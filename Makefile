@@ -4,8 +4,12 @@
 NDK    ?= /opt/android-ndk-r18b
 TC     := $(NDK)/toolchains/llvm/prebuilt/linux-x86_64
 CXX    := $(TC)/bin/clang++
-# Verified flags that reproduced ArrayAdd byte-exactly (keep the frame pointer; -O2).
-CXXFLAGS := -target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -O2 -fpic -frtti -Iinclude
+# Toolchain archaeology: the target .so was built SIZE-OPTIMIZED (-Oz), not -O2. Evidence:
+# across the 376 known-exact functions -Oz keeps every one exact AND flips 16 previously-divergent
+# functions to byte-exact (incl. FP InvSqrt + control-flow Player::shoot), where -O2 plateaued at
+# 53% mean / 0 of those exact. The earlier "-O2 ceiling" was the wrong opt level. (.comment confirms
+# the compiler is exactly NDK r18b clang 7.0.2; arch v7+VFPv3+NEONv1 is the -march=armv7-a default.)
+CXXFLAGS := -target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -Oz -fpic -frtti -Iinclude
 
 SRCS := $(shell find src -name '*.cpp' 2>/dev/null)
 OBJS := $(patsubst src/%.cpp,build/obj/%.o,$(SRCS))
