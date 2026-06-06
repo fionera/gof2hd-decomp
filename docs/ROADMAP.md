@@ -55,6 +55,25 @@ Lessons baked into the pipeline:
   tail-call wrappers (`return ext(field)`) trivial to match.
 - candidates: `work/candidates.tsv` (3666 named funcs ranked by size/leaf-ness) feeds the next batches.
 
+## Self-run wave (8 Claude team-members, no codex) — 147 → 376 functions
+Codex hit its usage limit, so a wave was run with 8 parallel **Claude subagents** (one per class),
+each building a coherent layout-`static_assert`'d header and matching its methods via `try.sh`/`gofdiff`.
+Yield (all genuine C++, 0 cheats, integrity intact, committed per class):
+Status 81, Player 58, Ship 43, AEMath 40, AEFile 32, Level 36, Quaternion 15, Item 0 (+ carryover) → **376 total, 7.4% of named.**
+(Nested subagents-per-method weren't available, so each class-agent did its methods directly.)
+
+### Toolchain ceiling (confirmed independently by every agent)
+Simple accessors / tail-call wrappers match ~first-try (≈75–80% of attempts). **Control-flow- and
+FP-heavy functions frequently cannot be byte-matched with NDK r18b clang 7.0.2 `-O2`**, even though
+`.comment` says clang 7.0.2. Systematic, non-source-fixable divergences observed:
+- if-conversion (`cbz`/`bx` vs predicated `it`/`bxne`); loop rotation/guard-merging; predicated-epilogue
+  SP-fold; FP load-order & vmls operand canonicalization; `movw/movt` vs literal-pool constants.
+- The target is **size-optimized** — per-function `__attribute__((minsize))` reproduces much of it.
+- `-fstack-protector-strong` was tested and **regressed** a canary method (89.7%→66.7%) — NOT the answer.
+Implication: a meaningful fraction of functions may need the *exact* original clang build/flags (or are
+inherently un-bytematchable here). Accessors/data/tail-calls are reliably matchable; the hard tail needs
+toolchain archaeology. This is the real ceiling on automated byte-match coverage.
+
 ### To scale further
 Run bigger tranches through `run_all.sh` (more workers), prioritizing leaf functions from
 `candidates.tsv`; route near-misses to decomp-permuter; expand to non-leaf functions as their

@@ -13,9 +13,13 @@ Example (ArrayAdd; Ghidra 0x805b4 -> ELF 0x705b4):
   gofdiff.py --so ../_work/bins/android_2.0.16_libgof2hdaa.so --vaddr 705b4 --n 40 \
              --obj build/obj/engine/array.o --sym ArrayAdd
 """
-import subprocess, sys, re, difflib, argparse, os
+import subprocess, sys, re, difflib, argparse, os, shutil
 
 OBJDUMP = os.environ.get("ARM_OBJDUMP", "arm-linux-gnueabihf-objdump")
+if shutil.which(OBJDUMP) is None:
+    # Fail loud: otherwise a missing objdump (e.g. run on the macOS host instead of the guest)
+    # silently yields 0 instructions -> a bogus 0% "regression". Run in the guest (orb run ...).
+    sys.exit("gofdiff: '%s' not found — run in the OrbStack guest, not the host." % OBJDUMP)
 
 BR = re.compile(r'(b|cbz|cbnz|beq|bne|bcs|bcc|bmi|bpl|bvs|bvc|bhi|bls|bge|blt|bgt|ble|bhs|blo)(\.[wn])?$')
 def normalize(ins):

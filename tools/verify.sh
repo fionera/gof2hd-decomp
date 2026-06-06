@@ -5,6 +5,11 @@
 set -u
 here="$(cd "$(dirname "$0")/.." && pwd)"; cd "$here"
 SO="${SO:-../_work/bins/android_2.0.16_libgof2hdaa.so}"
+# Fail loud, not silent: without the ARM objdump every diff returns empty and scores 0%, which
+# masquerades as "all regressed" (and can drown out a real regression). This gate MUST run in the
+# guest, e.g. `orb run make verify`.
+OBJDUMP="${ARM_OBJDUMP:-arm-linux-gnueabihf-objdump}"
+command -v "$OBJDUMP" >/dev/null 2>&1 || { echo "ABORT: '$OBJDUMP' not found — run this in the OrbStack guest (orb run make verify), not the host."; exit 1; }
 # Anti-cheat: the differ/wrapper/flags/target must be untampered (workers have fs access).
 bash tools/integrity.sh || { echo "ABORT: integrity check failed"; exit 1; }
 # Quality gate: recovered source must be genuine C/C++, not inline-asm/naked reproductions.
