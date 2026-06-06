@@ -19,7 +19,8 @@ OBJDUMP = os.environ.get("ARM_OBJDUMP", "arm-linux-gnueabihf-objdump")
 
 BR = re.compile(r'(b|cbz|cbnz|beq|bne|bcs|bcc|bmi|bpl|bvs|bvc|bhi|bls|bge|blt|bgt|ble|bhs|blo)(\.[wn])?$')
 def normalize(ins):
-    ins = re.sub(r';.*', '', ins)                 # drop comments
+    ins = re.sub(r';.*', '', ins)                 # drop ; comments
+    ins = re.sub(r'\s@\s.*$', '', ins)            # drop objdump ARM '@' comments (resolved literal addr etc.)
     ins = re.sub(r'<[^>]*>', '', ins)             # drop <symbol> annotations
     ins = re.sub(r'\s+', ' ', ins.strip())
     mn = ins.split(' ', 1)[0]
@@ -57,7 +58,14 @@ def obj_insns(obj, sym):
         if capture:
             if not line.strip(): capture = False; continue
             m = re.match(r'\s*[0-9a-f]+:\s+(\S.*)', line)
-            if m: insns.append(normalize(m.group(1)))
+            if m:
+                ni = normalize(m.group(1))
+                # skip literal-pool data directives (.word/.short/.byte/.inst) — not instructions
+                if re.match(r'\.(word|short|hword|byte|inst|long)\b', ni): continue
+                insns.append(ni)
+                # stop at the function's return, symmetric with target_insns (excludes trailing pool)
+                if re.search(r'pop \{[^}]*pc\}', ni) or ni == 'bx lr':
+                    capture = False
     return insns
 
 def main():
