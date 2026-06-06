@@ -2,8 +2,8 @@
 
 namespace AbyssEngine {
 
-Quaternion::operator const float *() const {
-    return &x;
+float &Quaternion::operator[](int index) {
+    return (&x)[index];
 }
 
 } // namespace AbyssEngine

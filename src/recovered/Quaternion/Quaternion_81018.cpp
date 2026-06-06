@@ -2,8 +2,9 @@
 
 namespace AbyssEngine {
 
-Quaternion::operator const float *() const {
-    return &x;
+Quaternion::Quaternion(AEMath::Vector angles)
+{
+    Set(angles);
 }
 
 } // namespace AbyssEngine

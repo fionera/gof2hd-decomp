@@ -25,3 +25,14 @@ alignToHorizon	a12f2	32	build/obj/recovered/alignToHorizon.o	alignToHorizon	exac
 setMaxEmpPoints	a2d64	32	build/obj/recovered/setMaxEmpPoints.o	setMaxEmpPoints	exact
 turnEnemy	a36a4	32	build/obj/recovered/turnEnemy.o	turnEnemy	exact
 setScaling	a47f8	32	build/obj/recovered/setScaling.o	setScaling	exact
+Quaternion_81008	81008	26	build/obj/recovered/Quaternion/Quaternion_81008.o	Quaternion	exact
+Quaternion_8100a	8100a	38	build/obj/recovered/Quaternion/Quaternion_8100a.o	Quaternion	exact
+Quaternion_81018	81018	38	build/obj/recovered/Quaternion/Quaternion_81018.o	Quaternion	exact
+Set_81026	81026	38	build/obj/recovered/Quaternion/Set_81026.o	Set	exact
+Quaternion_8102a	8102a	26	build/obj/recovered/Quaternion/Quaternion_8102a.o	Quaternion	exact
+Quaternion_8102c	8102c	38	build/obj/recovered/Quaternion/Quaternion_8102c.o	Quaternion	exact
+~Quaternion_81250	81250	26	build/obj/recovered/Quaternion/~Quaternion_81250.o	~Quaternion	exact
+Normalized_81410	81410	100	build/obj/recovered/Quaternion/Normalized_81410.o	Normalized	exact
+operator[]_814d8	814d8	30	build/obj/recovered/Quaternion/operator[]_814d8.o	operator[]	exact
+operator[]_814de	814de	30	build/obj/recovered/Quaternion/operator[]_814de.o	operator[]	exact
+Length_814e4	814e4	84	build/obj/recovered/Quaternion/Length_814e4.o	Length	exact

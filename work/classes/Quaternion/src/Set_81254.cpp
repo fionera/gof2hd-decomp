@@ -1,14 +1,14 @@
 #include "quaternion.h"
 
-extern "C" float sinf(float) __attribute__((longcall));
-extern "C" float cosf(float) __attribute__((longcall));
+extern "C" float (*gof2_sinf)(float);
+extern "C" float (*gof2_cosf)(float);
 
 namespace AbyssEngine {
 
 void Quaternion::Set(float x_angle, float y_angle, float z_angle) {
     const float half = 0.5f;
-    float (*sin_fn)(float) = sinf;
-    float (*cos_fn)(float) = cosf;
+    float (*sin_fn)(float) = gof2_sinf;
+    float (*cos_fn)(float) = gof2_cosf;
     float sz = sin_fn(z_angle * half);
     float sy = sin_fn(y_angle * half);
     float sx = sin_fn(x_angle * half);

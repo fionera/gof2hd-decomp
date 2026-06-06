@@ -3,28 +3,43 @@
 namespace AbyssEngine {
 
 void Quaternion::Convert(AEMath::Matrix &matrix) {
-    float x_ = x;
-    float y_ = y;
-    float z_ = z;
-    float w_ = w;
+    float fVar7 = x;
+    float fVar8 = y;
+    float fVar14f = fVar7 * fVar7;
+    float fVar9 = z;
+    float fVar11f = fVar8 * fVar8;
+    float fVar10 = w;
+    double fVar14 = fVar14f;
+    double fVar11 = fVar11f;
+    float fVar12f = fVar9 * fVar9;
+    double fVar12 = fVar12f;
+    float fVar13f = fVar10 * fVar10;
+    double fVar13 = fVar13f;
+    double inv = 1.0 / (fVar14 + fVar11 + fVar12 + fVar13);
+    double neg_xx = -fVar14;
 
-    double xx = x_ * x_;
-    double yy = y_ * y_;
-    double zz = z_ * z_;
-    double ww = w_ * w_;
-    double nxx = -xx;
-    double inv = 1.0 / (xx + yy + zz + ww);
+    float xyf = fVar7 * fVar8;
+    float wyf = fVar10 * fVar8;
+    float xzf = fVar7 * fVar9;
+    float yzf = fVar8 * fVar9;
+    float wxf = fVar10 * fVar7;
+    float wzf = fVar10 * fVar9;
 
-    double xy = x_ * y_;
-    double wz = w_ * z_;
-    double wy = y_ * w_;
-    double xz = x_ * z_;
-    double yz = y_ * z_;
-    double wx = w_ * x_;
+    double wz = wzf;
+    double xy = xyf;
+    double wy = wyf;
+    double xz = xzf;
+    double yz = yzf;
+    double wx = wxf;
 
-    double m5 = yy - xx;
-    double m0 = xx - yy;
-    double m10 = nxx - yy;
+    double m5 = fVar11 - fVar14;
+    double m0 = fVar14 - fVar11;
+    double m10 = neg_xx - fVar11;
+
+    m5 -= fVar12;
+    m0 -= fVar12;
+    m10 += fVar12;
+
     double m1 = xy + wz;
     double m4 = xy - wz;
     double m2 = xz - wy;
@@ -32,12 +47,9 @@ void Quaternion::Convert(AEMath::Matrix &matrix) {
     double m6 = wx + yz;
     double m9 = yz - wx;
 
-    m5 -= zz;
-    m0 -= zz;
-    m10 += zz;
-    m5 += ww;
-    m0 += ww;
-    m10 += ww;
+    m5 += fVar13;
+    m0 += fVar13;
+    m10 += fVar13;
 
     m2 += m2;
     m8 += m8;
@@ -56,25 +68,15 @@ void Quaternion::Convert(AEMath::Matrix &matrix) {
     m6 *= inv;
     m9 *= inv;
 
-    float out0 = m0;
-    float out5 = m5;
-    float out10 = m10;
-    float out1 = m1;
-    float out4 = m4;
-    float out2 = m2;
-    float out8 = m8;
-    float out6 = m6;
-    float out9 = m9;
-
-    matrix.m[0] = out0;
-    matrix.m[1] = out1;
-    matrix.m[2] = out2;
-    matrix.m[4] = out4;
-    matrix.m[5] = out5;
-    matrix.m[6] = out6;
-    matrix.m[8] = out8;
-    matrix.m[9] = out9;
-    matrix.m[10] = out10;
+    matrix.m[0] = static_cast<float>(m0);
+    matrix.m[1] = static_cast<float>(m1);
+    matrix.m[2] = static_cast<float>(m2);
+    matrix.m[4] = static_cast<float>(m4);
+    matrix.m[5] = static_cast<float>(m5);
+    matrix.m[6] = static_cast<float>(m6);
+    matrix.m[8] = static_cast<float>(m8);
+    matrix.m[9] = static_cast<float>(m9);
+    matrix.m[10] = static_cast<float>(m10);
 }
 
 } // namespace AbyssEngine

@@ -28,7 +28,7 @@ void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
     *reinterpret_cast<Vec4 *>(result) = result_vec;
     quaternion_normalized(this, result);
 
-    if (__stack_chk_guard == cookie) {
+    if (cookie == __stack_chk_guard) {
         return;
     }
     __stack_chk_fail();
