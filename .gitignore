@@ -8,3 +8,5 @@ work/classes/*/results/
 *.log
 *.out
 *.asm-cheat-REDO
+__pycache__/
+*.pyc
