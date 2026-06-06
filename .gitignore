@@ -10,3 +10,7 @@ work/classes/*/results/
 *.asm-cheat-REDO
 __pycache__/
 *.pyc
+# probe/experiment scratch (keep the .py reproduction scripts, drop their scratch outputs)
+build/probe/*.full
+build/probe/*.out
+build/probe/*.c
