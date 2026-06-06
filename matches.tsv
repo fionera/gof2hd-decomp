@@ -1,0 +1,27 @@
+# Registry of recovered functions (the regression set + coverage source of truth).
+# Columns: name <tab> elf_vaddr(hex) <tab> nbytes <tab> obj <tab> sym_substr <tab> status(exact|near)
+# (Android target; ELF vaddr = Ghidra addr - 0x10000.)
+ArrayAdd	705b4	48	build/obj/engine/array.o	ArrayAdd	exact
+ArrayRemoveAll	7fb3c	48	build/obj/engine/array.o	ArrayRemoveAll	exact
+ArraySetLength	a721c	80	build/obj/engine/array.o	ArraySetLength	near
+TransformGetTransform	7b67c	32	build/obj/recovered/TransformGetTransform.o	TransformGetTransform	exact
+OpenRead	70530	32	build/obj/recovered/OpenRead.o	OpenRead	exact
+OpenWrite	70b38	32	build/obj/recovered/OpenWrite.o	OpenWrite	exact
+SetApplicationManager	74154	32	build/obj/recovered/SetApplicationManager.o	SetApplicationManager	exact
+SetTexture	78212	32	build/obj/recovered/SetTexture.o	SetTexture	exact
+SetWorldViewMatrix	78810	32	build/obj/recovered/SetWorldViewMatrix.o	SetWorldViewMatrix	exact
+GetWidth	78fb4	32	build/obj/recovered/GetWidth.o	GetWidth	exact
+GetHeight	78fba	32	build/obj/recovered/GetHeight.o	GetHeight	exact
+DisableClip	7cb36	32	build/obj/recovered/DisableClip.o	DisableClip	exact
+StartDraw2FBO	7d088	32	build/obj/recovered/StartDraw2FBO.o	StartDraw2FBO	exact
+LightSetParticleAmbient	85828	32	build/obj/recovered/LightSetParticleAmbient.o	LightSetParticleAmbient	exact
+render2D	9984c	32	build/obj/recovered/render2D.o	render2D	exact
+ResumeEngineSound	9a5e2	32	build/obj/recovered/ResumeEngineSound.o	ResumeEngineSound	exact
+resetChargingDrive	9b04e	32	build/obj/recovered/resetChargingDrive.o	resetChargingDrive	exact
+getHitpoints	9b190	32	build/obj/recovered/getHitpoints.o	getHitpoints	exact
+getHullDamageRate	9b7a4	32	build/obj/recovered/getHullDamageRate.o	getHullDamageRate	exact
+getShieldDamageRate	9b7aa	32	build/obj/recovered/getShieldDamageRate.o	getShieldDamageRate	exact
+alignToHorizon	a12f2	32	build/obj/recovered/alignToHorizon.o	alignToHorizon	exact
+setMaxEmpPoints	a2d64	32	build/obj/recovered/setMaxEmpPoints.o	setMaxEmpPoints	exact
+turnEnemy	a36a4	32	build/obj/recovered/turnEnemy.o	turnEnemy	exact
+setScaling	a47f8	32	build/obj/recovered/setScaling.o	setScaling	exact

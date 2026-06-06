@@ -1,0 +1,10 @@
+# build artifacts + verbose worker logs (regenerable); everything else is committed for audit
+build/obj/
+build/asm/
+build/libgof2hdaa.so
+*.o
+work/results/
+work/classes/*/results/
+*.log
+*.out
+*.asm-cheat-REDO
