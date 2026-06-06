@@ -5,7 +5,7 @@ extern FileInterface *g_fileInterface;
 extern char g_AELowLevelPakFile_vtable[];
 
 __attribute__((stack_protect))
-AELowLevelFile *AEFile::findPakFile(const String &path)
+__attribute__((minsize)) AELowLevelFile *AEFile::findPakFile(const String &path)
 {
     AELowLevelFile *result;
     Array<AEPakFileEntry *> **entriesGlobal = &g_pakFileEntries;

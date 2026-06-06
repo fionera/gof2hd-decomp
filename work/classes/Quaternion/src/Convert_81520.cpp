@@ -3,80 +3,30 @@
 namespace AbyssEngine {
 
 void Quaternion::Convert(AEMath::Matrix &matrix) {
+    float fVar10 = w;
     float fVar7 = x;
     float fVar8 = y;
-    float fVar14f = fVar7 * fVar7;
     float fVar9 = z;
-    float fVar11f = fVar8 * fVar8;
-    float fVar10 = w;
-    double fVar14 = fVar14f;
-    double fVar11 = fVar11f;
-    float fVar12f = fVar9 * fVar9;
-    double fVar12 = fVar12f;
-    float fVar13f = fVar10 * fVar10;
-    double fVar13 = fVar13f;
-    double inv = 1.0 / (fVar14 + fVar11 + fVar12 + fVar13);
-    double neg_xx = -fVar14;
-
-    float xyf = fVar7 * fVar8;
-    float wyf = fVar10 * fVar8;
-    float xzf = fVar7 * fVar9;
-    float yzf = fVar8 * fVar9;
-    float wxf = fVar10 * fVar7;
-    float wzf = fVar10 * fVar9;
-
-    double wz = wzf;
-    double xy = xyf;
-    double wy = wyf;
-    double xz = xzf;
-    double yz = yzf;
-    double wx = wxf;
-
-    double m5 = fVar11 - fVar14;
-    double m0 = fVar14 - fVar11;
-    double m10 = neg_xx - fVar11;
-
-    m5 -= fVar12;
-    m0 -= fVar12;
-    m10 += fVar12;
-
-    double m1 = xy + wz;
-    double m4 = xy - wz;
-    double m2 = xz - wy;
-    double m8 = wy + xz;
-    double m6 = wx + yz;
-    double m9 = yz - wx;
-
-    m5 += fVar13;
-    m0 += fVar13;
-    m10 += fVar13;
-
-    m2 += m2;
-    m8 += m8;
-    m6 += m6;
-    m1 += m1;
-    m4 += m4;
-    m9 += m9;
-
-    m5 *= inv;
-    m0 *= inv;
-    m10 *= inv;
-    m1 *= inv;
-    m4 *= inv;
-    m2 *= inv;
-    m8 *= inv;
-    m6 *= inv;
-    m9 *= inv;
-
-    matrix.m[0] = static_cast<float>(m0);
-    matrix.m[1] = static_cast<float>(m1);
-    matrix.m[2] = static_cast<float>(m2);
-    matrix.m[4] = static_cast<float>(m4);
-    matrix.m[5] = static_cast<float>(m5);
-    matrix.m[6] = static_cast<float>(m6);
-    matrix.m[8] = static_cast<float>(m8);
-    matrix.m[9] = static_cast<float>(m9);
-    matrix.m[10] = static_cast<float>(m10);
+    double fVar14 = fVar7 * fVar7;
+    double fVar11 = fVar8 * fVar8;
+    double fVar12 = fVar9 * fVar9;
+    double fVar13 = fVar10 * fVar10;
+    double fVar1 = 1.0 / (fVar14 + fVar11 + fVar12 + fVar13);
+    double fVar6 = (double)(fVar7 * fVar8) + (double)(fVar10 * fVar9);
+    double fVar5 = (double)(fVar7 * fVar8) - (double)(fVar10 * fVar9);
+    double fVar4 = (double)(fVar7 * fVar9) - (double)(fVar10 * fVar8);
+    double fVar3 = (double)(fVar10 * fVar8) + (double)(fVar7 * fVar9);
+    double fVar2 = (double)(fVar10 * fVar7) + (double)(fVar8 * fVar9);
+    double fVar7b = (double)(fVar8 * fVar9) - (double)(fVar10 * fVar7);
+    matrix.m[0] = (((fVar14 - fVar11) - fVar12) + fVar13) * fVar1;
+    matrix.m[1] = (fVar6 + fVar6) * fVar1;
+    matrix.m[2] = (fVar4 + fVar4) * fVar1;
+    matrix.m[4] = (fVar5 + fVar5) * fVar1;
+    matrix.m[5] = (((fVar11 - fVar14) - fVar12) + fVar13) * fVar1;
+    matrix.m[6] = (fVar2 + fVar2) * fVar1;
+    matrix.m[8] = (fVar3 + fVar3) * fVar1;
+    matrix.m[9] = (fVar7b + fVar7b) * fVar1;
+    matrix.m[10] = ((-fVar14 - fVar11) + fVar12 + fVar13) * fVar1;
 }
 
 } // namespace AbyssEngine

@@ -5,13 +5,11 @@ namespace AEMath {
 
 bool operator>(const Vector &lhs, const Vector &rhs)
 {
-    const volatile Vector *left = &lhs;
     bool result = false;
-    if (!(left->x > rhs.x)) {
-        return false;
-    }
-    if (left->y > rhs.y) {
-        result = left->z > rhs.z;
+    if (lhs.x > rhs.x) {
+        if (lhs.y > rhs.y) {
+            result = lhs.z > rhs.z;
+        }
     }
     return result;
 }

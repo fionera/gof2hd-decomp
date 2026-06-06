@@ -3,7 +3,7 @@
 extern Array<AELowLevelFile *> *g_AEFile_openFiles;
 extern Array<AEPakFileEntry *> *volatile g_AEFile_pakFiles;
 
-void AEFile::Release()
+__attribute__((minsize)) void AEFile::Release()
 {
     if (g_AEFile_openFiles != 0) {
         ArrayReleaseClasses(*g_AEFile_openFiles);

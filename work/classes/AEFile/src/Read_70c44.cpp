@@ -1,6 +1,6 @@
 #include "class.h"
 
-uint32_t AEFile::Read(String &value, uint32_t handle, bool wide)
+__attribute__((minsize)) uint32_t AEFile::Read(String &value, uint32_t handle, bool wide)
 {
     uint32_t locals[2];
     uint32_t result = 0;

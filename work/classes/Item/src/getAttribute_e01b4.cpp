@@ -1,28 +1,16 @@
 #include "class.h"
 
-__attribute__((target("-movt")))
-int Item::getAttribute(int attribute) {
-    Array *array = attributes;
-    volatile Array *volatileArray = array;
-    uint32_t size = array->size;
-    uint32_t index = 0;
+__attribute__((minsize))
+int Item::getAttribute(int attribute)
+{
+    volatile Array *v = attributes;
     int result = (int)0xc5997825;
-
-    goto test;
-loop:
-    {
-        int *data = (int *)volatileArray->data;
-        int value = data[index];
-        if (value == attribute) {
+    uint32_t size = v->size;
+    for (uint32_t index = 0; index < size; index += 2) {
+        int *data = (int *)v->data;
+        if (data[index] == attribute) {
             return data[index + 1];
         }
-        index += 2;
     }
-
-test:
-    if (index < size) {
-        goto loop;
-    }
-
     return result;
 }

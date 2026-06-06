@@ -1,12 +1,14 @@
 #include "class.h"
 
-void AEFile::Write(char value, uint32_t handle)
+__attribute__((minsize)) void AEFile::Write(char value, uint32_t handle)
 {
+    void * volatile cookie = __stack_chk_guard;
     char local = value;
-    void * volatile guard = __stack_chk_guard;
     Write(1, &local, handle);
-    if (__stack_chk_guard == guard) {
+
+    uint32_t guardDelta = (uint32_t)cookie - (uint32_t)__stack_chk_guard;
+    if (guardDelta == 0) {
         return;
     }
-    __stack_chk_fail();
+    __stack_chk_fail(guardDelta);
 }

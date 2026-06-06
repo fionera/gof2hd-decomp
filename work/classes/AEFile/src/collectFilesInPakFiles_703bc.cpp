@@ -3,7 +3,7 @@
 extern FileInterface *g_fileInterface;
 extern Array<AEPakFileEntry *> *g_pakFileEntries;
 
-void AEFile::collectFilesInPakFiles(String &path)
+__attribute__((minsize)) void AEFile::collectFilesInPakFiles(String &path)
 {
     FileInterface *fileInterface = g_fileInterface;
     volatile uint32_t cookie = reinterpret_cast<uint32_t>(__stack_chk_guard);

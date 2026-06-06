@@ -5,39 +5,24 @@ extern Array<AELowLevelFile *> *g_AEFile_openFiles;
 extern FileInterface *g_AEFile_fileInterface;
 extern uint32_t g_AEFile_initialized;
 
-inline void *operator new(uint32_t, void *ptr) noexcept
+__attribute__((minsize)) void AEFile::SetInterface(FileInterface *fileInterface)
 {
-    return ptr;
-}
-
-void AEFile::SetInterface(FileInterface *fileInterface)
-{
-    if (__builtin_expect(fileInterface == 0, 0)) {
+    if (fileInterface == 0) {
         return;
     }
-    if (__builtin_expect(fileInterface->enabled == 0, 0)) {
+    if (fileInterface->enabled == 0) {
         return;
     }
 
-    uint32_t *initialized = &g_AEFile_initialized;
-    if (*initialized != 0) {
+    if (g_AEFile_initialized != 0) {
         fileInterface->vtable->ResetSaveDirectory(fileInterface);
     }
 
-    Array<AEPakFileEntry *> **pakFilesSlot = &g_AEFile_pakFiles;
-    if (*pakFilesSlot == 0) {
-        Array<AEPakFileEntry *> *pakFiles =
-            static_cast<Array<AEPakFileEntry *> *>(operator new(sizeof(Array<AEPakFileEntry *>)));
-        new (pakFiles) Array<AEPakFileEntry *>();
-        *pakFilesSlot = pakFiles;
+    if (g_AEFile_pakFiles == 0) {
+        g_AEFile_pakFiles = new Array<AEPakFileEntry *>();
     }
-
-    Array<AELowLevelFile *> **openFilesSlot = &g_AEFile_openFiles;
-    if (*openFilesSlot == 0) {
-        Array<AELowLevelFile *> *openFiles =
-            static_cast<Array<AELowLevelFile *> *>(operator new(sizeof(Array<AELowLevelFile *>)));
-        new (openFiles) Array<AELowLevelFile *>();
-        *openFilesSlot = openFiles;
+    if (g_AEFile_openFiles == 0) {
+        g_AEFile_openFiles = new Array<AELowLevelFile *>();
     }
     g_AEFile_fileInterface = fileInterface;
 }

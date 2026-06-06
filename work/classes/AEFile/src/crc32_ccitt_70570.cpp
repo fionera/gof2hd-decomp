@@ -1,7 +1,5 @@
 #include "class.h"
 
-extern "C" uint16_t *_ZNK11AbyssEngine6StringixEi(const String *text, int index);
-
 namespace {
 
 static const uint32_t crc32Table[256] = {
@@ -73,24 +71,14 @@ static const uint32_t crc32Table[256] = {
 
 } // namespace
 
-uint32_t AEFile::crc32_ccitt(const String &text)
+__attribute__((minsize)) uint32_t AEFile::crc32_ccitt(const String &text)
 {
+    String &s = const_cast<String &>(text);
     uint32_t crc = 0;
-    int index = 0;
-
-    goto check;
-
-loop:
-    {
-        uint16_t value = *_ZNK11AbyssEngine6StringixEi(&text, index);
-        crc = crc32Table[(value ^ crc) & 0xff] ^ (crc >> 8);
-        index++;
+    const uint32_t *table = crc32Table;
+    for (int index = 0; index < (int32_t)s.size; index++) {
+        uint16_t value = *s[(uint32_t)index];
+        crc = table[(value ^ crc) & 0xff] ^ (crc >> 8);
     }
-
-check:
-    if (index < static_cast<int32_t>(text.size)) {
-        goto loop;
-    }
-
     return crc;
 }

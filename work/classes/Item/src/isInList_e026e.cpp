@@ -1,29 +1,17 @@
 #include "class.h"
 
+__attribute__((minsize))
 bool Item::isInList(int index, int amount, Array *items)
 {
-    if (items == 0) {
-        return false;
-    }
-
-    uint32_t size = items->size;
-    volatile Array *volatileItems = items;
-    uint32_t i = 0;
-
-    goto test;
-loop:
-    {
-        Item *item = static_cast<Item **>(volatileItems->data)[i];
-        if (item->index == index && amount <= item->amount) {
-            return true;
+    if (items != 0) {
+        volatile Array *v = items;
+        uint32_t size = v->size;
+        for (uint32_t i = 0; i < size; i++) {
+            Item *item = static_cast<Item **>(v->data)[i];
+            if (item->index == index && amount <= item->amount) {
+                return true;
+            }
         }
-        i++;
     }
-
-test:
-    if (i < size) {
-        goto loop;
-    }
-
     return false;
 }

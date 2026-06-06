@@ -2,30 +2,18 @@
 
 extern FileInterface *gAEFileInterface;
 
-inline void *operator new(uint32_t, void *ptr) noexcept {
-    return ptr;
-}
-
-void AEFile::SetSaveDirectory(String path) {
-    struct StackFrame {
-        unsigned char savePathStorage[sizeof(String)];
-        void * volatile cookie;
-    } frame;
-    frame.cookie = __stack_chk_guard;
+__attribute__((minsize)) void AEFile::SetSaveDirectory(String path) {
+    void * volatile cookie = __stack_chk_guard;
 
     FileInterface *fileInterface = gAEFileInterface;
     if (fileInterface != 0) {
-        String *savePath = reinterpret_cast<String *>(frame.savePathStorage);
-        new (savePath) String(path, false);
-        void (*setSaveDirectory)(FileInterface *, const String &) =
-            fileInterface->vtable->SetSaveDirectory;
-        setSaveDirectory(fileInterface, *savePath);
-        savePath->~String();
+        String savePath(path, false);
+        fileInterface->vtable->SetSaveDirectory(fileInterface, savePath);
     }
 
-    if (frame.cookie == __stack_chk_guard) {
+    uint32_t guardDelta = (uint32_t)cookie - (uint32_t)__stack_chk_guard;
+    if (guardDelta == 0) {
         return;
     }
-    __stack_chk_fail();
-    __builtin_unreachable();
+    __stack_chk_fail(guardDelta);
 }

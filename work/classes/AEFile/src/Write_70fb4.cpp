@@ -1,22 +1,14 @@
 #include "class.h"
 
-extern "C" void __stack_chk_fail(...) __attribute__((noreturn));
-
-void AEFile::Write(float value, uint32_t handle)
+__attribute__((minsize)) void AEFile::Write(float value, uint32_t handle)
 {
-    uint32_t guard = (uint32_t)*(void * volatile *)&__stack_chk_guard;
-    struct {
-        float value;
-        volatile uint32_t guard;
-    } local;
+    void * volatile cookie = __stack_chk_guard;
+    float local = value;
+    Write(4, &local, handle);
 
-    local.value = value;
-    local.guard = guard;
-
-    Write(4, &local.value, handle);
-
-    if (((uint32_t)*(void * volatile *)&__stack_chk_guard - local.guard) == 0) {
+    uint32_t guardDelta = (uint32_t)cookie - (uint32_t)__stack_chk_guard;
+    if (guardDelta == 0) {
         return;
     }
-    __stack_chk_fail();
+    __stack_chk_fail(guardDelta);
 }

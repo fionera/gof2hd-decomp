@@ -1,5 +1,6 @@
 #include "class.h"
 
+void *operator new(uint32_t size);
 extern "C" void Array_Item_ctor(Array *array);
 extern "C" void ArrayAdd_Item(Item *item, Array *array);
 
@@ -12,8 +13,9 @@ Array *Item::extractItems(Array *items, bool station)
     Array *extracted = static_cast<Array *>(operator new(sizeof(Array)));
     Array_Item_ctor(extracted);
 
-    for (uint32_t i = 0; i < items->size; i++) {
-        Item *item = static_cast<Item **>(items->data)[i];
+    volatile Array *v = items;
+    for (uint32_t i = 0; i < v->size; i++) {
+        Item *item = static_cast<Item **>(v->data)[i];
         int amount;
         if (station) {
             amount = item->amount;
@@ -26,8 +28,7 @@ Array *Item::extractItems(Array *items, bool station)
     }
 
     if (extracted->size == 0) {
-        extracted = 0;
+        return 0;
     }
-
     return extracted;
 }

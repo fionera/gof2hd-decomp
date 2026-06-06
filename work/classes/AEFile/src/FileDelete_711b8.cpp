@@ -2,31 +2,20 @@
 
 extern FileInterface *gAEFileFileInterface;
 
-inline void *operator new(uint32_t, void *ptr) noexcept
+__attribute__((minsize)) uint32_t AEFile::FileDelete(const String &path)
 {
-    return ptr;
-}
+    void * volatile cookie = __stack_chk_guard;
 
-uint32_t AEFile::FileDelete(const String &path)
-{
-    struct StackFrame {
-        uint32_t stringStorage[3];
-        void *guard;
-    } frame;
-
-    void **guard = &__stack_chk_guard;
     FileInterface *fileInterface = gAEFileFileInterface;
-    frame.guard = *guard;
     uint32_t result = 0;
-
     if (fileInterface != 0) {
-        String *localPath = new (frame.stringStorage) String(path, false);
-        result = fileInterface->vtable->FileDelete(fileInterface, *localPath);
-        localPath->~String();
+        String localPath(path, false);
+        result = fileInterface->vtable->FileDelete(fileInterface, localPath);
     }
 
-    if ((uint32_t)*guard - (uint32_t)frame.guard != 0) {
-        __stack_chk_fail((uint32_t)*guard - (uint32_t)frame.guard);
+    uint32_t guardDelta = (uint32_t)cookie - (uint32_t)__stack_chk_guard;
+    if (guardDelta == 0) {
+        return result;
     }
-    return result;
+    __stack_chk_fail(guardDelta);
 }

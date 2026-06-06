@@ -7,7 +7,7 @@ extern char g_AELowLevelNativeFile_vtable[];
 typedef void (*StringDestructor)(String *);
 extern StringDestructor g_AEString_destructor;
 
-uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
+__attribute__((minsize)) uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     uint32_t result;

@@ -1,8 +1,8 @@
 #include "quaternion.h"
 #include <arm_neon.h>
 
-extern "C" unsigned int __stack_chk_guard;
-extern "C" void __stack_chk_fail() __attribute__((noreturn));
+extern "C" void *__stack_chk_guard;
+extern "C" void __stack_chk_fail(unsigned int delta) __attribute__((noreturn));
 extern "C" void quaternion_sub(AbyssEngine::Quaternion *out,
                                const AbyssEngine::Quaternion *a,
                                const AbyssEngine::Quaternion *b);
@@ -14,7 +14,7 @@ namespace AbyssEngine {
 void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
     typedef float Vec4 __attribute__((vector_size(16)));
 
-    volatile unsigned int cookie = __stack_chk_guard;
+    void *volatile cookie = __stack_chk_guard;
     alignas(16) unsigned char result_storage[sizeof(Quaternion)];
     alignas(16) unsigned char delta_storage[sizeof(Quaternion)];
     Quaternion *delta = reinterpret_cast<Quaternion *>(delta_storage);
@@ -28,10 +28,11 @@ void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
     *reinterpret_cast<Vec4 *>(result) = result_vec;
     quaternion_normalized(this, result);
 
-    if (cookie == __stack_chk_guard) {
+    unsigned int guardDelta = (unsigned int)cookie - (unsigned int)__stack_chk_guard;
+    if (guardDelta == 0) {
         return;
     }
-    __stack_chk_fail();
+    __stack_chk_fail(guardDelta);
 }
 
 } // namespace AbyssEngine

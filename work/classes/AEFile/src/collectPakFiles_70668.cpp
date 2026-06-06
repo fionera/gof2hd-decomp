@@ -7,7 +7,7 @@ inline void *operator new(uint32_t, void *ptr) noexcept
     return ptr;
 }
 
-void AEFile::collectPakFiles(const String &path)
+__attribute__((minsize)) void AEFile::collectPakFiles(const String &path)
 {
     struct StringSlot {
         uint32_t words[3];

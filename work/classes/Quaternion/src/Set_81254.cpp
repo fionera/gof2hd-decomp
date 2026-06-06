@@ -6,20 +6,18 @@ extern "C" float (*gof2_cosf)(float);
 namespace AbyssEngine {
 
 void Quaternion::Set(float x_angle, float y_angle, float z_angle) {
-    const float half = 0.5f;
-    float (*sin_fn)(float) = gof2_sinf;
-    float (*cos_fn)(float) = gof2_cosf;
-    float sz = sin_fn(z_angle * half);
-    float sy = sin_fn(y_angle * half);
-    float sx = sin_fn(x_angle * half);
-    float cz = cos_fn(z_angle * half);
-    float cy = cos_fn(y_angle * half);
-    float cx = cos_fn(x_angle * half);
-
-    x = sx * cz * cy - sz * sy * cx;
-    y = -(sy * cz * cx) + -(sx * sz * cy);
-    z = sz * cy * cx - sx * sy * cz;
-    w = cz * cy * cx + sz * sy * sx;
+    float (*pSin)(float) = gof2_sinf;
+    float fVar1 = pSin(z_angle * 0.5f);
+    float fVar2 = pSin(y_angle * 0.5f);
+    float (*pCos)(float) = gof2_cosf;
+    float fVar3 = pSin(x_angle * 0.5f);
+    float fVar4 = pCos(z_angle * 0.5f);
+    float fVar5 = pCos(y_angle * 0.5f);
+    float fVar6 = pCos(x_angle * 0.5f);
+    x = fVar3 * fVar4 * fVar5 - fVar1 * fVar2 * fVar6;
+    y = -(fVar2 * fVar4 * fVar6) + -(fVar3 * fVar1 * fVar5);
+    z = fVar1 * fVar5 * fVar6 - fVar3 * fVar2 * fVar4;
+    w = fVar4 * fVar5 * fVar6 + fVar1 * fVar2 * fVar3;
 }
 
 } // namespace AbyssEngine

@@ -3,7 +3,7 @@
 extern FileInterface *g_fileInterface;
 extern Array<AELowLevelFile *> *g_openFiles;
 
-void AEFile::Close(uint32_t handle) {
+__attribute__((minsize)) void AEFile::Close(uint32_t handle) {
     if (g_fileInterface != 0) {
         Array<AELowLevelFile *> *files = g_openFiles;
         if (files->size <= handle) {

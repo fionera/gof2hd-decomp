@@ -15,5 +15,3 @@ uint32_t AEFile::GetFileSize(uint32_t handle) {
     }
     return 0;
 }
-
-extern "C" void AEFile_GetFileSize_boundary() {}

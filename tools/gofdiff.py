@@ -51,26 +51,22 @@ def target_insns(so, vaddr, n):
 
 def obj_insns(obj, sym):
     out = subprocess.run([OBJDUMP, "-d", "-C", "--no-show-raw-insn", obj], capture_output=True, text=True).stdout
-    funcs, cur = {}, None     # demangled-name -> instruction list
+    insns, capture = [], False
     for line in out.splitlines():
         h = re.match(r'[0-9a-f]+ <(.+)>:', line)
-        if h: cur = h.group(1); funcs[cur] = []; continue
-        if cur is None: continue
-        if not line.strip(): cur = None; continue
-        m = re.match(r'\s*[0-9a-f]+:\s+(\S.*)', line)
-        if not m: continue
-        ni = normalize(m.group(1))
-        if re.match(r'\.(word|short|hword|byte|inst|long)\b', ni): continue   # skip literal-pool data
-        funcs[cur].append(ni)
-        if re.search(r'pop \{[^}]*pc\}', ni) or ni == 'bx lr':                 # stop at the return
-            cur = None
-    matched = [v for k, v in funcs.items() if sym in k and v]
-    if matched:
-        return max(matched, key=len)   # the method itself, not a smaller same-prefix helper
-    # sym-fallback: Ghidra short names (e.g. cast operators) don't substring the demangled symbol —
-    # if nothing matched, use the single (or largest) defined function in this single-method object.
-    nonempty = [v for v in funcs.values() if v]
-    return max(nonempty, key=len) if nonempty else []
+        if h: capture = sym in h.group(1); continue
+        if capture:
+            if not line.strip(): capture = False; continue
+            m = re.match(r'\s*[0-9a-f]+:\s+(\S.*)', line)
+            if m:
+                ni = normalize(m.group(1))
+                # skip literal-pool data directives (.word/.short/.byte/.inst) — not instructions
+                if re.match(r'\.(word|short|hword|byte|inst|long)\b', ni): continue
+                insns.append(ni)
+                # stop at the function's return, symmetric with target_insns (excludes trailing pool)
+                if re.search(r'pop \{[^}]*pc\}', ni) or ni == 'bx lr':
+                    capture = False
+    return insns
 
 def main():
     ap = argparse.ArgumentParser()

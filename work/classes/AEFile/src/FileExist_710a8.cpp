@@ -7,7 +7,7 @@ inline void *operator new(uint32_t, void *ptr) noexcept
     return ptr;
 }
 
-uint32_t AEFile::FileExist(const String &path)
+__attribute__((minsize)) uint32_t AEFile::FileExist(const String &path)
 {
     void * volatile cookie;
     unsigned char nativePathStorage[sizeof(String)] __attribute__((aligned(4)));

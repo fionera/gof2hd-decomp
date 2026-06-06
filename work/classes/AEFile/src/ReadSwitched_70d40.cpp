@@ -1,8 +1,8 @@
 #include "class.h"
 
-uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
+__attribute__((minsize)) uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
 {
-    volatile uint32_t cookie = reinterpret_cast<uint32_t>(__stack_chk_guard);
+    void * volatile cookie = __stack_chk_guard;
     uint16_t length;
     uint32_t result = 0;
 
@@ -17,8 +17,9 @@ uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
         operator delete(buffer);
     }
 
-    if (cookie == reinterpret_cast<uint32_t>(__stack_chk_guard)) {
+    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    if (guardDelta == 0) {
         return result;
     }
-    __stack_chk_fail();
+    __stack_chk_fail(guardDelta);
 }
