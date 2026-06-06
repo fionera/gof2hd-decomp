@@ -368,3 +368,12 @@ GetEngineEvent_a4108	a4108	30	build/obj/recovered/Player/GetEngineEvent_a4108.o	
 replaceGuns_a4360	a4360	26	build/obj/recovered/Player/replaceGuns_a4360.o	replaceGuns	exact
 operator___8052c	8052c	250	build/obj/recovered/AEMath/operator___8052c.o	operator!=	exact
 Inverse_81328	81328	96	build/obj/recovered/Quaternion/Inverse_81328.o	Inverse	exact
+Close_70610	70610	88	build/obj/recovered/AEFile/Close_70610.o	Close	exact
+OpenRead_70aec	70aec	82	build/obj/recovered/AEFile/OpenRead_70aec.o	OpenRead	exact
+OpenWrite_70b40	70b40	82	build/obj/recovered/AEFile/OpenWrite_70b40.o	OpenWrite	exact
+OpenAppend_70b94	70b94	82	build/obj/recovered/AEFile/OpenAppend_70b94.o	OpenAppend	exact
+Read_70c44	70c44	186	build/obj/recovered/AEFile/Read_70c44.o	Read	exact
+ReadSwitched_70d06	70d06	52	build/obj/recovered/AEFile/ReadSwitched_70d06.o	ReadSwitched	exact
+ReadSwitched_70d22	70d22	52	build/obj/recovered/AEFile/ReadSwitched_70d22.o	ReadSwitched	exact
+ReadSwitched_70d40	70d40	134	build/obj/recovered/AEFile/ReadSwitched_70d40.o	ReadSwitched	exact
+GetFileSize_71074	71074	66	build/obj/recovered/AEFile/GetFileSize_71074.o	GetFileSize	exact

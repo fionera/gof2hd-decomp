@@ -207,7 +207,7 @@ static_assert(__builtin_offsetof(AELowLevelPakFile, position) == 0x10, "AELowLev
 static_assert(__builtin_offsetof(FileInterface, enabled) == 0x4, "FileInterface::enabled");
 
 extern "C" void *__stack_chk_guard;
-extern "C" void __stack_chk_fail(...);
+extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 void *operator new(uint32_t size);
 void operator delete(void *ptr) noexcept;
 void *operator new[](uint32_t size);
