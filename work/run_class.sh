@@ -9,9 +9,9 @@ Inputs: $dir/class.md (overview + method list) and $dir/methods.tsv (lines: key<
 and one $dir/<key>.md work-item per method (Ghidra decompile + exact target disassembly).
 
 Do this:
-1) Study the method work-items and define the shared class layout ONCE in $dir/src/quaternion.h
+1) Study the method work-items and define the shared class layout ONCE in $dir/src/class.h
    (the struct with correct field offsets, consistent across every method). Method .cpp files will
-   #include \"quaternion.h\".
+   #include \"class.h\".
 2) PARALLELIZE across methods by fanning out sub-workers. For each line in $dir/methods.tsv run:
      bash work/run_method.sh $Class <key> <method> <vaddr> <n> </dev/null >$dir/results/<key>.log 2>&1 &
    Keep at most 5 running at once (wait when at the cap; use: while [ \$(jobs -rp | wc -l) -ge 5 ]; do sleep 2; done).
