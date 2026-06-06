@@ -11,7 +11,9 @@ __attribute__((minsize)) void AEFile::SetSaveDirectory(String path) {
         fileInterface->vtable->SetSaveDirectory(fileInterface, savePath);
     }
 
-    uint32_t guardDelta = (uint32_t)cookie - (uint32_t)__stack_chk_guard;
+    uint32_t saved = (uint32_t)cookie;
+    uint32_t current = (uint32_t)*(void *volatile *)&__stack_chk_guard;
+    uint32_t guardDelta = current - saved;
     if (guardDelta == 0) {
         return;
     }
