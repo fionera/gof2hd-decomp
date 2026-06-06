@@ -16,6 +16,10 @@ bash tools/integrity.sh || { echo "ABORT: integrity check failed"; exit 1; }
 if grep -rlnE '\b(__asm__|asm[[:space:]]*\(|asm[[:space:]]*volatile|__attribute__\(\(naked)' src/ 2>/dev/null; then
   echo "REJECTED: inline asm / naked found in src/ (not a real decompilation)"; exit 1
 fi
+# Always build CLEAN: objects don't depend on the Makefile, so a CXXFLAGS change (e.g. opt level)
+# would otherwise leave stale objects and the gate would diff the wrong build. The trust anchor
+# must reflect the current flags+source exactly.
+make clean >/dev/null 2>&1
 make NDK="${NDK:-/opt/android-ndk-r18b}" >/dev/null 2>&1 || { echo "BUILD FAILED"; exit 1; }
 fail=0; n=0
 while IFS=$'\t' read -r name vaddr nbytes obj sym status; do
