@@ -366,3 +366,5 @@ removeAllGuns_a3986	a3986	56	build/obj/recovered/Player/removeAllGuns_a3986.o	re
 getGunSlots_a39a6	a39a6	28	build/obj/recovered/Player/getGunSlots_a39a6.o	getGunSlots	exact
 GetEngineEvent_a4108	a4108	30	build/obj/recovered/Player/GetEngineEvent_a4108.o	GetEngineEvent	exact
 replaceGuns_a4360	a4360	26	build/obj/recovered/Player/replaceGuns_a4360.o	replaceGuns	exact
+operator___8052c	8052c	250	build/obj/recovered/AEMath/operator___8052c.o	operator!=	exact
+Inverse_81328	81328	96	build/obj/recovered/Quaternion/Inverse_81328.o	Inverse	exact
