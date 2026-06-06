@@ -11,8 +11,9 @@ functions). This tracks what's done and the path to full coverage. Detailed RE l
   - `.bin` tables — `names` + `items` schema-validated (byte-exact), `.lang` (3385 strings). Generic dumper for the rest.
   - FMOD `.fev/.fsb` — documented (stock tools).
 - **Matching pipeline**: NDK r18b clang 7.0.2 running (Rosetta), `make`/diff harness, verified flags.
-- **Matched code**: `src/engine/array.cpp` — `ArrayAdd` and `ArrayRemoveAll` reproduce the target
-  **byte-exactly**; one template covers the whole `Array<T*>` family. `ArraySetLength` ~90% (1 redundant load to resolve).
+- **Matched code**: `src/engine/array.cpp` — `ArrayAdd`, `ArrayRemoveAll`, and `ArraySetLength`
+  reproduce the target **byte-exactly** (`ArraySetLength` was the last `-O2` near-miss at 95.8%; it
+  matches at the correct `-Oz`). One template covers the whole `Array<T*>` family.
 
 ## Progress on the 6 fronts
 1. ✅ **iOS function discovery** — Thumb-prologue sweep of `__text`: **2407 → 7822 functions**
@@ -24,8 +25,8 @@ functions). This tracks what's done and the path to full coverage. Detailed RE l
    Android via BSim** (it would mostly apply wrong names). BSim stays useful for *same-compiler* and
    *within-binary* family matching, not cross-compiler. Naming is effectively maxed from the symbol
    tables (demangling, done) — bulk naming is NOT the scaling accelerator; per-function authoring is.
-3. ✅ **Containers** — `src/engine/array.cpp`: `ArrayAdd`+`ArrayRemoveAll` byte-exact, `ArraySetLength`
-   ~exact (1 scheduling swap), covering the whole `Array<T*>` family. `src/engine/string.cpp`:
+3. ✅ **Containers** — `src/engine/array.cpp`: `ArrayAdd`+`ArrayRemoveAll`+`ArraySetLength` byte-exact
+   (at `-Oz`), covering the whole `Array<T*>` family. `src/engine/string.cpp`:
    `String` layout + `GetStringLength`.
 4. ✅ **`.bin` schemas** — `names`, `items`(233), `systems`(34), `.lang` all byte-validated in
    `tools/gofbin.py`; method documented for ships/agents/weapons/stations/etc.
@@ -55,29 +56,48 @@ Lessons baked into the pipeline:
   tail-call wrappers (`return ext(field)`) trivial to match.
 - candidates: `work/candidates.tsv` (3666 named funcs ranked by size/leaf-ness) feeds the next batches.
 
-## Self-run wave (8 Claude team-members, no codex) — 147 → 376 functions
+## Self-run wave (8 Claude team-members, no codex) — 147 → 376, then `-Oz` → 392 functions
 Codex hit its usage limit, so a wave was run with 8 parallel **Claude subagents** (one per class),
 each building a coherent layout-`static_assert`'d header and matching its methods via `try.sh`/`gofdiff`.
 Yield (all genuine C++, 0 cheats, integrity intact, committed per class):
 Status 81, Player 58, Ship 43, AEMath 40, AEFile 32, Level 36, Quaternion 15, Item 0 (+ carryover) → **376 total, 7.4% of named.**
 (Nested subagents-per-method weren't available, so each class-agent did its methods directly.)
 
-### Toolchain ceiling (confirmed independently by every agent)
-Simple accessors / tail-call wrappers match ~first-try (≈75–80% of attempts). **Control-flow- and
-FP-heavy functions frequently cannot be byte-matched with NDK r18b clang 7.0.2 `-O2`**, even though
-`.comment` says clang 7.0.2. Systematic, non-source-fixable divergences observed:
-- if-conversion (`cbz`/`bx` vs predicated `it`/`bxne`); loop rotation/guard-merging; predicated-epilogue
-  SP-fold; FP load-order & vmls operand canonicalization; `movw/movt` vs literal-pool constants.
-- The target is **size-optimized** — per-function `__attribute__((minsize))` reproduces much of it.
-- `-fstack-protector-strong` was tested and **regressed** a canary method (89.7%→66.7%) — NOT the answer.
-Implication: a meaningful fraction of functions may need the *exact* original clang build/flags (or are
-inherently un-bytematchable here). Accessors/data/tail-calls are reliably matchable; the hard tail needs
-toolchain archaeology. This is the real ceiling on automated byte-match coverage.
+### The "toolchain ceiling" was the WRONG OPT LEVEL — RESOLVED → 392 functions
+Earlier waves concluded control-flow/FP-heavy functions "frequently cannot be byte-matched" with
+clang 7.0.2 and blamed an inherent toolchain ceiling. **That was a misdiagnosis.** Toolchain
+archaeology settled it:
+- **Compiler identity is exact**: `.comment` + `.note.android.ident` ⇒ NDK **r18b** clang **7.0.2**
+  build 5063045; linker **gold 1.12**; `.ARM.attributes` = v7 + VFPv3 + NEONv1 (the `-march=armv7-a`
+  default — no explicit `-mfpu` needed). So the compiler/version/arch were never the problem.
+- **The target is built `-Oz` (size), not `-O2`.** An opt-level sweep over the full regression set +
+  133 divergent authored functions is decisive:
 
-### To scale further
-Run bigger tranches through `run_all.sh` (more workers), prioritizing leaf functions from
-`candidates.tsv`; route near-misses to decomp-permuter; expand to non-leaf functions as their
-callees land. The `make verify` gate (with asm-guard) keeps every batch honest.
+  | level | of 376 known: exact | divergent set: exact | divergent mean |
+  |-------|---------------------|----------------------|----------------|
+  | `-O2` | 375 (ArraySetLength 95.8%) | 0 | 53.3% |
+  | `-Os` | **376** | 7 | 57.4% |
+  | `-Oz` | **376** | **16** | **64.0%** |
+  | `-O1` | 315 | — | — |
+
+  `-Oz` keeps **every** known match exact AND flips **16** previously-"unmatchable" functions to
+  byte-exact — including FP `AEMath::InvSqrt` (12/12) and 134-byte control-flow `Player::shoot`
+  (39/39), the exact categories the "ceiling" claimed were impossible. 9 of the 16 match *only* at
+  `-Oz`. The `movw/movt`-vs-literal-pool, predicated-epilogue and if-conversion "divergences" were
+  just `-O2` vs size-opt codegen.
+- The earlier `-fstack-protector-strong` regression was a red herring: the target uses plain
+  `-fstack-protector` (canaries only on functions with arrays, e.g. `MatrixIdentity`), not `-strong`.
+
+**Global flag switched `-O2 → -Oz`** (Makefile/try.sh/permuter/flags.sh), re-blessed, verified
+**392 exact / 0 regressed** on a clean build. This lifts the supposed ceiling: FP and control-flow
+functions are matchable at the right opt level.
+
+### To scale further (now much higher-yield at `-Oz`)
+Re-run waves at `-Oz` — functions prior waves abandoned as "unmatchable" are now reachable, and the
+~117 still-divergent authored functions sit at a higher base % (mean 64%), so most need only small
+source fixes or a decomp-permuter pass (now also `-Oz`). Keep prioritizing leaf/accessor functions
+from `candidates.tsv`; expand to non-leaf as callees land. The hardened `make verify` gate
+(clean build + integrity + asm-guard) keeps every batch honest.
 
 ## How to contribute a function (the loop)
 Decompile in Ghidra (types applied) → write C++ in `src/<subsystem>/` → `make asm` →

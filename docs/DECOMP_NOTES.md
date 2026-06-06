@@ -156,10 +156,28 @@ Reliable signals & tooling built:
 - **Result: `ArrayAdd<T*>` recompiled to a 15/15 instruction-identical match** with the target
   (`_work/build/arrayadd_target.txt` vs `arrayadd_compiled.txt`; the only nominal diff is
   `bl realloc` vs the target's `blx` — a link-time veneer, not codegen).
-- Verified matching flags: `-target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -O2 -fpic`
+- Matching flags: `-target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -Oz -fpic -frtti`
   (keep the frame pointer). Two convergence iterations showed how source structure drives the
   match: (1) reuse the `(size+1)` temp → matches the arithmetic; (2) don't keep it live across
   the `realloc` call (target reloads from memory) → matches register allocation/prologue exactly.
+  NB: `ArrayAdd` matches at `-O2` AND `-Oz` (opt-invariant), which is why early waves wrongly
+  fixed `-O2`; see the opt-level finding below.
+
+### Toolchain archaeology — the target is `-Oz`, not `-O2` (lifted the "ceiling")
+- Compiler identity pinned exactly: `.comment` + `.note.android.ident` ⇒ NDK **r18b** clang
+  **7.0.2** build 5063045. Linker **gold 1.12** (`.note.gnu.gold-version`) — *not* lld (relink-only
+  concern, see `RELINK.md`). `.ARM.attributes`: CPU v7, **VFPv3 + NEONv1**, strict IEEE FP — and the
+  bare `-march=armv7-a` default already emits exactly these, so **no `-mfpu`/`-mfloat-abi` needed**.
+- **Opt level was the real divergence.** Sweep over the 376-fn regression set + 133 divergent
+  authored functions: `-O2` left 0 of the divergent set exact (mean 53%); **`-Oz` keeps all 376
+  exact and flips 16 divergent → byte-exact (mean 64%)**, incl. FP `InvSqrt` (12/12) and ctrl-flow
+  `Player::shoot` (39/39). 9 match *only* at `-Oz`. `-Os` is intermediate (7 flips); `-O1`/`-O3`
+  worse. ⇒ global flag switched to **`-Oz`**; coverage 376 → **392**.
+- The `movw/movt`-vs-literal-pool / predicated-epilogue / if-conversion "non-source-fixable
+  divergences" prior agents catalogued were simply `-O2` vs size-opt codegen. Stack canaries on
+  some functions (e.g. `MatrixIdentity`) ⇒ plain `-fstack-protector` (NOT `-strong`, which
+  over-guards and regressed a test).
+- Reproduce: `build/probe/sweep.py` (full set) and `build/probe/divsweep.py` (divergent set).
 - Harness: `_work/build/{flags.sh,build_fn.sh,extract_target.sh,README.md,sample_arrayadd.cpp}`.
 - This proves the matching-decompilation approach is viable: recovered C++ + the exact toolchain
   reproduce the target's machine code. The remaining work is volume — author source per function

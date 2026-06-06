@@ -23,9 +23,13 @@ this environment — extract them (or the full NDK) to resolve symbols for a rea
 2. **Link order**: object/section order must match the original (driven by the original Makefile/
    ndk-build module order). Derive from the address order of functions in the target.
 3. **Compiler/STL**: build all TUs with the verified flags (`-target armv7-none-linux-androideabi16
-   -march=armv7-a -mthumb -O2 -fpic -frtti`, libc++), matching per-TU options where they differ.
-4. **Linker**: NDK r18 `lld` with the original version script (export list) + `--build-id` style.
-   The build-id is content-derived, so it falls out once the rest matches (or is stamped).
+   -march=armv7-a -mthumb -Oz -fpic -frtti`, libc++), matching per-TU options where they differ.
+   (`-Oz`, not `-O2` — see the toolchain-archaeology finding in `DECOMP_NOTES.md`.)
+4. **Linker**: the target was linked with **GNU gold 1.12** (`.note.gnu.gold-version`), *not* lld.
+   `make link` currently uses NDK `lld` for the scaffold, which differs from gold in section/segment
+   layout, padding, and emits no `.note.gnu.gold-version` — so a **byte-identical** relink needs the
+   original `gold` (NDK r18 ships `arm-linux-androideabi-ld.gold`) with the original version script
+   (export list) + `--build-id`. The build-id is content-derived, so it falls out once the rest matches.
 5. **Data sections**: `.rodata/.data` must match — these come from the recovered source's literals/
    globals + the asset/string tables; diff them too.
 6. **Verify**: `cmp`/section-diff the produced `.so` against the target; iterate.
