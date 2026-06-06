@@ -4,7 +4,7 @@
 Class="$1"; key="$2"; method="$3"; vaddr="$4"; n="$5"
 REPO=/Users/fionera/Downloads/GalaxyOnFire2/gof2-decomp
 dir="work/classes/$Class"
-PROMPT="Decompile ONE method of class $Class to byte-matching, GENUINE C++ (NO inline asm / __attribute__((naked))).
+PROMPT="HARD RULE: ONLY edit your assigned source file(s) under work/. Do NOT modify tools/, Makefile, matches.tsv, the target binary, or any other file — they are integrity-checked and changes will be reverted and your work rejected.\nDecompile ONE method of class $Class to byte-matching, GENUINE C++ (NO inline asm / __attribute__((naked))).
 - Work item: $dir/$key.md  (Ghidra decompile + the EXACT target disassembly to reproduce).
 - The shared class layout is in $dir/src/quaternion.h — #include \"quaternion.h\" and use its field offsets; do NOT redefine the struct.
 - Write your C++ to: $dir/src/$key.cpp

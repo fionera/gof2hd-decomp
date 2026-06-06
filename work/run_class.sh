@@ -4,7 +4,7 @@
 Class="$1"
 REPO=/Users/fionera/Downloads/GalaxyOnFire2/gof2-decomp
 dir="work/classes/$Class"; mkdir -p "$REPO/$dir/results"
-PROMPT="You OWN class $Class for the GOF2 decompilation. Decompile ALL its methods to byte-exact, GENUINE C++.
+PROMPT="HARD RULE: ONLY edit your assigned source file(s) under work/. Do NOT modify tools/, Makefile, matches.tsv, the target binary, or any other file — they are integrity-checked and changes will be reverted and your work rejected.\nYou OWN class $Class for the GOF2 decompilation. Decompile ALL its methods to byte-exact, GENUINE C++.
 Inputs: $dir/class.md (overview + method list) and $dir/methods.tsv (lines: key<TAB>method<TAB>elf_vaddr<TAB>nbytes),
 and one $dir/<key>.md work-item per method (Ghidra decompile + exact target disassembly).
 

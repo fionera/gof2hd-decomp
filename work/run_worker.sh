@@ -2,7 +2,7 @@
 # run_worker.sh <name> <elf_vaddr_hex> <nbytes> — launch a codex worker to byte-match one function.
 name="$1"; vaddr="$2"; n="$3"
 REPO=/Users/fionera/Downloads/GalaxyOnFire2/gof2-decomp
-PROMPT="Decompile ONE ARM/Thumb function to byte-matching C++.
+PROMPT="HARD RULE: ONLY edit your assigned source file(s) under work/. Do NOT modify tools/, Makefile, matches.tsv, the target binary, or any other file — they are integrity-checked and changes will be reverted and your work rejected.\nDecompile ONE ARM/Thumb function to byte-matching C++.
 - Read the work item: work/$name.md  (Ghidra decompile + the EXACT target disassembly to reproduce).
 - Write your C++ to: work/src/$name.cpp
 - Verify by running:  bash tools/try.sh work/src/$name.cpp $name $vaddr $n
