@@ -66,7 +66,7 @@ def obj_insns(obj, sym):
             cur = None
     matched = [v for k, v in funcs.items() if sym in k and v]
     if matched:
-        return matched[0]
+        return max(matched, key=len)   # the method itself, not a smaller same-prefix helper
     # sym-fallback: Ghidra short names (e.g. cast operators) don't substring the demangled symbol —
     # if nothing matched, use the single (or largest) defined function in this single-method object.
     nonempty = [v for v in funcs.values() if v]
