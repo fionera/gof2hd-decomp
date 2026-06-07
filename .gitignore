@@ -16,3 +16,6 @@ build/probe/*.out
 build/probe/*.c
 work/classes/*/src/_s_*.cpp
 work/classes/*/src/_cand_*.cpp
+work/_extract.tsv
+work/classes/*/results/
+work/classes/*/manifest.tsv
