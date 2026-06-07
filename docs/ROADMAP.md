@@ -69,6 +69,14 @@ methods via `try.sh`/`gofdiff`. All genuine C++, 0 asm-cheats, integrity intact,
   AERandom 5/7, ConfigReader 0/5. Packages built by `work/build_pkg.py` (joins symbol table +
   `candidates.tsv`) + a Ghidra batch work-item extractor; codex workers via `work/run_codex_class.sh`
   (direct authoring, opaque-struct + byte-offset-cast field access).
+- **Wave 3 — codex (Engine, AESoundRessource) → 533.** Engine 35/75, AESoundRessource 12/25.
+- **Wave 4 — codex (10 shader classes) → 564.** ShaderBaseStruct 5/9, DrawFBOShader 5/6, PostBWShader
+  4/7, TextureShader 4/7, GlowPPShader/BloomShader/TextureVtxColorShader 3 each, rest 1-2. Formulaic
+  GL uniform setup; residuals are register-scheduling around `glUniform*`/`glGetUniformLocation`.
+
+Per-class yield correlates with code shape: accessor/logic-heavy classes 50-90% first-pass at `-Oz`;
+GL/scheduling- and parse-heavy classes 15-50% (the residuals are register-allocation/scheduling ties →
+decomp-permuter, not more LLM re-tries). **44 classes now have byte-exact methods.**
 
 New-class scaling recipe (repeatable): `build_pkg.py <Class>` → batch-extract work-items in Ghidra →
 `run_codex_class.sh <Class>` → `collect_class.sh <Class>` → `make verify`. Tractable classes
