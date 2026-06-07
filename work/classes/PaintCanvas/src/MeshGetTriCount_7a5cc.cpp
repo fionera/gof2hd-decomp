@@ -6,9 +6,14 @@ extern "C" unsigned int __aeabi_uidiv(unsigned int, unsigned int);
 int MeshGetTriCount(AbyssEngine::PaintCanvas *self, char *mesh)
 {
     if (mesh) {
-        void *t = *(void **)(mesh + 0x34);
-        int tri = t ? paintcanvas_ext_transform_tricount(self, t) : 0;
-        return tri + (int)__aeabi_uidiv(*(unsigned short *)(mesh + 0x28), 3);
+        int tri;
+        if (*(void **)(mesh + 0x34) == 0) {
+            tri = 0;
+        } else {
+            tri = paintcanvas_ext_transform_tricount(self, *(void **)(mesh + 0x34));
+        }
+        int q = (int)__aeabi_uidiv(*(unsigned short *)(mesh + 0x28), 3);
+        return q + tri;
     }
     return 0;
 }

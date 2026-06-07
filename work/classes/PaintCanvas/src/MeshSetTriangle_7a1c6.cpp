@@ -6,7 +6,7 @@ void MeshSetTriangle(AbyssEngine::PaintCanvas *self, unsigned int meshIndex, uns
     if (meshIndex < *(unsigned int *)((char *)self + 0x24)) {
         char *mesh = (*(char ***)((char *)self + 0x28))[meshIndex];
         unsigned int t3 = tri * 3;
-        if (*(unsigned short *)(mesh + 0x28) <= t3) {
+        if (t3 >= *(unsigned short *)(mesh + 0x28)) {
             return;
         }
         unsigned short *buf = *(unsigned short **)(mesh + 0x2c);

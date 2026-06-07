@@ -5,7 +5,7 @@ extern "C" void paintcanvas_ext_remove_mesh(void *, unsigned int, int);
 
 void TransformRemoveMesh(AbyssEngine::PaintCanvas *self, unsigned int transformIndex, void *mesh)
 {
-    if (transformIndex >= *(unsigned int *)((char *)self + 0x158)) {
+    if (*(unsigned int *)((char *)self + 0x158) <= transformIndex) {
         return;
     }
     char *x = paintcanvas_ext_find_mesh(self, mesh);

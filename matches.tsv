@@ -730,3 +730,11 @@ CheatHandler_74448	74448	42	build/obj/recovered/CheatHandler/CheatHandler_74448.
 _CheatCode_743c0	743c0	26	build/obj/recovered/CheatCode/_CheatCode_743c0.o	~CheatCode	exact
 CheatCode_74378	74378	30	build/obj/recovered/CheatCode/CheatCode_74378.o	CheatCode	exact
 Update_743f0	743f0	88	build/obj/recovered/CheatCode/Update_743f0.o	Update	exact
+FogEnable_7cee0	7cee0	58	build/obj/recovered/PaintCanvas/FogEnable_7cee0.o	FogEnable	exact
+TransformGetLocal_7b3cc	7b3cc	64	build/obj/recovered/PaintCanvas/TransformGetLocal_7b3cc.o	TransformGetLocal	exact
+CameraGetLocal_7b7a4	7b7a4	68	build/obj/recovered/PaintCanvas/CameraGetLocal_7b7a4.o	CameraGetLocal	exact
+GetScreenPosition_7bce8	7bce8	88	build/obj/recovered/PaintCanvas/GetScreenPosition_7bce8.o	GetScreenPosition	exact
+DrawTextLines_7c6c0	7c6c0	102	build/obj/recovered/PaintCanvas/DrawTextLines_7c6c0.o	DrawTextLines	exact
+DrawTextLines_7c726	7c726	102	build/obj/recovered/PaintCanvas/DrawTextLines_7c726.o	DrawTextLines	exact
+SetProjOrthoMatrix_7c9b8	7c9b8	182	build/obj/recovered/PaintCanvas/SetProjOrthoMatrix_7c9b8.o	SetProjOrthoMatrix	exact
+FillRectangle_79288	79288	200	build/obj/recovered/PaintCanvas/FillRectangle_79288.o	FillRectangle	exact
