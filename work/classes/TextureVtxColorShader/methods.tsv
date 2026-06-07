@@ -1,0 +1,7 @@
+_TextureVtxColorShader_8c10c	~TextureVtxColorShader	8c10c	16
+UseShader_8bda8	UseShader	8bda8	26
+SetInActive_8bf18	SetInActive	8bf18	48
+Init_8bed0	Init	8bed0	70
+TextureVtxColorShader_8bd1c	TextureVtxColorShader	8bd1c	94
+ConnectShaderComponents_8bdc8	ConnectShaderComponents	8bdc8	198
+UpdateMeshData_8bf4c	UpdateMeshData	8bf4c	426
