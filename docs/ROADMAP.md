@@ -56,12 +56,23 @@ Lessons baked into the pipeline:
   tail-call wrappers (`return ext(field)`) trivial to match.
 - candidates: `work/candidates.tsv` (3666 named funcs ranked by size/leaf-ness) feeds the next batches.
 
-## Self-run wave (8 Claude team-members, no codex) — 147 → 376, then `-Oz` → 392 functions
-Codex hit its usage limit, so a wave was run with 8 parallel **Claude subagents** (one per class),
-each building a coherent layout-`static_assert`'d header and matching its methods via `try.sh`/`gofdiff`.
-Yield (all genuine C++, 0 cheats, integrity intact, committed per class):
-Status 81, Player 58, Ship 43, AEMath 40, AEFile 32, Level 36, Quaternion 15, Item 0 (+ carryover) → **376 total, 7.4% of named.**
-(Nested subagents-per-method weren't available, so each class-agent did its methods directly.)
+## Coverage progression — 147 → **486** byte-exact functions (485 exact + 1 near, 0 regressed)
+Driven by parallel waves of subagents (one per class), each building a header and matching its
+methods via `try.sh`/`gofdiff`. All genuine C++, 0 asm-cheats, integrity intact, committed per wave:
+- **Wave 0 — 8 Claude team-members → 376.** Status 81, Player 58, Ship 43, AEMath 40, AEFile 32,
+  Level 36, Quaternion 15, Item 0 (+ carryover).
+- **`-Oz` discovery → 392.** Switched the global flag (see below); 16 previously-divergent functions
+  flipped to byte-exact.
+- **Wave 1 — Claude authoring (existing classes' un-attempted methods) at `-Oz` → 428 (+`Release`).**
+  Ship +20 (66 total), Level +9 (51), Status +4 (87), Player +2 (62).
+- **Wave 2 — codex on 4 NEW classes at `-Oz` → 486.** ApplicationManager 42/63, Transform 11/24,
+  AERandom 5/7, ConfigReader 0/5. Packages built by `work/build_pkg.py` (joins symbol table +
+  `candidates.tsv`) + a Ghidra batch work-item extractor; codex workers via `work/run_codex_class.sh`
+  (direct authoring, opaque-struct + byte-offset-cast field access).
+
+New-class scaling recipe (repeatable): `build_pkg.py <Class>` → batch-extract work-items in Ghidra →
+`run_codex_class.sh <Class>` → `collect_class.sh <Class>` → `make verify`. Tractable classes
+(accessor/logic-heavy) yield well (ApplicationManager 67%); parsing/exception-tail classes need permuter.
 
 ### The "toolchain ceiling" was the WRONG OPT LEVEL — RESOLVED → 392 functions
 Earlier waves concluded control-flow/FP-heavy functions "frequently cannot be byte-matched" with
