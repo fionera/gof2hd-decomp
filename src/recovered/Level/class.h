@@ -222,12 +222,12 @@ struct Level {
     int getFriendsLeft();
     int getMessages();
     int getTimeLimit();
-    int collide(int v);
-    void isInAsteroidCenterRange(int v);
-    int collideStream(int v);
-    int collideStation(int v, int, int, int);
+    int collide(Vector v);
+    void isInAsteroidCenterRange(Vector v);
+    int collideStream(Vector v);
+    int collideStation(Vector v);
     void renderBG();
-    void render();
+    void render(int ctx);
     void render2D();
     void renderPause();
     void updateMissionOrbit();

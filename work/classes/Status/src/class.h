@@ -125,13 +125,13 @@ struct Status {
     Status();
     ~Status();
 
-    void addPendingProduct(int product);
+    void addPendingProduct(BluePrint *product);
     int getPendingProducts();
     Array<bool> *getSystemVisibilities();
     void setSystemVisibility(int index, bool value);
     Array<Station *> *getStationStack();
     void setStationStack(Array<Station *> *stack);
-    void addStationToStack(Station *station);
+    int addStationToStack(Station *station);
     bool isOnStack(Station *station);
     void setStation(Station *station);
     void departStation();
@@ -219,8 +219,10 @@ struct Status {
     int getAgents();
     void incPlayingTime(int64_t delta);
     int getWingmen();
-    void setWingmen(int count);
+    void setWingmen(Array<String *> *list);
     bool stringHasToken(String haystack, String needle);
+    String replaceHash(String haystack, String needle);
+    String replaceHash(String haystack, String needle, String replacement);
     void calcCargoPrices();
     void loadAgents();
     int getCollectedBounties(int index);
@@ -230,7 +232,7 @@ struct Status {
     Array<Wanted *> *getWanted();
     bool isStorylineWanted(int index);
     int wantedBoardAccessible();
-    void activateNewWanted();
+    int activateNewWanted();
     void resetGame();
 
     int isFreighterMissionStation(int station);
