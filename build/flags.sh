@@ -22,7 +22,7 @@ export READELF="$TOOLCHAIN/bin/llvm-readelf"
 #     no explicit -mfpu needed.
 TARGET="armv7-none-linux-androideabi16"
 ARCH_FLAGS="-march=armv7-a -mthumb"            # default fpu already = VFPv3+NEONv1 (matches target)
-OPT_FLAGS="-Oz -fpic"                            # add -DNDEBUG for real builds
+OPT_FLAGS="-Oz -fstack-protector -fpic"          # -fstack-protector: target canaries funcs w/ local buffers (0 regress on the matched set)
 CXX_FLAGS=""                                      # add -stdlib=libc++ -frtti (+sysroot) for TUs using libc++/STL
 export GOF2_CXXFLAGS="-target $TARGET $ARCH_FLAGS $OPT_FLAGS $CXX_FLAGS"
 # For TUs that #include libc++/Android headers, also add:

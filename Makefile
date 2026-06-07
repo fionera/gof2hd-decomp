@@ -9,7 +9,7 @@ CXX    := $(TC)/bin/clang++
 # functions to byte-exact (incl. FP InvSqrt + control-flow Player::shoot), where -O2 plateaued at
 # 53% mean / 0 of those exact. The earlier "-O2 ceiling" was the wrong opt level. (.comment confirms
 # the compiler is exactly NDK r18b clang 7.0.2; arch v7+VFPv3+NEONv1 is the -march=armv7-a default.)
-CXXFLAGS := -target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -Oz -fpic -frtti -Iinclude
+CXXFLAGS := -target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -Oz -fstack-protector -fpic -frtti -Iinclude
 
 SRCS := $(shell find src -name '*.cpp' 2>/dev/null)
 OBJS := $(patsubst src/%.cpp,build/obj/%.o,$(SRCS))
