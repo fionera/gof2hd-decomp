@@ -51,12 +51,10 @@ def build(prefix, clsdir):
     return len(rows)
 
 if __name__ == "__main__":
-    targets = [
-        ("AbyssEngine::Transform::",          "work/classes/Transform"),
-        ("AbyssEngine::ApplicationManager::",  "work/classes/ApplicationManager"),
-        ("AbyssEngine::AERandom::",            "work/classes/AERandom"),
-        ("AbyssEngine::ConfigReader::",        "work/classes/ConfigReader"),
-    ]
-    for prefix, d in targets:
+    # argv: Class names (under AbyssEngine::). Default = the next high-value batch.
+    classes = sys.argv[1:] or ["Engine", "AESoundRessource", "AESound"]
+    for cls in classes:
+        prefix = "AbyssEngine::%s::" % cls
+        d = "work/classes/%s" % cls
         n = build(prefix, d)
         print("  %-32s -> %3d methods  (%s/methods.tsv)" % (prefix, n, d))
