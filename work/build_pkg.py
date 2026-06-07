@@ -25,12 +25,16 @@ def method_of(dem):
     return base.rsplit("::", 1)[-1] if "::" in base else base
 
 def build(prefix, clsdir):
+    # `prefix` is the class name; match where the owning class (component before the method) == it.
+    cls_name = prefix
     seen = set(); rows = []
     for ln in open(SYM):
         p = ln.rstrip("\n").split("\t")
         if len(p) < 3: continue
         addr, mangled, dem = p[0], p[1], p[2]
-        if prefix not in dem: continue
+        base = dem.split("(", 1)[0]
+        parts = base.split("::")
+        if len(parts) < 2 or parts[-2] != cls_name: continue   # owning class must match exactly
         try: elf = int(addr, 16)
         except ValueError: continue
         if elf in seen: continue
@@ -54,7 +58,6 @@ if __name__ == "__main__":
     # argv: Class names (under AbyssEngine::). Default = the next high-value batch.
     classes = sys.argv[1:] or ["Engine", "AESoundRessource", "AESound"]
     for cls in classes:
-        prefix = "AbyssEngine::%s::" % cls
         d = "work/classes/%s" % cls
-        n = build(prefix, d)
-        print("  %-32s -> %3d methods  (%s/methods.tsv)" % (prefix, n, d))
+        n = build(cls, d)
+        print("  %-24s -> %3d methods  (%s/methods.tsv)" % (cls, n, d))
