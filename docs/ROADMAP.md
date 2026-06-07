@@ -56,7 +56,16 @@ Lessons baked into the pipeline:
   tail-call wrappers (`return ext(field)`) trivial to match.
 - candidates: `work/candidates.tsv` (3666 named funcs ranked by size/leaf-ness) feeds the next batches.
 
-## Coverage progression — 147 → **486** byte-exact functions (485 exact + 1 near, 0 regressed)
+## Coverage progression — 147 → **1104** byte-exact functions (1103 exact + 1 near, 0 regressed, 98 classes)
+Two toolchain breakthroughs drove the scale-up: **(1) the target is `-Oz`** (size), not `-O2` — lifted the
+false "ceiling"; **(2) the target uses `-fstack-protector`** (canaries on funcs with on-stack buffers) — adding
+it (0 regressions) unlocked the canary-gated `Create*`/`Draw*` family. Core game layer now largely recovered:
+PlayerEgo 112, KIPlayer 38, Player 62, Ship 66, Status 87, Level 51, Item, Mission, Agent, Station, Wanted,
+Hud, TouchButton, Layout, ListItem, PaintCanvas 61, Transform, ApplicationManager, Engine, ~30 GL shaders, etc.
+Repeatable pipeline per class: `build_pkg.py <Class>` (symbol-table ⋈ candidates, any namespace) → Ghidra batch
+work-item extractor → codex or Claude subagents (`run_codex_class.sh` / Agent) → `collect_class.sh` → `make verify`.
+
+### Earlier milestones
 Driven by parallel waves of subagents (one per class), each building a header and matching its
 methods via `try.sh`/`gofdiff`. All genuine C++, 0 asm-cheats, integrity intact, committed per wave:
 - **Wave 0 — 8 Claude team-members → 376.** Status 81, Player 58, Ship 43, AEMath 40, AEFile 32,
