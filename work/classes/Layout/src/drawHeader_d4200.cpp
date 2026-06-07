@@ -1,0 +1,13 @@
+#include "class.h"
+
+extern "C" void String_copy_ctor(void *out, const void *src, bool);  // 0x6f028
+extern "C" void String_dtor(void *s);                                // 0x6ee30
+extern "C" void Layout_drawHeaderImpl(Layout *self, void *str, int flag); // 0x74e6c
+
+// Layout::drawHeader(String) -> drawHeader(this, copy, 1)
+extern "C" void Layout_drawHeader1(Layout *self, const void *param) {
+    unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
+    String_copy_ctor(tmp, param, false);
+    Layout_drawHeaderImpl(self, tmp, 1);
+    String_dtor(tmp);
+}
