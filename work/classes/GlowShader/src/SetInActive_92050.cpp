@@ -1,0 +1,17 @@
+#include "class.h"
+
+namespace AbyssEngine {
+
+void GlowShader::SetInActive()
+{
+    int loc;
+    loc = field_i32(this, 0x20);
+    if (loc >= 0)
+        glDisableVertexAttribArray(loc);
+    loc = field_i32(this, 0x24);
+    if (loc < 0)
+        return;
+    return glDisableVertexAttribArray(loc);
+}
+
+} // namespace AbyssEngine
