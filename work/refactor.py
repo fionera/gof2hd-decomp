@@ -158,15 +158,26 @@ def process(cls):
     for f,c in backup.items(): open(f,"w").write(c)   # restore (no git race)
     return (cls,"REVERT",why,0)
 
+def commit(names):
+    if not names: return
+    subprocess.run(["git","add"]+["work/classes/"+c for c in names],capture_output=True)
+    subprocess.run(["git","commit","-q","-m","portability wave: +%d classes -> named-field structs (byte-exact verified)"%len(names)],capture_output=True)
+
 if __name__=="__main__":
     import concurrent.futures as cf
     classes=sys.argv[1:]
     if classes==["all"]: classes=sorted(os.path.basename(d) for d in glob.glob("work/classes/*") if os.path.isdir(d))
-    npass=nfail=nskip=0
-    with cf.ThreadPoolExecutor(max_workers=10) as ex:
-        for cls,st,why,nf in ex.map(process,classes):
-            if st=="OK": npass+=1
+    npass=nfail=nskip=0; pending=[]
+    # fewer workers (orb dispatch stalls under heavy parallel load); commit every 25 -> durable,
+    # idempotent re-run resumes after any stall.
+    with cf.ThreadPoolExecutor(max_workers=5) as ex:
+        futs={ex.submit(process,c):c for c in classes}
+        for fut in cf.as_completed(futs):
+            cls,st,why,nf=fut.result()
+            if st=="OK": npass+=1; pending.append(cls)
             elif st=="REVERT": nfail+=1
             else: nskip+=1
-            print("%-26s %-7s %s"%(cls,st,why))
+            print("%-26s %-7s %s"%(cls,st,why),flush=True)
+            if len(pending)>=25: commit(pending); pending=[]
+    commit(pending)
     print("\n== %d converted, %d reverted, %d skipped =="%(npass,nfail,nskip))
