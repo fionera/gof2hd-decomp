@@ -6,8 +6,19 @@
 # SAME armv7 .text as the known-good src/recovered/ offset form (byte-exact preserved) -> safe.
 # Unconverted complex accessors keep working via the existing helpers (partial conversion is safe).
 # Usage: python3 work/refactor.py <Class> [<Class> ...]
-import subprocess, re, os, sys, glob
+import subprocess, re, os, sys, glob, signal
 REPO=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); os.chdir(REPO)
+def run_to(cmd, timeout):
+    # run with a HARD timeout that kills the whole process group (orb can wedge; a plain
+    # subprocess timeout leaves the worker hung). Returns exit code (-1 on timeout).
+    p=subprocess.Popen(cmd,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
+    try: return p.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try: os.killpg(os.getpgid(p.pid),signal.SIGKILL)
+        except Exception: pass
+        try: p.wait(5)
+        except Exception: pass
+        return -1
 TC="/opt/android-ndk-r18b/toolchains/llvm/prebuilt/linux-x86_64"
 AFLAGS="-target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -Oz -fpic -frtti"
 
@@ -139,9 +150,9 @@ def verify(cls):
     # IMPORTANT: join with && (fail-fast). With ';' the script's exit code is only the LAST command's,
     # so a failing non-last compile would slip through verify and a broken class would get committed.
     script=" && ".join(c[1]+(" && "+c[2] if c[2] else "") for c in cmds)
-    try: r=subprocess.run(["orb","run","bash","-lc",script],capture_output=True,text=True,timeout=180)
-    except subprocess.TimeoutExpired: return (False,"timeout",checked)
-    if r.returncode!=0: return (False,"compile error",checked)
+    rc=run_to(["orb","run","bash","-lc",script], 300)
+    if rc==-1: return (False,"timeout",checked)
+    if rc!=0: return (False,"compile error",checked)
     for b,_,cmd_o,new_o,old_o in cmds:
         if old_o:
             if textsec(new_o)!=textsec(old_o): return (False,"DIFF %s"%b,checked)
@@ -168,7 +179,10 @@ def commit(names):
 if __name__=="__main__":
     import concurrent.futures as cf
     classes=sys.argv[1:]
-    if classes==["all"]: classes=sorted(os.path.basename(d) for d in glob.glob("work/classes/*") if os.path.isdir(d))
+    if classes==["all"]:
+        cs=[os.path.basename(d) for d in glob.glob("work/classes/*") if os.path.isdir(d)]
+        # smallest-first: bank the easy wins before any giant class can stall the pass
+        classes=sorted(cs, key=lambda c: len(glob.glob("work/classes/%s/src/*.cpp"%c)))
     npass=nfail=nskip=0; pending=[]
     # fewer workers (orb dispatch stalls under heavy parallel load); commit every 25 -> durable,
     # idempotent re-run resumes after any stall.
