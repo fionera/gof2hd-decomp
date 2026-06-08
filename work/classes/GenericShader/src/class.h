@@ -65,6 +65,10 @@ extern int GenericShader_typeInfoSource;
 extern int GenericShader_typeInfoDest;
 extern const char GenericShader_name[];
 
+// Shader-registry globals patched by the ctor (one global's value copied into another).
+extern int GenericShader_registerSrc;
+extern int *GenericShader_registerDst;
+
 int glGetAttribLocation(int program, const char *name);
 int glGetUniformLocation(int program, const char *name);
 void glUseProgram(int program);

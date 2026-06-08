@@ -87,4 +87,35 @@ static inline void *field_ptr(void *self, uint32_t offset)
 
 } // namespace AbyssEngine
 
+// Backing C symbols used by the ctor.
+extern "C" {
+extern char _ZTVN11AbyssEngine13SandboxShaderE[];
+
+// ShaderBaseStruct ctor.
+void *_ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
+// String(char const*, bool).
+void _ZN11AbyssEngine6StringC2EPKcb(AbyssEngine::String *self, const char *text, bool copy);
+// String::operator=(String const&).
+AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
+    AbyssEngine::String *self, const AbyssEngine::String *other);
+// ~String().
+void _ZN11AbyssEngine6StringD2Ev(AbyssEngine::String *self);
+
+// Shader-registry globals patched by the ctor (one global's value copied into another).
+extern int SandboxShader_registerSrc;
+extern int *SandboxShader_registerDst;
+}
+
+namespace AbyssEngine {
+inline String::String(const char *text, bool copy) noexcept
+{
+    _ZN11AbyssEngine6StringC2EPKcb(this, text, copy);
+}
+inline String::~String() noexcept { _ZN11AbyssEngine6StringD2Ev(this); }
+inline String &String::operator=(const String &other) noexcept
+{
+    return *_ZN11AbyssEngine6StringaSERKS0_(this, &other);
+}
+} // namespace AbyssEngine
+
 #endif

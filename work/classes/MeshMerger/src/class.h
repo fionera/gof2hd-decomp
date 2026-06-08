@@ -14,6 +14,8 @@ typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 typedef int int32_t;
 
+inline void *operator new(uint32_t, void *p) noexcept { return p; }
+
 namespace AbyssEngine {
 
 struct Mesh;
@@ -38,8 +40,18 @@ using PaintCanvas = AbyssEngine::PaintCanvas;
 using Matrix = AbyssEngine::AEMath::Matrix;
 using Vector = AbyssEngine::AEMath::Vector;
 
+// Engine container: { size, data, cap }.
+template <class T>
+struct Array {
+    uint32_t size;
+    T *data;
+    uint32_t cap;
+};
+
 struct MeshMerger {
     MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags);
+    MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
+               PaintCanvas *canvas, uint16_t flags);
     ~MeshMerger();
 
     void render();
