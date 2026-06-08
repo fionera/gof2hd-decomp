@@ -19,6 +19,26 @@ __attribute__((visibility("hidden"))) extern void **g_fmodPropName; // property-
 extern "C" extern float FModSound_defaultPitch;                     // DAT_000a3518
 
 struct FModSound {
+    // @portable-fields
+    int f_0; // 0x0
+    int f_4; // 0x4
+    uint8_t f_8; // 0x8
+    unsigned char _pad_9[3];
+    void* f_c; // 0xc
+    uint8_t f_10; // 0x10
+    unsigned char _pad_11[9199];
+    int f_2400; // 0x2400
+    int f_2404; // 0x2404
+    int f_2408; // 0x2408
+    int f_240c; // 0x240c
+    unsigned char _pad_2410[20];
+    void* f_2424; // 0x2424
+    void* f_2428; // 0x2428
+    void* f_242c; // 0x242c
+    void* f_2430; // 0x2430
+    void* f_2434; // 0x2434
+    void* f_2438; // 0x2438
+
     void play(int idx, Vector *pos, Vector *vel, float pitch);
 };
 
@@ -56,7 +76,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
     if (event == 0)
         return;
 
-    float basePitch = (u8(this, 8) == 0) ? FModSound_defaultPitch : -1.0f;
+    float basePitch = (this->f_8 == 0) ? FModSound_defaultPitch : -1.0f;
     FMOD_Event_setPitch(event, basePitch, 1);
     if (pitch != 0.0f)
         FMOD_Event_setPitch(event, pitch, 0);
@@ -64,8 +84,8 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
     int category = FMOD_Event_getCategory(event);
 
     if (category == 0) {
-        if (i32(this, 0x0) == 0)
-            i32(this, 0x0) = idx;
+        if (this->f_0 == 0)
+            this->f_0 = idx;
         else if (category > 2)
             return;
 
@@ -87,14 +107,14 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
         }
 
         if (havePos || haveVel) {
-            void *p = havePos ? pp(this, 0x2434) : 0;
-            void *v = haveVel ? pp(this, 0x2438) : 0;
+            void *p = havePos ? this->f_2434 : 0;
+            void *v = haveVel ? this->f_2438 : 0;
             FMOD_Event_set3DAttributes((void *)(uintptr_t)*slot, p, v);
         }
 
         int got = 0;
         if (FMOD_Event_getProperty((void *)(uintptr_t)*slot, *g_fmodPropName, &got) == 0 &&
-            i32(this, 0x0) == 1) {
+            this->f_0 == 1) {
             int *p = (int *)((char *)this + 0x2410);
             for (unsigned int i = 0; i <= 4; i++) {
                 if (p[i] == -1) {

@@ -8,10 +8,10 @@ extern "C" Wanted *Wanted_base_dtor(Wanted *self);
 // Frees the buffer at +0x40 (array delete), clears it, then tail-calls the base dtor.
 extern "C" Wanted *Wanted_dtor(Wanted *self)
 {
-    void *p = F<void *>(self, 0x40);
+    void *p = self->f_40;
     if (p != 0) {
         operator_delete_array(p);
     }
-    F<void *>(self, 0x40) = 0;
+    self->f_40 = 0;
     return Wanted_base_dtor(self);
 }

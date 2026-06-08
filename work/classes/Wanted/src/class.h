@@ -12,7 +12,15 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct Wanted;
+struct Wanted {
+    // @portable-fields
+    unsigned char _pad_0[12];
+    int f_c; // 0xc
+    unsigned char _pad_10[48];
+    void* f_40; // 0x40
+    unsigned char _pad_44[12];
+    int f_50; // 0x50
+};
 
 // AbyssEngine::String passed by value is a 12-byte trivially-copied aggregate
 // (text*, size, ...). Model it opaquely so it is passed the same way as the

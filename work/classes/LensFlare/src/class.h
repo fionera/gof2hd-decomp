@@ -1,3 +1,4 @@
+// @portable-fields
 #ifndef WORK_CLASSES_LENSFLARE_SRC_CLASS_H
 #define WORK_CLASSES_LENSFLARE_SRC_CLASS_H
 

@@ -1,6 +1,15 @@
 #include "class.h"
 
 struct MiningGame {
+    // @portable-fields
+    unsigned char _pad_0[136];
+    void* f_88; // 0x88
+    void* f_8c; // 0x8c
+    void* f_90; // 0x90
+    void* f_94; // 0x94
+    unsigned char _pad_98[56];
+    void* f_d0; // 0xd0
+
     bool isInCurrentLayer();
     int update(int delta);
 };
@@ -72,8 +81,8 @@ int MiningGame::update(int delta)
     F(this, 0x10) += ((F(this, 0x00) + F(this, 0x08)) / F(layout, 0xe4)) * frameScale;
     F(this, 0x14) += ((F(this, 0x04) + F(this, 0x0c)) / F(layout, 0xe4)) * frameScale;
 
-    MiningGame_MarqueeImage_update(P(this, 0x8c), delta);
-    MiningGame_MarqueeImage_update(P(this, 0x90), delta);
+    MiningGame_MarqueeImage_update(this->f_8c, delta);
+    MiningGame_MarqueeImage_update(this->f_90, delta);
 
     float *layerSpeed = g_MiningGame_layerSpeedUpdate;
     void **soundHolder = g_MiningGame_sound;
@@ -90,11 +99,11 @@ int MiningGame::update(int delta)
                      (frameScale / 1000.0f) * F(layout, 0xe0) * layerSpeed[I(this, 0x78)] * 3.0f;
         F(this, 0x68) = anim;
         if (!(anim < 1.0f)) {
-            MiningGame_Sprite_nextFrame(P(this, 0x94));
+            MiningGame_Sprite_nextFrame(this->f_94);
             F(this, 0x68) = 0.0f;
         }
 
-        MiningGame_MarqueeImage_update(P(this, 0x88), delta);
+        MiningGame_MarqueeImage_update(this->f_88, delta);
         int nextLayer = I(this, 0x78) + 1;
         float oldOre = F(this, 0x24);
         float layerFactor = 0.15f + ((float)nextLayer / 7.0f) * 2.35f;
@@ -128,7 +137,7 @@ int MiningGame::update(int delta)
                                            (float)MiningGame_Achievements_getValue(*achHolder, 0x26, 1)) *
                                           100.0f);
                         if (shown > 29) {
-                            MiningGame_Hud_hudEventMedal(P(this, 0xd0), 0x26, shown);
+                            MiningGame_Hud_hudEventMedal(this->f_d0, 0x26, shown);
                         }
                     }
                     if (MiningGame_Achievements_getValue(*achHolder, 0x26, 1) <= I(*statusHolder, 0x124)) {
@@ -137,7 +146,7 @@ int MiningGame::update(int delta)
                 }
                 return 0;
             }
-            MiningGame_MarqueeImage_setSpeed_update(P(this, 0x88), F(layout, 0xe0) * layerSpeed[nextLayer]);
+            MiningGame_MarqueeImage_setSpeed_update(this->f_88, F(layout, 0xe0) * layerSpeed[nextLayer]);
         }
     } else {
         if (wasInLayer != 0) {

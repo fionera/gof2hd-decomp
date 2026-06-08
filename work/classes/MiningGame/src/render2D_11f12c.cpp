@@ -1,6 +1,15 @@
 #include "class.h"
 
 struct MiningGame {
+    // @portable-fields
+    unsigned char _pad_0[136];
+    void* f_88; // 0x88
+    void* f_8c; // 0x8c
+    void* f_90; // 0x90
+    void* f_94; // 0x94
+    unsigned char _pad_98[56];
+    void* f_d0; // 0xd0
+
     void render2D();
 };
 
@@ -98,8 +107,8 @@ void MiningGame::render2D()
 
     MiningGame_PaintCanvas_DrawImage2D_anchor(canvas, I(this, 0x98), (int)F(this, 0x10), (int)F(this, 0x14),
                                              0x4411);
-    MiningGame_Sprite_setRefPixelPosition(P(this, 0x94), (int)F(this, 0x10), (int)F(this, 0x14));
-    MiningGame_Sprite_draw(P(this, 0x94), 1.0f, 1.0f);
+    MiningGame_Sprite_setRefPixelPosition(this->f_94, (int)F(this, 0x10), (int)F(this, 0x14));
+    MiningGame_Sprite_draw(this->f_94, 1.0f, 1.0f);
 
     MiningGame_PaintCanvas_DrawImage2D(canvas, I(this, 0xa4), I(this, 0x50) - I(layout, 0xfc),
                                        I(this, 0x54) - I(layout, 0xfc));
@@ -117,9 +126,9 @@ void MiningGame::render2D()
     MiningGame_PaintCanvas_SetColor(canvas, -1);
     MiningGame_PaintCanvas_DrawImage2D_anchor(canvas, I(this, 0xc4), I(this, 0x58), I(this, 0x54) - 3, 0x2411);
 
-    MiningGame_MarqueeImage_draw(P(this, 0x8c));
-    MiningGame_MarqueeImage_draw(P(this, 0x90));
-    MiningGame_MarqueeImage_drawAt(P(this, 0x88), (int)(F(this, 0x10) + (float)I(this, 0x40)),
+    MiningGame_MarqueeImage_draw(this->f_8c);
+    MiningGame_MarqueeImage_draw(this->f_90);
+    MiningGame_MarqueeImage_drawAt(this->f_88, (int)(F(this, 0x10) + (float)I(this, 0x40)),
                                    (int)(F(this, 0x14) - (float)I(this, 0x34)));
 
     MiningGame_PaintCanvas_DrawImage2D(canvas, I(this, 0x9c),

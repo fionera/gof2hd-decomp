@@ -16,6 +16,26 @@ __attribute__((visibility("hidden"))) static const char kSuffixB[24] = "_low.fev
 __attribute__((visibility("hidden"))) static void *kCats[4];
 
 struct FModSound {
+    // @portable-fields
+    int f_0; // 0x0
+    int f_4; // 0x4
+    uint8_t f_8; // 0x8
+    unsigned char _pad_9[3];
+    void* f_c; // 0xc
+    uint8_t f_10; // 0x10
+    unsigned char _pad_11[9199];
+    int f_2400; // 0x2400
+    int f_2404; // 0x2404
+    int f_2408; // 0x2408
+    int f_240c; // 0x240c
+    unsigned char _pad_2410[20];
+    void* f_2424; // 0x2424
+    void* f_2428; // 0x2428
+    void* f_242c; // 0x242c
+    void* f_2430; // 0x2430
+    void* f_2434; // 0x2434
+    void* f_2438; // 0x2438
+
     void setAudioLanguage(int lang);
     int init();
 };
@@ -29,8 +49,8 @@ int FModSound::init()
 
     char path[0x400];
     __aeabi_memclr8(path, 0x400);
-    strcpy(path, (const char *)pp(this, 0xc));
-    uint8_t lowFlag = u8(this, 0x10);
+    strcpy(path, (const char *)this->f_c);
+    uint8_t lowFlag = this->f_10;
     char *end = path + strlen(path);
     if (lowFlag == 0) {
         __builtin_memcpy(end, kSuffixB, 16);
@@ -43,10 +63,10 @@ int FModSound::init()
         FMOD_EventSystem_getCategory(pp(this, OFF_SYSTEM), kCats[i / 4]);
     }
     FMOD_EventSystem_getProjectByIndex(pp(this, OFF_SYSTEM), 0);
-    u32(this, 0x240c) = 0;
-    u32(this, 0x2408) = 0xffffffff;
-    u32(this, 0) = 0xffffffff;
-    u32(this, 4) = 0xffffffff;
-    u8(this, 8) = 0;
+    this->f_240c = 0;
+    this->f_2408 = 0xffffffff;
+    this->f_0 = 0xffffffff;
+    this->f_4 = 0xffffffff;
+    this->f_8 = 0;
     return 0;
 }

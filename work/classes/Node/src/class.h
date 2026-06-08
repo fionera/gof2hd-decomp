@@ -1,3 +1,4 @@
+// @portable-fields
 #ifndef WORK_CLASSES_NODE_SRC_CLASS_H
 #define WORK_CLASSES_NODE_SRC_CLASS_H
 

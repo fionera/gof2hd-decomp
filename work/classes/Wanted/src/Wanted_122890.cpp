@@ -12,7 +12,7 @@ Wanted_ctor(Wanted *self, int p1, const String12 &p2, int p3, int p4, bool p5,
             int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14)
 {
     Wanted *r = String_default_ctor(self);
-    F<int>(r, 0xc) = p1;
+    r->f_c = p1;
     String_assign(r, &p2);
     char *b = (char *)self;
     *(int *)(b + 0x10) = p3;

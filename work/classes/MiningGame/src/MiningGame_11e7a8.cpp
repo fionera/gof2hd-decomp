@@ -1,6 +1,15 @@
 #include "class.h"
 
 struct MiningGame {
+    // @portable-fields
+    unsigned char _pad_0[136];
+    void* f_88; // 0x88
+    void* f_8c; // 0x8c
+    void* f_90; // 0x90
+    void* f_94; // 0x94
+    unsigned char _pad_98[56];
+    void* f_d0; // 0xd0
+
     MiningGame(int layer, int station, Hud *hud);
 };
 
@@ -38,7 +47,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
 
     I(this, 0x18) = layer;
     I(this, 0x1c) = station;
-    P(this, 0xd0) = hud;
+    this->f_d0 = hud;
 
     void *layout = *layoutHolder;
     int centerX = *screenW >> 1;
@@ -78,7 +87,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     int imageHeight = MiningGame_PaintCanvas_GetImage2DHeight(*canvasHolder, imageId[0]);
     void *sprite = MiningGame_operator_new(0x40);
     MiningGame_Sprite_ctor(sprite, imageId[0], imageHeight, imageHeight);
-    P(this, 0x94) = sprite;
+    this->f_94 = sprite;
     MiningGame_Sprite_defineReferencePixel(sprite, imageHeight / 2, imageHeight / 2);
 
     I(this, 0x68) = 0;
@@ -113,13 +122,13 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
 
     void *leftMarquee = MiningGame_operator_new(0x24);
     MiningGame_MarqueeImage_ctor(leftMarquee, 0x4eb, I(this, 0xc8), x, I(this, 0x4c) + y + 5, 20.0f);
-    P(this, 0x8c) = leftMarquee;
+    this->f_8c = leftMarquee;
 
     void *rightMarquee = MiningGame_operator_new(0x24);
     MiningGame_MarqueeImage_ctor(rightMarquee, 0x4ec, I(this, 0xc8),
                                  (I(this, 0x50) - I(this, 0xc8)) + I(this, 0x48),
                                  I(this, 0x4c) + I(this, 0x54) + 5, 32.0f);
-    P(this, 0x90) = rightMarquee;
+    this->f_90 = rightMarquee;
 
     int (*imageWidth)(void *, int) = g_MiningGame_imageWidth;
     I(this, 0x40) = imageWidth(*canvasHolder, I(this, 0x98)) / 2 + 5;
@@ -129,7 +138,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     void *oreMarquee = MiningGame_operator_new(0x24);
     MiningGame_MarqueeImage_ctor(oreMarquee, 0x4e4, imageWidth(*canvasHolder, I(this, 0x9c)) - 8, 0, 0,
                                  F(layout, 0xdc));
-    P(this, 0x88) = oreMarquee;
+    this->f_88 = oreMarquee;
     MiningGame_MarqueeImage_setSpeed(oreMarquee, F(layout, 0xe0) * g_MiningGame_layerSpeed[I(this, 0x78)]);
 
     I(this, 0xcc) = 0;

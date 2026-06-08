@@ -14,7 +14,14 @@ extern void *const gLF_Canvas2 __attribute__((visibility("hidden")));
 // [-w,2w]x[-h,2h] guard band, then fade by distance from screen-centre and draw the three
 // flare sprites at interpolated positions along the centre->source vector, finishing with a
 // streak overlay.
-struct LensFlare { void render2D(float srcX, float srcY, float alpha, int colorIndex); };
+struct LensFlare {
+    // @portable-fields
+    int f_0; // 0x0
+    void* f_4; // 0x4
+    int f_8; // 0x8
+    int f_c; // 0xc
+    void* f_10; // 0x10
+ void render2D(float srcX, float srcY, float alpha, int colorIndex); };
 void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
 {
     // --- tint from palette -------------------------------------------------
@@ -34,14 +41,14 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
         return;
 
     // --- horizontal cull against the [-w, 2w] guard band -------------------
-    int w = i32(this, 0x08);
+    int w = this->f_8;
     if ((float)(-w) >= srcX)
         return;
     if ((float)(w * 2) <= srcX)
         return;
 
     // --- vertical cull against the [-h, 2h] guard band ---------------------
-    int h = i32(this, 0x0c);
+    int h = this->f_c;
     if ((float)(-h) >= srcY)
         return;
     if ((float)(h * 2) <= srcY)
@@ -66,10 +73,10 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
     float halfH = (float)(h >> 1);
     float base = (colorIndex == 5) ? 0.875f : 0.5f;
     float fade = base * (1.0f - dist / halfH);
-    f32(this, 0x00) = fade;
+    this->f_0 = fade;
 
     void *canvas = *(void **)gLF_Canvas2;
-    void **images = (void **)pp(this, 0x10);
+    void **images = (void **)this->f_10;
 
     // --- sprite 0: the main flare at the source, faded by (1-intensity) -----
     {
@@ -101,11 +108,11 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
 
     // --- re-fade and draw image[2] (the inner glow) -------------------------
     {
-        uint32_t a = (uint32_t)(1.0f - f32(this, 0x00));
+        uint32_t a = (uint32_t)(1.0f - this->f_0);
         uint32_t color = (a << 0) | (r << 8) | (g << 16) | (b << 24);
         LensFlare_setColor(canvas, color);
     }
-    if (1.0f - f32(this, 0x00) < 0.625f) {
+    if (1.0f - this->f_0 < 0.625f) {
         int iw = LensFlare_imgWidth(canvas, images[0]);
         int ih = LensFlare_imgWidth(canvas, images[0]);
         float s = (float)iw * 1.25f;
@@ -115,7 +122,7 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
 
     // --- streak / final overlay --------------------------------------------
     {
-        uint32_t a = (uint32_t)(1.0f - f32(this, 0x00));
+        uint32_t a = (uint32_t)(1.0f - this->f_0);
         uint32_t color = (a << 0) | (r << 8) | (g << 16) | (b << 24);
         LensFlare_setColor(canvas, color);
         int iw0 = LensFlare_imgWidth(canvas, images[2]);
@@ -126,13 +133,13 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
     }
 
     // final blended draw of image[2] if intensity > 0.
-    if (f32(this, 0x00) > 0.0f) {
-        int saved = (int)(unsigned long)pp(this, 0x04);
-        LensFlare_pushState(pp(this, 0x04));
+    if (this->f_0 > 0.0f) {
+        int saved = (int)(unsigned long)this->f_4;
+        LensFlare_pushState(this->f_4);
         uint32_t color = (g << 16) | (b << 8) | (r << 24);
-        uint32_t shifted = color + (uint32_t)(int)f32(this, 0x00);
-        LensFlare_setBlend(pp(this, 0x04), shifted);
-        LensFlare_drawFinal(pp(this, 0x04), pp(this, 0x10), 0, i32(this, 0x0c));
-        LensFlare_restoreState(pp(this, 0x04), saved);
+        uint32_t shifted = color + (uint32_t)(int)this->f_0;
+        LensFlare_setBlend(this->f_4, shifted);
+        LensFlare_drawFinal(this->f_4, this->f_10, 0, this->f_c);
+        LensFlare_restoreState(this->f_4, saved);
     }
 }
