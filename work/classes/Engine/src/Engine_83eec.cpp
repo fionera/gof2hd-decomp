@@ -85,7 +85,7 @@ extern "C" void Engine_Engine(Engine *self)
     up.z = 0.0f;
     *(Vector *)((char *)self + 0x3f0) = up;
     Engine_initFileInterface(self);
-    if ((uint32_t)__stack_chk_guard - (uint32_t)cookie == 0) {
+    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
         return;
     }
     __stack_chk_fail();

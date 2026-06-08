@@ -11,7 +11,7 @@ extern "C" void AEMath_MatrixAssign(void *dst, void *src);
 // PlayerFighter::setPosition(float, float, float). r0=self, r1..r3 = x,y,z (raw bits).
 extern "C" void PlayerFighter_setPosition3(PlayerFighter *self, int x, int y, int z)
 {
-    volatile uint32_t stackGuard = (uint32_t)__stack_chk_guard;
+    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     F<int32_t>(self, 0x58) = x;
     F<int32_t>(self, 0x5c) = y;
@@ -27,7 +27,7 @@ extern "C" void PlayerFighter_setPosition3(PlayerFighter *self, int x, int y, in
     int m = AEGeometry_getMatrix2(F<int32_t>(self, 8));
     AEMath_MatrixAssign((char *)*(int *)((char *)self + 4) + 4, (void *)m);
 
-    uint32_t diff = (uint32_t)__stack_chk_guard - stackGuard;
+    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (diff == 0) {
         return;
     }

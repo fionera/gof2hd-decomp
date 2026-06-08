@@ -25,7 +25,7 @@ extern "C" AbyssEngine::TextureConference *
 _ZN11AbyssEngine17TextureConferenceC2Ev(AbyssEngine::TextureConference *self)
 {
     AbyssEngine::ConstructorFrame frame;
-    frame.stackGuard = (uint32_t)__stack_chk_guard;
+    frame.stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
     *(void *volatile *)self = _ZTVN11AbyssEngine17TextureConferenceE + 8;
@@ -40,7 +40,7 @@ _ZN11AbyssEngine17TextureConferenceC2Ev(AbyssEngine::TextureConference *self)
 
     *(unsigned long long *)((char *)self + 0x38) = 0;
 
-    uint32_t stackDifference = (uint32_t)__stack_chk_guard - frame.stackGuard;
+    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - frame.stackGuard;
     if (stackDifference != 0) {
         __stack_chk_fail(stackDifference);
     }

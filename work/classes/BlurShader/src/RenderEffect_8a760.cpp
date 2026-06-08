@@ -11,7 +11,7 @@ extern "C" void BlurShader_RenderEffect(FBOContainer *fbo, Engine *engine, uint3
     void **vtable = *(void ***)fbo;
     ((FBOEffect *)vtable[0x20 / 4])(fbo, engine, &zero, amount, x, y, z, w);
     uint32_t guardDelta =
-        stack_guard_delta(*(volatile uint32_t *)&cookie, (uint32_t)__stack_chk_guard);
+        stack_guard_delta(*(volatile uint32_t *)&cookie, (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard);
     if (guardDelta == 0) {
         return;
     }

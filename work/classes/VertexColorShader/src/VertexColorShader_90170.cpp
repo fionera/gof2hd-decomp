@@ -21,7 +21,7 @@ VertexColorShader::VertexColorShader()
     ((String *)stack)->~String();
 
     uint32_t guardDelta = (uint32_t)stack[3];
-    guardDelta = (uint32_t)__stack_chk_guard - guardDelta;
+    guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - guardDelta;
     if (guardDelta == 0) {
         return;
     }

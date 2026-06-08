@@ -4,7 +4,7 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) void ConfigReader::ParseFile(String name)
 {
-    volatile uint32_t stackGuard = (uint32_t)__stack_chk_guard;
+    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
     if (AEFile::OpenRead(name, &config_file_handle(this)) != 0) {
         String line = GetNewLine();
         while (line.Compare("EOF") != 0) {
@@ -34,7 +34,7 @@ __attribute__((minsize)) void ConfigReader::ParseFile(String name)
         }
         AEFile::Close(config_file_handle(this));
     }
-    uint32_t stackDifference = (uint32_t)__stack_chk_guard - stackGuard;
+    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (stackDifference != 0) {
         __stack_chk_fail(stackDifference);
     }

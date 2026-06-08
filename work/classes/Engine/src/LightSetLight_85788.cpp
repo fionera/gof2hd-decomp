@@ -25,7 +25,7 @@ extern "C" void Engine_LightSetLight(Engine *self, unsigned int light)
             glLightfv(light, 0x1203, values);
         }
     }
-    if ((uint32_t)__stack_chk_guard - (uint32_t)cookie == 0) {
+    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
         return;
     }
     __stack_chk_fail();

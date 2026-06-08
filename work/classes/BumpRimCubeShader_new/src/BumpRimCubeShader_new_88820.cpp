@@ -17,7 +17,7 @@ __attribute__((minsize)) BumpRimCubeShader_new::BumpRimCubeShader_new()
         String tmp("BumpRimCubeShader_new", false);
         *(String *)((char *)this + 0xc) = tmp;
     }
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)
         __stack_chk_fail(guardDelta);
 }

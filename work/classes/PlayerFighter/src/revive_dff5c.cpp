@@ -23,7 +23,7 @@ extern "C" void *Generator_dtor(void *g);
 
 __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *self)
 {
-    volatile uint32_t stackGuard = (uint32_t)__stack_chk_guard;
+    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     int enemy = Player_turnedEnemy(F<int32_t>(self, 4));
     Player_reset(F<int32_t>(self, 4));
@@ -76,7 +76,7 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
         operator_delete(Generator_dtor(g));
     }
 
-    uint32_t diff = (uint32_t)__stack_chk_guard - stackGuard;
+    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (diff == 0) {
         return;
     }

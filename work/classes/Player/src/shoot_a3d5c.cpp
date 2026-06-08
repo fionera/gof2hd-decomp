@@ -60,7 +60,7 @@ extern "C" int Player_shoot2(Player *self, unsigned int slot, int gunId, int a4_
         }
     }
 
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0) {
         __stack_chk_fail(guardDelta);
     }

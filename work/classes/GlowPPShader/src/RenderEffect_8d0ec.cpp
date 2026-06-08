@@ -13,8 +13,8 @@ extern "C" void GlowPPShader_RenderEffect_simple(GlowPPShader *self, FBOContaine
     FBOContainer *target = 0;
     void **vtable = *(void ***)self;
     ((RenderEffectFn *)vtable[0x1c / 4])(self, source, &target, engine);
-    uint32_t saved = (uint32_t)cookie;
-    uint32_t diff = stack_guard_diff(saved, (uint32_t)__stack_chk_guard);
+    uint32_t saved = (uint32_t)(__UINTPTR_TYPE__)cookie;
+    uint32_t diff = stack_guard_diff(saved, (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard);
     if (diff == 0) {
         return;
     }

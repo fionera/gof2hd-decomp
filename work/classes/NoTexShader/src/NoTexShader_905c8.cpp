@@ -25,7 +25,7 @@ extern "C" AbyssEngine::NoTexShader *
 _ZN11AbyssEngine11NoTexShaderC2Ev(AbyssEngine::NoTexShader *self)
 {
     AbyssEngine::ConstructorFrame frame;
-    frame.stackGuard = (uint32_t)__stack_chk_guard;
+    frame.stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
     *(void *volatile *)self = _ZTVN11AbyssEngine11NoTexShaderE + 8;
@@ -38,7 +38,7 @@ _ZN11AbyssEngine11NoTexShaderC2Ev(AbyssEngine::NoTexShader *self)
         AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
     _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
 
-    uint32_t stackDifference = (uint32_t)__stack_chk_guard - frame.stackGuard;
+    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - frame.stackGuard;
     if (stackDifference != 0) {
         __stack_chk_fail(stackDifference);
     }

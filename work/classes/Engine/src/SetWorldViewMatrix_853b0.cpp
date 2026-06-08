@@ -19,16 +19,16 @@ extern "C" void Engine_SetWorldViewMatrix(Engine *self, const uint32_t *matrix)
         esMatrixMultiply((char *)self + 0x104, gl, (char *)self + 0x384);
     } else {
         MatrixGetGL((const Matrix *)matrix, (float *)((char *)self + 0x428));
-        uint32_t saved0 = (uint32_t)cookie;
-        uint32_t current0 = (uint32_t)*(void *volatile *)&__stack_chk_guard;
+        uint32_t saved0 = (uint32_t)(__UINTPTR_TYPE__)cookie;
+        uint32_t current0 = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
         uint32_t delta0 = current0 - saved0;
         if (delta0 == 0) {
             return glLoadMatrixf((float *)((char *)self + 0x428));
         }
         __stack_chk_fail(delta0);
     }
-    uint32_t saved1 = (uint32_t)cookie;
-    uint32_t current1 = (uint32_t)*(void *volatile *)&__stack_chk_guard;
+    uint32_t saved1 = (uint32_t)(__UINTPTR_TYPE__)cookie;
+    uint32_t current1 = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
     uint32_t delta1 = current1 - saved1;
     if (delta1 == 0) {
         return;

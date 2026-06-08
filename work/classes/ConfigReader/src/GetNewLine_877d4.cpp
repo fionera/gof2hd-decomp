@@ -4,7 +4,7 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) String ConfigReader::GetNewLine()
 {
-    volatile uint32_t stackGuard = (uint32_t)__stack_chk_guard;
+    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
     String line;
     char c = 0;
 
@@ -41,7 +41,7 @@ __attribute__((minsize)) String ConfigReader::GetNewLine()
             line.Set("EOF");
         }
     }
-    uint32_t stackDifference = (uint32_t)__stack_chk_guard - stackGuard;
+    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (stackDifference != 0) {
         __stack_chk_fail(stackDifference);
     }

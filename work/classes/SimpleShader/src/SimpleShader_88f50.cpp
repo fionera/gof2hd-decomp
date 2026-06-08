@@ -9,7 +9,7 @@ __attribute__((minsize)) SimpleShader::SimpleShader()
     *(String *)((char *)this + 0xc) = String("SimpleShader", false);
     *(void **)this = (char *)SimpleShader_vtable + 8;
     SimpleShader_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta == 0) {
         return;
     }

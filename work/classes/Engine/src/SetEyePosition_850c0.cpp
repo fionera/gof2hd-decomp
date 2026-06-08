@@ -10,8 +10,8 @@ extern "C" uint64_t Engine_SetEyePosition(Engine *self, uint32_t x, uint32_t y, 
     buf[1] = y;
     buf[2] = z;
     Vector_assign((Vector *)((char *)self + 0x3fc), (const Vector *)buf);
-    uint32_t saved = (uint32_t)cookie;
-    uint32_t current = (uint32_t)*(void *volatile *)&__stack_chk_guard;
+    uint32_t saved = (uint32_t)(__UINTPTR_TYPE__)cookie;
+    uint32_t current = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
     uint32_t guardDelta = current - saved;
     if (guardDelta == 0) {
         return (uint64_t)buf[0] | ((uint64_t)buf[1] << 32);

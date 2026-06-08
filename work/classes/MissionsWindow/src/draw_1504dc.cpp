@@ -163,7 +163,7 @@ extern "C" void MissionsWindow_draw(void *self)
     if (u8(self, 0x21) != 0 || u8(self, 0x20) != 0)
         ChoiceWindow_draw(pp(self, 0xc));
 
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)
         __stack_chk_fail((int)guardDelta);
 }

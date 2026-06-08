@@ -56,7 +56,7 @@ extern "C" void Engine_SetPostEffect(Engine *self, uint32_t effect, bool enable)
         flags = enable ? (flags | 1) : (flags & ~1u);
     }
     *(uint32_t *)((char *)self + 0x410) = flags;
-    if ((uint32_t)__stack_chk_guard - (uint32_t)cookie == 0) {
+    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
         return;
     }
     __stack_chk_fail();

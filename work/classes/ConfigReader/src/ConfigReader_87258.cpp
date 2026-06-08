@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) ConfigReader::ConfigReader(Engine *engine)
 {
-    volatile uint32_t stackGuard = (uint32_t)__stack_chk_guard;
+    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     new ((Array<TokenStruct *> *)this) Array<TokenStruct *>();
     config_engine(this) = engine;
@@ -23,7 +23,7 @@ __attribute__((minsize)) ConfigReader::ConfigReader(Engine *engine)
         String("ConfigRegisterTokenReadFunction", false),
         (ConfigTokenReadFunction)config_reader_register_token_callback, engine);
 
-    uint32_t stackDifference = (uint32_t)__stack_chk_guard - stackGuard;
+    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (stackDifference != 0) {
         __stack_chk_fail(stackDifference);
     }

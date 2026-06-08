@@ -15,7 +15,7 @@ GreenShader::GreenShader()
         *(String *)((char *)this + 0xc) = temp;
     }
 
-    uint32_t delta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t delta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (delta != 0)
         __stack_chk_fail(delta);
 }

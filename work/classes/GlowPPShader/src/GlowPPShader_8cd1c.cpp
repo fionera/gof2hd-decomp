@@ -17,8 +17,8 @@ extern "C" GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
     String_ctor_char((String *)name, "GlowPPShader", false);
     String_assign((String *)((char *)self + 0xc), (String *)name);
     String_dtor((String *)name);
-    uint32_t diff = (uint32_t)cookie;
-    diff = (uint32_t)__stack_chk_guard - diff;
+    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)cookie;
+    diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - diff;
     if (diff == 0) {
         return self;
     }

@@ -144,7 +144,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
         }
     }
 
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)
         __stack_chk_fail((int)guardDelta);
 }

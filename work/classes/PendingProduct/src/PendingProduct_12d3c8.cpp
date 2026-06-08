@@ -19,7 +19,7 @@ extern "C" PendingProduct *PendingProduct_ctor_BluePrint(PendingProduct *self, B
     i32(self, 0x0c) = BluePrint_getStationIndex(bp);
     i32(self, 0x10) = BluePrint_getQuantity(bp);
 
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)
         __stack_chk_fail((int)guardDelta);
     return self;

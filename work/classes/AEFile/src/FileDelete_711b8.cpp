@@ -13,8 +13,8 @@ __attribute__((minsize)) uint32_t AEFile::FileDelete(const String &path)
         result = fileInterface->vtable->FileDelete(fileInterface, localPath);
     }
 
-    uint32_t saved = (uint32_t)cookie;
-    uint32_t current = (uint32_t)*(void *volatile *)&__stack_chk_guard;
+    uint32_t saved = (uint32_t)(__UINTPTR_TYPE__)cookie;
+    uint32_t current = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
     uint32_t guardDelta = current - saved;
     if (guardDelta == 0) {
         return result;

@@ -57,7 +57,7 @@ extern "C" void GlowPPShader_InternalInit(GlowPPShader *self, Engine *engine)
     String_dtor_3(&name3);
     FBOContainer_Create_3(*(FBOContainer **)((char *)self + 0xa0), 0x200, 0x200, true, false);
 
-    uint32_t diff = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (diff == 0) {
         return;
     }

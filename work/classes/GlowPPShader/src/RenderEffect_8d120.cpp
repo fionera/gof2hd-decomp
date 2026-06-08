@@ -177,7 +177,7 @@ extern "C" void GlowPPShader_RenderEffect(GlowPPShader *self, FBOContainer *sour
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
 
-    uint32_t diff = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (diff == 0) {
         return;
     }

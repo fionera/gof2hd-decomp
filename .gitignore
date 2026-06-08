@@ -26,3 +26,8 @@ work/runtime/target/
 mac/gof2_host
 mac/*.dylib
 mac/*.o
+mac/obj/
+mac/stubs.*
+mac/*.rsp
+mac/*.txt
+mac/arm64.log

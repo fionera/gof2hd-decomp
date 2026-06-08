@@ -85,7 +85,7 @@ extern "C" Vector *Player_update(Player *self, int dt, int doSound)
     *(float *)&self->field_60 = nf;
     FloatVectorMax(&result, nf, k_update_c, 2, 0x20);
 
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0) {
         __stack_chk_fail(guardDelta);
     }

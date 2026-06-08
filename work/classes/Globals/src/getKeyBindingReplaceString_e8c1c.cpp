@@ -26,13 +26,13 @@ struct Globals;
 
 __attribute__((minsize)) String Globals_getKeyBindingReplaceString(Globals *, int key)
 {
-    volatile uint32_t stackGuard = (uint32_t)__stack_chk_guard;
+    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
     (void)key;
 
     String tmp;
     String result(tmp.ToUpperCase(), false);
 
-    uint32_t diff = (uint32_t)__stack_chk_guard - stackGuard;
+    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (diff == 0) {
         return result;
     }

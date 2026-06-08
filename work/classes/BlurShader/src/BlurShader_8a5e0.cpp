@@ -23,7 +23,7 @@ extern "C" BlurShader *BlurShader_BlurShader(BlurShader *self)
     *(uint32_t *)((char *)self + 0x58) = 0x92006800;
     *(uint32_t *)((char *)self + 0x5c) = 0x40000000;
     uint32_t guardDelta =
-        stack_guard_delta(*(volatile uint32_t *)&cookie, (uint32_t)__stack_chk_guard);
+        stack_guard_delta(*(volatile uint32_t *)&cookie, (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard);
     if (guardDelta == 0) {
         return self;
     }

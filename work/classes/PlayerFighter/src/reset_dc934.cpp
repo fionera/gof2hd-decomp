@@ -11,7 +11,7 @@ typedef void (*VFn)(void *dst, void *zeroVec);
 
 __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self)
 {
-    volatile uint32_t stackGuard = (uint32_t)__stack_chk_guard;
+    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     KIPlayer_reset(self);
     F<uint8_t>(self, 0x4c) = 1;
@@ -57,7 +57,7 @@ __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self
     F<uint8_t>(self, 0x2d8) = 1;
     F<uint8_t>(self, 0x2e4) = 0;
 
-    uint32_t diff = (uint32_t)__stack_chk_guard - stackGuard;
+    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (diff == 0) {
         return;
     }

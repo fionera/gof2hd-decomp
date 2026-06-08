@@ -81,7 +81,7 @@ extern "C" int Engine_InitGL(Engine *self, bool shaders, int width, int height)
                             *(int *)((char *)self + 0x36c), false, true);
     }
 
-    if ((uint32_t)__stack_chk_guard - (uint32_t)cookie == 0) {
+    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
         return 1;
     }
     __stack_chk_fail();

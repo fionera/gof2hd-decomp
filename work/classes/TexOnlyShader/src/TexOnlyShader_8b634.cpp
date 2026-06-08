@@ -14,7 +14,7 @@ TexOnlyShader::TexOnlyShader()
     String_assign((String *)((char *)this + 0xc), &tmp);
     String_dtor(&tmp);
 
-    uint32_t guardDelta = (uint32_t)*guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)*guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0) {
         __stack_chk_fail(guardDelta);
     }

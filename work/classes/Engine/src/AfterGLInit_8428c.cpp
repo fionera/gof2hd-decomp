@@ -29,7 +29,7 @@ extern "C" void Engine_AfterGLInit(Engine *self)
     String_assign(g_Engine_rendererString, text);
     String_dtor(text);
 
-    if ((uint32_t)__stack_chk_guard - (uint32_t)cookie == 0) {
+    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
         return;
     }
     __stack_chk_fail();

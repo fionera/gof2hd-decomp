@@ -126,7 +126,7 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
         glBindBuffer(0x8892, field_i32(mesh, 0x74));
         glVertexAttribPointer(field_i32(this, 0x30), 3, 0x1406, 0, 0, 0);
     }
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)
         __stack_chk_fail(guardDelta);
 }

@@ -5,7 +5,7 @@ __attribute__((minsize)) uint32_t AEFile::Read(String &value, uint32_t handle, b
     uint32_t locals[2];
     uint32_t result = 0;
 
-    locals[1] = (uint32_t)__stack_chk_guard;
+    locals[1] = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
     result = Read(4, &locals[0], handle);
 
     if (wide) {
@@ -38,7 +38,7 @@ __attribute__((minsize)) uint32_t AEFile::Read(String &value, uint32_t handle, b
         }
     }
 
-    uint32_t stack_difference = (uint32_t)__stack_chk_guard - locals[1];
+    uint32_t stack_difference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - locals[1];
     if (stack_difference == 0) {
         return result;
     }

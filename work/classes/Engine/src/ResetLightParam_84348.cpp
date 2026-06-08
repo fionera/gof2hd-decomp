@@ -43,7 +43,7 @@ extern "C" void Engine_ResetLightParam(Engine *self)
         glMaterialfv(0x408, 0x1202, (char *)self + 0x2b8);
         glMaterialf(0x408, 0x1601, *(float *)((char *)self + 0x2c8));
     }
-    if ((uint32_t)__stack_chk_guard - (uint32_t)cookie == 0) {
+    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
         return;
     }
     __stack_chk_fail();

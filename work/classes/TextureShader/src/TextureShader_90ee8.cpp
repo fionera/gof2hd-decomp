@@ -21,7 +21,7 @@ extern "C" TextureShader *TextureShader_TextureShader(TextureShader *self)
     String_assign((String *)(bytes(self) + 0x0c), (String *)frame.nameStorage);
     String_dtor((String *)frame.nameStorage);
 
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)frame.cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)frame.cookie;
     if (guardDelta == 0) {
         return self;
     }

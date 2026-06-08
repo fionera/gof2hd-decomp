@@ -106,7 +106,7 @@ extern "C" void MissionsWindow_update(void *self, int dt)
     for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
         TouchButton_setAlwaysPressed(((void **)tabs[1])[i], i == u32(self, 0x40));
 
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)
         __stack_chk_fail((int)guardDelta);
 }

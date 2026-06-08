@@ -53,7 +53,7 @@ extern "C" void Engine_SetModelMatrix(Engine *self, const uint32_t *matrix)
         *(float *)((char *)self + 0x350) /= *(float *)(matrix + 13);
         *(float *)((char *)self + 0x354) /= *(float *)(matrix + 14);
     }
-    if ((uint32_t)__stack_chk_guard - (uint32_t)cookie == 0) {
+    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
         return;
     }
     __stack_chk_fail();

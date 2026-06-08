@@ -20,7 +20,7 @@ extern "C" void Engine_LightSetLightPosition(Engine *self, float x, float y, flo
         *(Vector *)((char *)self + 0x468 + index * 0x0c) = value;
         *(uint32_t *)((char *)self + 0x378 + index * 4) = 0x3f800000;
     }
-    if ((uint32_t)__stack_chk_guard - (uint32_t)cookie == 0) {
+    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
         return;
     }
     __stack_chk_fail();
