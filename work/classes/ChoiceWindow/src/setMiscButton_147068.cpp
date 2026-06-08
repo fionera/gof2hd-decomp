@@ -17,44 +17,44 @@ __attribute__((visibility("hidden"))) extern int *g_ChoiceWindow_screenHeight_14
 void ChoiceWindow::setMiscButton(String const &text)
 {
     void *layout;
-    int padding = F<int>(this, 0x48);
+    int padding = this->f_48;
     int buttonWidth;
 
-    if (F<void *>(this, 0x10) == 0 || F<void *>(this, 0x14) == 0) {
+    if (this->f_10 == 0 || this->f_14 == 0) {
         layout = *g_ChoiceWindow_layout_147068_b;
-        buttonWidth = padding + F<int>(layout, 0x40) * 2;
+        buttonWidth = padding + layout->f_40 * 2;
     } else {
-        int leftWidth = TouchButton_getWidth(F<void *>(this, 0x10));
-        int rightWidth = TouchButton_getWidth(F<void *>(this, 0x14));
+        int leftWidth = TouchButton_getWidth(this->f_10);
+        int rightWidth = TouchButton_getWidth(this->f_14);
         layout = *g_ChoiceWindow_layout_147068_a;
         buttonWidth = leftWidth + rightWidth + padding;
     }
 
     void *button = operator new(0xc8);
     TouchButton_ctor(button, text, 0,
-                     F<int>(this, 0x0) + F<int>(this, 0x8) / 2 - F<int>(layout, 0x4c) / 2,
-                     F<int>(this, 0x4) + F<int>(this, 0xc) - padding,
+                     this->f_0 + this->f_8 / 2 - layout->f_4c / 2,
+                     this->f_4 + this->f_c - padding,
                      buttonWidth, 0x22, 4);
 
-    F<void *>(this, 0x18) = button;
+    this->f_18 = button;
 
     void **layoutHolder = g_ChoiceWindow_layout_147068_c;
     layout = *layoutHolder;
-    setHeight((F<int>(this, 0xc) - F<int>(layout, 0x8)) + F<int>(this, 0x48) * 2 +
-              F<int>(layout, 0x30));
+    setHeight((this->f_c - layout->f_8) + this->f_48 * 2 +
+              layout->f_30);
 
-    TouchButton_setPosition(F<void *>(this, 0x18),
-                            F<int>(this, 0x0) + F<int>(this, 0x8) / 2,
-                            F<int>(this, 0x4) + F<int>(this, 0xc) - F<int>(this, 0x48),
+    TouchButton_setPosition(this->f_18,
+                            this->f_0 + this->f_8 / 2,
+                            this->f_4 + this->f_c - this->f_48,
                             0x24);
 
-    int delta = -(F<int>(*layoutHolder, 0x30) + F<int>(this, 0x48));
-    if (F<void *>(this, 0x10) != 0)
-        TouchButton_translate(F<void *>(this, 0x10), 0, delta);
-    if (F<void *>(this, 0x14) != 0)
-        TouchButton_translate(F<void *>(this, 0x14), 0, delta);
+    int delta = -(F<int>(*layoutHolder, 0x30) + this->f_48);
+    if (this->f_10 != 0)
+        TouchButton_translate(this->f_10, 0, delta);
+    if (this->f_14 != 0)
+        TouchButton_translate(this->f_14, 0, delta);
 
-    ScrollTouchWindow_setPosition(F<void *>(this, 0x1c),
+    ScrollTouchWindow_setPosition(this->f_1c,
                                   *g_ChoiceWindow_screenHeight_147068 / 2 -
-                                      F<int>(this, 0xc) / 2 + F<int>(*layoutHolder, 0x8));
+                                      this->f_c / 2 + F<int>(*layoutHolder, 0x8));
 }

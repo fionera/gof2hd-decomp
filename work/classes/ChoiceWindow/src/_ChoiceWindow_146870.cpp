@@ -7,26 +7,26 @@ void operator delete(void *ptr) noexcept;
 
 ChoiceWindow::~ChoiceWindow()
 {
-    void *button = F<void *>(this, 0x10);
+    void *button = this->f_10;
     if (button != 0)
         operator delete(TouchButton_dtor(button));
-    F<void *>(this, 0x10) = 0;
+    this->f_10 = 0;
 
-    button = F<void *>(this, 0x14);
+    button = this->f_14;
     if (button != 0)
         operator delete(TouchButton_dtor(button));
-    F<void *>(this, 0x14) = 0;
+    this->f_14 = 0;
 
-    button = F<void *>(this, 0x18);
+    button = this->f_18;
     if (button != 0)
         operator delete(TouchButton_dtor(button));
-    F<void *>(this, 0x18) = 0;
+    this->f_18 = 0;
 
-    void *scroll = F<void *>(this, 0x1c);
+    void *scroll = this->f_1c;
     if (scroll != 0)
         operator delete(ScrollTouchWindow_dtor(scroll));
     void *title = (char *)this + 0x3c;
-    F<void *>(this, 0x1c) = 0;
+    this->f_1c = 0;
     String_dtor(title);
     String_dtor((char *)this + 0x20);
 }

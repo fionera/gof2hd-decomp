@@ -32,7 +32,7 @@ extern "C" void HangarWindow_showCreditsBuyWindow(HangarWindow *self)
     appData = ApplicationManager_GetApplicationData();
     *((uint8_t *)appData + 0x3d) = 1;
 
-    void *win = F<void *>(self, 0x20);
+    void *win = self->f_20;
     String12 a, b, yes, no;
 
     if (F<uint8_t>(self, 0x11f) == 0) {
@@ -61,19 +61,19 @@ extern "C" void HangarWindow_showCreditsBuyWindow(HangarWindow *self)
         int h;
         void *win2;
         if (*g_hw_buyFlag == 0) {
-            ChoiceWindow_setWidth(F<void *>(self, 0x20), *g_hw_buyWidth);
+            ChoiceWindow_setWidth(self->f_20, *g_hw_buyWidth);
             h = *g_hw_buyHeight;
-            win2 = F<void *>(self, 0x20);
+            win2 = self->f_20;
         } else {
-            ChoiceWindow_setWidth(F<void *>(self, 0x20), F<int>(self, 0x120) * 3);
-            float v = VectorSignedToFloat(F<int>(self, 0x124), 0);
-            win2 = F<void *>(self, 0x20);
+            ChoiceWindow_setWidth(self->f_20, self->f_120 * 3);
+            float v = VectorSignedToFloat(self->f_124, 0);
+            win2 = self->f_20;
             h = (int)(v * hw_buy_heightScale);
         }
         ChoiceWindow_setHeight(win2, h);
     }
 
-    F<uint8_t>(self, 0x3c) = 1;
+    self->f_3c = 1;
     F<uint8_t>(self, 0xae) = 1;
     F<uint8_t>(self, 0xaf) = 0;
 }

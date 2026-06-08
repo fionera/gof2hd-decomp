@@ -40,7 +40,7 @@ extern "C" FileInterfaceAndroid *FileInterfaceAndroid_OpenRead(FileInterfaceAndr
                                                                int p4, int p5, unsigned int p6)
 {
     const unsigned short *w = String_GetAEWChar(&name);
-    if (u8(self, 0x04) == 0)
+    if (self->f_4 == 0)
         return 0;
 
     const unsigned short *body = (*w == '/') ? w + 1 : w;

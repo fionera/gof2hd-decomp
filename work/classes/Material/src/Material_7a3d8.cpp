@@ -12,12 +12,12 @@ Material::Material(Material *other)
     Array_Matrix_ctor((char *)this + 0x5c);
 
     Vector *vec = (Vector *)((char *)this + 0x68);
-    i32(this, 0x68) = 0;
-    i32(this, 0x6c) = 0;
-    i32(this, 0x70) = 0;
+    this->f_68 = 0;
+    this->f_6c = 0;
+    this->f_70 = 0;
 
     if (other == 0) {
-        i32(this, 0x20) = 0;
+        this->f_20 = 0;
         int zero[3] = {0, 0, 0};
         Vector_assign(vec, (Vector *)zero);
         for (int i = 0; i != 8; ++i)
@@ -25,9 +25,9 @@ Material::Material(Material *other)
     } else {
         for (int i = 0; i != 8; ++i)
             i32(this, i * 4) = i32(other, i * 4);
-        i32(this, 0x20) = i32(other, 0x20);
-        uint32_t size = u32(other, 0x28);
-        u32(this, 0x28) = size;
+        this->f_20 = other->f_20;
+        uint32_t size = other->f_28;
+        this->f_28 = size;
         void *buf;
         if (size == 0)
             buf = 0;

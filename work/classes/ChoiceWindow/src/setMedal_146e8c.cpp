@@ -58,7 +58,7 @@ void ChoiceWindow::setMedal(int medal, int count)
     dtor(prefix);
 
     set(*GameText_getText(gameText, 0x161), *(String *)finalText, false);
-    ScrollTouchWindow_setTextCentered(F<void *>(this, 0x1c), true);
+    ScrollTouchWindow_setTextCentered(this->f_1c, true);
 
     void *canvas = *g_ChoiceWindow_canvas_146e8c;
     if (count < 0x24) {
@@ -72,8 +72,8 @@ void ChoiceWindow::setMedal(int medal, int count)
                               F<unsigned short>(g_ChoiceWindow_medalImages_146e8c, medal * 4),
                               (unsigned int *)((char *)this + 0x38));
 
-    F<int>(this, 0x2c) = count;
-    F<int>(this, 0x30) = medal;
+    this->f_2c = count;
+    this->f_30 = medal;
     F<uint8_t>(this, 0x59) = 1;
     String_dtor(finalText);
 }

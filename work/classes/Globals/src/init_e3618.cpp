@@ -172,6 +172,6 @@ extern "C" int Globals_init(Globals *self, void *app)
 
     void *arr = operator_new(0xc);
     ArrayInt_ctor(arr);
-    F<void *>(self, 4) = arr;
+    self->f_4 = arr;
     return (int)(long)arr;
 }

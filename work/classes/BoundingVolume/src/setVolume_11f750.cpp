@@ -9,6 +9,6 @@ void BoundingVolume::setVolume(BoundingVolume *src)
 {
     void *arr = operator_new(0xc);
     ArrayBV_ctor(arr);
-    pp(this, 0x4) = arr;
+    this->f_4 = arr;
     return BoundingVolume_setVolume_tail(src, arr);
 }

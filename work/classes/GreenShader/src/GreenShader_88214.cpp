@@ -7,7 +7,7 @@ GreenShader::GreenShader()
     void *volatile cookie = __stack_chk_guard;
 
     ShaderBaseStruct_ctor(this);
-    i32(this, 0x0) = (int)GreenShader_vtable + 8;
+    this->f_0 = (int)GreenShader_vtable + 8;
     GreenShader_typeInfoDest = GreenShader_typeInfoSource;
 
     {

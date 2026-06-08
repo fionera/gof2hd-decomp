@@ -16,10 +16,10 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
 {
     if (particleSet != -1) {
         int current = I(this, 0x50);
-        int set = ((int *)P(this, 0x3c))[particleSet];
-        ((uint8_t *)P(this, 0x6c))[current] = (uint8_t)set;
+        int set = ((int *)this->f_3c)[particleSet];
+        ((uint8_t *)this->f_6c)[current] = (uint8_t)set;
         char *def = ParticleSet_definitions + (set + set * 4) * 32;
-        ((int *)P(this, 0x68))[current] = 0;
+        ((int *)this->f_68)[current] = 0;
 
         uint32_t uv[4];
         uint32_t rotated[4];
@@ -46,7 +46,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
             ((float *)randomVelocity)[2] = (float)(AERandom_nextInt((char *)this + 0x10, range) - spread);
         }
 
-        void *slot = vec_at(P(this, 0x64), current);
+        void *slot = vec_at(this->f_64, current);
         Vector_assign(slot, randomVelocity);
 
         if (velocity != 0) {
@@ -90,7 +90,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 Vector_mul_scalar(emitVelocity, velocityScale, slot);
             }
 
-            EmitParticleFn fn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+            EmitParticleFn fn = *(EmitParticleFn *)((char *)this->f_0 + 0x18);
             fn(this, &position, lifetime, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                *(int *)(def + 0x3c) > 0, *(float *)(def + 0x1c), *(float *)(def + 0x20), emitVelocity);
         } else {
@@ -106,7 +106,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 Vector_mul_scalar(emitVelocity, velocityScale, slot);
             }
 
-            EmitParticleFn fn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+            EmitParticleFn fn = *(EmitParticleFn *)((char *)this->f_0 + 0x18);
             fn(this, &position, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                *(int *)(def + 0x3c) > 0, size0, size1, emitVelocity);
         }

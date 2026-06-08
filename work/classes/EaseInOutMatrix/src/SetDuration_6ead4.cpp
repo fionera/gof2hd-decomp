@@ -3,7 +3,7 @@
 namespace AbyssEngine {
 
 void EaseInOutMatrix::SetDuration(int duration) {
-    f32(this, 0xf0) = (float)duration;
+    this->f_f0 = (float)duration;
 }
 
 } // namespace AbyssEngine

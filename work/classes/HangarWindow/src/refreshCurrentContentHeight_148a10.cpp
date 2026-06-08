@@ -6,10 +6,10 @@ __attribute__((visibility("hidden"))) extern void **g_hw_globals;
 
 extern "C" void HangarWindow_refreshCurrentContentHeight(HangarWindow *self)
 {
-    int *items = HangarList_getCurrentTabItems(F<void *>(self, 0x14));
+    int *items = HangarList_getCurrentTabItems(self->f_14);
     if (items != 0) {
         int n = *items;
         int rowH = G<int>(*g_hw_globals, 0x70);
-        F<int>(self, 0xd4) = F<int>(self, 0x10c) * (n - 1) + n * rowH;
+        self->f_d4 = self->f_10c * (n - 1) + n * rowH;
     }
 }

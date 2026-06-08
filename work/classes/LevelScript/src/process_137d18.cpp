@@ -9,7 +9,7 @@ extern "C" void *gStatus;
 
 void LevelScript::process(int delta)
 {
-    Level *level = (Level *)P(this, 0x18);
+    Level *level = (Level *)this->m_pLevel;
     void *messages = Level_getMessages(level);
     void *player = Level_getPlayer(level);
     void *activeMessages = Level_getActiveMessages(level);
@@ -21,6 +21,6 @@ void LevelScript::process(int delta)
 
     if (mission != 0) {
         float frameDelta = (float)delta * 0.001f;
-        TargetFollowCamera_update((TargetFollowCamera *)P(this, 0x14), frameDelta, 0, 0);
+        TargetFollowCamera_update((TargetFollowCamera *)this->m_pCamera, frameDelta, 0, 0);
     }
 }

@@ -10,31 +10,31 @@ static volatile RenderProc gRenderProc;
 
 void LevelScript::render3D()
 {
-    if (P(this, 0xdc) != 0) {
-        AEGeometry_render(P(this, 0xdc));
+    if (this->f_dc != 0) {
+        AEGeometry_render(this->f_dc);
     }
-    if (P(this, 0xd8) != 0) {
-        AEGeometry_render(P(this, 0xd8));
+    if (this->f_d8 != 0) {
+        AEGeometry_render(this->f_d8);
     }
-    if (P(this, 0xb8) != 0) {
-        AEGeometry_render(P(this, 0xb8));
+    if (this->m_pPlayerEgo != 0) {
+        AEGeometry_render(this->m_pPlayerEgo);
     }
-    if (P(this, 0xbc) != 0) {
-        AEGeometry_render(P(this, 0xbc));
+    if (this->m_pAsteroids != 0) {
+        AEGeometry_render(this->m_pAsteroids);
     }
-    if (P(this, 0xc0) != 0) {
-        AEGeometry_render(P(this, 0xc0));
+    if (this->m_pExtra != 0) {
+        AEGeometry_render(this->m_pExtra);
     }
-    if (P(this, 0xc4) != 0) {
-        AEGeometry_render(P(this, 0xc4));
+    if (this->m_nParticleSystem0 != 0) {
+        AEGeometry_render(this->m_nParticleSystem0);
     }
-    if (P(this, 0xc8) != 0 && Explosion_isPlaying(P(this, 0xc8)) != 0) {
-        Explosion_render(P(this, 0xc8));
+    if (this->m_nParticleSystem1 != 0 && Explosion_isPlaying(this->m_nParticleSystem1) != 0) {
+        Explosion_render(this->m_nParticleSystem1);
     }
-    if (UC(this, 0xa8) != 0 && P(this, 0xac) != 0) {
+    if (UC(this, 0xa8) != 0 && this->m_pGeometriesMission2 != 0) {
         RenderProc render = gRenderProc;
-        render(P(this, 0xac));
-        render(P(this, 0xb0));
-        return render(P(this, 0xb4));
+        render(this->m_pGeometriesMission2);
+        render(this->m_pExplosion);
+        return render(this->m_pMission);
     }
 }

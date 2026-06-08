@@ -31,7 +31,7 @@ extern "C" void Explosion_start_matrix(Explosion *self, const Matrix *matrix)
     Array *streaks = A(self, 0xc);
     if (streaks != 0) {
         for (uint32_t i = 0; i < U(streaks, 0x0); i++) {
-            AEGeometry *geometry = *(AEGeometry **)((char *)P(streaks, 0x4) + i * 4);
+            AEGeometry *geometry = *(AEGeometry **)((char *)streaks->f_4 + i * 4);
             MatrixGetPosition(position, matrix);
             AEGeometry_setPosition(geometry, position);
             UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xed) = 1;

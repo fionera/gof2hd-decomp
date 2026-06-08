@@ -4,7 +4,7 @@ int Galaxy::getSystem(int index)
 {
     if (index < 0)
         return 0;
-    void *systems = P(this, 0x4);
-    void *data = P(systems, 0x4);
+    void *systems = this->systems;
+    void *data = systems->systems;
     return ((int *)data)[index];
 }

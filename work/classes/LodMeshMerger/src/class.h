@@ -56,6 +56,25 @@ using Matrix = AbyssEngine::AEMath::Matrix;
 using Vector = AbyssEngine::AEMath::Vector;
 
 struct LodMeshMerger {
+    // @portable-fields
+    int f_0; // 0x0
+    uint16_t f_4; // 0x4
+    uint8_t f_6; // 0x6
+    unsigned char _pad_7[5];
+    void* f_c; // 0xc
+    unsigned char _pad_10[4];
+    void* f_14; // 0x14
+    int f_18; // 0x18
+    int f_1c; // 0x1c
+    void* f_20; // 0x20
+    void* f_24; // 0x24
+    void* f_28; // 0x28
+    void* f_2c; // 0x2c
+    void* f_30; // 0x30
+    void* f_34; // 0x34
+    int f_38; // 0x38
+    uint8_t f_3c; // 0x3c
+
     LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags);
     ~LodMeshMerger();
 

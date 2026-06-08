@@ -12,7 +12,7 @@ extern "C" void *gStatus;
 
 LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamera *camera)
 {
-    P(this, 0x48) = 0;
+    this->f_48 = 0;
     I(this, 0x38) = 0;
     I(this, 0x3c) = 0;
     I(this, 0x40) = 0;
@@ -24,10 +24,10 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
 
     Matrix_ctor(B(this, 0x4c));
 
-    P(this, 0xd0) = hud;
-    P(this, 0xd4) = radar;
-    P(this, 0x14) = camera;
-    P(this, 0x18) = level;
+    this->f_d0 = hud;
+    this->f_d4 = radar;
+    this->m_pCamera = camera;
+    this->m_pLevel = level;
     Hud_drawTitleImage(hud, false);
 
     I(this, 0x1c) = 0;
@@ -38,21 +38,21 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     I(this, 0x90) = 0;
     I(this, 0x94) = 0;
     I(this, 0x98) = 0;
-    P(this, 0xac) = 0;
-    P(this, 0xb0) = 0;
-    P(this, 0xb4) = 0;
-    P(this, 0xb8) = 0;
-    P(this, 0xbc) = 0;
-    P(this, 0xc0) = 0;
-    P(this, 0xc4) = 0;
-    P(this, 0xc8) = 0;
-    P(this, 0xcc) = 0;
+    this->m_pGeometriesMission2 = 0;
+    this->m_pExplosion = 0;
+    this->m_pMission = 0;
+    this->m_pPlayerEgo = 0;
+    this->m_pAsteroids = 0;
+    this->m_pExtra = 0;
+    this->m_nParticleSystem0 = 0;
+    this->m_nParticleSystem1 = 0;
+    this->f_cc = 0;
     I(this, 0x8) = 0;
     I(this, 0xc) = 0;
     I(this, 0x0) = Level_getTimeLimit(level);
     I(this, 0x24) = 0;
-    P(this, 0xd8) = 0;
-    P(this, 0xdc) = 0;
+    this->f_d8 = 0;
+    this->f_dc = 0;
     US(this, 0x12) = 0;
 
     TargetFollowCamera_setLookAtCam(camera, true);
@@ -61,7 +61,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     if (player == 0) {
         UC(this, 0x20) = 0;
     } else {
-        Player_setVulnerable(P(player, 0), false);
+        Player_setVulnerable(player->f_0, false);
     }
 
     player = Level_getPlayer(level);

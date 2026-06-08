@@ -25,6 +25,24 @@ typedef unsigned int uint32_t;
 typedef int int32_t;
 
 struct FileInterfaceAndroid {
+    // @portable-fields
+    void* f_0; // 0x0
+    uint8_t f_4; // 0x4
+    unsigned char _pad_5[3];
+    void* f_8; // 0x8
+    void* f_c; // 0xc
+    void* f_10; // 0x10
+    uint8_t f_14; // 0x14
+    unsigned char _pad_15[7];
+    int f_1c; // 0x1c
+    unsigned char _pad_20[4];
+    uint8_t f_24; // 0x24
+    unsigned char _pad_25[3];
+    int f_28; // 0x28
+    unsigned char _pad_2c[4];
+    void* f_30; // 0x30
+    void* f_34; // 0x34
+
     ~FileInterfaceAndroid();   // deleting dtor authored in _FileInterfaceAndroid_6dfce.cpp
 };
 

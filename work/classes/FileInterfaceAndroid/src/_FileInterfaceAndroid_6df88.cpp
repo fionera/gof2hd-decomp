@@ -9,11 +9,11 @@ extern "C" void FileInterfaceAndroid_Close(FileInterfaceAndroid *self);
 
 FileInterfaceAndroid::~FileInterfaceAndroid()
 {
-    F<char *>(this, 0x00) = (char *)gFIAVtable_dtor + 8;
+    this->f_0 = (char *)gFIAVtable_dtor + 8;
     FileInterfaceAndroid_Close(this);
     int *cnt = gFIAInstCount_dtor;
     if (*cnt != 0)
         *cnt = *cnt - 1;
     else
-        u8(this, 0x04) = 0;
+        this->f_4 = 0;
 }

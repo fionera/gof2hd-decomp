@@ -9,7 +9,7 @@ void IParticleSystem::resetEmitterVelocity()
     Vector_assign((char *)this + 0x1c, value);
     *(volatile uint8_t *)((char *)this + 0x5) = 1;
     char *matrixValue = value;
-    MatrixGetPosition(matrixValue, F<Matrix const *>(this, 0x18));
+    MatrixGetPosition(matrixValue, this->f_18);
     Vector_assign((char *)this + 0x28, matrixValue);
     *(volatile uint8_t *)((char *)this + 0x4) = 0;
 }

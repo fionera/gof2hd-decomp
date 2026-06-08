@@ -55,7 +55,7 @@ void IParticleSystem::emit(int delta)
         return;
     }
 
-    int set = ((int *)P(this, 0x3c))[U8(this, 0x44)];
+    int set = ((int *)this->f_3c)[U8(this, 0x44)];
     if (set == -1) {
         return;
     }
@@ -65,7 +65,7 @@ void IParticleSystem::emit(int delta)
         if ((flags & 0x100) != 0) {
             return;
         }
-    } else if ((flags & 0x100) != 0 || ((int *)P(this, 0x68))[0] != -1) {
+    } else if ((flags & 0x100) != 0 || ((int *)this->f_68)[0] != -1) {
         return;
     }
 
@@ -84,14 +84,14 @@ void IParticleSystem::emit(int delta)
     char velocity[12];
     char emitVelocity[12];
 
-    MatrixGetPosition(matrixPos, F<Matrix const *>(this, 0x18));
-    MatrixGetRight(right, F<Matrix const *>(this, 0x18));
+    MatrixGetPosition(matrixPos, this->f_18);
+    MatrixGetRight(right, this->f_18);
     if (U8(this, 0x4c) != 0) {
         Vector_neg(tmp, right);
         Vector_assign(right, tmp);
     }
-    MatrixGetUp(up, F<Matrix const *>(this, 0x18));
-    MatrixGetDir(dir, F<Matrix const *>(this, 0x18));
+    MatrixGetUp(up, this->f_18);
+    MatrixGetDir(dir, this->f_18);
 
     char *def = ParticleSet_definitions + (set + set * 4) * 32;
     float speed2 = Vector_dot((char *)this + 0x1c, (char *)this + 0x1c);
@@ -144,8 +144,8 @@ void IParticleSystem::emit(int delta)
     uint32_t *uvp = (uint32_t *)uv;
     for (int i = 0; i < emitCount; ++i) {
         int current = I(this, 0x50);
-        ((uint8_t *)P(this, 0x6c))[current] = (uint8_t)set;
-        ((int *)P(this, 0x68))[current] = 0;
+        ((uint8_t *)this->f_6c)[current] = (uint8_t)set;
+        ((int *)this->f_68)[current] = 0;
         if ((U8(this, 0x37) & 0x80) != 0) {
             uvp = (uint32_t *)rotateUVs((float *)uv, current, (float *)rotated);
         }
@@ -163,7 +163,7 @@ void IParticleSystem::emit(int delta)
                                      (float)(AERandom_nextInt((char *)this + 0x10, range) - velSpread);
         }
 
-        void *slot = vec_at(P(this, 0x64), current);
+        void *slot = vec_at(this->f_64, current);
         Vector_assign(slot, velocity);
 
         float drag = *(float *)(def + 0x64);
@@ -272,7 +272,7 @@ void IParticleSystem::emit(int delta)
             colorFlag = (*(float *)(def + 0x40) > 0.0f) ? 1 : 0;
         }
 
-        EmitParticleFn emitFn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+        EmitParticleFn emitFn = *(EmitParticleFn *)((char *)this->f_0 + 0x18);
         emitFn(this, particlePos, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                colorFlag, size0, size1, emitVelocity);
 
@@ -286,7 +286,7 @@ void IParticleSystem::emit(int delta)
         if (remaining > fdelta) {
             remaining = fdelta;
         }
-        UpdateParticleFn updateFn = *(UpdateParticleFn *)((char *)P(this, 0x0) + 0x14);
+        UpdateParticleFn updateFn = *(UpdateParticleFn *)((char *)this->f_0 + 0x14);
         updateFn(this, current, remaining);
 
         current = I(this, 0x50) + 1;

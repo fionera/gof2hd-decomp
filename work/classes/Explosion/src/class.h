@@ -6,7 +6,12 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 
-struct Explosion;
+struct Explosion {
+    // @portable-fields
+    unsigned char _pad_0[4];
+    void* f_4; // 0x4
+    void* f_8; // 0x8
+};
 struct AEGeometry;
 struct Array;
 struct PaintCanvas;

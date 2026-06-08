@@ -7,10 +7,10 @@ extern "C" void *Array_String_dtor(void *arr);            // blx 0x6f64c
 extern "C" void operator_delete(void *p);                 // blx 0x6eb48
 
 extern "C" AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
-    ArrayReleaseClasses_String(F<void *>(self, 0x10));
-    void *a = F<void *>(self, 0x10);
+    ArrayReleaseClasses_String(self->f_10);
+    void *a = self->f_10;
     if (a != 0)
         operator_delete(Array_String_dtor(a));
-    F<void *>(self, 0x10) = 0;
+    self->f_10 = 0;
     return self;
 }

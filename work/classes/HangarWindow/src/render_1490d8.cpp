@@ -127,14 +127,14 @@ extern "C" void HangarWindow_render(HangarWindow *self)
     bool dlcShown = dlc != 0 && G<uint8_t>(dlc, 0x18) != 0;
 
     if (dlc == 0 || !dlcShown) {
-        int tab2 = F<int>(self, 0x58);
+        int tab2 = self->f_58;
         if (tab2 == 0) {
             Layout_drawBG(layout);
-            unsigned int tab = HangarList_getCurrentTab(F<void *>(self, 0x14));
-            Array<void *> *items = (Array<void *> *)HangarList_getCurrentTabItems(F<void *>(self, 0x14));
+            unsigned int tab = HangarList_getCurrentTab(self->f_14);
+            Array<void *> *items = (Array<void *> *)HangarList_getCurrentTabItems(self->f_14);
             if (items != 0) {
                 float startPos = HangarWindow_getRelativeScrollStartPos(self);
-                float visH = (float)F<int>(self, 0xd8);
+                float visH = (float)self->f_d8;
                 float scrollH = HangarWindow_getRelativeScrollHeight(self);
                 int scrollPx = (int)(scrollH * visH);
                 int startPx = (int)(startPos * visH);
@@ -151,7 +151,7 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                 else
                     rowGap = 0;
 
-                topY += (G<int>(layout, 0x28) + F<int>(self, 0xf4)) * -2;
+                topY += (G<int>(layout, 0x28) + self->f_f4) * -2;
                 int baseY = G<int>(layout, 0x2cc);
                 int colW = G<int>(layout, 0x4c);
 
@@ -162,11 +162,11 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                     int rows = __aeabi_idiv(*g_hw_screenHeight, 1);
                     int y = 0;
                     for (int r = 0; r <= rows; r++) {
-                        PaintCanvas_DrawImage2D(canvas, F<int>(self, 0xf0),
-                            (G<int>(layout, 0x28) - iw) + F<int>(self, 0xf4), y, 1);
+                        PaintCanvas_DrawImage2D(canvas, self->f_f0,
+                            (G<int>(layout, 0x28) - iw) + self->f_f4, y, 1);
                         int off = (scrollPx < 1) ? 0 : (G<int>(layout, 0x48) + G<int>(layout, 0x2c));
-                        PaintCanvas_DrawImage2D(canvas, F<int>(self, 0xf0),
-                            F<int>(self, 0xf4) + G<int>(layout, 0x28) + topY + off, y, 0);
+                        PaintCanvas_DrawImage2D(canvas, self->f_f0,
+                            self->f_f4 + G<int>(layout, 0x28) + topY + off, y, 0);
                         y += ih;
                     }
                 }
@@ -174,10 +174,10 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                 int contentBase = colW + baseY + rowGap;
 
                 // Hide all action buttons before re-laying them out per row.
-                Array<void *> *btnArr = (Array<void *> *)F<void *>(self, 0x24);
+                Array<void *> *btnArr = (Array<void *> *)self->f_24;
                 for (int i = 0; i != 0x18; i++) {
-                    if (F<uint8_t>(self, 0xd0) == 0) {
-                        void *btn = G<void *>(G<void *>(F<void *>(self, 0x24), 4), i * 4);
+                    if (self->f_d0 == 0) {
+                        void *btn = G<void *>(G<void *>(self->f_24, 4), i * 4);
                         if (btn != 0)
                             TouchButton_setVisible(btn, false);
                     }
@@ -186,8 +186,8 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                 int boxW = rowGap - 2;
 
                 for (unsigned int i = 0; i < items->length; i++) {
-                    int y = (G<int>(layout, 0x70) + F<int>(self, 0x10c)) * (int)i +
-                            F<int>(self, 0xb4) + G<int>(layout, 0x20) + G<int>(layout, 0xc);
+                    int y = (G<int>(layout, 0x70) + self->f_10c) * (int)i +
+                            self->f_b4 + G<int>(layout, 0x20) + G<int>(layout, 0xc);
                     if (y < 0 || y > *g_hw_screenHeight)
                         continue;
 
@@ -196,28 +196,28 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                         continue;
 
                     // Row background box (selected vs unselected, by tab).
-                    if (F<void *>(self, 0x68) == li && ListItem_isTextButton(li) == 0) {
+                    if (self->f_68 == li && ListItem_isTextButton(li) == 0) {
                         String12 boxText;
                         if (tab == 0 && G<int>(li, 0x3c) >= 0) {
                             AEString_ctor(&boxText, hw_rnd_a, false);
-                            Layout_drawBox(layout, 10, F<int>(self, 0xf4) + G<int>(layout, 0x28), y,
+                            Layout_drawBox(layout, 10, self->f_f4 + G<int>(layout, 0x28), y,
                                            topY, G<int>(layout, 0x70), &boxText);
                         } else {
                             AEString_ctor(&boxText, hw_rnd_b, false);
-                            Layout_drawBox(layout, 4, F<int>(self, 0xf4) + G<int>(layout, 0x28), y,
+                            Layout_drawBox(layout, 4, self->f_f4 + G<int>(layout, 0x28), y,
                                            topY, G<int>(layout, 0x70), &boxText);
                         }
                         AEString_dtor(&boxText);
                     } else if (tab != 0 || G<int>(li, 0x3c) < 0) {
                         String12 boxText;
                         AEString_ctor(&boxText, hw_rnd_c, false);
-                        Layout_drawBox(layout, 3, F<int>(self, 0xf4) + G<int>(layout, 0x28), y, topY,
+                        Layout_drawBox(layout, 3, self->f_f4 + G<int>(layout, 0x28), y, topY,
                                        G<int>(layout, 0x70), &boxText);
                         AEString_dtor(&boxText);
                     } else {
                         String12 boxText;
                         AEString_ctor(&boxText, hw_rnd_d, false);
-                        Layout_drawBox(layout, 9, F<int>(self, 0xf4) + G<int>(layout, 0x28), y, topY,
+                        Layout_drawBox(layout, 9, self->f_f4 + G<int>(layout, 0x28), y, topY,
                                        G<int>(layout, 0x70), &boxText);
                         AEString_dtor(&boxText);
                     }
@@ -235,22 +235,22 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                             String12 price;
                             Layout_formatCredits(&price, Ship_getPrice(G<void *>(li, 0xc)));
                             PaintCanvas_DrawString(canvas, *g_hw_font, (int)(uintptr_t)&price,
-                                contentBase + G<int>(layout, 0x28) + F<int>(self, 0xf4), 1);
+                                contentBase + G<int>(layout, 0x28) + self->f_f4, 1);
                             AEString_dtor(&price);
                             ImageFactory_drawShip(*g_hw_globals, Ship_getIndex(G<void *>(li, 0xc)),
-                                F<int>(self, 0xf4) + G<int>(layout, 0x28) + rowGap,
-                                F<int>(self, 0x118) + y);
+                                self->f_f4 + G<int>(layout, 0x28) + rowGap,
+                                self->f_118 + y);
                             PaintCanvas_SetColor((unsigned int)(uintptr_t)canvas);
                         } else if (ListItem_isSlot(li) != 0) {
                             AEString_assign(&label, (String12 *)GameText_getText(*g_hw_itemNameBase));
                             if (tab == 4 && i == items->length - 1) {
                                 TouchButton_setPosition(
-                                    G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x5c),
-                                    F<int>(self, 0xf4) + G<int>(layout, 0x28) + topY / 2,
+                                    G<void *>(G<void *>(self->f_24, 4), 0x5c),
+                                    self->f_f4 + G<int>(layout, 0x28) + topY / 2,
                                     G<int>(layout, 0x114) + y, 0x14);
                                 TouchButton_setVisible(
-                                    G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x5c), true);
-                                TouchButton_draw(G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x5c));
+                                    G<void *>(G<void *>(self->f_24, 4), 0x5c), true);
+                                TouchButton_draw(G<void *>(G<void *>(self->f_24, 4), 0x5c));
                                 String12 tmp;
                                 AEString_ctor(&tmp, hw_rnd_x, false);
                                 AEString_assign(&label, &tmp);
@@ -261,20 +261,20 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                             AEString_assign(&label, (String12 *)GameText_getText(*g_hw_itemNameBase));
                             float rate = BluePrint_getCompletionRate(G<void *>(li, 0x8));
                             if (rate > 0.0f) {
-                                PaintCanvas_DrawImage2D(canvas, F<int>(self, 0x78),
-                                    G<int>(layout, 0x28) + contentBase + 2 + F<int>(self, 0xf4), 0, 0);
-                                float dcw = (float)F<int>(self, 0xdc);
-                                PaintCanvas_DrawRegion2D(canvas, F<unsigned int>(self, 0x7c), 0, 0,
-                                    (int)(rate * dcw), F<int>(self, 0xe0), (float)(int)(rate * dcw),
+                                PaintCanvas_DrawImage2D(canvas, self->f_78,
+                                    G<int>(layout, 0x28) + contentBase + 2 + self->f_f4, 0, 0);
+                                float dcw = (float)self->f_dc;
+                                PaintCanvas_DrawRegion2D(canvas, self->f_7c, 0, 0,
+                                    (int)(rate * dcw), self->f_e0, (float)(int)(rate * dcw),
                                     0, 0, 0,
-                                    G<int>(layout, 0x28) + contentBase + 3 + F<int>(self, 0xf4));
+                                    G<int>(layout, 0x28) + contentBase + 3 + self->f_f4);
                                 String12 pct, sfx, sum;
                                 AEString_ctor_int(&pct, (int)(rate * startPos));
                                 AEString_ctor(&sfx, hw_rnd_x, false);
                                 AEString_add(&sum, &pct, &sfx);
                                 PaintCanvas_DrawString(canvas, *g_hw_font, (int)(uintptr_t)&sum,
-                                    contentBase + 2 + G<int>(layout, 0x28) + F<int>(self, 0xf4) +
-                                        F<int>(self, 0xdc) + G<int>(layout, 0x2c), 0);
+                                    contentBase + 2 + G<int>(layout, 0x28) + self->f_f4 +
+                                        self->f_dc + G<int>(layout, 0x2c), 0);
                                 AEString_dtor(&sum);
                                 AEString_dtor(&sfx);
                                 AEString_dtor(&pct);
@@ -283,8 +283,8 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                             int bpIdx = BluePrint_getIndex(G<void *>(li, 0x8));
                             int type = Item_getType(G<void *>(G<void *>(*g_hw_globals, 0x4), bpIdx));
                             ImageFactory_drawItem(*g_hw_globals, bpIdx, type,
-                                G<int>(layout, 0x28) + rowGap + F<int>(self, 0xf4),
-                                F<int>(self, 0x118) + y);
+                                G<int>(layout, 0x28) + rowGap + self->f_f4,
+                                self->f_118 + y);
                         } else if (ListItem_isPendingProduct(li) != 0) {
                             int amt = G<int>(G<void *>(li, 0x18), 0x10);
                             String12 head;
@@ -306,26 +306,26 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                             int pidx = G<int>(G<void *>(li, 0x18), 0x14);
                             int type = Item_getType(G<void *>(G<void *>(*g_hw_globals, 0x4), pidx));
                             ImageFactory_drawItem(*g_hw_globals, pidx, type,
-                                rowGap + G<int>(layout, 0x28) + F<int>(self, 0xf4),
-                                F<int>(self, 0x118) + y);
+                                rowGap + G<int>(layout, 0x28) + self->f_f4,
+                                self->f_118 + y);
                         } else if (ListItem_isMoveToCargoButton(li) != 0) {
                             TouchButton_setPosition(
-                                G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x18),
-                                F<int>(self, 0xf4) + G<int>(layout, 0x28), y, 0x11);
+                                G<void *>(G<void *>(self->f_24, 4), 0x18),
+                                self->f_f4 + G<int>(layout, 0x28), y, 0x11);
                             TouchButton_setVisible(
-                                G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x18), true);
-                            TouchButton_draw(G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x18));
+                                G<void *>(G<void *>(self->f_24, 4), 0x18), true);
+                            TouchButton_draw(G<void *>(G<void *>(self->f_24, 4), 0x18));
                         } else if (ListItem_isSellButton(li) != 0) {
                             TouchButton_setPosition(
-                                G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x14),
-                                F<int>(self, 0xf4) + G<int>(layout, 0x28), y, 0x11);
+                                G<void *>(G<void *>(self->f_24, 4), 0x14),
+                                self->f_f4 + G<int>(layout, 0x28), y, 0x11);
                             TouchButton_setVisible(
-                                G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x14), true);
-                            TouchButton_draw(G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x14));
+                                G<void *>(G<void *>(self->f_24, 4), 0x14), true);
+                            TouchButton_draw(G<void *>(G<void *>(self->f_24, 4), 0x14));
                         } else {
                             String12 txt;
                             AEString_ctor_str(&txt, G<String12 *>(li, 0x1c), false);
-                            Layout_drawBox(layout, 0, F<int>(self, 0xf4) + G<int>(layout, 0x28),
+                            Layout_drawBox(layout, 0, self->f_f4 + G<int>(layout, 0x28),
                                            (y + G<int>(layout, 0x70)) - G<int>(layout, 0x1c), topY,
                                            G<int>(layout, 0x1c), &txt);
                             AEString_dtor(&txt);
@@ -340,18 +340,18 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                             Item_getSinglePrice(G<void *>(li, 0x10));
                             Layout_formatCredits(&price, Item_getSinglePrice(G<void *>(li, 0x10)));
                             PaintCanvas_DrawString(canvas, *g_hw_font, (int)(uintptr_t)&price,
-                                contentBase + G<int>(layout, 0x28) + F<int>(self, 0xf4), 1);
+                                contentBase + G<int>(layout, 0x28) + self->f_f4, 1);
                             AEString_dtor(&price);
                         }
                         int iidx = Item_getIndex(G<void *>(li, 0x10));
                         int itype = Item_getType(G<void *>(li, 0x10));
                         ImageFactory_drawItem(*g_hw_globals, iidx, itype,
-                            G<int>(layout, 0x28) + rowGap + F<int>(self, 0xf4),
-                            F<int>(self, 0x118) + y);
+                            G<int>(layout, 0x28) + rowGap + self->f_f4,
+                            self->f_118 + y);
                     }
 
                     PaintCanvas_DrawString(canvas, *g_hw_font, (int)(uintptr_t)&label,
-                        F<int>(self, 0xf4) + G<int>(layout, 0x28) + contentBase, 0);
+                        self->f_f4 + G<int>(layout, 0x28) + contentBase, 0);
 
                     AEString_dtor(&label);
                 }
@@ -360,8 +360,8 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                 if (scrollPx > 0 || startPx > 0) {
                     Layout_drawScrollBar(layout,
                         ((*g_hw_screenHeight - G<int>(layout, 0x48)) - G<int>(layout, 0x28)) -
-                            F<int>(self, 0xf4),
-                        G<int>(layout, 0x20) + G<int>(layout, 0xc), F<int>(self, 0xd8), startPx,
+                            self->f_f4,
+                        G<int>(layout, 0x20) + G<int>(layout, 0xc), self->f_d8, startPx,
                         scrollPx);
                 }
             }
@@ -371,23 +371,23 @@ extern "C" void HangarWindow_render(HangarWindow *self)
             Layout_drawHeader(layout, &header);
             AEString_dtor(&header);
 
-            Array<void *> *tabs = (Array<void *> *)F<void *>(self, 0x4);
+            Array<void *> *tabs = (Array<void *> *)self->f_4;
             for (unsigned int i = 0; i < tabs->length; i++)
                 TouchButton_draw(tabs->data[i]);
         }
 
-        if (F<int>(self, 0x58) == 1) {
-            F<int>(self, 0x58) = 0;
+        if (self->f_58 == 1) {
+            self->f_58 = 0;
             HangarWindow_render(self);
-            F<int>(self, 0x58) = 1;
-            ListItemWindow_draw(F<void *>(self, 0x18));
+            self->f_58 = 1;
+            ListItemWindow_draw(self->f_18);
         }
     }
 
     // --- Footer + credits button (always drawn). ---
     layout = *g_hw_layout;
     Layout_drawFooter(layout);
-    void *btns = F<void *>(self, 0x24);
+    void *btns = self->f_24;
     TouchButton_setVisible(G<void *>(G<void *>(btns, 4), 0x2c), true);
     TouchButton_setAlwaysPressed(G<void *>(G<void *>(btns, 4), 0x2c), g_hw_optionFlags[0x4e] == 0);
     {
@@ -398,13 +398,13 @@ extern "C" void HangarWindow_render(HangarWindow *self)
     }
     TouchButton_draw(G<void *>(G<void *>(btns, 4), 0x2c));
 
-    if (F<uint8_t>(self, 0x3c) == 0)
+    if (self->f_3c == 0)
         return;
 
-    ChoiceWindow_draw(F<void *>(self, 0x20));
+    ChoiceWindow_draw(self->f_20);
 
     if (F<uint8_t>(self, 0xae) == 0) {
-        if (F<uint8_t>(self, 0xb0) != 0) {
+        if (self->f_b0 != 0) {
             // Free-credits action button column.
             for (unsigned int i = 0; i < 5; i++) {
                 void *b = G<void *>(G<void *>(btns, 4), i * 4 + 0x48);
@@ -416,7 +416,7 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                 else
                     vis = (i != 4 || g_hw_optionFlags[0x4c] == 0);
                 TouchButton_setVisible(b, vis);
-                TouchButton_setPosition2(b, G<int>(layout, 0x28) + G<int>(F<void *>(self, 0x20), 0),
+                TouchButton_setPosition2(b, G<int>(layout, 0x28) + G<int>(self->f_20, 0),
                                          G<int>(layout, 0x8));
                 TouchButton_draw(b);
             }
@@ -451,18 +451,18 @@ extern "C" void HangarWindow_render(HangarWindow *self)
                 default: AEString_ctor(&label, hw_rnd_e, false); AEString_ctor(&split, hw_rnd_x, false); break;
                 }
                 unsigned int rowOff = __aeabi_uidiv(i & 0xff, 3);
-                int x = (F<int>(self, 0x128) + F<int>(self, 0x120)) *
+                int x = (self->f_128 + self->f_120) *
                             ((i + rowOff * -3) & 0xff) +
-                        ((*g_hw_screenHeight / 2 - F<int>(self, 0x120)) - F<int>(self, 0x128));
+                        ((*g_hw_screenHeight / 2 - self->f_120) - self->f_128);
                 int yy = (int)((float)((G<int>(layout, 0x20) * -3) +
-                            (*g_hw_screenWidth / 2 - F<int>(self, 0x124) / 2)) +
-                            (float)F<int>(self, 0x12c) * -0.5f +
-                            (float)((int)rowOff * (F<int>(self, 0x12c) + F<int>(self, 0x124))));
+                            (*g_hw_screenWidth / 2 - self->f_124 / 2)) +
+                            (float)self->f_12c * -0.5f +
+                            (float)((int)rowOff * (self->f_12c + self->f_124)));
                 TouchButton_setPosition(b, x, yy, 'D');
                 TouchButton_replaceTextKeepSize(b, &label);
                 TouchButton_setSplitText(b, &split);
                 TouchButton_draw(b);
-                PaintCanvas_DrawImage2D(canvas, G<int>(F<void *>(self, 0x30), i * 4), x,
+                PaintCanvas_DrawImage2D(canvas, G<int>(self->f_30, i * 4), x,
                                         yy - G<int>(layout, 0x2c), 0x11);
                 AEString_dtor(&split);
                 AEString_dtor(&label);
@@ -473,7 +473,7 @@ extern "C" void HangarWindow_render(HangarWindow *self)
             int h17 = G<int>(layout, 0x30);
             int h34 = G<int>(layout, 0x34);
             int th = PaintCanvas_GetTextHeight(canvas);
-            ChoiceWindow_setHeight(F<void *>(self, 0x20), (h34 + h17) * 6 + th * 2);
+            ChoiceWindow_setHeight(self->f_20, (h34 + h17) * 6 + th * 2);
         }
     }
 }

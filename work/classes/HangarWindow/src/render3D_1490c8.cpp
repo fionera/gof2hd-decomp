@@ -5,7 +5,7 @@ extern "C" void HangarWindow_render3D_thunk(void *arg);
 
 extern "C" void HangarWindow_render3D(HangarWindow *self)
 {
-    if (F<int>(self, 0x58) == 1) {
-        return HangarWindow_render3D_thunk(F<void *>(self, 0x18));
+    if (self->f_58 == 1) {
+        return HangarWindow_render3D_thunk(self->f_18);
     }
 }

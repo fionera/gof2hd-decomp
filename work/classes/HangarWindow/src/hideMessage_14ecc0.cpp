@@ -2,5 +2,5 @@
 
 extern "C" void HangarWindow_hideMessage(HangarWindow *self)
 {
-    F<uint8_t>(self, 0x3c) = 0;
+    self->f_3c = 0;
 }

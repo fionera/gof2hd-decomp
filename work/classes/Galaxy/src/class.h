@@ -11,6 +11,10 @@ typedef unsigned int uint32_t;
 typedef int int32_t;
 
 struct Galaxy {
+    // @portable-fields
+    uint8_t* stations; // 0x0
+    AEArray* systems; // 0x4
+
     Galaxy();
     ~Galaxy();
 

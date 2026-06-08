@@ -7,7 +7,7 @@ typedef int (*CollideFn)(void *self, uint32_t x, uint32_t y, uint32_t z);
 
 int BoundingVolume::collide(float, float, float)
 {
-    Array<BoundingVolume *> *children = (Array<BoundingVolume *> *)pp(this, 0x4);
+    Array<BoundingVolume *> *children = (Array<BoundingVolume *> *)this->f_4;
     if (children != 0) {
         for (uint32_t i = 0; i < children->length; i++) {
             void *child = children->data[i];
@@ -16,7 +16,7 @@ int BoundingVolume::collide(float, float, float)
             if (fn(child, c[0], c[1], c[2]) != 0) {
                 return 1;
             }
-            children = (Array<BoundingVolume *> *)pp(this, 0x4);
+            children = (Array<BoundingVolume *> *)this->f_4;
         }
     }
     return 0;

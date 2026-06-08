@@ -12,35 +12,35 @@ extern "C" void operator_delete_arr(void *p);
 extern "C" HangarWindow *_ZN12HangarWindowD2Ev(HangarWindow *self)
 {
     void *p;
-    p = F<void *>(self, 0x14);
+    p = self->f_14;
     if (p != 0) operator_delete(HangarList_dtor(p));
-    F<void *>(self, 0x14) = 0;
-    p = F<void *>(self, 0x18);
+    self->f_14 = 0;
+    p = self->f_18;
     if (p != 0) operator_delete(ListItemWindow_dtor(p));
-    F<void *>(self, 0x18) = 0;
-    p = F<void *>(self, 0x1c);
+    self->f_18 = 0;
+    p = self->f_1c;
     if (p != 0) operator_delete(ChoiceWindow_dtor(p));
-    F<void *>(self, 0x1c) = 0;
-    p = F<void *>(self, 0x20);
+    self->f_1c = 0;
+    p = self->f_20;
     if (p != 0) operator_delete(ChoiceWindow_dtor(p));
-    F<void *>(self, 0x20) = 0;
-    p = F<void *>(self, 0x4);
+    self->f_20 = 0;
+    p = self->f_4;
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
-        void *q = F<void *>(self, 0x4);
+        void *q = self->f_4;
         if (q != 0) operator_delete(Array_TouchButton_dtor(q));
     }
-    F<void *>(self, 0x4) = 0;
-    p = F<void *>(self, 0x24);
+    self->f_4 = 0;
+    p = self->f_24;
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
-        void *q = F<void *>(self, 0x24);
+        void *q = self->f_24;
         if (q != 0) operator_delete(Array_TouchButton_dtor(q));
     }
-    p = F<void *>(self, 0x30);
-    F<uint8_t>(self, 0xc) = 0;
-    F<void *>(self, 0x24) = 0;
+    p = self->f_30;
+    self->f_c = 0;
+    self->f_24 = 0;
     if (p != 0) operator_delete_arr(p);
-    F<void *>(self, 0x30) = 0;
+    self->f_30 = 0;
     return self;
 }

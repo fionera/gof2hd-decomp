@@ -11,7 +11,7 @@ extern "C" void *Status_getShip(void *status);
 
 extern "C" void HangarWindow_refreshCargoAvailabilityForBlueprints(HangarWindow *self)
 {
-    void *items = HangarList_getItems(F<void *>(self, 0x14));
+    void *items = HangarList_getItems(self->f_14);
     Array<void *> *arr = *(Array<void *> **)((char *)G<void *>(items, 0x4) + 0x8);
     if (arr == 0) return;
     for (uint32_t i = 0; i < arr->length; i++) {

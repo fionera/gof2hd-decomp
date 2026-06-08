@@ -13,13 +13,13 @@ extern "C" int HangarWindow_highlightItem(HangarWindow *self, void *item)
     if (item != 0 && ListItem_isSelectable(item) != 0) {
         FModSound_play(*g_hw_sound, 0x7c, 0, 0, 0);
         unsigned flag = 0;
-        if (F<void *>(self, 0x68) != item) {
+        if (self->f_68 != item) {
             flag = ListItem_isTextButton(item) ^ 1;
         }
-        F<void *>(self, 0x68) = item;
+        self->f_68 = item;
         F<uint8_t>(self, 0xd2) = flag;
         if (ListItem_isShip(item) != 0) {
-            Ship_adjustPrice(G<void *>(F<void *>(self, 0x68), 0xc));
+            Ship_adjustPrice(G<void *>(self->f_68, 0xc));
         }
     }
     return 0;

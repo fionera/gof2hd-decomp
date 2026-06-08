@@ -16,7 +16,14 @@ typedef int int32_t;
 
 void *operator new(uint32_t size);
 
-struct ImagePart;
+struct ImagePart {
+    // @portable-fields
+    int id; // 0x0
+    int f_4; // 0x4
+    int pos_y; // 0x8
+    int scale_x; // 0xc
+    int scale_y; // 0x10
+};
 
 template <class T>
 static inline T &F(void *self, uint32_t off) { return *(T *)((char *)self + off); }

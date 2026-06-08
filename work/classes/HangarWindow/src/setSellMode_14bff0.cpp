@@ -78,82 +78,82 @@ extern "C" extern const char hw_bp_fmt1[], hw_bp_fmt2[], hw_bp_fmt3[];
 
 extern "C" void HangarWindow_setSellMode(HangarWindow *self)
 {
-    void *item = F<void *>(self, 0x68);
+    void *item = self->f_68;
 
     if (item == 0 ||
         ListItem_isShip(item) != 0 || ListItem_isSlot(item) != 0 ||
         ListItem_isTextButton(item) != 0 || ListItem_isSelectable(item) == 0 ||
         ListItem_isBluePrint(item) != 0) {
-        F<uint8_t>(self, 0x88) = 0;
+        self->f_88 = 0;
         return;
     }
 
-    F<uint8_t>(self, 0x88) = 1;
+    self->f_88 = 1;
 
-    int tab = HangarList_getCurrentTab(F<void *>(self, 0x14));
+    int tab = HangarList_getCurrentTab(self->f_14);
     if (tab == 1) {
-        if (F<uint8_t>(self, 0x88) == 0) {
+        if (self->f_88 == 0) {
             if (ListItem_isItem(item) != 0 && Item_getType(G<void *>(item, 0x10)) != 4) {
                 void *flags = *g_hw_itemFlags;
                 if (G<uint8_t>(flags, 0x1e) == 0) {
                     GameText_getText(*g_hw_sellTextId1);
-                    ChoiceWindow_set(F<void *>(self, 0x20), 0);
+                    ChoiceWindow_set(self->f_20, 0);
                     G<uint8_t>(flags, 0x1e) = 1;
-                    F<uint8_t>(self, 0x3c) = 1;
+                    self->f_3c = 1;
                 }
             }
-            F<uint8_t>(self, 0xf8) = 1;
-            F<unsigned int>(self, 0xfc) = HangarList_getCurrentItemIndex(F<void *>(self, 0x14));
+            self->f_f8 = 1;
+            self->f_fc = HangarList_getCurrentItemIndex(self->f_14);
         } else {
             void *flags = *g_hw_itemFlags;
             if (G<uint8_t>(flags, 0x1d) == 0) {
                 GameText_getText(*g_hw_sellTextId2);
-                ChoiceWindow_set(F<void *>(self, 0x20), 0);
+                ChoiceWindow_set(self->f_20, 0);
                 G<uint8_t>(flags, 0x1d) = 1;
-                F<uint8_t>(self, 0x3c) = 1;
+                self->f_3c = 1;
             }
-            F<int>(self, 0x8c) = Item_getStationAmount(G<void *>(item, 0x10));
-            F<int>(self, 0xa0) = Item_getAmount(G<void *>(item, 0x10));
-            F<int>(self, 0x98) = Status_getCredits();
-            F<int>(self, 0x9c) = F<int>(self, 0xa8);
+            self->f_8c = Item_getStationAmount(G<void *>(item, 0x10));
+            self->f_a0 = Item_getAmount(G<void *>(item, 0x10));
+            self->f_98 = Status_getCredits();
+            self->f_9c = self->f_a8;
         }
 
-        Ship_setCargo(Status_getShip(), Item_extractItems(F<void *>(self, 0x10), true));
-        Station_setItems(Status_getStation(), Item_extractItems(F<void *>(self, 0x10), false), false);
-        if (F<void *>(self, 0x10) != 0) {
-            ArrayReleaseClasses_ItemPtr(F<void *>(self, 0x10));
-            if (F<void *>(self, 0x10) != 0)
-                operator_delete(Array_ItemPtr_dtor(F<void *>(self, 0x10)));
+        Ship_setCargo(Status_getShip(), Item_extractItems(self->f_10, true));
+        Station_setItems(Status_getStation(), Item_extractItems(self->f_10, false), false);
+        if (self->f_10 != 0) {
+            ArrayReleaseClasses_ItemPtr(self->f_10);
+            if (self->f_10 != 0)
+                operator_delete(Array_ItemPtr_dtor(self->f_10));
         }
-        F<void *>(self, 0x10) = 0;
+        self->f_10 = 0;
 
         void *mixed = Item_mixItems(Ship_getCargo(Status_getShip()), Station_getItems(Status_getStation()));
-        F<void *>(self, 0x10) = mixed;
-        HangarList_initShopTab(F<void *>(self, 0x14), mixed, Station_getShips(Status_getStation()));
-        HangarList_initShipTab(F<void *>(self, 0x14), Status_getShip());
+        self->f_10 = mixed;
+        HangarList_initShopTab(self->f_14, mixed, Station_getShips(Status_getStation()));
+        HangarList_initShipTab(self->f_14, Status_getShip());
 
-        void *ci = HangarList_getCurrentItem(F<void *>(self, 0x14));
-        F<void *>(self, 0x68) = ci;
+        void *ci = HangarList_getCurrentItem(self->f_14);
+        self->f_68 = ci;
         if (ci != 0 && ListItem_isShip(ci) != 0)
-            Ship_adjustPrice(G<void *>(F<void *>(self, 0x68), 0xc));
+            Ship_adjustPrice(G<void *>(self->f_68, 0xc));
         HangarWindow_refreshCurrentContentHeight(self);
         return;
     }
 
-    if (HangarList_getCurrentTab(F<void *>(self, 0x14)) != 4)
+    if (HangarList_getCurrentTab(self->f_14) != 4)
         return;
 
-    if (F<uint8_t>(self, 0x88) == 0) {
-        if (F<void *>(self, 0x84) != 0 && F<void *>(self, 0x80) != 0) {
-            void *bpItem = G<void *>(F<void *>(self, 0x84), 0x10);
-            BluePrint_addItem(F<void *>(self, 0x80), bpItem, Item_getBlueprintAmount(bpItem),
+    if (self->f_88 == 0) {
+        if (self->f_84 != 0 && self->f_80 != 0) {
+            void *bpItem = G<void *>(self->f_84, 0x10);
+            BluePrint_addItem(self->f_80, bpItem, Item_getBlueprintAmount(bpItem),
                               Station_getIndex(Status_getStation()));
         }
 
         uint8_t completedFlag = 0;
-        if (BluePrint_isCompleted(F<void *>(self, 0x80)) != 0) {
+        if (BluePrint_isCompleted(self->f_80) != 0) {
             void *globals = *g_hw_globals;
-            if (BluePrint_getStationIndex(F<void *>(self, 0x80)) == Station_getIndex(Status_getStation())) {
+            if (BluePrint_getStationIndex(self->f_80) == Station_getIndex(Status_getStation())) {
                 String12 line, copy, name, fmt, result;
                 AEString_ctor(&line, (const char *)GameText_getText(*g_hw_sellTextId1), false);
                 AEString_ctor_str(&copy, &line, false);
@@ -165,15 +165,15 @@ extern "C" void HangarWindow_setSellMode(HangarWindow *self)
                 AEString_dtor(&fmt);
                 AEString_dtor(&name);
                 AEString_dtor(&copy);
-                ChoiceWindow_set(F<void *>(self, 0x20), 0);
+                ChoiceWindow_set(self->f_20, 0);
 
                 int *stations = g_hw_bpStations;
-                int idx = stations[BluePrint_getIndex(F<void *>(self, 0x80))];
-                BluePrint_getQuantity(F<void *>(self, 0x80));
+                int idx = stations[BluePrint_getIndex(self->f_80)];
+                BluePrint_getQuantity(self->f_80);
                 void *made = Item_makeItem((void *)(uintptr_t)idx);
                 Ship_addCargo(Status_getShip(), made);
-                ArrayAdd_ItemPtr(made, F<void *>(self, 0x10));
-                HangarList_setCurrentTab(F<void *>(self, 0x14), true);
+                ArrayAdd_ItemPtr(made, self->f_10);
+                HangarList_setCurrentTab(self->f_14, true);
                 HangarWindow_refreshCurrentContentHeight(self);
                 AEString_dtor(&line);
             } else {
@@ -190,7 +190,7 @@ extern "C" void HangarWindow_setSellMode(HangarWindow *self)
                 AEString_dtor(&copy);
 
                 AEString_ctor_str(&line2, &line, false);
-                BluePrint_getStationName(F<void *>(self, 0x80));
+                BluePrint_getStationName(self->f_80);
                 AEString_ctor(&sname, hw_bp_fmt3, false);
                 AEString_ctor(&fmt2, hw_bp_fmt3, false);
                 String12 result2;
@@ -201,13 +201,13 @@ extern "C" void HangarWindow_setSellMode(HangarWindow *self)
                 AEString_dtor(&sname);
                 AEString_dtor(&line2);
 
-                ChoiceWindow_set(F<void *>(self, 0x20), 0);
-                Status_addPendingProduct(globals, F<void *>(self, 0x80));
-                HangarList_setCurrentTab(F<void *>(self, 0x14), true);
+                ChoiceWindow_set(self->f_20, 0);
+                Status_addPendingProduct(globals, self->f_80);
+                HangarList_setCurrentTab(self->f_14, true);
                 HangarWindow_refreshCargoAvailabilityForBlueprints(self);
                 AEString_dtor(&line);
             }
-            BluePrint_reset(F<void *>(self, 0x80));
+            BluePrint_reset(self->f_80);
             completedFlag = 1;
         }
 
@@ -215,23 +215,23 @@ extern "C" void HangarWindow_setSellMode(HangarWindow *self)
         Ship_setCargo(HangarWindow_statusShip(), Item_extractItems(Ship_getCargo(0), true));
         HangarWindow_statusShip();
         void *items = Item_mixItems(Ship_getCargo(0), Station_getItems(Status_getStation()));
-        HangarList_initShopTab(F<void *>(self, 0x14), items, Station_getShips(Status_getStation()));
-        HangarList_initBlueprintTab(F<void *>(self, 0x14), Status_getBluePrints(globals));
+        HangarList_initShopTab(self->f_14, items, Station_getShips(Status_getStation()));
+        HangarList_initBlueprintTab(self->f_14, Status_getBluePrints(globals));
         void *mix = Item_mixItems(Ship_getCargo(0), Station_getItems(Status_getStation()));
-        F<void *>(self, 0x10) = mix;
-        F<uint8_t>(self, 0x3c) = completedFlag;
+        self->f_10 = mix;
+        self->f_3c = completedFlag;
 
         if (completedFlag) {
-            Array<void *> *items2 = (Array<void *> *)HangarList_getCurrentTabItems(F<void *>(self, 0x14));
+            Array<void *> *items2 = (Array<void *> *)HangarList_getCurrentTabItems(self->f_14);
             for (unsigned int i = 0; i < items2->length; i++) {
                 void *li = items2->data[i];
                 if (li != 0 && ListItem_isItem(li) != 0 &&
-                    Item_getIndex(G<void *>(li, 0x10)) == BluePrint_getIndex(F<void *>(self, 0x80))) {
+                    Item_getIndex(G<void *>(li, 0x10)) == BluePrint_getIndex(self->f_80)) {
                     if (Ship_hasEquipment(Status_getShip(), Item_getIndex(G<void *>(li, 0x10))) != 0) {
-                        F<unsigned int>(self, 0xfc) = i;
-                        F<uint8_t>(self, 0xf8) = 1;
+                        self->f_fc = i;
+                        self->f_f8 = 1;
                         HangarWindow_autoEquipSecondaryWeapons(self, i);
-                        F<uint8_t>(self, 0xf8) = 0;
+                        self->f_f8 = 0;
                         break;
                     }
                 }
@@ -240,17 +240,17 @@ extern "C" void HangarWindow_setSellMode(HangarWindow *self)
         return;
     }
 
-    F<int>(self, 0x94) = 0;
-    if (BluePrint_isEmpty(F<void *>(self, 0x80)) != 0 && Item_getAmount(G<void *>(item, 0x10)) > 0) {
-        int idx = BluePrint_getIndex(F<void *>(self, 0x80));
+    self->f_94 = 0;
+    if (BluePrint_isEmpty(self->f_80) != 0 && Item_getAmount(G<void *>(item, 0x10)) > 0) {
+        int idx = BluePrint_getIndex(self->f_80);
         bool flag;
         void *text;
-        if (idx == 0xd2 || BluePrint_getIndex(F<void *>(self, 0x80)) == 0xdf) {
+        if (idx == 0xd2 || BluePrint_getIndex(self->f_80) == 0xdf) {
             if (SolarSystem_getRoutes(Status_getSystem()) != 0) {
                 text = GameText_getText(*g_hw_sellTextId2);
                 flag = true;
             } else {
-                F<uint8_t>(self, 0x130) = 1;
+                self->f_130 = 1;
                 text = GameText_getText(*g_hw_routesTextId);
                 flag = false;
             }
@@ -258,13 +258,13 @@ extern "C" void HangarWindow_setSellMode(HangarWindow *self)
             text = GameText_getText(*g_hw_sellTextId2);
             flag = true;
         }
-        ChoiceWindow_setMsg(F<void *>(self, 0x20), text, flag);
-        F<uint8_t>(self, 0x3c) = 1;
+        ChoiceWindow_setMsg(self->f_20, text, flag);
+        self->f_3c = 1;
     }
 
-    F<int>(self, 0xa4) = Item_getBlueprintAmount(G<void *>(item, 0x10));
-    F<int>(self, 0xa0) = Item_getAmount(G<void *>(item, 0x10));
-    F<int>(self, 0x98) = Status_getCredits();
-    F<int>(self, 0x9c) = F<int>(self, 0xa8);
-    F<void *>(self, 0x84) = F<void *>(self, 0x68);
+    self->f_a4 = Item_getBlueprintAmount(G<void *>(item, 0x10));
+    self->f_a0 = Item_getAmount(G<void *>(item, 0x10));
+    self->f_98 = Status_getCredits();
+    self->f_9c = self->f_a8;
+    self->f_84 = self->f_68;
 }

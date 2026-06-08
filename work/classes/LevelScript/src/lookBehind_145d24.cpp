@@ -16,6 +16,6 @@ extern "C" void TargetFollowCamera_setCamOffset(void *camera, const StackVector 
 
 void LevelScript::lookBehind()
 {
-    TargetFollowCamera_setTargetOffset(P(this, 0x14), StackVector(0.0f, 0.0f, -950.0f));
-    TargetFollowCamera_setCamOffset(P(this, 0x14), StackVector(0.0f, 600.0f, 2230.0f));
+    TargetFollowCamera_setTargetOffset(this->m_pCamera, StackVector(0.0f, 0.0f, -950.0f));
+    TargetFollowCamera_setCamOffset(this->m_pCamera, StackVector(0.0f, 600.0f, 2230.0f));
 }

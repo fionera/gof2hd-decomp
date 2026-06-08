@@ -75,24 +75,24 @@ extern "C" extern const char hw_sel_fmt1[], hw_sel_fmt2[], hw_sel_fmt3[];
 static void showText(HangarWindow *self, int textId)
 {
     GameText_getText(textId);
-    ChoiceWindow_set(F<void *>(self, 0x20), 0);
-    F<uint8_t>(self, 0x3c) = 1;
+    ChoiceWindow_set(self->f_20, 0);
+    self->f_3c = 1;
 }
 
 extern "C" void HangarWindow_selectItem(HangarWindow *self, void *item)
 {
-    F<void *>(self, 0x68) = item;
+    self->f_68 = item;
     if (item != 0 && ListItem_isShip(item) != 0)
-        Ship_adjustPrice(G<void *>(F<void *>(self, 0x68), 0xc));
+        Ship_adjustPrice(G<void *>(self->f_68, 0xc));
 
-    int tab = HangarList_getCurrentTab(F<void *>(self, 0x14));
+    int tab = HangarList_getCurrentTab(self->f_14);
 
     if (tab == 2) {
         if (ListItem_isSelectable(item) != 0 && ListItem_isPendingProduct(item) == 0) {
             void *bp = G<void *>(item, 0x8);
-            F<void *>(self, 0x80) = bp;
-            HangarList_fillIngredientsList(F<void *>(self, 0x14), bp != 0);
-            HangarList_setCurrentTab(F<void *>(self, 0x14), true);
+            self->f_80 = bp;
+            HangarList_fillIngredientsList(self->f_14, bp != 0);
+            HangarList_setCurrentTab(self->f_14, true);
             HangarWindow_refreshCurrentContentHeight(self);
             if (F<uint8_t>(self, 0x89) != 0)
                 F<uint8_t>(self, 0x89) = 0;
@@ -108,28 +108,28 @@ extern "C" void HangarWindow_selectItem(HangarWindow *self, void *item)
             if (Item_isUnsaleable(G<void *>(item, 0x10)) != 0)
                 return;
 
-            uint8_t was = F<uint8_t>(self, 0x88);
-            F<uint8_t>(self, 0x88) = (uint8_t)(was ^ 1);
+            uint8_t was = self->f_88;
+            self->f_88 = (uint8_t)(was ^ 1);
             if (was == 0) {
                 void *flags = *g_hw_itemFlags;
                 if (G<uint8_t>(flags, 0x1d) == 0) {
                     GameText_getText(*g_hw_sellMsgTextId1);
-                    ChoiceWindow_set(F<void *>(self, 0x20), 0);
+                    ChoiceWindow_set(self->f_20, 0);
                     G<uint8_t>(flags, 0x1d) = 1;
-                    F<uint8_t>(self, 0x3c) = 1;
+                    self->f_3c = 1;
                 }
-                F<int>(self, 0x8c) = Item_getStationAmount(G<void *>(item, 0x10));
-                F<int>(self, 0xa0) = Item_getAmount(G<void *>(item, 0x10));
-                F<int>(self, 0x98) = Status_getCredits();
-                F<int>(self, 0x9c) = F<int>(self, 0xa8);
+                self->f_8c = Item_getStationAmount(G<void *>(item, 0x10));
+                self->f_a0 = Item_getAmount(G<void *>(item, 0x10));
+                self->f_98 = Status_getCredits();
+                self->f_9c = self->f_a8;
             } else {
                 if (ListItem_isItem(item) != 0 && Item_getType(G<void *>(item, 0x10)) != 4) {
                     void *flags = *g_hw_itemFlags;
                     if (G<uint8_t>(flags, 0x1e) == 0) {
                         GameText_getText(*g_hw_sellMsgTextId2);
-                        ChoiceWindow_set(F<void *>(self, 0x20), 0);
+                        ChoiceWindow_set(self->f_20, 0);
                         G<uint8_t>(flags, 0x1e) = 1;
-                        F<uint8_t>(self, 0x3c) = 1;
+                        self->f_3c = 1;
                     }
                 }
                 int li = ListItem_getIndex(item);
@@ -137,25 +137,25 @@ extern "C" void HangarWindow_selectItem(HangarWindow *self, void *item)
                     int base = G<int>(*g_hw_globals, 0xac);
                     *((uint8_t *)G<int>((void *)(uintptr_t)base, 4) + ListItem_getIndex(item) - 0x84) = 1;
                 }
-                F<uint8_t>(self, 0xf8) = 1;
-                F<unsigned int>(self, 0xfc) = HangarList_getCurrentItemIndex(F<void *>(self, 0x14));
+                self->f_f8 = 1;
+                self->f_fc = HangarList_getCurrentItemIndex(self->f_14);
 
-                Ship_setCargo(Status_getShip(), Item_extractItems(F<void *>(self, 0x10), true));
+                Ship_setCargo(Status_getShip(), Item_extractItems(self->f_10, true));
                 Station_setItems(Status_getStation(),
-                                 Item_extractItems(F<void *>(self, 0x10), false), false);
-                if (F<void *>(self, 0x10) != 0) {
-                    ArrayReleaseClasses_ItemPtr(F<void *>(self, 0x10));
-                    if (F<void *>(self, 0x10) != 0)
-                        operator_delete(Array_ItemPtr_dtor(F<void *>(self, 0x10)));
+                                 Item_extractItems(self->f_10, false), false);
+                if (self->f_10 != 0) {
+                    ArrayReleaseClasses_ItemPtr(self->f_10);
+                    if (self->f_10 != 0)
+                        operator_delete(Array_ItemPtr_dtor(self->f_10));
                 }
-                F<void *>(self, 0x10) = 0;
+                self->f_10 = 0;
 
                 void *mixed = Item_mixItems(Ship_getCargo(Status_getShip()),
                                             Station_getItems(Status_getStation()));
-                F<void *>(self, 0x10) = mixed;
-                HangarList_initShopTab(F<void *>(self, 0x14), mixed,
+                self->f_10 = mixed;
+                HangarList_initShopTab(self->f_14, mixed,
                                        Station_getShips(Status_getStation()));
-                HangarList_initShipTab(F<void *>(self, 0x14), Status_getShip());
+                HangarList_initShipTab(self->f_14, Status_getShip());
             }
             return;
         }
@@ -182,8 +182,8 @@ extern "C" void HangarWindow_selectItem(HangarWindow *self, void *item)
             AEString_addAssign(&msg, &combined);
             AEString_dtor(&combined);
             AEString_dtor(&suffix);
-            ChoiceWindow_setMsg(F<void *>(self, 0x20), &msg, true);
-            F<uint8_t>(self, 0x3c) = 1;
+            ChoiceWindow_setMsg(self->f_20, &msg, true);
+            self->f_3c = 1;
             F<uint8_t>(self, 0xaf) = 1;
             AEString_dtor(&msg);
             return;
@@ -198,11 +198,11 @@ extern "C" void HangarWindow_selectItem(HangarWindow *self, void *item)
             int a = Ship_getIndex(Status_getShip());
             int b = Ship_getIndex(G<void *>(item, 0xc));
             if (a != b) {
-                F<uint8_t>(self, 0x90) = 1;
+                self->f_90 = 1;
                 GameText_getText(*g_hw_sellMsgTextId2);
-                ChoiceWindow_setMsg(F<void *>(self, 0x20),
+                ChoiceWindow_setMsg(self->f_20,
                                     (String12 *)GameText_getText(*g_hw_sellMsgTextId2), true);
-                F<uint8_t>(self, 0x3c) = 1;
+                self->f_3c = 1;
                 return;
             }
             showText(self, *g_hw_buyBaseTextId);
@@ -220,22 +220,22 @@ extern "C" void HangarWindow_selectItem(HangarWindow *self, void *item)
     if (ListItem_isSelectable(item) == 0)
         return;
 
-    F<int>(self, 0xbc) = 0;
-    F<int>(self, 0xe4) = F<int>(self, 0xb4);
-    F<int>(self, 0xb4) = 0;
+    self->f_bc = 0;
+    self->f_e4 = self->f_b4;
+    self->f_b4 = 0;
 
     void *flags0 = *g_hw_itemFlags;
     if (G<uint8_t>(flags0, 0x1f) == 0 && ListItem_isSlot(item) != 0) {
         GameText_getText(*g_hw_slotMsgTextId);
-        ChoiceWindow_set(F<void *>(self, 0x20), 0);
+        ChoiceWindow_set(self->f_20, 0);
         G<uint8_t>(flags0, 0x1f) = 1;
-        F<uint8_t>(self, 0x3c) = 1;
+        self->f_3c = 1;
     }
 
     if (ListItem_isSelectable(item) == 0)
         return;
 
-    void *cur = HangarList_getCurrentItem(F<void *>(self, 0x14));
+    void *cur = HangarList_getCurrentItem(self->f_14);
     void *curItem = G<void *>(cur, 0x10);
     if (curItem != 0) {
         if (Item_isUnsaleable(curItem) != 0) {
@@ -263,7 +263,7 @@ extern "C" void HangarWindow_selectItem(HangarWindow *self, void *item)
     }
 
     if (G<int>(item, 0x3c) >= 0) {
-        void *ci = HangarList_getCurrentItem(F<void *>(self, 0x14));
+        void *ci = HangarList_getCurrentItem(self->f_14);
         HangarWindow_demountItem(self, curItem, G<int>(ci, 0x40));
         return;
     }
@@ -301,11 +301,11 @@ extern "C" void HangarWindow_selectItem(HangarWindow *self, void *item)
         AEString_dtor(&fmt);
         AEString_dtor(&etext);
         AEString_dtor(&copy);
-        ChoiceWindow_setMsg(F<void *>(self, 0x20), &name, true);
-        F<uint8_t>(self, 0x11c) = 1;
-        F<uint8_t>(self, 0x3c) = 1;
-        F<void *>(self, 0x28) = G<void *>(item, 0x10);
-        F<void *>(self, 0x2c) = existing;
+        ChoiceWindow_setMsg(self->f_20, &name, true);
+        self->f_11c = 1;
+        self->f_3c = 1;
+        self->f_28 = G<void *>(item, 0x10);
+        self->f_2c = existing;
         AEString_dtor(&name);
         return;
     }
