@@ -4,10 +4,7 @@ namespace AbyssEngine {
 namespace AEMath {
 
 Vector VectorNormalize(const Vector &value) {
-    float lengthSquared = value.y * value.y;
-    lengthSquared += value.x * value.x;
-    lengthSquared += value.z * value.z;
-    const float length = sqrtf(lengthSquared);
+    const float length = sqrtf(value.x * value.x + value.y * value.y + value.z * value.z);
     Vector result;
     if (length == 0.0f) {
         result.x = 0.0f;

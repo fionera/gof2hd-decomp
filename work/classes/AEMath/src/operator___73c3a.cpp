@@ -5,13 +5,7 @@ namespace AEMath {
 
 bool operator==(const Vector &lhs, const Vector &rhs)
 {
-    bool result = false;
-    if (lhs.x == rhs.x) {
-        if (lhs.y == rhs.y) {
-            result = lhs.z == rhs.z;
-        }
-    }
-    return result;
+    return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
 }
 
 } // namespace AEMath

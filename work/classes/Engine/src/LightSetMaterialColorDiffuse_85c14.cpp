@@ -19,8 +19,8 @@ extern "C" void Engine_LightSetMaterialColorDiffuse(Engine *self, float red, flo
     int sourceOffset = 0;
     int destOffset = 0;
     for (int i = 0; i < lightCount; i += 1) {
-        char *source = (char *)self + sourceOffset;
-        char *dest = (char *)self + destOffset;
+        int source = (int)(uint32_t)(char *)self + sourceOffset;
+        int dest = (int)(uint32_t)(char *)self + destOffset;
         sourceOffset += 0x10;
         destOffset += 0x0c;
         *(float *)(dest + 0x2fc) = *(float *)(source + 0x228) * red;

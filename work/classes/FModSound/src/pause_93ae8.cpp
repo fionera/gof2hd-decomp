@@ -7,11 +7,11 @@ extern "C" int FMOD_Event_setPaused(void *event, int paused);
 struct FModSound { int pause(int p1); };
 int FModSound::pause(int p1)
 {
+    void *self = this;
     if (u32(this, OFF_SYSTEM)) {
-        void *h = pp(this, p1 * 4 + OFF_EVENTS);
-        if (h)
-            return FMOD_Event_setPaused(h, 1);
-        return 0;
+        self = pp(this, p1 * 4 + OFF_EVENTS);
+        if (self)
+            return FMOD_Event_setPaused(self, 1);
     }
-    return (int)(long)this;
+    return (int)(long)self;
 }

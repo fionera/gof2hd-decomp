@@ -18,10 +18,10 @@ void BSphere::Merge(const BSphere &other)
             __builtin_memcpy(&radius2, &other.radius2, sizeof(radius2));
             operator=(other);
         } else {
-            float dy = other.center.y - center.y;
             float dx = other.center.x - center.x;
+            float dy = other.center.y - center.y;
             float dz = other.center.z - center.z;
-            float distance2 = dy * dy + dx * dx + dz * dz;
+            float distance2 = dx * dx + dy * dy + dz * dz;
             float distance = sqrtf(distance2);
 
             float otherRadius = other.radius;

@@ -7,11 +7,15 @@ extern "C" void glDepthFunc(unsigned int func);
 
 extern "C" void Engine_GlowBeginGlow(Engine *self, unsigned int depthFunc)
 {
-    if (*(uint8_t *)((char *)self + 0x41c) == 0 && g_Engine_useShaders != 0) {
-        glColorMask(0, 0, 0, 1);
-        Engine_GlowEnableGlow(self);
-        if (*(uint8_t *)((char *)self + 0x41c) != 0) {
-            return glDepthFunc(depthFunc);
-        }
+    if (*(uint8_t *)((char *)self + 0x41c) != 0) {
+        return;
+    }
+    if (g_Engine_useShaders == 0) {
+        return;
+    }
+    glColorMask(0, 0, 0, 1);
+    Engine_GlowEnableGlow(self);
+    if (*(uint8_t *)((char *)self + 0x41c) != 0) {
+        return glDepthFunc(depthFunc);
     }
 }

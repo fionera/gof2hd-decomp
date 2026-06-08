@@ -1668,3 +1668,8 @@ _SentryGun_15c3c0	15c3c0	16	build/obj/recovered/SentryGun/_SentryGun_15c3c0.o	~S
 SentryGun_15c380	15c380	54	build/obj/recovered/SentryGun/SentryGun_15c380.o	SentryGun	exact
 update_15c3d2	15c3d2	148	build/obj/recovered/SentryGun/update_15c3d2.o	update	exact
 _MovingStars_146190	146190	54	build/obj/recovered/MovingStars/_MovingStars_146190.o	~MovingStars	exact
+DrawRectangle_79368	79368	336	build/obj/recovered/PaintCanvas/DrawRectangle_79368.o	DrawRectangle	exact
+Matrix_6e8d8	6e8d8	68	build/obj/recovered/AEMath/Matrix_6e8d8.o	Matrix	exact
+VectorDot_73dd2	73dd2	66	build/obj/recovered/AEMath/VectorDot_73dd2.o	VectorDot	exact
+VectorLength_73eb8	73eb8	76	build/obj/recovered/AEMath/VectorLength_73eb8.o	VectorLength	exact
+IsExtensionSupported_86452	86452	110	build/obj/recovered/Engine/IsExtensionSupported_86452.o	IsExtensionSupported	exact

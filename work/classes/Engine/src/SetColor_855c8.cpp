@@ -17,9 +17,9 @@ extern "C" void Engine_SetColor(Engine *self, float red, float green, float blue
     *(float *)((char *)self + 0xd0) = red;
     *(float *)((char *)self + 0xd8) = blue;
     *(float *)((char *)self + 0xdc) = alpha;
-    *(uint32_t *)((char *)self + 0xe0) =
-        ((uint32_t)(green * 255.0f) << 16) + ((uint32_t)(red * 255.0f) << 24) +
-        ((uint32_t)(blue * 255.0f) << 8) + (uint32_t)(alpha * 255.0f);
+    *(int *)((char *)self + 0xe0) =
+        (int)(green * 255.0f) * 0x10000 + (int)(red * 255.0f) * 0x1000000 +
+        (int)(blue * 255.0f) * 0x100 + (int)(alpha * 255.0f);
     if (g_Engine_useShaders != 0) {
         return ShaderUpdateMaterialColor();
     }
