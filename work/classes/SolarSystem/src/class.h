@@ -11,7 +11,24 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct SolarSystem;
+struct SolarSystem {
+    int f_0; // 0x0
+    int f_4; // 0x4
+    int f_8; // 0x8
+    unsigned char _pad_c[12];
+    int f_18; // 0x18
+    int f_1c; // 0x1c
+    int f_20; // 0x20
+    int f_24; // 0x24
+    int f_28; // 0x28
+    int f_2c; // 0x2c
+    int f_30; // 0x30
+    int f_34; // 0x34
+    void* f_38; // 0x38
+    void* f_3c; // 0x3c
+    void* f_40; // 0x40
+    uint8_t f_44; // 0x44
+};
 
 // AbyssEngine::String passed/returned by value is a 12-byte trivially-copied
 // aggregate (text*, size, ...). Model it opaquely so the ABI matches the target.

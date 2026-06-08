@@ -2,7 +2,7 @@
 
 // Standing::isFriend(int race).
 extern "C" bool Standing_isFriend(Standing *self, int race) {
-    int iVar1 = F<int>(self, 4);
+    int iVar1 = self->f_4;
     if (-1 < iVar1) {
         if (race == 1) {
             iVar1 = iVar1 + -1;

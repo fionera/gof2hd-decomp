@@ -9,5 +9,5 @@ extern "C" int SolarSystem_warpGateLookup(SolarSystem *self, int idx);
 
 extern "C" int SolarSystem_getWarpGateEnumIndex(SolarSystem *self)
 {
-    return SolarSystem_warpGateLookup(self, F<int>(self, 0x30));
+    return SolarSystem_warpGateLookup(self, self->f_30);
 }

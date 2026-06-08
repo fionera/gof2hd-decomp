@@ -10,7 +10,7 @@ extern "C" void _ae_setmesh_b(uint32_t canvas, uint32_t mesh, uint32_t *tfp);
 struct AEGeometry { void setMesh(uint16_t mesh); };
 void AEGeometry::setMesh(uint16_t mesh)
 {
-    uint32_t *tfp = &u32(this, 0xc);
+    uint32_t *tfp = &this->f_c;
     uint32_t canvas = tfp[(0x2c - 0xc) / 4];
     if (*tfp != 0)
         return _ae_setmesh_a(canvas, *tfp, mesh, 0);

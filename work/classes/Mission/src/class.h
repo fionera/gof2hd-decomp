@@ -19,7 +19,28 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct Mission;
+struct Mission {
+    unsigned char _pad_0[4];
+    int f_4; // 0x4
+    int f_8; // 0x8
+    int f_c; // 0xc
+    unsigned char _pad_10[24];
+    int f_28; // 0x28
+    int f_2c; // 0x2c
+    int f_30; // 0x30
+    unsigned char _pad_34[4];
+    int f_38; // 0x38
+    int f_3c; // 0x3c
+    unsigned char _pad_40[24];
+    int f_58; // 0x58
+    int f_5c; // 0x5c
+    int f_60; // 0x60
+    int f_64; // 0x64
+    int f_68; // 0x68
+    int f_6c; // 0x6c
+    int f_70; // 0x70
+    int f_74; // 0x74
+};
 
 // AbyssEngine::String passed by value is a 12-byte aggregate. In the engine it has
 // a non-trivial copy ctor/dtor, so by-value params are passed by invisible

@@ -28,21 +28,21 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagB;      // *hold
 extern "C" void Hud_initHudMenu(Hud *self, int menuType, void *lvl)
 {
     // tear down old menu buttons
-    if (P(self, 0x18) != 0) {
-        ArrayReleaseClasses_TouchButton(P(self, 0x18));
-        if (P(self, 0x18) != 0) operator_delete(Array_TouchButton_dtor(P(self, 0x18)));
-        P(self, 0x18) = 0;
+    if (self->f_18 != 0) {
+        ArrayReleaseClasses_TouchButton(self->f_18);
+        if (self->f_18 != 0) operator_delete(Array_TouchButton_dtor(self->f_18));
+        self->f_18 = 0;
     }
     void *arr = operator_new(0xc);
     Array_TouchButton_ctor(arr);
-    P(self, 0x238) = lvl;
-    P(self, 0x18) = arr;
+    self->f_238 = lvl;
+    self->f_18 = arr;
 
     // refresh secondary-weapon equipment + label
-    if (P(self, 0x25c) != 0) operator_delete(Array_Item_dtor(P(self, 0x25c)));
-    P(self, 0x25c) = 0;
+    if (self->f_25c != 0) operator_delete(Array_Item_dtor(self->f_25c));
+    self->f_25c = 0;
     void *ship = Status_getShip();
-    P(self, 0x25c) = Ship_getEquipment(ship, 1);
+    self->f_25c = Ship_getEquipment(ship, 1);
     Hud_updateSecondaryWeaponString(self);
 
     I(self, 0x4cc) = 0;

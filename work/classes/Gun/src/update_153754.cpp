@@ -26,42 +26,42 @@ extern int *const gUP_globals __attribute__((visibility("hidden")));  // holder
 
 extern "C" void Gun_update(Gun *self, int dt)
 {
-    F<int>(self, 0x6c) += dt;
+    self->f_6c += dt;
     if (F<uint8_t>(self, 0xa9) != 0) {
-        int t = F<int>(self, 0x70) + dt;
-        F<int>(self, 0x70) = t;
-        if (F<int>(self, 0x48) <= t)
+        int t = self->f_70 + dt;
+        self->f_70 = t;
+        if (self->f_48 <= t)
             F<uint8_t>(self, 0xa9) = 0;
     }
-    Sparks *impact = F<Sparks *>(self, 0xb8);
+    Sparks *impact = self->f_b8;
     if (impact != 0)
         Sparks_update(impact, dt);
 
-    if (F<int>(self, 0x10c) != 0) {
+    if (self->f_10c != 0) {
         int canvas = *gUP_canvas;
-        for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
+        for (unsigned i = 0; i < self->f_8; i = i + 1) {
             long long tf = AbyssEngine::PaintCanvas::TransformGetTransform(canvas);
             AbyssEngine::Transform::Update(tf, (char)dt);
         }
     }
 
-    if (F<uint8_t>(self, 0x4c) != 0 && F<int>(self, 0x5c) != 0x27) {
+    if (self->f_4c != 0 && self->f_5c != 0x27) {
         Gun_calcCharacterCollision(self);
         float fdt = (float)dt;
         int off = 0;
-        for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
-            int amt = ((int *)F<int>(self, 0x3c))[i];
+        for (unsigned i = 0; i < self->f_8; i = i + 1) {
+            int amt = ((int *)self->f_3c)[i];
             int thr = 5;
-            if ((unsigned)(F<int>(self, 0x5c) - 4) > 1 && F<int>(self, 0x5c) != 0x28)
+            if ((unsigned)(self->f_5c - 4) > 1 && self->f_5c != 0x28)
                 thr = 0;
             if (thr < amt) {
-                ((int *)F<int>(self, 0x3c))[i] = amt - dt;
+                ((int *)self->f_3c)[i] = amt - dt;
                 Vector scaled;
-                if (F<int>(self, 0x5c) == 0xb) {
+                if (self->f_5c == 0xb) {
                     Vector tmp;
                     *(long long *)&tmp = *(long long *)((char *)self + 0x18);
                     AbyssEngine::AEMath::operator_mul(&tmp, fdt);
-                    int rem = F<int>(self, 0x44) - ((int *)F<int>(self, 0x3c))[i];
+                    int rem = self->f_44 - ((int *)self->f_3c)[i];
                     float f = (float)rem / 1.0f + 1.0f;
                     scaled = tmp;
                     AbyssEngine::AEMath::operator_mul(&scaled, f);
@@ -70,28 +70,28 @@ extern "C" void Gun_update(Gun *self, int dt)
                     AbyssEngine::AEMath::operator_mul(&scaled, fdt);
                 }
                 AbyssEngine::AEMath::Vector_addAssign(
-                    (Vector *)(F<int>(self, 0xc) + off), &scaled);
-                int v = ((int *)F<int>(self, 0x3c))[i];
+                    (Vector *)(self->f_c + off), &scaled);
+                int v = ((int *)self->f_3c)[i];
                 if (v < 1) {
-                    unsigned k = F<int>(self, 0x5c) - 6;
+                    unsigned k = self->f_5c - 6;
                     if (k < 0x1d && ((1 << (k & 0xff)) & 0x12345678) != 0) {
                         Gun_ignite(self);
-                        v = ((int *)F<int>(self, 0x3c))[i];
+                        v = ((int *)self->f_3c)[i];
                     }
                     if (v <= -2000) {
-                        int s = F<int>(self, 0x5c);
+                        int s = self->f_5c;
                         if ((unsigned)(s - 4) < 2 || s == 0x28)
                             *(int *)(*gUP_globals + 0x12c) = 0;
                     }
                 }
-                if (F<int>(self, 0x5c) == 0x2a)
+                if (self->f_5c == 0x2a)
                     Gun_ignite(self);
             } else {
-                int *p = (int *)(F<int>(self, 0xc) + off);
+                int *p = (int *)(self->f_c + off);
                 p[0] = 0;
                 p[1] = 0;
                 p[2] = 0;
-                int *q = (int *)(F<int>(self, 0x18) + off);
+                int *q = (int *)(self->f_18 + off);
                 q[0] = 0;
                 q[1] = 0;
                 q[2] = 0;

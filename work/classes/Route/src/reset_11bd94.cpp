@@ -7,5 +7,5 @@ extern "C" void Route_reset(Route *self)
 {
     for (uint32_t i = 0; i < F<Array<Waypoint *> *>(self, 0xc)->length; i++)
         Waypoint_reset(F<Array<Waypoint *> *>(self, 0xc)->data[i]);
-    F<int32_t>(self, 0x0) = 0;
+    self->f_0 = 0;
 }

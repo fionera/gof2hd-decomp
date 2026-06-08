@@ -9,24 +9,24 @@ struct AEGeometry { void setLodMeshes(uint16_t *meshes, int *dists, int count); 
 void AEGeometry::setLodMeshes(uint16_t *meshes, int *dists, int count)
 {
     uint16_t *meshArr = new uint16_t[count];
-    pp(this, 0x5c) = meshArr;
+    this->f_5c = meshArr;
     long long *distArr = new long long[count];
-    pp(this, 0x64) = distArr;
-    i32(this, 0x50) = count;
+    this->f_64 = distArr;
+    this->f_50 = count;
     uint32_t *tfArr = new uint32_t[count];
-    pp(this, 0x54) = tfArr;
+    this->f_54 = tfArr;
     for (int i = 0; i < count; i++) {
-        ((uint16_t *)u32(this, 0x5c))[i] = meshes[i];
-        long long *d = (long long *)u32(this, 0x64);
+        ((uint16_t *)this->f_5c)[i] = meshes[i];
+        long long *d = (long long *)this->f_64;
         d[i] = (long long)dists[i];
-        PaintCanvas::TransformCreate((PaintCanvas *)u32(this, 0x2c),
-                                     &((uint32_t *)u32(this, 0x54))[i]);
-        _ae_TransformAddMesh(u32(this, 0x2c), ((uint32_t *)u32(this, 0x54))[i],
+        PaintCanvas::TransformCreate((PaintCanvas *)this->f_2c,
+                                     &((uint32_t *)this->f_54)[i]);
+        _ae_TransformAddMesh(this->f_2c, ((uint32_t *)this->f_54)[i],
                              (uint16_t)meshes[i], 0);
-        long long v = ((long long *)u32(this, 0x64))[i];
-        ((long long *)u32(this, 0x64))[i] = v * v;
-        if (u32(this, 0x14) != 0xffffffffu)
-            PaintCanvas::TransformAddChild((PaintCanvas *)u32(this, 0x2c),
-                                           ((uint32_t *)u32(this, 0x54))[i], u32(this, 0x14));
+        long long v = ((long long *)this->f_64)[i];
+        ((long long *)this->f_64)[i] = v * v;
+        if (this->f_14 != 0xffffffffu)
+            PaintCanvas::TransformAddChild((PaintCanvas *)this->f_2c,
+                                           ((uint32_t *)this->f_54)[i], this->f_14);
     }
 }

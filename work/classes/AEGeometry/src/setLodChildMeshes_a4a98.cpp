@@ -9,26 +9,26 @@ extern "C" void _ae_TransformRemoveChild(PaintCanvas *canvas, uint32_t tf, uint3
 struct AEGeometry { void setLodChildMeshes(uint16_t *meshes); };
 void AEGeometry::setLodChildMeshes(uint16_t *meshes)
 {
-    int count = i32(this, 0x50);
+    int count = this->f_50;
     if (count > 0) {
         uint16_t *m = new uint16_t[count];
-        pp(this, 0x60) = m;
+        this->f_60 = m;
         uint32_t *tfs = new uint32_t[count];
-        pp(this, 0x58) = tfs;
+        this->f_58 = tfs;
         for (int i = 0; i < count; i++) {
-            ((uint16_t *)u32(this, 0x60))[i] = meshes[i];
-            PaintCanvas::TransformCreate((PaintCanvas *)u32(this, 0x2c),
-                                         &((uint32_t *)u32(this, 0x58))[i]);
-            _ae_TransformAddMesh(u32(this, 0x2c), ((uint32_t *)u32(this, 0x58))[i],
+            ((uint16_t *)this->f_60)[i] = meshes[i];
+            PaintCanvas::TransformCreate((PaintCanvas *)this->f_2c,
+                                         &((uint32_t *)this->f_58)[i]);
+            _ae_TransformAddMesh(this->f_2c, ((uint32_t *)this->f_58)[i],
                                  (uint16_t)meshes[i], 0);
-            PaintCanvas::TransformAddChild((PaintCanvas *)u32(this, 0x2c),
-                                           ((uint32_t *)u32(this, 0x54))[i],
-                                           ((uint32_t *)u32(this, 0x58))[i]);
-            _ae_TransformRemoveChild((PaintCanvas *)u32(this, 0x2c),
-                                     ((uint32_t *)u32(this, 0x54))[i], u32(this, 0x14));
-            PaintCanvas::TransformAddChild((PaintCanvas *)u32(this, 0x2c),
-                                           ((uint32_t *)u32(this, 0x54))[i], u32(this, 0x14));
-            count = i32(this, 0x50);
+            PaintCanvas::TransformAddChild((PaintCanvas *)this->f_2c,
+                                           ((uint32_t *)this->f_54)[i],
+                                           ((uint32_t *)this->f_58)[i]);
+            _ae_TransformRemoveChild((PaintCanvas *)this->f_2c,
+                                     ((uint32_t *)this->f_54)[i], this->f_14);
+            PaintCanvas::TransformAddChild((PaintCanvas *)this->f_2c,
+                                           ((uint32_t *)this->f_54)[i], this->f_14);
+            count = this->f_50;
         }
     }
 }

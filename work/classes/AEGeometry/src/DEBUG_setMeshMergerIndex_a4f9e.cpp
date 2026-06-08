@@ -5,6 +5,6 @@ struct LodMeshMerger;
 struct AEGeometry { void DEBUG_setMeshMergerIndex(int a, LodMeshMerger *b); };
 void AEGeometry::DEBUG_setMeshMergerIndex(int a, LodMeshMerger *b)
 {
-    i32(this, 0) = a;
-    pp(this, 4) = (void *)b;
+    this->f_0 = a;
+    this->f_4 = (void *)b;
 }

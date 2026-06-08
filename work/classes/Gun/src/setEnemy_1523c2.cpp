@@ -10,5 +10,5 @@ struct Player;
 // the natural setter (store enemy at +0xb4, matching getEnemies/removeAllEnemies) is kept.
 extern "C" void Gun_setEnemy(Gun *self, Player *enemy)
 {
-    F<Player *>(self, 0xb4) = enemy;
+    self->f_b4 = enemy;
 }

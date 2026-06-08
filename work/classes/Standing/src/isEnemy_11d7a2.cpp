@@ -6,7 +6,7 @@
 // cr->r0) so the "== 0" test lowers to clz/lsr in r0 — a register-allocation
 // choice not reachable from portable C. Left as the faithful decompiled form.
 extern "C" bool Standing_isEnemy(Standing *self, int race) {
-    int iVar1 = F<int>(self, 4);
+    int iVar1 = self->f_4;
     if (-1 < iVar1) {
         if (race != 1) {
             if (race == 3) {

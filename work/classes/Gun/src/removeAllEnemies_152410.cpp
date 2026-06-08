@@ -2,5 +2,5 @@
 
 extern "C" void Gun_removeAllEnemies(Gun *self)
 {
-    F<int>(self, 0xb4) = 0;
+    self->f_b4 = 0;
 }

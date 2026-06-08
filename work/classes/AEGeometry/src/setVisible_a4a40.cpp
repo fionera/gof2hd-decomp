@@ -4,6 +4,6 @@
 struct AEGeometry { void setVisible(bool v); };
 void AEGeometry::setVisible(bool v)
 {
-    u8(this, 0x48) = v;
-    u8(this, 0x49) = v;
+    this->f_48 = v;
+    this->f_49 = v;
 }

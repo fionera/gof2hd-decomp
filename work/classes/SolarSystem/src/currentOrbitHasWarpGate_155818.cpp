@@ -14,7 +14,7 @@ extern Status *gStatusOrbit __attribute__((visibility("hidden")));
 // SolarSystem::currentOrbitHasWarpGate() — orbit field at +0x30 vs current station index.
 extern "C" bool SolarSystem_currentOrbitHasWarpGate(SolarSystem *self)
 {
-    int orbit = F<int>(self, 0x30);
+    int orbit = self->f_30;
     Station *st = Status_getStation(*(Status **)gStatusOrbit);
     return orbit == Station_getIndex(st);
 }

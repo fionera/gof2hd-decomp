@@ -2,5 +2,5 @@
 
 extern "C" void *Gun_getEnemies(Gun *self)
 {
-    return F<void *>(self, 0xb4);
+    return self->f_b4;
 }

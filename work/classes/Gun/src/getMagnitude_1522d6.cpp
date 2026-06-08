@@ -2,5 +2,5 @@
 
 extern "C" int Gun_getMagnitude(Gun *self)
 {
-    return F<int>(self, 0x100);
+    return self->f_100;
 }

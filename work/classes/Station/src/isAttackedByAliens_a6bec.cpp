@@ -5,5 +5,5 @@ extern int **const gAlienAttackSingleton __attribute__((visibility("hidden")));
 
 extern "C" bool Station_isAttackedByAliens(Station *self)
 {
-    return F<int>(self, 0xc) == *(int *)((char *)(*gAlienAttackSingleton) + 0x80);
+    return self->f_c == *(int *)((char *)(*gAlienAttackSingleton) + 0x80);
 }

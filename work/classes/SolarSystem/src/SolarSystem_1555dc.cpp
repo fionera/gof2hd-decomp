@@ -22,25 +22,25 @@ SolarSystem_ctor(SolarSystem *self, int p1, const String12 &p2, int p3, bool p4,
                  int *p11, void *p12, void *p13, void *p14)
 {
     String_default_ctor((char *)self + 0xc);
-    F<int>(self, 0x18) = p1;
+    self->f_18 = p1;
     char tmp[12];
     String_copy_ctor(tmp, &p2, false);
     String_assign((char *)self + 0xc, tmp);
     String_dtor(tmp);
-    u8(self, 0x44) = p4;
-    F<int>(self, 0x1c) = p3;
-    F<int>(self, 0x20) = p5;
-    F<int>(self, 0x24) = p6;
-    F<int>(self, 0x28) = p7;
-    F<int>(self, 0x2c) = p8;
-    F<int>(self, 0x30) = p9;
-    F<int>(self, 0x34) = p10;
-    F<int>(self, 0x00) = p11[0];
-    F<int>(self, 0x04) = p11[1];
+    self->f_44 = p4;
+    self->f_1c = p3;
+    self->f_20 = p5;
+    self->f_24 = p6;
+    self->f_28 = p7;
+    self->f_2c = p8;
+    self->f_30 = p9;
+    self->f_34 = p10;
+    self->f_0 = p11[0];
+    self->f_4 = p11[1];
     int v2 = p11[2];
-    F<void *>(self, 0x38) = p12;
-    F<int>(self, 0x08) = v2;
-    F<void *>(self, 0x3c) = p14;
-    F<void *>(self, 0x40) = p13;
+    self->f_38 = p12;
+    self->f_8 = v2;
+    self->f_3c = p14;
+    self->f_40 = p13;
     return self;
 }

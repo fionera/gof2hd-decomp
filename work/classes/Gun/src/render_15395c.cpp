@@ -33,13 +33,13 @@ extern "C" void Gun_render(Gun *self)
     Matrix local;
     char camBuf[64];
 
-    Sparks *impact = F<Sparks *>(self, 0xb8);
+    Sparks *impact = self->f_b8;
     if (impact != 0)
         Sparks_render(impact);
 
-    if (F<int>(self, 0x10c) != 0) {
+    if (self->f_10c != 0) {
         unsigned canvas = *gGunRenderCanvas;
-        for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
+        for (unsigned i = 0; i < self->f_8; i = i + 1) {
             int tf = AbyssEngine::PaintCanvas::TransformGetTransform(canvas);
             if (*(char *)(tf + 0xed) != 0) {
                 unsigned c = canvas;
@@ -49,8 +49,8 @@ extern "C" void Gun_render(Gun *self)
                 unsigned tl = AbyssEngine::PaintCanvas::TransformGetLocal(canvas);
                 AbyssEngine::AEMath::MatrixGetPosition(&local, (const Matrix *)tl);
                 AbyssEngine::AEMath::Vector_assign((Vector *)((char *)self + 0xd8), (Vector *)&local);
-                AbyssEngine::AEMath::MatrixSetTranslation(&local, F<float>(self, 0xe0), 0, 0);
-                Matrix *m = ((Matrix **)F<int>(self, 0x10c))[i];
+                AbyssEngine::AEMath::MatrixSetTranslation(&local, self->f_e0, 0, 0);
+                Matrix *m = ((Matrix **)self->f_10c)[i];
                 AbyssEngine::PaintCanvas::TransformSetLocal(canvas, m);
                 AbyssEngine::PaintCanvas::DrawTransform(canvas, m);
             }

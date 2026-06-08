@@ -11,12 +11,12 @@ struct AEGeometry { void setScaling(float x, float y, float z); };
 void AEGeometry::setScaling(float x, float y, float z)
 {
     char buf[60];
-    uint32_t loc = PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
-    _ae_MatrixSetRotation(buf, loc, f32(this, 0x30), f32(this, 0x34), f32(this, 0x38),
-                          i32(this, 0x4c));
-    loc = PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
+    uint32_t loc = PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
+    _ae_MatrixSetRotation(buf, loc, this->f_30, this->f_34, this->f_38,
+                          this->f_4c);
+    loc = PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
     _ae_MatrixSetScaling(buf, loc, x, y, z);
-    f32(this, 0x3c) = x;
-    f32(this, 0x40) = y;
-    f32(this, 0x44) = z;
+    this->f_3c = x;
+    this->f_40 = y;
+    this->f_44 = z;
 }

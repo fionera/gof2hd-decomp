@@ -9,11 +9,11 @@ extern "C" void ArrayAdd_Ship(Ship *ship, void *arr);   // tail-called veneer
 // Station::addShip(Ship*) — this in r0, ship in r1.
 extern "C" void Station_addShip(Station *self, Ship *ship)
 {
-    uint32_t *arr = F<uint32_t *>(self, 0x2c);
+    uint32_t *arr = self->f_2c;
     if (arr == 0) {
         arr = (uint32_t *)Station_operator_new(0xc);
         Array_Ship_ctor(arr);
-        F<uint32_t *>(self, 0x2c) = arr;
+        self->f_2c = arr;
     } else {
         uint32_t n = arr[0];
         if (n != 0) {
@@ -21,10 +21,10 @@ extern "C" void Station_addShip(Station *self, Ship *ship)
                 if (Ship_equals(((Ship **)arr[1])[i], ship) != 0) {
                     if ((int)i >= 0)
                         return;
-                    arr = F<uint32_t *>(self, 0x2c);
+                    arr = self->f_2c;
                     break;
                 }
-                arr = F<uint32_t *>(self, 0x2c);
+                arr = self->f_2c;
                 n = arr[0];
             }
         }

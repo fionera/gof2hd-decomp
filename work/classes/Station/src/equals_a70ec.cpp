@@ -3,6 +3,6 @@
 extern "C" bool Station_equals(Station *self, Station *other)
 {
     if (other != 0)
-        return F<int>(self, 0xc) == F<int>(other, 0xc);
+        return self->f_c == other->f_c;
     return false;
 }

@@ -14,7 +14,7 @@ extern "C" void Station_visit(Station *self)
 {
     if (Station_isDiscovered(self) != 0)
         return;
-    F<uint8_t>(self, 0x1c) = 1;
+    self->f_1c = 1;
     Status_visitStation(*gStatusSingleton);
-    Galaxy_setSystemVisited(*gGalaxyVisit, F<int>(self, 0xc));
+    Galaxy_setSystemVisited(*gGalaxyVisit, self->f_c);
 }

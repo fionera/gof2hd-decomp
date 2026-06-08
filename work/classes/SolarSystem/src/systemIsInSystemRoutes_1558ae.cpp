@@ -4,8 +4,8 @@
 // scan the routes array at +0x40 (null -> not present).
 extern "C" int SolarSystem_systemIsInSystemRoutes(SolarSystem *self, int sys)
 {
-    if (F<int>(self, 0x18) != sys) {
-        uint32_t *arr = F<uint32_t *>(self, 0x40);
+    if (self->f_18 != sys) {
+        uint32_t *arr = self->f_40;
         if (arr == 0)
             return 0;
         uint32_t n = arr[0];

@@ -7,6 +7,6 @@ using namespace AbyssEngine::AEMath;
 struct AEGeometry { Vector getRightVector(); };
 Vector AEGeometry::getRightVector()
 {
-    Matrix &loc = *(Matrix *)PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
+    Matrix &loc = *(Matrix *)PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
     return MatrixGetRight(loc);
 }
