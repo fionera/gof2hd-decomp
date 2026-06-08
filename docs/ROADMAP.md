@@ -3,6 +3,18 @@
 A full matching decomp of a commercial engine+game is a long, incremental effort (thousands of
 functions). This tracks what's done and the path to full coverage. Detailed RE log: `DECOMP_NOTES.md`.
 
+## ★ MILESTONE: whole game disassembled AND reassembled
+- **Disassembly COMPLETE** — every function in the target (3,126 across 286 classes / the whole
+  named universe) has written, compiling C++. `0` functions missing.
+- **Reassembly WORKS** — `make reassemble` (`work/reassemble.sh`) compiles all + auto-stubs the
+  1,983 not-yet-recovered data globals/vtables + links → `build/full/libgof2hdaa.so`
+  (1.86 MB vs 2.14 MB target; 7,225 functions; valid ELF DYN shared object).
+- **Byte-exact subset: 1,672+** functions reproduce the target instruction-for-instruction
+  (`matches.tsv`, gated by the parallel `make verify`, 0 regressed). Driving the rest to byte-exact —
+  plus giving the 1,983 stubs their real values — is the remaining **finetuning** phase (deferred).
+- Toolchain pinned: NDK r18b clang 7.0.2, **`-Oz -fstack-protector`** (`-strong` is net-negative),
+  gold-vs-lld noted for byte-identical relink. Build+gate parallelized across all cores.
+
 ## Done — infrastructure & tooling (the hard setup is complete)
 - **Ghidra project**: 3 binaries imported, disassembled, demangled. Android Thumb coverage
   recovered (undisassembled funcs 3780→221; 7450 functions). Types imported + validated.
