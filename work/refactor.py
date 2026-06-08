@@ -108,20 +108,24 @@ def apply(cls, off2name, body):
     if "@portable-fields" in cht: return False     # already converted (idempotent)
     body="    // @portable-fields\n"+body
     DEF=re.compile(r'\bstruct\s+%s\s*\{'%re.escape(cls))   # FULL struct definition (has body)
-    if DEF.search(cht):
-        # style (a): struct defined in class.h -> inject there (no .cpp redefines it, else original
-        # wouldn't have compiled). Each .cpp #includes this.
+    cpp_defs=[f for f in glob.glob("work/classes/%s/src/*.cpp"%cls) if DEF.search(open(f).read())]
+    if cpp_defs:
+        # style (b): struct defined inside .cpp(s) (class.h has forward decl only). Inject the same
+        # fields into every .cpp's own def (separate TUs -> stays consistent). NEVER also define in
+        # class.h (that's what caused redefinition errors).
+        for f in cpp_defs:
+            t=open(f).read(); m=DEF.search(t)
+            open(f,"w").write(t[:m.end()]+"\n"+body+"\n"+t[m.end():])
+        open(ch,"w").write("// @portable-fields\n"+cht)
+    elif DEF.search(cht):
+        # style (a): struct defined in class.h -> inject there.
         m=DEF.search(cht); open(ch,"w").write(cht[:m.end()]+"\n"+body+"\n"+cht[m.end():])
     else:
-        # style (b): struct defined inside each .cpp (class.h has only a forward decl / nothing).
-        # Inject the same fields into every .cpp's own definition (separate TUs -> stays consistent).
-        n=0
-        for f in glob.glob("work/classes/%s/src/*.cpp"%cls):
-            t=open(f).read(); m=DEF.search(t)
-            if m and "@portable-fields" not in t:
-                open(f,"w").write(t[:m.end()]+"\n"+body+"\n"+t[m.end():]); n+=1
-        if n==0: return False                         # no struct definition anywhere -> can't convert
-        open(ch,"w").write("// @portable-fields\n"+cht)   # mark for idempotency
+        # style (c): only a forward decl `struct X;` anywhere -> CREATE the definition in class.h
+        # (safe: no .cpp defines it, so no redefinition). This is the common case (offset-only access).
+        fwd=re.search(r'\bstruct\s+%s\s*;'%re.escape(cls), cht)
+        if not fwd: return False                     # no decl to anchor on -> skip
+        open(ch,"w").write(cht[:fwd.start()]+("struct %s {\n%s\n};"%(cls,body))+cht[fwd.end():])
     # rewrite simple accessor(IDENT, OFF) -> IDENT->field for converted offsets
     def repl(m2):
         kind=m2.group(1); ident=m2.group(3)
