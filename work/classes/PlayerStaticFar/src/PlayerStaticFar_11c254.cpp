@@ -13,13 +13,13 @@ PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, fl
     PlayerStatic_ctor(this, playerId, geometry, x, y, z);
 
     void *vtable = g_PlayerStaticFar_vtable;
-    this->f_134 = 0;
-    this->f_138 = 0;
-    this->f_13c = 0;
-    this->f_58 = x;
-    this->f_0 = (char *)vtable + 8;
-    this->f_5c = y;
-    this->f_60 = z;
-    Player_setRadius(this->f_4, 0x1d4c);
-    this->f_130 = 0;
+    i32(this, 0x134) = 0;
+    i32(this, 0x138) = 0;
+    i32(this, 0x13c) = 0;
+    f32(this, 0x58) = x;
+    pp(this, 0x0) = (char *)vtable + 8;
+    f32(this, 0x5c) = y;
+    f32(this, 0x60) = z;
+    Player_setRadius(pp(this, 0x4), 0x1d4c);
+    i32(this, 0x130) = 0;
 }

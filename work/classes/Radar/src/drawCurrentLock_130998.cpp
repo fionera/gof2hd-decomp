@@ -18,20 +18,20 @@ void Radar::drawCurrentLock(Hud *)
     char text7c[12];
     char text88[12];
 
-    if (this->f_48 == 0) {
+    if (F<uint8_t>(this, 0x48) == 0) {
         return;
     }
 
     *gRadarDrawCurrentLockFlag = 1;
 
-    if (this->f_14 == 0) {
-        void *locked = this->f_c;
+    if (F<int>(this, 0x14) == 0) {
+        void *locked = F<void *>(this, 0x0c);
         if (locked == 0) {
-            locked = this->f_38;
+            locked = F<void *>(this, 0x38);
             if (locked == 0) {
-                locked = this->f_4;
+                locked = F<void *>(this, 0x04);
                 if (locked == 0) {
-                    locked = this->f_24;
+                    locked = F<void *>(this, 0x24);
                     if (locked == 0) {
                         *gRadarDrawCurrentLockFlag = 0;
                         return;
@@ -41,12 +41,12 @@ void Radar::drawCurrentLock(Hud *)
         }
 
         Radar_StringDefault(text40);
-        if (locked == this->f_24) {
+        if (locked == F<void *>(this, 0x24)) {
             Radar_StringAssign(text40, text34);
         }
         Radar_StringDtor(text40);
     } else {
-        Radar_StringText(text34, this->f_18c, false);
+        Radar_StringText(text34, F<void *>(this, 0x18c), false);
     }
 
     Radar_StringDtor(text34);

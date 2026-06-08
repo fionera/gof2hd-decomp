@@ -15,21 +15,21 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StatusWindow_ach;
 extern "C" int StatusWindow_OnTouchBegin(StatusWindow *self, int param_1, int param_2)
 {
     void **lh = g_StatusWindow_layout;
-    self->f_50 = param_2;
-    self->f_3c = param_2;
-    self->f_44 = 0;
-    self->f_54 = 1;
+    i32(self, 0x50) = param_2;
+    i32(self, 0x3c) = param_2;
+    i32(self, 0x44) = 0;
+    F<uint8_t>(self, 0x54) = 1;
     Layout_OnTouchBegin(*lh, param_1);
     if (*g_StatusWindow_btnFlag == 0) {
-        for (unsigned i = 0; i < self->f_4->size; ++i)
-            TouchButton_OnTouchBegin(self->f_4->data[i], param_1, param_2);
+        for (unsigned i = 0; i < F<Arr *>(self, 0x4)->size; ++i)
+            TouchButton_OnTouchBegin(F<Arr *>(self, 0x4)->data[i], param_1, param_2);
     }
-    if (self->f_30 == 1) {
+    if (i32(self, 0x30) == 1) {
         void **holder = g_StatusWindow_ach;
         int *medals = (int *)Achievements_getMedals(*holder);
-        for (int i = 0; i < self->f_0; ++i) {
+        for (int i = 0; i < i32(self, 0x0); ++i) {
             if (medals[i] != 0 || Achievements_isEliteMedal(*holder, i) != 0)
-                TouchButton_OnTouchBegin(self->f_8->data[i], param_1, param_2);
+                TouchButton_OnTouchBegin(F<Arr *>(self, 0x8)->data[i], param_1, param_2);
         }
     }
     return 0;

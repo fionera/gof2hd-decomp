@@ -16,7 +16,7 @@ extern "C" void String_dtor(void *s);
 extern "C" void Mission_setTargetStation(Mission *self, int idx) {
     unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
     Galaxy **gp = g_galaxy;
-    self->f_3c = idx;
+    F<int>(self, 0x3c) = idx;
     Station *st = Galaxy_getStation(*gp, idx);
     Station_getName(name, st);
     String_assign((char *)self + 0x40, name);

@@ -71,7 +71,7 @@ extern "C" void Explosion_render(Explosion *self)
         Array *streaks = A(self, 0xc);
         if (streaks != 0) {
             for (uint32_t i = 0; i < U(streaks, 0x0); i++) {
-                AEGeometry *geometry = *(AEGeometry **)((char *)streaks->f_4 + i * 4);
+                AEGeometry *geometry = *(AEGeometry **)((char *)P(streaks, 0x4) + i * 4);
                 AEGeometry_render(geometry);
                 streaks = A(self, 0xc);
             }

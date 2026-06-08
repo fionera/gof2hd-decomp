@@ -30,24 +30,24 @@ void LevelScript::setAutoPilotToProgrammedStation()
         void *target;
         void *player;
         if (SolarSystem_stationIsInSystem(Status_getSystem(*status), *programmedStation) != 0) {
-            player = Level_getPlayer((Level *)this->m_pLevel);
-            void *targets = StarSystem_getPlanetTargets(Level_getStarSystem((Level *)this->m_pLevel));
+            player = Level_getPlayer((Level *)P(this, 0x18));
+            void *targets = StarSystem_getPlanetTargets(Level_getStarSystem((Level *)P(this, 0x18)));
             void *system = Status_getSystem(*status);
             int stationIndex = Station_getIndex(*programmedStation);
             int targetIndex = SolarSystem_getStationEnumIndex(system, stationIndex);
-            target = ((void **)targets->f_4)[targetIndex];
+            target = ((void **)P(targets, 4))[targetIndex];
         } else if (SolarSystem_currentOrbitHasWarpGate(Status_getSystem(*status)) != 0) {
-            player = Level_getPlayer((Level *)this->m_pLevel);
-            void *landmarks = Level_getLandmarks((Level *)this->m_pLevel);
-            target = ((void **)landmarks->f_4)[1];
+            player = Level_getPlayer((Level *)P(this, 0x18));
+            void *landmarks = Level_getLandmarks((Level *)P(this, 0x18));
+            target = ((void **)P(landmarks, 4))[1];
         } else {
             int warpGateIndex = SolarSystem_getWarpGateEnumIndex(Status_getSystem(*status));
             if (warpGateIndex < 0) {
                 return;
             }
-            player = Level_getPlayer((Level *)this->m_pLevel);
-            void *targets = StarSystem_getPlanetTargets(Level_getStarSystem((Level *)this->m_pLevel));
-            target = ((void **)targets->f_4)[warpGateIndex];
+            player = Level_getPlayer((Level *)P(this, 0x18));
+            void *targets = StarSystem_getPlanetTargets(Level_getStarSystem((Level *)P(this, 0x18)));
+            target = ((void **)P(targets, 4))[warpGateIndex];
         }
         return Player_setAutoPilotTarget(player, target);
     }

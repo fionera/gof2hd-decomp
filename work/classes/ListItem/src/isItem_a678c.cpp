@@ -1,5 +1,5 @@
 #include "class.h"
 
 extern "C" bool ListItem_isItem(ListItem *self) {
-    return self->f_10 != 0;
+    return F<int>(self, 0x10) != 0;
 }

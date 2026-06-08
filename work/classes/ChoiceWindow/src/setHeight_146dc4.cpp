@@ -9,37 +9,37 @@ void ChoiceWindow::setHeight(int height)
 {
     void **layoutHolder = g_ChoiceWindow_layout_146dc4;
     void *layout = *layoutHolder;
-    int top = layout->f_8;
-    this->f_c = top + height;
+    int top = F<int>(layout, 0x8);
+    F<int>(this, 0xc) = top + height;
 
-    void *button = this->f_10;
+    void *button = F<void *>(this, 0x10);
     int yBase = *g_ChoiceWindow_screenHeight_146dc4 / 2 - height / 2;
-    this->f_4 = yBase - top;
+    F<int>(this, 0x4) = yBase - top;
 
-    if (this->f_58 == 0) {
+    if (F<uint8_t>(this, 0x58) == 0) {
         if (button == 0)
             return;
         TouchButton_setPosition(button,
-                                this->f_0 + this->f_8 / 2,
-                                height + yBase - this->f_48,
+                                F<int>(this, 0x0) + F<int>(this, 0x8) / 2,
+                                height + yBase - F<int>(this, 0x48),
                                 0x24);
         return;
     }
 
     if (button != 0) {
         TouchButton_setPosition(button,
-                                this->f_0 + this->f_8 / 2 - layout->f_4c / 2,
-                                height + yBase - this->f_48,
+                                F<int>(this, 0x0) + F<int>(this, 0x8) / 2 - F<int>(layout, 0x4c) / 2,
+                                height + yBase - F<int>(this, 0x48),
                                 0x22);
     }
 
-    button = this->f_14;
+    button = F<void *>(this, 0x14);
     if (button == 0)
         return;
 
     layout = *layoutHolder;
     TouchButton_setPosition(button,
-                            this->f_0 + this->f_8 / 2 + layout->f_4c / 2,
-                            this->f_4 + this->f_c - this->f_48,
+                            F<int>(this, 0x0) + F<int>(this, 0x8) / 2 + F<int>(layout, 0x4c) / 2,
+                            F<int>(this, 0x4) + F<int>(this, 0xc) - F<int>(this, 0x48),
                             0x21);
 }

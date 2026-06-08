@@ -33,7 +33,7 @@ void EaseInOutMatrix::SetRange(AEMath::Matrix mn, AEMath::Matrix mx)
     AEMath::Vector dPos = AEMath::operator-(maxPos, minPos);
     *(AEMath::Vector *)((char *)this + 0x68) = dPos;
 
-    this->f_74 = 0.75f;
+    f32(this, 0x74) = 0.75f;
     UpdateCurrentValue();
 }
 

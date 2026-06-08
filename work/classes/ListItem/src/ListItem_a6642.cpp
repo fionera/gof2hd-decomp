@@ -6,8 +6,8 @@ extern "C" void *ListItem_init(ListItem *self);
 extern "C" ListItem *ListItem_ctor_String_bool(ListItem *self, const void *src, bool b) {
     ListItem_init(self);
     EngString *s = new EngString(src, false);
-    self->f_1c = s;
-    self->f_44 = b;
-    self->f_24 = 0;
+    F<void *>(self, 0x1c) = s;
+    F<uint8_t>(self, 0x44) = b;
+    F<uint8_t>(self, 0x24) = 0;
     return self;
 }

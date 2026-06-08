@@ -11,7 +11,7 @@ extern "C" void ScrollTouchWindow_scroll(void *scroll, int amount);
 
 static inline void *key_agent(SpaceLounge *self)
 {
-    return ((void **)P(self->f_24, 0x4))[I(self, 0x20)];
+    return ((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)];
 }
 
 extern "C" void SpaceLounge_onKeyPress(SpaceLounge *self, int key)
@@ -21,9 +21,9 @@ extern "C" void SpaceLounge_onKeyPress(SpaceLounge *self, int key)
 
     if (UC(self, 0x1b) != 0) {
         if (key == 0x1000) {
-            ChoiceWindow_left(self->f_8);
+            ChoiceWindow_left(P(self, 0x8));
         } else if (key == 0x2000) {
-            ChoiceWindow_right(self->f_8);
+            ChoiceWindow_right(P(self, 0x8));
         } else if (key == 0x10000) {
             UC(self, 0x1b) = 0;
         }
@@ -34,14 +34,14 @@ extern "C" void SpaceLounge_onKeyPress(SpaceLounge *self, int key)
     if (mode == 0) {
         if (key == 0x1000 || key == 0x8000) {
             unsigned next = I(self, 0x20) + 1;
-            if (self->f_24 != 0 && next >= U(self->f_24, 0x0)) {
+            if (P(self, 0x24) != 0 && next >= U(P(self, 0x24), 0x0)) {
                 next = 0;
             }
             I(self, 0x20) = next;
         } else if (key == 0x2000 || key == 0x4000) {
             int current = I(self, 0x20);
-            if (current < 1 && self->f_24 != 0) {
-                current = U(self->f_24, 0x0);
+            if (current < 1 && P(self, 0x24) != 0) {
+                current = U(P(self, 0x24), 0x0);
             }
             I(self, 0x20) = current - 1;
         } else if (key == 0x10000 || key == 0x20000) {
@@ -82,9 +82,9 @@ extern "C" void SpaceLounge_onKeyPress(SpaceLounge *self, int key)
             }
             I(self, 0x14) = 0;
         } else if (key == 0x8000) {
-            ScrollTouchWindow_scroll(self->f_60, 1);
+            ScrollTouchWindow_scroll(P(self, 0x60), 1);
         } else if (key == 0x4000) {
-            ScrollTouchWindow_scroll(self->f_60, -1);
+            ScrollTouchWindow_scroll(P(self, 0x60), -1);
         }
     }
 }

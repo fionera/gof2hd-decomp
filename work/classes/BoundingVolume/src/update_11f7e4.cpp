@@ -8,13 +8,13 @@ typedef void (*UpdateFn)(void *self, float x, float y, float z);
 
 void BoundingVolume::update(float x, float y, float z)
 {
-    Array<BoundingVolume *> *children = (Array<BoundingVolume *> *)this->f_4;
+    Array<BoundingVolume *> *children = (Array<BoundingVolume *> *)pp(this, 0x4);
     if (children != 0) {
         for (uint32_t i = 0; i < children->length; i++) {
             void *child = children->data[i];
             UpdateFn fn = *(UpdateFn *)((char *)*(void **)child + 4);
             fn(child, x, y, z);
-            children = (Array<BoundingVolume *> *)this->f_4;
+            children = (Array<BoundingVolume *> *)pp(this, 0x4);
         }
     }
     Vector v;

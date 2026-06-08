@@ -12,10 +12,10 @@ extern int *gFIAInstCount __attribute__((visibility("hidden")));
 extern "C" void FileInterfaceAndroid_ctor_file(FileInterfaceAndroid *self, sFILE *f, bool append)
 {
     int *cnt = gFIAInstCount;
-    self->f_8 = f;
-    self->f_c = 0;
-    self->f_10 = 0;
-    self->f_0 = (char *)gFIAVtable_file + 8;
-    self->f_14 = append;
+    F<sFILE *>(self, 0x08) = f;
+    F<int>(self, 0x0c) = 0;
+    F<int>(self, 0x10) = 0;
+    F<char *>(self, 0x00) = (char *)gFIAVtable_file + 8;
+    u8(self, 0x14) = append;
     *cnt = *cnt + 1;
 }

@@ -25,9 +25,9 @@ extern "C" void BluePrint_addItem(BluePrint *self, Item *item, int amount, int s
             for (uint32_t i = 0; i < il->length; i++) {
                 if (il->data[i] == Item_getIndex(item)) {
                     F<Array<int> *>(self, 0x0)->data[i] -= amount;
-                    self->f_4 += Item_getSinglePrice(item) * amount;
-                    if (station >= 0 && self->f_10 < 0) {
-                        self->f_10 = station;
+                    F<int32_t>(self, 0x4) += Item_getSinglePrice(item) * amount;
+                    if (station >= 0 && F<int32_t>(self, 0x10) < 0) {
+                        F<int32_t>(self, 0x10) = station;
                         if (Station_getIndex(Status_getStation()) == station) {
                             char tmp[12];
                             Station_getName(tmp, Status_getStation());

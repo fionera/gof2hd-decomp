@@ -4,9 +4,9 @@ extern "C" int String_Compare(String *a, String *b);   // AbyssEngine::String::C
 
 extern "C" unsigned int Hud_sameHudEventAsBefore(Hud *self, String *str)
 {
-    int i = *(int *)self->f_264;
+    int i = *(int *)P(self, 0x264);
     while (--i >= 1) {
-        int e = ((int *)I(self->f_264, 4))[i];
+        int e = ((int *)I(P(self, 0x264), 4))[i];
         if (e != 0 && String_Compare((String *)I((void *)e, 0x1c), str) == 0)
             return 1;
     }

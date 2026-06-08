@@ -33,19 +33,6 @@ using Vector = AbyssEngine::AEMath::Vector;
 using Matrix = AbyssEngine::AEMath::Matrix;
 
 struct IParticleSystem {
-    // @portable-fields
-    void* f_0; // 0x0
-    unsigned char _pad_4[4];
-    void* f_8; // 0x8
-    unsigned char _pad_c[12];
-    void* f_18; // 0x18
-    unsigned char _pad_1c[32];
-    void* f_3c; // 0x3c
-    unsigned char _pad_40[36];
-    void* f_64; // 0x64
-    void* f_68; // 0x68
-    void* f_6c; // 0x6c
-
     IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets, bool mirror, bool alphaFade);
     ~IParticleSystem();
 

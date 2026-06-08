@@ -34,7 +34,7 @@ extern "C" void SpaceLounge_updateScreenPositions(SpaceLounge *self)
     char halfRight[12];
     char screen[12];
 
-    if (self->f_24 == 0) {
+    if (P(self, 0x24) == 0) {
         return;
     }
 
@@ -49,9 +49,9 @@ extern "C" void SpaceLounge_updateScreenPositions(SpaceLounge *self)
     MatrixGetRight(pos, local);
     Vector_mul(halfRight, pos, 0.5f);
 
-    unsigned count = U(self->f_24, 0x0);
+    unsigned count = U(P(self, 0x24), 0x0);
     for (unsigned i = 0; i < count; ++i) {
-        void *enemy = ((void **)enemies->f_4)[i];
+        void *enemy = ((void **)P(enemies, 0x4))[i];
         void (**vt)(void) = *(void (***)(void))enemy;
         ((void (*)(void *, void *))vt[0x28 / 4])(enemy, target);
 
@@ -72,8 +72,8 @@ extern "C" void SpaceLounge_updateScreenPositions(SpaceLounge *self)
         MatrixGetLookAt(look, pos, target, up);
         Matrix_assign(camera, look);
 
-        void *mapped = ((void **)enemies->f_4)[U(self->f_24, 0x0) + i];
-        AEGeometry_setMatrix(mapped->f_8);
+        void *mapped = ((void **)P(enemies, 0x4))[U(P(self, 0x24), 0x0) + i];
+        AEGeometry_setMatrix(P(mapped, 0x8));
 
         ((void (*)(void *, void *))project)(B(self, 0x4c), target);
         MatrixGetDir(pos, look);
@@ -88,7 +88,7 @@ extern "C" void SpaceLounge_updateScreenPositions(SpaceLounge *self)
             Matrix_mul_assign(camera, look);
         }
 
-        AEGeometry_setMatrix(enemy->f_8);
+        AEGeometry_setMatrix(P(enemy, 0x8));
         ((void (*)(void *, void *))vt[0x44 / 4])(enemy, target);
     }
 }

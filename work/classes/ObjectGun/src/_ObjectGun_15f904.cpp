@@ -10,23 +10,23 @@ extern "C" void operator_delete_array(void *self);
 
 extern "C" ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
 {
-    self->f_0 = (char *)ObjectGun_vtable + 8;
+    F<void *>(self, 0x0) = (char *)ObjectGun_vtable + 8;
 
-    AEGeometry *geometry = self->f_18;
+    AEGeometry *geometry = F<AEGeometry *>(self, 0x18);
     if (geometry != 0)
         operator_delete(AEGeometry_dtor(geometry));
 
-    Array *explosions = self->f_2c;
-    self->f_18 = 0;
+    Array *explosions = F<Array *>(self, 0x2c);
+    F<AEGeometry *>(self, 0x18) = 0;
     if (explosions != 0) {
         ArrayReleaseClasses_Explosion(explosions);
-        explosions = self->f_2c;
+        explosions = F<Array *>(self, 0x2c);
         if (explosions != 0)
             operator_delete(Array_Explosion_dtor(explosions));
-        self->f_2c = 0;
+        F<Array *>(self, 0x2c) = 0;
     }
 
-    operator_delete_array(self->f_30);
-    self->f_30 = 0;
+    operator_delete_array(F<void *>(self, 0x30));
+    F<void *>(self, 0x30) = 0;
     return self;
 }

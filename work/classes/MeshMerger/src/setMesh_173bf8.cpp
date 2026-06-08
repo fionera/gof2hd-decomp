@@ -6,9 +6,9 @@ extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t id);
 void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
-    void *canvas = this->f_c;
+    void *canvas = pp(this, 0xc);
     PaintCanvas_MeshCreate(canvas, meshId, &id, false);
-    void *ptr = PaintCanvas_MeshGetPointer(this->f_c, id);
-    void **meshes = (void **)this->f_8;
-    meshes[this->f_0 * lod + index] = ptr;
+    void *ptr = PaintCanvas_MeshGetPointer(pp(this, 0xc), id);
+    void **meshes = (void **)pp(this, 0x8);
+    meshes[i32(this, 0x0) * lod + index] = ptr;
 }

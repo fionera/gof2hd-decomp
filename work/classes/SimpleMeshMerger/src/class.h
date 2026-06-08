@@ -19,17 +19,7 @@ typedef int int32_t;
 
 void *operator new(uint32_t size);
 
-struct SimpleMeshMerger {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    unsigned char _pad_8[4];
-    void* f_c; // 0xc
-    unsigned char _pad_10[4];
-    void* f_14; // 0x14
-    int f_18; // 0x18
-    int f_1c; // 0x1c
-};
+struct SimpleMeshMerger;
 
 namespace AbyssEngine {
 namespace AEMath {

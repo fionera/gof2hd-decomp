@@ -121,6 +121,6 @@ extern "C" Globals *Globals_ctor(Globals *self)
     *(int *)p5b = 0;
     *(int *)p7b = 0;
     *(int *)p8b = 0;
-    self->f_4 = 0;
+    F<int32_t>(self, 4) = 0;
     return self;
 }

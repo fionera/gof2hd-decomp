@@ -21,18 +21,18 @@ typedef void (*fn_del)(void *env, void *arr);
 
 extern "C" bool FileInterfaceAndroid_Read(FileInterfaceAndroid *self, unsigned int n, void *buf)
 {
-    if (self->f_c != 0)
-        return zip_fread(self->f_c, buf, n) == n;
-    if (self->f_8 != 0)
+    if (F<void *>(self, 0x0c) != 0)
+        return zip_fread(F<void *>(self, 0x0c), buf, n) == n;
+    if (F<void *>(self, 0x08) != 0)
         return fread(buf, 1, n) == n;
-    if (self->f_10 == 0)
+    if (F<void *>(self, 0x10) == 0)
         return false;
 
     void *r9 = *gEnvR;
     void *env = *(void **)r9;
     void *table = *(void **)env;
     void *arr = (*(fn_i *)((char *)table + 0x2c0))(env, n);
-    unsigned int got = JNI_CallIntMethod(*(void **)r9, self->f_10, *(void **)gReadMidArg, arr);
+    unsigned int got = JNI_CallIntMethod(*(void **)r9, F<void *>(self, 0x10), *(void **)gReadMidArg, arr);
 
     bool ok;
     table = *(void **)(*(void **)r9);

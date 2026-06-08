@@ -4,10 +4,10 @@
 // returns -(float)range / (float)contentHeight(this+0xd4).
 extern "C" float HangarWindow_getRelativeScrollStartPos(HangarWindow *self)
 {
-    int range = self->f_b4;
+    int range = F<int>(self, 0xb4);
     if (range > 0) {
         union { unsigned u; float f; } c; c.u = 0x4650a903u;
         return c.f;
     }
-    return -(float)range / (float)self->f_d4;
+    return -(float)range / (float)F<int>(self, 0xd4);
 }

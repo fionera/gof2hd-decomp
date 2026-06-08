@@ -19,22 +19,22 @@ void Radar::update(Vector value)
     Vector *current = (Vector *)((char *)this + 0x154);
     Radar_VectorAssign(current, transformed);
 
-    this->f_158 = -this->f_158;
-    this->f_15c = -this->f_15c;
+    F<float>(this, 0x158) = -F<float>(this, 0x158);
+    F<float>(this, 0x15c) = -F<float>(this, 0x15c);
 
     int visible = Radar_GetScreenPosition(gPaintCanvas, positionStorage, positionStorage);
-    this->f_11c = (uint8_t)visible;
+    F<uint8_t>(this, 0x11c) = (uint8_t)visible;
 
     float *position = (float *)positionStorage;
     int screenX = (int)position[0];
-    this->f_fc = screenX;
+    F<int>(this, 0xfc) = screenX;
     int screenY = (int)position[1];
-    this->f_100 = screenY;
+    F<int>(this, 0x100) = screenY;
 
     if (visible == 0) {
         Radar_elipsoidIntersect(transformed, this, screenX, screenY, *current);
         Radar_VectorAssign(current, transformed);
-        this->f_fc = (int)current->x;
-        this->f_100 = (int)current->y;
+        F<int>(this, 0xfc) = (int)current->x;
+        F<int>(this, 0x100) = (int)current->y;
     }
 }

@@ -13,16 +13,16 @@ void ListItemWindow_update(void *win, int delta);
 
 extern "C" void HangarWindow_update(HangarWindow *self, int delta)
 {
-    if (self->f_c == 0)
+    if (F<uint8_t>(self, 0xc) == 0)
         return;
-    self->f_8 = delta;
+    F<int>(self, 8) = delta;
 
-    if (self->f_58 == 1) {
-        ListItemWindow_update(self->f_18, delta);
+    if (F<int>(self, 0x58) == 1) {
+        ListItemWindow_update(F<void *>(self, 0x18), delta);
         return;
     }
 
-    unsigned int tab = HangarList_getCurrentTab(self->f_14);
+    unsigned int tab = HangarList_getCurrentTab(F<void *>(self, 0x14));
     Array<void *> *buttons = F<Array<void *> *>(self, 4);
     for (unsigned int i = 0; i < buttons->length; i++) {
         bool pressed = true;
@@ -31,54 +31,54 @@ extern "C" void HangarWindow_update(HangarWindow *self, int delta)
         TouchButton_setAlwaysPressed(buttons->data[i], pressed);
     }
 
-    if (self->f_d0 == 0) {
-        float v = self->f_c4 * self->f_c8;
-        self->f_c8 = v;
+    if (F<uint8_t>(self, 0xd0) == 0) {
+        float v = F<float>(self, 0xc4) * F<float>(self, 200);
+        F<float>(self, 200) = v;
         float mag = v > 0.0f ? v : -v;
         if (mag >= 1.0f) {
-            float pos = VectorSignedToFloat(self->f_b4, 0);
-            self->f_b4 = (int)(v + pos);
+            float pos = VectorSignedToFloat(F<int>(self, 0xb4), 0);
+            F<int>(self, 0xb4) = (int)(v + pos);
         }
     }
 
-    if (self->f_b4 > 0) {
-        float f = VectorSignedToFloat(-self->f_b4, 0);
-        self->f_c4 = 1.0f;
-        self->f_c8 = f * 0.5f;
+    if (F<int>(self, 0xb4) > 0) {
+        float f = VectorSignedToFloat(-F<int>(self, 0xb4), 0);
+        F<float>(self, 0xc4) = 1.0f;
+        F<float>(self, 200) = f * 0.5f;
     }
 
-    if (HangarList_getCurrentTabItems(self->f_14) != 0) {
-        int diff = self->f_d8 - self->f_d4;
+    if (HangarList_getCurrentTabItems(F<void *>(self, 0x14)) != 0) {
+        int diff = F<int>(self, 0xd8) - F<int>(self, 0xd4);
         if (diff < 0) {
-            if (self->f_b4 < diff) {
-                float f = VectorSignedToFloat(diff - self->f_b4, 0);
-                self->f_c4 = 1.0f;
-                self->f_c8 = f * 0.5f;
+            if (F<int>(self, 0xb4) < diff) {
+                float f = VectorSignedToFloat(diff - F<int>(self, 0xb4), 0);
+                F<float>(self, 0xc4) = 1.0f;
+                F<float>(self, 200) = f * 0.5f;
             }
         } else {
-            self->f_c8 = 0;
-            self->f_b4 = 0;
+            F<int>(self, 200) = 0;
+            F<int>(self, 0xb4) = 0;
         }
     }
 
-    if (self->f_88 != 0) {
-        void *btnUp = G<void *>(G<void *>(self->f_24, 4), 0x20);
-        void *btnDown = G<void *>(G<void *>(self->f_24, 4), 0x24);
+    if (F<uint8_t>(self, 0x88) != 0) {
+        void *btnUp = G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x20);
+        void *btnDown = G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x24);
         if (TouchButton_isTouched(btnUp) != 0 || TouchButton_isTouched(btnDown) != 0) {
-            int t6c = self->f_6c + delta;
-            int t70 = self->f_70 + delta;
-            self->f_6c = t6c;
-            self->f_70 = t70;
+            int t6c = F<int>(self, 0x6c) + delta;
+            int t70 = F<int>(self, 0x70) + delta;
+            F<int>(self, 0x6c) = t6c;
+            F<int>(self, 0x70) = t70;
             int threshold = (t6c > 0x5dc) ? 0x1e : 200;
-            if (t70 > threshold && (self->f_70 = 0,
-                                    self->f_88 != 0 || F<uint8_t>(self, 0x89) != 0)) {
+            if (t70 > threshold && (F<int>(self, 0x70) = 0,
+                                    F<uint8_t>(self, 0x88) != 0 || F<uint8_t>(self, 0x89) != 0)) {
                 if (TouchButton_isTouched(btnDown) != 0 && TouchButton_isVisible(btnDown) != 0) {
-                    int n = (self->f_6c > 4000) ? 5 : 1;
+                    int n = (F<int>(self, 0x6c) > 4000) ? 5 : 1;
                     for (; n != 0; n--)
                         HangarWindow_transaction(self, true);
                 } else if (TouchButton_isTouched(btnUp) != 0 &&
                            TouchButton_isVisible(btnUp) != 0) {
-                    int n = (self->f_6c > 4000) ? 5 : 1;
+                    int n = (F<int>(self, 0x6c) > 4000) ? 5 : 1;
                     for (; n != 0; n--)
                         HangarWindow_transaction(self, false);
                 }

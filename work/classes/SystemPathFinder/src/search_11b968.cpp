@@ -6,7 +6,7 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
     Array<Node *> *closed = new Array<Node *>;
     Array<Node *> *open = new Array<Node *>;
     ArrayAdd<Node *>(start, *open);
-    start->f_4 = 0;
+    F<Node *>(start, 0x4) = 0;
 
     while (open->length != 0) {
         Node *current = open->data[0];
@@ -36,7 +36,7 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
                 ++j;
             }
 
-            next->f_4 = current;
+            F<Node *>(next, 0x4) = current;
             ArrayAdd<Node *>(next, *open);
 
         next_node:

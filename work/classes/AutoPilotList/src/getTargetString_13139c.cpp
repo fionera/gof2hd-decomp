@@ -13,7 +13,7 @@ extern const char kEmpty[] __attribute__((visibility("hidden")));
 // fallback literal.
 extern "C" RetStr AutoPilotList_getTargetString(AutoPilotList *self) {
     RetStr r;
-    int idx = self->f_0;
+    int idx = F<int>(self, 0x0);
     Array<void *> *entries = F<Array<void *> *>(self, 0x10);
     if (idx >= 0 && (uint32_t)idx < entries->length)
         String_ctor_copy(&r, entries->data[idx], false);

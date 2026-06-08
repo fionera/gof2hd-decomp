@@ -20,10 +20,6 @@ void operator delete[](void *ptr) noexcept;
 struct FileInterface;
 
 struct AEPakFile {
-    // @portable-fields
-    void* f_0; // 0x0
-    void* f_4; // 0x4
-
     AEPakFile(FileInterface *file, int param_2, int param_3);
     ~AEPakFile();
 

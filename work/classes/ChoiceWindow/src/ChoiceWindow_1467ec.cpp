@@ -21,14 +21,14 @@ ChoiceWindow::ChoiceWindow()
     void **configHolder = g_ChoiceWindow_config_1467ec;
     int *screenWidthPtr = g_ChoiceWindow_screenWidth_1467ec;
     void *config = *configHolder;
-    int width = config->f_264;
-    this->f_8 = width;
-    this->f_48 = config->f_268;
+    int width = F<int>(config, 0x264);
+    F<int>(this, 0x8) = width;
+    F<ChoiceWindow_Int4>(this, 0x48) = F<ChoiceWindow_Int4>(config, 0x268);
 
     int screenWidth = *screenWidthPtr;
-    this->f_10 = ChoiceWindow_Int4();
-    this->f_34 = -1;
-    this->f_38 = -1;
+    F<ChoiceWindow_Int4>(this, 0x10) = ChoiceWindow_Int4();
+    F<int>(this, 0x34) = -1;
+    F<int>(this, 0x38) = -1;
     F<uint8_t>(this, 0x59) = 1;
-    this->f_0 = screenWidth / 2 - width / 2;
+    F<int>(this, 0x0) = screenWidth / 2 - width / 2;
 }

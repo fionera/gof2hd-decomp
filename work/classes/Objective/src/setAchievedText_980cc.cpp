@@ -8,5 +8,5 @@ extern "C" void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective
 {
     String *copy = (String *)operator_new(sizeof(String));
     String_ctor_string(copy, text, false);
-    self->f_14 = copy;
+    F<String *>(self, 0x14) = copy;
 }

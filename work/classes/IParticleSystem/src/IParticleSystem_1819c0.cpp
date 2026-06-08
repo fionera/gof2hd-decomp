@@ -11,8 +11,8 @@ extern "C" void *operator_new(uint32_t size);
 IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
                                  bool mirror, bool alphaFade)
 {
-    this->f_8 = canvas;
-    this->f_0 = (char *)IParticleSystem_vtable + 8;
+    F<PaintCanvas *>(this, 0x8) = canvas;
+    P(this, 0x0) = (char *)IParticleSystem_vtable + 8;
     AERandom_ctor((char *)this + 0x10);
 
     uint32_t *zero = (uint32_t *)((char *)this + 0x1c);
@@ -20,7 +20,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
     zero[1] = 0;
     zero[2] = 0;
     zero[3] = 0;
-    this->f_18 = matrix;
+    F<Matrix const *>(this, 0x18) = matrix;
     I(this, 0x2c) = 0;
     I(this, 0x30) = 0;
 
@@ -66,11 +66,11 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
     if ((uint32_t)(bytes64 >> 32) != 0) {
         bytes = 0xffffffffu;
     }
-    this->f_68 = operator_new(bytes);
-    this->f_6c = operator_new(maxParticles | ((int32_t)maxParticles >> 31));
+    P(this, 0x68) = operator_new(bytes);
+    P(this, 0x6c) = operator_new(maxParticles | ((int32_t)maxParticles >> 31));
 
     for (int i = 0; i < (int)maxParticles; ++i) {
-        ((uint8_t *)this->f_6c)[i] = 200;
+        ((uint8_t *)P(this, 0x6c))[i] = 200;
         maxParticles = U(this, 0x48);
     }
 

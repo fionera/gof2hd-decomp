@@ -33,20 +33,6 @@ struct Array {
 };
 
 struct MineGun {
-    // @portable-fields
-    void* f_0; // 0x0
-    unsigned char _pad_4[4];
-    void* f_8; // 0x8
-    unsigned char _pad_c[36];
-    void* f_30; // 0x30
-    unsigned char _pad_34[12];
-    void* f_40; // 0x40
-    unsigned char _pad_44[108];
-    void* f_b0; // 0xb0
-    void* f_b4; // 0xb4
-    void* f_b8; // 0xb8
-    void* f_bc; // 0xbc
-
     MineGun(Gun *gun, int param_2, int param_3, int param_4, Level *level);
     ~MineGun();
     void setPlayer(PlayerEgo *player);

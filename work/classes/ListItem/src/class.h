@@ -54,26 +54,6 @@ struct Array {
 // We declare the destructor so it demangles to ListItem::~ListItem(); all other
 // methods are authored as extern "C" wrappers.
 struct ListItem {
-    // @portable-fields
-    unsigned char _pad_0[4];
-    void* f_4; // 0x4
-    void* f_8; // 0x8
-    void* f_c; // 0xc
-    void* f_10; // 0x10
-    void* f_14; // 0x14
-    void* f_18; // 0x18
-    void* f_1c; // 0x1c
-    void* f_20; // 0x20
-    int f_24; // 0x24
-    int f_28; // 0x28
-    int f_2c; // 0x2c
-    int f_30; // 0x30
-    int f_34; // 0x34
-    int f_38; // 0x38
-    int f_3c; // 0x3c
-    int f_40; // 0x40
-    int f_44; // 0x44
-
     ~ListItem();
 };
 

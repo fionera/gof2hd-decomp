@@ -8,8 +8,8 @@ namespace AbyssEngine {
 // harness, clang lowers the equivalent NEON min to vdup/vst1 form instead, so a
 // byte-exact match is not reachable with the available flags. Kept best-effort.
 void EaseInOutMatrix::Increase(float dt) {
-    float t = this->f_74 + (dt * 0.5f) / this->f_f0;
-    this->f_74 = vget_lane_f32(vmin_f32(vdup_n_f32(t), vdup_n_f32(1.25f)), 0);
+    float t = f32(this, 0x74) + (dt * 0.5f) / f32(this, 0xf0);
+    f32(this, 0x74) = vget_lane_f32(vmin_f32(vdup_n_f32(t), vdup_n_f32(1.25f)), 0);
     UpdateCurrentValue();
 }
 

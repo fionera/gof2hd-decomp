@@ -9,7 +9,7 @@ void LevelScript::skipSequence()
 {
     if (I(this, 0x24) > 0 && Status_getCurrentCampaignMission(gStatus) > 0) {
         I(this, 0x24) = 0x1b59;
-        void *player = Level_getPlayer((Level *)this->m_pLevel);
-        return Player_setUnknown(player->f_0, true);
+        void *player = Level_getPlayer((Level *)P(this, 0x18));
+        return Player_setUnknown(P(player, 0), true);
     }
 }

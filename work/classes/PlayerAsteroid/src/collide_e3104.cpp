@@ -9,12 +9,12 @@ extern "C" int Player_getHitpoints(Player *player);
 bool PlayerAsteroid::collide(float x, float y, float z)
 {
     PlayerAsteroid *self = this;
-    if (Player_getHitpoints(self->f_4) > 0) {
+    if (Player_getHitpoints(F<Player *>(self, 0x4)) > 0) {
         GeometryPositionFn getPosition = PlayerAsteroid_geometryPosition;
-        float px = getPosition(self->f_8).x;
-        float py = getPosition(self->f_8).y;
-        float pz = getPosition(self->f_8).z;
-        int radiusInt = F<int>(self->f_4, 0x40);
+        float px = getPosition(F<AEGeometry *>(self, 0x8)).x;
+        float py = getPosition(F<AEGeometry *>(self, 0x8)).y;
+        float pz = getPosition(F<AEGeometry *>(self, 0x8)).z;
+        int radiusInt = F<int>(F<Player *>(self, 0x4), 0x40);
         float radius = (float)radiusInt;
         float dx = x - px;
         if (dx < radius) {

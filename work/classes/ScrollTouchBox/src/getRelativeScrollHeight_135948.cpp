@@ -2,12 +2,12 @@
 
 float ScrollTouchBox::getRelativeScrollHeight()
 {
-    int height = this->f_10;
-    int contentHeight = this->f_18;
+    int height = F<int>(this, 0x10);
+    int contentHeight = F<int>(this, 0x18);
     if (height > contentHeight)
         return 1.0f;
 
-    int pos = this->f_34;
+    int pos = F<int>(this, 0x34);
     if (pos >= 1) {
         pos = height - pos;
     } else if (pos < height - contentHeight) {

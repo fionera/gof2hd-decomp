@@ -13,49 +13,49 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 {
     void *(*alloc)(int) = *g_allocFn;
 
-    this->f_18 = 0.0f;
-    this->f_1c = 0.0f;
-    this->f_20 = 0.0f;
-    this->f_24 = 0.0f;
-    this->f_c = canvas;
-    this->f_0 = rows;
-    this->f_30 = cols;
+    f32(this, 0x18) = 0.0f;
+    f32(this, 0x1c) = 0.0f;
+    f32(this, 0x20) = 0.0f;
+    f32(this, 0x24) = 0.0f;
+    pp(this, 0xc) = canvas;
+    i32(this, 0x00) = rows;
+    i32(this, 0x30) = cols;
 
     int bytes = cols * rows * 4;
     long long need = (long long)(unsigned)(cols * rows) * 4;
     int req = (int)((need >> 32) != 0 ? 0xffffffff : (unsigned)need);
 
-    this->f_8 = alloc(req);
-    aeabi_memclr4(this->f_8, bytes);
-    this->f_18 = alloc(req);
-    aeabi_memclr4(this->f_18, bytes);
+    pp(this, 0x8) = alloc(req);
+    aeabi_memclr4(pp(this, 0x8), bytes);
+    pp(this, 0x18) = alloc(req);
+    aeabi_memclr4(pp(this, 0x18), bytes);
 
-    this->f_24 = alloc(rows | (rows >> 31));
-    aeabi_memclr(this->f_24, rows);
+    pp(this, 0x24) = alloc(rows | (rows >> 31));
+    aeabi_memclr(pp(this, 0x24), rows);
 
     long long mneed = (long long)(unsigned)rows * 0x3c;
     int mreq = (int)((mneed >> 32) != 0 ? 0xffffffff : (unsigned)mneed);
     char *matrices = (char *)alloc(mreq);
     for (int off = 0; rows != 0 && off != rows * 0x3c; off += 0x3c)
         new ((void *)(matrices + off)) Matrix();
-    this->f_1c = matrices;
+    pp(this, 0x1c) = matrices;
 
     Matrix ident;   // engine identity matrix
-    int n = this->f_0;
-    char *mp = (char *)this->f_1c;
+    int n = i32(this, 0x00);
+    char *mp = (char *)pp(this, 0x1c);
     for (int i = 0, off = 0; i < n; i++, off += 0x3c)
         *(Matrix *)(mp + off) = ident;
 
-    n = this->f_0;
+    n = i32(this, 0x00);
     uint8_t *en = (uint8_t *)operator_new_array(n | (n >> 31));
-    this->f_28 = en;
+    pp(this, 0x28) = en;
     for (int i = 0; i < n; i++) en[i] = 1;
 
     uint8_t *vis = (uint8_t *)operator_new_array(n | (n >> 31));
-    this->f_2c = vis;
+    pp(this, 0x2c) = vis;
     for (int i = 0; i < n; i++) vis[i] = 1;
 
-    this->f_34 = 0;
-    this->f_4 = flags;
-    this->f_6 = 0;
+    u8(this, 0x34) = 0;
+    u16(this, 0x4) = flags;
+    u8(this, 0x6) = 0;
 }

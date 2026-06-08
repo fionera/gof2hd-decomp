@@ -2,5 +2,5 @@
 
 uint8_t ChoiceWindow::hasChoice()
 {
-    return this->f_58;
+    return F<uint8_t>(this, 0x58);
 }

@@ -20,9 +20,6 @@ void operator delete(void *ptr) noexcept;
 struct FileInterface;
 
 struct AENormalFile {
-    // @portable-fields
-    void* f_0; // 0x0
-
     AENormalFile(FileInterface *file);
     ~AENormalFile();
 

@@ -31,26 +31,26 @@ struct SentryGun : ObjectGun {
 
 void SentryGun::update(int dt)
 {
-    Gun *gun = this->f_8;
+    Gun *gun = F<Gun *>(this, 0x08);
     Gun_update(gun, dt);
 
-    gun = this->f_8;
-    if (gun->f_4d == 0)
+    gun = F<Gun *>(this, 0x08);
+    if (F<uint8_t>(gun, 0x4d) == 0)
         return;
-    gun->f_4d = 0;
+    F<uint8_t>(gun, 0x4d) = 0;
 
-    int base = this->f_b0;
+    int base = F<int>(this, 0xb0);
     for (int i = base; i < base + 3; i++) {
-        PoolObject *obj = F<PoolObject **>(F<void *>(this->f_c, 0xb0), 0x04)[i];
+        PoolObject *obj = F<PoolObject **>(F<void *>(F<void *>(this, 0x0c), 0xb0), 0x04)[i];
         if (KIPlayer_isDying((KIPlayer *)obj) == 0 &&
             (Player_isActive(obj->owner) == 0 || Player_isDead(obj->owner) != 0)) {
-            F<int>(this->f_c, 0x6c) += 1;
+            F<int>(F<void *>(this, 0x0c), 0x6c) += 1;
             ((void (*)(PoolObject *))obj->vtable[0x18 / 4])(obj);
-            Gun *g = this->f_8;
+            Gun *g = F<Gun *>(this, 0x08);
             ((void (*)(PoolObject *, int))obj->vtable[0x44 / 4])(
-                obj, g->f_c + g->f_a0 * 12);
+                obj, F<int>(g, 0x0c) + F<int>(g, 0xa0) * 12);
             return SentryGun_fire_tail(obj, 1);
         }
-        base = this->f_b0;
+        base = F<int>(this, 0xb0);
     }
 }

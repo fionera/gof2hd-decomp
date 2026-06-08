@@ -2,12 +2,12 @@
 
 void MeshMerger::setEnabled(int index, bool enabled)
 {
-    uint8_t *flags = (uint8_t *)this->f_28;
+    uint8_t *flags = (uint8_t *)pp(this, 0x28);
     if (flags[index] != enabled) {
         flags[index] = enabled;
-        if (*((int8_t *)this->f_2c + index) == 0) {
+        if (*((int8_t *)pp(this, 0x2c) + index) == 0) {
             return;
         }
-        this->f_34 = 1;
+        u8(this, 0x34) = 1;
     }
 }

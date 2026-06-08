@@ -2,5 +2,5 @@
 
 int PlayerAsteroid::getQuality()
 {
-    return this->f_150;
+    return F<int>(this, 0x150);
 }

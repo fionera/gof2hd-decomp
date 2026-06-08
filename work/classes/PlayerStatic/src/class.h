@@ -25,15 +25,6 @@ using Vector = AbyssEngine::AEMath::Vector;
 struct AEGeometry;
 
 struct PlayerStatic {
-    // @portable-fields
-    void* f_0; // 0x0
-    unsigned char _pad_4[4];
-    void* f_8; // 0x8
-    unsigned char _pad_c[280];
-    int f_124; // 0x124
-    int f_128; // 0x128
-    int f_12c; // 0x12c
-
     PlayerStatic(int playerId, AEGeometry *geometry, float x, float y, float z);
     ~PlayerStatic();
 

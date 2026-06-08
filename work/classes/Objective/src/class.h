@@ -30,15 +30,6 @@ struct String {
 using String = AbyssEngine::String;
 
 struct Objective {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    int f_8; // 0x8
-    void* f_c; // 0xc
-    void* f_10; // 0x10
-    void* f_14; // 0x14
-    int f_18; // 0x18
-
     Objective(int type, int value, Level *level);
     Objective(int type, int value, int calcValue, Level *level);
     ~Objective();

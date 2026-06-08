@@ -22,9 +22,6 @@ struct String {
 }
 
 struct ScrollTouchWindow {
-    // @portable-fields
-    void* f_0; // 0x0
-
     ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame);
     ScrollTouchWindow(int x, int y, int w, int h);
     ~ScrollTouchWindow();

@@ -48,11 +48,11 @@ void ScrollTouchWindow::draw()
         }
     }
 
-    ScrollTouchBox_draw(this->f_0);
+    ScrollTouchBox_draw(P(this, 0));
     int scrollHeight = scrollOffset + contentHeight;
     float scale = (float)scrollHeight;
-    float start = ScrollTouchBox_getRelativeScrollStartPos(this->f_0);
-    float height = ScrollTouchBox_getRelativeScrollHeight(this->f_0);
+    float start = ScrollTouchBox_getRelativeScrollStartPos(P(this, 0));
+    float height = ScrollTouchBox_getRelativeScrollHeight(P(this, 0));
     int startPx = (int)(start * scale);
     int heightPx = (int)(height * scale);
 

@@ -17,7 +17,7 @@ void *Galaxy::getAsteroidProbabilities(void *station)
 {
     int alien = Galaxy_ap_inAlienOrbit(*g_Galaxy_ap_status);
     int supernova = Galaxy_ap_inSupernovaOrbit(*g_Galaxy_ap_status);
-    void *systems = alien == 0 ? this->systems : 0;
+    void *systems = alien == 0 ? P(this, 0x4) : 0;
     void *itemTable = *g_Galaxy_ap_items;
 
     int *probs = (int *)Galaxy_ap_new(0x2c);
@@ -30,13 +30,13 @@ void *Galaxy::getAsteroidProbabilities(void *station)
         int next;
         if (alien == 0) {
             int sys = Galaxy_ap_Station_getSystem(station);
-            int sysX = Galaxy_ap_SolarSystem_getX(((void **)systems->systems)[sys]);
+            int sysX = Galaxy_ap_SolarSystem_getX(((void **)P(systems, 0x4))[sys]);
             sys = Galaxy_ap_Station_getSystem(station);
-            int sysY = Galaxy_ap_SolarSystem_getY(((void **)systems->systems)[sys]);
-            int it = Galaxy_ap_Item_getMinPriceSystem(((void **)itemTable->systems)[id]);
-            int itX = Galaxy_ap_SolarSystem_getX(((void **)systems->systems)[it]);
-            it = Galaxy_ap_Item_getMinPriceSystem(((void **)itemTable->systems)[id]);
-            int itY = Galaxy_ap_SolarSystem_getY(((void **)systems->systems)[it]);
+            int sysY = Galaxy_ap_SolarSystem_getY(((void **)P(systems, 0x4))[sys]);
+            int it = Galaxy_ap_Item_getMinPriceSystem(((void **)P(itemTable, 0x4))[id]);
+            int itX = Galaxy_ap_SolarSystem_getX(((void **)P(systems, 0x4))[it]);
+            it = Galaxy_ap_Item_getMinPriceSystem(((void **)P(itemTable, 0x4))[id]);
+            int itY = Galaxy_ap_SolarSystem_getY(((void **)P(systems, 0x4))[it]);
             prob = invDistancePercent(sysX, sysY, itX, itY);
             next = slot + 1;
             if (prob < 0x32)

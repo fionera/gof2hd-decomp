@@ -48,15 +48,15 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 {
     String *tickerText = (String *)((char *)this + 0x14);
     String_ctor(tickerText);
-    this->f_4 = x;
-    this->f_8 = y;
-    this->f_c = width;
+    F<int>(this, 0x4) = x;
+    F<int>(this, 0x8) = y;
+    F<int>(this, 0x0c) = width;
 
     String empty;
     String_cstr_ctor(&empty, g_NewsTicker_ctor_empty, false);
     String_assign(tickerText, &empty);
     String_dtor(&empty);
-    this->f_10 = 0;
+    F<int>(this, 0x10) = 0;
 
     void *reader = operator new(1);
     FileRead_ctor(reader);
@@ -71,9 +71,9 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 
     for (uint32_t i = 0; i < allItems->size; ++i) {
         void *item = allItems->data[i];
-        int minLevel = item->f_10;
-        if (minLevel > 0 && minLevel <= level && level <= item->f_14) {
-            uint8_t *factions = item->f_8;
+        int minLevel = F<int>(item, 0x10);
+        if (minLevel > 0 && minLevel <= level && level <= F<int>(item, 0x14)) {
+            uint8_t *factions = F<uint8_t *>(item, 0x8);
             if (factions[faction] != 0) {
                 ArrayAdd_NewsItem(NewsItem_clone(item), items);
             }
@@ -89,29 +89,29 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         }
         void *item = allItems->data[AERandom_nextInt(random, allItems->size)];
         void *system = Status_getSystem(*g_NewsTicker_ctor_status);
-        if (SolarSystem_getIndex(system) > 0x15 && item->f_0 == 0x0d) {
+        if (SolarSystem_getIndex(system) > 0x15 && F<int>(item, 0x0) == 0x0d) {
             continue;
         }
-        if (item->f_14 < 0xa1 || item->f_10 > level) {
+        if (F<int>(item, 0x14) < 0xa1 || F<int>(item, 0x10) > level) {
             continue;
         }
         if (AERandom_nextInt(random, 100) > 0x31) {
             continue;
         }
-        if (item->f_8[faction] == 0 || item->f_18 != 0) {
+        if (F<uint8_t *>(item, 0x8)[faction] == 0 || F<uint8_t>(item, 0x18) != 0) {
             continue;
         }
-        if (item->f_4 != 0) {
+        if (F<uint8_t>(item, 0x4) != 0) {
             int64_t now = Status_getPlayingTime(*g_NewsTicker_ctor_status);
             int64_t last = F<int64_t>(*g_NewsTicker_ctor_status, 0x160);
             if ((uint32_t)(now - last) <= 0x493e0) {
                 continue;
             }
             F<int64_t>(*g_NewsTicker_ctor_status, 0x160) = now;
-            F<int>(*g_NewsTicker_ctor_status, 0x174) = item->f_0;
+            F<int>(*g_NewsTicker_ctor_status, 0x174) = F<int>(item, 0x0);
         }
         ArrayAdd_NewsItem(NewsItem_clone(item), items);
-        item->f_18 = 1;
+        F<uint8_t>(item, 0x18) = 1;
         ++added;
     }
 
@@ -121,14 +121,14 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         void *item = items->data[i];
         String line;
         String_copy_ctor(&line, GameText_getText(*g_NewsTicker_ctor_text,
-                                                 item->f_0 + 0x0cbe),
+                                                 F<int>(item, 0x0) + 0x0cbe),
                          false);
         String replaced = replaceTokens(line);
         String_dtor(&line);
 
-        if (item->f_4 != 0) {
+        if (F<uint8_t>(item, 0x4) != 0) {
             String *statusText = (String *)((char *)*g_NewsTicker_ctor_status + 0x168);
-            if (item->f_18 == 0) {
+            if (F<uint8_t>(item, 0x18) == 0) {
                 String_assign(&replaced, statusText);
             } else {
                 String_assign(statusText, &replaced);
@@ -142,23 +142,23 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         String_dtor(&replaced);
     }
 
-    this->f_10 = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
+    F<int>(this, 0x10) = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
                                                   *g_NewsTicker_ctor_font, tickerText);
-    if (this->f_10 < width) {
+    if (F<int>(this, 0x10) < width) {
         String copy;
         String_copy_ctor(&copy, tickerText, false);
         String_plusAssign(tickerText, &copy);
         String_dtor(&copy);
-        this->f_10 = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
+        F<int>(this, 0x10) = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
                                                       *g_NewsTicker_ctor_font, tickerText);
     }
 
     if (GameText_getLanguage() == 9) {
-        width = -this->f_10;
+        width = -F<int>(this, 0x10);
     }
-    this->f_2c = 0;
-    this->f_28 = 0;
-    this->f_0 = (float)width;
+    F<int>(this, 0x2c) = 0;
+    F<uint8_t>(this, 0x28) = 0;
+    F<float>(this, 0x0) = (float)width;
 
     ArrayReleaseClasses_NewsItem(items);
     operator delete(Array_NewsItem_dtor(items));

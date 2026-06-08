@@ -7,12 +7,12 @@ __attribute__((visibility("hidden"))) extern void *const g_BoundingVolume_vtbl;
 BoundingVolume::BoundingVolume(float a, float b, float c, float d, float e, float f)
 {
     void *vt = (void *)((char *)g_BoundingVolume_vtbl + 8);
-    this->f_14 = d;
-    this->f_18 = e;
-    this->f_1c = f;
-    this->f_0 = vt;
-    this->f_4 = 0;
-    this->f_8 = a;
-    this->f_c = b;
-    this->f_10 = c;
+    f32(this, 0x14) = d;
+    f32(this, 0x18) = e;
+    f32(this, 0x1c) = f;
+    pp(this, 0x0) = vt;
+    u32(this, 0x4) = 0;
+    f32(this, 0x8) = a;
+    f32(this, 0xc) = b;
+    f32(this, 0x10) = c;
 }

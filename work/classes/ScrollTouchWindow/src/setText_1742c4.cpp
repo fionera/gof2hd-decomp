@@ -5,7 +5,7 @@ extern "C" void ScrollTouchBox_setTextColor(void *self, AbyssEngine::String *tex
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text, int color)
 {
     {
-        void *box = this->f_0;
+        void *box = P(this, 0);
         AbyssEngine::String tmp(text, false);
         ScrollTouchBox_setTextColor(box, &tmp, color);
     }

@@ -5,5 +5,5 @@ extern "C" void SpriteGun_Gun_update(void *base);
 
 extern "C" void SpriteGun_update(SpriteGun *this_)
 {
-    return SpriteGun_Gun_update(this_->f_8);
+    return SpriteGun_Gun_update(F<void *>(this_, 0x8));
 }

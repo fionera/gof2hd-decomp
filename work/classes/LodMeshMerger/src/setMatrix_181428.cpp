@@ -6,6 +6,6 @@ extern "C" void LodMeshMerger_setMatrix_tail(void *dst, const Matrix &m);
 
 void LodMeshMerger::setMatrix(int index, const Matrix &m)
 {
-    char *base = (char *)this->f_28;
+    char *base = (char *)pp(this, 0x28);
     return LodMeshMerger_setMatrix_tail(base + index * 0x3c, m);
 }

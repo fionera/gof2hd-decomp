@@ -2,5 +2,5 @@
 
 void PlayerAsteroid::setRotationEnabled(bool enabled)
 {
-    this->f_14c = enabled;
+    F<uint8_t>(this, 0x14c) = enabled;
 }

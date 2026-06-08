@@ -37,24 +37,6 @@ struct Vector;
 }
 
 struct TextureAlphaTestShader {
-    // @portable-fields
-    uint8_t f_0; // 0x0
-    unsigned char _pad_1[3];
-    int f_4; // 0x4
-    unsigned char _pad_8[1];
-    uint8_t f_9; // 0x9
-    unsigned char _pad_a[22];
-    int f_20; // 0x20
-    unsigned char _pad_24[56];
-    uint8_t f_5c; // 0x5c
-    unsigned char _pad_5d[751];
-    int f_34c; // 0x34c
-    int f_350; // 0x350
-    int f_354; // 0x354
-    unsigned char _pad_358[144];
-    int f_3e8; // 0x3e8
-    int f_3ec; // 0x3ec
-
     TextureAlphaTestShader();
     ~TextureAlphaTestShader();
 

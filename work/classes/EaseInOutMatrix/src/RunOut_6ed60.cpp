@@ -4,18 +4,18 @@ namespace AbyssEngine {
 
 void EaseInOutMatrix::RunOut(float dt) {
     float target = 1.0f;
-    float t = this->f_74;
+    float t = f32(this, 0x74);
     if (t > target) {
-        t = t + (dt * -0.5f) / this->f_f0;
-        this->f_74 = t;
+        t = t + (dt * -0.5f) / f32(this, 0xf0);
+        f32(this, 0x74) = t;
         if (t < target) {
-            this->f_74 = 1.0f;
+            f32(this, 0x74) = 1.0f;
         }
     } else if (t < target) {
-        t = t + (dt * 0.5f) / this->f_f0;
-        this->f_74 = t;
+        t = t + (dt * 0.5f) / f32(this, 0xf0);
+        f32(this, 0x74) = t;
         if (t > target) {
-            this->f_74 = 1.0f;
+            f32(this, 0x74) = 1.0f;
         }
     }
     UpdateCurrentValue();

@@ -87,7 +87,7 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
     void *gt = *g_Hud_ccGameText;
 
     // aggregate with previous "+N <unit>" event if allowed
-    if (aggregateKey != 0 && self->f_26c != 0) {
+    if (aggregateKey != 0 && C(self, 0x26c) != 0) {
         char a0[12]; String_ctor_int(a0, I(self, 0x52c));
         char ac[12]; String_ctor_cstr(ac, g_Hud_ccUnit, false);
         char a94[12]; String_concat(a94, a0, ac);
@@ -109,7 +109,7 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
             char n94[12]; String_ctor_copy(n94, nA0, false);
             void *u2 = GameText_getText(gt, 0);
             char n88[12]; String_concat(n88, n94, u2);
-            String_op_assign(*(void **)(*(int *)(I(self->f_264, 4) + idx * 4) + 0x1c), n88);
+            String_op_assign(*(void **)(*(int *)(I(P(self, 0x264), 4) + idx * 4) + 0x1c), n88);
             String_dtor(n88); String_dtor(n94); String_dtor(nA0); String_dtor(nC4); String_dtor(nAc);
             String_dtor(k34);
             return;

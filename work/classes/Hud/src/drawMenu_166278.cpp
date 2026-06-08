@@ -39,23 +39,23 @@ extern "C" void Hud_drawMenu(Hud *self)
 
     int y = I(self, 0x3c8) + I(self, 0x4d0) + I(self, 0x3cc);
     // repeated middle slices (one per button beyond the first)
-    if (self->f_18 != 0 && *(int *)self->f_18 != 0) {
-        int count = *(int *)self->f_18;
+    if (P(self, 0x18) != 0 && *(int *)P(self, 0x18) != 0) {
+        int count = *(int *)P(self, 0x18);
         for (unsigned int i = 0; i < (unsigned int)(count - 1); i++) {
             PaintCanvas_DrawImage2D2(canvas, I(self, 0x2a0), I(self, 0x3c4) + I(self, 0x4cc));
             y += I(self, 0x3d0);
-            count = *(int *)self->f_18;
+            count = *(int *)P(self, 0x18);
         }
     }
     // bottom cap
     PaintCanvas_DrawImage2D2(canvas, I(self, 0x29c), I(self, 0x3c4) + I(self, 0x4cc));
 
     // the actual buttons
-    if (self->f_18 != 0 && *(unsigned int *)self->f_18 != 0) {
-        unsigned int n = *(unsigned int *)self->f_18;
+    if (P(self, 0x18) != 0 && *(unsigned int *)P(self, 0x18) != 0) {
+        unsigned int n = *(unsigned int *)P(self, 0x18);
         for (unsigned int i = 0; i < n; i++) {
-            TouchButton_draw(((void **)I(self->f_18, 4))[i]);
-            n = *(unsigned int *)self->f_18;
+            TouchButton_draw(((void **)I(P(self, 0x18), 4))[i]);
+            n = *(unsigned int *)P(self, 0x18);
         }
     }
 

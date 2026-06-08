@@ -3,9 +3,9 @@
 void ScrollTouchBox::OnTouchBegin(int x, int y)
 {
     if (touchIsInside(x, y)) {
-        this->f_28 = y;
-        this->f_2c = y;
-        this->f_1c = 0;
-        this->f_30 = 1;
+        F<int>(this, 0x28) = y;
+        F<int>(this, 0x2c) = y;
+        F<int>(this, 0x1c) = 0;
+        F<uint8_t>(this, 0x30) = 1;
     }
 }

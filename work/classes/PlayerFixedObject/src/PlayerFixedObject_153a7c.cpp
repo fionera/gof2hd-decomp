@@ -49,20 +49,20 @@ extern "C" void PlayerFixedObject_ctor(PlayerFixedObject *self, int kind, int pa
     *(void **)self = &PlayerFixedObject_vtable + 8;
 
     String_ctor_empty((char *)self + 0x1ac);
-    self->f_18c = 0;
-    self->f_184 = 0;
-    self->f_28 = param2;
-    self->f_124 = 0;
-    self->f_128 = 0;
-    self->f_12c = 0;
-    self->f_130 = 0;
-    self->f_168 = 0;
-    self->f_16c = 0;
-    self->f_170 = 0;
-    self->f_1b8 = 0;
-    self->f_190 = 0;
-    self->f_174 = 0;
-    self->f_178 = 0; self->f_17c = 0; self->f_180 = 0;
+    F<int32_t>(self, 0x18c) = 0;
+    F<uint16_t>(self, 0x184) = 0;
+    F<int32_t>(self, 0x28) = param2;
+    F<int32_t>(self, 0x124) = 0;
+    F<int32_t>(self, 0x128) = 0;
+    F<int32_t>(self, 0x12c) = 0;
+    F<int32_t>(self, 0x130) = 0;
+    F<int32_t>(self, 0x168) = 0;
+    F<int32_t>(self, 0x16c) = 0;
+    F<uint8_t>(self, 0x170) = 0;
+    F<uint8_t>(self, 0x1b8) = 0;
+    F<int32_t>(self, 0x190) = 0;
+    F<int32_t>(self, 0x174) = 0;
+    F<int32_t>(self, 0x178) = 0; F<int32_t>(self, 0x17c) = 0; F<int32_t>(self, 0x180) = 0;
 
     // Vector::operator=(this+0x2c, {sx,sy,sz})
     {
@@ -71,13 +71,13 @@ extern "C" void PlayerFixedObject_ctor(PlayerFixedObject *self, int kind, int pa
         Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
     }
 
-    self->f_134 = 0;
-    self->f_194 = -1;
-    self->f_1a0 = -1;
-    self->f_1a4 = 0;
-    self->f_178 = (int32_t)sx;
-    self->f_17c = (int32_t)sy;
-    self->f_180 = (int32_t)sz;
+    F<uint8_t>(self, 0x134) = 0;
+    F<int32_t>(self, 0x194) = -1;
+    F<int32_t>(self, 0x1a0) = -1;
+    F<int32_t>(self, 0x1a4) = 0;
+    F<int32_t>(self, 0x178) = (int32_t)sx;
+    F<int32_t>(self, 0x17c) = (int32_t)sy;
+    F<int32_t>(self, 0x180) = (int32_t)sz;
 
     // Name string from a fixed literal.
     {
@@ -100,26 +100,26 @@ extern "C" void PlayerFixedObject_ctor(PlayerFixedObject *self, int kind, int pa
     }
 
     if (special) {
-        if (self->f_50 != 0) {
-            operator_delete(Array_int_dtor(self->f_50));
+        if (F<void *>(self, 0x50) != 0) {
+            operator_delete(Array_int_dtor(F<void *>(self, 0x50)));
         }
-        self->f_50 = 0;
+        F<int32_t>(self, 0x50) = 0;
     } else {
         void *gen = operator_new(1);
         Generator_ctor(gen);
         if (kind == 0x37a3) {
-            self->f_41 = 1;
+            F<uint8_t>(self, 0x41) = 1;
             void *station = Status_getStation();
             int sidx = Station_getIndex(station);
             for (uint32_t i = 0; i < 4; i++) {
                 if (g_pfo_stationIdx[i] == sidx) {
                     void *loot = Generator_getLootList(gen, g_pfo_lootParams[i * 2 + 1], 0);
-                    self->f_50 = loot;
+                    F<void *>(self, 0x50) = loot;
                 }
             }
         } else {
             uint32_t *loot = (uint32_t *)Generator_getLootList(gen, -1, -1);
-            self->f_50 = loot;
+            F<void *>(self, 0x50) = loot;
             if (loot != 0) {
                 int second = (kind != 0x498e) ? 0x4a88 : 0x498e;
                 if (kind != 0x498e && kind != second) {
@@ -127,15 +127,15 @@ extern "C" void PlayerFixedObject_ctor(PlayerFixedObject *self, int kind, int pa
                     for (int idx = 1; (uint32_t)(idx - 1) < loot[0]; idx += 2) {
                         if (kind == 0xe) {
                             int r = AERandom_nextInt((int)(long)rng);
-                            loot = (uint32_t *)self->f_50;
+                            loot = (uint32_t *)F<void *>(self, 0x50);
                             int *cell = (int *)(loot[1] + idx * 4);
                             *cell = *cell * (r + 5);
                         } else {
                             int r = AERandom_nextInt((int)(long)rng);
-                            int *base = (int *)(*(int *)((char *)self->f_50 + 4) + idx * 4);
+                            int *base = (int *)(*(int *)((char *)F<void *>(self, 0x50) + 4) + idx * 4);
                             *base = *base * (r + 2);
                             int r2 = AERandom_nextInt((int)(long)rng);
-                            loot = (uint32_t *)self->f_50;
+                            loot = (uint32_t *)F<void *>(self, 0x50);
                             int *cell = (int *)(loot[1] + idx * 4);
                             int v = *cell;
                             if (v < r2 + 8) v = r2 + 8;
@@ -150,10 +150,10 @@ extern "C" void PlayerFixedObject_ctor(PlayerFixedObject *self, int kind, int pa
 
     *(uint8_t *)(*(char **)((char *)self + 0x4) + 0x45) = 1;
     if (kind != 0x37a3) {
-        self->f_f8 = 0x2f;
+        F<int32_t>(self, 0xf8) = 0x2f;
         if (kind == 0xe) {
-            self->f_f8 = -1;
-            self->f_134 = 0;
+            F<int32_t>(self, 0xf8) = -1;
+            F<uint8_t>(self, 0x134) = 0;
         }
     }
 }

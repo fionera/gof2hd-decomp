@@ -20,10 +20,10 @@ extern "C" void TargetFollowCamera_setCamOffset(void *camera, const StackVector 
 void LevelScript::resetCamera(Level *level)
 {
     if (Level_getPlayer(level) != 0) {
-        void *camera = this->m_pCamera;
+        void *camera = P(this, 0x14);
         void *player = Level_getPlayer(level);
-        TargetFollowCamera_setTarget(camera, player->f_8);
-        TargetFollowCamera_setTargetOffset(this->m_pCamera, StackVector(0.0f, 600.0f, -650.0f));
-        TargetFollowCamera_setCamOffset(this->m_pCamera, StackVector(0.0f, 600.0f, -1338.0f));
+        TargetFollowCamera_setTarget(camera, P(player, 0x8));
+        TargetFollowCamera_setTargetOffset(P(this, 0x14), StackVector(0.0f, 600.0f, -650.0f));
+        TargetFollowCamera_setCamOffset(P(this, 0x14), StackVector(0.0f, 600.0f, -1338.0f));
     }
 }

@@ -8,11 +8,11 @@ extern "C" __attribute__((visibility("hidden"))) void **g_ImagePart_canvas;
 
 extern "C" ImagePart *ImagePart_ctor(ImagePart *self, unsigned id, int field04, int posY)
 {
-    self->id = id;
-    self->f_4 = field04;
-    self->pos_y = posY;
+    F<unsigned>(self, 0x00) = id;
+    F<int>(self, 0x04) = field04;
+    F<int>(self, 0x08) = posY;
     void **holder = g_ImagePart_canvas;
-    self->scale_x = PaintCanvas_GetImage2DWidth(*holder, id);
-    self->scale_y = PaintCanvas_GetImage2DHeight(*holder, id);
+    F<int>(self, 0x0c) = PaintCanvas_GetImage2DWidth(*holder, id);
+    F<int>(self, 0x10) = PaintCanvas_GetImage2DHeight(*holder, id);
     return self;
 }

@@ -19,16 +19,16 @@ extern "C" void ModMainMenu_releaseTail(void *sound);
 
 extern "C" void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
 {
-    void *cutscene = self->f_1c;
+    void *cutscene = P(self, 0x1c);
     if (cutscene != 0)
         operator_delete(CutScene_dtor(cutscene));
 
-    void *touchWindow = self->f_18;
-    self->f_1c = 0;
+    void *touchWindow = P(self, 0x18);
+    P(self, 0x1c) = 0;
     if (touchWindow != 0)
         operator_delete(MenuTouchWindow_dtor(touchWindow));
 
-    self->f_18 = 0;
+    P(self, 0x18) = 0;
     PaintCanvas_ReleaseAllResources(*g_ModMainMenu_releaseCanvas);
 
     int fontObj = *g_ModMainMenu_releaseFontObj;

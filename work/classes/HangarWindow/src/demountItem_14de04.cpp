@@ -57,28 +57,28 @@ extern "C" void HangarWindow_demountItem(HangarWindow *self, void *item, int slo
         }
     }
     if (!merged)
-        ArrayAdd_ItemPtr(made, self->f_10);
+        ArrayAdd_ItemPtr(made, F<void *>(self, 0x10));
 
-    Ship_setCargo(Status_getShip(), Item_extractItems(self->f_10, true));
+    Ship_setCargo(Status_getShip(), Item_extractItems(F<void *>(self, 0x10), true));
 
-    if (self->f_10 != 0) {
-        ArrayReleaseClasses_ItemPtr(self->f_10);
-        if (self->f_10 != 0)
-            operator_delete(Array_ItemPtr_dtor(self->f_10));
+    if (F<void *>(self, 0x10) != 0) {
+        ArrayReleaseClasses_ItemPtr(F<void *>(self, 0x10));
+        if (F<void *>(self, 0x10) != 0)
+            operator_delete(Array_ItemPtr_dtor(F<void *>(self, 0x10)));
     }
-    self->f_10 = 0;
+    F<void *>(self, 0x10) = 0;
 
     HangarWindow_statusShip();
     void *mixed = Item_mixItems(Ship_getCargo(0), Station_getItems(Status_getStation()));
-    self->f_10 = mixed;
-    HangarList_initShipTab(self->f_14, HangarWindow_statusShip());
+    F<void *>(self, 0x10) = mixed;
+    HangarList_initShipTab(F<void *>(self, 0x14), HangarWindow_statusShip());
 
     HangarWindow_statusShip();
     void *items = Item_mixItems(Ship_getCargo(0), Station_getItems(Status_getStation()));
-    HangarList_initShopTab(self->f_14, items, Station_getShips(Status_getStation()));
-    HangarList_setCurrentTab(self->f_14, false);
+    HangarList_initShopTab(F<void *>(self, 0x14), items, Station_getShips(Status_getStation()));
+    HangarList_setCurrentTab(F<void *>(self, 0x14), false);
 
     float h = HangarWindow_refreshCurrentContentHeight(self);
-    self->f_b4 = self->f_e4;
+    F<int>(self, 0xb4) = F<int>(self, 0xe4);
     FModSound_play(*g_hw_sound, 0x60, 0, 0, h);
 }

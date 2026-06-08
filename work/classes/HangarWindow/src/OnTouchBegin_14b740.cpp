@@ -47,30 +47,30 @@ extern "C" extern const char hw_otb_fmt1[], hw_otb_fmt2[];
 
 extern "C" void HangarWindow_OnTouchBegin(HangarWindow *self, int touch, int coord)
 {
-    self->f_6c = 0;
-    self->f_70 = 0;
+    F<int>(self, 0x6c) = 0;
+    F<int>(self, 0x70) = 0;
     unsigned char handled = (unsigned char)Layout_OnTouchBegin(*g_hw_layout, touch);
 
-    if (self->f_3c != 0) {
+    if (F<uint8_t>(self, 0x3c) != 0) {
         if (F<uint8_t>(self, 0xae) != 0) {
             for (int i = 0xc; i != 0x11; i++)
-                TouchButton_OnTouchBegin(G<void *>(G<void *>(self->f_24, 4), i * 4), touch);
-            TouchButton_OnTouchBegin(G<void *>(G<void *>(self->f_24, 4), 0x44), touch);
-        } else if (self->f_b0 != 0) {
+                TouchButton_OnTouchBegin(G<void *>(G<void *>(F<void *>(self, 0x24), 4), i * 4), touch);
+            TouchButton_OnTouchBegin(G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x44), touch);
+        } else if (F<uint8_t>(self, 0xb0) != 0) {
             for (int i = 0x12; i != 0x17; i++)
-                TouchButton_OnTouchBegin(G<void *>(G<void *>(self->f_24, 4), i * 4), touch);
+                TouchButton_OnTouchBegin(G<void *>(G<void *>(F<void *>(self, 0x24), 4), i * 4), touch);
         }
-        ChoiceWindow_OnTouchBegin(self->f_20, touch);
+        ChoiceWindow_OnTouchBegin(F<void *>(self, 0x20), touch);
         return;
     }
 
-    self->f_cc = coord;
-    self->f_b8 = coord;
-    self->f_c0 = 0;
-    self->f_d0 = 1;
+    F<int>(self, 0xcc) = coord;
+    F<int>(self, 0xb8) = coord;
+    F<int>(self, 0xc0) = 0;
+    F<uint8_t>(self, 0xd0) = 1;
 
-    if (self->f_58 == 1) {
-        ListItemWindow_OnTouchBegin(self->f_18, touch, coord);
+    if (F<int>(self, 0x58) == 1) {
+        ListItemWindow_OnTouchBegin(F<void *>(self, 0x18), touch, coord);
         return;
     }
 
@@ -78,33 +78,33 @@ extern "C" void HangarWindow_OnTouchBegin(HangarWindow *self, int touch, int coo
     unsigned char skip = 1;
     if (G<int>(layout, 0xc) < coord && coord < *g_hw_screenWidth - G<int>(layout, 0x10)) {
         int row = __aeabi_idiv(
-            ((coord - G<int>(layout, 0xc)) - G<int>(layout, 0x20)) - self->f_10c -
-                self->f_b4,
-            G<int>(layout, 0x70) + self->f_10c);
-        if (HangarList_getCurrentLength(self->f_14) > row) {
-            HangarList_setCurrentItemIndex(self->f_14, row);
-            HangarWindow_highlightItem(self, HangarList_getCurrentItem(self->f_14));
+            ((coord - G<int>(layout, 0xc)) - G<int>(layout, 0x20)) - F<int>(self, 0x10c) -
+                F<int>(self, 0xb4),
+            G<int>(layout, 0x70) + F<int>(self, 0x10c));
+        if (HangarList_getCurrentLength(F<void *>(self, 0x14)) > row) {
+            HangarList_setCurrentItemIndex(F<void *>(self, 0x14), row);
+            HangarWindow_highlightItem(self, HangarList_getCurrentItem(F<void *>(self, 0x14)));
             skip = 0;
             if (F<uint8_t>(self, 0x11d) != 0) {
-                void *ci = HangarList_getCurrentItem(self->f_14);
+                void *ci = HangarList_getCurrentItem(F<void *>(self, 0x14));
                 if (ListItem_isShip(ci) != 0 &&
-                    HangarList_getCurrentTab(self->f_14) == 1) {
-                    Ship_setCargo(Status_getShip(), Item_extractItems(self->f_10, true));
+                    HangarList_getCurrentTab(F<void *>(self, 0x14)) == 1) {
+                    Ship_setCargo(Status_getShip(), Item_extractItems(F<void *>(self, 0x10), true));
                     Station_setItems(Status_getStation(),
-                                     Item_extractItems(self->f_10, false), false);
+                                     Item_extractItems(F<void *>(self, 0x10), false), false);
                 }
             }
         }
     }
 
-    if (HangarList_getCurrentTab(self->f_14) == 4 && self->f_88 != 0 &&
-        !(!skip && self->f_68 == self->f_84) && self->f_94 > 0 &&
-        self->f_3c == 0 && BluePrint_isEmpty(self->f_80) == 0) {
-        if (BluePrint_getStationIndex(self->f_80) != Station_getIndex(Status_getStation())) {
+    if (HangarList_getCurrentTab(F<void *>(self, 0x14)) == 4 && F<uint8_t>(self, 0x88) != 0 &&
+        !(!skip && F<void *>(self, 0x68) == F<void *>(self, 0x84)) && F<int>(self, 0x94) > 0 &&
+        F<uint8_t>(self, 0x3c) == 0 && BluePrint_isEmpty(F<void *>(self, 0x80)) == 0) {
+        if (BluePrint_getStationIndex(F<void *>(self, 0x80)) != Station_getIndex(Status_getStation())) {
             void *globals = *g_hw_globals;
-            int bpIdx = Item_getIndex(G<void *>(self->f_84, 0x10));
+            int bpIdx = Item_getIndex(G<void *>(F<void *>(self, 0x84), 0x10));
             bool localBp = (bpIdx == 0xd1) ||
-                           (Item_getIndex(G<void *>(self->f_84, 0x10)) == 0xcc);
+                           (Item_getIndex(G<void *>(F<void *>(self, 0x84), 0x10)) == 0xcc);
             F<uint8_t>(self, 0x11e) = localBp;
 
             String12 msg;
@@ -117,7 +117,7 @@ extern "C" void HangarWindow_OnTouchBegin(HangarWindow *self, int touch, int coo
             if (F<uint8_t>(self, 0x11e) == 0) {
                 String12 copy, sname, fmt, result;
                 AEString_ctor_str(&copy, &msg, false);
-                BluePrint_getStationName(self->f_80);
+                BluePrint_getStationName(F<void *>(self, 0x80));
                 AEString_ctor(&sname, hw_otb_fmt1, false);
                 AEString_ctor(&fmt, hw_otb_fmt1, false);
                 Status_replaceHash(&result, globals, &copy, &sname, &fmt);
@@ -130,7 +130,7 @@ extern "C" void HangarWindow_OnTouchBegin(HangarWindow *self, int touch, int coo
                 String12 copy2, priceStr, fmt2, result2;
                 AEString_ctor_str(&copy2, &msg, false);
                 Layout_formatCredits(&priceStr,
-                                     Item_getBlueprintAmount(G<void *>(self->f_84, 0x10)));
+                                     Item_getBlueprintAmount(G<void *>(F<void *>(self, 0x84), 0x10)));
                 AEString_ctor(&fmt2, hw_otb_fmt2, false);
                 Status_replaceHash(&result2, globals, &copy2, &priceStr, &fmt2);
                 AEString_assign(&msg, &result2);
@@ -140,9 +140,9 @@ extern "C" void HangarWindow_OnTouchBegin(HangarWindow *self, int touch, int coo
                 AEString_dtor(&copy2);
             }
             bool flag = (F<uint8_t>(self, 0x11e) == 0);
-            ChoiceWindow_setMsg(self->f_20, &msg, flag);
-            self->f_3c = 1;
-            self->f_ac = 1;
+            ChoiceWindow_setMsg(F<void *>(self, 0x20), &msg, flag);
+            F<uint8_t>(self, 0x3c) = 1;
+            F<uint8_t>(self, 0xac) = 1;
             F<uint8_t>(self, 0xd1) = 1;
             AEString_dtor(&msg);
             return;
@@ -160,11 +160,11 @@ extern "C" void HangarWindow_OnTouchBegin(HangarWindow *self, int touch, int coo
             TouchButton_OnTouchBegin(btn, touch);
     }
 
-    if (self->f_f8 != 0 && HangarList_getCurrentTab(self->f_14) == 1) {
-        int idx = self->f_fc;
+    if (F<uint8_t>(self, 0xf8) != 0 && HangarList_getCurrentTab(F<void *>(self, 0x14)) == 1) {
+        int idx = F<int>(self, 0xfc);
         if (idx >= 0 &&
-            !(!handled && (unsigned int)idx == HangarList_getCurrentItemIndex(self->f_14))) {
-            self->f_f8 = 0;
+            !(!handled && (unsigned int)idx == HangarList_getCurrentItemIndex(F<void *>(self, 0x14)))) {
+            F<uint8_t>(self, 0xf8) = 0;
             HangarWindow_autoEquipSecondaryWeapons(self, idx);
         }
     }

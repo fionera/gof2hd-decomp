@@ -6,10 +6,10 @@ extern "C" void *ListItem_init(ListItem *self);
 // 0x1c=s, selectable=1.
 extern "C" ListItem *ListItem_ctor_int_int_String(ListItem *self, int a, int b, const void *src) {
     ListItem_init(self);
-    self->f_34 = a;
+    F<int>(self, 0x34) = a;
     EngString *s = new EngString(src, false);
-    self->f_1c = s;
-    self->f_28 = b;
-    self->f_24 = 1;
+    F<void *>(self, 0x1c) = s;
+    F<int>(self, 0x28) = b;
+    F<uint8_t>(self, 0x24) = 1;
     return self;
 }

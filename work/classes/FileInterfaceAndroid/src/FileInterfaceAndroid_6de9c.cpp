@@ -32,11 +32,11 @@ FileInterfaceAndroid_ctor_obj(FileInterfaceAndroid *self, jobject *stream, bool 
 {
     void *env = *gJniEnvObj;
     int *cnt = gFIAInstCount_obj;
-    self->f_8 = 0;
-    self->f_c = 0;
-    self->f_10 = stream;
-    self->f_14 = reading;
-    self->f_0 = (char *)gFIAVtable_obj + 8;
+    F<int>(self, 0x08) = 0;
+    F<int>(self, 0x0c) = 0;
+    F<jobject *>(self, 0x10) = stream;
+    u8(self, 0x14) = reading;
+    F<char *>(self, 0x00) = (char *)gFIAVtable_obj + 8;
     *cnt = *cnt + 1;
     void *cls = (*(jni_getclass *)((char *)*(void **)env + 0x7c))(env);
 

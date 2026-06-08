@@ -10,11 +10,7 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct Globals {
-    // @portable-fields
-    unsigned char _pad_0[4];
-    void* f_4; // 0x4
-};
+struct Globals;
 
 // AbyssEngine::String - 12-byte value type (text*, size, ...). Pass-by-value uses the
 // >8-byte struct ABI (sret / on stack), matching the target.

@@ -23,11 +23,6 @@ struct Array {
 };
 
 struct HangarList {
-    // @portable-fields
-    void* f_0; // 0x0
-    int f_4; // 0x4
-    void* f_8; // 0x8
-
     HangarList();
     ~HangarList();
 

@@ -15,25 +15,25 @@ extern "C" void HangarWindow_ctor(HangarWindow *self)
     int *cnt = g_hw_openCounter;
     void *lay = *g_hw_layout;
 
-    self->f_80 = 0;
-    self->f_84 = 0;
-    self->f_3c = 0;
-    self->f_ac = 0;
+    F<void *>(self, 0x80) = 0;
+    F<void *>(self, 0x84) = 0;
+    F<uint8_t>(self, 0x3c) = 0;
+    F<uint8_t>(self, 0xac) = 0;
     // zero 4 words at 0x14..0x20 (a zeroed Vector slot) via a 16-byte NEON store
     Blk16 zero = {0, 0, 0, 0};
     *(Blk16 *)((char *)self + 0x14) = zero;
     F<uint8_t>(self, 0x11e) = 0;
     *cnt = 1;
-    self->f_130 = 0;
-    self->f_d0 = 0;
-    self->f_4 = 0;
-    self->f_24 = 0;
-    self->f_90 = 0;
+    F<uint8_t>(self, 0x130) = 0;
+    F<uint8_t>(self, 0xd0) = 0;
+    F<void *>(self, 0x4) = 0;
+    F<void *>(self, 0x24) = 0;
+    F<void *>(self, 0x90) = 0;
     F<uint8_t>(self, 0xae) = 0;
 
     // copy lay[0x238..0x244] (16 bytes) into this[0x100..0x10c]
     *(Blk16 *)((char *)self + 0x100) = *(Blk16 *)((char *)lay + 0x238);
-    self->f_110 = G<int>(lay, 0x248);
-    self->f_114 = G<int>(lay, 0x24c);
-    self->f_118 = G<int>(lay, 0x250);
+    F<int>(self, 0x110) = G<int>(lay, 0x248);
+    F<int>(self, 0x114) = G<int>(lay, 0x24c);
+    F<int>(self, 0x118) = G<int>(lay, 0x250);
 }

@@ -49,24 +49,6 @@ struct Array {
 };
 
 struct MeshMerger {
-    // @portable-fields
-    int f_0; // 0x0
-    uint16_t f_4; // 0x4
-    uint8_t f_6; // 0x6
-    unsigned char _pad_7[1];
-    void* f_8; // 0x8
-    void* f_c; // 0xc
-    int f_10; // 0x10
-    void* f_14; // 0x14
-    void* f_18; // 0x18
-    void* f_1c; // 0x1c
-    void* f_20; // 0x20
-    void* f_24; // 0x24
-    void* f_28; // 0x28
-    void* f_2c; // 0x2c
-    int f_30; // 0x30
-    uint8_t f_34; // 0x34
-
     MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags);
     MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                PaintCanvas *canvas, uint16_t flags);

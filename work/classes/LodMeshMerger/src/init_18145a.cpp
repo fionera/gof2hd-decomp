@@ -10,23 +10,23 @@ extern "C" int LodMeshMerger_init_tail(LodMeshMerger *self, int r1, uint16_t fla
 
 int LodMeshMerger::init()
 {
-    if (this->f_6 != 0) {
-        return this->f_6;
+    if (u8(this, 0x6) != 0) {
+        return u8(this, 0x6);
     }
 
     int rows;
-    for (int i = 0; i < (rows = this->f_0); i++) {
-        int8_t *lods = (int8_t *)this->f_2c;
+    for (int i = 0; i < (rows = i32(this, 0x0)); i++) {
+        int8_t *lods = (int8_t *)pp(this, 0x2c);
         int lod = lods[i];
-        if (lod >= -1 && this->f_38 <= lod) {
+        if (lod >= -1 && i32(this, 0x38) <= lod) {
             lods[i] = 0;
         }
-        for (int c = 0; c < this->f_38; c++) {
-            void *mesh = ((void **)this->f_c)[this->f_0 * c + i];
+        for (int c = 0; c < i32(this, 0x38); c++) {
+            void *mesh = ((void **)pp(this, 0xc))[i32(this, 0x0) * c + i];
             if (mesh != 0) {
                 void *t = LodMeshMerger_transformMesh(
-                    mesh, *(const Matrix *)((char *)this->f_28 + i * 0x3c));
-                ((void **)this->f_24)[this->f_0 * c + i] = t;
+                    mesh, *(const Matrix *)((char *)pp(this, 0x28) + i * 0x3c));
+                ((void **)pp(this, 0x24))[i32(this, 0x0) * c + i] = t;
             }
         }
     }
@@ -34,20 +34,20 @@ int LodMeshMerger::init()
     uint16_t nv = 0;
     uint16_t ni = 0;
     for (int i = 0; i < rows; i++) {
-        void *m0 = ((void **)this->f_c)[i];
+        void *m0 = ((void **)pp(this, 0xc))[i];
         uint16_t v = *(uint16_t *)((char *)m0 + 2);
         uint16_t idiv = aeabi_uidiv16(*(uint16_t *)((char *)m0 + 0x28), 3);
         ni = ni + idiv;
         nv = nv + v;
     }
 
-    uint16_t flags = this->f_4;
-    PaintCanvas_MeshCreate2(this->f_14, nv, ni,
-                            (int)*(int8_t *)*(void **)this->f_c);
-    void *ptr = PaintCanvas_MeshGetPointer(this->f_14, this->f_18);
-    this->f_20 = (int)ptr;
-    PaintCanvas_TransformCreate(this->f_14, (uint32_t *)((char *)this + 0x1c));
-    PaintCanvas_TransformAddMeshId(this->f_14, this->f_1c, this->f_18);
-    this->f_3c = 1;
+    uint16_t flags = u16(this, 0x4);
+    PaintCanvas_MeshCreate2(pp(this, 0x14), nv, ni,
+                            (int)*(int8_t *)*(void **)pp(this, 0xc));
+    void *ptr = PaintCanvas_MeshGetPointer(pp(this, 0x14), u32(this, 0x18));
+    i32(this, 0x20) = (int)ptr;
+    PaintCanvas_TransformCreate(pp(this, 0x14), (uint32_t *)((char *)this + 0x1c));
+    PaintCanvas_TransformAddMeshId(pp(this, 0x14), u32(this, 0x1c), u32(this, 0x18));
+    u8(this, 0x3c) = 1;
     return LodMeshMerger_init_tail(this, 0, flags, (uint32_t *)((char *)this + 0x18));
 }

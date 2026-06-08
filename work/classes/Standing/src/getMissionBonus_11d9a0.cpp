@@ -12,16 +12,16 @@ extern "C" float Standing_getMissionBonus(Standing *self, unsigned race) {
     float s0;
     switch (race) {
     case 0:
-        s0 = (float)self->f_0[0];
+        s0 = (float)F<int *>(self, 0)[0];
         break;
     case 1:
-        s0 = (float)(-self->f_0[0]);
+        s0 = (float)(-F<int *>(self, 0)[0]);
         break;
     case 2:
-        s0 = (float)self->f_0[1];
+        s0 = (float)F<int *>(self, 0)[1];
         break;
     case 3:
-        s0 = (float)(-self->f_0[1]);
+        s0 = (float)(-F<int *>(self, 0)[1]);
         break;
     default:
         return 0.0f;

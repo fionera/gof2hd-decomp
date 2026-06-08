@@ -4,24 +4,24 @@ extern "C" int GameText_getLanguage();
 
 void NewsTicker::update(int dt)
 {
-    if (this->f_28 != 0) {
+    if (F<uint8_t>(this, 0x28) != 0) {
         return;
     }
 
     float step = ((float)dt / 1000.0f) * 50.0f;
     if (GameText_getLanguage() == 9) {
-        float x = this->f_0 + step;
-        float width = (float)this->f_c;
-        this->f_0 = x;
+        float x = F<float>(this, 0x0) + step;
+        float width = (float)F<int>(this, 0x0c);
+        F<float>(this, 0x0) = x;
         if (x > width) {
-            this->f_0 = (float)-this->f_10;
+            F<float>(this, 0x0) = (float)-F<int>(this, 0x10);
         }
     } else {
-        float x = this->f_0 - step;
-        float minX = (float)-this->f_10;
-        this->f_0 = x;
+        float x = F<float>(this, 0x0) - step;
+        float minX = (float)-F<int>(this, 0x10);
+        F<float>(this, 0x0) = x;
         if (x < minX) {
-            this->f_0 = 0;
+            F<int>(this, 0x0) = 0;
         }
     }
 }

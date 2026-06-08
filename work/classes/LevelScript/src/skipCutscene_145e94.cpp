@@ -24,7 +24,7 @@ static volatile LevelListProc gLevelListProc;
 
 static inline void *firstListEntry(void *list)
 {
-    return ((void **)list->f_4)[0];
+    return ((void **)P(list, 4))[0];
 }
 
 void LevelScript::skipCutscene()
@@ -37,37 +37,37 @@ void LevelScript::skipCutscene()
         if ((uint32_t)(I(this, 0x1c) - 1) < 9) {
             I(this, 0x1c) = 9;
             for (int i = 0; i != 8; ++i) {
-                void *messages = Level_getMessages((Level *)this->m_pLevel);
-                RadioMessage_trigger(((void **)messages->f_4)[i]);
-                messages = Level_getMessages((Level *)this->m_pLevel);
-                RadioMessage_finish(((void **)messages->f_4)[i]);
+                void *messages = Level_getMessages((Level *)P(this, 0x18));
+                RadioMessage_trigger(((void **)P(messages, 4))[i]);
+                messages = Level_getMessages((Level *)P(this, 0x18));
+                RadioMessage_finish(((void **)P(messages, 4))[i]);
             }
 
             I(this, 0x90) = 0x7d1;
             I(this, 0x94) = 0;
 
             LevelListProc getList = gLevelListProc;
-            void *list = getList((Level *)this->m_pLevel);
+            void *list = getList((Level *)P(this, 0x18));
             PlayerFighter_setAIDisabled(firstListEntry(list), false);
 
-            list = getList((Level *)this->m_pLevel);
+            list = getList((Level *)P(this, 0x18));
             void *fighter = firstListEntry(list);
 
-            list = getList((Level *)this->m_pLevel);
+            list = getList((Level *)P(this, 0x18));
             void *route = KIPlayer_getRoute(firstListEntry(list));
             void *waypoint = Route_getWaypoint(route, 0);
-            ReadWaypointProc readWaypoint = *(ReadWaypointProc *)((char *)waypoint->f_0 + 0x28);
+            ReadWaypointProc readWaypoint = *(ReadWaypointProc *)((char *)P(waypoint, 0) + 0x28);
             readWaypoint(&position, waypoint);
-            SetVectorProc setVector = *(SetVectorProc *)((char *)fighter->f_0 + 0x44);
+            SetVectorProc setVector = *(SetVectorProc *)((char *)P(fighter, 0) + 0x44);
             setVector(fighter, &position);
         }
     } else if (Status_getCurrentCampaignMission(*status) == 0x9d) {
         if (I(this, 0x1c) <= 4) {
             for (int i = 0; i != 4; ++i) {
-                void *messages = Level_getMessages((Level *)this->m_pLevel);
-                RadioMessage_trigger(((void **)messages->f_4)[i]);
-                messages = Level_getMessages((Level *)this->m_pLevel);
-                RadioMessage_finish(((void **)messages->f_4)[i]);
+                void *messages = Level_getMessages((Level *)P(this, 0x18));
+                RadioMessage_trigger(((void **)P(messages, 4))[i]);
+                messages = Level_getMessages((Level *)P(this, 0x18));
+                RadioMessage_finish(((void **)P(messages, 4))[i]);
             }
             I(this, 0x90) = 0x4651;
             I(this, 0x94) = 0;
@@ -77,22 +77,22 @@ void LevelScript::skipCutscene()
         I(this, 0x98) = 0x2ee1;
         I(this, 0x9c) = 0;
         for (int i = 0; i != 3; ++i) {
-            void *messages = Level_getMessages((Level *)this->m_pLevel);
-            RadioMessage_trigger(((void **)messages->f_4)[i]);
-            messages = Level_getMessages((Level *)this->m_pLevel);
-            RadioMessage_finish(((void **)messages->f_4)[i]);
+            void *messages = Level_getMessages((Level *)P(this, 0x18));
+            RadioMessage_trigger(((void **)P(messages, 4))[i]);
+            messages = Level_getMessages((Level *)P(this, 0x18));
+            RadioMessage_finish(((void **)P(messages, 4))[i]);
         }
 
         LevelListProc getList = gLevelListProc;
-        void *list = getList((Level *)this->m_pLevel);
+        void *list = getList((Level *)P(this, 0x18));
         void *player = firstListEntry(list);
-        VirtualCommandProc command = *(VirtualCommandProc *)((char *)player->f_0 + 0x48);
+        VirtualCommandProc command = *(VirtualCommandProc *)((char *)P(player, 0) + 0x48);
         command(player, 0x000ba51e, 0, 0x000ba4b6);
 
-        list = getList((Level *)this->m_pLevel);
+        list = getList((Level *)P(this, 0x18));
         KIPlayer_setVisible(firstListEntry(list), true);
 
-        list = getList((Level *)this->m_pLevel);
+        list = getList((Level *)P(this, 0x18));
         KIPlayer_setActive(firstListEntry(list), true);
         I(this, 0x1c) = 2;
     }

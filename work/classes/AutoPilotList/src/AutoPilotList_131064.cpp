@@ -34,7 +34,7 @@ extern const char kApLit1[] __attribute__((visibility("hidden")));
 extern const char kApLit2[] __attribute__((visibility("hidden")));
 
 static inline void **entryData(AutoPilotList *self) {
-    return *(void ***)((char *)self->f_10 + 0x4);
+    return *(void ***)((char *)F<void *>(self, 0x10) + 0x4);
 }
 
 // AutoPilotList::AutoPilotList(Level*) - build the list of autopilot destinations (current
@@ -43,9 +43,9 @@ static inline void **entryData(AutoPilotList *self) {
 extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     void *arr = operator new(0xc);
     Array_String_ctor(arr);
-    self->f_10 = arr;
+    F<void *>(self, 0x10) = arr;
     ArraySetLength_String(5, arr);
-    self->f_14 = 0;
+    F<int>(self, 0x14) = 0;
 
     if (**g_APL_apFlag != 0) {
         String *s = (String *)operator new(0xc);
@@ -60,7 +60,7 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
         d(a);
         d(c);
         d(b);
-        self->f_14 = self->f_14 + 1;
+        F<int>(self, 0x14) = F<int>(self, 0x14) + 1;
     }
 
     void *status = *g_APL_status;
@@ -68,7 +68,7 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
         String *s = (String *)operator new(0xc);
         String_ctor_copy(s, GameText_getText(*g_APL_gametext, 0x223), false);
         entryData(self)[1] = s;
-        self->f_14 = self->f_14 + 1;
+        F<int>(self, 0x14) = F<int>(self, 0x14) + 1;
     }
 
     if (Status_inEmptyOrbit(status) == 0) {
@@ -83,13 +83,13 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
         d(a);
         d(c);
         d(b);
-        self->f_14 = self->f_14 + 1;
+        F<int>(self, 0x14) = F<int>(self, 0x14) + 1;
     }
 
     String *cancel = (String *)operator new(0xc);
     String_ctor_copy(cancel, GameText_getText(*g_APL_gametext, 0x225), false);
     entryData(self)[3] = cancel;
-    self->f_14 = self->f_14 + 1;
+    F<int>(self, 0x14) = F<int>(self, 0x14) + 1;
 
     if (PlayerEgo_getRoute(Level_getPlayer(level)) != 0) {
         void *route = PlayerEgo_getRoute(Level_getPlayer(level));
@@ -97,12 +97,12 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
             String *s = (String *)operator new(0xc);
             String_ctor_copy(s, GameText_getText(*g_APL_gametext, 0x23d), false);
             entryData(self)[4] = s;
-            self->f_14 = self->f_14 + 1;
+            F<int>(self, 0x14) = F<int>(self, 0x14) + 1;
         }
     }
 
-    self->f_c = 0;
-    self->f_0 = 0;
+    F<int>(self, 0xc) = 0;
+    F<int>(self, 0x0) = 0;
     void *font = *g_APL_font;
     void *canvas = *g_APL_canvas;
     int width = 0;
@@ -110,9 +110,9 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     for (uint32_t i = 0; i < entries->length; i++) {
         if (entries->data[i] != 0) {
             int w = PaintCanvas_GetTextWidth(*(void **)canvas, (String *)*(void **)font) + 0x13;
-            width = self->f_c;
+            width = F<int>(self, 0xc);
             if (width < w) {
-                self->f_c = w;
+                F<int>(self, 0xc) = w;
                 width = w;
             }
         }
@@ -120,9 +120,9 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     }
 
     int screenH = **g_APL_screenH;
-    self->f_4 = (**g_APL_screenW - width) / 2;
-    self->f_8 = (screenH + self->f_14 * -0xf - 0xc) / 2;
-    while (entries->data[self->f_0] == 0) {
+    F<int>(self, 0x4) = (**g_APL_screenW - width) / 2;
+    F<int>(self, 0x8) = (screenH + F<int>(self, 0x14) * -0xf - 0xc) / 2;
+    while (entries->data[F<int>(self, 0x0)] == 0) {
         _ZN13AutoPilotList4downEv(self);
         entries = F<Array<void *> *>(self, 0x10);
     }

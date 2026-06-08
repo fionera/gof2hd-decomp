@@ -7,13 +7,13 @@ extern "C" void operator_delete(void *p);
 
 extern "C" Galaxy *_ZN6GalaxyD2Ev(Galaxy *self)
 {
-    operator_delete_array(self->stations);
-    void *systems = self->systems;
-    self->stations = 0;
+    operator_delete_array(P(self, 0x0));
+    void *systems = P(self, 0x4);
+    P(self, 0x0) = 0;
     Galaxy_ArrayReleaseClasses_SolarSystem(systems);
-    if (self->systems != 0) {
-        operator_delete(Galaxy_Array_SolarSystem_dtor(self->systems));
+    if (P(self, 0x4) != 0) {
+        operator_delete(Galaxy_Array_SolarSystem_dtor(P(self, 0x4)));
     }
-    self->systems = 0;
+    P(self, 0x4) = 0;
     return self;
 }

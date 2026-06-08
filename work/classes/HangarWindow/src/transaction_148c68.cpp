@@ -42,19 +42,19 @@ extern "C" extern const char hw_tx_fmt[], hw_tx_suffix[];
 
 extern "C" void HangarWindow_transaction(HangarWindow *self, bool buy)
 {
-    unsigned int tab = HangarList_getCurrentTab(self->f_14);
-    void *cur = G<void *>(self->f_68, 0x10);
+    unsigned int tab = HangarList_getCurrentTab(F<void *>(self, 0x14));
+    void *cur = G<void *>(F<void *>(self, 0x68), 0x10);
 
     if (tab < 2) {
         if (Item_isUnsaleable(cur) != 0) {
             GameText_getText(*g_hw_unsaleableTextId);
-            ChoiceWindow_setText(self->f_20, 0);
-            self->f_88 = 0;
-            self->f_3c = 1;
+            ChoiceWindow_setText(F<void *>(self, 0x20), 0);
+            F<uint8_t>(self, 0x88) = 0;
+            F<uint8_t>(self, 0x3c) = 1;
             return;
         }
 
-        unsigned int result = Item_transaction(cur, buy, self->f_a8, F<uint8_t>(self, 0x11d));
+        unsigned int result = Item_transaction(cur, buy, F<int>(self, 0xa8), F<uint8_t>(self, 0x11d));
         unsigned int idx = Item_getIndex(cur);
         void *globals = *g_hw_globals;
         unsigned int *avail = G<unsigned int *>(globals, 0x54);
@@ -62,13 +62,13 @@ extern "C" void HangarWindow_transaction(HangarWindow *self, bool buy)
             *((uint8_t *)avail[1] + Item_getIndex(cur)) = 1;
 
         if (result >= 0x80000000 && buy) {
-            self->f_a8 = self->f_a8 + 1;
+            F<int>(self, 0xa8) = F<int>(self, 0xa8) + 1;
             Ship_changeLoad(Status_getShip(), 1);
-            int li = ListItem_getIndex(self->f_68);
-            if (li >= 0x84 && ListItem_getIndex(self->f_68) < 0x9a) {
+            int li = ListItem_getIndex(F<void *>(self, 0x68));
+            if (li >= 0x84 && ListItem_getIndex(F<void *>(self, 0x68)) < 0x9a) {
                 int base = G<int>(globals, 0xac);
                 *((uint8_t *)G<int>((void *)(uintptr_t)base, 4) +
-                  ListItem_getIndex(self->f_68) - 0x84) = 1;
+                  ListItem_getIndex(F<void *>(self, 0x68)) - 0x84) = 1;
             }
         } else if (result == 0 && buy) {
             if (Status_getCredits() < Item_getSinglePrice(cur)) {
@@ -88,15 +88,15 @@ extern "C" void HangarWindow_transaction(HangarWindow *self, bool buy)
                 AEString_addAssign(&msg, &combined);
                 AEString_dtor(&combined);
                 AEString_dtor(&suffix);
-                ChoiceWindow_setMsg(self->f_20, &msg, true);
-                self->f_3c = 1;
+                ChoiceWindow_setMsg(F<void *>(self, 0x20), &msg, true);
+                F<uint8_t>(self, 0x3c) = 1;
                 F<uint8_t>(self, 0xaf) = 1;
-                TouchButton_resetTouch(G<void *>(G<void *>(self->f_24, 4), 0x20));
-                TouchButton_resetTouch(G<void *>(G<void *>(self->f_24, 4), 0x24));
+                TouchButton_resetTouch(G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x20));
+                TouchButton_resetTouch(G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x24));
                 AEString_dtor(&msg);
             }
         } else if ((int)result > 0 && !buy) {
-            self->f_a8 = self->f_a8 - 1;
+            F<int>(self, 0xa8) = F<int>(self, 0xa8) - 1;
             Ship_changeLoad(Status_getShip(), -1);
         }
 
@@ -105,14 +105,14 @@ extern "C" void HangarWindow_transaction(HangarWindow *self, bool buy)
     } else if (tab == 4) {
         if (buy) {
             int bpAmt = Item_getBlueprintAmount(cur);
-            void *bp = self->f_80;
+            void *bp = F<void *>(self, 0x80);
             int remaining = BluePrint_getRemainingAmount(bp, Item_getIndex(cur));
             if (bpAmt < remaining) {
                 int r = Item_transactionBlueprint(cur, 0);
                 if (r < 0) {
-                    self->f_a8 = self->f_a8 + 1;
+                    F<int>(self, 0xa8) = F<int>(self, 0xa8) + 1;
                 } else if (r != 0) {
-                    self->f_94 = self->f_94 + 1;
+                    F<int>(self, 0x94) = F<int>(self, 0x94) + 1;
                     Ship_changeLoad(Status_getShip(), -1);
                 }
             }

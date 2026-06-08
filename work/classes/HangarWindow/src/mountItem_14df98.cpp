@@ -48,7 +48,7 @@ extern "C" void HangarWindow_mountItem(HangarWindow *self, void *item)
                 int change;
                 if (Item_getStationAmount(cur) == 0) {
                     if (type == 1 || Item_getAmount(item) == 1) {
-                        ArrayRemove_ItemPtr(cur, self->f_10);
+                        ArrayRemove_ItemPtr(cur, F<void *>(self, 0x10));
                         break;
                     }
                     change = -1;
@@ -65,15 +65,15 @@ extern "C" void HangarWindow_mountItem(HangarWindow *self, void *item)
     }
 
     void *ship2 = HangarWindow_statusShip();
-    Ship_setCargo(ship2, Item_extractItems(self->f_10, true));
-    HangarList_initShipTab(self->f_14, HangarWindow_statusShip());
+    Ship_setCargo(ship2, Item_extractItems(F<void *>(self, 0x10), true));
+    HangarList_initShipTab(F<void *>(self, 0x14), HangarWindow_statusShip());
 
     HangarWindow_statusShip();
     void *items = Item_mixItems(Ship_getCargo(0), Station_getItems(Status_getStation()));
-    HangarList_initShopTab(self->f_14, items, Station_getShips(Status_getStation()));
-    HangarList_setCurrentTab(self->f_14, false);
+    HangarList_initShopTab(F<void *>(self, 0x14), items, Station_getShips(Status_getStation()));
+    HangarList_setCurrentTab(F<void *>(self, 0x14), false);
 
     float h = HangarWindow_refreshCurrentContentHeight(self);
-    self->f_b4 = self->f_e4;
+    F<int>(self, 0xb4) = F<int>(self, 0xe4);
     FModSound_play(*g_hw_sound, 0x62, 0, 0, h);
 }

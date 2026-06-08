@@ -4,7 +4,7 @@
 extern "C" KIPlayer *Route_getDockingTarget(Route *self)
 {
     Array<KIPlayer *> *targets = F<Array<KIPlayer *> *>(self, 0x10);
-    int index = self->f_0;
+    int index = F<int32_t>(self, 0x0);
     if (targets != 0 && (int)targets->length > index)
         return targets->data[index];
     return 0;

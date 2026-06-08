@@ -4,14 +4,14 @@ extern "C" Vector AEGeometry_getPosition(AEGeometry *geometry);
 
 Vector PlayerStatic::getPosition()
 {
-    AEGeometry *geometry = (AEGeometry *)this->f_8;
+    AEGeometry *geometry = (AEGeometry *)pp(this, 0x8);
     if (geometry != 0) {
         return AEGeometry_getPosition(geometry);
     }
 
     Vector result;
-    result.x = (float)this->f_124;
-    result.y = (float)this->f_128;
-    result.z = (float)this->f_12c;
+    result.x = (float)i32(this, 0x124);
+    result.y = (float)i32(this, 0x128);
+    result.z = (float)i32(this, 0x12c);
     return result;
 }

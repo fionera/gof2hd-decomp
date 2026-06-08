@@ -15,15 +15,15 @@ typedef void (*BVMoveFn)(void *bv, Vector);
 extern "C" void PlayerFixedObject_moveForward(PlayerFixedObject *self, int amount)
 {
     float d = (float)amount;
-    self->f_180 = amount + self->f_180;
-    AEGeometry_moveForward(self->f_8, d);
-    void *m = AEGeometry_getMatrix(self->f_8);
-    Matrix_assign((char *)self->f_4 + 0x4, m);
+    F<int>(self, 0x180) = amount + F<int>(self, 0x180);
+    AEGeometry_moveForward(F<void *>(self, 0x8), d);
+    void *m = AEGeometry_getMatrix(F<void *>(self, 0x8));
+    Matrix_assign((char *)F<void *>(self, 0x4) + 0x4, m);
     char buf[12];
-    AEGeometry_getPosition((Vector *)buf, self->f_8);
+    AEGeometry_getPosition((Vector *)buf, F<void *>(self, 0x8));
     Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
-    if (self->f_124 != 0) {
-        AEGeometry_moveForward(self->f_124, d);
+    if (F<void *>(self, 0x124) != 0) {
+        AEGeometry_moveForward(F<void *>(self, 0x124), d);
     }
     Array<void *> *bv = F<Array<void *> *>(self, 0x128);
     if (bv != 0) {

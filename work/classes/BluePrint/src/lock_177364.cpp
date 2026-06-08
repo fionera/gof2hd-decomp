@@ -2,5 +2,5 @@
 
 extern "C" void BluePrint_lock(BluePrint *self)
 {
-    self->f_8 = 1;
+    F<uint8_t>(self, 0x8) = 1;
 }

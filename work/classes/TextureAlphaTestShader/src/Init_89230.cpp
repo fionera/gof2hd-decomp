@@ -7,13 +7,13 @@ void TextureAlphaTestShader::Init(Engine *)
     int program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this,
                                                   "TextureAlphaTestShader.vsh",
                                                   "TextureAlphaTestShader.fsh");
-    this->f_4 = program;
+    i32(this, 0x04) = program;
     ConnectShaderComponents(program, 0);
 
     program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this,
                                               "TextureAlphaTestShader.vsh",
                                               "TextureAlphaTestShaderAlpha.fsh");
-    this->f_20 = program;
+    i32(this, 0x20) = program;
     ConnectShaderComponents(program, 1);
 }
 

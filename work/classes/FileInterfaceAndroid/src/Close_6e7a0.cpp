@@ -17,23 +17,23 @@ extern void *gModeAppend __attribute__((visibility("hidden")));
 // which also shifts a callee-saved register (r5 vs r6). A -Oz branch-vs-cmov choice.
 extern "C" void FileInterfaceAndroid_Close(FileInterfaceAndroid *self)
 {
-    if (self->f_8 != 0) {
-        fclose(self->f_8);
-        self->f_8 = 0;
+    if (F<void *>(self, 0x08) != 0) {
+        fclose(F<void *>(self, 0x08));
+        F<void *>(self, 0x08) = 0;
     }
-    if (self->f_c != 0) {
-        zip_fclose(self->f_c);
-        self->f_c = 0;
+    if (F<void *>(self, 0x0c) != 0) {
+        zip_fclose(F<void *>(self, 0x0c));
+        F<void *>(self, 0x0c) = 0;
     }
-    void *m = self->f_10;
+    void *m = F<void *>(self, 0x10);
     if (m != 0) {
         void *env = *(void **)gJniEnv;
         void *modePtr;
-        if (self->f_14 == 0)
+        if (u8(self, 0x14) == 0)
             modePtr = gModeWrite;
         else
             modePtr = gModeAppend;
         JNI_CallVoidMethod(env, m, *(void **)modePtr);
-        self->f_10 = 0;
+        F<void *>(self, 0x10) = 0;
     }
 }

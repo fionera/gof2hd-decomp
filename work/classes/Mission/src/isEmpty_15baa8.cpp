@@ -1,5 +1,5 @@
 #include "class.h"
 
 extern "C" bool Mission_isEmpty(Mission *self) {
-    return self->f_c == -1;
+    return F<int>(self, 0xc) == -1;
 }

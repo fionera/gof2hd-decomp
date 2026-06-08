@@ -11,6 +11,6 @@ extern "C" Route *Route_getExactClone(Route *self)
         if (*(uint8_t *)((char *)F<Array<Waypoint *> *>(self, 0xc)->data[i] + 0x130) != 0)
             Waypoint_reached(F<Array<Waypoint *> *>(result, 0xc)->data[i]);
     }
-    result->f_0 = self->f_0;
+    F<int32_t>(result, 0x0) = F<int32_t>(self, 0x0);
     return result;
 }

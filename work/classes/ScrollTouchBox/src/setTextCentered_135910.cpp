@@ -2,5 +2,5 @@
 
 void ScrollTouchBox::setTextCentered(bool centered)
 {
-    this->f_38 = centered;
+    F<uint8_t>(this, 0x38) = centered;
 }

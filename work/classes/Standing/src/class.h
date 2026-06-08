@@ -16,10 +16,6 @@ typedef unsigned int uint32_t;
 typedef int int32_t;
 
 struct Standing {
-    // @portable-fields
-    void* f_0; // 0x0
-    int f_4; // 0x4
-
     Standing();
     ~Standing();
 };

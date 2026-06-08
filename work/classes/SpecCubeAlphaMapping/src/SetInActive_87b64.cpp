@@ -4,9 +4,9 @@ namespace AbyssEngine {
 
 void SpecCubeAlphaMapping::SetInActive()
 {
-    glDisableVertexAttribArray(this->f_20);
-    glDisableVertexAttribArray(this->f_24);
-    return glDisableVertexAttribArray(this->f_28);
+    glDisableVertexAttribArray(i32(this, 0x20));
+    glDisableVertexAttribArray(i32(this, 0x24));
+    return glDisableVertexAttribArray(i32(this, 0x28));
 }
 
 } // namespace AbyssEngine

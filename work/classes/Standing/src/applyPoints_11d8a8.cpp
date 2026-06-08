@@ -4,7 +4,7 @@
 // clamp the result into [-100, 100]. The clamping store only runs when the value
 // leaves the band; otherwise it returns early.
 extern "C" void Standing_applyPoints(Standing *self, int race, int delta) {
-    int *p = self->f_0;
+    int *p = F<int *>(self, 0);
     int v = delta + p[race];
     p[race] = v;
     int c;

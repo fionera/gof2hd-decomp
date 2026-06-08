@@ -2,5 +2,5 @@
 
 int Radar::getTurretScopeWidth()
 {
-    return this->f_12c << 1;
+    return F<int>(this, 0x12c) << 1;
 }

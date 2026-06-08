@@ -136,7 +136,9 @@ def verify(cls):
             cmds.append((b,cmd_n,cmd_o,new_o,old_o)); checked+=1
         else:
             cmds.append((b,cmd_n,None,new_o,None))
-    script=" ; ".join(c[1]+(" ; "+c[2] if c[2] else "") for c in cmds)
+    # IMPORTANT: join with && (fail-fast). With ';' the script's exit code is only the LAST command's,
+    # so a failing non-last compile would slip through verify and a broken class would get committed.
+    script=" && ".join(c[1]+(" && "+c[2] if c[2] else "") for c in cmds)
     try: r=subprocess.run(["orb","run","bash","-lc",script],capture_output=True,text=True,timeout=180)
     except subprocess.TimeoutExpired: return (False,"timeout",checked)
     if r.returncode!=0: return (False,"compile error",checked)

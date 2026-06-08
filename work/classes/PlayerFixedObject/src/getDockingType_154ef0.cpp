@@ -2,5 +2,5 @@
 
 extern "C" int PlayerFixedObject_getDockingType(PlayerFixedObject *self)
 {
-    return self->f_1a4;
+    return F<int>(self, 0x1a4);
 }

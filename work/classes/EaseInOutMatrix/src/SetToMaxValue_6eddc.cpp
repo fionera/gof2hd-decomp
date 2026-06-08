@@ -3,7 +3,7 @@
 namespace AbyssEngine {
 
 void EaseInOutMatrix::SetToMaxValue() {
-    this->f_74 = 1.25f;
+    f32(this, 0x74) = 1.25f;
     UpdateCurrentValue();
 }
 

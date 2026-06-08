@@ -17,7 +17,7 @@ void ScrollTouchWindow::drawTextBG()
     int y = I(this, 0x18);
     int w = I(this, 0x1c);
     int pad = I(layout, 0x2c);
-    float relHeight = ScrollTouchBox_getRelativeScrollHeight(this->f_0);
+    float relHeight = ScrollTouchBox_getRelativeScrollHeight(P(this, 0));
     void *layoutNow = *layoutHolder;
     int widthInset;
     int heightInset;

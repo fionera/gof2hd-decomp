@@ -7,10 +7,6 @@ typedef unsigned int uint32_t;
 typedef int int32_t;
 
 struct HackingGame {
-    // @portable-fields
-    unsigned char _pad_0[296];
-    int f_128; // 0x128
-
     HackingGame(int type, int canvas, int rewardItem, int rewardAmount, int dockingIndex);
 
     int getRewardItem();

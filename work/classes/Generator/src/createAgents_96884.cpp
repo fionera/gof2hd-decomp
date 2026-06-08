@@ -86,7 +86,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                     Array_int_ctor(choices);
                     for (int j = 0; j != 6; ++j) {
                         int shipId = g_Generator_offerShipIds[j];
-                        if (Station_hasShip(status->f_14c,
+                        if (Station_hasShip(F<Station *>(status, 0x14c),
                                             shipId) == 0) {
                             Ship *ship = Status_getShip(status);
                             if (Ship_getIndex(ship) != shipId) {

@@ -6,11 +6,11 @@ extern "C" void *KIPlayer_dtor(PlayerAsteroid *self);
 
 extern "C" void *_ZN14PlayerAsteroidD1Ev(PlayerAsteroid *self)
 {
-    self->f_0 = (char *)PlayerAsteroid_vtable + 8;
-    Explosion *explosion = self->f_12c;
+    F<void *>(self, 0) = (char *)PlayerAsteroid_vtable + 8;
+    Explosion *explosion = F<Explosion *>(self, 0x12c);
     if (explosion != 0) {
         operator_delete(Explosion_dtor(explosion));
     }
-    self->f_12c = 0;
+    F<Explosion *>(self, 0x12c) = 0;
     return KIPlayer_dtor(self);
 }

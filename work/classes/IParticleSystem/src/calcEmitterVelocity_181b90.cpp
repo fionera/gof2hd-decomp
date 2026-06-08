@@ -10,7 +10,7 @@ void IParticleSystem::calcEmitterVelocity(int delta)
     char position[12];
     char scaled[12];
     char diff[12];
-    MatrixGetPosition(position, this->f_18);
+    MatrixGetPosition(position, F<Matrix const *>(this, 0x18));
     Vector_sub(diff, position, (char *)this + 0x28);
     Vector_mul(scaled, diff, 1000.0f / (float)delta);
     Vector_assign((char *)this + 0x1c, scaled);

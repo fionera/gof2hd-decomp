@@ -5,26 +5,26 @@ namespace AbyssEngine {
 void GreenShader::Init(Engine *)
 {
     int program = ShaderBaseStruct_ES2LoadProgram(this, "GreenShader.vsh", "GreenShader.fsh");
-    this->f_4 = program;
+    i32(this, 0x04) = program;
 
-    this->f_20 = glGetAttribLocation(program, "a0");
-    this->f_24 = glGetAttribLocation(this->f_4, "a1");
-    this->f_28 = glGetAttribLocation(this->f_4, "a2");
-    this->f_2c = glGetAttribLocation(this->f_4, "a3");
-    this->f_30 = glGetAttribLocation(this->f_4, "a4");
+    i32(this, 0x20) = glGetAttribLocation(program, "a0");
+    i32(this, 0x24) = glGetAttribLocation(i32(this, 0x04), "a1");
+    i32(this, 0x28) = glGetAttribLocation(i32(this, 0x04), "a2");
+    i32(this, 0x2c) = glGetAttribLocation(i32(this, 0x04), "a3");
+    i32(this, 0x30) = glGetAttribLocation(i32(this, 0x04), "a4");
 
-    this->f_34 = glGetUniformLocation(this->f_4, "u0");
-    this->f_38 = glGetUniformLocation(this->f_4, "u1");
-    this->f_3c = glGetUniformLocation(this->f_4, "u2");
-    this->f_40 = glGetUniformLocation(this->f_4, "u3");
-    this->f_44 = glGetUniformLocation(this->f_4, "u4");
-    this->f_48 = glGetUniformLocation(this->f_4, "u5");
-    this->f_4c = glGetUniformLocation(this->f_4, "u6");
-    this->f_50 = glGetUniformLocation(this->f_4, "u7");
-    this->f_54 = glGetUniformLocation(this->f_4, "u8");
+    i32(this, 0x34) = glGetUniformLocation(i32(this, 0x04), "u0");
+    i32(this, 0x38) = glGetUniformLocation(i32(this, 0x04), "u1");
+    i32(this, 0x3c) = glGetUniformLocation(i32(this, 0x04), "u2");
+    i32(this, 0x40) = glGetUniformLocation(i32(this, 0x04), "u3");
+    i32(this, 0x44) = glGetUniformLocation(i32(this, 0x04), "u4");
+    i32(this, 0x48) = glGetUniformLocation(i32(this, 0x04), "u5");
+    i32(this, 0x4c) = glGetUniformLocation(i32(this, 0x04), "u6");
+    i32(this, 0x50) = glGetUniformLocation(i32(this, 0x04), "u7");
+    i32(this, 0x54) = glGetUniformLocation(i32(this, 0x04), "u8");
 
-    glUseProgram(this->f_4);
-    return glUniform1i(this->f_44, 0);
+    glUseProgram(i32(this, 0x04));
+    return glUniform1i(i32(this, 0x44), 0);
 }
 
 } // namespace AbyssEngine

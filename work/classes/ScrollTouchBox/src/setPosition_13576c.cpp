@@ -2,6 +2,6 @@
 
 void ScrollTouchBox::setPosition(int x, int y)
 {
-    this->f_4 = x;
-    this->f_8 = y;
+    F<int>(this, 0x4) = x;
+    F<int>(this, 0x8) = y;
 }

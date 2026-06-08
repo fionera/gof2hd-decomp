@@ -1,5 +1,5 @@
 #include "class.h"
 
 extern "C" bool ListItem_isPendingProduct(ListItem *self) {
-    return self->f_18 != 0;
+    return F<int>(self, 0x18) != 0;
 }

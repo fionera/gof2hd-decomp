@@ -15,20 +15,7 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct SentryGun {
-    // @portable-fields
-    unsigned char _pad_0[8];
-    void* f_8; // 0x8
-    void* f_c; // 0xc
-    unsigned char _pad_10[61];
-    int f_4d; // 0x4d
-    unsigned char _pad_51[7];
-    int f_58; // 0x58
-    unsigned char _pad_5c[68];
-    int f_a0; // 0xa0
-    unsigned char _pad_a4[12];
-    int f_b0; // 0xb0
-};
+struct SentryGun;
 struct Gun;
 struct Level;
 

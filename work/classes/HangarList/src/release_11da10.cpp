@@ -41,5 +41,5 @@ void HangarList::release() {
             operator_delete(Array_ArrayListItem_dtor(tabs));
         }
     }
-    this->f_0 = 0;
+    F<uint32_t>(this, 0x0) = 0;
 }

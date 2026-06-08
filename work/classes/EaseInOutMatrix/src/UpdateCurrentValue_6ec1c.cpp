@@ -11,14 +11,14 @@ void EaseInOutMatrix::UpdateCurrentValue()
 {
     AEMath::Matrix *current = (AEMath::Matrix *)((char *)this + 0x78);
 
-    if (this->f_74 == 1.25f) {
+    if (f32(this, 0x74) == 1.25f) {
         *current = *(AEMath::Matrix *)((char *)this + 0xb4);
         return;
     }
 
     // DAT_0007ed00 is the sweep constant applied to the eased parameter.
     static const float kSweep = 3.14159265f;
-    float s = AEMath::Sinf(this->f_74 * kSweep);
+    float s = AEMath::Sinf(f32(this, 0x74) * kSweep);
     float w = s * 0.5f + 0.5f;
 
     Quaternion *q0 = (Quaternion *)((char *)this + 0x3c);

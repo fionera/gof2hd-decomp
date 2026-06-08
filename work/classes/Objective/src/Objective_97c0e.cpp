@@ -2,12 +2,12 @@
 
 Objective::Objective(int type, int value, int calcValue, Level *level)
 {
-    this->f_0 = type;
-    this->f_4 = value;
-    this->f_8 = calcValue;
-    this->f_c = level;
-    this->f_10 = 0;
-    this->f_14 = 0;
+    F<int>(this, 0x0) = type;
+    F<int>(this, 0x4) = value;
+    F<int>(this, 0x8) = calcValue;
+    F<Level *>(this, 0xc) = level;
+    F<int>(this, 0x10) = 0;
+    F<int>(this, 0x14) = 0;
     if (type == 0xd)
-        this->f_18 = calcValue;
+        F<int>(this, 0x18) = calcValue;
 }

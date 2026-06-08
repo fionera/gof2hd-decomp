@@ -41,7 +41,7 @@ float g_PlayerStaticFar_scaleFactor;  // DAT_0012c450
 
 void PlayerStaticFar::update(int /*delta*/)
 {
-    if (this->f_8 == 0)
+    if (pp(this, 0x8) == 0)
         return;
 
     void *camera = g_PlayerStaticFar_cameraHolder;
@@ -55,9 +55,9 @@ void PlayerStaticFar::update(int /*delta*/)
     AEMath_Vector_assign((Vec3 *)((char *)this + 0x90), &local);
 
     // this+0x9c = object's integer position converted to float.
-    local.x = (float)this->f_124;
-    local.y = (float)this->f_128;
-    local.z = (float)this->f_12c;
+    local.x = (float)i32(this, 0x124);
+    local.y = (float)i32(this, 0x128);
+    local.z = (float)i32(this, 0x12c);
     AEMath_Vector_assign((Vec3 *)((char *)this + 0x9c), &local);
 
     // local = (this+0x9c) - (this+0x90); store into this+0x134.
@@ -70,11 +70,11 @@ void PlayerStaticFar::update(int /*delta*/)
 
     if ((int)len < g_PlayerStaticFar_distLimit) {
         // Close: full-scale at the literal integer position.
-        AEGeometry_setScaling(this->f_8, 1.0f, 1.0f, 1.0f);
-        float fx = (float)this->f_124;
-        float fy = (float)this->f_128;
-        float fz = (float)this->f_12c;
-        AEGeometry_setPosition(this->f_8, fx, fy, fz);
+        AEGeometry_setScaling(pp(this, 0x8), 1.0f, 1.0f, 1.0f);
+        float fx = (float)i32(this, 0x124);
+        float fy = (float)i32(this, 0x128);
+        float fz = (float)i32(this, 0x12c);
+        AEGeometry_setPosition(pp(this, 0x8), fx, fy, fz);
     } else {
         // Far: place on a sphere of radius g_radius along the view direction.
         Vec3 n;
@@ -82,11 +82,11 @@ void PlayerStaticFar::update(int /*delta*/)
         AEMath_Vector_assign2(dir, &n);
         AEMath_Vector_mul_eq(dir, g_PlayerStaticFar_radius);
         AEMath_Vector_add_eq(dir, (Vec3 *)((char *)this + 0x90));
-        AEGeometry_setPositionVec(this->f_8, dir);
+        AEGeometry_setPositionVec(pp(this, 0x8), dir);
 
         float s = (float)(int)((g_PlayerStaticFar_radius / (float)(int)len) *
                                g_PlayerStaticFar_scaleNum);
         s = s * g_PlayerStaticFar_scaleFactor;
-        AEGeometry_setScaling(this->f_8, s, s, s);
+        AEGeometry_setScaling(pp(this, 0x8), s, s, s);
     }
 }

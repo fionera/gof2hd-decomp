@@ -2,5 +2,5 @@
 
 bool Objective::getCalcValue()
 {
-    return this->f_0 == 3;
+    return F<int>(this, 0x0) == 3;
 }

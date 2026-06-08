@@ -6,7 +6,7 @@ extern "C" uint32_t _ZN9AEPakFile7ReleaseEv(AEPakFile *self);
 
 extern "C" AEPakFile *_ZN9AEPakFileD2Ev(AEPakFile *self)
 {
-    self->f_0 = (char *)g_AEPakFile_vtable + 8;
+    P(self, 0) = (char *)g_AEPakFile_vtable + 8;
     _ZN9AEPakFile7ReleaseEv(self);
     return self;
 }

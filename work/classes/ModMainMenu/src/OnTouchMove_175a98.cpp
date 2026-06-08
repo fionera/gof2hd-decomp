@@ -7,5 +7,5 @@ extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu11OnTouchMov
 {
     if (UC(self, 0x28) != 0)
         return;
-    MenuTouchWindow_OnTouchMove(self->f_18, x, y, touch);
+    MenuTouchWindow_OnTouchMove(P(self, 0x18), x, y, touch);
 }

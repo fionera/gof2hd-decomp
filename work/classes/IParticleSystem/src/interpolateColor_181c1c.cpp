@@ -4,8 +4,8 @@ __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
 
 void IParticleSystem::interpolateColor(int index, float *alpha, float *red, float *green, float *blue)
 {
-    int age = ((int *)this->f_68)[index];
-    int setIndex = ((int8_t *)this->f_6c)[index];
+    int age = ((int *)P(this, 0x68))[index];
+    int setIndex = ((int8_t *)P(this, 0x6c))[index];
     char *def = ParticleSet_definitions + (setIndex + setIndex * 4) * 32;
 
     float t = (float)age / (float)*(int *)(def + 0x28);

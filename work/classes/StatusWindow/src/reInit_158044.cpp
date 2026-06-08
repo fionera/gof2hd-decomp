@@ -17,7 +17,7 @@ extern void *g_sw_canvas;         // *(DAT_168160): paint canvas singleton
 // StatusWindow::reInit() -- rebuild the four medal/rank image tiles from achievement state.
 extern "C" void StatusWindow_reInit(StatusWindow *self)
 {
-    self->f_c = ImageFactory_loadChar(*(void **)g_sw_imageFactory, &g_sw_charDef);
+    pp(self, 0xc) = ImageFactory_loadChar(*(void **)g_sw_imageFactory, &g_sw_charDef);
 
     void *ach = *(void **)g_sw_achievements;
     int a0 = Achievements_isUnlocked(Achievements_get(), 0);
@@ -48,6 +48,6 @@ extern "C" void StatusWindow_reInit(StatusWindow *self)
     if (a3) id = 0x49b;
     PaintCanvas_setImage2D(canvas, id, (char *)self + 0x20);
 
-    self->f_60 = PaintCanvas_GetImage2DWidth(canvas);
-    self->f_64 = PaintCanvas_GetImage2DHeight(canvas);
+    i32(self, 0x60) = PaintCanvas_GetImage2DWidth(canvas);
+    i32(self, 0x64) = PaintCanvas_GetImage2DHeight(canvas);
 }

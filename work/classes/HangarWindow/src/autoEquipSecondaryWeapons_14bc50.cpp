@@ -31,7 +31,7 @@ extern "C" extern const char hw_equip_fmt[];
 
 extern "C" void HangarWindow_autoEquipSecondaryWeapons(HangarWindow *self, int row)
 {
-    void *item = HangarList_getCurrentItemAt(self->f_14, row);
+    void *item = HangarList_getCurrentItemAt(F<void *>(self, 0x14), row);
     if (item == 0)
         return;
     void *itm = G<void *>(item, 0x10);
@@ -68,7 +68,7 @@ extern "C" void HangarWindow_autoEquipSecondaryWeapons(HangarWindow *self, int r
 
         Ship_setEquipment(HangarWindow_statusShip(), made);
         Ship_removeCargo(HangarWindow_statusShip(), Item_getIndex(made), Item_getAmount(itm));
-        HangarList_initShipTab(self->f_14, HangarWindow_statusShip());
+        HangarList_initShipTab(F<void *>(self, 0x14), HangarWindow_statusShip());
 
         String12 msg, msgCopy, name, fmt;
         AEString_ctor(&msg, (const char *)GameText_getText(*g_hw_equipTextId), false);
@@ -83,9 +83,9 @@ extern "C" void HangarWindow_autoEquipSecondaryWeapons(HangarWindow *self, int r
         AEString_dtor(&name);
         AEString_dtor(&msgCopy);
 
-        ChoiceWindow_set(self->f_20, &msg);
+        ChoiceWindow_set(F<void *>(self, 0x20), &msg);
         F<uint8_t>(self, 0xad) = 1;
-        self->f_3c = 1;
+        F<uint8_t>(self, 0x3c) = 1;
         AEString_dtor(&msg);
         break;
     }

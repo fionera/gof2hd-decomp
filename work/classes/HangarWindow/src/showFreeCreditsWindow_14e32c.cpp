@@ -32,7 +32,7 @@ extern "C" void HangarWindow_showFreeCreditsWindow(HangarWindow *self)
     appData = ApplicationManager_GetApplicationData();
     *((uint8_t *)appData + 0x3d) = 1;
 
-    void *win = self->f_20;
+    void *win = F<void *>(self, 0x20);
     String12 title, title2, yes, no;
     AEString_ctor(&title, hw_freeCredits_yes, false);
     AEString_ctor(&title2, hw_freeCredits_yes, false);
@@ -45,8 +45,8 @@ extern "C" void HangarWindow_showFreeCreditsWindow(HangarWindow *self)
     AEString_dtor(&title2);
     AEString_dtor(&title);
 
-    int rowH = TouchButton_getHeight(G<void *>(G<void *>(self->f_24, 4), 0x48));
-    ChoiceWindow_setHeight(self->f_20, rowH * 5);
+    int rowH = TouchButton_getHeight(G<void *>(G<void *>(F<void *>(self, 0x24), 4), 0x48));
+    ChoiceWindow_setHeight(F<void *>(self, 0x20), rowH * 5);
 
     int maxW = 0;
     for (int i = 5; i != 0; i--) {
@@ -57,11 +57,11 @@ extern "C" void HangarWindow_showFreeCreditsWindow(HangarWindow *self)
     }
     int btnW = TouchButton_getWidth(0);
     void *layout = *g_hw_layout;
-    ChoiceWindow_setWidth(self->f_20,
+    ChoiceWindow_setWidth(F<void *>(self, 0x20),
                           G<int>(layout, 0x2c) + btnW + maxW + G<int>(layout, 0x28) * 4);
 
-    self->f_b0 = 1;
-    self->f_3c = 1;
+    F<uint8_t>(self, 0xb0) = 1;
+    F<uint8_t>(self, 0x3c) = 1;
     F<uint8_t>(self, 0xae) = 0;
     F<uint8_t>(self, 0xaf) = 0;
 }

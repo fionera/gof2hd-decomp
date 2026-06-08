@@ -10,7 +10,7 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_canvas;
 // field checks). clang shrink-wraps here (checks before push, bx lr early-exit).
 extern "C" void PlayerFixedObject_setExhaustVisible(PlayerFixedObject *self, bool v)
 {
-    void *geom = self->f_8;
+    void *geom = F<void *>(self, 0x8);
     if (geom != 0 && *(int *)((char *)geom + 0x14) != -1) {
         void **holder = g_pfo_canvas;
         return Transform_setExhaustVisible(PaintCanvas_TransformGetTransform(*holder), v);

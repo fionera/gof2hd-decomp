@@ -2,5 +2,5 @@
 
 void Radar::unlockAsteroid()
 {
-    this->f_c = 0;
+    F<int>(this, 0x0c) = 0;
 }

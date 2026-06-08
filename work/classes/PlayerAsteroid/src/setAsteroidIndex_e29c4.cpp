@@ -2,5 +2,5 @@
 
 void PlayerAsteroid::setAsteroidIndex(int asteroidIndex)
 {
-    this->f_128 = asteroidIndex;
+    F<int>(this, 0x128) = asteroidIndex;
 }

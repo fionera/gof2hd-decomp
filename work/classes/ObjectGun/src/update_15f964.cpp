@@ -38,7 +38,7 @@ extern "C" void Explosion_reset(Explosion *self);
 
 static inline Explosion *explosion_at(ObjectGun *self, uint32_t index)
 {
-    return F<Explosion **>(self->f_2c, 0x4)[index];
+    return F<Explosion **>(F<Array *>(self, 0x2c), 0x4)[index];
 }
 
 void ObjectGun::update(int dt)
@@ -54,82 +54,82 @@ void ObjectGun::update(int dt)
     Vector zero = {0.0f, 0.0f, 0.0f};
 
     void **canvas = (void **)g_PaintCanvas;
-    uint32_t transform = TransformGetTransform(*canvas, this->f_10);
+    uint32_t transform = TransformGetTransform(*canvas, F<uint32_t>(this, 0x10));
     Transform_Update((uint64_t)transform, (int64_t)dt, 0);
 
-    this->f_34 = dt;
-    Gun *gun = this->f_8;
+    F<int>(this, 0x34) = dt;
+    Gun *gun = F<Gun *>(this, 0x8);
     Gun_update(gun, dt);
 
-    if (this->f_1c == 0) {
+    if (F<uint8_t>(this, 0x1c) == 0) {
         if (Gun_isPlayerGun(gun) == 0) {
-            Player *owner = gun->f_4;
+            Player *owner = F<Player *>(gun, 0x4);
             if (owner != 0) {
                 Player *ki = Player_getKIPlayer(owner);
                 if (ki != 0 && F<uint8_t>(Player_getKIPlayer(owner), 0x3f) != 0) {
-                    this->f_1c = 1;
+                    F<uint8_t>(this, 0x1c) = 1;
                     AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);
-                    AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[F<int>(this->f_8, 0x58)].id,
+                    AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[F<int>(F<Gun *>(this, 0x8), 0x58)].id,
                                     *canvas, false);
-                    this->f_18 = geometry;
+                    F<AEGeometry *>(this, 0x18) = geometry;
                 }
             }
         }
-        if (this->f_1c == 0)
+        if (F<uint8_t>(this, 0x1c) == 0)
             goto after_geometry;
     }
 
-    gun = this->f_8;
+    gun = F<Gun *>(this, 0x8);
     if (F<uint8_t>(gun, 0xa9) == 0) {
-        uint32_t object = g_TransformGetObject(*canvas, F<uint32_t>(this->f_18, 0xc));
+        uint32_t object = g_TransformGetObject(*canvas, F<uint32_t>(F<AEGeometry *>(this, 0x18), 0xc));
         g_TransformSetState(object, 0, 0);
-        object = g_TransformGetObject(*canvas, F<uint32_t>(this->f_18, 0xc));
+        object = g_TransformGetObject(*canvas, F<uint32_t>(F<AEGeometry *>(this, 0x18), 0xc));
         g_TransformSetState(object, 3, 0);
-        object = g_TransformGetObject(*canvas, F<uint32_t>(this->f_18, 0xc));
+        object = g_TransformGetObject(*canvas, F<uint32_t>(F<AEGeometry *>(this, 0x18), 0xc));
         g_TransformSetState(object, 1, 0);
         goto after_geometry;
     }
 
     {
-        Player *player = Level_getPlayer(this->f_c);
+        Player *player = Level_getPlayer(F<Level *>(this, 0xc));
         if (Gun_isPlayerGun(gun) != 0) {
             PlayerEgo_getPosition(&position, player);
         } else {
-            Player_getPosition(&position, gun->f_4);
+            Player_getPosition(&position, F<Player *>(gun, 0x4));
         }
 
-        gun = this->f_8;
+        gun = F<Gun *>(this, 0x8);
         void *matrixSource = player;
         if (Gun_isPlayerGun(gun) == 0)
             matrixSource = (char *)gun + 0x4;
-        __aeabi_memcpy(&playerMatrix, (char *)matrixSource->f_0 + 0x4, 0x3c);
+        __aeabi_memcpy(&playerMatrix, (char *)F<void *>(matrixSource, 0x0) + 0x4, 0x3c);
 
-        offsets.x = gun->f_7c;
-        offsets.y = gun->f_80;
-        offsets.z = gun->f_84 + 8.0f;
+        offsets.x = F<float>(gun, 0x7c);
+        offsets.y = F<float>(gun, 0x80);
+        offsets.z = F<float>(gun, 0x84) + 8.0f;
         MatrixRotateVector(&workMatrix, &playerMatrix, &offsets);
         Vector_add_assign(&position, (Vector *)&workMatrix);
-        AEGeometry_setPosition(this->f_18, &position);
+        AEGeometry_setPosition(F<AEGeometry *>(this, 0x18), &position);
 
-        transform = TransformGetTransform(*canvas, F<uint32_t>(this->f_18, 0xc));
+        transform = TransformGetTransform(*canvas, F<uint32_t>(F<AEGeometry *>(this, 0x18), 0xc));
         Transform_Update((uint64_t)transform, (int64_t)dt, 0);
 
-        if (F<int>(this->f_8, 0x5c) != 8) {
+        if (F<int>(F<Gun *>(this, 0x8), 0x5c) != 8) {
             void *paint = *canvas;
             void *camera = CameraGetCurrent(paint);
             Matrix_copy(&cameraMatrix, (Matrix *)CameraGetLocal(paint, camera));
             MatrixGetDir(&dir, &cameraMatrix);
             MatrixGetUp(&up, &cameraMatrix);
-            AEGeometry_setDirection(this->f_18, &dir, &up);
+            AEGeometry_setDirection(F<AEGeometry *>(this, 0x18), &dir, &up);
             goto after_geometry;
         }
 
-        Matrix *m0 = AEGeometry_getMatrix(this->f_18);
-        Matrix *m1 = AEGeometry_getMatrix(this->f_18);
+        Matrix *m0 = AEGeometry_getMatrix(F<AEGeometry *>(this, 0x18));
+        Matrix *m1 = AEGeometry_getMatrix(F<AEGeometry *>(this, 0x18));
         Matrix_multiply(&workMatrix, m0);
 
-        gun = this->f_8;
-        int weapon = gun->f_58;
+        gun = F<Gun *>(this, 0x8);
+        int weapon = F<int>(gun, 0x58);
         offsets.x = 0.0f;
         offsets.y = 0.0f;
         offsets.z = -3.5f;
@@ -147,15 +147,15 @@ void ObjectGun::update(int dt)
             offsets.z = 13.0f;
         }
 
-        if (gun->f_a4 != 0) {
+        if (F<uint8_t>(gun, 0xa4) != 0) {
             if (weapon == 0xb5) {
                 offsets.x = F<uint8_t>(gun, 0xa6) != 0 ? -1.5f : 1.5f;
             } else {
                 float left = weapon == 0x30 ? 20.0f : 15.0f;
                 float right = weapon == 0x30 ? -20.0f : -15.0f;
-                offsets.x = left - gun->f_7c;
+                offsets.x = left - F<float>(gun, 0x7c);
                 if (F<uint8_t>(gun, 0xa6) != 0)
-                    offsets.x = gun->f_7c + right;
+                    offsets.x = F<float>(gun, 0x7c) + right;
             }
         }
         if (F<uint8_t>(gun, 0xa5) != 0) {
@@ -166,36 +166,36 @@ void ObjectGun::update(int dt)
             }
         }
         MatrixRotateVector(&cameraMatrix, &workMatrix, &offsets);
-        AEGeometry_setMatrix(this->f_18, &workMatrix);
-        AEGeometry_translate(this->f_18, (Vector *)&cameraMatrix);
+        AEGeometry_setMatrix(F<AEGeometry *>(this, 0x18), &workMatrix);
+        AEGeometry_translate(F<AEGeometry *>(this, 0x18), (Vector *)&cameraMatrix);
         (void)m1;
     }
 
 after_geometry:
-    gun = this->f_8;
+    gun = F<Gun *>(this, 0x8);
     F<uint8_t>(this, 0x1d) = F<uint8_t>(gun, 0xa9);
-    if (gun->f_5c == 0x19) {
+    if (F<int>(gun, 0x5c) == 0x19) {
         int positionOffset = 0;
-        for (uint32_t i = 0; i < gun->f_8; ++i) {
-            if (gun->f_40[i] != 0) {
-                if (this->f_30[i] != 0) {
+        for (uint32_t i = 0; i < F<uint32_t>(gun, 0x8); ++i) {
+            if (F<uint8_t *>(gun, 0x40)[i] != 0) {
+                if (F<uint8_t *>(this, 0x30)[i] != 0) {
                     Explosion_start(explosion_at(this, i),
-                                    (Vector *)(gun->f_30 + positionOffset),
+                                    (Vector *)(F<char *>(gun, 0x30) + positionOffset),
                                     &zero);
-                    this->f_30[i] = 0;
+                    F<uint8_t *>(this, 0x30)[i] = 0;
                 }
                 Explosion *explosion = explosion_at(this, i);
                 Explosion_update(explosion, dt, 0);
                 if (Explosion_isPlaying(explosion) == 0) {
-                    gun = this->f_8;
-                    gun->f_40[i] = 0;
-                    gun->f_88 = 0;
-                    this->f_30[i] = 1;
+                    gun = F<Gun *>(this, 0x8);
+                    F<uint8_t *>(gun, 0x40)[i] = 0;
+                    F<uint8_t>(gun, 0x88) = 0;
+                    F<uint8_t *>(this, 0x30)[i] = 1;
                     Explosion_reset(explosion_at(this, i));
                 }
             }
             positionOffset += 0xc;
-            gun = this->f_8;
+            gun = F<Gun *>(this, 0x8);
         }
     }
 }

@@ -11,18 +11,6 @@ struct String;
 typedef AbyssEngine::String String;
 
 struct NewsTicker {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    void* f_8; // 0x8
-    int f_c; // 0xc
-    int f_10; // 0x10
-    int f_14; // 0x14
-    int f_18; // 0x18
-    unsigned char _pad_1c[12];
-    int f_28; // 0x28
-    int f_2c; // 0x2c
-
     NewsTicker(int x, int y, int width, int faction, int level);
     ~NewsTicker();
 

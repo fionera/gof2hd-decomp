@@ -20,12 +20,7 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct SpriteGun {
-    // @portable-fields
-    void* f_0; // 0x0
-    int f_4; // 0x4
-    void* f_8; // 0x8
-};
+struct SpriteGun;
 struct Array;
 struct Player;
 struct Gun;

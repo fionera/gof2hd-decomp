@@ -34,25 +34,25 @@ extern "C" int SpaceLounge_init(SpaceLounge *self)
     UC(self, 0xb2) = 0;
     UC(self, 0xb0) = 0;
     UC(self, 0xbc) = 0;
-    self->f_24 = Station_getAgents(Status_getStation());
+    P(self, 0x24) = Station_getAgents(Status_getStation());
 
-    if (self->f_8 != 0) {
-        operator_delete(ChoiceWindow_dtor(self->f_8));
-        self->f_8 = 0;
+    if (P(self, 0x8) != 0) {
+        operator_delete(ChoiceWindow_dtor(P(self, 0x8)));
+        P(self, 0x8) = 0;
     }
     void *choice = operator_new(0x5c);
     ChoiceWindow_ctor(choice);
-    self->f_8 = choice;
+    P(self, 0x8) = choice;
     UC(self, 0x35) = 0;
 
-    if (self->f_44 != 0) {
-        CutScene_resetCamera(self->f_44);
+    if (P(self, 0x44) != 0) {
+        CutScene_resetCamera(P(self, 0x44));
     }
 
     UC(self, 0x18) = 0;
-    self->f_58 = operator_new_arr(0x15);
+    P(self, 0x58) = operator_new_arr(0x15);
     for (int i = 0; i != 0x15; ++i) {
-        ((char *)self->f_58)[i] = 0;
+        ((char *)P(self, 0x58))[i] = 0;
     }
 
     void *layoutSlot = *(void **)&SpaceLounge_init_layout_slot;
@@ -65,21 +65,21 @@ extern "C" int SpaceLounge_init(SpaceLounge *self)
     void *scroll = operator_new(0x24);
     ScrollTouchWindow_ctor(scroll, I(self, 0x70) + I(layout, 0x4c) * 2 + I(layout, 0x2d4),
                            I(self, 0x74), I(self, 0x6c), I(layout, 0x6c), false);
-    self->f_60 = scroll;
+    P(self, 0x60) = scroll;
 
     I(self, 0x14) = 0;
     I(self, 0x78) = I(self, 0x74) + I(layout, 0x6c) + I(layout, 0x2c);
     I(self, 0x64) = (I(layout, 0x34) + I(layout, 0x30)) * 5;
 
-    if (self->f_5c != 0) {
-        ArrayRelease_TouchButtonPtr(self->f_5c);
-        if (self->f_5c != 0) {
-            operator_delete(Array_TouchButtonPtr_dtor(self->f_5c));
+    if (P(self, 0x5c) != 0) {
+        ArrayRelease_TouchButtonPtr(P(self, 0x5c));
+        if (P(self, 0x5c) != 0) {
+            operator_delete(Array_TouchButtonPtr_dtor(P(self, 0x5c)));
         }
     }
     void *buttons = operator_new(0xc);
     Array_TouchButton_ctor(buttons);
-    self->f_5c = buttons;
+    P(self, 0x5c) = buttons;
     ArraySetLength_TouchButtonPtr(buttons, 5);
 
     void *textsSlot = *(void **)&SpaceLounge_init_text_slot;
@@ -93,7 +93,7 @@ extern "C" int SpaceLounge_init(SpaceLounge *self)
         void *button = operator_new(200);
         TouchButton_ctor(button, text, 0, I(self, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)),
                          I(self, 0x6c), 0x11, 4);
-        ((void **)buttons->f_4)[i] = button;
+        ((void **)P(buttons, 0x4))[i] = button;
         TouchButton_setTextColor(button, -1);
     }
 
@@ -104,8 +104,8 @@ extern "C" int SpaceLounge_init(SpaceLounge *self)
     void *camera = *(void **)cameraSlot;
     void *current = PaintCanvas_CameraGetCurrent(camera);
     PaintCanvas_CameraSetLocal(camera, current);
-    if (self->f_48 != 0) {
-        EaseInOutMatrix_SetRange(self->f_48, matrix, matrix);
+    if (P(self, 0x48) != 0) {
+        EaseInOutMatrix_SetRange(P(self, 0x48), matrix, matrix);
     }
     UC(self, 0xbd) = 1;
     I(self, 0x104) = 0;

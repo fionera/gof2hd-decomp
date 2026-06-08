@@ -4,5 +4,5 @@
 extern "C" void FileInterfaceAndroid_SetAppRootDir(FileInterfaceAndroid *self, void *p)
 {
     if (p != 0)
-        self->f_30 = p;
+        F<void *>(self, 0x30) = p;
 }

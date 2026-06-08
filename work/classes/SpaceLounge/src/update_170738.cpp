@@ -45,28 +45,28 @@ extern "C" void SpaceLounge_update(SpaceLounge *self, int dt)
     }
 
     if (UC(self, 0x34) != 0) {
-        return SpaceLounge_update_map_tail(self->f_4, dt);
+        return SpaceLounge_update_map_tail(P(self, 0x4), dt);
     }
     if (UC(self, 0x1c) != 0) {
-        return SpaceLounge_update_ship_tail(self->f_c, dt);
+        return SpaceLounge_update_ship_tail(P(self, 0xc), dt);
     }
 
     if (UC(self, 0xbc) == 0) {
-        EaseInOutMatrix_Increase(self->f_48, (float)dt);
+        EaseInOutMatrix_Increase(P(self, 0x48), (float)dt);
     }
 
     void *cameraSlot;
     void *camera;
     void *current;
     if (UC(self, 0xbd) == 0) {
-        EaseInOutMatrix_GetMaxValue(maxMatrix, self->f_48);
-        EaseInOutMatrix_GetValue(valueMatrix, self->f_48);
+        EaseInOutMatrix_GetMaxValue(maxMatrix, P(self, 0x48));
+        EaseInOutMatrix_GetValue(valueMatrix, P(self, 0x48));
         if (Matrix_equal(maxMatrix, valueMatrix) == 0) {
             UC(self, 0xbc) = 0;
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_c;
             camera = *(void **)cameraSlot;
             current = PaintCanvas_CameraGetCurrent(camera);
-            EaseInOutMatrix_GetValue(valueMatrix, self->f_48);
+            EaseInOutMatrix_GetValue(valueMatrix, P(self, 0x48));
             PaintCanvas_CameraSetLocal(camera, valueMatrix);
         } else {
             goto idle_camera;
@@ -93,17 +93,17 @@ idle_camera:
             UC(self, 0xbc) = 1;
             int amount = AERandom_nextInt(*(void **)&SpaceLounge_update_random_slot, 10);
             UC(self, 0xc4) = 0;
-            if (self->f_c0 == 0) {
+            if (P(self, 0xc0) == 0) {
                 void *ease = operator_new(0x10);
                 EaseInOut_ctor(ease, 0.0f, (float)amount);
-                self->f_c0 = ease;
+                P(self, 0xc0) = ease;
             } else {
-                EaseInOut_SetRange(self->f_c0, 0.0f, (float)amount);
+                EaseInOut_SetRange(P(self, 0xc0), 0.0f, (float)amount);
             }
             I(self, 0x108) = 2;
         } else {
-            float value = EaseInOut_GetValue(self->f_c0);
-            float maxValue = EaseInOut_GetMaxValue(self->f_c0);
+            float value = EaseInOut_GetValue(P(self, 0xc0));
+            float maxValue = EaseInOut_GetMaxValue(P(self, 0xc0));
             float distance = value - maxValue;
             if (distance < 0.0f) {
                 distance = -distance;
@@ -114,17 +114,17 @@ idle_camera:
                 amount = AERandom_nextInt(random, 10);
                 float next = (float)(5 - amount);
                 UC(self, 0xc4) = value > next;
-                EaseInOut_SetRange(self->f_c0, value, next);
+                EaseInOut_SetRange(P(self, 0xc0), value, next);
                 I(self, 0x108) = AERandom_nextInt(random, 4) + 1;
                 amount = I(self, 0x108);
             }
             if (UC(self, 0xc4) != 0) {
                 amount = -amount;
             }
-            EaseInOut_Increase(self->f_c0, (float)(dt * amount));
+            EaseInOut_Increase(P(self, 0xc0), (float)(dt * amount));
         }
 
-        float value = EaseInOut_GetValue(self->f_c0);
+        float value = EaseInOut_GetValue(P(self, 0xc0));
         MatrixSetRotation(valueMatrix, value / 90.0f, 0.0f, value);
         MatrixSetTranslation(maxMatrix, 0.0f, 0.0f, wave * maxRot);
         Matrix_mul_assign(valueMatrix, B(self, 0xc8));
@@ -136,9 +136,9 @@ idle_camera:
 
     SpaceLounge_updateScreenPositions(self);
     if (I(self, 0x14) != 0) {
-        ScrollTouchWindow_update(self->f_60, dt);
+        ScrollTouchWindow_update(P(self, 0x60), dt);
     }
-    CutScene_update(self->f_44);
+    CutScene_update(P(self, 0x44));
 
     if (UC(self, 0xb2) != 0) {
         int x = I(self, 0xb4);
@@ -146,7 +146,7 @@ idle_camera:
         int top = *(int *)SpaceLounge_update_top_slot;
         int height = *(int *)SpaceLounge_update_height_slot;
         int width = *(int *)SpaceLounge_update_width_slot;
-        void *cutscene = self->f_44;
+        void *cutscene = P(self, 0x44);
         if (y < top) {
             if (x < 150) {
                 F(cutscene, 0xc) -= 10.0f;

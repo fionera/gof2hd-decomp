@@ -32,13 +32,13 @@ extern "C" int SpaceLounge_touch_race_vectors[];
 
 static inline void *selected_agent(SpaceLounge *self)
 {
-    void *agents = self->f_24;
-    return ((void **)agents->f_4)[I(self, 0x20)];
+    void *agents = P(self, 0x24);
+    return ((void **)P(agents, 0x4))[I(self, 0x20)];
 }
 
 static inline bool hit_agent(SpaceLounge *self, int x, int y, int i)
 {
-    char *data = (char *)P(self->f_40, 0x4);
+    char *data = (char *)P(P(self, 0x40), 0x4);
     float *a = *(float **)(data + i * 8);
     if (!(a[0] < (float)x)) {
         return false;
@@ -56,7 +56,7 @@ extern "C" void SpaceLounge_OnTouchEnd(SpaceLounge *self, int x, int y)
     UC(self, 0xb2) = 0;
 
     if (UC(self, 0x1b) != 0 || UC(self, 0x19) != 0) {
-        int result = ChoiceWindow_touch_end(self->f_8, x, y);
+        int result = ChoiceWindow_touch_end(P(self, 0x8), x, y);
         if (result == 1) {
             UC(self, 0x19) = 0;
         } else if (result == 0) {
@@ -66,8 +66,8 @@ extern "C" void SpaceLounge_OnTouchEnd(SpaceLounge *self, int x, int y)
     }
 
     if (UC(self, 0x34) != 0) {
-        if (StarMap_touch_end(self->f_4, x, y) != 0) {
-            CutScene_resetCamera(self->f_44);
+        if (StarMap_touch_end(P(self, 0x4), x, y) != 0) {
+            CutScene_resetCamera(P(self, 0x44));
             UC(self, 0x34) = 0;
         }
         return;
@@ -93,7 +93,7 @@ extern "C" void SpaceLounge_OnTouchEnd(SpaceLounge *self, int x, int y)
     }
 
     if (UC(self, 0x1c) != 0) {
-        ListItemWindow_touch_end(self->f_c, x, y);
+        ListItemWindow_touch_end(P(self, 0xc), x, y);
         if (Layout_helpPressed(layout) != 0) {
             void *texts = *(void **)&SpaceLounge_touch_list_help_text_slot;
             void *text = GameText_getText(*(void **)texts, 0x283);
@@ -116,17 +116,17 @@ extern "C" void SpaceLounge_OnTouchEnd(SpaceLounge *self, int x, int y)
             void *camera = *(void **)cameraSlot;
             void *current = PaintCanvas_CameraGetCurrent(camera);
             PaintCanvas_CameraSetLocal(camera, current);
-            if (self->f_48 != 0) {
-                EaseInOutMatrix_SetRange(self->f_48, matrix, matrix);
+            if (P(self, 0x48) != 0) {
+                EaseInOutMatrix_SetRange(P(self, 0x48), matrix, matrix);
             }
             UC(self, 0xbd) = 1;
             I(self, 0x104) = 0;
             return;
         }
-        if (self->f_24 != 0) {
+        if (P(self, 0x24) != 0) {
             I(self, 0x88) = -1;
             I(self, 0x20) = -1;
-            unsigned count = U(self->f_24, 0x0);
+            unsigned count = U(P(self, 0x24), 0x0);
             for (unsigned i = 0; i < count; ++i) {
                 if (hit_agent(self, x, y, i)) {
                     I(self, 0x20) = i;
@@ -140,9 +140,9 @@ extern "C" void SpaceLounge_OnTouchEnd(SpaceLounge *self, int x, int y)
         SpaceLounge_onKeyPress(self, 0x10000);
         break;
     case 2: {
-        unsigned count = U(self->f_5c, 0x0);
+        unsigned count = U(P(self, 0x5c), 0x0);
         for (unsigned i = 0; i < count; ++i) {
-            void *button = ((void **)P(self->f_5c, 0x4))[i];
+            void *button = ((void **)P(P(self, 0x5c), 0x4))[i];
             if (TouchButton_touch_end(button, x, y) != 0) {
                 void *agent = selected_agent(self);
                 if (i >= 5 && Agent_isGenericAgent(agent) != 0) {
@@ -153,13 +153,13 @@ extern "C" void SpaceLounge_OnTouchEnd(SpaceLounge *self, int x, int y)
         break;
     }
     case 3:
-        if (TouchButton_touch_end(*(void **)P(self->f_5c, 0x4), x, y) != 0) {
+        if (TouchButton_touch_end(*(void **)P(P(self, 0x5c), 0x4), x, y) != 0) {
             SpaceLounge_onKeyPress(self, 0x10000);
         }
         break;
     }
 
-    ScrollTouchWindow_touch_end(self->f_60, x, y);
+    ScrollTouchWindow_touch_end(P(self, 0x60), x, y);
     if (Layout_helpPressed(layout) != 0) {
         void *texts = *(void **)&SpaceLounge_touch_help_text_slot;
         void *text = GameText_getText(*(void **)texts, 0x273);

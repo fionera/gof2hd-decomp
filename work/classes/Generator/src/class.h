@@ -177,10 +177,6 @@ extern "C" bool Agent_isStoryAgent(Agent *self);
 extern "C" Mission *Agent_getMission(Agent *self);
 
 struct Generator {
-    // @portable-fields
-    unsigned char _pad_0[332];
-    void* f_14c; // 0x14c
-
     bool isKaamoSpecialItem(int item);
     void computerTradeGoods(Station *station);
     Array<Item *> *getItemBuyList(Station *station);

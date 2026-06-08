@@ -11,6 +11,6 @@ extern "C" void PlayerFixedObject_setBV(PlayerFixedObject *self, BoundingVolume 
 {
     void *arr = operator_new(0xc);
     Array_BV_ctor(arr);
-    self->f_128 = arr;
+    F<void *>(self, 0x128) = arr;
     return BoundingVolume_setArr(bv, arr);
 }

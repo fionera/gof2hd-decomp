@@ -8,13 +8,13 @@ extern "C" void operator_delete(void *p);              // 0x6eb48
 
 BoundingVolume::~BoundingVolume()
 {
-    this->f_0 = (void *)((char *)g_BoundingVolume_vtbl + 8);
-    void *children = this->f_4;
+    pp(this, 0x0) = (void *)((char *)g_BoundingVolume_vtbl + 8);
+    void *children = pp(this, 0x4);
     if (children != 0) {
         ArrayReleaseClasses_BVPtr(children);
-        if (this->f_4 != 0) {
-            operator_delete(ArrayBV_dtor(this->f_4));
+        if (pp(this, 0x4) != 0) {
+            operator_delete(ArrayBV_dtor(pp(this, 0x4)));
         }
     }
-    this->f_4 = 0;
+    pp(this, 0x4) = 0;
 }

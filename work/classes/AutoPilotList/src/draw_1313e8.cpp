@@ -23,8 +23,8 @@ void AutoPilotList::draw() {
     String *title = GameText_getText(*g_APL_gametext_draw, 0x23c);
     char tmp[12];
     String_ctor_copy(tmp, title, false);
-    Layout_drawWindow(layout, (String *)tmp, this->f_4, this->f_8,
-                      this->f_c, this->f_14 * 0xf + 0x16);
+    Layout_drawWindow(layout, (String *)tmp, F<int>(this, 0x4), F<int>(this, 0x8),
+                      F<int>(this, 0xc), F<int>(this, 0x14) * 0xf + 0x16);
     String_dtor(tmp);
 
     int drawn = 0;
@@ -34,8 +34,8 @@ void AutoPilotList::draw() {
         void *text = F<Array<void *> *>(this, 0x10)->data[i];
         if (text != 0) {
             PaintCanvas_DrawString(*canvasHolder, (String *)*fontHolder, text,
-                                   this->f_4,
-                                   drawn * 0xf + this->f_8 + 0x12, 0);
+                                   F<int>(this, 0x4),
+                                   drawn * 0xf + F<int>(this, 0x8) + 0x12, 0);
             drawn = drawn + 1;
         }
     }

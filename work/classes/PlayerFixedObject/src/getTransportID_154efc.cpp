@@ -2,5 +2,5 @@
 
 extern "C" int PlayerFixedObject_getTransportID(PlayerFixedObject *self)
 {
-    return self->f_1a8;
+    return F<int>(self, 0x1a8);
 }

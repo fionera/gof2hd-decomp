@@ -7,6 +7,6 @@ __attribute__((visibility("hidden"))) extern "C" char *const g_SpriteGun;
 
 extern "C" void SpriteGun_SpriteGun(SpriteGun *this_, Gun *param_1, int param_2)
 {
-    this_->f_0 = g_SpriteGun + 8;
-    this_->f_4 = 0;
+    F<char *>(this_, 0x0) = g_SpriteGun + 8;
+    F<int>(this_, 0x4) = 0;
 }

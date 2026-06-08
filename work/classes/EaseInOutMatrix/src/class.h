@@ -44,19 +44,6 @@ Quaternion operator-(const Quaternion &a, const Quaternion &b);
 //   0xb4  Matrix  m_max
 //   0xf0  float   m_duration
 struct EaseInOutMatrix {
-    // @portable-fields
-    unsigned char _pad_0[76];
-    int f_4c; // 0x4c
-    int f_50; // 0x50
-    int f_54; // 0x54
-    unsigned char _pad_58[16];
-    int f_68; // 0x68
-    int f_6c; // 0x6c
-    int f_70; // 0x70
-    int f_74; // 0x74
-    unsigned char _pad_78[120];
-    int f_f0; // 0xf0
-
     EaseInOutMatrix();
     EaseInOutMatrix(AEMath::Matrix mn, AEMath::Matrix mx, int duration);
 

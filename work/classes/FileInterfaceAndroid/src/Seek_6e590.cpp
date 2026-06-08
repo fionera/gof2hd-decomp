@@ -13,7 +13,7 @@ extern "C" bool FileInterfaceAndroid_Seek(FileInterfaceAndroid *self, unsigned i
 {
     if (n == 0)
         return true;
-    void *zf = self->f_c;
+    void *zf = F<void *>(self, 0x0c);
     int delta;
     if (zf != 0) {
         void *tmp = malloc(n);
@@ -23,7 +23,7 @@ extern "C" bool FileInterfaceAndroid_Seek(FileInterfaceAndroid *self, unsigned i
         free(tmp);
         delta = got - n;
     } else {
-        void *f = self->f_8;
+        void *f = F<void *>(self, 0x08);
         if (f == 0)
             return false;
         delta = fseek(f, n, 1);

@@ -2,6 +2,6 @@
 
 void ObjectGun::setScaling(int x, int y)
 {
-    this->f_3c = (float)x;
-    this->f_40 = (float)y;
+    F<float>(this, 0x3c) = (float)x;
+    F<float>(this, 0x40) = (float)y;
 }

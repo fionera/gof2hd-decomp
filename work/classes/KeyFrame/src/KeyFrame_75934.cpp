@@ -7,17 +7,17 @@ namespace AbyssEngine {
 //   sets the +0x48 weight to 1.0, and zeroes the four trailing words.
 KeyFrame::KeyFrame()
 {
-    this->f_50 = 0;
-    this->f_54 = 0;
+    u32(this, 0x50) = 0;
+    u32(this, 0x54) = 0;
     __aeabi_memclr4(this, 0x48);
 
     AEMath::Vector one = {1.0f, 1.0f, 1.0f};
     *(AEMath::Vector *)((char *)this + 0xc) = one;
     *(AEMath::Vector *)((char *)this + 0x30) = one;
 
-    this->f_58 = 0;
-    this->f_5c = 0;
-    this->f_48 = 1.0f;
+    u32(this, 0x58) = 0;
+    u32(this, 0x5c) = 0;
+    f32(this, 0x48) = 1.0f;
 }
 
 } // namespace AbyssEngine

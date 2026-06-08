@@ -8,7 +8,7 @@ extern "C" float Waypoint_advance(Waypoint *wp, bool b);   // veneer tail-call t
 // Route::update(float, float, float) -> if close enough to the active waypoint, advance to the next.
 extern "C" float Route_update_xyz(Route *self, float x, float y, float z)
 {
-    int idx = self->f_0;
+    int idx = F<int32_t>(self, 0x0);
     Array<Waypoint *> *wps = F<Array<Waypoint *> *>(self, 0xc);
     if (idx >= (int)wps->length)
         return x;
@@ -26,20 +26,20 @@ extern "C" float Route_update_xyz(Route *self, float x, float y, float z)
         return x;
 
     Waypoint_setActive(wp, false);
-    Waypoint_reached(F<Array<Waypoint *> *>(self, 0xc)->data[self->f_0]);
-    int cur = self->f_0;
+    Waypoint_reached(F<Array<Waypoint *> *>(self, 0xc)->data[F<int32_t>(self, 0x0)]);
+    int cur = F<int32_t>(self, 0x0);
     Array<Waypoint *> *w = F<Array<Waypoint *> *>(self, 0xc);
     int next = cur + 1;
-    self->f_0 = next;
+    F<int32_t>(self, 0x0) = next;
     uint32_t len = w->length;
-    if (self->f_4 != 0 && (int)(len - 1) <= cur) {
-        self->f_0 = 0;
+    if (F<uint8_t>(self, 0x4) != 0 && (int)(len - 1) <= cur) {
+        F<int32_t>(self, 0x0) = 0;
         for (uint32_t i = 0; i < len; i++) {
             Waypoint_reset(w->data[i]);
             w = F<Array<Waypoint *> *>(self, 0xc);
             len = w->length;
         }
-        next = self->f_0;
+        next = F<int32_t>(self, 0x0);
     }
     if (next < (int)len)
         return Waypoint_advance(w->data[next], true);

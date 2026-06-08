@@ -6,69 +6,69 @@ extern "C" void operator_delete(void *ptr);
 
 LevelScript::~LevelScript()
 {
-    void *geometry = this->f_dc;
+    void *geometry = P(this, 0xdc);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->f_dc = 0;
+    P(this, 0xdc) = 0;
 
-    geometry = this->f_d8;
+    geometry = P(this, 0xd8);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->f_d8 = 0;
+    P(this, 0xd8) = 0;
 
-    geometry = this->m_pPlayerEgo;
+    geometry = P(this, 0xb8);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->m_pPlayerEgo = 0;
+    P(this, 0xb8) = 0;
 
-    geometry = this->m_pAsteroids;
+    geometry = P(this, 0xbc);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->m_pAsteroids = 0;
+    P(this, 0xbc) = 0;
 
-    geometry = this->m_pExtra;
+    geometry = P(this, 0xc0);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->m_pExtra = 0;
+    P(this, 0xc0) = 0;
 
-    geometry = this->m_nParticleSystem0;
+    geometry = P(this, 0xc4);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->m_nParticleSystem0 = 0;
+    P(this, 0xc4) = 0;
 
-    geometry = this->m_pGeometriesMission2;
+    geometry = P(this, 0xac);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->m_pGeometriesMission2 = 0;
+    P(this, 0xac) = 0;
 
-    geometry = this->m_pExplosion;
+    geometry = P(this, 0xb0);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->m_pExplosion = 0;
+    P(this, 0xb0) = 0;
 
-    geometry = this->m_pMission;
+    geometry = P(this, 0xb4);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->m_pMission = 0;
+    P(this, 0xb4) = 0;
 
-    void *explosion = this->m_nParticleSystem1;
+    void *explosion = P(this, 0xc8);
     if (explosion != 0) {
         operator_delete(Explosion_dtor(explosion));
     }
-    this->m_nParticleSystem1 = 0;
+    P(this, 0xc8) = 0;
 
-    geometry = this->f_cc;
+    geometry = P(this, 0xcc);
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    this->f_cc = 0;
+    P(this, 0xcc) = 0;
 }

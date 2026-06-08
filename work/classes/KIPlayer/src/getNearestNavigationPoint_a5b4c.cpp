@@ -15,7 +15,7 @@ int SpacePoint_isFree(void *sp);                                 // 0x732c4
 //   (or the explicitly requested `target`) measured against the player's transformed position.
 extern "C" void *KIPlayer_getNearestNavigationPoint(KIPlayer *self, Vector *dir, void *target)
 {
-    void *arr = self->f_cc;
+    void *arr = F<void *>(self, 0xcc);
     if (arr == 0)
         return 0;
 
@@ -35,7 +35,7 @@ extern "C" void *KIPlayer_getNearestNavigationPoint(KIPlayer *self, Vector *dir,
         if (*(int *)((char *)pt + 0x18) != 1)
             continue;
 
-        void *mat = AEGeometry_getMatrix2(self->f_8);
+        void *mat = AEGeometry_getMatrix2(F<void *>(self, 0x8));
         Vector rotated;
         AEMath_MatrixRotateVector(&rotated, mat, ((void **)(*(char **)((char *)arr + 4)))[i]);
         Vector world;
@@ -45,7 +45,7 @@ extern "C" void *KIPlayer_getNearestNavigationPoint(KIPlayer *self, Vector *dir,
         float len = AEMath_VectorLength(&delta);
         float alen = len < 0.0f ? -len : len;
         if (alen < bestLen) {
-            void *cand = ((void **)(*(char **)((char *)self->f_cc + 4)))[i];
+            void *cand = ((void **)(*(char **)((char *)F<void *>(self, 0xcc) + 4)))[i];
             if (SpacePoint_isFree(cand) != 0 || cand == target) {
                 best = cand;
                 bestLen = alen;
@@ -54,7 +54,7 @@ extern "C" void *KIPlayer_getNearestNavigationPoint(KIPlayer *self, Vector *dir,
                 bestLen = alen;
             }
         }
-        count = *(unsigned *)self->f_cc;
+        count = *(unsigned *)F<void *>(self, 0xcc);
     }
     return best;
 }

@@ -5,5 +5,5 @@ extern "C" void SpriteGun_Gun_setEnemy(void *base);
 
 extern "C" void SpriteGun_setEnemy(Player *param_1)
 {
-    return SpriteGun_Gun_setEnemy(param_1->f_8);
+    return SpriteGun_Gun_setEnemy(F<void *>(param_1, 0x8));
 }

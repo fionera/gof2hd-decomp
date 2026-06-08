@@ -6,12 +6,12 @@ void operator delete(void *ptr) noexcept;
 
 ScrollTouchBox::~ScrollTouchBox()
 {
-    void *lines = this->f_0;
+    void *lines = F<void *>(this, 0x0);
     if (lines != 0) {
         ArrayReleaseClasses_StringPtr(lines);
-        lines = this->f_0;
+        lines = F<void *>(this, 0x0);
         if (lines != 0)
             operator delete(Array_StringPtr_dtor(lines));
-        this->f_0 = 0;
+        F<void *>(this, 0x0) = 0;
     }
 }

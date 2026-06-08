@@ -41,55 +41,55 @@ extern "C" SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     Matrix_ctor(B(self, 0xc8));
 
     UC(self, 0xb0) = 0;
-    self->f_4 = 0;
-    self->f_8 = 0;
-    self->f_c = 0;
+    P(self, 0x4) = 0;
+    P(self, 0x8) = 0;
+    P(self, 0xc) = 0;
     I(self, 0x34) = 0;
     UC(self, 0x36) = 0;
-    self->f_58 = 0;
-    self->f_5c = 0;
-    self->f_c0 = 0;
+    P(self, 0x58) = 0;
+    P(self, 0x5c) = 0;
+    P(self, 0xc0) = 0;
     UC(self, 0x1c) = 0;
     I(self, 0x14) = 0;
     I(self, 0x18) = 0;
-    self->f_48 = 0;
+    P(self, 0x48) = 0;
     I(self, 0x20) = 0;
-    self->f_24 = 0;
-    self->f_28 = 0;
-    self->f_2c = 0;
-    self->f_38 = 0;
-    self->f_3c = 0;
-    self->f_40 = 0;
-    self->f_44 = 0;
+    P(self, 0x24) = 0;
+    P(self, 0x28) = 0;
+    P(self, 0x2c) = 0;
+    P(self, 0x38) = 0;
+    P(self, 0x3c) = 0;
+    P(self, 0x40) = 0;
+    P(self, 0x44) = 0;
 
     SpaceLounge_init(self);
 
-    void *agents = self->f_24;
+    void *agents = P(self, 0x24);
     if (agents != 0) {
         for (unsigned i = 0; i < U(agents, 0x0); ++i) {
-            void *agent = ((void **)agents->f_4)[i];
+            void *agent = ((void **)P(agents, 0x4))[i];
             int offer = Agent_getOffer(agent);
             if ((offer == 6 || offer == 0) && Agent_getMission(agent) != 0) {
                 void *mission = Agent_getMission(agent);
                 if (Mission_getType(mission) == 0xc && Agent_hasAcceptedOffer(agent) != 0) {
-                    ArrayRemove_AgentPtr(agent, self->f_24);
+                    ArrayRemove_AgentPtr(agent, P(self, 0x24));
                     SpaceLounge_init(self);
                     break;
                 }
             }
-            agents = self->f_24;
+            agents = P(self, 0x24);
         }
     }
 
-    void *cutscene = self->f_44;
+    void *cutscene = P(self, 0x44);
     if (cutscene == 0) {
         cutscene = operator_new(0xa0);
         CutScene_ctor(cutscene, 4);
-        self->f_44 = cutscene;
+        P(self, 0x44) = cutscene;
     }
     while (CutScene_isInitialized(cutscene) == 0) {
         CutScene_initialize(cutscene);
-        cutscene = self->f_44;
+        cutscene = P(self, 0x44);
     }
 
     int race = SolarSystem_getRace(Status_getSystem());
@@ -99,7 +99,7 @@ extern "C" SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     MatrixSetRotation(to, 0.0f, 0.0f, 0.0f);
     void *ease = operator_new(0xf4);
     EaseInOutMatrix_ctor(ease, from, to, 3000);
-    self->f_48 = ease;
+    P(self, 0x48) = ease;
 
     void *cameraSlot = *(void **)&SpaceLounge_ctor_camera_slot;
     void *camera = *(void **)cameraSlot;

@@ -10,6 +10,6 @@ void MTitle::OnRender3D()
 {
     void **canvas = g_MTitle_r3d_canvas;
     PaintCanvas_ClearBuffer(*canvas, 0xff);
-    PaintCanvas_Begin3d(this->f_4);
-    MTitle_r3dTail(this->f_4);
+    PaintCanvas_Begin3d(P(this, 0x4));
+    MTitle_r3dTail(P(this, 0x4));
 }

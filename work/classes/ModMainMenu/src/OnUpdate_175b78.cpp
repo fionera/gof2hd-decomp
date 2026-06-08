@@ -12,26 +12,26 @@ extern "C" void FModSound_updateAll(
 
 extern "C" void _ZN11ModMainMenu8OnUpdateEv(ModMainMenu *self)
 {
-    int elapsed = ApplicationManager_GetElapsedTimeMillis(self->f_8);
+    int elapsed = ApplicationManager_GetElapsedTimeMillis(P(self, 0x08));
     int frameTime;
     if (elapsed < 0x97 &&
-        (elapsed = ApplicationManager_GetElapsedTimeMillis(self->f_8)) < 0) {
+        (elapsed = ApplicationManager_GetElapsedTimeMillis(P(self, 0x08))) < 0) {
         frameTime = 0;
     } else {
-        elapsed = ApplicationManager_GetElapsedTimeMillis(self->f_8);
+        elapsed = ApplicationManager_GetElapsedTimeMillis(P(self, 0x08));
         if (elapsed > 0x96)
             frameTime = 0x96;
         else
-            frameTime = ApplicationManager_GetElapsedTimeMillis(self->f_8);
+            frameTime = ApplicationManager_GetElapsedTimeMillis(P(self, 0x08));
     }
 
     I(self, 0x14) = frameTime;
 
     void **layout = g_ModMainMenu_updateLayout;
     Layout_update(*layout, frameTime);
-    CutScene_update(self->f_1c, I(self, 0x14));
+    CutScene_update(P(self, 0x1c), I(self, 0x14));
     if (UC(self, 0x28) == 0)
-        MenuTouchWindow_update(self->f_18, I(self, 0x14));
+        MenuTouchWindow_update(P(self, 0x18), I(self, 0x14));
     Layout_update(*layout, I(self, 0x14));
 
     void **listener = g_ModMainMenu_updateListener;

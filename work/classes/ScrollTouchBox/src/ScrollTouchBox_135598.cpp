@@ -11,16 +11,16 @@ struct Int4 {
 
 ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height)
 {
-    this->f_28 = 0;
-    this->f_0 = 0;
-    this->f_4 = x;
-    this->f_8 = y;
-    this->f_c = width;
-    this->f_10 = height;
-    this->f_14 = width;
-    this->f_30 = 0;
-    this->f_34 = 0;
-    this->f_38 = 0;
-    this->f_18 = Int4();
-    this->f_3c = *g_ScrollTouchBox_defaultFont_135598;
+    F<int>(this, 0x28) = 0;
+    F<void *>(this, 0x0) = 0;
+    F<int>(this, 0x4) = x;
+    F<int>(this, 0x8) = y;
+    F<int>(this, 0xc) = width;
+    F<int>(this, 0x10) = height;
+    F<int>(this, 0x14) = width;
+    F<uint8_t>(this, 0x30) = 0;
+    F<int>(this, 0x34) = 0;
+    F<uint8_t>(this, 0x38) = 0;
+    F<Int4>(this, 0x18) = Int4();
+    F<void *>(this, 0x3c) = *g_ScrollTouchBox_defaultFont_135598;
 }
