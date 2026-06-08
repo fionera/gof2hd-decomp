@@ -16,37 +16,37 @@ extern "C" void Hud_hudEvent(Hud *self, int eventId, void *ego, int arg)
     case 1:
     case 2:
         // autofire on/off notice — only when the autofire UI is present
-        if (C(self, 0x221) == 0) return;
+        if (self->f_221 == 0) return;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
     case 3:
-        if (C(self, 0x21e) == 0 || PlayerEgo_readyToBoost((void *)(long)arg) == 0) return;
+        if (self->f_21e == 0 || PlayerEgo_readyToBoost((void *)(long)arg) == 0) return;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
     case 4:
-        if (C(self, 0x21e) == 0) return;
+        if (self->f_21e == 0) return;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
 
     // ---- pure status-flag events (no queue entry) ----
     case 0x23:
         I(self, 0x468) = 0;
-        C(self, 0x27a) = 1;
+        self->f_27a = 1;
         *(unsigned short *)B(self, 0x278) = 1;
         return;
     case 0x25:
         I(self, 0x468) = 0;
-        C(self, 0x27a) = 1;
+        self->f_27a = 1;
         *(unsigned short *)B(self, 0x278) = 0x101;
         return;
     case 0x27:
         I(self, 0x468) = 0;
-        C(self, 0x27a) = 0;
+        self->f_27a = 0;
         *(unsigned short *)B(self, 0x278) = 1;
         return;
     case 0x29:
         I(self, 0x468) = 0;
-        C(self, 0x27a) = 0;
+        self->f_27a = 0;
         *(unsigned short *)B(self, 0x278) = 0x101;
         return;
     case 0x24:
@@ -54,7 +54,7 @@ extern "C" void Hud_hudEvent(Hud *self, int eventId, void *ego, int arg)
     case 0x28:
     case 0x2a:
         // these clear the "showing" flag and set a fixed localized line, no queue
-        C(self, 0x278) = 0;
+        self->f_278 = 0;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
 

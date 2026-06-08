@@ -12,7 +12,7 @@ int HackingGame::update(int dt)
         int timer = I(this, 0x12c) + dt;
         I(this, 0x12c) = timer;
         if (timer > 300) {
-            F<uint16_t>(this, 0x128) = 0;
+            this->f_128 = 0;
             I(this, 0x12c) = 0;
             for (int i = 0; i != 6; ++i)
                 I(this, 0x1c + i * 4) = I(this, 0x34 + i * 4);

@@ -9,11 +9,11 @@ extern void *gFIAVtable __attribute__((visibility("hidden")));
 // the target's interleaving. Scheduling-only difference.
 extern "C" void FileInterfaceAndroid_ctor_default(FileInterfaceAndroid *self)
 {
-    u8(self, 0x04) = 1;
+    self->f_4 = 1;
     char *vt = (char *)gFIAVtable + 8;
-    F<void *>(self, 0x30) = 0;
-    F<void *>(self, 0x34) = 0;
-    u8(self, 0x24) = 0;
-    F<int>(self, 0x28) = 0;
-    F<char *>(self, 0x00) = vt;
+    self->f_30 = 0;
+    self->f_34 = 0;
+    self->f_24 = 0;
+    self->f_28 = 0;
+    self->f_0 = vt;
 }

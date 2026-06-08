@@ -46,7 +46,7 @@ extern "C" void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
     void *window;
     int *musicSlot;
 
-    if (P(self, 0x1c) == 0) {
+    if (self->f_1c == 0) {
         void **soundRes = g_ModMainMenu_initSoundRes;
         Globals_startNewSoundResourceList(*soundRes);
         void (*addSound)(void *, int) = g_ModMainMenu_initAddSound;
@@ -68,7 +68,7 @@ extern "C" void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
 
         void *cutscene = operator_new(0xa0);
         CutScene_ctor(cutscene, 2);
-        P(self, 0x1c) = cutscene;
+        self->f_1c = cutscene;
         CutScene_initialize(cutscene);
 
         int canvas = I(self, 0x04);
@@ -110,7 +110,7 @@ extern "C" void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
     Status_setPlayingTime(*g_ModMainMenu_initPlayingTime, 0);
     window = operator_new(0x240);
     MenuTouchWindow_ctor(window, 0);
-    P(self, 0x18) = window;
+    self->f_18 = window;
     if (UC(self, 0x29) != 0) {
         MenuTouchWindow_showSupernovaMessage(window);
         UC(self, 0x29) = 0;

@@ -69,5 +69,5 @@ void HackingGame::reInit()
     for (int i = 0; i != 6; ++i)
         I(this, 0x1c + i * 4) = I(this, 0x34 + i * 4);
 
-    F<uint16_t>(this, 0x128) = 0;
+    this->f_128 = 0;
 }

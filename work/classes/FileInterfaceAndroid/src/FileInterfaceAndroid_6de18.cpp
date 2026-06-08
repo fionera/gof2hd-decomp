@@ -16,15 +16,15 @@ FileInterfaceAndroid_ctor_zip(FileInterfaceAndroid *self, zip_file *zf, bool app
 {
     int *cnt = gFIAInstCount_zip;
     char *vtbase = (char *)gFIAVtable_zip;   // *gVtable loaded; +8 applied at the store
-    F<int>(self, 0x08) = 0;
-    F<zip_file *>(self, 0x0c) = zf;
-    F<int>(self, 0x10) = 0;
-    u8(self, 0x14) = 0;
-    F<char *>(self, 0x00) = vtbase + 8;
+    self->f_8 = 0;
+    self->f_c = zf;
+    self->f_10 = 0;
+    self->f_14 = 0;
+    self->f_0 = vtbase + 8;
     *cnt = *cnt + 1;
-    F<int>(self, 0x1c) = 0;
-    F<int>(self, 0x28) = 0;
+    self->f_1c = 0;
+    self->f_28 = 0;
     FileInterfaceAndroid_Seek(self, start);
-    u8(self, 0x24) = append;
+    self->f_24 = append;
     return self;
 }

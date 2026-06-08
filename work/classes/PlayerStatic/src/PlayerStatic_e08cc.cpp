@@ -17,8 +17,8 @@ PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry, float x, float y,
     KIPlayer_ctor(this, playerId, -1, player, geometry, x, y, z, 0);
 
     void *vtable = g_PlayerStatic_vtable;
-    pp(this, 0x0) = (char *)vtable + 8;
-    i32(this, 0x124) = (int)x;
-    i32(this, 0x128) = (int)y;
-    i32(this, 0x12c) = (int)z;
+    this->f_0 = (char *)vtable + 8;
+    this->f_124 = (int)x;
+    this->f_128 = (int)y;
+    this->f_12c = (int)z;
 }

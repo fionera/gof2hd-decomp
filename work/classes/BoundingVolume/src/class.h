@@ -40,6 +40,16 @@ struct Array {
 };
 
 struct BoundingVolume {
+    // @portable-fields
+    void* f_0; // 0x0
+    void* f_4; // 0x4
+    int f_8; // 0x8
+    int f_c; // 0xc
+    int f_10; // 0x10
+    int f_14; // 0x14
+    int f_18; // 0x18
+    int f_1c; // 0x1c
+
     BoundingVolume(float, float, float, float, float, float);
     ~BoundingVolume();
     static void getCollisionNormal(const Vector &out);

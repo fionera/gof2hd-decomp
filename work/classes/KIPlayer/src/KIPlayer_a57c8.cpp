@@ -35,53 +35,53 @@ extern "C" void KIPlayer_ctor(KIPlayer *self, int faction, int group, void *play
     String_ctor_default((char *)self + 0x18);
 
     // zero a wide block of fields (the engine writes zero-vectors via NEON stores).
-    F<unsigned>(self, 0x90) = 0;  F<unsigned>(self, 0x94) = 0;
-    F<unsigned>(self, 0x98) = 0;  F<unsigned>(self, 0x9c) = 0;
-    F<unsigned>(self, 0x10c) = 0; F<unsigned>(self, 0x110) = 0;
-    F<unsigned>(self, 0x114) = 0; F<unsigned>(self, 0x118) = 0;
-    F<unsigned>(self, 0x2c) = 0;  F<unsigned>(self, 0x30) = 0;  F<unsigned>(self, 0x34) = 0;
-    F<unsigned>(self, 0x54) = 0;  F<unsigned>(self, 0x6c) = 0;  F<unsigned>(self, 0xb4) = 0;
-    F<unsigned>(self, 0xa0) = 0;  F<unsigned>(self, 0xa4) = 0;
-    F<unsigned>(self, 0x11c) = 0; F<unsigned>(self, 0x120) = 0;
+    self->f_90 = 0;  self->f_94 = 0;
+    self->f_98 = 0;  self->f_9c = 0;
+    self->f_10c = 0; self->f_110 = 0;
+    self->f_114 = 0; self->f_118 = 0;
+    self->f_2c = 0;  self->f_30 = 0;  self->f_34 = 0;
+    self->f_54 = 0;  self->f_6c = 0;  F<unsigned>(self, 0xb4) = 0;
+    self->f_a0 = 0;  self->f_a4 = 0;
+    self->f_11c = 0; self->f_120 = 0;
 
-    F<void *>(self, 0x4) = player;
-    F<unsigned>(self, 0x8) = 0;
-    F<unsigned>(self, 0xc) = 0;
-    F<unsigned>(self, 0xc4) = 0;
-    F<unsigned>(self, 0xc8) = 0;
-    F<unsigned>(self, 0xcc) = 0;
+    self->f_4 = player;
+    self->f_8 = 0;
+    self->f_c = 0;
+    self->f_c4 = 0;
+    self->f_c8 = 0;
+    self->f_cc = 0;
 
     // geometry: when a parent geometry is supplied (and it has children) build a child group.
     bool haveChild = (geom != 0) && (*(int *)((char *)geom + 0x18) != 0);
     if (geom != 0 && haveChild) {
-        F<void *>(self, 0xc) = geom;
+        self->f_c = geom;
         void *child = operator_new(0xc0);
         AEGeometry_ctor2(child, *(void **)gCanvas);
-        F<void *>(self, 0x8) = child;
-        AEGeometry_addChild(child, *(int *)((char *)F<void *>(self, 0xc) + 0xc));
-        *(int *)((char *)F<void *>(self, 0xc) + 0x24) = *(int *)((char *)F<void *>(self, 0x8) + 0xc);
+        self->f_8 = child;
+        AEGeometry_addChild(child, *(int *)((char *)self->f_c + 0xc));
+        *(int *)((char *)self->f_c + 0x24) = *(int *)((char *)self->f_8 + 0xc);
     } else {
-        F<void *>(self, 0x8) = geom;
-        F<unsigned>(self, 0xc) = 0;
+        self->f_8 = geom;
+        self->f_c = 0;
     }
 
-    F<unsigned>(self, 0x50) = 0;
-    F<int>(self, 0x28) = group;
+    self->f_50 = 0;
+    self->f_28 = group;
     F<uint8_t>(self, 0x72) = 0;
     F<uint8_t>(self, 0x25) = 0;
-    F<uint8_t>(self, 0x75) = 0;
+    self->f_75 = 0;
     F<uint16_t>(self, 0x42) = 0;
-    F<uint8_t>(self, 0x44) = 0;
-    F<int>(self, 0x48) = -1;
-    F<uint8_t>(self, 0x8c) = 1;
-    F<unsigned>(self, 0x3c) = 0;
-    F<uint8_t>(self, 0x4c) = 0;
-    F<uint8_t>(self, 0xd0) = 0;
-    F<uint16_t>(self, 0x68) = 0;
+    self->f_44 = 0;
+    self->f_48 = -1;
+    self->f_8c = 1;
+    self->f_3c = 0;
+    self->f_4c = 0;
+    self->f_d0 = 0;
+    self->f_68 = 0;
     F<uint8_t>(self, 0x6a) = 0;
-    F<uint8_t>(self, 0xdc) = 0;
-    F<uint8_t>(self, 0xec) = 0;
-    F<uint8_t>(self, 0xf4) = 0;
+    self->f_dc = 0;
+    self->f_ec = 0;
+    self->f_f4 = 0;
 
     {
         String12 tmp;
@@ -90,43 +90,43 @@ extern "C" void KIPlayer_ctor(KIPlayer *self, int faction, int group, void *play
         String_dtor(&tmp);
     }
 
-    F<uint8_t>(self, 0x24) = 0;
+    self->f_24 = 0;
     F<uint8_t>(self, 0xf5) = 1;
-    F<unsigned>(self, 0xe8) = 0;
-    F<uint16_t>(self, 0x70) = 0;
-    F<uint16_t>(self, 0x40) = 0;
-    F<unsigned>(self, 0xd8) = 0;
-    F<int>(self, 0x80) = -1;
-    F<int>(self, 0x84) = -1;
-    F<unsigned>(self, 0x104) = 0;
+    self->f_e8 = 0;
+    self->f_70 = 0;
+    self->f_40 = 0;
+    self->f_d8 = 0;
+    self->f_80 = -1;
+    self->f_84 = -1;
+    self->f_104 = 0;
 
-    Player_setKIPlayer(F<void *>(self, 0x4), self);
+    Player_setKIPlayer(self->f_4, self);
 
-    F<unsigned>(self, 0x88) = 0;
-    F<unsigned>(self, 0x10) = 0;
-    F<uint16_t>(self, 0xb1) = 0x100;
-    F<uint8_t>(self, 0xbc) = 0;
-    F<unsigned>(self, 0xc0) = 0xff;
+    self->f_88 = 0;
+    self->f_10 = 0;
+    self->f_b1 = 0x100;
+    self->f_bc = 0;
+    self->f_c0 = 0xff;
     F<unsigned>(self, 0x78) = 0;
-    F<unsigned>(self, 0xa8) = KIPlayer_initB;
-    F<int>(self, 0xac) = faction;
-    F<unsigned>(self, 0x64) = KIPlayer_initA;
+    self->f_a8 = KIPlayer_initB;
+    self->f_ac = faction;
+    self->f_64 = KIPlayer_initA;
 
     if (geom != 0) {
         AEGeometry_setPosition3f(geom, x, y, z);
-        Matrix_assign((char *)F<void *>(self, 0x4) + 4, AEGeometry_getMatrix());
-        if (F<int>(self, 0xc) != 0)
-            Matrix_mulassign((char *)F<void *>(self, 0x4) + 4, AEGeometry_getMatrix());
+        Matrix_assign((char *)self->f_4 + 4, AEGeometry_getMatrix());
+        if (self->f_c != 0)
+            Matrix_mulassign((char *)self->f_4 + 4, AEGeometry_getMatrix());
     }
 
     *(float *)((char *)self + 0x58) = x;
     *(float *)((char *)self + 0x5c) = y;
     *(float *)((char *)self + 0x60) = z;
-    F<unsigned>(self, 0x14) = 0;
+    self->f_14 = 0;
     F<uint16_t>(self, 0x73) = 0;
     F<uint8_t>(self, 0x76) = 0;
-    F<int>(self, 0xf8) = -1;
-    F<unsigned>(self, 0xfc) = 0;
-    F<uint16_t>(self, 0x100) = 0x100;
+    self->f_f8 = -1;
+    self->f_fc = 0;
+    self->f_100 = 0x100;
     (void)active;
 }

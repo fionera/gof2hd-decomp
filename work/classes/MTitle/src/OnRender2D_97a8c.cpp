@@ -17,7 +17,7 @@ extern "C" void MTitle_r2dTail(void *canvas);
 
 void MTitle::OnRender2D()
 {
-    PaintCanvas_Begin2d(P(this, 0x4));
+    PaintCanvas_Begin2d(this->f_4);
 
     void **canvas = g_MTitle_r2d_canvas;
     PaintCanvas_SetColor(*canvas, -1);
@@ -27,11 +27,11 @@ void MTitle::OnRender2D()
     Layout_drawHeader(*layout);
     Layout_drawEmptyFooter(*layout, 0);
 
-    int t = ApplicationManager_GetElapsedTimeMillis(P(this, 0x8));
+    int t = ApplicationManager_GetElapsedTimeMillis(this->f_8);
     if (0x32 < t)
         t = 0x32;
     else
-        t = ApplicationManager_GetElapsedTimeMillis(P(this, 0x8));
+        t = ApplicationManager_GetElapsedTimeMillis(this->f_8);
 
     t += I(this, 0x1c);
     I(this, 0x1c) = t;
@@ -64,8 +64,8 @@ pathC:
     fade = (float)t / 1000.0f;
 common:
     int color = (int)(fade * 255.0f) - 0x100;
-    PaintCanvas_SetColor(P(this, 0x4), color);
+    PaintCanvas_SetColor(this->f_4, color);
     PaintCanvas_DrawImage2D(*canvas, image, 0, 0, 0x44, 0x44);
-    PaintCanvas_End2d(P(this, 0x4));
-    MTitle_r2dTail(P(this, 0x4));
+    PaintCanvas_End2d(this->f_4);
+    MTitle_r2dTail(this->f_4);
 }

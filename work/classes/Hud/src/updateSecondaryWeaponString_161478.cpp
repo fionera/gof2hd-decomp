@@ -21,7 +21,7 @@ extern const char g_Hud_swEnd[]  __attribute__((visibility("hidden"))); // trail
 
 extern "C" void Hud_updateSecondaryWeaponString(Hud *self)
 {
-    void *item = P(self, 0x258);
+    void *item = self->f_258;
     if (item == 0) return;
 
     void *gt = *g_Hud_gameText;

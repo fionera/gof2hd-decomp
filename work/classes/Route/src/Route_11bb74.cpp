@@ -13,24 +13,24 @@ extern "C" void ArrayAddWaypoint(void *wp, void *a);
 // Route::Route(int *coords, int count) -- count triples of (x,y,z) define the waypoints.
 extern "C" Route *_ZN5RouteC2EPii(Route *self, int *coords, int count)
 {
-    F<uint8_t>(self, 0x4) = 0;
-    F<int32_t>(self, 0x0) = 0;
+    self->f_4 = 0;
+    self->f_0 = 0;
     void *wps = operator_new(0xc);
     ArrayWaypoint_ctor(wps);
-    F<void *>(self, 0xc) = wps;
+    self->f_c = wps;
     void *tgts = operator_new(0xc);
     ArrayKIPlayer_ctor(tgts);
-    F<void *>(self, 0x10) = tgts;
+    self->f_10 = tgts;
     void *times = operator_new(0xc);
     ArrayInt_ctor(times);
-    F<void *>(self, 0x14) = times;
+    self->f_14 = times;
     uint32_t n = __aeabi_idiv(count, 3);
-    ArraySetLengthKIPlayer(n, F<void *>(self, 0x10));
-    ArraySetLengthInt(n, F<void *>(self, 0x14));
+    ArraySetLengthKIPlayer(n, self->f_10);
+    ArraySetLengthInt(n, self->f_14);
     for (int i = 0; i < count; i += 3) {
         void *wp = operator_new(0x138);
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
-        ArrayAddWaypoint(wp, F<void *>(self, 0xc));
+        ArrayAddWaypoint(wp, self->f_c);
     }
     return self;
 }

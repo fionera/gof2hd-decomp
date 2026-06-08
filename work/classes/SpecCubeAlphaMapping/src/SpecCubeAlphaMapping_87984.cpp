@@ -16,7 +16,7 @@ SpecCubeAlphaMapping::SpecCubeAlphaMapping()
     ShaderBaseStruct_ctor(this);
 
     // install vtable (target adds +8 to the table base) and register self in the global slot
-    i32(this, 0x00) = (int)(SpecCubeAlphaMapping_vtable + 8);
+    this->f_0 = (int)(SpecCubeAlphaMapping_vtable + 8);
     *g_SCAM_globalSlotDst = *g_SCAM_globalSlotSrc;
 
     String name(g_SCAM_name, false);

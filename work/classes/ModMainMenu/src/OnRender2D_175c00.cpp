@@ -27,10 +27,10 @@ extern "C" void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
 {
     PaintCanvas_Begin2d(I(self, 0x04));
     PaintCanvas_SetColor(I(self, 0x04), -1);
-    CutScene_render2D(P(self, 0x1c));
+    CutScene_render2D(self->f_1c);
 
     if (UC(self, 0x28) == 0) {
-        MenuTouchWindow_draw(P(self, 0x18));
+        MenuTouchWindow_draw(self->f_18);
     } else {
         int color;
         int time = I(self, 0x24);

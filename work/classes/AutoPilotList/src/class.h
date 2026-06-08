@@ -24,6 +24,14 @@ struct Level;
 // Methods authored as real C++ members demangle to AutoPilotList::name(); the rest are
 // extern "C" wrappers with hand-mangled names.
 struct AutoPilotList {
+    // @portable-fields
+    int f_0; // 0x0
+    int f_4; // 0x4
+    int f_8; // 0x8
+    int f_c; // 0xc
+    void* f_10; // 0x10
+    int f_14; // 0x14
+
     void draw();
 };
 

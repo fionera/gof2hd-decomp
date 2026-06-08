@@ -9,8 +9,8 @@ extern "C" __attribute__((visibility("hidden"))) void **g_ImagePart_draw_canvas;
 extern "C" void ImagePart_draw(ImagePart *self, int x, int y, bool b)
 {
     void **holder = g_ImagePart_draw_canvas;
-    PaintCanvas_DrawImage2D(*holder, F<unsigned>(self, 0x00), x,
-                            F<int>(self, 0x08) + y,
-                            F<int>(self, 0x0c), F<int>(self, 0x10),
-                            0x11, F<int>(self, 0x04) | 1, b);
+    PaintCanvas_DrawImage2D(*holder, self->id, x,
+                            self->pos_y + y,
+                            self->scale_x, self->scale_y,
+                            0x11, self->f_4 | 1, b);
 }

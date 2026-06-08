@@ -32,13 +32,13 @@ void Hud_catchCargo(void *hud, int index, int amount, int flagA, int flagB, int 
 //   the relevant statistics, and notifies the HUD.
 extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
 {
-    if ((unsigned)(F<int>(self, 0x88) - 3) < 2) {
-        F<uint8_t>(self, 0x4c) = 0;
+    if ((unsigned)(self->f_88 - 3) < 2) {
+        self->f_4c = 0;
         if (F<uint8_t>(self, 0x101) != 0)
             setActive(self, 0);
     }
 
-    void *cargo = F<void *>(self, 0x50);
+    void *cargo = self->f_50;
     F<unsigned>(self, 0x78) = 0;
     if (cargo == 0)
         return;
@@ -50,7 +50,7 @@ extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
             continue;
 
         // randomise the captured amount unless we are in a "guaranteed" state.
-        if ((unsigned)(F<int>(self, 0x88) - 3) >= 2)
+        if ((unsigned)(self->f_88 - 3) >= 2)
             amount = AERandom_nextInt(*(void **)gAERandom, amount);
 
         void *status = *(void **)gStatus;
@@ -70,23 +70,23 @@ extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
         }
 
         // resolve the item info and decrement the crate's remaining count.
-        int itemId = *(int *)(*(char **)((char *)F<void *>(self, 0x50) + 4) + i * 4);
+        int itemId = *(int *)(*(char **)((char *)self->f_50 + 4) + i * 4);
         int infoPtr = *(int *)(*(char **)(*(char **)gItemDb + 4) + itemId * 4);
         void *item = Item_makeItem(infoPtr);
-        int *slot = (int *)(*(char **)((char *)F<void *>(self, 0x50) + 4) + i * 4);
+        int *slot = (int *)(*(char **)((char *)self->f_50 + 4) + i * 4);
         slot[1] = slot[1] - amount;
         if (item == 0)
             return;
 
-        if (*(char *)((char *)F<void *>(self, 0x4) + 0x5d) != 0)
-            Level_stealFriendCargo(F<void *>(self, 0x54));
+        if (*(char *)((char *)self->f_4 + 0x5d) != 0)
+            Level_stealFriendCargo(self->f_54);
 
-        if (F<uint8_t>(self, 0x3c) == 0)
-            Standing_applyStealCargo(Status_getStanding(), F<int>(self, 0x28));
+        if (self->f_3c == 0)
+            Standing_applyStealCargo(Status_getStanding(), self->f_28);
 
         // determine whether this is a special (illegal) cargo item.
         bool special = false;
-        if (F<uint8_t>(self, 0xd0) != 0) {
+        if (self->f_d0 != 0) {
             int idx = Item_getIndex(item);
             if (idx == 0x74)
                 special = true;
@@ -103,7 +103,7 @@ extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
 
         if (avail == 0) {
             if (special)
-                F<uint8_t>(self, 0x68) = 1;
+                self->f_68 = 1;
             hudIndex = Item_getIndex(item);
             hudAmount = Item_getAmount(item);
             flagB = 1;
@@ -133,12 +133,12 @@ extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
         if (!merged)
             Ship_addCargo(Status_getShip(), item);
 
-        *(int *)((char *)F<void *>(self, 0x54) + 0x1c) =
-            Item_getAmount(item) + *(int *)((char *)F<void *>(self, 0x54) + 0x1c);
+        *(int *)((char *)self->f_54 + 0x1c) =
+            Item_getAmount(item) + *(int *)((char *)self->f_54 + 0x1c);
 
         if (special) {
             F<uint8_t>(self, 0x69) = 1;
-        } else if (F<int>(self, 0x28) == 9) {
+        } else if (self->f_28 == 9) {
             void *st = *(void **)gStatus;
             *(int *)((char *)st + 0xcc) = Item_getAmount(item) + *(int *)((char *)st + 0xcc);
         } else {

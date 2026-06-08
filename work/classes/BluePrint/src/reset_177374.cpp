@@ -8,13 +8,13 @@ extern void *const gStatusPtr __attribute__((visibility("hidden")));
 // BluePrint::reset() -> bump production count, refill the ingredient counters, clear state.
 extern "C" void BluePrint_reset(BluePrint *self)
 {
-    F<int32_t>(self, 0xc) += 1;
+    self->f_c += 1;
     Status_incGoodsProduced(*(void **)gStatusPtr, 1);
     Array<int> *ql = BluePrint_getQuantityList(self);
     Array<int> *counters = F<Array<int> *>(self, 0x0);
     for (uint32_t i = 0; i < counters->length; i++)
         counters->data[i] = ql->data[i];
-    F<int32_t>(self, 0x10) = -1;
-    F<int32_t>(self, 0x28) = F<int32_t>(self, 0x24);
-    F<int32_t>(self, 0x4) = 0;
+    self->f_10 = -1;
+    self->f_28 = self->f_24;
+    self->f_4 = 0;
 }

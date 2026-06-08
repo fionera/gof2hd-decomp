@@ -22,7 +22,18 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct BluePrint;
+struct BluePrint {
+    // @portable-fields
+    void* f_0; // 0x0
+    int f_4; // 0x4
+    int f_8; // 0x8
+    int f_c; // 0xc
+    int f_10; // 0x10
+    unsigned char _pad_14[12];
+    int f_20; // 0x20
+    int f_24; // 0x24
+    int f_28; // 0x28
+};
 struct Item;
 struct Station;
 

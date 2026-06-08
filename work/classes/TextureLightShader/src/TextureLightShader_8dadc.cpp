@@ -23,7 +23,7 @@ TextureLightShader::TextureLightShader()
     ShaderBaseStruct_ctor(this);
 
     // Install vtable (base + 8 to skip RTTI/offset slots).
-    i32(this, 0x0) = g_tls_vtableBase + 8;
+    this->f_0 = g_tls_vtableBase + 8;
 
     // Copy the shader-source pointer into its destination slot.
     *g_tls_shaderDst = *g_tls_shaderSrc;

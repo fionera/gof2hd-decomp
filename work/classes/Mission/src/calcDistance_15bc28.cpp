@@ -21,14 +21,14 @@ extern "C" void Station_dtor_finish(Station *s);
 // mission's target station system, storing the truncated value at +0x60.
 extern "C" void Mission_calcDistance(Mission *self) {
     Galaxy **gp = g_galaxy;
-    Station *st = Galaxy_getStation(*gp, F<int>(self, 0x3c));
+    Station *st = Galaxy_getStation(*gp, self->f_3c);
     Systems *sys = Galaxy_getSystems(*gp);
     Galaxy *g = *gp;
     int i1 = Station_getSystem(Status_getStation(*g_status));
     SolarSystem *a = sys->data[i1];
     int i2 = Station_getSystem(st);
     SolarSystem *b = sys->data[i2];
-    F<int>(self, 0x60) = (int)Galaxy_distance(g, a, b);
+    self->f_60 = (int)Galaxy_distance(g, a, b);
     if (st != 0) {
         Station_dtor_finish(Station_dtor(st));
     }

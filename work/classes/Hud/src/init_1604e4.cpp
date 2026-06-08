@@ -42,12 +42,12 @@ extern "C" int Hud_init(Hud *self)
     // key-state arrays: 0x19 slots each
     void *keys = operator_new(0xc);
     Array_void_ctor(keys);
-    P(self, 0x28c) = keys;
+    self->f_28c = keys;
     ArraySetLength_void(0x19, keys);
     void *bits = operator_new_arr(100);
-    P(self, 0x290) = bits;
+    self->f_290 = bits;
     for (int i = 0; i != 0x19; i++) {
-        *(int *)(I(P(self, 0x28c), 4) + i * 4) = 0;
+        *(int *)(I(self->f_28c, 4) + i * 4) = 0;
         *(int *)(I(self, 0x290) + i * 4) = 0;
     }
     I(self, 0x284) = 0;
@@ -73,7 +73,7 @@ extern "C" int Hud_init(Hud *self)
     Hud_closeHudMenu(self);
     Hud_checkIfQuickMenuIsEmpty(self);
     Hud_releaseAllKeys(self);
-    P(self, 0x530) = 0;
+    self->f_530 = 0;
 
     int *layout = (int *)*g_Hud_initLayout;
     int w = PaintCanvas_GetImage2DWidth(*g_Hud_initCanvas);

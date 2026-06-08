@@ -15,7 +15,7 @@ extern "C" Hud *Hud_checkIfQuickMenuIsEmpty(Hud *self)
 {
     void *ship = Status_getShip();
     unsigned int *equip = (unsigned int *)Ship_getEquipment(ship, 1);
-    P(self, 0x25c) = equip;
+    self->f_25c = equip;
 
     unsigned char empty;
     bool hasSecondary = false;

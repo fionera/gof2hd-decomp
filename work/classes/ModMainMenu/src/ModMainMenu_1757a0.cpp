@@ -11,5 +11,5 @@ extern "C" void _ZN11ModMainMenuC2Ev(ModMainMenu *self)
     I(self, 0x14) = 0;
     I(self, 0x18) = 0;
     I(self, 0x1c) = 0;
-    P(self, 0) = (char *)vtable + 8;
+    self->f_0 = (char *)vtable + 8;
 }

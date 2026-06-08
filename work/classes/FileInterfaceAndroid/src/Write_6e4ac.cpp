@@ -22,9 +22,9 @@ typedef void (*fn_del)(void *env, void *arr);
 // serves the JNI slow path; clang -Oz colors them differently from the target. Resistant.
 extern "C" bool FileInterfaceAndroid_Write(FileInterfaceAndroid *self, unsigned int n, const void *buf)
 {
-    if (F<void *>(self, 0x08) != 0)
+    if (self->f_8 != 0)
         return fwrite(buf, 1, n) == n;
-    if (F<void *>(self, 0x10) == 0)
+    if (self->f_10 == 0)
         return true;
 
     void *r9 = *gEnvW;
@@ -34,7 +34,7 @@ extern "C" bool FileInterfaceAndroid_Write(FileInterfaceAndroid *self, unsigned 
     envObj = *(void **)r9;
     table = *(void **)envObj;
     (*(fn_setregion *)((char *)table + 0x340))(envObj, arr, 0, n, buf);
-    JNI_CallVoidMethod(envObj, F<void *>(self, 0x10), *(void **)gWriteMidArg, arr);
+    JNI_CallVoidMethod(envObj, self->f_10, *(void **)gWriteMidArg, arr);
     table = *(void **)(*(void **)r9);
     bool ok = (*(fn_check *)((char *)table + 0x3c))(*(void **)r9) == 0;
     if (!ok)

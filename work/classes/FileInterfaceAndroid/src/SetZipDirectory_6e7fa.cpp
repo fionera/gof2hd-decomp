@@ -4,5 +4,5 @@
 extern "C" void FileInterfaceAndroid_SetZipDirectory(FileInterfaceAndroid *self, void *p)
 {
     if (p != 0)
-        F<void *>(self, 0x34) = p;
+        self->f_34 = p;
 }

@@ -123,14 +123,14 @@ extern "C" void *Globals_dtor(Globals *self)
     }
     *ifSlot = 0;
 
-    void *selfArr = F<void *>(self, 4);
+    void *selfArr = self->f_4;
     if (selfArr != 0) {
         ArrayRelease_int(selfArr);
-        if (F<void *>(self, 4) != 0) {
-            operator_delete(ArrayInt_dtor(F<void *>(self, 4)));
+        if (self->f_4 != 0) {
+            operator_delete(ArrayInt_dtor(self->f_4));
         }
     }
-    F<void *>(self, 4) = 0;
+    self->f_4 = 0;
     **gG_tail = 0;
     return self;
 }

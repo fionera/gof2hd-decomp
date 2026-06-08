@@ -6,7 +6,7 @@ extern "C" void String_dtor(void *self);
 
 ScrollTouchWindow::~ScrollTouchWindow()
 {
-    void *box = P(this, 0);
+    void *box = this->f_0;
     if (box != 0) {
         operator_delete(ScrollTouchBox_dtor(box));
     }

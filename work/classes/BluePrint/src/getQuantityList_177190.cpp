@@ -7,7 +7,7 @@ extern void *const gItemDB __attribute__((visibility("hidden")));
 // BluePrint::getQuantityList() -> tail-call Item::getQuantities(itemDB[index]).
 extern "C" Array<int> *BluePrint_getQuantityList(BluePrint *self)
 {
-    int idx = F<int32_t>(self, 0x20);
+    int idx = self->f_20;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
     return Item_getQuantities(data[idx]);
 }

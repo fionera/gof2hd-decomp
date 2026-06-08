@@ -12,8 +12,8 @@ extern "C" void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
 {
     void **canvas = g_ModMainMenu_r3d_canvas;
     PaintCanvas_ClearBuffer(*canvas, 0);
-    CutScene_renderBG(P(self, 0x1c));
+    CutScene_renderBG(self->f_1c);
     PaintCanvas_Begin3d(*canvas);
-    CutScene_render3D(P(self, 0x1c));
+    CutScene_render3D(self->f_1c);
     ModMainMenu_r3dTail(*canvas);
 }

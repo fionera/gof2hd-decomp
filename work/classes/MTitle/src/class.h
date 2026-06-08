@@ -10,6 +10,11 @@ typedef unsigned int uint32_t;
 typedef int int32_t;
 
 struct MTitle {
+    // @portable-fields
+    void* f_0; // 0x0
+    void* f_4; // 0x4
+    void* f_8; // 0x8
+
     MTitle();
     ~MTitle();
 

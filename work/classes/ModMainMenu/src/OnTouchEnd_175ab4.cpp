@@ -10,8 +10,8 @@ extern "C" void _ZN11ModMainMenu10OnTouchEndEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
 {
     if (UC(self, 0x28) == 0) {
-        MenuTouchWindow_OnTouchEnd(P(self, 0x18), x, y, touch);
-        ModMainMenu_touchEndTail(Level_getStarSystem(*(void **)P(self, 0x1c)));
+        MenuTouchWindow_OnTouchEnd(self->f_18, x, y, touch);
+        ModMainMenu_touchEndTail(Level_getStarSystem(*(void **)self->f_1c));
         return;
     }
 
