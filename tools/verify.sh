@@ -20,9 +20,14 @@ fi
 # would otherwise leave stale objects and the gate would diff the wrong build. The trust anchor
 # must reflect the current flags+source exactly.
 NPROC="$(nproc 2>/dev/null || echo 4)"
-# Build + diff in PARALLEL across all cores (the gate was the cadence bottleneck at >1600 fns).
+# Build in PARALLEL (make -j), then DIFF in parallel (xargs -P below) — the gate was the cadence
+# bottleneck at >1600 fns. The NDK clang runs under Rosetta, where heavy -j load occasionally throws
+# a transient "rosetta error" that fails one TU; the retry rebuilds just that object INCREMENTALLY
+# (no clean), so it's both fast and flake-proof. objdump in the diff is native ARM (never flakes).
 make clean >/dev/null 2>&1
-make -j"$NPROC" NDK="${NDK:-/opt/android-ndk-r18b}" >/dev/null 2>&1 || { echo "BUILD FAILED"; exit 1; }
+make -j"$NPROC" NDK="${NDK:-/opt/android-ndk-r18b}" >/dev/null 2>&1 \
+  || make -j"$NPROC" NDK="${NDK:-/opt/android-ndk-r18b}" >/dev/null 2>&1 \
+  || { echo "BUILD FAILED"; exit 1; }
 # Per-entry check (one matches.tsv line -> PASS/FAIL row). Run via xargs -P across all cores;
 # each gofdiff is independent (own .o + read-only target), so there are no races.
 check_one() {
