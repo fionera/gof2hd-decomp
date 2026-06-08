@@ -2,14 +2,14 @@
 
 uint32_t AENormalFile::Release()
 {
-    FI *h = fi_held(this);
+    FI *h = this->held;
     if (h != 0) {
         h->vtable->Discard(h);
-        FI *h2 = fi_held(this);
+        FI *h2 = this->held;
         if (h2 != 0) {
             h2->vtable->Free(h2);
         }
     }
-    fi_held(this) = 0;
+    this->held = 0;
     return 1;
 }
