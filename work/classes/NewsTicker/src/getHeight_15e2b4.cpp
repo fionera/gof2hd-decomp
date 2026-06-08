@@ -10,5 +10,5 @@ int NewsTicker::getHeight()
     top += 2;
     int bottom;
     __builtin_sub_overflow(top, fontHeight, &bottom);
-    return bottom - F<int>(this, 0x8);
+    return bottom - this->f_8;
 }

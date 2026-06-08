@@ -6,9 +6,9 @@ typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 // then forwards to vtable slot 0x48.
 extern "C" void PlayerFixedObject_translate(PlayerFixedObject *self, const Vector &d)
 {
-    float x = (float)F<int32_t>(self, 0x178);
-    float y = (float)F<int32_t>(self, 0x17c);
-    float z = (float)F<int32_t>(self, 0x180);
+    float x = (float)self->f_178;
+    float y = (float)self->f_17c;
+    float z = (float)self->f_180;
     SetPosFn fn = *(SetPosFn *)(*(char **)self + 0x48);
     return fn(self, d.x + x, d.y + y, d.z + z);
 }

@@ -27,25 +27,25 @@ extern "C" void Explosion_setMatrix(Explosion *explosion, Matrix *matrix);
 
 void PlayerAsteroid::update(int delta)
 {
-    F<int>(this, 0x134) = delta;
+    this->f_134 = delta;
     if (delta == 0) {
         return;
     }
 
-    Player *player = F<Player *>(this, 0x4);
-    if (Player_isActive(player) == 0 && F<int>(this, 0x88) == 4) {
-        F<uint8_t>(this, 0x124) = 0;
+    Player *player = this->f_4;
+    if (Player_isActive(player) == 0 && this->f_88 == 4) {
+        this->f_124 = 0;
         return;
     }
 
     int hitpoints = Player_getHitpoints(player);
-    int state = F<int>(this, 0x88);
+    int state = this->f_88;
     if (hitpoints <= 0 && state == 0) {
-        F<int>(this, 0x88) = 3;
+        this->f_88 = 3;
         Level_asteroidDied(PlayerAsteroid_level);
 
-        if (F<uint8_t>(this, 0x4c) != 0) {
-            int quality = F<int>(this, 0x150);
+        if (this->f_4c != 0) {
+            int quality = this->f_150;
             void *random = PlayerAsteroid_random;
             bool spawn = true;
             if (quality == 7) {
@@ -57,8 +57,8 @@ void PlayerAsteroid::update(int delta)
             if (spawn) {
                 ArrayInt *items = (ArrayInt *)operator_new(0xc);
                 ArrayInt_ctor(items);
-                F<ArrayInt *>(this, 0x50) = items;
-                int item = F<int>(this, 0x128);
+                this->f_50 = items;
+                int item = this->f_128;
                 if (item == 0xd9) {
                     if (quality == 7) {
                         item = 0xda;
@@ -71,25 +71,25 @@ void PlayerAsteroid::update(int delta)
                 if (quality != 7) {
                     count = AERandom_nextInt(random, 3) + 1;
                 }
-                ArrayAdd_int(count, F<ArrayInt *>(this, 0x50));
-                KIPlayer_createCrate(this, F<int>(this, 0x128) == 0xa4 ? 2 : 1);
+                ArrayAdd_int(count, this->f_50);
+                KIPlayer_createCrate(this, this->f_128 == 0xa4 ? 2 : 1);
             } else {
-                F<uint8_t>(this, 0x4c) = 0;
-                F<int>(this, 0x50) = 0;
+                this->f_4c = 0;
+                this->f_50 = 0;
             }
         } else {
-            F<uint8_t>(this, 0x4c) = 0;
-            F<int>(this, 0x50) = 0;
+            this->f_4c = 0;
+            this->f_50 = 0;
         }
 
-        Explosion_setMatrix(F<Explosion *>(this, 0x12c), AEGeometry_getMatrix(F<AEGeometry *>(this, 0x8)));
+        Explosion_setMatrix(this->f_12c, AEGeometry_getMatrix(this->f_8));
         return;
     }
 
     if (state == 3) {
-        Explosion_update(F<Explosion *>(this, 0x12c), delta, 0);
-        if (Explosion_isPlaying(F<Explosion *>(this, 0x12c)) == 0) {
-            F<int>(this, 0x88) = 4;
+        Explosion_update(this->f_12c, delta, 0);
+        if (Explosion_isPlaying(this->f_12c) == 0) {
+            this->f_88 = 4;
             Player_setBombForce(player, 0.0f);
         }
     } else if (state == 4) {
@@ -97,25 +97,25 @@ void PlayerAsteroid::update(int delta)
         Player_setBombForce(player, 0.0f);
     }
 
-    int oldHitpoints = F<int>(this, 0x158);
+    int oldHitpoints = this->f_158;
     hitpoints = Player_getHitpoints(player);
     if (hitpoints < oldHitpoints) {
-        F<int>(this, 0x15c) = 1;
-        F<float>(this, 0x160) = 1.0f;
-        F<int>(this, 0x158) = Player_getHitpoints(player);
+        this->f_15c = 1;
+        this->f_160 = 1.0f;
+        this->f_158 = Player_getHitpoints(player);
     }
 
-    if (F<uint8_t>(this, 0x14c) != 0) {
+    if (this->f_14c != 0) {
         Vector rotation = Vector_scale((Vector *)((char *)this + 0x140), (float)delta * 0.001f);
-        AEGeometry_rotate(F<AEGeometry *>(this, 0x8), &rotation);
+        AEGeometry_rotate(this->f_8, &rotation);
     }
 
     float bombForce = Player_getBombForce(player);
-    if (bombForce > 0.0f && F<int>(this, 0x88) == 3) {
+    if (bombForce > 0.0f && this->f_88 == 3) {
         Vector hit = Player_getHitVector(player);
         Vector *hitSlot = (Vector *)((char *)this + 0x90);
         Vector_assign(hitSlot, &hit);
-        float scaling = F<float>(this, 0x138);
+        float scaling = this->f_138;
         float clamped = scaling;
         if (clamped > 1.0f) {
             clamped = 1.0f;
@@ -127,9 +127,9 @@ void PlayerAsteroid::update(int delta)
         Vector_scale_assign(hitSlot, force);
         typedef void (*PushFn)(PlayerAsteroid *, Vector *);
         (*(PushFn *)((char *)*(void **)this + 0x20))(this, hitSlot);
-        Explosion_translate(F<Explosion *>(this, 0x12c), hitSlot);
-        if (F<AEGeometry *>(this, 0x78) != 0) {
-            AEGeometry_translate(F<AEGeometry *>(this, 0x78), hitSlot);
+        Explosion_translate(this->f_12c, hitSlot);
+        if (this->f_78 != 0) {
+            AEGeometry_translate(this->f_78, hitSlot);
         }
         float nextForce = bombForce * 0.75f;
         if (nextForce < 0.01f) {

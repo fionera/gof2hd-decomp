@@ -103,7 +103,7 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
     Layout_drawBG(layout);
 
     float relStart = StatusWindow_getRelativeScrollStartPos(self);
-    int contentH = i32(self, 0x5c);
+    int contentH = self->f_5c;
     float ch = (float)contentH;
     float relH = StatusWindow_getRelativeScrollHeight(self);
     int barH = (int)(relH * ch);
@@ -118,13 +118,13 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
     int colW;
     if (*land == 0) {
         colW = screenW;
-        top += i32(self, 0x38);
+        top += self->f_38;
     } else {
         colW = screenW >> 1;
     }
     if (barH > 0)
         colW = (colW - *(int *)((char *)layout + 0x48)) - *(int *)((char *)layout + 0x2c);
-    i32(self, 0x6c) = colW + *(int *)((char *)layout + 0x28) * -2;
+    self->f_6c = colW + *(int *)((char *)layout + 0x28) * -2;
 
     char creditStr[0xc];
     String_default(creditStr);
@@ -134,12 +134,12 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
     else
         String_fromC(sep, ":", false);
 
-    int tab = i32(self, 0x30);
+    int tab = self->f_30;
     char drewStats = 0;
 
     // ===== player-stats tab (index 0 / landscape) =====
     if (tab == 0 || *land != 0) {
-        int boxW = i32(self, 0x6c);
+        int boxW = self->f_6c;
         int x0 = *(int *)((char *)layout + 0x28);
         int pad = *(int *)((char *)layout + 0x2c);
         char lbl[0xc];
@@ -155,7 +155,7 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
         String_fromC(lbl, "", false);
         Layout_drawBox(layout, 5, x0, y, (boxW >> 1) - pad, *(int *)((char *)layout + 0x2d8), lbl);
         String_dtor(lbl);
-        ImageFactory_drawChar(*(void **)g_swd_imageFactory, pp(self, 0xc),
+        ImageFactory_drawChar(*(void **)g_swd_imageFactory, self->f_c,
                               *(int *)((char *)layout + 0x4c) + x0, y, false);
         char credTmp[0xc];
         Layout_formatCredits(credTmp, Status_getCredits());
@@ -216,11 +216,11 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
         // Standing emblem panel + bars.
         void *standing = Status_getStanding();
         float rate = Standing_getStandingRate(standing);
-        PaintCanvas_DrawImage2D(canvas, i32(self, 0x24), x0 + (boxW >> 2), y, '\x11');
-        PaintCanvas_DrawRegion2D(canvas, i32(self, 0x28), i32(self, 0x70), 0,
-                                 (int)-(rate * (float)i32(self, 0x70)), i32(self, 0x74),
-                                 -(rate * (float)i32(self, 0x70)), 0, 0, 0, x0 + (boxW >> 2));
-        PaintCanvas_DrawImage2D(canvas, i32(self, 0x2c), x0, y, '\x11');
+        PaintCanvas_DrawImage2D(canvas, self->f_24, x0 + (boxW >> 2), y, '\x11');
+        PaintCanvas_DrawRegion2D(canvas, self->f_28, self->f_70, 0,
+                                 (int)-(rate * (float)self->f_70), self->f_74,
+                                 -(rate * (float)self->f_70), 0, 0, 0, x0 + (boxW >> 2));
+        PaintCanvas_DrawImage2D(canvas, self->f_2c, x0, y, '\x11');
 
         // Career-stat rows from the Status singleton.
         void *st = *(void **)g_swd_status;
@@ -240,15 +240,15 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
         }
 
         drewStats = *land;
-        tab = i32(self, 0x30);
+        tab = self->f_30;
     }
 
     // ===== achievements / medal tab (index 1) =====
     if (drewStats != 0 || tab == 1) {
-        int boxW = i32(self, 0x6c);
+        int boxW = self->f_6c;
         int third = __aeabi_idiv(boxW, 3);
         int x0 = *(int *)((char *)layout + 0x28);
-        int rowH = i32(self, 0x78);
+        int rowH = self->f_78;
         int gridX0 = drewStats ? (boxW + (third >> 1) + x0) : (x0 + (third >> 1));
         int gridY0 = *(int *)((char *)layout + 0xc) + (rowH >> 1) + *(int *)((char *)layout + 0x2c);
 
@@ -262,19 +262,19 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
             gridY0 += *(int *)((char *)layout + 0x1c) + *(int *)((char *)layout + 0x2c);
         }
 
-        for (int i = 0; i < i32(self, 0x0); i++) {
+        for (int i = 0; i < self->f_0; i++) {
             int col = (int)__aeabi_uidiv((unsigned)i, 3);
-            int by = col * rowH + gridY0 + i32(self, 0x38);
-            TouchButton_setPosition(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4),
+            int by = col * rowH + gridY0 + self->f_38;
+            TouchButton_setPosition(*(void **)(*(int *)((char *)self->f_8 + 4) + i * 4),
                                     (i - col * 3) * third + gridX0, by);
             if (by >= 0 && by <= screenH)
-                TouchButton_draw(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4));
+                TouchButton_draw(*(void **)(*(int *)((char *)self->f_8 + 4) + i * 4));
         }
 
         // Selected-medal detail panel.
-        if (i32(self, 0x34) >= 0) {
+        if (self->f_34 >= 0) {
             PaintCanvas_SetColor(canvas);
-            int lines = *(int *)pp(self, 0x10);
+            int lines = *(int *)self->f_10;
             int lineH = *(int *)((char *)layout + 0x4);
             char lbl[0xc];
             String_fromC(lbl, "", false);
@@ -282,7 +282,7 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
                            (((screenH - *(int *)((char *)layout + 0x10)) -
                              *(int *)((char *)layout + 0x24)) - lineH * lines) +
                                *(int *)((char *)layout + 0x4c) * -2,
-                           i32(self, 0x6c), *(int *)((char *)layout + 0x4c) * 2 + lineH * lines, lbl);
+                           self->f_6c, *(int *)((char *)layout + 0x4c) * 2 + lineH * lines, lbl);
             String_dtor(lbl);
 
             String_fromC(lbl, "", false);
@@ -290,10 +290,10 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
                            (((screenH - *(int *)((char *)layout + 0x10)) -
                              *(int *)((char *)layout + 0x24)) - lineH * lines) +
                                *(int *)((char *)layout + 0x4c) * -2,
-                           i32(self, 0x6c), *(int *)((char *)layout + 0x4c) * 2 + lineH * lines, lbl);
+                           self->f_6c, *(int *)((char *)layout + 0x4c) * 2 + lineH * lines, lbl);
             String_dtor(lbl);
 
-            Globals_drawLines(*(void **)g_swd_globals, font, pp(self, 0x10),
+            Globals_drawLines(*(void **)g_swd_globals, font, self->f_10,
                               *(int *)((char *)layout + 0x4c) + *(int *)((char *)layout + 0x28),
                               (char)screenH);
         }
@@ -308,7 +308,7 @@ extern "C" void StatusWindow_draw(StatusWindow *self)
     Layout_drawFooter(layout);
 
     if (*land == 0) {
-        void **tabs = (void **)pp(self, 0x4);
+        void **tabs = (void **)self->f_4;
         for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
             TouchButton_draw(((void **)tabs[1])[i]);
     }

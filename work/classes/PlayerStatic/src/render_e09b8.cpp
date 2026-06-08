@@ -4,5 +4,5 @@ extern "C" void PlayerStatic_render_geometry(void *geometry);
 
 void PlayerStatic::render()
 {
-    return PlayerStatic_render_geometry(pp(this, 0x8));
+    return PlayerStatic_render_geometry(this->f_8);
 }

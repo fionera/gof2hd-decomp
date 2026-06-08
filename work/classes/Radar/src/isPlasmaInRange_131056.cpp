@@ -2,5 +2,5 @@
 
 uint8_t Radar::isPlasmaInRange()
 {
-    return F<uint8_t>(this, 0x130);
+    return this->f_130;
 }

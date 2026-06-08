@@ -7,17 +7,17 @@
 // a single NEON store here, which the target keeps as two strd — a residual
 // 1-instruction-class difference we could not coax away at -Oz.
 extern "C" void *ListItem_init(ListItem *self) {
-    F<long long>(self, 0x14) = 0;
-    F<long long>(self, 0x1c) = 0;
-    F<uint8_t>(self, 0x24) = 0;
-    F<int>(self, 0x28) = -1;
-    F<int>(self, 0x2c) = -1;
-    F<int>(self, 0x30) = -1;
-    F<int>(self, 0x34) = -1;
-    F<uint8_t>(self, 0x38) = 0;
-    F<int>(self, 0x3c) = -1;
-    F<int>(self, 0x40) = -1;
-    F<uint16_t>(self, 0x44) = 0;
+    self->f_14 = 0;
+    self->f_1c = 0;
+    self->f_24 = 0;
+    self->f_28 = -1;
+    self->f_2c = -1;
+    self->f_30 = -1;
+    self->f_34 = -1;
+    self->f_38 = 0;
+    self->f_3c = -1;
+    self->f_40 = -1;
+    self->f_44 = 0;
     unsigned *p4 = (unsigned *)((char *)self + 4);
     p4[0] = 0; p4[1] = 0; p4[2] = 0; p4[3] = 0;
     return (char *)self + 4;

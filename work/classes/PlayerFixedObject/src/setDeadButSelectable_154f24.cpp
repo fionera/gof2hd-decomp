@@ -15,16 +15,16 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_canvas3;
 
 extern "C" void PlayerFixedObject_setDeadButSelectable(PlayerFixedObject *self)
 {
-    void *player = F<void *>(self, 0x4);
-    F<uint8_t>(self, 0x134) = 0;
+    void *player = self->f_4;
+    self->f_134 = 0;
     Player_setHitpoints(player, 1);
-    Player_setVulnerable(F<void *>(self, 0x4), false);
-    LODManager_removeObject(*(void **)F<void *>(self, 0x54), F<void *>(self, 0x8));
-    void *geom = F<void *>(self, 0x8);
+    Player_setVulnerable(self->f_4, false);
+    LODManager_removeObject(*(void **)self->f_54, self->f_8);
+    void *geom = self->f_8;
     if (geom != 0) operator_delete(AEGeometry_dtor(geom));
     void **holder = g_pfo_canvas3;
-    void *newGeom = F<void *>(self, 0x124);
-    F<void *>(self, 0x8) = newGeom;
+    void *newGeom = self->f_124;
+    self->f_8 = newGeom;
     void *t = PaintCanvas_TransformGetTransform(*holder, *(int *)((char *)newGeom + 0xc));
     Transform_SetAnimationRangeInTime(t, *(long long *)((char *)t + 0xf8));
 }

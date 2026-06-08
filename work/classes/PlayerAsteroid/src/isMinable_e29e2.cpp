@@ -2,5 +2,5 @@
 
 uint8_t PlayerAsteroid::isMinable()
 {
-    return F<uint8_t>(this, 0x13c);
+    return this->f_13c;
 }

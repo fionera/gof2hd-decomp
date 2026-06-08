@@ -2,5 +2,5 @@
 
 float PlayerAsteroid::getScaling()
 {
-    return F<float>(this, 0x138);
+    return this->f_138;
 }

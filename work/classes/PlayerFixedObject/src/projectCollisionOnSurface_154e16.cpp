@@ -7,11 +7,11 @@ extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 
 extern "C" V3 PlayerFixedObject_projectCollisionOnSurface(PlayerFixedObject *self, void *vec)
 {
-    void *bv = F<void *>(self, 0x12c);
-    if (bv != 0 && F<int>(self, 0x88) == 4) {
+    void *bv = self->f_12c;
+    if (bv != 0 && self->f_88 == 4) {
         return BV_staticProjectCollisionOnSurface(vec, bv);
     }
-    void *bv2 = F<void *>(self, 0x128);
+    void *bv2 = self->f_128;
     if (bv2 != 0) {
         return BV_staticProjectCollisionOnSurface(vec, bv2);
     }

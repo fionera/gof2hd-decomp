@@ -8,9 +8,9 @@ extern "C" int Item_getSinglePrice_li(Item *it);    // blx 0x71944
 // ListItem::checkCredits()
 extern "C" bool ListItem_checkCredits(ListItem *self) {
     int price;
-    Ship *sh = F<Ship *>(self, 0xc);
+    Ship *sh = self->f_c;
     if (sh == 0) {
-        Item *it = F<Item *>(self, 0x10);
+        Item *it = self->f_10;
         if (it == 0)
             return false;
         price = Item_getSinglePrice_li(it);

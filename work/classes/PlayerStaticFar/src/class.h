@@ -27,6 +27,23 @@ using Vector = AbyssEngine::AEMath::Vector;
 struct AEGeometry;
 
 struct PlayerStaticFar {
+    // @portable-fields
+    void* f_0; // 0x0
+    void* f_4; // 0x4
+    void* f_8; // 0x8
+    unsigned char _pad_c[76];
+    int f_58; // 0x58
+    int f_5c; // 0x5c
+    int f_60; // 0x60
+    unsigned char _pad_64[192];
+    int f_124; // 0x124
+    int f_128; // 0x128
+    int f_12c; // 0x12c
+    void* f_130; // 0x130
+    int f_134; // 0x134
+    int f_138; // 0x138
+    int f_13c; // 0x13c
+
     PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z);
     ~PlayerStaticFar() noexcept(false);
 

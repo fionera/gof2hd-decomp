@@ -34,7 +34,7 @@ extern "C" void *SpaceLounge_lounge_font_slot;
 
 static inline void *button_at(SpaceLounge *self, unsigned i)
 {
-    return ((void **)P(P(self, 0x5c), 0x4))[i];
+    return ((void **)P(self->f_5c, 0x4))[i];
 }
 
 extern "C" void SpaceLounge_drawLounge(SpaceLounge *self)
@@ -51,8 +51,8 @@ extern "C" void SpaceLounge_drawLounge(SpaceLounge *self)
     if (I(self, 0x14) == 0) {
         int hover = I(self, 0x88);
         if (hover >= 0) {
-            void *agent = ((void **)P(P(self, 0x24), 0x4))[hover];
-            char *rects = (char *)P(P(self, 0x40), 0x4);
+            void *agent = ((void **)P(self->f_24, 0x4))[hover];
+            char *rects = (char *)P(self->f_40, 0x4);
             float *left = *(float **)(rects + hover * 8);
             float *right = *(float **)(rects + hover * 8 + 4);
             int pad = I(layout, 0x94);
@@ -128,18 +128,18 @@ extern "C" void SpaceLounge_drawLounge(SpaceLounge *self)
     String_dtor(s0);
     PaintCanvas_DrawRectangle(canvas, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c));
     ImageFactory_drawChar(factory,
-                          ((void **)P(P(self, 0x38), 0x4))[I(self, 0x20)],
+                          ((void **)P(self->f_38, 0x4))[I(self, 0x20)],
                           I(layout, 0x4c) + I(self, 0x70),
                           I(layout, 0x4c) + I(self, 0x74),
                           false);
-    ScrollTouchWindow_draw(P(self, 0x60));
+    ScrollTouchWindow_draw(self->f_60);
 
     if ((I(self, 0x14) & 0xfffffffe) != 2) {
         return;
     }
 
     TouchButton_setTextColor(button_at(self, 0), -1);
-    int offer = Agent_getOffer(((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)]);
+    int offer = Agent_getOffer(((void **)P(self->f_24, 0x4))[I(self, 0x20)]);
     if (I(self, 0x14) == 2) {
         TouchButton_setPosition(button_at(self, 0), I(self, 0x84), I(self, 0x80));
         TouchButton_setPosition3(button_at(self, 1), I(self, 0x6c) + I(self, 0x84), I(self, 0x80), 0x12);
@@ -160,7 +160,7 @@ extern "C" void SpaceLounge_drawLounge(SpaceLounge *self)
         TouchButton_setPosition(button_at(self, 0), I(self, 0x84), I(self, 0x7c));
     }
 
-    for (unsigned i = 0; i < U(P(self, 0x5c), 0x0); ++i) {
+    for (unsigned i = 0; i < U(self->f_5c, 0x0); ++i) {
         TouchButton_setVisible(button_at(self, i), false);
     }
 
@@ -176,7 +176,7 @@ extern "C" void SpaceLounge_drawLounge(SpaceLounge *self)
     Layout_drawBox(layout, 2, I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight, s0);
     String_dtor(s0);
     PaintCanvas_DrawRectangle(canvas, I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight);
-    ImageFactory_drawChar(factory, P(self, 0x3c),
+    ImageFactory_drawChar(factory, self->f_3c,
                           I(layout, 0x4c) + I(self, 0x70),
                           I(self, 0x78) + I(layout, 0x4c),
                           true);

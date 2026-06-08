@@ -2,5 +2,5 @@
 
 int PlayerAsteroid::getQualityFrameIndex()
 {
-    return 7 - F<int>(this, 0x150);
+    return 7 - this->f_150;
 }

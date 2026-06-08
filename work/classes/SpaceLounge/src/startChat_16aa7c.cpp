@@ -25,11 +25,11 @@ extern "C" void SpaceLounge_startChat(SpaceLounge *self)
     char scratch[1900];
     (void)scratch;
 
-    if (P(self, 0x24) == 0 || I(self, 0x20) < 0) {
+    if (self->f_24 == 0 || I(self, 0x20) < 0) {
         return;
     }
 
-    void *agent = ((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)];
+    void *agent = ((void **)P(self->f_24, 0x4))[I(self, 0x20)];
     int offer = Agent_getOffer(agent);
     void *mission = Agent_getMission(agent);
     void *texts = *(void **)&SpaceLounge_start_text_slot;
@@ -52,8 +52,8 @@ extern "C" void SpaceLounge_startChat(SpaceLounge *self)
     String_ctor_copy(left, GameText_getText(*(void **)texts, 0x10), false);
     String_ctor_copy(right, GameText_getText(*(void **)texts, 0x11), false);
 
-    ChoiceWindow_setText(P(self, 0x8), title, body);
-    ChoiceWindow_setButtonText(P(self, 0x8), left, right);
+    ChoiceWindow_setText(self->f_8, title, body);
+    ChoiceWindow_setButtonText(self->f_8, left, right);
 
     if (Agent_isKnown(agent) == 0 && Agent_isStoryAgent(agent) == 0) {
         Agent_setKnown(agent, true);

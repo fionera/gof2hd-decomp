@@ -6,7 +6,7 @@ __attribute__((visibility("hidden"))) extern const char PlayerAsteroid_qualityFo
 
 String PlayerAsteroid::getQualityString()
 {
-    int quality = F<int>(this, 0x150);
+    int quality = this->f_150;
     unsigned int index = quality - 5U;
     const char *text;
     if (index < 3U) {

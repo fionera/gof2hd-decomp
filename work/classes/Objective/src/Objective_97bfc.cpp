@@ -2,11 +2,11 @@
 
 Objective::Objective(int type, int value, Level *level)
 {
-    F<int>(this, 0x0) = type;
-    F<int>(this, 0x4) = value;
-    F<int>(this, 0x8) = 0;
-    F<Level *>(this, 0xc) = level;
-    F<int>(this, 0x10) = 0;
-    F<int>(this, 0x14) = 0;
-    F<int>(this, 0x18) = 0;
+    this->f_0 = type;
+    this->f_4 = value;
+    this->f_8 = 0;
+    this->f_c = level;
+    this->f_10 = 0;
+    this->f_14 = 0;
+    this->f_18 = 0;
 }

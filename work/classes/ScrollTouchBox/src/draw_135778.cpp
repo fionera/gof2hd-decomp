@@ -33,7 +33,7 @@ void ScrollTouchBox::draw()
 
         for (unsigned i = 0; i < F<unsigned>(*(void * volatile *)((char *)this + 0x0), 0x0); ++i) {
             void *lineArray = *(void * volatile *)((char *)this + 0x0);
-            unsigned count = F<unsigned>(lineArray, 0x0);
+            unsigned count = lineArray->f_0;
             int lastOffset;
             if (i != count - 1 || notSpecial != 0) {
                 lastOffset = 0;
@@ -43,28 +43,28 @@ void ScrollTouchBox::draw()
                     lastOffset = -4;
             }
 
-            int yBase = F<int>(this, 0x8);
-            int lineY = F<int>(*fontHolder, 0x4) * (int)i + yBase + F<int>(this, 0x34);
+            int yBase = this->f_8;
+            int lineY = F<int>(*fontHolder, 0x4) * (int)i + yBase + this->f_34;
             if (count == 1 ||
                 (yBase <= lineY &&
-                 lineY + lastOffset <= (F<int>(this, 0x10) + yBase) - PaintCanvas_GetTextHeight(canvas, F<String *>(this, 0x3c)))) {
+                 lineY + lastOffset <= (this->f_10 + yBase) - PaintCanvas_GetTextHeight(canvas, this->f_3c))) {
                 int x;
-                String *font = F<String *>(this, 0x3c);
-                String *line = F<String *>(F<void *>(lineArray, 0x4), i * 4);
+                String *font = this->f_3c;
+                String *line = F<String *>(lineArray->f_4, i * 4);
                 canvas = *canvasHolder;
                 if (GameText_getLanguage() == 9) {
                     *rtl = 0;
-                    int left = F<int>(this, 0x4);
-                    int width = F<int>(this, 0xc);
-                    if (F<uint8_t>(this, 0x38) == 0) {
+                    int left = this->f_4;
+                    int width = this->f_c;
+                    if (this->f_38 == 0) {
                         x = (left + width) - PaintCanvas_GetTextWidth(canvas, font, line);
                     } else {
                         x = (left + (width >> 1)) - (PaintCanvas_GetTextWidth(canvas, font, line) >> 1);
                     }
                 } else {
-                    x = F<int>(this, 0x4);
-                    if (F<uint8_t>(this, 0x38) != 0) {
-                        int width = F<int>(this, 0xc);
+                    x = this->f_4;
+                    if (this->f_38 != 0) {
+                        int width = this->f_c;
                         x = (x + (width >> 1)) - (PaintCanvas_GetTextWidth(canvas, font, line) >> 1);
                     }
                 }

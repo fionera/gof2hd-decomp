@@ -24,7 +24,37 @@ void *operator new(uint32_t size);
 void *operator new[](uint32_t size);
 void operator delete(void *ptr) noexcept;
 
-struct StatusWindow;
+struct StatusWindow {
+    // @portable-fields
+    int f_0; // 0x0
+    void* f_4; // 0x4
+    void* f_8; // 0x8
+    void* f_c; // 0xc
+    void* f_10; // 0x10
+    unsigned char _pad_14[16];
+    int f_24; // 0x24
+    int f_28; // 0x28
+    int f_2c; // 0x2c
+    int f_30; // 0x30
+    int f_34; // 0x34
+    int f_38; // 0x38
+    int f_3c; // 0x3c
+    int f_40; // 0x40
+    int f_44; // 0x44
+    int f_48; // 0x48
+    int f_4c; // 0x4c
+    int f_50; // 0x50
+    int f_54; // 0x54
+    int f_58; // 0x58
+    int f_5c; // 0x5c
+    int f_60; // 0x60
+    int f_64; // 0x64
+    void* f_68; // 0x68
+    int f_6c; // 0x6c
+    int f_70; // 0x70
+    int f_74; // 0x74
+    int f_78; // 0x78
+};
 
 namespace AbyssEngine {
 struct String { uint32_t a, b, c; };

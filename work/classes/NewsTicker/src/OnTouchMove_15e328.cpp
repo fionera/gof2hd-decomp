@@ -4,18 +4,18 @@ __attribute__((visibility("hidden"))) extern int *g_NewsTicker_touchMove_screenW
 
 bool NewsTicker::OnTouchMove(int x, int)
 {
-    uint8_t touched = F<uint8_t>(this, 0x28);
+    uint8_t touched = this->f_28;
     if (touched != 0) {
-        float delta = (float)(F<int>(this, 0x2c) - x);
-        float current = F<float>(this, 0x0);
+        float delta = (float)(this->f_2c - x);
+        float current = this->f_0;
         int *limit = g_NewsTicker_touchMove_screenWidth;
         float next = current - delta;
-        F<float>(this, 0x0) = next;
+        this->f_0 = next;
         float maxX = (float)*limit;
         if (maxX < next) {
-            F<float>(this, 0x0) = maxX;
+            this->f_0 = maxX;
         }
-        F<int>(this, 0x2c) = x;
+        this->f_2c = x;
     }
     return touched != 0;
 }

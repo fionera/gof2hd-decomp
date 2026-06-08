@@ -19,91 +19,91 @@ extern "C" void operator_delete_arr(void *p);
 
 extern "C" void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
 {
-    void *p = P(self, 0x8);
+    void *p = self->f_8;
     if (p != 0) {
         operator_delete(ChoiceWindow_dtor(p));
     }
-    P(self, 0x8) = 0;
+    self->f_8 = 0;
 
-    p = P(self, 0x44);
+    p = self->f_44;
     if (p != 0) {
         operator_delete(CutScene_dtor(p));
     }
-    P(self, 0x44) = 0;
+    self->f_44 = 0;
 
-    operator_delete_arr(P(self, 0x58));
-    P(self, 0x58) = 0;
+    operator_delete_arr(self->f_58);
+    self->f_58 = 0;
 
-    p = P(self, 0x28);
+    p = self->f_28;
     if (p != 0) {
         ArrayRelease_StringPtr(p);
-        p = P(self, 0x28);
+        p = self->f_28;
         if (p != 0) {
             operator_delete(Array_StringPtr_dtor(p));
         }
     }
-    P(self, 0x28) = 0;
+    self->f_28 = 0;
 
-    p = P(self, 0x5c);
+    p = self->f_5c;
     if (p != 0) {
         ArrayRelease_TouchButtonPtr(p);
-        p = P(self, 0x5c);
+        p = self->f_5c;
         if (p != 0) {
             operator_delete(Array_TouchButtonPtr_dtor(p));
         }
     }
-    P(self, 0x5c) = 0;
+    self->f_5c = 0;
 
     if (I(self, 0x3c) != 0) {
         return self;
     }
     I(self, 0x3c) = 0;
 
-    p = P(self, 0x38);
+    p = self->f_38;
     if (p != 0) {
         unsigned i = 0;
         for (; i < U(p, 0x0); ++i) {
-            void **data = (void **)P(p, 0x4);
+            void **data = (void **)p->f_4;
             void *inner = data[i];
             ArrayRelease_ImagePartPtr(inner);
-            inner = ((void **)P(P(self, 0x38), 0x4))[i];
+            inner = ((void **)P(self->f_38, 0x4))[i];
             if (inner != 0) {
                 operator_delete(Array_ImagePartPtr_dtor(inner));
-                ((void **)P(P(self, 0x38), 0x4))[i] = 0;
+                ((void **)P(self->f_38, 0x4))[i] = 0;
             } else {
                 data[i] = 0;
             }
-            p = P(self, 0x38);
+            p = self->f_38;
         }
         ArrayRelease_ArrayImagePartPtr(p);
-        p = P(self, 0x38);
+        p = self->f_38;
         if (p != 0) {
             operator_delete(Array_ArrayImagePartPtr_dtor(p));
         }
     }
-    P(self, 0x38) = 0;
+    self->f_38 = 0;
 
-    p = P(self, 0x40);
+    p = self->f_40;
     if (p != 0) {
         ArrayRelease_VectorPtr(p);
-        p = P(self, 0x40);
+        p = self->f_40;
         if (p != 0) {
             operator_delete(Array_VectorPtr_dtor(p));
         }
     }
-    P(self, 0x40) = 0;
+    self->f_40 = 0;
 
-    p = P(self, 0x48);
+    p = self->f_48;
     if (p != 0) {
         operator_delete(EaseInOutMatrix_dtor(p));
     }
-    P(self, 0x48) = 0;
+    self->f_48 = 0;
 
-    p = P(self, 0xc0);
+    p = self->f_c0;
     if (p != 0) {
         operator_delete(p);
     }
-    P(self, 0xc0) = 0;
+    self->f_c0 = 0;
     String_dtor(B(self, 0xa4));
     return self;
 }

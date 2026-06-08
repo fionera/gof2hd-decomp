@@ -10,27 +10,27 @@ extern "C" void render_thunk_other(int meshId);     // DAT_001ac2b4 thunk, arg =
 // state5 block instead of sharing it via the original goto; structure differs.
 extern "C" void PlayerFixedObject_render(PlayerFixedObject *self)
 {
-    void *g78 = F<void *>(self, 0x78);
-    if (g78 != 0 && F<uint8_t>(self, 0x1b8) == 0) {
+    void *g78 = self->f_78;
+    if (g78 != 0 && self->f_1b8 == 0) {
         AEGeometry_render(g78);
     }
-    int iVar1 = F<int>(self, 0x88);
+    int iVar1 = self->f_88;
     if (iVar1 == 5) {
 LAB_538:
-        if (F<uint8_t>(self, 0x1b8) != 0) return;
-        return render_thunk_state5(F<void *>(self, 0x8));
+        if (self->f_1b8 != 0) return;
+        return render_thunk_state5(self->f_8);
     }
     if (iVar1 == 4) {
-        if (F<uint8_t>(self, 0x1b8) == 0) AEGeometry_render(F<void *>(self, 0x124));
-        iVar1 = F<int>(self, 0x18c);
+        if (self->f_1b8 == 0) AEGeometry_render(self->f_124);
+        iVar1 = self->f_18c;
         if (iVar1 == 0) return;
     } else {
         if (iVar1 != 3) {
-            if (Player_isActive(F<void *>(self, 0x4)) == 0) return;
+            if (Player_isActive(self->f_4) == 0) return;
             goto LAB_538;
         }
-        if (F<uint8_t>(self, 0x1b8) == 0) AEGeometry_render(F<void *>(self, 0x124));
-        iVar1 = F<int>(self, 0x18c);
+        if (self->f_1b8 == 0) AEGeometry_render(self->f_124);
+        iVar1 = self->f_18c;
     }
     return render_thunk_other(iVar1);
 }

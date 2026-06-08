@@ -18,33 +18,33 @@ extern "C" int StatusWindow_OnTouchMove(StatusWindow *self, int param_1, int par
 {
     void **lh = g_SWm_layout;
     void *layout = *lh;
-    if ((i32(layout, 0xc) < param_2 && param_2 < *g_SWm_height - i32(layout, 0x10)) || *g_SWm_force != 0) {
-        int d = param_2 - i32(self, 0x3c);
-        i32(self, 0x44) = d;
-        u32(self, 0x48) = 0x3f800000u;
-        i32(self, 0x38) += d;
-        i32(self, 0x3c) = param_2;
-        if (i32(self, 0x34) >= 0) {
-            int e = i32(self, 0x50) - param_2;
+    if ((layout->f_c < param_2 && param_2 < *g_SWm_height - layout->f_10) || *g_SWm_force != 0) {
+        int d = param_2 - self->f_3c;
+        self->f_44 = d;
+        self->f_48 = 0x3f800000u;
+        self->f_38 += d;
+        self->f_3c = param_2;
+        if (self->f_34 >= 0) {
+            int e = self->f_50 - param_2;
             if (e < 0) e = -e;
             if (e > 3) {
-                TouchButton_setAlwaysPressed(F<Arr *>(self, 0x8)->data[i32(self, 0x34)], 0);
-                i32(self, 0x34) = -1;
+                TouchButton_setAlwaysPressed(self->f_8->data[self->f_34], 0);
+                self->f_34 = -1;
                 layout = *lh;
             }
         }
     }
     Layout_OnTouchMove(layout, param_1, param_2);
     if (*g_SWm_btnFlag == 0) {
-        for (unsigned i = 0; i < F<Arr *>(self, 0x4)->size; ++i)
-            TouchButton_OnTouchMove(F<Arr *>(self, 0x4)->data[i], param_1, param_2);
+        for (unsigned i = 0; i < self->f_4->size; ++i)
+            TouchButton_OnTouchMove(self->f_4->data[i], param_1, param_2);
     }
-    if (i32(self, 0x30) == 1) {
+    if (self->f_30 == 1) {
         void **holder = g_SWm_ach;
         int *medals = (int *)Achievements_getMedals(*holder);
-        for (int i = 0; i < i32(self, 0x0); ++i) {
+        for (int i = 0; i < self->f_0; ++i) {
             if (medals[i] != 0 || Achievements_isEliteMedal(*holder, i) != 0)
-                TouchButton_OnTouchMove(F<Arr *>(self, 0x8)->data[i], param_1, param_2);
+                TouchButton_OnTouchMove(self->f_8->data[i], param_1, param_2);
         }
     }
     return 0;

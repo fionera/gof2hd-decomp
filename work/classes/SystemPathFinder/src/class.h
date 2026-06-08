@@ -50,6 +50,10 @@ extern "C" __attribute__((visibility("hidden"))) Status **volatile
     g_SystemPathFinder_status;
 
 struct SystemPathFinder {
+    // @portable-fields
+    int f_0; // 0x0
+    void* f_4; // 0x4
+
     int contains(Array<Node *> *nodes, Node *node);
     int getJumpDistance(Array<SolarSystem *> *systems, int from, int to);
     Array<Node *> *constructPath(Node *node);

@@ -12,7 +12,7 @@ extern "C" Vector VectorNormalize(const Vector *vector);
 Vector PlayerAsteroid::getProjectionVector(const Vector &value)
 {
     Vector result = value;
-    Vector position = AEGeometry_getPosition(F<AEGeometry *>(this, 0x8));
+    Vector position = AEGeometry_getPosition(this->f_8);
     Vector *scratch = PlayerAsteroid_projectionScratch;
     VectorAssignFn assign = PlayerAsteroid_vectorAssign;
     assign(scratch, &position);

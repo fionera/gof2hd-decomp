@@ -12,31 +12,31 @@ __attribute__((visibility("hidden"))) extern void ***g_pfo_globals;
 
 extern "C" void PlayerFixedObject_setWreckedMeshId(PlayerFixedObject *self, int meshId)
 {
-    F<uint16_t>(self, 0x184) = (uint16_t)meshId;
+    self->f_184 = (uint16_t)meshId;
     void *geom = operator_new(0xc0);
     void **holder = g_pfo_canvas2;
     AEGeometry_ctor(geom, (uint16_t)meshId, *holder, true);
-    F<void *>(self, 0x124) = geom;
+    self->f_124 = geom;
     void *t = PaintCanvas_TransformGetTransform(*holder, *(int *)((char *)geom + 0xc));
     *(int *)((char *)t + 0xe0) = 0x48f42400; // 500000.0f far-clip constant (raw bits)
 
-    int kind = F<int>(self, 0xac);
+    int kind = self->f_ac;
     int sel;
     if (kind == 0xd) {
         sel = 4;
     } else if (kind == 0xe) {
         sel = 0;
     } else if (kind == 0xf) {
-        if (F<int>(self, 0x28) == 3) sel = 1;
-        else sel = (F<int>(self, 0x28) == 2) ? 2 : 3;
+        if (self->f_28 == 3) sel = 1;
+        else sel = (self->f_28 == 2) ? 2 : 3;
     } else if (kind == 0x37a3) {
         sel = 5;
     } else {
-        sel = F<int>(self, 0x194);
+        sel = self->f_194;
         if (sel < 0) return;
-        F<int>(self, 0x12c) = Globals_getWreckCollision(**g_pfo_globals, sel, F<void*>(self, 0x124));
+        self->f_12c = Globals_getWreckCollision(**g_pfo_globals, sel, self->f_124);
         return;
     }
-    F<int>(self, 0x194) = sel;
-    F<int>(self, 0x12c) = Globals_getWreckCollision(**g_pfo_globals, sel, F<void*>(self, 0x124));
+    self->f_194 = sel;
+    self->f_12c = Globals_getWreckCollision(**g_pfo_globals, sel, self->f_124);
 }

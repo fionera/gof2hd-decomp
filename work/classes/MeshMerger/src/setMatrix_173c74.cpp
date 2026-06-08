@@ -6,6 +6,6 @@ extern "C" void MeshMerger_setMatrix_tail(void *dst, const Matrix &m);
 
 void MeshMerger::setMatrix(int index, const Matrix &m)
 {
-    char *base = (char *)pp(this, 0x1c);
+    char *base = (char *)this->f_1c;
     return MeshMerger_setMatrix_tail(base + index * 0x3c, m);
 }

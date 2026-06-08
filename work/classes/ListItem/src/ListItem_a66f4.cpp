@@ -5,8 +5,8 @@ extern "C" void *ListItem_init(ListItem *self);
 
 extern "C" ListItem *ListItem_ctor_int_int(ListItem *self, int a, int b) {
     ListItem_init(self);
-    F<int>(self, 0x28) = b;
-    F<int>(self, 0x2c) = a;
-    F<uint8_t>(self, 0x24) = 1;
+    self->f_28 = b;
+    self->f_2c = a;
+    self->f_24 = 1;
     return self;
 }

@@ -5,7 +5,7 @@ extern "C" Vector BoundingVolume_staticProjectCollisionOnSurface(
 
 Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value)
 {
-    void *volumes = pp(this, 0x130);
+    void *volumes = this->f_130;
     if (volumes != 0) {
         return BoundingVolume_staticProjectCollisionOnSurface(value, volumes);
     }

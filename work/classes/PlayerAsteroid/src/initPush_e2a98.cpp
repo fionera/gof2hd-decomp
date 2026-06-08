@@ -22,8 +22,8 @@ void PlayerAsteroid::initPush(const Vector &target, int duration)
         clamped = ratio;
     }
     int pushFrames = (int)((1.0f - clamped) * 1000.0f);
-    F<int>(this, 0x104) = pushFrames;
-    F<int>(this, 0x108) = pushFrames;
+    this->f_104 = pushFrames;
+    this->f_108 = pushFrames;
 
     Vector here = getVector(this);
     Vector directionSource = Vector_sub(&here, &target);

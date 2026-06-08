@@ -27,7 +27,7 @@ extern "C" void SpaceLounge_draw(SpaceLounge *self)
     char title[12];
 
     if (UC(self, 0x1c) != 0) {
-        if (ListItemWindow_shows3DShip(P(self, 0xc)) != 0) {
+        if (ListItemWindow_shows3DShip(self->f_c) != 0) {
             void *canvasSlot = *(void **)&SpaceLounge_draw_canvas_slot;
             void *canvas = *(void **)canvasSlot;
             PaintCanvas_SetColor4(canvas, 0xff, 0, 0, 0);
@@ -36,12 +36,12 @@ extern "C" void SpaceLounge_draw(SpaceLounge *self)
             PaintCanvas_FillRectangle(canvas, 0, 0, width, height);
             PaintCanvas_SetColor(canvas, -1);
         }
-        ListItemWindow_draw_call(P(self, 0xc));
+        ListItemWindow_draw_call(self->f_c);
         return SpaceLounge_draw_cutscene_tail();
     }
 
     if (UC(self, 0x34) != 0) {
-        return SpaceLounge_draw_map_tail(P(self, 0x4));
+        return SpaceLounge_draw_map_tail(self->f_4);
     }
 
     void *layoutSlot = *(void **)&SpaceLounge_draw_layout_slot;
@@ -62,6 +62,6 @@ extern "C" void SpaceLounge_draw(SpaceLounge *self)
     }
 
     if (UC(self, 0x19) != 0 || UC(self, 0x1a) != 0 || UC(self, 0x1b) != 0) {
-        ChoiceWindow_draw_call(P(self, 0x8));
+        ChoiceWindow_draw_call(self->f_8);
     }
 }

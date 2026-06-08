@@ -5,8 +5,8 @@
 Vector PlayerStaticFar::getInitPosition(Vector)
 {
     Vector r;
-    r.x = f32(this, 0x58);
-    r.y = f32(this, 0x5c);
-    r.z = f32(this, 0x60);
+    r.x = this->f_58;
+    r.y = this->f_5c;
+    r.z = this->f_60;
     return r;
 }

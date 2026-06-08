@@ -42,9 +42,9 @@ extern "C" SimpleMeshMerger *SimpleMeshMerger_ctor(SimpleMeshMerger *self, unsig
     int saved = *canary;
 
     SMM_Array_Mesh_ctor((char *)self + 8);
-    F<short>(self, 0x04) = (short)factor;
-    F<void *>(self, 0x14) = canvas;
-    F<int>(self, 0x00) = *(int *)transforms;
+    self->f_4 = (short)factor;
+    self->f_14 = canvas;
+    self->f_0 = *(int *)transforms;
     SMM_ArraySetLength_Mesh(meshIds[0], (char *)self + 8);
 
     // pass 1: load source meshes, accumulate vertex + triangle totals
@@ -54,8 +54,8 @@ extern "C" SimpleMeshMerger *SimpleMeshMerger_ctor(SimpleMeshMerger *self, unsig
         unsigned newId;
         SMM_MeshCreate_fromId(canvas, *(unsigned short *)(meshIds[1] + i * 2), &newId, false);
         void *meshPtr = SMM_MeshGetPointer(canvas, newId);
-        ((void **)F<void *>(self, 0xc))[i] = meshPtr;
-        char *m = (char *)((void **)F<void *>(self, 0xc))[i];
+        ((void **)self->f_c)[i] = meshPtr;
+        char *m = (char *)((void **)self->f_c)[i];
         short vc = *(short *)(m + 2);
         short tc = (short)SMM_uidiv(*(unsigned short *)(m + 0x28), 3);
         triTotal = triTotal + vc;       // (matches target's accumulation order)
@@ -67,18 +67,18 @@ extern "C" SimpleMeshMerger *SimpleMeshMerger_ctor(SimpleMeshMerger *self, unsig
     unsigned mergedId;
     SMM_MeshCreate_empty(canvas, (unsigned short)vertTotal, (unsigned short)triTotal,
                          (int)*(signed char *)firstMesh, factor, &mergedId);
-    F<unsigned>(self, 0x18) = mergedId;
+    self->f_18 = mergedId;
 
     // pass 2: copy transformed vertices and rebased triangles
     short vBase = 0;
     short tBase = 0;
     for (unsigned i = 0; i < meshIds[0]; i = i + 1) {
-        char *m = (char *)((void **)F<void *>(self, 0xc))[i];
+        char *m = (char *)((void **)self->f_c)[i];
         int posOff = 0, uvOff = 0, colOff = 0;
         unsigned v = 0;
         unsigned char flags = 0;
         for (; v < *(unsigned short *)(m + 2); v = v + 1) {
-            m = (char *)((void **)F<void *>(self, 0xc))[i];
+            m = (char *)((void **)self->f_c)[i];
             flags = *(unsigned char *)m;
             // transformed-vector scratch (matrix-transform writes a Vector into the head)
             float xform[4];
@@ -87,31 +87,31 @@ extern "C" SimpleMeshMerger *SimpleMeshMerger_ctor(SimpleMeshMerger *self, unsig
                 Vector *src = (Vector *)(transforms[1] + i * 0x3c);
                 SMM_MatrixTransformVector(matOut, src);
                 SMM_MeshSetPoint((unsigned)(unsigned long)canvas,
-                                 (unsigned short)F<unsigned>(self, 0x18),
+                                 (unsigned short)self->f_18,
                                  (unsigned short)(vBase + (short)v),
                                  xform[0], xform[1], xform[2]);
-                m = (char *)((void **)F<void *>(self, 0xc))[i];
+                m = (char *)((void **)self->f_c)[i];
                 flags = *(unsigned char *)m;
             }
             Matrix mat;
             if ((unsigned)flags & 4) {   // (flags<<0x1d)<0 -> bit2
                 Vector *src = (Vector *)(transforms[1] + i * 0x3c);
                 SMM_MatrixRotateVector(&mat, src);
-                SMM_MeshSetNormal(canvas, F<unsigned>(self, 0x18),
+                SMM_MeshSetNormal(canvas, self->f_18,
                                   (unsigned short)(vBase + (short)v), (Vector *)&mat);
-                m = (char *)((void **)F<void *>(self, 0xc))[i];
+                m = (char *)((void **)self->f_c)[i];
                 flags = *(unsigned char *)m;
             }
             if ((unsigned)flags & 2) {   // (flags<<0x1e)<0 -> bit1
                 float *uv = (float *)(*(int *)(m + 8) + uvOff);
-                SMM_MeshSetUv(0 /*canvas-as-uint*/, (unsigned short)F<unsigned>(self, 0x18),
+                SMM_MeshSetUv(0 /*canvas-as-uint*/, (unsigned short)self->f_18,
                               (unsigned short)(vBase + (short)v), uv[1], 0.0f);
-                m = (char *)((void **)F<void *>(self, 0xc))[i];
+                m = (char *)((void **)self->f_c)[i];
                 flags = *(unsigned char *)m;
             }
             if ((unsigned)flags & 8) {   // (flags<<0x1c)<0 -> bit3
                 float *col = (float *)(*(int *)(m + 0xc) + colOff);
-                SMM_MeshSetColor(canvas, F<unsigned>(self, 0x18),
+                SMM_MeshSetColor(canvas, self->f_18,
                                  (unsigned short)(vBase + (short)v),
                                  col[1], col[2], col[3], 0.0f);
             }
@@ -128,9 +128,9 @@ extern "C" SimpleMeshMerger *SimpleMeshMerger_ctor(SimpleMeshMerger *self, unsig
                 unsigned short a = (unsigned short)(tri[0] + vBase);
                 unsigned short b = (unsigned short)(tri[1] + vBase);
                 unsigned short c = (unsigned short)(tri[2] + vBase);
-                SMM_MeshSetTriangle(0 /*canvas-as-uint*/, (unsigned short)F<unsigned>(self, 0x18),
+                SMM_MeshSetTriangle(0 /*canvas-as-uint*/, (unsigned short)self->f_18,
                                     (unsigned short)(tBase + (short)t), a, b, c);
-                m = (char *)((void **)F<void *>(self, 0xc))[i];
+                m = (char *)((void **)self->f_c)[i];
             }
             triOff = triOff + 6;
         }
@@ -140,7 +140,7 @@ extern "C" SimpleMeshMerger *SimpleMeshMerger_ctor(SimpleMeshMerger *self, unsig
     }
 
     SMM_TransformCreate(canvas, (unsigned *)((char *)self + 0x1c));
-    SMM_TransformAddMeshId(canvas, F<unsigned>(self, 0x1c), F<unsigned>(self, 0x18));
+    SMM_TransformAddMeshId(canvas, self->f_1c, self->f_18);
     F<uint8_t>(self, 0x06) = 1;
 
     if (*canary != saved) {

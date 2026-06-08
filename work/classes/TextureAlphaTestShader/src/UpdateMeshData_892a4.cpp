@@ -9,7 +9,7 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
     glUniformMatrix4fv(*(int *)(shader + 0x34), 1, 0, (float *)((char *)engine + 0x104));
 
-    if (u8(this, 0x09) != 0) {
+    if (this->f_9 != 0) {
         int location = *(int *)(shader + 0x3c);
         if (location >= 0) {
             glUniform4fv(location, 1, (float *)((char *)engine + 0xd0));
@@ -22,12 +22,12 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
         location = *(int *)(shader + 0x5c);
         if (location >= 0) {
-            glUniform1f(location, f32(engine, 0x3e8));
+            glUniform1f(location, engine->f_3e8);
         }
 
         location = *(int *)(shader + 0x54);
         if (location >= 0) {
-            glUniform1f(location, f32(engine, 0x3ec));
+            glUniform1f(location, engine->f_3ec);
         }
 
         location = *(int *)(shader + 0x64);
@@ -37,13 +37,13 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
         location = *(int *)(shader + 0x6c);
         if (location >= 0) {
-            glUniform3f(location, f32(engine, 0x34c), f32(engine, 0x350), f32(engine, 0x354));
+            glUniform3f(location, engine->f_34c, engine->f_350, engine->f_354);
         }
 
-        u8(this, 0x09) = 0;
+        this->f_9 = 0;
     }
 
-    if ((((uint32_t)u8(mesh, 0x00)) << 30) < 0x80000000u) {
+    if ((((uint32_t)mesh->f_0) << 30) < 0x80000000u) {
         return;
     }
 
@@ -52,7 +52,7 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray(*position);
     glEnableVertexAttribArray(*texcoord);
 
-    if (u8(mesh, 0x5c) == 0) {
+    if (mesh->f_5c == 0) {
         glVertexAttribPointer(*position, 3, 0x1406, 0, 0, *(void **)((char *)mesh + 0x04));
         glVertexAttribPointer(*texcoord, 2, 0x1406, 0, 0, *(void **)((char *)mesh + 0x08));
     } else {

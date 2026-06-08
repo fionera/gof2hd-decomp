@@ -5,9 +5,9 @@ __attribute__((visibility("hidden"))) extern int *g_NewsTicker_touchBegin_screen
 
 uint8_t NewsTicker::OnTouchBegin(int x, int y)
 {
-    if (F<int>(this, 0x4) <= x &&
-        x <= F<int>(this, 0x4) + F<int>(this, 0x0c) &&
-        F<int>(this, 0x8) <= y) {
+    if (this->f_4 <= x &&
+        x <= this->f_4 + this->f_c &&
+        this->f_8 <= y) {
         int fontHeight = (*g_NewsTicker_touchBegin_font)[4];
         int bottom = *g_NewsTicker_touchBegin_screen;
         bottom += 2;
@@ -17,5 +17,5 @@ uint8_t NewsTicker::OnTouchBegin(int x, int y)
             *(volatile uint8_t *)((char *)this + 0x28) = 1;
         }
     }
-    return F<uint8_t>(this, 0x28);
+    return this->f_28;
 }

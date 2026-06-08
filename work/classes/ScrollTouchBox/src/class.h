@@ -15,6 +15,26 @@ typedef AbyssEngine::String String;
 struct Array;
 
 struct ScrollTouchBox {
+    // @portable-fields
+    void* f_0; // 0x0
+    void* f_4; // 0x4
+    int f_8; // 0x8
+    int f_c; // 0xc
+    int f_10; // 0x10
+    int f_14; // 0x14
+    int f_18; // 0x18
+    int f_1c; // 0x1c
+    int f_20; // 0x20
+    int f_24; // 0x24
+    int f_28; // 0x28
+    int f_2c; // 0x2c
+    int f_30; // 0x30
+    int f_34; // 0x34
+    int f_38; // 0x38
+    void* f_3c; // 0x3c
+    unsigned char _pad_40[8];
+    int f_48; // 0x48
+
     ScrollTouchBox(int x, int y, int width, int height);
     ~ScrollTouchBox();
 

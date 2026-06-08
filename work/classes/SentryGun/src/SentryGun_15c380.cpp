@@ -20,5 +20,5 @@ struct SentryGun : ObjectGun {
 SentryGun::SentryGun(Gun *gun, int p2, int p3, int p4, Level *level)
     : ObjectGun(p3, gun, p2, 0, level)
 {
-    F<int>(this, 0xb0) = F<int>(gun, 0x58) * 3 - 0x279;
+    this->f_b0 = gun->f_58 * 3 - 0x279;
 }

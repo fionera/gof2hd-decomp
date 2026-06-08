@@ -50,65 +50,65 @@ extern "C" void StatusWindow_OnTouchEnd(StatusWindow *self, int x, int y)
     void *volatile cookie = __stack_chk_guard;
 
     // Release scroll inertia: snap velocity, clamp scroll position.
-    int vy = i32(self, 0x44);
-    int newOff = i32(self, 0x38) + vy;
+    int vy = self->f_44;
+    int newOff = self->f_38 + vy;
     float vf = (float)vy;
     int absvy = vy < 0 ? -vy : vy;
     void *layout = *(void **)g_swe_layout;
 
-    f32(self, 0x48) = 1.0f;                       // DAT_16a494 == 1.0
-    F<unsigned char>(self, 0x54) = 0;
-    i32(self, 0x38) = newOff;
-    i32(self, 0x40) = newOff;
-    f32(self, 0x4c) = (absvy > 3) ? vf : 0.0f;    // DAT_16a490 == 0.0
+    self->f_48 = 1.0f;                       // DAT_16a494 == 1.0
+    self->f_54 = 0;
+    self->f_38 = newOff;
+    self->f_40 = newOff;
+    self->f_4c = (absvy > 3) ? vf : 0.0f;    // DAT_16a490 == 0.0
 
     if (Layout_OnTouchEnd(layout, x, y) != 0)
         goto done;
 
     // Tab buttons (only when no modal dialog is open).
     if (*g_swe_dialogBlock == 0) {
-        void **tabs = (void **)pp(self, 0x4);
+        void **tabs = (void **)self->f_4;
         for (unsigned int i = 0; i < *(unsigned int *)tabs; i++) {
             if (TouchButton_OnTouchEnd(((void **)tabs[1])[i], x) != 0) {
-                u32(self, 0x30) = i;
-                i32(self, 0x58) = *(int *)((char *)pp(self, 0x68) + i * 4);
-                i32(self, 0x38) = 0;
+                self->f_30 = i;
+                self->f_58 = *(int *)((char *)self->f_68 + i * 4);
+                self->f_38 = 0;
             }
         }
     }
 
     // Medal grid (only on the achievements tab, index 1).
-    if (i32(self, 0x30) == 1) {
-        for (int i = 0; i < i32(self, 0x0); i++) {
-            if (TouchButton_OnTouchEnd(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4), x) != 0) {
+    if (self->f_30 == 1) {
+        for (int i = 0; i < self->f_0; i++) {
+            if (TouchButton_OnTouchEnd(*(void **)(*(int *)((char *)self->f_8 + 4) + i * 4), x) != 0) {
                 void *ach = *(void **)g_swe_achievements;
                 int *medals = Achievements_getMedals(ach);
                 int elite = Achievements_isEliteMedal(ach, i);
                 if (elite != 0 || medals[i] != 0) {
-                    if (i32(self, 0x34) >= 0) {
+                    if (self->f_34 >= 0) {
                         TouchButton_setAlwaysPressed(
-                            *(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i32(self, 0x34) * 4), false);
+                            *(void **)(*(int *)((char *)self->f_8 + 4) + self->f_34 * 4), false);
                     }
-                    i32(self, 0x34) = i;
+                    self->f_34 = i;
 
                     // Rebuild the detail-text line array at +0x10.
-                    if (pp(self, 0x10) != 0) {
-                        ArrayStr_releaseClasses(pp(self, 0x10));
-                        if (pp(self, 0x10) != 0)
-                            operator_delete(ArrayStr_dtor(pp(self, 0x10)));
+                    if (self->f_10 != 0) {
+                        ArrayStr_releaseClasses(self->f_10);
+                        if (self->f_10 != 0)
+                            operator_delete(ArrayStr_dtor(self->f_10));
                     }
-                    pp(self, 0x10) = 0;
+                    self->f_10 = 0;
                     void *lineArr = operator_new(0xc);
                     ArrayStr_ctor(lineArr);
-                    pp(self, 0x10) = lineArr;
+                    self->f_10 = lineArr;
 
-                    int count = (elite == 0) ? medals[i32(self, 0x34)] : 1;
+                    int count = (elite == 0) ? medals[self->f_34] : 1;
 
                     char hdr[0xc], hdrTxt[0xc], valStr[0xc], valTmp[0xc], full[0xc], hint[0xc];
                     void *key = *(void **)g_swe_status;
-                    void *t = GameText_getText(i32(self, 0x34) + 0x610);
+                    void *t = GameText_getText(self->f_34 + 0x610);
                     String_fromText(hdr, t, false);
-                    void *val = Achievements_getValue(ach, i32(self, 0x34), count);
+                    void *val = Achievements_getValue(ach, self->f_34, count);
                     String_fromText(valStr, val, false);
                     String_fromText(valTmp, valStr, false);
                     Status_replaceHash(full, key, hdr, valTmp);
@@ -116,13 +116,13 @@ extern "C" void StatusWindow_OnTouchEnd(StatusWindow *self, int x, int y)
                     String_dtor(valStr);
                     String_dtor(hdr);
 
-                    StatusWindow_getMedalHintText(hint, i32(self, 0x34));
+                    StatusWindow_getMedalHintText(hint, self->f_34);
                     String_appendAssign(full, hint);
                     String_dtor(hint);
 
                     Globals_getLineArray(*(void **)g_swe_globals, *(void **)g_swe_font, full,
-                                         (void *)(i32(self, 0x6c) - *(int *)((char *)layout + 0x4c) * 2));
-                    TouchButton_setAlwaysPressed(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4), true);
+                                         (void *)(self->f_6c - *(int *)((char *)layout + 0x4c) * 2));
+                    TouchButton_setAlwaysPressed(*(void **)(*(int *)((char *)self->f_8 + 4) + i * 4), true);
                     String_dtor(full);
                     (void)hdrTxt;
                 }
@@ -133,13 +133,13 @@ extern "C" void StatusWindow_OnTouchEnd(StatusWindow *self, int x, int y)
 
     // Help button -> contextual help window for the current tab.
     if (Layout_helpPressed(layout) != 0) {
-        if (i32(self, 0x30) == 1) {
+        if (self->f_30 == 1) {
             char title[0xc];
             void *t = GameText_getText(0x287);
             String_fromText(title, t, false);
             Layout_initHelpWindow(layout, title);
             String_dtor(title);
-        } else if (i32(self, 0x30) == 0) {
+        } else if (self->f_30 == 0) {
             char title[0xc];
             void *t = GameText_getText(0x280);
             String_fromText(title, t, false);

@@ -6,7 +6,15 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct ModMainMenu;
+struct ModMainMenu {
+    // @portable-fields
+    void* f_0; // 0x0
+    unsigned char _pad_4[4];
+    void* f_8; // 0x8
+    unsigned char _pad_c[12];
+    void* f_18; // 0x18
+    void* f_1c; // 0x1c
+};
 struct CutScene;
 struct MenuTouchWindow;
 struct GameRecord;

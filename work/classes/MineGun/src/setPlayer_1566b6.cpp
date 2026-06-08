@@ -2,5 +2,5 @@
 
 void MineGun::setPlayer(PlayerEgo *player)
 {
-    P(this, 0xb0) = player;
+    this->f_b0 = player;
 }

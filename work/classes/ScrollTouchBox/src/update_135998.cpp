@@ -2,22 +2,22 @@
 
 void ScrollTouchBox::update(int dt)
 {
-    int height = F<int>(this, 0x10);
-    int contentHeight = F<int>(this, 0x18);
+    int height = this->f_10;
+    int contentHeight = this->f_18;
     if (contentHeight < height)
         return;
 
-    if (F<uint8_t>(this, 0x30) == 0) {
-        float velocity = F<float>(this, 0x20) * F<float>(this, 0x24);
+    if (this->f_30 == 0) {
+        float velocity = this->f_20 * this->f_24;
         float absVelocity = -velocity;
         if (velocity > 0.0f)
             absVelocity = velocity;
-        F<float>(this, 0x24) = velocity;
+        this->f_24 = velocity;
         if (absVelocity > 1.5f)
-            F<int>(this, 0x34) = (int)(velocity + (float)F<int>(this, 0x34));
+            this->f_34 = (int)(velocity + (float)this->f_34);
     }
 
-    int pos = F<int>(this, 0x34);
+    int pos = this->f_34;
     int pull;
     if (pos < 1)
         goto negative;
@@ -36,6 +36,6 @@ negative:
     }
 
 apply:
-    F<float>(this, 0x20) = 1.0f;
-    F<float>(this, 0x24) = (float)pull * 0.5f;
+    this->f_20 = 1.0f;
+    this->f_24 = (float)pull * 0.5f;
 }

@@ -5,13 +5,13 @@ namespace AbyssEngine {
 void TextureAlphaTestShader::UseShader(bool)
 {
     if (g_TextureAlphaTestShader_useAlphaProgram != 0) {
-        int program = i32(this, 0x20);
+        int program = this->f_20;
         if (program != 0) {
             glUseProgram(program);
             return;
         }
     }
-    glUseProgram(i32(this, 0x04));
+    glUseProgram(this->f_4);
 }
 
 } // namespace AbyssEngine

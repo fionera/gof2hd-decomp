@@ -7,7 +7,7 @@ __attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;
 void ObjectGun::replaceGun(int mesh)
 {
     void **canvas = (void **)g_PaintCanvas;
-    TransformRemoveMesh(*canvas, F<uint32_t>(this, 0x10), F<uint16_t>(this, 0x28));
-    F<int>(this, 0x28) = mesh;
-    return TransformAddMesh(*canvas, F<uint32_t>(this, 0x10), (uint16_t)mesh, 0);
+    TransformRemoveMesh(*canvas, this->f_10, this->f_28);
+    this->f_28 = mesh;
+    return TransformAddMesh(*canvas, this->f_10, (uint16_t)mesh, 0);
 }

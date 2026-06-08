@@ -7,25 +7,25 @@ extern "C" void *ListItem_init(ListItem *self);
 // at 0x1c/0x20 are deep-cloned when present.
 extern "C" ListItem *ListItem_ctor_copy(ListItem *self, ListItem *src) {
     ListItem_init(self);
-    F<Blk16>(self, 0x4) = F<Blk16>(src, 0x4);
-    F<int>(self, 0x14) = F<int>(src, 0x14);
-    F<uint8_t>(self, 0x24) = F<uint8_t>(src, 0x24);
+    self->f_4 = src->f_4;
+    self->f_14 = src->f_14;
+    self->f_24 = src->f_24;
 
-    void *p = F<void *>(src, 0x1c);
+    void *p = src->f_1c;
     if (p)
-        F<void *>(self, 0x1c) = new EngString(p, false);
+        self->f_1c = new EngString(p, false);
     else
-        F<void *>(self, 0x1c) = 0;
-    p = F<void *>(src, 0x20);
+        self->f_1c = 0;
+    p = src->f_20;
     if (p)
-        F<void *>(self, 0x20) = new EngString(p, false);
+        self->f_20 = new EngString(p, false);
     else
-        F<void *>(self, 0x20) = 0;
+        self->f_20 = 0;
 
-    F<Blk16>(self, 0x28) = F<Blk16>(src, 0x28);
-    F<uint8_t>(self, 0x38) = F<uint8_t>(src, 0x38);
-    F<int>(self, 0x3c) = F<int>(src, 0x3c);
-    F<int>(self, 0x40) = F<int>(src, 0x40);
-    F<int>(self, 0x18) = F<int>(src, 0x18);
+    self->f_28 = src->f_28;
+    self->f_38 = src->f_38;
+    self->f_3c = src->f_3c;
+    self->f_40 = src->f_40;
+    self->f_18 = src->f_18;
     return self;
 }

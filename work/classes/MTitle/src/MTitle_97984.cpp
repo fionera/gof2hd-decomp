@@ -6,5 +6,5 @@ MTitle::MTitle()
 {
     I(this, 0xc) = 100;
     void *vtable = g_MTitle_vtable;
-    P(this, 0) = (char *)vtable + 8;
+    this->f_0 = (char *)vtable + 8;
 }
