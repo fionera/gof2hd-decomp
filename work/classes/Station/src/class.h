@@ -1,5 +1,6 @@
 #ifndef WORK_CLASSES_STATION_SRC_CLASS_H
 #define WORK_CLASSES_STATION_SRC_CLASS_H
+// @portable-fields
 
 // Galaxy on Fire 2 — Station class. Top-level, no namespace.
 // Field offsets recovered from per-method target disassembly. Methods access

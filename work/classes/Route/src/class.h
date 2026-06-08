@@ -1,5 +1,6 @@
 #ifndef WORK_CLASSES_ROUTE_SRC_CLASS_H
 #define WORK_CLASSES_ROUTE_SRC_CLASS_H
+// @portable-fields
 
 // Galaxy on Fire 2 - Route class (waypoint navigation path).
 // Android libgof2hdaa.so, armv7 Thumb. Top-level class (no AbyssEngine namespace),

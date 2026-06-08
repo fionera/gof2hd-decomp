@@ -1,5 +1,6 @@
 #ifndef WORK_CLASSES_MISSION_SRC_CLASS_H
 #define WORK_CLASSES_MISSION_SRC_CLASS_H
+// @portable-fields
 
 // Galaxy on Fire 2 — Mission class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class (no AbyssEngine:: namespace). Field offsets recovered from the

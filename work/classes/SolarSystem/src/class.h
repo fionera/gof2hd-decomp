@@ -1,5 +1,6 @@
 #ifndef WORK_CLASSES_SOLARSYSTEM_SRC_CLASS_H
 #define WORK_CLASSES_SOLARSYSTEM_SRC_CLASS_H
+// @portable-fields
 
 // Galaxy on Fire 2 — SolarSystem class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class (no AbyssEngine:: on the class itself), though it embeds an

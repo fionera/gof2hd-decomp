@@ -1,5 +1,6 @@
 #ifndef WORK_CLASSES_GUN_SRC_CLASS_H
 #define WORK_CLASSES_GUN_SRC_CLASS_H
+// @portable-fields
 
 // Galaxy on Fire 2 — Gun class (weapon/projectile emitter). Top-level, no namespace.
 // Field offsets recovered from per-method target disassembly. We do NOT model a

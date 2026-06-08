@@ -1,5 +1,6 @@
 #ifndef WORK_CLASSES_AEGEOMETRY_SRC_CLASS_H
 #define WORK_CLASSES_AEGEOMETRY_SRC_CLASS_H
+// @portable-fields
 
 // Galaxy on Fire 2 -- AbyssEngine AEGeometry (Android libgof2hdaa.so, armv7 Thumb).
 // Qualified target names are top-level: "AEGeometry::isVisible()" (no AbyssEngine:: on the class).

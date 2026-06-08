@@ -1,5 +1,6 @@
 #ifndef WORK_CLASSES_STANDING_SRC_CLASS_H
 #define WORK_CLASSES_STANDING_SRC_CLASS_H
+// @portable-fields
 
 // Galaxy on Fire 2 — Standing class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class (no AbyssEngine:: namespace per the work-item Sig lines).

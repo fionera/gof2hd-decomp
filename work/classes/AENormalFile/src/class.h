@@ -1,5 +1,6 @@
 #ifndef WORK_CLASSES_AENORMALFILE_SRC_CLASS_H
 #define WORK_CLASSES_AENORMALFILE_SRC_CLASS_H
+// @portable-fields
 
 // Galaxy on Fire 2 -- AENormalFile (Android libgof2hdaa.so).
 // PORTABLE form: real struct with named fields (no hardcoded byte offsets), so the same source
