@@ -70,7 +70,7 @@ struct PostBWShader : ShaderBaseStruct {
 
 extern "C" void __stack_chk_fail(...);
 
-inline void *operator new(uint32_t, void *ptr) noexcept { return ptr; }
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 extern "C" void glActiveTexture(uint32_t texture);
 extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);

@@ -4,7 +4,7 @@ struct Waypoint {
     Waypoint(int x, int y, int z, Route *route);
 };
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 extern "C" void Player_ctor(Player *self, int radius, int hitpoints, int a, int b, int c);
 extern "C" void KIPlayer_ctor(Waypoint *self, int kind, int team, Player *player,
                               AEGeometry *geometry, float x, float y, float z, bool flag);

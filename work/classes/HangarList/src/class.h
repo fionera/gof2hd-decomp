@@ -50,7 +50,7 @@ static inline T &G(void *self, unsigned off) {
     return *(T *)((char *)self + off);
 }
 
-void *operator new(unsigned size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 extern "C" void *operator_new(unsigned size);

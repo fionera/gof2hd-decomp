@@ -71,7 +71,7 @@ inline void *&field_ptr(void *self, uint32_t off)
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 extern "C" __attribute__((visibility("hidden"))) void ShaderBaseStruct_ctor(ShaderBaseStruct *self);

@@ -58,7 +58,7 @@ static inline T *TP(void *self, uint32_t off)
     return *(T **)((char *)self + off);
 }
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);

@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void Array_Gun_ctor(Array<Gun *> *array);
 extern "C" void ArrayAdd_Gun(Gun *gun, Array<Gun *> *array);

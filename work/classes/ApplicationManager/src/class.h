@@ -6,8 +6,8 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 
-void *operator new(uint32_t size);
-inline void *operator new(uint32_t, void *ptr) noexcept { return ptr; }
+void *operator new(__SIZE_TYPE__ size);
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);

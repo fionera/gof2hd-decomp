@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void FBOContainer_ctor(FBOContainer *self, Engine *engine, String *name);
 extern "C" void FBOContainer_Create(FBOContainer *self, unsigned int width, unsigned int height,

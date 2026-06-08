@@ -208,9 +208,9 @@ static_assert(__builtin_offsetof(FileInterface, enabled) == 0x4, "FileInterface:
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
-void *operator new[](uint32_t size);
+void *operator new[](__SIZE_TYPE__ size);
 void operator delete[](void *ptr) noexcept;
 
 template <class T>

@@ -2,7 +2,7 @@
 
 struct Player;
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void Player_ctor(Player *self, int hitpoints, int armor, int shield,
                             int emp, int gamma);

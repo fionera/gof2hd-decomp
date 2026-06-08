@@ -53,8 +53,8 @@ static inline T &G(void *self, unsigned offset)
     return *(T *)((char *)self + offset);
 }
 
-void *operator new(unsigned int size);
-inline void *operator new(unsigned int, void *ptr) noexcept { return ptr; }
+void *operator new(__SIZE_TYPE__ size);
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 extern "C" void operator_delete(void *ptr);
 
 extern "C" void ArrayReleaseClasses_Objective(Array<Objective *> *array);

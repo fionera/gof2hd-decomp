@@ -17,7 +17,7 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 namespace AbyssEngine {

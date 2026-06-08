@@ -19,7 +19,7 @@ extern "C" unsigned short *AEString_index(void *s, unsigned int i);// operator[]
 extern "C" void  AEString_SubString(void *out, void *s, unsigned int a, unsigned int b);
 extern "C" void  AEString_append(void *dst, void *src);           // operator+=
 
-void *operator new[](uint32_t);
+void *operator new[](__SIZE_TYPE__);
 void operator delete[](void *) noexcept;
 extern "C" void *memcpy(void *, const void *, unsigned long);
 

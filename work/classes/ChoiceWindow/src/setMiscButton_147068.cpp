@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new(unsigned int size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" int TouchButton_getWidth(void *self);
 extern "C" void TouchButton_ctor(void *self, String const &text, int value, int x, int y,

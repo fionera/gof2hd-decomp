@@ -145,11 +145,11 @@ void ArrayAdd(T item, Array<T> *array);
 template <class T>
 void ArrayRelease(Array<T> *array);
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
-void *operator new[](uint32_t size);
+void *operator new[](__SIZE_TYPE__ size);
 void operator delete[](void *ptr) noexcept;
-inline void *operator new(uint32_t, void *ptr) noexcept { return ptr; }
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 struct FileRead {
     int32_t loadStation(int32_t id);

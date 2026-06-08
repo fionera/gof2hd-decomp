@@ -34,7 +34,7 @@ struct Vector {
 } }
 typedef AbyssEngine::AEMath::Vector Vector;
 
-void *operator new(unsigned);
+void *operator new(__SIZE_TYPE__);
 
 // Field accessor via byte offset.
 template <class T> static inline T &F(void *p, unsigned off) {

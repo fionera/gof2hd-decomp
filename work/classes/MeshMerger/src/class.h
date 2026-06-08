@@ -14,7 +14,7 @@ typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 typedef int int32_t;
 
-inline void *operator new(uint32_t, void *p) noexcept { return p; }
+inline void *operator new(__SIZE_TYPE__, void *p) noexcept { return p; }
 
 namespace AbyssEngine {
 

@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 extern "C" void Array_Item_ctor(Array *array);

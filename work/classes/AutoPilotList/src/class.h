@@ -47,7 +47,7 @@ struct EngString {
     uint32_t a, b, c;
     EngString(const void *src, bool copy);   // String(String*, bool) / String(char*, bool)
 };
-void *operator new(unsigned);
+void *operator new(__SIZE_TYPE__);
 
 // AbyssEngine::String passed/returned by value: 12-byte trivially-copied aggregate.
 struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };

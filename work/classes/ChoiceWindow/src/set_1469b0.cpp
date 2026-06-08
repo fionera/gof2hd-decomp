@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new(unsigned int size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 extern "C" String *GameText_getText(void *self, int id);

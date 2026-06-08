@@ -10,7 +10,7 @@ namespace AbyssEngine {
     }
 }
 
-inline void *operator new(unsigned int, void *p) noexcept { return p; }
+inline void *operator new(__SIZE_TYPE__, void *p) noexcept { return p; }
 extern "C" void *_Znwj(unsigned int size);
 
 __attribute__((visibility("hidden"))) extern int *g_routeRng;

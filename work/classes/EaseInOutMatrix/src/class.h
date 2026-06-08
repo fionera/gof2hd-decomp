@@ -2,7 +2,7 @@
 #define WORK_CLASSES_EASEINOUTMATRIX_SRC_CLASS_H
 
 typedef unsigned int uint32_t;
-inline void *operator new(uint32_t, void *p) noexcept { return p; }
+inline void *operator new(__SIZE_TYPE__, void *p) noexcept { return p; }
 
 namespace AbyssEngine {
 

@@ -12,8 +12,8 @@ using uint = uint32_t;
 using longlong = int64_t;
 using ulonglong = uint64_t;
 
-void *operator new(unsigned int size);
-inline void *operator new(unsigned int, void *ptr) { return ptr; }
+void *operator new(__SIZE_TYPE__ size);
+inline void *operator new(__SIZE_TYPE__, void *ptr) { return ptr; }
 void operator delete(void *ptr) noexcept;
 
 template <class T>

@@ -2,7 +2,7 @@
 
 // LODManager::LODManager() — real C++ constructor; symbol demangles to contain "LODManager".
 
-extern "C" void *LODManager_operator_new(unsigned n);   // operator new(unsigned)
+extern "C" void *LODManager_operator_new(unsigned n);   // operator new(__SIZE_TYPE__)
 extern "C" void *LODManager_Array_ctor(void *p);        // Array<AEGeometry*>::Array(Array*)
 
 struct LODManager {

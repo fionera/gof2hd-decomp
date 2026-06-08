@@ -8,7 +8,7 @@
 
 struct ParticleSystemSprite;
 
-void *operator new[](uint32_t size);
+void *operator new[](__SIZE_TYPE__ size);
 extern "C" void *memset(void *, int, unsigned long);
 
 extern "C" void _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(

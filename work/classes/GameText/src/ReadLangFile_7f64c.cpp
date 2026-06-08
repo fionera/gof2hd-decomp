@@ -16,9 +16,9 @@ extern "C" void  AEString_dtor(void *s);
 extern "C" void  GameText_release(void *self);
 extern "C" void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 
-void *operator new(uint32_t);
+void *operator new(__SIZE_TYPE__);
 void operator delete[](void *) noexcept;
-void *operator new[](uint32_t);
+void *operator new[](__SIZE_TYPE__);
 
 // Active language code; 9 == Arabic.
 __attribute__((visibility("hidden"))) extern short *g_langCode;

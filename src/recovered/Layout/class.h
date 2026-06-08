@@ -49,7 +49,7 @@ String operator+(const String &left, const String &right);
 using AbyssEngine::String;
 
 // placement new
-inline void *operator new(uint32_t, void *p) noexcept { return p; }
+inline void *operator new(__SIZE_TYPE__, void *p) noexcept { return p; }
 
 // Stack-protector guard (the engine resolves this to a PC-relative game global).
 extern "C" void *__stack_chk_guard;

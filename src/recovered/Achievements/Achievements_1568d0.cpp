@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new[](uint32_t size);
+void *operator new[](__SIZE_TYPE__ size);
 
 // Achievements::Achievements() — allocates two 45-int (0xb4) arrays.
 struct Achievements {

@@ -6,7 +6,7 @@
 // particle count (virtual call, vtable+0x10) into +0x5c, and returns the new system's handle:
 // the mesh-array index with bit 0x4000 set to mark it as a mesh-array handle.
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
                               bool b4, bool b5);                    // ParticleSystemMesh ctor

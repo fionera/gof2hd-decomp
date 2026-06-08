@@ -7,9 +7,9 @@ typedef unsigned int uint32_t;
 typedef int int32_t;
 typedef unsigned int size_t;
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
-inline void *operator new(uint32_t, void *ptr) noexcept { return ptr; }
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 extern "C" void *memcpy(void *, const void *, size_t);
 extern "C" void *memset(void *, int, size_t);

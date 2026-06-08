@@ -19,8 +19,8 @@ typedef unsigned int uint32_t;
 typedef int int32_t;
 
 // new(0x1c) scalar, and new[]/delete[] for the byte buffer.
-void *operator new(uint32_t size);
-void *operator new[](uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
+void *operator new[](__SIZE_TYPE__ size);
 void operator delete[](void *ptr) noexcept;
 
 // Field accessors via byte offset.

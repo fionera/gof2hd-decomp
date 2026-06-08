@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void *Array_Player_dtor(Array<Player *> *array);
 extern "C" void Player_operator_delete(void *p);

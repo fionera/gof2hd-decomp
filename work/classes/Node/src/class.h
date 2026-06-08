@@ -26,7 +26,7 @@ struct Array {
     uint32_t cap;
 };
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" {
 // Array<Node*>::Array(this) -- default ctor at 0x00075ee0.

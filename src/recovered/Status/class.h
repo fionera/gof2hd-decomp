@@ -290,7 +290,7 @@ static_assert(__builtin_offsetof(Status, boughtEquipment) == 0x1e4, "boughtEquip
 static_assert(__builtin_offsetof(Status, currentCampaignMission) == 0x1e8, "currentCampaignMission");
 
 // Engine globals / runtime allocator hooks.
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 #endif

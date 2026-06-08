@@ -36,7 +36,7 @@ static inline T &F(void *p, unsigned off) {
     return *(T *)((char *)p + off);
 }
 
-void *operator new(unsigned size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 extern "C" void __stack_chk_fail(void);

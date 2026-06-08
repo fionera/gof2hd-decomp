@@ -18,7 +18,7 @@ extern "C" void  _ZN11AbyssEngine6AEFile8OpenReadERKNS_6StringEPj(void *path, un
 extern "C" void  GameText_release(void *self);
 extern "C" void  GameText_ReadLangFile(void *self, unsigned int file, int count);
 
-void *operator new[](uint32_t);
+void *operator new[](__SIZE_TYPE__);
 void operator delete[](void *) noexcept;
 
 // Active language code slot (compared against the requested id to detect a no-op).

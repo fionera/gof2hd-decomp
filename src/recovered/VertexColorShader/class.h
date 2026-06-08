@@ -54,7 +54,7 @@ inline void *&ae_ptr(void *self, uint32_t offset)
 }
 
 void operator delete(void *ptr) noexcept;
-inline void *operator new(uint32_t, void *ptr) noexcept { return ptr; }
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);

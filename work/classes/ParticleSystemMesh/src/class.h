@@ -46,6 +46,6 @@ static inline uint8_t &u8(void *self, uint32_t off) { return *(uint8_t *)((char 
 static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
 static inline void *&ptr(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 #endif

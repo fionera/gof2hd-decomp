@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void Array_Player_ctor(Array<Player *> *array);
 extern "C" void ArrayAdd_Player(Player *value, Array<Player *> *array);

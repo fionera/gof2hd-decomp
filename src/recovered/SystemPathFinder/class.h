@@ -34,7 +34,7 @@ template <class T> void ArrayRelease(Array<T> &array);
 template <class T> void ArrayReleaseClasses(Array<T> &array);
 template <class T> void ArraySetLength(uint32_t length, Array<T> &array);
 
-void *operator new(unsigned size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 struct SolarSystem {

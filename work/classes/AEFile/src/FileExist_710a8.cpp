@@ -2,7 +2,7 @@
 
 extern FileInterface *gAEFileFileInterface;
 
-inline void *operator new(uint32_t, void *ptr) noexcept
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept
 {
     return ptr;
 }

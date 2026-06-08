@@ -46,9 +46,9 @@ static inline T &F(void *self, unsigned off)
     return *(T *)((char *)self + off);
 }
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
-inline void *operator new(uint32_t, void *ptr) noexcept { return ptr; }
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 extern "C" void *operator_new__(uint32_t size);
 extern "C" void operator_delete(void *ptr);
 extern "C" void operator_delete__(void *ptr);

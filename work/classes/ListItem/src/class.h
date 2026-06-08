@@ -41,7 +41,7 @@ struct EngString {
     uint32_t a, b, c;
     EngString(const void *src, bool copy);
 };
-void *operator new(unsigned);
+void *operator new(__SIZE_TYPE__);
 
 template <class T>
 struct Array {

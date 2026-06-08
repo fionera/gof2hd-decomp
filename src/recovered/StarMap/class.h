@@ -67,9 +67,9 @@ struct Array {
     uint32_t capacity;
 };
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
-void *operator new[](uint32_t size);
+void *operator new[](__SIZE_TYPE__ size);
 void operator delete[](void *ptr) noexcept;
 
 #endif

@@ -1,6 +1,6 @@
 #include "class.h"
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);

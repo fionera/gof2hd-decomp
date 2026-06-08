@@ -8,7 +8,7 @@ typedef int GLsizei;
 typedef unsigned char GLboolean;
 typedef void GLvoid;
 
-inline void *operator new(unsigned int, void *ptr) noexcept { return ptr; }
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 extern "C" {
 void glGenFramebuffers(GLsizei n, GLuint *framebuffers);

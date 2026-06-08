@@ -2,7 +2,7 @@
 #include "class.h"
 #undef wchar_t
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 Item *Item::clone()
 {

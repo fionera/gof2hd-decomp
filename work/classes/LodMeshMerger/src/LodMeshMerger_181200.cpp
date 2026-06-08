@@ -6,7 +6,7 @@ extern "C" void ArraySetLengthMesh(uint32_t n, void *a);         // 0x78814  Arr
 extern "C" void aeabi_memclr4(void *p, uint32_t n);              // 0x6ec14
 extern "C" void aeabi_memclr(void *p, uint32_t n);              // 0x6ec20
 
-inline void *operator new(unsigned int, void *p) { return p; }
+inline void *operator new(__SIZE_TYPE__, void *p) { return p; }
 
 // LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)

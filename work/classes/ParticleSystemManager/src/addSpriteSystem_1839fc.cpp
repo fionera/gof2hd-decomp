@@ -5,7 +5,7 @@
 // (+0x04) and the sprite flag (+0x38), appends it to the sprite array (+0x18), accumulates its
 // particle count into +0x34, and returns the new system's sprite-array handle (index, no flag).
 
-void *operator new(uint32_t size);
+void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
                            bool b4, bool b5);                       // ParticleSystemSprite ctor
