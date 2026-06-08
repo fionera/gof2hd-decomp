@@ -40,6 +40,11 @@ link: build/libgof2hdaa.so
 verify:
 	@bash tools/verify.sh
 
+# Whole-game reassembly: compile EVERY authored function + link a complete libgof2hdaa.so
+# (coverage, not byte-exactness — that's the per-function finetune gated by `verify`).
+reassemble:
+	@bash work/reassemble.sh
+
 coverage:
 	@python3 tools/coverage.py
 

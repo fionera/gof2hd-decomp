@@ -65,7 +65,7 @@ extern "C" void ModStation_OnRender2D(ModStation *self)
     if (C(self, 0x69) != 0)
         DialogueWindow_draw_r2d(self);
 
-    Layout **help = g_r2d_helpLayout;
+    Layout **help = (Layout **)g_r2d_helpLayout;
     if (*(char *)*help != 0)
         Layout_drawHelpWindow_r2d((Layout *)*help);
 

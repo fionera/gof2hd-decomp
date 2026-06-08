@@ -19,3 +19,6 @@ work/classes/*/src/_cand_*.cpp
 work/_extract.tsv
 work/classes/*/results/
 work/classes/*/manifest.tsv
+build/full/
+work/classes/*/todo*.tsv
+work/_extract*.tsv

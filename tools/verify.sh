@@ -19,21 +19,24 @@ fi
 # Always build CLEAN: objects don't depend on the Makefile, so a CXXFLAGS change (e.g. opt level)
 # would otherwise leave stale objects and the gate would diff the wrong build. The trust anchor
 # must reflect the current flags+source exactly.
+NPROC="$(nproc 2>/dev/null || echo 4)"
+# Build + diff in PARALLEL across all cores (the gate was the cadence bottleneck at >1600 fns).
 make clean >/dev/null 2>&1
-make NDK="${NDK:-/opt/android-ndk-r18b}" >/dev/null 2>&1 || { echo "BUILD FAILED"; exit 1; }
-fail=0; n=0
-while IFS=$'\t' read -r name vaddr nbytes obj sym status; do
-  [[ "$name" =~ ^#|^$ ]] && continue
-  n=$((n+1))
-  out=$(python3 tools/gofdiff.py --so "$SO" --vaddr "$vaddr" --n "$nbytes" --obj "$obj" --sym "$sym" 2>/dev/null | head -1)
-  pct=$(echo "$out" | grep -oE '[0-9]+\.[0-9]+%' | tr -d '%')
-  pct=${pct:-0}
-  need=100; [[ "$status" == near ]] && need=90
-  if awk "BEGIN{exit !($pct+0 >= $need)}"; then
-    printf "  PASS  %-22s %6s%%  (%s)\n" "$name" "$pct" "$status"
-  else
-    printf "  FAIL  %-22s %6s%%  (need >=%s%%)\n" "$name" "$pct" "$need"; fail=$((fail+1))
-  fi
-done < matches.tsv
+make -j"$NPROC" NDK="${NDK:-/opt/android-ndk-r18b}" >/dev/null 2>&1 || { echo "BUILD FAILED"; exit 1; }
+# Per-entry check (one matches.tsv line -> PASS/FAIL row). Run via xargs -P across all cores;
+# each gofdiff is independent (own .o + read-only target), so there are no races.
+check_one() {
+  IFS=$'\t' read -r name vaddr nbytes obj sym status <<< "$1"
+  case "$name" in \#*|"") return;; esac
+  local pct need
+  pct=$(python3 tools/gofdiff.py --so "$SO" --vaddr "$vaddr" --n "$nbytes" --obj "$obj" --sym "$sym" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+%' | tr -d '%' | head -1)
+  pct=${pct:-0}; need=100; [ "$status" = near ] && need=90
+  if awk "BEGIN{exit !($pct+0 >= $need)}"; then printf 'PASS\t%s\t%s\t%s\n' "$name" "$pct" "$status"
+  else printf 'FAIL\t%s\t%s\t%s\n' "$name" "$pct" "$need"; fi
+}
+export -f check_one; export SO
+results=$(grep -vE '^#|^$' matches.tsv | xargs -P"$NPROC" -d '\n' -I LINE bash -c 'check_one "$@"' _ LINE)
+echo "$results" | sort | awk -F'\t' '$1=="PASS"{printf "  PASS  %-24s %6s%%  (%s)\n",$2,$3,$4} $1=="FAIL"{printf "  FAIL  %-24s %6s%%  (need >=%s%%)\n",$2,$3,$4}'
+n=$(printf '%s\n' "$results" | grep -c .); fail=$(printf '%s\n' "$results" | grep -c '^FAIL')
 echo "---"; echo "$n checked, $fail regressed"
 exit $((fail>0))
