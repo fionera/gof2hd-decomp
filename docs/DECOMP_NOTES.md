@@ -183,3 +183,15 @@ Reliable signals & tooling built:
   reproduce the target's machine code. The remaining work is volume — author source per function
   and iterate flags/source against the diff, then solve whole-`.so` relink (link order, version
   script, build-id).
+
+## External reference repos (added to project dir; cross-validation, not game source)
+- **gof2-vita/** — Android `.so` loader (FalsoJNI/AFakeNative) for the original ARMv6 non-HD binary.
+  `loader/patch/*.c` resolves real game symbols by mangled name and confirms signatures + field
+  names — notably the full `Globals::` touch-button int fields (`fire_x/y`, `boost_x/y`,
+  `autopilot_x/y`, `turret_view_x/y`, `pause_x/y`, `action_menu_x/y`, `fast_forward_x/y`,
+  `sec_fire_x/y`) and `ApplicationManager::OnTouchBegin/OnTouchEnd/GetCurrentApplicationModule`.
+  Useful to fix header field names/signatures for Phase-2 matching. Cg shaders are SHA1-named.
+- **gof2edit/** (Rust) — authoritative RE of the `.bin` tables + save format (`src/data/`,
+  `src/data/save/`, `src/bin_io/`). Supersedes `tools/gofbin.py`; gives exact field semantics for
+  Item/Ship/Station/Agent/System/Wanted/Engine/Faction data classes.
+- **FMOD-GOF2-Recreated/** — recreated FMOD Designer project for the PC audio events (sound assets).

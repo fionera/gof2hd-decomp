@@ -92,7 +92,7 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     }
     glActiveTexture(0x84c0);
 
-    uint32_t guardDelta = (uint32_t)__stack_chk_guard - (uint32_t)cookie;
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta == 0) {
         return;
     }
