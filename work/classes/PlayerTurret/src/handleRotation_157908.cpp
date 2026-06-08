@@ -22,6 +22,27 @@ extern "C" void Transform_Update(uint32_t transform, int amount, int amountHigh,
 extern uint32_t *gPlayerTurretCanvas_rotation __attribute__((visibility("hidden")));
 
 struct PlayerTurret {
+    // @portable-fields
+    void* f_0; // 0x0
+    unsigned char _pad_4[4];
+    void* f_8; // 0x8
+    void* f_c; // 0xc
+    unsigned char _pad_10[64];
+    void* f_50; // 0x50
+    void* f_54; // 0x54
+    unsigned char _pad_58[32];
+    void* f_78; // 0x78
+    unsigned char _pad_7c[192];
+    void* f_13c; // 0x13c
+    void* f_140; // 0x140
+    void* f_144; // 0x144
+    void* f_148; // 0x148
+    void* f_14c; // 0x14c
+    void* f_150; // 0x150
+    void* f_154; // 0x154
+    void* f_158; // 0x158
+    void* f_15c; // 0x15c
+
     void handleRotation(int delta, AEGeometry *mainGeometry, AEGeometry *turretGeometry);
 };
 
@@ -36,8 +57,8 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     char tmpMatrixA[60];
     char tmpMatrixB[60];
 
-    __aeabi_memcpy(matrixBytes, B(P(this, 0x14c), 0x4), 0x3c);
-    Player_getPosition((Vector *)positionBytes, (Player *)P(this, 0x14c));
+    __aeabi_memcpy(matrixBytes, B(this->f_14c, 0x4), 0x3c);
+    Player_getPosition((Vector *)positionBytes, (Player *)this->f_14c);
     MatrixGetDir((Vector *)dirBytes, matrixBytes);
     VectorNormalize((Vector *)normalBytes, (Vector *)dirBytes);
     Vector_scale((Vector *)scaledBytes, (Vector *)normalBytes, 3000.0f);
@@ -73,7 +94,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
 
     if (normal->y > 0.0f) {
         if (UC(this, 0x3f) == 0 && I(this, 0x134) < 100) {
-            P(this, 0x150) = P(this, 0x14c);
+            this->f_150 = this->f_14c;
             I(this, 0x130) = I(this, 0x130) + delta;
             return;
         }
@@ -81,12 +102,12 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
         float next = (float)I(this, 0x134) - step;
         I(this, 0x134) = (int)next;
         AEGeometry_rotate(mainGeometry, next, 0.0f, step * 0.001f * 0.25f);
-        P(this, 0x150) = 0;
+        this->f_150 = 0;
         return;
     }
     if (normal->y < -0.05f) {
         if (UC(this, 0x3f) == 0 && I(this, 0x134) > 99) {
-            P(this, 0x150) = P(this, 0x14c);
+            this->f_150 = this->f_14c;
             I(this, 0x130) = I(this, 0x130) + delta;
             return;
         }
@@ -94,7 +115,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
         float next = (float)I(this, 0x134) + step;
         I(this, 0x134) = (int)next;
         AEGeometry_rotate(mainGeometry, next, 0.0f, step * 0.001f * -0.25f);
-        P(this, 0x150) = 0;
+        this->f_150 = 0;
         return;
     }
 
