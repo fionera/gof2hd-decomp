@@ -33,7 +33,7 @@ for ln in open("work/runtime/target/layouts.tsv"):
 
 def ctype_of(gtype, accsizes):
     g=gtype.strip()
-    if g.endswith("*"): return g.replace(" *","*"), True          # pointer (Ghidra)
+    if g.endswith("*"): return "void*", True   # pointer: use void* (8B on arm64, no fwd-decl needed)
     if g in ("float",): return "float", False
     if g in ("double",): return "double", False
     if g in ("uchar","byte","undefined1","bool","uint8_t","char"): return "uint8_t", False
@@ -104,20 +104,24 @@ def refactor(cls):
     return (cls, "ok", off2name, struct_body, len(off2name))
 
 def apply(cls, off2name, body):
-    ch="work/classes/%s/src/class.h"%cls; t=open(ch).read()
-    if "@portable-fields" in t: return False     # already converted (idempotent)
-    # skip if any .cpp defines its OWN `struct <cls> { ... }` (injecting into class.h would redefine it)
-    for f in glob.glob("work/classes/%s/src/*.cpp"%cls):
-        if re.search(r'\bstruct\s+%s\s*\{'%re.escape(cls), open(f).read()): return False
+    ch="work/classes/%s/src/class.h"%cls; cht=open(ch).read()
+    if "@portable-fields" in cht: return False     # already converted (idempotent)
     body="    // @portable-fields\n"+body
-    # inject fields into `struct <cls> { ... }` (or define a forward-declared one)
-    m=re.search(r'\bstruct\s+%s\s*\{'%re.escape(cls), t)
-    if m: t=t[:m.end()]+"\n"+body+"\n"+t[m.end():]
+    DEF=re.compile(r'\bstruct\s+%s\s*\{'%re.escape(cls))   # FULL struct definition (has body)
+    if DEF.search(cht):
+        # style (a): struct defined in class.h -> inject there (no .cpp redefines it, else original
+        # wouldn't have compiled). Each .cpp #includes this.
+        m=DEF.search(cht); open(ch,"w").write(cht[:m.end()]+"\n"+body+"\n"+cht[m.end():])
     else:
-        m=re.search(r'\bstruct\s+%s\s*;'%re.escape(cls), t)
-        if not m: return False
-        t=t[:m.start()]+("struct %s {\n%s\n};"%(cls,body))+t[m.end():]
-    open(ch,"w").write(t)
+        # style (b): struct defined inside each .cpp (class.h has only a forward decl / nothing).
+        # Inject the same fields into every .cpp's own definition (separate TUs -> stays consistent).
+        n=0
+        for f in glob.glob("work/classes/%s/src/*.cpp"%cls):
+            t=open(f).read(); m=DEF.search(t)
+            if m and "@portable-fields" not in t:
+                open(f,"w").write(t[:m.end()]+"\n"+body+"\n"+t[m.end():]); n+=1
+        if n==0: return False                         # no struct definition anywhere -> can't convert
+        open(ch,"w").write("// @portable-fields\n"+cht)   # mark for idempotency
     # rewrite simple accessor(IDENT, OFF) -> IDENT->field for converted offsets
     def repl(m2):
         kind=m2.group(1); ident=m2.group(3)
