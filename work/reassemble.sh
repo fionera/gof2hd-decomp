@@ -13,7 +13,7 @@ FLAGS="-target armv7-none-linux-androideabi16 -march=armv7-a -mthumb -Oz -fstack
 NPROC="$(nproc 2>/dev/null || echo 4)"
 OUT=build/full; rm -rf "$OUT"; mkdir -p "$OUT/obj"
 
-mapfile -t SRCS < <(find work/classes -path '*/src/*.cpp' | sort)
+mapfile -t SRCS < <( { find work/classes -path '*/src/*.cpp'; find work/runtime -name '*.cpp' 2>/dev/null; } | sort)
 echo "[1/4] compiling ${#SRCS[@]} sources on $NPROC cores..."
 compile() { local s="$1" o="build/full/obj/$(echo "$1" | sed 's#[/.]#_#g').o"
   $CXX $FLAGS -c "$s" -o "$o" 2>"$o.err" && echo OK || echo "FAIL $s"; }
