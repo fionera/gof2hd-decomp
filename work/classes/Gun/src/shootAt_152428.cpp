@@ -19,7 +19,7 @@ extern "C" void Gun_shootAt(Gun *self, Matrix m, int n, Player *p, bool b)
     // Records the firing transform / count and the (optional) target; the heavy body
     // (per-projectile spawn + vector setup) is data-driven from the Matrix argument.
     (void)m;
-    self->f_60 = n;
-    self->f_bc = p;
-    self->f_88 = b;
+    F<int>(self, 0x60) = n;
+    F<Player *>(self, 0xbc) = p;
+    F<uint8_t>(self, 0x88) = b;
 }

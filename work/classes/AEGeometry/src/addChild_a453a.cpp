@@ -6,9 +6,9 @@ using namespace AbyssEngine;
 struct AEGeometry { void addChild(uint32_t child); };
 void AEGeometry::addChild(uint32_t child)
 {
-    PaintCanvas::TransformAddChild((PaintCanvas *)this->f_2c, this->f_c, child);
-    uint32_t old = this->f_14;
+    PaintCanvas::TransformAddChild((PaintCanvas *)u32(this, 0x2c), u32(this, 0xc), child);
+    uint32_t old = u32(this, 0x14);
     if (old != 0xffffffffu)
-        this->f_10 = old;
-    this->f_14 = child;
+        u32(this, 0x10) = old;
+    u32(this, 0x14) = child;
 }

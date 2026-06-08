@@ -2,7 +2,7 @@
 
 uint32_t AENormalFile::GetFileSize()
 {
-    FI *h = this->held;
+    FI *h = fi_held(this);
     if (h != 0) {
         return h->vtable->GetFileSize(h);
     }

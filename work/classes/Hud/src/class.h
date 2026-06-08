@@ -8,33 +8,7 @@ typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 
-struct Hud {
-    unsigned char _pad_0[24];
-    void* f_18; // 0x18
-    unsigned char _pad_1c[514];
-    uint8_t f_21e; // 0x21e
-    unsigned char _pad_21f[2];
-    uint8_t f_221; // 0x221
-    unsigned char _pad_222[22];
-    void* f_238; // 0x238
-    unsigned char _pad_23c[28];
-    void* f_258; // 0x258
-    void* f_25c; // 0x25c
-    unsigned char _pad_260[4];
-    void* f_264; // 0x264
-    unsigned char _pad_268[4];
-    uint8_t f_26c; // 0x26c
-    unsigned char _pad_26d[11];
-    uint8_t f_278; // 0x278
-    unsigned char _pad_279[1];
-    uint8_t f_27a; // 0x27a
-    unsigned char _pad_27b[17];
-    void* f_28c; // 0x28c
-    void* f_290; // 0x290
-    unsigned char _pad_294[668];
-    void* f_530; // 0x530
-    void* f_534; // 0x534
-};            // opaque; we only ever take a Hud* and offset-cast.
+struct Hud;            // opaque; we only ever take a Hud* and offset-cast.
 
 // Other game types referenced by pointer only — keep opaque.
 struct Item;

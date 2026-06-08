@@ -21,11 +21,11 @@ Mission_ctor3(Mission *self, int id, int goods, int station) {
     String_default_ctor((char *)self + 0x1c);
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
-    self->f_30 = goods;
-    self->f_3c = station;
-    self->f_28 = 0;
-    self->f_8 = 0;
-    self->f_c = id;
+    F<int>(self, 0x30) = goods;
+    F<int>(self, 0x3c) = station;
+    F<int>(self, 0x28) = 0;
+    F<int>(self, 0x8) = 0;
+    F<int>(self, 0xc) = id;
     if (station < 0) {
         String_cstr_ctor(tmp, "", false);
     } else {
@@ -37,11 +37,11 @@ Mission_ctor3(Mission *self, int id, int goods, int station) {
     String_cstr_ctor(tmp, "", false);
     String_assign((char *)self + 0x4c, tmp);
     String_dtor(tmp);
-    self->f_74 = 1;
-    self->f_64 = 1;
-    self->f_4 = 0;
-    self->f_5c = 0;
-    self->f_70 = 0;
-    self->f_38 = 0;
+    F<uint8_t>(self, 0x74) = 1;
+    F<int>(self, 0x64) = 1;
+    F<uint16_t>(self, 0x4) = 0;
+    F<uint8_t>(self, 0x5c) = 0;
+    F<int>(self, 0x70) = 0;
+    F<int>(self, 0x38) = 0;
     return self;
 }

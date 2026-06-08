@@ -11,8 +11,8 @@ extern "C" Station *Station_clone(Station *self)
     Station *n = (Station *)Station_operator_new(0x34);
     char tmp[12];
     String_copy_ctor(tmp, self, false);
-    Station_ctor(n, tmp, self->f_c, self->f_10,
-                 self->f_20, self->f_18);
+    Station_ctor(n, tmp, F<int>(self, 0xc), F<int>(self, 0x10),
+                 F<int>(self, 0x20), F<int>(self, 0x18));
     String_dtor(tmp);
     return n;
 }

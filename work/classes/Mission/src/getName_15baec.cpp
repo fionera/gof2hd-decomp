@@ -17,10 +17,10 @@ struct RetStr { uint32_t a, b, c; };
 // look up "<id+0x162>" in the global text table.
 extern "C" RetStr Mission_getName(Mission *self) {
     RetStr r;
-    if (self->f_64 != 0) {
+    if (F<int>(self, 0x64) != 0) {
         String_cstr_ctor(&r, "", false);
     } else {
-        void *txt = GameText_getText(*g_gameText, self->f_c + 0x162);
+        void *txt = GameText_getText(*g_gameText, F<int>(self, 0xc) + 0x162);
         String_copy_ctor(&r, txt, false);
     }
     return r;

@@ -26,7 +26,7 @@ extern "C" void Standing_applyKill(Standing *self, int kind) {
     }
     int delta;
     if (kind == 8) {
-        if (self->f_4 >= 0) return;
+        if (F<int>(self, 4) >= 0) return;
         delta = 1;
         if (sysRace < 4) {
             kind = g_apk_raceTable[sysRace];

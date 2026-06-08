@@ -2,5 +2,5 @@
 
 extern "C" void Gun_setMagnitude(Gun *self, int v)
 {
-    self->f_100 = v;
+    F<int>(self, 0x100) = v;
 }

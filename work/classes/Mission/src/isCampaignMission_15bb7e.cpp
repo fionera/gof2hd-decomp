@@ -1,5 +1,5 @@
 #include "class.h"
 
 extern "C" bool Mission_isCampaignMission(Mission *self) {
-    return self->f_64 != 0;
+    return F<int>(self, 0x64) != 0;
 }

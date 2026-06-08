@@ -18,13 +18,13 @@ extern int *const gCC_status __attribute__((visibility("hidden")));   // holder
 
 extern "C" void Gun_calcCharacterCollision(Gun *self)
 {
-    unsigned *enemies = self->f_b4;
+    unsigned *enemies = F<unsigned *>(self, 0xb4);
     if (enemies == 0)
         return;
 
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
         Player *target = *(Player **)(enemies[1] + ei * 4);
-        self->f_bc = target;
+        F<Player *>(self, 0xbc) = target;
         // per-enemy / per-projectile collision sweep (vector math elided in this NEAR model)
     }
 }

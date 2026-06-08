@@ -11,11 +11,11 @@ extern "C" void ArrayAdd_Item(Item *item, void *arr);     // tail-called veneer
 // Station::addItem(Item*) — this in r0, item in r1.
 extern "C" void Station_addItem(Station *self, Item *item)
 {
-    uint32_t *arr = self->f_28;
+    uint32_t *arr = F<uint32_t *>(self, 0x28);
     if (arr == 0) {
         arr = (uint32_t *)Station_operator_new(0xc);
         Array_Item_ctor(arr);
-        self->f_28 = arr;
+        F<uint32_t *>(self, 0x28) = arr;
     } else {
         uint32_t n = arr[0];
         if (n != 0) {
@@ -23,12 +23,12 @@ extern "C" void Station_addItem(Station *self, Item *item)
                 if (Item_equals(((Item **)arr[1])[i], item) != 0) {
                     if ((int)i < 0)
                         break;
-                    uint32_t *cur = self->f_28;
+                    uint32_t *cur = F<uint32_t *>(self, 0x28);
                     Item *found = ((Item **)cur[1])[i];
                     Item_addAmount(found, Item_getAmount(item));
                     return;
                 }
-                arr = self->f_28;
+                arr = F<uint32_t *>(self, 0x28);
                 n = arr[0];
             }
         }

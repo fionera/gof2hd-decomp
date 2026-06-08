@@ -5,8 +5,8 @@ struct AEGeometry { AbyssEngine::AEMath::Vector getRotation(); };
 AbyssEngine::AEMath::Vector AEGeometry::getRotation()
 {
     AbyssEngine::AEMath::Vector v;
-    v.x = this->f_30;
-    v.y = this->f_34;
-    v.z = this->f_38;
+    v.x = f32(this, 0x30);
+    v.y = f32(this, 0x34);
+    v.z = f32(this, 0x38);
     return v;
 }

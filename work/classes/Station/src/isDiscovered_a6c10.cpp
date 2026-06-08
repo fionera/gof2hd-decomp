@@ -9,5 +9,5 @@ extern Galaxy **const gGalaxySingleton __attribute__((visibility("hidden")));
 extern "C" uint8_t Station_isDiscovered(Station *self)
 {
     char *visited = Galaxy_getVisited(*gGalaxySingleton);
-    return visited[self->f_c];
+    return visited[F<int>(self, 0xc)];
 }

@@ -13,10 +13,10 @@ void AEGeometry::translate(float x, float y, float z)
 {
     char buf[60];
     char src[60];
-    uint32_t loc = PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
+    uint32_t loc = PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
     __aeabi_memcpy(src, (void *)loc, 0x3c);
     _ae_MatrixSetTranslation(buf, *(float *)(src + 0x0c) + z, *(float *)(src + 0x1c),
                              *(float *)(src + 0x2c) + y);
-    _ae_TransformSetLocal(this->f_2c, this->f_c, buf);
+    _ae_TransformSetLocal(u32(this, 0x2c), u32(this, 0xc), buf);
     (void)x;
 }

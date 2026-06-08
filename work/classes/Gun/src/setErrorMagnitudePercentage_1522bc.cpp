@@ -2,5 +2,5 @@
 
 extern "C" void Gun_setErrorMagnitudePercentage(Gun *self, int v)
 {
-    self->f_fc = (float)v;
+    F<float>(self, 0xfc) = (float)v;
 }

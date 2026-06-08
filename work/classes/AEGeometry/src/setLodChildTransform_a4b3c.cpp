@@ -6,14 +6,14 @@ using namespace AbyssEngine;
 struct AEGeometry { void setLodChildTransform(uint32_t param); };
 void AEGeometry::setLodChildTransform(uint32_t param)
 {
-    int count = this->f_50;
+    int count = i32(this, 0x50);
     if (count > 0) {
         uint32_t *arr = new uint32_t[count];
-        this->f_58 = arr;
+        pp(this, 0x58) = arr;
         for (int i = 0; i < count; i++) {
-            PaintCanvas::TransformAddChild((PaintCanvas *)this->f_2c,
-                                           ((uint32_t *)this->f_54)[i], param);
-            count = this->f_50;
+            PaintCanvas::TransformAddChild((PaintCanvas *)u32(this, 0x2c),
+                                           ((uint32_t *)u32(this, 0x54))[i], param);
+            count = i32(this, 0x50);
         }
     }
 }

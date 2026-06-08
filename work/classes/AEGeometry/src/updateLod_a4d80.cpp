@@ -23,18 +23,18 @@ struct AEGeometry { void updateLod(const Vector &camPos, float screenScale); };
 
 void AEGeometry::updateLod(const Vector &camPos, float screenScale)
 {
-    this->f_48 = this->f_49;
+    u8(this, 0x48) = u8(this, 0x49);
 
     char matrixCopy[60];
-    uint32_t loc = PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
+    uint32_t loc = PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
     __aeabi_memcpy_b(matrixCopy, (void *)loc, 0x3c);
 
-    loc = PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
+    loc = PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
     Vector pos = AEMath_MatrixGetPosition_ret((void *)loc);
     Vector delta = AbyssEngine::AEMath::operator-(camPos, pos);
     _ae_vector_assign((char *)this + 0x78, &delta);
 
-    float dx = this->f_78, dy = this->f_7c, dz = this->f_80;
+    float dx = f32(this, 0x78), dy = f32(this, 0x7c), dz = f32(this, 0x80);
     unsigned long long distSq = __aeabi_f2ulz_(dy * dy + dx * dx + dz * dz);
     *(unsigned long long *)((char *)this + 0x68) = distSq;
 
@@ -44,23 +44,23 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
         visible = true;            // no clamp configured -> always considered visible
     } else {
         visible = distSq < lastVis;
-        this->f_48 = visible ? 1 : 0;
+        u8(this, 0x48) = visible ? 1 : 0;
     }
 
     if (!visible) {
-        this->f_28 = -1;
+        i32(this, 0x28) = -1;
         return;
     }
 
-    Transform_GetTransform(this->f_2c);
+    Transform_GetTransform(u32(this, 0x2c));
 
     // Detail factor: tighter LOD thresholds when the object is small on screen.
     float factor = (screenScale <= 0.0625f) ? 0.75f : 1.0f;
     float detail = (0.03125f < screenScale) ? factor : 0.5f;
 
-    int count = this->f_50;
+    int count = i32(this, 0x50);
     int level = count;
-    char *distances = (char *)this->f_64;   // per-level squared distance (u64 each)
+    char *distances = (char *)pp(this, 0x64);   // per-level squared distance (u64 each)
 
     // Walk levels high->low; stop at the first whose scaled threshold is met.
     while (level >= 1) {
@@ -72,31 +72,31 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
             continue;
         }
         // This level is the one to use.
-        void **lodMats = (void **)this->f_54;
+        void **lodMats = (void **)pp(this, 0x54);
         void *lodMat = lodMats[idx];
-        if (lodMat != this->f_c) {
-            PaintCanvas::TransformSetLocal((PaintCanvas *)(unsigned long)this->f_2c,
-                                           this->f_c, (Matrix *)lodMat);
-            this->f_c = ((void **)this->f_54)[idx];
-            uint32_t t = Transform_GetTransform(this->f_2c);
+        if (lodMat != pp(this, 0xc)) {
+            PaintCanvas::TransformSetLocal((PaintCanvas *)(unsigned long)u32(this, 0x2c),
+                                           u32(this, 0xc), (Matrix *)lodMat);
+            pp(this, 0xc) = ((void **)pp(this, 0x54))[idx];
+            uint32_t t = Transform_GetTransform(u32(this, 0x2c));
             Transform_SetCurrentAnimationTime(t, 0, 0);
-            t = Transform_GetTransform(this->f_2c);
+            t = Transform_GetTransform(u32(this, 0x2c));
             Transform_SetCurrentAnimationTime(t, 0, 0);
-            this->f_28 = level;
+            i32(this, 0x28) = level;
             _ae_matrix_assign((char *)this + 0x84, matrixCopy);
-            void *lmm = this->f_4;
+            void *lmm = pp(this, 0x4);
             if (lmm != 0)
-                LodMeshMerger_setLod(lmm, this->f_0, (signed char)level);
+                LodMeshMerger_setLod(lmm, u32(this, 0x0), (signed char)level);
         }
         return;
     }
 
     // No level matched: fall back to the base mesh.
-    PaintCanvas::TransformSetLocal((PaintCanvas *)(unsigned long)this->f_2c,
-                                   this->f_c, (Matrix *)this->f_18);
-    this->f_28 = 0;
-    this->f_c = this->f_18;
-    void *lmm = this->f_4;
+    PaintCanvas::TransformSetLocal((PaintCanvas *)(unsigned long)u32(this, 0x2c),
+                                   u32(this, 0xc), (Matrix *)pp(this, 0x18));
+    i32(this, 0x28) = 0;
+    pp(this, 0xc) = pp(this, 0x18);
+    void *lmm = pp(this, 0x4);
     if (lmm != 0)
-        LodMeshMerger_setLod(lmm, this->f_0, 0);
+        LodMeshMerger_setLod(lmm, u32(this, 0x0), 0);
 }

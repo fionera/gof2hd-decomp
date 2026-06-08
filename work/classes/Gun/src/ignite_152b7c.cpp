@@ -24,40 +24,40 @@ extern int *const gIG_status __attribute__((visibility("hidden")));   // holder
 
 extern "C" void Gun_ignite(Gun *self)
 {
-    if (self->f_5c == 6 || self->f_5c == 7) {
-        if (self->f_5c == 7)
+    if (F<int>(self, 0x5c) == 6 || F<int>(self, 0x5c) == 7) {
+        if (F<int>(self, 0x5c) == 7)
             *(int *)(*gIG_status + 0xc8) += 1;
-        *(uint8_t *)(self->f_38 + 0x69) = 0;
+        *(uint8_t *)(F<int>(self, 0x38) + 0x69) = 0;
     }
 
-    unsigned *enemies = self->f_b4;
-    self->f_88 = 1;
+    unsigned *enemies = F<unsigned *>(self, 0xb4);
+    F<uint8_t>(self, 0x88) = 1;
     if (enemies == 0)
         return;
 
     Vector *posOut = (Vector *)((char *)self + 0xd8);
     Vector *base   = (Vector *)((char *)self + 0xc0);
-    self->f_0 = 0;
+    F<int>(self, 0x0) = 0;
 
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
         Player *target = *(Player **)(enemies[1] + ei * 4);
-        self->f_bc = target;
-        if ((self->f_5c == 6 && Player_isAsteroid(target) != 0))
+        F<Player *>(self, 0xbc) = target;
+        if ((F<int>(self, 0x5c) == 6 && Player_isAsteroid(target) != 0))
             continue;
         if (Player_isActive(target) == 0)
             continue;
 
         int off = 0;
-        for (unsigned i = 0; i < self->f_8; i = i + 1) {
-            Vector v = *(Vector *)(self->f_c + off);
+        for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
+            Vector v = *(Vector *)(F<int>(self, 0xc) + off);
             AbyssEngine::AEMath::Vector_assign(base, &v);
             AbyssEngine::AEMath::Vector_assign(posOut, &v);
             AbyssEngine::AEMath::Vector_subAssign(posOut, base);
             int dist = (int)AbyssEngine::AEMath::VectorLength(posOut);
-            if (dist < self->f_100) {
-                ((uint8_t *)self->f_40)[i] = 1;
-                AbyssEngine::AEMath::Vector_assign((Vector *)(self->f_30 + off), base);
-                Item_getAttribute(*(int *)(*(int *)(*gIG_status + 4) + self->f_58 * 4), 0);
+            if (dist < F<int>(self, 0x100)) {
+                ((uint8_t *)F<int>(self, 0x40))[i] = 1;
+                AbyssEngine::AEMath::Vector_assign((Vector *)(F<int>(self, 0x30) + off), base);
+                Item_getAttribute(*(int *)(*(int *)(*gIG_status + 4) + F<int>(self, 0x58) * 4), 0);
             }
             off = off + 0xc;
         }

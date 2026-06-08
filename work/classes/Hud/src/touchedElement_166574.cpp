@@ -23,13 +23,13 @@ static inline bool cspan(Hud *self, int off, int w, unsigned int v) {
 
 extern "C" unsigned int Hud_touchedElement(Hud *self, unsigned int x, unsigned int y)
 {
-    unsigned int *menu = (unsigned int *)self->f_18;
+    unsigned int *menu = (unsigned int *)P(self, 0x18);
     if (UC(self, 0x282) != 0 && menu != 0) {
         // quick-menu open: delegate to its buttons
         for (unsigned int i = 0; i < menu[0]; i++) {
             if (TouchButton_OnTouchBegin(*(void **)(menu[1] + i * 4), x) != 0)
-                return *(unsigned int *)*(void **)(I(self->f_18, 4) + i * 4);
-            menu = (unsigned int *)self->f_18;
+                return *(unsigned int *)*(void **)(I(P(self, 0x18), 4) + i * 4);
+            menu = (unsigned int *)P(self, 0x18);
         }
         return 0;
     }

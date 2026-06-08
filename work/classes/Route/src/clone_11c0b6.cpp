@@ -40,13 +40,13 @@ extern "C" Route *Route_clone(Route *self)
                 ((void **)*(void **)((char *)targets + 4))[k] = F<Array<void *> *>(self, 0x10)->data[k];
             Route *r = (Route *)operator_new(0x18);
             Route_ctor2(r, coords, targets, timesCopy, (int)F<Array<Waypoint *> *>(self, 0xc)->length * 3);
-            r->f_4 = self->f_4;
+            F<uint8_t>(r, 0x4) = F<uint8_t>(self, 0x4);
             operator_delete__(timesCopy);
             return r;
         }
     }
     Route *r = (Route *)operator_new(0x18);
     Route_ctor1(r, coords, wps->length * 3);
-    r->f_4 = self->f_4;
+    F<uint8_t>(r, 0x4) = F<uint8_t>(self, 0x4);
     return r;
 }

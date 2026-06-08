@@ -15,13 +15,13 @@ extern "C" void Station_ctor_default(Station *self)
     String_from_cstr(tmp, kStationDefaultName, false);
     String_assign(self, tmp);
     String_dtor(tmp);
-    self->f_c = -1;
-    self->f_10 = -1;
-    self->f_20 = 0;
-    self->f_18 = 0;
-    self->f_1c = 0;
-    self->f_24 = 0;
-    self->f_28 = 0;
-    self->f_2c = 0;
-    self->f_30 = 0;
+    F<int>(self, 0xc) = -1;
+    F<int>(self, 0x10) = -1;
+    F<int>(self, 0x20) = 0;
+    F<int>(self, 0x18) = 0;
+    F<uint8_t>(self, 0x1c) = 0;
+    F<uint8_t>(self, 0x24) = 0;
+    F<int>(self, 0x28) = 0;
+    F<int>(self, 0x2c) = 0;
+    F<int>(self, 0x30) = 0;
 }

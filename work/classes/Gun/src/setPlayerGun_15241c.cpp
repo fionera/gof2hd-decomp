@@ -2,5 +2,5 @@
 
 extern "C" void Gun_setPlayerGun(Gun *self, bool v)
 {
-    self->f_f0 = v;
+    F<uint8_t>(self, 0xf0) = v;
 }

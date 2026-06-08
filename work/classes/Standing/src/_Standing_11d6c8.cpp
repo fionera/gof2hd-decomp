@@ -2,7 +2,7 @@
 
 // Standing::~Standing(): delete[] the standings array, null the pointer.
 Standing::~Standing() {
-    int *p = this->f_0;
+    int *p = F<int *>(this, 0);
     if (p) operator delete[](p);
-    this->f_0 = 0;
+    F<int *>(this, 0) = 0;
 }

@@ -8,7 +8,7 @@ extern "C" void Hud_clearQueue(Hud *self)
     unsigned int i = 1;
     int off = 4;
     unsigned int *arr;
-    while (arr = (unsigned int *)self->f_264, i < arr[0]) {
+    while (arr = (unsigned int *)P(self, 0x264), i < arr[0]) {
         unsigned int data = arr[1];
         void *item = *(void **)(data + off);
         int *dst;
@@ -17,7 +17,7 @@ extern "C" void Hud_clearQueue(Hud *self)
         } else {
             void *p = ListItem_dtor(item);
             operator_delete(p);
-            dst = (int *)(I(self->f_264, 4) + off);
+            dst = (int *)(I(P(self, 0x264), 4) + off);
         }
         *dst = 0;
         off = off + 4;

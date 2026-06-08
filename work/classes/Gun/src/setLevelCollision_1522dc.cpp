@@ -2,5 +2,5 @@
 
 extern "C" void Gun_setLevelCollision(Gun *self, bool v)
 {
-    self->f_f8 = v;
+    F<uint8_t>(self, 0xf8) = v;
 }

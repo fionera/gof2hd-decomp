@@ -11,7 +11,7 @@ extern "C" uint32_t Station_stationHasHiddenBlueprint(Station *self, bool ignore
     while (true) {
         if (i > 4)
             return 0;
-        if (kHiddenBlueprints[i] == self->f_c) {
+        if (kHiddenBlueprints[i] == F<int>(self, 0xc)) {
             if (ignoreFound)
                 return 1;
             char *flags = *(char **)(*(char **)(base + 0x58) + 4);

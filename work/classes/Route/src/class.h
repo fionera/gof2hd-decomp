@@ -1,6 +1,5 @@
 #ifndef WORK_CLASSES_ROUTE_SRC_CLASS_H
 #define WORK_CLASSES_ROUTE_SRC_CLASS_H
-// @portable-fields
 
 // Galaxy on Fire 2 - Route class (waypoint navigation path).
 // Android libgof2hdaa.so, armv7 Thumb. Top-level class (no AbyssEngine namespace),
@@ -19,14 +18,7 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct Route {
-    int f_0; // 0x0
-    int f_4; // 0x4
-    unsigned char _pad_8[4];
-    void* f_c; // 0xc
-    void* f_10; // 0x10
-    void* f_14; // 0x14
-};
+struct Route;
 struct Waypoint;
 struct KIPlayer;
 

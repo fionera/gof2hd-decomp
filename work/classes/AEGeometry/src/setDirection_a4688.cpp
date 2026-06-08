@@ -16,7 +16,7 @@ struct AEGeometry { void setDirection(const Vector &dir, const Vector &up); };
 void AEGeometry::setDirection(const Vector &dir, const Vector &up)
 {
     char local[60];
-    uint32_t loc = PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
+    uint32_t loc = PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
     __aeabi_memcpy_b(local, (void *)loc, 0x3c);
 
     // right = normalize(up x dir)
@@ -39,8 +39,8 @@ void AEGeometry::setDirection(const Vector &dir, const Vector &up)
     m.m[3] = rUp.x;    m.m[4] = rUp.y;    m.m[5] = rUp.z;
     m.m[6] = dir.x;    m.m[7] = dir.y;    m.m[8] = dir.z;
 
-    PaintCanvas::TransformSetLocal((PaintCanvas *)(unsigned long)this->f_2c,
-                                   this->f_c, &m);
-    loc = PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
-    _ae_MatrixSetScaling((void *)local, loc, this->f_3c, this->f_40, this->f_44);
+    PaintCanvas::TransformSetLocal((PaintCanvas *)(unsigned long)u32(this, 0x2c),
+                                   u32(this, 0xc), &m);
+    loc = PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
+    _ae_MatrixSetScaling((void *)local, loc, f32(this, 0x3c), f32(this, 0x40), f32(this, 0x44));
 }

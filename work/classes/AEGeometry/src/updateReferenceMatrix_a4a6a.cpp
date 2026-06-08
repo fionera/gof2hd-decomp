@@ -7,7 +7,7 @@ using namespace AbyssEngine::AEMath;
 struct AEGeometry { void updateReferenceMatrix(); };
 void AEGeometry::updateReferenceMatrix()
 {
-    Matrix *loc = (Matrix *)PaintCanvas::TransformGetLocal(this->f_2c, this->f_c);
+    Matrix *loc = (Matrix *)PaintCanvas::TransformGetLocal(u32(this, 0x2c), u32(this, 0xc));
     Matrix *ref = (Matrix *)((char *)this + 0x84);
     *ref = *loc;
 }

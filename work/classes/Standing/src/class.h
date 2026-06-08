@@ -1,6 +1,5 @@
 #ifndef WORK_CLASSES_STANDING_SRC_CLASS_H
 #define WORK_CLASSES_STANDING_SRC_CLASS_H
-// @portable-fields
 
 // Galaxy on Fire 2 — Standing class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class (no AbyssEngine:: namespace per the work-item Sig lines).
@@ -17,9 +16,6 @@ typedef unsigned int uint32_t;
 typedef int int32_t;
 
 struct Standing {
-    void* f_0; // 0x0
-    int f_4; // 0x4
-
     Standing();
     ~Standing();
 };

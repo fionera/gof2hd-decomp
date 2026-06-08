@@ -11,14 +11,14 @@ extern Galaxy *gGalaxyDiscover __attribute__((visibility("hidden")));
 // SolarSystem::isFullyDiscovered() — every station in array +0x38 must be visited.
 extern "C" int SolarSystem_isFullyDiscovered(SolarSystem *self)
 {
-    uint32_t *arr = self->f_38;
+    uint32_t *arr = F<uint32_t *>(self, 0x38);
     uint32_t i = 0;
     Galaxy *gal = gGalaxyDiscover;
     while (true) {
         if (i >= arr[0])
             return 1;
         char *visited = Galaxy_getVisited(*(Galaxy **)gal);
-        arr = self->f_38;
+        arr = F<uint32_t *>(self, 0x38);
         uint32_t flagIdx = ((int *)arr[1])[i];
         i++;
         if (visited[flagIdx] == 0)

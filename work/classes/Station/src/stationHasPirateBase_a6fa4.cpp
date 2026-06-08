@@ -11,7 +11,7 @@ extern "C" uint32_t Station_stationHasPirateBase(Station *self)
     while (true) {
         if (i > 3)
             return 0;
-        if (kPirateStations[i] == self->f_c) {
+        if (kPirateStations[i] == F<int>(self, 0xc)) {
             char *flags = *(char **)(*(char **)(base + 0x4c) + 4);
             if (flags[i] == 0)
                 return 1;

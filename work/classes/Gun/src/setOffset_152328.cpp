@@ -24,8 +24,8 @@ extern "C" void Gun_setOffset_ii(Gun *self, int a, int b)
     local.x = (float)(int)row[0];
     local.y = (float)(int)row[1];
     local.z = (float)(int)row[2];
-    local.x = self->f_7c + local.x;
-    local.y = self->f_80 + local.y;
-    local.z = self->f_84 + local.z;
+    local.x = F<float>(self, 0x7c) + local.x;
+    local.y = F<float>(self, 0x80) + local.y;
+    local.z = F<float>(self, 0x84) + local.z;
     Vector_assign((Vector *)((char *)self + 0x7c), &local);
 }

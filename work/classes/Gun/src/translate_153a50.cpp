@@ -11,8 +11,8 @@ extern "C" void Vector_addAssign(Vector *dst, const Vector *src);
 extern "C" void Gun_translate(Gun *self, const Vector *v)
 {
     int off = 0;
-    for (unsigned i = 0; i < self->f_8; i = i + 1) {
-        Vector_addAssign((Vector *)(self->f_c + off), v);
+    for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
+        Vector_addAssign((Vector *)(F<int>(self, 0xc) + off), v);
         off = off + 0xc;
     }
 }

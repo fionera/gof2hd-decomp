@@ -9,10 +9,10 @@ extern "C" void Route_reachWaypoint(Route *self, int index)
 {
     Array<Waypoint *> *wps = F<Array<Waypoint *> *>(self, 0xc);
     uint32_t len = wps->length;
-    if (self->f_0 < (int)(len - 1)) {
-        self->f_0 = index + 1;
-    } else if (self->f_4 != 0) {
-        self->f_0 = 0;
+    if (F<int32_t>(self, 0x0) < (int)(len - 1)) {
+        F<int32_t>(self, 0x0) = index + 1;
+    } else if (F<uint8_t>(self, 0x4) != 0) {
+        F<int32_t>(self, 0x0) = 0;
         for (uint32_t i = 0; i < len; i++) {
             Waypoint_reset(F<Array<Waypoint *> *>(self, 0xc)->data[i]);
             len = F<Array<Waypoint *> *>(self, 0xc)->length;

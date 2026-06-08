@@ -10,18 +10,18 @@ extern "C" void Hud_updateQueue(Hud *self, int dt)
     int v;
     if (t >= 0xfa1) {
         I(self, 0x268) = 0;
-        int *p = (int *)I(self->f_264, 4);
+        int *p = (int *)I(P(self, 0x264), 4);
         if ((void *)p[0] != 0) {
             void *q = ListItem_dtor((void *)p[0]);
             operator_delete(q);
-            p = (int *)I(self->f_264, 4);
+            p = (int *)I(P(self, 0x264), 4);
         }
         p[0] = 0;
         unsigned int i = 0;
         unsigned int d;
         while (true) {
-            d = ((unsigned int *)self->f_264)[1];
-            if (*(unsigned int *)self->f_264 <= i + 1)
+            d = ((unsigned int *)P(self, 0x264))[1];
+            if (*(unsigned int *)P(self, 0x264) <= i + 1)
                 break;
             *(int *)(d + i * 4) = *(int *)(d + i * 4 + 4);
             i = i + 1;
