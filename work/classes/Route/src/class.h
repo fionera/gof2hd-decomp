@@ -18,7 +18,15 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef int int32_t;
 
-struct Route;
+struct Route {
+    // @portable-fields
+    int f_0; // 0x0
+    int f_4; // 0x4
+    unsigned char _pad_8[4];
+    void* f_c; // 0xc
+    void* f_10; // 0x10
+    void* f_14; // 0x14
+};
 struct Waypoint;
 struct KIPlayer;
 

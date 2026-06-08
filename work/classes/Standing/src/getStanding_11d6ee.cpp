@@ -4,7 +4,7 @@
 // In "derived" mode (currentRace >= 0) factions 0/1 map to fixed standings based
 // on currentRace; otherwise the raw standings[race] value is returned.
 extern "C" int Standing_getStanding(Standing *self, int race) {
-    int cr = F<int>(self, 4);
+    int cr = self->f_4;
     if (cr >= 0) {
         if (race == 0) {
             int v = 0x46;
@@ -19,5 +19,5 @@ extern "C" int Standing_getStanding(Standing *self, int race) {
             return v;
         }
     }
-    return F<int *>(self, 0)[race];
+    return self->f_0[race];
 }

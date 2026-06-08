@@ -47,7 +47,7 @@ extern "C" void Hud_drawChallengeModeScore(Hud *self)
     int *layout = (int *)*g_Hud_csLayout;
     int *status = (int *)*g_Hud_csStatus;
     int screenW = *(int *)*g_Hud_csScreenW;
-    void *sprite = P(self, 0x534);
+    void *sprite = self->f_534;
 
     PaintCanvas_SetColor(canvas, -1);
     int fw = Sprite_getFrameWidth(sprite);

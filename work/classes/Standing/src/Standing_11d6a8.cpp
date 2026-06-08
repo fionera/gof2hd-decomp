@@ -5,6 +5,6 @@ Standing::Standing() {
     int *p = new int[2];
     p[0] = 0x1e;
     p[1] = 0;
-    F<int *>(this, 0) = p;
-    F<int>(this, 4) = -1;
+    this->f_0 = p;
+    this->f_4 = -1;
 }

@@ -31,7 +31,7 @@ extern "C" void Hud_drawEventQueue(Hud *self)
 
     PaintCanvas_DrawImage2D2(canvas, I(self, 0x354), US(self, 0x3e0));
 
-    int item = *(int *)(I(P(self, 0x264), 4) + 4);
+    int item = *(int *)(I(self->f_264, 4) + 4);
     if (item != 0) {
         int kind = *(int *)(item + 0x30);
         int b2, b3, b4;

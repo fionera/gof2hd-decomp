@@ -95,6 +95,9 @@ def refactor(cls):
 def apply(cls, off2name, body):
     ch="work/classes/%s/src/class.h"%cls; t=open(ch).read()
     if "@portable-fields" in t: return False     # already converted (idempotent)
+    # skip if any .cpp defines its OWN `struct <cls> { ... }` (injecting into class.h would redefine it)
+    for f in glob.glob("work/classes/%s/src/*.cpp"%cls):
+        if re.search(r'\bstruct\s+%s\s*\{'%re.escape(cls), open(f).read()): return False
     body="    // @portable-fields\n"+body
     # inject fields into `struct <cls> { ... }` (or define a forward-declared one)
     m=re.search(r'\bstruct\s+%s\s*\{'%re.escape(cls), t)
@@ -125,32 +128,45 @@ def verify(cls):
     cmds=[]
     for f in glob.glob(sd+"/*.cpp"):
         b=os.path.basename(f); rf=rd+"/"+b
-        new_o="/tmp/n_%s.o"%b; cmd_n="%s/bin/clang++ %s -I%s -c %s -o %s"%(TC,AFLAGS,sd,f,new_o)
+        # match reassembly's include setup (-Iinclude; class.h found via quote-include) so verify
+        # catches exactly what the full build would (e.g. struct redefinitions).
+        new_o="/tmp/n_%s_%s.o"%(cls,b); cmd_n="%s/bin/clang++ %s -Iinclude -c %s -o %s"%(TC,AFLAGS,f,new_o)
         if os.path.exists(rf):
-            old_o="/tmp/o_%s.o"%b; cmd_o="%s/bin/clang++ %s -I%s -c %s -o %s"%(TC,AFLAGS,rd,rf,old_o)
+            old_o="/tmp/o_%s_%s.o"%(cls,b); cmd_o="%s/bin/clang++ %s -Iinclude -c %s -o %s"%(TC,AFLAGS,rf,old_o)
             cmds.append((b,cmd_n,cmd_o,new_o,old_o)); checked+=1
         else:
             cmds.append((b,cmd_n,None,new_o,None))
     script=" ; ".join(c[1]+(" ; "+c[2] if c[2] else "") for c in cmds)
-    r=subprocess.run(["orb","run","bash","-lc",script],capture_output=True,text=True)
+    try: r=subprocess.run(["orb","run","bash","-lc",script],capture_output=True,text=True,timeout=180)
+    except subprocess.TimeoutExpired: return (False,"timeout",checked)
     if r.returncode!=0: return (False,"compile error",checked)
     for b,_,cmd_o,new_o,old_o in cmds:
         if old_o:
             if textsec(new_o)!=textsec(old_o): return (False,"DIFF %s"%b,checked)
     return (True,"ok",checked)
 
+def process(cls):
+    sd="work/classes/%s/src"%cls
+    if not os.path.isdir(sd): return (cls,"skip","no dir",0)
+    backup={f:open(f).read() for f in glob.glob(sd+"/*.cpp")+[sd+"/class.h"] if os.path.exists(f)}
+    r=refactor(cls)
+    if r[1]!="ok": return (cls,"skip",r[1],0)
+    _,_,off2name,body,nf=r
+    if not apply(cls,off2name,body): return (cls,"skip","done/no-struct",0)
+    ok,why,chk=verify(cls)
+    if ok: return (cls,"OK","%d fields, %d verified"%(nf,chk),nf)
+    for f,c in backup.items(): open(f,"w").write(c)   # restore (no git race)
+    return (cls,"REVERT",why,0)
+
 if __name__=="__main__":
+    import concurrent.futures as cf
     classes=sys.argv[1:]
     if classes==["all"]: classes=sorted(os.path.basename(d) for d in glob.glob("work/classes/*") if os.path.isdir(d))
     npass=nfail=nskip=0
-    for cls in classes:
-        r=refactor(cls)
-        if r[1]!="ok": print("%-26s skip: %s"%(cls,r[1])); nskip+=1; continue
-        _,_,off2name,body,nf=r
-        if not apply(cls,off2name,body): print("%-26s skip: no struct in class.h"%cls); nskip+=1; continue
-        ok,why,chk=verify(cls)
-        if ok: print("%-26s OK  %d fields, %d byte-exact-verified"%(cls,nf,chk)); npass+=1
-        else:
-            subprocess.run(["git","checkout","--","work/classes/%s"%cls],capture_output=True)
-            print("%-26s REVERT: %s"%(cls,why)); nfail+=1
+    with cf.ThreadPoolExecutor(max_workers=10) as ex:
+        for cls,st,why,nf in ex.map(process,classes):
+            if st=="OK": npass+=1
+            elif st=="REVERT": nfail+=1
+            else: nskip+=1
+            print("%-26s %-7s %s"%(cls,st,why))
     print("\n== %d converted, %d reverted, %d skipped =="%(npass,nfail,nskip))

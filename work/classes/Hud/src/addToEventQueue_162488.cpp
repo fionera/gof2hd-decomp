@@ -7,7 +7,7 @@ extern "C" void Hud_addToEventQueue(Hud *self, ListItem *item)
     int off;
     do {
         unsigned int next = idx + 1;
-        unsigned int *arr = (unsigned int *)P(self, 0x264);
+        unsigned int *arr = (unsigned int *)self->f_264;
         if (next >= arr[0])
             return;
         data = arr[1];
