@@ -19,6 +19,24 @@ struct Wanted;
 // Field accessor via byte offset.
 
 struct Wanted {
+    String field_0x0;                   // +0x0  (name, AbyssEngine::String)
+    int field_0xc;                      // +0xc
+    int field_0x10;                     // +0x10
+    int field_0x14;                     // +0x14
+    uint8_t field_0x18;                 // +0x18
+    int field_0x1c;                     // +0x1c
+    int field_0x20;                     // +0x20
+    int field_0x24;                     // +0x24
+    int field_0x28;                     // +0x28
+    int field_0x2c;                     // +0x2c
+    int field_0x30;                     // +0x30
+    int field_0x34;                     // +0x34
+    int field_0x38;                     // +0x38
+    int field_0x3c;                     // +0x3c
+    void* field_0x40;                   // +0x40  (heap buffer freed in dtor)
+    int field_0x44;                     // +0x44
+    int field_0x48;                     // +0x48
+    int field_0x4c;                     // +0x4c
     uint8_t field_0x50;                 // +0x50
     uint8_t field_0x51;                 // +0x51
 };

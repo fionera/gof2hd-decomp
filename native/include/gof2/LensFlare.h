@@ -1,24 +1,14 @@
 #ifndef GOF2_LENSFLARE_H
 #define GOF2_LENSFLARE_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// @portable-fields
-
-// Galaxy on Fire 2 -- LensFlare class (Android libgof2hdaa.so, armv7 Thumb).
-// Top-level class. Uses AbyssEngine::PaintCanvas for drawing. Field offsets recovered from
-// the per-method target disassembly; accessed via byte-offset casts from `this`.
+// Galaxy on Fire 2 -- LensFlare class.
+// Top-level class. Uses PaintCanvas for drawing.
 //
 //   0x00  float        intensity (alpha; cleared/updated)
 //   0x04  PaintCanvas* canvas (param to ctor)
 //   0x08  int          width  (PaintCanvas::GetWidth())
 //   0x0c  int          height (PaintCanvas::GetHeight())
 //   0x10  uint*[3]     images (new[](0xc); three Image2D handles)
-
-
-namespace AbyssEngine {
-struct PaintCanvas;
-}
-using PaintCanvas = AbyssEngine::PaintCanvas;
 
 void *operator new[](__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
@@ -44,11 +34,16 @@ void  LensFlare_drawFinal(void *canvas, void *img, int a, int b); // 0x00074de8
 void  LensFlare_restoreState(void *canvas, int saved);           // tail 0x001ac088
 }
 
-// Field accessors via byte offset.
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
+struct LensFlare {
+    float field_0x0;        // +0x0  intensity
+    void* field_0x4;        // +0x4  PaintCanvas* canvas
+    int field_0x8;          // +0x8  width
+    int field_0xc;          // +0xc  height
+    void* field_0x10;       // +0x10 image handle array (uint[3])
 
-struct LensFlare { void* _opaque; };  // no offset accesses observed
+    LensFlare(PaintCanvas *canvas);
+    ~LensFlare();
+    void render2D(float srcX, float srcY, float alpha, int colorIndex);
+    void update();
+};
 #endif

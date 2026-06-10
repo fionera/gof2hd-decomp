@@ -36,5 +36,8 @@ struct Achievements {
     uint8_t field_0x21;                 // +0x21
     uint8_t field_0x22;                 // +0x22
     int field_0x24;                     // +0x24
+
+    Achievements();
+    ~Achievements();
 };
 #endif

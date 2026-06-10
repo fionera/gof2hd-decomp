@@ -39,6 +39,9 @@ namespace AEMath {
 using Vector = AbyssEngine::AEMath::Vector;
 using Matrix = AbyssEngine::AEMath::Matrix;
 
+// Local matrix payload (this+0x13c, 0x3c = 60 bytes), returned by value from getLocal().
+struct Mat60 { float m[15]; };
+
 struct TargetFollowCamera {
     unsigned field_0x0;                 // +0x0
     void* field_0x4;                    // +0x4

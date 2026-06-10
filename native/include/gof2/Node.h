@@ -33,7 +33,12 @@ static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 struct Node {
+    Array<Node*>* field_0x0;            // +0x0 children
     Node* field_0x4;                    // +0x4
+    int field_0x8;                      // +0x8
     unsigned int field_0x30;            // +0x30
+
+    Node(int param_1);
+    ~Node();
 };
 #endif

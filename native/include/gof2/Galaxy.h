@@ -19,5 +19,21 @@ static inline uint8_t &UC(void *p, int off) { return *(uint8_t *)((char *)p + of
 static inline uint16_t &US(void *p, int off) { return *(uint16_t *)((char *)p + off); }
 static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
 
-struct Galaxy { void* _opaque; };  // no offset accesses observed
+// Galaxy — owns the per-station visited-flag array (at +0x0) and the SolarSystem* Array (+0x4).
+// Field access is via the B/I/U/P offset-cast helpers above; storage covers offsets 0x0..0x8.
+struct Galaxy {
+    Galaxy();
+
+    void reset();
+    int distancePercent(int x1, int y1, int x2, int y2);
+    void visitStation(int index);
+    int invDistancePercent(int x1, int y1, int x2, int y2);
+    void setVisited(bool *src, int count);
+    int getSystem(int index);
+    void *getPlasmaProbabilities(void *station);
+    void *getAsteroidProbabilities(void *station);
+    int getStation(int index);
+
+    char field_storage[0x8];
+};
 #endif

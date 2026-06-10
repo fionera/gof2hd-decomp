@@ -21,16 +21,34 @@ struct Mission;
 // AbyssEngine::String passed by value is a 12-byte aggregate. In the engine it has
 // a non-trivial copy ctor/dtor, so by-value params are passed by invisible
 // reference (a pointer). Model it opaquely.
+using AbyssEngine::String12;
 
-
-// Field accessor via byte offset.
-
+// Full Mission layout recovered from the per-method disassembly. The four embedded
+// String members (0x10/0x1c/0x40/0x4c) are reached via byte-offset casts, so they are
+// kept as raw 12-byte slots here.
 struct Mission {
-    int field_0xc;                      // +0xc
-    uint8_t field_0x5c;                 // +0x5c
-    int field_0x64;                     // +0x64
-    int field_0x68;                     // +0x68
-    int field_0x6c;                     // +0x6c
-    uint8_t field_0x74;                 // +0x74
+    void* field_0x0;                    // +0x0  vtable ptr
+    int field_0x4;                      // +0x4
+    int field_0x8;                      // +0x8
+    int field_0xc;                      // +0xc  id
+    unsigned char field_0x10[12];       // +0x10 String name
+    unsigned char field_0x1c[12];       // +0x1c String targetName
+    int field_0x28;                     // +0x28
+    int field_0x2c;                     // +0x2c
+    int field_0x30;                     // +0x30
+    int field_0x34;                     // +0x34
+    int field_0x38;                     // +0x38
+    int field_0x3c;                     // +0x3c targetStation
+    unsigned char field_0x40[12];       // +0x40 String targetStationName
+    unsigned char field_0x4c[12];       // +0x4c String targetSystemName
+    int field_0x58;                     // +0x58 reward
+    uint8_t field_0x5c;                 // +0x5c instantAction
+    unsigned char _pad_5d[3];
+    int field_0x60;                     // +0x60 distance
+    int field_0x64;                     // +0x64 campaign
+    int field_0x68;                     // +0x68 production goods a
+    int field_0x6c;                     // +0x6c production goods b
+    int field_0x70;                     // +0x70
+    uint8_t field_0x74;                 // +0x74 visible
 };
 #endif

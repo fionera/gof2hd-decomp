@@ -1,14 +1,27 @@
 #include "gof2/PlayerJumpgate.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/Transform.h"
 
+// Minimal local layouts for engine types accessed through opaque handles in this
+// translation unit. The full AEGeometry / Transform definitions live in their own
+// headers; here we only need the few fields/methods this class touches.
+struct AEGeometry {
+    uint16_t field_0x8;                 // +0x8
+    int32_t  field_0xc;                 // +0xc
+    uint32_t field_0x14;                // +0x14
+    void setPosition();
+};
+
+struct Transform {
+    int64_t field_0x110;                // +0x110 (current animation time)
+    bool    field_0xed;                 // +0xed  (animation running flag)
+    void Update(bool active, int64_t delta, bool enabled);
+};
 
 extern "C" void PlayerStaticFar_dtor(PlayerStaticFar *self);
 extern "C" void *PlayerJumpgate_delete_tail();
-extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, uint32_t handle);
-extern "C" void Transform_SetAnimationState(void *transform, int state, int loop);
+extern "C" Transform *PaintCanvas_TransformGetTransform(void *canvas, uint32_t handle);
+extern "C" void Transform_SetAnimationState(Transform *transform, int state, int loop);
 extern "C" void PaintCanvas_TransformRemoveChild(void *canvas, uint32_t parent, uint32_t child);
-extern "C" void AEGeometry_addChild(void *geometry, uint32_t handle);
+extern "C" void AEGeometry_addChild(AEGeometry *geometry, uint32_t handle);
 extern "C" void KIPlayer_setVisible(PlayerJumpgate *self, bool visible);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void Array_BoundingVolumePtr_ctor(Array<BoundingVolume *> *self);
@@ -30,14 +43,12 @@ __attribute__((visibility("hidden"))) extern void *volatile PaintCanvas_global;
 
 bool PlayerJumpgate::timeToJump()
 {
-    void *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
-                                                        this->field_0x144);
+    Transform *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
+                                                             this->field_0x144);
     return transform->field_0x110 > 1000LL;
 }
 
 // ---- activate_a5118.cpp ----
-__attribute__((visibility("hidden"))) extern void *volatile PaintCanvas_global;
-
 void PlayerJumpgate::activate()
 {
     if (this->field_0x140 != 0) {
@@ -47,10 +58,10 @@ void PlayerJumpgate::activate()
     uint32_t handle = this->field_0x144;
     if (handle != 0xffffffffU) {
         void **canvasOwner = (void **)PaintCanvas_global;
-        void *transform = PaintCanvas_TransformGetTransform(*canvasOwner, handle);
+        Transform *transform = PaintCanvas_TransformGetTransform(*canvasOwner, handle);
         Transform_SetAnimationState(transform, 1, 0);
 
-        void *geometry = this->field_0x8;
+        AEGeometry *geometry = this->field_0x8;
         PaintCanvas_TransformRemoveChild(*canvasOwner, geometry->field_0xc,
                                          geometry->field_0x14);
         AEGeometry_addChild(this->field_0x8, this->field_0x144);
@@ -66,42 +77,31 @@ void PlayerJumpgate::addJumpAnimationHandle(uint32_t handle)
 }
 
 // ---- animationEnded_a5190.cpp ----
-__attribute__((visibility("hidden"))) extern void *volatile PaintCanvas_global;
-
 bool PlayerJumpgate::animationEnded()
 {
     if (this->field_0x140 == 0) {
         return false;
     }
 
-    void *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
-                                                        this->field_0x144);
+    Transform *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
+                                                             this->field_0x144);
     return transform->field_0xed == 0;
 }
 
 // ---- update_a51f0.cpp ----
-__attribute__((visibility("hidden"))) extern void *volatile PaintCanvas_global;
-struct Transform {
-    void Update(bool active, int64_t delta, bool enabled);
-};
-
 void PlayerJumpgate::update(int delta)
 {
     if (this->field_0xf5 != 0) {
-        void *geometry = this->field_0x8;
-        void *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
-                                                            geometry->field_0xc);
+        AEGeometry *geometry = this->field_0x8;
+        Transform *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
+                                                                 geometry->field_0xc);
         bool active = true;
         int64_t wideDelta = delta;
-        ((Transform *)transform)->Update(active, wideDelta, active);
+        transform->Update(active, wideDelta, active);
     }
 }
 
 // ---- setPosition_a51c0.cpp ----
-struct AEGeometry {
-    void setPosition();
-};
-
 void PlayerJumpgate::setPosition(float x, float y, float z)
 {
     this->field_0x124 = (int32_t)x;
@@ -134,7 +134,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
         Array<BoundingVolume *> *volumes =
             (Array<BoundingVolume *> *)operator_new(0xc);
         Array_BoundingVolumePtr_ctor(volumes);
-        F<Array<BoundingVolume *> *>(this, 0x130) = volumes;
+        this->field_0x130 = volumes;
         ArraySetLength_BoundingVolumePtr(1, volumes);
 
         void **statusOwner = (void **)g_Status;
@@ -153,10 +153,10 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
 
         BoundingSphere *sphere = (BoundingSphere *)operator_new(0x48);
         BoundingSphere_ctor(sphere, x, y, z, 0.0f, 0.0f, 0.0f, (float)radius);
-        F<Array<BoundingVolume *> *>(this, 0x130)->data[0] = (BoundingVolume *)sphere;
+        (*this->field_0x130)[0] = (BoundingVolume *)sphere;
     }
 
-    VF<uint32_t>(this, 0x144) = 0xffffffffU;
-    VF<uint8_t>(this, 0x140) = 0;
+    this->field_0x144 = 0xffffffffU;
+    this->field_0x140 = 0;
     AEGeometry_setRotation(this->field_0x8, 0.0f, 3.1415927f, 0.0f);
 }

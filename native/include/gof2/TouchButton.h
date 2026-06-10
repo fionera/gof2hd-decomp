@@ -9,9 +9,6 @@
 
 struct TouchButton;    // opaque; we only ever take a TouchButton* and offset-cast.
 
-// Other game types referenced by pointer only — keep opaque.
-struct String;
-
 // ---- tiny offset-cast helpers -------------------------------------------------
 static inline char*           B (void* p, int off) { return (char*)p + off; }
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }

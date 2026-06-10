@@ -1,56 +1,79 @@
 #ifndef GOF2_BLURSHADER_H
 #define GOF2_BLURSHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-namespace AbyssEngine {
+#include "gof2/Mesh.h"
+#include <new>
+// Galaxy on Fire 2 -- AbyssEngine::BlurShader (Android libgof2hdaa.so, armv7 Thumb).
+// GLES2 radial/box blur post-process shader. Derives from ShaderBaseStruct: program handle at
+// 0x24, attribute/uniform locations at 0x28..0x50, tuning floats at 0x58/0x5c, dirty flag at 0x9.
+//
+// NOTE: this TU does NOT include gof2/Engine.h (that header does not compile standalone). Engine is
+// only touched through a handful of fields here, so we complete the global forward declaration from
+// gof2/fwd.h with a minimal, layout-faithful Engine view covering exactly those fields.
 
-struct Engine;
-struct FBOContainer;
-struct Mesh;
-struct ShaderBaseStruct;
-
-
-
-namespace AEMath {
-
-
-
-} // namespace AEMath
-
-
-
-} // namespace AbyssEngine
-
-using BlurShader = AbyssEngine::BlurShader;
-using Engine = AbyssEngine::Engine;
-using FBOContainer = AbyssEngine::FBOContainer;
-using Mesh = AbyssEngine::Mesh;
-using ShaderBaseStruct = AbyssEngine::ShaderBaseStruct;
-using String = AbyssEngine::String;
-using Vector = AbyssEngine::AEMath::Vector;
-
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
+#pragma pack(push, 1)
+struct Engine {
+    char     pad_0x0[0x30];
+    char**   field_0x30;                // +0x30  module table (*field_0x30 + 0x30 = orientation)
+    char     pad_0x38[0x380 - 0x38];
+    char*    field_0x380;               // +0x380 active vertex/texcoord buffer base
+    float    field_0x384;               // +0x384 viewport scale x
+    char     pad_0x388[0x398 - 0x388];
+    float    field_0x398;               // +0x398 viewport scale y
+    char     pad_0x39c[0x3ac - 0x39c];
+    uint32_t field_0x3ac;               // +0x3ac
+    char     pad_0x3b0[0x3b4 - 0x3b0];
+    uint32_t field_0x3b4;               // +0x3b4
+    uint32_t field_0x3b8;               // +0x3b8
+    char     pad_0x3bc[0x3c0 - 0x3bc];
+    uint32_t field_0x3c0;               // +0x3c0
+    char     pad_0x3c4[0x40c - 0x3c4];
+    uint32_t field_0x40c;               // +0x40c framebuffer object handle
+};
+#pragma pack(pop)
 
 static inline uint32_t stack_guard_delta(uint32_t saved, uint32_t current)
 {
     return current - saved;
 }
 
+namespace AbyssEngine {
+
+// AbyssEngine::BlurShader — derives from ShaderBaseStruct (shared shader storage layout).
+// Engine/Mesh/FBOContainer are the global (gof2/fwd.h + gof2/Mesh.h) types; qualified with :: so
+// name lookup does not resolve them to the AbyssEngine-namespace forward declarations.
 struct BlurShader {
-    uint8_t field_0x9;                  // +0x9
-    unsigned int field_0x24;            // +0x24
-    int field_0x28;                     // +0x28
-    int field_0x2c;                     // +0x2c
-    int field_0x30;                     // +0x30
-    int field_0x34;                     // +0x34
-    int field_0x38;                     // +0x38
-    int field_0x3c;                     // +0x3c
-    int field_0x40;                     // +0x40
-    int field_0x44;                     // +0x44
-    unsigned int field_0x48;            // +0x48
-    unsigned int field_0x50;            // +0x50
-    float field_0x58;                   // +0x58
-    float field_0x5c;                   // +0x5c
+    void Init(::Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(::Mesh *mesh, ::Engine *engine);
+    void RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::Engine *engine,
+                      float amount, Vector vector);
+    BlurShader();
+    ~BlurShader();
+
+    char     pad_0x0[0x9];
+    uint8_t  field_0x9;                 // +0x9  dirty flag
+    char     pad_0xa[0x24 - 0xa];
+    unsigned int field_0x24;            // +0x24 program handle
+    int      field_0x28;                // +0x28 a_position
+    int      field_0x2c;                // +0x2c u_mvpMatrix
+    int      field_0x30;                // +0x30 a_texCoord
+    int      field_0x34;                // +0x34 s_texture
+    int      field_0x38;                // +0x38 u_texelSize
+    int      field_0x3c;                // +0x3c u_blurAmount
+    int      field_0x40;                // +0x40 u_strength
+    int      field_0x44;                // +0x44 u_center
+    unsigned int field_0x48;            // +0x48 vertex attrib slot
+    char     pad_0x4c[0x50 - 0x4c];
+    unsigned int field_0x50;            // +0x50 texcoord attrib slot
+    char     pad_0x54[0x58 - 0x54];
+    float    field_0x58;                // +0x58 strength
+    float    field_0x5c;                // +0x5c blur scale
 };
+
+} // namespace AbyssEngine
+
+extern "C" void *__stack_chk_guard;
+extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
+
 #endif

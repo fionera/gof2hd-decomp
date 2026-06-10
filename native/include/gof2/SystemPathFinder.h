@@ -7,7 +7,9 @@ struct Status;
 struct SystemPathFinder;
 
 struct Node {
-    char opaque[12];
+    Array<Node *> *field_0x0;   // +0x00  children / outgoing edges
+    Node *field_0x4;            // +0x04  parent link (path back-pointer)
+    int field_0x8;              // +0x08  system index value
     Node(int index);
 };
 
@@ -36,5 +38,12 @@ struct Status {
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
     g_SystemPathFinder_status;
 
-struct SystemPathFinder { void* _opaque; };  // no offset accesses observed
+struct SystemPathFinder {
+    void *_opaque;  // no offset accesses observed
+    int contains(Array<Node *> *nodes, Node *node);
+    Array<Node *> *search(Node *start, Node *goal);
+    int getJumpDistance(Array<SolarSystem *> *systems, int from, int to);
+    Array<Node *> *constructPath(Node *node);
+    Array<int> *getSystemPath(Array<SolarSystem *> *systems, int from, int to);
+};
 #endif

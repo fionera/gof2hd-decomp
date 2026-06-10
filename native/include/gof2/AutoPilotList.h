@@ -37,10 +37,13 @@ struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 // Field accessor via byte offset.
 
 struct AutoPilotList {
-    int field_0x0;                      // +0x0
-    int field_0x4;                      // +0x4
-    int field_0x8;                      // +0x8
-    int field_0xc;                      // +0xc
-    void* field_0x10;                   // +0x10
+    int field_0x0;                      // +0x0  selected index
+    int field_0x4;                      // +0x4  x
+    int field_0x8;                      // +0x8  y
+    int field_0xc;                      // +0xc  width
+    void* field_0x10;                   // +0x10 Array<String*>* entries
+    int field_0x14;                     // +0x14 count
+
+    void draw();
 };
 #endif

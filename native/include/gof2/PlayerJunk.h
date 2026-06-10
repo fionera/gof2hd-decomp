@@ -16,26 +16,16 @@
 struct Player;
 struct AEGeometry;
 
-
-
-// AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.
-namespace AbyssEngine { namespace AEMath {
-
-} }
-typedef AbyssEngine::AEMath::Vector Vector;
-
-void *operator new(__SIZE_TYPE__);
-
-// Field accessor via byte offset.
-
+// PlayerJunk is a KIPlayer subclass; we model only the fields the methods touch.
+// Field offsets are recovered per-method from the target; this is not a full layout.
 struct PlayerJunk {
-    Player* field_0x4;                  // +0x4
-    uint8_t field_0x4c;                 // +0x4c
-    void* field_0x50;                   // +0x50
-    void* field_0x54;                   // +0x54
-    V3 field_0x58;                      // +0x58
-    void* field_0x78;                   // +0x78
-    int field_0x88;                     // +0x88
-    int field_0x124;                    // +0x124
+    Player* field_0x4;                  // +0x4   player/owner this junk targets
+    uint8_t field_0x4c;                 // +0x4c  "dropped a crate" flag
+    Array<int>* field_0x50;             // +0x50  crate contents (item id + amount)
+    void* field_0x54;                   // +0x54  Level owner
+    Vector field_0x58;                  // +0x58  emit position (3 floats)
+    void* field_0x78;                   // +0x78  AEGeometry
+    int field_0x88;                     // +0x88  state machine
+    int field_0x124;                    // +0x124 last update tick
 };
 #endif

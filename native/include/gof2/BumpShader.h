@@ -2,29 +2,16 @@
 #define GOF2_BUMPSHADER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+#include <new>
+
 namespace AbyssEngine {
 
 struct Engine;
 struct Mesh;
 
-
-
-
-
-namespace AEMath {
-struct Vector;
-}
-
-} // namespace AbyssEngine
-
-using Engine = AbyssEngine::Engine;
-using Mesh = AbyssEngine::Mesh;
-using String = AbyssEngine::String;
-using BumpShader = AbyssEngine::BumpShader;
-using Vector = AbyssEngine::AEMath::Vector;
-
-static_assert(sizeof(String) == 0xc, "String layout");
-
+// Per-class backing storage accessor helpers. The BumpShader fields live at fixed byte
+// offsets (program handle at 0x4, dirty flag byte at 0x9, name String at 0xc, attribute/
+// uniform locations 0x20..0x80) and are read/written through these helpers.
 static inline int &i32(void *self, uint32_t offset)
 {
     return *(int *)((char *)self + offset);
@@ -40,8 +27,20 @@ static inline float &f32(void *self, uint32_t offset)
     return *(float *)((char *)self + offset);
 }
 
+// AbyssEngine::BumpShader — GLES2 bump-mapping shader (derives from ShaderBaseStruct).
+struct BumpShader {
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    BumpShader();
+
+    // raw field storage (offsets referenced through the i32/u8/f32 helpers above)
+    char field_storage[0x84];
+};
+
+} // namespace AbyssEngine
+
 extern "C" {
-extern void *__stack_chk_guard;
 extern char BumpShader_vtable[];
 extern int BumpShader_typeInfoSource;
 extern int BumpShader_typeInfoDest;
@@ -75,14 +74,6 @@ void String_dtor(String *self);
 float *Vector_cast_to_float(Vector *self);
 
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
-namespace AbyssEngine {
-inline String::String(const char *text, bool copy) { String_ctor_char(this, text, copy); }
-inline String::~String() { String_dtor(this); }
-inline void String::operator=(const String &other) { String_assign(this, &other); }
-} // namespace AbyssEngine
-
-struct BumpShader { void* _opaque; };  // no offset accesses observed
 #endif

@@ -36,7 +36,11 @@ static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((ch
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 struct GameText {
-    void* field_0x4;                    // +0x4
-    void* field_0xc;                    // +0xc
+    uint32_t field_0x0;                 // +0x0  substitute Array<int> size
+    void* field_0x4;                    // +0x4  substitute Array<int> data
+    uint32_t field_0x8;                 // +0x8  substitute Array<int> cap
+    void* field_0xc;                    // +0xc  String** text table
+    unsigned char field_0x10[12];       // +0x10 fallback / region String (12 bytes)
+    int field_0x1c;                     // +0x1c text table count
 };
 #endif

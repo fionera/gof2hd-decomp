@@ -14,7 +14,6 @@ struct PaintCanvas;
 struct PlayerEgo;
 struct Radio;
 struct RadioMessage;
-struct Vector;
 struct Wanted;
 
 
@@ -26,14 +25,39 @@ using AbyssEngine::String;
 
 
 
+#include <new>
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 extern "C" void *operator_new__(uint32_t size);
+
+// Generic byte-offset field accessor (read or write) used by the recovered code.
+template <class T> static inline T &F(void *p, uint32_t off) { return *(T *)((char *)p + off); }
+
+// String factory helpers (the shared common.h String exposes no engine ctors).
+static inline String RadioStringCopy(const String &src) { String r; r.s = src.s; return r; }
+static inline String RadioStringFromCstr(const char *c) {
+    String r;
+    for (const char *p = c; p && *p; ++p) r.s.push_back((char16_t)(unsigned char)*p);
+    return r;
+}
 extern "C" void operator_delete(void *ptr);
 extern "C" void operator_delete__(void *ptr);
 
 
+
+// Minimal Layout view with the byte offsets Radio reads (full Layout lives in Layout.h,
+// which is not part of this batch and is not layout-compatible with common.h's placement-new).
+struct Layout {
+    uint8_t field_0x0;                  // +0x0
+    int field_0x4;                      // +0x4
+    int field_0x8;                      // +0x8
+    unsigned char _pad_c[0x98 - 0xc];
+    int field_0x98;                     // +0x98
+    int field_0x9c;                     // +0x9c
+    unsigned char _pad_a0[0x2d4 - 0xa0];
+    int field_0x2d4;                    // +0x2d4
+    int field_0x2d8;                    // +0x2d8
+};
 
 struct RadioMessage {
     void setRadio(Radio *radio) noexcept;
@@ -54,10 +78,6 @@ struct GameText {
 
 struct PaintCanvas {
     void SetColor(uint32_t color) noexcept;
-};
-
-struct Layout {
-    void setDrawColor(int color) noexcept;
 };
 
 struct ImageFactory {
@@ -105,5 +125,14 @@ struct Radio {
     int field_0x38;                     // +0x38
     int field_0x3c;                     // +0x3c
     int field_0x40;                     // +0x40
+
+    Radio();
+    ~Radio();
+    bool isShowingMessage();
+    uint8_t lastMessageShown();
+    RadioMessage *getMessage(int index);
+    void setMessages(Array<RadioMessage *> *messages);
+    void update(long time, PlayerEgo *ego, LevelScript *script);
+    void draw(int64_t time, PlayerEgo *ego, LevelScript *script);
 };
 #endif

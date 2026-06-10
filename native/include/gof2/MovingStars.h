@@ -8,11 +8,7 @@
 // Field offsets recovered per-method from the target disasm; accessed via byte-offset casts.
 
 
-void *operator new(__SIZE_TYPE__ size);
-void *operator new[](__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-void operator delete[](void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *p) noexcept { return p; }
+#include <new>
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -40,8 +36,25 @@ static inline uint16_t &u16(void *self, uint32_t off) { return *(uint16_t *)((ch
 static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
+// MovingStars — animated starfield rendered through PaintCanvas billboards/transforms.
+// Top-level class (not in AbyssEngine namespace). Field offsets are recovered from disasm;
+// the four parallel arrays at 0x0/0x4/0xc/0x10 plus the texture handle (0x8) keep named fields,
+// remaining scratch is reached through the i32/u32/u8/u16 helpers above.
 struct MovingStars {
-    uint32_t* field_0x4;                // +0x4
-    uint32_t field_0x8;                 // +0x8
+    void *field_0x0;                    // +0x0  billboard ids array
+    uint32_t *field_0x4;                // +0x4  transform handles array
+    uint32_t field_0x8;                 // +0x8  texture handle
+    void *field_0xc;                    // +0xc  life array
+    void *field_0x10;                   // +0x10 velocity array
+    uint16_t field_0x14;                // +0x14 anim flags
+    char field_0x16[2];                 // +0x16 padding
+    uint32_t field_0x18;                // +0x18 tick accumulator
+    char field_0x1c[4];                 // +0x1c
+
+    MovingStars();
+    ~MovingStars();
+    void update(const AbyssEngine::AEMath::Matrix &m, bool flag, float param19);
+    void translate(const AbyssEngine::AEMath::Vector &v);
+    void render();
 };
 #endif

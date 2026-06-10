@@ -1,10 +1,16 @@
 #ifndef GOF2_TEXTUREVTXCOLORSHADER_H
 #define GOF2_TEXTUREVTXCOLORSHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+// AbyssEngine::TextureVtxColorShader (Android libgof2hdaa.so, armv7 Thumb).
+// Real named struct recovered from the byte-offset field map.
+//
+// The shader keeps two GL programs: a normal program (index 0) and a fog
+// program (index 1). Every uniform / attribute location is therefore stored
+// as a two-element array indexed by the active program. In the original
+// disassembly these pairs were reached via `(char*)this + index*4 + 0xNN`,
+// i.e. an int[2] at an 8-byte stride starting at offset 0x24.
+
+#include <new>
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -25,15 +31,28 @@ extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);
 extern "C" void glVertexAttribPointer(
     uint32_t index, int size, uint32_t type, uint8_t normalized, int stride, const void *pointer);
 
+struct Mesh;  // defined in gof2/Mesh.h at global scope
+
 namespace AbyssEngine {
 
 struct Engine {
     static bool fogEnabled;
+    // Engine fields referenced by the shader, accessed at byte offsets in the
+    // original code. Only the offsets actually read here are named.
+    char         field_0x00[0xd0];
+    float        glColor[4];          // +0xd0
+    char         field_0xe0[0x24];
+    float        worldMatrix[16];     // +0x104
+    char         field_0x144[0x80];
+    float        uvMatrix[16];        // +0x1c4
+    char         field_0x204[0x148];
+    float        eyePosModelX;        // +0x34c
+    float        eyePosModelY;        // +0x350
+    float        eyePosModelZ;        // +0x354
+    char         field_0x358[0x98];
+    float        eyePosModel[3];      // +0x3f0
+    char         field_0x3fc_pad[0x0];
 };
-
-struct Mesh;
-
-
 
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
@@ -44,35 +63,39 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
 
-namespace AEMath {
+struct TextureVtxColorShader {
+    void    *vtable;                  // +0x00
+    int      program;                 // +0x04
+    uint8_t  field_0x08;              // +0x08
+    uint8_t  needsUniformUpdate;      // +0x09
+    uint16_t field_0x0a;              // +0x0a
+    String   shaderName;              // +0x0c
+    int      fogProgram;              // +0x20
+    // Uniform / attribute locations, indexed by program (0 = normal, 1 = fog).
+    int      loc_a_position[2];       // +0x24
+    int      loc_a_texCoord[2];       // +0x2c
+    int      loc_a_VertexColor[2];    // +0x34
+    int      loc_u_WorldMatrix[2];    // +0x3c
+    int      loc_glColor[2];          // +0x44
+    int      loc_s_texture[2];        // +0x4c
+    int      loc_u_UVAnimation[2];    // +0x54
+    int      loc_u_UvMatrix[2];       // +0x5c
+    int      loc_u_fogColor[2];       // +0x64
+    int      loc_u_fogMaxDist[2];     // +0x6c
+    int      loc_u_fogMinDist[2];     // +0x74
+    int      loc_u_EnableFog[2];      // +0x7c
+    int      loc_u_eyeposmodel[2];    // +0x84
+    int      loc_u_DarkenValue[2];    // +0x8c
 
+    static int ShaderIndex;
 
-
-} // namespace AEMath
-
-
-
-static inline int &field_i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
-
-static inline uint8_t &field_u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
-
-static inline float &field_f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
-
-static inline void *field_ptr(void *self, uint32_t offset)
-{
-    return *(void **)((char *)self + offset);
-}
+    void Init(Engine *engine);
+    void SetInActive();
+    void ConnectShaderComponents(uint32_t program, int index);
+    void UseShader(bool);
+    void UpdateMeshData(::Mesh *mesh, Engine *engine);
+};
 
 } // namespace AbyssEngine
 
-struct TextureVtxColorShader { void* _opaque; };  // no offset accesses observed
 #endif

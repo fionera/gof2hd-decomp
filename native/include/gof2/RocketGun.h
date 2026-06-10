@@ -23,10 +23,23 @@ typedef AbyssEngine::AEMath::Matrix Matrix;
 
 typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 
+// Typed byte-offset accessors retained ONLY for opaque cross-class pointers reached through
+// engine helpers (AEGeometry / ParticleSystemManager / Player internals) whose owning structs
+// are outside this translation unit. Named-field access is used everywhere the type is known.
+template <class T> static inline T &F(void *p, uint32_t off) { return *(T *)((char *)p + off); }
+template <class T> static inline T &G(void *p, uint32_t off) { return *(T *)((char *)p + off); }
+
 struct RocketGun {
+    void render();
+    RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
+              uint32_t param_5, int param_6, bool param_7, Level *param_8);
+    void setRadar(Radar *radar);
+    void seekEnemy(int unused, int index);
+    void update(int elapsed);
+
     int field_0x4;                      // +0x4
-    void* field_0x8;                    // +0x8
-    void* field_0xc;                    // +0xc
+    Gun* field_0x8;                     // +0x8  (owning gun)
+    void* field_0xc;                    // +0xc  (Level*, used opaquely)
     uint32_t field_0x10;                // +0x10
     void* field_0x18;                   // +0x18
     uint8_t field_0x1c;                 // +0x1c

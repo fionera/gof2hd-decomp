@@ -66,5 +66,21 @@ struct IParticleSystem {
     PaintCanvas* field_0x8;             // +0x8
     Matrix const* field_0x18;           // +0x18
     void* field_0x3c;                   // +0x3c
+
+    IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
+                    bool mirror, bool alphaFade);
+    ~IParticleSystem();
+    void setParticleSet(int set);
+    void setParticleSetIndex(uint8_t index);
+    void setMatrix(Matrix const *matrix);
+    void enableEmit(bool enabled);
+    void enableRender(bool enabled);
+    void update(int delta);
+    void emit(int delta);
+    void emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime);
+    void interpolateColor(int index, float *alpha, float *red, float *green, float *blue);
+    float *rotateUVs(float *src, int seed, float *dst);
+    void calcEmitterVelocity(int delta);
+    void resetEmitterVelocity();
 };
 #endif

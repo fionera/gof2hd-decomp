@@ -1,8 +1,9 @@
 #include "gof2/PaintCanvas.h"
-#include "gof2/Engine.h"
-#include "gof2/Mesh.h"
-#include "gof2/Node.h"
-#include "gof2/String.h"
+// NOTE: Engine.h / Mesh.h / Node.h / String.h are intentionally NOT included.
+// PaintCanvas.h is a self-contained translation unit that models the few
+// cross-class shapes (Mesh/Transform/Node/Engine/String) it actually touches;
+// pulling the real per-class headers in here causes redefinition/ambiguity
+// conflicts because each was generated to be the only class in its TU.
 
 
 extern "C" void paintcanvas_ext_has_vibration(void *);
@@ -113,7 +114,6 @@ extern "C" int paintcanvas_ext_init_dispheight(void *eng);
 extern "C" float paintcanvas_ext_init_signedtofloat(int v, unsigned int mode);
 extern "C" void paintcanvas_ext_init_setpersp(void *self, float a, float b, float c);
 extern "C" void paintcanvas_ext_draw_mesh(void *, void *);
-extern "C" int paintcanvas_ext_transform_tricount(void *, void *);
 extern "C" unsigned int __aeabi_uidiv(unsigned int, unsigned int);
 extern "C" int paintcanvas_ext_font_get_yoff(void *);
 extern "C" int paintcanvas_ext_spm_dispwidth(void *eng);
@@ -502,12 +502,12 @@ void DrawTextLines(AbyssEngine::PaintCanvas *self, unsigned int font,
                    AbyssEngine::Array<void *> *arr, int x, int y, bool center)
 {
     int xoff = 0;
-    for (unsigned int i = 0; i < arr->size; i++) {
+    for (unsigned int i = 0; i < arr->size(); i++) {
         if (center) {
-            int w = paintcanvas_ext_dtl_textwidth(self, font, arr->data[i]);
+            int w = paintcanvas_ext_dtl_textwidth(self, font, arr->data()[i]);
             xoff = -(w >> 1);
         }
-        paintcanvas_ext_dtl_drawstring(self, font, arr->data[i], xoff + x, y, false);
+        paintcanvas_ext_dtl_drawstring(self, font, arr->data()[i], xoff + x, y, false);
         y += paintcanvas_ext_dtl_textheight(self, font);
     }
 }
@@ -724,12 +724,12 @@ void DrawTextLines(AbyssEngine::PaintCanvas *self, unsigned int font,
                    AbyssEngine::Array<void *> *arr, int x, int y, unsigned int p5, bool flag)
 {
     int xoff = 0;
-    for (unsigned int i = 0; i < arr->size; i++) {
+    for (unsigned int i = 0; i < arr->size(); i++) {
         if (flag == 0) {
-            int w = paintcanvas_ext_dtl_textwidth(self, font, arr->data[i]);
+            int w = paintcanvas_ext_dtl_textwidth(self, font, arr->data()[i]);
             xoff = (int)p5 - w;
         }
-        paintcanvas_ext_dtl_drawstring(self, font, arr->data[i], xoff + x, y, false);
+        paintcanvas_ext_dtl_drawstring(self, font, arr->data()[i], xoff + x, y, false);
         y += paintcanvas_ext_dtl_textheight(self, font);
     }
 }

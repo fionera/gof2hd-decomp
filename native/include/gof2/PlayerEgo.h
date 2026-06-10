@@ -9,13 +9,7 @@
 struct PlayerEgo;          // opaque; we only ever take a PlayerEgo* and offset-cast.
 
 // Other game types referenced by pointer only — keep opaque.
-struct Player;
-struct Ship;
-struct Item;
-struct Route;
-struct HUD;
-struct Camera;
-struct Vector;
+// (Player/Ship/etc. forward-declared in fwd.h via common.h; Vector comes from math.h.)
 
 // ---- tiny offset-cast helpers -------------------------------------------------
 static inline char*           B(void* p, int off) { return (char*)p + off; }
@@ -40,5 +34,9 @@ struct PlayerEgo {
     unsigned short field_0x388;         // +0x388
     unsigned short field_0x38c;         // +0x38c
     unsigned short field_0x390;         // +0x390
+
+    // Real C++ ctor/dtor so the demangled symbols match the binary.
+    PlayerEgo(Player* player);
+    ~PlayerEgo() noexcept(false);
 };
 #endif

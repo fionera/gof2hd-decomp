@@ -7,7 +7,7 @@ struct Item;
 struct BluePrint;
 struct PendingProduct;
 struct ListItem;
-struct String;
+// String comes from gof2/common.h (AbyssEngine::String); do NOT redeclare it here.
 struct GameText;
 struct Status;
 struct Station;
@@ -81,9 +81,27 @@ extern "C" Status *g_HangarList_status;
 extern "C" GameText **g_HangarList_gameText;
 extern "C" Array<Item *> *g_HangarList_items;
 
+// The hangar/shop/blueprint list model. field_0x0 holds an Array of per-tab Arrays of ListItem*;
+// field_0x4 is the currently selected tab index; field_0x8 caches the current ListItem*.
 struct HangarList {
-    void* field_0x0;                    // +0x0
-    uint32_t field_0x4;                 // +0x4
-    void* field_0x8;                    // +0x8
+    Array<Array<ListItem *> *>* field_0x0;  // +0x0  per-tab item lists
+    uint32_t                    field_0x4;  // +0x4  current tab index
+    ListItem*                   field_0x8;  // +0x8  current item
+
+    HangarList();
+    ~HangarList();
+
+    void release();
+    uint32_t getCurrentLength();
+    Array<ListItem *> *getCurrentTabItems();
+    ListItem *getCurrentItem();
+    ListItem *getCurrentItemAt(int index);
+    void initBlueprintTab(Array<BluePrint *> *blueprints);
+    void fillIngredientsList(BluePrint *blueprint, bool flag);
+    void fillBuyList(ListItem *item);
+    void initShipTab(Ship *ship);
+    void initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships);
+    int  init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
+              Array<BluePrint *> *blueprints);
 };
 #endif

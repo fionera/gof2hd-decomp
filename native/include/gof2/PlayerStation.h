@@ -13,7 +13,6 @@ using Vector = AbyssEngine::AEMath::Vector;
 struct Station;
 struct AEGeometry;
 struct BoundingVolume;
-struct Array;
 struct FileRead;
 struct PaintCanvas;
 struct Transform;
@@ -58,5 +57,20 @@ struct PlayerStation {
     int32_t field_0x168;                // +0x168
     int32_t field_0x16c;                // +0x16c
     int32_t field_0x170;                // +0x170
+
+    PlayerStation(Station *station);
+    ~PlayerStation() noexcept(false);
+    void setVisible(bool visible);
+    void setPosition(const Vector &position);
+    Vector projectCollisionOnSurface(const Vector &position);
+    void *getRoot();
+    Vector getProjectionVector(const Vector &position);
+    void render();
+    void outerCollide(const Vector &position);
+    bool outerCollide(float x, float y, float z);
+    Vector getPosition();
+    bool collide(float x, float y, float z);
+    void update(int delta);
+    void translate(float x, float y, float z);
 };
 #endif

@@ -28,5 +28,9 @@ void AEString_dtor(void *self);
 uint32_t AEString_GetStringLength(const char *s);
 }
 
-struct GameRecord { void* _opaque; };  // no offset accesses observed
+struct GameRecord {
+    void* _opaque;  // raw byte-offset access throughout (coverage-mode translation)
+    GameRecord();
+    ~GameRecord();
+};
 #endif

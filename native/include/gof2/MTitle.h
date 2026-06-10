@@ -1,22 +1,24 @@
 #ifndef GOF2_MTITLE_H
 #define GOF2_MTITLE_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// MTitle — top-level class (NO namespace). Byte-exact decomp scaffold.
-// We do NOT model the full layout; fields are accessed by byte offset taken
-// from each work-item's target disasm.
+// MTitle — title screen. Top-level class (NO namespace).
+// Fields recovered from per-method byte-offset access; named field_0xNN.
 
+struct MTitle {
+    void* field_0x0;                    // +0x0   vtable pointer
+    void* field_0x4;                    // +0x4   PaintCanvas
+    void* field_0x8;                    // +0x8   ApplicationManager
+    int field_0xc;                      // +0xc   render priority (=100)
+    uint32_t field_0x10;                // +0x10  image handle
+    uint32_t field_0x14;                // +0x14  image handle
+    int field_0x18;                     // +0x18  step
+    int field_0x1c;                     // +0x1c  timer accumulator
 
-
-
-// ---- tiny offset-cast helpers -------------------------------------------------
-static inline char *B(void *p, int off) { return (char *)p + off; }
-static inline int &I(void *p, int off) { return *(int *)((char *)p + off); }
-static inline uint32_t &U(void *p, int off) { return *(uint32_t *)((char *)p + off); }
-static inline float &F(void *p, int off) { return *(float *)((char *)p + off); }
-static inline uint8_t &UC(void *p, int off) { return *(uint8_t *)((char *)p + off); }
-static inline uint16_t &US(void *p, int off) { return *(uint16_t *)((char *)p + off); }
-static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
-
-struct MTitle { void* _opaque; };  // no offset accesses observed
+    MTitle();
+    void OnRelease();
+    void OnRender2D();
+    void OnRender3D();
+    void OnTouchEnd(int x, int y);
+    int OnInitialize();
+};
 #endif

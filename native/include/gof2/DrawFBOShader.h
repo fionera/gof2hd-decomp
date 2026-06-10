@@ -35,7 +35,22 @@ struct ShaderBaseStruct {
     static int32_t shaderIndexIntern;
 };
 
+// AbyssEngine::DrawFBOShader — GLES2 full-screen FBO blit shader (derives from ShaderBaseStruct).
+// Fields (program handle at 0x4, dirty byte at 0x9, attribute/uniform locations 0x48..0x54)
+// are accessed through raw byte casts; storage covers offsets 0x00..0x54.
+struct DrawFBOShader : ShaderBaseStruct {
+    static int32_t ShaderIndex;
 
+    DrawFBOShader();
+    ~DrawFBOShader();
+
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void RenderEffect(FBOContainer *fbo, Engine *engine);
+
+    char field_storage[0x58];
+};
 
 } // namespace AbyssEngine
 
@@ -60,5 +75,4 @@ extern "C" void glDepthMask(uint8_t flag);
 extern "C" void glActiveTexture(uint32_t texture);
 extern "C" void glClear(uint32_t mask);
 
-struct DrawFBOShader { void* _opaque; };  // no offset accesses observed
 #endif

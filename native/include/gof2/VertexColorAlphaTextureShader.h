@@ -2,9 +2,9 @@
 #define GOF2_VERTEXCOLORALPHATEXTURESHADER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
+#include <new>
+
 void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -31,8 +31,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -42,31 +40,43 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
 
+extern "C" void String_ctor_char(String *self, const char *text, bool copy);
+extern "C" void String_assign(String *self, const String *other);
+extern "C" void String_dtor(String *self);
 
+// AbyssEngine::VertexColorAlphaTextureShader — GLES2 shader with per-vertex color +
+// alpha (derives from ShaderBaseStruct). Holds the program handle, six vertex
+// attribute locations and nine uniform locations.
+struct VertexColorAlphaTextureShader {
+    void *field_0x0;     // vtable
+    int field_0x4;       // program handle
+    uint8_t field_0x8;
+    uint8_t field_0x9;   // dirty flag
+    uint8_t field_0xa;
+    uint8_t field_0xb;
+    String field_0xc;    // name
+    int field_0x20;      // attrib a1
+    int field_0x24;      // attrib a2
+    int field_0x28;      // attrib a3
+    int field_0x2c;      // attrib a4
+    int field_0x30;      // attrib a5
+    int field_0x34;      // attrib a0
+    int field_0x38;      // uniform u0
+    int field_0x3c;      // uniform u1
+    int field_0x40;      // uniform u2
+    int field_0x44;      // uniform u3
+    int field_0x48;      // uniform u4
+    int field_0x4c;      // uniform u5
+    int field_0x50;      // uniform u6
+    int field_0x54;      // uniform u7
+    int field_0x58;      // uniform u8
 
-static inline int &field_i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
-
-static inline uint8_t &field_u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
-
-static inline float &field_f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
-
-static inline void *field_ptr(void *self, uint32_t offset)
-{
-    return *(void **)((char *)self + offset);
-}
+    void Init(Engine *engine);
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void SetInActive();
+    VertexColorAlphaTextureShader();
+};
 
 } // namespace AbyssEngine
 
-struct VertexColorAlphaTextureShader {
-    String field_0xc;                   // +0xc
-};
 #endif

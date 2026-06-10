@@ -2,9 +2,7 @@
 #define GOF2_TEXTURECONFERENCE_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -62,11 +60,23 @@ static inline void *field_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
+// AbyssEngine::TextureConference — GLES2 scrolling-texture shader (derives from ShaderBaseStruct).
+// Most members are accessed through the field_i32/field_u8/field_ptr helpers above; only the
+// byte-match-recovered animation accumulator at +0x38 keeps a named field.
+struct TextureConference : ShaderBaseStruct {
+    static int ShaderIndex;
+
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void Init(Engine *engine);
+
+    // raw field storage up to the named animation accumulator at +0x38.
+    char field_storage[0x38];
+    long long field_0x38;               // +0x38
+};
+
 } // namespace AbyssEngine
 
 extern "C" char _ZTVN11AbyssEngine17TextureConferenceE[];
 
-struct TextureConference {
-    long long field_0x38;               // +0x38
-};
 #endif

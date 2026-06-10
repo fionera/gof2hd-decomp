@@ -16,7 +16,6 @@ struct Route;
 struct SolarSystem;
 struct StarSystem;
 struct Station;
-struct Vector;
 
 
 
@@ -28,5 +27,21 @@ static inline uint8_t &UC(void *self, int offset) { return *(uint8_t *)((char *)
 static inline uint16_t &US(void *self, int offset) { return *(uint16_t *)((char *)self + offset); }
 static inline void *&P(void *self, int offset) { return *(void **)((char *)self + offset); }
 
-struct LevelScript { void* _opaque; };  // no offset accesses observed
+struct LevelScript {
+    void* _opaque;  // offset-accessed via the B/I/U/F/UC/US/P helpers
+
+    LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamera *camera);
+    ~LevelScript();
+    void render3D();
+    uint8_t startSequenceOver();
+    void resetCamera(Level *level);
+    void skipSequence();
+    uint8_t startSequence();
+    void setAutoPilotToProgrammedStation();
+    uint32_t canSkipCutsceneNow();
+    void resetStartSequenceOver();
+    void skipCutscene();
+    void process(int delta);
+    void lookBehind();
+};
 #endif

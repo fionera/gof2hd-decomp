@@ -28,5 +28,16 @@ struct TouchSlider {
     uint8_t field_0x34;                 // +0x34
     uint8_t field_0x35;                 // +0x35
     int field_0x38;                     // +0x38
+
+    TouchSlider(int param_1, int param_2, int param_3, float param_4);
+    void setPosition(int param_1, int param_2);
+    int OnTouchBegin(int param_1, int param_2);
+    int OnTouchEnd(int param_1, int param_2);
+    bool OnTouchMove(int param_1, int param_2);
+    void draw();
+    float getValue();
+    void setValue(float param_1);
+    void setHalfTransparent(bool param_1);
+    int touchedInside(int param_1, int param_2);
 };
 #endif

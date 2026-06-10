@@ -21,7 +21,12 @@
 
 struct Gun;
 
-// Field accessor via byte offset.
+// gof2/AEGeometry.h does not compile standalone; Gun only reads one AEGeometry field (the geometry
+// handle at +0xc), so we complete the global forward declaration with a minimal view here.
+struct AEGeometry {
+    char pad_0x0[0xc];
+    int32_t field_0xc;                  // +0xc geometry/transform handle
+};
 
 struct Gun {
     int field_0x0;                      // +0x0
@@ -33,7 +38,7 @@ struct Gun {
     char* field_0x24;                   // +0x24
     int field_0x30;                     // +0x30
     int field_0x38;                     // +0x38
-    int field_0x3c;                     // +0x3c
+    void* field_0x3c;                   // +0x3c (heap array)
     uint8_t* field_0x40;                // +0x40
     int field_0x44;                     // +0x44
     int field_0x48;                     // +0x48
@@ -68,8 +73,8 @@ struct Gun {
     uint8_t field_0xa9;                 // +0xa9
     void* field_0xac;                   // +0xac
     float field_0xb0;                   // +0xb0
-    int field_0xb4;                     // +0xb4
-    Sparks* field_0xb8;                 // +0xb8
+    Player* field_0xb4;                 // +0xb4 enemies
+    Sparks* field_0xb8;                 // +0xb8 impact
     Player* field_0xbc;                 // +0xbc
     int field_0xc0;                     // +0xc0
     int field_0xc4;                     // +0xc4
@@ -90,7 +95,9 @@ struct Gun {
     float field_0xfc;                   // +0xfc
     int field_0x100;                    // +0x100
     uint8_t field_0x108;                // +0x108
-    int field_0x10c;                    // +0x10c
-    int field_0x110;                    // +0x110
+    void* field_0x10c;                  // +0x10c (heap array)
+    void* field_0x110;                  // +0x110 (heap array)
+
+    ~Gun() noexcept(false);
 };
 #endif

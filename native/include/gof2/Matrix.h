@@ -20,11 +20,8 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-struct Matrix {
-    float field_0x28;                   // +0x28
-    float field_0x2c;                   // +0x2c
-    float field_0x30;                   // +0x30
-    float field_0x34;                   // +0x34
-    float field_0x38;                   // +0x38
-};
+// Matrix is the canonical AbyssEngine::AEMath::Matrix from gof2/math.h
+// (float m[16], a 3x4 affine matrix + embedded translation Vector at +0x30).
+// The byte-offset field_0xNN aliases (0x28..0x38) map onto m[10..14]; the embedded
+// Vector at +0x30 is m[12..14]. The implementations in Matrix.cpp index m[] directly.
 #endif

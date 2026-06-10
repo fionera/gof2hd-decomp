@@ -17,10 +17,6 @@
 //   +0x5c  int   content height-ish (b)
 
 
-void *operator new(__SIZE_TYPE__ size);
-void *operator new[](__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-
 struct StatusWindow;
 
 namespace AbyssEngine {
@@ -35,9 +31,12 @@ static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((ch
 static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
+// Engine Array<T> header layout { length, data, cap }.
+struct Arr { uint32_t size; void **data; uint32_t size2; };
+
 struct StatusWindow {
     Arr* field_0x4;                     // +0x4
-    void* field_0x8;                    // +0x8
+    Arr* field_0x8;                     // +0x8
     void* field_0xc;                    // +0xc
     void* field_0x10;                   // +0x10
     unsigned char field_0x54;           // +0x54

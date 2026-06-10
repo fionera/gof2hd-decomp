@@ -2,14 +2,13 @@
 #define GOF2_TEXTUREALPHATESTSHADER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept
-{
-    return ptr;
-}
+// Engine/Mesh/ShaderBaseStruct/TextureAlphaTestShader are top-level classes (declared
+// globally in fwd.h), so model them at global scope to stay consistent with the rest
+// of the codebase. (placement operator new comes from <new> via common.h.)
 
 void operator delete(void *ptr) noexcept;
 
-namespace AbyssEngine {
+using Vector = AbyssEngine::AEMath::Vector;
 
 struct Engine;
 struct Mesh;
@@ -19,22 +18,15 @@ struct ShaderBaseStruct {
     ~ShaderBaseStruct();
 };
 
-
-
-namespace AEMath {
-struct Vector;
-}
-
-
-
-} // namespace AbyssEngine
-
-using Engine = AbyssEngine::Engine;
-using Mesh = AbyssEngine::Mesh;
-using ShaderBaseStruct = AbyssEngine::ShaderBaseStruct;
-using String = AbyssEngine::String;
-using TextureAlphaTestShader = AbyssEngine::TextureAlphaTestShader;
-using Vector = AbyssEngine::AEMath::Vector;
+struct TextureAlphaTestShader : ShaderBaseStruct {
+    TextureAlphaTestShader();
+    ~TextureAlphaTestShader();
+    void Init(Engine *);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void ConnectShaderComponents(int program, int index);
+    void UseShader(bool);
+};
 
 static inline int &i32(void *self, unsigned int offset)
 {
@@ -87,5 +79,4 @@ void operator_delete(void *ptr) noexcept;
 __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
-struct TextureAlphaTestShader { void* _opaque; };  // no offset accesses observed
 #endif

@@ -16,10 +16,6 @@ extern "C" void SpacePoint_giveFree(SpacePoint *self)
 // plus a scalar tail store, exactly matching the target. Telling the compiler the
 // destination is word-aligned makes that NEON store use 32-bit (.32) elements.
 
-struct SpacePoint {
-    SpacePoint(int param_1, const Vector &param_2, const Vector &param_3, int param_4);
-};
-
 SpacePoint::SpacePoint(int param_1, const Vector &param_2, const Vector &param_3, int param_4)
 {
     memset(__builtin_assume_aligned(this, 4), 0, 0x18);

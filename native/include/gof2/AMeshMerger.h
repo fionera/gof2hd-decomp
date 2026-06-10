@@ -28,5 +28,12 @@ static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((ch
 static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
-struct AMeshMerger { void* _opaque; };  // no offset accesses observed
+struct AMeshMerger {
+    unsigned char _pad_0[20];
+    uint32_t field_0x14;   // +0x14  (drawMeshes arg 0)
+    unsigned char _pad_18[4];
+    uint32_t field_0x1c;   // +0x1c  (drawMeshes arg 1)
+    void render();
+    ~AMeshMerger();
+};
 #endif

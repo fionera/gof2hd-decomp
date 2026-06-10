@@ -110,11 +110,43 @@ void ArrayAdd(T item, Array<T> *array);
 template <class T>
 void ArrayRelease(Array<T> *array);
 
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-void *operator new[](__SIZE_TYPE__ size);
-void operator delete[](void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
 
-struct FileRead { void* _opaque; };  // no offset accesses observed
+// Helpers that stand in for the engine's UTF-16 String operations not present in the
+// simplified common.h String (which only exposes a default ctor + text()/size()).
+namespace gof2_fileread {
+inline String makeString(const char *t)
+{
+    String r;
+    if (t)
+        while (*t)
+            r.s.push_back((char16_t)(unsigned char)*t++);
+    return r;
+}
+// Game-side CP-1252/UTF-8 transliteration; storage already holds the decoded text natively.
+inline void ConvertFromUTF8(String &) {}
+} // namespace gof2_fileread
+
+// AbyssEngine::FileRead — loads the game's *.bin data tables (stations, systems, ships, items, ...).
+// All methods are instance methods on the (stateless) loader object.
+struct FileRead {
+    int32_t loadStation(int32_t id);
+    int32_t loadStationsBinary();
+    Array<Array<Vector *> *> *loadWeaponPositions(int32_t id);
+    Array<SpacePoint *> *loadSpacePoints(int32_t id, int32_t group);
+    Array<SolarSystem *> *loadSystemsBinary();
+    Array<Wanted *> *loadWanted();
+    Array<NewsItem *> *loadTicker();
+    Array<Station *> *loadStationsBinary(int16_t *ids, int32_t count);
+    Array<String *> *loadNamesBinary(int32_t type, bool first, bool second);
+    Array<Station *> *loadStationsBinary(SolarSystem *system);
+    Array<Agent *> *loadAgents();
+    Array<int32_t> *loadWreckCollision(int32_t id);
+    Array<int32_t> *loadStationCollision(int32_t id);
+    Array<int32_t> *loadStaticCollision(int32_t id);
+    Array<int32_t> *loadStationParts(int32_t id, int32_t special);
+    Array<int32_t> *loadShipParts(int32_t id);
+    Array<Item *> *loadItemsBinary();
+    Array<Ship *> *loadShipsBinary();
+};
 #endif

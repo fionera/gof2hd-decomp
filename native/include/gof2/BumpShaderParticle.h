@@ -1,10 +1,11 @@
 #ifndef GOF2_BUMPSHADERPARTICLE_H
 #define GOF2_BUMPSHADERPARTICLE_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
+// Galaxy on Fire 2 -- AbyssEngine::BumpShaderParticle (Android libgof2hdaa.so, armv7 Thumb).
+// GLES2 bump-mapping shader for particle meshes. Derives from ShaderBaseStruct: program handle
+// at 0x4, dirty flag byte at 0x9, name String at 0xc, attribute/uniform locations 0x20..0x68.
+// Offset-addressed fields go through the field_* accessor helpers (shared shader-storage idiom).
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -31,8 +32,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -41,8 +40,6 @@ struct ShaderBaseStruct {
 
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
-
-
 
 static inline int &field_i32(void *self, uint32_t offset)
 {
@@ -64,9 +61,19 @@ static inline void *field_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
+// AbyssEngine::BumpShaderParticle — derives from ShaderBaseStruct (shared shader storage layout).
+struct BumpShaderParticle {
+    static int ShaderIndex;
+
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    BumpShaderParticle();
+
+    // raw field storage (offsets referenced through the field_* helpers above)
+    char field_storage[0x6c];
+};
+
 } // namespace AbyssEngine
 
-struct BumpShaderParticle {
-    String field_0xc;                   // +0xc
-};
 #endif

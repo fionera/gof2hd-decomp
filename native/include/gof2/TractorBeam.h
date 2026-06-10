@@ -46,15 +46,15 @@ Vector operator-(const Vector &a, const Vector &b); // 0x0006ec38
 
 using AbyssEngine::AEMath::Vector;
 
-// Field accessors --------------------------------------------------------------
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline uint8_t &u8(void *self, uint32_t off) { return *(uint8_t *)((char *)self + off); }
-static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
-
 struct TractorBeam {
-    void* field_0xc;                    // +0xc
-    uint16_t field_0x10;                // +0x10
-    AEGeometry* field_0x14;             // +0x14
+    float field_0x0;                    // +0x00  working vector .x
+    float field_0x4;                    // +0x04  working vector .y
+    float field_0x8;                    // +0x08  working vector .z
+    KIPlayer* field_0xc;                // +0x0c  grabbed crate (0 = none)
+    uint8_t field_0x10;                 // +0x10  active flag
+    uint8_t field_0x11;                 // +0x11  sound-playing flag
+    uint8_t _pad_0x12[2];               // +0x12  padding
+    AEGeometry* field_0x14;             // +0x14  beam mesh geometry
+    int field_0x18;                     // +0x18  stored hitpoints snapshot
 };
 #endif

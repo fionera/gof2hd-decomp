@@ -10,7 +10,7 @@
 struct ModStation;     // opaque; we only ever take a ModStation* and offset-cast.
 
 // Other game types referenced by pointer only — keep opaque.
-struct String;
+// (String comes from common.h via `using AbyssEngine::String;` — do not redeclare.)
 struct ChoiceWindow;
 struct RecordHandler;
 

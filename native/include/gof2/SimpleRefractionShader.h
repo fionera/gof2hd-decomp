@@ -2,9 +2,7 @@
 #define GOF2_SIMPLEREFRACTIONSHADER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -32,8 +30,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -43,8 +39,6 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
     int LoadBindShader(const char *vertexPath, const char *fragmentPath);
 };
-
-
 
 static inline int &field_i32(void *self, uint32_t offset)
 {
@@ -66,9 +60,21 @@ static inline void *field_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
+// AbyssEngine::SimpleRefractionShader — GLES2 refraction shader (derives from ShaderBaseStruct).
+// Fields accessed through the field_i32/field_u8 helpers; storage covers offsets 0x00..0x54.
+struct SimpleRefractionShader : ShaderBaseStruct {
+    static int ShaderIndex;
+
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+
+    // raw field storage (offsets referenced through the field_i32/field_u8 helpers)
+    char field_storage[0x58];
+};
+
 } // namespace AbyssEngine
 
 extern "C" char _ZTVN11AbyssEngine22SimpleRefractionShaderE[];
 
-struct SimpleRefractionShader { void* _opaque; };  // no offset accesses observed
 #endif

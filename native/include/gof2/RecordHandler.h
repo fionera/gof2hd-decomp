@@ -13,7 +13,6 @@ struct Agent;
 struct Mission;
 struct Wanted;
 struct GameRecord;
-struct String;
 
 // ---- tiny offset-cast helpers -------------------------------------------------
 static inline char*           B (void* p, int off) { return (char*)p + off; }

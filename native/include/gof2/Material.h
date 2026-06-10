@@ -44,8 +44,6 @@ struct Material {
 
 } // namespace AbyssEngine
 
-using Material = AbyssEngine::Material;
-using Mesh = AbyssEngine::Mesh;
 using Vector = AbyssEngine::AEMath::Vector;
 using Matrix = AbyssEngine::AEMath::Matrix;
 

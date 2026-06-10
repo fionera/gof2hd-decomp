@@ -1,15 +1,13 @@
 #ifndef GOF2_PLAYERSTATIC_H
 #define GOF2_PLAYERSTATIC_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 -- PlayerStatic class (Android libgof2hdaa.so, armv7 Thumb).
-// Target names are top-level PlayerStatic::... (no AbyssEngine:: on the class).
-// Field offsets come from the per-method work-items and are accessed by byte casts.
-
-
+// Galaxy on Fire 2 - PlayerStatic (a stationary KIPlayer subclass).
+// Derives from KIPlayer; only a few fields are touched directly:
+//   +0x00 vtable pointer
+//   +0x08 AEGeometry* geometry
+//   +0x124/0x128/0x12c integer x/y/z fallback position
 namespace AbyssEngine {
 namespace AEMath {
-
 } // namespace AEMath
 } // namespace AbyssEngine
 
@@ -17,12 +15,18 @@ using Vector = AbyssEngine::AEMath::Vector;
 
 struct AEGeometry;
 
+struct PlayerStatic {
+    void *field_0x0;                    // +0x0 vtable
+    char field_pad_4[0x4];              // +0x4
+    AEGeometry *field_0x8;              // +0x8 geometry
+    char field_pad_c[0x124 - 0xc];      // +0xc .. +0x123 (KIPlayer/Player state)
+    int field_0x124;                    // +0x124 x
+    int field_0x128;                    // +0x128 y
+    int field_0x12c;                    // +0x12c z
 
+    PlayerStatic(int playerId, AEGeometry *geometry, float x, float y, float z);
+    void render();
+    Vector getPosition();
+};
 
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
-
-struct PlayerStatic { void* _opaque; };  // no offset accesses observed
 #endif

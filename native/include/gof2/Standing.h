@@ -19,5 +19,7 @@
 struct Standing {
     int* field_0x0;                     // +0x0
     int field_0x4;                      // +0x4
+    Standing();
+    ~Standing();
 };
 #endif

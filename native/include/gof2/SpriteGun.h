@@ -18,7 +18,6 @@
 
 
 struct SpriteGun;
-struct Array;
 struct Player;
 struct Gun;
 

@@ -20,7 +20,17 @@ static inline uint8_t  &u8 (void *self, uint32_t off) { return *(uint8_t  *)((ch
 static inline float    &f32(void *self, uint32_t off) { return *(float    *)((char *)self + off); }
 static inline void    *&pp (void *self, uint32_t off) { return *(void    **)((char *)self + off); }
 
+// 16-byte aggregate cleared in the ctor (4 ints).
+struct __attribute__((aligned(4))) Blk16 { int a, b, c, d; };
+
 struct MissionsWindow {
     Blk16 field_0xc;                    // +0xc
+    MissionsWindow();
+    ~MissionsWindow();
+    int OnTouchMove(int, int);
+    int OnTouchBegin(int, int);
+    void setHangarUpdate(bool);
+    uint8_t hangarNeedsUpdate();
+    void render3D();
 };
 #endif

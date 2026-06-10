@@ -2,9 +2,9 @@
 #define GOF2_CHEATHANDLER_H
 #include "gof2/common.h"
 // real struct kept from byte-match recovery (+ supporting decls)
+#include <new>
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 namespace AbyssEngine {
 

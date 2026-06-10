@@ -1,5 +1,8 @@
 #include "gof2/PlayerJunk.h"
-#include "gof2/Player.h"
+// Player is used only as an opaque pointer here (all access goes through the
+// extern "C" accessors below), so we forward-declare it rather than pull in
+// Player.h (whose byte-layout static_asserts assume the 32-bit ARM target).
+struct Player;
 
 
 
@@ -9,7 +12,7 @@ extern "C" void KIPlayer_reset(void *self);                 // blx 0x74518
 extern "C" void PlayerJunk_resetTail(void *self, int one);  // b.w 0x1abe08 (veneer)
 
 // PlayerJunk::reset() - reset base KIPlayer, clear state, tail-call the show/visible setter.
-extern "C" void _ZN10PlayerJunk5resetEv(void *self) {
+extern "C" void _ZN10PlayerJunk5resetEv(PlayerJunk *self) {
     KIPlayer_reset(self);
     self->field_0x88 = 0;
     return PlayerJunk_resetTail(self, 1);
@@ -46,8 +49,6 @@ extern "C" int Player_getHitpoints(Player *self);                      // 0x724f
 extern "C" int Level_junkDied(void *level);                            // 0x77908
 extern "C" void FModSound_play(void *self, int id, Vector *a, Vector *b, float volume); // 0x71548
 extern "C" int AERandom_nextInt(void *self, int max);                  // 0x71848
-extern "C" void Array_int_ctor(void *array);                          // 0x701f8
-extern "C" void ArrayAdd_int(int value, void *array);                 // 0x7021c
 extern "C" void KIPlayer_createCrate(void *self, int kind);          // 0x75904
 extern "C" void Player_setActive(Player *self, bool active);          // 0x72580
 extern "C" void *Level_getPlayer(void *level);                        // 0x72034
@@ -59,9 +60,8 @@ __attribute__((visibility("hidden"))) extern void **g_PJ_random;      // -> AERa
 
 // PlayerJunk::update(int) - when destroyed, play the death sound, maybe drop a crate, detach
 // from the player target, and emit the wreck particle burst.
-void PlayerJunk_update(void *self, int elapsed) {
+void PlayerJunk_update(PlayerJunk *self, int elapsed) {
     Vector zero;
-    char workBytes[12];
 
     self->field_0x124 = elapsed;
     if (Player_getHitpoints(self->field_0x4) < 1) {
@@ -73,30 +73,28 @@ void PlayerJunk_update(void *self, int elapsed) {
             void **randHolder = g_PJ_random;
             if (AERandom_nextInt(*randHolder, 100) < 10) {
                 self->field_0x4c = 1;
-                void *arr = operator new(0xc);
-                Array_int_ctor(arr);
+                Array<int> *arr = new Array<int>();
                 self->field_0x50 = arr;
-                ArrayAdd_int(99, arr);
-                ArrayAdd_int(AERandom_nextInt(*randHolder, 10) + 1, self->field_0x50);
+                ArrayAdd(99, *arr);
+                ArrayAdd(AERandom_nextInt(*randHolder, 10) + 1, *self->field_0x50);
                 KIPlayer_createCrate(self, 3);
                 self->field_0x4c = 1;
             } else {
                 Player_setActive(self->field_0x4, false);
                 void *player = Level_getPlayer(self->field_0x54);
-                if (F<void *>(player->field_0x14, 0x1c) == self) {
+                if (F<void *>(F<void *>(player, 0x14), 0x1c) == self) {
                     player = Level_getPlayer(self->field_0x54);
-                    F<void *>(player->field_0x14, 0x1c) = 0;
+                    F<void *>(F<void *>(player, 0x14), 0x1c) = 0;
                 }
             }
             void *levelObject = self->field_0x54;
-            struct V3 { uint32_t x, y, z; };
-            V3 position = self->field_0x58;
+            Vector position = self->field_0x58;
             zero.x = 0.0f;
             zero.y = 0.0f;
             zero.z = 0.0f;
             ParticleSystemManager_emitManual(F<int>(levelObject, 0x74),
                                              F<Vector *>(levelObject, 0x34),
-                                             (Vector *)&position, 0, &zero, -1.0f);
+                                             &position, 0, &zero, -1.0f);
         }
     }
 
@@ -110,7 +108,7 @@ extern "C" void PlayerJunk_renderTail(void *self);  // b.w 0x1ac3a8 (veneer)
 
 // PlayerJunk::render() - render the geometry if present, then (unless the state is 3 or 4)
 // tail-call the base render veneer.
-extern "C" void _ZN10PlayerJunk6renderEv(void *self) {
+extern "C" void _ZN10PlayerJunk6renderEv(PlayerJunk *self) {
     void *geom = self->field_0x78;
     if (geom != 0)
         AEGeometry_render(geom);

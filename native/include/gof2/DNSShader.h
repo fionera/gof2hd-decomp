@@ -1,10 +1,11 @@
 #ifndef GOF2_DNSSHADER_H
 #define GOF2_DNSSHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
+// Galaxy on Fire 2 -- AbyssEngine::DNSShader (Android libgof2hdaa.so, armv7 Thumb).
+// GLES2 "DNS" lighting shader. Derives from ShaderBaseStruct: program handle at 0x4, a dirty
+// flag byte at 0x9, the name String at 0xc, attribute/uniform locations at 0x20..0x60. Fields
+// are read/written through the i32/u8/f32/ptr accessor helpers below (shared shader-storage idiom).
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -32,8 +33,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -44,8 +43,7 @@ struct ShaderBaseStruct {
     int LoadBindShader(const char *vertexPath, const char *fragmentPath);
 };
 
-
-
+// Per-class backing-storage accessor helpers (take a raw object pointer + byte offset).
 static inline int &field_i32(void *self, uint32_t offset)
 {
     return *(int *)((char *)self + offset);
@@ -66,9 +64,21 @@ static inline void *field_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
+// AbyssEngine::DNSShader — derives from ShaderBaseStruct (shared shader storage layout).
+struct DNSShader {
+    static int ShaderIndex;
+
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    DNSShader();
+
+    // raw field storage (offsets referenced through the field_* helpers above)
+    char field_storage[0x64];
+};
+
 } // namespace AbyssEngine
 
 extern "C" char _ZTVN11AbyssEngine9DNSShaderE[];
 
-struct DNSShader { void* _opaque; };  // no offset accesses observed
 #endif

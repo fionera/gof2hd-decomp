@@ -33,8 +33,14 @@ struct SpacePoint;
 // Field accessor via byte offset.
 
 struct SpacePoint {
+    Vector position;                    // +0x00
+    Vector direction;                   // +0x0c
+    int field_0x10;                     // +0x10
+    int field_0x14;                     // +0x14
     int field_0x18;                     // +0x18
     uint8_t field_0x1c;                 // +0x1c
     int field_0x20;                     // +0x20
+
+    SpacePoint(int param_1, const Vector &param_2, const Vector &param_3, int param_4);
 };
 #endif

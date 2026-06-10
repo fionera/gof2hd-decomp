@@ -65,5 +65,27 @@ struct PlayerAsteroid {
     int field_0x164;                    // +0x164
     int field_0x168;                    // +0x168
     int field_0x16c;                    // +0x16c
+
+    PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType, int asteroidIndex,
+                   const Vector &position, float scaling, int quality);
+    void setAsteroidIndex(int asteroidIndex);
+    void translate(const Vector &delta);
+    void render();
+    void setPosition(const Vector &position);
+    void outerCollide(Vector value);
+    void outerCollide(float x, float y, float z);
+    Vector getPosition();
+    void setRotationEnabled(bool enabled);
+    int getQualityFrameIndex();
+    int getQuality();
+    float getScaling();
+    uint8_t isMinable();
+    String getQualityString();
+    void update(int delta);
+    Vector getProjectionVector(const Vector &value);
+    void setAsteroidCenter(Vector center);
+    bool collide(float x, float y, float z);
+    void push(int delta);
+    void initPush(const Vector &target, int duration);
 };
 #endif

@@ -2,13 +2,10 @@
 #define GOF2_TRANSFORM_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+#include <new>
 using uint = uint32_t;
 using longlong = int64_t;
 using ulonglong = uint64_t;
-
-void *operator new(__SIZE_TYPE__ size);
-inline void *operator new(__SIZE_TYPE__, void *ptr) { return ptr; }
-void operator delete(void *ptr) noexcept;
 
 
 
@@ -72,6 +69,8 @@ extern "C" void __stack_chk_fail();
 extern "C" int *g_transform_insert_counter;
 extern "C" bool g_transform_matrix_flag;
 
+namespace AbyssEngine {
+
 struct Transform {
     uint8_t field_0x0;                  // +0x0
     uint16_t field_0x2;                 // +0x2
@@ -112,8 +111,38 @@ struct Transform {
     longlong field_0x100;               // +0x100
     longlong field_0x108;               // +0x108
     longlong field_0x110;               // +0x110
-    int field_0x11c;                    // +0x11c
-    int field_0x120;                    // +0x120
+    int field_0x11c;                    // +0x11c (keyframe array length)
+    KeyFrame** field_0x120;             // +0x120 (keyframe array data)
     bool field_0x17c;                   // +0x17c
+
+    Transform();
+    Transform(Transform *other);
+    ~Transform();
+    void SetCurrentAnimationTime(longlong value);
+    void SetAnimationRangeInKeyFrames(int first, int last);
+    void SetVisible(bool value);
+    void SetVFCFlag(bool value);
+    void PauseAnimationWithKeyFrame(int index);
+    void PauseAnimationWithTimeStamp(longlong time);
+    void SetAnimationSpeed(float value);
+    void CollectAnimationData();
+    void InitAnimationRangeInTime();
+    int  IsRunning();
+    void UpdateKeyFrames(KeyFrame *keyFrame, int index);
+    void SetAnimationLength(longlong value);
+    void SetAnimationRangeInTime(longlong start, longlong end);
+    void InsertKeyFrame(KeyFrame *keyFrame, int index);
+    void InsertKeyFrame(const float *values, longlong flags, int time);
+    void InsertKeyFrame_old(const float *values, longlong flags, int time);
+    void Update(longlong time, bool updateBounds);
+    void InternUpdate(longlong time, bool updateBounds);
+    void SetAnimationState(AnimationMode, void *);
+    void AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
+                     const AEMath::Vector &c, const AEMath::Vector &d,
+                     const AEMath::Vector &e, const AEMath::Vector &f,
+                     int time);
+    int  InCameraVF(AEMath::Matrix *matrix, Camera *camera);
 };
+
+} // namespace AbyssEngine
 #endif

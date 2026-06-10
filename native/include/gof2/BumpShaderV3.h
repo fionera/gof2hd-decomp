@@ -2,9 +2,7 @@
 #define GOF2_BUMPSHADERV3_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -64,7 +62,19 @@ static inline void *field_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
+// AbyssEngine::BumpShaderV3 — GLES2 bump-mapping shader (derives from ShaderBaseStruct).
+// Members accessed via field_i32(this, 0xNN) helpers above; backing storage holds the
+// shader-program handle, attribute/uniform locations and the dirty flag.
+struct BumpShaderV3 : ShaderBaseStruct {
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    BumpShaderV3();
+
+    // raw field storage (offsets referenced through the field_i32/field_u8 helpers)
+    char field_storage[0x84];
+};
+
 } // namespace AbyssEngine
 
-struct BumpShaderV3 { void* _opaque; };  // no offset accesses observed
 #endif

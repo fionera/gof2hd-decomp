@@ -28,8 +28,15 @@ static inline int32_t &I(void *self, unsigned off) { return *(int32_t *)((char *
 static inline uint32_t &U(void *self, unsigned off) { return *(uint32_t *)((char *)self + off); }
 static inline uint8_t &UC(void *self, unsigned off) { return *(uint8_t *)((char *)self + off); }
 static inline float &FL(void *self, unsigned off) { return *(float *)((char *)self + off); }
+// Indexed element accessor (raw byte buffer indexed by element of type T).
+template <class T> static inline T &F(void *base, unsigned index) { return ((T *)base)[index]; }
 
 typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 
-struct MineGun { void* _opaque; };  // no offset accesses observed
+struct MineGun {
+    void* _opaque;  // raw byte-offset access via I/U/P/UC/FL macros
+    void render();
+    void setPlayer(PlayerEgo *player);
+    void update(int delta);
+};
 #endif

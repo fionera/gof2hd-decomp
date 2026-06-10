@@ -19,7 +19,9 @@ void *operator new(__SIZE_TYPE__ size);
 struct SimpleMeshMerger {
     // @portable-fields
     int f_0; // 0x0
-    int f_4; // 0x4
+    short f_4; // 0x4  mergeFactor
+    unsigned char field_0x6; // 0x6  valid flag
+    unsigned char _pad_7;    // 0x7
     unsigned char _pad_8[4];
     void* f_c; // 0xc
     unsigned char _pad_10[4];

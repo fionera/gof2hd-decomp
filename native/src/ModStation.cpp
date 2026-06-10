@@ -10,7 +10,7 @@ extern "C" void RecordHandler_recordStoreWritePreview(void *rh, int slot);
 extern "C" void *RecordHandler_dtor(void *rh);
 extern "C" void ModStation_op_delete(void *p);
 extern "C" void ModStation_autosaveTail();
-extern "C" Station *Status_getStation(Status *s);
+extern "C" Station *Status_getStation(void *s);
 extern "C" void Status_departStation(Status *s, Station *st);
 extern "C" void Station_visit(Station *st);
 extern "C" void Achievements_applyNewMedals(Achievements *a);
@@ -58,7 +58,6 @@ extern "C" void *PaintCanvas_CameraGetCurrent(void *c);
 extern "C" void *PaintCanvas_CameraGetLocal(void *c);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
 extern "C" void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int a4, int a5);
-extern "C" Station *Status_getStation(void *s);
 extern "C" int Station_getIndex(Station *st);
 extern "C" void Status_getSystem(void *s);
 extern "C" int SolarSystem_getRace();
@@ -453,7 +452,7 @@ struct Station;
 struct SolarSystem;
 struct EaseInOut;
 struct EaseInOutMatrix;
-struct Matrix;
+// Matrix comes from common.h via `using AbyssEngine::AEMath::Matrix;` — do not redeclare.
 
 __attribute__((visibility("hidden"))) extern int  *g_msc_stack;     // [DAT_000e5698]
 __attribute__((visibility("hidden"))) extern int   g_msc_vtable;    // [DAT_000e569c] vtable base

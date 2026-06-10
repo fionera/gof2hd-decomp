@@ -22,8 +22,6 @@ using String = AbyssEngine::String;
 
 
 
-void *operator new(__SIZE_TYPE__ size);
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 extern "C" void operator_delete(void *ptr);
 
 extern "C" void ArrayReleaseClasses_Objective(Array<Objective *> *array);
@@ -50,12 +48,19 @@ extern "C" unsigned int Objective_tail_message(void *message);
 extern "C" unsigned int Objective_tail_enemy_final(KIPlayer *player);
 
 struct Objective {
-    int field_0x0;                      // +0x0
-    int field_0x4;                      // +0x4
-    int field_0x8;                      // +0x8
-    Level* field_0xc;                   // +0xc
-    int field_0x10;                     // +0x10
-    int field_0x14;                     // +0x14
+    int field_0x0;                      // +0x0 objective type
+    int field_0x4;                      // +0x4 value
+    int field_0x8;                      // +0x8 calc value
+    Level* field_0xc;                   // +0xc owning level
+    Array<Objective *>* field_0x10;     // +0x10 child objectives
+    void* field_0x14;                   // +0x14 achieved-text String*
     int field_0x18;                     // +0x18
+
+    Objective(int type, int value, Level *level);
+    Objective(int type, int value, int calcValue, Level *level);
+    Objective *addObjective(Objective *objective);
+    bool isSurvivalObjective();
+    bool getCalcValue();
+    unsigned int achieved(int value);
 };
 #endif

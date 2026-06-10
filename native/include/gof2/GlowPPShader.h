@@ -1,28 +1,21 @@
 #ifndef GOF2_GLOWPPSHADER_H
 #define GOF2_GLOWPPSHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-namespace AbyssEngine {
+#include <new>
+// Galaxy on Fire 2 -- AbyssEngine::GlowPPShader (Android libgof2hdaa.so, armv7 Thumb).
+// GLES2 post-process glow/bloom shader. Holds four FBOContainer render targets (at 0x3c, 0x58,
+// 0x74, 0xa0) plus attribute/uniform locations for four sub-programs (copy/blurX/blurY/combine).
+// Offset-addressed scalar fields go through the field_* accessor helpers (shared shader-storage idiom).
+// The engine entry points are reached through C-linkage thunks declared below.
 
-struct ShaderBaseStruct;
-struct Engine;
-struct FBOContainer;
-struct Mesh;
+// ShaderBaseStruct, Engine, Mesh, FBOContainer, GlowPPShader are forward-declared (global)
+// in gof2/fwd.h.
 
-
-
-
-
-} // namespace AbyssEngine
-
-using AbyssEngine::Engine;
-using AbyssEngine::FBOContainer;
-using AbyssEngine::GlowPPShader;
-using AbyssEngine::Mesh;
-using AbyssEngine::ShaderBaseStruct;
-using AbyssEngine::String;
-
-static_assert(sizeof(String) == 0xc, "String layout");
+// GLES2-call function-pointer types (the shader caches resolved entry points in globals).
+typedef uint32_t LoadProgramFn(ShaderBaseStruct *, const char *, const char *);
+typedef uint32_t LocationFn(uint32_t, const char *);
+typedef void     UseProgramFn(uint32_t);
+typedef void     Uniform1iFn(uint32_t, int32_t);
 
 inline uint8_t &field_u8(void *self, uint32_t off)
 {
@@ -51,9 +44,6 @@ inline void *&field_ptr(void *self, uint32_t off)
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
-
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
 
 extern "C" __attribute__((visibility("hidden"))) void ShaderBaseStruct_ctor(ShaderBaseStruct *self);
 extern "C" __attribute__((visibility("hidden"))) void *ShaderBaseStruct_dtor(ShaderBaseStruct *self);
@@ -100,9 +90,12 @@ extern "C" uint32_t g_GlowPPShader_typeInfoSrc;
 extern "C" uint32_t g_GlowPPShader_typeInfoDst;
 
 struct GlowPPShader {
-    FBOContainer* field_0x3c;           // +0x3c
-    FBOContainer* field_0x58;           // +0x58
-    FBOContainer* field_0x74;           // +0x74
-    FBOContainer* field_0xa0;           // +0xa0
+    FBOContainer* field_0x3c;           // +0x3c  copy target
+    FBOContainer* field_0x58;           // +0x58  blurX target
+    FBOContainer* field_0x74;           // +0x74  blurY target
+    FBOContainer* field_0xa0;           // +0xa0  combine/background target
+
+    // raw field storage for the offset-addressed scalar locations (accessed via field_* helpers)
+    char field_storage[0xa8];
 };
 #endif

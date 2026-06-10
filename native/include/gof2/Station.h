@@ -18,9 +18,9 @@ struct Station {
     uint8_t field_0x1c;                 // +0x1c
     int field_0x20;                     // +0x20
     uint8_t field_0x24;                 // +0x24
-    uint32_t* field_0x28;               // +0x28
-    void* field_0x2c;                   // +0x2c
-    void* field_0x30;                   // +0x30
+    void* field_0x28;                   // +0x28 Array<Item*>*
+    void* field_0x2c;                   // +0x2c Array<Ship*>*
+    void* field_0x30;                   // +0x30 Array<Agent*>*
     uint8_t field_0x71;                 // +0x71
 };
 #endif
