@@ -80,9 +80,9 @@ Vector PlayerGasCloud::getPosition()
 
 // ---- _PlayerGasCloud_1765e8.cpp ----
 // Deleting destructor (D0): run the complete dtor (D1), then tail-call operator delete.
-extern "C" void *_ZN14PlayerGasCloudD1Ev(void *self); // complete object dtor
+void *_ZN14PlayerGasCloudD1Ev(void *self); // complete object dtor
 
-extern "C" void _ZN14PlayerGasCloudD0Ev(void *self)
+void _ZN14PlayerGasCloudD0Ev(void *self)
 {
     return operator_delete(_ZN14PlayerGasCloudD1Ev(self));
 }
@@ -157,7 +157,7 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
 // Complete object destructor (D1). Sets the vtable, tears down the spark arrays and the
 // base geometry, then tail-calls the base destructor.
 
-extern "C" void *_ZN14PlayerGasCloudD1Ev(void *selfv)
+void *_ZN14PlayerGasCloudD1Ev(void *selfv)
 {
     PlayerGasCloud *self = (PlayerGasCloud *)selfv;
     *(void **)self = &PlayerGasCloud_vtable + 8;
@@ -259,7 +259,7 @@ extern float g_pgc_lifeDiv;      // DAT_18694c
 }
 
 // PlayerGasCloud::explode(int itemIndex, Vector src, float radius)
-extern "C" void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius)
+void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius)
 {
     PlayerGasCloud *self = (PlayerGasCloud *)selfv;
     void *volatile cookie = __stack_chk_guard;
@@ -401,7 +401,7 @@ extern float g_pgcu_growDiv;      // DAT_186dfc
 }
 
 // PlayerGasCloud::update(int dt)
-extern "C" void PlayerGasCloud_update(void *self, int dt)
+void PlayerGasCloud_update(void *self, int dt)
 {
     char *s = (char *)self;
     void *volatile cookie = __stack_chk_guard;

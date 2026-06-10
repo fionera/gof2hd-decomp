@@ -748,7 +748,7 @@ int WantedWindow::init() {
 // ---- _WantedWindow_e0ec4.cpp ----
 __attribute__((visibility("hidden"))) extern void (*g_WantedWindow_string_dtor)(void *);
 
-extern "C" WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
+WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
 {
     void *p = self->field_0x8;
     if (p != 0) {
@@ -808,7 +808,7 @@ extern "C" WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_ctor_canvas;
 __attribute__((visibility("hidden"))) extern unsigned int **g_WantedWindow_ctor_font;
 
-extern "C" WantedWindow *_ZN12WantedWindowC2Ev(WantedWindow *self)
+WantedWindow *_ZN12WantedWindowC2Ev(WantedWindow *self)
 {
     ((String *)((char *)self + 0x3c))->ctor();
     ((String *)((char *)self + 0x48))->ctor();

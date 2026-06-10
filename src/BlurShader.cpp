@@ -46,7 +46,7 @@ void BlurShader::SetInActive()
 } // namespace AbyssEngine
 
 // ---- BlurShader_8a5e0.cpp ----
-extern "C" AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
+AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
 {
     using AbyssEngine::BlurShader;
     void *volatile cookie = __stack_chk_guard;
@@ -73,7 +73,7 @@ extern "C" AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShade
 typedef void FBOEffect(FBOContainer *, Engine *, void *, uint32_t, uint32_t, uint32_t, uint32_t,
                        uint32_t);
 
-extern "C" void BlurShader_RenderEffect(FBOContainer *fbo, Engine *engine, uint32_t amount,
+void BlurShader_RenderEffect(FBOContainer *fbo, Engine *engine, uint32_t amount,
                                         uint32_t x, uint32_t y, uint32_t z, uint32_t w)
 {
     void *volatile cookie = __stack_chk_guard;

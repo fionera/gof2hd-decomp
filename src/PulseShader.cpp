@@ -50,7 +50,7 @@ void PulseShader::Init(::Engine *)
 } // namespace AbyssEngine
 
 // ---- _PulseShader_927d0.cpp ----
-extern "C" void _ZN11AbyssEngine11PulseShaderD0Ev(PulseShader *self)
+void _ZN11AbyssEngine11PulseShaderD0Ev(PulseShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }

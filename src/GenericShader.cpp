@@ -153,7 +153,7 @@ GenericShader::GenericShader()
 } // namespace AbyssEngine
 
 // ---- _GenericShader_8eb90.cpp ----
-extern "C" void _ZN11AbyssEngine13GenericShaderD0Ev(AbyssEngine::GenericShader *self)
+void _ZN11AbyssEngine13GenericShaderD0Ev(AbyssEngine::GenericShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }

@@ -29,7 +29,7 @@ extern "C" float *PaintCanvas_CameraGetLocal(unsigned int canvas);
 // Complete object destructor (D1): set vtable, run release(), tail-call base dtor.
 extern "C" void _ZN20ParticleSystemSprite7releaseEv(void *self); // release()
 
-extern "C" void *_ZN20ParticleSystemSpriteD1Ev(void *self)
+void *_ZN20ParticleSystemSpriteD1Ev(void *self)
 {
     *(void **)self = &ParticleSystemSprite_vtable + 8;
     _ZN20ParticleSystemSprite7releaseEv(self);
@@ -125,7 +125,7 @@ void ParticleSystemSprite::render(void *canvas, int handle, unsigned int texture
 extern "C" void _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
     void *self, void *canvas, const void *matrix, const void *sets, bool b4, bool b5);
 
-extern "C" void *ParticleSystemSprite_ctor(
+void *ParticleSystemSprite_ctor(
     void *selfv, void *canvas, const void *matrix, const void *sets, bool b4, bool b5)
 {
     _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(

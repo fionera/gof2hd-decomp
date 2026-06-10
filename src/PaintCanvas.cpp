@@ -382,7 +382,7 @@ extern "C" void paintcanvas_ext_dr3_setwvm(void *self, void *m);
 extern "C" void paintcanvas_ext_dr3_gldisable(unsigned int cap);
 extern "C" void paintcanvas_ext_dr3_meshdraw(void *eng, void *mesh);
 extern "C" void paintcanvas_ext_dr3_glenable(unsigned int cap);
-extern "C" void RestoreImage2D(void *, void *);
+void RestoreImage2D(void *, void *);
 extern "C" void paintcanvas_ext_rar_gldeltex(int n, void *ids);
 extern "C" void paintcanvas_ext_rar_str_dtor(void *s);
 extern "C" void paintcanvas_ext_rar_op_delete(void *p);

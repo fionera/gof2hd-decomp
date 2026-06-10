@@ -12,7 +12,7 @@ extern "C" void operator_delete(void *ptr);
 extern "C" void BeamGun_setEnemies_tail(void *data);
 extern "C" void AEGeometry_render(AEGeometry *self);
 extern "C" void BeamGun_render_tail(AEGeometry *self);
-extern "C" BeamGun *_ZN7BeamGunD1Ev(BeamGun *self);
+BeamGun *_ZN7BeamGunD1Ev(BeamGun *self);
 extern "C" void BeamGun_setEnemy_tail(void *data);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, PaintCanvas *canvas, bool flag);
@@ -26,17 +26,17 @@ extern "C" int Vector_ne(const Vector *lhs, const Vector *rhs);
 extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *self);
 extern "C" void Matrix_mul(Matrix *out, const Matrix *lhs, const Matrix *rhs);
 extern "C" void Vector_add(Vector *out, const Vector *lhs, const Vector *rhs);
-extern "C" void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector);
+void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector);
 extern "C" void Vector_add_assign(void *self, const Vector *rhs);
 extern "C" void AEGeometry_setPosition(AEGeometry *self, const void *position);
 extern "C" void AEGeometry_setVisible(AEGeometry *self, bool visible);
-extern "C" void MatrixGetDir(Vector *out, const Matrix *matrix);
+void MatrixGetDir(Vector *out, const Matrix *matrix);
 
 // ---- _BeamGun_177834.cpp ----
 __attribute__((visibility("hidden"))) extern void *BeamGun_vtable;
 
 
-extern "C" BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
+BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
 {
     self->field_0x0 = (char *)BeamGun_vtable + 8;
 
@@ -78,7 +78,7 @@ void BeamGun::render()
 }
 
 // ---- _BeamGun_17786c.cpp ----
-extern "C" void _ZN7BeamGunD0Ev(BeamGun *self)
+void _ZN7BeamGunD0Ev(BeamGun *self)
 {
     return operator_delete(_ZN7BeamGunD1Ev(self));
 }

@@ -134,7 +134,7 @@ void BumpShaderRefract::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 // ---- _BumpShaderRefract_8fac2.cpp ----
 // AbyssEngine::BumpShaderRefract::~BumpShaderRefract() (deleting dtor)
-extern "C" void _ZN11AbyssEngine17BumpShaderRefractD0Ev(AbyssEngine::BumpShaderRefract *self)
+void _ZN11AbyssEngine17BumpShaderRefractD0Ev(AbyssEngine::BumpShaderRefract *self)
 {
     operator_delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev((AbyssEngine::ShaderBaseStruct *)self));
 }

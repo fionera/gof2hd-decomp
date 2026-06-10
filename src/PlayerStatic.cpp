@@ -8,7 +8,7 @@ extern "C" void PlayerStatic_render_geometry(void *geometry);
 extern "C" Vector AEGeometry_getPosition(AEGeometry *geometry);
 
 // ---- _PlayerStatic_e0970.cpp ----
-extern "C" void *_ZN12PlayerStaticD1Ev(PlayerStatic *self)
+void *_ZN12PlayerStaticD1Ev(PlayerStatic *self)
 {
     KIPlayer_dtor(self);
     return PlayerStatic_dtor_tail();

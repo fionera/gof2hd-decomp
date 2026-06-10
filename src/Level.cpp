@@ -3367,7 +3367,7 @@ BoundingVolume *Level_gbv_makeVolume(int rec, int shape);
 
 // Level::getBoundingVolume(int idx, AEGeometry* outArrayHolder) — loads the per-mesh collision
 // data for a station (idx<2000) or static object and produces an Array<BoundingVolume*>.
-extern "C" void *Level_getBoundingVolume(int idx, int kind)
+void *Level_getBoundingVolume(int idx, int kind)
 {
     (void)idx;
     FileRead *fr = (FileRead *)Level_opnew_gbv(1);

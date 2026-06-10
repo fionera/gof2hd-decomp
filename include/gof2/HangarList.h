@@ -73,7 +73,7 @@ extern "C" Station *Status_getStation(Status *status);
 extern "C" Array<PendingProduct *> *Status_getPendingProducts(Status *status);
 extern "C" Array<Ship *> *Station_getShips(Station *station);
 
-extern "C" Array<int32_t> *BluePrint_getIngredientList(BluePrint *blueprint);
+Array<int32_t> *BluePrint_getIngredientList(BluePrint *blueprint);
 extern "C" int BluePrint_getIndex(BluePrint *blueprint);
 extern "C" int BluePrint_isUnlocked(BluePrint *blueprint);
 

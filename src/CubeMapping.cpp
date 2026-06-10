@@ -34,7 +34,7 @@ void CubeMapping::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- _CubeMapping_90ab0.cpp ----
-extern "C" void _ZN11AbyssEngine11CubeMappingD0Ev(AbyssEngine::CubeMapping *self)
+void _ZN11AbyssEngine11CubeMappingD0Ev(AbyssEngine::CubeMapping *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }

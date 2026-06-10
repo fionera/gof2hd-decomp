@@ -40,8 +40,8 @@ extern "C" int TouchButton_touch_end(void *button, int x, int y);
 extern "C" void ScrollTouchWindow_touch_end(void *scroll, int x, int y);
 extern "C" void *Status_getSystem();
 extern "C" int SolarSystem_getRace(void *system);
-extern "C" void MatrixSetTranslation(void *matrix, float x, float y, float z);
-extern "C" void MatrixSetRotation(void *matrix, float x, float y, float z);
+void MatrixSetTranslation(void *matrix, float x, float y, float z);
+void MatrixSetRotation(void *matrix, float x, float y, float z);
 extern "C" void *PaintCanvas_CameraGetCurrent(void *canvas);
 extern "C" void PaintCanvas_CameraSetLocal(void *canvas, void *matrix);
 extern "C" void EaseInOutMatrix_SetRange(void *ease, void *from, void *to);
@@ -53,10 +53,10 @@ extern "C" int SpaceLounge_touch_race_vectors[];
 extern "C" int Agent_getRace(void *agent);
 extern "C" int Agent_getOffer(void *agent);
 extern "C" int Mission_getType(void *mission);
-extern "C" void Globals_getAgentMissionText(void *out, int textId, void *agent);
+void Globals_getAgentMissionText(void *out, int textId, void *agent);
 extern "C" int AERandom_nextInt(void *random, int limit);
 extern "C" int String_Compare(void *lhs, void *rhs);
-extern "C" int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate);
+int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate);
 extern "C" int *SpaceLounge_getSoundId_missionText;
 extern "C" void *SpaceLounge_getSoundId_offerText;
 extern "C" void *SpaceLounge_getSoundId_offer2358910;
@@ -77,11 +77,11 @@ extern "C" void ScrollTouchWindow_scroll(void *scroll, int amount);
 extern "C" void *Level_getEnemies(void *level);
 extern "C" void *PaintCanvas_CameraGetLocal(void *canvas);
 extern "C" void PaintCanvas_GetScreenPosition(void *canvas, void *vec);
-extern "C" void MatrixGetRight(void *out, void *matrix);
-extern "C" void MatrixGetPosition(void *out, void *matrix);
-extern "C" void MatrixGetUp(void *out, void *matrix);
-extern "C" void MatrixGetLookAt(void *out, void *pos, void *target, void *up);
-extern "C" void MatrixGetDir(void *out, void *matrix);
+void MatrixGetRight(void *out, void *matrix);
+void MatrixGetPosition(void *out, void *matrix);
+void MatrixGetUp(void *out, void *matrix);
+void MatrixGetLookAt(void *out, void *pos, void *target, void *up);
+void MatrixGetDir(void *out, void *matrix);
 extern "C" void Vector_mul(void *out, void *vec, float scale);
 extern "C" void Vector_assign(void *dst, void *src);
 extern "C" void Vector_sub(void *out, void *a, void *b);
@@ -133,7 +133,7 @@ extern "C" void *SpaceLounge_ctor_camera_slot;
 extern "C" void Agent_setKnown(void *agent, bool known);
 extern "C" void ChoiceWindow_setText(void *choice, void *title, void *body);
 extern "C" void ChoiceWindow_setButtonText(void *choice, void *left, void *right);
-extern "C" int SpaceLounge_getSoundId(SpaceLounge *self, void *agent);
+int SpaceLounge_getSoundId(SpaceLounge *self, void *agent);
 extern "C" void *SpaceLounge_start_text_slot;
 extern "C" void *CutScene_dtor(void *p);
 extern "C" void *Array_StringPtr_dtor(void *p);
@@ -169,7 +169,7 @@ extern "C" void EaseInOutMatrix_Increase(void *ease, float dt);
 extern "C" void EaseInOutMatrix_GetMaxValue(void *out, void *ease);
 extern "C" void EaseInOutMatrix_GetValue(void *out, void *ease);
 extern "C" int Matrix_equal(void *a, void *b);
-extern "C" float Sinf(float value);
+float Sinf(float value);
 extern "C" void EaseInOut_ctor(void *ease, float start, float end);
 extern "C" float EaseInOut_GetValue(void *ease);
 extern "C" float EaseInOut_GetMaxValue(void *ease);
@@ -375,7 +375,7 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
 }
 
 // ---- getSpecificSoundForRace_17177c.cpp ----
-extern "C" int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate)
+int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate)
 {
     unsigned delta;
 
@@ -571,7 +571,7 @@ static inline int random_from(void *slot, int limit)
     return AERandom_nextInt(*(void **)slot, limit);
 }
 
-extern "C" int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
+int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
 {
     char missionText[12];
 
@@ -1088,7 +1088,7 @@ int SpaceLounge::init() {
 }
 
 // ---- SpaceLounge_169ad0.cpp ----
-extern "C" SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
+SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
 {
     char from[60];
     char to[60];
@@ -1237,7 +1237,7 @@ void SpaceLounge::startChat() {
 }
 
 // ---- _SpaceLounge_16a89a.cpp ----
-extern "C" void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
+void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
 {
     void *p = P(self, 0x8);
     if (p != 0) {

@@ -27,7 +27,7 @@ extern "C" void *memcpy(void *, const void *, unsigned long);
 extern "C" int   _ZN11AbyssEngine6AEFile4ReadEjPvj(int size, void *dst, unsigned int file);
 extern "C" void  _ZN11AbyssEngine6AEFile5CloseEj(unsigned int file);
 extern "C" unsigned short *_ZN11AbyssEngine6String15getWCharFromUtf8EPcj(char *utf8, unsigned int len);
-extern "C" void  GameText_convertStringFromArabic(void *out, int pad, void *in);
+void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 
 // ---- release_8174e.cpp ----
 // GameText::release() -- destroys each owned text-table entry via its vtable[1], then nulls it.
@@ -55,7 +55,7 @@ void GameText::release() {
 // *g_GameText_language -> current language id (signed short).
 
 // GameText::getLanguage() -> (int)current language id.
-extern "C" int GameText_getLanguage()
+int GameText_getLanguage()
 {
     return *g_GameText_language;
 }
@@ -66,7 +66,7 @@ extern const char gRegionCodeStr[] __attribute__((visibility("hidden")));
 
 
 // GameText::getRegionCode() -> returns an AbyssEngine::String by value (sret).
-extern "C" RetStr GameText_getRegionCode()
+RetStr GameText_getRegionCode()
 {
     RetStr r;
     AEString_ctor_cstr(&r, gRegionCodeStr, false);
@@ -168,7 +168,7 @@ void GameText::setLanguage_si(int stringCount, int langId) {
 // Tail veneer to the base/Array<int> destructor; takes and returns this.
 
 // GameText::~GameText() -> releases owned text table + string, tail-calls base dtor.
-extern "C" GameText *_ZN8GameTextD2Ev(GameText *self)
+GameText *_ZN8GameTextD2Ev(GameText *self)
 {
     ((GameText *)(self))->release();
     void *p = self->field_0xc;
@@ -182,7 +182,7 @@ extern "C" GameText *_ZN8GameTextD2Ev(GameText *self)
 extern unsigned gArabicTable[] __attribute__((visibility("hidden")));
 
 // GameText::isNonArabicString(unsigned short const*, unsigned) -> 1 if no char is in the table.
-extern "C" int GameText_isNonArabicString(const unsigned short *param_1, unsigned param_2)
+int GameText_isNonArabicString(const unsigned short *param_1, unsigned param_2)
 {
     unsigned short i = 0;
     bool keep;
@@ -244,7 +244,7 @@ static inline bool isJoiner(unsigned short c) {
     return c >= 0x600 && c != 0x60c && c != 0x61f;
 }
 
-extern "C" void GameText_convertStringFromArabic(void *out, int pad, void *in)
+void GameText_convertStringFromArabic(void *out, int pad, void *in)
 {
     (void)pad;
 

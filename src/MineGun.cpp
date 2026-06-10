@@ -11,7 +11,7 @@ extern "C" void operator_delete(void *ptr);
 extern "C" void operator_delete_array(void *ptr);
 extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void *ObjectGun_dtor(MineGun *self);
-extern "C" void *_ZN7MineGunD1Ev(MineGun *self);
+void *_ZN7MineGunD1Ev(MineGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **MineGun_canvas_holder;
 extern "C" void *operator_new(uint32_t size);
 extern "C" void *operator_new_array(uint32_t size);
@@ -26,7 +26,7 @@ extern "C" void Transform_SetAnimationState(uint32_t transform, int state, int f
 extern "C" void ObjectGun_update(MineGun *self, int delta);
 extern "C" void Transform_Update(uint32_t transform, long long delta, int zero);
 extern "C" void AEMath_operator_sub(Vector *out, const Vector *a, const Vector *b);
-extern "C" float VectorLength(const Vector *self);
+float VectorLength(const Vector *self);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 
 // ---- render_1566bc.cpp ----
@@ -42,7 +42,7 @@ void MineGun::render()
 }
 
 // ---- _MineGun_1565e4.cpp ----
-extern "C" void *_ZN7MineGunD1Ev(MineGun *self)
+void *_ZN7MineGunD1Ev(MineGun *self)
 {
     P(self, 0x0) = (char *)MineGun_vtable + 8;
 
@@ -72,7 +72,7 @@ void MineGun::setPlayer(PlayerEgo *player)
 }
 
 // ---- _MineGun_1566a6.cpp ----
-extern "C" void _ZN7MineGunD0Ev(MineGun *self)
+void _ZN7MineGunD0Ev(MineGun *self)
 {
     return operator_delete(_ZN7MineGunD1Ev(self));
 }
@@ -81,7 +81,7 @@ extern "C" void _ZN7MineGunD0Ev(MineGun *self)
 extern "C" void ObjectGun_ctor(MineGun *self, int param_3, Gun *gun, int param_2,
                                 int zero, Level *level);
 
-extern "C" MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
+MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
                                                    int param_3, int, Level *level)
 {
     int zero = 0;

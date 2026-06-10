@@ -20,7 +20,7 @@ void BumpShader::SetInActive()
 } // namespace AbyssEngine
 
 // ---- _BumpShader_8bd0c.cpp ----
-extern "C" void _ZN11AbyssEngine10BumpShaderD0Ev(BumpShader *self)
+void _ZN11AbyssEngine10BumpShaderD0Ev(BumpShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }

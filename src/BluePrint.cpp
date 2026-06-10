@@ -4,10 +4,10 @@
 
 
 extern "C" int Item_getMaxPrice(Item *it);
-extern "C" Array<int> *BluePrint_getIngredientList(BluePrint *self);
+Array<int> *BluePrint_getIngredientList(BluePrint *self);
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void operator_delete(void *p);
-extern "C" Array<int> *BluePrint_getQuantityList(BluePrint *self);
+Array<int> *BluePrint_getQuantityList(BluePrint *self);
 extern "C" void Status_incGoodsProduced(void *status, int n);
 extern "C" Array<int> *Item_getIngredients(Item *it);
 extern "C" int Item_getSinglePrice(Item *it);
@@ -72,7 +72,7 @@ extern "C" void *ArrayInt_dtor(Array<int> *a);    // Array<int>::~Array
 // AbyssEngine::String::~String
 
 // BluePrint::~BluePrint() (D2). Returns this.
-extern "C" void *_ZN9BluePrintD2Ev(BluePrint *self)
+void *_ZN9BluePrintD2Ev(BluePrint *self)
 {
     Array<int> *a = self->field_0x0;
     if (a != 0) {
@@ -163,7 +163,7 @@ int BluePrint::getTotalAmount(int item) {
 extern void *const gItemDB __attribute__((visibility("hidden")));
 
 // BluePrint::getIngredientList() -> tail-call Item::getIngredients(itemDB[index]).
-extern "C" Array<int> *BluePrint_getIngredientList(BluePrint *self)
+Array<int> *BluePrint_getIngredientList(BluePrint *self)
 {
     int idx = self->field_0x20;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
@@ -194,7 +194,7 @@ int BluePrint::getIngredientsValue() {
 extern void *const gItemDB __attribute__((visibility("hidden")));
 
 // BluePrint::getQuantityList() -> tail-call Item::getQuantities(itemDB[index]).
-extern "C" Array<int> *BluePrint_getQuantityList(BluePrint *self)
+Array<int> *BluePrint_getQuantityList(BluePrint *self)
 {
     int idx = self->field_0x20;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
@@ -208,7 +208,7 @@ extern "C" void ArrayInt_ctor(void *a);                // Array<int>::Array()
 extern void *const gItemDB __attribute__((visibility("hidden")));
 
 // BluePrint::BluePrint(int item)
-extern "C" BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item)
+BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item)
 {
     ((String *)(&self->field_0x14))->ctor();
     self->field_0x20 = item;

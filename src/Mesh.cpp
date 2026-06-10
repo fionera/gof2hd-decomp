@@ -118,7 +118,7 @@ Mesh * Mesh::ctor(Mesh *src) {
 } // namespace AbyssEngine
 
 // Exported under the mangled copy-ctor symbol.
-extern "C" void *_ZN11AbyssEngine4MeshC1EPS0_(void *self, void *src)
+void *_ZN11AbyssEngine4MeshC1EPS0_(void *self, void *src)
 {
     return ((AbyssEngine::Mesh *)self)->ctor((AbyssEngine::Mesh *)src);
 }

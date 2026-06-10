@@ -401,7 +401,7 @@ void String::Trim() {
 
 // ---- GetStringLength_73634.cpp ----
 // AbyssEngine::String::GetStringLength(char const*) - byte length of a NUL-terminated char string.
-extern "C" int String_GetStringLength(const char *s)
+int String_GetStringLength(const char *s)
 {
     int n = 0;
     while (s[n] != '\0')
@@ -689,7 +689,7 @@ void String::SubString(String *self, unsigned int start, unsigned int end) {
 // ---- getWCharFromUtf8_725d0.cpp ----
 // AbyssEngine::String::getWCharFromUtf8(char* utf8, int len)
 // Decode `len` UTF-8 bytes into a wide buffer, transliterating Cyrillic to Latin.
-extern "C" uint16_t *String_getWCharFromUtf8(char *s, int len)
+uint16_t *String_getWCharFromUtf8(char *s, int len)
 {
     // First pass: count output code units (continuation bytes collapse multi-byte sequences).
     int outCount = 0;

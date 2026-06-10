@@ -57,7 +57,7 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
 }
 
 // ---- emit_18618c.cpp ----
-extern "C" void _ZN18ParticleSystemMesh4emitEi(ParticleSystemMesh *self, int id)
+void _ZN18ParticleSystemMesh4emitEi(ParticleSystemMesh *self, int id)
 {
     if (self->field_0xc == 0 || self->field_0xd == 0) {
         self->field_0x90 = 1;
@@ -119,7 +119,7 @@ void ParticleSystemMesh::reset()
 }
 
 // ---- _ParticleSystemMesh_1855c4.cpp ----
-extern "C" void _ZN18ParticleSystemMeshD1Ev(ParticleSystemMesh *self)
+void _ZN18ParticleSystemMeshD1Ev(ParticleSystemMesh *self)
 {
     self->field_0x0 = g_ParticleSystemMesh_vtable + 2;
     return _psm_mesh_base_dtor(self);

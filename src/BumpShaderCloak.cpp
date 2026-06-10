@@ -11,7 +11,7 @@ extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
     AbyssEngine::ShaderBaseStruct *self);
 
-extern "C" void _ZN11AbyssEngine15BumpShaderCloakD0Ev(
+void _ZN11AbyssEngine15BumpShaderCloakD0Ev(
     AbyssEngine::BumpShaderCloak *self)
 {
     operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(

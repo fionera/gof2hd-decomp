@@ -14,7 +14,7 @@
 extern "C" SentryGun *ObjectGun_dtor(SentryGun *self);   // ObjectGun::~ObjectGun(ObjectGun*)
 extern "C" void SentryGun_operator_delete(void *p);      // tail thunk
 
-extern "C" void _ZN9SentryGunD0Ev(SentryGun *self)
+void _ZN9SentryGunD0Ev(SentryGun *self)
 {
     return SentryGun_operator_delete(ObjectGun_dtor(self));
 }

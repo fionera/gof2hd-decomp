@@ -39,7 +39,7 @@ void SpecCubeAlphaMapping::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- _SpecCubeAlphaMapping_87d1c.cpp ----
-extern "C" void _ZN11AbyssEngine20SpecCubeAlphaMappingD0Ev(AbyssEngine::SpecCubeAlphaMapping *self)
+void _ZN11AbyssEngine20SpecCubeAlphaMappingD0Ev(AbyssEngine::SpecCubeAlphaMapping *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }

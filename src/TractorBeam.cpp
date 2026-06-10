@@ -245,7 +245,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
 
 // TractorBeam::~TractorBeam() (D2). Returns `this`.
 //   Destroys and frees the beam geometry, then clears the slot.
-extern "C" TractorBeam *_ZN11TractorBeamD2Ev(TractorBeam *self)
+TractorBeam *_ZN11TractorBeamD2Ev(TractorBeam *self)
 {
     AEGeometry *geo = self->field_0x14;
     if (geo != 0) {

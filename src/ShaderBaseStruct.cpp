@@ -58,7 +58,7 @@ void ShaderBaseStruct::Update()
 } // namespace AbyssEngine
 
 // ---- ShaderBaseStruct_8e424.cpp ----
-extern "C" AbyssEngine::ShaderBaseStruct *ShaderBaseStruct_8e424(AbyssEngine::ShaderBaseStruct *self)
+AbyssEngine::ShaderBaseStruct *ShaderBaseStruct_8e424(AbyssEngine::ShaderBaseStruct *self)
 {
     using namespace AbyssEngine;
     register uint32_t *stackGuardPtr = &__stack_chk_guard;

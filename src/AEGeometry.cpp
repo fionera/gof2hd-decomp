@@ -481,7 +481,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
 
 // ---- setDirection_a4688.cpp ----
 // AEGeometry::setDirection(const Vector& dir, const Vector& up)
-extern "C" void VectorCross(Vector *out, const Vector *b);                 // 0x6ec8c (out = out x b)
+void VectorCross(Vector *out, const Vector *b);                 // 0x6ec8c (out = out x b)
 
 void AEGeometry::setDirection(const Vector &dir, const Vector &up)
 {

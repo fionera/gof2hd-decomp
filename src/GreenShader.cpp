@@ -26,7 +26,7 @@ void GreenShader::SetInActive()
 } // namespace AbyssEngine
 
 // ---- _GreenShader_8847e.cpp ----
-extern "C" void _ZN11AbyssEngine11GreenShaderD0Ev(AbyssEngine::GreenShader *self)
+void _ZN11AbyssEngine11GreenShaderD0Ev(AbyssEngine::GreenShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }

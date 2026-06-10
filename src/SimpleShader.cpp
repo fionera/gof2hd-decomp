@@ -56,7 +56,7 @@ __attribute__((minsize)) SimpleShader::SimpleShader()
 
 // ---- _SimpleShader_890b0.cpp ----
 // AbyssEngine::SimpleShader::~SimpleShader() (deleting dtor)
-extern "C" void _ZN11AbyssEngine12SimpleShaderD0Ev(SimpleShader *self)
+void _ZN11AbyssEngine12SimpleShaderD0Ev(SimpleShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)self));
 }

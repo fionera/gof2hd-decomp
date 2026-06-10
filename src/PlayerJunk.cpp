@@ -17,7 +17,7 @@ struct Player {
 extern "C" void PlayerJunk_resetTail(void *self, int one);  // b.w 0x1abe08 (veneer)
 
 // PlayerJunk::reset() - reset base KIPlayer, clear state, tail-call the show/visible setter.
-extern "C" void _ZN10PlayerJunk5resetEv(PlayerJunk *self) {
+void _ZN10PlayerJunk5resetEv(PlayerJunk *self) {
     ((KIPlayer *)(self))->reset();
     self->field_0x88 = 0;
     return PlayerJunk_resetTail(self, 1);
@@ -29,7 +29,7 @@ extern "C" void PlayerJunk_dtorTail(void *self);            // b.w 0x1ab098 (ven
 
 // PlayerJunk::~PlayerJunk() - destroy the base KIPlayer then tail-call the deleting veneer
 // with the pointer the base dtor returns. Mangled so the symbol demangles to ~PlayerJunk.
-extern "C" void _ZN10PlayerJunkD0Ev(void *self) {
+void _ZN10PlayerJunkD0Ev(void *self) {
     return PlayerJunk_dtorTail(KIPlayer_dtor(self));
 }
 
@@ -41,7 +41,7 @@ extern "C" void _ZN10PlayerJunkD0Ev(void *self) {
 __attribute__((visibility("hidden"))) extern int g_PlayerJunk_vtbl;
 
 // PlayerJunk::PlayerJunk(int, Player*, AEGeometry*, float, float, float)
-extern "C" void _ZN10PlayerJunkC1EiP6PlayerP10AEGeometryfff(
+void _ZN10PlayerJunkC1EiP6PlayerP10AEGeometryfff(
         PlayerJunk *self, int p1, Player *p2, AEGeometry *p3, float p4, float p5, float p6) {
     // KIPlayer::KIPlayer returns the same object pointer (this), so write through self.
     self->field_0x3d = 1;
@@ -120,7 +120,7 @@ extern "C" void PlayerJunk_renderTail(void *self);  // b.w 0x1ac3a8 (veneer)
 
 // PlayerJunk::render() - render the geometry if present, then (unless the state is 3 or 4)
 // tail-call the base render veneer.
-extern "C" void _ZN10PlayerJunk6renderEv(PlayerJunk *self) {
+void _ZN10PlayerJunk6renderEv(PlayerJunk *self) {
     void *geom = self->field_0x78;
     if (geom != 0)
         AEGeometry_render(geom);

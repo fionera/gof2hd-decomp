@@ -538,7 +538,7 @@ void ListItemWindow::draw()
 extern "C" void  ScrollTouchWindow_update(void *self);                  // 0x75b98
 extern "C" int   Ship_getIndex(void *ship);                            // 0x719c8
 extern "C" uint32_t PaintCanvas_TransformGetLocal(uint32_t tf);        // 0x720c4
-extern "C" void  MatrixSetRotation(void *m, float x, float y, float z); // 0x72094
+void  MatrixSetRotation(void *m, float x, float y, float z); // 0x72094
 extern "C" void  MatrixSetScaling(void *m, float x, float y, float z);  // 0x6f814
 extern "C" void  AEGeometry_setRotation(void *geo, float x, float y, float z); // 0x73054
 extern "C" int   VectorSignedToFloat_i(int v);                          // s32->f32 helper

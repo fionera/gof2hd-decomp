@@ -193,7 +193,7 @@ void ParticleSystemManager::enableSystemRender(int handle, bool enable)
 extern "C" void _psm_arraySpriteCtor(void *arr);  // Array<ParticleSystemSprite*>::Array()
 extern "C" void _psm_arrayMeshCtor(void *arr);     // Array<ParticleSystemMesh*>::Array()
 
-extern "C" void *ParticleSystemManager_ctor6(
+void *ParticleSystemManager_ctor6(
     void *self, void *canvas, int cameraSet, unsigned short spriteTex, bool spriteFlag,
     unsigned short meshTex, bool meshFlag)
 {
@@ -314,7 +314,7 @@ void ParticleSystemManager::renderSprites()
 // "blend" half (+0x26/+0x4a), with the blend modes stored at +0x28/+0x4c.
 
 
-extern "C" void *ParticleSystemManager_ctor8(
+void *ParticleSystemManager_ctor8(
     void *self, void *canvas, int cameraSet, unsigned short spriteTex, int spriteBlend,
     bool spriteFlag, unsigned short meshTex, int meshBlend, bool meshFlag)
 {
@@ -541,7 +541,7 @@ void ParticleSystemManager::initMesh()
 // NB: the first explicit param is `this` (in r0); the engine passes the manager pointer there.
 
 
-extern "C" void *ParticleSystemManager_emitManual_v(
+void *ParticleSystemManager_emitManual_v(
     void *self, int handle, const float *pos, void *ret, const float *vel, float p5)
 {
     (void)vel; (void)p5;

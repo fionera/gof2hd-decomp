@@ -17,7 +17,7 @@ extern "C" void Array_AESoundInterface_dtor(void *array);
 extern "C" void __stack_chk_fail(int value) __attribute__((noreturn));
 
 // ---- freeAllRessources_7fb0c.cpp ----
-extern "C" void AESoundRessource_freeAllRessources_7fb0c(AbyssEngine::AESoundRessource *self)
+void AESoundRessource_freeAllRessources_7fb0c(AbyssEngine::AESoundRessource *self)
 {
     for (uint32_t i = 0; i < self->field_0x4; ++i) {
         void *sound = *(void **)(self->field_0x8 + i * 4);
@@ -29,7 +29,7 @@ extern "C" void AESoundRessource_freeAllRessources_7fb0c(AbyssEngine::AESoundRes
 }
 
 // ---- SetSound_7fb74.cpp ----
-extern "C" void AESoundRessource_SetSound_7fb74(AbyssEngine::AESoundRessource *self, AbyssEngine::AESoundInfo *info, int count)
+void AESoundRessource_SetSound_7fb74(AbyssEngine::AESoundRessource *self, AbyssEngine::AESoundInfo *info, int count)
 {
     self->field_0x10 = count;
     AbyssEngine::AESoundRessource *saved = self;
@@ -45,7 +45,7 @@ extern "C" void AESoundRessource_SetSound_7fb74(AbyssEngine::AESoundRessource *s
 // ---- setVolume_7fd14.cpp ----
 typedef void (*SoundIntMethod)(void *, int);
 
-extern "C" void AESoundRessource_setVolume_7fd14(AbyssEngine::AESoundRessource *self, int volume)
+void AESoundRessource_setVolume_7fd14(AbyssEngine::AESoundRessource *self, int volume)
 {
     for (uint32_t i = 0; i < self->field_0x4; ++i) {
         void *sound = *(void **)(self->field_0x8 + i * 4);
@@ -56,13 +56,13 @@ extern "C" void AESoundRessource_setVolume_7fd14(AbyssEngine::AESoundRessource *
 }
 
 // ---- play_7fee4.cpp ----
-extern "C" void AESoundRessource_play_7fee4(AbyssEngine::AESoundRessource *self, int sound)
+void AESoundRessource_play_7fee4(AbyssEngine::AESoundRessource *self, int sound)
 {
     return AESoundRessource_play_impl(self, sound, 0);
 }
 
 // ---- AESoundRessource_7fa78.cpp ----
-extern "C" AbyssEngine::AESoundRessource *AESoundRessource_7fa78(AbyssEngine::AESoundRessource *self)
+AbyssEngine::AESoundRessource *AESoundRessource_7fa78(AbyssEngine::AESoundRessource *self)
 {
     Array_AESoundInterface_ctor((char *)self + 4);
     self->field_0x10 = 0;
@@ -73,7 +73,7 @@ extern "C" AbyssEngine::AESoundRessource *AESoundRessource_7fa78(AbyssEngine::AE
 // ---- setMusicVolume_7fd70.cpp ----
 typedef void (*SoundIntMethod)(void *, int);
 
-extern "C" void AESoundRessource_setMusicVolume_7fd70(AbyssEngine::AESoundRessource *self, int volume)
+void AESoundRessource_setMusicVolume_7fd70(AbyssEngine::AESoundRessource *self, int volume)
 {
     for (uint32_t i = 0; i < self->field_0x4; ++i) {
         void *sound = *(void **)(self->field_0x8 + i * 4);
@@ -86,7 +86,7 @@ extern "C" void AESoundRessource_setMusicVolume_7fd70(AbyssEngine::AESoundRessou
 // ---- setSoundVolume_7fd42.cpp ----
 typedef void (*SoundIntMethod)(void *, int);
 
-extern "C" void AESoundRessource_setSoundVolume_7fd42(AbyssEngine::AESoundRessource *self, int volume)
+void AESoundRessource_setSoundVolume_7fd42(AbyssEngine::AESoundRessource *self, int volume)
 {
     for (uint32_t i = 0; i < self->field_0x4; ++i) {
         void *sound = *(void **)(self->field_0x8 + i * 4);
@@ -99,7 +99,7 @@ extern "C" void AESoundRessource_setSoundVolume_7fd42(AbyssEngine::AESoundRessou
 // ---- stop_7fff4.cpp ----
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_stop_7fff4(AbyssEngine::AESoundRessource *self)
+void AESoundRessource_stop_7fff4(AbyssEngine::AESoundRessource *self)
 {
     for (uint32_t i = 0; i < self->field_0x4; ++i) {
         void *sound = *(void **)(self->field_0x8 + i * 4);
@@ -112,7 +112,7 @@ extern "C" void AESoundRessource_stop_7fff4(AbyssEngine::AESoundRessource *self)
 // ---- pause_80080.cpp ----
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" int AESoundRessource_pause_80080(AbyssEngine::AESoundRessource *self)
+int AESoundRessource_pause_80080(AbyssEngine::AESoundRessource *self)
 {
     for (uint32_t i = 0; i < self->field_0x4; ++i) {
         void *sound = *(void **)(self->field_0x8 + i * 4);
@@ -126,7 +126,7 @@ extern "C" int AESoundRessource_pause_80080(AbyssEngine::AESoundRessource *self)
 // ---- resume_800e8.cpp ----
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_resume_800e8(AbyssEngine::AESoundRessource *self)
+void AESoundRessource_resume_800e8(AbyssEngine::AESoundRessource *self)
 {
     for (uint32_t i = 0; i < self->field_0x4; ++i) {
         void *sound = *(void **)(self->field_0x8 + i * 4);
@@ -137,7 +137,7 @@ extern "C" void AESoundRessource_resume_800e8(AbyssEngine::AESoundRessource *sel
 }
 
 // ---- getSoundInfo_7fa30.cpp ----
-extern "C" void AESoundRessource_getSoundInfo_7fa30(AbyssEngine::AESoundRessource *self, int id, AbyssEngine::AESoundInfo *info, int *index)
+void AESoundRessource_getSoundInfo_7fa30(AbyssEngine::AESoundRessource *self, int id, AbyssEngine::AESoundInfo *info, int *index)
 {
     *index = -1;
     uint32_t count = self->field_0x4;
@@ -155,7 +155,7 @@ extern "C" void AESoundRessource_getSoundInfo_7fa30(AbyssEngine::AESoundRessourc
 // ---- supend_80018.cpp ----
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_supend_80018(AbyssEngine::AESoundRessource *self)
+void AESoundRessource_supend_80018(AbyssEngine::AESoundRessource *self)
 {
     for (uint32_t i = 0; i < self->field_0x4; ++i) {
         void *sound = *(void **)(self->field_0x8 + i * 4);
@@ -168,7 +168,7 @@ extern "C" void AESoundRessource_supend_80018(AbyssEngine::AESoundRessource *sel
 // ---- stop_7ffb0.cpp ----
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_stop_7ffb0(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_stop_7ffb0(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     frame.cookie = __stack_chk_guard;
@@ -190,7 +190,7 @@ extern "C" void AESoundRessource_stop_7ffb0(AbyssEngine::AESoundRessource *self,
 typedef int (*SoundIntReturnMethod)(void *);
 typedef void (*SoundFloatMethod)(void *, float);
 
-extern "C" void AESoundRessource_play_7feec(AbyssEngine::AESoundRessource *self, int id, float volume)
+void AESoundRessource_play_7feec(AbyssEngine::AESoundRessource *self, int id, float volume)
 {
     float savedVolume = volume;
     int savedId = id;
@@ -219,7 +219,7 @@ extern "C" void AESoundRessource_play_7feec(AbyssEngine::AESoundRessource *self,
 typedef int (*SoundIntReturnMethod)(void *);
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_playMusicLoop_7fe88(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_playMusicLoop_7fe88(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     frame.cookie = __stack_chk_guard;
@@ -242,7 +242,7 @@ extern "C" void AESoundRessource_playMusicLoop_7fe88(AbyssEngine::AESoundRessour
 // ---- release_7fde8.cpp ----
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_release_7fde8(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_release_7fde8(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     frame.cookie = __stack_chk_guard;
@@ -264,7 +264,7 @@ static const char defaultSoundName[] = "";
 typedef void (*SoundPointerMethod)(void *, const char *);
 typedef void (*SoundIntMethod)(void *, int);
 
-extern "C" void AESoundRessource_init_7fc38(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_init_7fc38(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     const char *name = defaultSoundName;
@@ -296,7 +296,7 @@ extern "C" void AESoundRessource_init_7fc38(AbyssEngine::AESoundRessource *self,
 typedef int (*SoundIntReturnMethod)(void *);
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_playMusic_7fe2c(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_playMusic_7fe2c(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     frame.cookie = __stack_chk_guard;
@@ -346,7 +346,7 @@ AbyssEngine::AESoundRessource::~AESoundRessource()
 // ---- isPlaying_7fda0.cpp ----
 typedef int (*SoundIntReturnMethod)(void *);
 
-extern "C" int AESoundRessource_isPlaying_7fda0(AbyssEngine::AESoundRessource *self, int id)
+int AESoundRessource_isPlaying_7fda0(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     frame.cookie = __stack_chk_guard;
@@ -368,7 +368,7 @@ extern "C" int AESoundRessource_isPlaying_7fda0(AbyssEngine::AESoundRessource *s
 // ---- resume_800a4.cpp ----
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_resume_800a4(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_resume_800a4(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     frame.cookie = __stack_chk_guard;
@@ -390,7 +390,7 @@ extern "C" void AESoundRessource_resume_800a4(AbyssEngine::AESoundRessource *sel
 typedef int (*SoundIntReturnMethod)(void *);
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_playLoop_7ff54(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_playLoop_7ff54(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     frame.cookie = __stack_chk_guard;
@@ -412,7 +412,7 @@ extern "C" void AESoundRessource_playLoop_7ff54(AbyssEngine::AESoundRessource *s
 
 // ---- initWithoutLoading_7fbd0.cpp ----
 
-extern "C" void AESoundRessource_initWithoutLoading_7fbd0(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_initWithoutLoading_7fbd0(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     const char *name = defaultSoundName;
@@ -438,7 +438,7 @@ extern "C" void AESoundRessource_initWithoutLoading_7fbd0(AbyssEngine::AESoundRe
 // ---- pause_8003c.cpp ----
 typedef void (*SoundVoidMethod)(void *);
 
-extern "C" void AESoundRessource_pause_8003c(AbyssEngine::AESoundRessource *self, int id)
+void AESoundRessource_pause_8003c(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     frame.cookie = __stack_chk_guard;
@@ -459,7 +459,7 @@ extern "C" void AESoundRessource_pause_8003c(AbyssEngine::AESoundRessource *self
 // ---- setVolume_7fcc4.cpp ----
 typedef void (*SoundIntMethod)(void *, int);
 
-extern "C" void AESoundRessource_setVolume_7fcc4(AbyssEngine::AESoundRessource *self, int id, int volume)
+void AESoundRessource_setVolume_7fcc4(AbyssEngine::AESoundRessource *self, int id, int volume)
 {
     int savedVolume = volume;
     AESoundStackFrame frame;

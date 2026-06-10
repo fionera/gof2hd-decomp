@@ -60,7 +60,7 @@ bool Objective::getCalcValue()
 }
 
 // ---- _Objective_97c2a.cpp ----
-extern "C" Objective *_ZN9ObjectiveD2Ev(Objective *self)
+Objective *_ZN9ObjectiveD2Ev(Objective *self)
 {
     Array<Objective *> *children = self->field_0x10;
     if (children != 0) {
@@ -82,7 +82,7 @@ extern "C" Objective *_ZN9ObjectiveD2Ev(Objective *self)
 }
 
 // ---- setAchievedText_980cc.cpp ----
-extern "C" void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective *self,
+void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective *self,
                                                                         String *text)
 {
     String *copy = (String *)operator_new(sizeof(String));

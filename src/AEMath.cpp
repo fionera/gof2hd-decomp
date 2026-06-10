@@ -522,7 +522,7 @@ using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
 
 
-extern "C" __attribute__((disable_tail_calls)) void MatrixSetTranslation(
+__attribute__((disable_tail_calls)) void MatrixSetTranslation(
     Matrix *result,
     Matrix *matrix,
     const Vector *translation)
@@ -686,7 +686,7 @@ using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
 
 
-extern "C" __attribute__((disable_tail_calls)) void MatrixSetRotation(
+__attribute__((disable_tail_calls)) void MatrixSetRotation(
     Matrix *result,
     Matrix *matrix,
     const Vector *right,

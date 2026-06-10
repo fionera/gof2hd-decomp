@@ -112,9 +112,9 @@ extern "C" void *Mission_getAgent(void *m);
 extern "C" void AEFile_ReadByte(void *out, unsigned int fd);
 extern "C" void AEFile_ReadFloat(void *out, unsigned int fd);
 extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
-extern "C" int RecordHandler_checkHash(unsigned int fd);
+int RecordHandler_checkHash(unsigned int fd);
 extern "C" void GameText_setLanguage(short obj, int lang);
-extern "C" void Globals_loadFont(int kind);
+void Globals_loadFont(int kind);
 extern "C" void FModSound_setAudioLanguage(void *s, int lang);
 extern "C" int FModSound_enableCategory(void *s, int on);
 extern "C" int FModSound_setVolume(void *s, int v);
@@ -127,7 +127,7 @@ extern "C" void AEFile_OpenWrite(void *path, unsigned int *fd);
 extern "C" void AEFile_WriteByte(int v, unsigned int fd);
 extern "C" void AEFile_WriteFloat(int v, unsigned int fd);
 extern "C" void AEFile_WriteShort(int v, unsigned int fd);
-extern "C" int GameText_getLanguage();
+int GameText_getLanguage();
 extern "C" void Agent_setCosts(void *a, int v);
 extern "C" void Agent_setEvent(void *a, int v);
 extern "C" void Agent_setOffer(void *a, int v);
@@ -176,7 +176,7 @@ extern "C" void ArrayAdd_UC(unsigned char *src, unsigned int n, void *a);
 // Tail-called veneer at 0x1ac058 (recordStoreRead dispatch).
 
 // RecordHandler::readRecord(int)
-extern "C" void RecordHandler_readRecord(int param)
+void RecordHandler_readRecord(int param)
 {
     return RecordHandler_readRecordTail(param);
 }
@@ -221,7 +221,7 @@ void * RecordHandler::readAllPreviewRecords() {
 
 // ---- notEnoughMemory_cbb30.cpp ----
 // RecordHandler::notEnoughMemory() -> bool: free space < 900.
-extern "C" uint8_t RecordHandler_notEnoughMemory()
+uint8_t RecordHandler_notEnoughMemory()
 {
     return AEFile_GetDeviceFreeSpace() < 900;
 }
@@ -1595,7 +1595,7 @@ __attribute__((visibility("hidden"))) extern const unsigned char RH_ch_salt[]; /
 __attribute__((visibility("hidden"))) extern unsigned char **RH_ch_key;        // DAT_000dd8c4 (16-byte key)
 
 // RecordHandler::checkHash(unsigned int fd) -> bool (1=valid, 0=invalid).
-extern "C" int RecordHandler_checkHash(unsigned int fd)
+int RecordHandler_checkHash(unsigned int fd)
 {
     int *guardP = g_CH_guard;
     volatile int saved = *guardP;

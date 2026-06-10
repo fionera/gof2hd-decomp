@@ -6,7 +6,7 @@ extern "C" int ShaderBaseStruct_shaderIndexIntern;
 extern "C" int BumpShaderV2_ShaderIndex;
 
 // ---- _BumpShaderV2_8dacc.cpp ----
-extern "C" void _ZN11AbyssEngine12BumpShaderV2D0Ev(BumpShaderV2 *self)
+void _ZN11AbyssEngine12BumpShaderV2D0Ev(BumpShaderV2 *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }

@@ -8,7 +8,7 @@
 // Releases the two owned heap arrays (at +0x40 and +0x48) and nulls the slots.
 // Returns `this` (the ABI quirk for the base/complete destructor variant).
 
-extern "C" void *_ZN11AbyssEngine17ResourceTransformD2Ev(ResourceTransform *self)
+void *_ZN11AbyssEngine17ResourceTransformD2Ev(ResourceTransform *self)
 {
     void *p40 = self->field_0x40;
     if (p40 != 0)

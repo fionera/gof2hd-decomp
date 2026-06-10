@@ -166,7 +166,7 @@ _ZN11AbyssEngine21TextureVtxColorShaderC2Ev(AbyssEngine::TextureVtxColorShader *
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
     AbyssEngine::ShaderBaseStruct *self);
 
-extern "C" void _ZN11AbyssEngine21TextureVtxColorShaderD0Ev(
+void _ZN11AbyssEngine21TextureVtxColorShaderD0Ev(
     AbyssEngine::TextureVtxColorShader *self)
 {
     operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(

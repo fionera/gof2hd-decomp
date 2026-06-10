@@ -6,7 +6,7 @@
 
 
 // ---- _TextureLightShader_8df1c.cpp ----
-extern "C" void _ZN11AbyssEngine18TextureLightShaderD0Ev(TextureLightShader *self)
+void _ZN11AbyssEngine18TextureLightShaderD0Ev(TextureLightShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }

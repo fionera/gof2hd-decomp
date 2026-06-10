@@ -55,7 +55,7 @@ extern "C" void String_cstr_ctor(String12 *out, const char *s, bool copy);
 extern "C" void String_concat(String12 *out, String12 *lhs, String12 *rhs);
 extern "C" void String_int_ctor(String12 *out, int v);
 extern "C" void ChoiceWindow_set(...);
-extern "C" void Globals_playMusicAndFadeOutCurrent(int track);
+void Globals_playMusicAndFadeOutCurrent(int track);
 extern "C" uint8_t StarMap_OnTouchBegin(StarMap *map, int p1);
 extern "C" void ChoiceWindow_OnTouchBegin(...);
 extern "C" void MenuTouchWindow_OnTouchBegin(...);
@@ -72,8 +72,8 @@ extern "C" void MGame_opdelete(void *p);
 extern "C" void Status_getSystem();
 extern "C" int SolarSystem_getTextureIndex(void *ss);
 extern "C" void PaintCanvas_ChangeCubeTexture(unsigned tex);
-extern "C" void Globals_startNewSoundResourceList();
-extern "C" void Globals_addSoundResourceToList(int list);
+void Globals_startNewSoundResourceList();
+void Globals_addSoundResourceToList(int list);
 extern "C" int Status_getWingmen();
 extern "C" void Status_checkForLevelUp();
 extern "C" void Level_ctor(Level *l, int a);
@@ -83,9 +83,9 @@ extern "C" int Radar_hasScanner();
 extern "C" int Status_inBlackMarketSystem();
 extern "C" int Status_dlc1Won();
 extern "C" void MGame_freeCamPanDone(MGame *self, int p3);
-extern "C" void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
+void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 extern "C" void Status_incMissionCount(void *status);
-extern "C" int DialogueWindow_hasSuccessDialogue(int cm);
+int DialogueWindow_hasSuccessDialogue(int cm);
 extern "C" void Level_removeObjectives(Level *l);
 extern "C" void Status_setMission(void *status);
 extern "C" void StarSystem_getPlanets(StarSystem *ss);
@@ -103,8 +103,8 @@ extern "C" void FModSound_pauseAllPlayingSoundFXEvents(FModSound *s);
 extern "C" void PlayerEgo_rollRight(PlayerEgo *p, int shipField, float amt);
 extern "C" void PlayerEgo_rollLeft(PlayerEgo *p, int shipField, float amt);
 extern "C" void applyThrust(MGame *self, int y);
-extern "C" uint8_t TFC_isInLookAtMode(TargetFollowCamera *c);
-extern "C" void TFC_setLookAtCam(TargetFollowCamera *c, int v);
+uint8_t TFC_isInLookAtMode(TargetFollowCamera *c);
+void TFC_setLookAtCam(TargetFollowCamera *c, int v);
 extern "C" void Cam_setCinematic(TargetFollowCamera *c, int on);
 extern "C" void Hud_enterCinematic(...);
 extern "C" void FModSound_restoreState();
@@ -117,12 +117,12 @@ extern "C" void Radar_drawCurrentLock(void *radar);
 extern "C" void ChoiceWindow_draw(...);
 extern "C" int LevelScript_startSequenceOver(...);
 extern "C" int Status_getCurrentCampaignMission();
-extern "C" int DialogueWindow_hasBriefingDialogue(...);
+int DialogueWindow_hasBriefingDialogue(...);
 extern "C" Mission *Status_getMission();
 extern "C" int Mission_getType(Mission *m);
 extern "C" void DialogueWindow_ctor(...);
 extern "C" void LevelScript_resetCamera(...);
-extern "C" void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
+void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
 
 // ---- maneuverTouchEnd_1789b4.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
@@ -152,7 +152,7 @@ __attribute__((visibility("hidden"))) extern Music **g_music;
 __attribute__((visibility("hidden"))) extern Cfg **g_cfg;
 
 // MGame::OnResume(): resume background music unless it was deliberately stopped.
-extern "C" void MGame_OnResume() {
+void MGame_OnResume() {
     Music **mp = g_music;
     if (*mp == 0) return;
     if (FModSound_tryToStopMusicForBGMusic() != 0) return;
@@ -273,8 +273,8 @@ void MGame::OnRender3D() {
 // 0x7294c
 extern "C" void Level_enableFog(Level *l, int on);  // 0x7843c
 // 0x72838
-extern "C" void TFC_setActive(TargetFollowCamera *c, int v);  // 0x72acc
-extern "C" float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);  // 0x7267c
+void TFC_setActive(TargetFollowCamera *c, int v);  // 0x72acc
+float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);  // 0x7267c
 // 0x76b40
 // 0x76ca8
 // 0x7678c
@@ -438,8 +438,8 @@ void MGame::startJumpScene() {
 
 // 0x76804
 extern "C" void LevelScript_lookBehind(...);  // 0x7246c
-extern "C" void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v);  // 0x76c0c
-extern "C" int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c);  // 0x78460
+void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v);  // 0x76c0c
+int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c);  // 0x78460
 // PlayerEgo turret/first-person sync tail helper @0x1ac868.
 
 // MGame::switchCamera(int id)
@@ -1387,7 +1387,7 @@ void MGame::OnInitialize() {
 // 0x77adc
 extern "C" void Vector_sub(Vector *out, Vector *a, Vector *b);  // 0x6ec38
 extern "C" float Vector_length(Vector *v);  // 0x6ec44
-extern "C" void TFC_zoomTarget(void *cam, float z);  // 0x78178
+void TFC_zoomTarget(void *cam, float z);  // 0x78178
 // Pan-finish tail helper @0x1ac798 (no-op stack-guard-ok path).
 
 __attribute__((visibility("hidden"))) extern int *g_fcGuard;   // @0x188b10 (stack guard [0])
@@ -2172,7 +2172,7 @@ void MGame::setCinematicMode(bool on) {
 // ---- updateJumpScene_17f588.cpp ----
 
 extern "C" int PlayerJumpgate_timeToJump(int jg);  // 0x785c8
-extern "C" void TFC_translate(void *cam, int x, int y, int z);  // 0x72688
+void TFC_translate(void *cam, int x, int y, int z);  // 0x72688
 extern "C" void AEGeometry_getPosition(AEGeometry *geo, void *out);  // 0x720b8
 extern "C" void Transform_Update(unsigned t, int speedFlag);  // 0x6f7cc
 extern "C" void *TFC_getPosition(void *cam);  // 0x76b28
@@ -2424,8 +2424,8 @@ extern "C" void *DialogueWindow_dtor(...);  // 0x75010
 extern "C" void *ChoiceWindow_dtor(void *w);  // 0x74d88
 extern "C" void *GameRecord_dtor(...);  // 0x765ac
 extern "C" void PaintCanvas_ReleaseAllResources(int x);  // 0x6f964
-extern "C" unsigned short GameText_getLanguage();  // 0x6f544
-extern "C" void Globals_loadFont(int font, int lang);  // 0x71d04
+unsigned short GameText_getLanguage();  // 0x6f544
+void Globals_loadFont(int font, int lang);  // 0x71d04
 // 0x71d10
 // 0x71d1c
 extern "C" void Layout_initTip2(int layout);  // 0x71d28

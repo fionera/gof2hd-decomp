@@ -126,7 +126,7 @@ __attribute__((visibility("hidden"))) extern int **g_Galaxy_dist_canary;
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_dist_globals;
 __attribute__((visibility("hidden"))) extern float g_Galaxy_dist_scale;
 
-extern "C" float Galaxy_distance(void *self, void *a, void *b)
+float Galaxy_distance(void *self, void *a, void *b)
 {
     int *canary = *g_Galaxy_dist_canary;
     int saved = *canary;
@@ -237,7 +237,7 @@ void *Galaxy::getPlasmaProbabilities(void *station)
 }
 
 // ---- _Galaxy_175e54.cpp ----
-extern "C" Galaxy *_ZN6GalaxyD2Ev(Galaxy *self)
+Galaxy *_ZN6GalaxyD2Ev(Galaxy *self)
 {
     operator_delete_array(P(self, 0x0));
     void *systems = P(self, 0x4);

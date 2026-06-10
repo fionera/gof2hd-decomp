@@ -85,7 +85,7 @@ TexOnlyShader::TexOnlyShader()
 } // namespace AbyssEngine
 
 // ---- _TexOnlyShader_8b7e2.cpp ----
-extern "C" void _ZN11AbyssEngine12TexOnlyShaderD0Ev(AbyssEngine::TexOnlyShader *self)
+void _ZN11AbyssEngine12TexOnlyShaderD0Ev(AbyssEngine::TexOnlyShader *self)
 {
     operator delete(ShaderBaseStruct_dtor(self));
 }

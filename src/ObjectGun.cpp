@@ -10,18 +10,18 @@
 template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
 
-extern "C" ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self);
+ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self);
 extern "C" void ObjectGun_delete(ObjectGun *self);
 extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void operator_delete(void *self);
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion*> *self);
 extern "C" void *Array_Explosion_dtor(Array<Explosion*> *self);
 extern "C" void operator_delete_array(void *self);
-extern "C" void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
-extern "C" void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
+void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
+void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
 extern "C" void ObjectGun_setEnemies_impl(void *items);
 extern "C" void Matrix_ctor(Matrix *self);
-extern "C" void TransformCreate(void *canvas, uint32_t *transform);
+void TransformCreate(void *canvas, uint32_t *transform);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void *operator_new_array(uint32_t size);
 extern "C" void Array_Explosion_ctor(Array<Explosion*> *self);
@@ -29,19 +29,19 @@ extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion*> *sel
 extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int weapon);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
-extern "C" uint32_t TransformGetTransform(void *canvas, uint32_t transform);
+uint32_t TransformGetTransform(void *canvas, uint32_t transform);
 extern "C" void Transform_Update(uint64_t transform, int64_t dt, int flags);
 extern "C" Player *Level_getPlayer(Level *self);
 extern "C" void Player_getPosition(Vector *out, Player *self);
 // __aeabi_memcpy is declared by gof2/AEGeometry.h (returns void*)
-extern "C" void MatrixRotateVector(void *out, const void *matrix, const void *vec);
+void MatrixRotateVector(void *out, const void *matrix, const void *vec);
 extern "C" void Vector_add_assign(Vector *self, const Vector *rhs);
 extern "C" void AEGeometry_setPosition(AEGeometry *self, const Vector *position);
-extern "C" void *CameraGetCurrent(void *canvas);
-extern "C" void *CameraGetLocal(void *canvas, void *camera);
+void *CameraGetCurrent(void *canvas);
+void *CameraGetLocal(void *canvas, void *camera);
 extern "C" void Matrix_copy(Matrix *dst, const Matrix *src);
-extern "C" void MatrixGetDir(Vector *out, const Matrix *matrix);
-extern "C" void MatrixGetUp(Vector *out, const Matrix *matrix);
+void MatrixGetDir(Vector *out, const Matrix *matrix);
+void MatrixGetUp(Vector *out, const Matrix *matrix);
 extern "C" void AEGeometry_setDirection(AEGeometry *self, const Vector *dir, const Vector *up);
 extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *self);
 extern "C" void Matrix_multiply(Matrix *out, const Matrix *rhs);
@@ -50,23 +50,23 @@ extern "C" void Matrix_multiply_out(Matrix *out, const Vector *a, const Vector *
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const Matrix *matrix);
 extern "C" void AEGeometry_translate(AEGeometry *self, const Vector *offset);
 extern "C" void Explosion_update(Explosion *self, int dt, TargetFollowCamera *camera);
-extern "C" void MatrixSetRotation(Matrix *dst, float x, float y, float z);
+void MatrixSetRotation(Matrix *dst, float x, float y, float z);
 extern "C" void Matrix_multiply_inplace(Matrix *self, const Matrix *rhs);
-extern "C" void MatrixSetTranslation(Matrix *dst, float x, float y, float z);
-extern "C" void VectorNormalize(Vector *out, const Vector *in);
+void MatrixSetTranslation(Matrix *dst, float x, float y, float z);
+void VectorNormalize(Vector *out, const Vector *in);
 extern "C" void Vector_assign(Vector *dst, const Vector *src);
 extern "C" void Vector_negate(Vector *out, const Vector *in);
 extern "C" void Vector_scale(Vector *self, float scale);
 extern "C" void MatrixGetTranslation(Vector *out, const Matrix *matrix);
 extern "C" void Vector_add_scaled(Vector *out, const Vector *dir, float scale);
-extern "C" void VectorCross(Vector *out, const Vector *a, const Vector *b);
+void VectorCross(Vector *out, const Vector *a, const Vector *b);
 extern "C" void MatrixSetScaling(Matrix *dst, float x, float y, float z);
-extern "C" void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix);
-extern "C" void DrawTransform(void *canvas, uint32_t transform, int flags);
+void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix);
+void DrawTransform(void *canvas, uint32_t transform, int flags);
 extern "C" void AEGeometry_render(AEGeometry *self);
 
 // ---- _ObjectGun_15f94c.cpp ----
-extern "C" void _ZN9ObjectGunD0Ev(ObjectGun *self)
+void _ZN9ObjectGunD0Ev(ObjectGun *self)
 {
     return ObjectGun_delete(_ZN9ObjectGunD1Ev(self));
 }
@@ -82,7 +82,7 @@ void ObjectGun::setScaling(int x, int y)
 __attribute__((visibility("hidden"))) extern "C" void *ObjectGun_vtable;
 
 
-extern "C" ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
+ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
 {
     self->field_0x0 = (char *)ObjectGun_vtable + 8;
 

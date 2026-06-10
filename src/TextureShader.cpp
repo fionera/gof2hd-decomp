@@ -23,7 +23,7 @@ void TextureShader::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- _TextureShader_91258.cpp ----
-extern "C" void _ZN11AbyssEngine13TextureShaderD0Ev(AbyssEngine::TextureShader *self)
+void _ZN11AbyssEngine13TextureShaderD0Ev(AbyssEngine::TextureShader *self)
 {
     operator delete(ShaderBaseStruct_dtor(self));
 }
@@ -58,7 +58,7 @@ void TextureShader::SetInActive()
 } // namespace AbyssEngine
 
 // ---- TextureShader_90ee8.cpp ----
-extern "C" AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::TextureShader *self)
+AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::TextureShader *self)
 {
     struct Frame {
         void *nameStorage[3];

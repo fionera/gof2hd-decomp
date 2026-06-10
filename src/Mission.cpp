@@ -15,7 +15,7 @@ extern "C" void String_default_ctor(void *s);
 extern "C" Systems *Galaxy_getSystems(Galaxy *g);
 extern "C" Station *Status_getStation(Status *s);
 extern "C" int Station_getSystem(Station *s);
-extern "C" float Galaxy_distance(Galaxy *g, SolarSystem *a, SolarSystem *b);
+float Galaxy_distance(Galaxy *g, SolarSystem *a, SolarSystem *b);
 extern "C" void Station_dtor_finish(Station *s);
 
 // ---- isInstantActionMission_15bb78.cpp ----

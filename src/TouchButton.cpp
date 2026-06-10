@@ -13,7 +13,7 @@ extern "C" void  PaintCanvas_Image2DCreate(void *canvas, unsigned short imgId, u
 extern "C" int   PaintCanvas_GetImage2DWidth(void *canvas);
 extern "C" int   PaintCanvas_GetImage2DHeight(void *canvas);
 extern "C" int   PaintCanvas_GetTextHeight(void *canvas);
-extern "C" unsigned int GameText_getLanguage();
+unsigned int GameText_getLanguage();
 extern "C" int   PaintCanvas_FontGetSpacing(void *canvas);
 extern "C" unsigned int PaintCanvas_GetColor(void *canvas);
 extern "C" void  PaintCanvas_SetColor(unsigned int c);
@@ -151,7 +151,7 @@ void TouchButton::setSplitText(String *value) {
 // ---- getPosition_169380.cpp ----
 struct Vec3 { float x, y, z; };
 
-extern "C" void TouchButton_getPosition(Vec3 *out, TouchButton *self)
+void TouchButton_getPosition(Vec3 *out, TouchButton *self)
 {
     float x = (float)I(self, 0x78);
     float y = (float)I(self, 0x7c);
@@ -482,7 +482,7 @@ __attribute__((visibility("hidden"))) extern void **g_TB_canvas_ctor;   // Paint
 __attribute__((visibility("hidden"))) extern unsigned int *g_TB_defSpacing; // default glyph spacing
 __attribute__((visibility("hidden"))) extern const char  g_TB_emptyStr[];   // ""
 
-extern "C" void TouchButton_168ffc(TouchButton *self, unsigned int kind,
+void TouchButton_168ffc(TouchButton *self, unsigned int kind,
                                    int a, int b, int c, int d,
                                    unsigned char flags0, unsigned char flags1)
 {
@@ -832,7 +832,7 @@ __attribute__((visibility("hidden"))) extern void **g_TB_canvas_ctor;
 __attribute__((visibility("hidden"))) extern unsigned int *g_TB_defSpacing;
 __attribute__((visibility("hidden"))) extern const char  g_TB_emptyStr[];
 
-extern "C" void TouchButton_168d9c(TouchButton *self, unsigned int kind, unsigned int image,
+void TouchButton_168d9c(TouchButton *self, unsigned int kind, unsigned int image,
                                    int a, int b, int c, unsigned char flag)
 {
     String_ctor_default((char *)self + 0xc);
@@ -882,7 +882,7 @@ extern "C" void  String_ctor_default(void *s);                 // String::String
 // PaintCanvas singleton (deref twice). Hidden -> single pc-rel load.
 __attribute__((visibility("hidden"))) extern void **g_TB_canvas_ctor;
 
-extern "C" TouchButton *TouchButton_168f30(TouchButton *self, String *text,
+TouchButton *TouchButton_168f30(TouchButton *self, String *text,
                                            int a, int b, int c, int d,
                                            unsigned char flags0, unsigned char flags1,
                                            unsigned int spacing, int kerning)
@@ -933,7 +933,7 @@ __attribute__((visibility("hidden"))) extern void **g_TB_canvas_ctor;
 __attribute__((visibility("hidden"))) extern unsigned int *g_TB_defSpacing;
 __attribute__((visibility("hidden"))) extern const char  g_TB_emptyStr[];
 
-extern "C" void TouchButton_168cb0(TouchButton *self, unsigned int kind,
+void TouchButton_168cb0(TouchButton *self, unsigned int kind,
                                    int a, int b, int c, unsigned char flag)
 {
     String_ctor_default((char *)self + 0xc);

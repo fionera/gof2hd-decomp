@@ -57,7 +57,7 @@ extern "C" void ModStation_resumeTail(void *obj, int one, int arg);
 extern "C" void ModStation_dtor_finish(ModStation *self);
 extern "C" void ModStation_String_dtor(void *s);
 extern "C" void ModStation_leaveStation_impl(ModStation *self);
-extern "C" void Globals_reportLeaderboards(void *obj);
+void Globals_reportLeaderboards(void *obj);
 extern "C" int Status_getCurrentCampaignMission(void *s);
 extern "C" int *Achievements_getNewMedals(Achievements *a);
 extern "C" void *cm_op_new(unsigned int sz);
@@ -97,8 +97,8 @@ extern "C" void FModSound_disableReverb();
 extern "C" void FModSound_stopAllSoundFXEvents();
 extern "C" void PaintCanvas_FogEnable(void *c, int a, int b);
 extern "C" void PaintCanvas_ReleaseAllResources();
-extern "C" int GameText_getLanguage();
-extern "C" void Globals_loadFont(int obj, int lang);
+int GameText_getLanguage();
+void Globals_loadFont(int obj, int lang);
 extern "C" void *ms_op_delete(void *p);
 extern "C" void *ArrayReleaseClasses_TouchButton(void *a);
 extern "C" void *Array_TB_dtor(void *p);
@@ -162,7 +162,7 @@ __attribute__((visibility("hidden"))) extern Ship *(*g_ModStation_es_getShip)(St
 
 
 // ModStation::enterStation()
-extern "C" void ModStation_enterStation()
+void ModStation_enterStation()
 {
     Status **holder = g_ModStation_es_status;
     Status *status = holder[0];
@@ -268,7 +268,7 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_resumeArg;
 // Tail veneer (0x1ac178): (obj, 1, arg)
 
 // ModStation::OnResume()
-extern "C" void ModStation_OnResume()
+void ModStation_OnResume()
 {
     void **holder = g_ModStation_resumeObj;
     void *obj = *holder;
@@ -715,7 +715,7 @@ void Engine_LightEnable_rl(int engine, int flag);
 }
 
 // ModStation::resetLight() — restores the hangar's lighting rig to the home-system's race profile.
-extern "C" void ModStation_resetLight()
+void ModStation_resetLight()
 {
     int holder = *(int *)g_rl_engineHolder;
     rl_engineFromHolder(holder); // material ambient
@@ -1894,7 +1894,7 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
 }
 
 // --- the decline branch of the jump/depart choice window ---
-extern "C" void handleChoiceDecline(ModStation *self, int param_1, int param_2)
+void handleChoiceDecline(ModStation *self, int param_1, int param_2)
 {
     char *s = (char *)self;
     int *status = *(int **)g_ote_status;
@@ -1967,7 +1967,7 @@ extern "C" void handleChoiceDecline(ModStation *self, int param_1, int param_2)
 }
 
 // the post-standing-penalty continuation (mission-0x6c reward / level-up cleanup).
-extern "C" void handleChoiceDeclineTail(ModStation *self)
+void handleChoiceDeclineTail(ModStation *self)
 {
     char *s = (char *)self;
     int *status = *(int **)g_ote_status;
@@ -2015,7 +2015,7 @@ extern "C" void handleChoiceDeclineTail(ModStation *self)
 }
 
 // --- main button strip dispatch (launch / buy ship / DLC menu / news ticker) ---
-extern "C" void handleMainButtons(ModStation *self, int param_1, int param_2)
+void handleMainButtons(ModStation *self, int param_1, int param_2)
 {
     char *s = (char *)self;
     int *help = *(int **)g_ote_helpLayout;
@@ -2072,7 +2072,7 @@ extern "C" void handleMainButtons(ModStation *self, int param_1, int param_2)
 }
 
 // --- the full mission-completion + campaign-advance handler (reached on dialogue accept) ---
-extern "C" void handleMissionComplete(ModStation *self)
+void handleMissionComplete(ModStation *self)
 {
     char *s = (char *)self;
     int *status = *(int **)g_ote_status;
@@ -2217,7 +2217,7 @@ extern "C" void handleMissionComplete(ModStation *self)
 }
 
 // per-mission campaign station/ship side effects, then either restock-and-reward or depart.
-extern "C" void handleCampaignTransition(ModStation *self, int cm)
+void handleCampaignTransition(ModStation *self, int cm)
 {
     char *s = (char *)self;
     int *status = *(int **)g_ote_status;
@@ -2304,7 +2304,7 @@ extern "C" void handleCampaignTransition(ModStation *self, int cm)
 }
 
 // credits the reward, removes the mission and refreshes the lounge.
-extern "C" void finishMissionReward(ModStation *self)
+void finishMissionReward(ModStation *self)
 {
     char *s = (char *)self;
     int *status = *(int **)g_ote_status;

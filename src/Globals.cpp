@@ -45,7 +45,7 @@ extern "C" long long Globals_lts_divmod(long long num, int den, int *rem);
 extern "C" void AEString_int_ctor(void *dst, int v);
 extern "C" void AEString_concat(void *dst, void *a);
 extern "C" int PaintCanvas_GetTextWidth(int canvas, void *font);
-extern "C" void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth, void *lineArr);
+void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth, void *lineArr);
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
 extern "C" void AEString_default_ctor(void *s);
@@ -78,7 +78,7 @@ extern "C" int PaintCanvas_TransformGetLocal(unsigned canvas);
 extern "C" int PaintCanvas_TransformGetTransform(unsigned canvas);
 extern "C" void PaintCanvas_MeshCreate(void *canvas, unsigned short mesh, unsigned *out, int flag);
 extern "C" void PaintCanvas_MaterialCreate(void *canvas, unsigned short mat, unsigned *out);
-extern "C" void MatrixSetTranslation(void *m, float x, float y, float z);
+void MatrixSetTranslation(void *m, float x, float y, float z);
 extern "C" void Globals_buildShipGroup0f(void *self, int param_2, void *canvas);
 extern "C" int Status_dlc1Won(int status);
 extern "C" int AERandom_nextIntB(int rng, int bound);
@@ -125,7 +125,7 @@ extern "C" void Status_resetGame();
 extern "C" void FModSound_ctor(void *s);
 extern "C" void FModSound_init(void *s, void *engine);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
-extern "C" void ParticleSettingsRef_initialize();
+void ParticleSettingsRef_initialize();
 extern "C" void ArrayInt_ctor(void *a);
 extern "C" void FModSound_stop(int snd);
 extern "C" int FModSound_play(int snd, int track, int zero, int vol);
@@ -145,7 +145,7 @@ extern "C" Station *FileRead_loadStation(FileRead *p, int which);
 extern "C" void *FileRead_loadNamesBinary(void *self, int a, int b, int which);
 extern "C" void ArrayReleaseClasses_Str(void *a);
 extern "C" void *ArrayStr_dtor(void *a);
-extern "C" int GameText_getLanguage();
+int GameText_getLanguage();
 extern "C" void AEString_cstr_ctor(void *dst, const char *str, int c);
 
 // ---- reportLeaderboards_e4b90.cpp ----
@@ -154,7 +154,7 @@ struct Status;
 extern void *const gLB_status __attribute__((visibility("hidden")));
 extern void *const gLB_dest __attribute__((visibility("hidden")));
 
-extern "C" void Globals_reportLeaderboards()
+void Globals_reportLeaderboards()
 {
     int kills = Status_getKills(*(Status **)gLB_status);
     *(int *)gLB_dest = kills;
@@ -169,7 +169,7 @@ struct __attribute__((packed)) Q16 { v4si v; };
 
 extern void *const gHints __attribute__((visibility("hidden")));
 
-extern "C" void Globals_resetHints()
+void Globals_resetHints()
 {
     char *p = (char *)gHints;
     const v4si z = {0, 0, 0, 0};
@@ -180,7 +180,7 @@ extern "C" void Globals_resetHints()
 }
 
 // ---- startNewSoundResourceList_e5554.cpp ----
-extern "C" void Globals_startNewSoundResourceList(void *self)
+void Globals_startNewSoundResourceList(void *self)
 {
     if (((Globals*)self)->field_0x4 != 0) {
         ArrayInt_release(((Globals*)self)->field_0x4);
@@ -202,7 +202,7 @@ extern void *const gItemNameGameText __attribute__((visibility("hidden")));
 // RetStr (12-byte String sret aggregate) is provided by gof2/Agent.h above.
 
 // r0=sret, r1=unused, r2=item id.
-extern "C" RetStr Globals_getItemName(void *unused, int item)
+RetStr Globals_getItemName(void *unused, int item)
 {
     (void)unused;
     String *src = (String *)((GameText *)(*(void **)gItemNameGameText))->getText(item + 0x4fa);
@@ -215,7 +215,7 @@ extern "C" RetStr Globals_getItemName(void *unused, int item)
 // so the compiler keeps a frame and restores the sret pointer (no tail call). The int arg
 // is unused.
 
-extern "C" RetStr Globals_getKeyActionName(int action)
+RetStr Globals_getKeyActionName(int action)
 {
     (void)action;
     RetStr r;
@@ -237,7 +237,7 @@ float Globals::sqrt(float x) {
 extern void *const gDrinks_a __attribute__((visibility("hidden")));
 extern void *const gDrinks_rng __attribute__((visibility("hidden")));
 
-extern "C" void Globals_getRandomSystemForDrinks()
+void Globals_getRandomSystemForDrinks()
 {
     int a = *(int *)gDrinks_a;
     int r = AERandom_nextInt(*(int *)gDrinks_rng, 0x16);
@@ -246,7 +246,7 @@ extern "C" void Globals_getRandomSystemForDrinks()
 
 // ---- addSoundResourceToList_e55a6.cpp ----
 // r0=container, r1=value. Linear search; on no-match (index reaches length) tail-call to add.
-extern "C" void Globals_addSoundResourceToList(void *self, int val)
+void Globals_addSoundResourceToList(void *self, int val)
 {
     Array<int> *a = ((Globals*)self)->field_0x4;
     if (a != 0) {
@@ -269,7 +269,7 @@ extern "C" void Globals_addSoundResourceToList(void *self, int val)
 // Body copy-constructs the return slot from the source string (in r2), flag=false.
 // The copy-ctor returns void -> frame kept, sret pointer restored (no tail call).
 
-extern "C" RetStr Globals_replaceKeyBindingTokens(void *unused, void *src)
+RetStr Globals_replaceKeyBindingTokens(void *unused, void *src)
 {
     (void)unused;
     RetStr r;
@@ -280,7 +280,7 @@ extern "C" RetStr Globals_replaceKeyBindingTokens(void *unused, void *src)
 struct FileRead;
 extern void *const gStationRng __attribute__((visibility("hidden")));
 
-extern "C" int Globals_getRandomStation()
+int Globals_getRandomStation()
 {
     FileRead *f = (FileRead *)operator_new(1);
     FileRead_ctor(f);
@@ -294,10 +294,10 @@ extern "C" int Globals_getRandomStation()
 // 4-arg Globals::drawLines(uint, Array<String*>*, int, int) forwards to the 6-value
 // drawLines variant with the first arg forced to 0, the incoming 5th stack value as the
 // "startY", and a trailing 0.
-extern "C" void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
+void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
                                    int startY, int centered);
 
-extern "C" void Globals_drawLines4(unsigned p1, void *font, Array<int> *lines, int baseX,
+void Globals_drawLines4(unsigned p1, void *font, Array<int> *lines, int baseX,
                                    int startY)
 {
     (void)p1;
@@ -314,7 +314,7 @@ extern const char gGLA_newline[] __attribute__((visibility("hidden")));     // D
 // Globals::getLineArray(uint font, AbyssEngine::String const& text, int maxWidth,
 //                        Array<String*>* out)
 // font in r1, text in r2, maxWidth in r3, out at [r7+0x8].
-extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
+void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
                                      Array<void *> *out)
 {
     (void)arg3;
@@ -404,7 +404,7 @@ extern const char gLTS2_sep2[] __attribute__((visibility("hidden")));        // 
 
 // Globals::longToTimeString(long long ms, AbyssEngine::String& out)
 // out at [r7+0x8]; ms in r2:r3.
-extern "C" void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
+void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
 {
     (void)unused;
     (void)retSlot;
@@ -480,7 +480,7 @@ extern const char gGBS_prefix[] __attribute__((visibility("hidden")));      // D
 
 // Globals::getBoundedString(AbyssEngine::String const&, int) — String returned via sret (param_1).
 // text is in r2 (the const String&), width in r3.
-extern "C" void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width)
+void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width)
 {
     (void)unused;
     int *guardP = *(int **)gGBS_guardHolder;
@@ -550,7 +550,7 @@ static inline char rdflag(void *const g) { return **(char **)&g; }
 static inline int *rdobj(void *const g) { return *(int **)&g; }
 
 // Globals::setCoordsSteer(int p1, int p2, int p3, int p4, ushort& a..ushort& j)
-extern "C" void Globals_setCoordsSteer(void *self, int p1, int p2, int p3, int p4,
+void Globals_setCoordsSteer(void *self, int p1, int p2, int p3, int p4,
                                        unsigned short *o5, unsigned short *o6, unsigned short *o7,
                                        unsigned short *o8, unsigned short *o9, unsigned short *o10,
                                        unsigned short *o11, unsigned short *o12, unsigned short *o13,
@@ -706,7 +706,7 @@ extern void *const gGAMT_busyObj __attribute__((visibility("hidden")));  // DAT_
 extern void *const gGAMT_modText __attribute__((visibility("hidden")));  // DAT_000f617c
 
 // Globals::getAgentMissionText(Agent*) -> String via sret (param_1). agent in r2.
-extern "C" void Globals_getAgentMissionText(void *out, void *unused, void *agent)
+void Globals_getAgentMissionText(void *out, void *unused, void *agent)
 {
     (void)unused;
     int *guardP = *(int **)gGAMT_guard;
@@ -783,7 +783,7 @@ extern const char gIAP_id54[] __attribute__((visibility("hidden")));        // D
 
 // Globals::getInAppPurchaseArrayIndex(int productCode, Array<String*>* list)
 // productCode in r1, list in r2; returns index or -1.
-extern "C" int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
+int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
 {
     (void)self;
     int *guardP = *(int **)gIAP_guardHolder;
@@ -854,7 +854,7 @@ extern "C" int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, v
 
 // Default-construct a temp String, upper-case it, copy-construct the result into the sret
 // blob, then destroy the temp.
-extern "C" RetStr Globals_getKeyBindingReplaceString(Globals *, int key)
+RetStr Globals_getKeyBindingReplaceString(Globals *, int key)
 {
     (void)key;
 
@@ -883,7 +883,7 @@ extern const char gLTS_sep[] __attribute__((visibility("hidden")));         // D
 
 // Globals::longToTimeStringNoSeconds(long long ms, AbyssEngine::String& out)
 // out is the sret String at [r7+0x8]; param_1 (ms) in r2:r3.
-extern "C" void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms)
+void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms)
 {
     (void)unused;
     int *guardP = *(int **)gLTS_guardHolder;
@@ -945,7 +945,7 @@ extern const unsigned gGSG_lodTable[] __attribute__((visibility("hidden")));    
 extern const unsigned gGSG_childTable[] __attribute__((visibility("hidden")));       // DAT_000f5550 (3/group)
 
 // Globals::getShipGroup(int kind, int variant, bool wireframe) -> AEGeometry* via sret (this).
-extern "C" void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
+void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
 {
     int *guardP = *(int **)gGSG_guard;
     volatile int saved = *guardP;
@@ -1139,7 +1139,7 @@ extern void *const gDL2_lineHeight __attribute__((visibility("hidden"))); // DAT
 // Globals::drawLines(uint, Array<String*>*, int, int, uint, bool) — 7-decl form.
 // param_1(font), lines(r2), baseX(r3), startY(stack r7+0xc), rightX(param_5 r7+...), centered(stack).
 // When NOT centered: dx = rightX - GetTextWidth(); when centered: dx stays 0.
-extern "C" void Globals_drawLines7(unsigned font, Array<int> *lines, int baseX, int startY,
+void Globals_drawLines7(unsigned font, Array<int> *lines, int baseX, int startY,
                                    unsigned rightX, int centered)
 {
     int *cv = (int *)gDL2_canvas;          // global value (pointer); deref'd each iteration
@@ -1169,7 +1169,7 @@ extern void *const gCBB_canvas __attribute__((visibility("hidden")));    // DAT_
 
 // Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1, int width)
 // p1 ignored layout-wise; height in r1, width passed on stack(param_7).
-extern "C" void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
+void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
                                         int width)
 {
     (void)p1;
@@ -1236,7 +1236,7 @@ extern "C" void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float
 extern void *const gGWC_guardHolder __attribute__((visibility("hidden")));  // DAT_000f4e10
 
 // Globals::getWreckCollision(int kind, AEGeometry* geom) — kind in r1.
-extern "C" void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
+void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
 {
     (void)retSlot;
     int *guardP = *(int **)gGWC_guardHolder;
@@ -1566,7 +1566,7 @@ extern void *const gDL_lineHeight __attribute__((visibility("hidden")));
 // Globals::drawLines(uint, Array<String*>*, int, int, bool) — 5-decl form; the body
 // consumes 6 incoming values: p1(unused), font(r1), lines(r2), baseX(r3), startY(stack0),
 // centered(stack1).
-extern "C" void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
+void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
                                    int startY, int centered)
 {
     (void)p1;
@@ -1646,7 +1646,7 @@ static inline unsigned short clampU(float v)
 }
 
 // Globals::setCoordsFire(int p1, int p2, uint p3, uint p4, uint& o5, ushort& o6..ushort& o17)
-extern "C" void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
+void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
                                       unsigned *o5, unsigned short *o6, unsigned short *o7,
                                       unsigned short *o8, unsigned short *o9, unsigned short *o10,
                                       unsigned short *o11, unsigned short *o12, unsigned short *o13,
@@ -1782,7 +1782,7 @@ extern "C" void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, u
 extern void *const gRR_canvas __attribute__((visibility("hidden")));
 extern void *const gRR_arg __attribute__((visibility("hidden")));
 
-extern "C" void Globals_releaseResources()
+void Globals_releaseResources()
 {
     PaintCanvas_ReleaseAllResources(*(void **)gRR_canvas);
     return Globals_releaseResources_tail(*(void **)gRR_arg);
@@ -1819,7 +1819,7 @@ extern void *const gLF_flagG __attribute__((visibility("hidden")));     // DAT_0
 static inline char flag(void *const g) { return **(char **)&g; }
 
 // Globals::loadFont(int kind) — kind in r1.
-extern "C" void Globals_loadFont(void *self, int kind)
+void Globals_loadFont(void *self, int kind)
 {
     (void)self;
     void **canvasP;
@@ -2073,7 +2073,7 @@ extern const int gPM_table0 __attribute__((visibility("hidden")));   // DAT_000f
 extern const int gPM_table1 __attribute__((visibility("hidden")));   // DAT_000f5810
 
 // Globals::playMusicAndFadeOutCurrent(int mode) — mode in r1.
-extern "C" int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
+int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
 {
     int snd;
     int track;
@@ -2170,7 +2170,7 @@ extern const int gGDS_pairTable[] __attribute__((visibility("hidden")));  // DAT
 // (the disasm's iVar2 switch value 0..5). Returns -1 when unmapped.
 
 // Globals::getDialogueSoundId(int code, Agent* agent)
-extern "C" int Globals_getDialogueSoundId(void *self, int code, void *agent)
+int Globals_getDialogueSoundId(void *self, int code, void *agent)
 {
     (void)self;
     // Phase 1: linear search of the static pair table (47 pairs).
@@ -2213,7 +2213,7 @@ extern void *const gPlanetRng __attribute__((visibility("hidden")));
 
 // r0 = sret buffer for the returned name String; it is returned (r0 preserved -> the final
 // delete is a regular call, not a tail call).
-extern "C" String *Globals_getRandomPlanetName(String *ret)
+String *Globals_getRandomPlanetName(String *ret)
 {
     FileRead *f = (FileRead *)operator_new(1);
     FileRead_ctor(f);
@@ -2242,7 +2242,7 @@ extern const char gGRN_space[] __attribute__((visibility("hidden")));       // D
 
 // Globals::getRandomName(int kind, bool both) -> String via sret (r0).
 // kind in r2, both in r3.
-extern "C" void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
+void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
 {
     (void)unused;
     int *guardP = *(int **)gGRN_guardHolder;
@@ -2303,7 +2303,7 @@ extern const char gGL_empty[] __attribute__((visibility("hidden")));       // DA
 
 // Globals::getLine(uint font, AbyssEngine::String text, int maxWidth, AbyssEngine::String* out)
 // font in r1, text(String*) in r2, maxWidth in r3, out at [r7+0x8].
-extern "C" void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
+void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
                                 void *out)
 {
     (void)retSlot;

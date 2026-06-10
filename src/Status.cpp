@@ -66,7 +66,7 @@ extern "C" void *SystemPathFinder_dtor(SystemPathFinder *p);
 extern "C" void FileRead_ctor(FileRead *fr);
 extern "C" int FileRead_loadSystemsBinary();
 extern "C" void *FileRead_dtor(FileRead *fr);
-extern "C" Station *Globals_getRandomStation();
+Station *Globals_getRandomStation();
 extern "C" int Station_getSystem(Station *s);
 extern "C" int SolarSystem_getRoutes(SolarSystem *s);
 extern "C" void Wanted_setLastSeen(Wanted *w, int v);
@@ -1749,7 +1749,7 @@ void String12_dtor_v(Str12 *self);                                     // dtor v
 // Status::replaceHash(String haystack, String needle, String replacement) -> String (sret)
 //   Replaces the first occurrence of `needle` in `haystack` with `replacement`. If `needle`
 //   is absent, returns a copy of `haystack`. `out` is the hidden return slot.
-extern "C" void Status_replaceHash3(void *self, Str12 *out, Str12 *haystack,
+void Status_replaceHash3(void *self, Str12 *out, Str12 *haystack,
                                     Str12 *needle, Str12 *replacement)
 {
     (void)self;
@@ -1799,7 +1799,7 @@ void String12_ctor_char(Str12 *self, const char *text, bool copy);      // 0x6ee
 // Status::replaceHash(AbyssEngine::String haystack, AbyssEngine::String needle) -> String (sret)
 //   Forwards to the three-argument overload, substituting the hash placeholder with "".
 //   `out` is the hidden return slot; haystack/needle are passed by value (as Str12*).
-extern "C" void Status_replaceHash2(void *self, Str12 *out, Str12 *haystack, Str12 *needle)
+void Status_replaceHash2(void *self, Str12 *out, Str12 *haystack, Str12 *needle)
 {
     Str12 h, n, empty;
     String12_ctor_copy(&h, haystack, false);

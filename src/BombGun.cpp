@@ -34,7 +34,7 @@ extern "C" __attribute__((visibility("hidden"))) void *BombGun_vtable;
 extern "C" void *Explosion_dtor(Explosion *self);
 extern "C" void operator_delete(void *p);
 extern "C" void *BombGun_base_dtor(BombGun *self);
-extern "C" void *_ZN7BombGunD1Ev(BombGun *self);
+void *_ZN7BombGunD1Ev(BombGun *self);
 extern "C" void RocketGun_render(BombGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_update_canvas_a;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_update_canvas_b;
@@ -63,7 +63,7 @@ extern "C" void RocketGun_update(BombGun *self, int elapsed);
 extern "C" void LevelScript_resetCamera(LevelScript *self, Level *level);
 extern "C" void FModSound_stop(void *self, int sound);
 extern "C" void Vector_sub(void *out, void *a, void *b);
-extern "C" float VectorLength(void *self);
+float VectorLength(void *self);
 extern "C" int Status_hardCoreMode(void *self);
 extern "C" void Explosion_update(Explosion *self, int elapsed, TargetFollowCamera *camera);
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_player_canvas;
@@ -80,7 +80,7 @@ extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void AEGeometry_ctor_canvas(AEGeometry *self, void *canvas);
 
 // ---- _BombGun_147824.cpp ----
-extern "C" void *_ZN7BombGunD1Ev(BombGun *self)
+void *_ZN7BombGunD1Ev(BombGun *self)
 {
     *(void **)self = (char *)BombGun_vtable + 8;
 
@@ -93,7 +93,7 @@ extern "C" void *_ZN7BombGunD1Ev(BombGun *self)
 }
 
 // ---- _BombGun_147858.cpp ----
-extern "C" void _ZN7BombGunD0Ev(BombGun *self)
+void _ZN7BombGunD0Ev(BombGun *self)
 {
     return operator_delete(_ZN7BombGunD1Ev(self));
 }
@@ -292,7 +292,7 @@ static const float kOffsetY = 450.0f;
 static const float kOffsetZ = -1400.0f;
 static const float kRocketOffsetZ = 1700.0f;
 
-extern "C" BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
+BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
     BombGun *self, Gun *gun, uint32_t mesh, int param3, int type, int playerControlled,
     Level *level)
 {

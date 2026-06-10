@@ -5,8 +5,8 @@
 
 
 extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
-extern "C" int GameText_getLanguage();
-extern "C" void Globals_loadFont(void *obj, int lang);
+int GameText_getLanguage();
+void Globals_loadFont(void *obj, int lang);
 extern "C" void MTitle_or_tail(void *p);
 extern "C" void PaintCanvas_Begin2d(void *canvas);
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
@@ -16,7 +16,7 @@ extern "C" void Layout_drawHeader(void *layout);
 extern "C" void MTitle_r2dDone(void *screen, int arg);
 extern "C" void MTitle_r2dTail(void *canvas);
 extern "C" void _ZN6MTitle9OnReleaseEv(MTitle *self);
-extern "C" MTitle *_ZN6MTitleD2Ev(MTitle *self);
+MTitle *_ZN6MTitleD2Ev(MTitle *self);
 extern "C" void MTitle_deleteTail(MTitle *self);
 extern "C" void PaintCanvas_ClearBuffer(void *canvas, int value);
 extern "C" void PaintCanvas_Begin3d(void *arg);
@@ -118,7 +118,7 @@ MTitle::MTitle()
 }
 
 // ---- _MTitle_97998.cpp ----
-extern "C" MTitle *_ZN6MTitleD2Ev(MTitle *self)
+MTitle *_ZN6MTitleD2Ev(MTitle *self)
 {
     self->field_0x0 = (char *)g_MTitle_vtable + 8;
     _ZN6MTitle9OnReleaseEv(self);
@@ -132,7 +132,7 @@ void MTitle::OnTouchEnd(int x, int y)
 }
 
 // ---- _MTitle_979bc.cpp ----
-extern "C" void _ZN6MTitleD0Ev(MTitle *self)
+void _ZN6MTitleD0Ev(MTitle *self)
 {
     MTitle_deleteTail(_ZN6MTitleD2Ev(self));
 }

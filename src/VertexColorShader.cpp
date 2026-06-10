@@ -22,7 +22,7 @@ extern "C" __attribute__((visibility("hidden"))) BindBuffer *glBindBuffer_ptr;
 extern "C" __attribute__((visibility("hidden"))) VertexAttribPointer *glVertexAttribPointer_ptr;
 
 // ---- SetInActive_9032c.cpp ----
-extern "C" void VertexColorShader_SetInActive(AbyssEngine::VertexColorShader *self)
+void VertexColorShader_SetInActive(AbyssEngine::VertexColorShader *self)
 {
     if (ae_i32(self, 0x20) >= 0) {
         glDisableVertexAttribArray(ae_u32(self, 0x20));
@@ -45,7 +45,7 @@ extern "C" void VertexColorShader_SetInActive(AbyssEngine::VertexColorShader *se
 }
 
 // ---- Init_901fc.cpp ----
-extern "C" void VertexColorShader_Init(AbyssEngine::VertexColorShader *self)
+void VertexColorShader_Init(AbyssEngine::VertexColorShader *self)
 {
     unsigned int program = ShaderBaseStruct_ES2LoadProgram(self, "vtx_color_vs", "vtx_color_fs");
     ae_u32(self, 4) = program;
@@ -105,7 +105,7 @@ extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int
                                       int stride, const void *pointer);
 
 
-extern "C" void VertexColorShader_UpdateMeshData(AbyssEngine::VertexColorShader *self,
+void VertexColorShader_UpdateMeshData(AbyssEngine::VertexColorShader *self,
                                                   AbyssEngine::Mesh *mesh,
                                                   AbyssEngine::Engine *engine)
 {

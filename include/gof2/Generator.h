@@ -64,7 +64,7 @@ extern "C" void Agent_setWingmanFriendNames(Agent *self,
 
 extern "C" void AbyssEngine_String_dtor(AbyssEngine::String *self);
 
-extern "C" void Globals_getRandomName(AbyssEngine::String *out, int names,
+void Globals_getRandomName(AbyssEngine::String *out, int names,
                                        int race, int male);
 
 extern "C" int *ImageFactory_createChar(ImageFactory *self, int male, int race);
@@ -150,7 +150,7 @@ extern "C" Array<SolarSystem *> *Galaxy_getSystems(void *galaxy);
 extern "C" int Galaxy_invDistancePercent(void *galaxy, int x1, int y1, int x2,
                                           int y2);
 extern "C" Station *Galaxy_getStation(void *galaxy);
-extern "C" int Galaxy_distance(void *galaxy, SolarSystem *from,
+int Galaxy_distance(void *galaxy, SolarSystem *from,
                                 SolarSystem *to);
 extern "C" int *Galaxy_getAsteroidProbabilities(void *galaxy,
                                                  Station *station);

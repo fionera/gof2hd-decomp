@@ -150,7 +150,7 @@ void Quaternion::Set(const AEMath::Matrix &matrix) {
 // ---- Inverse_81328.cpp ----
 namespace AbyssEngine {
 
-extern "C" void AbyssEngine_Quaternion_Inverse(Quaternion *result, const Quaternion *self) {
+void AbyssEngine_Quaternion_Inverse(Quaternion *result, const Quaternion *self) {
     float x = self->x;
     float y = self->y;
     float z = self->z;

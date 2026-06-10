@@ -6,13 +6,13 @@ extern "C" void ArrayReleaseClasses_StringPtr(void *self);
 extern "C" void *Array_StringPtr_dtor(void *self);
 extern "C" void String_ctor_string(void *self, String *src, bool copy);
 extern "C" void ScrollTouchBox_setText2(ScrollTouchBox *self, String *text, int font);
-extern "C" int GameText_getLanguage();
+int GameText_getLanguage();
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" int PaintCanvas_GetTextHeight(void *canvas, String *font);
 extern "C" int PaintCanvas_GetTextWidth(void *canvas, String *font, String *text);
 extern "C" void PaintCanvas_DrawString(void *canvas, String *font, String *text, int x, int y, int unknown);
 extern "C" void Array_StringPtr_ctor(void *self);
-extern "C" void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);
+void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);
 extern "C" void String_ctor_cstr(void *self, char const *text, bool copy);
 extern "C" void ArrayAdd_StringPtr(String *value, void *array);
 

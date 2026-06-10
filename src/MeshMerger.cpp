@@ -76,8 +76,8 @@ void MeshMerger::setEnabled(int index, bool enabled)
 extern "C" void PaintCanvas_MeshCreate_simple(PaintCanvas *c, uint16_t nv, uint32_t *outId, bool b); // 0x75d.. (MeshCreate 4-arg)
 extern "C" void PaintCanvas_MeshCreate_full(PaintCanvas *c, int16_t nv, int16_t ni, int flags, uint16_t f, void *outId); // MeshCreate 6-arg
 
-extern "C" void MatrixTransformVector(Matrix *out, Vector *v);   // 0x.. transform point
-extern "C" void MatrixRotateVector(Matrix *out, Vector *v);      // 0x.. rotate normal
+void MatrixTransformVector(Matrix *out, Vector *v);   // 0x.. transform point
+void MatrixRotateVector(Matrix *out, Vector *v);      // 0x.. rotate normal
 
 // MeshMerger::MeshMerger(const Array<uint16_t>& meshIds, Array<Matrix> transforms,
 //                        PaintCanvas* canvas, unsigned short flags)

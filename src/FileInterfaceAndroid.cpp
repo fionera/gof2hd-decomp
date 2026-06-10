@@ -29,7 +29,7 @@ extern "C" void *operator_new(unsigned int n);
 extern const char kDirPreFix[] __attribute__((visibility("hidden")));
 
 
-extern "C" RetStr FileInterfaceAndroid_GetDirPreFix()
+RetStr FileInterfaceAndroid_GetDirPreFix()
 {
     RetStr r;
     String_ctor_cstr(&r, kDirPreFix, false);
@@ -189,7 +189,7 @@ bool FileInterfaceAndroid::Seek(unsigned int n) {
 // dtor (external), then tail-calls operator delete:
 //   blx <complete dtor> ; pop {r7,lr} ; b.w <operator delete>
 
-extern "C" void _ZN20FileInterfaceAndroidD0Ev(FileInterfaceAndroid *self)
+void _ZN20FileInterfaceAndroidD0Ev(FileInterfaceAndroid *self)
 {
     operator_delete(FileInterfaceAndroid_completeDtor(self));
 }
@@ -246,7 +246,7 @@ bool FileInterfaceAndroid::Write(unsigned int n, const void *buf) {
 // by-value String through the prologue push {r0-r3} and overlaps the temp at sp+0, giving a
 // 16-byte frame; clang -Oz lays the temp out at a higher slot with a 32-byte frame. The
 // by-value-aggregate homing/frame layout is not reachable from source form.
-extern "C" void FileInterfaceAndroid_FileDelete(String12 s)
+void FileInterfaceAndroid_FileDelete(String12 s)
 {
     char tmp[12];
     String_copy_ctor(tmp, &s, false);

@@ -10,8 +10,8 @@ extern "C" void *CutScene_dtor(void *self);
 extern "C" void *MenuTouchWindow_dtor(void *self);
 extern "C" void operator_delete(void *ptr);
 extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
-extern "C" int GameText_getLanguage();
-extern "C" void Globals_loadFont(int obj, int language);
+int GameText_getLanguage();
+void Globals_loadFont(int obj, int language);
 extern "C" void ModMainMenu_releaseTail(void *sound);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModMainMenu_resumeTail(int obj, int one, int arg);
@@ -20,7 +20,7 @@ extern "C" void PaintCanvas_Begin3d(void *canvas);
 extern "C" void CutScene_renderBG(void *scene);
 extern "C" void CutScene_render3D(void *scene);
 extern "C" void ModMainMenu_r3dTail(void *canvas);
-extern "C" ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self);
+ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self);
 extern "C" void ModMainMenu_deleteTail(ModMainMenu *self);
 extern "C" void MenuTouchWindow_OnTouchMove(void *self, int x, int y, void *touch);
 extern "C" void ModMainMenu_suspendTail(int obj);
@@ -28,7 +28,7 @@ extern "C" void MenuTouchWindow_OnTouchEnd(void *self, int x, int y, void *touch
 extern "C" void *Level_getStarSystem(void *level);
 extern "C" void ModMainMenu_touchEndTail(void *starSystem);
 extern "C" void MenuTouchWindow_OnTouchBegin(void *self, int x, int y, void *touch);
-extern "C" void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self);
+void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self);
 extern "C" void PaintCanvas_Begin2d(int canvas);
 extern "C" void PaintCanvas_SetColor(int canvas, int color);
 extern "C" void PaintCanvas_SetColor4(int canvas, int r, int g, int b, int a);
@@ -38,7 +38,7 @@ extern "C" void CutScene_render2D(void *scene);
 extern "C" void MenuTouchWindow_draw(void *window);
 extern "C" float AEMath_Sinf(float value);
 extern "C" void ModMainMenu_r2dTail(int canvas);
-extern "C" void Globals_startNewSoundResourceList(void *soundRes);
+void Globals_startNewSoundResourceList(void *soundRes);
 extern "C" void Status_resetGame(void *status);
 extern "C" void AERandom_reset(void *random);
 extern "C" int AERandom_nextInt(void *random, int limit);
@@ -57,14 +57,14 @@ extern "C" void Status_setPlayingTime(int time, long long zero);
 extern "C" void MenuTouchWindow_ctor(void *self, int mode);
 extern "C" void MenuTouchWindow_showSupernovaMessage(void *self);
 extern "C" void PaintCanvas_Image2DCreate(void *factory, int image, int *out);
-extern "C" void Globals_playMusicAndFadeOutCurrent(int music);
+void Globals_playMusicAndFadeOutCurrent(int music);
 extern "C" void CutScene_update(void *scene, int elapsed);
 extern "C" void MenuTouchWindow_update(void *window, int elapsed);
 
 // ---- ModMainMenu_1757a0.cpp ----
 __attribute__((visibility("hidden"))) extern void *volatile g_ModMainMenu_vtable;
 
-extern "C" void _ZN11ModMainMenuC2Ev(ModMainMenu *self)
+void _ZN11ModMainMenuC2Ev(ModMainMenu *self)
 {
     *(volatile uint8_t *)B(self, 0x10) = 0;
     *(volatile uint8_t *)B(self, 0x29) = 0;
@@ -84,7 +84,7 @@ __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_releaseImageFa
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_releaseSound;
 
 
-extern "C" void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
+void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
 {
     void *cutscene = P(self, 0x1c);
     if (cutscene != 0)
@@ -118,7 +118,7 @@ __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_resumeObj;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_resumeArg;
 
 
-extern "C" void _ZN11ModMainMenu8OnResumeEv(ModMainMenu *self)
+void _ZN11ModMainMenu8OnResumeEv(ModMainMenu *self)
 {
     int *holder = g_ModMainMenu_resumeObj;
     int obj = *holder;
@@ -134,7 +134,7 @@ extern "C" void _ZN11ModMainMenu8OnResumeEv(ModMainMenu *self)
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_r3d_canvas;
 
 
-extern "C" void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
+void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
 {
     void **canvas = g_ModMainMenu_r3d_canvas;
     PaintCanvas_ClearBuffer(*canvas, 0);
@@ -145,7 +145,7 @@ extern "C" void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
 }
 
 // ---- _ModMainMenu_1757e8.cpp ----
-extern "C" void _ZN11ModMainMenuD0Ev(ModMainMenu *self)
+void _ZN11ModMainMenuD0Ev(ModMainMenu *self)
 {
     ModMainMenu_deleteTail(_ZN11ModMainMenuD2Ev(self));
 }
@@ -163,7 +163,7 @@ extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu11OnTouchMov
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_suspendObj;
 
 
-extern "C" void _ZN11ModMainMenu9OnSuspendEv(ModMainMenu *self)
+void _ZN11ModMainMenu9OnSuspendEv(ModMainMenu *self)
 {
     int obj = *g_ModMainMenu_suspendObj;
     if (obj != 0)
@@ -174,7 +174,7 @@ extern "C" void _ZN11ModMainMenu9OnSuspendEv(ModMainMenu *self)
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_touchEndFlag;
 
 
-extern "C" void _ZN11ModMainMenu10OnTouchEndEiiPv(
+void _ZN11ModMainMenu10OnTouchEndEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
 {
     if (UC(self, 0x28) == 0) {
@@ -199,7 +199,7 @@ extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu12OnTouchBeg
 // ---- _ModMainMenu_1757c4.cpp ----
 
 
-extern "C" ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self)
+ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self)
 {
     P(self, 0) = (char *)g_ModMainMenu_vtable + 8;
     _ZN11ModMainMenu9OnReleaseEv(self);
@@ -219,7 +219,7 @@ extern "C" void PaintCanvas_DrawImage2D(
 extern "C" void PaintCanvas_DrawString(
     int canvas, void *str, int text, int x, int y, bool shadow);
 
-extern "C" void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
+void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
 {
     PaintCanvas_Begin2d(I(self, 0x04));
     PaintCanvas_SetColor(I(self, 0x04), -1);
@@ -295,7 +295,7 @@ __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_initMusicSlot;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_initMusic;
 
 
-extern "C" void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
+void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
 {
     char textureOut[5];
     void *options;
@@ -408,7 +408,7 @@ __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_updateListener
 extern "C" void FModSound_updateAll(
     void *listener, void *position, void *velocity, void *forward, void *up);
 
-extern "C" void _ZN11ModMainMenu8OnUpdateEv(ModMainMenu *self)
+void _ZN11ModMainMenu8OnUpdateEv(ModMainMenu *self)
 {
     int elapsed = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis();
     int frameTime;

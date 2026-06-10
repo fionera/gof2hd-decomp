@@ -24,13 +24,13 @@ extern "C" void *AEGeometry_getMatrix(AEGeometry *self);
 extern "C" void AEGeometry_rotate(AEGeometry *self, float x, float y, float z);
 extern "C" void *KIPlayer_dtor(void *self);
 extern "C" void Player_getPosition(Vector *out, Player *self);
-extern "C" void MatrixGetDir(Vector *out, const void *matrix);
-extern "C" void VectorNormalize(Vector *out, const Vector *v);
+void MatrixGetDir(Vector *out, const void *matrix);
+void VectorNormalize(Vector *out, const Vector *v);
 extern "C" void Vector_scale(Vector *out, const Vector *v, float value);
 extern "C" void Vector_add(Vector *out, const Vector *a, const Vector *b);
 extern "C" void Matrix_assign(void *dst, const void *src);
 extern "C" void Matrix_mul(void *out, const void *a, const void *b);
-extern "C" void MatrixInverseTransformVector(Vector *out, const void *matrix, const Vector *v);
+void MatrixInverseTransformVector(Vector *out, const void *matrix, const Vector *v);
 extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas, uint32_t transform);
 extern "C" void Transform_Update(uint32_t transform, int amount, int amountHigh, int flags);
 extern "C" int Level_getPlayer(Level *self);
@@ -38,7 +38,7 @@ extern "C" int Status_getStanding();
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const void *matrix);
 extern "C" void AEGeometry_translate(AEGeometry *self, const Vector *position);
 extern "C" void AEGeometry_getPosition(Vector *out, AEGeometry *self);
-extern "C" void MatrixRotateVector(Vector *out, const void *matrix, const Vector *vector);
+void MatrixRotateVector(Vector *out, const void *matrix, const Vector *vector);
 extern "C" void *FModSound_play(int sound, int id, Vector *pos, float volume);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 extern "C" int AERandom_nextInt(int rng, int max);
@@ -46,7 +46,7 @@ extern "C" void Array_int_ctor(IntArray *array);
 extern "C" void ArrayAdd_int(int value, IntArray *array);
 extern "C" PlayerArray *Player_getEnemies(Player *self);
 extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
-extern "C" float VectorLength(const Vector *v);
+float VectorLength(const Vector *v);
 extern "C" void *Explosion_dtor(Explosion *self);
 extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void AEGeometry_ctorMesh(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
@@ -178,7 +178,7 @@ KIPlayer *PlayerTurret::getHost()
 
 // ---- _PlayerTurret_1573ac.cpp ----
 // PlayerTurret deleting destructor (D0): run the complete dtor, then free.
-extern "C" void _ZN12PlayerTurretD0Ev(PlayerTurret *self)
+void _ZN12PlayerTurretD0Ev(PlayerTurret *self)
 {
     PlayerTurret_operator_delete(PlayerTurret_completeDtor(self));
 }

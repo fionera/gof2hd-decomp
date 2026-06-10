@@ -90,7 +90,7 @@ void Route::setNewCoords(float x, float y, float z) {
 }
 
 // Route::~Route() (D2). Returns this.
-extern "C" void *_ZN5RouteD2Ev(Route *self)
+void *_ZN5RouteD2Ev(Route *self)
 {
     Array<Waypoint *> *wps = self->field_0xc;
     if (wps != 0) {
@@ -134,7 +134,7 @@ extern "C" void ArrayKIPlayer_ctor(void *a);   // Array<KIPlayer*>::Array
 extern "C" void ArrayInt_ctor(void *a);        // Array<int>::Array
 
 // Route::Route(int *coords, int count) -- count triples of (x,y,z) define the waypoints.
-extern "C" Route *_ZN5RouteC2EPii(Route *self, int *coords, int count)
+Route *_ZN5RouteC2EPii(Route *self, int *coords, int count)
 {
     self->field_0x4 = 0;
     self->field_0x0 = 0;
@@ -199,7 +199,7 @@ void Route::reachWaypoint(int index) {
 }
 
 // Route::Route(int *coords, Array<KIPlayer*> *targets, int *times, int count)
-extern "C" Route *_ZN5RouteC2EPiPvPii(Route *self, int *coords, void *targets, int *times, int count)
+Route *_ZN5RouteC2EPiPvPii(Route *self, int *coords, void *targets, int *times, int count)
 {
     self->field_0x4 = 0;
     self->field_0x0 = 0;

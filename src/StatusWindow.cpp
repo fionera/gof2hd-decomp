@@ -30,7 +30,7 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StatusWindow_ach;
 
 // ---- _StatusWindow_158164.cpp ----
 // StatusWindow::~StatusWindow() -> returns this. Tears down the 4 owned Arrays.
-extern "C" StatusWindow *_ZN12StatusWindowD2Ev(StatusWindow *self)
+StatusWindow *_ZN12StatusWindowD2Ev(StatusWindow *self)
 {
     void *p = self->field_0x4;
     if (p != 0) {
@@ -369,7 +369,7 @@ extern void *g_swh_gameText;     // GameText id source
 }
 
 // StatusWindow::getMedalHintText(String *out, int medalIndex)
-extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
+void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
 {
     void *volatile cookie = __stack_chk_guard;
 

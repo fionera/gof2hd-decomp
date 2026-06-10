@@ -114,7 +114,7 @@ void BumpShaderParticle::SetInActive()
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
     AbyssEngine::ShaderBaseStruct *self);
 
-extern "C" void _ZN11AbyssEngine18BumpShaderParticleD0Ev(
+void _ZN11AbyssEngine18BumpShaderParticleD0Ev(
     AbyssEngine::BumpShaderParticle *self)
 {
     operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(

@@ -2,7 +2,7 @@
 #include <ctime>
 
 // ---- AERandom_719e0.cpp ----
-extern "C" AbyssEngine::AERandom *AERandom_719e0(AbyssEngine::AERandom *self)
+AbyssEngine::AERandom *AERandom_719e0(AbyssEngine::AERandom *self)
 {
     int seed = time(0);
     self->field_0x0 = 0xdeece66dU ^ static_cast<uint32_t>(seed);
@@ -11,7 +11,7 @@ extern "C" AbyssEngine::AERandom *AERandom_719e0(AbyssEngine::AERandom *self)
 }
 
 // ---- nextInt_71aa4.cpp ----
-extern "C" uint32_t nextInt_71aa4(AbyssEngine::AERandom *self)
+uint32_t nextInt_71aa4(AbyssEngine::AERandom *self)
 {
     uint32_t lo = self->field_0x0;
     uint32_t hi = self->field_0x4;
@@ -26,21 +26,21 @@ extern "C" uint32_t nextInt_71aa4(AbyssEngine::AERandom *self)
 }
 
 // ---- AERandom_71a18.cpp ----
-extern "C" void AERandom_71a18(AbyssEngine::AERandom *self, long long seed)
+void AERandom_71a18(AbyssEngine::AERandom *self, long long seed)
 {
     self->field_0x0 = 0xdeece66dU ^ static_cast<uint32_t>(seed);
     self->field_0x4 = (static_cast<uint32_t>(seed >> 32) & 0xffffU) ^ 5U;
 }
 
 // ---- setSeed_71a04.cpp ----
-extern "C" void setSeed_71a04(AbyssEngine::AERandom *self, long long seed)
+void setSeed_71a04(AbyssEngine::AERandom *self, long long seed)
 {
     self->field_0x0 = 0xdeece66dU ^ static_cast<uint32_t>(seed);
     self->field_0x4 = (static_cast<uint32_t>(seed >> 32) & 0xffffU) ^ 5U;
 }
 
 // ---- reset_71a30.cpp ----
-extern "C" void reset_71a30(AbyssEngine::AERandom *self)
+void reset_71a30(AbyssEngine::AERandom *self)
 {
     int seed = time(0);
     self->field_0x0 = 0xdeece66dU ^ static_cast<uint32_t>(seed);
@@ -48,7 +48,7 @@ extern "C" void reset_71a30(AbyssEngine::AERandom *self)
 }
 
 // ---- next_71a54.cpp ----
-extern "C" uint32_t next_71a54(AbyssEngine::AERandom *self, int bits)
+uint32_t next_71a54(AbyssEngine::AERandom *self, int bits)
 {
     uint32_t lo = self->field_0x0;
     uint32_t hi = self->field_0x4;
@@ -85,7 +85,7 @@ static inline __attribute__((always_inline)) uint32_t ae_next31(AbyssEngine::AER
     return (newLo >> 17) | (newHi << 15);
 }
 
-extern "C" int nextInt_71ad0(AbyssEngine::AERandom *self, int bound)
+int nextInt_71ad0(AbyssEngine::AERandom *self, int bound)
 {
     int mask = bound - 1;
     if ((bound & -bound) == bound) {

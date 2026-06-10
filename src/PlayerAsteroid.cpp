@@ -26,7 +26,7 @@ extern "C" void *PlayerAsteroid_complete_dtor(PlayerAsteroid *self);
 extern "C" void Explosion_update(Explosion *explosion, int delta, TargetFollowCamera *camera);
 extern "C" Vector Vector_scale(const Vector *vector, float scale);
 extern "C" void AEGeometry_rotate(AEGeometry *geometry, const Vector *rotation);
-extern "C" Vector Player_getHitVector(Player *player);
+Vector Player_getHitVector(Player *player);
 extern "C" Vector *Vector_assign(Vector *self, const Vector *other);
 extern "C" Vector *Vector_scale_assign(Vector *self, float scale);
 extern "C" void Level_asteroidDied(void *level);
@@ -36,13 +36,13 @@ extern "C" void ArrayAdd_int(int value, ArrayInt *array);
 extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *geometry);
 extern "C" void Explosion_setMatrix(Explosion *explosion, Matrix *matrix);
 extern "C" Vector *Vector_sub_assign(Vector *self, const Vector *other);
-extern "C" Vector VectorNormalize(const Vector *vector);
+Vector VectorNormalize(const Vector *vector);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transformId);
 extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void AEGeometry_setScaling(AEGeometry *geometry, float x, float y, float z);
 extern "C" void AEGeometry_setRotation(AEGeometry *geometry, float x, float y, float z);
-extern "C" float VectorLength(const Vector *vector);
-extern "C" void MatrixSetRotation(Matrix *out, const Matrix *base, float x, float y, float z);
+float VectorLength(const Vector *vector);
+void MatrixSetRotation(Matrix *out, const Matrix *base, float x, float y, float z);
 extern "C" Matrix Matrix_mul(const Matrix *a, const Matrix *b);
 extern "C" void AEGeometry_setMatrix(AEGeometry *geometry, const Matrix *matrix);
 extern "C" void *Explosion_dtor(Explosion *self);
@@ -112,7 +112,7 @@ int PlayerAsteroid::getQualityFrameIndex()
 }
 
 // ---- _PlayerAsteroid_e29b4.cpp ----
-extern "C" void _ZN14PlayerAsteroidD0Ev(PlayerAsteroid *self)
+void _ZN14PlayerAsteroidD0Ev(PlayerAsteroid *self)
 {
     return operator_delete(PlayerAsteroid_complete_dtor(self));
 }
@@ -472,7 +472,7 @@ void PlayerAsteroid::push(int delta)
 // ---- _PlayerAsteroid_e2980.cpp ----
 __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_vtable;
 
-extern "C" void *_ZN14PlayerAsteroidD1Ev(PlayerAsteroid *self)
+void *_ZN14PlayerAsteroidD1Ev(PlayerAsteroid *self)
 {
     self->field_0x0 = (char *)PlayerAsteroid_vtable + 8;
     Explosion *explosion = self->field_0x12c;

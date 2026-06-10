@@ -71,11 +71,11 @@ extern "C" void AEGeometry_setScaling3(AEGeometry *geom, float x, float y, float
 extern "C" void Vector_scale(char *out, const char *in, float scale);
 extern "C" void AEGeometry_setMesh(AEGeometry *geom, uint32_t mesh);
 extern "C" void AEGeometry_setScaling1(AEGeometry *geom, uint32_t scale_bits);
-extern "C" void MatrixGetPosition(char *out, void *matrix);
+void MatrixGetPosition(char *out, void *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned long n);
 extern "C" void Vector_add(char *out, const char *a, const char *b);
-extern "C" void MatrixGetUp(char *out, const char *matrix);
-extern "C" void MatrixGetLookAt(char *out, const char *from, const char *to, const char *up);
+void MatrixGetUp(char *out, const char *matrix);
+void MatrixGetLookAt(char *out, const char *from, const char *to, const char *up);
 extern "C" void Matrix_assign(char *dst, const char *src);
 extern "C" void AEGeometry_setRotation3(AEGeometry *geom, float x, float y, float z);
 extern "C" void MatrixSetScaling(char *matrix, float x, float y, float z);

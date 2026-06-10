@@ -56,7 +56,7 @@ extern "C" int  PaintCanvas_GetTextWidth(void *font, void *str);
 extern "C" void Hud_secondaryWeaponChanged(Hud *self);
 extern "C" int  Item_getIndex(void *item);
 extern "C" int  Item_getAmount(void *item);
-extern "C" void Image2DCreate(void *canvas, unsigned short id, void *outField);
+void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void *operator_new_arr(uint32_t);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);

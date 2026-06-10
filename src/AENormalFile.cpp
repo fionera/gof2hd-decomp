@@ -1,7 +1,7 @@
 #include "gof2/AENormalFile.h"
 
 
-extern "C" AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self);
+AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self);
 extern "C" void AENormalFile_deleteTail(AENormalFile *self);
 extern "C" uint32_t _ZN12AENormalFile7ReleaseEv(AENormalFile *self);
 
@@ -16,7 +16,7 @@ uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
 }
 
 // ---- _AENormalFile_70130.cpp ----
-extern "C" void _ZN12AENormalFileD0Ev(AENormalFile *self)
+void _ZN12AENormalFileD0Ev(AENormalFile *self)
 {
     AENormalFile_deleteTail(_ZN12AENormalFileD2Ev(self));
 }
@@ -78,7 +78,7 @@ uint32_t AENormalFile::Write(uint32_t bytes, const void *buffer)
 __attribute__((visibility("hidden"))) extern void *g_AENormalFile_vtable;
 
 
-extern "C" AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self)
+AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self)
 {
     P(self, 0) = (char *)g_AENormalFile_vtable + 8;
     _ZN12AENormalFile7ReleaseEv(self);

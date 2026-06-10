@@ -1,8 +1,8 @@
 #include "gof2/LODManager.h"
 
 extern "C" void LODManager_addObject_tail(AEGeometry *g, void *objects);
-extern "C" uint32_t CameraGetCurrent(void *canvas);
-extern "C" Matrix *CameraGetLocal(void *canvas, uint32_t index);
+uint32_t CameraGetCurrent(void *canvas);
+Matrix *CameraGetLocal(void *canvas, uint32_t index);
 extern "C" void AEGeometry_updateLod(AEGeometry *g, const void *pos, float factor);
 
 // ---- addObject_9520c.cpp ----
@@ -59,7 +59,7 @@ struct PaintCanvas;
 __attribute__((visibility("hidden"))) extern void **g_LOD_canvas;   // *holder = PaintCanvas*
 __attribute__((visibility("hidden"))) extern void *g_LOD_settings;  // float at +0x28 = LOD factor
 
-extern "C" void MatrixGetPosition(void *out, const Matrix *m);     // RetStr
+void MatrixGetPosition(void *out, const Matrix *m);     // RetStr
 extern "C" void Vector_assign(Vector *dst, const void *src);       // Vector::operator=
 extern "C" void AEGeometry_getParentPosition(void *out, AEGeometry *g);  // RetStr
 

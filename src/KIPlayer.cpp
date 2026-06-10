@@ -10,7 +10,7 @@
 extern "C" void FModSound_resumeEvent(void *a, int b);
 extern "C" void FModSound_pauseEvent(void *player);
 extern "C" void AEGeometry_translate(void *geom, const Vector &v);
-extern "C" void MatrixGetPosition(Vector *out, float *matrix);
+void MatrixGetPosition(Vector *out, float *matrix);
 extern "C" void Object_setVisible(void *obj);
 extern "C" void operator_delete(void *p);
 extern "C" void FModSound_stopEvent(void *player);
@@ -50,7 +50,7 @@ int KIPlayer::getType() {
 }
 
 // ---- projectCollisionOnSurface_a63d4.cpp ----
-extern "C" void KIPlayer_projectCollisionOnSurface(Vector *out)
+void KIPlayer_projectCollisionOnSurface(Vector *out)
 {
     out->x = 0.0f;
     out->y = 0.0f;
@@ -124,7 +124,7 @@ bool KIPlayer::isDocked() {
 }
 
 // ---- getProjectionVector_a63ca.cpp ----
-extern "C" void KIPlayer_getProjectionVector(Vector *out)
+void KIPlayer_getProjectionVector(Vector *out)
 {
     out->x = 0.0f;
     out->y = 0.0f;
@@ -169,9 +169,9 @@ void KIPlayer::setVisible(bool visible) {
 
 // ---- _KIPlayer_a5b16.cpp ----
 // Deleting destructor (D0): run the complete dtor, then tail-call operator delete.
-extern "C" void *_ZN8KIPlayerD1Ev(KIPlayer *self); // complete object dtor
+void *_ZN8KIPlayerD1Ev(KIPlayer *self); // complete object dtor
 
-extern "C" void _ZN8KIPlayerD0Ev(KIPlayer *self)
+void _ZN8KIPlayerD0Ev(KIPlayer *self)
 {
     return operator_delete(_ZN8KIPlayerD1Ev(self));
 }
@@ -252,7 +252,7 @@ uint8_t KIPlayer::isVisible() {
 extern "C" char KIPlayer_vtable[];     // vtable symbol base
 
 // Complete object destructor (D1). Returns this.
-extern "C" void *_ZN8KIPlayerD1Ev(KIPlayer *self)
+void *_ZN8KIPlayerD1Ev(KIPlayer *self)
 {
     *(void **)self = KIPlayer_vtable + 8;
 
@@ -311,7 +311,7 @@ void KIPlayer::setInitActive() {
 }
 
 // ---- getCollisionNormal_a5244.cpp ----
-extern "C" void KIPlayer_getCollisionNormal(Vector *out)
+void KIPlayer_getCollisionNormal(Vector *out)
 {
     out->x = 0.0f;
     out->y = 0.0f;

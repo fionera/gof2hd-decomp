@@ -160,7 +160,7 @@ int Layout::OnTouchBegin(int x, int y) {
 // (r0/r1), converted to float via __aeabi_l2f, scaled by the arg, fed to Sinf.
 struct Status;
 __attribute__((visibility("hidden"))) extern Status **gStatus;  // ldr [0xe4c5c]
-extern "C" float Sinf(float);   // AbyssEngine::AEMath::Sinf -> 0x6f1a8
+float Sinf(float);   // AbyssEngine::AEMath::Sinf -> 0x6f1a8
 
 // Layout::getPulseValue(float speed). The holder (gStatus's value) is cached; the
 // actual Status* (*holder) is reloaded for each getPlayingTime call.
@@ -185,7 +185,7 @@ __attribute__((visibility("hidden"))) extern int *gH;  // ldr [0xe3164]
 extern "C" void Layout_drawMaskImpl(void *pc, int a, int b, int w, int h);  // 0x74ddc
 
 // Layout::drawMask() -> drawMask(*gH, 0, 0, *gW, *gH)
-extern "C" void Layout_drawMask0() {
+void Layout_drawMask0() {
     void *pc = (void *)*gH;
     int w = *gW;
     Layout_drawMaskImpl(pc, 0, 0, w, *gH);
@@ -282,7 +282,7 @@ extern "C" void Layout_drawBGBorderImpl(int self, unsigned p2, int p3, int p4,
 // This 7-arg forwarding wrapper (engine 0x74e30) is distinct from the 6-arg
 // Layout::drawBGBorder method (0x74e78) used by drawBox; renamed to avoid the
 // extern "C" name clash.
-extern "C" void Layout_drawBGBorder7(unsigned p1, unsigned p2, int p3, int p4,
+void Layout_drawBGBorder7(unsigned p1, unsigned p2, int p3, int p4,
                                      int p5, int p6, int s8) {
     Layout_drawBGBorderImpl(p5, p2, p3, p4, p5, p6, s8, 0, 0);
 }
@@ -580,10 +580,10 @@ int Layout::drawMask4(int p1, int p2, int p3, int p4) {
 }
 
 // ---- formatCredits_d34d8.cpp ----
-extern "C" void Layout_formatNumber(void *out, int n);   // 0x74df4 (formatNumber)
+void Layout_formatNumber(void *out, int n);   // 0x74df4 (formatNumber)
 
 // Layout::formatCredits(int) -> out = formatNumber(n) + "$"
-extern "C" void Layout_formatCredits(void *out, int n) {
+void Layout_formatCredits(void *out, int n) {
     unsigned char num[sizeof(String12)] __attribute__((aligned(4)));
     unsigned char suffix[sizeof(String12)] __attribute__((aligned(4)));
     Layout_formatNumber(num, n);
@@ -657,7 +657,7 @@ __attribute__((visibility("hidden"))) extern const char g_fnSepB[];    // @0xe33
 __attribute__((visibility("hidden"))) extern const char g_fnOverflow[];// @0xe33f6
 
 // Layout::formatNumber(int): build a grouped decimal string into `out`.
-extern "C" void Layout_formatNumber(void *out, int value) {
+void Layout_formatNumber(void *out, int value) {
     int *guard = g_fnGuard;
     int g0 = *guard;
 
@@ -1320,7 +1320,7 @@ __attribute__((visibility("hidden"))) extern const char g_tagLit2[];       // @0
 // Layout::tagString(String): build "<lit0><base><lit1>" + param into the r0 return slot.
 // out  = param_1 (the String return value, arrives in r0).
 // in   = the incoming String (r2 -> aSStack_28 source).
-extern "C" void Layout_tagString(void *out, const void *in) {
+void Layout_tagString(void *out, const void *in) {
     unsigned char s_lit0[sizeof(String12)] __attribute__((aligned(4)));   // aSStack_4c
     unsigned char s_base[sizeof(String12)] __attribute__((aligned(4)));   // aSStack_58
     unsigned char s_ab[sizeof(String12)]   __attribute__((aligned(4)));   // aSStack_40
@@ -1478,7 +1478,7 @@ struct Status;
 struct Ship;
 
 // 0x74e00
-extern "C" void Layout_formatCredits(void *out, int n);                    // 0x74e54
+void Layout_formatCredits(void *out, int n);                    // 0x74e54
 
 // Hidden globals from drawFooter disasm.
 __attribute__((visibility("hidden"))) extern int *g_dfGuard;       // @0xe3c54 (stack guard [0])
@@ -1672,7 +1672,7 @@ struct PaintCanvas;
 
 extern "C" void Layout_drawBoxStr(PaintCanvas *pc, int p2, int x, int y,
                                int w, int h, void *str);                   // 0x7462c
-extern "C" void Layout_formatCredits(void *out, int n);                    // 0x74e54
+void Layout_formatCredits(void *out, int n);                    // 0x74e54
 
 // Hidden globals from drawMissionRewardMessage disasm.
 __attribute__((visibility("hidden"))) extern int *g_mrGuard;       // @0xe4d88 (stack guard [0])

@@ -10,7 +10,7 @@ extern "C" int glGetAttribLocation(unsigned int program, const char *name);
 extern "C" int glGetUniformLocation(unsigned int program, const char *name);
 extern "C" void glUseProgram(unsigned int program);
 extern "C" void glUniform1i(int location, int value);
-extern "C" void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self);
+void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self);
 extern "C" void operator_delete(void *self);
 extern "C" void glEnableVertexAttribArray(unsigned int index);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
@@ -116,7 +116,7 @@ void BloomShader::Init(::Engine *)
 } // namespace AbyssEngine
 
 // ---- _BloomShader_8947c.cpp ----
-extern "C" void _ZN11AbyssEngine11BloomShaderD0Ev(AbyssEngine::BloomShader *self)
+void _ZN11AbyssEngine11BloomShaderD0Ev(AbyssEngine::BloomShader *self)
 {
     return operator_delete(_ZN11AbyssEngine11BloomShaderD1Ev(self));
 }
@@ -396,7 +396,7 @@ void BloomShader::InternalInit(::Engine *engine)
 } // namespace AbyssEngine
 
 // ---- _BloomShader_89468.cpp ----
-extern "C" void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self)
+void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self)
 {
     *(void **)self = &BloomShader_vtable + 8;
     return ShaderBaseStruct_dtor((ShaderBaseStruct *)self);

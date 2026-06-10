@@ -888,7 +888,7 @@ __attribute__((visibility("hidden"))) extern char *g_psm_base2;
 // NOTE: best-effort. The colour clamps lower to a chain of vcvt.u32.f32 / conditional
 // 0xff saturation whose exact FP register scheduling under -Oz does not reproduce the
 // original byte-for-byte; the arithmetic is faithful to the decompiled form.
-extern "C" void ParticleSettings_multiplyAll(float scale) {
+void ParticleSettings_multiplyAll(float scale) {
     char *flags = g_psm_base;
     char *vals = g_psm_base2;
     float recip = 1.0f / ((scale + 1.0f) * 0.5f);
@@ -934,7 +934,7 @@ __attribute__((visibility("hidden"))) extern char *g_ps_base_dst;
 // Field +0x28 is stored as an int (count) but blended in float space; +0x14/+0x20/+0x70
 // are plain floats. Operands are written (1-t)*a + b*t so the b*t product seeds the
 // fused multiply-add, matching the target's vmul/vmla pairing.
-extern "C" void ParticleSettings_Interpolate(int a, int b, float t, int out) {
+void ParticleSettings_Interpolate(int a, int b, float t, int out) {
     char *base = g_ps_base;
     char *pb = base + b * 0xa0;
     char *pa = base + a * 0xa0;

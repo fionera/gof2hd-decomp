@@ -36,7 +36,7 @@ extern "C" void Array_GunArrayArray_ctor(Array<Array<Gun *> *> *array);
 extern "C" void Array_Gun_ctor(Array<Gun *> *array);
 extern "C" void ArraySetLength_GunArrayArray(int len, Array<Array<Gun *> *> *array);
 extern "C" void ArraySetLength_Gun(int len, Array<Gun *> *array);
-extern "C" void MatrixGetPosition(void *out, float *matrix);
+void MatrixGetPosition(void *out, float *matrix);
 extern "C" void Vector_assign(Vector *dst, Vector *src);
 extern "C" int Status_getSystem();
 extern "C" int SolarSystem_getRace();
@@ -63,7 +63,7 @@ extern "C" void *gFModSound;
 extern "C" void *gFModSoundAlt;
 extern "C" void Player_stopShootSound_play_tail(void *sound, int id);
 extern "C" int Item_getSinglePrice(void *item);
-extern "C" void Globals_addSoundResourceToList(int id);
+void Globals_addSoundResourceToList(int id);
 extern "C" void Player_calcWeaponSounds_tail(int a, int b);
 extern "C" unsigned char FModSound_pause(void *self);
 extern "C" void *gAppManager;
@@ -102,7 +102,7 @@ extern "C" int **g_damage_globals;
 extern "C" int **g_damage_text;
 extern "C" void Player_setEnemy_tail(Player *self, Player *enemy);
 extern "C" unsigned char FModSound_resume(void *self, void *event);
-extern "C" void Player_damage_full(Player *self, int amount, int a, int b);
+void Player_damage_full(Player *self, int amount, int a, int b);
 extern "C" void Player_stopShootSound(Player *self, int a, int b);
 extern "C" void Player_setMaxArmorHP_tail();
 extern "C" void Player_StopEngineSound(Player *self);
@@ -175,7 +175,7 @@ int Player::getShieldDamageRate() {
 }
 
 // ---- replaceGuns_a4360.cpp ----
-extern "C" int Player_replaceGuns(int a, int b, int c, int d, int e, bool f)
+int Player_replaceGuns(int a, int b, int c, int d, int e, bool f)
 {
     return a;
 }
@@ -587,7 +587,7 @@ struct HitVec3 {
     float z;
 };
 
-extern "C" void Player_getHitVector(HitVec3 *out, Player *self)
+void Player_getHitVector(HitVec3 *out, Player *self)
 {
     double xy = *(double *)self->hitVector;
     out->z = self->hitVector[2];
@@ -1312,7 +1312,7 @@ extern "C" const float k_damage_regen;  // DAT_b3684
 
 // Full damage implementation. Player::damage(int) below forwards here with flag=0,
 // missionId=-1. Matches the Player_damage_full(self, amount, a, b) prototype at top.
-extern "C" void Player_damage_full(Player *self, int amount, int flag, int missionId) {
+void Player_damage_full(Player *self, int amount, int flag, int missionId) {
     if (self->vulnerable == 0) return;
     if (self->active == 0) return;
     if (self->hitpoints < 1) return;

@@ -63,7 +63,7 @@ void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
 }
 
 // ---- _GlowPPShader_8cdac.cpp ----
-extern "C" void _ZN11AbyssEngine12GlowPPShaderD0Ev(GlowPPShader *self)
+void _ZN11AbyssEngine12GlowPPShaderD0Ev(GlowPPShader *self)
 {
     operator delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)self));
 }
@@ -374,7 +374,7 @@ void GlowPPShader::Init() {
 }
 
 // ---- GlowPPShader_8cd1c.cpp ----
-extern "C" GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
+GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
 {
     void *name[3];
     name[0] = self;

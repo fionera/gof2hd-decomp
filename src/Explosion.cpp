@@ -16,29 +16,29 @@ extern "C" int AERandom_nextInt(void *self, int bound);
 extern "C" void Transform_SetAnimationSpeed(uint32_t transform, float speed);
 extern "C" void AEGeometry_setPosition(AEGeometry *self, const Vector *position);
 extern "C" void AEGeometry_setDirection(AEGeometry *self, const Vector *direction, const Vector *up);
-extern "C" void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
+void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 extern "C" void Transform_Update(long long transform, long long elapsed, int zero);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
 extern "C" void AEGeometry_getPosition(Vector *out, AEGeometry *self);
 extern "C" int PaintCanvas_CameraGetCurrent(int canvas);
 extern "C" void *PaintCanvas_CameraGetLocal(int canvas, int current);
 extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
-extern "C" float VectorLength(const Vector *self);
+float VectorLength(const Vector *self);
 extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self, float value, int duration);
 extern "C" void Matrix_ctor(Matrix *self);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, int canvas, bool flag);
 extern "C" void AEGeometry_addChild(AEGeometry *self, uint32_t child);
 extern "C" void FModSound_play(int sound, int id, Vector *pos, int zero, int zero2);
-extern "C" void MatrixGetPosition(Vector *out, const Matrix *matrix);
+void MatrixGetPosition(Vector *out, const Matrix *matrix);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const Matrix *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 extern "C" void AEGeometry_render(AEGeometry *self);
-extern "C" void MatrixSetTranslation(Matrix *out, Matrix *base, float x, float y, float z);
+void MatrixSetTranslation(Matrix *out, Matrix *base, float x, float y, float z);
 extern "C" void MatrixSetScaling(Matrix *out, Matrix *base, float x, float y, float z);
-extern "C" void MatrixGetUp(Vector *out, const Matrix *matrix);
-extern "C" void MatrixGetDir(Vector *out, const Matrix *matrix);
-extern "C" void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
+void MatrixGetUp(Vector *out, const Matrix *matrix);
+void MatrixGetDir(Vector *out, const Matrix *matrix);
+void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
 extern "C" void Matrix_assign(Matrix *self, const Matrix *other);
 extern "C" void Matrix_mul_assign(Matrix *self, const Matrix *other);
 extern "C" void Explosion_reset_tail(Explosion *self);
@@ -100,7 +100,7 @@ void Explosion::reset() {
 }
 
 // ---- _Explosion_a80d8.cpp ----
-extern "C" Explosion *_ZN9ExplosionD2Ev(Explosion *self)
+Explosion *_ZN9ExplosionD2Ev(Explosion *self)
 {
     AEGeometry *geometry = self->field_0x4;
     if (geometry != 0) {
@@ -336,7 +336,7 @@ static inline __attribute__((always_inline)) AEGeometry *make_geometry(uint16_t 
     return geometry;
 }
 
-extern "C" Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
+Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
 {
     Matrix_ctor(&self->field_0x2c);
     self->field_0x24 = 1.0f;

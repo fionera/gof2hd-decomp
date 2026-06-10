@@ -22,7 +22,7 @@ extern "C" void PaintCanvas_SetColor(void *canvas, uint32_t color);
 extern "C" void PaintCanvas_FillRectangle(void *canvas, int x, int y, int w, int h);
 extern "C" void PaintCanvas_EnableClip(void *canvas, int x, int y, int w, int h);
 extern "C" void PaintCanvas_DrawString(void *canvas, void *font, String *text, int x, int y, bool flag);
-extern "C" int GameText_getLanguage();
+int GameText_getLanguage();
 extern "C" void PaintCanvas_DisableClip(void *canvas);
 extern "C" void String_copy_ctor(void *self, void *other, bool copy);
 extern "C" void String_cstr_ctor(void *self, const char *text, bool copy);

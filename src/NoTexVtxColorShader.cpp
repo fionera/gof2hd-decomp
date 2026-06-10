@@ -72,7 +72,7 @@ void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 } // namespace AbyssEngine
 
 // AbyssEngine::NoTexVtxColorShader::~NoTexVtxColorShader() (deleting dtor)
-extern "C" void _ZN11AbyssEngine19NoTexVtxColorShaderD0Ev(AbyssEngine::NoTexVtxColorShader *self)
+void _ZN11AbyssEngine19NoTexVtxColorShaderD0Ev(AbyssEngine::NoTexVtxColorShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
 }

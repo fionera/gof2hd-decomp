@@ -29,7 +29,7 @@ extern "C" __attribute__((visibility("hidden"))) int *g_IF_idTable;
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_IF_drawItem4_canvas;
 extern "C" void Array_ImagePart_ctor(Arr *a);
 extern "C" void ArraySetLength_ImagePart(uint32_t n, Arr *a);
-extern "C" int *ImageFactory_createChar_bi(int param_1, int param_2, int sel);
+int *ImageFactory_createChar_bi(int param_1, int param_2, int sel);
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagA;
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagB;
 extern "C" __attribute__((visibility("hidden"))) int *g_ctor_dst;
@@ -45,7 +45,7 @@ int ImageFactory::getItemImageId(int param_1)
 
 // ---- _ImageFactory_11c6b0.cpp ----
 // ImageFactory::~ImageFactory() -> returns this. Frees the owned Sprite at +0x00.
-extern "C" ImageFactory *_ZN12ImageFactoryD2Ev(ImageFactory *self)
+ImageFactory *_ZN12ImageFactoryD2Ev(ImageFactory *self)
 {
     void *p = self->field_0x0;
     if (p != 0) operator_delete(Sprite_dtor(p));
@@ -62,7 +62,7 @@ extern void *const gCreateChar2Rng2 __attribute__((visibility("hidden")));
 
 // ImageFactory::createChar(bool, int) — builds a 5-int char descriptor (type + 4 random parts).
 // r0=param_1(bool, unused on this path), r1=param_2, r2=sel.
-extern "C" int *ImageFactory_createChar_bi(int param_1, int param_2, int sel)
+int *ImageFactory_createChar_bi(int param_1, int param_2, int sel)
 {
     (void)param_1;
     if (sel == 3) {
@@ -146,7 +146,7 @@ void ImageFactory::drawShip(int shipId, int x, int y) {
 // canvas holder: *g_holder yields the canvas handle (matches the target's double-load).
 
 // ImageFactory::drawItem(int, int, int) — draws the item icon for id param_1 at (param_2,param_3).
-extern "C" void ImageFactory_drawItem3(int param_1, int param_2, int param_3)
+void ImageFactory_drawItem3(int param_1, int param_2, int param_3)
 {
     unsigned *holder = g_drawItem_canvas;
     unsigned local;

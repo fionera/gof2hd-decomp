@@ -42,11 +42,11 @@ extern "C" int Mission_getClientRace(Mission *self);
 extern "C" int Mission_getStatusValue(Mission *self);
 extern "C" void *Status_getStanding(void *status);
 extern "C" int AERandom_nextInt(void *self, int max);
-extern "C" int GameText_getLanguage(void);
+int GameText_getLanguage(void);
 extern "C" void String_ctor_literal(StringSlot *self, const char *text, bool copy);
 extern "C" void String_assign_slot(String *self, StringSlot *other);
 extern "C" void ScrollTouchWindow_setText4(void *self, StringSlot *style, StringSlot *text, int color);
-extern "C" int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
+int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
 extern "C" void ScrollTouchWindow_update(void *self, int dt);
 extern "C" void ChoiceWindow_update(void *self, int dt);
 extern "C" void FModSound_getPlayingProgress(void *self, int sound);
@@ -66,7 +66,7 @@ extern "C" void Layout_drawMask(void *layout);
 extern "C" void ScrollTouchWindow_draw(void *self);
 extern "C" void ChoiceWindow_draw(void *self);
 struct Vec2;  // defined below (float x, y) -- only the pointer type is needed here
-extern "C" void TouchButton_getPosition(Vec2 *out, void *self);
+void TouchButton_getPosition(Vec2 *out, void *self);
 
 // Byte-offset accessor for EXTERNAL opaque objects (Status, sound config, the
 // engine's button position records) whose layouts are not part of this class.
@@ -140,7 +140,7 @@ bool DialogueWindow::hasLevel() {
 }
 
 // ---- _DialogueWindow_167118.cpp ----
-extern "C" DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
+DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
 {
     void *p = self->field_0xc;
     if (p != 0) {
@@ -228,7 +228,7 @@ bool DialogueWindow::isLastPage() {
 // ---- hasBriefingDialogue_1671b4.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_briefingDialogueIds[];
 
-extern "C" bool DialogueWindow_hasBriefingDialogue(int id)
+bool DialogueWindow_hasBriefingDialogue(int id)
 {
     if (id > 0xa1) return false;
     return g_dw_briefingDialogueIds[id] > 0;
@@ -237,7 +237,7 @@ extern "C" bool DialogueWindow_hasBriefingDialogue(int id)
 // ---- hasSuccessDialogue_1671d4.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_successDialogueIds[];
 
-extern "C" bool DialogueWindow_hasSuccessDialogue(int id)
+bool DialogueWindow_hasSuccessDialogue(int id)
 {
     if (id > 0xa1) return false;
     return g_dw_successDialogueIds[id] > 0;

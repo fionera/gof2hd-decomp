@@ -13,7 +13,7 @@ extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
 // so it directly runs the base (PlayerStatic) destructor, then tail-calls
 // operator delete (the b.w 0x1ab098 trampoline).
 
-extern "C" void _ZN15PlayerStaticFarD0Ev(PlayerStaticFar *self)
+void _ZN15PlayerStaticFarD0Ev(PlayerStaticFar *self)
 {
     return operator_delete(PlayerStatic_base_dtor(self));
 }
@@ -72,7 +72,7 @@ bool PlayerStaticFar::outerCollide(float x, float y, float z)
 // body is a single tail-call thunk forwarding to the base PlayerStatic dtor
 // (b.w into the trampoline).
 
-extern "C" void *_ZN15PlayerStaticFarD2Ev(PlayerStaticFar *self)
+void *_ZN15PlayerStaticFarD2Ev(PlayerStaticFar *self)
 {
     return PlayerStatic_base_dtor_thunk(self);
 }

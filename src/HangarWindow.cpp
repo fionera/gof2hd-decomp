@@ -29,7 +29,7 @@ extern "C" void *Status_getShip(...);
 extern "C" void Status_replaceHash(...);
 extern "C" void ChoiceWindow_set(...);
 extern "C" void ChoiceWindow_setMsg(...);
-extern "C" void Layout_formatCredits(...);
+void Layout_formatCredits(...);
 extern "C" int PaintCanvas_GetTextWidth(...);
 // Decompiled sections disagree on arity (1 vs 2 args) / return type; extern "C" ABI symbol.
 extern "C" int *Ship_getEquipment(...);
@@ -51,7 +51,7 @@ extern "C" void FModSound_play(...);
 extern "C" extern const char hw_otb_fmt1[], hw_otb_fmt2[];
 extern "C" void *HangarList_getItems(void *list);
 extern "C" void *Ship_getCargo(void *ship);
-extern "C" void *BluePrint_getIngredientList(void *bp);
+void *BluePrint_getIngredientList(void *bp);
 extern "C" int Item_getIndex(void *item);
 extern "C" extern const char hw_bp_fmt1[], hw_bp_fmt2[], hw_bp_fmt3[];
 extern "C" extern const char hw_sel_fmt1[], hw_sel_fmt2[], hw_sel_fmt3[];
@@ -129,7 +129,7 @@ bool HangarWindow::currentItemIsHighlighted() {
 
 // ---- _HangarWindow_147d9c.cpp ----
 // HangarWindow::~HangarWindow() -> returns this. Tears down owned windows/lists/arrays.
-extern "C" HangarWindow *_ZN12HangarWindowD2Ev(HangarWindow *self)
+HangarWindow *_ZN12HangarWindowD2Ev(HangarWindow *self)
 {
     void *p;
     p = self->field_0x14;

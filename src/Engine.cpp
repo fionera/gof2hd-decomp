@@ -24,7 +24,7 @@ extern "C" void PaintCanvas_Suspend(void *canvas);
 extern "C" uint8_t g_Engine_useShaders;
 extern "C" void ShaderUpdateRimColor();
 extern "C" void glMatrixMode(unsigned int mode);
-extern "C" void MatrixGetGL(const Matrix *matrix, float *out);
+void MatrixGetGL(const Matrix *matrix, float *out);
 extern "C" void glLoadMatrixf(const float *matrix);
 extern "C" void glLoadIdentity();
 extern "C" void glScalef(float x, float y, float z);
@@ -65,11 +65,11 @@ extern "C" void operator_delete(void *ptr);
 extern "C" void AEFile_Release();
 extern "C" void ArrayReleaseClasses_ShaderBaseStruct_ptr(void *array);
 extern "C" void FBOContainer_dtor(FBOContainer *self);
-extern "C" void MeshRelease(Engine *self, void *meshSlot);
+void MeshRelease(Engine *self, void *meshSlot);
 extern "C" void Engine_ReleaseGL(Engine *self);
 extern "C" void Array_ShaderBaseStruct_ptr_dtor(void *array);
 extern "C" void Array_int_dtor(void *array);
-extern "C" void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
+void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
 extern "C" String *g_Engine_vendorString;
 extern "C" String *g_Engine_rendererString;
 extern "C" int g_Engine_cloakShader;
@@ -100,7 +100,7 @@ extern "C" int g_Engine_postEffectCounter;
 extern "C" int g_Engine_postEffectPending;
 extern "C" void FileInterfaceAndroid_ctor(void *self);
 extern "C" void AEFile_SetInterface(void *fileInterface);
-extern "C" void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
+void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
 extern "C" void PaintCanvas_Initialize(void *canvas, bool value);
 extern "C" void glLineWidth(float width);
 extern "C" void glCullFace(unsigned int mode);
@@ -472,7 +472,7 @@ void Engine::ShaderUpdate() {
 }
 
 // ---- IsExtensionSupported_86452.cpp ----
-extern "C" bool Engine_IsExtensionSupported(Engine *, const char *extension)
+bool Engine_IsExtensionSupported(Engine *, const char *extension)
 {
     const char *extensions = glGetString(0x1f03);
 
@@ -1284,7 +1284,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
 }
 
 // ---- ClearBuffer_84558.cpp ----
-extern "C" void Engine_ClearBuffer(Engine *, uint32_t color)
+void Engine_ClearBuffer(Engine *, uint32_t color)
 {
     const double scale = 255.0;
     double red = (double)(color >> 24) / scale;

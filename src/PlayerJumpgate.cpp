@@ -40,7 +40,7 @@ extern "C" int SolarSystem_getRace(void *system);
 extern "C" void AEGeometry_setRotation(AEGeometry *geometry, float x, float y, float z);
 
 // ---- _PlayerJumpgate_a5100.cpp ----
-extern "C" void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
+void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
 {
     PlayerStaticFar_dtor((PlayerStaticFar *)self);
     return PlayerJumpgate_delete_tail();

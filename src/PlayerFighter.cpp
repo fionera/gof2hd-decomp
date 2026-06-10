@@ -17,7 +17,7 @@ extern "C" void *Trail_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *PlayerFighter_base_dtor(PlayerFighter *self);
-extern "C" void *_ZN13PlayerFighterD1Ev(PlayerFighter *self);
+void *_ZN13PlayerFighterD1Ev(PlayerFighter *self);
 extern "C" void KIPlayer_setLevel(PlayerFighter *self, Level *lvl);
 extern "C" void *__stack_chk_guard;
 extern "C" void __stack_chk_fail(unsigned diff);
@@ -112,7 +112,7 @@ struct AEGeometry;
 // PlayerFighter::setShipGroup is a thunk that tail-jumps to the base implementation
 // (target is a single b.w to a relocated veneer). Model as a tail call with the same args.
 
-extern "C" void PlayerFighter_setShipGroup(AEGeometry *self, int a, bool b)
+void PlayerFighter_setShipGroup(AEGeometry *self, int a, bool b)
 {
     return PlayerFighter_setShipGroup_base(self, a, b);
 }
@@ -172,7 +172,7 @@ void PlayerFighter::removeTrail() {
 // owned members, then tail-calls the base (Fighter/Player) destructor.
 extern "C" char PlayerFighter_vtable;   // vtable symbol base
 
-extern "C" void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
+void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
 {
     *(void **)self = &PlayerFighter_vtable + 8;
 
@@ -206,7 +206,7 @@ extern "C" void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
 // ---- _PlayerFighter_dc922.cpp ----
 // PlayerFighter deleting destructor (D0): run the complete-object dtor, then tail-call delete.
 
-extern "C" void _ZN13PlayerFighterD0Ev(PlayerFighter *self)
+void _ZN13PlayerFighterD0Ev(PlayerFighter *self)
 {
     return operator_delete(_ZN13PlayerFighterD1Ev(self));
 }

@@ -11,7 +11,7 @@ extern "C" void *Array_Matrix_dtor(void *p);
 extern "C" void *Array_int_dtor(void *p);
 extern "C" void operator_delete(void *p);
 extern "C" void *RocketGun_base_dtor(RocketGun *self);
-extern "C" void *_ZN9RocketGunD1Ev(RocketGun *self);
+void *_ZN9RocketGunD1Ev(RocketGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder;
 extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(void *self, uint16_t mesh, void *canvas, bool flag);
@@ -39,15 +39,15 @@ extern "C" void Vector_imul(void *dst, float value);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder3;
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func2)(void *out, void *in);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_scale_func)(void *out, void *in, float scale);
-extern "C" void MatrixRotateVector(void *out, void *matrix, void *vec);
+void MatrixRotateVector(void *out, void *matrix, void *vec);
 extern "C" void AEGeometry_setPosition(void *geom, void *pos);
 extern "C" void AEGeometry_setScaling(void *geom, float x, float y, float z);
-extern "C" void MatrixGetDir(void *out, void *matrix);
+void MatrixGetDir(void *out, void *matrix);
 extern "C" void AEGeometry_setDirection(void *geom, void *dir, void *up);
-extern "C" void MatrixSetTranslation(void *matrix, float x, float y, float z);
+void MatrixSetTranslation(void *matrix, float x, float y, float z);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
-extern "C" void VectorCross(void *out, void *a, void *b);
-extern "C" void VectorNormalize(void *out, void *in);
+void VectorCross(void *out, void *a, void *b);
+void VectorNormalize(void *out, void *in);
 extern "C" void PaintCanvas_TransformSetLocal(void *canvas, uint32_t transformId, const void *matrix);
 extern "C" void Matrix_assign(void *dst, void *src);
 extern "C" void ParticleSystemManager_enableSystemRender(int manager, int system, bool enabled);
@@ -65,7 +65,7 @@ void RocketGun::render()
 }
 
 // ---- _RocketGun_15e9d0.cpp ----
-extern "C" void *_ZN9RocketGunD1Ev(RocketGun *self)
+void *_ZN9RocketGunD1Ev(RocketGun *self)
 {
     *(void **)self = (char *)RocketGun_vtable + 8;
 
@@ -88,7 +88,7 @@ extern "C" void *_ZN9RocketGunD1Ev(RocketGun *self)
 }
 
 // ---- _RocketGun_15ea28.cpp ----
-extern "C" void _ZN9RocketGunD0Ev(RocketGun *self)
+void _ZN9RocketGunD0Ev(RocketGun *self)
 {
     return operator_delete(_ZN9RocketGunD1Ev(self));
 }

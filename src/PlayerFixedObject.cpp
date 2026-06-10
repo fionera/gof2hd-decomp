@@ -57,7 +57,7 @@ extern "C" void Transform_setExhaustVisible(void *transform, bool v);
 extern "C" void Array_BV_ctor(void *arr);
 extern "C" void BoundingVolume_setArr(BoundingVolume *bv, void *arr);
 extern "C" void AEGeometry_ctor(void *geom, uint16_t meshId, void *canvas, bool b);
-extern "C" void *Globals_getWreckCollision(void *globals, int kind, void *geom);
+void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 extern "C" V3 BV_getProjectionVector(void *bv);
 extern "C" char PlayerFixedObject_vtable;
 extern "C" void *AEGeometry_dtor(void *p);
@@ -162,9 +162,9 @@ void * PlayerFixedObject::setName(String *name) {
 // ---- _PlayerFixedObject_153e14.cpp ----
 // Deleting destructor (D0): run the complete dtor (D1), then tail-call operator delete.
 // Mangled names so the demangled symbol contains "~PlayerFixedObject".
-extern "C" void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self); // complete object dtor
+void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self); // complete object dtor
 
-extern "C" void _ZN17PlayerFixedObjectD0Ev(PlayerFixedObject *self)
+void _ZN17PlayerFixedObjectD0Ev(PlayerFixedObject *self)
 {
     return operator_delete(_ZN17PlayerFixedObjectD1Ev(self));
 }
@@ -213,7 +213,7 @@ void PlayerFixedObject::outerCollide_vec(Vector v) {
 // sret in r0, this in r1. Reads three signed ints at +0x178/0x17c/0x180 and converts to float.
 struct PosOut { float x, y, z; };
 
-extern "C" void PlayerFixedObject_getPosition(PosOut *out, PlayerFixedObject *self)
+void PlayerFixedObject_getPosition(PosOut *out, PlayerFixedObject *self)
 {
     float a = (float)self->field_0x178;
     float b = (float)self->field_0x17c;
@@ -788,7 +788,7 @@ V3 PlayerFixedObject::getProjectionVector() {
 // the two bounding-volume arrays, the explosion, and the name String, then tail-calls
 // the base destructor.
 
-extern "C" void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
+void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
 {
     void *wreck = self->field_0x124;
     *(void **)self = &PlayerFixedObject_vtable + 8;

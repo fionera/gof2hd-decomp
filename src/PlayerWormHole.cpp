@@ -30,11 +30,11 @@ extern "C" void AEGeometry_setVisible(void *geometry, bool visible);
 extern "C" void PlayerStaticFar_update(PlayerWormHole *self, int elapsed);
 extern "C" int PaintCanvas_CameraGetCurrent(void *canvas);
 extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, int current);
-extern "C" void MatrixGetPosition(void *out, void *matrix);
+void MatrixGetPosition(void *out, void *matrix);
 extern "C" void AEGeometry_setScaling(void *geometry, float x, float y, float z);
 extern "C" void AEGeometry_getPosition(void *out, void *geometry);
 extern "C" void Vector_sub_assign(Vector *self, Vector *rhs);
-extern "C" void VectorNormalize(void *out, Vector *value);
+void VectorNormalize(void *out, Vector *value);
 extern "C" void AEGeometry_setDirection(void *geometry, Vector *direction, Vector *up);
 extern "C" void *Level_getPlayer(void *level);
 
@@ -46,7 +46,7 @@ bool PlayerWormHole::isShrinking()
 }
 
 // ---- _PlayerWormHole_a5302.cpp ----
-extern "C" void _ZN14PlayerWormHoleD0Ev(void *self)
+void _ZN14PlayerWormHoleD0Ev(void *self)
 {
     return operator_delete(PlayerStaticFar_dtor(self));
 }

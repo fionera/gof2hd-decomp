@@ -105,7 +105,7 @@ MaskShader::MaskShader()
 
 // ---- _MaskShader_9177c.cpp ----
 // AbyssEngine::MaskShader::~MaskShader() (deleting dtor)
-extern "C" void _ZN11AbyssEngine10MaskShaderD0Ev(AbyssEngine::MaskShader *self)
+void _ZN11AbyssEngine10MaskShaderD0Ev(AbyssEngine::MaskShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
 }

@@ -33,7 +33,7 @@ Vector Waypoint::getPosition()
 }
 
 // ---- _Waypoint_157d28.cpp ----
-extern "C" void _ZN8WaypointD0Ev(Waypoint *self)
+void _ZN8WaypointD0Ev(Waypoint *self)
 {
     return operator_delete(KIPlayer_dtor((KIPlayer *)self));
 }

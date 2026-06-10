@@ -34,7 +34,7 @@ extern "C" uint64_t g_perfFrame;
 extern "C" char g_perfEnabled;
 extern "C" char g_perfPendingFlag;
 extern "C" void Engine_PreUpdate(void *engine);
-extern "C" void Engine_ClearBuffer(void *engine, int color);
+void Engine_ClearBuffer(void *engine, int color);
 extern "C" void AESoundRessource_checkLooping(void *sound);
 extern "C" void PaintCanvas_StartDraw2FBO(void *canvas);
 extern "C" void PaintCanvas_StopDraw2FBO(void *canvas);
@@ -523,7 +523,7 @@ void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
 }
 
 // ---- EnablePerformanceTest_82334.cpp ----
-extern "C" void ApplicationManager_EnablePerformanceTest(int count)
+void ApplicationManager_EnablePerformanceTest(int count)
 {
     g_perfElapsed = 0;
     g_perfActionCount = (long long)count;

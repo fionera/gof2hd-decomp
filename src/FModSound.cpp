@@ -20,7 +20,7 @@ extern "C" int FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v);
 extern "C" void *__aeabi_memcpy8(void *dst, const void *src, uint32_t n);
 extern "C" void FMOD_EventSystem_Create(void *out);
 extern "C" int FMOD_EventSystem_init(void *system, int maxch, void *extdriver, int flags);
-extern "C" int GameText_getLanguage();
+int GameText_getLanguage();
 extern "C" void *__aeabi_memclr8(void *d, uint32_t n);
 extern "C" char *strcpy(char *d, const char *s);
 extern "C" __SIZE_TYPE__ strlen(const char *s);

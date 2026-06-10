@@ -2,10 +2,10 @@
 
 
 extern "C" int AERandom_nextInt(void *self, int max);
-extern "C" char *MatrixGetPosition(char *out, Matrix const *matrix);
-extern "C" char *MatrixGetRight(char *out, Matrix const *matrix);
-extern "C" char *MatrixGetUp(char *out, Matrix const *matrix);
-extern "C" char *MatrixGetDir(char *out, Matrix const *matrix);
+char *MatrixGetPosition(char *out, Matrix const *matrix);
+char *MatrixGetRight(char *out, Matrix const *matrix);
+char *MatrixGetUp(char *out, Matrix const *matrix);
+char *MatrixGetDir(char *out, Matrix const *matrix);
 extern "C" void *Vector_assign(void *self, char *other);
 extern "C" void *Vector_neg(void *out, void *a);
 extern "C" void *Vector_sub(void *out, char *a, void *b);

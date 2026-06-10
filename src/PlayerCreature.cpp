@@ -74,7 +74,7 @@ int PlayerCreature::getEndurance()
 }
 
 // ---- _PlayerCreature_11ccd8.cpp ----
-extern "C" void _ZN14PlayerCreatureD1Ev(PlayerCreature *self)
+void _ZN14PlayerCreatureD1Ev(PlayerCreature *self)
 {
     PlayerCreature_dtor_tail(KIPlayer_dtor((KIPlayer *)self));
 }

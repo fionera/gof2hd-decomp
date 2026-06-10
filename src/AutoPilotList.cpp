@@ -17,7 +17,7 @@ struct Station {
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
 
 // ---- touch_1314d0.cpp ----
-extern "C" void _ZN13AutoPilotList4downEv(AutoPilotList *self);   // AutoPilotList::down()
+void _ZN13AutoPilotList4downEv(AutoPilotList *self);   // AutoPilotList::down()
 
 // AutoPilotList::touch(int p1, int p2) -> selected index, or -1 if the touch is outside
 // the list window. On a hit, resets the selection to the top then steps down to the row
@@ -44,7 +44,7 @@ extern "C" void ArrayReleaseClasses_String(void *arr);   // blx 0x6facc
 extern "C" void *Array_String_dtor(void *arr);            // blx 0x6f64c
 extern "C" void operator_delete(void *p);                 // blx 0x6eb48
 
-extern "C" AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
+AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
     ArrayReleaseClasses_String(self->field_0x10);
     void *a = self->field_0x10;
     if (a != 0)
@@ -55,7 +55,7 @@ extern "C" AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
 
 // ---- down_13135c.cpp ----
 // AutoPilotList::down() - advance selection to the next non-empty entry, wrapping at 4.
-extern "C" void _ZN13AutoPilotList4downEv(AutoPilotList *self) {
+void _ZN13AutoPilotList4downEv(AutoPilotList *self) {
     void **data = ((Array<void *> *)self->field_0x10)->data();
     int i = self->field_0x0;
     int n;
@@ -92,7 +92,7 @@ RetStr AutoPilotList::getTargetString() {
 
 // ---- up_1313cc.cpp ----
 // AutoPilotList::up() - move selection to the previous non-empty entry, wrapping at 0.
-extern "C" void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
+void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
     void **data = ((Array<void *> *)self->field_0x10)->data();
     int i = self->field_0x0;
     int n;
@@ -123,7 +123,7 @@ extern "C" void *Level_getPlayer(void *level);                           // 0x72
 // 0x768b8
 // 0x71ee4
 extern "C" int PaintCanvas_GetTextWidth(void *canvas, const String *s);  // 0x6faa8
-extern "C" void _ZN13AutoPilotList4downEv(AutoPilotList *self);          // down()
+void _ZN13AutoPilotList4downEv(AutoPilotList *self);          // down()
 
 typedef void (*StringDtorFn)(void *self);
 
@@ -145,7 +145,7 @@ static inline void **entryData(AutoPilotList *self) {
 // AutoPilotList::AutoPilotList(Level*) - build the list of autopilot destinations (current
 // station, warp gate, mission target, "cancel", route waypoint), measure the widest entry
 // to size the window, center it, then select the first non-empty row.
-extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
+void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     void *arr = operator new(0xc);
     Array_String_ctor(arr);
     self->field_0x10 = arr;
