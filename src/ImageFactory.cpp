@@ -7,7 +7,6 @@ extern "C" int AERandom_nextInt(int rng, int bound);
 extern "C" int PaintCanvas_GetImage2DWidth(unsigned canvas, int id);
 extern "C" int PaintCanvas_GetImage2DHeight(unsigned canvas, int id);
 extern "C" void Sprite_ctor(void *self, void *ids, int n, int w, int h);
-extern "C" void PaintCanvas_Image2DCreate(unsigned canvas, int id, void *out);
 extern "C" void ImageFactory_reload_tail(unsigned canvas, int id, void *out);
 extern "C" __attribute__((visibility("hidden"))) GetTextFn *g_reload_getText;
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_reload_canvas;
@@ -30,8 +29,8 @@ extern "C" __attribute__((visibility("hidden"))) int *g_IF_idTable;
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_IF_drawItem4_canvas;
 extern "C" void Array_ImagePart_ctor(Arr *a);
 extern "C" void ArraySetLength_ImagePart(uint32_t n, Arr *a);
-extern "C" void *ImageFactory_loadImage(void *thisish, int a, int b, int c);
-extern "C" void ImageFactory_createChar_bi(int a, int b, int type);
+extern "C" void *ImageFactory_loadImage(ImageFactory *self, int row, int col, int frameBase);
+extern "C" int *ImageFactory_createChar_bi(int param_1, int param_2, int sel);
 extern "C" void ImageFactory_reload(ImageFactory *self);
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagA;
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagB;
@@ -39,7 +38,6 @@ extern "C" __attribute__((visibility("hidden"))) int *g_ctor_dst;
 
 // ---- getItemImageId_11ca50.cpp ----
 // ImageFactory::getItemImageId(int) -> base id (0x898 below 0xb0, else 0xef0) + param.
-struct ImageFactory { int getItemImageId(int param_1); };
 int ImageFactory::getItemImageId(int param_1)
 {
     int base = 0xef0;
@@ -87,7 +85,6 @@ extern "C" int *ImageFactory_createChar_bi(int param_1, int param_2, int sel)
 }
 
 // ---- reload_11c5d0.cpp ----
-typedef void (*GetTextFn)(unsigned canvas, int id, void *out);
 // Tail veneer: another Image2DCreate-like through a function-pointer global.
 // *g_reload_getText -> getText-style fn ptr; *g_reload_canvas -> canvas holder.
 
@@ -111,13 +108,11 @@ extern "C" void ImageFactory_reload(ImageFactory *self)
     int h = PaintCanvas_GetImage2DHeight(*holder, (int)ids[0]);
     Sprite_ctor(spr, ids, 6, w, h);
     self->field_0x0 = spr;
-    PaintCanvas_Image2DCreate(*holder, 0x485, (char *)self + 4);
+    PaintCanvas_Image2DCreate(*holder, 0x485, (unsigned *)((char *)self + 4));
     return ImageFactory_reload_tail(*holder, 0x511, (char *)self + 8);
 }
 
 // ---- drawChar_11c940.cpp ----
-struct Arr { uint32_t size; void **data; uint32_t size2; };
-
 // Tail veneer (function-pointer global): draws the foreground glyph layer.
 
 // ImageFactory::drawChar(Array<ImagePart*>*, int, int, bool)
@@ -180,11 +175,11 @@ extern "C" __attribute__((visibility("hidden"))) int *g_IF_posTableC;     // def
 extern "C" __attribute__((visibility("hidden"))) char *g_IF_flagC;        // selects C vs D
 extern "C" __attribute__((visibility("hidden"))) int *g_IF_posTableD;     // alt default base ptr
 
-extern "C" void ImageFactory_loadImage(ImageFactory *self, int row, int col, int frameBase)
+extern "C" void *ImageFactory_loadImage(ImageFactory *self, int row, int col, int frameBase)
 {
     int id = g_IF_idTable[row * 4 + col];   // 0x10-byte rows / 4-byte cells
     if (id < 0)
-        return;
+        return 0;
 
     unsigned local = 0;
     IF_PaintCanvas_Image2DCreate(*g_IF_li_canvas, (unsigned short)((short)id + (short)frameBase),
@@ -206,6 +201,7 @@ extern "C" void ImageFactory_loadImage(ImageFactory *self, int row, int col, int
     int x = *(int *)((char *)posBase + rowCol);
     int y = *(int *)((char *)posBase + rowCol + 4);
     IF_ImagePart_ctor(part, local, x, y);
+    return part;
 }
 
 // ---- drawItem_11c9b4.cpp ----
@@ -229,9 +225,6 @@ extern "C" void ImageFactory_drawItem4(ImageFactory *self, int itemId, int frame
 }
 
 // ---- loadChar_11c774.cpp ----
-struct Arr { uint32_t size; void **data; uint32_t size2; };
-
-
 // ImageFactory::loadChar(int*) -> Array<ImagePart*>* of 4 entries (with [0]/[2] swapped).
 extern "C" Arr *ImageFactory_loadChar(ImageFactory *self, int *param_1)
 {
@@ -245,7 +238,7 @@ extern "C" Arr *ImageFactory_loadChar(ImageFactory *self, int *param_1)
         int raw = param_1[i];
         void *part = (void *)(raw + 1);
         if (part != 0)
-            a->data[i] = ImageFactory_loadImage(part, first, i, raw);
+            a->data[i] = ImageFactory_loadImage((ImageFactory *)part, first, i, raw);
     }
     void *tmp = a->data[0];
     a->data[0] = a->data[2];

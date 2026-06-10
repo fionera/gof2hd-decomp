@@ -1,11 +1,10 @@
 #ifndef GOF2_FILEINTERFACEANDROID_H
 #define GOF2_FILEINTERFACEANDROID_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 — FileInterfaceAndroid class (Android libgof2hdaa.so, armv7 Thumb).
+// Galaxy on Fire 2 - FileInterfaceAndroid class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class (no AbyssEngine:: on the class), with file I/O over stdio FILE*,
-// libzip zip_file*, and JNI streams. Field offsets recovered per-method from the
-// target disassembly; methods access fields via byte-offset casts from `this`.
+// libzip zip_file*, and JNI streams. Real named struct; field_0xNN member names are
+// kept so cross-class references resolve. No byte-offset access.
 //
 // Layout (from the ctors / Close / Read / Write):
 //   0x00 vtable
@@ -20,23 +19,29 @@
 //   0x30 void* AppRootDir
 //   0x34 void* ZipDirectory
 
-
-
-
 // AbyssEngine::String passed/returned by value: 12-byte trivially-copied aggregate.
-
-
-// Field accessors via byte offset from `this`.
-
-static inline int32_t &i32(void *self, unsigned off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, unsigned off) { return *(uint32_t *)((char *)self + off); }
-static inline uint8_t &u8(void *self, unsigned off) { return *(uint8_t *)((char *)self + off); }
-static inline void *&pp(void *self, unsigned off) { return *(void **)((char *)self + off); }
+struct zip_file;
 
 struct FileInterfaceAndroid {
-    char* field_0x0;                    // +0x0
-    void* field_0x8;                    // +0x8
-    const char* field_0x30;             // +0x30
-    void* field_0x34;                   // +0x34
+    char        *field_0x0;             // +0x0  vtable
+    uint8_t      field_0x4;             // +0x4  alive byte
+    char         pad_5[3];
+    void        *field_0x8;             // +0x8  stdio FILE*
+    void        *field_0xc;             // +0xc  zip_file*
+    void        *field_0x10;            // +0x10 jobject / jmethodID stream handle
+    uint8_t      field_0x14;            // +0x14 append/write-mode flag
+    char         pad_15[7];
+    int32_t      field_0x1c;            // +0x1c
+    char         pad_20[4];
+    uint8_t      field_0x24;            // +0x24
+    char         pad_25[3];
+    int32_t      field_0x28;            // +0x28
+    char         pad_2c[4];
+    const char  *field_0x30;            // +0x30 AppRootDir
+    void        *field_0x34;            // +0x34 ZipDirectory
+
+    FileInterfaceAndroid();
+    ~FileInterfaceAndroid();
 };
+
 #endif

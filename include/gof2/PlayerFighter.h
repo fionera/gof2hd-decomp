@@ -79,7 +79,7 @@ struct PlayerFighter {
     int32_t field_0x148;                // +0x148
     int32_t field_0x14c;                // +0x14c
     void* field_0x150;                  // +0x150
-    int32_t field_0x154;                // +0x154
+    void* field_0x154;                  // +0x154 Trail*
     int32_t field_0x158;                // +0x158
     int32_t field_0x15c;                // +0x15c
     int32_t field_0x160;                // +0x160

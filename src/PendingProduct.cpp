@@ -19,10 +19,10 @@ extern "C" PendingProduct *PendingProduct_ctor_fields(
 {
     // Construct embedded String, then fill scalar fields.
     _ZN11AbyssEngine6StringC1Ev((String *)self);
-    i32(self, 0x14) = blueprintIndex;
+    self->field_0x14 = blueprintIndex;
     self->field_0x0 = *stationName;
-    i32(self, 0x0c) = stationIndex;
-    i32(self, 0x10) = quantity;
+    self->field_0xc = stationIndex;
+    self->field_0x10 = quantity;
     return self;
 }
 
@@ -35,7 +35,7 @@ extern "C" PendingProduct *PendingProduct_ctor_BluePrint(PendingProduct *self, B
     // Construct the embedded String (station name) at +0x00.
     _ZN11AbyssEngine6StringC1Ev((String *)self);
 
-    i32(self, 0x14) = BluePrint_getIndex(bp);
+    self->field_0x14 = BluePrint_getIndex(bp);
 
     {
         String name;
@@ -43,8 +43,8 @@ extern "C" PendingProduct *PendingProduct_ctor_BluePrint(PendingProduct *self, B
         self->field_0x0 = name;
     }
 
-    i32(self, 0x0c) = BluePrint_getStationIndex(bp);
-    i32(self, 0x10) = BluePrint_getQuantity(bp);
+    self->field_0xc = BluePrint_getStationIndex(bp);
+    self->field_0x10 = BluePrint_getQuantity(bp);
 
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)

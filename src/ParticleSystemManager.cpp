@@ -1,4 +1,5 @@
 #include "gof2/ParticleSystemManager.h"
+#include "gof2/IParticleSystem.h"
 
 
 extern "C" void _ips_update(void *sys, int dt);
@@ -23,7 +24,7 @@ extern "C" void _ips_setMatrix(void *sys, const void *matrix);
 extern "C" void _ips_setParticleSetBySet(void *sys, unsigned int set);
 extern "C" void _ips_enableUpdate(void *sys, bool enable);
 extern "C" void  PaintCanvas_TextureCreate(unsigned short canvas, unsigned int texId, bool b);
-extern "C" void  PaintCanvas_SpriteSystemSetAllSize(unsigned int canvas, short size);
+extern "C" void  PaintCanvas_SpriteSystemSetAllSize(void *canvas, short size);
 extern "C" short _ips_getParticleCount16(void *sys);
 extern "C" void PaintCanvas_MeshCreate(void *canvas, int verts, int indices, int fmt, unsigned int *out);
 extern "C" void PaintCanvas_TextureCreate(unsigned short canvas, unsigned int texId, bool b);
@@ -40,23 +41,22 @@ extern "C" void _psm_meshRender2(void *canvas, unsigned a);
 
 // ---- update_183866.cpp ----
 // ParticleSystemManager::update(long long)
-struct ParticleSystemManager { void update(long long dt); };
 void ParticleSystemManager::update(long long dt)
 {
     int d = (int)dt;
-    if (u8(this, 0x14) == 0)
+    if (this->field_0x14 == 0)
         return;
-    int accum = i32(this, 0x10) + d;
-    i32(this, 0x10) = accum;
-    for (unsigned i = 0; i < u32(this, 0x18); i++) {
-        void *p = ((void **)u32(this, 0x1c))[i];
+    int accum = this->field_0x10 + d;
+    this->field_0x10 = accum;
+    for (unsigned i = 0; i < this->field_0x18; i++) {
+        void *p = ((void **)this->field_0x1c)[i];
         if (p != 0) {
             _ips_update(p, d);
-            p = ((void **)u32(this, 0x1c))[i];
-            if (u8(p, 0x4) == 0) {
-                if (accum > 9 || u8(p, 0x5) != 0) {
-                    _ips_calcEmitterVelocity(p, i32(this, 0x10));
-                    p = ((void **)u32(this, 0x1c))[i];
+            p = ((void **)this->field_0x1c)[i];
+            if (((IParticleSystem*)p)->field_0x4 == 0) {
+                if (accum > 9 || ((IParticleSystem*)p)->field_0x5 != 0) {
+                    _ips_calcEmitterVelocity(p, this->field_0x10);
+                    p = ((void **)this->field_0x1c)[i];
                 }
                 (*(void (**)(void *, int))(*(int *)p + 4))(p, d);
             } else {
@@ -64,15 +64,15 @@ void ParticleSystemManager::update(long long dt)
             }
         }
     }
-    for (unsigned i = 0; i < u32(this, 0x3c); i++) {
-        void *p = ((void **)u32(this, 0x40))[i];
+    for (unsigned i = 0; i < this->field_0x3c; i++) {
+        void *p = ((void **)this->field_0x40)[i];
         if (p != 0) {
             _ips_update(p, d);
-            p = ((void **)u32(this, 0x40))[i];
-            if (u8(p, 0x4) == 0) {
-                if (accum > 9 || u8(p, 0x5) != 0) {
-                    _ips_calcEmitterVelocity(p, i32(this, 0x10));
-                    p = ((void **)u32(this, 0x40))[i];
+            p = ((void **)this->field_0x40)[i];
+            if (((IParticleSystem*)p)->field_0x4 == 0) {
+                if (accum > 9 || ((IParticleSystem*)p)->field_0x5 != 0) {
+                    _ips_calcEmitterVelocity(p, this->field_0x10);
+                    p = ((void **)this->field_0x40)[i];
                 }
                 (*(void (**)(void *, int))(*(int *)p + 4))(p, d);
             } else {
@@ -81,21 +81,20 @@ void ParticleSystemManager::update(long long dt)
         }
     }
     if (accum > 9)
-        i32(this, 0x10) = 0;
+        this->field_0x10 = 0;
 }
 
 // ---- reset_183ce8.cpp ----
 // ParticleSystemManager::reset()
-struct ParticleSystemManager { void reset(); };
 void ParticleSystemManager::reset()
 {
-    for (unsigned i = 0; i < u32(this, 0x18); i++) {
-        int *p = ((int **)u32(this, 0x1c))[i];
+    for (unsigned i = 0; i < this->field_0x18; i++) {
+        int *p = ((int **)this->field_0x1c)[i];
         if (p != 0)
             (*(void (**)(int *))(*p + 8))(p);
     }
-    for (unsigned i = 0; i < u32(this, 0x3c); i++) {
-        int *p = ((int **)u32(this, 0x40))[i];
+    for (unsigned i = 0; i < this->field_0x3c; i++) {
+        int *p = ((int **)this->field_0x40)[i];
         if (p != 0)
             (*(void (**)(int *))(*p + 8))(p);
     }
@@ -103,42 +102,39 @@ void ParticleSystemManager::reset()
 
 // ---- releaseSprites_183c48.cpp ----
 // ParticleSystemManager::releaseSprites()
-struct ParticleSystemManager { void releaseSprites(); };
 void ParticleSystemManager::releaseSprites()
 {
-    _psm_ArrayReleaseSprites((char *)this + 0x18);
-    if (u32(this, 0x30) != 0xffffffff) {
-        _psm_ReleaseSpriteSystemResource(pp(this, 0x4), u32(this, 0x30));
-        u32(this, 0x30) = 0xffffffff;
+    _psm_ArrayReleaseSprites(&this->field_0x18);
+    if (this->field_0x30 != 0xffffffff) {
+        _psm_ReleaseSpriteSystemResource(this->field_0x4, this->field_0x30);
+        this->field_0x30 = 0xffffffff;
     }
 }
 
 // ---- construct_183618.cpp ----
 // ParticleSystemManager::construct()
-struct ParticleSystemManager { void construct(); };
 void ParticleSystemManager::construct()
 {
-    u32(this, 0x10) = 0;
-    u8(this, 0x14) = 0;
-    u32(this, 0x2c) = 0xffffffff;
-    u32(this, 0x30) = 0xffffffff;
-    u32(this, 0x34) = 0;
-    u32(this, 0x54) = 0xffffffff;
-    u32(this, 0x58) = 0xffffffff;
-    u32(this, 0x5c) = 0;
-    u16(this, 0x0) = 0x101;
+    this->field_0x10 = 0;
+    this->field_0x14 = 0;
+    this->field_0x2c = 0xffffffff;
+    this->field_0x30 = 0xffffffff;
+    this->field_0x34 = 0;
+    this->field_0x54 = 0xffffffff;
+    this->field_0x58 = 0xffffffff;
+    this->field_0x5c = 0;
+    this->field_0x0 = 0x101;
 }
 
 // ---- render3d_183c68.cpp ----
 // ParticleSystemManager::render3d()
-struct ParticleSystemManager { void render3d(); };
 void ParticleSystemManager::render3d()
 {
-    if (u8(this, 0x14) == 0)
+    if (this->field_0x14 == 0)
         return;
-    if (u8(this, 0x1) != 0)
+    if ((*reinterpret_cast<uint8_t*>(reinterpret_cast<char*>(&this->field_0x0) + 1)) != 0)
         _psm_renderMeshes(this);
-    if (u8(this, 0x0) == 0)
+    if ((*reinterpret_cast<uint8_t*>(&this->field_0x0)) == 0)
         return;
     return _psm_renderSpritesExt(this);
 }
@@ -149,7 +145,6 @@ void ParticleSystemManager::render3d()
 // the selected IParticleSystem.
 
 
-struct ParticleSystemManager { void setParticleSetByIndex(int handle, unsigned char setIndex); };
 void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setIndex)
 {
     if (handle == -1)
@@ -157,10 +152,10 @@ void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setI
     void **arr;
     int idx;
     if (handle << 0x11 < 0) {
-        arr = (void **)u32(this, 0x40);
+        arr = (void **)this->field_0x40;
         idx = handle & 0x3fffffff;
     } else {
-        arr = (void **)u32(this, 0x1c);
+        arr = (void **)this->field_0x1c;
         idx = handle;
     }
     _ips_setParticleSetByIndex(arr[idx], setIndex);
@@ -172,7 +167,6 @@ void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setI
 // forwarding to the IParticleSystem render-enable method.
 
 
-struct ParticleSystemManager { void enableSystemRender(int handle, bool enable); };
 void ParticleSystemManager::enableSystemRender(int handle, bool enable)
 {
     if (handle == -1)
@@ -180,10 +174,10 @@ void ParticleSystemManager::enableSystemRender(int handle, bool enable)
     void **arr;
     int idx;
     if (handle << 0x11 < 0) {
-        arr = (void **)u32(this, 0x40);
+        arr = (void **)this->field_0x40;
         idx = handle & 0x3fffffff;
     } else {
-        arr = (void **)u32(this, 0x1c);
+        arr = (void **)this->field_0x1c;
         idx = handle;
     }
     _ips_enableRender(arr[idx], enable);
@@ -203,20 +197,20 @@ extern "C" void *ParticleSystemManager_ctor6(
     void *self, void *canvas, int cameraSet, unsigned short spriteTex, bool spriteFlag,
     unsigned short meshTex, bool meshFlag)
 {
-    i32(self, 0x0c) = cameraSet;
-    pp(self, 0x04) = canvas;
+    ((ParticleSystemManager*)self)->field_0xc = cameraSet;
+    ((ParticleSystemManager*)self)->field_0x4 = canvas;
 
-    _psm_arraySpriteCtor((char *)self + 0x18);
-    u16(self, 0x26) = 0xffff;
-    u16(self, 0x24) = spriteTex;
-    u32(self, 0x28) = 0;
-    u8(self, 0x38) = spriteFlag ? 1 : 0;
+    _psm_arraySpriteCtor(&((ParticleSystemManager*)self)->field_0x18);
+    ((ParticleSystemManager*)self)->field_0x26 = 0xffff;
+    ((ParticleSystemManager*)self)->field_0x24 = spriteTex;
+    ((ParticleSystemManager*)self)->field_0x28 = 0;
+    ((ParticleSystemManager*)self)->field_0x38 = spriteFlag ? 1 : 0;
 
-    _psm_arrayMeshCtor((char *)self + 0x3c);
-    u16(self, 0x4a) = 0xffff;
-    u16(self, 0x48) = meshTex;
-    u32(self, 0x4c) = 0;
-    u8(self, 0x60) = meshFlag ? 1 : 0;
+    _psm_arrayMeshCtor(&((ParticleSystemManager*)self)->field_0x3c);
+    ((ParticleSystemManager*)self)->field_0x4a = 0xffff;
+    ((ParticleSystemManager*)self)->field_0x48 = meshTex;
+    ((ParticleSystemManager*)self)->field_0x4c = 0;
+    ((ParticleSystemManager*)self)->field_0x60 = meshFlag ? 1 : 0;
 
     _psm_construct(self);
     return self;
@@ -226,24 +220,22 @@ extern "C" void *ParticleSystemManager_ctor6(
 // Array<ParticleSystemMesh*>::release-ish, via PLT veneer; takes &mesh-array (this+0x3c).
 
 // ParticleSystemManager::release()
-struct ParticleSystemManager { void release(); };
 void ParticleSystemManager::release()
 {
     _psm_releaseSprites(this);
-    u32(this, 0x4) = 0;
-    return _psm_releaseMeshArray((char *)this + 0x3c);
+    this->field_0x4 = 0;
+    return _psm_releaseMeshArray(&this->field_0x3c);
 }
 
 // ---- cameraToggle_183c28.cpp ----
 // re-init after camera change (PLT veneer); takes this.
 
 // ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet)
-struct ParticleSystemManager { void cameraToggle(int cam); };
 void ParticleSystemManager::cameraToggle(int cam)
 {
-    if (i32(this, 0xc) == cam)
+    if (this->field_0xc == cam)
         return;
-    i32(this, 0xc) = cam;
+    this->field_0xc = cam;
     _psm_releaseSprites(this);
     return _psm_constructAfterCamera(this);
 }
@@ -261,21 +253,18 @@ extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, cons
                               bool b4, bool b5);                    // ParticleSystemMesh ctor
 extern "C" void _psm_arrayMeshAdd(void *sys, void *arr);           // ArrayAdd<ParticleSystemMesh*>
 
-struct ParticleSystemManager {
-    unsigned int addMeshSystem(const void *matrix, const void *sets, bool flag);
-};
 unsigned int ParticleSystemManager::addMeshSystem(const void *matrix, const void *sets, bool flag)
 {
     void *sys = operator new(0xa0);
-    _psmesh_ctor(sys, pp(this, 0x04), matrix, sets, flag, u8(this, 0x60) != 0);
-    _psm_arrayMeshAdd(sys, (char *)this + 0x3c);
+    _psmesh_ctor(sys, this->field_0x4, matrix, sets, flag, this->field_0x60 != 0);
+    _psm_arrayMeshAdd(sys, &this->field_0x3c);
 
     // getParticleCount lives at vtable offset 0x10 for the mesh system.
     typedef int (*pfn)(void *);
     int count = ((pfn *)*(void **)sys)[4](sys);
-    i32(this, 0x5c) = count + i32(this, 0x5c);
+    this->field_0x5c = count + this->field_0x5c;
 
-    return (unsigned int)(i32(this, 0x3c) - 1) | 0x4000;
+    return (unsigned int)(this->field_0x3c - 1) | 0x4000;
 }
 
 // ---- emitManual_183e00.cpp ----
@@ -285,9 +274,6 @@ unsigned int ParticleSystemManager::addMeshSystem(const void *matrix, const void
 // path, matching the original's CONCAT44).
 
 
-struct ParticleSystemManager {
-    unsigned long long emitManual(int handle, const float *pos, int ret, float p4);
-};
 unsigned long long ParticleSystemManager::emitManual(int handle, const float *pos, int ret, float p4)
 {
     (void)p4;
@@ -297,10 +283,10 @@ unsigned long long ParticleSystemManager::emitManual(int handle, const float *po
     void **arr;
     int idx;
     if (handle << 0x11 < 0) {
-        arr = (void **)u32(this, 0x40);
+        arr = (void **)this->field_0x40;
         idx = handle & 0x3fffffff;
     } else {
-        arr = (void **)u32(this, 0x1c);
+        arr = (void **)this->field_0x1c;
         idx = handle;
     }
     _ips_emitManual(arr[idx], pos[0], pos[1], pos[2]);
@@ -312,13 +298,12 @@ unsigned long long ParticleSystemManager::emitManual(int handle, const float *po
 // 2-arg sprite renderer (DAT_001ac9a4 veneer): canvas, a
 
 // ParticleSystemManager::renderSprites()
-struct ParticleSystemManager { void renderSprites(); };
 void ParticleSystemManager::renderSprites()
 {
-    if (i16(this, 0x24) != -1)
-        return _psm_spriteRender2(pp(this, 0x4), u32(this, 0x30));
-    if (i16(this, 0x26) != -1)
-        return _psm_spriteRender4(pp(this, 0x4), u32(this, 0x30), u32(this, 0x2c), u32(this, 0x28));
+    if (this->field_0x24 != -1)
+        return _psm_spriteRender2(this->field_0x4, this->field_0x30);
+    if (this->field_0x26 != -1)
+        return _psm_spriteRender4(this->field_0x4, this->field_0x30, this->field_0x2c, this->field_0x28);
 }
 
 // ---- ParticleSystemManager_183662.cpp ----
@@ -334,20 +319,20 @@ extern "C" void *ParticleSystemManager_ctor8(
     void *self, void *canvas, int cameraSet, unsigned short spriteTex, int spriteBlend,
     bool spriteFlag, unsigned short meshTex, int meshBlend, bool meshFlag)
 {
-    i32(self, 0x0c) = cameraSet;
-    pp(self, 0x04) = canvas;
+    ((ParticleSystemManager*)self)->field_0xc = cameraSet;
+    ((ParticleSystemManager*)self)->field_0x4 = canvas;
 
-    _psm_arraySpriteCtor((char *)self + 0x18);
-    u16(self, 0x26) = spriteTex;
-    u16(self, 0x24) = 0xffff;
-    u32(self, 0x28) = (unsigned int)spriteBlend;
-    u8(self, 0x38) = spriteFlag ? 1 : 0;
+    _psm_arraySpriteCtor(&((ParticleSystemManager*)self)->field_0x18);
+    ((ParticleSystemManager*)self)->field_0x26 = spriteTex;
+    ((ParticleSystemManager*)self)->field_0x24 = 0xffff;
+    ((ParticleSystemManager*)self)->field_0x28 = (unsigned int)spriteBlend;
+    ((ParticleSystemManager*)self)->field_0x38 = spriteFlag ? 1 : 0;
 
-    _psm_arrayMeshCtor((char *)self + 0x3c);
-    u16(self, 0x4a) = meshTex;
-    u16(self, 0x48) = 0xffff;
-    u32(self, 0x4c) = (unsigned int)meshBlend;
-    u8(self, 0x60) = meshFlag ? 1 : 0;
+    _psm_arrayMeshCtor(&((ParticleSystemManager*)self)->field_0x3c);
+    ((ParticleSystemManager*)self)->field_0x4a = meshTex;
+    ((ParticleSystemManager*)self)->field_0x48 = 0xffff;
+    ((ParticleSystemManager*)self)->field_0x4c = (unsigned int)meshBlend;
+    ((ParticleSystemManager*)self)->field_0x60 = meshFlag ? 1 : 0;
 
     _psm_construct(self);
     return self;
@@ -358,7 +343,6 @@ extern "C" void *ParticleSystemManager_ctor8(
 // Bit-17 sprite/mesh dispatch; forwards the world matrix to the selected IParticleSystem.
 
 
-struct ParticleSystemManager { void systemSetMatrix(int handle, const void *matrix); };
 void ParticleSystemManager::systemSetMatrix(int handle, const void *matrix)
 {
     if (handle == -1)
@@ -366,10 +350,10 @@ void ParticleSystemManager::systemSetMatrix(int handle, const void *matrix)
     void **arr;
     int idx;
     if (handle << 0x11 < 0) {
-        arr = (void **)u32(this, 0x40);
+        arr = (void **)this->field_0x40;
         idx = handle & 0x3fffffff;
     } else {
-        arr = (void **)u32(this, 0x1c);
+        arr = (void **)this->field_0x1c;
         idx = handle;
     }
     _ips_setMatrix(arr[idx], matrix);
@@ -381,7 +365,6 @@ void ParticleSystemManager::systemSetMatrix(int handle, const void *matrix)
 // word in this build) to the selected IParticleSystem.
 
 
-struct ParticleSystemManager { void setParticleSetBySet(unsigned int handle, unsigned int set); };
 void ParticleSystemManager::setParticleSetBySet(unsigned int handle, unsigned int set)
 {
     if (handle == 0xffffffffu)
@@ -389,10 +372,10 @@ void ParticleSystemManager::setParticleSetBySet(unsigned int handle, unsigned in
     void **arr;
     unsigned int idx;
     if ((int)(handle << 0x11) < 0) {
-        arr = (void **)u32(this, 0x40);
+        arr = (void **)this->field_0x40;
         idx = handle & 0x3fffffff;
     } else {
-        arr = (void **)u32(this, 0x1c);
+        arr = (void **)this->field_0x1c;
         idx = handle;
     }
     _ips_setParticleSetBySet(arr[idx], set);
@@ -405,7 +388,6 @@ void ParticleSystemManager::setParticleSetBySet(unsigned int handle, unsigned in
 // "no system". The selected IParticleSystem's update-enable setter is then invoked.
 
 
-struct ParticleSystemManager { void enableSystemUpdate(int handle, bool enable); };
 void ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
 {
     if (handle == -1)
@@ -413,10 +395,10 @@ void ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
     void **arr;
     int idx;
     if (handle << 0x11 < 0) {
-        arr = (void **)u32(this, 0x40);
+        arr = (void **)this->field_0x40;
         idx = handle & 0x3fffffff;
     } else {
-        arr = (void **)u32(this, 0x1c);
+        arr = (void **)this->field_0x1c;
         idx = handle;
     }
     _ips_enableUpdate(arr[idx], enable);
@@ -440,43 +422,42 @@ extern "C" void  PaintCanvas_SpriteSystemSetAllUv(void *canvas, unsigned int han
 // Active particle-set descriptor (the engine resolves it from a global table).
 __attribute__((visibility("hidden"))) extern char *g_activeParticleSet;
 
-struct ParticleSystemManager { void initSprites(); };
 void ParticleSystemManager::initSprites()
 {
-    if (i32(this, 0x18) == 0)
+    if (this->field_0x18 == 0)
         return;
 
-    u32(this, 0x30) = 0xffffffff;
-    if (i32(this, 0x0c) == 0)
+    this->field_0x30 = 0xffffffff;
+    if (this->field_0xc == 0)
         return;
 
-    void *canvas = pp(this, 0x04);
-    if (u16(this, 0x24) == 0xffff) {
-        if ((short)u16(this, 0x26) != -1) {
-            PaintCanvas_SpriteSystemCreate(canvas, (unsigned short)u32(this, 0x34), false,
-                                           (unsigned int *)((char *)this + 0x30));
-            PaintCanvas_TextureCreate((unsigned short)(unsigned long)pp(this, 0x04),
-                                      u16(this, 0x26), (((char)(unsigned long)this + ',') != 0));
+    void *canvas = this->field_0x4;
+    if (this->field_0x24 == 0xffff) {
+        if ((short)this->field_0x26 != -1) {
+            PaintCanvas_SpriteSystemCreate(canvas, (unsigned short)this->field_0x34, false,
+                                           (unsigned int *)(&this->field_0x30));
+            PaintCanvas_TextureCreate((unsigned short)(unsigned long)this->field_0x4,
+                                      this->field_0x26, (((char)(unsigned long)this + ',') != 0));
         }
     } else {
-        PaintCanvas_SpriteSystemCreateTex(canvas, (unsigned short)u32(this, 0x34), false,
-                                          u16(this, 0x24),
-                                          (unsigned int *)((char *)this + 0x30));
+        PaintCanvas_SpriteSystemCreateTex(canvas, (unsigned short)this->field_0x34, false,
+                                          this->field_0x24,
+                                          (unsigned int *)(&this->field_0x30));
     }
 
     short offset = 0;
-    PaintCanvas_SpriteSystemSetAllSize(u32(this, 0x04), (short)u32(this, 0x30));
+    PaintCanvas_SpriteSystemSetAllSize(this->field_0x4, (short)this->field_0x30);
 
     float u = *(float *)(g_activeParticleSet + 0x90);
     float w = *(float *)(g_activeParticleSet + 0x94);
-    PaintCanvas_SpriteSystemSetAllUv(pp(this, 0x04), u32(this, 0x30), u, 0.0f, w, 0.0f);
+    PaintCanvas_SpriteSystemSetAllUv(this->field_0x4, this->field_0x30, u, 0.0f, w, 0.0f);
 
-    for (unsigned i = 0; i < u32(this, 0x18); ++i) {
-        void *sys = ((void **)u32(this, 0x1c))[i];
+    for (unsigned i = 0; i < this->field_0x18; ++i) {
+        void *sys = ((void **)this->field_0x1c)[i];
         typedef void (*pfn)(void *, unsigned int, short, void *, float, float);
         pfn fn = (pfn)(*(void ***)sys)[0];
-        fn(sys, u32(this, 0x30), offset, (void *)fn, u, w);
-        offset = offset + _ips_getParticleCount16(((void **)u32(this, 0x1c))[i]);
+        fn(sys, this->field_0x30, offset, (void *)fn, u, w);
+        offset = offset + _ips_getParticleCount16(((void **)this->field_0x1c)[i]);
     }
 }
 
@@ -493,16 +474,13 @@ extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const v
 extern "C" void _psm_arraySpriteAdd(void *sys, void *arr);          // ArrayAdd<ParticleSystemSprite*>
 extern "C" int  _ips_getParticleCount(void *sys);                  // IParticleSystem::getParticleCount
 
-struct ParticleSystemManager {
-    int addSpriteSystem(const void *matrix, const void *sets, bool flag);
-};
 int ParticleSystemManager::addSpriteSystem(const void *matrix, const void *sets, bool flag)
 {
     void *sys = operator new(0x78);
-    _pss_ctor(sys, pp(this, 0x04), matrix, sets, flag, u8(this, 0x38) != 0);
-    _psm_arraySpriteAdd(sys, (char *)this + 0x18);
-    i32(this, 0x34) = _ips_getParticleCount(sys) + i32(this, 0x34);
-    return i32(this, 0x18) - 1;
+    _pss_ctor(sys, this->field_0x4, matrix, sets, flag, this->field_0x38 != 0);
+    _psm_arraySpriteAdd(sys, &this->field_0x18);
+    this->field_0x34 = _ips_getParticleCount(sys) + this->field_0x34;
+    return this->field_0x18 - 1;
 }
 
 // ---- initMesh_1837a8.cpp ----
@@ -516,41 +494,40 @@ int ParticleSystemManager::addSpriteSystem(const void *matrix, const void *sets,
 extern "C" void PaintCanvas_MeshCreateTex(void *canvas, int verts, int indices, int fmt,
                                           short tex, unsigned int *out);
 
-struct ParticleSystemManager { void initMesh(); };
 void ParticleSystemManager::initMesh()
 {
-    if (i32(this, 0x3c) == 0)
+    if (this->field_0x3c == 0)
         return;
 
-    u32(this, 0x54) = 0xffffffff;
-    u32(this, 0x58) = 0xffffffff;
+    this->field_0x54 = 0xffffffff;
+    this->field_0x58 = 0xffffffff;
 
-    void *canvas = pp(this, 0x04);
-    int verts   = (u16(this, 0x5c) & 0x3fff) << 2;
-    int indices = (u16(this, 0x5c) & 0x7fff) << 1;
+    void *canvas = this->field_0x4;
+    int verts   = ((*reinterpret_cast<uint16_t*>(&this->field_0x5c)) & 0x3fff) << 2;
+    int indices = ((*reinterpret_cast<uint16_t*>(&this->field_0x5c)) & 0x7fff) << 1;
 
-    if ((short)u16(this, 0x48) == -1) {
-        if ((short)u16(this, 0x4a) != -1) {
+    if ((short)this->field_0x48 == -1) {
+        if ((short)this->field_0x4a != -1) {
             PaintCanvas_MeshCreate(canvas, verts, indices, 0x1b,
-                                   (unsigned int *)((char *)this + 0x54));
-            PaintCanvas_TextureCreate((unsigned short)(unsigned long)pp(this, 0x04),
-                                      u16(this, 0x4a), (((char)(unsigned long)this + 'P') != 0));
+                                   (unsigned int *)(&this->field_0x54));
+            PaintCanvas_TextureCreate((unsigned short)(unsigned long)this->field_0x4,
+                                      this->field_0x4a, (((char)(unsigned long)this + 'P') != 0));
         }
     } else {
-        PaintCanvas_MeshCreateTex(canvas, verts, indices, 0x1b, (short)u16(this, 0x48),
-                                  (unsigned int *)((char *)this + 0x54));
+        PaintCanvas_MeshCreateTex(canvas, verts, indices, 0x1b, (short)this->field_0x48,
+                                  (unsigned int *)(&this->field_0x54));
     }
 
-    PaintCanvas_TransformCreate(pp(this, 0x04), (unsigned int *)((char *)this + 0x58));
-    PaintCanvas_TransformAddMeshId(pp(this, 0x04), u32(this, 0x58), u32(this, 0x54));
+    PaintCanvas_TransformCreate(this->field_0x4, (unsigned int *)(&this->field_0x58));
+    PaintCanvas_TransformAddMeshId(this->field_0x4, this->field_0x58, this->field_0x54);
 
     short offset = 0;
-    for (unsigned i = 0; i < u32(this, 0x3c); ++i) {
-        void *sys = ((void **)u32(this, 0x40))[i];
+    for (unsigned i = 0; i < this->field_0x3c; ++i) {
+        void *sys = ((void **)this->field_0x40)[i];
         typedef void (*pfn)(void *, unsigned int, short);
-        ((pfn)(*(void ***)sys)[0])(sys, u32(this, 0x54), offset);
+        ((pfn)(*(void ***)sys)[0])(sys, this->field_0x54, offset);
 
-        void *sys2 = ((void **)u32(this, 0x40))[i];
+        void *sys2 = ((void **)this->field_0x40)[i];
         typedef short (*pfn2)(void *);
         short count = ((pfn2 *)*(void **)sys2)[4](sys2);   // vtable+0x10
         offset = offset + (short)(count * 4);
@@ -575,10 +552,10 @@ extern "C" void *ParticleSystemManager_emitManual_v(
         void **arr;
         int idx;
         if (handle << 0x11 < 0) {
-            arr = (void **)u32(self, 0x40);
+            arr = (void **)((ParticleSystemManager*)self)->field_0x40;
             idx = handle & 0x3fffffff;
         } else {
-            arr = (void **)u32(self, 0x1c);
+            arr = (void **)((ParticleSystemManager*)self)->field_0x1c;
             idx = handle;
         }
         _ips_emitManual(arr[idx], pos[0], pos[1], pos[2]);
@@ -593,7 +570,6 @@ extern "C" void *ParticleSystemManager_emitManual_v(
 // handle dispatch as the sibling setters, forwarding to the IParticleSystem emit-enable method.
 
 
-struct ParticleSystemManager { void enableSystemEmit(int handle, bool enable); };
 void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
 {
     if (handle == -1)
@@ -601,10 +577,10 @@ void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
     void **arr;
     int idx;
     if (handle << 0x11 < 0) {
-        arr = (void **)u32(this, 0x40);
+        arr = (void **)this->field_0x40;
         idx = handle & 0x3fffffff;
     } else {
-        arr = (void **)u32(this, 0x1c);
+        arr = (void **)this->field_0x1c;
         idx = handle;
     }
     _ips_enableEmit(arr[idx], enable);
@@ -617,9 +593,6 @@ void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
 // the sprite-system add path (the default add route), returning its handle.
 
 
-struct ParticleSystemManager {
-    int addSystem(const void *matrix, unsigned int set, bool flag);
-};
 int ParticleSystemManager::addSystem(const void *matrix, unsigned int set, bool flag)
 {
     return _psm_addSpriteSystem(this, matrix, set, flag);
@@ -631,12 +604,11 @@ int ParticleSystemManager::addSystem(const void *matrix, unsigned int set, bool 
 // update tick (via the virtual update at vtable+? -> here the resolved emitter-update entry).
 
 
-struct ParticleSystemManager { int init(); };
 int ParticleSystemManager::init()
 {
     _psm_initSprites(this);
     _psm_initMesh(this);
-    u8(this, 0x14) = 1;
+    this->field_0x14 = 1;
     return _psm_firstUpdate(this, 0, 0, 0);
 }
 
@@ -646,7 +618,6 @@ int ParticleSystemManager::init()
 // IParticleSystem's reset method.
 
 
-struct ParticleSystemManager { void resetSystem(int handle); };
 void ParticleSystemManager::resetSystem(int handle)
 {
     if (handle == -1)
@@ -654,10 +625,10 @@ void ParticleSystemManager::resetSystem(int handle)
     void **arr;
     int idx;
     if (handle << 0x11 < 0) {
-        arr = (void **)u32(this, 0x40);
+        arr = (void **)this->field_0x40;
         idx = handle & 0x3fffffff;
     } else {
-        arr = (void **)u32(this, 0x1c);
+        arr = (void **)this->field_0x1c;
         idx = handle;
     }
     _ips_reset(arr[idx]);
@@ -668,11 +639,10 @@ void ParticleSystemManager::resetSystem(int handle)
 // 2-arg renderer (DAT_001ac984 veneer): canvas, a
 
 // ParticleSystemManager::renderMeshes()
-struct ParticleSystemManager { void renderMeshes(); };
 void ParticleSystemManager::renderMeshes()
 {
-    if (i16(this, 0x48) != -1)
-        return _psm_meshRender2(pp(this, 0x4), u32(this, 0x58));
-    if (i16(this, 0x26) != -1)
-        return _psm_meshRender4(pp(this, 0x4), u32(this, 0x58), u32(this, 0x50), u32(this, 0x4c));
+    if (this->field_0x48 != -1)
+        return _psm_meshRender2(this->field_0x4, this->field_0x58);
+    if (this->field_0x26 != -1)
+        return _psm_meshRender4(this->field_0x4, this->field_0x58, this->field_0x50, this->field_0x4c);
 }

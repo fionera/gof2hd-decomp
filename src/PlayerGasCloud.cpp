@@ -10,7 +10,7 @@ extern "C" void Player_ctor(void *self, int a, int hp, int b, int c, int d);
 extern "C" char PlayerGasCloud_vtable;
 extern "C" void Player_setKIPlayer(void *player, void *ki);
 extern "C" void Player_setMaxHitpoints(void *player, int hp);
-extern "C" void Vector_assign(void *dst, Vector const &src);
+extern "C" void Vector_assign(void *dst, const void *src);   // Vector::operator=(Vector const&)
 extern "C" void AEGeometry_ctor(void *self, uint16_t meshId, void *canvas, bool b);
 extern "C" void ArrayReleaseClasses_AEGeometry(void *arr);
 extern "C" void *Array_AEGeometry_dtor(void *p);
@@ -28,23 +28,12 @@ extern "C" void AEGeometry_setDirection(void *geom, Vector const *dir, Vector co
 extern "C" void AEGeometry_render(void *geom);
 
 // ---- translate_176658.cpp ----
-using AbyssEngine::AEMath::Vector;
-
-struct PlayerGasCloud {
-    void translate(Vector const &param_1);
-};
-
-
 void PlayerGasCloud::translate(Vector const &param_1)
 {
     return AEGeometry_translate_v(this->field_0x8, param_1);
 }
 
 // ---- isSparkAlive_176610.cpp ----
-struct PlayerGasCloud {
-    bool isSparkAlive(int param_1);
-};
-
 bool PlayerGasCloud::isSparkAlive(int param_1)
 {
     void *arr = this->field_0x138;
@@ -57,10 +46,6 @@ bool PlayerGasCloud::isSparkAlive(int param_1)
 }
 
 // ---- setSparkInSight_1765f8.cpp ----
-struct PlayerGasCloud {
-    void setSparkInSight(int param_1, bool param_2);
-};
-
 void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
 {
     void *arr = this->field_0x138;
@@ -74,36 +59,18 @@ void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
 }
 
 // ---- setPosition_176652.cpp ----
-using AbyssEngine::AEMath::Vector;
-
-struct PlayerGasCloud {
-    void setPosition(Vector const &param_1);
-};
-
-
 void PlayerGasCloud::setPosition(Vector const &param_1)
 {
     return AEGeometry_setPosition_v(this->field_0x8, param_1);
 }
 
 // ---- getSparks_176640.cpp ----
-struct PlayerGasCloud {
-    void *getSparks();
-};
-
 void *PlayerGasCloud::getSparks()
 {
     return this->field_0x138;
 }
 
 // ---- getPosition_176646.cpp ----
-using AbyssEngine::AEMath::Vector;
-
-struct PlayerGasCloud {
-    Vector getPosition();
-};
-
-
 Vector PlayerGasCloud::getPosition()
 {
     return AEGeometry_getPosition_ret(this->field_0x8);
@@ -119,30 +86,16 @@ extern "C" void _ZN14PlayerGasCloudD0Ev(void *self)
 }
 
 // ---- hasExploded_1769ac.cpp ----
-struct PlayerGasCloud {
-    uint8_t hasExploded();
-};
-
 uint8_t PlayerGasCloud::hasExploded()
 {
     return this->field_0x154;
 }
 
 // ---- PlayerGasCloud_1763cc.cpp ----
-using AbyssEngine::AEMath::Vector;
-
-struct PlayerGasCloud {
-    PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGeometry *param_3,
-                   Vector const &param_4);
-};
-
 extern "C" void KIPlayer_ctor(void *self, int id, int faction, void *player, void *geom,
                               float x, float y, float z, bool flag);
 
 __attribute__((visibility("hidden"))) extern void **g_pgc_canvas;
-
-typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
-typedef int v4i1 __attribute__((__vector_size__(16), __aligned__(1)));
 
 PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGeometry *param_3,
                                Vector const &param_4)
@@ -176,10 +129,18 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     this->field_0x164 = iVar2;
     this->field_0x168 = iVar1;
 
-    this->field_0x145 = (v4i1){0, 0, 0, 0};
-    this->field_0x138 = (v4i){0, 0, 0, 0};
+    // Two 16-byte vector stores clear the spark-array pointer block (0x138..0x154).
+    this->field_0x138 = 0;
+    this->field_0x13c = 0;
+    this->field_0x140 = 0;
+    this->field_0x144 = 0;
+    this->field_0x145 = 0;
+    this->field_0x148 = 0;
+    this->field_0x14c = 0;
+    this->field_0x150 = 0;
+    this->field_0x154 = 0;
 
-    Vector_assign((char *)this + 0x128, param_4);
+    Vector_assign((char *)this + 0x128, &param_4);
 
     void *geom = operator_new(0xc0);
     AEGeometry_ctor(geom, this->field_0x168, *g_pgc_canvas, false);
@@ -197,8 +158,9 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
 // Complete object destructor (D1). Sets the vtable, tears down the spark arrays and the
 // base geometry, then tail-calls the base destructor.
 
-extern "C" void *_ZN14PlayerGasCloudD1Ev(void *self)
+extern "C" void *_ZN14PlayerGasCloudD1Ev(void *selfv)
 {
+    PlayerGasCloud *self = (PlayerGasCloud *)selfv;
     *(void **)self = &PlayerGasCloud_vtable + 8;
 
     void *a0 = self->field_0x138;
@@ -299,8 +261,9 @@ extern float g_pgc_lifeDiv;      // DAT_18694c
 }
 
 // PlayerGasCloud::explode(int itemIndex, Vector src, float radius)
-extern "C" void PlayerGasCloud_explode(void *self, int itemIndex, Vector src, float radius)
+extern "C" void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius)
 {
+    PlayerGasCloud *self = (PlayerGasCloud *)selfv;
     void *volatile cookie = __stack_chk_guard;
 
     if (self->field_0x154 == 0) {
@@ -427,7 +390,6 @@ void Vector_scale(float s, Vector *inout);      // operator*(float, Vector&)
 void Vector_add(Vector *out, const Vector *b);  // operator+(out, b) -> out += b
 float VectorLength(const Vector *v);
 void VectorNormalize(Vector *out, const Vector *v);
-void Vector_assign(Vector *dst, const Vector *src);
 
 // GOT globals.
 extern void *g_pgcu_canvasRoot;   // *(DAT_186d78 / DAT_186e14): paint canvas
@@ -602,17 +564,6 @@ extern "C" void PlayerGasCloud_update(void *self, int dt)
 }
 
 // ---- render_176e18.cpp ----
-namespace AbyssEngine { namespace AEMath {
-struct Matrix { char m[60]; };
-} }
-using AbyssEngine::AEMath::Matrix;
-using AbyssEngine::AEMath::Vector;
-
-struct PlayerGasCloud {
-    void render();
-};
-
-
 namespace AbyssEngine { namespace AEMath {
 void MatrixGetDir(Vector *out, Matrix const *m);
 void MatrixGetUp(Vector *out, Matrix const *m);

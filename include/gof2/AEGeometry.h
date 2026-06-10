@@ -1,69 +1,131 @@
 #ifndef GOF2_AEGEOMETRY_H
 #define GOF2_AEGEOMETRY_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+#include <new>
 // Galaxy on Fire 2 -- AbyssEngine AEGeometry (Android libgof2hdaa.so, armv7 Thumb).
 // Qualified target names are top-level: "AEGeometry::isVisible()" (no AbyssEngine:: on the class).
-// Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
-
-
-void *operator new(__SIZE_TYPE__ size);
-void *operator new[](__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-void operator delete[](void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *p) noexcept { return p; }
+// Field offsets recovered per-method from the target disassembly.
+//
+// Field offsets (recovered):
+//   +0x00 u32  mergerIndex          +0x04 LodMeshMerger* merger
+//   +0x08 u16  mesh (field_0x8)     +0x0c u32 transform handle
+//   +0x10 u32  parentTransform      +0x14 u32 childTransform
+//   +0x18 u32  baseTransform        +0x1c u32 meshId
+//   +0x20 u32  (mesh handle)        +0x24 u32 altTransform
+//   +0x28 i32  currentLod           +0x2c PaintCanvas* canvas
+//   +0x30 V4   rotation (xyz) / +0x3c..0x44 scaling xyz  (field_0x30, aliased)
+//   +0x48 u16  visibility (field_0x48)  +0x4c i32 rotationOrder  +0x50 i32 lodCount
+//   +0x54 V4   lod-array pointers (tf/childTf/mesh/childMesh)  (field_0x54)
+//   +0x68 u64  distSq (field_0x68)  +0x70 u64 lastVisibleDistSq (field_0x70)
+//   +0x78 V4   cameraDelta          +0x84 Matrix referenceMatrix (field_0x84)
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
-struct AEGeometry;
+struct PaintCanvas;   // ::PaintCanvas (defined in Radio.h); used by pointer here
+
+// Four-float NEON-ish vector used for rotation/scaling and the LOD pointer block.
+struct V4 { float a, b, c, d; };
 
 namespace AbyssEngine {
 namespace AEMath {
-
-
-
-
-
 // AEMath free functions (resolved blx targets in the target).
 void VectorNormalize(void *out, const Vector *v);        // 0x0006ec80
 Vector operator-(const Vector &a, const Vector &b);      // 0x0006ec38
 Vector MatrixGetUp(const Matrix &m);                     // 0x0006f4d8
 Vector MatrixGetRight(const Matrix &m);                  // 0x0006f4e4
 Vector MatrixGetPosition(const Matrix &m);               // 0x0006f16c
-
 } // namespace AEMath
+} // namespace AbyssEngine
 
-struct PaintCanvas {
-    // Static transform/mesh ops; first arg is the canvas pointer.
+// PaintCanvas transform/mesh static helpers (first arg is the canvas handle/pointer).
+struct AEGeomCanvas {
     static uint32_t TransformGetLocal(uint32_t canvas, uint32_t tf);     // 0x000720c4
     static void TransformCreate(PaintCanvas *canvas, uint32_t *out);     // 0x000720ac
-    static void TransformSetLocal(PaintCanvas *canvas, uint32_t tf, AEMath::Matrix *m); // 0x000721c0
+    static void TransformSetLocal(PaintCanvas *canvas, uint32_t tf, Matrix *m); // 0x000721c0
     static void TransformAddChild(PaintCanvas *canvas, uint32_t tf, uint32_t child);    // 0x000720d0
 };
 
-} // namespace AbyssEngine
-
-// Field accessors --------------------------------------------------------------
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline uint8_t &u8(void *self, uint32_t off) { return *(uint8_t *)((char *)self + off); }
-static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
-
 struct AEGeometry {
-    uint16_t field_0x8;                 // +0x8
-    int32_t field_0xc;                  // +0xc
+    uint32_t field_0x0;                 // +0x0  mergerIndex
+    void *field_0x4;                    // +0x4  LodMeshMerger*
+    uint16_t field_0x8;                 // +0x8  mesh
+    uint16_t pad_0xa;
+    uint32_t field_0xc;                 // +0xc  transform handle
+    uint32_t field_0x10;                // +0x10
     uint32_t field_0x14;                // +0x14
-    int field_0x18;                     // +0x18
-    unsigned field_0x1c;                // +0x1c
-    unsigned field_0x20;                // +0x20
-    V4 field_0x30;                      // +0x30
-    uint16_t field_0x48;                // +0x48
-    V4 field_0x54;                      // +0x54
-    unsigned long long field_0x68;      // +0x68
-    uint64_t field_0x70;                // +0x70
-    Matrix field_0x84;                  // +0x84
+    uint32_t field_0x18;                // +0x18
+    uint32_t field_0x1c;                // +0x1c
+    uint32_t field_0x20;                // +0x20
+    uint32_t field_0x24;                // +0x24
+    int32_t field_0x28;                 // +0x28 currentLod
+    void *field_0x2c;                   // +0x2c canvas
+    V4 field_0x30;                      // +0x30 rotation.xyz + (.d == scaling.x at 0x3c)
+    float field_0x40;                   // +0x40 scaling.y
+    float field_0x44;                   // +0x44 scaling.z
+    uint16_t field_0x48;                // +0x48 visibility
+    uint16_t pad_0x4a;
+    int32_t field_0x4c;                 // +0x4c rotation order
+    int32_t field_0x50;                 // +0x50 lodCount
+    V4 field_0x54;                      // +0x54 lod ptr block (tf/childTf/mesh/childMesh)
+    uint32_t pad_0x64;                  // +0x64 lod distance array ptr
+    uint32_t pad_0x67;
+    unsigned long long field_0x68;      // +0x68 distSq
+    uint64_t field_0x70;                // +0x70 lastVisibleDistSq
+    V4 field_0x78;                      // +0x78 cameraDelta
+    uint32_t pad_0x88;
+    Matrix field_0x84;                  // +0x84 referenceMatrix
+
+    // scaling.x aliases field_0x30.d
+    float &scaleX() { return field_0x30.d; }
+    // lod pointer accessors (the V4 block at 0x54 holds 4 pointers)
+    void *&lodTf()        { return *(void **)&field_0x54.a; }   // +0x54
+    void *&lodChildTf()   { return *(void **)&field_0x54.b; }   // +0x58
+    void *&lodMesh()      { return *(void **)&field_0x54.c; }   // +0x5c
+    void *&lodChildMesh() { return *(void **)&field_0x54.d; }   // +0x60
+    void *&lodDist()      { return *(void **)&pad_0x64; }       // +0x64
+
+    AEGeometry(PaintCanvas *canvas);
+    AEGeometry(uint16_t mesh, PaintCanvas *canvas, bool flag);
+    ~AEGeometry();
+
+    Vector getPosition();
+    Vector getRotation();
+    Vector getScaling();
+    Vector getRightVector();
+    Vector getUpVector();
+    Vector getParentPosition();
+    Matrix &getMatrix();
+
+    bool hasLod();
+    uint8_t isVisible();
+    void setVisible(bool v);
+    void render();
+    void updateReferenceMatrix();
+
+    void addChild(uint32_t child);
+    void setMesh(uint16_t mesh);
+
+    void translate(float x, float y, float z);
+    void translate(const Vector &v);
+    void setScaling(float x, float y, float z);
+    void setScaling(float s);
+    void setScaling(const Vector &v);
+    void setRotation(float x, float y, float z);
+    void setRotation(const Vector &v);
+    void setPosition(const Vector &v);
+    void rotate(float x, float y, float z);
+    void rotate(const Vector &v);
+    void moveForward(float dist);
+    void setDirection(const Vector &dir, const Vector &up);
+
+    void setLodMeshes(uint16_t *meshes, int *dists, int count);
+    void setLodMeshesWithMeshIds(uint16_t *meshes, uint32_t *meshIds, int *dists, int count);
+    void setLodChildMeshes(uint16_t *meshes);
+    void setLodChildTransform(uint32_t param);
+    void setLodLastVisibleDistance(uint64_t d);
+    void updateLod(const Vector &camPos, float screenScale);
+    void DEBUG_setMeshMergerIndex(int a, void *b);
 };
 #endif

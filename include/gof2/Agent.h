@@ -47,5 +47,8 @@ struct Agent {
     Mission* field_0x8c;                // +0x8c
     void* field_0x90;                   // +0x90
     int field_0x94;                     // +0x94
+
+    // Real C++ destructor so the demangled symbol contains "~Agent".
+    ~Agent() noexcept(false);
 };
 #endif

@@ -14,14 +14,6 @@
 struct PendingProduct;
 struct BluePrint;
 
-namespace AbyssEngine {
-
-}
-typedef AbyssEngine::String String;
-
-
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-
 extern "C" {
 extern void *__stack_chk_guard;
 __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
@@ -38,16 +30,10 @@ int BluePrint_getStationIndex(BluePrint *bp);
 int BluePrint_getQuantity(BluePrint *bp);
 }
 
-namespace AbyssEngine {
-inline String::String() noexcept { _ZN11AbyssEngine6StringC1Ev(this); }
-inline String::~String() noexcept { _ZN11AbyssEngine6StringD1Ev(this); }
-inline String &String::operator=(const String &other) noexcept {
-    return *_ZN11AbyssEngine6StringaSERKS0_(this, &other);
-}
-}
-
 struct PendingProduct {
-    String field_0x0;                   // +0x0
-    int field_0x14;                     // +0x14
+    String field_0x0;                   // +0x0  station name
+    int field_0xc;                      // +0xc  stationIndex
+    int field_0x10;                     // +0x10 quantity
+    int field_0x14;                     // +0x14 blueprintIndex
 };
 #endif

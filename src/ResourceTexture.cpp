@@ -4,45 +4,33 @@
 
 
 // ---- ResourceTexture_112c88.cpp ----
-namespace AbyssEngine {
-
 // AbyssEngine::ResourceTexture::ResourceTexture(char const*, float)
 ResourceTexture::ResourceTexture(const char *name, float value)
 {
     uint32_t len = String_GetStringLength(name);
-    void *buf = operator_new__(len + 1U);
-    *(void **)this = buf;
+    char *buf = (char *)operator_new__(len + 1U);
+    this->field_0x0 = buf;
     __aeabi_memcpy(buf, name, len + 1U);
     this->field_0x4 = value;
 }
 
-} // namespace AbyssEngine
-
 // ---- _ResourceTexture_77ebc.cpp ----
-namespace AbyssEngine {
-
 // AbyssEngine::ResourceTexture::~ResourceTexture()
 ResourceTexture::~ResourceTexture()
 {
-    operator_delete__(*(void **)this);
-    *(void **)this = 0;
+    operator_delete__(this->field_0x0);
+    this->field_0x0 = 0;
 }
 
-} // namespace AbyssEngine
-
 // ---- ResourceTexture_11b6d2.cpp ----
-namespace AbyssEngine {
-
 // AbyssEngine::ResourceTexture::ResourceTexture(AbyssEngine::String const&, float)
 ResourceTexture::ResourceTexture(const String &name, float value)
 {
-    void *utf8 = String_GetAEChar(&name);
-    uint32_t len = *(uint32_t *)((char *)&name + 0x8);
-    void *buf = operator_new__(len + 1U);
-    *(void **)this = buf;
+    char *utf8 = (char *)String_GetAEChar(&name);
+    uint32_t len = String_GetStringLength(utf8);
+    char *buf = (char *)operator_new__(len + 1U);
+    this->field_0x0 = buf;
     __aeabi_memcpy(buf, utf8, len + 1U);
     this->field_0x4 = value;
     operator_delete__(utf8);
 }
-
-} // namespace AbyssEngine

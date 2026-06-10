@@ -516,7 +516,7 @@ extern "C" void ModStation_ModStation(ModStation *self)
     }
 
     EaseInOutMatrix *cam = ModStation_msc_buildCameraTween(self, race);
-    I(self, 0x20) = (int)cam;
+    P(self, 0x20) = cam;
 
     unsigned camHandle = **(unsigned **)g_msc_canvas;
     Matrix *cur = (Matrix *)PaintCanvas_CameraGetCurrent_msc();
@@ -524,9 +524,9 @@ extern "C" void ModStation_ModStation(ModStation *self)
 
     // three scalar EaseInOut tweens (fov / fade etc.) stored at self+0x288..0x290.
     EaseInOut *e;
-    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); I(self, 0x288) = (int)e;
-    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); I(self, 0x28c) = (int)e;
-    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); I(self, 0x290) = (int)e;
+    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); P(self, 0x288) = e;
+    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); P(self, 0x28c) = e;
+    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); P(self, 0x290) = e;
 }
 
 // ---- _ModStation_d56c0.cpp ----
@@ -761,7 +761,7 @@ void  FModSound_stop_ou(int sound);
 void  FModSound_setParamValue_ou(int sound, int a, int b, float v);
 
 void  Layout_update_ou(int layout);
-void  Layout_formatCredits_ou(int outStr);
+void  Layout_formatCredits_ou(void *outStr);
 
 void  Status_incPlayingTime_ou(long long delta);
 int   Status_getCredits_ou();
@@ -782,7 +782,7 @@ int   Mission_getType_ou();
 int   Mission_getStatusValue_ou();
 void  Mission_setStatusValue_ou(int v);
 void  Mission_ctor_ou(Mission *m, int a, int b, int c);
-void  Mission_setCampaignMission_ou(int flag);
+void  Mission_setCampaignMission_ou(void *mission);
 
 void  Achievements_updateCredits_ou(void *ach, int credits);
 int   Globals_getInAppPurchaseArrayIndex_ou(int globals, void *arr);
@@ -801,9 +801,9 @@ void  CutScene_ctor_ou(CutScene *cs, int kind);
 int   CutScene_initialize_ou(CutScene *cs);
 
 void  DialogueWindow_ctor_msg_ou(DialogueWindow *dw, int titleStr, int bodyStr, int *param);
-void  DialogueWindow_ctor_mission_ou(DialogueWindow *dw, int mission, int level, int kind);
+void  DialogueWindow_ctor_mission_ou(DialogueWindow *dw, void *mission, int level, int kind);
 void  DialogueWindow_ctor_ou(DialogueWindow *dw);
-void  DialogueWindow_setMission_ou(int dw, int mission, int flag);
+void  DialogueWindow_setMission_ou(void *dw, void *mission, int flag);
 void  DialogueWindow_update_ou(int dw);
 
 void  StarMap_update_ou(int sm, int dt);
@@ -816,9 +816,9 @@ void  MenuTouchWindow_dtor_ou(void *w);
 
 int   SpaceLounge_introFinished_ou();
 void  SpaceLounge_ctor_ou(SpaceLounge *l);
-void  SpaceLounge_init_ou(int l);
+void  SpaceLounge_init_ou(void *l);
 void  SpaceLounge_update_ou(int l);
-void  SpaceLounge_setHangarUpdate_ou(int l);
+void  SpaceLounge_setHangarUpdate_ou(void *l);
 
 int   Radio_lastMessageShown_ou();
 
@@ -868,7 +868,7 @@ extern "C" void ModStation_OnUpdate(ModStation *self)
     // refresh the credits button text.
     int creditsBtn = *(int *)(s + 0x50 + 0x4); // this[1].field_4
     Status_getCredits_ou();
-    Layout_formatCredits_ou((int)(s + 0)); // formatted into a String temporary
+    Layout_formatCredits_ou(s + 0); // formatted into a String temporary
     TouchButton_setText_ou(creditsBtn);
 
     Achievements_updateCredits_ou((void *)**(int **)g_ou_achievements, Status_getCredits_ou());
@@ -879,12 +879,12 @@ extern "C" void ModStation_OnUpdate(ModStation *self)
         if (*flag != 0) {
             C(s, 0x94) = 1;          // this[1].field_48 low byte
             *flag = 0;
-            if (I(s, 0x74) == 0) {
+            if (P(s, 0x74) == 0) {
                 SpaceLounge *sl = (SpaceLounge *)ModStation_opnew_ou(0x10c);
                 SpaceLounge_ctor_ou(sl);
-                I(s, 0x74) = (int)sl;
+                P(s, 0x74) = sl;
             } else {
-                SpaceLounge_init_ou(I(s, 0x74));
+                SpaceLounge_init_ou(P(s, 0x74));
             }
             FModSound_setParamValue_ou(*sound, 0, *sound, 0.0f);
             FModSound_stop_ou(*sound);
@@ -941,16 +941,16 @@ extern "C" void ModStation_OnUpdate(ModStation *self)
         // docking cutscene playback + campaign transition at its end.
         int t = *(int *)(s + 0x50 + 0x24); // this[1].field_24
         if (t < 1 + 0 && 0 < I(s, 0x28) + t) {
-            if (I(s, 0x14) != 0) {
+            if (P(s, 0x14) != 0) {
                 // tear down the old cutscene.
                 ModStation_opdelete_ou(P(s, 0x14));
             }
-            I(s, 0x14) = 0;
+            P(s, 0x14) = 0;
             CutScene *cs = (CutScene *)ModStation_opnew_ou(0xa0);
             CutScene_ctor_ou(cs, 2);
-            I(s, 0x14) = (int)cs;
+            P(s, 0x14) = cs;
             CutScene_initialize_ou(cs);
-            *(int *)(I(s, 0x14) + 9 * 4) = 0;
+            *(int *)((char *)P(s, 0x14) + 9 * 4) = 0;
             t = *(int *)(s + 0x50 + 0x24);
             C(s, 0x60) = 1;
         }
@@ -1054,11 +1054,11 @@ extern "C" void ModStation_OnUpdate(ModStation *self)
                         Status_getStation_ou();
                         DialogueWindow *dw = (DialogueWindow *)ModStation_opnew_ou(0x74);
                         DialogueWindow_ctor_ou(dw);
-                        I(s, 0x84) = (int)dw;
+                        P(s, 0x84) = dw;
                         Mission *nm = (Mission *)ModStation_opnew_ou(0x78);
                         Mission_ctor_ou(nm, 0xa0, 0, -1);
-                        Mission_setCampaignMission_ou((int)nm);
-                        DialogueWindow_setMission_ou(I(s, 0x84), (int)nm, 1);
+                        Mission_setCampaignMission_ou(nm);
+                        DialogueWindow_setMission_ou(P(s, 0x84), nm, 1);
                         C(s, 0x69) = 1;
                         goto afterDialogue;
                     }
@@ -1069,9 +1069,9 @@ extern "C" void ModStation_OnUpdate(ModStation *self)
                 Status_setCurrentCampaignMission_ou(*status);
                 DialogueWindow *dw = (DialogueWindow *)ModStation_opnew_ou(0x74);
                 DialogueWindow_ctor_ou(dw);
-                I(s, 0x54) = (int)m;       // this[1].field_C cached mission
-                I(s, 0x84) = (int)dw;
-                DialogueWindow_setMission_ou(I(s, 0x84), (int)m, 1);
+                P(s, 0x54) = m;       // this[1].field_C cached mission
+                P(s, 0x84) = dw;
+                DialogueWindow_setMission_ou(P(s, 0x84), m, 1);
                 C(s, 0x69) = 1;
                 goto afterDialogue;
             } else {
@@ -1092,14 +1092,14 @@ extern "C" void ModStation_OnUpdate(ModStation *self)
                                            GameText_getText_ou(**g_ou_textRoot),
                                            (int *)(long)kind);
                 C(s, 0x69) = 1;
-                I(s, 0x84) = (int)dw;
+                P(s, 0x84) = dw;
             } else if (m == 0) {
                 Mission *fm = (Mission *)Status_missionFailed_ou(*status, 1, 0);
                 if (fm != 0) {
                     DialogueWindow *dw = (DialogueWindow *)ModStation_opnew_ou(0x74);
-                    DialogueWindow_ctor_mission_ou(dw, (int)fm, 0, 2);
+                    DialogueWindow_ctor_mission_ou(dw, fm, 0, 2);
                     C(s, 0x69) = 1;
-                    I(s, 0x84) = (int)dw;
+                    P(s, 0x84) = dw;
                     Status_removeMission_ou(*status);
                     if (Mission_getType_ou() == 0xd) {
                         *(short *)(*status + 0xf0) = 0;
@@ -1107,17 +1107,17 @@ extern "C" void ModStation_OnUpdate(ModStation *self)
                     }
                 }
             } else {
-                I(s, 0x54) = (int)m;
+                P(s, 0x54) = m;
                 DialogueWindow *dw = (DialogueWindow *)ModStation_opnew_ou(0x74);
-                DialogueWindow_ctor_mission_ou(dw, (int)m, 0, 1);
+                DialogueWindow_ctor_mission_ou(dw, m, 0, 1);
                 C(s, 0x69) = 1;
-                I(s, 0x84) = (int)dw;
+                P(s, 0x84) = dw;
                 if (Mission_getType_ou() == 0xd) {
                     *(short *)(*status + 0xf0) = 0;
                     ModStation_autosave_ou(self);
                 }
-                if (I(s, 0x74) != 0)
-                    SpaceLounge_setHangarUpdate_ou(I(s, 0x74));
+                if (P(s, 0x74) != 0)
+                    SpaceLounge_setHangarUpdate_ou(P(s, 0x74));
             }
         }
     afterDialogue:
@@ -1217,8 +1217,8 @@ int  Wanted_isTerminated_ch(Wanted *w);
 int  Achievements_gotAllMedals_ch(Achievements *a);
 int  Achievements_gotAllGoldMedals_ch();
 int  Achievements_gotAllSupernovaMedals_ch(Achievements *a);
-int  Status_isBlueprintUnlocked_ch(int status, int bp);
-void Status_unlockBluePrint_ch(int status, int bp);
+int  Status_isBlueprintUnlocked_ch(void *status, int bp);
+void Status_unlockBluePrint_ch(void *status, int bp);
 int  Status_hardCoreMode_ch();
 void ModStation_autosave_ch();
 // Pops the CBS choice-window hint for the given wanted index (builds the "criminal terminated"
@@ -1283,7 +1283,7 @@ extern "C" void ModStation_checkHints(ModStation *self)
         }
         // supernova blueprint unlock.
         if (C(s, 0x6a) == 0 && C(s, 0x63) == 0) {
-            int statPtr = (int)*status;
+            void *statPtr = (void *)*status;
             if (Status_isBlueprintUnlocked_ch(statPtr, 0xe8) == 0 &&
                 Achievements_gotAllGoldMedals_ch() != 0 &&
                 Achievements_gotAllSupernovaMedals_ch(*g_ch_ach) != 0) {
@@ -1571,7 +1571,7 @@ int   ApplicationManager_GetApplicationData_ote();
 int   Status_getStation_ote();
 int   Station_getIndex_ote(Station *s);
 int   Station_stationHasPirateBase_ote();
-int   Station_hasShip_ote(int station);
+int   Station_hasShip_ote(void *station);
 int   Station_getAgents_ote(Station *s);
 void  Station_addShip_ote(Ship *s);
 void  Station_departStation_ote(Station *s);
@@ -2012,10 +2012,10 @@ extern "C" void handleMainButtons(ModStation *self, int param_1, int param_2)
         RecordHandler *rh = (RecordHandler *)**(int **)g_ote_status;
         *(char *)(*(int *)g_ote_status + 0x4e) = 1;
         RecordHandler_saveOptions_ote(rh);
-        if (I(s, 0x78) == 0) {
+        if (P(s, 0x78) == 0) {
             HangarWindow *hw = (HangarWindow *)ModStation_opnew_ote(0x134);
             HangarWindow_ctor_ote(hw);
-            I(s, 0x78) = (int)hw;
+            P(s, 0x78) = hw;
         }
         HangarWindow_initialize_ote();
         C(s, 0x18) = 1;
@@ -2036,10 +2036,10 @@ extern "C" void handleMainButtons(ModStation *self, int param_1, int param_2)
 
     // the layout (system info box) hot area.
     if (Layout_OnTouchEndR_ote((Layout *)*help, param_1, param_2) != 0) {
-        if (I(s, 0x50) == 0) {
+        if (P(s, 0x50) == 0) {
             MenuTouchWindow *w = (MenuTouchWindow *)ModStation_opnew_ote(0x240);
             MenuTouchWindow_ctor_ote(w, 2);
-            I(s, 0x50) = (int)w;
+            P(s, 0x50) = w;
         }
         Status_checkForLevelUp_ote();
         C(s, 0x6e) = 1;
@@ -2240,11 +2240,11 @@ extern "C" void handleCampaignTransition(ModStation *self, int cm)
     Station *st = (Station *)Status_getStation_ote();
     if (cm == 0x54 && Station_getIndex_ote(st) == 100) {
         Ship *sh = (Ship *)Status_getStation_ote();
-        if (Station_hasShip_ote((int)sh) == 0) {
+        if (Station_hasShip_ote(sh) == 0) {
             Ship_makeShip_ote(*(int *)(*(int *)(**(int **)g_ote_shipTable + 4) + 0x98));
             Station_addShip_ote(sh);
         }
-        if (Station_hasShip_ote((int)sh) == 0) {
+        if (Station_hasShip_ote(sh) == 0) {
             Ship_makeShip_ote(*(int *)(*(int *)(**(int **)g_ote_shipTable + 4) + 0xa0));
             Station_addShip_ote(sh);
         }
@@ -2575,7 +2575,7 @@ int   Station_getShips_oi();
 int   Station_getItems_oi();
 int   Station_getName_oi();
 int   Station_hasItem_oi(int station);
-int   Station_hasShip_oi(int station);
+int   Station_hasShip_oi(void *station);
 int   Station_hasAttackedFriends_oi();
 int   Station_stationHasPirateBase_oi();
 void  Station_addItem_oi(Item *it);
@@ -2951,17 +2951,17 @@ extern "C" void ModStation_OnInitialize(ModStation *self)
              Status_getCurrentCampaignMission_oi() == 0x53 ||
              Status_getCurrentCampaignMission_oi() == 0x54)) {
             Ship *st = (Ship *)Status_getStation_oi();
-            if (Station_hasShip_oi((int)st) != 0) {
+            if (Station_hasShip_oi(st) != 0) {
                 unsigned *ships = (unsigned *)Station_getShips_oi();
                 unsigned i = 0;
                 while (i < *ships && Ship_getIndex_oi() != 0x25) i = i + 1;
                 Station_removeShip_oi(st);
             }
-            if (Station_hasShip_oi((int)st) == 0) {
+            if (Station_hasShip_oi(st) == 0) {
                 Ship_makeShip_oi(*(int *)(*(int *)(**g_oi_shipTable + 4) + 0x98));
                 Station_addShip_oi(st);
             }
-            if (Station_hasShip_oi((int)st) == 0) {
+            if (Station_hasShip_oi(st) == 0) {
                 Ship_makeShip_oi(*(int *)(*(int *)(**g_oi_shipTable + 4) + 0xa0));
                 Station_addShip_oi(st);
             }
@@ -3148,7 +3148,7 @@ extern "C" void ModStation_showDlcMenu(ModStation *self)
     if (win == 0) {
         win = (MenuTouchWindow *)ModStation_opnew_dlc(0x240);
         MenuTouchWindow_ctor_dlc(win, 2);
-        I(self, 0x50) = (int)win;
+        P(self, 0x50) = win;
     }
     C(self, 0x6a) = 1; // m_nStarMapWindowOpen + 2
 

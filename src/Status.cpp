@@ -17,7 +17,7 @@ extern "C" void *Ship_dtor(Ship *s);
 extern "C" void operator_delete(void *p);
 extern "C" void ArrayReleaseClasses_Agent(Array<Agent *> *a);
 extern "C" void *Array_Agent_dtor(Array<Agent *> *a);
-extern "C" void ArrayReleaseClasses_Station(Array<Station *> *a);
+extern "C" void ArrayReleaseClasses_Station(void *a);
 extern "C" void *Array_Station_dtor(Array<Station *> *a);
 extern "C" void ArrayReleaseClasses_Wanted(Array<Wanted *> *a);
 extern "C" void *Array_Wanted_dtor(Array<Wanted *> *a);
@@ -35,11 +35,11 @@ extern "C" int BluePrint_getIndex(BluePrint *);
 extern "C" int BluePrint_isUnlocked(BluePrint *);
 extern "C" void Array_Mission_ctor(Array<Mission *> *a);
 extern "C" void Array_Station_ctor(Array<Station *> *a);
-extern "C" void Array_bool_ctor(Array<bool> *a);
+extern "C" void Array_bool_ctor(void *a);
 extern "C" void Array_int_ctor(void *a);
 extern "C" void ArraySetLength_Mission(uint32_t n, Array<Mission *> *a);
 extern "C" void ArraySetLength_Station(uint32_t n, Array<Station *> *a);
-extern "C" void ArraySetLength_bool(uint32_t n, Array<bool> *a);
+extern "C" void ArraySetLength_bool(int len, void *a);
 extern "C" void Station_ctor(Station *s);
 extern "C" int Station_equals(Station *a, Station *b);
 extern "C" bool Status_inAlienOrbit_impl(Station *station, Station *playerStation);
@@ -73,7 +73,6 @@ extern "C" void PendingProduct_ctor(int *pp, BluePrint *bp);
 extern "C" void PendingProduct_add(int *pp, int arr);
 extern "C" void FileRead_ctor(FileRead *);
 extern "C" int FileRead_loadWanted();
-extern "C" void FileRead_dtor(FileRead *);
 extern "C" void operator_delete_tail(void *);
 extern "C" void BluePrint_unlock(BluePrint *);
 extern "C" Station *Status_isOnStack(Status *self, Station *s);
@@ -82,12 +81,12 @@ extern "C" int Mission_getAgent(Mission *m);
 extern "C" void Agent_setMission(Agent *a, Mission *m);
 extern "C" int Galaxy_getSystem(Galaxy *g, int sysIdx);
 extern "C" void *FileRead_loadStationsBinary(FileRead *fr, SolarSystem *sys);
-extern "C" void ArrayReleaseClasses_String(Array<String *> *a);
+extern "C" void ArrayReleaseClasses_String(void *a);
 extern "C" void *Array_String_dtor(Array<String *> *a);
 extern "C" void Array_String_ctor(Array<String *> *a);
 extern "C" void ArraySetLength_String(uint32_t n, Array<String *> *a);
 extern "C" void ArrayRelease_int(void *a);
-extern "C" void ArraySetLength_int(uint32_t n, void *a);
+extern "C" void ArraySetLength_int(int len, void *a);
 extern "C" Array<Station *> *SolarSystem_getStations(SolarSystem *sys);
 extern "C" void String_ctor_empty(String *s);
 extern "C" void Station_getName(String *out, Station *s);
@@ -96,6 +95,11 @@ extern "C" void ArrayReleaseClasses_Station(void *a);
 extern "C" void Array_Station_dtor_tail(void *a);
 extern "C" int FileRead_loadAgents();
 extern "C" void String_copyctor(String *dst, String *src, bool b);
+
+// Local engine helper types used across several member functions in this translation unit.
+// Defined once here; the per-function blocks below merely forward-declare them.
+struct FileRead { FileRead(); ~FileRead(); };
+struct Generator { Generator(); };
 
 // ---- getPlanetNames_ac5d4.cpp ----
 int Status::getPlanetNames() { return planetNames; }
@@ -151,7 +155,7 @@ void Status::setPirateKills(int v) { pirateKills = v; }
 
 // ---- setFreelanceMission_a99f8.cpp ----
 void Status::setFreelanceMission(Mission *m) {
-    ((Mission **)missions->data)[1] = m;
+    (*missions)[1] = m;
 }
 
 // ---- getStationStack_a8fe2.cpp ----
@@ -254,14 +258,14 @@ bool Status::inPirateLootOrbit() {
 void Status::setPlayingTime(int64_t v) { playingTime = v; }
 
 // ---- getPendingProducts_a8fd2.cpp ----
-int Status::getPendingProducts() { return pendingProducts; }
+int Status::getPendingProducts() { return (int)(intptr_t)pendingProducts; }
 
 // ---- getSystemVisibilities_a8fd6.cpp ----
 Array<bool> *Status::getSystemVisibilities() { return systemVisibilities; }
 
 // ---- setSystemVisibility_a8fda.cpp ----
 void Status::setSystemVisibility(int index, bool value) {
-    ((bool *)systemVisibilities->data)[index] = value;
+    (*systemVisibilities)[index] = value;
 }
 
 // ---- incCollectedBounties_acd1a.cpp ----
@@ -286,14 +290,13 @@ Station *Status::getStation() { return station; }
 // ---- setCampaignMission_a9a04.cpp ----
 void Status::setCampaignMission(Mission *m) {
     Mission_setCampaignMission(m, true);
-    int **slot = (int **)missions->data;
-    int *cur = slot[0];
+    Mission **slot = missions->data();
+    int *cur = (int *)slot[0];
     if (cur != 0 && cur != g_campaignSentinel) {
         (*(void (**)(int *))(*cur + 4))(cur);
-        ((int **)missions->data)[0] = 0;
-        slot = (int **)missions->data;
+        slot[0] = 0;
     }
-    slot[0] = (int *)m;
+    slot[0] = m;
 }
 
 // ---- getWantedInCurrentOrbit_abe64.cpp ----
@@ -304,15 +307,15 @@ Wanted *Status::getWantedInCurrentOrbit() {
     Wanted *best = 0;
     if (arr != 0) {
         unsigned i = 0;
-        while (i < arr->size) {
-            if (Wanted_isActive(((Wanted **)wanted->data)[i]) != 0 &&
-                Wanted_isTerminated(((Wanted **)wanted->data)[i]) == 0) {
-                int loc = Wanted_getCurrentLocation(((Wanted **)wanted->data)[i]);
+        while (i < arr->size()) {
+            if (Wanted_isActive((*wanted)[i]) != 0 &&
+                Wanted_isTerminated((*wanted)[i]) == 0) {
+                int loc = Wanted_getCurrentLocation((*wanted)[i]);
                 if (loc == Station_getIndex(station)) {
                     if (best == 0 ||
                         Wanted_getRequiredBounties(best) <
-                            Wanted_getRequiredBounties(((Wanted **)wanted->data)[i])) {
-                        best = ((Wanted **)wanted->data)[i];
+                            Wanted_getRequiredBounties((*wanted)[i])) {
+                        best = (*wanted)[i];
                     }
                 }
             }
@@ -383,7 +386,7 @@ int Status::getStationsVisited() { return stationsVisited; }
 
 // ---- getCampaignMission_a9672.cpp ----
 int Status::getCampaignMission() {
-    return ((int *)missions->data)[0];
+    return (int)(intptr_t)(*missions)[0];
 }
 
 // ---- setJumpgateUsed_ac4d0.cpp ----
@@ -419,8 +422,8 @@ int Status::getNumberOfMissions() {
     }
     int count = 0;
     int i = 0;
-    while ((int)m->size != i) {
-        Mission *cur = ((Mission **)m->data)[i];
+    while ((int)m->size() != i) {
+        Mission *cur = (*m)[i];
         i = i + 1;
         if (cur != 0) {
             count = count + 1;
@@ -449,12 +452,12 @@ __attribute__((visibility("hidden"))) extern Status **g_statusBoard;
 int Status::wantedBoardAccessible() {
     Status **slot = g_statusBoard;
     Array<Wanted *> *w = (*slot)->wanted;
-    for (unsigned i = 0; i < w->size; i = i + 1) {
+    for (unsigned i = 0; i < w->size(); i = i + 1) {
         int race = SolarSystem_getRace((*slot)->system);
-        int board = Wanted_getBoard(((Wanted **)w->data)[i]);
+        int board = Wanted_getBoard((*w)[i]);
         if (race == board) {
             int ccm = (*slot)->currentCampaignMission;
-            if (ccm >= Wanted_getRequiredMission(((Wanted **)w->data)[i]) &&
+            if (ccm >= Wanted_getRequiredMission((*w)[i]) &&
                 (*slot)->inAlienOrbit() == 0 &&
                 Station_getIndex((*slot)->station) != 0x6c) {
                 return 1;
@@ -487,7 +490,7 @@ int Status::getRating() { return rating; }
 
 // ---- getFreelanceMission_a99ee.cpp ----
 Mission *Status::getFreelanceMission() {
-    return ((Mission **)missions->data)[1];
+    return (*missions)[1];
 }
 
 // ---- jumpgateUsed_ac4d6.cpp ----
@@ -508,24 +511,24 @@ bool Status::isStorylineWanted(int index) { return (unsigned)index < 2; }
 // ---- missionFailed_abee6.cpp ----
 // Returns the first failed mission, or a type-0xd mission flagged failable (byte at 0xf1).
 int Status::missionFailed(bool param_1, int64_t time) {
-    for (unsigned i = 0; i < missions->size; i = i + 1) {
-        Mission *cur = ((Mission **)missions->data)[i];
+    for (unsigned i = 0; i < missions->size(); i = i + 1) {
+        Mission *cur = (*missions)[i];
         if (Mission_hasFailed(cur) != 0) {
             return 0;
         }
         if (cur != 0 && Mission_getType(cur) == 0xd && param_1 &&
             *((uint8_t *)this + 0xf1) != 0) {
-            return (int)(uint32_t)cur;
+            return (int)(intptr_t)cur;
         }
     }
     return 0;
 }
 
 // ---- getBluePrints_ac724.cpp ----
-int Status::getBluePrints() { return bluePrints; }
+int Status::getBluePrints() { return (int)(intptr_t)bluePrints; }
 
 // ---- getAgents_ac7a6.cpp ----
-int Status::getAgents() { return (int)agents; }
+int Status::getAgents() { return (int)(intptr_t)agents; }
 
 // ---- inPlanetRingOrbit_abc9c.cpp ----
 uint Status::inPlanetRingOrbit() {
@@ -581,18 +584,18 @@ int Status::isFreighterMissionStation(int station) {
 // ---- isBlueprintUnlocked_ac762.cpp ----
 // Returns whether the blueprint with item index `index` has been unlocked.
 int Status::isBlueprintUnlocked(int index) {
-    Array<BluePrint *> *bps = (Array<BluePrint *> *)bluePrints;
+    Array<BluePrint *> *bps = bluePrints;
     unsigned i = 0;
     while (true) {
-        if (bps->size <= i) {
+        if (bps->size() <= i) {
             return 0;
         }
-        if (BluePrint_getIndex(bps->data[i]) == index) {
+        if (BluePrint_getIndex((*bps)[i]) == index) {
             break;
         }
         i = i + 1;
     }
-    return BluePrint_isUnlocked(((Array<BluePrint *> *)bluePrints)->data[i]);
+    return BluePrint_isUnlocked((*bluePrints)[i]);
 }
 
 // ---- Status_a8ac0.cpp ----
@@ -613,7 +616,7 @@ Status::Status() {
     a = (Array<bool> *)operator new(0xc); Array_bool_ctor(a); field_b4 = a;
     a = (Array<bool> *)operator new(0xc); Array_bool_ctor(a); field_4c = a;
     a = (Array<bool> *)operator new(0xc); Array_bool_ctor(a); field_50 = a;
-    void *ai = operator new(0xc); Array_int_ctor(ai); field_90 = (int32_t)(uint32_t)ai;
+    void *ai = operator new(0xc); Array_int_ctor(ai); field_90 = ai;
     a = (Array<bool> *)operator new(0xc); Array_bool_ctor(a); field_54 = a;
     a = (Array<bool> *)operator new(0xc); Array_bool_ctor(a); field_58 = a;
     ArraySetLength_Mission(2, missions);
@@ -799,13 +802,13 @@ bool Status::isOnStack(Station *s) {
         if (2 < i) {
             return 0;
         }
-        Station *cur = ((Station **)stationStack->data)[i];
+        Station *cur = (*stationStack)[i];
         if (cur != 0 && Station_equals(cur, s) != 0) {
             break;
         }
         i = i + 1;
     }
-    return ((int *)stationStack->data)[i];
+    return (*stationStack)[i] != 0;
 }
 
 // ---- inAlienOrbit_a963c.cpp ----
@@ -861,7 +864,7 @@ void  *ArrayPP_dtor(void *a);
 void   ArrayReleaseClasses_PP(void *a);
 void   Globals_resetHints();
 void   Galaxy_reset(Galaxy *g);
-int   *Galaxy_getSystems(Galaxy *g);
+int    Galaxy_getSystems(Galaxy *g);
 void  *Galaxy_getStation(int gptr);
 int    SolarSystem_isVisible(void *ss);
 int    Item_getIngredients();
@@ -1153,7 +1156,7 @@ void Status::resetGame()
     int newShip = Ship_makeShip(*(int *)((*(int *)(*slotB + 4)) + 0x28));
     Status_rg_setShip(this, newShip);
     Ship_priceDecline(*(Ship **)(self + 0x190));
-    Status_rg_setStation(this, Galaxy_getStation((int)gal));
+    Status_rg_setStation(this, Galaxy_getStation((int)(intptr_t)gal));
     Ship_setCargo(*(Ship **)(self + 0x190), 0);
 
     int (*makeItemB)(int) = g_rg_makeItemB;
@@ -1167,7 +1170,7 @@ void Status::resetGame()
     addCargo(shipObj, makeItemB(*(int *)(srcShip + 0xec)), 1);
     addCargo(shipObj, makeItemB(*(int *)(srcShip + 0x148)), 2);
     addCargo(shipObj, makeItemB(*(int *)(srcShip + 0x124)), 3);
-    addCargo(*(int *)((int)(*(int **)(*g_rg_statusSlotA)) + 0x190),
+    addCargo(*(int *)((intptr_t)(*(int **)(*g_rg_statusSlotA)) + 0x190),
              Item_makeItem(*(int *)(srcShip + 0x90)), 0);
 
     if (C(srec, 0x35) != 0)
@@ -1183,7 +1186,6 @@ void Status::resetGame()
 }
 
 // ---- activateNewWanted_acedc.cpp ----
-struct FileRead { FileRead(); ~FileRead(); };
 struct SystemPathFinder;
 struct SolarSystem;
 
@@ -1333,28 +1335,28 @@ struct PendingProduct;
 // Merges `bp` into the pending-products list, bumping an existing matching entry's quantity
 // or appending a freshly constructed PendingProduct.
 void Status::addPendingProduct(BluePrint *bp) {
-    unsigned *arr = (unsigned *)(uint32_t)pendingProducts;
+    unsigned *arr = (unsigned *)pendingProducts;
     if (arr == 0) {
         int *na = (int *)operator new(0xc);
         Array_PendingProduct_ctor(na);
-        pendingProducts = (int32_t)(uint32_t)na;
+        pendingProducts = na;
     } else {
         for (unsigned i = 0; i < *arr; i = i + 1) {
             int e = ((int *)arr[1])[i];
             if (e != 0 && *(int *)(e + 0x14) == BluePrint_getIndex(bp) &&
-                *(int *)(((int *)((int *)(uint32_t)pendingProducts)[1])[i] + 0xc) ==
+                *(int *)(((int *)((int *)pendingProducts)[1])[i] + 0xc) ==
                     BluePrint_getStationIndex(bp)) {
                 int q = BluePrint_getQuantity(bp);
-                int slot = ((int *)((int *)(uint32_t)pendingProducts)[1])[i];
+                int slot = ((int *)((int *)pendingProducts)[1])[i];
                 *(int *)(slot + 0x10) = q + *(int *)(slot + 0x10);
                 return;
             }
-            arr = (unsigned *)(uint32_t)pendingProducts;
+            arr = (unsigned *)pendingProducts;
         }
     }
     int *pp = (int *)operator new(0x18);
     PendingProduct_ctor(pp, bp);
-    PendingProduct_add(pp, pendingProducts);
+    PendingProduct_add(pp, (int)(intptr_t)pendingProducts);
 }
 
 // ---- inEmptyOrbit_abc18.cpp ----
@@ -1391,7 +1393,6 @@ bool Status::inEmptyOrbit() {
 }
 
 // ---- loadWanted_ace18.cpp ----
-struct FileRead { FileRead(); ~FileRead(); };
 
 // Reads the wanted/bounty list from disk via a transient FileRead helper.
 void Status::loadWanted() {
@@ -1405,11 +1406,11 @@ void Status::loadWanted() {
 // ---- unlockBluePrint_ac728.cpp ----
 // Unlocks every blueprint whose item index matches `index`.
 void Status::unlockBluePrint(int index) {
-    Array<BluePrint *> *bps = (Array<BluePrint *> *)bluePrints;
-    for (unsigned i = 0; i < bps->size; i = i + 1) {
-        BluePrint *bp = bps->data[i];
+    Array<BluePrint *> *bps = bluePrints;
+    for (unsigned i = 0; i < bps->size(); i = i + 1) {
+        BluePrint *bp = (*bps)[i];
         if (BluePrint_getIndex(bp) == index) {
-            BluePrint_unlock(((Array<BluePrint *> *)bluePrints)->data[i]);
+            BluePrint_unlock((*bluePrints)[i]);
         }
     }
 }
@@ -1447,8 +1448,8 @@ int Status::addStationToStack(Station *s) {
         Status_setStationTail(this, found);
         return 0;
     }
-    int *base = (int *)stationStack->data;
-    if (*base == 0) {
+    Station **base = stationStack->data();
+    if (base[0] == 0) {
         int i = 0;
         int j;
         do {
@@ -1458,19 +1459,16 @@ int Status::addStationToStack(Station *s) {
             }
             i = j - 1;
         } while (base[j + 2] != 0);
-        base[j + 2] = (int)(uint32_t)s;
+        base[j + 2] = s;
     } else {
-        int *p = base + 2;
-        if ((Station *)*p != 0) {
-            operator_delete(Station_dtor((Station *)*p));
-            p = (int *)((int)stationStack->data + 8);
+        if (base[2] != 0) {
+            operator_delete(Station_dtor(base[2]));
         }
-        *p = 0;
+        base[2] = 0;
         for (int i = 0; i != -2; i = i - 1) {
-            int *slot = (int *)((int)stationStack->data + i * 4);
-            slot[2] = slot[1];
+            base[i + 2] = base[i + 1];
         }
-        *(int *)stationStack->data = (int)(uint32_t)s;
+        base[0] = s;
     }
     Status_setStationTail(this, s);
     return 1;
@@ -1482,32 +1480,29 @@ __attribute__((visibility("hidden"))) extern int *g_missionSentinel;
 // Removes `mission` from the active list: clears the campaign slot, detaches its agent, and
 // resets the slot to the sentinel value.
 void Status::removeMission(Mission *mission) {
-    int byteOff = 0;
     int *sentinel = g_missionSentinel;
-    for (unsigned i = 0; i < missions->size; i = i + 1) {
-        if (*(Mission **)((int)missions->data + byteOff) == mission) {
+    Mission **slots = missions->data();
+    for (unsigned i = 0; i < missions->size(); i = i + 1) {
+        if (slots[i] == mission) {
             Mission *target = mission;
             if (this->mission == mission) {
                 mission = 0;
                 this->mission = 0;
-                target = *(Mission **)((int)missions->data + byteOff);
+                target = slots[i];
             }
             if (Mission_getAgent(target) != 0) {
-                Agent *ag = (Agent *)Mission_getAgent(*(Mission **)((int)missions->data + byteOff));
+                Agent *ag = (Agent *)Mission_getAgent(slots[i]);
                 Agent_setMission(ag, 0);
             }
-            int *slot = *(int **)((int)missions->data + byteOff);
-            int *clr;
+            int *slot = (int *)slots[i];
             if (slot == 0) {
-                clr = (int *)((int)missions->data + i * 4);
+                slots[i] = 0;
             } else {
                 (*(void (**)(int *))(*slot + 4))(slot);
-                clr = (int *)((int)missions->data + byteOff);
+                slots[i] = 0;
             }
-            *clr = 0;
-            *(int *)((int)missions->data + byteOff) = *sentinel;
+            slots[i] = (Mission *)(intptr_t)*sentinel;
         }
-        byteOff = byteOff + 4;
     }
 }
 
@@ -1649,7 +1644,6 @@ extern "C" void Status_nextCampaignMission(Status *self, bool param_1)
 }
 
 // ---- setStation_a90b0.cpp ----
-struct FileRead { FileRead(); ~FileRead(); };
 struct Galaxy;
 struct SolarSystem;
 
@@ -1667,7 +1661,7 @@ void Status::setStation(Station *s) {
     if (system == 0) {
         return;
     }
-    ((uint8_t *)field_b4->data)[Station_getSystem(station)] = 1;
+    (*field_b4)[Station_getSystem(station)] = true;
     FileRead *fr = (FileRead *)operator new(1);
     FileRead_ctor(fr);
     Array<Station *> *list = (Array<Station *> *)FileRead_loadStationsBinary(fr, (SolarSystem *)(void *)(uint32_t)system);
@@ -1681,8 +1675,8 @@ void Status::setStation(Station *s) {
     planetNames = 0;
     Array<String *> *names = (Array<String *> *)operator new(0xc);
     Array_String_ctor(names);
-    planetNames = (int32_t)(uint32_t)names;
-    ArraySetLength_String(list->size, names);
+    planetNames = (int32_t)(intptr_t)names;
+    ArraySetLength_String(list->size(), names);
     if (planetTextures != 0) {
         ArrayRelease_int((void *)(uint32_t)planetTextures);
         if (planetTextures != 0) {
@@ -1692,22 +1686,22 @@ void Status::setStation(Station *s) {
     planetTextures = 0;
     void *texs = operator new(0xc);
     Array_int_ctor(texs);
-    planetTextures = (int32_t)(uint32_t)texs;
-    ArraySetLength_int(list->size, texs);
+    planetTextures = (int32_t)(intptr_t)texs;
+    ArraySetLength_int(list->size(), texs);
     Array<Station *> *stations = SolarSystem_getStations((SolarSystem *)(void *)(uint32_t)system);
     unsigned i = 0;
     while (true) {
-        if (SolarSystem_getStations((SolarSystem *)(void *)(uint32_t)system)->size <= i) {
+        if (SolarSystem_getStations((SolarSystem *)(void *)(uint32_t)system)->size() <= i) {
             break;
         }
         Station *cur;
         unsigned j = 0;
         while (true) {
-            if (list->size <= j) {
+            if (list->size() <= j) {
                 goto next;
             }
-            cur = ((Station **)list->data)[j];
-            int target = ((int *)stations->data)[i];
+            cur = (*list)[j];
+            int target = (int)(intptr_t)(*stations)[i];
             int idx = Station_getIndex(cur);
             j = j + 1;
             if (target == idx) {
@@ -1722,8 +1716,8 @@ void Status::setStation(Station *s) {
             } else {
                 Station_getName(nm, cur);
             }
-            ((String **)(*(int *)((char *)((Array<String *> *)(void *)(uint32_t)planetNames) + 4)))[i] = nm;
-            ((int *)(*(int *)((char *)((void *)(uint32_t)planetTextures) + 4)))[i] = Station_getTextureIndex(cur);
+            (*((Array<String *> *)(void *)(uint32_t)planetNames))[i] = nm;
+            (*((Array<int> *)(void *)(uint32_t)planetTextures))[i] = Station_getTextureIndex(cur);
         }
     next:
         i = i + 1;
@@ -1789,8 +1783,7 @@ extern "C" void Status_replaceHash3(void *self, String12 *out, String12 *haystac
 }
 
 // ---- replaceHash_ac83c.cpp ----
-// 12-byte AbyssEngine::String, built/destroyed via engine wrappers.
-struct String12 { uint32_t a, b, c; };
+// 12-byte AbyssEngine::String, built/destroyed via engine wrappers (String12 defined above).
 
 extern "C" {
 void String12_ctor_copy(String12 *self, const String12 *src, bool copy);   // 0x6f028
@@ -1834,7 +1827,6 @@ void Status::changeRating(int delta) {
 }
 
 // ---- departStation_a924c.cpp ----
-struct Generator { Generator(); };
 struct SolarSystem;
 struct Galaxy;
 
@@ -1975,7 +1967,7 @@ extern "C" void Status_departStation(Status *self, Station *dest)
                         do {
                             sys = AERandom_nextInt_ds(*g_dsRandom, 0x16);
                             SF(self, 0x7c) = sys;
-                        } while (((char *)self->systemVisibilities->data)[sys] == 0);
+                        } while ((*self->systemVisibilities)[sys] == 0);
                     } while (sys == 10 || sys == 0xf);
                     void *ss = Galaxy_getSystem_ds(*g_dsGalaxy, SF(self, 0x7c));
                     int stations = SolarSystem_getStations_ds(ss);
@@ -2018,7 +2010,6 @@ int Mission_isCampaignMission(Mission *m);
 int Mission_getAgent(Mission *m);
 int Mission_getClientImage(Mission *m);
 int Mission_getTargetStation();
-int Mission_getType();
 int Mission_getStatusValue();
 int Mission_getProductionGoodIndex(Mission *m);
 int Mission_getProductionGoodAmount();
@@ -2063,7 +2054,7 @@ extern "C" Mission *Status_missionCompleted(Status *self, bool atStation, bool d
              Mission_getTargetStation() == 0))
             continue;
 
-        int type = Mission_getType();
+        int type = Mission_getType(m);
         switch (type) {
         case 0x96:
             if (Mission_getStatusValue() <= self->missionCount) { Mission_setWon(m, true); return m; }
@@ -2136,7 +2127,7 @@ extern "C" Mission *Status_missionCompleted(Status *self, bool atStation, bool d
         case 0xa2:
             if (docked) {
                 if (Station_getIndex(self->station) == Mission_getTargetStation()) {
-                    void *bp = *(void **)(self->field_0x18 + Mission_getStatusValue() * 4);
+                    void *bp = *(void **)((char *)self->bluePrints + Mission_getStatusValue() * 4);
                     unsigned *ing = (unsigned *)BluePrint_getIngredientList(bp);
                     BluePrint_getQuantityList(bp);
                     bool all = true;
@@ -2240,8 +2231,6 @@ extern "C" Mission *Status_missionCompleted(Status *self, bool atStation, bool d
 }
 
 // ---- loadAgents_accd4.cpp ----
-struct FileRead { FileRead(); ~FileRead(); };
-
 // Reads the agent roster from disk via a transient FileRead helper.
 void Status::loadAgents() {
     FileRead *fr = (FileRead *)operator new(1);
@@ -2267,7 +2256,6 @@ void Status::checkForLevelUp() {
 }
 
 // ---- moveWanted_a9684.cpp ----
-struct FileRead { FileRead(); };
 struct SystemPathFinder;
 
 __attribute__((visibility("hidden"))) extern Status **g_mwStatus;     // DAT_000b99d4
@@ -2293,7 +2281,7 @@ void Wanted_setCurrentLocation_mw(Wanted *w, int loc);               // 0x737bc
 void Wanted_setTravelsTo_mw(Wanted *w, int loc);                     // 0x737ec
 void *Station_dtor_mw(void *s);                                      // 0x7360c
 void *Globals_getRandomStation_mw();                                 // 0x737d4
-void *SystemPathFinder_getSystemPath(SystemPathFinder *p, void *sys, int from, int to); // 0x737e0
+int *SystemPathFinder_getSystemPath(SystemPathFinder *p, void *sys, int from, int to); // 0x737e0
 int SolarSystem_getRoutes_mw();                                      // 0x71aac
 int SolarSystem_getWarpGateIndex_mw(void *ss);                       // 0x737f8
 void ArrayReleaseClasses_SolarSystem(void *a);                       // 0x73804
@@ -2321,17 +2309,17 @@ void Status::moveWanted()
         Wanted *w = ((Wanted **)(*(char **)((char *)self->wanted + 4)))[i];
         if (Wanted_isActive_mw(w) == 0)
             continue;
-        if (Wanted_isTerminated_mw(((Wanted **)(self->wanted->data))[i]) != 0)
+        if (Wanted_isTerminated_mw((*self->wanted)[i]) != 0)
             continue;
         if (Status_inAlienOrbit_mw() != 0)
             continue;
 
-        int loc = Wanted_getCurrentLocation_mw(((Wanted **)(self->wanted->data))[i]);
+        int loc = Wanted_getCurrentLocation_mw((*self->wanted)[i]);
         if (loc == Station_getIndex((*statusHolder)->station))
             continue;
         if (*prevHolder != 0) {
             if (Station_getIndex(*prevHolder) ==
-                Wanted_getCurrentLocation_mw(((Wanted **)(self->wanted->data))[i]))
+                Wanted_getCurrentLocation_mw((*self->wanted)[i]))
                 continue;
         }
 
@@ -2347,10 +2335,10 @@ void Status::moveWanted()
         }
 
         // resolve the from/to stations.
-        Wanted_getCurrentLocation_mw(((Wanted **)(self->wanted->data))[i]);
+        Wanted_getCurrentLocation_mw((*self->wanted)[i]);
         void *fromSt = FileRead_loadStation_mw(0);
         int fromSys = Station_getSystem_mw(fromSt);
-        Wanted_getTravelsTo_mw(((Wanted **)(self->wanted->data))[i]);
+        Wanted_getTravelsTo_mw((*self->wanted)[i]);
         void *toSt = FileRead_loadStation_mw(0);
         int toSys = Station_getSystem_mw(toSt);
 
@@ -2360,7 +2348,7 @@ void Status::moveWanted()
             unsigned lo, hi;
             if (i < 2) { hi = 4; lo = 2; }
             else { int r = aeabi_idivmod_mw(i - 1, 6); lo = aeabi_idiv_mw(r, 3) + 2; hi = r / 2 + 4; }
-            Wanted *pw = ((Wanted **)(self->wanted->data))[i];
+            Wanted *pw = (*self->wanted)[i];
             Wanted_setLastSeen_mw(pw, Wanted_getCurrentLocation_mw(pw));
             if (toSt != 0) operator_delete(Station_dtor_mw(toSt));
             toSt = Globals_getRandomStation_mw();
@@ -2372,11 +2360,11 @@ void Status::moveWanted()
                 int dsys = Station_getSystem_mw(toSt);
                 bool ok = path != 0 && routes != 0 &&
                           *(unsigned *)path >= lo && *(unsigned *)path <= hi &&
-                          ((char *)(*statusHolder)->systemVisibilities->data)[dsys] != 0 &&
+                          (*(*statusHolder)->systemVisibilities)[dsys] != 0 &&
                           dsys != 0x1b && dsys != 0x1c && dsys != 0x19 && dsys != 0x1a && dsys != 6 &&
                           dsys != Station_getSystem_mw(fromSt);
                 if (ok) {
-                    Wanted_setTravelsTo_mw(((Wanted **)(self->wanted->data))[i],
+                    Wanted_setTravelsTo_mw((*self->wanted)[i],
                                            Station_getIndex((Station *)toSt));
                     break;
                 }
@@ -2385,14 +2373,14 @@ void Status::moveWanted()
                 toSys = Station_getSystem_mw(toSt);
             }
         } else if (fromSys == toSys) {
-            Wanted *pw = ((Wanted **)(self->wanted->data))[i];
+            Wanted *pw = (*self->wanted)[i];
             Wanted_setCurrentLocation_mw(pw, Wanted_getTravelsTo_mw(pw));
             path = 0;
         } else {
             path = SystemPathFinder_getSystemPath(pf, systemsTable, fromSys, toSys);
             int wg = SolarSystem_getWarpGateIndex_mw(
                 *(void **)(*(int *)((char *)systemsTable + 4) + *(int *)(*(int *)((char *)path + 4) + 4) * 4));
-            Wanted_setCurrentLocation_mw(((Wanted **)(self->wanted->data))[i], wg);
+            Wanted_setCurrentLocation_mw((*self->wanted)[i], wg);
         }
 
         if (toSt != 0) operator_delete(Station_dtor_mw(toSt));
@@ -2424,12 +2412,12 @@ void Status::setWingmen(Array<String *> *list) {
     } else {
         Array<String *> *na = (Array<String *> *)operator new(0xc);
         Array_String_ctor(na);
-        wingmen = (int32_t)(uint32_t)na;
-        ArraySetLength_String(list->size, na);
-        for (unsigned i = 0; i < list->size; i = i + 1) {
+        wingmen = (int32_t)(intptr_t)na;
+        ArraySetLength_String(list->size(), na);
+        for (unsigned i = 0; i < list->size(); i = i + 1) {
             String *s = (String *)operator new(0xc);
-            String_copyctor(s, ((String **)list->data)[i], 0);
-            ((String **)((Array<String *> *)(void *)wingmen)->data)[i] = s;
+            String_copyctor(s, (*list)[i], 0);
+            (*((Array<String *> *)(void *)wingmen))[i] = s;
         }
     }
 }

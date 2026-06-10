@@ -44,4 +44,17 @@ inline void *&ae_ptr(void *self, uint32_t offset)
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
+
+// GLES2 entry-point function-pointer types (the engine dispatches some GL calls through
+// loaded function pointers, e.g. glGetAttribLocation_ptr / glBindBuffer_ptr).
+typedef int  GetShaderLocation(unsigned int program, const char *name);
+typedef void BindBuffer(unsigned int target, unsigned int buffer);
+typedef void VertexAttribPointer(unsigned int index, int size, unsigned int type, bool normalized,
+                                 int stride, const void *pointer);
+
+// String helpers: build a String from a C literal and assign it into the embedded name field
+// (matches the engine's String(char const*, bool) + operator= + ~String sequence).
+extern "C" void   String_ctor_char(String *self, const char *text, bool copy);
+extern "C" String *String_assign(String *self, const String *other);
+extern "C" void   String_dtor(String *self);
 #endif

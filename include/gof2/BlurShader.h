@@ -45,7 +45,7 @@ namespace AbyssEngine {
 struct BlurShader {
     void Init(::Engine *engine);
     void SetInActive();
-    void UpdateMeshData(::Mesh *mesh, ::Engine *engine);
+    void UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine);
     void RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::Engine *engine,
                       float amount, Vector vector);
     BlurShader();

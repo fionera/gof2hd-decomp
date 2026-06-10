@@ -7,28 +7,18 @@ namespace AbyssEngine {
 struct Engine;
 struct FBOContainer;
 struct Mesh;
-struct ShaderBaseStruct;
 
+// AbyssEngine::ShaderBaseStruct base layout used by BloomShader.
+struct ShaderBaseStruct {
+    void *field_0x0;                    // +0x0 vtable
+    int field_0x4;                      // +0x4 GL program handle (luma)
+    volatile uint16_t field_0x8;        // +0x8
+};
 
-
-
-
-} // namespace AbyssEngine
-
-using BloomShader = AbyssEngine::BloomShader;
-using Engine = AbyssEngine::Engine;
-using FBOContainer = AbyssEngine::FBOContainer;
-using Mesh = AbyssEngine::Mesh;
-using ShaderBaseStruct = AbyssEngine::ShaderBaseStruct;
-using String = AbyssEngine::String;
-
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
-
-struct BloomShader {
-    unsigned int field_0x4;             // +0x4
+// AbyssEngine::BloomShader
+struct BloomShader : ShaderBaseStruct {
     uint8_t field_0x9;                  // +0x9
-    String field_0xc;                   // +0xc
+    String field_0xc;                   // +0xc shader name
     unsigned int field_0x20;            // +0x20
     unsigned int field_0x24;            // +0x24
     int field_0x28;                     // +0x28
@@ -60,5 +50,19 @@ struct BloomShader {
     int field_0x90;                     // +0x90
     unsigned int field_0x94;            // +0x94
     int field_0x98;                     // +0x98
+
+    BloomShader();
+    void Init(Engine *engine);
+    void InternalInit(Engine *engine);
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void SetInActive();
+    void RenderEffect(FBOContainer *source, Engine *engine);
+    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine);
 };
+
+} // namespace AbyssEngine
+
+extern "C" void *__stack_chk_guard;
+extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
+
 #endif

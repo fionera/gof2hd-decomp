@@ -13,7 +13,7 @@ struct Hud;            // opaque; we only ever take a Hud* and offset-cast.
 struct Item;
 struct ListItem;
 struct TouchButton;
-struct String;
+// String comes from common.h (AbyssEngine::String, aliased into global scope).
 
 // ---- tiny offset-cast helpers -------------------------------------------------
 static inline char*           B (void* p, int off) { return (char*)p + off; }

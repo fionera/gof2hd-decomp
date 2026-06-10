@@ -1,9 +1,10 @@
 #include "gof2/BeamGun.h"
-#include "gof2/AEGeometry.h"
 #include "gof2/Gun.h"
-#include "gof2/Player.h"
 #include "gof2/PlayerEgo.h"
 
+// AEGeometry's full header is not yet native-clean; Gun.h already completes the
+// global forward declaration with a minimal view exposing field_0xc (transform id),
+// which is the only AEGeometry field this TU reads by name.
 
 extern "C" AEGeometry *AEGeometry_dtor(AEGeometry *self);
 extern "C" void operator_delete(void *ptr);
@@ -55,16 +56,14 @@ extern "C" BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
 }
 
 // ---- setEnemies_177b20.cpp ----
-extern "C" void BeamGun_setEnemies(Array *enemies)
+// BeamGun::setEnemies(Array<Player*>*): forwards the enemy list's data to the
+// engine handler.
+void BeamGun::setEnemies(Array<Player *> *enemies)
 {
-    return BeamGun_setEnemies_tail(F<void *>(enemies, 0x8));
+    return BeamGun_setEnemies_tail(enemies->data());
 }
 
 // ---- render_17787c.cpp ----
-struct BeamGun {
-    void render();
-};
-
 void BeamGun::render()
 {
     Gun *gun = this->field_0x8;
@@ -87,20 +86,17 @@ extern "C" void _ZN7BeamGunD0Ev(BeamGun *self)
 }
 
 // ---- setEnemy_177b26.cpp ----
-extern "C" void BeamGun_setEnemy(Player *enemy)
+// BeamGun::setEnemy(Player*): forwards the player's secondary geometry pointer
+// (object field at +0x8) to the engine handler.
+void BeamGun::setEnemy(Player *enemy)
 {
-    return BeamGun_setEnemy_tail(enemy->field_0x8);
+    return BeamGun_setEnemy_tail(((void **)enemy)[2]);
 }
 
 // ---- BeamGun_177754.cpp ----
-__attribute__((visibility("hidden"))) extern void *BeamGun_vtable;
 __attribute__((visibility("hidden"))) extern void **BeamGun_canvas;
 __attribute__((visibility("hidden"))) extern int32_t BeamGun_secondaryMeshes[];
 
-
-struct BeamGun {
-    BeamGun(int param_1, Gun *gun, int param_3, Level *level);
-};
 
 BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
 {
@@ -158,10 +154,6 @@ __attribute__((visibility("hidden"))) extern BeamGunGetTransformFn BeamGun_getTr
 __attribute__((visibility("hidden"))) extern BeamGunSetAnimationFn BeamGun_setAnimation_indirect;
 
 
-struct BeamGun {
-    void update(int elapsed);
-};
-
 void BeamGun::update(int elapsed)
 {
     Vector back;
@@ -189,7 +181,7 @@ void BeamGun::update(int elapsed)
         transform = PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
                                                       geometry->field_0xc);
         Transform_SetAnimationState(transform, 1, 0);
-        F<uint8_t>(this->field_0x8, 0x4d) = 0;
+        this->field_0x8->field_0x4d = 0;
     }
 
     void **canvasHolder = BeamGun_canvas_update_b;
@@ -253,7 +245,7 @@ void BeamGun::update(int elapsed)
             PlayerEgo_getPosition(&playerMatrix, player);
 
             gun = this->field_0x8;
-            transformed = gun->field_0x7c;
+            transformed = *(Vector *)&gun->field_0x7c;
             transformed.z = gun->field_0x84 + -100.0f;
 
             MatrixRotateVector(&rotated, (Matrix *)((char *)player->field_0x0 + 4),
@@ -274,5 +266,5 @@ void BeamGun::update(int elapsed)
         }
     }
 
-    this->field_0x21 = F<uint8_t>(this->field_0x8, 0xa9);
+    this->field_0x21 = this->field_0x8->field_0xa9;
 }

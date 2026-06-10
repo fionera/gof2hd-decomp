@@ -2,6 +2,13 @@
 #include "gof2/BoundingVolume.h"
 #include "gof2/Player.h"
 
+// Small 3-float aggregate returned by-value by several engine helpers.
+struct V3 { float x, y, z; };
+
+// Byte-offset reader retained for the few foreign-class fields accessed from this
+// translation unit by raw offset (engine singletons / Player internals not modelled
+// in their out-of-batch headers).
+template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void *String_assign(void *dst);
@@ -55,7 +62,6 @@ extern "C" void  TargetFollowCamera_setRumblePercentage(float pct, void *cam);
 extern "C" void  Vector_sub(Vector *a, Vector *b);
 extern "C" float Vector_length(Vector *v);
 extern "C" void *Player_getEnemies();
-extern "C" int   Player_isActive();
 extern "C" void  Player_getPosition(Vector *out);
 extern "C" void *Player_getEnemy(void *player, unsigned int idx);
 extern "C" void  Player_setActive(bool a);
@@ -68,13 +74,12 @@ extern "C" int   Achievements_getValue(void *a, int id, int n);
 extern "C" void  Hud_hudEventMedal(void *hud, int id, int v);
 extern "C" void  PaintCanvas_MaterialCreate(void *pc, unsigned short mat, void *out);
 extern "C" void  PaintCanvas_MeshChangeMaterial(void *pc, unsigned int mesh, unsigned short mat);
-extern "C" void *PaintCanvas_TransformGetTransform(void *canvas);
 extern "C" void Transform_setExhaustVisible(void *transform, bool v);
 extern "C" void Array_BV_ctor(void *arr);
 extern "C" void BoundingVolume_setArr(BoundingVolume *bv, void *arr);
 extern "C" void KIPlayer_reset(PlayerFixedObject *self);
 extern "C" void AEGeometry_ctor(void *geom, uint16_t meshId, void *canvas, bool b);
-extern "C" int Globals_getWreckCollision(void *globals, int kind, void *geom);
+extern "C" void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 extern "C" V3 BV_getProjectionVector(void *bv);
 extern "C" char PlayerFixedObject_vtable;
 extern "C" void *AEGeometry_dtor(void *p);
@@ -116,7 +121,7 @@ extern "C" int PlayerFixedObject_getDockingType(PlayerFixedObject *self)
 // ---- setBV_154016.cpp ----
 extern "C" void PlayerFixedObject_setBV_arr(PlayerFixedObject *self, Array<BoundingVolume *> *bv)
 {
-    F<Array<BoundingVolume *> *>(self, 0x128) = bv;
+    self->field_0x128 = bv;
 }
 
 // ---- hideShip_154f1a.cpp ----
@@ -200,8 +205,6 @@ extern "C" void PlayerFixedObject_setMoving(PlayerFixedObject *self, bool v)
 // ---- projectCollisionOnSurface_154e16.cpp ----
 // Returns a Vector by value (sret r0, this r1, collision vector r2). The callee returns
 // the projected Vector into the same sret, so the compiler keeps a frame + call (not tail).
-struct V3 { float x, y, z; };
-
 extern "C" V3 PlayerFixedObject_projectCollisionOnSurface(PlayerFixedObject *self, void *vec)
 {
     void *bv = self->field_0x12c;
@@ -225,11 +228,11 @@ extern "C" void PlayerFixedObject_setTransportID(PlayerFixedObject *self, int v)
 // ---- outerCollide_154e50.cpp ----
 // outerCollide(Vector) - Vector passed by value (r1,r2,r3). Pure tail-forward through
 // vtable slot 0x3c: ldr r12,[r0]; ldr r12,[r12,#0x3c]; bx r12.
-typedef void (*CollideFn)(PlayerFixedObject *, Vector);
+typedef void (*OuterCollideVecFn)(PlayerFixedObject *, Vector);
 
 extern "C" void PlayerFixedObject_outerCollide_vec(PlayerFixedObject *self, Vector v)
 {
-    CollideFn fn = *(CollideFn *)(*(char **)self + 0x3c);
+    OuterCollideVecFn fn = *(OuterCollideVecFn *)(*(char **)self + 0x3c);
     return fn(self, v);
 }
 
@@ -288,16 +291,18 @@ extern "C" void PlayerFixedObject_update(PlayerFixedObject *self, int dt)
     bool kiFlag = (self->field_0xf8 + 1 != 0) && (self->field_0x134 != 0);
     Player_update(self->field_0x4, kiFlag);
 
+    // Player::field_0x5c/0x5d (enemy/friend flags) are not modelled in Player.h
+    // (out-of-batch header) -> byte-offset accessed.
     void *player = self->field_0x4;
     unsigned char enemyFlag = 0;
     if ((self->field_0x28 & 0xfffffffe) == 8) {
-        player->field_0x5c = 1;
+        F<unsigned char>(player, 0x5c) = 1;
         enemyFlag = 0;
     } else {
         int st = Status_getStanding();
         unsigned char e = Standing_isEnemy((void *)(long)st);
         player = self->field_0x4;
-        player->field_0x5c = e;
+        F<unsigned char>(player, 0x5c) = e;
         if ((self->field_0x28 & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
@@ -306,12 +311,12 @@ extern "C" void PlayerFixedObject_update(PlayerFixedObject *self, int dt)
             player = self->field_0x4;
         }
     }
-    player->field_0x5d = enemyFlag;
+    F<unsigned char>(player, 0x5d) = enemyFlag;
 
     if (Player_turnedEnemy() != 0)
-        *(unsigned short *)(self->field_0x4 + 0x5c) = 1;
+        F<unsigned short>(self->field_0x4, 0x5c) = 1;
     if (Player_isAlwaysFriend() != 0)
-        *(unsigned short *)(self->field_0x4 + 0x5c) = 0x100;
+        F<unsigned short>(self->field_0x4, 0x5c) = 0x100;
 
     if (self->field_0x88 != 6) {
         float bomb = Player_getBombForce();
@@ -355,13 +360,13 @@ afterMotion:
 
     if (Player_getHitpoints() < 1 && (unsigned int)(self->field_0x88 - 3) >= 2) {
         // ---- death transition ----
-        if (*(char *)(self->field_0x4 + 0x5c) == 0) {
+        if (F<char>(self->field_0x4, 0x5c) == 0) {
             Level_friendDied();
         } else {
-            Level_enemyDied(self->field_0x54, (bool)(unsigned char)self->field_0xac);
+            Level_enemyDied((int)(__INTPTR_TYPE__)self->field_0x54, (bool)(unsigned char)self->field_0xac);
         }
         if (self->field_0xac == 0x37a3)
-            Level_pirateStationAction((bool)(unsigned char)self->field_0x54);
+            Level_pirateStationAction((bool)(unsigned char)(__INTPTR_TYPE__)self->field_0x54);
 
         self->field_0x134 = 0;
         self->field_0x88 = 3;
@@ -381,7 +386,7 @@ afterMotion:
                         *(int *)((char *)wreck + 0xc));
             Transform_SetAnimationState(t, 1, 0);
             if (self->field_0x28 == 3 && self->field_0x134 != 0 &&
-                *(int *)(self->field_0x8 + 0x10) != -1) {
+                *(int *)((char *)self->field_0x8 + 0x10) != -1) {
                 AEGeometry_addChild(self->field_0x8, self->field_0x124);
             }
         }
@@ -424,7 +429,7 @@ afterMotion:
                 enemies = (unsigned int *)Level_getEnemies();
             }
             if (self->field_0xac == 0xe &&
-                *(char *)(self->field_0x4 + 0x44) == 0) {
+                *(char *)((char *)self->field_0x4 + 0x44) == 0) {
                 void *egoObj = *g_pfo_egoA;
                 void *ach = *g_pfo_achievements;
                 *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1;
@@ -456,18 +461,18 @@ afterMotion:
                     AEGeometry_moveForward_ret(self->field_0x78, d);
             }
             void *m = AEGeometry_getMatrix(self->field_0x124);
-            Matrix_assign(self->field_0x4 + 0x4, m);
+            Matrix_assign((char *)self->field_0x4 + 0x4, m);
             char posBuf[12];
             AEGeometry_getPosition((Vector *)posBuf, self->field_0x124);
             Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)posBuf);
-            Array<void *> *bv = F<Array<void *> *>(self, 0x128);
+            Array<void *> *bv = (Array<void *> *)self->field_0x128;
             if (bv != 0) {
-                for (unsigned int i = 0; i < bv->length; i++) {
-                    void *o = bv->data[i];
+                for (unsigned int i = 0; i < bv->size(); i++) {
+                    void *o = bv->data()[i];
                     typedef void (*BVFn)(void *, float, float, float);
                     BVFn fn = *(BVFn *)(*(char **)o + 0x4);
                     fn(o, self->field_0x2c, self->field_0x30, self->field_0x34);
-                    bv = F<Array<void *> *>(self, 0x128);
+                    bv = (Array<void *> *)self->field_0x128;
                 }
             }
         }
@@ -515,7 +520,7 @@ afterMotion:
             Explosion_update(self->field_0x18c, dt, 0);
         self->field_0xd8 = self->field_0xd8 + dt;
 
-        bool spin = self->field_0x4c != 0 && Player_isActive() != 0 &&
+        bool spin = self->field_0x4c != 0 && Player_isActive(self->field_0x4) != 0 &&
                     self->field_0x78 != 0;
         if (spin) {
             float r = (float)(dt >> 1) * 0.001f; // DAT scalings
@@ -539,9 +544,9 @@ afterMotion:
                 char posBuf[12];
                 AEGeometry_getPosition((Vector *)posBuf, self->field_0x8);
                 Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)posBuf);
-                Array<void *> *bv = F<Array<void *> *>(self, 0x12c);
-                for (unsigned int i = 0; i < bv->length; i++) {
-                    void *o = bv->data[i];
+                Array<void *> *bv = (Array<void *> *)self->field_0x12c;
+                for (unsigned int i = 0; i < bv->size(); i++) {
+                    void *o = bv->data()[i];
                     typedef void (*BVFn)(void *, float, float, float);
                     BVFn fn = *(BVFn *)(*(char **)o + 0x4);
                     fn(o, self->field_0x2c, self->field_0x30, self->field_0x34);
@@ -559,7 +564,7 @@ afterMotion:
                 char matOut[4];
                 PaintCanvas_MaterialCreate(pc, mat, matOut);
                 PaintCanvas_MeshChangeMaterial(pc,
-                    *(unsigned int *)(self->field_0x124 + 0x1c),
+                    *(unsigned int *)((char *)self->field_0x124 + 0x1c),
                     *(unsigned short *)matOut);
             }
             // rumble ramp
@@ -590,7 +595,7 @@ afterMotion:
         if (enemies != 0) {
             self->field_0x168 = 0;
             for (unsigned int i = 0; i < enemies[0]; i++) {
-                if (Player_isActive() != 0) {
+                if (Player_isActive(Player_getEnemy(self->field_0x4, i)) != 0) {
                     char pb[12];
                     Player_getPosition((Vector *)pb);
                     Vector_assign((Vector *)((char *)self + 0x90), (Vector *)pb);
@@ -599,7 +604,7 @@ afterMotion:
                     float dz = self->field_0x34 - self->field_0x98;
                     const float lo = 0.0f, hi = 50.0f; // DAT thresholds
                     if (dx < hi && dx > lo && dy < hi && dy > lo && dz < hi && dz > lo) {
-                        self->field_0x168 = Player_getEnemy(self->field_0x4, i);
+                        self->field_0x168 = (int32_t)(__INTPTR_TYPE__)Player_getEnemy(self->field_0x4, i);
                         Player_getPosition((Vector *)pb);
                         Vector_assign((Vector *)((char *)self + 0x90), (Vector *)pb);
                         self->field_0x144 = self->field_0x90;
@@ -641,7 +646,8 @@ extern "C" void PlayerFixedObject_setExhaustVisible(PlayerFixedObject *self, boo
     void *geom = self->field_0x8;
     if (geom != 0 && *(int *)((char *)geom + 0x14) != -1) {
         void **holder = g_pfo_canvas;
-        return Transform_setExhaustVisible(PaintCanvas_TransformGetTransform(*holder), v);
+        return Transform_setExhaustVisible(
+            PaintCanvas_TransformGetTransform(*holder, *(int *)((char *)geom + 0xc)), v);
     }
 }
 
@@ -654,23 +660,23 @@ typedef int (*CollideFn)(void *bv, float, float, float);
 
 extern "C" int PlayerFixedObject_collide(PlayerFixedObject *self, float x, float y, float z)
 {
-    Array<void *> *a = F<Array<void *> *>(self, 0x12c);
+    Array<void *> *a = (Array<void *> *)self->field_0x12c;
     if ((a != 0 || self->field_0x88 != 4) && self->field_0x8c != 0) {
         if (a != 0 && self->field_0x88 == 4) {
-            for (uint32_t i = 0; i < a->length; i++) {
-                void *bv = a->data[i];
+            for (uint32_t i = 0; i < a->size(); i++) {
+                void *bv = a->data()[i];
                 CollideFn fn = *(CollideFn *)(*(char **)bv + 0x8);
                 if (fn(bv, x, y, z) != 0) return 1;
-                a = F<Array<void *> *>(self, 0x12c);
+                a = (Array<void *> *)self->field_0x12c;
             }
         } else {
-            Array<void *> *b = F<Array<void *> *>(self, 0x128);
+            Array<void *> *b = (Array<void *> *)self->field_0x128;
             if (b != 0) {
-                for (uint32_t i = 0; i < b->length; i++) {
-                    void *bv = b->data[i];
+                for (uint32_t i = 0; i < b->size(); i++) {
+                    void *bv = b->data()[i];
                     CollideFn fn = *(CollideFn *)(*(char **)bv + 0x8);
                     if (fn(bv, x, y, z) != 0) return 1;
-                    b = F<Array<void *> *>(self, 0x128);
+                    b = (Array<void *> *)self->field_0x128;
                 }
             }
         }
@@ -788,14 +794,12 @@ extern "C" void PlayerFixedObject_setWreckedMeshId(PlayerFixedObject *self, int 
 // indexes it by the stored collision index (this+0x16c) and forwards the chosen BV.
 // NEAR: target shares one index+call across both branches (explicit join) and keeps the
 // first bv in a callee reg; clang lays the branches out separately here.
-struct V3 { float x, y, z; };
-
 extern "C" V3 PlayerFixedObject_getProjectionVector(PlayerFixedObject *self)
 {
     void *bv = self->field_0x12c;
     if (bv != 0 && self->field_0x88 == 4) {
         int idx = self->field_0x16c;
-        void **data = bv->field_0x4;
+        void **data = *(void ***)((char *)bv + 0x4);
         return BV_getProjectionVector(data[idx]);
     }
     void *bv2 = self->field_0x128;
@@ -845,7 +849,7 @@ extern "C" void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
 // ---- render_154cdc.cpp ----
 // Tail-call thunks selected by object state.
 extern "C" void render_thunk_state5(void *geom);   // DAT_001abdd4 thunk, arg = this->0x8
-extern "C" void render_thunk_other(int meshId);     // DAT_001ac2b4 thunk, arg = this->0x18c
+extern "C" void render_thunk_other(void *expl);     // DAT_001ac2b4 thunk, arg = this->0x18c (Explosion*)
 
 // NEAR: clang reorders the state comparisons (3 before 5) and duplicates the shared
 // state5 block instead of sharing it via the original goto; structure differs.
@@ -855,25 +859,26 @@ extern "C" void PlayerFixedObject_render(PlayerFixedObject *self)
     if (g78 != 0 && self->field_0x1b8 == 0) {
         AEGeometry_render(g78);
     }
-    int iVar1 = self->field_0x88;
-    if (iVar1 == 5) {
+    int state = self->field_0x88;
+    void *expl;
+    if (state == 5) {
 LAB_538:
         if (self->field_0x1b8 != 0) return;
         return render_thunk_state5(self->field_0x8);
     }
-    if (iVar1 == 4) {
+    if (state == 4) {
         if (self->field_0x1b8 == 0) AEGeometry_render(self->field_0x124);
-        iVar1 = self->field_0x18c;
-        if (iVar1 == 0) return;
+        expl = self->field_0x18c;
+        if (expl == 0) return;
     } else {
-        if (iVar1 != 3) {
+        if (state != 3) {
             if (Player_isActive(self->field_0x4) == 0) return;
             goto LAB_538;
         }
         if (self->field_0x1b8 == 0) AEGeometry_render(self->field_0x124);
-        iVar1 = self->field_0x18c;
+        expl = self->field_0x18c;
     }
-    return render_thunk_other(iVar1);
+    return render_thunk_other(expl);
 }
 
 // ---- PlayerFixedObject_153a7c.cpp ----
@@ -1008,7 +1013,7 @@ extern "C" void PlayerFixedObject_ctor(PlayerFixedObject *self, int kind, int pa
         operator_delete(Generator_dtor(gen));
     }
 
-    *(uint8_t *)(self->field_0x4 + 0x45) = 1;
+    *(uint8_t *)((char *)self->field_0x4 + 0x45) = 1;
     if (kind != 0x37a3) {
         self->field_0xf8 = 0x2f;
         if (kind == 0xe) {
@@ -1039,13 +1044,13 @@ extern "C" void PlayerFixedObject_setPosition3(PlayerFixedObject *self, float x,
     AEGeometry_getPosition((Vector *)buf, self->field_0x8);
     Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
 
-    Array<void *> *bv = F<Array<void *> *>(self, 0x128);
+    Array<void *> *bv = (Array<void *> *)self->field_0x128;
     if (bv != 0) {
-        for (uint32_t i = 0; i < bv->length; i++) {
-            void *o = bv->data[i];
+        for (uint32_t i = 0; i < bv->size(); i++) {
+            void *o = bv->data()[i];
             BVSetPosFn fn = *(BVSetPosFn *)(*(char **)o + 0x4);
             fn(o, self->field_0x2c, self->field_0x30, self->field_0x34);
-            bv = F<Array<void *> *>(self, 0x128);
+            bv = (Array<void *> *)self->field_0x128;
         }
     }
 
@@ -1085,23 +1090,23 @@ typedef int (*CollideFn)(void *bv, float, float, float);
 
 extern "C" int PlayerFixedObject_outerCollide(PlayerFixedObject *self, float x, float y, float z)
 {
-    Array<void *> *a = F<Array<void *> *>(self, 0x12c);
+    Array<void *> *a = (Array<void *> *)self->field_0x12c;
     if ((a != 0 || self->field_0x88 != 4) && self->field_0x8c != 0) {
         if (a != 0 && self->field_0x88 == 4) {
-            for (uint32_t i = 0; i < a->length; i++) {
-                void *bv = a->data[i];
+            for (uint32_t i = 0; i < a->size(); i++) {
+                void *bv = a->data()[i];
                 CollideFn fn = *(CollideFn *)(*(char **)bv + 0xc);
                 if (fn(bv, x, y, z) != 0) { self->field_0x16c = i; return 1; }
-                a = F<Array<void *> *>(self, 0x12c);
+                a = (Array<void *> *)self->field_0x12c;
             }
         } else {
-            Array<void *> *b = F<Array<void *> *>(self, 0x128);
+            Array<void *> *b = (Array<void *> *)self->field_0x128;
             if (b != 0) {
-                for (uint32_t i = 0; i < b->length; i++) {
-                    void *bv = b->data[i];
+                for (uint32_t i = 0; i < b->size(); i++) {
+                    void *bv = b->data()[i];
                     CollideFn fn = *(CollideFn *)(*(char **)bv + 0xc);
                     if (fn(bv, x, y, z) != 0) { self->field_0x16c = i; return 1; }
-                    b = F<Array<void *> *>(self, 0x128);
+                    b = (Array<void *> *)self->field_0x128;
                 }
             }
         }
@@ -1130,13 +1135,14 @@ extern "C" void PlayerFixedObject_moveForward(PlayerFixedObject *self, int amoun
     if (self->field_0x124 != 0) {
         AEGeometry_moveForward(self->field_0x124, d);
     }
-    Array<void *> *bv = F<Array<void *> *>(self, 0x128);
+    Array<void *> *bv = (Array<void *> *)self->field_0x128;
     if (bv != 0) {
-        for (uint32_t i = 0; i < bv->length; i++) {
-            void *o = bv->data[i];
+        for (uint32_t i = 0; i < bv->size(); i++) {
+            void *o = bv->data()[i];
             BVMoveFn fn = *(BVMoveFn *)(*(char **)o + 0x4);
-            fn(o, self->field_0x2c);
-            bv = F<Array<void *> *>(self, 0x128);
+            Vector pos = { self->field_0x2c, self->field_0x30, self->field_0x34 };
+            fn(o, pos);
+            bv = (Array<void *> *)self->field_0x128;
         }
     }
 }

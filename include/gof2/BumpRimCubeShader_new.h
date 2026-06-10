@@ -2,9 +2,7 @@
 #define GOF2_BUMPRIMCUBESHADER_NEW_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -65,9 +63,30 @@ static inline void *field_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
-} // namespace AbyssEngine
-
+// BumpRimCubeShader_new — derives from ShaderBaseStruct (vtable at +0x0).
+// Int fields are GL uniform/attribute locations (contiguous block 0x20..0x94).
 struct BumpRimCubeShader_new {
-    String field_0xc;                   // +0xc
+    void *field_0x0;            // +0x0  vtable ptr
+    int field_0x4;              // +0x4  program
+    uint8_t pad_0x8;            // +0x8
+    uint8_t field_0x9;          // +0x9  needsUpdate flag
+    uint16_t pad_0xa;
+    String field_0xc;           // +0xc  shader name
+    int pad_0x1c;
+    int field_0x20;  int field_0x24;  int field_0x28;  int field_0x2c;  int field_0x30; // attribs a0..a4
+    int field_0x34;  int field_0x38;  int field_0x3c;  int field_0x40;  int field_0x44; // u0..u4
+    int field_0x48;  int field_0x4c;  int field_0x50;  int field_0x54;  int field_0x58; // u5..u9
+    int field_0x5c;  int field_0x60;  int field_0x64;  int field_0x68;  int field_0x6c; // u10..u14
+    int field_0x70;  int field_0x74;  int field_0x78;  int field_0x7c;  int field_0x80; // u15..u19
+    int field_0x84;  int field_0x88;  int field_0x8c;  int field_0x90;  int field_0x94; // u20..u24
+
+    static int ShaderIndex;
+
+    BumpRimCubeShader_new();
+    void Init(Engine *);
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void SetInActive();
 };
+
+} // namespace AbyssEngine
 #endif

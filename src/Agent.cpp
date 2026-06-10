@@ -1,5 +1,13 @@
 #include "gof2/Agent.h"
 
+using AbyssEngine::String12;
+
+// String returned by value: the 12-byte aggregate (text*, size, ...) the target ABI
+// passes/returns via the sret pointer.
+struct RetStr { uint32_t a, b, c; };
+
+// Minimal view of a virtual object whose deleting-dtor lives at vt[0]+4.
+struct VObj { void (*vt[8])(void *); };
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void String_assign(void *dst, String12 src);
@@ -13,8 +21,6 @@ extern "C" __attribute__((nothrow)) void Agent_operator_delete_arr(void *p);
 extern "C" void String_dtor(void *s);
 
 // ---- getStationName_17770a.cpp ----
-struct RetStr { uint32_t a, b, c; };
-
 extern "C" RetStr Agent_getStationName(Agent *self)
 {
     RetStr r;
@@ -79,8 +85,6 @@ extern "C" void Agent_setStationName(Agent *self, String12 src)
 }
 
 // ---- getMissionString_177676.cpp ----
-struct RetStr { uint32_t a, b, c; };
-
 extern "C" RetStr Agent_getMissionString(Agent *self)
 {
     RetStr r;
@@ -99,8 +103,6 @@ extern "C" uint8_t Agent_isMale(Agent *self)
 
 // Returns String by value. The copy-ctor returns void, so the compiler cannot
 // assume r0 survives the call and must keep a frame + restore the sret pointer.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
-
 extern "C" RetStr Agent_getName(Agent *self)
 {
     RetStr r;
@@ -157,8 +159,6 @@ extern "C" bool Agent_isGenericAgent(Agent *self)
 }
 
 // ---- getSystemName_17771e.cpp ----
-struct RetStr { uint32_t a, b, c; };
-
 extern "C" RetStr Agent_getSystemName(Agent *self)
 {
     RetStr r;
@@ -185,19 +185,16 @@ extern "C" Triple *Agent_setSellItemData(Agent *self, int a, int b, int c)
     return p + 1;
 }
 
-// ---- setWingmanFriendNames_177578.cpp ----
-struct VObj { void (*vt[8])(void *); };
-
 // final tail-called veneer (frees the incoming param array's backing)
 
 // Agent::setWingmanFriendNames(Array<String*>*) — this in r0, param in r1.
 extern "C" void Agent_setWingmanFriendNames(Agent *self, uint32_t *param)
 {
-    VObj *f0c = self->field_0xc;
+    VObj *f0c = (VObj *)self->field_0xc;
     if (f0c != 0)
         (*(void (**)(void *))((char *)f0c->vt[0] + 4))(f0c);
     self->field_0xc = 0;
-    VObj *f10 = self->field_0x10;
+    VObj *f10 = (VObj *)self->field_0x10;
     if (f10 != 0)
         (*(void (**)(void *))((char *)f10->vt[0] + 4))(f10);
     self->field_0x10 = 0;
@@ -237,8 +234,6 @@ extern "C" void Agent_setWingmanFriendNames(Agent *self, uint32_t *param)
 }
 
 // ---- getWingmanName_177658.cpp ----
-struct RetStr { uint32_t a, b, c; };
-
 extern "C" RetStr Agent_getWingmanName(Agent *self, int idx)
 {
     void *src;
@@ -263,32 +258,19 @@ extern "C" void Agent_setSystemName(Agent *self, String12 src)
 // ---- _Agent_1774b8.cpp ----
 // Agent::~Agent() — real C++ destructor so the demangled symbol contains "~Agent".
 
-typedef unsigned int uint32_t;
-
-
 typedef void (*dtor_fn)(void *) __attribute__((nothrow));
 extern dtor_fn const gStringDtor __attribute__((visibility("hidden")));
 
-struct VObj { dtor_fn vt[8]; };
-
-struct Agent {
-    void *name_str[3];   // 0x00 String (this+0x0)
-    VObj *field_c;        // 0x0c  virtual; dtor at vt[1]
-    unsigned char pad_10[0x88 - 0x10];
-    void *imageParts;     // 0x88
-    ~Agent() noexcept(false);
-};
-
 __attribute__((minsize)) Agent::~Agent() noexcept(false)
 {
-    if (this->imageParts != 0)
-        Agent_operator_delete_arr(this->imageParts);
+    if (this->field_0x88 != 0)               // +0x88 imageParts
+        Agent_operator_delete_arr(this->field_0x88);
 
-    VObj *o = this->field_c;
-    this->imageParts = 0;
+    VObj *o = (VObj *)this->field_0xc;        // +0xc  virtual; dtor at vt[0]+4
+    this->field_0x88 = 0;
     if (o != 0) {
-        (*(dtor_fn *)((char *)o->vt[0] + 4))(o);
-        this->field_c = 0;
+        (*(void (**)(void *))((char *)o->vt[0] + 4))(o);
+        this->field_0xc = 0;
     }
 
     dtor_fn d = gStringDtor;
@@ -300,20 +282,18 @@ __attribute__((minsize)) Agent::~Agent() noexcept(false)
 
 // ---- setMissionString_177684.cpp ----
 // String temp lifecycle helpers (compiler emits the canary via -fstack-protector).
-extern "C" void String_assign(void *dst, void *src);   // operator=(String*, String*)
 
 // Agent::setMissionString(String) — this in r0, source String* in r1.
 extern "C" void Agent_setMissionString(Agent *self, void *src)
 {
-    char tmp[12];
-    String_copy_ctor(tmp, src, false);
+    String12 tmp;
+    String_copy_ctor(&tmp, src, false);
     String_assign((char *)self + 0x6c, tmp);
-    String_dtor(tmp);
+    String_dtor(&tmp);
 }
 
 // ---- Agent_1773c4.cpp ----
 extern "C" void *String_default_ctor(void *s);         // String::String() -> this
-extern "C" void String_assign(void *dst, void *src);   // operator=(String*, String*)
 
 // Agent::Agent(int kind, String name, int p4, int p5, int p6, bool p7,
 //              int p8, int p9, int p10, int p11)
@@ -326,7 +306,7 @@ extern "C" Agent *Agent_ctor(Agent *self, unsigned kind, void *name,
     String_default_ctor((char *)self + 0x6c);
     String_default_ctor((char *)self + 0x78);
     self->field_0x40 = kind;
-    String_assign(self, name);
+    String_assign(self, *(String12 *)name);
     self->field_0x44 = p4;
     self->field_0x48 = p5;
     self->field_0x4c = p6;

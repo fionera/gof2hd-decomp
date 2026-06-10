@@ -23,6 +23,16 @@
 
 struct MGame;
 
+// MGame-local opaque helper types (used only as pointers in this class).
+struct Music;
+struct Cfg;
+
+// Enemy list returned by Level_getEnemies(): a simple {count, KIPlayer*[]} view.
+struct EnemyList { uint32_t size; KIPlayer **data; };
+
+// The recovered code uses the bare name String12 for the 12-byte stack String temp.
+using AbyssEngine::String12;
+
 // Field accessor via byte offset.
 
 struct MGame {
@@ -53,14 +63,14 @@ struct MGame {
     uint8_t field_0x60;                 // +0x60
     uint8_t field_0x61;                 // +0x61
     int field_0x70;                     // +0x70
-    void* field_0x74;                   // +0x74
+    Hud* field_0x74;                    // +0x74
     Level* field_0x78;                  // +0x78
     LevelScript* field_0x7c;            // +0x7c
-    void* field_0x80;                   // +0x80
-    int field_0x84;                     // +0x84
-    void* field_0x88;                   // +0x88
-    int field_0x8c;                     // +0x8c
-    int field_0x90;                     // +0x90
+    Radar* field_0x80;                  // +0x80
+    Radio* field_0x84;                  // +0x84
+    MenuTouchWindow* field_0x88;        // +0x88
+    DialogueWindow* field_0x8c;         // +0x8c
+    StarMap* field_0x90;                // +0x90
     ChoiceWindow* field_0x94;           // +0x94
     int field_0x98;                     // +0x98
     int field_0x9c;                     // +0x9c
@@ -104,7 +114,7 @@ struct MGame {
     int field_0x10c;                    // +0x10c
     uint8_t field_0x110;                // +0x110
     uint8_t field_0x111;                // +0x111
-    int field_0x114;                    // +0x114
+    AEGeometry* field_0x114;            // +0x114
     float field_0x118;                  // +0x118
     float field_0x11c;                  // +0x11c
     int field_0x120;                    // +0x120

@@ -31,12 +31,14 @@ struct Station;
 // Field accessor via byte offset.
 
 struct BluePrint {
-    int32_t field_0x4;                  // +0x4
-    uint8_t field_0x8;                  // +0x8
-    int32_t field_0xc;                  // +0xc
-    int32_t field_0x10;                 // +0x10
-    int32_t field_0x20;                 // +0x20
-    int32_t field_0x24;                 // +0x24
-    int32_t field_0x28;                 // +0x28
+    Array<int>* field_0x0;              // +0x0  ingredient remaining-quantity counters
+    int32_t field_0x4;                  // +0x4  spent value
+    uint8_t field_0x8;                  // +0x8  locked flag
+    int32_t field_0xc;                  // +0xc  production count
+    int32_t field_0x10;                 // +0x10 station index (-1 if unset)
+    String  field_0x14;                 // +0x14 station name
+    int32_t field_0x20;                 // +0x20 item index
+    int32_t field_0x24;                 // +0x24 batch multiplier
+    int32_t field_0x28;                 // +0x28 remaining batch
 };
 #endif

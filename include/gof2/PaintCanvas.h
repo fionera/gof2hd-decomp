@@ -95,7 +95,7 @@ struct PaintCanvas {
     int field_0xc;                      // +0xc
     unsigned int field_0x10;            // +0x10
     char** field_0x14;                  // +0x14
-    int field_0x20;                     // +0x20
+    char* field_0x20;                   // +0x20  current 2D-mask Image2D pointer
     unsigned int field_0x24;            // +0x24
     char** field_0x28;                  // +0x28
     int field_0x30;                     // +0x30

@@ -13,17 +13,17 @@ extern "C" void AE_Vector_assign(void *dst, const void *src);
 extern "C" void AE_FBOContainer_ctor(void *self);
 extern "C" void AE_FBOContainer_Create(void *self, int w, char h, bool flag);
 extern "C" void AE_String_fromCStr(String *self, const char *s, bool b);
-extern "C" void AE_String_dtor(String *self);
+extern "C" void AE_String_dtor(void *self);
 extern "C" float sqrtf(float);
 extern "C" void AE_Engine_AEClientState(Engine *self, unsigned int cap, bool on);
-extern "C" void AE_Engine_RenderMesh(Engine *self, Mesh *mesh);
+extern "C" void AE_Engine_RenderMesh(Engine *self, AbyssEngine::Mesh *mesh);
 extern "C" float _ZN11AbyssEngine6AEMath4SinfEf(float);
 extern "C" float _ZN11AbyssEngine6AEMath4CosfEf(float);
 extern "C" float _ZN11AbyssEngine6AEMath5ATanfEf(float);
 extern "C" void AE_Engine_SetAddData(Engine *self, void *data, int count);
 extern "C" void AE_Engine_LightSetAmbient(float r, float g, float b, Engine *self);
 extern "C" void AE_AEMath_matMul(Matrix *out, const Matrix *in);
-extern "C" void AE_PaintCanvas_SetWorldViewMatrix(Matrix *self);
+extern "C" void AE_PaintCanvas_SetWorldViewMatrix(void *self);
 extern "C" void AE_Engine_SetModelMatrix(Matrix *self);
 extern "C" void AE_Engine_SetUVMatrix(Engine *self, const Matrix *uv);
 extern "C" void AE_Engine_SetColor(float r, float g, float b, float a);
@@ -35,7 +35,7 @@ extern "C" void String_fromFloat(String *self, float v);
 extern "C" void *__aeabi_memclr(void *dst, size_t_ n);
 extern "C" void *__aeabi_memclr4(void *dst, size_t_ n);
 extern "C" void String_fromInt(String *self, int v);
-extern "C" void AE_ArrayAddCached_MeshPtr(Mesh *value, void *array);
+extern "C" void AE_ArrayAddCached_MeshPtr(AbyssEngine::Mesh *value, void *array);
 extern "C" void AE_ArrayAddCached_uint(unsigned int value, void *array);
 extern "C" void *__aeabi_memcpy4(void *dst, const void *src, size_t_ n);
 extern "C" int String_Compare(String *self, const String *o);
@@ -226,7 +226,7 @@ void glGetIntegerv(unsigned int, void *);
 void *operator_new_helper(size_t_); // placeholder, see operator new below
 }
 
-void *operator new(size_t_ size);
+void *operator new(size_t size);
 
 namespace AbyssEngine {
 
@@ -728,15 +728,15 @@ float CameraSetPerspective(float fov, float aspectNum, float aspectDen, float ne
         f[1] = near;
         f[2] = fov;
 
-        float s = AEMath::_ZN11AbyssEngine6AEMath4SinfEf(fov);
-        float c = AEMath::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
+        float s = ::_ZN11AbyssEngine6AEMath4SinfEf(fov);
+        float c = ::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
         float scale = s / c;
         f[0x12] = scale;
         f[0x13] = (aspectNum / aspectDen) * scale;
         f[0x14] = aspectNum / aspectDen;
 
-        float at = AEMath::_ZN11AbyssEngine6AEMath5ATanfEf(scale);
-        float ca = AEMath::_ZN11AbyssEngine6AEMath4CosfEf(at);
+        float at = ::_ZN11AbyssEngine6AEMath5ATanfEf(scale);
+        float ca = ::_ZN11AbyssEngine6AEMath4CosfEf(at);
         ret = 1.0f / ca;
         f[0x15] = ret;
     }
@@ -1205,11 +1205,11 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 tng[1] = ((p1[1] - p0[1]) * dv1 - (p2[1] - p0[1]) * dv2) * r;
                 tng[0] = ((p1[0] - p0[0]) * dv1 - (p2[0] - p0[0]) * dv2) * r;
                 tng[2] = ((p1[2] - p0[2]) * dv1 - (p2[2] - p0[2]) * dv2) * r;
-                float *a = (float *)((int)accum + i0 * 0xc);
+                float *a = (float *)((char *)accum + i0 * 0xc);
                 a[0] += tng[0]; a[1] += tng[1]; a[2] += tng[2];
-                a = (float *)((int)accum + i1 * 0xc);
+                a = (float *)((char *)accum + i1 * 0xc);
                 a[0] += tng[0]; a[1] += tng[1]; a[2] += tng[2];
-                a = (float *)((int)accum + i2 * 0xc);
+                a = (float *)((char *)accum + i2 * 0xc);
                 a[0] += tng[0]; a[1] += tng[1]; a[2] += tng[2];
                 triOff += 6;
             }
@@ -1223,9 +1223,9 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 nrm[1] = *(float *)(*(int *)(m + 0x10) + off + 4);
                 nrm[2] = *(float *)(*(int *)(m + 0x10) + off + 8);
                 float tg[3];
-                tg[0] = *(float *)((int)accum + off);
-                tg[1] = *(float *)((int)accum + off + 4);
-                tg[2] = *(float *)((int)accum + off + 8);
+                tg[0] = *(float *)((char *)accum + off);
+                tg[1] = *(float *)((char *)accum + off + 4);
+                tg[2] = *(float *)((char *)accum + off + 8);
                 float d = AE_VectorDot(nrm, tg);
                 float scaled[3] = {nrm[0], nrm[1], nrm[2]};
                 AE_VectorMul(scaled, d);
@@ -1333,16 +1333,18 @@ String operator+(const String &a, const long long &b)
 namespace AbyssEngine {
 
 // Sibling free functions (resolved by the linker via their AbyssEngine-mangled names).
-void *TransformRelease(Engine *engine, Transform **slot);
+void TransformRelease(Engine *engine, Transform **slot);
 
 void MeshRelease(Engine *engine, Mesh **slot)
 {
     if (engine != 0 && *slot != 0) {
-        void *r = TransformRelease(engine, (Transform **)((char *)*slot + 0x34));
-        // Tail-call through a runtime function pointer that frees the mesh body.
-        typedef void (*FreeFn)(void *, Mesh **);
+        TransformRelease(engine, (Transform **)((char *)*slot + 0x34));
+        // Tail-call through a runtime function pointer (MeshReleaseIntern) that frees the mesh
+        // body. The first argument is the engine pointer (preserved in r0 across the void
+        // TransformRelease call in the shipped code).
+        typedef void (*FreeFn)(Engine *, Mesh **);
         extern void *g_MeshRelease_freeFn; // *(DAT_001ab034 + 0x1ab038)
-        ((FreeFn)g_MeshRelease_freeFn)(r, slot);
+        ((FreeFn)g_MeshRelease_freeFn)(engine, slot);
     }
 }
 
@@ -1369,8 +1371,8 @@ String operator+(const float &a, const String &b)
 } // namespace AbyssEngine
 
 // ---- SpriteSystemCreate_86adc.cpp ----
-void *operator new(size_t_ size);
-void *operator new[](size_t_ size);
+void *operator new(size_t size);
+void *operator new[](size_t size);
 void operator delete(void *ptr) noexcept;
 void operator delete[](void *ptr) noexcept;
 
@@ -1692,8 +1694,8 @@ void Image2DRelease(Engine *engine, Image2D **slot)
 } // namespace AbyssEngine
 
 // ---- MeshCreate_6c4d4.cpp ----
-void *operator new(size_t_ size);
-void *operator new[](size_t_ size);
+void *operator new(size_t size);
+void *operator new[](size_t size);
 
 // AbyssEngine::MeshCreate(Engine*, unsigned short vertexCount, unsigned short triCount,
 //                         signed char vertexFormat, Mesh** out)
@@ -1782,17 +1784,17 @@ float CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen
         f[1] = aspectNum;
         f[2] = fov;
 
-        float s = AEMath::_ZN11AbyssEngine6AEMath4SinfEf(fov);
-        float c = AEMath::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
+        float s = ::_ZN11AbyssEngine6AEMath4SinfEf(fov);
+        float c = ::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
         f[0x12] = s / c;
         f[0x13] = (aspectDen / near) * (s / c);
         f[0x14] = aspectDen / near;
 
-        float c2 = AEMath::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
+        float c2 = ::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
         f[0x16] = 1.0f / c2;
 
-        AEMath::_ZN11AbyssEngine6AEMath5ATanfEf(f[0x12] * f[0x14]);
-        float c3 = AEMath::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
+        ::_ZN11AbyssEngine6AEMath5ATanfEf(f[0x12] * f[0x14]);
+        float c3 = ::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
         ret = 1.0f / c3;
         f[0x15] = ret;
     }
@@ -2374,13 +2376,13 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
 
         const unsigned int *v = (const unsigned int *)view;
         AE_SpriteSystem_pushMatrix(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9],
-                                   v[10], v[11], v[12], v[13], v[14], (int)pp(mesh, 0x30) + 0x2c);
+                                   v[10], v[11], v[12], v[13], v[14], (int)(intptr_t)pp(mesh, 0x30) + 0x2c);
         unsigned int one = 0x3f800000;
         AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, g_SpriteSystem_oneHalf, 0, 0, 0, 0, one, 0,
-                                   one, one, one, (int)pp(mesh, 0x30) + 0x38);
+                                   one, one, one, (int)(intptr_t)pp(mesh, 0x30) + 0x38);
         const unsigned int *w = (const unsigned int *)world;
         AE_SpriteSystem_pushMatrix(w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8], w[9],
-                                   w[10], w[11], w[12], w[13], w[14], (int)pp(mesh, 0x30) + 0x5c);
+                                   w[10], w[11], w[12], w[13], w[14], (int)(intptr_t)pp(mesh, 0x30) + 0x5c);
         AE_ArrayAddCached_uint(0xffffffff, (char *)pp(mesh, 0x30) + 0x50);
     }
 }
@@ -2393,7 +2395,7 @@ void glGenBuffers(int n, void *buffers);
 void glBindBuffer(unsigned int target, unsigned int buffer);
 void glBufferData(unsigned int target, unsigned int size, const void *data, unsigned int usage);
 void glDeleteBuffers(int n, const void *buffers);
-int glGetError();
+unsigned int glGetError();
 }
 void operator delete[](void *ptr) noexcept;
 
@@ -2860,8 +2862,8 @@ void SpriteSystemRelease(Engine *engine, SpriteSystem **slot)
 } // namespace AbyssEngine
 
 // ---- CurveCreate_7415c.cpp ----
-void *operator new(size_t_ size);
-void *operator new[](size_t_ size);
+void *operator new(size_t size);
+void *operator new[](size_t size);
 
 // AbyssEngine::CurveCreate(void**, unsigned short, AbyssEngine::Curve**)
 // Allocate a Curve {count@0, void** data@4}, copy `count` 4-byte entries from the source.
@@ -3010,7 +3012,7 @@ namespace AbyssEngine {
 
 extern "C" char *g_Mesh_vboEnabledFlag; // *(DAT_0007bbe8 + 0x7bbbe)
 
-void MeshConvertToVBOIntern(Mesh *mesh);
+int MeshConvertToVBOIntern(Mesh *mesh);
 int TransformConvertToVBO(Transform *t);
 
 int MeshConvertToVBO(Mesh *mesh)
@@ -3020,7 +3022,9 @@ int MeshConvertToVBO(Mesh *mesh)
         if (u8(mesh, 0x5c) != 0 || u8(mesh, 0x84) == 0)
             return -4;
         MeshConvertToVBOIntern(mesh);
-        TransformConvertToVBO(mesh->field_0x34);
+        // mesh is bare AbyssEngine::Mesh (incomplete fwd-decl from Mesh.h); use the global
+        // complete ::Mesh layout to read the embedded Transform pointer.
+        TransformConvertToVBO((Transform *)((::Mesh *)mesh)->field_0x34);
         result = 1;
     }
     return result;
@@ -3410,7 +3414,7 @@ long long CurveGetValue(unsigned long long time, Curve *curve)
 } // namespace AbyssEngine
 
 // ---- computeFloatString_72af8.cpp ----
-void *operator new[](size_t_ size);
+void *operator new[](size_t size);
 
 // AbyssEngine::computeFloatString(float value, int intValue, int* precision, int* exponentOut,
 //                                 int extra)

@@ -1,54 +1,34 @@
 #ifndef GOF2_ENGINE_H
 #define GOF2_ENGINE_H
 #include "gof2/common.h"
+#include <new>
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-namespace AbyssEngine {
 
-
-struct ApplicationManager;
+struct ApplicationManager;       // ::ApplicationManager (used by pointer only)
 struct FileInterfaceAndroid;
-struct FBOContainer;
-struct Mesh;
-struct ShaderBaseStruct;
 
+// Engine lifecycle callbacks (function-pointer typedefs).
+struct Engine;
+typedef void DestroyCallback(Engine *);
+typedef void QuitCallback(void *);
+typedef void LoadingCallback(void *);
+typedef void ResumeCallback(void *);
 
-
+namespace AbyssEngine {
 namespace AEMath {
-
-
-
-
-
 void MatrixGetGL(const Matrix &matrix, float *out);
-
 } // namespace AEMath
-
 } // namespace AbyssEngine
 
-using Engine = AbyssEngine::Engine;
-using ApplicationManager = AbyssEngine::ApplicationManager;
-using FBOContainer = AbyssEngine::FBOContainer;
-using Mesh = AbyssEngine::Mesh;
-using ShaderBaseStruct = AbyssEngine::ShaderBaseStruct;
-using String = AbyssEngine::String;
-using Vector = AbyssEngine::AEMath::Vector;
-using Matrix = AbyssEngine::AEMath::Matrix;
-
-
-
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
-
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void *__aeabi_memcpy(void *dest, const void *src, unsigned long n);
 extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
 
+// Engine is defined at top level (matches fwd.h ::Engine).
 struct Engine {
-    uint32_t field_0x0;                 // +0x0
-    Player* field_0x4;                  // +0x4
-    uint8_t field_0x8;                  // +0x8
+    uint32_t field_0x0;                 // +0x0  display width
+    uint32_t field_0x4;                 // +0x4  display height (fieldmap lists Player*, but
+                                        //       GetDeviceInfo stores NFC::getHeight() here)
+    uint8_t field_0x8;                  // +0x8  isPad
     uint32_t field_0xc;                 // +0xc
     uint32_t field_0x10;                // +0x10
     uint8_t field_0x20;                 // +0x20
@@ -126,9 +106,9 @@ struct Engine {
     Vector field_0x33c;                 // +0x33c
     uint64_t field_0x340;               // +0x340
     int field_0x348;                    // +0x348
-    uint64_t field_0x34c;               // +0x34c
+    float field_0x34c;                  // +0x34c  (light dir vector x; y@0x350 z@0x354)
     float field_0x350;                  // +0x350
-    uint32_t field_0x354;               // +0x354
+    float field_0x354;                  // +0x354
     void* field_0x358;                  // +0x358
     int field_0x35c;                    // +0x35c
     uint32_t field_0x360;               // +0x360
@@ -143,15 +123,15 @@ struct Engine {
     uint32_t field_0x388;               // +0x388
     uint32_t field_0x38c;               // +0x38c
     uint32_t field_0x390;               // +0x390
-    u32x4 field_0x394;                  // +0x394
+    uint32_t field_0x394;                  // +0x394
     float field_0x398;                  // +0x398
     uint32_t field_0x39c;               // +0x39c
     uint32_t field_0x3a0;               // +0x3a0
-    u32x4 field_0x3a4;                  // +0x3a4
+    uint32_t field_0x3a4;                  // +0x3a4
     uint32_t field_0x3a8;               // +0x3a8
     unsigned int field_0x3ac;           // +0x3ac
     uint32_t field_0x3b0;               // +0x3b0
-    u32x4 field_0x3b4;                  // +0x3b4
+    uint32_t field_0x3b4;                  // +0x3b4
     unsigned int field_0x3b8;           // +0x3b8
     uint32_t field_0x3bc;               // +0x3bc
     unsigned int field_0x3c0;           // +0x3c0
@@ -197,5 +177,7 @@ struct Engine {
     double field_0x508;                 // +0x508
     uint32_t field_0x510;               // +0x510
     char* field_0x514;                  // +0x514
+
+    ~Engine();
 };
 #endif

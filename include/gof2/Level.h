@@ -26,7 +26,7 @@ struct Mission;
 // Layout deduced from getter/setter disassembly. Total size 0x2a0.
 struct Level {
     // --- header / skybox + objective state (0x00..0xb0) ---
-    void *vtable;            // 0x00
+    uint vtable;             // 0x00 (4-byte vtable slot; ARM32 32-bit pointer layout)
     int skyboxMesh;          // 0x04
     int field_08;            // 0x08
     int skyboxTexture;       // 0x0c

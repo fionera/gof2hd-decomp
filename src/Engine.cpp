@@ -1,8 +1,15 @@
 #include "gof2/Engine.h"
-#include "gof2/ApplicationManager.h"
 #include "gof2/Mesh.h"
 #include "gof2/ShaderBaseStruct.h"
 #include <arm_neon.h>
+
+// ShaderBaseStruct lives in AbyssEngine (complete type with field_0x4).
+// The bare ::ShaderBaseStruct from fwd.h stays incomplete and is only used by
+// pointer; member access casts to the complete type via this alias.
+typedef AbyssEngine::ShaderBaseStruct ShaderBaseStructFull;
+// Mesh is defined in the AbyssEngine namespace (Mesh.h); the complete type is
+// needed for field access. ::Mesh (fwd.h) is only an incomplete forward decl.
+typedef AbyssEngine::Mesh MeshFull;
 
 extern "C" void FBOContainer_ActivateRender2Texture(FBOContainer *self);
 extern "C" void PaintCanvas_Resume(void *canvas);
@@ -43,7 +50,7 @@ extern "C" void AEMath_VectorNormalize(Vector *result, const Vector *value);
 extern "C" uint8_t g_Engine_shaderDrew;
 extern "C" int g_Engine_defaultShader;
 extern "C" void Engine_AEClientState(Engine *self, unsigned int state, bool enable);
-extern "C" void Engine_ShaderSetActive(Engine *self, int shader, Mesh *mesh);
+extern "C" void Engine_ShaderSetActive(Engine *self, int shader, MeshFull *mesh);
 extern "C" void Engine_ShaderSetInActive(Engine *self);
 extern "C" void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
 extern "C" void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr);
@@ -74,7 +81,7 @@ extern "C" String *g_Engine_vendorString;
 extern "C" String *g_Engine_rendererString;
 extern "C" int g_Engine_cloakShader;
 extern "C" void ShaderBaseStruct_GetShaderName(String *result, ShaderBaseStruct *self);
-extern "C" char *String_GetAEChar(String *self);
+// String_GetAEChar declared in ShaderBaseStruct.h (returns void*)
 extern "C" void ArrayAdd_ShaderBaseStruct_ptr(ShaderBaseStruct *item, void *array);
 extern "C" void ArrayAdd_int(int item, void *array);
 extern "C" float g_Engine_texEnv;
@@ -103,7 +110,7 @@ extern "C" int g_Engine_postEffectPending;
 extern "C" void FileInterfaceAndroid_ctor(void *self);
 extern "C" void AEFile_SetInterface(void *fileInterface);
 extern "C" void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
-extern "C" void Engine_ShaderInit(Engine *self);
+extern "C" uint32_t Engine_ShaderInit(Engine *self);
 extern "C" void Engine_AfterGLInit(Engine *self);
 extern "C" void Engine_GlEnable(Engine *self, unsigned int cap, bool enable);
 extern "C" void PaintCanvas_Initialize(void *canvas, bool value);
@@ -613,7 +620,7 @@ extern "C" void Engine_SetFrameBufferTexture(Engine *self, int slot0, int slot1)
 extern "C" void Engine_LightSetLightDirection(Engine *self, float x, float y, float z,
                                                unsigned int light)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     unsigned int index = light - 0x4000;
     if (index < 8) {
         int count = light - 0x3fff;
@@ -639,9 +646,9 @@ extern "C" void Engine_LightSetLightDirection(Engine *self, float x, float y, fl
 }
 
 // ---- RenderMesh_85f24.cpp ----
-extern "C" void Engine_RenderMesh(Engine *self, Mesh *mesh)
+extern "C" void Engine_RenderMesh(Engine *self, MeshFull *mesh)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     if (mesh == 0 || mesh->field_0x28 == 0) {
         goto done;
     }
@@ -651,7 +658,7 @@ extern "C" void Engine_RenderMesh(Engine *self, Mesh *mesh)
         Engine_AEClientState(self, 0x8074, true);
         bool tex = ((uint32_t)*(uint8_t *)mesh << 30) < 0;
         if (tex && (mesh->field_0x30 == 0 ||
-                    *(int *)(mesh->field_0x30 + 4) == -1)) {
+                    *(int *)((char *)mesh->field_0x30 + 4) == -1)) {
             glTexCoordPointer(2, 0x1406, 0, mesh->field_0x8);
         }
         Engine_AEClientState(self, 0x8078, tex);
@@ -662,7 +669,7 @@ extern "C" void Engine_RenderMesh(Engine *self, Mesh *mesh)
         Engine_AEClientState(self, 0x8075, normals);
         bool colors = ((uint32_t)*(uint8_t *)mesh << 28) < 0;
         if (colors) {
-            glColorPointer(4, 0x1406, 0, mesh->field_0xc);
+            glColorPointer(4, 0x1406, 0, (void *)(uintptr_t)mesh->field_0xc);
         }
         Engine_AEClientState(self, 0x8076, colors);
         if (((uint32_t)*(uint8_t *)mesh << 27) < 0) {
@@ -672,7 +679,7 @@ extern "C" void Engine_RenderMesh(Engine *self, Mesh *mesh)
             glDrawArrays(4, 0, mesh->field_0x2);
         }
         if (tex && mesh->field_0x30 != 0 &&
-            *(int *)(mesh->field_0x30 + 4) != -1) {
+            *(int *)((char *)mesh->field_0x30 + 4) != -1) {
             Engine_AEClientState(self, 0x8078, false);
         }
     } else {
@@ -713,8 +720,8 @@ extern "C" void Engine_DrawQuad(Engine *self, int x, int y, int width, int heigh
     float right = (float)(x + width);
     float bottom = (float)(height + y);
 
-    void *mesh = self->field_0x380;
-    float *positions = mesh->field_0x4;
+    MeshFull *mesh = (MeshFull *)self->field_0x380;
+    float *positions = (float *)mesh->field_0x4;
     positions[0] = fx;
     positions[1] = fy;
     positions[3] = right;
@@ -730,7 +737,7 @@ extern "C" void Engine_DrawQuad(Engine *self, int x, int y, int width, int heigh
         1.0f, 1.0f,
         0.0f, 1.0f,
     };
-    float *uv = mesh->field_0x8;
+    float *uv = (float *)mesh->field_0x8;
     float32x4_t uv0 = vld1q_f32(uvs);
     float32x4_t uv1 = vld1q_f32(uvs + 4);
     vst1q_f32(uv, uv0);
@@ -768,8 +775,6 @@ typedef void DestroyCallback(Engine *);
 typedef void FileInterfaceRelease(void *);
 
 
-namespace AbyssEngine {
-
 Engine::~Engine()
 {
     DestroyCallback *destroy = this->field_0x484;
@@ -777,7 +782,7 @@ Engine::~Engine()
         destroy(this);
     }
 
-    ApplicationManager *manager = this->field_0x30;
+    ApplicationManager *manager = (ApplicationManager *)this->field_0x30;
     if (manager != 0) {
         ApplicationManager_dtor(manager);
         operator_delete(manager);
@@ -819,12 +824,10 @@ Engine::~Engine()
     String_dtor((String *)this);
 }
 
-} // namespace AbyssEngine
-
 // ---- AfterGLInit_8428c.cpp ----
 extern "C" void Engine_AfterGLInit(Engine *self)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     Engine_ResetLightParam(self);
     MeshCreate(self, 4, 2, 0x13, (char *)self + 0x380);
 
@@ -851,8 +854,9 @@ extern "C" void Engine_AfterGLInit(Engine *self)
 // ---- DrawCloakFBO_868b0.cpp ----
 typedef void ShaderDrawCloak(ShaderBaseStruct *);
 
-extern "C" void Engine_DrawCloakFBO(Engine *self)
+extern "C" void Engine_DrawCloakFBO(Engine *self, FBOContainer *fbo)
 {
+    (void)fbo;   // unused in the shader path
     if (g_Engine_useShaders != 0) {
         ShaderBaseStruct *shader =
             *(ShaderBaseStruct **)(self->field_0x514 + g_Engine_cloakShader * 4);
@@ -866,12 +870,12 @@ typedef void ShaderInitFn(ShaderBaseStruct *, Engine *);
 
 extern "C" void Engine_ShaderRegister(Engine *self, ShaderBaseStruct *shader)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     if (shader != 0) {
         char nameStorage[sizeof(String)];
         String *name = (String *)nameStorage;
         ShaderBaseStruct_GetShaderName(name, shader);
-        char *text = String_GetAEChar(name);
+        char *text = (char *)String_GetAEChar(name);
         String_dtor(name);
 
         void **vtable = *(void ***)shader;
@@ -889,13 +893,13 @@ extern "C" void Engine_ShaderRegister(Engine *self, ShaderBaseStruct *shader)
 // ---- SetTextureSlot_84ffc.cpp ----
 extern "C" void Engine_SetTextureSlot(Engine *self, uint32_t textureIndex, uint32_t slot)
 {
-    void *manager = *self->field_0x30;
-    uint32_t count = manager->field_0x10;
+    char *manager = *self->field_0x30;   // external texture-manager (no named struct)
+    uint32_t count = *(uint32_t *)(manager + 0x10);
     if (count == 0 || slot >= 8 || textureIndex > count - 1) {
         return;
     }
     uint32_t *bound = (uint32_t *)((char *)self + 0x7c + slot * 4);
-    void *textureEntry = *(void **)(manager->field_0x14 + textureIndex * 4);
+    void *textureEntry = *(void **)(*(char **)(manager + 0x14) + textureIndex * 4);
     uint32_t texture = **(uint32_t **)(&textureEntry);
     if (*bound == texture) {
         return;
@@ -906,7 +910,7 @@ extern "C" void Engine_SetTextureSlot(Engine *self, uint32_t textureIndex, uint3
         g_Engine_texEnv = env;
         if (g_Engine_useShaders == 0) {
             glTexEnvf(0x8500, 0x8501, env);
-            textureEntry = *(void **)(manager->field_0x14 + textureIndex * 4);
+            textureEntry = *(void **)(*(char **)(manager + 0x14) + textureIndex * 4);
         } else if (g_Engine_texEnvDirty != 0) {
             g_Engine_texEnvDirty = 0;
         }
@@ -970,9 +974,9 @@ extern "C" void Engine_DrawLine2D(Engine *self, int vertexCount, int count, bool
 
 // ---- ShaderSetActive_85e60.cpp ----
 typedef void ShaderEnable(ShaderBaseStruct *, bool);
-typedef void ShaderApply(ShaderBaseStruct *, Mesh *, Engine *);
+typedef void ShaderApply(ShaderBaseStruct *, MeshFull *, Engine *);
 
-extern "C" void Engine_ShaderSetActive(Engine *self, int shaderIndex, Mesh *mesh)
+extern "C" void Engine_ShaderSetActive(Engine *self, int shaderIndex, MeshFull *mesh)
 {
     while (shaderIndex == -1) {
         shaderIndex = g_Engine_defaultShader;
@@ -990,10 +994,10 @@ extern "C" void Engine_ShaderSetActive(Engine *self, int shaderIndex, Mesh *mesh
     g_Engine_shaderDirty = 1;
 
     void **vtable = *(void ***)shader;
-    if (shader->field_0x4 != self->field_0x3e4) {
+    if (((ShaderBaseStructFull *)shader)->field_0x4 != self->field_0x3e4) {
         ((ShaderEnable *)vtable[0x28 / 4])(shader, hasExtra);
         shader = *(ShaderBaseStruct **)(self->field_0x514 + shaderIndex * 4);
-        self->field_0x3e4 = shader->field_0x4;
+        self->field_0x3e4 = ((ShaderBaseStructFull *)shader)->field_0x4;
         g_Engine_currentShader = shaderIndex;
         vtable = *(void ***)shader;
     }
@@ -1014,7 +1018,7 @@ typedef void ShaderPostDrawSwap(ShaderBaseStruct *, void *, void **, Engine *);
 
 extern "C" void Engine_DoPostEffect(Engine *self)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     uint32_t flags = self->field_0x410;
     void *current = self->field_0x414;
     void *other = self->field_0x418;
@@ -1127,7 +1131,7 @@ extern "C" void Engine_LightSetGlobalSceneColorAmbient(Engine *self, float red, 
 // ---- SetPostEffect_865fc.cpp ----
 extern "C" void Engine_SetPostEffect(Engine *self, uint32_t effect, bool enable)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     if (self->field_0x414 == 0 && enable) {
         FBOContainer *fbo = (FBOContainer *)operator new(0x38);
         char nameStorage[sizeof(String)];
@@ -1192,8 +1196,8 @@ extern "C" void Engine_LightSetMaterialColorDiffuse(Engine *self, float red, flo
     int sourceOffset = 0;
     int destOffset = 0;
     for (int i = 0; i < lightCount; i += 1) {
-        int source = (int)(uint32_t)(char *)self + sourceOffset;
-        int dest = (int)(uint32_t)(char *)self + destOffset;
+        char *source = (char *)self + sourceOffset;
+        char *dest = (char *)self + destOffset;
         sourceOffset += 0x10;
         destOffset += 0x0c;
         *(float *)(dest + 0x2fc) = *(float *)(source + 0x228) * red;
@@ -1216,7 +1220,7 @@ extern "C" void Engine_initFileInterface(Engine *self)
 extern "C" void Engine_SetOrthoMatrix(Engine *self, const uint32_t *projection,
                                        const uint32_t *view, bool multiply)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         for (int i = 0; i < 16; i += 1) {
             *(uint32_t *)((char *)self + 0x384 + i * 4) = projection[i];
@@ -1236,7 +1240,7 @@ extern "C" void Engine_SetOrthoMatrix(Engine *self, const uint32_t *projection,
 // ---- InitGL_6db20.cpp ----
 extern "C" int Engine_InitGL(Engine *self, bool shaders, int width, int height)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     self->field_0x418 = 0;
     self->field_0x368 = width;
     self->field_0x36c = height;
@@ -1317,7 +1321,7 @@ extern "C" void Engine_ClearBuffer(Engine *, uint32_t color)
 extern "C" void Engine_LightSetLightPosition(Engine *self, float x, float y, float z,
                                               unsigned int light)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     unsigned int index = light - 0x4000;
     if (index < 8) {
         int count = light - 0x3fff;
@@ -1419,7 +1423,7 @@ extern "C" void Engine_LightSetLightColorDiffuse(Engine *self, float red, float 
 // ---- Engine_83eec.cpp ----
 extern "C" void Engine_Engine(Engine *self)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     String_ctor((String *)self);
     String_ctor((String *)((char *)self + 0x14));
     String_ctor((String *)((char *)self + 0x3c));
@@ -1448,7 +1452,7 @@ extern "C" void Engine_Engine(Engine *self)
     up.x = 0.5f;
     up.y = 0.0f;
     up.z = 0.0f;
-    self->field_0x3cc = up;
+    *(Vector *)&self->field_0x3cc = up;   // vector spans 0x3cc(x,y)+0x3d4(z)
     self->field_0x358 = 0;
     self->field_0x414 = 0;
     self->field_0x418 = 0;
@@ -1484,7 +1488,7 @@ extern "C" void Engine_Engine(Engine *self)
     self->field_0x20 = 1;
     void *manager = operator new(0xc0);
     ApplicationManager_ctor((ApplicationManager *)manager, self);
-    self->field_0x30 = manager;
+    self->field_0x30 = (char **)manager;
     self->field_0x3e8 = 0;
     self->field_0x3ec = 0;
     self->field_0xd0 = -1.0f;
@@ -1505,8 +1509,8 @@ extern "C" void Engine_Engine(Engine *self)
 // ---- SetTextures_84c44.cpp ----
 extern "C" void Engine_SetTextures(Engine *self, uint32_t first, uint32_t second)
 {
-    void *manager = *self->field_0x30;
-    uint32_t count = manager->field_0x10;
+    char *manager = *self->field_0x30;   // external texture-manager (no named struct)
+    uint32_t count = *(uint32_t *)(manager + 0x10);
     if (count == 0 || first > count - 1) {
         return;
     }
@@ -1522,7 +1526,7 @@ extern "C" void Engine_SetTextures(Engine *self, uint32_t first, uint32_t second
         }
         return;
     }
-    uint32_t texture = **(uint32_t **)(manager->field_0x14 + second * 4);
+    uint32_t texture = **(uint32_t **)(*(char **)(manager + 0x14) + second * 4);
     if (self->field_0x80 != texture) {
         glActiveTexture(0x84c1);
         Engine_GlEnable(self, 0xde1, true);
@@ -1562,7 +1566,7 @@ extern "C" void Vector_assign(Vector *dst, const Vector *src);   // 0x6eb3c
 
 extern "C" uint64_t Engine_SetEyePosition(Engine *self, uint32_t x, uint32_t y, uint32_t z)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     uint32_t buf[3];
     buf[0] = x;
     buf[1] = y;
@@ -1580,7 +1584,7 @@ extern "C" uint64_t Engine_SetEyePosition(Engine *self, uint32_t x, uint32_t y, 
 // ---- SetModelMatrix_851f4.cpp ----
 extern "C" void Engine_SetModelMatrix(Engine *self, const uint32_t *matrix)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         self->field_0x204 = matrix[0];
         self->field_0x208 = matrix[4];
@@ -1620,7 +1624,7 @@ extern "C" void Engine_SetModelMatrix(Engine *self, const uint32_t *matrix)
         Engine_ShaderUpdate(self);
         AEMath_MatrixInverseTransformVector(&tmp, (const Matrix *)matrix,
                                             (const Vector *)((char *)self + 0x3fc));
-        self->field_0x34c = tmp;
+        *(Vector *)&self->field_0x34c = tmp;
         self->field_0x34c /= *(float *)(matrix + 12);
         self->field_0x350 /= *(float *)(matrix + 13);
         self->field_0x354 /= *(float *)(matrix + 14);
@@ -1634,7 +1638,7 @@ extern "C" void Engine_SetModelMatrix(Engine *self, const uint32_t *matrix)
 // ---- LightSetLight_85788.cpp ----
 extern "C" void Engine_LightSetLight(Engine *self, unsigned int light)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     uint32_t values[4] = {0, 0, 0, 0};
     unsigned int index = light - 0x4000;
     if (index < 8) {
@@ -1664,9 +1668,9 @@ extern "C" void Engine_LightSetLight(Engine *self, unsigned int light)
 extern "C" void Engine_SetTexturesExt(Engine *self, uint32_t first, uint32_t second,
                                        uint32_t third, ...)
 {
-    void * volatile cookie = __stack_chk_guard;
-    void *manager = *self->field_0x30;
-    if (manager->field_0x10 != 0) {
+    uint32_t volatile cookie = __stack_chk_guard;
+    char *manager = *self->field_0x30;   // external texture-manager (no named struct)
+    if (*(uint32_t *)(manager + 0x10) != 0) {
         uint32_t values[3] = {first, second, third};
         uint32_t slot = 0;
         uint32_t *p = values;
@@ -1689,7 +1693,7 @@ extern "C" void Engine_SetTexturesExt(Engine *self, uint32_t first, uint32_t sec
 // ---- SetWorldViewMatrix_853b0.cpp ----
 extern "C" void Engine_SetWorldViewMatrix(Engine *self, const uint32_t *matrix)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         uint32_t gl[16] = {
             matrix[0], matrix[4], matrix[8], 0,
@@ -1721,7 +1725,7 @@ extern "C" void Engine_SetWorldViewMatrix(Engine *self, const uint32_t *matrix)
 // ---- ResetLightParam_84348.cpp ----
 extern "C" void Engine_ResetLightParam(Engine *self)
 {
-    void * volatile cookie = __stack_chk_guard;
+    uint32_t volatile cookie = __stack_chk_guard;
     self->field_0x488 = 0x3f800000;
     self->field_0x32c = 1;
     self->field_0x298 = 0.8f;

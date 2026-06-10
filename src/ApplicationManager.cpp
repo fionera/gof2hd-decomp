@@ -92,11 +92,11 @@ extern "C" void operator_delete(void *ptr);
 extern "C" void operator_delete_array(void *ptr);
 
 // ---- SetLoadingCallback_82506.cpp ----
-typedef void LoadingCallback(PaintCanvas *, int, void *);
+typedef void LoadingCallback_t(PaintCanvas *, int, void *);
 
-extern "C" void ApplicationManager_SetLoadingCallback(ApplicationManager *self, LoadingCallback *callback, void *data)
+extern "C" void ApplicationManager_SetLoadingCallback(ApplicationManager *self, LoadingCallback_t *callback, void *data)
 {
-    self->field_0x20 = callback;
+    self->field_0x20 = (void *)callback;
     self->field_0x24 = data;
 }
 
@@ -139,7 +139,7 @@ typedef void LoadingShowCallback(PaintCanvas *, int, void *);
 
 extern "C" void ApplicationManager_LoadingCallbackShow(ApplicationManager *self, int mode, void *data)
 {
-    LoadingShowCallback *callback = self->field_0x20;
+    LoadingShowCallback *callback = (LoadingShowCallback *)self->field_0x20;
     if (callback != 0) {
         callback(*(PaintCanvas **)self, mode, data);
     }
@@ -155,7 +155,7 @@ extern "C" void ApplicationManager_SoundPlay(ApplicationManager *self, int sound
 }
 
 // ---- SoundPlay_821c6.cpp ----
-extern "C" void ApplicationManager_SoundPlay(ApplicationManager *self, int soundId, float volume)
+extern "C" void ApplicationManager_SoundPlay_vol(ApplicationManager *self, int soundId, float volume)
 {
     void *sound = self->field_0xac;
     if (sound == 0) {
@@ -295,16 +295,17 @@ extern "C" void ApplicationManager_SoundPlayMusic(ApplicationManager *self, int 
 }
 
 // ---- OnTouchEnd_83c90.cpp ----
-typedef uint64_t uint64x2_unaligned __attribute__((vector_size(16), aligned(8)));
-
 extern "C" void ApplicationManager_OnTouchEndSimple(ApplicationManager *self)
 {
-    uint64x2_unaligned zero = (uint64x2_unaligned){0, 0};
     self->field_0x8 = 0;
     self->field_0xc = 0;
     self->field_0x80 = 0;
     self->field_0x84 = 0;
-    self->field_0x98 = zero;
+    // Original wrote a 16-byte vector zero across +0x98..+0xa7 (action mask + action state).
+    self->field_0x98 = 0;
+    self->field_0x9c = 0;
+    self->field_0xa0 = 0;
+    self->field_0xa4 = 0;
 }
 
 // ---- SoundEnable_8225a.cpp ----
@@ -324,18 +325,19 @@ extern "C" void ApplicationManager_SoundSetMusicVolume(ApplicationManager *self,
 }
 
 // ---- SetResumeCallback_82516.cpp ----
-typedef bool ResumeCallback(PaintCanvas *, void *);
+typedef bool ResumeCallback_t(PaintCanvas *, void *);
 
-extern "C" void ApplicationManager_SetResumeCallback(ApplicationManager *self, ResumeCallback *callback, void *data)
+extern "C" void ApplicationManager_SetResumeCallback(ApplicationManager *self, ResumeCallback_t *callback, void *data)
 {
-    self->field_0x28 = callback;
+    self->field_0x28 = (void *)callback;
     self->field_0x2c = data;
 }
 
 // ---- GetApplicationVersionString_82480.cpp ----
 extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_GetApplicationVersionString(String *out)
 {
-    new (out) String("2.0.16", false);
+    new (out) String();
+    out->s = u"2.0.16";
 }
 
 // ---- VibrateEnable_822b6.cpp ----
@@ -363,11 +365,11 @@ extern "C" void ApplicationManager_SoundRelease(ApplicationManager *self)
 }
 
 // ---- Quit_82476.cpp ----
-typedef void QuitCallback();
+typedef void QuitCallback_t();
 
 extern "C" void ApplicationManager_Quit(ApplicationManager *self)
 {
-    QuitCallback *callback = self->field_0x1c;
+    QuitCallback_t *callback = (QuitCallback_t *)self->field_0x1c;
     if (callback != 0) {
         callback();
     }
@@ -472,7 +474,7 @@ extern "C" uint64_t ApplicationManager_GetKeyState(ApplicationManager *self)
 // ---- SetApplicationModule_82440.cpp ----
 extern "C" void ApplicationManager_SetApplicationModule(ApplicationManager *self, void *module)
 {
-    int current = self->field_0x18;
+    void *current = self->field_0x18;
     self->field_0x60 = module;
     self->field_0x3c = current != 0;
 }
@@ -482,10 +484,10 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRea
 {
     void * volatile cookie = __stack_chk_guard;
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
-    ConfigReader *reader = self->field_0x38;
+    ConfigReader *reader = (ConfigReader *)self->field_0x38;
     if (reader != 0) {
         String *copy = (String *)storage;
-        new (copy) String(*name, false);
+        new (copy) String(*name);
         ConfigReader_ParseFile(reader, copy);
         ((String *)storage)->~String();
     }
@@ -541,8 +543,8 @@ extern "C" void ApplicationManager_EnablePerformanceTest(int count)
 // ---- OnUpdate_827f0.cpp ----
 typedef int ModuleIntCallback(void *);
 typedef void ModuleVoidCallback(void *);
-typedef bool LoadingCallback(PaintCanvas *, int, void *);
-typedef bool ResumeCallback(PaintCanvas *, void *);
+typedef bool LoadingCallbackU(PaintCanvas *, int, void *);
+typedef bool ResumeCallbackU(PaintCanvas *, void *);
 
 
 extern "C" void ApplicationManager_OnUpdate(ApplicationManager *self, long long now)
@@ -570,7 +572,7 @@ extern "C" void ApplicationManager_OnUpdate(ApplicationManager *self, long long 
         if (module != 0) {
             void **vtable = *(void ***)module;
             int loading = ((ModuleIntCallback *)vtable[2])(module);
-            LoadingCallback *callback = self->field_0x20;
+            LoadingCallbackU *callback = (LoadingCallbackU *)self->field_0x20;
             if (callback != 0) {
                 callback(*(PaintCanvas **)self, loading, self->field_0x24);
             }
@@ -614,11 +616,11 @@ extern "C" void ApplicationManager_OnUpdate(ApplicationManager *self, long long 
         if (module != 0) {
             void **vtable = *(void ***)module;
             ((ModuleVoidCallback *)vtable[0x30 / 4])(module);
-            engine->field_0x68 = 0;
-            engine->field_0x58 = 0;
+            *(uint64_t *)((char *)engine + 0x68) = 0;
+            *(uint64_t *)((char *)engine + 0x58) = 0;
             *(int *)((char *)*(void **)self + 4) = 0;
             ((ModuleVoidCallback *)vtable[0x34 / 4])(module);
-            ResumeCallback *resume = self->field_0x28;
+            ResumeCallbackU *resume = (ResumeCallbackU *)self->field_0x28;
             if (resume == 0 || !resume(*(PaintCanvas **)self, self->field_0x2c)) {
                 ((ModuleVoidCallback *)vtable[0x38 / 4])(module);
             }
@@ -740,7 +742,7 @@ extern "C" void ApplicationManager_OnKeyPress(ApplicationManager *self, int key)
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = self->field_0x10;
+    int *mapping = (int *)self->field_0x10;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
             int highIndex = (int)keyIndex - 0x20;
@@ -825,7 +827,7 @@ extern "C" void ApplicationManager_SetCurrentApplicationModule(ApplicationManage
     while (index < count) {
         if (*(unsigned int *)(self->field_0x54 + index * 4) == id) {
             void *module = *(void **)(self->field_0x48 + index * 4);
-            int current = self->field_0x18;
+            void *current = self->field_0x18;
             self->field_0x3c = current != 0;
             self->field_0x5c = id;
             self->field_0x60 = module;
@@ -905,11 +907,12 @@ extern "C" void ApplicationManager_OnTouchBegin(ApplicationManager *self, int xA
                        y > PaintCanvas_GetHeight(canvas) - 0x32) {
                 g_touchMode = 2;
             } else if (mode == 2 && x <= 0x31 && y > PaintCanvas_GetHeight(canvas) - 0x32) {
-                engine->field_0x74 = !engine->field_0x74;
+                uint8_t *flag = (uint8_t *)((char *)engine + 0x74);
+                *flag = !*flag;
             } else if (mode == 3 && y <= 0x31 && x > PaintCanvas_GetWidth(canvas) - 0x32) {
                 g_touchMode = 4;
             }
-        } else if (engine->field_0x74) {
+        } else if (*(uint8_t *)((char *)engine + 0x74)) {
             if (y < 100) {
                 g_touchToggle ^= 1;
             } else {
@@ -983,7 +986,7 @@ loop:
             actions = self->field_0x8c;
             char *keys = self->field_0x10;
             unsigned int keyIndex = *(unsigned int *)(actions + byteOffset + 8);
-            new (string) String(*(String *)(keys + keyIndex * 0x10 + 4), false);
+            new (string) String(*(String *)(keys + keyIndex * 0x10 + 4));
             ArrayAdd_StringPtr(string, result);
         }
         byteOffset += 0x10;
@@ -1009,7 +1012,7 @@ extern "C" void ApplicationManager_OnKeyRelease(ApplicationManager *self, int ke
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = self->field_0x10;
+    int *mapping = (int *)self->field_0x10;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
             int highIndex = (int)keyIndex - 0x20;
@@ -1081,7 +1084,7 @@ static bool update_orientation_timer(ApplicationManager *self, int *timer)
 extern "C" void ApplicationManager_CheckForOrientationChange(ApplicationManager *self)
 {
     void *engine = self->field_0xa8;
-    double tilt = engine->field_0x4b0;
+    double tilt = *(double *)((char *)engine + 0x4b0);
     void *canvas;
     int orientation;
     int *timer;
@@ -1144,14 +1147,7 @@ setOrientation:
 // ---- _ApplicationManager_82038.cpp ----
 typedef void ModuleCallback(void *);
 
-
-namespace AbyssEngine {
-struct ApplicationManager {
-    ~ApplicationManager();
-};
-}
-
-__attribute__((minsize)) AbyssEngine::ApplicationManager::~ApplicationManager()
+__attribute__((minsize)) ApplicationManager::~ApplicationManager()
 {
     ApplicationManager *self = this;
     void *module = self->field_0x18;
@@ -1230,10 +1226,10 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigReg
 {
     void * volatile cookie = __stack_chk_guard;
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
-    ConfigReader *reader = self->field_0x38;
+    ConfigReader *reader = (ConfigReader *)self->field_0x38;
     if (reader != 0) {
         String *copy = (String *)storage;
-        new (copy) String(*name, false);
+        new (copy) String(*name);
         ConfigReader_RegisterTokenReadFunction(reader, copy, read, context);
         ((String *)storage)->~String();
     }

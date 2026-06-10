@@ -5,33 +5,25 @@ extern "C" void Player_setActive(Player *self, bool active);
 extern "C" void *KIPlayer_dtor(KIPlayer *self);
 extern "C" void operator_delete(void *ptr);
 extern "C" void Player_ctor(Player *self, int radius, int hitpoints, int a, int b, int c);
+extern "C" void KIPlayer_ctor(Waypoint *self, int kind, int team, Player *player,
+                              AEGeometry *geometry, float x, float y, float z, bool flag);
+void *operator new(__SIZE_TYPE__ size);
+
+__attribute__((visibility("hidden"))) extern void *Waypoint_vtable;
 
 // ---- setActive_157d5e.cpp ----
-struct Waypoint {
-    void setActive(bool active);
-};
-
-
 void Waypoint::setActive(bool active)
 {
     return Player_setActive(this->field_0x4, active);
 }
 
 // ---- reached_157d64.cpp ----
-struct Waypoint {
-    void reached();
-};
-
 void Waypoint::reached()
 {
     this->field_0x130 = 0x101;
 }
 
 // ---- getPosition_157d38.cpp ----
-struct Waypoint {
-    Vector getPosition();
-};
-
 Vector Waypoint::getPosition()
 {
     float x = (float)this->field_0x124;
@@ -51,11 +43,6 @@ extern "C" void _ZN8WaypointD0Ev(Waypoint *self)
 }
 
 // ---- reset_157d6e.cpp ----
-struct Waypoint {
-    void reset();
-};
-
-
 void Waypoint::reset()
 {
     Player *player = this->field_0x4;
@@ -64,16 +51,6 @@ void Waypoint::reset()
 }
 
 // ---- Waypoint_157c54.cpp ----
-struct Waypoint {
-    Waypoint(int x, int y, int z, Route *route);
-};
-
-void *operator new(__SIZE_TYPE__ size);
-extern "C" void KIPlayer_ctor(Waypoint *self, int kind, int team, Player *player,
-                              AEGeometry *geometry, float x, float y, float z, bool flag);
-
-__attribute__((visibility("hidden"))) extern void *Waypoint_vtable;
-
 Waypoint::Waypoint(int x, int y, int z, Route *route)
 {
     Player *player = (Player *)operator new(0x114);

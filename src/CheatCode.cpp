@@ -22,8 +22,8 @@ bool CheatCode::Update(uint16_t key)
 {
     Array<uint16_t> *a = keys;
     uint32_t p = pos;
-    uint16_t *d = a->data;
-    uint32_t n = a->size;
+    uint16_t *d = a->data();
+    uint32_t n = a->size();
     if (p >= n) {
         return false;
     }

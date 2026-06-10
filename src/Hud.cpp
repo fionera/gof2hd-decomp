@@ -21,7 +21,7 @@ extern "C" int  Status_inAlienOrbit();
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void PaintCanvas_SetColor4(void *canvas, int b1, int b2, int b3, int b4);
 extern "C" int  PaintCanvas_GetImage2DWidth(void *canvas);
-extern "C" void PaintCanvas_DrawImage2D2(void *canvas, int img, int anchor);
+extern "C" void PaintCanvas_DrawImage2D2(void *canvas, int img, int arg);
 extern "C" void PaintCanvas_DrawString2(void *canvas, void *font, void *str, int x, char y);
 extern "C" void *Status_getSystem();
 extern "C" int  SolarSystem_hasNoOwner(void *sys);
@@ -40,14 +40,14 @@ extern "C" unsigned int Hud_touchMoveFallback(Hud *self, unsigned int a, void *b
 extern "C" float Globals_sqrt(void *g, float v);
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" int TouchButton_OnTouchBegin(void *btn, unsigned int x);
-extern "C" void Hud_init(Hud *self);
+extern "C" int  Hud_init(Hud *self);
 extern "C" void String_op_assign(void *dst, void *src);
 extern "C" void String_ctor_int(void *s, int v);
 extern "C" void *operator_new(uint32_t);
 extern "C" void ListItem_ctor1(void *li, void *str, int kind);
-extern "C" void ListItem_ctor(void *li, void *str);
-extern "C" int  Hud_sameHudEventAsBeforeAggregate(Hud *self, void *str);
-extern "C" void Hud_addToEventQueue(Hud *self, void *item);
+extern "C" void ListItem_ctor(void *li, void *str, int kind = 0);
+extern "C" int  Hud_sameHudEventAsBeforeAggregate(Hud *self, String *str);
+extern "C" void Hud_addToEventQueue(Hud *self, ListItem *item);
 extern "C" void *Status_getMission();
 extern "C" int  Mission_getType(void *m);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
@@ -55,7 +55,6 @@ extern "C" int  PaintCanvas_GetTextWidth(void *font, void *str);
 extern "C" void Hud_secondaryWeaponChanged(Hud *self);
 extern "C" int  Item_getIndex(void *item);
 extern "C" int  Item_getAmount(void *item);
-extern "C" void PaintCanvas_DrawImage2D2(void *canvas, int img, unsigned int frame);
 extern "C" unsigned int Hud_touchedElement(Hud *self, unsigned int a, unsigned int b);
 extern "C" void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void *operator_new_arr(uint32_t);
@@ -63,7 +62,7 @@ extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
 extern "C" int  SolarSystem_getRace(void *sys);
 extern "C" void Hud_closeHudMenu(Hud *self);
-extern "C" void Hud_checkIfQuickMenuIsEmpty(Hud *self);
+extern "C" Hud *Hud_checkIfQuickMenuIsEmpty(Hud *self);
 extern "C" void Hud_releaseAllKeys(Hud *self);
 extern "C" void PaintCanvas_drawImage(void *canvas, int img, int x, int y);
 extern "C" void *Status_getShip();
@@ -72,10 +71,8 @@ extern "C" int  Ship_hasJumpDrive(void *ship);
 extern "C" int  Status_getWingmen();
 extern "C" unsigned char Ship_hasCloak(void *ship);
 extern "C" void Layout_drawMask();
-extern "C" void PaintCanvas_DrawImage2D2(void *canvas, int img, int xy);
 extern "C" void PaintCanvas_DrawImage2D5(void *canvas, int img, int x, int y, char anchor);
 extern "C" void TouchButton_draw(void *btn);
-extern "C" int  Ship_hasCloak(void *ship);
 extern "C" int  PaintCanvas_GetImage2DHeight(void *canvas);
 extern "C" int  PaintCanvas_GetTextHeight(void *canvas);
 extern "C" int  PlayerEgo_readyToBoost(void *ego);
@@ -87,8 +84,7 @@ extern "C" void Sprite_draw(void *sprite);
 extern "C" int  String_length(void *s);
 extern "C" void String_SubString(void *out, void *s, int idx);
 extern "C" int  String_ValueOf(void *s);
-extern "C" int  Hud_sameHudEventAsBefore(Hud *self, void *str);
-extern "C" void ListItem_ctor(void *li, void *str, int kind);
+extern "C" unsigned int Hud_sameHudEventAsBefore(Hud *self, String *str);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *arr);
 extern "C" void *Array_Item_dtor(void *arr);
@@ -326,18 +322,18 @@ extern "C" void Hud_updateQueue(Hud *self, int dt)
     int v;
     if (t >= 0xfa1) {
         I(self, 0x268) = 0;
-        int *p = (int *)I(self->f_264, 4);
+        int *p = (int *)I(P(self, 0x264), 4);
         if ((void *)p[0] != 0) {
             void *q = ListItem_dtor((void *)p[0]);
             operator_delete(q);
-            p = (int *)I(self->f_264, 4);
+            p = (int *)I(P(self, 0x264), 4);
         }
         p[0] = 0;
         unsigned int i = 0;
         unsigned int d;
         while (true) {
-            d = ((unsigned int *)self->f_264)[1];
-            if (*(unsigned int *)self->f_264 <= i + 1)
+            d = ((unsigned int *)P(self, 0x264))[1];
+            if (*(unsigned int *)P(self, 0x264) <= i + 1)
                 break;
             *(int *)(d + i * 4) = *(int *)(d + i * 4 + 4);
             i = i + 1;
@@ -441,7 +437,7 @@ extern "C" unsigned int Hud_touchMove(Hud *self, unsigned int a, void *b, int ke
     return Hud_touchMoveFallback(self, a, b);
 found:
     int dx = (int)a - (int)US(self, 0x424);
-    int dy = (int)(unsigned int)b - (int)US(self, 0x426);
+    int dy = (int)(unsigned int)(uintptr_t)b - (int)US(self, 0x426);
     float f = (float)(dy * dy + dx * dx);
     float r = Globals_sqrt(*g_Hud_globals, f);
     int denom = I(self, 0x4e0);
@@ -454,7 +450,7 @@ found:
         S(self, 0x420) = s + base;
     } else {
         S(self, 0x41e) = (short)a;
-        S(self, 0x420) = (short)(unsigned int)b;
+        S(self, 0x420) = (short)(unsigned int)(uintptr_t)b;
     }
     return 0x20;
 }
@@ -482,13 +478,13 @@ static inline bool cspan(Hud *self, int off, int w, unsigned int v) {
 
 extern "C" unsigned int Hud_touchedElement(Hud *self, unsigned int x, unsigned int y)
 {
-    unsigned int *menu = (unsigned int *)self->f_18;
+    unsigned int *menu = (unsigned int *)P(self, 0x18);
     if (UC(self, 0x282) != 0 && menu != 0) {
         // quick-menu open: delegate to its buttons
         for (unsigned int i = 0; i < menu[0]; i++) {
             if (TouchButton_OnTouchBegin(*(void **)(menu[1] + i * 4), x) != 0)
-                return *(unsigned int *)*(void **)(I(self->f_18, 4) + i * 4);
-            menu = (unsigned int *)self->f_18;
+                return *(unsigned int *)*(void **)(I(P(self, 0x18), 4) + i * 4);
+            menu = (unsigned int *)P(self, 0x18);
         }
         return 0;
     }
@@ -616,8 +612,8 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
         void *str = operator_new(0xc);
         String_ctor_copy(str, dst, false);
         ListItem_ctor(item, str);
-        item->field_0x2c = cargoVal;
-        Hud_addToEventQueue(self, item);
+        ((ListItem *)item)->field_0x2c = cargoVal;
+        Hud_addToEventQueue(self, (ListItem *)item);
         return;
     }
 
@@ -639,7 +635,7 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
     void *gt = *g_Hud_ccGameText;
 
     // aggregate with previous "+N <unit>" event if allowed
-    if (aggregateKey != 0 && self->f_26c != 0) {
+    if (aggregateKey != 0 && P(self, 0x26c) != 0) {
         char a0[12]; String_ctor_int(a0, I(self, 0x52c));
         char ac[12]; String_ctor_cstr(ac, g_Hud_ccUnit, false);
         char a94[12]; String_concat(a94, a0, ac);
@@ -649,7 +645,7 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
         String_dtor(a88); String_dtor(a94); String_dtor(ac); String_dtor(a0);
 
         char b8[12]; String_ctor_copy(b8, k34, false);
-        int idx = Hud_sameHudEventAsBeforeAggregate(self, b8);
+        int idx = Hud_sameHudEventAsBeforeAggregate(self, (String *)b8);
         String_dtor(b8);
         if (idx >= 0) {
             I(self, 0x268) = 2000;
@@ -661,7 +657,7 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
             char n94[12]; String_ctor_copy(n94, nA0, false);
             void *u2 = GameText_getText(gt, 0);
             char n88[12]; String_concat(n88, n94, u2);
-            String_op_assign(*(void **)(*(int *)(I(self->f_264, 4) + idx * 4) + 0x1c), n88);
+            String_op_assign(*(void **)(*(int *)(I(P(self, 0x264), 4) + idx * 4) + 0x1c), n88);
             String_dtor(n88); String_dtor(n94); String_dtor(nA0); String_dtor(nC4); String_dtor(nAc);
             String_dtor(k34);
             return;
@@ -684,10 +680,10 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
     void *str = operator_new(0xc);
     String_ctor_copy(str, B(self, 0x1f4), false);
     ListItem_ctor(item, str);
-    item->field_0x2c = cargoVal;
-    if (!p7 || p6) item->field_0x30 = 2;
-    if (p7) item->field_0x24 = 1;
-    Hud_addToEventQueue(self, item);
+    ((ListItem *)item)->field_0x2c = cargoVal;
+    if (!p7 || p6) ((ListItem *)item)->field_0x30 = 2;
+    if (p7) ((ListItem *)item)->field_0x24 = 1;
+    Hud_addToEventQueue(self, (ListItem *)item);
 }
 
 // ---- drawEventString_1636f4.cpp ----
@@ -731,7 +727,7 @@ extern "C" void Hud_drawEventString(Hud *self, void *text, int rightAlign)
 // ---- setCurrentSecondaryWeapon_1622ec.cpp ----
 extern "C" void Hud_setCurrentSecondaryWeapon(Hud *self, Item *item)
 {
-    self->f_258 = item;
+    P(self, 0x258) = item;
     return Hud_secondaryWeaponChanged(self);
 }
 
@@ -740,13 +736,13 @@ extern "C" int String_Compare(String *a, String *b);   // AbyssEngine::String::C
 
 extern "C" int Hud_sameHudEventAsBeforeAggregate(Hud *self, String *str)
 {
-    int i = *(int *)self->f_264;
+    int i = *(int *)P(self, 0x264);
     int e;
     do {
         i = i + -1;
         if (i < 1)
             return -1;
-        e = I((void *)(I(self->f_264, 4)), i * 4);
+        e = I((void *)(I(P(self, 0x264), 4)), i * 4);
     } while (e == 0 || String_Compare((String *)I((void *)e, 0x1c), str) != 0);
     return i;
 }
@@ -765,7 +761,7 @@ extern const char g_Hud_swEnd[]  __attribute__((visibility("hidden"))); // trail
 
 extern "C" void Hud_updateSecondaryWeaponString(Hud *self)
 {
-    void *item = self->f_258;
+    void *item = P(self, 0x258);
     if (item == 0) return;
 
     void *gt = *g_Hud_gameText;
@@ -822,7 +818,7 @@ extern "C" void Hud_drawEventQueue(Hud *self)
 
     PaintCanvas_DrawImage2D2(canvas, I(self, 0x354), US(self, 0x3e0));
 
-    int item = *(int *)(I(self->f_264, 4) + 4);
+    int item = *(int *)(I(P(self, 0x264), 4) + 4);
     if (item != 0) {
         int kind = *(int *)(item + 0x30);
         int b2, b3, b4;
@@ -845,7 +841,7 @@ extern "C" void Hud_drawEventQueue(Hud *self)
 // ---- touchBegin_1669fc.cpp ----
 extern "C" unsigned int Hud_touchBegin(Hud *self, unsigned int a, void *b, int key)
 {
-    unsigned int e = Hud_touchedElement(self, a, (unsigned int)b);
+    unsigned int e = Hud_touchedElement(self, a, (unsigned int)(uintptr_t)b);
     if (e == 0) {
         for (int i = 0; i != 0x19; i = i + 1) {
             int arr = I((void *)I(self, 0x28c), 4);
@@ -888,9 +884,9 @@ extern "C" int String_Compare(String *a, String *b);   // AbyssEngine::String::C
 
 extern "C" unsigned int Hud_sameHudEventAsBefore(Hud *self, String *str)
 {
-    int i = *(int *)self->f_264;
+    int i = *(int *)P(self, 0x264);
     while (--i >= 1) {
-        int e = ((int *)I(self->f_264, 4))[i];
+        int e = ((int *)I(P(self, 0x264), 4))[i];
         if (e != 0 && String_Compare((String *)I((void *)e, 0x1c), str) == 0)
             return 1;
     }
@@ -925,12 +921,12 @@ extern "C" int Hud_init(Hud *self)
     // key-state arrays: 0x19 slots each
     void *keys = operator_new(0xc);
     Array_void_ctor(keys);
-    self->f_28c = keys;
+    P(self, 0x28c) = keys;
     ArraySetLength_void(0x19, keys);
     void *bits = operator_new_arr(100);
-    self->f_290 = bits;
+    P(self, 0x290) = bits;
     for (int i = 0; i != 0x19; i++) {
-        *(int *)(I(self->f_28c, 4) + i * 4) = 0;
+        *(int *)(I(P(self, 0x28c), 4) + i * 4) = 0;
         *(int *)(I(self, 0x290) + i * 4) = 0;
     }
     I(self, 0x284) = 0;
@@ -956,7 +952,7 @@ extern "C" int Hud_init(Hud *self)
     Hud_closeHudMenu(self);
     Hud_checkIfQuickMenuIsEmpty(self);
     Hud_releaseAllKeys(self);
-    self->f_530 = 0;
+    P(self, 0x530) = 0;
 
     int *layout = (int *)*g_Hud_initLayout;
     int w = PaintCanvas_GetImage2DWidth(*g_Hud_initCanvas);
@@ -992,7 +988,7 @@ extern "C" Hud *Hud_checkIfQuickMenuIsEmpty(Hud *self)
 {
     void *ship = Status_getShip();
     unsigned int *equip = (unsigned int *)Ship_getEquipment(ship, 1);
-    self->f_25c = equip;
+    P(self, 0x25c) = equip;
 
     unsigned char empty;
     bool hasSecondary = false;
@@ -1043,23 +1039,23 @@ extern "C" void Hud_drawMenu(Hud *self)
 
     int y = I(self, 0x3c8) + I(self, 0x4d0) + I(self, 0x3cc);
     // repeated middle slices (one per button beyond the first)
-    if (self->f_18 != 0 && *(int *)self->f_18 != 0) {
-        int count = *(int *)self->f_18;
+    if (P(self, 0x18) != 0 && *(int *)P(self, 0x18) != 0) {
+        int count = *(int *)P(self, 0x18);
         for (unsigned int i = 0; i < (unsigned int)(count - 1); i++) {
             PaintCanvas_DrawImage2D2(canvas, I(self, 0x2a0), I(self, 0x3c4) + I(self, 0x4cc));
             y += I(self, 0x3d0);
-            count = *(int *)self->f_18;
+            count = *(int *)P(self, 0x18);
         }
     }
     // bottom cap
     PaintCanvas_DrawImage2D2(canvas, I(self, 0x29c), I(self, 0x3c4) + I(self, 0x4cc));
 
     // the actual buttons
-    if (self->f_18 != 0 && *(unsigned int *)self->f_18 != 0) {
-        unsigned int n = *(unsigned int *)self->f_18;
+    if (P(self, 0x18) != 0 && *(unsigned int *)P(self, 0x18) != 0) {
+        unsigned int n = *(unsigned int *)P(self, 0x18);
         for (unsigned int i = 0; i < n; i++) {
-            TouchButton_draw(((void **)I(self->f_18, 4))[i]);
-            n = *(unsigned int *)self->f_18;
+            TouchButton_draw(((void **)I(P(self, 0x18), 4))[i]);
+            n = *(unsigned int *)P(self, 0x18);
         }
     }
 
@@ -1103,7 +1099,7 @@ extern "C" void Hud_clearQueue(Hud *self)
     unsigned int i = 1;
     int off = 4;
     unsigned int *arr;
-    while (arr = (unsigned int *)self->f_264, i < arr[0]) {
+    while (arr = (unsigned int *)P(self, 0x264), i < arr[0]) {
         unsigned int data = arr[1];
         void *item = *(void **)(data + off);
         int *dst;
@@ -1112,7 +1108,7 @@ extern "C" void Hud_clearQueue(Hud *self)
         } else {
             void *p = ListItem_dtor(item);
             operator_delete(p);
-            dst = (int *)(I(self->f_264, 4) + off);
+            dst = (int *)(I(P(self, 0x264), 4) + off);
         }
         *dst = 0;
         off = off + 4;
@@ -1137,37 +1133,37 @@ extern "C" void Hud_hudEvent(Hud *self, int eventId, void *ego, int arg)
     case 1:
     case 2:
         // autofire on/off notice — only when the autofire UI is present
-        if (self->f_221 == 0) return;
+        if (UC(self, 0x221) == 0) return;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
     case 3:
-        if (self->f_21e == 0 || PlayerEgo_readyToBoost((void *)(long)arg) == 0) return;
+        if (UC(self, 0x21e) == 0 || PlayerEgo_readyToBoost((void *)(long)arg) == 0) return;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
     case 4:
-        if (self->f_21e == 0) return;
+        if (UC(self, 0x21e) == 0) return;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
 
     // ---- pure status-flag events (no queue entry) ----
     case 0x23:
         I(self, 0x468) = 0;
-        self->f_27a = 1;
+        UC(self, 0x27a) = 1;
         *(unsigned short *)B(self, 0x278) = 1;
         return;
     case 0x25:
         I(self, 0x468) = 0;
-        self->f_27a = 1;
+        UC(self, 0x27a) = 1;
         *(unsigned short *)B(self, 0x278) = 0x101;
         return;
     case 0x27:
         I(self, 0x468) = 0;
-        self->f_27a = 0;
+        UC(self, 0x27a) = 0;
         *(unsigned short *)B(self, 0x278) = 1;
         return;
     case 0x29:
         I(self, 0x468) = 0;
-        self->f_27a = 0;
+        UC(self, 0x27a) = 0;
         *(unsigned short *)B(self, 0x278) = 0x101;
         return;
     case 0x24:
@@ -1175,7 +1171,7 @@ extern "C" void Hud_hudEvent(Hud *self, int eventId, void *ego, int arg)
     case 0x28:
     case 0x2a:
         // these clear the "showing" flag and set a fixed localized line, no queue
-        self->f_278 = 0;
+        I(self, 0x278) = 0;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
 
@@ -1218,7 +1214,7 @@ extern "C" void Hud_drawChallengeModeScore(Hud *self)
     int *layout = (int *)*g_Hud_csLayout;
     int *status = (int *)*g_Hud_csStatus;
     int screenW = *(int *)*g_Hud_csScreenW;
-    void *sprite = self->f_534;
+    void *sprite = P(self, 0x534);
 
     PaintCanvas_SetColor(canvas, -1);
     int fw = Sprite_getFrameWidth(sprite);
@@ -1314,7 +1310,7 @@ extern "C" void Hud_hudEventMedal(Hud *self, int medalId, int percent)
 
     char probe[12];
     String_ctor_copy(probe, dst, false);
-    int same = Hud_sameHudEventAsBefore(self, probe);
+    int same = Hud_sameHudEventAsBefore(self, (String *)probe);
     String_dtor(probe);
     if (same != 0) return;
 
@@ -1322,7 +1318,7 @@ extern "C" void Hud_hudEventMedal(Hud *self, int medalId, int percent)
     void *str = operator_new(0xc);
     String_ctor_copy(str, dst, false);
     ListItem_ctor(item, str, 3);
-    Hud_addToEventQueue(self, item);
+    Hud_addToEventQueue(self, (ListItem *)item);
 
     int w = PaintCanvas_GetTextWidth(*g_Hud_meCanvas, *g_Hud_meFont);
     int screenW = *(int *)*g_Hud_meScreenW;
@@ -1351,21 +1347,21 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagB;      // *hold
 extern "C" void Hud_initHudMenu(Hud *self, int menuType, void *lvl)
 {
     // tear down old menu buttons
-    if (self->f_18 != 0) {
-        ArrayReleaseClasses_TouchButton(self->f_18);
-        if (self->f_18 != 0) operator_delete(Array_TouchButton_dtor(self->f_18));
-        self->f_18 = 0;
+    if (P(self, 0x18) != 0) {
+        ArrayReleaseClasses_TouchButton(P(self, 0x18));
+        if (P(self, 0x18) != 0) operator_delete(Array_TouchButton_dtor(P(self, 0x18)));
+        P(self, 0x18) = 0;
     }
     void *arr = operator_new(0xc);
     Array_TouchButton_ctor(arr);
-    self->f_238 = lvl;
-    self->f_18 = arr;
+    P(self, 0x238) = lvl;
+    P(self, 0x18) = arr;
 
     // refresh secondary-weapon equipment + label
-    if (self->f_25c != 0) operator_delete(Array_Item_dtor(self->f_25c));
-    self->f_25c = 0;
+    if (P(self, 0x25c) != 0) operator_delete(Array_Item_dtor(P(self, 0x25c)));
+    P(self, 0x25c) = 0;
     void *ship = Status_getShip();
-    self->f_25c = Ship_getEquipment(ship, 1);
+    P(self, 0x25c) = Ship_getEquipment(ship, 1);
     Hud_updateSecondaryWeaponString(self);
 
     I(self, 0x4cc) = 0;
@@ -1417,20 +1413,20 @@ extern "C" void Hud_subObjectDtor(void *p);   // DAT_0017134c shared sub-object 
 
 extern "C" Hud *Hud_dtor(Hud *self)
 {
-    if (self->f_25c != 0) operator_delete(Array_Item_dtor(self->f_25c));
-    self->f_25c = 0;
+    if (P(self, 0x25c) != 0) operator_delete(Array_Item_dtor(P(self, 0x25c)));
+    P(self, 0x25c) = 0;
 
-    if (self->f_264 != 0) operator_delete(Array_ListItem_dtor(self->f_264));
-    self->f_264 = 0;
+    if (P(self, 0x264) != 0) operator_delete(Array_ListItem_dtor(P(self, 0x264)));
+    P(self, 0x264) = 0;
 
-    if (self->f_18 != 0) {
-        ArrayReleaseClasses_TouchButton(self->f_18);
-        if (self->f_18 != 0) operator_delete(Array_TouchButton_dtor(self->f_18));
+    if (P(self, 0x18) != 0) {
+        ArrayReleaseClasses_TouchButton(P(self, 0x18));
+        if (P(self, 0x18) != 0) operator_delete(Array_TouchButton_dtor(P(self, 0x18)));
     }
-    self->f_18 = 0;
+    P(self, 0x18) = 0;
 
-    if (self->f_530 != 0) operator_delete(Array_uint_dtor(self->f_530));
-    self->f_530 = 0;
+    if (P(self, 0x530) != 0) operator_delete(Array_uint_dtor(P(self, 0x530)));
+    P(self, 0x530) = 0;
 
     Hud_subObjectDtor(B(self, 0x51c));
     Hud_subObjectDtor(B(self, 0x3b4));

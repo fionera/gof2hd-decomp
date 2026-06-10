@@ -1,19 +1,12 @@
 #include "gof2/LODManager.h"
 
-
 extern "C" void LODManager_addObject_tail(AEGeometry *g, void *objects);
-extern "C" void LODManager_operator_delete(void *p);
 extern "C" uint32_t CameraGetCurrent(void *canvas);
 extern "C" Matrix *CameraGetLocal(void *canvas, uint32_t index);
 extern "C" void AEGeometry_updateLod(AEGeometry *g, const void *pos, float factor);
 
 // ---- addObject_9520c.cpp ----
 extern "C" int LODManager_hasLod(AEGeometry *g);              // AEGeometry::hasLod()
-
-struct LODManager {
-    void *objects;
-    void addObject(AEGeometry *g);
-};
 
 void LODManager::addObject(AEGeometry *g)
 {
@@ -25,61 +18,33 @@ void LODManager::addObject(AEGeometry *g)
 // ---- LODManager_9518c.cpp ----
 // LODManager::LODManager() — real C++ constructor; symbol demangles to contain "LODManager".
 
-extern "C" void *LODManager_operator_new(unsigned n);   // operator new(__SIZE_TYPE__)
-extern "C" void *LODManager_Array_ctor(void *p);        // Array<AEGeometry*>::Array(Array*)
-
-struct LODManager {
-    void *objects;
-    LODManager();
-};
-
 LODManager::LODManager()
 {
-    this->field_0x4 = 0;
-    this->field_0x8 = 0;
-    this->field_0xc = 0;
-    void *arr = LODManager_operator_new(0xc);
-    LODManager_Array_ctor(arr);
+    this->cameraPos.x = 0;
+    this->cameraPos.y = 0;
+    this->cameraPos.z = 0;
     this->field_0x10 = 0x3e9;
-    this->objects = arr;
+    this->objects = new Array<AEGeometry*>();
 }
 
 // ---- _LODManager_951dc.cpp ----
 // LODManager::~LODManager() — real C++ destructor so the demangled symbol contains "~LODManager".
 
-extern "C" void *LODManager_Array_dtor(void *p);   // Array<AEGeometry*>::~Array(Array*)
-
-struct LODManager {
-    void *objects;
-    ~LODManager();
-};
-
 LODManager::~LODManager()
 {
-    void *a = *(void **)this;
-    if (a != 0)
-        LODManager_operator_delete(LODManager_Array_dtor(a));
-    *(void **)this = 0;
+    if (this->objects != 0)
+        delete this->objects;
+    this->objects = 0;
 }
 
 // ---- removeObject_9524e.cpp ----
-struct LODArray {
-    uint32_t length;
-    AEGeometry **data;
-};
-
-extern "C" void LODManager_ArrayRemove(AEGeometry *g, LODArray *arr);  // ArrayRemove<AEGeometry*>(AEGeometry*, Array*)
-
-struct LODManager {
-    LODArray *objects;
-    void removeObject(AEGeometry *g);
-};
+extern "C" void LODManager_ArrayRemove(AEGeometry *g, Array<AEGeometry*> *arr);  // ArrayRemove<AEGeometry*>(AEGeometry*, Array*)
 
 void LODManager::removeObject(AEGeometry *g)
 {
-    for (uint32_t i = 0; i < this->objects->length; i++) {
-        LODArray *arr = this->objects;
-        if (arr->data[i] == g)
+    for (uint32_t i = 0; i < this->objects->size(); i++) {
+        Array<AEGeometry*> *arr = this->objects;
+        if ((*arr)[i] == g)
             LODManager_ArrayRemove(g, arr);
     }
 }
@@ -98,44 +63,28 @@ extern "C" void MatrixGetPosition(void *out, const Matrix *m);     // RetStr
 extern "C" void Vector_assign(Vector *dst, const void *src);       // Vector::operator=
 extern "C" void AEGeometry_getParentPosition(void *out, AEGeometry *g);  // RetStr
 
-struct LODArray {
-    uint32_t length;
-    AEGeometry **data;
-};
-
-struct LODManager {
-    LODArray *objects;
-    Vector cameraPos;   // +0x04
-    void forceUpdate(int dt, bool useParent);
-};
-
 void LODManager::forceUpdate(int dt, bool useParent)
 {
-    char local[12];
+    Vector local;
     void *canvas = *g_LOD_canvas;
-    float factor = F<float>(g_LOD_settings, 0x28);
+    float factor = *(float*)((char*)g_LOD_settings + 0x28);
 
     uint32_t cam = CameraGetCurrent(canvas);
     Matrix *m = CameraGetLocal(canvas, cam);
-    MatrixGetPosition(local, m);
-    Vector_assign(&this->cameraPos, local);
+    MatrixGetPosition(&local, m);
+    Vector_assign(&this->cameraPos, &local);
 
-    for (uint32_t i = 0; i < this->objects->length; i++) {
-        AEGeometry *g = this->objects->data[i];
+    for (uint32_t i = 0; i < this->objects->size(); i++) {
+        AEGeometry *g = (*this->objects)[i];
         if (useParent)
-            AEGeometry_getParentPosition(local, g);
+            AEGeometry_getParentPosition(&local, g);
         else
-            *(Vector *)local = this->cameraPos;
-        AEGeometry_updateLod(g, local, factor);
+            local = this->cameraPos;
+        AEGeometry_updateLod(g, &local, factor);
     }
 }
 
 // ---- update_95384.cpp ----
-struct LODManager {
-    void update(int dt);
-    void forceUpdate(int a, bool b);
-};
-
 void LODManager::update(int dt)
 {
     int sum = this->field_0x10 + dt;

@@ -159,7 +159,7 @@ void BumpShaderV3::UpdateMeshData(Mesh *mesh, Engine *engine)
             glUniform3fv(field_i32(this, 0x74), 1, (float *)((char *)engine + 0x320));
         if (field_i32(this, 0x80) >= 0) {
             float w = 0.85f;
-            if (*(int *)((char *)((::Mesh *)mesh)->field_0x30 + 0x24) != 0)
+            if (*(int *)((char *)((AbyssEngine::Mesh *)mesh)->field_0x30 + 0x24) != 0)
                 w = 1.0f;
             glUniform1f(field_i32(this, 0x80), w);
         }

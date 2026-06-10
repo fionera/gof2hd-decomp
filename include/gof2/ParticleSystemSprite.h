@@ -8,24 +8,14 @@
 // Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
 
 
-struct ParticleSystemSprite;
-
 namespace AbyssEngine {
 struct PaintCanvas;
 enum BlendMode { BLEND_DUMMY };
-namespace AEMath {
-
-
-}
 }
 
 struct ParticleSettings {
     struct ParticleSet;
 };
-
-template <class T> struct Array;
-
-// Templated byte-offset field accessor: F<int>(this, 0x54) etc.
 
 struct ParticleSystemSprite {
     uint8_t field_0x4;                  // +0x4
@@ -40,8 +30,19 @@ struct ParticleSystemSprite {
     uint8_t field_0x5c;                 // +0x5c
     int field_0x60;                     // +0x60
     void* field_0x64;                   // +0x64
-    void* field_0x68;                   // +0x68
-    void* field_0x6c;                   // +0x6c
+    int* field_0x68;                    // +0x68  per-particle ages array
+    void* field_0x6c;                   // +0x6c  per-particle set-index array
     float field_0x70;                   // +0x70
+
+    void reset();
+    int init(unsigned int param_1, unsigned short param_2);
+    void release();
+    void render(void *canvas, int handle, unsigned int texture, int blend);
+    void render(void *canvas, unsigned int handle);
+    void updateSingle(int index, float dt);
+    void setAlpha(int param_1, unsigned int param_2, float param_3);
+    void updateAreaExitParticle(int param_1, float param_2);
+    void setParticle(const void *pos, float p2, unsigned int color, float p4, float p5,
+                     float p6, float p7, bool clearColor, float p9, float p10, const void *uv);
 };
 #endif

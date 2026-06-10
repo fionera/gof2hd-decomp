@@ -12,13 +12,14 @@ struct PlayerGasCloud;
 struct ParticleSystemManager;
 struct AEGeometry;
 
-namespace AbyssEngine {
-namespace AEMath {
+using Vector = AbyssEngine::AEMath::Vector;
 
+// Templated byte-offset field accessor over an opaque container pointer (the spark Array<T>
+// objects share the {count@+0,data@+4,capacity@+8} layout). F<int>(arr, 0x0) reads the count,
+// F<int*>(arr, 0x4) reads the data pointer, etc.
+template <class T> static inline T &F(void *p, uint32_t off) {
+    return *(T *)((char *)p + off);
 }
-}
-
-// Templated byte-offset field accessor: F<int>(this, 0x138) etc.
 
 struct PlayerGasCloud {
     void* field_0x4;                    // +0x4
@@ -37,7 +38,7 @@ struct PlayerGasCloud {
     void* field_0x13c;                  // +0x13c
     void* field_0x140;                  // +0x140
     void* field_0x144;                  // +0x144
-    v4i1 field_0x145;                   // +0x145
+    uint8_t field_0x145;                // +0x145 (zeroed as part of a 16-byte vector store)
     void* field_0x148;                  // +0x148
     void* field_0x14c;                  // +0x14c
     void* field_0x150;                  // +0x150
@@ -47,5 +48,16 @@ struct PlayerGasCloud {
     int field_0x160;                    // +0x160
     uint16_t field_0x164;               // +0x164
     int field_0x168;                    // +0x168
+
+    PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGeometry *param_3,
+                   Vector const &param_4);
+    void translate(Vector const &param_1);
+    bool isSparkAlive(int param_1);
+    void setSparkInSight(int param_1, bool param_2);
+    void setPosition(Vector const &param_1);
+    void *getSparks();
+    Vector getPosition();
+    uint8_t hasExploded();
+    void render();
 };
 #endif

@@ -46,7 +46,6 @@ extern "C" int Status_inSupernovaSystem(void *status);
 extern "C" int Status_orbitHasPlanetRing(void *status, int station_index);
 extern "C" void *SolarSystem_getStations(void *system);
 extern "C" int Station_getIndex(void *station);
-extern "C" int Station_getTextureIndex(void *station);
 extern "C" void FileRead_ctor(void *self);
 extern "C" void *FileRead_loadStationsBinary(void *self, void *system);
 extern "C" void *FileRead_dtor(void *self);
@@ -74,7 +73,6 @@ extern "C" void PaintCanvas_TextureCreate(void *canvas, uint32_t texture, void *
 extern "C" int AERandom_nextInt(int *rng, int max);
 extern "C" void AERandom_setSeed(int *rng, long long seed);
 extern "C" void AERandom_reset(int *rng);
-extern "C" void *ApplicationManager_GetEngine(void *app);
 extern "C" int Engine_IsPostEffectActivated(void *engine);
 extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t mesh_id);
 extern "C" void PlayerStatic_ctor(void *self, int mode, AEGeometry *geom, float x, float y, float z);
@@ -84,7 +82,6 @@ extern "C" void AEGeometry_getScaling(char *out, AEGeometry *geom);
 extern "C" void AEGeometry_setScaling3(AEGeometry *geom, float x, float y, float z);
 extern "C" void Vector_scale(char *out, const char *in, float scale);
 extern "C" void AEGeometry_setMesh(AEGeometry *geom, uint32_t mesh);
-extern "C" void Vector_scale(char *out, const char *in, uint32_t scale_bits);
 extern "C" void AEGeometry_setScaling1(AEGeometry *geom, uint32_t scale_bits);
 extern "C" void MatrixGetPosition(char *out, void *matrix);
 extern "C" void __aeabi_memcpy(void *dst, const void *src, unsigned n);
@@ -135,10 +132,6 @@ extern "C" Vector StarSystem_getLightDirection(StarSystem *self)
 }
 
 // ---- _StarSystem_134d10.cpp ----
-struct StarSystem {
-    ~StarSystem();
-};
-
 StarSystem::~StarSystem()
 {
     StarSystem *self = this;
@@ -703,7 +696,7 @@ extern "C" void StarSystem_switchSunForSupernovaIntro(StarSystem *self)
     AEGeometry_setMesh((AEGeometry *)P(self, 0x40), 0x2df2);
     AEGeometry *streak = (AEGeometry *)P(self, 0x40);
     AEGeometry_getScaling(current, streak);
-    Vector_scale(scaled, current, 0x40a00000);
+    Vector_scale(scaled, current, 5.0f);   // 0x40a00000
     AEGeometry_setScaling(streak, scaled);
 
     AEGeometry *sun = *(AEGeometry **)P(P(self, 0x1c), 4);

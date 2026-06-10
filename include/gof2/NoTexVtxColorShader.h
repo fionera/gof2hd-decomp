@@ -1,62 +1,61 @@
 #ifndef GOF2_NOTEXVTXCOLORSHADER_H
 #define GOF2_NOTEXVTXCOLORSHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
-
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
-
-extern "C" void glUseProgram(uint32_t program);
-extern "C" int glGetUniformLocation(uint32_t program, const char *name);
-extern "C" int glGetAttribLocation(uint32_t program, const char *name);
-extern "C" void glUniform1i(int location, int value);
-extern "C" void glUniform4fv(int location, int count, const float *value);
-extern "C" void glUniformMatrix4fv(int location, int count, uint8_t transpose, const void *value);
-extern "C" void glEnableVertexAttribArray(uint32_t index);
-extern "C" void glDisableVertexAttribArray(uint32_t index);
-extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);
-extern "C" void glVertexAttribPointer(
-    uint32_t index, int size, uint32_t type, uint8_t normalized, int stride, const void *pointer);
-
+// Galaxy on Fire 2 - AbyssEngine::NoTexVtxColorShader (GLES2 untextured, per-vertex-color shader).
+// Derives from ShaderBaseStruct. Field names use the deterministic field_0xNN convention.
 namespace AbyssEngine {
 
 struct Engine;
 struct Mesh;
 
-
-
+// AbyssEngine::ShaderBaseStruct base layout used by NoTexVtxColorShader.
 struct ShaderBaseStruct {
-    static int shaderIndexIntern;
-
-    ShaderBaseStruct();
-    ~ShaderBaseStruct();
-
-    int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
+    void *field_0x0;                    // +0x0 vtable
+    int field_0x4;                      // +0x4 GL program handle
+    volatile uint16_t field_0x8;        // +0x8
 };
 
+// AbyssEngine::NoTexVtxColorShader
+struct NoTexVtxColorShader : ShaderBaseStruct {
+    uint8_t field_0x9;                  // +0x9 color-dirty flag
+    String field_0xc;                   // +0xc shader name
+    int field_0x20;                     // +0x20 attribute a_position
+    int field_0x24;                     // +0x24 attribute a_color
+    int field_0x28;                     // +0x28 uniform u_mvp
+    int field_0x2c;                     // +0x2c uniform u_color
 
-
-static inline int &field_i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
-
-static inline uint8_t &field_u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
-
-static inline void *field_ptr(void *self, uint32_t offset)
-{
-    return *(void **)((char *)self + offset);
-}
+    NoTexVtxColorShader();
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+};
 
 } // namespace AbyssEngine
 
-extern "C" char _ZTVN11AbyssEngine19NoTexVtxColorShaderE[];
+extern "C" void *__stack_chk_guard;
+extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
-struct NoTexVtxColorShader { void* _opaque; };  // no offset accesses observed
+extern "C" {
+void ShaderBaseStruct_ctor(void *self);
+void *ShaderBaseStruct_dtor(void *self);
+uint32_t ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertex, const char *fragment);
+
+int glGetAttribLocation(uint32_t program, const char *name);
+int glGetUniformLocation(uint32_t program, const char *name);
+void glUseProgram(uint32_t program);
+void glUniform1i(int location, int value);
+void glUniform4fv(int location, int count, const float *value);
+void glUniformMatrix4fv(int location, int count, uint8_t transpose, const void *value);
+void glEnableVertexAttribArray(uint32_t index);
+void glDisableVertexAttribArray(uint32_t index);
+void glVertexAttribPointer(uint32_t index, int size, uint32_t type, uint8_t normalized, int stride, const void *pointer);
+void glBindBuffer(uint32_t target, uint32_t buffer);
+
+extern void *NoTexVtxColorShader_vtable[];
+extern int32_t ShaderBaseStruct_shaderIndexIntern;
+extern int32_t NoTexVtxColorShader_ShaderIndex;
+
+void operator_delete(void *ptr) noexcept;
+}
+
 #endif

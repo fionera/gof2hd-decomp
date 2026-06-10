@@ -411,7 +411,6 @@ extern "C" void AESoundRessource_playLoop_7ff54(AbyssEngine::AESoundRessource *s
 }
 
 // ---- initWithoutLoading_7fbd0.cpp ----
-static const char defaultSoundName[] = "";
 
 extern "C" void AESoundRessource_initWithoutLoading_7fbd0(AbyssEngine::AESoundRessource *self, int id)
 {

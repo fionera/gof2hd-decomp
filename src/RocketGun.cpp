@@ -54,7 +54,7 @@ extern "C" void MatrixSetTranslation(void *matrix, float x, float y, float z);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 extern "C" void VectorCross(void *out, void *a, void *b);
 extern "C" void VectorNormalize(void *out, void *in);
-extern "C" void PaintCanvas_TransformSetLocal(void *canvas, void *matrix);
+extern "C" void PaintCanvas_TransformSetLocal(void *canvas, uint32_t transformId, const void *matrix);
 extern "C" void Matrix_assign(void *dst, void *src);
 extern "C" void ParticleSystemManager_enableSystemRender(int manager, int system, bool enabled);
 extern "C" void ParticleSystemManager_resetSystem(int manager, int system);
@@ -65,11 +65,6 @@ extern "C" void Vector_scale(void *out, void *vec, float scale);
 extern "C" void Vector_add(void *out, void *a, void *b);
 
 // ---- render_15ecd4.cpp ----
-struct RocketGun {
-    void render();
-};
-
-
 void RocketGun::render()
 {
     return RocketGun_render_tail();
@@ -105,11 +100,6 @@ extern "C" void _ZN9RocketGunD0Ev(RocketGun *self)
 }
 
 // ---- RocketGun_15e8f8.cpp ----
-struct RocketGun {
-    RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
-              uint32_t param_5, int param_6, bool param_7, Level *param_8);
-};
-
 extern "C" void ObjectGun_ctor(RocketGun *self, int param_1, Gun *param_2, int param_3,
                                 uint32_t param_5, Level *param_8);
 
@@ -153,16 +143,11 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
 }
 
 // ---- setRadar_15ea38.cpp ----
-struct RocketGun {
-    void setRadar(Radar *radar);
-};
-
-
 void RocketGun::setRadar(Radar *radar)
 {
     this->field_0xb0 = radar;
     void *radarObj = radar->field_0x0;
-    void *gun = this->field_0x8;
+    Gun *gun = this->field_0x8;
     this->field_0xe4 = F<int>(radarObj, 0x80);
 
     int gunType = gun->field_0x58;
@@ -278,11 +263,6 @@ non_special:
 }
 
 // ---- seekEnemy_15f44c.cpp ----
-struct RocketGun {
-    void seekEnemy(int unused, int index);
-};
-
-
 void RocketGun::seekEnemy(int unused, int index)
 {
     char tmp1[12];
@@ -341,12 +321,6 @@ have_enemy:
 }
 
 // ---- update_15ecd8.cpp ----
-struct RocketGun {
-    void update(int elapsed);
-    void seekEnemy(int unused, int index);
-};
-
-
 static const float kMuzzleZAdd = 0.0001f;
 static const float kScaleDiv = 1000.0f;
 static const float kScaleMul = 100.0f;
@@ -372,7 +346,7 @@ void RocketGun::update(int elapsed)
         *(uint32_t *)gunVec = F<uint32_t>(this->field_0x8, 0x7c);
         *(uint32_t *)(gunVec + 4) = F<uint32_t>(this->field_0x8, 0x80);
         *(float *)(gunVec + 8) = F<float>(this->field_0x8, 0x84) + kMuzzleZAdd;
-        MatrixRotateVector(axis, (char *)player->field_0x0 + 4, gunVec);
+        MatrixRotateVector(axis, (char *)F<void *>(player, 0x0) + 4, gunVec);
         Vector_iadd(matrix, axis);
         AEGeometry_setPosition(this->field_0x18, matrix);
 
@@ -381,14 +355,14 @@ void RocketGun::update(int elapsed)
         scaling = scaling / kScaleMul;
         AEGeometry_setScaling(this->field_0x18, scaling, scaling, scaling);
 
-        MatrixGetDir(axis, (char *)player->field_0x0 + 4);
+        MatrixGetDir(axis, (char *)F<void *>(player, 0x0) + 4);
         zero.x = 0.0f;
         zero.y = 1.0f;
         zero.z = 0.0f;
         AEGeometry_setDirection(this->field_0x18, axis, &zero);
     }
 
-    void *gun = this->field_0x8;
+    Gun *gun = this->field_0x8;
     this->field_0x1d = gun->field_0xa9;
 
     if (gun->field_0x4d != 0) {
@@ -430,7 +404,7 @@ void RocketGun::update(int elapsed)
         *(uint32_t *)(matrix + 0x20) = *(uint32_t *)(dir + 8);
         *(uint32_t *)(matrix + 0x24) = *(uint32_t *)(axis + 8);
         *(uint32_t *)(matrix + 0x28) = *(uint32_t *)(gunVec + 8);
-        PaintCanvas_TransformSetLocal(*holder, this->field_0x10);
+        PaintCanvas_TransformSetLocal(*holder, this->field_0x10, matrix);
 
         if (this->field_0xd8 == 0) {
             int kind = this->field_0xd0;
@@ -517,8 +491,8 @@ void RocketGun::update(int elapsed)
             if (zero.z != kZeroCompare) {
                 if (this->field_0xc0 != 0 &&
                     (this->field_0xd8 != 0 ||
-                     *(int *)(gun->field_0x3c + i * 4) < gun->field_0x44 - 1000)) {
-                    this->seekEnemy(*(int *)(gun->field_0x3c + i * 4), i);
+                     *(int *)((char *)gun->field_0x3c + i * 4) < gun->field_0x44 - 1000)) {
+                    this->seekEnemy(*(int *)((char *)gun->field_0x3c + i * 4), i);
                     gun = this->field_0x8;
                 }
 
@@ -527,7 +501,7 @@ void RocketGun::update(int elapsed)
                     uint32_t base = __aeabi_uidiv(total * i, gun->field_0x8);
                     float waveIn = (float)base +
                                    (float)(gun->field_0x44 -
-                                           *(int *)(gun->field_0x3c + i * 4));
+                                           *(int *)((char *)gun->field_0x3c + i * 4));
                     float s = AEMath_Sinf(waveIn * kWave);
                     float c = AEMath_Cosf(waveIn * kWave);
                     VectorCross(gunVec, (char *)gun->field_0x18 + vecOff,

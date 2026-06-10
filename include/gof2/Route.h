@@ -1,11 +1,9 @@
 #ifndef GOF2_ROUTE_H
 #define GOF2_ROUTE_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 - Route class (waypoint navigation path).
-// Android libgof2hdaa.so, armv7 Thumb. Top-level class (no AbyssEngine namespace),
-// per each work-item Sig line. Field offsets recovered per-method from the target
-// disassembly; access fields via byte-offset casts from `this`.
+// Top-level class (no AbyssEngine namespace). Real named struct; field_0xNN
+// member names are kept so cross-class references resolve. No byte-offset access.
 //
 // Object layout (recovered):
 //   +0x00  int                   current waypoint index
@@ -14,24 +12,19 @@
 //   +0x10  Array<KIPlayer*>*     docking targets
 //   +0x14  Array<int>*           docking times
 
-
 struct Route;
 struct Waypoint;
 struct KIPlayer;
 
-
-
 // AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.
-namespace AbyssEngine { namespace AEMath {
-
-} }
 typedef AbyssEngine::AEMath::Vector Vector;
 
-// Field accessor via byte offset.
-
 struct Route {
-    int32_t field_0x0;                  // +0x0
-    void* field_0xc;                    // +0xc
-    void* field_0x10;                   // +0x10
+    int32_t              field_0x0;     // +0x0  current waypoint index
+    uint8_t              field_0x4;     // +0x4  looping flag
+    Array<Waypoint *>   *field_0xc;     // +0xc  waypoints
+    Array<KIPlayer *>   *field_0x10;    // +0x10 docking targets
+    Array<int>          *field_0x14;    // +0x14 docking times
 };
+
 #endif

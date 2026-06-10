@@ -19,7 +19,9 @@ struct AEGeometry;
 // PlayerJunk is a KIPlayer subclass; we model only the fields the methods touch.
 // Field offsets are recovered per-method from the target; this is not a full layout.
 struct PlayerJunk {
+    void* field_0x0;                    // +0x0   vtable pointer
     Player* field_0x4;                  // +0x4   player/owner this junk targets
+    uint8_t field_0x3d;                 // +0x3d  init flag (set in ctor)
     uint8_t field_0x4c;                 // +0x4c  "dropped a crate" flag
     Array<int>* field_0x50;             // +0x50  crate contents (item id + amount)
     void* field_0x54;                   // +0x54  Level owner

@@ -19,7 +19,6 @@ void operator delete(void *ptr) noexcept;
 
 namespace AbyssEngine {
 
-struct Mesh;
 struct Transform;
 
 namespace AEMath {
@@ -27,10 +26,7 @@ struct BSphere;
 struct Vector;
 }
 
-} // namespace AbyssEngine
-
-// Templated byte-offset field accessor: F<int>(this, 0x34) etc.
-
+// AbyssEngine::Mesh — renderable mesh with optional animation track.
 struct Mesh {
     uint8_t field_0x0;                  // +0x0
     uint16_t field_0x2;                 // +0x2
@@ -46,15 +42,15 @@ struct Mesh {
     uint16_t field_0x2a;                // +0x2a
     void* field_0x2c;                   // +0x2c
     void* field_0x30;                   // +0x30
-    Transform* field_0x34;              // +0x34
+    Transform* field_0x34;              // +0x34 animation track
     uint8_t field_0x38;                 // +0x38
-    float field_0x3c;                   // +0x3c
-    float field_0x40;                   // +0x40
-    float field_0x44;                   // +0x44
-    float field_0x48;                   // +0x48
+    float field_0x3c;                   // +0x3c BSphere center x
+    float field_0x40;                   // +0x40 BSphere center y
+    float field_0x44;                   // +0x44 BSphere center z
+    float field_0x48;                   // +0x48 BSphere radius
     float field_0x4c;                   // +0x4c
-    float field_0x50;                   // +0x50
-    float field_0x54;                   // +0x54
+    float field_0x50;                   // +0x50 embedded Vector x
+    float field_0x54;                   // +0x54 embedded Vector y
     uint8_t field_0x5c;                 // +0x5c
     unsigned int field_0x60;            // +0x60
     uint32_t field_0x64;                // +0x64
@@ -68,4 +64,7 @@ struct Mesh {
     uint8_t field_0x84;                 // +0x84
     uint8_t field_0x85;                 // +0x85
 };
+
+} // namespace AbyssEngine
+
 #endif

@@ -10,26 +10,26 @@ extern "C" uint8_t PaintCanvas_CameraIsSphereInViewFrustum(void *canvas, const V
 // ---- setEnabled_181438.cpp ----
 void LodMeshMerger::setEnabled(int index, bool enabled)
 {
-    uint8_t *flags = (uint8_t *)pp(this, 0x30);
+    uint8_t *flags = field_0x30;
     if (flags[index] != enabled) {
         flags[index] = enabled;
-        if (*((int8_t *)pp(this, 0x34) + index) == 0) {
+        if (((int8_t *)field_0x34)[index] == 0) {
             return;
         }
-        u8(this, 0x3c) = 1;
+        field_0x3c = 1;
     }
 }
 
 // ---- setLod_181400.cpp ----
 void LodMeshMerger::setLod(int index, signed char lod)
 {
-    int8_t *lods = (int8_t *)pp(this, 0x2c);
+    int8_t *lods = field_0x2c;
     if (lods[index] != lod) {
         lods[index] = lod;
-        if (*((int8_t *)pp(this, 0x30) + index) == 0) {
+        if (((int8_t *)field_0x30)[index] == 0) {
             return;
         }
-        u8(this, 0x3c) = 1;
+        field_0x3c = 1;
     }
 }
 
@@ -39,7 +39,7 @@ void LodMeshMerger::setLod(int index, signed char lod)
 
 void LodMeshMerger::setMatrix(int index, const Matrix &m)
 {
-    char *base = (char *)pp(this, 0x28);
+    char *base = (char *)field_0x28;
     return LodMeshMerger_setMatrix_tail(base + index * 0x3c, m);
 }
 
@@ -47,10 +47,10 @@ void LodMeshMerger::setMatrix(int index, const Matrix &m)
 void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
-    PaintCanvas_MeshCreate(pp(this, 0x14), meshId, &id, false);
-    void *ptr = PaintCanvas_MeshGetPointer(pp(this, 0x14), id);
-    void **meshes = (void **)pp(this, 0xc);
-    meshes[i32(this, 0x0) * lod + index] = ptr;
+    PaintCanvas_MeshCreate(field_0x14, meshId, &id, false);
+    void *ptr = PaintCanvas_MeshGetPointer(field_0x14, id);
+    Mesh **meshes = field_0x8.data();
+    meshes[field_0x0 * lod + index] = (Mesh *)ptr;
 }
 
 // ---- update_18174c.cpp ----
@@ -58,45 +58,45 @@ extern "C" void aeabi_memcpy4(void *dst, const void *src, uint32_t n);  // __aea
 
 void LodMeshMerger::update()
 {
-    int rows = i32(this, 0x0);
+    int rows = field_0x0;
     for (int i = 0; i < rows; i++) {
-        void *sph = ((void **)pp(this, 0x24))[i];
+        void *sph = field_0x24[i];
         uint8_t vis = PaintCanvas_CameraIsSphereInViewFrustum(
-            pp(this, 0x14),
+            field_0x14,
             (const Vector *)((char *)sph + 0x3c),
             *(float *)((char *)sph + 0x48));
-        int8_t *visArr = (int8_t *)pp(this, 0x34);
+        int8_t *visArr = (int8_t *)field_0x34;
         if (vis != (uint8_t)visArr[i]) {
             visArr[i] = (int8_t)vis;
-            if (*((int8_t *)pp(this, 0x30) + i) != 0) {
-                u8(this, 0x3c) = 1;
+            if (((int8_t *)field_0x30)[i] != 0) {
+                field_0x3c = 1;
             }
         }
-        rows = i32(this, 0x0);
+        rows = field_0x0;
     }
 
-    if (u8(this, 0x3c) != 0) {
+    if (field_0x3c != 0) {
         int sumIdx = 0;   // r6 (index/triangle accumulator for the budget test)
         for (int j = 0; j < rows; j++) {
-            if (*((int8_t *)pp(this, 0x30) + j) != 0 &&
-                *((int8_t *)pp(this, 0x34) + j) != 0) {
-                signed char lod = *((int8_t *)pp(this, 0x2c) + j);
-                void *src = ((void **)pp(this, 0x24))[rows * lod + j];
+            if (((int8_t *)field_0x30)[j] != 0 &&
+                ((int8_t *)field_0x34)[j] != 0) {
+                signed char lod = ((int8_t *)field_0x2c)[j];
+                Mesh *src = (Mesh *)field_0x24[rows * lod + j];
                 sumIdx += (uint16_t)src->field_0x28;
             }
         }
         for (int j = 0; sumIdx >= 0x10000 && j < rows; j++) {
-            if (*((int8_t *)pp(this, 0x30) + j) != 0 &&
-                *((int8_t *)pp(this, 0x34) + j) != 0) {
-                signed char lod = *((int8_t *)pp(this, 0x2c) + j);
-                if (lod < i32(this, 0x38) - 1) {
-                    void *prev = ((void **)pp(this, 0x24))[rows * lod + j];
+            if (((int8_t *)field_0x30)[j] != 0 &&
+                ((int8_t *)field_0x34)[j] != 0) {
+                signed char lod = ((int8_t *)field_0x2c)[j];
+                if (lod < field_0x38 - 1) {
+                    Mesh *prev = (Mesh *)field_0x24[rows * lod + j];
                     setLod(j, (signed char)(lod + 1));
-                    rows = i32(this, 0x0);
-                    signed char nlod = *((int8_t *)pp(this, 0x2c) + j);
-                    void *cur = ((void **)pp(this, 0x24))[rows * nlod + j];
-                    sumIdx = sumIdx - (uint16_t)*(uint16_t *)((char *)prev + 0x28)
-                                    + (uint16_t)*(uint16_t *)((char *)cur + 0x28);
+                    rows = field_0x0;
+                    signed char nlod = ((int8_t *)field_0x2c)[j];
+                    Mesh *cur = (Mesh *)field_0x24[rows * nlod + j];
+                    sumIdx = sumIdx - (uint16_t)prev->field_0x28
+                                    + (uint16_t)cur->field_0x28;
                 }
             }
         }
@@ -104,43 +104,43 @@ void LodMeshMerger::update()
         int vtxOff = 0;   // r5 (vertex accumulator)
         int idxOff = 0;   // r8 (index accumulator)
         for (int j = 0; j < rows; j++) {
-            if (*((int8_t *)pp(this, 0x30) + j) != 0 &&
-                *((int8_t *)pp(this, 0x34) + j) != 0) {
-                uint8_t *out = (uint8_t *)pp(this, 0x20);
+            if (((int8_t *)field_0x30)[j] != 0 &&
+                ((int8_t *)field_0x34)[j] != 0) {
+                uint8_t *out = (uint8_t *)field_0x20;
                 uint8_t mask = out[0];
-                signed char lod = *((int8_t *)pp(this, 0x2c) + j);
-                void *src = ((void **)pp(this, 0x24))[rows * lod + j];
+                signed char lod = ((int8_t *)field_0x2c)[j];
+                Mesh *src = (Mesh *)field_0x24[rows * lod + j];
 
                 if (mask & 1) {
                     aeabi_memcpy4(*(char **)(out + 4) + vtxOff * 0xc,
                                   src->field_0x4,
                                   (uint32_t)src->field_0x2 * 0xc);
-                    out = (uint8_t *)pp(this, 0x20);
+                    out = (uint8_t *)field_0x20;
                     mask = out[0];
                 }
                 if (mask & 4) {
                     aeabi_memcpy4(*(char **)(out + 0x10) + vtxOff * 0xc,
                                   src->field_0x10,
                                   (uint32_t)src->field_0x2 * 0xc);
-                    out = (uint8_t *)pp(this, 0x20);
+                    out = (uint8_t *)field_0x20;
                     mask = out[0];
                 }
                 if (mask & 8) {
                     aeabi_memcpy4(*(char **)(out + 0xc) + vtxOff * 0x10,
-                                  src->field_0xc,
+                                  (void *)(uintptr_t)src->field_0xc,
                                   (uint32_t)src->field_0x2 << 4);
-                    out = (uint8_t *)pp(this, 0x20);
+                    out = (uint8_t *)field_0x20;
                     mask = out[0];
                 }
                 if (mask & 2) {
                     aeabi_memcpy4(*(char **)(out + 8) + vtxOff * 8,
                                   src->field_0x8,
                                   (uint32_t)src->field_0x2 << 3);
-                    out = (uint8_t *)pp(this, 0x20);
+                    out = (uint8_t *)field_0x20;
                     mask = out[0];
                 }
                 if (mask & 0x10) {
-                    int16_t *si = src->field_0x2c;
+                    int16_t *si = (int16_t *)src->field_0x2c;
                     int16_t *di = (int16_t *)(*(char **)(out + 0x2c) + idxOff * 2);
                     for (int k = -(int)(uint16_t)src->field_0x28; k != 0; k++) {
                         *di = (int16_t)(*si + (int16_t)vtxOff);
@@ -148,56 +148,52 @@ void LodMeshMerger::update()
                         di++;
                     }
                 }
-                rows = i32(this, 0x0);
+                rows = field_0x0;
                 idxOff += (uint16_t)src->field_0x28;
                 vtxOff += (uint16_t)src->field_0x2;
             }
         }
-        uint8_t *out = (uint8_t *)pp(this, 0x20);
+        uint8_t *out = (uint8_t *)field_0x20;
         *(int16_t *)(out + 0x28) = (int16_t)idxOff;
         *(int16_t *)(out + 2) = (int16_t)vtxOff;
-        u8(this, 0x3c) = 0;
+        field_0x3c = 0;
     }
 }
 
 // ---- LodMeshMerger_181200.cpp ----
 extern "C" void *operator_new_array(uint32_t size);              // 0x6ec08
-extern "C" void ArrayMesh_ctor(void *a);                         // 0x6f724  Array<Mesh*>::Array()
-extern "C" void ArraySetLengthMesh(uint32_t n, void *a);         // 0x78814  ArraySetLength<Mesh*>
 extern "C" void aeabi_memclr4(void *p, uint32_t n);              // 0x6ec14
 extern "C" void aeabi_memclr(void *p, uint32_t n);              // 0x6ec20
-
-inline void *operator new(__SIZE_TYPE__, void *p) { return p; }
 
 // LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 {
-    ArrayMesh_ctor((char *)this + 8);
-    u32(this, 0x20) = 0;
-    u32(this, 0x24) = 0;
-    u32(this, 0x28) = 0;
-    u32(this, 0x2c) = 0;
-    pp(this, 0x14) = canvas;
-    i32(this, 0x0) = rows;
-    i32(this, 0x38) = cols;
-    ArraySetLengthMesh((uint32_t)(cols * rows), (char *)this + 8);
+    new (&field_0x8) Array<Mesh*>();
+    field_0x20 = 0;
+    field_0x24 = 0;
+    field_0x28 = 0;
+    field_0x2c = 0;
+    field_0x14 = canvas;
+    field_0x0 = rows;
+    field_0x38 = cols;
+    field_0x8.resize((uint32_t)(cols * rows));
 
-    uint32_t n = u32(this, 0x0);
+    uint32_t n = (uint32_t)field_0x0;
     void *slots = operator_new_array(n * cols * 4);
-    pp(this, 0x24) = slots;
+    field_0x24 = (void **)slots;
     aeabi_memclr4(slots, n * cols * 4);
 
     void *lods = operator_new_array(n | ((int)n >> 31));
-    pp(this, 0x2c) = lods;
+    field_0x2c = (int8_t *)lods;
     aeabi_memclr(lods, n);
 
     char *mats = (char *)operator_new_array(n * 0x3c);
     for (uint32_t off = 0; off != n * 0x3c; off += 0x3c) {
         new ((Matrix *)(mats + off)) Matrix();
     }
-    pp(this, 0x28) = mats;
+    field_0x28 = (Matrix *)mats;
 
-    for (int i = 0; i < (int)u32(this, 0x0); i++) {
+    for (int i = 0; i < (int)field_0x0; i++) {
         Matrix tmp;
         tmp.m[0] = 1.0f;
         tmp.m[1] = 0.0f; tmp.m[2] = 0.0f; tmp.m[3] = 0.0f;
@@ -207,28 +203,27 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
         tmp.m[10] = 1.0f;
         tmp.m[11] = 0.0f; tmp.m[12] = 0.0f; tmp.m[13] = 0.0f;
         tmp.m[14] = 1.0f;
-        *(Matrix *)((char *)pp(this, 0x28) + i * 0x3c) = tmp;
+        *(Matrix *)((char *)field_0x28 + i * 0x3c) = tmp;
     }
 
-    uint32_t rn = u32(this, 0x0);
+    uint32_t rn = (uint32_t)field_0x0;
     uint32_t signedN = rn | ((int)rn >> 31);
     char *enabled = (char *)operator_new_array(signedN);
-    pp(this, 0x30) = enabled;
+    field_0x30 = (uint8_t *)enabled;
     for (int i = 0; i < (int)rn; i++) enabled[i] = 1;
 
     char *visible = (char *)operator_new_array(signedN);
-    pp(this, 0x34) = visible;
+    field_0x34 = (uint8_t *)visible;
     for (int i = 0; i < (int)rn; i++) visible[i] = 1;
 
-    u8(this, 0x3c) = 0;
-    u16(this, 0x4) = flags;
-    u8(this, 0x6) = 0;
+    field_0x3c = 0;
+    field_0x4 = flags;
+    field_0x6 = 0;
 }
 
 // ---- init_18145a.cpp ----
 extern "C" void *LodMeshMerger_transformMesh(void *mesh, const Matrix &m);            // 0x7882c
 extern "C" void PaintCanvas_MeshCreate2(void *canvas, uint16_t nv, uint16_t ni, int flags); // 0x75da8
-extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t id);               // 0x72370
 extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out);             // 0x720ac
 extern "C" void PaintCanvas_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh); // 0x73030
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                            // 0x6ec2c (__aeabi_uidiv)
@@ -236,23 +231,23 @@ extern "C" int LodMeshMerger_init_tail(LodMeshMerger *self, int r1, uint16_t fla
 
 int LodMeshMerger::init()
 {
-    if (u8(this, 0x6) != 0) {
-        return u8(this, 0x6);
+    if (field_0x6 != 0) {
+        return field_0x6;
     }
 
     int rows;
-    for (int i = 0; i < (rows = i32(this, 0x0)); i++) {
-        int8_t *lods = (int8_t *)pp(this, 0x2c);
+    for (int i = 0; i < (rows = field_0x0); i++) {
+        int8_t *lods = field_0x2c;
         int lod = lods[i];
-        if (lod >= -1 && i32(this, 0x38) <= lod) {
+        if (lod >= -1 && field_0x38 <= lod) {
             lods[i] = 0;
         }
-        for (int c = 0; c < i32(this, 0x38); c++) {
-            void *mesh = ((void **)pp(this, 0xc))[i32(this, 0x0) * c + i];
+        for (int c = 0; c < field_0x38; c++) {
+            Mesh *mesh = field_0x8.data()[field_0x0 * c + i];
             if (mesh != 0) {
                 void *t = LodMeshMerger_transformMesh(
-                    mesh, *(const Matrix *)((char *)pp(this, 0x28) + i * 0x3c));
-                ((void **)pp(this, 0x24))[i32(this, 0x0) * c + i] = t;
+                    mesh, *(const Matrix *)((char *)field_0x28 + i * 0x3c));
+                field_0x24[field_0x0 * c + i] = t;
             }
         }
     }
@@ -260,27 +255,26 @@ int LodMeshMerger::init()
     uint16_t nv = 0;
     uint16_t ni = 0;
     for (int i = 0; i < rows; i++) {
-        void *m0 = ((void **)pp(this, 0xc))[i];
-        uint16_t v = *(uint16_t *)((char *)m0 + 2);
-        uint16_t idiv = aeabi_uidiv16(*(uint16_t *)((char *)m0 + 0x28), 3);
+        Mesh *m0 = field_0x8.data()[i];
+        uint16_t v = m0->field_0x2;
+        uint16_t idiv = aeabi_uidiv16(m0->field_0x28, 3);
         ni = ni + idiv;
         nv = nv + v;
     }
 
-    uint16_t flags = u16(this, 0x4);
-    PaintCanvas_MeshCreate2(pp(this, 0x14), nv, ni,
-                            (int)*(int8_t *)*(void **)pp(this, 0xc));
-    void *ptr = PaintCanvas_MeshGetPointer(pp(this, 0x14), u32(this, 0x18));
-    i32(this, 0x20) = (int)ptr;
-    PaintCanvas_TransformCreate(pp(this, 0x14), (uint32_t *)((char *)this + 0x1c));
-    PaintCanvas_TransformAddMeshId(pp(this, 0x14), u32(this, 0x1c), u32(this, 0x18));
-    u8(this, 0x3c) = 1;
-    return LodMeshMerger_init_tail(this, 0, flags, (uint32_t *)((char *)this + 0x18));
+    uint16_t flags = field_0x4;
+    PaintCanvas_MeshCreate2(field_0x14, nv, ni,
+                            (int)field_0x8.data()[0]->field_0x0);
+    void *ptr = PaintCanvas_MeshGetPointer(field_0x14, field_0x18);
+    field_0x20 = ptr;
+    PaintCanvas_TransformCreate(field_0x14, &field_0x1c);
+    PaintCanvas_TransformAddMeshId(field_0x14, field_0x1c, field_0x18);
+    field_0x3c = 1;
+    return LodMeshMerger_init_tail(this, 0, flags, &field_0x18);
 }
 
 // ---- transformMesh_181550.cpp ----
 extern "C" {
-void *operator_new_array(uint32_t size);                          // 0x6ec08
 void *operator_new_mesh(uint32_t size);                           // 0x6eb24 (operator new)
 // AEMath helpers.
 void AEMath_MatrixTransformVector(Vector *out, const Matrix &m, const Vector &v);  // 0x6f688
@@ -395,27 +389,27 @@ LodMeshMerger::~LodMeshMerger()
     int idx = 0;   // byte offset (r6)
     void *slots;
     for (;;) {
-        slots = pp(this, 0x24);
-        if (i >= i32(this, 0x0) * i32(this, 0x38)) break;
+        slots = field_0x24;
+        if (i >= field_0x0 * field_0x38) break;
 
         void **cell = (void **)((char *)slots + idx);  // slots[idx]
         void **m4 = (void **)((char *)*cell + 4);
         if (*m4 != 0) {
             operator_delete_array(*m4);
-            cell = (void **)((char *)pp(this, 0x24) + idx);
+            cell = (void **)((char *)field_0x24 + idx);
             m4 = (void **)((char *)*cell + 4);
         }
         *m4 = 0;
         void **m10 = (void **)((char *)*cell + 0x10);
         if (*m10 != 0) {
             operator_delete_array(*m10);
-            cell = (void **)((char *)pp(this, 0x24) + idx);
+            cell = (void **)((char *)field_0x24 + idx);
             m10 = (void **)((char *)*cell + 0x10);
         }
         *m10 = 0;
         if (*cell != 0) {
             operator_delete(*cell);
-            cell = (void **)((char *)pp(this, 0x24) + idx);
+            cell = (void **)((char *)field_0x24 + idx);
         }
         *cell = 0;
 
@@ -423,16 +417,16 @@ LodMeshMerger::~LodMeshMerger()
         i += 1;
     }
     if (slots != 0) operator_delete_array(slots);
-    pp(this, 0x24) = 0;
+    field_0x24 = 0;
 
-    g_freeFn(pp(this, 0x2c));
-    pp(this, 0x2c) = 0;
-    g_freeFn(pp(this, 0x30));
-    pp(this, 0x30) = 0;
-    g_freeFn(pp(this, 0x34));
-    pp(this, 0x34) = 0;
+    g_freeFn(field_0x2c);
+    field_0x2c = 0;
+    g_freeFn(field_0x30);
+    field_0x30 = 0;
+    g_freeFn(field_0x34);
+    field_0x34 = 0;
 
-    if (pp(this, 0x28) != 0) operator_delete_array(pp(this, 0x28));
-    pp(this, 0x28) = 0;
+    if (field_0x28 != 0) operator_delete_array(field_0x28);
+    field_0x28 = 0;
     LodMeshMerger_base_dtor(this);
 }

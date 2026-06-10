@@ -26,7 +26,16 @@ static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char
 static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
+// reload() pulls glyph image ids through a function-pointer global (a getText-style fetch).
+typedef void (*GetTextFn)(unsigned canvas, int id, void *out);
+
+// Plain view over the engine's Array<ImagePart*> (count / data ptr / capacity) used by the
+// drawChar / loadChar paths.
+struct Arr { uint32_t size; void **data; uint32_t size2; };
+
 struct ImageFactory {
     void* field_0x0;                    // +0x0
+
+    int getItemImageId(int param_1);
 };
 #endif

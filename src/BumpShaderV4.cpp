@@ -143,6 +143,11 @@ void BumpShaderV4::Init(Engine *)
 // ---- BumpShaderV4_8b210.cpp ----
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
     AbyssEngine::ShaderBaseStruct *self);
+extern "C" void _ZN11AbyssEngine6StringC1EPKcb(
+    AbyssEngine::String *self, const char *text, bool copy);
+extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
+    AbyssEngine::String *self, const AbyssEngine::String *other);
+extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 namespace AbyssEngine {
 
@@ -152,11 +157,13 @@ __attribute__((minsize)) BumpShaderV4::BumpShaderV4()
 {
     void *volatile cookie = __stack_chk_guard;
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
-    *(uint32_t *)this = (uint32_t)_ZTVN11AbyssEngine12BumpShaderV4E + 8;
+    *(void **)this = (void *)(_ZTVN11AbyssEngine12BumpShaderV4E + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {
-        String tmp("BumpShaderV4", false);
-        this->field_0xc = tmp;
+        String tmp;
+        _ZN11AbyssEngine6StringC1EPKcb(&tmp, "BumpShaderV4", false);
+        _ZN11AbyssEngine6StringaSERKS0_(&this->field_0xc(), &tmp);
+        _ZN11AbyssEngine6StringD1Ev(&tmp);
     }
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)

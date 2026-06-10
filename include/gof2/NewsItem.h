@@ -15,15 +15,18 @@
 //   0x18  bool   field_18    (= 0)
 
 
-// new(0x1c) scalar, and new[]/delete[] for the byte buffer.
-void *operator new(__SIZE_TYPE__ size);
-void *operator new[](__SIZE_TYPE__ size);
-void operator delete[](void *ptr) noexcept;
+// POD-ish ticker entry; 0x1c bytes.
+struct NewsItem {
+    int   field_0x00;  // id (param_1)
+    byte  field_0x04;  // flag (param_2)
+    void *field_0x08;  // data (byte buffer, new[]/delete[])
+    int   field_0x0c;  // length (param_4)
+    int   field_0x10;  // (param_5)
+    int   field_0x14;  // (param_6)
+    byte  field_0x18;  // (= 0)
 
-// Field accessors via byte offset.
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint8_t &u8(void *self, uint32_t off) { return *(uint8_t *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
-
-struct NewsItem { void* _opaque; };  // no offset accesses observed
+    NewsItem(int p1, bool p2, void *p3, int p4, int p5, int p6);
+    ~NewsItem();
+    void *clone();
+};
 #endif

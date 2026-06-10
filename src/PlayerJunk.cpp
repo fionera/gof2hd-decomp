@@ -38,10 +38,11 @@ __attribute__((visibility("hidden"))) extern int g_PlayerJunk_vtbl;
 
 // PlayerJunk::PlayerJunk(int, Player*, AEGeometry*, float, float, float)
 extern "C" void _ZN10PlayerJunkC1EiP6PlayerP10AEGeometryfff(
-        void *self, int p1, Player *p2, AEGeometry *p3, float p4, float p5, float p6) {
-    void *base = KIPlayer_ctor(self, p1, -1, p2, p3, p4, p5, p6, 0);
-    F<uint8_t>(base, 0x3d) = 1;
-    F<int>(base, 0x0) = g_PlayerJunk_vtbl + 8;
+        PlayerJunk *self, int p1, Player *p2, AEGeometry *p3, float p4, float p5, float p6) {
+    // KIPlayer::KIPlayer returns the same object pointer (this), so write through self.
+    KIPlayer_ctor(self, p1, -1, p2, p3, p4, p5, p6, 0);
+    self->field_0x3d = 1;
+    self->field_0x0 = (void *)(g_PlayerJunk_vtbl + 8);
 }
 
 // ---- update_15e798.cpp ----
@@ -81,10 +82,14 @@ void PlayerJunk_update(PlayerJunk *self, int elapsed) {
                 self->field_0x4c = 1;
             } else {
                 Player_setActive(self->field_0x4, false);
+                // Level's player object holds a target reference at [0x14]->[0x1c];
+                // clear it if it points at this junk (opaque Level-internal layout).
                 void *player = Level_getPlayer(self->field_0x54);
-                if (F<void *>(F<void *>(player, 0x14), 0x1c) == self) {
+                void **targetSlot = (void **)((char *)*(void **)((char *)player + 0x14) + 0x1c);
+                if (*targetSlot == self) {
                     player = Level_getPlayer(self->field_0x54);
-                    F<void *>(F<void *>(player, 0x14), 0x1c) = 0;
+                    targetSlot = (void **)((char *)*(void **)((char *)player + 0x14) + 0x1c);
+                    *targetSlot = 0;
                 }
             }
             void *levelObject = self->field_0x54;
@@ -92,8 +97,11 @@ void PlayerJunk_update(PlayerJunk *self, int elapsed) {
             zero.x = 0.0f;
             zero.y = 0.0f;
             zero.z = 0.0f;
-            ParticleSystemManager_emitManual(F<int>(levelObject, 0x74),
-                                             F<Vector *>(levelObject, 0x34),
+            // Level holds the particle-system-manager handle at +0x74 and an emitter
+            // Vector* at +0x34 (opaque Level-internal layout, not modeled here).
+            int psManager = *(int *)((char *)levelObject + 0x74);
+            Vector *emitter = *(Vector **)((char *)levelObject + 0x34);
+            ParticleSystemManager_emitManual(psManager, emitter,
                                              &position, 0, &zero, -1.0f);
         }
     }

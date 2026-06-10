@@ -1,7 +1,18 @@
 #ifndef GOF2_WANTEDWINDOW_H
 #define GOF2_WANTEDWINDOW_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 - WantedWindow (bounty-board UI). Top-level class. Real named struct
+// (field_0xNN member names kept for cross-class refs). The recovered bodies still reach into
+// sibling engine objects (Layout, the engine Array container) by raw byte offset; F<T>(p,off)
+// is the typed byte-offset accessor used for those foreign reads.
+//
+// 16-byte SIMD lane (the ctor zero-fills field_0x91..0xa0 with one vector store).
+typedef int v4si __attribute__((vector_size(16)));
+
+// Typed byte-offset accessor into a foreign (non-WantedWindow) object: F<T>(p, off) == *(T*)(p+off).
+template <class T>
+static inline T &F(void *p, unsigned off) { return *(T *)((char *)p + off); }
+
 struct WantedWindow;
 struct Wanted;
 struct Station;

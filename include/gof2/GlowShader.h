@@ -2,9 +2,7 @@
 #define GOF2_GLOWSHADER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -46,6 +44,9 @@ struct ShaderBaseStruct {
 
 
 
+// Per-class backing storage accessor helpers. The GlowShader fields live at fixed byte
+// offsets (program handle at 0x4, name String at 0xc, attribute/uniform locations 0x20..0x30)
+// and are read/written through these helpers.
 static inline int &field_i32(void *self, uint32_t offset)
 {
     return *(int *)((char *)self + offset);
@@ -66,9 +67,20 @@ static inline void *field_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
+// AbyssEngine::GlowShader — GLES2 glow shader (derives from ShaderBaseStruct).
+struct GlowShader {
+    static int ShaderIndex;
+
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+
+    // raw field storage (offsets referenced through the field_i32/field_u8/field_ptr helpers)
+    char field_storage[0x34];
+};
+
 } // namespace AbyssEngine
 
 extern "C" char _ZTVN11AbyssEngine10GlowShaderE[];
 
-struct GlowShader { void* _opaque; };  // no offset accesses observed
 #endif

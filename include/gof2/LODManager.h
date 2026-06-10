@@ -1,6 +1,7 @@
 #ifndef GOF2_LODMANAGER_H
 #define GOF2_LODMANAGER_H
 #include "gof2/common.h"
+#include "gof2/math.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 — LODManager. Top-level, no namespace.
 // Field offsets recovered from per-method target disassembly.
@@ -11,18 +12,19 @@
 //   +0x10  int                 timer     (init 0x3e9)
 
 
-struct LODManager;
 struct AEGeometry;
-struct Matrix;
 
-
-
-// Field accessor via byte offset.
 
 struct LODManager {
-    int field_0x4;                      // +0x4
-    int field_0x8;                      // +0x8
-    int field_0xc;                      // +0xc
-    int field_0x10;                     // +0x10
+    Array<AEGeometry*>* objects;        // +0x0
+    AEMath::Vector cameraPos;           // +0x4 (field_0x4/0x8/0xc)
+    int field_0x10;                     // +0x10 (timer)
+
+    LODManager();
+    ~LODManager();
+    void addObject(AEGeometry *g);
+    void removeObject(AEGeometry *g);
+    void forceUpdate(int dt, bool useParent);
+    void update(int dt);
 };
 #endif

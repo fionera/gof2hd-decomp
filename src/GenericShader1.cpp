@@ -1,57 +1,58 @@
 #include "gof2/GenericShader1.h"
 
-
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(ShaderBaseStruct *self);
-
 // ---- UpdateMeshData_8ed8a.cpp ----
 namespace AbyssEngine {
 
+// AbyssEngine::GenericShader1::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
 void GenericShader1::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    if (field_i32(this, 0x34) >= 0)
-        glUniformMatrix4fv(field_i32(this, 0x34), 1, 0, (char *)engine + 0x104);
-    if (field_i32(this, 0x38) >= 0)
-        glUniformMatrix3fv(field_i32(this, 0x38), 1, 0, (char *)engine + 0x204);
+    char *e = (char *)engine;
+    char *m = (char *)mesh;
 
-    if (field_u8(this, 0x9) != 0) {
-        if (field_i32(this, 0x3c) >= 0)
-            glUniform3f(field_i32(this, 0x3c), field_f32(engine, 0x330), field_f32(engine, 0x334),
-                        field_f32(engine, 0x338));
-        if (field_i32(this, 0x40) >= 0)
-            glUniform3f(field_i32(this, 0x40), field_f32(engine, 0x34c), field_f32(engine, 0x350),
-                        field_f32(engine, 0x354));
-        if (field_i32(this, 0x48) >= 0)
-            glUniform4fv(field_i32(this, 0x48), 1, (float *)((char *)engine + 0xd0));
-        if (field_i32(this, 0x4c) >= 0)
-            glUniform4fv(field_i32(this, 0x4c), 1, (float *)((char *)engine + 0x2a8));
-        if (field_i32(this, 0x50) >= 0)
-            glUniform4fv(field_i32(this, 0x50), 1, (float *)((char *)engine + 0x298));
-        if (field_i32(this, 0x54) >= 0)
-            glUniform4fv(field_i32(this, 0x54), 1, (float *)((char *)engine + 0x2b8));
-        field_u8(this, 0x9) = 0;
+    if (field_0x34 >= 0)
+        glUniformMatrix4fv(field_0x34, 1, 0, e + 0x104);
+    if (field_0x38 >= 0)
+        glUniformMatrix3fv(field_0x38, 1, 0, e + 0x204);
+
+    if (field_0x9 != 0) {
+        if (field_0x3c >= 0)
+            glUniform3f(field_0x3c, *(float *)(e + 0x330), *(float *)(e + 0x334),
+                        *(float *)(e + 0x338));
+        if (field_0x40 >= 0)
+            glUniform3f(field_0x40, *(float *)(e + 0x34c), *(float *)(e + 0x350),
+                        *(float *)(e + 0x354));
+        if (field_0x48 >= 0)
+            glUniform4fv(field_0x48, 1, (const float *)(e + 0xd0));
+        if (field_0x4c >= 0)
+            glUniform4fv(field_0x4c, 1, (const float *)(e + 0x2a8));
+        if (field_0x50 >= 0)
+            glUniform4fv(field_0x50, 1, (const float *)(e + 0x298));
+        if (field_0x54 >= 0)
+            glUniform4fv(field_0x54, 1, (const float *)(e + 0x2b8));
+        field_0x9 = 0;
     }
 
-    if (field_i32(this, 0x20) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x20));
-    if (field_i32(this, 0x24) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x24));
-    if (field_i32(this, 0x28) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x28));
-    if (field_i32(this, 0x2c) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x2c));
-    if (field_i32(this, 0x30) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x30));
+    if (field_0x20 >= 0)
+        glEnableVertexAttribArray(field_0x20);
+    if (field_0x24 >= 0)
+        glEnableVertexAttribArray(field_0x24);
+    if (field_0x28 >= 0)
+        glEnableVertexAttribArray(field_0x28);
+    if (field_0x2c >= 0)
+        glEnableVertexAttribArray(field_0x2c);
+    if (field_0x30 >= 0)
+        glEnableVertexAttribArray(field_0x30);
 
-    if (field_i32(this, 0x20) >= 0)
-        glVertexAttribPointer(field_i32(this, 0x20), 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
-    if (field_i32(this, 0x24) >= 0)
-        glVertexAttribPointer(field_i32(this, 0x24), 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
-    if (field_i32(this, 0x28) >= 0)
-        glVertexAttribPointer(field_i32(this, 0x28), 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
-    if (field_i32(this, 0x2c) >= 0)
-        glVertexAttribPointer(field_i32(this, 0x2c), 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
-    if (field_i32(this, 0x30) >= 0)
-        glVertexAttribPointer(field_i32(this, 0x30), 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+    if (field_0x20 >= 0)
+        glVertexAttribPointer(field_0x20, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
+    if (field_0x24 >= 0)
+        glVertexAttribPointer(field_0x24, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+    if (field_0x28 >= 0)
+        glVertexAttribPointer(field_0x28, 3, 0x1406, 0, 0, *(void **)(m + 0x10));
+    if (field_0x2c >= 0)
+        glVertexAttribPointer(field_0x2c, 3, 0x1406, 0, 0, *(void **)(m + 0x14));
+    if (field_0x30 >= 0)
+        glVertexAttribPointer(field_0x30, 3, 0x1406, 0, 0, *(void **)(m + 0x18));
 }
 
 } // namespace AbyssEngine
@@ -59,24 +60,19 @@ void GenericShader1::UpdateMeshData(Mesh *mesh, Engine *engine)
 // ---- SetInActive_8ed4c.cpp ----
 namespace AbyssEngine {
 
+// AbyssEngine::GenericShader1::SetInActive()
 void GenericShader1::SetInActive()
 {
-    int loc;
-    loc = field_i32(this, 0x20);
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x24);
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x28);
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x2c);
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x30);
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
+    if (field_0x20 >= 0)
+        glDisableVertexAttribArray(field_0x20);
+    if (field_0x24 >= 0)
+        glDisableVertexAttribArray(field_0x24);
+    if (field_0x28 >= 0)
+        glDisableVertexAttribArray(field_0x28);
+    if (field_0x2c >= 0)
+        glDisableVertexAttribArray(field_0x2c);
+    if (field_0x30 >= 0)
+        glDisableVertexAttribArray(field_0x30);
 }
 
 } // namespace AbyssEngine
@@ -84,66 +80,54 @@ void GenericShader1::SetInActive()
 // ---- Init_8ec2c.cpp ----
 namespace AbyssEngine {
 
+// AbyssEngine::GenericShader1::Init(AbyssEngine::Engine*)
 void GenericShader1::Init(Engine *)
 {
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("GenericShader1.vsh", "GenericShader1.fsh");
-    field_i32(this, 0x04) = program;
+    uint32_t program = ShaderBaseStruct_ES2LoadProgram(
+        (ShaderBaseStruct *)this, "GenericShader1.vsh", "GenericShader1.fsh");
+    field_0x4 = (int)program;
 
-    field_i32(this, 0x20) = glGetAttribLocation(program, "a_position");
-    field_i32(this, 0x24) = glGetAttribLocation(field_i32(this, 0x04), "a_normal");
-    field_i32(this, 0x28) = glGetAttribLocation(field_i32(this, 0x04), "a_tangent");
-    field_i32(this, 0x2c) = glGetAttribLocation(field_i32(this, 0x04), "a_binormal");
-    field_i32(this, 0x30) = glGetAttribLocation(field_i32(this, 0x04), "a_texCoord");
+    field_0x20 = glGetAttribLocation(program, "a_position");
+    field_0x24 = glGetAttribLocation(field_0x4, "a_normal");
+    field_0x28 = glGetAttribLocation(field_0x4, "a_tangent");
+    field_0x2c = glGetAttribLocation(field_0x4, "a_binormal");
+    field_0x30 = glGetAttribLocation(field_0x4, "a_texCoord");
 
-    field_i32(this, 0x34) = glGetUniformLocation(field_i32(this, 0x04), "u_m0");
-    field_i32(this, 0x38) = glGetUniformLocation(field_i32(this, 0x04), "u_m1");
-    field_i32(this, 0x3c) = glGetUniformLocation(field_i32(this, 0x04), "u_m2");
-    field_i32(this, 0x40) = glGetUniformLocation(field_i32(this, 0x04), "u_m3");
-    field_i32(this, 0x44) = glGetUniformLocation(field_i32(this, 0x04), "u_m4");
-    field_i32(this, 0x48) = glGetUniformLocation(field_i32(this, 0x04), "u_m5");
-    field_i32(this, 0x4c) = glGetUniformLocation(field_i32(this, 0x04), "u_m6");
-    field_i32(this, 0x50) = glGetUniformLocation(field_i32(this, 0x04), "u_m7");
-    field_i32(this, 0x54) = glGetUniformLocation(field_i32(this, 0x04), "u_m8");
+    field_0x34 = glGetUniformLocation(field_0x4, "u_m0");
+    field_0x38 = glGetUniformLocation(field_0x4, "u_m1");
+    field_0x3c = glGetUniformLocation(field_0x4, "u_m2");
+    field_0x40 = glGetUniformLocation(field_0x4, "u_m3");
+    field_0x44 = glGetUniformLocation(field_0x4, "u_m4");
+    field_0x48 = glGetUniformLocation(field_0x4, "u_m5");
+    field_0x4c = glGetUniformLocation(field_0x4, "u_m6");
+    field_0x50 = glGetUniformLocation(field_0x4, "u_m7");
+    field_0x54 = glGetUniformLocation(field_0x4, "u_m8");
 
-    glUseProgram(field_i32(this, 0x04));
-    return glUniform1i(field_i32(this, 0x44), 0);
+    glUseProgram(field_0x4);
+    glUniform1i(field_0x44, 0);
 }
 
 } // namespace AbyssEngine
 
 // ---- _GenericShader1_8eee2.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
-extern "C" void _ZN11AbyssEngine14GenericShader1D0Ev(
-    AbyssEngine::GenericShader1 *self)
+// AbyssEngine::GenericShader1::~GenericShader1() (deleting dtor)
+extern "C" void _ZN11AbyssEngine14GenericShader1D0Ev(AbyssEngine::GenericShader1 *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    operator_delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
 }
 
 // ---- GenericShader1_8eba0.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::GenericShader1::GenericShader1()
-// Constructs the ShaderBaseStruct base, installs the vtable, publishes the instance
-// to a global pointer slot, and assigns the shader name string to field 0xc.
-extern int *g_genericShader1GlobalSlot; // *(DAT_0009ec24 + 0x9ebc6)
-extern int *g_genericShader1GlobalSrc;  // *(DAT_0009ec1c + 0x9ebbe)
-
+// Constructs the ShaderBaseStruct base, installs the vtable, publishes the shader
+// index into the engine's global slot, and assigns the shader name to field_0xc.
 GenericShader1::GenericShader1()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
-
-    // Install vtable: *this = &vtable + 8 (skip the two RTTI/offset words).
-    *(void **)this = (void *)(_ZTVN11AbyssEngine14GenericShader1E + 8);
-
-    // Publish *src into the global pointer slot.
-    *g_genericShader1GlobalSlot = *g_genericShader1GlobalSrc;
-
-    String tmp("GenericShader1", false);
-    this->field_0xc = tmp;
-    tmp.~String();
+    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    field_0x0 = (char *)GenericShader1_vtable + 8;
+    GenericShader1_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    field_0xc.s = u"GenericShader1";
 }
 
 } // namespace AbyssEngine

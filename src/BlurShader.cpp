@@ -270,7 +270,7 @@ extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int
 
 namespace AbyssEngine {
 
-void BlurShader::UpdateMeshData(::Mesh *mesh, ::Engine *engine)
+void BlurShader::UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine)
 {
     int matrixLocation = this->field_0x2c;
     if (matrixLocation >= 0) {

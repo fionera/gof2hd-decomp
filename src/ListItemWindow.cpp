@@ -39,7 +39,6 @@ extern "C" int  _liw_GetTextHeight(void *canvas);
 __attribute__((visibility("hidden"))) extern int **g_liw_screen;
 
 // ListItemWindow::OnTouchBegin(int, int)
-struct ListItemWindow { void OnTouchBegin(int, int); };
 void ListItemWindow::OnTouchBegin(int x, int y)
 {
     _liw_stw_OnTouchBegin(pp(this, 0x18), x);
@@ -57,7 +56,6 @@ void ListItemWindow::OnTouchBegin(int x, int y)
 
 // ---- shows3DShip_1330fc.cpp ----
 // ListItemWindow::shows3DShip() -- raw uint8 getter at +0x54.
-struct ListItemWindow { uint8_t shows3DShip(); };
 uint8_t ListItemWindow::shows3DShip()
 {
     return u8(this, 0x54);
@@ -67,7 +65,6 @@ uint8_t ListItemWindow::shows3DShip()
 // Base sub-window at +0x18 (a ScrollTouchWindow*); forward the touch first.
 
 // ListItemWindow::OnTouchMove(int, int)
-struct ListItemWindow { void OnTouchMove(int, int); };
 void ListItemWindow::OnTouchMove(int x, int y)
 {
     _liw_stw_OnTouchMove(pp(this, 0x18), x);
@@ -84,7 +81,6 @@ void ListItemWindow::OnTouchMove(int x, int y)
 // Base sub-window at +0x18; forward the release first.
 
 // ListItemWindow::OnTouchEnd(int, int)
-struct ListItemWindow { void OnTouchEnd(int, int); };
 void ListItemWindow::OnTouchEnd(int x, int y)
 {
     _liw_stw_OnTouchEnd(pp(this, 0x18), x);
@@ -117,7 +113,6 @@ __attribute__((visibility("hidden"))) extern void **g_liw_r_canvas;   // 0x1439e
 __attribute__((visibility("hidden"))) extern void **g_liw_r_obj;      // 0x1439ec
 
 // ListItemWindow::render()
-struct ListItemWindow { void render(); };
 void ListItemWindow::render()
 {
     if (!u8(this, 0x54))
@@ -191,8 +186,6 @@ extern const float g_liw_s_wAlt;
 extern const float g_liw_s_wMode;      // mode-flag width
 extern const unsigned int g_liw_s_baseAngle;   // 0x1419fc default preview angle
 
-struct ListItemWindow { void set(void *item, unsigned p2, unsigned p3,
-                                 unsigned p4, unsigned p5, bool p6); };
 
 void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
                          unsigned p4, unsigned p5, bool p6)
@@ -316,7 +309,6 @@ extern "C" void *_liw_STW_dtor(void *w);              // 0x75afc
 extern "C" void  _liw_String_dtor(void *s);           // 0x6ee30
 
 // ListItemWindow::~ListItemWindow()
-struct ListItemWindow { ~ListItemWindow(); };
 ListItemWindow::~ListItemWindow()
 {
     if (pp(this, 0x0)) {
@@ -347,7 +339,6 @@ ListItemWindow::~ListItemWindow()
 
 // ---- draw_133104.cpp ----
 // String is a 12-byte trivially-copyable value (ctor/dtor are engine calls).
-struct Str { uint32_t a, b, c; };
 extern "C" void  Str_ctor_cstr(Str *s, const char *text, bool copy); // 0x6ee18 family
 extern "C" void  Str_ctor_copy(Str *s, const void *src, bool copy);  // String(String&)
 
@@ -369,7 +360,6 @@ __attribute__((visibility("hidden"))) extern void **g_liw_d_arrowL;      // 0x14
 __attribute__((visibility("hidden"))) extern void **g_liw_d_arrowR;      // 0x143466
 __attribute__((visibility("hidden"))) extern int   *g_liw_d_scrollLimit; // 0x14335c
 
-struct ListItemWindow { void draw(); };
 
 // ListItemWindow::draw()
 //   Renders the list window chrome: background box, header, the ship/item preview
@@ -572,7 +562,6 @@ __attribute__((visibility("hidden"))) extern uint32_t *g_liw_u_tf;     // 0x1439
 __attribute__((visibility("hidden"))) extern const float *g_liw_u_angleTable; // 0x143... per-ship base angle
 extern const float g_liw_u_angleScale;                                 // 0x1439b8
 
-struct ListItemWindow { void update(int frameTime); };
 
 // ListItemWindow::update(int frameTime)
 //   Advances the scroll window, applies inertial spin damping to the rotating
@@ -626,7 +615,6 @@ __attribute__((visibility("hidden"))) extern void ***g_liw_b;
 struct Vec4 { int a, b, c, d; };
 
 // ListItemWindow::ListItemWindow()
-struct ListItemWindow { ListItemWindow(); };
 ListItemWindow::ListItemWindow()
 {
     _liw_String_ctor((char *)this + 0x74);

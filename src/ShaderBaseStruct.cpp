@@ -8,7 +8,9 @@ namespace AbyssEngine {
 
 String ShaderBaseStruct::GetShaderName()
 {
-    return String(*shader_name(this), false);
+    String copy;
+    copy.s = shader_name(this)->s;
+    return copy;
 }
 
 } // namespace AbyssEngine
@@ -18,7 +20,7 @@ namespace AbyssEngine {
 
 ShaderBaseStruct::~ShaderBaseStruct()
 {
-    shader_vtable(this) = (uint32_t)ShaderBaseStruct_vtable + 8;
+    shader_vtable(this) = (char *)ShaderBaseStruct_vtable + 8;
     shader_name(this)->~String();
 }
 
@@ -55,27 +57,22 @@ void ShaderBaseStruct::Update()
 } // namespace AbyssEngine
 
 // ---- ShaderBaseStruct_8e424.cpp ----
-using AbyssEngine::ShaderBaseStruct;
-using AbyssEngine::String;
-using AbyssEngine::shader_name;
-using AbyssEngine::shader_paths;
-
-extern "C" ShaderBaseStruct *ShaderBaseStruct_8e424(ShaderBaseStruct *self)
+extern "C" AbyssEngine::ShaderBaseStruct *ShaderBaseStruct_8e424(AbyssEngine::ShaderBaseStruct *self)
 {
+    using namespace AbyssEngine;
     register uint32_t *stackGuardPtr = &__stack_chk_guard;
     volatile uint32_t stackGuard = *stackGuardPtr;
 
-    shader_vtable(self) = (uint32_t)ShaderBaseStruct_vtable + 8;
+    shader_vtable(self) = (char *)ShaderBaseStruct_vtable + 8;
     new (shader_name(self)) String();
     self->field_0x4 = 0xffffffff;
     self->field_0x8 = 0x100;
     ++ShaderBaseStruct_count;
-    shader_paths(self) = 0;
+    shader_vertex_path(self) = 0;
+    shader_fragment_path(self) = 0;
 
-    char nameStorage[sizeof(String)];
-    new ((String *)nameStorage) String("", false);
-    *shader_name(self) = *(String *)nameStorage;
-    ((String *)nameStorage)->~String();
+    // name initialized to the empty string
+    shader_name(self)->s.clear();
 
     uint32_t stackDifference = *stackGuardPtr - stackGuard;
     if (stackDifference != 0) {
@@ -111,7 +108,7 @@ uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *
                     glDeleteShader(vertexShader);
                     glDeleteShader(fragmentShader);
 
-                    char *name = shader_name(this)->GetAEChar();
+                    char *name = (char *)String_GetAEChar(shader_name(this));
                     AELabelObject(0x8b40, program, name);
                     operator delete[](name);
                 } else {

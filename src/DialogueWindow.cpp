@@ -1,5 +1,6 @@
 #include "gof2/DialogueWindow.h"
-#include "gof2/Layout.h"
+// Layout's drawMask/drawBox are used via the local extern "C" prototypes below;
+// the full Layout.h is not required here.
 
 
 extern "C" int ScrollTouchWindow_OnTouchBegin(void *self, int x, int y);
@@ -12,7 +13,7 @@ extern "C" void ArrayReleaseClasses_ImagePartPtr(void *self);
 extern "C" void *Array_ImagePartPtr_dtor(void *self);
 extern "C" void *ScrollTouchWindow_dtor(void *self);
 extern "C" void *TouchButton_dtor(void *self);
-extern "C" void String_dtor(String *self);
+extern "C" void String_dtor(void *self);
 extern "C" void operator_delete(void *self);
 extern "C" void operator_delete_arr(void *self);
 extern "C" int ScrollTouchWindow_OnTouchMove(void *self, int x, int y);
@@ -44,12 +45,11 @@ extern "C" int AERandom_nextInt(void *self, int max);
 extern "C" int GameText_getLanguage(void);
 extern "C" void String_ctor_literal(StringSlot *self, const char *text, bool copy);
 extern "C" void String_ctor_copy(StringSlot *self, String *text, bool copy);
-extern "C" void String_assign(String *self, String *other);
+extern "C" void String_assign(String *self, void *other);
 extern "C" void String_assign_slot(String *self, StringSlot *other);
-extern "C" void String_dtor(StringSlot *self);
-extern "C" void ScrollTouchWindow_setText(void *self, StringSlot *style, StringSlot *text, int color);
+extern "C" void ScrollTouchWindow_setText4(void *self, StringSlot *style, StringSlot *text, int color);
 extern "C" void *ImageFactory_loadChar(void *self, void *parts);
-extern "C" int DialogueWindow_isLastPage(DialogueWindow *self);
+extern "C" bool DialogueWindow_isLastPage(DialogueWindow *self);
 extern "C" int DialogueWindow_pickGermanGenericTextBecauseWeSaved100EurosWithThat(DialogueWindow *self, int kind, Agent *agent);
 extern "C" int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
 extern "C" void String_ctor(String *self);
@@ -66,12 +66,10 @@ extern "C" void ChoiceWindow_set(void *self, String *text, bool flag);
 extern "C" int DialogueWindow_previousPage(DialogueWindow *self);
 extern "C" void *operator_new(unsigned size);
 extern "C" void *operator_new_arr(unsigned size);
-extern "C" void String_assign(String *self, StringSlot *other);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void ChoiceWindow_ctor(void *self);
 extern "C" void TouchButton_ctor(void *self, String *text, int type, int x, int y, int width, int icon, int style);
 extern "C" void ScrollTouchWindow_setText(void *self, StringSlot *style, StringSlot *text);
-extern "C" void *ImageFactory_loadChar(void *self, int *parts);
 extern "C" void DialogueWindow_set(DialogueWindow *self, Mission *mission, int kind, int campaign);
 extern "C" int Agent_getRace(Agent *self);
 extern "C" int Agent_isMale(Agent *self);
@@ -82,7 +80,12 @@ extern "C" void Layout_drawBox(void *layout, int style, int x, int y, int w, int
 extern "C" void ScrollTouchWindow_draw(void *self);
 extern "C" void ImageFactory_drawChar(void *self, void *parts, int x, int y, bool flipped);
 extern "C" void ChoiceWindow_draw(void *self);
+struct Vec2;  // defined below (float x, y) -- only the pointer type is needed here
 extern "C" void TouchButton_getPosition(Vec2 *out, void *self);
+
+// Byte-offset accessor for EXTERNAL opaque objects (Status, sound config, the
+// engine's button position records) whose layouts are not part of this class.
+template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
 // ---- OnTouchBegin_168318.cpp ----
 typedef int (*TouchHandler)(void *, int, int);
@@ -391,7 +394,7 @@ extern "C" void DialogueWindow_loadContent(DialogueWindow *self)
 
     String_ctor_literal(&style, g_dw_emptyLoad, false);
     String_ctor_copy(&tmp, (String *)((char *)self + 0x28), false);
-    ScrollTouchWindow_setText(self->field_0x40, &style, &tmp, 0);
+    ScrollTouchWindow_setText4(self->field_0x40, &style, &tmp, 0);
     String_dtor(&tmp);
     String_dtor(&style);
 
@@ -553,8 +556,8 @@ extern "C" int DialogueWindow_init(DialogueWindow *self)
     self->field_0x70 = 0;
 
     void *layout = *g_dw_layoutInit;
-    int frameW = layout->field_0x54;
-    int frameH = layout->field_0x58;
+    int frameW = F<int>(layout, 0x54);
+    int frameH = F<int>(layout, 0x58);
     self->field_0x1c = frameW;
     self->field_0x20 = frameH;
     int frameX = half_round_to_zero(*g_dw_screenWidth) - half_round_to_zero(frameW);
@@ -563,12 +566,12 @@ extern "C" int DialogueWindow_init(DialogueWindow *self)
     self->field_0x18 = frameY;
 
     void *scroll = operator_new(0x24);
-    int margin = layout->field_0x4c;
+    int margin = F<int>(layout, 0x4c);
     ScrollTouchWindow_ctor(scroll,
-                           frameX + margin * 2 + layout->field_0x2d4,
-                           layout->field_0x8 + frameY,
-                           frameW - margin * 2 - layout->field_0x2d4,
-                           frameH - margin * 2 - layout->field_0x8 - layout->field_0x30,
+                           frameX + margin * 2 + F<int>(layout, 0x2d4),
+                           F<int>(layout, 0x8) + frameY,
+                           frameW - margin * 2 - F<int>(layout, 0x2d4),
+                           frameH - margin * 2 - F<int>(layout, 0x8) - F<int>(layout, 0x30),
                            false);
     self->field_0x40 = scroll;
 
@@ -580,31 +583,31 @@ extern "C" int DialogueWindow_init(DialogueWindow *self)
     void *button = operator_new(0xc8);
     String *label = GameText_getText(*gameText, 0xb3);
     layout = *g_dw_layoutInit;
-    margin = layout->field_0x4c;
+    margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 5,
                      self->field_0x14 + margin,
                      self->field_0x18 - margin + self->field_0x20,
-                     layout->field_0x50, 0x21, 4);
+                     F<int>(layout, 0x50), 0x21, 4);
     self->field_0x0 = button;
 
     button = operator_new(0xc8);
     label = GameText_getText(*gameText, 0xb4);
     layout = *g_dw_layoutInit;
-    margin = layout->field_0x4c;
+    margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 6,
                      self->field_0x14 + self->field_0x1c - margin,
                      self->field_0x18 - margin + self->field_0x20,
-                     layout->field_0x50, 0x22, 4);
+                     F<int>(layout, 0x50), 0x22, 4);
     self->field_0x4 = button;
 
     button = operator_new(0xc8);
     label = GameText_getText(*gameText, 0x18b);
     layout = *g_dw_layoutInit;
-    margin = layout->field_0x4c;
+    margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 0,
                      self->field_0x14 + half_round_to_zero(self->field_0x1c),
                      self->field_0x18 + self->field_0x20 - margin,
-                     self->field_0x1c - margin * 4 - layout->field_0x50 * 2,
+                     self->field_0x1c - margin * 4 - F<int>(layout, 0x50) * 2,
                      0x24, 4);
     self->field_0x54 = 0;
     self->field_0x8 = button;
@@ -646,10 +649,10 @@ extern "C" DialogueWindow *DialogueWindow_ctor_text(DialogueWindow *self, String
     void *button = operator_new(0xc8);
     String *buttonText = GameText_getText(*g_dw_gameTextCtor, 0x20c);
     void *layout = *g_dw_layoutCtor;
-    int margin = layout->field_0x4c;
+    int margin = F<int>(layout, 0x4c);
     int x = self->field_0x14 + self->field_0x1c / 2;
     int y = self->field_0x18 + self->field_0x20 - margin;
-    int width = self->field_0x1c - margin * 4 - layout->field_0x50 * 2;
+    int width = self->field_0x1c - margin * 4 - F<int>(layout, 0x50) * 2;
     TouchButton_ctor(button, buttonText, 0, x, y, width, 0x24, 4);
     self->field_0x4 = button;
 
@@ -760,10 +763,10 @@ extern "C" void DialogueWindow_draw(DialogueWindow *self)
     ScrollTouchWindow_draw(self->field_0x40);
 
     layout = *g_dw_layoutDraw;
-    int margin = layout->field_0x4c;
+    int margin = F<int>(layout, 0x4c);
     ImageFactory_drawChar(*g_dw_imageFactoryDraw, self->field_0xc,
                           self->field_0x14 + margin,
-                          self->field_0x18 + margin + layout->field_0x8,
+                          self->field_0x18 + margin + F<int>(layout, 0x8),
                           self->field_0x70);
 
     ButtonDraw drawButton = g_dw_touchButtonDraw;

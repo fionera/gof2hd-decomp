@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 void CubeNormalMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
 {
-    ::Mesh *mesh = (::Mesh *)meshArg;
+    AbyssEngine::Mesh *mesh = (AbyssEngine::Mesh *)meshArg;
     char *e = (char *)engine;
     if (this->field_0x9 != 0) {
         glUniform4fv(this->field_0x5c, 1, (float *)(e + 0xd0));

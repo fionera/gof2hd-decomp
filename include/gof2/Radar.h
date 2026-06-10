@@ -59,15 +59,16 @@ void operator delete(void *) noexcept;
 
 struct Radar {
     void* field_0x0;                    // +0x0
-    int field_0x4;                      // +0x4
+    void* field_0x4;                    // +0x4
     void* field_0x8;                    // +0x8
-    int field_0xc;                      // +0xc
+    void* field_0xc;                    // +0xc
     int field_0x10;                     // +0x10
     int field_0x14;                     // +0x14
     int field_0x18;                     // +0x18
     void* field_0x1c;                   // +0x1c
     void* field_0x24;                   // +0x24
-    int field_0x38;                     // +0x38
+    Array<KIPlayer *>* field_0x34;      // +0x34
+    void* field_0x38;                   // +0x38
     int field_0x3c;                     // +0x3c
     int field_0x40;                     // +0x40
     uint8_t field_0x48;                 // +0x48
@@ -99,7 +100,7 @@ struct Radar {
     int field_0x178;                    // +0x178
     int field_0x17c;                    // +0x17c
     int field_0x180;                    // +0x180
-    int field_0x188;                    // +0x188
+    void* field_0x188;                  // +0x188
     void* field_0x18c;                  // +0x18c
     uint8_t field_0x1a8;                // +0x1a8
     uint8_t field_0x1ab;                // +0x1ab
@@ -115,5 +116,20 @@ struct Radar {
     int field_0x228;                    // +0x228
     int field_0x22c;                    // +0x22c
     int field_0x230;                    // +0x230
+
+    Radar(Level *level);
+    ~Radar();
+    int getTurretScopeWidth();
+    uint8_t hasScanner();
+    uint8_t isPlasmaInRange();
+    bool stationLocked();
+    void unlockAsteroid();
+    int getPlanetDockIndex();
+    void update(KIPlayer *player);
+    void update(AbyssEngine::AEMath::Vector value);
+    long long draw(Player *player, Hud *hud, int mode);
+    AbyssEngine::AEMath::Vector elipsoidIntersect(int y, int x, AbyssEngine::AEMath::Vector value);
+    void drawCurrentLock(Hud *hud);
+    void calcDistance(float p0, float a, float b, float c, float d, float e);
 };
 #endif

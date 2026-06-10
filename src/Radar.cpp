@@ -1,7 +1,9 @@
 #include "gof2/Radar.h"
-#include "gof2/Layout.h"
-#include "gof2/Station.h"
 
+// Layout and Station are not part of this batch; their fields are read by raw byte offset
+// (including their headers triggers a placement-new redefinition against the STL).
+static inline int layout_i32(void *layout, unsigned off) { return *(int *)((char *)layout + off); }
+static inline uint8_t station_u8(void *station, unsigned off) { return *(uint8_t *)((char *)station + off); }
 
 extern "C" void Radar_SetColor(void *canvas, int color);
 extern "C" int Radar_GetMissionState(void *mission);
@@ -19,7 +21,6 @@ extern "C" void Radar_StringText(void *self, void const *text, bool copy);
 extern "C" void Radar_StringAssign(void *self, void const *rhs);
 extern "C" void Radar_StringDtor(void *self);
 extern "C" void Radar_StringInt(void *self, int value);
-extern "C" void Radar_StringText(void *self, char const *text, bool copy);
 extern "C" void Radar_StringPlus(void *out, void const *lhs, void const *rhs);
 extern "C" void Radar_StringSubString(void *out, void const *self, int start, int count);
 extern "C" int __aeabi_idivmod(int numerator, int denominator);
@@ -38,12 +39,12 @@ int Radar::getTurretScopeWidth()
 // ---- _Radar_12de3c.cpp ----
 Radar::~Radar()
 {
-    Array<KIPlayer *> *players = F<Array<KIPlayer *> *>(this, 0x34);
+    Array<KIPlayer *> *players = this->field_0x34;
     if (players != 0) {
         players->~Array<KIPlayer *>();
         operator delete(players);
     }
-    F<Array<KIPlayer *> *>(this, 0x34) = 0;
+    this->field_0x34 = 0;
     ((AbyssEngine::String *)((char *)this + 0x18c))->~String();
 }
 
@@ -64,7 +65,7 @@ bool Radar::stationLocked()
 {
     void *station = this->field_0x24;
     if (station != 0) {
-        return station->field_0x71 != 0;
+        return station_u8(station, 0x71) != 0;
     }
     return false;
 }
@@ -90,7 +91,7 @@ int Radar::getPlanetDockIndex()
 {
     SolarSystem *system = gStatus->getSystem();
     Array<Station *> *stations = system->getStations();
-    return (int)stations->data[this->field_0x40];
+    return (int)(intptr_t)stations->data()[this->field_0x40];
 }
 
 // ---- draw_12e050.cpp ----
@@ -173,14 +174,14 @@ Radar::Radar(Level *level)
 
     void *layout = *(void **)gRadarLayoutSlot;
     if (layout != 0) {
-        int width = layout->field_0xac;
-        int height = layout->field_0xa8;
+        int width = layout_i32(layout, 0xac);
+        int height = layout_i32(layout, 0xa8);
         this->field_0x21c = width;
         this->field_0x220 = width >> 1;
         this->field_0x224 = height;
         this->field_0x228 = height >> 1;
-        this->field_0x22c = layout->field_0xa0;
-        this->field_0x230 = layout->field_0xa4;
+        this->field_0x22c = layout_i32(layout, 0xa0);
+        this->field_0x230 = layout_i32(layout, 0xa4);
     }
 
     void *canvas = *(void **)gRadarCanvasSlot;

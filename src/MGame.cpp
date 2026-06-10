@@ -1,10 +1,17 @@
 #include "gof2/MGame.h"
-#include "gof2/Engine.h"
+// NOTE: gof2/Engine.h is intentionally NOT included — it does not compile
+// standalone (it is owned by another batch) and MGame only uses Engine as an
+// opaque pointer type, which is already forward-declared via fwd.h (common.h).
 #include "gof2/KIPlayer.h"
 #include "gof2/PlayerEgo.h"
 #include "gof2/PlayerFixedObject.h"
 #include "gof2/Status.h"
 
+// Typed byte-offset accessor for the few cases where the field is selected at
+// runtime (computed offsets / loop indices) and cannot be named statically.
+template <class T> static inline T &F(void *p, unsigned off) {
+    return *reinterpret_cast<T *>(reinterpret_cast<char *>(p) + off);
+}
 
 extern "C" void PlayerEgo_initManeuver(PlayerEgo *p, int dir);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
@@ -14,26 +21,26 @@ extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void PlayerEgo_syncFirstPerson(PlayerEgo *p, int v);
 extern "C" Vector *TFC_getCamOffset(TargetFollowCamera *c);
 extern "C" float AEMath_VectorLength(Vector *v);
-extern "C" void *Vector_assign(Vector *dst, void *src);
+extern "C" void *Vector_assign(void *dst, void *src);
 extern "C" int PlayerEgo_toggleCloaking(PlayerEgo *p);
 extern "C" void *MGame_opnew(unsigned sz);
 extern "C" void ChoiceWindow_ctor(ChoiceWindow *w);
 extern "C" Ship *Status_getShip(Status *s);
 extern "C" int Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
 extern "C" int Item_getAttribute(int item, int which);
-extern "C" void *GameText_getText(GameText *t, int id);
+extern "C" void *GameText_getText(...);
 extern "C" void String_cstr_ctor(String12 *out, const char *s, bool copy);
 extern "C" void String_concat(String12 *out, String12 *lhs, String12 *rhs);
 extern "C" void String_int_ctor(String12 *out, int v);
-extern "C" void ChoiceWindow_set(ChoiceWindow *w, String12 *s);
-extern "C" void String_dtor(String12 *s);
+extern "C" void ChoiceWindow_set(...);
+extern "C" void String_dtor(void *s);
 extern "C" void MGame_pauseSounds(MGame *self);
-extern "C" void GameRecord_load(void *rec);
+extern "C" void GameRecord_load(...);
 extern "C" void Globals_playMusicAndFadeOutCurrent(int track);
-extern "C" uint8_t StarMap_OnTouchBegin(int map, int p1);
-extern "C" void ChoiceWindow_OnTouchBegin(int w, int p1);
-extern "C" void DialogueWindow_OnTouchBegin(int w, int p1);
-extern "C" void MenuTouchWindow_OnTouchBegin(int w, int p1, void *p2);
+extern "C" uint8_t StarMap_OnTouchBegin(StarMap *map, int p1);
+extern "C" void ChoiceWindow_OnTouchBegin(...);
+extern "C" void DialogueWindow_OnTouchBegin(DialogueWindow *w, int p1);
+extern "C" void MenuTouchWindow_OnTouchBegin(...);
 extern "C" int Hud_touchBegin(void *hud, int p1, int p2, void *p3);
 extern "C" void MGame_endRunModule(int field8, int code);
 extern "C" void MGame_handleHudTouchAction(MGame *self, int p1, int p2, void *p3, unsigned hudResult);
@@ -67,18 +74,15 @@ extern "C" int SolarSystem_currentOrbitHasWarpGate(void *ss);
 extern "C" void Status_checkForLevelUp();
 extern "C" void Level_ctor(Level *l, int a);
 extern "C" int Level_init(Level *l);
-extern "C" void Player_setHitpoints(Player *p, int hp);
+extern "C" void Player_setHitpoints(...);
 extern "C" void Player_setShieldHP(Player *p, int hp);
 extern "C" void Player_setArmorHP(Player *p, int hp);
 extern "C" void Player_setGammaHP(Player *p, int hp);
 extern "C" void PlayerEgo_resetLastHP(PlayerEgo *p);
 extern "C" int Radar_hasScanner();
-extern "C" int Ship_getFirstEquipmentOfSort(int ship);
-extern "C" int Item_getAttribute(int item);
 extern "C" void Hud_setTimeExtender(void *hud, int a, int b, int c);
 extern "C" int Status_inBlackMarketSystem();
-extern "C" int Level_getEnemies(Level *l);
-extern "C" void Level_createRadioMessage(int level, int id);
+extern "C" void Level_createRadioMessage(...);
 extern "C" int Status_dlc1Won();
 extern "C" void MGame_freeCamPanDone(MGame *self, int p3);
 extern "C" int PlayerEgo_isAutoPilot(PlayerEgo *p);
@@ -99,19 +103,16 @@ extern "C" void KIPlayer_setRoute(KIPlayer *k, Route *r);
 extern "C" void *Route_dtor(Route *r);
 extern "C" void MGame_buildMissionFollowup(MGame *self);
 extern "C" void MGame_OnRelease(MGame *self);
-extern "C" void String_dtor(void *s);
 extern "C" void FModSound_resumeAll(FModSound *s);
 extern "C" void PlayerEgo_ResumeEngineSound(PlayerEgo *p);
 extern "C" void KIPlayer_ResumeEngineSound(KIPlayer *k);
 extern "C" int Ship_hasCargo(Ship *ship, int id, int n);
 extern "C" int Status_hardCoreMode();
 extern "C" int Status_inAlienOrbit();
-extern "C" void *GameText_getText(int table, int id);
-extern "C" void ChoiceWindow_set(ChoiceWindow *w, void *txt);
 extern "C" void *Ship_getCargo(Ship *ship, int id);
 extern "C" int Item_getAmount(void *item);
 extern "C" void PlayerEgo_startJumpDrive(PlayerEgo *p);
-extern "C" void Hud_hudEvent(Hud *h, int ev, PlayerEgo *p, int arg);
+extern "C" void Hud_hudEvent(...);
 extern "C" void Ship_removeCargo(Ship *ship, int id, int n);
 extern "C" void FModSound_pauseAllPlayingSoundFXEvents(FModSound *s);
 extern "C" void PlayerEgo_rollRight(PlayerEgo *p, int shipField, float amt);
@@ -121,35 +122,35 @@ extern "C" void MGame_switchCamera(MGame *self, int id);
 extern "C" uint8_t TFC_isInLookAtMode(TargetFollowCamera *c);
 extern "C" void TFC_setLookAtCam(TargetFollowCamera *c, int v);
 extern "C" void Cam_setCinematic(TargetFollowCamera *c, int on);
-extern "C" void Hud_enterCinematic(Hud *h, int a, int one);
+extern "C" void Hud_enterCinematic(...);
 extern "C" void FModSound_restoreState();
 extern "C" int LevelScript_startSequence(LevelScript *s);
-extern "C" void StarMap_draw(int map);
+extern "C" void StarMap_draw(StarMap *map);
 extern "C" void Layout_drawHelpWindow(Layout *l);
-extern "C" void Level_render2D(int level);
+extern "C" void Level_render2D(...);
 extern "C" void Hud_drawPauseButton(void *hud);
-extern "C" void *Status_getCampaignMission();
+extern "C" Mission *Status_getCampaignMission();
 extern "C" int LevelScript_getEvent(LevelScript *s);
 extern "C" void Hud_drawOrbitInformation(void *hud);
-extern "C" void DialogueWindow_draw(int w);
+extern "C" void DialogueWindow_draw(DialogueWindow *w);
 extern "C" int PlayerEgo_isDockingToPlanet(PlayerEgo *p);
 extern "C" void PlayerEgo_draw(PlayerEgo *p);
 extern "C" int PlayerEgo_isHacking(PlayerEgo *p);
 extern "C" void Radar_drawCurrentLock(void *radar);
 extern "C" void Layout_drawMissionRewardMessage(int layout);
-extern "C" void ChoiceWindow_draw(int w);
-extern "C" void Hud_drawMenu(int hud);
-extern "C" int LevelScript_startSequenceOver(Level *lvl);
-extern "C" Mission *Status_getCurrentCampaignMission(Status *s);
-extern "C" int DialogueWindow_hasBriefingDialogue(Mission *m);
-extern "C" Mission *Status_getMission(Status *s);
+extern "C" void ChoiceWindow_draw(...);
+extern "C" void Hud_drawMenu(...);
+extern "C" int LevelScript_startSequenceOver(...);
+extern "C" int Status_getCurrentCampaignMission();
+extern "C" int DialogueWindow_hasBriefingDialogue(...);
+extern "C" Mission *Status_getMission();
 extern "C" int Mission_isCampaignMission(Mission *m);
 extern "C" int Mission_isEmpty(Mission *m);
 extern "C" int Mission_getType(Mission *m);
 extern "C" int Mission_isVisible(Mission *m);
-extern "C" void DialogueWindow_ctor(DialogueWindow *w, Mission *m, Level *lvl, int z);
-extern "C" void PlayerEgo_setTurretMode(PlayerEgo *p, int on);
-extern "C" void LevelScript_resetCamera(Level *lvl);
+extern "C" void DialogueWindow_ctor(...);
+extern "C" int PlayerEgo_setTurretMode(PlayerEgo *p, int on);
+extern "C" void LevelScript_resetCamera(...);
 extern "C" void PlayerEgo_setFreeLookMode(PlayerEgo *p, int on);
 extern "C" void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
 extern "C" void PlayerEgo_hideShipForFirstPersonCameraView(PlayerEgo *p, int on);
@@ -157,7 +158,6 @@ extern "C" int PlayerEgo_hasAutoTurret(PlayerEgo *p);
 extern "C" int PlayerEgo_isDockedToDockingPoint(PlayerEgo *p);
 
 // ---- maneuverTouchEnd_1789b4.cpp ----
-struct PlayerEgo;
 __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
 
 // MGame::maneuverTouchEnd(): if a maneuver gesture was active, recent, and the finger
@@ -179,8 +179,6 @@ extern "C" void MGame_maneuverTouchEnd(MGame *self, int a, void *p) {
 }
 
 // ---- OnResume_1807cc.cpp ----
-struct Music;
-struct Cfg;
 // Singletons held as pointer-to-pointer in hidden globals (single PC-relative deref).
 __attribute__((visibility("hidden"))) extern Music **g_music;
 __attribute__((visibility("hidden"))) extern Cfg **g_cfg;
@@ -217,26 +215,24 @@ extern "C" void MGame_maneuverTouchMove(MGame *self, int a, int b) {
 
 // ---- maneuverTouchBegin_178948.cpp ----
 // Begins a maneuver gesture: mark active, record start position, reset timer.
-extern "C" void MGame_maneuverTouchBegin(MGame *self, int x, void *p) {
+extern "C" void MGame_maneuverTouchBegin(MGame *self, int x, int y) {
     self->field_0x17c = 1;
     self->field_0x180 = x;
-    self->field_0x184 = p;
+    self->field_0x184 = y;
     self->field_0x178 = 0;
 }
 
 // ---- OnRender3D_180dcc.cpp ----
-struct Level;
-struct PaintCanvas;
 
-extern "C" void PaintCanvas_ClearBuffer(unsigned color);          // 0x71d94
-extern "C" void Level_renderBG(int level);                        // 0x72214
-extern "C" void PaintCanvas_Begin3d();                            // 0x71da0
-extern "C" void Level_render(int level, int arg);                 // 0x7222c
-extern "C" void PlayerEgo_render(int flag);                       // 0x78730
-extern "C" void AEGeometry_render(Level *g);                      // 0x72238
-extern "C" void LevelScript_render3D(int script);                // 0x7873c
-extern "C" void MenuTouchWindow_render3D(int w);                  // 0x78748
-extern "C" void StarMap_render(int map);                          // 0x7567c
+extern "C" void PaintCanvas_ClearBuffer(unsigned color);  // 0x71d94
+extern "C" void Level_renderBG(...);  // 0x72214
+extern "C" void PaintCanvas_Begin3d();  // 0x71da0
+extern "C" void Level_render(...);  // 0x7222c
+extern "C" void PlayerEgo_render(int flag);  // 0x78730
+extern "C" void AEGeometry_render(...);  // 0x72238
+extern "C" void LevelScript_render3D(...);  // 0x7873c
+extern "C" void MenuTouchWindow_render3D(...);  // 0x78748
+extern "C" void StarMap_render(StarMap *map);  // 0x7567c
 // PaintCanvas End3d tail helper @0x1ab918.
 
 __attribute__((visibility("hidden"))) extern unsigned *g_r3dCanvas; // @0x190de4 ([0]=canvas)
@@ -302,57 +298,43 @@ extern "C" void MGame_OnRender3D(MGame *self) {
 }
 
 // ---- startJumpScene_17c0d4.cpp ----
-struct PlayerEgo;
-struct Engine;
-struct AEGeometry;
-struct TargetFollowCamera;
-struct Level;
-struct PaintCanvas;
-struct Vector;
 
-extern "C" void Player_setVulnerable(void *player, int v);               // 0x7294c
-extern "C" void Level_enableFog(Level *l, int on);                       // 0x7843c
-extern "C" int PlayerEgo_isDockedToDockingPoint(PlayerEgo *p);           // 0x75928
-extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *p, int a, void *r); // 0x72838
-extern "C" void TFC_setActive(TargetFollowCamera *c, int v);            // 0x72acc
-extern "C" void TFC_setLookAtCam(TargetFollowCamera *c, int v);         // 0x72670
+extern "C" void Player_setVulnerable(void *player, int v);  // 0x7294c
+extern "C" void Level_enableFog(Level *l, int on);  // 0x7843c
+extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *p, int a, void *r);  // 0x72838
+extern "C" void TFC_setActive(TargetFollowCamera *c, int v);  // 0x72acc
 extern "C" float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);  // 0x7267c
-extern "C" void PlayerEgo_setSpeed(PlayerEgo *p, float s);              // 0x76b40
-extern "C" void PlayerEgo_setDockingState(PlayerEgo *p, int v);        // 0x76ca8
-extern "C" int PlayerEgo_isInTurretMode(PlayerEgo *p);                  // 0x7678c
-extern "C" void PlayerEgo_setTurretMode(PlayerEgo *p, int v);          // 0x72b08
-extern "C" void FModSound_stop(int snd, int id);                       // 0x724a8
-extern "C" void MGame_switchCamera(MGame *self, int id);               // 0x78388
-extern "C" void Hud_releaseAllKeys(void *hud);                         // 0x77a1c
-extern "C" int Status_inAlienOrbit();                                  // 0x723d0
-extern "C" int Status_getCurrentCampaignMission();                     // 0x71770
-extern "C" void PaintCanvas_CameraSetPerspective(unsigned cam, float fov, float a, float b); // 0x72004
-extern "C" void PlayerEgo_setAutoPilot(PlayerEgo *p, int v);           // 0x728d4
-extern "C" void PlayerEgo_setCollide(PlayerEgo *p, int v);             // 0x76a80
-extern "C" void PlayerEgo_stopBoost(PlayerEgo *p);                     // 0x72cac
-extern "C" int ApplicationManager_GetEngine();                        // 0x7258c
-extern "C" void Engine_SetPostEffect(Engine *e, int id, int on);      // 0x707f8
-extern "C" int Level_getLandmarks(Level *l);                          // 0x725b0
-extern "C" void Vector_assign(Vector *dst, Vector *src);              // 0x6eb3c
-extern "C" void PlayerEgo_setPosition(PlayerEgo *p, int x, int y, float z); // 0x72cb8
+extern "C" void PlayerEgo_setSpeed(PlayerEgo *p, float s);  // 0x76b40
+extern "C" void PlayerEgo_setDockingState(PlayerEgo *p, int v);  // 0x76ca8
+extern "C" int PlayerEgo_isInTurretMode(PlayerEgo *p);  // 0x7678c
+extern "C" void FModSound_stop(int snd, int id);  // 0x724a8
+extern "C" void Hud_releaseAllKeys(void *hud);  // 0x77a1c
+extern "C" void PaintCanvas_CameraSetPerspective(unsigned cam, float fov, float a, float b);  // 0x72004
+extern "C" void PlayerEgo_setAutoPilot(PlayerEgo *p, int v);  // 0x728d4
+extern "C" void PlayerEgo_setCollide(PlayerEgo *p, int v);  // 0x76a80
+extern "C" void PlayerEgo_stopBoost(PlayerEgo *p);  // 0x72cac
+extern "C" int ApplicationManager_GetEngine();  // 0x7258c
+extern "C" void Engine_SetPostEffect(Engine *e, int id, int on);  // 0x707f8
+extern "C" int Level_getLandmarks(Level *l);  // 0x725b0
+extern "C" void PlayerEgo_setPosition(...);  // 0x72cb8
 extern "C" void PlayerEgo_setComputerControlled(PlayerEgo *p, int v);  // 0x76aa4
-extern "C" void AEGeometry_setRotation3(void *g, int x, int y, int z); // 0x73054
-extern "C" void PlayerEgo_resetMovement(PlayerEgo *p);                 // 0x78448
-extern "C" void *operator_new(unsigned sz);                           // 0x6eb24
-extern "C" void AEGeometry_ctor(AEGeometry *g, int id, PaintCanvas *pc, int b); // 0x7207c
-extern "C" int PaintCanvas_TransformGetTransform(unsigned cam);       // 0x72088
-extern "C" void Transform_SetAnimationState(int t, int a, int b);     // 0x6fd18
-extern "C" void PlayerEgo_getPosition(void *out, PlayerEgo *p);       // 0x72574
-extern "C" void Vector_copy(Vector *dst, Vector *src);                // fn @0x18c268 (pcVar8)
-extern "C" void Vector_scale(Vector *v, float s);                     // 0x6ec74
-extern "C" void Vector_addAssign(Vector *dst, Vector *src);           // 0x73534
-extern "C" void AEGeometry_setPosition(AEGeometry *g, Vector *v);     // 0x72148
-extern "C" void AEGeometry_setScaling(AEGeometry *g, int x, int y, int z); // 0x727b4
-extern "C" void AEGeometry_setDirection(AEGeometry *g, Vector *v);    // 0x726ac
-extern "C" void Matrix_rotateVector(void *mat, Vector *v);            // 0x6f694
-extern "C" void FModSound_setProp(int snd, int id);                   // fn @0x18c30e (pcVar8)
-extern "C" void FModSound_play(int snd, int a, int b, float c);       // 0x71548
-extern "C" void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z); // 0x76abc
+extern "C" void AEGeometry_setRotation3(void *g, int x, int y, int z);  // 0x73054
+extern "C" void PlayerEgo_resetMovement(PlayerEgo *p);  // 0x78448
+extern "C" void *operator_new(unsigned sz);  // 0x6eb24
+extern "C" void AEGeometry_ctor(AEGeometry *g, int id, PaintCanvas *pc, int b);  // 0x7207c
+extern "C" int PaintCanvas_TransformGetTransform(unsigned cam);  // 0x72088
+extern "C" void Transform_SetAnimationState(int t, int a, int b);  // 0x6fd18
+extern "C" void PlayerEgo_getPosition(void *out, PlayerEgo *p);  // 0x72574
+extern "C" void Vector_copy(Vector *dst, Vector *src);  // fn @0x18c268 (pcVar8)
+extern "C" void Vector_scale(Vector *v, float s);  // 0x6ec74
+extern "C" void Vector_addAssign(Vector *dst, Vector *src);  // 0x73534
+extern "C" void AEGeometry_setPosition(...);  // 0x72148
+extern "C" void AEGeometry_setScaling(...);  // 0x727b4
+extern "C" void AEGeometry_setDirection(...);  // 0x726ac
+extern "C" void Matrix_rotateVector(void *mat, Vector *v);  // 0x6f694
+extern "C" void FModSound_setProp(int snd, int id);  // fn @0x18c30e (pcVar8)
+extern "C" void FModSound_play(int snd, int a, int b, float c);  // 0x71548
+extern "C" void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);  // 0x76abc
 
 __attribute__((visibility("hidden"))) extern int *g_jsGuard;     // @0x18c0ea (stack guard / canvas[0])
 __attribute__((visibility("hidden"))) extern int *g_jsSound;     // @0x18c15a (*piVar9)
@@ -482,21 +464,10 @@ extern "C" void MGame_startJumpScene(MGame *self) {
 }
 
 // ---- switchCamera_17c4e8.cpp ----
-struct PlayerEgo;
-struct TargetFollowCamera;
-struct LevelScript;
-struct Level;
 
-extern "C" int PlayerEgo_isDockingToAsteroid(PlayerEgo *p);            // 0x76804
-extern "C" int PlayerEgo_setTurretMode(PlayerEgo *p, int on);         // 0x72b08
-extern "C" int PlayerEgo_isDockedToDockingPoint(PlayerEgo *p);        // 0x75928
-extern "C" void LevelScript_lookBehind(LevelScript *s, int a);        // 0x7246c
-extern "C" void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v); // 0x76c0c
-extern "C" void PlayerEgo_setFreeLookMode(PlayerEgo *p, int v);       // 0x76b94
-extern "C" int ApplicationManager_GetEngine();                        // 0x7258c
-extern "C" void LevelScript_resetCamera(Level *l);                    // 0x76cfc
-extern "C" void TFC_setLookAtCam(TargetFollowCamera *c, int v);       // 0x72670
-extern "C" void TFC_enableFirstPersonCam(TargetFollowCamera *c, int v); // 0x76ba0
+extern "C" int PlayerEgo_isDockingToAsteroid(PlayerEgo *p);  // 0x76804
+extern "C" void LevelScript_lookBehind(...);  // 0x7246c
+extern "C" void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v);  // 0x76c0c
 extern "C" int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c);  // 0x78460
 // PlayerEgo turret/first-person sync tail helper @0x1ac868.
 
@@ -557,8 +528,10 @@ afterTurret:
             LevelScript_lookBehind(self->field_0x7c, self->field_0x78);
             TFC_setRotationAroundTarget(self->field_0xf4, 0);
             PlayerEgo_setFreeLookMode(self->field_0x58, 0);
-            int eng = ApplicationManager_GetEngine();
-            eng->field_0x360 = 0;
+            Engine *eng = (Engine *)ApplicationManager_GetEngine();
+            // Engine layout lives in another translation unit (gof2/Engine.h is not
+            // included here); write its +0x360 field via a typed byte offset.
+            F<int>(eng, 0x360) = 0;
             goto firstPerson;
         }
         // docked: restart the whole selection with id=1.
@@ -582,8 +555,6 @@ firstPerson: {
 }
 
 // ---- freeCamTouchBegin_178a28.cpp ----
-struct TargetFollowCamera;
-struct Vector;
 __attribute__((visibility("hidden"))) extern int *g_fcb_guard; // DAT_188af4 (canary anchor read)
 
 
@@ -623,13 +594,6 @@ tail:
 }
 
 // ---- useCloak_179bfc.cpp ----
-struct PlayerEgo;
-struct ChoiceWindow;
-struct Status;
-struct Ship;
-struct Item;
-struct GameText;
-struct String12 { uint32_t a, b, c; };
 __attribute__((visibility("hidden"))) extern Status **g_status;     // DAT_189d44
 __attribute__((visibility("hidden"))) extern GameText **g_gameText; // DAT_189d4c
 
@@ -668,39 +632,19 @@ extern "C" void MGame_useCloak(MGame *self) {
 }
 
 // ---- gameOverCheck_180514.cpp ----
-struct PlayerEgo;
-struct Level;
-struct DialogueWindow;
-struct TargetFollowCamera;
-struct Mission;
-struct Objective;
-struct RecordHandler;
 
-extern "C" int PlayerEgo_getHitpoints(PlayerEgo *p);                      // 0x724e4
-extern "C" int Level_checkGameOver(int level, int arg);                  // 0x78688
-extern "C" int DialogueWindow_hasLevel(DialogueWindow *w);               // 0x78658
-extern "C" int PlayerEgo_tryToStartEmergencySystem(PlayerEgo *p);        // 0x78694
-extern "C" int PlayerEgo_isInWormhole(PlayerEgo *p);                     // 0x76c84
-extern "C" void *GameText_getText(int id);                               // 0x72f70
-extern "C" void String_assign(void *dst, const void *src);               // 0x6f2b0
-extern "C" void *operator_new(unsigned sz);                              // 0x6eb24
-extern "C" void DialogueWindow_ctor(DialogueWindow *w);                  // 0x75544
-extern "C" void DialogueWindow_setLevel(DialogueWindow *w, Level *l);    // 0x78664
-extern "C" Mission *Status_getMission();                                 // 0x72850
-extern "C" void DialogueWindow_set(DialogueWindow *w, Mission *m, int a, int b); // 0x75550
-extern "C" void MGame_pauseSounds(MGame *self);                          // 0x7822c
-extern "C" void PlayerEgo_setTurretMode(PlayerEgo *p, int v);            // 0x72b08
-extern "C" void LevelScript_resetCamera(int script, int arg);            // 0x7246c
-extern "C" void PlayerEgo_setFreeLookMode(PlayerEgo *p, int v);          // 0x76b94
-extern "C" void TFC_enableFirstPersonCam(TargetFollowCamera *c, int v);  // 0x76ba0
-extern "C" void PlayerEgo_hideShipForFirstPersonCameraView(PlayerEgo *p, int v); // 0x76bac
-extern "C" void PlayerEgo_explode(PlayerEgo *p);                         // 0x786ac
-extern "C" int PlayerEgo_explosionEnded(PlayerEgo *p);                   // 0x786b8
-extern "C" int Mission_isCampaignMission(Mission *m);                    // 0x7372c
-extern "C" int Status_getCurrentCampaignMission();                       // 0x71770
-extern "C" int Objective_isSurvivalObjective(Objective *o);              // 0x786a0
-extern "C" int RecordHandler_recordStoreRead(RecordHandler *rh, int id); // 0x7483c
-extern "C" void FModSound_play(int snd, int a, int b, float c);          // 0x71548
+extern "C" int PlayerEgo_getHitpoints(PlayerEgo *p);  // 0x724e4
+extern "C" int Level_checkGameOver(...);  // 0x78688
+extern "C" int DialogueWindow_hasLevel(...);  // 0x78658
+extern "C" int PlayerEgo_tryToStartEmergencySystem(PlayerEgo *p);  // 0x78694
+extern "C" int PlayerEgo_isInWormhole(PlayerEgo *p);  // 0x76c84
+extern "C" void String_assign(void *dst, const void *src);  // 0x6f2b0
+extern "C" void DialogueWindow_setLevel(...);  // 0x78664
+extern "C" void DialogueWindow_set(DialogueWindow *w, ...);  // 0x75550 — DialogueWindow::set(Mission*, int, int)
+extern "C" void PlayerEgo_explode(PlayerEgo *p);  // 0x786ac
+extern "C" int PlayerEgo_explosionEnded(PlayerEgo *p);  // 0x786b8
+extern "C" int Objective_isSurvivalObjective(Objective *o);  // 0x786a0
+extern "C" int RecordHandler_recordStoreRead(RecordHandler *rh, int id);  // 0x7483c
 
 __attribute__((visibility("hidden"))) extern int **g_goWormText;   // @0x190572
 __attribute__((visibility("hidden"))) extern int **g_goDeathText;  // @0x19069c
@@ -788,7 +732,7 @@ extern "C" void MGame_gameOverCheck(MGame *self) {
     if (ready) {
         self->field_0x48 = 0;
         self->field_0x4c = 0;
-        int *sc = self->field_0x7c;
+        int *sc = (int *)self->field_0x7c;
         if (sc[0] >= 1) {
             // 64-bit compare against script counters [2]/[3].
             bool done = !((long long)(unsigned)sc[0] - ((long long)sc[3] << 32 | (unsigned)sc[2]) < 0);
@@ -817,15 +761,12 @@ extern "C" void MGame_gameOverCheck(MGame *self) {
 }
 
 // ---- OnTouchBegin_178e64.cpp ----
-struct PlayerEgo;
-struct Layout;
 
-extern "C" int Status_getCurrentCampaignMission();                       // 0x71770
-extern "C" void ApplicationManager_SetCurrentApplicationModule(unsigned m); // 0x71d64
-extern "C" int Layout_OnTouchBegin(int layout, int p1);                 // 0x... (Layout::OnTouchBegin)
-extern "C" int ApplicationManager_GetApplicationData();                 // 0x71704
-extern "C" int MenuTouchWindow_isShowingMessage(void *w);               // 0x781e4
-extern "C" int MenuTouchWindow_isMakingScreenshot(void *w);             // 0x781f0
+extern "C" void ApplicationManager_SetCurrentApplicationModule(unsigned m);  // 0x71d64
+extern "C" int Layout_OnTouchBegin(Layout *layout, int p1);  // 0x... (Layout::OnTouchBegin)
+extern "C" int ApplicationManager_GetApplicationData();  // 0x71704
+extern "C" int MenuTouchWindow_isShowingMessage(void *w);  // 0x781e4
+extern "C" int MenuTouchWindow_isMakingScreenshot(void *w);  // 0x781f0
 // Module-switch tail helper @0x1ab908 (replay/menu transition).
 // The large post-Hud-touch reaction body (time-extender, dock dialogue, free-cam
 // init, etc.) is one logical unit; kept as a helper to remain faithful + compiling.
@@ -864,7 +805,7 @@ extern "C" void MGame_OnTouchBegin(MGame *self, int p1, int p2, void *touchId) {
         if (self->field_0xc7 != 0) {
             Layout *hl = **g_tbStarLayout;
             if (*(uint8_t *)hl != 0) {
-                Layout_OnTouchBegin((int)hl, p1);
+                Layout_OnTouchBegin(hl, p1);
                 return;
             }
             uint8_t r = StarMap_OnTouchBegin(self->field_0x90, p1);
@@ -900,7 +841,7 @@ extern "C" void MGame_OnTouchBegin(MGame *self, int p1, int p2, void *touchId) {
 }
 
 // ---- OnUpdate_17c8d8.cpp ----
-extern "C" int ApplicationManager_GetElapsedTimeMillis();                // GetElapsedTimeMillis
+extern "C" int ApplicationManager_GetElapsedTimeMillis();  // GetElapsedTimeMillis
 // The entire per-frame game tick — free-cam keyboard input, AI/physics step,
 // mining/hacking/docking state machines, dialogue + sound pumps, jump-scene update,
 // station-service transitions and their string building — is one massive body that
@@ -940,17 +881,10 @@ extern "C" void MGame_OnUpdate(MGame *self) {
 }
 
 // ---- OnSuspend_180800.cpp ----
-struct RecordHandler;
-struct MenuTouchWindow;
-struct FModSound;
-struct PlayerEgo;
-struct KIPlayer;
-struct Level;
-struct EnemyList { uint32_t size; KIPlayer **data; };
 
 __attribute__((visibility("hidden"))) extern RecordHandler **g_record;
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
-extern "C" void Level_onSuspend(Level *lvl);  // tail call via this->[0x74]
+extern "C" void Level_onSuspend(...);  // tail call via this->[0x74]
 
 // MGame::OnSuspend(): persist options, pause all audio, raise the pause dialogue (cutscene
 // mode if the player is mid-cutscene/dead), then suspend the level.
@@ -983,44 +917,20 @@ extern "C" void MGame_OnSuspend(MGame *self) {
 }
 
 // ---- dockEvent_17f920.cpp ----
-struct PlayerEgo;
-struct Player;
-struct Station;
-struct StarMap;
-struct Engine;
-struct ChoiceWindow;
-struct Mission;
-struct Level;
 
-extern "C" void PlayerEgo_getPosition(void *out, PlayerEgo *p);          // 0x7264c
-extern "C" uint8_t Level_collideStream(int level, int x, int y, int z);  // 0x78604
-extern "C" uint8_t Level_collideStation(int level, int x, int y, int z); // 0x78610
-extern "C" Mission *Status_getMission();                                 // 0x72850
-extern "C" int Mission_isEmpty(Mission *m);                              // 0x72868
-extern "C" int Mission_getType(Mission *m);                              // 0x72874
-extern "C" int PlayerEgo_isAutoPilot(PlayerEgo *p);                      // (isAutoPilot)
-extern "C" void Hud_hudEvent(int hud, int ev, int player);              // (Hud::hudEvent)
-extern "C" int PlayerEgo_goingToStream(PlayerEgo *p);                    // 0x... goingToStream
-extern "C" int Player_getHitpoints(Player *p);                           // 0x724f0
-extern "C" int Player_getShieldHP(Player *p);                            // 0x726c4
-extern "C" int Player_getArmorHP(Player *p);                             // 0x72928
-extern "C" int Player_getGammaHP(Player *p);                             // 0x72814
-extern "C" int PlayerEgo_getCurrentSecondaryWeaponIndex(PlayerEgo *p);   // 0x76d20
-extern "C" void *operator_new(unsigned sz);                              // 0x6eb24
-extern "C" void StarMap_ctor(StarMap *m, int a, Mission *b, int c, int d); // 0x75424
-extern "C" int ApplicationManager_GetEngine();                           // 0x7258c
-extern "C" void Engine_SetPostEffect(Engine *e, int id, int on);         // 0x707f8
-extern "C" void StarMap_initLights(StarMap *m);                          // 0x78298
-extern "C" void StarMap_setJumpMapMode(StarMap *m, int a, int b);        // 0x75430
-extern "C" void PlayerEgo_setAutoPilot(PlayerEgo *p, int v);             // 0x728d4
-extern "C" void MGame_pauseSounds(MGame *self);                          // 0x7822c
-extern "C" void ChoiceWindow_ctor(ChoiceWindow *w);                      // 0x74584
-extern "C" int Level_getLandmarks(Level *l);                             // 0x725b0
-extern "C" int Status_getCurrentCampaignMission();                       // 0x71770
-extern "C" Station *Status_getStation();                                 // 0x71c14
-extern "C" int Station_getIndex(Station *s);                             // 0x71824
-extern "C" int Status_inAlienOrbit();                                    // 0x723d0
-extern "C" void ApplicationManager_SetCurrentApplicationModule(unsigned m); // 0x71d64
+extern "C" uint8_t Level_collideStream(...);  // 0x78604
+extern "C" uint8_t Level_collideStation(...);  // 0x78610
+extern "C" int PlayerEgo_goingToStream(PlayerEgo *p);  // 0x... goingToStream
+extern "C" int Player_getHitpoints(Player *p);  // 0x724f0
+extern "C" int Player_getShieldHP(Player *p);  // 0x726c4
+extern "C" int Player_getArmorHP(Player *p);  // 0x72928
+extern "C" int Player_getGammaHP(Player *p);  // 0x72814
+extern "C" int PlayerEgo_getCurrentSecondaryWeaponIndex(PlayerEgo *p);  // 0x76d20
+extern "C" void StarMap_ctor(StarMap *m, int a, Mission *b, int c, int d);  // 0x75424
+extern "C" void StarMap_initLights(...);  // 0x78298
+extern "C" void StarMap_setJumpMapMode(...);  // 0x75430
+extern "C" Station *Status_getStation();  // 0x71c14
+extern "C" int Station_getIndex(Station *s);  // 0x71824
 // Builds and sets the "dock at <station>?" choice text, then ChoiceWindow::left().
 
 __attribute__((visibility("hidden"))) extern int *g_deGuard;     // @0x18f932 (stack guard [0])
@@ -1036,13 +946,15 @@ __attribute__((visibility("hidden"))) extern int g_deLitB1;      // @0x18fcb2
 __attribute__((visibility("hidden"))) extern int **g_deAchieve;  // @0x18fb90
 __attribute__((visibility("hidden"))) extern int **g_deAlienFlag;// @0x18fb9c
 
-static void savePlayerStats(MGame *self, int *status) {
+static void savePlayerStats(MGame *self, Status *status) {
     PlayerEgo *ego = self->field_0x58;
-    Player *pl = ego->field_0x0;
-    status->field_0x64 = Player_getHitpoints(pl);
-    status->field_0x5c = Player_getShieldHP(pl);
-    status->field_0x60 = Player_getArmorHP(pl);
-    status->field_0x68 = Player_getGammaHP(pl);
+    Player *pl = (Player *)ego->field_0x0;
+    // Status fields at +0x5c/0x60/0x64/0x68 are not modeled in gof2/Status.h
+    // (owned by another batch); write them via typed byte offsets.
+    F<int>(status, 0x64) = Player_getHitpoints(pl);
+    F<int>(status, 0x5c) = Player_getShieldHP(pl);
+    F<int>(status, 0x60) = Player_getArmorHP(pl);
+    F<int>(status, 0x68) = Player_getGammaHP(pl);
 }
 
 // MGame::dockEvent(): handle proximity to a jumpgate/station while flying.
@@ -1058,7 +970,7 @@ extern "C" void MGame_dockEvent(MGame *self) {
     self->field_0xcc = Level_collideStation(self->field_0x78,
                                                   (int)pos[0], (int)pos[1], (int)pos[2]);
 
-    int *status = g_deStatus;
+    Status *status = (Status *)g_deStatus;
     Mission *m = Status_getMission();
     bool special = Mission_isEmpty(m) != 0 ||
                    Mission_getType(Status_getMission()) == 0xb ||
@@ -1089,7 +1001,8 @@ extern "C" void MGame_dockEvent(MGame *self) {
         }
         if (self->field_0xcb != 0) {
             savePlayerStats(self, status);
-            status->field_0xf4 = PlayerEgo_getCurrentSecondaryWeaponIndex(self->field_0x58);
+            // Status +0xf4 is not modeled in gof2/Status.h (owned by another batch).
+            F<int>(status, 0xf4) = PlayerEgo_getCurrentSecondaryWeaponIndex(self->field_0x58);
             int autop = PlayerEgo_isAutoPilot(self->field_0x58);
             int *autoFlag = g_deAutoFlag;
             if (*autoFlag == 0 || autop == 0) {
@@ -1175,7 +1088,7 @@ extern "C" void MGame_dockEvent(MGame *self) {
     }
     if (PlayerEgo_goingToStation(self->field_0x58) != 0 &&
         Status_inAlienOrbit() == 0 &&
-        Status_inEmptyOrbit((Station *)*status) == 0) {
+        Status_inEmptyOrbit(*(Station **)status) == 0) {
         Achievements_checkForNewMedal(*g_deAchieve, self->field_0x58);
         **g_deAlienFlag = 0;
         savePlayerStats(self, status);
@@ -1239,43 +1152,20 @@ extern "C" void MGame_deleting_dtor(MGame *self) {
 }
 
 // ---- UseKhadorDrive_179d5c.cpp ----
-struct PlayerEgo;
-struct Mission;
-struct Station;
-struct StarMap;
-struct Engine;
 
-extern "C" int PlayerEgo_isChargingDrive(PlayerEgo *p);            // 0x77a7c
-extern "C" Mission *Status_getMission();                          // 0x72850
-extern "C" int Mission_isEmpty(Mission *m);                       // 0x72868
-extern "C" int Status_getCurrentCampaignMission();                // 0x71770
-extern "C" int Mission_getType(Mission *m);                       // 0x72874
-extern "C" int Status_inAlienOrbit();                             // 0x723d0
-extern "C" Station *Status_getStation();                          // 0x71c14
-extern "C" int Station_getIndex(Station *s);                      // 0x71824
-extern "C" Mission *Status_getCampaignMission();                  // 0x7285c
-extern "C" int Mission_getTargetStation(Mission *m);              // 0x73738
-extern "C" int Level_getPlayer(MGame *self);                      // 0x72034
-extern "C" void PlayerEgo_resetGunDelay(PlayerEgo *p);            // 0x72ca0
-extern "C" void MGame_startChargingJumpDrive(MGame *self);        // 0x78280
-extern "C" void MGame_resumeSounds(MGame *self);                  // 0x7828c
-extern "C" void Hud_closeHudMenu(void *hud);                      // 0x77a04
-extern "C" int PlayerEgo_hasVolatileGoods(PlayerEgo *p);          // 0x77b24
-extern "C" void *GameText_getText(int id);                        // 0x72f70
-extern "C" void ChoiceWindow_set(void *w, void *txt);             // 0x74794
-extern "C" void MGame_pauseSounds(MGame *self);                   // 0x7822c
-extern "C" void *operator_new(unsigned sz);                       // 0x6eb24
-extern "C" void StarMap_ctor(StarMap *m, int a, Mission *b, int c, int d); // 0x75424
-extern "C" int ApplicationManager_GetEngine();                    // 0x7258c
-extern "C" void Engine_SetPostEffect(Engine *e, int id, int on);  // 0x707f8
-extern "C" void StarMap_initLights(StarMap *m);                   // 0x78298
-extern "C" void StarMap_setJumpMapMode(StarMap *m, int a, int b); // 0x75430
-extern "C" void StarMap_askForJumpIntoAlienWorld(StarMap *m);     // 0x782a4
-extern "C" int Galaxy_getStation(int idx);                        // 0x71c44
+extern "C" int PlayerEgo_isChargingDrive(PlayerEgo *p);  // 0x77a7c
+extern "C" int Mission_getTargetStation(Mission *m);  // 0x73738
+extern "C" PlayerEgo *Level_getPlayer(...);  // 0x72034
+extern "C" void PlayerEgo_resetGunDelay(PlayerEgo *p);  // 0x72ca0
+extern "C" void MGame_startChargingJumpDrive(MGame *self);  // 0x78280
+extern "C" void MGame_resumeSounds(MGame *self);  // 0x7828c
+extern "C" void Hud_closeHudMenu(void *hud);  // 0x77a04
+extern "C" int PlayerEgo_hasVolatileGoods(PlayerEgo *p);  // 0x77b24
+extern "C" void StarMap_askForJumpIntoAlienWorld(...);  // 0x782a4
+extern "C" int Galaxy_getStation(int idx);  // 0x71c44
 // Tail helpers.
-extern "C" void Hud_hudEvent(void *hud, int ev, int player, int arg); // @0x1ac7a8
-extern "C" void MGame_jumpFinish(int *globals, int one);          // @0x1ac808
-extern "C" void MGame_starMapShown(int hud);                      // @0x1ac818
+extern "C" void MGame_jumpFinish(int *globals, int one);  // @0x1ac808
+extern "C" void MGame_starMapShown(...);  // @0x1ac818
 
 __attribute__((visibility("hidden"))) extern int *g_kdStatus;     // @0x189d7e (*piVar6)
 __attribute__((visibility("hidden"))) extern int **g_kdJumpDst;   // @0x189e36
@@ -1310,7 +1200,7 @@ extern "C" void MGame_UseKhadorDrive(MGame *self) {
     }
 
     if (special) {
-        int player = Level_getPlayer(self);
+        PlayerEgo *player = Level_getPlayer(self);
         return Hud_hudEvent(self->field_0x74, 0x15, player, 0);
     }
 
@@ -1372,27 +1262,14 @@ extern "C" void MGame_UseKhadorDrive(MGame *self) {
 }
 
 // ---- OnInitialize_177c50.cpp ----
-struct Level;
-struct PlayerEgo;
-struct Player;
-struct Ship;
-struct Station;
-struct Item;
-struct Engine;
 
-extern "C" int Status_inAlienOrbit();                                    // 0x723d0
-extern "C" void PaintCanvas_TextureCreate(unsigned a, unsigned *b, int c); // TextureCreate
-extern "C" int Status_getCurrentCampaignMission();                       // 0x71770
-extern "C" void *operator_new(unsigned sz);                              // 0x6eb24
-extern "C" void operator_delete(void *p);                                // 0x6eb48
-extern "C" void MGame_reset(MGame *self);                                // 0x178470
-extern "C" Station *Status_getStation();                                 // 0x71c14
-extern "C" int Station_getIndex(Station *s);                             // 0x71824
-extern "C" unsigned ApplicationManager_GetCurrentTimeMillis();           // 0x713d4
-extern "C" int Status_getShip();                                         // 0x71a58? getShip
+extern "C" void PaintCanvas_TextureCreate(unsigned a, unsigned *b, int c);  // TextureCreate
+extern "C" void operator_delete(void *p);  // 0x6eb48
+extern "C" void MGame_reset(MGame *self);  // 0x178470
+extern "C" unsigned ApplicationManager_GetCurrentTimeMillis();  // 0x713d4
 // Heavily-corrupt sub-blocks are delegated to documented helpers:
-extern "C" void MGame_loadSoundResources(MGame *self);    // sound-resource list (62..145)
-extern "C" void MGame_restorePlayerStats(MGame *self);    // HP/shield/armor restore (157..198)
+extern "C" void MGame_loadSoundResources(MGame *self);  // sound-resource list (62..145)
+extern "C" void MGame_restorePlayerStats(MGame *self);  // HP/shield/armor restore (157..198)
 extern "C" void MGame_setupWeaponsAndAudio(MGame *self);  // weapon + music init (315..end)
 
 __attribute__((visibility("hidden"))) extern int *g_initGuard;   // @0x187c60 (stack guard [0])
@@ -1463,10 +1340,10 @@ extern "C" void MGame_OnInitialize(MGame *self) {
     *(int *)((char *)*status + 0x13c) = 0;
     *(int *)((char *)*status + 0x144) = 0;
 
-    int eq = Ship_getFirstEquipmentOfSort(Status_getShip());
+    int eq = Ship_getFirstEquipmentOfSort(Status_getShip((Status *)*g_initStatus), 0x15);
     if (eq != 0) {
-        self->field_0x1b4 = Item_getAttribute(eq);
-        self->field_0x1b0 = Item_getAttribute(eq);
+        self->field_0x1b4 = Item_getAttribute(eq, 0x26);
+        self->field_0x1b0 = Item_getAttribute(eq, 0x26);
         Hud_setTimeExtender(self->field_0x74, 1, 0, 1);
     }
 
@@ -1474,7 +1351,7 @@ extern "C" void MGame_OnInitialize(MGame *self) {
     if (Status_dlc1Won() != 0 && Status_inAlienOrbit() != 0 &&
         Status_getCurrentCampaignMission() < 0x93) {
         if (self->field_0x58 != 0 && self->field_0x84 != 0)
-            *(int *)((char *)self->field_0x58 + 0x18) = self->field_0x84;
+            *(Radio **)((char *)self->field_0x58 + 0x18) = self->field_0x84;
         Level_createRadioMessage(self->field_0x78, 8);
     }
 
@@ -1482,16 +1359,16 @@ extern "C" void MGame_OnInitialize(MGame *self) {
         *(uint16_t *)((char *)*status + 0x110) = 0;
     } else {
         if (self->field_0x58 != 0 && self->field_0x84 != 0)
-            *(int *)((char *)self->field_0x58 + 0x18) = self->field_0x84;
+            *(Radio **)((char *)self->field_0x58 + 0x18) = self->field_0x84;
         if (*(uint8_t *)((char *)*status + 0x110) == 0) {
             int id;
-            int lvl;
+            Level *lvl;
             if (*(uint8_t *)((char *)*status + 0x111) == 0) {
-                int enemies = Level_getEnemies(self->field_0x78);
+                EnemyList *enemies = Level_getEnemies(self->field_0x78);
                 if (enemies != 0) {
-                    int n = *(int *)enemies;
+                    int n = (int)enemies->size;
                     for (int i = 0; i < n; i++) {
-                        int e = *(int *)(*(int *)((char *)enemies + 4) + i * 4);
+                        KIPlayer *e = enemies->data[i];
                         if (e->field_0x28 == 8)
                             e->field_0x25 = 0;
                     }
@@ -1504,11 +1381,11 @@ extern "C" void MGame_OnInitialize(MGame *self) {
             }
             Level_createRadioMessage(lvl, id);
         } else {
-            int enemies = Level_getEnemies(self->field_0x78);
+            EnemyList *enemies = Level_getEnemies(self->field_0x78);
             if (enemies != 0) {
-                int n = *(int *)enemies;
+                int n = (int)enemies->size;
                 for (int i = 0; i < n; i++) {
-                    int e = *(int *)(*(int *)((char *)enemies + 4) + i * 4);
+                    KIPlayer *e = enemies->data[i];
                     if (e->field_0x28 == 8)
                         e->field_0x25 = 0;
                 }
@@ -1524,14 +1401,11 @@ extern "C" void MGame_OnInitialize(MGame *self) {
 }
 
 // ---- freeCamTouchMove_178af8.cpp ----
-struct PlayerEgo;
-struct Vector;
 
-extern "C" int PlayerEgo_isMining(PlayerEgo *p);                      // 0x77adc
-extern "C" void Vector_sub(Vector *out, Vector *a, Vector *b);        // 0x6ec38
-extern "C" float Vector_length(Vector *v);                           // 0x6ec44
-extern "C" void Vector_assign(Vector *dst, Vector *src);             // 0x6eb3c
-extern "C" void TFC_zoomTarget(void *cam, float z);                  // 0x78178
+extern "C" int PlayerEgo_isMining(PlayerEgo *p);  // 0x77adc
+extern "C" void Vector_sub(Vector *out, Vector *a, Vector *b);  // 0x6ec38
+extern "C" float Vector_length(Vector *v);  // 0x6ec44
+extern "C" void TFC_zoomTarget(void *cam, float z);  // 0x78178
 // Pan-finish tail helper @0x1ac798 (no-op stack-guard-ok path).
 
 __attribute__((visibility("hidden"))) extern int *g_fcGuard;   // @0x188b10 (stack guard [0])
@@ -1540,14 +1414,17 @@ __attribute__((visibility("hidden"))) extern float g_fcZoomMax;   // @0x188d24
 __attribute__((visibility("hidden"))) extern float g_fcZoomMin;   // @0x188d28
 
 // MGame::freeCamTouchMove(int x, int y, void* touchId): rotate/zoom the free camera.
+// The third gesture component arrives pointer-sized but is consumed as a signed
+// touch coordinate; route it through intptr_t so the host build does not truncate.
 extern "C" void MGame_freeCamTouchMove(MGame *self, int x, int y, void *touchId) {
+    int ty = (int)(intptr_t)touchId;
     int *guard = g_fcGuard;
     int g0 = *guard;
 
     if (PlayerEgo_isMining(self->field_0x58) != 0) {
         self->field_0x111 = 1;
         if (*guard - g0 == 0)
-            return MGame_freeCamPanDone(self, (int)touchId);
+            return MGame_freeCamPanDone(self, ty);
         __stack_chk_fail();
         return;
     }
@@ -1558,9 +1435,9 @@ extern "C" void MGame_freeCamTouchMove(MGame *self, int x, int y, void *touchId)
     if (t0 == 0 || t1 == 0) {
         // Single-finger pan: accumulate rotation deltas.
         int dy = y - self->field_0x124;
-        int dx = (int)touchId - self->field_0x128;
+        int dx = ty - self->field_0x128;
         self->field_0x124 = x;
-        self->field_0x128 = (int)touchId;
+        self->field_0x128 = ty;
         self->field_0x134 = dy;
         self->field_0x138 = dx;
         self->field_0x13c = 0x3f800000;
@@ -1569,10 +1446,10 @@ extern "C" void MGame_freeCamTouchMove(MGame *self, int x, int y, void *touchId)
         self->field_0x11c += (float)dx;
 
         if (t0 == 0) {
-            float v[4]; v[0] = (float)x; v[1] = (float)(int)touchId; v[2] = 0;
+            float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
             Vector_assign((Vector *)((char *)self + 0xb0), (Vector *)v);
         } else if (t1 == 0) {
-            float v[4]; v[0] = (float)x; v[1] = (float)(int)touchId; v[2] = 0;
+            float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
             Vector_assign((Vector *)((char *)self + 0xa4), (Vector *)v);
         }
         if (*guard != g0) __stack_chk_fail();
@@ -1586,13 +1463,13 @@ extern "C" void MGame_freeCamTouchMove(MGame *self, int x, int y, void *touchId)
     float oldLen = Vector_length((Vector *)tmp);
     float newLen = oldLen;
 
-    if (self->field_0x98 == (int)touchId) {
-        float v[4]; v[0] = (float)x; v[1] = (float)(int)touchId; v[2] = 0;
+    if (self->field_0x98 == ty) {
+        float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
         Vector_sub((Vector *)tmp, base, (Vector *)v);
         newLen = Vector_length((Vector *)tmp);
         Vector_assign(base, (Vector *)v);
-    } else if (self->field_0x9c == (int)touchId) {
-        float v[4]; v[0] = (float)x; v[1] = (float)(int)touchId; v[2] = 0;
+    } else if (self->field_0x9c == ty) {
+        float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
         Vector_sub((Vector *)tmp, base, (Vector *)v);
         newLen = Vector_length((Vector *)tmp);
         Vector_assign((Vector *)((char *)self + 0xb0), (Vector *)v);
@@ -1610,8 +1487,6 @@ extern "C" void MGame_freeCamTouchMove(MGame *self, int x, int y, void *touchId)
 }
 
 // ---- OnTouchEnd_17a144.cpp ----
-struct PlayerEgo;
-struct TargetFollowCamera;
 
 // The full button-action dispatch body (cutscene/pause menu, boost/shoot, dock,
 // jump, menu navigation, dialogue choice handling, station services, etc.) is an
@@ -1661,35 +1536,10 @@ extern "C" void MGame_OnTouchEnd(MGame *self, int p1, int p2, void *touchId) {
 }
 
 // ---- successCheck_17ff58.cpp ----
-struct PlayerEgo;
-struct Level;
-struct DialogueWindow;
-struct Mission;
-struct Station;
-struct StarSystem;
-struct Route;
-struct PlayerFixedObject;
-struct KIPlayer;
-struct Player;
 
-extern "C" void *Status_getCampaignMission();                            // 0x7285c
-extern "C" int Mission_getType(void *m);                                 // 0x72874
-extern "C" Mission *Status_getMission();                                 // 0x72850
 extern "C" int Status_missionCompleted(int status, int a, long long b);  // 0x... missionCompleted
-extern "C" int Level_checkObjective(int level);                          // 0x... checkObjective
-extern "C" int Mission_isCampaignMission(Mission *m);                    // 0x7372c
-extern "C" int Status_getCurrentCampaignMission();                       // 0x71770
-extern "C" void *operator_new(unsigned sz);                              // 0x6eb24
-extern "C" void operator_delete(void *p);                                // 0x6eb48
-extern "C" void DialogueWindow_ctor(DialogueWindow *w);                  // 0x75544
-extern "C" int DialogueWindow_hasLevel(DialogueWindow *w);               // 0x78658
-extern "C" void DialogueWindow_setLevel(DialogueWindow *w, Level *l);    // 0x78664
-extern "C" void DialogueWindow_set(DialogueWindow *w, int m, int a);     // 0x75550
-extern "C" void MGame_pauseSounds(MGame *self);                          // 0x7822c
-extern "C" Station *Status_getStation();                                 // 0x71c14
-extern "C" int Station_getIndex(Station *s);                             // 0x71824
-extern "C" int Level_getEnemies(Level *l);                              // 0x... getEnemies
-extern "C" StarSystem *Level_getStarSystem(Level *l);                   // 0x727c0
+extern "C" int Level_checkObjective(...);  // 0x... checkObjective
+extern "C" StarSystem *Level_getStarSystem(Level *l);  // 0x727c0
 // Corrupt follow-up-mission setup block (227..291) kept as one helper.
 
 __attribute__((visibility("hidden"))) extern int *g_scGuard;     // @0x18ff6e (stack guard [0])
@@ -1702,7 +1552,7 @@ static void bindDlg(MGame *self) {
         DialogueWindow *w = (DialogueWindow *)operator_new(0x74);
         DialogueWindow_ctor(w);
         Level *lvl = self->field_0x78;
-        self->field_0x8c = (int)w;
+        self->field_0x8c = w;
         if (lvl != 0) DialogueWindow_setLevel(w, lvl);
     } else if (DialogueWindow_hasLevel(self->field_0x8c) == 0) {
         Level *lvl = self->field_0x78;
@@ -1757,20 +1607,22 @@ extern "C" void MGame_successCheck(MGame *self) {
             // fallthrough: has success dialogue -> show it.
             bindDlg(self);
             DialogueWindow_set(self->field_0x8c,
-                               (int)Status_getMission(), 1);
+                               Status_getMission(), 1);
             self->field_0x5d = 0x101;
             MGame_pauseSounds(self);
 
             int cm = Status_getCurrentCampaignMission();
             if (Mission_isCampaignMission(Status_getMission()) != 0 && cm == 0x26) {
-                int enemies = Level_getEnemies(self->field_0x78);
-                unsigned n = *(unsigned *)enemies;
+                EnemyList *enemies = Level_getEnemies(self->field_0x78);
+                unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
-                    int e = *(int *)(*(int *)((char *)enemies + 4) + i * 4);
+                    // Enemy entries are polymorphic; this branch touches the
+                    // PlayerFixedObject layout (field_0x40 "moving" flag).
+                    PlayerFixedObject *e = (PlayerFixedObject *)enemies->data[i];
                     if (e->field_0x40 != 0 &&
                         KIPlayer_isDead((KIPlayer *)e) == 0)
-                        Player_setHitpoints(e->field_0x4,
-                                            e->field_0x4);
+                        Player_setHitpoints((Player *)e->field_0x4,
+                                            (Player *)e->field_0x4);
                 }
             } else if (Mission_isCampaignMission(Status_getMission()) != 0 && cm == 0x38) {
                 StarSystem *ss = Level_getStarSystem(self->field_0x78);
@@ -1778,8 +1630,8 @@ extern "C" void MGame_successCheck(MGame *self) {
                 int pts[3] = {0, 0, 0};
                 Route *route = (Route *)operator_new(0x18);
                 Route_ctor(route, pts, 3);
-                int enemies = Level_getEnemies(self->field_0x78);
-                unsigned n = *(unsigned *)enemies;
+                EnemyList *enemies = Level_getEnemies(self->field_0x78);
+                unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     KIPlayer *k = *(KIPlayer **)(*(int *)((char *)enemies + 4) + i * 4);
                     if (k->field_0x28 == 1) {
@@ -1789,16 +1641,16 @@ extern "C" void MGame_successCheck(MGame *self) {
                 }
                 operator_delete(Route_dtor(route));
             } else if (Mission_isCampaignMission(Status_getMission()) != 0 && cm == 0x3f) {
-                int enemies = Level_getEnemies(self->field_0x78);
-                unsigned n = *(unsigned *)enemies;
+                EnemyList *enemies = Level_getEnemies(self->field_0x78);
+                unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
-                    int e = *(int *)(*(int *)((char *)enemies + 4) + i * 4);
+                    KIPlayer *e = enemies->data[i];
                     if (e->field_0x28 == 8)
-                        Player_removeAllGuns(e->field_0x4);
+                        Player_removeAllGuns((Player *)e->field_0x4);
                 }
             } else if (Mission_isCampaignMission(Status_getMission()) != 0 && cm == 0x49) {
-                int enemies = Level_getEnemies(self->field_0x78);
-                unsigned n = *(unsigned *)enemies;
+                EnemyList *enemies = Level_getEnemies(self->field_0x78);
+                unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     PlayerFixedObject *o = *(PlayerFixedObject **)(*(int *)((char *)enemies + 4) + i * 4);
                     if (o->field_0x40 != 0 &&
@@ -1817,8 +1669,11 @@ extern "C" void MGame_successCheck(MGame *self) {
         }
         // Non-campaign success-dialogue path.
         bindDlg(self);
-        int m = Status_getCurrentCampaignMission() == 0 ? (int)Status_getMission()
-                                                         : Status_getCurrentCampaignMission();
+        // Slot holds either a Mission* (non-campaign) or a campaign mission id;
+        // use a pointer-width carrier so neither is truncated on a 64-bit host.
+        intptr_t m = Status_getCurrentCampaignMission() == 0
+                         ? (intptr_t)Status_getMission()
+                         : (intptr_t)Status_getCurrentCampaignMission();
         DialogueWindow_set(self->field_0x8c, m, 1);
         self->field_0x5d = 0x101;
         MGame_pauseSounds(self);
@@ -1849,11 +1704,6 @@ extern "C" MGame *MGame_dtor(MGame *self) {
 }
 
 // ---- resumeSounds_178e24.cpp ----
-struct FModSound;
-struct PlayerEgo;
-struct KIPlayer;
-struct Level;
-struct EnemyList { uint32_t size; KIPlayer **data; };
 
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 
@@ -1868,11 +1718,6 @@ extern "C" void MGame_resumeSounds(MGame *self) {
 }
 
 // ---- startChargingJumpDrive_179fb0.cpp ----
-struct Status;
-struct Ship;
-struct ChoiceWindow;
-struct PlayerEgo;
-struct Hud;
 __attribute__((visibility("hidden"))) extern Status **g_status;   // DAT_18a128
 __attribute__((visibility("hidden"))) extern int *g_jumpFlag;     // DAT_18a134 (*piVar6)
 __attribute__((visibility("hidden"))) extern int **g_alienAmt;    // DAT_18a138
@@ -1937,11 +1782,6 @@ extern "C" void MGame_startChargingJumpDrive(MGame *self) {
 }
 
 // ---- pauseSounds_178ddc.cpp ----
-struct FModSound;
-struct PlayerEgo;
-struct KIPlayer;
-struct Level;
-struct EnemyList { uint32_t size; KIPlayer **data; };
 
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 
@@ -1959,43 +1799,22 @@ extern "C" void MGame_pauseSounds(MGame *self) {
 }
 
 // ---- reset_178470.cpp ----
-struct Hud;
-struct Radio;
-struct Radar;
-struct Level;
-struct LevelScript;
-struct TargetFollowCamera;
-struct ChoiceWindow;
-struct PlayerEgo;
-struct Mission;
-struct PaintCanvas;
 
-extern "C" int Level_getPlayer(MGame *self);                              // 0x72034
-extern "C" void *operator_new(unsigned sz);                              // 0x6eb24
-extern "C" void operator_delete(void *p);                                // 0x6eb48
-extern "C" void Hud_ctor(Hud *h);                                        // 0x78118
-extern "C" void Radio_ctor(Radio *r);                                    // 0x75160
-extern "C" void *Level_getMessages(Level *l);                            // 0x71ef0
-extern "C" void Radio_setMessages(Radio *r, void *msgs);                 // 0x74488
-extern "C" void PaintCanvas_CameraCreate(PaintCanvas *pc, unsigned *out); // 0x72058
-extern "C" int Status_inAlienOrbit();                                    // 0x723d0
-extern "C" int Status_getCurrentCampaignMission();                       // 0x71770
-extern "C" void PaintCanvas_CameraSetPerspective(unsigned cam, float fov, float a, float b); // 0x72004
-extern "C" void *TargetFollowCamera_dtor(TargetFollowCamera *c);         // 0x72064
+extern "C" void Hud_ctor(Hud *h);  // 0x78118
+extern "C" void Radio_ctor(Radio *r);  // 0x75160
+extern "C" void *Level_getMessages(Level *l);  // 0x71ef0
+extern "C" void Radio_setMessages(Radio *r, void *msgs);  // 0x74488
+extern "C" void PaintCanvas_CameraCreate(PaintCanvas *pc, unsigned *out);  // 0x72058
+extern "C" void *TargetFollowCamera_dtor(void *c);  // 0x72064
 extern "C" void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
                                         int a, int b, int d, int e, int f, int g); // 0x78124
-extern "C" void PaintCanvas_CameraSetCurrent(PaintCanvas *pc, unsigned cam); // 0x6fd9c
-extern "C" void PlayerEgo_setTargetFollowCamera(PlayerEgo *p, TargetFollowCamera *c); // 0x78130
-extern "C" void TargetFollowCamera_resetShipHandling(TargetFollowCamera *c); // 0x72a18
-extern "C" void Radar_ctor(Radar *r, Level *l);                          // 0x7813c
-extern "C" Mission *Status_getMission();                                 // 0x72850
-extern "C" int Mission_isCampaignMission(Mission *m);                    // 0x7372c
+extern "C" void PaintCanvas_CameraSetCurrent(PaintCanvas *pc, unsigned cam);  // 0x6fd9c
+extern "C" void PlayerEgo_setTargetFollowCamera(PlayerEgo *p, TargetFollowCamera *c);  // 0x78130
+extern "C" void TargetFollowCamera_resetShipHandling(TargetFollowCamera *c);  // 0x72a18
+extern "C" void Radar_ctor(Radar *r, Level *l);  // 0x7813c
 extern "C" void LevelScript_ctor(LevelScript *s, Hud *hud, Level *level,
                                  Radar *radar, TargetFollowCamera *cam);  // 0x78148
-extern "C" void LevelScript_lookBehind(LevelScript *s, int a);           // 0x7246c (resetCamera shares 0x7246c? see disasm)
-extern "C" void Level_initParticleSystems(Level *l);                     // 0x7204c
-extern "C" void ChoiceWindow_ctor(ChoiceWindow *w);                      // 0x74584
-extern "C" unsigned ApplicationManager_GetCurrentTimeMillis();           // 0x713d4
+extern "C" void Level_initParticleSystems(Level *l);  // 0x7204c
 
 __attribute__((visibility("hidden"))) extern int g_resAspectA;    // @0x1886dc (DAT)
 __attribute__((visibility("hidden"))) extern int g_resAspectB;    // @0x1886e0
@@ -2111,23 +1930,22 @@ extern "C" void MGame_reset(MGame *self) {
     self->field_0x2c = 0;
     self->field_0x1dd = **g_resPauseSrc;
 
-    int s = *status;
-    s->field_0x184 = 0;
-    s->field_0x188 = 1;
-    s->field_0x18c = 1;
+    // *status points at the Status object; fields +0x184/0x188/0x18c are not
+    // modeled in gof2/Status.h (owned by another batch) — write via byte offset.
+    void *s = (void *)(intptr_t)*status;
+    F<int>(s, 0x184) = 0;
+    F<int>(s, 0x188) = 1;
+    F<int>(s, 0x18c) = 1;
 }
 
 // ---- handleAccelerometer_178714.cpp ----
-struct Engine;
-struct PlayerEgo;
 
-extern "C" int ApplicationManager_GetEngine();                    // 0x7258c
-extern "C" int Engine_GetAccelValue(Engine *e);                   // 0x6ff88
-extern "C" void PlayerEgo_left(PlayerEgo *p, float amt);          // 0x729d0
-extern "C" void PlayerEgo_right(PlayerEgo *p, float amt);         // 0x729dc
+extern "C" int Engine_GetAccelValue(Engine *e);  // 0x6ff88
+extern "C" void PlayerEgo_left(PlayerEgo *p, float amt);  // 0x729d0
+extern "C" void PlayerEgo_right(PlayerEgo *p, float amt);  // 0x729dc
 // Roll-control callbacks invoked by fn-ptr: (ego, shipField, amt).
-extern "C" void *MGame_accelCtxBegin(int field8);                 // fn @0x1887b4 (pcVar5)
-extern "C" double *MGame_accelCtxValue();                         // fn @0x1887bc (pcVar4)
+extern "C" void *MGame_accelCtxBegin(int field8);  // fn @0x1887b4 (pcVar5)
+extern "C" double *MGame_accelCtxValue();  // fn @0x1887bc (pcVar4)
 // Roll tail helpers @0x1abb78 / @0x1abb68.
 
 __attribute__((visibility("hidden"))) extern int g_accelTune;   // @0x1887d4 (*(int*) iVar6)
@@ -2222,22 +2040,18 @@ afterYaw: {
 }
 
 // ---- OnTouchMove_1799dc.cpp ----
-struct PlayerEgo;
 
-extern "C" int MenuTouchWindow_isShowingMessage(void *w);                 // 0x781e4
-extern "C" int MenuTouchWindow_isMakingScreenshot(void *w);               // 0x781f0
-extern "C" void MGame_freeCamTouchMove(MGame *self, int p1, int p2, void *p3); // 0x78238
-extern "C" int Hud_touchMove(void *hud, int p1, int p2, void *p3);        // 0x78244
-extern "C" void MGame_maneuverTouchMove(MGame *self, int mode, int y);    // 0x78250
-extern "C" float PlayerEgo_getThrust(PlayerEgo *p);                       // 0x7825c
-extern "C" void PlayerEgo_setThrust(PlayerEgo *p, float v);               // 0x78268
-extern "C" void PlayerEgo_throttleChanged(PlayerEgo *p);                  // 0x78274
-extern "C" int ApplicationManager_GetApplicationData();                   // 0x71704
-extern "C" void MenuTouchWindow_OnTouchMove(void *w, int p1, int p2, void *p3); // 0x75118
-extern "C" void DialogueWindow_OnTouchMove(int w, int p1, int p2);        // 0x750d0
-extern "C" void StarMap_OnTouchMove(int m, int p1, int p2);               // 0x750e8
-extern "C" void Layout_OnTouchMove2(int l, int p1, int p2);              // 0x74758
-extern "C" void ChoiceWindow_OnTouchMove(int w, int p1, int p2);          // 0x7474c
+extern "C" void MGame_freeCamTouchMove(MGame *self, int p1, int p2, void *p3);  // 0x78238
+extern "C" int Hud_touchMove(void *hud, int p1, int p2, void *p3);  // 0x78244
+extern "C" void MGame_maneuverTouchMove(MGame *self, int mode, int y);  // 0x78250
+extern "C" float PlayerEgo_getThrust(PlayerEgo *p);  // 0x7825c
+extern "C" void PlayerEgo_setThrust(PlayerEgo *p, float v);  // 0x78268
+extern "C" void PlayerEgo_throttleChanged(PlayerEgo *p);  // 0x78274
+extern "C" void MenuTouchWindow_OnTouchMove(void *w, int p1, int p2, void *p3);  // 0x75118
+extern "C" void DialogueWindow_OnTouchMove(DialogueWindow *w, int p1, int p2);  // 0x750d0
+extern "C" void StarMap_OnTouchMove(StarMap *m, int p1, int p2);  // 0x750e8
+extern "C" void Layout_OnTouchMove2(int l, int p1, int p2);  // 0x74758
+extern "C" void ChoiceWindow_OnTouchMove(...);  // 0x7474c
 // Thrust-from-drag application (0x189af2..0x189b46): new = max(2, base + dY*scale),
 // then setThrust + throttleChanged. Helper keeps the corrupt float math compiling.
 
@@ -2334,8 +2148,6 @@ extern "C" void MGame_OnTouchMove(MGame *self, int p1, int y, void *touch) {
 }
 
 // ---- setCinematicMode_17c454.cpp ----
-struct TargetFollowCamera;
-struct Hud;
 // Hidden PC-relative globals: a "cinematic active" byte flag and an input/UI byte flag.
 __attribute__((visibility("hidden"))) extern uint8_t *g_cinFlagA;
 __attribute__((visibility("hidden"))) extern uint8_t **g_cinFlagB;
@@ -2361,51 +2173,28 @@ extern "C" void MGame_setCinematicMode(MGame *self, bool on) {
         self->field_0x164 = TFC_isInLookAtMode(self->field_0xf4);
         TFC_setLookAtCam(self->field_0xf4, 0);
         MGame_switchCamera(self, 3);
-        return Hud_enterCinematic(*self->field_0x78, self->field_0x40, 1);
+        return Hud_enterCinematic(*(void **)self->field_0x78, self->field_0x40, 1);
     }
 }
 
 // ---- updateJumpScene_17f588.cpp ----
-struct PlayerEgo;
-struct Station;
-struct Player;
-struct Vector;
-struct LevelScript;
-struct Level;
 
-extern "C" int Level_getLandmarks(Level *l);                             // 0x725b0
-extern "C" int PlayerJumpgate_timeToJump(int jg);                        // 0x785c8
-extern "C" int PaintCanvas_TransformGetTransform(unsigned cam);          // 0x72088
-extern "C" void Matrix_rotateVector(void *out, Vector *v);              // 0x6f694
-extern "C" void Vector_assign(Vector *dst, Vector *src);               // 0x6eb3c
-extern "C" void TFC_translate(void *cam, int x, int y, int z);         // 0x72688
-extern "C" void AEGeometry_getPosition(int geo, void *out);            // 0x720b8
-extern "C" void Transform_Update(unsigned t, int speedFlag);           // 0x6f7cc
-extern "C" void *TFC_getPosition(void *cam);                           // 0x76b28
-extern "C" void PlayerJumpgate_activate(int jg);                       // 0x785d4
-extern "C" void PlayerEgo_getPosition(void *out, PlayerEgo *p);        // 0x7264c
-extern "C" void FModSound_setProp(int snd, int id);                    // fn @0x18f724
-extern "C" void FModSound_play(int snd, int a, int b, float c);        // 0x71548
-extern "C" void PlayerEgo_setSpeed(PlayerEgo *p, float s);             // 0x76b40
-extern "C" void PlayerEgo_setVisible(PlayerEgo *p, int v);             // 0x76aec
-extern "C" void PlayerEgo_setExhaustVisible(PlayerEgo *p, int v);      // 0x72af0
-extern "C" int PlayerJumpgate_animationEnded(int jg);                  // 0x785e0
-extern "C" int Status_getCurrentCampaignMission();                     // 0x71770
-extern "C" int Status_inAlienOrbit();                                  // 0x723d0
-extern "C" void LevelScript_setEvent(LevelScript *s, int ev);          // 0x785ec
-extern "C" void PlayerEgo_setPosition(PlayerEgo *p, int x, int y, int z); // 0x72cb8
-extern "C" void PlayerEgo_resetChargingDrive(PlayerEgo *p);            // 0x785f8
-extern "C" void Status_departStation(Station *s);                     // 0x745fc
-extern "C" void Level_setInitStreamOut(int level);                    // 0x74608
-extern "C" void Status_jumpgateUsed(Station *s);                      // 0x74614
-extern "C" int Station_equals(Station *a, Station *b);                // 0x73678
-extern "C" void Status_setStation(Station *s);                        // 0x7366c
-extern "C" int Player_getHitpoints(Player *p);                        // 0x724f0
-extern "C" int Player_getShieldHP(Player *p);                         // 0x726c4
-extern "C" int Player_getArmorHP(Player *p);                          // 0x72928
-extern "C" int Player_getGammaHP(Player *p);                          // 0x72814
-extern "C" int PlayerEgo_getCurrentSecondaryWeaponIndex(PlayerEgo *p); // 0x76d20
-extern "C" void ApplicationManager_SetCurrentApplicationModule(unsigned m); // 0x71d64
+extern "C" int PlayerJumpgate_timeToJump(int jg);  // 0x785c8
+extern "C" void TFC_translate(void *cam, int x, int y, int z);  // 0x72688
+extern "C" void AEGeometry_getPosition(AEGeometry *geo, void *out);  // 0x720b8
+extern "C" void Transform_Update(unsigned t, int speedFlag);  // 0x6f7cc
+extern "C" void *TFC_getPosition(void *cam);  // 0x76b28
+extern "C" void PlayerJumpgate_activate(int jg);  // 0x785d4
+extern "C" void PlayerEgo_setVisible(PlayerEgo *p, int v);  // 0x76aec
+extern "C" void PlayerEgo_setExhaustVisible(PlayerEgo *p, int v);  // 0x72af0
+extern "C" int PlayerJumpgate_animationEnded(int jg);  // 0x785e0
+extern "C" void LevelScript_setEvent(LevelScript *s, int ev);  // 0x785ec
+extern "C" void PlayerEgo_resetChargingDrive(PlayerEgo *p);  // 0x785f8
+extern "C" void Status_departStation(Station *s);  // 0x745fc
+extern "C" void Level_setInitStreamOut(...);  // 0x74608
+extern "C" void Status_jumpgateUsed(Station *s);  // 0x74614
+extern "C" int Station_equals(Station *a, Station *b);  // 0x73678
+extern "C" void Status_setStation(Station *s);  // 0x7366c
 
 __attribute__((visibility("hidden"))) extern int *g_ujGuard;     // @0x18f598 (stack guard [0])
 __attribute__((visibility("hidden"))) extern unsigned **g_ujCanvasA; // @0x18f5b2
@@ -2559,7 +2348,7 @@ done:
 }
 
 // ---- MGame_177b30.cpp ----
-extern "C" void String_default_ctor(void *s);   // 0x6efbc
+extern "C" void String_default_ctor(void *s);  // 0x6efbc
 __attribute__((visibility("hidden"))) extern int g_mgameVtable; // @0x187b3c ([0]=vtable base)
 __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (DAT_00187c00)
 
@@ -2607,14 +2396,14 @@ extern "C" MGame *MGame_ctor(MGame *self) {
     self->field_0x1a6 = 0;
     self->field_0x54 = 0;
     self->field_0xd5 = 0;
-    self->field_0x114 = z;
-    self->field_0xf4 = z;
+    self->field_0x114 = 0;
+    self->field_0xf4 = 0;
     self->field_0x1e4 = 0;
     self->field_0x1d4 = z;
     self->field_0x40 = z;
-    self->field_0x58 = z; self->field_0x5c = z;
+    self->field_0x58 = 0; self->field_0x5c = z;
     self->field_0x60 = 0;
-    self->field_0x90 = z; self->field_0x94 = z;
+    self->field_0x90 = 0; self->field_0x94 = 0;
     self->field_0xc8 = 0;
     self->field_0xc4 = z;
     self->field_0xce = 0;
@@ -2626,40 +2415,30 @@ extern "C" MGame *MGame_ctor(MGame *self) {
 }
 
 // ---- OnRelease_17c6bc.cpp ----
-struct Engine;
-struct Level;
-struct AEGeometry;
-struct Hud;
-struct LevelScript;
-struct StarMap;
 
-extern "C" int ApplicationManager_GetEngine();                            // 0x7258c
-extern "C" void Engine_SetPostEffect(Engine *e, int id, int on);          // 0x707f8
-extern "C" void FModSound_setDownPitch(int v);                            // 0x74f74
-extern "C" void FModSound_disableReverb(Engine *e);                       // 0x75310
-extern "C" void FModSound_stopAllSoundFXEvents(Engine *e);                // 0x7531c
-extern "C" void *Level_dtor(Level *l);                                    // 0x71fd4
-extern "C" void *AEGeometry_dtor(AEGeometry *g);                          // 0x71fc8
-extern "C" void *Hud_dtor(Hud *h);                                        // 0x7846c
-extern "C" void *LevelScript_dtor(LevelScript *s);                        // 0x78478
-extern "C" void *Radar_dtor(void *r);                                     // 0x78484
-extern "C" void *Radio_dtor(void *r);                                     // 0x75388
-extern "C" int ApplicationManager_GetApplicationModule(int id);           // 0x75bd4
-extern "C" void *StarMap_dtor(StarMap *m);                                // 0x75340
-extern "C" void *MenuTouchWindow_dtor(void *w);                           // 0x7537c
-extern "C" void *DialogueWindow_dtor(void *w);                            // 0x75010
-extern "C" void *ChoiceWindow_dtor(void *w);                              // 0x74d88
-extern "C" void *TargetFollowCamera_dtor(void *c);                        // 0x72064
-extern "C" void *GameRecord_dtor(void *r);                                // 0x765ac
-extern "C" void PaintCanvas_ReleaseAllResources(int x);                   // 0x6f964
-extern "C" unsigned short GameText_getLanguage();                         // 0x6f544
-extern "C" void Globals_loadFont(int font, int lang);                     // 0x71d04
-extern "C" void Layout_reload(int layout);                                // 0x71d10
-extern "C" void ImageFactory_reload(int factory);                         // 0x71d1c
-extern "C" void Layout_initTip2(int layout);                              // 0x71d28
-extern "C" void ArrayReleaseClasses_StringPtr(void *arr);                 // 0x6facc
-extern "C" void *ArrayStringPtr_dtor(void *arr);                          // 0x6f64c
-extern "C" void operator_delete(void *p);                                 // 0x6eb48
+extern "C" void FModSound_setDownPitch(int v);  // 0x74f74
+extern "C" void FModSound_disableReverb(Engine *e);  // 0x75310
+extern "C" void FModSound_stopAllSoundFXEvents(Engine *e);  // 0x7531c
+extern "C" void *Level_dtor(Level *l);  // 0x71fd4
+extern "C" void *AEGeometry_dtor(...);  // 0x71fc8
+extern "C" void *Hud_dtor(...);  // 0x7846c
+extern "C" void *LevelScript_dtor(LevelScript *s);  // 0x78478
+extern "C" void *Radar_dtor(void *r);  // 0x78484
+extern "C" void *Radio_dtor(...);  // 0x75388
+extern "C" int ApplicationManager_GetApplicationModule(int id);  // 0x75bd4
+extern "C" void *StarMap_dtor(...);  // 0x75340
+extern "C" void *MenuTouchWindow_dtor(void *w);  // 0x7537c
+extern "C" void *DialogueWindow_dtor(...);  // 0x75010
+extern "C" void *ChoiceWindow_dtor(void *w);  // 0x74d88
+extern "C" void *GameRecord_dtor(...);  // 0x765ac
+extern "C" void PaintCanvas_ReleaseAllResources(int x);  // 0x6f964
+extern "C" unsigned short GameText_getLanguage();  // 0x6f544
+extern "C" void Globals_loadFont(int font, int lang);  // 0x71d04
+extern "C" void Layout_reload(int layout);  // 0x71d10
+extern "C" void ImageFactory_reload(int factory);  // 0x71d1c
+extern "C" void Layout_initTip2(int layout);  // 0x71d28
+extern "C" void ArrayReleaseClasses_StringPtr(void *arr);  // 0x6facc
+extern "C" void *ArrayStringPtr_dtor(void *arr);  // 0x6f64c
 // Tail helper @0x1ac168 (re-enables low-pass / restores FMOD state).
 
 __attribute__((visibility("hidden"))) extern int g_relPostEffect;   // @0x18c8b8 (DAT)
@@ -2783,30 +2562,19 @@ extern "C" void MGame_OnRelease(MGame *self) {
 }
 
 // ---- OnRender2D_1808c0.cpp ----
-struct PlayerEgo;
-struct Level;
-struct LevelScript;
-struct Layout;
 
-extern "C" void PaintCanvas_Begin2d();                                   // 0x71d34
-extern "C" void Level_getStarSystem(Level *l);                          // 0x727c0
-extern "C" void StarSystem_render2D(int ss);                            // 0x74458
-extern "C" int LevelScript_startSequenceOver();                         // (startSequenceOver)
-extern "C" void MGame_drawRadio(MGame *self);                           // Radio::draw wrapper
-extern "C" int Mission_getType(void *m);                                // 0x72874
-extern "C" int Status_getCurrentCampaignMission();                      // 0x71770
-extern "C" int PlayerEgo_isMining(PlayerEgo *p);                        // 0x77adc
-extern "C" void MGame_drawRadar(MGame *self);                          // Radar::draw wrapper
-extern "C" void MGame_nextCamId(MGame *self);                          // 0x... nextCamId
-extern "C" void MGame_drawHud(MGame *self);                            // Hud::draw wrapper
-extern "C" void PaintCanvas_SetColor(unsigned color);                  // 0x6fac0
-extern "C" void PaintCanvas_DrawImage2D5(int pc, int img, int x, int y, int anchor); // 0x71d70
-extern "C" void Layout_drawFade(Layout *l);                           // 0x... drawFade
-extern "C" void MenuTouchWindow_draw(void *w);                         // 0x755d4
-extern "C" void Vector_assign(void *dst, void *src);                  // 0x6eb3c
-extern "C" int ApplicationManager_GetEngine();                        // 0x7258c
-extern "C" void PaintCanvas_End2d();                                  // 0x71d40? End2d
-extern "C" void MGame_drawFadeMessage(MGame *self, int pc);           // splash/fade text helper
+extern "C" void PaintCanvas_Begin2d();  // 0x71d34
+extern "C" void StarSystem_render2D(int ss);  // 0x74458
+extern "C" void MGame_drawRadio(MGame *self);  // Radio::draw wrapper
+extern "C" void MGame_drawRadar(MGame *self);  // Radar::draw wrapper
+extern "C" int MGame_nextCamId(MGame *self, int cur);  // 0x18c624 nextCamId
+extern "C" void MGame_drawHud(MGame *self);  // Hud::draw wrapper
+extern "C" void PaintCanvas_SetColor(unsigned color);  // 0x6fac0
+extern "C" void PaintCanvas_DrawImage2D5(int pc, int img, int x, int y, int anchor);  // 0x71d70
+extern "C" void Layout_drawFade(Layout *l);  // 0x... drawFade
+extern "C" void MenuTouchWindow_draw(void *w);  // 0x755d4
+extern "C" void PaintCanvas_End2d();  // 0x71d40? End2d
+extern "C" void MGame_drawFadeMessage(MGame *self, int pc);  // splash/fade text helper
 
 __attribute__((visibility("hidden"))) extern int *g_r2dGuard;    // @0x1908d4 (stack guard [0])
 __attribute__((visibility("hidden"))) extern unsigned **g_r2dCanvas; // @0x1908e8
@@ -2841,7 +2609,7 @@ extern "C" void MGame_OnRender2D(MGame *self) {
             StarSystem_render2D(0);
         }
         float v[4]; *(int *)&v[0] = 0x3f000000; *(int *)&v[1] = 0x3f000000; v[2] = 0;
-        int eng = ApplicationManager_GetEngine();
+        Engine *eng = (Engine *)ApplicationManager_GetEngine();
         Vector_assign((char *)eng + 0x3cc, v);
         PaintCanvas_End2d();
         if (*guard != g0) __stack_chk_fail();
@@ -2896,7 +2664,7 @@ extern "C" void MGame_OnRender2D(MGame *self) {
                      self->field_0xc9 != 0))
                     MGame_drawRadar(self);
                 if (self->field_0x5e == 0) {
-                    MGame_nextCamId(self);
+                    MGame_nextCamId(self, self->field_0x14);
                     MGame_drawHud(self);
                     MGame_drawRadio(self);
                     Radar_drawCurrentLock(self->field_0x80);
@@ -2925,12 +2693,6 @@ extern "C" void MGame_OnRender2D(MGame *self) {
 }
 
 // ---- dialogueEvent_17fe34.cpp ----
-struct Status;
-struct Mission;
-struct Level;
-struct PlayerEgo;
-struct TargetFollowCamera;
-struct DialogueWindow;
 __attribute__((visibility("hidden"))) extern Status **g_status;
 
 
@@ -2939,21 +2701,21 @@ __attribute__((visibility("hidden"))) extern Status **g_status;
 extern "C" void MGame_dialogueEvent(MGame *self) {
     if (LevelScript_startSequenceOver(self->field_0x7c) == 0) return;
     Status **sp = g_status;
-    if (DialogueWindow_hasBriefingDialogue(Status_getCurrentCampaignMission(*sp)) == 0) {
-        if (Mission_isCampaignMission(Status_getMission(*sp)) != 0) return;
+    if (DialogueWindow_hasBriefingDialogue(Status_getCurrentCampaignMission()) == 0) {
+        if (Mission_isCampaignMission(Status_getMission()) != 0) return;
     }
-    if (Mission_isEmpty(Status_getMission(*sp)) != 0) return;
-    if (Mission_getType(Status_getMission(*sp)) == 8) return;
-    if (Mission_getType(Status_getMission(*sp)) == 0xa6) return;
-    if (Mission_getType(Status_getMission(*sp)) == 0) return;
-    if (Mission_getType(Status_getMission(*sp)) == 0xb7) return;
-    if (Mission_isVisible(Status_getMission(*sp)) == 0) return;
-    if (Mission_isCampaignMission(Status_getMission(*sp)) == 0) {
-        if (Mission_getType(Status_getMission(*sp)) == 0xb) return;
+    if (Mission_isEmpty(Status_getMission()) != 0) return;
+    if (Mission_getType(Status_getMission()) == 8) return;
+    if (Mission_getType(Status_getMission()) == 0xa6) return;
+    if (Mission_getType(Status_getMission()) == 0) return;
+    if (Mission_getType(Status_getMission()) == 0xb7) return;
+    if (Mission_isVisible(Status_getMission()) == 0) return;
+    if (Mission_isCampaignMission(Status_getMission()) == 0) {
+        if (Mission_getType(Status_getMission()) == 0xb) return;
     }
     if (self->field_0x8c == 0) {
         DialogueWindow *w = (DialogueWindow *)MGame_opnew(0x74);
-        DialogueWindow_ctor(w, Status_getMission(*sp), self->field_0x78, 0);
+        DialogueWindow_ctor(w, Status_getMission(), self->field_0x78, 0);
         self->field_0x8c = w;
     }
     PlayerEgo_setTurretMode(self->field_0x58, 0);
@@ -2961,19 +2723,16 @@ extern "C" void MGame_dialogueEvent(MGame *self) {
     PlayerEgo_setFreeLookMode(self->field_0x58, 0);
     TFC_enableFirstPersonCam(self->field_0xf4, 0);
     PlayerEgo_hideShipForFirstPersonCameraView(self->field_0x58, 0);
-    Level *cam = self->field_0x7c;
+    LevelScript *cam = self->field_0x7c;
     self->field_0x111 = 1;
-    F<int>((MGame *)cam, 0x8) = 0;
-    F<int>((MGame *)cam, 0xc) = 0;
+    F<int>(cam, 0x8) = 0;
+    F<int>(cam, 0xc) = 0;
     self->field_0x5d = 1;
     MGame_pauseSounds(self);
     self->field_0x5e = 1;
 }
 
 // ---- nextCamId_17c624.cpp ----
-struct Status;
-struct Ship;
-struct PlayerEgo;
 __attribute__((visibility("hidden"))) extern Status **g_status;
 
 // MGame::nextCamId(int): advances through the cycle of available camera modes, skipping

@@ -1,9 +1,83 @@
 #include "gof2/Level.h"
 #include "gof2/Gun.h"
-#include "gof2/KIPlayer.h"
 #include "gof2/PlayerTurret.h"
-#include "gof2/Status.h"
 #include "gof2/Waypoint.h"
+
+// Several related game classes (Status, KIPlayer, ...) are defined in their own
+// headers, but those headers assert the 32-bit ARM struct layout
+// (sizeof(String)==0xc, sizeof(Array)==0xc, etc.) which does not hold on the
+// 64-bit host build, and KIPlayer.h models only data members (no methods).
+// Level only reaches these classes through a handful of accessor methods and
+// opaque pointers, so the minimal interfaces it needs are declared locally here
+// (one definition each, consolidated from the per-method translation units).
+struct SolarSystem;
+struct Station;
+struct Wanted;
+
+struct Status {
+    SolarSystem *getSystem();
+    Station *getStation();
+    int getMission();
+    void addKills(int n);
+    int inBlackMarketSystem();
+    int getShip();
+    int inEmptyOrbit();
+    unsigned int *getWingmen();
+    int isStorylineWanted(int index);
+    int getWanted();
+    void setMission(int m);
+    void setCampaignMission(int m);
+};
+
+struct SolarSystem {
+    int getTextureIndex();
+    int getRace();
+};
+
+struct Station {
+    int getPirateStationIndex();
+    int getIndex();
+};
+
+struct PaintCanvas {
+    static void MeshCreate(PaintCanvas *self, int mesh, unsigned int *dst, bool flag);
+    static void TextureCreate(PaintCanvas *self, int id, unsigned int *dst, bool flag);
+};
+
+struct KIPlayer {
+    void reset();
+    static void setDead(KIPlayer *self);
+    static int isWingMan();
+};
+
+struct Route {
+    Route(int *pts, unsigned int n);
+    ~Route();
+    void reset();
+};
+
+struct PlayerEgo {
+    void setRoute(int route);
+    void hitCamera();
+};
+
+struct Player {
+    static void setAlwaysEnemy(bool enemy);
+    static void turnEnemy();
+};
+
+struct Wanted {
+    static int getNumWingmen(Wanted *self);
+};
+
+struct RadioMessage {
+    void reset();
+};
+
+struct ParticleSystemManager {
+    static void enableSystemEmit(int mgr, int id);
+    static void enableSystemRender(int mgr, int id, bool enable);
+};
 
 
 extern "C" void Level_render2D_call(int starSystem);
@@ -169,9 +243,6 @@ int Level::getNumDeliveredOre() {
 }
 
 // ---- setPlayerRoute_c0dc8.cpp ----
-struct Route {
-    ~Route();
-};
 
 void operator delete(void *ptr);
 
@@ -191,7 +262,7 @@ void Level::enableFog(bool enable) {
 
 // ---- isInAsteroidCenterRange_c456e.cpp ----
 void Level::isInAsteroidCenterRange(Vector v) {
-    int *vol = this->field_0xc4;
+    int *vol = collisionVolume;
     return (*(void (**)(int *, Vector))(*vol + 8))(vol, v);
 }
 
@@ -202,7 +273,7 @@ int Level::getAsteroids() {
 
 // ---- collide_c455a.cpp ----
 int Level::collide(Vector v) {
-    int *vol = this->field_0xc4;
+    int *vol = collisionVolume;
     if (vol != 0) {
         return (*(int (**)(int *, Vector))(*vol + 8))(vol, v);
     }
@@ -220,10 +291,6 @@ void Level::incNumDeliveredOre(int delta) {
 }
 
 // ---- enableParticleEffects_bd68c.cpp ----
-struct ParticleSystemManager {
-    static void enableSystemEmit(int mgr, int id);
-    static void enableSystemRender(int mgr, int id, bool enable);
-};
 
 void Level::enableParticleEffects(bool emit, bool render) {
     ParticleSystemManager::enableSystemEmit(particleSystemMgr, field_284);
@@ -233,14 +300,7 @@ void Level::enableParticleEffects(bool emit, bool render) {
 }
 
 // ---- switchSkyboxForIntro_c663c.cpp ----
-struct PaintCanvas {
-    static void MeshCreate(PaintCanvas *self, int mesh, unsigned int *dst, bool flag);
-    static void TextureCreate(PaintCanvas *self, int id, unsigned int *dst, bool flag);
-};
 
-struct KIPlayer {
-    static void setDead(KIPlayer *self);
-};
 
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_paintCanvas_intro;
 
@@ -258,18 +318,7 @@ void Level::switchSkyboxForIntro() {
 }
 
 // ---- switchSkyboxForSupernovaReversal_c668c.cpp ----
-struct PaintCanvas {
-    static void MeshCreate(PaintCanvas *self, unsigned short mesh, unsigned int *dst, bool flag);
-    static void TextureCreate(PaintCanvas *self, unsigned short id, unsigned int *dst, bool flag);
-};
 
-struct SolarSystem {
-    int getTextureIndex();
-};
-
-struct Status {
-    SolarSystem *getSystem();
-};
 
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_paintCanvas_snr;
 __attribute__((visibility("hidden"))) extern Status **g_status_snr;
@@ -315,11 +364,6 @@ int Level::getEnemies() {
 }
 
 // ---- applyKills_c444c.cpp ----
-struct Status {
-    int getMission();
-    void addKills(int n);
-};
-
 __attribute__((visibility("hidden"))) extern Status **g_status_applyKills;
 
 void Level::applyKills() {
@@ -353,53 +397,53 @@ int Level::getPlayerGuns() {
 // ---- renderPause_c4ca8.cpp ----
 void Level::renderPause() {
     unsigned int *a;
-    a = this->field_0xe4;
+    a = playerGuns;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *))(*o + 0x14))(o);
-            a = this->field_0xe4;
+            a = playerGuns;
         }
     }
-    a = this->field_0xe8;
+    a = enemyGuns;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *))(*o + 0x14))(o);
-            a = this->field_0xe8;
+            a = enemyGuns;
         }
     }
-    a = this->field_0xf8;
+    a = enemies;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *))(*o + 0x24))(o);
-            a = this->field_0xf8;
+            a = enemies;
         }
     }
-    a = this->field_0xfc;
+    a = asteroids;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *))(*o + 0x24))(o);
-            a = this->field_0xfc;
+            a = asteroids;
         }
     }
-    a = this->field_0xf4;
+    a = gasClouds;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *))(*o + 0x24))(o);
-            a = this->field_0xf4;
+            a = gasClouds;
         }
     }
-    a = this->field_0x100;
+    a = landmarks;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             if (o != 0) {
                 (*(void (**)(int *))(*o + 0x24))(o);
-                a = this->field_0x100;
+                a = landmarks;
             }
         }
     }
@@ -416,14 +460,6 @@ int Level::getStarSystem() {
 }
 
 // ---- pirateStationAction_c62b0.cpp ----
-struct Station {
-    int getPirateStationIndex();
-};
-
-struct Status {
-    Station *getStation();
-};
-
 __attribute__((visibility("hidden"))) extern Status **g_status_pirate;
 
 void Level::pirateStationAction(bool param) {
@@ -497,100 +533,100 @@ int Level::getLandmarks() {
 // ---- render_c4b10.cpp ----
 void Level::render(int ctx) {
     unsigned int *a;
-    a = this->field_0xe4;
+    a = playerGuns;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *))(*o + 0x14))(o);
-            a = this->field_0xe4;
+            a = playerGuns;
         }
     }
-    a = this->field_0xe8;
+    a = enemyGuns;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *))(*o + 0x14))(o);
-            a = this->field_0xe8;
+            a = enemyGuns;
         }
     }
-    a = this->field_0xf8;
+    a = enemies;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = ((int **)(*(int *)(this->field_0xf8 + 4)))[i];
+            int *o2 = ((int **)(*(int *)(enemies + 4)))[i];
             (*(void (**)(int *))(*o2 + 0x24))(o2);
-            a = this->field_0xf8;
+            a = enemies;
         }
     }
-    a = this->field_0xfc;
+    a = asteroids;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = ((int **)(*(int *)(this->field_0xfc + 4)))[i];
+            int *o2 = ((int **)(*(int *)(asteroids + 4)))[i];
             (*(void (**)(int *))(*o2 + 0x24))(o2);
-            a = this->field_0xfc;
+            a = asteroids;
         }
     }
-    a = this->field_0xf4;
+    a = gasClouds;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = ((int **)(*(int *)(this->field_0xf4 + 4)))[i];
+            int *o2 = ((int **)(*(int *)(gasClouds + 4)))[i];
             (*(void (**)(int *))(*o2 + 0x24))(o2);
-            a = this->field_0xf4;
+            a = gasClouds;
         }
     }
-    a = this->field_0x100;
+    a = landmarks;
     if (a != 0) {
         for (unsigned int i = 0; i < *a; i = i + 1) {
             int *o = ((int **)a[1])[i];
             if (o != 0) {
                 (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-                int *o2 = ((int **)(*(int *)(this->field_0x100 + 4)))[i];
+                int *o2 = ((int **)(*(int *)(landmarks + 4)))[i];
                 (*(void (**)(int *))(*o2 + 0x24))(o2);
-                a = this->field_0x100;
+                a = landmarks;
             }
         }
     }
-    if (this->field_0x80 != 0) {
-        ParticleSystemManager_render3d(this->field_0x80);
+    if (field_80 != 0) {
+        ParticleSystemManager_render3d(field_80);
     }
-    if (this->field_0x74 != 0) {
-        ParticleSystemManager_render3d(this->field_0x74);
+    if (field_74 != 0) {
+        ParticleSystemManager_render3d(field_74);
     }
-    if (this->field_0x78 != 0) {
-        ParticleSystemManager_render3d(this->field_0x78);
+    if (particleEmitBoolPtr != 0) {
+        ParticleSystemManager_render3d(particleEmitBoolPtr);
     }
-    if (this->field_0x7c != 0) {
-        ParticleSystemManager_render3d(this->field_0x7c);
+    if (particleSystemMgr != 0) {
+        ParticleSystemManager_render3d(particleSystemMgr);
     }
-    if (this->field_0x88 != 0) {
-        ParticleSystemManager_render3d(this->field_0x88);
+    if (skybox2Mesh != 0) {
+        ParticleSystemManager_render3d(skybox2Mesh);
     }
-    if (this->field_0x84 != 0) {
-        ParticleSystemManager_render3d(this->field_0x84);
+    if (particleRenderBoolPtr != 0) {
+        ParticleSystemManager_render3d(particleRenderBoolPtr);
     }
-    if (this->field_0x8c != 0) {
-        ParticleSystemManager_render3d(this->field_0x8c);
+    if (field_8c != 0) {
+        ParticleSystemManager_render3d(field_8c);
     }
-    if (this->field_0x98 != 0) {
-        ParticleSystemManager_render3d(this->field_0x98);
+    if (field_98 != 0) {
+        ParticleSystemManager_render3d(field_98);
     }
-    if (this->field_0x94 != 0) {
-        ParticleSystemManager_render3d(this->field_0x94);
+    if (field_94 != 0) {
+        ParticleSystemManager_render3d(field_94);
     }
-    if (this->field_0x9c != 0) {
-        ParticleSystemManager_render3d(this->field_0x9c);
+    if (field_9c != 0) {
+        ParticleSystemManager_render3d(field_9c);
     }
     return Level_render_tail(starSystem);
 }
 
 // ---- collideStream_c457c.cpp ----
 int Level::collideStream(Vector v) {
-    int *obj = *(int **)(*(int *)(this->field_0x100 + 4) + 4);
+    int *obj = *(int **)(*(int *)(landmarks + 4) + 4);
     if (obj != 0) {
         return (*(int (**)(int *, Vector))(*obj + 0x38))(obj, v);
     }
@@ -631,12 +667,12 @@ Level::~Level() {
     SIMPLE(0x2c, dtor_Objective)
     SIMPLE(0xc4, dtor_BoundingVolume)
     {
-        int *p = this->field_0xd8;
+        int *p = asteroidWaypoint;
         if (p != 0) {
             (*(void (**)(int *))(*p + 4))(p);
         }
     }
-    this->field_0xd8 = 0;
+    asteroidWaypoint = 0;
     SIMPLE(0xec, dtor_StarSystem)
     SIMPLE(0xf0, dtor_PlayerEgo)
     SIMPLE(0x180, dtor_Route)
@@ -661,10 +697,10 @@ Level::~Level() {
     ARR(0x104, Level_releaseAEGeometry, dtor_ArrayAEGeometry)
     SIMPLE(0x0, dtor_LODManager)
     SIMPLE(0xa0, dtor_LodMeshMerger)
-    if (this->field_0xb0 != 0) {
-        operator delete(dtor_ArrayKI(this->field_0xb0));
+    if (field_b0 != 0) {
+        operator delete(dtor_ArrayKI(field_b0));
     }
-    this->field_0xb0 = 0;
+    field_b0 = 0;
 }
 
 // ---- incNumDeliveredPassengers_c6798.cpp ----
@@ -678,9 +714,6 @@ void Level::friendDied() {
 }
 
 // ---- createRoute_c0ce0.cpp ----
-struct Route {
-    Route(int *pts, unsigned int n);
-};
 
 namespace AbyssEngine {
     namespace AERandom {
@@ -717,35 +750,24 @@ Route *Level::createRoute(int count) {
 }
 
 // ---- alarmAllFriends_c55d0.cpp ----
-struct SolarSystem {
-    int getRace();
-};
-
-struct Station;
-
-struct Status {
-    int inBlackMarketSystem();
-    SolarSystem *getSystem();
-    Station *getStation();
-};
-
-
 __attribute__((visibility("hidden"))) extern Status **g_alarmAllFriends;
 
 void Level::alarmAllFriends(int race, bool message) {
-    unsigned int *list = this->field_0xf8;
+    unsigned int *list = enemies;
     if (list != 0) {
         for (unsigned int i = 0; i < *list; i = i + 1) {
             int obj = ((int *)list[1])[i];
             if (*(int *)(obj + 0x28) == race) {
                 Level_setAlwaysEnemy(*(int *)(obj + 4), 1);
-                list = this->field_0xf8;
+                list = enemies;
             }
         }
     }
-    if (this->field_0x189 == 0 && message) {
+    // field_188 packs two flags; 0x188 is friendTurnedEnemy, 0x189 is the alarm flag.
+    unsigned char *alarmFlag = (unsigned char *)&field_188 + 1;
+    if (*alarmFlag == 0 && message) {
         int type = 1;
-        this->field_0x189 = type;
+        *alarmFlag = (unsigned char)type;
         Status **slot = g_alarmAllFriends;
         if ((*slot)->inBlackMarketSystem() != 0) {
             type = 0xc;
@@ -2206,22 +2228,9 @@ void Level::friendTurnedEnemy() {
 }
 
 // ---- reset_c653a.cpp ----
-struct Route {
-    void reset();
-};
 
-struct KIPlayer {
-    void reset();
-    static int isWingMan();
-};
 
-struct RadioMessage {
-    void reset();
-};
 
-struct PlayerEgo {
-    void setRoute(int route);
-};
 
 void Level::reset() {
     if (playerRoute != 0) {
@@ -2233,25 +2242,25 @@ void Level::reset() {
     if (friendRoute != 0) {
         ((Route *)friendRoute)->reset();
     }
-    unsigned int *list = this->field_0xf8;
+    unsigned int *list = enemies;
     if (list != 0) {
         for (unsigned int i = 0; i < *list; i = i + 1) {
             ((KIPlayer *)((int *)list[1])[i])->reset();
-            list = this->field_0xf8;
+            list = enemies;
         }
     }
     createPlayer();
     assignGuns();
     connectPlayers();
-    list = this->field_0x114;
+    list = messages;
     if (list != 0) {
         for (unsigned int i = 0; i < *list; i = i + 1) {
             ((RadioMessage *)((int *)list[1])[i])->reset();
-            list = this->field_0x114;
+            list = messages;
         }
     }
     ((PlayerEgo *)player)->setRoute(playerRoute);
-    list = this->field_0xf8;
+    list = enemies;
     int count;
     if (list != 0) {
         count = 0;
@@ -2259,8 +2268,8 @@ void Level::reset() {
             int e = ((int *)list[1])[i];
             if (*(char *)(e + 0x41) == 0 && *(char *)(e + 0x71) == 0 && *(char *)(e + 0x3f) == 0) {
                 int wm = KIPlayer::isWingMan();
-                list = this->field_0xf8;
-                list = this->field_0xf8;
+                list = enemies;
+                list = enemies;
                 if (wm == 0) {
                     e = ((int *)list[1])[i];
                     if (*(char *)(e + 0x44) == 0 && *(char *)(e + 0x3c) == 0) {
@@ -2288,11 +2297,6 @@ done:
 }
 
 // ---- createSentryGuns_bc1f4.cpp ----
-struct Status {
-    int getShip();
-};
-
-
 __attribute__((visibility("hidden"))) extern Status **g_sentryStatus;
 
 void Level::createSentryGuns() {
@@ -2324,32 +2328,21 @@ void Level::createSentryGuns() {
 }
 
 // ---- collideStation_c4594.cpp ----
-struct Status {
-    int inEmptyOrbit();
-};
-
 __attribute__((visibility("hidden"))) extern Status **g_status_collideStation;
 
 int Level::collideStation(Vector v) {
-    int landmarks = this->field_0x100;
+    int landmarks = landmarks;
     if (landmarks != 0 &&
         *(int *)(*(int *)(landmarks + 4)) != 0 &&
         (*g_status_collideStation)->inEmptyOrbit() == 0) {
-        int *obj = *(int **)(this->field_0x100 + 4);
+        int *obj = *(int **)(landmarks + 4);
         return (*(int (**)(int *, Vector))(*obj + 0x38))(obj, v);
     }
     return 0;
 }
 
 // ---- uncoverWanted_c6320.cpp ----
-struct Player {
-    static void setAlwaysEnemy(bool enemy);
-    static void turnEnemy();
-};
 
-struct Wanted {
-    static int getNumWingmen(Wanted *self);
-};
 
 __attribute__((visibility("hidden"))) extern int **g_uncoverWanted;
 
@@ -3038,9 +3031,6 @@ extern "C" void Level_createRadioMessages(Level *thisptr, int set)
 }
 
 // ---- flashScreen_c40e0.cpp ----
-struct PlayerEgo {
-    void hitCamera();
-};
 
 __attribute__((visibility("hidden"))) extern float *g_flash2_a;
 __attribute__((visibility("hidden"))) extern float *g_flash2_b;
@@ -3104,12 +3094,6 @@ void Level::createPlayer() {
 }
 
 // ---- wingmanDied_c4484.cpp ----
-struct String;
-
-struct Status {
-    unsigned int *getWingmen();
-};
-
 namespace AbyssEngine {
     int String_Compare(String *a, String *b);
 }
@@ -3175,8 +3159,10 @@ Level::Level(int mission) {
     flashDurationA = 0;
     flashDurationB = 0;
     flashActive = 0;
-    this->field_0x2d = 0;
-    this->field_0x29 = 0;
+    // Original zeroes the objective region with two unaligned 4-byte stores at
+    // +0x29 and +0x2d; net effect is clearing objectivesA/objectivesB.
+    objectivesA = 0;
+    objectivesB = 0;
     __aeabi_memclr4((char *)this + 0xd8, 0x65);
     zero16((char *)this + 0x16c);
     zero16((char *)this + 0x15c);
@@ -3202,7 +3188,7 @@ Level::Level(int mission) {
     miningPlant = 0;
     numDeliveredOre = 0;
     numDeliveredPassengers = 0;
-    this->field_0x29c = 0;
+    field_29c = 0;
     field_29e = 0;
     field_1b4 = -1;
     field_1b8 = -1;
@@ -3214,9 +3200,6 @@ Level::Level(int mission) {
 struct Station;
 struct PlayerFixedObject;
 struct Player;
-struct KIPlayer;
-struct String;
-struct Vector;
 
 __attribute__((visibility("hidden"))) extern int  *g_cso_stack;     // [DAT_000cc1e4]
 __attribute__((visibility("hidden"))) extern int **g_cso_textA;     // [DAT_000cc1ec]
@@ -3575,19 +3558,6 @@ extern "C" PlayerFixedObject *Level_createShip(Level *thisptr, int race, int shi
 // ---- almostKillWanted_c63f4.cpp ----
 void operator delete(void *);
 
-struct Station {
-    int getIndex();
-};
-
-struct Status {
-    int isStorylineWanted(int index);
-    Station *getStation();
-    int getWanted();
-    void setMission(int m);
-    void setCampaignMission(int m);
-};
-
-
 __attribute__((visibility("hidden"))) extern Status **g_almostKillWanted;
 
 void Level::almostKillWanted(int index) {
@@ -3606,16 +3576,16 @@ void Level::almostKillWanted(int index) {
     (*slot)->setMission(m);
     (*slot)->setCampaignMission(m);
     if (objectivesA != 0) {
-        operator delete(dtor_Objective_akw(this->field_0x28));
+        operator delete(dtor_Objective_akw(objectivesA));
     }
     objectivesA = 0;
     int o = (int)Level_opnew_akw(0x1c);
     Objective_ctor_akw(o, 3, 0, 0, this);
     objectivesA = o;
-    int e = *(int *)(*(int *)(this->field_0xf8 + 4));
+    int e = *(int *)(*(int *)(enemies + 4));
     Level_setAlwaysEnemy(*(int *)(e + 4), 0);
-    Player_resetDamageDoneByPlayer(*(int *)(*(int *)(this->field_0xf8 + 4) + 4));
-    int e0 = *(int *)(*(int *)(this->field_0xf8 + 4));
+    Player_resetDamageDoneByPlayer(*(int *)(*(int *)(enemies + 4) + 4));
+    int e0 = *(int *)(*(int *)(enemies + 4));
     *(unsigned char *)(*(int *)(e0 + 4) + 0x5c) = 0;
     *(unsigned char *)(e0 + 0x43) = 1;
     int w = (*slot)->getWanted();
@@ -4239,8 +4209,6 @@ void Level::initParticleSystems()
 // ---- createWingmen_bc3ec.cpp ----
 struct Mission;
 struct Player;
-struct KIPlayer;
-struct String;
 struct Globals;
 
 __attribute__((visibility("hidden"))) extern int     *g_cwm_stack;   // [DAT_000cc670]
@@ -4581,8 +4549,6 @@ void Level::createScene()
 }
 
 // ---- renderBG_c45e8.cpp ----
-struct Matrix;
-struct SolarSystem;
 struct StarSystem;
 struct Engine;
 

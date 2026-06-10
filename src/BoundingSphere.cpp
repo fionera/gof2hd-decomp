@@ -1,7 +1,8 @@
 #include "gof2/BoundingSphere.h"
 
-
-
+// Helpers to view the inherited center/extents floats as Vectors.
+static inline Vector *centerOf(BoundingVolume *v) { return (Vector *)&v->field_0x8; }
+static inline Vector *extentsOf(BoundingVolume *v) { return (Vector *)&v->field_0x14; }
 
 // ---- _BoundingSphere_151d64.cpp ----
 BoundingSphere::~BoundingSphere()
@@ -22,31 +23,31 @@ BoundingSphere::BoundingSphere(
     : BoundingVolume(x, y, z, ex, ey, ez)
 {
     void *vt = (void *)((char *)g_BoundingSphere_vtbl + 8);
-    f32(this, 0x38) = radius;
-    pp(this, 0x0) = vt;
+    field_0x38 = radius;
+    field_0x0 = vt;
 }
 
 // ---- projectCollisionOnSurface_151e74.cpp ----
 Vector BoundingSphere::projectCollisionOnSurface(const Vector &position)
 {
     Vector result;
-    char delta[12];
-    char center[12];
-    char scaled[12];
+    Vector delta;
+    Vector center;
+    Vector scaled;
 
-    AEMath_VectorAdd(center, &vec(this, 0x8), &vec(this, 0x14));
-    AEMath_VectorSub(delta, center, &position);
-    float length = AEMath_VectorLength(delta);
-    float radius = f32(this, 0x38);
+    AEMath_VectorAdd(&center, centerOf(this), extentsOf(this));
+    AEMath_VectorSub(&delta, &center, &position);
+    float length = AEMath_VectorLength(&delta);
+    float radius = field_0x38;
 
     if (length >= radius) {
         result.x = 0.0f;
         result.y = 0.0f;
         result.z = 0.0f;
     } else {
-        AEMath_VectorAdd(center, &vec(this, 0x8), &vec(this, 0x14));
-        AEMath_VectorScale(scaled, radius / length, delta);
-        AEMath_VectorSub(&result, center, scaled);
+        AEMath_VectorAdd(&center, centerOf(this), extentsOf(this));
+        AEMath_VectorScale(&scaled, radius / length, &delta);
+        AEMath_VectorSub(&result, &center, &scaled);
     }
 
     return result;
@@ -55,19 +56,18 @@ Vector BoundingSphere::projectCollisionOnSurface(const Vector &position)
 // ---- outerCollide_151da0.cpp ----
 bool BoundingSphere::outerCollide(float x, float y, float z)
 {
-    char delta[12];
-    char sum[12];
-    char pointBytes[12];
-    Vector *point = (Vector *)(void *)sum;
+    Vector delta;
+    Vector point;
+    Vector sum;
 
-    point->x = x;
-    point->y = y;
-    point->z = z;
+    point.x = x;
+    point.y = y;
+    point.z = z;
 
-    AEMath_VectorAdd(pointBytes, &vec(this, 0x8), &vec(this, 0x14));
-    AEMath_VectorSub(delta, point, pointBytes);
-    float distance = AEMath_VectorDot(delta, delta);
-    float radius = f32(this, 0x38);
+    AEMath_VectorAdd(&sum, centerOf(this), extentsOf(this));
+    AEMath_VectorSub(&delta, &point, &sum);
+    float distance = AEMath_VectorDot(&delta, &delta);
+    float radius = field_0x38;
     return distance < radius * radius;
 }
 
@@ -75,14 +75,12 @@ bool BoundingSphere::outerCollide(float x, float y, float z)
 Vector BoundingSphere::getCollisionNormal(const Vector &position)
 {
     Vector result;
-    char center[12];
-    void *centerPtr = center;
-    const void *positionPtr = &position;
+    Vector center;
 
-    AEMath_VectorAdd(centerPtr, &vec(this, 0x8), &vec(this, 0x14));
-    AEMath_VectorSub(&result, centerPtr, positionPtr);
-    AEMath_VectorNormalize(centerPtr, &result);
-    AEMath_VectorAssign(&result, centerPtr);
+    AEMath_VectorAdd(&center, centerOf(this), extentsOf(this));
+    AEMath_VectorSub(&result, &center, &position);
+    AEMath_VectorNormalize(&center, &result);
+    AEMath_VectorAssign(&result, &center);
 
     return result;
 }
@@ -92,7 +90,7 @@ typedef bool (*CollisionTestFn)(BoundingSphere *self);
 
 bool BoundingSphere::collide(float x, float y, float z)
 {
-    CollisionTestFn fn = *(CollisionTestFn *)((char *)pp(this, 0x0) + 0xc);
+    CollisionTestFn fn = *(CollisionTestFn *)((char *)field_0x0 + 0xc);
     if (fn(this)) {
         return true;
     }

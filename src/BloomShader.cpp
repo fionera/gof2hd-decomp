@@ -1,13 +1,15 @@
 #include "gof2/BloomShader.h"
-#include "gof2/Engine.h"
-#include "gof2/Mesh.h"
 
+// cross-class field accessors (Engine/Mesh/FBOContainer are not in this batch; opaque here)
+template <class T> static inline T &ae_field(void *base, unsigned int off) {
+    return *(T *)((char *)base + off);
+}
 
 extern "C" int glGetAttribLocation(unsigned int program, const char *name);
 extern "C" int glGetUniformLocation(unsigned int program, const char *name);
 extern "C" void glUseProgram(unsigned int program);
 extern "C" void glUniform1i(int location, int value);
-extern "C" void *_ZN11AbyssEngine11BloomShaderD1Ev(BloomShader *self);
+extern "C" void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self);
 extern "C" void operator_delete(void *self);
 extern "C" void glEnableVertexAttribArray(unsigned int index);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
@@ -22,24 +24,24 @@ extern "C" void glUniform1f(int location, float value);
 extern "C" void glClearColor(float red, float green, float blue, float alpha);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" int Engine_GetDisplayWidth(Engine *self);
-extern "C" int Engine_GetDisplayHeight(Engine *self);
-extern "C" void Engine_SetWorldViewMatrix(Engine *self);
-extern "C" void FBOContainer_Activate(FBOContainer *self);
-extern "C" void FBOContainer_BeginCapture(FBOContainer *self);
-extern "C" void FBOContainer_EndCapture(FBOContainer *self);
+extern "C" int Engine_GetDisplayWidth(void *self);
+extern "C" int Engine_GetDisplayHeight(void *self);
+extern "C" void Engine_SetWorldViewMatrix(void *self);
+extern "C" void FBOContainer_Activate(void *self);
+extern "C" void FBOContainer_BeginCapture(void *self);
+extern "C" void FBOContainer_EndCapture(void *self);
 extern "C" unsigned char g_BloomShader_internalInitNeeded;
 extern "C" unsigned int g_BloomShader_shaderMode;
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
-extern "C" void ShaderBaseStruct_ctor(ShaderBaseStruct *self);
+extern "C" void ShaderBaseStruct_ctor(void *self);
 extern "C" char BloomShader_vtable;
 extern "C" void *BloomShader_typeinfo_source;
 extern "C" void *BloomShader_typeinfo_dest;
-extern "C" void FBOContainer_ctor(FBOContainer *self, Engine *engine, String *name);
-extern "C" void *ShaderBaseStruct_dtor(ShaderBaseStruct *self);
+extern "C" void FBOContainer_ctor(void *self, void *engine, String *name);
+extern "C" void *ShaderBaseStruct_dtor(void *self);
 
 // ---- Init_895ec.cpp ----
-extern "C" unsigned int ShaderBaseStruct_ES2LoadProgram(ShaderBaseStruct *self,
+extern "C" unsigned int ShaderBaseStruct_ES2LoadProgram(void *self,
                                                         const char *vertex,
                                                         const char *fragment);
 
@@ -47,7 +49,7 @@ namespace AbyssEngine {
 
 void BloomShader::Init(Engine *)
 {
-    unsigned int (*loadProgram)(ShaderBaseStruct *, const char *, const char *) =
+    unsigned int (*loadProgram)(void *, const char *, const char *) =
         ShaderBaseStruct_ES2LoadProgram;
     int (*attrib)(unsigned int, const char *) = glGetAttribLocation;
     int (*uniform)(unsigned int, const char *) = glGetUniformLocation;
@@ -116,7 +118,7 @@ void BloomShader::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- _BloomShader_8947c.cpp ----
-extern "C" void _ZN11AbyssEngine11BloomShaderD0Ev(BloomShader *self)
+extern "C" void _ZN11AbyssEngine11BloomShaderD0Ev(AbyssEngine::BloomShader *self)
 {
     return operator_delete(_ZN11AbyssEngine11BloomShaderD1Ev(self));
 }
@@ -140,18 +142,18 @@ void BloomShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray(this->field_0x94);
 
     unsigned int zero = 0;
-    if (mesh->field_0x5c != 0) {
-        glBindBuffer(0x8892, mesh->field_0x60);
+    if (ae_field<uint8_t>(mesh, 0x5c) != 0) {
+        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
         glVertexAttribPointer(this->field_0x8c, 3, 0x1406, 0, 0,
                               (void *)zero);
-        glBindBuffer(0x8892, mesh->field_0x68);
+        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
         return glVertexAttribPointer(this->field_0x94, 2, 0x1406, 0, 0,
                                      (void *)zero);
     } else {
         glVertexAttribPointer(this->field_0x8c, 3, 0x1406, 0, 0,
-                              mesh->field_0x4);
+                              ae_field<void *>(mesh, 0x4));
         return glVertexAttribPointer(this->field_0x94, 2, 0x1406, 0, 0,
-                                     mesh->field_0x8);
+                                     ae_field<void *>(mesh, 0x8));
     }
 }
 
@@ -162,7 +164,7 @@ extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transp
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
                                       unsigned char normalized, int stride, const void *pointer);
-extern "C" void Engine_DrawQuad(Engine *self, int x, int y, unsigned int width,
+extern "C" void Engine_DrawQuad(void *self, int x, int y, unsigned int width,
                                  unsigned int height);
 
 
@@ -171,7 +173,7 @@ namespace AbyssEngine {
 void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
 {
     void *volatile cookie = __stack_chk_guard;
-    engine->field_0x3e4 = this->field_0x4;
+    ae_field<int>(engine, 0x3e4) = this->field_0x4;
 
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
@@ -184,21 +186,21 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
     u32x4 zero = {0, 0, 0, 0};
-    engine->field_0x3b4 = zero;
-    engine->field_0x3a4 = zero;
-    engine->field_0x394 = zero;
-    engine->field_0x384 = zero;
+    ae_field<u32x4>(engine, 0x3b4) = zero;
+    ae_field<u32x4>(engine, 0x3a4) = zero;
+    ae_field<u32x4>(engine, 0x394) = zero;
+    ae_field<u32x4>(engine, 0x384) = zero;
     float matrix[16] = {};
     matrix[0] = 1.0f;
     matrix[5] = 1.0f;
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
-    engine->field_0x384 = 2.0f / (float)Engine_GetDisplayWidth(engine);
-    engine->field_0x398 = -(2.0f / (float)Engine_GetDisplayHeight(engine));
-    engine->field_0x3ac = 0xbf800000;
-    engine->field_0x3b4 = 0xbf800000;
-    engine->field_0x3b8 = 0x3f800000;
-    engine->field_0x3c0 = 0x3f800000;
+    ae_field<float>(engine, 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    ae_field<unsigned int>(engine, 0x3ac) = 0xbf800000;
+    ae_field<unsigned int>(engine, 0x3b4) = 0xbf800000;
+    ae_field<unsigned int>(engine, 0x3b8) = 0x3f800000;
+    ae_field<unsigned int>(engine, 0x3c0) = 0x3f800000;
     Engine_SetWorldViewMatrix(engine);
 
     glDisable(0xb71);
@@ -214,9 +216,9 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     const void *mvp = (char *)engine + 0x104;
     glUniformMatrix4fv(this->field_0x28, 1, 0, mvp);
     glVertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0,
-                          *(void **)(engine->field_0x380 + 4));
+                          *(void **)(ae_field<char *>(engine, 0x380) + 4));
     glVertexAttribPointer(this->field_0x2c, 2, 0x1406, 0, 0,
-                          *(void **)(engine->field_0x380 + 8));
+                          *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(this->field_0x24);
@@ -232,9 +234,9 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
         glEnableVertexAttribArray(this->field_0x44);
         glUniformMatrix4fv(this->field_0x40, 1, 0, mvp);
         glVertexAttribPointer(this->field_0x3c, 3, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 4));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->field_0x44, 2, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 8));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 8));
         glUniform1f(this->field_0x4c,
                     (float)*(int *)((char *)this->field_0x50 + 0xc));
         glClear(0x4000);
@@ -251,9 +253,9 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
         glEnableVertexAttribArray(this->field_0x60);
         glUniformMatrix4fv(this->field_0x5c, 1, 0, mvp);
         glVertexAttribPointer(this->field_0x58, 3, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 4));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->field_0x60, 2, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 8));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 8));
         glUniform1f(this->field_0x68,
                     (float)*(int *)((char *)this->field_0x6c + 0x10));
         glClear(0x4000);
@@ -287,10 +289,10 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     FBOContainer_Activate(base);
     glActiveTexture(0x84c1);
     FBOContainer_Activate(bloom);
-    glBindFramebuffer(0x8d40, engine->field_0x40c);
+    glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
     unsigned int width;
     unsigned int height;
-    if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
+    if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
         width = Engine_GetDisplayWidth(engine);
         height = Engine_GetDisplayHeight(engine);
     } else {
@@ -303,9 +305,9 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     glEnableVertexAttribArray(this->field_0x80);
     glUniformMatrix4fv(this->field_0x7c, 1, 0, mvp);
     glVertexAttribPointer(this->field_0x78, 3, 0x1406, 0, 0,
-                          *(void **)(engine->field_0x380 + 4));
+                          *(void **)(ae_field<char *>(engine, 0x380) + 4));
     glVertexAttribPointer(this->field_0x80, 2, 0x1406, 0, 0,
-                          *(void **)(engine->field_0x380 + 8));
+                          *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(this->field_0x78);
@@ -314,7 +316,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
 
-    unsigned int guardDelta = (unsigned int)__stack_chk_guard - (unsigned int)cookie;
+    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard - (unsigned int)(__UINTPTR_TYPE__)cookie;
     if (guardDelta == 0) {
         return;
     }
@@ -343,12 +345,10 @@ __attribute__((minsize)) BloomShader::BloomShader()
 {
     void *volatile cookie = __stack_chk_guard;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
-    *(void **)this = &BloomShader_vtable + 8;
+    this->field_0x0 = &BloomShader_vtable + 8;
     *(void **)BloomShader_typeinfo_dest = *(void **)BloomShader_typeinfo_source;
-    String name("BloomShader", false);
-    this->field_0xc = name;
-    name.~String();
-    unsigned int guardDelta = (unsigned int)__stack_chk_guard - (unsigned int)cookie;
+    this->field_0xc.s = u"BloomShader";
+    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard - (unsigned int)(__UINTPTR_TYPE__)cookie;
     if (guardDelta == 0) {
         return;
     }
@@ -360,7 +360,7 @@ __attribute__((minsize)) BloomShader::BloomShader()
 // ---- InternalInit_8948c.cpp ----
 void *operator new(__SIZE_TYPE__ size);
 
-extern "C" void FBOContainer_Create(FBOContainer *self, unsigned int width, unsigned int height,
+extern "C" void FBOContainer_Create(void *self, unsigned int width, unsigned int height,
                                     bool depth, bool stencil);
 
 namespace AbyssEngine {
@@ -370,34 +370,30 @@ void BloomShader::InternalInit(Engine *engine)
     void *volatile cookie = __stack_chk_guard;
 
     FBOContainer *fbo = (FBOContainer *)operator new(0x38);
-    String luma("BloomShader fboLuma", false);
+    String luma; luma.s = u"BloomShader fboLuma";
     FBOContainer_ctor(fbo, engine, &luma);
     this->field_0x34 = fbo;
-    luma.~String();
     FBOContainer_Create(this->field_0x34, 0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
-    String blurH("BloomShader fboBlurH", false);
+    String blurH; blurH.s = u"BloomShader fboBlurH";
     FBOContainer_ctor(fbo, engine, &blurH);
     this->field_0x50 = fbo;
-    blurH.~String();
     FBOContainer_Create(this->field_0x50, 0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
-    String blurV("BloomShader fboBlurV", false);
+    String blurV; blurV.s = u"BloomShader fboBlurV";
     FBOContainer_ctor(fbo, engine, &blurV);
     this->field_0x6c = fbo;
-    blurV.~String();
     FBOContainer_Create(this->field_0x6c, 0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
-    String black("BloomShader fboBlack", false);
+    String black; black.s = u"BloomShader fboBlack";
     FBOContainer_ctor(fbo, engine, &black);
     this->field_0x70 = fbo;
-    black.~String();
     FBOContainer_Create(this->field_0x70, 0x100, 0x100, true, false);
 
-    unsigned int guardDelta = (unsigned int)__stack_chk_guard - (unsigned int)cookie;
+    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard - (unsigned int)(__UINTPTR_TYPE__)cookie;
     if (guardDelta == 0) {
         return;
     }
@@ -407,7 +403,7 @@ void BloomShader::InternalInit(Engine *engine)
 } // namespace AbyssEngine
 
 // ---- _BloomShader_89468.cpp ----
-extern "C" void *_ZN11AbyssEngine11BloomShaderD1Ev(BloomShader *self)
+extern "C" void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self)
 {
     *(void **)self = &BloomShader_vtable + 8;
     return ShaderBaseStruct_dtor((ShaderBaseStruct *)self);
@@ -418,7 +414,7 @@ extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transp
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
                                       unsigned char normalized, int stride, const void *pointer);
-extern "C" void Engine_DrawQuad(Engine *self, int x, int y, unsigned int width,
+extern "C" void Engine_DrawQuad(void *self, int x, int y, unsigned int width,
                                  unsigned int height);
 
 
@@ -439,21 +435,21 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
     u32x4 zero = {0, 0, 0, 0};
-    engine->field_0x3b4 = zero;
-    engine->field_0x3a4 = zero;
-    engine->field_0x394 = zero;
-    engine->field_0x384 = zero;
+    ae_field<u32x4>(engine, 0x3b4) = zero;
+    ae_field<u32x4>(engine, 0x3a4) = zero;
+    ae_field<u32x4>(engine, 0x394) = zero;
+    ae_field<u32x4>(engine, 0x384) = zero;
     float matrix[16] = {};
     matrix[0] = 1.0f;
     matrix[5] = 1.0f;
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
-    engine->field_0x384 = 2.0f / (float)Engine_GetDisplayWidth(engine);
-    engine->field_0x398 = -(2.0f / (float)Engine_GetDisplayHeight(engine));
-    engine->field_0x3ac = 0xbf800000;
-    engine->field_0x3b4 = 0xbf800000;
-    engine->field_0x3b8 = 0x3f800000;
-    engine->field_0x3c0 = 0x3f800000;
+    ae_field<float>(engine, 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    ae_field<unsigned int>(engine, 0x3ac) = 0xbf800000;
+    ae_field<unsigned int>(engine, 0x3b4) = 0xbf800000;
+    ae_field<unsigned int>(engine, 0x3b8) = 0x3f800000;
+    ae_field<unsigned int>(engine, 0x3c0) = 0x3f800000;
     Engine_SetWorldViewMatrix(engine);
 
     glDisable(0xb71);
@@ -469,9 +465,9 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     const void *mvp = (char *)engine + 0x104;
     glUniformMatrix4fv(this->field_0x28, 1, 0, mvp);
     glVertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0,
-                          *(void **)(engine->field_0x380 + 4));
+                          *(void **)(ae_field<char *>(engine, 0x380) + 4));
     glVertexAttribPointer(this->field_0x2c, 2, 0x1406, 0, 0,
-                          *(void **)(engine->field_0x380 + 8));
+                          *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(this->field_0x24);
@@ -487,9 +483,9 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
         glEnableVertexAttribArray(this->field_0x44);
         glUniformMatrix4fv(this->field_0x40, 1, 0, mvp);
         glVertexAttribPointer(this->field_0x3c, 3, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 4));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->field_0x44, 2, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 8));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 8));
         glUniform1f(this->field_0x4c,
                     (float)*(int *)((char *)this->field_0x50 + 0xc));
         glClear(0x4000);
@@ -506,9 +502,9 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
         glEnableVertexAttribArray(this->field_0x60);
         glUniformMatrix4fv(this->field_0x5c, 1, 0, mvp);
         glVertexAttribPointer(this->field_0x58, 3, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 4));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->field_0x60, 2, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 8));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 8));
         glUniform1f(this->field_0x68,
                     (float)*(int *)((char *)this->field_0x6c + 0x10));
         glClear(0x4000);
@@ -550,9 +546,9 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     glEnableVertexAttribArray(this->field_0x80);
     glUniformMatrix4fv(this->field_0x7c, 1, 0, mvp);
     glVertexAttribPointer(this->field_0x78, 3, 0x1406, 0, 0,
-                          *(void **)(engine->field_0x380 + 4));
+                          *(void **)(ae_field<char *>(engine, 0x380) + 4));
     glVertexAttribPointer(this->field_0x80, 2, 0x1406, 0, 0,
-                          *(void **)(engine->field_0x380 + 8));
+                          *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(this->field_0x78);
@@ -564,7 +560,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
         FBOContainer_EndCapture(*target);
     }
 
-    unsigned int guardDelta = (unsigned int)__stack_chk_guard - (unsigned int)cookie;
+    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard - (unsigned int)(__UINTPTR_TYPE__)cookie;
     if (guardDelta == 0) {
         return;
     }

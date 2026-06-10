@@ -9,9 +9,9 @@ extern "C" void FMOD_EventSystem_unload(void *system);
 extern "C" void FMOD_EventSystem_release(void *system);
 extern "C" void *AEFile_GetAppRootDir();
 extern "C" FModSound *FMOD_Event_stop_p(void *event, int immediate);
-extern "C" void FMOD_Event_setPitch(void *event, float pitch, int mode);
+extern "C" int FMOD_Event_setPitch(void *event, float pitch, int mode);
 extern "C" int FMOD_Event_setVolume(void *event, float vol);
-extern "C" int FMOD_Event_getProperty(void *event, void *prop, void *out, int b);
+extern "C" int FMOD_Event_getProperty(void *event, void *prop, void *out, int b = 1);
 extern "C" int FMOD_EventSystem_getNumReverbPresets(void *system, int *out);
 extern "C" int FMOD_EventSystem_getReverbPresetByIndex(void *system, int idx, void *props, char **name);
 extern "C" int FMOD_EventSystem_setReverbProperties(void *system, void *props);
@@ -23,7 +23,7 @@ extern "C" int FMOD_EventSystem_init(void *system, int maxch, void *extdriver, i
 extern "C" int GameText_getLanguage();
 extern "C" void *__aeabi_memclr8(void *d, uint32_t n);
 extern "C" char *strcpy(char *d, const char *s);
-extern "C" uint32_t strlen(const char *s);
+extern "C" __SIZE_TYPE__ strlen(const char *s);
 extern "C" int FMOD_EventSystem_load(void *system, const char *name, void *proj);
 extern "C" void FMOD_EventSystem_getCategory(void *system, void *out);
 extern "C" void FMOD_EventSystem_getProjectByIndex(void *system, void *out);
@@ -31,7 +31,7 @@ extern "C" int FMOD_Event_getState(void *event, unsigned *out);
 extern "C" int FMOD_Event_getParameter(void *event, const char *name, FMOD::EventParameter **out);
 extern "C" int FMOD_EventSystem_getProject(void *system, const char *name, FMOD::EventProject **out);
 extern "C" int FMOD_Event_getParentGroup(void *event, FMOD::EventGroup **out);
-extern "C" int FMOD_Event_getCategory(void *event, FMOD::EventCategory **out);
+extern "C" int FMOD_Event_getCategory(void *event, FMOD::EventCategory **out = 0);
 extern "C" void FMOD_play(void *self, int a, void *b, float v);
 
 // ---- setAudioLanguage_92d80.cpp ----
@@ -39,7 +39,6 @@ extern "C" void FMOD_play(void *self, int a, void *b, float v);
 //   if (system) tail-call ext(system, langTable[p1 == 1])
 __attribute__((visibility("hidden"))) static const uint32_t langTable[2] = {0, 1};
 
-struct FModSound { void setAudioLanguage(int p1); };
 void FModSound::setAudioLanguage(int p1)
 {
     void *system = pp(this, OFF_SYSTEM);
@@ -54,10 +53,6 @@ using AbyssEngine::AEMath::Vector;
 
 // FModSound::updateEvent3DAttributes(int, Vector*, Vector*, bool)
 //   events[p1] = updateEvent3DAttributes(events[p1], p1, p2, p3, p4)
-struct FModSound {
-    void *updateEvent3DAttributes(void *event, int idx, Vector *a, Vector *b, bool c);
-    void updateEvent3DAttributes(int idx, Vector *a, Vector *b, bool c);
-};
 void FModSound::updateEvent3DAttributes(int idx, Vector *a, Vector *b, bool c)
 {
     void **slot = (void **)((char *)this + idx * 4 + OFF_EVENTS);
@@ -67,7 +62,6 @@ void FModSound::updateEvent3DAttributes(int idx, Vector *a, Vector *b, bool c)
 // ---- stopAll_93b4c.cpp ----
 // FModSound::stopAll() -> for 0x8f5 slots: if (system && events[i]) Event::stop(events[i],1)
 
-struct FModSound { void stopAll(); };
 void FModSound::stopAll()
 {
     int *sys = &i32(this, OFF_SYSTEM);
@@ -81,7 +75,6 @@ void FModSound::stopAll()
 // ---- resumeAll_93b80.cpp ----
 // FModSound::resumeAll() -> for 0x8f5 slots: if (system && events[i]) Event::setPaused(events[i],0)
 
-struct FModSound { void resumeAll(); };
 void FModSound::resumeAll()
 {
     int *sys = &i32(this, OFF_SYSTEM);
@@ -95,7 +88,6 @@ void FModSound::resumeAll()
 // ---- promptMusicCue_93ad8.cpp ----
 // FModSound::promptMusicCue(int)
 //   music = this->0x2400; if (music) tail-call music->vtbl[0x28](music, p1)
-struct FModSound { void promptMusicCue(int p1); };
 void FModSound::promptMusicCue(int p1)
 {
     void *music = pp(this, OFF_MUSIC);
@@ -111,7 +103,6 @@ void FModSound::promptMusicCue(int p1)
 //   s = this[0]; if (s==-1 || this[4]==s) return; tail-call ext(this, 0, s, kConst)
 static const float kFade = 0.1f;
 
-struct FModSound { void fadeOutNow(); };
 void FModSound::fadeOutNow()
 {
     int s = i32(this, 0);
@@ -125,7 +116,6 @@ void FModSound::fadeOutNow()
 // ---- release_92be6.cpp ----
 // FModSound::release()
 
-struct FModSound { void release(); };
 void FModSound::release()
 {
     void *system = pp(this, OFF_SYSTEM);
@@ -144,7 +134,6 @@ void FModSound::release()
 // ---- FModSound_92b70.cpp ----
 // FModSound::FModSound()
 
-struct FModSound { FModSound(); };
 FModSound::FModSound()
 {
     u32(this, OFF_SYSTEM) = 0;
@@ -168,7 +157,6 @@ FModSound::FModSound()
 // FModSound::stop(FMOD::Event*) -> if (e) return Event::stop(e, 0); else this
 struct FModSound;
 
-struct FModSound { FModSound *stop(void *e); };
 FModSound *FModSound::stop(void *e)
 {
     if (e == 0)
@@ -179,7 +167,6 @@ FModSound *FModSound::stop(void *e)
 // ---- setVolume_92fb8.cpp ----
 // FModSound::setVolume(int, float)
 //   if (system && (h=this[p1*4+0x23ec])) tail-call h->vtbl[0x20](h, vol)
-struct FModSound { void setVolume(int p1, float vol); };
 void FModSound::setVolume(int p1, float vol)
 {
     if (u32(this, OFF_SYSTEM) == 0)
@@ -195,7 +182,6 @@ void FModSound::setVolume(int p1, float vol)
 // ---- pauseAll_93b18.cpp ----
 // FModSound::pauseAll() -> for 0x8f5 slots: if (system && events[i]) Event::setPaused(events[i],1)
 
-struct FModSound { void pauseAll(); };
 void FModSound::pauseAll()
 {
     int *sys = &i32(this, OFF_SYSTEM);
@@ -208,10 +194,6 @@ void FModSound::pauseAll()
 
 // ---- _FModSound_92bd4.cpp ----
 // FModSound::~FModSound() -> release(this); (returns this)
-struct FModSound {
-    void release();
-    ~FModSound();
-};
 FModSound::~FModSound()
 {
     release();
@@ -222,10 +204,6 @@ FModSound::~FModSound()
 //   pitch = down ? -1.0 : 0.1 ; this[8]=down ; for i<0x8f5: if(system&&events[i]&&isPlaying(i)) setPitch
 static const float kUp = 0.1f;
 
-struct FModSound {
-    unsigned isPlaying(int p1);
-    void setDownPitch(bool down);
-};
 void FModSound::setDownPitch(bool down)
 {
     float pitch = down ? -1.0f : kUp;
@@ -239,7 +217,6 @@ void FModSound::setDownPitch(bool down)
 // ---- stop_93568.cpp ----
 // FModSound::stop(int) -> if (p1>=0 && events[p1]) tail-call Event::stop(h, 0)
 
-struct FModSound { void stop(int p1); };
 void FModSound::stop(int p1)
 {
     if (p1 < 0)
@@ -253,7 +230,6 @@ void FModSound::stop(int p1)
 // ---- setMusicParamValue_92fa8.cpp ----
 // FModSound::setMusicParamValue(int, float)
 //   music = this->0x2400; if (music) tail-call music->vtbl[0x34](music, p1, p2)
-struct FModSound { void setMusicParamValue(int p1, float p2); };
 void FModSound::setMusicParamValue(int p1, float p2)
 {
     void *music = pp(this, OFF_MUSIC);
@@ -267,7 +243,6 @@ void FModSound::setMusicParamValue(int p1, float p2)
 // ---- setSoundVolume_92fd6.cpp ----
 // FModSound::setSoundVolume(int, float) -> if (system && events[p1]) tail-call setVolume(h, vol)
 
-struct FModSound { void setSoundVolume(int p1, float vol); };
 void FModSound::setSoundVolume(int p1, float vol)
 {
     if (u32(this, OFF_SYSTEM) != 0) {
@@ -281,10 +256,6 @@ void FModSound::setSoundVolume(int p1, float vol)
 // FModSound::pauseAllPlaying()
 //   for i<0x8f5: if (system && events[i] && isPlaying(i)) Event::setPaused(events[i],1)
 
-struct FModSound {
-    unsigned isPlaying(int p1);
-    void pauseAllPlaying();
-};
 void FModSound::pauseAllPlaying()
 {
     for (unsigned i = 0; i < 0x8f5u; ++i) {
@@ -299,7 +270,6 @@ void FModSound::pauseAllPlaying()
 // ---- resume_93b00.cpp ----
 // FModSound::resume(int) -> if (system && events[p1]) tail-call setPaused(h, 0)
 
-struct FModSound { void resume(int p1); };
 void FModSound::resume(int p1)
 {
     if (u32(this, OFF_SYSTEM) != 0) {
@@ -314,27 +284,6 @@ void FModSound::resume(int p1)
 //   if (this[0x2404] && system && enabled[0x11] && events[idx]) getProperty(h, *gProp, &out, 1)
 extern "C" void **gPauseProp;   // pc-relative global: holds &prop
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- int getEventPauseLength(int idx); };
 int FModSound::getEventPauseLength(int idx)
 {
     int out = 0;
@@ -351,27 +300,6 @@ int FModSound::getEventPauseLength(int idx)
 //   One stack array holds both the FMOD_REVERB_PROPERTIES (buf[0..0x4f]) and numPresets (buf+0x50),
 //   matching the target's frame: buffer at sp+0, scalar at sp+0x50, canary at sp+0x54.
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void enableReverb(int p1); };
 void FModSound::enableReverb(int p1)
 {
     void *system = pp(this, OFF_SYSTEM);
@@ -397,29 +325,6 @@ float VectorSignedToFloat(int v, int mode);
 
 // FModSound::getPlayingProgress(int) -> queries the FMOD event info for a slot
 // and converts two of its fields to float (progress numerator/denominator).
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
-
-    float getPlayingProgress(int idx);
-};
 
 float FModSound::getPlayingProgress(int idx)
 {
@@ -436,7 +341,6 @@ float FModSound::getPlayingProgress(int idx)
 }
 
 // ---- play_932f4.cpp ----
-typedef unsigned int uintptr_t;
 
 namespace AbyssEngine { namespace AEMath { struct Vector; } }
 using AbyssEngine::AEMath::Vector;
@@ -445,39 +349,13 @@ extern "C" {
 void *operator_new(uint32_t size);
 int FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, void **out);
 int FMOD_Event_setPitch(void *event, float pitch, int mode);
-int FMOD_Event_getCategory(void *event);
 int FMOD_Event_set3DAttributes(void *event, void *pos, void *vel);
-int FMOD_Event_getProperty(void *event, void *name, void *value);
 int FMOD_Event_start(void *event);
-int FMOD_Event_getParentGroup(void *event, void **group);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_fmodPropName; // property-name pointer
 extern "C" extern float FModSound_defaultPitch;                     // DAT_000a3518
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
-
-    void play(int idx, Vector *pos, Vector *vel, float pitch);
-};
 
 static void *cacheVec(void *self, uint32_t off, Vector *src)
 {
@@ -563,7 +441,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
         FMOD_Event_start((void *)(uintptr_t)*slot);
     } else {
         if (*slot != 0) {
-            void *group = 0;
+            FMOD::EventGroup *group = 0;
             if (FMOD_Event_getParentGroup((void *)(uintptr_t)*slot, &group) == 0) {
                 void **sysObj = (void **)pp(this, OFF_SYSTEM);
                 typedef int (*ReleaseFn)(void *, int, int);
@@ -578,27 +456,6 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
 // ---- resume_9384c.cpp ----
 // FModSound::resume(FMOD::Event*) -> bool: e && system && setPaused(e,0)==0
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- bool resume(void *e); };
 bool FModSound::resume(void *e)
 {
     bool ok = false;
@@ -614,27 +471,6 @@ namespace FMOD { struct Event; struct EventParameter; }
 
 // FModSound::setParamValue(FMOD::Event* e, int paramIdx, float val)
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void setParamValue(FMOD::Event *e, int paramIdx, float val); };
 void FModSound::setParamValue(FMOD::Event *e, int paramIdx, float val)
 {
     if (e != 0 && u32(this, OFF_SYSTEM) != 0) {
@@ -647,27 +483,6 @@ void FModSound::setParamValue(FMOD::Event *e, int paramIdx, float val)
 // ---- stopAllSoundFXEvents_92dac.cpp ----
 // FModSound::stopAllSoundFXEvents()
 //   if (system) iterate category indices (inner skip on ==1, stop at 4): cat[i]->vtbl[0x1c](cat[i])
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void stopAllSoundFXEvents(); };
 void FModSound::stopAllSoundFXEvents()
 {
     if (u32(this, OFF_SYSTEM) == 0)
@@ -693,27 +508,6 @@ void FModSound::stopAllSoundFXEvents()
 // FModSound::pause(int)
 //   system==0 -> return this ;  h==0 -> return 0 ;  else tail-call setPaused(h,1)
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- int pause(int p1); };
 int FModSound::pause(int p1)
 {
     void *self = this;
@@ -732,27 +526,6 @@ int FModSound::pause(int p1)
 
 __attribute__((visibility("hidden"))) static const unsigned char kRev[0x50] = {0};
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void disableReverb(); };
 void FModSound::disableReverb()
 {
     void *system = pp(this, OFF_SYSTEM);
@@ -771,30 +544,6 @@ __attribute__((visibility("hidden"))) static const char kSuffixA[16] = ".fev";
 __attribute__((visibility("hidden"))) static const char kSuffixB[24] = "_low.fev";
 __attribute__((visibility("hidden"))) static void *kCats[4];
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
-
-    void setAudioLanguage(int lang);
-    int init();
-};
 int FModSound::init()
 {
     for (int i = 0; i != 5; i++)
@@ -832,27 +581,6 @@ namespace FMOD { struct EventParameter; }
 
 // FModSound::setParamValue(int idx, int paramIdx, float val)
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void setParamValue(int paramIdx, int idx, float val); };
 void FModSound::setParamValue(int paramIdx, int idx, float val)
 {
     if (idx >= 0 && u32(this, OFF_SYSTEM) != 0 && pp(this, idx * 4 + OFF_EVENTS) != 0) {
@@ -865,27 +593,6 @@ void FModSound::setParamValue(int paramIdx, int idx, float val)
 // ---- isChannelActive_93228.cpp ----
 // FModSound::isChannelActive(int) -> if (system && events[p1]) { getState(h,&s); r=(s>>4)&1; } else 0
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- unsigned isChannelActive(int p1); };
 unsigned FModSound::isChannelActive(int p1)
 {
     if (u32(this, OFF_SYSTEM) != 0) {
@@ -902,32 +609,7 @@ unsigned FModSound::isChannelActive(int p1)
 // ---- playMusicFadeOutCurrent_93524.cpp ----
 // FModSound::playMusicFadeOutCurrent(int p1)
 //   if (this[0] != p1) { if (this[0]==-1) {this[0]=p1; s=p1;} setParamValue(0,s,0.1f); this[4]=p1; }
-static const float kFade = 0.1f;
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
-
-    void setParamValue(int a, int b, float v);
-    void playMusicFadeOutCurrent(int p1);
-};
 void FModSound::playMusicFadeOutCurrent(int p1)
 {
     int s = this->f_0;
@@ -946,27 +628,6 @@ namespace FMOD { struct EventParameter; }
 
 // FModSound::getParam(char const*, int) -> if (system && events[idx]) getParameter(h, name, &out)
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void getParam(const char *name, int idx); };
 void FModSound::getParam(const char *name, int idx)
 {
     if (u32(this, OFF_SYSTEM) != 0) {
@@ -979,7 +640,6 @@ void FModSound::getParam(const char *name, int idx)
 }
 
 // ---- updateAll_92ff0.cpp ----
-typedef unsigned int uintptr_t;
 
 namespace AbyssEngine { namespace AEMath { struct Vector; } }
 using AbyssEngine::AEMath::Vector;
@@ -989,49 +649,8 @@ void *operator_new(uint32_t size);
 int FMOD_EventSystem_set3DListenerAttributes(int system, void *zero, void *pos, void *vel,
                                              void *forward);
 int FMOD_EventSystem_update(int system);
-int FMOD_Event_getParentGroup(void *event, void **group);
 }
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
-
-    int isPlaying(int idx);
-    void updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up);
-};
-
-static void *cacheVec(void *self, uint32_t off, Vector *src)
-{
-    int *slot = (int *)pp(self, off);
-    if (slot == 0) {
-        slot = (int *)operator_new(0xc);
-        slot[0] = 0;
-        slot[1] = 0;
-        slot[2] = 0;
-        pp(self, off) = slot;
-    }
-    slot[0] = *(int *)src;
-    slot[1] = *((int *)src + 1);
-    slot[2] = *((int *)src + 2);
-    return slot;
-}
 
 void FModSound::updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up)
 {
@@ -1077,7 +696,7 @@ afterListener:
             ev = *evp;
         }
         if (slotIdx != -1 && ev != 0 && isPlaying(slotIdx) == 0) {
-            void *group = 0;
+            FMOD::EventGroup *group = 0;
             if (FMOD_Event_getParentGroup((void *)(uintptr_t)*evp, &group) == 0) {
                 // Release the event back to the system.
                 void **sysObj = (void **)pp(this, OFF_SYSTEM);
@@ -1096,27 +715,6 @@ afterListener:
 // NOTE: target carries a stack canary for the 4-byte state slot (built with stack-protector-strong
 // upstream); basic -fstack-protector here does not, so this is a near-match.
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- unsigned isPlaying(int p1); };
 unsigned FModSound::isPlaying(int p1)
 {
     if (u32(this, OFF_SYSTEM) != 0) {
@@ -1136,27 +734,6 @@ namespace FMOD { struct EventProject; struct EventGroup; }
 // FModSound::freeAllEvents()
 __attribute__((visibility("hidden"))) static const char kProjName[8] = "GoF2";
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void freeAllEvents(); };
 void FModSound::freeAllEvents()
 {
     if (u32(this, OFF_SYSTEM) != 0) {
@@ -1199,27 +776,6 @@ void FModSound::freeAllEvents()
 
 // ---- IsCategoryEnabled_9326c.cpp ----
 // FModSound::IsCategoryEnabled(int) -> p1<=3 && system && enabled[p1] ? 1 : 0
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- uint8_t IsCategoryEnabled(int p1); };
 uint8_t FModSound::IsCategoryEnabled(int p1)
 {
     uint8_t r = 0;
@@ -1233,27 +789,6 @@ namespace FMOD { struct EventParameter; }
 
 // FModSound::setParamValue(char const* name, int idx, float val)
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void setParamValue(const char *name, int idx, float val); };
 void FModSound::setParamValue(const char *name, int idx, float val)
 {
     if (idx >= 0 && u32(this, OFF_SYSTEM) != 0 && pp(this, idx * 4 + OFF_EVENTS) != 0) {
@@ -1267,27 +802,6 @@ void FModSound::setParamValue(const char *name, int idx, float val)
 // FModSound::pause(FMOD::Event*) -> int
 //   if (e && system) { if (getState(e,&s)==0 && (s<<0x1c)<0) return setPaused(e,1)==0; return 0; }
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- int pause(void *e); };
 int FModSound::pause(void *e)
 {
     unsigned r = 0;
@@ -1303,63 +817,21 @@ int FModSound::pause(void *e)
 }
 
 // ---- updateEvent3DAttributes_935a8.cpp ----
-typedef unsigned int uintptr_t;
 
 namespace AbyssEngine { namespace AEMath { struct Vector; } }
 using AbyssEngine::AEMath::Vector;
 
 extern "C" {
 void *operator_new(uint32_t size);
-int FMOD_Event_getCategory(void *event);
 int FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, void **out);
 int FMOD_Event_set3DAttributes(void *event, void *pos, void *vel);
 int FMOD_Event_start(void *event);
 int FMOD_Event_getState(void *event, unsigned int *state);
-int FMOD_Event_stop(void *event, bool immediate);
 }
 
 // FModSound::updateEvent3DAttributes(Event*, int, Vector*, Vector*, bool)
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
-
-    void *updateEvent3DAttributes(void *event, int idx, Vector *pos, Vector *vel, bool restart);
-};
 
 // Copy a Vector (3 floats) into a cached FMOD_VECTOR slot, allocating if needed.
-static void *cacheVec(void *self, uint32_t off, Vector *src)
-{
-    int *slot = (int *)pp(self, off);
-    if (slot == 0) {
-        slot = (int *)operator_new(0xc);
-        slot[0] = 0;
-        slot[1] = 0;
-        slot[2] = 0;
-        pp(self, off) = slot;
-    }
-    slot[0] = *(int *)src;
-    slot[1] = *((int *)src + 1);
-    slot[2] = *((int *)src + 2);
-    return slot;
-}
-
 void *FModSound::updateEvent3DAttributes(void *event, int idx, Vector *pos, Vector *vel, bool restart)
 {
     if (pp(this, OFF_FLAG2404) == 0 || u8(this, OFF_ENABLED) == 0)
@@ -1439,30 +911,6 @@ namespace FMOD { struct EventCategory; }
 //   for i<0x8f5: if (system && events[i] && isPlaying(i)) { getCategory(h,&cat);
 //       cat->vtbl[0](cat,&a,&b); if (a==1) setPaused(h,1); }
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
-
-    unsigned isPlaying(int p1);
-    void pauseAllPlayingSoundFXEvents();
-};
 void FModSound::pauseAllPlayingSoundFXEvents()
 {
     for (unsigned i = 0; i < 0x8f5u; ++i) {
@@ -1485,27 +933,6 @@ void FModSound::pauseAllPlayingSoundFXEvents()
 // ---- enableCategory_93288.cpp ----
 // FModSound::enableCategory(int p1, bool enable)
 
-struct FModSound {
-    // @portable-fields
-    int f_0; // 0x0
-    int f_4; // 0x4
-    uint8_t f_8; // 0x8
-    unsigned char _pad_9[3];
-    void* f_c; // 0xc
-    uint8_t f_10; // 0x10
-    unsigned char _pad_11[9199];
-    int f_2400; // 0x2400
-    int f_2404; // 0x2404
-    int f_2408; // 0x2408
-    int f_240c; // 0x240c
-    unsigned char _pad_2410[20];
-    void* f_2424; // 0x2424
-    void* f_2428; // 0x2428
-    void* f_242c; // 0x242c
-    void* f_2430; // 0x2430
-    void* f_2434; // 0x2434
-    void* f_2438; // 0x2438
- void enableCategory(int p1, bool enable); };
 void FModSound::enableCategory(int p1, bool enable)
 {
     if (p1 > 3)

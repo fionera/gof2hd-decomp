@@ -16,6 +16,18 @@
 
 typedef unsigned int size_t_;
 
+// --- Engine/runtime types declared at GLOBAL scope ------------------------
+// fwd.h already declares Engine/Mesh/Material/Camera/Transform/PaintCanvas globally; the
+// remaining engine types are declared here once at global scope. The AbyssEngine namespace
+// re-exports them via `using` so AbyssEngine::Engine and ::Engine are the same type and the
+// top-level extern "C" engine prototypes match the namespace-scope call sites.
+struct Image;
+struct Image2D;
+struct ImageFont;
+struct Curve;
+struct SpriteSystem;
+struct AELoadedTexture;
+
 namespace AbyssEngine {
 
 // --- Small value types -----------------------------------------------------
@@ -26,26 +38,28 @@ namespace AEMath {
 } // namespace AEMath
 
 using AEMath::Vector;
-using AEMath::Quaternion;
 using AEMath::Matrix;
+// Quaternion lives directly in namespace AbyssEngine (see gof2/math.h); already visible here.
 
 struct ESMatrix { float m[4][4]; };
 
 
 
-// --- Forward-declared engine/runtime types (opaque; used by pointer) -------
-struct Engine;
-struct Image;
-struct Image2D;
-struct ImageFont;
-struct Mesh;
-struct Material;
-struct Camera;
-struct Curve;
-struct SpriteSystem;
-struct Transform;
-struct PaintCanvas;
-struct AELoadedTexture;
+// --- Re-export the global engine/runtime types into this namespace --------
+// NOTE: Mesh and Transform are intentionally NOT re-exported here. gof2/Mesh.h declares
+// AbyssEngine::Mesh / AbyssEngine::Transform as namespace-scope forward decls (distinct from
+// the global complete ::Mesh struct), so a `using ::Mesh;` would conflict. Code that needs the
+// complete Mesh layout uses the global ::Mesh explicitly at the access site.
+using ::Engine;
+using ::Image;
+using ::Image2D;
+using ::ImageFont;
+using ::Material;
+using ::Camera;
+using ::Curve;
+using ::SpriteSystem;
+using ::PaintCanvas;
+using ::AELoadedTexture;
 
 } // namespace AbyssEngine
 
@@ -59,5 +73,5 @@ static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)s
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 static inline char *bp(void *self, uint32_t off) { return (char *)self + off; }
 
-struct AbyssEngine { void* _opaque; };  // no offset accesses observed
+// NOTE: AbyssEngine is a namespace (declared above), not a class. No struct here.
 #endif

@@ -8,8 +8,8 @@
 
 struct Gun;
 struct KIPlayer;
-struct Vector;
-struct Matrix;
+// Vector and Matrix are AEMath 3D types brought in via common.h (using AEMath::Vector/Matrix).
+// Do NOT forward-declare them here as plain structs — that conflicts with the using-declarations.
 
 
 
@@ -69,8 +69,8 @@ struct Player {
     uint8_t alwaysFriend;            // 0xed
     uint8_t neverAttack;             // 0xee
     uint8_t pad_ef;                  // 0xef
-    int32_t engineEvent;             // 0xf0
-    int32_t field_f4;                // 0xf4  (init -1)
+    void *engineEvent;               // 0xf0  FMOD event handle
+    void *field_f4;                  // 0xf4  engine-sound position vec (init -1)
     uint8_t field_f8;                // 0xf8
     uint8_t pad_f9[3];               // 0xf9
     float position[3];               // 0xfc .. 0x104
@@ -78,23 +78,13 @@ struct Player {
     uint8_t pad_109[3];              // 0x109
     int32_t playShootSoundId;        // 0x10c
     int32_t field_110;               // 0x110
+
+    ~Player();                       // defined out-of-line in Player.cpp
 };
 
-static_assert(sizeof(Array<Gun *>) == 0xc, "Array size");
-static_assert(__builtin_offsetof(Player, radius) == 0x40, "radius");
-static_assert(__builtin_offsetof(Player, enemies) == 0x74, "enemies");
-static_assert(__builtin_offsetof(Player, hitpoints) == 0x78, "hitpoints");
-static_assert(__builtin_offsetof(Player, shieldHP) == 0x88, "shieldHP");
-static_assert(__builtin_offsetof(Player, damageRate) == 0x98, "damageRate");
-static_assert(__builtin_offsetof(Player, gammaHP) == 0xb8, "gammaHP");
-static_assert(__builtin_offsetof(Player, active) == 0xc0, "active");
-static_assert(__builtin_offsetof(Player, shootingEnabled) == 0xc3, "shootingEnabled");
-static_assert(__builtin_offsetof(Player, hitVector) == 0xc4, "hitVector");
-static_assert(__builtin_offsetof(Player, kiPlayer) == 0xd0, "kiPlayer");
-static_assert(__builtin_offsetof(Player, turnedEnemy) == 0xe0, "turnedEnemy");
-static_assert(__builtin_offsetof(Player, alwaysEnemy) == 0xec, "alwaysEnemy");
-static_assert(__builtin_offsetof(Player, neverAttack) == 0xee, "neverAttack");
-static_assert(__builtin_offsetof(Player, engineEvent) == 0xf0, "engineEvent");
-static_assert(__builtin_offsetof(Player, position) == 0xfc, "position");
-static_assert(__builtin_offsetof(Player, playShootSoundId) == 0x10c, "playShootSoundId");
+// NOTE: the original byte-matching decomp asserted the 32-bit ARM (ILP32) field offsets here
+// (sizeof(Array<Gun*>)==0xc, radius==0x40, hitpoints==0x78, ...). Those invariants only hold on the
+// 4-byte-pointer target; this is the native 64-bit macOS port (8-byte pointers, 24-byte std::vector),
+// so the absolute offsets necessarily differ. Methods access fields by name, so the exact layout no
+// longer needs to match — the target-only static_asserts are intentionally dropped for the 64-bit port.
 #endif

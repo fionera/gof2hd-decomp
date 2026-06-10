@@ -37,22 +37,13 @@ extern "C" void *_ZN20ParticleSystemSpriteD1Ev(void *self)
 }
 
 // ---- reset_18335c.cpp ----
-struct ParticleSystemSprite {
-    void reset();
-};
-
-extern "C" void PaintCanvas_SpriteSystemSetPosition(unsigned int handle, unsigned int sub,
-                                                    unsigned short id, float x, float y, float z);
-extern "C" void PaintCanvas_SpriteSystemSetSize(unsigned int handle, unsigned int sub,
-                                                unsigned short id, int size);
-
 void ParticleSystemSprite::reset()
 {
     for (int i = 0; i < this->field_0x48; i++) {
-        PaintCanvas_SpriteSystemSetPosition(this->field_0x8, this->field_0x54,
+        PaintCanvas_SpriteSystemSetPosition(this->field_0x8,
                                             (unsigned short)(this->field_0x58 + i),
                                             4294967296.0f, 4294967296.0f, 4294967296.0f);
-        PaintCanvas_SpriteSystemSetSize(this->field_0x8, this->field_0x54,
+        PaintCanvas_SpriteSystemSetSize(this->field_0x8,
                                         (unsigned short)(this->field_0x58 + i), 0);
         this->field_0x68[i] = 0xffffffff;
     }
@@ -61,10 +52,6 @@ void ParticleSystemSprite::reset()
 }
 
 // ---- init_182c48.cpp ----
-struct ParticleSystemSprite {
-    int init(unsigned int param_1, unsigned short param_2);
-};
-
 int ParticleSystemSprite::init(unsigned int param_1, unsigned short param_2)
 {
     void **vt = *(void ***)this;
@@ -76,11 +63,6 @@ int ParticleSystemSprite::init(unsigned int param_1, unsigned short param_2)
 }
 
 // ---- release_1833b8.cpp ----
-struct ParticleSystemSprite {
-    void release();
-};
-
-
 void ParticleSystemSprite::release()
 {
     if (this->field_0x64 != 0)
@@ -98,11 +80,6 @@ void ParticleSystemSprite::release()
 // Draws the sprite system with an identity world transform: binds the texture and blend mode,
 // builds an identity 3x4 matrix on the stack, pushes it as the world-view matrix, and issues
 // the sprite-system draw. A handle of -1 means "no system" and is skipped.
-
-struct ParticleSystemSprite {
-    void render(void *canvas, int handle, unsigned int texture, int blend);
-};
-
 
 // Constant {0,0,1,0} tail used to fill the identity matrix (matches the original literals).
 static const float kIdentTail[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
@@ -144,19 +121,18 @@ void ParticleSystemSprite::render(void *canvas, int handle, unsigned int texture
 // particle sprite scratch array (count at +0x48, 12 bytes each) at +0x64 and zero-fills it,
 // and caches a precomputed Pow value at +0x70.
 
-struct ParticleSystemSprite;
-
 void *operator new[](__SIZE_TYPE__ size);
 
 extern "C" void _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
     void *self, void *canvas, const void *matrix, const void *sets, bool b4, bool b5);
 
 extern "C" void *ParticleSystemSprite_ctor(
-    void *self, void *canvas, const void *matrix, const void *sets, bool b4, bool b5)
+    void *selfv, void *canvas, const void *matrix, const void *sets, bool b4, bool b5)
 {
     _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
-        self, canvas, matrix, sets, b4, b5);
+        selfv, canvas, matrix, sets, b4, b5);
 
+    ParticleSystemSprite *self = (ParticleSystemSprite *)selfv;
     unsigned int count = self->field_0x48;
 
     // Install the derived vtable (base + 8 -> first virtual slot).
@@ -178,11 +154,6 @@ extern "C" void *ParticleSystemSprite_ctor(
 // selecting a 0xA0-byte ParticleSet), kills it once it passes its lifetime, grows its sprite
 // size, interpolates and applies its RGBA, steps the UV flipbook animation when the set has
 // frames, and integrates its velocity into the sprite position.
-
-struct ParticleSystemSprite {
-    void updateSingle(int index, float dt);
-};
-
 
 // Base address of the ParticleSet table the per-particle byte index multiplies into (0xA0 stride).
 __attribute__((visibility("hidden"))) extern char *g_particleSetBase;
@@ -262,13 +233,6 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
 }
 
 // ---- setAlpha_183028.cpp ----
-struct ParticleSystemSprite {
-    void setAlpha(int param_1, unsigned int param_2, float param_3);
-};
-
-extern "C" void PaintCanvas_SpriteSystemSetRGBA(unsigned int handle, unsigned int sub,
-                                                unsigned short id, float a, float b, float c, float d);
-
 void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float param_3)
 {
     float c0 = (float)(param_2 & 0xff);
@@ -289,7 +253,7 @@ void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float par
         c3 = c3 * param_3;
     }
 
-    PaintCanvas_SpriteSystemSetRGBA(this->field_0x8, this->field_0x54,
+    PaintCanvas_SpriteSystemSetRGBA(this->field_0x8,
                                     (unsigned short)(this->field_0x58 + param_1),
                                     c3, c2, c1, c0);
 }
@@ -300,11 +264,6 @@ void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float par
 // stray conditional ARM ops ending in a conditional branch). Functionally it is a thin
 // forwarder that, under one condition, tail-calls the shared area-exit particle update helper.
 // We model it as that forwarding call so the translation unit is faithful and compiles.
-
-struct ParticleSystemSprite {
-    void updateAreaExitParticle(int param_1, float param_2);
-};
-
 
 void ParticleSystemSprite::updateAreaExitParticle(int param_1, float param_2)
 {
@@ -318,18 +277,6 @@ void ParticleSystemSprite::updateAreaExitParticle(int param_1, float param_2)
 // (base size + per-system offset), UV rectangle, and RGBA. When `clearColor` is set the packed
 // color's low byte is masked off first. Color components are converted from 0..255 bytes to
 // normalized floats via VectorUnsignedToFloat and scaled by a global constant.
-
-struct ParticleSystemSprite {
-    void setParticle(const void *pos, float p2, unsigned int color, float p4, float p5,
-                     float p6, float p7, bool clearColor, float p9, float p10, const void *uv);
-};
-
-extern "C" void PaintCanvas_SpriteSystemSetPosition(unsigned int handle, unsigned short id,
-                                                    float x, float y, float z);
-extern "C" void PaintCanvas_SpriteSystemSetUv(unsigned int handle, unsigned short id,
-                                              float u0, float v0, float u1, float v1);
-extern "C" void PaintCanvas_SpriteSystemSetRGBA(unsigned int handle, unsigned short id,
-                                                float r, float g, float b, float a);
 
 // Global color normalization scale (1/255).
 __attribute__((visibility("hidden"))) extern float g_colorScale;
@@ -369,10 +316,6 @@ void ParticleSystemSprite::setParticle(const void *pos, float p2, unsigned int c
 // Camera-relative draw: snapshots the current camera's local matrix twice (the engine swaps
 // the active camera between the two queries) and forwards both 15-float matrices to the
 // sprite-system draw entry. A handle of 0xffffffff means "no system" and is skipped.
-
-struct ParticleSystemSprite {
-    void render(void *canvas, unsigned int handle);
-};
 
 extern "C" void  PaintCanvas_DrawSpriteSystemCam(
     void *canvas, unsigned int handle,

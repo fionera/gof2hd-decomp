@@ -2,43 +2,57 @@
 #define GOF2_PULSESHADER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// AbyssEngine::PulseShader -- GLES2 pulse shader (derives from ShaderBaseStruct).
+// Layout (confirmed from Ghidra Init/ctor):
+//   +0x00 vtable   +0x04 GL program   +0x09 byte "dirty" flag
+//   +0x0c String name (12 bytes)
+//   +0x20..0x30 attribute locations a0..a4
+//   +0x34..0x58 uniform locations u0..u9 (note 0x58 carries u4)
+
+#include "gof2/Mesh.h"   // full Mesh layout (top-level ::Mesh)
+
+struct Engine;            // top-level, matches fwd.h (layout not modelled in this batch)
+
 namespace AbyssEngine {
 
-struct Engine;
-struct Mesh;
+// AbyssEngine::PulseShader.
+struct PulseShader {
+    void *field_0x0;                    // +0x0  vtable
+    int field_0x4;                      // +0x4  GL program handle
+    uint8_t pad_0x8;                    // +0x8  (padding/unused)
+    uint8_t field_0x9;                  // +0x9  "needs uniform update" flag
+    uint8_t pad_0xa[2];                 // +0xa
+    String field_0xc;                   // +0xc  shader name (12 bytes -> ends 0x18)
+    uint8_t pad_0x18[8];                // +0x18
+    int field_0x20;                     // +0x20 attrib a0
+    int field_0x24;                     // +0x24 attrib a1
+    int field_0x28;                     // +0x28 attrib a2
+    int field_0x2c;                     // +0x2c attrib a3
+    int field_0x30;                     // +0x30 attrib a4
+    int field_0x34;                     // +0x34 uniform u0
+    int field_0x38;                     // +0x38 uniform u1
+    int field_0x3c;                     // +0x3c uniform u2
+    int field_0x40;                     // +0x40 uniform u3
+    int field_0x44;                     // +0x44 uniform u5
+    int field_0x48;                     // +0x48 uniform u6
+    int field_0x4c;                     // +0x4c uniform u7
+    int field_0x50;                     // +0x50 uniform u8
+    int field_0x54;                     // +0x54 uniform u9
+    int field_0x58;                     // +0x58 uniform u4
 
-
-
-
-
-namespace AEMath {
-struct Vector;
-}
+    PulseShader();
+    void Init(::Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(::Mesh *mesh, ::Engine *engine);
+};
 
 } // namespace AbyssEngine
 
-using Engine = AbyssEngine::Engine;
-using Mesh = AbyssEngine::Mesh;
-using String = AbyssEngine::String;
-using PulseShader = AbyssEngine::PulseShader;
-using Vector = AbyssEngine::AEMath::Vector;
-
-static_assert(sizeof(String) == 0xc, "String layout");
-
-static inline int &i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
-
-static inline uint8_t &u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
-
-static inline float &f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
+// Byte-offset accessors into the render Engine object (its full layout is not modelled
+// in this batch -- the matrices / light vectors it carries are read by fixed offset).
+static inline int   &i32(void *self, uint32_t offset) { return *(int *)((char *)self + offset); }
+static inline uint8_t &u8(void *self, uint32_t offset) { return *(uint8_t *)((char *)self + offset); }
+static inline float &f32(void *self, uint32_t offset) { return *(float *)((char *)self + offset); }
 
 extern "C" {
 extern void *__stack_chk_guard;
@@ -72,19 +86,8 @@ void String_ctor_char(String *self, const char *text, bool copy);
 String *String_assign(String *self, const String *other);
 void String_dtor(String *self);
 
-float *Vector_cast_to_float(Vector *self);
-
 void operator_delete(void *ptr) noexcept;
 __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
-namespace AbyssEngine {
-inline String::String(const char *text, bool copy) { String_ctor_char(this, text, copy); }
-inline String::~String() { String_dtor(this); }
-inline void String::operator=(const String &other) { String_assign(this, &other); }
-} // namespace AbyssEngine
-
-struct PulseShader {
-    String field_0xc;                   // +0xc
-};
 #endif

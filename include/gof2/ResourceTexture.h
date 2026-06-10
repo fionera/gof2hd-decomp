@@ -9,16 +9,16 @@
 // Access fields via byte-offset casts from `this`.
 
 
-namespace AbyssEngine {
+// Defined at top level to match fwd.h's `struct ResourceTexture;` forward decl.
+// (game-qualified name is AbyssEngine::ResourceTexture)
+struct ResourceTexture {
+    char *field_0x0;                    // +0x0  heap copy of name C-string
+    float field_0x4;                    // +0x4  value
 
-
-
-
-
-} // namespace AbyssEngine
-
-using String = AbyssEngine::String;
-using ResourceTexture = AbyssEngine::ResourceTexture;
+    ResourceTexture(const char *name, float value);
+    ResourceTexture(const String &name, float value);
+    ~ResourceTexture();
+};
 
 extern "C" {
 void *operator_new__(uint32_t size);
@@ -30,8 +30,4 @@ uint32_t String_GetStringLength(const char *s);
 // AbyssEngine::String::GetAEChar() const -- returns a freshly allocated UTF-8 C-string.
 void *String_GetAEChar(const String *self);
 }
-
-struct ResourceTexture {
-    float field_0x4;                    // +0x4
-};
 #endif

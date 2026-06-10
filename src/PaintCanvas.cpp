@@ -24,7 +24,7 @@ extern "C" void paintcanvas_ext_dr_glcap(void *eng, unsigned int cap, int on);
 extern "C" void paintcanvas_ext_dr_glVertexPointer(int a, int b, int c, void *p);
 extern "C" void paintcanvas_ext_dr_glColorMask(void *eng, unsigned int cap, int on);
 extern "C" void paintcanvas_ext_dr_glDrawArrays(int a, int b, int c);
-extern "C" void paintcanvas_ext_dr_drawline2d(void *eng, int p, int n, bool b);
+extern "C" void paintcanvas_ext_dr_drawline2d(void *eng, void *p, int n, bool b);
 extern "C" void paintcanvas_ext_fbo_a(void *);
 extern "C" void paintcanvas_ext_fbo_b(void *, int);
 extern "C" void paintcanvas_ext_fbo_c(void *);
@@ -142,7 +142,7 @@ extern "C" void paintcanvas_ext_dl_setwvm(void *self, void *m);
 extern "C" void paintcanvas_ext_dl_glVertexPointer(int a, int b, int c, void *p);
 extern "C" void paintcanvas_ext_dl_glColorMask(void *eng, unsigned int cap, int on);
 extern "C" void paintcanvas_ext_dl_glDrawArrays(int a, int b, int c);
-extern "C" void paintcanvas_ext_dl_drawline2d(void *eng, int p, bool b);
+extern "C" void paintcanvas_ext_dl_drawline2d(void *eng, void *p, bool b);
 extern "C" int paintcanvas_ext_get_w(AbyssEngine::PaintCanvas *);
 extern "C" int paintcanvas_ext_get_h(AbyssEngine::PaintCanvas *);
 extern "C" void paintcanvas_ext_cam_persp4(float, float, float, float, float, void *);
@@ -546,9 +546,9 @@ void SpriteSystemSetRGBA(AbyssEngine::PaintCanvas *self, unsigned int index, uns
                          float a, float b, float c, float d)
 {
     if (index < self->field_0x180) {
-        unsigned short *s = (self->field_0x184)[index];
+        char *s = (self->field_0x184)[index];
         if (s) {
-            if ((unsigned int)*s <= (unsigned int)sub) {
+            if ((unsigned int)*(unsigned short *)s <= (unsigned int)sub) {
                 return;
             }
             return paintcanvas_ext_sprite_rgba(sub, a, b, c, d, s);
@@ -611,7 +611,7 @@ void DrawRectangle(AbyssEngine::PaintCanvas *self, int param_1, int param_2,
         paintcanvas_ext_dr_glDrawArrays(2, 0, 4);
         paintcanvas_ext_dr_glcap(self->field_0x34, 0xde1, 1);
     } else {
-        paintcanvas_ext_dr_drawline2d(self->field_0x34, (int)((char *)self + 0x1d0), 4, true);
+        paintcanvas_ext_dr_drawline2d(self->field_0x34, (char *)self + 0x1d0, 4, true);
     }
 }
 
@@ -674,9 +674,9 @@ using AbyssEngine::AEMath::Vector;
 void SpriteSystemGetPosition(AbyssEngine::PaintCanvas *self, unsigned int index, unsigned short sub, Vector &out)
 {
     if (index < self->field_0x180) {
-        unsigned short *s = (self->field_0x184)[index];
+        char *s = (self->field_0x184)[index];
         if (s) {
-            if ((unsigned int)*s <= (unsigned int)sub) {
+            if ((unsigned int)*(unsigned short *)s <= (unsigned int)sub) {
                 return;
             }
             float *p = (float *)(*(char **)((char *)s + 0x4) + sub * 12);
@@ -713,7 +713,7 @@ void MaterialChange(AbyssEngine::PaintCanvas *self, unsigned int index,
                     unsigned int param3, unsigned int param4)
 {
     if (index < self->field_0x174) {
-        unsigned int *mat = (self->field_0x178)[index];
+        unsigned int *mat = (unsigned int *)(self->field_0x178)[index];
         mat[8] = param3;
         mat[0] = param4;
     }
@@ -869,9 +869,9 @@ void Vibrate(AbyssEngine::PaintCanvas *self, unsigned short)
 void SpriteSystemAddSize(AbyssEngine::PaintCanvas *self, unsigned int index, unsigned short sub, short delta)
 {
     if (index < self->field_0x180) {
-        short *s = (self->field_0x184)[index];
+        char *s = (self->field_0x184)[index];
         if (s) {
-            if ((unsigned short)*s <= (unsigned int)sub) {
+            if ((unsigned short)*(short *)s <= (unsigned int)sub) {
                 return;
             }
             short *vals = *(short **)((char *)s + 0x8);
@@ -890,7 +890,7 @@ using AbyssEngine::AEMath::Matrix;
 void TransformSetLocal(AbyssEngine::PaintCanvas *self, unsigned int index, const Matrix &matrix)
 {
     if (index < self->field_0x158) {
-        Matrix *t = (self->field_0x15c)[index];
+        Matrix *t = (Matrix *)(self->field_0x15c)[index];
         *t = matrix;
     }
 }
@@ -970,7 +970,7 @@ float CameraGetCurrentFactor1(AbyssEngine::PaintCanvas *self)
     if (cur >= self->field_0x164) {
         return 1.0f;
     }
-    char *cam = (self->field_0x168)[cur];
+    char *cam = (char *)(self->field_0x168)[cur];
     return *(float *)(cam + 0x48);
 }
 
@@ -1099,7 +1099,7 @@ void SetProjOrthoMatrix(AbyssEngine::PaintCanvas *self)
 }
 
 // ---- MeshChangeMaterialIntern_7a372.cpp ----
-void MeshChangeMaterialIntern(AbyssEngine::PaintCanvas *self, void *mesh, void *mat)
+void MeshChangeMaterialIntern(AbyssEngine::PaintCanvas *self, AbyssEngine::Mesh *mesh, void *mat)
 {
     if (mesh && mat) {
         mesh->field_0x30 = mat;
@@ -1155,7 +1155,7 @@ void CameraSetCurrent(AbyssEngine::PaintCanvas *self, unsigned int index)
 {
     self->field_0x170 = index;
     if (index < self->field_0x164) {
-        unsigned int *cam = (self->field_0x168)[index];
+        unsigned int *cam = (unsigned int *)(self->field_0x168)[index];
         return paintcanvas_ext_camera_apply(self, cam[0], cam[1], cam[2]);
     }
 }
@@ -1273,9 +1273,9 @@ void SpriteSystemSetUv(AbyssEngine::PaintCanvas *self, unsigned int index, unsig
                        float a, float b, float c, float d)
 {
     if (index < self->field_0x180) {
-        unsigned short *s = (self->field_0x184)[index];
+        char *s = (self->field_0x184)[index];
         if (s) {
-            if ((unsigned int)*s <= (unsigned int)sub) {
+            if ((unsigned int)*(unsigned short *)s <= (unsigned int)sub) {
                 return;
             }
             return paintcanvas_ext_sprite_uv(sub, a, b, c, d, s);
@@ -1295,7 +1295,7 @@ using AbyssEngine::AEMath::Matrix;
 void CameraSetLocal(AbyssEngine::PaintCanvas *self, unsigned int index, const Matrix &matrix)
 {
     if (index < self->field_0x164) {
-        char *cam = (self->field_0x168)[index];
+        char *cam = (char *)(self->field_0x168)[index];
         *(Matrix *)(cam + 0xc) = matrix;
     }
 }
@@ -1303,7 +1303,7 @@ void CameraSetLocal(AbyssEngine::PaintCanvas *self, unsigned int index, const Ma
 // ---- SetShaderMode_7cb3e.cpp ----
 void SetShaderMode(AbyssEngine::PaintCanvas *self, int mode)
 {
-    *(int *)(self->field_0x34 + 0x4a8) = mode;
+    *(int *)((char *)self->field_0x34 + 0x4a8) = mode;
 }
 
 // ---- MeshConvertToVBO_7a292.cpp ----
@@ -2050,7 +2050,7 @@ void DrawLine(AbyssEngine::PaintCanvas *self, int param_1, int param_2, int para
         v[1] = y1;
         v[2] = x2;
         v[3] = y2;
-        paintcanvas_ext_dl_drawline2d(*(void **)(t + 0x34), (int)(t + 0x1d0), true);
+        paintcanvas_ext_dl_drawline2d(*(void **)(t + 0x34), t + 0x1d0, true);
     }
 }
 
@@ -2118,7 +2118,7 @@ extern char paintcanvas_g_bg_b;
 
 void BeginBG(AbyssEngine::PaintCanvas *self)
 {
-    *(unsigned char *)(self->field_0x34 + 0xfd) = 0;
+    *(unsigned char *)((char *)self->field_0x34 + 0xfd) = 0;
     paintcanvas_ext_gl_enable(0xb71);
     paintcanvas_ext_gl_depthmask(0);
     paintcanvas_ext_gl_enable(0xbe2);
@@ -2176,17 +2176,17 @@ void FontCreate(AbyssEngine::PaintCanvas *self, unsigned short param_1, unsigned
     *(int *)(res + 8) = idx;
     *param_2 = idx;
 
-    char *eng = self->field_0x34;
+    char *eng = (char *)self->field_0x34;
     int cur = *(int *)(eng + 0x78);
     if (cur == -1) {
         *(int *)(eng + 0x78) = idx;
     } else {
-        char *curFont = (self->field_0x144)[cur];
+        char *curFont = (char *)(self->field_0x144)[cur];
         if (*(unsigned short *)curFont <= *(unsigned short *)font) {
             int curH = paintcanvas_ext_fc_fontheight(curFont);
             int newH = paintcanvas_ext_fc_fontheight(font);
             if (newH < curH) {
-                *(int *)(self->field_0x34 + 0x78) = *param_2;
+                *(int *)((char *)self->field_0x34 + 0x78) = *param_2;
             }
         }
     }
@@ -2207,7 +2207,7 @@ void MaterialResourceChangeTexture(AbyssEngine::PaintCanvas *self, unsigned shor
         if (r) {
             unsigned int matIdx = *(unsigned int *)(r + 0x8);
             if (matIdx + 1 != 0 && matIdx < self->field_0x174) {
-                char *mat = (self->field_0x178)[matIdx];
+                char *mat = (char *)(self->field_0x178)[matIdx];
                 *(void **)(mat + slot * 4) = texture;
             }
         }
@@ -2267,7 +2267,7 @@ extern char paintcanvas_g_use_matgl;
 
 void Begin3d(AbyssEngine::PaintCanvas *self)
 {
-    *(unsigned char *)(self->field_0x34 + 0xfd) = 0;
+    *(unsigned char *)((char *)self->field_0x34 + 0xfd) = 0;
     paintcanvas_ext_gl_disable(0xb71);
     paintcanvas_ext_gl_depthmask(1);
     paintcanvas_ext_gl_enable(0xbe2);
@@ -2320,7 +2320,7 @@ void GetReverseString(AbyssEngine::String *out, unsigned int /*r1*/, AbyssEngine
         grs_String_ctor_copy(out, in, false);
     } else {
         grs_String_ctor_cstr(out, g_grs_empty, false);
-        int i = in->field_0x8;
+        int i = (int)in->size();
         while (--i >= 0) {
             String piece;
             grs_String_substr(&piece, in, (unsigned)i, (unsigned)(i + 1));
@@ -2348,9 +2348,9 @@ void SpriteSystemCreate(AbyssEngine::PaintCanvas *self, unsigned short param_1, 
         unsigned int mat = 0xffffffff;
         paintcanvas_ext_ss2_matcreate(self, param_3, &mat);
         if (mat <= self->field_0x174) {
-            void *node = *(void **)((char *)ss + 0x10);
+            AbyssEngine::Node *node = *(AbyssEngine::Node **)((char *)ss + 0x10);
             node->field_0x30 =
-                *(unsigned int *)(self->field_0x178 + mat * 4);
+                *(unsigned int *)((char *)self->field_0x178 + mat * 4);
         }
         unsigned int i;
         for (i = 0; i < self->field_0x180; i++) {
@@ -3204,11 +3204,11 @@ void Suspend(AbyssEngine::PaintCanvas *self)
 {
     char texId[4];
     for (unsigned int i = 0; i < self->field_0x10; i++) {
-        int *p = (self->field_0x14)[i];
+        int *p = (int *)(self->field_0x14)[i];
         *(int *)texId = *p;
         if (*p != -1) {
             paintcanvas_ext_gl_deletetextures(1, texId);
-            p = (self->field_0x14)[i];
+            p = (int *)(self->field_0x14)[i];
         }
         *p = -1;
     }
@@ -3591,7 +3591,7 @@ void MeshCreate(AbyssEngine::PaintCanvas *self, unsigned short param_1, unsigned
             // material pointer back-reference: write last element ptr into mesh+0x30
             void *m = *(void **)(self->field_0x178 - 4);
             if (mesh) {
-                mesh->field_0x30 = m;
+                ((AbyssEngine::Mesh *)mesh)->field_0x30 = m;
             }
         }
         AbyssEngine::ArrayAddMesh((AbyssEngine::Mesh *)mesh, (char *)self + 0x24);
@@ -3739,7 +3739,7 @@ extern char *paintcanvas_g_b2d_flag HIDDEN;
 
 void Begin2d(AbyssEngine::PaintCanvas *self)
 {
-    *(unsigned char *)(self->field_0x34 + 0xfd) = 1;
+    *(unsigned char *)((char *)self->field_0x34 + 0xfd) = 1;
     paintcanvas_ext_gl_disable(0xb71);
     paintcanvas_ext_gl_depthmask(0);
     paintcanvas_ext_gl_enable(0xbe2);
@@ -3773,9 +3773,9 @@ void DrawString(AbyssEngine::PaintCanvas *self, unsigned int index, const unsign
                 int x, int y, bool b)
 {
     if (index < self->field_0x140) {
-        char *font = (self->field_0x144)[index];
+        char *font = (char *)(self->field_0x144)[index];
         paintcanvas_ext_string_prep(self, *(void **)(font + 0x8), -1);
-        char *font2 = (self->field_0x144)[index];
+        char *font2 = (char *)(self->field_0x144)[index];
         paintcanvas_ext_drawstring_raw(font2, str, x, y, self,
                                        self->field_0x34, b);
     }
@@ -4062,7 +4062,7 @@ void MeshCreate(AbyssEngine::PaintCanvas *self, unsigned short param_1, unsigned
         }
         if (*g_meshcreate_vboflag_79d5c != 0) {
             if (mesh) {
-                mesh->field_0x84 = 1;
+                ((AbyssEngine::Mesh *)mesh)->field_0x84 = 1;
             }
             paintcanvas_ext_mc2_converttovbo(mesh);
         }
@@ -4070,8 +4070,8 @@ void MeshCreate(AbyssEngine::PaintCanvas *self, unsigned short param_1, unsigned
         idx = self->field_0x24 - 1;
         *(unsigned int *)(res + 8) = idx;
     } else {
-        char *meshes = self->field_0x28;
-        char *existing = ((char **)meshes)[idx];
+        char **meshes = self->field_0x28;
+        char *existing = meshes[idx];
         if (*(int *)(existing + 0x34) != 0 || param_3) {
             void *clone = paintcanvas_ext_mc2_new_mesh_copy(
                 ((void **)meshes)[*(unsigned int *)(res + 8)]);
@@ -4762,9 +4762,9 @@ void DrawString(AbyssEngine::PaintCanvas *self, unsigned int index, void *str,
                 int x, int y, bool b)
 {
     if (index < self->field_0x140) {
-        char *font = (self->field_0x144)[index];
+        char *font = (char *)(self->field_0x144)[index];
         paintcanvas_ext_string_prep(self, *(void **)(font + 0x8), -1);
-        char *font2 = (self->field_0x144)[index];
+        char *font2 = (char *)(self->field_0x144)[index];
         unsigned int len = paintcanvas_ext_strlen(str);
         paintcanvas_ext_drawstring_str(font2, len, *(unsigned int *)((char *)str + 0x8), x, y,
                                        self, self->field_0x34, b);
@@ -4792,15 +4792,18 @@ int TransformGetTriCount(AbyssEngine::PaintCanvas *self, char *transform)
 }
 
 // ---- MeshChangeShaderAnimValue_7a2d2.cpp ----
-void MeshChangeShaderAnimValue(AbyssEngine::PaintCanvas *self, char *transform, float value, unsigned int mode)
+// Distinct overload from the single-mesh variant above: recurses over a Transform
+// node's child meshes and child transforms. The first object param is a Transform*,
+// which also disambiguates it from the (PaintCanvas*, Mesh-bytes char*, ...) overload.
+void MeshChangeShaderAnimValue(AbyssEngine::PaintCanvas *self, AbyssEngine::Transform *transform, float value, unsigned int mode)
 {
     if (transform) {
-        for (unsigned int i = 0; i < *(unsigned int *)(transform + 0x3c); ++i) {
-            void *m = (*(void ***)(transform + 0x40))[i];
+        for (unsigned int i = 0; i < transform->field_0x3c; ++i) {
+            void *m = transform->field_0x40[i];
             paintcanvas_ext_mesh_shaderanim(self, m, value, mode);
         }
-        for (unsigned int i = 0; i < *(unsigned int *)(transform + 0x4c); ++i) {
-            void *c = (*(void ***)(transform + 0x50))[i];
+        for (unsigned int i = 0; i < transform->field_0x4c; ++i) {
+            void *c = transform->field_0x50[i];
             paintcanvas_ext_transform_shaderanim(self, c, value, mode);
         }
     }
@@ -4811,8 +4814,8 @@ void ReleaseSpriteSystemResource(AbyssEngine::PaintCanvas *self, unsigned int in
 {
     if (index < self->field_0x180) {
         void *ctx = self->field_0x34;
-        char *arr = self->field_0x184;
-        return paintcanvas_ext_release_sprite_res(ctx, arr + index * 4);
+        char **arr = self->field_0x184;
+        return paintcanvas_ext_release_sprite_res(ctx, arr + index);
     }
 }
 

@@ -1,27 +1,22 @@
 #include "gof2/Globals.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/Status.h"
-#include "gof2/String.h"
+
+// Status / AEGeometry / String full layouts are not needed here: Globals only takes
+// Status* as an opaque handle and reaches the engine via extern "C" free functions.
+struct Status;
 
 
 extern "C" int Status_getKills(Status *s);
 extern "C" void *operator_new(unsigned int sz);
 extern "C" void operator_delete(void *p);
 extern "C" void ArrayInt_release(Array<int> *a);
-extern "C" void *ArrayInt_dtor(Array<int> *a);
-extern "C" void ArrayInt_ctor(Array<int> *a);
 extern "C" void ArrayInt_add(int val, Array<int> *a);
 extern "C" void Globals_startNewSoundResourceList_tail(int val, Array<int> *a);
-extern "C" String *GameText_getText(void *gt, int id);
+extern "C" String *GameText_getText(void *gt, ...);
 extern "C" void AEString_ctor_copy(void *dst, void *src, bool flag);
 extern "C" void AEString_ctor_default(void *out);
 extern "C" float Globals_sqrt_impl(float x);
-extern "C" int AERandom_nextInt(int rng, int bound);
 extern "C" void Globals_getRandomSystemForDrinks_tail(int a, int b);
 extern "C" void Globals_addSoundResource_tail(int val, Array<int> *a);
-extern "C" void FileRead_ctor(FileRead *p);
-extern "C" int FileRead_loadStation(FileRead *p, int which);
-extern "C" void *FileRead_dtor(FileRead *p);
 extern "C" void *__stack_chk_guard;
 extern "C" void __stack_chk_fail(unsigned diff);
 extern "C" void AEString_default_ctor(void *dst);
@@ -31,13 +26,12 @@ extern "C" void AEString_substr(void *dst, void *s, unsigned from, unsigned to);
 extern "C" void AEString_assign(void *dst, void *src);
 extern "C" void AEString_dtor(void *s);
 extern "C" short *AEString_index(void *s, int i);
-extern "C" void Globals_getLine(void *out, unsigned font, void *text, int width, void *lineArr);
 extern "C" void ArraySetLength_Str(unsigned n, void *a);
 extern "C" long long Globals_lts_divmod(long long num, int den, int *rem);
 extern "C" void AEString_int_ctor(void *dst, int v);
 extern "C" void AEString_concat(void *dst, void *a);
 extern "C" int PaintCanvas_GetTextWidth(int canvas, void *font);
-extern "C" void Globals_getLine(void *out, int font, void *text, int width, void *lineArr);
+extern "C" void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth, void *lineArr);
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
 extern "C" void AEString_default_ctor(void *s);
@@ -54,8 +48,7 @@ extern "C" int Agent_getSellModIndex(void *agent);
 extern "C" int Status_getShip();
 extern "C" int Ship_getPrice(int ship);
 extern "C" int Ship_hasModInstalled(int ship, int modIndex);
-extern "C" void *GameText_getText(int id);
-extern "C" int AERandom_nextInt(int rng);
+extern "C" int AERandom_nextInt(int rng, ...);
 extern "C" int idiv(int a, int b);
 extern "C" void Globals_buildAgentMissionText(void *out, void *agent, int offer);
 extern "C" int AEString_compare(void *a, void *b);
@@ -192,18 +185,17 @@ extern "C" void Globals_resetHints()
 // ---- startNewSoundResourceList_e5554.cpp ----
 extern "C" void Globals_startNewSoundResourceList(void *self)
 {
-    if (F<Array<int> *>(self, 4) != 0) {
-        ArrayInt_release(F<Array<int> *>(self, 4));
-        if (F<Array<int> *>(self, 4) != 0) {
-            operator_delete(ArrayInt_dtor(F<Array<int> *>(self, 4)));
+    if (((Globals*)self)->field_0x4 != 0) {
+        ArrayInt_release(((Globals*)self)->field_0x4);
+        if (((Globals*)self)->field_0x4 != 0) {
+            operator_delete(ArrayInt_dtor(((Globals*)self)->field_0x4));
         }
     }
-    F<Array<int> *>(self, 4) = 0;
-    Array<int> *a = (Array<int> *)operator_new(0xc);
-    ArrayInt_ctor(a);
-    F<Array<int> *>(self, 4) = a;
+    ((Globals*)self)->field_0x4 = 0;
+    Array<int> *a = new Array<int>();
+    ((Globals*)self)->field_0x4 = a;
     ArrayInt_add(0x7c, a);
-    return Globals_startNewSoundResourceList_tail(0x7b, F<Array<int> *>(self, 4));
+    return Globals_startNewSoundResourceList_tail(0x7b, ((Globals*)self)->field_0x4);
 }
 
 // ---- getItemName_e4b68.cpp ----
@@ -226,8 +218,6 @@ extern "C" RetStr Globals_getItemName(void *unused, int item)
 // Globals::getKeyActionName(int) returns a String by value. The default ctor returns void,
 // so the compiler keeps a frame and restores the sret pointer (no tail call). The int arg
 // is unused.
-
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 extern "C" RetStr Globals_getKeyActionName(int action)
 {
@@ -262,14 +252,14 @@ extern "C" void Globals_getRandomSystemForDrinks()
 // r0=container, r1=value. Linear search; on no-match (index reaches length) tail-call to add.
 extern "C" void Globals_addSoundResourceToList(void *self, int val)
 {
-    Array<int> *a = F<Array<int> *>(self, 4);
+    Array<int> *a = ((Globals*)self)->field_0x4;
     if (a != 0) {
         unsigned i = 0;
         for (;;) {
-            if (i >= a->length) {
+            if (i >= a->size()) {
                 return Globals_addSoundResource_tail(val, a);
             }
-            int e = a->data[i];
+            int e = (*a)[i];
             i = i + 1;
             if (e == val) {
                 break;
@@ -282,8 +272,6 @@ extern "C" void Globals_addSoundResourceToList(void *self, int val)
 // Globals::replaceKeyBindingTokens(String const&) returns a String by value (sret in r0).
 // Body copy-constructs the return slot from the source string (in r2), flag=false.
 // The copy-ctor returns void -> frame kept, sret pointer restored (no tail call).
-
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 extern "C" RetStr Globals_replaceKeyBindingTokens(void *unused, void *src)
 {
@@ -302,7 +290,7 @@ extern "C" int Globals_getRandomStation()
     FileRead *f = (FileRead *)operator_new(1);
     FileRead_ctor(f);
     int which = AERandom_nextInt(*(int *)gStationRng, 0x87);
-    int r = FileRead_loadStation(f, which);
+    int r = (int)(long)FileRead_loadStation(f, which);
     operator_delete(FileRead_dtor(f));
     return r;
 }
@@ -332,7 +320,7 @@ extern const char gGLA_newline[] __attribute__((visibility("hidden")));     // D
 //                        Array<String*>* out)
 // font in r1, text in r2, maxWidth in r3, out at [r7+0x8].
 extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
-                                     void *out)
+                                     Array<void *> *out)
 {
     (void)arg3;
     int *guardP = *(int **)gGLA_guardHolder;
@@ -372,7 +360,7 @@ extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, vo
     for (unsigned i = 0; i < count; i++) {
         void *s = operator_new(0xc);
         AEString_default_ctor(s);
-        *(void **)(out->field_0x4 + i * 4) = s;
+        (*out)[i] = s;
     }
 
     for (unsigned i = 0; i < count; i++) {
@@ -380,29 +368,29 @@ extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, vo
         AEString_substr(sub, work, consumed, total);
         char ssub[12];
         AEString_copy_ctor(ssub, sub, 0);
-        void *slot = *(void **)(out->field_0x4 + i * 4);
+        void *slot = (*out)[i];
         Globals_getLine(slot, font, ssub, maxWidth, slot);
         AEString_dtor(ssub);
 
         int li = 0;
-        void *s = *(void **)(out->field_0x4 + i * 4);
-        int hi = s->field_0x8;
+        void *s = (*out)[i];
+        int hi = (int)((String *)s)->size();
         while (*AEString_index(s, li) == 0x20) {
             li++;
-            s = *(void **)(out->field_0x4 + i * 4);
+            s = (*out)[i];
         }
         hi++;
         do {
-            void *cur = *(void **)(out->field_0x4 + i * 4);
+            void *cur = (*out)[i];
             short ch = *AEString_index(cur, hi - 2);
             hi--;
             if (ch != 0x20) break;
         } while (true);
 
         char trimmed[12];
-        void *cur = *(void **)(out->field_0x4 + i * 4);
+        void *cur = (*out)[i];
         AEString_substr(trimmed, cur, li, hi);
-        AEString_assign(*(void **)(out->field_0x4 + i * 4), trimmed);
+        AEString_assign((*out)[i], trimmed);
         AEString_dtor(trimmed);
         AEString_dtor(sub);
     }
@@ -540,7 +528,7 @@ extern "C" void Globals_getBoundedString(void *retSlot, void *unused, void *text
         void *line = operator_new(0xc);
         AEString_default_ctor(line);
 
-        int font = (int)*strPtr;
+        int font = (int)(long)*strPtr;
         char tmpText[12];
         AEString_copy_ctor(tmpText, text, 0);
         Globals_getLine(font ? (void *)(long)font : line, font, tmpText, width - 3, line);
@@ -788,7 +776,7 @@ extern "C" void Globals_getAgentMissionText(void *out, void *unused, void *agent
                     ship = Status_getShip();
                     int modIdx = Agent_getSellModIndex(agent);
                     if (Ship_hasModInstalled(ship, modIdx) != 0) {
-                        void *t = GameText_getText(**(int **)gGAMT_modText);
+                        void *t = GameText_getText((void *)(long)**(int **)gGAMT_modText);
                         AEString_assign(acc, t);
                         *(int *)(*busy + 0xd0) -= 1;
                         AEString_copy_ctor(out, acc, 0);
@@ -910,38 +898,21 @@ extern "C" int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, v
 // sret slot), then the stack String is destroyed. The on-stack String is guarded by an
 // explicit stack canary, mirroring the matched ConfigReader::GetNewLine / AEFile idiom.
 
-typedef unsigned int uint32_t;
-typedef unsigned short uint16_t;
+extern "C" String *String_ToUpperCase(String *self);
 
-
-namespace AbyssEngine {
-struct String {
-    uint16_t *text;
-    uint32_t field_04;
-    uint32_t size;
-    String();
-    ~String();
-    String &ToUpperCase();
-    String(const String &other, bool copy);
-};
-}
-using AbyssEngine::String;
-
-struct Globals;
-
-__attribute__((minsize)) String Globals_getKeyBindingReplaceString(Globals *, int key)
+// Default-construct a temp String, upper-case it, copy-construct the result into the sret
+// blob, then destroy the temp.
+extern "C" RetStr Globals_getKeyBindingReplaceString(Globals *, int key)
 {
-    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
     (void)key;
 
-    String tmp;
-    String result(tmp.ToUpperCase(), false);
-
-    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
-    if (diff == 0) {
-        return result;
-    }
-    __stack_chk_fail(diff);
+    RetStr tmp;
+    AEString_ctor_default(&tmp);
+    String *up = String_ToUpperCase((String *)&tmp);
+    RetStr result;
+    AEString_ctor_copy(&result, up, false);
+    AEString_dtor(&tmp);
+    return result;
 }
 
 // ---- longToTimeStringNoSeconds_e3c68.cpp ----
@@ -1081,13 +1052,13 @@ extern "C" void Globals_getShipGroup(void *self, int kind, int variant, int wire
             PaintCanvas_TransformCreate(*canvasP, &mainT);
             PaintCanvas_TransformAddMeshId(*canvasP, mainT, mainMesh);
             AEGeometry_addChild((unsigned)(long)geom);
-            geom->field_0x20 = mainMesh;
+            *(unsigned *)((char *)geom + 0x20) = mainMesh;
         }
         if (!wireframe) {
             unsigned short mat = (unsigned short)((short)kind + 0x7dc8);
             unsigned matH = 0xffffffff;
             PaintCanvas_MaterialCreate(*canvasP, mat, &matH);
-            PaintCanvas_MeshChangeResourceMaterial(*canvasP, geom->field_0x1c,
+            PaintCanvas_MeshChangeResourceMaterial(*canvasP, *(unsigned *)((char *)geom + 0x1c),
                                                    mat);
         }
         short extra = gGSG_extraTable[kind];
@@ -1235,19 +1206,20 @@ extern "C" void Globals_drawLines7(unsigned font, Array<int> *lines, int baseX, 
     int **lh = (int **)gDL2_lineHeight;    // global value (pointer)
     int yacc = startY;
     int dx = 0;
-    for (unsigned i = 0; i < lines->length; i++) {
+    for (unsigned i = 0; i < lines->size(); i++) {
         if (centered == 0) {
             int w = PaintCanvas_GetTextWidth(*cv, (void *)font);
             dx = (int)rightX - w;
         }
-        PaintCanvas_DrawString(*cv, (void *)font, lines->data[i], dx + baseX, yacc, 0);
+        PaintCanvas_DrawString(*cv, (void *)font, (*lines)[i], dx + baseX, yacc, 0);
         yacc += *(int *)((char *)*lh + 4);
     }
 }
 
 // ---- createBillBoard_e3e08.cpp ----
-extern "C" void PaintCanvas_MeshCreate(void *canvas, int a, int b, int c, unsigned short d,
-                                       void *meshOut);
+// Distinct PaintCanvas::MeshCreate overload (explicit vertex/face/uv counts) -> own wrapper name.
+extern "C" void PaintCanvas_MeshCreateBillboard(void *canvas, int a, int b, int c, unsigned short d,
+                                                void *meshOut);
 // per-face index triple setter
 // per-vertex UV/attr setter (variadic-ish; extra floats are uv coords)
 // per-vertex position setter (x, y, z)
@@ -1266,7 +1238,7 @@ extern "C" void Globals_createBillBoard(int p1, int height, float u0, float v0, 
     int snapshot = *counter;
 
     long long mesh64 = 0;
-    PaintCanvas_MeshCreate((void *)(long)*canvasP, 0xc, 6, 0x13, 0, &mesh64);
+    PaintCanvas_MeshCreateBillboard((void *)(long)*canvasP, 0xc, 6, 0x13, 0, &mesh64);
     int mesh = (int)mesh64;
     int cv = *canvasP;
 
@@ -1524,7 +1496,7 @@ extern "C" Globals *Globals_ctor(Globals *self)
     *(int *)p5b = 0;
     *(int *)p7b = 0;
     *(int *)p8b = 0;
-    self->f_4 = 0;
+    self->field_0x4 = 0;
     return self;
 }
 
@@ -1633,14 +1605,14 @@ extern "C" void *Globals_dtor(Globals *self)
     }
     *ifSlot = 0;
 
-    void *selfArr = self->f_4;
+    void *selfArr = self->field_0x4;
     if (selfArr != 0) {
         ArrayRelease_int(selfArr);
-        if (self->f_4 != 0) {
-            operator_delete(ArrayInt_dtor(self->f_4));
+        if (self->field_0x4 != 0) {
+            operator_delete(ArrayInt_dtor(self->field_0x4));
         }
     }
-    self->f_4 = 0;
+    self->field_0x4 = 0;
     **gG_tail = 0;
     return self;
 }
@@ -1662,12 +1634,12 @@ extern "C" void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, i
     int **lh = (int **)gDL_lineHeight;    // global value (pointer)
     int yacc = startY;
     int dx = 0;
-    for (unsigned i = 0; i < lines->length; i++) {
+    for (unsigned i = 0; i < lines->size(); i++) {
         if (centered != 0) {
             int w = PaintCanvas_GetTextWidth(*cv, font);
             dx = -(w >> 1);
         }
-        PaintCanvas_DrawString(*cv, font, lines->data[i], dx + baseX, yacc, 0);
+        PaintCanvas_DrawString(*cv, font, (*lines)[i], dx + baseX, yacc, 0);
         yacc += *(int *)((char *)*lh + 4);
     }
 }
@@ -1921,7 +1893,7 @@ extern "C" void Globals_loadFont(void *self, int kind)
         canvasP = *(void ***)gLF_canvas9;
         fontP = *(void ***)gLF_font9;
         PaintCanvas_FontCreate((unsigned short)(unsigned long)*canvasP, (unsigned *)0x2d74,
-                               (int)*fontP);
+                               (int)(long)*fontP);
         if (flag(gLF_flagA) != 0) {
             spacing = -6;
         } else {
@@ -1951,7 +1923,7 @@ extern "C" void Globals_loadFont(void *self, int kind)
         if (kind == 0xf) {
             fontP = *(void ***)gLF_font15;
             PaintCanvas_FontCreate((unsigned short)(unsigned long)*canvasP, (unsigned *)0x2d7e,
-                                   (int)*fontP);
+                                   (int)(long)*fontP);
             if (flag(gLF_flagC) != 0) {
                 spacing = -7;
             } else {
@@ -1960,7 +1932,7 @@ extern "C" void Globals_loadFont(void *self, int kind)
         } else {
             fontP = *(void ***)gLF_fontDef;
             PaintCanvas_FontCreate((unsigned short)(unsigned long)*canvasP, (unsigned *)0x457,
-                                   (int)*fontP);
+                                   (int)(long)*fontP);
             if (flag(gLF_flagE) != 0) {
                 spacing = -5;
             } else if (flag(gLF_flagF) != 0) {
@@ -1978,7 +1950,7 @@ extern "C" void Globals_loadFont(void *self, int kind)
 
     // cases 10/11/14: common creation tail
     PaintCanvas_FontCreate((unsigned short)(unsigned long)*canvasP, (unsigned *)(unsigned long)glyph,
-                           (int)*fontP);
+                           (int)(long)*fontP);
     if (flag(gLF_flagA) != 0) {
         spacing = -6;
     } else {
@@ -1993,10 +1965,10 @@ epilogue: {
     unsigned *mainFont = *(unsigned **)gLF_fontMain;
     int cv = *mainCanvas;
     *(unsigned char *)(cv + 0x1c) = isMainFontPersian;
-    PaintCanvas_FontCreate((unsigned short)cv, (unsigned *)0x51e, (int)mainFont);
+    PaintCanvas_FontCreate((unsigned short)cv, (unsigned *)0x51e, (int)(long)mainFont);
     PaintCanvas_FontSetSpacing((void *)(long)*mainCanvas, *mainFont, 0);
     unsigned *extra = *(unsigned **)gLF_fontExtra;
-    PaintCanvas_FontCreate((unsigned short)*mainCanvas, (unsigned *)0x2d7a, (int)extra);
+    PaintCanvas_FontCreate((unsigned short)*mainCanvas, (unsigned *)0x2d7a, (int)(long)extra);
     Globals_loadFont_tail(*mainCanvas, (int)*extra, 0);
 }
 }
@@ -2042,7 +2014,7 @@ extern "C" int Globals_init(Globals *self, void *app)
     if (*missionSlot == 0) {
         void *m = operator_new(0x78);
         Mission_ctor(m);
-        *missionSlot = (int)m;
+        *missionSlot = (int)(long)m;
     }
 
     int *settings = (int *)*gI_settings;
@@ -2147,9 +2119,8 @@ extern "C" int Globals_init(Globals *self, void *app)
     Layout_reload();
     ParticleSettingsRef_initialize();
 
-    void *arr = operator_new(0xc);
-    ArrayInt_ctor(arr);
-    self->f_4 = arr;
+    Array<int> *arr = new Array<int>();
+    self->field_0x4 = arr;
     return (int)(long)arr;
 }
 
@@ -2346,13 +2317,13 @@ extern "C" void Globals_getRandomName(void *retSlot, void *unused, int kind, int
         AEString_cstr_ctor(firstStr, gGRN_noFirst, 0);
     } else {
         int idx = AERandom_nextInt(**(int **)gGRN_rng1);
-        AEString_copy_ctor(firstStr, first->data[idx], 0);
+        AEString_copy_ctor(firstStr, (*first)[idx], 0);
     }
     if (last == 0) {
         AEString_cstr_ctor(lastStr, gGRN_noLast, 0);
     } else {
         int idx = AERandom_nextInt(**(int **)gGRN_rng2);
-        AEString_copy_ctor(lastStr, last->data[idx], 0);
+        AEString_copy_ctor(lastStr, (*last)[idx], 0);
     }
 
     if (first != 0) {
@@ -2386,7 +2357,6 @@ extern "C" void Globals_getRandomName(void *retSlot, void *unused, int kind, int
 }
 
 // ---- getLine_e4230.cpp ----
-extern "C" short *AEString_index(void *s, unsigned i);                 // operator[]
 extern "C" int PaintCanvas_GetTextWidthRange(int canvas, unsigned font, void *s,
                                              unsigned from, unsigned to);
 

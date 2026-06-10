@@ -63,13 +63,7 @@ __attribute__((used)) void Set_81026_trailer() {}
 } // namespace AbyssEngine
 
 // ---- operator[]_814de.cpp ----
-namespace AbyssEngine {
-
-float Quaternion::operator[](int index) const {
-    return (&x)[index];
-}
-
-} // namespace AbyssEngine
+// const operator[] is defined inline in math.h; no out-of-line definition needed.
 
 // ---- Quaternion_8102c.cpp ----
 namespace AbyssEngine {
@@ -95,29 +89,13 @@ Quaternion Quaternion::Normalized() {
 } // namespace AbyssEngine
 
 // ---- operator.cast.to.float*_814d6.cpp ----
-namespace AbyssEngine {
-
-Quaternion::operator const float *() const {
-    return &x;
-}
-
-} // namespace AbyssEngine
+// operator const float* is defined inline in math.h.
 
 // ---- Quaternion_81008.cpp ----
-namespace AbyssEngine {
-
-Quaternion::Quaternion() {}
-
-} // namespace AbyssEngine
+// default ctor is defined inline in math.h.
 
 // ---- operator.cast.to.float*_814d4.cpp ----
-namespace AbyssEngine {
-
-Quaternion::operator float *() {
-    return &x;
-}
-
-} // namespace AbyssEngine
+// operator float* is defined inline in math.h.
 
 // ---- Set_8103c.cpp ----
 namespace AbyssEngine {
@@ -233,7 +211,7 @@ void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
     *reinterpret_cast<Vec4 *>(result) = result_vec;
     quaternion_normalized(this, result);
 
-    unsigned int guardDelta = (unsigned int)cookie - (unsigned int)__stack_chk_guard;
+    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)cookie - (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard;
     if (guardDelta == 0) {
         return;
     }
@@ -243,20 +221,10 @@ void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
 } // namespace AbyssEngine
 
 // ---- operator[]_814d8.cpp ----
-namespace AbyssEngine {
-
-float &Quaternion::operator[](int index) {
-    return (&x)[index];
-}
-
-} // namespace AbyssEngine
+// non-const operator[] is defined inline in math.h.
 
 // ---- ~Quaternion_81250.cpp ----
-namespace AbyssEngine {
-
-Quaternion::~Quaternion() {}
-
-} // namespace AbyssEngine
+// destructor is defined inline in math.h.
 
 // ---- Convert_81520.cpp ----
 namespace AbyssEngine {
@@ -291,16 +259,7 @@ void Quaternion::Convert(AEMath::Matrix &matrix) {
 } // namespace AbyssEngine
 
 // ---- Quaternion_8100a.cpp ----
-namespace AbyssEngine {
-
-Quaternion::Quaternion(float x_, float y_, float z_, float w_) {
-    x = x_;
-    y = y_;
-    z = z_;
-    w = w_;
-}
-
-} // namespace AbyssEngine
+// 4-float ctor is defined inline in math.h.
 
 // ---- Lerp_8145c.cpp ----
 extern "C" void quaternion_normalized(AbyssEngine::Quaternion *out,
@@ -333,7 +292,7 @@ void Quaternion::Lerp(const float *a, const float *b, float t) {
     *reinterpret_cast<Vec4 *>(storage) = result;
     quaternion_normalized(this, reinterpret_cast<Quaternion *>(storage));
 
-    unsigned int guardDelta = (unsigned int)cookie - (unsigned int)__stack_chk_guard;
+    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)cookie - (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard;
     if (guardDelta == 0) {
         return;
     }

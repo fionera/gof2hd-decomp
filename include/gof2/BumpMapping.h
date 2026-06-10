@@ -1,10 +1,8 @@
 #ifndef GOF2_BUMPMAPPING_H
 #define GOF2_BUMPMAPPING_H
 #include "gof2/common.h"
+#include <new>
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -30,10 +28,12 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
+
+    void *field_0x0;                    // +0x0 vtable
+    int field_0x4;                      // +0x4 GL program handle
+    volatile uint16_t field_0x8;        // +0x8 flags
 
     ShaderBaseStruct();
     ~ShaderBaseStruct();
@@ -41,8 +41,28 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
 
+struct BumpMapping : ShaderBaseStruct {
+    uint8_t field_0x9;                  // +0x9 dirty flag
+    String field_0xc;                   // +0xc shader name
+    int field_0x20;                     // +0x20 attrib a_position
+    int field_0x24;                     // +0x24 attrib a_normal
+    int field_0x28;                     // +0x28 attrib a_tangent
+    int field_0x2c;                     // +0x2c attrib a_binormal
+    int field_0x30;                     // +0x30 attrib a_texCoord
+    int field_0x34;                     // +0x34 uniform u_mvpMatrix
+    int field_0x38;                     // +0x38 uniform u_lightDir
+    int field_0x3c;                     // +0x3c uniform u_texture
+    int field_0x40;                     // +0x40 uniform u_normalMap
 
+    static int ShaderIndex;
 
+    BumpMapping();
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+};
+
+// cross-class field accessors (Engine/Mesh are not in this batch; opaque here)
 static inline int &field_i32(void *self, uint32_t offset)
 {
     return *(int *)((char *)self + offset);
@@ -65,5 +85,4 @@ static inline void *field_ptr(void *self, uint32_t offset)
 
 } // namespace AbyssEngine
 
-struct BumpMapping { void* _opaque; };  // no offset accesses observed
 #endif

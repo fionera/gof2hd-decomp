@@ -54,5 +54,9 @@ struct BombGun {
     v4i field_0x110;                    // +0x110
     volatile uint64_t field_0x120;      // +0x120
     int field_0x128;                    // +0x128
+
+    void setPlayer(PlayerEgo *player);
+    void render();
+    void update(int elapsed);
 };
 #endif

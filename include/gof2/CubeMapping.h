@@ -1,44 +1,8 @@
 #ifndef GOF2_CUBEMAPPING_H
 #define GOF2_CUBEMAPPING_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-namespace AbyssEngine {
-
-struct Engine;
-struct Mesh;
-
-
-
-
-
-namespace AEMath {
-struct Vector;
-}
-
-} // namespace AbyssEngine
-
-using Engine = AbyssEngine::Engine;
-using Mesh = AbyssEngine::Mesh;
-using String = AbyssEngine::String;
-using CubeMapping = AbyssEngine::CubeMapping;
-using Vector = AbyssEngine::AEMath::Vector;
-
-static_assert(sizeof(String) == 0xc, "String layout");
-
-static inline int &i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
-
-static inline uint8_t &u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
-
-static inline float &f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
+// AbyssEngine::CubeMapping — GLES2 cube-mapping shader.
+// Derives from ShaderBaseStruct; holds one GL program plus its attrib/uniform locations.
 
 extern "C" {
 extern void *__stack_chk_guard;
@@ -72,19 +36,47 @@ void String_ctor_char(String *self, const char *text, bool copy);
 String *String_assign(String *self, const String *other);
 void String_dtor(String *self);
 
-float *Vector_cast_to_float(Vector *self);
-
 void operator_delete(void *ptr) noexcept;
 __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 namespace AbyssEngine {
-inline String::String(const char *text, bool copy) { String_ctor_char(this, text, copy); }
-inline String::~String() { String_dtor(this); }
-inline void String::operator=(const String &other) { String_assign(this, &other); }
-} // namespace AbyssEngine
+
+struct Engine;
+struct Mesh;
 
 struct CubeMapping {
-    String field_0xc;                   // +0xc
+    void* field_0x0;        // +0x0  vtable
+    int field_0x4;          // +0x4  GL program
+    uint8_t field_0x8;      // +0x8
+    uint8_t field_0x9;      // +0x9  per-frame uniform dirty flag
+    uint8_t field_0xa;      // +0xa
+    uint8_t field_0xb;      // +0xb
+    String field_0xc;       // +0xc  resource name
+    int field_0x18;         // +0x18
+    int field_0x1c;         // +0x1c
+    int field_0x20;         // +0x20 attrib a0 (position)
+    int field_0x24;         // +0x24 attrib a1 (normal)
+    int field_0x28;         // +0x28 attrib a2 (texcoord)
+    int field_0x2c;         // +0x2c uniform u0 (mvp)
+    int field_0x30;         // +0x30 uniform u1 (normal matrix)
+    int field_0x34;         // +0x34 uniform u2
+    int field_0x38;         // +0x38 uniform u3
+    int field_0x3c;         // +0x3c uniform u5
+    int field_0x40;         // +0x40 uniform u4
+    int field_0x44;         // +0x44 uniform u6
+    int field_0x48;         // +0x48 uniform u7
+    int field_0x4c;         // +0x4c uniform u8
+    int field_0x50;         // +0x50 uniform u9
+    int field_0x54;         // +0x54 uniform u10
+    int field_0x58;         // +0x58 uniform u11
+
+    CubeMapping();
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
 };
+
+} // namespace AbyssEngine
+
 #endif

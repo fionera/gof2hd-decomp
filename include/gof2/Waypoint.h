@@ -8,6 +8,8 @@ struct Player;
 struct KIPlayer;
 struct AEGeometry;
 
+using Vector = AbyssEngine::AEMath::Vector;
+
 struct Waypoint {
     void* field_0x0;                    // +0x0
     Player* field_0x4;                  // +0x4
@@ -21,5 +23,11 @@ struct Waypoint {
     int32_t field_0x12c;                // +0x12c
     uint16_t field_0x130;               // +0x130
     Route* field_0x134;                 // +0x134
+
+    Waypoint(int x, int y, int z, Route *route);
+    void setActive(bool active);
+    void reached();
+    Vector getPosition();
+    void reset();
 };
 #endif

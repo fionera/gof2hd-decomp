@@ -1,90 +1,59 @@
 #include "gof2/EaseInOutMatrix.h"
 #include <arm_neon.h>
 
-
-
-// ---- RunOut_6ed60.cpp ----
 namespace AbyssEngine {
 
+// AbyssEngine::EaseInOutMatrix::RunOut(float)
 void EaseInOutMatrix::RunOut(float dt) {
     float target = 1.0f;
-    float t = f32(this, 0x74);
+    float t = m_t;
     if (t > target) {
-        t = t + (dt * -0.5f) / f32(this, 0xf0);
-        f32(this, 0x74) = t;
+        t = t + (dt * -0.5f) / m_duration;
+        m_t = t;
         if (t < target) {
-            f32(this, 0x74) = 1.0f;
+            m_t = 1.0f;
         }
     } else if (t < target) {
-        t = t + (dt * 0.5f) / f32(this, 0xf0);
-        f32(this, 0x74) = t;
+        t = t + (dt * 0.5f) / m_duration;
+        m_t = t;
         if (t > target) {
-            f32(this, 0x74) = 1.0f;
+            m_t = 1.0f;
         }
     }
     UpdateCurrentValue();
 }
 
-} // namespace AbyssEngine
-
-// ---- GetValue_6edcc.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::EaseInOutMatrix::GetValue()
 AEMath::Matrix EaseInOutMatrix::GetValue() {
     return this->field_0x78;
 }
 
-} // namespace AbyssEngine
-
-// ---- _EaseInOutMatrix_9a1f6.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::EaseInOutMatrix::~EaseInOutMatrix()
 EaseInOutMatrix::~EaseInOutMatrix() {
-    ((Quaternion *)((char *)this + 0x58))->~Quaternion();
-    ((Quaternion *)((char *)this + 0x3c))->~Quaternion();
+    m_q1.~Quaternion();
+    m_q0.~Quaternion();
 }
 
-} // namespace AbyssEngine
-
-// ---- SetDuration_6ead4.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::EaseInOutMatrix::SetDuration(int)
 void EaseInOutMatrix::SetDuration(int duration) {
-    f32(this, 0xf0) = (float)duration;
+    m_duration = (float)duration;
 }
 
-} // namespace AbyssEngine
-
-// ---- GetMaxValue_6edfe.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::EaseInOutMatrix::GetMaxValue()
 AEMath::Matrix EaseInOutMatrix::GetMaxValue() {
     return this->field_0xb4;
 }
 
-} // namespace AbyssEngine
-
-// ---- GetMinValue_6edf2.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::EaseInOutMatrix::GetMinValue()
 AEMath::Matrix EaseInOutMatrix::GetMinValue() {
     return this->field_0x0;
 }
 
-} // namespace AbyssEngine
-
-// ---- SetToMaxValue_6eddc.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::EaseInOutMatrix::SetToMaxValue()
 void EaseInOutMatrix::SetToMaxValue() {
-    f32(this, 0x74) = 1.25f;
+    m_t = 1.25f;
     UpdateCurrentValue();
 }
-
-} // namespace AbyssEngine
-
-// ---- SetRange_6e918.cpp ----
-namespace AbyssEngine {
 
 // AbyssEngine::EaseInOutMatrix::SetRange(Matrix mn, Matrix mx)
 //   Stores the two end matrices, derives the start/end orientation quaternions
@@ -92,160 +61,98 @@ namespace AbyssEngine {
 //   and refreshes the current matrix.
 void EaseInOutMatrix::SetRange(AEMath::Matrix mn, AEMath::Matrix mx)
 {
-    AEMath::Matrix *minM = (AEMath::Matrix *)((char *)this + 0x00);
-    AEMath::Matrix *maxM = (AEMath::Matrix *)((char *)this + 0xb4);
-    *minM = mn;
-    *maxM = mx;
+    field_0x0 = mn;
+    field_0xb4 = mx;
 
-    Quaternion *q0 = (Quaternion *)((char *)this + 0x3c);
-    q0->Set(mn);
+    m_q0.Set(mn);
 
-    // Position of the min matrix (via an identity carrier the original builds).
+    // Position of the min matrix.
     AEMath::Matrix ident;
-    q0->Convert(&ident);
+    m_q0.Convert(ident);
     Quaternion qIdent(ident);
     AEMath::Vector minPos = AEMath::MatrixGetPosition(mn);
     this->field_0x4c = minPos;
 
     // Orientation delta q1 = q(max) - q0.
     Quaternion qMax(mx);
-    Quaternion *q1 = (Quaternion *)((char *)this + 0x58);
-    *q1 = AbyssEngine::operator-(qMax, *q0);
+    m_q1 = AbyssEngine::operator-(qMax, m_q0);
 
     // Translation delta = pos(max) - pos(min).
     AEMath::Vector maxPos = AEMath::MatrixGetPosition(mx);
     AEMath::Vector dPos = AEMath::operator-(maxPos, minPos);
     this->field_0x68 = dPos;
 
-    this->f_74 = 0.75f;
+    this->m_t = 0.75f;
     UpdateCurrentValue();
 }
 
-} // namespace AbyssEngine
-
-// ---- UpdateCurrentValue_6ec1c.cpp ----
-namespace AbyssEngine {
-
 // AbyssEngine::EaseInOutMatrix::UpdateCurrentValue()
-//   Recomputes the current matrix (+0x78) from the eased parameter t (+0x74).
-//   At t == 1.25 the current matrix is exactly the max matrix; otherwise the
-//   rotation is the slerp-style blend of the two stored quaternions and the
-//   translation is the min translation plus the eased delta.
+//   Recomputes the current matrix from the eased parameter t. At t == 1.25 the
+//   current matrix is exactly the max matrix; otherwise the rotation is the
+//   slerp-style blend of the two stored quaternions and the translation is the
+//   min translation plus the eased delta.
 void EaseInOutMatrix::UpdateCurrentValue()
 {
-    AEMath::Matrix *current = (AEMath::Matrix *)((char *)this + 0x78);
+    AEMath::Matrix &current = this->field_0x78;
 
-    if (this->f_74 == 1.25f) {
-        *current = this->field_0xb4;
+    if (this->m_t == 1.25f) {
+        current = this->field_0xb4;
         return;
     }
 
-    // DAT_0007ed00 is the sweep constant applied to the eased parameter.
     static const float kSweep = 3.14159265f;
-    float s = AEMath::Sinf(this->f_74 * kSweep);
+    float s = AEMath::Sinf(this->m_t * kSweep);
     float w = s * 0.5f + 0.5f;
 
-    Quaternion *q0 = (Quaternion *)((char *)this + 0x3c);
-    Quaternion *q1 = (Quaternion *)((char *)this + 0x58);
-    Quaternion blended = AbyssEngine::operator+(AbyssEngine::operator*(*q1, w), *q0);
+    Quaternion blended = AbyssEngine::operator+(AbyssEngine::operator*(m_q1, w), m_q0);
     blended.Convert(current);
 
-    // Translation: min translation (+0x4c) plus eased delta (+0x68).
-    AEMath::Vector *minT = (AEMath::Vector *)((char *)this + 0x4c);
-    AEMath::Vector *delta = (AEMath::Vector *)((char *)this + 0x68);
-    AEMath::Vector t = AEMath::operator+(*minT, AEMath::operator*(*delta, w));
-    AEMath::MatrixSetTranslation(current, &t);
+    // Translation: min translation plus eased delta.
+    AEMath::Vector t = AEMath::operator+(this->field_0x4c, AEMath::operator*(this->field_0x68, w));
+    AEMath::MatrixSetTranslation(current, t);
 }
 
-} // namespace AbyssEngine
-
-// ---- Increase_6ed08.cpp ----
-namespace AbyssEngine {
-
-// NOTE: the target was built with fast-math; its `fminf(t, 1.25f)` lowers to a
-// scalar `vmin.f32 d0,d0,d2` + `vstr s0`. Under the fixed -Oz (no -ffast-math)
-// harness, clang lowers the equivalent NEON min to vdup/vst1 form instead, so a
-// byte-exact match is not reachable with the available flags. Kept best-effort.
+// AbyssEngine::EaseInOutMatrix::Increase(float)
 void EaseInOutMatrix::Increase(float dt) {
-    float t = this->f_74 + (dt * 0.5f) / this->f_f0;
-    this->f_74 = vget_lane_f32(vmin_f32(vdup_n_f32(t), vdup_n_f32(1.25f)), 0);
+    float t = this->m_t + (dt * 0.5f) / this->m_duration;
+    this->m_t = vget_lane_f32(vmin_f32(vdup_n_f32(t), vdup_n_f32(1.25f)), 0);
     UpdateCurrentValue();
 }
 
-} // namespace AbyssEngine
-
-// ---- SetToMinValue_6ede8.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::EaseInOutMatrix::SetToMinValue()
 void EaseInOutMatrix::SetToMinValue() {
-    this->f_74 = 0.75f;
+    this->m_t = 0.75f;
     UpdateCurrentValue();
 }
 
-} // namespace AbyssEngine
-
-// ---- Decrease_6ed34.cpp ----
-namespace AbyssEngine {
-
-// See Increase: target uses fast-math `fmaxf(t, 0.75f)` -> scalar vmax.f32; not
-// byte-reachable under the fixed -Oz harness. Kept best-effort.
+// AbyssEngine::EaseInOutMatrix::Decrease(float)
 void EaseInOutMatrix::Decrease(float dt) {
-    float t = this->f_74 + (dt * -0.5f) / this->f_f0;
-    this->f_74 = vget_lane_f32(vmax_f32(vdup_n_f32(t), vdup_n_f32(0.75f)), 0);
+    float t = this->m_t + (dt * -0.5f) / this->m_duration;
+    this->m_t = vget_lane_f32(vmax_f32(vdup_n_f32(t), vdup_n_f32(0.75f)), 0);
     UpdateCurrentValue();
 }
-
-} // namespace AbyssEngine
-
-// ---- EaseInOutMatrix_6eae2.cpp ----
-namespace AbyssEngine {
 
 // AbyssEngine::EaseInOutMatrix::EaseInOutMatrix(Matrix mn, Matrix mx, int duration)
-//   As the default constructor, but seeds the range from the supplied matrices
-//   and converts the integer duration to its float storage.
 EaseInOutMatrix::EaseInOutMatrix(AEMath::Matrix mn, AEMath::Matrix mx, int duration)
 {
-    new ((void *)((char *)this + 0x00)) AEMath::Matrix();
-    new ((void *)((char *)this + 0x3c)) Quaternion();
-    this->f_4c = 0;
-    this->f_50 = 0;
-    this->f_54 = 0;
-    new ((void *)((char *)this + 0x58)) Quaternion();
-    this->f_68 = 0;
-    this->f_6c = 0;
-    this->f_70 = 0;
-    new ((void *)((char *)this + 0x78)) AEMath::Matrix();
-    new ((void *)((char *)this + 0xb4)) AEMath::Matrix();
+    this->field_0x4c = AEMath::Vector{0, 0, 0};
+    this->field_0x68 = AEMath::Vector{0, 0, 0};
 
     SetRange(mn, mx);
-    this->f_f0 = (float)duration;
+    this->m_duration = (float)duration;
 }
 
-} // namespace AbyssEngine
-
-// ---- EaseInOutMatrix_6e820.cpp ----
-namespace AbyssEngine {
-
 // AbyssEngine::EaseInOutMatrix::EaseInOutMatrix() -- default constructor.
-//   Default-constructs the embedded matrices/quaternions, then initialises the
-//   range to identity .. identity with a zero duration.
+//   Initialises the range to identity .. identity with a zero duration.
 EaseInOutMatrix::EaseInOutMatrix()
 {
-    new ((void *)((char *)this + 0x00)) AEMath::Matrix();
-    new ((void *)((char *)this + 0x3c)) Quaternion();
-    this->f_4c = 0;
-    this->f_50 = 0;
-    this->f_54 = 0;
-    new ((void *)((char *)this + 0x58)) Quaternion();
-    this->f_68 = 0;
-    this->f_6c = 0;
-    this->f_70 = 0;
-    new ((void *)((char *)this + 0x78)) AEMath::Matrix();
-    new ((void *)((char *)this + 0xb4)) AEMath::Matrix();
+    this->field_0x4c = AEMath::Vector{0, 0, 0};
+    this->field_0x68 = AEMath::Vector{0, 0, 0};
 
-    AEMath::Matrix ident;   // AEMath::Matrix() yields the identity 3x5 matrix.
+    AEMath::Matrix ident;
+    AEMath::MatrixIdentity(ident);
     SetRange(ident, ident);
-    this->f_f0 = 0.0f;
+    this->m_duration = 0.0f;
 }
 
 } // namespace AbyssEngine

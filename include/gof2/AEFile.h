@@ -1,6 +1,7 @@
 #ifndef GOF2_AEFILE_H
 #define GOF2_AEFILE_H
 #include "gof2/common.h"
+#include "gof2/String.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 namespace AbyssEngine {
 
@@ -86,22 +87,9 @@ struct FileInterface {
 
 
 
-static_assert(sizeof(String) == 0xc, "String layout");
-static_assert(__builtin_offsetof(String, size) == 0x8, "String::size");
-static_assert(sizeof(Array<void *>) == 0xc, "Array layout");
-static_assert(sizeof(AEPakFileEntry) == 0x1c, "AEPakFileEntry layout");
-static_assert(__builtin_offsetof(AEPakFileEntry, crc) == 0x0, "AEPakFileEntry::crc");
-static_assert(__builtin_offsetof(AEPakFileEntry, name) == 0x4, "AEPakFileEntry::name");
-static_assert(__builtin_offsetof(AEPakFileEntry, offset) == 0x10, "AEPakFileEntry::offset");
-static_assert(__builtin_offsetof(AEPakFileEntry, packedSize) == 0x14, "AEPakFileEntry::packedSize");
-static_assert(__builtin_offsetof(AEPakFileEntry, size) == 0x18, "AEPakFileEntry::size");
-static_assert(sizeof(AELowLevelNativeFile) == 0x8, "AELowLevelNativeFile layout");
-static_assert(sizeof(AELowLevelPakFile) == 0x14, "AELowLevelPakFile layout");
-static_assert(__builtin_offsetof(AELowLevelPakFile, handle) == 0x4, "AELowLevelPakFile::handle");
-static_assert(__builtin_offsetof(AELowLevelPakFile, packedSize) == 0x8, "AELowLevelPakFile::packedSize");
-static_assert(__builtin_offsetof(AELowLevelPakFile, size) == 0xc, "AELowLevelPakFile::size");
-static_assert(__builtin_offsetof(AELowLevelPakFile, position) == 0x10, "AELowLevelPakFile::position");
-static_assert(__builtin_offsetof(FileInterface, enabled) == 0x4, "FileInterface::enabled");
+// NOTE: AEPakFileEntry::name holds the std::u16string-backed String (common.h), so the original
+// 0x1c byte layout no longer holds. The low-level file structs derive from AELowLevelFile (a
+// vtable-pointer base), which is the natural native layout: vtable at 0x0, then members.
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -116,5 +104,75 @@ void ArrayAdd(T item, Array<T> &array);
 template <class T>
 void ArrayReleaseClasses(Array<T> &array);
 
-struct AEFile { void* _opaque; };  // no offset accesses observed
+enum FileOpenType : uint32_t {
+    OPEN_READ   = 0,
+    OPEN_WRITE  = 1,
+    OPEN_APPEND = 2,
+};
+
+// AEFile is a fully static utility class (a namespace of file I/O routines over the active
+// FileInterface plus the registered .pak archives). No instance state.
+struct AEFile {
+    static void        SetInterface(FileInterface *fileInterface);
+    static void        Release();
+
+    static uint32_t    Open(String &path, FileOpenType openType, uint32_t *handle);
+    static uint32_t    OpenRead(String &path, uint32_t *handle);
+    static uint32_t    OpenRead(const char *path, uint32_t *handle);
+    static uint32_t    OpenWrite(String &path, uint32_t *handle);
+    static uint32_t    OpenWrite(const char *path, uint32_t *handle);
+    static uint32_t    OpenAppend(String &path, uint32_t *handle);
+    static uint32_t    OpenAppend(const char *path, uint32_t *handle);
+    static void        Close(uint32_t handle);
+
+    static uint32_t    Read(uint32_t bytes, void *buffer, uint32_t handle);
+    static uint32_t    Read(bool &value, uint32_t handle);
+    static uint32_t    Read(char &value, uint32_t handle);
+    static uint32_t    Read(int8_t &value, uint32_t handle);
+    static uint32_t    Read(uint8_t &value, uint32_t handle);
+    static uint32_t    Read(int16_t &value, uint32_t handle);
+    static uint32_t    Read(uint16_t &value, uint32_t handle);
+    static uint32_t    Read(int32_t &value, uint32_t handle);
+    static uint32_t    Read(uint32_t &value, uint32_t handle);
+    static uint32_t    Read(int64_t &value, uint32_t handle);
+    static uint32_t    Read(float &value, uint32_t handle);
+    static uint32_t    Read(String &value, uint32_t handle, bool wide);
+
+    static uint32_t    ReadSwitched(int16_t &value, uint32_t handle);
+    static uint32_t    ReadSwitched(uint16_t &value, uint32_t handle);
+    static uint32_t    ReadSwitched(int32_t &value, uint32_t handle);
+    static uint32_t    ReadSwitched(String &value, uint32_t handle, bool wide);
+
+    static uint32_t    Write(uint32_t bytes, const void *buffer, uint32_t handle);
+    static void        Write(bool value, uint32_t handle);
+    static void        Write(char value, uint32_t handle);
+    static void        Write(int8_t value, uint32_t handle);
+    static void        Write(uint8_t value, uint32_t handle);
+    static void        Write(int16_t value, uint32_t handle);
+    static void        Write(uint16_t value, uint32_t handle);
+    static void        Write(int32_t value, uint32_t handle);
+    static void        Write(uint32_t value, uint32_t handle);
+    static void        Write(int64_t value, uint32_t handle);
+    static void        Write(float value, uint32_t handle);
+    static uint32_t    Write(const String &value, uint32_t handle, bool wide);
+
+    static uint32_t    Skip(uint32_t bytes, uint32_t handle);
+    static uint32_t    GetFileSize(uint32_t handle);
+
+    static void        RegisterPakFile(String &path);
+    static void        collectPakFiles(const String &path);
+    static void        collectFilesInPakFiles(String &path);
+    static void        sortPakFileEntryList();
+    static AELowLevelFile *findPakFile(const String &path);
+    static uint32_t    crc32_ccitt(const String &text);
+
+    static uint32_t    FileExist(const String &path);
+    static uint32_t    FileDelete(const String &path);
+    static uint32_t    GetDeviceFreeSpace();
+    static const char *GetAppRootDir();
+    static void        SetAppRootDir(const char *path);
+    static void        SetZipDirectory(const char *path);
+    static void        SetSaveDirectory(String path);
+    static void        ResetSaveDirectory();
+};
 #endif

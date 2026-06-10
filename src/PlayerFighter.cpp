@@ -6,7 +6,6 @@ extern "C" void Player_setActive(int player, int on);
 extern "C" void PlayerFighter_setExhaustVisible(PlayerFighter *self, bool vis);
 extern "C" void PlayerFighter_awake_tail(int geom, int on);
 extern "C" void PlayerFighter_cloak_off_helper();
-extern "C" void *Trail_dtor(Trail *p);
 extern "C" void operator_delete(void *p);
 extern "C" void *Route_dtor(void *p);
 extern "C" void ArrayReleaseClasses_BV(void *arr);
@@ -35,11 +34,11 @@ extern "C" int Status_getCurrentCampaignMission();
 extern "C" int Status_inAlienOrbit();
 extern "C" int Player_getHitpoints(int player);
 extern "C" void Generator_ctor(void *g);
-extern "C" int Generator_getLootList(void *g, int a);
+extern "C" void *Generator_getLootList(void *g, int a, int b);
 extern "C" void *Generator_dtor(void *g);
 extern "C" void Explosion_ctor(void *e, int flag);
 extern "C" void Explosion_addFireStreaks(void *e);
-extern "C" int Explosion_isPlaying(int e);
+extern "C" int Explosion_isPlaying(void *e);
 extern "C" void AEGeometry_getPosition(void *out, int geom);
 extern "C" int KIPlayer_isWingMan(PlayerFighter *self);
 extern "C" int Status_getStanding();
@@ -47,7 +46,7 @@ extern "C" int Standing_isEnemy(int standing);
 extern "C" void PF_update_dead(PlayerFighter *self);
 extern "C" void PF_update_body(PlayerFighter *self, int dt);
 extern "C" void AEGeometry_setPosition3(int geom, float x, float y, float z);
-extern "C" void Trail_reset(int trail, int a, int b, int c);
+extern "C" void Trail_reset(void *trail, int a, int b, int c);
 extern "C" int AEGeometry_getMatrix2(int geom);
 extern "C" void AEMath_MatrixAssign(void *dst, void *src);
 extern "C" int AEGeometry_getMatrix(int geom);
@@ -93,10 +92,9 @@ extern "C" void AEString_assign(void *dst, void *src);
 extern "C" void AEString_dtor(void *s);
 extern "C" void Route_reset(int route);
 extern "C" void KIPlayer_setActive(PlayerFighter *self, int on);
-extern "C" void Explosion_reset(int e);
+extern "C" void Explosion_reset(void *e);
 extern "C" void AEGeometry_setVisible(int geom, int vis);
 extern "C" void *ArrayInt_dtor(void *p);
-extern "C" int Generator_getLootList(void *g, int a, int b);
 
 // ---- hasMissionCrateLost_dcb7e.cpp ----
 extern "C" uint8_t PlayerFighter_hasMissionCrateLost(PlayerFighter *self)
@@ -152,7 +150,7 @@ struct BoundingVolume;
 
 extern "C" void PlayerFighter_setBV_a(PlayerFighter *self, Array<BoundingVolume *> *v)
 {
-    F<Array<BoundingVolume *> *>(self, 0x150) = v;
+    self->field_0x150 = v;
 }
 
 // ---- setBoostProb_dcd02.cpp ----
@@ -176,7 +174,7 @@ struct Trail;
 
 extern "C" void PlayerFighter_removeTrail(PlayerFighter *self)
 {
-    Trail *t = self->field_0x154;
+    void *t = self->field_0x154;
     if (t != 0) {
         operator_delete(Trail_dtor(t));
     }
@@ -378,7 +376,7 @@ extern "C" void PlayerFighter_ctor(PlayerFighter *self, int p1, int wingmanCmd, 
         __aeabi_memcpy(defPts, &gPFC_defaultRoute, 0x30);
         void *sr = operator_new(0x18);
         Route_ctor(sr, defPts, 0xc);
-        *shared = (int)sr;
+        *shared = (int)(intptr_t)sr;
     }
 
     self->field_0x130 = -1;
@@ -439,7 +437,7 @@ extern "C" void PlayerFighter_ctor(PlayerFighter *self, int p1, int wingmanCmd, 
     } else {
         void *g = operator_new(1);
         Generator_ctor(g);
-        self->field_0x50 = Generator_getLootList(g, -1);
+        self->field_0x50 = Generator_getLootList(g, -1, -1);
         operator_delete(Generator_dtor(g));
     }
 
@@ -699,15 +697,15 @@ extern "C" void PlayerFighter_setMissionCrate(PlayerFighter *self, bool on)
 {
     self->field_0xd0 = on;
     if (on) {
-        F<Array<int> *>(self, 0x50) = 0;
+        self->field_0x50 = 0;
         Array<int> *a = (Array<int> *)operator_new(0xc);
         ArrayInt_ctor(a);
-        F<Array<int> *>(self, 0x50) = a;
+        self->field_0x50 = a;
         int mission = Status_getMission(*(unsigned *)gMissionCrateApp);
         int type = Mission_getType(mission);
         int item = (type == 5) ? 0x74 : 0x75;
-        ArrayInt_add(item, F<Array<int> *>(self, 0x50));
-        PlayerFighter_setMissionCrate_tail(1, F<Array<int> *>(self, 0x50));
+        ArrayInt_add(item, (Array<int> *)self->field_0x50);
+        PlayerFighter_setMissionCrate_tail(1, (Array<int> *)self->field_0x50);
     }
 }
 
@@ -718,15 +716,15 @@ typedef int (*CollFn)(BV *, float, float, float);
 extern "C" int PlayerFighter_collide(PlayerFighter *self, float x, float y, float z)
 {
     if ((unsigned)(self->field_0x88 - 3) > 1) {
-        Array<BV *> *a = F<Array<BV *> *>(self, 0x150);
+        Array<BV *> *a = (Array<BV *> *)self->field_0x150;
         if (a != 0) {
-            for (unsigned i = 0; i < a->length; i++) {
-                BV *e = a->data[i];
+            for (unsigned i = 0; i < a->size(); i++) {
+                BV *e = a->data()[i];
                 CollFn fn = *(CollFn *)(*(char **)e + 8);
                 if (fn(e, x, y, z) != 0) {
                     return 1;
                 }
-                a = F<Array<BV *> *>(self, 0x150);
+                a = (Array<BV *> *)self->field_0x150;
             }
         }
     }
@@ -740,7 +738,7 @@ extern "C" void PlayerFighter_setBV_b(PlayerFighter *self, BoundingVolume *bv)
 {
     Array<BoundingVolume *> *a = (Array<BoundingVolume *> *)operator_new(0xc);
     ArrayBV_ctor(a);
-    F<Array<BoundingVolume *> *>(self, 0x150) = a;
+    self->field_0x150 = a;
     return PlayerFighter_setBV_add(bv, a);
 }
 
@@ -794,15 +792,15 @@ typedef int (*CollFn)(BV *, float, float, float);
 extern "C" int PlayerFighter_outerCollide(PlayerFighter *self, float x, float y, float z)
 {
     if ((unsigned)(self->field_0x88 - 3) > 1) {
-        Array<BV *> *a = F<Array<BV *> *>(self, 0x150);
+        Array<BV *> *a = (Array<BV *> *)self->field_0x150;
         if (a != 0) {
-            for (unsigned i = 0; i < a->length; i++) {
-                BV *e = a->data[i];
+            for (unsigned i = 0; i < a->size(); i++) {
+                BV *e = a->data()[i];
                 CollFn fn = *(CollFn *)(*(char **)e + 0xc);
                 if (fn(e, x, y, z) != 0) {
                     return 1;
                 }
-                a = F<Array<BV *> *>(self, 0x150);
+                a = (Array<BV *> *)self->field_0x150;
             }
         }
     }
@@ -980,7 +978,7 @@ extern "C" void PlayerFighter_push(PlayerFighter *self, int dt)
         int lo = self->field_0x1d0;
         int hi = self->field_0x1d4;
         if ((int)(unsigned)(lo == 0) <= hi) {
-            void *geom = self->field_0x8;
+            void *geom = (void *)(intptr_t)self->field_0x8;
             void *m = (void *)(long)AEGeometry_getMatrix((int)(long)geom);
             AEMath_MatrixMul(rot, m);
             AEGeometry_setMatrix(geom);
@@ -988,7 +986,7 @@ extern "C" void PlayerFighter_push(PlayerFighter *self, int dt)
             hi = self->field_0x1d4;
         }
         float speed = l2f(((long long)hi << 32) | (unsigned)lo);
-        void *geom = self->field_0x8;
+        void *geom = (void *)(intptr_t)self->field_0x8;
         float ftotal2 = VectorSignedToFloat(self->field_0x108, 0);
 
         unsigned char a[12], b[12], c[60];

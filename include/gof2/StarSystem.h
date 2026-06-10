@@ -5,7 +5,6 @@
 struct StarSystem;
 struct AEGeometry;
 struct LensFlare;
-struct Array;
 struct Station;
 struct SolarSystem;
 struct Status;
@@ -48,6 +47,8 @@ static inline void *array_data(void *array) {
 }
 
 struct StarSystem {
-    Vector field_0x30;                  // +0x30
+    Vector field_0x30;                  // +0x30  (light direction)
+
+    ~StarSystem();
 };
 #endif

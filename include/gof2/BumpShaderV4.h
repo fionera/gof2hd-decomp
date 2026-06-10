@@ -2,9 +2,7 @@
 #define GOF2_BUMPSHADERV4_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+#include <new>
 
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
@@ -44,6 +42,9 @@ struct ShaderBaseStruct {
 
 
 
+// Per-class backing storage accessor helpers. The fields live at fixed byte offsets
+// (program handle at 0x4, dirty flag byte at 0x9, name String at 0xc, attribute/uniform
+// locations 0x20..0x58) and are read/written through these helpers.
 static inline int &field_i32(void *self, uint32_t offset)
 {
     return *(int *)((char *)self + offset);
@@ -64,9 +65,22 @@ static inline void *field_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
+// AbyssEngine::BumpShaderV4 — GLES2 bump-mapping shader variant (derives from ShaderBaseStruct).
+struct BumpShaderV4 {
+    static int ShaderIndex;
+
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    BumpShaderV4();
+
+    // The name String lives at offset 0xc; all other fields are reached via the helpers above.
+    String &field_0xc() { return *(String *)((char *)this + 0xc); }
+
+    // raw field storage (offsets referenced through the field_i32/field_u8/field_ptr helpers)
+    char field_storage[0x5c];
+};
+
 } // namespace AbyssEngine
 
-struct BumpShaderV4 {
-    String field_0xc;                   // +0xc
-};
 #endif

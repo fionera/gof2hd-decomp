@@ -1,5 +1,4 @@
 #include "gof2/BombGun.h"
-#include "gof2/AEGeometry.h"
 #include "gof2/Gun.h"
 #include "gof2/PlayerEgo.h"
 
@@ -19,9 +18,9 @@ extern "C" __attribute__((visibility("hidden"))) void **BombGun_status;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_sound_stop;
 extern "C" void PlayerEgo_getPosition(void *out, PlayerEgo *self);
 extern "C" void *Vector_assign(void *dst, void *src);
-extern "C" uint64_t PaintCanvas_TransformGetTransform(void *canvas, uint32_t transform);
-extern "C" void Transform_Update(uint64_t transform, int64_t elapsed, int zero);
-extern "C" void Transform_SetAnimationState(void *transform, int state, void *arg);
+extern "C" Transform *PaintCanvas_TransformGetTransform(void *canvas, uint32_t transform);
+extern "C" void Transform_Update(Transform *transform, int64_t elapsed, int zero);
+extern "C" void Transform_SetAnimationState(Transform *self, int state, void *arg);
 extern "C" void Matrix_assign(void *dst, void *src);
 extern "C" void FModSound_play(void *self, int sound, void *a, void *b, float volume);
 extern "C" void *PaintCanvas_TransformGetLocal(void *canvas, uint32_t transform);
@@ -60,8 +59,6 @@ extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
 extern "C" void Explosion_setScaling(Explosion *self, float scaling);
 extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out);
-extern "C" Transform *PaintCanvas_TransformGetTransform(void *canvas, uint32_t transform);
-extern "C" void Transform_SetAnimationState(Transform *self, int state, void *arg);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" void PaintCanvas_TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
 extern "C" void PaintCanvas_TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
@@ -88,33 +85,20 @@ extern "C" void _ZN7BombGunD0Ev(BombGun *self)
 }
 
 // ---- setPlayer_147868.cpp ----
-struct BombGun {
-    void setPlayer(PlayerEgo *player);
-};
-
 void BombGun::setPlayer(PlayerEgo *player)
 {
     this->field_0xec = player;
 }
 
 // ---- render_147cf0.cpp ----
-struct BombGun {
-    void render();
-};
-
-
 void BombGun::render()
 {
     RocketGun_render(this);
-    if (F<uint8_t>(this->field_0x8, 0x88) != 0)
+    if (this->field_0x8->field_0x88 != 0)
         return Explosion_render(this->field_0xf0);
 }
 
 // ---- update_147870.cpp ----
-struct BombGun {
-    void update(int elapsed);
-};
-
 extern "C" __attribute__((visibility("hidden"))) TargetFollowCamera *(*BombGun_getCamera)(
     PlayerEgo *player);
 
@@ -144,7 +128,7 @@ void BombGun::update(int elapsed)
         } else {
             void *gunPos = gun->field_0xc;
             *(uint64_t *)position = *(uint64_t *)gunPos;
-            *(uint32_t *)(position + 8) = F<uint32_t>(gunPos, 0x8);
+            *(uint32_t *)(position + 8) = *(uint32_t *)((char *)gunPos + 0x8);
         }
         Vector_assign((char *)this + 0xf8, position);
     }
@@ -162,10 +146,10 @@ void BombGun::update(int elapsed)
             uint32_t *activeTransform = &this->field_0x10;
             if (gun->field_0x4d != 0) {
                 gun->field_0x4d = 0;
-                uint64_t transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
-                Transform_SetAnimationState((void *)(uint32_t)transform, 3, 0);
+                Transform *transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
+                Transform_SetAnimationState(transform, 3, 0);
                 transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
-                Transform_SetAnimationState((void *)(uint32_t)transform, 1, 0);
+                Transform_SetAnimationState(transform, 1, 0);
                 Matrix_assign((char *)player + 0x10, (char *)player->field_0x0 + 4);
                 FModSound_play(*BombGun_sound_play, 0x45c, 0, 0, 0.0f);
             }
@@ -189,7 +173,7 @@ void BombGun::update(int elapsed)
             PlayerEgo_setRocketControl(player, gun, geometry);
 
             if (*(int *)gun->field_0x3c < gun->field_0x44 - 500) {
-                uint64_t transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
+                Transform *transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
                 Transform_Update(transform, (int64_t)elapsed, 0);
             }
 
@@ -203,7 +187,7 @@ void BombGun::update(int elapsed)
 update_transforms:
     {
         void **canvas = BombGun_update_canvas_a;
-        uint64_t transform = PaintCanvas_TransformGetTransform(*canvas, this->field_0x10);
+        Transform *transform = PaintCanvas_TransformGetTransform(*canvas, this->field_0x10);
         Transform_Update(transform, (int64_t)elapsed, 0);
         if (this->field_0xf4 != -1) {
             transform = PaintCanvas_TransformGetTransform(*canvas, this->field_0xf4);
@@ -241,7 +225,7 @@ after_transforms:
             force *= kBombScale;
         if (Status_hardCoreMode(*BombGun_status) != 0) {
             Gun *damageGun = this->field_0x8;
-            Player_damage(player->field_0x0, (int)(force * (float)damageGun->field_0x60),
+            Player_damage((Player *)player->field_0x0, (int)(force * (float)damageGun->field_0x60),
                           0, -1);
         }
         PlayerEgo_addNukeVolatileForce(player, force);
@@ -277,24 +261,19 @@ after_transforms:
     if (Explosion_isPlaying(this->field_0xf0) == 0) {
         TargetFollowCamera_setRumblePercentage(PlayerEgo_getTargetFollowCamera(player), 0.0f, 0);
         this->field_0x108 = 0;
-        F<uint8_t>(this->field_0x8, 0x88) = 0;
+        this->field_0x8->field_0x88 = 0;
         this->field_0x104 = 1;
         Explosion_reset(this->field_0xf0);
     }
 }
 
 // ---- BombGun_1475cc.cpp ----
-struct BombGun {
-    BombGun(Gun *gun, uint32_t mesh, int param3, int type, bool playerControlled, Level *level);
-};
-
-
 extern "C" void RocketGun_ctor(BombGun *self, int param3, Gun *gun, uint32_t mesh,
                                 int zero0, int zero1, int type, bool flag, Level *level);
 extern "C" void PaintCanvas_TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh,
                                               int flags);
 
-static const float kBombScale = 50000.0f;
+static const float kCtorBombScale = 50000.0f;
 static const float kOffsetY = 450.0f;
 static const float kOffsetZ = -1400.0f;
 static const float kRocketOffsetZ = 1700.0f;
@@ -335,7 +314,7 @@ extern "C" BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
     self->field_0x128 = type;
     self->field_0xf4 = -1;
     if (scaledBomb)
-        Explosion_setScaling(self->field_0xf0, kBombScale);
+        Explosion_setScaling(self->field_0xf0, kCtorBombScale);
 
     AEGeometry *geometry;
     if (playerFlag) {

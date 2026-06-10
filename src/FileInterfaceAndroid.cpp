@@ -1,38 +1,28 @@
 #include "gof2/FileInterfaceAndroid.h"
+#include <cstdio>
+#include <cstdlib>
 
+struct zip_file;
+using AbyssEngine::String12;
 
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
-extern "C" int fseek(void *f, long off, int whence);
-extern "C" long ftell(void *f);
 extern "C" void FileInterfaceAndroid_Close(FileInterfaceAndroid *self);
 extern "C" bool FileInterfaceAndroid_Seek(FileInterfaceAndroid *self, unsigned int off);
 extern "C" unsigned int zip_fread(void *zf, void *buf, unsigned int n);
-extern "C" unsigned int fread(void *buf, unsigned int sz, unsigned int n);
 extern "C" unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
-extern "C" void *malloc(unsigned int n);
-extern "C" void free(void *p);
 extern "C" void *FileInterfaceAndroid_completeDtor(FileInterfaceAndroid *self);
 extern "C" void operator_delete(void *p);
-extern "C" unsigned int fwrite(const void *p, unsigned int sz, unsigned int n);
-extern "C" void JNI_CallVoidMethod(void *env, void *m, void *arg0, void *arg1);
+extern "C" void JNI_CallVoidMethod(void *env, void *m, void *arg, ...);
 extern "C" void String_copy_ctor(void *out, const void *src, bool);
 extern "C" void String_dtor(void *self);
 extern "C" void String_append(void *self, const void *rhs);
 extern "C" void String_concat(void *out, const void *a, const void *b);
 extern "C" const char *String_GetAEChar(const void *s);
-extern "C" void String_dtor(void *s);
-extern "C" void *zip_fopen(void *za, const char *name, int flags);
-extern "C" void zip_fclose(void *zf);
-extern "C" sFILE *fopen(const char *path, const char *mode);
-extern "C" void fclose(sFILE *f);
+extern "C" zip_file *zip_fopen(void *za, const char *name, int flags);
+extern "C" int zip_fclose(void *zf);
 extern "C" const unsigned short *String_GetAEWChar(const void *s);
 extern "C" void String_ctor_wide(void *out, const unsigned short *w, bool);
-extern "C" zip_file *zip_fopen(void *za, const char *name, int flags);
 extern "C" void *operator_new(unsigned int n);
-extern "C" int fprintf(void *stream, const char *fmt, ...);
-extern "C" int fclose(void *f);
-extern "C" int zip_fclose(void *zf);
-extern "C" void JNI_CallVoidMethod(void *env, void *m, void *arg);
 
 // ---- GetDirPreFix_6e80c.cpp ----
 // AbyssEngine::String::String(String* out, const char* cstr, bool) -> void (0x6ee18)
@@ -54,9 +44,9 @@ extern "C" RetStr FileInterfaceAndroid_GetDirPreFix()
 // FileInterfaceAndroid::GetFileSize() — seek end, tell, seek start; FILE* at +0x8.
 extern "C" int FileInterfaceAndroid_GetFileSize(FileInterfaceAndroid *self)
 {
-    fseek(self->field_0x8, 0, 2);
-    int size = ftell(self->field_0x8);
-    fseek(self->field_0x8, 0, 0);
+    fseek((FILE *)self->field_0x8, 0, 2);
+    int size = ftell((FILE *)self->field_0x8);
+    fseek((FILE *)self->field_0x8, 0, 0);
     return size;
 }
 
@@ -83,7 +73,7 @@ FileInterfaceAndroid::~FileInterfaceAndroid()
     if (*cnt != 0)
         *cnt = *cnt - 1;
     else
-        u8(this, 0x04) = 0;
+        this->field_0x4 = 0;
 }
 
 // ---- SetAppRootDir_6e7f4.cpp ----
@@ -91,7 +81,7 @@ FileInterfaceAndroid::~FileInterfaceAndroid()
 extern "C" void FileInterfaceAndroid_SetAppRootDir(FileInterfaceAndroid *self, void *p)
 {
     if (p != 0)
-        self->field_0x30 = p;
+        self->field_0x30 = (const char *)p;
 }
 
 // ---- FileInterfaceAndroid_6de18.cpp ----
@@ -110,16 +100,16 @@ FileInterfaceAndroid_ctor_zip(FileInterfaceAndroid *self, zip_file *zf, bool app
 {
     int *cnt = gFIAInstCount_zip;
     char *vtbase = (char *)gFIAVtable_zip;   // *gVtable loaded; +8 applied at the store
-    self->f_8 = 0;
-    self->f_c = zf;
-    self->f_10 = 0;
-    self->f_14 = 0;
-    self->f_0 = vtbase + 8;
+    self->field_0x8 = 0;
+    self->field_0xc = zf;
+    self->field_0x10 = 0;
+    self->field_0x14 = 0;
+    self->field_0x0 = vtbase + 8;
     *cnt = *cnt + 1;
-    self->f_1c = 0;
-    self->f_28 = 0;
+    self->field_0x1c = 0;
+    self->field_0x28 = 0;
     FileInterfaceAndroid_Seek(self, start);
-    self->f_24 = append;
+    self->field_0x24 = append;
     return self;
 }
 
@@ -142,18 +132,18 @@ typedef void (*fn_del)(void *env, void *arr);
 
 extern "C" bool FileInterfaceAndroid_Read(FileInterfaceAndroid *self, unsigned int n, void *buf)
 {
-    if (self->f_c != 0)
-        return zip_fread(self->f_c, buf, n) == n;
-    if (self->f_8 != 0)
-        return fread(buf, 1, n) == n;
-    if (self->f_10 == 0)
+    if (self->field_0xc != 0)
+        return zip_fread(self->field_0xc, buf, n) == n;
+    if (self->field_0x8 != 0)
+        return fread(buf, 1, n, (FILE *)self->field_0x8) == n;
+    if (self->field_0x10 == 0)
         return false;
 
     void *r9 = *gEnvR;
     void *env = *(void **)r9;
     void *table = *(void **)env;
     void *arr = (*(fn_i *)((char *)table + 0x2c0))(env, n);
-    unsigned int got = JNI_CallIntMethod(*(void **)r9, self->f_10, *(void **)gReadMidArg, arr);
+    unsigned int got = JNI_CallIntMethod(*(void **)r9, self->field_0x10, *(void **)gReadMidArg, arr);
 
     bool ok;
     table = *(void **)(*(void **)r9);
@@ -182,7 +172,7 @@ extern "C" bool FileInterfaceAndroid_Seek(FileInterfaceAndroid *self, unsigned i
 {
     if (n == 0)
         return true;
-    void *zf = self->f_c;
+    void *zf = self->field_0xc;
     int delta;
     if (zf != 0) {
         void *tmp = malloc(n);
@@ -192,10 +182,10 @@ extern "C" bool FileInterfaceAndroid_Seek(FileInterfaceAndroid *self, unsigned i
         free(tmp);
         delta = got - n;
     } else {
-        void *f = self->f_8;
+        void *f = self->field_0x8;
         if (f == 0)
             return false;
-        delta = fseek(f, n, 1);
+        delta = fseek((FILE *)f, n, 1);
     }
     return delta == 0;
 }
@@ -205,9 +195,9 @@ extern "C" bool FileInterfaceAndroid_Seek(FileInterfaceAndroid *self, unsigned i
 // dtor (external), then tail-calls operator delete:
 //   blx <complete dtor> ; pop {r7,lr} ; b.w <operator delete>
 
-FileInterfaceAndroid::~FileInterfaceAndroid()
+extern "C" void _ZN20FileInterfaceAndroidD0Ev(FileInterfaceAndroid *self)
 {
-    operator_delete(FileInterfaceAndroid_completeDtor(this));
+    operator_delete(FileInterfaceAndroid_completeDtor(self));
 }
 
 // ---- Write_6e4ac.cpp ----
@@ -230,9 +220,9 @@ typedef void (*fn_del)(void *env, void *arr);
 // serves the JNI slow path; clang -Oz colors them differently from the target. Resistant.
 extern "C" bool FileInterfaceAndroid_Write(FileInterfaceAndroid *self, unsigned int n, const void *buf)
 {
-    if (self->f_8 != 0)
-        return fwrite(buf, 1, n) == n;
-    if (self->f_10 == 0)
+    if (self->field_0x8 != 0)
+        return fwrite(buf, 1, n, (FILE *)self->field_0x8) == n;
+    if (self->field_0x10 == 0)
         return true;
 
     void *r9 = *gEnvW;
@@ -242,7 +232,7 @@ extern "C" bool FileInterfaceAndroid_Write(FileInterfaceAndroid *self, unsigned 
     envObj = *(void **)r9;
     table = *(void **)envObj;
     (*(fn_setregion *)((char *)table + 0x340))(envObj, arr, 0, n, buf);
-    JNI_CallVoidMethod(envObj, self->f_10, *(void **)gWriteMidArg, arr);
+    JNI_CallVoidMethod(envObj, self->field_0x10, *(void **)gWriteMidArg, arr);
     table = *(void **)(*(void **)r9);
     bool ok = (*(fn_check *)((char *)table + 0x3c))(*(void **)r9) == 0;
     if (!ok)
@@ -276,7 +266,6 @@ extern "C" void FileInterfaceAndroid_FileDelete(String12 s)
 // NOTE: near-match only. The String temporaries, the canary frame, and the AbyssEngine::String
 // by-value ABI homing do not reproduce the target's exact -Oz frame layout. Faithful model.
 
-struct sFILE;
 extern void **gZipMain __attribute__((visibility("hidden")));
 extern void **gZipPatch __attribute__((visibility("hidden")));
 extern const char *gZipPrefixA __attribute__((visibility("hidden")));
@@ -305,7 +294,7 @@ extern "C" bool FileInterfaceAndroid_FileExist(FileInterfaceAndroid *self, Strin
         char dir[12], full[12];
         String_ctor_cstr(dir, self->field_0x30, false);
         String_concat(full, dir, &name);
-        sFILE *f = fopen(String_GetAEChar(full), gModeRb);
+        FILE *f = fopen(String_GetAEChar(full), gModeRb);
         if (f != 0) {
             fclose(f);
             exists = true;
@@ -321,7 +310,6 @@ extern "C" bool FileInterfaceAndroid_FileExist(FileInterfaceAndroid *self, Strin
 }
 
 // ---- FileInterfaceAndroid_6de68.cpp ----
-struct sFILE;
 // Vtable group base + an instance-count cell, both PC-relative globals.
 extern void *gFIAVtable_file __attribute__((visibility("hidden")));
 extern int *gFIAInstCount __attribute__((visibility("hidden")));
@@ -330,14 +318,14 @@ extern int *gFIAInstCount __attribute__((visibility("hidden")));
 // NOTE: near-match. Identical instruction multiset; clang -Oz schedules the
 // instance-count pointer deref and colors its temp register (r0 vs r1) differently
 // than the target. Scheduling/coloring-only difference.
-extern "C" void FileInterfaceAndroid_ctor_file(FileInterfaceAndroid *self, sFILE *f, bool append)
+extern "C" void FileInterfaceAndroid_ctor_file(FileInterfaceAndroid *self, FILE *f, bool append)
 {
     int *cnt = gFIAInstCount;
-    self->f_8 = f;
-    self->f_c = 0;
-    self->f_10 = 0;
-    self->f_0 = (char *)gFIAVtable_file + 8;
-    self->f_14 = append;
+    self->field_0x8 = f;
+    self->field_0xc = 0;
+    self->field_0x10 = 0;
+    self->field_0x0 = (char *)gFIAVtable_file + 8;
+    self->field_0x14 = append;
     *cnt = *cnt + 1;
 }
 
@@ -374,11 +362,11 @@ FileInterfaceAndroid_ctor_obj(FileInterfaceAndroid *self, jobject *stream, bool 
 {
     void *env = *gJniEnvObj;
     int *cnt = gFIAInstCount_obj;
-    self->f_8 = 0;
-    self->f_c = 0;
-    self->f_10 = stream;
-    self->f_14 = reading;
-    self->f_0 = (char *)gFIAVtable_obj + 8;
+    self->field_0x8 = 0;
+    self->field_0xc = 0;
+    self->field_0x10 = stream;
+    self->field_0x14 = reading;
+    self->field_0x0 = (char *)gFIAVtable_obj + 8;
     *cnt = *cnt + 1;
     void *cls = (*(jni_getclass *)((char *)*(void **)env + 0x7c))(env);
 
@@ -406,7 +394,6 @@ FileInterfaceAndroid_ctor_obj(FileInterfaceAndroid *self, jobject *stream, bool 
 // temporaries, the stack-protector canary and the placement-construction of the result object do
 // not reproduce the target's exact AbyssEngine::String ABI and -Oz frame layout. Faithful model.
 
-struct sFILE;
 struct zip_file;
 extern "C" FileInterfaceAndroid *FileInterfaceAndroid_ctor_zip(FileInterfaceAndroid *self,
                                                                zip_file *zf, bool append,
@@ -427,7 +414,7 @@ extern "C" FileInterfaceAndroid *FileInterfaceAndroid_OpenRead(FileInterfaceAndr
                                                                int p4, int p5, unsigned int p6)
 {
     const unsigned short *w = String_GetAEWChar(&name);
-    if (self->f_4 == 0)
+    if (self->field_0x4 == 0)
         return 0;
 
     const unsigned short *body = (*w == '/') ? w + 1 : w;
@@ -442,7 +429,7 @@ extern "C" FileInterfaceAndroid *FileInterfaceAndroid_OpenRead(FileInterfaceAndr
     String_append(b, wide2);
     String_dtor(wide2);
 
-    fprintf((char *)*(void **)gStderrBase + 0xa8, gOpenReadFmt, String_GetAEChar(b), p3, p4, p5, p6, p2);
+    fprintf((FILE *)((char *)*(void **)gStderrBase + 0xa8), gOpenReadFmt, String_GetAEChar(b), p3, p4, p5, p6, p2);
 
     zip_file *z1 = zip_fopen(*gZipMainR, String_GetAEChar(a), 0);
     zip_file *z2 = (*gZipPatchR != 0) ? zip_fopen(*gZipPatchR, String_GetAEChar(b), 0) : 0;
@@ -458,17 +445,17 @@ extern "C" FileInterfaceAndroid *FileInterfaceAndroid_OpenRead(FileInterfaceAndr
         char dir[12], full[12];
         String_ctor_cstr(dir, self->field_0x30, false);
         String_concat(full, dir, body == w ? (void *)a : (void *)a);
-        sFILE *f = fopen(String_GetAEChar(full), gModeRbR);
+        FILE *f = fopen(String_GetAEChar(full), gModeRbR);
         if (f != 0) {
-            int *p = (int *)operator_new(0x38);
-            p[2] = (int)f;
-            p[3] = 0;
-            p[4] = 0;
-            *(unsigned char *)(p + 5) = 0;
-            p[0] = (int)((char *)gFIAVtable_or + 8);
+            FileInterfaceAndroid *p = (FileInterfaceAndroid *)operator_new(0x38);
+            p->field_0x8 = f;       // +0x8 stdio handle
+            p->field_0xc = 0;       // +0xc zip handle
+            p->field_0x10 = 0;      // +0x10 jobject stream
+            p->field_0x14 = 0;      // +0x14 mode flag (read)
+            p->field_0x0 = (char *)gFIAVtable_or + 8;
             int *cnt = gFIAInstCount_or;
             *cnt = *cnt + 1;
-            result = (FileInterfaceAndroid *)p;
+            result = p;
         }
         String_dtor(full);
         String_dtor(dir);
@@ -487,7 +474,6 @@ extern "C" FileInterfaceAndroid *FileInterfaceAndroid_OpenRead(FileInterfaceAndr
 // and the placement-construction of the result object do not reproduce the target's exact
 // AbyssEngine::String ABI homing and -Oz frame layout. Faithful semantic model.
 
-struct sFILE;
 extern void *gFIAVtable_ow __attribute__((visibility("hidden")));
 extern int *gFIAInstCount_ow __attribute__((visibility("hidden")));
 extern const char *gModeWb __attribute__((visibility("hidden")));
@@ -505,18 +491,18 @@ extern "C" FileInterfaceAndroid *FileInterfaceAndroid_OpenWrite(FileInterfaceAnd
     String_concat(full, dir, wide);
     String_dtor(wide);
 
-    sFILE *f = fopen(String_GetAEChar(full), gModeWb);
+    FILE *f = fopen(String_GetAEChar(full), gModeWb);
     FileInterfaceAndroid *result = 0;
     if (f != 0) {
-        int *p = (int *)operator_new(0x38);
-        p[2] = (int)f;
-        p[3] = 0;
-        p[4] = 0;
-        *(unsigned char *)(p + 5) = 1;
-        p[0] = (int)((char *)gFIAVtable_ow + 8);
+        FileInterfaceAndroid *p = (FileInterfaceAndroid *)operator_new(0x38);
+        p->field_0x8 = f;       // +0x8 stdio handle
+        p->field_0xc = 0;       // +0xc zip handle
+        p->field_0x10 = 0;      // +0x10 jobject stream
+        p->field_0x14 = 1;      // +0x14 mode flag (write)
+        p->field_0x0 = (char *)gFIAVtable_ow + 8;
         int *cnt = gFIAInstCount_ow;
         *cnt = *cnt + 1;
-        result = (FileInterfaceAndroid *)p;
+        result = p;
     }
     String_dtor(full);
     String_dtor(dir);
@@ -533,13 +519,13 @@ extern void *gFIAVtable __attribute__((visibility("hidden")));
 // the target's interleaving. Scheduling-only difference.
 extern "C" void FileInterfaceAndroid_ctor_default(FileInterfaceAndroid *self)
 {
-    self->f_4 = 1;
+    self->field_0x4 = 1;
     char *vt = (char *)gFIAVtable + 8;
-    self->f_30 = 0;
-    self->f_34 = 0;
-    self->f_24 = 0;
-    self->f_28 = 0;
-    self->f_0 = vt;
+    self->field_0x30 = 0;
+    self->field_0x34 = 0;
+    self->field_0x24 = 0;
+    self->field_0x28 = 0;
+    self->field_0x0 = vt;
 }
 
 // ---- Close_6e7a0.cpp ----
@@ -557,23 +543,23 @@ extern void *gModeAppend __attribute__((visibility("hidden")));
 // which also shifts a callee-saved register (r5 vs r6). A -Oz branch-vs-cmov choice.
 extern "C" void FileInterfaceAndroid_Close(FileInterfaceAndroid *self)
 {
-    if (self->f_8 != 0) {
-        fclose(self->f_8);
-        self->f_8 = 0;
+    if (self->field_0x8 != 0) {
+        fclose((FILE *)self->field_0x8);
+        self->field_0x8 = 0;
     }
-    if (self->f_c != 0) {
-        zip_fclose(self->f_c);
-        self->f_c = 0;
+    if (self->field_0xc != 0) {
+        zip_fclose(self->field_0xc);
+        self->field_0xc = 0;
     }
-    void *m = self->f_10;
+    void *m = self->field_0x10;
     if (m != 0) {
         void *env = *(void **)gJniEnv;
         void *modePtr;
-        if (self->f_14 == 0)
+        if (self->field_0x14 == 0)
             modePtr = gModeWrite;
         else
             modePtr = gModeAppend;
         JNI_CallVoidMethod(env, m, *(void **)modePtr);
-        self->f_10 = 0;
+        self->field_0x10 = 0;
     }
 }

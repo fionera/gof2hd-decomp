@@ -1,122 +1,78 @@
 #include "gof2/NoTexVtxColorShader.h"
 
-
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
-
-// ---- SetInActive_8e024.cpp ----
 namespace AbyssEngine {
 
+// AbyssEngine::NoTexVtxColorShader::SetInActive()
 void NoTexVtxColorShader::SetInActive()
 {
-    glDisableVertexAttribArray(field_i32(this, 0x20));
-    return glDisableVertexAttribArray(field_i32(this, 0x24));
+    glDisableVertexAttribArray(field_0x20);
+    return glDisableVertexAttribArray(field_0x24);
 }
 
-} // namespace AbyssEngine
-
-// ---- _NoTexVtxColorShader_8e0be.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
-extern "C" void _ZN11AbyssEngine19NoTexVtxColorShaderD0Ev(
-    AbyssEngine::NoTexVtxColorShader *self)
-{
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
-}
-
-// ---- Init_8dfb8.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::NoTexVtxColorShader::Init(AbyssEngine::Engine*)
 void NoTexVtxColorShader::Init(Engine *)
 {
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram(
-        "NoTexVtxColorShader.vsh", "NoTexVtxColorShader.fsh");
-    field_i32(this, 0x04) = program;
+    uint32_t program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "NoTexVtxColorShader.vsh", "NoTexVtxColorShader.fsh");
+    field_0x4 = (int)program;
 
-    field_i32(this, 0x20) = glGetAttribLocation(program, "a_position");
-    field_i32(this, 0x24) = glGetAttribLocation(field_i32(this, 0x04), "a_color");
+    field_0x20 = glGetAttribLocation(program, "a_position");
+    field_0x24 = glGetAttribLocation(field_0x4, "a_color");
 
-    field_i32(this, 0x28) = glGetUniformLocation(field_i32(this, 0x04), "u_mvp");
-    field_i32(this, 0x2c) = glGetUniformLocation(field_i32(this, 0x04), "u_color");
+    field_0x28 = glGetUniformLocation(field_0x4, "u_mvp");
+    field_0x2c = glGetUniformLocation(field_0x4, "u_color");
 
-    return glUseProgram(field_i32(this, 0x04));
+    return glUseProgram(field_0x4);
 }
 
-} // namespace AbyssEngine
-
-// ---- NoTexVtxColorShader_8df2c.cpp ----
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-
-namespace AbyssEngine {
-
-struct ConstructorFrame {
-    char name[sizeof(String)];
-    volatile uint32_t stackGuard;
-};
-
-static inline String *shaderName(NoTexVtxColorShader *self)
+// AbyssEngine::NoTexVtxColorShader::NoTexVtxColorShader()
+NoTexVtxColorShader::NoTexVtxColorShader()
 {
-    return (String *)((char *)self + 0x0c);
-}
-
-} // namespace AbyssEngine
-
-extern "C" AbyssEngine::NoTexVtxColorShader *
-_ZN11AbyssEngine19NoTexVtxColorShaderC2Ev(AbyssEngine::NoTexVtxColorShader *self)
-{
-    AbyssEngine::ConstructorFrame frame;
-    frame.stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
-    *(void *volatile *)self = _ZTVN11AbyssEngine19NoTexVtxColorShaderE + 8;
-    AbyssEngine::NoTexVtxColorShader::ShaderIndex =
-        AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
-
-    _ZN11AbyssEngine6StringC1EPKcb(
-        (AbyssEngine::String *)frame.name, "NoTexVtxColorShader", false);
-    _ZN11AbyssEngine6StringaSERKS0_(
-        AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
-    _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
-
-    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - frame.stackGuard;
-    if (stackDifference != 0) {
-        __stack_chk_fail(stackDifference);
+    void *volatile cookie = __stack_chk_guard;
+    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    field_0x0 = (char *)NoTexVtxColorShader_vtable + 8;
+    NoTexVtxColorShader_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    field_0xc.s = u"NoTexVtxColorShader";
+    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
+    if (guardDelta == 0) {
+        return;
     }
-    return self;
+    __stack_chk_fail(guardDelta);
 }
 
-// ---- UpdateMeshData_8e03a.cpp ----
-namespace AbyssEngine {
-
+// AbyssEngine::NoTexVtxColorShader::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
 void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(field_i32(this, 0x28), 1, 0, (char *)engine + 0x104);
-    if (field_u8(this, 0x9) != 0) {
-        glUniform4fv(field_i32(this, 0x2c), 1, (float *)((char *)engine + 0xd0));
-        field_u8(this, 0x9) = 0;
-    }
-    glEnableVertexAttribArray(field_i32(this, 0x20));
-    glEnableVertexAttribArray(field_i32(this, 0x24));
+    char *e = (char *)engine;
+    char *m = (char *)mesh;
 
-    int index = field_i32(this, 0x20);
+    glUniformMatrix4fv(field_0x28, 1, 0, e + 0x104);
+    if (field_0x9 != 0) {
+        glUniform4fv(field_0x2c, 1, (const float *)(e + 0xd0));
+        field_0x9 = 0;
+    }
+    glEnableVertexAttribArray(field_0x20);
+    glEnableVertexAttribArray(field_0x24);
+
+    int index = field_0x20;
     int size;
     const void *ptr;
     int stride = 0;
     if (mesh == 0) {
-        ptr = field_ptr(engine, 0x348);
+        ptr = *(void **)(e + 0x348);
         size = 2;
     } else {
-        glVertexAttribPointer(index, 3, 0x1406, 0, stride, field_ptr(mesh, 0x4));
-        ptr = field_ptr(mesh, 0xc);
-        index = field_i32(this, 0x24);
+        glVertexAttribPointer(index, 3, 0x1406, 0, stride, *(void **)(m + 0x4));
+        ptr = *(void **)(m + 0xc);
+        index = field_0x24;
         size = 4;
     }
     return glVertexAttribPointer(index, size, 0x1406, 0, stride, ptr);
 }
 
 } // namespace AbyssEngine
+
+// AbyssEngine::NoTexVtxColorShader::~NoTexVtxColorShader() (deleting dtor)
+extern "C" void _ZN11AbyssEngine19NoTexVtxColorShaderD0Ev(AbyssEngine::NoTexVtxColorShader *self)
+{
+    operator_delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
+}

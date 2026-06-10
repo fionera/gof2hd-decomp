@@ -4,9 +4,8 @@
 extern "C" void _ZN11AbyssEngine6Engine18ActivateRefractFBOEv(AbyssEngine::Engine *self);
 extern "C" void glUniform2f(int location, float x, float y);
 extern "C" void glUniformMatrix3fv(int location, int count, uint8_t transpose, const void *value);
-extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(void *self);
-extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(void *self);
-extern "C" void _ZN11AbyssEngine6Engine18ActivateRefractFBOEv(void *self);
+extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *self);
+extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *self);
 
 // ---- _BumpShaderCloak_8b200.cpp ----
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
@@ -97,6 +96,11 @@ void BumpShaderCloak::SetInActive()
 // ---- BumpShaderCloak_8abf0.cpp ----
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
     AbyssEngine::ShaderBaseStruct *self);
+extern "C" void _ZN11AbyssEngine6StringC1EPKcb(
+    AbyssEngine::String *self, const char *text, bool copy);
+extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
+    AbyssEngine::String *self, const AbyssEngine::String *other);
+extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 namespace AbyssEngine {
 
@@ -108,11 +112,13 @@ BumpShaderCloak::BumpShaderCloak()
     void *volatile cookie = __stack_chk_guard;
 
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
-    *(uint32_t *)this = (uint32_t)_ZTVN11AbyssEngine15BumpShaderCloakE + 8;
+    *(void **)this = (void *)(_ZTVN11AbyssEngine15BumpShaderCloakE + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {
-        String tmp("BumpShaderCloak", false);
-        this->field_0xc = tmp;
+        String tmp;
+        _ZN11AbyssEngine6StringC1EPKcb(&tmp, "BumpShaderCloak", false);
+        _ZN11AbyssEngine6StringaSERKS0_(&this->field_0xc(), &tmp);
+        _ZN11AbyssEngine6StringD1Ev(&tmp);
     }
 
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;

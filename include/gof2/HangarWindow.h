@@ -23,6 +23,55 @@ namespace AbyssEngine { namespace AEMath {
 } }
 typedef AbyssEngine::AEMath::Vector Vector;
 
+// 16-byte block used for NEON vld1/vst1.32 field copies in the constructor.
+struct Blk16 { int a, b, c, d; };
+
+// Small UTF-16 stack-string temp (12 bytes) used by the UI text/format helpers.
+struct String12 { uint32_t a, b, c; };
+
+// Typed byte-offset accessors for opaque (void*) referenced objects whose full
+// layout is not modeled in this translation unit. Return references so call sites
+// can read and assign. (Same pattern as RocketGun.h / Radio.h.)
+template <class T> static inline T &G(void *p, uint32_t off) { return *(T *)((char *)p + off); }
+template <class T> static inline T &F(void *p, uint32_t off) { return *(T *)((char *)p + off); }
+
+// Layout - HUD layout/skin object. Defined here (rather than including gof2/Layout.h,
+// which redefines placement-new and clashes with libc++'s <new>) so the window code can
+// read its geometry fields through a real named struct. Mirrors gof2/Layout.h's layout.
+struct Layout {
+    uint8_t field_0x0;                  // +0x0
+    int field_0x4;                      // +0x4
+    int field_0x8;                      // +0x8
+    int field_0xc;                      // +0xc
+    int field_0x10;                     // +0x10
+    int field_0x14;                     // +0x14
+    int field_0x18;                     // +0x18
+    int field_0x1c;                     // +0x1c
+    int field_0x20;                     // +0x20
+    int field_0x24;                     // +0x24
+    int field_0x28;                     // +0x28
+    int field_0x2c;                     // +0x2c
+    int field_0x30;                     // +0x30
+    int field_0x34;                     // +0x34
+    int field_0x38;                     // +0x38
+    int field_0x3c;                     // +0x3c
+    int field_0x40;                     // +0x40
+    int field_0x44;                     // +0x44
+    int field_0x48;                     // +0x48
+    int field_0x4c;                     // +0x4c
+    int field_0x50;                     // +0x50
+    int field_0x54;                     // +0x54
+    int field_0x58;                     // +0x58
+    int field_0x5c;                     // +0x5c
+    int field_0x60;                     // +0x60
+    int field_0x64;                     // +0x64
+    int field_0x70;                     // +0x70
+    int field_0x84;                     // +0x84
+    int field_0x114;                    // +0x114
+    int field_0x264;                    // +0x264
+    int field_0x2cc;                    // +0x2cc
+};
+
 // Field accessors via byte offset.
 
 struct HangarWindow {

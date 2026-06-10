@@ -163,5 +163,21 @@ extern "C" bool Agent_isGenericAgent(Agent *self);
 extern "C" bool Agent_isStoryAgent(Agent *self);
 extern "C" Mission *Agent_getMission(Agent *self);
 
-struct Generator { void* _opaque; };  // no offset accesses observed
+// Generator is a stateless helper class: all methods operate on globals and the
+// arguments passed in (no instance fields are accessed).
+struct Generator {
+    void computerTradeGoods(Station *station);
+    int generateStationIndex(Array<SolarSystem *> *systems, int station);
+    Array<Agent *> *createAgents(Station *station);
+    Mission *createMission(Agent *agent, Array<SolarSystem *> *systems);
+    Agent *createAgent(Station *station);
+    Array<Ship *> *getShipBuyList(Station *station);
+    Array<Item *> *getItemBuyList(Station *station);
+    Array<int> *getLootList(int itemIndex, int amount);
+    bool isKaamoSpecialItem(int item);
+};
+
+// Byte-offset accessor for EXTERNAL opaque objects whose layouts are not part of
+// this class (e.g. the mission Status struct).
+template <class T> static inline T &F(void *p, unsigned off) { return *(T *)((char *)p + off); }
 #endif

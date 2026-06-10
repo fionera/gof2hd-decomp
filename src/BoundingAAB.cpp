@@ -43,19 +43,13 @@ int BoundingAAB::outerCollide(float x, float y, float z)
 Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
 {
     float distances[6];
-    char offsetStorage[72];
-    Vector *offsets = (Vector *)offsetStorage;
-    uint32_t zero = 0;
+    Vector offsets[6] = {};   // each candidate face-offset, only one axis non-zero
 
     float centerX = this->field_0x8 + this->field_0x14;
     float extentX = this->field_0x20;
     float highX = centerX + extentX;
     float lowX = centerX - extentX;
     float pointX = point.x;
-    F<uint32_t>(&offsets[0], 0x4) = zero;
-    F<uint32_t>(&offsets[0], 0x8) = zero;
-    F<uint32_t>(&offsets[1], 0x4) = zero;
-    F<uint32_t>(&offsets[1], 0x8) = zero;
     offsets[0].x = pointX - highX;
     offsets[1].x = pointX - lowX;
 
@@ -64,10 +58,6 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     float highY = centerY + extentY;
     float lowY = centerY - extentY;
     float pointY = point.y;
-    F<uint32_t>(&offsets[2], 0x0) = zero;
-    F<uint32_t>(&offsets[2], 0x8) = zero;
-    F<uint32_t>(&offsets[3], 0x0) = zero;
-    F<uint32_t>(&offsets[3], 0x8) = zero;
     offsets[2].y = pointY - highY;
     offsets[3].y = pointY - lowY;
 
@@ -76,10 +66,6 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     float highZ = centerZ + extentZ;
     float lowZ = centerZ - extentZ;
     float pointZ = point.z;
-    F<uint32_t>(&offsets[4], 0x0) = zero;
-    F<uint32_t>(&offsets[4], 0x4) = zero;
-    F<uint32_t>(&offsets[5], 0x0) = zero;
-    F<uint32_t>(&offsets[5], 0x4) = zero;
     offsets[4].z = pointZ - highZ;
     offsets[5].z = pointZ - lowZ;
 

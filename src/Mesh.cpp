@@ -1,14 +1,25 @@
 #include "gof2/Mesh.h"
-#include "gof2/Transform.h"
+// NOTE: gof2/Transform.h is intentionally NOT included here: it carries its own
+// minimal `AbyssEngine::Mesh` view (for Transform's needs) that would clash with
+// the full Mesh definition in gof2/Mesh.h. We only need a couple of Transform
+// fields from Mesh.cpp, so a local minimal view is declared instead.
+namespace AbyssEngine {
+struct Transform {
+    char pad_to_e8[0xe8];
+    int field_0xe8;                     // +0xe8 animation rate (frames)
+    char pad_e8_to_11c[0x11c - 0xe8 - 4];
+    int field_0x11c;                    // +0x11c keyframe array length
+};
+}
 
 
-extern "C" void _ZN11AbyssEngine4Mesh12ConvertToVBOEv(Mesh *m);
-extern "C" void *_ZN11AbyssEngine9TransformC1EPS0_(Transform *self, Transform *src);
+extern "C" void _ZN11AbyssEngine4Mesh12ConvertToVBOEv(AbyssEngine::Mesh *m);
+extern "C" void *_ZN11AbyssEngine9TransformC1EPS0_(AbyssEngine::Transform *self, AbyssEngine::Transform *src);
 extern "C" int   _ZN11AbyssEngine6AEFile4ReadEjPvj(int size, void *dst, unsigned int file);
-extern "C" void *_ZN11AbyssEngine9TransformC1Ev(Transform *self);
-extern "C" void *_ZN11AbyssEngine9TransformD1Ev(Transform *self);
-extern "C" void  _ZN11AbyssEngine9Transform14InsertKeyFrameEjf(Transform *self, unsigned int ch, int frame);
-extern "C" void  _ZN11AbyssEngine9Transform23SetAnimationRangeInTimeEx(Transform *self, long long range);
+extern "C" void *_ZN11AbyssEngine9TransformC1Ev(AbyssEngine::Transform *self);
+extern "C" void *_ZN11AbyssEngine9TransformD1Ev(AbyssEngine::Transform *self);
+extern "C" void  _ZN11AbyssEngine9Transform14InsertKeyFrameEjf(AbyssEngine::Transform *self, unsigned int ch, int frame);
+extern "C" void  _ZN11AbyssEngine9Transform23SetAnimationRangeInTimeEx(AbyssEngine::Transform *self, long long range);
 
 // ---- Mesh_6ba90.cpp ----
 // AbyssEngine::Mesh::Mesh(Mesh*)  -- copy constructor.
@@ -195,7 +206,7 @@ static bool readScalarTrack(int file, Transform *anim, float *maxSlot,
     return true;
 }
 
-int Mesh_ReadEnhancedDataFromFile(void *self, unsigned int file, unsigned int flags)
+int Mesh_ReadEnhancedDataFromFile(Mesh *self, unsigned int file, unsigned int flags)
 {
     Transform *anim = (Transform *)operator new(0x180);
     _ZN11AbyssEngine9TransformC1Ev(anim);
@@ -305,5 +316,5 @@ fail:
 extern "C" void _ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj(
     void *self, unsigned int file, unsigned int flags)
 {
-    AbyssEngine::Mesh_ReadEnhancedDataFromFile(self, file, flags);
+    AbyssEngine::Mesh_ReadEnhancedDataFromFile((AbyssEngine::Mesh *)self, file, flags);
 }

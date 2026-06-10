@@ -1,44 +1,13 @@
 #ifndef GOF2_GENERICSHADER_H
 #define GOF2_GENERICSHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-namespace AbyssEngine {
+// Galaxy on Fire 2 -- AbyssEngine::GenericShader (ES2 program wrapper).
+// Holds the GL program handle plus the attribute/uniform locations queried at Init.
 
-struct Engine;
-struct Mesh;
+struct Engine;   // global engine object (opaque here; only raw GL data is read)
+struct Mesh;     // global mesh object (opaque here; only raw GL data is read)
 
-
-
-
-
-namespace AEMath {
-struct Vector;
-}
-
-} // namespace AbyssEngine
-
-using Engine = AbyssEngine::Engine;
-using Mesh = AbyssEngine::Mesh;
-using String = AbyssEngine::String;
-using GenericShader = AbyssEngine::GenericShader;
 using Vector = AbyssEngine::AEMath::Vector;
-
-static_assert(sizeof(String) == 0xc, "String layout");
-
-static inline int &i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
-
-static inline uint8_t &u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
-
-static inline float &f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
 
 extern "C" {
 extern void *__stack_chk_guard;
@@ -79,12 +48,42 @@ __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 namespace AbyssEngine {
-inline String::String(const char *text, bool copy) { String_ctor_char(this, text, copy); }
-inline String::~String() { String_dtor(this); }
-inline void String::operator=(const String &other) { String_assign(this, &other); }
-} // namespace AbyssEngine
 
 struct GenericShader {
-    String field_0xc;                   // +0xc
+    void*    field_0x0;     // +0x00 vtable
+    int32_t  field_0x4;     // +0x04 GL program handle
+    uint8_t  field_0x9;     // +0x09 lighting-uniforms-dirty flag
+    String   field_0xc;     // +0x0c shader name
+    // attribute locations (a0..a4)
+    int32_t  field_0x20;    // +0x20 a0
+    int32_t  field_0x24;    // +0x24 a1
+    int32_t  field_0x28;    // +0x28 a2
+    int32_t  field_0x2c;    // +0x2c a3
+    int32_t  field_0x30;    // +0x30 a4
+    // uniform locations (u0..u11)
+    int32_t  field_0x34;    // +0x34 u0
+    int32_t  field_0x38;    // +0x38 u1
+    int32_t  field_0x3c;    // +0x3c u2
+    int32_t  field_0x40;    // +0x40 u3
+    int32_t  field_0x44;    // +0x44 u4
+    int32_t  field_0x48;    // +0x48 u5
+    int32_t  field_0x4c;    // +0x4c u6
+    int32_t  field_0x50;    // +0x50 u7
+    int32_t  field_0x54;    // +0x54 u8
+    int32_t  field_0x58;    // +0x58 u9
+    int32_t  field_0x5c;    // +0x5c u10
+    int32_t  field_0x60;    // +0x60 u11
+
+    GenericShader();
+    ~GenericShader();
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
 };
+
+} // namespace AbyssEngine
+
+// Note: fwd.h forward-declares a distinct global `::GenericShader`; the real class
+// lives in namespace AbyssEngine, so we do not alias it into the global scope.
+
 #endif

@@ -1,5 +1,4 @@
 #include "gof2/WantedWindow.h"
-#include "gof2/Layout.h"
 
 
 extern "C" void StarMap_OnTouchMove(void *self, int x, int y);
@@ -21,7 +20,6 @@ extern "C" void StarMap_OnTouchEnd_tail(void);
 extern "C" int StarMap_OnTouchEnd(void *self, int x, int y);
 extern "C" void ScrollTouchWindow_OnTouchEnd(void *self, int x, int y);
 extern "C" int TouchButton_OnTouchEnd(void *self, int x, int y);
-extern "C" int WantedWindow_getWantedAtPosition(WantedWindow *self, int x, int y);
 extern "C" void WantedWindow_selectWanted(WantedWindow *self, int idx);
 extern "C" int Wanted_isActive(void *wanted);
 extern "C" int Wanted_getLastSeen(void *wanted);
@@ -117,8 +115,8 @@ extern "C" int WantedWindow_OnTouchMove(WantedWindow *self, int x, int y)
 
     void **layoutHolder = g_WantedWindow_move_layout;
     void *layout = *layoutHolder;
-    if (((layout->field_0xc < y) &&
-         (y < *g_WantedWindow_move_screen_h - layout->field_0x10) &&
+    if (((F<int>(layout, 0xc) < y) &&
+         (y < *g_WantedWindow_move_screen_h - F<int>(layout, 0x10)) &&
          (x < *g_WantedWindow_move_screen_w_a / 2)) ||
         (*g_WantedWindow_move_force != 0)) {
         int delta = y - self->field_0x88;
@@ -267,11 +265,11 @@ extern "C" uint32_t WantedWindow_getWantedAtPosition(WantedWindow *self, int x, 
     void *list = self->field_0x38;
     void *layout = *g_WantedWindow_hit_layout;
     int numerator = y - self->field_0x20;
-    numerator -= layout->field_0xc;
-    numerator -= layout->field_0x20;
-    numerator -= layout->field_0x5c;
+    numerator -= F<int>(layout, 0xc);
+    numerator -= F<int>(layout, 0x20);
+    numerator -= F<int>(layout, 0x5c);
     numerator -= self->field_0x84;
-    int idx = __aeabi_idiv(numerator, layout->field_0x70 + layout->field_0x34);
+    int idx = __aeabi_idiv(numerator, F<int>(layout, 0x70) + F<int>(layout, 0x34));
     if ((uint32_t)idx > (uint32_t)(F<int>(list, 0x0) - 1)) {
         return 0xffffffffu;
     }
@@ -460,10 +458,10 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
     void *font = *g_WantedWindow_draw_font;
 
     PaintCanvas_EnableClip(canvas, self->field_0x1c,
-                           self->field_0x20 + layout->field_0xc +
-                               layout->field_0x20 + layout->field_0x5c,
+                           self->field_0x20 + F<int>(layout, 0xc) +
+                               F<int>(layout, 0x20) + F<int>(layout, 0x5c),
                            self->field_0x24,
-                           layout->field_0x2c + self->field_0xa8);
+                           F<int>(layout, 0x2c) + self->field_0xa8);
 
     float relStart = WantedWindow_getRelativeScrollStartPos(self);
     int visible = self->field_0xa8;
@@ -474,34 +472,34 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
     if (barSize >= 1 || barStart >= 0) {
         Layout_drawScrollBar(layout,
                              ((self->field_0x1c + (self->field_0x24 >> 1)) -
-                              layout->field_0x2c) - layout->field_0x48,
-                             self->field_0x20 + layout->field_0x2c +
-                                 layout->field_0xc + layout->field_0x20 +
-                                 layout->field_0x5c,
+                              F<int>(layout, 0x2c)) - F<int>(layout, 0x48),
+                             self->field_0x20 + F<int>(layout, 0x2c) +
+                                 F<int>(layout, 0xc) + F<int>(layout, 0x20) +
+                                 F<int>(layout, 0x5c),
                              visible, barStart, barSize);
     }
 
-    int y = self->field_0x20 + layout->field_0xc + layout->field_0x20 +
-            layout->field_0x5c + layout->field_0x2c + self->field_0x84;
-    int inset = barSize < 1 ? 0 : layout->field_0x2c + layout->field_0x48;
+    int y = self->field_0x20 + F<int>(layout, 0xc) + F<int>(layout, 0x20) +
+            F<int>(layout, 0x5c) + F<int>(layout, 0x2c) + self->field_0x84;
+    int inset = barSize < 1 ? 0 : F<int>(layout, 0x2c) + F<int>(layout, 0x48);
 
     for (uint32_t i = 0; i < F<uint32_t>(self->field_0x38, 0x0); ++i) {
         int style = (i == self->field_0x30 || i == self->field_0x34) ? 4 : 3;
         String_cstr_ctor(&s40, g_WantedWindow_draw_empty_a, false);
-        Layout_drawBox(layout, style, layout->field_0x28 + self->field_0x1c, y,
+        Layout_drawBox(layout, style, F<int>(layout, 0x28) + self->field_0x1c, y,
                        (self->field_0x24 >> 1) -
-                           (inset + layout->field_0x28 + layout->field_0x2c),
-                       layout->field_0x70, &s40);
+                           (inset + F<int>(layout, 0x28) + F<int>(layout, 0x2c)),
+                       F<int>(layout, 0x70), &s40);
         String_dtor(&s40);
 
         void *wanted = draw_wanted_at(self, i);
         PaintCanvas_SetColor(canvas, Wanted_isActive(wanted) ? 0xffffffffu : 0xff808080u);
         Wanted_getName(&s4c, wanted);
-        int textY = y + layout->field_0x70 / 2 -
+        int textY = y + F<int>(layout, 0x70) / 2 -
                     PaintCanvas_GetTextHeight(canvas, (unsigned int)(unsigned long)font) / 2;
         PaintCanvas_DrawString(canvas, font, &s4c,
-                               self->field_0x1c + layout->field_0x28 +
-                                   layout->field_0x44,
+                               self->field_0x1c + F<int>(layout, 0x28) +
+                                   F<int>(layout, 0x44),
                                textY, false);
         String_dtor(&s4c);
 
@@ -513,15 +511,15 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
             String_plus(&s4c, &s58, &s64);
             int textW = PaintCanvas_GetTextWidth(canvas, font, &s4c);
             PaintCanvas_DrawImage2D(canvas, self->field_0xac,
-                                    self->field_0x1c + layout->field_0x28 +
-                                        layout->field_0x44 + textW,
+                                    self->field_0x1c + F<int>(layout, 0x28) +
+                                        F<int>(layout, 0x44) + textW,
                                     textY);
             String_dtor(&s4c);
             String_dtor(&s64);
             String_dtor(&s58);
         }
 
-        y += layout->field_0x34 + layout->field_0x70;
+        y += F<int>(layout, 0x34) + F<int>(layout, 0x70);
     }
 
     PaintCanvas_DisableClip(canvas);
@@ -535,59 +533,59 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
     }
 
     String_copy_ctor(&s7c, GameText_getText(*g_WantedWindow_draw_text, 0xc95), false);
-    Layout_drawBox(layout, 1, layout->field_0x28 + self->field_0x1c,
-                   self->field_0x20 + layout->field_0xc + layout->field_0x20,
-                   (self->field_0x24 >> 1) - (layout->field_0x2c + layout->field_0x28),
-                   layout->field_0x5c, &s7c);
+    Layout_drawBox(layout, 1, F<int>(layout, 0x28) + self->field_0x1c,
+                   self->field_0x20 + F<int>(layout, 0xc) + F<int>(layout, 0x20),
+                   (self->field_0x24 >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)),
+                   F<int>(layout, 0x5c), &s7c);
     String_dtor(&s7c);
 
     String_cstr_ctor(&s88, g_WantedWindow_draw_empty_b, false);
-    Layout_drawBox(layout, 5, layout->field_0x28 + self->field_0x1c,
-                   self->field_0x20 + layout->field_0xc + layout->field_0x20 +
-                       layout->field_0x5c + layout->field_0x2c,
-                   (self->field_0x24 >> 1) - (layout->field_0x2c + layout->field_0x28),
+    Layout_drawBox(layout, 5, F<int>(layout, 0x28) + self->field_0x1c,
+                   self->field_0x20 + F<int>(layout, 0xc) + F<int>(layout, 0x20) +
+                       F<int>(layout, 0x5c) + F<int>(layout, 0x2c),
+                   (self->field_0x24 >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)),
                    ((self->field_0x28 -
-                     (layout->field_0x20 + layout->field_0xc +
-                      layout->field_0x5c + layout->field_0x2c * 2)) -
-                    layout->field_0x10) -
-                       layout->field_0x24,
+                     (F<int>(layout, 0x20) + F<int>(layout, 0xc) +
+                      F<int>(layout, 0x5c) + F<int>(layout, 0x2c) * 2)) -
+                    F<int>(layout, 0x10)) -
+                       F<int>(layout, 0x24),
                    &s88);
     String_dtor(&s88);
 
     String_copy_ctor(&s94, GameText_getText(*g_WantedWindow_draw_text, 0xc95), false);
     Layout_drawBox(layout, 1, self->field_0x1c + (self->field_0x24 >> 1) +
-                                  layout->field_0x2c,
-                   self->field_0x20 + layout->field_0xc + layout->field_0x20,
-                   ((self->field_0x24 >> 1) - layout->field_0x2c) - layout->field_0x28,
-                   layout->field_0x5c, &s94);
+                                  F<int>(layout, 0x2c),
+                   self->field_0x20 + F<int>(layout, 0xc) + F<int>(layout, 0x20),
+                   ((self->field_0x24 >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28),
+                   F<int>(layout, 0x5c), &s94);
     String_dtor(&s94);
 
     String_cstr_ctor(&sa0, g_WantedWindow_draw_empty_c, false);
     Layout_drawBox(layout, 5, self->field_0x1c + (self->field_0x24 >> 1) +
-                                  layout->field_0x2c,
-                   self->field_0x20 + layout->field_0x2c + layout->field_0xc +
-                       layout->field_0x20 + layout->field_0x5c,
-                   ((self->field_0x24 >> 1) - layout->field_0x2c) - layout->field_0x28,
+                                  F<int>(layout, 0x2c),
+                   self->field_0x20 + F<int>(layout, 0x2c) + F<int>(layout, 0xc) +
+                       F<int>(layout, 0x20) + F<int>(layout, 0x5c),
+                   ((self->field_0x24 >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28),
                    ((self->field_0x28 -
-                     (layout->field_0xc + layout->field_0x2c * 2 +
-                      layout->field_0x20 + layout->field_0x5c)) -
-                    layout->field_0x10) -
-                       layout->field_0x24,
+                     (F<int>(layout, 0xc) + F<int>(layout, 0x2c) * 2 +
+                      F<int>(layout, 0x20) + F<int>(layout, 0x5c))) -
+                    F<int>(layout, 0x10)) -
+                       F<int>(layout, 0x24),
                    &sa0);
     String_dtor(&sa0);
 
     if (self->field_0x8 != 0) {
-        int charX = self->field_0x1c + (self->field_0x24 >> 1) + layout->field_0x2c;
-        int charY = layout->field_0x5c + self->field_0x20 + layout->field_0x2c +
-                    layout->field_0xc + layout->field_0x20;
+        int charX = self->field_0x1c + (self->field_0x24 >> 1) + F<int>(layout, 0x2c);
+        int charY = F<int>(layout, 0x5c) + self->field_0x20 + F<int>(layout, 0x2c) +
+                    F<int>(layout, 0xc) + F<int>(layout, 0x20);
         ImageFactory_drawChar(*g_WantedWindow_draw_factory, self->field_0x8, charX, charY, false);
-        int textX = layout->field_0x2d4 + charX + layout->field_0x2c;
+        int textX = F<int>(layout, 0x2d4) + charX + F<int>(layout, 0x2c);
         PaintCanvas_DrawString(canvas, font, (String *)((char *)self + 0x54), textX, charY, false);
 
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_a, false);
         String_plus(&s58, &s64, GameText_getText(*g_WantedWindow_draw_text, 0xc93));
         String_plus(&s4c, &s58, (String *)((char *)self + 0x3c));
-        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + layout->field_0x4 * 2, false);
+        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + F<int>(layout, 0x4) * 2, false);
         String_dtor(&s4c);
         String_dtor(&s58);
         String_dtor(&s64);
@@ -595,7 +593,7 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_b, false);
         String_plus(&s58, &s64, GameText_getText(*g_WantedWindow_draw_text, 0xc93));
         String_plus(&s4c, &s58, (String *)((char *)self + 0x48));
-        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + layout->field_0x4 * 3, false);
+        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + F<int>(layout, 0x4) * 3, false);
         String_dtor(&s4c);
         String_dtor(&s58);
         String_dtor(&s64);
@@ -625,10 +623,13 @@ __attribute__((visibility("hidden"))) extern void **g_WantedWindow_init_text;
 
 extern "C" int WantedWindow_init(WantedWindow *self)
 {
-    typedef int v4si __attribute__((vector_size(16)));
     v4si zero = {0, 0, 0, 0};
     self->field_0x91 = zero;
-    self->field_0x84 = zero;
+    // Original cleared a 16-byte vector starting at +0x84 (the scroll-state ints).
+    self->field_0x84 = 0;
+    self->field_0x88 = 0;
+    self->field_0x8c = 0;
+    self->field_0x90 = 0;
 
     void *wantedList = operator_new(0x0c);
     Array_Wanted_ctor(wantedList);
@@ -638,9 +639,9 @@ extern "C" int WantedWindow_init(WantedWindow *self)
     void *allWanted = Status_getWanted(status);
     void **layoutHolder = g_WantedWindow_init_layout;
     void *layout = *layoutHolder;
-    int wBase = layout->field_0x28;
-    int wLimit = layout->field_0xcc;
-    int wExtra = layout->field_0x4c;
+    int wBase = F<int>(layout, 0x28);
+    int wLimit = F<int>(layout, 0xcc);
+    int wExtra = F<int>(layout, 0x4c);
     int activeWidth = wLimit - wBase - wExtra;
 
     for (uint32_t i = 0; i < F<uint32_t>(allWanted, 0x0); ++i) {
@@ -745,7 +746,7 @@ extern "C" int WantedWindow_init(WantedWindow *self)
     bw = self->field_0x24;
     help = Layout_getHelpButtonOffset(layout);
     int width = TouchButton_getWidth(*(void **)((char *)F<void *>(buttons, 0x4) + 4));
-    TouchButton_ctor6(button, text, 3, x + bw - help - width + layout->field_0x38,
+    TouchButton_ctor6(button, text, 3, x + bw - help - width + F<int>(layout, 0x38),
                       self->field_0x20, 0x12);
     *(void **)F<void *>(buttons, 0x4) = button;
 
@@ -754,12 +755,12 @@ extern "C" int WantedWindow_init(WantedWindow *self)
                                self->field_0x24, self->field_0x28);
 
     layout = *layoutHolder;
-    self->field_0xa4 = (layout->field_0x34 + layout->field_0x70) *
+    self->field_0xa4 = (F<int>(layout, 0x34) + F<int>(layout, 0x70)) *
                          F<int>(self->field_0x38, 0x0);
     self->field_0xa8 =
-        (((((self->field_0x28 - layout->field_0x10) - layout->field_0xc) -
-           layout->field_0x20) - layout->field_0x24) - layout->field_0x5c) +
-        layout->field_0x2c;
+        (((((self->field_0x28 - F<int>(layout, 0x10)) - F<int>(layout, 0xc)) -
+           F<int>(layout, 0x20)) - F<int>(layout, 0x24)) - F<int>(layout, 0x5c)) +
+        F<int>(layout, 0x2c);
 
     if (self->field_0x18 != 0) {
         operator_delete(TouchButton_dtor(self->field_0x18));
@@ -772,9 +773,9 @@ extern "C" int WantedWindow_init(WantedWindow *self)
     text = GameText_getText(*textHolder, 0x1a8);
     layout = *layoutHolder;
     TouchButton_ctor8(button, text, 0,
-                      self->field_0x1c + (self->field_0x24 >> 1) + layout->field_0x2c,
-                      (((self->field_0x20 - layout->field_0x2c) + self->field_0x28) -
-                       layout->field_0x10) - layout->field_0x24,
+                      self->field_0x1c + (self->field_0x24 >> 1) + F<int>(layout, 0x2c),
+                      (((self->field_0x20 - F<int>(layout, 0x2c)) + self->field_0x28) -
+                       F<int>(layout, 0x10)) - F<int>(layout, 0x24),
                       activeWidth, 0x21, 4);
     self->field_0x15 = 0;
     self->field_0x18 = button;
@@ -1067,20 +1068,20 @@ extern "C" void WantedWindow_selectWanted(WantedWindow *self, int idx)
     void *layout = *g_WantedWindow_select_layout;
     int y = self->field_0x20;
     int h = self->field_0x28;
-    int top = y + layout->field_0xc + layout->field_0x20 +
-              layout->field_0x5c + layout->field_0x2c;
-    int height = (((((y - layout->field_0x2c) + h) - top) -
-                   layout->field_0x10) - layout->field_0x2d8) -
-                 layout->field_0x24;
+    int top = y + F<int>(layout, 0xc) + F<int>(layout, 0x20) +
+              F<int>(layout, 0x5c) + F<int>(layout, 0x2c);
+    int height = (((((y - F<int>(layout, 0x2c)) + h) - top) -
+                   F<int>(layout, 0x10)) - F<int>(layout, 0x2d8)) -
+                 F<int>(layout, 0x24);
     if (Wanted_isActive(wanted) != 0) {
-        height = (height - layout->field_0x4c) - layout->field_0x30;
+        height = (height - F<int>(layout, 0x4c)) - F<int>(layout, 0x30);
     }
 
     void *scroll = operator_new(0x24);
-    int pad = layout->field_0x2c;
+    int pad = F<int>(layout, 0x2c);
     ScrollTouchWindow_ctor(scroll, self->field_0x1c + (self->field_0x24 >> 1) + pad,
-                           layout->field_0x2d8 + pad + top,
-                           ((self->field_0x24 >> 1) - pad) - layout->field_0x28,
+                           F<int>(layout, 0x2d8) + pad + top,
+                           ((self->field_0x24 >> 1) - pad) - F<int>(layout, 0x28),
                            height, false);
     self->field_0x2c = scroll;
 

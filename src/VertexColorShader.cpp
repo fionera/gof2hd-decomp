@@ -44,10 +44,6 @@ extern "C" void VertexColorShader_SetInActive(AbyssEngine::VertexColorShader *se
 }
 
 // ---- Init_901fc.cpp ----
-typedef int GetShaderLocation(unsigned int program, const char *name);
-
-
-
 extern "C" void VertexColorShader_Init(AbyssEngine::VertexColorShader *self)
 {
     unsigned int program = ShaderBaseStruct_ES2LoadProgram(self, "vtx_color_vs", "vtx_color_fs");
@@ -80,22 +76,15 @@ namespace AbyssEngine {
 
 VertexColorShader::VertexColorShader()
 {
-    void *stack[4];
-    stack[3] = __stack_chk_guard;
-
     ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
     *(void * volatile *)this = g_VertexColorShader_vtable + 8;
     *g_VertexColorShader_typeinfo_dst = *g_VertexColorShader_typeinfo_src;
-    new (stack) String("VertexColorShader", false);
-    this->field_0xc = *(String *)stack;
-    ((String *)stack)->~String();
 
-    uint32_t guardDelta = (uint32_t)stack[3];
-    guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - guardDelta;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    // name = String("VertexColorShader", false); this->field_0xc = name; ~name.
+    String name;
+    String_ctor_char(&name, "VertexColorShader", false);
+    String_assign(&this->field_0xc, &name);
+    String_dtor(&name);
 }
 
 } // namespace AbyssEngine
@@ -111,10 +100,6 @@ VertexColorShader::~VertexColorShader()
 } // namespace AbyssEngine
 
 // ---- UpdateMeshData_90374.cpp ----
-typedef void BindBuffer(unsigned int target, unsigned int buffer);
-typedef void VertexAttribPointer(unsigned int index, int size, unsigned int type, bool normalized,
-                                 int stride, const void *pointer);
-
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type, bool normalized,
                                       int stride, const void *pointer);
 

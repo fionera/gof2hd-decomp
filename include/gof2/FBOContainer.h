@@ -34,10 +34,12 @@ void glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
 namespace AbyssEngine {
 
+// Minimal view of Engine used by FBOContainer (full definition lives in Engine.h,
+// owned by another batch). Only the framebuffer-binding field at +0x40c is touched here.
 struct Engine;
 
-
-
+// AbyssEngine::FBOContainer — wraps a GL framebuffer object (color texture + depth
+// renderbuffer) for off-screen render-to-texture capture.
 // Layout (byte offsets):
 //   0x00 GLuint framebuffer
 //   0x04 GLuint texture
@@ -48,17 +50,29 @@ struct Engine;
 //   0x18 bool created
 //   0x1c String name
 //   0x2c .. 0x34 extra GL ids
+struct FBOContainer {
+    GLuint field_0x0;                   // +0x0  framebuffer id
+    GLuint field_0x4;                   // +0x4  color texture id
+    GLuint field_0x8;                   // +0x8  depth renderbuffer id
+    GLsizei field_0xc;                  // +0xc  width
+    GLsizei field_0x10;                 // +0x10 height
+    Engine* field_0x14;                 // +0x14 owning engine
+    unsigned char field_0x18;           // +0x18 created flag
+    String field_0x1c;                  // +0x1c debug name
+    unsigned char field_0x28;           // +0x28
+    GLuint field_0x2c;                  // +0x2c extra renderbuffer id
+    GLuint field_0x30;                  // +0x30 extra renderbuffer id
+    GLuint field_0x34;                  // +0x34 extra renderbuffer id
 
+    FBOContainer(Engine *engine, String name);
+    ~FBOContainer();
+    void Create(int width, int height, bool a, bool linear);
+    void Release();
+    void Activate();
+    void BeginCapture();
+    void EndCapture();
+};
 
 } // namespace AbyssEngine
 
-struct FBOContainer {
-    GLuint field_0x0;                   // +0x0
-    GLuint field_0x4;                   // +0x4
-    GLuint field_0x8;                   // +0x8
-    GLsizei field_0xc;                  // +0xc
-    GLsizei field_0x10;                 // +0x10
-    Engine* field_0x14;                 // +0x14
-    unsigned char field_0x18;           // +0x18
-};
 #endif
