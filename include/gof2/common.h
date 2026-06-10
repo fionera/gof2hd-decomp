@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
+#include <new>          // global operator new/delete (replaces the decomp's hand-written redeclarations)
 #include "gof2/math.h"
 #include "gof2/fwd.h"
 

@@ -121,7 +121,6 @@ void ParticleSystemSprite::render(void *canvas, int handle, unsigned int texture
 // particle sprite scratch array (count at +0x48, 12 bytes each) at +0x64 and zero-fills it,
 // and caches a precomputed Pow value at +0x70.
 
-void *operator new[](__SIZE_TYPE__ size);
 
 extern "C" void _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
     void *self, void *canvas, const void *matrix, const void *sets, bool b4, bool b5);

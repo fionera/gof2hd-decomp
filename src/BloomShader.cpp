@@ -352,7 +352,6 @@ __attribute__((minsize)) BloomShader::BloomShader()
 } // namespace AbyssEngine
 
 // ---- InternalInit_8948c.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void FBOContainer_Create(void *self, unsigned int width, unsigned int height,
                                     bool depth, bool stencil);

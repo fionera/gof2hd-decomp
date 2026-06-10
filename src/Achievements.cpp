@@ -14,7 +14,6 @@ uint8_t Achievements::hasMedal(int index, int value) {
 }
 
 // ---- _Achievements_1568f2.cpp ----
-void operator delete[](void *ptr) noexcept;
 
 // Achievements::~Achievements() — delete[] the two arrays (with null checks),
 // zeroing each pointer.
@@ -87,7 +86,6 @@ uint8_t Achievements::isEliteMedal(int index) {
 }
 
 // ---- Achievements_1568d0.cpp ----
-void *operator new[](__SIZE_TYPE__ size);
 
 // Achievements::Achievements() — allocates two 45-int (0xb4) arrays.
 Achievements::Achievements()

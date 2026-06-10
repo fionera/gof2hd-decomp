@@ -40,8 +40,6 @@ void TouchButton_ctor(void *self, String const &text, int value, int x, int y,
 void Status_replaceHash(String *out, void *status, String const &pattern, String const &value);
 }
 
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
 
 // ---- OnTouchMove_147518.cpp ----
 int ChoiceWindow::OnTouchMove(int x, int y)

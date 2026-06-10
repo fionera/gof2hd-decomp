@@ -226,7 +226,6 @@ void glGetIntegerv(unsigned int, void *);
 void *operator_new_helper(size_t_); // placeholder, see operator new below
 }
 
-void *operator new(size_t size);
 
 namespace AbyssEngine {
 
@@ -796,8 +795,6 @@ int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int s
 } // namespace AbyssEngine
 
 // ---- CurveRelease_74322.cpp ----
-void operator delete(void *ptr) noexcept;
-void operator delete[](void *ptr) noexcept;
 
 // AbyssEngine::CurveRelease(AbyssEngine::Curve**)
 // Free each keyframe object (tag byte 1/2/3 -> single delete), then the entry array and the
@@ -898,8 +895,6 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
 } // namespace AbyssEngine
 
 // ---- ImageFontRelease_7227e.cpp ----
-void operator delete(void *ptr) noexcept;
-void operator delete[](void *ptr) noexcept;
 
 // AbyssEngine::ImageFontRelease(AbyssEngine::Engine*, AbyssEngine::ImageFont**)
 // Free the codepoint table (@4), release each glyph mesh (count@0, array@0xc), free the glyph
@@ -1371,10 +1366,6 @@ String operator+(const float &a, const String &b)
 } // namespace AbyssEngine
 
 // ---- SpriteSystemCreate_86adc.cpp ----
-void *operator new(size_t size);
-void *operator new[](size_t size);
-void operator delete(void *ptr) noexcept;
-void operator delete[](void *ptr) noexcept;
 
 // AbyssEngine::SpriteSystemCreate(Engine*, unsigned short count, bool sharedSize,
 //                                 SpriteSystem** out)
@@ -1654,8 +1645,6 @@ fail:
 } // namespace AbyssEngine
 
 // ---- ImageRelease_6ee94.cpp ----
-void operator delete(void *ptr) noexcept;
-void operator delete[](void *ptr) noexcept;
 
 // AbyssEngine::ImageRelease(AbyssEngine::Image**)
 namespace AbyssEngine {
@@ -1674,7 +1663,6 @@ void ImageRelease(Image **slot)
 } // namespace AbyssEngine
 
 // ---- Image2DRelease_71b64.cpp ----
-void operator delete(void *ptr) noexcept;
 
 // AbyssEngine::Image2DRelease(AbyssEngine::Engine*, AbyssEngine::Image2D**)
 namespace AbyssEngine {
@@ -1694,8 +1682,6 @@ void Image2DRelease(Engine *engine, Image2D **slot)
 } // namespace AbyssEngine
 
 // ---- MeshCreate_6c4d4.cpp ----
-void *operator new(size_t size);
-void *operator new[](size_t size);
 
 // AbyssEngine::MeshCreate(Engine*, unsigned short vertexCount, unsigned short triCount,
 //                         signed char vertexFormat, Mesh** out)
@@ -2397,7 +2383,6 @@ void glBufferData(unsigned int target, unsigned int size, const void *data, unsi
 void glDeleteBuffers(int n, const void *buffers);
 unsigned int glGetError();
 }
-void operator delete[](void *ptr) noexcept;
 
 // AbyssEngine::MeshConvertToVBOIntern(AbyssEngine::Mesh*)
 // Upload the mesh's CPU vertex arrays into GL buffer objects (position/uv+index/normal
@@ -2829,8 +2814,6 @@ String operator+(const long long &a, const String &b)
 } // namespace AbyssEngine
 
 // ---- SpriteSystemRelease_87064.cpp ----
-void operator delete(void *ptr) noexcept;
-void operator delete[](void *ptr) noexcept;
 
 // AbyssEngine::SpriteSystemRelease(AbyssEngine::Engine*, AbyssEngine::SpriteSystem**)
 namespace AbyssEngine {
@@ -2862,8 +2845,6 @@ void SpriteSystemRelease(Engine *engine, SpriteSystem **slot)
 } // namespace AbyssEngine
 
 // ---- CurveCreate_7415c.cpp ----
-void *operator new(size_t size);
-void *operator new[](size_t size);
 
 // AbyssEngine::CurveCreate(void**, unsigned short, AbyssEngine::Curve**)
 // Allocate a Curve {count@0, void** data@4}, copy `count` 4-byte entries from the source.
@@ -2902,8 +2883,6 @@ bool operator==(const String &a, const String &b)
 } // namespace AbyssEngine
 
 // ---- MeshReleaseIntern_6c380.cpp ----
-void operator delete(void *ptr) noexcept;
-void operator delete[](void *ptr) noexcept;
 
 // AbyssEngine::MeshReleaseIntern(AbyssEngine::Engine*, AbyssEngine::Mesh**)
 // Tear down a mesh: delete its GL buffer objects (gated on the flag byte at offset 0 and the
@@ -3414,7 +3393,6 @@ long long CurveGetValue(unsigned long long time, Curve *curve)
 } // namespace AbyssEngine
 
 // ---- computeFloatString_72af8.cpp ----
-void *operator new[](size_t size);
 
 // AbyssEngine::computeFloatString(float value, int intValue, int* precision, int* exponentOut,
 //                                 int extra)

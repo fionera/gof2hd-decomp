@@ -4,7 +4,6 @@
 
 extern "C" void *KIPlayer_dtor(KIPlayer *self);
 extern "C" void operator_delete(void *ptr);
-void *operator new(__SIZE_TYPE__ size);
 
 __attribute__((visibility("hidden"))) extern void *Waypoint_vtable;
 

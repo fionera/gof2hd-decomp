@@ -247,7 +247,6 @@ void ParticleSystemManager::cameraToggle(int cam)
 // particle count (virtual call, vtable+0x10) into +0x5c, and returns the new system's handle:
 // the mesh-array index with bit 0x4000 set to mark it as a mesh-array handle.
 
-void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
                               bool b4, bool b5);                    // ParticleSystemMesh ctor
@@ -467,7 +466,6 @@ void ParticleSystemManager::initSprites()
 // (+0x04) and the sprite flag (+0x38), appends it to the sprite array (+0x18), accumulates its
 // particle count into +0x34, and returns the new system's sprite-array handle (index, no flag).
 
-void *operator new(__SIZE_TYPE__ size);
 
 extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
                            bool b4, bool b5);                       // ParticleSystemSprite ctor

@@ -655,7 +655,6 @@ __attribute__((minsize)) extern "C" void Player_refillGunDelay(Player *self, int
 }
 
 // ---- addEnemies_a2be2.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 __attribute__((minsize)) extern "C" void Player_addEnemies(Player *self, Array<Player *> *enemies)
@@ -677,7 +676,6 @@ __attribute__((minsize)) extern "C" void Player_addEnemies(Player *self, Array<P
 }
 
 // ---- Player_a2570.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 
@@ -916,7 +914,6 @@ lab_3164:
 }
 
 // ---- addGun_a3910.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 __attribute__((minsize)) void Player_addGun(Player *self, Array<Gun *> *guns, int slot)
@@ -1051,7 +1048,6 @@ __attribute__((minsize)) extern "C" void Player_reset(Player *self)
 }
 
 // ---- addGun_a36ec.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 __attribute__((minsize)) void Player_addGun(Player *self, Gun *gun, int slot)
@@ -1070,7 +1066,6 @@ __attribute__((minsize)) void Player_addGun(Player *self, Gun *gun, int slot)
 }
 
 // ---- calcWeaponSounds_a3774.cpp ----
-void operator delete[](void *p);
 
 
 extern "C" int *g_cws_items;   // DAT_b37da  -> item table (GOT pointer)
@@ -1179,7 +1174,6 @@ __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Ve
 }
 
 // ---- setEnemies_a2acc.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 __attribute__((minsize)) extern "C" void Player_setEnemies(Player *self, Array<Player *> *enemies)
@@ -1521,7 +1515,6 @@ LAB_3488:
 }
 
 // ---- setEnemy_a2b76.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 __attribute__((minsize)) extern "C" void Player_setEnemy(Player *self, Player *enemy)
@@ -1535,7 +1528,6 @@ __attribute__((minsize)) extern "C" void Player_setEnemy(Player *self, Player *e
 }
 
 // ---- addEnemy_a2c6a.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 __attribute__((minsize)) extern "C" void Player_addEnemy(Player *self, Player *enemy)

@@ -39,7 +39,6 @@ float ScrollTouchBox::getRelativeScrollStartPos()
 }
 
 // ---- _ScrollTouchBox_1355d8.cpp ----
-void operator delete(void *ptr) noexcept;
 
 ScrollTouchBox::~ScrollTouchBox()
 {
@@ -246,7 +245,6 @@ void ScrollTouchBox::draw()
 }
 
 // ---- setText_135600.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 __attribute__((visibility("hidden"))) extern void **g_ScrollTouchBox_globals_135600;

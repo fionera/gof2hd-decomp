@@ -38,7 +38,6 @@ Vector PlayerStatic::getPosition()
 // ---- PlayerStatic_e08cc.cpp ----
 struct Player;
 
-void *operator new(__SIZE_TYPE__ size);
 
 __attribute__((visibility("hidden"))) extern void *volatile g_PlayerStatic_vtable;
 

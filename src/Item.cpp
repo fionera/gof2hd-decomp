@@ -392,7 +392,6 @@ __attribute__((minsize)) bool Item::equals(Item *other)
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
-void *operator new(__SIZE_TYPE__ size);
 
 Item *Item::clone()
 {
@@ -583,7 +582,6 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems)
 }
 
 // ---- fabricate_e02ae.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 
 __attribute__((minsize)) void Item::fabricate(Item *item, ItemArray *items, int amount)
@@ -622,7 +620,6 @@ check:
 }
 
 // ---- extractItems_e049c.cpp ----
-void *operator new(__SIZE_TYPE__ size);
 
 ItemArray *Item::extractItems(ItemArray *items, bool station)
 {
@@ -683,8 +680,6 @@ void Item::combineDuplicates(ItemArray *items)
 }
 
 // ---- mixItems_e05ca.cpp ----
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
 
 
 ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems)

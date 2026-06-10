@@ -99,8 +99,6 @@ void GameText::setSubstituteArray(int *param_1, unsigned param_2) {
 // Exported as GameText_setLanguage_si to match the forwarder in setLanguage_7f2b8.cpp.
 
 
-void *operator new[](__SIZE_TYPE__);
-void operator delete[](void *) noexcept;
 
 // Active language code slot (compared against the requested id to detect a no-op).
 __attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
@@ -235,8 +233,6 @@ extern "C" unsigned short *AEString_data(void *s);                 // operator c
 extern "C" unsigned short *AEString_index(void *s, unsigned int i);// operator[](i)
 extern "C" void  AEString_append(void *dst, void *src);           // operator+=
 
-void *operator new[](__SIZE_TYPE__);
-void operator delete[](void *) noexcept;
 
 // Substitution tables (see header comment for row layout).
 __attribute__((visibility("hidden"))) extern const unsigned int gArabForms[];  // 41 rows * 5
@@ -415,9 +411,6 @@ void * GameText::getText(int key) {
 
 extern "C" void  AEString_ctor_cstr(void *s, const char *text, bool copy);     // wchar ctor (text*, copy)
 
-void *operator new(__SIZE_TYPE__);
-void operator delete[](void *) noexcept;
-void *operator new[](__SIZE_TYPE__);
 
 // Active language code; 9 == Arabic.
 __attribute__((visibility("hidden"))) extern unsigned short *g_langCode;

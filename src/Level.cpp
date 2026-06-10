@@ -243,7 +243,6 @@ int Level::getNumDeliveredOre() {
 
 // ---- setPlayerRoute_c0dc8.cpp ----
 
-void operator delete(void *ptr);
 
 void Level::setPlayerRoute(Route *route) {
     Route *old = (Route *)playerRoute;
@@ -638,7 +637,6 @@ int Level::getNumDeliveredPassengers() {
 }
 
 // ---- _Level_adbd0.cpp ----
-void operator delete(void *);
 
 // ARM ABI destructors return `this`; model them as functions returning the pointer
 // so the result feeds operator delete without a reload.
@@ -3546,7 +3544,6 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
 }
 
 // ---- almostKillWanted_c63f4.cpp ----
-void operator delete(void *);
 
 __attribute__((visibility("hidden"))) extern Status **g_almostKillWanted;
 
