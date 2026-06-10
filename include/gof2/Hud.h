@@ -16,9 +16,22 @@ struct TouchButton;
 // String comes from common.h (AbyssEngine::String, aliased into global scope).
 
 // ---- tiny offset-cast helpers -------------------------------------------------
-static inline char*           B (void* p, int off) { return (char*)p + off; 
+static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
+static inline unsigned int&   U (void* p, int off) { return *(unsigned int*)((char*)p + off); }
+static inline float&          F (void* p, int off) { return *(float*)((char*)p + off); }
+static inline double&         D (void* p, int off) { return *(double*)((char*)p + off); }
+static inline char&           C (void* p, int off) { return *(char*)((char*)p + off); }
+static inline unsigned char&  UC(void* p, int off) { return *(unsigned char*)((char*)p + off); }
+static inline bool&           BL(void* p, int off) { return *(bool*)((char*)p + off); }
+static inline short&          S (void* p, int off) { return *(short*)((char*)p + off); }
+static inline unsigned short& US(void* p, int off) { return *(unsigned short*)((char*)p + off); }
+static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
+
+struct Hud {
+    void* _opaque;  // no offset accesses observed
+
     // ---- methods (converted from free functions) ----
-    Hud * Hud();
+    Hud * ctor();
     void addToEventQueue(ListItem *item);
     uint8_t cargoFull();
     void catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7, int aggregateKey);
@@ -59,17 +72,5 @@ static inline char*           B (void* p, int off) { return (char*)p + off;
     unsigned int touchedElement(unsigned int x, unsigned int y);
     void updateQueue(int dt);
     void updateSecondaryWeaponString();
-}
-static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
-static inline unsigned int&   U (void* p, int off) { return *(unsigned int*)((char*)p + off); }
-static inline float&          F (void* p, int off) { return *(float*)((char*)p + off); }
-static inline double&         D (void* p, int off) { return *(double*)((char*)p + off); }
-static inline char&           C (void* p, int off) { return *(char*)((char*)p + off); }
-static inline unsigned char&  UC(void* p, int off) { return *(unsigned char*)((char*)p + off); }
-static inline bool&           BL(void* p, int off) { return *(bool*)((char*)p + off); }
-static inline short&          S (void* p, int off) { return *(short*)((char*)p + off); }
-static inline unsigned short& US(void* p, int off) { return *(unsigned short*)((char*)p + off); }
-static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
-
-struct Hud { void* _opaque; };  // no offset accesses observed
+};
 #endif

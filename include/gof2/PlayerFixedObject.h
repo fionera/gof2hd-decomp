@@ -13,6 +13,11 @@ struct BoundingVolume;
 struct AEGeometry;
 struct Player;
 
+// String returned by value: 3-word ABI struct (ptr/len/cap-like triple).
+struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// V3: 3-float vector return type (AbyssEngine::AEMath::Vector ABI).
+typedef AbyssEngine::AEMath::Vector V3;
+
 
 
 // AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.

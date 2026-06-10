@@ -16,6 +16,13 @@ struct ConfigReader;
 struct PaintCanvas;
 using String = AbyssEngine::String;
 
+// Callback function types (used only via pointer below; PaintCanvas fwd-declared above).
+// Signatures recovered from mangled symbols (unified_symbols.tsv) and src/ApplicationManager.cpp:
+//   SetLoadingCallback(void (*)(PaintCanvas*, int, void*), void*)
+//   SetResumeCallback (bool (*)(PaintCanvas*, void*),       void*)
+typedef void LoadingCallback_t(PaintCanvas *, int, void *);
+typedef bool ResumeCallback_t(PaintCanvas *, void *);
+
 struct ApplicationManager {
     void        *field_0x0;             // +0x0  PaintCanvas* (object starts with the canvas ptr)
     uint32_t     field_0x8;             // +0x8

@@ -32,6 +32,9 @@ struct Matrix {
     float        operator[](int i) const { return m[i]; }
     Matrix& operator=(const Matrix& o);
     Matrix& operator*=(const Matrix& o);
+
+    // ---- methods (converted from String_*/free functions) ----
+    void initIdentity();
 };
 
 } // namespace AEMath

@@ -1,6 +1,9 @@
 #ifndef GOF2_PLAYEREGO_H
 #define GOF2_PLAYEREGO_H
 #include "gof2/common.h"
+// Vec3 — the 3-component math vector returned by several PlayerEgo methods.
+// Alias to the foundation Vector type (AbyssEngine::AEMath::Vector via common.h).
+typedef Vector Vec3;
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // PlayerEgo — top-level class (NO namespace). Byte-exact decomp scaffold.
 // We do NOT model the full layout; fields are accessed by byte offset taken

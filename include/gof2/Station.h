@@ -10,6 +10,7 @@
 struct Station;
 
 // AbyssEngine::String by value: 12-byte trivially-copied aggregate.
+struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 struct Station {
     int field_0xc;                      // +0xc

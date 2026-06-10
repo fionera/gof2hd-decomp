@@ -15,6 +15,13 @@ struct Wanted;
 // (text*, size, ...). Model it opaquely so it is passed the same way as the
 // target ABI (struct > 8 bytes by value -> on the stack / sret-style).
 
+// The recovered code uses the bare name String12 for the 12-byte stack String
+// temp. It lives in namespace AbyssEngine (see common.h); pull it into scope.
+using AbyssEngine::String12;
+
+// 12-byte by-value String return aggregate (sret on the target ABI): getName()
+// returns a 12-byte String temp. Modeled the same way as in Agent.h/Mission.h.
+struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 // Field accessor via byte offset.
 

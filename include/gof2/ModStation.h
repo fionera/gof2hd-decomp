@@ -15,9 +15,10 @@ struct ChoiceWindow;
 struct RecordHandler;
 
 // ---- tiny offset-cast helpers -------------------------------------------------
-static inline char*           B (void* p, int off) { return (char*)p + off; 
+static inline char*           B (void* p, int off) { return (char*)p + off; }
+struct ModStation {
     // ---- methods (converted from free functions) ----
-    void ModStation();
+    ModStation();
     void OnInitialize();
     void OnKeyPress(long long key);
     void OnRelease();
@@ -41,7 +42,7 @@ static inline char*           B (void* p, int off) { return (char*)p + off;
     void showCBSMessage();
     void showDlcMenu();
     void showMapWindow();
-}
+};
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
 static inline unsigned int&   U (void* p, int off) { return *(unsigned int*)((char*)p + off); }
 static inline float&          F (void* p, int off) { return *(float*)((char*)p + off); }
@@ -53,5 +54,4 @@ static inline short&          S (void* p, int off) { return *(short*)((char*)p +
 static inline unsigned short& US(void* p, int off) { return *(unsigned short*)((char*)p + off); }
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 
-struct ModStation { void* _opaque; };  // no offset accesses observed
 #endif

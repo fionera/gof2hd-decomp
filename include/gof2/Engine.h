@@ -13,6 +13,12 @@ typedef void DestroyCallback(Engine *);
 typedef void QuitCallback(void *);
 typedef void LoadingCallback(void *);
 typedef void ResumeCallback(void *);
+typedef void InitializeCallback(Engine *);
+
+// Mesh is forward-declared in fwd.h (::Mesh); AbyssEngine::Mesh is the in-engine
+// alias used by Engine.cpp. MeshFull is only referenced by pointer here.
+namespace AbyssEngine { struct Mesh; }
+typedef AbyssEngine::Mesh MeshFull;
 
 namespace AbyssEngine {
 namespace AEMath {

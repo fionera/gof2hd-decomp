@@ -22,17 +22,7 @@ struct ImageFactory;
 // Field accessor via byte offset.
 
 
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); 
-    // ---- methods (converted from free functions) ----
-    void createChar_i(int param_1);
-    ImageFactory * ctor();
-    void drawChar(Arr *parts, int x, int y, int flag);
-    void drawItem4(int itemId, int frame, int x, int y);
-    void drawShip(int shipId, int x, int y);
-    Arr * loadChar(int *param_1);
-    void * loadImage(int row, int col, int frameBase);
-    void reload();
-}
+static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
 static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
@@ -45,6 +35,16 @@ struct Arr { uint32_t size; void **data; uint32_t size2; };
 
 struct ImageFactory {
     void* field_0x0;                    // +0x0
+
+    // ---- methods (converted from free functions) ----
+    void createChar_i(int param_1);
+    ImageFactory * ctor();
+    void drawChar(Arr *parts, int x, int y, int flag);
+    void drawItem4(int itemId, int frame, int x, int y);
+    void drawShip(int shipId, int x, int y);
+    Arr * loadChar(int *param_1);
+    void * loadImage(int row, int col, int frameBase);
+    void reload();
 
     int getItemImageId(int param_1);
 };

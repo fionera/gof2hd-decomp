@@ -29,7 +29,7 @@ struct SpriteGun {
     void* field_0x8;                    // +0x8
 
     // ---- methods (converted from free functions) ----
-    void SpriteGun(Gun *param_1, int param_2);
+    SpriteGun(Gun *param_1, int param_2);
     void setEnemies();
     void setEnemy();
     void update();

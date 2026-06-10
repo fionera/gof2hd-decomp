@@ -20,6 +20,14 @@
 //   0x34 void* ZipDirectory
 
 // AbyssEngine::String passed/returned by value: 12-byte trivially-copied aggregate.
+// String12 lives in namespace AbyssEngine (see common.h) and is not pulled in by a
+// global using-declaration there, so bring it into scope for this header's signatures.
+using AbyssEngine::String12;
+
+// JNI handle: only ever used through a pointer here, so a forward declaration is enough.
+struct _jobject;
+typedef struct _jobject *jobject;
+
 struct zip_file;
 
 struct FileInterfaceAndroid {

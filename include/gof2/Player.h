@@ -141,7 +141,10 @@ struct Player {
     void shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8, int m9, int m10, int m11, int m12, int m13, int m14);
     int shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22);
     void turnEnemy();
-    unsigned char turnedEnemy();
+    // NOTE: 'turnedEnemy' is a data member (field at 0xe0) AND the original code exposes
+    // an accessor of the same name. C++ forbids a member variable and member function sharing
+    // a name, so the redundant accessor (which merely returns the field) is declared out-of-struct
+    // below as a non-member equivalent. The field is load-bearing and kept intact.
     Vector * update(int dt, int doSound);
     void updateDamageRate();
 };

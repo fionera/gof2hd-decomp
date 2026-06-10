@@ -40,6 +40,49 @@ struct String {
     // (method declarations are folded in from the recovered String header during the merge)
     const char16_t* text() const { return s.c_str(); }
     uint32_t        size() const { return (uint32_t)s.size(); }
+
+    // ---- methods (converted from String_*/free functions) ----
+    unsigned int Compare_char(const char *s);
+    int Compare_str(String *other);
+    void ConvertFromUTF8();
+    char * GetAEChar();
+    unsigned int IndexOf(String *needle);
+    unsigned int IndexOf_from(unsigned int start, String *needle);
+    void PrintOut();
+    void ReplaceChar(char from, char to);
+    void ReplaceString(String *find, String *repl);
+    void Reverse();
+    void Set_char(const char *s);
+    void Set_float(float v);
+    void Set_longlong(long long v);
+    void Set_wchar(const uint16_t *s);
+    void * Split(String *sep);
+    void SplitTags(String *tag);
+    int StrLen_char(const char *s);
+    int StrLen_wchar(const uint16_t *s);
+    void SubString(String *self, unsigned int start, unsigned int end);
+    void ToLowerCase();
+    void ToUpperCase();
+    void Trim();
+    int ValueOf();
+    String * addAssign_char(const char *c);
+    String * addAssign_float(const float *v);
+    String * addAssign_int(const int *v);
+    String * addAssign_longlong(const long long *v);
+    String * addAssign_str(String *other);
+    String * assign(String *other);
+    void ctor();
+    String * ctor_char(const char *s, bool reverse);
+    String * ctor_charval(char c);
+    String * ctor_copy(String *other, bool reverse);
+    String * ctor_float(float v);
+    String * ctor_int(int v);
+    String * ctor_longlong(long long v);
+    String * ctor_wchar(const uint16_t *s, bool reverse);
+    String * dtor();
+    void dtor_del();
+    uint16_t * index(int i);
+    uint16_t * index_const(int i);
 };
 struct String12 { char16_t buf[6]; };   // small stack string temp
 } // namespace AbyssEngine

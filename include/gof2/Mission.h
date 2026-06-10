@@ -23,6 +23,10 @@ struct Mission;
 // reference (a pointer). Model it opaquely.
 using AbyssEngine::String12;
 
+// String returned by value (12-byte aggregate, matches AbyssEngine::String layout).
+// Returned through a hidden sret pointer in the decompiled getters below.
+struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+
 // Full Mission layout recovered from the per-method disassembly. The four embedded
 // String members (0x10/0x1c/0x40/0x4c) are reached via byte-offset casts, so they are
 // kept as raw 12-byte slots here.
