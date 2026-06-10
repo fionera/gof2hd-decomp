@@ -60,9 +60,6 @@ __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 namespace AbyssEngine {
 
 // Foreign-pointer byte accessors (Engine/Mesh layouts are owned by other classes).
-static inline int &i32(void *self, uint32_t offset) { return *(int *)((char *)self + offset); }
-static inline uint8_t &u8(void *self, uint32_t offset) { return *(uint8_t *)((char *)self + offset); }
-static inline float &f32(void *self, uint32_t offset) { return *(float *)((char *)self + offset); }
 
 // Layout (after the ShaderBaseStruct base; offsets are absolute from the object base):
 //   0x00 vtable

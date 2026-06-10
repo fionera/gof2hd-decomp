@@ -146,5 +146,51 @@ struct KIPlayer {
     int field_0x118;                    // +0x118
     int field_0x11c;                    // +0x11c
     int field_0x120;                    // +0x120
+
+    // ---- methods (converted from free functions) ----
+    void PauseEngineSound();
+    void PlayEngineSound();
+    void ResumeEngineSound();
+    void StopEngineSound();
+    void addGun_a();
+    void addGun_b();
+    void awake();
+    void captureCrate(void *hud);
+    int cargoAvailable();
+    void createCrate(int type);
+    void ctor(int faction, int group, void *player, void *geom, float x, float y, float z, bool active);
+    void * getNearestDockingPoint(Vector *dir);
+    void * getNearestNavigationPoint(Vector *dir, void *target);
+    Vector getPosition();
+    int getType();
+    bool isDead();
+    bool isDocked();
+    bool isDying();
+    uint8_t isEnemy();
+    uint8_t isJumper();
+    uint8_t isVisible();
+    uint8_t isWingMan();
+    void jump();
+    void outerCollide(const Vector &v);
+    void render();
+    void reset();
+    void setActive();
+    void setDead();
+    void setEnemies();
+    void setInitActive();
+    void setJumpSphere(uint32_t sphere);
+    void setJumper(bool b);
+    void setPosition3(float x, float y, float z);
+    void setPosition_vec(const Vector &v);
+    void setRotationSpeed(float speed);
+    void setRoute(Route *route);
+    void setShipGroup(int param2, int flag, int cond);
+    void setSpacePoints(Array<SpacePoint *> *pts);
+    void setState(int state);
+    void setToSleep();
+    void setVisible(bool visible);
+    void setWingman(bool b, int cmd);
+    void setWingmanCommand(int cmd, KIPlayer *target);
+    void translate(const Vector &v);
 };
 #endif

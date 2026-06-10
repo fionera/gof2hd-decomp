@@ -2,11 +2,6 @@
 #define GOF2_MARQUEEIMAGE_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-template <class T>
-static inline T &field(void *self, uint32_t off)
-{
-    return *(T *)((char *)self + off);
-}
 
 template <class T>
 static inline const T &field(const void *self, uint32_t off)

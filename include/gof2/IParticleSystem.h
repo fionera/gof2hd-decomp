@@ -34,10 +34,6 @@ static inline int32_t &I(void *self, uint32_t off)
     return *(int32_t *)((char *)self + off);
 }
 
-static inline uint32_t &U(void *self, uint32_t off)
-{
-    return *(uint32_t *)((char *)self + off);
-}
 
 static inline uint16_t &U16(void *self, uint32_t off)
 {
@@ -49,10 +45,6 @@ static inline uint8_t &U8(void *self, uint32_t off)
     return *(uint8_t *)((char *)self + off);
 }
 
-static inline float &FL(void *self, uint32_t off)
-{
-    return *(float *)((char *)self + off);
-}
 
 static inline Vector *vec_at(void *base, int index)
 {

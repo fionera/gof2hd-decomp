@@ -10,8 +10,6 @@
 typedef int v4si __attribute__((vector_size(16)));
 
 // Typed byte-offset accessor into a foreign (non-WantedWindow) object: F<T>(p, off) == *(T*)(p+off).
-template <class T>
-static inline T &F(void *p, unsigned off) { return *(T *)((char *)p + off); }
 
 struct WantedWindow;
 struct Wanted;
@@ -85,5 +83,18 @@ struct WantedWindow {
     int field_0xa8;                     // +0xa8
     int field_0xac;                     // +0xac
     void* field_0xb0;                   // +0xb0
+
+    // ---- methods (converted from free functions) ----
+    int OnTouchBegin(int x, int y);
+    void OnTouchEnd(int x, int y);
+    int OnTouchMove(int x, int y);
+    void draw();
+    float getRelativeScrollHeight();
+    float getRelativeScrollStartPos();
+    uint32_t getWantedAtPosition(int x, int y);
+    int init();
+    void render3D();
+    void selectWanted(int idx);
+    void update(int dt);
 };
 #endif

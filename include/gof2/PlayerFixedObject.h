@@ -113,5 +113,33 @@ struct PlayerFixedObject {
     int field_0x1a4;                    // +0x1a4
     int field_0x1a8;                    // +0x1a8
     uint8_t field_0x1b8;                // +0x1b8
+
+    // ---- methods (converted from free functions) ----
+    int collide(float x, float y, float z);
+    void ctor(int kind, int param2, void *player, void *geom, float p5, float p6, float p7, float sx, float sy, float sz);
+    int getDockingType();
+    RetStr getName();
+    V3 getProjectionVector();
+    int getTransportID();
+    void hideShip();
+    void moveForward(int amount);
+    int outerCollide(float x, float y, float z);
+    void outerCollide_vec(Vector v);
+    V3 projectCollisionOnSurface(void *vec);
+    void render();
+    void reset();
+    void setBV(BoundingVolume *bv);
+    void setBV_arr(Array<BoundingVolume *> *bv);
+    void setDeadButSelectable();
+    void setDockingType(int v);
+    void setExhaustVisible(bool v);
+    void setMoving(bool v);
+    void * setName();
+    void setPosition3(float x, float y, float z);
+    void setPosition_vec(const Vector &v);
+    void setTransportID(int v);
+    void setWreckedMeshId(int meshId);
+    void translate(const Vector &d);
+    void update(int dt);
 };
 #endif

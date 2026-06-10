@@ -40,5 +40,10 @@ struct PendingProduct {
     int field_0xc;                      // +0xc  stationIndex
     int field_0x10;                     // +0x10 quantity
     int field_0x14;                     // +0x14 blueprintIndex
+
+    // ---- methods (converted from free functions) ----
+    PendingProduct * ctor_BluePrint(BluePrint *bp);
+    PendingProduct * ctor_fields(int blueprintIndex, const String *stationName, int stationIndex, int quantity);
+    void dtor();
 };
 #endif

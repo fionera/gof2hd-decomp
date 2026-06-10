@@ -31,11 +31,6 @@ static const uint32_t OFF_MUSIC     = 0x2400;  // music Event*
 static const uint32_t OFF_FLAG2404  = 0x2404;
 
 // Field accessors --------------------------------------------------------------
-static inline int32_t  &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline uint8_t  &u8(void *self, uint32_t off)  { return *(uint8_t *)((char *)self + off); }
-static inline float    &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
-static inline void    *&pp(void *self, uint32_t off)  { return *(void **)((char *)self + off); }
 
 // FModSound — FMOD designer-API sound manager. Named fields live at recovered byte offsets;
 // the large event-handle array (0x18..0x23ec) and category/system slots are reached via the

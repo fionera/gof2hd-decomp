@@ -37,10 +37,6 @@ typedef AbyssEngine::String String;
 
 // Field accessors via byte offset.
 
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 // Engine Array<T> header layout { length, data, cap }.
 struct Arr { uint32_t size; void **data; uint32_t size2; };
@@ -51,5 +47,16 @@ struct StatusWindow {
     void* field_0xc;                    // +0xc
     void* field_0x10;                   // +0x10
     unsigned char field_0x54;           // +0x54
+
+    // ---- methods (converted from free functions) ----
+    int OnTouchBegin(int param_1, int param_2);
+    void OnTouchEnd(int x, int y);
+    int OnTouchMove(int param_1, int param_2);
+    StatusWindow * ctor();
+    void draw();
+    float getRelativeScrollHeight();
+    float getRelativeScrollStartPos();
+    void reInit();
+    void update();
 };
 #endif

@@ -25,9 +25,6 @@ typedef AbyssEngine::AEMath::Vector Vector;
 
 static inline void *&P(void *self, unsigned off) { return *(void **)((char *)self + off); }
 static inline int32_t &I(void *self, unsigned off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &U(void *self, unsigned off) { return *(uint32_t *)((char *)self + off); }
-static inline uint8_t &UC(void *self, unsigned off) { return *(uint8_t *)((char *)self + off); }
-static inline float &FL(void *self, unsigned off) { return *(float *)((char *)self + off); }
 // Indexed element accessor (raw byte buffer indexed by element of type T).
 template <class T> static inline T &F(void *base, unsigned index) { return ((T *)base)[index]; }
 

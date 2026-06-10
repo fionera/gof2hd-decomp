@@ -61,8 +61,6 @@ struct String12 { uint32_t a, b, c; };
 // Typed byte-offset accessors for opaque (void*) referenced objects whose full
 // layout is not modeled in this translation unit. Return references so call sites
 // can read and assign. (Same pattern as RocketGun.h / Radio.h.)
-template <class T> static inline T &G(void *p, uint32_t off) { return *(T *)((char *)p + off); }
-template <class T> static inline T &F(void *p, uint32_t off) { return *(T *)((char *)p + off); }
 
 // Layout - HUD layout/skin object. Defined here (rather than including gof2/Layout.h,
 // which redefines placement-new and clashes with libc++'s <new>) so the window code can
@@ -188,5 +186,34 @@ struct HangarWindow {
     int field_0x128;                    // +0x128
     int field_0x12c;                    // +0x12c
     uint8_t field_0x130;                // +0x130
+
+    // ---- methods (converted from free functions) ----
+    void OnTouchBegin(int touch, int coord);
+    void OnTouchEnd(int touch, int coord);
+    unsigned int OnTouchMove(int touch, int coord);
+    void autoEquipSecondaryWeapons(int row);
+    void ctor();
+    bool currentItemIsHighlighted();
+    void demountItem(void *item, int slot);
+    int getCurrentTab();
+    float getRelativeScrollHeight();
+    float getRelativeScrollStartPos();
+    void hideMessage();
+    int highlightItem(void *item);
+    void initialize();
+    bool isInSpecialMode();
+    bool listMode();
+    void mountItem(void *item);
+    bool readyToClose();
+    void refreshCargoAvailabilityForBlueprints();
+    void refreshCurrentContentHeight();
+    void render();
+    void render3D();
+    void selectItem(void *item);
+    void setSellMode();
+    void showCreditsBuyWindow();
+    void showFreeCreditsWindow();
+    void transaction(bool buy);
+    void update(int delta);
 };
 #endif

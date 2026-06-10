@@ -13,10 +13,6 @@
 // ---- tiny offset-cast helpers -------------------------------------------------
 static inline char *B(void *p, int off) { return (char *)p + off; }
 static inline int &I(void *p, int off) { return *(int *)((char *)p + off); }
-static inline uint32_t &U(void *p, int off) { return *(uint32_t *)((char *)p + off); }
-static inline float &F(void *p, int off) { return *(float *)((char *)p + off); }
-static inline uint8_t &UC(void *p, int off) { return *(uint8_t *)((char *)p + off); }
-static inline uint16_t &US(void *p, int off) { return *(uint16_t *)((char *)p + off); }
 static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
 
 // Galaxy — owns the per-station visited-flag array (at +0x0) and the SolarSystem* Array (+0x4).

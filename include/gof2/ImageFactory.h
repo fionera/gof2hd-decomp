@@ -22,9 +22,6 @@ struct ImageFactory;
 // Field accessor via byte offset.
 
 
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 // reload() pulls glyph image ids through a function-pointer global (a getText-style fetch).
 typedef void (*GetTextFn)(unsigned canvas, int id, void *out);

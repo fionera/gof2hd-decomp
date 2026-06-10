@@ -41,8 +41,5 @@ struct Explosion {
 // Byte-offset accessors for EXTERNAL opaque objects (AEGeometry, Transform,
 // PaintCanvas) whose layouts are not part of this class.
 static inline int      &I(void *p, int off) { return *(int *)((char *)p + off); }
-static inline uint32_t &U(void *p, int off) { return *(uint32_t *)((char *)p + off); }
-static inline uint8_t  &UC(void *p, int off) { return *(uint8_t *)((char *)p + off); }
-static inline float    &F(void *p, int off) { return *(float *)((char *)p + off); }
 
 #endif

@@ -97,7 +97,8 @@ def update_header(cls):
     hp=f"include/gof2/{cls}.h"
     if not os.path.exists(hp): return 0
     t=open(hp).read()
-    m=re.search(r'struct\s+'+re.escape(cls)+r'\b[^{]*\{', t)
+    # match the struct DEFINITION, not a forward decl: [^{;]* won't cross a ';' (`struct X;`)
+    m=re.search(r'struct\s+'+re.escape(cls)+r'\b[^{;]*\{', t)
     if not m: return 0
     depth=0; i=m.end()-1
     while i<len(t):

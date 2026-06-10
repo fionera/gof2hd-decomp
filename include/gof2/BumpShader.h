@@ -12,20 +12,8 @@ struct Mesh;
 // Per-class backing storage accessor helpers. The BumpShader fields live at fixed byte
 // offsets (program handle at 0x4, dirty flag byte at 0x9, name String at 0xc, attribute/
 // uniform locations 0x20..0x80) and are read/written through these helpers.
-static inline int &i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
 
-static inline uint8_t &u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
 
-static inline float &f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
 
 // AbyssEngine::BumpShader — GLES2 bump-mapping shader (derives from ShaderBaseStruct).
 struct BumpShader {

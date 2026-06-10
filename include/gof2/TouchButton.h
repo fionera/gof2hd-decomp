@@ -47,15 +47,39 @@ static inline char*           B (void* p, int off) { return (char*)p + off;
     void translate(int dx, int dy);
 }
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
-static inline unsigned int&   U (void* p, int off) { return *(unsigned int*)((char*)p + off); }
-static inline float&          F (void* p, int off) { return *(float*)((char*)p + off); }
-static inline double&         D (void* p, int off) { return *(double*)((char*)p + off); }
-static inline char&           C (void* p, int off) { return *(char*)((char*)p + off); }
-static inline unsigned char&  UC(void* p, int off) { return *(unsigned char*)((char*)p + off); }
-static inline bool&           BL(void* p, int off) { return *(bool*)((char*)p + off); }
-static inline short&          S (void* p, int off) { return *(short*)((char*)p + off); }
-static inline unsigned short& US(void* p, int off) { return *(unsigned short*)((char*)p + off); }
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 
-struct TouchButton { void* _opaque; };  // no offset accesses observed
+struct TouchButton { void* _opaque; 
+    // ---- methods (converted from free functions) ----
+    bool OnTouchBegin(int px, int py);
+    unsigned int OnTouchEnd(int px, int py);
+    unsigned int OnTouchMove(int px, int py);
+    TouchButton * ctor5(String *text, int x, int y, int p4, unsigned char p5);
+    TouchButton * ctor6(int x, int y, String *text, int p4, int p5, unsigned char p6);
+    TouchButton * ctor7(String *text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7);
+    void draw();
+    void dtor();
+    int getHeight();
+    RetStr getText();
+    int getWidth();
+    int init(String *text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y, unsigned char flags0, unsigned char flags1);
+    uint8_t isTouched();
+    uint8_t isVisible();
+    void replaceTextKeepSize(String *text);
+    void resetTouch();
+    void setAlwaysPressed(bool value);
+    void setHalfTransparent(bool value);
+    void setNumberText(String *value);
+    void setPosition(int x, int y, unsigned char flags);
+    void setPosition2(int x, int y);
+    void setPressProgress(float value);
+    void setPressProgressHighlight(bool value);
+    void setSplitText(String *value);
+    void setText(String *text);
+    void setTextColor(int color);
+    void setVisible(bool value);
+    void setYPosition(int y);
+    bool touchedInside(int px, int py);
+    void translate(int dx, int dy);
+};  // no offset accesses observed
 #endif

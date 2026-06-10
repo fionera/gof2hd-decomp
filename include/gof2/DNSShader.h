@@ -44,25 +44,9 @@ struct ShaderBaseStruct {
 };
 
 // Per-class backing-storage accessor helpers (take a raw object pointer + byte offset).
-static inline int &field_i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
 
-static inline uint8_t &field_u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
 
-static inline float &field_f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
 
-static inline void *field_ptr(void *self, uint32_t offset)
-{
-    return *(void **)((char *)self + offset);
-}
 
 // AbyssEngine::DNSShader — derives from ShaderBaseStruct (shared shader storage layout).
 struct DNSShader {

@@ -23,9 +23,6 @@ struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 // Field accessors via byte offset from `this`.
 
-static inline int32_t &i32(void *self, unsigned off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, unsigned off) { return *(uint32_t *)((char *)self + off); }
-static inline uint8_t &u8(void *self, unsigned off) { return *(uint8_t *)((char *)self + off); }
 
 struct SolarSystem {
     int field_0x0;                      // +0x0

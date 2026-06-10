@@ -147,6 +147,9 @@ struct Player {
     // below as a non-member equivalent. The field is load-bearing and kept intact.
     Vector * update(int dt, int doSound);
     void updateDamageRate();
+
+    // ---- methods (converted from free functions) ----
+    unsigned char turnedEnemy();
 };
 
 // NOTE: the original byte-matching decomp asserted the 32-bit ARM (ILP32) field offsets here

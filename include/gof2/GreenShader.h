@@ -20,15 +20,7 @@ struct ShaderBaseStruct;
 // Per-class backing storage accessors. GreenShader's fields live at fixed byte offsets:
 // GL program handle at 0x4, name String at 0xc, attribute locations 0x20..0x30 and
 // uniform locations 0x34..0x54. They are read/written through these helpers.
-static inline int &i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
 
-static inline uint8_t &u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
 
 extern "C" {
 extern void *__stack_chk_guard;

@@ -17,9 +17,6 @@ using Vector = AbyssEngine::AEMath::Vector;
 // Templated byte-offset field accessor over an opaque container pointer (the spark Array<T>
 // objects share the {count@+0,data@+4,capacity@+8} layout). F<int>(arr, 0x0) reads the count,
 // F<int*>(arr, 0x4) reads the data pointer, etc.
-template <class T> static inline T &F(void *p, uint32_t off) {
-    return *(T *)((char *)p + off);
-}
 
 struct PlayerGasCloud {
     void* field_0x4;                    // +0x4

@@ -201,5 +201,41 @@ struct MGame {
     uint8_t field_0x1e6;                // +0x1e6
     int field_0x1e8;                    // +0x1e8
     void* field_0x1ec;                  // +0x1ec
+
+    // ---- methods (converted from free functions) ----
+    void OnInitialize();
+    void OnRelease();
+    void OnRender2D();
+    void OnRender3D();
+    void OnSuspend();
+    void OnTouchBegin(int p1, int p2, void *touchId);
+    void OnTouchEnd(int p1, int p2, void *touchId);
+    void OnTouchMove(int p1, int y, void *touch);
+    void OnUpdate();
+    void UseKhadorDrive();
+    MGame * ctor();
+    void deleting_dtor();
+    void dialogueEvent();
+    void dockEvent();
+    MGame * dtor();
+    void freeCamTouchBegin(int x, int y, int id);
+    void freeCamTouchEnd(int p1, int p2, int id);
+    void freeCamTouchMove(int x, int y, void *touchId);
+    void gameOverCheck();
+    void handleAccelerometer();
+    void maneuverTouchBegin(int x, int y);
+    void maneuverTouchEnd(int a, void *p);
+    void maneuverTouchMove(int a, int b);
+    int nextCamId(int cur);
+    void pauseSounds();
+    void reset();
+    void resumeSounds();
+    void setCinematicMode(bool on);
+    void startChargingJumpDrive();
+    void startJumpScene();
+    void successCheck();
+    void switchCamera(int id);
+    void updateJumpScene();
+    void useCloak();
 };
 #endif

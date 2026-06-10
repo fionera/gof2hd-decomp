@@ -24,9 +24,6 @@ void AMeshMerger_drawMeshes(uint32_t a, uint32_t b, uint32_t c);
 }
 
 // Field accessors via byte offset.
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 struct AMeshMerger {
     unsigned char _pad_0[20];

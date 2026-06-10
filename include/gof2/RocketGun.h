@@ -26,8 +26,6 @@ typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 // Typed byte-offset accessors retained ONLY for opaque cross-class pointers reached through
 // engine helpers (AEGeometry / ParticleSystemManager / Player internals) whose owning structs
 // are outside this translation unit. Named-field access is used everywhere the type is known.
-template <class T> static inline T &F(void *p, uint32_t off) { return *(T *)((char *)p + off); }
-template <class T> static inline T &G(void *p, uint32_t off) { return *(T *)((char *)p + off); }
 
 struct RocketGun {
     void render();

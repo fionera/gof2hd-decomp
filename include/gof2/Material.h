@@ -47,18 +47,6 @@ struct Material {
 using Vector = AbyssEngine::AEMath::Vector;
 using Matrix = AbyssEngine::AEMath::Matrix;
 
-static inline int &i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
-static inline uint32_t &u32(void *self, uint32_t offset)
-{
-    return *(uint32_t *)((char *)self + offset);
-}
-static inline float &f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
 static inline void *&pptr(void *self, uint32_t offset)
 {
     return *(void **)((char *)self + offset);

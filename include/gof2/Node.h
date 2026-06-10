@@ -29,8 +29,6 @@ void Node_ArrayNode_release(void *arr);
 }
 
 // Field accessors via byte offset.
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 struct Node {
     Array<Node*>* field_0x0;            // +0x0 children

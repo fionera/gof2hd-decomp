@@ -179,5 +179,4 @@ struct Generator {
 
 // Byte-offset accessor for EXTERNAL opaque objects whose layouts are not part of
 // this class (e.g. the mission Status struct).
-template <class T> static inline T &F(void *p, unsigned off) { return *(T *)((char *)p + off); }
 #endif

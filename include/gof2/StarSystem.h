@@ -40,13 +40,7 @@ static inline int &I(void *p, unsigned off) {
     return *(int *)((char *)p + off);
 }
 
-static inline uint32_t &U(void *p, unsigned off) {
-    return *(uint32_t *)((char *)p + off);
-}
 
-static inline float &FL(void *p, unsigned off) {
-    return *(float *)((char *)p + off);
-}
 
 static inline uint8_t &B(void *p, unsigned off) {
     return *(uint8_t *)((char *)p + off);
@@ -64,5 +58,18 @@ struct StarSystem {
     Vector field_0x30;                  // +0x30  (light direction)
 
     ~StarSystem();
+
+    // ---- methods (converted from free functions) ----
+    Vector getLightDirection();
+    void initLight();
+    void render();
+    void render2D();
+    void renderSunStreak();
+    void scaleSunDuringSupernovaIntro(int amount);
+    void switchPlanetForIntro();
+    void switchSunForSupernovaExpansion();
+    void switchSunForSupernovaIntro();
+    void switchSunForSupernovaReversal();
+    void updateSupernova(int dt);
 };
 #endif

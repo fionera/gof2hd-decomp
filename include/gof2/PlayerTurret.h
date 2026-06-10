@@ -35,10 +35,6 @@ struct PlayerArray {
 static inline char *B(void *self, uint32_t off) { return (char *)self + off; }
 static inline const char *B(const void *self, uint32_t off) { return (const char *)self + off; }
 static inline int32_t &I(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &U(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline uint16_t &US(void *self, uint32_t off) { return *(uint16_t *)((char *)self + off); }
-static inline uint8_t &UC(void *self, uint32_t off) { return *(uint8_t *)((char *)self + off); }
-static inline float &F(void *self, uint32_t off) { return *(float *)((char *)self + off); }
 static inline void *&P(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 template <class T>

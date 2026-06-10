@@ -45,8 +45,6 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::PaintCanvas **gTrailCa
 __attribute__((visibility("hidden"))) extern AbyssEngine::PaintCanvas **gTrailCanvasUpdate;
 __attribute__((visibility("hidden"))) extern AbyssEngine::PaintCanvas **gTrailCanvasSetWidth;
 
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
 static inline void *&ptr(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 // Trail: fields accessed via i32/u32/ptr offset helpers (deterministic field_0xNN layout).

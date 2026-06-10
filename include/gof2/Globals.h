@@ -38,5 +38,12 @@ struct Globals {
     unsigned short field_0x110;         // +0x110
     int field_0x114;                    // +0x114
     int field_0x14c;                    // +0x14c
+
+    // ---- methods (converted from free functions) ----
+    Globals * ctor();
+    void * dtor();
+    unsigned getRandomEnemyFighter(int kind);
+    int init(void *app);
+    float sqrt(float x);
 };
 #endif

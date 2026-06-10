@@ -28,20 +28,8 @@ struct TextureAlphaTestShader : ShaderBaseStruct {
     void UseShader(bool);
 };
 
-static inline int &i32(void *self, unsigned int offset)
-{
-    return *(int *)((char *)self + offset);
-}
 
-static inline uint8_t &u8(void *self, unsigned int offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
 
-static inline float &f32(void *self, unsigned int offset)
-{
-    return *(float *)((char *)self + offset);
-}
 
 static inline String &string_at(void *self, unsigned int offset)
 {

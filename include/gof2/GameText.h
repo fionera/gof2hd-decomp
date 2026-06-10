@@ -40,9 +40,6 @@ typedef AbyssEngine::String String;
 
 // Field accessors via byte offset.
 
-static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 struct GameText {
     uint32_t field_0x0;                 // +0x0  substitute Array<int> size
@@ -51,5 +48,14 @@ struct GameText {
     void* field_0xc;                    // +0xc  String** text table
     unsigned char field_0x10[12];       // +0x10 fallback / region String (12 bytes)
     int field_0x1c;                     // +0x1c text table count
+
+    // ---- methods (converted from free functions) ----
+    void ReadLangFile(unsigned int file, int count);
+    void ctor();
+    void * getText(int key);
+    void release();
+    void setLanguage_i(int param_1);
+    void setLanguage_si(int stringCount, int langId);
+    void setSubstituteArray(int *param_1, unsigned param_2);
 };
 #endif

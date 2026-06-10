@@ -10,7 +10,6 @@ struct ScrollTouchWindow;
 
 // Byte-offset accessor template, used for reads into objects whose full layout is not
 // modelled in this batch (config blobs, medal image tables, foreign globals).
-template <class T> static inline T &F(void *p, uint32_t off) { return *(T *)((char *)p + off); }
 
 struct ChoiceWindow {
     int field_0x0;                      // +0x0   x

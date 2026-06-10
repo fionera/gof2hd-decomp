@@ -12,11 +12,6 @@ struct Mission;
 struct SystemPathFinder;
 
 // Byte-offset field accessors used throughout StarMap's methods.
-template <class T>
-static inline T &field(void *self, uint32_t off)
-{
-    return *(T *)((char *)self + off);
-}
 
 static inline void *&ptr_field(void *self, uint32_t off)
 {

@@ -61,5 +61,10 @@ struct TractorBeam {
     uint8_t _pad_0x12[2];               // +0x12  padding
     AEGeometry* field_0x14;             // +0x14  beam mesh geometry
     int field_0x18;                     // +0x18  stored hitpoints snapshot
+
+    // ---- methods (converted from free functions) ----
+    void ctor(AEGeometry * /*unused*/, int param2);
+    void render();
+    void update(int frameTime, Radar *radar, Level *level, Hud *hud);
 };
 #endif

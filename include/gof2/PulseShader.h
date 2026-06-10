@@ -50,9 +50,6 @@ struct PulseShader {
 
 // Byte-offset accessors into the render Engine object (its full layout is not modelled
 // in this batch -- the matrices / light vectors it carries are read by fixed offset).
-static inline int   &i32(void *self, uint32_t offset) { return *(int *)((char *)self + offset); }
-static inline uint8_t &u8(void *self, uint32_t offset) { return *(uint8_t *)((char *)self + offset); }
-static inline float &f32(void *self, uint32_t offset) { return *(float *)((char *)self + offset); }
 
 extern "C" {
 extern void *__stack_chk_guard;

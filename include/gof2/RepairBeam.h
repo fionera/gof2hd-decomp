@@ -40,5 +40,11 @@ struct RepairBeam {
     void** field_0x18;                  // +0x18  Array<float>*
     int field_0x1c;                     // +0x1c
     int field_0x20;                     // +0x20
+
+    // ---- methods (converted from free functions) ----
+    RepairBeam * ctor(int shipIndex, int sort);
+    RepairBeam * dtor();
+    void render();
+    void update(int dt, void *level, void *hud);
 };
 #endif

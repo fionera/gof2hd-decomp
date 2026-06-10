@@ -45,17 +45,37 @@ static inline char*           B (void* p, int off) { return (char*)p + off;
     void writeWanted(void *w, unsigned int fd);
 }
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
-static inline unsigned int&   U (void* p, int off) { return *(unsigned int*)((char*)p + off); }
-static inline float&          F (void* p, int off) { return *(float*)((char*)p + off); }
-static inline double&         D (void* p, int off) { return *(double*)((char*)p + off); }
-static inline char&           C (void* p, int off) { return *(char*)((char*)p + off); }
-static inline unsigned char&  UC(void* p, int off) { return *(unsigned char*)((char*)p + off); }
-static inline bool&           BL(void* p, int off) { return *(bool*)((char*)p + off); }
-static inline short&          S (void* p, int off) { return *(short*)((char*)p + off); }
-static inline unsigned short& US(void* p, int off) { return *(unsigned short*)((char*)p + off); }
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 
 struct RecordHandler {
     void* field_0x4;                    // +0x4
+
+    // ---- methods (converted from free functions) ----
+    void addHash(int slot);
+    void addHashToOptions();
+    void changeSaveDirectoryToBackupDirectory();
+    void convertSDVersionSaves();
+    RecordHandler * ctor();
+    RecordHandler * dtor();
+    void loadOptions();
+    void loadResolutionValue();
+    void * readAgent(unsigned int fd);
+    void * readAllPreviewRecords();
+    void * readAllRecords();
+    void * readMission(unsigned int fd);
+    int readOptionsFileAsByteArray(signed char **out);
+    int readRecordAsByteArray(signed char **out, int slot, bool fromBackup);
+    void * readWanted(unsigned int fd);
+    void * recordStoreRead(int slot);
+    void * recordStoreReadPreview(int slot);
+    void recordStoreWrite(int slot);
+    int recordStoreWritePreview(void *rec, int slot);
+    int recordStoreWritePreview_int(int slot);
+    void saveOptions();
+    void writeAgent(void *agentPtr, unsigned int fd);
+    void writeByteArrayAsOptionsFile(signed char *buf, int n);
+    int writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup);
+    void writeMission(void *m, unsigned int fd);
+    void writeWanted(void *w, unsigned int fd);
 };
 #endif

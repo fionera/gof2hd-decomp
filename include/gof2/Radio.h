@@ -31,7 +31,6 @@ void operator delete(void *ptr) noexcept;
 extern "C" void *operator_new__(uint32_t size);
 
 // Generic byte-offset field accessor (read or write) used by the recovered code.
-template <class T> static inline T &F(void *p, uint32_t off) { return *(T *)((char *)p + off); }
 
 // String factory helpers (the shared common.h String exposes no engine ctors).
 static inline String RadioStringCopy(const String &src) { String r; r.s = src.s; return r; }

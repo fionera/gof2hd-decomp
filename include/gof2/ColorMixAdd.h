@@ -42,25 +42,9 @@ struct ShaderBaseStruct {
 
 extern "C" char _ZTVN11AbyssEngine11ColorMixAddE[];
 
-static inline int &field_i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
 
-static inline uint8_t &field_u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
 
-static inline float &field_f32(void *self, uint32_t offset)
-{
-    return *(float *)((char *)self + offset);
-}
 
-static inline void *field_ptr(void *self, uint32_t offset)
-{
-    return *(void **)((char *)self + offset);
-}
 
 struct ColorMixAdd : ShaderBaseStruct {
     static int ShaderIndex;

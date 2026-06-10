@@ -31,12 +31,5 @@ struct ListItemWindow {
 };
 
 // Field accessors via byte offset.
-static inline int32_t  &i32(void *self, uint32_t off) { return *(int32_t  *)((char *)self + off); }
-static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
-static inline uint16_t &u16(void *self, uint32_t off) { return *(uint16_t *)((char *)self + off); }
-static inline short    &i16(void *self, uint32_t off) { return *(short    *)((char *)self + off); }
-static inline uint8_t  &u8 (void *self, uint32_t off) { return *(uint8_t  *)((char *)self + off); }
-static inline float    &f32(void *self, uint32_t off) { return *(float    *)((char *)self + off); }
-static inline void    *&pp (void *self, uint32_t off) { return *(void    **)((char *)self + off); }
 
 #endif

@@ -162,5 +162,37 @@ struct PlayerFighter {
     int32_t field_0x2e0;                // +0x2e0
     uint8_t field_0x2e4;                // +0x2e4
     int32_t field_0x2e8;                // +0x2e8
+
+    // ---- methods (converted from free functions) ----
+    void awake();
+    void cloak(int dur, bool b);
+    int collide(float x, float y, float z);
+    void ctor(int p1, int wingmanCmd, void *player, void *geom, float a, float b, float c, int flag);
+    void handleCloaking();
+    uint8_t hasCrateCaptured();
+    uint8_t hasCrateLost();
+    uint8_t hasMissionCrateCaptured();
+    uint8_t hasMissionCrateLost();
+    void initPush(void *target, int radius);
+    int outerCollide(float x, float y, float z);
+    void push(int dt);
+    void removeTrail();
+    void render();
+    void roll(int angle);
+    void setAIDisabled(bool v);
+    void setBV_a(Array<BoundingVolume *> *v);
+    void setBV_b(BoundingVolume *bv);
+    void setBoostProb(int v);
+    void setCloakingPossible(bool v);
+    void setExhaustVisible(bool vis);
+    void setLevel(Level *lvl);
+    void setMissionCrate(bool on);
+    void setPosition3(int x, int y, int z);
+    void setPosition_ref(const Vector &v);
+    void setRotate(int v);
+    void setShootError(int v);
+    void setSpeed(float v);
+    void setWingmanCommand(int cmd, KIPlayer *target);
+    void update(int dt);
 };
 #endif
