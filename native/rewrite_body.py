@@ -25,7 +25,7 @@ RAW=re.compile(r'\*\(\s*[A-Za-z_][\w\s:]*?\**\s*\)\s*\(\s*\(\s*char\s*\*\s*\)\s*
                r'([A-Za-z_]\w*)\s*(?:\+\s*(0x[0-9a-fA-F]+|\d+))?\s*\)')
 
 def rewrite(cls):
-    src=f"merged/src/{cls}.cpp"
+    src=f"native/src/{cls}.cpp"   # operate IN PLACE on the canonical tree (git tracks the evolution)
     if not os.path.exists(src): return f"{cls}: NO SRC"
     txt=open(src,errors='ignore').read()
     v2c={'self':cls,'this':cls}
