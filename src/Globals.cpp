@@ -6,9 +6,9 @@
 #include "gof2/Layout.h"
 // Mission.h transitively pulls Station.h, which redefines the identical (token-for-token,
 // 12-byte aligned aggregate) global `struct RetStr` already provided by Agent.h. Rename the
-// duplicate so it doesn't collide. Station::getName()'s return type becomes RetStr_StationDup,
+// duplicate so it doesn't collide. Station::getName()'s return type becomes RetStr,
 // which is layout-identical and only ever discarded here. (Other headers are out of edit scope.)
-#define RetStr RetStr_StationDup
+#define RetStr RetStr
 #include "gof2/Mission.h"
 #include "gof2/Station.h"
 #undef RetStr

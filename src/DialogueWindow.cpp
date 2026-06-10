@@ -7,12 +7,12 @@
 // `struct RetStr`, which collides with Agent.h's. None of the RetStr-returning accessors
 // are used in this TU, so the duplicate definitions are renamed away here to avoid the
 // redefinition error without touching those (other-batch) headers.
-#define RetStr RetStr_StationDup
+#define RetStr RetStr
 #include "gof2/Mission.h"
 #undef RetStr
 #include "gof2/Standing.h"
 #include "gof2/String.h"
-#define RetStr RetStr_TouchButtonDup
+#define RetStr RetStr
 #include "gof2/TouchButton.h"
 #undef RetStr
 // Layout's drawMask/drawBox are used via the local extern "C" prototypes below;

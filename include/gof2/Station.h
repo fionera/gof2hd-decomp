@@ -1,6 +1,7 @@
 #ifndef GOF2_STATION_H
 #define GOF2_STATION_H
 #include "gof2/common.h"
+#include "gof2/Agent.h"   // provides the shared RetStr aggregate
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 — Station class. Top-level, no namespace.
 // Field offsets recovered from per-method target disassembly. Methods access
@@ -9,8 +10,8 @@
 
 struct Station;
 
-// AbyssEngine::String by value: 12-byte trivially-copied aggregate.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// RetStr (AbyssEngine::String by value: 12-byte trivially-copied aggregate)
+// is provided by gof2/Agent.h (included above) to avoid a duplicate definition.
 
 struct Station {
     int field_0xc;                      // +0xc

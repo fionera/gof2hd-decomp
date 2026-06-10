@@ -10,7 +10,6 @@
 struct TouchButton;    // opaque; we only ever take a TouchButton* and offset-cast.
 
 // 12-byte return-by-value String aggregate (matches other gof2 getters).
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 // ---- tiny offset-cast helpers -------------------------------------------------
 static inline char*           B (void* p, int off) { return (char*)p + off; }

@@ -84,10 +84,13 @@ struct String {
     uint16_t * index(int i);
     uint16_t * index_const(int i);
 };
-struct String12 { char16_t buf[6]; };   // small stack string temp
+struct String12 { uint32_t a, b, c; };   // 12-byte by-value String aggregate (sret/stack ABI)
 } // namespace AbyssEngine
 
 using AbyssEngine::String;
+using AbyssEngine::String12;
+// RetStr: a String returned by value through a hidden sret pointer (12-byte aggregate). One definition.
+struct RetStr { uint32_t a, b, c; };
 
 // ---- global aliases so recovered code's short type names resolve --------------------------
 namespace AEMath = AbyssEngine::AEMath;   // so global `AEMath::Vector` resolves

@@ -50,15 +50,15 @@ extern "C" AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShade
 {
     using AbyssEngine::BlurShader;
     void *volatile cookie = __stack_chk_guard;
-    void *name[3];
+    String name;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)self);
     void **source = BlurShader_typeinfo_source;
     void **dest = BlurShader_typeinfo_dest;
     *(void **)self = BlurShader_vtable + 8;
     *dest = *source;
-    String_ctor_text(name, "BlurShader", false);
-    ((String *)((char *)self + 0xc))->assign(name);
-    ((String *)(name))->dtor();
+    ((String *)(&name))->ctor_char("BlurShader", false);
+    ((String *)((char *)self + 0xc))->assign(&name);
+    ((String *)(&name))->dtor();
     self->field_0x58 = 0x92006800;
     self->field_0x5c = 0x40000000;
     uint32_t guardDelta =
@@ -142,13 +142,13 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
 
-    engine->field_0x384 = 2.0f / (float)((Engine *)(engine))->GetDisplayWidth();
-    engine->field_0x398 = -(2.0f / (float)((Engine *)(engine))->GetDisplayHeight());
+    engine->field_0x384 = 2.0f / (float)(engine)->GetDisplayWidth();
+    engine->field_0x398 = -(2.0f / (float)(engine)->GetDisplayHeight());
     engine->field_0x3ac = 0xbf800000;
     engine->field_0x3b4 = 0xbf800000;
     engine->field_0x3b8 = 0x3f800000;
     engine->field_0x3c0 = 0x3f800000;
-    ((Engine *)(engine))->SetWorldViewMatrix();
+    (engine)->SetWorldViewMatrix((const uint32_t *)matrix);
 
     glDisable(0xb71);
     glDepthMask(0);
@@ -162,11 +162,11 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         int width;
         int height;
         if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = ((Engine *)(engine))->GetDisplayWidth();
-            height = ((Engine *)(engine))->GetDisplayHeight();
+            width = (engine)->GetDisplayWidth();
+            height = (engine)->GetDisplayHeight();
         } else {
-            width = ((Engine *)(engine))->GetDisplayHeight();
-            height = ((Engine *)(engine))->GetDisplayWidth();
+            width = (engine)->GetDisplayHeight();
+            height = (engine)->GetDisplayWidth();
         }
         glViewport(0, 0, width, height);
     } else {
@@ -190,11 +190,11 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         float width;
         int other;
         if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = (float)((Engine *)(engine))->GetDisplayWidth();
-            other = ((Engine *)(engine))->GetDisplayHeight();
+            width = (float)(engine)->GetDisplayWidth();
+            other = (engine)->GetDisplayHeight();
         } else {
-            width = (float)((Engine *)(engine))->GetDisplayHeight();
-            other = ((Engine *)(engine))->GetDisplayWidth();
+            width = (float)(engine)->GetDisplayHeight();
+            other = (engine)->GetDisplayWidth();
         }
         glUniform2f(texelLocation, 1.0f / width, 1.0f / (float)other);
     }
@@ -226,8 +226,8 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     }
 
     glClear(0x4000);
-    int width = ((Engine *)(engine))->GetDisplayWidth();
-    ((Engine *)(engine))->DrawQuad(0, 0, width, ((Engine *)(engine))->GetDisplayHeight());
+    int width = (engine)->GetDisplayWidth();
+    (engine)->DrawQuad(0, 0, width, (engine)->GetDisplayHeight());
     if (position >= 0) {
         glDisableVertexAttribArray(position);
     }
@@ -279,11 +279,11 @@ void BlurShader::UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine)
         float height;
         float one = 1.0f;
         if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = (float)((Engine *)(engine))->GetDisplayWidth();
-            height = (float)((Engine *)(engine))->GetDisplayHeight();
+            width = (float)(engine)->GetDisplayWidth();
+            height = (float)(engine)->GetDisplayHeight();
         } else {
-            width = (float)((Engine *)(engine))->GetDisplayHeight();
-            height = (float)((Engine *)(engine))->GetDisplayWidth();
+            width = (float)(engine)->GetDisplayHeight();
+            height = (float)(engine)->GetDisplayWidth();
         }
         glUniform2f(texelLocation, one / width, one / height);
     }

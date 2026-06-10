@@ -379,8 +379,7 @@ void KIPlayer::setDead() {
 }
 
 // ---- KIPlayer_a57c8.cpp ----
-// 12-byte AbyssEngine::String, constructed/destroyed via engine wrappers.
-struct String12 { unsigned a, b, c; };
+// String12 is provided by gof2/common.h.
 
 extern "C" {
 extern char KIPlayer_vtable[];                                   // KIPlayer vtable

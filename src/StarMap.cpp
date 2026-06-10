@@ -4,12 +4,22 @@
 #include "gof2/Engine.h"
 #include "gof2/GameText.h"
 #include "gof2/Layout.h"
-#include "gof2/Mission.h"
-#include "gof2/SolarSystem.h"
+#include "gof2/Mission.h"   // pulls in Station.h -> Agent.h, the canonical RetStr
 #include "gof2/Station.h"
+// Agent.h (via Station.h above), SolarSystem.h and TouchButton.h each define an
+// identical, layout-compatible `struct RetStr` at global scope. Including more than
+// one in a single TU is a C++ redefinition. Let Agent.h own the canonical RetStr and
+// rename the duplicates from the other two headers. Their renamed RetStr is
+// ABI-identical and the only RetStr-returning calls used here (Station::getName(),
+// SolarSystem::getName()) discard their results, so the ABI is unaffected.
+#define RetStr RetStr
+#include "gof2/SolarSystem.h"
+#undef RetStr
 #include "gof2/Status.h"
 #include "gof2/String.h"
+#define RetStr RetStr
 #include "gof2/TouchButton.h"
+#undef RetStr
 
 // Engine helpers that are invoked with more than one argument type in this translation
 // unit (the canvas handle appears both as a raw uint32_t id and as a void* in different
@@ -270,7 +280,7 @@ void StarMap::askForJumpIntoAlienWorld()
 {
     void *window = *(void *volatile *)((char *)this + 0x5c);
     field<uint8_t>(this, 0x120) = 1;
-    String *text = ((GameText *)(*g_StarMap_alien_text))->getText(0x1a6);
+    String *text = (String *)((GameText *)(*g_StarMap_alien_text))->getText(0x1a6);
     ChoiceWindow_set(window, text, true);
     field<uint8_t>(this, 0xa9) = 1;
 }
@@ -465,10 +475,10 @@ void StarMap::draw()
     if (field<uint8_t>(this, 0x108) != 0) {
         drawKey();
     }
-    ((String *)(&tmp))->ctor_copy(((GameText *)(*g_StarMap_draw_text))->getText(0x190), false);
+    ((String *)(&tmp))->ctor_copy((String *)((GameText *)(*g_StarMap_draw_text))->getText(0x190), false);
     Layout_drawHeader(*g_StarMap_draw_layout, &tmp);
     ((String *)(&tmp))->dtor();
-    ((Layout *)(*g_StarMap_draw_layout))->drawEmptyFooter();
+    ((Layout *)(*g_StarMap_draw_layout))->drawEmptyFooter(1);
     ((TouchButton *)(ptr_field(this, 0x4c)))->draw();
     if (field<uint8_t>(this, 0xa9) != 0) {
         ChoiceWindow_draw(ptr_field(this, 0x5c));
@@ -487,7 +497,7 @@ void StarMap::depart(bool jump)
     void *status = *statusHolder;
     if (field<uint8_t>(this, 0xaa) != 0) {
         Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
-        ((Status *)(status))->departStation(stations->data()[selected]);
+        ((Status *)(status))->departStation((Station *)stations->data()[selected]);
         *g_StarMap_depart_store0_a = 0;
         Level_setInitStreamOut();
         int used = Status_jumpgateUsed(status);
@@ -514,11 +524,11 @@ void StarMap::depart(bool jump)
         statusWords[0x60 / 4] = -1;
         statusWords[0x64 / 4] = -1;
         statusWords[0x68 / 4] = -1;
-        ((Status *)(status))->departStation(Status_getStation(status));
+        ((Status *)(status))->departStation((Station *)Status_getStation(status));
 
         Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
         void *target = stations->data()[field<int32_t>(this, 0x64)];
-        if (((Station *)(target))->equals(Status_getStation(status)) == 0) {
+        if (((Station *)(target))->equals((Station *)Status_getStation(status)) == 0) {
             *g_StarMap_depart_targetStation = (int)(intptr_t)target;
         }
 
@@ -550,7 +560,8 @@ cleanup:
             if (i != (uint32_t)field<int32_t>(this, 0x64)) {
                 void *station = stations->data()[i];
                 if (station != 0) {
-                    operator delete(((Station *)(station))->dtor());
+                    ((Station *)(station))->dtor();
+                    operator delete(station);
                 }
                 stations->data()[i] = 0;
             }
@@ -661,7 +672,7 @@ void StarMap::OnTouchEnd(int x, int y)
                 field<int32_t>(this, 0x19c) == field<int32_t>(this, 0x60)) {
                 if (field<uint8_t>(this, 0xab) == 0 &&
                     ((SolarSystem *)(Status_getSystem(*g_StarMap_end_status)))->systemIsInSystemRoutes(SolarSystem_getIndex(Status_getSystem(*g_StarMap_end_status))) == 0) {
-                    ChoiceWindow_set(ptr_field(this, 0x5c), ((GameText *)(*g_StarMap_end_text))->getText(0x1a4), false);
+                    ChoiceWindow_set(ptr_field(this, 0x5c), (String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a4), false);
                     field<uint8_t>(this, 0xa9) = 1;
                     return;
                 }
@@ -689,7 +700,7 @@ void StarMap::OnTouchEnd(int x, int y)
                 if (ptr_field(this, 0x5c) == 0) {
                     ptr_field(this, 0x5c) = ChoiceWindow_ctor(operator new(0x5c));
                 }
-                ChoiceWindow_set(ptr_field(this, 0x5c), ((GameText *)(*g_StarMap_end_text))->getText(0x1a3), true);
+                ChoiceWindow_set(ptr_field(this, 0x5c), (String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a3), true);
                 field<uint8_t>(this, 0xa9) = 1;
             } else {
                 FModSound_play(*g_StarMap_end_sound, 0x69, 0, 0.0f);
@@ -698,7 +709,7 @@ void StarMap::OnTouchEnd(int x, int y)
         }
     }
     if (((Layout *)(layout))->helpPressed() != 0) {
-        ((String *)(&help))->ctor_copy(((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
+        ((String *)(&help))->ctor_copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
         ((Layout *)(layout))->initHelpWindow(&help);
         ((String *)(&help))->dtor();
     }
@@ -1233,7 +1244,7 @@ void StarMap::drawKey()
     String empty;
     ((String *)(&empty))->ctor_char("", false);
     int x = screenH - boxW;
-    ((Layout *)(layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, &empty);
+    ((Layout *)(layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, &empty, 0);
     int drawX = x + lineH;
     int textX = imageWidth + lineH + drawX;
     int y = ((screenW - lineH) - rightPad) - marginY;
@@ -1433,7 +1444,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             PaintCanvas_DrawString(canvas, *g_StarMap_info_font, &name, drawX, drawY, false);
             PaintCanvas_SetColorRGBA(canvas, 0xff, 0xff, 0xff, field<int32_t>(this, 0x1a4));
             if (Station_getTecLevel(station) > 0) {
-                ((String *)(&line))->ctor_copy(((GameText *)(*g_StarMap_info_text))->getText(0x200), false);
+                ((String *)(&line))->ctor_copy((String *)((GameText *)(*g_StarMap_info_text))->getText(0x200), false);
                 ((String *)(&value))->ctor_int(Station_getTecLevel(station));
                 String_add(&name, &line, &value);
                 PaintCanvas_DrawString(canvas, *g_StarMap_info_font, &name, drawX,
@@ -1626,7 +1637,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     field<uint16_t>(this, 0xaa) = 0;
     field<uint8_t>(this, 0) = 0;
     void *button = operator new(0xc8);
-    String *back = ((GameText *)(*g_StarMap_init_text))->getText(0x190);
+    String *back = (String *)((GameText *)(*g_StarMap_init_text))->getText(0x190);
     TouchButton_ctor(button, back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c),
                      *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
     ptr_field(this, 0x4c) = button;
@@ -1659,7 +1670,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
 
     field<int32_t>(this, 0x10c) = 0;
     for (int i = 0; i < 6; i++) {
-        int width = PaintCanvas_GetTextWidth(canvas, ((GameText *)(*g_StarMap_init_text))->getText(0x112 + i));
+        int width = PaintCanvas_GetTextWidth(canvas, (String *)((GameText *)(*g_StarMap_init_text))->getText(0x112 + i));
         if (field<int32_t>(this, 0x10c) < width) {
             field<int32_t>(this, 0x10c) = width;
         }

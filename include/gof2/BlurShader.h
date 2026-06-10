@@ -2,35 +2,14 @@
 #define GOF2_BLURSHADER_H
 #include "gof2/common.h"
 #include "gof2/Mesh.h"
+#include "gof2/Engine.h"
 #include <new>
 // Galaxy on Fire 2 -- AbyssEngine::BlurShader (Android libgof2hdaa.so, armv7 Thumb).
 // GLES2 radial/box blur post-process shader. Derives from ShaderBaseStruct: program handle at
 // 0x24, attribute/uniform locations at 0x28..0x50, tuning floats at 0x58/0x5c, dirty flag at 0x9.
 //
-// NOTE: this TU does NOT include gof2/Engine.h (that header does not compile standalone). Engine is
-// only touched through a handful of fields here, so we complete the global forward declaration from
-// gof2/fwd.h with a minimal, layout-faithful Engine view covering exactly those fields.
-
-#pragma pack(push, 1)
-struct Engine {
-    char     pad_0x0[0x30];
-    char**   field_0x30;                // +0x30  module table (*field_0x30 + 0x30 = orientation)
-    char     pad_0x38[0x380 - 0x38];
-    char*    field_0x380;               // +0x380 active vertex/texcoord buffer base
-    float    field_0x384;               // +0x384 viewport scale x
-    char     pad_0x388[0x398 - 0x388];
-    float    field_0x398;               // +0x398 viewport scale y
-    char     pad_0x39c[0x3ac - 0x39c];
-    uint32_t field_0x3ac;               // +0x3ac
-    char     pad_0x3b0[0x3b4 - 0x3b0];
-    uint32_t field_0x3b4;               // +0x3b4
-    uint32_t field_0x3b8;               // +0x3b8
-    char     pad_0x3bc[0x3c0 - 0x3bc];
-    uint32_t field_0x3c0;               // +0x3c0
-    char     pad_0x3c4[0x40c - 0x3c4];
-    uint32_t field_0x40c;               // +0x40c framebuffer object handle
-};
-#pragma pack(pop)
+// Engine is the real gof2/Engine.h type (it self-compiles now); BlurShader touches a handful of its
+// fields/methods (field_0x30/0x380.., GetDisplayWidth/Height, DrawQuad, SetWorldViewMatrix).
 
 static inline uint32_t stack_guard_delta(uint32_t saved, uint32_t current)
 {

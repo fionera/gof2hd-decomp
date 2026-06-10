@@ -22,8 +22,8 @@
 #define F(p, off) (*(float *)((char *)(p) + (off)))
 
 // ---- canonical helper types / prototypes (deduped across merged sources) ----
-// 3-float vector returned by value by several AEGeometry/PlayerEgo accessors.
-struct Vec3 { float x, y, z; };
+// Vec3 is `typedef Vector Vec3;` from PlayerEgo.h (AbyssEngine::AEMath::Vector).
+// Several AEGeometry/PlayerEgo accessors return it by value.
 
 // These accessors are used in the decomp both as value-returning (Vec3 r = f(geo))
 // and as out-param (f(geo, out)) forms — the same sret ABI function viewed two ways.
@@ -850,7 +850,7 @@ void PlayerEgo::setCurrentSecondaryWeaponIndex(int idx) {
 }
 
 // ---- removeRoute_9b15c.cpp ----
-struct Route { ~Route(); };
+// `struct Route` (with its destructor) is provided by gof2/Route.h.
 void PlayerEgo::removeRoute() {
     PlayerEgo *self = this;
   Route* r = (Route*)P(self, 0xfc);
@@ -1470,7 +1470,7 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
         void *station = P(self, 0x1e0);
         float pos[3];
         ((PlayerEgo *)(self))->getPosition();
-        void *nav = ((KIPlayer *)(station))->getNearestNavigationPoint(pos, (char *)self + 0x350);
+        void *nav = ((KIPlayer *)(station))->getNearestNavigationPoint((Vector *)pos, (char *)self + 0x350);
         if (nav != 0) {
             if (P(self, 0x380) != nav) {
                 if (P(self, 0x380) != 0)
@@ -1497,7 +1497,7 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
         if (dist < radius) {
             int ev = adp_arrivalEvent(self, P(self, 0x1e0));
             if (ev != 0)
-                ((Hud *)(hud))->hudEvent(ev, self);
+                ((Hud *)(hud))->hudEvent(ev, self, 0);
             I(self, 0x314) = 1;        // hand back to manual control
         }
         PE_adp_apply(self);
@@ -2377,7 +2377,7 @@ void PlayerEgo::setTurretMode(int enable) {
 
     C(self, 0x1a0) = (unsigned char)enable;
     if (enable == 0) {
-        ((PlayerEgo *)(self))->stopShooting();
+        ((PlayerEgo *)(self))->stopShooting(0);
         PaintCanvas_CameraSetCurrent(*g_PE_tm_canvasE, U(P(self, 0x88), 0));
         LevelScript_resetCamera(P(self, 0xc));
     } else {
@@ -2511,7 +2511,7 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
         float pos[3];
         ((PlayerEgo *)(self))->getPosition();
         void *sp = (void *)(unsigned long)I(self, 0x36c);
-        void *nav = ((KIPlayer *)(radar))->getNearestNavigationPoint(pos, sp);
+        void *nav = ((KIPlayer *)(radar))->getNearestNavigationPoint((Vector *)pos, sp);
         if (nav == 0) {
             if (C(radar, 0x70) != 0)
                 C(radar, 0x8c) = 1;
@@ -2534,7 +2534,7 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
             P(self, 0x358) = 0;
 
             ((PlayerEgo *)(self))->getPosition();
-            void *nav2 = ((KIPlayer *)(radar))->getNearestNavigationPoint(pos, sp);
+            void *nav2 = ((KIPlayer *)(radar))->getNearestNavigationPoint((Vector *)pos, sp);
             void *from = AEGeometry_getMatrix(P(self, 0x8));
             P(self, 0x358) = PE_dtdp_makeEase(from, nav2);
             ((PlayerEgo *)(self))->setExhaustVisible(true);
@@ -2839,7 +2839,8 @@ void PlayerEgo::revive() {
     P(self, 0x8c) = 0;
 
     TargetFollowCamera_setActive(P(self, 0x88), true);
-    int v = ((Player *)(P(self, 0x0)))->setActive(true);
+    ((Player *)(P(self, 0x0)))->setActive(true);
+    int v = 0;
 
     void *snd = *g_PE_reviveSound;
     v = FModSound_play(*(void **)snd, *(void **)snd, 0, v);
@@ -3137,12 +3138,12 @@ void PlayerEgo::approachAsteroid(int hud2, void *radar) {
                 C(self, 0x39b) = 1;
                 I(*g_PE_aa_winHolder1, 0x124) = 0;
                 ((PlayerEgo *)(self))->stopMining();
-                ((Hud *)((void *)(unsigned long)hud2))->hudEvent(8, self);
+                ((Hud *)((void *)(unsigned long)hud2))->hudEvent(8, self, 0);
             }
         } else if (((KIPlayer *)(self))->isDying() != 0 || ((KIPlayer *)(self))->isDead() != 0) {
             I(*g_PE_aa_winHolder2, 0x124) = 0;
             ((PlayerEgo *)(self))->stopMining();
-            ((Hud *)((void *)(unsigned long)hud2))->hudEvent(8, self);
+            ((Hud *)((void *)(unsigned long)hud2))->hudEvent(8, self, 0);
         }
         return;
     }
@@ -3175,8 +3176,8 @@ void PlayerEgo::handleShip(int dt) {
     PlayerEgo *self = this;
     void *snd = *g_PE_hs_sound;
     // engine sound: param 0 = RPM (from |yaw|,|pitch| max), param 1 = throttle.
-    FModSound_setParamValue(snd, ((Player *)(P(self, 0x0)))->GetEngineEvent(), 0, F(self, 0x270));
-    FModSound_setParamValue(snd, ((Player *)(P(self, 0x0)))->GetEngineEvent(), 1,
+    FModSound_setParamValue(snd, (void *)(long)((Player *)(P(self, 0x0)))->GetEngineEvent(), 0, F(self, 0x270));
+    FModSound_setParamValue(snd, (void *)(long)((Player *)(P(self, 0x0)))->GetEngineEvent(), 1,
                             F(self, 0x268) * g_PE_hs_throttleBias + 0.5f);
 
     unsigned int tf = *(unsigned int *)((char *)*g_PE_hs_transform);
@@ -3414,8 +3415,8 @@ void PlayerEgo::toggleCloaking() {
         if (need <= have) {
             Ship_removeCargo(Status_getShip(), 0x7a);
             C(self, 0x1ad) = 1;
-            ((Hud *)(P(self, 0x220)))->hudEvent(0x1e, self);
-            ((Hud *)(P(self, 0x220)))->hudEvent(0x1c, self);
+            ((Hud *)(P(self, 0x220)))->hudEvent(0x1e, self, 0);
+            ((Hud *)(P(self, 0x220)))->hudEvent(0x1c, self, 0);
         }
         return;
     }

@@ -1,9 +1,18 @@
 #include "gof2/MGame.h"
+// RecordHandler.h, Hud.h and PlayerEgo.h each define the file-local offset
+// helpers B()/I()/P(). RecordHandler.h gates its trio behind GOF2_BIP_HELPERS;
+// pre-define it so this TU takes B from PlayerEgo.h and I/P from Hud.h (one each).
+#define GOF2_BIP_HELPERS
 #include "gof2/Achievements.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/DialogueWindow.h"
 #include "gof2/Engine.h"
+// Engine.h declares __aeabi_memcpy returning void*; GameRecord.h redeclares it
+// returning void. Neither is called here, so rename GameRecord.h's decl away to
+// avoid the conflicting-return-type error (both headers still compile).
+#define __aeabi_memcpy __aeabi_memcpy_gamerecord
 #include "gof2/GameRecord.h"
+#undef __aeabi_memcpy
 #include "gof2/GameText.h"
 #include "gof2/Hud.h"
 #include "gof2/ImageFactory.h"
@@ -24,17 +33,16 @@
 #include "gof2/PlayerFixedObject.h"
 #include "gof2/Status.h"
 
-// Typed byte-offset accessor for the few cases where the field is selected at
-// runtime (computed offsets / loop indices) and cannot be named statically.
-template <class T> static inline T &F(void *p, unsigned off) {
-    return *reinterpret_cast<T *>(reinterpret_cast<char *>(p) + off);
-}
-
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void Music_resume(Music *m, int one, int v);
 extern "C" void PaintCanvas_End3d(unsigned color);
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void PlayerEgo_syncFirstPerson(PlayerEgo *p, int v);
+// PlayerEgo.h (owned by another batch) declares these as returning void, but the
+// callers below consume their (int) result. Use the original free-function form
+// so this TU sees the real int return type without editing PlayerEgo.h.
+extern "C" int PlayerEgo_setTurretMode(PlayerEgo *p, int enable);
+extern "C" int PlayerEgo_toggleCloaking(PlayerEgo *p);
 extern "C" Vector *TFC_getCamOffset(TargetFollowCamera *c);
 extern "C" float AEMath_VectorLength(Vector *v);
 extern "C" void *Vector_assign(void *dst, void *src);
@@ -211,12 +219,12 @@ void MGame::OnRender3D() {
 
     if (inMenuLevel == 0) {
         // World render.
-        ((Level *)(self->field_0x78))->renderBG();
+        ((Level *)(self->field_0x78))->renderBG(0);
         PaintCanvas_Begin3d();
         int arg = (flag15e == 0) ? self->field_0x40 : 0;
         Level_render(self->field_0x78, arg);
         int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
-        ((PlayerEgo *)(egoFlag))->render();
+        ((PlayerEgo *)(self->field_0x58))->render(egoFlag);
         if (self->field_0x114 != 0)
             AEGeometry_render(self->field_0x58);
         LevelScript_render3D(self->field_0x7c);
@@ -225,11 +233,11 @@ void MGame::OnRender3D() {
 
     if (flag15e != 0) {
         // Free-cam / cinematic world render.
-        ((Level *)(self->field_0x78))->renderBG();
+        ((Level *)(self->field_0x78))->renderBG(0);
         PaintCanvas_Begin3d();
         Level_render(self->field_0x78, self->field_0x40);
         int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
-        ((PlayerEgo *)(egoFlag))->render();
+        ((PlayerEgo *)(self->field_0x58))->render(egoFlag);
         if (self->field_0x114 != 0)
             AEGeometry_render(self->field_0x58);
         LevelScript_render3D(self->field_0x7c);
@@ -249,11 +257,11 @@ void MGame::OnRender3D() {
     }
 
     // Fallback world render.
-    ((Level *)(self->field_0x78))->renderBG();
+    ((Level *)(self->field_0x78))->renderBG(0);
     PaintCanvas_Begin3d();
     Level_render(self->field_0x78, 0);
     int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
-    ((PlayerEgo *)(egoFlag))->render();
+    ((PlayerEgo *)(self->field_0x58))->render(egoFlag);
     if (self->field_0x114 != 0)
         AEGeometry_render(self->field_0x58);
     LevelScript_render3D(self->field_0x7c);
@@ -356,7 +364,7 @@ void MGame::startJumpScene() {
     ((PlayerEgo *)(self->field_0x58))->setCollide(0);
     TFC_setLookAtCam(self->field_0xf4, 1);
     ((PlayerEgo *)(self->field_0x58))->stopBoost();
-    Engine *eng = (Engine *)ApplicationManager_GetEngine();
+    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
     ((Engine *)(eng))->SetPostEffect(g_jsPostEffect, 0);
 
     float camX, camY, camZ;
@@ -448,7 +456,7 @@ restart:
             self->field_0xd5 = 0;
             // fallthrough to step++
         } else {
-            int t = ((PlayerEgo *)(self->field_0x58))->setTurretMode(1);
+            int t = PlayerEgo_setTurretMode((PlayerEgo *)(self->field_0x58), 1);
             self->field_0xd5 = (uint8_t)t;
             if (t != 0) {
                 id = self->field_0x14;
@@ -492,7 +500,7 @@ afterTurret:
             LevelScript_lookBehind(self->field_0x7c, self->field_0x78);
             TFC_setRotationAroundTarget(self->field_0xf4, 0);
             ((PlayerEgo *)(self->field_0x58))->setFreeLookMode(0);
-            Engine *eng = (Engine *)ApplicationManager_GetEngine();
+            Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
             // Engine layout lives in another translation unit (gof2/Engine.h is not
             // included here); write its +0x360 field via a typed byte offset.
             F<int>(eng, 0x360) = 0;
@@ -568,7 +576,7 @@ __attribute__((visibility("hidden"))) extern GameText **g_gameText; // DAT_189d4
 // (six temporary Strings on the stack).
 void MGame::useCloak() {
     MGame *self = this;
-    if (((PlayerEgo *)(self->field_0x58))->toggleCloaking() != 0) return;
+    if (PlayerEgo_toggleCloaking((PlayerEgo *)(self->field_0x58)) != 0) return;
     if (self->field_0x94 == 0) {
         ChoiceWindow *w = (ChoiceWindow *)MGame_opnew(0x5c);
         ChoiceWindow_ctor(w);
@@ -654,12 +662,12 @@ void MGame::gameOverCheck() {
             ((PlayerEgo *)(self->field_0x58))->explode();
             if (((PlayerEgo *)(self->field_0x58))->explosionEnded() != 0) {
                 self->field_0x60 = 1;
-                void *t = ((GameText *)(**g_goDeathText))->getText();
+                String *t = (String *)((GameText *)(**g_goDeathText))->getText(0);
                 ((String *)((char *)self + 0x64))->assign(t);
             }
         } else {
             self->field_0x60 = 1;
-            void *t = ((GameText *)(**g_goWormText))->getText();
+            String *t = (String *)((GameText *)(**g_goWormText))->getText(0);
             ((String *)((char *)self + 0x64))->assign(t);
             self->field_0x111 = 1;
         }
@@ -679,7 +687,7 @@ void MGame::gameOverCheck() {
                 *sa = cm;
                 **g_goStatusD = v;
             }
-            int rec = ((RecordHandler *)((RecordHandler *)**g_goRecHandler))->recordStoreRead(**g_goRecId);
+            int rec = (int)(intptr_t)((RecordHandler *)((RecordHandler *)**g_goRecHandler))->recordStoreRead(**g_goRecId);
             self->field_0x1e8 = rec;
         }
     }
@@ -764,7 +772,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             }
             Globals_playMusicAndFadeOutCurrent(**g_tbMenuTrack);
             self->field_0x54 = 0;
-            ((ApplicationManager *)(self->field_0x8))->SetCurrentApplicationModule();
+            ((ApplicationManager *)(self->field_0x8))->SetCurrentApplicationModule(5);
             return;
         }
     } else {
@@ -772,7 +780,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
         if (self->field_0xc7 != 0) {
             Layout *hl = **g_tbStarLayout;
             if (*(uint8_t *)hl != 0) {
-                ((Layout *)(hl))->OnTouchBegin(p1);
+                ((Layout *)(hl))->OnTouchBegin(p1, p2);
                 return;
             }
             uint8_t r = StarMap_OnTouchBegin(self->field_0x90, p1);
@@ -785,7 +793,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             return;
         }
         if (self->field_0x5e != 0) {
-            ((DialogueWindow *)(self->field_0x8c))->OnTouchBegin(p1);
+            ((DialogueWindow *)(self->field_0x8c))->OnTouchBegin(p1, p2);
             return;
         }
         if (self->field_0x15d != 0) {
@@ -802,7 +810,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
     }
 
     // World HUD touch: dispatch on the hud's touch result bitmask.
-    unsigned hr = ((Hud *)(self->field_0x74))->touchBegin(p1, p2, touchId);
+    unsigned hr = ((Hud *)(self->field_0x74))->touchBegin(p1, (void *)(intptr_t)p2, (int)(intptr_t)touchId);
     self->field_0xf8 = hr;
     MGame_handleHudTouchAction(self, p1, p2, touchId, hr);
 }
@@ -827,11 +835,11 @@ void MGame::OnUpdate() {
 
     // Clamp this frame's elapsed time to [0, 0x96] ms (cap large hitches).
     int delta;
-    int t = ApplicationManager_GetElapsedTimeMillis();
+    int t = ((ApplicationManager *)(self->field_0x8))->GetElapsedTimeMillis();
     if (t < 0x97) {
-        delta = (ApplicationManager_GetElapsedTimeMillis() < 0) ? 0
-                : (ApplicationManager_GetElapsedTimeMillis() < 0x97
-                       ? ApplicationManager_GetElapsedTimeMillis()
+        delta = (((ApplicationManager *)(self->field_0x8))->GetElapsedTimeMillis() < 0) ? 0
+                : (((ApplicationManager *)(self->field_0x8))->GetElapsedTimeMillis() < 0x97
+                       ? ((ApplicationManager *)(self->field_0x8))->GetElapsedTimeMillis()
                        : 0x96);
     } else {
         delta = 0x96;
@@ -952,7 +960,7 @@ void MGame::dockEvent() {
     if (!special) {
         if ((self->field_0xcc != 0 || self->field_0xcb != 0) &&
             ((PlayerEgo *)(self->field_0x58))->isAutoPilot() != 0) {
-            ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58);
+            ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58, 0);
         }
         if (*guard != g0) __stack_chk_fail();
         return;
@@ -995,7 +1003,7 @@ void MGame::dockEvent() {
                         StarMap_ctor(sm, 0, 0, 0, -1);
                         self->field_0x90 = sm;
                     }
-                    Engine *eng = (Engine *)ApplicationManager_GetEngine();
+                    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
                     ((Engine *)(eng))->SetPostEffect(g_dePostEffect, 0);
                     StarMap_initLights(self->field_0x90);
                     StarMap_setJumpMapMode(self->field_0x90, 1, 0);
@@ -1051,7 +1059,7 @@ void MGame::dockEvent() {
     int cm = Status_getCurrentCampaignMission();
     if (cm > 0x30 && Status_getCurrentCampaignMission() < 0x37) {
         if (Station_getIndex(Status_getStation()) != 0x4a) {
-            ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58);
+            ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58, 0);
             if (*guard != g0) __stack_chk_fail();
             return;
         }
@@ -1062,7 +1070,7 @@ void MGame::dockEvent() {
         ((Achievements *)(*g_deAchieve))->checkForNewMedal(self->field_0x58);
         **g_deAlienFlag = 0;
         savePlayerStats(self, status);
-        ((ApplicationManager *)(self->field_0x8))->SetCurrentApplicationModule();
+        ((ApplicationManager *)(self->field_0x8))->SetCurrentApplicationModule(5);
         self->field_0x54 = 0;
     }
 
@@ -1191,7 +1199,7 @@ void MGame::UseKhadorDrive() {
 
     if (Status_inAlienOrbit() == 0) {
         if (((PlayerEgo *)(self->field_0x58))->hasVolatileGoods() != 0) {
-            void *txt = ((GameText *)(**g_kdVolText))->getText();
+            void *txt = ((GameText *)(**g_kdVolText))->getText(0);
             ChoiceWindow_set(self->field_0x94, txt);
             self->field_0x5d = 1;
             self->field_0xce = 1;
@@ -1207,7 +1215,7 @@ void MGame::UseKhadorDrive() {
             StarMap_ctor(sm, 0, 0, 0, -1);
             self->field_0x90 = sm;
         }
-        Engine *eng = (Engine *)ApplicationManager_GetEngine();
+        Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
         ((Engine *)(eng))->SetPostEffect(g_kdPostEffect, 0);
         StarMap_initLights(self->field_0x90);
         self->field_0xdd = 1;
@@ -1299,7 +1307,7 @@ void MGame::OnInitialize() {
     if (Status_inAlienOrbit() == 0)
         *(int *)((char *)*status + 0x84) = Station_getIndex(Status_getStation());
 
-    unsigned t = ApplicationManager_GetCurrentTimeMillis();
+    unsigned t = ((ApplicationManager *)(self->field_0x8))->GetCurrentTimeMillis();
     self->field_0x1ac = 0;   // this[1].field_A4
     self->field_0x1b4 = 0;   // this[1].field_AC
     self->field_0x20 = t & 0xffff;
@@ -1318,7 +1326,7 @@ void MGame::OnInitialize() {
     if (eq != 0) {
         self->field_0x1b4 = Item_getAttribute(eq, 0x26);
         self->field_0x1b0 = Item_getAttribute(eq, 0x26);
-        ((Hud *)(self->field_0x74))->setTimeExtender(1, 0, 1);
+        ((Hud *)(self->field_0x74))->setTimeExtender(1, 0, 1, 0);
     }
 
     // Alien-orbit / black-market radio messages.
@@ -1326,7 +1334,7 @@ void MGame::OnInitialize() {
         Status_getCurrentCampaignMission() < 0x93) {
         if (self->field_0x58 != 0 && self->field_0x84 != 0)
             *(Radio **)((char *)self->field_0x58 + 0x18) = self->field_0x84;
-        ((Level *)(self->field_0x78))->createRadioMessage(8);
+        ((Level *)(self->field_0x78))->createRadioMessage(8, 0);
     }
 
     if (Status_inBlackMarketSystem() == 0) {
@@ -1353,7 +1361,7 @@ void MGame::OnInitialize() {
                 lvl = self->field_0x78;
                 id = 0xd;
             }
-            ((Level *)(lvl))->createRadioMessage(id);
+            ((Level *)(lvl))->createRadioMessage(id, 0);
         } else {
             EnemyList *enemies = Level_getEnemies(self->field_0x78);
             if (enemies != 0) {
@@ -1496,7 +1504,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
 
     unsigned hr = 0;
     if (self->field_0x5d == 0) {
-        hr = ((Hud *)(self->field_0x74))->touchEnd(p1, p2, touchId);
+        hr = ((Hud *)(self->field_0x74))->touchEnd(p1, (void *)(intptr_t)p2, (int)(intptr_t)touchId);
         self->field_0xf8 = hr;
         if (hr != 0) {
             self->field_0x98 = 0;
@@ -1549,7 +1557,7 @@ void MGame::successCheck() {
 
     {
         int *status = g_scStatus;
-        int mc = ((Status *)(*status))->missionCompleted(0, 0);
+        Mission *mc = ((Status *)(*status))->missionCompleted(0, 0, 0);
         int obj = Level_checkObjective(self->field_0x78);
         if (mc == 0 && obj == 0) goto done;
     }
@@ -1583,7 +1591,7 @@ void MGame::successCheck() {
             }
             // fallthrough: has success dialogue -> show it.
             bindDlg(self);
-            ((DialogueWindow *)(self->field_0x8c))->set(Status_getMission(), 1);
+            ((DialogueWindow *)(self->field_0x8c))->set(Status_getMission(), 1, -1);
             self->field_0x5d = 0x101;
             ((MGame *)(self))->pauseSounds();
 
@@ -1595,7 +1603,10 @@ void MGame::successCheck() {
                     // Enemy entries are polymorphic; this branch touches the
                     // PlayerFixedObject layout (field_0x40 "moving" flag).
                     PlayerFixedObject *e = (PlayerFixedObject *)enemies->data[i];
-                    if (e->field_0x40 != 0 &&
+                    if (e->field_0x40 != 0) {
+                        ((Player *)(e->field_0x4))->setHitpoints((int)(intptr_t)e->field_0x4);
+                        ((PlayerFixedObject *)(e))->setMoving(1);
+                    }
                 }
             } else if (((Mission *)(Status_getMission()))->isCampaignMission() != 0 && cm == 0x38) {
                 StarSystem *ss = Level_getStarSystem(self->field_0x78);
@@ -1626,10 +1637,8 @@ void MGame::successCheck() {
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     PlayerFixedObject *o = *(PlayerFixedObject **)(*(int *)((char *)enemies + 4) + i * 4);
-                    if (o->field_0x40 != 0 &&
-bool Player::isDead() {
-    Player *self = this;
-                        ((Player *)(o->field_0x4))->setHitpoints(o->field_0x4);
+                    if (o->field_0x40 != 0) {
+                        ((Player *)(o->field_0x4))->setHitpoints((int)(intptr_t)o->field_0x4);
                         ((PlayerFixedObject *)(o))->setMoving(1);
                     }
                 }
@@ -1647,7 +1656,7 @@ bool Player::isDead() {
         intptr_t m = Status_getCurrentCampaignMission() == 0
                          ? (intptr_t)Status_getMission()
                          : (intptr_t)Status_getCurrentCampaignMission();
-        ((DialogueWindow *)(self->field_0x8c))->set(m, 1);
+        ((DialogueWindow *)(self->field_0x8c))->set((Mission *)m, 1, -1);
         self->field_0x5d = 0x101;
         ((MGame *)(self))->pauseSounds();
         goto done;
@@ -1895,7 +1904,7 @@ void MGame::reset() {
     self->field_0x17c = 0;
     self->field_0x180 = 0; self->field_0x184 = 0;
 
-    unsigned t = ApplicationManager_GetCurrentTimeMillis();
+    unsigned t = ((ApplicationManager *)(self->field_0x8))->GetCurrentTimeMillis();
     self->field_0x111 = 0x101;
     self->field_0xcf = 0;
     self->field_0xd0 = 0;
@@ -1931,8 +1940,8 @@ __attribute__((visibility("hidden"))) extern int g_accelTune;   // @0x1887d4 (*(
 // MGame::handleAccelerometer(): tilt-steer the ship from device accelerometer input.
 void MGame::handleAccelerometer() {
     MGame *self = this;
-    Engine *eng = (Engine *)ApplicationManager_GetEngine();
-    int acc = ((Engine *)(eng))->GetAccelValue();
+    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
+    double *acc = ((Engine *)(eng))->GetAccelValue();
 
     // Yaw from raw tilt (axis at +8, scaled by 2.5).
     float yaw = (float)(*(double *)((char *)acc + 8) * 2.5);
@@ -1940,18 +1949,20 @@ void MGame::handleAccelerometer() {
     if (yaw <= 1.0f) {
         steer = -1.0f;
         if (yaw < -1.0f) {
-            ((PlayerEgo *)(self->field_0x58))->left(steer * steer);
+            // frameTime arg was dropped by the decompiler; the per-frame nominal
+            // tick (0x32 ms) is used as the time multiplier.
+            ((PlayerEgo *)(self->field_0x58))->left(0x32, steer * steer);
             goto afterYaw;
         }
         steer = yaw;
         if (yaw < 0.0f) {
-            ((PlayerEgo *)(self->field_0x58))->left(steer * steer);
+            ((PlayerEgo *)(self->field_0x58))->left(0x32, steer * steer);
             goto afterYaw;
         }
         if (yaw == 0.0f)
             goto afterYaw;
     }
-    ((PlayerEgo *)(self->field_0x58))->right(steer * steer);
+    ((PlayerEgo *)(self->field_0x58))->right(0x32, steer * steer);
 
 afterYaw: {
     int field8 = self->field_0x8;
@@ -2063,7 +2074,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
 
     if (!handledFree) {
         if (self->field_0x5d == 0) {
-            int hh = ((Hud *)(self->field_0x74))->touchMove(p1, y, touch);
+            int hh = ((Hud *)(self->field_0x74))->touchMove(p1, (void *)(intptr_t)y, (int)(intptr_t)touch);
             self->field_0xf8 = hh;
             unsigned mode = (unsigned)self->field_0x14;
             if (mode <= 1) {
@@ -2301,7 +2312,7 @@ afterCam:
             ((PlayerEgo *)(p))->resetChargingDrive();
         } else {
             int **stationPtr = g_ujStation;
-            ((Status *)((Station *)*status))->departStation();
+            ((Status *)((Station *)*status))->departStation((Station *)*stationPtr);
             Level_setInitStreamOut(self->field_0x78);
             if (self->field_0xdd == 0)
                 Status_jumpgateUsed((Station *)*status);
@@ -2318,7 +2329,7 @@ afterCam:
             *(int *)((char *)*status + 0xf4) = ((PlayerEgo *)(self->field_0x58))->getCurrentSecondaryWeaponIndex();
             **g_ujFlagC = 1;
             self->field_0x54 = 0;
-            ((ApplicationManager *)(self->field_0x8))->SetCurrentApplicationModule();
+            ((ApplicationManager *)(self->field_0x8))->SetCurrentApplicationModule(5);
         }
     }
 
@@ -2432,7 +2443,7 @@ __attribute__((visibility("hidden"))) extern int **g_relImgFactory; // @0x18c878
 // MGame::OnRelease(): tear down the whole game session and reload UI resources.
 void MGame::OnRelease() {
     MGame *self = this;
-    Engine *eng = (Engine *)ApplicationManager_GetEngine();
+    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
     ((Engine *)(eng))->SetPostEffect(g_relPostEffect, 0);
 
     int *soundFlag = g_relSoundFlag;
@@ -2478,14 +2489,14 @@ void MGame::OnRelease() {
     self->field_0x84 = 0;
 
     int *appMod = g_relAppMod;
-    int m1 = ((ApplicationManager *)(*appMod))->GetApplicationModule();
+    void *m1 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
     if (*(int *)((char *)m1 + 0x10) != 0) {
-        int m2 = ((ApplicationManager *)(*appMod))->GetApplicationModule();
+        void *m2 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
         StarMap *sm = *(StarMap **)((char *)m2 + 0x10);
         if (sm != 0)
             operator_delete(StarMap_dtor(sm));
     }
-    int m3 = ((ApplicationManager *)(*appMod))->GetApplicationModule();
+    void *m3 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
     *(int *)((char *)m3 + 0x10) = 0;
 
     if (self->field_0x88 != 0)
@@ -2592,7 +2603,7 @@ void MGame::OnRender2D() {
             ((StarSystem *)(0))->render2D();
         }
         float v[4]; *(int *)&v[0] = 0x3f000000; *(int *)&v[1] = 0x3f000000; v[2] = 0;
-        Engine *eng = (Engine *)ApplicationManager_GetEngine();
+        Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
         Vector_assign((char *)eng + 0x3cc, v);
         PaintCanvas_End2d();
         if (*guard != g0) __stack_chk_fail();
@@ -2640,7 +2651,7 @@ void MGame::OnRender2D() {
                 self->field_0x111 = 0;
                 self->field_0x5d = 0;
             } else if (self->field_0x60 == 0) {
-                ((PlayerEgo *)(self->field_0x58))->draw();
+                ((PlayerEgo *)(self->field_0x58))->draw(1 /* allowHud: arg lost in decomp */);
                 if (((PlayerEgo *)(self->field_0x58))->isMining() == 0 &&
                     self->field_0xc7 == 0 &&
                     (((PlayerEgo *)(self->field_0x58))->isHacking() == 0 ||
@@ -2651,7 +2662,7 @@ void MGame::OnRender2D() {
                     MGame_drawHud(self);
                     MGame_drawRadio(self);
                     Radar_drawCurrentLock(self->field_0x80);
-                    ((Layout *)(**g_r2dRewardLayout))->drawMissionRewardMessage();
+                    ((Layout *)(**g_r2dRewardLayout))->drawMissionRewardMessage(1 /* transition: arg lost in decomp */);
                 } else {
                     ((DialogueWindow *)(self->field_0x8c))->draw();
                 }

@@ -17,46 +17,12 @@ struct Station;
 
 
 
-// AbyssEngine::AEMath::Vector - 3 floats.
-namespace AbyssEngine { namespace AEMath {
-
-} 
-    // ---- methods (converted from free functions) ----
-    void OnTouchBegin(int touch, int coord);
-    void OnTouchEnd(int touch, int coord);
-    unsigned int OnTouchMove(int touch, int coord);
-    void autoEquipSecondaryWeapons(int row);
-    void ctor();
-    bool currentItemIsHighlighted();
-    void demountItem(void *item, int slot);
-    int getCurrentTab();
-    float getRelativeScrollHeight();
-    float getRelativeScrollStartPos();
-    void hideMessage();
-    int highlightItem(void *item);
-    void initialize();
-    bool isInSpecialMode();
-    bool listMode();
-    void mountItem(void *item);
-    bool readyToClose();
-    void refreshCargoAvailabilityForBlueprints();
-    void refreshCurrentContentHeight();
-    void render();
-    void render3D();
-    void selectItem(void *item);
-    void setSellMode();
-    void showCreditsBuyWindow();
-    void showFreeCreditsWindow();
-    void transaction(bool buy);
-    void update(int delta);
-}
-typedef AbyssEngine::AEMath::Vector Vector;
+// AbyssEngine::AEMath::Vector - 3 floats. (Vector is already provided by common.h.)
 
 // 16-byte block used for NEON vld1/vst1.32 field copies in the constructor.
 struct Blk16 { int a, b, c, d; };
 
-// Small UTF-16 stack-string temp (12 bytes) used by the UI text/format helpers.
-struct String12 { uint32_t a, b, c; };
+// String12 is provided by gof2/common.h.
 
 // Typed byte-offset accessors for opaque (void*) referenced objects whose full
 // layout is not modeled in this translation unit. Return references so call sites
@@ -97,6 +63,55 @@ struct Layout {
     int field_0x114;                    // +0x114
     int field_0x264;                    // +0x264
     int field_0x2cc;                    // +0x2cc
+
+    // ---- methods used by HangarWindow (signatures match the call sites in
+    // HangarWindow.cpp; gof2/Layout.h is intentionally NOT included here because it
+    // redefines this struct and pulls in conflicting RetStr/B/I/P helpers). ----
+    void drawBG();
+    void drawBox(int style, int x, int y, int h, int w, void *text);
+    void drawFooter();
+    void drawScrollBar(int x, int y, int trackH, int pos, int range);
+    int OnTouchBegin(int coord);
+    int OnTouchEnd(int touch, int coord);
+    int OnTouchMove(int coord);
+    unsigned char helpPressed();
+    void initHelpWindow(void *text);
+    void resetWindowDimensions();
+};
+
+// Free-function geometry helpers from the Layout class (no `this`); declared here
+// so call sites resolve without including gof2/Layout.h.
+extern "C" int Layout_getHelpButtonOffset();
+extern "C" int Layout_getFooterTransitionWidth();
+
+// TouchButton - opaque; only ever reached via ((TouchButton*)ptr)->method(...).
+// Declared locally (gof2/TouchButton.h is NOT included: it redefines the RetStr/B/I/P
+// helpers that Station.h/RecordHandler.h also provide, and several of its method
+// signatures disagree with the call sites here). Signatures mirror the call sites.
+struct TouchButton {
+    int OnTouchBegin(int coord);
+    int OnTouchEnd(int coord);
+    int OnTouchMove(int coord);
+    void draw();
+    int getHeight();
+    int getWidth();
+    uint8_t isTouched();
+    uint8_t isVisible();
+    void replaceTextKeepSize(void *text);
+    void resetTouch();
+    void setAlwaysPressed(bool value);
+    void setPosition(int x, int y, int flags);
+    void setPosition2(int x, int y);
+    void setSplitText(void *value);
+    void setText(void *text);
+    void setVisible(bool value);
+};
+
+// GameText - opaque text table; only ever reached via getText(). The decompiler
+// dropped the string-key argument at every call site here, so the local declaration
+// takes none (gof2/GameText.h's getText takes an int key). Returns void* (a String*).
+struct GameText {
+    void *getText();
 };
 
 // Field accessors via byte offset.

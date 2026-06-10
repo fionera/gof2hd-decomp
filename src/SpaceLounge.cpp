@@ -5,7 +5,14 @@
 #include "gof2/Layout.h"
 #include "gof2/Mission.h"
 #include "gof2/String.h"
+// gof2/TouchButton.h and gof2/Station.h (pulled in via Mission.h above) both define
+// `struct RetStr` unconditionally with identical layout, which is a C++ redefinition error.
+// We need TouchButton.h for the TouchButton struct/methods used below, so include it with
+// its RetStr renamed out of the way (it is never referenced in this translation unit; the
+// canonical RetStr is the one already provided by Station.h).
+#define RetStr RetStr
 #include "gof2/TouchButton.h"
+#undef RetStr
 
 
 extern "C" void ChoiceWindow_OnTouchMove(void *choice, int x, int y);
@@ -486,7 +493,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         if (((Layout *)(layout))->helpPressed() != 0) {
             void *texts = *(void **)&SpaceLounge_touch_list_help_text_slot;
             void *text = ((GameText *)(*(void **)texts))->getText(0x283);
-            ((String *)(helpSmall))->ctor_copy(text, false);
+            ((String *)(helpSmall))->ctor_copy((String *)text, false);
             ((Layout *)(layout))->initHelpWindow(helpSmall);
             ((String *)(helpSmall))->dtor();
         }
@@ -552,7 +559,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     if (((Layout *)(layout))->helpPressed() != 0) {
         void *texts = *(void **)&SpaceLounge_touch_help_text_slot;
         void *text = ((GameText *)(*(void **)texts))->getText(0x273);
-        ((String *)(helpBig))->ctor_copy(text, false);
+        ((String *)(helpBig))->ctor_copy((String *)text, false);
         ((Layout *)(layout))->initHelpWindow(helpBig);
         ((String *)(helpBig))->dtor();
     }
@@ -872,14 +879,14 @@ void SpaceLounge::drawLounge() {
             } else {
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
                 void *text = ((GameText *)(*(void **)texts))->getText(Agent_getRace(agent) + 0x196);
-                ((String *)(s0))->ctor_copy(text, false);
+                ((String *)(s0))->ctor_copy((String *)text, false);
             }
 
             void *mission = ((Agent *)(agent))->getMission();
             if (mission != 0) {
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
                 void *text = ((GameText *)(*(void **)texts))->getText(Mission_getType(mission) + 0x162);
-                ((String *)(s1))->ctor_copy(text, false);
+                ((String *)(s1))->ctor_copy((String *)text, false);
             } else {
                 int offer = Agent_getOffer(agent);
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
@@ -892,7 +899,7 @@ void SpaceLounge::drawLounge() {
                     id = 0x130;
                 }
                 if (id != 0) {
-                    ((String *)(s1))->ctor_copy(((GameText *)(*(void **)texts))->getText(id), false);
+                    ((String *)(s1))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(id), false);
                 } else {
                     String_ctor_cstr(s1, "", false);
                 }
@@ -904,7 +911,7 @@ void SpaceLounge::drawLounge() {
             int boxY = y - pad;
             int width = pad * 2 + textWidth;
             String_ctor_cstr(s2, "", false);
-            ((Layout *)(layout))->drawBox(2, boxX, boxY, width, I(layout, 0x30), s2);
+            ((Layout *)(layout))->drawBox6(2, boxX, boxY, width, I(layout, 0x30), s2);
             ((String *)(s2))->dtor();
             PaintCanvas_DrawRectangle(canvas, boxX, boxY, width, I(layout, 0x30));
 
@@ -931,10 +938,10 @@ void SpaceLounge::drawLounge() {
 
     PaintCanvas_SetColor(canvas, -1);
     String_ctor_cstr(s0, "", false);
-    ((Layout *)(layout))->drawBox(2, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c), s0);
+    ((Layout *)(layout))->drawBox6(2, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c), s0);
     ((String *)(s0))->dtor();
     PaintCanvas_DrawRectangle(canvas, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c));
-    ((ImageFactory *)(factory))->drawChar(((void **)P(P(self, 0x38), 0x4))[I(self, 0x20)], I(layout, 0x4c) + I(self, 0x70), I(layout, 0x4c) + I(self, 0x74), false);
+    ((ImageFactory *)(factory))->drawChar((Arr *)((void **)P(P(self, 0x38), 0x4))[I(self, 0x20)], I(layout, 0x4c) + I(self, 0x70), I(layout, 0x4c) + I(self, 0x74), false);
     ScrollTouchWindow_draw(P(self, 0x60));
 
     if ((I(self, 0x14) & 0xfffffffe) != 2) {
@@ -944,23 +951,23 @@ void SpaceLounge::drawLounge() {
     ((TouchButton *)(button_at(self, 0)))->setTextColor(-1);
     int offer = Agent_getOffer(((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)]);
     if (I(self, 0x14) == 2) {
-        ((TouchButton *)(button_at(self, 0)))->setPosition(I(self, 0x84), I(self, 0x80));
+        ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x80));
         TouchButton_setPosition3(button_at(self, 1), I(self, 0x6c) + I(self, 0x84), I(self, 0x80), 0x12);
         I(self, 0x68) = 0;
         if (offer < 11 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
             I(self, 0x68) = 3;
         } else if (offer == 1) {
             I(self, 0x68) = 1;
-            ((TouchButton *)(button_at(self, 0)))->setPosition(I(self, 0x84), I(self, 0x7c));
+            ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x7c));
         } else {
             I(self, 0x68) = 2;
-            ((TouchButton *)(button_at(self, 0)))->setPosition(I(self, 0x84), I(self, 0x7c));
+            ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x7c));
             TouchButton_setPosition3(button_at(self, 1), I(self, 0x6c) + I(self, 0x84), I(self, 0x7c), 0x12);
         }
     } else {
         I(self, 0x68) = 1;
         ((TouchButton *)(button_at(self, 0)))->setTextColor(-1);
-        ((TouchButton *)(button_at(self, 0)))->setPosition(I(self, 0x84), I(self, 0x7c));
+        ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x7c));
     }
 
     for (unsigned i = 0; i < U(P(self, 0x5c), 0x0); ++i) {
@@ -976,10 +983,10 @@ void SpaceLounge::drawLounge() {
     }
     int panelHeight = I(layout, 0x4c) * 2 + buttonHeight;
     String_ctor_cstr(s0, "", false);
-    ((Layout *)(layout))->drawBox(2, I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight, s0);
+    ((Layout *)(layout))->drawBox6(2, I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight, s0);
     ((String *)(s0))->dtor();
     PaintCanvas_DrawRectangle(canvas, I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight);
-    ((ImageFactory *)(factory))->drawChar(P(self, 0x3c), I(layout, 0x4c) + I(self, 0x70), I(self, 0x78) + I(layout, 0x4c), true);
+    ((ImageFactory *)(factory))->drawChar((Arr *)P(self, 0x3c), I(layout, 0x4c) + I(self, 0x70), I(self, 0x78) + I(layout, 0x4c), true);
 
     ((TouchButton *)(button_at(self, 0)))->setVisible(true);
     if (!(offer == 1 || UC(self, 0x36) != 0 || I(self, 0x14) == 3)) {
@@ -1200,10 +1207,10 @@ void SpaceLounge::startChat() {
         bodyId = 0x133;
     }
 
-    ((String *)(title))->ctor_copy(((GameText *)(*(void **)texts))->getText(titleId), false);
-    ((String *)(body))->ctor_copy(((GameText *)(*(void **)texts))->getText(bodyId), false);
-    ((String *)(left))->ctor_copy(((GameText *)(*(void **)texts))->getText(0x10), false);
-    ((String *)(right))->ctor_copy(((GameText *)(*(void **)texts))->getText(0x11), false);
+    ((String *)(title))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(titleId), false);
+    ((String *)(body))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(bodyId), false);
+    ((String *)(left))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x10), false);
+    ((String *)(right))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x11), false);
 
     ChoiceWindow_setText(P(self, 0x8), title, body);
     ChoiceWindow_setButtonText(P(self, 0x8), left, right);
@@ -1348,7 +1355,7 @@ void SpaceLounge::draw() {
     void *layout = *(void **)layoutSlot;
     void *textsSlot = *(void **)&SpaceLounge_draw_text_slot;
     void *text = ((GameText *)(*(void **)textsSlot))->getText(0x18e);
-    ((String *)(title))->ctor_copy(text, false);
+    ((String *)(title))->ctor_copy((String *)text, false);
     Layout_drawHeader_call(layout, title);
     ((String *)(title))->dtor();
 

@@ -1,12 +1,18 @@
-#include "gof2/LevelScript.h"
-#include "gof2/Explosion.h"
+// Offset accessors come from a single source each within this TU:
+//   I() from Explosion.h, B() from PlayerEgo.h, P() from LevelScript.h.
+#include "gof2/LevelScript.h"   // defines P()
+#include "gof2/Explosion.h"     // defines I()
 #include "gof2/KIPlayer.h"
 #include "gof2/Player.h"
-#include "gof2/PlayerEgo.h"
+#include "gof2/PlayerEgo.h"     // defines B()
 #include "gof2/PlayerFighter.h"
 #include "gof2/Route.h"
-#include "gof2/SolarSystem.h"
+#include "gof2/SolarSystem.h"   // first to define struct RetStr
+// Station.h also defines an identical struct RetStr; rename it inside that
+// header so it doesn't collide with SolarSystem.h's copy within this TU.
+#define RetStr RetStr
 #include "gof2/Station.h"
+#undef RetStr
 
 // A by-value 3-float vector passed to the camera helpers (a math Vector laid out
 // as 3 contiguous floats). Defined once here so all uses agree.
@@ -129,14 +135,14 @@ void LevelScript::setAutoPilotToProgrammedStation()
     void **programmedStation = &gProgrammedStation;
     if (*programmedStation != 0) {
         void **status = &gStatus;
-        if (((Station *)(Status_getStation(*status)))->equals(*programmedStation) != 0) {
+        if (((Station *)(Status_getStation(*status)))->equals((Station *)*programmedStation) != 0) {
             *programmedStation = 0;
             return;
         }
 
         void *target;
         void *player;
-        if (((SolarSystem *)(Status_getSystem(*status)))->stationIsInSystem(*programmedStation) != 0) {
+        if (((SolarSystem *)(Status_getSystem(*status)))->stationIsInSystem((Station *)*programmedStation) != 0) {
             player = Level_getPlayer((Level *)P(this, 0x18));
             void *targets = StarSystem_getPlanetTargets(Level_getStarSystem((Level *)P(this, 0x18)));
             void *system = Status_getSystem(*status);

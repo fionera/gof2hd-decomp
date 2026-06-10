@@ -2,10 +2,23 @@
 #include "gof2/GameText.h"
 #include "gof2/Globals.h"
 #include "gof2/PlayerEgo.h"
-#include "gof2/SolarSystem.h"
+#include "gof2/SolarSystem.h"   // first definer of RetStr in this TU
+// Station.h and TouchButton.h re-define the same per-class helper symbols
+// (RetStr/B/I/P) without include guards. Rename them per-header so the TU has
+// one canonical RetStr/B/I/P (from the headers above) and no redefinitions.
+#define RetStr RetStr
 #include "gof2/Station.h"
+#undef RetStr
 #include "gof2/String.h"
+#define RetStr RetStr
+#define B B_TouchButton
+#define I I_TouchButton
+#define P P_TouchButton
 #include "gof2/TouchButton.h"
+#undef RetStr
+#undef B
+#undef I
+#undef P
 #include "gof2/ListItem.h"
 
 
@@ -160,7 +173,7 @@ unsigned int Hud::touchEnd(unsigned int a, void *b, int key) {
         unsigned int *btns = (unsigned int *)P(self, 0x18);
         if (btns != 0) {
             for (unsigned int j = 0; j < btns[0]; j = j + 1) {
-                ((TouchButton *)(((int *)btns[1])[j]))->OnTouchEnd(a, b);
+                ((TouchButton *)(((int *)btns[1])[j]))->OnTouchEnd((int)a, (int)(long)b);
                 btns = (unsigned int *)P(self, 0x18);
             }
         }
@@ -379,7 +392,7 @@ void Hud::drawOrbitInformation() {
         char sysName[12], copy[12], sep[12], acc[12], full[12];
         Status_getSystem();
         ((SolarSystem *)(sysName))->getName();
-        ((String *)(copy))->ctor_copy(sysName, false);
+        ((String *)(copy))->ctor_copy((String *)(sysName), false);
         String_ctor_cstr(sep, g_Hud_oiSep, false);
         String_concat(acc, copy, sep);
         void *txt = ((GameText *)(*g_Hud_oiGameText))->getText(0); // id resolved by table
@@ -458,7 +471,7 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
     if (UC(self, 0x282) != 0 && menu != 0) {
         // quick-menu open: delegate to its buttons
         for (unsigned int i = 0; i < menu[0]; i++) {
-            if (((TouchButton *)(*(void **)(menu[1] + i * 4)))->OnTouchBegin(x) != 0)
+            if (((TouchButton *)(*(void **)(menu[1] + i * 4)))->OnTouchBegin((int)x, (int)y) != 0)
                 return *(unsigned int *)*(void **)(I(P(self, 0x18), 4) + i * 4);
             menu = (unsigned int *)P(self, 0x18);
         }
@@ -521,7 +534,7 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
 // ---- Hud_1603fc.cpp ----
 // AbyssEngine::String::String()
 
-Hud * Hud::Hud() {
+Hud * Hud::ctor() {
     Hud *self = this;
     int i = 0x1c;
     do {
@@ -564,18 +577,18 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         String_op_assign(dst, base);
 
         void *tmpl = *g_Hud_ccTemplate;
-        char a40[12]; ((String *)(a40))->ctor_copy(dst, false);
+        char a40[12]; ((String *)(a40))->ctor_copy((String *)(dst), false);
         Status_getMission();
         Mission_getType(Status_getMission());
         void *typeTxt = ((GameText *)(gt))->getText(0);
-        char a4c[12]; ((String *)(a4c))->ctor_copy(typeTxt, false);
+        char a4c[12]; ((String *)(a4c))->ctor_copy((String *)(typeTxt), false);
         char a58[12]; String_ctor_cstr(a58, g_Hud_ccHashX, false);
         char out1[12]; Status_replaceHash(out1, tmpl, a40, a4c, a58);
         String_op_assign(dst, out1);
         ((String *)(out1))->dtor(); ((String *)(a58))->dtor(); ((String *)(a4c))->dtor(); ((String *)(a40))->dtor();
 
         tmpl = *g_Hud_ccTemplate;
-        char a64[12]; ((String *)(a64))->ctor_copy(dst, false);
+        char a64[12]; ((String *)(a64))->ctor_copy((String *)(dst), false);
         char a70[12]; ((String *)(a70))->ctor_int(1);
         char a7c[12]; String_ctor_cstr(a7c, g_Hud_ccHashN, false);
         char out2[12]; Status_replaceHash(out2, tmpl, a64, a70, a7c);
@@ -584,7 +597,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
 
         void *item = operator_new(0x48);
         void *str = operator_new(0xc);
-        ((String *)(str))->ctor_copy(dst, false);
+        ((String *)(str))->ctor_copy((String *)(dst), false);
         ListItem_ctor(item, str);
         ((ListItem *)item)->field_0x2c = cargoVal;
         ((Hud *)(self))->addToEventQueue((ListItem *)item);
@@ -598,7 +611,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         String_op_assign(B(self, 0x1f4), txt);
         void *item = operator_new(0x48);
         void *str = operator_new(0xc);
-        ((String *)(str))->ctor_copy(B(self, 0x1f4), false);
+        ((String *)(str))->ctor_copy((String *)(B(self, 0x1f4)), false);
         ListItem_ctor1(item, str, 1);
         Hud_catchCargoFinish(self);
         return;
@@ -613,12 +626,12 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         char a0[12]; ((String *)(a0))->ctor_int(I(self, 0x52c));
         char ac[12]; String_ctor_cstr(ac, g_Hud_ccUnit, false);
         char a94[12]; String_concat(a94, a0, ac);
-        char a88[12]; ((String *)(a88))->ctor_copy(a94, false);
+        char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
         void *unit = ((GameText *)(gt))->getText(0);
         char k34[12]; String_concat(k34, a88, unit);
         ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
-        char b8[12]; ((String *)(b8))->ctor_copy(k34, false);
+        char b8[12]; ((String *)(b8))->ctor_copy((String *)(k34), false);
         int idx = ((Hud *)(self))->sameHudEventAsBeforeAggregate((String *)b8);
         ((String *)(b8))->dtor();
         if (idx >= 0) {
@@ -628,7 +641,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
             char nAc[12]; ((String *)(nAc))->ctor_int(newAmt);
             char nC4[12]; String_ctor_cstr(nC4, g_Hud_ccUnit2, false);
             char nA0[12]; String_concat(nA0, nAc, nC4);
-            char n94[12]; ((String *)(n94))->ctor_copy(nA0, false);
+            char n94[12]; ((String *)(n94))->ctor_copy((String *)(nA0), false);
             void *u2 = ((GameText *)(gt))->getText(0);
             char n88[12]; String_concat(n88, n94, u2);
             String_op_assign(*(void **)(*(int *)(I(P(self, 0x264), 4) + idx * 4) + 0x1c), n88);
@@ -644,7 +657,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     char a0[12]; ((String *)(a0))->ctor_int(I(self, 0x52c));
     char ac[12]; String_ctor_cstr(ac, g_Hud_ccUnit, false);
     char a94[12]; String_concat(a94, a0, ac);
-    char a88[12]; ((String *)(a88))->ctor_copy(a94, false);
+    char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
     void *unit = ((GameText *)(gt))->getText(0);
     char k34[12]; String_concat(k34, a88, unit);
     String_op_assign(B(self, 0x1f4), k34);
@@ -652,7 +665,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
 
     void *item = operator_new(0x48);
     void *str = operator_new(0xc);
-    ((String *)(str))->ctor_copy(B(self, 0x1f4), false);
+    ((String *)(str))->ctor_copy((String *)(B(self, 0x1f4)), false);
     ListItem_ctor(item, str);
     ((ListItem *)item)->field_0x2c = cargoVal;
     if (!p7 || p6) ((ListItem *)item)->field_0x30 = 2;
@@ -784,7 +797,7 @@ void Hud::drawEventQueue() {
     void *src = *g_Hud_eqSelf;
     void *canvas = *g_Hud_eqCanvas;
     int dispBase = I(src, 0x1e4);
-    float dispScale = F(src, 0x1e0);
+    float dispScale = F<float>(src, 0x1e0);
 
     PaintCanvas_SetColor4(canvas, 0xff, 0xff, 0xff, 0); // alpha derived below replaced inline
     float mul = (letterbox == 0) ? -2.0f : -1.0f;
@@ -1172,7 +1185,7 @@ static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw
     int x = x0;
     for (int i = 1; (unsigned int)(i - 1) < (unsigned int)len; i++) {
         char ch[12];
-        ((String *)(ch))->SubString(str, i - 1);
+        ((String *)(ch))->SubString((String *)str, i - 1, i);
         int frame = ((String *)(ch))->ValueOf();
         ((String *)(ch))->dtor();
         Sprite_setFrame(sprite, frame);
@@ -1283,14 +1296,14 @@ void Hud::hudEventMedal(int medalId, int percent) {
     ((String *)(sep))->dtor();
 
     char probe[12];
-    ((String *)(probe))->ctor_copy(dst, false);
+    ((String *)(probe))->ctor_copy((String *)(dst), false);
     int same = ((Hud *)(self))->sameHudEventAsBefore((String *)probe);
     ((String *)(probe))->dtor();
     if (same != 0) return;
 
     void *item = operator_new(0x48);
     void *str = operator_new(0xc);
-    ((String *)(str))->ctor_copy(dst, false);
+    ((String *)(str))->ctor_copy((String *)(dst), false);
     ListItem_ctor(item, str, 3);
     ((Hud *)(self))->addToEventQueue((ListItem *)item);
 

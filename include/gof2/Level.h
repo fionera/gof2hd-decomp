@@ -21,6 +21,9 @@ struct Player;
 struct ParticleSystemManager;
 struct PaintCanvas;
 struct Mission;
+struct Gun;
+struct Waypoint;
+struct PlayerFixedObject;
 
 // Galaxy on Fire 2 — Level (the in-flight game world / mission space).
 // Layout deduced from getter/setter disassembly. Total size 0x2a0.
@@ -160,7 +163,7 @@ struct Level {
 
     static void setInitStreamOut();
 
-    void init();
+    int init();
     void createSpace();
     void createPlayer();
     void createAsteroids();
@@ -179,12 +182,12 @@ struct Level {
     void initParticleSystems();
     int getStarSystem();
     int getGasClouds();
-    int createGun();
-    void createStaticObject();
-    void createShip();
+    Gun *createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color);
+    int createStaticObject(Waypoint *wp, int type, int jitter);
+    PlayerFixedObject *createShip(int race, int shipClass, int type, Waypoint *wp, int hostile, int group);
     Route *createRoute(int count);
     void setPlayerRoute(Route *route);
-    void createRadioMessages();
+    void createRadioMessages(int set);
     void getBoundingVolume();
     int getPlayer();
     int getEnemies();
@@ -195,7 +198,7 @@ struct Level {
     int getEnemyRoute();
     int getFriendRoute();
     void flashScreen(int type);
-    void enemyDied();
+    void enemyDied(int r1, bool r2arg);
     void junkDied();
     void applyKills();
     void friendDied();
@@ -210,17 +213,17 @@ struct Level {
     void isInAsteroidCenterRange(Vector v);
     int collideStream(Vector v);
     int collideStation(Vector v);
-    void renderBG();
+    void renderBG(float t);
     void render(int ctx);
     void render2D();
     void renderPause();
-    void updateMissionOrbit();
-    void updateOrbit();
+    void updateMissionOrbit(int dt);
+    void updateOrbit(int dt);
     void alarmAllFriends(int race, bool message);
     void createRadioMessage(int type, int param);
-    void updateAlienAttackers();
+    void updateAlienAttackers(int dt);
     void updateAsteroidCluster();
-    void update();
+    void update(long long time, unsigned dtArg, int stackFlag);
     int checkObjective();
     void stealFriendCargo();
     uint8_t friendCargoWasStolen();

@@ -1,19 +1,18 @@
 #include "gof2/HangarWindow.h"
 #include "gof2/BluePrint.h"
-#include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
 #include "gof2/RecordHandler.h"
 #include "gof2/Station.h"
-#include "gof2/TouchButton.h"
 #include "gof2/Globals.h"
 #include "gof2/Status.h"
 #include "gof2/ListItem.h"
 // NOTE: gof2/Item.h is intentionally not included - Item is only ever used opaquely
 // here (via the Item_* free functions), and fwd.h already forward-declares it.
-// NOTE: gof2/Layout.h is intentionally not included - it (re)defines a placement-new
-// that clashes with libc++'s <new>. The Layout struct we need is defined in
-// gof2/HangarWindow.h instead (completes the fwd.h forward declaration).
+// NOTE: gof2/Layout.h, gof2/TouchButton.h and gof2/GameText.h are intentionally NOT
+// included. Layout.h redefines the Layout struct and pulls in placement-new; both
+// TouchButton.h and Station.h/RecordHandler.h redefine the shared RetStr/B/I/P helper
+// structs unconditionally, which collide. Minimal local Layout/TouchButton/GameText
+// declarations (matching these call sites) live in gof2/HangarWindow.h instead.
 
 
 extern "C" int *HangarList_getCurrentTabItems(void *list);
@@ -876,7 +875,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     switch (i) {
                     case 0:
                         ((RecordHandler *)(rh))->recordStoreWrite(0);
-                        ((RecordHandler *)(rh))->recordStoreWritePreview(0);
+                        ((RecordHandler *)(rh))->recordStoreWritePreview_int(0);
                         break;
                     case 1:
                         G<uint8_t>(appData, 0xa0) = 1;
@@ -969,7 +968,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->field_0x3c = 0;
                 ((ListItem *)(self->field_0x68))->getPrice();
                 Status_changeCredits(globals);
-                ((Station *)(Status_getStation()))->removeShip();
+                ((Station *)(Status_getStation()))->removeShip((Ship *)Status_getShip());
                 HangarList_initShopTab(self->field_0x14, self->field_0x10,
                                        Station_getShips(Status_getStation()));
                 ((HangarWindow *)(self))->refreshCurrentContentHeight();
@@ -1346,7 +1345,7 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
                 if (((ListItem *)(ci))->isShip() != 0 &&
                     HangarList_getCurrentTab(self->field_0x14) == 1) {
                     Ship_setCargo(Status_getShip(), Item_extractItems(self->field_0x10, true));
-                    ((Station *)(Status_getStation()))->setItems(Item_extractItems(self->field_0x10, false), false);
+                    ((Station *)(Status_getStation()))->setItems((uint32_t *)Item_extractItems(self->field_0x10, false), false);
                 }
             }
         }
@@ -1602,7 +1601,7 @@ void HangarWindow::setSellMode() {
         }
 
         Ship_setCargo(Status_getShip(), Item_extractItems(self->field_0x10, true));
-        ((Station *)(Status_getStation()))->setItems(Item_extractItems(self->field_0x10, false), false);
+        ((Station *)(Status_getStation()))->setItems((uint32_t *)Item_extractItems(self->field_0x10, false), false);
         if (self->field_0x10 != 0) {
             ArrayReleaseClasses_ItemPtr(self->field_0x10);
             if (self->field_0x10 != 0)
@@ -1629,7 +1628,7 @@ void HangarWindow::setSellMode() {
     if (self->field_0x88 == 0) {
         if (self->field_0x84 != 0 && self->field_0x80 != 0) {
             void *bpItem = G<void *>(self->field_0x84, 0x10);
-            ((BluePrint *)(self->field_0x80))->addItem(bpItem, Item_getBlueprintAmount(bpItem), Station_getIndex(Status_getStation()));
+            ((BluePrint *)(self->field_0x80))->addItem((Item *)bpItem, Item_getBlueprintAmount(bpItem), Station_getIndex(Status_getStation()));
         }
 
         uint8_t completedFlag = 0;
@@ -1848,7 +1847,7 @@ void HangarWindow::selectItem(void *item) {
                 self->field_0xfc = HangarList_getCurrentItemIndex(self->field_0x14);
 
                 Ship_setCargo(Status_getShip(), Item_extractItems(self->field_0x10, true));
-                ((Station *)(Status_getStation()))->setItems(Item_extractItems(self->field_0x10, false), false);
+                ((Station *)(Status_getStation()))->setItems((uint32_t *)Item_extractItems(self->field_0x10, false), false);
                 if (self->field_0x10 != 0) {
                     ArrayReleaseClasses_ItemPtr(self->field_0x10);
                     if (self->field_0x10 != 0)

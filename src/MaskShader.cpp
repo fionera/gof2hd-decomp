@@ -17,7 +17,7 @@ void MaskShader::SetInActive()
 }
 
 // AbyssEngine::MaskShader::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
-void MaskShader::UpdateMeshData(Mesh *mesh, Engine *engine)
+void MaskShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 {
     char *e = (char *)engine;
     char *m = (char *)mesh;
@@ -41,7 +41,7 @@ void MaskShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     char *texBase = *(char **)(e + 0x30);
     int *tex = *(int **)(texBase + 0x20);
     if (tex != 0)
-        ((Engine *)(engine))->SetTextureSlot(tex[1], 1);
+        ((::Engine *)(engine))->SetTextureSlot(tex[1], 1);
 
     if (*(uint8_t *)(m + 0x5c) == 0) {
         if (field_0x20 >= 0)
@@ -66,7 +66,7 @@ void MaskShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 }
 
 // AbyssEngine::MaskShader::Init(AbyssEngine::Engine*)
-void MaskShader::Init(Engine *)
+void MaskShader::Init(::Engine *)
 {
     uint32_t program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "MaskShader.vsh", "MaskShader.fsh");
     field_0x4 = (int)program;

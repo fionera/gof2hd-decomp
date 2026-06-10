@@ -32,10 +32,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-extern "C" void String_ctor_char(String *self, const char *text, bool copy);
-extern "C" void String_assign(String *self, const String *other);
-extern "C" void String_dtor(String *self);
-
 // AbyssEngine::TexOnlyShader — minimal GLES2 shader that only samples a texture.
 struct TexOnlyShader {
     void *field_0x0;     // vtable

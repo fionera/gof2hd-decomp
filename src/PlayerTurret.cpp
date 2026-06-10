@@ -392,7 +392,7 @@ void PlayerTurret::update(int delta)
             UC(player, 0x5d) = ((Standing *)(Status_getStanding()))->isFriend(standing);
         }
     }
-    if (((Player *)(player))->turnedEnemy() != 0) {
+    if (Player_turnedEnemy((Player *)(player)) != 0) {
         US(player, 0x5c) = 1;
     }
     if (((Player *)(player))->isAlwaysFriend() != 0) {

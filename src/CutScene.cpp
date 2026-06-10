@@ -85,7 +85,15 @@ void CutScene::render3D()
     if (level != 0) {
         uint32_t t = (uint32_t)((ApplicationManager *)(*g_appManager))->GetElapsedTimeMillis();
         u32(this, 0x58) = t;
-        ((Level *)(pp(this, 0x0)))->update((long long)(int)t, 0);
+        // Level::update(long long time, unsigned dt, int flag) — real 3-arg signature
+        // recovered from src/Level.cpp; the in-flight Level.h still declares update().
+        // Call through a typed member-function pointer so this compiles regardless of
+        // the transitional header and preserves the original arguments.
+        {
+            typedef void (Level::*LevelUpdateFn)(long long, unsigned, int);
+            LevelUpdateFn fn = (LevelUpdateFn)(&Level::update);
+            (((Level *)(pp(this, 0x0)))->*fn)((long long)(int)t, 0u, 0);
+        }
         Level_render(pp(this, 0x0), u32(this, 0x58));
     }
     if (pp(this, 0x28) != 0) AEGeometry_render(pp(this, 0x28));
@@ -154,7 +162,7 @@ void CutScene::process(int delta)
     if (u8(self, 0x5c) == 0)
         return;
 
-    unsigned int now = ApplicationManager_GetCurrentTimeMillis();
+    unsigned int now = (unsigned int)((ApplicationManager *)(*g_appManager))->GetCurrentTimeMillis();
     unsigned int prev = u32(self, 0x48);
     unsigned int dt = now - prev;
     // 64-bit accumulator at +0x50.
@@ -537,11 +545,18 @@ void CutScene::initialize()
         Level_ctor(level, i32(this, 0x88));
         pp(this, 0x0) = level;
     }
-    do {
-        if (((Level *)(level))->init() != 0)
-            break;
-        level = pp(this, 0x0);
-    } while (true);
+    // Level::init() really returns int (staged setup, nonzero == done) per
+    // src/Level.cpp; the in-flight Level.h still declares it as void. Call through
+    // a typed member-function pointer to recover the return value and loop intent.
+    {
+        typedef int (Level::*LevelInitFn)();
+        LevelInitFn fn = (LevelInitFn)(&Level::init);
+        do {
+            if ((((Level *)(level))->*fn)() != 0)
+                break;
+            level = pp(this, 0x0);
+        } while (true);
+    }
 
     void *player = Level_getPlayer(pp(this, 0x0));
     pp(this, 0x60) = player;
@@ -661,7 +676,7 @@ void CutScene::initialize()
     i32(this, 0x80) = 0;
     i32(this, 0x84) = 0;
 
-    unsigned int now = ApplicationManager_GetCurrentTimeMillis();
+    unsigned int now = (unsigned int)((ApplicationManager *)(*g_appManager))->GetCurrentTimeMillis();
     u8(this, 0x5c) = 1;
     u32(this, 0x40) = now & 0xffff;
     u32(this, 0x44) = 0;

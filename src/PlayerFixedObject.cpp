@@ -11,8 +11,8 @@
 #include "gof2/BoundingVolume.h"
 #include "gof2/Player.h"
 
-// Small 3-float aggregate returned by-value by several engine helpers.
-struct V3 { float x, y, z; };
+// V3 (3-float by-value vector return type) is provided by gof2/PlayerFixedObject.h
+// as a typedef of AbyssEngine::AEMath::Vector.
 
 // Byte-offset reader retained for the few foreign-class fields accessed from this
 // translation unit by raw offset (engine singletons / Player internals not modelled
@@ -142,7 +142,7 @@ void PlayerFixedObject::translate(const Vector &d) {
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void.
 // Returns String by value (sret r0, this r1). Copy-ctor returns void, so the
 // compiler keeps a frame + restores the sret pointer.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// `struct RetStr` is provided by gof2/Station.h via the class header.
 
 RetStr PlayerFixedObject::getName() {
     PlayerFixedObject *self = this;
@@ -154,9 +154,9 @@ RetStr PlayerFixedObject::getName() {
 // ---- setName_154f12.cpp ----
 // Tail-call into AbyssEngine::String::operator= (or move-assign): dst = this+0x1ac, src = r1 (the String arg).
 
-void * PlayerFixedObject::setName() {
+void * PlayerFixedObject::setName(String *name) {
     PlayerFixedObject *self = this;
-    return ((String *)((char *)self + 0x1ac))->assign();
+    return ((String *)((char *)self + 0x1ac))->assign(name);
 }
 
 // ---- _PlayerFixedObject_153e14.cpp ----
@@ -262,7 +262,7 @@ void PlayerFixedObject::update(int dt) {
 
     // ship's KIPlayer "is active for tutorial" flag derived from 0xf8/0x134
     bool kiFlag = (self->field_0xf8 + 1 != 0) && (self->field_0x134 != 0);
-    ((Player *)(self->field_0x4))->update(kiFlag);
+    ((Player *)(self->field_0x4))->update(dt, kiFlag);
 
     // Player::field_0x5c/0x5d (enemy/friend flags) are not modelled in Player.h
     // (out-of-batch header) -> byte-offset accessed.
@@ -273,7 +273,7 @@ void PlayerFixedObject::update(int dt) {
         enemyFlag = 0;
     } else {
         int st = Status_getStanding();
-        unsigned char e = ((Standing *)((void *)(long)st))->isEnemy();
+        unsigned char e = ((Standing *)((void *)(long)st))->isEnemy(self->field_0x28);
         player = self->field_0x4;
         F<unsigned char>(player, 0x5c) = e;
         if ((self->field_0x28 & 0xfffffffe) == 8) {
@@ -286,18 +286,18 @@ void PlayerFixedObject::update(int dt) {
     }
     F<unsigned char>(player, 0x5d) = enemyFlag;
 
-    if (Player_turnedEnemy() != 0)
+    if (Player_turnedEnemy((Player *)self->field_0x4) != 0)
         F<unsigned short>(self->field_0x4, 0x5c) = 1;
-    if (Player_isAlwaysFriend() != 0)
+    if (((Player *)(self->field_0x4))->isAlwaysFriend() != 0)
         F<unsigned short>(self->field_0x4, 0x5c) = 0x100;
 
     if (self->field_0x88 != 6) {
-        float bomb = Player_getBombForce();
+        float bomb = ((Player *)(self->field_0x4))->getBombForce();
         float emp = ((Player *)(self->field_0x4))->getEmpForce();
         if (bomb > 0.0f) {
             float nb = bomb * 0.95f; // DAT decay factor
             if (nb < 1.0f) nb = 0.0f;
-            ((Player *)(nb))->setBombForce();
+            ((Player *)(self->field_0x4))->setBombForce(nb);
         }
         if (emp > 0.0f) {
             float ne = emp - (float)dt;
@@ -331,21 +331,21 @@ void PlayerFixedObject::update(int dt) {
     }
 afterMotion:
 
-    if (Player_getHitpoints() < 1 && (unsigned int)(self->field_0x88 - 3) >= 2) {
+    if (((Player *)(self->field_0x4))->getHitpoints() < 1 && (unsigned int)(self->field_0x88 - 3) >= 2) {
         // ---- death transition ----
         if (F<char>(self->field_0x4, 0x5c) == 0) {
             Level_friendDied();
         } else {
-            ((Level *)((int)(__INTPTR_TYPE__)self->field_0x54))->enemyDied((bool)(unsigned char)self->field_0xac);
+            ((Level *)((int)(__INTPTR_TYPE__)self->field_0x54))->enemyDied(0, (bool)(unsigned char)self->field_0xac);
         }
         if (self->field_0xac == 0x37a3)
             Level_pirateStationAction((bool)(unsigned char)(__INTPTR_TYPE__)self->field_0x54);
 
         self->field_0x134 = 0;
         self->field_0x88 = 3;
-        int cargo = KIPlayer_cargoAvailable();
+        int cargo = ((KIPlayer *)(self))->cargoAvailable();
         self->field_0x4c = (unsigned char)cargo;
-        if (cargo != 0) ((KIPlayer *)(self))->createCrate();
+        if (cargo != 0) ((KIPlayer *)(self))->createCrate(0);
         ((PlayerFixedObject *)(self))->setExhaustVisible(false);
 
         void *wreck = self->field_0x124;
@@ -387,7 +387,7 @@ afterMotion:
 
         char posBuf[12];
         AEGeometry_getPosition((Vector *)posBuf, self->field_0x8);
-        ((Explosion *)(expl))->start((Vector *)posBuf);
+        ((Explosion *)(expl))->start((Vector *)posBuf, (const Vector *)0);
 
         if (self->field_0xac == 0xe) {
             unsigned int *enemies = (unsigned int *)Level_getEnemies();
@@ -411,7 +411,7 @@ afterMotion:
                     float val = (float)((Achievements *)(ach))->getValue(0x27, 1);
                     if ((int)(cur / val) < 2) {
                         void *ego = Level_getPlayer();
-                        void *hud = ((PlayerEgo *)(ego))->getHUD();
+                        void *hud = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                         cur = (float)*(int *)((char *)egoObj + 0x118);
                         val = (float)((Achievements *)(ach))->getValue(0x27, 1);
                         ((Hud *)(hud))->hudEventMedal(0x27, (int)((cur / val) * 100.0f));
@@ -465,14 +465,14 @@ afterMotion:
             if (self->field_0xac == 0x37e7) scale = 8.0f;
             if (self->field_0xac == 0x37a3) scale = 8.0f;
             ((Explosion *)(self->field_0x18c))->setScaling(scale);
-            ((Explosion *)(self->field_0x18c))->start((Vector *)((char *)self + 0x2c));
+            ((Explosion *)(self->field_0x18c))->start((Vector *)((char *)self + 0x2c), (const Vector *)0);
             self->field_0x198 = 1;
             self->field_0x190 = 0;
             if (Level_getPlayer() != 0) {
                 void *ego = Level_getPlayer();
                 if (((PlayerEgo *)(ego))->getTargetFollowCamera() != 0) {
                     ego = Level_getPlayer();
-                    void *cam = ((PlayerEgo *)(ego))->getTargetFollowCamera();
+                    void *cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                     char cp[12];
                     TargetFollowCamera_getPosition((Vector *)cp, cam);
                     Vector_sub((Vector *)cp, (Vector *)((char *)self + 0x2c));
@@ -481,7 +481,7 @@ afterMotion:
                     float use = (len < maxd) ? len : maxd;
                     self->field_0x19c = 1.0f - use / maxd;
                     ego = Level_getPlayer();
-                    cam = ((PlayerEgo *)(ego))->getTargetFollowCamera();
+                    cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                     TargetFollowCamera_setRumblePercentage(self->field_0x19c, cam);
                 }
             }
@@ -541,19 +541,19 @@ afterMotion:
             // rumble ramp
             if (Level_getPlayer() != 0) {
                 void *ego = Level_getPlayer();
-                void *cam = ((PlayerEgo *)(ego))->getTargetFollowCamera();
+                void *cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                 if (cam != 0 && self->field_0x198 > 0) {
                     int v = self->field_0x198 + dt;
                     if (v >= 0x7d0) v = 0x7d0;
                     self->field_0x198 = v;
                     ego = Level_getPlayer();
-                    cam = ((PlayerEgo *)(ego))->getTargetFollowCamera();
+                    cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                     TargetFollowCamera_setRumblePercentage(
                         self->field_0x19c * ((float)v / 50.0f + 1.0f), cam);
                     if (self->field_0x18c != 0 &&
                         ((Explosion *)(self->field_0x18c))->isPlaying() == 0) {
                         ego = Level_getPlayer();
-                        cam = ((PlayerEgo *)(ego))->getTargetFollowCamera();
+                        cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                         TargetFollowCamera_setRumblePercentage(0.0f, cam);
                         self->field_0x198 = 0;
                     }
@@ -595,7 +595,7 @@ afterMotion:
         const float lo = 0.0f, hi = 50.0f;
         if (vx < hi && vx > lo && vz > lo && vy < hi && vy > lo && vz < hi) {
             self->field_0x88 = 1;
-            ((Player *)((bool)(unsigned char)(long)self->field_0x4))->setActive();
+            ((Player *)(self->field_0x4))->setActive((bool)(unsigned char)(long)self->field_0x4);
         }
     }
 

@@ -28,7 +28,6 @@ extern "C" void *operator_new(unsigned int n);
 // The copy ctor returns void, so the compiler keeps a frame and restores the sret pointer.
 extern const char kDirPreFix[] __attribute__((visibility("hidden")));
 
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 extern "C" RetStr FileInterfaceAndroid_GetDirPreFix()
 {

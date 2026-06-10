@@ -76,9 +76,9 @@ __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_1469
 void ChoiceWindow::set(String const &a, String const &b)
 {
     void *gameText = *g_ChoiceWindow_gameText_146954;
-    String *title = ((GameText *)(gameText))->getText(0x186);
-    String *left = ((GameText *)(gameText))->getText(0x86);
-    String *center = ((GameText *)(gameText))->getText(0x87);
+    String *title = (String *)((GameText *)(gameText))->getText(0x186);
+    String *left = (String *)((GameText *)(gameText))->getText(0x86);
+    String *center = (String *)((GameText *)(gameText))->getText(0x87);
     set(*title, a, false, *left, *center, b, -1, -1);
 }
 
@@ -87,7 +87,7 @@ __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_146d
 
 void ChoiceWindow::set(String const &text, bool flag)
 {
-    String *title = ((GameText *)(*g_ChoiceWindow_gameText_146d5c))->getText(0x186);
+    String *title = (String *)((GameText *)(*g_ChoiceWindow_gameText_146d5c))->getText(0x186);
     set(*title, text, flag);
 }
 
@@ -97,9 +97,9 @@ __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_1468
 void ChoiceWindow::set(String const &title, String const &message, bool flag)
 {
     void *gameText = *g_ChoiceWindow_gameText_1468f4;
-    String *left = ((GameText *)(gameText))->getText(0x86);
-    String *center = ((GameText *)(gameText))->getText(0x87);
-    String *right = ((GameText *)(gameText))->getText(0x20c);
+    String *left = (String *)((GameText *)(gameText))->getText(0x86);
+    String *center = (String *)((GameText *)(gameText))->getText(0x87);
+    String *right = (String *)((GameText *)(gameText))->getText(0x20c);
     set(title, message, flag, *left, *center, *right, -1, -1);
 }
 
@@ -123,7 +123,7 @@ __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_1468
 
 void ChoiceWindow::set(String const &text)
 {
-    String *title = ((GameText *)(*g_ChoiceWindow_gameText_1468c8))->getText(0x186);
+    String *title = (String *)((GameText *)(*g_ChoiceWindow_gameText_1468c8))->getText(0x186);
     set(*title, text, false);
 }
 
@@ -154,13 +154,13 @@ int ChoiceWindow::OnTouchBegin(int x, int y)
 // ---- _ChoiceWindow_146870.cpp ----
 ChoiceWindow::~ChoiceWindow()
 {
-    if (this->field_0x10 != 0) operator delete(((TouchButton *)(this->field_0x10))->dtor());
+    if (this->field_0x10 != 0) { ((TouchButton *)(this->field_0x10))->dtor(); operator delete(this->field_0x10); }
     this->field_0x10 = 0;
 
-    if (this->field_0x14 != 0) operator delete(((TouchButton *)(this->field_0x14))->dtor());
+    if (this->field_0x14 != 0) { ((TouchButton *)(this->field_0x14))->dtor(); operator delete(this->field_0x14); }
     this->field_0x14 = 0;
 
-    if (this->field_0x18 != 0) operator delete(((TouchButton *)(this->field_0x18))->dtor());
+    if (this->field_0x18 != 0) { ((TouchButton *)(this->field_0x18))->dtor(); operator delete(this->field_0x18); }
     this->field_0x18 = 0;
 
     if (this->field_0x1c != 0) operator delete(ScrollTouchWindow_dtor(this->field_0x1c));
@@ -213,9 +213,9 @@ __attribute__((visibility("hidden"))) extern char g_ChoiceWindow_medalImages_146
 void ChoiceWindow::setMedal(int medal, int count)
 {
     void *gameText = *g_ChoiceWindow_gameText_146e8c;
-    this->field_0x3c = *((GameText *)(gameText))->getText(medal + 0x5e3);
+    this->field_0x3c = *(String *)((GameText *)(gameText))->getText(medal + 0x5e3);
 
-    String pattern = *((GameText *)(gameText))->getText(medal + 0x610);
+    String pattern = *(String *)((GameText *)(gameText))->getText(medal + 0x610);
     int value = ((Achievements *)(*g_ChoiceWindow_achievements_146e8c))->getValue(medal, count);
     String number;
     {
@@ -235,7 +235,7 @@ void ChoiceWindow::setMedal(int medal, int count)
     Status_replaceHash(&replaced, *g_ChoiceWindow_replaceHash_146e8c, pattern, number);
     String finalText = replaced;  // prefix "" + replaced + suffix "" == replaced
 
-    set(*((GameText *)(gameText))->getText(0x161), finalText, false);
+    set(*(String *)((GameText *)(gameText))->getText(0x161), finalText, false);
     ScrollTouchWindow_setTextCentered(this->field_0x1c, true);
 
     void *canvas = *g_ChoiceWindow_canvas_146e8c;
@@ -301,8 +301,8 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
 
     void *gameText = *g_ChoiceWindow_gameText_1469b0;
     bool defaultButtons = false;
-    if (String_Compare(((GameText *)(gameText))->getText(0x86), left) == 0)
-        defaultButtons = String_Compare(((GameText *)(gameText))->getText(0x87), right) == 0;
+    if (String_Compare((String *)((GameText *)(gameText))->getText(0x86), left) == 0)
+        defaultButtons = String_Compare((String *)((GameText *)(gameText))->getText(0x87), right) == 0;
 
     if (width == -1)
         width = F<int>(*g_ChoiceWindow_defaultConfig_1469b0, 0x264);
@@ -349,10 +349,10 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     ArrayReleaseClasses_StringPtr(lines);
     operator delete(Array_StringPtr_dtor(lines));
 
-    if (this->field_0x10 != 0) operator delete(((TouchButton *)(this->field_0x10))->dtor());
+    if (this->field_0x10 != 0) { ((TouchButton *)(this->field_0x10))->dtor(); operator delete(this->field_0x10); }
     this->field_0x10 = 0;
 
-    if (this->field_0x14 != 0) operator delete(((TouchButton *)(this->field_0x14))->dtor());
+    if (this->field_0x14 != 0) { ((TouchButton *)(this->field_0x14))->dtor(); operator delete(this->field_0x14); }
     this->field_0x14 = 0;
 
     if (hasButtons) {
@@ -454,7 +454,7 @@ void ChoiceWindow::draw()
     void *layout = *g_ChoiceWindow_layout_1471bc;
     Layout_drawMask(layout);
 
-    ((Layout *)(layout))->drawBox(7, this->field_0x0, this->field_0x4, this->field_0x8, this->field_0xc, this->field_0x20);
+    ((Layout *)(layout))->drawBox6(7, this->field_0x0, this->field_0x4, this->field_0x8, this->field_0xc, &this->field_0x20);
 
     void *canvas = *g_ChoiceWindow_canvas_1471bc;
     PaintCanvas_SetColor(canvas, 0xffffffff);

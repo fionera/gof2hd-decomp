@@ -60,16 +60,6 @@ struct Route {
     void reset();
 };
 
-struct PlayerEgo {
-    void setRoute(int route);
-    void hitCamera();
-};
-
-struct Player {
-    static void setAlwaysEnemy(bool enemy);
-    static void turnEnemy();
-};
-
 struct Wanted {
     static int getNumWingmen(Wanted *self);
 };
@@ -2360,8 +2350,8 @@ void Level::uncoverWanted(int index) {
         for (int i = 1;
              i - 1 < Wanted::getNumWingmen((Wanted *)((int *)(*(int *)(*g) + 4))[index]);
              i = i + 1) {
-            Player::setAlwaysEnemy((bool)((int *)((int *)(((int *)enemies)[1]))[i])[1]);
-            Player::turnEnemy();
+            Level_setAlwaysEnemy(*(int *)(((int *)((RawArray *)(intptr_t)enemies)->data)[i] + 4), 1);
+            Level_turnEnemy(*(int *)(((int *)((RawArray *)(intptr_t)enemies)->data)[i] + 4));
         }
     }
 }

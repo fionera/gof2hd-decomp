@@ -123,7 +123,7 @@ struct Status {
     int addStationToStack(Station *station);
     bool isOnStack(Station *station);
     void setStation(Station *station);
-    void departStation();
+    void departStation(Station *dest);
     bool inAlienOrbit();
     Station *getStation();
     int64_t getPlayingTime();
@@ -164,7 +164,7 @@ struct Status {
     bool hardCoreMode();
     Wanted *getWantedInCurrentOrbit();
     int missionFailed(bool param_1, int64_t time);
-    void missionCompleted(Mission *mission);
+    Mission * missionCompleted(bool atStation, bool docked, long long extra);
     void setJumpgateUsed(int value);
     void jumpgateUsed();
     int getJumpgateUsed();

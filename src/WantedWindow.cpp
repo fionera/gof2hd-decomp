@@ -9,13 +9,13 @@
 // Rename their duplicate definitions so they don't collide; the only RetStr-returning
 // methods used here (getName/getText) have their results discarded, so the distinct-but-
 // identical return type is harmless. (Those headers are out of this batch's edit scope.)
-#define RetStr RetStr_dup_Station
+#define RetStr RetStr
 #include "gof2/Station.h"
 #undef RetStr
-#define RetStr RetStr_dup_TouchButton
+#define RetStr RetStr
 #include "gof2/TouchButton.h"
 #undef RetStr
-#define RetStr RetStr_dup_Wanted
+#define RetStr RetStr
 #include "gof2/Wanted.h"
 #undef RetStr
 #include "gof2/String.h"

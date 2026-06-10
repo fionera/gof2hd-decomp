@@ -21,7 +21,7 @@
 #define B      B_TouchButton
 #define I      I_TouchButton
 #define P      P_TouchButton
-#define RetStr RetStr_TouchButton
+#define RetStr RetStr
 #include "gof2/TouchButton.h"
 #undef B
 #undef I

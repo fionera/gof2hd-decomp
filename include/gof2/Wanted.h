@@ -21,7 +21,6 @@ using AbyssEngine::String12;
 
 // 12-byte by-value String return aggregate (sret on the target ABI): getName()
 // returns a 12-byte String temp. Modeled the same way as in Agent.h/Mission.h.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 // Field accessor via byte offset.
 

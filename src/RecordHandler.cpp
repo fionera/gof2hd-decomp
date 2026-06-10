@@ -6,13 +6,13 @@
 // used (the value is layout-identical and always discarded at the call sites).
 #include "gof2/Station.h"
 #include "gof2/Mission.h"
-#define RetStr RetStr_SolarSystem_dup
+#define RetStr RetStr
 #include "gof2/SolarSystem.h"
 #undef RetStr
-#define RetStr RetStr_Wanted_dup
+#define RetStr RetStr
 #include "gof2/Wanted.h"
 #undef RetStr
-#define RetStr RetStr_Agent_dup
+#define RetStr RetStr
 #include "gof2/Agent.h"
 #undef RetStr
 #include "gof2/String.h"

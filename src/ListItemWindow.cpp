@@ -349,7 +349,8 @@ extern "C" void  PaintCanvas_FillRectangle(uint32_t c, int x, int y, int w); // 
 __attribute__((visibility("hidden"))) extern char *g_liw_d_maskFlag;     // 0x143118
 __attribute__((visibility("hidden"))) extern void **g_liw_d_canvas;      // 0x143140 -> canvas
 __attribute__((visibility("hidden"))) extern void **g_liw_d_layout;      // 0x143162 -> Layout
-__attribute__((visibility("hidden"))) extern int   *g_liw_d_headerId;    // 0x1431dc
+__attribute__((visibility("hidden"))) extern int   *g_liw_d_headerId;    // 0x1431dc text key
+__attribute__((visibility("hidden"))) extern void **g_liw_d_gameText;    // GameText singleton
 __attribute__((visibility("hidden"))) extern void **g_liw_d_imageFactory;// 0x1437c8 / 0x1432e4
 __attribute__((visibility("hidden"))) extern void **g_liw_d_itemDB;      // 0x1432c2
 __attribute__((visibility("hidden"))) extern void **g_liw_d_arrowL;      // 0x14350c
@@ -375,17 +376,17 @@ void ListItemWindow::draw()
 
     {
         Str s; Str_ctor_cstr(&s, "", false);
-        ((Layout *)(layout))->drawBox(2, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c), i32(this, 0x70), &s);
+        ((Layout *)(layout))->drawBox(2, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c), i32(this, 0x70), &s, 0);
         Str_dtor(&s);
     }
     if (masked) {
         Str s; Str_ctor_cstr(&s, "", false);
-        ((Layout *)(layout))->drawBox(7, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c), i32(this, 0x70), &s);
+        ((Layout *)(layout))->drawBox(7, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c), i32(this, 0x70), &s, 0);
         Str_dtor(&s);
     }
 
     {
-        Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_headerId))->getText(), false);
+        Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
         Layout_drawHeader(layout, &s);
         Str_dtor(&s);
     }
@@ -403,7 +404,7 @@ void ListItemWindow::draw()
             int color = i32(L, 0x5c);
             int textId = *g_liw_d_headerId;
             Ship_getIndex(0);
-            Str s; Str_ctor_copy(&s, ((GameText *)(textId))->getText(), false);
+            Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(textId), false);
             Layout_drawBox8(layout, 1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
             Str_dtor(&s);
 
@@ -418,7 +419,7 @@ void ListItemWindow::draw()
         int color = i32(L, 0x5c);
         int textId = *g_liw_d_headerId;
         ((ListItem *)(li))->getIndex();
-        Str s; Str_ctor_copy(&s, ((GameText *)(textId))->getText(), false);
+        Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(textId), false);
         Layout_drawBox8(layout, 1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
         Str_dtor(&s);
 
@@ -458,7 +459,7 @@ void ListItemWindow::draw()
             int color = i32(L, 0x1c);
             Str s;
             Str_ctor_copy(&s, *(void **)(*(int *)((char *)rows + 4) + i * 4), false);
-            ((Layout *)(layout))->drawBox(6, i32(L, 0x28) + i32(this, 0x64), ycur, (i32(this, 0x6c) >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s);
+            ((Layout *)(layout))->drawBox(6, i32(L, 0x28) + i32(this, 0x64), ycur, (i32(this, 0x6c) >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s, 0);
             Str_dtor(&s);
             PaintCanvas_SetColor(canvas);
 
@@ -503,22 +504,22 @@ void ListItemWindow::draw()
 
     // Footer / progress.
     if (i32(this, 0x20) < 1) {
-        Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_headerId))->getText(), false);
-        ((Layout *)(layout))->drawBox(1, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x5c), &s);
+        Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+        ((Layout *)(layout))->drawBox(1, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x5c), &s, 0);
         Str_dtor(&s);
     } else {
         PaintCanvas_SetColor(canvas);
         {
             Str s; Str_ctor_cstr(&s, "", false);
-            ((Layout *)(layout))->drawBox(8, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(this, 0x20), &s);
+            ((Layout *)(layout))->drawBox(8, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(this, 0x20), &s, 0);
             Str_dtor(&s);
         }
         int prog = i32(this, 0x20);
         int yBox = i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20);
         if (prog > 0) yBox = yBox + prog + i32(L, 0x2c);
         {
-            Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_headerId))->getText(), false);
-            ((Layout *)(layout))->drawBox(0, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), yBox, ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s);
+            Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+            ((Layout *)(layout))->drawBox(0, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), yBox, ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s, 0);
             Str_dtor(&s);
         }
         PaintCanvas_SetColor(canvas);

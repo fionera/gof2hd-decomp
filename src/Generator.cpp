@@ -6,17 +6,17 @@
 // `RetStr` tag to a unique name for the other headers so their definitions don't
 // collide. Generator never names RetStr directly and discards these getters'
 // return values, so the distinct tags are harmless.
-#define RetStr RetStr_Agent
+#define RetStr RetStr
 #include "gof2/Agent.h"
 #undef RetStr
 #include "gof2/Globals.h"
 #include "gof2/Station.h"
 #include "gof2/Mission.h"
-#define RetStr RetStr_SolarSystem
+#define RetStr RetStr
 #include "gof2/SolarSystem.h"
 #undef RetStr
 #include "gof2/Standing.h"
-#define RetStr RetStr_Wanted
+#define RetStr RetStr
 #include "gof2/Wanted.h"
 #undef RetStr
 #include "gof2/Status.h"

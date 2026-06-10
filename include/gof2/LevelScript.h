@@ -19,8 +19,9 @@ struct Station;
 
 
 
-static inline char *B(void *self, int offset) { return (char *)self + offset; }
-static inline int &I(void *self, int offset) { return *(int *)((char *)self + offset); }
+// Only P() is owned here: B() and I() are provided (identically) by sibling
+// headers PlayerEgo.h / Explosion.h, so redefining them here would collide
+// within the same translation unit.
 static inline void *&P(void *self, int offset) { return *(void **)((char *)self + offset); }
 
 struct LevelScript {

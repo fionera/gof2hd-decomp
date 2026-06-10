@@ -12,11 +12,9 @@ struct Agent;
 // AbyssEngine::String passed by value is a 12-byte trivially-copied aggregate
 // (text*, size, ...). Model it opaquely so it is passed on the stack/regs the
 // same way as the target ABI (struct >8 bytes by value).
-using AbyssEngine::String12;
+// (String12 is provided globally by gof2/common.h)
 
-// String returned by value (12-byte aggregate, matches AbyssEngine::String
-// layout). Returned through a hidden sret pointer in the decompiled getters.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// RetStr is provided by gof2/common.h.
 
 // Sell-item data triple returned by setSellItemData (item/price/percentage),
 // reached via byte-offset casts at the call sites; modelled as three ints.

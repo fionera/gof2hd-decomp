@@ -253,7 +253,7 @@ __attribute__((visibility("hidden"))) extern void **g_APL_canvas_draw;     // ->
 // AutoPilotList::draw() - draw the window frame plus one row per non-empty entry.
 void AutoPilotList::draw() {
     void *layout = *g_APL_layout_draw;
-    String *title = ((GameText *)(*g_APL_gametext_draw))->getText(0x23c);
+    String *title = (String *)((GameText *)(*g_APL_gametext_draw))->getText(0x23c);
     char tmp[12];
     ((String *)(tmp))->ctor_copy(title, false);
     Layout_drawWindow(layout, (String *)tmp, this->field_0x4, this->field_0x8,

@@ -1,11 +1,23 @@
 #include "gof2/Status.h"
 #include "gof2/Achievements.h"
+// Agent.h, Station.h, SolarSystem.h and Wanted.h each define an identical,
+// layout-compatible `struct RetStr` at global scope. Including more than one in a
+// single TU is a C++ redefinition. Let Agent.h own the canonical RetStr and rename
+// the duplicates from the other three headers (Station.h is pulled in transitively by
+// Mission.h). Their renamed RetStr is unused here: the only RetStr-returning call,
+// Station::getName(), discards its result, so the ABI is unaffected.
 #include "gof2/Agent.h"
 #include "gof2/BluePrint.h"
-#include "gof2/Mission.h"
-#include "gof2/SolarSystem.h"
+#define RetStr RetStr
+#include "gof2/Mission.h"   // pulls in Station.h
 #include "gof2/Station.h"
+#undef RetStr
+#define RetStr RetStr
+#include "gof2/SolarSystem.h"
+#undef RetStr
+#define RetStr RetStr
 #include "gof2/Wanted.h"
+#undef RetStr
 
 
 extern "C" int SolarSystem_getIndex(int system);
@@ -640,7 +652,7 @@ Status::Status() {
     rating = 0;
     playingTime = 0;
     Station *st = (Station *)operator new(0x34);
-    ((Station *)(st))->ctor();
+    ((Station *)(st))->ctor_default();
     playerStation = st;
     field_8c = 0;
     ship = 0;
@@ -818,7 +830,7 @@ bool Status::inAlienOrbit() {
 // Local offset-cast helpers (the Status header models fields by name, but resetGame
 // touches many raw offsets so byte-offset access is clearer here).
 static inline int&   I(void *p, int off) { return *(int *)((char *)p + off); }
-static inline char&  C(void *p, int off) { return *(char *)((char *)p + off); }
+// C(void*,int) is provided by common.h; keep only the locally-needed I/P helpers.
 static inline void*& P(void *p, int off) { return *(void **)((char *)p + off); }
 
 struct Standing;
@@ -931,11 +943,11 @@ void Status::resetGame()
 
     // recreate the per-game scratch station at 0x14c.
     if (P(self, 0x14c) != 0) {
-        operator_delete(((Station *)((Station *)P(self, 0x14c)))->dtor());
+        (((Station *)((Station *)P(self, 0x14c)))->dtor(), operator_delete((void *)P(self, 0x14c)));
         I(self, 0x14c) = 0;
     }
     Station *scratch = (Station *)Status_opnew(0x34);
-    ((Station *)(scratch))->ctor();
+    ((Station *)(scratch))->ctor_default();
     P(self, 0x14c) = scratch;
 
     if (P(self, 0x28) != 0) {
@@ -978,7 +990,7 @@ void Status::resetGame()
         for (unsigned k = 0; k < *stk; k = k + 1) {
             Station *st = ((Station **)stk[1])[k];
             if (st != 0) {
-                operator_delete(((Station *)(st))->dtor());
+                (((Station *)(st))->dtor(), operator_delete((void *)st));
                 ((int *)(*(int *)((char *)P(self, 0x1a0) + 4)))[k] = 0;
                 stk = (unsigned *)P(self, 0x1a0);
             }
@@ -1267,7 +1279,7 @@ int Status::activateNewWanted() {
                     break;
                 }
                 if (a != 0) {
-                    operator_delete(((Station *)(a))->dtor());
+                    (((Station *)(a))->dtor(), operator_delete((void *)a));
                 }
                 a = Globals_getRandomStation();
                 asys = Station_getSystem(a);
@@ -1285,7 +1297,7 @@ int Status::activateNewWanted() {
                     break;
                 }
                 if (b != 0) {
-                    operator_delete(((Station *)(b))->dtor());
+                    (((Station *)(b))->dtor(), operator_delete((void *)b));
                 }
                 b = Globals_getRandomStation();
                 bsys = Station_getSystem(b);
@@ -1295,10 +1307,10 @@ int Status::activateNewWanted() {
             fromSys = Station_getSystem(a);
             toSys = Station_getSystem(b);
             if (a != 0) {
-                operator_delete(((Station *)(a))->dtor());
+                (((Station *)(a))->dtor(), operator_delete((void *)a));
             }
             if (b != 0) {
-                operator_delete(((Station *)(b))->dtor());
+                (((Station *)(b))->dtor(), operator_delete((void *)b));
             }
             path = SystemPathFinder_getSystemPath(pf, systems, fromSys, toSys);
         } while (path == 0 || (unsigned)*path < lo || hi < (unsigned)*path);
@@ -1456,7 +1468,7 @@ int Status::addStationToStack(Station *s) {
         base[j + 2] = s;
     } else {
         if (base[2] != 0) {
-            operator_delete(((Station *)(base[2]))->dtor());
+            (((Station *)(base[2]))->dtor(), operator_delete((void *)base[2]));
         }
         base[2] = 0;
         for (int i = 0; i != -2; i = i - 1) {
@@ -1568,9 +1580,8 @@ static const Step kSteps[] = {
 //   Advances the campaign by one step: bumps the campaign-mission counter, snapshots the
 //   playing-time, runs the achievement check, then spawns and registers the next scripted
 //   Mission for that step (with a few steps performing extra cargo/equipment bookkeeping).
-void Status::nextCampaignMission(bool param_1) {
+void Status::nextCampaignMission() {
     Status *self = this;
-    (void)param_1;
     int *state = (int *)((char *)self + 0x1e8);
     int prevTimeLo = (int)self->playingTime;
     int prevTimeHi = (int)(self->playingTime >> 32);
@@ -1721,23 +1732,25 @@ void Status::setStation(Station *s) {
 }
 
 // ---- replaceHash_ac8d4.cpp ----
-// 12-byte AbyssEngine::String, built/destroyed via engine wrappers.
-struct String12 { uint32_t a, b, c; };
+// 12-byte AbyssEngine::String, built/destroyed via engine wrappers. Modeled locally as
+// Str12 (text*, size, ...) — distinct from AbyssEngine::String12 (char16_t buf[6]) which
+// the included headers pull into scope; the recovered code accesses .a/.b/.c by offset.
+struct Str12 { uint32_t a, b, c; };
 
 extern "C" {
-int  String12_IndexOf(String12 *self, String12 *needle);                  // 0x6f3a0
-void String12_SubString(String12 *out, String12 *self, int start, int len); // 0x6f604
-void String12_ctor_copy(String12 *self, const String12 *src, bool copy);  // 0x6f028
-void String12_concat(String12 *out, String12 *left, String12 *right);     // 0x6ef98 operator+
-void String12_dtor(String12 *self);                                       // 0x6ee30 ~String
-void String12_dtor_v(String12 *self);                                     // dtor via DAT (blx r4)
+int  String12_IndexOf(Str12 *self, Str12 *needle);                  // 0x6f3a0
+void String12_SubString(Str12 *out, Str12 *self, int start, int len); // 0x6f604
+void String12_ctor_copy(Str12 *self, const Str12 *src, bool copy);  // 0x6f028
+void String12_concat(Str12 *out, Str12 *left, Str12 *right);     // 0x6ef98 operator+
+void String12_dtor(Str12 *self);                                       // 0x6ee30 ~String
+void String12_dtor_v(Str12 *self);                                     // dtor via DAT (blx r4)
 }
 
 // Status::replaceHash(String haystack, String needle, String replacement) -> String (sret)
 //   Replaces the first occurrence of `needle` in `haystack` with `replacement`. If `needle`
 //   is absent, returns a copy of `haystack`. `out` is the hidden return slot.
-extern "C" void Status_replaceHash3(void *self, String12 *out, String12 *haystack,
-                                    String12 *needle, String12 *replacement)
+extern "C" void Status_replaceHash3(void *self, Str12 *out, Str12 *haystack,
+                                    Str12 *needle, Str12 *replacement)
 {
     (void)self;
     int idx = String12_IndexOf(haystack, needle);
@@ -1748,25 +1761,25 @@ extern "C" void Status_replaceHash3(void *self, String12 *out, String12 *haystac
     }
 
     // prefix = haystack[0 .. idx)
-    String12 prefix;
+    Str12 prefix;
     String12_SubString(&prefix, haystack, 0, idx);
 
     if (prefix.b == 0) {
         // needle at position 0: result = replacement + haystack[idx+len ..)
-        String12 repl;
+        Str12 repl;
         String12_ctor_copy(&repl, replacement, false);
-        String12 suffix;
+        Str12 suffix;
         String12_SubString(&suffix, haystack, needle->c + idx, haystack->c);
         String12_concat(out, &repl, &suffix);
         String12_dtor_v(&suffix);
         String12_dtor_v(&repl);
     } else {
         // result = prefix + replacement + haystack[idx+len ..)
-        String12 repl;
+        Str12 repl;
         String12_ctor_copy(&repl, replacement, false);
-        String12 mid;
+        Str12 mid;
         String12_concat(&mid, &prefix, &repl);
-        String12 suffix;
+        Str12 suffix;
         String12_SubString(&suffix, haystack, needle->c + idx, haystack->c);
         String12_concat(out, &mid, &suffix);
         String12_dtor_v(&suffix);
@@ -1777,23 +1790,18 @@ extern "C" void Status_replaceHash3(void *self, String12 *out, String12 *haystac
 }
 
 // ---- replaceHash_ac83c.cpp ----
-// 12-byte AbyssEngine::String, built/destroyed via engine wrappers (String12 defined above).
+// 12-byte AbyssEngine::String, built/destroyed via engine wrappers (Str12 defined above).
 
 extern "C" {
-void String12_ctor_copy(String12 *self, const String12 *src, bool copy);   // 0x6f028
-void String12_ctor_char(String12 *self, const char *text, bool copy);      // 0x6ee18
-void String12_dtor(String12 *self);                                        // dtor (blx via DAT)
-// 3-arg overload (Status::replaceHash(String,String,String)) at 0xac8d4.
-void Status_replaceHash3(void *self, String12 *out, String12 *haystack, String12 *needle,
-                         String12 *replacement);
+void String12_ctor_char(Str12 *self, const char *text, bool copy);      // 0x6ee18
 }
 
 // Status::replaceHash(AbyssEngine::String haystack, AbyssEngine::String needle) -> String (sret)
 //   Forwards to the three-argument overload, substituting the hash placeholder with "".
-//   `out` is the hidden return slot; haystack/needle are passed by value (as String12*).
-extern "C" void Status_replaceHash2(void *self, String12 *out, String12 *haystack, String12 *needle)
+//   `out` is the hidden return slot; haystack/needle are passed by value (as Str12*).
+extern "C" void Status_replaceHash2(void *self, Str12 *out, Str12 *haystack, Str12 *needle)
 {
-    String12 h, n, empty;
+    Str12 h, n, empty;
     String12_ctor_copy(&h, haystack, false);
     String12_ctor_copy(&n, needle, false);
     String12_ctor_char(&empty, "", false);
@@ -1872,8 +1880,8 @@ void Status::departStation(Station *dest) {
         bool hub = Station_getIndex(self->station) == 0x6c;
         if (hub && SF(self, 0x114) == 3) {
             Station *st = (Station *)(void *)(long)SF(self, 0x14c);
-            ((Station *)(st))->setItems(Station_getItems_ds(), true);
-            ((Station *)((void *)(long)SF(self, 0x14c)))->setShips((bool)Station_getShips_ds());
+            ((Station *)(st))->setItems((uint32_t *)Station_getItems_ds(), true);
+            ((Station *)((void *)(long)SF(self, 0x14c)))->setShips((uint32_t *)(long)Station_getShips_ds(), true);
         }
     }
 
@@ -1887,11 +1895,11 @@ void Status::departStation(Station *dest) {
         addStationToStack_ds(self, dest);
         bool hub = Station_getIndex(dest) == 0x6c;
         if (hub && SF(self, 0x114) == 3) {
-            ((Station *)(dest))->setItems(Station_getItems_ds(), true);
-            ((Station *)((void *)dest))->setShips((bool)Station_getShips_ds());
+            ((Station *)(dest))->setItems((uint32_t *)Station_getItems_ds(), true);
+            ((Station *)((void *)dest))->setShips((uint32_t *)(long)Station_getShips_ds(), true);
             if (prev != 0 && prev != dest) {
-                ((Station *)(prev))->setItems(Station_getItems_ds(), true);
-                ((Station *)((void *)prev))->setShips((bool)Station_getShips_ds());
+                ((Station *)(prev))->setItems((uint32_t *)Station_getItems_ds(), true);
+                ((Station *)((void *)prev))->setShips((uint32_t *)(long)Station_getShips_ds(), true);
             }
             if (prev == 0) {
                 Generator g;
@@ -1901,8 +1909,8 @@ void Status::departStation(Station *dest) {
         } else if (prev == 0) {
             Generator g;
             Generator_ctor(&g);
-            ((Station *)(dest))->setItems(Generator_getItemBuyList(&g, dest), false);
-            ((Station *)((void *)dest))->setShips((bool)Generator_getShipBuyList((Station *)&g));
+            ((Station *)(dest))->setItems((uint32_t *)Generator_getItemBuyList(&g, dest), false);
+            ((Station *)((void *)dest))->setShips((uint32_t *)(long)Generator_getShipBuyList((Station *)&g), false);
             ((Station *)(dest))->setAgents(Generator_createAgents(&g, dest));
         }
         SF(self, 0x70) = (int)self->playingTime;

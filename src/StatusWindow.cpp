@@ -6,35 +6,9 @@
 #include "gof2/Standing.h"
 #include "gof2/String.h"
 #include "gof2/TouchButton.h"
-// NOTE: gof2/Layout.h cannot be co-included with common.h in this toolchain
-// (Layout.h defines an inline placement-operator-new that the libc++ <new>
-// pulled in by common.h reports as a redefinition). We therefore model the
-// subset of the Layout layout that StatusWindow touches as a local struct with
-// byte-exact field offsets matching native/include/gof2/Layout.h.
-struct Layout {
-    int field_0x0;
-    int field_0x4;                      // +0x4
-    char _pad_8[0x4];
-    int field_0xc;                      // +0xc
-    int field_0x10;                     // +0x10
-    char _pad_14[0x8];
-    int field_0x1c;                     // +0x1c
-    int field_0x20;                     // +0x20
-    int field_0x24;                     // +0x24
-    int field_0x28;                     // +0x28
-    int field_0x2c;                     // +0x2c
-    char _pad_30[0x8];
-    int field_0x38;                     // +0x38
-    char _pad_3c[0xc];
-    int field_0x48;                     // +0x48
-    int field_0x4c;                     // +0x4c
-    char _pad_50[0x34];
-    int field_0x84;                     // +0x84
-    char _pad_88[0x244];
-    int field_0x2cc;                    // +0x2cc
-    char _pad_2d0[0x8];
-    int field_0x2d8;                    // +0x2d8
-};
+// Layout is the real gof2/Layout.h type (it self-compiles and co-includes with common.h now);
+// StatusWindow drives it through its real methods (OnTouchMove/OnTouchEnd/draw*/helpPressed/...)
+// and byte-offset field reads.
 
 
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
@@ -140,7 +114,7 @@ float StatusWindow::getRelativeScrollStartPos() {
 // ---- OnTouchEnd_15a1c4.cpp ----
 extern "C" {
 extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
+__attribute__((noreturn)) void __stack_chk_fail(...);
 
 void *operator_new(uint32_t size);
 void operator_delete(void *p) noexcept;
@@ -198,7 +172,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     if (*g_swe_dialogBlock == 0) {
         void **tabs = (void **)pp(self, 0x4);
         for (unsigned int i = 0; i < *(unsigned int *)tabs; i++) {
-            if (((TouchButton *)(((void **)tabs[1])[i]))->OnTouchEnd(x) != 0) {
+            if (((TouchButton *)(((void **)tabs[1])[i]))->OnTouchEnd(x, y) != 0) {
                 u32(self, 0x30) = i;
                 i32(self, 0x58) = *(int *)((char *)pp(self, 0x68) + i * 4);
                 i32(self, 0x38) = 0;
@@ -209,7 +183,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     // Medal grid (only on the achievements tab, index 1).
     if (i32(self, 0x30) == 1) {
         for (int i = 0; i < i32(self, 0x0); i++) {
-            if (((TouchButton *)(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4)))->OnTouchEnd(x) != 0) {
+            if (((TouchButton *)(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4)))->OnTouchEnd(x, y) != 0) {
                 void *ach = *(void **)g_swe_achievements;
                 int *medals = Achievements_getMedals(ach);
                 int elite = ((Achievements *)(ach))->isEliteMedal(i);
@@ -234,9 +208,9 @@ void StatusWindow::OnTouchEnd(int x, int y) {
 
                     char hdr[0xc], hdrTxt[0xc], valStr[0xc], valTmp[0xc], full[0xc], hint[0xc];
                     void *key = *(void **)g_swe_status;
-                    void *t = ((GameText *)(i32(self, 0x34) + 0x610))->getText();
+                    void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(i32(self, 0x34) + 0x610);
                     String_fromText(hdr, t, false);
-                    void *val = ((Achievements *)(ach))->getValue(i32(self, 0x34), count);
+                    void *val = (void *)(__INTPTR_TYPE__)((Achievements *)(ach))->getValue(i32(self, 0x34), count);
                     String_fromText(valStr, val, false);
                     String_fromText(valTmp, valStr, false);
                     Status_replaceHash(full, key, hdr, valTmp);
@@ -263,13 +237,13 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     if (((Layout *)(layout))->helpPressed() != 0) {
         if (i32(self, 0x30) == 1) {
             char title[0xc];
-            void *t = ((GameText *)(0x287))->getText();
+            void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(0x287);
             String_fromText(title, t, false);
             ((Layout *)(layout))->initHelpWindow(title);
             ((String *)(title))->dtor();
         } else if (i32(self, 0x30) == 0) {
             char title[0xc];
-            void *t = ((GameText *)(0x280))->getText();
+            void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(0x280);
             String_fromText(title, t, false);
             ((Layout *)(layout))->initHelpWindow(title);
             ((String *)(title))->dtor();
@@ -293,7 +267,7 @@ int StatusWindow::OnTouchBegin(int param_1, int param_2) {
     i32(self, 0x3c) = param_2;
     i32(self, 0x44) = 0;
     self->field_0x54 = 1;
-    ((Layout *)(*lh))->OnTouchBegin(param_1);
+    ((Layout *)(*lh))->OnTouchBegin(param_1, param_2);
     if (*g_StatusWindow_btnFlag == 0) {
         for (unsigned i = 0; i < self->field_0x4->size; ++i)
             ((TouchButton *)(self->field_0x4->data[i]))->OnTouchBegin(param_1, param_2);
@@ -376,7 +350,7 @@ void StatusWindow::update() {
 // Stack String slots are 0xc bytes; we drive them via the engine's String entry points.
 extern "C" {
 extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
+__attribute__((noreturn)) void __stack_chk_fail(...);
 
 void String_default(void *s);                              // String::String()
 void String_fromC(void *s, const char *text, bool copy);   // String::String(char*, bool)
@@ -413,7 +387,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
         // Each branch builds one header then iterates over a sub-goal list.
         if (medalIndex == 2 && state == 2) {
             String_fromC(tmpA, "\n", false);
-            void *hdr = ((GameText *)(0x114))->getText();
+            void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
             String_concat(tmpB, tmpA, hdr);
             String_appendAssign(outStr, tmpB);
             ((String *)(tmpB))->dtor();
@@ -424,7 +398,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             for (unsigned int i = 0; i < *list; i++) {
                 if (*(char *)(list[1] + i) == 0) {
                     String_fromC(tmpA, "\n", false);
-                    void *t = ((GameText *)(0x594 + (int)i))->getText();
+                    void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x594 + (int)i);
                     String_concat(tmpB, tmpA, t);
                     String_appendAssign(outStr, tmpB);
                     ((String *)(tmpB))->dtor();
@@ -433,7 +407,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             }
         } else if (medalIndex == 3 && state == 2) {
             String_fromC(tmpA, "\n", false);
-            void *hdr = ((GameText *)(0x114))->getText();
+            void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
             String_concat(tmpB, tmpA, hdr);
             String_appendAssign(outStr, tmpB);
             ((String *)(tmpB))->dtor();
@@ -444,7 +418,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             for (unsigned int i = 0; i < *list; i++) {
                 if (*(char *)(list[1] + i) == 0) {
                     String_fromC(tmpA, "\n", false);
-                    void *t = ((GameText *)(0x59f + (int)i))->getText();
+                    void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x59f + (int)i);
                     String_concat(tmpB, tmpA, t);
                     String_appendAssign(outStr, tmpB);
                     ((String *)(tmpB))->dtor();
@@ -453,7 +427,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             }
         } else if (medalIndex == 9 && state == 2) {
             String_fromC(tmpA, "\n", false);
-            void *hdr = ((GameText *)(0x114))->getText();
+            void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
             String_concat(tmpB, tmpA, hdr);
             String_appendAssign(outStr, tmpB);
             ((String *)(tmpB))->dtor();
@@ -464,7 +438,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             for (unsigned int i = 0; i < *list; i++) {
                 if (*(char *)(list[1] + i) == 0) {
                     String_fromC(tmpA, "\n", false);
-                    void *t = ((GameText *)(0x57e + (int)i))->getText();
+                    void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x57e + (int)i);
                     String_concat(tmpB, tmpA, t);
                     String_appendAssign(outStr, tmpB);
                     ((String *)(tmpB))->dtor();
@@ -473,7 +447,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             }
         } else if (medalIndex == 0xd && state == 2) {
             String_fromC(tmpA, "\n", false);
-            void *hdr = ((GameText *)(0x114))->getText();
+            void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
             String_concat(tmpB, tmpA, hdr);
             String_appendAssign(outStr, tmpB);
             ((String *)(tmpB))->dtor();
@@ -485,7 +459,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                 if (*(char *)((char *)bp + 8) == 0) {
                     String_fromC(tmpA, "\n", false);
                     int idx = BluePrint_getIndex(bp);
-                    void *t = ((GameText *)(idx + 0x4fa))->getText();
+                    void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(idx + 0x4fa);
                     String_concat(tmpB, tmpA, t);
                     String_appendAssign(outStr, tmpB);
                     ((String *)(tmpB))->dtor();
@@ -494,7 +468,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             }
         } else if (medalIndex == 0xe && state == 2) {
             String_fromC(tmpA, "\n", false);
-            void *hdr = ((GameText *)(0x114))->getText();
+            void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
             String_concat(tmpB, tmpA, hdr);
             String_appendAssign(outStr, tmpB);
             ((String *)(tmpB))->dtor();
@@ -506,7 +480,7 @@ extern "C" void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                 if (*(int *)((char *)bp + 0xc) == 0) {
                     String_fromC(tmpA, "\n", false);
                     int idx = BluePrint_getIndex(bp);
-                    void *t = ((GameText *)(idx + 0x4fa))->getText();
+                    void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(idx + 0x4fa);
                     String_concat(tmpB, tmpA, t);
                     String_appendAssign(outStr, tmpB);
                     ((String *)(tmpB))->dtor();
@@ -580,7 +554,7 @@ void StatusWindow::reInit() {
 
 extern "C" {
 extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
+__attribute__((noreturn)) void __stack_chk_fail(...);
 
 // String slots are 0xc bytes, driven via engine entry points.
 void String_default(void *s);
@@ -641,6 +615,7 @@ extern void *g_swd_status;     // *(DAT_16855c): status singleton
 extern void *g_swd_globals;    // *(DAT_16868c): globals
 extern char *g_swd_landscape;  // *(DAT_168478): landscape-layout flag
 extern int  *g_swd_textId;     // *(DAT_1684ac): rolling GameText id cursor
+extern void *g_swd_gameText;   // *(DAT_1684ac): GameText singleton (receiver for getText)
 }
 
 
@@ -701,33 +676,33 @@ void StatusWindow::draw() {
         int pad = layout->field_0x2c;
         char lbl[0xc];
 
-        void *t = ((GameText *)(*g_swd_textId))->getText();
+        void *t = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
         String_fromText(lbl, t, false);
-        ((Layout *)(layout))->drawBox(0, x0, top, boxW, layout->field_0x1c, lbl);
+        ((Layout *)(layout))->drawBox(0, x0, top, boxW, layout->field_0x1c, lbl, 0);
         ((String *)(lbl))->dtor();
 
         int y = layout->field_0x1c + top + pad;
 
         // Credits panel.
         String_fromC(lbl, "", false);
-        ((Layout *)(layout))->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl);
+        ((Layout *)(layout))->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         ((String *)(lbl))->dtor();
-        ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawChar(pp(self, 0xc), layout->field_0x4c + x0, y, false);
+        ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawChar((Arr *)pp(self, 0xc), layout->field_0x4c + x0, y, false);
         char credTmp[0xc];
         Layout_formatCredits(credTmp, Status_getCredits());
-        ((String *)(creditStr))->assign(credTmp);
+        ((String *)(creditStr))->assign((String *)credTmp);
         ((String *)(credTmp))->dtor();
         int tw = PaintCanvas_GetTextWidth(canvas, font);
         PaintCanvas_DrawString(canvas, font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y);
 
         // Level line.
         char lvlPrefix[0xc], lvlText[0xc], lvlFull[0xc];
-        void *lt = ((GameText *)(*g_swd_textId))->getText();
+        void *lt = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
         String_fromC(lvlPrefix, " ", false);
         String_concatText(lvlText, lt);
         int lvl = Status_getLevel();
         String_concatInt(lvlFull, lvlText, &lvl);
-        ((String *)(creditStr))->assign(lvlFull);
+        ((String *)(creditStr))->assign((String *)lvlFull);
         ((String *)(lvlFull))->dtor(); ((String *)(lvlText))->dtor(); ((String *)(lvlPrefix))->dtor();
         tw = PaintCanvas_GetTextWidth(canvas, font);
         PaintCanvas_DrawString(canvas, font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y);
@@ -740,10 +715,10 @@ void StatusWindow::draw() {
 
         // Ship picture panel.
         String_fromC(lbl, "", false);
-        ((Layout *)(layout))->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl);
+        ((Layout *)(layout))->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         ((String *)(lbl))->dtor();
         ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawShip(Ship_getIndex(Status_getShip()), x0 + (boxW >> 1) + pad * 2, y);
-        void *shipNameTxt = ((GameText *)(Ship_getIndex(Status_getShip())))->getText();
+        void *shipNameTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(Ship_getIndex(Status_getShip()));
         PaintCanvas_DrawString(canvas, font, shipNameTxt,
                                x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y);
 
@@ -755,7 +730,7 @@ void StatusWindow::draw() {
         String_fromC(fpPre, "%", false);
         String_concatInt(fpFull, fpPre, &fp2);
         String_concatText(fpStr, fpFull);
-        ((String *)(creditStr))->assign(fpStr);
+        ((String *)(creditStr))->assign((String *)fpStr);
         ((String *)(fpFull))->dtor(); ((String *)(fpPre))->dtor(); ((String *)(fpStr))->dtor();
         tw = PaintCanvas_GetTextWidth(canvas, font);
         PaintCanvas_DrawString(canvas, font, creditStr, ((y + x0) - pad) - tw, y);
@@ -769,7 +744,7 @@ void StatusWindow::draw() {
 
         // Standing emblem panel + bars.
         void *standing = Status_getStanding();
-        float rate = ((Standing *)(standing))->getStandingRate();
+        float rate = ((Standing *)(standing))->getStandingRate(0);
         PaintCanvas_DrawImage2D(canvas, i32(self, 0x24), x0 + (boxW >> 2), y, '\x11');
         PaintCanvas_DrawRegion2D(canvas, i32(self, 0x28), i32(self, 0x70), 0,
                                  (int)-(rate * (float)i32(self, 0x70)), i32(self, 0x74),
@@ -785,7 +760,7 @@ void StatusWindow::draw() {
             { Status_getStationsVisited }, { Status_getJumpgateUsed }, { Status_getGoodsProduced },
         };
         for (unsigned r = 0; r < sizeof(rows) / sizeof(rows[0]); r++) {
-            void *labelTxt = ((GameText *)(*g_swd_textId))->getText();
+            void *labelTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
             PaintCanvas_DrawString(canvas, font, labelTxt, rowX, y);
             String_fromInt(rowStr, rows[r].get(st));
             tw = PaintCanvas_GetTextWidth(canvas, font);
@@ -808,9 +783,9 @@ void StatusWindow::draw() {
 
         if (drewStats != 0) {
             char hdr[0xc];
-            void *t = ((GameText *)(*g_swd_textId))->getText();
+            void *t = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
             String_fromText(hdr, t, false);
-            ((Layout *)(layout))->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, hdr);
+            ((Layout *)(layout))->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, hdr, 0);
             ((String *)(hdr))->dtor();
             gridY0 += layout->field_0x1c + layout->field_0x2c;
         }
@@ -818,7 +793,7 @@ void StatusWindow::draw() {
         for (int i = 0; i < i32(self, 0x0); i++) {
             int col = (int)__aeabi_uidiv((unsigned)i, 3);
             int by = col * rowH + gridY0 + i32(self, 0x38);
-            ((TouchButton *)(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4)))->setPosition((i - col * 3) * third + gridX0, by);
+            ((TouchButton *)(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4)))->setPosition((i - col * 3) * third + gridX0, by, 0x44);
             if (by >= 0 && by <= screenH)
                 ((TouchButton *)(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4)))->draw();
         }
@@ -832,13 +807,13 @@ void StatusWindow::draw() {
             String_fromC(lbl, "", false);
             ((Layout *)(layout))->drawBox(2, layout->field_0x28, (((screenH - layout->field_0x10) -
                              layout->field_0x24) - lineH * lines) +
-                               layout->field_0x4c * -2, i32(self, 0x6c), layout->field_0x4c * 2 + lineH * lines, lbl);
+                               layout->field_0x4c * -2, i32(self, 0x6c), layout->field_0x4c * 2 + lineH * lines, lbl, 0);
             ((String *)(lbl))->dtor();
 
             String_fromC(lbl, "", false);
             ((Layout *)(layout))->drawBox(5, layout->field_0x28, (((screenH - layout->field_0x10) -
                              layout->field_0x24) - lineH * lines) +
-                               layout->field_0x4c * -2, i32(self, 0x6c), layout->field_0x4c * 2 + lineH * lines, lbl);
+                               layout->field_0x4c * -2, i32(self, 0x6c), layout->field_0x4c * 2 + lineH * lines, lbl, 0);
             ((String *)(lbl))->dtor();
 
             Globals_drawLines(*(void **)g_swd_globals, font, pp(self, 0x10),
@@ -849,7 +824,7 @@ void StatusWindow::draw() {
 
     // --- header / footer / tab buttons ---
     char header[0xc];
-    void *ht = ((GameText *)(*g_swd_textId))->getText();
+    void *ht = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
     String_fromText(header, ht, false);
     Layout_drawHeader(layout, header);
     ((String *)(header))->dtor();
@@ -914,14 +889,14 @@ StatusWindow * StatusWindow::ctor() {
     int textId = *(int *)*(void **)g_sw_gameTextDef;
 
     void *b0 = operator_new(200);
-    void *t0 = ((GameText *)(textId))->getText();
-    int helpOff = Layout_getHelpButtonOffset();
+    void *t0 = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
+    int helpOff = layout->getHelpButtonOffset();
     TouchButton_ctor_tab(b0, t0, 3, layoutW - helpOff, 0, 0x12);
     *(void **)(*(int *)(self->field_0x4 + 4) + 4) = b0;
 
     void *b1 = operator_new(200);
-    void *t1 = ((GameText *)(textId))->getText();
-    int helpOff2 = Layout_getHelpButtonOffset();
+    void *t1 = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
+    int helpOff2 = layout->getHelpButtonOffset();
     int w1 = ((TouchButton *)(b1))->getWidth();
     TouchButton_ctor_tab(b1, t1, 3,
                          ((layoutW - helpOff2) - w1) + layout->field_0x38, 0, 0x12);
@@ -946,7 +921,7 @@ StatusWindow * StatusWindow::ctor() {
     for (int i = 0; i < i32(self, 0x0); i++) {
         void *btn = operator_new(200);
         int medal = medalIds[i];
-        void *txt = ((GameText *)(textId))->getText();
+        void *txt = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
         TouchButton_ctor_medal(btn, i, medal, txt, 0, 0, 'D');
         *(void **)(*(int *)(self->field_0x8 + 4) + i * 4) = btn;
     }

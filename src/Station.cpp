@@ -142,7 +142,7 @@ void Station::visit() {
 }
 
 // ---- getName_a6bce.cpp ----
-struct RetStr { uint32_t a, b, c; };
+// RetStr is declared in gof2/Station.h (via gof2/Agent.h).
 
 // Station::getName() -> String by value (sret in r0, this in r1).
 RetStr Station::getName() {
@@ -373,7 +373,7 @@ void Station::ctor_default() {
     String_default_ctor(self);
     char tmp[12];
     String_from_cstr(tmp, kStationDefaultName, false);
-    ((String *)(self))->assign(tmp);
+    ((String *)(self))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     self->field_0xc = -1;
     self->field_0x10 = -1;
@@ -465,7 +465,7 @@ extern "C" void *String_default_ctor(void *s);         // String::String() -> th
 Station * Station::ctor(void *name, int p3, int p4, int p5, int p6) {
     Station *self = this;
     void *s = String_default_ctor(self);
-    ((String *)(s))->assign(name);
+    ((String *)(s))->assign((String *)name);
     self->field_0xc = p3;
     self->field_0x10 = p4;
     self->field_0x20 = p5;

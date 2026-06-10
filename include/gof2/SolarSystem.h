@@ -18,7 +18,6 @@ using AbyssEngine::String12;
 
 // AbyssEngine::String passed/returned by value is a 12-byte trivially-copied
 // aggregate (text*, size, ...). Model it opaquely so the ABI matches the target.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
 
 // Field accessors via byte offset from `this`.

@@ -6,13 +6,9 @@
 struct Transform;
 struct PlayerStaticFar;
 
-// Read a T from a byte offset of an ambiguous local pointer. The underlying classes
-// (AEGeometry, Transform, BoundingVolume) aren't modeled as named structs here, so the
-// recovered code accesses their fields positionally.
-template <class T> static inline T &F(void *base, unsigned off)
-{
-    return *(T *)((char *)base + off);
-}
+// Note: the byte-offset accessor F<T>(void*, off) is provided by gof2/common.h.
+// The underlying classes (AEGeometry, Transform, BoundingVolume) aren't modeled as
+// named structs here, so the recovered code accesses their fields positionally via F.
 
 // Function-pointer globals used by update() — declared with their typedefs below.
 typedef long long (*TransformGetFn)(void *canvas, int mesh);

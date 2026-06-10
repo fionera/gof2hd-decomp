@@ -14,6 +14,10 @@ extern "C" void Layout_setBtnRect(void *btn, int x, int y, int anchor);
 extern "C" void Layout_loadImage(unsigned canvas, int id, void *field);
 extern "C" void Layout_headerAnim(void *btn);
 
+// Global GameText singleton holder (ldr [0xe4bbc]); receiver for getText(key).
+struct GameTextHolder { GameText *obj; };
+__attribute__((visibility("hidden"))) extern GameTextHolder *gGameText;
+
 // ---- Canonical cross-class engine helpers ---------------------------------
 // The per-method decomp blocks each re-declared these with slightly different
 // (and mutually conflicting) signatures — varying the canvas/color/button
@@ -348,7 +352,7 @@ void Layout::initTip() {
     int textId = **g_tipTextId;
     PaintCanvas *canvas = **g_tipCanvas;
     AERandom_nextInt(**g_tipRandN);
-    void *str = ((GameText *)(textId))->getText();
+    void *str = gGameText->obj->getText(textId);
 
     *tipArr = arr;
     int *m = *g_tipMetric;
@@ -673,7 +677,7 @@ extern "C" void Layout_formatNumber(void *out, int value) {
         String_cstr_ctor(sep, g_fnSepB, false);
 
     if (len < 4) {
-        ((String *)(out))->assign(digits);
+        ((String *)(out))->assign((String *)digits);
     } else {
         int i = len;
         while (i > 2) {
@@ -691,7 +695,7 @@ extern "C" void Layout_formatNumber(void *out, int value) {
             String_concat(t1, prefix, grp);
             unsigned char t2[sizeof(String12)] __attribute__((aligned(4)));  // aSStack_4c
             String_concat(t2, t1, out);
-            ((String *)(out))->assign(t2);
+            ((String *)(out))->assign((String *)t2);
 
             ((String *)(t2))->dtor();
             ((String *)(t1))->dtor();
@@ -705,7 +709,7 @@ extern "C" void Layout_formatNumber(void *out, int value) {
             String_concat(j1, head, sep);
             unsigned char j2[sizeof(String12)] __attribute__((aligned(4))); // aSStack_58
             String_concat(j2, j1, out);
-            ((String *)(out))->assign(j2);
+            ((String *)(out))->assign((String *)j2);
             ((String *)(j2))->dtor();
             ((String *)(j1))->dtor();
         }
@@ -717,7 +721,7 @@ extern "C" void Layout_formatNumber(void *out, int value) {
         String_cstr_ctor(ov, g_fnOverflow, false);
         unsigned char r[sizeof(String12)] __attribute__((aligned(4)));      // aSStack_4c
         String_concat(r, ov, out);
-        ((String *)(out))->assign(r);
+        ((String *)(out))->assign((String *)r);
         ((String *)(r))->dtor();
         ((String *)(ov))->dtor();
     }
@@ -1235,9 +1239,8 @@ void Layout::drawHelpWindow() {
 
 // ---- initHelpWindow_d4b40.cpp ----
 extern "C" void *operator_new_li(unsigned sz);                  // 0x6eb24
-struct GameText; struct GameTextHolder { GameText *obj; };
 __attribute__((visibility("hidden"))) extern int *gFmodHelp;        // ldr [0xe4bb8] (distinct global from showMissionRewardMessage's gFmod)
-__attribute__((visibility("hidden"))) extern GameTextHolder *gGameText; // ldr [0xe4bbc]
+// gGameText holder declared at top of file.
 
 // Layout::initHelpWindow(String text)
 void Layout::initHelpWindow(void *text) {
@@ -1419,7 +1422,7 @@ void Layout::reload() {
 
     // Back button (string-labelled).
     TouchButton *bBack = (TouchButton *)operator_new(200);
-    void *txt = ((GameText *)(*g_rlBackText))->getText();
+    void *txt = gGameText->obj->getText(*g_rlBackText);
     int sh = *g_rlScreenH;
     TouchButton_ctorStr(bBack, txt, 2, self->field_0x28, sh - 3, '!');
     self->field_0x3b4 = bBack;
@@ -1430,7 +1433,7 @@ void Layout::reload() {
     PaintCanvas_Image2DCreate((PaintCanvas *)*g_rlCanvas, 0x535, &img535);
     TouchButton *b2 = (TouchButton *)operator_new(200);
     if (img535 == 0xffffffff) {
-        void *t = ((GameText *)(*g_rlBackText))->getText();
+        void *t = gGameText->obj->getText(*g_rlBackText);
         TouchButton_ctorStr(b2, t, 2, self->field_0x28,
                             *g_rlScreenH - self->field_0x3fc, '!');
     } else {
@@ -1731,7 +1734,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         PaintCanvas_DrawImage2D5(*g_mrCanvas, self->field_0x3a4, sh >> 1,
                                  (char)boxX, 0x11);
 
-        void *txt = ((GameText *)(*g_mrTextId))->getText();
+        void *txt = gGameText->obj->getText(*g_mrTextId);
         unsigned char line[sizeof(String12)] __attribute__((aligned(4)));
         String_copy_ctor(line, txt, false);
 
@@ -1747,7 +1750,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         Layout_formatCredits(credits, self->field_0x3d4);
         unsigned char joined[sizeof(String12)] __attribute__((aligned(4)));
         String_concat(joined, suffix, credits);
-        ((String *)(line))->assign(joined);
+        ((String *)(line))->assign((String *)joined);
         ((String *)(joined))->dtor();
         ((String *)(credits))->dtor();
         ((String *)(suffix))->dtor();

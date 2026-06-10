@@ -3,9 +3,11 @@
 #include "gof2/common.h"
 // Galaxy on Fire 2 - AbyssEngine::MaskShader (GLES2 masked/textured shader).
 // Derives from ShaderBaseStruct. Field names use the deterministic field_0xNN convention.
+// Engine is a global-scope type (::Engine, defined in gof2/Engine.h).
+struct Engine;
+
 namespace AbyssEngine {
 
-struct Engine;
 struct Mesh;
 
 // AbyssEngine::ShaderBaseStruct base layout used by MaskShader.
@@ -30,9 +32,9 @@ struct MaskShader : ShaderBaseStruct {
     static int ShaderIndex;
 
     MaskShader();
-    void Init(Engine *engine);
+    void Init(::Engine *engine);
     void SetInActive();
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void UpdateMeshData(Mesh *mesh, ::Engine *engine);
 };
 
 } // namespace AbyssEngine
