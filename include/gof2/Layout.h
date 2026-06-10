@@ -32,9 +32,9 @@ namespace AbyssEngine {
 String operator+(const String &left, const String &right);
 } // namespace AbyssEngine
 using AbyssEngine::String;
+using AbyssEngine::String12;
 
-// placement new
-inline void *operator new(__SIZE_TYPE__, void *p) noexcept { return p; }
+// placement new is provided by <new> (pulled in via common.h's standard headers).
 
 // Stack-protector guard (the engine resolves this to a PC-relative game global).
 extern "C" void *__stack_chk_guard;
@@ -45,6 +45,7 @@ extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 // Field accessor via byte offset.
 
 struct Layout {
+    ~Layout();
     uint8_t field_0x0;                  // +0x0
     int field_0x4;                      // +0x4
     int field_0x8;                      // +0x8
@@ -158,7 +159,7 @@ struct Layout {
     void* field_0x3bc;                  // +0x3bc
     uint8_t field_0x3c0;                // +0x3c0
     void* field_0x3c4;                  // +0x3c4
-    int field_0x3c8;                    // +0x3c8
+    int* field_0x3c8;                   // +0x3c8 (tip line-array; deref'd for line count)
     uint8_t field_0x3cc;                // +0x3cc
     int field_0x3d0;                    // +0x3d0
     int field_0x3d4;                    // +0x3d4

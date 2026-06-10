@@ -2,22 +2,30 @@
 #include "gof2/Mesh.h"
 #include "gof2/Vector.h"
 
+// Mesh and PaintCanvas are AbyssEngine types. fwd.h also declares conflicting *global*
+// forward decls of the same bare names, so we cannot pull the engine types to global
+// scope with `using` (the names already exist). Use the fully-qualified engine names
+// throughout this translation unit.
+typedef AbyssEngine::Mesh        AEMesh;
+typedef AbyssEngine::PaintCanvas AEPaintCanvas;
+#define Mesh        AEMesh
+#define PaintCanvas AEPaintCanvas
+
 
 extern "C" void MeshMerger_setMatrix_tail(void *dst, const Matrix &m);
 extern "C" void MeshMerger_render_tail(void *a, void *b, int z);
-extern "C" uint32_t PaintCanvas_MeshGetPointer(PaintCanvas *c, uint32_t id);
+extern "C" void *PaintCanvas_MeshGetPointer(void *c, uint32_t id);
 extern "C" void PaintCanvas_MeshSetPoint(PaintCanvas *c, uint16_t mesh, float x, float y, float z);
 extern "C" void PaintCanvas_MeshSetNormal(PaintCanvas *c, uint32_t mesh, int16_t idx, Vector *n);
 extern "C" void PaintCanvas_MeshSetUv(PaintCanvas *c, uint16_t mesh, float u, float v);
 extern "C" void PaintCanvas_MeshSetColor(PaintCanvas *c, uint32_t mesh, int16_t idx, float r, float g, float b, float a);
 extern "C" void PaintCanvas_MeshSetTriangle(PaintCanvas *c, uint16_t mesh, int16_t tri, int16_t a, int16_t b);
-extern "C" void PaintCanvas_TransformCreate(PaintCanvas *c, uint32_t *out);
-extern "C" void PaintCanvas_TransformAddMeshId(PaintCanvas *c, uint32_t tf, uint32_t mesh);
+extern "C" void PaintCanvas_TransformCreate(void *c, uint32_t *out);
+extern "C" void PaintCanvas_TransformAddMeshId(void *c, uint32_t tf, uint32_t mesh);
 extern "C" void *operator_new_array(uint32_t n);
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 extern "C" uint8_t PaintCanvas_CameraIsSphereInViewFrustum(void *canvas, const Vector *center, float r);
 extern "C" void PaintCanvas_MeshCreate(void *canvas, uint16_t meshId, uint32_t *out, bool flag);
-extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t id);
 
 // ---- setMatrix_173c74.cpp ----
 // setMatrix(index, m): tail-call the engine matrix-assign with the per-index
@@ -82,19 +90,19 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     pp(this, 0xc) = canvas;
     i32(this, 0x30) = 1;
     u16(this, 0x4) = flags;
-    i32(this, 0x00) = (int)transforms.size;
+    i32(this, 0x00) = (int)transforms.size();
 
-    uint32_t count = meshIds.size;
+    uint32_t count = meshIds.size();
     uint32_t **table = (uint32_t **)operator_new_array(count * 4);
     pp(this, 0x8) = table;
 
     // Per-source meshes: create them and tally vertex/index totals.
     int16_t totalV = 0;
     int16_t totalI = 0;
-    for (uint32_t i = 0; i < meshIds.size; i++) {
+    for (uint32_t i = 0; i < meshIds.size(); i++) {
         uint32_t localId;
-        PaintCanvas_MeshCreate_simple(canvas, meshIds.data[i], &localId, false);
-        uint32_t ptr = PaintCanvas_MeshGetPointer(canvas, localId);
+        PaintCanvas_MeshCreate_simple(canvas, meshIds.data()[i], &localId, false);
+        void *ptr = PaintCanvas_MeshGetPointer(canvas, localId);
         ((uint32_t **)pp(this, 0x8))[i] = (uint32_t *)ptr;
         char *m = (char *)((uint32_t **)pp(this, 0x8))[i];
         totalV = (int16_t)(totalV + *(uint16_t *)(m + 2));
@@ -108,9 +116,9 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
 
     int16_t triBase = 0;
     int16_t vtxBase = 0;
-    for (uint32_t i = 0; i < meshIds.size; i++) {
+    for (uint32_t i = 0; i < meshIds.size(); i++) {
         char *m = (char *)((uint32_t **)pp(this, 0x8))[i];
-        Matrix *xf = &transforms.data[i];
+        Matrix *xf = &transforms.data()[i];
         int colOff = 0;
         int uvOff = 0;
         uint16_t nv = *(uint16_t *)(m + 2);
@@ -198,7 +206,7 @@ void MeshMerger::update()
                 uint8_t *out = (uint8_t *)pp(this, 0x20);
                 uint8_t mask = out[0];
                 signed char lod = *((int8_t *)pp(this, 0x24) + j);
-                void *src = ((void **)pp(this, 0x18))[rows * lod + j];
+                Mesh *src = (Mesh *)((void **)pp(this, 0x18))[rows * lod + j];
 
                 if (mask & 1) {
                     aeabi_memcpy4(*(char **)(out + 4) + vtxOff * 0xc,
@@ -216,7 +224,7 @@ void MeshMerger::update()
                 }
                 if (mask & 8) {
                     aeabi_memcpy4(*(char **)(out + 0xc) + vtxOff * 0x10,
-                                  src->field_0xc,
+                                  (const void *)(uintptr_t)src->field_0xc,
                                   (uint32_t)src->field_0x2 << 4);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
@@ -229,7 +237,7 @@ void MeshMerger::update()
                     mask = out[0];
                 }
                 if (mask & 0x10) {
-                    int16_t *si = src->field_0x2c;
+                    int16_t *si = (int16_t *)src->field_0x2c;
                     int16_t *di = (int16_t *)(*(char **)(out + 0x2c) + idxOff * 2);
                     for (int k = -(int)(uint16_t)src->field_0x28; k != 0; k++) {
                         *di = (int16_t)(*si + (int16_t)vtxOff);
@@ -295,7 +303,7 @@ int MeshMerger::init()
     PaintCanvas_MeshCreate2(pp(this, 0xc), nv, ni,
                             (int)*(int8_t *)*(void **)pp(this, 0x8));
     void *ptr = PaintCanvas_MeshGetPointer(pp(this, 0xc), u32(this, 0x10));
-    i32(this, 0x20) = (int)ptr;
+    pp(this, 0x20) = ptr;   // field_0x20: merged-mesh pointer (full-width store)
     PaintCanvas_TransformCreate(pp(this, 0xc), (uint32_t *)((char *)this + 0x14));
     PaintCanvas_TransformAddMeshId(pp(this, 0xc), u32(this, 0x14), u32(this, 0x10));
     u8(this, 0x34) = 1;
@@ -409,13 +417,13 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
     *(uint8_t *)out = flags;
 
     if (flags & 2) {
-        *(uint32_t *)(out + 8) = mesh->field_0x8;
+        *(void **)(out + 8) = mesh->field_0x8;       // pointer field (full-width store)
     }
     if (flags & 8) {
-        *(uint32_t *)(out + 0xc) = mesh->field_0xc;
+        *(uint32_t *)(out + 0xc) = mesh->field_0xc;  // field_0xc is uint32_t
     }
     if (flags & 0x10) {
-        *(uint32_t *)(out + 0x2c) = mesh->field_0x2c;
+        *(void **)(out + 0x2c) = mesh->field_0x2c;   // pointer field (full-width store)
     }
     if (flags & 1) {
         void *buf = operator_new_array((uint32_t)nv * 0xc);

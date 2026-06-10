@@ -1,7 +1,10 @@
 #include "gof2/GreenShader.h"
 
-
-
+extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
+    AbyssEngine::String *self, const char *text, bool copy);
+extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
+    AbyssEngine::String *self, const AbyssEngine::String *other);
+extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 // ---- SetInActive_883c0.cpp ----
 namespace AbyssEngine {
@@ -23,7 +26,7 @@ void GreenShader::SetInActive()
 } // namespace AbyssEngine
 
 // ---- _GreenShader_8847e.cpp ----
-extern "C" void _ZN11AbyssEngine11GreenShaderD0Ev(GreenShader *self)
+extern "C" void _ZN11AbyssEngine11GreenShaderD0Ev(AbyssEngine::GreenShader *self)
 {
     operator_delete(ShaderBaseStruct_dtor(self));
 }
@@ -97,12 +100,15 @@ GreenShader::GreenShader()
     void *volatile cookie = __stack_chk_guard;
 
     ShaderBaseStruct_ctor(this);
-    i32(this, 0x0) = (int)GreenShader_vtable + 8;
+    i32(this, 0x0) = (int)(__UINTPTR_TYPE__)GreenShader_vtable + 8;
     GreenShader_typeInfoDest = GreenShader_typeInfoSource;
 
     {
-        String temp(GreenShader_name, false);
-        this->field_0xc = temp;
+        char tempStorage[sizeof(String)];
+        String *temp = (String *)tempStorage;
+        _ZN11AbyssEngine6StringC1EPKcb(temp, GreenShader_name, false);
+        _ZN11AbyssEngine6StringaSERKS0_(&this->field_0xc, temp);
+        _ZN11AbyssEngine6StringD1Ev(temp);
     }
 
     uint32_t delta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;

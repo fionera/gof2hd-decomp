@@ -21,20 +21,17 @@
 
 struct Gun;
 
-// gof2/AEGeometry.h does not compile standalone; Gun only reads one AEGeometry field (the geometry
-// handle at +0xc), so we complete the global forward declaration with a minimal view here.
-struct AEGeometry {
-    char pad_0x0[0xc];
-    int32_t field_0xc;                  // +0xc geometry/transform handle
-};
+// AEGeometry is provided in full by gof2/AEGeometry.h (included by Gun.cpp). Only the +0xc
+// geometry/transform handle is read here; forward-declare so Gun.h stays standalone.
+struct AEGeometry;
 
 struct Gun {
     int field_0x0;                      // +0x0
     Player* field_0x4;                  // +0x4
     unsigned field_0x8;                 // +0x8
-    void* field_0xc;                    // +0xc
+    char* field_0xc;                    // +0xc vertex buffer (byte-addressed)
     int field_0x14;                     // +0x14
-    void* field_0x18;                   // +0x18
+    char* field_0x18;                   // +0x18 velocity buffer (byte-addressed)
     char* field_0x24;                   // +0x24
     int field_0x30;                     // +0x30
     int field_0x38;                     // +0x38
@@ -71,7 +68,7 @@ struct Gun {
     uint8_t field_0xa7;                 // +0xa7
     uint8_t field_0xa8;                 // +0xa8
     uint8_t field_0xa9;                 // +0xa9
-    void* field_0xac;                   // +0xac
+    char* field_0xac;                   // +0xac Array<Vector*> (byte-addressed header)
     float field_0xb0;                   // +0xb0
     Player* field_0xb4;                 // +0xb4 enemies
     Sparks* field_0xb8;                 // +0xb8 impact

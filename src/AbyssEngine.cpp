@@ -3022,9 +3022,9 @@ int MeshConvertToVBO(Mesh *mesh)
         if (u8(mesh, 0x5c) != 0 || u8(mesh, 0x84) == 0)
             return -4;
         MeshConvertToVBOIntern(mesh);
-        // mesh is bare AbyssEngine::Mesh (incomplete fwd-decl from Mesh.h); use the global
-        // complete ::Mesh layout to read the embedded Transform pointer.
-        TransformConvertToVBO((Transform *)((::Mesh *)mesh)->field_0x34);
+        // mesh is AbyssEngine::Mesh (complete struct from Mesh.h); field_0x34 is the embedded
+        // Transform pointer (AbyssEngine::Transform*).
+        TransformConvertToVBO(mesh->field_0x34);
         result = 1;
     }
     return result;

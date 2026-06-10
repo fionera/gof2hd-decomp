@@ -2,7 +2,7 @@
 
 
 extern "C" void *_mtw_GameText_getText(void *gt, int id);
-extern "C" void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b);
+void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b);
 extern "C" void _mtw_render3D_inner(void *obj);
 extern "C" int  _mtw_Layout_OnTouchEnd(void *layout, int y, int x);
 extern "C" int  _mtw_ChoiceWindow_OnTouchEnd(void *cw, int y);
@@ -37,9 +37,8 @@ extern "C" void _mtw_String_ctor_cstr(void *s, const char *cstr, bool b);
 extern "C" void _mtw_String_ctor_from(void *s, int src);
 extern "C" void _mtw_String_dtor(void *s);
 extern "C" void _mtw_Globals_longToTimeStringNoSeconds(long long t, void *out);
-extern "C" void _mtw_Layout_formatCredits(int out);
+extern "C" void _mtw_Layout_formatCredits(void *out);
 extern "C" void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char type);
-extern "C" void _mtw_TouchButton_setPosition(void *btn, int x, int y);
 extern "C" void _mtw_Status_resetGame();
 extern "C" void _mtw_Status_nextCampaignMission(bool a);
 extern "C" void _mtw_Mission_ctor(void *m);
@@ -56,7 +55,6 @@ extern "C" void _mtw_Status_setSystemVisibility(void *status, int sys, bool vis)
 extern "C" void _mtw_Achievements_setMedal(void *ach, int id, int n);
 extern "C" void _mtw_RecordHandler_saveOptions(void *rh);
 extern "C" void _mtw_Status_setKills(void *status);
-extern "C" void _mtw_FModSound_stop(void *snd);
 extern "C" void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y);
 extern "C" int  _mtw_Layout_OnTouchBegin(void *layout, int y);
 extern "C" void _mtw_TouchButton_OnTouchBegin(void *btn, int y);
@@ -74,7 +72,7 @@ extern "C" void *_mtw_RecordHandler_readRecord(void *rh);
 extern "C" void *_mtw_RecordHandler_dtor(void *rh);
 extern "C" void *_mtw_GameRecord_dtor(void *gr);
 extern "C" void _mtw_GameRecord_load(void *gr);
-extern "C" void _mtw_ChoiceWindow_set(void *cw, void *s, bool b);
+void _mtw_ChoiceWindow_set(void *cw, void *s, bool b);
 extern "C" void *_mtw_AppMgr_GetApplicationModule(void *app, int id);
 extern "C" void _mtw_ModStation_setGameLoaded(void *ms);
 extern "C" void _mtw_ArrayAdd_TouchButton(void *btn, void *arr);
@@ -82,14 +80,13 @@ extern "C" void _mtw_TouchButton_getPosition(void *out, void *btn);
 extern "C" void _mtw_TouchButton_setVisible(void *btn, bool v);
 extern "C" void *_mtw_Array_GameRecord_dtor(void *p);
 extern "C" void *_mtw_RecordHandler_readAllPreviewRecords(void *rh);
-extern "C" void _mtw_RecordHandler_dtor(void *rh);
 extern "C" void _mtw_RecordHandler_recordStoreWrite(void *rh, int slot);
 extern "C" void _mtw_RecordHandler_recordStoreWritePreview(void *rh, int slot);
 extern "C" void *_mtw_RecordHandler_recordStoreReadPreview(void *rh);
 extern "C" void _mtw_createRecordButtons(void *self, bool b);
 extern "C" void *_mtw_AppMgr_GetApplicationData();
 extern "C" void *_mtw_AppMgr_GetEngine();
-extern "C" void _mtw_ChoiceWindow_set(void *cw, void *s);
+void _mtw_ChoiceWindow_set(void *cw, void *s);
 extern "C" void _mtw_ChoiceWindow_update(void *cw);
 extern "C" void _mtw_TouchButton_setYPosition(void *btn, int y);
 extern "C" int  _mtw_TouchButton_isVisible(void *btn);
@@ -115,7 +112,7 @@ extern "C" void _mtw_PaintCanvas_DrawImage2D(void *pc, unsigned int img, int x, 
 extern "C" void _mtw_PaintCanvas_DrawString(void *pc, void *str, int val, int x, char y);
 extern "C" void _mtw_PaintCanvas_DrawStringFull(void *pc, void *str, void *s, int x, int y, int z);
 extern "C" void _mtw_TouchButton_draw(void *btn);
-extern "C" void _mtw_Layout_drawBox(int layout, int mode, int x, int y, int w, int h, void *str);
+extern "C" void _mtw_Layout_drawBox(void *layout, int mode, int x, int y, int w, int h, void *str);
 extern "C" void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y);
 extern "C" void _mtw_Ship_addCargo(void *ship, void *item);
 extern "C" float _mtw_FModSound_stop(void *snd);
@@ -125,7 +122,6 @@ extern "C" float _mtw_FModSound_stop(void *snd);
 extern void *const gSupernovaGameText __attribute__((visibility("hidden")));
 
 // MenuTouchWindow::showSupernovaMessage()
-struct MenuTouchWindow { void showSupernovaMessage(); };
 void MenuTouchWindow::showSupernovaMessage()
 {
     void *cw = pp(this, 0x104);
@@ -139,7 +135,6 @@ void MenuTouchWindow::showSupernovaMessage()
 
 // ---- isInMissionScreen_125406.cpp ----
 // MenuTouchWindow::isInMissionScreen()
-struct MenuTouchWindow { bool isInMissionScreen(); };
 bool MenuTouchWindow::isInMissionScreen()
 {
     return i32(this, 0x16c) == 9;
@@ -147,7 +142,6 @@ bool MenuTouchWindow::isInMissionScreen()
 
 // ---- isShowingMessage_12cffa.cpp ----
 // MenuTouchWindow::isShowingMessage()
-struct MenuTouchWindow { uint8_t isShowingMessage(); };
 uint8_t MenuTouchWindow::isShowingMessage()
 {
     return u8(this, 0x170);
@@ -155,7 +149,6 @@ uint8_t MenuTouchWindow::isShowingMessage()
 
 // ---- isMakingScreenshot_12d00e.cpp ----
 // MenuTouchWindow::isMakingScreenshot() -> (unsigned)field < 0x80000000, i.e. signed >= 0.
-struct MenuTouchWindow { bool isMakingScreenshot(); };
 bool MenuTouchWindow::isMakingScreenshot()
 {
     return u32(this, 0x184) < 0x80000000u;
@@ -163,7 +156,6 @@ bool MenuTouchWindow::isMakingScreenshot()
 
 // ---- hideMessage_12d01e.cpp ----
 // MenuTouchWindow::hideMessage()
-struct MenuTouchWindow { void hideMessage(); };
 void MenuTouchWindow::hideMessage()
 {
     u8(this, 0x170) = 0;
@@ -171,7 +163,6 @@ void MenuTouchWindow::hideMessage()
 
 // ---- render3D_12cfe4.cpp ----
 // MenuTouchWindow::render3D()
-struct MenuTouchWindow { void render3D(); };
 void MenuTouchWindow::render3D()
 {
     if (i32(this, 0x16c) != 9)
@@ -184,7 +175,6 @@ void MenuTouchWindow::render3D()
 
 // ---- inCinematicMode_12d000.cpp ----
 // MenuTouchWindow::inCinematicMode()
-struct MenuTouchWindow { bool inCinematicMode(); };
 bool MenuTouchWindow::inCinematicMode()
 {
     return i32(this, 0x16c) == 0xd;
@@ -193,7 +183,6 @@ bool MenuTouchWindow::inCinematicMode()
 // ---- getRelativeScrollStartPos_125d74.cpp ----
 // MenuTouchWindow::getRelativeScrollStartPos()
 //   r = CONST; if (this->0x194 <= 0) r = -(float)(int)this->0x194 / (float)(int)this->0x22c;
-struct MenuTouchWindow { float getRelativeScrollStartPos(); };
 float MenuTouchWindow::getRelativeScrollStartPos()
 {
     int a = i32(this, 0x194);
@@ -224,7 +213,6 @@ extern void *const gEndQuitApp     __attribute__((visibility("hidden")));
 extern void *const gEndModuleId    __attribute__((visibility("hidden"))); // *holder -> module id
 extern void *const gEndPendingFlag __attribute__((visibility("hidden"))); // *holder -> int set on confirm
 
-struct MenuTouchWindow { int OnTouchEnd(int y, int x); };
 int MenuTouchWindow::OnTouchEnd(int y, int x)
 {
     void *self = this;
@@ -386,7 +374,6 @@ static inline void freeObj(void *self, int off, void *(*dtor)(void *)) {
     pp(self, off) = 0;
 }
 
-struct MenuTouchWindow { MenuTouchWindow *dtor(); };
 MenuTouchWindow *MenuTouchWindow::dtor()
 {
     void *self = this;
@@ -470,7 +457,6 @@ extern void *const gCrbLayout   __attribute__((visibility("hidden")));   // *hol
 extern void *const gCrbScreenW  __attribute__((visibility("hidden")));   // *holder -> [0] = screen width
 extern void *const gCrbBackFlag __attribute__((visibility("hidden")));   // *holder -> [0]: byte, use 7-button form
 
-struct MenuTouchWindow { void createRecordButtons(bool inSaveMode); };
 void MenuTouchWindow::createRecordButtons(bool inSaveMode)
 {
     void *self = this;
@@ -560,7 +546,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
 
             void *credits = operator_new(0xc);
-            _mtw_Layout_formatCredits((int)credits);
+            _mtw_Layout_formatCredits(credits);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[3] = credits;
 
             // build "Kills: " + value string
@@ -642,7 +628,6 @@ extern void *const gValTransition __attribute__((visibility("hidden")));
 
 typedef void (*TransitionFn)(void *app, int mode);
 
-struct MenuTouchWindow { void startValkyrie(); };
 void MenuTouchWindow::startValkyrie()
 {
     void **statusHolder = (void **)gValStatus;
@@ -727,10 +712,9 @@ extern void *const gBgScreenH2 __attribute__((visibility("hidden")));
 extern void *const gBgScrollImg __attribute__((visibility("hidden")));
 extern void *const gBgScreenW2 __attribute__((visibility("hidden")));
 
-struct MenuTouchWindow { int OnTouchBegin(int y, int x, int touchId); };
 int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
 {
-    void *self = this;
+    MenuTouchWindow *self = this;
     if (u8(self, 0x170) != 0) { _mtw_ChoiceWindow_OnTouchBegin(pp(self, 0x104), y); return 0; }
 
     char *layout = (char *)*(void **)gBgLayout;
@@ -975,7 +959,6 @@ extern void *const gLoadAppHolder __attribute__((visibility("hidden")));     // 
 extern void *const gLoadResetCell __attribute__((visibility("hidden")));     // *holder -> int cell to clear
 
 // MenuTouchWindow::loadGame(int slot)
-struct MenuTouchWindow { int loadGame(int slot); };
 int MenuTouchWindow::loadGame(int slot)
 {
     void *rh = operator_new(0x2c);
@@ -1043,7 +1026,6 @@ extern void *const gAddBtnPosY    __attribute__((visibility("hidden")));  // y c
 extern void *const gAddBtnCount   __attribute__((visibility("hidden")));  // *holder -> count cell
 
 // MenuTouchWindow::addButton(int id, String label, int row, Array<TouchButton*>* arr, int yOff)
-struct MenuTouchWindow { void addButton(int id, void *label, int row, void *arr, int yOff); };
 void MenuTouchWindow::addButton(int id, void *label, int row, void *arr, int yOff)
 {
     void *btn = operator_new(0xc8);
@@ -1080,7 +1062,6 @@ void MenuTouchWindow::addButton(int id, void *label, int row, void *arr, int yOf
 // ---- setCutsceneMode_125414.cpp ----
 // MenuTouchWindow::setCutsceneMode(bool). Ghidra mislabels: r0=this, r1=mode.
 // Sets this->0x238 = mode, then hides/shows all type-0x13 buttons (id 0) to !mode.
-struct MenuTouchWindow { void setCutsceneMode(bool mode); };
 void MenuTouchWindow::setCutsceneMode(bool mode)
 {
     u8(this, 0x238) = (uint8_t)mode;
@@ -1103,7 +1084,6 @@ typedef void (*RefreshFn)();
 extern void *const gPrevRefreshThunk __attribute__((visibility("hidden")));
 
 // MenuTouchWindow::loadPreviewRecords()
-struct MenuTouchWindow { void loadPreviewRecords(); };
 void MenuTouchWindow::loadPreviewRecords()
 {
     i32(this, 0x194) = 0;
@@ -1138,7 +1118,6 @@ void MenuTouchWindow::loadPreviewRecords()
 extern void *const gSaveGameText __attribute__((visibility("hidden")));
 
 // MenuTouchWindow::saveGame(int slot)
-struct MenuTouchWindow { void saveGame(int slot); };
 void MenuTouchWindow::saveGame(int slot)
 {
     void *rh = operator_new(0x2c);
@@ -1191,10 +1170,9 @@ extern void *const gUpListLayout  __attribute__((visibility("hidden")));
 // helper: pull a GameText id from one of the PC-relative literal pools.
 extern const int g_mtw_upTextIds[16] __attribute__((visibility("hidden")));
 
-struct MenuTouchWindow { void update(int dt); };
 void MenuTouchWindow::update(int dt)
 {
-    void *self = this;
+    MenuTouchWindow *self = this;
 
     // ---- scroll inertia for list states (0x16c in {1,2,15}) ----
     unsigned int st = u32(self, 0x16c);
@@ -1424,7 +1402,6 @@ void MenuTouchWindow::update(int dt)
 // thunk that forwards to the supernova-challenge start handler. Faithful recoverable
 // translation via an extern helper.
 
-struct MenuTouchWindow { void startSupernovaChallenge(); };
 void MenuTouchWindow::startSupernovaChallenge()
 {
     _mtw_startSupernovaChallenge_impl(this);
@@ -1435,7 +1412,6 @@ extern void *const gAppHolder __attribute__((visibility("hidden")));
 extern void *const gDlcGameText __attribute__((visibility("hidden")));
 
 // MenuTouchWindow::callDlcMenu()
-struct MenuTouchWindow { void callDlcMenu(); };
 void MenuTouchWindow::callDlcMenu()
 {
     void *holder = gAppHolder;
@@ -1482,7 +1458,6 @@ extern void *const gDrawPosY        __attribute__((visibility("hidden")));
 extern void *const gDrawCountObj    __attribute__((visibility("hidden")));
 extern void *const gDrawColorSrc    __attribute__((visibility("hidden"))); // *holder -> color obj +0x118.. used as 0x168 gate
 
-struct MenuTouchWindow { void draw(); };
 void MenuTouchWindow::draw()
 {
     void *self = this;
@@ -1542,7 +1517,6 @@ void MenuTouchWindow::draw()
 // MenuTouchWindow::getRelativeScrollHeight()
 //   Returns the visible fraction of the scrollable list (page / content), clamped by the
 //   current scroll offset at +0x194. Content height at +0x228, page height at +0x22c.
-struct MenuTouchWindow { float getRelativeScrollHeight(); };
 float MenuTouchWindow::getRelativeScrollHeight()
 {
     int content = i32(this, 0x228);
@@ -1586,10 +1560,9 @@ static void doSliders(void *self, int y) {
     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **)sl)[3]));
 }
 
-struct MenuTouchWindow { int OnTouchMove(int y, int x); };
 int MenuTouchWindow::OnTouchMove(int y, int x)
 {
-    void *self = this;
+    MenuTouchWindow *self = this;
     if (u8(self, 0x170) != 0) {
         _mtw_ChoiceWindow_OnTouchMove(pp(self, 0x104), y);
         return 0;
@@ -1740,7 +1713,6 @@ extern "C" void _mtw_buildMenu(void *self, int menuType); // per-type widget ass
 
 extern void *const gCtorLayout __attribute__((visibility("hidden"))); // *holder -> layout, +0x294.. metrics
 
-struct MenuTouchWindow { void ctor(int menuType); };
 void MenuTouchWindow::ctor(int menuType)
 {
     void *self = this;
@@ -1794,7 +1766,6 @@ void MenuTouchWindow::ctor(int menuType)
 // ---- setSkipButtonVisible_12d026.cpp ----
 // MenuTouchWindow::setSkipButtonVisible(bool). r0=this, r1=visible.
 // Shows/hides all type-0x12 buttons (id 0).
-struct MenuTouchWindow { void setSkipButtonVisible(bool visible); };
 void MenuTouchWindow::setSkipButtonVisible(bool visible)
 {
     void **arr = (void **)pp(this, 0x4);
@@ -1831,7 +1802,6 @@ extern const char gDlsBoxStr[]  __attribute__((visibility("hidden")));  // box s
 extern void *const gDlsFont     __attribute__((visibility("hidden")));  // *holder -> [0] -> font String
 extern void *const gDlsImgFact  __attribute__((visibility("hidden")));  // *holder -> ImageFactory
 
-struct MenuTouchWindow { void drawLoadSaveMenu(bool param1); };
 void MenuTouchWindow::drawLoadSaveMenu(bool param1)
 {
     (void)param1;
@@ -1889,7 +1859,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
         int boxX = layout[0xa] + i32(self, 0x198);
         char box[12]; _mtw_String_ctor_cstr(box, gDlsBoxStr, false);
         int mode = (i == i32(self, 0x18c)) ? 4 : 3;
-        _mtw_Layout_drawBox((int)layout, mode, boxX, rowY, inner - 3, layout[0x1c], box);
+        _mtw_Layout_drawBox(layout, mode, boxX, rowY, inner - 3, layout[0x1c], box);
         _mtw_String_dtor(box);
 
         void *font = *(void **)*(void **)gDlsFont;
@@ -1958,7 +1928,6 @@ extern void *const gSnTransition __attribute__((visibility("hidden")));
 
 typedef void (*TransitionFn)(void *app, int mode);
 
-struct MenuTouchWindow { void startSupernova(); };
 void MenuTouchWindow::startSupernova()
 {
     void **statusHolder = (void **)gSnStatus;
@@ -2032,10 +2001,9 @@ extern void *const gGof2Fmod __attribute__((visibility("hidden")));
 extern void *const gGof2StatusObj __attribute__((visibility("hidden")));
 extern void *const gGof2Transition __attribute__((visibility("hidden")));
 
-typedef void (*TransitionFn)(void *app, int a, int b);
+typedef void (*TransitionFn3)(void *app, int a, int b);
 
 // MenuTouchWindow::startGOF2()
-struct MenuTouchWindow { void startGOF2(); };
 void MenuTouchWindow::startGOF2()
 {
     _mtw_Status_resetGame();
@@ -2045,6 +2013,6 @@ void MenuTouchWindow::startGOF2()
     float v = _mtw_FModSound_stop(snd);
     _mtw_FModSound_play(snd, 0x8f, 0, v);
     void *appHolder = *(void **)gGof2Transition;
-    TransitionFn fn = *(TransitionFn *)((char *)appHolder); // thunk via DAT_001ab904
+    TransitionFn3 fn = *(TransitionFn3 *)((char *)appHolder); // thunk via DAT_001ab904
     fn(*(void **)appHolder, 2, 0);
 }

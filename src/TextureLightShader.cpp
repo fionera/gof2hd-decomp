@@ -69,7 +69,7 @@ static inline float eff(Engine *e, unsigned off)
 // TextureLightShader::UpdateMeshData(Mesh*, Engine*)
 void TextureLightShader::UpdateMeshData(Mesh *meshIn, Engine *engine)
 {
-    ::Mesh *mesh = (::Mesh *)meshIn;
+    Mesh *mesh = (Mesh *)meshIn;
     glUniformMatrix4fv(this->f_2c, 1, 0, ef(engine, 0x104));
     if (this->f_68 >= 0)
         glUniformMatrix4fv(this->f_68, 1, 0, ef(engine, 0x1c4));

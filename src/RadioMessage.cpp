@@ -124,7 +124,7 @@ static ALWAYS_INLINE Array<Player *> *enemies(PlayerEgo *ego)
 
 static ALWAYS_INLINE Player *selected(Array<Player *> *list, RadioMessage *self, int i)
 {
-    return list->data[indices(self)[i]];
+    return list->data()[indices(self)[i]];
 }
 
 static ALWAYS_INLINE int set_result(RadioMessage *self, int value)
@@ -158,7 +158,7 @@ static ALWAYS_INLINE int low_hp(Player *player, int divisor, int multiplier)
 
 static ALWAYS_INLINE float vector_z(Vector *vector)
 {
-    return *reinterpret_cast<float *>(vector->raw + 8);
+    return *reinterpret_cast<float *>(reinterpret_cast<char *>(vector) + 8);
 }
 
 int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
@@ -272,14 +272,14 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
 
     case 0x0e: {
         Array<Player *> *list = enemies(ego);
-        KIPlayer *ki = list->data[param(this)]->getKIPlayer();
+        KIPlayer *ki = list->data()[param(this)]->getKIPlayer();
         return set_result(this, field<uint8_t>(ki, 0x69));
     }
 
     case 0x0f: {
         Array<Player *> *list = enemies(ego);
-        for (uint32_t i = 0; i < list->size; ++i) {
-            Player *player = list->data[i];
+        for (uint32_t i = 0; i < list->size(); ++i) {
+            Player *player = list->data()[i];
             if (!player->isAsteroid() && player->isDead()) {
                 return trigger_result(this);
             }
@@ -289,8 +289,8 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
 
     case 0x10: {
         Array<Player *> *list = enemies(ego);
-        for (uint32_t i = 0; i < list->size; ++i) {
-            Player *player = list->data[i];
+        for (uint32_t i = 0; i < list->size(); ++i) {
+            Player *player = list->data()[i];
             if (!player->isAsteroid() && player->isActive() && !player->isAlwaysFriend()) {
                 return trigger_result(this);
             }
@@ -300,11 +300,11 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
 
     case 0x11: {
         Array<Player *> *list = enemies(ego);
-        for (uint32_t i = 0; i < list->size; ++i) {
+        for (uint32_t i = 0; i < list->size(); ++i) {
             if (i == static_cast<uint32_t>(param(this))) {
                 continue;
             }
-            Player *player = list->data[i];
+            Player *player = list->data()[i];
             if (player->isAsteroid()) {
                 continue;
             }
@@ -317,11 +317,11 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
 
     case 0x12: {
         Array<Player *> *list = enemies(ego);
-        KIPlayer *ki = list->data[param(this)]->getKIPlayer();
+        KIPlayer *ki = list->data()[param(this)]->getKIPlayer();
         if (field<uint8_t>(ki, 0x69) != 0) {
             return trigger_result(this);
         }
-        ki = list->data[param(this)]->getKIPlayer();
+        ki = list->data()[param(this)]->getKIPlayer();
         return set_result(this, field<uint8_t>(ki, 0x6a));
     }
 
@@ -338,8 +338,8 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
     case 0x14: {
         Array<Player *> *list = enemies(ego);
         int dead = 0;
-        for (uint32_t i = 0; i < list->size; ++i) {
-            Player *player = list->data[i];
+        for (uint32_t i = 0; i < list->size(); ++i) {
+            Player *player = list->data()[i];
             if (!player->isAsteroid()) {
                 dead += player->isDead();
             }
@@ -352,7 +352,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
 
     case 0x15: {
         Array<Player *> *list = enemies(ego);
-        KIPlayer *ki = list->data[param(this)]->getKIPlayer();
+        KIPlayer *ki = list->data()[param(this)]->getKIPlayer();
         return set_result(this, field<uint8_t>(ki, 0x24));
     }
 
@@ -366,7 +366,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
 
     case 0x18: {
         Array<Player *> *list = enemies(ego);
-        Player *player = list->data[param(this)];
+        Player *player = list->data()[param(this)];
         if (!player->isActive()) {
             int value = (!player->isDead()) & (time > 0xea5fLL);
             return set_result(this, value);
@@ -383,8 +383,8 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
         field<int>(this, 0x24) = ego->getRoute()->getCurrent();
         Array<Player *> *list = enemies(ego);
         int active = 0;
-        for (uint32_t i = 0; i < list->size; ++i) {
-            Player *player = list->data[i];
+        for (uint32_t i = 0; i < list->size(); ++i) {
+            Player *player = list->data()[i];
             if (!player->isAsteroid()) {
                 active += player->isDead() ^ 1;
             }
@@ -395,7 +395,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
 
     case 0x1a: {
         Array<Player *> *list = enemies(ego);
-        Player *player = list->data[0];
+        Player *player = list->data()[0];
         if (!player->isActive() || player->isDead()) {
             break;
         }
@@ -423,7 +423,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
         Array<Player *> *list = enemies(ego);
         int dead = 0;
         for (int i = 2; i != 6; ++i) {
-            Player *player = list->data[i];
+            Player *player = list->data()[i];
             if (!player->isAsteroid()) {
                 dead += player->isDead();
             }

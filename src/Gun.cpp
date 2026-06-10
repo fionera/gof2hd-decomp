@@ -14,8 +14,7 @@ extern "C" void Gun_VecPtrArray_setLength(int n, void *a);
 extern "C" float Vector_assign(Vector *dst, const Vector *src);
 extern "C" void Vector_mulAssign(Vector *dst, float s);
 extern "C" void Gun_shootAt(Gun *self, Matrix m, int n, Player *p, bool b);
-extern "C" void Vector_assign(Vector *dst, const Vector *src);
-extern "C" void Vector_addAssign(Vector *dst, const Vector *src);
+extern "C" float Vector_addAssign(Vector *dst, const Vector *src);
 
 // ---- _Gun_152134.cpp ----
 // Gun::~Gun() — real C++ destructor so the demangled symbol contains "~Gun".
@@ -29,11 +28,6 @@ extern "C" void *Gun_ArrayDtor(VecArray *a);              // Array<Vector*>::~Ar
 
 typedef void (*dtor_fn)(void *) __attribute__((nothrow));
 extern dtor_fn const gGunStringDtor __attribute__((visibility("hidden")));
-
-struct Gun {
-    void *f_0;
-    ~Gun() noexcept(false);
-};
 
 __attribute__((minsize)) Gun::~Gun() noexcept(false)
 {
@@ -194,12 +188,7 @@ extern "C" void Gun_setIndex(Gun *self, int index)
 // matches the decompile (table lookup of a packed 3*int16 offset, added to the gun's
 // offset Vector, then Vector::operator=).
 
-namespace AbyssEngine { namespace AEMath {
-struct Vector { float x, y, z; };
-} }
-using AbyssEngine::AEMath::Vector;
-
-extern "C" void Vector_assign(Vector *dst, const Vector *src);   // 0x6eb3c
+// Vector is provided by gof2/math.h (via common.h). Vector_assign is declared above.
 
 // pc-rel globals.
 extern int *const gSO_holder __attribute__((visibility("hidden")));
@@ -228,12 +217,10 @@ extern "C" void Gun_setOffset_ii(Gun *self, int a, int b)
 struct Player;
 
 namespace AbyssEngine { namespace AEMath {
-struct Vector { float x, y, z; };
 void   Vector_assign(Vector *dst, const Vector *src);   // 0x6eb3c
 void   Vector_subAssign(Vector *dst, const Vector *src);
 float  VectorLength(const Vector *v);
 } }
-using AbyssEngine::AEMath::Vector;
 
 
 extern int *const gIG_status __attribute__((visibility("hidden")));   // holder
@@ -246,7 +233,7 @@ extern "C" void Gun_ignite(Gun *self)
         *(uint8_t *)(self->field_0x38 + 0x69) = 0;
     }
 
-    unsigned *enemies = self->field_0xb4;
+    unsigned *enemies = (unsigned *)self->field_0xb4;
     self->field_0x88 = 1;
     if (enemies == 0)
         return;
@@ -285,14 +272,12 @@ struct Sparks;
 
 namespace AbyssEngine {
 namespace AEMath {
-struct Vector { float x, y, z; };
-struct Matrix { float m[15]; };
 void MatrixGetPosition(Matrix *out, const Matrix *m);                 // 0x6f16c
 void MatrixSetTranslation(Matrix *m, float x, float y, float z);     // 0x6f820
 void Vector_assign(Vector *dst, const Vector *src);                  // 0x6eb3c
 }
 namespace PaintCanvas {
-int  TransformGetTransform(unsigned canvas);     // 0x72088
+unsigned TransformGetTransform(unsigned canvas); // 0x72088
 unsigned CameraGetCurrent();                     // 0x717f4
 unsigned CameraGetLocal(unsigned canvas);        // 0x6ff1c
 unsigned TransformGetLocal(unsigned canvas);     // 0x720c4
@@ -300,8 +285,6 @@ void TransformSetLocal(unsigned canvas, AEMath::Matrix *m);          // 0x721c0
 void DrawTransform(unsigned canvas, AEMath::Matrix *m);              // 0x7306c
 }
 }
-using AbyssEngine::AEMath::Matrix;
-using AbyssEngine::AEMath::Vector;
 
 extern "C" void Sparks_render(Sparks *s);                            // 0x773ec
 
@@ -339,10 +322,7 @@ extern "C" void Gun_render(Gun *self)
 }
 
 // ---- Gun_151f20.cpp ----
-namespace AbyssEngine { namespace AEMath {
-struct Vector { float x, y, z; };
-} }
-using AbyssEngine::AEMath::Vector;
+// Vector/Matrix provided by gof2/math.h (via common.h).
 
 struct VecArray;  // Array<Vector>
 struct VecPtrArray;  // Array<Vector*>
@@ -396,9 +376,9 @@ extern "C" Gun *Gun_ctor(Gun *self, int kind, int p2, unsigned count, int p4,
     self->field_0x78 = 0;
     self->field_0xf0 = 0;
     self->field_0xa8 = 0;
-    float sp = Vector_assign((Vector *)(s + 0x7c), &dir);
+    float sp = ::Vector_assign((Vector *)(s + 0x7c), &dir);
     Vector_mulAssign(&vel, sp);
-    Vector_assign((Vector *)(s + 0xe4), &vel);
+    ::Vector_assign((Vector *)(s + 0xe4), &vel);
     self->field_0x44 = p5;
     self->field_0x48 = p6;
     self->field_0x6c = p6;
@@ -412,10 +392,10 @@ extern "C" Gun *Gun_ctor(Gun *self, int kind, int p2, unsigned count, int p4,
     if ((unsigned)(bytes >> 32) != 0)
         alloc = 0xffffffff;
     self->field_0x3c = Gun_operator_new_arr(alloc);
-    self->field_0x40 = Gun_operator_new_arr(count | ((int)count >> 31));
+    self->field_0x40 = (uint8_t *)Gun_operator_new_arr(count | ((int)count >> 31));
     void *arr = Gun_operator_new(0xc);
     Gun_VecPtrArray_ctor(arr);
-    self->field_0xac = arr;
+    self->field_0xac = (char *)arr;
     Gun_VecArray_setLength(count, s + 0x8);
     Gun_VecArray_setLength(count, s + 0x14);
     Gun_VecArray_setLength(count, s + 0x20);
@@ -449,10 +429,7 @@ extern "C" Gun *Gun_ctor(Gun *self, int kind, int p2, unsigned count, int p4,
 // ---- shoot_152b24.cpp ----
 struct Player;
 
-namespace AbyssEngine { namespace AEMath {
-struct Matrix { float m[15]; };
-} }
-using AbyssEngine::AEMath::Matrix;
+// Matrix provided by gof2/math.h (via common.h).
 
 // Gun::shootAt(Matrix, int, Player*, bool)
 
@@ -477,10 +454,7 @@ extern "C" void Gun_setEnemy(Gun *self, Player *enemy)
 }
 
 // ---- setOffset_1522e4.cpp ----
-namespace AbyssEngine { namespace AEMath {
-struct Vector { float x, y, z; };
-} }
-using AbyssEngine::AEMath::Vector;
+// Vector provided by gof2/math.h (via common.h).
 
 // AbyssEngine::AEMath::Vector::operator=(Vector*, Vector const&)
 
@@ -494,7 +468,7 @@ extern "C" void Gun_setOffset(Gun *self, const Vector *v)
     local->x = v->x;
     local->y = v->y;
     local->z = v->z + kZOffset;
-    Vector_assign((Vector *)((char *)self + 0x7c), local);
+    ::Vector_assign((Vector *)((char *)self + 0x7c), local);
 }
 
 // ---- update_153754.cpp ----
@@ -506,14 +480,12 @@ struct Sparks;
 
 namespace AbyssEngine {
 namespace AEMath {
-struct Vector { float x, y, z; };
 void operator_mul(Vector *out, float s);                 // 0x6ec74 (Vector operator*(scale))
 float Vector_addAssign(Vector *dst, const Vector *src);  // 0x73534
 }
 namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); } // 0x72088
 namespace Transform { void Update(long long tf, char b); }                 // 0x6f7cc
 }
-using AbyssEngine::AEMath::Vector;
 
 extern "C" void Sparks_update(Sparks *s, int dt);                 // 0x773d4
 extern "C" void Gun_calcCharacterCollision(Gun *self);           // 0x773e0
@@ -557,14 +529,14 @@ extern "C" void Gun_update(Gun *self, int dt)
                 Vector scaled;
                 if (self->field_0x5c == 0xb) {
                     Vector tmp;
-                    *(long long *)&tmp = self->field_0x18;
+                    *(long long *)&tmp = (long long)self->field_0x18;
                     AbyssEngine::AEMath::operator_mul(&tmp, fdt);
                     int rem = self->field_0x44 - ((int *)self->field_0x3c)[i];
                     float f = (float)rem / 1.0f + 1.0f;
                     scaled = tmp;
                     AbyssEngine::AEMath::operator_mul(&scaled, f);
                 } else {
-                    *(long long *)&scaled = self->field_0x18;
+                    *(long long *)&scaled = (long long)self->field_0x18;
                     AbyssEngine::AEMath::operator_mul(&scaled, fdt);
                 }
                 AbyssEngine::AEMath::Vector_addAssign(
@@ -600,10 +572,7 @@ extern "C" void Gun_update(Gun *self, int dt)
 }
 
 // ---- translate_153a50.cpp ----
-namespace AbyssEngine { namespace AEMath {
-struct Vector { float x, y, z; };
-} }
-using AbyssEngine::AEMath::Vector;
+// Vector provided by gof2/math.h (via common.h).
 
 // AbyssEngine::AEMath::Vector::operator+=(Vector*, Vector const&)
 
@@ -611,7 +580,7 @@ extern "C" void Gun_translate(Gun *self, const Vector *v)
 {
     int off = 0;
     for (unsigned i = 0; i < self->field_0x8; i = i + 1) {
-        Vector_addAssign((Vector *)(self->field_0xc + off), v);
+        ::Vector_addAssign((Vector *)(self->field_0xc + off), v);
         off = off + 0xc;
     }
 }
@@ -625,11 +594,7 @@ extern "C" void Gun_translate(Gun *self, const Vector *v)
 
 struct Player;
 
-namespace AbyssEngine { namespace AEMath {
-struct Vector { float x, y, z; };
-struct Matrix { float m[15]; };
-} }
-using AbyssEngine::AEMath::Matrix;
+// Vector/Matrix provided by gof2/math.h (via common.h).
 
 extern "C" void Gun_shootAt(Gun *self, Matrix m, int n, Player *p, bool b)
 {
@@ -650,17 +615,13 @@ extern "C" void Gun_shootAt(Gun *self, Matrix m, int n, Player *p, bool b)
 
 struct Player;
 
-namespace AbyssEngine { namespace AEMath {
-struct Vector { float x, y, z; };
-struct Matrix { float m[15]; };
-} }
-using AbyssEngine::AEMath::Vector;
+// Vector/Matrix provided by gof2/math.h (via common.h).
 
 extern int *const gCC_status __attribute__((visibility("hidden")));   // holder
 
 extern "C" void Gun_calcCharacterCollision(Gun *self)
 {
-    unsigned *enemies = self->field_0xb4;
+    unsigned *enemies = (unsigned *)self->field_0xb4;
     if (enemies == 0)
         return;
 

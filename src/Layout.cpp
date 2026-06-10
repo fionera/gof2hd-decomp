@@ -8,17 +8,82 @@ extern "C" void operator_delete_li(void *p);
 extern "C" void Layout_drawFooterImpl(Layout *self, int a, int b);
 extern "C" void *operator_new(unsigned sz);
 extern "C" void operator_delete(void *p);
-extern "C" void TouchButton_footerAnim(TouchButton *b, int one, int h, void *sp);
 extern "C" void Layout_initConstBlock(Layout *self, int hd, int wide, int scale, int res);
-extern "C" void FModSound_play(int sound, Vec3 *a, Vec3 *b, float v);
-extern "C" void PaintCanvas_restoreColor(unsigned pc, unsigned saved);
-extern "C" void PaintCanvas_restoreColor(PaintCanvas *pc, unsigned saved);
 extern "C" void Layout_setBtnRect(void *btn, int x, int y, int anchor);
-extern "C" int PaintCanvas_GetTextHeight(unsigned pc);
-extern "C" void PaintCanvas_Image2DCreate(PaintCanvas *pc, int id, unsigned *out);
-extern "C" int TouchButton_getWidth(TouchButton *b);
 extern "C" void Layout_loadImage(unsigned canvas, int id, void *field);
 extern "C" void Layout_headerAnim(void *btn);
+
+// ---- Canonical cross-class engine helpers ---------------------------------
+// The per-method decomp blocks each re-declared these with slightly different
+// (and mutually conflicting) signatures — varying the canvas/color/button
+// parameter between unsigned/int/void*/PaintCanvas* and even the arity.  Under
+// `extern "C"` these cannot overload, so we declare each ONCE here with an
+// unspecified-argument (variadic) signature.  That accepts every call site's
+// argument list and is link-compatible with the real engine entry point.
+struct PaintCanvas;
+struct TouchButton;
+extern "C" {
+int  PaintCanvas_GetImage2DWidth(...);
+int  PaintCanvas_GetImage2DHeight(...);
+unsigned PaintCanvas_GetColor(...);
+void PaintCanvas_SetColor(...);
+void PaintCanvas_restoreColor(...);
+void PaintCanvas_FillRectangle(...);
+void PaintCanvas_DrawRectangle(...);
+void PaintCanvas_DrawImage2D3(...);
+void PaintCanvas_DrawImage2D5(...);
+void PaintCanvas_DrawImage2D9(...);
+void PaintCanvas_DrawString(...);
+void PaintCanvas_DrawRegion2D(...);
+int  PaintCanvas_GetTextWidth(...);
+int  PaintCanvas_GetTextHeight(...);
+void PaintCanvas_Image2DCreate(...);
+void PaintCanvas_GetLineArray(...);
+
+int     TouchButton_getWidth(...);
+void    TouchButton_setVisible(...);
+void    TouchButton_footerAnim(...);
+void    TouchButton_draw(...);
+void    TouchButton_getPosition(...);
+int     TouchButton_isVisible(...);
+void    TouchButton_OnTouchBegin(...);
+void    TouchButton_OnTouchMove(...);
+uint8_t TouchButton_OnTouchEnd(...);
+void    TouchButton_ctorStr(...);
+void    TouchButton_ctorImg(...);
+void    TouchButton_ctorImg2(...);
+
+void ChoiceWindow_update(...);
+void ChoiceWindow_OnTouchBegin(...);
+void ChoiceWindow_OnTouchMove(...);
+int  ChoiceWindow_OnTouchEnd(...);
+void *ChoiceWindow_ctor(...);
+void ChoiceWindow_set(...);
+
+void FModSound_play(...);
+void *GameText_getText(...);
+
+long long Status_getPlayingTime(...);
+void *Status_getShip(...);
+int  Status_getCredits(...);
+int  Ship_getCurrentLoad(...);
+int  Ship_getMaxLoad(...);
+
+void String_cstr_ctor(...);
+void String_copy_ctor(...);
+void String_dtor(...);
+void String_concat(...);
+void String_from_uint(...);
+void String_default_ctor(...);
+void String_assign(...);
+void String_subString(...);
+void String_copy_global(...);
+int  AbyssString_Compare(...);
+unsigned short GameText_getLanguage(...);
+
+void Globals_drawLines(...);
+int  AERandom_nextInt(...);
+}
 
 // ---- isFading_d514c.cpp ----
 // ldrb.w r0,[r0,#0x400]; bx lr
@@ -28,7 +93,6 @@ extern "C" uint8_t Layout_isFading(Layout *self) {
 
 // ---- getHelpButtonOffset_d4bd0.cpp ----
 __attribute__((visibility("hidden"))) extern int **gTouchButtonHolder;  // ldr [0xe4bec]
-extern "C" int TouchButton_getWidth(int id);   // blx 0x74da0
 
 // Layout::getHelpButtonOffset() -> TouchButton::getWidth(self->f3bc) - (**holder)[0x38/4]
 extern "C" int Layout_getHelpButtonOffset(Layout *self) {
@@ -37,7 +101,6 @@ extern "C" int Layout_getHelpButtonOffset(Layout *self) {
 }
 
 // ---- update_d5152.cpp ----
-extern "C" void ChoiceWindow_update(void *cw, int dt);  // blx 0x74eb4
 
 // Layout::update(int dt)
 extern "C" void Layout_update(Layout *self, int dt) {
@@ -64,7 +127,6 @@ extern "C" void Layout_update(Layout *self, int dt) {
 // ---- getFooterTransitionWidth_d3c08.cpp ----
 // PC-relative hidden global: pointer to the PaintCanvas singleton holder.
 __attribute__((visibility("hidden"))) extern void **gPaintCanvasHolder; // ldr [0xe3c38]
-extern "C" int PaintCanvas_GetImage2DWidth(void *canvas, int imageId); // blx 0x72d84
 
 // Layout::getFooterTransitionWidth()
 extern "C" int Layout_getFooterTransitionWidth(Layout *self) {
@@ -75,9 +137,6 @@ extern "C" int Layout_getFooterTransitionWidth(Layout *self) {
 }
 
 // ---- OnTouchBegin_d51a8.cpp ----
-extern "C" void TouchButton_OnTouchBegin(void *btn, int x, int y);    // 0x74734
-extern "C" void ChoiceWindow_OnTouchBegin(void *cw, int x, int y);    // 0x7471c
-extern "C" int TouchButton_isVisible(void *btn);                       // 0x74ec0
 extern "C" int Layout_dispatchTouchBegin(void *btn, int x, int y);     // tail 0x1ac0c8
 
 // Layout::OnTouchBegin(int x, int y)
@@ -101,7 +160,6 @@ extern "C" int Layout_OnTouchBegin(Layout *self, int x, int y) {
 // (r0/r1), converted to float via __aeabi_l2f, scaled by the arg, fed to Sinf.
 struct Status;
 __attribute__((visibility("hidden"))) extern Status **gStatus;  // ldr [0xe4c5c]
-extern "C" long long Status_getPlayingTime(Status *st);  // blx 0x71710
 extern "C" float Sinf(float);   // AbyssEngine::AEMath::Sinf -> 0x6f1a8
 
 // Layout::getPulseValue(float speed). The holder (gStatus's value) is cached; the
@@ -189,9 +247,6 @@ extern "C" void Layout_drawFooter(Layout *self) {
 }
 
 // ---- OnTouchMove_d5206.cpp ----
-extern "C" void TouchButton_OnTouchMove(void *btn, int x, int y);     // 0x74764
-extern "C" void ChoiceWindow_OnTouchMove(void *cw, int x, int y);     // 0x7474c
-extern "C" int TouchButton_isVisible(void *btn);                       // 0x74ec0
 extern "C" int Layout_dispatchTouchMove(void *btn, int x, int y);      // tail 0x1ac0d8
 
 // Layout::OnTouchMove(int x, int y)
@@ -215,16 +270,16 @@ extern "C" int Layout_OnTouchMove(Layout *self, int x, int y) {
 extern "C" void Layout_drawBGBorderImpl(int self, unsigned p2, int p3, int p4,
                                         int p5, int p6, int s8, int z1, int z2); // 0x74e30
 
-// Layout::drawBGBorder(uint p1, uint p2, int p3, int p4, int p5, int p6) + stack arg s8
-extern "C" void Layout_drawBGBorder6(unsigned p1, unsigned p2, int p3, int p4,
+// Layout::drawBGBorder(uint p1, uint p2, int p3, int p4, int p5, int p6) + stack arg s8.
+// This 7-arg forwarding wrapper (engine 0x74e30) is distinct from the 6-arg
+// Layout::drawBGBorder method (0x74e78) used by drawBox; renamed to avoid the
+// extern "C" name clash.
+extern "C" void Layout_drawBGBorder7(unsigned p1, unsigned p2, int p3, int p4,
                                      int p5, int p6, int s8) {
     Layout_drawBGBorderImpl(p5, p2, p3, p4, p5, p6, s8, 0, 0);
 }
 
 // ---- OnTouchEnd_d5264.cpp ----
-extern "C" uint8_t TouchButton_OnTouchEnd(void *btn, int x, int y);   // 0x74788
-extern "C" int ChoiceWindow_OnTouchEnd(void *cw, int x, int y);       // 0x74770
-extern "C" int TouchButton_isVisible(void *btn);                       // 0x74ec0
 extern "C" int Layout_dispatchTouchEnd(void *btn, int x, int y);       // tail 0x1ac0e8
 
 // Layout::OnTouchEnd(int x, int y)
@@ -257,10 +312,6 @@ struct PaintCanvas;
 extern "C" void ArrayReleaseClasses_StringPtr(void *arr);    // 0x6facc
 extern "C" void *ArrayStringPtr_dtor(void *arr);             // 0x6f64c
 extern "C" void ArrayStringPtr_ctor(void *arr);             // 0x6f628
-extern "C" int AERandom_nextInt(int n);                     // 0x71848
-extern "C" void *GameText_getText(int id);                  // 0x72f70
-extern "C" void PaintCanvas_GetLineArray(PaintCanvas *pc, unsigned color, void *str,
-                                         int width, void *outArr);  // 0x74e90
 
 // Hidden PC-relative globals from initTip disasm:
 //   g_tipColor  : *(uint**) @0xe499c — color value (read [0]).
@@ -302,13 +353,10 @@ extern "C" void Layout_initTip(Layout *self) {
 struct PaintCanvas;
 struct TouchButton;
 
-extern "C" void PaintCanvas_SetColor(unsigned color);                       // 0x6fac0
-extern "C" int PaintCanvas_GetImage2DWidth(int img);                        // 0x72d84
 extern "C" void PaintCanvas_DrawImage2D(PaintCanvas *pc, unsigned img, int x,
                                         int y, int anchor);                 // 0x71d70
 extern "C" void Layout_drawBGPattern(Layout *self, unsigned img, int p3, int p4,
                                      int p5, int p6);                       // 0x74e00
-extern "C" void TouchButton_setVisible(TouchButton *b, int v);             // 0x74e48
 // Footer "scroll into place" tail-called helper at 0x1ac0a8.
 
 // Hidden globals from drawEmptyFooter disasm.
@@ -509,9 +557,6 @@ extern "C" void Layout_ctor(Layout *self) {
 
 // ---- drawMask_d3168.cpp ----
 __attribute__((visibility("hidden"))) extern void **gPC;          // ldr [0xe31ac]
-extern "C" int PaintCanvas_GetColor(void *pc);                     // 0x6fa90
-extern "C" void PaintCanvas_SetColor(void *pc, int color);         // 0x6fac0
-extern "C" void PaintCanvas_FillRectangle(void *pc, int a, int b, int c); // 0x74de8
 extern "C" int Layout_drawMaskTail(void *pc, int color, int p4, void *st); // tail 0x1ac088
 
 // Layout::drawMask(int p1, int p2, int p3, int p4) — singleton reloaded each call.
@@ -524,9 +569,6 @@ extern "C" int Layout_drawMask4(Layout *self, int p1, int p2, int p3, int p4) {
 
 // ---- formatCredits_d34d8.cpp ----
 extern "C" void Layout_formatNumber(void *out, int n);   // 0x74df4 (formatNumber)
-extern "C" void String_cstr_ctor(void *out, const char *s, bool);  // 0x6ee18
-extern "C" void String_concat(void *ret, void *a, void *b);        // operator+ 0x6ef98
-extern "C" void String_dtor(void *s);                              // 0x6ee30
 
 // Layout::formatCredits(int) -> out = formatNumber(n) + "$"
 extern "C" void Layout_formatCredits(void *out, int n) {
@@ -542,14 +584,7 @@ extern "C" void Layout_formatCredits(void *out, int n) {
 // ---- drawBGPattern_d3574.cpp ----
 struct PaintCanvas;
 
-extern "C" void PaintCanvas_SetColor(unsigned color);                      // 0x6fac0
-extern "C" int PaintCanvas_GetImage2DWidth(int img);                       // 0x72d84
-extern "C" int PaintCanvas_GetImage2DHeight(int img);                      // 0x72d90
 extern "C" int __aeabi_idiv(int a, int b);                                 // 0x7198c
-extern "C" void PaintCanvas_DrawImage2D3(PaintCanvas *pc, unsigned img, int x, int y); // 0x72dc0
-extern "C" void PaintCanvas_DrawRegion2D(PaintCanvas *pc, unsigned img, int sx, int sy,
-                                         int sw, int sh, int rot, int a, int b, int c,
-                                         int x, int y);                     // 0x72d9c
 
 // Hidden global from drawBGPattern disasm.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_bgCanvas;  // @0xe358a
@@ -601,15 +636,6 @@ extern "C" void Layout_drawBGPattern(Layout *self, unsigned img, int x, int y,
 
 // ---- formatNumber_d32b4.cpp ----
 // Engine String helpers used by the thousands-separator formatter.
-extern "C" void String_from_uint(void *out, unsigned v);            // 0x6f658 String(uint)
-extern "C" void String_cstr_ctor(void *out, const char *s, bool);   // 0x6ee18
-extern "C" void String_default_ctor(void *out);                     // 0x6efbc String()
-extern "C" void String_copy_ctor(void *out, const void *src, bool); // 0x6f028
-extern "C" void String_assign(void *dst, const void *src);          // 0x6f2b0 operator=
-extern "C" void String_concat(void *ret, void *a, void *b);         // 0x6ef98 operator+
-extern "C" void String_subString(void *out, const void *src, int start, int len); // 0x6f604
-extern "C" void String_dtor(void *s);                               // 0x6ee30 / 0x6ee30
-extern "C" unsigned short GameText_getLanguage();                   // 0x6f544
 
 // Hidden globals from formatNumber disasm.
 __attribute__((visibility("hidden"))) extern int *g_fnGuard;        // @0xe32cc (stack guard [0])
@@ -696,8 +722,6 @@ extern "C" void Layout_formatNumber(void *out, int value) {
 }
 
 // ---- drawWindow_d36f4.cpp ----
-extern "C" void String_copy_ctor(void *out, const void *src, bool);  // 0x6f028
-extern "C" void String_dtor(void *s);                                // 0x6ee30
 extern "C" void Layout_drawWindowImpl5(Layout *self, void *str, int a, int b,
                                        int p4, int p5, int flag);  // 0x74e0c
 __attribute__((visibility("hidden"))) extern int *gW1;  // ldr [0xe3774]
@@ -721,7 +745,6 @@ typedef void (*SetPosFn)(void *btn, int x, int y, int mode);
 __attribute__((visibility("hidden"))) extern SetPosFn gSetPos;   // ldr [0xe4d30]
 struct TB; struct TBHolder { TB *o; };
 __attribute__((visibility("hidden"))) extern int **gTB;          // ldr [0xe4d34]
-extern "C" void TouchButton_getPosition(void *btn);              // returns via regs
 __attribute__((visibility("hidden"))) extern int *gPosX;         // ldr [0xe4d38]
 __attribute__((visibility("hidden"))) extern int *gPosY;         // ldr [0xe4d3c]
 
@@ -758,8 +781,6 @@ extern "C" void Layout_showMissionRewardMessage(Layout *self, int show, bool fla
 }
 
 // ---- drawWindow_d38d4.cpp ----
-extern "C" void String_copy_ctor(void *out, const void *src, bool);  // 0x6f028
-extern "C" void String_dtor(void *s);                                // 0x6ee30
 extern "C" void Layout_drawWindowImpl5(Layout *self, void *str, int p3, int p4,
                                        int p5, int p6, int flag);  // 0x74e0c
 
@@ -776,15 +797,7 @@ extern "C" void Layout_drawWindow5(Layout *self, const void *param, int p3, int 
 // ---- drawBGBorder_d395c.cpp ----
 struct PaintCanvas;
 
-extern "C" int PaintCanvas_GetImage2DWidth(int img);                       // 0x72d84
-extern "C" int PaintCanvas_GetImage2DHeight(int img);                      // 0x72d90
-extern "C" void PaintCanvas_DrawImage2D3(PaintCanvas *pc, unsigned img, int x, int y); // 0x72dc0
-extern "C" void PaintCanvas_DrawImage2D5(PaintCanvas *pc, unsigned img, int x,
-                                         int y, int anchor);                // fn ptr @0xe39d2 / 0x74e3c
 extern "C" int __aeabi_idiv(int a, int b);                                 // 0x7198c
-extern "C" void PaintCanvas_DrawRegion2D(PaintCanvas *pc, unsigned img, int sx, int sy,
-                                         int sw, int sh, int rot, int flip, int a, int b,
-                                         int x, int y);                     // 0x72d9c
 
 // Hidden globals from drawBGBorder disasm.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_bbCanvas;  // @0xe3972
@@ -849,16 +862,8 @@ extern "C" void Layout_drawBGBorder(Layout *self, unsigned corner, unsigned edge
 // ---- drawScrollBar_d4258.cpp ----
 struct PaintCanvas;
 
-extern "C" int PaintCanvas_GetImage2DWidth(int img);                       // 0x72d84
-extern "C" int PaintCanvas_GetImage2DHeight(int img);                      // 0x72d90
-extern "C" void PaintCanvas_SetColor(unsigned color);                      // fn ptr @0xe428e
-extern "C" void PaintCanvas_DrawRectangle(PaintCanvas *pc, int x, int y,
-                                          int w, int h);                    // 0x74e18
 extern "C" void Layout_drawBGPattern(Layout *self, unsigned img, int p3, int p4,
                                      int p5, int p6);                       // 0x74e00
-extern "C" void PaintCanvas_DrawImage2D3(PaintCanvas *pc, int img, int x);  // 0x72dc0
-extern "C" void PaintCanvas_DrawImage2D5(PaintCanvas *pc, unsigned img, int x,
-                                         int y, int anchor);                // 0x74e3c
 
 // Hidden globals from drawScrollBar disasm.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_sbCanvas;  // @0xe426e
@@ -906,9 +911,6 @@ extern "C" void Layout_drawScrollBar(Layout *self, int x, int y, int trackH,
 // ---- drawFade_d5038.cpp ----
 struct PaintCanvas;
 
-extern "C" unsigned PaintCanvas_GetColor(PaintCanvas *pc);   // 0x6fa90
-extern "C" void PaintCanvas_SetColor(unsigned color);        // 0x6fac0
-extern "C" void PaintCanvas_FillRectangle(PaintCanvas *pc, int x, int y, int wh); // 0x74de8
 
 // Hidden globals from drawFade disasm.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvasA;  // @0xe5052
@@ -948,22 +950,12 @@ extern "C" uint8_t Layout_drawFade(Layout *self) {
 // ---- drawBox_d4384.cpp ----
 struct PaintCanvas;
 
-extern "C" unsigned PaintCanvas_GetColor(PaintCanvas *pc);                  // 0x6fa90
-extern "C" void PaintCanvas_SetColor(unsigned color);                      // 0x6fac0
-extern "C" int PaintCanvas_GetImage2DWidth(int img);                       // 0x72d84
-extern "C" int PaintCanvas_GetImage2DHeight(int img);                      // 0x72d90
-extern "C" void PaintCanvas_DrawImage2D3(PaintCanvas *pc, unsigned img, int x, int y); // 0x72dc0
-extern "C" void PaintCanvas_DrawImage2D5(PaintCanvas *pc, unsigned img, int x,
-                                         int y, int anchor);                // 0x74e3c
 extern "C" void Layout_drawBGPattern(Layout *self, unsigned img, int p3, int p4,
                                      int p5, int p6);                       // 0x74e00
 extern "C" void Layout_drawBGBorder8(Layout *self, unsigned a, unsigned b, int x,
                                      int y, int w, int h, int p8, int p9);  // 0x74e30
 extern "C" void Layout_drawBGBorder6(Layout *self, unsigned a, int b, int x,
                                      int y, int w);                         // 0x74e78
-extern "C" int PaintCanvas_GetTextWidth(unsigned pc, void *font);          // 0x6faa8
-extern "C" void PaintCanvas_DrawString(unsigned pc, void *font, void *str,
-                                       int x, int y);                       // 0x6fe14
 // Color-restore tail helper @0x1ac088.
 
 // Hidden globals from drawBox disasm.
@@ -1116,16 +1108,8 @@ extern "C" void Layout_drawBox(Layout *self, int style, int x, int y, int w, int
 // ---- drawWindow_d3780.cpp ----
 struct PaintCanvas;
 
-extern "C" unsigned PaintCanvas_GetColor(PaintCanvas *pc);                  // 0x6fa90
-extern "C" void PaintCanvas_SetColor(unsigned color);                      // 0x6fac0
 extern "C" void Layout_drawBGPattern(Layout *self, unsigned img, int p3, int p4,
                                      int p5, int p6);                       // 0x74e00
-extern "C" void PaintCanvas_DrawRectangle(PaintCanvas *pc, int x, int y,
-                                          int w, int h);                    // 0x74e18
-extern "C" void PaintCanvas_DrawImage2D3(PaintCanvas *pc, int img, int x);  // 0x72dc0
-extern "C" int AbyssString_Compare(const void *s, const char *lit);        // 0x6fa3c
-extern "C" void PaintCanvas_DrawString(PaintCanvas *pc, void *font, void *str,
-                                       int x, int y);                       // 0x6fe14
 // Color-restore tail helper @0x1ac088.
 
 // Hidden globals from drawWindow disasm.
@@ -1162,8 +1146,6 @@ extern "C" void Layout_drawWindow7(Layout *self, void *title, int x, int y,
 }
 
 // ---- drawBox_d48f0.cpp ----
-extern "C" void String_copy_ctor(void *out, const void *src, bool);  // 0x6f028
-extern "C" void String_dtor(void *s);                                // 0x6ee30
 extern "C" void Layout_drawBoxImpl(Layout *self, int p2, int p3, int p4,
                                    int p5, int p6, void *str, int flag);  // 0x74e84
 
@@ -1179,14 +1161,8 @@ extern "C" void Layout_drawBox6(Layout *self, int p2, int p3, int p4,
 // ---- drawTip_d4a14.cpp ----
 struct PaintCanvas;
 
-extern "C" void PaintCanvas_SetColor(unsigned color);                      // 0x6fac0
-extern "C" void String_cstr_ctor(void *out, const char *s, bool);          // 0x6ee18
-extern "C" void String_dtor(void *s);                                      // 0x6ee30
-extern "C" void Layout_drawBox(PaintCanvas *pc, int p2, int x, int y,
+extern "C" void Layout_drawBoxStr(PaintCanvas *pc, int p2, int x, int y,
                                int w, int h, void *str);                   // 0x7462c
-extern "C" void PaintCanvas_DrawImage2D5(PaintCanvas *pc, int img, int x, int y,
-                                         int anchor);                      // 0x71d70
-extern "C" void Globals_drawLines(unsigned a, void *arr, int lines, int x, int y); // 0x74e9c
 
 // Hidden globals from drawTip disasm.
 __attribute__((visibility("hidden"))) extern int *g_dtGuard;     // @0xe4a26 (stack guard [0])
@@ -1211,7 +1187,7 @@ extern "C" void Layout_drawTip(Layout *self) {
 
         unsigned char box[sizeof(String12)] __attribute__((aligned(4)));
         String_cstr_ctor(box, g_dtBoxLit, false);
-        Layout_drawBox((PaintCanvas *)mA, 5,
+        Layout_drawBoxStr((PaintCanvas *)mA, 5,
                        (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box);
         String_dtor(box);
 
@@ -1228,8 +1204,6 @@ extern "C" void Layout_drawTip(Layout *self) {
 }
 
 // ---- drawHeader_d4200.cpp ----
-extern "C" void String_copy_ctor(void *out, const void *src, bool);  // 0x6f028
-extern "C" void String_dtor(void *s);                                // 0x6ee30
 extern "C" void Layout_drawHeaderImpl(Layout *self, void *str, int flag); // 0x74e6c
 
 // Layout::drawHeader(String) -> drawHeader(this, copy, 1)
@@ -1250,12 +1224,8 @@ extern "C" void Layout_drawHelpWindow(Layout *self) {
 
 // ---- initHelpWindow_d4b40.cpp ----
 extern "C" void *operator_new_li(unsigned sz);                  // 0x6eb24
-extern "C" void *ChoiceWindow_ctor(void *cw);                   // 0x74584
-extern "C" void FModSound_play(int sound, int a, int b, int v, int pad); // 0x71548
 struct GameText; struct GameTextHolder { GameText *obj; };
-extern "C" void *GameText_getText(GameText *gt, int id);         // 0x72f70
-extern "C" void ChoiceWindow_set(void *cw, void *title, void *body, bool); // 0x74ea8
-__attribute__((visibility("hidden"))) extern int *gFmod;            // ldr [0xe4bb8]
+__attribute__((visibility("hidden"))) extern int *gFmodHelp;        // ldr [0xe4bb8] (distinct global from showMissionRewardMessage's gFmod)
 __attribute__((visibility("hidden"))) extern GameTextHolder *gGameText; // ldr [0xe4bbc]
 
 // Layout::initHelpWindow(String text)
@@ -1265,7 +1235,7 @@ extern "C" void Layout_initHelpWindow(Layout *self, void *text) {
         ChoiceWindow_ctor(cw);
         self->field_0x3c4 = cw;
     }
-    FModSound_play(*gFmod, 0x7e, 0, 0, 0);
+    FModSound_play(*gFmodHelp, 0x7e, 0, 0, 0);
     void *cw = self->field_0x3c4;
     void *title = GameText_getText(gGameText->obj, 0x187);
     ChoiceWindow_set(cw, title, text, false);
@@ -1277,7 +1247,6 @@ extern "C" void Layout_initHelpWindow(Layout *self, void *text) {
 struct TouchButton;
 
 // setRect-style helper invoked via fn ptr @0xe306c: (ptr, x, y, anchor).
-extern "C" void TouchButton_getPosition(TouchButton *b);   // 0x74dd0 (writes s0/s1 stack)
 
 // Hidden globals from resetWindowDimensions disasm.
 __attribute__((visibility("hidden"))) extern int *g_rwGuard;     // @0xe305e (stack guard source [0])
@@ -1325,10 +1294,6 @@ extern "C" void Layout_resetWindowDimensions(Layout *self) {
 }
 
 // ---- tagString_d31b0.cpp ----
-extern "C" void String_cstr_ctor(void *out, const char *s, bool);  // 0x6ee18
-extern "C" void String_copy_global(void *out, const void *g);      // 0x6f658 (String(const String&))
-extern "C" void String_concat(void *ret, void *a, void *b);        // operator+ 0x6ef98
-extern "C" void String_dtor(void *s);                              // ptr from 0xe3222
 
 // Hidden globals from tagString disasm.
 __attribute__((visibility("hidden"))) extern const void *g_tagBaseString;  // @0xe329c
@@ -1371,14 +1336,7 @@ struct PaintCanvas;
 struct TouchButton;
 
 extern "C" void __aeabi_memset4(void *dst, int n, int v);                // 0x74d94
-extern "C" void *GameText_getText(int id);                               // 0x72f70
 extern "C" void Layout_resetWindowDimensions(Layout *self);              // 0xd3048
-extern "C" void TouchButton_ctorStr(TouchButton *b, void *str, int a, int x,
-                                    int y, int anchor);                  // 0xd... TouchButton(String,...)
-extern "C" void TouchButton_ctorImg(TouchButton *b, unsigned img, int a, int x,
-                                    int y, int anchor);
-extern "C" void TouchButton_ctorImg2(TouchButton *b, unsigned img, int a, int x,
-                                     int y, int z, int anchor, int extra);
 // Image2DCreate-into-field loader (fn ptr @0xe2c64): (canvas, imgId, &field).
 
 __attribute__((visibility("hidden"))) extern int *g_rlGuard;    // @0xe2c38 (stack guard [0])
@@ -1502,26 +1460,8 @@ struct TouchButton;
 struct Status;
 struct Ship;
 
-extern "C" void PaintCanvas_SetColor(unsigned color);                      // 0x6fac0
-extern "C" int PaintCanvas_GetImage2DWidth(int img);                       // 0x72d84
-extern "C" void PaintCanvas_DrawImage2D5(PaintCanvas *pc, unsigned img, int x,
-                                         int y, int anchor);                // 0x71d70 / 0x74e3c
-extern "C" void PaintCanvas_DrawImage2D3(PaintCanvas *pc, unsigned img, int x, int y); // 0x72dc0
 extern "C" void Layout_drawBGPattern(Layout *self, unsigned img, int p3, int p4,
                                      int p5, int p6);                       // 0x74e00
-extern "C" void TouchButton_setVisible(TouchButton *b, int v);             // 0x74e48
-extern "C" void TouchButton_draw(TouchButton *b);                          // 0x746e0
-extern "C" Ship *Status_getShip();                                         // 0x71a58
-extern "C" int Ship_getCurrentLoad(Ship *s);                               // 0x72bf8
-extern "C" int Ship_getMaxLoad(Ship *s);                                   // 0x72c04
-extern "C" int Status_getCredits();                                        // 0x733d8
-extern "C" void String_from_uint(void *out, unsigned v);                   // 0x6f658
-extern "C" void String_cstr_ctor(void *out, const char *s, bool);          // 0x6ee18
-extern "C" void String_concat(void *ret, void *a, void *b);                // 0x6ef98
-extern "C" void String_dtor(void *s);                                      // 0x6ee30
-extern "C" int PaintCanvas_GetTextWidth(unsigned pc, void *font);          // 0x6faa8
-extern "C" void PaintCanvas_DrawString(unsigned pc, void *font, void *str,
-                                       int x, int y);                       // 0x6fe14
 extern "C" void Layout_formatCredits(void *out, int n);                    // 0x74e54
 
 // Hidden globals from drawFooter disasm.
@@ -1533,8 +1473,9 @@ __attribute__((visibility("hidden"))) extern const char g_dfSep[];     // @0xe3d
 __attribute__((visibility("hidden"))) extern const char g_dfTail[];    // @0xe3dfa
 __attribute__((visibility("hidden"))) extern void **g_dfFont;      // @0xe3e34
 
-// Layout::drawFooter(bool stationMode, bool showBack)
-extern "C" void Layout_drawFooter(Layout *self, int stationMode, int showBack) {
+// Layout::drawFooter(bool stationMode, bool showBack) — the 3-arg implementation
+// reached by the forwarding wrappers via Layout_drawFooterImpl.
+extern "C" void Layout_drawFooterImpl(Layout *self, int stationMode, int showBack) {
     int *guard = g_dfGuard;
     int g0 = *guard;
     PaintCanvas *pc = *g_dfCanvas;
@@ -1641,8 +1582,6 @@ extern "C" void Layout_drawFooter(Layout *self, int stationMode, int showBack) {
 }
 
 // ---- drawHeader_d40a0.cpp ----
-extern "C" void String_cstr_ctor(void *out, const char *s, bool);  // 0x6ee18
-extern "C" void String_dtor(void *s);                              // 0x6ee30
 extern "C" void Layout_drawHeaderImpl(Layout *self, void *str, int flag); // 0x74e6c
 
 // Layout::drawHeader() -> drawHeader(this, String(""), 0)
@@ -1662,16 +1601,8 @@ extern "C" void Layout_drawFooterStation(Layout *self) {
 // ---- drawHeader_d4100.cpp ----
 struct PaintCanvas;
 
-extern "C" void PaintCanvas_SetColor(unsigned color);                      // 0x6fac0
-extern "C" int PaintCanvas_GetImage2DWidth(int img);                       // 0x72d84
-extern "C" int PaintCanvas_GetImage2DHeight(int img);                      // 0x72d90
-extern "C" void PaintCanvas_DrawImage2D3(PaintCanvas *pc, int img, int x, int y);  // 0x72dc0
 extern "C" void Layout_drawBGPattern(Layout *self, unsigned img, int p3, int p4,
                                      int p5, int p6);                       // 0x74e00
-extern "C" void PaintCanvas_DrawImage2D9(PaintCanvas *pc, int img, int x, int y,
-                                         int w, int h, int a1, int a2, int a3); // 0x73564
-extern "C" void PaintCanvas_DrawString(PaintCanvas *pc, void *font, void *str,
-                                       int x, int y);                       // 0x6fe14
 // Header transition tail helper @0x1ac0a8.
 
 // Hidden globals from drawHeader disasm.
@@ -1709,8 +1640,6 @@ extern "C" void Layout_drawHeader7(Layout *self, void *title, int transition) {
 }
 
 // ---- drawWindow_d387c.cpp ----
-extern "C" void String_copy_ctor(void *out, const void *src, bool);  // 0x6f028
-extern "C" void String_dtor(void *s);                                // 0x6ee30
 extern "C" void Layout_drawWindowImpl(Layout *self, void *str, int flag); // 0x74e24
 
 // Layout::drawWindow(String) -> drawWindow(this, copy, 0). The on-stack String
@@ -1725,22 +1654,9 @@ extern "C" void Layout_drawWindow1(Layout *self, const void *param) {
 // ---- drawMissionRewardMessage_d4d74.cpp ----
 struct PaintCanvas;
 
-extern "C" unsigned PaintCanvas_GetColor(PaintCanvas *pc);                  // 0x6fa90
-extern "C" void PaintCanvas_SetColor(unsigned color);                      // 0x6fac0
-extern "C" void String_cstr_ctor(void *out, const char *s, bool);          // 0x6ee18
-extern "C" void String_copy_ctor(void *out, const void *src, bool);        // 0x6f028
-extern "C" void String_dtor(void *s);                                      // 0x6ee30
-extern "C" void Layout_drawBox(PaintCanvas *pc, int p2, int x, int y,
+extern "C" void Layout_drawBoxStr(PaintCanvas *pc, int p2, int x, int y,
                                int w, int h, void *str);                   // 0x7462c
-extern "C" void PaintCanvas_DrawImage2D5(PaintCanvas *pc, int img, int x,
-                                         int y, int anchor);                // 0x71d70
-extern "C" void *GameText_getText(int id);                                 // 0x72f70
-extern "C" int PaintCanvas_GetTextWidth(unsigned pc, void *font);          // 0x6faa8
-extern "C" void PaintCanvas_DrawString(unsigned pc, void *font, void *str,
-                                       int x, int y);                       // 0x6fe14
 extern "C" void Layout_formatCredits(void *out, int n);                    // 0x74e54
-extern "C" void String_concat(void *ret, void *a, void *b);                // 0x6ef98
-extern "C" void String_assign(void *dst, const void *src);                 // 0x6f2b0
 
 // Hidden globals from drawMissionRewardMessage disasm.
 __attribute__((visibility("hidden"))) extern int *g_mrGuard;       // @0xe4d88 (stack guard [0])
@@ -1787,13 +1703,13 @@ extern "C" void Layout_drawMissionRewardMessage(Layout *self, int transition) {
             int sw = *g_mrDimA;
             unsigned char s0[sizeof(String12)] __attribute__((aligned(4)));
             String_cstr_ctor(s0, g_mrLit0, false);
-            Layout_drawBox(pc, 2, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s0);
+            Layout_drawBoxStr(pc, 2, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s0);
             String_dtor(s0);
 
             sw = *g_mrDimA;
             unsigned char s1[sizeof(String12)] __attribute__((aligned(4)));
             String_cstr_ctor(s1, g_mrLit1, false);
-            Layout_drawBox(pc, 8, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s1);
+            Layout_drawBoxStr(pc, 8, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s1);
             String_dtor(s1);
         }
 

@@ -18,7 +18,7 @@ namespace AbyssEngine {
 
 void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine)
 {
-    ::Mesh *mesh = (::Mesh *)meshArg;
+    AbyssEngine::Mesh *mesh = (AbyssEngine::Mesh *)meshArg;
     char *e = (char *)engine;
 
     glUniformMatrix4fv(this->field_0x34, 1, 0, e + 0x104);

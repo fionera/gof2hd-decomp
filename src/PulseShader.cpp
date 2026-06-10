@@ -58,7 +58,7 @@ extern float PulseShader_timeScale;
 
 namespace AbyssEngine {
 
-void PulseShader::UpdateMeshData(::Mesh *mesh, ::Engine *engine)
+void PulseShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 {
     if (this->field_0x34 >= 0)
         glUniformMatrix4fv(this->field_0x34, 1, 0, (float *)((char *)engine + 0x104));

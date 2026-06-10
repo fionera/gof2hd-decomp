@@ -70,5 +70,16 @@ struct LevelScript {
     int getEvent();
 };
 
-struct RadioMessage { void* _opaque; };  // no offset accesses observed
+struct RadioMessage {
+    RadioMessage(int param_1, int param_2, int param_3, int param_4, int param_5);
+    RadioMessage(int param_1, int param_2, int param_3, int param_4);
+    RadioMessage(int param_1, int param_2, Objective *param_3);
+    ~RadioMessage();
+    void finish();
+    uint8_t isOver();
+    void reset();
+    void trigger();
+    uint8_t isTriggered();
+    int triggered(int64_t time, PlayerEgo *ego, LevelScript *script);
+};
 #endif

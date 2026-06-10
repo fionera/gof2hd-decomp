@@ -65,7 +65,7 @@ void TextureVtxColorShader::SetInActive()
 }
 
 // ---- UpdateMeshData_8bf4c.cpp ----
-void TextureVtxColorShader::UpdateMeshData(::Mesh *mesh, Engine *engine)
+void TextureVtxColorShader::UpdateMeshData(AbyssEngine::Mesh *mesh, Engine *engine)
 {
     int index = Engine::fogEnabled ? 1 : 0;
 

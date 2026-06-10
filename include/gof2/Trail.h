@@ -49,5 +49,22 @@ static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char
 static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
 static inline void *&ptr(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
-struct Trail { void* _opaque; };  // no offset accesses observed
+// Trail: fields accessed via i32/u32/ptr offset helpers (deterministic field_0xNN layout).
+// Method signatures recovered from the decompiled bodies in src/Trail.cpp and cross-checked
+// against Ghidra (Trail @ 0016bd58, ~Trail @ 0016bf8c, changeType @ 0016bef4, setWidth @ 0016c184).
+struct Trail {
+    Trail(int type, int segments);
+    ~Trail();
+
+    void update(const AbyssEngine::AEMath::Vector &a, const AbyssEngine::AEMath::Vector &b);
+    void update(float ax, float ay, float az, float bx, float by, float bz);
+    void update(const AbyssEngine::AEMath::Matrix &a, const AbyssEngine::AEMath::Matrix &b,
+                const AbyssEngine::AEMath::Vector &v);
+
+    void render();
+    void translate(const AbyssEngine::AEMath::Vector &delta);
+    void setWidth(int width);
+    void changeType(int type);
+    void reset(AbyssEngine::AEMath::Vector value);
+};
 #endif

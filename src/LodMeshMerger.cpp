@@ -49,8 +49,8 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
     uint32_t id;
     PaintCanvas_MeshCreate(field_0x14, meshId, &id, false);
     void *ptr = PaintCanvas_MeshGetPointer(field_0x14, id);
-    Mesh **meshes = field_0x8.data();
-    meshes[field_0x0 * lod + index] = (Mesh *)ptr;
+    AEMesh **meshes = field_0x8.data();
+    meshes[field_0x0 * lod + index] = (AEMesh *)ptr;
 }
 
 // ---- update_18174c.cpp ----
@@ -81,7 +81,7 @@ void LodMeshMerger::update()
             if (((int8_t *)field_0x30)[j] != 0 &&
                 ((int8_t *)field_0x34)[j] != 0) {
                 signed char lod = ((int8_t *)field_0x2c)[j];
-                Mesh *src = (Mesh *)field_0x24[rows * lod + j];
+                AEMesh *src = (AEMesh *)field_0x24[rows * lod + j];
                 sumIdx += (uint16_t)src->field_0x28;
             }
         }
@@ -90,11 +90,11 @@ void LodMeshMerger::update()
                 ((int8_t *)field_0x34)[j] != 0) {
                 signed char lod = ((int8_t *)field_0x2c)[j];
                 if (lod < field_0x38 - 1) {
-                    Mesh *prev = (Mesh *)field_0x24[rows * lod + j];
+                    AEMesh *prev = (AEMesh *)field_0x24[rows * lod + j];
                     setLod(j, (signed char)(lod + 1));
                     rows = field_0x0;
                     signed char nlod = ((int8_t *)field_0x2c)[j];
-                    Mesh *cur = (Mesh *)field_0x24[rows * nlod + j];
+                    AEMesh *cur = (AEMesh *)field_0x24[rows * nlod + j];
                     sumIdx = sumIdx - (uint16_t)prev->field_0x28
                                     + (uint16_t)cur->field_0x28;
                 }
@@ -109,7 +109,7 @@ void LodMeshMerger::update()
                 uint8_t *out = (uint8_t *)field_0x20;
                 uint8_t mask = out[0];
                 signed char lod = ((int8_t *)field_0x2c)[j];
-                Mesh *src = (Mesh *)field_0x24[rows * lod + j];
+                AEMesh *src = (AEMesh *)field_0x24[rows * lod + j];
 
                 if (mask & 1) {
                     aeabi_memcpy4(*(char **)(out + 4) + vtxOff * 0xc,
@@ -168,7 +168,7 @@ extern "C" void aeabi_memclr(void *p, uint32_t n);              // 0x6ec20
 // LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 {
-    new (&field_0x8) Array<Mesh*>();
+    new (&field_0x8) Array<AEMesh*>();
     field_0x20 = 0;
     field_0x24 = 0;
     field_0x28 = 0;
@@ -243,7 +243,7 @@ int LodMeshMerger::init()
             lods[i] = 0;
         }
         for (int c = 0; c < field_0x38; c++) {
-            Mesh *mesh = field_0x8.data()[field_0x0 * c + i];
+            AEMesh *mesh = field_0x8.data()[field_0x0 * c + i];
             if (mesh != 0) {
                 void *t = LodMeshMerger_transformMesh(
                     mesh, *(const Matrix *)((char *)field_0x28 + i * 0x3c));
@@ -255,7 +255,7 @@ int LodMeshMerger::init()
     uint16_t nv = 0;
     uint16_t ni = 0;
     for (int i = 0; i < rows; i++) {
-        Mesh *m0 = field_0x8.data()[i];
+        AEMesh *m0 = field_0x8.data()[i];
         uint16_t v = m0->field_0x2;
         uint16_t idiv = aeabi_uidiv16(m0->field_0x28, 3);
         ni = ni + idiv;
@@ -287,7 +287,7 @@ void AEMath_BSphereAssign(void *dst, const void *src);                          
 // LodMeshMerger::transformMesh(AbyssEngine::Mesh* src, AbyssEngine::AEMath::Matrix const& m)
 //   Builds a fresh Mesh that is `src` with all geometry transformed by `m`: positions are
 //   transformed, normals rotated+normalized, and the bounding sphere is recomputed.
-void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m)
+void *LodMeshMerger::transformMesh(AEMesh *src, const Matrix &m)
 {
     char *s = (char *)src;
     char *out = (char *)operator_new_mesh(0x88);

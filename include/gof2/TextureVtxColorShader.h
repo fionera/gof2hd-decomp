@@ -31,9 +31,9 @@ extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);
 extern "C" void glVertexAttribPointer(
     uint32_t index, int size, uint32_t type, uint8_t normalized, int stride, const void *pointer);
 
-struct Mesh;  // defined in gof2/Mesh.h at global scope
-
 namespace AbyssEngine {
+
+struct Mesh;  // defined in gof2/Mesh.h within namespace AbyssEngine
 
 struct Engine {
     static bool fogEnabled;
@@ -93,7 +93,7 @@ struct TextureVtxColorShader {
     void SetInActive();
     void ConnectShaderComponents(uint32_t program, int index);
     void UseShader(bool);
-    void UpdateMeshData(::Mesh *mesh, Engine *engine);
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
 };
 
 } // namespace AbyssEngine

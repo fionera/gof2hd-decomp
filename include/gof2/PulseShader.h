@@ -43,7 +43,7 @@ struct PulseShader {
     PulseShader();
     void Init(::Engine *engine);
     void SetInActive();
-    void UpdateMeshData(::Mesh *mesh, ::Engine *engine);
+    void UpdateMeshData(Mesh *mesh, ::Engine *engine);
 };
 
 } // namespace AbyssEngine

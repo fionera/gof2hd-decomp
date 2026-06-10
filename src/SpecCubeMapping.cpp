@@ -81,7 +81,7 @@ namespace AbyssEngine {
 
 void SpecCubeMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
 {
-    ::Mesh *mesh = (::Mesh *)meshArg;
+    Mesh *mesh = (Mesh *)meshArg;
     char *eng = (char *)engine;
 
     if (this->field_0x9 != 0) {

@@ -23,16 +23,20 @@
 //   0x38 int    cols
 //   0x3c u8     dirty
 
-// Mesh is the global struct defined in gof2/Mesh.h.
+// Mesh is AbyssEngine::Mesh (complete type defined in gof2/Mesh.h). The global
+// ::Mesh in fwd.h is only an incomplete forward declaration; an unqualified
+// `Mesh` binds to that incomplete type, so we alias the engine type explicitly.
+// We cannot use `using AbyssEngine::Mesh;` because it would collide with ::Mesh.
 // PaintCanvas is only used as an opaque pointer here (forward-declared in fwd.h).
 using Matrix = AbyssEngine::AEMath::Matrix;
 using Vector = AbyssEngine::AEMath::Vector;
+using AEMesh = AbyssEngine::Mesh;
 
 struct LodMeshMerger {
     int32_t            field_0x0;    // +0x00 rows
     uint16_t           field_0x4;    // +0x04 flags
     uint8_t            field_0x6;    // +0x06 initFlag
-    Array<Mesh*>       field_0x8;    // +0x08 source meshes (rows*cols)
+    Array<AEMesh*>     field_0x8;    // +0x08 source meshes (rows*cols)
     PaintCanvas*       field_0x14;   // +0x14 canvas
     uint32_t           field_0x18;   // +0x18 meshId
     uint32_t           field_0x1c;   // +0x1c transformId
@@ -53,6 +57,6 @@ struct LodMeshMerger {
     void setMesh(int index, signed char lod, uint16_t meshId);
     void update();
     int  init();
-    void *transformMesh(Mesh *src, const Matrix &m);
+    void *transformMesh(AEMesh *src, const Matrix &m);
 };
 #endif
