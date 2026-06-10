@@ -1,33 +1,13 @@
-# build artifacts + verbose worker logs (regenerable); everything else is committed for audit
-build/obj/
-build/asm/
-build/libgof2hdaa.so
+# CMake / CLion
+cmake-build-*/
+/build/
+compile_commands.json
+.idea/
+.cache/
+
+# object files, scratch, python caches
 *.o
-work/results/
-work/classes/*/results/
 *.log
 *.out
-*.asm-cheat-REDO
 __pycache__/
 *.pyc
-# probe/experiment scratch (keep the .py reproduction scripts, drop their scratch outputs)
-build/probe/*.full
-build/probe/*.out
-build/probe/*.c
-work/classes/*/src/_s_*.cpp
-work/classes/*/src/_cand_*.cpp
-work/_extract.tsv
-work/classes/*/results/
-work/classes/*/manifest.tsv
-build/full/
-work/classes/*/todo*.tsv
-work/_extract*.tsv
-work/runtime/target/
-mac/gof2_host
-mac/*.dylib
-mac/*.o
-mac/obj/
-mac/stubs.*
-mac/*.rsp
-mac/*.txt
-mac/arm64.log

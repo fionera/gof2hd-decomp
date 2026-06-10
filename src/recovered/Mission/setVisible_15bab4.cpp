@@ -1,5 +1,0 @@
-#include "class.h"
-
-extern "C" void Mission_setVisible(Mission *self, bool v) {
-    F<uint8_t>(self, 0x74) = v;
-}
