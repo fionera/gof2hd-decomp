@@ -2,6 +2,27 @@
 #define GOF2_ROCKETGUN_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct RocketGun;
+struct Gun;
+struct Level;
+struct Radar;
+
+
+
+namespace AbyssEngine {
+namespace AEMath {
+
+
+}
+}
+
+typedef AbyssEngine::AEMath::Vector Vector;
+typedef AbyssEngine::AEMath::Matrix Matrix;
+
+
+
+typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
+
 struct RocketGun {
     int field_0x4;                      // +0x4
     void* field_0x8;                    // +0x8

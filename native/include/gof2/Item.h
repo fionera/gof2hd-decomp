@@ -1,7 +1,10 @@
 #ifndef GOF2_ITEM_H
 #define GOF2_ITEM_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery
+// real struct kept from byte-match recovery (+ supporting decls)
+struct Station;
+struct Ship;
+
 struct Item {
     int index;
     int type;
@@ -81,4 +84,9 @@ struct Item {
     static void combineDuplicates(Array *items);
     static Array *mixItems(Array *items, Array *stationItems);
 };
+
+static_assert(sizeof(Item) == 0x48, "Item layout size");
+static_assert(__builtin_offsetof(Item, ingredients) == 0x28, "Item ingredients offset");
+static_assert(__builtin_offsetof(Item, amount) == 0x34, "Item amount offset");
+static_assert(__builtin_offsetof(Item, unsaleable) == 0x44, "Item unsaleable offset");
 #endif

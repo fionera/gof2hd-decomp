@@ -1,7 +1,37 @@
 #ifndef GOF2_STATUS_H
 #define GOF2_STATUS_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery
+// real struct kept from byte-match recovery (+ supporting decls)
+using uint = uint32_t;
+using uchar = uint8_t;
+using ushort = uint16_t;
+using longlong = int64_t;
+using ulonglong = uint64_t;
+
+namespace AbyssEngine {
+
+// AbyssEngine::String — 0xc bytes: { uint16_t* text; uint32_t field_04; uint32_t size; }
+
+
+} // namespace AbyssEngine
+
+using String = AbyssEngine::String;
+
+// Engine container: { uint32_t size; T* data; uint32_t size2; } — 0xc bytes.
+
+
+// Forward declarations of related game classes (opaque — accessed only via extern "C" helpers).
+struct Mission;
+struct Station;
+struct Ship;
+struct Wanted;
+struct Agent;
+struct BluePrint;
+struct Item;
+
+// =====================================================================================
+// Status — the persistent player/game state.  Field offsets recovered from the target.
+// =====================================================================================
 struct Status {
     Array<Wanted *> *wanted;               // 0x000
     int32_t collectedBounties[4];          // 0x004 .. 0x010  (getCollectedBounties: this+idx*4+4)
@@ -185,4 +215,58 @@ struct Status {
     int isFreighterMissionStation(int station);
     int getFreighterMissionStationBit(int station);
 };
+
+static_assert(sizeof(String) == 0xc, "String layout");
+static_assert(sizeof(Array<void *>) == 0xc, "Array layout");
+
+static_assert(__builtin_offsetof(Status, wanted) == 0x000, "wanted");
+static_assert(__builtin_offsetof(Status, collectedBounties) == 0x004, "collectedBounties");
+static_assert(__builtin_offsetof(Status, standing) == 0x014, "standing");
+static_assert(__builtin_offsetof(Status, bluePrints) == 0x018, "bluePrints");
+static_assert(__builtin_offsetof(Status, pendingProducts) == 0x01c, "pendingProducts");
+static_assert(__builtin_offsetof(Status, agents) == 0x020, "agents");
+static_assert(__builtin_offsetof(Status, wingmen) == 0x024, "wingmen");
+static_assert(__builtin_offsetof(Status, passengers) == 0x034, "passengers");
+static_assert(__builtin_offsetof(Status, systemVisibilities) == 0x038, "systemVisibilities");
+static_assert(__builtin_offsetof(Status, field_4c) == 0x04c, "field_4c");
+static_assert(__builtin_offsetof(Status, field_58) == 0x058, "field_58");
+static_assert(__builtin_offsetof(Status, playerStation) == 0x078, "playerStation");
+static_assert(__builtin_offsetof(Status, field_8c) == 0x08c, "field_8c");
+static_assert(__builtin_offsetof(Status, field_94) == 0x094, "field_94");
+static_assert(__builtin_offsetof(Status, field_a0) == 0x0a0, "field_a0");
+static_assert(__builtin_offsetof(Status, field_a4) == 0x0a4, "field_a4");
+static_assert(__builtin_offsetof(Status, field_ac) == 0x0ac, "field_ac");
+static_assert(__builtin_offsetof(Status, field_b4) == 0x0b4, "field_b4");
+static_assert(__builtin_offsetof(Status, field_d4) == 0x0d4, "field_d4");
+static_assert(__builtin_offsetof(Status, field_10c) == 0x10c, "field_10c");
+static_assert(__builtin_offsetof(Status, field_110) == 0x110, "field_110");
+static_assert(__builtin_offsetof(Status, field_14c) == 0x14c, "field_14c");
+static_assert(__builtin_offsetof(Status, string_168) == 0x168, "string_168");
+static_assert(__builtin_offsetof(Status, field_178) == 0x178, "field_178");
+static_assert(__builtin_offsetof(Status, ship) == 0x190, "ship");
+static_assert(__builtin_offsetof(Status, mission) == 0x194, "mission");
+static_assert(__builtin_offsetof(Status, missions) == 0x198, "missions");
+static_assert(__builtin_offsetof(Status, station) == 0x19c, "station");
+static_assert(__builtin_offsetof(Status, stationStack) == 0x1a0, "stationStack");
+static_assert(__builtin_offsetof(Status, system) == 0x1a4, "system");
+static_assert(__builtin_offsetof(Status, planetNames) == 0x1a8, "planetNames");
+static_assert(__builtin_offsetof(Status, planetTextures) == 0x1ac, "planetTextures");
+static_assert(__builtin_offsetof(Status, credits) == 0x1b0, "credits");
+static_assert(__builtin_offsetof(Status, rating) == 0x1b4, "rating");
+static_assert(__builtin_offsetof(Status, playingTime) == 0x1b8, "playingTime");
+static_assert(__builtin_offsetof(Status, kills) == 0x1c0, "kills");
+static_assert(__builtin_offsetof(Status, missionCount) == 0x1c4, "missionCount");
+static_assert(__builtin_offsetof(Status, level) == 0x1c8, "level");
+static_assert(__builtin_offsetof(Status, lastXP) == 0x1cc, "lastXP");
+static_assert(__builtin_offsetof(Status, stationsVisited) == 0x1d0, "stationsVisited");
+static_assert(__builtin_offsetof(Status, goodsProduced) == 0x1d4, "goodsProduced");
+static_assert(__builtin_offsetof(Status, pirateKills) == 0x1d8, "pirateKills");
+static_assert(__builtin_offsetof(Status, jumpgatesUsed) == 0x1dc, "jumpgateUsed");
+static_assert(__builtin_offsetof(Status, capturedCrates) == 0x1e0, "capturedCrates");
+static_assert(__builtin_offsetof(Status, boughtEquipment) == 0x1e4, "boughtEquipment");
+static_assert(__builtin_offsetof(Status, currentCampaignMission) == 0x1e8, "currentCampaignMission");
+
+// Engine globals / runtime allocator hooks.
+void *operator new(__SIZE_TYPE__ size);
+void operator delete(void *ptr) noexcept;
 #endif

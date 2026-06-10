@@ -2,6 +2,37 @@
 #define GOF2_PLAYERASTEROID_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+namespace AbyssEngine {
+
+
+
+namespace AEMath {
+
+
+
+} // namespace AEMath
+
+} // namespace AbyssEngine
+
+using String = AbyssEngine::String;
+using Vector = AbyssEngine::AEMath::Vector;
+using Matrix = AbyssEngine::AEMath::Matrix;
+
+struct AEGeometry;
+struct Player;
+struct Explosion;
+struct TargetFollowCamera;
+struct ArrayInt;
+
+
+
+
+
+
+
+extern "C" void *operator_new(uint32_t size);
+extern "C" void operator_delete(void *ptr);
+
 struct PlayerAsteroid {
     void* field_0x0;                    // +0x0
     Player* field_0x4;                  // +0x4

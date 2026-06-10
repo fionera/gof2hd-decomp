@@ -1,7 +1,17 @@
 #ifndef GOF2_EASEINOUT_H
 #define GOF2_EASEINOUT_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery
+// real struct kept from byte-match recovery (+ supporting decls)
+namespace AbyssEngine {
+
+namespace AEMath {
+float Sinf(float value);
+}
+
+// PI as a 32-bit float constant; double-context uses promote it to double,
+// reproducing the target's literal-pool double values (N * (double)PI).
+static const float PI = 3.1415927f;
+
 struct EaseInOut {
     float m_min;      // +0x0  base/start output value
     float m_range;    // +0x4  span (max - min)
@@ -21,4 +31,6 @@ struct EaseInOut {
     void RunOut(float dt);
     void UpdateCurrentValue();
 };
+
+} // namespace AbyssEngine
 #endif

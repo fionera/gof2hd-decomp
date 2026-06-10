@@ -2,6 +2,35 @@
 #define GOF2_MESH_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 -- AbyssEngine::Mesh (Android libgof2hdaa.so, armv7 Thumb).
+// (Namespace confirmed from work-item Sig: AbyssEngine::Mesh.)
+//
+// We do NOT model the full Mesh layout; fields are accessed by byte offset taken from
+// each work-item's target disassembly. Known offsets used here:
+//   +0x00 (byte) flag           +0x02 (u16)
+//   +0x3c..0x50  BSphere (center+radius), with +0x40 swapped with +0x44 on load
+//   +0x34  Transform* animation track
+//   +0x50  embedded Vector
+//   +0x85  (byte) hasAnimation flag
+
+
+void *operator new(__SIZE_TYPE__ size);
+void operator delete(void *ptr) noexcept;
+
+namespace AbyssEngine {
+
+struct Mesh;
+struct Transform;
+
+namespace AEMath {
+struct BSphere;
+struct Vector;
+}
+
+} // namespace AbyssEngine
+
+// Templated byte-offset field accessor: F<int>(this, 0x34) etc.
+
 struct Mesh {
     uint8_t field_0x0;                  // +0x0
     uint16_t field_0x2;                 // +0x2

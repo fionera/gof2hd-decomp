@@ -2,6 +2,24 @@
 #define GOF2_PLAYERGASCLOUD_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 -- PlayerGasCloud (Android libgof2hdaa.so, armv7 Thumb).
+// Qualified target names are top-level: "PlayerGasCloud::..." (the class is NOT in a
+// namespace; only argument types like AbyssEngine::AEMath::Vector are).
+// Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
+
+
+struct PlayerGasCloud;
+struct ParticleSystemManager;
+struct AEGeometry;
+
+namespace AbyssEngine {
+namespace AEMath {
+
+}
+}
+
+// Templated byte-offset field accessor: F<int>(this, 0x138) etc.
+
 struct PlayerGasCloud {
     void* field_0x4;                    // +0x4
     void* field_0x8;                    // +0x8

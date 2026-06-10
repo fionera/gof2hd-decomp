@@ -2,6 +2,28 @@
 #define GOF2_REPAIRBEAM_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// RepairBeam — top-level class (only arg types are namespaced).
+// Layout recovered from ctor/dtor/render/update decompiles:
+//   +0x00  int    shipIndex      (used to index a sound-event global array)
+//   +0x04  Vector beamPosition   (x@+0x4, y@+0x8, z@+0xc)
+//   +0x10  Array<AEGeometry*>* geoms
+//   +0x14  Array<int>*           targetIds   (size@[0], data@[1])
+//   +0x18  Array<float>*         charges     (size@[0], data@[1])
+//   +0x1c  int    sort           (0x25 heal / 0x29 shield)
+//   +0x20  int    timer
+
+
+void *operator new(__SIZE_TYPE__ size);
+
+struct RepairBeam;
+
+namespace AbyssEngine {
+namespace AEMath {
+
+}
+}
+using Vector = AbyssEngine::AEMath::Vector;
+
 struct RepairBeam {
     int field_0x0;                      // +0x0
     int field_0x4;                      // +0x4

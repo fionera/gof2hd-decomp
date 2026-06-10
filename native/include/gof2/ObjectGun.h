@@ -2,6 +2,32 @@
 #define GOF2_OBJECTGUN_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct AEGeometry;
+struct Array;
+struct Explosion;
+struct Gun;
+struct Level;
+struct ObjectGun;
+struct PaintCanvas;
+struct Player;
+struct TargetFollowCamera;
+
+
+
+
+
+struct Vec4 {
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct MeshId {
+    uint16_t id;
+    uint16_t pad;
+};
+
 struct ObjectGun {
     void* field_0x0;                    // +0x0
     int field_0x4;                      // +0x4

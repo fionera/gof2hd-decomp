@@ -2,6 +2,61 @@
 #define GOF2_RADAR_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct Level;
+struct Hud;
+struct Player;
+struct Station;
+
+namespace AbyssEngine {
+
+
+namespace AEMath {
+struct Matrix;
+
+
+
+Vector MatrixTransformVector(Matrix const &, Vector const &);
+}
+
+struct PaintCanvas {
+    int GetScreenPosition(AEMath::Vector const &, AEMath::Vector &);
+};
+}
+
+
+
+struct KIPlayer {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual AbyssEngine::AEMath::Vector getPosition();
+};
+
+struct SolarSystem {
+    Array<Station *> *getStations();
+};
+
+struct Status {
+    SolarSystem *getSystem();
+};
+
+struct Globals {
+    float sqrt(float);
+};
+
+extern Status *gStatus;
+extern Globals *gGlobals;
+extern AbyssEngine::PaintCanvas *gPaintCanvas;
+
+void operator delete(void *) noexcept;
+
 struct Radar {
     void* field_0x0;                    // +0x0
     int field_0x4;                      // +0x4

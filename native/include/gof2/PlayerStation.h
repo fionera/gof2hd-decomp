@@ -2,6 +2,41 @@
 #define GOF2_PLAYERSTATION_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+namespace AbyssEngine {
+namespace AEMath {
+
+} // namespace AEMath
+} // namespace AbyssEngine
+
+using Vector = AbyssEngine::AEMath::Vector;
+
+struct Station;
+struct AEGeometry;
+struct BoundingVolume;
+struct Array;
+struct FileRead;
+struct PaintCanvas;
+struct Transform;
+
+struct PlayerStaticFar {
+    PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z);
+    ~PlayerStaticFar() noexcept(false);
+};
+
+
+
+
+
+
+
+static inline void *&P(void *self, uint32_t off)
+{
+    return *(void **)((char *)self + off);
+}
+
+extern "C" void *operator_new(uint32_t size);
+extern "C" void operator_delete(void *ptr) __attribute__((nothrow));
+
 struct PlayerStation {
     uint8_t field_0x25;                 // +0x25
     float field_0x58;                   // +0x58

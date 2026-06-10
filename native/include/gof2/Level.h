@@ -1,7 +1,29 @@
 #ifndef GOF2_LEVEL_H
 #define GOF2_LEVEL_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery
+// real struct kept from byte-match recovery (+ supporting decls)
+// Engine array container (size, data, capacity).
+
+
+
+
+// Forward declarations for related game classes referenced by Level.
+struct Route;
+struct RadioMessage;
+struct KIPlayer;
+struct PlayerEgo;
+struct Ship;
+struct SolarSystem;
+struct Station;
+struct Wanted;
+struct Status;
+struct Player;
+struct ParticleSystemManager;
+struct PaintCanvas;
+struct Mission;
+
+// Galaxy on Fire 2 — Level (the in-flight game world / mission space).
+// Layout deduced from getter/setter disassembly. Total size 0x2a0.
 struct Level {
     // --- header / skybox + objective state (0x00..0xb0) ---
     void *vtable;            // 0x00
@@ -226,4 +248,28 @@ struct Level {
     int getNumDeliveredPassengers();
     void incNumDeliveredPassengers(int delta);
 };
+
+static_assert(sizeof(Level) == 0x2a0, "Level size");
+static_assert(__builtin_offsetof(Level, objectivesA) == 0x28, "objectivesA");
+static_assert(__builtin_offsetof(Level, particleSystemMgr) == 0x7c, "particleSystemMgr");
+static_assert(__builtin_offsetof(Level, miningPlantIndex) == 0xac, "miningPlantIndex");
+static_assert(__builtin_offsetof(Level, player) == 0xf0, "player");
+static_assert(__builtin_offsetof(Level, enemies) == 0xf8, "enemies");
+static_assert(__builtin_offsetof(Level, asteroids) == 0xfc, "asteroids");
+static_assert(__builtin_offsetof(Level, landmarks) == 0x100, "landmarks");
+static_assert(__builtin_offsetof(Level, playerRoute) == 0x108, "playerRoute");
+static_assert(__builtin_offsetof(Level, messages) == 0x114, "messages");
+static_assert(__builtin_offsetof(Level, enemiesLeft) == 0x118, "enemiesLeft");
+static_assert(__builtin_offsetof(Level, asteroidsLeft) == 0x128, "asteroidsLeft");
+static_assert(__builtin_offsetof(Level, kills) == 0x12c, "kills");
+static_assert(__builtin_offsetof(Level, timeLimit) == 0x130, "timeLimit");
+static_assert(__builtin_offsetof(Level, friendCargoStolen) == 0x13c, "friendCargoStolen");
+static_assert(__builtin_offsetof(Level, flashColor) == 0x140, "flashColor");
+static_assert(__builtin_offsetof(Level, flashActive) == 0x158, "flashActive");
+static_assert(__builtin_offsetof(Level, flashType) == 0x15c, "flashType");
+static_assert(__builtin_offsetof(Level, sub_1d0) == 0x1d0, "sub_1d0");
+static_assert(__builtin_offsetof(Level, field_284) == 0x284, "field_284");
+static_assert(__builtin_offsetof(Level, miningPlant) == 0x28c, "miningPlant");
+static_assert(__builtin_offsetof(Level, numDeliveredOre) == 0x290, "numDeliveredOre");
+static_assert(__builtin_offsetof(Level, field_29c) == 0x29c, "field_29c");
 #endif

@@ -2,6 +2,15 @@
 #define GOF2_TOUCHSLIDER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 -- TouchSlider (Android libgof2hdaa.so, armv7 Thumb).
+// Qualified target names are top-level: "TouchSlider::..." (NOT in a namespace).
+// Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
+
+
+struct TouchSlider;
+
+// Templated byte-offset field accessor: F<int>(this, 0x14) etc.
+
 struct TouchSlider {
     int field_0x0;                      // +0x0
     int field_0x4;                      // +0x4

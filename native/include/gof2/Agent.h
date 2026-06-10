@@ -2,6 +2,22 @@
 #define GOF2_AGENT_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 — Agent class (NPC/trader). Top-level, no namespace.
+// Field offsets recovered from per-method target disassembly. We do NOT model a
+// full layout: methods access fields via byte-offset casts from `this`.
+
+
+struct Agent;
+
+// AbyssEngine::String passed by value is a 12-byte trivially-copied aggregate
+// (text*, size, ...). Model it opaquely so it is passed on the stack/regs the
+// same way as the target ABI (struct >8 bytes by value).
+
+
+
+
+// Field accessors via byte offsets.
+
 struct Agent {
     void* field_0xc;                    // +0xc
     void* field_0x10;                   // +0x10

@@ -1,7 +1,18 @@
 #ifndef GOF2_PLAYER_H
 #define GOF2_PLAYER_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery
+// real struct kept from byte-match recovery (+ supporting decls)
+// Galaxy on Fire 2 — Player class layout (Android libgof2hdaa.so, armv7 Thumb).
+// Field offsets recovered from the per-method target disassembly.
+
+
+struct Gun;
+struct KIPlayer;
+struct Vector;
+struct Matrix;
+
+
+
 struct Player {
     Array<Array<Gun *> *> *guns;     // 0x00  gun slots (array of arrays of guns)
     float transform[15];             // 0x04  AEMath::Matrix (this+4), 0x3c bytes -> ends 0x40
@@ -68,4 +79,22 @@ struct Player {
     int32_t playShootSoundId;        // 0x10c
     int32_t field_110;               // 0x110
 };
+
+static_assert(sizeof(Array<Gun *>) == 0xc, "Array size");
+static_assert(__builtin_offsetof(Player, radius) == 0x40, "radius");
+static_assert(__builtin_offsetof(Player, enemies) == 0x74, "enemies");
+static_assert(__builtin_offsetof(Player, hitpoints) == 0x78, "hitpoints");
+static_assert(__builtin_offsetof(Player, shieldHP) == 0x88, "shieldHP");
+static_assert(__builtin_offsetof(Player, damageRate) == 0x98, "damageRate");
+static_assert(__builtin_offsetof(Player, gammaHP) == 0xb8, "gammaHP");
+static_assert(__builtin_offsetof(Player, active) == 0xc0, "active");
+static_assert(__builtin_offsetof(Player, shootingEnabled) == 0xc3, "shootingEnabled");
+static_assert(__builtin_offsetof(Player, hitVector) == 0xc4, "hitVector");
+static_assert(__builtin_offsetof(Player, kiPlayer) == 0xd0, "kiPlayer");
+static_assert(__builtin_offsetof(Player, turnedEnemy) == 0xe0, "turnedEnemy");
+static_assert(__builtin_offsetof(Player, alwaysEnemy) == 0xec, "alwaysEnemy");
+static_assert(__builtin_offsetof(Player, neverAttack) == 0xee, "neverAttack");
+static_assert(__builtin_offsetof(Player, engineEvent) == 0xf0, "engineEvent");
+static_assert(__builtin_offsetof(Player, position) == 0xfc, "position");
+static_assert(__builtin_offsetof(Player, playShootSoundId) == 0x10c, "playShootSoundId");
 #endif

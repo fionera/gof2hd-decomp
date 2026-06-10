@@ -2,6 +2,63 @@
 #define GOF2_IPARTICLESYSTEM_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct PaintCanvas;
+struct ParticleSet;
+
+
+
+namespace AbyssEngine {
+namespace AEMath {
+
+
+
+} // namespace AEMath
+} // namespace AbyssEngine
+
+using Vector = AbyssEngine::AEMath::Vector;
+using Matrix = AbyssEngine::AEMath::Matrix;
+
+
+
+
+
+
+
+static inline void *&P(void *self, uint32_t off)
+{
+    return *(void **)((char *)self + off);
+}
+
+static inline int32_t &I(void *self, uint32_t off)
+{
+    return *(int32_t *)((char *)self + off);
+}
+
+static inline uint32_t &U(void *self, uint32_t off)
+{
+    return *(uint32_t *)((char *)self + off);
+}
+
+static inline uint16_t &U16(void *self, uint32_t off)
+{
+    return *(uint16_t *)((char *)self + off);
+}
+
+static inline uint8_t &U8(void *self, uint32_t off)
+{
+    return *(uint8_t *)((char *)self + off);
+}
+
+static inline float &FL(void *self, uint32_t off)
+{
+    return *(float *)((char *)self + off);
+}
+
+static inline Vector *vec_at(void *base, int index)
+{
+    return (Vector *)((char *)base + index * 12);
+}
+
 struct IParticleSystem {
     void* field_0x0;                    // +0x0
     volatile uint16_t field_0x4;        // +0x4

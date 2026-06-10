@@ -77,6 +77,21 @@ def has_named_struct(cls,htext):
     members=re.findall(r'\b(?:int|float|bool|char|short|double|long|unsigned|void|[A-Z]\w+)[\s\*]+([a-z]\w*)\s*;', blk)
     return blk if len(members)>=2 else None
 
+def clean_header(text, drop_class=None):
+    """Keep supporting decls (callbacks/enums/nested types) from the original header; drop shared-type
+    redefs, F<>/G<> helper templates, include guards/includes, conflicting basic typedefs, and
+    optionally the opaque struct for `drop_class` (replaced by the derived one)."""
+    rm=[(s,e) for n,s,e in find_blocks(text) if n in SHARED or (drop_class and n==drop_class)]
+    for s,e in sorted(rm,reverse=True): text=text[:s]+text[e:]
+    text=re.sub(r'template\s*<[^>]*>\s*[^;{}]*\b[FG]\s*\([^)]*\)\s*\{[^{}]*\}','',text)  # F/G helpers
+    keep=[]
+    for ln in text.splitlines():
+        s=ln.strip()
+        if re.match(r'#\s*(ifndef|define|endif|include|pragma)\b', s): continue
+        if re.match(r'typedef\s+(unsigned\s+|signed\s+)?(char|short|int|long)[\w\s]*\b(u?int(8|16|32|64)_t|int32_t|int)\s*;', s): continue
+        keep.append(ln)
+    return "\n".join(keep).strip()
+
 def emit_struct_from_fieldmap(cls):
     fields=fieldmap.get(cls,{})
     if not fields:
@@ -94,10 +109,11 @@ for cls in CLASSES:
     guard=f"GOF2_{re.sub(r'%W','_',cls).upper()}_H"
     kept=has_named_struct(cls,htext)
     if kept:
-        body=kept  # keep the recovered/real struct verbatim
-        note="// real struct kept from byte-match recovery"
+        body=clean_header(htext)  # keep real struct + its supporting typedefs/enums/callbacks
+        note="// real struct kept from byte-match recovery (+ supporting decls)"
     else:
-        body=emit_struct_from_fieldmap(cls)
+        support=clean_header(htext, drop_class=cls)  # keep supporting decls, drop opaque struct
+        body=(support+"\n\n" if support else "")+emit_struct_from_fieldmap(cls)
         note="// struct derived from offset-access field map (deterministic field_0xNN naming)"
     open(f"{OUT_H}/{cls}.h","w").write(
         f"#ifndef {guard}\n#define {guard}\n#include \"gof2/common.h\"\n{note}\n{body}\n#endif\n")

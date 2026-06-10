@@ -2,6 +2,28 @@
 #define GOF2_PLAYERCREATURE_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct PlayerCreature;
+struct KIPlayer;
+struct Player;
+struct AEGeometry;
+struct FModSound;
+
+namespace AbyssEngine {
+namespace AEMath {
+
+
+
+
+
+void MatrixMultiply(Matrix &lhs, const Matrix &rhs);
+Matrix MatrixSetRotation(Matrix &matrix, float x, float y, float z);
+
+}
+}
+
+typedef AbyssEngine::AEMath::Vector Vector;
+typedef AbyssEngine::AEMath::Matrix Matrix;
+
 struct PlayerCreature {
     char* field_0x0;                    // +0x0
     Player* field_0x4;                  // +0x4

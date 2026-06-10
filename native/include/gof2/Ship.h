@@ -1,7 +1,32 @@
 #ifndef GOF2_SHIP_H
 #define GOF2_SHIP_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery
+// real struct kept from byte-match recovery (+ supporting decls)
+// Shared layout + helper declarations for Galaxy on Fire 2 `Ship` class.
+// Target: Android libgof2hdaa.so (Thumb-2, clang -O2). Recovered byte-exact.
+//
+// Each method .cpp #includes this header. The struct reproduces the field
+// offsets observed in the target disassembly (verified across the simple
+// getters/setters and the constructor). External engine/game helpers are
+// declared `extern "C"` so the differ (which normalizes call targets) lets
+// tail-calls become `return helper(...)`.
+
+// ---------------------------------------------------------------------------
+// AbyssEngine Array<T> container.
+//   layout = { u32 size; T* data; u32 size2(capacity); }  (== AEArray)
+// All pointer instantiations compile identically.
+
+
+// Engine container primitives (defined in src/engine/array.cpp; matched).
+template <class T> void  ArrayAdd(T item, Array<T>& a);
+template <class T> void  ArraySetLength(unsigned int n, Array<T>& a);
+
+// ---------------------------------------------------------------------------
+// Ship layout. size = 0x80. Field offsets reproduced from the target.
+// `Item` is opaque here; the recovered code only ever holds Item* and calls
+// out to Item:: members via extern "C" thunks.
+struct Item;
+
 struct Ship {
     int          index;            // 0x00  ship id / type
     int          baseHP;           // 0x04

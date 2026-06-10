@@ -2,6 +2,30 @@
 #define GOF2_PLAYERFIGHTER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 - PlayerFighter class (Android libgof2hdaa.so, armv7 Thumb).
+// Top-level class (no AbyssEngine namespace). Field offsets recovered per-method from
+// the target disassembly; we do NOT model a full layout - access fields via byte-offset
+// casts from `self`.
+
+
+struct PlayerFighter;
+
+
+
+// AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.
+namespace AbyssEngine { namespace AEMath {
+
+} }
+typedef AbyssEngine::AEMath::Vector Vector;
+
+// AbyssEngine::String - 12-byte value aggregate (text*, field, size).
+namespace AbyssEngine {
+
+}
+typedef AbyssEngine::String String;
+
+// Field accessor via byte offset.
+
 struct PlayerFighter {
     int32_t field_0x4;                  // +0x4
     int32_t field_0x8;                  // +0x8

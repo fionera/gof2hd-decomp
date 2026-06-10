@@ -2,6 +2,27 @@
 #define GOF2_GUN_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 — Gun class (weapon/projectile emitter). Top-level, no namespace.
+// Field offsets recovered from per-method target disassembly. We do NOT model a
+// full layout: methods access fields via byte-offset casts from `this`.
+//
+// Known fields:
+//   +0x08  uint  vertexCount
+//   +0x0c  Vector* vertices (each 0xc bytes)
+//   +0xb4  Player* enemies
+//   +0xb8  Sparks* impact
+//   +0xf0  bool  playerGun
+//   +0xf8  bool  levelCollision
+//   +0xf9  bool  friendGun
+//   +0xfc  float errorMagnitudePercentage
+//   +0x100 int   magnitude
+//   +0x7c  Vector offset
+
+
+struct Gun;
+
+// Field accessor via byte offset.
+
 struct Gun {
     int field_0x0;                      // +0x0
     Player* field_0x4;                  // +0x4

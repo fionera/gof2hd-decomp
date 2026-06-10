@@ -2,6 +2,49 @@
 #define GOF2_ENGINE_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+namespace AbyssEngine {
+
+
+struct ApplicationManager;
+struct FileInterfaceAndroid;
+struct FBOContainer;
+struct Mesh;
+struct ShaderBaseStruct;
+
+
+
+namespace AEMath {
+
+
+
+
+
+void MatrixGetGL(const Matrix &matrix, float *out);
+
+} // namespace AEMath
+
+} // namespace AbyssEngine
+
+using Engine = AbyssEngine::Engine;
+using ApplicationManager = AbyssEngine::ApplicationManager;
+using FBOContainer = AbyssEngine::FBOContainer;
+using Mesh = AbyssEngine::Mesh;
+using ShaderBaseStruct = AbyssEngine::ShaderBaseStruct;
+using String = AbyssEngine::String;
+using Vector = AbyssEngine::AEMath::Vector;
+using Matrix = AbyssEngine::AEMath::Matrix;
+
+
+
+void *operator new(__SIZE_TYPE__ size);
+void operator delete(void *ptr) noexcept;
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+
+extern "C" void *__stack_chk_guard;
+extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
+extern "C" void *__aeabi_memcpy(void *dest, const void *src, unsigned long n);
+extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
+
 struct Engine {
     uint32_t field_0x0;                 // +0x0
     uint32_t field_0x4;                 // +0x4

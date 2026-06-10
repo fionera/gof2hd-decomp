@@ -2,6 +2,18 @@
 #define GOF2_BOUNDINGAAB_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+namespace AbyssEngine {
+namespace AEMath {
+
+} // namespace AEMath
+} // namespace AbyssEngine
+
+using Vector = AbyssEngine::AEMath::Vector;
+
+struct BoundingVolume {
+    BoundingVolume(float, float, float, float, float, float);
+};
+
 struct BoundingAAB {
     void* field_0x0;                    // +0x0
     float field_0x8;                    // +0x8

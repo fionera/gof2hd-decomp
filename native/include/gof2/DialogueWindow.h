@@ -2,6 +2,19 @@
 #define GOF2_DIALOGUEWINDOW_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct DialogueWindow;
+struct Mission;
+struct Level;
+struct Agent;
+struct String;
+struct Vector;
+
+
+
+struct StringSlot {
+    char bytes[12];
+};
+
 struct DialogueWindow {
     void* field_0x0;                    // +0x0
     void* field_0x4;                    // +0x4

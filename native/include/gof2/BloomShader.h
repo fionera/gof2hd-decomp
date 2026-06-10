@@ -2,6 +2,29 @@
 #define GOF2_BLOOMSHADER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+namespace AbyssEngine {
+
+struct Engine;
+struct FBOContainer;
+struct Mesh;
+struct ShaderBaseStruct;
+
+
+
+
+
+} // namespace AbyssEngine
+
+using BloomShader = AbyssEngine::BloomShader;
+using Engine = AbyssEngine::Engine;
+using FBOContainer = AbyssEngine::FBOContainer;
+using Mesh = AbyssEngine::Mesh;
+using ShaderBaseStruct = AbyssEngine::ShaderBaseStruct;
+using String = AbyssEngine::String;
+
+extern "C" void *__stack_chk_guard;
+extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
+
 struct BloomShader {
     unsigned int field_0x4;             // +0x4
     uint8_t field_0x9;                  // +0x9

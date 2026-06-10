@@ -2,6 +2,12 @@
 #define GOF2_WAYPOINT_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct Waypoint;
+struct Route;
+struct Player;
+struct KIPlayer;
+struct AEGeometry;
+
 struct Waypoint {
     void* field_0x0;                    // +0x0
     Player* field_0x4;                  // +0x4

@@ -2,6 +2,15 @@
 #define GOF2_STATION_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 — Station class. Top-level, no namespace.
+// Field offsets recovered from per-method target disassembly. Methods access
+// fields via byte-offset casts from `this`.
+
+
+struct Station;
+
+// AbyssEngine::String by value: 12-byte trivially-copied aggregate.
+
 struct Station {
     int field_0xc;                      // +0xc
     int field_0x10;                     // +0x10

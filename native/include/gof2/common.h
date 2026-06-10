@@ -46,4 +46,14 @@ struct String12 { char16_t buf[6]; };   // small stack string temp
 
 using AbyssEngine::String;
 
+// ---- global aliases so recovered code's short type names resolve --------------------------
+namespace AEMath = AbyssEngine::AEMath;   // so global `AEMath::Vector` resolves
+using AbyssEngine::AEMath::Vector;        // recovered structs use bare Vector/Matrix
+using AbyssEngine::AEMath::Matrix;
+using AbyssEngine::Quaternion;
+typedef unsigned char  byte;
+typedef unsigned int   uint;
+typedef unsigned short ushort;
+struct u32x4 { uint32_t v[4]; };          // NEON 4x u32 (best-effort, non-matching)
+
 #endif // GOF2_COMMON_H

@@ -2,6 +2,24 @@
 #define GOF2_PLAYERJUMPGATE_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct AEGeometry;
+struct BoundingVolume;
+struct BoundingSphere;
+struct PlayerJumpgate;
+struct PlayerStaticFar;
+
+
+
+
+
+
+
+template <class T>
+static inline volatile T &VF(void *self, unsigned off)
+{
+    return *(volatile T *)((char *)self + off);
+}
+
 struct PlayerJumpgate {
     void* field_0x0;                    // +0x0
     void* field_0x4;                    // +0x4

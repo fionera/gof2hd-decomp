@@ -2,6 +2,25 @@
 #define GOF2_APPLICATIONMANAGER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+void *operator new(__SIZE_TYPE__ size);
+inline void *operator new(__SIZE_TYPE__, void *ptr) noexcept { return ptr; }
+
+extern "C" void *__stack_chk_guard;
+extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
+
+namespace AbyssEngine {
+struct ApplicationManager;
+struct ConfigReader;
+struct PaintCanvas;
+
+
+}
+
+using ApplicationManager = AbyssEngine::ApplicationManager;
+using ConfigReader = AbyssEngine::ConfigReader;
+using PaintCanvas = AbyssEngine::PaintCanvas;
+using String = AbyssEngine::String;
+
 struct ApplicationManager {
     uint32_t field_0x8;                 // +0x8
     uint32_t field_0xc;                 // +0xc

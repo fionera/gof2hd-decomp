@@ -2,6 +2,19 @@
 #define GOF2_NEWSTICKER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+namespace AbyssEngine {
+struct String;
+}
+typedef AbyssEngine::String String;
+
+
+
+namespace AbyssEngine {
+
+
+String operator+(const String &left, const String &right);
+}
+
 struct NewsTicker {
     float field_0x0;                    // +0x0
     int field_0x4;                      // +0x4

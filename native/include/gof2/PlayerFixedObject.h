@@ -2,6 +2,27 @@
 #define GOF2_PLAYERFIXEDOBJECT_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 - PlayerFixedObject class. Android libgof2hdaa.so, armv7 Thumb.
+// Top-level class (no AbyssEngine namespace). Field offsets recovered per-method from the
+// target disassembly; we do NOT model a full layout - access fields via byte-offset casts.
+
+
+// Opaque referenced types.
+struct PlayerFixedObject;
+struct BoundingVolume;
+struct AEGeometry;
+struct Player;
+
+
+
+// AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.
+namespace AbyssEngine { namespace AEMath {
+
+} }
+typedef AbyssEngine::AEMath::Vector Vector;
+
+// Field accessors via byte offset.
+
 struct PlayerFixedObject {
     void* field_0x4;                    // +0x4
     void* field_0x8;                    // +0x8

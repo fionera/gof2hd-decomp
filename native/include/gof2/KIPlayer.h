@@ -2,6 +2,27 @@
 #define GOF2_KIPLAYER_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 - KIPlayer class (enemy AI). Android libgof2hdaa.so, armv7 Thumb.
+// Top-level class (no AbyssEngine namespace). Field offsets recovered per-method from the
+// target disassembly; we do NOT model a full layout - access fields via byte-offset casts.
+
+
+// Opaque referenced types.
+struct KIPlayer;
+struct Route;
+struct Gun;
+struct SpacePoint;
+
+
+
+// AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.
+namespace AbyssEngine { namespace AEMath {
+
+} }
+typedef AbyssEngine::AEMath::Vector Vector;
+
+// Field accessors via byte offset.
+
 struct KIPlayer {
     void* field_0x4;                    // +0x4
     void* field_0x8;                    // +0x8

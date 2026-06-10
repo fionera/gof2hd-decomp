@@ -3,13 +3,11 @@
 // forward declarations of all game/engine class structs
 struct AEFile;
 struct AEGeometry;
-struct AEMath;
 struct AENormalFile;
 struct AEPakFile;
 struct AERandom;
 struct AESoundRessource;
 struct AMeshMerger;
-struct AbyssEngine;
 struct Achievements;
 struct Agent;
 struct ApplicationManager;

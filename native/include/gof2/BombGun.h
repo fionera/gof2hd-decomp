@@ -2,6 +2,39 @@
 #define GOF2_BOMBGUN_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct BombGun;
+struct RocketGun;
+struct Gun;
+struct Level;
+struct Player;
+struct PlayerEgo;
+struct LevelScript;
+struct Explosion;
+struct AEGeometry;
+struct PaintCanvas;
+struct Transform;
+struct TargetFollowCamera;
+struct FModSound;
+
+namespace AbyssEngine {
+namespace AEMath {
+
+
+
+
+
+} // namespace AEMath
+} // namespace AbyssEngine
+
+typedef AbyssEngine::AEMath::Vector Vector;
+typedef AbyssEngine::AEMath::Matrix Matrix;
+
+
+
+
+
+typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
+
 struct BombGun {
     Gun* field_0x8;                     // +0x8
     uint32_t field_0x10;                // +0x10

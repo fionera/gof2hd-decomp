@@ -2,6 +2,27 @@
 #define GOF2_SOLARSYSTEM_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 — SolarSystem class (Android libgof2hdaa.so, armv7 Thumb).
+// Top-level class (no AbyssEngine:: on the class itself), though it embeds an
+// AbyssEngine::String at +0x0c. Field offsets recovered per-method from the
+// target disassembly; methods access fields via byte-offset casts from `this`.
+
+
+struct SolarSystem;
+
+// AbyssEngine::String passed/returned by value is a 12-byte trivially-copied
+// aggregate (text*, size, ...). Model it opaquely so the ABI matches the target.
+
+
+// Array<int> header layout: { length, data, cap }.
+
+
+// Field accessors via byte offset from `this`.
+
+static inline int32_t &i32(void *self, unsigned off) { return *(int32_t *)((char *)self + off); }
+static inline uint32_t &u32(void *self, unsigned off) { return *(uint32_t *)((char *)self + off); }
+static inline uint8_t &u8(void *self, unsigned off) { return *(uint8_t *)((char *)self + off); }
+
 struct SolarSystem {
     int field_0x0;                      // +0x0
     int field_0x4;                      // +0x4

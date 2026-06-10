@@ -2,6 +2,22 @@
 #define GOF2_SENTRYGUN_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 — SentryGun. Top-level, no namespace. Subclass of ObjectGun.
+// Field offsets recovered from per-method target disassembly.
+//
+// Known fields (relative to SentryGun*):
+//   +0x00  vtable
+//   +0x08  Gun*  gun     (the ObjectGun-owned weapon, set by base ctor)
+//   +0x0c  Level* level
+//   +0xb0  int   cooldown  (init from gun->0x58 * 3 - 0x279)
+
+
+struct SentryGun;
+struct Gun;
+struct Level;
+
+// Field accessor via byte offset.
+
 struct SentryGun {
     Gun* field_0x8;                     // +0x8
     void* field_0xc;                    // +0xc

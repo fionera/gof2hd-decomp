@@ -2,6 +2,27 @@
 #define GOF2_PLAYERWORMHOLE_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 -- PlayerWormHole (Android libgof2hdaa.so, armv7 Thumb).
+// Target names are top-level PlayerWormHole::... (no AbyssEngine namespace).
+// Field offsets come from the per-method work-items and are accessed by byte casts.
+
+
+struct PlayerWormHole;
+struct AEGeometry;
+
+namespace AbyssEngine {
+struct String;
+
+namespace AEMath {
+
+
+
+}
+}
+
+using Vector = AbyssEngine::AEMath::Vector;
+using Matrix = AbyssEngine::AEMath::Matrix;
+
 struct PlayerWormHole {
     char* field_0x0;                    // +0x0
     void* field_0x4;                    // +0x4

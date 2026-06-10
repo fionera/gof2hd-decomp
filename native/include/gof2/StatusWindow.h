@@ -2,6 +2,39 @@
 #define GOF2_STATUSWINDOW_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 -- StatusWindow (Android libgof2hdaa.so, armv7 Thumb).
+// Qualified target name is top-level: "StatusWindow::..." (class not in a namespace;
+// argument types like AbyssEngine::String / Array<...> are namespaced/templated).
+// Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
+//
+// Partial layout (from dtor/scroll/touch decompiles):
+//   +0x04  Array<TouchButton*>*
+//   +0x08  Array<TouchButton*>*
+//   +0x0c  Array<ImagePart*>*
+//   +0x10  Array<AbyssEngine::String*>*
+//   +0x38  int   scroll range
+//   +0x58  int   content height-ish (a)
+//   +0x5c  int   content height-ish (b)
+
+
+void *operator new(__SIZE_TYPE__ size);
+void *operator new[](__SIZE_TYPE__ size);
+void operator delete(void *ptr) noexcept;
+
+struct StatusWindow;
+
+namespace AbyssEngine {
+
+}
+typedef AbyssEngine::String String;
+
+// Field accessors via byte offset.
+
+static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
+static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
+static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)self + off); }
+static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
+
 struct StatusWindow {
     Arr* field_0x4;                     // +0x4
     void* field_0x8;                    // +0x8

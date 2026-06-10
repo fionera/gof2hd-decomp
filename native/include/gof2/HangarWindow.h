@@ -2,6 +2,29 @@
 #define GOF2_HANGARWINDOW_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 - HangarWindow class. Android libgof2hdaa.so, armv7 Thumb.
+// Top-level class (no AbyssEngine namespace). Field offsets recovered per-method from the
+// target disassembly; we do NOT model a full layout - access fields via byte-offset casts.
+
+
+// Opaque referenced types.
+struct HangarWindow;
+struct HangarList;
+struct ListItem;
+struct Item;
+struct BluePrint;
+struct Station;
+
+
+
+// AbyssEngine::AEMath::Vector - 3 floats.
+namespace AbyssEngine { namespace AEMath {
+
+} }
+typedef AbyssEngine::AEMath::Vector Vector;
+
+// Field accessors via byte offset.
+
 struct HangarWindow {
     uint8_t field_0x0;                  // +0x0
     void* field_0x4;                    // +0x4

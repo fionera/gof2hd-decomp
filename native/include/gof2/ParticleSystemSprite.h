@@ -2,6 +2,31 @@
 #define GOF2_PARTICLESYSTEMSPRITE_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 -- ParticleSystemSprite (Android libgof2hdaa.so, armv7 Thumb).
+// Qualified target names are top-level: "ParticleSystemSprite::..." (the class is NOT in a
+// namespace; only argument types like AbyssEngine::PaintCanvas are).
+// Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
+
+
+struct ParticleSystemSprite;
+
+namespace AbyssEngine {
+struct PaintCanvas;
+enum BlendMode { BLEND_DUMMY };
+namespace AEMath {
+
+
+}
+}
+
+struct ParticleSettings {
+    struct ParticleSet;
+};
+
+template <class T> struct Array;
+
+// Templated byte-offset field accessor: F<int>(this, 0x54) etc.
+
 struct ParticleSystemSprite {
     uint8_t field_0x4;                  // +0x4
     unsigned int field_0x8;             // +0x8

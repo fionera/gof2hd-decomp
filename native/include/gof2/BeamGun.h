@@ -2,6 +2,34 @@
 #define GOF2_BEAMGUN_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+// Galaxy on Fire 2 -- BeamGun (Android libgof2hdaa.so, armv7 Thumb).
+// Target names are top-level "BeamGun::..." symbols. Field offsets are recovered
+// per method and accessed directly instead of modeling a full class layout.
+
+
+struct BeamGun;
+struct Gun;
+struct Level;
+struct Player;
+struct PlayerEgo;
+struct AEGeometry;
+struct PaintCanvas;
+struct Transform;
+struct Array;
+
+namespace AbyssEngine {
+namespace AEMath {
+
+
+
+
+
+} // namespace AEMath
+} // namespace AbyssEngine
+
+typedef AbyssEngine::AEMath::Vector Vector;
+typedef AbyssEngine::AEMath::Matrix Matrix;
+
 struct BeamGun {
     void* field_0x0;                    // +0x0
     int32_t field_0x4;                  // +0x4

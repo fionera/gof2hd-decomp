@@ -2,6 +2,35 @@
 #define GOF2_WANTEDWINDOW_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
+struct WantedWindow;
+struct Wanted;
+struct Station;
+struct Mission;
+struct StarMap;
+struct ScrollTouchWindow;
+struct TouchButton;
+struct Layout;
+struct PaintCanvas;
+struct ImageFactory;
+
+
+
+
+
+
+static inline int *IArrayData(void *arr) {
+    return F<int *>(arr, 4);
+}
+
+static inline void *ArrayItem(void *arr, int idx) {
+    return *(void **)((char *)F<void *>(arr, 4) + idx * 4);
+}
+
+struct Blk16 { int a, b, c, d; };
+
+extern "C" void *operator_new(unsigned size);
+extern "C" void operator_delete(void *p);
+
 struct WantedWindow {
     uint32_t field_0x0;                 // +0x0
     void* field_0x4;                    // +0x4
