@@ -39,6 +39,7 @@ static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)se
 
 struct BoundingVolume {
     uint64_t field_0x0;                 // +0x0
+    void** field_0x4;                   // +0x4
     uint32_t field_0x8;                 // +0x8
 };
 #endif

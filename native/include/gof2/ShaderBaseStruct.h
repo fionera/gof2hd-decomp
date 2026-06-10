@@ -92,7 +92,7 @@ static inline uint64_t &shader_paths(ShaderBaseStruct *self)
 } // namespace AbyssEngine
 
 struct ShaderBaseStruct {
-    volatile uint32_t field_0x4;        // +0x4
+    int field_0x4;                      // +0x4
     volatile uint16_t field_0x8;        // +0x8
 };
 #endif

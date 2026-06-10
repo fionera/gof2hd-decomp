@@ -54,7 +54,7 @@ struct Gun {
     float field_0x80;                   // +0x80
     float field_0x84;                   // +0x84
     uint8_t field_0x88;                 // +0x88
-    uint8_t field_0x89;                 // +0x89
+    char field_0x89;                    // +0x89
     int32_t field_0x8c;                 // +0x8c
     int field_0x90;                     // +0x90
     int field_0x94;                     // +0x94
@@ -67,7 +67,7 @@ struct Gun {
     uint8_t field_0xa8;                 // +0xa8
     uint8_t field_0xa9;                 // +0xa9
     void* field_0xac;                   // +0xac
-    int field_0xb0;                     // +0xb0
+    float field_0xb0;                   // +0xb0
     int field_0xb4;                     // +0xb4
     Sparks* field_0xb8;                 // +0xb8
     Player* field_0xbc;                 // +0xbc

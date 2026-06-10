@@ -1,6 +1,11 @@
 {
 "AEGeometry": {
 "0x8": "uint16_t",
+"0xc": "int32_t",
+"0x14": "uint32_t",
+"0x18": "int",
+"0x1c": "unsigned",
+"0x20": "unsigned",
 "0x30": "V4",
 "0x48": "uint16_t",
 "0x54": "V4",
@@ -99,7 +104,7 @@
 "0x8": "uint32_t",
 "0xc": "uint32_t",
 "0x10": "char*",
-"0x14": "bool",
+"0x14": "char*",
 "0x18": "void*",
 "0x1c": "QuitCallback*",
 "0x20": "LoadingCallback*",
@@ -137,16 +142,18 @@
 },
 "Engine": {
 "0x0": "uint32_t",
-"0x4": "uint32_t",
+"0x4": "Player*",
 "0x8": "uint8_t",
 "0xc": "uint32_t",
 "0x10": "uint32_t",
 "0x20": "uint8_t",
 "0x24": "void*",
-"0x28": "uint32_t",
+"0x25": "uint8_t",
+"0x28": "int",
 "0x2c": "bool",
 "0x30": "char**",
 "0x34": "uint32_t",
+"0x40": "uint8_t",
 "0x58": "uint64_t",
 "0x68": "uint64_t",
 "0x70": "uint32_t",
@@ -324,7 +331,7 @@
 "0x80": "float",
 "0x84": "float",
 "0x88": "uint8_t",
-"0x89": "uint8_t",
+"0x89": "char",
 "0x8c": "int32_t",
 "0x90": "int",
 "0x94": "int",
@@ -337,7 +344,7 @@
 "0xa8": "uint8_t",
 "0xa9": "uint8_t",
 "0xac": "void*",
-"0xb0": "int",
+"0xb0": "float",
 "0xb4": "int",
 "0xb8": "Sparks*",
 "0xbc": "Player*",
@@ -377,10 +384,7 @@
 },
 "Player": {
 "0x0": "void*",
-"0x4": "AEGeometry*",
-"0x8": "AEGeometry*",
-"0xc": "Level*",
-"0x10": "LevelScript*",
+"0x8": "void*",
 "0x14": "void*",
 "0x44": "char",
 "0x5c": "unsigned char",
@@ -401,6 +405,18 @@
 "0xf0": "void*",
 "0xf4": "Vector*",
 "0x110": "float"
+},
+"PlayerEgo": {
+"0x0": "void*",
+"0x4": "AEGeometry*",
+"0x8": "AEGeometry*",
+"0xc": "Level*",
+"0x10": "LevelScript*",
+"0x25": "uint8_t",
+"0x15c": "void*",
+"0x388": "unsigned short",
+"0x38c": "unsigned short",
+"0x390": "unsigned short"
 },
 "BloomShader": {
 "0x4": "unsigned int",
@@ -495,8 +511,19 @@
 "0x24": "float",
 "0x28": "float"
 },
+"Vector": {
+"0x0": "uint32_t",
+"0x2": "uint16_t",
+"0x4": "void*",
+"0x8": "void*",
+"0xc": "void*",
+"0x10": "void*",
+"0x28": "uint16_t",
+"0x2c": "int16_t*"
+},
 "BoundingVolume": {
 "0x0": "uint64_t",
+"0x4": "void**",
 "0x8": "uint32_t"
 },
 "BumpRimCubeShader": {
@@ -716,6 +743,10 @@
 "0x78": "AEMath::Matrix",
 "0xb4": "AEMath::Matrix"
 },
+"ShaderBaseStruct": {
+"0x4": "int",
+"0x8": "volatile uint16_t"
+},
 "FBOContainer": {
 "0x0": "GLuint",
 "0x4": "GLuint",
@@ -736,13 +767,17 @@
 "0xc": "void*"
 },
 "Status": {
+"0x8": "AEGeometry*",
+"0xc": "AEGeometry*",
 "0x18": "char*",
+"0x25": "char",
 "0x28": "int32_t",
 "0x30": "int32_t",
 "0x3c": "int32_t",
-"0x40": "int32_t",
+"0x40": "char",
 "0x44": "int32_t",
 "0x48": "int32_t",
+"0x50": "void*",
 "0x5c": "int",
 "0x60": "int",
 "0x64": "int",
@@ -754,13 +789,21 @@
 "0x108": "unsigned char",
 "0x114": "int",
 "0x14c": "Station*",
-"0x17c": "uint8_t"
+"0x17c": "uint8_t",
+"0x184": "int",
+"0x188": "int",
+"0x18c": "int"
 },
 "GenericShader": {
 "0xc": "String"
 },
 "GenericShader1": {
 "0xc": "String"
+},
+"String": {
+"0x0": "void*",
+"0x4": "void*",
+"0x8": "int"
 },
 "GlowPPShader": {
 "0x3c": "FBOContainer*",
@@ -776,19 +819,24 @@
 "0x4": "uint32_t",
 "0x8": "void*"
 },
-"Item": {
-"0x0": "int",
-"0x4": "uint8_t",
-"0x8": "uint8_t*",
-"0xc": "void*",
-"0x10": "void*",
+"ListItem": {
+"0x4": "Blk16",
+"0x8": "BluePrint*",
+"0xc": "Ship*",
+"0x10": "Item*",
 "0x14": "int",
-"0x18": "uint8_t",
-"0x24": "unsigned char",
+"0x18": "int",
+"0x1c": "void*",
+"0x20": "void*",
+"0x24": "uint8_t",
 "0x28": "int",
 "0x2c": "int",
 "0x30": "int",
-"0x3c": "int"
+"0x34": "int",
+"0x38": "uint8_t",
+"0x3c": "int",
+"0x40": "int",
+"0x44": "uint8_t"
 },
 "HangarWindow": {
 "0x0": "uint8_t",
@@ -887,6 +935,16 @@
 "0x114": "int",
 "0x14c": "int"
 },
+"Item": {
+"0x0": "int",
+"0x4": "uint8_t",
+"0x8": "uint8_t*",
+"0xc": "void*",
+"0x10": "void*",
+"0x14": "int",
+"0x18": "uint8_t",
+"0x3c": "int"
+},
 "IApplicationModule": {
 "0x4": "ApplicationManager*",
 "0x8": "ApplicationManager*"
@@ -908,11 +966,13 @@
 "0xc": "void*",
 "0x25": "uint8_t",
 "0x28": "int",
-"0x42": "uint16_t",
+"0x3f": "char",
+"0x42": "char",
 "0x50": "void*",
 "0x58": "float",
 "0x5c": "float",
 "0x60": "float",
+"0x68": "uint8_t",
 "0x69": "uint8_t",
 "0x6a": "uint8_t",
 "0x6c": "Route*",
@@ -981,24 +1041,87 @@
 "0x189": "unsigned char",
 "0x29c": "short"
 },
-"ListItem": {
-"0x4": "Agent*",
-"0x8": "BluePrint*",
-"0xc": "Ship*",
-"0x10": "Item*",
-"0x14": "int",
-"0x18": "int",
-"0x1c": "void*",
-"0x20": "void*",
-"0x24": "uint8_t",
+"PlayerTurret": {
+"0x4": "int",
 "0x28": "int",
-"0x2c": "int",
-"0x30": "int",
-"0x34": "int",
-"0x38": "uint8_t",
-"0x3c": "int",
-"0x40": "int",
-"0x44": "uint8_t"
+"0x3e": "char",
+"0x74": "char"
+},
+"Waypoint": {
+"0x0": "void*",
+"0x4": "Player*",
+"0x4c": "uint8_t",
+"0x58": "float",
+"0x5c": "float",
+"0x60": "float",
+"0x72": "uint8_t",
+"0x124": "int32_t",
+"0x128": "int32_t",
+"0x12c": "int32_t",
+"0x130": "uint16_t",
+"0x134": "Route*"
+},
+"PendingProduct": {
+"0x0": "String",
+"0x14": "int"
+},
+"PlayerFixedObject": {
+"0x4": "void*",
+"0x8": "void*",
+"0x24": "unsigned char",
+"0x28": "int",
+"0x2c": "float",
+"0x30": "float",
+"0x34": "float",
+"0x40": "uint8_t",
+"0x41": "uint8_t",
+"0x4c": "unsigned char",
+"0x50": "void*",
+"0x54": "void*",
+"0x58": "float",
+"0x5c": "float",
+"0x60": "float",
+"0x78": "void*",
+"0x88": "int",
+"0x8c": "uint8_t",
+"0x90": "float",
+"0x94": "float",
+"0x98": "float",
+"0xac": "int",
+"0xd8": "int",
+"0xf8": "int32_t",
+"0x101": "unsigned char",
+"0x124": "void*",
+"0x128": "void*",
+"0x12c": "void*",
+"0x130": "int32_t",
+"0x134": "unsigned char",
+"0x138": "uint64_t",
+"0x140": "uint64_t",
+"0x144": "unsigned int",
+"0x148": "uint64_t",
+"0x14c": "unsigned int",
+"0x150": "uint64_t",
+"0x154": "float",
+"0x158": "uint64_t",
+"0x160": "uint64_t",
+"0x168": "int32_t",
+"0x16c": "int",
+"0x170": "uint8_t",
+"0x174": "int32_t",
+"0x178": "int32_t",
+"0x17c": "int32_t",
+"0x180": "int32_t",
+"0x184": "uint16_t",
+"0x18c": "void*",
+"0x190": "int",
+"0x194": "int",
+"0x198": "int",
+"0x19c": "float",
+"0x1a0": "int",
+"0x1a4": "int",
+"0x1a8": "int",
+"0x1b8": "uint8_t"
 },
 "MGame": {
 "0x0": "int",
@@ -1145,9 +1268,54 @@
 "0x38": "float"
 },
 "MenuTouchWindow": {
+"0x4": "unsigned*",
 "0x98": "unsigned short",
 "0x108": "unsigned short",
 "0x17a": "unsigned short"
+},
+"Transform": {
+"0x0": "uint8_t",
+"0x2": "uint16_t",
+"0x4": "uint32_t",
+"0x8": "uint32_t",
+"0xc": "uint32_t",
+"0x10": "uint32_t",
+"0x14": "uint32_t",
+"0x18": "uint32_t",
+"0x28": "uint16_t",
+"0x2a": "uint16_t",
+"0x2c": "uint32_t",
+"0x30": "uint32_t",
+"0x34": "Transform*",
+"0x3c": "uint",
+"0x40": "char**",
+"0x4c": "uint",
+"0x50": "Transform**",
+"0x5c": "uint8_t",
+"0x60": "uint32_t",
+"0x64": "uint32_t",
+"0x68": "uint32_t",
+"0x6c": "uint32_t",
+"0x70": "uint32_t",
+"0x74": "uint32_t",
+"0x78": "uint32_t",
+"0x80": "uint32_t",
+"0x84": "unsigned char",
+"0x85": "uint8_t",
+"0xd4": "AEMath::Vector",
+"0xe0": "float",
+"0xe4": "float",
+"0xe8": "int",
+"0xec": "bool",
+"0xed": "bool",
+"0xf0": "float",
+"0xf8": "longlong",
+"0x100": "longlong",
+"0x108": "longlong",
+"0x110": "longlong",
+"0x11c": "int",
+"0x120": "int",
+"0x17c": "bool"
 },
 "Mission": {
 "0xc": "int",
@@ -1285,9 +1453,6 @@
 "0x6c": "void*",
 "0x70": "float"
 },
-"PendingProduct": {
-"0x0": "String"
-},
 "PlayerAsteroid": {
 "0x0": "void*",
 "0x4": "Player*",
@@ -1321,26 +1486,6 @@
 "0x168": "int",
 "0x16c": "int"
 },
-"Transform": {
-"0x3c": "uint",
-"0x40": "char**",
-"0x4c": "uint",
-"0x50": "Transform**",
-"0xd4": "AEMath::Vector",
-"0xe0": "float",
-"0xe4": "float",
-"0xe8": "int",
-"0xec": "bool",
-"0xed": "bool",
-"0xf0": "float",
-"0xf8": "longlong",
-"0x100": "longlong",
-"0x108": "longlong",
-"0x110": "longlong",
-"0x11c": "int",
-"0x120": "int",
-"0x17c": "bool"
-},
 "PlayerCreature": {
 "0x0": "char*",
 "0x4": "Player*",
@@ -1362,12 +1507,6 @@
 "0x138": "int",
 "0x13c": "int",
 "0x140": "int"
-},
-"PlayerEgo": {
-"0x15c": "void*",
-"0x388": "unsigned short",
-"0x38c": "unsigned short",
-"0x390": "unsigned short"
 },
 "PlayerFighter": {
 "0x4": "int32_t",
@@ -1473,63 +1612,6 @@
 "0x2e0": "int32_t",
 "0x2e4": "uint8_t",
 "0x2e8": "int32_t"
-},
-"PlayerFixedObject": {
-"0x4": "void*",
-"0x8": "void*",
-"0x24": "unsigned char",
-"0x28": "int",
-"0x2c": "float",
-"0x30": "float",
-"0x34": "float",
-"0x41": "uint8_t",
-"0x4c": "unsigned char",
-"0x50": "void*",
-"0x54": "void*",
-"0x58": "float",
-"0x5c": "float",
-"0x60": "float",
-"0x78": "void*",
-"0x88": "int",
-"0x8c": "uint8_t",
-"0x90": "float",
-"0x94": "float",
-"0x98": "float",
-"0xac": "int",
-"0xd8": "int",
-"0xf8": "int32_t",
-"0x101": "unsigned char",
-"0x124": "void*",
-"0x128": "void*",
-"0x12c": "void*",
-"0x130": "int32_t",
-"0x134": "unsigned char",
-"0x138": "uint64_t",
-"0x140": "uint64_t",
-"0x144": "unsigned int",
-"0x148": "uint64_t",
-"0x14c": "unsigned int",
-"0x150": "uint64_t",
-"0x154": "float",
-"0x158": "uint64_t",
-"0x160": "uint64_t",
-"0x168": "int32_t",
-"0x16c": "int",
-"0x170": "uint8_t",
-"0x174": "int32_t",
-"0x178": "int32_t",
-"0x17c": "int32_t",
-"0x180": "int32_t",
-"0x184": "uint16_t",
-"0x18c": "void*",
-"0x190": "int",
-"0x194": "int",
-"0x198": "int",
-"0x19c": "float",
-"0x1a0": "int",
-"0x1a4": "int",
-"0x1a8": "int",
-"0x1b8": "uint8_t"
 },
 "PlayerGasCloud": {
 "0x4": "void*",
@@ -1788,10 +1870,6 @@
 "0xc": "void*",
 "0xb0": "int"
 },
-"ShaderBaseStruct": {
-"0x4": "volatile uint32_t",
-"0x8": "volatile uint16_t"
-},
 "SimpleMeshMerger": {
 "0x6": "uint8_t",
 "0xc": "void*"
@@ -1837,6 +1915,11 @@
 "SpecCubeMapping": {
 "0xc": "String"
 },
+"SpriteGun": {
+"0x0": "char*",
+"0x4": "int",
+"0x8": "void*"
+},
 "Standing": {
 "0x0": "int*",
 "0x4": "int"
@@ -1853,11 +1936,6 @@
 "0xc": "void*",
 "0x10": "void*",
 "0x54": "unsigned char"
-},
-"String": {
-"0x0": "void*",
-"0x4": "void*",
-"0x8": "int"
 },
 "TargetFollowCamera": {
 "0x0": "unsigned",
@@ -1973,19 +2051,5 @@
 "0xa8": "int",
 "0xac": "int",
 "0xb0": "void*"
-},
-"Waypoint": {
-"0x0": "void*",
-"0x4": "Player*",
-"0x4c": "uint8_t",
-"0x58": "float",
-"0x5c": "float",
-"0x60": "float",
-"0x72": "uint8_t",
-"0x124": "int32_t",
-"0x128": "int32_t",
-"0x12c": "int32_t",
-"0x130": "uint16_t",
-"0x134": "Route*"
 }
 }

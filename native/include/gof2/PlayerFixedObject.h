@@ -31,6 +31,7 @@ struct PlayerFixedObject {
     float field_0x2c;                   // +0x2c
     float field_0x30;                   // +0x30
     float field_0x34;                   // +0x34
+    uint8_t field_0x40;                 // +0x40
     uint8_t field_0x41;                 // +0x41
     unsigned char field_0x4c;           // +0x4c
     void* field_0x50;                   // +0x50

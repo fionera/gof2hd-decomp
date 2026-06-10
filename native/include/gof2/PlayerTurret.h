@@ -53,5 +53,10 @@ void operator delete(void *ptr) noexcept;
 
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
-struct PlayerTurret { void* _opaque; };  // no offset accesses observed
+struct PlayerTurret {
+    int field_0x4;                      // +0x4
+    int field_0x28;                     // +0x28
+    char field_0x3e;                    // +0x3e
+    char field_0x74;                    // +0x74
+};
 #endif

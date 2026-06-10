@@ -48,5 +48,6 @@ inline String &String::operator=(const String &other) noexcept {
 
 struct PendingProduct {
     String field_0x0;                   // +0x0
+    int field_0x14;                     // +0x14
 };
 #endif

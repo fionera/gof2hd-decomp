@@ -50,7 +50,7 @@ void *operator new(__SIZE_TYPE__);
 // Field accessor via byte offset.
 
 struct ListItem {
-    Agent* field_0x4;                   // +0x4
+    Blk16 field_0x4;                    // +0x4
     BluePrint* field_0x8;               // +0x8
     Ship* field_0xc;                    // +0xc
     Item* field_0x10;                   // +0x10

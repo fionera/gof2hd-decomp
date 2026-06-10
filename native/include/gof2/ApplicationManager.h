@@ -25,7 +25,7 @@ struct ApplicationManager {
     uint32_t field_0x8;                 // +0x8
     uint32_t field_0xc;                 // +0xc
     char* field_0x10;                   // +0x10
-    bool field_0x14;                    // +0x14
+    char* field_0x14;                   // +0x14
     void* field_0x18;                   // +0x18
     QuitCallback* field_0x1c;           // +0x1c
     LoadingCallback* field_0x20;        // +0x20

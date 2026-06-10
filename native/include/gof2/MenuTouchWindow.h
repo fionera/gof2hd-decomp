@@ -21,6 +21,7 @@ static inline float &f32(void *self, uint32_t off) { return *(float *)((char *)s
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 struct MenuTouchWindow {
+    unsigned* field_0x4;                // +0x4
     unsigned short field_0x98;          // +0x98
     unsigned short field_0x108;         // +0x108
     unsigned short field_0x17a;         // +0x17a

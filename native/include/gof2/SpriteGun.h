@@ -24,5 +24,9 @@ struct Gun;
 
 // Field accessor via byte offset.
 
-struct SpriteGun { void* _opaque; };  // no offset accesses observed
+struct SpriteGun {
+    char* field_0x0;                    // +0x0
+    int field_0x4;                      // +0x4
+    void* field_0x8;                    // +0x8
+};
 #endif

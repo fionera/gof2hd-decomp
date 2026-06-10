@@ -17,5 +17,14 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-struct Vector { void* _opaque; };  // no offset accesses observed
+struct Vector {
+    uint32_t field_0x0;                 // +0x0
+    uint16_t field_0x2;                 // +0x2
+    void* field_0x4;                    // +0x4
+    void* field_0x8;                    // +0x8
+    void* field_0xc;                    // +0xc
+    void* field_0x10;                   // +0x10
+    uint16_t field_0x28;                // +0x28
+    int16_t* field_0x2c;                // +0x2c
+};
 #endif

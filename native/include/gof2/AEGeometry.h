@@ -54,6 +54,11 @@ static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)se
 
 struct AEGeometry {
     uint16_t field_0x8;                 // +0x8
+    int32_t field_0xc;                  // +0xc
+    uint32_t field_0x14;                // +0x14
+    int field_0x18;                     // +0x18
+    unsigned field_0x1c;                // +0x1c
+    unsigned field_0x20;                // +0x20
     V4 field_0x30;                      // +0x30
     uint16_t field_0x48;                // +0x48
     V4 field_0x54;                      // +0x54

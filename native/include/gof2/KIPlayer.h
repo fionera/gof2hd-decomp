@@ -29,11 +29,13 @@ struct KIPlayer {
     void* field_0xc;                    // +0xc
     uint8_t field_0x25;                 // +0x25
     int field_0x28;                     // +0x28
-    uint16_t field_0x42;                // +0x42
+    char field_0x3f;                    // +0x3f
+    char field_0x42;                    // +0x42
     void* field_0x50;                   // +0x50
     float field_0x58;                   // +0x58
     float field_0x5c;                   // +0x5c
     float field_0x60;                   // +0x60
+    uint8_t field_0x68;                 // +0x68
     uint8_t field_0x69;                 // +0x69
     uint8_t field_0x6a;                 // +0x6a
     Route* field_0x6c;                  // +0x6c

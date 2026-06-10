@@ -73,10 +73,34 @@ extern "C" int *g_transform_insert_counter;
 extern "C" bool g_transform_matrix_flag;
 
 struct Transform {
+    uint8_t field_0x0;                  // +0x0
+    uint16_t field_0x2;                 // +0x2
+    uint32_t field_0x4;                 // +0x4
+    uint32_t field_0x8;                 // +0x8
+    uint32_t field_0xc;                 // +0xc
+    uint32_t field_0x10;                // +0x10
+    uint32_t field_0x14;                // +0x14
+    uint32_t field_0x18;                // +0x18
+    uint16_t field_0x28;                // +0x28
+    uint16_t field_0x2a;                // +0x2a
+    uint32_t field_0x2c;                // +0x2c
+    uint32_t field_0x30;                // +0x30
+    Transform* field_0x34;              // +0x34
     uint field_0x3c;                    // +0x3c
     char** field_0x40;                  // +0x40
     uint field_0x4c;                    // +0x4c
     Transform** field_0x50;             // +0x50
+    uint8_t field_0x5c;                 // +0x5c
+    uint32_t field_0x60;                // +0x60
+    uint32_t field_0x64;                // +0x64
+    uint32_t field_0x68;                // +0x68
+    uint32_t field_0x6c;                // +0x6c
+    uint32_t field_0x70;                // +0x70
+    uint32_t field_0x74;                // +0x74
+    uint32_t field_0x78;                // +0x78
+    uint32_t field_0x80;                // +0x80
+    unsigned char field_0x84;           // +0x84
+    uint8_t field_0x85;                 // +0x85
     AEMath::Vector field_0xd4;          // +0xd4
     float field_0xe0;                   // +0xe0
     float field_0xe4;                   // +0xe4

@@ -30,6 +30,12 @@ static inline short&          S (void* p, int off) { return *(short*)((char*)p +
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 
 struct PlayerEgo {
+    void* field_0x0;                    // +0x0
+    AEGeometry* field_0x4;              // +0x4
+    AEGeometry* field_0x8;              // +0x8
+    Level* field_0xc;                   // +0xc
+    LevelScript* field_0x10;            // +0x10
+    uint8_t field_0x25;                 // +0x25
     void* field_0x15c;                  // +0x15c
     unsigned short field_0x388;         // +0x388
     unsigned short field_0x38c;         // +0x38c

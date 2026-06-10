@@ -37,17 +37,21 @@ for cls in CLASSES:
     cp=f"merged/src/{cls}.cpp"
     if not os.path.exists(cp): continue
     txt=open(cp,errors='ignore').read()
+    # per-file var->class map IDENTICAL to rewrite_body.py so the header has every referenced field
+    v2c={'self':cls,'this':cls}
+    for m in re.finditer(r'\b([A-Z]\w+)\s*[\*&]\s*([A-Za-z_]\w*)\b', txt):
+        if m.group(1) in CLASSES: v2c.setdefault(m.group(2), m.group(1))
+    def cls_of(v): return v2c.get(v) or name2class.get(v.lower())
+    def off_int(o): return int(o,16) if o.startswith('0x') else int(o)
     for m in RAW.finditer(txt):
         # cast is `(FIELDTYPE *)` — strip exactly one trailing '*' (the cast pointer) to get the field type
         raw=norm_type(m.group(1))
         typ=norm_type(raw[:-1]) if raw.endswith('*') else raw
-        var,off=m.group(2),(m.group(3) or '0')
-        tc=base_class(var,cls)
-        if tc: votes[(tc,int(off,16) if off.startswith('0x') else int(off))][typ]+=1
+        var,off=m.group(2),(m.group(3) or '0'); tc=cls_of(var)
+        if tc: votes[(tc,off_int(off))][typ]+=1
     for m in HLP.finditer(txt):
-        typ,var,off=norm_type(m.group(2)),m.group(3),m.group(4)
-        tc=base_class(var,cls)
-        if tc: votes[(tc,int(off,16) if off.startswith('0x') else int(off))][typ]+=1
+        typ,var,off=norm_type(m.group(2)),m.group(3),m.group(4); tc=cls_of(var)
+        if tc: votes[(tc,off_int(off))][typ]+=1
 
 fieldmap=collections.defaultdict(dict)
 for (cls,off),ctr in votes.items():
