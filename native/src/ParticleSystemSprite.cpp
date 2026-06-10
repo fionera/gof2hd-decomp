@@ -1,4 +1,4 @@
-#include "ParticleSystemSprite.h"
+#include "gof2/ParticleSystemSprite.h"
 
 
 extern "C" char ParticleSystemSprite_vtable;
@@ -48,16 +48,16 @@ extern "C" void PaintCanvas_SpriteSystemSetSize(unsigned int handle, unsigned in
 
 void ParticleSystemSprite::reset()
 {
-    for (int i = 0; i < F<int>(this, 0x48); i++) {
-        PaintCanvas_SpriteSystemSetPosition(F<unsigned int>(this, 0x8), F<unsigned int>(this, 0x54),
-                                            (unsigned short)(F<unsigned int>(this, 0x58) + i),
+    for (int i = 0; i < this->field_0x48; i++) {
+        PaintCanvas_SpriteSystemSetPosition(this->field_0x8, this->field_0x54,
+                                            (unsigned short)(this->field_0x58 + i),
                                             4294967296.0f, 4294967296.0f, 4294967296.0f);
-        PaintCanvas_SpriteSystemSetSize(F<unsigned int>(this, 0x8), F<unsigned int>(this, 0x54),
-                                        (unsigned short)(F<unsigned int>(this, 0x58) + i), 0);
-        F<unsigned int *>(this, 0x68)[i] = 0xffffffff;
+        PaintCanvas_SpriteSystemSetSize(this->field_0x8, this->field_0x54,
+                                        (unsigned short)(this->field_0x58 + i), 0);
+        this->field_0x68[i] = 0xffffffff;
     }
-    F<int>(this, 0x60) = 0;
-    F<uint8_t>(this, 0x4) = 1;
+    this->field_0x60 = 0;
+    this->field_0x4 = 1;
 }
 
 // ---- init_182c48.cpp ----
@@ -68,9 +68,9 @@ struct ParticleSystemSprite {
 int ParticleSystemSprite::init(unsigned int param_1, unsigned short param_2)
 {
     void **vt = *(void ***)this;
-    F<unsigned int>(this, 0x54) = param_1;
-    F<unsigned int>(this, 0x58) = param_2;
-    F<uint8_t>(this, 0x5c) = 1;
+    this->field_0x54 = param_1;
+    this->field_0x58 = param_2;
+    this->field_0x5c = 1;
     typedef int (*pfn)(void *);
     return ((pfn)vt[2])(this);
 }
@@ -83,14 +83,14 @@ struct ParticleSystemSprite {
 
 void ParticleSystemSprite::release()
 {
-    if (F<void *>(this, 0x64) != 0)
-        operator_delete__(F<void *>(this, 0x64));
-    F<void *>(this, 0x64) = 0;
-    if (F<void *>(this, 0x68) != 0)
-        operator_delete__(F<void *>(this, 0x68));
-    F<void *>(this, 0x68) = 0;
-    operator_delete__(F<void *>(this, 0x6c));
-    F<void *>(this, 0x6c) = 0;
+    if (this->field_0x64 != 0)
+        operator_delete__(this->field_0x64);
+    this->field_0x64 = 0;
+    if (this->field_0x68 != 0)
+        operator_delete__(this->field_0x68);
+    this->field_0x68 = 0;
+    operator_delete__(this->field_0x6c);
+    this->field_0x6c = 0;
 }
 
 // ---- render_1833e0.cpp ----
@@ -157,7 +157,7 @@ extern "C" void *ParticleSystemSprite_ctor(
     _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
         self, canvas, matrix, sets, b4, b5);
 
-    unsigned int count = F<unsigned int>(self, 0x48);
+    unsigned int count = self->field_0x48;
 
     // Install the derived vtable (base + 8 -> first virtual slot).
     *(void **)self = (void *)(_ZTV20ParticleSystemSprite + 8);
@@ -165,9 +165,9 @@ extern "C" void *ParticleSystemSprite_ctor(
     void *arr = operator new[](count * 0xc);
     if (count != 0)
         memset(arr, 0, (unsigned long)count * 0xc);
-    F<void *>(self, 0x64) = arr;
+    self->field_0x64 = arr;
 
-    F<float>(self, 0x70) = _ZN11AbyssEngine6AEMath3PowEff(0.0f, 0.0f);
+    self->field_0x70 = _ZN11AbyssEngine6AEMath3PowEff(0.0f, 0.0f);
     return self;
 }
 
@@ -192,14 +192,14 @@ __attribute__((visibility("hidden"))) extern float g_uvRoundBias;
 void ParticleSystemSprite::updateSingle(int index, float dt)
 {
     // Active flag: sign bit of (flagByte << 24).
-    if ((int)((unsigned int)F<unsigned char>(this, 0x34) << 0x18) < 0)
+    if ((int)((unsigned int)this->field_0x34 << 0x18) < 0)
         return;
 
-    unsigned int handle = F<unsigned int>(this, 0x08);
-    unsigned short id = (unsigned short)F<unsigned int>(this, 0x54);
+    unsigned int handle = this->field_0x8;
+    unsigned short id = (unsigned short)this->field_0x54;
 
-    int *ages = (int *)F<void *>(this, 0x68);
-    char *setIdx = (char *)F<void *>(this, 0x6c);
+    int *ages = (int *)this->field_0x68;
+    char *setIdx = (char *)this->field_0x6c;
     char *set = g_particleSetBase + (int)setIdx[index] * 0xa0;
 
     // Age the particle.
@@ -216,7 +216,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
 
     // Grow size.
     VectorSignedToFloat(*(int *)(set + 0x44), 0);
-    PaintCanvas_SpriteSystemAddSize(handle, id, (short)F<int>(this, 0x58) + (short)index);
+    PaintCanvas_SpriteSystemAddSize(handle, id, (short)this->field_0x58 + (short)index);
 
     // Color.
     float cr, cg, cb;
@@ -249,7 +249,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
 
             float *out = uv;
             // UV rotation flag: sign bit of (flagByte2 << 30).
-            if ((int)((unsigned int)F<unsigned char>(this, 0x37) << 0x1e) < 0)
+            if ((int)((unsigned int)this->field_0x37 << 0x1e) < 0)
                 out = IParticleSystem_rotateUVs(this, uv, index);
 
             PaintCanvas_SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
@@ -281,7 +281,7 @@ void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float par
     c2 = c2 * (1.0f / 255.0f);
     c3 = c3 * (1.0f / 255.0f);
 
-    if (F<char>(this, 0x45) == 0) {
+    if (this->field_0x45 == 0) {
         c0 = c0 * param_3;
     } else {
         c1 = c1 * param_3;
@@ -289,8 +289,8 @@ void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float par
         c3 = c3 * param_3;
     }
 
-    PaintCanvas_SpriteSystemSetRGBA(F<unsigned int>(this, 0x8), F<unsigned int>(this, 0x54),
-                                    (unsigned short)(F<unsigned int>(this, 0x58) + param_1),
+    PaintCanvas_SpriteSystemSetRGBA(this->field_0x8, this->field_0x54,
+                                    (unsigned short)(this->field_0x58 + param_1),
                                     c3, c2, c1, c0);
 }
 
@@ -340,13 +340,13 @@ void ParticleSystemSprite::setParticle(const void *pos, float p2, unsigned int c
 {
     (void)p2; (void)p5; (void)p6; (void)p7; (void)p9; (void)p10; (void)pos;
 
-    unsigned int handle = F<unsigned int>(this, 0x08);
-    unsigned short id = (unsigned short)F<unsigned int>(this, 0x54);
+    unsigned int handle = this->field_0x8;
+    unsigned short id = (unsigned short)this->field_0x54;
 
     const float *posv = (const float *)pos;
     PaintCanvas_SpriteSystemSetPosition(handle, id, posv[1], p4, posv[2]);
 
-    short size = (short)F<int>(this, 0x50) + (short)F<int>(this, 0x58);
+    short size = (short)this->field_0x50 + (short)this->field_0x58;
     PaintCanvas_SpriteSystemSetSize(handle, id, size);
 
     const float *uvv = (const float *)uv;

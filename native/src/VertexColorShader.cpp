@@ -1,4 +1,4 @@
-#include "VertexColorShader.h"
+#include "gof2/VertexColorShader.h"
 
 
 extern "C" void glDisableVertexAttribArray(unsigned int index);
@@ -87,7 +87,7 @@ VertexColorShader::VertexColorShader()
     *(void * volatile *)this = g_VertexColorShader_vtable + 8;
     *g_VertexColorShader_typeinfo_dst = *g_VertexColorShader_typeinfo_src;
     new (stack) String("VertexColorShader", false);
-    *(String *)((char *)this + 0x0c) = *(String *)stack;
+    this->field_0xc = *(String *)stack;
     ((String *)stack)->~String();
 
     uint32_t guardDelta = (uint32_t)stack[3];

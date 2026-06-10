@@ -1,4 +1,4 @@
-#include "LODManager.h"
+#include "gof2/LODManager.h"
 
 
 extern "C" void LODManager_addObject_tail(AEGeometry *g, void *objects);
@@ -35,12 +35,12 @@ struct LODManager {
 
 LODManager::LODManager()
 {
-    F<int>(this, 0x04) = 0;
-    F<int>(this, 0x08) = 0;
-    F<int>(this, 0x0c) = 0;
+    this->field_0x4 = 0;
+    this->field_0x8 = 0;
+    this->field_0xc = 0;
     void *arr = LODManager_operator_new(0xc);
     LODManager_Array_ctor(arr);
-    F<int>(this, 0x10) = 0x3e9;
+    this->field_0x10 = 0x3e9;
     this->objects = arr;
 }
 
@@ -138,10 +138,10 @@ struct LODManager {
 
 void LODManager::update(int dt)
 {
-    int sum = F<int>(this, 0x10) + dt;
-    F<int>(this, 0x10) = sum;
+    int sum = this->field_0x10 + dt;
+    this->field_0x10 = sum;
     if (sum > 1000) {
-        F<int>(this, 0x10) = 0;
+        this->field_0x10 = 0;
         return forceUpdate(0, false);
     }
 }

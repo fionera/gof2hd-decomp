@@ -1,4 +1,4 @@
-#include "BumpShaderV2.h"
+#include "gof2/BumpShaderV2.h"
 
 
 extern "C" int ShaderBaseStruct_shaderIndexIntern;

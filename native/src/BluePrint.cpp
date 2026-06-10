@@ -1,4 +1,4 @@
-#include "BluePrint.h"
+#include "gof2/BluePrint.h"
 
 
 extern "C" int BluePrint_getIngredientsValue(BluePrint *self);
@@ -34,12 +34,12 @@ extern void *const gItemDB __attribute__((visibility("hidden")));
 //   otherwise -> batch * item max price, scaled by 1.25.
 extern "C" int BluePrint_getAutoCompletionPrice(BluePrint *self)
 {
-    int idx = F<int32_t>(self, 0x20);
+    int idx = self->field_0x20;
     if (idx == 0xd2)
         return BluePrint_getIngredientsValue(self) + 0x1e8480;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
     int maxPrice = Item_getMaxPrice(data[idx]);
-    return (int)((float)(F<int32_t>(self, 0x24) * maxPrice) * 1.25f);
+    return (int)((float)(self->field_0x24 * maxPrice) * 1.25f);
 }
 
 // ---- getRemainingAmount_177208.cpp ----
@@ -58,7 +58,7 @@ extern "C" int BluePrint_getRemainingAmount(BluePrint *self, int item)
 // ---- isEmpty_17736a.cpp ----
 extern "C" bool BluePrint_isEmpty(BluePrint *self)
 {
-    return F<int32_t>(self, 0x4) == 0;
+    return self->field_0x4 == 0;
 }
 
 // ---- getStationName_177348.cpp ----
@@ -122,7 +122,7 @@ extern "C" bool BluePrint_isCompleted(BluePrint *self)
 // ---- unlock_17735e.cpp ----
 extern "C" void BluePrint_unlock(BluePrint *self)
 {
-    F<uint8_t>(self, 0x8) = 1;
+    self->field_0x8 = 1;
 }
 
 // ---- reset_177374.cpp ----
@@ -132,21 +132,21 @@ extern void *const gStatusPtr __attribute__((visibility("hidden")));
 // BluePrint::reset() -> bump production count, refill the ingredient counters, clear state.
 extern "C" void BluePrint_reset(BluePrint *self)
 {
-    F<int32_t>(self, 0xc) += 1;
+    self->field_0xc += 1;
     Status_incGoodsProduced(*(void **)gStatusPtr, 1);
     Array<int> *ql = BluePrint_getQuantityList(self);
     Array<int> *counters = F<Array<int> *>(self, 0x0);
     for (uint32_t i = 0; i < counters->length; i++)
         counters->data[i] = ql->data[i];
-    F<int32_t>(self, 0x10) = -1;
-    F<int32_t>(self, 0x28) = F<int32_t>(self, 0x24);
-    F<int32_t>(self, 0x4) = 0;
+    self->field_0x10 = -1;
+    self->field_0x28 = self->field_0x24;
+    self->field_0x4 = 0;
 }
 
 // ---- lock_177364.cpp ----
 extern "C" void BluePrint_lock(BluePrint *self)
 {
-    F<uint8_t>(self, 0x8) = 1;
+    self->field_0x8 = 1;
 }
 
 // ---- getTotalAmount_1771a8.cpp ----

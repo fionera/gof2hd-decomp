@@ -1,4 +1,9 @@
-#include "MGame.h"
+#include "gof2/MGame.h"
+#include "gof2/Engine.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/PlayerEgo.h"
+#include "gof2/PlayerFixedObject.h"
+#include "gof2/Status.h"
 
 
 extern "C" void PlayerEgo_initManeuver(PlayerEgo *p, int dir);
@@ -159,18 +164,18 @@ __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
 // moved far enough, trigger a left/right maneuver on the player; always clear the flag.
 extern "C" void MGame_maneuverTouchEnd(MGame *self, int a, void *p) {
     (void)p;
-    if (F<uint8_t>(self, 0x17c) != 0 && F<int>(self, 0x178) <= 0x258) {
+    if (self->field_0x17c != 0 && self->field_0x178 <= 0x258) {
         float f2 = (float)(*g_maneuverScale);
-        int d = a - F<int>(self, 0x180);
+        int d = a - self->field_0x180;
         if (d < 0) d = -d;
         float f3 = (float)d;
         if ((f2 / 320.0f) * 0.15f < f3) {
             int dir = 1;
-            if (F<int>(self, 0x180) < a) dir = 2;
-            PlayerEgo_initManeuver(F<PlayerEgo *>(self, 0x58), dir);
+            if (self->field_0x180 < a) dir = 2;
+            PlayerEgo_initManeuver(self->field_0x58, dir);
         }
     }
-    F<uint8_t>(self, 0x17c) = 0;
+    self->field_0x17c = 0;
 }
 
 // ---- OnResume_1807cc.cpp ----
@@ -196,16 +201,16 @@ __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
 // finger has moved far enough sideways relative to a screen-scaled threshold.
 extern "C" void MGame_maneuverTouchMove(MGame *self, int a, int b) {
     (void)a;
-    if (F<uint8_t>(self, 0x17c) != 0) {
+    if (self->field_0x17c != 0) {
         float f2 = (float)(*g_maneuverScale);
-        int d = b - F<int>(self, 0x184);
+        int d = b - self->field_0x184;
         if (d < 0) d = -d;
         float f3 = (float)d;
         // The exact constant values are irrelevant to the byte match (the diff
         // normalizes pc-relative literal loads); only the vldr/vdiv/vmul shape matters.
         if ((f2 / 320.0f) * 0.15f < f3) {
-            F<uint8_t>(self, 0x17c) = 0;
-            F<int>(self, 0x178) = 0;
+            self->field_0x17c = 0;
+            self->field_0x178 = 0;
         }
     }
 }
@@ -213,10 +218,10 @@ extern "C" void MGame_maneuverTouchMove(MGame *self, int a, int b) {
 // ---- maneuverTouchBegin_178948.cpp ----
 // Begins a maneuver gesture: mark active, record start position, reset timer.
 extern "C" void MGame_maneuverTouchBegin(MGame *self, int x, void *p) {
-    F<uint8_t>(self, 0x17c) = 1;
-    F<int>(self, 0x180) = x;
-    F<void *>(self, 0x184) = p;
-    F<int>(self, 0x178) = 0;
+    self->field_0x17c = 1;
+    self->field_0x180 = x;
+    self->field_0x184 = p;
+    self->field_0x178 = 0;
 }
 
 // ---- OnRender3D_180dcc.cpp ----
@@ -238,61 +243,61 @@ __attribute__((visibility("hidden"))) extern unsigned *g_r3dCanvas; // @0x190de4
 
 // MGame::OnRender3D(): render the active 3D view (game world, menu, or star map).
 extern "C" void MGame_OnRender3D(MGame *self) {
-    if (F<uint8_t>(self, 0x54) == 0) return;
+    if (self->field_0x54 == 0) return;
     unsigned canvas = *g_r3dCanvas;
     PaintCanvas_ClearBuffer(canvas);
 
-    uint8_t inMenuLevel = F<uint8_t>(self, 0x5d);
-    uint8_t flag15e = F<uint8_t>(self, 0x15e);
+    uint8_t inMenuLevel = self->field_0x5d;
+    uint8_t flag15e = self->field_0x15e;
 
     if (inMenuLevel == 0) {
         // World render.
-        Level_renderBG(F<int>(self, 0x78));
+        Level_renderBG(self->field_0x78);
         PaintCanvas_Begin3d();
-        int arg = (flag15e == 0) ? F<int>(self, 0x40) : 0;
-        Level_render(F<int>(self, 0x78), arg);
-        int egoFlag = (F<uint8_t>(self, 0x5f) != 0) ? 0 : (F<uint8_t>(self, 0xdc) == 0);
+        int arg = (flag15e == 0) ? self->field_0x40 : 0;
+        Level_render(self->field_0x78, arg);
+        int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
         PlayerEgo_render(egoFlag);
-        if (F<int>(self, 0x114) != 0)
-            AEGeometry_render(F<Level *>(self, 0x58));
-        LevelScript_render3D(F<int>(self, 0x7c));
+        if (self->field_0x114 != 0)
+            AEGeometry_render(self->field_0x58);
+        LevelScript_render3D(self->field_0x7c);
         return PaintCanvas_End3d(canvas);
     }
 
     if (flag15e != 0) {
         // Free-cam / cinematic world render.
-        Level_renderBG(F<int>(self, 0x78));
+        Level_renderBG(self->field_0x78);
         PaintCanvas_Begin3d();
-        Level_render(F<int>(self, 0x78), F<int>(self, 0x40));
-        int egoFlag = (F<uint8_t>(self, 0x5f) != 0) ? 0 : (F<uint8_t>(self, 0xdc) == 0);
+        Level_render(self->field_0x78, self->field_0x40);
+        int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
         PlayerEgo_render(egoFlag);
-        if (F<int>(self, 0x114) != 0)
-            AEGeometry_render(F<Level *>(self, 0x58));
-        LevelScript_render3D(F<int>(self, 0x7c));
+        if (self->field_0x114 != 0)
+            AEGeometry_render(self->field_0x58);
+        LevelScript_render3D(self->field_0x7c);
         return PaintCanvas_End3d(canvas);
     }
 
-    if (F<uint8_t>(self, 0xc9) != 0) {
+    if (self->field_0xc9 != 0) {
         PaintCanvas_Begin3d();
-        MenuTouchWindow_render3D(F<int>(self, 0x88));
+        MenuTouchWindow_render3D(self->field_0x88);
         return PaintCanvas_End3d(canvas);
     }
 
-    if (F<uint8_t>(self, 0xc7) != 0) {
+    if (self->field_0xc7 != 0) {
         PaintCanvas_Begin3d();
-        StarMap_render(F<int>(self, 0x90));
+        StarMap_render(self->field_0x90);
         return PaintCanvas_End3d(canvas);
     }
 
     // Fallback world render.
-    Level_renderBG(F<int>(self, 0x78));
+    Level_renderBG(self->field_0x78);
     PaintCanvas_Begin3d();
-    Level_render(F<int>(self, 0x78), 0);
-    int egoFlag = (F<uint8_t>(self, 0x5f) != 0) ? 0 : (F<uint8_t>(self, 0xdc) == 0);
+    Level_render(self->field_0x78, 0);
+    int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
     PlayerEgo_render(egoFlag);
-    if (F<int>(self, 0x114) != 0)
-        AEGeometry_render(F<Level *>(self, 0x58));
-    LevelScript_render3D(F<int>(self, 0x7c));
+    if (self->field_0x114 != 0)
+        AEGeometry_render(self->field_0x58);
+    LevelScript_render3D(self->field_0x7c);
     return PaintCanvas_End3d(canvas);
 }
 
@@ -367,110 +372,110 @@ extern "C" void MGame_startJumpScene(MGame *self) {
     int *guard = g_jsGuard;
     int g0 = *guard;
 
-    Player_setVulnerable(*(void **)((char *)F<int>(self, 0x58)), 0);
-    Level_enableFog(F<Level *>(self, 0x78), 0);
+    Player_setVulnerable(*(void **)((char *)self->field_0x58), 0);
+    Level_enableFog(self->field_0x78, 0);
 
-    if (PlayerEgo_isDockedToDockingPoint(F<PlayerEgo *>(self, 0x58)) != 0) {
-        PlayerEgo_dockToDockingPoint(F<PlayerEgo *>(self, 0x58), 0, F<void *>(self, 0x80));
-        TFC_setActive(F<TargetFollowCamera *>(self, 0xf4), 1);
-        TFC_setLookAtCam(F<TargetFollowCamera *>(self, 0xf4), 0);
-        float sp = TFC_useTargetsUpVector(F<TargetFollowCamera *>(self, 0xf4), 0);
-        PlayerEgo_setSpeed(F<PlayerEgo *>(self, 0x58), sp);
-        PlayerEgo_setDockingState(F<PlayerEgo *>(self, 0x58), 0);
+    if (PlayerEgo_isDockedToDockingPoint(self->field_0x58) != 0) {
+        PlayerEgo_dockToDockingPoint(self->field_0x58, 0, self->field_0x80);
+        TFC_setActive(self->field_0xf4, 1);
+        TFC_setLookAtCam(self->field_0xf4, 0);
+        float sp = TFC_useTargetsUpVector(self->field_0xf4, 0);
+        PlayerEgo_setSpeed(self->field_0x58, sp);
+        PlayerEgo_setDockingState(self->field_0x58, 0);
     }
-    if (PlayerEgo_isInTurretMode(F<PlayerEgo *>(self, 0x58)) != 0)
-        PlayerEgo_setTurretMode(F<PlayerEgo *>(self, 0x58), 0);
+    if (PlayerEgo_isInTurretMode(self->field_0x58) != 0)
+        PlayerEgo_setTurretMode(self->field_0x58, 0);
 
     int *snd = g_jsSound;
     FModSound_stop(*snd, 0x23);
     MGame_switchCamera(self, 0);
-    F<int>(self, 0x70) = g_jsHudFlag;
-    Hud_releaseAllKeys(F<void *>(self, 0x74));
-    F<uint8_t>(self, 0x110) = 0;
-    F<uint8_t>(self, 0x5c) = 0;
+    self->field_0x70 = g_jsHudFlag;
+    Hud_releaseAllKeys(self->field_0x74);
+    self->field_0x110 = 0;
+    self->field_0x5c = 0;
 
     PaintCanvas *pc = *g_jsCanvas;
-    unsigned cam = F<unsigned>(self, 0xf0);
+    unsigned cam = self->field_0xf0;
     float fov = *(float *)&g_jsFovDefault;
     if (Status_inAlienOrbit() != 0) {
         int cm = Status_getCurrentCampaignMission();
         fov = (cm < 0x50) ? *(float *)&g_jsFovAlienB : *(float *)&g_jsFovAlienA;
     }
     PaintCanvas_CameraSetPerspective(cam, fov, *(float *)&g_jsHudFlag, 0);
-    PlayerEgo_setAutoPilot(F<PlayerEgo *>(self, 0x58), 0);
-    F<uint8_t>(self, 0x5d) = 0;
-    F<uint8_t>(self, 0xd6) = 0;
-    F<uint8_t>(self, 0xdc) = 1;
-    F<uint8_t>(self, 0x5f) = 1;
-    PlayerEgo_setCollide(F<PlayerEgo *>(self, 0x58), 0);
-    TFC_setLookAtCam(F<TargetFollowCamera *>(self, 0xf4), 1);
-    PlayerEgo_stopBoost(F<PlayerEgo *>(self, 0x58));
+    PlayerEgo_setAutoPilot(self->field_0x58, 0);
+    self->field_0x5d = 0;
+    self->field_0xd6 = 0;
+    self->field_0xdc = 1;
+    self->field_0x5f = 1;
+    PlayerEgo_setCollide(self->field_0x58, 0);
+    TFC_setLookAtCam(self->field_0xf4, 1);
+    PlayerEgo_stopBoost(self->field_0x58);
     Engine *eng = (Engine *)ApplicationManager_GetEngine();
     Engine_SetPostEffect(eng, g_jsPostEffect, 0);
 
     float camX, camY, camZ;
-    if (F<uint8_t>(self, 0xdd) == 0) {
+    if (self->field_0xdd == 0) {
         // Free-space jump: position from a landmark.
-        int lm = Level_getLandmarks(F<Level *>(self, 0x78));
+        int lm = Level_getLandmarks(self->field_0x78);
         void *obj = *(void **)((char *)lm + 4);
         void *vt = *(void **)obj;
         float vtmp[4];
         (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, vtmp);
         Vector_assign((Vector *)((char *)self + 0xe4), (Vector *)vtmp);
-        float nz = (float)F<int>(self, 0xec) + *(float *)&g_jsOffsetZ;
-        F<int>(self, 0xec) = (int)nz;
-        PlayerEgo_setPosition(F<PlayerEgo *>(self, 0x58), F<int>(self, 0xe4),
-                              F<int>(self, 0xe8), nz);
-        PlayerEgo_setComputerControlled(F<PlayerEgo *>(self, 0x58), 1);
-        AEGeometry_setRotation3(*(void **)((char *)F<int>(self, 0x58) + 8), 0, 0, 0);
-        F<int>(self, 0xe4) = (int)((float)F<int>(self, 0xe4) + *(float *)&g_jsOffsetX);
-        F<int>(self, 0xe8) = (int)((float)F<int>(self, 0xe8) + *(float *)&g_jsOffsetY);
-        F<int>(self, 0xec) = (int)((float)F<int>(self, 0xec) + *(float *)&g_jsOffsetZ2);
-        camX = (float)F<int>(self, 0xe4);
-        camY = (float)F<int>(self, 0xe8);
-        camZ = (float)F<int>(self, 0xec);
+        float nz = (float)self->field_0xec + *(float *)&g_jsOffsetZ;
+        self->field_0xec = (int)nz;
+        PlayerEgo_setPosition(self->field_0x58, self->field_0xe4,
+                              self->field_0xe8, nz);
+        PlayerEgo_setComputerControlled(self->field_0x58, 1);
+        AEGeometry_setRotation3(*(void **)((char *)self->field_0x58 + 8), 0, 0, 0);
+        self->field_0xe4 = (int)((float)self->field_0xe4 + *(float *)&g_jsOffsetX);
+        self->field_0xe8 = (int)((float)self->field_0xe8 + *(float *)&g_jsOffsetY);
+        self->field_0xec = (int)((float)self->field_0xec + *(float *)&g_jsOffsetZ2);
+        camX = (float)self->field_0xe4;
+        camY = (float)self->field_0xe8;
+        camZ = (float)self->field_0xec;
     } else {
         // Charged jump: spawn the warp-tunnel geometry.
-        PlayerEgo_resetMovement(F<PlayerEgo *>(self, 0x58));
-        PlayerEgo_setComputerControlled(F<PlayerEgo *>(self, 0x58), 1);
+        PlayerEgo_resetMovement(self->field_0x58);
+        PlayerEgo_setComputerControlled(self->field_0x58, 1);
         AEGeometry *geo = (AEGeometry *)operator_new(0xc0);
         AEGeometry_ctor(geo, 0x3ab2, *g_jsCanvas, 0);
-        F<AEGeometry *>(self, 0x114) = geo;
+        self->field_0x114 = geo;
         int tr = PaintCanvas_TransformGetTransform(*(unsigned *)g_jsCanvas);
         Transform_SetAnimationState(tr, 1, 0);
 
         float pos[4];
-        PlayerEgo_getPosition(pos, F<PlayerEgo *>(self, 0x58));
+        PlayerEgo_getPosition(pos, self->field_0x58);
         Vector *dst = (Vector *)((char *)self + 0xe4);
         Vector_copy(dst, (Vector *)pos);
 
         float dir[4];
-        PlayerEgo_getPosition(dir, F<PlayerEgo *>(self, 0x58));
+        PlayerEgo_getPosition(dir, self->field_0x58);
         Vector_scale((Vector *)dir, *(float *)&g_jsOffsetX);
         Vector_addAssign(dst, (Vector *)dir);
-        AEGeometry_setPosition(F<AEGeometry *>(self, 0x114), dst);
+        AEGeometry_setPosition(self->field_0x114, dst);
 
-        AEGeometry_setScaling(F<AEGeometry *>(self, 0x114), 0x40000000, 0x40000000, 0x40000000);
+        AEGeometry_setScaling(self->field_0x114, 0x40000000, 0x40000000, 0x40000000);
         float zero[4]; zero[0] = 0; *(int *)&zero[1] = 0x3f800000; zero[2] = 0;
-        AEGeometry_setDirection(F<AEGeometry *>(self, 0x114), (Vector *)zero);
+        AEGeometry_setDirection(self->field_0x114, (Vector *)zero);
 
         float off[4]; off[0] = (float)g_jsOffsetX; off[1] = (float)g_jsOffsetY; off[2] = (float)g_jsOffsetX;
         Vector_copy((Vector *)off, (Vector *)off);
-        Matrix_rotateVector(off, (Vector *)((char *)*(int *)((char *)F<int>(self, 0x58)) + 4));
+        Matrix_rotateVector(off, (Vector *)((char *)*(int *)((char *)self->field_0x58) + 4));
         Vector_copy((Vector *)off, (Vector *)off);
         Vector_addAssign(dst, (Vector *)off);
 
-        FModSound_setProp(*snd, F<int>(self, 0x1c));
+        FModSound_setProp(*snd, self->field_0x1c);
         FModSound_setProp(*snd, 0x23);
         FModSound_setProp(*snd, 0x8d5);
         FModSound_setProp(*snd, 0x8d4);
         FModSound_play(*snd, 0x20, 0, 0.0f);
 
-        camX = (float)F<int>(self, 0xe4);
-        camZ = (float)F<int>(self, 0xe8);
-        camY = (float)F<int>(self, 0xec);
+        camX = (float)self->field_0xe4;
+        camZ = (float)self->field_0xe8;
+        camY = (float)self->field_0xec;
     }
-    TFC_setPosition(F<TargetFollowCamera *>(self, 0xf4), camX, camY, camZ);
+    TFC_setPosition(self->field_0xf4, camX, camY, camZ);
 
     if (*guard != g0)
         __stack_chk_fail();
@@ -502,58 +507,58 @@ extern "C" void MGame_switchCamera(MGame *self, int id) {
 
 restart:
     if (id == 2) id = 3;
-    F<int>(self, 0x14) = id;
+    self->field_0x14 = id;
     if (id == 1) {
-        if (PlayerEgo_isDockingToAsteroid(F<PlayerEgo *>(self, 0x58)) != 0) {
-            F<uint8_t>(self, 0xd5) = 0;
+        if (PlayerEgo_isDockingToAsteroid(self->field_0x58) != 0) {
+            self->field_0xd5 = 0;
             // fallthrough to step++
         } else {
-            int t = PlayerEgo_setTurretMode(F<PlayerEgo *>(self, 0x58), 1);
-            F<uint8_t>(self, 0xd5) = (uint8_t)t;
+            int t = PlayerEgo_setTurretMode(self->field_0x58, 1);
+            self->field_0xd5 = (uint8_t)t;
             if (t != 0) {
-                id = F<int>(self, 0x14);
+                id = self->field_0x14;
                 turretArg = 1;
                 goto afterTurret;
             }
         }
-        id = F<int>(self, 0x14) + 1;
-        F<int>(self, 0x14) = id;
+        id = self->field_0x14 + 1;
+        self->field_0x14 = id;
         turretArg = 0;
     } else {
-        F<uint8_t>(self, 0xd5) = 0;
+        self->field_0xd5 = 0;
         turretArg = 0;
     }
 
 afterTurret:
     if (id == 2) {
-        F<int>(self, 0x14) = 3;
+        self->field_0x14 = 3;
     } else if (id >= 4) {
-        F<int>(self, 0x14) = 0;
+        self->field_0x14 = 0;
     }
-    F<uint8_t>(self, 0x18) = 0;
-    PlayerEgo_setTurretMode(F<PlayerEgo *>(self, 0x58), turretArg);
+    self->field_0x18 = 0;
+    PlayerEgo_setTurretMode(self->field_0x58, turretArg);
 
-    int mode = F<int>(self, 0x14);
+    int mode = self->field_0x14;
     switch (mode) {
     case 0:
         break;
     case 1:
     case 3: {
-        if (PlayerEgo_isDockedToDockingPoint(F<PlayerEgo *>(self, 0x58)) != 0)
-            TFC_setLookAtCam(F<TargetFollowCamera *>(self, 0xf4), 0);
-        LevelScript_lookBehind(F<LevelScript *>(self, 0x7c), F<int>(self, 0x78));
-        TFC_setRotationAroundTarget(F<TargetFollowCamera *>(self, 0xf4), 1);
-        PlayerEgo_setFreeLookMode(F<PlayerEgo *>(self, 0x58), 1);
+        if (PlayerEgo_isDockedToDockingPoint(self->field_0x58) != 0)
+            TFC_setLookAtCam(self->field_0xf4, 0);
+        LevelScript_lookBehind(self->field_0x7c, self->field_0x78);
+        TFC_setRotationAroundTarget(self->field_0xf4, 1);
+        PlayerEgo_setFreeLookMode(self->field_0x58, 1);
         goto firstPerson;
     }
     case 2: {
-        dockState = PlayerEgo_isDockedToDockingPoint(F<PlayerEgo *>(self, 0x58));
+        dockState = PlayerEgo_isDockedToDockingPoint(self->field_0x58);
         if (dockState == 0) {
-            LevelScript_lookBehind(F<LevelScript *>(self, 0x7c), F<int>(self, 0x78));
-            TFC_setRotationAroundTarget(F<TargetFollowCamera *>(self, 0xf4), 0);
-            PlayerEgo_setFreeLookMode(F<PlayerEgo *>(self, 0x58), 0);
+            LevelScript_lookBehind(self->field_0x7c, self->field_0x78);
+            TFC_setRotationAroundTarget(self->field_0xf4, 0);
+            PlayerEgo_setFreeLookMode(self->field_0x58, 0);
             int eng = ApplicationManager_GetEngine();
-            *(int *)((char *)eng + 0x360) = 0;
+            eng->field_0x360 = 0;
             goto firstPerson;
         }
         // docked: restart the whole selection with id=1.
@@ -565,11 +570,11 @@ afterTurret:
     }
 
 firstPerson: {
-        TFC_enableFirstPersonCam(F<TargetFollowCamera *>(self, 0xf4), F<int>(self, 0x14) == 2);
-        PlayerEgo *ego = F<PlayerEgo *>(self, 0x58);
+        TFC_enableFirstPersonCam(self->field_0xf4, self->field_0x14 == 2);
+        PlayerEgo *ego = self->field_0x58;
         int v;
-        if (F<uint8_t>(self, 0x18) == 0)
-            v = TFC_hideShipForFirstPersonCam(F<TargetFollowCamera *>(self, 0xf4));
+        if (self->field_0x18 == 0)
+            v = TFC_hideShipForFirstPersonCam(self->field_0xf4);
         else
             v = 1;
         PlayerEgo_syncFirstPerson(ego, v);
@@ -589,32 +594,32 @@ extern "C" void MGame_freeCamTouchBegin(MGame *self, int x, int y, int id) {
     float fy = (float)y;
     float fx = (float)x;
     int slot;
-    if (F<int>(self, 0x98) == 0) {
-        if (F<int>(self, 0x9c) == 0) F<int>(self, 0xa0) = 0;
+    if (self->field_0x98 == 0) {
+        if (self->field_0x9c == 0) self->field_0xa0 = 0;
         *(volatile float *)(buf + 4) = fy;
         *(volatile float *)(buf + 0) = fx;
         *(volatile int *)(buf + 8) = 0;
-        F<int>(self, 0x98) = id;
+        self->field_0x98 = id;
         slot = 0xa4;
     } else {
-        if (F<int>(self, 0xa0) >= 1000) goto tail;
-        F<int>(self, 0xbc) = 0;
-        float len = AEMath_VectorLength(TFC_getCamOffset(F<TargetFollowCamera *>(self, 0xf4)));
+        if (self->field_0xa0 >= 1000) goto tail;
+        self->field_0xbc = 0;
+        float len = AEMath_VectorLength(TFC_getCamOffset(self->field_0xf4));
         *(volatile float *)(buf + 4) = fy;
         *(volatile float *)(buf + 0) = fx;
-        F<float>(self, 0xbc) = len;
+        self->field_0xbc = len;
         slot = 0xb0;
-        F<int>(self, 0x9c) = id;
+        self->field_0x9c = id;
     }
     Vector_assign((Vector *)((char *)self + slot), buf);
 tail:
-    F<int>(self, 0x124) = x;
-    F<int>(self, 0x128) = y;
-    F<int>(self, 0x154) = x;
-    F<int>(self, 0x158) = y;
-    F<int>(self, 0x134) = 0;
-    F<int>(self, 0x138) = 0;
-    F<uint8_t>(self, 0x15c) = 1;
+    self->field_0x124 = x;
+    self->field_0x128 = y;
+    self->field_0x154 = x;
+    self->field_0x158 = y;
+    self->field_0x134 = 0;
+    self->field_0x138 = 0;
+    self->field_0x15c = 1;
 }
 
 // ---- useCloak_179bfc.cpp ----
@@ -633,15 +638,15 @@ __attribute__((visibility("hidden"))) extern GameText **g_gameText; // DAT_189d4
 // "<text><cloak-attr><text>" describing the cloak and pause the game. Stack-protected
 // (six temporary Strings on the stack).
 extern "C" void MGame_useCloak(MGame *self) {
-    if (PlayerEgo_toggleCloaking(F<PlayerEgo *>(self, 0x58)) != 0) return;
-    if (F<ChoiceWindow *>(self, 0x94) == 0) {
+    if (PlayerEgo_toggleCloaking(self->field_0x58) != 0) return;
+    if (self->field_0x94 == 0) {
         ChoiceWindow *w = (ChoiceWindow *)MGame_opnew(0x5c);
         ChoiceWindow_ctor(w);
-        F<ChoiceWindow *>(self, 0x94) = w;
+        self->field_0x94 = w;
     }
     int eq = Ship_getFirstEquipmentOfSort(Status_getShip(*g_status), 0x15);
     int attr = eq == 0 ? 0 : Item_getAttribute(eq, 0x26);
-    ChoiceWindow *cw = F<ChoiceWindow *>(self, 0x94);
+    ChoiceWindow *cw = self->field_0x94;
     void *txt = GameText_getText(*g_gameText, 0x247);
     String12 s0, s1, s2, s3, s4, s5;
     String_cstr_ctor(&s2, "", false);
@@ -657,8 +662,8 @@ extern "C" void MGame_useCloak(MGame *self) {
     String_dtor(&s1);
     String_dtor(&s3);
     String_dtor(&s2);
-    F<uint8_t>(self, 0x5d) = 1;
-    F<uint8_t>(self, 0xce) = 1;
+    self->field_0x5d = 1;
+    self->field_0xce = 1;
     MGame_pauseSounds(self);
 }
 
@@ -710,45 +715,45 @@ __attribute__((visibility("hidden"))) extern int **g_goSnd;        // @0x190746
 
 // Helper to (re)bind a DialogueWindow to the current level (the duplicated block).
 static void bindDialogueLevel(MGame *self) {
-    if (F<int>(self, 0x8c) == 0) {
+    if (self->field_0x8c == 0) {
         DialogueWindow *w = (DialogueWindow *)operator_new(0x74);
         DialogueWindow_ctor(w);
-        Level *lvl = F<Level *>(self, 0x78);
-        F<DialogueWindow *>(self, 0x8c) = w;
+        Level *lvl = self->field_0x78;
+        self->field_0x8c = w;
         if (lvl != 0) DialogueWindow_setLevel(w, lvl);
-    } else if (DialogueWindow_hasLevel(F<DialogueWindow *>(self, 0x8c)) == 0) {
-        Level *lvl = F<Level *>(self, 0x78);
-        if (lvl != 0) DialogueWindow_setLevel(F<DialogueWindow *>(self, 0x8c), lvl);
+    } else if (DialogueWindow_hasLevel(self->field_0x8c) == 0) {
+        Level *lvl = self->field_0x78;
+        if (lvl != 0) DialogueWindow_setLevel(self->field_0x8c, lvl);
     }
-    DialogueWindow_set(F<DialogueWindow *>(self, 0x8c), Status_getMission(), 2, -1);
+    DialogueWindow_set(self->field_0x8c, Status_getMission(), 2, -1);
 }
 
 // MGame::gameOverCheck(): handle player death/explosion and end-of-level dialogue.
 extern "C" void MGame_gameOverCheck(MGame *self) {
-    if (PlayerEgo_getHitpoints(F<PlayerEgo *>(self, 0x58)) <= 0) {
-        if (PlayerEgo_tryToStartEmergencySystem(F<PlayerEgo *>(self, 0x58)) != 0)
+    if (PlayerEgo_getHitpoints(self->field_0x58) <= 0) {
+        if (PlayerEgo_tryToStartEmergencySystem(self->field_0x58) != 0)
             return;
-        if (PlayerEgo_isInWormhole(F<PlayerEgo *>(self, 0x58)) == 0) {
-            PlayerEgo_setTurretMode(F<PlayerEgo *>(self, 0x58), 0);
-            LevelScript_resetCamera(F<int>(self, 0x7c), F<int>(self, 0x78));
-            PlayerEgo_setFreeLookMode(F<PlayerEgo *>(self, 0x58), 0);
-            TFC_enableFirstPersonCam(F<TargetFollowCamera *>(self, 0xf4), 0);
-            PlayerEgo_hideShipForFirstPersonCameraView(F<PlayerEgo *>(self, 0x58), 0);
-            F<uint8_t>(self, 0x111) = 1;
-            PlayerEgo_explode(F<PlayerEgo *>(self, 0x58));
-            if (PlayerEgo_explosionEnded(F<PlayerEgo *>(self, 0x58)) != 0) {
-                F<uint8_t>(self, 0x60) = 1;
+        if (PlayerEgo_isInWormhole(self->field_0x58) == 0) {
+            PlayerEgo_setTurretMode(self->field_0x58, 0);
+            LevelScript_resetCamera(self->field_0x7c, self->field_0x78);
+            PlayerEgo_setFreeLookMode(self->field_0x58, 0);
+            TFC_enableFirstPersonCam(self->field_0xf4, 0);
+            PlayerEgo_hideShipForFirstPersonCameraView(self->field_0x58, 0);
+            self->field_0x111 = 1;
+            PlayerEgo_explode(self->field_0x58);
+            if (PlayerEgo_explosionEnded(self->field_0x58) != 0) {
+                self->field_0x60 = 1;
                 void *t = GameText_getText(**g_goDeathText);
                 String_assign((char *)self + 0x64, t);
             }
         } else {
-            F<uint8_t>(self, 0x60) = 1;
+            self->field_0x60 = 1;
             void *t = GameText_getText(**g_goWormText);
             String_assign((char *)self + 0x64, t);
-            F<uint8_t>(self, 0x111) = 1;
+            self->field_0x111 = 1;
         }
 
-        if (F<uint8_t>(self, 0x60) != 0) {
+        if (self->field_0x60 != 0) {
             if (Status_getMission() != 0 &&
                 Mission_isCampaignMission(Status_getMission()) != 0) {
                 int cm = Status_getCurrentCampaignMission();
@@ -765,25 +770,25 @@ extern "C" void MGame_gameOverCheck(MGame *self) {
             }
             int rec = RecordHandler_recordStoreRead((RecordHandler *)**g_goRecHandler,
                                                     **g_goRecId);
-            F<int>(self, 0x1e8) = rec;
+            self->field_0x1e8 = rec;
         }
     }
 
-    if (Level_checkGameOver(F<int>(self, 0x78), *(int *)((char *)F<int>(self, 0x78) + 8)) != 0) {
+    if (Level_checkGameOver(self->field_0x78, *(int *)((char *)self->field_0x78 + 8)) != 0) {
         bindDialogueLevel(self);
-        F<uint8_t>(self, 0x5e) = 1;
+        self->field_0x5e = 1;
         MGame_pauseSounds(self);
-        F<uint8_t>(self, 0x5d) = 1;
+        self->field_0x5d = 1;
     }
 
     // Timed end-of-mission check (0x48/0x4c is a 64-bit counter vs 0x1389).
-    unsigned lo = F<unsigned>(self, 0x48);
-    int hi = F<int>(self, 0x4c);
+    unsigned lo = self->field_0x48;
+    int hi = self->field_0x4c;
     bool ready = !(hi < (int)(lo < 0x1389));
     if (ready) {
-        F<unsigned>(self, 0x48) = 0;
-        F<int>(self, 0x4c) = 0;
-        int *sc = F<int *>(self, 0x7c);
+        self->field_0x48 = 0;
+        self->field_0x4c = 0;
+        int *sc = self->field_0x7c;
         if (sc[0] >= 1) {
             // 64-bit compare against script counters [2]/[3].
             bool done = !((long long)(unsigned)sc[0] - ((long long)sc[3] << 32 | (unsigned)sc[2]) < 0);
@@ -791,22 +796,22 @@ extern "C" void MGame_gameOverCheck(MGame *self) {
             if (!done) {
                 int cm = Status_getCurrentCampaignMission();
                 if (cm != 0x2a) {
-                    Objective *obj = *(Objective **)((char *)F<int>(self, 0x78) + 0x28);
+                    Objective *obj = *(Objective **)((char *)self->field_0x78 + 0x28);
                     survival = (obj == 0) || (Objective_isSurvivalObjective(obj) != 0);
                 }
                 if (!survival) {
                     bindDialogueLevel(self);
-                    F<uint16_t>(self, 0x5d) = 0x101;
+                    self->field_0x5d = 0x101;
                     MGame_pauseSounds(self);
                 }
             }
         }
     }
 
-    if (F<uint8_t>(self, 0x60) != 0) {
-        F<unsigned>(self, 0x48) = 0;
-        F<int>(self, 0x4c) = 0;
-        F<int>(self, 0x50) = 0;
+    if (self->field_0x60 != 0) {
+        self->field_0x48 = 0;
+        self->field_0x4c = 0;
+        self->field_0x50 = 0;
         FModSound_play(**g_goSnd, 0x25, 0, 0.0f);
     }
 }
@@ -832,65 +837,65 @@ __attribute__((visibility("hidden"))) extern int **g_tbMenuTrack;      // @0x188
 // MGame::OnTouchBegin(int p1, int p2, void *touchId)
 extern "C" void MGame_OnTouchBegin(MGame *self, int p1, int p2, void *touchId) {
     // Track the active touch id (field 0xc0) when none is held.
-    if (F<int>(self, 0xc0) == 0)
-        F<void *>(self, 0xc0) = touchId;
+    if (self->field_0xc0 == 0)
+        self->field_0xc0 = touchId;
 
-    if (F<uint8_t>(self, 0x5d) == 0) {
+    if (self->field_0x5d == 0) {
         // Game-over / replay splash tap dispatch.
-        if (F<uint8_t>(self, 0x60) != 0 && F<int>(self, 0x50) >= 4000) {
+        if (self->field_0x60 != 0 && self->field_0x50 >= 4000) {
             int cm = Status_getCurrentCampaignMission();
             if (cm == 0x9e) {
-                F<uint8_t>(self, 0x54) = 0;
-                return MGame_endRunModule(F<int>(self, 0x8), 2);
+                self->field_0x54 = 0;
+                return MGame_endRunModule(self->field_0x8, 2);
             }
-            if (F<int>(self, 0x1e8) != 0) {
-                GameRecord_load(F<void *>(self, 0x1e8));
+            if (self->field_0x1e8 != 0) {
+                GameRecord_load(self->field_0x1e8);
                 Globals_playMusicAndFadeOutCurrent(**g_tbRecordTrack);
-                F<uint8_t>(self, 0x54) = 0;
-                return MGame_endRunModule(F<int>(self, 0x8), 5);
+                self->field_0x54 = 0;
+                return MGame_endRunModule(self->field_0x8, 5);
             }
             Globals_playMusicAndFadeOutCurrent(**g_tbMenuTrack);
-            F<uint8_t>(self, 0x54) = 0;
-            ApplicationManager_SetCurrentApplicationModule(F<unsigned>(self, 0x8));
+            self->field_0x54 = 0;
+            ApplicationManager_SetCurrentApplicationModule(self->field_0x8);
             return;
         }
     } else {
         // Modal/overlay routing while in active flight UI.
-        if (F<uint8_t>(self, 0xc7) != 0) {
+        if (self->field_0xc7 != 0) {
             Layout *hl = **g_tbStarLayout;
             if (*(uint8_t *)hl != 0) {
                 Layout_OnTouchBegin((int)hl, p1);
                 return;
             }
-            uint8_t r = StarMap_OnTouchBegin(F<int>(self, 0x90), p1);
-            F<uint8_t>(self, 0xc7) = r ^ 1;
+            uint8_t r = StarMap_OnTouchBegin(self->field_0x90, p1);
+            self->field_0xc7 = r ^ 1;
             return;
         }
-        if (F<uint8_t>(self, 0xc5) != 0 || F<uint8_t>(self, 0xce) != 0 ||
-            F<uint8_t>(self, 0xc4) != 0) {
-            ChoiceWindow_OnTouchBegin(F<int>(self, 0x94), p1);
+        if (self->field_0xc5 != 0 || self->field_0xce != 0 ||
+            self->field_0xc4 != 0) {
+            ChoiceWindow_OnTouchBegin(self->field_0x94, p1);
             return;
         }
-        if (F<uint8_t>(self, 0x5e) != 0) {
-            DialogueWindow_OnTouchBegin(F<int>(self, 0x8c), p1);
+        if (self->field_0x5e != 0) {
+            DialogueWindow_OnTouchBegin(self->field_0x8c, p1);
             return;
         }
-        if (F<uint8_t>(self, 0x15d) != 0) {
+        if (self->field_0x15d != 0) {
             int ad = ApplicationManager_GetApplicationData();
             if (*(uint8_t *)((char *)ad + 5) != 0) return;
             if (*(uint8_t *)((char *)ad + 0xc) != 0) return;
-            MenuTouchWindow_OnTouchBegin(F<int>(self, 0x88), p1, (void *)p2);
-            if (F<uint8_t>(self, 0x15e) == 0) return;
-            if (MenuTouchWindow_isShowingMessage(F<void *>(self, 0x88)) != 0) return;
-            if (MenuTouchWindow_isMakingScreenshot(F<void *>(self, 0x88)) != 0) return;
+            MenuTouchWindow_OnTouchBegin(self->field_0x88, p1, (void *)p2);
+            if (self->field_0x15e == 0) return;
+            if (MenuTouchWindow_isShowingMessage(self->field_0x88) != 0) return;
+            if (MenuTouchWindow_isMakingScreenshot(self->field_0x88) != 0) return;
             // fall through to free-cam handler.
             return MGame_handleHudTouchAction(self, p1, p2, touchId, 0);
         }
     }
 
     // World HUD touch: dispatch on the hud's touch result bitmask.
-    unsigned hr = Hud_touchBegin(F<void *>(self, 0x74), p1, p2, touchId);
-    F<int>(self, 0xf8) = hr;
+    unsigned hr = Hud_touchBegin(self->field_0x74, p1, p2, touchId);
+    self->field_0xf8 = hr;
     MGame_handleHudTouchAction(self, p1, p2, touchId, hr);
 }
 
@@ -923,9 +928,9 @@ extern "C" void MGame_OnUpdate(MGame *self) {
         delta = 0x96;
     }
 
-    F<int>(self, 0x40) = delta;
+    self->field_0x40 = delta;
     // Accumulate into the 4-wide playtime counter at 0x30 (lane 0 gets +delta).
-    F<int>(self, 0x30) += delta;
+    self->field_0x30 += delta;
 
     // Run the full per-frame update.
     MGame_tick(self, delta);
@@ -952,29 +957,29 @@ extern "C" void Level_onSuspend(Level *lvl);  // tail call via this->[0x74]
 extern "C" void MGame_OnSuspend(MGame *self) {
     if (*g_record != 0) RecordHandler_saveOptions(*g_record);
     MGame_pauseSounds(self);
-    if (F<uint8_t>(self, 0x5d) == 0) {
-        if (F<MenuTouchWindow *>(self, 0x88) == 0) {
+    if (self->field_0x5d == 0) {
+        if (self->field_0x88 == 0) {
             MenuTouchWindow *w = (MenuTouchWindow *)MGame_opnew(0x240);
             MenuTouchWindow_ctor(w, 1);
-            F<MenuTouchWindow *>(self, 0x88) = w;
+            self->field_0x88 = w;
         }
-        F<uint8_t>(self, 0x1a6) = 1;
-        F<uint8_t>(self, 0x5d) = 1;
+        self->field_0x1a6 = 1;
+        self->field_0x5d = 1;
         FModSound_pauseAllPlaying(*g_fmod);
-        PlayerEgo_PauseEngineSound(F<PlayerEgo *>(self, 0x58));
-        EnemyList *e = Level_getEnemies(F<Level *>(self, 0x78));
+        PlayerEgo_PauseEngineSound(self->field_0x58);
+        EnemyList *e = Level_getEnemies(self->field_0x78);
         if (e != 0) {
             for (uint32_t i = 0; i < e->size; i++)
                 KIPlayer_PauseEngineSound(e->data[i]);
         }
-        MenuTouchWindow *w = F<MenuTouchWindow *>(self, 0x88);
+        MenuTouchWindow *w = self->field_0x88;
         int mode = 1;
-        if (F<uint8_t>(self, 0x5f) == 0)
-            mode = PlayerEgo_isDead(F<PlayerEgo *>(self, 0x58));
+        if (self->field_0x5f == 0)
+            mode = PlayerEgo_isDead(self->field_0x58);
         MenuTouchWindow_setCutsceneMode(w, mode);
-        F<uint8_t>(self, 0xc9) = 1;
+        self->field_0xc9 = 1;
     }
-    return Level_onSuspend(F<Level *>(self, 0x74));
+    return Level_onSuspend(self->field_0x74);
 }
 
 // ---- dockEvent_17f920.cpp ----
@@ -1032,12 +1037,12 @@ __attribute__((visibility("hidden"))) extern int **g_deAchieve;  // @0x18fb90
 __attribute__((visibility("hidden"))) extern int **g_deAlienFlag;// @0x18fb9c
 
 static void savePlayerStats(MGame *self, int *status) {
-    PlayerEgo *ego = F<PlayerEgo *>(self, 0x58);
-    Player *pl = *(Player **)((char *)ego);
-    *(int *)((char *)status + 100) = Player_getHitpoints(pl);
-    *(int *)((char *)status + 0x5c) = Player_getShieldHP(pl);
-    *(int *)((char *)status + 0x60) = Player_getArmorHP(pl);
-    *(int *)((char *)status + 0x68) = Player_getGammaHP(pl);
+    PlayerEgo *ego = self->field_0x58;
+    Player *pl = ego->field_0x0;
+    status->field_0x64 = Player_getHitpoints(pl);
+    status->field_0x5c = Player_getShieldHP(pl);
+    status->field_0x60 = Player_getArmorHP(pl);
+    status->field_0x68 = Player_getGammaHP(pl);
 }
 
 // MGame::dockEvent(): handle proximity to a jumpgate/station while flying.
@@ -1046,11 +1051,11 @@ extern "C" void MGame_dockEvent(MGame *self) {
     int g0 = *guard;
 
     float pos[4];
-    PlayerEgo_getPosition(pos, F<PlayerEgo *>(self, 0x58));
-    F<uint8_t>(self, 0xcb) = Level_collideStream(F<int>(self, 0x78),
+    PlayerEgo_getPosition(pos, self->field_0x58);
+    self->field_0xcb = Level_collideStream(self->field_0x78,
                                                  (int)pos[0], (int)pos[1], (int)pos[2]);
-    PlayerEgo_getPosition(pos, F<PlayerEgo *>(self, 0x58));
-    F<uint8_t>(self, 0xcc) = Level_collideStation(F<int>(self, 0x78),
+    PlayerEgo_getPosition(pos, self->field_0x58);
+    self->field_0xcc = Level_collideStation(self->field_0x78,
                                                   (int)pos[0], (int)pos[1], (int)pos[2]);
 
     int *status = g_deStatus;
@@ -1063,98 +1068,98 @@ extern "C" void MGame_dockEvent(MGame *self) {
                    Mission_getType(Status_getMission()) == 0xac;
 
     if (!special) {
-        if ((F<uint8_t>(self, 0xcc) != 0 || F<uint8_t>(self, 0xcb) != 0) &&
-            PlayerEgo_isAutoPilot(F<PlayerEgo *>(self, 0x58)) != 0) {
-            Hud_hudEvent(F<int>(self, 0x74), 0x15, F<int>(self, 0x58));
+        if ((self->field_0xcc != 0 || self->field_0xcb != 0) &&
+            PlayerEgo_isAutoPilot(self->field_0x58) != 0) {
+            Hud_hudEvent(self->field_0x74, 0x15, self->field_0x58);
         }
         if (*guard != g0) __stack_chk_fail();
         return;
     }
 
     // special-mission docking path.
-    if (F<uint8_t>(self, 0xcb) != 0) {
-        if (PlayerEgo_goingToStream(F<PlayerEgo *>(self, 0x58)) != 0 &&
-            PlayerEgo_isDockingToStream(F<PlayerEgo *>(self, 0x58)) == 0 &&
-            PlayerEgo_isDockedToStream(F<PlayerEgo *>(self, 0x58)) == 0) {
-            PlayerEgo_dockToStream(F<PlayerEgo *>(self, 0x58), 0);
-            F<uint8_t>(self, 0x15c) = 0;
-            F<uint8_t>(self, 0x111) = 1;
+    if (self->field_0xcb != 0) {
+        if (PlayerEgo_goingToStream(self->field_0x58) != 0 &&
+            PlayerEgo_isDockingToStream(self->field_0x58) == 0 &&
+            PlayerEgo_isDockedToStream(self->field_0x58) == 0) {
+            PlayerEgo_dockToStream(self->field_0x58, 0);
+            self->field_0x15c = 0;
+            self->field_0x111 = 1;
             if (*guard != g0) __stack_chk_fail();
             return;
         }
-        if (F<uint8_t>(self, 0xcb) != 0) {
+        if (self->field_0xcb != 0) {
             savePlayerStats(self, status);
-            *(int *)((char *)status + 0xf4) = PlayerEgo_getCurrentSecondaryWeaponIndex(F<PlayerEgo *>(self, 0x58));
-            int autop = PlayerEgo_isAutoPilot(F<PlayerEgo *>(self, 0x58));
+            status->field_0xf4 = PlayerEgo_getCurrentSecondaryWeaponIndex(self->field_0x58);
+            int autop = PlayerEgo_isAutoPilot(self->field_0x58);
             int *autoFlag = g_deAutoFlag;
             if (*autoFlag == 0 || autop == 0) {
-                if (F<uint8_t>(self, 0xc7) != 0) {
-                    F<int>(self, 0x30) = 0;
-                    F<int>(self, 0x34) = 0;
+                if (self->field_0xc7 != 0) {
+                    self->field_0x30 = 0;
+                    self->field_0x34 = 0;
                     if (*guard != g0) __stack_chk_fail();
                     return;
                 }
-                PlayerEgo_isAutoPilot(F<PlayerEgo *>(self, 0x58));
-                if (PlayerEgo_goingToStream(F<PlayerEgo *>(self, 0x58)) == 0) {
+                PlayerEgo_isAutoPilot(self->field_0x58);
+                if (PlayerEgo_goingToStream(self->field_0x58) == 0) {
                     if (*guard != g0) __stack_chk_fail();
                     return;
                 }
                 if (*autoFlag == 0) {
-                    F<uint8_t>(self, 0x15c) = 0;
-                    F<uint8_t>(self, 0x111) = 1;
-                    if (F<int>(self, 0x90) == 0) {
+                    self->field_0x15c = 0;
+                    self->field_0x111 = 1;
+                    if (self->field_0x90 == 0) {
                         StarMap *sm = (StarMap *)operator_new(0x1e8);
                         StarMap_ctor(sm, 0, 0, 0, -1);
-                        F<StarMap *>(self, 0x90) = sm;
+                        self->field_0x90 = sm;
                     }
                     Engine *eng = (Engine *)ApplicationManager_GetEngine();
                     Engine_SetPostEffect(eng, g_dePostEffect, 0);
-                    StarMap_initLights(F<StarMap *>(self, 0x90));
-                    StarMap_setJumpMapMode(F<StarMap *>(self, 0x90), 1, 0);
-                    PlayerEgo_setAutoPilot(F<PlayerEgo *>(self, 0x58), 0);
-                    F<uint8_t>(self, 0x5d) = 1;
-                    F<uint8_t>(self, 0xc7) = 1;
+                    StarMap_initLights(self->field_0x90);
+                    StarMap_setJumpMapMode(self->field_0x90, 1, 0);
+                    PlayerEgo_setAutoPilot(self->field_0x58, 0);
+                    self->field_0x5d = 1;
+                    self->field_0xc7 = 1;
                     MGame_pauseSounds(self);
-                    F<uint8_t>(self, 0x111) = 1;
+                    self->field_0x111 = 1;
                     if (*guard != g0) __stack_chk_fail();
                     return;
                 }
-                if (F<uint8_t>(self, 0xc5) != 0) { if (*guard != g0) __stack_chk_fail(); return; }
-                F<uint8_t>(self, 0x15c) = 0;
-                ChoiceWindow *cw = F<ChoiceWindow *>(self, 0x94);
-                F<uint8_t>(self, 0x111) = 1;
+                if (self->field_0xc5 != 0) { if (*guard != g0) __stack_chk_fail(); return; }
+                self->field_0x15c = 0;
+                ChoiceWindow *cw = self->field_0x94;
+                self->field_0x111 = 1;
                 if (cw == 0) {
                     cw = (ChoiceWindow *)operator_new(0x5c);
                     ChoiceWindow_ctor(cw);
-                    F<ChoiceWindow *>(self, 0x94) = cw;
+                    self->field_0x94 = cw;
                 }
                 MGame_buildDockChoice(self, g_deTextB, g_deLitB0, g_deLitB1);
             } else {
-                if (F<uint8_t>(self, 0xc5) != 0) { if (*guard != g0) __stack_chk_fail(); return; }
-                F<uint8_t>(self, 0x15c) = 0;
-                ChoiceWindow *cw = F<ChoiceWindow *>(self, 0x94);
-                F<uint8_t>(self, 0x111) = 1;
+                if (self->field_0xc5 != 0) { if (*guard != g0) __stack_chk_fail(); return; }
+                self->field_0x15c = 0;
+                ChoiceWindow *cw = self->field_0x94;
+                self->field_0x111 = 1;
                 if (cw == 0) {
                     cw = (ChoiceWindow *)operator_new(0x5c);
                     ChoiceWindow_ctor(cw);
-                    F<ChoiceWindow *>(self, 0x94) = cw;
+                    self->field_0x94 = cw;
                 }
                 MGame_buildDockChoice(self, g_deTextA, g_deLitA0, g_deLitA1);
             }
-            F<uint8_t>(self, 0x5d) = 1;
-            F<uint8_t>(self, 0xc5) = 1;
+            self->field_0x5d = 1;
+            self->field_0xc5 = 1;
             MGame_pauseSounds(self);
-            PlayerEgo_setAutoPilot(F<PlayerEgo *>(self, 0x58), 0);
+            PlayerEgo_setAutoPilot(self->field_0x58, 0);
             if (*guard != g0) __stack_chk_fail();
             return;
         }
     }
 
-    if (F<uint8_t>(self, 0xcc) == 0) {
-        int tgt = PlayerEgo_getAutoPilotTarget(F<PlayerEgo *>(self, 0x58));
-        int lm = Level_getLandmarks(F<Level *>(self, 0x78));
+    if (self->field_0xcc == 0) {
+        int tgt = PlayerEgo_getAutoPilotTarget(self->field_0x58);
+        int lm = Level_getLandmarks(self->field_0x78);
         if (tgt != *(int *)((char *)lm + 4) ||
-            PlayerEgo_collidesWithStation(F<PlayerEgo *>(self, 0x58)) == 0) {
+            PlayerEgo_collidesWithStation(self->field_0x58) == 0) {
             if (*guard != g0) __stack_chk_fail();
             return;
         }
@@ -1163,19 +1168,19 @@ extern "C" void MGame_dockEvent(MGame *self) {
     int cm = Status_getCurrentCampaignMission();
     if (cm > 0x30 && Status_getCurrentCampaignMission() < 0x37) {
         if (Station_getIndex(Status_getStation()) != 0x4a) {
-            Hud_hudEvent(F<int>(self, 0x74), 0x15, F<int>(self, 0x58));
+            Hud_hudEvent(self->field_0x74, 0x15, self->field_0x58);
             if (*guard != g0) __stack_chk_fail();
             return;
         }
     }
-    if (PlayerEgo_goingToStation(F<PlayerEgo *>(self, 0x58)) != 0 &&
+    if (PlayerEgo_goingToStation(self->field_0x58) != 0 &&
         Status_inAlienOrbit() == 0 &&
         Status_inEmptyOrbit((Station *)*status) == 0) {
-        Achievements_checkForNewMedal(*g_deAchieve, F<PlayerEgo *>(self, 0x58));
+        Achievements_checkForNewMedal(*g_deAchieve, self->field_0x58);
         **g_deAlienFlag = 0;
         savePlayerStats(self, status);
-        ApplicationManager_SetCurrentApplicationModule(F<unsigned>(self, 0x8));
-        F<uint8_t>(self, 0x54) = 0;
+        ApplicationManager_SetCurrentApplicationModule(self->field_0x8);
+        self->field_0x54 = 0;
     }
 
     if (*guard != g0) __stack_chk_fail();
@@ -1189,20 +1194,20 @@ extern "C" void MGame_dockEvent(MGame *self) {
 extern "C" void MGame_freeCamTouchEnd(MGame *self, int p1, int p2, int id) {
     (void)p1;
     (void)p2;
-    if (F<int>(self, 0x98) == id) {
-        F<int>(self, 0x98) = 0;
-        F<int>(self, 0xa0) = 0;
-    } else if (F<int>(self, 0x9c) == id) {
-        F<int>(self, 0x9c) = 0;
-        F<int>(self, 0xa0) = 0;
+    if (self->field_0x98 == id) {
+        self->field_0x98 = 0;
+        self->field_0xa0 = 0;
+    } else if (self->field_0x9c == id) {
+        self->field_0x9c = 0;
+        self->field_0xa0 = 0;
     }
     {
-        int ix = F<int>(self, 0x134);
-        int iy = F<int>(self, 0x138);
+        int ix = self->field_0x134;
+        int iy = self->field_0x138;
         float fx = (float)ix;
         float fy = (float)iy;
-        float nx = F<float>(self, 0x118) + fx;
-        float ny = F<float>(self, 0x11c) + fy;
+        float nx = self->field_0x118 + fx;
+        float ny = self->field_0x11c + fy;
         if (iy < 0) iy = -iy;
         if (ix < 0) ix = -ix;
         // Default coefficients come from float literals (exact values irrelevant to the
@@ -1212,16 +1217,16 @@ extern "C" void MGame_freeCamTouchEnd(MGame *self, int p1, int p2, int id) {
         if (ix > 3) ox = fx;
         float oy = 0.001f;
         if (iy > 3) oy = fy;
-        F<uint8_t>(self, 0x111) = 1;
-        F<float>(self, 0x13c) = 0.002f;
-        F<float>(self, 0x140) = 0.002f;
-        F<uint8_t>(self, 0x15c) = 0;
-        F<float>(self, 0x148) = ox;
-        F<float>(self, 0x14c) = oy;
-        F<float>(self, 0x118) = nx;
-        F<float>(self, 0x11c) = ny;
-        F<int>(self, 0x12c) = (int)nx;
-        F<int>(self, 0x130) = (int)ny;
+        self->field_0x111 = 1;
+        self->field_0x13c = 0.002f;
+        self->field_0x140 = 0.002f;
+        self->field_0x15c = 0;
+        self->field_0x148 = ox;
+        self->field_0x14c = oy;
+        self->field_0x118 = nx;
+        self->field_0x11c = ny;
+        self->field_0x12c = (int)nx;
+        self->field_0x130 = (int)ny;
     }
 }
 
@@ -1281,7 +1286,7 @@ __attribute__((visibility("hidden"))) extern int g_kdPostEffect;  // @0x189f98 (
 
 // MGame::UseKhadorDrive(): trigger a hyperspace jump or open the jump star map.
 extern "C" void MGame_UseKhadorDrive(MGame *self) {
-    if (PlayerEgo_isChargingDrive(F<PlayerEgo *>(self, 0x58)) != 0) return;
+    if (PlayerEgo_isChargingDrive(self->field_0x58) != 0) return;
 
     int *status = g_kdStatus;
     Mission *m = Status_getMission();
@@ -1306,51 +1311,51 @@ extern "C" void MGame_UseKhadorDrive(MGame *self) {
 
     if (special) {
         int player = Level_getPlayer(self);
-        return Hud_hudEvent(F<void *>(self, 0x74), 0x15, player, 0);
+        return Hud_hudEvent(self->field_0x74, 0x15, player, 0);
     }
 
-    PlayerEgo_resetGunDelay(F<PlayerEgo *>(self, 0x58));
+    PlayerEgo_resetGunDelay(self->field_0x58);
     if (Status_getCurrentCampaignMission() == 0x4e) {
         **g_kdJumpDst = *(int *)((char *)*status + 0x78);
-        F<uint8_t>(self, 0xdd) = 1;
+        self->field_0xdd = 1;
         MGame_startChargingJumpDrive(self);
-        F<uint8_t>(self, 0x5d) = 0;
+        self->field_0x5d = 0;
         MGame_resumeSounds(self);
-        F<uint8_t>(self, 0xd6) = 0;
-        Hud_closeHudMenu(F<void *>(self, 0x74));
+        self->field_0xd6 = 0;
+        Hud_closeHudMenu(self->field_0x74);
         return MGame_jumpFinish(status, 1);
     }
 
     if (Status_inAlienOrbit() == 0) {
-        if (PlayerEgo_hasVolatileGoods(F<PlayerEgo *>(self, 0x58)) != 0) {
+        if (PlayerEgo_hasVolatileGoods(self->field_0x58) != 0) {
             void *txt = GameText_getText(**g_kdVolText);
-            ChoiceWindow_set(F<void *>(self, 0x94), txt);
-            F<uint8_t>(self, 0x5d) = 1;
-            F<uint8_t>(self, 0xce) = 1;
-            F<uint8_t>(self, 0x111) = 1;
-            F<uint8_t>(self, 0xd6) = 0;
-            Hud_closeHudMenu(F<void *>(self, 0x74));
+            ChoiceWindow_set(self->field_0x94, txt);
+            self->field_0x5d = 1;
+            self->field_0xce = 1;
+            self->field_0x111 = 1;
+            self->field_0xd6 = 0;
+            Hud_closeHudMenu(self->field_0x74);
             MGame_pauseSounds(self);
-            F<uint8_t>(self, 0x17c) = 0;
+            self->field_0x17c = 0;
             return;
         }
-        if (F<int>(self, 0x90) == 0) {
+        if (self->field_0x90 == 0) {
             StarMap *sm = (StarMap *)operator_new(0x1e8);
             StarMap_ctor(sm, 0, 0, 0, -1);
-            F<StarMap *>(self, 0x90) = sm;
+            self->field_0x90 = sm;
         }
         Engine *eng = (Engine *)ApplicationManager_GetEngine();
         Engine_SetPostEffect(eng, g_kdPostEffect, 0);
-        StarMap_initLights(F<StarMap *>(self, 0x90));
-        F<uint8_t>(self, 0xdd) = 1;
-        StarMap_setJumpMapMode(F<StarMap *>(self, 0x90), 1, 1);
+        StarMap_initLights(self->field_0x90);
+        self->field_0xdd = 1;
+        StarMap_setJumpMapMode(self->field_0x90, 1, 1);
         if (Status_inAlienOrbit() == 0)
-            StarMap_askForJumpIntoAlienWorld(F<StarMap *>(self, 0x90));
-        F<uint8_t>(self, 0x5d) = 1;
-        F<uint8_t>(self, 0xc7) = 1;
+            StarMap_askForJumpIntoAlienWorld(self->field_0x90);
+        self->field_0x5d = 1;
+        self->field_0xc7 = 1;
         MGame_pauseSounds(self);
-        F<uint8_t>(self, 0xd6) = 0;
-        return MGame_starMapShown(F<int>(self, 0x74));
+        self->field_0xd6 = 0;
+        return MGame_starMapShown(self->field_0x74);
     }
 
     // In alien orbit.
@@ -1358,12 +1363,12 @@ extern "C" void MGame_UseKhadorDrive(MGame *self) {
         *(int *)((char *)*status + 0x84) = 100;
     int station = Galaxy_getStation(**g_kdGalaxy);
     **g_kdAlienDst = station;
-    F<uint8_t>(self, 0xdd) = 1;
+    self->field_0xdd = 1;
     MGame_startChargingJumpDrive(self);
-    F<uint8_t>(self, 0x5d) = 0;
+    self->field_0x5d = 0;
     MGame_resumeSounds(self);
-    F<uint8_t>(self, 0xd6) = 0;
-    return MGame_starMapShown(F<int>(self, 0x74));
+    self->field_0xd6 = 0;
+    return MGame_starMapShown(self->field_0x74);
 }
 
 // ---- OnInitialize_177c50.cpp ----
@@ -1398,9 +1403,9 @@ extern "C" void MGame_OnInitialize(MGame *self) {
     int *guard = g_initGuard;
     int g0 = *guard;
 
-    F<uint8_t>(self, 0x1ec) = 0;   // this[2].field_4C low byte
-    Level *level = F<Level *>(self, 0x78);
-    F<int>(self, 0xc) = 100;
+    self->field_0x1ec = 0;   // this[2].field_4C low byte
+    Level *level = self->field_0x78;
+    self->field_0xc = 100;
 
     if (level == 0) {
         // Create skybox cube texture from the current system / alien orbit.
@@ -1412,8 +1417,8 @@ extern "C" void MGame_OnInitialize(MGame *self) {
         } else {
             texSel = 0x2f08;
         }
-        PaintCanvas_TextureCreate(F<unsigned>(self, 0x4), &texSel, 0);
-        PaintCanvas_ChangeCubeTexture(F<unsigned>(self, 0x4));
+        PaintCanvas_TextureCreate(self->field_0x4, &texSel, 0);
+        PaintCanvas_ChangeCubeTexture(self->field_0x4);
 
         // Build the per-session sound-resource list (long sequential block).
         MGame_loadSoundResources(self);
@@ -1421,11 +1426,11 @@ extern "C" void MGame_OnInitialize(MGame *self) {
         Status_checkForLevelUp();
         level = (Level *)operator_new(0x2a0);
         Level_ctor(level, 3);
-        F<Level *>(self, 0x78) = level;
+        self->field_0x78 = level;
     }
 
     if (Level_init(level) == 0) {
-        F<int>(self, 0xc) = 100;
+        self->field_0xc = 100;
         if (*guard != g0) __stack_chk_fail();
         return;
     }
@@ -1434,7 +1439,7 @@ extern "C" void MGame_OnInitialize(MGame *self) {
 
     int *status = g_initStatus;
     MGame_restorePlayerStats(self);
-    PlayerEgo_resetLastHP(F<PlayerEgo *>(self, 0x58));
+    PlayerEgo_resetLastHP(self->field_0x58);
 
     // Per-mission HP cap and alien-orbit station bookkeeping.
     if (Status_getCurrentCampaignMission() != 0x5f) {
@@ -1444,12 +1449,12 @@ extern "C" void MGame_OnInitialize(MGame *self) {
         *(int *)((char *)*status + 0x84) = Station_getIndex(Status_getStation());
 
     unsigned t = ApplicationManager_GetCurrentTimeMillis();
-    F<int>(self, 0x1ac) = 0;   // this[1].field_A4
-    F<int>(self, 0x1b4) = 0;   // this[1].field_AC
-    F<unsigned>(self, 0x20) = t & 0xffff;
-    F<unsigned>(self, 0x24) = 0;
-    F<unsigned>(self, 0x28) = t & 0xffff;
-    F<unsigned>(self, 0x2c) = 0;
+    self->field_0x1ac = 0;   // this[1].field_A4
+    self->field_0x1b4 = 0;   // this[1].field_AC
+    self->field_0x20 = t & 0xffff;
+    self->field_0x24 = 0;
+    self->field_0x28 = t & 0xffff;
+    self->field_0x2c = 0;
 
     if (Radar_hasScanner() != 0)
         *(int *)((char *)*status + 0x11c) = 0;
@@ -1460,52 +1465,52 @@ extern "C" void MGame_OnInitialize(MGame *self) {
 
     int eq = Ship_getFirstEquipmentOfSort(Status_getShip());
     if (eq != 0) {
-        F<int>(self, 0x1b4) = Item_getAttribute(eq);
-        F<int>(self, 0x1b0) = Item_getAttribute(eq);
-        Hud_setTimeExtender(F<void *>(self, 0x74), 1, 0, 1);
+        self->field_0x1b4 = Item_getAttribute(eq);
+        self->field_0x1b0 = Item_getAttribute(eq);
+        Hud_setTimeExtender(self->field_0x74, 1, 0, 1);
     }
 
     // Alien-orbit / black-market radio messages.
     if (Status_dlc1Won() != 0 && Status_inAlienOrbit() != 0 &&
         Status_getCurrentCampaignMission() < 0x93) {
-        if (F<int>(self, 0x58) != 0 && F<int>(self, 0x84) != 0)
-            *(int *)((char *)F<int>(self, 0x58) + 0x18) = F<int>(self, 0x84);
-        Level_createRadioMessage(F<int>(self, 0x78), 8);
+        if (self->field_0x58 != 0 && self->field_0x84 != 0)
+            *(int *)((char *)self->field_0x58 + 0x18) = self->field_0x84;
+        Level_createRadioMessage(self->field_0x78, 8);
     }
 
     if (Status_inBlackMarketSystem() == 0) {
         *(uint16_t *)((char *)*status + 0x110) = 0;
     } else {
-        if (F<int>(self, 0x58) != 0 && F<int>(self, 0x84) != 0)
-            *(int *)((char *)F<int>(self, 0x58) + 0x18) = F<int>(self, 0x84);
+        if (self->field_0x58 != 0 && self->field_0x84 != 0)
+            *(int *)((char *)self->field_0x58 + 0x18) = self->field_0x84;
         if (*(uint8_t *)((char *)*status + 0x110) == 0) {
             int id;
             int lvl;
             if (*(uint8_t *)((char *)*status + 0x111) == 0) {
-                int enemies = Level_getEnemies(F<Level *>(self, 0x78));
+                int enemies = Level_getEnemies(self->field_0x78);
                 if (enemies != 0) {
                     int n = *(int *)enemies;
                     for (int i = 0; i < n; i++) {
                         int e = *(int *)(*(int *)((char *)enemies + 4) + i * 4);
-                        if (*(int *)((char *)e + 0x28) == 8)
-                            *(uint8_t *)((char *)e + 0x25) = 0;
+                        if (e->field_0x28 == 8)
+                            e->field_0x25 = 0;
                     }
                 }
-                lvl = F<int>(self, 0x78);
+                lvl = self->field_0x78;
                 id = 9;
             } else {
-                lvl = F<int>(self, 0x78);
+                lvl = self->field_0x78;
                 id = 0xd;
             }
             Level_createRadioMessage(lvl, id);
         } else {
-            int enemies = Level_getEnemies(F<Level *>(self, 0x78));
+            int enemies = Level_getEnemies(self->field_0x78);
             if (enemies != 0) {
                 int n = *(int *)enemies;
                 for (int i = 0; i < n; i++) {
                     int e = *(int *)(*(int *)((char *)enemies + 4) + i * 4);
-                    if (*(int *)((char *)e + 0x28) == 8)
-                        *(uint8_t *)((char *)e + 0x25) = 0;
+                    if (e->field_0x28 == 8)
+                        e->field_0x25 = 0;
                 }
             }
         }
@@ -1539,29 +1544,29 @@ extern "C" void MGame_freeCamTouchMove(MGame *self, int x, int y, void *touchId)
     int *guard = g_fcGuard;
     int g0 = *guard;
 
-    if (PlayerEgo_isMining(F<PlayerEgo *>(self, 0x58)) != 0) {
-        F<uint8_t>(self, 0x111) = 1;
+    if (PlayerEgo_isMining(self->field_0x58) != 0) {
+        self->field_0x111 = 1;
         if (*guard - g0 == 0)
             return MGame_freeCamPanDone(self, (int)touchId);
         __stack_chk_fail();
         return;
     }
-    F<uint8_t>(self, 0x111) = 0;
+    self->field_0x111 = 0;
 
-    int t0 = F<int>(self, 0x98);
-    int t1 = F<int>(self, 0x9c);
+    int t0 = self->field_0x98;
+    int t1 = self->field_0x9c;
     if (t0 == 0 || t1 == 0) {
         // Single-finger pan: accumulate rotation deltas.
-        int dy = y - F<int>(self, 0x124);
-        int dx = (int)touchId - F<int>(self, 0x128);
-        F<int>(self, 0x124) = x;
-        F<int>(self, 0x128) = (int)touchId;
-        F<int>(self, 0x134) = dy;
-        F<int>(self, 0x138) = dx;
-        F<int>(self, 0x13c) = 0x3f800000;
-        F<int>(self, 0x140) = 0x3f800000;
-        F<float>(self, 0x118) += (float)dy;
-        F<float>(self, 0x11c) += (float)dx;
+        int dy = y - self->field_0x124;
+        int dx = (int)touchId - self->field_0x128;
+        self->field_0x124 = x;
+        self->field_0x128 = (int)touchId;
+        self->field_0x134 = dy;
+        self->field_0x138 = dx;
+        self->field_0x13c = 0x3f800000;
+        self->field_0x140 = 0x3f800000;
+        self->field_0x118 += (float)dy;
+        self->field_0x11c += (float)dx;
 
         if (t0 == 0) {
             float v[4]; v[0] = (float)x; v[1] = (float)(int)touchId; v[2] = 0;
@@ -1581,25 +1586,25 @@ extern "C" void MGame_freeCamTouchMove(MGame *self, int x, int y, void *touchId)
     float oldLen = Vector_length((Vector *)tmp);
     float newLen = oldLen;
 
-    if (F<int>(self, 0x98) == (int)touchId) {
+    if (self->field_0x98 == (int)touchId) {
         float v[4]; v[0] = (float)x; v[1] = (float)(int)touchId; v[2] = 0;
         Vector_sub((Vector *)tmp, base, (Vector *)v);
         newLen = Vector_length((Vector *)tmp);
         Vector_assign(base, (Vector *)v);
-    } else if (F<int>(self, 0x9c) == (int)touchId) {
+    } else if (self->field_0x9c == (int)touchId) {
         float v[4]; v[0] = (float)x; v[1] = (float)(int)touchId; v[2] = 0;
         Vector_sub((Vector *)tmp, base, (Vector *)v);
         newLen = Vector_length((Vector *)tmp);
         Vector_assign((Vector *)((char *)self + 0xb0), (Vector *)v);
     }
 
-    float zoom = F<float>(self, 0xbc) + (newLen - oldLen) * g_fcRotScale;
-    F<float>(self, 0xbc) = zoom;
+    float zoom = self->field_0xbc + (newLen - oldLen) * g_fcRotScale;
+    self->field_0xbc = zoom;
     if (zoom > g_fcZoomMax || zoom < g_fcZoomMin) {
         zoom = (zoom > g_fcZoomMax) ? g_fcZoomMax : g_fcZoomMin;
-        F<float>(self, 0xbc) = zoom;
+        self->field_0xbc = zoom;
     }
-    TFC_zoomTarget(F<void *>(self, 0xf4), zoom);
+    TFC_zoomTarget(self->field_0xf4, zoom);
 
     if (*guard != g0) __stack_chk_fail();
 }
@@ -1625,26 +1630,26 @@ extern "C" void MGame_OnTouchEnd(MGame *self, int p1, int p2, void *touchId) {
     int g0 = *guard;
 
     // Release the tracked touch id if this is the one we were following.
-    if (F<void *>(self, 0xc0) == touchId) {
-        F<uint8_t>(self, 0xc0) = 0;
-        F<uint8_t>(self, 0xc1) = 0;
-        F<uint8_t>(self, 0xc2) = 0;
-        F<uint8_t>(self, 0xc3) = 0;
+    if (self->field_0xc0 == touchId) {
+        self->field_0xc0 = 0;
+        self->field_0xc1 = 0;
+        self->field_0xc2 = 0;
+        self->field_0xc3 = 0;
     }
 
-    int wasAutoPilot = PlayerEgo_isAutoPilot(F<PlayerEgo *>(self, 0x58));
-    F<int>(self, 0x1a8) = 0x3f800000;                 // this[1].field_A0 (fast-forward weight)
-    TFC_setFastForwardMode(F<TargetFollowCamera *>(self, 0xf4), 0);
+    int wasAutoPilot = PlayerEgo_isAutoPilot(self->field_0x58);
+    self->field_0x1a8 = 0x3f800000;                 // this[1].field_A0 (fast-forward weight)
+    TFC_setFastForwardMode(self->field_0xf4, 0);
     // (*ppPVar1)[3].field_18 == ego + 0x... resume-flag.
-    *(uint8_t *)((char *)F<int>(self, 0x58) + 0x150) = 1;
+    *(uint8_t *)((char *)self->field_0x58 + 0x150) = 1;
 
     unsigned hr = 0;
-    if (F<uint8_t>(self, 0x5d) == 0) {
-        hr = Hud_touchEnd(F<void *>(self, 0x74), p1, p2, touchId);
-        F<int>(self, 0xf8) = hr;
+    if (self->field_0x5d == 0) {
+        hr = Hud_touchEnd(self->field_0x74, p1, p2, touchId);
+        self->field_0xf8 = hr;
         if (hr != 0) {
-            F<int>(self, 0x98) = 0;
-            F<int>(self, 0x9c) = 0;
+            self->field_0x98 = 0;
+            self->field_0x9c = 0;
         }
     }
 
@@ -1693,15 +1698,15 @@ __attribute__((visibility("hidden"))) extern uint8_t **g_scFlag; // @0x1904aa
 
 // Bind a DialogueWindow to the current level (duplicated block at 0x1019020c/0x190020).
 static void bindDlg(MGame *self) {
-    if (F<int>(self, 0x8c) == 0) {
+    if (self->field_0x8c == 0) {
         DialogueWindow *w = (DialogueWindow *)operator_new(0x74);
         DialogueWindow_ctor(w);
-        Level *lvl = F<Level *>(self, 0x78);
-        F<int>(self, 0x8c) = (int)w;
+        Level *lvl = self->field_0x78;
+        self->field_0x8c = (int)w;
         if (lvl != 0) DialogueWindow_setLevel(w, lvl);
-    } else if (DialogueWindow_hasLevel(F<DialogueWindow *>(self, 0x8c)) == 0) {
-        Level *lvl = F<Level *>(self, 0x78);
-        if (lvl != 0) DialogueWindow_setLevel(F<DialogueWindow *>(self, 0x8c), lvl);
+    } else if (DialogueWindow_hasLevel(self->field_0x8c) == 0) {
+        Level *lvl = self->field_0x78;
+        if (lvl != 0) DialogueWindow_setLevel(self->field_0x8c, lvl);
     }
 }
 
@@ -1710,15 +1715,15 @@ extern "C" void MGame_successCheck(MGame *self) {
     int *guard = g_scGuard;
     int g0 = *guard;
 
-    bool timed = !(F<int>(self, 0x4c) < (int)(F<unsigned>(self, 0x48) < 0x1389));
-    if (timed || F<uint8_t>(self, 0xdc) != 0) {
+    bool timed = !(self->field_0x4c < (int)(self->field_0x48 < 0x1389));
+    if (timed || self->field_0xdc != 0) {
         if (Mission_getType(Status_getCampaignMission()) != 0xaa) goto done;
     }
 
     {
         int *status = g_scStatus;
         int mc = Status_missionCompleted(*status, 0, 0);
-        int obj = Level_checkObjective(F<int>(self, 0x78));
+        int obj = Level_checkObjective(self->field_0x78);
         if (mc == 0 && obj == 0) goto done;
     }
 
@@ -1743,7 +1748,7 @@ extern "C" void MGame_successCheck(MGame *self) {
                     int cm2 = Status_getCurrentCampaignMission();
                     if (DialogueWindow_hasSuccessDialogue(cm2) == 0) {
                         Status_nextCampaignMission(*status);
-                        Level_removeObjectives(F<Level *>(self, 0x78));
+                        Level_removeObjectives(self->field_0x78);
                         Status_setMission(status);
                     }
                 }
@@ -1751,55 +1756,55 @@ extern "C" void MGame_successCheck(MGame *self) {
             }
             // fallthrough: has success dialogue -> show it.
             bindDlg(self);
-            DialogueWindow_set(F<DialogueWindow *>(self, 0x8c),
+            DialogueWindow_set(self->field_0x8c,
                                (int)Status_getMission(), 1);
-            F<uint16_t>(self, 0x5d) = 0x101;
+            self->field_0x5d = 0x101;
             MGame_pauseSounds(self);
 
             int cm = Status_getCurrentCampaignMission();
             if (Mission_isCampaignMission(Status_getMission()) != 0 && cm == 0x26) {
-                int enemies = Level_getEnemies(F<Level *>(self, 0x78));
+                int enemies = Level_getEnemies(self->field_0x78);
                 unsigned n = *(unsigned *)enemies;
                 for (unsigned i = 0; i < n; i++) {
                     int e = *(int *)(*(int *)((char *)enemies + 4) + i * 4);
-                    if (*(uint8_t *)((char *)e + 0x40) != 0 &&
+                    if (e->field_0x40 != 0 &&
                         KIPlayer_isDead((KIPlayer *)e) == 0)
-                        Player_setHitpoints(*(Player **)((char *)e + 4),
-                                            *(int *)((char *)e + 4));
+                        Player_setHitpoints(e->field_0x4,
+                                            e->field_0x4);
                 }
             } else if (Mission_isCampaignMission(Status_getMission()) != 0 && cm == 0x38) {
-                StarSystem *ss = Level_getStarSystem(F<Level *>(self, 0x78));
+                StarSystem *ss = Level_getStarSystem(self->field_0x78);
                 StarSystem_getPlanets(ss);
                 int pts[3] = {0, 0, 0};
                 Route *route = (Route *)operator_new(0x18);
                 Route_ctor(route, pts, 3);
-                int enemies = Level_getEnemies(F<Level *>(self, 0x78));
+                int enemies = Level_getEnemies(self->field_0x78);
                 unsigned n = *(unsigned *)enemies;
                 for (unsigned i = 0; i < n; i++) {
                     KIPlayer *k = *(KIPlayer **)(*(int *)((char *)enemies + 4) + i * 4);
-                    if (*(int *)((char *)k + 0x28) == 1) {
+                    if (k->field_0x28 == 1) {
                         Route *rc = (Route *)Route_clone(route);
                         KIPlayer_setRoute(k, rc);
                     }
                 }
                 operator_delete(Route_dtor(route));
             } else if (Mission_isCampaignMission(Status_getMission()) != 0 && cm == 0x3f) {
-                int enemies = Level_getEnemies(F<Level *>(self, 0x78));
+                int enemies = Level_getEnemies(self->field_0x78);
                 unsigned n = *(unsigned *)enemies;
                 for (unsigned i = 0; i < n; i++) {
                     int e = *(int *)(*(int *)((char *)enemies + 4) + i * 4);
-                    if (*(int *)((char *)e + 0x28) == 8)
-                        Player_removeAllGuns(*(Player **)((char *)e + 4));
+                    if (e->field_0x28 == 8)
+                        Player_removeAllGuns(e->field_0x4);
                 }
             } else if (Mission_isCampaignMission(Status_getMission()) != 0 && cm == 0x49) {
-                int enemies = Level_getEnemies(F<Level *>(self, 0x78));
+                int enemies = Level_getEnemies(self->field_0x78);
                 unsigned n = *(unsigned *)enemies;
                 for (unsigned i = 0; i < n; i++) {
                     PlayerFixedObject *o = *(PlayerFixedObject **)(*(int *)((char *)enemies + 4) + i * 4);
-                    if (*(uint8_t *)((char *)o + 0x40) != 0 &&
+                    if (o->field_0x40 != 0 &&
                         KIPlayer_isDead((KIPlayer *)o) == 0) {
-                        Player_setHitpoints(*(Player **)((char *)o + 4),
-                                            *(int *)((char *)o + 4));
+                        Player_setHitpoints(o->field_0x4,
+                                            o->field_0x4);
                         PlayerFixedObject_setMoving(o, 1);
                     }
                 }
@@ -1814,8 +1819,8 @@ extern "C" void MGame_successCheck(MGame *self) {
         bindDlg(self);
         int m = Status_getCurrentCampaignMission() == 0 ? (int)Status_getMission()
                                                          : Status_getCurrentCampaignMission();
-        DialogueWindow_set(F<DialogueWindow *>(self, 0x8c), m, 1);
-        F<uint16_t>(self, 0x5d) = 0x101;
+        DialogueWindow_set(self->field_0x8c, m, 1);
+        self->field_0x5d = 0x101;
         MGame_pauseSounds(self);
         goto done;
     }
@@ -1855,8 +1860,8 @@ __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 // MGame::resumeSounds(): resume FMOD, the player's engine sound, and every enemy's.
 extern "C" void MGame_resumeSounds(MGame *self) {
     FModSound_resumeAll(*g_fmod);
-    PlayerEgo_ResumeEngineSound(F<PlayerEgo *>(self, 0x58));
-    EnemyList *e = Level_getEnemies(F<Level *>(self, 0x78));
+    PlayerEgo_ResumeEngineSound(self->field_0x58);
+    EnemyList *e = Level_getEnemies(self->field_0x78);
     if (e == 0) return;
     for (uint32_t i = 0; i < e->size; i++)
         KIPlayer_ResumeEngineSound(e->data[i]);
@@ -1878,20 +1883,20 @@ __attribute__((visibility("hidden"))) extern int **g_alienCost;   // DAT_18a140
 // MGame::startChargingJumpDrive(): if the jump drive is armed, validate fuel/cargo, then
 // either pop a "no fuel" choice dialogue or actually trigger the hyperspace jump.
 extern "C" void MGame_startChargingJumpDrive(MGame *self) {
-    if (F<uint8_t>(self, 0xdd) == 0) return;
+    if (self->field_0xdd == 0) return;
     Status **sp = g_status;
     int needed = 1;
     if (Ship_hasCargo(Status_getShip(*sp), 0x7a, 1) == 0) {
-        ChoiceWindow *w = F<ChoiceWindow *>(self, 0x94);
+        ChoiceWindow *w = self->field_0x94;
         if (w == 0) {
             w = (ChoiceWindow *)MGame_opnew(0x5c);
             ChoiceWindow_ctor(w);
-            F<ChoiceWindow *>(self, 0x94) = w;
+            self->field_0x94 = w;
         }
         void *txt = GameText_getText(**(int **)g_status, 0x243);
         ChoiceWindow_set(w, txt);
-        F<uint8_t>(self, 0x5d) = 1;
-        F<uint8_t>(self, 0xce) = 1;
+        self->field_0x5d = 1;
+        self->field_0xce = 1;
         MGame_pauseSounds(self);
         **g_jumpCost = 0;
         return;
@@ -1908,26 +1913,26 @@ extern "C" void MGame_startChargingJumpDrive(MGame *self) {
     }
     Ship_getCargo(Status_getShip(*sp), 0x7a);
     if (Item_getAmount(0) < cost) {
-        ChoiceWindow *w = F<ChoiceWindow *>(self, 0x94);
+        ChoiceWindow *w = self->field_0x94;
         if (w == 0) {
             w = (ChoiceWindow *)MGame_opnew(0x5c);
             ChoiceWindow_ctor(w);
-            F<ChoiceWindow *>(self, 0x94) = w;
+            self->field_0x94 = w;
         }
         int hc2 = Status_hardCoreMode();
         void *txt = GameText_getText(**(int **)g_status, hc2 != 0 ? 0x243 : 0x244);
         ChoiceWindow_set(w, txt);
-        F<uint8_t>(self, 0x5d) = 1;
-        F<uint8_t>(self, 0xce) = 1;
+        self->field_0x5d = 1;
+        self->field_0xce = 1;
         MGame_pauseSounds(self);
         *jf = 0;
         return;
     }
-    PlayerEgo_startJumpDrive(F<PlayerEgo *>(self, 0x58));
+    PlayerEgo_startJumpDrive(self->field_0x58);
     if (*jf != F<int>((MGame *)*sp, 0x78)) {
         if (Status_inAlienOrbit() == 0) needed = **g_alienCost;
     }
-    Hud_hudEvent(F<Hud *>(self, 0x74), 0x1e, F<PlayerEgo *>(self, 0x58), needed);
+    Hud_hudEvent(self->field_0x74, 0x1e, self->field_0x58, needed);
     Ship_removeCargo(Status_getShip(*sp), 0x7a, needed);
 }
 
@@ -1943,10 +1948,10 @@ __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 // MGame::pauseSounds(): snapshot the pause flag, pause FMOD, the player's engine sound,
 // and every enemy's.
 extern "C" void MGame_pauseSounds(MGame *self) {
-    F<uint8_t>(self, 0x1a6) = F<uint8_t>(self, 0x5d);
+    self->field_0x1a6 = self->field_0x5d;
     FModSound_pauseAllPlayingSoundFXEvents(*g_fmod);
-    PlayerEgo_PauseEngineSound(F<PlayerEgo *>(self, 0x58));
-    EnemyList *e = Level_getEnemies(F<Level *>(self, 0x78));
+    PlayerEgo_PauseEngineSound(self->field_0x58);
+    EnemyList *e = Level_getEnemies(self->field_0x78);
     if (e != 0) {
         for (uint32_t i = 0; i < e->size; i++)
             KIPlayer_PauseEngineSound(e->data[i]);
@@ -2003,29 +2008,29 @@ __attribute__((visibility("hidden"))) extern uint8_t **g_resPauseSrc; // @0x1886
 
 // MGame::reset(): rebuild all per-session subsystems and reset transient state.
 extern "C" void MGame_reset(MGame *self) {
-    F<int>(self, 0xbc) = 0; F<int>(self, 0xc0) = 0;
-    F<int>(self, 0x98) = 0; F<int>(self, 0x9c) = 0;
-    F<int>(self, 0xa0) = 0;
-    F<int>(self, 0x154) = 0; F<int>(self, 0x158) = 0;
-    F<int>(self, 0x138) = 0;
-    F<uint8_t>(self, 0x15c) = 0;
-    F<int>(self, 0x118) = g_resAspectC;
-    F<int>(self, 0x11c) = g_resAspectA;
-    F<int>(self, 0x120) = g_resAspectB;
-    F<int>(self, 0x124) = 0; F<int>(self, 0x128) = 0;
-    F<int>(self, 300) = 0;   // 0x12c
-    F<int>(self, 0x130) = 0; F<int>(self, 0x134) = 0;
+    self->field_0xbc = 0; self->field_0xc0 = 0;
+    self->field_0x98 = 0; self->field_0x9c = 0;
+    self->field_0xa0 = 0;
+    self->field_0x154 = 0; self->field_0x158 = 0;
+    self->field_0x138 = 0;
+    self->field_0x15c = 0;
+    self->field_0x118 = g_resAspectC;
+    self->field_0x11c = g_resAspectA;
+    self->field_0x120 = g_resAspectB;
+    self->field_0x124 = 0; self->field_0x128 = 0;
+    self->field_0x12c = 0;   // 0x12c
+    self->field_0x130 = 0; self->field_0x134 = 0;
 
-    F<int>(self, 0x58) = Level_getPlayer(self);
+    self->field_0x58 = Level_getPlayer(self);
 
     Hud *hud = (Hud *)operator_new(0x53c);
     Hud_ctor(hud);
-    F<Hud *>(self, 0x74) = hud;
+    self->field_0x74 = hud;
 
     Radio *radio = (Radio *)operator_new(0x48);
     Radio_ctor(radio);
-    F<Radio *>(self, 0x84) = radio;
-    Radio_setMessages(radio, Level_getMessages(F<Level *>(self, 0x78)));
+    self->field_0x84 = radio;
+    Radio_setMessages(radio, Level_getMessages(self->field_0x78));
 
     PaintCanvas *pc = *g_resCanvas;
     PaintCanvas_CameraCreate(pc, (unsigned *)((char *)self + 0xf0));
@@ -2039,77 +2044,77 @@ extern "C" void MGame_reset(MGame *self) {
     }
     PaintCanvas_CameraSetPerspective(cam, fov, 0, 0);
 
-    if (F<TargetFollowCamera *>(self, 0xf4) != 0) {
-        operator_delete(TargetFollowCamera_dtor(F<TargetFollowCamera *>(self, 0xf4)));
-        F<int>(self, 0xf4) = 0;
+    if (self->field_0xf4 != 0) {
+        operator_delete(TargetFollowCamera_dtor(self->field_0xf4));
+        self->field_0xf4 = 0;
     }
     TargetFollowCamera *tfc = (TargetFollowCamera *)operator_new(0x178);
-    TargetFollowCamera_ctor(tfc, F<int>(self, 0xf0),
-                            *(int *)((char *)F<int>(self, 0x58) + 8), 0, 0, 0, 0, 0, 0);
-    F<TargetFollowCamera *>(self, 0xf4) = tfc;
-    PaintCanvas_CameraSetCurrent(pc, F<unsigned>(self, 0xf0));
-    PlayerEgo_setTargetFollowCamera(F<PlayerEgo *>(self, 0x58), F<TargetFollowCamera *>(self, 0xf4));
-    TargetFollowCamera_resetShipHandling(F<TargetFollowCamera *>(self, 0xf4));
+    TargetFollowCamera_ctor(tfc, self->field_0xf0,
+                            *(int *)((char *)self->field_0x58 + 8), 0, 0, 0, 0, 0, 0);
+    self->field_0xf4 = tfc;
+    PaintCanvas_CameraSetCurrent(pc, self->field_0xf0);
+    PlayerEgo_setTargetFollowCamera(self->field_0x58, self->field_0xf4);
+    TargetFollowCamera_resetShipHandling(self->field_0xf4);
 
     Radar *radar = (Radar *)operator_new(0x248);
-    Radar_ctor(radar, F<Level *>(self, 0x78));
-    F<Radar *>(self, 0x80) = radar;
+    Radar_ctor(radar, self->field_0x78);
+    self->field_0x80 = radar;
 
     if (Status_getMission() != 0)
-        F<uint8_t>(self, 0x61) = (uint8_t)Mission_isCampaignMission(Status_getMission());
+        self->field_0x61 = (uint8_t)Mission_isCampaignMission(Status_getMission());
 
     LevelScript *script = (LevelScript *)operator_new(0xe8);
-    LevelScript_ctor(script, F<Hud *>(self, 0x74), F<Level *>(self, 0x78),
-                     F<Radar *>(self, 0x80), F<TargetFollowCamera *>(self, 0xf4));
-    F<LevelScript *>(self, 0x7c) = script;
-    LevelScript_lookBehind(script, F<int>(self, 0x78));
-    Level_initParticleSystems(F<Level *>(self, 0x78));
+    LevelScript_ctor(script, self->field_0x74, self->field_0x78,
+                     self->field_0x80, self->field_0xf4);
+    self->field_0x7c = script;
+    LevelScript_lookBehind(script, self->field_0x78);
+    Level_initParticleSystems(self->field_0x78);
 
     ChoiceWindow *cw = (ChoiceWindow *)operator_new(0x5c);
     ChoiceWindow_ctor(cw);
-    F<ChoiceWindow *>(self, 0x94) = cw;
+    self->field_0x94 = cw;
 
-    F<int>(self, 0x48) = 0; F<int>(self, 0x4c) = 0;
-    F<int>(self, 0x14) = 0;
-    F<uint8_t>(self, 0x18) = 0;
-    F<uint16_t>(self, 0x5c) = 0;
-    F<uint16_t>(self, 0x5f) = 0;
-    F<uint16_t>(self, 0xc4) = 0;
-    F<uint8_t>(self, 0xc6) = 0;
-    F<uint16_t>(self, 0xc8) = 0;
-    F<uint8_t>(self, 0xe0) = 0;
-    F<uint8_t>(self, 0x15e) = 0;
-    F<uint8_t>(self, 0x110) = 0;
-    F<int>(self, 0x168) = 0x3f800000;
-    F<int>(self, 0x1b0) = 0;
-    F<int>(self, 0x1b4) = g_resInitB;
-    F<int>(self, 0x100) = 0;
-    F<int>(self, 0x104) = 0; F<int>(self, 0x108) = 0; F<int>(self, 0x10c) = 0;
-    F<uint16_t>(self, 0x1b8) = 0;
-    F<int>(self, 0x1cc) = (*g_resShipTune)[0x2f4 / 4];
-    F<int>(self, 0x1d0) = 0;
-    F<int>(self, 0x1e8) = 0;
-    F<int>(self, 0x178) = 0;
-    F<uint8_t>(self, 0x17c) = 0;
-    F<int>(self, 0x180) = 0; F<int>(self, 0x184) = 0;
+    self->field_0x48 = 0; self->field_0x4c = 0;
+    self->field_0x14 = 0;
+    self->field_0x18 = 0;
+    self->field_0x5c = 0;
+    self->field_0x5f = 0;
+    self->field_0xc4 = 0;
+    self->field_0xc6 = 0;
+    self->field_0xc8 = 0;
+    self->field_0xe0 = 0;
+    self->field_0x15e = 0;
+    self->field_0x110 = 0;
+    self->field_0x168 = 0x3f800000;
+    self->field_0x1b0 = 0;
+    self->field_0x1b4 = g_resInitB;
+    self->field_0x100 = 0;
+    self->field_0x104 = 0; self->field_0x108 = 0; self->field_0x10c = 0;
+    self->field_0x1b8 = 0;
+    self->field_0x1cc = (*g_resShipTune)[0x2f4 / 4];
+    self->field_0x1d0 = 0;
+    self->field_0x1e8 = 0;
+    self->field_0x178 = 0;
+    self->field_0x17c = 0;
+    self->field_0x180 = 0; self->field_0x184 = 0;
 
     unsigned t = ApplicationManager_GetCurrentTimeMillis();
-    F<uint16_t>(self, 0x111) = 0x101;
-    F<uint8_t>(self, 0xcf) = 0;
-    F<int>(self, 0xd0) = 0;
-    F<uint8_t>(self, 0xd4) = 0;
-    F<uint16_t>(self, 0x1e4) = 0;
-    F<uint8_t>(self, 0x1e6) = 0;
-    F<unsigned>(self, 0x20) = t & 0xffff;
-    F<unsigned>(self, 0x24) = 0;
-    F<unsigned>(self, 0x28) = t & 0xffff;
-    F<unsigned>(self, 0x2c) = 0;
-    F<uint8_t>(self, 0x1dd) = **g_resPauseSrc;
+    self->field_0x111 = 0x101;
+    self->field_0xcf = 0;
+    self->field_0xd0 = 0;
+    self->field_0xd4 = 0;
+    self->field_0x1e4 = 0;
+    self->field_0x1e6 = 0;
+    self->field_0x20 = t & 0xffff;
+    self->field_0x24 = 0;
+    self->field_0x28 = t & 0xffff;
+    self->field_0x2c = 0;
+    self->field_0x1dd = **g_resPauseSrc;
 
     int s = *status;
-    *(int *)((char *)s + 0x184) = 0;
-    *(int *)((char *)s + 0x188) = 1;
-    *(int *)((char *)s + 0x18c) = 1;
+    s->field_0x184 = 0;
+    s->field_0x188 = 1;
+    s->field_0x18c = 1;
 }
 
 // ---- handleAccelerometer_178714.cpp ----
@@ -2138,21 +2143,21 @@ extern "C" void MGame_handleAccelerometer(MGame *self) {
     if (yaw <= 1.0f) {
         steer = -1.0f;
         if (yaw < -1.0f) {
-            PlayerEgo_left(F<PlayerEgo *>(self, 0x58), steer * steer);
+            PlayerEgo_left(self->field_0x58, steer * steer);
             goto afterYaw;
         }
         steer = yaw;
         if (yaw < 0.0f) {
-            PlayerEgo_left(F<PlayerEgo *>(self, 0x58), steer * steer);
+            PlayerEgo_left(self->field_0x58, steer * steer);
             goto afterYaw;
         }
         if (yaw == 0.0f)
             goto afterYaw;
     }
-    PlayerEgo_right(F<PlayerEgo *>(self, 0x58), steer * steer);
+    PlayerEgo_right(self->field_0x58, steer * steer);
 
 afterYaw: {
-    int field8 = F<int>(self, 0x8);
+    int field8 = self->field_0x8;
 
     MGame_accelCtxBegin(field8);
     double *v1 = MGame_accelCtxValue();
@@ -2197,21 +2202,21 @@ afterYaw: {
     float roll = (aAbs < bAbs) ? b3 : a3;
 
     float rollMag = 1.0f;
-    int shipOff = (F<int>(self, 0x16c) > 0) ? 0x44 : 0x40;
+    int shipOff = (self->field_0x16c > 0) ? 0x44 : 0x40;
     if (roll <= 1.0f) {
         rollMag = -1.0f;
         if (roll < -1.0f) {
-            return PlayerEgo_rollRight(F<PlayerEgo *>(self, 0x58),
+            return PlayerEgo_rollRight(self->field_0x58,
                                        F<int>(self, shipOff), rollMag * rollMag);
         }
         rollMag = roll;
         if (roll < 0.0f) {
-            return PlayerEgo_rollRight(F<PlayerEgo *>(self, 0x58),
+            return PlayerEgo_rollRight(self->field_0x58,
                                        F<int>(self, shipOff), rollMag * rollMag);
         }
         if (roll == 0.0f) return;
     }
-    return PlayerEgo_rollLeft(F<PlayerEgo *>(self, 0x58),
+    return PlayerEgo_rollLeft(self->field_0x58,
                               F<int>(self, shipOff), rollMag * rollMag);
 }
 }
@@ -2243,12 +2248,12 @@ __attribute__((visibility("hidden"))) extern int **g_tmAppData;   // @0x189bf8
 // MGame::OnTouchMove(int p1, int y, void *touch)
 extern "C" void MGame_OnTouchMove(MGame *self, int p1, int y, void *touch) {
     int handledFree = 0;
-    if (F<uint8_t>(self, 0x5d) != 0) {
-        uint8_t fc = F<uint8_t>(self, 0x15e);
+    if (self->field_0x5d != 0) {
+        uint8_t fc = self->field_0x15e;
         int allowFree = (fc != 0);
         if (fc != 0 &&
-            MenuTouchWindow_isShowingMessage(F<void *>(self, 0x88)) == 0 &&
-            MenuTouchWindow_isMakingScreenshot(F<void *>(self, 0x88)) == 0) {
+            MenuTouchWindow_isShowingMessage(self->field_0x88) == 0 &&
+            MenuTouchWindow_isMakingScreenshot(self->field_0x88) == 0) {
             allowFree = 1;
         } else {
             allowFree = 0;
@@ -2256,43 +2261,43 @@ extern "C" void MGame_OnTouchMove(MGame *self, int p1, int y, void *touch) {
         (void)allowFree;
     }
 
-    if (F<uint8_t>(self, 0x15c) != 0 && F<int>(self, 0xf8) == 0 &&
-        F<int>(self, 0x14) == 3) {
+    if (self->field_0x15c != 0 && self->field_0xf8 == 0 &&
+        self->field_0x14 == 3) {
         MGame_freeCamTouchMove(self, p1, y, touch);
         handledFree = 1;
     }
 
     if (!handledFree) {
-        if (F<uint8_t>(self, 0x5d) == 0) {
-            int hh = Hud_touchMove(F<void *>(self, 0x74), p1, y, touch);
-            F<int>(self, 0xf8) = hh;
-            unsigned mode = (unsigned)F<int>(self, 0x14);
+        if (self->field_0x5d == 0) {
+            int hh = Hud_touchMove(self->field_0x74, p1, y, touch);
+            self->field_0xf8 = hh;
+            unsigned mode = (unsigned)self->field_0x14;
             if (mode <= 1) {
                 MGame_maneuverTouchMove(self, mode, y);
-                if (F<uint8_t>(self, 0x1b8) != 0 && F<uint8_t>(self, 0x5f) == 0) {
-                    int f8 = F<int>(self, 0xf8);
+                if (self->field_0x1b8 != 0 && self->field_0x5f == 0) {
+                    int f8 = self->field_0xf8;
                     int ok = (f8 == 0) ||
-                             (f8 == 0x20 && F<void *>(self, 0xc0) != touch);
+                             (f8 == 0x20 && self->field_0xc0 != touch);
                     if (ok) {
                         float thrust;
-                        if (F<uint8_t>(self, 0x1b9) == 0) {
+                        if (self->field_0x1b9 == 0) {
                             float fy = (float)y;
-                            float start = (float)F<int>(self, 0x1c0);
-                            float thresh = (float)F<int>(self, 0x1cc);
+                            float start = (float)self->field_0x1c0;
+                            float thresh = (float)self->field_0x1cc;
                             float d = fy - start;
                             float ad = (d > 0.0f) ? d : -d;
                             if (ad > thresh) {
                                 int dir = (start > fy) ? 1 : -1;
                                 int ny = dir + y;
-                                F<int>(self, 0x1c8) = 0;
-                                F<int>(self, 0x1c0) = ny;
-                                thrust = PlayerEgo_getThrust(F<PlayerEgo *>(self, 0x58));
-                                F<int>(self, 0x1d0) = (int)thrust;
-                                F<uint8_t>(self, 0x1b9) = 1;
+                                self->field_0x1c8 = 0;
+                                self->field_0x1c0 = ny;
+                                thrust = PlayerEgo_getThrust(self->field_0x58);
+                                self->field_0x1d0 = (int)thrust;
+                                self->field_0x1b9 = 1;
                                 applyThrust(self, y);
                             }
                         } else {
-                            F<uint8_t>(self, 0x1b9) = 1;
+                            self->field_0x1b9 = 1;
                             applyThrust(self, y);
                         }
                     }
@@ -2301,30 +2306,30 @@ extern "C" void MGame_OnTouchMove(MGame *self, int p1, int y, void *touch) {
         }
     }
 
-    if (F<uint8_t>(self, 0x5d) == 0) return;
+    if (self->field_0x5d == 0) return;
 
     // Modal / overlay touch routing.
-    if (F<uint8_t>(self, 0x60) != 0 || F<uint8_t>(self, 0xc5) != 0 ||
-        F<uint8_t>(self, 0xce) != 0 || F<uint8_t>(self, 0xc4) != 0) {
-        ChoiceWindow_OnTouchMove(F<int>(self, 0x94), p1, y);
+    if (self->field_0x60 != 0 || self->field_0xc5 != 0 ||
+        self->field_0xce != 0 || self->field_0xc4 != 0) {
+        ChoiceWindow_OnTouchMove(self->field_0x94, p1, y);
         return;
     }
-    if (F<uint8_t>(self, 0xc7) != 0) {
+    if (self->field_0xc7 != 0) {
         int sel = **g_tmStarMap;
         if (*(uint8_t *)sel == 0)
-            StarMap_OnTouchMove(F<int>(self, 0x90), p1, y);
+            StarMap_OnTouchMove(self->field_0x90, p1, y);
         else
             Layout_OnTouchMove2(**g_tmStarMap, p1, y);
         return;
     }
-    if (F<uint8_t>(self, 0x5e) != 0) {
-        DialogueWindow_OnTouchMove(F<int>(self, 0x8c), p1, y);
+    if (self->field_0x5e != 0) {
+        DialogueWindow_OnTouchMove(self->field_0x8c, p1, y);
         return;
     }
-    if (F<uint8_t>(self, 0xc9) != 0) {
+    if (self->field_0xc9 != 0) {
         int ad = **g_tmAppData;
         if (*(uint8_t *)((char *)ad + 5) == 0 && *(uint8_t *)((char *)ad + 0xc) == 0)
-            MenuTouchWindow_OnTouchMove(F<void *>(self, 0x88), p1, y, touch);
+            MenuTouchWindow_OnTouchMove(self->field_0x88, p1, y, touch);
     }
 }
 
@@ -2341,22 +2346,22 @@ __attribute__((visibility("hidden"))) extern uint8_t **g_cinFlagB;
 // MGame::setCinematicMode(bool): toggles cinematic camera/UI state, switching cameras
 // and (de)activating the look-at HUD overlay.
 extern "C" void MGame_setCinematicMode(MGame *self, bool on) {
-    F<uint8_t>(self, 0x15e) = on;
+    self->field_0x15e = on;
     *g_cinFlagA = on;
     uint8_t *flag = *g_cinFlagB;
     if (!on) {
-        *flag = F<uint8_t>(self, 0x1dd);
-        MGame_switchCamera(self, F<int>(self, 0x160));
-        return Cam_setCinematic(F<TargetFollowCamera *>(self, 0xf4), F<uint8_t>(self, 0x164));
+        *flag = self->field_0x1dd;
+        MGame_switchCamera(self, self->field_0x160);
+        return Cam_setCinematic(self->field_0xf4, self->field_0x164);
     }
-    F<uint8_t>(self, 0x1dd) = *flag;
+    self->field_0x1dd = *flag;
     *flag = 1;
-    if (F<uint8_t>(self, 0xdc) == 0 && F<uint8_t>(self, 0x5f) == 0) {
-        F<int>(self, 0x160) = F<int>(self, 0x14);
-        F<uint8_t>(self, 0x164) = TFC_isInLookAtMode(F<TargetFollowCamera *>(self, 0xf4));
-        TFC_setLookAtCam(F<TargetFollowCamera *>(self, 0xf4), 0);
+    if (self->field_0xdc == 0 && self->field_0x5f == 0) {
+        self->field_0x160 = self->field_0x14;
+        self->field_0x164 = TFC_isInLookAtMode(self->field_0xf4);
+        TFC_setLookAtCam(self->field_0xf4, 0);
         MGame_switchCamera(self, 3);
-        return Hud_enterCinematic(*F<Hud **>(self, 0x78), F<int>(self, 0x40), 1);
+        return Hud_enterCinematic(*self->field_0x78, self->field_0x40, 1);
     }
 }
 
@@ -2425,15 +2430,15 @@ extern "C" void MGame_updateJumpScene(MGame *self) {
     int g0 = *guard;
     bool fadeOut = true;
 
-    if (F<uint8_t>(self, 0xdd) != 0 && F<int>(self, 0x114) != 0) {
+    if (self->field_0xdd != 0 && self->field_0x114 != 0) {
         int tr = PaintCanvas_TransformGetTransform(**g_ujCanvasA);
         int prog = *(int *)((char *)tr + 0x114);
         int over = (*(unsigned *)((char *)tr + 0x110) > 0x6a4);
         if ((0 - over) - prog < 0) goto camMove;
     } else {
-        int lm = Level_getLandmarks(F<Level *>(self, 0x78));
+        int lm = Level_getLandmarks(self->field_0x78);
         if (*(int *)((char *)*(int *)((char *)lm + 4) + 4) != 0) {
-            Level_getLandmarks(F<Level *>(self, 0x78));
+            Level_getLandmarks(self->field_0x78);
             int jg = *(int *)((char *)*(int *)((char *)lm + 4) + 4);
             if (PlayerJumpgate_timeToJump(jg) == 0) goto camMove;
         }
@@ -2442,17 +2447,17 @@ extern "C" void MGame_updateJumpScene(MGame *self) {
     goto afterCam;
 
 camMove: {
-        int speed = F<int>(self, 0x40);
-        int ego = *(int *)((char *)F<int>(self, 0x58));
+        int speed = self->field_0x40;
+        int ego = *(int *)((char *)self->field_0x58);
         float mtx[4];
         Matrix_rotateVector(mtx, (Vector *)((char *)ego + 4));
         Vector_assign((Vector *)((char *)self + 0xe4), (Vector *)mtx);
-        TFC_translate(F<void *>(self, 0xf4), 0, 0, 0);
+        TFC_translate(self->field_0xf4, 0, 0, 0);
         (void)speed;
-        if (F<uint8_t>(self, 0xdd) != 0) {
-            AEGeometry_getPosition(F<int>(self, 0x114), mtx);
+        if (self->field_0xdd != 0) {
+            AEGeometry_getPosition(self->field_0x114, mtx);
         } else {
-            int lm = Level_getLandmarks(F<Level *>(self, 0x78));
+            int lm = Level_getLandmarks(self->field_0x78);
             void *obj = *(void **)((char *)*(int *)((char *)lm + 4) + 4);
             void *vt = *(void **)obj;
             (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, mtx);
@@ -2462,45 +2467,45 @@ camMove: {
     }
 
 afterCam:
-    if (F<uint8_t>(self, 0xdd) != 0) {
+    if (self->field_0xdd != 0) {
         unsigned tr = PaintCanvas_TransformGetTransform(**g_ujCanvasB);
-        Transform_Update(tr, F<int>(self, 0x40));
+        Transform_Update(tr, self->field_0x40);
     }
 
-    void *camPos = TFC_getPosition(F<void *>(self, 0xf4));
-    float threshold = (float)F<int>(self, 0xec) + *(float *)&g_ujZNear;
+    void *camPos = TFC_getPosition(self->field_0xf4);
+    float threshold = (float)self->field_0xec + *(float *)&g_ujZNear;
     float fVar14 = threshold;
-    if (*(float *)((char *)camPos + 8) < threshold && F<uint8_t>(self, 0xdd) == 0) {
-        int lm = Level_getLandmarks(F<Level *>(self, 0x78));
+    if (*(float *)((char *)camPos + 8) < threshold && self->field_0xdd == 0) {
+        int lm = Level_getLandmarks(self->field_0x78);
         PlayerJumpgate_activate(*(int *)((char *)*(int *)((char *)lm + 4) + 4));
         float p[4];
-        PlayerEgo_getPosition(p, F<PlayerEgo *>(self, 0x58));
-        float t2 = (float)F<int>(self, 0xec) + *(float *)&g_ujZSound;
-        if (t2 <= p[2] && F<uint8_t>(self, 0xcd) == 0) {
+        PlayerEgo_getPosition(p, self->field_0x58);
+        float t2 = (float)self->field_0xec + *(float *)&g_ujZSound;
+        if (t2 <= p[2] && self->field_0xcd == 0) {
             int *snd = g_ujSound;
-            FModSound_setProp(*snd, *(int *)((char *)F<int>(self, 0x58) + 0x1c));
+            FModSound_setProp(*snd, *(int *)((char *)self->field_0x58 + 0x1c));
             FModSound_setProp(*snd, 0x8d5);
             FModSound_setProp(*snd, 0x8d4);
             FModSound_setProp(*snd, 0x23);
             FModSound_play(*snd, 0x1f, 0, 0.0f);
-            F<uint8_t>(self, 0xcd) = 1;
+            self->field_0xcd = 1;
         }
     }
 
     if (fadeOut) {
-        PlayerEgo_setSpeed(F<PlayerEgo *>(self, 0x58), *(float *)&g_ujSpeed);
-        PlayerEgo_setVisible(F<PlayerEgo *>(self, 0x58), 0);
-        PlayerEgo_setExhaustVisible(F<PlayerEgo *>(self, 0x58), 0);
+        PlayerEgo_setSpeed(self->field_0x58, *(float *)&g_ujSpeed);
+        PlayerEgo_setVisible(self->field_0x58, 0);
+        PlayerEgo_setExhaustVisible(self->field_0x58, 0);
     }
     (void)fVar14;
 
     // Animation-end check.
     bool ended;
-    if (F<uint8_t>(self, 0xdd) != 0) {
+    if (self->field_0xdd != 0) {
         int tr = PaintCanvas_TransformGetTransform(**g_ujCanvasC);
         ended = *(uint8_t *)((char *)tr + 0xed) != 0;
     } else {
-        int lm = Level_getLandmarks(F<Level *>(self, 0x78));
+        int lm = Level_getLandmarks(self->field_0x78);
         ended = PlayerJumpgate_animationEnded(*(int *)((char *)*(int *)((char *)lm + 4) + 4)) != 0;
     }
     if (!ended) goto done;
@@ -2508,27 +2513,27 @@ afterCam:
     {
         int *status = g_ujStatus;
         if (Status_getCurrentCampaignMission() == 0x2a && Status_inAlienOrbit() != 0) {
-            LevelScript_setEvent(F<LevelScript *>(self, 0x7c), 6);
-            PlayerEgo_setSpeed(F<PlayerEgo *>(self, 0x58), 0.0f);
-            int lm = Level_getLandmarks(F<Level *>(self, 0x78));
+            LevelScript_setEvent(self->field_0x7c, 6);
+            PlayerEgo_setSpeed(self->field_0x58, 0.0f);
+            int lm = Level_getLandmarks(self->field_0x78);
             int *node = *(int **)((char *)*(int *)((char *)lm + 4) + 0xc);
             (*(void (**)(int *, int, int, int))((char *)*node + 0x48))(node, g_ujPos0, g_ujPos1, g_ujPos2);
-            lm = Level_getLandmarks(F<Level *>(self, 0x78));
+            lm = Level_getLandmarks(self->field_0x78);
             void *node2 = *(void **)((char *)*(int *)((char *)lm + 4) + 0xc);
             float mtx[4];
             (*(void (**)(void *, void *))((char *)*(void **)node2 + 0x28))(node2, mtx);
             Vector_assign((Vector *)((char *)self + 0xe4), (Vector *)mtx);
-            PlayerEgo_setPosition(F<PlayerEgo *>(self, 0x58), F<int>(self, 0xe4),
-                                  F<int>(self, 0xe8), F<int>(self, 0xec));
-            PlayerEgo *p = F<PlayerEgo *>(self, 0x58);
-            *(uint8_t *)((char *)p + 0x25) = 1;
-            F<uint8_t>(self, 0xdc) = 0;
+            PlayerEgo_setPosition(self->field_0x58, self->field_0xe4,
+                                  self->field_0xe8, self->field_0xec);
+            PlayerEgo *p = self->field_0x58;
+            p->field_0x25 = 1;
+            self->field_0xdc = 0;
             PlayerEgo_resetChargingDrive(p);
         } else {
             int **stationPtr = g_ujStation;
             Status_departStation((Station *)*status);
-            Level_setInitStreamOut(F<int>(self, 0x78));
-            if (F<uint8_t>(self, 0xdd) == 0)
+            Level_setInitStreamOut(self->field_0x78);
+            if (self->field_0xdd == 0)
                 Status_jumpgateUsed((Station *)*status);
             if (Station_equals((Station *)*stationPtr,
                                *(Station **)((char *)*status + 0x78)) != 0) {
@@ -2537,14 +2542,14 @@ afterCam:
                 Status_setStation((Station *)*status);
             }
             *stationPtr = 0;
-            *(int *)((char *)*status + 100) = Player_getHitpoints((Player *)*(int *)((char *)F<int>(self, 0x58)));
-            *(int *)((char *)*status + 0x5c) = Player_getShieldHP((Player *)*(int *)((char *)F<int>(self, 0x58)));
-            *(int *)((char *)*status + 0x60) = Player_getArmorHP((Player *)*(int *)((char *)F<int>(self, 0x58)));
-            *(int *)((char *)*status + 0x68) = Player_getGammaHP((Player *)*(int *)((char *)F<int>(self, 0x58)));
-            *(int *)((char *)*status + 0xf4) = PlayerEgo_getCurrentSecondaryWeaponIndex(F<PlayerEgo *>(self, 0x58));
+            *(int *)((char *)*status + 100) = Player_getHitpoints((Player *)*(int *)((char *)self->field_0x58));
+            *(int *)((char *)*status + 0x5c) = Player_getShieldHP((Player *)*(int *)((char *)self->field_0x58));
+            *(int *)((char *)*status + 0x60) = Player_getArmorHP((Player *)*(int *)((char *)self->field_0x58));
+            *(int *)((char *)*status + 0x68) = Player_getGammaHP((Player *)*(int *)((char *)self->field_0x58));
+            *(int *)((char *)*status + 0xf4) = PlayerEgo_getCurrentSecondaryWeaponIndex(self->field_0x58);
             **g_ujFlagC = 1;
-            F<uint8_t>(self, 0x54) = 0;
-            ApplicationManager_SetCurrentApplicationModule(F<unsigned>(self, 0x8));
+            self->field_0x54 = 0;
+            ApplicationManager_SetCurrentApplicationModule(self->field_0x8);
         }
     }
 
@@ -2560,7 +2565,7 @@ __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (D
 
 // MGame::MGame() — install vtable, default-construct the title String, zero state.
 extern "C" MGame *MGame_ctor(MGame *self) {
-    F<int>(self, 0x0) = g_mgameVtable + 8;
+    self->field_0x0 = g_mgameVtable + 8;
     String_default_ctor((char *)self + 0x64);
 
     int z = 0;
@@ -2576,18 +2581,18 @@ extern "C" MGame *MGame_ctor(MGame *self) {
         F<int>(self, off + 12) = 0;
     }
 
-    F<int>(self, 0x48) = z; F<int>(self, 0x4c) = z;
-    F<int>(self, 0xe4) = z; F<int>(self, 0xe8) = z;
-    F<int>(self, 0xec) = z;
-    F<int>(self, 0x1bc) = z; F<int>(self, 0x1c0) = z;
-    F<int>(self, 0x1c4) = z;
-    F<int>(self, 0xb4) = z; F<int>(self, 0xb8) = z;
-    F<int>(self, 0x14c) = z; F<int>(self, 0x150) = z;
-    F<int>(self, 0x19c) = z; F<int>(self, 0x1a0) = z;
+    self->field_0x48 = z; self->field_0x4c = z;
+    self->field_0xe4 = z; self->field_0xe8 = z;
+    self->field_0xec = z;
+    self->field_0x1bc = z; self->field_0x1c0 = z;
+    self->field_0x1c4 = z;
+    self->field_0xb4 = z; self->field_0xb8 = z;
+    self->field_0x14c = z; self->field_0x150 = z;
+    self->field_0x19c = z; self->field_0x1a0 = z;
 
-    F<int>(self, 0xc) = 0x64;       // field_0C = 100
-    F<int>(self, 0x10) = -1;        // field_10 = -1
-    F<int>(self, 0x14) = z;
+    self->field_0xc = 0x64;       // field_0C = 100
+    self->field_0x10 = -1;        // field_10 = -1
+    self->field_0x14 = z;
 
     // NEON-cleared 16-byte groups at 0x30, 0x20, 0x80, 0x70.
     static const unsigned grpB[] = {0x30u, 0x20u, 0x80u, 0x70u};
@@ -2599,24 +2604,24 @@ extern "C" MGame *MGame_ctor(MGame *self) {
         F<int>(self, off + 12) = 0;
     }
 
-    F<uint8_t>(self, 0x1a6) = 0;
-    F<uint8_t>(self, 0x54) = 0;
-    F<uint16_t>(self, 0xd5) = 0;
-    F<int>(self, 0x114) = z;
-    F<int>(self, 0xf4) = z;
-    F<uint8_t>(self, 0x1e4) = 0;
-    F<int>(self, 0x1d4) = z;
-    F<int>(self, 0x40) = z;
-    F<int>(self, 0x58) = z; F<int>(self, 0x5c) = z;
-    F<uint16_t>(self, 0x60) = 0;
-    F<int>(self, 0x90) = z; F<int>(self, 0x94) = z;
-    F<uint8_t>(self, 0xc8) = 0;
-    F<int>(self, 0xc4) = z;
-    F<uint16_t>(self, 0xce) = 0;
-    F<int>(self, 0xca) = z;
-    F<int>(self, 0xd8) = z; F<int>(self, 0xdc) = z;
-    F<int>(self, 0x1d8) = initVal;
-    F<int>(self, 0x1e0) = z;
+    self->field_0x1a6 = 0;
+    self->field_0x54 = 0;
+    self->field_0xd5 = 0;
+    self->field_0x114 = z;
+    self->field_0xf4 = z;
+    self->field_0x1e4 = 0;
+    self->field_0x1d4 = z;
+    self->field_0x40 = z;
+    self->field_0x58 = z; self->field_0x5c = z;
+    self->field_0x60 = 0;
+    self->field_0x90 = z; self->field_0x94 = z;
+    self->field_0xc8 = 0;
+    self->field_0xc4 = z;
+    self->field_0xce = 0;
+    self->field_0xca = z;
+    self->field_0xd8 = z; self->field_0xdc = z;
+    self->field_0x1d8 = initVal;
+    self->field_0x1e0 = z;
     return self;
 }
 
@@ -2676,40 +2681,40 @@ extern "C" void MGame_OnRelease(MGame *self) {
         FModSound_stopAllSoundFXEvents((Engine *)*soundFlag);
     }
 
-    if (F<Level *>(self, 0x78) != 0)
-        operator_delete(Level_dtor(F<Level *>(self, 0x78)));
+    if (self->field_0x78 != 0)
+        operator_delete(Level_dtor(self->field_0x78));
 
-    F<int>(self, 0x48) = 0; F<int>(self, 0x4c) = 0;
-    F<int>(self, 0x14) = 0;
-    F<int>(self, 0x78) = 0;
-    F<uint8_t>(self, 0x54) = 0;
-    F<int>(self, 0x70) = 0;
-    F<int>(self, 0x40) = 0;
-    F<uint16_t>(self, 0x60) = 0;
-    F<int>(self, 0x58) = 0; F<int>(self, 0x5c) = 0;
+    self->field_0x48 = 0; self->field_0x4c = 0;
+    self->field_0x14 = 0;
+    self->field_0x78 = 0;
+    self->field_0x54 = 0;
+    self->field_0x70 = 0;
+    self->field_0x40 = 0;
+    self->field_0x60 = 0;
+    self->field_0x58 = 0; self->field_0x5c = 0;
     // NEON-clear 0x30 and 0x20 groups.
     for (unsigned i = 0; i < 4; i++) F<int>(self, 0x30 + i * 4) = 0;
     for (unsigned i = 0; i < 4; i++) F<int>(self, 0x20 + i * 4) = 0;
 
-    if (F<int>(self, 0x114) != 0)
-        operator_delete(AEGeometry_dtor(F<AEGeometry *>(self, 0x114)));
-    F<int>(self, 0x114) = 0;
+    if (self->field_0x114 != 0)
+        operator_delete(AEGeometry_dtor(self->field_0x114));
+    self->field_0x114 = 0;
 
-    if (F<int>(self, 0x74) != 0)
-        operator_delete(Hud_dtor(F<Hud *>(self, 0x74)));
-    F<int>(self, 0x74) = 0;
+    if (self->field_0x74 != 0)
+        operator_delete(Hud_dtor(self->field_0x74));
+    self->field_0x74 = 0;
 
-    if (F<int>(self, 0x7c) != 0)
-        operator_delete(LevelScript_dtor(F<LevelScript *>(self, 0x7c)));
-    F<int>(self, 0x7c) = 0;
+    if (self->field_0x7c != 0)
+        operator_delete(LevelScript_dtor(self->field_0x7c));
+    self->field_0x7c = 0;
 
-    if (F<int>(self, 0x80) != 0)
-        operator_delete(Radar_dtor(F<void *>(self, 0x80)));
-    F<int>(self, 0x80) = 0;
+    if (self->field_0x80 != 0)
+        operator_delete(Radar_dtor(self->field_0x80));
+    self->field_0x80 = 0;
 
-    if (F<int>(self, 0x84) != 0)
-        operator_delete(Radio_dtor(F<void *>(self, 0x84)));
-    F<int>(self, 0x84) = 0;
+    if (self->field_0x84 != 0)
+        operator_delete(Radio_dtor(self->field_0x84));
+    self->field_0x84 = 0;
 
     int *appMod = g_relAppMod;
     int m1 = ApplicationManager_GetApplicationModule(*appMod);
@@ -2722,34 +2727,34 @@ extern "C" void MGame_OnRelease(MGame *self) {
     int m3 = ApplicationManager_GetApplicationModule(*appMod);
     *(int *)((char *)m3 + 0x10) = 0;
 
-    if (F<int>(self, 0x88) != 0)
-        operator_delete(MenuTouchWindow_dtor(F<void *>(self, 0x88)));
-    F<int>(self, 0x88) = 0;
+    if (self->field_0x88 != 0)
+        operator_delete(MenuTouchWindow_dtor(self->field_0x88));
+    self->field_0x88 = 0;
 
-    if (F<int>(self, 0x8c) != 0)
-        operator_delete(DialogueWindow_dtor(F<void *>(self, 0x8c)));
-    F<int>(self, 0x8c) = 0;
+    if (self->field_0x8c != 0)
+        operator_delete(DialogueWindow_dtor(self->field_0x8c));
+    self->field_0x8c = 0;
 
-    if (F<int>(self, 0x90) != 0)
-        operator_delete(StarMap_dtor(F<StarMap *>(self, 0x90)));
-    F<int>(self, 0x90) = 0;
+    if (self->field_0x90 != 0)
+        operator_delete(StarMap_dtor(self->field_0x90));
+    self->field_0x90 = 0;
 
-    if (F<int>(self, 0x94) != 0)
-        operator_delete(ChoiceWindow_dtor(F<void *>(self, 0x94)));
-    F<int>(self, 0x94) = 0;
+    if (self->field_0x94 != 0)
+        operator_delete(ChoiceWindow_dtor(self->field_0x94));
+    self->field_0x94 = 0;
 
-    F<int>(self, 0xd8) = 0; F<int>(self, 0xdc) = 0;
-    F<uint16_t>(self, 0xd5) = 0;
-    F<int>(self, 0xc5) = 0;
-    F<int>(self, 0xcb) = 0;
+    self->field_0xd8 = 0; self->field_0xdc = 0;
+    self->field_0xd5 = 0;
+    self->field_0xc5 = 0;
+    self->field_0xcb = 0;
 
-    if (F<int>(self, 0xf4) != 0)
-        operator_delete(TargetFollowCamera_dtor(F<void *>(self, 0xf4)));
-    F<int>(self, 0xf4) = 0;
+    if (self->field_0xf4 != 0)
+        operator_delete(TargetFollowCamera_dtor(self->field_0xf4));
+    self->field_0xf4 = 0;
 
-    if (F<int>(self, 0x1e8) != 0)
-        operator_delete(GameRecord_dtor(F<void *>(self, 0x1e8)));
-    F<int>(self, 0x1e8) = 0;
+    if (self->field_0x1e8 != 0)
+        operator_delete(GameRecord_dtor(self->field_0x1e8));
+    self->field_0x1e8 = 0;
 
     // GetApplicationData()->[0] : release-all-resources target.
     {
@@ -2768,10 +2773,10 @@ extern "C" void MGame_OnRelease(MGame *self) {
         Layout_initTip2(*layout);
     }
 
-    ArrayReleaseClasses_StringPtr(F<void *>(self, 0x1ec));
-    if (F<int>(self, 0x1ec) != 0)
-        operator_delete(ArrayStringPtr_dtor(F<void *>(self, 0x1ec)));
-    F<int>(self, 0x1ec) = 0;
+    ArrayReleaseClasses_StringPtr(self->field_0x1ec);
+    if (self->field_0x1ec != 0)
+        operator_delete(ArrayStringPtr_dtor(self->field_0x1ec));
+    self->field_0x1ec = 0;
 
     if (*soundFlag != 0)
         FModSound_restoreState();
@@ -2814,25 +2819,25 @@ __attribute__((visibility("hidden"))) extern Layout ***g_r2dFadeLayout; // @0x19
 extern "C" void MGame_OnRender2D(MGame *self) {
     int *guard = g_r2dGuard;
     int g0 = *guard;
-    if (F<uint8_t>(self, 0x54) == 0) {
+    if (self->field_0x54 == 0) {
         if (*guard != g0) __stack_chk_fail();
         return;
     }
 
     PaintCanvas_Begin2d();
 
-    if (F<uint8_t>(self, 0x5d) != 0 && F<uint8_t>(self, 0xc9) != 0) {
+    if (self->field_0x5d != 0 && self->field_0xc9 != 0) {
         // Menu-touch-window / star-system background path.
         bool drawSS = true;
-        if (F<uint8_t>(self, 0x15e) != 0 && F<uint8_t>(self, 0x15c) != 0 &&
-            *(uint8_t *)((char *)F<int>(self, 0x88) + 1) == 0) {
+        if (self->field_0x15e != 0 && self->field_0x15c != 0 &&
+            *(uint8_t *)((char *)self->field_0x88 + 1) == 0) {
             drawSS = true;
         } else {
-            MenuTouchWindow_draw(F<void *>(self, 0x88));
-            drawSS = (F<uint8_t>(self, 0x15e) != 0);
+            MenuTouchWindow_draw(self->field_0x88);
+            drawSS = (self->field_0x15e != 0);
         }
         if (drawSS) {
-            Level_getStarSystem(F<Level *>(self, 0x78));
+            Level_getStarSystem(self->field_0x78);
             StarSystem_render2D(0);
         }
         float v[4]; *(int *)&v[0] = 0x3f000000; *(int *)&v[1] = 0x3f000000; v[2] = 0;
@@ -2843,72 +2848,72 @@ extern "C" void MGame_OnRender2D(MGame *self) {
         return;
     }
 
-    if (F<uint8_t>(self, 0x5d) == 0 || F<uint8_t>(self, 0x111) == 0) {
+    if (self->field_0x5d == 0 || self->field_0x111 == 0) {
         // World/HUD render path.
-        if (F<uint8_t>(self, 0x111) == 0) {
+        if (self->field_0x111 == 0) {
             // Cinematic-sequence path (field 0x49 etc.).
-            Level_getStarSystem(F<Level *>(self, 0x78));
+            Level_getStarSystem(self->field_0x78);
             StarSystem_render2D(0);
             if (LevelScript_startSequenceOver() != 0 ||
-                LevelScript_startSequence(F<LevelScript *>(self, 0x7c)) == 0)
+                LevelScript_startSequence(self->field_0x7c) == 0)
                 MGame_drawRadio(self);
-        } else if (F<uint8_t>(self, 0xc7) != 0) {
-            StarMap_draw(F<int>(self, 0x90));
+        } else if (self->field_0xc7 != 0) {
+            StarMap_draw(self->field_0x90);
             Layout *hl = **g_r2dHelpLayout;
             if (*(uint8_t *)hl != 0)
                 Layout_drawHelpWindow(hl);
         } else {
-            Level_render2D(F<int>(self, 0x78));
+            Level_render2D(self->field_0x78);
             if (**g_r2dPauseFlag == 0)
-                Hud_drawPauseButton(F<void *>(self, 0x74));
+                Hud_drawPauseButton(self->field_0x74);
 
             if (Mission_getType(Status_getCampaignMission()) == 0xaa) {
-                if (LevelScript_getEvent(F<LevelScript *>(self, 0x7c)) == 0)
-                    Hud_drawOrbitInformation(F<void *>(self, 0x74));
+                if (LevelScript_getEvent(self->field_0x7c) == 0)
+                    Hud_drawOrbitInformation(self->field_0x74);
                 MGame_drawRadio(self);
-                if (F<uint8_t>(self, 0x5e) != 0)
-                    DialogueWindow_draw(F<int>(self, 0x8c));
-                F<uint8_t>(self, 0x111) = 0;
-                F<uint8_t>(self, 0x5d) = 0;
-            } else if (F<uint8_t>(self, 0x5f) != 0 || F<uint8_t>(self, 0x15d) != 0) {
+                if (self->field_0x5e != 0)
+                    DialogueWindow_draw(self->field_0x8c);
+                self->field_0x111 = 0;
+                self->field_0x5d = 0;
+            } else if (self->field_0x5f != 0 || self->field_0x15d != 0) {
                 int cm = Status_getCurrentCampaignMission();
-                if (cm > 7 && F<uint8_t>(self, 0x80) == 0 && F<uint8_t>(self, 0x15d) == 0 &&
-                    PlayerEgo_isDockingToPlanet(F<PlayerEgo *>(self, 0x58)) == 0 &&
-                    LevelScript_getEvent(F<LevelScript *>(self, 0x7c)) == 0)
-                    Hud_drawOrbitInformation(F<void *>(self, 0x74));
+                if (cm > 7 && self->field_0x80 == 0 && self->field_0x15d == 0 &&
+                    PlayerEgo_isDockingToPlanet(self->field_0x58) == 0 &&
+                    LevelScript_getEvent(self->field_0x7c) == 0)
+                    Hud_drawOrbitInformation(self->field_0x74);
                 if (LevelScript_startSequenceOver() != 0 ||
-                    LevelScript_startSequence(F<LevelScript *>(self, 0x7c)) == 0)
+                    LevelScript_startSequence(self->field_0x7c) == 0)
                     MGame_drawRadio(self);
-                if (F<uint8_t>(self, 0x5e) != 0)
-                    DialogueWindow_draw(F<int>(self, 0x8c));
-                F<uint8_t>(self, 0x111) = 0;
-                F<uint8_t>(self, 0x5d) = 0;
-            } else if (F<uint8_t>(self, 0x60) == 0) {
-                PlayerEgo_draw(F<PlayerEgo *>(self, 0x58));
-                if (PlayerEgo_isMining(F<PlayerEgo *>(self, 0x58)) == 0 &&
-                    F<uint8_t>(self, 0xc7) == 0 &&
-                    (PlayerEgo_isHacking(F<PlayerEgo *>(self, 0x58)) == 0 ||
-                     F<uint8_t>(self, 0xc9) != 0))
+                if (self->field_0x5e != 0)
+                    DialogueWindow_draw(self->field_0x8c);
+                self->field_0x111 = 0;
+                self->field_0x5d = 0;
+            } else if (self->field_0x60 == 0) {
+                PlayerEgo_draw(self->field_0x58);
+                if (PlayerEgo_isMining(self->field_0x58) == 0 &&
+                    self->field_0xc7 == 0 &&
+                    (PlayerEgo_isHacking(self->field_0x58) == 0 ||
+                     self->field_0xc9 != 0))
                     MGame_drawRadar(self);
-                if (F<uint8_t>(self, 0x5e) == 0) {
+                if (self->field_0x5e == 0) {
                     MGame_nextCamId(self);
                     MGame_drawHud(self);
                     MGame_drawRadio(self);
-                    Radar_drawCurrentLock(F<void *>(self, 0x80));
+                    Radar_drawCurrentLock(self->field_0x80);
                     Layout_drawMissionRewardMessage(**g_r2dRewardLayout);
                 } else {
-                    DialogueWindow_draw(F<int>(self, 0x8c));
+                    DialogueWindow_draw(self->field_0x8c);
                 }
-                if (F<uint8_t>(self, 0xc5) != 0 || F<uint8_t>(self, 0xc6) != 0 ||
-                    F<uint8_t>(self, 0xce) != 0 || F<uint8_t>(self, 0xc4) != 0)
-                    ChoiceWindow_draw(F<int>(self, 0x94));
-                if (F<uint8_t>(self, 0xca) != 0)
-                    Hud_drawMenu(F<int>(self, 0x74));
-            } else if (!(F<int>(self, 0x4c) < (int)(F<unsigned>(self, 0x48) < 0xbb9))) {
+                if (self->field_0xc5 != 0 || self->field_0xc6 != 0 ||
+                    self->field_0xce != 0 || self->field_0xc4 != 0)
+                    ChoiceWindow_draw(self->field_0x94);
+                if (self->field_0xca != 0)
+                    Hud_drawMenu(self->field_0x74);
+            } else if (!(self->field_0x4c < (int)(self->field_0x48 < 0xbb9))) {
                 // Loading/jump splash text.
-                PaintCanvas_SetColor(F<unsigned>(self, 0x4));
-                PaintCanvas_DrawImage2D5(*(int *)g_r2dCanvas, F<int>(self, 0x10), 0, 0, 'D');
-                if (F<int>(self, 0x50) >= 4000)
+                PaintCanvas_SetColor(self->field_0x4);
+                PaintCanvas_DrawImage2D5(*(int *)g_r2dCanvas, self->field_0x10, 0, 0, 'D');
+                if (self->field_0x50 >= 4000)
                     MGame_drawFadeMessage(self, *(int *)g_r2dCanvas);
             }
             Layout_drawFade(**g_r2dFadeLayout);
@@ -2932,7 +2937,7 @@ __attribute__((visibility("hidden"))) extern Status **g_status;
 // MGame::dialogueEvent(): when a level sequence completes, decide whether to raise a
 // briefing/mission dialogue, and if so set up the dialogue window + first-person view.
 extern "C" void MGame_dialogueEvent(MGame *self) {
-    if (LevelScript_startSequenceOver(F<Level *>(self, 0x7c)) == 0) return;
+    if (LevelScript_startSequenceOver(self->field_0x7c) == 0) return;
     Status **sp = g_status;
     if (DialogueWindow_hasBriefingDialogue(Status_getCurrentCampaignMission(*sp)) == 0) {
         if (Mission_isCampaignMission(Status_getMission(*sp)) != 0) return;
@@ -2946,23 +2951,23 @@ extern "C" void MGame_dialogueEvent(MGame *self) {
     if (Mission_isCampaignMission(Status_getMission(*sp)) == 0) {
         if (Mission_getType(Status_getMission(*sp)) == 0xb) return;
     }
-    if (F<DialogueWindow *>(self, 0x8c) == 0) {
+    if (self->field_0x8c == 0) {
         DialogueWindow *w = (DialogueWindow *)MGame_opnew(0x74);
-        DialogueWindow_ctor(w, Status_getMission(*sp), F<Level *>(self, 0x78), 0);
-        F<DialogueWindow *>(self, 0x8c) = w;
+        DialogueWindow_ctor(w, Status_getMission(*sp), self->field_0x78, 0);
+        self->field_0x8c = w;
     }
-    PlayerEgo_setTurretMode(F<PlayerEgo *>(self, 0x58), 0);
-    LevelScript_resetCamera(F<Level *>(self, 0x7c));
-    PlayerEgo_setFreeLookMode(F<PlayerEgo *>(self, 0x58), 0);
-    TFC_enableFirstPersonCam(F<TargetFollowCamera *>(self, 0xf4), 0);
-    PlayerEgo_hideShipForFirstPersonCameraView(F<PlayerEgo *>(self, 0x58), 0);
-    Level *cam = F<Level *>(self, 0x7c);
-    F<uint8_t>(self, 0x111) = 1;
+    PlayerEgo_setTurretMode(self->field_0x58, 0);
+    LevelScript_resetCamera(self->field_0x7c);
+    PlayerEgo_setFreeLookMode(self->field_0x58, 0);
+    TFC_enableFirstPersonCam(self->field_0xf4, 0);
+    PlayerEgo_hideShipForFirstPersonCameraView(self->field_0x58, 0);
+    Level *cam = self->field_0x7c;
+    self->field_0x111 = 1;
     F<int>((MGame *)cam, 0x8) = 0;
     F<int>((MGame *)cam, 0xc) = 0;
-    F<uint8_t>(self, 0x5d) = 1;
+    self->field_0x5d = 1;
     MGame_pauseSounds(self);
-    F<uint8_t>(self, 0x5e) = 1;
+    self->field_0x5e = 1;
 }
 
 // ---- nextCamId_17c624.cpp ----
@@ -2980,20 +2985,20 @@ extern "C" int MGame_nextCamId(MGame *self, int cur) {
         Status **sp = g_status;
         if (Ship_getFirstEquipmentOfSort(Status_getShip(*sp), 8) != 0 ||
             Ship_getFirstEquipmentOfSort(Status_getShip(*sp), 0x23) != 0) {
-            id = PlayerEgo_hasAutoTurret(F<PlayerEgo *>(self, 0x58)) == 0 ? 1 : 2;
+            id = PlayerEgo_hasAutoTurret(self->field_0x58) == 0 ? 1 : 2;
         } else {
             id = 2;
         }
     }
     if (id == 2) id = 3;
     if (id >= 4) {
-        if (PlayerEgo_isDockedToDockingPoint(F<PlayerEgo *>(self, 0x58)) == 0) return 0;
+        if (PlayerEgo_isDockedToDockingPoint(self->field_0x58) == 0) return 0;
         Status **sp = g_status;
         if (Ship_getFirstEquipmentOfSort(Status_getShip(*sp), 8) == 0 &&
             Ship_getFirstEquipmentOfSort(Status_getShip(*sp), 0x23) == 0) {
             return 3;
         }
-        id = PlayerEgo_hasAutoTurret(F<PlayerEgo *>(self, 0x58)) != 0 ? 3 : 1;
+        id = PlayerEgo_hasAutoTurret(self->field_0x58) != 0 ? 3 : 1;
     }
     return id;
 }

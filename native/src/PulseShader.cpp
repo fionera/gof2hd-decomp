@@ -1,4 +1,5 @@
-#include "PulseShader.h"
+#include "gof2/PulseShader.h"
+#include "gof2/Mesh.h"
 
 
 
@@ -113,19 +114,19 @@ void PulseShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (u8(mesh, 0x5c) == 0) {
         if (i32(this, 0x20) >= 0)
             glVertexAttribPointer(i32(this, 0x20), 3, 0x1406, 0, 0,
-                                  *(void **)((char *)mesh + 0x4));
+                                  mesh->field_0x4);
         if (i32(this, 0x24) >= 0)
             glVertexAttribPointer(i32(this, 0x24), 2, 0x1406, 0, 0,
-                                  *(void **)((char *)mesh + 0x8));
+                                  mesh->field_0x8);
         if (i32(this, 0x28) >= 0)
             glVertexAttribPointer(i32(this, 0x28), 3, 0x1406, 0, 0,
-                                  *(void **)((char *)mesh + 0x10));
+                                  mesh->field_0x10);
         if (i32(this, 0x2c) >= 0)
             glVertexAttribPointer(i32(this, 0x2c), 3, 0x1406, 0, 0,
-                                  *(void **)((char *)mesh + 0x14));
+                                  mesh->field_0x14);
         if (i32(this, 0x30) >= 0)
             glVertexAttribPointer(i32(this, 0x30), 3, 0x1406, 0, 0,
-                                  *(void **)((char *)mesh + 0x18));
+                                  mesh->field_0x18);
     } else {
         void (*bindBuffer)(unsigned int, unsigned int) = glBindBuffer;
         void (*vertexAttribPointer)(int, int, unsigned int, uint8_t, int, const void *) =
@@ -154,7 +155,7 @@ PulseShader::PulseShader()
     *(int *)this = (int)(PulseShader_vtable) + 8;
     PulseShader_typeInfoDest = PulseShader_typeInfoSource;
     String tmp(PulseShader_name, false);
-    *(String *)((char *)this + 0xc) = tmp;
+    this->field_0xc = tmp;
 }
 
 } // namespace AbyssEngine

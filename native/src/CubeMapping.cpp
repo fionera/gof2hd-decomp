@@ -1,4 +1,5 @@
-#include "CubeMapping.h"
+#include "gof2/CubeMapping.h"
+#include "gof2/Mesh.h"
 
 
 
@@ -50,7 +51,7 @@ CubeMapping::CubeMapping()
     *(int *)this = (int)(CubeMapping_vtable) + 8;
     CubeMapping_typeInfoDest = CubeMapping_typeInfoSource;
     String tmp(CubeMapping_name, false);
-    *(String *)((char *)this + 0xc) = tmp;
+    this->field_0xc = tmp;
 }
 
 } // namespace AbyssEngine
@@ -96,13 +97,13 @@ void CubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 
     if (u8(mesh, 0x5c) == 0) {
         glVertexAttribPointer(i32(this, 0x20), 3, 0x1406, 0, 0,
-                              *(void **)((char *)mesh + 0x4));
+                              mesh->field_0x4);
         if ((u8(mesh, 0x0) & 2) != 0)
             glVertexAttribPointer(i32(this, 0x28), 2, 0x1406, 0, 0,
-                                  *(void **)((char *)mesh + 0x8));
+                                  mesh->field_0x8);
         if ((u8(mesh, 0x0) & 4) != 0)
             glVertexAttribPointer(i32(this, 0x24), 3, 0x1406, 0, 0,
-                                  *(void **)((char *)mesh + 0x10));
+                                  mesh->field_0x10);
     } else {
         void (*bindBuffer)(unsigned int, unsigned int) = glBindBuffer;
         void (*vertexAttribPointer)(int, int, unsigned int, uint8_t, int, const void *) =

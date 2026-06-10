@@ -1,4 +1,5 @@
-#include "ApplicationManager.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/Engine.h"
 
 
 extern "C" void ext_001ab578(void *sound, int volume);
@@ -95,14 +96,14 @@ typedef void LoadingCallback(PaintCanvas *, int, void *);
 
 extern "C" void ApplicationManager_SetLoadingCallback(ApplicationManager *self, LoadingCallback *callback, void *data)
 {
-    *(LoadingCallback **)((char *)self + 0x20) = callback;
-    *(void **)((char *)self + 0x24) = data;
+    self->field_0x20 = callback;
+    self->field_0x24 = data;
 }
 
 // ---- SoundSetVolume_82270.cpp ----
 extern "C" void ApplicationManager_SoundSetVolume(ApplicationManager *self, int volume)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab578(sound, volume);
     }
@@ -111,7 +112,7 @@ extern "C" void ApplicationManager_SoundSetVolume(ApplicationManager *self, int 
 // ---- SoundStopSounds_821fc.cpp ----
 extern "C" void ApplicationManager_SoundStopSounds(ApplicationManager *self)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab528(sound);
     }
@@ -120,7 +121,7 @@ extern "C" void ApplicationManager_SoundStopSounds(ApplicationManager *self)
 // ---- SoundIsPlaying_8229a.cpp ----
 extern "C" int ApplicationManager_SoundIsPlaying(ApplicationManager *self)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound == 0) {
         return 0;
     }
@@ -130,7 +131,7 @@ extern "C" int ApplicationManager_SoundIsPlaying(ApplicationManager *self)
 // ---- GetSystemTimeMillis_83e9e.cpp ----
 extern "C" uint64_t ApplicationManager_GetSystemTimeMillis(ApplicationManager *self)
 {
-    return *(uint64_t *)((char *)self + 0x68);
+    return self->field_0x68;
 }
 
 // ---- LoadingCallbackShow_8250c.cpp ----
@@ -138,7 +139,7 @@ typedef void LoadingShowCallback(PaintCanvas *, int, void *);
 
 extern "C" void ApplicationManager_LoadingCallbackShow(ApplicationManager *self, int mode, void *data)
 {
-    LoadingShowCallback *callback = *(LoadingShowCallback **)((char *)self + 0x20);
+    LoadingShowCallback *callback = self->field_0x20;
     if (callback != 0) {
         callback(*(PaintCanvas **)self, mode, data);
     }
@@ -147,8 +148,8 @@ extern "C" void ApplicationManager_LoadingCallbackShow(ApplicationManager *self,
 // ---- SoundPlay_821b2.cpp ----
 extern "C" void ApplicationManager_SoundPlay(ApplicationManager *self, int soundId)
 {
-    void *sound = *(void **)((char *)self + 0xac);
-    if (sound != 0 && *(bool *)((char *)self + 0xb0)) {
+    void *sound = self->field_0xac;
+    if (sound != 0 && self->field_0xb0) {
         ext_001ab4f8(sound, soundId);
     }
 }
@@ -156,11 +157,11 @@ extern "C" void ApplicationManager_SoundPlay(ApplicationManager *self, int sound
 // ---- SoundPlay_821c6.cpp ----
 extern "C" void ApplicationManager_SoundPlay(ApplicationManager *self, int soundId, float volume)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound == 0) {
         return;
     }
-    if (*(bool *)((char *)self + 0xb0) == 0) {
+    if (self->field_0xb0 == 0) {
         return;
     }
     ext_001ab488(sound, soundId, volume);
@@ -169,8 +170,8 @@ extern "C" void ApplicationManager_SoundPlay(ApplicationManager *self, int sound
 // ---- CheatUpdate_8253a.cpp ----
 extern "C" void ApplicationManager_CheatUpdate(ApplicationManager *self, unsigned short key)
 {
-    if (*(bool *)((char *)self + 0x34)) {
-        void *cheats = *(void **)((char *)self + 0x30);
+    if (self->field_0x34) {
+        void *cheats = self->field_0x30;
         if (cheats != 0) {
             ext_001ab5e8(cheats, key);
         }
@@ -180,7 +181,7 @@ extern "C" void ApplicationManager_CheatUpdate(ApplicationManager *self, unsigne
 // ---- CheatAddCode_82528.cpp ----
 extern "C" void ApplicationManager_CheatAddCode(ApplicationManager *self, void *code, int value)
 {
-    void *cheats = *(void **)((char *)self + 0x30);
+    void *cheats = self->field_0x30;
     if (cheats != 0) {
         ext_001ab5d8(cheats);
     }
@@ -189,7 +190,7 @@ extern "C" void ApplicationManager_CheatAddCode(ApplicationManager *self, void *
 // ---- SoundPause_82218.cpp ----
 extern "C" void ApplicationManager_SoundPause(ApplicationManager *self)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab548(sound);
     }
@@ -198,7 +199,7 @@ extern "C" void ApplicationManager_SoundPause(ApplicationManager *self)
 // ---- GetActionState_83e8a.cpp ----
 extern "C" uint64_t ApplicationManager_GetActionState(ApplicationManager *self)
 {
-    return *(uint64_t *)((char *)self + 0xa0);
+    return self->field_0xa0;
 }
 
 // ---- Resume_824d0.cpp ----
@@ -207,30 +208,30 @@ typedef void ModuleCallback(void *);
 
 extern "C" void ApplicationManager_Resume(ApplicationManager *self)
 {
-    if (*(int *)((char *)self + 0x3c) != 3) {
+    if (self->field_0x3c != 3) {
         return;
     }
 
-    void *module = *(void **)((char *)self + 0x18);
+    void *module = self->field_0x18;
     if (module != 0) {
         ModuleCallback **vtable = *(ModuleCallback ***)module;
         vtable[0x40 / 4](module);
-        void *engine = *(void **)((char *)self + 0xa8);
+        void *engine = self->field_0xa8;
         if (engine != 0) {
             Engine_Resume(engine);
         }
-        *(uint32_t *)((char *)self + 0xa0) = 0;
-        *(uint32_t *)((char *)self + 0xa4) = 0;
-        *(uint32_t *)((char *)self + 0x80) = 0;
-        *(uint32_t *)((char *)self + 0x84) = 0;
-        *(int *)((char *)self + 0x3c) = 4;
+        self->field_0xa0 = 0;
+        self->field_0xa4 = 0;
+        self->field_0x80 = 0;
+        self->field_0x84 = 0;
+        self->field_0x3c = 4;
     }
 }
 
 // ---- SoundStop_821ee.cpp ----
 extern "C" void ApplicationManager_SoundStop(ApplicationManager *self)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab518(sound);
     }
@@ -239,8 +240,8 @@ extern "C" void ApplicationManager_SoundStop(ApplicationManager *self)
 // ---- SoundPlayLoop_821da.cpp ----
 extern "C" void ApplicationManager_SoundPlayLoop(ApplicationManager *self, int soundId)
 {
-    void *sound = *(void **)((char *)self + 0xac);
-    if (sound != 0 && *(bool *)((char *)self + 0xb0)) {
+    void *sound = self->field_0xac;
+    if (sound != 0 && self->field_0xb0) {
         ext_001ab508(sound, soundId);
     }
 }
@@ -248,8 +249,8 @@ extern "C" void ApplicationManager_SoundPlayLoop(ApplicationManager *self, int s
 // ---- SoundPlayMusicLoop_8219e.cpp ----
 extern "C" void ApplicationManager_SoundPlayMusicLoop(ApplicationManager *self, int soundId)
 {
-    void *sound = *(void **)((char *)self + 0xac);
-    if (sound != 0 && *(bool *)((char *)self + 0xb1)) {
+    void *sound = self->field_0xac;
+    if (sound != 0 && self->field_0xb1) {
         ext_001ab4e8(sound, soundId);
     }
 }
@@ -257,38 +258,38 @@ extern "C" void ApplicationManager_SoundPlayMusicLoop(ApplicationManager *self, 
 // ---- ResetKeyState_83e90.cpp ----
 extern "C" void ApplicationManager_ResetKeyState(ApplicationManager *self)
 {
-    *(uint64_t *)((char *)self + 0x80) = 0;
+    self->field_0x80 = 0;
 }
 
 // ---- GetElapsedTimeMillis_827dc.cpp ----
 extern "C" uint64_t ApplicationManager_GetElapsedTimeMillis(ApplicationManager *self)
 {
-    return *(uint64_t *)((char *)self + 0x70) - *(uint64_t *)((char *)self + 0x78);
+    return self->field_0x70 - self->field_0x78;
 }
 
 // ---- SoundMusicEnable_8226a.cpp ----
 extern "C" void ApplicationManager_SoundMusicEnable(ApplicationManager *self, bool enable)
 {
-    *(bool *)((char *)self + 0xb1) = enable;
+    self->field_0xb1 = enable;
 }
 
 // ---- CheatEnable_82534.cpp ----
 extern "C" void ApplicationManager_CheatEnable(ApplicationManager *self, bool enable)
 {
-    *(bool *)((char *)self + 0x34) = enable;
+    self->field_0x34 = enable;
 }
 
 // ---- GetCurrentTimeMillis_83e98.cpp ----
 extern "C" uint64_t ApplicationManager_GetCurrentTimeMillis(ApplicationManager *self)
 {
-    return *(uint64_t *)((char *)self + 0x68);
+    return self->field_0x68;
 }
 
 // ---- SoundPlayMusic_8218a.cpp ----
 extern "C" void ApplicationManager_SoundPlayMusic(ApplicationManager *self, int soundId)
 {
-    void *sound = *(void **)((char *)self + 0xac);
-    if (sound != 0 && *(bool *)((char *)self + 0xb1)) {
+    void *sound = self->field_0xac;
+    if (sound != 0 && self->field_0xb1) {
         ext_001ab4d8(sound, soundId);
     }
 }
@@ -299,24 +300,24 @@ typedef uint64_t uint64x2_unaligned __attribute__((vector_size(16), aligned(8)))
 extern "C" void ApplicationManager_OnTouchEndSimple(ApplicationManager *self)
 {
     uint64x2_unaligned zero = (uint64x2_unaligned){0, 0};
-    *(uint32_t *)((char *)self + 0x08) = 0;
-    *(uint32_t *)((char *)self + 0x0c) = 0;
-    *(uint32_t *)((char *)self + 0x80) = 0;
-    *(uint32_t *)((char *)self + 0x84) = 0;
-    *(uint64x2_unaligned *)((char *)self + 0x98) = zero;
+    self->field_0x8 = 0;
+    self->field_0xc = 0;
+    self->field_0x80 = 0;
+    self->field_0x84 = 0;
+    self->field_0x98 = zero;
 }
 
 // ---- SoundEnable_8225a.cpp ----
 extern "C" void ApplicationManager_SoundEnable(ApplicationManager *self, bool enable)
 {
-    *(volatile bool *)((char *)self + 0xb0) = enable;
-    *(volatile bool *)((char *)self + 0xb1) = enable;
+    self->field_0xb0 = enable;
+    self->field_0xb1 = enable;
 }
 
 // ---- SoundSetMusicVolume_8228c.cpp ----
 extern "C" void ApplicationManager_SoundSetMusicVolume(ApplicationManager *self, int volume)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab598(sound);
     }
@@ -327,8 +328,8 @@ typedef bool ResumeCallback(PaintCanvas *, void *);
 
 extern "C" void ApplicationManager_SetResumeCallback(ApplicationManager *self, ResumeCallback *callback, void *data)
 {
-    *(ResumeCallback **)((char *)self + 0x28) = callback;
-    *(void **)((char *)self + 0x2c) = data;
+    self->field_0x28 = callback;
+    self->field_0x2c = data;
 }
 
 // ---- GetApplicationVersionString_82480.cpp ----
@@ -340,14 +341,14 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_GetApplic
 // ---- VibrateEnable_822b6.cpp ----
 extern "C" void ApplicationManager_VibrateEnable(ApplicationManager *self, bool enable)
 {
-    *(bool *)((char *)self + 0xb2) = enable;
+    self->field_0xb2 = enable;
 }
 
 // ---- SoundResume_82226.cpp ----
 extern "C" void ApplicationManager_SoundResume(ApplicationManager *self, int soundId)
 {
-    void *sound = *(void **)((char *)self + 0xac);
-    if ((sound != 0 && *(bool *)((char *)self + 0xb0)) || *(bool *)((char *)self + 0xb1)) {
+    void *sound = self->field_0xac;
+    if ((sound != 0 && self->field_0xb0) || self->field_0xb1) {
         ext_001ab558(sound, soundId);
     }
 }
@@ -355,7 +356,7 @@ extern "C" void ApplicationManager_SoundResume(ApplicationManager *self, int sou
 // ---- SoundRelease_8217c.cpp ----
 extern "C" void ApplicationManager_SoundRelease(ApplicationManager *self)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab4c8(sound);
     }
@@ -366,7 +367,7 @@ typedef void QuitCallback();
 
 extern "C" void ApplicationManager_Quit(ApplicationManager *self)
 {
-    QuitCallback *callback = *(QuitCallback **)((char *)self + 0x1c);
+    QuitCallback *callback = self->field_0x1c;
     if (callback != 0) {
         callback();
     }
@@ -375,7 +376,7 @@ extern "C" void ApplicationManager_Quit(ApplicationManager *self)
 // ---- GetEngine_8249c.cpp ----
 extern "C" void *ApplicationManager_GetEngine(ApplicationManager *self)
 {
-    return *(void **)((char *)self + 0xa8);
+    return self->field_0xa8;
 }
 
 // ---- Suspend_824a2.cpp ----
@@ -384,35 +385,35 @@ typedef void ModuleCallback(void *);
 
 extern "C" void ApplicationManager_Suspend(ApplicationManager *self)
 {
-    unsigned int state = *(unsigned int *)((char *)self + 0x3c);
+    unsigned int state = self->field_0x3c;
     if (state - 3 < 2) {
         return;
     }
 
-    void *module = *(void **)((char *)self + 0x18);
+    void *module = self->field_0x18;
     if (module != 0) {
         ModuleCallback **vtable = *(ModuleCallback ***)module;
         vtable[0x3c / 4](module);
-        void *engine = *(void **)((char *)self + 0xa8);
+        void *engine = self->field_0xa8;
         if (engine != 0) {
             Engine_Suspend(engine);
         }
-        int oldState = *(int *)((char *)self + 0x3c);
-        *(int *)((char *)self + 0x3c) = 3;
-        *(int *)((char *)self + 0x40) = oldState;
+        int oldState = self->field_0x3c;
+        self->field_0x3c = 3;
+        self->field_0x40 = oldState;
     }
 }
 
 // ---- SoundFxEnable_82264.cpp ----
 extern "C" void ApplicationManager_SoundFxEnable(ApplicationManager *self, bool enable)
 {
-    *(bool *)((char *)self + 0xb0) = enable;
+    self->field_0xb0 = enable;
 }
 
 // ---- SoundResume_822a8.cpp ----
 extern "C" void ApplicationManager_SoundResumeSelf(ApplicationManager *self)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab568(sound);
     }
@@ -421,15 +422,15 @@ extern "C" void ApplicationManager_SoundResumeSelf(ApplicationManager *self)
 // ---- Vibrate_822c4.cpp ----
 extern "C" void ApplicationManager_Vibrate(ApplicationManager *self, unsigned short duration)
 {
-    if (*(bool *)((char *)self + 0xb2)) {
-        ext_001ab328(*(void **)((char *)self + 0xa8), duration);
+    if (self->field_0xb2) {
+        ext_001ab328(self->field_0xa8, duration);
     }
 }
 
 // ---- SoundSetFXVolume_8227e.cpp ----
 extern "C" void ApplicationManager_SoundSetFXVolume(ApplicationManager *self, int volume)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab588(sound);
     }
@@ -438,7 +439,7 @@ extern "C" void ApplicationManager_SoundSetFXVolume(ApplicationManager *self, in
 // ---- CheatSetCallback_8251c.cpp ----
 extern "C" void ApplicationManager_CheatSetCallback(ApplicationManager *self, void *callback, void *data)
 {
-    void *cheats = *(void **)((char *)self + 0x30);
+    void *cheats = self->field_0x30;
     if (cheats != 0) {
         ext_001ab5c8(cheats);
     }
@@ -447,8 +448,8 @@ extern "C" void ApplicationManager_CheatSetCallback(ApplicationManager *self, vo
 // ---- SoundResumeSounds_82240.cpp ----
 extern "C" void ApplicationManager_SoundResumeSounds(ApplicationManager *self)
 {
-    void *sound = *(void **)((char *)self + 0xac);
-    if ((sound != 0 && *(bool *)((char *)self + 0xb0)) || *(bool *)((char *)self + 0xb1)) {
+    void *sound = self->field_0xac;
+    if ((sound != 0 && self->field_0xb0) || self->field_0xb1) {
         ext_001ab568(sound);
     }
 }
@@ -456,7 +457,7 @@ extern "C" void ApplicationManager_SoundResumeSounds(ApplicationManager *self)
 // ---- SoundPauseSounds_8220a.cpp ----
 extern "C" void ApplicationManager_SoundPauseSounds(ApplicationManager *self)
 {
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab538(sound);
     }
@@ -465,15 +466,15 @@ extern "C" void ApplicationManager_SoundPauseSounds(ApplicationManager *self)
 // ---- GetKeyState_83e84.cpp ----
 extern "C" uint64_t ApplicationManager_GetKeyState(ApplicationManager *self)
 {
-    return *(uint64_t *)((char *)self + 0x80);
+    return self->field_0x80;
 }
 
 // ---- SetApplicationModule_82440.cpp ----
 extern "C" void ApplicationManager_SetApplicationModule(ApplicationManager *self, void *module)
 {
-    int current = *(int *)((char *)self + 0x18);
-    *(void **)((char *)self + 0x60) = module;
-    *(unsigned int *)((char *)self + 0x3c) = current != 0;
+    int current = self->field_0x18;
+    self->field_0x60 = module;
+    self->field_0x3c = current != 0;
 }
 
 // ---- ConfigReadFile_8254c.cpp ----
@@ -481,7 +482,7 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRea
 {
     void * volatile cookie = __stack_chk_guard;
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
-    ConfigReader *reader = *(ConfigReader **)((char *)self + 0x38);
+    ConfigReader *reader = self->field_0x38;
     if (reader != 0) {
         String *copy = (String *)storage;
         new (copy) String(*name, false);
@@ -506,17 +507,17 @@ extern "C" void ApplicationManager_OnTouchEnd(ApplicationManager *self, int xArg
     int x = xArg;
     int y = yArg;
 
-    void *module = *(void **)((char *)self + 0x18);
-    if (module != 0 && *(int *)((char *)self + 0x3c) == 5) {
+    void *module = self->field_0x18;
+    if (module != 0 && self->field_0x3c == 5) {
         ApplicationManager_ConvertTouchCoords(self, &x, &y);
-        module = *(void **)((char *)self + 0x18);
+        module = self->field_0x18;
         void **vtable = *(void ***)module;
         ((TouchEndCallback *)vtable[0x2c / 4])(module, x, y, touch);
-        module = *(void **)((char *)self + 0x18);
+        module = self->field_0x18;
         vtable = *(void ***)module;
         ((TouchReleaseCallback *)vtable[0x20 / 4])(module, x, y);
-        *(int *)((char *)self + 0xb4) = x;
-        *(int *)((char *)self + 0xb8) = y;
+        self->field_0xb4 = x;
+        self->field_0xb8 = y;
     }
 
     if (cookie == __stack_chk_guard) {
@@ -547,78 +548,78 @@ typedef bool ResumeCallback(PaintCanvas *, void *);
 extern "C" void ApplicationManager_OnUpdate(ApplicationManager *self, long long now)
 {
     void * volatile cookie = __stack_chk_guard;
-    void *engine = *(void **)((char *)self + 0xa8);
+    void *engine = self->field_0xa8;
     Engine_PreUpdate(engine);
 
-    if (*(bool *)((char *)self + 0x14)) {
+    if (self->field_0x14) {
         ApplicationManager_CheckForOrientationChange(self);
     }
-    void *sound = *(void **)((char *)self + 0xac);
-    if (sound != 0 && *(bool *)((char *)self + 0xb0)) {
+    void *sound = self->field_0xac;
+    if (sound != 0 && self->field_0xb0) {
         AESoundRessource_checkLooping(sound);
     }
 
-    switch (*(int *)((char *)self + 0x3c)) {
+    switch (self->field_0x3c) {
     case 0: {
-        void *next = *(void **)((char *)self + 0x60);
-        void *module = next != 0 ? next : *(void **)((char *)self + 0x18);
+        void *next = self->field_0x60;
+        void *module = next != 0 ? next : self->field_0x18;
         if (next != 0) {
-            *(void **)((char *)self + 0x60) = 0;
-            *(void **)((char *)self + 0x18) = next;
+            self->field_0x60 = 0;
+            self->field_0x18 = next;
         }
         if (module != 0) {
             void **vtable = *(void ***)module;
             int loading = ((ModuleIntCallback *)vtable[2])(module);
-            LoadingCallback *callback = *(LoadingCallback **)((char *)self + 0x20);
+            LoadingCallback *callback = self->field_0x20;
             if (callback != 0) {
-                callback(*(PaintCanvas **)self, loading, *(void **)((char *)self + 0x24));
+                callback(*(PaintCanvas **)self, loading, self->field_0x24);
             }
             if (loading == 0) {
-                *(uint64_t *)((char *)self + 0xa0) = 0;
-                *(int *)((char *)self + 0x3c) = 5;
-                *(uint64_t *)((char *)self + 0x68) = 0;
-                *(uint64_t *)((char *)self + 0x70) = now;
-                *(uint64_t *)((char *)self + 0x78) = now - 1;
-                *(uint64_t *)((char *)self + 0x80) = 0;
+                self->field_0xa0 = 0;
+                self->field_0x3c = 5;
+                self->field_0x68 = 0;
+                self->field_0x70 = now;
+                self->field_0x78 = now - 1;
+                self->field_0x80 = 0;
             } else {
-                uint64_t previous = *(uint64_t *)((char *)self + 0x70);
-                *(uint64_t *)((char *)self + 0x68) += (uint64_t)now - previous;
-                *(uint64_t *)((char *)self + 0x78) = previous;
-                *(uint64_t *)((char *)self + 0x70) = now;
+                uint64_t previous = self->field_0x70;
+                self->field_0x68 += (uint64_t)now - previous;
+                self->field_0x78 = previous;
+                self->field_0x70 = now;
             }
         }
         break;
     }
     case 1: {
-        void *module = *(void **)((char *)self + 0x18);
+        void *module = self->field_0x18;
         if (module != 0) {
             void **vtable = *(void ***)module;
             ((ModuleVoidCallback *)vtable[3])(module);
             Engine_ResetLightParam(engine);
-            *(int *)((char *)self + 0x3c) = 0;
-            *(void **)((char *)self + 0x18) = 0;
+            self->field_0x3c = 0;
+            self->field_0x18 = 0;
         }
         break;
     }
     case 4:
-        *(uint64_t *)((char *)self + 0xa0) = 0;
-        *(int *)((char *)self + 0x3c) = *(int *)((char *)self + 0x40);
-        *(uint64_t *)((char *)self + 0x68) += 1;
-        *(uint64_t *)((char *)self + 0x70) = now;
-        *(uint64_t *)((char *)self + 0x78) = now - 1;
-        *(uint64_t *)((char *)self + 0x80) = 0;
+        self->field_0xa0 = 0;
+        self->field_0x3c = self->field_0x40;
+        self->field_0x68 += 1;
+        self->field_0x70 = now;
+        self->field_0x78 = now - 1;
+        self->field_0x80 = 0;
         break;
     case 5: {
-        void *module = *(void **)((char *)self + 0x18);
+        void *module = self->field_0x18;
         if (module != 0) {
             void **vtable = *(void ***)module;
             ((ModuleVoidCallback *)vtable[0x30 / 4])(module);
-            *(uint64_t *)((char *)engine + 0x68) = 0;
-            *(uint64_t *)((char *)engine + 0x58) = 0;
+            engine->field_0x68 = 0;
+            engine->field_0x58 = 0;
             *(int *)((char *)*(void **)self + 4) = 0;
             ((ModuleVoidCallback *)vtable[0x34 / 4])(module);
-            ResumeCallback *resume = *(ResumeCallback **)((char *)self + 0x28);
-            if (resume == 0 || !resume(*(PaintCanvas **)self, *(void **)((char *)self + 0x2c))) {
+            ResumeCallback *resume = self->field_0x28;
+            if (resume == 0 || !resume(*(PaintCanvas **)self, self->field_0x2c)) {
                 ((ModuleVoidCallback *)vtable[0x38 / 4])(module);
             }
         }
@@ -644,15 +645,15 @@ extern "C" ApplicationManager *ApplicationManager_ctor(ApplicationManager *self,
     ArrayCtor_uint((char *)self + 0x50);
     ArrayCtor_long_long((char *)self + 0x88);
 
-    *(uint64_t *)((char *)self + 0x70) = 0;
-    *(uint64_t *)((char *)self + 0x78) = 0;
-    *(void **)((char *)self + 0x60) = 0;
-    *(uint64_t *)((char *)self + 0x68) = 0;
-    *(uint64_t *)((char *)self + 0x08) = 0;
-    *(int *)((char *)self + 0x3c) = 5;
-    *(uint64_t *)((char *)self + 0x18) = 0;
-    *(uint64_t *)((char *)self + 0x80) = 0;
-    *(void **)((char *)self + 0xa8) = engine;
+    self->field_0x70 = 0;
+    self->field_0x78 = 0;
+    self->field_0x60 = 0;
+    self->field_0x68 = 0;
+    self->field_0x8 = 0;
+    self->field_0x3c = 5;
+    self->field_0x18 = 0;
+    self->field_0x80 = 0;
+    self->field_0xa8 = engine;
 
     void *canvas = operator_new(0x20c);
     PaintCanvas_ctor(canvas, engine);
@@ -660,17 +661,17 @@ extern "C" ApplicationManager *ApplicationManager_ctor(ApplicationManager *self,
 
     void *sound = operator_new(0x14);
     AESoundRessource_ctor(sound);
-    *(bool *)((char *)self + 0x34) = false;
-    *(void **)((char *)self + 0xac) = sound;
+    self->field_0x34 = false;
+    self->field_0xac = sound;
 
     void *reader = operator_new(0x14);
     ConfigReader_ctor(reader, engine);
-    *(void **)((char *)self + 0x20) = 0;
-    *(void **)((char *)self + 0x38) = reader;
-    *(void **)((char *)self + 0x28) = 0;
-    *(uint16_t *)((char *)self + 0xb0) = 0x101;
-    *(bool *)((char *)self + 0xb2) = true;
-    *(bool *)((char *)self + 0x14) = false;
+    self->field_0x20 = 0;
+    self->field_0x38 = reader;
+    self->field_0x28 = 0;
+    self->field_0xb0 = 0x101;
+    self->field_0xb2 = true;
+    self->field_0x14 = false;
 
     char *storage = (char *)operator_new(0x408);
     *(uint32_t *)storage = 0x10;
@@ -680,13 +681,13 @@ extern "C" ApplicationManager *ApplicationManager_ctor(ApplicationManager *self,
         new ((String *)(keys + offset + 4)) String();
         *(uint32_t *)(keys + offset) = 0;
     }
-    *(char **)((char *)self + 0x10) = keys;
+    self->field_0x10 = keys;
 
     void *cheats = operator_new(0x10);
     CheatHandler_ctor(cheats, keys);
-    *(void **)((char *)self + 0x30) = cheats;
-    *(int *)((char *)self + 0xb4) = -1;
-    *(int *)((char *)self + 0xb8) = -1;
+    self->field_0x30 = cheats;
+    self->field_0xb4 = -1;
+    self->field_0xb8 = -1;
 
     if (cookie == __stack_chk_guard) {
         return self;
@@ -705,17 +706,17 @@ extern "C" void ApplicationManager_OnTouchMove(ApplicationManager *self, int xAr
     int x = xArg;
     int y = yArg;
 
-    void *module = *(void **)((char *)self + 0x18);
-    if (module != 0 && *(int *)((char *)self + 0x3c) == 5) {
+    void *module = self->field_0x18;
+    if (module != 0 && self->field_0x3c == 5) {
         ApplicationManager_ConvertTouchCoords(self, &x, &y);
-        module = *(void **)((char *)self + 0x18);
+        module = self->field_0x18;
         void **vtable = *(void ***)module;
         ((TouchMoveCallback *)vtable[0x28 / 4])(module, x, y, touch);
-        module = *(void **)((char *)self + 0x18);
+        module = self->field_0x18;
         vtable = *(void ***)module;
         ((TouchDragCallback *)vtable[0x1c / 4])(module, x, y);
-        *(int *)((char *)self + 0xb4) = x;
-        *(int *)((char *)self + 0xb8) = y;
+        self->field_0xb4 = x;
+        self->field_0xb8 = y;
     }
 
     if (cookie == __stack_chk_guard) {
@@ -729,17 +730,17 @@ typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned in
 
 extern "C" void ApplicationManager_OnKeyPress(ApplicationManager *self, int key)
 {
-    *(uint32_t *)((char *)self + 0x98) = 0;
-    *(int *)((char *)self + 0x08) = key;
-    *(int *)((char *)self + 0x0c) = key >> 31;
-    *(uint32_t *)((char *)self + 0x9c) = 0;
+    self->field_0x98 = 0;
+    self->field_0x8 = key;
+    self->field_0xc = key >> 31;
+    self->field_0x9c = 0;
 
     unsigned int keyLow = 0;
     unsigned int keyHigh = 0;
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = *(int **)((char *)self + 0x10);
+    int *mapping = self->field_0x10;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
             int highIndex = (int)keyIndex - 0x20;
@@ -751,19 +752,19 @@ extern "C" void ApplicationManager_OnKeyPress(ApplicationManager *self, int key)
             if (highIndex >= 0) {
                 keyHigh = 1u << highIndex;
             }
-            *(uint64_t *)((char *)self + 0x80) =
-                *(uint64_t *)((char *)self + 0x80) | (((uint64_t)keyHigh << 32) | keyLow);
+            self->field_0x80 =
+                self->field_0x80 | (((uint64_t)keyHigh << 32) | keyLow);
 
             unsigned int offset = 0;
-            for (unsigned int i = 0; i < *(unsigned int *)((char *)self + 0x88); i += 2) {
-                char *entry = *(char **)((char *)self + 0x8c) + offset;
+            for (unsigned int i = 0; i < self->field_0x88; i += 2) {
+                char *entry = self->field_0x8c + offset;
                 if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
                     actionLow |= *(uint32_t *)entry;
                     actionHigh |= *(uint32_t *)(entry + 4);
-                    *(uint32_t *)((char *)self + 0x98) = actionLow;
-                    *(uint32_t *)((char *)self + 0x9c) = actionHigh;
-                    *(uint32_t *)((char *)self + 0xa0) |= actionLow;
-                    *(uint32_t *)((char *)self + 0xa4) |= actionHigh;
+                    self->field_0x98 = actionLow;
+                    self->field_0x9c = actionHigh;
+                    self->field_0xa0 |= actionLow;
+                    self->field_0xa4 |= actionHigh;
                 }
                 offset += 0x10;
             }
@@ -773,8 +774,8 @@ extern "C" void ApplicationManager_OnKeyPress(ApplicationManager *self, int key)
         ++keyIndex;
     }
 
-    void *module = *(void **)((char *)self + 0x18);
-    if (module != 0 && *(int *)((char *)self + 0x3c) == 5) {
+    void *module = self->field_0x18;
+    if (module != 0 && self->field_0x3c == 5) {
         void **vtable = *(void ***)module;
         ((KeyCallback *)vtable[0x10 / 4])(module, module, keyLow, keyHigh, actionLow, actionHigh);
     }
@@ -784,11 +785,11 @@ extern "C" void ApplicationManager_OnKeyPress(ApplicationManager *self, int key)
 __attribute__((minsize)) extern "C" void ApplicationManager_SoundSet(ApplicationManager *self, void *info, int count)
 {
     if (info != 0) {
-        void *sound = *(void **)((char *)self + 0xac);
+        void *sound = self->field_0xac;
         if (sound != 0) {
             AESoundRessource_SetSound(sound, info, count);
             for (int i = 0; i < count; ++i) {
-                AESoundRessource_init(*(void **)((char *)self + 0xac), i);
+                AESoundRessource_init(self->field_0xac, i);
             }
         }
     }
@@ -819,15 +820,15 @@ extern "C" void ApplicationManager_SetCurrentApplicationModule(ApplicationManage
         }
     }
 
-    unsigned int count = *(unsigned int *)((char *)self + 0x50);
+    unsigned int count = self->field_0x50;
     unsigned int index = 0;
     while (index < count) {
-        if (*(unsigned int *)(*(char **)((char *)self + 0x54) + index * 4) == id) {
-            void *module = *(void **)(*(char **)((char *)self + 0x48) + index * 4);
-            int current = *(int *)((char *)self + 0x18);
-            *(unsigned int *)((char *)self + 0x3c) = current != 0;
-            *(unsigned int *)((char *)self + 0x5c) = id;
-            *(void **)((char *)self + 0x60) = module;
+        if (*(unsigned int *)(self->field_0x54 + index * 4) == id) {
+            void *module = *(void **)(self->field_0x48 + index * 4);
+            int current = self->field_0x18;
+            self->field_0x3c = current != 0;
+            self->field_0x5c = id;
+            self->field_0x60 = module;
             return;
         }
         ++index;
@@ -868,7 +869,7 @@ storeY:
 // ---- VibrateSupported_822bc.cpp ----
 extern "C" void ApplicationManager_VibrateSupported(ApplicationManager *self)
 {
-    ext_001ab318(*(void **)((char *)self + 0xa8));
+    ext_001ab318(self->field_0xa8);
 }
 
 // ---- OnTouchBegin_83a38.cpp ----
@@ -882,19 +883,19 @@ extern "C" void ApplicationManager_OnTouchBegin(ApplicationManager *self, int xA
     int x = xArg;
     int y = yArg;
 
-    void *module = *(void **)((char *)self + 0x18);
-    if (module != 0 && *(int *)((char *)self + 0x3c) == 5) {
+    void *module = self->field_0x18;
+    if (module != 0 && self->field_0x3c == 5) {
         ApplicationManager_ConvertTouchCoords(self, &x, &y);
-        module = *(void **)((char *)self + 0x18);
+        module = self->field_0x18;
         void **vtable = *(void ***)module;
         ((TouchBeginCallback *)vtable[0x24 / 4])(module, x, y, touch);
-        module = *(void **)((char *)self + 0x18);
+        module = self->field_0x18;
         vtable = *(void ***)module;
         ((TouchPressCallback *)vtable[0x18 / 4])(module, x, y);
-        *(int *)((char *)self + 0xb4) = x;
-        *(int *)((char *)self + 0xb8) = y;
+        self->field_0xb4 = x;
+        self->field_0xb8 = y;
 
-        void *engine = *(void **)((char *)self + 0xa8);
+        void *engine = self->field_0xa8;
         int mode = g_touchMode;
         if (mode <= 3) {
             void *canvas = *(void **)self;
@@ -904,11 +905,11 @@ extern "C" void ApplicationManager_OnTouchBegin(ApplicationManager *self, int xA
                        y > PaintCanvas_GetHeight(canvas) - 0x32) {
                 g_touchMode = 2;
             } else if (mode == 2 && x <= 0x31 && y > PaintCanvas_GetHeight(canvas) - 0x32) {
-                *(bool *)((char *)engine + 0x74) = !*(bool *)((char *)engine + 0x74);
+                engine->field_0x74 = !engine->field_0x74;
             } else if (mode == 3 && y <= 0x31 && x > PaintCanvas_GetWidth(canvas) - 0x32) {
                 g_touchMode = 4;
             }
-        } else if (*(bool *)((char *)engine + 0x74)) {
+        } else if (engine->field_0x74) {
             if (y < 100) {
                 g_touchToggle ^= 1;
             } else {
@@ -941,7 +942,7 @@ extern "C" void ApplicationManager_ConfigRegisterAction(ApplicationManager *self
 // ---- GetApplicationModule_82452.cpp ----
 extern "C" void *ApplicationManager_GetApplicationModule(ApplicationManager *self, unsigned int id)
 {
-    unsigned int count = *(unsigned int *)((char *)self + 0x50);
+    unsigned int count = self->field_0x50;
     unsigned int index = 0;
     goto check;
 
@@ -951,10 +952,10 @@ check:
     if (index >= count) {
         return 0;
     }
-    if (*(int *)(*(char **)((char *)self + 0x54) + index * 4) != (int)id) {
+    if (*(int *)(self->field_0x54 + index * 4) != (int)id) {
         goto advance;
     }
-    return *(void **)(*(char **)((char *)self + 0x48) + index * 4);
+    return *(void **)(self->field_0x48 + index * 4);
 }
 
 // ---- ConfigGetKeysForAction_82654.cpp ----
@@ -969,7 +970,7 @@ extern "C" void *ApplicationManager_ConfigGetKeysForAction(ApplicationManager *s
 
 loop:
     {
-        char *actions = *(char **)((char *)self + 0x8c);
+        char *actions = self->field_0x8c;
         int actionLow = *(int *)(actions + byteOffset);
         int actionHigh = *(int *)(actions + byteOffset + 4);
         int mismatch = (actionLow ^ low) | (actionHigh ^ high);
@@ -979,8 +980,8 @@ loop:
                 Array_StringPtr_ctor(result);
             }
             String *string = (String *)operator new(0xc);
-            actions = *(char **)((char *)self + 0x8c);
-            char *keys = *(char **)((char *)self + 0x10);
+            actions = self->field_0x8c;
+            char *keys = self->field_0x10;
             unsigned int keyIndex = *(unsigned int *)(actions + byteOffset + 8);
             new (string) String(*(String *)(keys + keyIndex * 0x10 + 4), false);
             ArrayAdd_StringPtr(string, result);
@@ -989,7 +990,7 @@ loop:
         index += 2;
     }
 check:
-    if (index < *(unsigned int *)((char *)self + 0x88)) {
+    if (index < self->field_0x88) {
         goto loop;
     }
     return result;
@@ -1000,15 +1001,15 @@ typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned in
 
 extern "C" void ApplicationManager_OnKeyRelease(ApplicationManager *self, int key)
 {
-    *(uint32_t *)((char *)self + 0x98) = 0;
-    *(uint32_t *)((char *)self + 0x9c) = 0;
+    self->field_0x98 = 0;
+    self->field_0x9c = 0;
 
     unsigned int keyLow = 0;
     unsigned int keyHigh = 0;
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = *(int **)((char *)self + 0x10);
+    int *mapping = self->field_0x10;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
             int highIndex = (int)keyIndex - 0x20;
@@ -1020,19 +1021,19 @@ extern "C" void ApplicationManager_OnKeyRelease(ApplicationManager *self, int ke
             if (highIndex >= 0) {
                 keyHigh = 1u << highIndex;
             }
-            *(uint32_t *)((char *)self + 0x80) &= ~keyLow;
-            *(uint32_t *)((char *)self + 0x84) &= ~keyHigh;
+            self->field_0x80 &= ~keyLow;
+            self->field_0x84 &= ~keyHigh;
 
             unsigned int offset = 0;
-            for (unsigned int i = 0; i < *(unsigned int *)((char *)self + 0x88); i += 2) {
-                char *entry = *(char **)((char *)self + 0x8c) + offset;
+            for (unsigned int i = 0; i < self->field_0x88; i += 2) {
+                char *entry = self->field_0x8c + offset;
                 if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
                     actionLow |= *(uint32_t *)entry;
                     actionHigh |= *(uint32_t *)(entry + 4);
-                    *(uint32_t *)((char *)self + 0x98) = actionLow;
-                    *(uint32_t *)((char *)self + 0x9c) = actionHigh;
-                    *(uint32_t *)((char *)self + 0xa0) &= ~actionLow;
-                    *(uint32_t *)((char *)self + 0xa4) &= ~actionHigh;
+                    self->field_0x98 = actionLow;
+                    self->field_0x9c = actionHigh;
+                    self->field_0xa0 &= ~actionLow;
+                    self->field_0xa4 &= ~actionHigh;
                 }
                 offset += 0x10;
             }
@@ -1042,8 +1043,8 @@ extern "C" void ApplicationManager_OnKeyRelease(ApplicationManager *self, int ke
         ++keyIndex;
     }
 
-    void *module = *(void **)((char *)self + 0x18);
-    if (module != 0 && *(int *)((char *)self + 0x3c) == 5) {
+    void *module = self->field_0x18;
+    if (module != 0 && self->field_0x3c == 5) {
         void **vtable = *(void ***)module;
         ((KeyCallback *)vtable[0x14 / 4])(module, module, keyLow, keyHigh, actionLow, actionHigh);
     }
@@ -1058,7 +1059,7 @@ extern "C" void ApplicationManager_KeyCodeSetMapping(ApplicationManager *self, v
         int offset = 0;
         while (index < count) {
             uint32_t *mapping = *(uint32_t **)(*(char **)((char *)array + 4) + index * 4);
-            char *dst = *(char **)((char *)self + 0x10) + offset;
+            char *dst = self->field_0x10 + offset;
             *(uint32_t *)dst = *mapping;
             String_assign((String *)(dst + 4), (String *)(mapping + 1));
             offset += 0x10;
@@ -1071,7 +1072,7 @@ extern "C" void ApplicationManager_KeyCodeSetMapping(ApplicationManager *self, v
 // ---- CheckForOrientationChange_826e8.cpp ----
 static bool update_orientation_timer(ApplicationManager *self, int *timer)
 {
-    int elapsed = *(int *)((char *)self + 0x70) - *(int *)((char *)self + 0x78);
+    int elapsed = self->field_0x70 - self->field_0x78;
     int value = *timer + elapsed;
     *timer = value;
     return value >= 0xfb;
@@ -1079,8 +1080,8 @@ static bool update_orientation_timer(ApplicationManager *self, int *timer)
 
 extern "C" void ApplicationManager_CheckForOrientationChange(ApplicationManager *self)
 {
-    void *engine = *(void **)((char *)self + 0xa8);
-    double tilt = *(double *)((char *)engine + 0x4b0);
+    void *engine = self->field_0xa8;
+    double tilt = engine->field_0x4b0;
     void *canvas;
     int orientation;
     int *timer;
@@ -1153,7 +1154,7 @@ struct ApplicationManager {
 __attribute__((minsize)) AbyssEngine::ApplicationManager::~ApplicationManager()
 {
     ApplicationManager *self = this;
-    void *module = *(void **)((char *)self + 0x18);
+    void *module = self->field_0x18;
     if (module != 0) {
         ModuleCallback **vtable = *(ModuleCallback ***)module;
         vtable[0x0c / 4](module);
@@ -1162,12 +1163,12 @@ __attribute__((minsize)) AbyssEngine::ApplicationManager::~ApplicationManager()
     void *modules = (char *)self + 0x44;
     unsigned int offset = 0;
     for (unsigned int i = 0; i < *(unsigned int *)modules; ++i) {
-        void **slot = (void **)(*(char **)((char *)self + 0x48) + offset);
+        void **slot = (void **)(self->field_0x48 + offset);
         void *entry = *slot;
         if (entry != 0) {
             ModuleCallback **vtable = *(ModuleCallback ***)entry;
             vtable[1](entry);
-            slot = (void **)(*(char **)((char *)self + 0x48) + offset);
+            slot = (void **)(self->field_0x48 + offset);
         }
         *slot = 0;
         offset += 4;
@@ -1182,28 +1183,28 @@ __attribute__((minsize)) AbyssEngine::ApplicationManager::~ApplicationManager()
     }
     *(void **)self = 0;
 
-    void *sound = *(void **)((char *)self + 0xac);
+    void *sound = self->field_0xac;
     if (sound != 0) {
         AESoundRessource_dtor(sound);
         operator_delete(sound);
     }
-    *(void **)((char *)self + 0xac) = 0;
+    self->field_0xac = 0;
 
-    void *cheats = *(void **)((char *)self + 0x30);
+    void *cheats = self->field_0x30;
     if (cheats != 0) {
         CheatHandler_dtor(cheats);
         operator_delete(cheats);
     }
-    *(void **)((char *)self + 0x30) = 0;
+    self->field_0x30 = 0;
 
-    void *reader = *(void **)((char *)self + 0x38);
+    void *reader = self->field_0x38;
     if (reader != 0) {
         ConfigReader_dtor(reader);
         operator_delete(reader);
     }
-    *(void **)((char *)self + 0x38) = 0;
+    self->field_0x38 = 0;
 
-    char *keys = *(char **)((char *)self + 0x10);
+    char *keys = self->field_0x10;
     if (keys != 0) {
         unsigned int count = *(unsigned int *)(keys - 4);
         for (unsigned int i = count; i != 0; --i) {
@@ -1211,7 +1212,7 @@ __attribute__((minsize)) AbyssEngine::ApplicationManager::~ApplicationManager()
         }
         operator_delete_array(keys - 8);
     }
-    *(void **)((char *)self + 0x10) = 0;
+    self->field_0x10 = 0;
 
     ArrayDtor_long_long((char *)self + 0x88);
     ArrayDtor_uint((char *)self + 0x50);
@@ -1229,7 +1230,7 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigReg
 {
     void * volatile cookie = __stack_chk_guard;
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
-    ConfigReader *reader = *(ConfigReader **)((char *)self + 0x38);
+    ConfigReader *reader = self->field_0x38;
     if (reader != 0) {
         String *copy = (String *)storage;
         new (copy) String(*name, false);

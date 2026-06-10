@@ -1,4 +1,4 @@
-#include "BumpMapping.h"
+#include "gof2/BumpMapping.h"
 
 
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(void *self);

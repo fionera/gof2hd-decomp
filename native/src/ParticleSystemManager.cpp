@@ -1,4 +1,4 @@
-#include "ParticleSystemManager.h"
+#include "gof2/ParticleSystemManager.h"
 
 
 extern "C" void _ips_update(void *sys, int dt);

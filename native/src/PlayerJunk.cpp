@@ -1,4 +1,5 @@
-#include "PlayerJunk.h"
+#include "gof2/PlayerJunk.h"
+#include "gof2/Player.h"
 
 
 
@@ -10,7 +11,7 @@ extern "C" void PlayerJunk_resetTail(void *self, int one);  // b.w 0x1abe08 (ven
 // PlayerJunk::reset() - reset base KIPlayer, clear state, tail-call the show/visible setter.
 extern "C" void _ZN10PlayerJunk5resetEv(void *self) {
     KIPlayer_reset(self);
-    F<int>(self, 0x88) = 0;
+    self->field_0x88 = 0;
     return PlayerJunk_resetTail(self, 1);
 }
 
@@ -62,34 +63,34 @@ void PlayerJunk_update(void *self, int elapsed) {
     Vector zero;
     char workBytes[12];
 
-    F<int>(self, 0x124) = elapsed;
-    if (Player_getHitpoints(F<Player *>(self, 0x4)) < 1) {
-        int state = F<int>(self, 0x88);
+    self->field_0x124 = elapsed;
+    if (Player_getHitpoints(self->field_0x4) < 1) {
+        int state = self->field_0x88;
         if ((uint32_t)(state - 3) >= 2) {
-            Level_junkDied(F<void *>(self, 0x54));
-            F<int>(self, 0x88) = 3;
+            Level_junkDied(self->field_0x54);
+            self->field_0x88 = 3;
             FModSound_play(*g_PJ_sound, 0x16, 0, 0, 0.0f);
             void **randHolder = g_PJ_random;
             if (AERandom_nextInt(*randHolder, 100) < 10) {
-                F<uint8_t>(self, 0x4c) = 1;
+                self->field_0x4c = 1;
                 void *arr = operator new(0xc);
                 Array_int_ctor(arr);
-                F<void *>(self, 0x50) = arr;
+                self->field_0x50 = arr;
                 ArrayAdd_int(99, arr);
-                ArrayAdd_int(AERandom_nextInt(*randHolder, 10) + 1, F<void *>(self, 0x50));
+                ArrayAdd_int(AERandom_nextInt(*randHolder, 10) + 1, self->field_0x50);
                 KIPlayer_createCrate(self, 3);
-                F<uint8_t>(self, 0x4c) = 1;
+                self->field_0x4c = 1;
             } else {
-                Player_setActive(F<Player *>(self, 0x4), false);
-                void *player = Level_getPlayer(F<void *>(self, 0x54));
-                if (F<void *>(F<void *>(player, 0x14), 0x1c) == self) {
-                    player = Level_getPlayer(F<void *>(self, 0x54));
-                    F<void *>(F<void *>(player, 0x14), 0x1c) = 0;
+                Player_setActive(self->field_0x4, false);
+                void *player = Level_getPlayer(self->field_0x54);
+                if (F<void *>(player->field_0x14, 0x1c) == self) {
+                    player = Level_getPlayer(self->field_0x54);
+                    F<void *>(player->field_0x14, 0x1c) = 0;
                 }
             }
-            void *levelObject = F<void *>(self, 0x54);
+            void *levelObject = self->field_0x54;
             struct V3 { uint32_t x, y, z; };
-            V3 position = F<V3>(self, 0x58);
+            V3 position = self->field_0x58;
             zero.x = 0.0f;
             zero.y = 0.0f;
             zero.z = 0.0f;
@@ -99,8 +100,8 @@ void PlayerJunk_update(void *self, int elapsed) {
         }
     }
 
-    if (F<int>(self, 0x88) == 3)
-        F<int>(self, 0x88) = 4;
+    if (self->field_0x88 == 3)
+        self->field_0x88 = 4;
 }
 
 // ---- render_15e8cc.cpp ----
@@ -110,9 +111,9 @@ extern "C" void PlayerJunk_renderTail(void *self);  // b.w 0x1ac3a8 (veneer)
 // PlayerJunk::render() - render the geometry if present, then (unless the state is 3 or 4)
 // tail-call the base render veneer.
 extern "C" void _ZN10PlayerJunk6renderEv(void *self) {
-    void *geom = F<void *>(self, 0x78);
+    void *geom = self->field_0x78;
     if (geom != 0)
         AEGeometry_render(geom);
-    if ((uint32_t)(F<int>(self, 0x88) - 3) > 1)
+    if ((uint32_t)(self->field_0x88 - 3) > 1)
         return PlayerJunk_renderTail(self);
 }

@@ -1,4 +1,4 @@
-#include "ListItemWindow.h"
+#include "gof2/ListItemWindow.h"
 
 
 extern "C" void _liw_stw_OnTouchBegin(void *stw, int x);

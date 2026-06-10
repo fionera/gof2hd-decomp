@@ -1,4 +1,6 @@
-#include "Player.h"
+#include "gof2/Player.h"
+#include "gof2/Globals.h"
+#include "gof2/Gun.h"
 
 
 extern "C" void Player_damageHull_tail();
@@ -224,7 +226,7 @@ extern "C" void Player_setRadius(Player *self, int value)
 // ---- resetDamageDoneByPlayer_a2f96.cpp ----
 extern "C" void Player_resetDamageDoneByPlayer(Player *self)
 {
-    *(int *)((char *)self + 0xdc) = 0;
+    self->field_0xdc = 0;
     self->damageDoneByPlayer = 0;
     self->turnedEnemy = 0;
 }
@@ -633,14 +635,14 @@ extern "C" void Player_regenerateShield(Player *self)
 // ---- heal_a42dc.cpp ----
 __attribute__((minsize)) extern "C" void Player_heal(Player *self, float amount)
 {
-    float f = *(float *)((char *)self + 0x110) + amount;
-    *(float *)((char *)self + 0x110) = f;
+    float f = self->field_0x110 + amount;
+    self->field_0x110 = f;
     if (f > 1.0f) {
         int count = (int)f;
         for (int i = 0; i < count; i++) {
             Player_regenerateHull(self);
         }
-        *(float *)((char *)self + 0x110) = *(float *)((char *)self + 0x110) - (float)count;
+        self->field_0x110 = self->field_0x110 - (float)count;
     }
 }
 
@@ -665,7 +667,7 @@ __attribute__((minsize)) extern "C" void Player_refillGunDelay(Player *self, int
             int n = arr->length;
             for (int i = 0; n != i; i++) {
                 Gun *gun = arr->data[i];
-                *(int *)((char *)gun + 0x6c) = *(int *)((char *)gun + 0x48);
+                gun->field_0x6c = gun->field_0x48;
             }
         }
     }
@@ -810,7 +812,7 @@ __attribute__((minsize)) extern "C" float Player_damageGamma(Player *self, float
             *((unsigned char *)self + 0x67) = 1;
             self->gammaHP = amount;
             if (!(amount > 0.0f)) {
-                *(int *)((char *)self + 0xb8) = 0;
+                self->field_0xb8 = 0;
             }
         }
     }
@@ -928,7 +930,7 @@ lab_3164:
     float f = (float)self->empData;
     self->field_68 = 1;
     self->empPoints = 0;
-    *(int *)((char *)self + 0xe8) = 0;
+    self->field_0xe8 = 0;
     self->empForce = f;
     return Player_damageEmp_tail(self);
 }
@@ -1077,7 +1079,7 @@ __attribute__((minsize)) extern "C" void Player_reset(Player *self)
     self->shieldHP = shield;
     Player_updateDamageRate(self);
     self->vulnerable = 1;
-    *(unsigned short *)((char *)self + 0xc0) = 1;  // active = 1, damaged = 0
+    self->field_0xc0 = 1;  // active = 1, damaged = 0
     self->field_54 = 0;
     *((unsigned char *)self + 0x44) = 0;
     self->damageDoneByPlayer = 0;
@@ -1087,8 +1089,8 @@ __attribute__((minsize)) extern "C" void Player_reset(Player *self)
     self->field_64 = 0;
     self->bombForce = 0;
     self->empForce = 0;
-    *(int *)((char *)self + 0xdd) = 0;
-    *(int *)((char *)self + 0xd9) = 0;
+    self->field_0xdd = 0;
+    self->field_0xd9 = 0;
 }
 
 // ---- addGun_a36ec.cpp ----
@@ -1183,8 +1185,8 @@ extern "C" void Player_calcWeaponSounds(Player *self, int count)
         if (slot2 != 0 && slot2->length != 0) {
             Gun *g = slot2->data[0];
             if (g != 0) {
-                int sid = g_cws_sound3[*(int *)((char *)g + 0x58)];
-                *(char *)((char *)g + 0x89) = 1;
+                int sid = g_cws_sound3[g->field_0x58];
+                g->field_0x89 = 1;
                 return Player_calcWeaponSounds_tail(*g_cws_sound2, sid);
             }
         }
@@ -1194,7 +1196,7 @@ extern "C" void Player_calcWeaponSounds(Player *self, int count)
 // ---- PauseEngineSound_a4088.cpp ----
 __attribute__((minsize)) extern "C" void Player_PauseEngineSound(Player *self)
 {
-    int event = *(int *)((char *)self + 0xf0);
+    int event = self->field_0xf0;
     if (event != 0) {
         self->field_f8 = FModSound_pause(gFModSound);
     }
@@ -1205,16 +1207,16 @@ struct Mat { float m[12]; };
 
 __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Vector *vec)
 {
-    *(Vector **)((char *)self + 0xf4) = vec;
+    self->field_0xf4 = vec;
     if (*((char *)gAppManager + 0xf) != 0) {
         Mat pos;
         MatrixGetPosition(&pos, self->transform);
         void *ev = FModSound_updateEvent3DAttributes(
             gFModSoundPtr[0],
-            *(void **)((char *)self + 0xf0),
-            *(void **)((char *)self + 0xf4),
+            self->field_0xf0,
+            self->field_0xf4,
             (Vector *)&pos, 0, true);
-        *(void **)((char *)self + 0xf0) = ev;
+        self->field_0xf0 = ev;
         self->field_108 = 1;
     }
 }
@@ -1256,7 +1258,7 @@ __attribute__((minsize)) extern "C" void Player_setEnemies(Player *self, Array<P
 // ---- StopEngineSound_a40e0.cpp ----
 __attribute__((minsize)) extern "C" void Player_StopEngineSound(Player *self)
 {
-    int event = *(int *)((char *)self + 0xf0);
+    int event = self->field_0xf0;
     if (event != 0) {
         FModSound_stop(gFModSound, (void *)event);
         self->field_108 = 0;
@@ -1320,21 +1322,21 @@ extern "C" void Player_shoot1(Player *self, unsigned int slot, int idLo, int idH
         if (arr != 0) {
             for (unsigned int i = 0; i < arr->length; i++) {
                 Gun *g = self->guns->data[slot]->data[i];
-                if (*(int *)((char *)g + 0x48) < *(int *)((char *)g + 0x6c)) {
+                if (g->field_0x48 < g->field_0x6c) {
                     int r = Gun_shootAt(g, m0, m1, m2, m3, m4, m5, m6, m7,
                                         m8, m9, m10, m11, m12, m13, m14,
                                         flag, self, idLo);
                     if (r != 0) {
-                        *(float *)((char *)self + 0x60) = *(float *)((char *)self + 0x60) + k_shootAt_inc;
+                        self->field_0x60 = self->field_0x60 + k_shootAt_inc;
                         Gun *g2 = self->guns->data[slot]->data[i];
-                        *(int *)((char *)g2 + 0x6c) = 0;
-                        if (self->playShootSound != 0 && *(char *)((char *)g2 + 0x89) != 0) {
+                        g2->field_0x6c = 0;
+                        if (self->playShootSound != 0 && g2->field_0x89 != 0) {
                             float tmp[3];
                             MatrixGetPosition(tmp, self->transform);
                             Gun *g3 = self->guns->data[slot]->data[i];
-                            Player_playShootSound(self, *(int *)((char *)g3 + 0x58),
-                                                  *(void **)((char *)g3 + 0x5c),
-                                                  *(float *)((char *)g3 + 0xb0));
+                            Player_playShootSound(self, g3->field_0x58,
+                                                  g3->field_0x5c,
+                                                  g3->field_0xb0);
                         }
                     }
                 }
@@ -1366,7 +1368,7 @@ extern "C" void Player_damage(Player *self, int amount, int flag, int missionId)
         if (self->alwaysEnemy == 0 &&
             (unsigned int)(*(int *)(ki + 0x28) - 9) > 1 &&
             Status_getSystem() != 0 &&
-            ((*(unsigned char *)((char *)self + 0x5c) == 0) || (*(char *)((char *)self + 0xe0) != 0))) {
+            ((self->field_0x5c == 0) || (self->field_0xe0 != 0))) {
             ki = (char *)self->kiPlayer;
             if (*(char *)(ki + 0x42) != 0) {
                 if (amount > 0) {
@@ -1382,7 +1384,7 @@ extern "C" void Player_damage(Player *self, int amount, int flag, int missionId)
         if (ki != 0 && self->alwaysEnemy == 0 &&
             (unsigned int)(*(int *)(ki + 0x28) - 9) > 1 &&
             KIPlayer_isWingMan() == 0 && Status_getSystem() != 0 &&
-            ((*(unsigned char *)((char *)self + 0x5c) == 0) || (*(char *)((char *)self + 0xe0) != 0))) {
+            ((self->field_0x5c == 0) || (self->field_0xe0 != 0))) {
             int race = *(int *)((char *)self->kiPlayer + 0x28);
             Status_getSystem();
             bool sameRace = (race == SolarSystem_getRace());
@@ -1475,7 +1477,7 @@ LAB_342a:
                         }
                     }
                 }
-                *(unsigned short *)((char *)globals + 0x110) = 0x100;
+                globals->field_0x110 = 0x100;
             }
         }
     }
@@ -1488,14 +1490,14 @@ LAB_3488:
             shieldI = shieldI + self->armorHP;
             if (shieldI < 0) {
                 self->armorHP = 0;
-                *(char *)((char *)self + 0x66) = 1;
+                self->field_0x66 = 1;
                 self->hitpoints = shieldI + self->hitpoints;
             } else {
-                *(char *)((char *)self + 0x65) = 1;
+                self->field_0x65 = 1;
                 self->armorHP = shieldI;
             }
         } else {
-            *(char *)((char *)self + 0x64) = 1;
+            self->field_0x64 = 1;
             self->shieldHP = (float)shieldI;
         }
     }
@@ -1517,7 +1519,7 @@ LAB_3488:
         if (hp < 1) {
             self->hitpoints = 0;
             if (flag != 0) {
-                *(char *)((char *)self + 0x44) = 1;
+                self->field_0x44 = 1;
             } else {
                 char *ki2 = (char *)self->kiPlayer;
                 if (ki2 != 0 && *(char *)(ki2 + 0x3c) == 0 && *(char *)(ki2 + 0x3d) == 0 &&
@@ -1593,7 +1595,7 @@ __attribute__((minsize)) extern "C" void Player_addEnemy(Player *self, Player *e
 // ---- ResumeEngineSound_a40ac.cpp ----
 __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, bool force)
 {
-    void *event = *(void **)((char *)self + 0xf0);
+    void *event = self->field_0xf0;
     if (event != 0 && (self->field_f8 != 0 || force)) {
         self->field_f8 = FModSound_resume(gFModSound, event) ^ 1;
     }
@@ -1627,7 +1629,7 @@ __attribute__((minsize)) extern "C" void Player_stopShooting(Player *self, int s
     }
     for (unsigned int i = 0; i < arr->length; i++) {
         Gun *gun = arr->data[i];
-        Player_stopShootSound(self, *(int *)((char *)gun + 0x58), *(int *)((char *)gun + 0x5c));
+        Player_stopShootSound(self, gun->field_0x58, gun->field_0x5c);
         arr = self->guns->data[slot];
     }
 }
@@ -1673,28 +1675,28 @@ extern "C" int Player_shoot2(Player *self, unsigned int slot, int gunId, int a4_
         if (arr != 0) {
             for (unsigned int i = 0; i < arr->length; i++) {
                 Gun *g = self->guns->data[slot]->data[i];
-                unsigned int sortIdx = *(int *)((char *)g + 0x5c) - 6;
+                unsigned int sortIdx = g->field_0x5c - 6;
                 if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0 &&
-                    **(int **)((char *)g + 0x3c) >= 0) {
+                    *g->field_0x3c >= 0) {
                     Gun_ignite(g);
-                } else if (*(int *)((char *)g + 0x58) == gunId &&
-                           *(int *)((char *)g + 0x48) < *(int *)((char *)g + 0x6c)) {
+                } else if (g->field_0x58 == gunId &&
+                           g->field_0x48 < g->field_0x6c) {
                     if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
-                        *(char *)(*(int *)((char *)g + 0x38) + 0x69) = 1;
+                        *(char *)(g->field_0x38 + 0x69) = 1;
                     }
                     int r = Gun_shoot(g, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19,
                                       a20, a21, a22, flag, a7);
                     if (r != 0) {
-                        *(float *)((char *)self + 0x60) = *(float *)((char *)self + 0x60) + k_shoot_inc;
+                        self->field_0x60 = self->field_0x60 + k_shoot_inc;
                         if (self->playShootSound != 0) {
                             float tmp[3];
                             MatrixGetPosition(tmp, self->transform);
                             Gun *g2 = self->guns->data[slot]->data[i];
-                            Player_playShootSound(self, *(int *)((char *)g2 + 0x58),
-                                                  *(void **)((char *)g2 + 0x5c),
-                                                  *(float *)((char *)g2 + 0xb0));
+                            Player_playShootSound(self, g2->field_0x58,
+                                                  g2->field_0x5c,
+                                                  g2->field_0xb0);
                         }
-                        *(int *)((char *)g + 0x6c) = 0;
+                        g->field_0x6c = 0;
                         retval = 1;
                         break;
                     }
@@ -1827,7 +1829,7 @@ __attribute__((minsize)) extern "C" void Player_stopShooting(Player *self, int s
     }
     for (unsigned int i = 0; i < arr->length; i++) {
         Gun *gun = arr->data[i];
-        Player_stopShootSound(self, *(int *)((char *)gun + 0x58), *(int *)((char *)gun + 0x5c));
+        Player_stopShootSound(self, gun->field_0x58, gun->field_0x5c);
         arr = self->guns->data[slot];
     }
 }

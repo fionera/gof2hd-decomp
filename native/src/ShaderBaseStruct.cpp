@@ -1,4 +1,4 @@
-#include "ShaderBaseStruct.h"
+#include "gof2/ShaderBaseStruct.h"
 
 
 
@@ -67,8 +67,8 @@ extern "C" ShaderBaseStruct *ShaderBaseStruct_8e424(ShaderBaseStruct *self)
 
     shader_vtable(self) = (uint32_t)ShaderBaseStruct_vtable + 8;
     new (shader_name(self)) String();
-    *(volatile uint32_t *)((char *)self + 0x4) = 0xffffffff;
-    *(volatile uint16_t *)((char *)self + 0x8) = 0x100;
+    self->field_0x4 = 0xffffffff;
+    self->field_0x8 = 0x100;
     ++ShaderBaseStruct_count;
     shader_paths(self) = 0;
 

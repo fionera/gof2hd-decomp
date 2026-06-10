@@ -1,4 +1,4 @@
-#include "Explosion.h"
+#include "gof2/Explosion.h"
 
 
 extern "C" uint32_t PaintCanvas_TransformGetTransform32(int canvas, int transform);

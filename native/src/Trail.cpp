@@ -1,4 +1,4 @@
-#include "Trail.h"
+#include "gof2/Trail.h"
 
 
 extern "C" void Trail_MatrixSetTranslation(void *out, Matrix *matrix, float x, float y, float z);

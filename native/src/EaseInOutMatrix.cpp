@@ -1,4 +1,4 @@
-#include "EaseInOutMatrix.h"
+#include "gof2/EaseInOutMatrix.h"
 #include <arm_neon.h>
 
 
@@ -31,7 +31,7 @@ void EaseInOutMatrix::RunOut(float dt) {
 namespace AbyssEngine {
 
 AEMath::Matrix EaseInOutMatrix::GetValue() {
-    return *(AEMath::Matrix *)((char *)this + 0x78);
+    return this->field_0x78;
 }
 
 } // namespace AbyssEngine
@@ -59,7 +59,7 @@ void EaseInOutMatrix::SetDuration(int duration) {
 namespace AbyssEngine {
 
 AEMath::Matrix EaseInOutMatrix::GetMaxValue() {
-    return *(AEMath::Matrix *)((char *)this + 0xb4);
+    return this->field_0xb4;
 }
 
 } // namespace AbyssEngine
@@ -68,7 +68,7 @@ AEMath::Matrix EaseInOutMatrix::GetMaxValue() {
 namespace AbyssEngine {
 
 AEMath::Matrix EaseInOutMatrix::GetMinValue() {
-    return *(AEMath::Matrix *)((char *)this + 0x0);
+    return this->field_0x0;
 }
 
 } // namespace AbyssEngine
@@ -105,7 +105,7 @@ void EaseInOutMatrix::SetRange(AEMath::Matrix mn, AEMath::Matrix mx)
     q0->Convert(&ident);
     Quaternion qIdent(ident);
     AEMath::Vector minPos = AEMath::MatrixGetPosition(mn);
-    *(AEMath::Vector *)((char *)this + 0x4c) = minPos;
+    this->field_0x4c = minPos;
 
     // Orientation delta q1 = q(max) - q0.
     Quaternion qMax(mx);
@@ -115,7 +115,7 @@ void EaseInOutMatrix::SetRange(AEMath::Matrix mn, AEMath::Matrix mx)
     // Translation delta = pos(max) - pos(min).
     AEMath::Vector maxPos = AEMath::MatrixGetPosition(mx);
     AEMath::Vector dPos = AEMath::operator-(maxPos, minPos);
-    *(AEMath::Vector *)((char *)this + 0x68) = dPos;
+    this->field_0x68 = dPos;
 
     this->f_74 = 0.75f;
     UpdateCurrentValue();
@@ -136,7 +136,7 @@ void EaseInOutMatrix::UpdateCurrentValue()
     AEMath::Matrix *current = (AEMath::Matrix *)((char *)this + 0x78);
 
     if (this->f_74 == 1.25f) {
-        *current = *(AEMath::Matrix *)((char *)this + 0xb4);
+        *current = this->field_0xb4;
         return;
     }
 

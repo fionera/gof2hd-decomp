@@ -1,4 +1,4 @@
-#include "CheatCode.h"
+#include "gof2/CheatCode.h"
 
 
 

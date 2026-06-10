@@ -1,4 +1,5 @@
-#include "WantedWindow.h"
+#include "gof2/WantedWindow.h"
+#include "gof2/Layout.h"
 
 
 extern "C" void StarMap_OnTouchMove(void *self, int x, int y);
@@ -109,93 +110,93 @@ __attribute__((visibility("hidden"))) extern int *g_WantedWindow_move_screen_w_b
 
 extern "C" int WantedWindow_OnTouchMove(WantedWindow *self, int x, int y)
 {
-    if (F<uint8_t>(self, 0x14) != 0) {
-        StarMap_OnTouchMove(F<void *>(self, 0x4), x, y);
+    if (self->field_0x14 != 0) {
+        StarMap_OnTouchMove(self->field_0x4, x, y);
         return 0;
     }
 
     void **layoutHolder = g_WantedWindow_move_layout;
     void *layout = *layoutHolder;
-    if (((F<int>(layout, 0x0c) < y) &&
-         (y < *g_WantedWindow_move_screen_h - F<int>(layout, 0x10)) &&
+    if (((layout->field_0xc < y) &&
+         (y < *g_WantedWindow_move_screen_h - layout->field_0x10) &&
          (x < *g_WantedWindow_move_screen_w_a / 2)) ||
         (*g_WantedWindow_move_force != 0)) {
-        int delta = y - F<int>(self, 0x88);
-        F<int>(self, 0x90) = delta;
-        F<float>(self, 0x94) = 1.0f;
-        F<int>(self, 0x84) += delta;
-        F<int>(self, 0x88) = y;
+        int delta = y - self->field_0x88;
+        self->field_0x90 = delta;
+        self->field_0x94 = 1.0f;
+        self->field_0x84 += delta;
+        self->field_0x88 = y;
     }
 
     if (*g_WantedWindow_move_screen_w_b / 2 < x) {
-        ScrollTouchWindow_OnTouchMove(F<void *>(self, 0x2c), x, y);
+        ScrollTouchWindow_OnTouchMove(self->field_0x2c, x, y);
     }
 
     uint32_t i = 0;
-    while (i < F<uint32_t>(F<void *>(self, 0x0c), 0x0)) {
-        TouchButton_OnTouchMove(ArrayItem(F<void *>(self, 0x0c), i), x, y);
+    while (i < F<uint32_t>(self->field_0xc, 0x0)) {
+        TouchButton_OnTouchMove(ArrayItem(self->field_0xc, i), x, y);
         ++i;
     }
 
     Layout_OnTouchMove(*layoutHolder, x, y);
-    if (F<void *>(self, 0x18) != 0) {
-        void *wanted = ArrayItem(F<void *>(self, 0x38), F<int>(self, 0x30));
+    if (self->field_0x18 != 0) {
+        void *wanted = ArrayItem(self->field_0x38, self->field_0x30);
         if (Wanted_isActive(wanted) != 0) {
-            TouchButton_OnTouchMove(F<void *>(self, 0x18), x, y);
+            TouchButton_OnTouchMove(self->field_0x18, x, y);
         }
     }
 
     uint32_t selected = WantedWindow_getWantedAtPosition(self, x, y);
-    int moved = y - F<int>(self, 0x9c);
+    int moved = y - self->field_0x9c;
     if (moved < 0) {
         moved = -moved;
     }
     if (moved > 5) {
         selected = 0xffffffffu;
     }
-    F<uint32_t>(self, 0x34) = selected;
+    self->field_0x34 = selected;
     return 0;
 }
 
 // ---- update_e2028.cpp ----
 extern "C" void WantedWindow_update(WantedWindow *self, int dt)
 {
-    if (F<uint8_t>(self, 0x14) != 0) {
-        return WantedWindow_update_tail(F<void *>(self, 0x4), dt);
+    if (self->field_0x14 != 0) {
+        return WantedWindow_update_tail(self->field_0x4, dt);
     }
 
-    TouchButton_setAlwaysPressed(*(void **)((char *)F<void *>(F<void *>(self, 0x0c), 0x4) + 4), true);
-    ScrollTouchWindow_update(F<void *>(self, 0x2c), dt);
+    TouchButton_setAlwaysPressed(*(void **)((char *)F<void *>(self->field_0xc, 0x4) + 4), true);
+    ScrollTouchWindow_update(self->field_0x2c, dt);
 
-    if (F<uint8_t>(self, 0xa0) == 0) {
-        float speed = F<float>(self, 0x94);
-        float old = F<float>(self, 0x98);
+    if (self->field_0xa0 == 0) {
+        float speed = self->field_0x94;
+        float old = self->field_0x98;
         float delta = speed * old;
         float mag = -(speed * old);
         if (0.0f < delta) {
             mag = delta;
         }
-        F<float>(self, 0x98) = delta;
+        self->field_0x98 = delta;
         if (mag > 1.0f) {
-            F<int>(self, 0x84) = (int)(delta + (float)F<int>(self, 0x84));
+            self->field_0x84 = (int)(delta + (float)self->field_0x84);
         }
     }
 
-    int scroll = F<int>(self, 0x84);
+    int scroll = self->field_0x84;
     if (scroll > 0) {
-        F<float>(self, 0x94) = 1.0f;
-        F<float>(self, 0x98) = (float)-scroll * 0.5f;
+        self->field_0x94 = 1.0f;
+        self->field_0x98 = (float)-scroll * 0.5f;
     }
 
-    int limit = F<int>(self, 0xa8) - F<int>(self, 0xa4);
+    int limit = self->field_0xa8 - self->field_0xa4;
     if (limit <= -1) {
         if (scroll < limit) {
-            F<float>(self, 0x94) = 1.0f;
-            F<float>(self, 0x98) = (float)(limit - scroll) * 0.5f;
+            self->field_0x94 = 1.0f;
+            self->field_0x98 = (float)(limit - scroll) * 0.5f;
         }
     } else {
-        F<int>(self, 0x84) = 0;
-        F<int>(self, 0x98) = 0;
+        self->field_0x84 = 0;
+        self->field_0x98 = 0;
     }
 }
 
@@ -205,53 +206,53 @@ __attribute__((visibility("hidden"))) extern void **g_WantedWindow_touch_layout;
 
 extern "C" int WantedWindow_OnTouchBegin(WantedWindow *self, int x, int y)
 {
-    if (F<uint8_t>(self, 0x14) != 0) {
-        StarMap_OnTouchBegin(F<void *>(self, 0x4), x, y);
+    if (self->field_0x14 != 0) {
+        StarMap_OnTouchBegin(self->field_0x4, x, y);
         return 0;
     }
 
-    F<int>(self, 0x88) = y;
-    F<int>(self, 0x9c) = y;
-    F<int>(self, 0x90) = 0;
-    F<uint8_t>(self, 0xa0) = 1;
-    ScrollTouchWindow_OnTouchBegin(F<void *>(self, 0x2c), x, y);
+    self->field_0x88 = y;
+    self->field_0x9c = y;
+    self->field_0x90 = 0;
+    self->field_0xa0 = 1;
+    ScrollTouchWindow_OnTouchBegin(self->field_0x2c, x, y);
 
     uint32_t i = 0;
-    while (i < F<uint32_t>(F<void *>(self, 0x0c), 0x0)) {
-        TouchButton_OnTouchBegin(ArrayItem(F<void *>(self, 0x0c), i), x, y);
+    while (i < F<uint32_t>(self->field_0xc, 0x0)) {
+        TouchButton_OnTouchBegin(ArrayItem(self->field_0xc, i), x, y);
         ++i;
     }
 
     Layout_OnTouchBegin(*g_WantedWindow_touch_layout, x, y);
-    if (F<void *>(self, 0x18) != 0) {
-        void *wanted = ArrayItem(F<void *>(self, 0x38), F<int>(self, 0x30));
+    if (self->field_0x18 != 0) {
+        void *wanted = ArrayItem(self->field_0x38, self->field_0x30);
         if (Wanted_isActive(wanted) != 0) {
-            TouchButton_OnTouchBegin(F<void *>(self, 0x18), x, y);
+            TouchButton_OnTouchBegin(self->field_0x18, x, y);
         }
     }
 
-    F<uint32_t>(self, 0x34) = WantedWindow_getWantedAtPosition(self, x, y);
+    self->field_0x34 = WantedWindow_getWantedAtPosition(self, x, y);
     return 0;
 }
 
 // ---- render3D_e182c.cpp ----
 extern "C" void WantedWindow_render3D(WantedWindow *self)
 {
-    if (F<uint8_t>(self, 0x14) != 0) {
-        return WantedWindow_render3D_tail(F<void *>(self, 0x4));
+    if (self->field_0x14 != 0) {
+        return WantedWindow_render3D_tail(self->field_0x4);
     }
 }
 
 // ---- getRelativeScrollStartPos_e17a8.cpp ----
 extern "C" float WantedWindow_getRelativeScrollStartPos(WantedWindow *self)
 {
-    int pos = F<int>(self, 0x84);
+    int pos = self->field_0x84;
     if (pos > 0) {
         union { uint32_t u; float f; } c;
         c.u = 0x4650a903u;
         return c.f;
     }
-    return -(float)pos / (float)F<int>(self, 0xa4);
+    return -(float)pos / (float)self->field_0xa4;
 }
 
 // ---- getWantedAtPosition_e1fc0.cpp ----
@@ -259,18 +260,18 @@ __attribute__((visibility("hidden"))) extern void **g_WantedWindow_hit_layout;
 
 extern "C" uint32_t WantedWindow_getWantedAtPosition(WantedWindow *self, int x, int y)
 {
-    if (x >= F<int>(self, 0x1c) + (F<int>(self, 0x24) >> 1)) {
+    if (x >= self->field_0x1c + (self->field_0x24 >> 1)) {
         return 0xffffffffu;
     }
 
-    void *list = F<void *>(self, 0x38);
+    void *list = self->field_0x38;
     void *layout = *g_WantedWindow_hit_layout;
-    int numerator = y - F<int>(self, 0x20);
-    numerator -= F<int>(layout, 0x0c);
-    numerator -= F<int>(layout, 0x20);
-    numerator -= F<int>(layout, 0x5c);
-    numerator -= F<int>(self, 0x84);
-    int idx = __aeabi_idiv(numerator, F<int>(layout, 0x70) + F<int>(layout, 0x34));
+    int numerator = y - self->field_0x20;
+    numerator -= layout->field_0xc;
+    numerator -= layout->field_0x20;
+    numerator -= layout->field_0x5c;
+    numerator -= self->field_0x84;
+    int idx = __aeabi_idiv(numerator, layout->field_0x70 + layout->field_0x34);
     if ((uint32_t)idx > (uint32_t)(F<int>(list, 0x0) - 1)) {
         return 0xffffffffu;
     }
@@ -295,16 +296,16 @@ extern "C" void WantedWindow_OnTouchEnd(WantedWindow *self, int x, int y)
 {
     String help;
 
-    if (F<uint8_t>(self, 0x14) != 0) {
-        if (StarMap_OnTouchEnd(F<void *>(self, 0x4), x, y) != 0) {
+    if (self->field_0x14 != 0) {
+        if (StarMap_OnTouchEnd(self->field_0x4, x, y) != 0) {
             uint32_t h;
             uint32_t w;
             uint32_t halfW = 0;
             if (*g_WantedWindow_end_fullscreen == 0) {
                 h = *g_WantedWindow_end_window_h;
                 w = *g_WantedWindow_end_window_w;
-                F<int>(self, 0x1c) = 0;
-                F<int>(self, 0x20) = 0;
+                self->field_0x1c = 0;
+                self->field_0x20 = 0;
             } else {
                 if (*g_WantedWindow_end_tablet == 0) {
                     h = 1000;
@@ -319,16 +320,16 @@ extern "C" void WantedWindow_OnTouchEnd(WantedWindow *self, int x, int y)
                     halfW = 0x1c9;
                     w = 0x392;
                 }
-                F<uint32_t>(self, 0x1c) = (*g_WantedWindow_end_screen_w >> 1) - halfW;
-                F<uint32_t>(self, 0x20) = (*g_WantedWindow_end_screen_h >> 1) - (h >> 1);
+                self->field_0x1c = (*g_WantedWindow_end_screen_w >> 1) - halfW;
+                self->field_0x20 = (*g_WantedWindow_end_screen_h >> 1) - (h >> 1);
             }
-            F<uint32_t>(self, 0x24) = w;
-            F<uint32_t>(self, 0x28) = h;
-            F<uint8_t>(self, 0x14) = 0;
+            self->field_0x24 = w;
+            self->field_0x28 = h;
+            self->field_0x14 = 0;
         }
     } else {
-        int delta = F<int>(self, 0x90);
-        int pos = F<int>(self, 0x84) + delta;
+        int delta = self->field_0x90;
+        int pos = self->field_0x84 + delta;
         float velocity = 0.0f;
         int mag = delta;
         if (mag < 0) {
@@ -337,31 +338,31 @@ extern "C" void WantedWindow_OnTouchEnd(WantedWindow *self, int x, int y)
         if (mag > 3) {
             velocity = (float)delta;
         }
-        F<float>(self, 0x94) = 0.95f;
-        F<uint8_t>(self, 0xa0) = 0;
-        F<int>(self, 0x84) = pos;
-        F<int>(self, 0x8c) = pos;
-        F<float>(self, 0x98) = velocity;
+        self->field_0x94 = 0.95f;
+        self->field_0xa0 = 0;
+        self->field_0x84 = pos;
+        self->field_0x8c = pos;
+        self->field_0x98 = velocity;
 
-        ScrollTouchWindow_OnTouchEnd(F<void *>(self, 0x2c), x, y);
-        for (uint32_t i = 0; i < F<uint32_t>(F<void *>(self, 0x0c), 0x0); ++i) {
-            if (TouchButton_OnTouchEnd(ArrayItem(F<void *>(self, 0x0c), i), x, y) != 0) {
-                F<uint32_t>(self, 0x0) = i;
+        ScrollTouchWindow_OnTouchEnd(self->field_0x2c, x, y);
+        for (uint32_t i = 0; i < F<uint32_t>(self->field_0xc, 0x0); ++i) {
+            if (TouchButton_OnTouchEnd(ArrayItem(self->field_0xc, i), x, y) != 0) {
+                self->field_0x0 = i;
             }
         }
 
-        if (F<int>(self, 0x34) >= 0) {
+        if (self->field_0x34 >= 0) {
             int idx = WantedWindow_getWantedAtPosition(self, x, y);
-            F<int>(self, 0x30) = idx;
-            F<int>(self, 0x34) = idx;
+            self->field_0x30 = idx;
+            self->field_0x34 = idx;
             WantedWindow_selectWanted(self, idx);
         }
 
         bool openMap = false;
-        if (F<void *>(self, 0x18) != 0) {
-            void *wanted = ArrayItem(F<void *>(self, 0x38), F<int>(self, 0x30));
+        if (self->field_0x18 != 0) {
+            void *wanted = ArrayItem(self->field_0x38, self->field_0x30);
             if (Wanted_isActive(wanted) != 0 &&
-                TouchButton_OnTouchEnd(F<void *>(self, 0x18), x, y) != 0) {
+                TouchButton_OnTouchEnd(self->field_0x18, x, y) != 0) {
                 openMap = true;
             }
         }
@@ -369,28 +370,28 @@ extern "C" void WantedWindow_OnTouchEnd(WantedWindow *self, int x, int y)
         if (openMap) {
             void **appHolder = g_WantedWindow_end_app;
             void *module = ApplicationManager_GetApplicationModule(*appHolder, 5);
-            F<void *>(self, 0x4) = F<void *>(module, 0x10);
-            void *wanted = ArrayItem(F<void *>(self, 0x38), F<int>(self, 0x30));
+            self->field_0x4 = F<void *>(module, 0x10);
+            void *wanted = ArrayItem(self->field_0x38, self->field_0x30);
             int lastSeen = Wanted_getLastSeen(wanted);
             void *station = Galaxy_getStation(*g_WantedWindow_end_galaxy, lastSeen);
-            void *oldMission = F<void *>(self, 0xb0);
+            void *oldMission = self->field_0xb0;
             if (oldMission != 0) {
                 (*(void (**)(void *))(*(int *)oldMission + 4))(oldMission);
             }
-            F<void *>(self, 0xb0) = 0;
+            self->field_0xb0 = 0;
 
             void *mission = operator_new(0x78);
             Mission_ctor(mission, 0, 0, Wanted_getTravelsTo(wanted));
-            F<void *>(self, 0xb0) = mission;
+            self->field_0xb0 = mission;
 
-            void *map = F<void *>(self, 0x4);
+            void *map = self->field_0x4;
             if (map == 0) {
                 map = operator_new(0x1e8);
                 StarMap_ctor(map, true, mission, false, -1);
                 ApplicationManager_GetApplicationModule(*appHolder, 5);
                 F<void *>(ApplicationManager_GetApplicationModule(*appHolder, 5), 0x10) = map;
                 map = F<void *>(ApplicationManager_GetApplicationModule(*appHolder, 5), 0x10);
-                F<void *>(self, 0x4) = map;
+                self->field_0x4 = map;
             } else {
                 StarMap_init(map, true, mission, false, -1);
             }
@@ -401,7 +402,7 @@ extern "C" void WantedWindow_OnTouchEnd(WantedWindow *self, int x, int y)
             if (station != 0) {
                 operator_delete(Station_dtor(station));
             }
-            F<uint8_t>(self, 0x14) = 1;
+            self->field_0x14 = 1;
             Layout_resetWindowDimensions(*g_WantedWindow_end_layout_a);
         } else {
             void **layoutHolder = g_WantedWindow_end_layout_b;
@@ -434,7 +435,7 @@ __attribute__((visibility("hidden"))) extern const char g_WantedWindow_draw_labe
 
 static inline void *draw_wanted_at(WantedWindow *self, int idx)
 {
-    return ArrayItem(F<void *>(self, 0x38), idx);
+    return ArrayItem(self->field_0x38, idx);
 }
 
 extern "C" void WantedWindow_draw(WantedWindow *self)
@@ -449,8 +450,8 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
     String s94;
     String sa0;
 
-    if (F<uint8_t>(self, 0x14) != 0) {
-        WantedWindow_draw_tail(F<void *>(self, 0x4));
+    if (self->field_0x14 != 0) {
+        WantedWindow_draw_tail(self->field_0x4);
         return;
     }
 
@@ -458,49 +459,49 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
     void *canvas = *g_WantedWindow_draw_canvas;
     void *font = *g_WantedWindow_draw_font;
 
-    PaintCanvas_EnableClip(canvas, F<int>(self, 0x1c),
-                           F<int>(self, 0x20) + F<int>(layout, 0x0c) +
-                               F<int>(layout, 0x20) + F<int>(layout, 0x5c),
-                           F<int>(self, 0x24),
-                           F<int>(layout, 0x2c) + F<int>(self, 0xa8));
+    PaintCanvas_EnableClip(canvas, self->field_0x1c,
+                           self->field_0x20 + layout->field_0xc +
+                               layout->field_0x20 + layout->field_0x5c,
+                           self->field_0x24,
+                           layout->field_0x2c + self->field_0xa8);
 
     float relStart = WantedWindow_getRelativeScrollStartPos(self);
-    int visible = F<int>(self, 0xa8);
+    int visible = self->field_0xa8;
     float visf = (float)visible;
     float relHeight = WantedWindow_getRelativeScrollHeight(self);
     int barSize = (int)(relHeight * visf);
     int barStart = (int)(relStart * visf);
     if (barSize >= 1 || barStart >= 0) {
         Layout_drawScrollBar(layout,
-                             ((F<int>(self, 0x1c) + (F<int>(self, 0x24) >> 1)) -
-                              F<int>(layout, 0x2c)) - F<int>(layout, 0x48),
-                             F<int>(self, 0x20) + F<int>(layout, 0x2c) +
-                                 F<int>(layout, 0x0c) + F<int>(layout, 0x20) +
-                                 F<int>(layout, 0x5c),
+                             ((self->field_0x1c + (self->field_0x24 >> 1)) -
+                              layout->field_0x2c) - layout->field_0x48,
+                             self->field_0x20 + layout->field_0x2c +
+                                 layout->field_0xc + layout->field_0x20 +
+                                 layout->field_0x5c,
                              visible, barStart, barSize);
     }
 
-    int y = F<int>(self, 0x20) + F<int>(layout, 0x0c) + F<int>(layout, 0x20) +
-            F<int>(layout, 0x5c) + F<int>(layout, 0x2c) + F<int>(self, 0x84);
-    int inset = barSize < 1 ? 0 : F<int>(layout, 0x2c) + F<int>(layout, 0x48);
+    int y = self->field_0x20 + layout->field_0xc + layout->field_0x20 +
+            layout->field_0x5c + layout->field_0x2c + self->field_0x84;
+    int inset = barSize < 1 ? 0 : layout->field_0x2c + layout->field_0x48;
 
-    for (uint32_t i = 0; i < F<uint32_t>(F<void *>(self, 0x38), 0x0); ++i) {
-        int style = (i == F<uint32_t>(self, 0x30) || i == F<uint32_t>(self, 0x34)) ? 4 : 3;
+    for (uint32_t i = 0; i < F<uint32_t>(self->field_0x38, 0x0); ++i) {
+        int style = (i == self->field_0x30 || i == self->field_0x34) ? 4 : 3;
         String_cstr_ctor(&s40, g_WantedWindow_draw_empty_a, false);
-        Layout_drawBox(layout, style, F<int>(layout, 0x28) + F<int>(self, 0x1c), y,
-                       (F<int>(self, 0x24) >> 1) -
-                           (inset + F<int>(layout, 0x28) + F<int>(layout, 0x2c)),
-                       F<int>(layout, 0x70), &s40);
+        Layout_drawBox(layout, style, layout->field_0x28 + self->field_0x1c, y,
+                       (self->field_0x24 >> 1) -
+                           (inset + layout->field_0x28 + layout->field_0x2c),
+                       layout->field_0x70, &s40);
         String_dtor(&s40);
 
         void *wanted = draw_wanted_at(self, i);
         PaintCanvas_SetColor(canvas, Wanted_isActive(wanted) ? 0xffffffffu : 0xff808080u);
         Wanted_getName(&s4c, wanted);
-        int textY = y + F<int>(layout, 0x70) / 2 -
+        int textY = y + layout->field_0x70 / 2 -
                     PaintCanvas_GetTextHeight(canvas, (unsigned int)(unsigned long)font) / 2;
         PaintCanvas_DrawString(canvas, font, &s4c,
-                               F<int>(self, 0x1c) + F<int>(layout, 0x28) +
-                                   F<int>(layout, 0x44),
+                               self->field_0x1c + layout->field_0x28 +
+                                   layout->field_0x44,
                                textY, false);
         String_dtor(&s4c);
 
@@ -511,16 +512,16 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
             String_cstr_ctor(&s64, g_WantedWindow_draw_mark, false);
             String_plus(&s4c, &s58, &s64);
             int textW = PaintCanvas_GetTextWidth(canvas, font, &s4c);
-            PaintCanvas_DrawImage2D(canvas, F<int>(self, 0xac),
-                                    F<int>(self, 0x1c) + F<int>(layout, 0x28) +
-                                        F<int>(layout, 0x44) + textW,
+            PaintCanvas_DrawImage2D(canvas, self->field_0xac,
+                                    self->field_0x1c + layout->field_0x28 +
+                                        layout->field_0x44 + textW,
                                     textY);
             String_dtor(&s4c);
             String_dtor(&s64);
             String_dtor(&s58);
         }
 
-        y += F<int>(layout, 0x34) + F<int>(layout, 0x70);
+        y += layout->field_0x34 + layout->field_0x70;
     }
 
     PaintCanvas_DisableClip(canvas);
@@ -529,64 +530,64 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
     Layout_drawHeader(layout, &s70);
     String_dtor(&s70);
 
-    for (uint32_t i = 0; i < F<uint32_t>(F<void *>(self, 0x0c), 0x0); ++i) {
-        TouchButton_draw(ArrayItem(F<void *>(self, 0x0c), i));
+    for (uint32_t i = 0; i < F<uint32_t>(self->field_0xc, 0x0); ++i) {
+        TouchButton_draw(ArrayItem(self->field_0xc, i));
     }
 
     String_copy_ctor(&s7c, GameText_getText(*g_WantedWindow_draw_text, 0xc95), false);
-    Layout_drawBox(layout, 1, F<int>(layout, 0x28) + F<int>(self, 0x1c),
-                   F<int>(self, 0x20) + F<int>(layout, 0x0c) + F<int>(layout, 0x20),
-                   (F<int>(self, 0x24) >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)),
-                   F<int>(layout, 0x5c), &s7c);
+    Layout_drawBox(layout, 1, layout->field_0x28 + self->field_0x1c,
+                   self->field_0x20 + layout->field_0xc + layout->field_0x20,
+                   (self->field_0x24 >> 1) - (layout->field_0x2c + layout->field_0x28),
+                   layout->field_0x5c, &s7c);
     String_dtor(&s7c);
 
     String_cstr_ctor(&s88, g_WantedWindow_draw_empty_b, false);
-    Layout_drawBox(layout, 5, F<int>(layout, 0x28) + F<int>(self, 0x1c),
-                   F<int>(self, 0x20) + F<int>(layout, 0x0c) + F<int>(layout, 0x20) +
-                       F<int>(layout, 0x5c) + F<int>(layout, 0x2c),
-                   (F<int>(self, 0x24) >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)),
-                   ((F<int>(self, 0x28) -
-                     (F<int>(layout, 0x20) + F<int>(layout, 0x0c) +
-                      F<int>(layout, 0x5c) + F<int>(layout, 0x2c) * 2)) -
-                    F<int>(layout, 0x10)) -
-                       F<int>(layout, 0x24),
+    Layout_drawBox(layout, 5, layout->field_0x28 + self->field_0x1c,
+                   self->field_0x20 + layout->field_0xc + layout->field_0x20 +
+                       layout->field_0x5c + layout->field_0x2c,
+                   (self->field_0x24 >> 1) - (layout->field_0x2c + layout->field_0x28),
+                   ((self->field_0x28 -
+                     (layout->field_0x20 + layout->field_0xc +
+                      layout->field_0x5c + layout->field_0x2c * 2)) -
+                    layout->field_0x10) -
+                       layout->field_0x24,
                    &s88);
     String_dtor(&s88);
 
     String_copy_ctor(&s94, GameText_getText(*g_WantedWindow_draw_text, 0xc95), false);
-    Layout_drawBox(layout, 1, F<int>(self, 0x1c) + (F<int>(self, 0x24) >> 1) +
-                                  F<int>(layout, 0x2c),
-                   F<int>(self, 0x20) + F<int>(layout, 0x0c) + F<int>(layout, 0x20),
-                   ((F<int>(self, 0x24) >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28),
-                   F<int>(layout, 0x5c), &s94);
+    Layout_drawBox(layout, 1, self->field_0x1c + (self->field_0x24 >> 1) +
+                                  layout->field_0x2c,
+                   self->field_0x20 + layout->field_0xc + layout->field_0x20,
+                   ((self->field_0x24 >> 1) - layout->field_0x2c) - layout->field_0x28,
+                   layout->field_0x5c, &s94);
     String_dtor(&s94);
 
     String_cstr_ctor(&sa0, g_WantedWindow_draw_empty_c, false);
-    Layout_drawBox(layout, 5, F<int>(self, 0x1c) + (F<int>(self, 0x24) >> 1) +
-                                  F<int>(layout, 0x2c),
-                   F<int>(self, 0x20) + F<int>(layout, 0x2c) + F<int>(layout, 0x0c) +
-                       F<int>(layout, 0x20) + F<int>(layout, 0x5c),
-                   ((F<int>(self, 0x24) >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28),
-                   ((F<int>(self, 0x28) -
-                     (F<int>(layout, 0x0c) + F<int>(layout, 0x2c) * 2 +
-                      F<int>(layout, 0x20) + F<int>(layout, 0x5c))) -
-                    F<int>(layout, 0x10)) -
-                       F<int>(layout, 0x24),
+    Layout_drawBox(layout, 5, self->field_0x1c + (self->field_0x24 >> 1) +
+                                  layout->field_0x2c,
+                   self->field_0x20 + layout->field_0x2c + layout->field_0xc +
+                       layout->field_0x20 + layout->field_0x5c,
+                   ((self->field_0x24 >> 1) - layout->field_0x2c) - layout->field_0x28,
+                   ((self->field_0x28 -
+                     (layout->field_0xc + layout->field_0x2c * 2 +
+                      layout->field_0x20 + layout->field_0x5c)) -
+                    layout->field_0x10) -
+                       layout->field_0x24,
                    &sa0);
     String_dtor(&sa0);
 
-    if (F<void *>(self, 0x8) != 0) {
-        int charX = F<int>(self, 0x1c) + (F<int>(self, 0x24) >> 1) + F<int>(layout, 0x2c);
-        int charY = F<int>(layout, 0x5c) + F<int>(self, 0x20) + F<int>(layout, 0x2c) +
-                    F<int>(layout, 0x0c) + F<int>(layout, 0x20);
-        ImageFactory_drawChar(*g_WantedWindow_draw_factory, F<void *>(self, 0x8), charX, charY, false);
-        int textX = F<int>(layout, 0x2d4) + charX + F<int>(layout, 0x2c);
+    if (self->field_0x8 != 0) {
+        int charX = self->field_0x1c + (self->field_0x24 >> 1) + layout->field_0x2c;
+        int charY = layout->field_0x5c + self->field_0x20 + layout->field_0x2c +
+                    layout->field_0xc + layout->field_0x20;
+        ImageFactory_drawChar(*g_WantedWindow_draw_factory, self->field_0x8, charX, charY, false);
+        int textX = layout->field_0x2d4 + charX + layout->field_0x2c;
         PaintCanvas_DrawString(canvas, font, (String *)((char *)self + 0x54), textX, charY, false);
 
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_a, false);
         String_plus(&s58, &s64, GameText_getText(*g_WantedWindow_draw_text, 0xc93));
         String_plus(&s4c, &s58, (String *)((char *)self + 0x3c));
-        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + F<int>(layout, 0x4) * 2, false);
+        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + layout->field_0x4 * 2, false);
         String_dtor(&s4c);
         String_dtor(&s58);
         String_dtor(&s64);
@@ -594,17 +595,17 @@ extern "C" void WantedWindow_draw(WantedWindow *self)
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_b, false);
         String_plus(&s58, &s64, GameText_getText(*g_WantedWindow_draw_text, 0xc93));
         String_plus(&s4c, &s58, (String *)((char *)self + 0x48));
-        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + F<int>(layout, 0x4) * 3, false);
+        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + layout->field_0x4 * 3, false);
         String_dtor(&s4c);
         String_dtor(&s58);
         String_dtor(&s64);
 
-        ScrollTouchWindow_draw(F<void *>(self, 0x2c));
+        ScrollTouchWindow_draw(self->field_0x2c);
     }
 
-    if (F<void *>(self, 0x18) != 0 &&
-        Wanted_isActive(draw_wanted_at(self, F<int>(self, 0x30))) != 0) {
-        TouchButton_draw(F<void *>(self, 0x18));
+    if (self->field_0x18 != 0 &&
+        Wanted_isActive(draw_wanted_at(self, self->field_0x30)) != 0) {
+        TouchButton_draw(self->field_0x18);
     }
 
     Layout_drawFooter(layout);
@@ -626,20 +627,20 @@ extern "C" int WantedWindow_init(WantedWindow *self)
 {
     typedef int v4si __attribute__((vector_size(16)));
     v4si zero = {0, 0, 0, 0};
-    *(v4si *)((char *)self + 0x91) = zero;
-    *(v4si *)((char *)self + 0x84) = zero;
+    self->field_0x91 = zero;
+    self->field_0x84 = zero;
 
     void *wantedList = operator_new(0x0c);
     Array_Wanted_ctor(wantedList);
-    F<void *>(self, 0x38) = wantedList;
+    self->field_0x38 = wantedList;
 
     void *status = *g_WantedWindow_init_status;
     void *allWanted = Status_getWanted(status);
     void **layoutHolder = g_WantedWindow_init_layout;
     void *layout = *layoutHolder;
-    int wBase = F<int>(layout, 0x28);
-    int wLimit = F<int>(layout, 0xcc);
-    int wExtra = F<int>(layout, 0x4c);
+    int wBase = layout->field_0x28;
+    int wLimit = layout->field_0xcc;
+    int wExtra = layout->field_0x4c;
     int activeWidth = wLimit - wBase - wExtra;
 
     for (uint32_t i = 0; i < F<uint32_t>(allWanted, 0x0); ++i) {
@@ -650,10 +651,10 @@ extern "C" int WantedWindow_init(WantedWindow *self)
             if (race != 0 || Status_getCurrentCampaignMission(status) < 0x80) {
                 race = SolarSystem_getRace(Status_getSystem(status));
                 if (race == 0 && Status_getCurrentCampaignMission(status) >= 0xa2) {
-                    ArrayAdd_Wanted(wanted, F<void *>(self, 0x38));
+                    ArrayAdd_Wanted(wanted, self->field_0x38);
                 }
             } else {
-                ArrayAdd_Wanted(wanted, F<void *>(self, 0x38));
+                ArrayAdd_Wanted(wanted, self->field_0x38);
             }
         }
     }
@@ -664,8 +665,8 @@ extern "C" int WantedWindow_init(WantedWindow *self)
     if (*g_WantedWindow_init_fullscreen == 0) {
         h = *g_WantedWindow_init_window_h;
         w = *g_WantedWindow_init_window_w;
-        F<int>(self, 0x1c) = 0;
-        F<int>(self, 0x20) = 0;
+        self->field_0x1c = 0;
+        self->field_0x20 = 0;
     } else {
         if (*g_WantedWindow_init_tablet == 0) {
             h = 1000;
@@ -680,40 +681,40 @@ extern "C" int WantedWindow_init(WantedWindow *self)
             halfW = 0x1c9;
             w = 0x392;
         }
-        F<uint32_t>(self, 0x1c) = (*g_WantedWindow_init_screen_w >> 1) - halfW;
-        F<uint32_t>(self, 0x20) = (*g_WantedWindow_init_screen_h >> 1) - (h >> 1);
+        self->field_0x1c = (*g_WantedWindow_init_screen_w >> 1) - halfW;
+        self->field_0x20 = (*g_WantedWindow_init_screen_h >> 1) - (h >> 1);
     }
 
-    F<uint32_t>(self, 0x24) = w;
-    F<uint32_t>(self, 0x28) = h;
-    F<uint32_t>(self, 0x30) = 0;
+    self->field_0x24 = w;
+    self->field_0x28 = h;
+    self->field_0x30 = 0;
 
     uint32_t selected = 0;
     for (;;) {
-        void *arr = F<void *>(self, 0x38);
+        void *arr = self->field_0x38;
         uint32_t count = F<uint32_t>(arr, 0x0);
         if (selected >= count) {
-            selected = F<uint32_t>(self, 0x30);
+            selected = self->field_0x30;
             if (selected == count - 1) {
                 if (Wanted_isActive(ArrayItem(arr, selected)) == 0) {
                     selected = 0;
-                    F<uint32_t>(self, 0x30) = 0;
+                    self->field_0x30 = 0;
                 } else {
-                    selected = F<uint32_t>(self, 0x30);
+                    selected = self->field_0x30;
                 }
             }
             break;
         }
         if (Wanted_isActive(ArrayItem(arr, selected)) != 0) {
-            F<uint32_t>(self, 0x30) = selected;
-            arr = F<void *>(self, 0x38);
+            self->field_0x30 = selected;
+            arr = self->field_0x38;
             count = F<uint32_t>(arr, 0x0);
             if (selected == count - 1) {
                 if (Wanted_isActive(ArrayItem(arr, selected)) == 0) {
                     selected = 0;
-                    F<uint32_t>(self, 0x30) = 0;
+                    self->field_0x30 = 0;
                 } else {
-                    selected = F<uint32_t>(self, 0x30);
+                    selected = self->field_0x30;
                 }
             }
             break;
@@ -721,63 +722,63 @@ extern "C" int WantedWindow_init(WantedWindow *self)
         ++selected;
     }
 
-    F<uint32_t>(self, 0x34) = selected;
+    self->field_0x34 = selected;
     WantedWindow_selectWanted(self, selected);
 
     void *buttons = operator_new(0x0c);
     Array_TouchButton_ctor(buttons);
-    F<void *>(self, 0x0c) = buttons;
+    self->field_0xc = buttons;
     ArraySetLength_TouchButton(2, buttons);
 
     void **textHolder = g_WantedWindow_init_text;
     void *button = operator_new(0xc8);
     String *text = GameText_getText(*textHolder, 0xc93);
-    int x = F<int>(self, 0x1c);
-    int bw = F<int>(self, 0x24);
+    int x = self->field_0x1c;
+    int bw = self->field_0x24;
     int help = Layout_getHelpButtonOffset(layout);
-    TouchButton_ctor6(button, text, 3, x + bw - help, F<int>(self, 0x20), 0x12);
+    TouchButton_ctor6(button, text, 3, x + bw - help, self->field_0x20, 0x12);
     *(void **)((char *)F<void *>(buttons, 0x4) + 4) = button;
 
     button = operator_new(0xc8);
     text = GameText_getText(*textHolder, 0x81);
-    x = F<int>(self, 0x1c);
-    bw = F<int>(self, 0x24);
+    x = self->field_0x1c;
+    bw = self->field_0x24;
     help = Layout_getHelpButtonOffset(layout);
     int width = TouchButton_getWidth(*(void **)((char *)F<void *>(buttons, 0x4) + 4));
-    TouchButton_ctor6(button, text, 3, x + bw - help - width + F<int>(layout, 0x38),
-                      F<int>(self, 0x20), 0x12);
+    TouchButton_ctor6(button, text, 3, x + bw - help - width + layout->field_0x38,
+                      self->field_0x20, 0x12);
     *(void **)F<void *>(buttons, 0x4) = button;
 
     TouchButton_setAlwaysPressed(*(void **)((char *)F<void *>(buttons, 0x4) + 4), true);
-    Layout_setWindowDimensions(layout, F<int>(self, 0x1c), F<int>(self, 0x20),
-                               F<int>(self, 0x24), F<int>(self, 0x28));
+    Layout_setWindowDimensions(layout, self->field_0x1c, self->field_0x20,
+                               self->field_0x24, self->field_0x28);
 
     layout = *layoutHolder;
-    F<int>(self, 0xa4) = (F<int>(layout, 0x34) + F<int>(layout, 0x70)) *
-                         F<int>(F<void *>(self, 0x38), 0x0);
-    F<int>(self, 0xa8) =
-        (((((F<int>(self, 0x28) - F<int>(layout, 0x10)) - F<int>(layout, 0x0c)) -
-           F<int>(layout, 0x20)) - F<int>(layout, 0x24)) - F<int>(layout, 0x5c)) +
-        F<int>(layout, 0x2c);
+    self->field_0xa4 = (layout->field_0x34 + layout->field_0x70) *
+                         F<int>(self->field_0x38, 0x0);
+    self->field_0xa8 =
+        (((((self->field_0x28 - layout->field_0x10) - layout->field_0xc) -
+           layout->field_0x20) - layout->field_0x24) - layout->field_0x5c) +
+        layout->field_0x2c;
 
-    if (F<void *>(self, 0x18) != 0) {
-        operator_delete(TouchButton_dtor(F<void *>(self, 0x18)));
+    if (self->field_0x18 != 0) {
+        operator_delete(TouchButton_dtor(self->field_0x18));
     }
-    F<void *>(self, 0x4) = 0;
-    F<void *>(self, 0x18) = 0;
-    F<uint16_t>(self, 0x14) = 0;
+    self->field_0x4 = 0;
+    self->field_0x18 = 0;
+    self->field_0x14 = 0;
 
     button = operator_new(0xc8);
     text = GameText_getText(*textHolder, 0x1a8);
     layout = *layoutHolder;
     TouchButton_ctor8(button, text, 0,
-                      F<int>(self, 0x1c) + (F<int>(self, 0x24) >> 1) + F<int>(layout, 0x2c),
-                      (((F<int>(self, 0x20) - F<int>(layout, 0x2c)) + F<int>(self, 0x28)) -
-                       F<int>(layout, 0x10)) - F<int>(layout, 0x24),
+                      self->field_0x1c + (self->field_0x24 >> 1) + layout->field_0x2c,
+                      (((self->field_0x20 - layout->field_0x2c) + self->field_0x28) -
+                       layout->field_0x10) - layout->field_0x24,
                       activeWidth, 0x21, 4);
-    F<uint8_t>(self, 0x15) = 0;
-    F<void *>(self, 0x18) = button;
-    F<int>(self, 0x0) = 1;
+    self->field_0x15 = 0;
+    self->field_0x18 = button;
+    self->field_0x0 = 1;
     return 1;
 }
 
@@ -786,49 +787,49 @@ __attribute__((visibility("hidden"))) extern void (*g_WantedWindow_string_dtor)(
 
 extern "C" WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
 {
-    void *p = F<void *>(self, 0x8);
+    void *p = self->field_0x8;
     if (p != 0) {
         ArrayReleaseClasses_ImagePart(p);
-        p = F<void *>(self, 0x8);
+        p = self->field_0x8;
         if (p != 0) {
             operator_delete(Array_ImagePart_dtor(p));
         }
     }
-    F<void *>(self, 0x8) = 0;
+    self->field_0x8 = 0;
 
-    p = F<void *>(self, 0x0c);
+    p = self->field_0xc;
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
-        p = F<void *>(self, 0x0c);
+        p = self->field_0xc;
         if (p != 0) {
             operator_delete(Array_TouchButton_dtor(p));
         }
     }
-    F<void *>(self, 0x0c) = 0;
+    self->field_0xc = 0;
 
-    p = F<void *>(self, 0x18);
+    p = self->field_0x18;
     if (p != 0) {
         operator_delete(TouchButton_dtor(p));
     }
-    F<void *>(self, 0x18) = 0;
+    self->field_0x18 = 0;
 
-    p = F<void *>(self, 0x38);
+    p = self->field_0x38;
     if (p != 0) {
         operator_delete(Array_Wanted_dtor(p));
     }
-    F<void *>(self, 0x38) = 0;
+    self->field_0x38 = 0;
 
-    p = F<void *>(self, 0xb0);
+    p = self->field_0xb0;
     if (p != 0) {
         (*(void (**)(void *))(*(int *)p + 4))(p);
     }
-    F<void *>(self, 0xb0) = 0;
+    self->field_0xb0 = 0;
 
-    p = F<void *>(self, 0x2c);
+    p = self->field_0x2c;
     if (p != 0) {
         operator_delete(ScrollTouchWindow_dtor(p));
     }
-    F<void *>(self, 0x2c) = 0;
+    self->field_0x2c = 0;
 
     void (*stringDtor)(void *) = g_WantedWindow_string_dtor;
     stringDtor((char *)self + 0x78);
@@ -854,16 +855,16 @@ extern "C" WantedWindow *_ZN12WantedWindowC2Ev(WantedWindow *self)
     String_ctor((char *)self + 0x78);
 
     void **canvasHolder = g_WantedWindow_ctor_canvas;
-    F<void *>(self, 0x18) = 0;
-    F<void *>(self, 0x4) = 0;
-    F<void *>(self, 0x8) = 0;
+    self->field_0x18 = 0;
+    self->field_0x4 = 0;
+    self->field_0x8 = 0;
     unsigned int *fontHolder = *g_WantedWindow_ctor_font;
     int h = PaintCanvas_GetTextHeight(*canvasHolder, *fontHolder);
-    F<void *>(self, 0x38) = 0;
-    F<void *>(self, 0xb0) = 0;
-    F<void *>(self, 0x2c) = 0;
-    F<void *>(self, 0x0c) = 0;
-    F<int>(self, 0x10) = h / 2 - 1;
+    self->field_0x38 = 0;
+    self->field_0xb0 = 0;
+    self->field_0x2c = 0;
+    self->field_0xc = 0;
+    self->field_0x10 = h / 2 - 1;
     PaintCanvas_Image2DCreate(*canvasHolder, 0x454, (char *)self + 0xac);
     WantedWindow_init(self);
     return self;
@@ -872,7 +873,7 @@ extern "C" WantedWindow *_ZN12WantedWindowC2Ev(WantedWindow *self)
 // ---- getRelativeScrollHeight_e17d8.cpp ----
 extern "C" float WantedWindow_getRelativeScrollHeight(WantedWindow *self)
 {
-    long long pair = F<long long>(self, 0xa4);
+    long long pair = self->field_0xa4;
     int content = (int)pair;
     int visible = (int)((unsigned long long)pair >> 32);
     if (content < visible) {
@@ -880,7 +881,7 @@ extern "C" float WantedWindow_getRelativeScrollHeight(WantedWindow *self)
         c.u = 0x4605e009u;
         return c.f;
     }
-    int scroll = F<int>(self, 0x84);
+    int scroll = self->field_0x84;
     int num;
     if (scroll >= 1) {
         num = visible - scroll;
@@ -915,7 +916,7 @@ __attribute__((visibility("hidden"))) extern const char g_WantedWindow_s_empty[]
 
 static inline void *wanted_at(WantedWindow *self, int idx)
 {
-    return ArrayItem(F<void *>(self, 0x38), idx);
+    return ArrayItem(self->field_0x38, idx);
 }
 
 static inline void append_label(String *dst, const char *prefix, String *value)
@@ -941,18 +942,18 @@ extern "C" void WantedWindow_selectWanted(WantedWindow *self, int idx)
     String s88;
     String s94;
 
-    if (F<void *>(self, 0x8) != 0) {
-        operator_delete(Array_ImagePart_dtor(F<void *>(self, 0x8)));
+    if (self->field_0x8 != 0) {
+        operator_delete(Array_ImagePart_dtor(self->field_0x8));
     }
-    F<void *>(self, 0x8) = 0;
+    self->field_0x8 = 0;
 
-    if (F<void *>(self, 0x2c) != 0) {
-        operator_delete(ScrollTouchWindow_dtor(F<void *>(self, 0x2c)));
+    if (self->field_0x2c != 0) {
+        operator_delete(ScrollTouchWindow_dtor(self->field_0x2c));
     }
-    F<void *>(self, 0x2c) = 0;
+    self->field_0x2c = 0;
 
     void *wanted = wanted_at(self, idx);
-    F<void *>(self, 0x8) = ImageFactory_loadChar(*g_WantedWindow_select_factory,
+    self->field_0x8 = ImageFactory_loadChar(*g_WantedWindow_select_factory,
                                                   Wanted_getImageParts(wanted));
 
     Wanted_getName(&s34, wanted);
@@ -1064,24 +1065,24 @@ extern "C" void WantedWindow_selectWanted(WantedWindow *self, int idx)
                   GameText_getText(*g_WantedWindow_select_text_a, 0xc9d));
 
     void *layout = *g_WantedWindow_select_layout;
-    int y = F<int>(self, 0x20);
-    int h = F<int>(self, 0x28);
-    int top = y + F<int>(layout, 0x0c) + F<int>(layout, 0x20) +
-              F<int>(layout, 0x5c) + F<int>(layout, 0x2c);
-    int height = (((((y - F<int>(layout, 0x2c)) + h) - top) -
-                   F<int>(layout, 0x10)) - F<int>(layout, 0x2d8)) -
-                 F<int>(layout, 0x24);
+    int y = self->field_0x20;
+    int h = self->field_0x28;
+    int top = y + layout->field_0xc + layout->field_0x20 +
+              layout->field_0x5c + layout->field_0x2c;
+    int height = (((((y - layout->field_0x2c) + h) - top) -
+                   layout->field_0x10) - layout->field_0x2d8) -
+                 layout->field_0x24;
     if (Wanted_isActive(wanted) != 0) {
-        height = (height - F<int>(layout, 0x4c)) - F<int>(layout, 0x30);
+        height = (height - layout->field_0x4c) - layout->field_0x30;
     }
 
     void *scroll = operator_new(0x24);
-    int pad = F<int>(layout, 0x2c);
-    ScrollTouchWindow_ctor(scroll, F<int>(self, 0x1c) + (F<int>(self, 0x24) >> 1) + pad,
-                           F<int>(layout, 0x2d8) + pad + top,
-                           ((F<int>(self, 0x24) >> 1) - pad) - F<int>(layout, 0x28),
+    int pad = layout->field_0x2c;
+    ScrollTouchWindow_ctor(scroll, self->field_0x1c + (self->field_0x24 >> 1) + pad,
+                           layout->field_0x2d8 + pad + top,
+                           ((self->field_0x24 >> 1) - pad) - layout->field_0x28,
                            height, false);
-    F<void *>(self, 0x2c) = scroll;
+    self->field_0x2c = scroll;
 
     String_cstr_ctor(&s34, g_WantedWindow_s_empty, false);
     String_assign(&s34, GameText_getText(*g_WantedWindow_select_text_a, 0xc9d));
@@ -1097,7 +1098,7 @@ extern "C" void WantedWindow_selectWanted(WantedWindow *self, int idx)
 
     String_cstr_ctor(&s88, g_WantedWindow_s_empty, false);
     String_copy_ctor(&s94, &s34, false);
-    ScrollTouchWindow_setText(F<void *>(self, 0x2c), &s88, &s94);
+    ScrollTouchWindow_setText(self->field_0x2c, &s88, &s94);
     String_dtor(&s94);
     String_dtor(&s88);
     String_dtor(&s34);

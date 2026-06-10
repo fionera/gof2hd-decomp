@@ -1,4 +1,4 @@
-#include "PlayerStaticFar.h"
+#include "gof2/PlayerStaticFar.h"
 
 
 extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);

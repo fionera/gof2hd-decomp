@@ -1,4 +1,4 @@
-#include "PlayerGasCloud.h"
+#include "gof2/PlayerGasCloud.h"
 
 
 extern "C" void AEGeometry_translate_v(void *geom, Vector const &v);
@@ -37,7 +37,7 @@ struct PlayerGasCloud {
 
 void PlayerGasCloud::translate(Vector const &param_1)
 {
-    return AEGeometry_translate_v(F<void *>(this, 0x8), param_1);
+    return AEGeometry_translate_v(this->field_0x8, param_1);
 }
 
 // ---- isSparkAlive_176610.cpp ----
@@ -47,12 +47,12 @@ struct PlayerGasCloud {
 
 bool PlayerGasCloud::isSparkAlive(int param_1)
 {
-    void *arr = F<void *>(this, 0x138);
+    void *arr = this->field_0x138;
     if (arr == 0)
         return false;
     if (F<unsigned int>(arr, 0x0) <= (unsigned int)param_1)
         return false;
-    int *base = F<int *>(F<void *>(this, 0x14c), 0x4);
+    int *base = F<int *>(this->field_0x14c, 0x4);
     return -1500 < base[param_1];
 }
 
@@ -63,12 +63,12 @@ struct PlayerGasCloud {
 
 void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
 {
-    void *arr = F<void *>(this, 0x138);
+    void *arr = this->field_0x138;
     if (arr == 0)
         return;
     unsigned int len = F<unsigned int>(arr, 0x0);
     if ((unsigned int)param_1 < len) {
-        char *base = F<char *>(F<void *>(this, 0x150), 0x4);
+        char *base = F<char *>(this->field_0x150, 0x4);
         base[param_1] = (char)param_2;
     }
 }
@@ -83,7 +83,7 @@ struct PlayerGasCloud {
 
 void PlayerGasCloud::setPosition(Vector const &param_1)
 {
-    return AEGeometry_setPosition_v(F<void *>(this, 0x8), param_1);
+    return AEGeometry_setPosition_v(this->field_0x8, param_1);
 }
 
 // ---- getSparks_176640.cpp ----
@@ -93,7 +93,7 @@ struct PlayerGasCloud {
 
 void *PlayerGasCloud::getSparks()
 {
-    return F<void *>(this, 0x138);
+    return this->field_0x138;
 }
 
 // ---- getPosition_176646.cpp ----
@@ -106,7 +106,7 @@ struct PlayerGasCloud {
 
 Vector PlayerGasCloud::getPosition()
 {
-    return AEGeometry_getPosition_ret(F<void *>(this, 0x8));
+    return AEGeometry_getPosition_ret(this->field_0x8);
 }
 
 // ---- _PlayerGasCloud_1765e8.cpp ----
@@ -125,7 +125,7 @@ struct PlayerGasCloud {
 
 uint8_t PlayerGasCloud::hasExploded()
 {
-    return F<uint8_t>(this, 0x154);
+    return this->field_0x154;
 }
 
 // ---- PlayerGasCloud_1763cc.cpp ----
@@ -152,19 +152,19 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     KIPlayer_ctor(this, param_1, -1, this_00, param_3, param_4.x, param_4.y, param_4.z, false);
 
     *(void **)this = &PlayerGasCloud_vtable + 8;
-    F<void *>(this, 0x128) = 0;
-    F<void *>(this, 0x12c) = 0;
-    F<void *>(this, 0x130) = 0;
-    Player_setKIPlayer(F<void *>(this, 0x4), this);
-    Player_setMaxHitpoints(F<void *>(this, 0x4), 1);
+    this->field_0x128 = 0;
+    this->field_0x12c = 0;
+    this->field_0x130 = 0;
+    Player_setKIPlayer(this->field_0x4, this);
+    Player_setMaxHitpoints(this->field_0x4, 1);
 
     void **vt = *(void ***)this;
     typedef void (*pfn)(void *, Vector const &);
     ((pfn)vt[0x11])(this, param_4);
 
-    F<int>(this, 0x158) = 0;
-    F<int>(this, 0x78) = 0;
-    F<uint8_t>(this, 0x25) = 0;
+    this->field_0x158 = 0;
+    this->field_0x78 = 0;
+    this->field_0x25 = 0;
 
     int iVar1 = 0x4a35;
     if ((unsigned int)(param_1 - 0xc9) < 4)
@@ -172,25 +172,25 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     int iVar2 = 0x4a39;
     if ((unsigned int)(param_1 - 0xc9) < 4)
         iVar2 = param_1 + 0x4970;
-    F<int>(this, 0x160) = param_1;
-    F<int>(this, 0x164) = iVar2;
-    F<int>(this, 0x168) = iVar1;
+    this->field_0x160 = param_1;
+    this->field_0x164 = iVar2;
+    this->field_0x168 = iVar1;
 
-    *(v4i1 *)((char *)this + 0x145) = (v4i1){0, 0, 0, 0};
-    *(v4i *)((char *)this + 0x138) = (v4i){0, 0, 0, 0};
+    this->field_0x145 = (v4i1){0, 0, 0, 0};
+    this->field_0x138 = (v4i){0, 0, 0, 0};
 
     Vector_assign((char *)this + 0x128, param_4);
 
     void *geom = operator_new(0xc0);
-    AEGeometry_ctor(geom, F<uint16_t>(this, 0x168), *g_pgc_canvas, false);
-    F<void *>(this, 0x134) = geom;
+    AEGeometry_ctor(geom, this->field_0x168, *g_pgc_canvas, false);
+    this->field_0x134 = geom;
     AEGeometry_setPosition_v(geom, param_4);
 
-    F<uint8_t>(this, 0x4c) = 1;
-    F<uint8_t>(this, 0x44) = 1;
-    F<int>(this, 0x88) = 0;
-    F<uint8_t>(this, 0xf5) = 1;
-    F<uint8_t>(this, 0x15c) = 0;
+    this->field_0x4c = 1;
+    this->field_0x44 = 1;
+    this->field_0x88 = 0;
+    this->field_0xf5 = 1;
+    this->field_0x15c = 0;
 }
 
 // ---- _PlayerGasCloud_176520.cpp ----
@@ -201,48 +201,48 @@ extern "C" void *_ZN14PlayerGasCloudD1Ev(void *self)
 {
     *(void **)self = &PlayerGasCloud_vtable + 8;
 
-    void *a0 = F<void *>(self, 0x138);
+    void *a0 = self->field_0x138;
     if (a0 != 0) {
         ArrayReleaseClasses_AEGeometry(a0);
-        void *p = F<void *>(self, 0x138);
+        void *p = self->field_0x138;
         if (p != 0)
             operator_delete(Array_AEGeometry_dtor(p));
-        F<void *>(self, 0x138) = 0;
+        self->field_0x138 = 0;
     }
 
-    void *a1 = F<void *>(self, 0x13c);
+    void *a1 = self->field_0x13c;
     if (a1 != 0) {
         ArrayReleaseClasses_Vector(a1);
-        void *p = F<void *>(self, 0x13c);
+        void *p = self->field_0x13c;
         if (p != 0)
             operator_delete(Array_Vector_dtor(p));
-        F<void *>(self, 0x13c) = 0;
+        self->field_0x13c = 0;
     }
 
-    void *a2 = F<void *>(self, 0x140);
+    void *a2 = self->field_0x140;
     if (a2 != 0)
         operator_delete(Array_float_dtor(a2));
-    F<void *>(self, 0x140) = 0;
+    self->field_0x140 = 0;
 
-    void *a3 = F<void *>(self, 0x144);
+    void *a3 = self->field_0x144;
     if (a3 != 0)
         operator_delete(Array_float_dtor(a3));
-    F<void *>(self, 0x144) = 0;
+    self->field_0x144 = 0;
 
-    void *a4 = F<void *>(self, 0x148);
+    void *a4 = self->field_0x148;
     if (a4 != 0)
         operator_delete(Array_float_dtor(a4));
-    F<void *>(self, 0x148) = 0;
+    self->field_0x148 = 0;
 
-    void *a5 = F<void *>(self, 0x14c);
+    void *a5 = self->field_0x14c;
     if (a5 != 0)
         operator_delete(Array_int_dtor(a5));
-    F<void *>(self, 0x14c) = 0;
+    self->field_0x14c = 0;
 
-    void *g = F<void *>(self, 0x134);
+    void *g = self->field_0x134;
     if (g != 0)
         operator_delete(AEGeometry_dtor(g));
-    F<void *>(self, 0x134) = 0;
+    self->field_0x134 = 0;
 
     return PlayerGasCloud_baseDtor(self);
 }
@@ -303,25 +303,25 @@ extern "C" void PlayerGasCloud_explode(void *self, int itemIndex, Vector src, fl
 {
     void *volatile cookie = __stack_chk_guard;
 
-    if (*(char *)((char *)self + 0x154) == 0) {
-        *(int *)((char *)self + 0x88) = 3;
+    if (self->field_0x154 == 0) {
+        self->field_0x88 = 3;
         KIPlayer_setActive(self, false);
-        *(unsigned char *)((char *)self + 0x154) = 1;
+        self->field_0x154 = 1;
 
         void *aGeom = operator_new(0xc);  ArrayGeom_ctor(aGeom);
-        *(void **)((char *)self + 0x138) = aGeom;
+        self->field_0x138 = aGeom;
         void *aVec = operator_new(0xc);   ArrayVec_ctor(aVec);
-        *(void **)((char *)self + 0x13c) = aVec;
+        self->field_0x13c = aVec;
         void *aLife = operator_new(0xc);  ArrayFloat_ctor(aLife);
-        *(void **)((char *)self + 0x140) = aLife;
+        self->field_0x140 = aLife;
         void *aLifeMin = operator_new(0xc); ArrayFloat_ctor(aLifeMin);
-        *(void **)((char *)self + 0x144) = aLifeMin;
+        self->field_0x144 = aLifeMin;
         void *aTimer = operator_new(0xc); ArrayInt_ctor(aTimer);
-        *(void **)((char *)self + 0x14c) = aTimer;
+        self->field_0x14c = aTimer;
         void *aActive = operator_new(0xc); ArrayBool_ctor(aActive);
-        *(void **)((char *)self + 0x150) = aActive;
+        self->field_0x150 = aActive;
         void *aScale = operator_new(0xc); ArrayFloat_ctor(aScale);
-        *(void **)((char *)self + 0x148) = aScale;
+        self->field_0x148 = aScale;
 
         // Distance from the explosion source to the cloud centre (+0x128).
         Vector delta;
@@ -341,7 +341,7 @@ extern "C" void PlayerGasCloud_explode(void *self, int itemIndex, Vector src, fl
         int count = (int)((countBase / 1.5f + 10.0f) * attrF);
         for (int i = 0; i < count; i++) {
             void *shard = operator_new(0xc0);
-            AEGeometry_ctor(shard, *(uint16_t *)((char *)self + 0x164),
+            AEGeometry_ctor(shard, self->field_0x164,
                             *(void **)g_pgc_canvasRoot, false);
             AEGeometry_setPosition(shard, (Vector *)((char *)self + 0x128));
 
@@ -351,9 +351,9 @@ extern "C" void PlayerGasCloud_explode(void *self, int itemIndex, Vector src, fl
             float jz = (float)AERandom_next(rng, 10000);
 
             Vector p;
-            p.x = ((*(float *)((char *)self + 0x128) + delta.x) - spread) + t * jx;
-            p.y = ((*(float *)((char *)self + 0x12c) + delta.y) - spread) + t * jy;
-            p.z = ((*(float *)((char *)self + 0x130) + delta.z) - spread) + t * jz;
+            p.x = ((self->field_0x128 + delta.x) - spread) + t * jx;
+            p.y = ((self->field_0x12c + delta.y) - spread) + t * jy;
+            p.z = ((self->field_0x130 + delta.z) - spread) + t * jz;
 
             // Direction = normalized (p - center).
             Vector d, dn;
@@ -363,16 +363,16 @@ extern "C" void PlayerGasCloud_explode(void *self, int itemIndex, Vector src, fl
             float life = ((float)AERandom_next(rng, 200) / lifeDiv) * 3.0f + 3.0f;
             int timer = AERandom_next(rng, 14000);
 
-            ArrayAdd_float(life * 7.0f, *(void **)((char *)self + 0x140));
-            ArrayAdd_float(life, *(void **)((char *)self + 0x144));
-            ArrayAdd_int(timer + 8000, *(void **)((char *)self + 0x14c));
+            ArrayAdd_float(life * 7.0f, self->field_0x140);
+            ArrayAdd_float(life, self->field_0x144);
+            ArrayAdd_int(timer + 8000, self->field_0x14c);
 
             Vector *velCopy = (Vector *)operator_new(0xc);
             *velCopy = dn;
-            ArrayAdd_vec(velCopy, *(void **)((char *)self + 0x13c));
-            ArrayAdd_geom(shard, *(void **)((char *)self + 0x138));
-            ArrayAdd_bool(false, *(void **)((char *)self + 0x150));
-            ArrayAdd_float(1.0f, *(void **)((char *)self + 0x148));
+            ArrayAdd_vec(velCopy, self->field_0x13c);
+            ArrayAdd_geom(shard, self->field_0x138);
+            ArrayAdd_bool(false, self->field_0x150);
+            ArrayAdd_float(1.0f, self->field_0x148);
         }
     }
 
@@ -627,9 +627,9 @@ void PlayerGasCloud::render()
     Vector dir;
     char cameraLocal[60];
 
-    if (F<uint8_t>(this, 0xf5) == 0)
+    if (this->field_0xf5 == 0)
         return;
-    int mode = F<int>(this, 0x88);
+    int mode = this->field_0x88;
     if (mode != 3 && mode != 0)
         return;
 
@@ -641,20 +641,20 @@ void PlayerGasCloud::render()
     float scale = AbyssEngine::AEMath::operator-(dir, *(Vector *)&local_80);
 
     void *arr;
-    if (F<uint8_t>(this, 0x154) == 0 || (arr = F<void *>(this, 0x138)) == 0) {
-        void *geom = F<void *>(this, 0x134);
+    if (this->field_0x154 == 0 || (arr = this->field_0x138) == 0) {
+        void *geom = this->field_0x134;
         AbyssEngine::AEMath::MatrixGetUp((Vector *)&local_80, (Matrix *)cameraLocal);
         AEGeometry_setDirection(geom, &dir, (Vector *)&local_80);
         AEGeometry_render(geom);
     } else {
         for (unsigned int i = 0, off = 0; i < F<unsigned int>(arr, 0x0); i++, off += 4) {
-            void *g = *(void **)((char *)F<void *>(F<void *>(this, 0x138), 0x4) + off);
-            float si = *(float *)((char *)F<void *>(F<void *>(this, 0x148), 0x4) + off);
+            void *g = *(void **)((char *)F<void *>(this->field_0x138, 0x4) + off);
+            float si = *(float *)((char *)F<void *>(this->field_0x148, 0x4) + off);
             AEGeometry_setScaling(g, si);
             AbyssEngine::AEMath::MatrixGetUp((Vector *)&local_80, (Matrix *)cameraLocal);
             AEGeometry_setDirection(g, &dir, (Vector *)&local_80);
             AEGeometry_render(g);
-            arr = F<void *>(this, 0x138);
+            arr = this->field_0x138;
         }
     }
 }

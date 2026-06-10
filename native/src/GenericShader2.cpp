@@ -1,4 +1,4 @@
-#include "GenericShader2.h"
+#include "gof2/GenericShader2.h"
 
 
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);

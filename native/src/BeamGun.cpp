@@ -1,4 +1,8 @@
-#include "BeamGun.h"
+#include "gof2/BeamGun.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Gun.h"
+#include "gof2/Player.h"
+#include "gof2/PlayerEgo.h"
 
 
 extern "C" AEGeometry *AEGeometry_dtor(AEGeometry *self);
@@ -35,17 +39,17 @@ __attribute__((visibility("hidden"))) extern void *BeamGun_vtable;
 
 extern "C" BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
 {
-    F<void *>(self, 0x0) = (char *)BeamGun_vtable + 8;
+    self->field_0x0 = (char *)BeamGun_vtable + 8;
 
-    AEGeometry *primary = F<AEGeometry *>(self, 0x18);
+    AEGeometry *primary = self->field_0x18;
     if (primary != 0)
         operator_delete(AEGeometry_dtor(primary));
-    F<AEGeometry *>(self, 0x18) = 0;
+    self->field_0x18 = 0;
 
-    AEGeometry *secondary = F<AEGeometry *>(self, 0x1c);
+    AEGeometry *secondary = self->field_0x1c;
     if (secondary != 0)
         operator_delete(AEGeometry_dtor(secondary));
-    F<AEGeometry *>(self, 0x1c) = 0;
+    self->field_0x1c = 0;
 
     return self;
 }
@@ -63,14 +67,14 @@ struct BeamGun {
 
 void BeamGun::render()
 {
-    Gun *gun = F<Gun *>(this, 0x8);
-    if (F<uint8_t>(gun, 0x4c) == 0)
+    Gun *gun = this->field_0x8;
+    if (gun->field_0x4c == 0)
         return;
 
-    AEGeometry_render(F<AEGeometry *>(this, 0x18));
+    AEGeometry_render(this->field_0x18);
 
-    if (F<uint8_t>(this, 0x21) != 0) {
-        AEGeometry *secondary = F<AEGeometry *>(this, 0x1c);
+    if (this->field_0x21 != 0) {
+        AEGeometry *secondary = this->field_0x1c;
         if (secondary != 0)
             return BeamGun_render_tail(secondary);
     }
@@ -85,7 +89,7 @@ extern "C" void _ZN7BeamGunD0Ev(BeamGun *self)
 // ---- setEnemy_177b26.cpp ----
 extern "C" void BeamGun_setEnemy(Player *enemy)
 {
-    return BeamGun_setEnemy_tail(F<void *>(enemy, 0x8));
+    return BeamGun_setEnemy_tail(enemy->field_0x8);
 }
 
 // ---- BeamGun_177754.cpp ----
@@ -109,12 +113,12 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
     if (type == 0xe4)
         param_3 = 2;
 
-    F<void *>(this, 0x0) = (char *)BeamGun_vtable + 8;
-    F<int32_t>(this, 0x4) = 0;
-    F<Gun *>(this, 0x8) = gun;
-    F<Level *>(this, 0xc) = level;
-    F<int32_t>(this, 0x10) = param_1;
-    F<int32_t>(this, 0x14) = param_3;
+    this->field_0x0 = (char *)BeamGun_vtable + 8;
+    this->field_0x4 = 0;
+    this->field_0x8 = gun;
+    this->field_0xc = level;
+    this->field_0x10 = param_1;
+    this->field_0x14 = param_3;
 
     geometry = (AEGeometry *)operator_new(0xc0);
     void **canvasHolder = BeamGun_canvas;
@@ -122,16 +126,16 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
     if (type == 0xe4)
         primaryMesh = 0x4a92;
     AEGeometry_ctor(geometry, (uint16_t)primaryMesh, (PaintCanvas *)*canvasHolder, false);
-    F<AEGeometry *>(this, 0x18) = geometry;
+    this->field_0x18 = geometry;
 
     mesh = Gun_isPlayerGun(gun);
     if (mesh == 0 ||
-        (mesh = BeamGun_secondaryMeshes[F<int32_t>(gun, 0x58)], mesh < 0)) {
+        (mesh = BeamGun_secondaryMeshes[gun->field_0x58], mesh < 0)) {
         geometry = 0;
-        F<uint8_t>(this, 0x20) = 0;
+        this->field_0x20 = 0;
     } else {
-        int gunKind = F<int32_t>(gun, 0x5c);
-        F<uint8_t>(this, 0x20) = gunKind != 0xb;
+        int gunKind = gun->field_0x5c;
+        this->field_0x20 = gunKind != 0xb;
         if (gunKind == 0xb) {
             geometry = 0;
         } else {
@@ -140,8 +144,8 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
         }
     }
 
-    F<uint8_t>(this, 0x21) = 0;
-    F<AEGeometry *>(this, 0x1c) = geometry;
+    this->field_0x21 = 0;
+    this->field_0x1c = geometry;
 }
 
 // ---- update_1778a4.cpp ----
@@ -166,58 +170,58 @@ void BeamGun::update(int elapsed)
     Vector transformed;
     char position[12];
 
-    Gun *gun = F<Gun *>(this, 0x8);
+    Gun *gun = this->field_0x8;
     Gun_update(gun, elapsed);
 
-    gun = F<Gun *>(this, 0x8);
-    if (F<uint8_t>(gun, 0x4c) == 0) {
-        AEGeometry_setVisible(F<AEGeometry *>(this, 0x18), false);
+    gun = this->field_0x8;
+    if (gun->field_0x4c == 0) {
+        AEGeometry_setVisible(this->field_0x18, false);
         return;
     }
 
-    if (F<uint8_t>(gun, 0x4d) != 0) {
+    if (gun->field_0x4d != 0) {
         void **canvasHolder = BeamGun_canvas_update_a;
-        AEGeometry *geometry = F<AEGeometry *>(this, 0x18);
+        AEGeometry *geometry = this->field_0x18;
         Transform *transform =
             PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
-                                              F<int32_t>(geometry, 0x0c));
+                                              geometry->field_0xc);
         Transform_SetAnimationState(transform, 3, 0);
         transform = PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
-                                                      F<int32_t>(geometry, 0x0c));
+                                                      geometry->field_0xc);
         Transform_SetAnimationState(transform, 1, 0);
-        F<uint8_t>(F<Gun *>(this, 0x8), 0x4d) = 0;
+        F<uint8_t>(this->field_0x8, 0x4d) = 0;
     }
 
     void **canvasHolder = BeamGun_canvas_update_b;
-    AEGeometry *primary = F<AEGeometry *>(this, 0x18);
+    AEGeometry *primary = this->field_0x18;
     Transform *transform =
-        PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder, F<int32_t>(primary, 0x0c));
+        PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder, primary->field_0xc);
     Transform_Update(transform, (long long)elapsed, false);
 
-    gun = F<Gun *>(this, 0x8);
-    AEGeometry_setScaling(F<AEGeometry *>(this, 0x18), 1.0f, 1.0f,
-                          (float)F<int32_t>(gun, 0x8c));
+    gun = this->field_0x8;
+    AEGeometry_setScaling(this->field_0x18, 1.0f, 1.0f,
+                          (float)gun->field_0x8c);
 
     Vector *up = (Vector *)&playerMatrix;
     up->x = 0.0f;
     up->y = 1.0f;
     up->z = 0.0f;
-    AEGeometry_setDirection(F<AEGeometry *>(this, 0x18), (Vector *)((char *)gun + 0x90), up);
+    AEGeometry_setDirection(this->field_0x18, (Vector *)((char *)gun + 0x90), up);
 
-    PlayerEgo *player = Level_getPlayer(F<Level *>(this, 0x0c));
+    PlayerEgo *player = Level_getPlayer(this->field_0xc);
     PlayerEgo_getPosition(&position, player);
 
     up->x = 0.0f;
     up->y = 0.0f;
     up->z = 0.0f;
-    if (Vector_ne((Vector *)((char *)F<Gun *>(this, 0x8) + 0x7c), up) != 0) {
-        player = Level_getPlayer(F<Level *>(this, 0x0c));
-        Matrix *firstMatrix = AEGeometry_getMatrix(F<AEGeometry *>(player, 0x8));
-        player = Level_getPlayer(F<Level *>(this, 0x0c));
-        Matrix *secondMatrix = AEGeometry_getMatrix(F<AEGeometry *>(player, 0x4));
+    if (Vector_ne((Vector *)((char *)this->field_0x8 + 0x7c), up) != 0) {
+        player = Level_getPlayer(this->field_0xc);
+        Matrix *firstMatrix = AEGeometry_getMatrix(player->field_0x8);
+        player = Level_getPlayer(this->field_0xc);
+        Matrix *secondMatrix = AEGeometry_getMatrix(player->field_0x4);
         Matrix_mul(&playerMatrix, firstMatrix, secondMatrix);
 
-        gun = F<Gun *>(this, 0x8);
+        gun = this->field_0x8;
         back.x = 0.0f;
         back.y = 0.0f;
         back.z = -100.0f;
@@ -226,49 +230,49 @@ void BeamGun::update(int elapsed)
         Vector_add_assign(position, &transformed);
     }
 
-    AEGeometry_setPosition(F<AEGeometry *>(this, 0x18), position);
-    AEGeometry_setVisible(F<AEGeometry *>(this, 0x18), true);
+    AEGeometry_setPosition(this->field_0x18, position);
+    AEGeometry_setVisible(this->field_0x18, true);
 
-    if (F<uint8_t>(this, 0x20) != 0) {
-        gun = F<Gun *>(this, 0x8);
-        if (F<uint8_t>(gun, 0xa9) == 0) {
-            AEGeometry *secondary = F<AEGeometry *>(this, 0x1c);
+    if (this->field_0x20 != 0) {
+        gun = this->field_0x8;
+        if (gun->field_0xa9 == 0) {
+            AEGeometry *secondary = this->field_0x1c;
             BeamGunGetTransformFn getTransform = BeamGun_getTransform_indirect;
             Transform *secondaryTransform =
-                getTransform((PaintCanvas *)*canvasHolder, F<int32_t>(secondary, 0x0c));
+                getTransform((PaintCanvas *)*canvasHolder, secondary->field_0xc);
             BeamGunSetAnimationFn setAnimation = BeamGun_setAnimation_indirect;
             setAnimation(secondaryTransform, 0, 0);
             secondaryTransform =
-                getTransform((PaintCanvas *)*canvasHolder, F<int32_t>(secondary, 0x0c));
+                getTransform((PaintCanvas *)*canvasHolder, secondary->field_0xc);
             setAnimation(secondaryTransform, 3, 0);
             secondaryTransform =
-                getTransform((PaintCanvas *)*canvasHolder, F<int32_t>(secondary, 0x0c));
+                getTransform((PaintCanvas *)*canvasHolder, secondary->field_0xc);
             setAnimation(secondaryTransform, 1, 0);
         } else {
-            player = Level_getPlayer(F<Level *>(this, 0x0c));
+            player = Level_getPlayer(this->field_0xc);
             PlayerEgo_getPosition(&playerMatrix, player);
 
-            gun = F<Gun *>(this, 0x8);
-            transformed = *(Vector *)((char *)gun + 0x7c);
-            transformed.z = F<float>(gun, 0x84) + -100.0f;
+            gun = this->field_0x8;
+            transformed = gun->field_0x7c;
+            transformed.z = gun->field_0x84 + -100.0f;
 
-            MatrixRotateVector(&rotated, (Matrix *)((char *)F<void *>(player, 0x0) + 4),
+            MatrixRotateVector(&rotated, (Matrix *)((char *)player->field_0x0 + 4),
                                &transformed);
             Vector_add_assign(&playerMatrix, &rotated);
-            AEGeometry_setPosition(F<AEGeometry *>(this, 0x1c), &playerMatrix);
+            AEGeometry_setPosition(this->field_0x1c, &playerMatrix);
 
-            AEGeometry *secondary = F<AEGeometry *>(this, 0x1c);
+            AEGeometry *secondary = this->field_0x1c;
             transform = PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
-                                                          F<int32_t>(secondary, 0x0c));
+                                                          secondary->field_0xc);
             Transform_Update(transform, (long long)elapsed, false);
 
-            MatrixGetDir(&rotated, (Matrix *)((char *)F<void *>(player, 0x0) + 4));
+            MatrixGetDir(&rotated, (Matrix *)((char *)player->field_0x0 + 4));
             back.x = 0.0f;
             back.y = 1.0f;
             back.z = 0.0f;
-            AEGeometry_setDirection(F<AEGeometry *>(this, 0x1c), &rotated, &back);
+            AEGeometry_setDirection(this->field_0x1c, &rotated, &back);
         }
     }
 
-    F<uint8_t>(this, 0x21) = F<uint8_t>(F<Gun *>(this, 0x8), 0xa9);
+    this->field_0x21 = F<uint8_t>(this->field_0x8, 0xa9);
 }

@@ -1,4 +1,5 @@
-#include "FBOContainer.h"
+#include "gof2/FBOContainer.h"
+#include "gof2/Engine.h"
 
 
 
@@ -7,7 +8,7 @@
 namespace AbyssEngine {
 
 void FBOContainer::Activate() {
-    glBindTexture(0xde1, *(GLuint *)((char *)this + 0x4));
+    glBindTexture(0xde1, this->field_0x4);
 }
 
 } // namespace AbyssEngine
@@ -16,8 +17,8 @@ void FBOContainer::Activate() {
 namespace AbyssEngine {
 
 void FBOContainer::BeginCapture() {
-    glBindFramebuffer(0x8d40, *(GLuint *)((char *)this + 0x0));
-    glViewport(0, 0, *(GLsizei *)((char *)this + 0xc), *(GLsizei *)((char *)this + 0x10));
+    glBindFramebuffer(0x8d40, this->field_0x0);
+    glViewport(0, 0, this->field_0xc, this->field_0x10);
 }
 
 } // namespace AbyssEngine
@@ -26,12 +27,12 @@ void FBOContainer::BeginCapture() {
 namespace AbyssEngine {
 
 void FBOContainer::Create(int width, int height, bool a, bool linear) {
-    *(int *)((char *)this + 0xc) = width;
-    *(int *)((char *)this + 0x10) = height;
+    this->field_0xc = width;
+    this->field_0x10 = height;
     glGenFramebuffers(1, (GLuint *)((char *)this + 0x0));
-    glBindFramebuffer(0x8d40, *(GLuint *)((char *)this + 0x0));
+    glBindFramebuffer(0x8d40, this->field_0x0);
     glGenTextures(1, (GLuint *)((char *)this + 0x4));
-    glBindTexture(0xde1, *(GLuint *)((char *)this + 0x4));
+    glBindTexture(0xde1, this->field_0x4);
     glPixelStorei(0xcf5, 1);
     glTexParameteri(0xde1, 0x2802, 0x812f);
     glTexParameteri(0xde1, 0x2803, 0x812f);
@@ -44,18 +45,18 @@ void FBOContainer::Create(int width, int height, bool a, bool linear) {
         filter = 0x2600;
     }
     glTexParameteri(0xde1, 0x2801, filter);
-    glTexImage2D(0xde1, 0, 0x1908, *(GLsizei *)((char *)this + 0xc),
-                 *(GLsizei *)((char *)this + 0x10), 0, 0x1908, 0x1401, 0);
-    glFramebufferTexture2D(0x8d40, 0x8ce0, 0xde1, *(GLuint *)((char *)this + 0x4), 0);
+    glTexImage2D(0xde1, 0, 0x1908, this->field_0xc,
+                 this->field_0x10, 0, 0x1908, 0x1401, 0);
+    glFramebufferTexture2D(0x8d40, 0x8ce0, 0xde1, this->field_0x4, 0);
     glGenRenderbuffers(1, (GLuint *)((char *)this + 0x8));
-    glBindRenderbuffer(0x8d41, *(GLuint *)((char *)this + 0x8));
-    glRenderbufferStorage(0x8d41, 0x81a5, *(GLsizei *)((char *)this + 0xc),
-                          *(GLsizei *)((char *)this + 0x10));
-    glFramebufferRenderbuffer(0x8d40, 0x8d00, 0x8d41, *(GLuint *)((char *)this + 0x8));
+    glBindRenderbuffer(0x8d41, this->field_0x8);
+    glRenderbufferStorage(0x8d41, 0x81a5, this->field_0xc,
+                          this->field_0x10);
+    glFramebufferRenderbuffer(0x8d40, 0x8d00, 0x8d41, this->field_0x8);
     glCheckFramebufferStatus(0x8d40);
-    *(unsigned char *)((char *)this + 0x18) = 1;
-    Engine *engine = *(Engine **)((char *)this + 0x14);
-    glBindFramebuffer(0x8d40, *(GLuint *)((char *)engine + 0x40c));
+    this->field_0x18 = 1;
+    Engine *engine = this->field_0x14;
+    glBindFramebuffer(0x8d40, engine->field_0x40c);
 }
 
 } // namespace AbyssEngine
@@ -64,16 +65,16 @@ void FBOContainer::Create(int width, int height, bool a, bool linear) {
 namespace AbyssEngine {
 
 void FBOContainer::Release() {
-    if (*(unsigned char *)((char *)this + 0x18) == 0) {
+    if (this->field_0x18 == 0) {
         return;
     }
     glDeleteFramebuffers(1, (GLuint *)((char *)this + 0x0));
-    *(GLuint *)((char *)this + 0x0) = 0;
+    this->field_0x0 = 0;
     glDeleteTextures(1, (GLuint *)((char *)this + 0x4));
-    *(GLuint *)((char *)this + 0x4) = 0;
+    this->field_0x4 = 0;
     glDeleteRenderbuffers(1, (GLuint *)((char *)this + 0x8));
-    *(GLuint *)((char *)this + 0x8) = 0;
-    *(unsigned char *)((char *)this + 0x18) = 0;
+    this->field_0x8 = 0;
+    this->field_0x18 = 0;
     glDeleteRenderbuffers(1, (GLuint *)((char *)this + 0x30));
     glDeleteRenderbuffers(1, (GLuint *)((char *)this + 0x34));
     glBindFramebuffer(0x8d40, 0);
@@ -115,8 +116,8 @@ FBOContainer::FBOContainer(Engine *engine, String name)
 namespace AbyssEngine {
 
 void FBOContainer::EndCapture() {
-    Engine *engine = *(Engine **)((char *)this + 0x14);
-    glBindFramebuffer(0x8d40, *(GLuint *)((char *)engine + 0x40c));
+    Engine *engine = this->field_0x14;
+    glBindFramebuffer(0x8d40, engine->field_0x40c);
 }
 
 } // namespace AbyssEngine

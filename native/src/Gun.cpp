@@ -1,4 +1,5 @@
-#include "Gun.h"
+#include "gof2/Gun.h"
+#include "gof2/AEGeometry.h"
 
 
 extern "C" void AEGeometry_ctor(AEGeometry *self, unsigned short idx, void *canvas, bool b);
@@ -73,31 +74,31 @@ __attribute__((minsize)) Gun::~Gun() noexcept(false)
 // ---- setFriendGun_1522ca.cpp ----
 extern "C" void Gun_setFriendGun(Gun *self, bool v)
 {
-    F<uint8_t>(self, 0xf9) = v;
+    self->field_0xf9 = v;
 }
 
 // ---- getMagnitude_1522d6.cpp ----
 extern "C" int Gun_getMagnitude(Gun *self)
 {
-    return F<int>(self, 0x100);
+    return self->field_0x100;
 }
 
 // ---- getEnemies_1523bc.cpp ----
 extern "C" void *Gun_getEnemies(Gun *self)
 {
-    return F<void *>(self, 0xb4);
+    return self->field_0xb4;
 }
 
 // ---- setMagnitude_1522d0.cpp ----
 extern "C" void Gun_setMagnitude(Gun *self, int v)
 {
-    F<int>(self, 0x100) = v;
+    self->field_0x100 = v;
 }
 
 // ---- setErrorMagnitudePercentage_1522bc.cpp ----
 extern "C" void Gun_setErrorMagnitudePercentage(Gun *self, int v)
 {
-    F<float>(self, 0xfc) = (float)v;
+    self->field_0xfc = (float)v;
 }
 
 // ---- setImpact_1523b0.cpp ----
@@ -105,31 +106,31 @@ struct Sparks;
 
 extern "C" void Gun_setImpact(Gun *self, Sparks *impact)
 {
-    F<Sparks *>(self, 0xb8) = impact;
+    self->field_0xb8 = impact;
 }
 
 // ---- setPlayerGun_15241c.cpp ----
 extern "C" void Gun_setPlayerGun(Gun *self, bool v)
 {
-    F<uint8_t>(self, 0xf0) = v;
+    self->field_0xf0 = v;
 }
 
 // ---- isPlayerGun_152422.cpp ----
 extern "C" uint8_t Gun_isPlayerGun(Gun *self)
 {
-    return F<uint8_t>(self, 0xf0);
+    return self->field_0xf0;
 }
 
 // ---- setLevelCollision_1522dc.cpp ----
 extern "C" void Gun_setLevelCollision(Gun *self, bool v)
 {
-    F<uint8_t>(self, 0xf8) = v;
+    self->field_0xf8 = v;
 }
 
 // ---- removeAllEnemies_152410.cpp ----
 extern "C" void Gun_removeAllEnemies(Gun *self)
 {
-    F<int>(self, 0xb4) = 0;
+    self->field_0xb4 = 0;
 }
 
 // ---- setIndex_1521ac.cpp ----
@@ -156,32 +157,32 @@ extern int  *const gSI_rng    __attribute__((visibility("hidden")));
 
 extern "C" void Gun_setIndex(Gun *self, int index)
 {
-    F<int>(self, 0x58) = index;
+    self->field_0x58 = index;
     int *items = gSI_items;
-    F<uint8_t>(self, 0x108) = (index == 0xe4) || ((unsigned)(index - 9) < 3);
-    F<int>(self, 0x64) = Item_getAttribute(*(int *)(*(int *)(*items + 4) + index * 4), 0xa);
+    self->field_0x108 = (index == 0xe4) || ((unsigned)(index - 9) < 3);
+    self->field_0x64 = Item_getAttribute(*(int *)(*(int *)(*items + 4) + index * 4), 0xa);
     int g = gSI_table[index];
     if (g >= 0) {
-        unsigned count = F<unsigned>(self, 0x8);
+        unsigned count = self->field_0x8;
         unsigned long long bytes = (unsigned long long)count * 4;
         unsigned alloc = (unsigned)bytes;
         if ((unsigned)(bytes >> 32) != 0)
             alloc = 0xffffffff;
-        F<void *>(self, 0x10c) = Gun_operator_new_arr(alloc);
-        F<void *>(self, 0x110) = Gun_operator_new_arr(count);
+        self->field_0x10c = Gun_operator_new_arr(alloc);
+        self->field_0x110 = Gun_operator_new_arr(count);
         unsigned *canvasHolder = gSI_canvas;
         int *rngHolder = gSI_rng;
         for (unsigned i = 0; i < count; i = i + 1) {
             AEGeometry *geom = (AEGeometry *)Gun_operator_new(0xc0);
             AEGeometry_ctor(geom, (unsigned short)g, (void *)*canvasHolder, false);
-            ((int *)F<int>(self, 0x10c))[i] = *(int *)((char *)geom + 0xc);
+            ((int *)self->field_0x10c)[i] = geom->field_0xc;
             int r = AbyssEngine::AERandom::nextInt(*rngHolder);
-            ((uint8_t *)F<int>(self, 0x110))[i] = (r == 0);
+            ((uint8_t *)self->field_0x110)[i] = (r == 0);
             unsigned tf = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder);
             AbyssEngine::Transform::SetAnimationState(tf, 0, 0);
             void *p = AEGeometry_dtor(geom);
             Gun_operator_delete(p);
-            count = F<unsigned>(self, 0x8);
+            count = self->field_0x8;
         }
     }
 }
@@ -211,9 +212,9 @@ extern "C" void Gun_setOffset_ii(Gun *self, int a, int b)
     local.x = (float)(int)row[0];
     local.y = (float)(int)row[1];
     local.z = (float)(int)row[2];
-    local.x = F<float>(self, 0x7c) + local.x;
-    local.y = F<float>(self, 0x80) + local.y;
-    local.z = F<float>(self, 0x84) + local.z;
+    local.x = self->field_0x7c + local.x;
+    local.y = self->field_0x80 + local.y;
+    local.z = self->field_0x84 + local.z;
     Vector_assign((Vector *)((char *)self + 0x7c), &local);
 }
 
@@ -239,40 +240,40 @@ extern int *const gIG_status __attribute__((visibility("hidden")));   // holder
 
 extern "C" void Gun_ignite(Gun *self)
 {
-    if (F<int>(self, 0x5c) == 6 || F<int>(self, 0x5c) == 7) {
-        if (F<int>(self, 0x5c) == 7)
+    if (self->field_0x5c == 6 || self->field_0x5c == 7) {
+        if (self->field_0x5c == 7)
             *(int *)(*gIG_status + 0xc8) += 1;
-        *(uint8_t *)(F<int>(self, 0x38) + 0x69) = 0;
+        *(uint8_t *)(self->field_0x38 + 0x69) = 0;
     }
 
-    unsigned *enemies = F<unsigned *>(self, 0xb4);
-    F<uint8_t>(self, 0x88) = 1;
+    unsigned *enemies = self->field_0xb4;
+    self->field_0x88 = 1;
     if (enemies == 0)
         return;
 
     Vector *posOut = (Vector *)((char *)self + 0xd8);
     Vector *base   = (Vector *)((char *)self + 0xc0);
-    F<int>(self, 0x0) = 0;
+    self->field_0x0 = 0;
 
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
         Player *target = *(Player **)(enemies[1] + ei * 4);
-        F<Player *>(self, 0xbc) = target;
-        if ((F<int>(self, 0x5c) == 6 && Player_isAsteroid(target) != 0))
+        self->field_0xbc = target;
+        if ((self->field_0x5c == 6 && Player_isAsteroid(target) != 0))
             continue;
         if (Player_isActive(target) == 0)
             continue;
 
         int off = 0;
-        for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
-            Vector v = *(Vector *)(F<int>(self, 0xc) + off);
+        for (unsigned i = 0; i < self->field_0x8; i = i + 1) {
+            Vector v = *(Vector *)(self->field_0xc + off);
             AbyssEngine::AEMath::Vector_assign(base, &v);
             AbyssEngine::AEMath::Vector_assign(posOut, &v);
             AbyssEngine::AEMath::Vector_subAssign(posOut, base);
             int dist = (int)AbyssEngine::AEMath::VectorLength(posOut);
-            if (dist < F<int>(self, 0x100)) {
-                ((uint8_t *)F<int>(self, 0x40))[i] = 1;
-                AbyssEngine::AEMath::Vector_assign((Vector *)(F<int>(self, 0x30) + off), base);
-                Item_getAttribute(*(int *)(*(int *)(*gIG_status + 4) + F<int>(self, 0x58) * 4), 0);
+            if (dist < self->field_0x100) {
+                ((uint8_t *)self->field_0x40)[i] = 1;
+                AbyssEngine::AEMath::Vector_assign((Vector *)(self->field_0x30 + off), base);
+                Item_getAttribute(*(int *)(*(int *)(*gIG_status + 4) + self->field_0x58 * 4), 0);
             }
             off = off + 0xc;
         }
@@ -312,13 +313,13 @@ extern "C" void Gun_render(Gun *self)
     Matrix local;
     char camBuf[64];
 
-    Sparks *impact = F<Sparks *>(self, 0xb8);
+    Sparks *impact = self->field_0xb8;
     if (impact != 0)
         Sparks_render(impact);
 
-    if (F<int>(self, 0x10c) != 0) {
+    if (self->field_0x10c != 0) {
         unsigned canvas = *gGunRenderCanvas;
-        for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
+        for (unsigned i = 0; i < self->field_0x8; i = i + 1) {
             int tf = AbyssEngine::PaintCanvas::TransformGetTransform(canvas);
             if (*(char *)(tf + 0xed) != 0) {
                 unsigned c = canvas;
@@ -328,8 +329,8 @@ extern "C" void Gun_render(Gun *self)
                 unsigned tl = AbyssEngine::PaintCanvas::TransformGetLocal(canvas);
                 AbyssEngine::AEMath::MatrixGetPosition(&local, (const Matrix *)tl);
                 AbyssEngine::AEMath::Vector_assign((Vector *)((char *)self + 0xd8), (Vector *)&local);
-                AbyssEngine::AEMath::MatrixSetTranslation(&local, F<float>(self, 0xe0), 0, 0);
-                Matrix *m = ((Matrix **)F<int>(self, 0x10c))[i];
+                AbyssEngine::AEMath::MatrixSetTranslation(&local, self->field_0xe0, 0, 0);
+                Matrix *m = ((Matrix **)self->field_0x10c)[i];
                 AbyssEngine::PaintCanvas::TransformSetLocal(canvas, m);
                 AbyssEngine::PaintCanvas::DrawTransform(canvas, m);
             }
@@ -364,84 +365,84 @@ extern "C" Gun *Gun_ctor(Gun *self, int kind, int p2, unsigned count, int p4,
     Gun_VecArray_ctor(s + 0x14);
     Gun_VecArray_ctor(s + 0x20);
     Gun_VecArray_ctor(s + 0x2c);
-    F<int>(self, 0x7c) = 0;
-    F<int>(self, 0x80) = 0;
-    F<int>(self, 0x84) = 0;
-    F<int>(self, 0x90) = 0;
-    F<int>(self, 0x94) = 0;
-    F<int>(self, 0x98) = 0;
-    F<int>(self, 0x38) = 0;
-    F<int>(self, 0x3c) = 0;
-    F<int>(self, 0xb4) = 0;
-    F<int>(self, 0xb8) = 0;
-    F<int>(self, 0x10c) = 0;
-    F<int>(self, 0x110) = 0;
-    F<int>(self, 0xf4) = kind;
-    F<int>(self, 0x60) = p2;
-    F<float>(self, 0x50) = p7;
-    F<int>(self, 0xe0) = 0;
-    F<int>(self, 0xe4) = 0;
-    F<int>(self, 0xe8) = 0;
-    F<int>(self, 0xec) = 0;
-    F<int>(self, 0xd0) = 0;
-    F<int>(self, 0xd4) = 0;
-    F<int>(self, 0xd8) = 0;
-    F<int>(self, 0xdc) = 0;
-    F<int>(self, 0xc0) = 0;
-    F<int>(self, 0xc4) = 0;
-    F<int>(self, 0xc8) = 0;
-    F<int>(self, 0xcc) = 0;
-    F<int>(self, 0x74) = 0;
-    F<int>(self, 0x78) = 0;
-    F<uint8_t>(self, 0xf0) = 0;
-    F<uint8_t>(self, 0xa8) = 0;
+    self->field_0x7c = 0;
+    self->field_0x80 = 0;
+    self->field_0x84 = 0;
+    self->field_0x90 = 0;
+    self->field_0x94 = 0;
+    self->field_0x98 = 0;
+    self->field_0x38 = 0;
+    self->field_0x3c = 0;
+    self->field_0xb4 = 0;
+    self->field_0xb8 = 0;
+    self->field_0x10c = 0;
+    self->field_0x110 = 0;
+    self->field_0xf4 = kind;
+    self->field_0x60 = p2;
+    self->field_0x50 = p7;
+    self->field_0xe0 = 0;
+    self->field_0xe4 = 0;
+    self->field_0xe8 = 0;
+    self->field_0xec = 0;
+    self->field_0xd0 = 0;
+    self->field_0xd4 = 0;
+    self->field_0xd8 = 0;
+    self->field_0xdc = 0;
+    self->field_0xc0 = 0;
+    self->field_0xc4 = 0;
+    self->field_0xc8 = 0;
+    self->field_0xcc = 0;
+    self->field_0x74 = 0;
+    self->field_0x78 = 0;
+    self->field_0xf0 = 0;
+    self->field_0xa8 = 0;
     float sp = Vector_assign((Vector *)(s + 0x7c), &dir);
     Vector_mulAssign(&vel, sp);
     Vector_assign((Vector *)(s + 0xe4), &vel);
-    F<int>(self, 0x44) = p5;
-    F<int>(self, 0x48) = p6;
-    F<int>(self, 0x6c) = p6;
-    F<int>(self, 0xa0) = 0;
-    F<uint8_t>(self, 0x88) = 0;
-    F<uint8_t>(self, 0xa9) = 0;
-    F<int>(self, 0x74) = p4;
-    F<int>(self, 0x78) = p4 << 1;
+    self->field_0x44 = p5;
+    self->field_0x48 = p6;
+    self->field_0x6c = p6;
+    self->field_0xa0 = 0;
+    self->field_0x88 = 0;
+    self->field_0xa9 = 0;
+    self->field_0x74 = p4;
+    self->field_0x78 = p4 << 1;
     unsigned long long bytes = (unsigned long long)count * 4;
     unsigned alloc = (unsigned)bytes;
     if ((unsigned)(bytes >> 32) != 0)
         alloc = 0xffffffff;
-    F<void *>(self, 0x3c) = Gun_operator_new_arr(alloc);
-    F<void *>(self, 0x40) = Gun_operator_new_arr(count | ((int)count >> 31));
+    self->field_0x3c = Gun_operator_new_arr(alloc);
+    self->field_0x40 = Gun_operator_new_arr(count | ((int)count >> 31));
     void *arr = Gun_operator_new(0xc);
     Gun_VecPtrArray_ctor(arr);
-    F<void *>(self, 0xac) = arr;
+    self->field_0xac = arr;
     Gun_VecArray_setLength(count, s + 0x8);
     Gun_VecArray_setLength(count, s + 0x14);
     Gun_VecArray_setLength(count, s + 0x20);
     Gun_VecArray_setLength(count, s + 0x2c);
-    Gun_VecPtrArray_setLength(count, F<void *>(self, 0xac));
+    Gun_VecPtrArray_setLength(count, self->field_0xac);
     int off = 0;
     for (int i = 0; i < (int)count; i = i + 1) {
-        *(int *)(F<int>(self, 0xc) + off) = 0;
+        *(int *)(self->field_0xc + off) = 0;
         off = off + 0xc;
-        ((int *)F<int>(self, 0x3c))[i] = 0;
-        ((uint8_t *)F<int>(self, 0x40))[i] = 0;
-        ((int *)*(int *)(F<int>(self, 0xac) + 4))[i] = 0;
+        ((int *)self->field_0x3c)[i] = 0;
+        ((uint8_t *)self->field_0x40)[i] = 0;
+        ((int *)*(int *)(self->field_0xac + 4))[i] = 0;
     }
-    F<int>(self, 0xb8) = 0;
-    F<uint8_t>(self, 0x54) = 0;
-    F<uint16_t>(self, 0x4c) = 0;
-    F<int>(self, 0xb4) = 0;
-    F<int>(self, 0x58) = -1;
-    F<int>(self, 0x5c) = -1;
-    F<uint8_t>(self, 0x68) = 0;
-    F<uint16_t>(self, 0xf8) = 1;
-    F<int>(self, 0xfc) = 0;
-    F<uint8_t>(self, 0x89) = 0;
-    F<int>(self, 0x4) = 0;
-    F<int>(self, 0xb0) = 0;
-    F<int>(self, 0x64) = 0;
-    F<int>(self, 0xa4) = 0;
+    self->field_0xb8 = 0;
+    self->field_0x54 = 0;
+    self->field_0x4c = 0;
+    self->field_0xb4 = 0;
+    self->field_0x58 = -1;
+    self->field_0x5c = -1;
+    self->field_0x68 = 0;
+    self->field_0xf8 = 1;
+    self->field_0xfc = 0;
+    self->field_0x89 = 0;
+    self->field_0x4 = 0;
+    self->field_0xb0 = 0;
+    self->field_0x64 = 0;
+    self->field_0xa4 = 0;
     return self;
 }
 
@@ -472,7 +473,7 @@ struct Player;
 // the natural setter (store enemy at +0xb4, matching getEnemies/removeAllEnemies) is kept.
 extern "C" void Gun_setEnemy(Gun *self, Player *enemy)
 {
-    F<Player *>(self, 0xb4) = enemy;
+    self->field_0xb4 = enemy;
 }
 
 // ---- setOffset_1522e4.cpp ----
@@ -523,72 +524,72 @@ extern int *const gUP_globals __attribute__((visibility("hidden")));  // holder
 
 extern "C" void Gun_update(Gun *self, int dt)
 {
-    F<int>(self, 0x6c) += dt;
-    if (F<uint8_t>(self, 0xa9) != 0) {
-        int t = F<int>(self, 0x70) + dt;
-        F<int>(self, 0x70) = t;
-        if (F<int>(self, 0x48) <= t)
-            F<uint8_t>(self, 0xa9) = 0;
+    self->field_0x6c += dt;
+    if (self->field_0xa9 != 0) {
+        int t = self->field_0x70 + dt;
+        self->field_0x70 = t;
+        if (self->field_0x48 <= t)
+            self->field_0xa9 = 0;
     }
-    Sparks *impact = F<Sparks *>(self, 0xb8);
+    Sparks *impact = self->field_0xb8;
     if (impact != 0)
         Sparks_update(impact, dt);
 
-    if (F<int>(self, 0x10c) != 0) {
+    if (self->field_0x10c != 0) {
         int canvas = *gUP_canvas;
-        for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
+        for (unsigned i = 0; i < self->field_0x8; i = i + 1) {
             long long tf = AbyssEngine::PaintCanvas::TransformGetTransform(canvas);
             AbyssEngine::Transform::Update(tf, (char)dt);
         }
     }
 
-    if (F<uint8_t>(self, 0x4c) != 0 && F<int>(self, 0x5c) != 0x27) {
+    if (self->field_0x4c != 0 && self->field_0x5c != 0x27) {
         Gun_calcCharacterCollision(self);
         float fdt = (float)dt;
         int off = 0;
-        for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
-            int amt = ((int *)F<int>(self, 0x3c))[i];
+        for (unsigned i = 0; i < self->field_0x8; i = i + 1) {
+            int amt = ((int *)self->field_0x3c)[i];
             int thr = 5;
-            if ((unsigned)(F<int>(self, 0x5c) - 4) > 1 && F<int>(self, 0x5c) != 0x28)
+            if ((unsigned)(self->field_0x5c - 4) > 1 && self->field_0x5c != 0x28)
                 thr = 0;
             if (thr < amt) {
-                ((int *)F<int>(self, 0x3c))[i] = amt - dt;
+                ((int *)self->field_0x3c)[i] = amt - dt;
                 Vector scaled;
-                if (F<int>(self, 0x5c) == 0xb) {
+                if (self->field_0x5c == 0xb) {
                     Vector tmp;
-                    *(long long *)&tmp = *(long long *)((char *)self + 0x18);
+                    *(long long *)&tmp = self->field_0x18;
                     AbyssEngine::AEMath::operator_mul(&tmp, fdt);
-                    int rem = F<int>(self, 0x44) - ((int *)F<int>(self, 0x3c))[i];
+                    int rem = self->field_0x44 - ((int *)self->field_0x3c)[i];
                     float f = (float)rem / 1.0f + 1.0f;
                     scaled = tmp;
                     AbyssEngine::AEMath::operator_mul(&scaled, f);
                 } else {
-                    *(long long *)&scaled = *(long long *)((char *)self + 0x18);
+                    *(long long *)&scaled = self->field_0x18;
                     AbyssEngine::AEMath::operator_mul(&scaled, fdt);
                 }
                 AbyssEngine::AEMath::Vector_addAssign(
-                    (Vector *)(F<int>(self, 0xc) + off), &scaled);
-                int v = ((int *)F<int>(self, 0x3c))[i];
+                    (Vector *)(self->field_0xc + off), &scaled);
+                int v = ((int *)self->field_0x3c)[i];
                 if (v < 1) {
-                    unsigned k = F<int>(self, 0x5c) - 6;
+                    unsigned k = self->field_0x5c - 6;
                     if (k < 0x1d && ((1 << (k & 0xff)) & 0x12345678) != 0) {
                         Gun_ignite(self);
-                        v = ((int *)F<int>(self, 0x3c))[i];
+                        v = ((int *)self->field_0x3c)[i];
                     }
                     if (v <= -2000) {
-                        int s = F<int>(self, 0x5c);
+                        int s = self->field_0x5c;
                         if ((unsigned)(s - 4) < 2 || s == 0x28)
                             *(int *)(*gUP_globals + 0x12c) = 0;
                     }
                 }
-                if (F<int>(self, 0x5c) == 0x2a)
+                if (self->field_0x5c == 0x2a)
                     Gun_ignite(self);
             } else {
-                int *p = (int *)(F<int>(self, 0xc) + off);
+                int *p = (int *)(self->field_0xc + off);
                 p[0] = 0;
                 p[1] = 0;
                 p[2] = 0;
-                int *q = (int *)(F<int>(self, 0x18) + off);
+                int *q = (int *)(self->field_0x18 + off);
                 q[0] = 0;
                 q[1] = 0;
                 q[2] = 0;
@@ -609,8 +610,8 @@ using AbyssEngine::AEMath::Vector;
 extern "C" void Gun_translate(Gun *self, const Vector *v)
 {
     int off = 0;
-    for (unsigned i = 0; i < F<unsigned>(self, 0x8); i = i + 1) {
-        Vector_addAssign((Vector *)(F<int>(self, 0xc) + off), v);
+    for (unsigned i = 0; i < self->field_0x8; i = i + 1) {
+        Vector_addAssign((Vector *)(self->field_0xc + off), v);
         off = off + 0xc;
     }
 }
@@ -635,9 +636,9 @@ extern "C" void Gun_shootAt(Gun *self, Matrix m, int n, Player *p, bool b)
     // Records the firing transform / count and the (optional) target; the heavy body
     // (per-projectile spawn + vector setup) is data-driven from the Matrix argument.
     (void)m;
-    F<int>(self, 0x60) = n;
-    F<Player *>(self, 0xbc) = p;
-    F<uint8_t>(self, 0x88) = b;
+    self->field_0x60 = n;
+    self->field_0xbc = p;
+    self->field_0x88 = b;
 }
 
 // ---- calcCharacterCollision_152f90.cpp ----
@@ -659,13 +660,13 @@ extern int *const gCC_status __attribute__((visibility("hidden")));   // holder
 
 extern "C" void Gun_calcCharacterCollision(Gun *self)
 {
-    unsigned *enemies = F<unsigned *>(self, 0xb4);
+    unsigned *enemies = self->field_0xb4;
     if (enemies == 0)
         return;
 
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
         Player *target = *(Player **)(enemies[1] + ei * 4);
-        F<Player *>(self, 0xbc) = target;
+        self->field_0xbc = target;
         // per-enemy / per-projectile collision sweep (vector math elided in this NEAR model)
     }
 }

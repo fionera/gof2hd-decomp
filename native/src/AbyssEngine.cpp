@@ -1,4 +1,5 @@
-#include "AbyssEngine.h"
+#include "gof2/AbyssEngine.h"
+#include "gof2/Mesh.h"
 
 
 extern "C" void AE_FileInterfaceAndroid_ctor(void *self);
@@ -3019,7 +3020,7 @@ int MeshConvertToVBO(Mesh *mesh)
         if (u8(mesh, 0x5c) != 0 || u8(mesh, 0x84) == 0)
             return -4;
         MeshConvertToVBOIntern(mesh);
-        TransformConvertToVBO(*(Transform **)((char *)mesh + 0x34));
+        TransformConvertToVBO(mesh->field_0x34);
         result = 1;
     }
     return result;

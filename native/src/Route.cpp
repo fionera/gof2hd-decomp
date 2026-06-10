@@ -1,4 +1,5 @@
-#include "Route.h"
+#include "gof2/Route.h"
+#include "gof2/Waypoint.h"
 
 
 extern "C" void Waypoint_reset(Waypoint *wp);
@@ -28,7 +29,7 @@ extern "C" int Route_getDockingTimeAt(Route *self, int index);
 // Route::waypointDefined() -> whether the waypoint array has been allocated.
 extern "C" bool Route_waypointDefined(Route *self)
 {
-    return F<void *>(self, 0xc) != 0;
+    return self->field_0xc != 0;
 }
 
 // ---- length_11bf5c.cpp ----
@@ -44,14 +45,14 @@ extern "C" void Route_reset(Route *self)
 {
     for (uint32_t i = 0; i < F<Array<Waypoint *> *>(self, 0xc)->length; i++)
         Waypoint_reset(F<Array<Waypoint *> *>(self, 0xc)->data[i]);
-    F<int32_t>(self, 0x0) = 0;
+    self->field_0x0 = 0;
 }
 
 // ---- getWaypoint_11bed8.cpp ----
 // Route::getWaypoint() -> waypoint at the current index.
 extern "C" Waypoint *Route_getWaypoint(Route *self)
 {
-    return Route_getWaypointAt(self, F<int32_t>(self, 0x0));
+    return Route_getWaypointAt(self, self->field_0x0);
 }
 
 // ---- getExactClone_11c074.cpp ----
@@ -63,7 +64,7 @@ extern "C" Route *Route_getExactClone(Route *self)
         if (*(uint8_t *)((char *)F<Array<Waypoint *> *>(self, 0xc)->data[i] + 0x130) != 0)
             Waypoint_reached(F<Array<Waypoint *> *>(result, 0xc)->data[i]);
     }
-    F<int32_t>(result, 0x0) = F<int32_t>(self, 0x0);
+    result->field_0x0 = self->field_0x0;
     return result;
 }
 
@@ -72,7 +73,7 @@ extern "C" Route *Route_getExactClone(Route *self)
 extern "C" KIPlayer *Route_getDockingTarget(Route *self)
 {
     Array<KIPlayer *> *targets = F<Array<KIPlayer *> *>(self, 0x10);
-    int index = F<int32_t>(self, 0x0);
+    int index = self->field_0x0;
     if (targets != 0 && (int)targets->length > index)
         return targets->data[index];
     return 0;
@@ -82,7 +83,7 @@ extern "C" KIPlayer *Route_getDockingTarget(Route *self)
 // Route::getDockingTime(int) -> docking time at the given index, or 0.
 extern "C" int Route_getDockingTimeAt(Route *self, int index)
 {
-    if (F<void *>(self, 0x10) != 0) {
+    if (self->field_0x10 != 0) {
         Array<int> *times = F<Array<int> *>(self, 0x14);
         if (index < (int)times->length)
             return times->data[index];
@@ -95,9 +96,9 @@ extern "C" int Route_getDockingTimeAt(Route *self, int index)
 extern "C" void Route_setNewCoords(Route *self, float x, float y, float z)
 {
     Waypoint *wp = F<Array<Waypoint *> *>(self, 0xc)->data[0];
-    *(int32_t *)((char *)wp + 0x124) = (int)x;
-    *(int32_t *)((char *)wp + 0x128) = (int)y;
-    *(int32_t *)((char *)wp + 0x12c) = (int)z;
+    wp->field_0x124 = (int)x;
+    wp->field_0x128 = (int)y;
+    wp->field_0x12c = (int)z;
 }
 
 // ---- _Route_11bcf0.cpp ----
@@ -188,9 +189,9 @@ extern "C" void Route_translate(Route *self, const Vector &v)
     float vx = v.x, vy = v.y, vz = v.z;
     for (uint32_t i = 0; i != wps->length; i++) {
         Waypoint *wp = wps->data[i];
-        *(int32_t *)((char *)wp + 0x124) = (int)((float)*(int32_t *)((char *)wp + 0x124) + vx);
-        *(int32_t *)((char *)wp + 0x128) = (int)((float)*(int32_t *)((char *)wp + 0x128) + vy);
-        *(int32_t *)((char *)wp + 0x12c) = (int)((float)*(int32_t *)((char *)wp + 0x12c) + vz);
+        wp->field_0x124 = (int)((float)wp->field_0x124 + vx);
+        wp->field_0x128 = (int)((float)wp->field_0x128 + vy);
+        wp->field_0x12c = (int)((float)wp->field_0x12c + vz);
     }
 }
 
@@ -255,9 +256,9 @@ extern "C" Route *Route_clone(Route *self)
     int *p = coords;
     for (int i = 0; i != n; i++) {
         Waypoint *wp = wps->data[i];
-        p[0] = *(int32_t *)((char *)wp + 0x124);
-        p[1] = *(int32_t *)((char *)wp + 0x128);
-        p[2] = *(int32_t *)((char *)wp + 0x12c);
+        p[0] = wp->field_0x124;
+        p[1] = wp->field_0x128;
+        p[2] = wp->field_0x12c;
         p += 3;
     }
     Array<int> *tgt = F<Array<int> *>(self, 0x10);
@@ -309,11 +310,11 @@ extern "C" Waypoint *Route_getWaypointAt(Route *self, int index)
         void *k = F<Array<void *> *>(self, 0x10)->data[index];
         if (k != 0) {
             getPos(k, pos);
-            *(int32_t *)((char *)wp + 0x124) = (int)*(float *)(pos + 0);
+            wp->field_0x124 = (int)*(float *)(pos + 0);
             getPos(F<Array<void *> *>(self, 0x10)->data[index], pos);
-            *(int32_t *)((char *)wp + 0x128) = (int)*(float *)(pos + 4);
+            wp->field_0x128 = (int)*(float *)(pos + 4);
             getPos(F<Array<void *> *>(self, 0x10)->data[index], pos);
-            *(int32_t *)((char *)wp + 0x12c) = (int)*(float *)(pos + 8);
+            wp->field_0x12c = (int)*(float *)(pos + 8);
         }
     }
     return wp;
@@ -332,13 +333,13 @@ extern "C" float Route_update_xyz(Route *self, float x, float y, float z)
     if (F<Array<void *> *>(self, 0x10)->data[idx] != 0)
         return x;
     Waypoint *wp = wps->data[idx];
-    float dx = x - (float)*(int32_t *)((char *)wp + 0x124);
+    float dx = x - (float)wp->field_0x124;
     if (!(dx < 2000.0f) || !(dx > -2000.0f))
         return x;
-    float dy = y - (float)*(int32_t *)((char *)wp + 0x128);
+    float dy = y - (float)wp->field_0x128;
     if (!(dy < 2000.0f) || !(dy > -2000.0f))
         return x;
-    float dz = z - (float)*(int32_t *)((char *)wp + 0x12c);
+    float dz = z - (float)wp->field_0x12c;
     if (!(dz < 2000.0f) || !(dz > -2000.0f))
         return x;
 

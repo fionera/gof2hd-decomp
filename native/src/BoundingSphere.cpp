@@ -1,4 +1,4 @@
-#include "BoundingSphere.h"
+#include "gof2/BoundingSphere.h"
 
 
 

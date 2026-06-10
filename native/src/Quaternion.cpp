@@ -1,4 +1,4 @@
-#include "Quaternion.h"
+#include "gof2/Quaternion.h"
 #include <arm_neon.h>
 
 extern "C" float (*gof2_sinf)(float);

@@ -1,4 +1,7 @@
-#include "BombGun.h"
+#include "gof2/BombGun.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Gun.h"
+#include "gof2/PlayerEgo.h"
 
 
 extern "C" __attribute__((visibility("hidden"))) void *BombGun_vtable;
@@ -70,11 +73,11 @@ extern "C" void *_ZN7BombGunD1Ev(BombGun *self)
 {
     *(void **)self = (char *)BombGun_vtable + 8;
 
-    Explosion *explosion = F<Explosion *>(self, 0xf0);
+    Explosion *explosion = self->field_0xf0;
     if (explosion != 0)
         operator_delete(Explosion_dtor(explosion));
 
-    F<Explosion *>(self, 0xf0) = 0;
+    self->field_0xf0 = 0;
     return BombGun_base_dtor(self);
 }
 
@@ -91,7 +94,7 @@ struct BombGun {
 
 void BombGun::setPlayer(PlayerEgo *player)
 {
-    F<PlayerEgo *>(this, 0xec) = player;
+    this->field_0xec = player;
 }
 
 // ---- render_147cf0.cpp ----
@@ -103,8 +106,8 @@ struct BombGun {
 void BombGun::render()
 {
     RocketGun_render(this);
-    if (F<uint8_t>(F<void *>(this, 0x8), 0x88) != 0)
-        return Explosion_render(F<Explosion *>(this, 0xf0));
+    if (F<uint8_t>(this->field_0x8, 0x88) != 0)
+        return Explosion_render(this->field_0xf0);
 }
 
 // ---- update_147870.cpp ----
@@ -130,48 +133,48 @@ void BombGun::update(int elapsed)
     char position[12];
     char work[12];
 
-    PlayerEgo *player = F<PlayerEgo *>(this, 0xec);
+    PlayerEgo *player = this->field_0xec;
     if (player == 0)
         return;
 
-    Gun *gun = F<Gun *>(this, 0x8);
-    if (F<uint8_t>(gun, 0x88) == 0) {
-        if (F<int>(this, 0x128) == 0x2a) {
+    Gun *gun = this->field_0x8;
+    if (gun->field_0x88 == 0) {
+        if (this->field_0x128 == 0x2a) {
             PlayerEgo_getPosition(position, player);
         } else {
-            void *gunPos = F<void *>(gun, 0xc);
+            void *gunPos = gun->field_0xc;
             *(uint64_t *)position = *(uint64_t *)gunPos;
             *(uint32_t *)(position + 8) = F<uint32_t>(gunPos, 0x8);
         }
         Vector_assign((char *)this + 0xf8, position);
     }
 
-    gun = F<Gun *>(this, 0x8);
-    bool playerControlled = F<uint8_t>(this, 0x24) != 0;
+    gun = this->field_0x8;
+    bool playerControlled = this->field_0x24 != 0;
     if (!playerControlled) {
-        if (F<uint8_t>(gun, 0x4c) != 0)
+        if (gun->field_0x4c != 0)
             goto update_transforms;
-    } else if (F<uint8_t>(gun, 0x4c) != 0) {
-        if (F<uint8_t>(gun, 0x88) != 0)
+    } else if (gun->field_0x4c != 0) {
+        if (gun->field_0x88 != 0)
             goto update_transforms;
         {
             void **canvas = BombGun_update_canvas_b;
-            uint32_t *activeTransform = &F<uint32_t>(this, 0x10);
-            if (F<uint8_t>(gun, 0x4d) != 0) {
-                F<uint8_t>(gun, 0x4d) = 0;
+            uint32_t *activeTransform = &this->field_0x10;
+            if (gun->field_0x4d != 0) {
+                gun->field_0x4d = 0;
                 uint64_t transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
                 Transform_SetAnimationState((void *)(uint32_t)transform, 3, 0);
                 transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
                 Transform_SetAnimationState((void *)(uint32_t)transform, 1, 0);
-                Matrix_assign((char *)player + 0x10, (char *)F<void *>(player, 0x0) + 4);
+                Matrix_assign((char *)player + 0x10, (char *)player->field_0x0 + 4);
                 FModSound_play(*BombGun_sound_play, 0x45c, 0, 0, 0.0f);
             }
 
-            AEGeometry *geometry = F<AEGeometry *>(this, 0xe8);
+            AEGeometry *geometry = this->field_0xe8;
             void *local = PaintCanvas_TransformGetLocal(*canvas, *activeTransform);
             AEGeometry_setMatrix(geometry, local);
-            Vector_scale_scalar(scaled, kRocketOffsetScale, F<void *>(gun, 0x18));
-            Vector_add(position, F<void *>(gun, 0xc), scaled);
+            Vector_scale_scalar(scaled, kRocketOffsetScale, gun->field_0x18);
+            Vector_add(position, gun->field_0xc, scaled);
             AEGeometry_setPosition(geometry, position);
             AEGeometry_updateReferenceMatrix(geometry);
 
@@ -185,13 +188,13 @@ void BombGun::update(int elapsed)
             TargetFollowCamera_useTargetsUpVector(camera, false);
             PlayerEgo_setRocketControl(player, gun, geometry);
 
-            if (*(int *)F<void *>(gun, 0x3c) < F<int>(gun, 0x44) - 500) {
+            if (*(int *)gun->field_0x3c < gun->field_0x44 - 500) {
                 uint64_t transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
                 Transform_Update(transform, (int64_t)elapsed, 0);
             }
 
             float bank = PlayerEgo_getRocketBanking(player) * kBombScale;
-            F<float>(this, 0x20) = bank;
+            this->field_0x20 = bank;
             FModSound_setParamValue(*BombGun_sound_param, 0, 0x45c, bank * 0.5f);
         }
     }
@@ -200,10 +203,10 @@ void BombGun::update(int elapsed)
 update_transforms:
     {
         void **canvas = BombGun_update_canvas_a;
-        uint64_t transform = PaintCanvas_TransformGetTransform(*canvas, F<uint32_t>(this, 0x10));
+        uint64_t transform = PaintCanvas_TransformGetTransform(*canvas, this->field_0x10);
         Transform_Update(transform, (int64_t)elapsed, 0);
-        if (F<int>(this, 0xf4) != -1) {
-            transform = PaintCanvas_TransformGetTransform(*canvas, F<uint32_t>(this, 0xf4));
+        if (this->field_0xf4 != -1) {
+            transform = PaintCanvas_TransformGetTransform(*canvas, this->field_0xf4);
             Transform_Update(transform, (int64_t)elapsed, 0);
         }
     }
@@ -211,34 +214,34 @@ update_transforms:
 after_transforms:
 
     RocketGun_update(this, elapsed);
-    gun = F<Gun *>(this, 0x8);
-    if (F<uint8_t>(gun, 0x88) == 0)
+    gun = this->field_0x8;
+    if (gun->field_0x88 == 0)
         return;
 
-    if (F<uint8_t>(this, 0x104) != 0) {
-        if (F<uint8_t>(this, 0x24) != 0) {
-            player = F<PlayerEgo *>(this, 0xec);
-            LevelScript_resetCamera(F<LevelScript *>(player, 0x10), F<Level *>(player, 0xc));
-            PlayerEgo_setRocketControl(player, 0, F<AEGeometry *>(this, 0xe8));
+    if (this->field_0x104 != 0) {
+        if (this->field_0x24 != 0) {
+            player = this->field_0xec;
+            LevelScript_resetCamera(player->field_0x10, player->field_0xc);
+            PlayerEgo_setRocketControl(player, 0, this->field_0xe8);
             FModSound_stop(*BombGun_sound_stop, 0x45c);
         }
 
-        F<int>(this, 0x108) = 0;
-        player = F<PlayerEgo *>(this, 0xec);
+        this->field_0x108 = 0;
+        player = this->field_0xec;
         PlayerEgo_getPosition(work, player);
         Vector_sub(position, (char *)this + 0xf8, work);
         float distance = VectorLength(position);
-        float magnitude = (float)Gun_getMagnitude(F<Gun *>(this, 0x8));
+        float magnitude = (float)Gun_getMagnitude(this->field_0x8);
         float force = (((magnitude * 0.5f) - distance) / (magnitude * 0.5f)) * 0.5f;
         if (force > 1.0f)
             force = 1.0f;
         if (force < kZero)
             force = kZero;
-        if (F<int>(this, 0x128) == 0x2a)
+        if (this->field_0x128 == 0x2a)
             force *= kBombScale;
         if (Status_hardCoreMode(*BombGun_status) != 0) {
-            Gun *damageGun = F<Gun *>(this, 0x8);
-            Player_damage(F<Player *>(player, 0x0), (int)(force * (float)F<int>(damageGun, 0x60)),
+            Gun *damageGun = this->field_0x8;
+            Player_damage(player->field_0x0, (int)(force * (float)damageGun->field_0x60),
                           0, -1);
         }
         PlayerEgo_addNukeVolatileForce(player, force);
@@ -246,37 +249,37 @@ after_transforms:
         float capped = kRumbleDistance;
         if (distance < kRumbleDistance)
             capped = distance;
-        F<float>(this, 0x10c) = 1.0f - capped / kRumbleDistance;
+        this->field_0x10c = 1.0f - capped / kRumbleDistance;
         TargetFollowCamera_setRumblePercentage(PlayerEgo_getTargetFollowCamera(player),
-                                               F<float>(this, 0x10c), 0x32);
+                                               this->field_0x10c, 0x32);
 
-        Explosion *explosion = F<Explosion *>(this, 0xf0);
-        if (F<int>(this, 0x128) == 0x2a) {
+        Explosion *explosion = this->field_0xf0;
+        if (this->field_0x128 == 0x2a) {
             PlayerEgo_GetDirVector(position, player);
         } else {
             *(uint64_t *)position = 0;
             *(uint32_t *)(position + 8) = 0;
         }
         Explosion_start(explosion, (char *)this + 0xf8, position);
-        F<uint8_t>(this, 0x104) = 0;
+        this->field_0x104 = 0;
     }
 
-    Explosion_update(F<Explosion *>(this, 0xf0), elapsed, 0);
-    int timer = F<int>(this, 0x108) + elapsed;
+    Explosion_update(this->field_0xf0, elapsed, 0);
+    int timer = this->field_0x108 + elapsed;
     if (timer > 2000)
         timer = 2000;
-    F<int>(this, 0x108) = timer;
+    this->field_0x108 = timer;
 
-    player = F<PlayerEgo *>(this, 0xec);
-    float rumble = F<float>(this, 0x10c) * ((float)timer / kRumbleTime + 1.0f);
+    player = this->field_0xec;
+    float rumble = this->field_0x10c * ((float)timer / kRumbleTime + 1.0f);
     TargetFollowCamera_setRumblePercentage(PlayerEgo_getTargetFollowCamera(player), rumble, 0x32);
 
-    if (Explosion_isPlaying(F<Explosion *>(this, 0xf0)) == 0) {
+    if (Explosion_isPlaying(this->field_0xf0) == 0) {
         TargetFollowCamera_setRumblePercentage(PlayerEgo_getTargetFollowCamera(player), 0.0f, 0);
-        F<int>(this, 0x108) = 0;
-        F<uint8_t>(F<void *>(this, 0x8), 0x88) = 0;
-        F<uint8_t>(this, 0x104) = 1;
-        Explosion_reset(F<Explosion *>(this, 0xf0));
+        this->field_0x108 = 0;
+        F<uint8_t>(this->field_0x8, 0x88) = 0;
+        this->field_0x104 = 1;
+        Explosion_reset(this->field_0xf0);
     }
 }
 
@@ -304,11 +307,11 @@ extern "C" BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
 
     RocketGun_ctor(self, param3, gun, mesh, 0, 0, type, false, level);
 
-    *(v4i *)((char *)self + 0x110) = (v4i){0, 0, 0, 0};
+    self->field_0x110 = (v4i){0, 0, 0, 0};
     *(void * volatile *)self = (char *)BombGun_vtable + 8;
-    *(volatile uint64_t *)((char *)self + 0xf8) = 0;
-    *(volatile int *)((char *)self + 0x100) = 0;
-    *(volatile uint64_t *)((char *)self + 0x120) = 0;
+    self->field_0xf8 = 0;
+    self->field_0x100 = 0;
+    self->field_0x120 = 0;
 
     Explosion *explosion = (Explosion *)operator_new(0x68);
     int explosionType;
@@ -318,29 +321,29 @@ extern "C" BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         explosionType = 0xb;
     } else {
         explosionType = 0;
-        if (F<int>(gun, 0x58) == 0xe8)
+        if (gun->field_0x58 == 0xe8)
             explosionType = 0xd;
     }
     Explosion_ctor(explosion, explosionType);
-    F<Explosion *>(self, 0xf0) = explosion;
-    Explosion_setWeaponIndex(explosion, F<int>(gun, 0x58));
+    self->field_0xf0 = explosion;
+    Explosion_setWeaponIndex(explosion, gun->field_0x58);
 
     int playerFlag = *(volatile int *)&playerControlled;
-    *(volatile uint8_t *)((char *)self + 0x24) = playerFlag;
+    self->field_0x24 = playerFlag;
     bool scaledBomb = type == 0x2a;
-    *(volatile uint8_t *)((char *)self + 0x104) = 1;
-    *(volatile int *)((char *)self + 0x128) = type;
-    *(volatile int *)((char *)self + 0xf4) = -1;
+    self->field_0x104 = 1;
+    self->field_0x128 = type;
+    self->field_0xf4 = -1;
     if (scaledBomb)
-        Explosion_setScaling(F<Explosion *>(self, 0xf0), kBombScale);
+        Explosion_setScaling(self->field_0xf0, kBombScale);
 
     AEGeometry *geometry;
     if (playerFlag) {
         void **canvasHolder = BombGun_player_canvas;
-        uint32_t *createdTransform = &F<uint32_t>(self, 0x14);
+        uint32_t *createdTransform = &self->field_0x14;
         PaintCanvas_TransformCreate(*canvasHolder, createdTransform);
         PaintCanvas_TransformAddMesh(*canvasHolder, *createdTransform,
-                                     F<uint16_t>(self, 0x28), 0);
+                                     self->field_0x28, 0);
         Transform *transform =
             PaintCanvas_TransformGetTransform(*canvasHolder, *createdTransform);
         Transform_SetAnimationState(transform, 1, 0);
@@ -348,16 +351,16 @@ extern "C" BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         geometry = (AEGeometry *)operator_new(0xc0);
         AEGeometry_ctor(geometry, 0x37d6, *canvasHolder, false);
         PaintCanvas_TransformAddChild(*canvasHolder, *createdTransform,
-                                      F<uint32_t>(geometry, 0xc));
-        PaintCanvas_TransformRemoveMesh(*canvasHolder, F<uint32_t>(self, 0x10),
-                                        F<uint16_t>(self, 0x28));
-        PaintCanvas_TransformAddChild(*canvasHolder, F<uint32_t>(self, 0x10),
-                                      F<uint32_t>(self, 0x14));
+                                      geometry->field_0xc);
+        PaintCanvas_TransformRemoveMesh(*canvasHolder, self->field_0x10,
+                                        self->field_0x28);
+        PaintCanvas_TransformAddChild(*canvasHolder, self->field_0x10,
+                                      self->field_0x14);
     } else {
-        int weapon = F<int>(gun, 0x58);
+        int weapon = gun->field_0x58;
         bool normal = weapon != 0xe8;
         if (normal)
-            weapon = F<int>(gun, 0x5c);
+            weapon = gun->field_0x5c;
         if (!normal || weapon == 0x22)
             goto after_geometry;
 
@@ -370,16 +373,16 @@ extern "C" BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
             geomMesh = 0x3959;
 
         AEGeometry_ctor(geometry, geomMesh, *canvasHolder, false);
-        F<uint32_t>(self, 0xf4) = F<uint32_t>(geometry, 0xc);
-        PaintCanvas_TransformAddChild(*canvasHolder, F<uint32_t>(self, 0x10),
-                                      F<uint32_t>(geometry, 0xc));
+        self->field_0xf4 = geometry->field_0xc;
+        PaintCanvas_TransformAddChild(*canvasHolder, self->field_0x10,
+                                      geometry->field_0xc);
 
         Transform *transform;
         if (mesh == 0x395c) {
-            transform = PaintCanvas_TransformGetTransform(*canvasHolder, F<uint32_t>(self, 0xf4));
+            transform = PaintCanvas_TransformGetTransform(*canvasHolder, self->field_0xf4);
             Transform_SetAnimationState(transform, 2, 0);
         } else {
-            transform = PaintCanvas_TransformGetTransform(*canvasHolder, F<uint32_t>(self, 0x10));
+            transform = PaintCanvas_TransformGetTransform(*canvasHolder, self->field_0x10);
             Transform_SetAnimationState(transform, 1, 0);
         }
     }
@@ -397,10 +400,10 @@ after_geometry:
     *(volatile float *)(local + 0x8) = kRocketOffsetZ;
     Vector_assign((char *)self + 0x11c, local);
 
-    F<PlayerEgo *>(self, 0xec) = 0;
+    self->field_0xec = 0;
     AEGeometry *finalGeometry = (AEGeometry *)operator_new(0xc0);
     void **finalCanvas = BombGun_final_canvas;
     AEGeometry_ctor_canvas(finalGeometry, *finalCanvas);
-    F<AEGeometry *>(self, 0xe8) = finalGeometry;
+    self->field_0xe8 = finalGeometry;
     return self;
 }

@@ -1,4 +1,4 @@
-#include "StarSystem.h"
+#include "gof2/StarSystem.h"
 
 
 extern "C" void AEGeometry_setScaling(AEGeometry *geom, const char *scale);
@@ -131,7 +131,7 @@ extern "C" void StarSystem_renderSunStreak(StarSystem *self)
 // ---- getLightDirection_134dbe.cpp ----
 extern "C" Vector StarSystem_getLightDirection(StarSystem *self)
 {
-    return F<Vector>(self, 0x30);
+    return self->field_0x30;
 }
 
 // ---- _StarSystem_134d10.cpp ----

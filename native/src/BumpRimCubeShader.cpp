@@ -1,4 +1,4 @@
-#include "BumpRimCubeShader.h"
+#include "gof2/BumpRimCubeShader.h"
 
 
 extern "C" void glUniform3fv(int location, int count, const float *value);
@@ -168,7 +168,7 @@ __attribute__((minsize)) BumpRimCubeShader::BumpRimCubeShader()
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {
         String tmp("BumpRimCubeShader", false);
-        *(String *)((char *)this + 0xc) = tmp;
+        this->field_0xc = tmp;
     }
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)

@@ -1,4 +1,4 @@
-#include "BSphere.h"
+#include "gof2/BSphere.h"
 
 
 extern "C" float sqrtf(float);

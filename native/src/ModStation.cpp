@@ -1,4 +1,5 @@
-#include "ModStation.h"
+#include "gof2/ModStation.h"
+#include "gof2/MenuTouchWindow.h"
 
 
 extern "C" long long Status_getPlayingTime(Status *s);
@@ -3154,7 +3155,7 @@ extern "C" void ModStation_showDlcMenu(ModStation *self)
 
     int *bx = g_dlc_btnX;
     int *by = g_dlc_btnY;
-    for (unsigned i = 0; i < **(unsigned **)((char *)win + 4); i = i + 1) {
+    for (unsigned i = 0; i < *win->field_0x4; i = i + 1) {
         if (i < 10) {
             float pos[3];
             TouchButton_getPosition_dlc(pos, win, i);
@@ -3164,7 +3165,7 @@ extern "C" void ModStation_showDlcMenu(ModStation *self)
             win = (MenuTouchWindow *)P(self, 0x50);
         }
     }
-    **g_dlc_btnCount = **(unsigned **)((char *)win + 4);
+    **g_dlc_btnCount = *win->field_0x4;
     C(self, 0x66) = 0; // field_64 + 2
     MenuTouchWindow_callDlcMenu_dlc(win);
 }

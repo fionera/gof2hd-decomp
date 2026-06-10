@@ -1,4 +1,6 @@
-#include "BloomShader.h"
+#include "gof2/BloomShader.h"
+#include "gof2/Engine.h"
+#include "gof2/Mesh.h"
 
 
 extern "C" int glGetAttribLocation(unsigned int program, const char *name);
@@ -59,56 +61,56 @@ void BloomShader::Init(Engine *)
     const char *samplerName = "s_texture";
     const char *texSizeName = "texSize";
 
-    *(unsigned int *)((char *)this + 0x4) =
+    this->field_0x4 =
         loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderLuma.fsh");
-    *(unsigned int *)((char *)this + 0x20) =
+    this->field_0x20 =
         loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderDownSample.fsh");
-    *(unsigned int *)((char *)this + 0x38) =
+    this->field_0x38 =
         loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderBlurH.fsh");
-    *(unsigned int *)((char *)this + 0x54) =
+    this->field_0x54 =
         loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderBlurV.fsh");
-    *(unsigned int *)((char *)this + 0x74) =
+    this->field_0x74 =
         loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderFinal.fsh");
 
-    *(int *)((char *)this + 0x8c) = attrib(*(unsigned int *)((char *)this + 0x4), positionName);
-    *(int *)((char *)this + 0x94) = attrib(*(unsigned int *)((char *)this + 0x4), texCoordName);
-    *(int *)((char *)this + 0x90) = uniform(*(unsigned int *)((char *)this + 0x4), matrixName);
-    *(int *)((char *)this + 0x98) = uniform(*(unsigned int *)((char *)this + 0x4), samplerName);
-    useProgram(*(unsigned int *)((char *)this + 0x4));
-    uniform1i(*(int *)((char *)this + 0x98), 0);
+    this->field_0x8c = attrib(this->field_0x4, positionName);
+    this->field_0x94 = attrib(this->field_0x4, texCoordName);
+    this->field_0x90 = uniform(this->field_0x4, matrixName);
+    this->field_0x98 = uniform(this->field_0x4, samplerName);
+    useProgram(this->field_0x4);
+    uniform1i(this->field_0x98, 0);
 
-    *(int *)((char *)this + 0x24) = attrib(*(unsigned int *)((char *)this + 0x20), positionName);
-    *(int *)((char *)this + 0x2c) = attrib(*(unsigned int *)((char *)this + 0x20), texCoordName);
-    *(int *)((char *)this + 0x28) = uniform(*(unsigned int *)((char *)this + 0x20), matrixName);
-    *(int *)((char *)this + 0x30) = uniform(*(unsigned int *)((char *)this + 0x20), samplerName);
-    useProgram(*(unsigned int *)((char *)this + 0x20));
-    uniform1i(*(int *)((char *)this + 0x30), 0);
+    this->field_0x24 = attrib(this->field_0x20, positionName);
+    this->field_0x2c = attrib(this->field_0x20, texCoordName);
+    this->field_0x28 = uniform(this->field_0x20, matrixName);
+    this->field_0x30 = uniform(this->field_0x20, samplerName);
+    useProgram(this->field_0x20);
+    uniform1i(this->field_0x30, 0);
 
-    *(int *)((char *)this + 0x3c) = attrib(*(unsigned int *)((char *)this + 0x38), positionName);
-    *(int *)((char *)this + 0x44) = attrib(*(unsigned int *)((char *)this + 0x38), texCoordName);
-    *(int *)((char *)this + 0x40) = uniform(*(unsigned int *)((char *)this + 0x38), matrixName);
-    *(int *)((char *)this + 0x48) = uniform(*(unsigned int *)((char *)this + 0x38), samplerName);
-    *(int *)((char *)this + 0x4c) = uniform(*(unsigned int *)((char *)this + 0x38), texSizeName);
-    useProgram(*(unsigned int *)((char *)this + 0x38));
-    uniform1i(*(int *)((char *)this + 0x48), 0);
+    this->field_0x3c = attrib(this->field_0x38, positionName);
+    this->field_0x44 = attrib(this->field_0x38, texCoordName);
+    this->field_0x40 = uniform(this->field_0x38, matrixName);
+    this->field_0x48 = uniform(this->field_0x38, samplerName);
+    this->field_0x4c = uniform(this->field_0x38, texSizeName);
+    useProgram(this->field_0x38);
+    uniform1i(this->field_0x48, 0);
 
-    *(int *)((char *)this + 0x58) = attrib(*(unsigned int *)((char *)this + 0x54), positionName);
-    *(int *)((char *)this + 0x60) = attrib(*(unsigned int *)((char *)this + 0x54), texCoordName);
-    *(int *)((char *)this + 0x5c) = uniform(*(unsigned int *)((char *)this + 0x54), matrixName);
-    *(int *)((char *)this + 0x64) = uniform(*(unsigned int *)((char *)this + 0x54), samplerName);
-    *(int *)((char *)this + 0x68) = uniform(*(unsigned int *)((char *)this + 0x54), texSizeName);
-    useProgram(*(unsigned int *)((char *)this + 0x54));
-    uniform1i(*(int *)((char *)this + 0x64), 0);
+    this->field_0x58 = attrib(this->field_0x54, positionName);
+    this->field_0x60 = attrib(this->field_0x54, texCoordName);
+    this->field_0x5c = uniform(this->field_0x54, matrixName);
+    this->field_0x64 = uniform(this->field_0x54, samplerName);
+    this->field_0x68 = uniform(this->field_0x54, texSizeName);
+    useProgram(this->field_0x54);
+    uniform1i(this->field_0x64, 0);
 
-    *(int *)((char *)this + 0x78) = attrib(*(unsigned int *)((char *)this + 0x74), positionName);
-    *(int *)((char *)this + 0x80) = attrib(*(unsigned int *)((char *)this + 0x74), texCoordName);
-    *(int *)((char *)this + 0x7c) = uniform(*(unsigned int *)((char *)this + 0x74), matrixName);
-    *(int *)((char *)this + 0x84) = uniform(*(unsigned int *)((char *)this + 0x74), samplerName);
-    *(int *)((char *)this + 0x88) =
-        uniform(*(unsigned int *)((char *)this + 0x74), "s_texture_bloom");
-    useProgram(*(unsigned int *)((char *)this + 0x74));
-    uniform1i(*(int *)((char *)this + 0x84), 0);
-    return uniform1i(*(int *)((char *)this + 0x88), 1);
+    this->field_0x78 = attrib(this->field_0x74, positionName);
+    this->field_0x80 = attrib(this->field_0x74, texCoordName);
+    this->field_0x7c = uniform(this->field_0x74, matrixName);
+    this->field_0x84 = uniform(this->field_0x74, samplerName);
+    this->field_0x88 =
+        uniform(this->field_0x74, "s_texture_bloom");
+    useProgram(this->field_0x74);
+    uniform1i(this->field_0x84, 0);
+    return uniform1i(this->field_0x88, 1);
 }
 
 } // namespace AbyssEngine
@@ -129,27 +131,27 @@ namespace AbyssEngine {
 
 void BloomShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(*(int *)((char *)this + 0x90), 1, 0, (char *)engine + 0x104);
-    if (*(uint8_t *)((char *)this + 0x9) != 0) {
-        *(uint8_t *)((char *)this + 0x9) = 0;
+    glUniformMatrix4fv(this->field_0x90, 1, 0, (char *)engine + 0x104);
+    if (this->field_0x9 != 0) {
+        this->field_0x9 = 0;
     }
 
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x8c));
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x94));
+    glEnableVertexAttribArray(this->field_0x8c);
+    glEnableVertexAttribArray(this->field_0x94);
 
     unsigned int zero = 0;
-    if (*(uint8_t *)((char *)mesh + 0x5c) != 0) {
-        glBindBuffer(0x8892, *(unsigned int *)((char *)mesh + 0x60));
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x8c), 3, 0x1406, 0, 0,
+    if (mesh->field_0x5c != 0) {
+        glBindBuffer(0x8892, mesh->field_0x60);
+        glVertexAttribPointer(this->field_0x8c, 3, 0x1406, 0, 0,
                               (void *)zero);
-        glBindBuffer(0x8892, *(unsigned int *)((char *)mesh + 0x68));
-        return glVertexAttribPointer(*(unsigned int *)((char *)this + 0x94), 2, 0x1406, 0, 0,
+        glBindBuffer(0x8892, mesh->field_0x68);
+        return glVertexAttribPointer(this->field_0x94, 2, 0x1406, 0, 0,
                                      (void *)zero);
     } else {
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x8c), 3, 0x1406, 0, 0,
-                              *(void **)((char *)mesh + 0x4));
-        return glVertexAttribPointer(*(unsigned int *)((char *)this + 0x94), 2, 0x1406, 0, 0,
-                                     *(void **)((char *)mesh + 0x8));
+        glVertexAttribPointer(this->field_0x8c, 3, 0x1406, 0, 0,
+                              mesh->field_0x4);
+        return glVertexAttribPointer(this->field_0x94, 2, 0x1406, 0, 0,
+                                     mesh->field_0x8);
     }
 }
 
@@ -169,126 +171,126 @@ namespace AbyssEngine {
 void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
 {
     void *volatile cookie = __stack_chk_guard;
-    *(unsigned int *)((char *)engine + 0x3e4) = *(unsigned int *)((char *)this + 0x4);
+    engine->field_0x3e4 = this->field_0x4;
 
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
         InternalInit(engine);
-        FBOContainer_BeginCapture(*(FBOContainer **)((char *)this + 0x70));
+        FBOContainer_BeginCapture(this->field_0x70);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        FBOContainer_EndCapture(*(FBOContainer **)((char *)this + 0x70));
+        FBOContainer_EndCapture(this->field_0x70);
     }
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
     u32x4 zero = {0, 0, 0, 0};
-    *(u32x4 *)((char *)engine + 0x3b4) = zero;
-    *(u32x4 *)((char *)engine + 0x3a4) = zero;
-    *(u32x4 *)((char *)engine + 0x394) = zero;
-    *(u32x4 *)((char *)engine + 0x384) = zero;
+    engine->field_0x3b4 = zero;
+    engine->field_0x3a4 = zero;
+    engine->field_0x394 = zero;
+    engine->field_0x384 = zero;
     float matrix[16] = {};
     matrix[0] = 1.0f;
     matrix[5] = 1.0f;
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
-    *(float *)((char *)engine + 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
-    *(float *)((char *)engine + 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
-    *(unsigned int *)((char *)engine + 0x3ac) = 0xbf800000;
-    *(unsigned int *)((char *)engine + 0x3b4) = 0xbf800000;
-    *(unsigned int *)((char *)engine + 0x3b8) = 0x3f800000;
-    *(unsigned int *)((char *)engine + 0x3c0) = 0x3f800000;
+    engine->field_0x384 = 2.0f / (float)Engine_GetDisplayWidth(engine);
+    engine->field_0x398 = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    engine->field_0x3ac = 0xbf800000;
+    engine->field_0x3b4 = 0xbf800000;
+    engine->field_0x3b8 = 0x3f800000;
+    engine->field_0x3c0 = 0x3f800000;
     Engine_SetWorldViewMatrix(engine);
 
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
 
-    glUseProgram(*(unsigned int *)((char *)this + 0x20));
+    glUseProgram(this->field_0x20);
     glActiveTexture(0x84c0);
     FBOContainer_Activate(source);
-    FBOContainer_BeginCapture(*(FBOContainer **)((char *)this + 0x34));
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x24));
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x2c));
+    FBOContainer_BeginCapture(this->field_0x34);
+    glEnableVertexAttribArray(this->field_0x24);
+    glEnableVertexAttribArray(this->field_0x2c);
     const void *mvp = (char *)engine + 0x104;
-    glUniformMatrix4fv(*(int *)((char *)this + 0x28), 1, 0, mvp);
-    glVertexAttribPointer(*(unsigned int *)((char *)this + 0x24), 3, 0x1406, 0, 0,
-                          *(void **)(*(char **)((char *)engine + 0x380) + 4));
-    glVertexAttribPointer(*(unsigned int *)((char *)this + 0x2c), 2, 0x1406, 0, 0,
-                          *(void **)(*(char **)((char *)engine + 0x380) + 8));
+    glUniformMatrix4fv(this->field_0x28, 1, 0, mvp);
+    glVertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0,
+                          *(void **)(engine->field_0x380 + 4));
+    glVertexAttribPointer(this->field_0x2c, 2, 0x1406, 0, 0,
+                          *(void **)(engine->field_0x380 + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x24));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x2c));
+    glDisableVertexAttribArray(this->field_0x24);
+    glDisableVertexAttribArray(this->field_0x2c);
 
-    FBOContainer *blurSource = *(FBOContainer **)((char *)this + 0x34);
+    FBOContainer *blurSource = this->field_0x34;
     for (int i = 6; i != 0; i -= 1) {
-        glUseProgram(*(unsigned int *)((char *)this + 0x38));
+        glUseProgram(this->field_0x38);
         glActiveTexture(0x84c0);
         FBOContainer_Activate(blurSource);
-        FBOContainer_BeginCapture(*(FBOContainer **)((char *)this + 0x50));
-        glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x3c));
-        glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x44));
-        glUniformMatrix4fv(*(int *)((char *)this + 0x40), 1, 0, mvp);
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x3c), 3, 0x1406, 0, 0,
-                              *(void **)(*(char **)((char *)engine + 0x380) + 4));
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x44), 2, 0x1406, 0, 0,
-                              *(void **)(*(char **)((char *)engine + 0x380) + 8));
-        glUniform1f(*(int *)((char *)this + 0x4c),
-                    (float)*(int *)((char *)*(FBOContainer **)((char *)this + 0x50) + 0xc));
+        FBOContainer_BeginCapture(this->field_0x50);
+        glEnableVertexAttribArray(this->field_0x3c);
+        glEnableVertexAttribArray(this->field_0x44);
+        glUniformMatrix4fv(this->field_0x40, 1, 0, mvp);
+        glVertexAttribPointer(this->field_0x3c, 3, 0x1406, 0, 0,
+                              *(void **)(engine->field_0x380 + 4));
+        glVertexAttribPointer(this->field_0x44, 2, 0x1406, 0, 0,
+                              *(void **)(engine->field_0x380 + 8));
+        glUniform1f(this->field_0x4c,
+                    (float)*(int *)((char *)this->field_0x50 + 0xc));
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine),
                         Engine_GetDisplayHeight(engine));
-        glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x3c));
-        glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x44));
+        glDisableVertexAttribArray(this->field_0x3c);
+        glDisableVertexAttribArray(this->field_0x44);
 
-        glUseProgram(*(unsigned int *)((char *)this + 0x54));
+        glUseProgram(this->field_0x54);
         glActiveTexture(0x84c0);
-        FBOContainer_Activate(*(FBOContainer **)((char *)this + 0x50));
-        FBOContainer_BeginCapture(*(FBOContainer **)((char *)this + 0x6c));
-        glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x58));
-        glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x60));
-        glUniformMatrix4fv(*(int *)((char *)this + 0x5c), 1, 0, mvp);
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x58), 3, 0x1406, 0, 0,
-                              *(void **)(*(char **)((char *)engine + 0x380) + 4));
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x60), 2, 0x1406, 0, 0,
-                              *(void **)(*(char **)((char *)engine + 0x380) + 8));
-        glUniform1f(*(int *)((char *)this + 0x68),
-                    (float)*(int *)((char *)*(FBOContainer **)((char *)this + 0x6c) + 0x10));
+        FBOContainer_Activate(this->field_0x50);
+        FBOContainer_BeginCapture(this->field_0x6c);
+        glEnableVertexAttribArray(this->field_0x58);
+        glEnableVertexAttribArray(this->field_0x60);
+        glUniformMatrix4fv(this->field_0x5c, 1, 0, mvp);
+        glVertexAttribPointer(this->field_0x58, 3, 0x1406, 0, 0,
+                              *(void **)(engine->field_0x380 + 4));
+        glVertexAttribPointer(this->field_0x60, 2, 0x1406, 0, 0,
+                              *(void **)(engine->field_0x380 + 8));
+        glUniform1f(this->field_0x68,
+                    (float)*(int *)((char *)this->field_0x6c + 0x10));
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine),
                         Engine_GetDisplayHeight(engine));
-        glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x58));
-        glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x60));
-        blurSource = *(FBOContainer **)((char *)this + 0x6c);
+        glDisableVertexAttribArray(this->field_0x58);
+        glDisableVertexAttribArray(this->field_0x60);
+        blurSource = this->field_0x6c;
     }
 
     FBOContainer *base = source;
-    FBOContainer *bloom = *(FBOContainer **)((char *)this + 0x70);
+    FBOContainer *bloom = this->field_0x70;
     if (g_BloomShader_shaderMode < 4) {
         switch (g_BloomShader_shaderMode) {
         case 1:
-            base = *(FBOContainer **)((char *)this + 0x34);
+            base = this->field_0x34;
             break;
         case 2:
-            base = *(FBOContainer **)((char *)this + 0x6c);
+            base = this->field_0x6c;
             break;
         case 3:
-            bloom = *(FBOContainer **)((char *)this + 0x70);
+            bloom = this->field_0x70;
             break;
         default:
             break;
         }
     }
 
-    glUseProgram(*(unsigned int *)((char *)this + 0x74));
+    glUseProgram(this->field_0x74);
     glActiveTexture(0x84c0);
     FBOContainer_Activate(base);
     glActiveTexture(0x84c1);
     FBOContainer_Activate(bloom);
-    glBindFramebuffer(0x8d40, *(unsigned int *)((char *)engine + 0x40c));
+    glBindFramebuffer(0x8d40, engine->field_0x40c);
     unsigned int width;
     unsigned int height;
-    if (*(int *)(**(char ***)((char *)engine + 0x30) + 0x30) == 2) {
+    if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
         width = Engine_GetDisplayWidth(engine);
         height = Engine_GetDisplayHeight(engine);
     } else {
@@ -297,17 +299,17 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     }
     glViewport(0, 0, width, height);
 
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x78));
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x80));
-    glUniformMatrix4fv(*(int *)((char *)this + 0x7c), 1, 0, mvp);
-    glVertexAttribPointer(*(unsigned int *)((char *)this + 0x78), 3, 0x1406, 0, 0,
-                          *(void **)(*(char **)((char *)engine + 0x380) + 4));
-    glVertexAttribPointer(*(unsigned int *)((char *)this + 0x80), 2, 0x1406, 0, 0,
-                          *(void **)(*(char **)((char *)engine + 0x380) + 8));
+    glEnableVertexAttribArray(this->field_0x78);
+    glEnableVertexAttribArray(this->field_0x80);
+    glUniformMatrix4fv(this->field_0x7c, 1, 0, mvp);
+    glVertexAttribPointer(this->field_0x78, 3, 0x1406, 0, 0,
+                          *(void **)(engine->field_0x380 + 4));
+    glVertexAttribPointer(this->field_0x80, 2, 0x1406, 0, 0,
+                          *(void **)(engine->field_0x380 + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x78));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x80));
+    glDisableVertexAttribArray(this->field_0x78);
+    glDisableVertexAttribArray(this->field_0x80);
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
@@ -326,10 +328,10 @@ namespace AbyssEngine {
 
 void BloomShader::SetInActive()
 {
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x8c));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x94));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x2c));
-    return glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x24));
+    glDisableVertexAttribArray(this->field_0x8c);
+    glDisableVertexAttribArray(this->field_0x94);
+    glDisableVertexAttribArray(this->field_0x2c);
+    return glDisableVertexAttribArray(this->field_0x24);
 }
 
 } // namespace AbyssEngine
@@ -344,7 +346,7 @@ __attribute__((minsize)) BloomShader::BloomShader()
     *(void **)this = &BloomShader_vtable + 8;
     *(void **)BloomShader_typeinfo_dest = *(void **)BloomShader_typeinfo_source;
     String name("BloomShader", false);
-    *(String *)((char *)this + 0xc) = name;
+    this->field_0xc = name;
     name.~String();
     unsigned int guardDelta = (unsigned int)__stack_chk_guard - (unsigned int)cookie;
     if (guardDelta == 0) {
@@ -370,30 +372,30 @@ void BloomShader::InternalInit(Engine *engine)
     FBOContainer *fbo = (FBOContainer *)operator new(0x38);
     String luma("BloomShader fboLuma", false);
     FBOContainer_ctor(fbo, engine, &luma);
-    *(FBOContainer **)((char *)this + 0x34) = fbo;
+    this->field_0x34 = fbo;
     luma.~String();
-    FBOContainer_Create(*(FBOContainer **)((char *)this + 0x34), 0x100, 0x100, true, false);
+    FBOContainer_Create(this->field_0x34, 0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String blurH("BloomShader fboBlurH", false);
     FBOContainer_ctor(fbo, engine, &blurH);
-    *(FBOContainer **)((char *)this + 0x50) = fbo;
+    this->field_0x50 = fbo;
     blurH.~String();
-    FBOContainer_Create(*(FBOContainer **)((char *)this + 0x50), 0x100, 0x100, true, false);
+    FBOContainer_Create(this->field_0x50, 0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String blurV("BloomShader fboBlurV", false);
     FBOContainer_ctor(fbo, engine, &blurV);
-    *(FBOContainer **)((char *)this + 0x6c) = fbo;
+    this->field_0x6c = fbo;
     blurV.~String();
-    FBOContainer_Create(*(FBOContainer **)((char *)this + 0x6c), 0x100, 0x100, true, false);
+    FBOContainer_Create(this->field_0x6c, 0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String black("BloomShader fboBlack", false);
     FBOContainer_ctor(fbo, engine, &black);
-    *(FBOContainer **)((char *)this + 0x70) = fbo;
+    this->field_0x70 = fbo;
     black.~String();
-    FBOContainer_Create(*(FBOContainer **)((char *)this + 0x70), 0x100, 0x100, true, false);
+    FBOContainer_Create(this->field_0x70, 0x100, 0x100, true, false);
 
     unsigned int guardDelta = (unsigned int)__stack_chk_guard - (unsigned int)cookie;
     if (guardDelta == 0) {
@@ -429,113 +431,113 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
         InternalInit(engine);
-        FBOContainer_BeginCapture(*(FBOContainer **)((char *)this + 0x70));
+        FBOContainer_BeginCapture(this->field_0x70);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        FBOContainer_EndCapture(*(FBOContainer **)((char *)this + 0x70));
+        FBOContainer_EndCapture(this->field_0x70);
     }
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
     u32x4 zero = {0, 0, 0, 0};
-    *(u32x4 *)((char *)engine + 0x3b4) = zero;
-    *(u32x4 *)((char *)engine + 0x3a4) = zero;
-    *(u32x4 *)((char *)engine + 0x394) = zero;
-    *(u32x4 *)((char *)engine + 0x384) = zero;
+    engine->field_0x3b4 = zero;
+    engine->field_0x3a4 = zero;
+    engine->field_0x394 = zero;
+    engine->field_0x384 = zero;
     float matrix[16] = {};
     matrix[0] = 1.0f;
     matrix[5] = 1.0f;
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
-    *(float *)((char *)engine + 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
-    *(float *)((char *)engine + 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
-    *(unsigned int *)((char *)engine + 0x3ac) = 0xbf800000;
-    *(unsigned int *)((char *)engine + 0x3b4) = 0xbf800000;
-    *(unsigned int *)((char *)engine + 0x3b8) = 0x3f800000;
-    *(unsigned int *)((char *)engine + 0x3c0) = 0x3f800000;
+    engine->field_0x384 = 2.0f / (float)Engine_GetDisplayWidth(engine);
+    engine->field_0x398 = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    engine->field_0x3ac = 0xbf800000;
+    engine->field_0x3b4 = 0xbf800000;
+    engine->field_0x3b8 = 0x3f800000;
+    engine->field_0x3c0 = 0x3f800000;
     Engine_SetWorldViewMatrix(engine);
 
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
 
-    glUseProgram(*(unsigned int *)((char *)this + 0x20));
+    glUseProgram(this->field_0x20);
     glActiveTexture(0x84c0);
     FBOContainer_Activate(source);
-    FBOContainer_BeginCapture(*(FBOContainer **)((char *)this + 0x34));
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x24));
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x2c));
+    FBOContainer_BeginCapture(this->field_0x34);
+    glEnableVertexAttribArray(this->field_0x24);
+    glEnableVertexAttribArray(this->field_0x2c);
     const void *mvp = (char *)engine + 0x104;
-    glUniformMatrix4fv(*(int *)((char *)this + 0x28), 1, 0, mvp);
-    glVertexAttribPointer(*(unsigned int *)((char *)this + 0x24), 3, 0x1406, 0, 0,
-                          *(void **)(*(char **)((char *)engine + 0x380) + 4));
-    glVertexAttribPointer(*(unsigned int *)((char *)this + 0x2c), 2, 0x1406, 0, 0,
-                          *(void **)(*(char **)((char *)engine + 0x380) + 8));
+    glUniformMatrix4fv(this->field_0x28, 1, 0, mvp);
+    glVertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0,
+                          *(void **)(engine->field_0x380 + 4));
+    glVertexAttribPointer(this->field_0x2c, 2, 0x1406, 0, 0,
+                          *(void **)(engine->field_0x380 + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x24));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x2c));
+    glDisableVertexAttribArray(this->field_0x24);
+    glDisableVertexAttribArray(this->field_0x2c);
 
-    FBOContainer *blurSource = *(FBOContainer **)((char *)this + 0x34);
+    FBOContainer *blurSource = this->field_0x34;
     for (int i = 6; i != 0; i -= 1) {
-        glUseProgram(*(unsigned int *)((char *)this + 0x38));
+        glUseProgram(this->field_0x38);
         glActiveTexture(0x84c0);
         FBOContainer_Activate(blurSource);
-        FBOContainer_BeginCapture(*(FBOContainer **)((char *)this + 0x50));
-        glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x3c));
-        glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x44));
-        glUniformMatrix4fv(*(int *)((char *)this + 0x40), 1, 0, mvp);
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x3c), 3, 0x1406, 0, 0,
-                              *(void **)(*(char **)((char *)engine + 0x380) + 4));
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x44), 2, 0x1406, 0, 0,
-                              *(void **)(*(char **)((char *)engine + 0x380) + 8));
-        glUniform1f(*(int *)((char *)this + 0x4c),
-                    (float)*(int *)((char *)*(FBOContainer **)((char *)this + 0x50) + 0xc));
+        FBOContainer_BeginCapture(this->field_0x50);
+        glEnableVertexAttribArray(this->field_0x3c);
+        glEnableVertexAttribArray(this->field_0x44);
+        glUniformMatrix4fv(this->field_0x40, 1, 0, mvp);
+        glVertexAttribPointer(this->field_0x3c, 3, 0x1406, 0, 0,
+                              *(void **)(engine->field_0x380 + 4));
+        glVertexAttribPointer(this->field_0x44, 2, 0x1406, 0, 0,
+                              *(void **)(engine->field_0x380 + 8));
+        glUniform1f(this->field_0x4c,
+                    (float)*(int *)((char *)this->field_0x50 + 0xc));
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine),
                         Engine_GetDisplayHeight(engine));
-        glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x3c));
-        glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x44));
+        glDisableVertexAttribArray(this->field_0x3c);
+        glDisableVertexAttribArray(this->field_0x44);
 
-        glUseProgram(*(unsigned int *)((char *)this + 0x54));
+        glUseProgram(this->field_0x54);
         glActiveTexture(0x84c0);
-        FBOContainer_Activate(*(FBOContainer **)((char *)this + 0x50));
-        FBOContainer_BeginCapture(*(FBOContainer **)((char *)this + 0x6c));
-        glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x58));
-        glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x60));
-        glUniformMatrix4fv(*(int *)((char *)this + 0x5c), 1, 0, mvp);
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x58), 3, 0x1406, 0, 0,
-                              *(void **)(*(char **)((char *)engine + 0x380) + 4));
-        glVertexAttribPointer(*(unsigned int *)((char *)this + 0x60), 2, 0x1406, 0, 0,
-                              *(void **)(*(char **)((char *)engine + 0x380) + 8));
-        glUniform1f(*(int *)((char *)this + 0x68),
-                    (float)*(int *)((char *)*(FBOContainer **)((char *)this + 0x6c) + 0x10));
+        FBOContainer_Activate(this->field_0x50);
+        FBOContainer_BeginCapture(this->field_0x6c);
+        glEnableVertexAttribArray(this->field_0x58);
+        glEnableVertexAttribArray(this->field_0x60);
+        glUniformMatrix4fv(this->field_0x5c, 1, 0, mvp);
+        glVertexAttribPointer(this->field_0x58, 3, 0x1406, 0, 0,
+                              *(void **)(engine->field_0x380 + 4));
+        glVertexAttribPointer(this->field_0x60, 2, 0x1406, 0, 0,
+                              *(void **)(engine->field_0x380 + 8));
+        glUniform1f(this->field_0x68,
+                    (float)*(int *)((char *)this->field_0x6c + 0x10));
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine),
                         Engine_GetDisplayHeight(engine));
-        glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x58));
-        glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x60));
-        blurSource = *(FBOContainer **)((char *)this + 0x6c);
+        glDisableVertexAttribArray(this->field_0x58);
+        glDisableVertexAttribArray(this->field_0x60);
+        blurSource = this->field_0x6c;
     }
 
     FBOContainer *base = source;
-    FBOContainer *bloom = *(FBOContainer **)((char *)this + 0x70);
+    FBOContainer *bloom = this->field_0x70;
     if (g_BloomShader_shaderMode < 4) {
         switch (g_BloomShader_shaderMode) {
         case 1:
-            base = *(FBOContainer **)((char *)this + 0x34);
+            base = this->field_0x34;
             break;
         case 2:
-            base = *(FBOContainer **)((char *)this + 0x6c);
+            base = this->field_0x6c;
             break;
         case 3:
-            bloom = *(FBOContainer **)((char *)this + 0x70);
+            bloom = this->field_0x70;
             break;
         default:
             break;
         }
     }
 
-    glUseProgram(*(unsigned int *)((char *)this + 0x74));
+    glUseProgram(this->field_0x74);
     glActiveTexture(0x84c0);
     FBOContainer_Activate(base);
     glActiveTexture(0x84c1);
@@ -544,17 +546,17 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
         FBOContainer_BeginCapture(*target);
     }
 
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x78));
-    glEnableVertexAttribArray(*(unsigned int *)((char *)this + 0x80));
-    glUniformMatrix4fv(*(int *)((char *)this + 0x7c), 1, 0, mvp);
-    glVertexAttribPointer(*(unsigned int *)((char *)this + 0x78), 3, 0x1406, 0, 0,
-                          *(void **)(*(char **)((char *)engine + 0x380) + 4));
-    glVertexAttribPointer(*(unsigned int *)((char *)this + 0x80), 2, 0x1406, 0, 0,
-                          *(void **)(*(char **)((char *)engine + 0x380) + 8));
+    glEnableVertexAttribArray(this->field_0x78);
+    glEnableVertexAttribArray(this->field_0x80);
+    glUniformMatrix4fv(this->field_0x7c, 1, 0, mvp);
+    glVertexAttribPointer(this->field_0x78, 3, 0x1406, 0, 0,
+                          *(void **)(engine->field_0x380 + 4));
+    glVertexAttribPointer(this->field_0x80, 2, 0x1406, 0, 0,
+                          *(void **)(engine->field_0x380 + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x78));
-    glDisableVertexAttribArray(*(unsigned int *)((char *)this + 0x80));
+    glDisableVertexAttribArray(this->field_0x78);
+    glDisableVertexAttribArray(this->field_0x80);
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);

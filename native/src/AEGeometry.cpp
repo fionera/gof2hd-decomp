@@ -1,4 +1,4 @@
-#include "AEGeometry.h"
+#include "gof2/AEGeometry.h"
 
 
 extern "C" void _ae_geom_render(uint32_t canvas, uint32_t tf, int z);
@@ -191,7 +191,7 @@ void AEGeometry::setLodMeshesWithMeshIds(uint16_t *meshes, uint32_t *meshIds, in
 struct AEGeometry { void setLodLastVisibleDistance(uint64_t d); };
 void AEGeometry::setLodLastVisibleDistance(uint64_t d)
 {
-    *(uint64_t *)((char *)this + 0x70) = d * d;
+    this->field_0x70 = d * d;
 }
 
 // ---- getRightVector_a45e0.cpp ----
@@ -412,16 +412,16 @@ AEGeometry::AEGeometry(PaintCanvas *canvas)
     u32(this, 0x7c) = 0;
     u32(this, 0x80) = 0;
     new ((Matrix *)((char *)this + 0x84)) Matrix();
-    *(uint16_t *)((char *)this + 8) = 0;
+    this->field_0x8 = 0;
     pp(this, 0x2c) = canvas;
     PaintCanvas::TransformCreate(canvas, &u32(this, 0x18));
 
-    *(V4 *)((char *)this + 0x30) = kDir;
-    *(V4 *)((char *)this + 0x54) = (V4){0.0f, 0.0f, 0.0f, 0.0f};
+    this->field_0x30 = kDir;
+    this->field_0x54 = (V4){0.0f, 0.0f, 0.0f, 0.0f};
 
     f32(this, 0x40) = 1.0f;
     f32(this, 0x44) = 1.0f;
-    *(uint16_t *)((char *)this + 0x48) = 0x101;
+    this->field_0x48 = 0x101;
     u32(this, 0x4c) = 0;
     u32(this, 0x64) = 0;
     u32(this, 0x1c) = 0xffffffff;
@@ -487,18 +487,18 @@ AEGeometry::AEGeometry(uint16_t mesh, PaintCanvas *canvas, bool flag)
     u32(this, 0x80) = 0;
     new ((Matrix *)((char *)this + 0x84)) Matrix();
     pp(this, 0x2c) = canvas;
-    *(uint16_t *)((char *)this + 8) = mesh;
+    this->field_0x8 = mesh;
     u32(this, 0xc) = 0;
     u32(this, 0x18) = 0;
     PaintCanvas::TransformCreate(canvas, &u32(this, 0x18));
     _ae_MeshCreate(canvas, mesh, &u32(this, 0x1c), flag);
     _ae_TransformAddMeshId(canvas, u32(this, 0x18), u32(this, 0x1c));
 
-    *(V4b *)((char *)this + 0x30) = kDir2;
-    *(V4b *)((char *)this + 0x54) = (V4b){0, 0, 0, 0};
+    this->field_0x30 = kDir2;
+    this->field_0x54 = (V4b){0, 0, 0, 0};
     f32(this, 0x40) = 1.0f;
     f32(this, 0x44) = 1.0f;
-    *(uint16_t *)((char *)this + 0x48) = 0x101;
+    this->field_0x48 = 0x101;
     u32(this, 0x4c) = 0;
     u32(this, 0x64) = 0;
     u32(this, 0x20) = 0xffffffff;
@@ -508,7 +508,7 @@ AEGeometry::AEGeometry(uint16_t mesh, PaintCanvas *canvas, bool flag)
     u32(this, 0x10) = 0xffffffff;
     u32(this, 0x14) = 0xffffffff;
     uint32_t loc = PaintCanvas::TransformGetLocal((uint32_t)canvas, 0);
-    *(Matrix *)((char *)this + 0x84) = *(Matrix *)loc;
+    this->field_0x84 = *(Matrix *)loc;
     u32(this, 4) = 0;
 }
 
@@ -590,9 +590,9 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
 
     float dx = f32(this, 0x78), dy = f32(this, 0x7c), dz = f32(this, 0x80);
     unsigned long long distSq = __aeabi_f2ulz_(dy * dy + dx * dx + dz * dz);
-    *(unsigned long long *)((char *)this + 0x68) = distSq;
+    this->field_0x68 = distSq;
 
-    unsigned long long lastVis = *(unsigned long long *)((char *)this + 0x70);
+    unsigned long long lastVis = this->field_0x70;
     bool visible;
     if (lastVis == 0) {
         visible = true;            // no clamp configured -> always considered visible
@@ -620,7 +620,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
     while (level >= 1) {
         int idx = level - 1;
         float thresh = __aeabi_ul2f_(*(unsigned long long *)(distances + idx * 8));
-        float d = __aeabi_ul2f_(*(unsigned long long *)((char *)this + 0x68));
+        float d = __aeabi_ul2f_(this->field_0x68);
         if (!(detail * thresh < d)) {
             level = idx;
             continue;

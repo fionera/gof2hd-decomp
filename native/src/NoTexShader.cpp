@@ -1,4 +1,4 @@
-#include "NoTexShader.h"
+#include "gof2/NoTexShader.h"
 
 
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);

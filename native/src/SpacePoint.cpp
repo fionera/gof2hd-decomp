@@ -1,4 +1,4 @@
-#include "SpacePoint.h"
+#include "gof2/SpacePoint.h"
 
 
 extern "C" Vector *Vector_assign(Vector *dst, const Vector *src);
@@ -7,7 +7,7 @@ extern "C" void *memset(void *, int, unsigned long);
 // ---- giveFree_1603f0.cpp ----
 extern "C" void SpacePoint_giveFree(SpacePoint *self)
 {
-    F<uint8_t>(self, 0x1c) = 1;
+    self->field_0x1c = 1;
 }
 
 // ---- SpacePoint_1603ac.cpp ----
@@ -23,15 +23,15 @@ struct SpacePoint {
 SpacePoint::SpacePoint(int param_1, const Vector &param_2, const Vector &param_3, int param_4)
 {
     memset(__builtin_assume_aligned(this, 4), 0, 0x18);
-    F<int>(this, 0x18) = param_1;
+    this->field_0x18 = param_1;
     Vector_assign((Vector *)this, &param_2);
     Vector_assign((Vector *)((char *)this + 0xc), &param_3);
-    F<uint8_t>(this, 0x1c) = 1;
-    F<int>(this, 0x20) = param_4;
+    this->field_0x1c = 1;
+    this->field_0x20 = param_4;
 }
 
 // ---- take_1603ea.cpp ----
 extern "C" void SpacePoint_take(SpacePoint *self)
 {
-    F<uint8_t>(self, 0x1c) = 0;
+    self->field_0x1c = 0;
 }

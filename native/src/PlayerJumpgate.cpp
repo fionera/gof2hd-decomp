@@ -1,4 +1,6 @@
-#include "PlayerJumpgate.h"
+#include "gof2/PlayerJumpgate.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Transform.h"
 
 
 extern "C" void PlayerStaticFar_dtor(PlayerStaticFar *self);
@@ -29,8 +31,8 @@ __attribute__((visibility("hidden"))) extern void *volatile PaintCanvas_global;
 bool PlayerJumpgate::timeToJump()
 {
     void *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
-                                                        F<uint32_t>(this, 0x144));
-    return F<int64_t>(transform, 0x110) > 1000LL;
+                                                        this->field_0x144);
+    return transform->field_0x110 > 1000LL;
 }
 
 // ---- activate_a5118.cpp ----
@@ -38,29 +40,29 @@ __attribute__((visibility("hidden"))) extern void *volatile PaintCanvas_global;
 
 void PlayerJumpgate::activate()
 {
-    if (F<uint8_t>(this, 0x140) != 0) {
+    if (this->field_0x140 != 0) {
         return;
     }
 
-    uint32_t handle = F<uint32_t>(this, 0x144);
+    uint32_t handle = this->field_0x144;
     if (handle != 0xffffffffU) {
         void **canvasOwner = (void **)PaintCanvas_global;
         void *transform = PaintCanvas_TransformGetTransform(*canvasOwner, handle);
         Transform_SetAnimationState(transform, 1, 0);
 
-        void *geometry = F<void *>(this, 0x8);
-        PaintCanvas_TransformRemoveChild(*canvasOwner, F<uint32_t>(geometry, 0xc),
-                                         F<uint32_t>(geometry, 0x14));
-        AEGeometry_addChild(F<void *>(this, 0x8), F<uint32_t>(this, 0x144));
+        void *geometry = this->field_0x8;
+        PaintCanvas_TransformRemoveChild(*canvasOwner, geometry->field_0xc,
+                                         geometry->field_0x14);
+        AEGeometry_addChild(this->field_0x8, this->field_0x144);
     }
 
-    F<uint8_t>(this, 0x140) = 1;
+    this->field_0x140 = 1;
 }
 
 // ---- addJumpAnimationHandle_a5110.cpp ----
 void PlayerJumpgate::addJumpAnimationHandle(uint32_t handle)
 {
-    F<uint32_t>(this, 0x144) = handle;
+    this->field_0x144 = handle;
 }
 
 // ---- animationEnded_a5190.cpp ----
@@ -68,13 +70,13 @@ __attribute__((visibility("hidden"))) extern void *volatile PaintCanvas_global;
 
 bool PlayerJumpgate::animationEnded()
 {
-    if (F<uint8_t>(this, 0x140) == 0) {
+    if (this->field_0x140 == 0) {
         return false;
     }
 
     void *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
-                                                        F<uint32_t>(this, 0x144));
-    return F<uint8_t>(transform, 0xed) == 0;
+                                                        this->field_0x144);
+    return transform->field_0xed == 0;
 }
 
 // ---- update_a51f0.cpp ----
@@ -85,10 +87,10 @@ struct Transform {
 
 void PlayerJumpgate::update(int delta)
 {
-    if (F<uint8_t>(this, 0xf5) != 0) {
-        void *geometry = F<void *>(this, 0x8);
+    if (this->field_0xf5 != 0) {
+        void *geometry = this->field_0x8;
         void *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
-                                                            F<uint32_t>(geometry, 0xc));
+                                                            geometry->field_0xc);
         bool active = true;
         int64_t wideDelta = delta;
         ((Transform *)transform)->Update(active, wideDelta, active);
@@ -102,10 +104,10 @@ struct AEGeometry {
 
 void PlayerJumpgate::setPosition(float x, float y, float z)
 {
-    F<int32_t>(this, 0x124) = (int32_t)x;
-    F<int32_t>(this, 0x128) = (int32_t)y;
-    F<int32_t>(this, 0x12c) = (int32_t)z;
-    F<AEGeometry *>(this, 0x8)->setPosition();
+    this->field_0x124 = (int32_t)x;
+    this->field_0x128 = (int32_t)y;
+    this->field_0x12c = (int32_t)z;
+    this->field_0x8->setPosition();
 }
 
 // ---- PlayerJumpgate_a4fa4.cpp ----
@@ -125,7 +127,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
     PlayerStaticFar_ctor((PlayerStaticFar *)this, playerId, geometry, x, y, z);
 
     void *vtable = g_PlayerJumpgate_vtable;
-    F<void *>(this, 0x0) = (char *)vtable + 8;
+    this->field_0x0 = (char *)vtable + 8;
     KIPlayer_setVisible(this, visible);
 
     if (visible) {
@@ -147,7 +149,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
             }
         }
 
-        Player_setRadius(F<void *>(this, 0x4), radius);
+        Player_setRadius(this->field_0x4, radius);
 
         BoundingSphere *sphere = (BoundingSphere *)operator_new(0x48);
         BoundingSphere_ctor(sphere, x, y, z, 0.0f, 0.0f, 0.0f, (float)radius);
@@ -156,5 +158,5 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
 
     VF<uint32_t>(this, 0x144) = 0xffffffffU;
     VF<uint8_t>(this, 0x140) = 0;
-    AEGeometry_setRotation(F<AEGeometry *>(this, 0x8), 0.0f, 3.1415927f, 0.0f);
+    AEGeometry_setRotation(this->field_0x8, 0.0f, 3.1415927f, 0.0f);
 }

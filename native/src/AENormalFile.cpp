@@ -1,4 +1,4 @@
-#include "AENormalFile.h"
+#include "gof2/AENormalFile.h"
 
 
 extern "C" AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self);

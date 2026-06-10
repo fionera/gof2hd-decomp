@@ -1,4 +1,5 @@
-#include "LodMeshMerger.h"
+#include "gof2/LodMeshMerger.h"
+#include "gof2/Vector.h"
 
 
 extern "C" void LodMeshMerger_setMatrix_tail(void *dst, const Matrix &m);
@@ -81,7 +82,7 @@ void LodMeshMerger::update()
                 *((int8_t *)pp(this, 0x34) + j) != 0) {
                 signed char lod = *((int8_t *)pp(this, 0x2c) + j);
                 void *src = ((void **)pp(this, 0x24))[rows * lod + j];
-                sumIdx += (uint16_t)*(uint16_t *)((char *)src + 0x28);
+                sumIdx += (uint16_t)src->field_0x28;
             }
         }
         for (int j = 0; sumIdx >= 0x10000 && j < rows; j++) {
@@ -112,44 +113,44 @@ void LodMeshMerger::update()
 
                 if (mask & 1) {
                     aeabi_memcpy4(*(char **)(out + 4) + vtxOff * 0xc,
-                                  *(void **)((char *)src + 4),
-                                  (uint32_t)*(uint16_t *)((char *)src + 2) * 0xc);
+                                  src->field_0x4,
+                                  (uint32_t)src->field_0x2 * 0xc);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
                 }
                 if (mask & 4) {
                     aeabi_memcpy4(*(char **)(out + 0x10) + vtxOff * 0xc,
-                                  *(void **)((char *)src + 0x10),
-                                  (uint32_t)*(uint16_t *)((char *)src + 2) * 0xc);
+                                  src->field_0x10,
+                                  (uint32_t)src->field_0x2 * 0xc);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
                 }
                 if (mask & 8) {
                     aeabi_memcpy4(*(char **)(out + 0xc) + vtxOff * 0x10,
-                                  *(void **)((char *)src + 0xc),
-                                  (uint32_t)*(uint16_t *)((char *)src + 2) << 4);
+                                  src->field_0xc,
+                                  (uint32_t)src->field_0x2 << 4);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
                 }
                 if (mask & 2) {
                     aeabi_memcpy4(*(char **)(out + 8) + vtxOff * 8,
-                                  *(void **)((char *)src + 8),
-                                  (uint32_t)*(uint16_t *)((char *)src + 2) << 3);
+                                  src->field_0x8,
+                                  (uint32_t)src->field_0x2 << 3);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
                 }
                 if (mask & 0x10) {
-                    int16_t *si = *(int16_t **)((char *)src + 0x2c);
+                    int16_t *si = src->field_0x2c;
                     int16_t *di = (int16_t *)(*(char **)(out + 0x2c) + idxOff * 2);
-                    for (int k = -(int)(uint16_t)*(uint16_t *)((char *)src + 0x28); k != 0; k++) {
+                    for (int k = -(int)(uint16_t)src->field_0x28; k != 0; k++) {
                         *di = (int16_t)(*si + (int16_t)vtxOff);
                         si++;
                         di++;
                     }
                 }
                 rows = i32(this, 0x0);
-                idxOff += (uint16_t)*(uint16_t *)((char *)src + 0x28);
-                vtxOff += (uint16_t)*(uint16_t *)((char *)src + 2);
+                idxOff += (uint16_t)src->field_0x28;
+                vtxOff += (uint16_t)src->field_0x2;
             }
         }
         uint8_t *out = (uint8_t *)pp(this, 0x20);

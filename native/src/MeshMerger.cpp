@@ -1,4 +1,6 @@
-#include "MeshMerger.h"
+#include "gof2/MeshMerger.h"
+#include "gof2/Mesh.h"
+#include "gof2/Vector.h"
 
 
 extern "C" void MeshMerger_setMatrix_tail(void *dst, const Matrix &m);
@@ -200,44 +202,44 @@ void MeshMerger::update()
 
                 if (mask & 1) {
                     aeabi_memcpy4(*(char **)(out + 4) + vtxOff * 0xc,
-                                  *(void **)((char *)src + 4),
-                                  (uint32_t)*(uint16_t *)((char *)src + 2) * 0xc);
+                                  src->field_0x4,
+                                  (uint32_t)src->field_0x2 * 0xc);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
                 }
                 if (mask & 4) {
                     aeabi_memcpy4(*(char **)(out + 0x10) + vtxOff * 0xc,
-                                  *(void **)((char *)src + 0x10),
-                                  (uint32_t)*(uint16_t *)((char *)src + 2) * 0xc);
+                                  src->field_0x10,
+                                  (uint32_t)src->field_0x2 * 0xc);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
                 }
                 if (mask & 8) {
                     aeabi_memcpy4(*(char **)(out + 0xc) + vtxOff * 0x10,
-                                  *(void **)((char *)src + 0xc),
-                                  (uint32_t)*(uint16_t *)((char *)src + 2) << 4);
+                                  src->field_0xc,
+                                  (uint32_t)src->field_0x2 << 4);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
                 }
                 if (mask & 2) {
                     aeabi_memcpy4(*(char **)(out + 8) + vtxOff * 8,
-                                  *(void **)((char *)src + 8),
-                                  (uint32_t)*(uint16_t *)((char *)src + 2) << 3);
+                                  src->field_0x8,
+                                  (uint32_t)src->field_0x2 << 3);
                     out = (uint8_t *)pp(this, 0x20);
                     mask = out[0];
                 }
                 if (mask & 0x10) {
-                    int16_t *si = *(int16_t **)((char *)src + 0x2c);
+                    int16_t *si = src->field_0x2c;
                     int16_t *di = (int16_t *)(*(char **)(out + 0x2c) + idxOff * 2);
-                    for (int k = -(int)(uint16_t)*(uint16_t *)((char *)src + 0x28); k != 0; k++) {
+                    for (int k = -(int)(uint16_t)src->field_0x28; k != 0; k++) {
                         *di = (int16_t)(*si + (int16_t)vtxOff);
                         si++;
                         di++;
                     }
                 }
                 rows = i32(this, 0x0);
-                idxOff += (uint16_t)*(uint16_t *)((char *)src + 0x28);
-                vtxOff += (uint16_t)*(uint16_t *)((char *)src + 2);
+                idxOff += (uint16_t)src->field_0x28;
+                vtxOff += (uint16_t)src->field_0x2;
             }
         }
         uint8_t *out = (uint8_t *)pp(this, 0x20);
@@ -400,20 +402,20 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
     __builtin_memset(out + 0x3c, 0, 16);
     *(uint32_t *)(out + 0x55) = 0;
 
-    uint16_t nv = *(uint16_t *)((char *)mesh + 2);
+    uint16_t nv = mesh->field_0x2;
     *(uint16_t *)(out + 2) = nv;
-    *(uint16_t *)(out + 0x28) = *(uint16_t *)((char *)mesh + 0x28);
+    *(uint16_t *)(out + 0x28) = mesh->field_0x28;
     uint8_t flags = *(uint8_t *)mesh;
     *(uint8_t *)out = flags;
 
     if (flags & 2) {
-        *(uint32_t *)(out + 8) = *(uint32_t *)((char *)mesh + 8);
+        *(uint32_t *)(out + 8) = mesh->field_0x8;
     }
     if (flags & 8) {
-        *(uint32_t *)(out + 0xc) = *(uint32_t *)((char *)mesh + 0xc);
+        *(uint32_t *)(out + 0xc) = mesh->field_0xc;
     }
     if (flags & 0x10) {
-        *(uint32_t *)(out + 0x2c) = *(uint32_t *)((char *)mesh + 0x2c);
+        *(uint32_t *)(out + 0x2c) = mesh->field_0x2c;
     }
     if (flags & 1) {
         void *buf = operator_new_array((uint32_t)nv * 0xc);
@@ -424,7 +426,7 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
             AEMath_MatrixTransformVector(&tmp, (const Vector *)&m);
             AEMath_Vector_assign((Vector *)(*(char **)(out + 4) + off), &tmp);
             off += 0xc;
-            nv = *(uint16_t *)((char *)mesh + 2);
+            nv = mesh->field_0x2;
         }
         flags = *(uint8_t *)mesh;
     }
@@ -439,7 +441,7 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
             AEMath_VectorNormalize(&nrm, &rot);
             AEMath_Vector_assign((Vector *)(*(char **)(out + 0x10) + off), &nrm);
             off += 0xc;
-            nv = *(uint16_t *)((char *)mesh + 2);
+            nv = mesh->field_0x2;
         }
     }
 
@@ -451,7 +453,7 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
     bs[1] = center.y;
     bs[2] = center.z;
     bs[3] = 1.0f;
-    *(uint32_t *)&bs[2] = *(uint32_t *)((char *)mesh + 0x48);  // radius overrides z slot? matches uStack_44
+    *(uint32_t *)&bs[2] = mesh->field_0x48;  // radius overrides z slot? matches uStack_44
     AEMath_BSphere_assign(out + 0x3c, bs);
     return out;
 }

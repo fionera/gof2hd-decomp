@@ -1,4 +1,4 @@
-#include "Sprite.h"
+#include "gof2/Sprite.h"
 
 
 

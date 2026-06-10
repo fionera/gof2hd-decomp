@@ -1,4 +1,4 @@
-#include "GameData.h"
+#include "gof2/GameData.h"
 
 
 extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);

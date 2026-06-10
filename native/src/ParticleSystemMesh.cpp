@@ -1,4 +1,4 @@
-#include "ParticleSystemMesh.h"
+#include "gof2/ParticleSystemMesh.h"
 
 
 extern "C" void _psm_emitTrail(ParticleSystemMesh *self, int id);
@@ -125,11 +125,11 @@ void ParticleSystemMesh::reset()
     for (int i = 0; i < i32(this, 0x48); i++)
         i32(ptr(this, 0x68), (uint32_t)i * 4) = -1;
 
-    *(volatile uint32_t *)((char *)this + 0x94) = 0;
-    *(volatile uint32_t *)((char *)this + 0x50) = 0;
-    *(volatile uint8_t *)((char *)this + 0x90) = 1;
-    *(volatile uint32_t *)((char *)this + 0x60) = 0;
-    *(volatile uint8_t *)((char *)this + 0x4) = 1;
+    this->field_0x94 = 0;
+    this->field_0x50 = 0;
+    this->field_0x90 = 1;
+    this->field_0x60 = 0;
+    this->field_0x4 = 1;
 }
 
 // ---- _ParticleSystemMesh_1855c4.cpp ----

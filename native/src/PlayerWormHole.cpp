@@ -1,4 +1,4 @@
-#include "PlayerWormHole.h"
+#include "gof2/PlayerWormHole.h"
 
 
 extern "C" void *PlayerStaticFar_dtor(void *self);
@@ -42,7 +42,7 @@ struct PlayerWormHole {
 
 bool PlayerWormHole::isShrinking()
 {
-    return F<int>(this, 0x150) > 60000;
+    return this->field_0x150 > 60000;
 }
 
 // ---- _PlayerWormHole_a5302.cpp ----
@@ -58,8 +58,8 @@ struct PlayerWormHole {
 
 int PlayerWormHole::open(char *, int, ...)
 {
-    F<int>(this, 0x150) = -3000;
-    F<int>(this, 0x154) = 0;
+    this->field_0x150 = -3000;
+    this->field_0x154 = 0;
     return (int)this;
 }
 
@@ -70,9 +70,9 @@ struct PlayerWormHole {
 
 Vector PlayerWormHole::getPosition()
 {
-    float x = (float)F<int>(this, 0x124);
-    float y = (float)F<int>(this, 0x128);
-    float z = (float)F<int>(this, 0x12c);
+    float x = (float)this->field_0x124;
+    float y = (float)this->field_0x128;
+    float z = (float)this->field_0x12c;
     Vector result = {x, y, z};
     return result;
 }
@@ -91,16 +91,16 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
 {
     PlayerStaticFar_ctor(this, playerId, geometry, x, y, z);
     void **textSource = g_playerWormHole_text;
-    F<char *>(this, 0x0) = g_playerWormHole_vtable + 8;
+    this->field_0x0 = g_playerWormHole_vtable + 8;
     AbyssEngine::String *text = GameText_getText(*textSource, 0x221);
     String_assign((AbyssEngine::String *)((char *)this + 0x18), text);
     KIPlayer_setVisible(this, visible);
-    Player_setRadius(F<void *>(this, 0x4), 40000);
-    void *transform = PaintCanvas_TransformGetTransform(*g_playerWormHole_canvas, F<int>(F<void *>(this, 0x8), 0xc));
+    Player_setRadius(this->field_0x4, 40000);
+    void *transform = PaintCanvas_TransformGetTransform(*g_playerWormHole_canvas, F<int>(this->field_0x8, 0xc));
     Transform_SetAnimationState(transform, 2, 0);
-    F<uint8_t>(this, 0x15c) = 1;
-    F<int>(this, 0x150) = 0;
-    F<int>(this, 0x154) = 0x1000;
+    this->field_0x15c = 1;
+    this->field_0x150 = 0;
+    this->field_0x154 = 0x1000;
 }
 
 // ---- freeMissionLock_a5378.cpp ----
@@ -110,7 +110,7 @@ struct PlayerWormHole {
 
 void PlayerWormHole::freeMissionLock()
 {
-    F<uint8_t>(this, 0x15c) = 0;
+    this->field_0x15c = 0;
 }
 
 // ---- render_a536a.cpp ----
@@ -121,9 +121,9 @@ struct PlayerWormHole {
 
 void PlayerWormHole::render()
 {
-    if (F<uint8_t>(this, 0xf5) == 0)
+    if (this->field_0xf5 == 0)
         return;
-    return AEGeometry_render(F<void *>(this, 0x8));
+    return AEGeometry_render(this->field_0x8);
 }
 
 // ---- reset_a52ec.cpp ----
@@ -136,8 +136,8 @@ void PlayerWormHole::reset(bool shrinking)
     int value = 0;
     if (shrinking)
         value = 59000;
-    F<int>(this, 0x150) = value;
-    F<int>(this, 0x154) = 0x1000;
+    this->field_0x150 = value;
+    this->field_0x154 = 0x1000;
 }
 
 // ---- setPosition_a5336.cpp ----
@@ -148,13 +148,13 @@ struct PlayerWormHole {
 
 void PlayerWormHole::setPosition(float x, float y, float z)
 {
-    F<float>(this, 0x58) = x;
-    F<float>(this, 0x5c) = y;
-    F<float>(this, 0x60) = z;
-    F<int>(this, 0x128) = (int)y;
-    F<int>(this, 0x124) = (int)x;
-    F<int>(this, 0x12c) = (int)z;
-    return AEGeometry_positionChanged(F<void *>(this, 0x8));
+    this->field_0x58 = x;
+    this->field_0x5c = y;
+    this->field_0x60 = z;
+    this->field_0x128 = (int)y;
+    this->field_0x124 = (int)x;
+    this->field_0x12c = (int)z;
+    return AEGeometry_positionChanged(this->field_0x8);
 }
 
 // ---- update_a5380.cpp ----

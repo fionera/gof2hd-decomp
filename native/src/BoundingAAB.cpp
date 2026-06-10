@@ -1,4 +1,4 @@
-#include "BoundingAAB.h"
+#include "gof2/BoundingAAB.h"
 
 
 extern "C" float external_fabsf(float value);
@@ -10,8 +10,8 @@ extern "C" void BoundingVolume_update(BoundingAAB *self, float x, float y, float
 int BoundingAAB::outerCollide(float x, float y, float z)
 {
     BoundingAAB *self = this;
-    float centerX = F<float>(self, 0x8) + F<float>(self, 0x14);
-    float extentX = F<float>(self, 0x20);
+    float centerX = self->field_0x8 + self->field_0x14;
+    float extentX = self->field_0x20;
     if (!(centerX - extentX < x)) {
         return 0;
     }
@@ -19,8 +19,8 @@ int BoundingAAB::outerCollide(float x, float y, float z)
         return 0;
     }
 
-    float centerY = F<float>(self, 0xc) + F<float>(self, 0x18);
-    float extentY = F<float>(self, 0x24);
+    float centerY = self->field_0xc + self->field_0x18;
+    float extentY = self->field_0x24;
     if (!(centerY - extentY < y)) {
         return 0;
     }
@@ -28,8 +28,8 @@ int BoundingAAB::outerCollide(float x, float y, float z)
         return 0;
     }
 
-    float centerZ = F<float>(self, 0x10) + F<float>(self, 0x1c);
-    float extentZ = F<float>(self, 0x28);
+    float centerZ = self->field_0x10 + self->field_0x1c;
+    float extentZ = self->field_0x28;
     if (!(centerZ - extentZ < z)) {
         return 0;
     }
@@ -47,8 +47,8 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     Vector *offsets = (Vector *)offsetStorage;
     uint32_t zero = 0;
 
-    float centerX = F<float>(this, 0x8) + F<float>(this, 0x14);
-    float extentX = F<float>(this, 0x20);
+    float centerX = this->field_0x8 + this->field_0x14;
+    float extentX = this->field_0x20;
     float highX = centerX + extentX;
     float lowX = centerX - extentX;
     float pointX = point.x;
@@ -59,8 +59,8 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     offsets[0].x = pointX - highX;
     offsets[1].x = pointX - lowX;
 
-    float centerY = F<float>(this, 0xc) + F<float>(this, 0x18);
-    float extentY = F<float>(this, 0x24);
+    float centerY = this->field_0xc + this->field_0x18;
+    float extentY = this->field_0x24;
     float highY = centerY + extentY;
     float lowY = centerY - extentY;
     float pointY = point.y;
@@ -71,8 +71,8 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     offsets[2].y = pointY - highY;
     offsets[3].y = pointY - lowY;
 
-    float centerZ = F<float>(this, 0x10) + F<float>(this, 0x1c);
-    float extentZ = F<float>(this, 0x28);
+    float centerZ = this->field_0x10 + this->field_0x1c;
+    float extentZ = this->field_0x28;
     float highZ = centerZ + extentZ;
     float lowZ = centerZ - extentZ;
     float pointZ = point.z;
@@ -129,10 +129,10 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
         extentZ = halfDepth;
     }
 
-    F<void *>(self, 0x0) = (char *)g_BoundingAAB_vtbl + 8;
-    F<float>(self, 0x20) = extentX;
-    F<float>(self, 0x24) = extentY;
-    F<float>(self, 0x28) = extentZ;
+    self->field_0x0 = (char *)g_BoundingAAB_vtbl + 8;
+    self->field_0x20 = extentX;
+    self->field_0x24 = extentY;
+    self->field_0x28 = extentZ;
 }
 
 // ---- getCollisionNormal_98270.cpp ----

@@ -1,4 +1,4 @@
-#include "MenuTouchWindow.h"
+#include "gof2/MenuTouchWindow.h"
 
 
 extern "C" void *_mtw_GameText_getText(void *gt, int id);
@@ -772,7 +772,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
             break;
         }
         _mtw_TouchButton_OnTouchBegin(pp(self, 0xe4), y);
-        *(unsigned short *)((char *)self + 0x108) = 0;
+        self->field_0x108 = 0;
         int b28 = *(int *)(layout + 0x28);
         int top = b28 + i32(self, 0x19c);
         if (top < y && y < i32(self, 0x158) + top &&
@@ -828,7 +828,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
         }
     } break;
     case 8: {
-        *(unsigned short *)((char *)self + 0x108) = 0;
+        self->field_0x108 = 0;
         int b28 = *(int *)(layout + 0x28);
         int top = b28 + i32(self, 0x19c);
         if (top < y && y < i32(self, 0x158) + top &&
@@ -866,15 +866,15 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
                     i32(self, 0xc) != 0 || y <= *(int *)*(void **)gBgScreenH2 - 0xdc ||
                     x <= *(int *)(*(char **)gBgObjB + 0x58) - 0x14 ||
                     *(int *)(*(char **)gBgObjB + 0x58) + 0xe6 <= x) {
-                    *(unsigned short *)((char *)self + 0x98) = 0;
+                    self->field_0x98 = 0;
                 } else {
                     i32(self, 0xc) = touchId;
-                    *(unsigned short *)((char *)self + 0x98) = 0x100;
+                    self->field_0x98 = 0x100;
                     pp(self, 0x94) = (void *)(long)x;
                 }
             } else {
                 i32(self, 8) = touchId;
-                *(unsigned short *)((char *)self + 0x98) = 1;
+                self->field_0x98 = 1;
                 pp(self, 0x90) = (void *)(long)x;
             }
         }
@@ -1254,7 +1254,7 @@ void MenuTouchWindow::update(int dt)
                 _mtw_ChoiceWindow_set(cw, s);
                 u8(self, 0x17d) = 1;
                 u8(self, 0x170) = 1;
-                *(unsigned short *)((char *)self + 0x17a) = 0;
+                self->field_0x17a = 0;
                 *(char *)((char *)appData + 0x42) = 0;
                 u8(self, 0x190) = 0;
             }
@@ -1622,7 +1622,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
                 _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
         } else {
             _mtw_TouchButton_OnTouchMove(pp(self, 0xe4), y);
-            *(unsigned short *)((char *)self + 0x108) = 0;
+            self->field_0x108 = 0;
             int base = *(int *)(layout + 0x28);
             int top = base + i32(self, 0x19c);
             int bottom = i32(self, 0x158) + top;
@@ -1673,7 +1673,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
         }
         break;
     case 6: { // state 7
-        *(unsigned short *)((char *)self + 0x108) = 0;
+        self->field_0x108 = 0;
         int base = *(int *)(layout + 0x28);
         int top = base + i32(self, 0x19c);
         int bottom = i32(self, 0x158) + top;

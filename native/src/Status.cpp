@@ -1,4 +1,4 @@
-#include "Status.h"
+#include "gof2/Status.h"
 
 
 extern "C" int SolarSystem_getIndex(int system);
@@ -651,19 +651,19 @@ Status::Status() {
     field_14c = 0;
     wanted = 0;
     wingmen = 0;
-    *(int32_t *)((char *)this + 0x28) = 0;
+    this->field_0x28 = 0;
     standing = 0;
     bluePrints = 0;
     pendingProducts = 0;
     agents = 0;
-    *(int32_t *)((char *)this + 0x3c) = 0;
-    *(int32_t *)((char *)this + 0x40) = 0;
-    *(int32_t *)((char *)this + 0x44) = 0;
-    *(int32_t *)((char *)this + 0x48) = 0;
+    this->field_0x3c = 0;
+    this->field_0x40 = 0;
+    this->field_0x44 = 0;
+    this->field_0x48 = 0;
     for (int i = 1; i != 5; i = i + 1) {
         *(int32_t *)((char *)this + i * 4) = 0;
     }
-    *(uint8_t *)((char *)this + 0x17c) = 0;
+    this->field_0x17c = 0;
     field_178 = 0;
 }
 
@@ -1592,14 +1592,14 @@ extern "C" void Status_nextCampaignMission(Status *self, bool param_1)
     // achievement check: flag if the new step matches any of the three tracked mission ids.
     for (int k = 0; k < 3; k = k + 1) {
         if (next == g_ncmAchTable[k])
-            *(unsigned char *)((char *)self + 0x17c) = 1;
+            self->field_0x17c = 1;
     }
 
     // advance counter + snapshot time (cases that finalise via campaign use 0x1e8, others 0x1e8
     // too -- both write the same counter in the engine).
     *state = next;
-    *(int *)((char *)self + 0x100) = prevTimeLo;
-    *(int *)((char *)self + 0x104) = prevTimeHi;
+    self->field_0x100 = prevTimeLo;
+    self->field_0x104 = prevTimeHi;
 
     if (step == 0)
         return;   // step 0 has no mission.
@@ -2003,7 +2003,7 @@ extern "C" void Status_departStation(Status *self, Station *dest)
                 Item_setStationAmount_ds(it, 0);
         }
     }
-    *(unsigned char *)((char *)self + 0x108) = 0;
+    self->field_0x108 = 0;
     Status_departTail((int)(long)self->ship);
 }
 
@@ -2136,7 +2136,7 @@ extern "C" Mission *Status_missionCompleted(Status *self, bool atStation, bool d
         case 0xa2:
             if (docked) {
                 if (Station_getIndex(self->station) == Mission_getTargetStation()) {
-                    void *bp = *(void **)(*(char **)((char *)self + 0x18) + Mission_getStatusValue() * 4);
+                    void *bp = *(void **)(self->field_0x18 + Mission_getStatusValue() * 4);
                     unsigned *ing = (unsigned *)BluePrint_getIngredientList(bp);
                     BluePrint_getQuantityList(bp);
                     bool all = true;
@@ -2222,7 +2222,7 @@ extern "C" Mission *Status_missionCompleted(Status *self, bool atStation, bool d
                     if (Item_isInList(idx, amt, Ship_getCargo()) != 0) return m;
                 }
             } else if (type == 0xd) {
-                if (docked && *(unsigned char *)((char *)self + 0xf0) != 0) return m;
+                if (docked && self->field_0xf0 != 0) return m;
             } else if (type == 0xe) {
                 if (docked) {
                     Agent *ag = (Agent *)Mission_getAgent(m);
@@ -2419,8 +2419,8 @@ void Status::setWingmen(Array<String *> *list) {
     }
     if (list == 0) {
         wingmen = 0;
-        *(int32_t *)((char *)this + 0x28) = 0;
-        *(int32_t *)((char *)this + 0x30) = 0;
+        this->field_0x28 = 0;
+        this->field_0x30 = 0;
     } else {
         Array<String *> *na = (Array<String *> *)operator new(0xc);
         Array_String_ctor(na);

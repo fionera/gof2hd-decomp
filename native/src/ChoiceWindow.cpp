@@ -1,4 +1,5 @@
-#include "ChoiceWindow.h"
+#include "gof2/ChoiceWindow.h"
+#include "gof2/Layout.h"
 
 
 extern "C" void TouchButton_OnTouchMove(void *self, int x, int y);
@@ -52,23 +53,23 @@ extern "C" void TouchButton_getPosition(void *out, void *self);
 // ---- OnTouchMove_147518.cpp ----
 int ChoiceWindow::OnTouchMove(int x, int y)
 {
-    if (F<uint8_t>(this, 0x59) != 0) {
-        if (F<void *>(this, 0x10) != 0)
-            TouchButton_OnTouchMove(F<void *>(this, 0x10), x, y);
-        if (F<void *>(this, 0x14) != 0)
-            TouchButton_OnTouchMove(F<void *>(this, 0x14), x, y);
-        if (F<void *>(this, 0x18) != 0)
-            TouchButton_OnTouchMove(F<void *>(this, 0x18), x, y);
+    if (this->field_0x59 != 0) {
+        if (this->field_0x10 != 0)
+            TouchButton_OnTouchMove(this->field_0x10, x, y);
+        if (this->field_0x14 != 0)
+            TouchButton_OnTouchMove(this->field_0x14, x, y);
+        if (this->field_0x18 != 0)
+            TouchButton_OnTouchMove(this->field_0x18, x, y);
     }
-    if (F<void *>(this, 0x1c) != 0)
-        ScrollTouchWindow_OnTouchMove(F<void *>(this, 0x1c), x, y);
+    if (this->field_0x1c != 0)
+        ScrollTouchWindow_OnTouchMove(this->field_0x1c, x, y);
     return 0;
 }
 
 // ---- hasChoice_146d9c.cpp ----
 uint8_t ChoiceWindow::hasChoice()
 {
-    return F<uint8_t>(this, 0x58);
+    return this->field_0x58;
 }
 
 // ---- setWidth_146da4.cpp ----
@@ -76,8 +77,8 @@ __attribute__((visibility("hidden"))) extern int *g_ChoiceWindow_screenWidth;
 
 void ChoiceWindow::setWidth(int width)
 {
-    F<int>(this, 0x8) = width;
-    F<int>(this, 0x0) = *g_ChoiceWindow_screenWidth / 2 - width / 2;
+    this->field_0x8 = width;
+    this->field_0x0 = *g_ChoiceWindow_screenWidth / 2 - width / 2;
 }
 
 // ---- set_146954.cpp ----
@@ -124,16 +125,16 @@ void ChoiceWindow::set(String const &title, String const &message, bool flag)
 // ---- OnTouchEnd_147564.cpp ----
 int ChoiceWindow::OnTouchEnd(int x, int y)
 {
-    if (F<uint8_t>(this, 0x59) != 0) {
-        if (F<void *>(this, 0x10) != 0 && TouchButton_OnTouchEnd(F<void *>(this, 0x10), x, y) != 0)
+    if (this->field_0x59 != 0) {
+        if (this->field_0x10 != 0 && TouchButton_OnTouchEnd(this->field_0x10, x, y) != 0)
             return 0;
-        if (F<void *>(this, 0x14) != 0 && TouchButton_OnTouchEnd(F<void *>(this, 0x14), x, y) != 0)
+        if (this->field_0x14 != 0 && TouchButton_OnTouchEnd(this->field_0x14, x, y) != 0)
             return 1;
-        if (F<void *>(this, 0x18) != 0 && TouchButton_OnTouchEnd(F<void *>(this, 0x18), x, y) != 0)
+        if (this->field_0x18 != 0 && TouchButton_OnTouchEnd(this->field_0x18, x, y) != 0)
             return 2;
     }
-    if (F<void *>(this, 0x1c) != 0)
-        ScrollTouchWindow_OnTouchEnd(F<void *>(this, 0x1c), x, y);
+    if (this->field_0x1c != 0)
+        ScrollTouchWindow_OnTouchEnd(this->field_0x1c, x, y);
     return -1;
 }
 
@@ -149,28 +150,28 @@ void ChoiceWindow::set(String const &text)
 // ---- update_1471b4.cpp ----
 void ChoiceWindow::update(int dt)
 {
-    ScrollTouchWindow_update(F<void *>(this, 0x1c), dt);
+    ScrollTouchWindow_update(this->field_0x1c, dt);
 }
 
 // ---- removeButtons_146d94.cpp ----
 void ChoiceWindow::removeButtons()
 {
-    F<uint8_t>(this, 0x59) = 0;
+    this->field_0x59 = 0;
 }
 
 // ---- OnTouchBegin_1474cc.cpp ----
 int ChoiceWindow::OnTouchBegin(int x, int y)
 {
-    if (F<uint8_t>(this, 0x59) != 0) {
-        if (F<void *>(this, 0x10) != 0)
-            TouchButton_OnTouchBegin(F<void *>(this, 0x10), x, y);
-        if (F<void *>(this, 0x14) != 0)
-            TouchButton_OnTouchBegin(F<void *>(this, 0x14), x, y);
-        if (F<void *>(this, 0x18) != 0)
-            TouchButton_OnTouchBegin(F<void *>(this, 0x18), x, y);
+    if (this->field_0x59 != 0) {
+        if (this->field_0x10 != 0)
+            TouchButton_OnTouchBegin(this->field_0x10, x, y);
+        if (this->field_0x14 != 0)
+            TouchButton_OnTouchBegin(this->field_0x14, x, y);
+        if (this->field_0x18 != 0)
+            TouchButton_OnTouchBegin(this->field_0x18, x, y);
     }
-    if (F<void *>(this, 0x1c) != 0)
-        ScrollTouchWindow_OnTouchBegin(F<void *>(this, 0x1c), x, y);
+    if (this->field_0x1c != 0)
+        ScrollTouchWindow_OnTouchBegin(this->field_0x1c, x, y);
     return 0;
 }
 
@@ -179,26 +180,26 @@ void operator delete(void *ptr) noexcept;
 
 ChoiceWindow::~ChoiceWindow()
 {
-    void *button = F<void *>(this, 0x10);
+    void *button = this->field_0x10;
     if (button != 0)
         operator delete(TouchButton_dtor(button));
-    F<void *>(this, 0x10) = 0;
+    this->field_0x10 = 0;
 
-    button = F<void *>(this, 0x14);
+    button = this->field_0x14;
     if (button != 0)
         operator delete(TouchButton_dtor(button));
-    F<void *>(this, 0x14) = 0;
+    this->field_0x14 = 0;
 
-    button = F<void *>(this, 0x18);
+    button = this->field_0x18;
     if (button != 0)
         operator delete(TouchButton_dtor(button));
-    F<void *>(this, 0x18) = 0;
+    this->field_0x18 = 0;
 
-    void *scroll = F<void *>(this, 0x1c);
+    void *scroll = this->field_0x1c;
     if (scroll != 0)
         operator delete(ScrollTouchWindow_dtor(scroll));
     void *title = (char *)this + 0x3c;
-    F<void *>(this, 0x1c) = 0;
+    this->field_0x1c = 0;
     String_dtor(title);
     String_dtor((char *)this + 0x20);
 }
@@ -211,38 +212,38 @@ void ChoiceWindow::setHeight(int height)
 {
     void **layoutHolder = g_ChoiceWindow_layout_146dc4;
     void *layout = *layoutHolder;
-    int top = F<int>(layout, 0x8);
-    F<int>(this, 0xc) = top + height;
+    int top = layout->field_0x8;
+    this->field_0xc = top + height;
 
-    void *button = F<void *>(this, 0x10);
+    void *button = this->field_0x10;
     int yBase = *g_ChoiceWindow_screenHeight_146dc4 / 2 - height / 2;
-    F<int>(this, 0x4) = yBase - top;
+    this->field_0x4 = yBase - top;
 
-    if (F<uint8_t>(this, 0x58) == 0) {
+    if (this->field_0x58 == 0) {
         if (button == 0)
             return;
         TouchButton_setPosition(button,
-                                F<int>(this, 0x0) + F<int>(this, 0x8) / 2,
-                                height + yBase - F<int>(this, 0x48),
+                                this->field_0x0 + this->field_0x8 / 2,
+                                height + yBase - this->field_0x48,
                                 0x24);
         return;
     }
 
     if (button != 0) {
         TouchButton_setPosition(button,
-                                F<int>(this, 0x0) + F<int>(this, 0x8) / 2 - F<int>(layout, 0x4c) / 2,
-                                height + yBase - F<int>(this, 0x48),
+                                this->field_0x0 + this->field_0x8 / 2 - layout->field_0x4c / 2,
+                                height + yBase - this->field_0x48,
                                 0x22);
     }
 
-    button = F<void *>(this, 0x14);
+    button = this->field_0x14;
     if (button == 0)
         return;
 
     layout = *layoutHolder;
     TouchButton_setPosition(button,
-                            F<int>(this, 0x0) + F<int>(this, 0x8) / 2 + F<int>(layout, 0x4c) / 2,
-                            F<int>(this, 0x4) + F<int>(this, 0xc) - F<int>(this, 0x48),
+                            this->field_0x0 + this->field_0x8 / 2 + layout->field_0x4c / 2,
+                            this->field_0x4 + this->field_0xc - this->field_0x48,
                             0x21);
 }
 
@@ -293,7 +294,7 @@ void ChoiceWindow::setMedal(int medal, int count)
     dtor(prefix);
 
     set(*GameText_getText(gameText, 0x161), *(String *)finalText, false);
-    ScrollTouchWindow_setTextCentered(F<void *>(this, 0x1c), true);
+    ScrollTouchWindow_setTextCentered(this->field_0x1c, true);
 
     void *canvas = *g_ChoiceWindow_canvas_146e8c;
     if (count < 0x24) {
@@ -307,9 +308,9 @@ void ChoiceWindow::setMedal(int medal, int count)
                               F<unsigned short>(g_ChoiceWindow_medalImages_146e8c, medal * 4),
                               (unsigned int *)((char *)this + 0x38));
 
-    F<int>(this, 0x2c) = count;
-    F<int>(this, 0x30) = medal;
-    F<uint8_t>(this, 0x59) = 1;
+    this->field_0x2c = count;
+    this->field_0x30 = medal;
+    this->field_0x59 = 1;
     String_dtor(finalText);
 }
 
@@ -334,15 +335,15 @@ ChoiceWindow::ChoiceWindow()
     int *screenWidthPtr = g_ChoiceWindow_screenWidth_1467ec;
     void *config = *configHolder;
     int width = F<int>(config, 0x264);
-    F<int>(this, 0x8) = width;
-    F<ChoiceWindow_Int4>(this, 0x48) = F<ChoiceWindow_Int4>(config, 0x268);
+    this->field_0x8 = width;
+    this->field_0x48 = F<ChoiceWindow_Int4>(config, 0x268);
 
     int screenWidth = *screenWidthPtr;
-    F<ChoiceWindow_Int4>(this, 0x10) = ChoiceWindow_Int4();
-    F<int>(this, 0x34) = -1;
-    F<int>(this, 0x38) = -1;
-    F<uint8_t>(this, 0x59) = 1;
-    F<int>(this, 0x0) = screenWidth / 2 - width / 2;
+    this->field_0x10 = ChoiceWindow_Int4();
+    this->field_0x34 = -1;
+    this->field_0x38 = -1;
+    this->field_0x59 = 1;
+    this->field_0x0 = screenWidth / 2 - width / 2;
 }
 
 // ---- set_1469b0.cpp ----
@@ -369,7 +370,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     char titleCopy[12];
     char messageCopy[12];
 
-    F<uint8_t>(this, 0x58) = hasButtons;
+    this->field_0x58 = hasButtons;
 
     void *gameText = *g_ChoiceWindow_gameText_1469b0;
     bool defaultButtons = false;
@@ -381,45 +382,45 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     if (!defaultButtons)
         width = (int)((float)width * 0.85f);
 
-    F<int>(this, 0x8) = width;
-    F<int>(this, 0x0) = *g_ChoiceWindow_screenWidth_1469b0 / 2 - width / 2;
+    this->field_0x8 = width;
+    this->field_0x0 = *g_ChoiceWindow_screenWidth_1469b0 / 2 - width / 2;
     FModSound_play(*g_ChoiceWindow_sound_1469b0, 0x7e, 0, 0, 0.0f);
     String_assign((char *)this + 0x20, title);
 
-    void *scroll = F<void *>(this, 0x1c);
+    void *scroll = this->field_0x1c;
     if (scroll != 0)
         operator delete(ScrollTouchWindow_dtor(scroll));
-    F<void *>(this, 0x1c) = 0;
+    this->field_0x1c = 0;
 
     void *lines = operator new(0xc);
     Array_StringPtr_ctor(lines);
 
     void *layout = *g_ChoiceWindow_layout_1469b0;
     Globals_getLineArray(*g_ChoiceWindow_globals_1469b0, *g_ChoiceWindow_lineFont_1469b0, message,
-                         (F<int>(this, 0x8) - F<int>(layout, 0x4c) * 2) -
-                             F<int>(layout, 0x48),
+                         (this->field_0x8 - layout->field_0x4c * 2) -
+                             layout->field_0x48,
                          lines);
 
-    int contentHeight = F<int>(layout, 0x4) * F<int>(lines, 0x0) + F<int>(layout, 0x8) +
-                        F<int>(layout, 0x4c) * 2 + F<int>(this, 0x48) * 2 +
-                        F<int>(layout, 0x30);
-    int maxHeight = F<int>(layout, 0x278);
+    int contentHeight = layout->field_0x4 * F<int>(lines, 0x0) + layout->field_0x8 +
+                        layout->field_0x4c * 2 + this->field_0x48 * 2 +
+                        layout->field_0x30;
+    int maxHeight = layout->field_0x278;
     if ((unsigned)contentHeight < (unsigned)maxHeight)
         maxHeight = contentHeight;
-    F<int>(this, 0xc) = maxHeight;
+    this->field_0xc = maxHeight;
 
     if (y == -1)
         y = *g_ChoiceWindow_screenHeight_1469b0 / 2 - maxHeight / 2;
-    F<int>(this, 0x4) = y;
+    this->field_0x4 = y;
 
     scroll = operator new(0x24);
-    ScrollTouchWindow_ctor(scroll, F<int>(this, 0x0), F<int>(layout, 0x8) + y,
-                           F<int>(this, 0x8),
-                           (((maxHeight - F<int>(this, 0x48) * 2) - F<int>(layout, 0x8)) -
-                            F<int>(layout, 0x30)) +
-                               F<int>(layout, 0x2bc),
+    ScrollTouchWindow_ctor(scroll, this->field_0x0, layout->field_0x8 + y,
+                           this->field_0x8,
+                           (((maxHeight - this->field_0x48 * 2) - layout->field_0x8) -
+                            layout->field_0x30) +
+                               layout->field_0x2bc,
                            false);
-    F<void *>(this, 0x1c) = scroll;
+    this->field_0x1c = scroll;
 
     String_ctor_string(titleCopy, title, false);
     String_ctor_string(messageCopy, message, false);
@@ -430,18 +431,18 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     ArrayReleaseClasses_StringPtr(lines);
     operator delete(Array_StringPtr_dtor(lines));
 
-    void *button = F<void *>(this, 0x10);
+    void *button = this->field_0x10;
     if (button != 0)
         operator delete(TouchButton_dtor(button));
-    F<void *>(this, 0x10) = 0;
+    this->field_0x10 = 0;
 
-    button = F<void *>(this, 0x14);
+    button = this->field_0x14;
     if (button != 0)
         operator delete(TouchButton_dtor(button));
-    F<void *>(this, 0x14) = 0;
+    this->field_0x14 = 0;
 
     if (hasButtons) {
-        int baseWidth = F<int>(layout, 0x40);
+        int baseWidth = layout->field_0x40;
         float scaled = (float)baseWidth * 1.5f;
         if (defaultButtons)
             scaled = (float)baseWidth;
@@ -449,27 +450,27 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
 
         button = operator new(0xc8);
         TouchButton_ctor(button, left, 0,
-                         F<int>(this, 0x0) + F<int>(this, 0x8) / 2 - F<int>(layout, 0x4c) / 2,
-                         F<int>(this, 0x4) + F<int>(this, 0xc) - F<int>(this, 0x48),
+                         this->field_0x0 + this->field_0x8 / 2 - layout->field_0x4c / 2,
+                         this->field_0x4 + this->field_0xc - this->field_0x48,
                          buttonWidth, 0x22, 4);
-        F<void *>(this, 0x10) = button;
+        this->field_0x10 = button;
 
         button = operator new(0xc8);
         TouchButton_ctor(button, right, 0,
-                         F<int>(this, 0x0) + F<int>(this, 0x8) / 2 + F<int>(layout, 0x4c) / 2,
-                         F<int>(this, 0x4) + F<int>(this, 0xc) - F<int>(this, 0x48),
+                         this->field_0x0 + this->field_0x8 / 2 + layout->field_0x4c / 2,
+                         this->field_0x4 + this->field_0xc - this->field_0x48,
                          buttonWidth, 0x21, 4);
-        F<void *>(this, 0x14) = button;
+        this->field_0x14 = button;
     } else {
         button = operator new(0xc8);
         TouchButton_ctor(button, single, 0,
-                         F<int>(this, 0x0) + F<int>(this, 0x8) / 2,
-                         F<int>(this, 0x4) + F<int>(this, 0xc) - F<int>(this, 0x48),
-                         F<int>(layout, 0x40), 0x24, 4);
-        F<void *>(this, 0x14) = button;
+                         this->field_0x0 + this->field_0x8 / 2,
+                         this->field_0x4 + this->field_0xc - this->field_0x48,
+                         layout->field_0x40, 0x24, 4);
+        this->field_0x14 = button;
     }
 
-    F<uint8_t>(this, 0x59) = 1;
+    this->field_0x59 = 1;
 }
 
 // ---- setMiscButton_147068.cpp ----
@@ -486,46 +487,46 @@ __attribute__((visibility("hidden"))) extern int *g_ChoiceWindow_screenHeight_14
 void ChoiceWindow::setMiscButton(String const &text)
 {
     void *layout;
-    int padding = F<int>(this, 0x48);
+    int padding = this->field_0x48;
     int buttonWidth;
 
-    if (F<void *>(this, 0x10) == 0 || F<void *>(this, 0x14) == 0) {
+    if (this->field_0x10 == 0 || this->field_0x14 == 0) {
         layout = *g_ChoiceWindow_layout_147068_b;
-        buttonWidth = padding + F<int>(layout, 0x40) * 2;
+        buttonWidth = padding + layout->field_0x40 * 2;
     } else {
-        int leftWidth = TouchButton_getWidth(F<void *>(this, 0x10));
-        int rightWidth = TouchButton_getWidth(F<void *>(this, 0x14));
+        int leftWidth = TouchButton_getWidth(this->field_0x10);
+        int rightWidth = TouchButton_getWidth(this->field_0x14);
         layout = *g_ChoiceWindow_layout_147068_a;
         buttonWidth = leftWidth + rightWidth + padding;
     }
 
     void *button = operator new(0xc8);
     TouchButton_ctor(button, text, 0,
-                     F<int>(this, 0x0) + F<int>(this, 0x8) / 2 - F<int>(layout, 0x4c) / 2,
-                     F<int>(this, 0x4) + F<int>(this, 0xc) - padding,
+                     this->field_0x0 + this->field_0x8 / 2 - layout->field_0x4c / 2,
+                     this->field_0x4 + this->field_0xc - padding,
                      buttonWidth, 0x22, 4);
 
-    F<void *>(this, 0x18) = button;
+    this->field_0x18 = button;
 
     void **layoutHolder = g_ChoiceWindow_layout_147068_c;
     layout = *layoutHolder;
-    setHeight((F<int>(this, 0xc) - F<int>(layout, 0x8)) + F<int>(this, 0x48) * 2 +
-              F<int>(layout, 0x30));
+    setHeight((this->field_0xc - layout->field_0x8) + this->field_0x48 * 2 +
+              layout->field_0x30);
 
-    TouchButton_setPosition(F<void *>(this, 0x18),
-                            F<int>(this, 0x0) + F<int>(this, 0x8) / 2,
-                            F<int>(this, 0x4) + F<int>(this, 0xc) - F<int>(this, 0x48),
+    TouchButton_setPosition(this->field_0x18,
+                            this->field_0x0 + this->field_0x8 / 2,
+                            this->field_0x4 + this->field_0xc - this->field_0x48,
                             0x24);
 
-    int delta = -(F<int>(*layoutHolder, 0x30) + F<int>(this, 0x48));
-    if (F<void *>(this, 0x10) != 0)
-        TouchButton_translate(F<void *>(this, 0x10), 0, delta);
-    if (F<void *>(this, 0x14) != 0)
-        TouchButton_translate(F<void *>(this, 0x14), 0, delta);
+    int delta = -(F<int>(*layoutHolder, 0x30) + this->field_0x48);
+    if (this->field_0x10 != 0)
+        TouchButton_translate(this->field_0x10, 0, delta);
+    if (this->field_0x14 != 0)
+        TouchButton_translate(this->field_0x14, 0, delta);
 
-    ScrollTouchWindow_setPosition(F<void *>(this, 0x1c),
+    ScrollTouchWindow_setPosition(this->field_0x1c,
                                   *g_ChoiceWindow_screenHeight_147068 / 2 -
-                                      F<int>(this, 0xc) / 2 + F<int>(*layoutHolder, 0x8));
+                                      this->field_0xc / 2 + F<int>(*layoutHolder, 0x8));
 }
 
 // ---- draw_1471bc.cpp ----
@@ -555,33 +556,33 @@ void ChoiceWindow::draw()
     void *layout = *g_ChoiceWindow_layout_1471bc;
     Layout_drawMask(layout);
 
-    String_ctor_string(titleCopy, *(String *)((char *)this + 0x20), false);
-    Layout_drawBox(layout, 7, F<int>(this, 0x0), F<int>(this, 0x4),
-                   F<int>(this, 0x8), F<int>(this, 0xc), titleCopy);
+    String_ctor_string(titleCopy, this->field_0x20, false);
+    Layout_drawBox(layout, 7, this->field_0x0, this->field_0x4,
+                   this->field_0x8, this->field_0xc, titleCopy);
     String_dtor(titleCopy);
 
     void *canvas = *g_ChoiceWindow_canvas_1471bc;
     PaintCanvas_SetColor(canvas, 0xffffffff);
 
-    if (F<int>(this, 0x34) != -1) {
-        PaintCanvas_DrawImage2D(canvas, F<int>(this, 0x34),
-                                F<int>(this, 0x0) + (F<int>(this, 0x8) >> 1),
-                                F<int>(this, 0x4) + F<int>(this, 0x4c) + 1, 0x11);
+    if (this->field_0x34 != -1) {
+        PaintCanvas_DrawImage2D(canvas, this->field_0x34,
+                                this->field_0x0 + (this->field_0x8 >> 1),
+                                this->field_0x4 + this->field_0x4c + 1, 0x11);
         int color;
-        if (F<int>(this, 0x2c) < 0x24)
-            color = F<int>(g_ChoiceWindow_medalColorsLow_1471bc, F<int>(this, 0x2c) * 4);
+        if (this->field_0x2c < 0x24)
+            color = F<int>(g_ChoiceWindow_medalColorsLow_1471bc, this->field_0x2c * 4);
         else
-            color = F<int>(g_ChoiceWindow_medalColorsHigh_1471bc, F<int>(this, 0x2c) * 4);
+            color = F<int>(g_ChoiceWindow_medalColorsHigh_1471bc, this->field_0x2c * 4);
         PaintCanvas_SetColor(canvas, color);
-        PaintCanvas_DrawImage2D(canvas, F<int>(this, 0x38),
-                                F<int>(this, 0x0) + (F<int>(this, 0x8) >> 1),
-                                F<int>(this, 0x4) + F<int>(this, 0x4c), 0x11);
+        PaintCanvas_DrawImage2D(canvas, this->field_0x38,
+                                this->field_0x0 + (this->field_0x8 >> 1),
+                                this->field_0x4 + this->field_0x4c, 0x11);
 
         if (Status_hardCoreMode(*g_ChoiceWindow_status_1471bc) == 0 &&
-            Achievements_isEliteMedal(*g_ChoiceWindow_achievements_1471bc, F<int>(this, 0x30)) == 0) {
+            Achievements_isEliteMedal(*g_ChoiceWindow_achievements_1471bc, this->field_0x30) == 0) {
             String_ctor_cstr(prefix, "", false);
             Layout_formatCredits(credits, layout,
-                                 F<int>(g_ChoiceWindow_creditValues_1471bc, F<int>(this, 0x2c) * 4));
+                                 F<int>(g_ChoiceWindow_creditValues_1471bc, this->field_0x2c * 4));
             String_plus(creditsText, prefix, credits);
             String_dtor(credits);
             String_dtor(prefix);
@@ -589,8 +590,8 @@ void ChoiceWindow::draw()
             void *font = *g_ChoiceWindow_font_1471bc_a;
             int textWidth = PaintCanvas_GetTextWidth(canvas, font, creditsText);
             PaintCanvas_DrawString(canvas, font, creditsText,
-                                   F<int>(this, 0x0) + (F<int>(this, 0x8) >> 1) - textWidth / 2,
-                                   F<int>(this, 0x4) + F<int>(this, 0xc) - F<int>(this, 0x50),
+                                   this->field_0x0 + (this->field_0x8 >> 1) - textWidth / 2,
+                                   this->field_0x4 + this->field_0xc - this->field_0x50,
                                    false);
             String_dtor(creditsText);
         }
@@ -599,42 +600,42 @@ void ChoiceWindow::draw()
         void *font = *g_ChoiceWindow_font_1471bc_b;
         int textWidth = PaintCanvas_GetTextWidth(canvas, font, (char *)this + 0x3c);
         PaintCanvas_DrawString(canvas, font, (char *)this + 0x3c,
-                               F<int>(this, 0x0) + (F<int>(this, 0x8) >> 1) - textWidth / 2,
-                               F<int>(this, 0x4) + F<int>(this, 0x54), false);
+                               this->field_0x0 + (this->field_0x8 >> 1) - textWidth / 2,
+                               this->field_0x4 + this->field_0x54, false);
     }
 
-    ScrollTouchWindow_draw(F<void *>(this, 0x1c));
+    ScrollTouchWindow_draw(this->field_0x1c);
 
-    if (F<uint8_t>(this, 0x59) != 0) {
-        if (F<void *>(this, 0x10) != 0)
-            TouchButton_draw(F<void *>(this, 0x10));
+    if (this->field_0x59 != 0) {
+        if (this->field_0x10 != 0)
+            TouchButton_draw(this->field_0x10);
 
-        if (F<void *>(this, 0x14) != 0) {
-            TouchButton_draw(F<void *>(this, 0x14));
-            if (F<void *>(this, 0x14) != 0) {
-                TouchButton_getPosition(pos, F<void *>(this, 0x14));
+        if (this->field_0x14 != 0) {
+            TouchButton_draw(this->field_0x14);
+            if (this->field_0x14 != 0) {
+                TouchButton_getPosition(pos, this->field_0x14);
                 F<int>(g_ChoiceWindow_posTargetA_1471bc, 0x8) = (int)pos[0];
-                TouchButton_getPosition(pos, F<void *>(this, 0x14));
+                TouchButton_getPosition(pos, this->field_0x14);
                 F<int>(g_ChoiceWindow_posTargetB_1471bc, 0x8) = (int)pos[1];
             }
         }
 
-        if (F<void *>(this, 0x10) != 0) {
-            TouchButton_getPosition(pos, F<void *>(this, 0x10));
+        if (this->field_0x10 != 0) {
+            TouchButton_getPosition(pos, this->field_0x10);
             F<int>(g_ChoiceWindow_posTargetC_1471bc, 0xc) = (int)pos[0];
-            TouchButton_getPosition(pos, F<void *>(this, 0x10));
+            TouchButton_getPosition(pos, this->field_0x10);
             F<int>(g_ChoiceWindow_posTargetD_1471bc, 0xc) = (int)pos[1];
 
-            if (F<void *>(this, 0x14) == 0) {
-                TouchButton_getPosition(pos, F<void *>(this, 0x10));
+            if (this->field_0x14 == 0) {
+                TouchButton_getPosition(pos, this->field_0x10);
                 F<int>(g_ChoiceWindow_posTargetC_1471bc, 0x8) = (int)pos[0];
-                TouchButton_getPosition(pos, F<void *>(this, 0x10));
+                TouchButton_getPosition(pos, this->field_0x10);
                 F<int>(g_ChoiceWindow_posTargetD_1471bc, 0x8) = (int)pos[1];
             }
         }
 
         *g_ChoiceWindow_dirtyFlag_1471bc = 1;
-        if (F<void *>(this, 0x18) != 0)
-            TouchButton_draw(F<void *>(this, 0x18));
+        if (this->field_0x18 != 0)
+            TouchButton_draw(this->field_0x18);
     }
 }

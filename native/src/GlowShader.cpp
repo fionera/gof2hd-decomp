@@ -1,4 +1,4 @@
-#include "GlowShader.h"
+#include "gof2/GlowShader.h"
 
 
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);

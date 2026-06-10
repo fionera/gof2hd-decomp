@@ -1,4 +1,6 @@
-#include "ObjectGun.h"
+#include "gof2/ObjectGun.h"
+#include "gof2/Gun.h"
+#include "gof2/Player.h"
 
 
 extern "C" ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self);
@@ -74,8 +76,8 @@ extern "C" void _ZN9ObjectGunD0Ev(ObjectGun *self)
 // ---- setScaling_16035a.cpp ----
 void ObjectGun::setScaling(int x, int y)
 {
-    F<float>(this, 0x3c) = (float)x;
-    F<float>(this, 0x40) = (float)y;
+    this->field_0x3c = (float)x;
+    this->field_0x40 = (float)y;
 }
 
 // ---- _ObjectGun_15f904.cpp ----
@@ -84,24 +86,24 @@ __attribute__((visibility("hidden"))) extern "C" void *ObjectGun_vtable;
 
 extern "C" ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
 {
-    F<void *>(self, 0x0) = (char *)ObjectGun_vtable + 8;
+    self->field_0x0 = (char *)ObjectGun_vtable + 8;
 
-    AEGeometry *geometry = F<AEGeometry *>(self, 0x18);
+    AEGeometry *geometry = self->field_0x18;
     if (geometry != 0)
         operator_delete(AEGeometry_dtor(geometry));
 
-    Array *explosions = F<Array *>(self, 0x2c);
-    F<AEGeometry *>(self, 0x18) = 0;
+    Array *explosions = self->field_0x2c;
+    self->field_0x18 = 0;
     if (explosions != 0) {
         ArrayReleaseClasses_Explosion(explosions);
-        explosions = F<Array *>(self, 0x2c);
+        explosions = self->field_0x2c;
         if (explosions != 0)
             operator_delete(Array_Explosion_dtor(explosions));
-        F<Array *>(self, 0x2c) = 0;
+        self->field_0x2c = 0;
     }
 
-    operator_delete_array(F<void *>(self, 0x30));
-    F<void *>(self, 0x30) = 0;
+    operator_delete_array(self->field_0x30);
+    self->field_0x30 = 0;
     return self;
 }
 
@@ -111,9 +113,9 @@ __attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;
 void ObjectGun::replaceGun(int mesh)
 {
     void **canvas = (void **)g_PaintCanvas;
-    TransformRemoveMesh(*canvas, F<uint32_t>(this, 0x10), F<uint16_t>(this, 0x28));
-    F<int>(this, 0x28) = mesh;
-    return TransformAddMesh(*canvas, F<uint32_t>(this, 0x10), (uint16_t)mesh, 0);
+    TransformRemoveMesh(*canvas, this->field_0x10, this->field_0x28);
+    this->field_0x28 = mesh;
+    return TransformAddMesh(*canvas, this->field_0x10, (uint16_t)mesh, 0);
 }
 
 // ---- setEnemies_15f95c.cpp ----
@@ -136,27 +138,27 @@ static const Vec4 kDefaultScale = {1.0f, 1.0f, 1.0f, 0.0f};
 ObjectGun::ObjectGun(int, Gun *gun, int mesh, uint32_t, Level *level)
 {
     ObjectGun *self = this;
-    F<Vec4>(self, 0x60) = kZeroVec;
-    F<Vec4>(self, 0x50) = kZeroVec;
-    F<uint32_t>(self, 0x70) = 0;
-    F<void *>(self, 0x0) = (char *)ObjectGun_vtable + 8;
+    self->field_0x60 = kZeroVec;
+    self->field_0x50 = kZeroVec;
+    self->field_0x70 = 0;
+    self->field_0x0 = (char *)ObjectGun_vtable + 8;
     Matrix_ctor((Matrix *)((char *)self + 0x74));
 
     void **canvas = (void **)g_PaintCanvas;
-    F<uint8_t>(self, 0x24) = 0;
-    F<Array *>(self, 0x2c) = 0;
-    F<void *>(self, 0x30) = 0;
-    F<int>(self, 0x4) = -1;
-    F<Gun *>(self, 0x8) = gun;
-    F<Level *>(self, 0xc) = level;
-    F<int>(self, 0x14) = -1;
-    TransformCreate(*canvas, &F<uint32_t>(self, 0x10));
-    F<int>(self, 0x28) = mesh;
-    TransformAddMesh(*canvas, F<uint32_t>(self, 0x10), (uint16_t)mesh, 0);
-    F<uint32_t>(self, 0x20) = 0;
-    F<Vec4>(self, 0x3c) = kDefaultScale;
+    self->field_0x24 = 0;
+    self->field_0x2c = 0;
+    self->field_0x30 = 0;
+    self->field_0x4 = -1;
+    self->field_0x8 = gun;
+    self->field_0xc = level;
+    self->field_0x14 = -1;
+    TransformCreate(*canvas, &self->field_0x10);
+    self->field_0x28 = mesh;
+    TransformAddMesh(*canvas, self->field_0x10, (uint16_t)mesh, 0);
+    self->field_0x20 = 0;
+    self->field_0x3c = kDefaultScale;
 
-    uint32_t type = F<uint32_t>(gun, 0x5c);
+    uint32_t type = gun->field_0x5c;
     uint32_t visible = 1;
     if (type > 8)
         goto visible_zero;
@@ -169,7 +171,7 @@ ObjectGun::ObjectGun(int, Gun *gun, int mesh, uint32_t, Level *level)
 visible_zero:
     visible = 0;
 visible_done:
-    F<uint8_t>(self, 0x4c) = (uint8_t)visible;
+    self->field_0x4c = (uint8_t)visible;
 
     if (*(uint8_t *)g_ObjectGunScaleFlag == 0)
         goto check_special_type;
@@ -186,9 +188,9 @@ visible_done:
     goto after_special_type;
 
 scale_to_small:
-    F<float>(self, 0x3c) = 0.6f;
-    F<float>(self, 0x40) = 0.6f;
-    F<float>(self, 0x44) = 0.6f;
+    self->field_0x3c = 0.6f;
+    self->field_0x40 = 0.6f;
+    self->field_0x44 = 0.6f;
 
 check_special_type:
     if (type == 0x19)
@@ -198,66 +200,66 @@ check_special_type:
     goto after_special_type;
 
 scale_to_medium:
-    F<float>(self, 0x3c) = 0.7f;
-    F<float>(self, 0x40) = 0.7f;
-    F<float>(self, 0x44) = 0.7f;
+    self->field_0x3c = 0.7f;
+    self->field_0x40 = 0.7f;
+    self->field_0x44 = 0.7f;
     goto after_special_type;
 
 make_explosions:
     {
         Array *explosions = (Array *)operator_new(0xc);
         Array_Explosion_ctor(explosions);
-        F<Array *>(self, 0x2c) = explosions;
-        ArraySetLength_Explosion(F<uint32_t>(gun, 0x8), explosions);
-        explosions = F<Array *>(self, 0x2c);
-        F<void *>(self, 0x30) = operator_new_array(F<uint32_t>(explosions, 0x0));
+        self->field_0x2c = explosions;
+        ArraySetLength_Explosion(gun->field_0x8, explosions);
+        explosions = self->field_0x2c;
+        self->field_0x30 = operator_new_array(F<uint32_t>(explosions, 0x0));
 
         for (uint32_t i = 0; i < F<uint32_t>(explosions, 0x0); ++i) {
             Explosion *explosion = (Explosion *)operator_new(0x68);
             int explosionType = 10;
-            int weapon = F<int>(gun, 0x58);
+            int weapon = gun->field_0x58;
             if (weapon == 0xb1)
                 explosionType = 9;
             if (weapon == 0xb0)
                 explosionType = 8;
             Explosion_ctor(explosion, explosionType);
-            F<Explosion **>(F<Array *>(self, 0x2c), 0x4)[i] = explosion;
-            Explosion_setWeaponIndex(F<Explosion **>(F<Array *>(self, 0x2c), 0x4)[i],
-                                     F<int>(gun, 0x58));
-            F<uint8_t *>(self, 0x30)[i] = 1;
-            explosions = F<Array *>(self, 0x2c);
+            F<Explosion **>(self->field_0x2c, 0x4)[i] = explosion;
+            Explosion_setWeaponIndex(F<Explosion **>(self->field_0x2c, 0x4)[i],
+                                     gun->field_0x58);
+            self->field_0x30[i] = 1;
+            explosions = self->field_0x2c;
         }
     }
 
 after_special_type:
 
     AEGeometry *geometry;
-    if (F<uint8_t>(gun, 0xa8) == 0) {
+    if (gun->field_0xa8 == 0) {
         if (Gun_isPlayerGun(gun) == 0 ||
-            g_ObjectGunPlayerGunIds[F<int>(gun, 0x58)] < 0) {
+            g_ObjectGunPlayerGunIds[gun->field_0x58] < 0) {
             geometry = 0;
-            F<uint8_t>(self, 0x1c) = 0;
+            self->field_0x1c = 0;
             goto done;
         }
-        int createGeometry = F<int>(gun, 0x5c) - 0xb;
+        int createGeometry = gun->field_0x5c - 0xb;
         if (createGeometry != 0)
             createGeometry = 1;
-        F<uint8_t>(self, 0x1c) = createGeometry;
+        self->field_0x1c = createGeometry;
         if (createGeometry == 0) {
             geometry = 0;
             goto done;
         }
     } else {
-        F<uint8_t>(self, 0x1c) = 1;
+        self->field_0x1c = 1;
     }
 
     geometry = (AEGeometry *)operator_new(0xc0);
-    AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[F<int>(gun, 0x58)].id, *canvas, false);
+    AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[gun->field_0x58].id, *canvas, false);
 
 done:
-    F<uint8_t>(self, 0x1d) = 0;
-    F<AEGeometry *>(self, 0x18) = geometry;
-    F<uint32_t>(self, 0x34) = 0;
+    self->field_0x1d = 0;
+    self->field_0x18 = geometry;
+    self->field_0x34 = 0;
 }
 
 // ---- update_15f964.cpp ----
@@ -269,7 +271,7 @@ __attribute__((visibility("hidden"))) extern "C" void (*g_TransformSetState)(uin
 
 static inline Explosion *explosion_at(ObjectGun *self, uint32_t index)
 {
-    return F<Explosion **>(F<Array *>(self, 0x2c), 0x4)[index];
+    return F<Explosion **>(self->field_0x2c, 0x4)[index];
 }
 
 void ObjectGun::update(int dt)
@@ -285,82 +287,82 @@ void ObjectGun::update(int dt)
     Vector zero = {0.0f, 0.0f, 0.0f};
 
     void **canvas = (void **)g_PaintCanvas;
-    uint32_t transform = TransformGetTransform(*canvas, F<uint32_t>(this, 0x10));
+    uint32_t transform = TransformGetTransform(*canvas, this->field_0x10);
     Transform_Update((uint64_t)transform, (int64_t)dt, 0);
 
-    F<int>(this, 0x34) = dt;
-    Gun *gun = F<Gun *>(this, 0x8);
+    this->field_0x34 = dt;
+    Gun *gun = this->field_0x8;
     Gun_update(gun, dt);
 
-    if (F<uint8_t>(this, 0x1c) == 0) {
+    if (this->field_0x1c == 0) {
         if (Gun_isPlayerGun(gun) == 0) {
-            Player *owner = F<Player *>(gun, 0x4);
+            Player *owner = gun->field_0x4;
             if (owner != 0) {
                 Player *ki = Player_getKIPlayer(owner);
                 if (ki != 0 && F<uint8_t>(Player_getKIPlayer(owner), 0x3f) != 0) {
-                    F<uint8_t>(this, 0x1c) = 1;
+                    this->field_0x1c = 1;
                     AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);
-                    AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[F<int>(F<Gun *>(this, 0x8), 0x58)].id,
+                    AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[F<int>(this->field_0x8, 0x58)].id,
                                     *canvas, false);
-                    F<AEGeometry *>(this, 0x18) = geometry;
+                    this->field_0x18 = geometry;
                 }
             }
         }
-        if (F<uint8_t>(this, 0x1c) == 0)
+        if (this->field_0x1c == 0)
             goto after_geometry;
     }
 
-    gun = F<Gun *>(this, 0x8);
-    if (F<uint8_t>(gun, 0xa9) == 0) {
-        uint32_t object = g_TransformGetObject(*canvas, F<uint32_t>(F<AEGeometry *>(this, 0x18), 0xc));
+    gun = this->field_0x8;
+    if (gun->field_0xa9 == 0) {
+        uint32_t object = g_TransformGetObject(*canvas, F<uint32_t>(this->field_0x18, 0xc));
         g_TransformSetState(object, 0, 0);
-        object = g_TransformGetObject(*canvas, F<uint32_t>(F<AEGeometry *>(this, 0x18), 0xc));
+        object = g_TransformGetObject(*canvas, F<uint32_t>(this->field_0x18, 0xc));
         g_TransformSetState(object, 3, 0);
-        object = g_TransformGetObject(*canvas, F<uint32_t>(F<AEGeometry *>(this, 0x18), 0xc));
+        object = g_TransformGetObject(*canvas, F<uint32_t>(this->field_0x18, 0xc));
         g_TransformSetState(object, 1, 0);
         goto after_geometry;
     }
 
     {
-        Player *player = Level_getPlayer(F<Level *>(this, 0xc));
+        Player *player = Level_getPlayer(this->field_0xc);
         if (Gun_isPlayerGun(gun) != 0) {
             PlayerEgo_getPosition(&position, player);
         } else {
-            Player_getPosition(&position, F<Player *>(gun, 0x4));
+            Player_getPosition(&position, gun->field_0x4);
         }
 
-        gun = F<Gun *>(this, 0x8);
+        gun = this->field_0x8;
         void *matrixSource = player;
         if (Gun_isPlayerGun(gun) == 0)
             matrixSource = (char *)gun + 0x4;
         __aeabi_memcpy(&playerMatrix, (char *)F<void *>(matrixSource, 0x0) + 0x4, 0x3c);
 
-        offsets.x = F<float>(gun, 0x7c);
-        offsets.y = F<float>(gun, 0x80);
-        offsets.z = F<float>(gun, 0x84) + 8.0f;
+        offsets.x = gun->field_0x7c;
+        offsets.y = gun->field_0x80;
+        offsets.z = gun->field_0x84 + 8.0f;
         MatrixRotateVector(&workMatrix, &playerMatrix, &offsets);
         Vector_add_assign(&position, (Vector *)&workMatrix);
-        AEGeometry_setPosition(F<AEGeometry *>(this, 0x18), &position);
+        AEGeometry_setPosition(this->field_0x18, &position);
 
-        transform = TransformGetTransform(*canvas, F<uint32_t>(F<AEGeometry *>(this, 0x18), 0xc));
+        transform = TransformGetTransform(*canvas, F<uint32_t>(this->field_0x18, 0xc));
         Transform_Update((uint64_t)transform, (int64_t)dt, 0);
 
-        if (F<int>(F<Gun *>(this, 0x8), 0x5c) != 8) {
+        if (F<int>(this->field_0x8, 0x5c) != 8) {
             void *paint = *canvas;
             void *camera = CameraGetCurrent(paint);
             Matrix_copy(&cameraMatrix, (Matrix *)CameraGetLocal(paint, camera));
             MatrixGetDir(&dir, &cameraMatrix);
             MatrixGetUp(&up, &cameraMatrix);
-            AEGeometry_setDirection(F<AEGeometry *>(this, 0x18), &dir, &up);
+            AEGeometry_setDirection(this->field_0x18, &dir, &up);
             goto after_geometry;
         }
 
-        Matrix *m0 = AEGeometry_getMatrix(F<AEGeometry *>(this, 0x18));
-        Matrix *m1 = AEGeometry_getMatrix(F<AEGeometry *>(this, 0x18));
+        Matrix *m0 = AEGeometry_getMatrix(this->field_0x18);
+        Matrix *m1 = AEGeometry_getMatrix(this->field_0x18);
         Matrix_multiply(&workMatrix, m0);
 
-        gun = F<Gun *>(this, 0x8);
-        int weapon = F<int>(gun, 0x58);
+        gun = this->field_0x8;
+        int weapon = gun->field_0x58;
         offsets.x = 0.0f;
         offsets.y = 0.0f;
         offsets.z = -3.5f;
@@ -378,55 +380,55 @@ void ObjectGun::update(int dt)
             offsets.z = 13.0f;
         }
 
-        if (F<uint8_t>(gun, 0xa4) != 0) {
+        if (gun->field_0xa4 != 0) {
             if (weapon == 0xb5) {
-                offsets.x = F<uint8_t>(gun, 0xa6) != 0 ? -1.5f : 1.5f;
+                offsets.x = gun->field_0xa6 != 0 ? -1.5f : 1.5f;
             } else {
                 float left = weapon == 0x30 ? 20.0f : 15.0f;
                 float right = weapon == 0x30 ? -20.0f : -15.0f;
-                offsets.x = left - F<float>(gun, 0x7c);
-                if (F<uint8_t>(gun, 0xa6) != 0)
-                    offsets.x = F<float>(gun, 0x7c) + right;
+                offsets.x = left - gun->field_0x7c;
+                if (gun->field_0xa6 != 0)
+                    offsets.x = gun->field_0x7c + right;
             }
         }
-        if (F<uint8_t>(gun, 0xa5) != 0) {
+        if (gun->field_0xa5 != 0) {
             if (weapon == 0xe0) {
-                offsets.y = F<uint8_t>(gun, 0xa7) == 0 ? 13.0f : -13.0f;
+                offsets.y = gun->field_0xa7 == 0 ? 13.0f : -13.0f;
             } else if (weapon == 0xb5) {
-                offsets.y = F<uint8_t>(gun, 0xa7) == 0 ? 2.5f : -2.5f;
+                offsets.y = gun->field_0xa7 == 0 ? 2.5f : -2.5f;
             }
         }
         MatrixRotateVector(&cameraMatrix, &workMatrix, &offsets);
-        AEGeometry_setMatrix(F<AEGeometry *>(this, 0x18), &workMatrix);
-        AEGeometry_translate(F<AEGeometry *>(this, 0x18), (Vector *)&cameraMatrix);
+        AEGeometry_setMatrix(this->field_0x18, &workMatrix);
+        AEGeometry_translate(this->field_0x18, (Vector *)&cameraMatrix);
         (void)m1;
     }
 
 after_geometry:
-    gun = F<Gun *>(this, 0x8);
-    F<uint8_t>(this, 0x1d) = F<uint8_t>(gun, 0xa9);
-    if (F<int>(gun, 0x5c) == 0x19) {
+    gun = this->field_0x8;
+    this->field_0x1d = gun->field_0xa9;
+    if (gun->field_0x5c == 0x19) {
         int positionOffset = 0;
-        for (uint32_t i = 0; i < F<uint32_t>(gun, 0x8); ++i) {
-            if (F<uint8_t *>(gun, 0x40)[i] != 0) {
-                if (F<uint8_t *>(this, 0x30)[i] != 0) {
+        for (uint32_t i = 0; i < gun->field_0x8; ++i) {
+            if (gun->field_0x40[i] != 0) {
+                if (this->field_0x30[i] != 0) {
                     Explosion_start(explosion_at(this, i),
-                                    (Vector *)(F<char *>(gun, 0x30) + positionOffset),
+                                    (Vector *)(gun->field_0x30 + positionOffset),
                                     &zero);
-                    F<uint8_t *>(this, 0x30)[i] = 0;
+                    this->field_0x30[i] = 0;
                 }
                 Explosion *explosion = explosion_at(this, i);
                 Explosion_update(explosion, dt, 0);
                 if (Explosion_isPlaying(explosion) == 0) {
-                    gun = F<Gun *>(this, 0x8);
-                    F<uint8_t *>(gun, 0x40)[i] = 0;
-                    F<uint8_t>(gun, 0x88) = 0;
-                    F<uint8_t *>(this, 0x30)[i] = 1;
+                    gun = this->field_0x8;
+                    gun->field_0x40[i] = 0;
+                    gun->field_0x88 = 0;
+                    this->field_0x30[i] = 1;
                     Explosion_reset(explosion_at(this, i));
                 }
             }
             positionOffset += 0xc;
-            gun = F<Gun *>(this, 0x8);
+            gun = this->field_0x8;
         }
     }
 }
@@ -438,7 +440,7 @@ __attribute__((visibility("hidden"))) extern "C" void *g_ObjectGunRenderScaleFla
 
 static inline Explosion *render_explosion_at(ObjectGun *self, uint32_t index)
 {
-    return F<Explosion **>(F<Array *>(self, 0x2c), 0x4)[index];
+    return F<Explosion **>(self->field_0x2c, 0x4)[index];
 }
 
 static inline void identity(Matrix *m)
@@ -461,28 +463,28 @@ void ObjectGun::render()
     Vector up;
     Vector side;
 
-    Gun *gun = F<Gun *>(this, 0x8);
+    Gun *gun = this->field_0x8;
     Gun_render(gun);
 
-    if (F<int>(gun, 0x5c) == 0x19) {
-        for (uint32_t i = 0; i < F<uint32_t>(gun, 0x8); ++i) {
-            if (F<uint8_t *>(gun, 0x40)[i] != 0) {
+    if (gun->field_0x5c == 0x19) {
+        for (uint32_t i = 0; i < gun->field_0x8; ++i) {
+            if (gun->field_0x40[i] != 0) {
                 Explosion_render(render_explosion_at(this, i));
-                gun = F<Gun *>(this, 0x8);
+                gun = this->field_0x8;
             }
         }
     }
 
-    if (F<uint8_t>(gun, 0x4c) != 0) {
+    if (gun->field_0x4c != 0) {
         identity(&cameraLocal);
-        if (F<int>(gun, 0x5c) == 8) {
+        if (gun->field_0x5c == 8) {
             void **canvas = (void **)g_PaintCanvas;
             void *paint = *canvas;
             void *camera = CameraGetCurrent(paint);
             Matrix_copy(&cameraLocal, (Matrix *)CameraGetLocal(paint, camera));
-            if (F<uint8_t>(this, 0x4c) != 0) {
+            if (this->field_0x4c != 0) {
                 identity(&rotate);
-                MatrixSetRotation(&scaleMatrix, F<float>(this, 0x48), 0.0f, 0.0f);
+                MatrixSetRotation(&scaleMatrix, this->field_0x48, 0.0f, 0.0f);
                 Matrix_copy(&rotate, &scaleMatrix);
                 Matrix_multiply_inplace(&cameraLocal, &rotate);
             }
@@ -490,52 +492,52 @@ void ObjectGun::render()
 
         uint32_t inactive = 0;
         int offset = 0;
-        for (uint32_t i = 0; i < F<uint32_t>(gun, 0x8); ++i) {
-            Vector *position = (Vector *)(F<char *>(gun, 0xc) + offset);
+        for (uint32_t i = 0; i < gun->field_0x8; ++i) {
+            Vector *position = (Vector *)(gun->field_0xc + offset);
             if (position->x != -1000.0f) {
                 MatrixSetTranslation(&local, position->x, position->y, position->z);
-                VectorNormalize((Vector *)&local, (Vector *)(F<char *>(gun, 0x18) + offset));
+                VectorNormalize((Vector *)&local, (Vector *)(gun->field_0x18 + offset));
                 Vector_assign((Vector *)((char *)this + 0x50), (Vector *)&local);
 
-                if (F<uint8_t>(this, 0x4c) != 0) {
+                if (this->field_0x4c != 0) {
                     Vector_negate(&muzzle, (Vector *)((char *)this + 0x50));
-                    if ((uint32_t)(F<int>(gun, 0x58) - 0xb4) > 2) {
+                    if ((uint32_t)(gun->field_0x58 - 0xb4) > 2) {
                         void **canvas = (void **)g_PaintCanvas;
                         void *paint = *canvas;
                         void *camera = CameraGetCurrent(paint);
                         Matrix_copy(&cameraLocal, (Matrix *)CameraGetLocal(paint, camera));
                         MatrixGetDir(&dir, &cameraLocal);
                         Vector_assign(&muzzle, &dir);
-                        gun = F<Gun *>(this, 0x8);
+                        gun = this->field_0x8;
                     }
 
-                    F<uint32_t>(this, 0x74) = cameraLocal.words[0];
-                    F<uint32_t>(this, 0x78) = cameraLocal.words[1];
-                    F<uint32_t>(this, 0x84) = cameraLocal.words[4];
-                    F<uint32_t>(this, 0x88) = cameraLocal.words[5];
-                    F<uint32_t>(this, 0x94) = cameraLocal.words[10];
-                    F<uint32_t>(this, 0x98) = cameraLocal.words[11];
-                    F<float>(this, 0x7c) = -muzzle.x;
-                    F<float>(this, 0x8c) = -muzzle.y;
-                    F<float>(this, 0x9c) = -muzzle.z;
+                    this->field_0x74 = cameraLocal.words[0];
+                    this->field_0x78 = cameraLocal.words[1];
+                    this->field_0x84 = cameraLocal.words[4];
+                    this->field_0x88 = cameraLocal.words[5];
+                    this->field_0x94 = cameraLocal.words[10];
+                    this->field_0x98 = cameraLocal.words[11];
+                    this->field_0x7c = -muzzle.x;
+                    this->field_0x8c = -muzzle.y;
+                    this->field_0x9c = -muzzle.z;
 
-                    int scale = F<int *>(gun, 0x3c)[i];
+                    int scale = gun->field_0x3c[i];
                     if (scale < 1000) {
                         float fscale = (float)scale / 750.0f;
                         MatrixSetScaling(&local, fscale, fscale, fscale);
-                    } else if (F<uint8_t>(gun, 0x4d) != 0) {
+                    } else if (gun->field_0x4d != 0) {
                         MatrixSetScaling(&local, 1.0f, 1.0f, 1.0f);
                     }
-                } else if (F<uint8_t>(this, 0x24) == 0) {
+                } else if (this->field_0x24 == 0) {
                     Vector *base;
-                    if (F<Level *>(this, 0xc) == 0 || Level_getPlayer(F<Level *>(this, 0xc)) == 0 ||
+                    if (this->field_0xc == 0 || Level_getPlayer(this->field_0xc) == 0 ||
                         Gun_isPlayerGun(gun) == 0) {
                         up.x = 0.0f;
                         up.y = 1.0f;
                         up.z = 0.0f;
                         base = &up;
                     } else {
-                        base = (Vector *)(F<char *>(gun, 0x24) + offset);
+                        base = (Vector *)(gun->field_0x24 + offset);
                     }
                     Vector_assign((Vector *)((char *)this + 0x5c), base);
                     VectorCross(&side, (Vector *)((char *)this + 0x5c), (Vector *)((char *)this + 0x50));
@@ -543,75 +545,75 @@ void ObjectGun::render()
                     VectorCross(&side, (Vector *)((char *)this + 0x68), (Vector *)((char *)this + 0x50));
                     VectorNormalize((Vector *)((char *)this + 0x5c), &side);
 
-                    F<uint32_t>(this, 0x74) = F<uint32_t>(this, 0x68);
-                    F<uint32_t>(this, 0x78) = F<uint32_t>(this, 0x5c);
-                    F<uint32_t>(this, 0x7c) = F<uint32_t>(this, 0x50);
-                    F<uint32_t>(this, 0x84) = F<uint32_t>(this, 0x6c);
-                    F<uint32_t>(this, 0x88) = F<uint32_t>(this, 0x60);
-                    F<uint32_t>(this, 0x8c) = F<uint32_t>(this, 0x54);
-                    F<uint32_t>(this, 0x94) = F<uint32_t>(this, 0x70);
-                    F<uint32_t>(this, 0x98) = F<uint32_t>(this, 0x64);
-                    F<uint32_t>(this, 0x9c) = F<uint32_t>(this, 0x58);
+                    this->field_0x74 = this->field_0x68;
+                    this->field_0x78 = this->field_0x5c;
+                    this->field_0x7c = this->field_0x50;
+                    this->field_0x84 = this->field_0x6c;
+                    this->field_0x88 = this->field_0x60;
+                    this->field_0x8c = this->field_0x54;
+                    this->field_0x94 = this->field_0x70;
+                    this->field_0x98 = this->field_0x64;
+                    this->field_0x9c = this->field_0x58;
 
-                    int scale = F<int *>(gun, 0x3c)[i];
+                    int scale = gun->field_0x3c[i];
                     if (scale < 1000) {
                         float fscale = (float)scale / 750.0f;
                         MatrixSetScaling(&local, fscale, fscale, fscale);
-                    } else if (F<uint8_t>(gun, 0x4d) != 0) {
+                    } else if (gun->field_0x4d != 0) {
                         MatrixSetScaling(&local, 1.0f, 1.0f, 1.0f);
                         typedef int (*DoneFn)(ObjectGun *);
-                        if (((DoneFn *)F<void *>(this, 0x0))[8](this) == 0)
-                            F<uint8_t>(gun, 0x4d) = 0;
+                        if (((DoneFn *)this->field_0x0)[8](this) == 0)
+                            gun->field_0x4d = 0;
                     }
                 } else {
-                    Player *player = Level_getPlayer(F<Level *>(this, 0xc));
+                    Player *player = Level_getPlayer(this->field_0xc);
                     identity(&local);
-                    MatrixSetRotation(&scaleMatrix, F<float>(player, 0x7c), F<float>(player, 0x80), 0.0f);
+                    MatrixSetRotation(&scaleMatrix, player->field_0x7c, player->field_0x80, 0.0f);
                     Matrix_multiply_inplace((Matrix *)((char *)player + 0x40), &local);
                     Matrix_copy((Matrix *)((char *)this + 0x74), (Matrix *)((char *)player + 0x40));
                     MatrixSetTranslation(&scaleMatrix, position->x, position->y, position->z);
                     MatrixGetDir(&dir, &scaleMatrix);
                     VectorNormalize(&muzzle, &dir);
-                    Vector_scale(&muzzle, F<float>(gun, 0x50));
-                    Vector_assign((Vector *)(F<char *>(gun, 0x18) + offset), &muzzle);
-                    F<uint32_t>(player, 0x7c) = 0;
-                    F<uint32_t>(player, 0x80) = 0;
-                    MatrixSetRotation(&scaleMatrix, F<float>(this, 0x20), 0.0f, 0.0f);
-                    TransformSetLocal(*(void **)g_PaintCanvas, F<uint32_t>(this, 0x14), &scaleMatrix);
+                    Vector_scale(&muzzle, gun->field_0x50);
+                    Vector_assign((Vector *)(gun->field_0x18 + offset), &muzzle);
+                    player->field_0x7c = 0;
+                    player->field_0x80 = 0;
+                    MatrixSetRotation(&scaleMatrix, this->field_0x20, 0.0f, 0.0f);
+                    TransformSetLocal(*(void **)g_PaintCanvas, this->field_0x14, &scaleMatrix);
                 }
 
                 if (*(uint8_t *)g_ObjectGunRenderScaleFlag != 0)
-                    MatrixSetScaling(&local, F<float>(this, 0x3c), F<float>(this, 0x40),
-                                     F<float>(this, 0x44));
+                    MatrixSetScaling(&local, this->field_0x3c, this->field_0x40,
+                                     this->field_0x44);
 
-                if (F<int>(F<Gun *>(this, 0x8), 0x5c) == 0xb) {
-                    Vector *spin = F<Vector **>(F<Array *>(F<Gun *>(this, 0x8), 0xac), 0x4)[i];
-                    if (spin != 0 && F<int>(this, 0x34) > 0) {
+                if (F<int>(this->field_0x8, 0x5c) == 0xb) {
+                    Vector *spin = F<Vector **>(F<Array *>(this->field_0x8, 0xac), 0x4)[i];
+                    if (spin != 0 && this->field_0x34 > 0) {
                         MatrixSetRotation(&local, spin->x, spin->y, spin->z);
-                        float step = (float)F<int>(this, 0x34) * 0.02f;
+                        float step = (float)this->field_0x34 * 0.02f;
                         float neg = -step;
                         spin->x += spin->x < 0.0f ? neg : step;
                         spin->y += spin->y < 0.0f ? neg : step;
                         spin->z += spin->z < 0.0f ? neg : step;
                     }
-                    MatrixSetScaling(&local, F<float>(this, 0x3c), F<float>(this, 0x40),
-                                     F<float>(this, 0x44));
+                    MatrixSetScaling(&local, this->field_0x3c, this->field_0x40,
+                                     this->field_0x44);
                 }
 
                 void **canvas = (void **)g_PaintCanvas;
-                TransformSetLocal(*canvas, F<uint32_t>(this, 0x10), (Matrix *)((char *)this + 0x74));
-                DrawTransform(*canvas, F<uint32_t>(this, 0x10), 0);
+                TransformSetLocal(*canvas, this->field_0x10, (Matrix *)((char *)this + 0x74));
+                DrawTransform(*canvas, this->field_0x10, 0);
             } else {
                 ++inactive;
             }
             offset += 0xc;
-            gun = F<Gun *>(this, 0x8);
+            gun = this->field_0x8;
         }
-        if (F<int>(gun, 0x14) <= (int)inactive)
-            F<uint8_t>(gun, 0x4c) = 0;
+        if (gun->field_0x14 <= (int)inactive)
+            gun->field_0x4c = 0;
     }
 
-    if (F<uint8_t>(this, 0x1d) != 0 && F<AEGeometry *>(this, 0x18) != 0)
-        AEGeometry_render(F<AEGeometry *>(this, 0x18));
-    F<uint32_t>(this, 0x34) = 0;
+    if (this->field_0x1d != 0 && this->field_0x18 != 0)
+        AEGeometry_render(this->field_0x18);
+    this->field_0x34 = 0;
 }

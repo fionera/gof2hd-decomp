@@ -1,4 +1,6 @@
-#include "Radar.h"
+#include "gof2/Radar.h"
+#include "gof2/Layout.h"
+#include "gof2/Station.h"
 
 
 extern "C" void Radar_SetColor(void *canvas, int color);
@@ -30,7 +32,7 @@ extern "C" void Radar_elipsoidIntersect(void *out, Radar *self, int x, int y, Ve
 // ---- getTurretScopeWidth_13104e.cpp ----
 int Radar::getTurretScopeWidth()
 {
-    return F<int>(this, 0x12c) << 1;
+    return this->field_0x12c << 1;
 }
 
 // ---- _Radar_12de3c.cpp ----
@@ -48,21 +50,21 @@ Radar::~Radar()
 // ---- hasScanner_13105c.cpp ----
 uint8_t Radar::hasScanner()
 {
-    return F<uint8_t>(this, 0x1ab);
+    return this->field_0x1ab;
 }
 
 // ---- isPlasmaInRange_131056.cpp ----
 uint8_t Radar::isPlasmaInRange()
 {
-    return F<uint8_t>(this, 0x130);
+    return this->field_0x130;
 }
 
 // ---- stationLocked_13103a.cpp ----
 bool Radar::stationLocked()
 {
-    void *station = F<void *>(this, 0x24);
+    void *station = this->field_0x24;
     if (station != 0) {
-        return F<uint8_t>(station, 0x71) != 0;
+        return station->field_0x71 != 0;
     }
     return false;
 }
@@ -80,7 +82,7 @@ void Radar::update(KIPlayer *player)
 // ---- unlockAsteroid_131030.cpp ----
 void Radar::unlockAsteroid()
 {
-    F<int>(this, 0x0c) = 0;
+    this->field_0xc = 0;
 }
 
 // ---- getPlanetDockIndex_130974.cpp ----
@@ -88,7 +90,7 @@ int Radar::getPlanetDockIndex()
 {
     SolarSystem *system = gStatus->getSystem();
     Array<Station *> *stations = system->getStations();
-    return (int)stations->data[F<int>(this, 0x40)];
+    return (int)stations->data[this->field_0x40];
 }
 
 // ---- draw_12e050.cpp ----
@@ -100,12 +102,12 @@ long long Radar::draw(Player *, Hud *, int mode)
     char scratch[0x120];
     (void)scratch;
 
-    if (F<uint8_t>(this, 0x48) == 0) {
+    if (this->field_0x48 == 0) {
         return 0;
     }
 
-    F<uint8_t>(this, 0x218) = 0;
-    F<uint8_t>(this, 0x130) = 0;
+    this->field_0x218 = 0;
+    this->field_0x130 = 0;
 
     void *canvas = *(void **)gRadarCanvasForDraw;
     Radar_SetColor(canvas, -1);
@@ -113,7 +115,7 @@ long long Radar::draw(Player *, Hud *, int mode)
     void *mission = *(void **)gRadarMissionSlot;
     int missionState = Radar_GetMissionState(mission);
     if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
-        F<uint8_t>(this, 0x218) = (uint8_t)mode;
+        this->field_0x218 = (uint8_t)mode;
     }
 
     return 0;
@@ -130,72 +132,72 @@ Radar::Radar(Level *level)
     char text54[12];
     char local48[12];
 
-    F<int>(this, 0x174) = 0;
-    F<int>(this, 0x178) = 0;
-    F<int>(this, 0x17c) = 0;
-    F<int>(this, 0x180) = 0;
-    F<int>(this, 0x164) = 0;
-    F<int>(this, 0x168) = 0;
-    F<int>(this, 0x16c) = 0;
-    F<int>(this, 0x170) = 0;
-    F<int>(this, 0x154) = 0;
-    F<int>(this, 0x158) = 0;
-    F<int>(this, 0x15c) = 0;
-    F<int>(this, 0x160) = 0;
+    this->field_0x174 = 0;
+    this->field_0x178 = 0;
+    this->field_0x17c = 0;
+    this->field_0x180 = 0;
+    this->field_0x164 = 0;
+    this->field_0x168 = 0;
+    this->field_0x16c = 0;
+    this->field_0x170 = 0;
+    this->field_0x154 = 0;
+    this->field_0x158 = 0;
+    this->field_0x15c = 0;
+    this->field_0x160 = 0;
 
     Radar_StringDefault((char *)this + 0x18c);
     Radar_MatrixDefault((char *)this + 0x1d0);
 
-    F<int>(this, 0x04) = 0;
-    F<int>(this, 0x08) = 0;
-    F<int>(this, 0x14) = 0;
-    F<uint8_t>(this, 0x48) = 1;
-    F<int>(this, 0x58) = 0;
-    F<int>(this, 0x188) = 0;
-    F<int>(this, 0x0c) = 0;
-    F<int>(this, 0x10) = 0;
-    F<int>(this, 0x18) = 0;
-    F<int>(this, 0x38) = 0;
-    F<int>(this, 0x3c) = 0;
-    F<int>(this, 0x40) = 0;
-    F<int>(this, 0x20c) = 0;
-    F<int>(this, 0x1b4) = 0;
-    F<int>(this, 0x1b8) = 0;
-    F<int>(this, 0x1bc) = 0;
-    F<uint8_t>(this, 0x54) = 0;
-    F<uint8_t>(this, 0x130) = 0;
-    F<uint8_t>(this, 0x120) = 0;
-    F<int>(this, 0x11c) = 0;
-    F<uint8_t>(this, 0x1a8) = 0;
-    F<Level *>(this, 0x00) = level;
+    this->field_0x4 = 0;
+    this->field_0x8 = 0;
+    this->field_0x14 = 0;
+    this->field_0x48 = 1;
+    this->field_0x58 = 0;
+    this->field_0x188 = 0;
+    this->field_0xc = 0;
+    this->field_0x10 = 0;
+    this->field_0x18 = 0;
+    this->field_0x38 = 0;
+    this->field_0x3c = 0;
+    this->field_0x40 = 0;
+    this->field_0x20c = 0;
+    this->field_0x1b4 = 0;
+    this->field_0x1b8 = 0;
+    this->field_0x1bc = 0;
+    this->field_0x54 = 0;
+    this->field_0x130 = 0;
+    this->field_0x120 = 0;
+    this->field_0x11c = 0;
+    this->field_0x1a8 = 0;
+    this->field_0x0 = level;
 
     void *layout = *(void **)gRadarLayoutSlot;
     if (layout != 0) {
-        int width = F<int>(layout, 0xac);
-        int height = F<int>(layout, 0xa8);
-        F<int>(this, 0x21c) = width;
-        F<int>(this, 0x220) = width >> 1;
-        F<int>(this, 0x224) = height;
-        F<int>(this, 0x228) = height >> 1;
-        F<int>(this, 0x22c) = F<int>(layout, 0xa0);
-        F<int>(this, 0x230) = F<int>(layout, 0xa4);
+        int width = layout->field_0xac;
+        int height = layout->field_0xa8;
+        this->field_0x21c = width;
+        this->field_0x220 = width >> 1;
+        this->field_0x224 = height;
+        this->field_0x228 = height >> 1;
+        this->field_0x22c = layout->field_0xa0;
+        this->field_0x230 = layout->field_0xa4;
     }
 
     void *canvas = *(void **)gRadarCanvasSlot;
     Radar_Image2DCreate(canvas, 0x4c7, (char *)this + 0x1c4);
-    int image = F<int>(this, 0x1c4);
+    int image = this->field_0x1c4;
     int imageWidth = Radar_GetImage2DWidth(canvas, image);
     int imageHeight = Radar_GetImage2DHeight(canvas, image);
-    F<int>(this, 0x4c) = imageWidth;
-    F<int>(this, 0x50) = imageHeight;
-    F<int>(this, 0x114) = imageWidth * imageWidth;
-    F<int>(this, 0x118) = imageHeight * imageHeight;
-    F<float>(this, 0x10c) = 1.0f / (float)(imageWidth * imageWidth);
-    F<float>(this, 0x110) = 1.0f / (float)(imageHeight * imageHeight);
+    this->field_0x4c = imageWidth;
+    this->field_0x50 = imageHeight;
+    this->field_0x114 = imageWidth * imageWidth;
+    this->field_0x118 = imageHeight * imageHeight;
+    this->field_0x10c = 1.0f / (float)(imageWidth * imageWidth);
+    this->field_0x110 = 1.0f / (float)(imageHeight * imageHeight);
 
     void *strings = Radar_operator_new(12);
     Radar_ArrayStringCtor(strings);
-    F<void *>(this, 0x188) = strings;
+    this->field_0x188 = strings;
     Radar_ArraySetLengthString(4, strings);
 
     (void)text6c;
@@ -208,14 +210,14 @@ Radar::Radar(Level *level)
 AbyssEngine::AEMath::Vector Radar::elipsoidIntersect(
     int y, int x, AbyssEngine::AEMath::Vector value)
 {
-    int centerY = *(volatile int *)((char *)this + 0x108);
+    int centerY = this->field_0x108;
     float dy = (float)(centerY - x);
     float dy2 = dy * dy;
-    int centerX = *(volatile int *)((char *)this + 0x104);
+    int centerX = this->field_0x104;
     float dx = (float)(centerX - y);
     float dx2 = dx * dx;
-    float weightY = *(volatile float *)((char *)this + 0x110);
-    float weightX = *(volatile float *)((char *)this + 0x10c);
+    float weightY = this->field_0x110;
+    float weightX = this->field_0x10c;
     float distance = weightY * dy2 + weightX * dx2;
 
     if (distance >= 0.0f) {
@@ -243,20 +245,20 @@ void Radar::drawCurrentLock(Hud *)
     char text7c[12];
     char text88[12];
 
-    if (F<uint8_t>(this, 0x48) == 0) {
+    if (this->field_0x48 == 0) {
         return;
     }
 
     *gRadarDrawCurrentLockFlag = 1;
 
-    if (F<int>(this, 0x14) == 0) {
-        void *locked = F<void *>(this, 0x0c);
+    if (this->field_0x14 == 0) {
+        void *locked = this->field_0xc;
         if (locked == 0) {
-            locked = F<void *>(this, 0x38);
+            locked = this->field_0x38;
             if (locked == 0) {
-                locked = F<void *>(this, 0x04);
+                locked = this->field_0x4;
                 if (locked == 0) {
-                    locked = F<void *>(this, 0x24);
+                    locked = this->field_0x24;
                     if (locked == 0) {
                         *gRadarDrawCurrentLockFlag = 0;
                         return;
@@ -266,12 +268,12 @@ void Radar::drawCurrentLock(Hud *)
         }
 
         Radar_StringDefault(text40);
-        if (locked == F<void *>(this, 0x24)) {
+        if (locked == this->field_0x24) {
             Radar_StringAssign(text40, text34);
         }
         Radar_StringDtor(text40);
     } else {
-        Radar_StringText(text34, F<void *>(this, 0x18c), false);
+        Radar_StringText(text34, this->field_0x18c, false);
     }
 
     Radar_StringDtor(text34);
@@ -363,22 +365,22 @@ void Radar::update(Vector value)
     Vector *current = (Vector *)((char *)this + 0x154);
     Radar_VectorAssign(current, transformed);
 
-    F<float>(this, 0x158) = -F<float>(this, 0x158);
-    F<float>(this, 0x15c) = -F<float>(this, 0x15c);
+    this->field_0x158 = -this->field_0x158;
+    this->field_0x15c = -this->field_0x15c;
 
     int visible = Radar_GetScreenPosition(gPaintCanvas, positionStorage, positionStorage);
-    F<uint8_t>(this, 0x11c) = (uint8_t)visible;
+    this->field_0x11c = (uint8_t)visible;
 
     float *position = (float *)positionStorage;
     int screenX = (int)position[0];
-    F<int>(this, 0xfc) = screenX;
+    this->field_0xfc = screenX;
     int screenY = (int)position[1];
-    F<int>(this, 0x100) = screenY;
+    this->field_0x100 = screenY;
 
     if (visible == 0) {
         Radar_elipsoidIntersect(transformed, this, screenX, screenY, *current);
         Radar_VectorAssign(current, transformed);
-        F<int>(this, 0xfc) = (int)current->x;
-        F<int>(this, 0x100) = (int)current->y;
+        this->field_0xfc = (int)current->x;
+        this->field_0x100 = (int)current->y;
     }
 }

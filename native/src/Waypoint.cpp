@@ -1,4 +1,4 @@
-#include "Waypoint.h"
+#include "gof2/Waypoint.h"
 
 
 extern "C" void Player_setActive(Player *self, bool active);
@@ -14,7 +14,7 @@ struct Waypoint {
 
 void Waypoint::setActive(bool active)
 {
-    return Player_setActive(F<Player *>(this, 0x4), active);
+    return Player_setActive(this->field_0x4, active);
 }
 
 // ---- reached_157d64.cpp ----
@@ -24,7 +24,7 @@ struct Waypoint {
 
 void Waypoint::reached()
 {
-    F<uint16_t>(this, 0x130) = 0x101;
+    this->field_0x130 = 0x101;
 }
 
 // ---- getPosition_157d38.cpp ----
@@ -34,9 +34,9 @@ struct Waypoint {
 
 Vector Waypoint::getPosition()
 {
-    float x = (float)F<int32_t>(this, 0x124);
-    float y = (float)F<int32_t>(this, 0x128);
-    float z = (float)F<int32_t>(this, 0x12c);
+    float x = (float)this->field_0x124;
+    float y = (float)this->field_0x128;
+    float z = (float)this->field_0x12c;
     Vector result;
     result.x = x;
     result.y = y;
@@ -58,8 +58,8 @@ struct Waypoint {
 
 void Waypoint::reset()
 {
-    Player *player = F<Player *>(this, 0x4);
-    F<uint8_t>(this, 0x130) = 0;
+    Player *player = this->field_0x4;
+    this->field_0x130 = 0;
     return Player_setActive(player, false);
 }
 
@@ -84,17 +84,17 @@ Waypoint::Waypoint(int x, int y, int z, Route *route)
     float xf = (float)x;
     KIPlayer_ctor(this, 0, -1, player, (AEGeometry *)0, xf, yf, zf, false);
 
-    F<Route *>(this, 0x134) = route;
-    F<void *>(this, 0x0) = (char *)Waypoint_vtable + 8;
-    Player_setActive(F<Player *>(this, 0x4), false);
+    this->field_0x134 = route;
+    this->field_0x0 = (char *)Waypoint_vtable + 8;
+    Player_setActive(this->field_0x4, false);
 
-    F<int32_t>(this, 0x124) = x;
-    F<int32_t>(this, 0x128) = y;
-    F<int32_t>(this, 0x12c) = z;
-    F<float>(this, 0x58) = xf;
-    F<float>(this, 0x5c) = yf;
-    F<float>(this, 0x60) = zf;
-    F<uint16_t>(this, 0x130) = 0;
-    F<uint8_t>(this, 0x72) = 1;
-    F<uint8_t>(this, 0x4c) = 0;
+    this->field_0x124 = x;
+    this->field_0x128 = y;
+    this->field_0x12c = z;
+    this->field_0x58 = xf;
+    this->field_0x5c = yf;
+    this->field_0x60 = zf;
+    this->field_0x130 = 0;
+    this->field_0x72 = 1;
+    this->field_0x4c = 0;
 }

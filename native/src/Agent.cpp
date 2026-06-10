@@ -1,4 +1,4 @@
-#include "Agent.h"
+#include "gof2/Agent.h"
 
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
@@ -25,25 +25,25 @@ extern "C" RetStr Agent_getStationName(Agent *self)
 // ---- hasAcceptedOffer_1776f2.cpp ----
 extern "C" uint8_t Agent_hasAcceptedOffer(Agent *self)
 {
-    return F<uint8_t>(self, 0x84);
+    return self->field_0x84;
 }
 
 // ---- isStoryAgent_17753a.cpp ----
 extern "C" bool Agent_isStoryAgent(Agent *self)
 {
-    return F<int>(self, 0x58) == 0;
+    return self->field_0x58 == 0;
 }
 
 // ---- getWingmanNames_177670.cpp ----
 extern "C" void *Agent_getWingmanNames(Agent *self)
 {
-    return F<void *>(self, 0x90);
+    return self->field_0x90;
 }
 
 // ---- getImageParts_177556.cpp ----
 extern "C" int *Agent_getImageParts(Agent *self)
 {
-    return F<int *>(self, 0x88);
+    return self->field_0x88;
 }
 
 // ---- getMission_177566.cpp ----
@@ -51,7 +51,7 @@ struct Mission;
 
 extern "C" Mission *Agent_getMission(Agent *self)
 {
-    return F<Mission *>(self, 0x8c);
+    return self->field_0x8c;
 }
 
 // ---- setMission_177560.cpp ----
@@ -59,13 +59,13 @@ struct Mission;
 
 extern "C" void Agent_setMission(Agent *self, Mission *mission)
 {
-    F<Mission *>(self, 0x8c) = mission;
+    self->field_0x8c = mission;
 }
 
 // ---- getSellModIndex_177732.cpp ----
 extern "C" int Agent_getSellModIndex(Agent *self)
 {
-    return F<int>(self, 0x94);
+    return self->field_0x94;
 }
 
 // ---- setStationName_177718.cpp ----
@@ -91,7 +91,7 @@ extern "C" RetStr Agent_getMissionString(Agent *self)
 // ---- isMale_177524.cpp ----
 extern "C" uint8_t Agent_isMale(Agent *self)
 {
-    return F<uint8_t>(self, 0x50);
+    return self->field_0x50;
 }
 
 // ---- getName_177504.cpp ----
@@ -114,7 +114,7 @@ static const int kModPriceTable[4] = { 0, 0, 0, 0 };
 
 extern "C" int Agent_getModPricePercentage(Agent *self)
 {
-    uint32_t i = F<uint32_t>(self, 0x94);
+    uint32_t i = self->field_0x94;
     if (i < 4)
         return kModPriceTable[i];
     return 0x28;
@@ -123,37 +123,37 @@ extern "C" int Agent_getModPricePercentage(Agent *self)
 // ---- setOfferAccepted_1776f8.cpp ----
 extern "C" void Agent_setOfferAccepted(Agent *self, bool v)
 {
-    F<uint8_t>(self, 0x84) = v;
+    self->field_0x84 = v;
 }
 
 // ---- nextEvent_177532.cpp ----
 extern "C" void Agent_nextEvent(Agent *self)
 {
-    F<int>(self, 0x54) = F<int>(self, 0x54) + 1;
+    self->field_0x54 = self->field_0x54 + 1;
 }
 
 // ---- hasReward_1776fe.cpp ----
 extern "C" uint8_t Agent_hasReward(Agent *self)
 {
-    return F<uint8_t>(self, 0x85);
+    return self->field_0x85;
 }
 
 // ---- setImageParts_177550.cpp ----
 extern "C" void Agent_setImageParts(Agent *self, int *parts)
 {
-    F<int *>(self, 0x88) = parts;
+    self->field_0x88 = parts;
 }
 
 // ---- isKnown_17756c.cpp ----
 extern "C" bool Agent_isKnown(Agent *self)
 {
-    return F<int>(self, 0x54) > 0;
+    return self->field_0x54 > 0;
 }
 
 // ---- isGenericAgent_177544.cpp ----
 extern "C" bool Agent_isGenericAgent(Agent *self)
 {
-    return F<int>(self, 0x58) == 1;
+    return self->field_0x58 == 1;
 }
 
 // ---- getSystemName_17771e.cpp ----
@@ -169,7 +169,7 @@ extern "C" RetStr Agent_getSystemName(Agent *self)
 // ---- giveRewardAtNextChat_177704.cpp ----
 extern "C" void Agent_giveRewardAtNextChat(Agent *self, bool v)
 {
-    F<uint8_t>(self, 0x85) = v;
+    self->field_0x85 = v;
 }
 
 // ---- setSellItemData_1776ec.cpp ----
@@ -193,42 +193,42 @@ struct VObj { void (*vt[8])(void *); };
 // Agent::setWingmanFriendNames(Array<String*>*) — this in r0, param in r1.
 extern "C" void Agent_setWingmanFriendNames(Agent *self, uint32_t *param)
 {
-    VObj *f0c = F<VObj *>(self, 0xc);
+    VObj *f0c = self->field_0xc;
     if (f0c != 0)
         (*(void (**)(void *))((char *)f0c->vt[0] + 4))(f0c);
-    F<VObj *>(self, 0xc) = 0;
-    VObj *f10 = F<VObj *>(self, 0x10);
+    self->field_0xc = 0;
+    VObj *f10 = self->field_0x10;
     if (f10 != 0)
         (*(void (**)(void *))((char *)f10->vt[0] + 4))(f10);
-    F<VObj *>(self, 0x10) = 0;
-    if (F<void *>(self, 0x90) != 0) {
-        Agent_operator_delete(Array_StringPtr_dtor(F<void *>(self, 0x90)));
-        F<void *>(self, 0x90) = 0;
+    self->field_0x10 = 0;
+    if (self->field_0x90 != 0) {
+        Agent_operator_delete(Array_StringPtr_dtor(self->field_0x90));
+        self->field_0x90 = 0;
     }
     void *na = Agent_operator_new(0xc);
     Array_StringPtr_ctor(na);
-    F<void *>(self, 0x90) = na;
+    self->field_0x90 = na;
     void *ns = Agent_operator_new(0xc);
     String_copy_ctor(ns, self, false);
-    ArrayAdd_StringPtr(ns, F<void *>(self, 0x90));
-    F<int>(self, 0x14) = 0;
+    ArrayAdd_StringPtr(ns, self->field_0x90);
+    self->field_0x14 = 0;
     if (param == 0)
         return;
     uint32_t n = param[0];
     if (n != 0) {
         void *w0 = *(void **)(param[1]);
         if (w0 != 0) {
-            F<int>(self, 0x14) = 1;
-            F<void *>(self, 0xc) = w0;
-            ArrayAdd_StringPtr(w0, F<void *>(self, 0x90));
+            self->field_0x14 = 1;
+            self->field_0xc = w0;
+            ArrayAdd_StringPtr(w0, self->field_0x90);
             n = param[0];
         }
         if (n >= 2) {
             void *w1 = ((void **)param[1])[1];
             if (w1 != 0) {
-                F<void *>(self, 0x10) = w1;
-                F<int>(self, 0x14) = F<int>(self, 0x14) + 1;
-                ArrayAdd_StringPtr(w1, F<void *>(self, 0x90));
+                self->field_0x10 = w1;
+                self->field_0x14 = self->field_0x14 + 1;
+                ArrayAdd_StringPtr(w1, self->field_0x90);
             }
         }
     }
@@ -243,11 +243,11 @@ extern "C" RetStr Agent_getWingmanName(Agent *self, int idx)
 {
     void *src;
     if (idx == 1) {
-        src = F<void *>(self, 0xc);
+        src = self->field_0xc;
     } else if (idx == 0) {
         src = self;
     } else {
-        src = F<void *>(self, 0x10);
+        src = self->field_0x10;
     }
     RetStr r;
     String_copy_ctor(&r, src, false);
@@ -325,42 +325,42 @@ extern "C" Agent *Agent_ctor(Agent *self, unsigned kind, void *name,
     String_default_ctor((char *)s0 + 0x18);
     String_default_ctor((char *)self + 0x6c);
     String_default_ctor((char *)self + 0x78);
-    F<unsigned>(self, 0x40) = kind;
+    self->field_0x40 = kind;
     String_assign(self, name);
-    F<int>(self, 0x44) = p4;
-    F<int>(self, 0x48) = p5;
-    F<int>(self, 0x4c) = p6;
-    F<char>(self, 0x50) = p7;
-    F<int>(self, 0x54) = 0;
-    F<int>(self, 0x30) = -1;
-    F<int>(self, 0x5c) = -1;
-    F<int>(self, 0x64) = p8;
+    self->field_0x44 = p4;
+    self->field_0x48 = p5;
+    self->field_0x4c = p6;
+    self->field_0x50 = p7;
+    self->field_0x54 = 0;
+    self->field_0x30 = -1;
+    self->field_0x5c = -1;
+    self->field_0x64 = p8;
     if (p8 >= 0)
-        F<int>(self, 0x5c) = 4;
-    F<int>(self, 0x68) = p9;
+        self->field_0x5c = 4;
+    self->field_0x68 = p9;
     if (p9 >= 0)
-        F<int>(self, 0x5c) = 3;
-    F<uint16_t>(self, 0x84) = 0;
-    F<uint16_t>(self, 0x24) = 0;
-    F<int>(self, 0xc) = 0;
-    F<int>(self, 0x10) = 0;
-    F<int>(self, 0x14) = 0;
-    F<int>(self, 0x34) = 0;
-    F<int>(self, 0x38) = 0;
-    F<int>(self, 0x3c) = p11;
-    F<int>(self, 0x60) = 0;
-    F<int>(self, 0x88) = 0;
-    F<int>(self, 0x8c) = 0;
-    F<int>(self, 0x90) = 0;
-    F<int>(self, 0x28) = -1;
-    F<int>(self, 0x2c) = -1;
-    F<unsigned>(self, 0x58) = kind >> 31;
+        self->field_0x5c = 3;
+    self->field_0x84 = 0;
+    self->field_0x24 = 0;
+    self->field_0xc = 0;
+    self->field_0x10 = 0;
+    self->field_0x14 = 0;
+    self->field_0x34 = 0;
+    self->field_0x38 = 0;
+    self->field_0x3c = p11;
+    self->field_0x60 = 0;
+    self->field_0x88 = 0;
+    self->field_0x8c = 0;
+    self->field_0x90 = 0;
+    self->field_0x28 = -1;
+    self->field_0x2c = -1;
+    self->field_0x58 = kind >> 31;
     if (p10 >= 0)
-        F<int>(self, 0x5c) = 8;
+        self->field_0x5c = 8;
     if (kind == 0x19)
-        F<int>(self, 0x5c) = 9;
+        self->field_0x5c = 9;
     else if (kind == 0x1a)
-        F<int>(self, 0x5c) = 10;
-    F<int>(self, 0x94) = p10;
+        self->field_0x5c = 10;
+    self->field_0x94 = p10;
     return self;
 }

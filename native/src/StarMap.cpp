@@ -1,4 +1,4 @@
-#include "StarMap.h"
+#include "gof2/StarMap.h"
 
 
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_render_canvas;
@@ -953,7 +953,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
 {
     void (*vecCtor)(void *) = g_StarMap_ctor_vecCtor;
     Vector zero = {0.0f, 0.0f, 0.0f};
-    *(Vector *)((char *)this + 0x78) = zero;
+    this->field_0x78 = zero;
     field<int32_t>(this, 0x88) = 0;
     field<int32_t>(this, 0x8c) = 0;
     vecCtor((char *)this + 0xac);

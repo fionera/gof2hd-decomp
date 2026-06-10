@@ -1,4 +1,5 @@
-#include "MaskShader.h"
+#include "gof2/MaskShader.h"
+#include "gof2/Engine.h"
 
 
 
@@ -57,7 +58,7 @@ void MaskShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (field_i32(this, 0x28) >= 0)
         glEnableVertexAttribArray(field_i32(this, 0x28));
 
-    char *texBase = *(char **)(*(char **)((char *)engine + 0x30));
+    char *texBase = *(char **)(engine->field_0x30);
     int *tex = *(int **)(texBase + 0x20);
     if (tex != 0)
         _ZN11AbyssEngine6Engine14SetTextureSlotEjj(engine, tex[1], 1);
@@ -131,7 +132,7 @@ MaskShader::MaskShader()
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {
         String tmp("MaskShader", false);
-        *(String *)((char *)this + 0xc) = tmp;
+        this->field_0xc = tmp;
     }
 
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;

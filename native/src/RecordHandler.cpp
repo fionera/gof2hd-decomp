@@ -1,4 +1,5 @@
-#include "RecordHandler.h"
+#include "gof2/RecordHandler.h"
+#include "gof2/Agent.h"
 
 
 extern "C" void RecordHandler_readRecordTail(int param);
@@ -737,8 +738,8 @@ extern "C" void RecordHandler_writeAgent(RecordHandler *self, void *agent, unsig
     AEFile_WriteBool(Agent_isMale(agent), fd);
     AEFile_WriteBool(Agent_hasReward(agent), fd);
     AEFile_WriteBool(Agent_hasAcceptedOffer(agent), fd);
-    AEFile_WriteBool(*(unsigned char *)((char *)agent + 0x24), fd);
-    AEFile_WriteBool(*(unsigned char *)((char *)agent + 0x25), fd);
+    AEFile_WriteBool(agent->field_0x24, fd);
+    AEFile_WriteBool(agent->field_0x25, fd);
 
     if (Agent_getImageParts(agent) == 0) {
         AEFile_WriteInt(-1, fd);
@@ -767,7 +768,7 @@ extern "C" void RecordHandler_writeAgent(RecordHandler *self, void *agent, unsig
     AEFile_WriteString(s, fd, 1);
     AEString_dtor(s);
 
-    void *f0c = *(void **)((char *)agent + 0xc);
+    void *f0c = agent->field_0xc;
     if (f0c == 0) {
         AEString_cstr_ctor(s, g_WA_empty1, 0);
         AEFile_WriteString(s, fd, 1);
@@ -775,7 +776,7 @@ extern "C" void RecordHandler_writeAgent(RecordHandler *self, void *agent, unsig
     } else {
         AEFile_WriteString(f0c, fd, 1);
     }
-    void *f10 = *(void **)((char *)agent + 0x10);
+    void *f10 = agent->field_0x10;
     if (f10 == 0) {
         AEString_cstr_ctor(s, g_WA_empty2, 0);
         AEFile_WriteString(s, fd, 1);
@@ -784,7 +785,7 @@ extern "C" void RecordHandler_writeAgent(RecordHandler *self, void *agent, unsig
         AEFile_WriteString(f10, fd, 1);
     }
 
-    *(void **)((char *)self + 4) = agent;
+    self->field_0x4 = agent;
     void *mission = Agent_getMission(agent);
     if (mission == 0 || *(void **)self == mission) {
         AEFile_WriteInt(-1, fd);
@@ -847,7 +848,7 @@ extern "C" void RecordHandler_writeMission(RecordHandler *self, void *m, unsigne
 
         *(void **)self = m;
         void *agent = Mission_getAgent(m);
-        if (agent == 0 || *(void **)((char *)self + 4) == agent) {
+        if (agent == 0 || self->field_0x4 == agent) {
             AEFile_WriteInt(-1, fd);
         } else {
             AEFile_WriteInt(1, fd);
@@ -1369,14 +1370,14 @@ extern "C" void *RecordHandler_readAgent(RecordHandler *self, unsigned int fd)
     if (*((int *)strE + 2) != 0) {
         void *s = RH_op_new(0xc);
         AEString_copy_ctor(s, strE, 0);
-        *(void **)((char *)agent + 0xc) = s;
+        agent->field_0xc = s;
     }
     if (*((int *)strF + 2) != 0) {
         void *s = RH_op_new(0xc);
         AEString_copy_ctor(s, strF, 0);
-        *(void **)((char *)agent + 0x10) = s;
+        agent->field_0x10 = s;
     }
-    *(unsigned *)((char *)agent + 0x14) = wingmen;
+    agent->field_0x14 = wingmen;
 
     void *arr = RH_op_new(0xc);
     ArrayStr_ctor(arr);
@@ -1404,8 +1405,8 @@ extern "C" void *RecordHandler_readAgent(RecordHandler *self, unsigned int fd)
     AEString_dtor(tmp);
     Agent_setMission(agent, mission);
 
-    *(unsigned char *)((char *)agent + 0x24) = raw24;
-    *(unsigned char *)((char *)agent + 0x25) = raw25;
+    agent->field_0x24 = raw24;
+    agent->field_0x25 = raw25;
 
     AEString_dtor(strF);
     AEString_dtor(strE);

@@ -1,4 +1,7 @@
-#include "Globals.h"
+#include "gof2/Globals.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Status.h"
+#include "gof2/String.h"
 
 
 extern "C" int Status_getKills(Status *s);
@@ -369,7 +372,7 @@ extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, vo
     for (unsigned i = 0; i < count; i++) {
         void *s = operator_new(0xc);
         AEString_default_ctor(s);
-        *(void **)(*(char **)((char *)out + 4) + i * 4) = s;
+        *(void **)(out->field_0x4 + i * 4) = s;
     }
 
     for (unsigned i = 0; i < count; i++) {
@@ -377,29 +380,29 @@ extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, vo
         AEString_substr(sub, work, consumed, total);
         char ssub[12];
         AEString_copy_ctor(ssub, sub, 0);
-        void *slot = *(void **)(*(char **)((char *)out + 4) + i * 4);
+        void *slot = *(void **)(out->field_0x4 + i * 4);
         Globals_getLine(slot, font, ssub, maxWidth, slot);
         AEString_dtor(ssub);
 
         int li = 0;
-        void *s = *(void **)(*(char **)((char *)out + 4) + i * 4);
-        int hi = *(int *)((char *)s + 8);
+        void *s = *(void **)(out->field_0x4 + i * 4);
+        int hi = s->field_0x8;
         while (*AEString_index(s, li) == 0x20) {
             li++;
-            s = *(void **)(*(char **)((char *)out + 4) + i * 4);
+            s = *(void **)(out->field_0x4 + i * 4);
         }
         hi++;
         do {
-            void *cur = *(void **)(*(char **)((char *)out + 4) + i * 4);
+            void *cur = *(void **)(out->field_0x4 + i * 4);
             short ch = *AEString_index(cur, hi - 2);
             hi--;
             if (ch != 0x20) break;
         } while (true);
 
         char trimmed[12];
-        void *cur = *(void **)(*(char **)((char *)out + 4) + i * 4);
+        void *cur = *(void **)(out->field_0x4 + i * 4);
         AEString_substr(trimmed, cur, li, hi);
-        AEString_assign(*(void **)(*(char **)((char *)out + 4) + i * 4), trimmed);
+        AEString_assign(*(void **)(out->field_0x4 + i * 4), trimmed);
         AEString_dtor(trimmed);
         AEString_dtor(sub);
     }
@@ -1078,13 +1081,13 @@ extern "C" void Globals_getShipGroup(void *self, int kind, int variant, int wire
             PaintCanvas_TransformCreate(*canvasP, &mainT);
             PaintCanvas_TransformAddMeshId(*canvasP, mainT, mainMesh);
             AEGeometry_addChild((unsigned)(long)geom);
-            *(unsigned *)((char *)geom + 0x20) = mainMesh;
+            geom->field_0x20 = mainMesh;
         }
         if (!wireframe) {
             unsigned short mat = (unsigned short)((short)kind + 0x7dc8);
             unsigned matH = 0xffffffff;
             PaintCanvas_MaterialCreate(*canvasP, mat, &matH);
-            PaintCanvas_MeshChangeResourceMaterial(*canvasP, *(unsigned *)((char *)geom + 0x1c),
+            PaintCanvas_MeshChangeResourceMaterial(*canvasP, geom->field_0x1c,
                                                    mat);
         }
         short extra = gGSG_extraTable[kind];

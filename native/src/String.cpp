@@ -1,4 +1,4 @@
-#include "String.h"
+#include "gof2/String.h"
 
 
 extern "C" void *operator_new__(unsigned int n);
@@ -13,12 +13,12 @@ extern "C" unsigned int String_IndexOf_from(String *self, unsigned int start, St
 // AbyssEngine::String::GetAEChar() const - allocate an 8-bit (low-byte) copy of the wide buffer.
 extern "C" char *String_GetAEChar(String *self)
 {
-    unsigned int len = F<uint32_t>(self, 0x8);
+    unsigned int len = self->field_0x8;
     if (len != 0) {
         unsigned int n = len + 1;
         char *out = (char *)operator_new__(n);
         for (unsigned int i = 0; i != n; i++)
-            out[i] = *(char *)((char *)F<void *>(self, 0x4) + i * 2);
+            out[i] = *(char *)((char *)self->field_0x4 + i * 2);
         return out;
     }
     char *out = (char *)operator_new__(1);
@@ -44,7 +44,7 @@ struct SBuf { uint32_t a, b, c; };
 // Replace each occurrence of `find` with `repl` (here named param2=repl) in this string.
 extern "C" void String_ReplaceString(String *self, String *find, String *repl)
 {
-    if (F<int>(self, 0x4) == 0 || F<int>(self, 0x8) == 0 || F<int>(find, 0x8) == 0)
+    if (self->field_0x4 == 0 || self->field_0x8 == 0 || find->field_0x8 == 0)
         return;
 
     SBuf acc;
@@ -61,12 +61,12 @@ extern "C" void String_ReplaceString(String *self, String *find, String *repl)
         String_addAssign_str((String *)&acc, (String *)&piece);
         String_dtor((String *)&piece);
         String_dtor((String *)&head);
-        pos = F<int>(find, 0x8) + idx;
+        pos = find->field_0x8 + idx;
     }
 
-    if (pos != 0 && pos < F<uint32_t>(self, 0x8)) {
+    if (pos != 0 && pos < self->field_0x8) {
         SBuf tail;
-        String_SubString((String *)&tail, self, pos, F<uint32_t>(self, 0x8));
+        String_SubString((String *)&tail, self, pos, self->field_0x8);
         String_addAssign_str((String *)&acc, (String *)&tail);
         String_dtor((String *)&tail);
     }
@@ -80,10 +80,10 @@ extern "C" void String_ReplaceString(String *self, String *find, String *repl)
 // AbyssEngine::String::ReplaceChar(char from, char to) - replace every matching code unit.
 extern "C" void String_ReplaceChar(String *self, char from, char to)
 {
-    uint16_t *p = F<uint16_t *>(self, 0x4);
+    uint16_t *p = self->field_0x4;
     if (p == 0)
         return;
-    int count = F<int>(self, 0x8);
+    int count = self->field_0x8;
     while (count != 0) {
         count = count - 1;
         if ((unsigned int)*p == (unsigned int)(int)from)
@@ -100,8 +100,8 @@ __attribute__((visibility("hidden"))) extern void *g_String_vtable;
 // AbyssEngine::String::String(char) - build a string from a single character's numeric value.
 extern "C" String *String_ctor_charval(String *self, char c)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    F<void *>(self, 0x4) = 0;
+    self->field_0x0 = g_String_vtable;
+    self->field_0x4 = 0;
     String_Set_longlong(self, (long long)c);
     return self;
 }
@@ -124,11 +124,11 @@ extern "C" String *String_addAssign_float(String *self, const float *v)
     unsigned int addLen = *(uint32_t *)((char *)&tmp + 0x8);
     if (addLen != 0) {
         void *addData = *(void **)((char *)&tmp + 0x4);
-        int oldLen = F<int>(self, 0x8);
+        int oldLen = self->field_0x8;
         int newLen = addLen + oldLen;
-        F<int>(self, 0x8) = newLen;
-        void *buf = realloc(F<void *>(self, 0x4), newLen * 2 + 2);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x8 = newLen;
+        void *buf = realloc(self->field_0x4, newLen * 2 + 2);
+        self->field_0x4 = buf;
         __aeabi_memcpy((char *)buf + oldLen * 2, addData, addLen << 1);
     }
     String_dtor((String *)&tmp);
@@ -150,13 +150,13 @@ struct SBuf { uint32_t a, b, c; };
 // AbyssEngine::String::Reverse() - reverse the code units (only for language id 9 / RTL).
 extern "C" void String_Reverse(String *self)
 {
-    if (F<int>(self, 0x4) != 0 && GameText_getLanguage() == 9) {
+    if (self->field_0x4 != 0 && GameText_getLanguage() == 9) {
         SBuf src;
-        String_ctor_wchar((String *)&src, F<uint16_t *>(self, 0x4), false);
+        String_ctor_wchar((String *)&src, self->field_0x4, false);
         uint16_t *srcData = *(uint16_t **)((char *)&src + 0x4);
         int srcLen = *(int *)((char *)&src + 0x8);
 
-        unsigned int idx = F<int>(self, 0x8) - 1;
+        unsigned int idx = self->field_0x8 - 1;
         uint16_t *tail = srcData + idx;
         uint16_t *nul = &g_String_nullChar;
 
@@ -168,7 +168,7 @@ extern "C" void String_Reverse(String *self)
             if (idx > 0x7fffffff)
                 pick = nul;
             tail = tail - 1;
-            *(uint16_t *)((char *)F<void *>(self, 0x4) + dst) = *pick;
+            *(uint16_t *)((char *)self->field_0x4 + dst) = *pick;
             dst = dst + 2;
         }
         String_dtor((String *)&src);
@@ -182,8 +182,8 @@ __attribute__((visibility("hidden"))) extern void *g_String_vtable;
 // AbyssEngine::String::String(int) - decimal string of an int (sign-extended into Set(long long)).
 extern "C" String *String_ctor_int(String *self, int v)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    F<void *>(self, 0x4) = 0;
+    self->field_0x0 = g_String_vtable;
+    self->field_0x4 = 0;
     String_Set_longlong(self, (long long)v);
     return self;
 }
@@ -192,10 +192,10 @@ extern "C" String *String_ctor_int(String *self, int v)
 // AbyssEngine::String::ToUpperCase() - uppercase ASCII plus a CP-1252 accented range.
 extern "C" void String_ToUpperCase(String *self)
 {
-    short *p = F<short *>(self, 0x4);
+    short *p = self->field_0x4;
     if (p == 0)
         return;
-    int count = F<int>(self, 0x8);
+    int count = self->field_0x8;
     while (count != 0) {
         short c = *p;
         unsigned short u = (unsigned short)(c - 0x61);
@@ -269,7 +269,7 @@ void *String_ArrayString_dtor(void *arr);                      // Array<String*>
 // AbyssEngine::String::Split(AbyssEngine::String sep) -> Array<String*>* (null if no splits).
 extern "C" void *String_Split(String *self, String *sep)
 {
-    if (F<int>(self, 0x4) != 0 && F<int>(self, 0x8) != 0 && F<int>(sep, 0x8) != 0) {
+    if (self->field_0x4 != 0 && self->field_0x8 != 0 && sep->field_0x8 != 0) {
         void *arr = operator_new(0xc);
         String_ArrayString_ctor(arr);
 
@@ -281,11 +281,11 @@ extern "C" void *String_Split(String *self, String *sep)
                 String_SubString((String *)piece, self, pos, idx);
                 String_ArrayString_add(piece, arr);
             }
-            pos = F<int>(sep, 0x8) + idx;
+            pos = sep->field_0x8 + idx;
         }
-        if (pos != 0 && pos < F<uint32_t>(self, 0x8)) {
+        if (pos != 0 && pos < self->field_0x8) {
             void *piece = operator_new(0xc);
-            String_SubString((String *)piece, self, pos, F<uint32_t>(self, 0x8));
+            String_SubString((String *)piece, self, pos, self->field_0x8);
             String_ArrayString_add(piece, arr);
         }
 
@@ -309,8 +309,8 @@ extern "C" uint16_t *String_index(String *self, int i)
     uint16_t *fallback = &g_String_nullChar;
     if (i < 0)
         return fallback;
-    if (i < F<int>(self, 0x8))
-        return (uint16_t *)((char *)F<void *>(self, 0x4) + i * 2);
+    if (i < self->field_0x8)
+        return (uint16_t *)((char *)self->field_0x4 + i * 2);
     return fallback;
 }
 
@@ -325,8 +325,8 @@ void String_Reverse(String *self);
 // AbyssEngine::String::String(char const*, bool reverse)
 extern "C" String *String_ctor_char(String *self, const char *s, bool reverse)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    F<void *>(self, 0x4) = 0;
+    self->field_0x0 = g_String_vtable;
+    self->field_0x4 = 0;
     String_Set_char(self, s);
     if (reverse)
         String_Reverse(self);
@@ -344,10 +344,10 @@ void String_Set_char(String *self, const char *s);   // virtual Set(char const*)
 // AbyssEngine::String::Set(long long) - format a signed 64-bit integer as a decimal string.
 extern "C" void String_Set_longlong(String *self, long long v)
 {
-    void *old = F<void *>(self, 0x4);
+    void *old = self->field_0x4;
     if (old != 0)
         operator_delete__(old);
-    F<void *>(self, 0x4) = 0;
+    self->field_0x4 = 0;
 
     if (v == 0) {
         String_Set_char(self, "");
@@ -355,8 +355,8 @@ extern "C" void String_Set_longlong(String *self, long long v)
     }
 
     uint16_t *buf = (uint16_t *)operator_new__(0x28);
-    F<void *>(self, 0x4) = buf;
-    F<uint32_t>(self, 0x8) = 0;
+    self->field_0x4 = buf;
+    self->field_0x8 = 0;
 
     unsigned long long mag;
     uint16_t *digits;       // where the first generated digit is written
@@ -366,7 +366,7 @@ extern "C" void String_Set_longlong(String *self, long long v)
         digits = buf + 1;
         mag = (unsigned long long)(-v);
         count = 1;
-        F<uint32_t>(self, 0x8) = 1;
+        self->field_0x8 = 1;
     } else {
         digits = buf;
         mag = (unsigned long long)v;
@@ -386,7 +386,7 @@ extern "C" void String_Set_longlong(String *self, long long v)
         count++;
         mag = q;
     } while (mag != 0);
-    F<uint32_t>(self, 0x8) = count;
+    self->field_0x8 = count;
     *w = 0;
 
     // Reverse the generated digit run in place so it reads most-significant first.
@@ -412,9 +412,9 @@ void String_Reverse(String *self);
 // AbyssEngine::String::String(AbyssEngine::String const&, bool reverse) - copy ctor.
 extern "C" String *String_ctor_copy(String *self, String *other, bool reverse)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    F<void *>(self, 0x4) = 0;
-    String_Set_wchar(self, F<uint16_t *>(other, 0x4));
+    self->field_0x0 = g_String_vtable;
+    self->field_0x4 = 0;
+    String_Set_wchar(self, other->field_0x4);
     if (reverse)
         String_Reverse(self);
     return self;
@@ -450,8 +450,8 @@ __attribute__((visibility("hidden"))) extern void *g_String_vtable;
 // AbyssEngine::String::String(float) - formatted string of a float.
 extern "C" String *String_ctor_float(String *self, float v)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    F<void *>(self, 0x4) = 0;
+    self->field_0x0 = g_String_vtable;
+    self->field_0x4 = 0;
     String_Set_float(self, v);
     return self;
 }
@@ -460,13 +460,13 @@ extern "C" String *String_ctor_float(String *self, float v)
 // AbyssEngine::String::Compare(char const*) - compare against an 8-bit string.
 extern "C" unsigned int String_Compare_char(String *self, const char *s)
 {
-    if (F<int>(self, 0x8) == 0)
+    if (self->field_0x8 == 0)
         return 1;
 
     bool reachedEnd = false;
     uint16_t cur;
     unsigned int other;
-    uint16_t *p = F<uint16_t *>(self, 0x4);
+    uint16_t *p = self->field_0x4;
     for (; (cur = *p) != 0; p++) {
         other = (unsigned int)(unsigned char)*s;
         if (other == 0 || other != cur)
@@ -498,10 +498,10 @@ static const char kEmpty[] = "";
 // AbyssEngine::String::Set(char const*) - replace contents from an 8-bit string (widened to 16-bit).
 extern "C" void String_Set_char(String *self, const char *s)
 {
-    void *old = F<void *>(self, 0x4);
+    void *old = self->field_0x4;
     if (old != 0)
         operator_delete__(old);
-    F<void *>(self, 0x4) = 0;
+    self->field_0x4 = 0;
 
     // Null input falls back to the empty literal (matching the target's retry loop).
     if (s == 0)
@@ -515,11 +515,11 @@ extern "C" void String_Set_char(String *self, const char *s)
         p++;
     } while (c != 0);
     unsigned int len = (unsigned int)(p - in) - 1;   // code units excluding terminator
-    F<uint32_t>(self, 0x8) = len;
+    self->field_0x8 = len;
 
     if (len == 0) {
         uint16_t *buf = (uint16_t *)operator_new__(2);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x4 = buf;
         buf[0] = 0;
         return;
     }
@@ -530,17 +530,17 @@ extern "C" void String_Set_char(String *self, const char *s)
         if (len + len < len)
             bytes = 0xffffffff;
         uint16_t *buf = (uint16_t *)operator_new__(bytes);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x4 = buf;
         for (unsigned int i = 0; i < len; i++)
             buf[i] = (uint16_t)in[i];
-        F<uint32_t>(self, 0x8) = len - 1;
+        self->field_0x8 = len - 1;
     } else {
         unsigned int count = len + 1;
         unsigned int bytes = count * 2;
         if (count + count < count)
             bytes = 0xffffffff;
         uint16_t *buf = (uint16_t *)operator_new__(bytes);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x4 = buf;
         for (unsigned int i = 0; i < len; i++)
             buf[i] = (uint16_t)in[i];
         buf[len] = 0;
@@ -553,9 +553,9 @@ extern "C" void String_Set_char(String *self, const char *s)
 extern "C" int String_Compare_str(String *self, String *other)
 {
     short result;
-    if (F<int>(other, 0x8) == F<int>(self, 0x8)) {
-        short *op = F<short *>(other, 0x4);
-        short *sp = F<short *>(self, 0x4);
+    if (other->field_0x8 == self->field_0x8) {
+        short *op = other->field_0x4;
+        short *sp = self->field_0x4;
         short sc, oc;
         bool reachedEnd;
         while (true) {
@@ -594,11 +594,11 @@ __attribute__((visibility("hidden"))) extern void *g_String_vtable;
 // AbyssEngine::String::~String() - reset vtable, free the data buffer.
 extern "C" String *String_dtor(String *self)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    void *data = F<void *>(self, 0x4);
+    self->field_0x0 = g_String_vtable;
+    void *data = self->field_0x4;
     if (data != 0)
         operator_delete__(data);
-    F<void *>(self, 0x4) = 0;
+    self->field_0x4 = 0;
     return self;
 }
 
@@ -614,9 +614,9 @@ struct SBuf { uint32_t a, b, c; };
 // AbyssEngine::String::Trim() - strip leading/trailing spaces and tabs.
 extern "C" void String_Trim(String *self)
 {
-    int data = F<int>(self, 0x4);
+    int data = self->field_0x4;
     unsigned int len;
-    if (data != 0 && (len = F<uint32_t>(self, 0x8)) != 0) {
+    if (data != 0 && (len = self->field_0x8) != 0) {
         short *base = (short *)(unsigned int)data;
         unsigned int start = 0;
         while (start < len) {
@@ -659,10 +659,10 @@ extern "C" int String_GetStringLength(const char *s)
 // AbyssEngine::String::ToLowerCase() - lowercase ASCII plus a CP-1252 accented range.
 extern "C" void String_ToLowerCase(String *self)
 {
-    short *p = F<short *>(self, 0x4);
+    short *p = self->field_0x4;
     if (p == 0)
         return;
-    int count = F<int>(self, 0x8);
+    int count = self->field_0x8;
     while (count != 0) {
         short c = *p;
         unsigned short u = (unsigned short)(c - 0x41);
@@ -706,7 +706,7 @@ extern "C" void String_ToLowerCase(String *self)
 // AbyssEngine::String::operator=(AbyssEngine::String const&)
 extern "C" String *String_assign(String *self, String *other)
 {
-    uint16_t *data = F<uint16_t *>(other, 0x4);
+    uint16_t *data = other->field_0x4;
     if (data != 0)
         String_Set_wchar(self, data);
     return self;
@@ -719,9 +719,9 @@ __attribute__((visibility("hidden"))) extern void *g_String_vtable;
 // AbyssEngine::String::String() - default constructor: empty string.
 extern "C" void String_ctor(String *self)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    F<void *>(self, 0x4) = 0;
-    F<uint32_t>(self, 0x8) = 0;
+    self->field_0x0 = g_String_vtable;
+    self->field_0x4 = 0;
+    self->field_0x8 = 0;
 }
 
 // ---- Set_723dc.cpp ----
@@ -735,10 +735,10 @@ void String_Set_char(String *self, const char *s);   // virtual Set(char const*)
 // AbyssEngine::String::Set(unsigned short const*) - replace contents from a wide string.
 extern "C" void String_Set_wchar(String *self, const uint16_t *s)
 {
-    void *old = F<void *>(self, 0x4);
+    void *old = self->field_0x4;
     if (old != 0)
         operator_delete__(old);
-    F<void *>(self, 0x4) = 0;
+    self->field_0x4 = 0;
 
     if (s == 0) {
         // Null -> empty string via the char-Set path (tail call in the target).
@@ -754,11 +754,11 @@ extern "C" void String_Set_wchar(String *self, const uint16_t *s)
     } while (c != 0);
     unsigned int count = (unsigned int)(p - s);     // includes the terminator
     unsigned int len = count - 1;
-    F<uint32_t>(self, 0x8) = len;
+    self->field_0x8 = len;
 
     if (len == 0) {
         uint16_t *buf = (uint16_t *)operator_new__(2);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x4 = buf;
         buf[0] = 0;
         return;
     }
@@ -769,16 +769,16 @@ extern "C" void String_Set_wchar(String *self, const uint16_t *s)
         if (len + len < len)
             bytes = 0xffffffff;
         void *buf = operator_new__(bytes);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x4 = buf;
         __aeabi_memcpy(buf, s, len * 2);
         *(uint16_t *)((char *)buf + last * 2) = 0;
-        F<uint32_t>(self, 0x8) = last;
+        self->field_0x8 = last;
     } else {
         unsigned int bytes = count * 2;
         if (count + count < count)
             bytes = 0xffffffff;
         void *buf = operator_new__(bytes);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x4 = buf;
         __aeabi_memcpy(buf, s, len * 2);
         *(uint16_t *)((char *)buf + len * 2) = 0;
     }
@@ -789,15 +789,15 @@ extern "C" void String_Set_wchar(String *self, const uint16_t *s)
 // Return the first index >= start where needle occurs, or 0xffffffff if not found.
 extern "C" unsigned int String_IndexOf_from(String *self, unsigned int start, String *needle)
 {
-    while (start < F<uint32_t>(self, 0x8) &&
-           F<uint32_t>(needle, 0x8) <= F<uint32_t>(self, 0x8) - start) {
-        short first = *F<short *>(needle, 0x4);
-        if (first == *(short *)((char *)F<void *>(self, 0x4) + start * 2)) {
+    while (start < self->field_0x8 &&
+           needle->field_0x8 <= self->field_0x8 - start) {
+        short first = *needle->field_0x4;
+        if (first == *(short *)((char *)self->field_0x4 + start * 2)) {
             unsigned int k = 0;
-            while (first == *(short *)((char *)F<void *>(self, 0x4) + start * 2 + k * 2)) {
-                if (F<uint32_t>(needle, 0x8) <= k + 1)
+            while (first == *(short *)((char *)self->field_0x4 + start * 2 + k * 2)) {
+                if (needle->field_0x8 <= k + 1)
                     return start;
-                first = F<short *>(needle, 0x4)[k + 1];
+                first = needle->field_0x4[k + 1];
                 k = k + 1;
             }
             start = start + k;
@@ -821,19 +821,19 @@ struct SBuf { uint32_t a, b, c; };
 // AbyssEngine::String::operator+=(AbyssEngine::String const&)
 extern "C" String *String_addAssign_str(String *self, String *other)
 {
-    if (F<int>(other, 0x8) != 0) {
+    if (other->field_0x8 != 0) {
         SBuf tmp;
         String_ctor_copy((String *)&tmp, other, false);
         unsigned int addLen = *(uint32_t *)((char *)&tmp + 0x8);
         void *addData = *(void **)((char *)&tmp + 0x4);
 
-        int oldLen = F<int>(self, 0x8);
+        int oldLen = self->field_0x8;
         int newLen = addLen + oldLen;
-        F<int>(self, 0x8) = newLen;
-        void *buf = realloc(F<void *>(self, 0x4), newLen * 2 + 2);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x8 = newLen;
+        void *buf = realloc(self->field_0x4, newLen * 2 + 2);
+        self->field_0x4 = buf;
         __aeabi_memcpy((char *)buf + oldLen * 2, addData, addLen << 1);
-        *(uint16_t *)((char *)buf + F<int>(self, 0x8) * 2) = 0;
+        *(uint16_t *)((char *)buf + self->field_0x8 * 2) = 0;
         String_dtor((String *)&tmp);
     }
     return self;
@@ -851,12 +851,12 @@ void String_freeWide(void *p);                              // 0x1ab108 (tail-ca
 // AbyssEngine::String::ConvertFromUTF8() - reinterpret the stored bytes as UTF-8 and re-store.
 extern "C" void String_ConvertFromUTF8(String *self)
 {
-    if (F<void *>(self, 0x4) == 0)
+    if (self->field_0x4 == 0)
         return;
 
     char *bytes = String_GetAEChar(self);
     char *bytes2 = String_GetAEChar(self);
-    uint16_t *wide = String_getWCharFromUtf8(bytes2, F<int>(self, 0x8));
+    uint16_t *wide = String_getWCharFromUtf8(bytes2, self->field_0x8);
     String_Set_wchar(self, wide);
     operator_delete__(bytes);
     String_freeWide(wide);
@@ -902,7 +902,7 @@ static const char kSlash[] = "</";
 // Wrap `tag` as "<tag>", split this string on it, ending each run at the matching "</".
 extern "C" void String_SplitTags(String *self, String *tag)
 {
-    if (F<int>(self, 0x4) == 0 || F<int>(self, 0x8) == 0 || F<int>(tag, 0x8) == 0)
+    if (self->field_0x4 == 0 || self->field_0x8 == 0 || tag->field_0x8 == 0)
         return;
 
     // tag := "<" + tag + ">"
@@ -931,7 +931,7 @@ extern "C" void String_SplitTags(String *self, String *tag)
             String_SubString((String *)piece, self, pos, idx);
             String_ArrayString_add(piece, arr);
 
-            int afterTag = F<int>(tag, 0x8) + idx;
+            int afterTag = tag->field_0x8 + idx;
             SBuf closer;
             String_ctor_char((String *)&closer, kSlash, false);
             endPos = (int)String_IndexOf_from(self, afterTag, (String *)&closer);
@@ -946,9 +946,9 @@ extern "C" void String_SplitTags(String *self, String *tag)
         pos = endPos + 1;
     }
 
-    if (pos != 0 && pos < F<uint32_t>(self, 0x8)) {
+    if (pos != 0 && pos < self->field_0x8) {
         void *piece = operator_new(0xc);
-        String_SubString((String *)piece, self, pos, F<uint32_t>(self, 0x8));
+        String_SubString((String *)piece, self, pos, self->field_0x8);
         String_ArrayString_add(piece, arr);
     }
 
@@ -978,11 +978,11 @@ extern "C" String *String_addAssign_longlong(String *self, const long long *v)
     unsigned int addLen = *(uint32_t *)((char *)&tmp + 0x8);
     if (addLen != 0) {
         void *addData = *(void **)((char *)&tmp + 0x4);
-        int oldLen = F<int>(self, 0x8);
+        int oldLen = self->field_0x8;
         int newLen = addLen + oldLen;
-        F<int>(self, 0x8) = newLen;
-        void *buf = realloc(F<void *>(self, 0x4), newLen * 2 + 2);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x8 = newLen;
+        void *buf = realloc(self->field_0x4, newLen * 2 + 2);
+        self->field_0x4 = buf;
         __aeabi_memcpy((char *)buf + oldLen * 2, addData, addLen << 1);
     }
     String_dtor((String *)&tmp);
@@ -1099,8 +1099,8 @@ void String_Reverse(String *self);
 // AbyssEngine::String::String(unsigned short const*, bool reverse)
 extern "C" String *String_ctor_wchar(String *self, const uint16_t *s, bool reverse)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    F<void *>(self, 0x4) = 0;
+    self->field_0x0 = g_String_vtable;
+    self->field_0x4 = 0;
     String_Set_wchar(self, s);
     if (reverse)
         String_Reverse(self);
@@ -1116,19 +1116,19 @@ void *realloc(void *p, unsigned int n);
 // AbyssEngine::String::operator+=(char const&) - append a single character.
 extern "C" String *String_addAssign_char(String *self, const char *c)
 {
-    int len = F<int>(self, 0x8);
+    int len = self->field_0x8;
     if (len == 0) {
         uint16_t *buf = (uint16_t *)operator_new__(4);
-        F<void *>(self, 0x4) = buf;
+        self->field_0x4 = buf;
         unsigned char ch = *(const unsigned char *)c;
         buf[1] = 0;
         buf[0] = (uint16_t)ch;
-        F<uint32_t>(self, 0x8) = 1;
+        self->field_0x8 = 1;
     } else {
-        F<int>(self, 0x8) = len + 1;
-        char *buf = (char *)realloc(F<void *>(self, 0x4), len * 2 + 4);
-        F<void *>(self, 0x4) = buf;
-        int nlen = F<int>(self, 0x8);
+        self->field_0x8 = len + 1;
+        char *buf = (char *)realloc(self->field_0x4, len * 2 + 4);
+        self->field_0x4 = buf;
+        int nlen = self->field_0x8;
         unsigned char ch = *(const unsigned char *)c;
         *(uint16_t *)(buf + nlen * 2) = 0;
         *(uint16_t *)(buf + nlen * 2 - 2) = (uint16_t)ch;
@@ -1156,15 +1156,15 @@ extern "C" void String_SubString(String *out, String *self, unsigned int start, 
         if (count + count < count)
             bytes = 0xffffffff;
         void *buf = operator_new__(bytes);
-        __aeabi_memcpy(buf, (char *)F<void *>(self, 0x4) + start * 2, n * 2);
+        __aeabi_memcpy(buf, (char *)self->field_0x4 + start * 2, n * 2);
         *(uint16_t *)((char *)buf + n * 2) = 0;
         // Construct the result in-place from the freshly built wide buffer.
         String_ctor_wchar(out, (uint16_t *)buf, false);
     } else {
         // Empty substring: vtable pointer + null data + zero length.
-        F<void *>(out, 0x0) = g_String_vtable;
-        F<void *>(out, 0x4) = 0;
-        F<uint32_t>(out, 0x8) = 0;
+        out->field_0x0 = g_String_vtable;
+        out->field_0x4 = 0;
+        out->field_0x8 = 0;
     }
 }
 
@@ -1261,8 +1261,8 @@ __attribute__((visibility("hidden"))) extern void *g_String_vtable;
 // AbyssEngine::String::String(long long) - decimal string of a 64-bit value.
 extern "C" String *String_ctor_longlong(String *self, long long v)
 {
-    F<void *>(self, 0x0) = g_String_vtable;
-    F<void *>(self, 0x4) = 0;
+    self->field_0x0 = g_String_vtable;
+    self->field_0x4 = 0;
     String_Set_longlong(self, v);
     return self;
 }
@@ -1277,8 +1277,8 @@ extern "C" uint16_t *String_index_const(String *self, int i)
     uint16_t *fallback = &g_String_nullChar;
     if (i < 0)
         return fallback;
-    if (i < F<int>(self, 0x8))
-        return (uint16_t *)((char *)F<void *>(self, 0x4) + i * 2);
+    if (i < self->field_0x8)
+        return (uint16_t *)((char *)self->field_0x4 + i * 2);
     return fallback;
 }
 

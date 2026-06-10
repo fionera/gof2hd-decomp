@@ -1,4 +1,5 @@
-#include "Hud.h"
+#include "gof2/Hud.h"
+#include "gof2/ListItem.h"
 
 
 extern "C" void TouchButton_OnTouchEnd(int self, unsigned int a, void *b);
@@ -615,7 +616,7 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
         void *str = operator_new(0xc);
         String_ctor_copy(str, dst, false);
         ListItem_ctor(item, str);
-        *(int *)((char *)item + 0x2c) = cargoVal;
+        item->field_0x2c = cargoVal;
         Hud_addToEventQueue(self, item);
         return;
     }
@@ -683,9 +684,9 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
     void *str = operator_new(0xc);
     String_ctor_copy(str, B(self, 0x1f4), false);
     ListItem_ctor(item, str);
-    *(int *)((char *)item + 0x2c) = cargoVal;
-    if (!p7 || p6) *(int *)((char *)item + 0x30) = 2;
-    if (p7) *(unsigned char *)((char *)item + 0x24) = 1;
+    item->field_0x2c = cargoVal;
+    if (!p7 || p6) item->field_0x30 = 2;
+    if (p7) item->field_0x24 = 1;
     Hud_addToEventQueue(self, item);
 }
 

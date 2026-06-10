@@ -1,4 +1,4 @@
-#include "BumpShaderCloak.h"
+#include "gof2/BumpShaderCloak.h"
 
 
 extern "C" void _ZN11AbyssEngine6Engine18ActivateRefractFBOEv(AbyssEngine::Engine *self);
@@ -112,7 +112,7 @@ BumpShaderCloak::BumpShaderCloak()
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {
         String tmp("BumpShaderCloak", false);
-        *(String *)((char *)this + 0xc) = tmp;
+        this->field_0xc = tmp;
     }
 
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;

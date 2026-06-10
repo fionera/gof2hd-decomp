@@ -1,4 +1,5 @@
-#include "Generator.h"
+#include "gof2/Generator.h"
+#include "gof2/Status.h"
 
 
 
@@ -196,7 +197,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                     Array_int_ctor(choices);
                     for (int j = 0; j != 6; ++j) {
                         int shipId = g_Generator_offerShipIds[j];
-                        if (Station_hasShip(F<Station *>(status, 0x14c),
+                        if (Station_hasShip(status->field_0x14c,
                                             shipId) == 0) {
                             Ship *ship = Status_getShip(status);
                             if (Ship_getIndex(ship) != shipId) {

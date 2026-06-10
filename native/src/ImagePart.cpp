@@ -1,4 +1,4 @@
-#include "ImagePart.h"
+#include "gof2/ImagePart.h"
 
 
 extern "C" int PaintCanvas_GetImage2DWidth(void *canvas, unsigned id);

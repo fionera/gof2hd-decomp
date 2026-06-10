@@ -1,4 +1,4 @@
-#include "ResourceTexture.h"
+#include "gof2/ResourceTexture.h"
 
 
 
@@ -13,7 +13,7 @@ ResourceTexture::ResourceTexture(const char *name, float value)
     void *buf = operator_new__(len + 1U);
     *(void **)this = buf;
     __aeabi_memcpy(buf, name, len + 1U);
-    *(float *)((char *)this + 0x4) = value;
+    this->field_0x4 = value;
 }
 
 } // namespace AbyssEngine
@@ -41,7 +41,7 @@ ResourceTexture::ResourceTexture(const String &name, float value)
     void *buf = operator_new__(len + 1U);
     *(void **)this = buf;
     __aeabi_memcpy(buf, utf8, len + 1U);
-    *(float *)((char *)this + 0x4) = value;
+    this->field_0x4 = value;
     operator_delete__(utf8);
 }
 

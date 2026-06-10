@@ -1,4 +1,4 @@
-#include "KeyCode.h"
+#include "gof2/KeyCode.h"
 
 
 extern "C" String *_ZN11AbyssEngine6StringaSERKS0_(String *self, const String *other);

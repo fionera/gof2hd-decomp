@@ -1,4 +1,4 @@
-#include "GreenShader.h"
+#include "gof2/GreenShader.h"
 
 
 
@@ -102,7 +102,7 @@ GreenShader::GreenShader()
 
     {
         String temp(GreenShader_name, false);
-        *(String *)((char *)this + 0xc) = temp;
+        this->field_0xc = temp;
     }
 
     uint32_t delta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;

@@ -1,4 +1,4 @@
-#include "GenericShader.h"
+#include "gof2/GenericShader.h"
 
 
 
@@ -156,7 +156,7 @@ GenericShader::GenericShader()
 
     // Initialise the String member at +0xc from a literal.
     String tmp("GenericShader", false);
-    *(String *)((char *)this + 0xc) = tmp;
+    this->field_0xc = tmp;
     tmp.~String();
 }
 

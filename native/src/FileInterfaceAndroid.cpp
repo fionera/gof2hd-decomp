@@ -1,4 +1,4 @@
-#include "FileInterfaceAndroid.h"
+#include "gof2/FileInterfaceAndroid.h"
 
 
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
@@ -54,9 +54,9 @@ extern "C" RetStr FileInterfaceAndroid_GetDirPreFix()
 // FileInterfaceAndroid::GetFileSize() — seek end, tell, seek start; FILE* at +0x8.
 extern "C" int FileInterfaceAndroid_GetFileSize(FileInterfaceAndroid *self)
 {
-    fseek(F<void *>(self, 0x8), 0, 2);
-    int size = ftell(F<void *>(self, 0x8));
-    fseek(F<void *>(self, 0x8), 0, 0);
+    fseek(self->field_0x8, 0, 2);
+    int size = ftell(self->field_0x8);
+    fseek(self->field_0x8, 0, 0);
     return size;
 }
 
@@ -65,7 +65,7 @@ extern "C" int FileInterfaceAndroid_GetFileSize(FileInterfaceAndroid *self)
 extern "C" void FileInterfaceAndroid_SetZipDirectory(FileInterfaceAndroid *self, void *p)
 {
     if (p != 0)
-        F<void *>(self, 0x34) = p;
+        self->field_0x34 = p;
 }
 
 // ---- _FileInterfaceAndroid_6df88.cpp ----
@@ -77,7 +77,7 @@ extern int *gFIAInstCount_dtor __attribute__((visibility("hidden")));
 
 FileInterfaceAndroid::~FileInterfaceAndroid()
 {
-    F<char *>(this, 0x00) = (char *)gFIAVtable_dtor + 8;
+    this->field_0x0 = (char *)gFIAVtable_dtor + 8;
     FileInterfaceAndroid_Close(this);
     int *cnt = gFIAInstCount_dtor;
     if (*cnt != 0)
@@ -91,7 +91,7 @@ FileInterfaceAndroid::~FileInterfaceAndroid()
 extern "C" void FileInterfaceAndroid_SetAppRootDir(FileInterfaceAndroid *self, void *p)
 {
     if (p != 0)
-        F<void *>(self, 0x30) = p;
+        self->field_0x30 = p;
 }
 
 // ---- FileInterfaceAndroid_6de18.cpp ----
@@ -303,7 +303,7 @@ extern "C" bool FileInterfaceAndroid_FileExist(FileInterfaceAndroid *self, Strin
         exists = true;
     } else {
         char dir[12], full[12];
-        String_ctor_cstr(dir, *(const char **)((char *)self + 0x30), false);
+        String_ctor_cstr(dir, self->field_0x30, false);
         String_concat(full, dir, &name);
         sFILE *f = fopen(String_GetAEChar(full), gModeRb);
         if (f != 0) {
@@ -454,9 +454,9 @@ extern "C" FileInterfaceAndroid *FileInterfaceAndroid_OpenRead(FileInterfaceAndr
     } else if (z2 != 0) {
         result = FileInterfaceAndroid_ctor_zip((FileInterfaceAndroid *)operator_new(0x38),
                                                z2, (bool)p4, p2, p5, p4);
-    } else if (*(const char **)((char *)self + 0x30) != 0) {
+    } else if (self->field_0x30 != 0) {
         char dir[12], full[12];
-        String_ctor_cstr(dir, *(const char **)((char *)self + 0x30), false);
+        String_ctor_cstr(dir, self->field_0x30, false);
         String_concat(full, dir, body == w ? (void *)a : (void *)a);
         sFILE *f = fopen(String_GetAEChar(full), gModeRbR);
         if (f != 0) {
@@ -500,7 +500,7 @@ extern "C" FileInterfaceAndroid *FileInterfaceAndroid_OpenWrite(FileInterfaceAnd
         ++w;
 
     char dir[12], wide[12], full[12];
-    String_ctor_cstr(dir, *(const char **)((char *)self + 0x30), false);
+    String_ctor_cstr(dir, self->field_0x30, false);
     String_ctor_wide(wide, String_GetAEWChar(&name), false);
     String_concat(full, dir, wide);
     String_dtor(wide);

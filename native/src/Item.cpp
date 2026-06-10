@@ -1,4 +1,4 @@
-#include "Item.h"
+#include "gof2/Item.h"
 
 
 extern "C" void Array_Item_ctor(Array *array);

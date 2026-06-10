@@ -1,4 +1,4 @@
-#include "AESoundRessource.h"
+#include "gof2/AESoundRessource.h"
 
 
 extern "C" void operator_delete(void *ptr);
@@ -19,11 +19,11 @@ extern "C" void __stack_chk_fail(int value) __attribute__((noreturn));
 // ---- freeAllRessources_7fb0c.cpp ----
 extern "C" void AESoundRessource_freeAllRessources_7fb0c(AbyssEngine::AESoundRessource *self)
 {
-    for (uint32_t i = 0; i < *(uint32_t *)((char *)self + 4); ++i) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + i * 4);
+    for (uint32_t i = 0; i < self->field_0x4; ++i) {
+        void *sound = *(void **)(self->field_0x8 + i * 4);
         if (sound != 0) {
             operator_delete(sound);
-            *(int *)(*(char **)((char *)self + 8) + i * 4) = 0;
+            *(int *)(self->field_0x8 + i * 4) = 0;
         }
     }
 }
@@ -31,14 +31,14 @@ extern "C" void AESoundRessource_freeAllRessources_7fb0c(AbyssEngine::AESoundRes
 // ---- SetSound_7fb74.cpp ----
 extern "C" void AESoundRessource_SetSound_7fb74(AbyssEngine::AESoundRessource *self, AbyssEngine::AESoundInfo *info, int count)
 {
-    *(volatile int *)((char *)self + 0x10) = count;
+    self->field_0x10 = count;
     AbyssEngine::AESoundRessource *saved = self;
     *(AbyssEngine::AESoundInfo * volatile *)((char *)saved + 0) = info;
     ArraySetLength_AESoundInterface(count, (char *)saved + 4);
-    int length = *(int *)((char *)saved + 4);
+    int length = saved->field_0x4;
     int zero = 0;
     for (int i = 0; length != i; ++i) {
-        *(int *)(*(char **)((char *)saved + 8) + i * 4) = zero;
+        *(int *)(saved->field_0x8 + i * 4) = zero;
     }
 }
 
@@ -47,8 +47,8 @@ typedef void (*SoundIntMethod)(void *, int);
 
 extern "C" void AESoundRessource_setVolume_7fd14(AbyssEngine::AESoundRessource *self, int volume)
 {
-    for (uint32_t i = 0; i < *(uint32_t *)((char *)self + 4); ++i) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + i * 4);
+    for (uint32_t i = 0; i < self->field_0x4; ++i) {
+        void *sound = *(void **)(self->field_0x8 + i * 4);
         if (sound != 0) {
             (*(SoundIntMethod *)((char *)*(void **)sound + 0x28))(sound, volume);
         }
@@ -65,8 +65,8 @@ extern "C" void AESoundRessource_play_7fee4(AbyssEngine::AESoundRessource *self,
 extern "C" AbyssEngine::AESoundRessource *AESoundRessource_7fa78(AbyssEngine::AESoundRessource *self)
 {
     Array_AESoundInterface_ctor((char *)self + 4);
-    *(volatile int *)((char *)self + 0x10) = 0;
-    *(volatile int *)((char *)self + 0) = 0;
+    self->field_0x10 = 0;
+    self->field_0x0 = 0;
     return self;
 }
 
@@ -75,8 +75,8 @@ typedef void (*SoundIntMethod)(void *, int);
 
 extern "C" void AESoundRessource_setMusicVolume_7fd70(AbyssEngine::AESoundRessource *self, int volume)
 {
-    for (uint32_t i = 0; i < *(uint32_t *)((char *)self + 4); ++i) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + i * 4);
+    for (uint32_t i = 0; i < self->field_0x4; ++i) {
+        void *sound = *(void **)(self->field_0x8 + i * 4);
         if (sound != 0) {
             (*(SoundIntMethod *)((char *)*(void **)sound + 0x30))(sound, volume);
         }
@@ -88,8 +88,8 @@ typedef void (*SoundIntMethod)(void *, int);
 
 extern "C" void AESoundRessource_setSoundVolume_7fd42(AbyssEngine::AESoundRessource *self, int volume)
 {
-    for (uint32_t i = 0; i < *(uint32_t *)((char *)self + 4); ++i) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + i * 4);
+    for (uint32_t i = 0; i < self->field_0x4; ++i) {
+        void *sound = *(void **)(self->field_0x8 + i * 4);
         if (sound != 0) {
             (*(SoundIntMethod *)((char *)*(void **)sound + 0x2c))(sound, volume);
         }
@@ -101,8 +101,8 @@ typedef void (*SoundVoidMethod)(void *);
 
 extern "C" void AESoundRessource_stop_7fff4(AbyssEngine::AESoundRessource *self)
 {
-    for (uint32_t i = 0; i < *(uint32_t *)((char *)self + 4); ++i) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + i * 4);
+    for (uint32_t i = 0; i < self->field_0x4; ++i) {
+        void *sound = *(void **)(self->field_0x8 + i * 4);
         if (sound != 0) {
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x1c))(sound);
         }
@@ -114,13 +114,13 @@ typedef void (*SoundVoidMethod)(void *);
 
 extern "C" int AESoundRessource_pause_80080(AbyssEngine::AESoundRessource *self)
 {
-    for (uint32_t i = 0; i < *(uint32_t *)((char *)self + 4); ++i) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + i * 4);
+    for (uint32_t i = 0; i < self->field_0x4; ++i) {
+        void *sound = *(void **)(self->field_0x8 + i * 4);
         if (sound != 0) {
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x14))(sound);
         }
     }
-    return *(int *)((char *)self + 4);
+    return self->field_0x4;
 }
 
 // ---- resume_800e8.cpp ----
@@ -128,8 +128,8 @@ typedef void (*SoundVoidMethod)(void *);
 
 extern "C" void AESoundRessource_resume_800e8(AbyssEngine::AESoundRessource *self)
 {
-    for (uint32_t i = 0; i < *(uint32_t *)((char *)self + 4); ++i) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + i * 4);
+    for (uint32_t i = 0; i < self->field_0x4; ++i) {
+        void *sound = *(void **)(self->field_0x8 + i * 4);
         if (sound != 0) {
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x18))(sound);
         }
@@ -140,9 +140,9 @@ extern "C" void AESoundRessource_resume_800e8(AbyssEngine::AESoundRessource *sel
 extern "C" void AESoundRessource_getSoundInfo_7fa30(AbyssEngine::AESoundRessource *self, int id, AbyssEngine::AESoundInfo *info, int *index)
 {
     *index = -1;
-    uint32_t count = *(uint32_t *)((char *)self + 4);
+    uint32_t count = self->field_0x4;
     for (uint32_t i = 0; i < count; ++i) {
-        char *base = *(char **)((char *)self + 0);
+        char *base = self->field_0x0;
         AbyssEngine::AESoundInfo *entry = (AbyssEngine::AESoundInfo *)(base + i * 12);
         if (entry->id == id) {
             *index = i;
@@ -157,8 +157,8 @@ typedef void (*SoundVoidMethod)(void *);
 
 extern "C" void AESoundRessource_supend_80018(AbyssEngine::AESoundRessource *self)
 {
-    for (uint32_t i = 0; i < *(uint32_t *)((char *)self + 4); ++i) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + i * 4);
+    for (uint32_t i = 0; i < self->field_0x4; ++i) {
+        void *sound = *(void **)(self->field_0x8 + i * 4);
         if (sound != 0) {
             (*(SoundVoidMethod *)((char *)*(void **)sound + 4))(sound);
         }
@@ -174,7 +174,7 @@ extern "C" void AESoundRessource_stop_7ffb0(AbyssEngine::AESoundRessource *self,
     frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + frame.index * 4);
+        void *sound = *(void **)(self->field_0x8 + frame.index * 4);
         if (sound != 0) {
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x1c))(sound);
         }
@@ -199,11 +199,11 @@ extern "C" void AESoundRessource_play_7feec(AbyssEngine::AESoundRessource *self,
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+        void *sound = *(void **)(self->field_0x8 + index * 4);
         if ((*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x38))(sound) == 0) {
             AESoundRessource_init(self, savedId);
         }
-        sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+        sound = *(void **)(self->field_0x8 + index * 4);
         if (sound != 0) {
             (*(SoundFloatMethod *)((char *)*(void **)sound + 0xc))(sound, savedVolume);
         }
@@ -226,9 +226,9 @@ extern "C" void AESoundRessource_playMusicLoop_7fe88(AbyssEngine::AESoundRessour
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+        void *sound = *(void **)(self->field_0x8 + index * 4);
         if (sound != 0 && (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound) == 0) {
-            sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+            sound = *(void **)(self->field_0x8 + index * 4);
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x10))(sound);
         }
     }
@@ -248,7 +248,7 @@ extern "C" void AESoundRessource_release_7fde8(AbyssEngine::AESoundRessource *se
     frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + frame.index * 4);
+        void *sound = *(void **)(self->field_0x8 + frame.index * 4);
         (*(SoundVoidMethod *)((char *)*(void **)sound + 0x34))(sound);
     }
     int diff = __stack_chk_guard;
@@ -273,16 +273,16 @@ extern "C" void AESoundRessource_init_7fc38(AbyssEngine::AESoundRessource *self,
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        char *sounds = *(char **)((char *)self + 8);
+        char *sounds = self->field_0x8;
         void *sound = *(void **)(sounds + index * 4);
         if (sound == 0) {
             sound = operator_new(4);
             *(void **)sound = AESoundInterface_vtable + 8;
             *(void **)(sounds + index * 4) = sound;
-            sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+            sound = *(void **)(self->field_0x8 + index * 4);
         }
         (*(SoundPointerMethod *)*(void **)sound)(sound, *(const char **)(frame.info + 4));
-        sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+        sound = *(void **)(self->field_0x8 + index * 4);
         (*(SoundIntMethod *)((char *)*(void **)sound + 0x24))(sound, *(int *)(frame.info + 8));
     }
     int diff = __stack_chk_guard;
@@ -303,9 +303,9 @@ extern "C" void AESoundRessource_playMusic_7fe2c(AbyssEngine::AESoundRessource *
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+        void *sound = *(void **)(self->field_0x8 + index * 4);
         if (sound != 0 && (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound) == 0) {
-            sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+            sound = *(void **)(self->field_0x8 + index * 4);
             (*(SoundVoidMethod *)((char *)*(void **)sound + 8))(sound);
         }
     }
@@ -326,14 +326,14 @@ AbyssEngine::AESoundRessource::~AESoundRessource()
     int byteOffset = 0;
     uint32_t i = 0;
     while (i < *(uint32_t *)array) {
-        char *data = *(char **)((char *)self + 8);
+        char *data = self->field_0x8;
         void *sound = *(void **)(data + byteOffset);
         int *slot;
         if (sound == 0) {
             slot = (int *)(data + i * 4);
         } else {
             operator_delete(sound);
-            slot = (int *)(*(char **)((char *)self + 8) + byteOffset);
+            slot = (int *)(self->field_0x8 + byteOffset);
         }
         *slot = zero;
         byteOffset += 4;
@@ -355,7 +355,7 @@ extern "C" int AESoundRessource_isPlaying_7fda0(AbyssEngine::AESoundRessource *s
     if (frame.index == -1) {
         result = 0;
     } else {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + frame.index * 4);
+        void *sound = *(void **)(self->field_0x8 + frame.index * 4);
         result = (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound);
     }
     int diff = __stack_chk_guard - frame.cookie;
@@ -374,7 +374,7 @@ extern "C" void AESoundRessource_resume_800a4(AbyssEngine::AESoundRessource *sel
     frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + frame.index * 4);
+        void *sound = *(void **)(self->field_0x8 + frame.index * 4);
         if (sound != 0) {
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x18))(sound);
         }
@@ -397,9 +397,9 @@ extern "C" void AESoundRessource_playLoop_7ff54(AbyssEngine::AESoundRessource *s
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+        void *sound = *(void **)(self->field_0x8 + index * 4);
         if (sound != 0 && (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound) == 0) {
-            sound = *(void **)(*(char **)((char *)self + 8) + index * 4);
+            sound = *(void **)(self->field_0x8 + index * 4);
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x10))(sound);
         }
     }
@@ -422,7 +422,7 @@ extern "C" void AESoundRessource_initWithoutLoading_7fbd0(AbyssEngine::AESoundRe
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        char *sounds = *(char **)((char *)self + 8);
+        char *sounds = self->field_0x8;
         if (*(void **)(sounds + index * 4) == 0) {
             void *sound = operator_new(4);
             *(void **)sound = AESoundInterface_vtable + 8;
@@ -445,7 +445,7 @@ extern "C" void AESoundRessource_pause_8003c(AbyssEngine::AESoundRessource *self
     frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + frame.index * 4);
+        void *sound = *(void **)(self->field_0x8 + frame.index * 4);
         if (sound != 0) {
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x14))(sound);
         }
@@ -467,7 +467,7 @@ extern "C" void AESoundRessource_setVolume_7fcc4(AbyssEngine::AESoundRessource *
     frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = *(void **)(*(char **)((char *)self + 8) + frame.index * 4);
+        void *sound = *(void **)(self->field_0x8 + frame.index * 4);
         if (sound != 0) {
             (*(SoundIntMethod *)((char *)*(void **)sound + 0x28))(sound, savedVolume);
         }

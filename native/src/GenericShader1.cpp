@@ -1,4 +1,4 @@
-#include "GenericShader1.h"
+#include "gof2/GenericShader1.h"
 
 
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(ShaderBaseStruct *self);
@@ -142,7 +142,7 @@ GenericShader1::GenericShader1()
     *g_genericShader1GlobalSlot = *g_genericShader1GlobalSrc;
 
     String tmp("GenericShader1", false);
-    *(String *)((char *)this + 0xc) = tmp;
+    this->field_0xc = tmp;
     tmp.~String();
 }
 

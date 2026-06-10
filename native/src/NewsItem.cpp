@@ -1,4 +1,4 @@
-#include "NewsItem.h"
+#include "gof2/NewsItem.h"
 
 
 

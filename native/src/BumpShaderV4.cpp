@@ -1,4 +1,4 @@
-#include "BumpShaderV4.h"
+#include "gof2/BumpShaderV4.h"
 
 
 
@@ -156,7 +156,7 @@ __attribute__((minsize)) BumpShaderV4::BumpShaderV4()
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {
         String tmp("BumpShaderV4", false);
-        *(String *)((char *)this + 0xc) = tmp;
+        this->field_0xc = tmp;
     }
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)

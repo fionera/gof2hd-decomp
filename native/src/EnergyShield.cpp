@@ -1,4 +1,4 @@
-#include "EnergyShield.h"
+#include "gof2/EnergyShield.h"
 
 
 extern "C" void glUniform2f(int location, float x, float y);
