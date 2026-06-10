@@ -258,6 +258,7 @@ struct Engine {
     uint32_t field_0x510;               // +0x510
     char* field_0x514;                  // +0x514
 
+    Engine();
     ~Engine();
 
     // ---- methods (converted from free functions) ----

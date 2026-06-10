@@ -1,6 +1,7 @@
 #ifndef GOF2_MISSION_H
 #define GOF2_MISSION_H
 #include "gof2/common.h"
+#include "gof2/Station.h"   // provides struct RetStr (single shared definition)
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 — Mission class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class (no AbyssEngine:: namespace). Field offsets recovered from the
@@ -25,7 +26,7 @@ using AbyssEngine::String12;
 
 // String returned by value (12-byte aggregate, matches AbyssEngine::String layout).
 // Returned through a hidden sret pointer in the decompiled getters below.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// `struct RetStr` is provided by gof2/Station.h (single shared definition).
 
 // Full Mission layout recovered from the per-method disassembly. The four embedded
 // String members (0x10/0x1c/0x40/0x4c) are reached via byte-offset casts, so they are

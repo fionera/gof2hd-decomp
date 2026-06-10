@@ -104,7 +104,7 @@ uint8_t TouchButton::isVisible() {
 // ---- setPressProgress_1693ca.cpp ----
 void TouchButton::setPressProgress(float value) {
     TouchButton *self = this;
-    F(self, 0xbc) = value;
+    F<float>(self, 0xbc) = value;
 }
 
 // ---- isTouched_1699d0.cpp ----
@@ -118,7 +118,7 @@ uint8_t TouchButton::isTouched() {
 
 // Returns the text String (stored at offset 0xc) by value. The copy-ctor returns
 // void, so the compiler keeps a frame + restores the sret pointer (r0).
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// `struct RetStr` is provided by gof2/TouchButton.h (single shared definition).
 
 RetStr TouchButton::getText() {
     TouchButton *self = this;
@@ -603,7 +603,7 @@ void TouchButton::draw() {
         ((Layout *)(layoutC))->setDrawColor(-1);
 
         // optional progress fill (when 0xbc > 0).
-        float prog = F(self, 0xbc);
+        float prog = F<float>(self, 0xbc);
         if (prog > 0.0f) {
             PaintCanvas_SetColor(0xffffffff);
             ((Layout *)(layoutC))->setDrawColor(-0x80);

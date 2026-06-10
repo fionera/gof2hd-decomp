@@ -29,7 +29,7 @@ void SpriteGun::setEnemies() {
 // single dereference; the two word stores fuse into a single strd.
 __attribute__((visibility("hidden"))) extern "C" char *const g_SpriteGun;
 
-void SpriteGun::SpriteGun(Gun *param_1, int param_2) {
+SpriteGun::SpriteGun(Gun *param_1, int param_2) {
     SpriteGun *this_ = this;
     this_->field_0x0 = g_SpriteGun + 8;
     this_->field_0x4 = 0;

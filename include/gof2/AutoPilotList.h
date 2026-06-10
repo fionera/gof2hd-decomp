@@ -1,6 +1,12 @@
 #ifndef GOF2_AUTOPILOTLIST_H
 #define GOF2_AUTOPILOTLIST_H
 #include "gof2/common.h"
+// RetStr (12-byte by-value String aggregate) and the SolarSystem class are sourced
+// from a single header to avoid the duplicate-RetStr ODR clash that arises when
+// SolarSystem.h and Station.h (both define RetStr unconditionally) are pulled into
+// one TU. getTargetString() below returns RetStr by value, so its definition must be
+// in scope here.
+#include "gof2/SolarSystem.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 - AutoPilotList class. Android libgof2hdaa.so, armv7 Thumb.
 // Top-level class (no AbyssEngine namespace; only some arg/field types live in
@@ -31,8 +37,7 @@ struct EngString {
 };
 void *operator new(__SIZE_TYPE__);
 
-// AbyssEngine::String passed/returned by value: 12-byte trivially-copied aggregate.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// RetStr is provided by gof2/SolarSystem.h (included above).
 
 // Field accessor via byte offset.
 

@@ -20,20 +20,6 @@ struct FileRead;
 
 static inline void *&P(void *p, unsigned off) {
     return *(void **)((char *)p + off);
-
-    // ---- methods (converted from free functions) ----
-    StarSystem * StarSystem(int mode);
-    Vector getLightDirection();
-    void initLight();
-    void render();
-    void render2D();
-    void renderSunStreak();
-    void scaleSunDuringSupernovaIntro(int amount);
-    void switchPlanetForIntro();
-    void switchSunForSupernovaExpansion();
-    void switchSunForSupernovaIntro();
-    void switchSunForSupernovaReversal();
-    void updateSupernova(int dt);
 }
 
 static inline int &I(void *p, unsigned off) {
@@ -57,6 +43,7 @@ static inline void *array_data(void *array) {
 struct StarSystem {
     Vector field_0x30;                  // +0x30  (light direction)
 
+    StarSystem(int mode);
     ~StarSystem();
 
     // ---- methods (converted from free functions) ----

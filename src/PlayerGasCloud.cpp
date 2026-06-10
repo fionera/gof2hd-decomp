@@ -107,7 +107,7 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     this->field_0x128 = 0;
     this->field_0x12c = 0;
     this->field_0x130 = 0;
-    ((Player *)(this->field_0x4))->setKIPlayer(this);
+    ((Player *)(this->field_0x4))->setKIPlayer((KIPlayer *)this);
     ((Player *)(this->field_0x4))->setMaxHitpoints(1);
 
     void **vt = *(void ***)this;
@@ -453,7 +453,7 @@ extern "C" void PlayerGasCloud_update(void *self, int dt)
                                 FModSound_play(g_pgcu_pickupSound, (void *)0x8d0, (void *)0, v);
                                 void *ego = Level_getPlayer();
                                 int hud = ((PlayerEgo *)(ego))->getHUD();
-                                ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), false, true, false, true, false);
+                                ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), false, true, false, true, false, 0, 0);
                             }
                         } else {
                             void *def = *(void **)(*(int *)(*(int *)g_pgcu_itemDefs + 4) + itemId * 4);
@@ -461,7 +461,7 @@ extern "C" void PlayerGasCloud_update(void *self, int dt)
                             if (Level_getPlayer() != 0) {
                                 void *ego = Level_getPlayer();
                                 int hud = ((PlayerEgo *)(ego))->getHUD();
-                                ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), true, false, false, false, false);
+                                ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), true, false, false, false, false, 0, 0);
 
                                 void *camp = *(void **)g_pgcu_campaign;
                                 if (*(char *)((char *)camp + 0x2d) == 0 &&

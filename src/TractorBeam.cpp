@@ -1,8 +1,23 @@
 #include "gof2/TractorBeam.h"
 #include "gof2/KIPlayer.h"
-#include "gof2/Player.h"
 #include "gof2/PlayerEgo.h"
+
+// Player.h cannot be included here: it both declares a data member 'turnedEnemy'
+// (field 0xe0) and a method 'turnedEnemy()' inside the same struct, which is
+// ill-formed C++ and makes the header fail to self-compile. TractorBeam only needs
+// two Player accessors, so a minimal local declaration is used instead.
+struct Player {
+    int getHitpoints();
+    unsigned char isActive();
+};
+
+// Radar.h re-defines a minimal vtable-only 'struct KIPlayer' (no GOF2_KIPLAYER_H
+// guard), which collides with the full definition pulled in from KIPlayer.h above.
+// Rename Radar.h's copy via the preprocessor so only the 'Radar' struct is taken
+// from it; the cpp always uses the full KIPlayer from KIPlayer.h.
+#define KIPlayer KIPlayer_RadarUnused
 #include "gof2/Radar.h"
+#undef KIPlayer
 
 // KIPlayer (the grabbed crate) is the minimal vtable-only struct from Radar.h; its
 // data fields are not modeled in any in-batch header, so read them by typed offset.

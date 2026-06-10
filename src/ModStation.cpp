@@ -2,17 +2,46 @@
 #include "gof2/Achievements.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/DialogueWindow.h"
-#include "gof2/HangarWindow.h"
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
-#include "gof2/RecordHandler.h"
+#include "gof2/RecordHandler.h"   // defines the canonical B/I/P offset helpers (guarded)
+// SpaceLounge.h and TouchButton.h define their own (unguarded) copies of the B/I/P
+// offset helpers, and TouchButton.h redefines `RetStr` (already provided by Station.h).
+// Rename those tokens for the duration of these two includes so the duplicates land on
+// throwaway names instead of colliding; ModStation uses neither from these headers.
+#define B  B_SpaceLounge
+#define I  I_SpaceLounge
+#define P  P_SpaceLounge
 #include "gof2/SpaceLounge.h"
+#undef B
+#undef I
+#undef P
 #include "gof2/Station.h"
 #include "gof2/Status.h"
-#include "gof2/StatusWindow.h"
+#define B      B_TouchButton
+#define I      I_TouchButton
+#define P      P_TouchButton
+#define RetStr RetStr_TouchButton
 #include "gof2/TouchButton.h"
+#undef B
+#undef I
+#undef P
+#undef RetStr
 #include "gof2/MenuTouchWindow.h"
 
+// HangarWindow.h and StatusWindow.h are intentionally NOT included: both leak their
+// converted methods into the `AbyssEngine` namespace as free functions (a decompiler
+// artifact), which collide with each other across the two headers, and HangarWindow.h
+// also redefines `Layout`/`String12`. ModStation only ever dispatches OnTouchBegin/
+// OnTouchMove on these via byte-offset casts, so minimal local definitions suffice.
+struct HangarWindow {
+    void OnTouchBegin(int touch, int coord);
+    unsigned int OnTouchMove(int touch, int coord);
+};
+struct StatusWindow {
+    int OnTouchBegin(int param_1, int param_2);
+    int OnTouchMove(int param_1, int param_2);
+};
 
 extern "C" long long Status_getPlayingTime(Status *s);
 extern "C" void *ModStation_op_new(unsigned int sz);
@@ -110,7 +139,7 @@ void ModStation::autosave() {
     void *rh = ModStation_op_new(0x2c);
     ((RecordHandler *)(rh))->ctor();
     ((RecordHandler *)(rh))->recordStoreWrite(0);
-    ((RecordHandler *)(rh))->recordStoreWritePreview(0);
+    ((RecordHandler *)(rh))->recordStoreWritePreview_int(0);
     ModStation_op_delete(((RecordHandler *)(rh))->dtor());
     UC(self, 0xb1) = 1;
     if (I(self, 0x50) != 0)
@@ -137,7 +166,14 @@ extern "C" void ModStation_enterStation()
 {
     Status **holder = g_ModStation_es_status;
     Status *status = holder[0];
-    ((Status *)(status))->departStation(Status_getStation(status));
+    // Status::departStation actually takes the destination Station* (see Status.cpp);
+    // gof2/Status.h's no-arg prototype is wrong but not editable here, so dispatch
+    // through a correctly-typed pointer-to-member.
+    {
+        void (Status::*depart)(Station *) =
+            reinterpret_cast<void (Status::*)(Station *)>(&Status::departStation);
+        (((Status *)status)->*depart)(Status_getStation(status));
+    }
     ((Station *)(Status_getStation(holder[0])))->visit();
     ((Achievements *)(g_ModStation_es_ach[0]))->applyNewMedals();
 
@@ -457,7 +493,7 @@ EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race);
 
 // ModStation::ModStation() — constructor: zero-inits the station-module state, picks the home
 // station's race, and sets up the hangar idle camera tween.
-void ModStation::ModStation() {
+ModStation::ModStation() {
     ModStation *self = this;
     I(self, 0x00) = g_msc_vtable + 8;          // vtable
     String_ctor_default_msc((String *)B(self, 0x38));
@@ -2322,7 +2358,8 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
             ((Status *)((char)*(int *)*g_ModStation_tb_campaign))->nextCampaignMission();
             unsigned int mod = *(unsigned int *)*g_ModStation_tb_appmod;
             *(int *)*g_ModStation_tb_clear = 0;
-            ((ApplicationManager *)(mod))->SetCurrentApplicationModule();
+            // `mod` is the target module id; dispatch on the ApplicationManager singleton.
+            ((ApplicationManager *)(*g_ModStation_tb_appmod))->SetCurrentApplicationModule(mod);
             UC(self, 0x60) = 0;
         }
         return;

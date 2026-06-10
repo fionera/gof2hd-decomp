@@ -56,6 +56,9 @@ struct Layout {
     unsigned char _pad_a0[0x2d4 - 0xa0];
     int field_0x2d4;                    // +0x2d4
     int field_0x2d8;                    // +0x2d8
+
+    void setDrawColor(int color);
+    void drawBox(int style, int x, int y, int width, int height, String *title);
 };
 
 struct RadioMessage {

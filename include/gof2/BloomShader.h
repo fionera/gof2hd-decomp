@@ -4,7 +4,6 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 namespace AbyssEngine {
 
-struct Engine;
 struct FBOContainer;
 struct Mesh;
 
@@ -52,12 +51,12 @@ struct BloomShader : ShaderBaseStruct {
     int field_0x98;                     // +0x98
 
     BloomShader();
-    void Init(Engine *engine);
-    void InternalInit(Engine *engine);
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void Init(::Engine *engine);
+    void InternalInit(::Engine *engine);
+    void UpdateMeshData(Mesh *mesh, ::Engine *engine);
     void SetInActive();
-    void RenderEffect(FBOContainer *source, Engine *engine);
-    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine);
+    void RenderEffect(FBOContainer *source, ::Engine *engine);
+    void RenderEffect(FBOContainer *source, FBOContainer **target, ::Engine *engine);
 };
 
 } // namespace AbyssEngine

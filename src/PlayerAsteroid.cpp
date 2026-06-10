@@ -327,7 +327,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->field_0x164 = 0;
     this->field_0x168 = 0;
     this->field_0x16c = 0;
-    ((Player *)(this->field_0x4))->setKIPlayer(this);
+    ((Player *)(this->field_0x4))->setKIPlayer((KIPlayer *)this);
 
     this->field_0x124 = 0;
     this->field_0x128 = asteroidIndex;

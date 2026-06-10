@@ -26,8 +26,9 @@ extern "C" void glGetProgramInfoLog(uint32_t program, uint32_t maxLength, int *l
 extern "C" void AELabelObject(uint32_t type, uint32_t object, const char *name);
 extern "C" uint32_t ShaderBaseStruct_ES2LoadShader(uint32_t receiver, uint32_t type, const char *source);
 
-// AbyssEngine::String::GetAEChar() const -- freshly allocated UTF-8 C-string.
-extern "C" void *String_GetAEChar(const AbyssEngine::String *self);
+// AbyssEngine::String::GetAEChar() const returns a freshly allocated UTF-8 C-string.
+// The canonical declaration (char *String_GetAEChar(String*)) lives in gof2/String.h;
+// the call site uses the String::GetAEChar() method provided by gof2/common.h.
 
 namespace AbyssEngine {
 

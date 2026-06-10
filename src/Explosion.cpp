@@ -406,7 +406,7 @@ extern "C" Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
     if (self->field_0x8 != 0) {
         Transform_SetAnimationState(
             PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x8, 0xc)), 1, 0);
-        F((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x8, 0xc)), 0xe0) =
+        F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x8, 0xc)), 0xe0) =
             10000.0f;
     }
 
@@ -422,7 +422,7 @@ extern "C" Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
     }
     self->field_0x10 = duration;
 
-    F((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 0xe0) = 10000.0f;
+    F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 0xe0) = 10000.0f;
     self->field_0x28 = -1;
     ((Explosion *)(self))->reset();
     return self;
@@ -718,7 +718,7 @@ void Explosion::addFireStreaks() {
             PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 1, 0);
 
         geometry = (*self->field_0xc)[i];
-        F((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xe0) =
+        F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xe0) =
             10000.0f;
 
         geometry = (*self->field_0xc)[i];

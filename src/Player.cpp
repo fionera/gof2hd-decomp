@@ -1,5 +1,6 @@
 #include "gof2/Player.h"
 #include "gof2/Achievements.h"
+#include "gof2/KIPlayer.h"
 #include "gof2/GameText.h"
 #include "gof2/Hud.h"
 #include "gof2/PlayerEgo.h"
@@ -421,7 +422,7 @@ int Player::getMaxEmpPoints() {
 }
 
 // ---- regenerateShield_a2df0.cpp ----
-void Player::regenerateShield() {
+void Player::regenerateShield(float amount) {
     Player *self = this;
     float f = self->shieldHP + amount;
     float maxF = (float)self->maxShieldHP;
@@ -457,21 +458,9 @@ unsigned char Player::isActive() {
 }
 
 // ---- shoot_a3f30.cpp ----
-// Forwards to the full Player::shoot overload, expanding the transform matrix
-// (fields 0x04..0x3c) into the trailing arguments.
-extern "C" void Player_shoot_full(
-    Player *self, int a, int loA, int hiA, int flags,
-    int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7,
-    int m8, int m9, int m10, int m11, int m12, int m13, int m14);
-
-void Player::shoot(int a, int b, long long pos, bool flag) {
-    Player *self = this;
-    int *m = (int *)self->transform;
-    Player_shoot_full(self, a, (int)pos, (int)((unsigned long long)pos >> 32), flag,
-                      m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7],
-                      m[8], m[9], m[10], m[11], m[12], m[13], m[14]);
-    return 1;
-}
+// Duplicate of Player::shoot(int,int,long long,bool); the canonical definition (using
+// Player_shoot_full2 and the 'b' argument) lives further below. Removed to avoid a
+// redefinition; the leftover here also dropped 'b' and wrongly returned a value.
 
 // ---- getEmpPoints_a2d92.cpp ----
 int Player::getEmpPoints() {
@@ -510,10 +499,8 @@ float Player::getEmpForce() {
 }
 
 // ---- turnedEnemy_a369e.cpp ----
-unsigned char Player::turnedEnemy() {
-    Player *self = this;
-    return self->turnedEnemy;
-}
+// Accessor lives as the non-member inline Player_turnedEnemy() in Player.h, because a
+// member of this name would collide with the 'turnedEnemy' data member (field 0xe0).
 
 // ---- gunAvailable_a36ac.cpp ----
 __attribute__((minsize)) extern "C" bool Player_gunAvailable(Player *self, unsigned int slot)
@@ -593,12 +580,14 @@ int Player::getGunSlots() {
 }
 
 // ---- getHitVector_a2eb2.cpp ----
-struct Vec3 {
+// Local POD for the returned 3-float hit vector (packed as a double xy + float z).
+// Named HitVec3 to avoid colliding with PlayerEgo.h's `typedef Vector Vec3`.
+struct HitVec3 {
     double xy;
     float z;
 };
 
-extern "C" void Player_getHitVector(Vec3 *out, Player *self)
+extern "C" void Player_getHitVector(HitVec3 *out, Player *self)
 {
     double xy = *(double *)self->hitVector;
     out->z = self->hitVector[2];
@@ -840,7 +829,7 @@ void Player::damageEmp(int amount, bool flag) {
             }
         }
         // LAB_000b3016
-        if (runLab && self->alwaysEnemy == 0 && KIPlayer_isWingMan() == 0 &&
+        if (runLab && self->alwaysEnemy == 0 && ((KIPlayer *)self->kiPlayer)->isWingMan() == 0 &&
             (unsigned int)(*(int *)((char *)self->kiPlayer + 0x28) - 9) > 1 &&
             Status_getSystem() != 0) {
             int race = *(int *)((char *)self->kiPlayer + 0x28);
@@ -908,7 +897,7 @@ void Player::damageEmp(int amount, bool flag) {
                 *(int *)((char *)(*g_damageEmp_progress) + 0x134) = cnt;
                 if (((Achievements *)(*g_damageEmp_achievements))->getValue(0x2a, 1) <= cnt) {
                     void *ego = Level_getPlayer();
-                    void *hud = ((PlayerEgo *)(ego))->getHUD();
+                    void *hud = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                     ((Hud *)(hud))->hudEventMedal(0x2a, 100);
                     *(char *)((char *)(*g_damageEmp_progress) + 0x138) = 1;
                 }
@@ -1285,8 +1274,18 @@ void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int
             for (unsigned int i = 0; i < arr->size(); i++) {
                 Gun *g = self->guns->data()[slot]->data()[i];
                 if (g->field_0x48 < g->field_0x6c) {
-                    int r = ((Gun *)(g))->shootAt(m0, m1, m2, m3);
-                    if (r != 0) {
+                    // Rebuild the firing transform from the flattened matrix args (m0..m14)
+                    // that the decompiler spilled out of the by-value Matrix parameter.
+                    Matrix fireMat;
+                    {
+                        int mi[15] = { m0, m1, m2, m3, m4, m5, m6, m7,
+                                       m8, m9, m10, m11, m12, m13, m14 };
+                        for (int k = 0; k < 15; ++k)
+                            fireMat.m[k] = *(float *)&mi[k];
+                        fireMat.m[15] = 1.0f;
+                    }
+                    ((Gun *)(g))->shootAt(fireMat, flag, (Player *)self, false);
+                    {
                         self->field_60 = self->field_60 + k_shootAt_inc;
                         Gun *g2 = self->guns->data()[slot]->data()[i];
                         g2->field_0x6c = 0;
@@ -1317,8 +1316,9 @@ extern "C" const float k_damage_full2;  // DAT_b367c
 extern "C" const float k_damage_hc2;    // DAT_b3680
 extern "C" const float k_damage_regen;  // DAT_b3684
 
-void Player::damage(int amount) {
-    Player *self = this;
+// Full damage implementation. Player::damage(int) below forwards here with flag=0,
+// missionId=-1. Matches the Player_damage_full(self, amount, a, b) prototype at top.
+extern "C" void Player_damage_full(Player *self, int amount, int flag, int missionId) {
     if (self->vulnerable == 0) return;
     if (self->active == 0) return;
     if (self->hitpoints < 1) return;
@@ -1343,7 +1343,7 @@ void Player::damage(int amount) {
 
         if (ki != 0 && self->alwaysEnemy == 0 &&
             (unsigned int)(*(int *)(ki + 0x28) - 9) > 1 &&
-            KIPlayer_isWingMan() == 0 && Status_getSystem() != 0 &&
+            ((KIPlayer *)self->kiPlayer)->isWingMan() == 0 && Status_getSystem() != 0 &&
             ((self->enemyFlags == 0) || (self->turnedEnemy != 0))) {
             int race = *(int *)((char *)self->kiPlayer + 0x28);
             Status_getSystem();
@@ -1381,7 +1381,7 @@ void Player::damage(int amount) {
                         void *ego = Level_getPlayer();
                         int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                         int p = (int)(long)Level_getPlayer();
-                        ((Hud *)(hud))->hudEvent((void *)0x1f, p);
+                        ((Hud *)(hud))->hudEvent(0x1f, (void *)(__INTPTR_TYPE__)p, 0);
                     }
                 }
             }
@@ -1402,7 +1402,7 @@ void Player::damage(int amount) {
                     void *ego = Level_getPlayer();
                     int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                     int p = (int)(long)Level_getPlayer();
-                    ((Hud *)(hud))->hudEvent((void *)0x1f, p);
+                    ((Hud *)(hud))->hudEvent(0x1f, (void *)(__INTPTR_TYPE__)p, 0);
                 }
                 self->turnedEnemy = 1;
             }
@@ -1490,7 +1490,9 @@ LAB_3488:
                     }
                     int mission = Status_getCampaignMission();
                     char *ki3 = (char *)self->kiPlayer;
-                    void *txt = ((GameText *)(*g_damage_text[0]))->getText();
+                    // NOTE: original text-table key for this name lookup was dropped by the
+                    // decompiler; using missionId (the only contextual id) to keep it compiling.
+                    void *txt = ((GameText *)(*g_damage_text[0]))->getText(missionId);
                     int cmp = String_Compare((void *)(ki3 + 0x18), txt);
                     if (missionId == 0xb3 && cmp == 0) {
                         Mission_getStatusValue();
@@ -1637,8 +1639,17 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
                     if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
                         *(char *)(g->field_0x38 + 0x69) = 1;
                     }
-                    int r = ((Gun *)(g))->shoot(a8, a9, a10);
-                    if (r != 0) {
+                    // Rebuild the by-value firing Matrix the decompiler spilled to a8..a22.
+                    Matrix fireMat2;
+                    {
+                        int mi[15] = { a8, a9, a10, a11, a12, a13, a14, a15,
+                                       a16, a17, a18, a19, a20, a21, a22 };
+                        for (int k = 0; k < 15; ++k)
+                            fireMat2.m[k] = *(float *)&mi[k];
+                        fireMat2.m[15] = 1.0f;
+                    }
+                    ((Gun *)(g))->shoot(fireMat2, flag, false);
+                    {
                         self->field_60 = self->field_60 + k_shoot_inc;
                         if (self->playShootSound != 0) {
                             float tmp[3];

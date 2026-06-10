@@ -1,10 +1,17 @@
-#include "gof2/AutoPilotList.h"
+#include "gof2/AutoPilotList.h"   // also pulls in gof2/SolarSystem.h (RetStr + SolarSystem)
 #include "gof2/GameText.h"
 #include "gof2/PlayerEgo.h"
 #include "gof2/Route.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/Station.h"
 #include "gof2/String.h"
+
+// Station is declared minimally here rather than via gof2/Station.h: that header
+// defines RetStr unconditionally, which would clash with the identical definition
+// from gof2/SolarSystem.h (already in scope) within this single TU. Only Station's
+// getName() accessor is used, and the decomp accesses Station through byte-offset
+// casts, so a minimal forward declaration is sufficient and ABI-safe.
+struct Station {
+    RetStr getName();
+};
 
 
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
@@ -77,7 +84,7 @@ RetStr AutoPilotList::getTargetString() {
     int idx = self->field_0x0;
     Array<void *> *entries = ((Array<void *> *)self->field_0x10);
     if (idx >= 0 && (uint32_t)idx < entries->size())
-        ((String *)(&r))->ctor_copy(entries->data()[idx], false);
+        ((String *)(&r))->ctor_copy((String *)entries->data()[idx], false);
     else
         String_ctor_cstr(&r, kEmpty, false);
     return r;
@@ -147,7 +154,7 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
 
     if (**g_APL_apFlag != 0) {
         String *s = (String *)operator new(0xc);
-        String *txt = ((GameText *)(*g_APL_gametext))->getText(0x222);
+        String *txt = (String *)((GameText *)(*g_APL_gametext))->getText(0x222);
         char a[12], b[12], c[12];
         String_ctor_cstr(b, kApLit1, false);
         String_plus(c, txt, b);
@@ -164,7 +171,7 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     void *status = *g_APL_status;
     if (((SolarSystem *)(Status_getSystem(status)))->currentOrbitHasWarpGate() != 0) {
         String *s = (String *)operator new(0xc);
-        ((String *)(s))->ctor_copy(((GameText *)(*g_APL_gametext))->getText(0x223), false);
+        ((String *)(s))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x223), false);
         entryData(self)[1] = s;
         self->field_0x14 = self->field_0x14 + 1;
     }
@@ -185,15 +192,15 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     }
 
     String *cancel = (String *)operator new(0xc);
-    ((String *)(cancel))->ctor_copy(((GameText *)(*g_APL_gametext))->getText(0x225), false);
+    ((String *)(cancel))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x225), false);
     entryData(self)[3] = cancel;
     self->field_0x14 = self->field_0x14 + 1;
 
     if (((PlayerEgo *)(Level_getPlayer(level)))->getRoute() != 0) {
-        void *route = ((PlayerEgo *)(Level_getPlayer(level)))->getRoute();
+        void *route = (void *)(intptr_t)((PlayerEgo *)(Level_getPlayer(level)))->getRoute();
         if (*((uint8_t *)((Route *)(route))->getLastWaypoint() + 0x130) == 0) {
             String *s = (String *)operator new(0xc);
-            ((String *)(s))->ctor_copy(((GameText *)(*g_APL_gametext))->getText(0x23d), false);
+            ((String *)(s))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x23d), false);
             entryData(self)[4] = s;
             self->field_0x14 = self->field_0x14 + 1;
         }

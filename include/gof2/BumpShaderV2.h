@@ -47,9 +47,7 @@ void ShaderBaseStruct_ctor(void *self);
 void *ShaderBaseStruct_dtor(void *self) noexcept;
 int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const char *fragmentSource);
 
-void String_ctor_char(AbyssEngine::String *self, const char *text, bool copy);
-AbyssEngine::String *String_assign(AbyssEngine::String *self, const AbyssEngine::String *other);
-void String_dtor(AbyssEngine::String *self);
+// String_ctor_char / String_assign / String_dtor are declared in gof2/String.h.
 
 float *Vector_cast_to_float(Vector *self);
 

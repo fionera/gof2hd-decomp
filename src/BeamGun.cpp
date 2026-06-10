@@ -1,6 +1,7 @@
 #include "gof2/BeamGun.h"
 #include "gof2/Gun.h"
 #include "gof2/PlayerEgo.h"
+#include "gof2/AEGeometry.h"
 
 // AEGeometry's full header is not yet native-clean; Gun.h already completes the
 // global forward declaration with a minimal view exposing field_0xc (transform id),

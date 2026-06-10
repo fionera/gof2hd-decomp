@@ -253,17 +253,19 @@ void BluePrint::addItem(Item *item, int amount, int station) {
                         self->field_0x10 = station;
                         if (Station_getIndex(Status_getStation()) == station) {
                             char tmp[12];
-                            ((Station *)(tmp))->getName();
-                            ((String *)(&self->field_0x14))->assign(tmp);
+                            *(RetStr *)tmp = ((Station *)Status_getStation())->getName();
+                            ((String *)(&self->field_0x14))->assign((String *)tmp);
                             ((String *)(tmp))->dtor();
                         } else {
                             void *st = Galaxy_getStation(*(void **)gGalaxyPtr, station);
                             char tmp[12];
-                            ((Station *)(tmp))->getName();
-                            ((String *)(&self->field_0x14))->assign(tmp);
+                            *(RetStr *)tmp = ((Station *)(st))->getName();
+                            ((String *)(&self->field_0x14))->assign((String *)tmp);
                             ((String *)(tmp))->dtor();
-                            if (st != 0)
-                                operator_delete(((Station *)(st))->dtor());
+                            if (st != 0) {
+                                ((Station *)(st))->dtor();
+                                operator_delete(st);
+                            }
                         }
                     }
                     break;

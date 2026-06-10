@@ -260,12 +260,12 @@ extern "C" void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
                 void *str;
             };
             DrawTarget draw = {*imageHolder, *stringHolder};
-            int text = ((GameText *)(*textIdHolder))->getText(0xc7);
+            int text = (int)(long)((GameText *)(*textIdHolder))->getText(0xc7);
 
             int screenW = *g_ModMainMenu_r2d_screenW;
             void *measureStr = *stringHolder;
             int measureCanvas = *imageHolder;
-            int measureText = ((GameText *)(*textIdHolder))->getText(0xc7);
+            int measureText = (int)(long)((GameText *)(*textIdHolder))->getText(0xc7);
             int textWidth = PaintCanvas_GetTextWidth(measureCanvas, measureStr, measureText);
 
             int image = I(self, 0x20);

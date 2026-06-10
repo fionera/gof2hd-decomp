@@ -9,9 +9,12 @@ struct GameRecord;
 struct RecordHandler;
 struct Station;
 
+#ifndef GOF2_BIP_HELPERS
+#define GOF2_BIP_HELPERS
 static inline char *B(void *p, int off) { return (char *)p + off; }
 static inline int &I(void *p, int off) { return *(int *)((char *)p + off); }
 static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
+#endif
 
 // Explicit layout so the named members coexist with raw byte-offset macro access.
 struct ModMainMenu {

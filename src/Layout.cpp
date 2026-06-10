@@ -170,7 +170,7 @@ float Layout::getPulseValue(float speed) {
 
 // ---- setDrawColor_d3138.cpp ----
 // str.w r1,[r0,#0x3b0]; bx lr
-static inline void Layout::setDrawColor(int color) {
+void Layout::setDrawColor(int color) {
     Layout *self = this;
     self->field_0x3b0 = color;
 }
@@ -213,13 +213,13 @@ void Layout::enableFillScreen(bool v) {
 
 Layout::~Layout() {
     void *p = this->field_0x3b4;
-    if (p) operator_delete_li(((TouchButton *)(p))->dtor());
+    if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
     this->field_0x3b4 = 0;
     p = this->field_0x3b8;
-    if (p) operator_delete_li(((TouchButton *)(p))->dtor());
+    if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
     this->field_0x3b8 = 0;
     p = this->field_0x3bc;
-    if (p) operator_delete_li(((TouchButton *)(p))->dtor());
+    if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
     this->field_0x3bc = 0;
     p = this->field_0x3c4;
     if (p) operator_delete_li(ChoiceWindow_dtor(p));

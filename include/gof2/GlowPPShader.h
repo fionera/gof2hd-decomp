@@ -17,19 +17,11 @@ typedef uint32_t LocationFn(uint32_t, const char *);
 typedef void     UseProgramFn(uint32_t);
 typedef void     Uniform1iFn(uint32_t, int32_t);
 
-inline uint8_t &field_u8(void *self, uint32_t off)
-{
-    return *(uint8_t *)((char *)self + off);
-}
-
+// field_u8 / field_i32 / field_ptr are provided by common.h. Only the helpers
+// that common.h does NOT supply are defined here (field_u32, field_float).
 inline uint32_t &field_u32(void *self, uint32_t off)
 {
     return *(uint32_t *)((char *)self + off);
-}
-
-inline int32_t &field_i32(void *self, uint32_t off)
-{
-    return *(int32_t *)((char *)self + off);
 }
 
 inline float &field_float(void *self, uint32_t off)
@@ -37,19 +29,13 @@ inline float &field_float(void *self, uint32_t off)
     return *(float *)((char *)self + off);
 }
 
-inline void *&field_ptr(void *self, uint32_t off)
-{
-    return *(void **)((char *)self + off);
-}
-
 extern "C" void *__stack_chk_guard;
 extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 extern "C" __attribute__((visibility("hidden"))) void ShaderBaseStruct_ctor(ShaderBaseStruct *self);
 extern "C" __attribute__((visibility("hidden"))) void *ShaderBaseStruct_dtor(ShaderBaseStruct *self);
-extern "C" __attribute__((visibility("hidden"))) void String_ctor_char(String *self, const char *text, bool copy);
-extern "C" __attribute__((visibility("hidden"))) void String_assign(String *self, const String *other);
-extern "C" __attribute__((visibility("hidden"))) void String_dtor(String *self);
+// String_ctor_char / String_assign / String_dtor are declared in gof2/String.h
+// (included by the .cpp) with their real String*-returning signatures.
 
 extern "C" __attribute__((visibility("hidden"))) void FBOContainer_ctor(FBOContainer *self, Engine *engine, String *name);
 extern "C" __attribute__((visibility("hidden"))) void FBOContainer_Create(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);

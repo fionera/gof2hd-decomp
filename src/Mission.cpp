@@ -25,7 +25,7 @@ uint8_t Mission::isInstantActionMission() {
 }
 
 // ---- getTargetStationName_15bb90.cpp ----
-struct RetStr { uint32_t a, b, c; };
+// `struct RetStr` provided by gof2/Station.h (via Mission.h).
 
 RetStr Mission::getTargetStationName() {
     Mission *self = this;
@@ -190,7 +190,7 @@ void Mission::setTargetStation(int idx) {
     self->field_0x3c = idx;
     Station *st = Galaxy_getStation(*gp, idx);
     ((Station *)(name))->getName();
-    ((String *)((char *)self + 0x40))->assign(name);
+    ((String *)((char *)self + 0x40))->assign((String *)name);
     ((String *)(name))->dtor();
 }
 
@@ -223,18 +223,18 @@ Mission * Mission::ctor7(int id, const void *client, int a, int b, int c, int st
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
     self->field_0xc = id;
-    ((String *)((char *)self + 0x10))->assign((void *)client);
+    ((String *)((char *)self + 0x10))->assign((String *)client);
     self->field_0x28 = a;
     self->field_0x2c = b;
     self->field_0x30 = c;
     self->field_0x3c = station;
     Station *st = Galaxy_getStation(*g_galaxy, station);
     ((Station *)(tmp))->getName();
-    ((String *)((char *)self + 0x40))->assign(tmp);
+    ((String *)((char *)self + 0x40))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     self->field_0x58 = reward;
     String_cstr_ctor(tmp, "", false);
-    ((String *)((char *)self + 0x4c))->assign(tmp);
+    ((String *)((char *)self + 0x4c))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     self->field_0x74 = 1;
     self->field_0x64 = 0;
@@ -259,7 +259,7 @@ Mission * Mission::ctor_int(int id) {
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
     String_cstr_ctor(tmp, "", false);
-    ((String *)((char *)self + 0x10))->assign(tmp);
+    ((String *)((char *)self + 0x10))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     self->field_0x64 = 0;
     self->field_0x74 = 0;
@@ -302,7 +302,9 @@ void Mission::calcDistance() {
     SolarSystem *b = sys->data[i2];
     self->field_0x60 = (int)Galaxy_distance(g, a, b);
     if (st != 0) {
-        Station_dtor_finish(((Station *)(st))->dtor());
+        // Station::~Station() returns `this` in r0; the finisher consumes that pointer.
+        ((Station *)(st))->dtor();
+        Station_dtor_finish(st);
     }
 }
 
@@ -333,10 +335,10 @@ Mission * Mission::ctor3(int id, int goods, int station) {
         Station *st = Galaxy_getStation(*g_galaxy, station);
         ((Station *)(tmp))->getName();
     }
-    ((String *)((char *)self + 0x40))->assign(tmp);
+    ((String *)((char *)self + 0x40))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     String_cstr_ctor(tmp, "", false);
-    ((String *)((char *)self + 0x4c))->assign(tmp);
+    ((String *)((char *)self + 0x4c))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     self->field_0x74 = 1;
     self->field_0x64 = 1;
@@ -387,7 +389,7 @@ Mission * Mission::ctor_default() {
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
     String_cstr_ctor(tmp, "", false);
-    ((String *)((char *)self + 0x10))->assign(tmp);
+    ((String *)((char *)self + 0x10))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     self->field_0x64 = 0;
     self->field_0x74 = 0;

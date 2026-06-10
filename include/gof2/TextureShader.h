@@ -45,9 +45,7 @@ struct Vector;
 
 extern "C" float *Vector_to_float(AEMath::Vector *self);
 
-extern "C" void String_ctor_char(String *self, const char *text, bool copy);
-extern "C" String *String_assign(String *self, const String *other);
-extern "C" void String_dtor(String *self);
+// String_ctor_char / String_assign / String_dtor are declared in gof2/String.h.
 
 // AbyssEngine::TextureShader — GLES2 textured-mesh shader. Holds two shader
 // programs (base + extended); per-slot uniform/attribute locations are stored as

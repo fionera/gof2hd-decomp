@@ -1,12 +1,24 @@
 #include "gof2/Generator.h"
 #include "gof2/Achievements.h"
+// Several headers (Agent/SolarSystem/Station/Wanted) each define an identical
+// global `struct RetStr` (the 12-byte by-value String aggregate) unconditionally.
+// Station.h provides the canonical one (Mission.h delegates to it); rename the
+// `RetStr` tag to a unique name for the other headers so their definitions don't
+// collide. Generator never names RetStr directly and discards these getters'
+// return values, so the distinct tags are harmless.
+#define RetStr RetStr_Agent
 #include "gof2/Agent.h"
+#undef RetStr
 #include "gof2/Globals.h"
-#include "gof2/Mission.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/Standing.h"
 #include "gof2/Station.h"
+#include "gof2/Mission.h"
+#define RetStr RetStr_SolarSystem
+#include "gof2/SolarSystem.h"
+#undef RetStr
+#include "gof2/Standing.h"
+#define RetStr RetStr_Wanted
 #include "gof2/Wanted.h"
+#undef RetStr
 #include "gof2/Status.h"
 
 
@@ -88,7 +100,7 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
 
         uint32_t systemIndex = 0;
         while (systemIndex < systems->size()) {
-            if (((SolarSystem *)(systems->data()[systemIndex]))->stationIsInSystem(selected) != 0) {
+            if (((SolarSystem *)(systems->data()[systemIndex]))->stationIsInSystem_int(selected) != 0) {
                 break;
             }
             ++systemIndex;
@@ -425,7 +437,7 @@ Mission *Generator::createMission(Agent *agent,
                     targetStation =
                         generateStationIndex(systems, Agent_getStation(agent));
                     for (uint32_t i = 0; i < systems->size(); ++i) {
-                        if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem(targetStation) &&
+                        if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem_int(targetStation) &&
                             (uint32_t)SolarSystem_getRace(systems->data()[i]) ==
                                 race) {
                             ok = true;
@@ -478,7 +490,7 @@ Mission *Generator::createMission(Agent *agent,
         case 0xf:
             amount = AERandom_nextInt(random, 90) + 30;
             for (uint32_t i = 0; i < systems->size(); ++i) {
-                if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem(targetStation)) {
+                if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem_int(targetStation)) {
                     int *prob = Galaxy_getAsteroidProbabilities(
                         *g_Generator_missionGalaxy,
                         Status_getStation(status));
@@ -550,7 +562,8 @@ Mission *Generator::createMission(Agent *agent,
     } else if (type == 6) {
         AbyssEngine::String targetName;
         Globals_getRandomName(&targetName, *g_Generator_targetNames, 0, 1);
-        ((Mission *)(mission))->setTargetName(&targetName);
+        // String passed by value via its 12-byte aggregate ABI representation.
+        ((Mission *)(mission))->setTargetName(*(const AbyssEngine::String12 *)&targetName);
         AbyssEngine_String_dtor(&targetName);
     }
     int costRem = costs % 50;
@@ -563,10 +576,10 @@ Mission *Generator::createMission(Agent *agent,
     Mission_setBonus(mission, bonus);
 
     for (uint32_t i = 0; i < systems->size(); ++i) {
-        if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem(targetStation)) {
+        if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem_int(targetStation)) {
             AbyssEngine::String systemName;
             ((SolarSystem *)(&systemName))->getName();
-            ((Mission *)(mission))->setTargetSystemName(&systemName);
+            ((Mission *)(mission))->setTargetSystemName(*(const AbyssEngine::String12 *)&systemName);
             AbyssEngine_String_dtor(&systemName);
             break;
         }
@@ -653,7 +666,8 @@ Agent *Generator::createAgent(Station *station) {
             Globals_getRandomName(friendName, *names, Agent_getRace(agent), 1);
             friendNames->data()[i] = friendName;
         }
-        ((Agent *)(agent))->setWingmanFriendNames(friendNames);
+        // setWingmanFriendNames takes an opaque Array<String*>* (declared as uint32_t*).
+        ((Agent *)(agent))->setWingmanFriendNames((uint32_t *)friendNames);
         int costRoll = AERandom_nextInt(*randomPtr, 0x514);
         Agent_setCosts(agent, (costRoll + 700) * (count + 1));
         if (Status_hardCoreMode(status) != 0) {

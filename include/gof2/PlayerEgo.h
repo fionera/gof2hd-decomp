@@ -180,8 +180,8 @@ static inline char*           B(void* p, int off) { return (char*)p + off;
     void update(int dt, void *radar, void *hud, void *radio, void *script, int arg5, bool arg6, int arg7);
     int updateManeuver();
 }
-static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
-static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
+// I()/P() byte-offset accessors are provided as macros in PlayerEgo.cpp to avoid
+// colliding with the identical static-inline definitions in Explosion.h / Hud.h.
 
 struct PlayerEgo {
     void* field_0x0;                    // +0x0

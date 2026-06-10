@@ -86,8 +86,8 @@ static inline void draw_fullscreen(GlowPPShader *self, Engine *engine, uint32_t 
                           (void *)field_u32((void *)field_u32(engine, 0x380), 8));
     glClear(0x4000);
     uint32_t width = ((Engine *)(engine))->GetDisplayWidth();
-    ((Engine *)(engine))->GetDisplayHeight();
-    ((Engine *)(engine))->DrawQuad(0, 0, width);
+    uint32_t height = ((Engine *)(engine))->GetDisplayHeight();
+    ((Engine *)(engine))->DrawQuad(0, 0, width, height);
     glDisableVertexAttribArray(field_u32(self, posOff));
     glDisableVertexAttribArray(field_u32(self, texOff));
 }
@@ -146,9 +146,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     matrix[13] = 0.0f;
     matrix[14] = 0.0f;
     matrix[15] = 1.0f;
-    (void)matrix;
-
-    ((Engine *)(engine))->SetWorldViewMatrix();
+    ((Engine *)(engine))->SetWorldViewMatrix((const uint32_t *)matrix);
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
@@ -175,8 +173,8 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
                     1.0f / (float)field_i32((void *)field_u32(self, 0x58), 0x0c));
         glClear(0x4000);
         uint32_t width = ((Engine *)(engine))->GetDisplayWidth();
-        ((Engine *)(engine))->GetDisplayHeight();
-        ((Engine *)(engine))->DrawQuad(0, 0, width);
+        uint32_t height = ((Engine *)(engine))->GetDisplayHeight();
+        ((Engine *)(engine))->DrawQuad(0, 0, width, height);
         glDisableVertexAttribArray(field_u32(self, 0x44));
         glDisableVertexAttribArray(field_u32(self, 0x4c));
 
@@ -195,8 +193,8 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
                     1.0f / (float)field_i32((void *)field_u32(self, 0x74), 0x10));
         glClear(0x4000);
         width = ((Engine *)(engine))->GetDisplayWidth();
-        ((Engine *)(engine))->GetDisplayHeight();
-        ((Engine *)(engine))->DrawQuad(0, 0, width);
+        height = ((Engine *)(engine))->GetDisplayHeight();
+        ((Engine *)(engine))->DrawQuad(0, 0, width, height);
         glDisableVertexAttribArray(field_u32(self, 0x60));
         glDisableVertexAttribArray(field_u32(self, 0x68));
     }

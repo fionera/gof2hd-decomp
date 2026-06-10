@@ -1,10 +1,13 @@
 #include "gof2/PlayerJunk.h"
 #include "gof2/KIPlayer.h"
-#include "gof2/Player.h"
-// Player is used only as an opaque pointer here (all access goes through the
-// extern "C" accessors below), so we forward-declare it rather than pull in
-// Player.h (whose byte-layout static_asserts assume the 32-bit ARM target).
-struct Player;
+// Player is dereferenced here only for getHitpoints()/setActive(); we declare a
+// minimal local view of those two methods rather than pull in the full Player.h
+// (whose byte-layout static_asserts assume the 32-bit ARM target, and which is
+// owned by another translation unit's batch).
+struct Player {
+    int getHitpoints();
+    void setActive(bool value);
+};
 
 
 

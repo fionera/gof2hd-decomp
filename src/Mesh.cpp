@@ -120,7 +120,7 @@ Mesh * Mesh::ctor(Mesh *src) {
 // Exported under the mangled copy-ctor symbol.
 extern "C" void *_ZN11AbyssEngine4MeshC1EPS0_(void *self, void *src)
 {
-    return AbyssEngine::((Mesh *)((AbyssEngine::Mesh *)self))->ctor((AbyssEngine::Mesh *)src);
+    return ((AbyssEngine::Mesh *)self)->ctor((AbyssEngine::Mesh *)src);
 }
 
 // ---- ReadEnhancedDataFromFile_6bbec.cpp ----
@@ -313,8 +313,7 @@ fail:
 
 } // namespace AbyssEngine
 
-extern "C" void _ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj(
-    void *self, unsigned int file, unsigned int flags)
-{
-    AbyssEngine::((Mesh *)((AbyssEngine::Mesh *)self))->ReadEnhancedDataFromFile(file, flags);
-}
+// NOTE: the former extern "C" wrapper that re-exported
+// _ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj has been removed: the converted
+// method AbyssEngine::Mesh::ReadEnhancedDataFromFile already emits exactly that mangled
+// symbol, so the wrapper was a duplicate definition of the same name.

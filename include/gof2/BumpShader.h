@@ -55,10 +55,6 @@ void ShaderBaseStruct_ctor(void *self);
 void *ShaderBaseStruct_dtor(void *self) noexcept;
 int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const char *fragmentSource);
 
-void String_ctor_char(String *self, const char *text, bool copy);
-String *String_assign(String *self, const String *other);
-void String_dtor(String *self);
-
 float *Vector_cast_to_float(Vector *self);
 
 void operator_delete(void *ptr) noexcept;

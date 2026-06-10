@@ -175,7 +175,7 @@ void MineGun::update(int delta)
                 }
                 FL(this, 0xd0) = one - clamped / range;
                 TargetFollowCamera *camera =
-                    ((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
+                    (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
                 TargetFollowCamera_setRumblePercentage(camera, FL(this, 0xd0), 0x32);
 
                 ((int *)(vectorBytes + 12))[0] = zero;
@@ -193,13 +193,13 @@ void MineGun::update(int delta)
             }
             I(this, 0xcc) = timer;
             TargetFollowCamera *camera =
-                ((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
+                (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
             float pct = FL(this, 0xd0) * ((float)I(this, 0xcc) / decay + one);
             TargetFollowCamera_setRumblePercentage(camera, pct, 0x32);
 
             if (((Explosion *)(explosion))->isPlaying() == 0) {
                 TargetFollowCamera *camera =
-                    ((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
+                    (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
                 TargetFollowCamera_setRumblePercentage(camera, 0.0f, zero);
                 gun = P(this, 0x8);
                 I(this, 0xcc) = zero;

@@ -406,9 +406,9 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     if (Status_getCurrentCampaignMission() != 0x29) {
         int cloned;
         if (wingmanCmd == 9) {
-            cloned = ((Route *)((void *)(long)*shared))->clone();
+            cloned = (int)(intptr_t)((Route *)((void *)(long)*shared))->clone();
         } else {
-            cloned = ((Route *)(self->field_0x144))->clone();
+            cloned = (int)(intptr_t)((Route *)(self->field_0x144))->clone();
         }
         self->field_0x6c = cloned;
     }
@@ -521,7 +521,7 @@ void PlayerFighter::update(int dt) {
         } else if (((KIPlayer *)(self))->isWingMan() != 0) {
             enemy = 0;
         } else {
-            enemy = (unsigned char)((Standing *)(Status_getStanding()))->isEnemy();
+            enemy = (unsigned char)((Standing *)(Status_getStanding()))->isEnemy(self->field_0x28);
         }
         *(unsigned char *)(self->field_0x4 + 0x5c) = enemy;
     }
@@ -739,7 +739,7 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
         if (cmd == 2) {
             if (Level_getPlayerRoute(self->field_0x54) != 0) {
                 int r = Level_getPlayerRoute(self->field_0x54);
-                self->field_0x14c = ((Route *)(r))->getExactClone();
+                self->field_0x14c = (int32_t)(intptr_t)((Route *)(r))->getExactClone();
                 self->field_0x1e4 = Route_getCurrent(self->field_0x14c);
                 goto done;
             }
@@ -1159,7 +1159,7 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
 {
     volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
-    int enemy = ((Player *)(self->field_0x4))->turnedEnemy();
+    int enemy = UC((void *)(intptr_t)(self->field_0x4), 0xe0);
     Player_reset(self->field_0x4);
     if (enemy != 0) {
         ((Player *)(self->field_0x4))->turnEnemy();

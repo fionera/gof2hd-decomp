@@ -2,7 +2,13 @@
 #include "gof2/GameText.h"
 #include "gof2/Hud.h"
 #include "gof2/KIPlayer.h"
-#include "gof2/Player.h"
+// NOTE: gof2/Player.h is not included here because that header currently has an
+// unresolved member/method name collision ('turnedEnemy' is both a data member at
+// 0xe0 and a converted accessor method) that is owned by the Player batch. This TU
+// only needs Player::setRadius, so a minimal local declaration is provided instead.
+struct Player {
+    void setRadius(int value);
+};
 #include "gof2/PlayerEgo.h"
 #include "gof2/Station.h"
 #include "gof2/String.h"
@@ -77,7 +83,7 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
     PlayerStaticFar_ctor(this, playerId, geometry, x, y, z);
     void **textSource = g_playerWormHole_text;
     this->field_0x0 = g_playerWormHole_vtable + 8;
-    AbyssEngine::String *text = ((GameText *)(*textSource))->getText(0x221);
+    AbyssEngine::String *text = (AbyssEngine::String *)((GameText *)(*textSource))->getText(0x221);
     ((String *)((AbyssEngine::String *)((char *)this + 0x18)))->assign(text);
     ((KIPlayer *)(this))->setVisible(visible);
     ((Player *)(this->field_0x4))->setRadius(40000);
@@ -250,11 +256,11 @@ void PlayerWormHole::update(int elapsed)
                     if (((PlayerEgo *)(player))->goingToWormhole() != 0) {
                         GetPlayerFn getPlayer = g_playerWormHole_update_getPlayer;
                         void *target = getPlayer(this->field_0x54);
-                        void *hud = ((PlayerEgo *)(target))->getHUD();
+                        void *hud = (void *)(intptr_t)((PlayerEgo *)(target))->getHUD();
                         target = getPlayer(this->field_0x54);
                         ((Hud *)(hud))->hudEvent(6, target, 0);
                         target = getPlayer(this->field_0x54);
-                        ((PlayerEgo *)(target))->setAutoPilot(false);
+                        ((PlayerEgo *)(target))->setAutoPilot((void *)0);
                     }
                 } else {
                     this->field_0xf5 = 0;

@@ -167,7 +167,7 @@ void ScrollTouchWindow::drawTextBG()
     int h = this->field_0x20;
     char text[sizeof(AbyssEngine::String)];
     String_ctor_cstr(text, g_STW_empty_drawTextBG, false);
-    ((Layout *)(layout))->drawBox(5, x, pad + y, w - widthInset, h - heightInset, (AbyssEngine::String *)text);
+    ((Layout *)(layout))->drawBox(5, x, pad + y, w - widthInset, h - heightInset, (AbyssEngine::String *)text, 0);
     ((String *)(text))->dtor();
 }
 

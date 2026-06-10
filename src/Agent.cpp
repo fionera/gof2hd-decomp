@@ -3,9 +3,7 @@
 
 using AbyssEngine::String12;
 
-// String returned by value: the 12-byte aggregate (text*, size, ...) the target ABI
-// passes/returns via the sret pointer.
-struct RetStr { uint32_t a, b, c; };
+// RetStr (the 12-byte aggregate returned via sret) is declared in Agent.h.
 
 // Minimal view of a virtual object whose deleting-dtor lives at vt[0]+4.
 struct VObj { void (*vt[8])(void *); };
@@ -80,7 +78,7 @@ int Agent::getSellModIndex() {
 // Tail-calls operator= on the field at +0x78.
 void Agent::setStationName(String12 src) {
     Agent *self = this;
-    ((String *)((char *)self + 0x78))->assign(src);
+    ((String *)((char *)self + 0x78))->assign((String *)&src);
 }
 
 // ---- getMissionString_177676.cpp ----
@@ -172,7 +170,7 @@ void Agent::giveRewardAtNextChat(bool v) {
 }
 
 // ---- setSellItemData_1776ec.cpp ----
-struct Triple { int a, b, c; };
+// Triple (item/price/percentage) is declared in Agent.h.
 
 // target: adds r0,#0x34; stmia r0!,{r1,r2,r3}; bx lr  (returns this+0x40)
 Triple * Agent::setSellItemData(int a, int b, int c) {
@@ -251,7 +249,7 @@ RetStr Agent::getWingmanName(int idx) {
 // ---- setSystemName_17772c.cpp ----
 void Agent::setSystemName(String12 src) {
     Agent *self = this;
-    ((String *)((char *)self + 0x18))->assign(src);
+    ((String *)((char *)self + 0x18))->assign((String *)&src);
 }
 
 // ---- _Agent_1774b8.cpp ----
@@ -287,7 +285,7 @@ void Agent::setMissionString(void *src) {
     Agent *self = this;
     String12 tmp;
     String_copy_ctor(&tmp, src, false);
-    ((String *)((char *)self + 0x6c))->assign(tmp);
+    ((String *)((char *)self + 0x6c))->assign((String *)&tmp);
     ((String *)(&tmp))->dtor();
 }
 
@@ -303,7 +301,7 @@ Agent * Agent::ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, 
     String_default_ctor((char *)self + 0x6c);
     String_default_ctor((char *)self + 0x78);
     self->field_0x40 = kind;
-    ((String *)(self))->assign(*(String12 *)name);
+    ((String *)(self))->assign((String *)name);
     self->field_0x44 = p4;
     self->field_0x48 = p5;
     self->field_0x4c = p6;

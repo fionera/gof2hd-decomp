@@ -325,7 +325,6 @@ void FileInterfaceAndroid::ctor_file(FILE *f, bool append) {
 }
 
 // ---- FileInterfaceAndroid_6de9c.cpp ----
-struct jobject;
 // JNI env: *env is a function table; we call slot 0x7c (GetObjectClass) and 0x84 (GetMethodID).
 typedef void *(*jni_getclass)(void *env);
 typedef void *(*jni_getmethod)(void *env, void *cls, const char *name, const char *sig);

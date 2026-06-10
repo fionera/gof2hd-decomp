@@ -38,7 +38,7 @@ void Wanted::setActive(bool v) {
 
 // Returns the name String (stored at offset 0x0) by value. The copy-ctor returns
 // void, so the compiler keeps a frame + restores the sret pointer (r0).
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// RetStr is defined in gof2/Wanted.h.
 
 RetStr Wanted::getName() {
     Wanted *self = this;
@@ -57,7 +57,7 @@ Wanted * Wanted::ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p
     Wanted *self = this;
     Wanted *r = String_default_ctor(self);
     r->field_0xc = p1;
-    ((String *)(r))->assign(&p2);
+    ((String *)(r))->assign((String *)&p2);
     self->field_0x10 = p3;
     self->field_0x14 = p4;
     self->field_0x18 = p5;

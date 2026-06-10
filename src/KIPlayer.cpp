@@ -216,7 +216,7 @@ void KIPlayer::jump() {
 // ---- setActive_a5e46.cpp ----
 void KIPlayer::setActive() {
     KIPlayer *self = this;
-    return ((Player *)(self->field_0x4))->setActive();
+    return ((Player *)(self->field_0x4))->setActive(1);
 }
 
 // ---- PlayEngineSound_a6192.cpp ----
@@ -455,7 +455,7 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
     {
         String12 tmp;
         ((String *)(&tmp))->ctor_char("", false);
-        ((String *)((char *)self + 0x18))->assign(&tmp);
+        ((String *)((char *)self + 0x18))->assign((String *)&tmp);
         ((String *)(&tmp))->dtor();
     }
 
@@ -599,7 +599,7 @@ extern void *const gStatus __attribute__((visibility("hidden")));     // DAT_000
 extern void *const gItemDb __attribute__((visibility("hidden")));     // DAT_000b6108
 
 extern "C" {
-void setActive(KIPlayer *self, int v);                        // 0x732f4
+void KIPlayer_setActive_732f4(KIPlayer *self, int v);         // 0x732f4
 int AERandom_nextInt(void *rng, int bound);                  // 0x71848
 void *Status_getShip(void);                                  // 0x71a58
 int Ship_getFreeSpace(void *ship);                           // 0x722ec
@@ -628,7 +628,7 @@ void KIPlayer::captureCrate(void *hud) {
     if ((unsigned)(self->field_0x88 - 3) < 2) {
         self->field_0x4c = 0;
         if (self->field_0x101 != 0)
-            setActive(self, 0);
+            KIPlayer_setActive_732f4(self, 0);
     }
 
     void *cargo = self->field_0x50;
@@ -700,7 +700,7 @@ void KIPlayer::captureCrate(void *hud) {
             hudIndex = Item_getIndex(item);
             hudAmount = Item_getAmount(item);
             flagB = 1;
-            ((Hud *)(hud))->catchCargo(hudIndex, hudAmount, flagA, 0, 0, flagB);
+            ((Hud *)(hud))->catchCargo(hudIndex, hudAmount, flagA, 0, 0, flagB, 0, 0);
             return;
         }
 
@@ -745,7 +745,7 @@ void KIPlayer::captureCrate(void *hud) {
 
         hudIndex = Item_getIndex(item);
         hudAmount = Item_getAmount(item);
-        ((Hud *)(hud))->catchCargo(hudIndex, hudAmount, flagA, 0, 0, 0);
+        ((Hud *)(hud))->catchCargo(hudIndex, hudAmount, flagA, 0, 0, 0, 0, 0);
         return;
     }
 }

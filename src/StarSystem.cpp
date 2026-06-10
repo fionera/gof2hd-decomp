@@ -72,7 +72,7 @@ extern "C" void Vector_scale(char *out, const char *in, float scale);
 extern "C" void AEGeometry_setMesh(AEGeometry *geom, uint32_t mesh);
 extern "C" void AEGeometry_setScaling1(AEGeometry *geom, uint32_t scale_bits);
 extern "C" void MatrixGetPosition(char *out, void *matrix);
-extern "C" void __aeabi_memcpy(void *dst, const void *src, unsigned n);
+extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned long n);
 extern "C" void Vector_add(char *out, const char *a, const char *b);
 extern "C" void MatrixGetUp(char *out, const char *matrix);
 extern "C" void MatrixGetLookAt(char *out, const char *from, const char *to, const char *up);
@@ -200,7 +200,7 @@ static inline uint32_t rgba_scaled(uint32_t color, float scale)
 void StarSystem::initLight() {
     StarSystem *self = this;
     void *app = *g_StarSystem_init_app;
-    Engine *engine = ((ApplicationManager *)(app))->GetEngine();
+    Engine *engine = (Engine *)((ApplicationManager *)(app))->GetEngine();
     I(engine, 0x32c) = 2;
 
     void *status = *g_StarSystem_init_status;
@@ -372,7 +372,7 @@ static inline void set_vec(char *dst, float x, float y, float z)
     ((float *)dst)[2] = z;
 }
 
-StarSystem * StarSystem::StarSystem(int mode) {
+StarSystem::StarSystem(int mode) {
     StarSystem *self = this;
     char vec[12];
     char usedSlots[0x60];
@@ -450,7 +450,7 @@ StarSystem * StarSystem::StarSystem(int mode) {
         set_vec(vec, 250.0f, 15.0f, 1000.0f);
         AEGeometry_setScaling(streak, vec);
         ((StarSystem *)(self))->initLight();
-        return self;
+        return;
     }
 
     void *system = Status_getSystem(status);
@@ -589,7 +589,7 @@ StarSystem * StarSystem::StarSystem(int mode) {
 
     AERandom_reset(g_StarSystem_ctor_rng);
     ((StarSystem *)(self))->initLight();
-    return self;
+    return;
 }
 
 // ---- updateSupernova_135064.cpp ----

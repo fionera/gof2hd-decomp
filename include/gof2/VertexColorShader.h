@@ -52,9 +52,6 @@ typedef void BindBuffer(unsigned int target, unsigned int buffer);
 typedef void VertexAttribPointer(unsigned int index, int size, unsigned int type, bool normalized,
                                  int stride, const void *pointer);
 
-// String helpers: build a String from a C literal and assign it into the embedded name field
-// (matches the engine's String(char const*, bool) + operator= + ~String sequence).
-extern "C" void   String_ctor_char(String *self, const char *text, bool copy);
-extern "C" String *String_assign(String *self, const String *other);
-extern "C" void   String_dtor(String *self);
+// String helpers (String_ctor_char / String_assign / String_dtor) are declared
+// canonically in gof2/String.h.
 #endif

@@ -24,10 +24,6 @@ extern "C" {
 void *operator_new__(uint32_t size);
 void operator_delete__(void *ptr);
 void __aeabi_memcpy(void *dst, const void *src, uint32_t n);
-
-// AbyssEngine::String::GetStringLength(char const*) -- strlen.
-uint32_t String_GetStringLength(const char *s);
-// AbyssEngine::String::GetAEChar() const -- returns a freshly allocated UTF-8 C-string.
-void *String_GetAEChar(const String *self);
 }
+// String_GetStringLength / String_GetAEChar are declared canonically in gof2/String.h.
 #endif

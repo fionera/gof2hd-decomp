@@ -75,9 +75,9 @@ extern "C" AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::
     self->field_0x0 = (char *)g_TextureShader_vtable + 8;
     *target = *source;
 
-    AbyssEngine::((String *)((String *)frame.nameStorage))->ctor_char("TextureShader", false);
-    AbyssEngine::((String *)(&self->field_0xc))->assign((String *)frame.nameStorage);
-    AbyssEngine::((String *)((String *)frame.nameStorage))->dtor();
+    ((String *)((String *)frame.nameStorage))->ctor_char("TextureShader", false);
+    ((String *)(&self->field_0xc))->assign((String *)frame.nameStorage);
+    ((String *)((String *)frame.nameStorage))->dtor();
 
     uint32_t guardDelta =
         (uint32_t)((__UINTPTR_TYPE__)__stack_chk_guard - (__UINTPTR_TYPE__)frame.cookie);

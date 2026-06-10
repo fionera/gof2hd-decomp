@@ -91,12 +91,14 @@ long Item_getIndex(...);
 long Item_setUnsaleable(...);
 long Mission_ctor(...);
 long Mission_getTargetStation(...);
+long Mission_isEmpty(...);
 long Ship_addMod(...);
 long Ship_getCargo(...);
 long Ship_getFirstEquipmentOfSort(...);
 long Ship_getMods(...);
 long SolarSystem_getRoutes(...);
 long Station_getIndex(...);
+long Station_getName(...);
 long Station_getShips(...);
 long Station_getSystem(...);
 long Status_dlc1Won(...);
@@ -318,8 +320,8 @@ LAB_00165dc2:
     Status_setCampaignMission(pSVar17,pMVar3);
   }
 LAB_00165e0c:
-  ((Station *)(*(char **)(*piVar22 + 0x14c)))->setItems((char *)in_r0[0x60], true);
-  ((Station *)(*(char **)(*piVar22 + 0x14c)))->setShips(SUB41(in_r0[0x61],0));
+  ((Station *)(*(char **)(*piVar22 + 0x14c)))->setItems((uint32_t *)in_r0[0x60], true);
+  ((Station *)(*(char **)(*piVar22 + 0x14c)))->setShips((uint32_t *)in_r0[0x61], SUB41(in_r0[0x61],0));
   ctx = (char *)*piVar22;
   pEVar10 = ctx + 0x94;
   if (*(char **)pEVar10 != (char *)0x0) {
@@ -451,13 +453,15 @@ LAB_00165faa:
           iVar11 = SolarSystem_getRoutes();
           if (iVar11 == 0) {
             *(uint32_t *)(*(int *)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4) + 0x10) = 10;
-            pvVar4 = (char *)((Station *)(pSVar8))->dtor();
+            ((Station *)(pSVar8))->dtor();
+            pvVar4 = pSVar8;
             operator_delete(pvVar4);
             pSVar8 = (char *)Galaxy_getStation(*piVar16);
             Station_getName();
             if (pSVar8 == (char *)0x0) goto LAB_00166114;
           }
-          pvVar4 = (char *)((Station *)(pSVar8))->dtor();
+          ((Station *)(pSVar8))->dtor();
+          pvVar4 = pSVar8;
           operator_delete(pvVar4);
         }
       }

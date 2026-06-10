@@ -1,10 +1,18 @@
 #include "gof2/PlayerJumpgate.h"
 #include "gof2/KIPlayer.h"
-#include "gof2/Player.h"
 
 // Minimal local layouts for engine types accessed through opaque handles in this
 // translation unit. The full AEGeometry / Transform definitions live in their own
 // headers; here we only need the few fields/methods this class touches.
+//
+// NOTE: gof2/Player.h is intentionally NOT included. That (out-of-batch) header has
+// a pre-existing name collision (a 'turnedEnemy()' method vs. its own 'turnedEnemy'
+// field) that breaks compilation. This class only needs Player::setRadius(), so a
+// minimal local stub is used instead.
+struct Player {
+    void setRadius(int value);
+};
+
 struct AEGeometry {
     uint16_t field_0x8;                 // +0x8
     int32_t  field_0xc;                 // +0xc

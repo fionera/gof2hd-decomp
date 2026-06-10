@@ -3,6 +3,7 @@
 #include "gof2/PlayerEgo.h"
 #include "gof2/Gun.h"
 #include "gof2/Player.h"
+#include "gof2/AEGeometry.h"
 
 // Byte-offset reader retained ONLY for foreign-class fields that are not yet
 // modelled in their (out-of-batch) header (currently a few Player fields).
@@ -32,7 +33,7 @@ extern "C" uint32_t TransformGetTransform(void *canvas, uint32_t transform);
 extern "C" void Transform_Update(uint64_t transform, int64_t dt, int flags);
 extern "C" Player *Level_getPlayer(Level *self);
 extern "C" void Player_getPosition(Vector *out, Player *self);
-extern "C" void __aeabi_memcpy(void *dst, const void *src, uint32_t size);
+// __aeabi_memcpy is declared by gof2/AEGeometry.h (returns void*)
 extern "C" void MatrixRotateVector(void *out, const void *matrix, const void *vec);
 extern "C" void Vector_add_assign(Vector *self, const Vector *rhs);
 extern "C" void AEGeometry_setPosition(AEGeometry *self, const Vector *position);
@@ -300,7 +301,7 @@ void ObjectGun::update(int dt)
         if (((Gun *)(gun))->isPlayerGun() == 0) {
             Player *owner = gun->field_0x4;
             if (owner != 0) {
-                Player *ki = ((Player *)(owner))->getKIPlayer();
+                KIPlayer *ki = ((Player *)(owner))->getKIPlayer();
                 if (ki != 0 && F<uint8_t>(((Player *)(owner))->getKIPlayer(), 0x3f) != 0) {
                     this->field_0x1c = 1;
                     AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);

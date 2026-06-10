@@ -16,7 +16,11 @@ struct TouchButton;
 // String comes from common.h (AbyssEngine::String, aliased into global scope).
 
 // ---- tiny offset-cast helpers -------------------------------------------------
+// I() is also defined identically in Explosion.h; only define it here when that
+// header (which has the canonical definition for TUs that include both) is absent.
+#ifndef GOF2_EXPLOSION_H
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
+#endif
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 
 struct Hud {
@@ -64,8 +68,5 @@ struct Hud {
     unsigned int touchedElement(unsigned int x, unsigned int y);
     void updateQueue(int dt);
     void updateSecondaryWeaponString();
-
-    // ---- methods (converted from free functions) ----
-    Hud * Hud();
 };
 #endif

@@ -263,7 +263,7 @@ void RocketGun::seekEnemy(int unused, int index)
     char tmp0[12];
     char enemyPos[12];
 
-    int hasEnemies = ((Gun *)(this->field_0x8))->getEnemies();
+    void *hasEnemies = ((Gun *)(this->field_0x8))->getEnemies();
     void *enemy;
 
     if (F<void *>(this->field_0x8, 0x4) == 0)

@@ -127,7 +127,7 @@ uint32_t SolarSystem::getStationEnumIndex(int idx) {
 // SolarSystem::getName() -> String by value (sret in r0, this in r1).
 // Copies the String member at +0xc. The copy-ctor returns void, so the compiler
 // keeps a frame and restores the sret pointer.
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// RetStr is defined in gof2/SolarSystem.h.
 
 RetStr SolarSystem::getName() {
     SolarSystem *self = this;
@@ -236,7 +236,7 @@ SolarSystem * SolarSystem::ctor(int p1, const String12 &p2, int p3, bool p4, int
     self->field_0x18 = p1;
     char tmp[12];
     String_copy_ctor(tmp, &p2, false);
-    ((String *)((char *)self + 0xc))->assign(tmp);
+    ((String *)((char *)self + 0xc))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     u8(self, 0x44) = p4;
     self->field_0x1c = p3;

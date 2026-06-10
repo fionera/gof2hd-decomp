@@ -52,7 +52,7 @@ extern "C" ListItem *ListItem_ctor_BluePrint(ListItem *self, BluePrint *blueprin
 extern "C" ListItem *ListItem_ctor_PendingProduct(ListItem *self,
                                                   PendingProduct *product);
 extern "C" ListItem *ListItem_ctor_ListItem(ListItem *self, ListItem *item);
-extern "C" ListItem *ListItem_ctor_TextButton(ListItem *self, String *text,
+extern "C" ListItem *ListItem_ctor_TextButton(ListItem *self, const void *text,
                                                bool enabled, int mode);
 extern "C" bool ListItem_isShip(ListItem *self);
 extern "C" bool ListItem_isSlot(ListItem *self);

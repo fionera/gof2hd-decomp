@@ -1,10 +1,21 @@
 #include "gof2/RecordHandler.h"
-#include "gof2/Mission.h"
-#include "gof2/SolarSystem.h"
+// Station.h is the canonical home of `struct RetStr`; pull it in first so the
+// shared definition wins. SolarSystem.h / Wanted.h / Agent.h each redefine an
+// identical `struct RetStr` unguarded, which would be a redefinition error here.
+// Rename their local copies during inclusion so only Station.h's definition is
+// used (the value is layout-identical and always discarded at the call sites).
 #include "gof2/Station.h"
-#include "gof2/String.h"
+#include "gof2/Mission.h"
+#define RetStr RetStr_SolarSystem_dup
+#include "gof2/SolarSystem.h"
+#undef RetStr
+#define RetStr RetStr_Wanted_dup
 #include "gof2/Wanted.h"
+#undef RetStr
+#define RetStr RetStr_Agent_dup
 #include "gof2/Agent.h"
+#undef RetStr
+#include "gof2/String.h"
 
 
 extern "C" void RecordHandler_readRecordTail(int param);
@@ -416,8 +427,8 @@ void * RecordHandler::readWanted(unsigned int fd) {
     AEFile_ReadInt(&numWingmen, fd);
 
     void *w = RH_op_new(0x54);
-    char nameCopy[12];
-    AEString_copy_ctor(nameCopy, name, 0);
+    String12 nameCopy;
+    AEString_copy_ctor(&nameCopy, name, 0);
     ((Wanted *)(w))->ctor(idx, nameCopy, board, race, male, ship, weapon, hp, loot, lootAmt, reward, reqBounties, reqMission, numWingmen);
 
     int *parts = (int *)RH_op_new_arr(0x14);
@@ -559,15 +570,15 @@ RecordHandler * RecordHandler::ctor() {
     String_default_ctor(m2);
 
     String_cstr_ctor(tmp, RH_lit0, false);
-    ((String *)(m0))->assign(tmp);
+    ((String *)(m0))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
 
     String_cstr_ctor(tmp, RH_lit1, false);
-    ((String *)(m1))->assign(tmp);
+    ((String *)(m1))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
 
     String_cstr_ctor(tmp, RH_lit2, false);
-    ((String *)(m2))->assign(tmp);
+    ((String *)(m2))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
 
     return self;
@@ -1080,12 +1091,12 @@ void * RecordHandler::readMission(unsigned int fd) {
         ((Mission *)(mission))->setVisible(visible);
         Mission_setAgent(mission, agent);
 
-        char tgtNameCopy[12];
-        AEString_copy_ctor(tgtNameCopy, targetName, 0);
+        String12 tgtNameCopy;
+        AEString_copy_ctor(&tgtNameCopy, targetName, 0);
         ((Mission *)(mission))->setTargetName(tgtNameCopy);
 
         if (agent != 0) {
-            ((Agent *)(agent))->setMission(mission);
+            ((Agent *)(agent))->setMission((Mission *)mission);
         }
 
     }
@@ -1291,19 +1302,19 @@ void * RecordHandler::readAgent(unsigned int fd) {
         AEString_copy_ctor(s, src, 0);
         *(void **)(*(char **)((char *)arr + 4) + i * 4) = s;
     }
-    ((Agent *)(agent))->setWingmanFriendNames(arr);
+    ((Agent *)(agent))->setWingmanFriendNames((uint32_t *)arr);
     ((Agent *)(agent))->giveRewardAtNextChat(hasReward);
     ((Agent *)(agent))->setOfferAccepted(accepted);
     ((Agent *)(agent))->setImageParts(img);
 
-    char tmp[12];
-    AEString_copy_ctor(tmp, missionStr, 0);
-    ((Agent *)(agent))->setMissionString(tmp);
-    AEString_copy_ctor(tmp, stationName, 0);
+    String12 tmp;
+    AEString_copy_ctor(&tmp, missionStr, 0);
+    ((Agent *)(agent))->setMissionString(&tmp);
+    AEString_copy_ctor(&tmp, stationName, 0);
     ((Agent *)(agent))->setStationName(tmp);
-    AEString_copy_ctor(tmp, systemName, 0);
+    AEString_copy_ctor(&tmp, systemName, 0);
     ((Agent *)(agent))->setSystemName(tmp);
-    ((Agent *)(agent))->setMission(mission);
+    ((Agent *)(agent))->setMission((Mission *)mission);
 
     agent->field_0x24 = raw24;
     agent->field_0x25 = raw25;

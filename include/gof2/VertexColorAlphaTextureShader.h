@@ -40,9 +40,7 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
 
-extern "C" void String_ctor_char(String *self, const char *text, bool copy);
-extern "C" void String_assign(String *self, const String *other);
-extern "C" void String_dtor(String *self);
+// String_ctor_char / String_assign / String_dtor are declared in gof2/String.h
 
 // AbyssEngine::VertexColorAlphaTextureShader — GLES2 shader with per-vertex color +
 // alpha (derives from ShaderBaseStruct). Holds the program handle, six vertex

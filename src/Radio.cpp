@@ -1,11 +1,15 @@
 #include "gof2/Radio.h"
-#include "gof2/Layout.h"
+// NOTE: gof2/Layout.h is intentionally NOT included here. Radio only needs the
+// minimal byte-offset Layout view declared in Radio.h, which is not layout-
+// compatible with the full Layout.h definition.
 
-// Layout::setDrawColor is a Layout method (Layout not in this batch);
-// call its mangled symbol directly via a thin wrapper.
+// Layout::setDrawColor / drawBox are Layout methods (Layout not in this batch);
+// call their mangled symbols directly via thin wrappers.
 extern "C" void _ZN13Layout12setDrawColorEi(Layout *self, int color);
-static inline void Layout::setDrawColor(int color) {
+void Layout::setDrawColor(int color) {
     Layout *self = this; _ZN13Layout12setDrawColorEi(self, color); }
+void Layout::drawBox(int style, int x, int y, int width, int height, String *title) {
+    Layout_drawBox(this, style, x, y, width, height, title); }
 
 extern "C" __attribute__((visibility("hidden"))) void *g_Radio_wantedRoot;
 extern "C" __attribute__((visibility("hidden"))) ImageFactory **g_Radio_imageFactoryCreate;

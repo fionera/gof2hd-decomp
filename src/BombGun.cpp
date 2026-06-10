@@ -1,8 +1,33 @@
 #include "gof2/BombGun.h"
 #include "gof2/Explosion.h"
-#include "gof2/Player.h"
 #include "gof2/Gun.h"
-#include "gof2/PlayerEgo.h"
+#include "gof2/AEGeometry.h"
+
+// NOTE: gof2/Player.h and gof2/PlayerEgo.h are intentionally NOT included. Those
+// (out-of-batch) headers have pre-existing self-collisions that break compilation
+// (Player.h: method 'turnedEnemy()' vs. field 'turnedEnemy'; PlayerEgo.h: redefines
+// the byte-accessor helper 'I' already provided by common.h). BombGun only needs a
+// few members/methods of each, so minimal local layouts are provided here. The
+// 'getTargetFollowCamera()' return type is the true TargetFollowCamera* (PlayerEgo.h
+// mistypes it as int).
+struct Player {
+    void damage(int amount);
+};
+
+struct PlayerEgo {
+    void*        field_0x0;             // +0x0  (holds a Player*)
+    AEGeometry*  field_0x4;             // +0x4
+    AEGeometry*  field_0x8;             // +0x8
+    Level*       field_0xc;             // +0xc
+    LevelScript* field_0x10;           // +0x10
+
+    void getPosition();
+    void GetDirVector();
+    void setRocketControl(void* gun, void* geo);
+    int  getRocketBanking();
+    void addNukeVolatileForce(float v);
+    TargetFollowCamera* getTargetFollowCamera();
+};
 
 
 extern "C" __attribute__((visibility("hidden"))) void *BombGun_vtable;
@@ -232,7 +257,8 @@ after_transforms:
             *(uint64_t *)position = 0;
             *(uint32_t *)(position + 8) = 0;
         }
-        ((Explosion *)(explosion))->start((char *)this + 0xf8, position);
+        ((Explosion *)(explosion))->start((const Vector *)((char *)this + 0xf8),
+                                          (const Vector *)position);
         this->field_0x104 = 0;
     }
 

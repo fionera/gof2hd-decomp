@@ -1,12 +1,20 @@
 #include "gof2/DialogueWindow.h"
-#include "gof2/Agent.h"
+#include "gof2/Agent.h"   // defines the canonical (identical-layout) `struct RetStr`
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
+// Mission.h (-> Station.h) and TouchButton.h each re-declare an identical, unguarded
+// `struct RetStr`, which collides with Agent.h's. None of the RetStr-returning accessors
+// are used in this TU, so the duplicate definitions are renamed away here to avoid the
+// redefinition error without touching those (other-batch) headers.
+#define RetStr RetStr_StationDup
 #include "gof2/Mission.h"
+#undef RetStr
 #include "gof2/Standing.h"
 #include "gof2/String.h"
+#define RetStr RetStr_TouchButtonDup
 #include "gof2/TouchButton.h"
+#undef RetStr
 // Layout's drawMask/drawBox are used via the local extern "C" prototypes below;
 // the full Layout.h is not required here.
 
@@ -157,15 +165,15 @@ extern "C" DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
     self->field_0x40 = 0;
 
     p = self->field_0x0;
-    if (p != 0) operator_delete(((TouchButton *)(p))->dtor());
+    if (p != 0) { ((TouchButton *)(p))->dtor(); operator_delete(p); }
     self->field_0x0 = 0;
 
     p = self->field_0x4;
-    if (p != 0) operator_delete(((TouchButton *)(p))->dtor());
+    if (p != 0) { ((TouchButton *)(p))->dtor(); operator_delete(p); }
     self->field_0x4 = 0;
 
     p = self->field_0x8;
-    if (p != 0) operator_delete(((TouchButton *)(p))->dtor());
+    if (p != 0) { ((TouchButton *)(p))->dtor(); operator_delete(p); }
     self->field_0x8 = 0;
 
     ((String *)((String *)((char *)self + 0x34)))->dtor();
@@ -290,7 +298,7 @@ void DialogueWindow::loadContent() {
     void **gameText = g_dw_gameTextLoad;
     void **sound = g_dw_soundLoad;
 
-    ((TouchButton *)(self->field_0x4))->replaceTextKeepSize(((GameText *)(*gameText))->getText(0xb4));
+    ((TouchButton *)(self->field_0x4))->replaceTextKeepSize((String *)((GameText *)(*gameText))->getText(0xb4));
     self->field_0x70 = 0;
     self->field_0x68 = 0;
     self->field_0x6c = 0;
@@ -323,12 +331,12 @@ void DialogueWindow::loadContent() {
             textId = 0x10 + 0x63d;
         }
         self->field_0x24 = g_dw_defaultClientImage;
-        ((String *)((String *)((char *)self + 0x34)))->assign(((GameText *)(*gameText))->getText(0x63d + (textId & 0xff)));
-        ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
+        ((String *)((String *)((char *)self + 0x34)))->assign((String *)((GameText *)(*gameText))->getText(0x63d + (textId & 0xff)));
+        ((String *)((String *)((char *)self + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
     } else if (mission != 0) {
         if ((page & 1) != 0) {
             self->field_0x24 = g_dw_defaultClientImage;
-            ((String *)((String *)((char *)self + 0x34)))->assign(((GameText *)(*gameText))->getText(0x63d));
+            ((String *)((String *)((char *)self + 0x34)))->assign((String *)((GameText *)(*gameText))->getText(0x63d));
             self->field_0x70 = 1;
         } else {
             self->field_0x24 = Mission_getClientImage(mission);
@@ -348,7 +356,7 @@ void DialogueWindow::loadContent() {
         } else {
             textId = 0x20f;
         }
-        ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
+        ((String *)((String *)((char *)self + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
 
         if (kind == 1) {
             void *standing = Status_getStanding(*g_dw_statusLoad);
@@ -356,17 +364,17 @@ void DialogueWindow::loadContent() {
         }
         if (Mission_getTargetStation(mission) == 0x6c && kind == 0) {
             textId = 0x1ca;
-            ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
+            ((String *)((String *)((char *)self + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
         }
         if (Mission_getType(mission) == 0x0c && kind == 0) {
             textId = 0x174;
-            ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
+            ((String *)((String *)((char *)self + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
         }
     } else {
         self->field_0x24 = g_dw_defaultClientImage;
         textId = 0x10;
-        ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
-        ((String *)((String *)((char *)self + 0x34)))->assign(((GameText *)(*gameText))->getText(0x63d));
+        ((String *)((String *)((char *)self + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
+        ((String *)((String *)((char *)self + 0x34)))->assign((String *)((GameText *)(*gameText))->getText(0x63d));
     }
 
     String_ctor_literal(&style, g_dw_emptyLoad, false);
@@ -377,10 +385,10 @@ void DialogueWindow::loadContent() {
 
     ((TouchButton *)(self->field_0x0))->setVisible(self->field_0x48 != 0);
     ((TouchButton *)(self->field_0x8))->setVisible(((DialogueWindow *)(self))->length() > 1);
-    self->field_0xc = ((ImageFactory *)(*g_dw_imageFactoryLoad))->loadChar(self->field_0x24);
+    self->field_0xc = ((ImageFactory *)(*g_dw_imageFactoryLoad))->loadChar((int *)self->field_0x24);
 
     if (((DialogueWindow *)(self))->isLastPage() != 0) {
-        ((TouchButton *)(self->field_0x4))->replaceTextKeepSize(((GameText *)(*gameText))->getText(0xb5));
+        ((TouchButton *)(self->field_0x4))->replaceTextKeepSize((String *)((GameText *)(*gameText))->getText(0xb5));
     }
 
     Agent *agent = mission == 0 ? (Agent *)0 : Mission_getAgent(mission);
@@ -478,7 +486,7 @@ choice_return_zero:
     }
     if (((TouchButton *)(self->field_0x8))->OnTouchEnd(x, y) != 0) {
         void *choice = self->field_0x50;
-        String *text = ((GameText *)(*g_dw_gameTextTouchEnd))->getText(0x18c);
+        String *text = (String *)((GameText *)(*g_dw_gameTextTouchEnd))->getText(0x18c);
         ChoiceWindow_set(choice, text, true);
         self->field_0x54 = 1;
     }
@@ -520,7 +528,7 @@ int DialogueWindow::init() {
     }
 
     String_ctor_literal(&name, g_dw_defaultAgentName, false);
-    ((String *)((String *)((char *)self + 0x34)))->assign(&name);
+    String_assign_slot((String *)((char *)self + 0x34), &name);
     ((String *)(&name))->dtor();
 
     self->field_0x4c = 0;
@@ -558,7 +566,7 @@ int DialogueWindow::init() {
 
     void **gameText = g_dw_gameTextInit;
     void *button = operator_new(0xc8);
-    String *label = ((GameText *)(*gameText))->getText(0xb3);
+    String *label = (String *)((GameText *)(*gameText))->getText(0xb3);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 5,
@@ -568,7 +576,7 @@ int DialogueWindow::init() {
     self->field_0x0 = button;
 
     button = operator_new(0xc8);
-    label = ((GameText *)(*gameText))->getText(0xb4);
+    label = (String *)((GameText *)(*gameText))->getText(0xb4);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 6,
@@ -578,7 +586,7 @@ int DialogueWindow::init() {
     self->field_0x4 = button;
 
     button = operator_new(0xc8);
-    label = ((GameText *)(*gameText))->getText(0x18b);
+    label = (String *)((GameText *)(*gameText))->getText(0x18b);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 0,
@@ -619,12 +627,13 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     self->field_0xc = ((ImageFactory *)(*g_dw_imageFactoryCtor))->loadChar(parts);
     void *old = self->field_0x4;
     if (old != 0) {
-        operator_delete(((TouchButton *)(old))->dtor());
+        ((TouchButton *)(old))->dtor();
+        operator_delete(old);
     }
     self->field_0x4 = 0;
 
     void *button = operator_new(0xc8);
-    String *buttonText = ((GameText *)(*g_dw_gameTextCtor))->getText(0x20c);
+    String *buttonText = (String *)((GameText *)(*g_dw_gameTextCtor))->getText(0x20c);
     void *layout = *g_dw_layoutCtor;
     int margin = F<int>(layout, 0x4c);
     int x = self->field_0x14 + self->field_0x1c / 2;
@@ -732,14 +741,14 @@ void DialogueWindow::draw() {
     void *layout = *g_dw_layoutDraw;
     Layout_drawMask(layout);
     ((String *)(&title))->ctor_copy((String *)((char *)self + 0x34), false);
-    ((Layout *)(layout))->drawBox(7, self->field_0x14, self->field_0x18, self->field_0x1c, self->field_0x20, &title);
+    ((Layout *)(layout))->drawBox(7, self->field_0x14, self->field_0x18, self->field_0x1c, self->field_0x20, &title, 1);
     ((String *)(&title))->dtor();
 
     ScrollTouchWindow_draw(self->field_0x40);
 
     layout = *g_dw_layoutDraw;
     int margin = F<int>(layout, 0x4c);
-    ((ImageFactory *)(*g_dw_imageFactoryDraw))->drawChar(self->field_0xc, self->field_0x14 + margin, self->field_0x18 + margin + F<int>(layout, 0x8), self->field_0x70);
+    ((ImageFactory *)(*g_dw_imageFactoryDraw))->drawChar((Arr *)self->field_0xc, self->field_0x14 + margin, self->field_0x18 + margin + F<int>(layout, 0x8), self->field_0x70);
 
     ButtonDraw drawButton = g_dw_touchButtonDraw;
     drawButton(self->field_0x0);

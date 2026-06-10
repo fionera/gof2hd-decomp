@@ -117,7 +117,8 @@ struct Player {
     bool isDead();
     void regenerateArmor();
     void regenerateHull();
-    void regenerateShield();
+    void regenerateShield();            // a2e1a: per-frame +1.0 regen
+    void regenerateShield(float amount); // a2df0: regen by explicit amount (RepairBeam)
     void removeAllGuns();
     void resetDamageDoneByPlayer();
     void setActive(bool value);
@@ -147,10 +148,12 @@ struct Player {
     // below as a non-member equivalent. The field is load-bearing and kept intact.
     Vector * update(int dt, int doSound);
     void updateDamageRate();
-
-    // ---- methods (converted from free functions) ----
-    unsigned char turnedEnemy();
 };
+
+// Non-member equivalent of the 'turnedEnemy' accessor (see NOTE above): C++ forbids a
+// member function sharing a name with the data member at 0xe0, so the accessor that merely
+// returns that field lives out-of-struct here.
+inline unsigned char Player_turnedEnemy(Player *self) { return self->turnedEnemy; }
 
 // NOTE: the original byte-matching decomp asserted the 32-bit ARM (ILP32) field offsets here
 // (sizeof(Array<Gun*>)==0xc, radius==0x40, hitpoints==0x78, ...). Those invariants only hold on the

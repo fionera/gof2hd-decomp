@@ -12,6 +12,15 @@
 #include "gof2/String.h"
 #include "gof2/TractorBeam.h"
 
+// Explosion.h and Hud.h each define an identical file-scope `static inline I(...)`
+// (and Hud.h a `P(...)`), making unqualified calls ambiguous. Use macros here so
+// the offset accessors resolve unambiguously to a plain pointer cast.
+#define I(p, off) (*(int *)((char *)(p) + (off)))
+#define P(p, off) (*(void **)((char *)(p) + (off)))
+// common.h's F() is a class template needing an explicit type argument; every use
+// in this TU is a float field accessor, so provide a plain-float F macro.
+#define F(p, off) (*(float *)((char *)(p) + (off)))
+
 // ---- canonical helper types / prototypes (deduped across merged sources) ----
 // 3-float vector returned by value by several AEGeometry/PlayerEgo accessors.
 struct Vec3 { float x, y, z; };

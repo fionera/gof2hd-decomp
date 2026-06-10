@@ -15,7 +15,12 @@ struct ChoiceWindow;
 struct RecordHandler;
 
 // ---- tiny offset-cast helpers -------------------------------------------------
+#ifndef GOF2_BIP_HELPERS
+#define GOF2_BIP_HELPERS
 static inline char*           B (void* p, int off) { return (char*)p + off; }
+static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
+static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
+#endif
 struct ModStation {
     // ---- methods (converted from free functions) ----
     ModStation();
@@ -43,7 +48,5 @@ struct ModStation {
     void showDlcMenu();
     void showMapWindow();
 };
-static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
-static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 
 #endif

@@ -3,11 +3,22 @@
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
-#include "gof2/SolarSystem.h"
+#include "gof2/SolarSystem.h"   // defines the canonical global `struct RetStr` (12-byte String sret)
+// Station.h, TouchButton.h and Wanted.h each redefine the identical (token-for-token,
+// 12-byte aligned aggregate) global `struct RetStr` already provided by SolarSystem.h.
+// Rename their duplicate definitions so they don't collide; the only RetStr-returning
+// methods used here (getName/getText) have their results discarded, so the distinct-but-
+// identical return type is harmless. (Those headers are out of this batch's edit scope.)
+#define RetStr RetStr_dup_Station
 #include "gof2/Station.h"
-#include "gof2/String.h"
+#undef RetStr
+#define RetStr RetStr_dup_TouchButton
 #include "gof2/TouchButton.h"
+#undef RetStr
+#define RetStr RetStr_dup_Wanted
 #include "gof2/Wanted.h"
+#undef RetStr
+#include "gof2/String.h"
 
 
 extern "C" void StarMap_OnTouchMove(void *self, int x, int y);
@@ -369,7 +380,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             lastSeen = Wanted_getLastSeen(wanted);
             StarMap_setStart(map, system, lastSeen);
             if (station != 0) {
-                operator_delete(((Station *)(station))->dtor());
+                ((Station *)(station))->dtor(); operator_delete(station);
             }
             self->field_0x14 = 1;
             ((Layout *)(*g_WantedWindow_end_layout_a))->resetWindowDimensions();
@@ -379,7 +390,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             if (((Layout *)(layout))->OnTouchEnd(x, y) != 0) {
                 ((Layout *)(layout))->resetWindowDimensions();
             } else if (((Layout *)(layout))->helpPressed() != 0) {
-                String_copy_ctor(&help, ((GameText *)(*g_WantedWindow_end_text))->getText(0x27b), false);
+                String_copy_ctor(&help, (String *)((GameText *)(*g_WantedWindow_end_text))->getText(0x27b), false);
                 ((Layout *)(layout))->initHelpWindow(&help);
                 ((String *)(&help))->dtor();
             }
@@ -455,7 +466,7 @@ void WantedWindow::draw() {
         int style = (i == self->field_0x30 || i == self->field_0x34) ? 4 : 3;
         String_cstr_ctor(&s40, g_WantedWindow_draw_empty_a, false);
         ((Layout *)(layout))->drawBox(style, F<int>(layout, 0x28) + self->field_0x1c, y, (self->field_0x24 >> 1) -
-                           (inset + F<int>(layout, 0x28) + F<int>(layout, 0x2c)), F<int>(layout, 0x70), &s40);
+                           (inset + F<int>(layout, 0x28) + F<int>(layout, 0x2c)), F<int>(layout, 0x70), &s40, 0);
         ((String *)(&s40))->dtor();
 
         void *wanted = draw_wanted_at(self, i);
@@ -490,7 +501,7 @@ void WantedWindow::draw() {
 
     PaintCanvas_DisableClip(canvas);
     PaintCanvas_SetColor(canvas, 0xffffffffu);
-    String_copy_ctor(&s70, ((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93), false);
+    String_copy_ctor(&s70, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93), false);
     Layout_drawHeader(layout, &s70);
     ((String *)(&s70))->dtor();
 
@@ -498,8 +509,8 @@ void WantedWindow::draw() {
         ((TouchButton *)(ArrayItem(self->field_0xc, i)))->draw();
     }
 
-    String_copy_ctor(&s7c, ((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
-    ((Layout *)(layout))->drawBox(1, F<int>(layout, 0x28) + self->field_0x1c, self->field_0x20 + F<int>(layout, 0xc) + F<int>(layout, 0x20), (self->field_0x24 >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)), F<int>(layout, 0x5c), &s7c);
+    String_copy_ctor(&s7c, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
+    ((Layout *)(layout))->drawBox(1, F<int>(layout, 0x28) + self->field_0x1c, self->field_0x20 + F<int>(layout, 0xc) + F<int>(layout, 0x20), (self->field_0x24 >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)), F<int>(layout, 0x5c), &s7c, 0);
     ((String *)(&s7c))->dtor();
 
     String_cstr_ctor(&s88, g_WantedWindow_draw_empty_b, false);
@@ -508,12 +519,12 @@ void WantedWindow::draw() {
                      (F<int>(layout, 0x20) + F<int>(layout, 0xc) +
                       F<int>(layout, 0x5c) + F<int>(layout, 0x2c) * 2)) -
                     F<int>(layout, 0x10)) -
-                       F<int>(layout, 0x24), &s88);
+                       F<int>(layout, 0x24), &s88, 0);
     ((String *)(&s88))->dtor();
 
-    String_copy_ctor(&s94, ((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
+    String_copy_ctor(&s94, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
     ((Layout *)(layout))->drawBox(1, self->field_0x1c + (self->field_0x24 >> 1) +
-                                  F<int>(layout, 0x2c), self->field_0x20 + F<int>(layout, 0xc) + F<int>(layout, 0x20), ((self->field_0x24 >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28), F<int>(layout, 0x5c), &s94);
+                                  F<int>(layout, 0x2c), self->field_0x20 + F<int>(layout, 0xc) + F<int>(layout, 0x20), ((self->field_0x24 >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28), F<int>(layout, 0x5c), &s94, 0);
     ((String *)(&s94))->dtor();
 
     String_cstr_ctor(&sa0, g_WantedWindow_draw_empty_c, false);
@@ -523,19 +534,19 @@ void WantedWindow::draw() {
                      (F<int>(layout, 0xc) + F<int>(layout, 0x2c) * 2 +
                       F<int>(layout, 0x20) + F<int>(layout, 0x5c))) -
                     F<int>(layout, 0x10)) -
-                       F<int>(layout, 0x24), &sa0);
+                       F<int>(layout, 0x24), &sa0, 0);
     ((String *)(&sa0))->dtor();
 
     if (self->field_0x8 != 0) {
         int charX = self->field_0x1c + (self->field_0x24 >> 1) + F<int>(layout, 0x2c);
         int charY = F<int>(layout, 0x5c) + self->field_0x20 + F<int>(layout, 0x2c) +
                     F<int>(layout, 0xc) + F<int>(layout, 0x20);
-        ((ImageFactory *)(*g_WantedWindow_draw_factory))->drawChar(self->field_0x8, charX, charY, false);
+        ((ImageFactory *)(*g_WantedWindow_draw_factory))->drawChar((Arr *)self->field_0x8, charX, charY, false);
         int textX = F<int>(layout, 0x2d4) + charX + F<int>(layout, 0x2c);
         PaintCanvas_DrawString(canvas, font, (String *)((char *)self + 0x54), textX, charY, false);
 
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_a, false);
-        String_plus(&s58, &s64, ((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93));
+        String_plus(&s58, &s64, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93));
         String_plus(&s4c, &s58, (String *)((char *)self + 0x3c));
         PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + F<int>(layout, 0x4) * 2, false);
         ((String *)(&s4c))->dtor();
@@ -543,7 +554,7 @@ void WantedWindow::draw() {
         ((String *)(&s64))->dtor();
 
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_b, false);
-        String_plus(&s58, &s64, ((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93));
+        String_plus(&s58, &s64, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93));
         String_plus(&s4c, &s58, (String *)((char *)self + 0x48));
         PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + F<int>(layout, 0x4) * 3, false);
         ((String *)(&s4c))->dtor();
@@ -685,20 +696,21 @@ int WantedWindow::init() {
 
     void **textHolder = g_WantedWindow_init_text;
     void *button = operator_new(0xc8);
-    String *text = ((GameText *)(*textHolder))->getText(0xc93);
+    String *text = (String *)((GameText *)(*textHolder))->getText(0xc93);
     int x = self->field_0x1c;
     int bw = self->field_0x24;
     int help = ((Layout *)(layout))->getHelpButtonOffset();
-    ((TouchButton *)(button))->ctor6(text, 3, x + bw - help, self->field_0x20, 0x12);
+    // ctor6 header order is (x, y, text, p4, p5, p6); decomp call passed (text, kind, x, y, flags).
+    ((TouchButton *)(button))->ctor6(x + bw - help, self->field_0x20, text, 3, 0x12, 0);
     *(void **)((char *)F<void *>(buttons, 0x4) + 4) = button;
 
     button = operator_new(0xc8);
-    text = ((GameText *)(*textHolder))->getText(0x81);
+    text = (String *)((GameText *)(*textHolder))->getText(0x81);
     x = self->field_0x1c;
     bw = self->field_0x24;
     help = ((Layout *)(layout))->getHelpButtonOffset();
     int width = ((TouchButton *)(*(void **)((char *)F<void *>(buttons, 0x4) + 4)))->getWidth();
-    ((TouchButton *)(button))->ctor6(text, 3, x + bw - help - width + F<int>(layout, 0x38), self->field_0x20, 0x12);
+    ((TouchButton *)(button))->ctor6(x + bw - help - width + F<int>(layout, 0x38), self->field_0x20, text, 3, 0x12, 0);
     *(void **)F<void *>(buttons, 0x4) = button;
 
     ((TouchButton *)(*(void **)((char *)F<void *>(buttons, 0x4) + 4)))->setAlwaysPressed(true);
@@ -713,14 +725,14 @@ int WantedWindow::init() {
         F<int>(layout, 0x2c);
 
     if (self->field_0x18 != 0) {
-        operator_delete(((TouchButton *)(self->field_0x18))->dtor());
+        ((TouchButton *)(self->field_0x18))->dtor(); operator_delete(self->field_0x18);
     }
     self->field_0x4 = 0;
     self->field_0x18 = 0;
     self->field_0x14 = 0;
 
     button = operator_new(0xc8);
-    text = ((GameText *)(*textHolder))->getText(0x1a8);
+    text = (String *)((GameText *)(*textHolder))->getText(0x1a8);
     layout = *layoutHolder;
     TouchButton_ctor8(button, text, 0,
                       self->field_0x1c + (self->field_0x24 >> 1) + F<int>(layout, 0x2c),
@@ -760,7 +772,7 @@ extern "C" WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
 
     p = self->field_0x18;
     if (p != 0) {
-        operator_delete(((TouchButton *)(p))->dtor());
+        ((TouchButton *)(p))->dtor(); operator_delete(p);
     }
     self->field_0x18 = 0;
 
@@ -904,7 +916,7 @@ void WantedWindow::selectWanted(int idx) {
     self->field_0x2c = 0;
 
     void *wanted = wanted_at(self, idx);
-    self->field_0x8 = ((ImageFactory *)(*g_WantedWindow_select_factory))->loadChar(Wanted_getImageParts(wanted));
+    self->field_0x8 = ((ImageFactory *)(*g_WantedWindow_select_factory))->loadChar((int *)Wanted_getImageParts(wanted));
 
     ((Wanted *)(&s34))->getName();
     ((String *)((String *)((char *)self + 0x54)))->assign(&s34);
@@ -973,13 +985,13 @@ void WantedWindow::selectWanted(int idx) {
         ((String *)(&s40))->dtor();
 
         if (last != 0) {
-            operator_delete(((Station *)(last))->dtor());
+            ((Station *)(last))->dtor(); operator_delete(last);
         }
         if (travel != 0) {
-            operator_delete(((Station *)(travel))->dtor());
+            ((Station *)(travel))->dtor(); operator_delete(travel);
         }
         if (current != 0) {
-            operator_delete(((Station *)(current))->dtor());
+            ((Station *)(current))->dtor(); operator_delete(current);
         }
     } else if (((Wanted *)(wanted))->isTerminated() != 0) {
         String_cstr_ctor(&s34, g_WantedWindow_s_terminated_a, false);
@@ -995,9 +1007,9 @@ void WantedWindow::selectWanted(int idx) {
         ((String *)((String *)((char *)self + 0x78)))->assign(&s34);
         ((String *)(&s34))->dtor();
     } else {
-        String *text = ((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
+        String *text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
         ((String *)((String *)((char *)self + 0x3c)))->assign(text);
-        text = ((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
+        text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
         ((String *)((String *)((char *)self + 0x48)))->assign(text);
         String_int_ctor(&s40, Wanted_getReward(wanted));
         String_cstr_ctor(&s4c, g_WantedWindow_s_reward, false);
@@ -1006,12 +1018,12 @@ void WantedWindow::selectWanted(int idx) {
         ((String *)(&s34))->dtor();
         ((String *)(&s4c))->dtor();
         ((String *)(&s40))->dtor();
-        text = ((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
+        text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
         ((String *)((String *)((char *)self + 0x6c)))->assign(text);
     }
 
     ((Wanted *)(wanted))->isTerminated();
-    ((String *)((String *)((char *)self + 0x60)))->assign(((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
+    ((String *)((String *)((char *)self + 0x60)))->assign((String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
 
     void *layout = *g_WantedWindow_select_layout;
     int y = self->field_0x20;
@@ -1034,7 +1046,7 @@ void WantedWindow::selectWanted(int idx) {
     self->field_0x2c = scroll;
 
     String_cstr_ctor(&s34, g_WantedWindow_s_empty, false);
-    ((String *)(&s34))->assign(((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
+    ((String *)(&s34))->assign((String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
     append_label(&s34, g_WantedWindow_s_line_a,
                  (String *)((char *)self + 0x3c));
     append_label(&s34, g_WantedWindow_s_line_b,

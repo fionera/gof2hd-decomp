@@ -2,7 +2,12 @@
 #include "gof2/ApplicationManager.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
+// ShaderBaseStruct.h declares __stack_chk_guard as uint32_t, conflicting with the
+// canonical void* declaration in ApplicationManager.h (included above). Neutralize the
+// duplicate declaration just for this header; the void* symbol is the one actually used.
+#define __stack_chk_guard __stack_chk_guard_sbs_unused
 #include "gof2/ShaderBaseStruct.h"
+#undef __stack_chk_guard
 #include <arm_neon.h>
 
 // ShaderBaseStruct lives in AbyssEngine (complete type with field_0x4).
@@ -370,7 +375,7 @@ void Engine::SwapBuffer() {
 
 // ---- ReloadShaders_865c8.cpp ----
 typedef void ShaderUnload(ShaderBaseStruct *);
-typedef void ShaderInit(ShaderBaseStruct *, Engine *);
+typedef void ShaderInitReloadFn(ShaderBaseStruct *, Engine *);
 
 void Engine::ReloadShaders() {
     Engine *self = this;
@@ -383,7 +388,7 @@ void Engine::ReloadShaders() {
 
         shader = *(ShaderBaseStruct **)(self->field_0x514 + index * 4);
         vtable = *(void ***)shader;
-        ((ShaderInit *)vtable[0x08 / 4])(shader, self);
+        ((ShaderInitReloadFn *)vtable[0x08 / 4])(shader, self);
         index += 1;
     }
 }
@@ -596,7 +601,7 @@ void Engine::SetFrameBufferTexture(int slot0, int slot1) {
 // ---- LightSetLightDirection_858d0.cpp ----
 void Engine::LightSetLightDirection(float x, float y, float z, unsigned int light) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     unsigned int index = light - 0x4000;
     if (index < 8) {
         int count = light - 0x3fff;
@@ -624,7 +629,7 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
 // ---- RenderMesh_85f24.cpp ----
 void Engine::RenderMesh(MeshFull *mesh) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     if (mesh == 0 || mesh->field_0x28 == 0) {
         goto done;
     }
@@ -803,7 +808,7 @@ Engine::~Engine()
 // ---- AfterGLInit_8428c.cpp ----
 void Engine::AfterGLInit() {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     ((Engine *)(self))->ResetLightParam();
     MeshCreate(self, 4, 2, 0x13, (char *)self + 0x380);
 
@@ -846,7 +851,7 @@ typedef void ShaderInitFn(ShaderBaseStruct *, Engine *);
 
 void Engine::ShaderRegister(ShaderBaseStruct *shader) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     if (shader != 0) {
         char nameStorage[sizeof(String)];
         String *name = (String *)nameStorage;
@@ -994,7 +999,7 @@ typedef void ShaderPostDrawSwap(ShaderBaseStruct *, void *, void **, Engine *);
 
 void Engine::DoPostEffect() {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     uint32_t flags = self->field_0x410;
     void *current = self->field_0x414;
     void *other = self->field_0x418;
@@ -1105,7 +1110,7 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
 // ---- SetPostEffect_865fc.cpp ----
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     if (self->field_0x414 == 0 && enable) {
         FBOContainer *fbo = (FBOContainer *)operator new(0x38);
         char nameStorage[sizeof(String)];
@@ -1193,7 +1198,7 @@ void Engine::initFileInterface() {
 // ---- SetOrthoMatrix_854e8.cpp ----
 void Engine::SetOrthoMatrix(const uint32_t *projection, const uint32_t *view, bool multiply) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         for (int i = 0; i < 16; i += 1) {
             *(uint32_t *)((char *)self + 0x384 + i * 4) = projection[i];
@@ -1213,7 +1218,7 @@ void Engine::SetOrthoMatrix(const uint32_t *projection, const uint32_t *view, bo
 // ---- InitGL_6db20.cpp ----
 int Engine::InitGL(bool shaders, int width, int height) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     self->field_0x418 = 0;
     self->field_0x368 = width;
     self->field_0x36c = height;
@@ -1293,7 +1298,7 @@ extern "C" void Engine_ClearBuffer(Engine *, uint32_t color)
 // ---- LightSetLightPosition_8595c.cpp ----
 void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     unsigned int index = light - 0x4000;
     if (index < 8) {
         int count = light - 0x3fff;
@@ -1391,9 +1396,9 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
 }
 
 // ---- Engine_83eec.cpp ----
-void Engine::Engine() {
+Engine::Engine() {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     ((String *)((String *)self))->ctor();
     ((String *)((String *)((char *)self + 0x14)))->ctor();
     ((String *)((String *)((char *)self + 0x3c)))->ctor();
@@ -1536,7 +1541,7 @@ extern "C" void Vector_assign(Vector *dst, const Vector *src);   // 0x6eb3c
 
 uint64_t Engine::SetEyePosition(uint32_t x, uint32_t y, uint32_t z) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     uint32_t buf[3];
     buf[0] = x;
     buf[1] = y;
@@ -1554,7 +1559,7 @@ uint64_t Engine::SetEyePosition(uint32_t x, uint32_t y, uint32_t z) {
 // ---- SetModelMatrix_851f4.cpp ----
 void Engine::SetModelMatrix(const uint32_t *matrix) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         self->field_0x204 = matrix[0];
         self->field_0x208 = matrix[4];
@@ -1608,7 +1613,7 @@ void Engine::SetModelMatrix(const uint32_t *matrix) {
 // ---- LightSetLight_85788.cpp ----
 void Engine::LightSetLight(unsigned int light) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     uint32_t values[4] = {0, 0, 0, 0};
     unsigned int index = light - 0x4000;
     if (index < 8) {
@@ -1637,7 +1642,7 @@ void Engine::LightSetLight(unsigned int light) {
 // ---- SetTexturesExt_84b0c.cpp ----
 void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     char *manager = *self->field_0x30;   // external texture-manager (no named struct)
     if (*(uint32_t *)(manager + 0x10) != 0) {
         uint32_t values[3] = {first, second, third};
@@ -1662,7 +1667,7 @@ void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...
 // ---- SetWorldViewMatrix_853b0.cpp ----
 void Engine::SetWorldViewMatrix(const uint32_t *matrix) {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         uint32_t gl[16] = {
             matrix[0], matrix[4], matrix[8], 0,
@@ -1694,7 +1699,7 @@ void Engine::SetWorldViewMatrix(const uint32_t *matrix) {
 // ---- ResetLightParam_84348.cpp ----
 void Engine::ResetLightParam() {
     Engine *self = this;
-    uint32_t volatile cookie = __stack_chk_guard;
+    void * volatile cookie = __stack_chk_guard;
     self->field_0x488 = 0x3f800000;
     self->field_0x32c = 1;
     self->field_0x298 = 0.8f;

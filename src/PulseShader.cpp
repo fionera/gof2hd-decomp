@@ -1,6 +1,12 @@
 #include "gof2/PulseShader.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
+#include "gof2/ApplicationManager.h"
+
+// The decompiler dropped the receiver from the original
+// ApplicationManager_GetCurrentTimeMillis() call; it reads from the global
+// ApplicationManager singleton. Recover it here as the receiver.
+extern ApplicationManager *g_ApplicationManager;
 
 namespace AbyssEngine {
 
@@ -81,7 +87,7 @@ void PulseShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
         if (this->field_0x54 >= 0)
             glUniform4fv(this->field_0x54, 1, (float *)((char *)engine + 0x2b8));
 
-        long long t = ApplicationManager_GetCurrentTimeMillis();
+        long long t = g_ApplicationManager->GetCurrentTimeMillis();
         float v = sinf(__aeabi_l2f(t) / PulseShader_timeScale);
         glUniform1f(this->field_0x58, v + 2.0f);
         this->field_0x9 = 0;

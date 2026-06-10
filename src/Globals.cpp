@@ -1,11 +1,18 @@
 #include "gof2/Globals.h"
-#include "gof2/Agent.h"
+#include "gof2/Agent.h"          // defines the canonical global `struct RetStr` (12-byte String sret)
 #include "gof2/ApplicationManager.h"
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
-#include "gof2/RecordHandler.h"
+// Mission.h transitively pulls Station.h, which redefines the identical (token-for-token,
+// 12-byte aligned aggregate) global `struct RetStr` already provided by Agent.h. Rename the
+// duplicate so it doesn't collide. Station::getName()'s return type becomes RetStr_StationDup,
+// which is layout-identical and only ever discarded here. (Other headers are out of edit scope.)
+#define RetStr RetStr_StationDup
+#include "gof2/Mission.h"
 #include "gof2/Station.h"
+#undef RetStr
+#include "gof2/RecordHandler.h"
 #include "gof2/String.h"
 
 // Status / AEGeometry / String full layouts are not needed here: Globals only takes
@@ -25,7 +32,7 @@ extern "C" float Globals_sqrt_impl(float x);
 extern "C" void Globals_getRandomSystemForDrinks_tail(int a, int b);
 extern "C" void Globals_addSoundResource_tail(int val, Array<int> *a);
 extern "C" void *__stack_chk_guard;
-extern "C" void __stack_chk_fail(unsigned diff);
+extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void AEString_default_ctor(void *dst);
 extern "C" void AEString_copy_ctor(void *dst, void *src, int c);
 extern "C" void AEString_cstr_ctor(void *dst, const char *s, int c);
@@ -192,13 +199,13 @@ extern "C" void Globals_startNewSoundResourceList(void *self)
 // hidden PC-relative pointer-to-pointer global (deref'd twice).
 extern void *const gItemNameGameText __attribute__((visibility("hidden")));
 
-struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
+// RetStr (12-byte String sret aggregate) is provided by gof2/Agent.h above.
 
 // r0=sret, r1=unused, r2=item id.
 extern "C" RetStr Globals_getItemName(void *unused, int item)
 {
     (void)unused;
-    String *src = ((GameText *)(*(void **)gItemNameGameText))->getText(item + 0x4fa);
+    String *src = (String *)((GameText *)(*(void **)gItemNameGameText))->getText(item + 0x4fa);
     RetStr r;
     return r;
 }
@@ -732,7 +739,7 @@ extern "C" void Globals_getAgentMissionText(void *out, void *unused, void *agent
                     ship = Status_getShip();
                     int modIdx = ((Agent *)(agent))->getSellModIndex();
                     if (Ship_hasModInstalled(ship, modIdx) != 0) {
-                        void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText();
+                        void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText(modIdx);
                         *(int *)(*busy + 0xd0) -= 1;
                         AEString_copy_ctor(out, acc, 0);
                         goto epilogue;
@@ -853,7 +860,7 @@ extern "C" RetStr Globals_getKeyBindingReplaceString(Globals *, int key)
 
     RetStr tmp;
     AEString_ctor_default(&tmp);
-    String *up = ((String *)((String *)&tmp))->ToUpperCase();
+    ((String *)((String *)&tmp))->ToUpperCase();   // in-place; returns void
     RetStr result;
     return result;
 }
@@ -2049,7 +2056,7 @@ int Globals::init(void *app) {
     void *layout = operator_new(0x414);
     ((Layout *)(layout))->ctor();
     **gI_layout = layout;
-    Layout_reload();
+    ((Layout *)(layout))->reload();
     ParticleSettingsRef_initialize();
 
     Array<int> *arr = new Array<int>();
@@ -2106,7 +2113,7 @@ extern "C" int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
             if (Status_getCurrentCampaignMission() == 0x59) {
                 return FModSound_play(*sndP, 0x8be, 0, vol);
             }
-            if (Status_getMission() != 0 && Mission_isEmpty() == 0) {
+            if (Status_getMission() != 0 && ((Mission *)(long)Status_getMission())->isEmpty() == 0) {
                 Status_getMission();
                 int tgt = Mission_getTargetStation();
                 if (tgt == Station_getIndex(Status_getStation())) {
@@ -2214,7 +2221,8 @@ extern "C" String *Globals_getRandomPlanetName(String *ret)
     Station *st = FileRead_loadStation(f, which);
     ((Station *)(ret))->getName();
     if (st != 0) {
-        operator_delete(((Station *)(st))->dtor());
+        ((Station *)(st))->dtor();   // dtor() returns void
+        operator_delete(st);
     }
     operator_delete(FileRead_dtor(f));
     return ret;

@@ -1,6 +1,13 @@
 #include "gof2/Gun.h"
-#include "gof2/Player.h"
 #include "gof2/AEGeometry.h"
+
+// NOTE: gof2/Player.h is intentionally NOT included. That (out-of-batch) header has
+// a pre-existing name collision (a 'turnedEnemy()' method vs. its own 'turnedEnemy'
+// field) that breaks compilation. This translation unit only needs Player::isActive()
+// (and Player as an opaque pointer type), so a minimal local definition is used instead.
+struct Player {
+    unsigned char isActive();
+};
 
 
 extern "C" void AEGeometry_ctor(AEGeometry *self, unsigned short idx, void *canvas, bool b);

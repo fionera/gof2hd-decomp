@@ -220,7 +220,7 @@ struct Layout {
     uint8_t isFading();
     void reload();
     void resetWindowDimensions();
-    static inline void setDrawColor(int color);
+    void setDrawColor(int color);
     void setWindowDimensions(int p1, int p2, int p3, int p4);
     void showMissionRewardMessage(int show, bool flag);
     void startFade(uint8_t fadeOut, int color, int duration);

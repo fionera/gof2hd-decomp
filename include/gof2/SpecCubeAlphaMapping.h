@@ -33,10 +33,6 @@ void *ShaderBaseStruct_dtor(void *self) noexcept;
 int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const char *fragmentSource);
 int ShaderBaseStruct_LoadBindShader(void *self, const char *vertexPath, const char *fragmentPath);
 
-void String_ctor_char(String *self, const char *text, bool copy);
-String *String_assign(String *self, const String *other);
-void String_dtor(String *self);
-
 void operator_delete(void *ptr) noexcept;
 __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
