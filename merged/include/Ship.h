@@ -1,0 +1,67 @@
+// Shared layout + helper declarations for Galaxy on Fire 2 `Ship` class.
+// Target: Android libgof2hdaa.so (Thumb-2, clang -O2). Recovered byte-exact.
+//
+// Each method .cpp #includes this header. The struct reproduces the field
+// offsets observed in the target disassembly (verified across the simple
+// getters/setters and the constructor). External engine/game helpers are
+// declared `extern "C"` so the differ (which normalizes call targets) lets
+// tail-calls become `return helper(...)`.
+#ifndef GOF2_SHIP_CLASS_H
+#define GOF2_SHIP_CLASS_H
+
+// ---------------------------------------------------------------------------
+// AbyssEngine Array<T> container.
+//   layout = { u32 size; T* data; u32 size2(capacity); }  (== AEArray)
+// All pointer instantiations compile identically.
+template <class T>
+struct Array { unsigned int size; T* data; unsigned int size2; };
+
+// Engine container primitives (defined in src/engine/array.cpp; matched).
+template <class T> void  ArrayAdd(T item, Array<T>& a);
+template <class T> void  ArraySetLength(unsigned int n, Array<T>& a);
+
+// ---------------------------------------------------------------------------
+// Ship layout. size = 0x80. Field offsets reproduced from the target.
+// `Item` is opaque here; the recovered code only ever holds Item* and calls
+// out to Item:: members via extern "C" thunks.
+struct Item;
+
+struct Ship {
+    int          index;            // 0x00  ship id / type
+    int          baseHP;           // 0x04
+    int          value;            // 0x08
+    int          baseLoad;         // 0x0c
+    int          currentLoad;      // 0x10
+    int          price;            // 0x14
+    float        handling;         // 0x18
+    int          maxShieldHP;      // 0x1c
+    int          maxArmorHP;       // 0x20
+    int          shieldRegen;      // 0x24
+    int          cargoPlus;        // 0x28
+    int          compression;      // 0x2c
+    int          radarType;        // 0x30
+    int          boostSpeed;       // 0x34
+    int          boostDelay;       // 0x38
+    int          boostTime;        // 0x3c
+    int          agility;          // 0x40
+    int          maxPassengers;    // 0x44
+    int          firePower;        // 0x48
+    int          repairType;       // 0x4c
+    unsigned char hasJumpDriveFlag;// 0x50
+    unsigned char hasCloakFlag;    // 0x51
+    unsigned char pad52[2];        // 0x52
+    float        fireRateFactor;   // 0x54
+    float        damageFactor;     // 0x58
+    unsigned char hasEmergency;    // 0x5c
+    unsigned char pad5d[3];        // 0x5d
+    int          signatureRace;    // 0x60
+    int          race;             // 0x64
+    int*         slots;            // 0x68  int[4] slot-count array
+    Array<Item*>* equipment;       // 0x6c
+    Array<Item*>* cargo;           // 0x70
+    int          currentWeaponSlot;// 0x74
+    Array<int>*  mods;             // 0x78
+    int          numAddedDeviceSlots; // 0x7c
+};
+
+#endif // GOF2_SHIP_CLASS_H

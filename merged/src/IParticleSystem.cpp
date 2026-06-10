@@ -1,0 +1,669 @@
+#include "IParticleSystem.h"
+
+
+extern "C" int AERandom_nextInt(void *self, int max);
+extern "C" char *MatrixGetPosition(char *out, Matrix const *matrix);
+extern "C" char *MatrixGetRight(char *out, Matrix const *matrix);
+extern "C" char *MatrixGetUp(char *out, Matrix const *matrix);
+extern "C" char *MatrixGetDir(char *out, Matrix const *matrix);
+extern "C" void *Vector_assign(void *self, char *other);
+extern "C" void *Vector_neg(void *out, void *a);
+extern "C" void *Vector_sub(void *out, char *a, void *b);
+extern "C" float Vector_dot(void *a, void *b);
+extern "C" void *Vector_mul(void *out, void *a, float scale);
+extern "C" void *Vector_div(void *out, void *a, float scale);
+extern "C" void *Vector_add(void *out, void *a, void *b);
+extern "C" void *Vector_mul_scalar(void *out, float scale, void *a);
+extern "C" void *Vector_plus_equal(void *self, void *other);
+extern "C" void *Vector_minus_equal(void *self, void *other);
+extern "C" void *AERandom_seed_ctor(void *self, long long seed);
+extern "C" void AERandom_dtor(void *self);
+extern "C" void AERandom_ctor(void *self);
+extern "C" void Array_ParticleSet_ctor(void *self);
+extern "C" void ArraySet_ParticleSet(Array<int> const *src, void *dst);
+extern "C" void *operator_new(uint32_t size);
+extern "C" void *Vector_mul(void *out, char *a, float scale);
+extern "C" void Array_ParticleSet_dtor(void *self);
+
+// ---- setParticleSet_181b1e.cpp ----
+void IParticleSystem::setParticleSet(int set)
+{
+    if (I(this, 0x38) != 0 && *(int *)F<void *>(this, 0x3c) == set) {
+        U8(this, 0x44) = 0;
+    }
+}
+
+// ---- enableEmit_181d96.cpp ----
+void IParticleSystem::enableEmit(bool enabled)
+{
+    if (enabled && U8(this, 0xc) == 0) {
+        I(this, 0x60) = 0;
+    }
+    U8(this, 0xc) = enabled;
+}
+
+// ---- update_181d54.cpp ----
+typedef void (*UpdateParticleFn)(IParticleSystem *, int, float);
+
+void IParticleSystem::update(int delta)
+{
+    if (U8(this, 0xe) != 0) {
+        float fdelta = (float)delta;
+        for (int i = 0; i < I(this, 0x48); ++i) {
+            if (((int *)P(this, 0x68))[i] != -1) {
+                UpdateParticleFn fn = *(UpdateParticleFn *)((char *)P(this, 0x0) + 0x14);
+                fn(this, i, fdelta);
+            }
+        }
+    }
+}
+
+// ---- setParticleSetIndex_181b18.cpp ----
+void IParticleSystem::setParticleSetIndex(uint8_t index)
+{
+    U8(this, 0x44) = index;
+}
+
+// ---- setMatrix_182b40.cpp ----
+void IParticleSystem::setMatrix(Matrix const *matrix)
+{
+    *(Matrix const * volatile *)((char *)this + 0x18) = matrix;
+    *(volatile uint16_t *)((char *)this + 0x4) = 0x100;
+}
+
+// ---- enableRender_181da4.cpp ----
+typedef void (*RenderOffFn)(IParticleSystem *);
+
+void IParticleSystem::enableRender(bool enabled)
+{
+    if (!enabled && U8(this, 0xd) != 0) {
+        RenderOffFn fn = *(RenderOffFn *)((char *)F<void *>(this, 0x0) + 8);
+        fn(this);
+    }
+    U8(this, 0xd) = enabled;
+}
+
+// ---- emit_181dc4.cpp ----
+__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
+
+
+typedef void (*EmitParticleFn)(IParticleSystem *, void *, float, uint32_t, uint32_t, uint32_t, uint32_t,
+                              uint32_t, int, float, float, void *);
+typedef void (*UpdateParticleFn)(IParticleSystem *, int, float);
+
+static inline int float_bits(float v)
+{
+    union {
+        float f;
+        int i;
+    } u;
+    u.f = v;
+    return u.i;
+}
+
+static inline float bits_float(int v)
+{
+    union {
+        float f;
+        int i;
+    } u;
+    u.i = v;
+    return u.f;
+}
+
+static inline void zero_vec(char *v)
+{
+    *(uint32_t *)(v + 0) = 0;
+    *(uint32_t *)(v + 4) = 0;
+    *(uint32_t *)(v + 8) = 0;
+}
+
+void IParticleSystem::emit(int delta)
+{
+    if (U8(this, 0xc) == 0 || U8(this, 0xd) == 0) {
+        return;
+    }
+
+    int set = ((int *)P(this, 0x3c))[U8(this, 0x44)];
+    if (set == -1) {
+        return;
+    }
+
+    uint32_t flags = U(this, 0x34);
+    if ((flags & 0x80) == 0) {
+        if ((flags & 0x100) != 0) {
+            return;
+        }
+    } else if ((flags & 0x100) != 0 || ((int *)P(this, 0x68))[0] != -1) {
+        return;
+    }
+
+    char matrixPos[12];
+    char right[12];
+    char up[12];
+    char dir[12];
+    char tmp[12];
+    char tmp2[12];
+    char travel[12];
+    char travelDiv[12];
+    char baseDelta[12];
+    char uv[16];
+    char rotated[16];
+    char particlePos[12];
+    char velocity[12];
+    char emitVelocity[12];
+
+    MatrixGetPosition(matrixPos, F<Matrix const *>(this, 0x18));
+    MatrixGetRight(right, F<Matrix const *>(this, 0x18));
+    if (U8(this, 0x4c) != 0) {
+        Vector_neg(tmp, right);
+        Vector_assign(right, tmp);
+    }
+    MatrixGetUp(up, F<Matrix const *>(this, 0x18));
+    MatrixGetDir(dir, F<Matrix const *>(this, 0x18));
+
+    char *def = ParticleSet_definitions + (set + set * 4) * 32;
+    float speed2 = Vector_dot((char *)this + 0x1c, (char *)this + 0x1c);
+    if (speed2 < (float)*(int *)(def + 0x98)) {
+        return;
+    }
+
+    float fdelta = (float)delta;
+    float elapsed = FL(this, 0x60) + fdelta;
+    Vector_mul(travel, (char *)this + 0x1c, elapsed);
+    Vector_div(travelDiv, travel, 1000.0f);
+    float travelLen2 = Vector_dot(travelDiv, travelDiv);
+    float invGuess = bits_float(0x5f3759df - (float_bits(travelLen2) >> 1));
+    float invLen = (travelLen2 * -0.5f * invGuess * invGuess + 1.5f) * invGuess;
+    float distance = 1.0f / invLen;
+
+    int emitCount;
+    if ((flags & 0x10) != 0) {
+        float countf = distance / *(float *)(def + 0x2c);
+        emitCount = (int)countf;
+        FL(this, 0x60) = (elapsed * (countf - (float)emitCount)) / countf;
+    } else if ((flags & 0x20) != 0) {
+        int cycles = (int)(*(float *)(def + 0x2c) * elapsed * 0.001f);
+        FL(this, 0x60) = elapsed + ((float)cycles * -1000.0f) / *(float *)(def + 0x2c);
+        emitCount = cycles;
+    } else {
+        emitCount = *(int *)(def + 0x10);
+        if ((flags & 0x40) != 0) {
+            U8(this, 0xc) = 0;
+        }
+    }
+
+    if (emitCount <= 0) {
+        return;
+    }
+
+    Vector_sub(baseDelta, matrixPos, travelDiv);
+    float spreadScale = 0.0f;
+    float pathScale = 0.0f;
+    if ((U8(this, 0x34) & 0xc0) == 0) {
+        float y = bits_float(0x5f3759df - (float_bits(speed2) >> 1));
+        pathScale = (speed2 * -0.5f * y * y + 1.5f) * y;
+    }
+
+    ((uint32_t *)uv)[0] = *(uint32_t *)(def + 0x88);
+    ((uint32_t *)uv)[1] = *(uint32_t *)(def + 0x90);
+    ((uint32_t *)uv)[2] = *(uint32_t *)(def + 0x8c);
+    ((uint32_t *)uv)[3] = *(uint32_t *)(def + 0x94);
+
+    uint32_t *uvp = (uint32_t *)uv;
+    for (int i = 0; i < emitCount; ++i) {
+        int current = I(this, 0x50);
+        ((uint8_t *)P(this, 0x6c))[current] = (uint8_t)set;
+        ((int *)P(this, 0x68))[current] = 0;
+        if ((U8(this, 0x37) & 0x80) != 0) {
+            uvp = (uint32_t *)rotateUVs((float *)uv, current, (float *)rotated);
+        }
+
+        int velSpread = *(int *)(def + 0x50);
+        if (velSpread == 0) {
+            zero_vec(velocity);
+        } else {
+            int range = velSpread << 1;
+            ((float *)velocity)[0] = *(float *)(def + 0x58) +
+                                     (float)(AERandom_nextInt((char *)this + 0x10, range) - velSpread);
+            ((float *)velocity)[1] = *(float *)(def + 0x5c) +
+                                     (float)(AERandom_nextInt((char *)this + 0x10, range) - velSpread);
+            ((float *)velocity)[2] = *(float *)(def + 0x60) +
+                                     (float)(AERandom_nextInt((char *)this + 0x10, range) - velSpread);
+        }
+
+        void *slot = vec_at(P(this, 0x64), current);
+        Vector_assign(slot, velocity);
+
+        float drag = *(float *)(def + 0x64);
+        if (drag != 0.0f) {
+            Vector_mul(velocity, (char *)this + 0x1c, drag);
+            Vector_minus_equal(slot, velocity);
+        }
+        if (*(float *)(def + 0x68) != 0.0f) {
+            Vector_mul(velocity, right, *(float *)(def + 0x68));
+            Vector_plus_equal(slot, velocity);
+        }
+        if (*(float *)(def + 0x6c) != 0.0f) {
+            Vector_mul(velocity, up, *(float *)(def + 0x6c));
+            Vector_plus_equal(slot, velocity);
+        }
+        if (*(float *)(def + 0x70) != 0.0f) {
+            Vector_mul(velocity, dir, *(float *)(def + 0x70));
+            Vector_plus_equal(slot, velocity);
+        }
+
+        float phase;
+        if (*(int *)(def + 0x30) == 1) {
+            phase = (float)(i + 1);
+        } else {
+            phase = (float)i + (float)AERandom_nextInt((char *)this + 0x10, 10000) * 0.0001f;
+        }
+
+        zero_vec(particlePos);
+        if ((U(this, 0x34) & 0xc0) == 0) {
+            if (distance >= 1.0f) {
+                float step = ((U(this, 0x34) & 0x10) != 0) ? *(float *)(def + 0x2c)
+                                                           : distance / (float)emitCount;
+                Vector_mul(tmp, travelDiv, phase * step);
+                Vector_mul(tmp2, tmp, pathScale);
+                Vector_assign(particlePos, tmp2);
+                Vector_add(tmp2, baseDelta, particlePos);
+                Vector_assign(particlePos, tmp2);
+            } else {
+                Vector_assign(particlePos, matrixPos);
+                phase = (float)(i + 1);
+                emitCount = i + 1;
+            }
+        } else {
+            Vector_assign(particlePos, matrixPos);
+            phase = 0.0f;
+        }
+
+        if ((U8(this, 0x34) & 0x80) != 0) {
+            int posRange = (int)*(float *)(def + 0x78);
+            int range = posRange << 1;
+            ((float *)tmp)[0] = (float)(AERandom_nextInt((char *)this + 0x10, range) - posRange);
+            ((float *)tmp)[1] = (float)(AERandom_nextInt((char *)this + 0x10, range) - posRange);
+            ((float *)tmp)[2] = (float)(AERandom_nextInt((char *)this + 0x10, range) - posRange);
+            Vector_plus_equal(particlePos, tmp);
+        } else {
+            if (*(float *)(def + 0x78) != 0.0f) {
+                Vector_mul(tmp, right, *(float *)(def + 0x78));
+                Vector_plus_equal(particlePos, tmp);
+            }
+            if (*(float *)(def + 0x7c) != 0.0f) {
+                Vector_mul(tmp, up, *(float *)(def + 0x7c));
+                Vector_plus_equal(particlePos, tmp);
+            }
+            if (*(float *)(def + 0x80) != 0.0f) {
+                Vector_mul(tmp, dir, *(float *)(def + 0x80));
+                Vector_plus_equal(particlePos, tmp);
+            }
+            if (*(float *)(def + 0x84) != 0.0f) {
+                Vector_mul(tmp, dir, (float)AERandom_nextInt((char *)this + 0x10, (int)*(float *)(def + 0x84)));
+                Vector_plus_equal(particlePos, tmp);
+            }
+            int posSpread = *(int *)(def + 0x48);
+            if (posSpread != 0) {
+                ((float *)tmp)[0] = (float)(AERandom_nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
+                ((float *)tmp)[1] = 0.0f;
+                ((float *)tmp)[2] = (float)(AERandom_nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
+                Vector_plus_equal(particlePos, tmp);
+            }
+            int ySpread = *(int *)(def + 0x4c);
+            if (ySpread != 0) {
+                ((float *)particlePos)[1] +=
+                    (float)(AERandom_nextInt((char *)this + 0x10, ySpread << 1) - ySpread);
+            }
+        }
+
+        float life = *(float *)(def + 0x14);
+        float size0 = *(float *)(def + 0x1c);
+        float size1 = *(float *)(def + 0x20);
+        int randomLife = *(int *)(def + 0x18);
+        if (randomLife != 0) {
+            life += (float)AERandom_nextInt((char *)this + 0x10, randomLife);
+            size0 += (float)AERandom_nextInt((char *)this + 0x10, randomLife);
+            size1 += (float)AERandom_nextInt((char *)this + 0x10, randomLife);
+        }
+
+        if (*(float *)(def + 0x24) == 0.0f) {
+            zero_vec(emitVelocity);
+        } else {
+            Vector_mul_scalar(emitVelocity, *(float *)(def + 0x24), slot);
+        }
+
+        int colorFlag;
+        if (*(int *)(def + 0x3c) > 0) {
+            colorFlag = 1;
+        } else {
+            colorFlag = (*(float *)(def + 0x40) > 0.0f) ? 1 : 0;
+        }
+
+        EmitParticleFn emitFn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+        emitFn(this, particlePos, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
+               colorFlag, size0, size1, emitVelocity);
+
+        if (*(float *)(def + 0x64) != 0.0f) {
+            Vector_mul(tmp, (char *)this + 0x1c, *(float *)(def + 0x64));
+            Vector_mul(tmp2, tmp, 2.0f);
+            Vector_plus_equal(slot, tmp2);
+        }
+
+        float remaining = pathScale * invLen * ((float)emitCount - phase) * 1000.0f;
+        if (remaining > fdelta) {
+            remaining = fdelta;
+        }
+        UpdateParticleFn updateFn = *(UpdateParticleFn *)((char *)P(this, 0x0) + 0x14);
+        updateFn(this, current, remaining);
+
+        current = I(this, 0x50) + 1;
+        if (I(this, 0x48) <= current) {
+            current = 0;
+        }
+        I(this, 0x50) = current;
+    }
+}
+
+// ---- interpolateColor_181c1c.cpp ----
+__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
+
+void IParticleSystem::interpolateColor(int index, float *alpha, float *red, float *green, float *blue)
+{
+    int age = ((int *)P(this, 0x68))[index];
+    int setIndex = ((int8_t *)P(this, 0x6c))[index];
+    char *def = ParticleSet_definitions + (setIndex + setIndex * 4) * 32;
+
+    float t = (float)age / (float)*(int *)(def + 0x28);
+    if (t > 1.0f) {
+        t = 1.0f;
+    }
+    float inv = 1.0f - t;
+    uint32_t c0 = *(uint32_t *)(def + 0x34);
+    uint32_t c1 = *(uint32_t *)(def + 0x38);
+
+    float a0 = (float)(c0 >> 24);
+    float r0 = (float)((c0 >> 16) & 0xff);
+    float g0 = (float)((c0 >> 8) & 0xff);
+    float b0 = (float)(c0 & 0xff);
+    float a1 = (float)(c1 >> 24);
+    float r1 = (float)((c1 >> 16) & 0xff);
+    float g1 = (float)((c1 >> 8) & 0xff);
+    float b1 = (float)(c1 & 0xff);
+
+    const float scale = 0.003921568859368563f;
+    *alpha = (inv * a0 + t * a1) * scale;
+    *red = (inv * r0 + t * r1) * scale;
+    *green = (inv * g0 + t * g1) * scale;
+    *blue = (inv * b0 + t * b1) * scale;
+
+    int fadeFrames = *(int *)(def + 0x3c);
+    if (age < fadeFrames) {
+        float fade = (float)age / (float)fadeFrames;
+        if (U8(this, 0x45) != 0) {
+            *alpha *= fade;
+            *red *= fade;
+            *green *= fade;
+        } else {
+            *blue *= fade;
+        }
+    }
+}
+
+// ---- rotateUVs_182704.cpp ----
+struct LocalRandom {
+    char data[12];
+};
+
+
+float *IParticleSystem::rotateUVs(float *src, int seed, float *dst)
+{
+    LocalRandom random;
+    AERandom_seed_ctor(&random, (long long)seed);
+    unsigned value = (unsigned)AERandom_nextInt(&random, 40000);
+    unsigned inv = ~value;
+    ((uint32_t *)dst)[0] = ((uint32_t *)src)[value & 1];
+    ((uint32_t *)dst)[1] = ((uint32_t *)src)[inv & 1];
+    ((uint32_t *)dst)[2] = *(uint32_t *)((char *)src + (((value & 2) << 1) | 8));
+    ((uint32_t *)dst)[3] = *(uint32_t *)((char *)src + (((inv & 2) << 1) | 8));
+    AERandom_dtor(&random);
+    return dst;
+}
+
+// ---- IParticleSystem_1819c0.cpp ----
+__attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
+__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
+
+
+IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
+                                 bool mirror, bool alphaFade)
+{
+    F<PaintCanvas *>(this, 0x8) = canvas;
+    P(this, 0x0) = (char *)IParticleSystem_vtable + 8;
+    AERandom_ctor((char *)this + 0x10);
+
+    uint32_t *zero = (uint32_t *)((char *)this + 0x1c);
+    zero[0] = 0;
+    zero[1] = 0;
+    zero[2] = 0;
+    zero[3] = 0;
+    F<Matrix const *>(this, 0x18) = matrix;
+    I(this, 0x2c) = 0;
+    I(this, 0x30) = 0;
+
+    Array_ParticleSet_ctor((char *)this + 0x38);
+    U8(this, 0x4c) = mirror;
+    U8(this, 0x45) = alphaFade;
+    ArraySet_ParticleSet(&sets, (char *)this + 0x38);
+
+    I(this, 0x50) = 0;
+    I(this, 0x54) = -1;
+    I(this, 0x58) = -1;
+    U16(this, 0xc) = 0x101;
+    U8(this, 0xe) = 1;
+    I(this, 0x48) = 0;
+    I(this, 0x34) = 0;
+
+    int count = sets.length;
+    int *src = sets.data;
+    int firstFlags = 0;
+    uint32_t maxParticles = 0;
+    while (count != 0) {
+        int set = *src;
+        if (set != -1) {
+            char *def = ParticleSet_definitions + (set + set * 4) * 32;
+            uint32_t particles = *(uint32_t *)(def + 0x10);
+            if ((int)maxParticles <= (int)particles) {
+                maxParticles = particles;
+            }
+            U(this, 0x48) = maxParticles;
+            if (firstFlags == 0) {
+                firstFlags = *(int *)(def + 0xc);
+                I(this, 0x34) = firstFlags;
+            }
+        }
+        ++src;
+        --count;
+    }
+
+    unsigned long long bytes64 = (unsigned long long)maxParticles * 4u;
+    uint32_t bytes = (uint32_t)bytes64;
+    I(this, 0x60) = 0;
+    U8(this, 0x44) = 0;
+    if ((uint32_t)(bytes64 >> 32) != 0) {
+        bytes = 0xffffffffu;
+    }
+    P(this, 0x68) = operator_new(bytes);
+    P(this, 0x6c) = operator_new(maxParticles | ((int32_t)maxParticles >> 31));
+
+    for (int i = 0; i < (int)maxParticles; ++i) {
+        ((uint8_t *)P(this, 0x6c))[i] = 200;
+        maxParticles = U(this, 0x48);
+    }
+
+    U8(this, 0x5c) = 0;
+    U16(this, 0x4) = 0x101;
+}
+
+// ---- calcEmitterVelocity_181b90.cpp ----
+void IParticleSystem::calcEmitterVelocity(int delta)
+{
+    char position[12];
+    char scaled[12];
+    char diff[12];
+    MatrixGetPosition(position, F<Matrix const *>(this, 0x18));
+    Vector_sub(diff, position, (char *)this + 0x28);
+    Vector_mul(scaled, diff, 1000.0f / (float)delta);
+    Vector_assign((char *)this + 0x1c, scaled);
+    U8(this, 0x5) = 0;
+    Vector_assign((char *)this + 0x28, position);
+}
+
+// ---- emitManual_182790.cpp ----
+__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
+
+
+typedef void (*EmitParticleFn)(IParticleSystem *, Vector *, float, uint32_t, uint32_t, uint32_t, uint32_t,
+                              uint32_t, int, float, float, void *);
+
+void IParticleSystem::emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime)
+{
+    if (particleSet != -1) {
+        int current = I(this, 0x50);
+        int set = ((int *)P(this, 0x3c))[particleSet];
+        ((uint8_t *)P(this, 0x6c))[current] = (uint8_t)set;
+        char *def = ParticleSet_definitions + (set + set * 4) * 32;
+        ((int *)P(this, 0x68))[current] = 0;
+
+        uint32_t uv[4];
+        uint32_t rotated[4];
+        uv[0] = *(uint32_t *)(def + 0x88);
+        uv[1] = *(uint32_t *)(def + 0x90);
+        uv[2] = *(uint32_t *)(def + 0x8c);
+        uv[3] = *(uint32_t *)(def + 0x94);
+        uint32_t *uvp = uv;
+        if ((U8(this, 0x37) & 0x80) != 0) {
+            uvp = (uint32_t *)rotateUVs((float *)uv, current, (float *)rotated);
+        }
+
+        char randomVelocity[12];
+        int spread = *(int *)(def + 0x50);
+        if (spread == 0) {
+            *(uint32_t *)(randomVelocity + 0) = 0;
+            *(uint32_t *)(randomVelocity + 4) = 0;
+            *(uint32_t *)(randomVelocity + 8) = 0;
+        } else {
+            int range = spread << 1;
+            ((float *)randomVelocity)[0] = (float)(AERandom_nextInt((char *)this + 0x10, range) - spread);
+            ((float *)randomVelocity)[1] = *(float *)(def + 0x5c) +
+                                           (float)(AERandom_nextInt((char *)this + 0x10, range) - spread);
+            ((float *)randomVelocity)[2] = (float)(AERandom_nextInt((char *)this + 0x10, range) - spread);
+        }
+
+        void *slot = vec_at(P(this, 0x64), current);
+        Vector_assign(slot, randomVelocity);
+
+        if (velocity != 0) {
+            float drag = *(float *)(def + 0x64);
+            if (drag != 0.0f) {
+                char tmp[12];
+                Vector_mul(tmp, (void *)velocity, drag);
+                Vector_minus_equal(slot, tmp);
+            }
+        }
+
+        int posSpread = *(int *)(def + 0x48);
+        if (posSpread != 0) {
+            char randomPosition[12];
+            ((float *)randomPosition)[0] =
+                (float)(AERandom_nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
+            ((float *)randomPosition)[1] = 0.0f;
+            ((float *)randomPosition)[2] =
+                (float)(AERandom_nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
+            Vector_plus_equal(&position, randomPosition);
+        }
+
+        int ySpread = *(int *)(def + 0x4c);
+        if (ySpread != 0) {
+            position.y += (float)(AERandom_nextInt((char *)this + 0x10, ySpread << 1) - ySpread);
+        }
+
+        if (lifetime < 0.0f) {
+            lifetime = *(float *)(def + 0x14);
+        }
+
+        char emitVelocity[12];
+        int randomLife = *(int *)(def + 0x18);
+        if (randomLife == 0) {
+            float velocityScale = *(float *)(def + 0x24);
+            if (velocityScale == 0.0f) {
+                *(uint32_t *)(emitVelocity + 0) = 0;
+                *(uint32_t *)(emitVelocity + 4) = 0;
+                *(uint32_t *)(emitVelocity + 8) = 0;
+            } else {
+                Vector_mul_scalar(emitVelocity, velocityScale, slot);
+            }
+
+            EmitParticleFn fn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+            fn(this, &position, lifetime, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
+               *(int *)(def + 0x3c) > 0, *(float *)(def + 0x1c), *(float *)(def + 0x20), emitVelocity);
+        } else {
+            float life = lifetime + (float)AERandom_nextInt((char *)this + 0x10, randomLife);
+            float size0 = *(float *)(def + 0x1c) + (float)AERandom_nextInt((char *)this + 0x10, randomLife);
+            float size1 = *(float *)(def + 0x20) + (float)AERandom_nextInt((char *)this + 0x10, randomLife);
+            float velocityScale = *(float *)(def + 0x24);
+            if (velocityScale == 0.0f) {
+                *(uint32_t *)(emitVelocity + 0) = 0;
+                *(uint32_t *)(emitVelocity + 4) = 0;
+                *(uint32_t *)(emitVelocity + 8) = 0;
+            } else {
+                Vector_mul_scalar(emitVelocity, velocityScale, slot);
+            }
+
+            EmitParticleFn fn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+            fn(this, &position, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
+               *(int *)(def + 0x3c) > 0, size0, size1, emitVelocity);
+        }
+
+        float drag = *(float *)(def + 0x64);
+        if (drag != 0.0f) {
+            char tmp[12];
+            char tmp2[12];
+            Vector_mul(tmp, (char *)this + 0x1c, drag);
+            Vector_mul(tmp2, tmp, 2.0f);
+            Vector_plus_equal(slot, tmp2);
+        }
+
+        current = I(this, 0x50) + 1;
+        if (I(this, 0x48) <= current) {
+            current = 0;
+        }
+        I(this, 0x50) = current;
+    }
+}
+
+// ---- resetEmitterVelocity_181b34.cpp ----
+void IParticleSystem::resetEmitterVelocity()
+{
+    char value[12] = {};
+    Vector_assign((char *)this + 0x1c, value);
+    *(volatile uint8_t *)((char *)this + 0x5) = 1;
+    char *matrixValue = value;
+    MatrixGetPosition(matrixValue, F<Matrix const *>(this, 0x18));
+    Vector_assign((char *)this + 0x28, matrixValue);
+    *(volatile uint8_t *)((char *)this + 0x4) = 0;
+}
+
+// ---- _IParticleSystem_182c1c.cpp ----
+__attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
+
+
+IParticleSystem::~IParticleSystem()
+{
+    volatile char *random = (char *)this;
+    *(void * volatile *)random = (char *)IParticleSystem_vtable + 8;
+    random += 0x10;
+    Array_ParticleSet_dtor((char *)(random + 0x28));
+    AERandom_dtor((void *)random);
+}
