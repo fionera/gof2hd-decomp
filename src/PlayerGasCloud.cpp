@@ -1,4 +1,9 @@
 #include "gof2/PlayerGasCloud.h"
+#include "gof2/Hud.h"
+#include "gof2/Level.h"
+#include "gof2/Mission.h"
+#include "gof2/Player.h"
+#include "gof2/PlayerEgo.h"
 
 
 extern "C" void AEGeometry_translate_v(void *geom, Vector const &v);
@@ -6,10 +11,7 @@ extern "C" void AEGeometry_setPosition_v(void *geom, Vector const &v);
 extern "C" Vector AEGeometry_getPosition_ret(void *geom);
 extern "C" void operator_delete(void *p);
 extern "C" void *operator_new(uint32_t);
-extern "C" void Player_ctor(void *self, int a, int hp, int b, int c, int d);
 extern "C" char PlayerGasCloud_vtable;
-extern "C" void Player_setKIPlayer(void *player, void *ki);
-extern "C" void Player_setMaxHitpoints(void *player, int hp);
 extern "C" void Vector_assign(void *dst, const void *src);   // Vector::operator=(Vector const&)
 extern "C" void AEGeometry_ctor(void *self, uint16_t meshId, void *canvas, bool b);
 extern "C" void ArrayReleaseClasses_AEGeometry(void *arr);
@@ -92,8 +94,6 @@ uint8_t PlayerGasCloud::hasExploded()
 }
 
 // ---- PlayerGasCloud_1763cc.cpp ----
-extern "C" void KIPlayer_ctor(void *self, int id, int faction, void *player, void *geom,
-                              float x, float y, float z, bool flag);
 
 __attribute__((visibility("hidden"))) extern void **g_pgc_canvas;
 
@@ -101,15 +101,14 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
                                Vector const &param_4)
 {
     void *this_00 = operator_new(0x114);
-    Player_ctor(this_00, 0, 9999999, 0, 0, 0);
-    KIPlayer_ctor(this, param_1, -1, this_00, param_3, param_4.x, param_4.y, param_4.z, false);
+    ((Player *)(this_00))->ctor(0, 9999999, 0, 0, 0);
 
     *(void **)this = &PlayerGasCloud_vtable + 8;
     this->field_0x128 = 0;
     this->field_0x12c = 0;
     this->field_0x130 = 0;
-    Player_setKIPlayer(this->field_0x4, this);
-    Player_setMaxHitpoints(this->field_0x4, 1);
+    ((Player *)(this->field_0x4))->setKIPlayer(this);
+    ((Player *)(this->field_0x4))->setMaxHitpoints(1);
 
     void **vt = *(void ***)this;
     typedef void (*pfn)(void *, Vector const &);
@@ -221,7 +220,6 @@ __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 
 void *operator_new(uint32_t size);
 
-void KIPlayer_setActive(void *self, bool active);
 
 // Array<T> default constructors (all share the 0xc-byte container layout).
 void ArrayGeom_ctor(void *self);    // Array<AEGeometry*>
@@ -268,7 +266,6 @@ extern "C" void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, f
 
     if (self->field_0x154 == 0) {
         self->field_0x88 = 3;
-        KIPlayer_setActive(self, false);
         self->field_0x154 = 1;
 
         void *aGeom = operator_new(0xc);  ArrayGeom_ctor(aGeom);
@@ -354,8 +351,6 @@ __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 
 void *Level_getPlayer();
 void *PlayerEgo_getTurretPosition(void *ego, Vector *out);
-int PlayerEgo_isInTurretMode(void *ego);
-int PlayerEgo_getHUD(void *ego);
 int PlayerEgo_getCampaignProgress(void *ego);
 
 void AEGeometry_getPosition(void *geom, Vector *out);
@@ -372,14 +367,11 @@ void Ship_addCargo(void *ship, void *item);
 void *Item_makeItem(void *def);
 int Item_getAttribute(void *item);
 
-void Hud_catchCargo(int hud, int itemId, bool a, bool b, bool c, bool d, bool e);
 
 float FModSound_stop(void *snd);
 void FModSound_play(void *snd, void *a, void *b, float vol);
 
-int Mission_isEmpty(void *mission);
 
-void Level_createRadioMessage(void *level, int id, int type);
 
 void *PaintCanvas_TransformGetTransform(void *canvas);
 void Transform_Update(void *transform, int withChildren, bool b);
@@ -450,7 +442,7 @@ extern "C" void PlayerGasCloud_update(void *self, int dt)
                 bool collected = false;
                 if (dist < g_pgcu_catchDist && *(int *)(s + 0x158) >= 2000) {
                     void *p2 = Level_getPlayer();
-                    if (PlayerEgo_isInTurretMode(p2) != 0 &&
+                    if (((PlayerEgo *)(p2))->isInTurretMode() != 0 &&
                         *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4) >= g_pgcu_minTimer) {
                         *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4) = g_pgcu_resetTimer;
                         void *ship = Status_getShip();
@@ -460,26 +452,26 @@ extern "C" void PlayerGasCloud_update(void *self, int dt)
                                 float v = FModSound_stop(g_pgcu_pickupSound);
                                 FModSound_play(g_pgcu_pickupSound, (void *)0x8d0, (void *)0, v);
                                 void *ego = Level_getPlayer();
-                                int hud = PlayerEgo_getHUD(ego);
-                                Hud_catchCargo(hud, *(int *)(s + 0x160), false, true, false, true, false);
+                                int hud = ((PlayerEgo *)(ego))->getHUD();
+                                ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), false, true, false, true, false);
                             }
                         } else {
                             void *def = *(void **)(*(int *)(*(int *)g_pgcu_itemDefs + 4) + itemId * 4);
                             Item_makeItem(def);
                             if (Level_getPlayer() != 0) {
                                 void *ego = Level_getPlayer();
-                                int hud = PlayerEgo_getHUD(ego);
-                                Hud_catchCargo(hud, *(int *)(s + 0x160), true, false, false, false, false);
+                                int hud = ((PlayerEgo *)(ego))->getHUD();
+                                ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), true, false, false, false, false);
 
                                 void *camp = *(void **)g_pgcu_campaign;
                                 if (*(char *)((char *)camp + 0x2d) == 0 &&
                                     Status_getCurrentCampaignMission() > 0x8e) {
                                     Vector missionBuf;
                                     Status_getMission(&missionBuf);
-                                    if (Mission_isEmpty(&missionBuf) != 0 &&
+                                    if (((Mission *)(&missionBuf))->isEmpty() != 0 &&
                                         *(int *)(s + 0x160) == 0xcc) {
                                         *(char *)((char *)camp + 0x2d) = 1;
-                                        Level_createRadioMessage(*(void **)(s + 0x54), 0x1a, 0);
+                                        ((Level *)(*(void **)(s + 0x54)))->createRadioMessage(0x1a, 0);
                                     }
                                 }
                             }

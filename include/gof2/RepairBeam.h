@@ -21,6 +21,12 @@ namespace AbyssEngine {
 namespace AEMath {
 
 }
+
+    // ---- methods (converted from free functions) ----
+    RepairBeam * ctor(int shipIndex, int sort);
+    RepairBeam * dtor();
+    void render();
+    void update(int dt, void *level, void *hud);
 }
 using Vector = AbyssEngine::AEMath::Vector;
 

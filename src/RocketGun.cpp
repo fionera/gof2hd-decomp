@@ -1,4 +1,5 @@
 #include "gof2/RocketGun.h"
+#include "gof2/PlayerEgo.h"
 #include "gof2/Gun.h"
 #include "gof2/Player.h"
 #include "gof2/Radar.h"
@@ -26,13 +27,8 @@ extern "C" int ParticleSystemManager_addSystem(int manager, int transform, int t
 extern "C" void ParticleSystemManager_enableSystemEmit(int manager, int system, bool enabled);
 extern "C" void ParticleSystemManager_attachSystem(int manager, int system, int zero);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func)(void *out, void *in);
-extern "C" int Gun_getEnemies(void *gun);
-extern "C" int Gun_isPlayerGun(void *gun);
-extern "C" void *Player_getKIPlayer(void *player);
 extern "C" int Player_getEnemies(void *player);
-extern "C" void *Player_getEnemy(void *player, int index);
 extern "C" void *Level_getPlayer(void *level);
-extern "C" int PlayerEgo_isInFreeLookMode(void *player);
 extern "C" void Player_getPosition(void *out, void *player);
 extern "C" void Vector_sub(void *out, void *a, void *b);
 extern "C" void *Vector_assign(void *dst, void *src);
@@ -43,8 +39,6 @@ extern "C" void Vector_imul(void *dst, float value);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder3;
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func2)(void *out, void *in);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_scale_func)(void *out, void *in, float scale);
-extern "C" void Gun_update(void *gun, int elapsed);
-extern "C" void PlayerEgo_getPosition(void *out, void *player);
 extern "C" void MatrixRotateVector(void *out, void *matrix, void *vec);
 extern "C" void AEGeometry_setPosition(void *geom, void *pos);
 extern "C" void AEGeometry_setScaling(void *geom, float x, float y, float z);
@@ -269,22 +263,22 @@ void RocketGun::seekEnemy(int unused, int index)
     char tmp0[12];
     char enemyPos[12];
 
-    int hasEnemies = Gun_getEnemies(this->field_0x8);
+    int hasEnemies = ((Gun *)(this->field_0x8))->getEnemies();
     void *enemy;
 
     if (F<void *>(this->field_0x8, 0x4) == 0)
         goto fallback;
-    if (Gun_isPlayerGun(this->field_0x8) != 0)
+    if (((Gun *)(this->field_0x8))->isPlayerGun() != 0)
         goto fallback;
     if (F<void *>(this->field_0x8, 0x4) == 0)
         goto fallback;
     enemy = F<void *>(this->field_0x8, 0x4);
-    if (F<int>(Player_getKIPlayer(enemy), 0x38) < 0)
+    if (F<int>(((Player *)(enemy))->getKIPlayer(), 0x38) < 0)
         goto fallback;
     if (Player_getEnemies(F<void *>(this->field_0x8, 0x4)) == 0)
         goto fallback;
     enemy = F<void *>(this->field_0x8, 0x4);
-    enemy = Player_getEnemy(enemy, F<int>(Player_getKIPlayer(enemy), 0x38));
+    enemy = ((Player *)(enemy))->getEnemy(F<int>(((Player *)(enemy))->getKIPlayer(), 0x38));
     goto have_enemy;
 
 fallback:
@@ -297,7 +291,7 @@ fallback:
         return;
     if (F<uint8_t>(enemy, 0x76) == 0 || F<uint8_t>(enemy, 0x74) != 0)
         return;
-    if (PlayerEgo_isInFreeLookMode(Level_getPlayer(F<void *>(this->field_0xb0, 0x0))) != 0)
+    if (((PlayerEgo *)(Level_getPlayer(F<void *>(this->field_0xb0, 0x0))))->isInFreeLookMode() != 0)
         return;
     enemy = F<void *>(F<void *>(this->field_0xb0, 0x4), 0x4);
 
@@ -338,11 +332,11 @@ void RocketGun::update(int elapsed)
     char tmp[12];
     Vector zero = {0.0f, 0.0f, 0.0f};
 
-    Gun_update(this->field_0x8, elapsed);
+    ((Gun *)(this->field_0x8))->update(elapsed);
 
     if (this->field_0x1c != 0 && F<uint8_t>(this->field_0x8, 0xa9) != 0) {
         void *player = Level_getPlayer(this->field_0xc);
-        PlayerEgo_getPosition(matrix, player);
+        ((PlayerEgo *)(matrix))->getPosition();
         *(uint32_t *)gunVec = F<uint32_t>(this->field_0x8, 0x7c);
         *(uint32_t *)(gunVec + 4) = F<uint32_t>(this->field_0x8, 0x80);
         *(float *)(gunVec + 8) = F<float>(this->field_0x8, 0x84) + kMuzzleZAdd;
@@ -446,7 +440,7 @@ void RocketGun::update(int elapsed)
             typedef void (*Fn)(RocketGun *, int);
             Fn fn = *(Fn *)(*(char **)this + 0x10);
             fn(this, elapsed);
-            Gun_update(this->field_0x8, elapsed);
+            ((Gun *)(this->field_0x8))->update(elapsed);
             gun = this->field_0x8;
         }
     }

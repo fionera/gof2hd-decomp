@@ -1,4 +1,9 @@
 #include "gof2/ModMainMenu.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/GameText.h"
+#include "gof2/ImageFactory.h"
+#include "gof2/Layout.h"
+#include "gof2/RecordHandler.h"
 
 
 extern "C" void *CutScene_dtor(void *self);
@@ -7,9 +12,6 @@ extern "C" void operator_delete(void *ptr);
 extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
 extern "C" int GameText_getLanguage();
 extern "C" void Globals_loadFont(int obj, int language);
-extern "C" void Layout_reload(void *layout);
-extern "C" void ImageFactory_reload(void *factory);
-extern "C" void Layout_initTip(void *layout);
 extern "C" void ModMainMenu_releaseTail(void *sound);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModMainMenu_resumeTail(int obj, int one, int arg);
@@ -34,9 +36,7 @@ extern "C" int PaintCanvas_GetTextWidth(int canvas, void *str, int text);
 extern "C" int PaintCanvas_GetImage2DHeight(int canvas, int image);
 extern "C" void CutScene_render2D(void *scene);
 extern "C" void MenuTouchWindow_draw(void *window);
-extern "C" long long ApplicationManager_GetSystemTimeMillis(void *app);
 extern "C" float AEMath_Sinf(float value);
-extern "C" int GameText_getText(int text, int id);
 extern "C" void ModMainMenu_r2dTail(int canvas);
 extern "C" void Globals_startNewSoundResourceList(void *soundRes);
 extern "C" void Status_resetGame(void *status);
@@ -52,16 +52,12 @@ extern "C" void *Status_getSystem(void *status);
 extern "C" int SolarSystem_getTextureIndex(void *system);
 extern "C" void PaintCanvas_TextureCreate(int canvas, int texture, int *out, int flags);
 extern "C" void PaintCanvas_ChangeCubeTexture(int canvas, int texture);
-extern "C" void *RecordHandler_recordStoreReadPreview(void *record, int slot);
 extern "C" void *GameRecord_dtor(void *record);
-extern "C" void RecordHandler_saveOptions(void *record);
 extern "C" void Status_setPlayingTime(int time, long long zero);
 extern "C" void MenuTouchWindow_ctor(void *self, int mode);
 extern "C" void MenuTouchWindow_showSupernovaMessage(void *self);
 extern "C" void PaintCanvas_Image2DCreate(void *factory, int image, int *out);
 extern "C" void Globals_playMusicAndFadeOutCurrent(int music);
-extern "C" int ApplicationManager_GetElapsedTimeMillis(void *app);
-extern "C" void Layout_update(void *layout, int elapsed);
 extern "C" void CutScene_update(void *scene, int elapsed);
 extern "C" void MenuTouchWindow_update(void *window, int elapsed);
 
@@ -107,9 +103,9 @@ extern "C" void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
 
     void **reload = g_ModMainMenu_releaseReload;
     if (*reload != 0) {
-        Layout_reload(*reload);
-        ImageFactory_reload(*g_ModMainMenu_releaseImageFactory);
-        Layout_initTip(*reload);
+        ((Layout *)(*reload))->reload();
+        ((ImageFactory *)(*g_ModMainMenu_releaseImageFactory))->reload();
+        ((Layout *)(*reload))->initTip();
     }
 
     void *sound = *g_ModMainMenu_releaseSound;
@@ -248,10 +244,10 @@ extern "C" void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
             int canvas = *imageHolder;
             void **timeHolder = g_ModMainMenu_r2d_time;
             float pulseA =
-                AEMath_Sinf((float)ApplicationManager_GetSystemTimeMillis(*timeHolder) *
+                AEMath_Sinf((float)((ApplicationManager *)(*timeHolder))->GetSystemTimeMillis() *
                             0.003f);
             float pulseB =
-                AEMath_Sinf((float)ApplicationManager_GetSystemTimeMillis(*timeHolder) *
+                AEMath_Sinf((float)((ApplicationManager *)(*timeHolder))->GetSystemTimeMillis() *
                             0.003f);
             float signedPulse = pulseA > 0.0f ? pulseB : -pulseB;
             int alpha = (unsigned int)(signedPulse * 255.0f);
@@ -264,12 +260,12 @@ extern "C" void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
                 void *str;
             };
             DrawTarget draw = {*imageHolder, *stringHolder};
-            int text = GameText_getText(*textIdHolder, 0xc7);
+            int text = ((GameText *)(*textIdHolder))->getText(0xc7);
 
             int screenW = *g_ModMainMenu_r2d_screenW;
             void *measureStr = *stringHolder;
             int measureCanvas = *imageHolder;
-            int measureText = GameText_getText(*textIdHolder, 0xc7);
+            int measureText = ((GameText *)(*textIdHolder))->getText(0xc7);
             int textWidth = PaintCanvas_GetTextWidth(measureCanvas, measureStr, measureText);
 
             int image = I(self, 0x20);
@@ -360,13 +356,13 @@ extern "C" void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
     options = g_ModMainMenu_initOptions;
     if (UC(options, 0x48) == 0) {
         recordHolder = g_ModMainMenu_initRecord;
-        record = RecordHandler_recordStoreReadPreview(*recordHolder, 0);
+        record = ((RecordHandler *)(*recordHolder))->recordStoreReadPreview(0);
         if (record != 0) {
             UC(self, 0x29) = 1;
             operator_delete(GameRecord_dtor(record));
         }
         UC(options, 0x48) = 1;
-        RecordHandler_saveOptions(*recordHolder);
+        ((RecordHandler *)(*recordHolder))->saveOptions();
     }
 
     Status_setPlayingTime(*g_ModMainMenu_initPlayingTime, 0);
@@ -414,27 +410,27 @@ extern "C" void FModSound_updateAll(
 
 extern "C" void _ZN11ModMainMenu8OnUpdateEv(ModMainMenu *self)
 {
-    int elapsed = ApplicationManager_GetElapsedTimeMillis(self->f_8);
+    int elapsed = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis();
     int frameTime;
     if (elapsed < 0x97 &&
-        (elapsed = ApplicationManager_GetElapsedTimeMillis(self->f_8)) < 0) {
+        (elapsed = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis()) < 0) {
         frameTime = 0;
     } else {
-        elapsed = ApplicationManager_GetElapsedTimeMillis(self->f_8);
+        elapsed = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis();
         if (elapsed > 0x96)
             frameTime = 0x96;
         else
-            frameTime = ApplicationManager_GetElapsedTimeMillis(self->f_8);
+            frameTime = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis();
     }
 
     I(self, 0x14) = frameTime;
 
     void **layout = g_ModMainMenu_updateLayout;
-    Layout_update(*layout, frameTime);
+    ((Layout *)(*layout))->update(frameTime);
     CutScene_update(self->f_1c, I(self, 0x14));
     if (UC(self, 0x28) == 0)
         MenuTouchWindow_update(self->f_18, I(self, 0x14));
-    Layout_update(*layout, I(self, 0x14));
+    ((Layout *)(*layout))->update(I(self, 0x14));
 
     void **listener = g_ModMainMenu_updateListener;
     I(self, 0x24) = I(self, 0x14) + I(self, 0x24);

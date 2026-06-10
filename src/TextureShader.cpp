@@ -1,4 +1,5 @@
 #include "gof2/TextureShader.h"
+#include "gof2/String.h"
 
 // Engine / Mesh are opaque to this translation unit; their fields are accessed
 // by raw offset since their real layouts live in other (non-batch) classes.
@@ -74,9 +75,9 @@ extern "C" AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::
     self->field_0x0 = (char *)g_TextureShader_vtable + 8;
     *target = *source;
 
-    AbyssEngine::String_ctor_char((String *)frame.nameStorage, "TextureShader", false);
-    AbyssEngine::String_assign(&self->field_0xc, (String *)frame.nameStorage);
-    AbyssEngine::String_dtor((String *)frame.nameStorage);
+    AbyssEngine::((String *)((String *)frame.nameStorage))->ctor_char("TextureShader", false);
+    AbyssEngine::((String *)(&self->field_0xc))->assign((String *)frame.nameStorage);
+    AbyssEngine::((String *)((String *)frame.nameStorage))->dtor();
 
     uint32_t guardDelta =
         (uint32_t)((__UINTPTR_TYPE__)__stack_chk_guard - (__UINTPTR_TYPE__)frame.cookie);

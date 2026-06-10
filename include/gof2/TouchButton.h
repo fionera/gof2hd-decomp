@@ -10,7 +10,39 @@
 struct TouchButton;    // opaque; we only ever take a TouchButton* and offset-cast.
 
 // ---- tiny offset-cast helpers -------------------------------------------------
-static inline char*           B (void* p, int off) { return (char*)p + off; }
+static inline char*           B (void* p, int off) { return (char*)p + off; 
+    // ---- methods (converted from free functions) ----
+    bool OnTouchBegin(int px, int py);
+    unsigned int OnTouchEnd(int px, int py);
+    unsigned int OnTouchMove(int px, int py);
+    TouchButton * ctor5(String *text, int x, int y, int p4, unsigned char p5);
+    TouchButton * ctor6(int x, int y, String *text, int p4, int p5, unsigned char p6);
+    TouchButton * ctor7(String *text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7);
+    void draw();
+    void dtor();
+    int getHeight();
+    RetStr getText();
+    int getWidth();
+    int init(String *text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y, unsigned char flags0, unsigned char flags1);
+    uint8_t isTouched();
+    uint8_t isVisible();
+    void replaceTextKeepSize(String *text);
+    void resetTouch();
+    void setAlwaysPressed(bool value);
+    void setHalfTransparent(bool value);
+    void setNumberText(String *value);
+    void setPosition(int x, int y, unsigned char flags);
+    void setPosition2(int x, int y);
+    void setPressProgress(float value);
+    void setPressProgressHighlight(bool value);
+    void setSplitText(String *value);
+    void setText(String *text);
+    void setTextColor(int color);
+    void setVisible(bool value);
+    void setYPosition(int y);
+    bool touchedInside(int px, int py);
+    void translate(int dx, int dy);
+}
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
 static inline unsigned int&   U (void* p, int off) { return *(unsigned int*)((char*)p + off); }
 static inline float&          F (void* p, int off) { return *(float*)((char*)p + off); }

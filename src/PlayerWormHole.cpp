@@ -1,13 +1,16 @@
 #include "gof2/PlayerWormHole.h"
+#include "gof2/GameText.h"
+#include "gof2/Hud.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
+#include "gof2/PlayerEgo.h"
+#include "gof2/Station.h"
+#include "gof2/String.h"
 
 
 extern "C" void *PlayerStaticFar_dtor(void *self);
 extern "C" void operator_delete(void *self);
 extern "C" void PlayerStaticFar_ctor(PlayerWormHole *self, int playerId, AEGeometry *geometry, float x, float y, float z);
-extern "C" AbyssEngine::String *GameText_getText(void *gameText, int id);
-extern "C" void String_assign(AbyssEngine::String *dst, AbyssEngine::String *src);
-extern "C" void KIPlayer_setVisible(PlayerWormHole *self, bool visible);
-extern "C" void Player_setRadius(void *player, int radius);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transform);
 extern "C" void Transform_SetAnimationState(void *transform, int state, int frame);
 extern "C" void AEGeometry_render(void *geometry);
@@ -17,7 +20,6 @@ extern "C" void Transform_Update(void *transform, long long elapsed, bool flag);
 extern "C" int Status_getCurrentCampaignMission(void *status);
 extern "C" int Status_inAlienOrbit(void *status);
 extern "C" void *Status_getStation(void *status);
-extern "C" int Station_isAttackedByAliens(void *station);
 extern "C" void AEGeometry_setVisible(void *geometry, bool visible);
 extern "C" void PlayerStaticFar_update(PlayerWormHole *self, int elapsed);
 extern "C" int PaintCanvas_CameraGetCurrent(void *canvas);
@@ -29,11 +31,6 @@ extern "C" void Vector_sub_assign(Vector *self, Vector *rhs);
 extern "C" void VectorNormalize(void *out, Vector *value);
 extern "C" void AEGeometry_setDirection(void *geometry, Vector *direction, Vector *up);
 extern "C" void *Level_getPlayer(void *level);
-extern "C" void PlayerEgo_getPosition(void *out, void *player);
-extern "C" int PlayerEgo_goingToWormhole(void *player);
-extern "C" void *PlayerEgo_getHUD(void *player);
-extern "C" void Hud_hudEvent(void *hud, int event, void *player, int value);
-extern "C" void PlayerEgo_setAutoPilot(void *player, bool active);
 
 // ---- isShrinking_a5324.cpp ----
 
@@ -80,10 +77,10 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
     PlayerStaticFar_ctor(this, playerId, geometry, x, y, z);
     void **textSource = g_playerWormHole_text;
     this->field_0x0 = g_playerWormHole_vtable + 8;
-    AbyssEngine::String *text = GameText_getText(*textSource, 0x221);
-    String_assign((AbyssEngine::String *)((char *)this + 0x18), text);
-    KIPlayer_setVisible(this, visible);
-    Player_setRadius(this->field_0x4, 40000);
+    AbyssEngine::String *text = ((GameText *)(*textSource))->getText(0x221);
+    ((String *)((AbyssEngine::String *)((char *)this + 0x18)))->assign(text);
+    ((KIPlayer *)(this))->setVisible(visible);
+    ((Player *)(this->field_0x4))->setRadius(40000);
     void *transform = PaintCanvas_TransformGetTransform(*g_playerWormHole_canvas, F<int>(this->field_0x8, 0xc));
     Transform_SetAnimationState(transform, 2, 0);
     this->field_0x15c = 1;
@@ -200,7 +197,7 @@ void PlayerWormHole::update(int elapsed)
         if (current > 63000) {
             int alien = Status_inAlienOrbit(status);
             if (alien != 0 ||
-                Station_isAttackedByAliens(Status_getStation(status)) != 0) {
+                ((Station *)(Status_getStation(status)))->isAttackedByAliens() != 0) {
                 bool closeWormhole = false;
                 if (this->field_0x15c != 0) {
                     int alienNow = Status_inAlienOrbit(status);
@@ -236,7 +233,7 @@ void PlayerWormHole::update(int elapsed)
                     void *level = this->field_0x54;
                     if (mission == 0x1d || mission == 0x29) {
                         void *player = Level_getPlayer(level);
-                        PlayerEgo_getPosition(tmpOut, player);
+                        ((PlayerEgo *)(tmpOut))->getPosition();
                         VectorAssignFn assign = g_playerWormHole_update_vectorAssign;
                         assign(position, tmpOut);
 
@@ -250,14 +247,14 @@ void PlayerWormHole::update(int elapsed)
                     setPosition(this, (float)x, (float)y, (float)z);
 
                     void *player = Level_getPlayer(this->field_0x54);
-                    if (PlayerEgo_goingToWormhole(player) != 0) {
+                    if (((PlayerEgo *)(player))->goingToWormhole() != 0) {
                         GetPlayerFn getPlayer = g_playerWormHole_update_getPlayer;
                         void *target = getPlayer(this->field_0x54);
-                        void *hud = PlayerEgo_getHUD(target);
+                        void *hud = ((PlayerEgo *)(target))->getHUD();
                         target = getPlayer(this->field_0x54);
-                        Hud_hudEvent(hud, 6, target, 0);
+                        ((Hud *)(hud))->hudEvent(6, target, 0);
                         target = getPlayer(this->field_0x54);
-                        PlayerEgo_setAutoPilot(target, false);
+                        ((PlayerEgo *)(target))->setAutoPilot(false);
                     }
                 } else {
                     this->field_0xf5 = 0;

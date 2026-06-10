@@ -21,6 +21,17 @@ struct StatusWindow;
 
 namespace AbyssEngine {
 
+
+    // ---- methods (converted from free functions) ----
+    int OnTouchBegin(int param_1, int param_2);
+    void OnTouchEnd(int x, int y);
+    int OnTouchMove(int param_1, int param_2);
+    StatusWindow * ctor();
+    void draw();
+    float getRelativeScrollHeight();
+    float getRelativeScrollStartPos();
+    void reInit();
+    void update();
 }
 typedef AbyssEngine::String String;
 

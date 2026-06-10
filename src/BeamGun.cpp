@@ -15,15 +15,12 @@ extern "C" BeamGun *_ZN7BeamGunD1Ev(BeamGun *self);
 extern "C" void BeamGun_setEnemy_tail(void *data);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, PaintCanvas *canvas, bool flag);
-extern "C" int Gun_isPlayerGun(Gun *self);
-extern "C" void Gun_update(Gun *self, int elapsed);
 extern "C" Transform *PaintCanvas_TransformGetTransform(PaintCanvas *canvas, int transformId);
 extern "C" void Transform_SetAnimationState(Transform *self, int state, void *arg);
 extern "C" void Transform_Update(Transform *self, long long elapsed, bool flag);
 extern "C" void AEGeometry_setScaling(AEGeometry *self, float x, float y, float z);
 extern "C" void AEGeometry_setDirection(AEGeometry *self, const Vector *direction, const void *up);
 extern "C" PlayerEgo *Level_getPlayer(Level *self);
-extern "C" void PlayerEgo_getPosition(void *out, PlayerEgo *self);
 extern "C" int Vector_ne(const Vector *lhs, const Vector *rhs);
 extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *self);
 extern "C" void Matrix_mul(Matrix *out, const Matrix *lhs, const Matrix *rhs);
@@ -124,7 +121,7 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
     AEGeometry_ctor(geometry, (uint16_t)primaryMesh, (PaintCanvas *)*canvasHolder, false);
     this->field_0x18 = geometry;
 
-    mesh = Gun_isPlayerGun(gun);
+    mesh = ((Gun *)(gun))->isPlayerGun();
     if (mesh == 0 ||
         (mesh = BeamGun_secondaryMeshes[gun->field_0x58], mesh < 0)) {
         geometry = 0;
@@ -163,7 +160,7 @@ void BeamGun::update(int elapsed)
     char position[12];
 
     Gun *gun = this->field_0x8;
-    Gun_update(gun, elapsed);
+    ((Gun *)(gun))->update(elapsed);
 
     gun = this->field_0x8;
     if (gun->field_0x4c == 0) {
@@ -201,7 +198,7 @@ void BeamGun::update(int elapsed)
     AEGeometry_setDirection(this->field_0x18, (Vector *)((char *)gun + 0x90), up);
 
     PlayerEgo *player = Level_getPlayer(this->field_0xc);
-    PlayerEgo_getPosition(&position, player);
+    ((PlayerEgo *)(&position))->getPosition();
 
     up->x = 0.0f;
     up->y = 0.0f;
@@ -242,7 +239,7 @@ void BeamGun::update(int elapsed)
             setAnimation(secondaryTransform, 1, 0);
         } else {
             player = Level_getPlayer(this->field_0xc);
-            PlayerEgo_getPosition(&playerMatrix, player);
+            ((PlayerEgo *)(&playerMatrix))->getPosition();
 
             gun = this->field_0x8;
             transformed = *(Vector *)&gun->field_0x7c;

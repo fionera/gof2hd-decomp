@@ -1,4 +1,5 @@
 #include "gof2/ShaderBaseStruct.h"
+#include "gof2/String.h"
 
 
 
@@ -108,7 +109,7 @@ uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *
                     glDeleteShader(vertexShader);
                     glDeleteShader(fragmentShader);
 
-                    char *name = (char *)String_GetAEChar(shader_name(this));
+                    char *name = (char *)((String *)(shader_name(this)))->GetAEChar();
                     AELabelObject(0x8b40, program, name);
                     operator delete[](name);
                 } else {

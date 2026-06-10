@@ -1,10 +1,10 @@
 #include "gof2/Gun.h"
+#include "gof2/Player.h"
 #include "gof2/AEGeometry.h"
 
 
 extern "C" void AEGeometry_ctor(AEGeometry *self, unsigned short idx, void *canvas, bool b);
 extern "C" int  Player_isAsteroid(Player *p);
-extern "C" int  Player_isActive(Player *p);
 extern "C" int  Item_getAttribute(int item, int attr);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void Gun_VecArray_ctor(void *a);
@@ -13,7 +13,6 @@ extern "C" void Gun_VecArray_setLength(int n, void *a);
 extern "C" void Gun_VecPtrArray_setLength(int n, void *a);
 extern "C" float Vector_assign(Vector *dst, const Vector *src);
 extern "C" void Vector_mulAssign(Vector *dst, float s);
-extern "C" void Gun_shootAt(Gun *self, Matrix m, int n, Player *p, bool b);
 extern "C" float Vector_addAssign(Vector *dst, const Vector *src);
 
 // ---- _Gun_152134.cpp ----
@@ -66,64 +65,64 @@ __attribute__((minsize)) Gun::~Gun() noexcept(false)
 }
 
 // ---- setFriendGun_1522ca.cpp ----
-extern "C" void Gun_setFriendGun(Gun *self, bool v)
-{
+void Gun::setFriendGun(bool v) {
+    Gun *self = this;
     self->field_0xf9 = v;
 }
 
 // ---- getMagnitude_1522d6.cpp ----
-extern "C" int Gun_getMagnitude(Gun *self)
-{
+int Gun::getMagnitude() {
+    Gun *self = this;
     return self->field_0x100;
 }
 
 // ---- getEnemies_1523bc.cpp ----
-extern "C" void *Gun_getEnemies(Gun *self)
-{
+void * Gun::getEnemies() {
+    Gun *self = this;
     return self->field_0xb4;
 }
 
 // ---- setMagnitude_1522d0.cpp ----
-extern "C" void Gun_setMagnitude(Gun *self, int v)
-{
+void Gun::setMagnitude(int v) {
+    Gun *self = this;
     self->field_0x100 = v;
 }
 
 // ---- setErrorMagnitudePercentage_1522bc.cpp ----
-extern "C" void Gun_setErrorMagnitudePercentage(Gun *self, int v)
-{
+void Gun::setErrorMagnitudePercentage(int v) {
+    Gun *self = this;
     self->field_0xfc = (float)v;
 }
 
 // ---- setImpact_1523b0.cpp ----
 struct Sparks;
 
-extern "C" void Gun_setImpact(Gun *self, Sparks *impact)
-{
+void Gun::setImpact(Sparks *impact) {
+    Gun *self = this;
     self->field_0xb8 = impact;
 }
 
 // ---- setPlayerGun_15241c.cpp ----
-extern "C" void Gun_setPlayerGun(Gun *self, bool v)
-{
+void Gun::setPlayerGun(bool v) {
+    Gun *self = this;
     self->field_0xf0 = v;
 }
 
 // ---- isPlayerGun_152422.cpp ----
-extern "C" uint8_t Gun_isPlayerGun(Gun *self)
-{
+uint8_t Gun::isPlayerGun() {
+    Gun *self = this;
     return self->field_0xf0;
 }
 
 // ---- setLevelCollision_1522dc.cpp ----
-extern "C" void Gun_setLevelCollision(Gun *self, bool v)
-{
+void Gun::setLevelCollision(bool v) {
+    Gun *self = this;
     self->field_0xf8 = v;
 }
 
 // ---- removeAllEnemies_152410.cpp ----
-extern "C" void Gun_removeAllEnemies(Gun *self)
-{
+void Gun::removeAllEnemies() {
+    Gun *self = this;
     self->field_0xb4 = 0;
 }
 
@@ -149,8 +148,8 @@ extern int  *const gSI_table  __attribute__((visibility("hidden")));
 extern unsigned *const gSI_canvas __attribute__((visibility("hidden")));
 extern int  *const gSI_rng    __attribute__((visibility("hidden")));
 
-extern "C" void Gun_setIndex(Gun *self, int index)
-{
+void Gun::setIndex(int index) {
+    Gun *self = this;
     self->field_0x58 = index;
     int *items = gSI_items;
     self->field_0x108 = (index == 0xe4) || ((unsigned)(index - 9) < 3);
@@ -194,8 +193,8 @@ extern "C" void Gun_setIndex(Gun *self, int index)
 extern int *const gSO_holder __attribute__((visibility("hidden")));
 extern short *const gSO_table __attribute__((visibility("hidden")));
 
-extern "C" void Gun_setOffset_ii(Gun *self, int a, int b)
-{
+void Gun::setOffset_ii(int a, int b) {
+    Gun *self = this;
     short *row = (short *)((char *)gSO_table + b * 0x3c + a * 6);
     Vector local;
     local.x = (float)(int)row[0];
@@ -225,8 +224,8 @@ float  VectorLength(const Vector *v);
 
 extern int *const gIG_status __attribute__((visibility("hidden")));   // holder
 
-extern "C" void Gun_ignite(Gun *self)
-{
+void Gun::ignite() {
+    Gun *self = this;
     if (self->field_0x5c == 6 || self->field_0x5c == 7) {
         if (self->field_0x5c == 7)
             *(int *)(*gIG_status + 0xc8) += 1;
@@ -247,7 +246,7 @@ extern "C" void Gun_ignite(Gun *self)
         self->field_0xbc = target;
         if ((self->field_0x5c == 6 && Player_isAsteroid(target) != 0))
             continue;
-        if (Player_isActive(target) == 0)
+        if (((Player *)(target))->isActive() == 0)
             continue;
 
         int off = 0;
@@ -291,8 +290,8 @@ extern "C" void Sparks_render(Sparks *s);                            // 0x773ec
 // pc-rel global: holder for the gun-transform canvas pointer (*holder used each iter).
 extern unsigned *const gGunRenderCanvas __attribute__((visibility("hidden")));
 
-extern "C" void Gun_render(Gun *self)
-{
+void Gun::render() {
+    Gun *self = this;
     Matrix local;
     char camBuf[64];
 
@@ -337,9 +336,8 @@ struct VecPtrArray;  // Array<Vector*>
 extern "C" void *Gun_operator_new(unsigned size);       // operator new(uint)   0x6eb24
 extern "C" void *Gun_operator_new_arr(unsigned size);   // operator new[](uint) 0x6ec08
 
-extern "C" Gun *Gun_ctor(Gun *self, int kind, int p2, unsigned count, int p4,
-                         int p5, int p6, float p7, Vector dir, Vector vel)
-{
+Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
+    Gun *self = this;
     char *s = (char *)self;
     Gun_VecArray_ctor(s + 0x8);
     Gun_VecArray_ctor(s + 0x14);
@@ -434,9 +432,9 @@ struct Player;
 // Gun::shootAt(Matrix, int, Player*, bool)
 
 // Gun::shoot(Matrix, int, bool) — forwards to shootAt with a null Player.
-extern "C" void Gun_shoot(Gun *self, Matrix m, int n, bool b)
-{
-    Gun_shootAt(self, m, n, 0, b);
+void Gun::shoot(Matrix m, int n, bool b) {
+    Gun *self = this;
+    ((Gun *)(self))->shootAt(m, n, 0, b);
 }
 
 // ---- setEnemy_1523c2.cpp ----
@@ -448,8 +446,8 @@ struct Player;
 // truncated function, not a leaf setter. The Ghidra decompile for it is flagged "bad
 // instruction data". No 2-instruction C setter can match a 3-instruction prologue window;
 // the natural setter (store enemy at +0xb4, matching getEnemies/removeAllEnemies) is kept.
-extern "C" void Gun_setEnemy(Gun *self, Player *enemy)
-{
+void Gun::setEnemy(Player *enemy) {
+    Gun *self = this;
     self->field_0xb4 = enemy;
 }
 
@@ -461,8 +459,8 @@ extern "C" void Gun_setEnemy(Gun *self, Player *enemy)
 // Float offset applied to z (literal-pool constant in the target; not vmov-encodable).
 static const float kZOffset = 0.1f;
 
-extern "C" void Gun_setOffset(Gun *self, const Vector *v)
-{
+void Gun::setOffset(const Vector *v) {
+    Gun *self = this;
     char buf[12];
     Vector *local = (Vector *)buf;
     local->x = v->x;
@@ -488,14 +486,14 @@ namespace Transform { void Update(long long tf, char b); }                 // 0x
 }
 
 extern "C" void Sparks_update(Sparks *s, int dt);                 // 0x773d4
-extern "C" void Gun_calcCharacterCollision(Gun *self);           // 0x773e0
-extern "C" void Gun_ignite(Gun *self);                           // 0x72fdc
+// 0x773e0
+// 0x72fdc
 
 extern int *const gUP_canvas __attribute__((visibility("hidden")));   // holder
 extern int *const gUP_globals __attribute__((visibility("hidden")));  // holder
 
-extern "C" void Gun_update(Gun *self, int dt)
-{
+void Gun::update(int dt) {
+    Gun *self = this;
     self->field_0x6c += dt;
     if (self->field_0xa9 != 0) {
         int t = self->field_0x70 + dt;
@@ -516,7 +514,7 @@ extern "C" void Gun_update(Gun *self, int dt)
     }
 
     if (self->field_0x4c != 0 && self->field_0x5c != 0x27) {
-        Gun_calcCharacterCollision(self);
+        ((Gun *)(self))->calcCharacterCollision();
         float fdt = (float)dt;
         int off = 0;
         for (unsigned i = 0; i < self->field_0x8; i = i + 1) {
@@ -545,7 +543,7 @@ extern "C" void Gun_update(Gun *self, int dt)
                 if (v < 1) {
                     unsigned k = self->field_0x5c - 6;
                     if (k < 0x1d && ((1 << (k & 0xff)) & 0x12345678) != 0) {
-                        Gun_ignite(self);
+                        ((Gun *)(self))->ignite();
                         v = ((int *)self->field_0x3c)[i];
                     }
                     if (v <= -2000) {
@@ -555,7 +553,7 @@ extern "C" void Gun_update(Gun *self, int dt)
                     }
                 }
                 if (self->field_0x5c == 0x2a)
-                    Gun_ignite(self);
+                    ((Gun *)(self))->ignite();
             } else {
                 int *p = (int *)(self->field_0xc + off);
                 p[0] = 0;
@@ -576,8 +574,8 @@ extern "C" void Gun_update(Gun *self, int dt)
 
 // AbyssEngine::AEMath::Vector::operator+=(Vector*, Vector const&)
 
-extern "C" void Gun_translate(Gun *self, const Vector *v)
-{
+void Gun::translate(const Vector *v) {
+    Gun *self = this;
     int off = 0;
     for (unsigned i = 0; i < self->field_0x8; i = i + 1) {
         ::Vector_addAssign((Vector *)(self->field_0xc + off), v);
@@ -596,8 +594,8 @@ struct Player;
 
 // Vector/Matrix provided by gof2/math.h (via common.h).
 
-extern "C" void Gun_shootAt(Gun *self, Matrix m, int n, Player *p, bool b)
-{
+void Gun::shootAt(Matrix m, int n, Player *p, bool b) {
+    Gun *self = this;
     // Records the firing transform / count and the (optional) target; the heavy body
     // (per-projectile spawn + vector setup) is data-driven from the Matrix argument.
     (void)m;
@@ -619,8 +617,8 @@ struct Player;
 
 extern int *const gCC_status __attribute__((visibility("hidden")));   // holder
 
-extern "C" void Gun_calcCharacterCollision(Gun *self)
-{
+void Gun::calcCharacterCollision() {
+    Gun *self = this;
     unsigned *enemies = (unsigned *)self->field_0xb4;
     if (enemies == 0)
         return;

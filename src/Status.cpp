@@ -1,4 +1,11 @@
 #include "gof2/Status.h"
+#include "gof2/Achievements.h"
+#include "gof2/Agent.h"
+#include "gof2/BluePrint.h"
+#include "gof2/Mission.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/Station.h"
+#include "gof2/Wanted.h"
 
 
 extern "C" int SolarSystem_getIndex(int system);
@@ -8,8 +15,6 @@ extern "C" void op_delete(void *);
 extern "C" int SolarSystem_getTextureIndex(int system);
 extern "C" void Mission_setCampaignMission(Mission *m, bool flag);
 extern "C" int *g_campaignSentinel;
-extern "C" int Wanted_isActive(Wanted *w);
-extern "C" int Wanted_isTerminated(Wanted *w);
 extern "C" int Wanted_getCurrentLocation(Wanted *w);
 extern "C" int Wanted_getRequiredBounties(Wanted *w);
 extern "C" int Station_getIndex(Station *s);
@@ -40,13 +45,10 @@ extern "C" void Array_int_ctor(void *a);
 extern "C" void ArraySetLength_Mission(uint32_t n, Array<Mission *> *a);
 extern "C" void ArraySetLength_Station(uint32_t n, Array<Station *> *a);
 extern "C" void ArraySetLength_bool(int len, void *a);
-extern "C" void Station_ctor(Station *s);
-extern "C" int Station_equals(Station *a, Station *b);
 extern "C" bool Status_inAlienOrbit_impl(Station *station, Station *playerStation);
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" int __aeabi_idivmod(int a, int b);
 extern "C" int SolarSystem_getRace(int sys);
-extern "C" void Wanted_setActive(Wanted *w, bool v);
 extern "C" void SystemPathFinder_ctor(SystemPathFinder *p);
 extern "C" void *SystemPathFinder_dtor(SystemPathFinder *p);
 extern "C" void FileRead_ctor(FileRead *fr);
@@ -54,7 +56,6 @@ extern "C" int FileRead_loadSystemsBinary();
 extern "C" void *FileRead_dtor(FileRead *fr);
 extern "C" Station *Globals_getRandomStation();
 extern "C" int Station_getSystem(Station *s);
-extern "C" void *Station_dtor(Station *s);
 extern "C" int SolarSystem_getRoutes(SolarSystem *s);
 extern "C" void Wanted_setLastSeen(Wanted *w, int v);
 extern "C" void Wanted_setTravelsTo(Wanted *w, int v);
@@ -74,11 +75,9 @@ extern "C" void PendingProduct_add(int *pp, int arr);
 extern "C" void FileRead_ctor(FileRead *);
 extern "C" int FileRead_loadWanted();
 extern "C" void operator_delete_tail(void *);
-extern "C" void BluePrint_unlock(BluePrint *);
 extern "C" Station *Status_isOnStack(Status *self, Station *s);
 extern "C" void Status_setStationTail(Status *self, Station *s);
 extern "C" int Mission_getAgent(Mission *m);
-extern "C" void Agent_setMission(Agent *a, Mission *m);
 extern "C" int Galaxy_getSystem(Galaxy *g, int sysIdx);
 extern "C" void *FileRead_loadStationsBinary(FileRead *fr, SolarSystem *sys);
 extern "C" void ArrayReleaseClasses_String(void *a);
@@ -89,7 +88,6 @@ extern "C" void ArrayRelease_int(void *a);
 extern "C" void ArraySetLength_int(int len, void *a);
 extern "C" Array<Station *> *SolarSystem_getStations(SolarSystem *sys);
 extern "C" void String_ctor_empty(String *s);
-extern "C" void Station_getName(String *out, Station *s);
 extern "C" int Station_getTextureIndex(Station *s);
 extern "C" void ArrayReleaseClasses_Station(void *a);
 extern "C" void Array_Station_dtor_tail(void *a);
@@ -308,8 +306,8 @@ Wanted *Status::getWantedInCurrentOrbit() {
     if (arr != 0) {
         unsigned i = 0;
         while (i < arr->size()) {
-            if (Wanted_isActive((*wanted)[i]) != 0 &&
-                Wanted_isTerminated((*wanted)[i]) == 0) {
+            if (((Wanted *)((*wanted)[i]))->isActive() != 0 &&
+                ((Wanted *)((*wanted)[i]))->isTerminated() == 0) {
                 int loc = Wanted_getCurrentLocation((*wanted)[i]);
                 if (loc == Station_getIndex(station)) {
                     if (best == 0 ||
@@ -642,7 +640,7 @@ Status::Status() {
     rating = 0;
     playingTime = 0;
     Station *st = (Station *)operator new(0x34);
-    Station_ctor(st);
+    ((Station *)(st))->ctor();
     playerStation = st;
     field_8c = 0;
     ship = 0;
@@ -803,7 +801,7 @@ bool Status::isOnStack(Station *s) {
             return 0;
         }
         Station *cur = (*stationStack)[i];
-        if (cur != 0 && Station_equals(cur, s) != 0) {
+        if (cur != 0 && ((Station *)(cur))->equals(s) != 0) {
             break;
         }
         i = i + 1;
@@ -846,8 +844,6 @@ extern "C" {
 void  *Status_opnew(unsigned int size);
 void   operator_delete(void *p);
 void   operator_delete_arr(void *p);
-void  *Station_dtor(Station *s);
-void   Station_ctor(Station *s);
 void  *ArrayString_dtor(void *a);
 void   ArrayReleaseClasses_String(void *a);
 void  *Array_int_dtor(void *a);
@@ -866,12 +862,10 @@ void   Globals_resetHints();
 void   Galaxy_reset(Galaxy *g);
 int    Galaxy_getSystems(Galaxy *g);
 void  *Galaxy_getStation(int gptr);
-int    SolarSystem_isVisible(void *ss);
 int    Item_getIngredients();
 void   BluePrint_ctor(void *bp, unsigned int index);
 void   Standing_ctor(Standing *s);
 void  *Standing_dtor(Standing *s);
-void   Achievements_init(Achievements *a, int v);
 void   Mission_ctor(void *m, int a, int b, int c);
 int    Ship_makeShip(int shipDesc);
 void   Ship_priceDecline(Ship *s);
@@ -937,11 +931,11 @@ void Status::resetGame()
 
     // recreate the per-game scratch station at 0x14c.
     if (P(self, 0x14c) != 0) {
-        operator_delete(Station_dtor((Station *)P(self, 0x14c)));
+        operator_delete(((Station *)((Station *)P(self, 0x14c)))->dtor());
         I(self, 0x14c) = 0;
     }
     Station *scratch = (Station *)Status_opnew(0x34);
-    Station_ctor(scratch);
+    ((Station *)(scratch))->ctor();
     P(self, 0x14c) = scratch;
 
     if (P(self, 0x28) != 0) {
@@ -984,7 +978,7 @@ void Status::resetGame()
         for (unsigned k = 0; k < *stk; k = k + 1) {
             Station *st = ((Station **)stk[1])[k];
             if (st != 0) {
-                operator_delete(Station_dtor(st));
+                operator_delete(((Station *)(st))->dtor());
                 ((int *)(*(int *)((char *)P(self, 0x1a0) + 4)))[k] = 0;
                 stk = (unsigned *)P(self, 0x1a0);
             }
@@ -1029,7 +1023,7 @@ void Status::resetGame()
     I(self, 0xf4) = -1;
     *(short *)(self + 0xf8) = 1;
 
-    Achievements_init(*g_rg_ach, 1);
+    ((Achievements *)(*g_rg_ach))->init();
 
     // recreate the four int arrays at 0x40/0x3c/0x48/0x44 (length 0xe9).
     static const int off4[4] = {0x40, 0x3c, 0x48, 0x44};
@@ -1087,7 +1081,7 @@ void Status::resetGame()
     unsigned *systems = (unsigned *)Galaxy_getSystems(gal);
     void *vis = P(self, 0x38);
     for (unsigned k = 0; k < *systems; k = k + 1) {
-        int v = SolarSystem_isVisible(((void **)systems[1])[k]);
+        int v = ((SolarSystem *)(((void **)systems[1])[k]))->isVisible();
         ((char *)(*(int *)((char *)vis + 4)))[k] = (char)v;
     }
 
@@ -1235,10 +1229,10 @@ int Status::activateNewWanted() {
         if (Station_getIndex((*slot)->station) == 0x6c) {
             continue;
         }
-        if (Wanted_isActive(cur) != 0) {
+        if (((Wanted *)(cur))->isActive() != 0) {
             continue;
         }
-        if (Wanted_isTerminated(cur) != 0) {
+        if (((Wanted *)(cur))->isTerminated() != 0) {
             continue;
         }
         int board = Wanted_getBoard(cur);
@@ -1246,7 +1240,7 @@ int Status::activateNewWanted() {
         if (avail < Wanted_getRequiredBounties(cur)) {
             continue;
         }
-        Wanted_setActive(cur, true);
+        ((Wanted *)(cur))->setActive(true);
         if (pf == 0) {
             pf = (SystemPathFinder *)operator new(1);
             SystemPathFinder_ctor(pf);
@@ -1273,7 +1267,7 @@ int Status::activateNewWanted() {
                     break;
                 }
                 if (a != 0) {
-                    operator_delete(Station_dtor(a));
+                    operator_delete(((Station *)(a))->dtor());
                 }
                 a = Globals_getRandomStation();
                 asys = Station_getSystem(a);
@@ -1291,7 +1285,7 @@ int Status::activateNewWanted() {
                     break;
                 }
                 if (b != 0) {
-                    operator_delete(Station_dtor(b));
+                    operator_delete(((Station *)(b))->dtor());
                 }
                 b = Globals_getRandomStation();
                 bsys = Station_getSystem(b);
@@ -1301,10 +1295,10 @@ int Status::activateNewWanted() {
             fromSys = Station_getSystem(a);
             toSys = Station_getSystem(b);
             if (a != 0) {
-                operator_delete(Station_dtor(a));
+                operator_delete(((Station *)(a))->dtor());
             }
             if (b != 0) {
-                operator_delete(Station_dtor(b));
+                operator_delete(((Station *)(b))->dtor());
             }
             path = SystemPathFinder_getSystemPath(pf, systems, fromSys, toSys);
         } while (path == 0 || (unsigned)*path < lo || hi < (unsigned)*path);
@@ -1410,7 +1404,7 @@ void Status::unlockBluePrint(int index) {
     for (unsigned i = 0; i < bps->size(); i = i + 1) {
         BluePrint *bp = (*bps)[i];
         if (BluePrint_getIndex(bp) == index) {
-            BluePrint_unlock((*bluePrints)[i]);
+            ((BluePrint *)((*bluePrints)[i]))->unlock();
         }
     }
 }
@@ -1462,7 +1456,7 @@ int Status::addStationToStack(Station *s) {
         base[j + 2] = s;
     } else {
         if (base[2] != 0) {
-            operator_delete(Station_dtor(base[2]));
+            operator_delete(((Station *)(base[2]))->dtor());
         }
         base[2] = 0;
         for (int i = 0; i != -2; i = i - 1) {
@@ -1492,7 +1486,7 @@ void Status::removeMission(Mission *mission) {
             }
             if (Mission_getAgent(target) != 0) {
                 Agent *ag = (Agent *)Mission_getAgent(slots[i]);
-                Agent_setMission(ag, 0);
+                ((Agent *)(ag))->setMission(0);
             }
             int *slot = (int *)slots[i];
             if (slot == 0) {
@@ -1513,8 +1507,8 @@ __attribute__((visibility("hidden"))) extern int g_ncmAchTable[3];   // DAT_000b
 
 extern "C" {
 void *operator_new(unsigned int sz);
-void Mission_ctor3(void *m, int type, int param, int station);       // Mission::Mission(int,int,int)
-void Mission_ctor_default(void *m);                                  // Mission::Mission()
+// Mission::Mission(int,int,int)
+// Mission::Mission()
 void Status_setCampaignMission_ncm(Status *self, void *m);           // setCampaignMission
 void Status_addMissionTail(Status *self, void *m);                   // indirect tail 0x1abf38
 void Ship_setCargo_ncm(Ship *ship, void *arr);                       // Ship::setCargo
@@ -1574,8 +1568,8 @@ static const Step kSteps[] = {
 //   Advances the campaign by one step: bumps the campaign-mission counter, snapshots the
 //   playing-time, runs the achievement check, then spawns and registers the next scripted
 //   Mission for that step (with a few steps performing extra cargo/equipment bookkeeping).
-extern "C" void Status_nextCampaignMission(Status *self, bool param_1)
-{
+void Status::nextCampaignMission(bool param_1) {
+    Status *self = this;
     (void)param_1;
     int *state = (int *)((char *)self + 0x1e8);
     int prevTimeLo = (int)self->playingTime;
@@ -1628,9 +1622,9 @@ extern "C" void Status_nextCampaignMission(Status *self, bool param_1)
     if ((unsigned)step < sizeof(kSteps) / sizeof(kSteps[0])) {
         const Step &s = kSteps[step];
         if (s.type == 0 && s.station == 0 && s.param == 0) {
-            Mission_ctor_default(m);
+            ((Mission *)(m))->ctor_default();
         } else {
-            Mission_ctor3(m, s.type, s.param, s.station);
+            ((Mission *)(m))->ctor3(s.type, s.param, s.station);
         }
         if (s.campaign)
             Status_setCampaignMission_ncm(self, m);
@@ -1638,7 +1632,7 @@ extern "C" void Status_nextCampaignMission(Status *self, bool param_1)
             Status_addMissionTail(self, m);
     } else {
         // beyond the scripted range: default freelance hop.
-        Mission_ctor3(m, 0xb, 0, 100);
+        ((Mission *)(m))->ctor3(0xb, 0, 100);
         Status_addMissionTail(self, m);
     }
 }
@@ -1714,7 +1708,7 @@ void Status::setStation(Station *s) {
             if (ccm == 0) {
                 String_ctor_empty(nm);
             } else {
-                Station_getName(nm, cur);
+                ((Station *)(nm))->getName();
             }
             (*((Array<String *> *)(void *)(uint32_t)planetNames))[i] = nm;
             (*((Array<int> *)(void *)(uint32_t)planetTextures))[i] = Station_getTextureIndex(cur);
@@ -1839,10 +1833,10 @@ extern "C" {
 int Status_inAlienOrbit_ds();                                        // 0x723d0
 int Station_getIndex(Station *s);                                    // 0x71824
 void *Station_getItems_ds();                                         // 0x71830
-void Station_setItems(Station *s, void *items, bool owns);           // 0x736e4
+// 0x736e4
 int Station_getShips_ds();                                           // 0x73708
-void Station_setShips(void *s, bool v);                              // 0x736fc
-void Station_setAgents(Station *s, void *agents);                    // 0x73720
+// 0x736fc
+// 0x73720
 int isOnStack_ds(Status *self, Station *s);                          // 0x73660
 void addStationToStack_ds(Status *self, Station *s);                 // 0x736c0
 void Generator_ctor(Generator *g);                                   // 0x736cc
@@ -1870,16 +1864,16 @@ static inline int &SF(Status *s, unsigned off) { return *(int *)((char *)s + off
 //   Leaving the current station to travel to `dest`: refreshes inventories, stacks the prior
 //   station, regenerates the destination's wares/ships/agents, then re-targets the active
 //   campaign/freelance mission, moves wanted criminals, and clears per-cargo station amounts.
-extern "C" void Status_departStation(Status *self, Station *dest)
-{
+void Status::departStation(Station *dest) {
+    Status *self = this;
 
     // refresh the just-departed station inventory if it is the campaign hub in state 3.
     if (Status_inAlienOrbit_ds() == 0) {
         bool hub = Station_getIndex(self->station) == 0x6c;
         if (hub && SF(self, 0x114) == 3) {
             Station *st = (Station *)(void *)(long)SF(self, 0x14c);
-            Station_setItems(st, Station_getItems_ds(), true);
-            Station_setShips((void *)(long)SF(self, 0x14c), (bool)Station_getShips_ds());
+            ((Station *)(st))->setItems(Station_getItems_ds(), true);
+            ((Station *)((void *)(long)SF(self, 0x14c)))->setShips((bool)Station_getShips_ds());
         }
     }
 
@@ -1893,23 +1887,23 @@ extern "C" void Status_departStation(Status *self, Station *dest)
         addStationToStack_ds(self, dest);
         bool hub = Station_getIndex(dest) == 0x6c;
         if (hub && SF(self, 0x114) == 3) {
-            Station_setItems(dest, Station_getItems_ds(), true);
-            Station_setShips((void *)dest, (bool)Station_getShips_ds());
+            ((Station *)(dest))->setItems(Station_getItems_ds(), true);
+            ((Station *)((void *)dest))->setShips((bool)Station_getShips_ds());
             if (prev != 0 && prev != dest) {
-                Station_setItems(prev, Station_getItems_ds(), true);
-                Station_setShips((void *)prev, (bool)Station_getShips_ds());
+                ((Station *)(prev))->setItems(Station_getItems_ds(), true);
+                ((Station *)((void *)prev))->setShips((bool)Station_getShips_ds());
             }
             if (prev == 0) {
                 Generator g;
                 Generator_ctor(&g);
-                Station_setAgents(dest, Generator_createAgents(&g, dest));
+                ((Station *)(dest))->setAgents(Generator_createAgents(&g, dest));
             }
         } else if (prev == 0) {
             Generator g;
             Generator_ctor(&g);
-            Station_setItems(dest, Generator_getItemBuyList(&g, dest), false);
-            Station_setShips((void *)dest, (bool)Generator_getShipBuyList((Station *)&g));
-            Station_setAgents(dest, Generator_createAgents(&g, dest));
+            ((Station *)(dest))->setItems(Generator_getItemBuyList(&g, dest), false);
+            ((Station *)((void *)dest))->setShips((bool)Generator_getShipBuyList((Station *)&g));
+            ((Station *)(dest))->setAgents(Generator_createAgents(&g, dest));
         }
         SF(self, 0x70) = (int)self->playingTime;
         SF(self, 0x74) = (int)(self->playingTime >> 32);
@@ -2006,7 +2000,6 @@ __attribute__((visibility("hidden"))) extern Status **g_mcStatusB;
 
 extern "C" {
 int Mission_hasWon(Mission *m);
-int Mission_isCampaignMission(Mission *m);
 int Mission_getAgent(Mission *m);
 int Mission_getClientImage(Mission *m);
 int Mission_getTargetStation();
@@ -2035,9 +2028,8 @@ int Status_inAlienOrbit3();
 //   Scans the active mission list; for the first unfinished mission whose completion criteria
 //   are met it returns that Mission (some types auto-mark themselves won). Mission-type-specific
 //   checks mirror the engine's giant dispatch.
-extern "C" Mission *Status_missionCompleted(Status *self, bool atStation, bool docked,
-                                            long long extra)
-{
+Mission * Status::missionCompleted(bool atStation, bool docked, long long extra) {
+    Status *self = this;
     unsigned which = (unsigned)docked;
     unsigned both = which & (unsigned)extra;
 
@@ -2049,7 +2041,7 @@ extern "C" Mission *Status_missionCompleted(Status *self, bool atStation, bool d
 
         // skip irrelevant missions (no agent/target/campaign tie-in).
         if (m == 0 ||
-            (Mission_isCampaignMission(m) == 0 && Mission_getAgent(m) == 0 &&
+            (((Mission *)(m))->isCampaignMission() == 0 && Mission_getAgent(m) == 0 &&
              Mission_getClientImage(m) == 0 && Mission_getTargetStation() == 0 &&
              Mission_getTargetStation() == 0))
             continue;

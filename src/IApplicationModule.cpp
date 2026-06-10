@@ -4,8 +4,8 @@
 
 
 // ---- SetApplicationManager_74154.cpp ----
-extern "C" void IApplicationModule_SetApplicationManager(IApplicationModule *self, ApplicationManager *manager)
-{
+void IApplicationModule::SetApplicationManager(ApplicationManager *manager) {
+    IApplicationModule *self = this;
     self->field_0x8 = manager;
     self->field_0x4 = *(ApplicationManager **)manager;
 }

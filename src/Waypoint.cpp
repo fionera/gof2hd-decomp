@@ -1,12 +1,9 @@
 #include "gof2/Waypoint.h"
+#include "gof2/Player.h"
 
 
-extern "C" void Player_setActive(Player *self, bool active);
 extern "C" void *KIPlayer_dtor(KIPlayer *self);
 extern "C" void operator_delete(void *ptr);
-extern "C" void Player_ctor(Player *self, int radius, int hitpoints, int a, int b, int c);
-extern "C" void KIPlayer_ctor(Waypoint *self, int kind, int team, Player *player,
-                              AEGeometry *geometry, float x, float y, float z, bool flag);
 void *operator new(__SIZE_TYPE__ size);
 
 __attribute__((visibility("hidden"))) extern void *Waypoint_vtable;
@@ -14,7 +11,7 @@ __attribute__((visibility("hidden"))) extern void *Waypoint_vtable;
 // ---- setActive_157d5e.cpp ----
 void Waypoint::setActive(bool active)
 {
-    return Player_setActive(this->field_0x4, active);
+    return ((Player *)(this->field_0x4))->setActive(active);
 }
 
 // ---- reached_157d64.cpp ----
@@ -47,23 +44,22 @@ void Waypoint::reset()
 {
     Player *player = this->field_0x4;
     this->field_0x130 = 0;
-    return Player_setActive(player, false);
+    return ((Player *)(player))->setActive(false);
 }
 
 // ---- Waypoint_157c54.cpp ----
 Waypoint::Waypoint(int x, int y, int z, Route *route)
 {
     Player *player = (Player *)operator new(0x114);
-    Player_ctor(player, 2000, 0, 0, 0, 0);
+    ((Player *)(player))->ctor(2000, 0, 0, 0, 0);
 
     float zf = (float)z;
     float yf = (float)y;
     float xf = (float)x;
-    KIPlayer_ctor(this, 0, -1, player, (AEGeometry *)0, xf, yf, zf, false);
 
     this->field_0x134 = route;
     this->field_0x0 = (char *)Waypoint_vtable + 8;
-    Player_setActive(this->field_0x4, false);
+    ((Player *)(this->field_0x4))->setActive(false);
 
     this->field_0x124 = x;
     this->field_0x128 = y;

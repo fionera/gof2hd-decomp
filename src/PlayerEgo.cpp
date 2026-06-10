@@ -1,4 +1,16 @@
 #include "gof2/PlayerEgo.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/Explosion.h"
+#include "gof2/Hud.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Mission.h"
+#include "gof2/Player.h"
+#include "gof2/PlayerFixedObject.h"
+#include "gof2/RepairBeam.h"
+#include "gof2/Route.h"
+#include "gof2/SpacePoint.h"
+#include "gof2/String.h"
+#include "gof2/TractorBeam.h"
 
 // ---- canonical helper types / prototypes (deduped across merged sources) ----
 // 3-float vector returned by value by several AEGeometry/PlayerEgo accessors.
@@ -11,7 +23,6 @@ struct Vec3 { float x, y, z; };
 extern "C" Vec3 AEGeometry_getDirection(void*, ...);
 extern "C" Vec3 AEGeometry_getUpVector(void*, ...);
 extern "C" Vec3 AEGeometry_getPosition(void*, ...);
-extern "C" Vec3 PlayerEgo_getPosition(PlayerEgo* self, ...);
 
 // Functions whose merged prototypes disagree on argument lists / return type.
 // Unified here as variadic so every call site compiles (compile-only target).
@@ -26,7 +37,7 @@ extern "C" void ParticleSystemManager_enableSystemEmit(...);
 extern "C" int  Transform_SetVisible(void* tf, bool vis);
 extern "C" void* PaintCanvas_MeshGetPointer(void* canvas, unsigned int mesh);
 extern "C" void  AEGeometry_setPosition(void* geo, const void* vec);
-extern "C" void  Hud_hudEvent(...);                 // (int|void* hud, int ev, PlayerEgo*, [int])
+// (int|void* hud, int ev, PlayerEgo*, [int])
 extern "C" void  TargetFollowCamera_setActive(void* cam, int active);
 extern "C" void* AEGeometry_newMesh(int meshId, void* canvas, bool b);
 extern "C" void  operator_delete_(void*) noexcept;
@@ -35,11 +46,7 @@ extern "C" void PlayerEgo_setVisible_ext();
 extern "C" void* g_boost_fmod;
 extern "C" void* Level_getLandmarks(void*);
 extern "C" int PlayerEgo_getHitpoints_ext(void*);
-extern "C" int PlayerEgo_getHitpoints(PlayerEgo*);
-extern "C" int PlayerEgo_goingToStream(PlayerEgo*);
-extern "C" int PlayerEgo_goingToStation(PlayerEgo*);
 extern "C" int PlayerEgo_getHackingGameDockIndex_ext(int);
-extern "C" void PlayerEgo_setPosition3(PlayerEgo*, float, float, float);
 extern "C" void PlayerEgo_dockToStream_ext(PlayerEgo*, int);
 extern "C" void PlayerEgo_hackingShuffle_ext(int);
 extern "C" void* AEGeometry_getReferenceMatrix(void*);
@@ -47,7 +54,6 @@ extern "C" void ParticleSystemManager_systemSetMatrix(void*, int, void*);
 extern "C" void PlayerEgo_setRocketControl_ext(PlayerEgo*, int);
 extern "C" void PlayerEgo_turnHorizontal_neg(PlayerEgo*);
 extern "C" void PlayerEgo_turnHorizontal_pos(PlayerEgo*);
-extern "C" int Player_getCombinedHP(void*);
 extern "C" void ParticleSystemManager_enableSystemEmit2(void*, int, int);
 extern "C" void PlayerEgo_setPosition_v(PlayerEgo*);
 extern "C" void PlayerEgo_PauseEngineSound_ext(void*);
@@ -69,18 +75,13 @@ extern "C" int __aeabi_idiv(int, int);
 extern "C" void PlayerEgo_turnVertical_neg();
 extern "C" void PlayerEgo_turnVertical_pos(PlayerEgo*);
 extern "C" void* g_FMod_singleton;
-extern "C" int Mission_isEmpty(void*);
 extern "C" void* Status_getStation(void*);
 extern "C" int Station_getIndex(void*);
 extern "C" void Player_addGun(void*, void*, int);
 extern "C" void PlayerEgo_addGun_ext(PlayerEgo*);
 extern "C" void PlayerEgo_endExplosion_ext(int);
-extern "C" int Player_getHitpoints(void*);
-extern "C" void Player_setHitpoints(void*, int);
-extern "C" void Player_setVulnerable(void*, int);
 extern "C" int Ship_getFirstEquipmentOfSort(void*, int);
 extern "C" float Ship_removeEquipment(void*, int);
-extern "C" void PlayerEgo_stopBoost(PlayerEgo*);
 extern "C" void PlayerEgo_hackingRotateRCW_ext(int, int);
 extern "C" void PlayerEgo_refillGunDelay_ext(void*, int);
 extern "C" int   Player_gunAvailable(void *player);
@@ -95,7 +96,6 @@ extern "C" void *PaintCanvas_TransformGetTransform(unsigned int handle);
 extern "C" void  Transform_SetAnimationState(void *tf, int a, int b);
 extern "C" void  PaintCanvas_MeshCloneMaterial(void *canvas, int mesh, unsigned int *out);
 extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void*);
-extern "C" int PlayerEgo_isDead(PlayerEgo*);
 extern "C" void stopShooting_extA(void*, int);
 extern "C" void stopShooting_extB(void*, int, int);
 extern "C" int  AERandom_next(void *rng, int bound);
@@ -111,29 +111,21 @@ extern "C" int   Ship_getCurrentLoad(void *ship);
 extern "C" int   Ship_getMaxLoad(void *ship);
 extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" float PE_pitchRampDelta(PlayerEgo *self, float rate, int frameTime);
-extern "C" int   KIPlayer_isDying(void *self);
-extern "C" void *KIPlayer_getNearestNavigationPoint(void *station, void *posOut, void *spOut);
-extern "C" void  SpacePoint_take(void *sp);
-extern "C" void  SpacePoint_giveFree(void *sp);
-extern "C" void  PlayerEgo_setTurretMode(PlayerEgo *self, int on);
 extern "C" int   Ship_getIndex(void *ship);
 extern "C" int   Ship_hasCargo(void *ship, int idx);
 extern "C" void *Ship_getCargo(void *ship, int idx);
 extern "C" int   Ship_getMaxPassengers(void *ship);
 extern "C" int   Item_getAmount(void *item);
 extern "C" void *Status_getCampaignMission();
-extern "C" int   Mission_isEmpty(void *m);
 extern "C" int   Mission_getType(void *m);
 extern "C" int   Mission_getProductionGoodIndex(void *m);
 extern "C" int   Mission_getProductionGoodAmount(void *m);
 extern "C" int   Mission_getStatusValue(void *m);
-extern "C" int   PlayerFixedObject_getDockingType(void *o);
 extern "C" int   Level_getNumDeliveredOre(void *level);
 extern "C" void  TargetFollowCamera_useTargetsUpVector(void *cam, bool on);
 extern "C" void  LevelScript_resetCamera(void *level);
 extern "C" void  Player_resetGunDelay(void *player, int idx);
 extern "C" void *HackingGame_dtor(void *hg);
-extern "C" void  Hud_setHackingGameActive(void *hud, bool active);
 extern "C" int   PE_adp_approach(PlayerEgo *self, void *station);
 extern "C" int   PE_adp_glide(PlayerEgo *self);
 extern "C" void  PE_adp_apply(PlayerEgo *self);
@@ -159,16 +151,11 @@ extern "C" void  AEGeometry_setDirection(void *geo, const void *dir);
 extern "C" void  AEGeometry_moveForward(void *geo, float dist);
 extern "C" void  Mat_assign(void *dst, const void *src);
 extern "C" void  Vec_assign(void *dst, const void *src);
-extern "C" void  PlayerEgo_roll(PlayerEgo *self, int amount);
 extern "C" void  TargetFollowCamera_translateNoUpdate(void *cam, float x, float y, float z);
 extern "C" void  PE_mtp_steer(PlayerEgo *self, const float *target, int steer, float speed);
 extern "C" void PlayerEgo_resetGunDelay_ext(void*, int);
 extern "C" int PlayerEgo_getShieldDamageRate_ext(void*);
 extern "C" void *Level_getEnemies(void *level);
-extern "C" int   KIPlayer_isDead(void *e);
-extern "C" int   KIPlayer_isDying(void *e);
-extern "C" int   Player_isActive(void *p);
-extern "C" int   KIPlayer_isEnemy(void *e);
 extern "C" void  Vec_sub(void *out, const void *a, const void *b);
 extern "C" float Vec_length(const void *v);
 extern "C" void  Player_stopShooting(void *player);
@@ -177,14 +164,9 @@ extern "C" void  PlayerAsteroid_setRotationEnabled(void *ast, bool en);
 extern "C" float PlayerAsteroid_getScaling(void *ast);
 extern "C" void *MiningGame_dtor(void *mg);
 extern "C" void  Radar_unlockAsteroid(void *radar);
-extern "C" void  PlayerEgo_setExhaustVisible(PlayerEgo *self, bool visible);
 extern "C" void Vector_assign(void*, void*);
 extern "C" float PE_roll_bankFactor(PlayerEgo *self, float rx, float ry, float *outZ);
 extern "C" void PlayerEgo_setTargetFollowCamera_ext(void*, void*);
-extern "C" int   KIPlayer_getType(void *o);
-extern "C" int   KIPlayer_isVisible(void *o);
-extern "C" int   KIPlayer_isDying(void *o);
-extern "C" int   KIPlayer_isDead(void *o);
 extern "C" int   PlayerWormHole_isShrinking(void *o);
 extern "C" void  hitCamera_(PlayerEgo *self);
 extern "C" void  PE_cc_wormhole(PlayerEgo *self, void *obj);
@@ -192,57 +174,31 @@ extern "C" void  PE_cc_obstacle(PlayerEgo *self, void *obj, unsigned idx);
 extern "C" void  PE_cc_destructible(PlayerEgo *self, void *obj);
 extern "C" float PlayerEgo_resetGunDelay_f(PlayerEgo*);
 extern "C" void* g_dockToPlanet_fmod;
-extern "C" int   PlayerEgo_isDead(PlayerEgo *self);
 extern "C" int   Player_shootSecondary(void *player, int kind, int idx, int hi, int zero);
 extern "C" int   Player_shootPrimary(void *player, int kind, int weapon, int hi, int zero);
 extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self);
 extern "C" void  PaintCanvas_CameraSetCurrent(void *canvas, unsigned int cam);
-extern "C" void  PlayerEgo_stopShooting(PlayerEgo *self);
 extern "C" void  PaintCanvas_CameraCreate(void *canvas, unsigned int *out);
 extern "C" void  AEGeometry_rotate(void *geo, const void *vec);
 extern "C" int   Ship_getFirstEquipmentOfSort(void *ship, int sort);
 extern "C" void  FModSound_stop(int snd);
 extern "C" void* g_rotate_transform;
-extern "C" void *KIPlayer_getNearestNavigationPoint(void *radar, void *posOut, void *spOut);
 extern "C" void  PlayEngineSound_(PlayerEgo *self);
-extern "C" void  PlayerEgo_setExhaustVisible(PlayerEgo *self, bool vis);
 extern "C" void *EaseInOutMatrix_dtor(void *m);
 extern "C" void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint);
-extern "C" int  PlayerEgo_isDead(PlayerEgo *self);
 extern "C" void  PaintCanvas_SetColor(unsigned int c);
 extern "C" int   Radar_isPlasmaInRange(void *radar);
-extern "C" void  PlayerEgo_drawThrottle(PlayerEgo *self);
-extern "C" int  Player_isActive(void *player);
-extern "C" int  Player_getHitpoints(void *player);
 extern "C" void Player_stopShooting(void *player);
-extern "C" void PlayerEgo_roll(PlayerEgo *self, int amount);
-extern "C" int  PlayerEgo_updateManeuver(PlayerEgo *self);
-extern "C" void PlayerEgo_handleShip(PlayerEgo *self, int dt);
-extern "C" void PlayerEgo_handleTurretView(PlayerEgo *self, int dt);
-extern "C" void PlayerEgo_handleAutoTurret(PlayerEgo *self, int dt);
-extern "C" void PlayerEgo_dockToAsteroid(PlayerEgo *self, void *radar);
-extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *self, void *radar);
-extern "C" void PlayerEgo_approachAsteroid(PlayerEgo *self, int hud2, void *radar);
-extern "C" int  PlayerEgo_approachDockingPoint(PlayerEgo *self, void *hud, int hud2, void *radar);
 extern "C" void KIPlayer_setAutoPilot(PlayerEgo *self);
-extern "C" void *Route_getWaypoint(void *route);
 extern "C" float Ship_getHandling(void *ship);
 extern "C" void PE_upd_boost(PlayerEgo *self, int dt);
 extern "C" void PE_upd_docksFinishDelivery(PlayerEgo *self, void *radio);
 extern "C" void  ParticleSystemManager_enableSystemRender(int mgr, bool en);
 extern "C" void *Explosion_dtor(void *exp);
-extern "C" int   Player_setActive(void *player, bool active);
-extern "C" int   Player_getMaxHitpoints(void *player);
-extern "C" void  Player_setHitpoints(void *player, int hp);
-extern "C" int   Player_getMaxArmorHP(void *player);
-extern "C" void  Player_setArmorHP(void *player, int hp);
-extern "C" void  PlayerEgo_setPosition(PlayerEgo *self, int a, int b, int c);
 extern "C" int   PaintCanvas_GetImage2DWidth(void *canvas);
 extern "C" int   PaintCanvas_GetImage2DHeight(void *canvas);
 extern "C" int   PaintCanvas_GetTextWidth(void *canvas, void *str);
 extern "C" void  PaintCanvas_DrawString(void *canvas, void *str, void *posStr, int x, bool centered);
-extern "C" void  String_dtor(void *s);
-extern "C" void* ApplicationManager_GetEngine(void*);
 extern "C" void  AEGeometry_getRightVector(void *geo, void *out);
 extern "C" void  PE_um_dodgeStep(PlayerEgo *self);
 extern "C" void  PE_um_strafeTarget(PlayerEgo *self, float *out);
@@ -255,16 +211,13 @@ extern "C" void  Mat_getLookAt(void *out, const void *eye, const void *dir, cons
 extern "C" void  PaintCanvas_CameraSetLocal(unsigned int cam, const void *m);
 extern "C" unsigned int PaintCanvas_TransformGetLocal(unsigned int tf);
 extern "C" void  PE_htv_applyShake(PlayerEgo *self, int dt, void *eye, void *dir);
-extern "C" int   KIPlayer_isDead(void *self);
 extern "C" void *MiningGame_new(int quality, int seed, void *hud);
 extern "C" int   MiningGame_update(void *mg, int dt);
 extern "C" int   MiningGame_gameLost(void *mg);
 extern "C" int   MiningGame_getOreAmount(void *mg);
 extern "C" int   PlayerAsteroid_getQuality(void *ast);
 extern "C" void  FModSound_pause(void *snd);
-extern "C" void  PlayerEgo_stopMining(PlayerEgo *self);
 extern "C" int   PE_aa_approachStep(PlayerEgo *self, int hud2, void *radar);
-extern "C" void *Player_GetEngineEvent(void *player);
 extern "C" void  FModSound_setParamValue(void *snd, void *ev, int idx, float v);
 extern "C" void  Mat_mul(void *out, const void *a, const void *b);
 extern "C" void  PaintCanvas_TransformSetLocal(unsigned int tf, const void *m);
@@ -284,11 +237,8 @@ extern "C" int   Status_inSupernovaOrbit();
 extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void **canvasHolder);
 extern "C" void Player_addGun2(void*, void*, int);
 extern "C" void PlayerEgo_addGun2_ext(PlayerEgo*);
-extern "C" void Explosion_render(void *exp);
 extern "C" void AEGeometry_render(void *geo);
 extern "C" void AEGeometry_setVisible(void *geo, bool vis);
-extern "C" void TractorBeam_render(void *tb);
-extern "C" void RepairBeam_render(void *rb);
 extern "C" void* AEGeometry_getMatrix(void*);
 extern "C" void Matrix_mul(void*, void*, void*);
 extern "C" void MatrixGetPosition(void*, void*);
@@ -300,14 +250,16 @@ extern "C" void  PaintCanvas_MeshChangeShaderAnimValue(void *canvas, void *mesh,
 extern "C" void  PaintCanvas_MaterialCreate(void *canvas, unsigned short id, unsigned int *out);
 
 // ---- setVisible_a1c88.cpp ----
-void PlayerEgo_setVisible(PlayerEgo* self, bool v) {
+void PlayerEgo::setVisible(bool v) {
+    PlayerEgo *self = this;
   C(self, 0x32e) = v;
   C(self, 0x309) = v;
   return PlayerEgo_setVisible_ext();
 }
 
 // ---- boost_9aea4.cpp ----
-void PlayerEgo_boost(PlayerEgo* self) {
+void PlayerEgo::boost() {
+    PlayerEgo *self = this;
   if (C(self, 0x13c) != 0) return;
   if (C(self, 0x146) == 0) return;
   if (I(self, 0x194) != 0) return;
@@ -321,16 +273,19 @@ void PlayerEgo_boost(PlayerEgo* self) {
 }
 
 // ---- getDriveChargeRate_9b00e.cpp ----
-float PlayerEgo_getDriveChargeRate(PlayerEgo* self) {
+float PlayerEgo::getDriveChargeRate() {
+    PlayerEgo *self = this;
   float d = (float)I(self, 0x1fc) / (float)I(self, 0x200);
   return d >= 0.0f ? d : 1.0f;
 }
 
 // ---- isAutoPilot_9b8a4.cpp ----
-unsigned char PlayerEgo_isAutoPilot(PlayerEgo* self) { return UC(self, 0x158); }
+unsigned char PlayerEgo::isAutoPilot() {
+    PlayerEgo *self = this; return UC(self, 0x158); }
 
 // ---- goingToWormhole_9b8fc.cpp ----
-bool PlayerEgo_goingToWormhole(PlayerEgo* self) {
+bool PlayerEgo::goingToWormhole() {
+    PlayerEgo *self = this;
   void* m = P(self, 0xc);
   void* r4 = P(self, 0x15c);
   void* lm = Level_getLandmarks(m);
@@ -338,38 +293,47 @@ bool PlayerEgo_goingToWormhole(PlayerEgo* self) {
 }
 
 // ---- getCurrentSecondaryWeaponIndex_9b7b0.cpp ----
-int PlayerEgo_getCurrentSecondaryWeaponIndex(PlayerEgo* self) { return I(self, 0x10c); }
+int PlayerEgo::getCurrentSecondaryWeaponIndex() {
+    PlayerEgo *self = this; return I(self, 0x10c); }
 
 // ---- getHitpoints_9b190.cpp ----
-int PlayerEgo_getHitpoints(PlayerEgo* self) { return PlayerEgo_getHitpoints_ext(P(self, 0)); }
+int PlayerEgo::getHitpoints() {
+    PlayerEgo *self = this; return PlayerEgo_getHitpoints_ext(P(self, 0)); }
 
 // ---- isChargingDrive_9b048.cpp ----
-unsigned char PlayerEgo_isChargingDrive(PlayerEgo* self) { return UC(self, 0x204); }
+unsigned char PlayerEgo::isChargingDrive() {
+    PlayerEgo *self = this; return UC(self, 0x204); }
 
 // ---- shouldSwitchToFreeLookCam_a1788.cpp ----
-int PlayerEgo_shouldSwitchToFreeLookCam(PlayerEgo* self) {
+int PlayerEgo::shouldSwitchToFreeLookCam() {
+    PlayerEgo *self = this;
   if (C(self, 0xb1) == 0) return 0;
   C(self, 0xb1) = 0;
   return 1;
 }
 
 // ---- getHandling_a212e.cpp ----
-int PlayerEgo_getHandling(PlayerEgo* self) { return I(self, 0x154); }
+int PlayerEgo::getHandling() {
+    PlayerEgo *self = this; return I(self, 0x154); }
 
 // ---- setComputerControlled_9b7fa.cpp ----
-void PlayerEgo_setComputerControlled(PlayerEgo* self, bool v) { C(self, 0x1f4) = v; }
+void PlayerEgo::setComputerControlled(bool v) {
+    PlayerEgo *self = this; C(self, 0x1f4) = v; }
 
 // ---- getRocketBanking_a11ae.cpp ----
-int PlayerEgo_getRocketBanking(PlayerEgo* self) { return I(self, 0x198); }
+int PlayerEgo::getRocketBanking() {
+    PlayerEgo *self = this; return I(self, 0x198); }
 
 // ---- isDockingToDockingPoint_a069c.cpp ----
-bool PlayerEgo_isDockingToDockingPoint(PlayerEgo* self) {
+bool PlayerEgo::isDockingToDockingPoint() {
+    PlayerEgo *self = this;
   if (C(self, 0x356) != 0) return I(self, 0x1c4) != 1;
   return false;
 }
 
 // ---- forceBoost_9af06.cpp ----
-void PlayerEgo_forceBoost(PlayerEgo* self) {
+void PlayerEgo::forceBoost() {
+    PlayerEgo *self = this;
   I(self, 0x138) = 0;
   C(self, 0x13c) = 1;
   I(self, 0xb8) = 0x41000000;
@@ -378,53 +342,65 @@ void PlayerEgo_forceBoost(PlayerEgo* self) {
 }
 
 // ---- isDead_9b17c.cpp ----
-int PlayerEgo_isDead(PlayerEgo* self) { return PlayerEgo_getHitpoints(self) < 1; }
+int PlayerEgo::isDead() {
+    PlayerEgo *self = this; return ((PlayerEgo *)(self))->getHitpoints() < 1; }
 
 // ---- getAutoPilotTarget_9b872.cpp ----
-int PlayerEgo_getAutoPilotTarget(PlayerEgo* self) { return I(self, 0x15c); }
+int PlayerEgo::getAutoPilotTarget() {
+    PlayerEgo *self = this; return I(self, 0x15c); }
 
 // ---- goingToPlanet_9b878.cpp ----
-bool PlayerEgo_goingToPlanet(PlayerEgo* self) {
-  if (C(self, 0x158) != 0 && PlayerEgo_goingToStream(self) == 0 && PlayerEgo_goingToStation(self) == 0)
+bool PlayerEgo::goingToPlanet() {
+    PlayerEgo *self = this;
+  if (C(self, 0x158) != 0 && ((PlayerEgo *)(self))->goingToStream() == 0 && ((PlayerEgo *)(self))->goingToStation() == 0)
     return C(self, 0x160) == 0;
   return false;
 }
 
 // ---- getCloakRechargeRate_9b06a.cpp ----
-float PlayerEgo_getCloakRechargeRate(PlayerEgo* self) {
+float PlayerEgo::getCloakRechargeRate() {
+    PlayerEgo *self = this;
   return 1.0f - (float)I(self, 0x20c) / (float)I(self, 0x368);
 }
 
 // ---- isDockedToStream_a167c.cpp ----
-unsigned char PlayerEgo_isDockedToStream(PlayerEgo* self) { return UC(self, 0x1ed); }
+unsigned char PlayerEgo::isDockedToStream() {
+    PlayerEgo *self = this; return UC(self, 0x1ed); }
 
 // ---- getTargetFollowCamera_a2202.cpp ----
-int PlayerEgo_getTargetFollowCamera(PlayerEgo* self) { return I(self, 0x88); }
+int PlayerEgo::getTargetFollowCamera() {
+    PlayerEgo *self = this; return I(self, 0x88); }
 
 // ---- isCloaked_9b0aa.cpp ----
-unsigned char PlayerEgo_isCloaked(PlayerEgo* self) { return UC(self, 0x1ac); }
+unsigned char PlayerEgo::isCloaked() {
+    PlayerEgo *self = this; return UC(self, 0x1ac); }
 
 // ---- setFreeLookMode_a21ec.cpp ----
-void PlayerEgo_setFreeLookMode(PlayerEgo* self, bool v) { C(self, 0xc4) = v; }
+void PlayerEgo::setFreeLookMode(bool v) {
+    PlayerEgo *self = this; C(self, 0xc4) = v; }
 
 // ---- setThrust_9b86c.cpp ----
-void PlayerEgo_setThrust(PlayerEgo* self, float v) { F(self, 0xbc) = v; }
+void PlayerEgo::setThrust(float v) {
+    PlayerEgo *self = this; F(self, 0xbc) = v; }
 
 // ---- readyForCloak_9b08c.cpp ----
-bool PlayerEgo_readyForCloak(PlayerEgo* self) {
+bool PlayerEgo::readyForCloak() {
+    PlayerEgo *self = this;
   if (C(self, 0x1ad) == 0) return false;
   return I(self, 0x208) >= I(self, 0x214);
 }
 
 // ---- getHackingGameDockIndex_a1142.cpp ----
-int PlayerEgo_getHackingGameDockIndex(PlayerEgo* self) {
+int PlayerEgo::getHackingGameDockIndex() {
+    PlayerEgo *self = this;
   int v = I(self, 0x1e8);
   if (v == 0) return -1;
   return PlayerEgo_getHackingGameDockIndex_ext(v);
 }
 
 // ---- setPosition_9b91c.cpp ----
-void PlayerEgo_setPosition3(PlayerEgo* self, float x, float y, float z) {
+void PlayerEgo::setPosition3(float x, float y, float z) {
+    PlayerEgo *self = this;
   void* g = P(self, 8);
   char v[12];
   *(float*)(v + 0) = x;
@@ -434,10 +410,11 @@ void PlayerEgo_setPosition3(PlayerEgo* self, float x, float y, float z) {
 }
 
 // ---- dockToStream_a1732.cpp ----
-void PlayerEgo_dockToStream(PlayerEgo* self, bool param) {
+void PlayerEgo::dockToStream(bool param) {
+    PlayerEgo *self = this;
   if (param) { *(short*)B(self, 0x1ec) = 0x100; return; }
   I(self, 0xb8) = 0x40000000;
-  PlayerEgo_setPosition3(self, F(self, 0xe0), F(self, 0xe4), F(self, 0xe8));
+  ((PlayerEgo *)(self))->setPosition3(F(self, 0xe0), F(self, 0xe4), F(self, 0xe8));
   C(self, 0x24) = 0;
   C(self, 0x145) = 0;
   *(short*)B(self, 0x1ec) = 0;
@@ -445,34 +422,41 @@ void PlayerEgo_dockToStream(PlayerEgo* self, bool param) {
 }
 
 // ---- hackingShuffle_a12e4.cpp ----
-void PlayerEgo_hackingShuffle(PlayerEgo* self) {
+void PlayerEgo::hackingShuffle() {
+    PlayerEgo *self = this;
   int v = I(self, 0x1e8);
   if (v != 0) PlayerEgo_hackingShuffle_ext(v);
 }
 
 // ---- getDockTransferedAmount_a2286.cpp ----
-int PlayerEgo_getDockTransferedAmount(PlayerEgo* self) { return I(self, 0x364); }
+int PlayerEgo::getDockTransferedAmount() {
+    PlayerEgo *self = this; return I(self, 0x364); }
 
 // ---- goingToWaypoint_9b8f6.cpp ----
-unsigned char PlayerEgo_goingToWaypoint(PlayerEgo* self) { return UC(self, 0x160); }
+unsigned char PlayerEgo::goingToWaypoint() {
+    PlayerEgo *self = this; return UC(self, 0x160); }
 
 // ---- isDockedToDockingPoint_9a684.cpp ----
-bool PlayerEgo_isDockedToDockingPoint(PlayerEgo* self) {
+bool PlayerEgo::isDockedToDockingPoint() {
+    PlayerEgo *self = this;
   if (C(self, 0x356) == 0) return false;
   return I(self, 0x1c4) == 1;
 }
 
 // ---- getDockTotalAmount_a2280.cpp ----
-int PlayerEgo_getDockTotalAmount(PlayerEgo* self) { return I(self, 0x360); }
+int PlayerEgo::getDockTotalAmount() {
+    PlayerEgo *self = this; return I(self, 0x360); }
 
 // ---- isInWormhole_9b94c.cpp ----
-bool PlayerEgo_isInWormhole(PlayerEgo* self) {
-  if (PlayerEgo_getHitpoints(self) > 0) return C(self, 0x25) != 0;
+bool PlayerEgo::isInWormhole() {
+    PlayerEgo *self = this;
+  if (((PlayerEgo *)(self))->getHitpoints() > 0) return C(self, 0x25) != 0;
   return false;
 }
 
 // ---- setRocketControl_a19c6.cpp ----
-void PlayerEgo_setRocketControl(PlayerEgo* self, void* gun, void* geo) {
+void PlayerEgo::setRocketControl(void* gun, void* geo) {
+    PlayerEgo *self = this;
   void* lvl = P(self, 0xc);
   I(self, 0x194) = (int)(intptr_t)gun;
   int psm_arg = I(lvl, 0x64);
@@ -488,19 +472,23 @@ void PlayerEgo_setRocketControl(PlayerEgo* self, void* gun, void* geo) {
 }
 
 // ---- isMining_9add8.cpp ----
-bool PlayerEgo_isMining(PlayerEgo* self) { return I(self, 0x1e4) != 0; }
+bool PlayerEgo::isMining() {
+    PlayerEgo *self = this; return I(self, 0x1e4) != 0; }
 
 // ---- turnHorizontal_a1194.cpp ----
-void PlayerEgo_turnHorizontal(PlayerEgo* self, int a, float v) {
+void PlayerEgo::turnHorizontal(int a, float v) {
+    PlayerEgo *self = this;
   if (v < 0.0f) { PlayerEgo_turnHorizontal_neg(self); return; }
   if (v > 0.0f) { PlayerEgo_turnHorizontal_pos(self); return; }
 }
 
 // ---- getThrust_a2274.cpp ----
-int PlayerEgo_getThrust(PlayerEgo* self) { return I(self, 0xbc); }
+int PlayerEgo::getThrust() {
+    PlayerEgo *self = this; return I(self, 0xbc); }
 
 // ---- getCloakRate_9afd0.cpp ----
-float PlayerEgo_getCloakRate(PlayerEgo* self) {
+float PlayerEgo::getCloakRate() {
+    PlayerEgo *self = this;
   int off = 0x210;
   if (C(self, 0x1ac) == 0) off = 0x214;
   float a = (float)I(self, 0x208);
@@ -510,12 +498,14 @@ float PlayerEgo_getCloakRate(PlayerEgo* self) {
 }
 
 // ---- resetLastHP_9a6b2.cpp ----
-void PlayerEgo_resetLastHP(PlayerEgo* self) {
-  I(self, 0x130) = Player_getCombinedHP(P(self, 0));
+void PlayerEgo::resetLastHP() {
+    PlayerEgo *self = this;
+  I(self, 0x130) = ((Player *)(P(self, 0)))->getCombinedHP();
 }
 
 // ---- setExhaustVisible_9a50c.cpp ----
-void PlayerEgo_setExhaustVisible(PlayerEgo* self, bool param) {
+void PlayerEgo::setExhaustVisible(bool param) {
+    PlayerEgo *self = this;
   void* lvl = P(self, 0xc);
   C(self, 0x32f) = param;
   C(P(lvl, 0x80), 0) = param;
@@ -529,51 +519,62 @@ void PlayerEgo_setExhaustVisible(PlayerEgo* self, bool param) {
 }
 
 // ---- shouldSwitchToStandardCam_a1772.cpp ----
-int PlayerEgo_shouldSwitchToStandardCam(PlayerEgo* self) {
+int PlayerEgo::shouldSwitchToStandardCam() {
+    PlayerEgo *self = this;
   if (C(self, 0xb0) == 0) return 0;
   C(self, 0xb0) = 0;
   return 1;
 }
 
 // ---- resetMovement_9a69e.cpp ----
-void PlayerEgo_resetMovement(PlayerEgo* self) {
+void PlayerEgo::resetMovement() {
+    PlayerEgo *self = this;
   D(self, 0x278) = 0;
   D(self, 0x268) = 0;
   D(self, 0x270) = 0;
 }
 
 // ---- isHacking_a110c.cpp ----
-bool PlayerEgo_isHacking(PlayerEgo* self) { return I(self, 0x1e8) != 0; }
+bool PlayerEgo::isHacking() {
+    PlayerEgo *self = this; return I(self, 0x1e8) != 0; }
 
 // ---- setPosition_9b948.cpp ----
-void PlayerEgo_setPosition(PlayerEgo* self) { return PlayerEgo_setPosition_v(self); }
+void PlayerEgo::setPosition() {
+    PlayerEgo *self = this; return PlayerEgo_setPosition_v(self); }
 
 // ---- resetChargingDrive_9b04e.cpp ----
-void PlayerEgo_resetChargingDrive(PlayerEgo* self) { UC(self, 0x204) = 0; }
+void PlayerEgo::resetChargingDrive() {
+    PlayerEgo *self = this; UC(self, 0x204) = 0; }
 
 // ---- PauseEngineSound_9a5dc.cpp ----
 // 000aa5dc: ldr r0,[r0,#0x0] ; b.w <ext>   — tail-call ext(self->m_pPlayer)
-void PlayerEgo_PauseEngineSound(PlayerEgo* self) {
+void PlayerEgo::PauseEngineSound() {
+    PlayerEgo *self = this;
   return PlayerEgo_PauseEngineSound_ext(P(self, 0));
 }
 
 // ---- isInFreeLookMode_a21e6.cpp ----
-unsigned char PlayerEgo_isInFreeLookMode(PlayerEgo* self) { return UC(self, 0xc4); }
+unsigned char PlayerEgo::isInFreeLookMode() {
+    PlayerEgo *self = this; return UC(self, 0xc4); }
 
 // ---- setActive_9b7f4.cpp ----
-void PlayerEgo_setActive(PlayerEgo* self, bool) { return PlayerEgo_setActive_ext(P(self, 0)); }
+void PlayerEgo::setActive(bool) {
+    PlayerEgo *self = this; return PlayerEgo_setActive_ext(P(self, 0)); }
 
 // ---- alignToHorizon_a12f2.cpp ----
-void PlayerEgo_alignToHorizon(PlayerEgo* self) { UC(self, 0x2f4) = 1; }
+void PlayerEgo::alignToHorizon() {
+    PlayerEgo *self = this; UC(self, 0x2f4) = 1; }
 
 // ---- setAutoTurret_9b2a2.cpp ----
-void PlayerEgo_setAutoTurret(PlayerEgo* self, bool on) {
+void PlayerEgo::setAutoTurret(bool on) {
+    PlayerEgo *self = this;
   C(self, 0x355) = on;
   if (!on) PlayerEgo_setAutoTurret_ext(P(self, 0), 2);
 }
 
 // ---- hitCamera_a06ec.cpp ----
-void PlayerEgo_hitCamera(PlayerEgo* self) {
+void PlayerEgo::hitCamera() {
+    PlayerEgo *self = this;
   C(self, 0x32c) = 1;
   int cam = I(self, 0x88);
   I(self, 0x328) = 0;
@@ -581,49 +582,58 @@ void PlayerEgo_hitCamera(PlayerEgo* self) {
 }
 
 // ---- hackingWon_a1118.cpp ----
-int PlayerEgo_hackingWon(PlayerEgo* self) {
+int PlayerEgo::hackingWon() {
+    PlayerEgo *self = this;
   int v = I(self, 0x1e8);
   if (v == 0) return 0;
   return PlayerEgo_hackingWon_ext(v);
 }
 
 // ---- lostMiningGame_a19c0.cpp ----
-unsigned char PlayerEgo_lostMiningGame(PlayerEgo* self) { return UC(self, 0x39b); }
+unsigned char PlayerEgo::lostMiningGame() {
+    PlayerEgo *self = this; return UC(self, 0x39b); }
 
 // ---- getCurrentMiningAmount_9af24.cpp ----
-int PlayerEgo_getCurrentMiningAmount(PlayerEgo* self) {
+int PlayerEgo::getCurrentMiningAmount() {
+    PlayerEgo *self = this;
   int v = I(self, 0x1e4);
   if (v == 0) return 0;
   return PlayerEgo_getCurrentMiningAmount_ext(v);
 }
 
 // ---- setDockingState_a179e.cpp ----
-void PlayerEgo_setDockingState(PlayerEgo* self, int s) {
+void PlayerEgo::setDockingState(int s) {
+    PlayerEgo *self = this;
   if (s == 2 && I(self, 0x1c4) == 1) C(self, 0xb2) = 1;
   I(self, 0x1c4) = s;
 }
 
 // ---- hackingRotateLCW_a12b8.cpp ----
-void PlayerEgo_hackingRotateLCW(PlayerEgo* self) {
+void PlayerEgo::hackingRotateLCW() {
+    PlayerEgo *self = this;
   if (I(self, 0x1e8) != 0 && HackingGame_isRotating(I(self, 0x1e8)) == 0
       && HackingGame_gameWon(I(self, 0x1e8)) == 0)
     PlayerEgo_hackingRotateLCW_ext(I(self, 0x1e8), 1);
 }
 
 // ---- isInDockingProcedure_a1152.cpp ----
-bool PlayerEgo_isInDockingProcedure(PlayerEgo* self) {
+bool PlayerEgo::isInDockingProcedure() {
+    PlayerEgo *self = this;
   if (C(self, 0x1c0) != 0) return true;
   return C(self, 0x356) != 0;
 }
 
 // ---- setSpeed_a220e.cpp ----
-void PlayerEgo_setSpeed(PlayerEgo* self, float v) { F(self, 0xb8) = v; }
+void PlayerEgo::setSpeed(float v) {
+    PlayerEgo *self = this; F(self, 0xb8) = v; }
 
 // ---- ResumeEngineSound_9a5e2.cpp ----
-void PlayerEgo_ResumeEngineSound(PlayerEgo* self) { return PlayerEgo_ResumeEngineSound_ext(P(self, 0), 0); }
+void PlayerEgo::ResumeEngineSound() {
+    PlayerEgo *self = this; return PlayerEgo_ResumeEngineSound_ext(P(self, 0), 0); }
 
 // ---- addNukeVolatileForce_9a9f8.cpp ----
-void PlayerEgo_addNukeVolatileForce(PlayerEgo* self, float v) {
+void PlayerEgo::addNukeVolatileForce(float v) {
+    PlayerEgo *self = this;
   void* p = P(self, 0);
   F(p, 0x60) = F(p, 0x60) + v * 3.0f;
 }
@@ -631,7 +641,8 @@ void PlayerEgo_addNukeVolatileForce(PlayerEgo* self, float v) {
 // ---- explode_a13e0.cpp ----
 extern void* g_explode_obj;
 extern void (*g_explode_fn)(void*, int);
-void PlayerEgo_explode(PlayerEgo* self) {
+void PlayerEgo::explode() {
+    PlayerEgo *self = this;
   ParticleSystemManager_enableSystemEmit3(P(P(self, 0xc), 0x74), I(self, 0x2fc), 1);
   if (I(self, 0x8c) != 0) return;
   TargetFollowCamera_setActive(P(self, 0x88), 0);
@@ -656,10 +667,12 @@ void PlayerEgo_explode(PlayerEgo* self) {
 }
 
 // ---- isDockingToStream_9f49a.cpp ----
-unsigned char PlayerEgo_isDockingToStream(PlayerEgo* self) { return UC(self, 0x1ec); }
+unsigned char PlayerEgo::isDockingToStream() {
+    PlayerEgo *self = this; return UC(self, 0x1ec); }
 
 // ---- goingToStream_9b8aa.cpp ----
-int PlayerEgo_goingToStream(PlayerEgo* self) {
+int PlayerEgo::goingToStream() {
+    PlayerEgo *self = this;
   void* m = P(self, 0xc);
   void* r4 = P(self, 0x15c);
   void* lm = Level_getLandmarks(m);
@@ -667,10 +680,12 @@ int PlayerEgo_goingToStream(PlayerEgo* self) {
 }
 
 // ---- GetDirVector_9b7dc.cpp ----
-Vec3 PlayerEgo_GetDirVector(PlayerEgo* self) { return AEGeometry_getDirection(P(self, 8)); }
+Vec3 PlayerEgo::GetDirVector() {
+    PlayerEgo *self = this; return AEGeometry_getDirection(P(self, 8)); }
 
 // ---- hideShipForFirstPersonCameraView_a1c56.cpp ----
-void PlayerEgo_hideShipForFirstPersonCameraView(PlayerEgo* self, bool param) {
+void PlayerEgo::hideShipForFirstPersonCameraView(bool param) {
+    PlayerEgo *self = this;
   unsigned char r1 = param;
   C(self, 0x32d) = r1;
   unsigned char nr = r1 ^ 1;
@@ -679,7 +694,8 @@ void PlayerEgo_hideShipForFirstPersonCameraView(PlayerEgo* self, bool param) {
 }
 
 // ---- changeThrust_a2214.cpp ----
-void PlayerEgo_changeThrust(PlayerEgo* self, float v) {
+void PlayerEgo::changeThrust(float v) {
+    PlayerEgo *self = this;
   float n = F(self, 0xbc) + v;
   float p3 = 1.0f;
   if (n < 1.0f) p3 = 0.0f;
@@ -692,20 +708,23 @@ void PlayerEgo_changeThrust(PlayerEgo* self, float v) {
 
 // ---- deleteHackingGame_a1126.cpp ----
 struct HackingGame { ~HackingGame(); };
-void PlayerEgo_deleteHackingGame(PlayerEgo* self) {
+void PlayerEgo::deleteHackingGame() {
+    PlayerEgo *self = this;
   HackingGame* g = (HackingGame*)P(self, 0x1e8);
   if (g != 0) delete g;
   P(self, 0x1e8) = 0;
 }
 
 // ---- explosionEnded_a15d4.cpp ----
-bool PlayerEgo_explosionEnded(PlayerEgo* self) {
+bool PlayerEgo::explosionEnded() {
+    PlayerEgo *self = this;
   if (I(self, 0x8c) == 0) return true;
   return 8000 < I(self, 0x2f8);
 }
 
 // ---- getBoostPercentage_9af48.cpp ----
-float PlayerEgo_getBoostPercentage(PlayerEgo* self) {
+float PlayerEgo::getBoostPercentage() {
+    PlayerEgo *self = this;
   float den = (float)__aeabi_idiv(I(self, 0xcc), 6);
   float d = (float)I(self, 0x138) / den;
   float r;
@@ -720,22 +739,27 @@ float PlayerEgo_getBoostPercentage(PlayerEgo* self) {
 }
 
 // ---- GetUpVector_9b7d0.cpp ----
-Vec3 PlayerEgo_GetUpVector(PlayerEgo* self) { return AEGeometry_getUpVector(P(self, 8)); }
+Vec3 PlayerEgo::GetUpVector() {
+    PlayerEgo *self = this; return AEGeometry_getUpVector(P(self, 8)); }
 
 // ---- isDockedToPlanet_a1720.cpp ----
-bool PlayerEgo_isDockedToPlanet(PlayerEgo* self) { return 3000 < I(self, 0x1f0); }
+bool PlayerEgo::isDockedToPlanet() {
+    PlayerEgo *self = this; return 3000 < I(self, 0x1f0); }
 
 // ---- emergencySystemActive_a10f8.cpp ----
-bool PlayerEgo_emergencySystemActive(PlayerEgo* self) { return 0 < I(self, 0x30c); }
+bool PlayerEgo::emergencySystemActive() {
+    PlayerEgo *self = this; return 0 < I(self, 0x30c); }
 
 // ---- isDockingToAsteroid_a161e.cpp ----
-bool PlayerEgo_isDockingToAsteroid(PlayerEgo* self) {
+bool PlayerEgo::isDockingToAsteroid() {
+    PlayerEgo *self = this;
   if (C(self, 0x1c0) != 0) return I(self, 0x1c4) != 1;
   return false;
 }
 
 // ---- getBoostRate_9afa0.cpp ----
-float PlayerEgo_getBoostRate(PlayerEgo* self) {
+float PlayerEgo::getBoostRate() {
+    PlayerEgo *self = this;
   float d = (float)I(self, 0x138) / (float)I(self, 0xd0);
   float r = d + 1.0f;
   if (0.0f < d) r = 1.0f;
@@ -743,34 +767,41 @@ float PlayerEgo_getBoostRate(PlayerEgo* self) {
 }
 
 // ---- driveReady_9b03a.cpp ----
-bool PlayerEgo_driveReady(PlayerEgo* self) { return I(self, 0x1fc) >= I(self, 0x200); }
+bool PlayerEgo::driveReady() {
+    PlayerEgo *self = this; return I(self, 0x1fc) >= I(self, 0x200); }
 
 // ---- turnVertical_a1168.cpp ----
-void PlayerEgo_turnVertical(PlayerEgo* self, int a, float v) {
+void PlayerEgo::turnVertical(int a, float v) {
+    PlayerEgo *self = this;
   if (v < -0.0f) { PlayerEgo_turnVertical_neg(); return; }
   if (v > 0.0f) { PlayerEgo_turnVertical_pos(self); return; }
 }
 
 // ---- isInTurretMode_9aa10.cpp ----
-unsigned char PlayerEgo_isInTurretMode(PlayerEgo* self) { return UC(self, 0x1a0); }
+unsigned char PlayerEgo::isInTurretMode() {
+    PlayerEgo *self = this; return UC(self, 0x1a0); }
 
 // ---- startJumpDrive_9a6c4.cpp ----
-void PlayerEgo_startJumpDrive(PlayerEgo* self) {
+void PlayerEgo::startJumpDrive() {
+    PlayerEgo *self = this;
   if (C(self, 0x204) != 0) return;
   FModSound_play(*(void**)g_FMod_singleton, 0x21, 0, 0, 0);
-  Hud_hudEvent(I(self, 0x220), 0x19, self, 0);
+  ((Hud *)(I(self, 0x220)))->hudEvent(0x19, self, 0);
   I(self, 0x1fc) = 0;
   C(self, 0x204) = 1;
 }
 
 // ---- isInRocketControl_9ade4.cpp ----
-bool PlayerEgo_isInRocketControl(PlayerEgo* self) { return I(self, 0x194) != 0; }
+bool PlayerEgo::isInRocketControl() {
+    PlayerEgo *self = this; return I(self, 0x194) != 0; }
 
 // ---- getSpeed_a227a.cpp ----
-int PlayerEgo_getSpeed(PlayerEgo* self) { return I(self, 0xb8); }
+int PlayerEgo::getSpeed() {
+    PlayerEgo *self = this; return I(self, 0xb8); }
 
 // ---- getVolatileForce_9a9c4.cpp ----
-float PlayerEgo_getVolatileForce(PlayerEgo* self) {
+float PlayerEgo::getVolatileForce() {
+    PlayerEgo *self = this;
   float f = F(P(self, 0), 0x60);
   float r = 0.0f;
   if (!(f < 0.0f)) {
@@ -781,16 +812,19 @@ float PlayerEgo_getVolatileForce(PlayerEgo* self) {
 }
 
 // ---- isDockingToPlanet_9f494.cpp ----
-unsigned char PlayerEgo_isDockingToPlanet(PlayerEgo* self) { return UC(self, 0x1ee); }
+unsigned char PlayerEgo::isDockingToPlanet() {
+    PlayerEgo *self = this; return UC(self, 0x1ee); }
 
 // ---- isChargingCloak_9b056.cpp ----
-unsigned char PlayerEgo_isChargingCloak(PlayerEgo* self) { return UC(self, 0x1ad); }
+unsigned char PlayerEgo::isChargingCloak() {
+    PlayerEgo *self = this; return UC(self, 0x1ad); }
 
 // ---- isDockedToMiningPlant_a1634.cpp ----
 extern void* g_mining_status;
-bool PlayerEgo_isDockedToMiningPlant(PlayerEgo* self) {
+bool PlayerEgo::isDockedToMiningPlant() {
+    PlayerEgo *self = this;
   if (C(self, 0x356) != 0 && I(self, 0x1c4) == 1) {
-    if (Mission_isEmpty(Status_getMission(g_mining_status)) != 0
+    if (((Mission *)(Status_getMission(g_mining_status)))->isEmpty() != 0
         && Status_inAlienOrbit(g_mining_status) == 0) {
       return Station_getIndex(Status_getStation(g_mining_status)) == 0x67;
     }
@@ -800,33 +834,39 @@ bool PlayerEgo_isDockedToMiningPlant(PlayerEgo* self) {
 
 // ---- setCurrentSecondaryWeaponIndex_9b7b8.cpp ----
 extern PlayerEgo* g_PlayerEgo_singleton;
-void PlayerEgo_setCurrentSecondaryWeaponIndex(PlayerEgo* self, int idx) {
+void PlayerEgo::setCurrentSecondaryWeaponIndex(int idx) {
+    PlayerEgo *self = this;
   I(self, 0x10c) = idx;
   I(g_PlayerEgo_singleton, 0xf4) = idx;
 }
 
 // ---- removeRoute_9b15c.cpp ----
 struct Route { ~Route(); };
-void PlayerEgo_removeRoute(PlayerEgo* self) {
+void PlayerEgo::removeRoute() {
+    PlayerEgo *self = this;
   Route* r = (Route*)P(self, 0xfc);
   if (r != 0) delete r;
   P(self, 0xfc) = 0;
 }
 
 // ---- setRoute_9b150.cpp ----
-void PlayerEgo_setRoute(PlayerEgo* self, int v) { I(self, 0xfc) = v; }
+void PlayerEgo::setRoute(int v) {
+    PlayerEgo *self = this; I(self, 0xfc) = v; }
 
 // ---- boosting_9af32.cpp ----
-unsigned char PlayerEgo_boosting(PlayerEgo* self) { return UC(self, 0x13c); }
+unsigned char PlayerEgo::boosting() {
+    PlayerEgo *self = this; return UC(self, 0x13c); }
 
 // ---- isDockedToAsteroid_a1604.cpp ----
-bool PlayerEgo_isDockedToAsteroid(PlayerEgo* self) {
+bool PlayerEgo::isDockedToAsteroid() {
+    PlayerEgo *self = this;
   if (C(self, 0x1c0) == 0) return false;
   return I(self, 0x1c4) == 1;
 }
 
 // ---- goingToStation_9b8c8.cpp ----
-int PlayerEgo_goingToStation(PlayerEgo* self) {
+int PlayerEgo::goingToStation() {
+    PlayerEgo *self = this;
   void* lm = Level_getLandmarks(P(self, 0xc));
   if (P(P(lm, 4), 0) == 0) return false;
   void* r4 = P(self, 0x15c);
@@ -835,7 +875,8 @@ int PlayerEgo_goingToStation(PlayerEgo* self) {
 }
 
 // ---- getCloakingPercentage_9c170.cpp ----
-float PlayerEgo_getCloakingPercentage(PlayerEgo* self) {
+float PlayerEgo::getCloakingPercentage() {
+    PlayerEgo *self = this;
   float r = 0.0f;
   if (C(self, 0x1ac) != 0) {
     int v = I(self, 0x208);
@@ -856,56 +897,68 @@ float PlayerEgo_getCloakingPercentage(PlayerEgo* self) {
 }
 
 // ---- getBoostSpeed_9af00.cpp ----
-int PlayerEgo_getBoostSpeed(PlayerEgo* self) { return I(self, 0xc8); }
+int PlayerEgo::getBoostSpeed() {
+    PlayerEgo *self = this; return I(self, 0xc8); }
 
 // ---- addGun_9b778.cpp ----
-void PlayerEgo_addGun(PlayerEgo* self, void* gun, int x) {
+void PlayerEgo::addGun(void* gun, int x) {
+    PlayerEgo *self = this;
   Player_addGun(P(self, 0), gun, x);
   return PlayerEgo_addGun_ext(self);
 }
 
 // ---- aboutToReachAutoTarget_a15ee.cpp ----
-unsigned char PlayerEgo_aboutToReachAutoTarget(PlayerEgo* self) { return UC(self, 0x330); }
+unsigned char PlayerEgo::aboutToReachAutoTarget() {
+    PlayerEgo *self = this; return UC(self, 0x330); }
 
 // ---- autoTurretIsEnabled_9b2b4.cpp ----
-unsigned char PlayerEgo_autoTurretIsEnabled(PlayerEgo* self) { return UC(self, 0x355); }
+unsigned char PlayerEgo::autoTurretIsEnabled() {
+    PlayerEgo *self = this; return UC(self, 0x355); }
 
 // ---- readyToBoost_9af38.cpp ----
-bool PlayerEgo_readyToBoost(PlayerEgo* self) { return -1 < I(self, 0x138); }
+bool PlayerEgo::readyToBoost() {
+    PlayerEgo *self = this; return -1 < I(self, 0x138); }
 
 // ---- endExplosion_a15c6.cpp ----
-void PlayerEgo_endExplosion(PlayerEgo* self) {
+void PlayerEgo::endExplosion() {
+    PlayerEgo *self = this;
   int v = I(self, 0x8c);
   if (v != 0) PlayerEgo_endExplosion_ext(v);
 }
 
 // ---- isLandingOrTakingOff_a06b2.cpp ----
-bool PlayerEgo_isLandingOrTakingOff(PlayerEgo* self) {
+bool PlayerEgo::isLandingOrTakingOff() {
+    PlayerEgo *self = this;
   if (C(self, 0x356) == 0) return false;
   return (U(self, 0x1c4) | 1) == 3;
 }
 
 // ---- setFreeze_9b800.cpp ----
-void PlayerEgo_setFreeze(PlayerEgo* self, bool v) { C(self, 0x24) = v; }
+void PlayerEgo::setFreeze(bool v) {
+    PlayerEgo *self = this; C(self, 0x24) = v; }
 
 // ---- getHUD_a21e0.cpp ----
-int PlayerEgo_getHUD(PlayerEgo* self) { return I(self, 0x220); }
+int PlayerEgo::getHUD() {
+    PlayerEgo *self = this; return I(self, 0x220); }
 
 // ---- getRoute_9b156.cpp ----
-int PlayerEgo_getRoute(PlayerEgo* self) { return I(self, 0xfc); }
+int PlayerEgo::getRoute() {
+    PlayerEgo *self = this; return I(self, 0xfc); }
 
 // ---- setCollide_9b0b0.cpp ----
-void PlayerEgo_setCollide(PlayerEgo* self, bool v) { C(self, 0x144) = v; }
+void PlayerEgo::setCollide(bool v) {
+    PlayerEgo *self = this; C(self, 0x144) = v; }
 
 // ---- tryToStartEmergencySystem_a106c.cpp ----
 extern void* g_emerg_status;
 extern void* g_emerg_fmod;
-int PlayerEgo_tryToStartEmergencySystem(PlayerEgo* self) {
+int PlayerEgo::tryToStartEmergencySystem() {
+    PlayerEgo *self = this;
   if (I(self, 0xac) == 0 || I(self, 0x30c) != 0) return 0;
-  if (Player_getHitpoints(P(self, 0)) > 1) return 0;
-  Player_setHitpoints(P(self, 0), 1);
+  if (((Player *)(P(self, 0)))->getHitpoints() > 1) return 0;
+  ((Player *)(P(self, 0)))->setHitpoints(1);
   I(self, 0x30c) = I(self, 0x310);
-  Player_setVulnerable(P(self, 0), 0);
+  ((Player *)(P(self, 0)))->setVulnerable(0);
   void* s1 = Status_getShip(g_emerg_status);
   int eq = Ship_getFirstEquipmentOfSort(Status_getShip(g_emerg_status), 0x1b);
   float f = Ship_removeEquipment(s1, eq);
@@ -914,41 +967,49 @@ int PlayerEgo_tryToStartEmergencySystem(PlayerEgo* self) {
 }
 
 // ---- hasAutoTurret_9b29c.cpp ----
-unsigned char PlayerEgo_hasAutoTurret(PlayerEgo* self) { return UC(self, 0x180); }
+unsigned char PlayerEgo::hasAutoTurret() {
+    PlayerEgo *self = this; return UC(self, 0x180); }
 
 // ---- collidesWithStation_a1106.cpp ----
-unsigned char PlayerEgo_collidesWithStation(PlayerEgo* self) { return UC(self, 0x234); }
+unsigned char PlayerEgo::collidesWithStation() {
+    PlayerEgo *self = this; return UC(self, 0x234); }
 
 // ---- stopPlanetDock_a16f4.cpp ----
-void PlayerEgo_stopPlanetDock(PlayerEgo* self) {
+void PlayerEgo::stopPlanetDock() {
+    PlayerEgo *self = this;
   TargetFollowCamera_setLookAtCam(I(self, 0x88), 0);
   C(self, 0x144) = 1;
   C(self, 0x1ee) = 0;
-  PlayerEgo_stopBoost(self);
+  ((PlayerEgo *)(self))->stopBoost();
   I(self, 0xb8) = 0x40000000;
 }
 
 // ---- isRechargingCloak_9b05c.cpp ----
-bool PlayerEgo_isRechargingCloak(PlayerEgo* self) { return 0 < I(self, 0x20c); }
+bool PlayerEgo::isRechargingCloak() {
+    PlayerEgo *self = this; return 0 < I(self, 0x20c); }
 
 // ---- hasVolatileGoods_9a9bc.cpp ----
 // 000aa9bc: ldrb.w r0,[r0,#0x398] ; bx lr
-unsigned char PlayerEgo_hasVolatileGoods(PlayerEgo* self) {
+unsigned char PlayerEgo::hasVolatileGoods() {
+    PlayerEgo *self = this;
   return UC(self, 0x398);
 }
 
 // ---- hackingRotateRCW_a128c.cpp ----
-void PlayerEgo_hackingRotateRCW(PlayerEgo* self) {
+void PlayerEgo::hackingRotateRCW() {
+    PlayerEgo *self = this;
   if (I(self, 0x1e8) != 0 && HackingGame_isRotating(I(self, 0x1e8)) == 0
       && HackingGame_gameWon(I(self, 0x1e8)) == 0)
     PlayerEgo_hackingRotateRCW_ext(I(self, 0x1e8), 1);
 }
 
 // ---- hasCloak_9a9b0.cpp ----
-bool PlayerEgo_hasCloak(PlayerEgo* self) { return P(self, 0x1b0) != 0; }
+bool PlayerEgo::hasCloak() {
+    PlayerEgo *self = this; return P(self, 0x1b0) != 0; }
 
 // ---- isBoostRefreshed_9ae80.cpp ----
-int PlayerEgo_isBoostRefreshed(PlayerEgo* self) {
+int PlayerEgo::isBoostRefreshed() {
+    PlayerEgo *self = this;
   if (C(self, 0x13c) != 0) return 0;
   if (C(self, 0x146) == 0) return 0;
   if (I(self, 0x138) > -1) return 1;
@@ -956,7 +1017,8 @@ int PlayerEgo_isBoostRefreshed(PlayerEgo* self) {
 }
 
 // ---- getPosition_9b7e8.cpp ----
-Vec3 PlayerEgo_getPosition(PlayerEgo* self) { return AEGeometry_getPosition(P(self, 8)); }
+Vec3 PlayerEgo::getPosition() {
+    PlayerEgo *self = this; return AEGeometry_getPosition(P(self, 8)); }
 
 // ---- initManeuver_a1abc.cpp ----
 // PlayerEgo::initManeuver(int type)
@@ -974,8 +1036,8 @@ extern "C" void Vec_assign(void *dst, const void *src);              // Vector::
 extern const float g_PE_rollNudge;    // 0xb1b6c
 extern const float g_PE_strafeDist;   // 0xb1b70 distance scalar
 
-extern "C" void PlayerEgo_initManeuver(PlayerEgo *self, int type)
-{
+void PlayerEgo::initManeuver(int type) {
+    PlayerEgo *self = this;
     if ((unsigned)(type - 1) < 2 && C(self, 0x398) != 0) {
         void *player = P(self, 0x0);
         F(player, 0x60) = F(player, 0x60) + g_PE_rollNudge;
@@ -986,7 +1048,7 @@ extern "C" void PlayerEgo_initManeuver(PlayerEgo *self, int type)
         P(self, 0x350) = 0;
         if (type == 3) {
             float pos[3];
-            PlayerEgo_getPosition(self, pos);
+            ((PlayerEgo *)(self))->getPosition();
 
             float dir[3];
             AEGeometry_getDirection(P(self, 0x8), dir);
@@ -1005,7 +1067,8 @@ extern "C" void PlayerEgo_initManeuver(PlayerEgo *self, int type)
 }
 
 // ---- refillGunDelay_a15fc.cpp ----
-void PlayerEgo_refillGunDelay(PlayerEgo* self) { return PlayerEgo_refillGunDelay_ext(P(self, 0), 0); }
+void PlayerEgo::refillGunDelay() {
+    PlayerEgo *self = this; return PlayerEgo_refillGunDelay_ext(P(self, 0), 0); }
 
 // ---- checkForTurret_9b340.cpp ----
 // PlayerEgo::checkForTurret()
@@ -1024,8 +1087,8 @@ extern "C" void  PE_cft_place(PlayerEgo *self, int turretIdx);                //
 __attribute__((visibility("hidden"))) extern void **g_PE_cft_canvas;   // 0xab512 PaintCanvas
 extern const float g_PE_cft_transformVal;   // 0xab76c muzzle transform +0xe0
 
-extern "C" void PlayerEgo_checkForTurret(PlayerEgo *self)
-{
+void PlayerEgo::checkForTurret() {
+    PlayerEgo *self = this;
     if (C(self, 0x170) != 0)
         return;
     int avail = Player_gunAvailable(P(self, 0x0));
@@ -1118,15 +1181,17 @@ extern "C" void PlayerEgo_checkForTurret(PlayerEgo *self)
 }
 
 // ---- pitchAllPrimaryGuns_a2208.cpp ----
-void PlayerEgo_pitchAllPrimaryGuns(PlayerEgo* self, float) { return PlayerEgo_pitchAllPrimaryGuns_ext(P(self, 0)); }
+void PlayerEgo::pitchAllPrimaryGuns(float) {
+    PlayerEgo *self = this; return PlayerEgo_pitchAllPrimaryGuns_ext(P(self, 0)); }
 
 // ---- stopShooting_9adf0.cpp ----
-void PlayerEgo_stopShooting(PlayerEgo* self, int param) {
+void PlayerEgo::stopShooting(int param) {
+    PlayerEgo *self = this;
   if (C(self, 0x1a0) != 0) {
     stopShooting_extA(P(self, 0), 2);
     return;
   }
-  if (PlayerEgo_isDead(self) != 0) return;
+  if (((PlayerEgo *)(self))->isDead() != 0) return;
   void* p = P(self, 0);
   if (param == 1) {
     stopShooting_extB(p, 1, I(self, 0x10c));
@@ -1145,8 +1210,8 @@ void PlayerEgo_stopShooting(PlayerEgo* self, int param) {
 __attribute__((visibility("hidden"))) extern void **g_PE_rng;        // AERandom singleton
 extern const float g_PE_shakeDiv;                                    // 0xb21d4 normaliser
 
-extern "C" void PlayerEgo_shake(PlayerEgo *self, int amount)
-{
+void PlayerEgo::shake(int amount) {
+    PlayerEgo *self = this;
     void *cam = P(self, 0x8);
     float a = (float)amount / g_PE_shakeDiv;
     float intensity = (float)(I(self, 0x134) << 1);
@@ -1164,7 +1229,8 @@ extern "C" void PlayerEgo_shake(PlayerEgo *self, int amount)
 }
 
 // ---- setRotation_a137c.cpp ----
-void PlayerEgo_setRotation(PlayerEgo* self, float rx, float ry, float rz) {
+void PlayerEgo::setRotation(float rx, float ry, float rz) {
+    PlayerEgo *self = this;
   char local[60];
   F(self, 0x2e8) = rx;
   F(self, 0x2ec) = ry;
@@ -1177,7 +1243,8 @@ void PlayerEgo_setRotation(PlayerEgo* self, float rx, float ry, float rz) {
 // ---- StopEngineSound_9a5ec.cpp ----
 extern void* g_engine_status;
 extern void* g_engine_fmod;
-void PlayerEgo_StopEngineSound(PlayerEgo* self) {
+void PlayerEgo::StopEngineSound() {
+    PlayerEgo *self = this;
   if (C(self, 0x356) == 0 || I(self, 0x1c4) != 1) {
     if (Ship_getFirstEquipmentOfSort(Status_getShip(g_engine_status), 0x26) != 0
         && Status_inAlienOrbit(g_engine_status) == 0) {
@@ -1194,7 +1261,8 @@ void PlayerEgo_StopEngineSound(PlayerEgo* self) {
 }
 
 // ---- startSmokeEmission_a1598.cpp ----
-void PlayerEgo_startSmokeEmission(PlayerEgo* self) {
+void PlayerEgo::startSmokeEmission() {
+    PlayerEgo *self = this;
   int v = I(self, 0x300);
   if (v < 0) return;
   ParticleSystemManager_enableSystemEmit(P(P(self, 0xc), 0x78), v, 1);
@@ -1223,8 +1291,8 @@ extern const float g_PE_d_loadK;    // 0xb0dd4
 extern const float g_PE_d_loadB;    // 0xb0dd8
 extern const float g_PE_d_rateK;    // 0xb0ddc
 
-extern "C" float PlayerEgo_down(PlayerEgo *self, int frameTime, float delta)
-{
+float PlayerEgo::down(int frameTime, float delta) {
+    PlayerEgo *self = this;
     if (P(self, 0x1e4) != 0) {
         if (C(*g_PE_d_miningGate, 0x10) == 0)
             return MiningGame_steerYAlt();
@@ -1319,8 +1387,8 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
     void *campaign = Status_getCampaignMission();
     void *fixed = *g_PE_adp_fixedObj;
 
-    if (Mission_isEmpty(mission) == 0 && Mission_getType(mission) == 0xf
-        && PlayerFixedObject_getDockingType(fixed) == 1) {
+    if (((Mission *)(mission))->isEmpty() == 0 && Mission_getType(mission) == 0xf
+        && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
         if (Ship_hasCargo(Status_getShip(), Mission_getProductionGoodIndex(mission)) != 0) {
             int amount = Item_getAmount(Ship_getCargo(Status_getShip(),
                                         Mission_getProductionGoodIndex(mission)));
@@ -1334,9 +1402,9 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
         return 0;
     }
 
-    if (Mission_isEmpty(mission) == 0
+    if (((Mission *)(mission))->isEmpty() == 0
         && (Mission_getType(mission) == 0xb8 || Mission_getType(mission) == 0xa8)
-        && PlayerFixedObject_getDockingType(fixed) == 2) {
+        && ((PlayerFixedObject *)(fixed))->getDockingType() == 2) {
         // passenger drop-off
         int carried = I(fixed, 0x178);
         int maxPax = Ship_getMaxPassengers(Status_getShip());
@@ -1355,8 +1423,8 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
         return 0;
     }
 
-    if (Mission_isEmpty(mission) == 0 && Mission_getType(mission) == 0xb8
-        && PlayerFixedObject_getDockingType(fixed) == 1) {
+    if (((Mission *)(mission))->isEmpty() == 0 && Mission_getType(mission) == 0xb8
+        && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
         int n = I(fixed, 0x178);
         if (n > 0) {
             I(self, 0x184) = 0;
@@ -1366,9 +1434,9 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
         return 0;
     }
 
-    if (campaign != 0 && Mission_isEmpty(campaign) == 0
+    if (campaign != 0 && ((Mission *)(campaign))->isEmpty() == 0
         && (Mission_getType(campaign) == 0xa7 || Mission_getType(campaign) == 0xae)
-        && PlayerFixedObject_getDockingType(fixed) == 1) {
+        && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
         if (Ship_hasCargo(Status_getShip(), Mission_getProductionGoodIndex(campaign)) != 0) {
             int amount = Item_getAmount(Ship_getCargo(Status_getShip(),
                                         Mission_getProductionGoodIndex(campaign)));
@@ -1382,9 +1450,9 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
     return 0;
 }
 
-extern "C" int PlayerEgo_approachDockingPoint(PlayerEgo *self, void *hud, int /*hud2*/, void *radar)
-{
-    if (KIPlayer_isDying(self) != 0)
+int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
+    PlayerEgo *self = this;
+    if (((KIPlayer *)(self))->isDying() != 0)
         return 0;
 
     int state = I(self, 0x314);
@@ -1392,14 +1460,14 @@ extern "C" int PlayerEgo_approachDockingPoint(PlayerEgo *self, void *hud, int /*
     if (state == 0) {
         void *station = P(self, 0x1e0);
         float pos[3];
-        PlayerEgo_getPosition(self, pos);
-        void *nav = KIPlayer_getNearestNavigationPoint(station, pos, (char *)self + 0x350);
+        ((PlayerEgo *)(self))->getPosition();
+        void *nav = ((KIPlayer *)(station))->getNearestNavigationPoint(pos, (char *)self + 0x350);
         if (nav != 0) {
             if (P(self, 0x380) != nav) {
                 if (P(self, 0x380) != 0)
-                    SpacePoint_giveFree(P(self, 0x380));
+                    ((SpacePoint *)(P(self, 0x380)))->giveFree();
                 P(self, 0x380) = nav;
-                SpacePoint_take(nav);
+                ((SpacePoint *)(nav))->take();
             }
             int dist = PE_adp_approach(self, station);
             if (dist < I(self, 0x1cc)) {
@@ -1414,13 +1482,13 @@ extern "C" int PlayerEgo_approachDockingPoint(PlayerEgo *self, void *hud, int /*
 
     if (state == 2) {
         if (C(self, 0x2c4) != 0)
-            PlayerEgo_setTurretMode(self, 0);
+            ((PlayerEgo *)(self))->setTurretMode(0);
         int dist = PE_adp_glide(self);
         int radius = g_PE_adp_dockRadius[Ship_getIndex(Status_getShip())];
         if (dist < radius) {
             int ev = adp_arrivalEvent(self, P(self, 0x1e0));
             if (ev != 0)
-                Hud_hudEvent(hud, ev, self);
+                ((Hud *)(hud))->hudEvent(ev, self);
             I(self, 0x314) = 1;        // hand back to manual control
         }
         PE_adp_apply(self);
@@ -1442,13 +1510,13 @@ extern "C" int PlayerEgo_approachDockingPoint(PlayerEgo *self, void *hud, int /*
             Player_resetGunDelay(P(self, 0x0), 0);
             I(self, 0x314) = 0;
             if (P(self, 0x380) != 0) {
-                SpacePoint_giveFree(P(self, 0x380));
+                ((SpacePoint *)(P(self, 0x380)))->giveFree();
                 P(self, 0x380) = 0;
             }
             if (P(self, 0x1e8) != 0) {
                 operator_delete_(HackingGame_dtor(P(self, 0x1e8)));
                 P(self, 0x1e8) = 0;
-                Hud_setHackingGameActive(hud, false);
+                ((Hud *)(hud))->setHackingGameActive(false);
             }
             return 1;        // docking complete
         }
@@ -1459,7 +1527,8 @@ extern "C" int PlayerEgo_approachDockingPoint(PlayerEgo *self, void *hud, int /*
 
 // ---- setLevel_9b0b8.cpp ----
 extern void* g_setLevel_status;
-void PlayerEgo_setLevel(PlayerEgo* self, void* level) {
+void PlayerEgo::setLevel(void* level) {
+    PlayerEgo *self = this;
   I(self, 0xc) = (int)(intptr_t)level;
   void* src = P(level, 0x74);
   void* gm = AEGeometry_getMatrix2(P(self, 8));
@@ -1497,8 +1566,8 @@ extern const float g_PE_dc_fovAlien;    // 0xaab6c
 extern const unsigned int g_PE_dc_defX; // 0xaab78 default offset lo
 extern const unsigned int g_PE_dc_defY; // 0xaab7c default offset hi
 
-extern "C" void PlayerEgo_setDockingCamera(PlayerEgo *self)
-{
+void PlayerEgo::setDockingCamera() {
+    PlayerEgo *self = this;
     if (P(self, 0x178) == 0) {
         void **holder = g_PE_dc_canvas;
         PaintCanvas_CameraCreate(*holder, &U(self, 0x174));
@@ -1552,8 +1621,8 @@ extern const float g_PE_r_turK3;    // 0xb0918
 extern const float g_PE_r_manK1;    // 0xb091c
 extern const float g_PE_r_manK2;    // 0xb0920
 
-extern "C" float PlayerEgo_right(PlayerEgo *self, int frameTime, float delta)
-{
+float PlayerEgo::right(int frameTime, float delta) {
+    PlayerEgo *self = this;
     if (P(self, 0x1e4) != 0)
         return MiningGame_steerXR(P(self, 0x1e4), delta);
 
@@ -1625,8 +1694,8 @@ extern const float g_PE_l_turK3;    // 0xb0b5c
 extern const float g_PE_l_manK1;    // 0xb0b60
 extern const float g_PE_l_manK2;    // 0xb0b64
 
-extern "C" float PlayerEgo_left(PlayerEgo *self, int frameTime, float delta)
-{
+float PlayerEgo::left(int frameTime, float delta) {
+    PlayerEgo *self = this;
     if (P(self, 0x1e4) != 0)
         return MiningGame_steerX(P(self, 0x1e4), -delta);
 
@@ -1734,7 +1803,8 @@ __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
 }
 
 // ---- throttleChanged_a20f4.cpp ----
-void PlayerEgo_throttleChanged(PlayerEgo* self) {
+void PlayerEgo::throttleChanged() {
+    PlayerEgo *self = this;
   int v;
   if (C(self, 0x370) == 0) {
     C(self, 0x370) = 1;
@@ -1785,7 +1855,8 @@ PlayerEgo::PlayerEgo(Player *player)
 // ---- PlayEngineSound_9a550.cpp ----
 extern void* g_engine_status;
 extern void* g_engine_fmod;
-void PlayerEgo_PlayEngineSound(PlayerEgo* self) {
+void PlayerEgo::PlayEngineSound() {
+    PlayerEgo *self = this;
   if (Ship_getFirstEquipmentOfSort(Status_getShip(g_engine_status), 0x26) != 0
       && Status_inAlienOrbit(g_engine_status) == 0) {
     void* obj = g_engine_status;
@@ -1816,9 +1887,8 @@ extern const float g_PE_mtp_strafeEps;   // 0xaca60
 extern const float g_PE_mtp_strafeReset; // 0xaca64
 extern const float g_PE_mtp_strafeK;     // 0xaca68
 
-extern "C" void PlayerEgo_moveToPosition(PlayerEgo *self, float tx, float ty, float tz,
-                                         int steer, float speed)
-{
+void PlayerEgo::moveToPosition(float tx, float ty, float tz, int steer, float speed) {
+    PlayerEgo *self = this;
     float target[3] = { tx, ty, tz };
     PE_mtp_steer(self, target, steer, speed);
 
@@ -1829,7 +1899,7 @@ extern "C" void PlayerEgo_moveToPosition(PlayerEgo *self, float tx, float ty, fl
 
     float dt = (float)I(self, 0x134);
     AEGeometry_moveForward(P(self, 0x8), F(self, 0xbc) * dt * F(self, 0xb8));
-    PlayerEgo_roll(self, I(self, 0x134));
+    ((PlayerEgo *)(self))->roll(I(self, 0x134));
 
     // strafe slide -> follow camera, unless below the dead-zone.
     float slide = F(self, 0x37c);
@@ -1851,10 +1921,12 @@ extern "C" void PlayerEgo_moveToPosition(PlayerEgo *self, float tx, float ty, fl
 }
 
 // ---- resetGunDelay_a15f4.cpp ----
-void PlayerEgo_resetGunDelay(PlayerEgo* self) { return PlayerEgo_resetGunDelay_ext(P(self, 0), 0); }
+void PlayerEgo::resetGunDelay() {
+    PlayerEgo *self = this; return PlayerEgo_resetGunDelay_ext(P(self, 0), 0); }
 
 // ---- getShieldDamageRate_9b7aa.cpp ----
-int PlayerEgo_getShieldDamageRate(PlayerEgo* self) { return PlayerEgo_getShieldDamageRate_ext(P(self, 0)); }
+int PlayerEgo::getShieldDamageRate() {
+    PlayerEgo *self = this; return PlayerEgo_getShieldDamageRate_ext(P(self, 0)); }
 
 // ---- handleAutoTurret_9ca78.cpp ----
 // PlayerEgo::handleAutoTurret(int dt)
@@ -1866,12 +1938,12 @@ int PlayerEgo_getShieldDamageRate(PlayerEgo* self) { return PlayerEgo_getShieldD
 //   target or exceeding the no-target window stops shooting. The aim/intercept
 //   vector-and-matrix math is delegated to PE_hat_aimAndFire.
 
-extern "C" void  KIPlayer_getPosition(void *e, void *out);   // virtual +0x28
+// virtual +0x28
 // Aims the turret at the held target and fires when appropriate; returns the
 // new "no-target" timer contribution (0 while actively tracking).
 
-extern "C" void PlayerEgo_handleAutoTurret(PlayerEgo *self, int dt)
-{
+void PlayerEgo::handleAutoTurret(int dt) {
+    PlayerEgo *self = this;
     int t = I(self, 0x184) + dt;
     I(self, 0x184) = t;
     if (t >= 0xbb9) {                       // 3000ms: rescan for the best target
@@ -1882,14 +1954,14 @@ extern "C" void PlayerEgo_handleAutoTurret(PlayerEgo *self, int dt)
             int best = 60000;
             for (unsigned i = 0; i < enemies[0]; i++) {
                 void *e = *(void **)(enemies[1] + i * 4);
-                if (KIPlayer_isDead(e) != 0) continue;
-                if (KIPlayer_isDying(e) != 0) continue;
-                if (Player_isActive(*(void **)((char *)e + 4)) == 0) continue;
-                if (KIPlayer_isEnemy(e) == 0) continue;
+                if (((KIPlayer *)(e))->isDead() != 0) continue;
+                if (((KIPlayer *)(e))->isDying() != 0) continue;
+                if (((Player *)(*(void **)((char *)e + 4)))->isActive() == 0) continue;
+                if (((KIPlayer *)(e))->isEnemy() == 0) continue;
                 if (C(e, 0x74) != 0) continue;
 
                 float epos[3];
-                KIPlayer_getPosition(e, epos);
+                ((KIPlayer *)(e))->getPosition();
                 float rel[3];
                 Vec_sub(rel, epos, (char *)self + 0x148);
                 int dist = (int)Vec_length(rel);
@@ -1928,8 +2000,8 @@ extern "C" void  Vec_assign(void *dst, const void *src);                 // Vect
 
 extern const float g_PE_astApproach;    // 0xaf568 scaling -> approach distance
 
-extern "C" void PlayerEgo_dockToAsteroid(PlayerEgo *self, void *radar)
-{
+void PlayerEgo::dockToAsteroid(void *radar) {
+    PlayerEgo *self = this;
     if (C(self, 0x1c0) != 0) {
         // Already docked -> undock.
         PlayerAsteroid_setRotationEnabled(P(self, 0x1bc), true);
@@ -1947,7 +2019,7 @@ extern "C" void PlayerEgo_dockToAsteroid(PlayerEgo *self, void *radar)
         P(self, 0x1e4) = 0;
         Radar_unlockAsteroid(radar);
         I(self, 0x1c4) = 0;
-        PlayerEgo_setExhaustVisible(self, true);
+        ((PlayerEgo *)(self))->setExhaustVisible(true);
     } else if (radar != 0) {
         // Not docked -> latch onto the asteroid.
         C(self, 0x1c0) = 1;
@@ -1961,7 +2033,8 @@ extern "C" void PlayerEgo_dockToAsteroid(PlayerEgo *self, void *radar)
 }
 
 // ---- killLiberator_a1a18.cpp ----
-void PlayerEgo_killLiberator(PlayerEgo* self) {
+void PlayerEgo::killLiberator() {
+    PlayerEgo *self = this;
   char sv[12];
   void* p = *(void**)P(self, 0);
   if (p == 0) return;
@@ -2003,8 +2076,8 @@ extern "C" void  Mat_setRotation(void *out, float x, float y, float z); // Matri
 
 extern const float g_PE_rollLevelEps;   // 0xabdb0 settle threshold
 
-extern "C" void PlayerEgo_roll(PlayerEgo *self, int amount)
-{
+void PlayerEgo::roll(int amount) {
+    PlayerEgo *self = this;
     if (C(self, 0x2f4) == 0)
         return;
 
@@ -2041,7 +2114,8 @@ extern "C" void PlayerEgo_roll(PlayerEgo *self, int amount)
 }
 
 // ---- setTargetFollowCamera_a21f2.cpp ----
-void PlayerEgo_setTargetFollowCamera(PlayerEgo* self, void* cam) {
+void PlayerEgo::setTargetFollowCamera(void* cam) {
+    PlayerEgo *self = this;
   void* m = P(self, 0x154);
   P(self, 0x88) = cam;
   return PlayerEgo_setTargetFollowCamera_ext(cam, m);
@@ -2065,8 +2139,8 @@ void PlayerEgo_setTargetFollowCamera(PlayerEgo* self, void* cam) {
 
 extern const float g_PE_cc_alarmDist;   // 0xaf470
 
-extern "C" void PlayerEgo_calcCollision(PlayerEgo *self, void *candidates)
-{
+void PlayerEgo::calcCollision(void *candidates) {
+    PlayerEgo *self = this;
     if (candidates == 0)
         return;
     if (C(self, 0x356) != 0 && (unsigned)(I(self, 0x1c4) - 1) < 3)
@@ -2092,11 +2166,11 @@ extern "C" void PlayerEgo_calcCollision(PlayerEgo *self, void *candidates)
         if (!overlaps(obj, pos))
             continue;
 
-        if (KIPlayer_getType(obj) == 0x4262 && KIPlayer_isVisible(obj) != 0) {
+        if (((KIPlayer *)(obj))->getType() == 0x4262 && ((KIPlayer *)(obj))->isVisible() != 0) {
             if (PlayerWormHole_isShrinking(obj) == 0 && P(self, 0x1e4) == 0)
                 PE_cc_wormhole(self, obj);
         } else if (C(obj, 0x3c) == 0) {
-            if (KIPlayer_isVisible(obj) != 0) {
+            if (((KIPlayer *)(obj))->isVisible() != 0) {
                 // skip the object we are actively docking with.
                 bool docking = (C(self, 0x1c0) != 0 || C(self, 0x356) != 0)
                                && P(self, 0x1bc) == obj;
@@ -2105,7 +2179,7 @@ extern "C" void PlayerEgo_calcCollision(PlayerEgo *self, void *candidates)
                 hitCamera_(self);
             }
         } else {
-            if (KIPlayer_isDying(obj) == 0 && KIPlayer_isDead(obj) == 0) {
+            if (((KIPlayer *)(obj))->isDying() == 0 && ((KIPlayer *)(obj))->isDead() == 0) {
                 bool skipDockTarget = (C(self, 0x1c0) != 0 || C(self, 0x356) != 0)
                                       && obj == P(self, 0x1bc);
                 if (!skipDockTarget) {
@@ -2118,7 +2192,8 @@ extern "C" void PlayerEgo_calcCollision(PlayerEgo *self, void *candidates)
 }
 
 // ---- dockToPlanet_a1684.cpp ----
-void PlayerEgo_dockToPlanet(PlayerEgo* self) {
+void PlayerEgo::dockToPlanet() {
+    PlayerEgo *self = this;
   TargetFollowCamera_setLookAtCam(I(self, 0x88));
   C(self, 0x13c) = 1;
   I(self, 0x138) = 0;
@@ -2156,8 +2231,8 @@ extern const float g_PE_u_loadK;    // 0xb1048
 extern const float g_PE_u_loadB;    // 0xb104c
 extern const float g_PE_u_rateK;    // 0xb1050
 
-extern "C" float PlayerEgo_up(PlayerEgo *self, int frameTime, float delta)
-{
+float PlayerEgo::up(int frameTime, float delta) {
+    PlayerEgo *self = this;
     if (P(self, 0x1e4) != 0) {
         if (C(*g_PE_u_miningGate, 0x10) == 0)
             return MiningGame_steerY(P(self, 0x1e4), -delta);
@@ -2225,8 +2300,8 @@ extern "C" void  Mat_mul(void *out, const void *a, const void *b);   // operator
 extern "C" int   Player_shootTurret(void *player, int kind, int weapon, int hi,
                                     int flag, const void *matrix);
 
-extern "C" void PlayerEgo_shoot(PlayerEgo *self, int weapon, int type)
-{
+void PlayerEgo::shoot(int weapon, int type) {
+    PlayerEgo *self = this;
     if (C(self, 0x1a0) != 0) {
         void *m1 = AEGeometry_getMatrix(P(self, 0x8));
         void *m2 = AEGeometry_getMatrix(P(self, 0x28));
@@ -2236,7 +2311,7 @@ extern "C" void PlayerEgo_shoot(PlayerEgo *self, int weapon, int type)
         return;
     }
 
-    if (PlayerEgo_isDead(self) != 0)
+    if (((PlayerEgo *)(self))->isDead() != 0)
         return;
 
     void *player = P(self, 0x0);
@@ -2254,8 +2329,8 @@ extern "C" void PlayerEgo_shoot(PlayerEgo *self, int weapon, int type)
 //   teardown helper (the Ghidra listing is bad-instruction noise because the
 //   region is a hand-written veneer). Faithfully forward to that helper.
 
-extern "C" void PlayerEgo_stopMining(PlayerEgo *self)
-{
+void PlayerEgo::stopMining() {
+    PlayerEgo *self = this;
     PlayerEgo_stopMining_impl(self);
 }
 
@@ -2280,8 +2355,8 @@ __attribute__((visibility("hidden"))) extern int  *g_PE_tm_hum;        // 0xaadd
 extern const float g_PE_tm_fovNormal;  // 0xaad9c
 extern const float g_PE_tm_fovAlien;   // 0xaada0
 
-extern "C" void PlayerEgo_setTurretMode(PlayerEgo *self, int enable)
-{
+void PlayerEgo::setTurretMode(int enable) {
+    PlayerEgo *self = this;
     if (C(self, 0x170) == 0 || P(self, 0x1e4) != 0 || C(self, 0x180) != 0) {
         // turret view unavailable -> restore default camera if a maneuver runs.
         if (P(self, 0x194) != 0) {
@@ -2293,7 +2368,7 @@ extern "C" void PlayerEgo_setTurretMode(PlayerEgo *self, int enable)
 
     C(self, 0x1a0) = (unsigned char)enable;
     if (enable == 0) {
-        PlayerEgo_stopShooting(self);
+        ((PlayerEgo *)(self))->stopShooting();
         PaintCanvas_CameraSetCurrent(*g_PE_tm_canvasE, U(P(self, 0x88), 0));
         LevelScript_resetCamera(P(self, 0xc));
     } else {
@@ -2341,7 +2416,8 @@ extern "C" void PlayerEgo_setTurretMode(PlayerEgo *self, int enable)
 }
 
 // ---- rotate_a12fc.cpp ----
-void PlayerEgo_rotate(PlayerEgo* self, float rx, float ry, float rz) {
+void PlayerEgo::rotate(float rx, float ry, float rz) {
+    PlayerEgo *self = this;
   char local[60];
   F(self, 0x2e8) = F(self, 0x2e8) + rx;
   F(self, 0x2ec) = F(self, 0x2ec) + ry;
@@ -2366,8 +2442,8 @@ extern const float g_PE_strafeAccelK;  // 0xb1284
 
 static inline float fmin_(float a, float b) { return a < b ? a : b; }
 
-extern "C" void PlayerEgo_strafe(PlayerEgo *self, int /*dir*/, bool positive)
-{
+void PlayerEgo::strafe(int /*dir*/, bool positive) {
+    PlayerEgo *self = this;
     if (I(self, 0x194) != 0)
         return;
 
@@ -2404,9 +2480,9 @@ extern "C" void PlayerEgo_strafe(PlayerEgo *self, int /*dir*/, bool positive)
 
 __attribute__((visibility("hidden"))) extern void **g_PE_dtdp_canvas;   // 0xafa68 PaintCanvas
 
-extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *self, void *radar)
-{
-    if (PlayerEgo_isDead(self) != 0)
+void PlayerEgo::dockToDockingPoint(void *radar) {
+    PlayerEgo *self = this;
+    if (((PlayerEgo *)(self))->isDead() != 0)
         return;
 
     if (C(self, 0x356) == 0) {
@@ -2424,9 +2500,9 @@ extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *self, void *radar)
     bool undock = (radar == 0);
     if (!undock) {
         float pos[3];
-        PlayerEgo_getPosition(self, pos);
+        ((PlayerEgo *)(self))->getPosition();
         void *sp = (void *)(unsigned long)I(self, 0x36c);
-        void *nav = KIPlayer_getNearestNavigationPoint(radar, pos, sp);
+        void *nav = ((KIPlayer *)(radar))->getNearestNavigationPoint(pos, sp);
         if (nav == 0) {
             if (C(radar, 0x70) != 0)
                 C(radar, 0x8c) = 1;
@@ -2435,7 +2511,7 @@ extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *self, void *radar)
             if (C(radar, 0x70) != 0)
                 C(radar, 0x8c) = 1;
 
-            PlayerEgo_setTurretMode(self, 0);
+            ((PlayerEgo *)(self))->setTurretMode(0);
             C(self, 0x1a1) = 0;
             PaintCanvas_CameraSetCurrent(*g_PE_dtdp_canvas, U(P(self, 0x88), 0));
             LevelScript_resetCamera(P(self, 0x10));
@@ -2448,11 +2524,11 @@ extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *self, void *radar)
                 operator_delete_(EaseInOutMatrix_dtor(P(self, 0x358)));
             P(self, 0x358) = 0;
 
-            PlayerEgo_getPosition(self, pos);
-            void *nav2 = KIPlayer_getNearestNavigationPoint(radar, pos, sp);
+            ((PlayerEgo *)(self))->getPosition();
+            void *nav2 = ((KIPlayer *)(radar))->getNearestNavigationPoint(pos, sp);
             void *from = AEGeometry_getMatrix(P(self, 0x8));
             P(self, 0x358) = PE_dtdp_makeEase(from, nav2);
-            PlayerEgo_setExhaustVisible(self, true);
+            ((PlayerEgo *)(self))->setExhaustVisible(true);
         }
     }
 
@@ -2469,9 +2545,9 @@ extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *self, void *radar)
         TargetFollowCamera_useTargetsUpVector(P(self, 0x88), false);
         Player_resetGunDelay(P(self, 0x0), 0);
         I(self, 0x1c4) = 0;
-        PlayerEgo_setExhaustVisible(self, true);
+        ((PlayerEgo *)(self))->setExhaustVisible(true);
         if (I(self, 0x36c) != 0) {
-            SpacePoint_giveFree((void *)(unsigned long)I(self, 0x36c));
+            ((SpacePoint *)((void *)(unsigned long)I(self, 0x36c)))->giveFree();
             I(self, 0x36c) = 0;
         }
     }
@@ -2479,7 +2555,7 @@ extern "C" void PlayerEgo_dockToDockingPoint(PlayerEgo *self, void *radar)
     if (P(self, 0x1e8) != 0) {
         operator_delete_(HackingGame_dtor(P(self, 0x1e8)));
         P(self, 0x1e8) = 0;
-        Hud_setHackingGameActive(P(self, 0x220), false);
+        ((Hud *)(P(self, 0x220)))->setHackingGameActive(false);
     }
 }
 
@@ -2506,8 +2582,8 @@ __attribute__((visibility("hidden"))) extern float *g_PE_dr_posNoLock; // 0xb1ea
 __attribute__((visibility("hidden"))) extern float *g_PE_dr_posBlink;  // 0xb1e24
 __attribute__((visibility("hidden"))) extern float *g_PE_dr_posNormal; // 0xb1e6e
 
-extern "C" void PlayerEgo_draw(PlayerEgo *self, int allowHud)
-{
+void PlayerEgo::draw(int allowHud) {
+    PlayerEgo *self = this;
     if (P(self, 0x194) != 0)               // mid scripted maneuver: nothing to draw
         return;
 
@@ -2520,7 +2596,7 @@ extern "C" void PlayerEgo_draw(PlayerEgo *self, int allowHud)
     }
 
     bool full;
-    if (C(self, 0x1f4) != 0 || PlayerEgo_isDead(self) != 0 || C(self, 0x24) != 0
+    if (C(self, 0x1f4) != 0 || ((PlayerEgo *)(self))->isDead() != 0 || C(self, 0x24) != 0
         || allowHud == 0 || C(self, 0x1c0) != 0 || C(self, 0x1ee) != 0 || C(self, 0x1ed) != 0) {
         full = false;
     } else {
@@ -2579,7 +2655,7 @@ extern "C" void PlayerEgo_draw(PlayerEgo *self, int allowHud)
         }
     }
 
-    PlayerEgo_drawThrottle(self);
+    ((PlayerEgo *)(self))->drawThrottle();
 }
 
 // ---- update_9ce38.cpp ----
@@ -2599,8 +2675,6 @@ extern "C" void PlayerEgo_draw(PlayerEgo *self, int allowHud)
 
 
 // flight controllers (already authored as their own methods).
-extern "C" void PlayerEgo_moveToPosition(PlayerEgo *self, float x, float y, float z,
-                                         int steer, float speed);
 
 // route / nav helpers.
 
@@ -2612,9 +2686,8 @@ extern "C" void PE_upd_post(PlayerEgo *self, int dt, void *radar, void *hud,
 
 extern const float g_PE_upd_handlingBias;   // 0xae484
 
-extern "C" void PlayerEgo_update(PlayerEgo *self, int dt, void *radar, void *hud,
-                                 void *radio, void *script, int arg5, bool arg6, int arg7)
-{
+void PlayerEgo::update(int dt, void *radar, void *hud, void *radio, void *script, int arg5, bool arg6, int arg7) {
+    PlayerEgo *self = this;
     (void)arg6; (void)arg7; (void)script;
 
     if (P(self, 0x220) == 0)
@@ -2624,7 +2697,7 @@ extern "C" void PlayerEgo_update(PlayerEgo *self, int dt, void *radar, void *hud
 
     // cache world position for this frame.
     float pos[3];
-    PlayerEgo_getPosition(self, pos);
+    ((PlayerEgo *)(self))->getPosition();
     I(self, 0x148) = *(int *)&pos[0];
     I(self, 0x14c) = *(int *)&pos[1];
     I(self, 0x150) = *(int *)&pos[2];
@@ -2637,46 +2710,46 @@ extern "C" void PlayerEgo_update(PlayerEgo *self, int dt, void *radar, void *hud
     // ---- asteroid docking --------------------------------------------------
     if (C(self, 0x1c0) != 0) {
         C(self, 0x145) = 1;
-        if (P(self, 0x1bc) == 0 || PlayerEgo_isDead(self) != 0) {
-            PlayerEgo_dockToAsteroid(self, 0);
+        if (P(self, 0x1bc) == 0 || ((PlayerEgo *)(self))->isDead() != 0) {
+            ((PlayerEgo *)(self))->dockToAsteroid(0);
             PE_upd_post(self, dt, radar, hud, radio, arg5);
             return;
         }
-        PlayerEgo_approachAsteroid(self, 0 /*hud2*/, radar);
+        ((PlayerEgo *)(self))->approachAsteroid(0 /*hud2*/, radar);
     }
 
     // ---- station docking ---------------------------------------------------
-    if (C(self, 0x356) != 0 && Player_getHitpoints(P(self, 0x0)) > 0) {
+    if (C(self, 0x356) != 0 && ((Player *)(P(self, 0x0)))->getHitpoints() > 0) {
         C(self, 0x145) = 1;
-        if (P(self, 0x1bc) == 0 || PlayerEgo_isDead(self) != 0) {
-            PlayerEgo_dockToDockingPoint(self, 0);
+        if (P(self, 0x1bc) == 0 || ((PlayerEgo *)(self))->isDead() != 0) {
+            ((PlayerEgo *)(self))->dockToDockingPoint(0);
             PE_upd_post(self, dt, radar, hud, radio, arg5);
             return;
         }
-        if (PlayerEgo_approachDockingPoint(self, hud, 0, radar) != 0)
+        if (((PlayerEgo *)(self))->approachDockingPoint(hud, 0, radar) != 0)
             PE_upd_docksFinishDelivery(self, radio);
     }
 
     // turret view while the free-look/turret camera is active.
     if (C(self, 0x1a0) != 0 || C(self, 0x1a1) != 0)
-        PlayerEgo_handleTurretView(self, dt);
+        ((PlayerEgo *)(self))->handleTurretView(dt);
 
     // ---- flight controller -------------------------------------------------
     bool autopilot = (C(self, 0x158) != 0 && I(self, 0x15c) != 0);
     if (!autopilot) {
         if (C(self, 0x145) == 0) {
             if (C(self, 0x1a0) == 0 && C(self, 0x1a1) == 0) {
-                PlayerEgo_roll(self, I(self, 0x134));
-                if (PlayerEgo_updateManeuver(self) == 0)
-                    PlayerEgo_handleShip(self, dt);
+                ((PlayerEgo *)(self))->roll(I(self, 0x134));
+                if (((PlayerEgo *)(self))->updateManeuver() == 0)
+                    ((PlayerEgo *)(self))->handleShip(dt);
             } else {
-                PlayerEgo_handleTurretView(self, dt);
+                ((PlayerEgo *)(self))->handleTurretView(dt);
             }
         }
-    } else if (C(self, 0x145) == 0 && PlayerEgo_updateManeuver(self) == 0) {
+    } else if (C(self, 0x145) == 0 && ((PlayerEgo *)(self))->updateManeuver() == 0) {
         void *wp = self->field_0x15c;
         if (C(self, 0x160) != 0 && wp != 0 && I(wp, 0x134) != 0) {
-            wp = Route_getWaypoint(self->field_0x15c);
+            wp = ((Route *)(self->field_0x15c))->getWaypoint();
             P(self, 0x15c) = wp;
         }
         if (wp == 0 || C(self, 0x1ed) != 0) {
@@ -2691,7 +2764,7 @@ extern "C" void PlayerEgo_update(PlayerEgo *self, int dt, void *radar, void *hud
             I(self, 0xf4) = *(int *)&wpPos[2];
 
             float me[3];
-            PlayerEgo_getPosition(self, me);
+            ((PlayerEgo *)(self))->getPosition();
             float dx = me[0] - wpPos[0], dy = me[1] - wpPos[1], dz = me[2] - wpPos[2];
             if ((int)(dx * dx + dy * dy + dz * dz) < 20000)
                 C(self, 0x330) = 1;
@@ -2700,21 +2773,21 @@ extern "C" void PlayerEgo_update(PlayerEgo *self, int dt, void *radar, void *hud
             float h = Ship_getHandling(Status_getShip());
             if (h + g_PE_upd_handlingBias < 4.0f)
                 speed = Ship_getHandling(Status_getShip()) + g_PE_upd_handlingBias;
-            PlayerEgo_moveToPosition(self, F(self, 0xec), F(self, 0xf0), F(self, 0xf4), 1, speed);
+            ((PlayerEgo *)(self))->moveToPosition(F(self, 0xec), F(self, 0xf0), F(self, 0xf4), 1, speed);
             if (C(self, 0x1a0) != 0)
-                PlayerEgo_handleTurretView(self, dt);
+                ((PlayerEgo *)(self))->handleTurretView(dt);
         }
     }
 
     // continue an evasive maneuver during a non-final docking glide.
     if (C(self, 0x356) != 0 && U(self, 0x1c4) != 1
         && C(self, 0x1a0) == 0 && (U(self, 0x1c4) | 1) != 3)
-        PlayerEgo_updateManeuver(self);
+        ((PlayerEgo *)(self))->updateManeuver();
 
     // auto-turret (when enabled and the radar window allows it).
     if (C(self, 0x180) != 0 && C(self, 0x355) != 0) {
-        if (PlayerEgo_isDead(self) == 0) {
-            PlayerEgo_handleAutoTurret(self, dt);
+        if (((PlayerEgo *)(self))->isDead() == 0) {
+            ((PlayerEgo *)(self))->handleAutoTurret(dt);
         } else {
             C(self, 0x355) = 0;
             Player_stopShooting(P(self, 0x0));
@@ -2726,7 +2799,8 @@ extern "C" void PlayerEgo_update(PlayerEgo *self, int dt, void *radar, void *hud
 }
 
 // ---- setTurretPosition_9b2bc.cpp ----
-void PlayerEgo_setTurretPosition(PlayerEgo* self, float x, float y, float z) {
+void PlayerEgo::setTurretPosition(float x, float y, float z) {
+    PlayerEgo *self = this;
   char v[12];
   *(float*)(v + 0) = x;
   *(float*)(v + 4) = y;
@@ -2744,8 +2818,8 @@ void PlayerEgo_setTurretPosition(PlayerEgo* self, float x, float y, float z) {
 
 __attribute__((visibility("hidden"))) extern void **g_PE_reviveSound;
 
-extern "C" void PlayerEgo_revive(PlayerEgo *self)
-{
+void PlayerEgo::revive() {
+    PlayerEgo *self = this;
     int psm = I(P(self, 0xc), 0x74);
     bool en = C(self, 0x2fc) != 0;
     ParticleSystemManager_enableSystemEmit(psm, en);
@@ -2756,20 +2830,20 @@ extern "C" void PlayerEgo_revive(PlayerEgo *self)
     P(self, 0x8c) = 0;
 
     TargetFollowCamera_setActive(P(self, 0x88), true);
-    int v = Player_setActive(P(self, 0x0), true);
+    int v = ((Player *)(P(self, 0x0)))->setActive(true);
 
     void *snd = *g_PE_reviveSound;
     v = FModSound_play(*(void **)snd, *(void **)snd, 0, v);
     FModSound_play(snd, P(self, 0x1c), 0, v);
 
-    PlayerEgo_setExhaustVisible(self, true);
+    ((PlayerEgo *)(self))->setExhaustVisible(true);
 
     void *player = P(self, 0x0);
-    Player_setHitpoints(player, Player_getMaxHitpoints(player));
+    ((Player *)(player))->setHitpoints(((Player *)(player))->getMaxHitpoints());
     player = P(self, 0x0);
-    Player_setArmorHP(player, Player_getMaxArmorHP(player));
+    ((Player *)(player))->setArmorHP(((Player *)(player))->getMaxArmorHP());
 
-    PlayerEgo_setPosition(self, 0, 0, 0);
+    ((PlayerEgo *)(self))->setPosition();
 
     float fwd[3] = {0.0f, 0.0f, 1.0f};
     AEGeometry_setDirection(P(self, 0x8), fwd);
@@ -2786,7 +2860,7 @@ extern "C" void PlayerEgo_revive(PlayerEgo *self)
 
 extern "C" void  PaintCanvas_DrawRegion2D(void *canvas, int img, int sx, int sy, int w,
                                           int h, int dh, int a, int b, int c, int dx);
-extern "C" void  String_ctor_int(void *s, int value);                  // String::String(int)
+// String::String(int)
 
 __attribute__((visibility("hidden"))) extern void **g_PE_t_canvas;     // PaintCanvas singleton
 __attribute__((visibility("hidden"))) extern float *g_PE_t_anchor;     // {x,y} gauge anchor
@@ -2795,8 +2869,8 @@ extern const float g_PE_t_timerDiv;    // 0xb1f30 timer normaliser
 extern const float g_PE_t_pctScale;    // 0xb20dc thrust->percent
 extern const float g_PE_t_textDiv;     // 0xb20e0 text vertical divisor
 
-extern "C" void PlayerEgo_drawThrottle(PlayerEgo *self)
-{
+void PlayerEgo::drawThrottle() {
+    PlayerEgo *self = this;
     if (C(self, 0x370) == 0)
         return;
 
@@ -2824,7 +2898,7 @@ extern "C" void PlayerEgo_drawThrottle(PlayerEgo *self)
 
     // percentage label
     unsigned char pct[12];
-    String_ctor_int(pct, (int)(thrust * g_PE_t_pctScale));
+    ((String *)(pct))->ctor_int((int)(thrust * g_PE_t_pctScale));
 
     int th = PaintCanvas_GetImage2DHeight(canvas);
     void *pctStr = *g_PE_t_pctStr;
@@ -2834,12 +2908,13 @@ extern "C" void PlayerEgo_drawThrottle(PlayerEgo *self)
         (bool)(int)(anchor[1] + (float)th / g_PE_t_textDiv));
     PaintCanvas_SetColor(0xffffffff);
 
-    String_dtor(pct);
+    ((String *)(pct))->dtor();
 }
 
 // ---- setAutoPilot_9b808.cpp ----
 extern void* g_appmgr;
-void PlayerEgo_setAutoPilot(PlayerEgo* self, void* kip) {
+void PlayerEgo::setAutoPilot(void* kip) {
+    PlayerEgo *self = this;
   C(self, 0x160) = 0;
   int v = (int)(intptr_t)kip;
   I(self, 0x15c) = v;
@@ -2854,7 +2929,7 @@ void PlayerEgo_setAutoPilot(PlayerEgo* self, void* kip) {
     return;
   }
   if (C(kip, 0x72) != 0) C(self, 0x160) = 1;
-  void* eng = ApplicationManager_GetEngine(*(void**)g_appmgr);
+  void* eng = ((ApplicationManager *)(*(void**)g_appmgr))->GetEngine();
   I(eng, 0x360) = 0;
   I(self, 0xbc) = 0x3f800000;
 }
@@ -2872,15 +2947,13 @@ void PlayerEgo_setAutoPilot(PlayerEgo* self, void* kip) {
 //   PE_um_* helpers; the type dispatch, timer advance and terminal camera reset
 //   stay inline.
 
-extern "C" void  PlayerEgo_moveToPosition(PlayerEgo *self, float x, float y, float z,
-                                          int steer, float speed);
 // dodge-arc step (types 1/2): banks/slides the ship + camera for `dt`-advanced
 // timer; returns nothing, updates the hull transform in place.
 // strafe-run step (type 3): builds the intercept target offset into `out`.
 // strafe-run post-move bank + camera glide.
 
-extern "C" int PlayerEgo_updateManeuver(PlayerEgo *self)
-{
+int PlayerEgo::updateManeuver() {
+    PlayerEgo *self = this;
     unsigned int type = U(self, 0x334);
 
     if ((type - 1) < 2) {
@@ -2909,7 +2982,7 @@ extern "C" int PlayerEgo_updateManeuver(PlayerEgo *self)
         target[1] = F(self, 0x33c);
         target[2] = F(self, 0x340);
     }
-    PlayerEgo_moveToPosition(self, target[0], target[1], target[2], 1, 0.0f);
+    ((PlayerEgo *)(self))->moveToPosition(target[0], target[1], target[2], 1, 0.0f);
 
     PE_um_strafeGlide(self);
     TargetFollowCamera_setLookAtCam(P(self, 0x88), false);
@@ -2924,7 +2997,8 @@ extern "C" int PlayerEgo_updateManeuver(PlayerEgo *self)
 }
 
 // ---- getHullDamageRate_9b7a4.cpp ----
-int PlayerEgo_getHullDamageRate(PlayerEgo* self) { return PlayerEgo_getHullDamageRate_ext(P(self, 0)); }
+int PlayerEgo::getHullDamageRate() {
+    PlayerEgo *self = this; return PlayerEgo_getHullDamageRate_ext(P(self, 0)); }
 
 // ---- handleTurretView_9b96c.cpp ----
 // PlayerEgo::handleTurretView(int dt)
@@ -2942,8 +3016,8 @@ extern "C" void  Mat_mulEq(void *acc, const void *b);                       // o
 
 __attribute__((visibility("hidden"))) extern void **g_PE_htv_camera; // 0xabb72 PaintCanvas (camera)
 
-extern "C" void PlayerEgo_handleTurretView(PlayerEgo *self, int dt)
-{
+void PlayerEgo::handleTurretView(int dt) {
+    PlayerEgo *self = this;
     // advance along boost vector unless free-look/cutscene suppresses it.
     bool move = true;
     if (P(self, 0x15c) != 0 && C(self, 0x1ed) == 0)
@@ -2986,7 +3060,7 @@ extern "C" void PlayerEgo_handleTurretView(PlayerEgo *self, int dt)
 
     I(self, 0x100) = 0;
     I(self, 0x104) = 0;
-    PlayerEgo_roll(self, I(self, 0x134));
+    ((PlayerEgo *)(self))->roll(I(self, 0x134));
 
     // HUD transform local = hullLocal * reticleLocal
     unsigned int hull = PaintCanvas_TransformGetLocal(*(unsigned int *)((char *)P(self, 0x8) + 0xc));
@@ -3018,9 +3092,9 @@ __attribute__((visibility("hidden"))) extern void **g_PE_aa_winHolder1;  // 0xaf
 __attribute__((visibility("hidden"))) extern void **g_PE_aa_winHolder2;  // 0xaf742
 extern const float g_PE_aa_settleEps;   // 0xaf9c0
 
-extern "C" void PlayerEgo_approachAsteroid(PlayerEgo *self, int hud2, void *radar)
-{
-    if (KIPlayer_isDying(self) != 0)
+void PlayerEgo::approachAsteroid(int hud2, void *radar) {
+    PlayerEgo *self = this;
+    if (((KIPlayer *)(self))->isDying() != 0)
         return;
 
     if (I(self, 0x1c4) == 1) {
@@ -3049,17 +3123,17 @@ extern "C" void PlayerEgo_approachAsteroid(PlayerEgo *self, int hud2, void *rada
         if (running == 0) {
             if (MiningGame_gameLost(P(self, 0x1e4)) == 0
                 && MiningGame_getOreAmount(P(self, 0x1e4)) > 0) {
-                PlayerEgo_stopMining(self);
+                ((PlayerEgo *)(self))->stopMining();
             } else if (MiningGame_gameLost(P(self, 0x1e4)) != 0) {
                 C(self, 0x39b) = 1;
                 I(*g_PE_aa_winHolder1, 0x124) = 0;
-                PlayerEgo_stopMining(self);
-                Hud_hudEvent((void *)(unsigned long)hud2, 8, self);
+                ((PlayerEgo *)(self))->stopMining();
+                ((Hud *)((void *)(unsigned long)hud2))->hudEvent(8, self);
             }
-        } else if (KIPlayer_isDying(self) != 0 || KIPlayer_isDead(self) != 0) {
+        } else if (((KIPlayer *)(self))->isDying() != 0 || ((KIPlayer *)(self))->isDead() != 0) {
             I(*g_PE_aa_winHolder2, 0x124) = 0;
-            PlayerEgo_stopMining(self);
-            Hud_hudEvent((void *)(unsigned long)hud2, 8, self);
+            ((PlayerEgo *)(self))->stopMining();
+            ((Hud *)((void *)(unsigned long)hud2))->hudEvent(8, self);
         }
         return;
     }
@@ -3088,12 +3162,12 @@ __attribute__((visibility("hidden"))) extern void **g_PE_hs_sound;     // 0xabe0
 __attribute__((visibility("hidden"))) extern void **g_PE_hs_transform; // 0xabe96 transform holder
 extern const float g_PE_hs_throttleBias;   // 0xac140
 
-extern "C" void PlayerEgo_handleShip(PlayerEgo *self, int dt)
-{
+void PlayerEgo::handleShip(int dt) {
+    PlayerEgo *self = this;
     void *snd = *g_PE_hs_sound;
     // engine sound: param 0 = RPM (from |yaw|,|pitch| max), param 1 = throttle.
-    FModSound_setParamValue(snd, Player_GetEngineEvent(P(self, 0x0)), 0, F(self, 0x270));
-    FModSound_setParamValue(snd, Player_GetEngineEvent(P(self, 0x0)), 1,
+    FModSound_setParamValue(snd, ((Player *)(P(self, 0x0)))->GetEngineEvent(), 0, F(self, 0x270));
+    FModSound_setParamValue(snd, ((Player *)(P(self, 0x0)))->GetEngineEvent(), 1,
                             F(self, 0x268) * g_PE_hs_throttleBias + 0.5f);
 
     unsigned int tf = *(unsigned int *)((char *)*g_PE_hs_transform);
@@ -3118,7 +3192,8 @@ extern "C" void PlayerEgo_handleShip(PlayerEgo *self, int dt)
 }
 
 // ---- stopBoost_9ae34.cpp ----
-void PlayerEgo_stopBoost(PlayerEgo* self) {
+void PlayerEgo::stopBoost() {
+    PlayerEgo *self = this;
   C(self, 0x13c) = 0;
   void* r4 = *(void**)g_stopBoost_obj;
   void (*fn)(void*, int) = g_stopBoost_fn;
@@ -3149,8 +3224,8 @@ __attribute__((visibility("hidden"))) extern void **g_PE_ss_status;   // 0xaa2ca
 extern const float g_PE_ss_emDiv;     // 0xaa4b8
 extern const float g_PE_ss_emBias;    // 0xaa4bc
 
-extern "C" void PlayerEgo_setShip(PlayerEgo *self, int race, int group)
-{
+void PlayerEgo::setShip(int race, int group) {
+    PlayerEgo *self = this;
     void **globals = g_PE_ss_globals;
     void *grp = Globals_getShipGroup(*globals, race, group, true);
     P(self, 0x4) = grp;
@@ -3218,7 +3293,8 @@ extern "C" void PlayerEgo_setShip(PlayerEgo *self, int race, int group)
 }
 
 // ---- addGun_9b78e.cpp ----
-void PlayerEgo_addGun2(PlayerEgo* self, void* arr, int x) {
+void PlayerEgo::addGun2(void* arr, int x) {
+    PlayerEgo *self = this;
   Player_addGun2(P(self, 0), arr, x);
   return PlayerEgo_addGun2_ext(self);
 }
@@ -3233,21 +3309,21 @@ void PlayerEgo_addGun2(PlayerEgo* self, void* arr, int x) {
 
 extern "C" void PlayerEgo_render_tail(void *level, int flag);   // 0x1abc38 veneer
 
-extern "C" void PlayerEgo_render(PlayerEgo *self, int allowHud)
-{
+void PlayerEgo::render(int allowHud) {
+    PlayerEgo *self = this;
     void *level = P(self, 0xc);
 
-    if (PlayerEgo_isDead(self) == 0) {
+    if (((PlayerEgo *)(self))->isDead() == 0) {
         if (C(self, 0x309) == 0)
             return;
 
         if (P(self, 0x8c) != 0) {
-            Explosion_render(P(self, 0x8c));
+            ((Explosion *)(P(self, 0x8c)))->render();
             if (I(self, 0x2f8) <= 0xbb7)        // explosion < 3000 ticks old
                 AEGeometry_render(P(self, 0x8));
         }
         if (P(self, 0x90) != 0)
-            Explosion_render(P(self, 0x90));
+            ((Explosion *)(P(self, 0x90)))->render();
 
         AEGeometry_render(P(self, 0x8));
 
@@ -3264,12 +3340,12 @@ extern "C" void PlayerEgo_render(PlayerEgo *self, int allowHud)
         }
 
         if (P(self, 0x1b4) != 0)
-            TractorBeam_render(P(self, 0x1b4));
+            ((TractorBeam *)(P(self, 0x1b4)))->render();
 
         unsigned int *beams = (unsigned int *)P(self, 0x1b8);
         if (beams != 0) {
             for (unsigned int i = 0; i < beams[0]; i++) {
-                RepairBeam_render(*(void **)(beams[1] + i * 4));
+                ((RepairBeam *)(*(void **)(beams[1] + i * 4)))->render();
                 beams = (unsigned int *)P(self, 0x1b8);
             }
         }
@@ -3282,12 +3358,12 @@ extern "C" void PlayerEgo_render(PlayerEgo *self, int allowHud)
         PlayerEgo_render_tail(level, flag);
     } else {
         if (P(self, 0x8c) != 0) {
-            Explosion_render(P(self, 0x8c));
+            ((Explosion *)(P(self, 0x8c)))->render();
             if (I(self, 0x2f8) < 3000)
                 AEGeometry_render(P(self, 0x8));
         }
         if (P(self, 0xac) != 0)
-            Explosion_render(P(self, 0x8c));
+            ((Explosion *)(P(self, 0x8c)))->render();
         PlayerEgo_render_tail(level, 1);
     }
 }
@@ -3317,8 +3393,8 @@ extern "C" void  PaintCanvas_MeshChangeResourceMaterial(void *canvas, unsigned i
 __attribute__((visibility("hidden"))) extern int  *g_PE_tc_sound;     // 0xaa786 cloak sound
 __attribute__((visibility("hidden"))) extern void **g_PE_tc_canvas;   // 0xaa798 PaintCanvas
 
-extern "C" void PlayerEgo_toggleCloaking(PlayerEgo *self)
-{
+void PlayerEgo::toggleCloaking() {
+    PlayerEgo *self = this;
     if (C(self, 0x1ad) == 0) {
         // currently uncloaked -> try to cloak
         if (C(self, 0x1ac) != 0 || I(self, 0x20c) > 0)
@@ -3329,8 +3405,8 @@ extern "C" void PlayerEgo_toggleCloaking(PlayerEgo *self)
         if (need <= have) {
             Ship_removeCargo(Status_getShip(), 0x7a);
             C(self, 0x1ad) = 1;
-            Hud_hudEvent(P(self, 0x220), 0x1e, self);
-            Hud_hudEvent(P(self, 0x220), 0x1c, self);
+            ((Hud *)(P(self, 0x220)))->hudEvent(0x1e, self);
+            ((Hud *)(P(self, 0x220)))->hudEvent(0x1c, self);
         }
         return;
     }

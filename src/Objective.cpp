@@ -1,4 +1,5 @@
 #include "gof2/Objective.h"
+#include "gof2/Route.h"
 #include "gof2/KIPlayer.h"
 // NOTE: gof2/Level.h is intentionally NOT included: its 32-bit-target static_asserts
 // do not hold on a 64-bit host. Level is opaque here; the few direct field reads on a
@@ -103,7 +104,7 @@ unsigned int Objective::achieved(int value)
         return Objective_tail_enemy(
             Level_getEnemies(this->field_0xc)->data()[this->field_0x4]);
     case 2:
-        result = *(uint8_t *)((char *)Route_getLastWaypoint(Level_getPlayerRoute(this->field_0xc)) + 0x130) != 0;
+        result = *(uint8_t *)((char *)((Route *)(Level_getPlayerRoute(this->field_0xc)))->getLastWaypoint() + 0x130) != 0;
         break;
     case 3:
         result = this->field_0x4 < value;
@@ -117,7 +118,7 @@ unsigned int Objective::achieved(int value)
         result = 0;
         int i = 0;
         while (i < this->field_0x4) {
-            result += KIPlayer_isDead(enemies->data()[i]);
+            result += ((KIPlayer *)(enemies->data()[i]))->isDead();
             i++;
         }
         result = (int)result == this->field_0x4;
@@ -128,7 +129,7 @@ unsigned int Objective::achieved(int value)
         result = 0;
         uint32_t i = 0;
         while (i < asteroids->size()) {
-            result += KIPlayer_isDead(asteroids->data()[i]);
+            result += ((KIPlayer *)(asteroids->data()[i]))->isDead();
             i++;
         }
         result = (int)result > this->field_0x4;
@@ -188,7 +189,7 @@ unsigned int Objective::achieved(int value)
         result = 0;
         int i = this->field_0x4;
         while (i < this->field_0x8) {
-            result += KIPlayer_isDead(enemies->data()[i]);
+            result += ((KIPlayer *)(enemies->data()[i]))->isDead();
             i++;
         }
         result = (int)result == this->field_0x8 - this->field_0x4;
@@ -202,7 +203,7 @@ unsigned int Objective::achieved(int value)
         int i = this->field_0x4;
         while (i < this->field_0x8) {
             KIPlayer *enemy = enemies->data()[i];
-            if (KIPlayer_isDead(enemy) != 0 && enemy->field_0x28 == 8)
+            if (((KIPlayer *)(enemy))->isDead() != 0 && enemy->field_0x28 == 8)
                 result++;
             i++;
         }
@@ -231,7 +232,7 @@ unsigned int Objective::achieved(int value)
     case 26: {
         int i = this->field_0x4;
         while (i < this->field_0x8) {
-            int dead = KIPlayer_isDead(enemies->data()[i]);
+            int dead = ((KIPlayer *)(enemies->data()[i]))->isDead();
             i++;
             result = 1;
             if (dead != 0)

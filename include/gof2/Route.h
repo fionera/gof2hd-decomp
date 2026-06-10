@@ -25,6 +25,25 @@ struct Route {
     Array<Waypoint *>   *field_0xc;     // +0xc  waypoints
     Array<KIPlayer *>   *field_0x10;    // +0x10 docking targets
     Array<int>          *field_0x14;    // +0x14 docking times
+
+    // ---- methods (converted from free functions) ----
+    Route * clone();
+    KIPlayer * getDockingTarget();
+    KIPlayer * getDockingTarget_i(int index);
+    int getDockingTime();
+    int getDockingTimeAt(int index);
+    Route * getExactClone();
+    Waypoint * getLastWaypoint();
+    Waypoint * getWaypoint();
+    Waypoint * getWaypointAt(int index);
+    int length();
+    void reachWaypoint(int index);
+    void reset();
+    void setNewCoords(float x, float y, float z);
+    void translate(const Vector &v);
+    void update(const Vector &v);
+    float update_xyz(float x, float y, float z);
+    bool waypointDefined();
 };
 
 #endif

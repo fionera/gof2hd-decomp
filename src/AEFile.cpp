@@ -1,4 +1,5 @@
 #include "gof2/AEFile.h"
+#include "gof2/String.h"
 #include <new>   // placement new used by the in-place String construction below
 
 // ---------------------------------------------------------------------------------------------
@@ -11,24 +12,24 @@
 namespace {
 
 // Construct a String in place from a NUL-terminated 8-bit string.
-inline void AEStr_init(String *self, const char *s)            { String_ctor_char(self, s, false); }
+inline void AEStr_init(String *self, const char *s)            { ((String *)(self))->ctor_char(s, false); }
 // Construct a String in place from a NUL-terminated UTF-16 buffer.
-inline void AEStr_init(String *self, const uint16_t *s)        { String_ctor_wchar(self, s, false); }
+inline void AEStr_init(String *self, const uint16_t *s)        { ((String *)(self))->ctor_wchar(s, false); }
 // Construct a String in place as a copy of another String.
-inline void AEStr_init(String *self, const String &other)      { String_ctor_copy(self, const_cast<String *>(&other), false); }
+inline void AEStr_init(String *self, const String &other)      { ((String *)(self))->ctor_copy(const_cast<String *>(&other), false); }
 
 // Reset a String's contents from a NUL-terminated 8-bit / UTF-16 buffer.
-inline void AEStr_set(String &self, const char *s)             { String_Set_char(&self, s); }
-inline void AEStr_set(String &self, const uint16_t *s)         { String_Set_wchar(&self, s); }
+inline void AEStr_set(String &self, const char *s)             { ((String *)(&self))->Set_char(s); }
+inline void AEStr_set(String &self, const uint16_t *s)         { ((String *)(&self))->Set_wchar(s); }
 
 // Raw UTF-16 backing buffer (engine GetAEWChar / implicit uint16_t* conversion).
 inline uint16_t *AEStr_wchar(const String &self)               { return reinterpret_cast<uint16_t *>(const_cast<char16_t *>(self.text())); }
 // Newly allocated 8-bit (low-byte) copy (engine GetAEChar; caller frees with operator delete).
-inline char     *AEStr_char(const String &self)                { return String_GetAEChar(const_cast<String *>(&self)); }
+inline char     *AEStr_char(const String &self)                { return ((String *)(const_cast<String *>(&self)))->GetAEChar(); }
 // UTF-16 code unit at index i.
-inline uint16_t *AEStr_index(const String &self, int i)        { return String_index(const_cast<String *>(&self), i); }
+inline uint16_t *AEStr_index(const String &self, int i)        { return ((String *)(const_cast<String *>(&self)))->index(i); }
 // First index of needle, or 0xffffffff if absent.
-inline uint32_t  AEStr_indexOf(const String &self, const String &needle) { return String_IndexOf(const_cast<String *>(&self), const_cast<String *>(&needle)); }
+inline uint32_t  AEStr_indexOf(const String &self, const String &needle) { return ((String *)(const_cast<String *>(&self)))->IndexOf(const_cast<String *>(&needle)); }
 
 } // namespace
 

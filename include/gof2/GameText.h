@@ -26,6 +26,15 @@ struct GameText;
 // >8-byte struct ABI (sret / on stack), matching the target.
 namespace AbyssEngine {
 
+
+    // ---- methods (converted from free functions) ----
+    void ReadLangFile(unsigned int file, int count);
+    void ctor();
+    void * getText(int key);
+    void release();
+    void setLanguage_i(int param_1);
+    void setLanguage_si(int stringCount, int langId);
+    void setSubstituteArray(int *param_1, unsigned param_2);
 }
 typedef AbyssEngine::String String;
 

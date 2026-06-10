@@ -40,5 +40,21 @@ struct BluePrint {
     int32_t field_0x20;                 // +0x20 item index
     int32_t field_0x24;                 // +0x24 batch multiplier
     int32_t field_0x28;                 // +0x28 remaining batch
+
+    // ---- methods (converted from free functions) ----
+    void addItem(Item *item, int amount, int station);
+    void complete();
+    int getAutoCompletionPrice();
+    float getCompletionRate();
+    int getCurrentAmount(int item);
+    int getIngredientsValue();
+    int getRemainingAmount(int item);
+    AbyssEngine::String12 getStationName();
+    int getTotalAmount(int item);
+    bool isCompleted();
+    bool isEmpty();
+    void lock();
+    void reset();
+    void unlock();
 };
 #endif

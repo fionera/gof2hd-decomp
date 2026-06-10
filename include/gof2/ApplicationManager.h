@@ -58,6 +58,64 @@ struct ApplicationManager {
     int          field_0xb8;            // +0xb8 last touch y
 
     ~ApplicationManager();
+
+    // ---- methods (converted from free functions) ----
+    void CheatAddCode(void *code, int value);
+    void CheatEnable(bool enable);
+    void CheatSetCallback(void *callback, void *data);
+    void CheatUpdate(unsigned short key);
+    void CheckForOrientationChange();
+    void * ConfigGetKeysForAction(long long action);
+    void ConfigRegisterAction(long long value, long long key);
+    void ConvertTouchCoords(int *x, int *y);
+    uint64_t GetActionState();
+    void * GetApplicationModule(unsigned int id);
+    uint64_t GetCurrentTimeMillis();
+    uint64_t GetElapsedTimeMillis();
+    void * GetEngine();
+    uint64_t GetKeyState();
+    uint64_t GetSystemTimeMillis();
+    void KeyCodeSetMapping(void *array);
+    void LoadingCallbackShow(int mode, void *data);
+    void OnKeyPress(int key);
+    void OnKeyRelease(int key);
+    void OnTouchBegin(int xArg, int yArg, void *touch);
+    void OnTouchEnd(int xArg, int yArg, void *touch);
+    void OnTouchEndSimple();
+    void OnTouchMove(int xArg, int yArg, void *touch);
+    void OnUpdate(long long now);
+    void Quit();
+    void ResetKeyState();
+    void Resume();
+    void SetApplicationModule(void *module);
+    void SetCurrentApplicationModule(unsigned int id);
+    void SetLoadingCallback(LoadingCallback_t *callback, void *data);
+    void SetResumeCallback(ResumeCallback_t *callback, void *data);
+    void SoundEnable(bool enable);
+    void SoundFxEnable(bool enable);
+    int SoundIsPlaying();
+    void SoundMusicEnable(bool enable);
+    void SoundPause();
+    void SoundPauseSounds();
+    void SoundPlay(int soundId);
+    void SoundPlayLoop(int soundId);
+    void SoundPlayMusic(int soundId);
+    void SoundPlayMusicLoop(int soundId);
+    void SoundPlay_vol(int soundId, float volume);
+    void SoundRelease();
+    void SoundResume(int soundId);
+    void SoundResumeSelf();
+    void SoundResumeSounds();
+    void SoundSetFXVolume(int volume);
+    void SoundSetMusicVolume(int volume);
+    void SoundSetVolume(int volume);
+    void SoundStop();
+    void SoundStopSounds();
+    void Suspend();
+    void Vibrate(unsigned short duration);
+    void VibrateEnable(bool enable);
+    void VibrateSupported();
+    ApplicationManager * ctor(void *engine);
 };
 
 #endif

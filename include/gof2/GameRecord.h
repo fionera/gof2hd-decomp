@@ -32,5 +32,8 @@ struct GameRecord {
     void* _opaque;  // raw byte-offset access throughout (coverage-mode translation)
     GameRecord();
     ~GameRecord();
+
+    // ---- methods (converted from free functions) ----
+    void load();
 };
 #endif

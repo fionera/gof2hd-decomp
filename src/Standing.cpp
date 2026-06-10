@@ -1,10 +1,6 @@
 #include "gof2/Standing.h"
 #include <arm_neon.h>
 
-extern "C" int Standing_getStanding(Standing *self, int race);
-extern "C" bool Standing_isEnemy(Standing *self, int race);
-extern "C" bool Standing_isFriend(Standing *self, int race);
-extern "C" void Standing_applyPoints(Standing *self, int race, int delta);
 extern "C" int Status_hardCoreMode(Status *self);
 extern "C" int Status_inAlienOrbit(Status *self);
 extern "C" SolarSystem *Status_getSystem(Status *self);
@@ -24,7 +20,8 @@ Standing::Standing() {
 // Standing::applyPoints(int race, int delta): add delta to standings[race] and
 // clamp the result into [-100, 100]. The clamping store only runs when the value
 // leaves the band; otherwise it returns early.
-extern "C" void Standing_applyPoints(Standing *self, int race, int delta) {
+void Standing::applyPoints(int race, int delta) {
+    Standing *self = this;
     int *p = self->field_0x0;
     int v = delta + p[race];
     p[race] = v;
@@ -40,15 +37,17 @@ extern "C" void Standing_applyPoints(Standing *self, int race, int delta) {
 
 // ---- getStandingRate_11d728.cpp ----
 // Standing::getStandingRate(int race): getStanding(race) normalized to [-1, 1].
-extern "C" float Standing_getStandingRate(Standing *self, int race) {
-    return (float)Standing_getStanding(self, race) / 100.0f;
+float Standing::getStandingRate(int race) {
+    Standing *self = this;
+    return (float)((Standing *)(self))->getStanding(race) / 100.0f;
 }
 
 // ---- isEnemyWithAnyone_11d780.cpp ----
 // Standing::isEnemyWithAnyone(): true if either home-race standing is outside the
 // non-hostile band, i.e. (standing + 0x46) does not fit in [0, 0x8c] as unsigned.
 // Both comparisons are always evaluated (bitwise |) to mirror the branchless target.
-extern "C" bool Standing_isEnemyWithAnyone(Standing *self) {
+bool Standing::isEnemyWithAnyone() {
+    Standing *self = this;
     int *p = self->field_0x0;
     int a = p[0];
     int b = p[1];
@@ -60,7 +59,8 @@ extern "C" bool Standing_isEnemyWithAnyone(Standing *self) {
 __attribute__((visibility("hidden"))) extern const uint32_t Standing_enemyRaceTable[4];
 
 // Standing::getEnemyRace(int idx): idx<4 ? table[idx] : 8.
-extern "C" uint32_t Standing_getEnemyRace(Standing *self, unsigned idx) {
+uint32_t Standing::getEnemyRace(unsigned idx) {
+    Standing *self = this;
     (void)self;
     if (idx < 4)
         return Standing_enemyRaceTable[idx];
@@ -69,9 +69,10 @@ extern "C" uint32_t Standing_getEnemyRace(Standing *self, unsigned idx) {
 
 // ---- isNeutral_11d86e.cpp ----
 // Standing::isNeutral(int race): neither enemy nor friend.
-extern "C" unsigned Standing_isNeutral(Standing *self, int race) {
-    if (Standing_isEnemy(self, race)) return 0;
-    return Standing_isFriend(self, race) ^ 1;
+unsigned Standing::isNeutral(int race) {
+    Standing *self = this;
+    if (((Standing *)(self))->isEnemy(race)) return 0;
+    return ((Standing *)(self))->isFriend(race) ^ 1;
 }
 
 // ---- _Standing_11d6c8.cpp ----
@@ -86,7 +87,8 @@ Standing::~Standing() {
 // Standing::getStanding(int race) [static-style: this in r0, race in r1].
 // In "derived" mode (currentRace >= 0) factions 0/1 map to fixed standings based
 // on currentRace; otherwise the raw standings[race] value is returned.
-extern "C" int Standing_getStanding(Standing *self, int race) {
+int Standing::getStanding(int race) {
+    Standing *self = this;
     int cr = self->field_0x4;
     if (cr >= 0) {
         if (race == 0) {
@@ -107,20 +109,23 @@ extern "C" int Standing_getStanding(Standing *self, int race) {
 
 // ---- applyMissionCompleted_11d992.cpp ----
 // Standing::applyMissionCompleted(int race): +5 reputation (delta -5 fed to applyPoints).
-extern "C" void Standing_applyMissionCompleted(Standing *self, int race) {
-    Standing_applyPoints(self, race, -5);
+void Standing::applyMissionCompleted(int race) {
+    Standing *self = this;
+    ((Standing *)(self))->applyPoints(race, -5);
 }
 
 // ---- setStanding_11d6de.cpp ----
 // Standing::setStanding(int race, int value): standings[race] = value.
-extern "C" void Standing_setStanding(Standing *self, int race, int value) {
+void Standing::setStanding(int race, int value) {
+    Standing *self = this;
     self->field_0x0[race] = value;
 }
 
 // ---- applyStealCargo_11d98c.cpp ----
 // Standing::applyStealCargo(int race): -2 reputation toward that race.
-extern "C" void Standing_applyStealCargo(Standing *self, int race) {
-    Standing_applyPoints(self, race, 2);
+void Standing::applyStealCargo(int race) {
+    Standing *self = this;
+    ((Standing *)(self))->applyPoints(race, 2);
 }
 
 // ---- isEnemy_11d7a2.cpp ----
@@ -129,7 +134,8 @@ extern "C" void Standing_applyStealCargo(Standing *self, int race) {
 // `this` in r0 / currentRace in r2, whereas the original swaps them (this->r2,
 // cr->r0) so the "== 0" test lowers to clz/lsr in r0 — a register-allocation
 // choice not reachable from portable C. Left as the faithful decompiled form.
-extern "C" bool Standing_isEnemy(Standing *self, int race) {
+bool Standing::isEnemy(int race) {
+    Standing *self = this;
     int iVar1 = self->field_0x4;
     if (-1 < iVar1) {
         if (race != 1) {
@@ -169,22 +175,23 @@ __attribute__((visibility("hidden"))) extern Status **g_adl_status;
 // Standing::applyDelict(int kind, int severity): a committed crime against a race.
 // Severity doubles in hardcore mode; kinds 0/2 are "against the even slot", 1/3 the
 // odd slot, with 0/2 applied as a penalty (negated) — all routed through applyPoints.
-extern "C" void Standing_applyDelict(Standing *self, unsigned kind, int severity) {
+void Standing::applyDelict(unsigned kind, int severity) {
+    Standing *self = this;
     int hc = Status_hardCoreMode(*g_adl_status);
     int delta = severity << hc;
     int sign;
     switch (kind) {
     case 0:
-        Standing_applyPoints(self, 0, -delta);
+        ((Standing *)(self))->applyPoints(0, -delta);
         return;
     case 1:
-        Standing_applyPoints(self, 0, delta);
+        ((Standing *)(self))->applyPoints(0, delta);
         return;
     case 2:
-        Standing_applyPoints(self, 1, -delta);
+        ((Standing *)(self))->applyPoints(1, -delta);
         return;
     case 3:
-        Standing_applyPoints(self, 1, delta);
+        ((Standing *)(self))->applyPoints(1, delta);
         return;
     default:
         return;
@@ -204,7 +211,8 @@ __attribute__((visibility("hidden"))) extern const int g_apk_raceTable[4];
 // Standing::applyKill(int kind): a kill committed against another ship. For police
 // kills (kind 8) the offence is mapped to the local system's owning race (once),
 // otherwise it costs 5 standing toward the victim's faction.
-extern "C" void Standing_applyKill(Standing *self, int kind) {
+void Standing::applyKill(int kind) {
+    Standing *self = this;
     Status **holder = g_apk_status;
     unsigned sysRace;
     if (Status_inAlienOrbit(*holder) != 0) {
@@ -225,12 +233,13 @@ extern "C" void Standing_applyKill(Standing *self, int kind) {
     } else {
         delta = 5;
     }
-    Standing_applyPoints(self, kind, delta);
+    ((Standing *)(self))->applyPoints(kind, delta);
 }
 
 // ---- isFriend_11d808.cpp ----
 // Standing::isFriend(int race).
-extern "C" bool Standing_isFriend(Standing *self, int race) {
+bool Standing::isFriend(int race) {
+    Standing *self = this;
     int iVar1 = self->field_0x4;
     if (-1 < iVar1) {
         if (race == 1) {
@@ -269,7 +278,8 @@ extern "C" bool Standing_isFriend(Standing *self, int race) {
 // under -Oz routes every case through a GPR before a shared vcvt, and encodes the 0.0
 // floor as an immediate rather than a literal-pool load. Both are codegen choices not
 // reachable from portable C / NEON intrinsics here.
-extern "C" float Standing_getMissionBonus(Standing *self, unsigned race) {
+float Standing::getMissionBonus(unsigned race) {
+    Standing *self = this;
     float s0;
     switch (race) {
     case 0:
@@ -293,14 +303,16 @@ extern "C" float Standing_getMissionBonus(Standing *self, unsigned race) {
 
 // ---- applyDisable_11d99a.cpp ----
 // Standing::applyDisable(int race).
-extern "C" void Standing_applyDisable(Standing *self, int race) {
-    Standing_applyPoints(self, race, 2);
+void Standing::applyDisable(int race) {
+    Standing *self = this;
+    ((Standing *)(self))->applyPoints(race, 2);
 }
 
 // ---- rehabilitate_11d750.cpp ----
 // Standing::rehabilitate(int race): reset the standing toward a faction's home
 // race to a fixed value (-35 for the "even" slot, +35 for the "odd" slot).
-extern "C" void Standing_rehabilitate(Standing *self, int race) {
+void Standing::rehabilitate(int race) {
+    Standing *self = this;
     if (race == 0) {
         self->field_0x0[0] = -35;
     } else if (race == 1) {

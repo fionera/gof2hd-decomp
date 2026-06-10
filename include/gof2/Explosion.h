@@ -22,6 +22,20 @@ struct Explosion {
     float                  field_0x24;   // +0x24 scale
     int                    field_0x28;   // +0x28 sound id (-1 == none)
     Matrix                 field_0x2c;   // +0x2c rotation matrix
+
+    // ---- methods (converted from free functions) ----
+    void addFireStreaks();
+    uint8_t isPlaying();
+    bool peakReached();
+    void playSound(Vector *pos);
+    void render();
+    void reset();
+    void setScaling(float scale);
+    void start(const Vector *position, const Vector *direction);
+    void start_matrix(const Matrix *matrix);
+    void translate(const Vector *v);
+    void update_camera(int dt, TargetFollowCamera *camera);
+    void update_vector(int dt, const Vector *position);
 };
 
 // Byte-offset accessors for EXTERNAL opaque objects (AEGeometry, Transform,

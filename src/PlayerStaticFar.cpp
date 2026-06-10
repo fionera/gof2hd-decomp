@@ -1,4 +1,5 @@
 #include "gof2/PlayerStaticFar.h"
+#include "gof2/Player.h"
 
 
 extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);
@@ -6,7 +7,6 @@ extern "C" void operator_delete(void *p);
 extern "C" Vector BoundingVolume_getProjectionVector(void *volume, const Vector &value);
 extern "C" void PlayerStaticFar_render_tail(PlayerStaticFar *self);
 extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
-extern "C" void Player_setRadius(void *player, int value);
 
 // ---- _PlayerStaticFar_11c2c8.cpp ----
 // PlayerStaticFar deleting destructor (D0): PlayerStaticFar has no owned members,
@@ -243,6 +243,6 @@ PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, fl
     this->field_0x00 = (char *)vtable + 8;
     this->field_0x5c = y;
     this->field_0x60 = z;
-    Player_setRadius(this->field_0x04, 0x1d4c);
+    ((Player *)(this->field_0x04))->setRadius(0x1d4c);
     this->field_0x130 = 0;
 }

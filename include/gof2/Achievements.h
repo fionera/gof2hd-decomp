@@ -39,5 +39,26 @@ struct Achievements {
 
     Achievements();
     ~Achievements();
+
+    // ---- methods (converted from free functions) ----
+    void applyNewMedals();
+    void checkForNewMedal(PlayerEgo *ego);
+    void countMedals();
+    int getValue(int index, int sub);
+    uint8_t gotAllGoldMedals();
+    uint8_t gotAllMedals();
+    uint8_t gotAllSupernovaMedals();
+    uint8_t hasMedal(int index, int value);
+    void incCatches();
+    void incKills();
+    void incPirateKills();
+    int init();
+    void initCheckEquipmentAndWeapons();
+    uint8_t isEliteMedal(int index);
+    void resetNewMedals();
+    void resetPirateKills();
+    void setMedal(int index, int value);
+    void setMedals(int *src, int count);
+    void updateCredits(int value);
 };
 #endif

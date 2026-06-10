@@ -1,4 +1,5 @@
 #include "gof2/MaskShader.h"
+#include "gof2/Engine.h"
 
 namespace AbyssEngine {
 
@@ -40,7 +41,7 @@ void MaskShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     char *texBase = *(char **)(e + 0x30);
     int *tex = *(int **)(texBase + 0x20);
     if (tex != 0)
-        Engine_SetTextureSlot(engine, tex[1], 1);
+        ((Engine *)(engine))->SetTextureSlot(tex[1], 1);
 
     if (*(uint8_t *)(m + 0x5c) == 0) {
         if (field_0x20 >= 0)

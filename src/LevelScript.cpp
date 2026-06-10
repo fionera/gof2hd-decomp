@@ -1,4 +1,12 @@
 #include "gof2/LevelScript.h"
+#include "gof2/Explosion.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
+#include "gof2/PlayerEgo.h"
+#include "gof2/PlayerFighter.h"
+#include "gof2/Route.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/Station.h"
 
 // A by-value 3-float vector passed to the camera helpers (a math Vector laid out
 // as 3 contiguous floats). Defined once here so all uses agree.
@@ -15,8 +23,6 @@ struct StackVector {
 };
 
 extern "C" void AEGeometry_render(void *geometry);
-extern "C" int Explosion_isPlaying(void *explosion);
-extern "C" void Explosion_render(void *explosion);
 extern "C" void *Level_getPlayer(Level *level);
 extern "C" void TargetFollowCamera_setTarget(void *camera, void *target);
 extern "C" void TargetFollowCamera_setTargetOffset(void *camera, const StackVector &offset);
@@ -27,12 +33,7 @@ extern "C" void Player_setUnknown(void *player, bool enabled);
 extern "C" void *gProgrammedStation;
 extern "C" void *Status_getStation(void *status);
 extern "C" void *Status_getSystem(void *status);
-extern "C" int Station_equals(void *station, void *other);
-extern "C" int SolarSystem_stationIsInSystem(void *system, void *station);
-extern "C" int SolarSystem_currentOrbitHasWarpGate(void *system);
-extern "C" int SolarSystem_getWarpGateEnumIndex(void *system);
 extern "C" int Station_getIndex(void *station);
-extern "C" int SolarSystem_getStationEnumIndex(void *system, int stationIndex);
 extern "C" void *Level_getStarSystem(Level *level);
 extern "C" void *Level_getLandmarks(Level *level);
 extern "C" void *StarSystem_getPlanetTargets(void *starSystem);
@@ -43,18 +44,12 @@ extern "C" void operator_delete(void *ptr);
 extern "C" void *Level_getMessages(Level *level);
 extern "C" void RadioMessage_trigger(void *message);
 extern "C" void RadioMessage_finish(void *message);
-extern "C" void PlayerFighter_setAIDisabled(void *fighter, bool disabled);
 extern "C" void *KIPlayer_getRoute(void *player);
-extern "C" void *Route_getWaypoint(void *route, int index);
-extern "C" void KIPlayer_setVisible(void *player, bool visible);
-extern "C" void KIPlayer_setActive(void *player, bool active);
 extern "C" void *Level_getActiveMessages(Level *level);
 extern "C" void TargetFollowCamera_update(TargetFollowCamera *camera, float delta, int a, int b);
 extern "C" void Matrix_ctor(void *matrix);
 extern "C" void Hud_drawTitleImage(Hud *hud, bool visible);
 extern "C" int Level_getTimeLimit(Level *level);
-extern "C" void Player_setVulnerable(void *player, bool vulnerable);
-extern "C" void PlayerEgo_setCollide(void *player, bool collide);
 extern "C" void TargetFollowCamera_setLookAtCam(TargetFollowCamera *camera, bool enabled);
 
 // ---- render3D_145d84.cpp ----
@@ -83,8 +78,8 @@ void LevelScript::render3D()
     if (P(this, 0xc4) != 0) {
         AEGeometry_render(P(this, 0xc4));
     }
-    if (P(this, 0xc8) != 0 && Explosion_isPlaying(P(this, 0xc8)) != 0) {
-        Explosion_render(P(this, 0xc8));
+    if (P(this, 0xc8) != 0 && ((Explosion *)(P(this, 0xc8)))->isPlaying() != 0) {
+        ((Explosion *)(P(this, 0xc8)))->render();
     }
     if (UC(this, 0xa8) != 0 && P(this, 0xac) != 0) {
         RenderProc render = gRenderProc;
@@ -134,26 +129,26 @@ void LevelScript::setAutoPilotToProgrammedStation()
     void **programmedStation = &gProgrammedStation;
     if (*programmedStation != 0) {
         void **status = &gStatus;
-        if (Station_equals(Status_getStation(*status), *programmedStation) != 0) {
+        if (((Station *)(Status_getStation(*status)))->equals(*programmedStation) != 0) {
             *programmedStation = 0;
             return;
         }
 
         void *target;
         void *player;
-        if (SolarSystem_stationIsInSystem(Status_getSystem(*status), *programmedStation) != 0) {
+        if (((SolarSystem *)(Status_getSystem(*status)))->stationIsInSystem(*programmedStation) != 0) {
             player = Level_getPlayer((Level *)P(this, 0x18));
             void *targets = StarSystem_getPlanetTargets(Level_getStarSystem((Level *)P(this, 0x18)));
             void *system = Status_getSystem(*status);
             int stationIndex = Station_getIndex(*programmedStation);
-            int targetIndex = SolarSystem_getStationEnumIndex(system, stationIndex);
+            int targetIndex = ((SolarSystem *)(system))->getStationEnumIndex(stationIndex);
             target = ((void **)P(targets, 4))[targetIndex];
-        } else if (SolarSystem_currentOrbitHasWarpGate(Status_getSystem(*status)) != 0) {
+        } else if (((SolarSystem *)(Status_getSystem(*status)))->currentOrbitHasWarpGate() != 0) {
             player = Level_getPlayer((Level *)P(this, 0x18));
             void *landmarks = Level_getLandmarks((Level *)P(this, 0x18));
             target = ((void **)P(landmarks, 4))[1];
         } else {
-            int warpGateIndex = SolarSystem_getWarpGateEnumIndex(Status_getSystem(*status));
+            int warpGateIndex = ((SolarSystem *)(Status_getSystem(*status)))->getWarpGateEnumIndex();
             if (warpGateIndex < 0) {
                 return;
             }
@@ -296,14 +291,14 @@ void LevelScript::skipCutscene()
 
             LevelListProc getList = gLevelListProc;
             void *list = getList((Level *)P(this, 0x18));
-            PlayerFighter_setAIDisabled(firstListEntry(list), false);
+            ((PlayerFighter *)(firstListEntry(list)))->setAIDisabled(false);
 
             list = getList((Level *)P(this, 0x18));
             void *fighter = firstListEntry(list);
 
             list = getList((Level *)P(this, 0x18));
             void *route = KIPlayer_getRoute(firstListEntry(list));
-            void *waypoint = Route_getWaypoint(route, 0);
+            void *waypoint = ((Route *)(route))->getWaypoint();
             ReadWaypointProc readWaypoint = *(ReadWaypointProc *)((char *)P(waypoint, 0) + 0x28);
             readWaypoint(&position, waypoint);
             SetVectorProc setVector = *(SetVectorProc *)((char *)P(fighter, 0) + 0x44);
@@ -338,10 +333,9 @@ void LevelScript::skipCutscene()
         command(player, 0x000ba51e, 0, 0x000ba4b6);
 
         list = getList((Level *)P(this, 0x18));
-        KIPlayer_setVisible(firstListEntry(list), true);
+        ((KIPlayer *)(firstListEntry(list)))->setVisible(true);
 
         list = getList((Level *)P(this, 0x18));
-        KIPlayer_setActive(firstListEntry(list), true);
         I(this, 0x1c) = 2;
     }
 }
@@ -424,11 +418,11 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     if (player == 0) {
         UC(this, 0x20) = 0;
     } else {
-        Player_setVulnerable(P(player, 0), false);
+        ((Player *)(P(player, 0)))->setVulnerable(false);
     }
 
     player = Level_getPlayer(level);
-    PlayerEgo_setCollide(player, false);
+    ((PlayerEgo *)(player))->setCollide(false);
 
     if (Status_getCurrentCampaignMission(gStatus) == 0) {
         I(this, 0x90) = 0;

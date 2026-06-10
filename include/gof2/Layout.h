@@ -181,5 +181,49 @@ struct Layout {
     int field_0x40c;                    // +0x40c
     int field_0x40d;                    // +0x40d
     uint8_t field_0x410;                // +0x410
+
+    // ---- methods (converted from free functions) ----
+    int OnTouchBegin(int x, int y);
+    int OnTouchEnd(int x, int y);
+    int OnTouchMove(int x, int y);
+    void ctor();
+    void drawBG();
+    void drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
+    void drawBGPattern(unsigned img, int x, int y, int w, int h);
+    void drawBox(int style, int x, int y, int w, int h, void *text, unsigned flags);
+    void drawBox6(int p2, int p3, int p4, int p5, int p6, const void *str);
+    void drawEmptyFooter(int showBack);
+    uint8_t drawFade();
+    void drawFooter();
+    void drawFooterImpl(int stationMode, int showBack);
+    void drawFooterNoBackButton();
+    void drawFooterStation();
+    void drawHeader0();
+    void drawHeader1(const void *param);
+    void drawHeader7(void *title, int transition);
+    void drawHelpWindow();
+    int drawMask4(int p1, int p2, int p3, int p4);
+    void drawMissionRewardMessage(int transition);
+    void drawScrollBar(int x, int y, int trackH, int pos, int range);
+    void drawTip();
+    void drawWindow1(const void *param);
+    void drawWindow2(const void *param, int flag);
+    void drawWindow5(const void *param, int p3, int p4, int p5, int p6);
+    void drawWindow7(void *title, int x, int y, int w, int h, int drawBG);
+    void enableFillScreen(bool v);
+    int getFooterTransitionWidth();
+    int getHelpButtonOffset();
+    float getPulseValue(float speed);
+    uint8_t helpPressed();
+    void initHelpWindow(void *text);
+    void initTip();
+    uint8_t isFading();
+    void reload();
+    void resetWindowDimensions();
+    static inline void setDrawColor(int color);
+    void setWindowDimensions(int p1, int p2, int p3, int p4);
+    void showMissionRewardMessage(int show, bool flag);
+    void startFade(uint8_t fadeOut, int color, int duration);
+    void update(int dt);
 };
 #endif

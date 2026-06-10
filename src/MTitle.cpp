@@ -1,20 +1,18 @@
 #include "gof2/MTitle.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/ImageFactory.h"
+#include "gof2/Layout.h"
 
 
 extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
 extern "C" int GameText_getLanguage();
 extern "C" void Globals_loadFont(void *obj, int lang);
-extern "C" void Layout_reload(void *p);
-extern "C" void ImageFactory_reload(void *p);
 extern "C" void MTitle_or_tail(void *p);
 extern "C" void PaintCanvas_Begin2d(void *canvas);
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y, int ax, int ay);
 extern "C" void PaintCanvas_End2d(void *canvas);
-extern "C" void Layout_drawBG(void *layout);
 extern "C" void Layout_drawHeader(void *layout);
-extern "C" void Layout_drawEmptyFooter(void *layout, int flag);
-extern "C" int ApplicationManager_GetElapsedTimeMillis(void *arg);
 extern "C" void MTitle_r2dDone(void *screen, int arg);
 extern "C" void MTitle_r2dTail(void *canvas);
 extern "C" void _ZN6MTitle9OnReleaseEv(MTitle *self);
@@ -42,8 +40,8 @@ void MTitle::OnRelease()
 
     void **reload = g_MTitle_or_reload;
     if (*reload != 0) {
-        Layout_reload(*reload);
-        ImageFactory_reload(*g_MTitle_or_imgfac);
+        ((Layout *)(*reload))->reload();
+        ((ImageFactory *)(*g_MTitle_or_imgfac))->reload();
         MTitle_or_tail(*reload);
     }
 }
@@ -62,15 +60,15 @@ void MTitle::OnRender2D()
     PaintCanvas_SetColor(*canvas, -1);
 
     void **layout = g_MTitle_r2d_layout;
-    Layout_drawBG(*layout);
+    ((Layout *)(*layout))->drawBG();
     Layout_drawHeader(*layout);
-    Layout_drawEmptyFooter(*layout, 0);
+    ((Layout *)(*layout))->drawEmptyFooter(0);
 
-    int t = ApplicationManager_GetElapsedTimeMillis(this->field_0x8);
+    int t = ((ApplicationManager *)(this->field_0x8))->GetElapsedTimeMillis();
     if (0x32 < t)
         t = 0x32;
     else
-        t = ApplicationManager_GetElapsedTimeMillis(this->field_0x8);
+        t = ((ApplicationManager *)(this->field_0x8))->GetElapsedTimeMillis();
 
     t += this->field_0x1c;
     this->field_0x1c = t;

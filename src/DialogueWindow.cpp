@@ -1,19 +1,22 @@
 #include "gof2/DialogueWindow.h"
+#include "gof2/Agent.h"
+#include "gof2/GameText.h"
+#include "gof2/ImageFactory.h"
+#include "gof2/Layout.h"
+#include "gof2/Mission.h"
+#include "gof2/Standing.h"
+#include "gof2/String.h"
+#include "gof2/TouchButton.h"
 // Layout's drawMask/drawBox are used via the local extern "C" prototypes below;
 // the full Layout.h is not required here.
 
 
 extern "C" int ScrollTouchWindow_OnTouchBegin(void *self, int x, int y);
 extern "C" int ChoiceWindow_OnTouchBegin(void *self, int x, int y);
-extern "C" int Mission_isCampaignMission(Mission *self);
 extern "C" int Mission_getTargetStation(Mission *self);
-extern "C" int DialogueWindow_length(DialogueWindow *self);
-extern "C" void DialogueWindow_loadContent(DialogueWindow *self);
 extern "C" void ArrayReleaseClasses_ImagePartPtr(void *self);
 extern "C" void *Array_ImagePartPtr_dtor(void *self);
 extern "C" void *ScrollTouchWindow_dtor(void *self);
-extern "C" void *TouchButton_dtor(void *self);
-extern "C" void String_dtor(void *self);
 extern "C" void operator_delete(void *self);
 extern "C" void operator_delete_arr(void *self);
 extern "C" int ScrollTouchWindow_OnTouchMove(void *self, int x, int y);
@@ -21,64 +24,38 @@ extern "C" int ChoiceWindow_OnTouchMove(void *self, int x, int y);
 extern "C" Agent *Mission_getAgent(Mission *self);
 extern "C" void Mission_setWon(Mission *self, bool won);
 extern "C" void Mission_setFailed(Mission *self, bool failed);
-extern "C" int Agent_isGenericAgent(Agent *self);
-extern "C" void Agent_setOfferAccepted(Agent *self, bool accepted);
 extern "C" int Status_getCurrentCampaignMission(void *status);
-extern "C" String *GameText_getText(void *self, int id);
-extern "C" void TouchButton_replaceTextKeepSize(void *self, String *text);
-extern "C" void TouchButton_setPressProgress(void *self, int progress);
-extern "C" void TouchButton_setVisible(void *self, bool visible);
 extern "C" int FModSound_stop(void *self, int sound);
 extern "C" void FModSound_play(void *self, int sound, void *pos, int volume, int extra);
 extern "C" int FModSound_getEventPauseLength(void *self, int sound);
 extern "C" int Mission_getType(Mission *self);
 extern "C" void *Mission_getClientImage(Mission *self);
-extern "C" void Mission_getClientName(StringSlot *out, Mission *self);
 extern "C" int Mission_getClientRace(Mission *self);
 extern "C" int Mission_getStatusValue(Mission *self);
-extern "C" void Mission_getTargetStationName(StringSlot *out, Mission *self);
-extern "C" void Agent_getStationName(StringSlot *out, Agent *self);
-extern "C" int Agent_isStoryAgent(Agent *self);
 extern "C" void *Status_getStanding(void *status);
-extern "C" void Standing_applyMissionCompleted(void *self, int race);
 extern "C" int AERandom_nextInt(void *self, int max);
 extern "C" int GameText_getLanguage(void);
 extern "C" void String_ctor_literal(StringSlot *self, const char *text, bool copy);
-extern "C" void String_ctor_copy(StringSlot *self, String *text, bool copy);
-extern "C" void String_assign(String *self, void *other);
 extern "C" void String_assign_slot(String *self, StringSlot *other);
 extern "C" void ScrollTouchWindow_setText4(void *self, StringSlot *style, StringSlot *text, int color);
-extern "C" void *ImageFactory_loadChar(void *self, void *parts);
-extern "C" bool DialogueWindow_isLastPage(DialogueWindow *self);
-extern "C" int DialogueWindow_pickGermanGenericTextBecauseWeSaved100EurosWithThat(DialogueWindow *self, int kind, Agent *agent);
 extern "C" int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
-extern "C" void String_ctor(String *self);
-extern "C" int DialogueWindow_init(DialogueWindow *self);
 extern "C" void ScrollTouchWindow_update(void *self, int dt);
 extern "C" void ChoiceWindow_update(void *self, int dt);
 extern "C" void FModSound_getPlayingProgress(void *self, int sound);
 extern "C" int FModSound_isPlaying(void *self, int sound);
-extern "C" int DialogueWindow_nextPage(DialogueWindow *self);
 extern "C" int ScrollTouchWindow_OnTouchEnd(void *self, int x, int y);
-extern "C" int TouchButton_OnTouchEnd(void *self, int x, int y);
 extern "C" int ChoiceWindow_OnTouchEnd(void *self, int x, int y);
 extern "C" void ChoiceWindow_set(void *self, String *text, bool flag);
-extern "C" int DialogueWindow_previousPage(DialogueWindow *self);
 extern "C" void *operator_new(unsigned size);
 extern "C" void *operator_new_arr(unsigned size);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void ChoiceWindow_ctor(void *self);
 extern "C" void TouchButton_ctor(void *self, String *text, int type, int x, int y, int width, int icon, int style);
 extern "C" void ScrollTouchWindow_setText(void *self, StringSlot *style, StringSlot *text);
-extern "C" void DialogueWindow_set(DialogueWindow *self, Mission *mission, int kind, int campaign);
 extern "C" int Agent_getRace(Agent *self);
-extern "C" int Agent_isMale(Agent *self);
-extern "C" int *Agent_getImageParts(Agent *self);
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void Layout_drawMask(void *layout);
-extern "C" void Layout_drawBox(void *layout, int style, int x, int y, int w, int h, StringSlot *title);
 extern "C" void ScrollTouchWindow_draw(void *self);
-extern "C" void ImageFactory_drawChar(void *self, void *parts, int x, int y, bool flipped);
 extern "C" void ChoiceWindow_draw(void *self);
 struct Vec2;  // defined below (float x, y) -- only the pointer type is needed here
 extern "C" void TouchButton_getPosition(Vec2 *out, void *self);
@@ -92,8 +69,8 @@ typedef int (*TouchHandler)(void *, int, int);
 
 __attribute__((visibility("hidden"))) extern TouchHandler g_dw_touchButtonOnTouchBegin;
 
-extern "C" int DialogueWindow_OnTouchBegin(DialogueWindow *self, int x, int y)
-{
+int DialogueWindow::OnTouchBegin(int x, int y) {
+    DialogueWindow *self = this;
     if (self->field_0x54 != 0) {
         ChoiceWindow_OnTouchBegin(self->field_0x50, x, y);
     } else {
@@ -112,10 +89,10 @@ __attribute__((visibility("hidden"))) extern int g_dw_briefingCounts[];
 __attribute__((visibility("hidden"))) extern int g_dw_successCounts[];
 __attribute__((visibility("hidden"))) extern void **g_dw_status;
 
-extern "C" int DialogueWindow_length(DialogueWindow *self)
-{
+int DialogueWindow::length() {
+    DialogueWindow *self = this;
     Mission *mission = self->field_0x4c;
-    if (mission != 0 && Mission_isCampaignMission(mission) != 0) {
+    if (mission != 0 && ((Mission *)(mission))->isCampaignMission() != 0) {
         int kind = self->field_0x44;
         int *counts;
         if (kind == 1) {
@@ -136,21 +113,21 @@ extern "C" int DialogueWindow_length(DialogueWindow *self)
 }
 
 // ---- nextPage_16801e.cpp ----
-extern "C" int DialogueWindow_nextPage(DialogueWindow *self)
-{
+int DialogueWindow::nextPage() {
+    DialogueWindow *self = this;
     int page = self->field_0x48;
-    int len = DialogueWindow_length(self);
+    int len = ((DialogueWindow *)(self))->length();
     if (page < len - 1) {
         self->field_0x48 = self->field_0x48 + 1;
-        DialogueWindow_loadContent(self);
+        ((DialogueWindow *)(self))->loadContent();
         return 1;
     }
     return 0;
 }
 
 // ---- hasLevel_1680b6.cpp ----
-extern "C" bool DialogueWindow_hasLevel(DialogueWindow *self)
-{
+bool DialogueWindow::hasLevel() {
+    DialogueWindow *self = this;
     return self->field_0x58 != 0;
 }
 
@@ -180,19 +157,19 @@ extern "C" DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
     self->field_0x40 = 0;
 
     p = self->field_0x0;
-    if (p != 0) operator_delete(TouchButton_dtor(p));
+    if (p != 0) operator_delete(((TouchButton *)(p))->dtor());
     self->field_0x0 = 0;
 
     p = self->field_0x4;
-    if (p != 0) operator_delete(TouchButton_dtor(p));
+    if (p != 0) operator_delete(((TouchButton *)(p))->dtor());
     self->field_0x4 = 0;
 
     p = self->field_0x8;
-    if (p != 0) operator_delete(TouchButton_dtor(p));
+    if (p != 0) operator_delete(((TouchButton *)(p))->dtor());
     self->field_0x8 = 0;
 
-    String_dtor((String *)((char *)self + 0x34));
-    String_dtor((String *)((char *)self + 0x28));
+    ((String *)((String *)((char *)self + 0x34)))->dtor();
+    ((String *)((String *)((char *)self + 0x28)))->dtor();
     return self;
 }
 
@@ -201,8 +178,8 @@ typedef int (*TouchHandler)(void *, int, int);
 
 __attribute__((visibility("hidden"))) extern TouchHandler g_dw_touchButtonOnTouchMove;
 
-extern "C" int DialogueWindow_OnTouchMove(DialogueWindow *self, int x, int y)
-{
+int DialogueWindow::OnTouchMove(int x, int y) {
+    DialogueWindow *self = this;
     if (self->field_0x54 != 0) {
         ChoiceWindow_OnTouchMove(self->field_0x50, x, y);
     } else {
@@ -217,26 +194,26 @@ extern "C" int DialogueWindow_OnTouchMove(DialogueWindow *self, int x, int y)
 }
 
 // ---- isFirstPage_1680ac.cpp ----
-extern "C" bool DialogueWindow_isFirstPage(DialogueWindow *self)
-{
+bool DialogueWindow::isFirstPage() {
+    DialogueWindow *self = this;
     return self->field_0x48 == 0;
 }
 
 // ---- previousPage_1680c4.cpp ----
-extern "C" int DialogueWindow_previousPage(DialogueWindow *self)
-{
+int DialogueWindow::previousPage() {
+    DialogueWindow *self = this;
     int page = self->field_0x48;
     if (page <= 0) return 0;
     self->field_0x48 = page - 1;
-    DialogueWindow_loadContent(self);
+    ((DialogueWindow *)(self))->loadContent();
     return 1;
 }
 
 // ---- isLastPage_168008.cpp ----
-extern "C" bool DialogueWindow_isLastPage(DialogueWindow *self)
-{
+bool DialogueWindow::isLastPage() {
+    DialogueWindow *self = this;
     int page = self->field_0x48;
-    int len = DialogueWindow_length(self);
+    int len = ((DialogueWindow *)(self))->length();
     return page == len - 1;
 }
 
@@ -261,8 +238,8 @@ extern "C" bool DialogueWindow_hasSuccessDialogue(int id)
 // ---- set_166ee4.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_dw_statusForSet;
 
-extern "C" void DialogueWindow_set(DialogueWindow *self, Mission *mission, int kind, int campaign)
-{
+void DialogueWindow::set(Mission *mission, int kind, int campaign) {
+    DialogueWindow *self = this;
     if (kind == 1) {
         self->field_0x4c = mission;
         self->field_0x44 = kind;
@@ -272,8 +249,8 @@ extern "C" void DialogueWindow_set(DialogueWindow *self, Mission *mission, int k
     self->field_0x44 = kind;
     if (kind == 2) {
         Agent *agent = Mission_getAgent(mission);
-        if (agent != 0 && Agent_isGenericAgent(agent) == 0) {
-            Agent_setOfferAccepted(agent, false);
+        if (agent != 0 && ((Agent *)(agent))->isGenericAgent() == 0) {
+            ((Agent *)(agent))->setOfferAccepted(false);
         }
         Mission_setFailed(mission, true);
         goto finish;
@@ -290,7 +267,7 @@ finish:
         campaign = Status_getCurrentCampaignMission(*g_dw_statusForSet);
     }
     self->field_0x10 = campaign;
-    DialogueWindow_loadContent(self);
+    ((DialogueWindow *)(self))->loadContent();
 }
 
 // ---- loadContent_1671f4.cpp ----
@@ -305,21 +282,21 @@ __attribute__((visibility("hidden"))) extern int g_dw_campaignBriefingTextIds[];
 __attribute__((visibility("hidden"))) extern int g_dw_campaignSuccessTextIds[];
 __attribute__((visibility("hidden"))) extern void *g_dw_defaultClientImage;
 
-extern "C" void DialogueWindow_loadContent(DialogueWindow *self)
-{
+void DialogueWindow::loadContent() {
+    DialogueWindow *self = this;
     StringSlot tmp;
     StringSlot style;
 
     void **gameText = g_dw_gameTextLoad;
     void **sound = g_dw_soundLoad;
 
-    TouchButton_replaceTextKeepSize(self->field_0x4, GameText_getText(*gameText, 0xb4));
+    ((TouchButton *)(self->field_0x4))->replaceTextKeepSize(((GameText *)(*gameText))->getText(0xb4));
     self->field_0x70 = 0;
     self->field_0x68 = 0;
     self->field_0x6c = 0;
     FModSound_stop(*sound, self->field_0x64);
     self->field_0x64 = -1;
-    TouchButton_setPressProgress(self->field_0x4, 0);
+    ((TouchButton *)(self->field_0x4))->setPressProgress(0);
 
     void *parts = self->field_0xc;
     if (parts != 0) {
@@ -334,7 +311,7 @@ extern "C" void DialogueWindow_loadContent(DialogueWindow *self)
     int page = self->field_0x48;
     int textId = -1;
 
-    if (mission != 0 && Mission_isCampaignMission(mission) != 0) {
+    if (mission != 0 && ((Mission *)(mission))->isCampaignMission() != 0) {
         int base;
         if (kind == 1) {
             base = self->field_0x60[self->field_0x10];
@@ -346,64 +323,64 @@ extern "C" void DialogueWindow_loadContent(DialogueWindow *self)
             textId = 0x10 + 0x63d;
         }
         self->field_0x24 = g_dw_defaultClientImage;
-        String_assign((String *)((char *)self + 0x34), GameText_getText(*gameText, 0x63d + (textId & 0xff)));
-        String_assign((String *)((char *)self + 0x28), GameText_getText(*gameText, textId));
+        ((String *)((String *)((char *)self + 0x34)))->assign(((GameText *)(*gameText))->getText(0x63d + (textId & 0xff)));
+        ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
     } else if (mission != 0) {
         if ((page & 1) != 0) {
             self->field_0x24 = g_dw_defaultClientImage;
-            String_assign((String *)((char *)self + 0x34), GameText_getText(*gameText, 0x63d));
+            ((String *)((String *)((char *)self + 0x34)))->assign(((GameText *)(*gameText))->getText(0x63d));
             self->field_0x70 = 1;
         } else {
             self->field_0x24 = Mission_getClientImage(mission);
-            Mission_getClientName(&tmp, mission);
+            ((Mission *)(&tmp))->getClientName();
             String_assign_slot((String *)((char *)self + 0x34), &tmp);
-            String_dtor(&tmp);
+            ((String *)(&tmp))->dtor();
             self->field_0x70 = 0;
         }
 
         if (kind == 1 || kind == 0 || kind == 2) {
             Agent *agent = Mission_getAgent(mission);
             if (GameText_getLanguage() == 1 && agent != 0) {
-                textId = DialogueWindow_pickGermanGenericTextBecauseWeSaved100EurosWithThat(self, kind, agent);
+                textId = ((DialogueWindow *)(self))->pickGermanGenericTextBecauseWeSaved100EurosWithThat(kind, agent);
             } else {
                 textId = 0x188 + AERandom_nextInt(*g_dw_randomLoad, 5);
             }
         } else {
             textId = 0x20f;
         }
-        String_assign((String *)((char *)self + 0x28), GameText_getText(*gameText, textId));
+        ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
 
         if (kind == 1) {
             void *standing = Status_getStanding(*g_dw_statusLoad);
-            Standing_applyMissionCompleted(standing, Mission_getClientRace(mission));
+            ((Standing *)(standing))->applyMissionCompleted(Mission_getClientRace(mission));
         }
         if (Mission_getTargetStation(mission) == 0x6c && kind == 0) {
             textId = 0x1ca;
-            String_assign((String *)((char *)self + 0x28), GameText_getText(*gameText, textId));
+            ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
         }
         if (Mission_getType(mission) == 0x0c && kind == 0) {
             textId = 0x174;
-            String_assign((String *)((char *)self + 0x28), GameText_getText(*gameText, textId));
+            ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
         }
     } else {
         self->field_0x24 = g_dw_defaultClientImage;
         textId = 0x10;
-        String_assign((String *)((char *)self + 0x28), GameText_getText(*gameText, textId));
-        String_assign((String *)((char *)self + 0x34), GameText_getText(*gameText, 0x63d));
+        ((String *)((String *)((char *)self + 0x28)))->assign(((GameText *)(*gameText))->getText(textId));
+        ((String *)((String *)((char *)self + 0x34)))->assign(((GameText *)(*gameText))->getText(0x63d));
     }
 
     String_ctor_literal(&style, g_dw_emptyLoad, false);
-    String_ctor_copy(&tmp, (String *)((char *)self + 0x28), false);
+    ((String *)(&tmp))->ctor_copy((String *)((char *)self + 0x28), false);
     ScrollTouchWindow_setText4(self->field_0x40, &style, &tmp, 0);
-    String_dtor(&tmp);
-    String_dtor(&style);
+    ((String *)(&tmp))->dtor();
+    ((String *)(&style))->dtor();
 
-    TouchButton_setVisible(self->field_0x0, self->field_0x48 != 0);
-    TouchButton_setVisible(self->field_0x8, DialogueWindow_length(self) > 1);
-    self->field_0xc = ImageFactory_loadChar(*g_dw_imageFactoryLoad, self->field_0x24);
+    ((TouchButton *)(self->field_0x0))->setVisible(self->field_0x48 != 0);
+    ((TouchButton *)(self->field_0x8))->setVisible(((DialogueWindow *)(self))->length() > 1);
+    self->field_0xc = ((ImageFactory *)(*g_dw_imageFactoryLoad))->loadChar(self->field_0x24);
 
-    if (DialogueWindow_isLastPage(self) != 0) {
-        TouchButton_replaceTextKeepSize(self->field_0x4, GameText_getText(*gameText, 0xb5));
+    if (((DialogueWindow *)(self))->isLastPage() != 0) {
+        ((TouchButton *)(self->field_0x4))->replaceTextKeepSize(((GameText *)(*gameText))->getText(0xb5));
     }
 
     Agent *agent = mission == 0 ? (Agent *)0 : Mission_getAgent(mission);
@@ -416,11 +393,11 @@ extern "C" void DialogueWindow_loadContent(DialogueWindow *self)
 }
 
 // ---- DialogueWindow_166f5c.cpp ----
-extern "C" DialogueWindow *DialogueWindow_ctor_default(DialogueWindow *self)
-{
-    String_ctor((String *)((char *)self + 0x28));
-    String_ctor((String *)((char *)self + 0x34));
-    DialogueWindow_init(self);
+DialogueWindow * DialogueWindow::ctor_default() {
+    DialogueWindow *self = this;
+    ((String *)((String *)((char *)self + 0x28)))->ctor();
+    ((String *)((String *)((char *)self + 0x34)))->ctor();
+    ((DialogueWindow *)(self))->init();
     return self;
 }
 
@@ -428,8 +405,8 @@ extern "C" DialogueWindow *DialogueWindow_ctor_default(DialogueWindow *self)
 __attribute__((visibility("hidden"))) extern void *g_dw_soundConfig;
 __attribute__((visibility("hidden"))) extern void **g_dw_fmodSound;
 
-extern "C" void DialogueWindow_update(DialogueWindow *self, int dt)
-{
+void DialogueWindow::update(int dt) {
+    DialogueWindow *self = this;
     void *scroll = self->field_0x40;
     if (scroll != 0) {
         ScrollTouchWindow_update(scroll, dt);
@@ -443,10 +420,10 @@ extern "C" void DialogueWindow_update(DialogueWindow *self, int dt)
         void *playingSound = *sound;
         int playingId = self->field_0x64;
         if (FModSound_isPlaying(playingSound, playingId) == 0 &&
-            DialogueWindow_isLastPage(self) == 0) {
+            ((DialogueWindow *)(self))->isLastPage() == 0) {
             int elapsed = self->field_0x68;
             if (elapsed >= self->field_0x6c) {
-                DialogueWindow_nextPage(self);
+                ((DialogueWindow *)(self))->nextPage();
                 elapsed = self->field_0x68;
             }
             self->field_0x68 = elapsed + dt;
@@ -462,8 +439,8 @@ __attribute__((visibility("hidden"))) extern void **g_dw_soundPrev;
 __attribute__((visibility("hidden"))) extern void **g_dw_soundNext;
 __attribute__((visibility("hidden"))) extern void **g_dw_gameTextTouchEnd;
 
-extern "C" int DialogueWindow_OnTouchEnd(DialogueWindow *self, int x, int y)
-{
+int DialogueWindow::OnTouchEnd(int x, int y) {
+    DialogueWindow *self = this;
     if (self->field_0x54 != 0) {
         int r = ChoiceWindow_OnTouchEnd(self->field_0x50, x, y);
         if (r == 1) {
@@ -489,19 +466,19 @@ choice_return_zero:
     }
 
     ScrollTouchWindow_OnTouchEnd(self->field_0x40, x, y);
-    if (TouchButton_OnTouchEnd(self->field_0x0, x, y) != 0) {
+    if (((TouchButton *)(self->field_0x0))->OnTouchEnd(x, y) != 0) {
         FModSound_stop(*g_dw_soundPrev, self->field_0x64);
-        DialogueWindow_previousPage(self);
+        ((DialogueWindow *)(self))->previousPage();
     }
-    if (TouchButton_OnTouchEnd(self->field_0x4, x, y) != 0) {
+    if (((TouchButton *)(self->field_0x4))->OnTouchEnd(x, y) != 0) {
         FModSound_stop(*g_dw_soundNext, self->field_0x64);
-        if (DialogueWindow_nextPage(self) == 0) {
+        if (((DialogueWindow *)(self))->nextPage() == 0) {
             return 1;
         }
     }
-    if (TouchButton_OnTouchEnd(self->field_0x8, x, y) != 0) {
+    if (((TouchButton *)(self->field_0x8))->OnTouchEnd(x, y) != 0) {
         void *choice = self->field_0x50;
-        String *text = GameText_getText(*g_dw_gameTextTouchEnd, 0x18c);
+        String *text = ((GameText *)(*g_dw_gameTextTouchEnd))->getText(0x18c);
         ChoiceWindow_set(choice, text, true);
         self->field_0x54 = 1;
     }
@@ -522,8 +499,8 @@ static inline int half_round_to_zero(int v)
     return (v + ((unsigned)v >> 31)) >> 1;
 }
 
-extern "C" int DialogueWindow_init(DialogueWindow *self)
-{
+int DialogueWindow::init() {
+    DialogueWindow *self = this;
     StringSlot name;
 
     int *briefingOffsets = (int *)operator_new_arr(0x288);
@@ -543,8 +520,8 @@ extern "C" int DialogueWindow_init(DialogueWindow *self)
     }
 
     String_ctor_literal(&name, g_dw_defaultAgentName, false);
-    String_assign((String *)((char *)self + 0x34), &name);
-    String_dtor(&name);
+    ((String *)((String *)((char *)self + 0x34)))->assign(&name);
+    ((String *)(&name))->dtor();
 
     self->field_0x4c = 0;
     self->field_0x50 = 0;
@@ -581,7 +558,7 @@ extern "C" int DialogueWindow_init(DialogueWindow *self)
 
     void **gameText = g_dw_gameTextInit;
     void *button = operator_new(0xc8);
-    String *label = GameText_getText(*gameText, 0xb3);
+    String *label = ((GameText *)(*gameText))->getText(0xb3);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 5,
@@ -591,7 +568,7 @@ extern "C" int DialogueWindow_init(DialogueWindow *self)
     self->field_0x0 = button;
 
     button = operator_new(0xc8);
-    label = GameText_getText(*gameText, 0xb4);
+    label = ((GameText *)(*gameText))->getText(0xb4);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 6,
@@ -601,7 +578,7 @@ extern "C" int DialogueWindow_init(DialogueWindow *self)
     self->field_0x4 = button;
 
     button = operator_new(0xc8);
-    label = GameText_getText(*gameText, 0x18b);
+    label = ((GameText *)(*gameText))->getText(0x18b);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     TouchButton_ctor(button, label, 0,
@@ -620,34 +597,34 @@ __attribute__((visibility("hidden"))) extern void **g_dw_imageFactoryCtor;
 __attribute__((visibility("hidden"))) extern void **g_dw_gameTextCtor;
 __attribute__((visibility("hidden"))) extern void **g_dw_layoutCtor;
 
-extern "C" DialogueWindow *DialogueWindow_ctor_text(DialogueWindow *self, String *text, String *agentName, int *parts)
-{
+DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int *parts) {
+    DialogueWindow *self = this;
     StringSlot blank;
     StringSlot copy;
 
-    String_ctor((String *)((char *)self + 0x28));
-    String_ctor((String *)((char *)self + 0x34));
-    DialogueWindow_init(self);
+    ((String *)((String *)((char *)self + 0x28)))->ctor();
+    ((String *)((String *)((char *)self + 0x34)))->ctor();
+    ((DialogueWindow *)(self))->init();
 
     void *scroll = self->field_0x40;
     String_ctor_literal(&blank, g_dw_emptyString, false);
-    String_ctor_copy(&copy, text, false);
+    ((String *)(&copy))->ctor_copy(text, false);
     ScrollTouchWindow_setText(scroll, &blank, &copy);
-    String_dtor(&copy);
-    String_dtor(&blank);
+    ((String *)(&copy))->dtor();
+    ((String *)(&blank))->dtor();
 
-    TouchButton_setVisible(self->field_0x8, false);
-    TouchButton_setVisible(self->field_0x0, false);
+    ((TouchButton *)(self->field_0x8))->setVisible(false);
+    ((TouchButton *)(self->field_0x0))->setVisible(false);
 
-    self->field_0xc = ImageFactory_loadChar(*g_dw_imageFactoryCtor, parts);
+    self->field_0xc = ((ImageFactory *)(*g_dw_imageFactoryCtor))->loadChar(parts);
     void *old = self->field_0x4;
     if (old != 0) {
-        operator_delete(TouchButton_dtor(old));
+        operator_delete(((TouchButton *)(old))->dtor());
     }
     self->field_0x4 = 0;
 
     void *button = operator_new(0xc8);
-    String *buttonText = GameText_getText(*g_dw_gameTextCtor, 0x20c);
+    String *buttonText = ((GameText *)(*g_dw_gameTextCtor))->getText(0x20c);
     void *layout = *g_dw_layoutCtor;
     int margin = F<int>(layout, 0x4c);
     int x = self->field_0x14 + self->field_0x1c / 2;
@@ -656,7 +633,7 @@ extern "C" DialogueWindow *DialogueWindow_ctor_text(DialogueWindow *self, String
     TouchButton_ctor(button, buttonText, 0, x, y, width, 0x24, 4);
     self->field_0x4 = button;
 
-    String_assign((String *)((char *)self + 0x34), agentName);
+    ((String *)((String *)((char *)self + 0x34)))->assign(agentName);
     self->field_0x64 = -1;
     self->field_0x48 = 0;
     self->field_0x6c = 0;
@@ -664,13 +641,13 @@ extern "C" DialogueWindow *DialogueWindow_ctor_text(DialogueWindow *self, String
 }
 
 // ---- DialogueWindow_166bfc.cpp ----
-extern "C" DialogueWindow *DialogueWindow_ctor_mission(DialogueWindow *self, Mission *mission, Level *level, int kind)
-{
-    String_ctor((String *)((char *)self + 0x28));
-    String_ctor((String *)((char *)self + 0x34));
-    DialogueWindow_init(self);
+DialogueWindow * DialogueWindow::ctor_mission(Mission *mission, Level *level, int kind) {
+    DialogueWindow *self = this;
+    ((String *)((String *)((char *)self + 0x28)))->ctor();
+    ((String *)((String *)((char *)self + 0x34)))->ctor();
+    ((DialogueWindow *)(self))->init();
     self->field_0x58 = level;
-    DialogueWindow_set(self, mission, kind, -1);
+    ((DialogueWindow *)(self))->set(mission, kind, -1);
     return self;
 }
 
@@ -680,26 +657,25 @@ __attribute__((visibility("hidden"))) extern int g_dw_germanBriefingTexts[];
 __attribute__((visibility("hidden"))) extern int g_dw_germanSuccessTexts[];
 __attribute__((visibility("hidden"))) extern int g_dw_germanOtherTexts[];
 
-extern "C" int DialogueWindow_pickGermanGenericTextBecauseWeSaved100EurosWithThat(
-    DialogueWindow *self, int kind, Agent *agent)
-{
+int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent) {
+    DialogueWindow *self = this;
     (void)self;
     int race = Agent_getRace(agent);
     int male;
     if (race < 10) {
         race = Agent_getRace(agent);
-        male = Agent_isMale(agent);
+        male = ((Agent *)(agent))->isMale();
         if (race == 3) {
-            if (Agent_getImageParts(agent) == 0) {
+            if (((Agent *)(agent))->getImageParts() == 0) {
                 race = 3;
             } else {
-                int *parts = Agent_getImageParts(agent);
+                int *parts = ((Agent *)(agent))->getImageParts();
                 race = 0;
                 if (*parts == 2) race = 3;
             }
         }
     } else {
-        male = Agent_isMale(agent);
+        male = ((Agent *)(agent))->isMale();
         race = 10;
     }
 
@@ -747,27 +723,23 @@ __attribute__((visibility("hidden"))) extern int *g_dw_nextButtonX;
 __attribute__((visibility("hidden"))) extern int *g_dw_nextButtonY;
 __attribute__((visibility("hidden"))) extern int *g_dw_drawReadyFlag;
 
-extern "C" void DialogueWindow_draw(DialogueWindow *self)
-{
+void DialogueWindow::draw() {
+    DialogueWindow *self = this;
     StringSlot title;
     Vec2 pos;
 
     PaintCanvas_SetColor(*g_dw_paintCanvas, -1);
     void *layout = *g_dw_layoutDraw;
     Layout_drawMask(layout);
-    String_ctor_copy(&title, (String *)((char *)self + 0x34), false);
-    Layout_drawBox(layout, 7, self->field_0x14, self->field_0x18,
-                   self->field_0x1c, self->field_0x20, &title);
-    String_dtor(&title);
+    ((String *)(&title))->ctor_copy((String *)((char *)self + 0x34), false);
+    ((Layout *)(layout))->drawBox(7, self->field_0x14, self->field_0x18, self->field_0x1c, self->field_0x20, &title);
+    ((String *)(&title))->dtor();
 
     ScrollTouchWindow_draw(self->field_0x40);
 
     layout = *g_dw_layoutDraw;
     int margin = F<int>(layout, 0x4c);
-    ImageFactory_drawChar(*g_dw_imageFactoryDraw, self->field_0xc,
-                          self->field_0x14 + margin,
-                          self->field_0x18 + margin + F<int>(layout, 0x8),
-                          self->field_0x70);
+    ((ImageFactory *)(*g_dw_imageFactoryDraw))->drawChar(self->field_0xc, self->field_0x14 + margin, self->field_0x18 + margin + F<int>(layout, 0x8), self->field_0x70);
 
     ButtonDraw drawButton = g_dw_touchButtonDraw;
     drawButton(self->field_0x0);

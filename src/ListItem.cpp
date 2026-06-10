@@ -2,7 +2,6 @@
 // gof2/PendingProduct.h is intentionally NOT included (it does not compile standalone); ListItem.h
 // provides a minimal PendingProduct view with the one field this TU reads.
 
-extern "C" void *ListItem_init(ListItem *self);
 
 // Shared status singleton accessor (one of getShip()/getCredits() per call site).
 struct Status {
@@ -12,20 +11,23 @@ struct Status {
 extern Status *status;
 
 // ---- isMission_a67be.cpp ----
-extern "C" bool ListItem_isMission(ListItem *self) {
+bool ListItem::isMission() {
+    ListItem *self = this;
     return self->field_0x14 != 0;
 }
 
 // ---- isItem_a678c.cpp ----
-extern "C" bool ListItem_isItem(ListItem *self) {
+bool ListItem::isItem() {
+    ListItem *self = this;
     return self->field_0x10 != 0;
 }
 
 // ---- ListItem_a64fa.cpp ----
 // ListItem::ListItem(BluePrint*)
 
-extern "C" ListItem *ListItem_ctor_BluePrint(ListItem *self, BluePrint *bp) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_BluePrint(BluePrint *bp) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x24 = 1;
     self->field_0x8 = bp;
     return self;
@@ -36,7 +38,8 @@ extern "C" int Item_getSort_li(Item *it);              // blx 0x71908
 extern "C" int ListItem_sortCmp(Ship *ship, int sort); // tail b.w 0x1abe28
 
 // ListItem::checkSort() — field 0x10 is reloaded (not cached) before getSort.
-extern "C" int ListItem_checkSort(ListItem *self) {
+int ListItem::checkSort() {
+    ListItem *self = this;
     if (self->field_0x10 == 0)
         return 0;
     Ship *ship = status->getShip();
@@ -47,8 +50,9 @@ extern "C" int ListItem_checkSort(ListItem *self) {
 // ---- ListItem_a66f4.cpp ----
 // ListItem::ListItem(int, int) -> 0x28 = second arg, 0x2c = first arg, selectable=1
 
-extern "C" ListItem *ListItem_ctor_int_int(ListItem *self, int a, int b) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_int_int(int a, int b) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x28 = b;
     self->field_0x2c = a;
     self->field_0x24 = 1;
@@ -73,35 +77,40 @@ ListItem::~ListItem() {
 }
 
 // ---- isCargo_a6796.cpp ----
-extern "C" bool ListItem_isCargo(ListItem *self) {
+bool ListItem::isCargo() {
+    ListItem *self = this;
     return self->field_0x10 != 0;
 }
 
 // ---- getNumLines_a6822.cpp ----
 // ldrb r1,[0x44]; cmp #0; itee eq; mov.eq 0; ldr.ne r0,[r0,#0]; ldr.ne r0,[r0,#0]
 // if (!textFlag) return 0; else return **(int**)this  (first line count of the strings array)
-extern "C" int ListItem_getNumLines(ListItem *self) {
+int ListItem::getNumLines() {
+    ListItem *self = this;
     if (self->field_0x44 == 0)
         return 0;
     return **(int **)self;
 }
 
 // ---- isBluePrint_a6808.cpp ----
-extern "C" bool ListItem_isBluePrint(ListItem *self) {
+bool ListItem::isBluePrint() {
+    ListItem *self = this;
     return self->field_0x8 != 0;
 }
 
 // ---- isSelectable_a676e.cpp ----
 // ldrb.w r0,[r0,#0x24]; bx lr
-extern "C" uint8_t ListItem_isSelectable(ListItem *self) {
+uint8_t ListItem::isSelectable() {
+    ListItem *self = this;
     return self->field_0x24;
 }
 
 // ---- ListItem_a6512.cpp ----
 // ListItem::ListItem(Ship*)
 
-extern "C" ListItem *ListItem_ctor_Ship(ListItem *self, Ship *s) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_Ship(Ship *s) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x24 = 1;
     self->field_0xc = s;
     return self;
@@ -112,7 +121,8 @@ extern "C" int Item_getType_li(Item *it);                  // blx 0x718fc
 extern "C" int Ship_getFreeSlots_li(Ship *ship, int type); // blx 0x733e4
 
 // ListItem::checkSlot()
-extern "C" int ListItem_checkSlot(ListItem *self) {
+int ListItem::checkSlot() {
+    ListItem *self = this;
     int r = 0;
     if (self->field_0x10 != 0) {
         Ship *ship = status->getShip();
@@ -125,8 +135,9 @@ extern "C" int ListItem_checkSlot(ListItem *self) {
 
 // ---- ListItem_a65fc.cpp ----
 // ListItem::ListItem(String*, int) -> 0x30=int, 0x1c=new String, selectable=0
-extern "C" ListItem *ListItem_ctor_String_int(ListItem *self, const void *src, int v) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_String_int(const void *src, int v) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     EngString *s = new EngString(src, false);
     self->field_0x1c = s;
     self->field_0x30 = v;
@@ -137,8 +148,9 @@ extern "C" ListItem *ListItem_ctor_String_int(ListItem *self, const void *src, i
 // ---- ListItem_a6688.cpp ----
 // ListItem::ListItem(int)  -> field 0x28
 
-extern "C" ListItem *ListItem_ctor_int(ListItem *self, int v) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_int(int v) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x24 = 1;
     self->field_0x28 = v;
     return self;
@@ -147,8 +159,9 @@ extern "C" ListItem *ListItem_ctor_int(ListItem *self, int v) {
 // ---- ListItem_a66a0.cpp ----
 // ListItem::ListItem(String* p1, String* p2): 0x1c=new String(p1), 0x20=new String(p2),
 // selectable=0.
-extern "C" ListItem *ListItem_ctor_String_String(ListItem *self, const void *p1, const void *p2) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_String_String(const void *p1, const void *p2) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     EngString *s1 = new EngString(p1, false);
     self->field_0x1c = s1;
     EngString *s2 = new EngString(p2, false);
@@ -159,15 +172,17 @@ extern "C" ListItem *ListItem_ctor_String_String(ListItem *self, const void *p1,
 
 // ---- isImage_a6774.cpp ----
 // ldr r1,[r0,#0x34]; movs r0,#0; cmp.w r1,#0xffffffff; it gt; mov.gt r0,#1
-extern "C" bool ListItem_isImage(ListItem *self) {
+bool ListItem::isImage() {
+    ListItem *self = this;
     return self->field_0x34 < 0x80000000u;
 }
 
 // ---- ListItem_a63e0.cpp ----
 // ListItem::ListItem(int p1, int p2, String* p3): 0x34=p1, new String(p3), 0x28=p2,
 // 0x1c=s, selectable=1.
-extern "C" ListItem *ListItem_ctor_int_int_String(ListItem *self, int a, int b, const void *src) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_int_int_String(int a, int b, const void *src) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x34 = a;
     EngString *s = new EngString(src, false);
     self->field_0x1c = s;
@@ -183,7 +198,8 @@ extern "C" int BluePrint_getIndex_li(BluePrint *bp);  // tail b.w 0x1abe78
 
 // ListItem::getIndex() — default 999999 (literal pool constant) when nothing set;
 // the PendingProduct path reads its index at +0x14, selected via ite eq.
-extern "C" int ListItem_getIndex(ListItem *self) {
+int ListItem::getIndex() {
+    ListItem *self = this;
     Ship *sh = self->field_0xc;
     if (sh)
         return Ship_getIndex_li(sh);
@@ -202,8 +218,9 @@ extern "C" int ListItem_getIndex(ListItem *self) {
 // ---- ListItem_a652a.cpp ----
 // ListItem::ListItem(Item*)
 
-extern "C" ListItem *ListItem_ctor_Item(ListItem *self, Item *it) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_Item(Item *it) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x24 = 1;
     self->field_0x10 = it;
     return self;
@@ -212,8 +229,9 @@ extern "C" ListItem *ListItem_ctor_Item(ListItem *self, Item *it) {
 // ---- ListItem_a6730.cpp ----
 // ListItem::ListItem(Array<String*>*)  -> field 0x00, selectable=0
 
-extern "C" ListItem *ListItem_ctor_Array(ListItem *self, Array<AbyssEngine::String12 *> *arr) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_Array(Array<AbyssEngine::String12 *> *arr) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x24 = 0;
     self->field_0x0 = arr;
     return self;
@@ -222,8 +240,9 @@ extern "C" ListItem *ListItem_ctor_Array(ListItem *self, Array<AbyssEngine::Stri
 // ---- ListItem_a6718.cpp ----
 // ListItem::ListItem(Mission*)
 
-extern "C" ListItem *ListItem_ctor_Mission(ListItem *self, Mission *m) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_Mission(Mission *m) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x24 = 1;
     self->field_0x14 = m;
     return self;
@@ -231,13 +250,15 @@ extern "C" ListItem *ListItem_ctor_Mission(ListItem *self, Mission *m) {
 
 // ---- isTextButton_a67d6.cpp ----
 // ldrb.w r0,[r0,#0x38]; bx lr
-extern "C" uint8_t ListItem_isTextButton(ListItem *self) {
+uint8_t ListItem::isTextButton() {
+    ListItem *self = this;
     return self->field_0x38;
 }
 
 // ---- isText_a681c.cpp ----
 // ldrb.w r0,[r0,#0x44]; bx lr
-extern "C" uint8_t ListItem_isText(ListItem *self) {
+uint8_t ListItem::isText() {
+    ListItem *self = this;
     return self->field_0x44;
 }
 
@@ -246,7 +267,8 @@ extern "C" int Ship_getPrice_li(Ship *s);          // blx 0x71b00
 extern "C" int Item_getSinglePrice_li(Item *it);    // blx 0x71944
 
 // ListItem::checkCredits()
-extern "C" bool ListItem_checkCredits(ListItem *self) {
+bool ListItem::checkCredits() {
+    ListItem *self = this;
     int price;
     Ship *sh = self->field_0xc;
     if (sh == 0) {
@@ -263,8 +285,9 @@ extern "C" bool ListItem_checkCredits(ListItem *self) {
 
 // ---- ListItem_a6642.cpp ----
 // ListItem::ListItem(String*, bool) -> 0x44=bool, 0x1c=new String, selectable=0
-extern "C" ListItem *ListItem_ctor_String_bool(ListItem *self, const void *src, bool b) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_String_bool(const void *src, bool b) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     EngString *s = new EngString(src, false);
     self->field_0x1c = s;
     self->field_0x44 = b;
@@ -276,7 +299,8 @@ extern "C" ListItem *ListItem_ctor_String_bool(ListItem *self, const void *src, 
 // (Ship_getPrice_li / Item_getSinglePrice_li(Item*) already declared above.)
 
 // ListItem::getPrice()
-extern "C" int ListItem_getPrice(ListItem *self) {
+int ListItem::getPrice() {
+    ListItem *self = this;
     Ship *sh = self->field_0xc;
     if (sh)
         return Ship_getPrice_li(sh);
@@ -286,26 +310,30 @@ extern "C" int ListItem_getPrice(ListItem *self) {
 }
 
 // ---- isSlot_a67c8.cpp ----
-extern "C" bool ListItem_isSlot(ListItem *self) {
+bool ListItem::isSlot() {
+    ListItem *self = this;
     return self->field_0x28 < 0x80000000u;
 }
 
 // ---- isMoveToCargoButton_a67f0.cpp ----
 // if (!this[0x38]) false; else this[0x30]==1
-extern "C" bool ListItem_isMoveToCargoButton(ListItem *self) {
+bool ListItem::isMoveToCargoButton() {
+    ListItem *self = this;
     if (self->field_0x38 == 0)
         return false;
     return self->field_0x30 == 1;
 }
 
 // ---- isPendingProduct_a6812.cpp ----
-extern "C" bool ListItem_isPendingProduct(ListItem *self) {
+bool ListItem::isPendingProduct() {
+    ListItem *self = this;
     return self->field_0x18 != 0;
 }
 
 // ---- isTab_a67a0.cpp ----
 // if (!selectable && *(int*)(*(int*)(this+0x1c)+8) != 0) return this[0x38]==0; else false
-extern "C" bool ListItem_isTab(ListItem *self) {
+bool ListItem::isTab() {
+    ListItem *self = this;
     if (self->field_0x24 == 0 &&
         *(int *)((char *)self->field_0x1c + 8) != 0)
         return self->field_0x38 == 0;
@@ -314,13 +342,15 @@ extern "C" bool ListItem_isTab(ListItem *self) {
 
 // ---- isShip_a6782.cpp ----
 // ldr r0,[r0,#0xc]; cmp; it ne; mov.ne r0,#1; bx lr
-extern "C" bool ListItem_isShip(ListItem *self) {
+bool ListItem::isShip() {
+    ListItem *self = this;
     return self->field_0xc != 0;
 }
 
 // ---- isSellButton_a67dc.cpp ----
 // if (!this[0x38]) false; else this[0x30]==0
-extern "C" bool ListItem_isSellButton(ListItem *self) {
+bool ListItem::isSellButton() {
+    ListItem *self = this;
     if (self->field_0x38 == 0)
         return false;
     return self->field_0x30 == 0;
@@ -329,8 +359,9 @@ extern "C" bool ListItem_isSellButton(ListItem *self) {
 // ---- ListItem_a65bc.cpp ----
 // ListItem::ListItem(String*) -> new String at 0x1c, selectable=0
 
-extern "C" ListItem *ListItem_ctor_String(ListItem *self, const void *src) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_String(const void *src) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     EngString *s = new EngString(src, false);
     self->field_0x1c = s;
     self->field_0x24 = 0;
@@ -340,8 +371,9 @@ extern "C" ListItem *ListItem_ctor_String(ListItem *self, const void *src) {
 // ---- ListItem_a6542.cpp ----
 // ListItem::ListItem(PendingProduct*)
 
-extern "C" ListItem *ListItem_ctor_PendingProduct(ListItem *self, PendingProduct *pp) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_PendingProduct(PendingProduct *pp) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x24 = 1;
     self->field_0x18 = pp;
     return self;
@@ -350,8 +382,9 @@ extern "C" ListItem *ListItem_ctor_PendingProduct(ListItem *self, PendingProduct
 // ---- ListItem_a655a.cpp ----
 // ListItem::ListItem(Agent*)
 
-extern "C" ListItem *ListItem_ctor_Agent(ListItem *self, Agent *a) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_Agent(Agent *a) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x24 = 1;
     self->field_0x4 = a;
     return self;
@@ -360,8 +393,9 @@ extern "C" ListItem *ListItem_ctor_Agent(ListItem *self, Agent *a) {
 // ---- ListItem_a6572.cpp ----
 // ListItem::ListItem(String*, bool p2, int p3): 0x38=1, 0x1c=new String, 0x30=p3,
 // selectable=p2.
-extern "C" ListItem *ListItem_ctor_String_bool_int(ListItem *self, const void *src, bool b, int v) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_String_bool_int(const void *src, bool b, int v) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     EngString *s = new EngString(src, false);
     self->field_0x38 = 1;
     self->field_0x1c = s;
@@ -377,7 +411,8 @@ extern "C" ListItem *ListItem_ctor_String_bool_int(ListItem *self, const void *s
 // pairs. NOTE: clang's SLP vectorizer additionally merges the 0x14..0x20 pair into
 // a single NEON store here, which the target keeps as two strd — a residual
 // 1-instruction-class difference we could not coax away at -Oz.
-extern "C" void *ListItem_init(ListItem *self) {
+void * ListItem::init() {
+    ListItem *self = this;
     self->field_0x14 = 0;
     self->field_0x1c = 0;
     self->field_0x24 = 0;
@@ -398,8 +433,9 @@ extern "C" void *ListItem_init(ListItem *self) {
 // ListItem::ListItem(ListItem* src) — copy constructor. Pointer/value fields are
 // bulk-copied (16-byte NEON for 0x4..0x14 and 0x28..0x38); the two owned Strings
 // at 0x1c/0x20 are deep-cloned when present.
-extern "C" ListItem *ListItem_ctor_copy(ListItem *self, ListItem *src) {
-    ListItem_init(self);
+ListItem * ListItem::ctor_copy(ListItem *src) {
+    ListItem *self = this;
+    ((ListItem *)(self))->init();
     self->field_0x4 = src->field_0x4;
     self->field_0x14 = src->field_0x14;
     self->field_0x24 = src->field_0x24;

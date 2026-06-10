@@ -1,35 +1,35 @@
 #include "gof2/ModStation.h"
+#include "gof2/Achievements.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/DialogueWindow.h"
+#include "gof2/HangarWindow.h"
+#include "gof2/ImageFactory.h"
+#include "gof2/Layout.h"
+#include "gof2/RecordHandler.h"
+#include "gof2/SpaceLounge.h"
+#include "gof2/Station.h"
+#include "gof2/Status.h"
+#include "gof2/StatusWindow.h"
+#include "gof2/TouchButton.h"
 #include "gof2/MenuTouchWindow.h"
 
 
 extern "C" long long Status_getPlayingTime(Status *s);
 extern "C" void *ModStation_op_new(unsigned int sz);
-extern "C" void RecordHandler_ctor(void *rh);
-extern "C" void RecordHandler_recordStoreWrite(void *rh, int slot);
-extern "C" void RecordHandler_recordStoreWritePreview(void *rh, int slot);
-extern "C" void *RecordHandler_dtor(void *rh);
 extern "C" void ModStation_op_delete(void *p);
 extern "C" void ModStation_autosaveTail();
 extern "C" Station *Status_getStation(void *s);
-extern "C" void Status_departStation(Status *s, Station *st);
-extern "C" void Station_visit(Station *st);
-extern "C" void Achievements_applyNewMedals(Achievements *a);
 extern "C" Item *Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
 extern "C" int Ship_getIndex(Ship *ship);
 extern "C" int Item_getIndex(Item *it);
-extern "C" int Achievements_isEliteMedal(Achievements *a, int id);
-extern "C" int Achievements_getValue(Achievements *a, int id, int which);
 extern "C" void ModStation_suspendTail(void *obj, void **holder);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModStation_resumeTail(void *obj, int one, int arg);
-extern "C" ModStation *ModStation_dtor_inner(ModStation *self);
 extern "C" void ModStation_dtor_finish(ModStation *self);
-extern "C" void ModStation_OnRelease(ModStation *self);
 extern "C" void ModStation_String_dtor(void *s);
 extern "C" void ModStation_leaveStation_impl(ModStation *self);
 extern "C" void Globals_reportLeaderboards(void *obj);
 extern "C" int Status_getCurrentCampaignMission(void *s);
-extern "C" void ModStation_addAchievement(ModStation *self, int a, int b);
 extern "C" int *Achievements_getNewMedals(Achievements *a);
 extern "C" void *cm_op_new(unsigned int sz);
 extern "C" void Array_int_ctor(void *a);
@@ -43,9 +43,7 @@ extern "C" void ModStation_cm_tail(void *p, int a, int b);
 extern "C" void PaintCanvas_ClearBuffer(void *c);
 extern "C" void PaintCanvas_Begin3d(void *c);
 extern "C" void StarMap_renderBG(void *p);
-extern "C" void SpaceLounge_OnRenderBG(void *sl);
 extern "C" void CutScene_renderBG();
-extern "C" void SpaceLounge_OnRender3D(void *sl);
 extern "C" void StarMap_render(void *p);
 extern "C" void MissionsWindow_render3D(void *p);
 extern "C" void CutScene_render3D(void *p);
@@ -61,16 +59,10 @@ extern "C" void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int
 extern "C" int Station_getIndex(Station *st);
 extern "C" void Status_getSystem(void *s);
 extern "C" int SolarSystem_getRace();
-extern "C" void HangarWindow_OnTouchMove(void *w, int x, int y);
 extern "C" void StarMap_OnTouchMove(void *w, int x, int y);
-extern "C" void SpaceLounge_OnTouchMove(void *w, int x, int y);
-extern "C" void StatusWindow_OnTouchMove(void *w, int x, int y);
 extern "C" void MissionsWindow_OnTouchMove(void *w, int x, int y);
 extern "C" void MenuTouchWindow_OnTouchMove(void *w, int x, int y);
 extern "C" void ChoiceWindow_OnTouchMove(void *w, int x, int y);
-extern "C" void DialogueWindow_OnTouchMove(void *w, int x, int y);
-extern "C" void Layout_OnTouchMove(void *w, int x, int y);
-extern "C" void TouchButton_OnTouchMove(void *w, int x, int y);
 extern "C" int NewsTicker_OnTouchMove(void *w, int x, int y);
 extern "C" void FModSound_disableReverb();
 extern "C" void FModSound_stopAllSoundFXEvents();
@@ -78,9 +70,6 @@ extern "C" void PaintCanvas_FogEnable(void *c, int a, int b);
 extern "C" void PaintCanvas_ReleaseAllResources();
 extern "C" int GameText_getLanguage();
 extern "C" void Globals_loadFont(int obj, int lang);
-extern "C" void Layout_reload(void *p);
-extern "C" void ImageFactory_reload(void *p);
-extern "C" void Layout_initTip(void *p);
 extern "C" void *ms_op_delete(void *p);
 extern "C" void *ArrayReleaseClasses_TouchButton(void *a);
 extern "C" void *Array_TB_dtor(void *p);
@@ -100,18 +89,10 @@ extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *ScrollTouchBox_dtor(void *p);
 extern "C" void ModStation_or_tail();
 extern "C" int Radio_lastMessageShown(void *radio);
-extern "C" void Status_nextCampaignMission(int flag);
-extern "C" void ApplicationManager_SetCurrentApplicationModule(unsigned int mod);
-extern "C" void HangarWindow_OnTouchBegin(void *w, int x, int y);
-extern "C" void SpaceLounge_OnTouchBegin(void *w, int x, int y);
 extern "C" void StarMap_OnTouchBegin(void *w, int x, int y);
-extern "C" void StatusWindow_OnTouchBegin(void *w, int x, int y);
 extern "C" void MissionsWindow_OnTouchBegin(void *w, int x, int y);
 extern "C" void MenuTouchWindow_OnTouchBegin(void *w, int x, int y);
 extern "C" void ChoiceWindow_OnTouchBegin(void *w, int x, int y);
-extern "C" void DialogueWindow_OnTouchBegin(void *w, int x, int y);
-extern "C" void Layout_OnTouchBegin(void *w, int x, int y);
-extern "C" void TouchButton_OnTouchBegin(void *w, int x, int y);
 extern "C" int NewsTicker_OnTouchBegin(void *w, int x, int y);
 
 // ---- autosave_d7054.cpp ----
@@ -121,16 +102,16 @@ __attribute__((visibility("hidden"))) extern Status **g_ModStation_statusHolder;
 // Tail veneer (0x1ac0f8).
 
 // ModStation::autosave()
-extern "C" void ModStation_autosave(ModStation *self)
-{
+void ModStation::autosave() {
+    ModStation *self = this;
     Status *st = *g_ModStation_statusHolder;
     if (Status_getPlayingTime(st) - 1LL < 0)
         return;
     void *rh = ModStation_op_new(0x2c);
-    RecordHandler_ctor(rh);
-    RecordHandler_recordStoreWrite(rh, 0);
-    RecordHandler_recordStoreWritePreview(rh, 0);
-    ModStation_op_delete(RecordHandler_dtor(rh));
+    ((RecordHandler *)(rh))->ctor();
+    ((RecordHandler *)(rh))->recordStoreWrite(0);
+    ((RecordHandler *)(rh))->recordStoreWritePreview(0);
+    ModStation_op_delete(((RecordHandler *)(rh))->dtor());
     UC(self, 0xb1) = 1;
     if (I(self, 0x50) != 0)
         ModStation_autosaveTail();
@@ -156,9 +137,9 @@ extern "C" void ModStation_enterStation()
 {
     Status **holder = g_ModStation_es_status;
     Status *status = holder[0];
-    Status_departStation(status, Status_getStation(status));
-    Station_visit(Status_getStation(holder[0]));
-    Achievements_applyNewMedals(g_ModStation_es_ach[0]);
+    ((Status *)(status))->departStation(Status_getStation(status));
+    ((Station *)(Status_getStation(holder[0])))->visit();
+    ((Achievements *)(g_ModStation_es_ach[0]))->applyNewMedals();
 
     Ship *(*getShip)(Status *) = g_ModStation_es_getShip;
     Item *e10 = Ship_getFirstEquipmentOfSort(getShip(holder[0]), 10);
@@ -199,15 +180,15 @@ __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_c;
 
 
 // ModStation::addAchievement(int, int)
-extern "C" void ModStation_addAchievement(ModStation *self, int param_1, int param_2)
-{
+void ModStation::addAchievement(int param_1, int param_2) {
+    ModStation *self = this;
     Achievements **holder = g_ModStation_achievements;
-    if (Achievements_isEliteMedal(holder[0], param_1) != 0)
+    if (((Achievements *)(holder[0]))->isEliteMedal(param_1) != 0)
         return;
     if ((unsigned)(param_2 - 1) < 2) {
-        if (Achievements_getValue(holder[0], param_1, 3) != -1)
+        if (((Achievements *)(holder[0]))->getValue(param_1, 3) != -1)
             *g_ModStation_ach_a = param_1 * 3;
-        if (param_2 == 1 && Achievements_getValue(holder[0], param_1, 2) != -1)
+        if (param_2 == 1 && ((Achievements *)(holder[0]))->getValue(param_1, 2) != -1)
             *(int *)((char *)g_ModStation_ach_b + 4) = param_1 * 3 + 1;
     }
     *(int *)((char *)g_ModStation_ach_c + 8) = (param_1 * 3 + 3) - param_2;
@@ -215,16 +196,16 @@ extern "C" void ModStation_addAchievement(ModStation *self, int param_1, int par
 
 // ---- showMapWindow_dc0c8.cpp ----
 // ModStation::showMapWindow()
-extern "C" void ModStation_showMapWindow(ModStation *self)
-{
+void ModStation::showMapWindow() {
+    ModStation *self = this;
     UC(self, 0x64) = 0;
     UC(self, 0x67) = 1;
 }
 
 // ---- setGameLoaded_dbfec.cpp ----
 // ModStation::setGameLoaded()
-extern "C" void ModStation_setGameLoaded(ModStation *self)
-{
+void ModStation::setGameLoaded() {
+    ModStation *self = this;
     UC(self, 0xb0) = 1;
     UC(self, 0xb3) = 1;
 }
@@ -235,8 +216,8 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_suspendObj;
 // Tail-called suspend veneer (0x1ac188): receives the object pointer (r0) and holder (r1).
 
 // ModStation::OnSuspend()
-extern "C" void ModStation_OnSuspend(ModStation *self)
-{
+void ModStation::OnSuspend() {
+    ModStation *self = this;
     P(self, 0x128) = 0;
     void **holder = g_ModStation_suspendObj;
     void *obj = *holder;
@@ -294,8 +275,8 @@ void  ModStation_cpp_appendDeliveryLine(int amount, int itemTextId);
 
 // ModStation::checkPendingProducts() — on docking, delivers any queued station-production goods to
 // the player's cargo hold and shows a summary notice.
-extern "C" void ModStation_checkPendingProducts(ModStation *self)
-{
+void ModStation::checkPendingProducts() {
+    ModStation *self = this;
     int camp = Status_getCurrentCampaignMission_cpp();
     int textId = *(int *)g_cpp_textId;
     GameText_getText_cpp(textId); // seed the summary header string
@@ -355,8 +336,8 @@ void ModStation_okp_toggleHelp(ModStation *self);
 }
 
 // ModStation::OnKeyPress(self, key) — drives the station main-menu cursor and screen selection.
-extern "C" void ModStation_OnKeyPress(ModStation *self, long long key)
-{
+void ModStation::OnKeyPress(long long key) {
+    ModStation *self = this;
     char *s = (char *)self;
     if (C(s, 0x24) == 0)
         return;
@@ -442,9 +423,9 @@ extern "C" void ModStation_OnKeyPress(ModStation *self, long long key)
 
 // Deleting destructor at 0xd56f8: runs the base dtor (which returns `this`), then
 // tail-calls the finisher with that pointer.
-extern "C" void ModStation_dtor(ModStation *self)
-{
-    ModStation_dtor_finish(ModStation_dtor_inner(self));
+void ModStation::dtor() {
+    ModStation *self = this;
+    ModStation_dtor_finish(((ModStation *)(self))->dtor_inner());
 }
 
 // ---- ModStation_d52d0.cpp ----
@@ -476,8 +457,8 @@ EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race);
 
 // ModStation::ModStation() — constructor: zero-inits the station-module state, picks the home
 // station's race, and sets up the hangar idle camera tween.
-extern "C" void ModStation_ModStation(ModStation *self)
-{
+void ModStation::ModStation() {
+    ModStation *self = this;
     I(self, 0x00) = g_msc_vtable + 8;          // vtable
     String_ctor_default_msc((String *)B(self, 0x38));
 
@@ -537,10 +518,10 @@ __attribute__((visibility("hidden"))) extern void *ModStation_vtable;
 
 // Installs the vtable (+8), runs OnRelease(this), destroys the String member at
 // +0x38, and returns `this` in r0 (consumed by the deleting dtor's tail-call).
-extern "C" ModStation *ModStation_dtor_inner(ModStation *self)
-{
+ModStation * ModStation::dtor_inner() {
+    ModStation *self = this;
     *(void **)self = (char *)ModStation_vtable + 8;
-    ModStation_OnRelease(self);
+    ((ModStation *)(self))->OnRelease();
     ModStation_String_dtor((char *)self + 0x38);
     return self;
 }
@@ -550,8 +531,8 @@ extern "C" ModStation *ModStation_dtor_inner(ModStation *self)
 // instruction data"; it tail-calls the real leave-station handler (which tears the station
 // module down and transitions back to flight). Expressed faithfully as that forwarding call.
 
-extern "C" void ModStation_leaveStation(ModStation *self)
-{
+void ModStation::leaveStation() {
+    ModStation *self = this;
     ModStation_leaveStation_impl(self);
 }
 
@@ -568,8 +549,8 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_cm_status; // *
 // Tail veneer at 0x1ac158: (ptr, ptr[0], ptr[1]).
 
 // ModStation::checkMedals()
-extern "C" void ModStation_checkMedals(ModStation *self)
-{
+void ModStation::checkMedals() {
+    ModStation *self = this;
     Globals_reportLeaderboards(*g_ModStation_cm_lead);
 
     if (C(self, 0x6a) != 0 || C(self, 0x63) != 0) {
@@ -592,7 +573,7 @@ extern "C" void ModStation_checkMedals(ModStation *self)
 
     int delta = *g_ModStation_cm_credit1;
     if (Status_getCurrentCampaignMission(*g_ModStation_cm_status) == 1)
-        ModStation_addAchievement((ModStation *)1, 0, 1);
+        ((ModStation *)((ModStation *)1))->addAchievement(0, 1);
     P(self, 0xbc) = 0;
     int *medals = Achievements_getNewMedals(g_ModStation_cm_ach[0]);
     int count = 0;
@@ -648,8 +629,8 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_r3d_canvas;
 // Tail veneer at 0x1ab918.
 
 // ModStation::OnRender3D()
-extern "C" void ModStation_OnRender3D(ModStation *self)
-{
+void ModStation::OnRender3D() {
+    ModStation *self = this;
     if (C(self, 0x24) == 0)
         return;
     void **holder = g_ModStation_r3d_canvas;
@@ -662,14 +643,14 @@ extern "C" void ModStation_OnRender3D(ModStation *self)
         if (C(self, 0x67) != 0) {
             StarMap_renderBG(P(self, 0x10));
         } else if (*p65 != 0) {
-            SpaceLounge_OnRenderBG(P(self, 0x74));
+            ((SpaceLounge *)(P(self, 0x74)))->OnRenderBG();
         }
     } else {
         CutScene_renderBG();
     }
     PaintCanvas_Begin3d(*holder);
     if (*p65 != 0)
-        SpaceLounge_OnRender3D(P(self, 0x74));
+        ((SpaceLounge *)(P(self, 0x74)))->OnRender3D();
     else if (C(self, 0x67) != 0)
         StarMap_render(P(self, 0x10));
     else if (C(self, 0x64) != 0)
@@ -837,8 +818,8 @@ void  ModStation_ou_updateHangarLight(ModStation *self, int elapsed);
 // ModStation::OnUpdate() — the per-frame station tick: accumulates time, updates audio/layout, the
 // active sub-window, the docking-cutscene + idle camera, then drives mission completion/failure
 // dialogues and the campaign-progress hooks.
-extern "C" void ModStation_OnUpdate(ModStation *self)
-{
+void ModStation::OnUpdate() {
+    ModStation *self = this;
     char *s = (char *)self;
 
     int *status = *(int **)g_ou_status;
@@ -1144,8 +1125,8 @@ __attribute__((visibility("hidden"))) extern int *g_ModStation_ric_rotY;     // 
 
 
 // ModStation::resetIdleCamForHangar()
-extern "C" void ModStation_resetIdleCamForHangar(ModStation *self)
-{
+void ModStation::resetIdleCamForHangar() {
+    ModStation *self = this;
     char matrix[60];
 
     if (P(self, 0x14) != 0)
@@ -1232,8 +1213,8 @@ void ModStation_ch_showWingmanDialogue(ModStation *self, int kind);
 
 // ModStation::checkHints() — once per docked frame, shows the highest-priority contextual hint
 // (wanted criminal terminated, all medals earned, blueprint unlocked, wingman events).
-extern "C" void ModStation_checkHints(ModStation *self)
-{
+void ModStation::checkHints() {
+    ModStation *self = this;
     char *s = (char *)self;
     if (C(s, 0x60) != 0)   // a window is already busy
         return;
@@ -1330,8 +1311,8 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_tm_screenH; // 
 
 
 // ModStation::OnTouchMove(int, int, void*)
-extern "C" void ModStation_OnTouchMove(ModStation *self, int x, int y, void *touch)
-{
+void ModStation::OnTouchMove(int x, int y, void *touch) {
+    ModStation *self = this;
     if (P(self, 0x128) != touch)
         return;
     I(self, 0x110) = x;
@@ -1342,11 +1323,11 @@ extern "C" void ModStation_OnTouchMove(ModStation *self, int x, int y, void *tou
     void **layoutHolder = g_ModStation_tm_layout;
     void *layoutObj = *layoutHolder;
     if (*(char *)layoutObj != 0) {
-        Layout_OnTouchMove(layoutObj, x, y);
+        ((Layout *)(layoutObj))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x69) != 0) {
-        DialogueWindow_OnTouchMove(P(self, 0x84), x, y);
+        ((DialogueWindow *)(P(self, 0x84)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x63) != 0) {
@@ -1358,7 +1339,7 @@ extern "C" void ModStation_OnTouchMove(ModStation *self, int x, int y, void *tou
         return;
     }
     if (C(self, 0x66) != 0) {
-        HangarWindow_OnTouchMove(P(self, 0x78), x, y);
+        ((HangarWindow *)(P(self, 0x78)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x67) != 0) {
@@ -1366,11 +1347,11 @@ extern "C" void ModStation_OnTouchMove(ModStation *self, int x, int y, void *tou
         return;
     }
     if (C(self, 0x65) != 0) {
-        SpaceLounge_OnTouchMove(P(self, 0x74), x, y);
+        ((SpaceLounge *)(P(self, 0x74)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x68) != 0) {
-        StatusWindow_OnTouchMove(P(self, 0x7c), x, y);
+        ((StatusWindow *)(P(self, 0x7c)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x64) != 0) {
@@ -1383,11 +1364,11 @@ extern "C" void ModStation_OnTouchMove(ModStation *self, int x, int y, void *tou
     }
     if (C(self, 0x61) == 0)
         return;
-    TouchButton_OnTouchMove(P(self, 0x90), x, y);
-    TouchButton_OnTouchMove(P(self, 0x94), x, y);
+    ((TouchButton *)(P(self, 0x90)))->OnTouchMove(x, y);
+    ((TouchButton *)(P(self, 0x94)))->OnTouchMove(x, y);
     for (int i = 0; i != 5; i++)
-        TouchButton_OnTouchMove(*(void **)(I(P(self, 0x8c), 4) + i * 4), x, y);
-    Layout_OnTouchMove(layoutObj, x, y);
+        ((TouchButton *)(*(void **)(I(P(self, 0x8c), 4) + i * 4)))->OnTouchMove(x, y);
+    ((Layout *)(layoutObj))->OnTouchMove(x, y);
     if (NewsTicker_OnTouchMove(P(self, 0x1c), x, y) != 0)
         return;
     int *layout = (int *)layoutObj;
@@ -1418,8 +1399,8 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_or_imgfac;  // 
 // Tail veneer at 0x1ac168.
 
 // ModStation::OnRelease()
-extern "C" void ModStation_OnRelease(ModStation *self)
-{
+void ModStation::OnRelease() {
+    ModStation *self = this;
     void **soundHolder = g_ModStation_or_sound;
     if (*soundHolder != 0) {
         FModSound_disableReverb();
@@ -1492,9 +1473,9 @@ extern "C" void ModStation_OnRelease(ModStation *self)
 
     void **reloadHolder = g_ModStation_or_reload;
     if (*reloadHolder != 0) {
-        Layout_reload(*reloadHolder);
-        ImageFactory_reload(*g_ModStation_or_imgfac);
-        Layout_initTip(*reloadHolder);
+        ((Layout *)(*reloadHolder))->reload();
+        ((ImageFactory *)(*g_ModStation_or_imgfac))->reload();
+        ((Layout *)(*reloadHolder))->initTip();
     }
 
     if (P(self, 0x20) != 0)
@@ -1692,8 +1673,8 @@ static int *help_layout()
 // ModStation::OnTouchEnd(int x, int y, void *touch) — routes a touch release to the active station
 // sub-window or the main button strip; the dialogue-accept path runs the full mission-completion and
 // campaign-advance handler.
-extern "C" void ModStation_OnTouchEnd(ModStation *self, int param_1, int param_2, void *param_3)
-{
+void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
+    ModStation *self = this;
     char *s = (char *)self;
     int *status = *(int **)g_ote_status;
 
@@ -2326,8 +2307,8 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_clear;   // 
 
 
 // ModStation::OnTouchBegin(int, int, void*)
-extern "C" void ModStation_OnTouchBegin(ModStation *self, int x, int y, void *touch)
-{
+void ModStation::OnTouchBegin(int x, int y, void *touch) {
+    ModStation *self = this;
     if (P(self, 0x128) != 0)
         return;
     UC(self, 0x118) = 1;
@@ -2338,10 +2319,10 @@ extern "C" void ModStation_OnTouchBegin(ModStation *self, int x, int y, void *to
     if (flag != 0) {
         if (Radio_lastMessageShown(P(self, 0x54)) != 0) {
             UC(self, 0x24) = 0;
-            Status_nextCampaignMission((char)*(int *)*g_ModStation_tb_campaign);
+            ((Status *)((char)*(int *)*g_ModStation_tb_campaign))->nextCampaignMission();
             unsigned int mod = *(unsigned int *)*g_ModStation_tb_appmod;
             *(int *)*g_ModStation_tb_clear = 0;
-            ApplicationManager_SetCurrentApplicationModule(mod);
+            ((ApplicationManager *)(mod))->SetCurrentApplicationModule();
             UC(self, 0x60) = 0;
         }
         return;
@@ -2349,11 +2330,11 @@ extern "C" void ModStation_OnTouchBegin(ModStation *self, int x, int y, void *to
     void **layoutHolder = g_ModStation_tb_layout;
     void *layoutObj = *layoutHolder;
     if (*(char *)layoutObj != 0) {
-        Layout_OnTouchBegin(layoutObj, x, y);
+        ((Layout *)(layoutObj))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x69) != 0) {
-        DialogueWindow_OnTouchBegin(P(self, 0x84), x, y);
+        ((DialogueWindow *)(P(self, 0x84)))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x63) != 0) {
@@ -2365,11 +2346,11 @@ extern "C" void ModStation_OnTouchBegin(ModStation *self, int x, int y, void *to
         return;
     }
     if (C(self, 0x66) != 0) {
-        HangarWindow_OnTouchBegin(P(self, 0x78), x, y);
+        ((HangarWindow *)(P(self, 0x78)))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x65) != 0) {
-        SpaceLounge_OnTouchBegin(P(self, 0x74), x, y);
+        ((SpaceLounge *)(P(self, 0x74)))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x67) != 0) {
@@ -2377,7 +2358,7 @@ extern "C" void ModStation_OnTouchBegin(ModStation *self, int x, int y, void *to
         return;
     }
     if (C(self, 0x68) != 0) {
-        StatusWindow_OnTouchBegin(P(self, 0x7c), x, y);
+        ((StatusWindow *)(P(self, 0x7c)))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x64) != 0) {
@@ -2390,11 +2371,11 @@ extern "C" void ModStation_OnTouchBegin(ModStation *self, int x, int y, void *to
     }
     if (C(self, 0x61) == 0)
         return;
-    TouchButton_OnTouchBegin(P(self, 0x90), x, y);
-    TouchButton_OnTouchBegin(P(self, 0x94), x, y);
+    ((TouchButton *)(P(self, 0x90)))->OnTouchBegin(x, y);
+    ((TouchButton *)(P(self, 0x94)))->OnTouchBegin(x, y);
     for (int i = 0; i != 5; i++)
-        TouchButton_OnTouchBegin(*(void **)(I(P(self, 0x8c), 4) + i * 4), x, y);
-    Layout_OnTouchBegin(layoutObj, x, y);
+        ((TouchButton *)(*(void **)(I(P(self, 0x8c), 4) + i * 4)))->OnTouchBegin(x, y);
+    ((Layout *)(layoutObj))->OnTouchBegin(x, y);
     if (NewsTicker_OnTouchBegin(P(self, 0x1c), x, y) != 0)
         return;
     int *layout = (int *)layoutObj;
@@ -2441,8 +2422,8 @@ void ModStation_r2d_drawStationHud(ModStation *self);
 
 // ModStation::OnRender2D() — top-level 2D pass; dispatches to whichever station sub-screen is
 // currently open, then overlays the choice/dialogue/help windows.
-extern "C" void ModStation_OnRender2D(ModStation *self)
-{
+void ModStation::OnRender2D() {
+    ModStation *self = this;
     PaintCanvas_Begin2d_r2d();
     PaintCanvas_SetColor_r2d(U(self, 4));
 
@@ -2638,8 +2619,8 @@ void  ModStation_oi_buildDlcMenu(ModStation *self);
 // ModStation::OnInitialize() — per-screen-state setup. The current state is at self+0xc; each branch
 // configures its screen (load cutscene, hangar camera, news ticker, DLC menu, ...) and advances the
 // state machine. State 0x14=hangar, 0x28=station info, 0x3c=leave, 0x50=DLC menu, 0x64=enter.
-extern "C" void ModStation_OnInitialize(ModStation *self)
-{
+void ModStation::OnInitialize() {
+    ModStation *self = this;
     char *s = (char *)self;
 
     int *status = *(int **)g_oi_status;
@@ -3142,8 +3123,8 @@ void  TouchButton_getPosition_dlc(void *dst, void *win, unsigned idx);
 
 // ModStation::showDlcMenu() — opens (creating it on first use) the in-station DLC store window,
 // snapshotting the current button layout first.
-extern "C" void ModStation_showDlcMenu(ModStation *self)
-{
+void ModStation::showDlcMenu() {
+    ModStation *self = this;
     MenuTouchWindow *win = (MenuTouchWindow *)P(self, 0x50);
     if (win == 0) {
         win = (MenuTouchWindow *)ModStation_opnew_dlc(0x240);
@@ -3184,8 +3165,8 @@ void  ChoiceWindow_set_cbs(ChoiceWindow *cw, String *title, String *ok, int moda
 
 // ModStation::showCBSMessage() — pops the "Cross-Buy Support" notice via the station's choice
 // window and flags it as open.
-extern "C" void ModStation_showCBSMessage(ModStation *self)
-{
+void ModStation::showCBSMessage() {
+    ModStation *self = this;
     // String is opaque (0xc bytes); use raw storage for the stack temporaries.
     char emptyA[12], emptyB[12], ok[12];
     String_ctor_lit_cbs((String *)emptyA, "", 0);

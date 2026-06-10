@@ -1,4 +1,15 @@
 #include "gof2/StarMap.h"
+#include "gof2/Achievements.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/Engine.h"
+#include "gof2/GameText.h"
+#include "gof2/Layout.h"
+#include "gof2/Mission.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/Station.h"
+#include "gof2/Status.h"
+#include "gof2/String.h"
+#include "gof2/TouchButton.h"
 
 // Engine helpers that are invoked with more than one argument type in this translation
 // unit (the canvas handle appears both as a raw uint32_t id and as a void* in different
@@ -27,7 +38,6 @@ extern "C" void PaintCanvas_SetBlendMode(uint32_t canvas, int mode);
 extern "C" void AEGeometry_render(void *geometry);
 extern "C" void StarMap_render_tail();
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_alien_text;
-extern "C" String *GameText_getText(void *gameText, int id);
 extern "C" void ChoiceWindow_set(void *choiceWindow, String *text, bool enabled);
 extern "C" void *Array_int_dtor(void *arr);
 extern "C" void ArrayReleaseClasses_Vector(void *arr);
@@ -47,15 +57,8 @@ extern "C" void PaintCanvas_DrawLine(uint32_t canvas, int x0, int y0, int x1, in
 extern "C" void PaintCanvas_DrawImage2D(uint32_t canvas, uint32_t image, int x, int y, int anchor);
 extern "C" void PaintCanvas_DrawString(uint32_t canvas, void *font, String *text, int x, int y, bool flag);
 extern "C" int PaintCanvas_GetImage2DWidth(uint32_t canvas, uint32_t image);
-extern "C" String *GameText_getText(void *text, int id);
 extern "C" void Layout_drawHeader(void *layout, String *text);
-extern "C" void Layout_drawEmptyFooter(void *layout);
-extern "C" void TouchButton_draw(void *button);
 extern "C" void ChoiceWindow_draw(void *choice);
-extern "C" void String_ctor_copy(String *self, String *src, bool copy);
-extern "C" void String_ctor_int(String *self, int value);
-extern "C" void String_ctor_char(String *self, const char *value, bool copy);
-extern "C" void String_dtor(String *self);
 extern "C" void String_add(String *out, String *a, String *b);
 extern "C" void Vector_assign(Vector *dst, Vector *src);
 extern "C" void *Status_getSystem(void *status);
@@ -64,8 +67,6 @@ extern "C" void *Status_getShip(void *status);
 extern "C" int Ship_hasJumpDriveIntegrated(void *ship);
 extern "C" int SolarSystem_getIndex(void *system);
 extern "C" void *SolarSystem_getRoutes(void *system);
-extern "C" int SolarSystem_hasNoOwner(void *system);
-extern "C" void SolarSystem_getName(String *out, void *system);
 extern "C" int SolarSystem_getRace(void *system);
 extern "C" int SolarSystem_getSecurityLevel(void *system);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_status;
@@ -82,18 +83,14 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_achieve
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_sound;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_depart_modstation_flag;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_canvas;
-extern "C" void Status_departStation(void *status, void *station);
 extern "C" void Level_setInitStreamOut();
 extern "C" int Status_jumpgateUsed(void *status);
 extern "C" int Status_getCurrentCampaignMission(void *status);
 extern "C" void *Status_getStation(void *status);
 extern "C" int Ship_hasVolatileGoods(void *ship);
 extern "C" int Station_getSystem(void *station);
-extern "C" int Station_equals(void *a, void *b);
-extern "C" void *Station_dtor(void *station);
 extern "C" void ArrayReleaseClasses_Station(void *arr);
 extern "C" void *Array_Station_dtor(void *arr);
-extern "C" void Achievements_resetNewMedals(void *achievements);
 extern "C" void FModSound_stop(void *sound, int id);
 extern "C" void StarMap_depart_tail(void *canvas, int mode);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_layout;
@@ -102,23 +99,16 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_sound;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_text;
 extern "C" int ChoiceWindow_OnTouchEnd(void *window, int x, int y);
-extern "C" int Layout_OnTouchEnd(void *layout, int x, int y);
-extern "C" int TouchButton_OnTouchEnd(void *button, int x, int y);
-extern "C" int Layout_helpPressed(void *layout);
-extern "C" void Layout_initHelpWindow(void *layout, String *text);
 extern "C" void FModSound_play(void *sound, int id, void *pos, float volume);
 extern "C" void ChoiceWindow_set(void *window, String *text, bool yesNo);
 extern "C" void *ChoiceWindow_ctor(void *window);
 extern "C" int Station_getIndex(void *station);
-extern "C" int SolarSystem_systemIsInSystemRoutes(void *system, int index);
 extern "C" void AEGeometry_getPosition(Vector *out, void *geometry);
 extern "C" void *PaintCanvas_CameraGetLocal(void *canvas);
 extern "C" void MatrixGetPosition(Vector *out, void *matrix);
 extern "C" void EaseInOut_SetRange(void *ease, float from, float to);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_lights_engine;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_lights_canvas;
-extern "C" void *ApplicationManager_GetEngine(void *manager);
-extern "C" void Engine_LightSetMaterialColorAmbient(void *engine, float r, float g, float b);
 extern "C" void PaintCanvas_LightEnable(void *canvas, int light, bool enabled);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_update_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_update_status;
@@ -168,8 +158,6 @@ extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_touch_screenH;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_touch_sound;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_touch_status;
 extern "C" void ChoiceWindow_OnTouchBegin(void *window, int x, int y);
-extern "C" void Layout_OnTouchBegin(void *layout, int x, int y);
-extern "C" void TouchButton_OnTouchBegin(void *button, int x, int y);
 extern "C" int Status_hardCoreMode(void *status);
 extern "C" int SystemPathFinder_getJumpDistance(void *finder, void *systems, int from, int to);
 extern "C" void Array_Station_ctor(void *arr);
@@ -180,8 +168,6 @@ extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_move_guard;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_move_layout;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_move_canvas;
 extern "C" void ChoiceWindow_OnTouchMove(void *window, int x, int y);
-extern "C" void Layout_OnTouchMove(void *layout, int x, int y);
-extern "C" void TouchButton_OnTouchMove(void *button, int x, int y);
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_drawKey_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_drawKey_layout;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_drawKey_screenW;
@@ -191,8 +177,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_drawKey_text;
 extern "C" __attribute__((visibility("hidden"))) String *(*g_StarMap_drawKey_getText)(void *, int);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_drawKey_font;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_drawKey_drawString)(uint32_t, void *, String *, int, int, bool);
-extern "C" void String_ctor_char(String *self, const char *text, bool copy);
-extern "C" void Layout_drawBox(void *layout, int style, int x, int y, int w, int h, String *label);
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_system_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_system_random;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_system_status;
@@ -205,7 +189,6 @@ extern "C" void ArraySetLength_bool(uint32_t n, void *arr);
 extern "C" void AEGeometry_translate(void *geometry, Vector *pos);
 extern "C" int AERandom_nextInt(void *random, int bound);
 extern "C" void AERandom_setSeed(void *random, long long seed);
-extern "C" void Engine_LightSetLightDirection(void *engine, float x, float y, float z, int light);
 extern "C" void PaintCanvas_Image2DCreate(uint32_t canvas, uint16_t image, void *out);
 extern "C" void PaintCanvas_TextureCreate(uint32_t canvas, uint16_t image, void *out, bool flag);
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_info_screenW;
@@ -217,25 +200,19 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_info_layout;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_info_text;
 extern "C" __attribute__((visibility("hidden"))) uint8_t *g_StarMap_info_isGerman;
 extern "C" int PaintCanvas_GetTextWidth(uint32_t canvas, String *font);
-extern "C" void Station_getName(String *out, void *station);
-extern "C" int Station_isDiscovered(void *station);
 extern "C" int Station_getTecLevel(void *station);
-extern "C" int SolarSystem_isFullyDiscovered(void *system);
-extern "C" int SolarSystem_getStationEnumIndex(void *system, int station);
 extern "C" int SolarSystem_getWarpGateIndex(void *system);
 extern "C" void *Status_getCampaignMission(void *status);
 extern "C" void *Status_getFreelanceMission(void *status);
 extern "C" void *Status_getPendingProducts(void *status);
 extern "C" int Status_isFreighterMissionStation(void *status, int station);
 extern "C" int Status_getFreighterMissionStationBit(void *status, int station);
-extern "C" int Mission_isEmpty(void *mission);
 extern "C" int Mission_getType(void *mission);
 extern "C" int Mission_getTargetStation(void *mission);
 extern "C" int Mission_getStatusValue(void *mission);
 extern "C" void *Mission_getAgent(void *mission);
 extern "C" int Agent_getStation(void *agent);
 extern "C" int Ship_hasCargo(void *ship, int cargo);
-extern "C" float Layout_getPulseValue(void *layout, float alpha);
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_init_canvas;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_init_imageCreate)(uint32_t, int, void *);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_init_layout;
@@ -250,7 +227,6 @@ extern "C" void MatrixSetRotation(void *matrix, float x, float y, float z, float
 extern "C" void *EaseInOut_ctor(void *ease);
 extern "C" void *TouchButton_ctor(void *button, String *text, int a, int x, int y, int size);
 extern "C" void *SystemPathFinder_ctor(void *finder);
-extern "C" int Mission_isVisible(void *mission);
 extern "C" int Ship_getCargo(void *ship);
 extern "C" int Item_getAmount(void *item);
 
@@ -294,7 +270,7 @@ void StarMap::askForJumpIntoAlienWorld()
 {
     void *window = *(void *volatile *)((char *)this + 0x5c);
     field<uint8_t>(this, 0x120) = 1;
-    String *text = GameText_getText(*g_StarMap_alien_text, 0x1a6);
+    String *text = ((GameText *)(*g_StarMap_alien_text))->getText(0x1a6);
     ChoiceWindow_set(window, text, true);
     field<uint8_t>(this, 0xa9) = 1;
 }
@@ -459,21 +435,21 @@ void StarMap::draw()
 
     if (ptr_field(this, 0xa4) != 0 && ptr_field(this, 0x58) != 0) {
         void *system = ((Array<void *> *)ptr_field(this, 0x54))->data()[field<int32_t>(this, 0x60)];
-        if (SolarSystem_hasNoOwner(system) == 0) {
+        if (((SolarSystem *)(system))->hasNoOwner() == 0) {
             PaintCanvas_SetColorRGBA(canvas, 0xff, 0xff, 0xff, field<int32_t>(this, 0x1a4) ^ 0xff);
             PaintCanvas_DrawImage2D(canvas, field<uint32_t>(this, 0x34),
                                     field<int32_t>(*g_StarMap_draw_layout, 0x2c),
                                     field<int32_t>(*g_StarMap_draw_layout, 0xc) +
                                         field<int32_t>(*g_StarMap_draw_layout, 0x2c),
                                     0);
-            SolarSystem_getName(&tmp, system);
+            ((SolarSystem *)(&tmp))->getName();
             PaintCanvas_DrawString(canvas, *g_StarMap_draw_font, &tmp,
                                    PaintCanvas_GetImage2DWidth(canvas, field<uint32_t>(this, 0x34)) +
                                        field<int32_t>(*g_StarMap_draw_layout, 0x2c) * 2,
                                    field<int32_t>(*g_StarMap_draw_layout, 0xc) +
                                        field<int32_t>(*g_StarMap_draw_layout, 0x2c) + 2,
                                    false);
-            String_dtor(&tmp);
+            ((String *)(&tmp))->dtor();
         }
         Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
         for (uint32_t i = 0; i < stations->size(); i++) {
@@ -489,11 +465,11 @@ void StarMap::draw()
     if (field<uint8_t>(this, 0x108) != 0) {
         drawKey();
     }
-    String_ctor_copy(&tmp, GameText_getText(*g_StarMap_draw_text, 0x190), false);
+    ((String *)(&tmp))->ctor_copy(((GameText *)(*g_StarMap_draw_text))->getText(0x190), false);
     Layout_drawHeader(*g_StarMap_draw_layout, &tmp);
-    String_dtor(&tmp);
-    Layout_drawEmptyFooter(*g_StarMap_draw_layout);
-    TouchButton_draw(ptr_field(this, 0x4c));
+    ((String *)(&tmp))->dtor();
+    ((Layout *)(*g_StarMap_draw_layout))->drawEmptyFooter();
+    ((TouchButton *)(ptr_field(this, 0x4c)))->draw();
     if (field<uint8_t>(this, 0xa9) != 0) {
         ChoiceWindow_draw(ptr_field(this, 0x5c));
     }
@@ -511,7 +487,7 @@ void StarMap::depart(bool jump)
     void *status = *statusHolder;
     if (field<uint8_t>(this, 0xaa) != 0) {
         Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
-        Status_departStation(status, stations->data()[selected]);
+        ((Status *)(status))->departStation(stations->data()[selected]);
         *g_StarMap_depart_store0_a = 0;
         Level_setInitStreamOut();
         int used = Status_jumpgateUsed(status);
@@ -538,11 +514,11 @@ void StarMap::depart(bool jump)
         statusWords[0x60 / 4] = -1;
         statusWords[0x64 / 4] = -1;
         statusWords[0x68 / 4] = -1;
-        Status_departStation(status, Status_getStation(status));
+        ((Status *)(status))->departStation(Status_getStation(status));
 
         Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
         void *target = stations->data()[field<int32_t>(this, 0x64)];
-        if (Station_equals(target, Status_getStation(status)) == 0) {
+        if (((Station *)(target))->equals(Status_getStation(status)) == 0) {
             *g_StarMap_depart_targetStation = (int)(intptr_t)target;
         }
 
@@ -564,7 +540,7 @@ void StarMap::depart(bool jump)
 no_jump:
             *g_StarMap_depart_flag_b = 0;
         }
-        Achievements_resetNewMedals(*g_StarMap_depart_achievements);
+        ((Achievements *)(*g_StarMap_depart_achievements))->resetNewMedals();
     }
 
 cleanup:
@@ -574,7 +550,7 @@ cleanup:
             if (i != (uint32_t)field<int32_t>(this, 0x64)) {
                 void *station = stations->data()[i];
                 if (station != 0) {
-                    operator delete(Station_dtor(station));
+                    operator delete(((Station *)(station))->dtor());
                 }
                 stations->data()[i] = 0;
             }
@@ -649,7 +625,7 @@ void StarMap::OnTouchEnd(int x, int y)
         return;
     }
     void *layout = *g_StarMap_end_layout;
-    if (*(uint8_t *)layout == 0 && Layout_OnTouchEnd(layout, x, y) != 0) {
+    if (*(uint8_t *)layout == 0 && ((Layout *)(layout))->OnTouchEnd(x, y) != 0) {
         if (field<int32_t>(this, 4) == 3 && field<uint8_t>(this, 0xf4) != 0) {
             field<uint8_t>(this, 0x139) = 1;
             field<int32_t>(this, 0x168) = 0;
@@ -668,7 +644,7 @@ void StarMap::OnTouchEnd(int x, int y)
     if (field<uint8_t>(this, 0xa8) != 0 && field<uint8_t>(this, 0x13a) != 0) {
         return;
     }
-    if (TouchButton_OnTouchEnd(ptr_field(this, 0x4c), x, y) != 0) {
+    if (((TouchButton *)(ptr_field(this, 0x4c)))->OnTouchEnd(x, y) != 0) {
         field<uint8_t>(this, 0x108) ^= 1;
     }
     if (field<uint8_t>(this, 0x174) != 0) {
@@ -684,9 +660,8 @@ void StarMap::OnTouchEnd(int x, int y)
                 field<uint8_t>(this, 0xa8) == 0 &&
                 field<int32_t>(this, 0x19c) == field<int32_t>(this, 0x60)) {
                 if (field<uint8_t>(this, 0xab) == 0 &&
-                    SolarSystem_systemIsInSystemRoutes(Status_getSystem(*g_StarMap_end_status),
-                                                       SolarSystem_getIndex(Status_getSystem(*g_StarMap_end_status))) == 0) {
-                    ChoiceWindow_set(ptr_field(this, 0x5c), GameText_getText(*g_StarMap_end_text, 0x1a4), false);
+                    ((SolarSystem *)(Status_getSystem(*g_StarMap_end_status)))->systemIsInSystemRoutes(SolarSystem_getIndex(Status_getSystem(*g_StarMap_end_status))) == 0) {
+                    ChoiceWindow_set(ptr_field(this, 0x5c), ((GameText *)(*g_StarMap_end_text))->getText(0x1a4), false);
                     field<uint8_t>(this, 0xa9) = 1;
                     return;
                 }
@@ -714,7 +689,7 @@ void StarMap::OnTouchEnd(int x, int y)
                 if (ptr_field(this, 0x5c) == 0) {
                     ptr_field(this, 0x5c) = ChoiceWindow_ctor(operator new(0x5c));
                 }
-                ChoiceWindow_set(ptr_field(this, 0x5c), GameText_getText(*g_StarMap_end_text, 0x1a3), true);
+                ChoiceWindow_set(ptr_field(this, 0x5c), ((GameText *)(*g_StarMap_end_text))->getText(0x1a3), true);
                 field<uint8_t>(this, 0xa9) = 1;
             } else {
                 FModSound_play(*g_StarMap_end_sound, 0x69, 0, 0.0f);
@@ -722,18 +697,18 @@ void StarMap::OnTouchEnd(int x, int y)
             }
         }
     }
-    if (Layout_helpPressed(layout) != 0) {
-        String_ctor_copy(&help, GameText_getText(*g_StarMap_end_text, 0x1a5), false);
-        Layout_initHelpWindow(layout, &help);
-        String_dtor(&help);
+    if (((Layout *)(layout))->helpPressed() != 0) {
+        ((String *)(&help))->ctor_copy(((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
+        ((Layout *)(layout))->initHelpWindow(&help);
+        ((String *)(&help))->dtor();
     }
 }
 
 // ---- initLights_c7d9c.cpp ----
 void StarMap::initLights()
 {
-    void *engine = ApplicationManager_GetEngine(*g_StarMap_lights_engine);
-    Engine_LightSetMaterialColorAmbient(engine, 0.5f, 0.5f, 0.5f);
+    void *engine = ((ApplicationManager *)(*g_StarMap_lights_engine))->GetEngine();
+    ((Engine *)(engine))->LightSetMaterialColorAmbient(0.5f, 0.5f, 0.5f);
     return PaintCanvas_LightEnable(*g_StarMap_lights_canvas, 0, true);
 }
 
@@ -1060,12 +1035,12 @@ uint32_t StarMap::OnTouchBegin(int x, int y)
     }
 
     void *layout = *g_StarMap_touch_layout;
-    Layout_OnTouchBegin(layout, x, y);
+    ((Layout *)(layout))->OnTouchBegin(x, y);
     if ((field<uint8_t>(this, 0xa8) != 0 && field<uint8_t>(this, 0x13a) != 0) ||
         field<uint8_t>(this, 0x13b) != 0) {
         return 0;
     }
-    TouchButton_OnTouchBegin(ptr_field(this, 0x4c), x, y);
+    ((TouchButton *)(ptr_field(this, 0x4c)))->OnTouchBegin(x, y);
     if (field<int32_t>(layout, 0xc) >= y || y >= *g_StarMap_touch_screenH - field<int32_t>(layout, 0x10)) {
         return 0;
     }
@@ -1168,12 +1143,12 @@ void StarMap::OnTouchMove(int x, int y)
         return;
     }
     void *layout = *g_StarMap_move_layout;
-    Layout_OnTouchMove(layout, x, y);
+    ((Layout *)(layout))->OnTouchMove(x, y);
     if ((field<uint8_t>(this, 0xa8) != 0 && field<uint8_t>(this, 0x13a) != 0) ||
         field<uint8_t>(this, 0x13b) != 0) {
         return;
     }
-    TouchButton_OnTouchMove(ptr_field(this, 0x4c), x, y);
+    ((TouchButton *)(ptr_field(this, 0x4c)))->OnTouchMove(x, y);
     if (field<uint8_t>(this, 0x174) == 0) {
         return;
     }
@@ -1256,13 +1231,13 @@ void StarMap::drawKey()
     int lineH = field<int32_t>(layout, 0x2c);
 
     String empty;
-    String_ctor_char(&empty, "", false);
+    ((String *)(&empty))->ctor_char("", false);
     int x = screenH - boxW;
-    Layout_drawBox(layout, 7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, &empty);
+    ((Layout *)(layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, &empty);
     int drawX = x + lineH;
     int textX = imageWidth + lineH + drawX;
     int y = ((screenW - lineH) - rightPad) - marginY;
-    String_dtor(&empty);
+    ((String *)(&empty))->dtor();
 
     void (*drawImage)(uint32_t, uint32_t, int, int) = g_StarMap_drawKey_drawImage;
     drawImage(*canvasHolder, field<uint32_t>(this, 0x20), drawX, y);
@@ -1396,7 +1371,7 @@ void StarMap::initStarSystem()
         ((Array<Vector *> *)stationPositions)->data()[i] = p;
     }
 
-    Engine_LightSetLightDirection(*g_StarMap_system_engine, 0.0f, 0.0f, 1.0f, 1);
+    ((Engine *)(*g_StarMap_system_engine))->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
     if (ptr_field(this, 0x1bc) != 0) {
         operator delete(AEGeometry_dtor(ptr_field(this, 0x1bc)));
     }
@@ -1442,14 +1417,14 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
 
     if (stationMode) {
         void *station = ((Array<void *> *)ptr_field(this, 0x58))->data()[index];
-        if (Station_isDiscovered(station) != 0) {
+        if (((Station *)(station))->isDiscovered() != 0) {
             icons[0] = field<int32_t>(this, 0x30);
         }
         int current = Station_getIndex(Status_getStation(*g_StarMap_info_status));
         if (current == Station_getIndex(station)) {
             icons[3] = field<int32_t>(this, 0x2c);
         }
-        Station_getName(&name, station);
+        ((Station *)(&name))->getName();
         int textW = PaintCanvas_GetTextWidth(canvas, (String *)*g_StarMap_info_font);
         int drawX = (int)(x - (float)(textW / 2));
         int drawY = (int)(y + (float)(field<int32_t>(this, 0x1a8) >> 1) - 3.0f);
@@ -1458,14 +1433,14 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             PaintCanvas_DrawString(canvas, *g_StarMap_info_font, &name, drawX, drawY, false);
             PaintCanvas_SetColorRGBA(canvas, 0xff, 0xff, 0xff, field<int32_t>(this, 0x1a4));
             if (Station_getTecLevel(station) > 0) {
-                String_ctor_copy(&line, GameText_getText(*g_StarMap_info_text, 0x200), false);
-                String_ctor_int(&value, Station_getTecLevel(station));
+                ((String *)(&line))->ctor_copy(((GameText *)(*g_StarMap_info_text))->getText(0x200), false);
+                ((String *)(&value))->ctor_int(Station_getTecLevel(station));
                 String_add(&name, &line, &value);
                 PaintCanvas_DrawString(canvas, *g_StarMap_info_font, &name, drawX,
                                        drawY + field<int32_t>(*g_StarMap_info_layout, 4), false);
-                String_dtor(&name);
-                String_dtor(&value);
-                String_dtor(&line);
+                ((String *)(&name))->dtor();
+                ((String *)(&value))->dtor();
+                ((String *)(&line))->dtor();
             }
             PaintCanvas_DrawImage2D(canvas, field<uint32_t>(this, 0x40), (int)x, (int)y, 0x11);
         } else {
@@ -1473,37 +1448,37 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             PaintCanvas_DrawImage2D(canvas, field<uint32_t>(this, 0x44), (int)x, (int)y, 0x11);
             PaintCanvas_DrawString(canvas, *g_StarMap_info_font, &name, drawX, drawY, false);
         }
-        String_dtor(&name);
+        ((String *)(&name))->dtor();
     } else {
         void *system = ((Array<void *> *)ptr_field(this, 0x54))->data()[index];
-        if (SolarSystem_isFullyDiscovered(system) != 0) {
+        if (((SolarSystem *)(system))->isFullyDiscovered() != 0) {
             icons[0] = field<int32_t>(this, 0x30);
         }
         if (Status_getCurrentCampaignMission(*g_StarMap_info_status) == 0x34 &&
-            SolarSystem_getStationEnumIndex(system, 0x4a) >= 0) {
+            ((SolarSystem *)(system))->getStationEnumIndex(0x4a) >= 0) {
             icons[1] = field<int32_t>(this, 0x24);
         }
         void *mission = Status_getCampaignMission(*g_StarMap_info_status);
-        if (mission != 0 && Mission_isEmpty(mission) == 0) {
+        if (mission != 0 && ((Mission *)(mission))->isEmpty() == 0) {
             int target = Mission_getTargetStation(mission);
-            if (SolarSystem_getStationEnumIndex(system, target) >= 0) {
+            if (((SolarSystem *)(system))->getStationEnumIndex(target) >= 0) {
                 icons[2] = field<int32_t>(this, 0x28);
             }
         }
         void *freelance = Status_getFreelanceMission(*g_StarMap_info_status);
-        if (freelance != 0 && Mission_isEmpty(freelance) == 0) {
+        if (freelance != 0 && ((Mission *)(freelance))->isEmpty() == 0) {
             int target = Mission_getTargetStation(freelance);
-            if (SolarSystem_getStationEnumIndex(system, target) >= 0) {
+            if (((SolarSystem *)(system))->getStationEnumIndex(target) >= 0) {
                 icons[2] = field<int32_t>(this, 0x28);
             }
         }
-        SolarSystem_getName(&name, system);
+        ((SolarSystem *)(&name))->getName();
         int textW = PaintCanvas_GetTextWidth(canvas, (String *)*g_StarMap_info_font);
         int drawX = (int)(x - (float)(textW / 2));
         int drawY = (int)(y + (float)(field<int32_t>(this, 0x1a8) >> 1) - 3.0f);
         void *currentSystem = Status_getSystem(*g_StarMap_info_status);
         if (SolarSystem_getIndex(currentSystem) == SolarSystem_getIndex(system)) {
-            Layout_getPulseValue(*g_StarMap_info_layout, (float)field<int32_t>(this, 0x1a4));
+            ((Layout *)(*g_StarMap_info_layout))->getPulseValue((float)field<int32_t>(this, 0x1a4));
             PaintCanvas_SetColorRGBA(canvas, 0xff, 0xff, 0xff, field<int32_t>(this, 0x1a4));
             PaintCanvas_DrawImage2D(canvas, field<uint32_t>(this, 0x48), (int)x, (int)y, 0x11);
         }
@@ -1513,9 +1488,9 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             PaintCanvas_SetColorRGBA(canvas, 0xff, 0xff, 0xff, field<int32_t>(this, 0x1a4));
         }
         PaintCanvas_DrawString(canvas, *g_StarMap_info_font, &name, drawX, drawY, false);
-        String_dtor(&name);
+        ((String *)(&name))->dtor();
         PaintCanvas_SetColorRGBA(canvas, 0xff, 0xff, 0xff, field<int32_t>(this, 0x1a4));
-        if (SolarSystem_hasNoOwner(system) == 0) {
+        if (((SolarSystem *)(system))->hasNoOwner() == 0) {
             uint32_t image = field<uint32_t>(this, 0x130);
             int race = SolarSystem_getRace(system);
             if (race == 2) {
@@ -1651,7 +1626,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     field<uint16_t>(this, 0xaa) = 0;
     field<uint8_t>(this, 0) = 0;
     void *button = operator new(0xc8);
-    String *back = GameText_getText(*g_StarMap_init_text, 0x190);
+    String *back = ((GameText *)(*g_StarMap_init_text))->getText(0x190);
     TouchButton_ctor(button, back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c),
                      *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
     ptr_field(this, 0x4c) = button;
@@ -1659,8 +1634,8 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     ptr_field(this, 0x5c) = ChoiceWindow_ctor(operator new(0x5c));
     ptr_field(this, 0x50) = SystemPathFinder_ctor(operator new(1));
 
-    if (jumpMapMode && field<int32_t>(this, 4) == 0 && mission != 0 && Mission_isEmpty(mission) == 0 &&
-        (Mission_isVisible(mission) != 0 || Mission_getType(mission) == 0xe)) {
+    if (jumpMapMode && field<int32_t>(this, 4) == 0 && mission != 0 && ((Mission *)(mission))->isEmpty() == 0 &&
+        (((Mission *)(mission))->isVisible() != 0 || Mission_getType(mission) == 0xe)) {
         field<int32_t>(this, 0x104) = -1;
         field<int32_t>(this, 0x60) = -1;
         int target = Mission_getTargetStation(mission);
@@ -1684,7 +1659,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
 
     field<int32_t>(this, 0x10c) = 0;
     for (int i = 0; i < 6; i++) {
-        int width = PaintCanvas_GetTextWidth(canvas, GameText_getText(*g_StarMap_init_text, 0x112 + i));
+        int width = PaintCanvas_GetTextWidth(canvas, ((GameText *)(*g_StarMap_init_text))->getText(0x112 + i));
         if (field<int32_t>(this, 0x10c) < width) {
             field<int32_t>(this, 0x10c) = width;
         }

@@ -45,5 +45,9 @@ struct AutoPilotList {
     int field_0x14;                     // +0x14 count
 
     void draw();
+
+    // ---- methods (converted from free functions) ----
+    RetStr getTargetString();
+    int touch(int p1, int p2);
 };
 #endif

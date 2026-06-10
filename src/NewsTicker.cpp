@@ -1,4 +1,6 @@
 #include "gof2/NewsTicker.h"
+#include "gof2/GameText.h"
+#include "gof2/String.h"
 
 // Minimal view of NewsItem fields read here (NewsItem.h is opaque; not in this batch).
 // Layout confirmed from Ghidra NewsTicker::NewsTicker @ 0x16c468.
@@ -23,12 +25,9 @@ extern "C" void PaintCanvas_DrawString(void *canvas, void *font, String *text, i
 extern "C" int GameText_getLanguage();
 extern "C" void PaintCanvas_DisableClip(void *canvas);
 extern "C" void String_copy_ctor(void *self, void *other, bool copy);
-extern "C" void String_ctor(void *self);
 extern "C" void String_cstr_ctor(void *self, const char *text, bool copy);
-extern "C" void String_assign(void *self, void *other);
 extern "C" void String_plus(void *out, void *left, void *right);
 extern "C" void String_plusAssign(void *self, void *other);
-extern "C" void String_dtor(void *self);
 typedef Array<NewsItemView *> NewsItemArray;
 extern "C" void FileRead_ctor(void *self);
 extern "C" NewsItemArray *FileRead_loadTicker(void *self);
@@ -42,7 +41,6 @@ extern "C" void *NewsItem_clone(void *item);
 extern "C" void *Status_getSystem(void *status);
 extern "C" int SolarSystem_getIndex(void *system);
 extern "C" int64_t Status_getPlayingTime(void *status);
-extern "C" String *GameText_getText(void *text, int id);
 extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *font, String *text);
 
 // ---- draw_15e174.cpp ----
@@ -203,15 +201,15 @@ __attribute__((visibility("hidden"))) extern void **g_NewsTicker_ctor_canvas;
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 {
     String *tickerText = &this->field_0x14;
-    String_ctor(tickerText);
+    ((String *)(tickerText))->ctor();
     this->field_0x4 = x;
     this->field_0x8 = y;
     this->field_0xc = width;
 
     String empty;
     String_cstr_ctor(&empty, g_NewsTicker_ctor_empty, false);
-    String_assign(tickerText, &empty);
-    String_dtor(&empty);
+    ((String *)(tickerText))->assign(&empty);
+    ((String *)(&empty))->dtor();
     this->field_0x10 = 0;
 
     void *reader = operator new(1);
@@ -277,26 +275,25 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     for (uint32_t i = 0; i < items->size(); ++i) {
         NewsItemView *item = (*items)[i];
         String line;
-        String_copy_ctor(&line, GameText_getText(*g_NewsTicker_ctor_text,
-                                                 item->field_0x0 + 0x0cbe),
+        String_copy_ctor(&line, ((GameText *)(*g_NewsTicker_ctor_text))->getText(item->field_0x0 + 0x0cbe),
                          false);
         String replaced = replaceTokens(line);
-        String_dtor(&line);
+        ((String *)(&line))->dtor();
 
         if (item->field_0x4 != 0) {
             String *statusText = (String *)((char *)*g_NewsTicker_ctor_status + 0x168);
             if (item->field_0x18 == 0) {
-                String_assign(&replaced, statusText);
+                ((String *)(&replaced))->assign(statusText);
             } else {
-                String_assign(statusText, &replaced);
+                ((String *)(statusText))->assign(&replaced);
             }
         }
 
         String combined;
         String_plus(&combined, &replaced, &separator);
         String_plusAssign(tickerText, &combined);
-        String_dtor(&combined);
-        String_dtor(&replaced);
+        ((String *)(&combined))->dtor();
+        ((String *)(&replaced))->dtor();
     }
 
     this->field_0x10 = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
@@ -305,7 +302,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         String copy;
         String_copy_ctor(&copy, tickerText, false);
         String_plusAssign(tickerText, &copy);
-        String_dtor(&copy);
+        ((String *)(&copy))->dtor();
         this->field_0x10 = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
                                                       *g_NewsTicker_ctor_font, tickerText);
     }
@@ -321,7 +318,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     operator delete(Array_NewsItem_dtor(items));
     ArrayReleaseClasses_NewsItem(allItems);
     operator delete(Array_NewsItem_dtor(allItems));
-    String_dtor(&separator);
+    ((String *)(&separator))->dtor();
 }
 
 // ---- OnTouchBegin_15e2d8.cpp ----

@@ -1,31 +1,35 @@
 #include "gof2/Wanted.h"
+#include "gof2/String.h"
 
 
 using AbyssEngine::String12;
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" Wanted *String_default_ctor(Wanted *self);
-extern "C" void String_assign(Wanted *self, const String12 *rhs);
 extern "C" void operator_delete_array(void *p);
 extern "C" Wanted *Wanted_base_dtor(Wanted *self);
 
 // ---- isTerminated_12298a.cpp ----
-extern "C" uint8_t Wanted_isTerminated(Wanted *self) {
+uint8_t Wanted::isTerminated() {
+    Wanted *self = this;
     return self->field_0x50;
 }
 
 // ---- setTerminated_12296c.cpp ----
-extern "C" void Wanted_setTerminated(Wanted *self, bool v) {
+void Wanted::setTerminated(bool v) {
+    Wanted *self = this;
     self->field_0x50 = v;
 }
 
 // ---- isActive_122984.cpp ----
-extern "C" uint8_t Wanted_isActive(Wanted *self) {
+uint8_t Wanted::isActive() {
+    Wanted *self = this;
     return self->field_0x51;
 }
 
 // ---- setActive_122972.cpp ----
-extern "C" void Wanted_setActive(Wanted *self, bool v) {
+void Wanted::setActive(bool v) {
+    Wanted *self = this;
     self->field_0x51 = v;
 }
 
@@ -36,8 +40,8 @@ extern "C" void Wanted_setActive(Wanted *self, bool v) {
 // void, so the compiler keeps a frame + restores the sret pointer (r0).
 struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 
-extern "C" RetStr Wanted_getName(Wanted *self)
-{
+RetStr Wanted::getName() {
+    Wanted *self = this;
     RetStr r;
     String_copy_ctor(&r, &self->field_0x0, false);
     return r;
@@ -49,13 +53,11 @@ extern "C" RetStr Wanted_getName(Wanted *self)
 
 // The String argument has a non-trivial copy ctor/dtor in the real engine, so the
 // C++ ABI passes it by invisible reference -> it arrives as a pointer in r2.
-extern "C" Wanted *
-Wanted_ctor(Wanted *self, int p1, const String12 &p2, int p3, int p4, bool p5,
-            int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14)
-{
+Wanted * Wanted::ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14) {
+    Wanted *self = this;
     Wanted *r = String_default_ctor(self);
     r->field_0xc = p1;
-    String_assign(r, &p2);
+    ((String *)(r))->assign(&p2);
     self->field_0x10 = p3;
     self->field_0x14 = p4;
     self->field_0x18 = p5;
@@ -81,8 +83,8 @@ Wanted_ctor(Wanted *self, int p1, const String12 &p2, int p3, int p4, bool p5,
 // Base subobject destructor (String::~String at offset 0), returns the object pointer.
 
 // Frees the buffer at +0x40 (array delete), clears it, then tail-calls the base dtor.
-extern "C" Wanted *Wanted_dtor(Wanted *self)
-{
+Wanted * Wanted::dtor() {
+    Wanted *self = this;
     void *p = self->field_0x40;
     if (p != 0) {
         operator_delete_array(p);

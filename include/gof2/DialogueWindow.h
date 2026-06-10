@@ -33,5 +33,25 @@ struct DialogueWindow {
     int field_0x68;                     // +0x68
     int field_0x6c;                     // +0x6c
     uint8_t field_0x70;                 // +0x70
+
+    // ---- methods (converted from free functions) ----
+    int OnTouchBegin(int x, int y);
+    int OnTouchEnd(int x, int y);
+    int OnTouchMove(int x, int y);
+    DialogueWindow * ctor_default();
+    DialogueWindow * ctor_mission(Mission *mission, Level *level, int kind);
+    DialogueWindow * ctor_text(String *text, String *agentName, int *parts);
+    void draw();
+    bool hasLevel();
+    int init();
+    bool isFirstPage();
+    bool isLastPage();
+    int length();
+    void loadContent();
+    int nextPage();
+    int pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent);
+    int previousPage();
+    void set(Mission *mission, int kind, int campaign);
+    void update(int dt);
 };
 #endif

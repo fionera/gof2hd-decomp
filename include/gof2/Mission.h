@@ -50,5 +50,31 @@ struct Mission {
     int field_0x6c;                     // +0x6c production goods b
     int field_0x70;                     // +0x70
     uint8_t field_0x74;                 // +0x74 visible
+
+    // ---- methods (converted from free functions) ----
+    void calcDistance();
+    Mission * clone();
+    Mission * ctor3(int id, int goods, int station);
+    Mission * ctor7(int id, const void *client, int a, int b, int c, int station, int reward);
+    Mission * ctor_default();
+    Mission * ctor_int(int id);
+    void dtor();
+    Mission * dtor_inner();
+    RetStr getClientName();
+    RetStr getDescription();
+    RetStr getName();
+    RetStr getTargetName();
+    RetStr getTargetStationName();
+    RetStr getTargetSystemName();
+    bool isCampaignMission();
+    bool isEmpty();
+    uint8_t isInstantActionMission();
+    uint8_t isVisible();
+    void setInstantActionMission(bool v);
+    void setProductionGoods(int a, int b);
+    void * setTargetName(const String12 &rhs);
+    void setTargetStation(int idx);
+    void * setTargetSystemName(const String12 &rhs);
+    void setVisible(bool v);
 };
 #endif

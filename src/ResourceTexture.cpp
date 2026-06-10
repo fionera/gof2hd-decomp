@@ -1,4 +1,5 @@
 #include "gof2/ResourceTexture.h"
+#include "gof2/String.h"
 
 
 
@@ -26,7 +27,7 @@ ResourceTexture::~ResourceTexture()
 // AbyssEngine::ResourceTexture::ResourceTexture(AbyssEngine::String const&, float)
 ResourceTexture::ResourceTexture(const String &name, float value)
 {
-    char *utf8 = (char *)String_GetAEChar(&name);
+    char *utf8 = (char *)((String *)(&name))->GetAEChar();
     uint32_t len = String_GetStringLength(utf8);
     char *buf = (char *)operator_new__(len + 1U);
     this->field_0x0 = buf;

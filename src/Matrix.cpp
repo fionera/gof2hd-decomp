@@ -19,8 +19,8 @@ static const float kIdentTail[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
 // NOTE: Matrix's default constructor is declared inline (= {}) in gof2/math.h, which we
 // must not edit. To avoid an ODR redefinition we expose the identity-init logic as a
 // helper instead of redefining Matrix::Matrix(); callers that need identity init use this.
-void Matrix_initIdentity(Matrix *self)
-{
+void Matrix::initIdentity() {
+    Matrix *self = this;
     float *m = self->m;
     m[0] = 1.0f;   // 0x00
     m[5] = 1.0f;   // 0x14

@@ -21,5 +21,23 @@ struct Standing {
     int field_0x4;                      // +0x4
     Standing();
     ~Standing();
+
+    // ---- methods (converted from free functions) ----
+    void applyDelict(unsigned kind, int severity);
+    void applyDisable(int race);
+    void applyKill(int kind);
+    void applyMissionCompleted(int race);
+    void applyPoints(int race, int delta);
+    void applyStealCargo(int race);
+    uint32_t getEnemyRace(unsigned idx);
+    float getMissionBonus(unsigned race);
+    int getStanding(int race);
+    float getStandingRate(int race);
+    bool isEnemy(int race);
+    bool isEnemyWithAnyone();
+    bool isFriend(int race);
+    unsigned isNeutral(int race);
+    void rehabilitate(int race);
+    void setStanding(int race, int value);
 };
 #endif

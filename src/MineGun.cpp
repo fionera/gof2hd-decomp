@@ -1,8 +1,9 @@
 #include "gof2/MineGun.h"
+#include "gof2/Explosion.h"
+#include "gof2/PlayerEgo.h"
 
 
 extern "C" void ObjectGun_render(MineGun *self);
-extern "C" void Explosion_render(Explosion *self);
 extern "C" __attribute__((visibility("hidden"))) void *MineGun_vtable;
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion *> *array);
 extern "C" void *Array_Explosion_dtor(Array<Explosion *> *array);
@@ -24,14 +25,9 @@ extern "C" uint32_t PaintCanvas_TransformGetTransform(void *canvas, uint32_t tra
 extern "C" void Transform_SetAnimationState(uint32_t transform, int state, int frame);
 extern "C" void ObjectGun_update(MineGun *self, int delta);
 extern "C" void Transform_Update(uint32_t transform, long long delta, int zero);
-extern "C" void PlayerEgo_getPosition(Vector *out, PlayerEgo *self);
 extern "C" void AEMath_operator_sub(Vector *out, const Vector *a, const Vector *b);
 extern "C" float VectorLength(const Vector *self);
-extern "C" TargetFollowCamera *PlayerEgo_getTargetFollowCamera(PlayerEgo *self);
-extern "C" void Explosion_start(Explosion *self, const Vector *position, const Vector *zero);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
-extern "C" int Explosion_isPlaying(Explosion *self);
-extern "C" void Explosion_reset(Explosion *self);
 
 // ---- render_1566bc.cpp ----
 void MineGun::render()
@@ -40,7 +36,7 @@ void MineGun::render()
     for (uint32_t i = 0; i < U(P(this, 0x8), 0x8); ++i) {
         if (F<uint8_t>(P(P(this, 0x8), 0x40), i) != 0) {
             Array<Explosion *> *explosions = (Array<Explosion *> *)P(this, 0xb4);
-            Explosion_render(explosions->data()[i]);
+            ((Explosion *)(explosions->data()[i]))->render();
         }
     }
 }
@@ -168,7 +164,7 @@ void MineGun::update(int delta)
             if (F<uint8_t>(P(this, 0xb8), i) != 0) {
                 I(this, 0xcc) = zero;
                 char *positions = (char *)P(gun, 0x30);
-                PlayerEgo_getPosition((Vector *)vectorBytes, (PlayerEgo *)P(this, 0xb0));
+                ((PlayerEgo *)((Vector *)vectorBytes))->getPosition();
                 Vector *minePosition = (Vector *)(positions + positionOffset);
                 AEMath_operator_sub((Vector *)(vectorBytes + 12), minePosition,
                                     (Vector *)vectorBytes);
@@ -179,15 +175,13 @@ void MineGun::update(int delta)
                 }
                 FL(this, 0xd0) = one - clamped / range;
                 TargetFollowCamera *camera =
-                    PlayerEgo_getTargetFollowCamera((PlayerEgo *)P(this, 0xb0));
+                    ((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
                 TargetFollowCamera_setRumblePercentage(camera, FL(this, 0xd0), 0x32);
 
                 ((int *)(vectorBytes + 12))[0] = zero;
                 ((int *)(vectorBytes + 12))[1] = zero;
                 ((int *)(vectorBytes + 12))[2] = zero;
-                Explosion_start(explosion_at(this, i),
-                                (Vector *)((char *)P(P(this, 0x8), 0x30) + positionOffset),
-                                (Vector *)(vectorBytes + 12));
+                ((Explosion *)(explosion_at(this, i)))->start((Vector *)((char *)P(P(this, 0x8), 0x30) + positionOffset), (Vector *)(vectorBytes + 12));
                 F<uint8_t>(P(this, 0xb8), i) = 0;
             }
 
@@ -199,20 +193,20 @@ void MineGun::update(int delta)
             }
             I(this, 0xcc) = timer;
             TargetFollowCamera *camera =
-                PlayerEgo_getTargetFollowCamera((PlayerEgo *)P(this, 0xb0));
+                ((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
             float pct = FL(this, 0xd0) * ((float)I(this, 0xcc) / decay + one);
             TargetFollowCamera_setRumblePercentage(camera, pct, 0x32);
 
-            if (Explosion_isPlaying(explosion) == 0) {
+            if (((Explosion *)(explosion))->isPlaying() == 0) {
                 TargetFollowCamera *camera =
-                    PlayerEgo_getTargetFollowCamera((PlayerEgo *)P(this, 0xb0));
+                    ((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
                 TargetFollowCamera_setRumblePercentage(camera, 0.0f, zero);
                 gun = P(this, 0x8);
                 I(this, 0xcc) = zero;
                 F<uint8_t>(P(gun, 0x40), i) = zero;
                 UC(gun, 0x88) = zero;
                 F<uint8_t>(P(this, 0xb8), i) = 1;
-                Explosion_reset(explosion_at(this, i));
+                ((Explosion *)(explosion_at(this, i)))->reset();
             }
         }
         positionOffset += 0xc;

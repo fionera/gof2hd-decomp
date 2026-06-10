@@ -1,18 +1,18 @@
 #include "gof2/PlayerTurret.h"
+#include "gof2/Explosion.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
+#include "gof2/Standing.h"
 
 
 extern "C" void PlayerTurret_pickEnemy(PlayerTurret *self);
 extern "C" void PlayerTurret_handleRotation(PlayerTurret *self, int delta, AEGeometry *main, AEGeometry *turret);
 extern "C" Vector *Vector_assign(Vector *dst, const Vector *src);
 extern "C" void AEGeometry_render(void *self);
-extern "C" void Explosion_render(Explosion *self);
 extern "C" void PlayerTurret_renderBase(PlayerTurret *self);
 extern "C" void Player_reset(Player *self);
-extern "C" void KIPlayer_setActive(PlayerTurret *self, bool active);
-extern "C" void Explosion_reset(Explosion *self);
 extern "C" void AEGeometry_setVisible(void *self, bool visible);
 extern "C" void AEGeometry_setPosition(AEGeometry *self, const Vector *position);
-extern "C" void KIPlayer_reset(PlayerTurret *self);
 extern "C" void KIPlayer_setLevel(PlayerTurret *self, Level *level);
 extern "C" int AEGeometry_getReferenceMatrix(AEGeometry *self);
 extern "C" int ParticleSystemManager_addSystem(int manager, int matrix, int kind, int flags);
@@ -33,30 +33,18 @@ extern "C" void Matrix_mul(void *out, const void *a, const void *b);
 extern "C" void MatrixInverseTransformVector(Vector *out, const void *matrix, const Vector *v);
 extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas, uint32_t transform);
 extern "C" void Transform_Update(uint32_t transform, int amount, int amountHigh, int flags);
-extern "C" int Player_isActive(Player *self);
-extern "C" void Player_setVulnerable(Player *self, bool value);
-extern "C" int Player_getHitpoints(Player *self);
-extern "C" void Player_setActive(Player *self, bool value);
-extern "C" int Player_turnedEnemy(Player *self);
-extern "C" int Player_isAlwaysFriend(Player *self);
 extern "C" int Level_getPlayer(Level *self);
 extern "C" int Status_getStanding();
-extern "C" int Standing_isEnemy(int standing, int value);
-extern "C" int Standing_isFriend(int standing, int value);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const void *matrix);
 extern "C" void AEGeometry_translate(AEGeometry *self, const Vector *position);
 extern "C" void AEGeometry_getPosition(Vector *out, AEGeometry *self);
 extern "C" void MatrixRotateVector(Vector *out, const void *matrix, const Vector *vector);
 extern "C" void *FModSound_play(int sound, int id, Vector *pos, float volume);
-extern "C" void Explosion_start(Explosion *self, Vector *position, Vector *velocity);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 extern "C" int AERandom_nextInt(int rng, int max);
 extern "C" void Array_int_ctor(IntArray *array);
 extern "C" void ArrayAdd_int(int value, IntArray *array);
-extern "C" void KIPlayer_createCrate(PlayerTurret *self, int kind);
 extern "C" PlayerArray *Player_getEnemies(Player *self);
-extern "C" int Player_isDead(Player *self);
-extern "C" void *Player_getKIPlayer(Player *self);
 extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
 extern "C" float VectorLength(const Vector *v);
 extern "C" void *Explosion_dtor(Explosion *self);
@@ -66,7 +54,6 @@ extern "C" void AEGeometry_ctor(AEGeometry *self, void *canvas);
 extern "C" void AEGeometry_setRotationOrder(AEGeometry *self, int order);
 extern "C" void AEGeometry_addChild(AEGeometry *self, uint32_t child);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
-extern "C" void Explosion_addFireStreaks(Explosion *self);
 
 // ---- setTurretRange_157418.cpp ----
 
@@ -109,7 +96,7 @@ void PlayerTurret::render()
     }
     int state = I(this, 0x88);
     if (state == 3) {
-        Explosion_render(TP<Explosion>(this, 0x13c));
+        ((Explosion *)(TP<Explosion>(this, 0x13c)))->render();
         state = I(this, 0x88);
     }
     if ((uint32_t)(state - 3) >= 2) {
@@ -139,8 +126,7 @@ void PlayerTurret::revive()
     *(volatile int *)B(this, 0x78) = zero;
     *(volatile int *)B(this, 0x88) = one;
     *(volatile int *)B(this, 0xd8) = zero;
-    KIPlayer_setActive(this, true);
-    Explosion_reset(TP<Explosion>(this, 0x13c));
+    ((Explosion *)(TP<Explosion>(this, 0x13c)))->reset();
     void *geometry = P(this, 0xc);
     *(volatile int *)B(this, 0x128) = zero;
     *(volatile uint8_t *)B(this, 0xf5) = one;
@@ -167,9 +153,8 @@ void PlayerTurret::setPosition(const Vector &position)
 
 void PlayerTurret::reset()
 {
-    KIPlayer_reset(this);
+    ((KIPlayer *)(this))->reset();
     I(this, 0x88) = 0;
-    KIPlayer_setActive(this, true);
 }
 
 // ---- setLevel_1573bc.cpp ----
@@ -208,8 +193,6 @@ void PlayerTurret::setScaling(float scale)
 // ---- handleRotation_157908.cpp ----
 using AbyssEngine::AEMath::Vector;
 
-extern "C" void Player_shoot(Player *self, int weapon, int amount, int amountHigh, int flags,
-                             const void *matrix);
 
 extern uint32_t *gPlayerTurretCanvas_rotation __attribute__((visibility("hidden")));
 
@@ -288,7 +271,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     }
 
     if (ready) {
-        Player_shoot(TP<Player>(this, 0x4), 0, delta, delta >> 31, 0, matrixBytes);
+        ((Player *)(TP<Player>(this, 0x4)))->shoot(0, delta, delta >> 31, 0);
         uint32_t transform = PaintCanvas_TransformGetTransform(*gPlayerTurretCanvas_rotation,
                                                                U(turretGeometry, 0xc));
         Transform_Update(transform, delta, delta >> 31, 0);
@@ -314,16 +297,16 @@ void PlayerTurret::update(int delta)
     I(this, 0x124) = delta;
 
     Player *player = TP<Player>(this, 0x4);
-    if (Player_isActive(player) == 0) {
+    if (((Player *)(player))->isActive() == 0) {
         return;
     }
 
     if (UC(this, 0x3f) != 0 && I(this, 0x128) < 3000) {
-        Player_setVulnerable(player, false);
+        ((Player *)(player))->setVulnerable(false);
         int time = I(this, 0x128) + delta;
         I(this, 0x128) = time;
         if (time > 2999) {
-            Player_setVulnerable(player, true);
+            ((Player *)(player))->setVulnerable(true);
         }
     }
 
@@ -340,7 +323,7 @@ void PlayerTurret::update(int delta)
     AEGeometry_getPosition((Vector *)vectorBytes, TP<AEGeometry>(this, 0x8));
     Vector_assign((Vector *)B(this, 0x2c), (Vector *)vectorBytes);
 
-    int hp = Player_getHitpoints(player);
+    int hp = ((Player *)(player))->getHitpoints();
     int state = I(this, 0x88);
     if (hp < 1 && (uint32_t)(state - 3) >= 2) {
         I(this, 0x12c) = 0;
@@ -350,7 +333,7 @@ void PlayerTurret::update(int delta)
         ParticleSystemManager_emitManual(I(this->f_54, 0x74), I(this->f_54, 0x3c),
                                          (Vector *)B(this, 0x2c), &zero, value);
         ParticleSystemManager_enableSystemEmit(I(this->f_54, 0x74), I(this, 0x138), 1);
-        Explosion_start(TP<Explosion>(this, 0x13c), (Vector *)B(this, 0x2c), &zero);
+        ((Explosion *)(TP<Explosion>(this, 0x13c)))->start((Vector *)B(this, 0x2c), &zero);
 
         int random = AERandom_nextInt(*gPlayerTurretRandom, 100);
         if (random < 0) {
@@ -360,7 +343,7 @@ void PlayerTurret::update(int delta)
             this->f_50 = array;
             ArrayAdd_int(99, array);
             ArrayAdd_int(AERandom_nextInt(*gPlayerTurretRandom, 10) + 1, (IntArray *)this->f_50);
-            KIPlayer_createCrate(this, 3);
+            ((KIPlayer *)(this))->createCrate(3);
             UC(this, 0x4c) = 1;
         } else {
             int levelPlayer = Level_getPlayer((Level *)this->f_54);
@@ -388,7 +371,7 @@ void PlayerTurret::update(int delta)
             ParticleSystemManager_enableSystemEmit(I(this->f_54, 0x74), I(this, 0x138), 0);
             I(this, 0x12c) = 0;
             I(this, 0x88) = 4;
-            Player_setActive(player, false);
+            ((Player *)(player))->setActive(false);
             if (UC(this, 0x3f) != 0) {
                 I(this->f_54, 0x6c) = I(this->f_54, 0x6c) - 1;
             }
@@ -402,17 +385,17 @@ void PlayerTurret::update(int delta)
         UC(player, 0x5d) = 0;
     } else {
         int s = Status_getStanding();
-        UC(player, 0x5c) = Standing_isEnemy(s, standing);
+        UC(player, 0x5c) = ((Standing *)(s))->isEnemy(standing);
         if ((standing & 0xfffffffeU) == 8) {
             UC(player, 0x5d) = 0;
         } else {
-            UC(player, 0x5d) = Standing_isFriend(Status_getStanding(), standing);
+            UC(player, 0x5d) = ((Standing *)(Status_getStanding()))->isFriend(standing);
         }
     }
-    if (Player_turnedEnemy(player) != 0) {
+    if (((Player *)(player))->turnedEnemy() != 0) {
         US(player, 0x5c) = 1;
     }
-    if (Player_isAlwaysFriend(player) != 0) {
+    if (((Player *)(player))->isAlwaysFriend() != 0) {
         US(player, 0x5c) = 0x100;
     }
 
@@ -446,12 +429,12 @@ void PlayerTurret::pickEnemy()
             {
                 Player *enemy = enemies->data[i];
 
-                if (Player_isDead(enemy) == 0 && Player_isActive(enemy) != 0) {
+                if (((Player *)(enemy))->isDead() == 0 && ((Player *)(enemy))->isActive() != 0) {
                     bool accepted = false;
                     if (UC(enemy, 0x69) != 0 && UC(TP<Player>(this, 0x4), 0x5c) != 0) {
                         accepted = true;
                     } else if (UC(this, 0x3f) == 0) {
-                        if (Player_getKIPlayer(enemy) != 0) {
+                        if (((Player *)(enemy))->getKIPlayer() != 0) {
                             accepted = true;
                         }
                     } else if (UC(enemy, 0x5c) != 0) {
@@ -523,8 +506,6 @@ using AbyssEngine::AEMath::Vector;
 extern void *gPlayerTurretVtable_ctor __attribute__((visibility("hidden")));
 extern uint32_t *gPlayerTurretCanvas __attribute__((visibility("hidden")));
 
-extern "C" void KIPlayer_ctor(PlayerTurret *self, int mesh, int team, Player *player,
-                              AEGeometry *geometry, float x, float y, float z, bool flag);
 
 
 typedef void (*SetPositionFn)(PlayerTurret *self, const Vector *position);
@@ -532,7 +513,6 @@ typedef void (*SetPositionFn)(PlayerTurret *self, const Vector *position);
 PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z)
 {
     char vectorBytes[12];
-    KIPlayer_ctor(this, mesh, -1, player, geometry, x, y, z, false);
 
     this->f_0 = (char *)gPlayerTurretVtable_ctor + 8;
     UC(this, 0x25) = 1;
@@ -625,7 +605,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
     Explosion *explosion = (Explosion *)operator new(0x68);
     Explosion_ctor(explosion, 0);
     this->f_13c = explosion;
-    Explosion_addFireStreaks(explosion);
+    ((Explosion *)(explosion))->addFireStreaks();
 
     this->f_14c = 0;
     this->f_150 = 0;

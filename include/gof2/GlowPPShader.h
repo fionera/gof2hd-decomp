@@ -97,5 +97,13 @@ struct GlowPPShader {
 
     // raw field storage for the offset-addressed scalar locations (accessed via field_* helpers)
     char field_storage[0xa8];
+
+    // ---- methods (converted from free functions) ----
+    void Init();
+    void InternalInit(Engine *engine);
+    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine);
+    void RenderEffect_simple(FBOContainer *source, Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
 };
 #endif

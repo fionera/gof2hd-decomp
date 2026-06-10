@@ -1,4 +1,8 @@
 #include "gof2/Level.h"
+#include "gof2/Achievements.h"
+#include "gof2/Hud.h"
+#include "gof2/Player.h"
+#include "gof2/PlayerEgo.h"
 #include "gof2/Gun.h"
 #include "gof2/PlayerTurret.h"
 #include "gof2/Waypoint.h"
@@ -126,10 +130,7 @@ extern "C" void ArrayCtor(int arr);
 extern "C" void ArraySetLength(int len, int arr);
 extern "C" unsigned int uidiv(unsigned int a, unsigned int b);
 extern "C" int Level_createStaticObject_call(Level *self, int wp, int type, int flag);
-extern "C" void Player_setRadius(int player, int radius);
 extern "C" void Player_setAlwaysFriend(int player, int flag);
-extern "C" void Player_setMaxHitpoints(int player, int hp);
-extern "C" void KIPlayer_setActive(int k, int flag);
 extern "C" void ArrayAdd(int item, int arr);
 extern "C" void Level_createPlayer_impl(Level *self);
 extern "C" void Level_wingmanDied_all(Status *obj, int zero);
@@ -141,7 +142,6 @@ extern "C" void Mission_setCampaign_akw(int m, int flag);
 extern "C" void Mission_setWon_akw(int m, int flag);
 extern "C" void *dtor_Objective_akw(void *p);
 extern "C" void Objective_ctor_akw(int o, int a, int b, int c, Level *self);
-extern "C" void Player_resetDamageDoneByPlayer(int obj);
 extern "C" void Level_almostKillWanted_tail(int target, int zero);
 extern "C" void Level_turnEnemy(int obj);
 extern "C" int Level_getNumWingmen(int wanted);
@@ -853,9 +853,8 @@ void ArrayAdd_AGun_cg(ObjectGun *o, void *a);
 
 // Level::createGun(idx, owner, kind, hp, dmg, rate, cool, color) — factory for the player's and
 // AI ships' weapons; dispatches on `kind` to the right Gun subclass and registers the sound.
-extern "C" Gun *Level_createGun(Level *thisptr, int idx, int owner, int kind, int hp, int dmg,
-                                int rate, int cool, int color)
-{
+Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     ObjectGun *obj = 0;
     Gun *gun = 0;
@@ -1162,8 +1161,8 @@ void Level_crm_dispatch(int ego, void *queue);
 
 // Level::createRadioMessage(int type, int sub) — builds a context-appropriate sequence of radio
 // chatter lines for the current orbit/mission and queues them on the player's comms.
-extern "C" void Level_createRadioMessage(Level *thisptr, int type, int sub)
-{
+void Level::createRadioMessage(int type, int sub) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     unsigned r2 = (unsigned)sub;
 
@@ -1389,8 +1388,8 @@ void  Level_init_placePlayer(Level *self, int statusA, int stationStack);
 
 // Level::init() — staged level setup; runs over up to two ticks (the counter at self+0x134),
 // then builds space, mission, scene, objects, guns and wires up the players.
-extern "C" int Level_init(Level *thisptr)
-{
+int Level::init() {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     int **statusA = 0;
 
@@ -1647,8 +1646,8 @@ void Level_uaa_placeAlien(int self, int *kiPlayer, int alienInOrbit);
 }
 
 // Level::updateAlienAttackers(int dt) — periodically (re)spawns the alien attacker wave.
-extern "C" void Level_updateAlienAttackers(Level *thisptr, int dt)
-{
+void Level::updateAlienAttackers(int dt) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     *(int *)(self + 0x170) = *(int *)(self + 0x170) + dt;
 
@@ -2124,8 +2123,8 @@ void Level_uo_spawnFar(Level *self, int *kiPlayer);
 }
 
 // Level::updateOrbit(int dt) — non-mission ambient traffic / reinforcement spawner.
-extern "C" void Level_updateOrbit(Level *thisptr, int dt)
-{
+void Level::updateOrbit(int dt) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
 
     int t178 = *(int *)(self + 0x178) + dt;
@@ -2326,11 +2325,10 @@ void Level::createSentryGuns() {
             int obj = Level_createStaticObject_call(this, 0, uidiv(i, 3) + 0x49c0, 1);
             ((int *)(*(int *)(field_b0 + 4)))[i] = obj;
             int k = ((int *)(*(int *)(field_b0 + 4)))[i];
-            Player_setRadius(*(int *)(k + 4), 800);
+            ((Player *)(*(int *)(k + 4)))->setRadius(800);
             Player_setAlwaysFriend(*(int *)(k + 4), 1);
-            Player_setMaxHitpoints(*(int *)(k + 4), 100);
+            ((Player *)(*(int *)(k + 4)))->setMaxHitpoints(100);
             (*(void (**)(int, int, int, int))(*(int *)k + 0x48))(k, color, color, color);
-            KIPlayer_setActive(k, 0);
             ArrayAdd(k, enemies);
         }
     }
@@ -2411,9 +2409,8 @@ void LODManager_update_up(LODManager *m, unsigned dt);
 }
 
 // Level::update(long long time, bool param_2) [+ a third stack bool] — engine per-frame tick.
-extern "C" void Level_update(Level *thisptr, long long /*time*/, unsigned dtArg,
-                             int stackFlag)
-{
+void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     unsigned dt = dtArg;
 
@@ -2766,19 +2763,14 @@ __attribute__((visibility("hidden"))) extern float          g_ed_100;   // DAT_0
 
 extern "C" {
 void Status_incKills(Status *s);
-int  Achievements_hasMedal(Achievements *a, int id, int tier);
-int  Achievements_getValue(Achievements *a, int id, int tier);
-int  PlayerEgo_getHUD(int egoPtr);
-int  PlayerEgo_emergencySystemActive(int egoPtr);
-void Hud_hudEventMedal(int hud, int id, int value);
 int  aeabi_idivmod_ed(int a, int b);
 }
 
 // Level::enemyDied — the header declares it nullary, but the target reads a discriminator in
 // r2 (whether the kill counts toward the player), so we express it as a C callback that the
 // engine invokes with (Level* self, _, bool wasFriendlyFire).
-extern "C" void Level_enemyDied(Level *thisptr, int r1, bool r2arg)
-{
+void Level::enemyDied(int r1, bool r2arg) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     int r2 = (int)r2arg; // the recovered "in_r2" discriminator
     (void)r1;
@@ -2799,43 +2791,43 @@ extern "C" void Level_enemyDied(Level *thisptr, int r1, bool r2arg)
 
     if (Radar::hasScanner() == 0) {
         Achievements **achA = g_ed_achA;
-        if (Achievements_hasMedal(*achA, 0x28, 1) == 0) {
+        if (((Achievements *)(*achA))->hasMedal(0x28, 1) == 0) {
             int st = *(int *)statusHolder;
             int v = *(int *)(st + 0x11c);
             if (*(char *)(st + 0x120) == 0) {
                 v = v + 1;
                 *(int *)(st + 0x11c) = v;
             }
-            int goal = Achievements_getValue(*achA, 0x28, 1);
+            int goal = ((Achievements *)(*achA))->getValue(0x28, 1);
             int prog = (int)(((float)v / (float)goal) * g_ed_100);
             if (aeabi_idivmod_ed(prog, 10) == 0) {
-                int hud = PlayerEgo_getHUD(*(int *)(self + 0xf0));
+                int hud = ((PlayerEgo *)(*(int *)(self + 0xf0)))->getHUD();
                 int cur = *(int *)(*(int *)statusHolder + 0x11c);
-                int g2 = Achievements_getValue(*achA, 0x28, 1);
-                Hud_hudEventMedal(hud, 0x28, (int)(((float)cur / (float)g2) * g_ed_100));
+                int g2 = ((Achievements *)(*achA))->getValue(0x28, 1);
+                ((Hud *)(hud))->hudEventMedal(0x28, (int)(((float)cur / (float)g2) * g_ed_100));
             }
             int cur2 = *(int *)(*(int *)statusHolder + 0x11c);
-            if (Achievements_getValue(*achA, 0x28, 1) <= cur2)
+            if (((Achievements *)(*achA))->getValue(0x28, 1) <= cur2)
                 *(char *)(*(int *)statusHolder + 0x120) = 1;
         }
     }
 
     if (*(int *)(self + 0xf0) != 0 &&
-        PlayerEgo_emergencySystemActive(*(int *)(self + 0xf0)) != 0) {
+        ((PlayerEgo *)(*(int *)(self + 0xf0)))->emergencySystemActive() != 0) {
         Achievements **achB = g_ed_achB;
-        if (Achievements_hasMedal(*achB, 0x2b, 1) == 0) {
+        if (((Achievements *)(*achB))->hasMedal(0x2b, 1) == 0) {
             int st = *(int *)statusHolder;
             int v = *(int *)(st + 0x13c) + 1;
             *(int *)(st + 0x13c) = v;
-            int goal = Achievements_getValue(*achB, 0x2b, 1);
+            int goal = ((Achievements *)(*achB))->getValue(0x2b, 1);
             if (0 < (int)((float)v / (float)goal)) {
-                int hud = PlayerEgo_getHUD(*(int *)(self + 0xf0));
+                int hud = ((PlayerEgo *)(*(int *)(self + 0xf0)))->getHUD();
                 int cur = *(int *)(*(int *)statusHolder + 0x13c);
-                int g2 = Achievements_getValue(*achB, 0x2b, 1);
-                Hud_hudEventMedal(hud, 0x2b, (int)(((float)cur / (float)g2) * g_ed_100));
+                int g2 = ((Achievements *)(*achB))->getValue(0x2b, 1);
+                ((Hud *)(hud))->hudEventMedal(0x2b, (int)(((float)cur / (float)g2) * g_ed_100));
             }
             int cur2 = *(int *)(*(int *)statusHolder + 0x13c);
-            if (Achievements_getValue(*achB, 0x2b, 1) <= cur2)
+            if (((Achievements *)(*achB))->getValue(0x2b, 1) <= cur2)
                 *(char *)(*(int *)statusHolder + 0x140) = 1;
         }
     }
@@ -2872,8 +2864,8 @@ static void buildQueue(char *self, const RMSpec *specs, unsigned n)
 
 // Level::createRadioMessages(int set) — populates the level's radio-chatter queue with the fixed
 // dialogue sequence for the requested mission/event set.
-extern "C" void Level_createRadioMessages(Level *thisptr, int set)
-{
+void Level::createRadioMessages(int set) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     *(int *)(self + 0x114) = 0;
 
@@ -3335,8 +3327,8 @@ int  Level_cso2_construct(Level *self, int type, int x, int y, int z);
 
 // Level::createStaticObject(Waypoint* wp, int type, bool jitter) — spawns one scenery / structure
 // object at the waypoint (optionally with a small random position offset).
-extern "C" int Level_createStaticObject(Level *thisptr, Waypoint *wp, int type, int jitter)
-{
+int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
 
     int x = 0, y = 0, z = 0;
@@ -3473,9 +3465,8 @@ void *Level_cs_buildBV(int race, int type, int *outWreckMesh);
 
 // Level::createShip(race, shipClass, type, wp, hostile, group) — spawns a fighter (class 0) or a
 // fixed capital ship (class 1) at the waypoint, scaling its stats to the player level/difficulty.
-extern "C" PlayerFixedObject *Level_createShip(Level *thisptr, int race, int shipClass, int type,
-                                               Waypoint *wp, int hostile, int group)
-{
+PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoint *wp, int hostile, int group) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     int camp = Status_getCurrentCampaignMission_cs();
 
@@ -3593,7 +3584,7 @@ void Level::almostKillWanted(int index) {
     objectivesA = o;
     int e = *(int *)(*(int *)(enemies + 4));
     Level_setAlwaysEnemy(*(int *)(e + 4), 0);
-    Player_resetDamageDoneByPlayer(*(int *)(*(int *)(enemies + 4) + 4));
+    ((Player *)(*(int *)(*(int *)(enemies + 4) + 4)))->resetDamageDoneByPlayer();
     int e0 = *(int *)(*(int *)(enemies + 4));
     *(unsigned char *)(*(int *)(e0 + 4) + 0x5c) = 0;
     *(unsigned char *)(e0 + 0x43) = 1;
@@ -3985,8 +3976,8 @@ void Level_umo_spawnAt(Level *self, int *kiPlayer, int profile);
 }
 
 // Level::updateMissionOrbit(int dt) — drives mission-specific enemy respawn timing.
-extern "C" void Level_updateMissionOrbit(Level *thisptr, int dt)
-{
+void Level::updateMissionOrbit(int dt) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
 
     // --- phase A: periodic far wave (only when a "boss present" flag at 0x288 is set) ---
@@ -4601,8 +4592,8 @@ void Level_rbg_buildSkyMatrix(char *self, int mode, float spin);
 }
 
 // Level::renderBG(float t) — draws the skybox, nebula, planet rings and supernova glow.
-extern "C" void Level_renderBG(Level *thisptr, float t)
-{
+void Level::renderBG(float t) {
+    Level *thisptr = this;
     char *self = (char *)thisptr;
     unsigned canvas = *g_rbg_canvas;
 

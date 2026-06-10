@@ -1,4 +1,7 @@
 #include "gof2/PlayerAsteroid.h"
+#include "gof2/Explosion.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
 
 // AEGeometry / Transform are only touched via opaque pointers plus two byte-offset
 // field reads; we forward-declare them and provide minimal accessors below rather
@@ -17,39 +20,25 @@ struct PlayerRadiusFields { char _pad[0x40]; int field_0x40; };
 extern "C" void AEGeometry_translate(AEGeometry *geometry, const Vector *delta);
 extern "C" void AEGeometry_render(AEGeometry *geometry);
 extern "C" void AEGeometry_renderBase(AEGeometry *geometry);
-extern "C" void Explosion_render(Explosion *explosion);
 extern "C" void AEGeometry_setPosition(AEGeometry *geometry, const Vector *position);
 extern "C" Vector AEGeometry_getPosition(AEGeometry *geometry);
 extern "C" void *PlayerAsteroid_complete_dtor(PlayerAsteroid *self);
-extern "C" int Player_isActive(Player *player);
-extern "C" int Player_getHitpoints(Player *player);
 extern "C" void Explosion_update(Explosion *explosion, int delta, TargetFollowCamera *camera);
-extern "C" int Explosion_isPlaying(Explosion *explosion);
-extern "C" void KIPlayer_setActive(PlayerAsteroid *self, bool active);
-extern "C" void Player_setBombForce(Player *player, float force);
 extern "C" Vector Vector_scale(const Vector *vector, float scale);
 extern "C" void AEGeometry_rotate(AEGeometry *geometry, const Vector *rotation);
-extern "C" float Player_getBombForce(Player *player);
 extern "C" Vector Player_getHitVector(Player *player);
 extern "C" Vector *Vector_assign(Vector *self, const Vector *other);
 extern "C" Vector *Vector_scale_assign(Vector *self, float scale);
-extern "C" void Explosion_translate(Explosion *explosion, const Vector *delta);
 extern "C" void Level_asteroidDied(void *level);
 extern "C" int AERandom_nextInt(void *random, int max);
 extern "C" void ArrayInt_ctor(ArrayInt *array);
 extern "C" void ArrayAdd_int(int value, ArrayInt *array);
-extern "C" void KIPlayer_createCrate(PlayerAsteroid *self, int amount);
 extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *geometry);
 extern "C" void Explosion_setMatrix(Explosion *explosion, Matrix *matrix);
 extern "C" Vector *Vector_sub_assign(Vector *self, const Vector *other);
 extern "C" Vector VectorNormalize(const Vector *vector);
-extern "C" void Player_ctor(Player *self, int hitpoints, int damage, int a, int b, int c);
-extern "C" void Player_setKIPlayer(Player *player, PlayerAsteroid *self);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transformId);
-extern "C" void Player_setRadius(Player *player, int radius);
-extern "C" void Player_setMaxHitpoints(Player *player, int hitpoints);
 extern "C" void Explosion_ctor(Explosion *self, int type);
-extern "C" void Explosion_setScaling(Explosion *self, float scaling);
 extern "C" void AEGeometry_setScaling(AEGeometry *geometry, float x, float y, float z);
 extern "C" void AEGeometry_setRotation(AEGeometry *geometry, float x, float y, float z);
 extern "C" float VectorLength(const Vector *vector);
@@ -82,7 +71,7 @@ void PlayerAsteroid::render()
         int state = this->field_0x88;
         if (state != 0) {
             if (state == 3) {
-                return Explosion_render(this->field_0x12c);
+                return ((Explosion *)(this->field_0x12c))->render();
             }
             return;
         }
@@ -191,12 +180,12 @@ void PlayerAsteroid::update(int delta)
     }
 
     Player *player = this->field_0x4;
-    if (Player_isActive(player) == 0 && this->field_0x88 == 4) {
+    if (((Player *)(player))->isActive() == 0 && this->field_0x88 == 4) {
         this->field_0x124 = 0;
         return;
     }
 
-    int hitpoints = Player_getHitpoints(player);
+    int hitpoints = ((Player *)(player))->getHitpoints();
     int state = this->field_0x88;
     if (hitpoints <= 0 && state == 0) {
         this->field_0x88 = 3;
@@ -230,7 +219,7 @@ void PlayerAsteroid::update(int delta)
                     count = AERandom_nextInt(random, 3) + 1;
                 }
                 ArrayAdd_int(count, this->field_0x50);
-                KIPlayer_createCrate(this, this->field_0x128 == 0xa4 ? 2 : 1);
+                ((KIPlayer *)(this))->createCrate(this->field_0x128 == 0xa4 ? 2 : 1);
             } else {
                 this->field_0x4c = 0;
                 this->field_0x50 = 0;
@@ -246,21 +235,20 @@ void PlayerAsteroid::update(int delta)
 
     if (state == 3) {
         Explosion_update(this->field_0x12c, delta, 0);
-        if (Explosion_isPlaying(this->field_0x12c) == 0) {
+        if (((Explosion *)(this->field_0x12c))->isPlaying() == 0) {
             this->field_0x88 = 4;
-            Player_setBombForce(player, 0.0f);
+            ((Player *)(player))->setBombForce(0.0f);
         }
     } else if (state == 4) {
-        KIPlayer_setActive(this, false);
-        Player_setBombForce(player, 0.0f);
+        ((Player *)(player))->setBombForce(0.0f);
     }
 
     int oldHitpoints = this->field_0x158;
-    hitpoints = Player_getHitpoints(player);
+    hitpoints = ((Player *)(player))->getHitpoints();
     if (hitpoints < oldHitpoints) {
         this->field_0x15c = 1;
         this->field_0x160 = 1.0f;
-        this->field_0x158 = Player_getHitpoints(player);
+        this->field_0x158 = ((Player *)(player))->getHitpoints();
     }
 
     if (this->field_0x14c != 0) {
@@ -268,7 +256,7 @@ void PlayerAsteroid::update(int delta)
         AEGeometry_rotate(this->field_0x8, &rotation);
     }
 
-    float bombForce = Player_getBombForce(player);
+    float bombForce = ((Player *)(player))->getBombForce();
     if (bombForce > 0.0f && this->field_0x88 == 3) {
         Vector hit = Player_getHitVector(player);
         Vector *hitSlot = (Vector *)((char *)this + 0x90);
@@ -285,7 +273,7 @@ void PlayerAsteroid::update(int delta)
         Vector_scale_assign(hitSlot, force);
         typedef void (*PushFn)(PlayerAsteroid *, Vector *);
         (*(PushFn *)((char *)*(void **)this + 0x20))(this, hitSlot);
-        Explosion_translate(this->field_0x12c, hitSlot);
+        ((Explosion *)(this->field_0x12c))->translate(hitSlot);
         if (this->field_0x78 != 0) {
             AEGeometry_translate(this->field_0x78, hitSlot);
         }
@@ -293,7 +281,7 @@ void PlayerAsteroid::update(int delta)
         if (nextForce < 0.01f) {
             nextForce = 0.0f;
         }
-        Player_setBombForce(player, nextForce);
+        ((Player *)(player))->setBombForce(nextForce);
     }
 }
 
@@ -325,15 +313,12 @@ __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_random;
 __attribute__((visibility("hidden"))) extern Vector *PlayerAsteroid_rotationVector;
 __attribute__((visibility("hidden"))) extern int *PlayerAsteroid_someCounter;
 
-extern "C" void KIPlayer_ctor(PlayerAsteroid *self, int playerId, int team, Player *player,
-                              AEGeometry *geometry, float x, float y, float z, int flags);
 
 PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType, int asteroidIndex,
                                const Vector &position, float scaling, int quality)
 {
     Player *player = (Player *)operator_new(0x114);
-    Player_ctor(player, 0x5dc, 0x1e, 0, 0, 0);
-    KIPlayer_ctor(this, playerId, -1, player, geometry, position.x, position.y, position.z, 0);
+    ((Player *)(player))->ctor(0x5dc, 0x1e, 0, 0, 0);
 
     this->field_0x0 = (char *)PlayerAsteroid_vtable + 8;
     this->field_0x140 = 0;
@@ -342,7 +327,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->field_0x164 = 0;
     this->field_0x168 = 0;
     this->field_0x16c = 0;
-    Player_setKIPlayer(this->field_0x4, this);
+    ((Player *)(this->field_0x4))->setKIPlayer(this);
 
     this->field_0x124 = 0;
     this->field_0x128 = asteroidIndex;
@@ -352,16 +337,16 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     Player *ownedPlayer = this->field_0x4;
     void *transform = PaintCanvas_TransformGetTransform(*(void **)PlayerAsteroid_canvas,
                                                         ((AEGeometryFields *)geometry)->field_0xc);
-    Player_setRadius(ownedPlayer, (int)(((TransformFields *)transform)->field_0xe0 * scaling * 0.5f));
-    Player_setMaxHitpoints(this->field_0x4, (int)(scaling * 100.0f + 30.0f));
-    int hitpoints = Player_getHitpoints(this->field_0x4);
+    ((Player *)(ownedPlayer))->setRadius((int)(((TransformFields *)transform)->field_0xe0 * scaling * 0.5f));
+    ((Player *)(this->field_0x4))->setMaxHitpoints((int)(scaling * 100.0f + 30.0f));
+    int hitpoints = ((Player *)(this->field_0x4))->getHitpoints();
     this->field_0x13c = quality > 3;
     this->field_0x158 = hitpoints;
 
     Explosion *explosion = (Explosion *)operator_new(0x68);
     Explosion_ctor(explosion, explosionType + 2);
     this->field_0x12c = explosion;
-    Explosion_setScaling(explosion, scaling);
+    ((Explosion *)(explosion))->setScaling(scaling);
     AEGeometry_setScaling(this->field_0x8, scaling, scaling, scaling);
     this->setPosition(position);
 
@@ -420,7 +405,7 @@ __attribute__((visibility("hidden"))) extern GeometryPositionFn PlayerAsteroid_g
 bool PlayerAsteroid::collide(float x, float y, float z)
 {
     PlayerAsteroid *self = this;
-    if (Player_getHitpoints(self->field_0x4) > 0) {
+    if (((Player *)(self->field_0x4))->getHitpoints() > 0) {
         GeometryPositionFn getPosition = PlayerAsteroid_geometryPosition;
         float px = getPosition(self->field_0x8).x;
         float py = getPosition(self->field_0x8).y;

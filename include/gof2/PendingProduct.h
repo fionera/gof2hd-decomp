@@ -28,6 +28,11 @@ int BluePrint_getIndex(BluePrint *bp);
 void BluePrint_getStationName(String *out, BluePrint *bp);
 int BluePrint_getStationIndex(BluePrint *bp);
 int BluePrint_getQuantity(BluePrint *bp);
+
+    // ---- methods (converted from free functions) ----
+    PendingProduct * ctor_BluePrint(BluePrint *bp);
+    PendingProduct * ctor_fields(int blueprintIndex, const String *stationName, int stationIndex, int quantity);
+    void dtor();
 }
 
 struct PendingProduct {

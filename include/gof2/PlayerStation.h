@@ -72,5 +72,8 @@ struct PlayerStation {
     bool collide(float x, float y, float z);
     void update(int delta);
     void translate(float x, float y, float z);
+
+    // ---- methods (converted from free functions) ----
+    void deleting_dtor();
 };
 #endif

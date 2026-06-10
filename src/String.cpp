@@ -31,8 +31,8 @@ void  String_assign_op(String *self, String *src);
 
 // ---- GetAEChar_72752.cpp ----
 // AbyssEngine::String::GetAEChar() const - allocate an 8-bit (low-byte) copy of the wide buffer.
-extern "C" char *String_GetAEChar(String *self)
-{
+char * String::GetAEChar() {
+    String *self = this;
     unsigned int len = self->s.size();
     unsigned int n = len + 1;
     char *out = (char *)operator_new(n);
@@ -44,15 +44,15 @@ extern "C" char *String_GetAEChar(String *self)
 
 // ---- ReplaceString_73530.cpp ----
 // AbyssEngine::String::ReplaceString(find, repl) - replace each occurrence of `find` with `repl`.
-extern "C" void String_ReplaceString(String *self, String *find, String *repl)
-{
+void String::ReplaceString(String *find, String *repl) {
+    String *self = this;
     if (self->s.empty() || find->s.empty())
         return;
 
     std::u16string acc;
     unsigned int pos = 0;
     int idx;
-    while ((idx = (int)String_IndexOf_from(self, pos, find)) != -1) {
+    while ((idx = (int)((String *)(self))->IndexOf_from(pos, find)) != -1) {
         acc.append(self->s, pos, (unsigned int)idx - pos);
         acc.append(repl->s);
         pos = (unsigned int)find->s.size() + idx;
@@ -67,8 +67,8 @@ extern "C" void String_ReplaceString(String *self, String *find, String *repl)
 
 // ---- ReplaceChar_73070.cpp ----
 // AbyssEngine::String::ReplaceChar(char from, char to) - replace every matching code unit.
-extern "C" void String_ReplaceChar(String *self, char from, char to)
-{
+void String::ReplaceChar(char from, char to) {
+    String *self = this;
     for (size_t i = 0; i < self->s.size(); i++)
         if ((unsigned int)self->s[i] == (unsigned int)(int)from)
             self->s[i] = (char16_t)(short)to;
@@ -76,27 +76,27 @@ extern "C" void String_ReplaceChar(String *self, char from, char to)
 
 // ---- String_6e484.cpp ----
 // AbyssEngine::String::String(char) - build a string from a single character's numeric value.
-extern "C" String *String_ctor_charval(String *self, char c)
-{
+String * String::ctor_charval(char c) {
+    String *self = this;
     self->s.clear();
-    String_Set_longlong(self, (long long)c);
+    ((String *)(self))->Set_longlong((long long)c);
     return self;
 }
 
 // ---- operator___72958.cpp ----
 // AbyssEngine::String::operator+=(float const&) - append the formatted form of a float.
-extern "C" String *String_addAssign_float(String *self, const float *v)
-{
+String * String::addAssign_float(const float *v) {
+    String *self = this;
     String tmp;
-    String_ctor_float(&tmp, *v);
+    ((String *)(&tmp))->ctor_float(*v);
     self->s.append(tmp.s);
     return self;
 }
 
 // ---- Reverse_722e8.cpp ----
 // AbyssEngine::String::Reverse() - reverse the code units (only for language id 9 / RTL).
-extern "C" void String_Reverse(String *self)
-{
+void String::Reverse() {
+    String *self = this;
     if (!self->s.empty() && GameText_getLanguage() == 9) {
         std::u16string r(self->s.rbegin(), self->s.rend());
         self->s = r;
@@ -105,17 +105,17 @@ extern "C" void String_Reverse(String *self)
 
 // ---- String_737b4.cpp ----
 // AbyssEngine::String::String(int) - decimal string of an int.
-extern "C" String *String_ctor_int(String *self, int v)
-{
+String * String::ctor_int(int v) {
+    String *self = this;
     self->s.clear();
-    String_Set_longlong(self, (long long)v);
+    ((String *)(self))->Set_longlong((long long)v);
     return self;
 }
 
 // ---- ToUpperCase_730a4.cpp ----
 // AbyssEngine::String::ToUpperCase() - uppercase ASCII plus a CP-1252 accented range.
-extern "C" void String_ToUpperCase(String *self)
-{
+void String::ToUpperCase() {
+    String *self = this;
     for (size_t i = 0; i < self->s.size(); i++) {
         short c = (short)self->s[i];
         unsigned short u = (unsigned short)(c - 0x61);
@@ -148,9 +148,9 @@ extern "C" void String_ToUpperCase(String *self)
 
 // ---- ValueOf_727bc.cpp ----
 // AbyssEngine::String::ValueOf() - parse the string as an integer.
-extern "C" int String_ValueOf(String *self)
-{
-    char *bytes = String_GetAEChar(self);
+int String::ValueOf() {
+    String *self = this;
+    char *bytes = ((String *)(self))->GetAEChar();
     int v = atoi(bytes);
     operator_delete__(bytes);
     return v;
@@ -158,25 +158,25 @@ extern "C" int String_ValueOf(String *self)
 
 // ---- Split_7322c.cpp ----
 // AbyssEngine::String::Split(sep) -> Array<String*>* (null if no splits).
-extern "C" void *String_Split(String *self, String *sep)
-{
+void * String::Split(String *sep) {
+    String *self = this;
     if (!self->s.empty() && !sep->s.empty()) {
         void *arr = operator_new(0xc);
         String_ArrayString_ctor(arr);
 
         unsigned int pos = 0;
         unsigned int idx;
-        while ((idx = String_IndexOf_from(self, pos, sep)) != 0xffffffff) {
+        while ((idx = ((String *)(self))->IndexOf_from(pos, sep)) != 0xffffffff) {
             if (pos < idx) {
                 String *piece = (String *)operator_new(0xc);
-                String_SubString(piece, self, pos, idx);
+                ((String *)(piece))->SubString(self, pos, idx);
                 String_ArrayString_add(piece, arr);
             }
             pos = (unsigned int)sep->s.size() + idx;
         }
         if (pos != 0 && pos < self->s.size()) {
             String *piece = (String *)operator_new(0xc);
-            String_SubString(piece, self, pos, self->s.size());
+            ((String *)(piece))->SubString(self, pos, self->s.size());
             String_ArrayString_add(piece, arr);
         }
 
@@ -195,8 +195,8 @@ extern "C" void *String_Split(String *self, String *sep)
 static char16_t g_String_nullChar = 0;
 
 // AbyssEngine::String::operator[](int) - pointer to the index-th code unit, or &NUL on OOB.
-extern "C" uint16_t *String_index(String *self, int i)
-{
+uint16_t * String::index(int i) {
+    String *self = this;
     if (i < 0 || (unsigned int)i >= self->s.size())
         return (uint16_t *)&g_String_nullChar;
     return (uint16_t *)&self->s[i];
@@ -204,23 +204,23 @@ extern "C" uint16_t *String_index(String *self, int i)
 
 // ---- String_72488.cpp ----
 // AbyssEngine::String::String(char const*, bool reverse)
-extern "C" String *String_ctor_char(String *self, const char *s, bool reverse)
-{
+String * String::ctor_char(const char *s, bool reverse) {
+    String *self = this;
     self->s.clear();
-    String_Set_char(self, s);
+    ((String *)(self))->Set_char(s);
     if (reverse)
-        String_Reverse(self);
+        ((String *)(self))->Reverse();
     return self;
 }
 
 // ---- Set_72a0c.cpp ----
 // AbyssEngine::String::Set(long long) - format a signed 64-bit integer as a decimal string.
-extern "C" void String_Set_longlong(String *self, long long v)
-{
+void String::Set_longlong(long long v) {
+    String *self = this;
     self->s.clear();
 
     if (v == 0) {
-        String_Set_char(self, "");
+        ((String *)(self))->Set_char("");
         return;
     }
 
@@ -248,18 +248,18 @@ extern "C" void String_Set_longlong(String *self, long long v)
 
 // ---- String_72564.cpp ----
 // AbyssEngine::String::String(AbyssEngine::String const&, bool reverse) - copy ctor.
-extern "C" String *String_ctor_copy(String *self, String *other, bool reverse)
-{
+String * String::ctor_copy(String *other, bool reverse) {
+    String *self = this;
     self->s = other->s;
     if (reverse)
-        String_Reverse(self);
+        ((String *)(self))->Reverse();
     return self;
 }
 
 // ---- StrLen_729e0.cpp ----
 // AbyssEngine::String::StrLen(char const*) - byte length of a NUL-terminated char string.
-extern "C" int String_StrLen_char(String *self, const char *s)
-{
+int String::StrLen_char(const char *s) {
+    String *self = this;
     int n = 0;
     while (s[n] != '\0')
         n++;
@@ -268,25 +268,25 @@ extern "C" int String_StrLen_char(String *self, const char *s)
 
 // ---- operator___72928.cpp ----
 // AbyssEngine::String::operator+=(int const&) - sign-extend to 64-bit and append.
-extern "C" String *String_addAssign_int(String *self, const int *v)
-{
+String * String::addAssign_int(const int *v) {
+    String *self = this;
     long long ext = (long long)*v;
-    return String_addAssign_longlong(self, &ext);
+    return ((String *)(self))->addAssign_longlong(&ext);
 }
 
 // ---- String_729bc.cpp ----
 // AbyssEngine::String::String(float) - formatted string of a float.
-extern "C" String *String_ctor_float(String *self, float v)
-{
+String * String::ctor_float(float v) {
+    String *self = this;
     self->s.clear();
-    String_Set_float(self, v);
+    ((String *)(self))->Set_float(v);
     return self;
 }
 
 // ---- Compare_72fc0.cpp ----
 // AbyssEngine::String::Compare(char const*) - compare against an 8-bit string.
-extern "C" unsigned int String_Compare_char(String *self, const char *s)
-{
+unsigned int String::Compare_char(const char *s) {
+    String *self = this;
     if (self->s.empty())
         return 1;
 
@@ -315,8 +315,8 @@ done:
 
 // ---- Set_724b4.cpp ----
 // AbyssEngine::String::Set(char const*) - replace contents from an 8-bit string (widened to 16-bit).
-extern "C" void String_Set_char(String *self, const char *s)
-{
+void String::Set_char(const char *s) {
+    String *self = this;
     self->s.clear();
     if (s == 0)
         return;
@@ -327,8 +327,8 @@ extern "C" void String_Set_char(String *self, const char *s)
 // ---- Compare_72f80.cpp ----
 // AbyssEngine::String::Compare(AbyssEngine::String const&)
 // Returns 0 when equal; a small signed value otherwise (0xff sentinel for length mismatch).
-extern "C" int String_Compare_str(String *self, String *other)
-{
+int String::Compare_str(String *other) {
+    String *self = this;
     short result;
     if (other->s.size() == self->s.size()) {
         size_t i = 0;
@@ -365,16 +365,16 @@ extern "C" int String_Compare_str(String *self, String *other)
 
 // ---- _String_72594.cpp ----
 // AbyssEngine::String::~String() - clear contents.
-extern "C" String *String_dtor(String *self)
-{
+String * String::dtor() {
+    String *self = this;
     self->s.clear();
     return self;
 }
 
 // ---- Trim_731a8.cpp ----
 // AbyssEngine::String::Trim() - strip leading/trailing spaces and tabs.
-extern "C" void String_Trim(String *self)
-{
+void String::Trim() {
+    String *self = this;
     size_t len = self->s.size();
     if (len == 0)
         return;
@@ -411,8 +411,8 @@ extern "C" int String_GetStringLength(const char *s)
 
 // ---- ToLowerCase_73128.cpp ----
 // AbyssEngine::String::ToLowerCase() - lowercase ASCII plus a CP-1252 accented range.
-extern "C" void String_ToLowerCase(String *self)
-{
+void String::ToLowerCase() {
+    String *self = this;
     for (size_t i = 0; i < self->s.size(); i++) {
         short c = (short)self->s[i];
         unsigned short u = (unsigned short)(c - 0x41);
@@ -447,23 +447,23 @@ extern "C" void String_ToLowerCase(String *self)
 
 // ---- operator__727a8.cpp ----
 // AbyssEngine::String::operator=(AbyssEngine::String const&)
-extern "C" String *String_assign(String *self, String *other)
-{
+String * String::assign(String *other) {
+    String *self = this;
     self->s = other->s;
     return self;
 }
 
 // ---- String_72398.cpp ----
 // AbyssEngine::String::String() - default constructor: empty string.
-extern "C" void String_ctor(String *self)
-{
+void String::ctor() {
+    String *self = this;
     self->s.clear();
 }
 
 // ---- Set_723dc.cpp ----
 // AbyssEngine::String::Set(unsigned short const*) - replace contents from a wide string.
-extern "C" void String_Set_wchar(String *self, const uint16_t *s)
-{
+void String::Set_wchar(const uint16_t *s) {
+    String *self = this;
     self->s.clear();
     if (s == 0)
         return;
@@ -474,8 +474,8 @@ extern "C" void String_Set_wchar(String *self, const uint16_t *s)
 // ---- IndexOf_73004.cpp ----
 // AbyssEngine::String::IndexOf(unsigned int start, AbyssEngine::String const&)
 // Return the first index >= start where needle occurs, or 0xffffffff if not found.
-extern "C" unsigned int String_IndexOf_from(String *self, unsigned int start, String *needle)
-{
+unsigned int String::IndexOf_from(unsigned int start, String *needle) {
+    String *self = this;
     unsigned int slen = (unsigned int)self->s.size();
     unsigned int nlen = (unsigned int)needle->s.size();
     while (start < slen && nlen <= slen - start) {
@@ -496,31 +496,31 @@ extern "C" unsigned int String_IndexOf_from(String *self, unsigned int start, St
 
 // ---- operator___727d8.cpp ----
 // AbyssEngine::String::operator+=(AbyssEngine::String const&)
-extern "C" String *String_addAssign_str(String *self, String *other)
-{
+String * String::addAssign_str(String *other) {
+    String *self = this;
     self->s.append(other->s);
     return self;
 }
 
 // ---- ConvertFromUTF8_7270c.cpp ----
 // AbyssEngine::String::ConvertFromUTF8() - reinterpret the stored bytes as UTF-8 and re-store.
-extern "C" void String_ConvertFromUTF8(String *self)
-{
+void String::ConvertFromUTF8() {
+    String *self = this;
     if (self->s.empty())
         return;
 
-    char *bytes = String_GetAEChar(self);
+    char *bytes = ((String *)(self))->GetAEChar();
     uint16_t *wide = String_getWCharFromUtf8(bytes, (int)self->s.size());
-    String_Set_wchar(self, wide);
+    ((String *)(self))->Set_wchar(wide);
     operator_delete__(bytes);
     operator_delete__(wide);
 }
 
 // ---- _String_725b8.cpp ----
 // AbyssEngine::String::~String() - deleting destructor: destroy then free the object.
-extern "C" void String_dtor_del(String *self)
-{
-    String_dtor(self);
+void String::dtor_del() {
+    String *self = this;
+    ((String *)(self))->dtor();
     operator_delete(self);
 }
 
@@ -532,8 +532,8 @@ static const char kSlash[] = "</";
 
 // AbyssEngine::String::SplitTags(AbyssEngine::String tag)
 // Wrap `tag` as "<tag>", split this string on it, ending each run at the matching "</".
-extern "C" void String_SplitTags(String *self, String *tag)
-{
+void String::SplitTags(String *tag) {
+    String *self = this;
     if (self->s.empty() || tag->s.empty())
         return;
 
@@ -552,21 +552,21 @@ extern "C" void String_SplitTags(String *self, String *tag)
     int endPos = 0;
     unsigned int pos = 0;
     unsigned int idx;
-    while ((idx = String_IndexOf_from(self, pos, tag)) != 0xffffffff) {
+    while ((idx = ((String *)(self))->IndexOf_from(pos, tag)) != 0xffffffff) {
         if (pos <= idx) {
             String *piece = (String *)operator_new(0xc);
-            String_SubString(piece, self, pos, idx);
+            ((String *)(piece))->SubString(self, pos, idx);
             String_ArrayString_add(piece, arr);
 
             unsigned int afterTag = (unsigned int)tag->s.size() + idx;
             String closer;
-            String_ctor_char(&closer, kSlash, false);
-            endPos = (int)String_IndexOf_from(self, afterTag, &closer);
+            ((String *)(&closer))->ctor_char(kSlash, false);
+            endPos = (int)((String *)(self))->IndexOf_from(afterTag, &closer);
             if (endPos == -1)
                 goto done;
 
             String *piece2 = (String *)operator_new(0xc);
-            String_SubString(piece2, self, afterTag, (unsigned int)endPos);
+            ((String *)(piece2))->SubString(self, afterTag, (unsigned int)endPos);
             String_ArrayString_add(piece2, arr);
         }
         pos = endPos + 1;
@@ -574,7 +574,7 @@ extern "C" void String_SplitTags(String *self, String *tag)
 
     if (pos != 0 && pos < self->s.size()) {
         String *piece = (String *)operator_new(0xc);
-        String_SubString(piece, self, pos, self->s.size());
+        ((String *)(piece))->SubString(self, pos, self->s.size());
         String_ArrayString_add(piece, arr);
     }
 
@@ -588,10 +588,10 @@ done:
 
 // ---- operator___7289c.cpp ----
 // AbyssEngine::String::operator+=(long long const&) - append the decimal form of a 64-bit value.
-extern "C" String *String_addAssign_longlong(String *self, const long long *v)
-{
+String * String::addAssign_longlong(const long long *v) {
+    String *self = this;
     String tmp;
-    String_ctor_longlong(&tmp, *v);
+    ((String *)(&tmp))->ctor_longlong(*v);
     self->s.append(tmp.s);
     return self;
 }
@@ -604,8 +604,8 @@ static const char kDot[]     = ".";
 static const char kExp[]     = "E";
 
 // AbyssEngine::String::Set(float) - format a float into this string.
-extern "C" void String_Set_float(String *self, float v)
-{
+void String::Set_float(float v) {
+    String *self = this;
     int exp = 0;
     int neg = 0;
     uint16_t *digitsW = String_computeFloatString(v, 10, &exp, &neg);
@@ -645,8 +645,8 @@ extern "C" void String_Set_float(String *self, float v)
 
 // ---- StrLen_729f0.cpp ----
 // AbyssEngine::String::StrLen(unsigned short const*) - length of a NUL-terminated wide string.
-extern "C" int String_StrLen_wchar(String *self, const uint16_t *s)
-{
+int String::StrLen_wchar(const uint16_t *s) {
+    String *self = this;
     if (s == 0)
         return 0;
     int n = 0;
@@ -657,19 +657,19 @@ extern "C" int String_StrLen_wchar(String *self, const uint16_t *s)
 
 // ---- String_723b0.cpp ----
 // AbyssEngine::String::String(unsigned short const*, bool reverse)
-extern "C" String *String_ctor_wchar(String *self, const uint16_t *s, bool reverse)
-{
+String * String::ctor_wchar(const uint16_t *s, bool reverse) {
+    String *self = this;
     self->s.clear();
-    String_Set_wchar(self, s);
+    ((String *)(self))->Set_wchar(s);
     if (reverse)
-        String_Reverse(self);
+        ((String *)(self))->Reverse();
     return self;
 }
 
 // ---- operator___72850.cpp ----
 // AbyssEngine::String::operator+=(char const&) - append a single character.
-extern "C" String *String_addAssign_char(String *self, const char *c)
-{
+String * String::addAssign_char(const char *c) {
+    String *self = this;
     self->s.push_back((char16_t)*(const unsigned char *)c);
     return self;
 }
@@ -677,8 +677,8 @@ extern "C" String *String_addAssign_char(String *self, const char *c)
 // ---- SubString_72ed8.cpp ----
 // AbyssEngine::String::SubString(unsigned int start, unsigned int end)
 // out = self[start..end); empty string when end <= start.
-extern "C" void String_SubString(String *out, String *self, unsigned int start, unsigned int end)
-{
+void String::SubString(String *self, unsigned int start, unsigned int end) {
+    String *out = this;
     new (&out->s) std::u16string();   // placement-init when out came from raw operator_new
     if (start < end && start < self->s.size()) {
         unsigned int hi = end > self->s.size() ? (unsigned int)self->s.size() : end;
@@ -763,24 +763,24 @@ extern "C" uint16_t *String_getWCharFromUtf8(char *s, int len)
 
 // ---- IndexOf_73068.cpp ----
 // AbyssEngine::String::IndexOf(AbyssEngine::String const&) - search from offset 0.
-extern "C" unsigned int String_IndexOf(String *self, String *needle)
-{
-    return String_IndexOf_from(self, 0, needle);
+unsigned int String::IndexOf(String *needle) {
+    String *self = this;
+    return ((String *)(self))->IndexOf_from(0, needle);
 }
 
 // ---- String_72904.cpp ----
 // AbyssEngine::String::String(long long) - decimal string of a 64-bit value.
-extern "C" String *String_ctor_longlong(String *self, long long v)
-{
+String * String::ctor_longlong(long long v) {
+    String *self = this;
     self->s.clear();
-    String_Set_longlong(self, v);
+    ((String *)(self))->Set_longlong(v);
     return self;
 }
 
 // ---- operator___72788.cpp ----
 // AbyssEngine::String::operator[](int) const - pointer to the index-th code unit, or &NUL on OOB.
-extern "C" uint16_t *String_index_const(String *self, int i)
-{
+uint16_t * String::index_const(int i) {
+    String *self = this;
     if (i < 0 || (unsigned int)i >= self->s.size())
         return (uint16_t *)&g_String_nullChar;
     return (uint16_t *)&self->s[i];
@@ -788,8 +788,8 @@ extern "C" uint16_t *String_index_const(String *self, int i)
 
 // ---- PrintOut_73644.cpp ----
 // AbyssEngine::String::PrintOut() - print the string via the platform helper.
-extern "C" void String_PrintOut(String *self)
-{
-    char *bytes = String_GetAEChar(self);
+void String::PrintOut() {
+    String *self = this;
+    char *bytes = ((String *)(self))->GetAEChar();
     String_printImpl(bytes);
 }

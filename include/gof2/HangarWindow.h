@@ -20,7 +20,36 @@ struct Station;
 // AbyssEngine::AEMath::Vector - 3 floats.
 namespace AbyssEngine { namespace AEMath {
 
-} }
+} 
+    // ---- methods (converted from free functions) ----
+    void OnTouchBegin(int touch, int coord);
+    void OnTouchEnd(int touch, int coord);
+    unsigned int OnTouchMove(int touch, int coord);
+    void autoEquipSecondaryWeapons(int row);
+    void ctor();
+    bool currentItemIsHighlighted();
+    void demountItem(void *item, int slot);
+    int getCurrentTab();
+    float getRelativeScrollHeight();
+    float getRelativeScrollStartPos();
+    void hideMessage();
+    int highlightItem(void *item);
+    void initialize();
+    bool isInSpecialMode();
+    bool listMode();
+    void mountItem(void *item);
+    bool readyToClose();
+    void refreshCargoAvailabilityForBlueprints();
+    void refreshCurrentContentHeight();
+    void render();
+    void render3D();
+    void selectItem(void *item);
+    void setSellMode();
+    void showCreditsBuyWindow();
+    void showFreeCreditsWindow();
+    void transaction(bool buy);
+    void update(int delta);
+}
 typedef AbyssEngine::AEMath::Vector Vector;
 
 // 16-byte block used for NEON vld1/vst1.32 field copies in the constructor.

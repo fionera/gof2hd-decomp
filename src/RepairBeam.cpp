@@ -61,8 +61,8 @@ extern "C" void RB___stack_chk_fail();
 // ---- render_a7a48.cpp ----
 // RepairBeam::render() — render each beam geometry whose target id slot is active (!= -1).
 
-extern "C" void RepairBeam_render(RepairBeam *self)
-{
+void RepairBeam::render() {
+    RepairBeam *self = this;
     int **targetIds = (int **)self->field_0x14;
     for (unsigned i = 0; i < (unsigned)targetIds[0][0]; i = i + 1) {
         if (targetIds[1][i] != -1) {
@@ -76,8 +76,8 @@ extern "C" void RepairBeam_render(RepairBeam *self)
 // RepairBeam::RepairBeam(int shipIndex, int sort) — builds the per-target geometry/id/charge
 // arrays sized to the player's equipment-of-sort attribute count.
 
-extern "C" RepairBeam *RepairBeam_ctor(RepairBeam *self, int shipIndex, int sort)
-{
+RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
+    RepairBeam *self = this;
     self->field_0x1c = sort;
     self->field_0x0 = shipIndex;
     self->field_0x4 = 0;
@@ -139,8 +139,8 @@ extern "C" RepairBeam *RepairBeam_ctor(RepairBeam *self, int shipIndex, int sort
 // RepairBeam::~RepairBeam() — releases the contained AEGeometry* array (also releasing the
 // pointed-to objects) and the int/float arrays, nulling each handle.
 
-extern "C" RepairBeam *RepairBeam_dtor(RepairBeam *self)
-{
+RepairBeam * RepairBeam::dtor() {
+    RepairBeam *self = this;
     void *geoms = self->field_0x10;
     if (geoms != 0) {
         RepairBeam_ArrayReleaseClasses_Geo(geoms);
@@ -189,8 +189,8 @@ extern "C" __attribute__((visibility("hidden"))) char **g_RB_sndFlag;   // gatin
 static inline int *targetIds(RepairBeam *self) { return (int *)self->field_0x14; }
 static inline int targetCount(RepairBeam *self) { return ((int **)((char *)self + 0x14))[0][0]; }
 
-extern "C" void RepairBeam_update(RepairBeam *self, int dt, void *level, void *hud)
-{
+void RepairBeam::update(int dt, void *level, void *hud) {
+    RepairBeam *self = this;
     int *canary = *g_RB_canary;
     int saved = *canary;
 

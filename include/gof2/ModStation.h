@@ -15,7 +15,33 @@ struct ChoiceWindow;
 struct RecordHandler;
 
 // ---- tiny offset-cast helpers -------------------------------------------------
-static inline char*           B (void* p, int off) { return (char*)p + off; }
+static inline char*           B (void* p, int off) { return (char*)p + off; 
+    // ---- methods (converted from free functions) ----
+    void ModStation();
+    void OnInitialize();
+    void OnKeyPress(long long key);
+    void OnRelease();
+    void OnRender2D();
+    void OnRender3D();
+    void OnSuspend();
+    void OnTouchBegin(int x, int y, void *touch);
+    void OnTouchEnd(int param_1, int param_2, void *param_3);
+    void OnTouchMove(int x, int y, void *touch);
+    void OnUpdate();
+    void addAchievement(int param_1, int param_2);
+    void autosave();
+    void checkHints();
+    void checkMedals();
+    void checkPendingProducts();
+    void dtor();
+    ModStation * dtor_inner();
+    void leaveStation();
+    void resetIdleCamForHangar();
+    void setGameLoaded();
+    void showCBSMessage();
+    void showDlcMenu();
+    void showMapWindow();
+}
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
 static inline unsigned int&   U (void* p, int off) { return *(unsigned int*)((char*)p + off); }
 static inline float&          F (void* p, int off) { return *(float*)((char*)p + off); }

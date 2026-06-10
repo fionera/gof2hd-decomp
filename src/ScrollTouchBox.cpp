@@ -1,10 +1,10 @@
 #include "gof2/ScrollTouchBox.h"
+#include "gof2/String.h"
 
 
 extern "C" void ArrayReleaseClasses_StringPtr(void *self);
 extern "C" void *Array_StringPtr_dtor(void *self);
 extern "C" void String_ctor_string(void *self, String *src, bool copy);
-extern "C" void String_dtor(void *self);
 extern "C" void ScrollTouchBox_setText2(ScrollTouchBox *self, String *text, int font);
 extern "C" int GameText_getLanguage();
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
@@ -130,7 +130,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text)
 
     String_ctor_string(&tmp, &text, false);
     ScrollTouchBox_setText2(this, &tmp, **g_ScrollTouchBox_defaultWidth_13570c);
-    String_dtor(&tmp);
+    ((String *)(&tmp))->dtor();
 }
 
 // ---- update_135998.cpp ----

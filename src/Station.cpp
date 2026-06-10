@@ -1,11 +1,12 @@
 #include "gof2/Station.h"
+#include "gof2/Agent.h"
+#include "gof2/String.h"
 
 
 extern "C" void *Station_operator_new(uint32_t sz);
 extern "C" void Array_Item_ctor(void *arr);
 extern "C" void ArraySetLength_Item(uint32_t len, void *arr);
 extern "C" void *Item_clone(Item *item);
-extern "C" uint8_t Station_isDiscovered(Station *self);
 extern "C" void Status_visitStation(Status *s);
 extern "C" void Galaxy_setSystemVisited(Galaxy *g, int systemId);
 extern "C" void String_copy_ctor(void *out, void *src, bool);
@@ -16,8 +17,6 @@ extern "C" void Station_arrayRemoveShip(Ship *ship, void *ships);
 extern "C" char *Galaxy_getVisited(Galaxy *g);
 extern "C" int Item_equals(Item *a, Item *b);
 extern "C" int Item_getAmount(Item *item);
-extern "C" void String_dtor(void *s);
-extern "C" Station *Station_ctor(Station *self, void *name, int p3, int p4, int p5, int p6);
 extern "C" void ArrayReleaseClasses_Ship(void *arr) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Item(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Ship_dtor(void *arr) __attribute__((nothrow));
@@ -27,7 +26,6 @@ extern "C" void Station_operator_delete(void *p) __attribute__((nothrow));
 extern "C" Mission *Status_getCampaignMission(Status *s) __attribute__((nothrow));
 extern "C" Mission *Status_getFreelanceMission(Status *s) __attribute__((nothrow));
 extern "C" Agent *Mission_getAgent(Mission *m) __attribute__((nothrow));
-extern "C" int Agent_isStoryAgent(Agent *a) __attribute__((nothrow));
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 extern "C" void Station_baseDtor(void *self) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Agent(void *arr) __attribute__((nothrow));
@@ -38,8 +36,8 @@ extern "C" int Ship_equals(Ship *a, Ship *b);
 // ---- removeShips_a6c74.cpp ----
 struct Ship;
 
-extern "C" void Station_removeShips(Station *self)
-{
+void Station::removeShips() {
+    Station *self = this;
     void *arr = self->field_0x2c;
     if (arr != 0) {
         ArrayReleaseClasses_Ship(arr);
@@ -55,8 +53,8 @@ static const int kHiddenBlueprints[5] = { 0, 0, 0, 0, 0 };
 extern char **const gHiddenBlueprintSingleton __attribute__((visibility("hidden")));
 
 // Station::stationHasHiddenBlueprint(bool) — this in r0, flag in r1.
-extern "C" uint32_t Station_stationHasHiddenBlueprint(Station *self, bool ignoreFound)
-{
+uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
+    Station *self = this;
     char *base = *gHiddenBlueprintSingleton;
     uint32_t i = 0;
     while (true) {
@@ -78,8 +76,8 @@ static const int kPirateStations[4] = { 0, 0, 0, 0 };
 extern char **const gPirateBaseSingleton __attribute__((visibility("hidden")));
 
 // Station::stationHasPirateBase() — this in r0.
-extern "C" uint32_t Station_stationHasPirateBase(Station *self)
-{
+uint32_t Station::stationHasPirateBase() {
+    Station *self = this;
     char *base = *gPirateBaseSingleton;       // r12 = *(*(global))
     uint32_t i = 0;
     while (true) {
@@ -98,8 +96,8 @@ extern "C" uint32_t Station_stationHasPirateBase(Station *self)
 struct Item;
 
 // Station::setItems(Array<Item*>*, bool) — this in r0, items in r1, deep in r2.
-extern "C" void Station_setItems(Station *self, uint32_t *items, bool deep)
-{
+void Station::setItems(uint32_t *items, bool deep) {
+    Station *self = this;
     void *old = self->field_0x28;
     if (old != 0)
         Station_operator_delete(Array_Item_dtor(old));
@@ -119,8 +117,8 @@ extern "C" void Station_setItems(Station *self, uint32_t *items, bool deep)
 }
 
 // ---- equals_a70ec.cpp ----
-extern "C" bool Station_equals(Station *self, Station *other)
-{
+bool Station::equals(Station *other) {
+    Station *self = this;
     if (other != 0)
         return self->field_0xc == other->field_0xc;
     return false;
@@ -134,9 +132,9 @@ struct Galaxy;
 extern Status **const gStatusSingleton __attribute__((visibility("hidden")));
 extern Galaxy **const gGalaxyVisit __attribute__((visibility("hidden")));
 
-extern "C" void Station_visit(Station *self)
-{
-    if (Station_isDiscovered(self) != 0)
+void Station::visit() {
+    Station *self = this;
+    if (((Station *)(self))->isDiscovered() != 0)
         return;
     self->field_0x1c = 1;
     Status_visitStation(*gStatusSingleton);
@@ -147,8 +145,8 @@ extern "C" void Station_visit(Station *self)
 struct RetStr { uint32_t a, b, c; };
 
 // Station::getName() -> String by value (sret in r0, this in r1).
-extern "C" RetStr Station_getName(Station *self)
-{
+RetStr Station::getName() {
+    Station *self = this;
     RetStr r;
     String_copy_ctor(&r, self, false);
     return r;
@@ -158,8 +156,8 @@ extern "C" RetStr Station_getName(Station *self)
 struct Ship;
 
 // Station::setShips(Array<Ship*>*, bool) — this in r0, ships in r1, deep in r2.
-extern "C" void Station_setShips(Station *self, uint32_t *ships, bool deep)
-{
+void Station::setShips(uint32_t *ships, bool deep) {
+    Station *self = this;
     void *old = self->field_0x2c;
     if (old != 0) {
         ArrayReleaseClasses_Ship(old);
@@ -186,8 +184,8 @@ extern "C" void Station_setShips(Station *self, uint32_t *ships, bool deep)
 // Global slot holding a pointer P; *P -> Q; *(Q+0x80) is the compared value.
 extern int **const gAlienAttackSingleton __attribute__((visibility("hidden")));
 
-extern "C" bool Station_isAttackedByAliens(Station *self)
-{
+bool Station::isAttackedByAliens() {
+    Station *self = this;
     return self->field_0xc == *(int *)((char *)(*gAlienAttackSingleton) + 0x80);
 }
 
@@ -196,8 +194,8 @@ struct Ship;
 // ArrayRemove<Ship*>(Ship* ship, Array* ships) — tail-called veneer.
 
 // Station::removeShip(Ship*) — this in r0, ship in r1.
-extern "C" void Station_removeShip(Station *self, Ship *ship)
-{
+void Station::removeShip(Ship *ship) {
+    Station *self = this;
     void *ships = self->field_0x2c;
     if (ships == 0)
         return;
@@ -205,8 +203,8 @@ extern "C" void Station_removeShip(Station *self, Ship *ship)
 }
 
 // ---- getHiddenBlueprintIndex_a7050.cpp ----
-extern "C" uint32_t Station_getHiddenBlueprintIndex(Station *self)
-{
+uint32_t Station::getHiddenBlueprintIndex() {
+    Station *self = this;
     uint32_t i = 0;
     while (true) {
         if (i > 4)
@@ -223,27 +221,27 @@ struct Galaxy;
 // Global slot -> P; *P -> the Galaxy* singleton.
 extern Galaxy **const gGalaxySingleton __attribute__((visibility("hidden")));
 
-extern "C" uint8_t Station_isDiscovered(Station *self)
-{
+uint8_t Station::isDiscovered() {
+    Station *self = this;
     char *visited = Galaxy_getVisited(*gGalaxySingleton);
     return visited[self->field_0xc];
 }
 
 // ---- setAttackedFriends_a6bde.cpp ----
-extern "C" void Station_setAttackedFriends(Station *self, bool v)
-{
+void Station::setAttackedFriends(bool v) {
+    Station *self = this;
     self->field_0x24 = v;
 }
 
 // ---- hasAttackedFriends_a6be4.cpp ----
-extern "C" uint8_t Station_hasAttackedFriends(Station *self)
-{
+uint8_t Station::hasAttackedFriends() {
+    Station *self = this;
     return self->field_0x24;
 }
 
 // ---- getPirateStationIndex_a6fe4.cpp ----
-extern "C" uint32_t Station_getPirateStationIndex(Station *self)
-{
+uint32_t Station::getPirateStationIndex() {
+    Station *self = this;
     uint32_t i = 0;
     while (true) {
         if (i > 3)
@@ -260,8 +258,8 @@ extern "C" void Item_addAmount(Item *found, int amount);  // tail-called veneer
 extern "C" void ArrayAdd_Item(Item *item, void *arr);     // tail-called veneer
 
 // Station::addItem(Item*) — this in r0, item in r1.
-extern "C" void Station_addItem(Station *self, Item *item)
-{
+void Station::addItem(Item *item) {
+    Station *self = this;
     uint32_t *arr = (uint32_t *)self->field_0x28;
     if (arr == 0) {
         arr = (uint32_t *)Station_operator_new(0xc);
@@ -289,14 +287,13 @@ extern "C" void Station_addItem(Station *self, Item *item)
 
 // ---- clone_a7078.cpp ----
 // Station::clone() — this in r0, returns a new Station copy.
-extern "C" Station *Station_clone(Station *self)
-{
+Station * Station::clone() {
+    Station *self = this;
     Station *n = (Station *)Station_operator_new(0x34);
     char tmp[12];
     String_copy_ctor(tmp, self, false);
-    Station_ctor(n, tmp, self->field_0xc, self->field_0x10,
-                 self->field_0x20, self->field_0x18);
-    String_dtor(tmp);
+    ((Station *)(n))->ctor(tmp, self->field_0xc, self->field_0x10, self->field_0x20, self->field_0x18);
+    ((String *)(tmp))->dtor();
     return n;
 }
 
@@ -311,8 +308,8 @@ extern Status **const gStatusForDtor __attribute__((visibility("hidden")));
 #define STATUS (*gStatusForDtor)
 
 // Station::~Station()
-extern "C" void Station_dtor(Station *self)
-{
+void Station::dtor() {
+    Station *self = this;
     if (self->field_0x2c != 0) {
         ArrayReleaseClasses_Ship(self->field_0x2c);
         if (self->field_0x2c != 0)
@@ -335,7 +332,7 @@ extern "C" void Station_dtor(Station *self)
             Agent *freeA = Status_getFreelanceMission(STATUS) == 0
                                ? (Agent *)0
                                : Mission_getAgent(Status_getFreelanceMission(STATUS));
-            if (a != 0 && a != campA && a != freeA && Agent_isStoryAgent(a) == 0)
+            if (a != 0 && a != campA && a != freeA && ((Agent *)(a))->isStoryAgent() == 0)
                 Station_operator_delete(Agent_dtor(a));
             agents = (StationArray *)self->field_0x30;
         }
@@ -349,8 +346,8 @@ extern "C" void Station_dtor(Station *self)
 // ---- setAgents_a6dce.cpp ----
 struct Agent;
 
-extern "C" void Station_setAgents(Station *self, void *agents)
-{
+void Station::setAgents(void *agents) {
+    Station *self = this;
     void *cur = self->field_0x30;
     if (cur != agents) {
         if (cur != 0) {
@@ -366,18 +363,18 @@ extern "C" void Station_setAgents(Station *self, void *agents)
 // ---- Station_a6978.cpp ----
 extern "C" void *String_default_ctor(void *s);                 // String::String() -> this
 extern "C" void String_from_cstr(void *out, const char *s, bool); // String::String(const char*, bool)
-extern "C" void String_assign(void *dst, void *src);           // operator=(String*, String*)
+// operator=(String*, String*)
 
 extern const char kStationDefaultName[] __attribute__((visibility("hidden")));
 
 // Station::Station() — default ctor.
-extern "C" void Station_ctor_default(Station *self)
-{
+void Station::ctor_default() {
+    Station *self = this;
     String_default_ctor(self);
     char tmp[12];
     String_from_cstr(tmp, kStationDefaultName, false);
-    String_assign(self, tmp);
-    String_dtor(tmp);
+    ((String *)(self))->assign(tmp);
+    ((String *)(tmp))->dtor();
     self->field_0xc = -1;
     self->field_0x10 = -1;
     self->field_0x20 = 0;
@@ -393,8 +390,8 @@ extern "C" void Station_ctor_default(Station *self)
 struct Ship;
 
 // Station::hasShip(int) — this in r0, index in r1.
-extern "C" uint32_t Station_hasShip(Station *self, int index)
-{
+uint32_t Station::hasShip(int index) {
+    Station *self = this;
     uint32_t *arr = (uint32_t *)self->field_0x2c;
     if (arr != 0) {
         for (uint32_t i = 0; i < arr[0]; i++) {
@@ -413,8 +410,8 @@ extern "C" uint32_t Station_hasShip(Station *self, int index)
 struct Item;
 
 // Station::hasItem(int) — this in r0, index in r1.
-extern "C" uint32_t Station_hasItem(Station *self, int index)
-{
+uint32_t Station::hasItem(int index) {
+    Station *self = this;
     uint32_t *arr = (uint32_t *)self->field_0x28;
     if (arr != 0) {
         for (uint32_t i = 0; i < arr[0]; i++) {
@@ -434,8 +431,8 @@ struct Ship;
 extern "C" void ArrayAdd_Ship(Ship *ship, void *arr);   // tail-called veneer
 
 // Station::addShip(Ship*) — this in r0, ship in r1.
-extern "C" void Station_addShip(Station *self, Ship *ship)
-{
+void Station::addShip(Ship *ship) {
+    Station *self = this;
     uint32_t *arr = (uint32_t *)self->field_0x2c;
     if (arr == 0) {
         arr = (uint32_t *)Station_operator_new(0xc);
@@ -461,15 +458,14 @@ extern "C" void Station_addShip(Station *self, Ship *ship)
 
 // ---- Station_a692c.cpp ----
 extern "C" void *String_default_ctor(void *s);         // String::String() -> this
-extern "C" void String_assign(void *dst, void *src);   // operator=(String*, String*)
+// operator=(String*, String*)
 
 // Station::Station(String, int, int, int, int)
 // r0=this, r1=String* param, r2=p3, r3=p4, [stack]=p5, p6.
-extern "C" Station *Station_ctor(Station *self, void *name,
-                                 int p3, int p4, int p5, int p6)
-{
+Station * Station::ctor(void *name, int p3, int p4, int p5, int p6) {
+    Station *self = this;
     void *s = String_default_ctor(self);
-    String_assign(s, name);
+    ((String *)(s))->assign(name);
     self->field_0xc = p3;
     self->field_0x10 = p4;
     self->field_0x20 = p5;

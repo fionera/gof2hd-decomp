@@ -17,8 +17,6 @@ extern "C" void Transform_SetAnimationSpeed(uint32_t transform, float speed);
 extern "C" void AEGeometry_setPosition(AEGeometry *self, const Vector *position);
 extern "C" void AEGeometry_setDirection(AEGeometry *self, const Vector *direction, const Vector *up);
 extern "C" void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
-extern "C" void Explosion_setScaling(Explosion *self, float scale);
-extern "C" void Explosion_playSound(Explosion *self, Vector *position);
 extern "C" void Transform_Update(long long transform, long long elapsed, int zero);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
 extern "C" void AEGeometry_getPosition(Vector *out, AEGeometry *self);
@@ -27,7 +25,6 @@ extern "C" void *PaintCanvas_CameraGetLocal(int canvas, int current);
 extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
 extern "C" float VectorLength(const Vector *self);
 extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self, float value, int duration);
-extern "C" void Explosion_reset(Explosion *self);
 extern "C" void Matrix_ctor(Matrix *self);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, int canvas, bool flag);
@@ -53,8 +50,8 @@ extern "C" void AEGeometry_setRotation3(AEGeometry *self, float x, float y, floa
 extern int Explosion_paintCanvas;
 
 
-extern "C" void Explosion_reset(Explosion *self)
-{
+void Explosion::reset() {
+    Explosion *self = this;
     int *canvas = &Explosion_paintCanvas;
 
     Transform_SetAnimationState(
@@ -130,14 +127,14 @@ extern "C" Explosion *_ZN9ExplosionD2Ev(Explosion *self)
 }
 
 // ---- isPlaying_a8916.cpp ----
-extern "C" uint8_t Explosion_isPlaying(Explosion *self)
-{
+uint8_t Explosion::isPlaying() {
+    Explosion *self = this;
     return self->field_0x20;
 }
 
 // ---- translate_a8aa0.cpp ----
-extern "C" void Explosion_translate(Explosion *self, const Vector *v)
-{
+void Explosion::translate(const Vector *v) {
+    Explosion *self = this;
     AEGeometry_translate_vec(self->field_0x4, v);
     void *secondary = self->field_0x8;
     if (secondary != 0) {
@@ -150,8 +147,8 @@ extern int Explosion_paintCanvas;
 extern void *Explosion_random;
 
 
-extern "C" void Explosion_setScaling(Explosion *self, float scale)
-{
+void Explosion::setScaling(float scale) {
+    Explosion *self = this;
     self->field_0x24 = scale;
     AEGeometry_setScaling3(self->field_0x4, scale, scale, scale);
 
@@ -197,8 +194,8 @@ extern "C" void Explosion_setScaling(Explosion *self, float scale)
 }
 
 // ---- peakReached_a8900.cpp ----
-extern "C" bool Explosion_peakReached(Explosion *self)
-{
+bool Explosion::peakReached() {
+    Explosion *self = this;
     return self->field_0x18 > 0x8fcLL;
 }
 
@@ -207,8 +204,8 @@ extern int Explosion_paintCanvas;
 extern void *Explosion_random;
 
 
-extern "C" void Explosion_start(Explosion *self, const Vector *position, const Vector *direction)
-{
+void Explosion::start(const Vector *position, const Vector *direction) {
+    Explosion *self = this;
     AEGeometry_setPosition(self->field_0x4, position);
 
     int *canvas = &Explosion_paintCanvas;
@@ -232,7 +229,7 @@ extern "C" void Explosion_start(Explosion *self, const Vector *position, const V
         MatrixSetRotation(&rotation, &self->field_0x2c, 0, 0, angle);
 
         float scale = 0.6f + (float)AERandom_nextInt(Explosion_random, 0x28) * 0.01f;
-        Explosion_setScaling(self, scale);
+        ((Explosion *)(self))->setScaling(scale);
     } else if (type == 0xb) {
         Vector up;
         up.x = 0.0f;
@@ -257,15 +254,15 @@ extern "C" void Explosion_start(Explosion *self, const Vector *position, const V
 
     self->field_0x20 = 1;
     Vector soundPosition = *position;
-    Explosion_playSound(self, &soundPosition);
+    ((Explosion *)(self))->playSound(&soundPosition);
 }
 
 // ---- update_a8668.cpp ----
 extern int Explosion_paintCanvas;
 
 
-extern "C" void Explosion_update_camera(Explosion *self, int dt, TargetFollowCamera *camera)
-{
+void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
+    Explosion *self = this;
     if (self->field_0x20 == 0) {
         return;
     }
@@ -321,7 +318,7 @@ extern "C" void Explosion_update_camera(Explosion *self, int dt, TargetFollowCam
     long long elapsed = self->field_0x18 + delta;
     self->field_0x18 = elapsed;
     if (self->field_0x10 < elapsed) {
-        Explosion_reset(self);
+        ((Explosion *)(self))->reset();
         if (camera != 0) {
             TargetFollowCamera_setRumblePercentage(camera, 0.0f, 0);
         }
@@ -362,7 +359,7 @@ extern "C" Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
     default:
         if (type == 13) {
             self->field_0x4 = make_geometry(0x41a9, *canvas);
-            Explosion_setScaling(self, 0.25f);
+            ((Explosion *)(self))->setScaling(0.25f);
             Transform_SetAnimationSpeed(
                 PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 1.0f);
         } else {
@@ -427,7 +424,7 @@ extern "C" Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
 
     F((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 0xe0) = 10000.0f;
     self->field_0x28 = -1;
-    Explosion_reset(self);
+    ((Explosion *)(self))->reset();
     return self;
 }
 
@@ -439,8 +436,8 @@ extern char Explosion_soundSettings[];
 extern void *Explosion_random;
 
 
-extern "C" void Explosion_playSound(Explosion *self, Vector *pos)
-{
+void Explosion::playSound(Vector *pos) {
+    Explosion *self = this;
     Vector *soundPos = pos;
     int soundId = self->field_0x28;
     int cue;
@@ -540,8 +537,8 @@ extern "C" void Explosion_playSound(Explosion *self, Vector *pos)
 extern int Explosion_paintCanvas;
 
 
-extern "C" void Explosion_start_matrix(Explosion *self, const Matrix *matrix)
-{
+void Explosion::start_matrix(const Matrix *matrix) {
+    Explosion *self = this;
     char positionStorage[12];
     Vector *position = (Vector *)positionStorage;
 
@@ -583,15 +580,15 @@ extern "C" void Explosion_start_matrix(Explosion *self, const Matrix *matrix)
 
     self->field_0x20 = 1;
     MatrixGetPosition(position, matrix);
-    Explosion_playSound(self, position);
+    ((Explosion *)(self))->playSound(position);
 }
 
 // ---- render_a891c.cpp ----
 extern int Explosion_paintCanvas;
 
 
-extern "C" void Explosion_render(Explosion *self)
-{
+void Explosion::render() {
+    Explosion *self = this;
     Matrix cameraLocal;
     Matrix work;
     Vector position;
@@ -654,8 +651,8 @@ extern "C" void Explosion_render(Explosion *self)
 extern int Explosion_paintCanvas;
 
 
-extern "C" void Explosion_update_vector(Explosion *self, int dt, const Vector *position)
-{
+void Explosion::update_vector(int dt, const Vector *position) {
+    Explosion *self = this;
     if (self->field_0x20 == 0) {
         return;
     }
@@ -696,8 +693,8 @@ extern int Explosion_paintCanvas;
 extern void *Explosion_random;
 
 
-extern "C" void Explosion_addFireStreaks(Explosion *self)
-{
+void Explosion::addFireStreaks() {
+    Explosion *self = this;
     if (self->field_0xc != 0) {
         return;
     }

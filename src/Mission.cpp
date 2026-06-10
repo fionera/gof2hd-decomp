@@ -1,42 +1,42 @@
 #include "gof2/Mission.h"
+#include "gof2/GameText.h"
+#include "gof2/Station.h"
+#include "gof2/String.h"
 
 struct Systems;
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void String_cstr_ctor(void *out, const char *s, bool);
-extern "C" void *GameText_getText(GameText *table, int id);
 extern "C" void *String_assign_ref(void *self, const String12 &rhs);
 extern "C" void *operator_new(uint32_t n);
-extern "C" void String_dtor(void *s);
 extern "C" Station *Galaxy_getStation(Galaxy *g, int idx);
-extern "C" void Station_getName(void *out, Station *s);
-extern "C" void String_assign(void *self, void *rhs);
-extern "C" Mission *Mission_dtor_inner(Mission *self);
 extern "C" void Mission_dtor_finish(Mission *self);
 extern "C" void String_default_ctor(void *s);
 extern "C" Systems *Galaxy_getSystems(Galaxy *g);
 extern "C" Station *Status_getStation(Status *s);
 extern "C" int Station_getSystem(Station *s);
 extern "C" float Galaxy_distance(Galaxy *g, SolarSystem *a, SolarSystem *b);
-extern "C" Station *Station_dtor(Station *s);
 extern "C" void Station_dtor_finish(Station *s);
 
 // ---- isInstantActionMission_15bb78.cpp ----
-extern "C" uint8_t Mission_isInstantActionMission(Mission *self) {
+uint8_t Mission::isInstantActionMission() {
+    Mission *self = this;
     return self->field_0x5c;
 }
 
 // ---- getTargetStationName_15bb90.cpp ----
 struct RetStr { uint32_t a, b, c; };
 
-extern "C" RetStr Mission_getTargetStationName(Mission *self) {
+RetStr Mission::getTargetStationName() {
+    Mission *self = this;
     RetStr r;
     String_copy_ctor(&r, (char *)self + 0x40, false);
     return r;
 }
 
 // ---- isCampaignMission_15bb7e.cpp ----
-extern "C" bool Mission_isCampaignMission(Mission *self) {
+bool Mission::isCampaignMission() {
+    Mission *self = this;
     return self->field_0x64 != 0;
 }
 
@@ -44,7 +44,8 @@ extern "C" bool Mission_isCampaignMission(Mission *self) {
 // AbyssEngine::String::String(String* out, const char* cstr, bool) -> 0x6ee18
 
 // Returns a fixed description String built from a string literal.
-extern "C" RetStr Mission_getDescription(Mission *self) {
+RetStr Mission::getDescription() {
+    Mission *self = this;
     RetStr r;
     String_cstr_ctor(&r, "", false);
     return r;
@@ -52,7 +53,8 @@ extern "C" RetStr Mission_getDescription(Mission *self) {
 
 // ---- getTargetSystemName_15bb9e.cpp ----
 
-extern "C" RetStr Mission_getTargetSystemName(Mission *self) {
+RetStr Mission::getTargetSystemName() {
+    Mission *self = this;
     RetStr r;
     String_copy_ctor(&r, (char *)self + 0x4c, false);
     return r;
@@ -70,19 +72,21 @@ __attribute__((visibility("hidden"))) extern GameText **g_gameText;
 
 // Mission::getName(): campaign missions use a fixed literal name; freelance ones
 // look up "<id+0x162>" in the global text table.
-extern "C" RetStr Mission_getName(Mission *self) {
+RetStr Mission::getName() {
+    Mission *self = this;
     RetStr r;
     if (self->field_0x64 != 0) {
         String_cstr_ctor(&r, "", false);
     } else {
-        void *txt = GameText_getText(*g_gameText, self->field_0xc + 0x162);
+        void *txt = ((GameText *)(*g_gameText))->getText(self->field_0xc + 0x162);
         String_copy_ctor(&r, txt, false);
     }
     return r;
 }
 
 // ---- setProductionGoods_15bad0.cpp ----
-extern "C" void Mission_setProductionGoods(Mission *self, int a, int b) {
+void Mission::setProductionGoods(int a, int b) {
+    Mission *self = this;
     self->field_0x68 = a;
     self->field_0x6c = b;
 }
@@ -92,7 +96,8 @@ extern "C" void Mission_setProductionGoods(Mission *self, int a, int b) {
 
 // Mission::setTargetName(String by value): the String has a non-trivial copy
 // ctor/dtor so it is passed by invisible reference (pointer in r1).
-extern "C" void *Mission_setTargetName(Mission *self, const String12 &rhs) {
+void * Mission::setTargetName(const String12 &rhs) {
+    Mission *self = this;
     return String_assign_ref((char *)self + 0x1c, rhs);
 }
 
@@ -101,65 +106,69 @@ extern "C" void *Mission_setTargetName(Mission *self, const String12 &rhs) {
 
 // Returns the client name String (offset 0x10) by value. The void copy-ctor forces
 // a frame + non-tail blx (the sret r0 must be restored).
-extern "C" RetStr Mission_getClientName(Mission *self) {
+RetStr Mission::getClientName() {
+    Mission *self = this;
     RetStr r;
     String_copy_ctor(&r, (char *)self + 0x10, false);
     return r;
 }
 
 // ---- isVisible_15baba.cpp ----
-extern "C" uint8_t Mission_isVisible(Mission *self) {
+uint8_t Mission::isVisible() {
+    Mission *self = this;
     return self->field_0x74;
 }
 
 // ---- isEmpty_15baa8.cpp ----
-extern "C" bool Mission_isEmpty(Mission *self) {
+bool Mission::isEmpty() {
+    Mission *self = this;
     return self->field_0xc == -1;
 }
 
 // ---- getTargetName_15bcb4.cpp ----
 
-extern "C" RetStr Mission_getTargetName(Mission *self) {
+RetStr Mission::getTargetName() {
+    Mission *self = this;
     RetStr r;
     String_copy_ctor(&r, (char *)self + 0x1c, false);
     return r;
 }
 
 // ---- setInstantActionMission_15bb72.cpp ----
-extern "C" void Mission_setInstantActionMission(Mission *self, bool v) {
+void Mission::setInstantActionMission(bool v) {
+    Mission *self = this;
     self->field_0x5c = v;
 }
 
 // ---- setTargetSystemName_15bbac.cpp ----
 // AbyssEngine::String::operator=(String* this, const String& rhs) -> 0x1ac548
 
-extern "C" void *Mission_setTargetSystemName(Mission *self, const String12 &rhs) {
+void * Mission::setTargetSystemName(const String12 &rhs) {
+    Mission *self = this;
     return String_assign_ref((char *)self + 0x4c, rhs);
 }
 
 // ---- setVisible_15bab4.cpp ----
-extern "C" void Mission_setVisible(Mission *self, bool v) {
+void Mission::setVisible(bool v) {
+    Mission *self = this;
     self->field_0x74 = v;
 }
 
 // ---- clone_15bccc.cpp ----
 // Mission::Mission(int, String, int*, int, int, int, int) -> 0x15b64c. The by-value
 // String is passed by invisible reference -> model it as a pointer parameter.
-extern "C" Mission *Mission_ctor7(Mission *self, int id, const void *name,
-                              int a, int b, int c, int d, int e);
 
 // Mission::clone(): deep-copies this mission into a freshly allocated Mission via
 // the 7-arg constructor, then copies the instant-action flag. The on-stack String
 // temp triggers the -Oz stack-protector canary.
-extern "C" Mission *Mission_clone(Mission *self) {
+Mission * Mission::clone() {
+    Mission *self = this;
     unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
     Mission *m = (Mission *)operator_new(0x78);
     int id = self->field_0xc;
     String_copy_ctor(name, (char *)self + 0x10, false);
-    Mission_ctor7(m, id, name,
-                  self->field_0x28, self->field_0x2c, self->field_0x30,
-                  self->field_0x3c, self->field_0x58);
-    String_dtor(name);
+    ((Mission *)(m))->ctor7(id, name, self->field_0x28, self->field_0x2c, self->field_0x30, self->field_0x3c, self->field_0x58);
+    ((String *)(name))->dtor();
     m->field_0x5c = self->field_0x5c;
     return m;
 }
@@ -174,14 +183,15 @@ __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 // Sets the target station index (+0x3c) and caches that station's name into the
 // targetStationName String (+0x40). The char-array-backed String temp triggers
 // the -Oz/-fstack-protector canary the target emits.
-extern "C" void Mission_setTargetStation(Mission *self, int idx) {
+void Mission::setTargetStation(int idx) {
+    Mission *self = this;
     unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
     Galaxy **gp = g_galaxy;
     self->field_0x3c = idx;
     Station *st = Galaxy_getStation(*gp, idx);
-    Station_getName(name, st);
-    String_assign((char *)self + 0x40, name);
-    String_dtor(name);
+    ((Station *)(name))->getName();
+    ((String *)((char *)self + 0x40))->assign(name);
+    ((String *)(name))->dtor();
 }
 
 // ---- _Mission_15ba98.cpp ----
@@ -190,8 +200,9 @@ extern "C" void Mission_setTargetStation(Mission *self, int idx) {
 
 // Deleting/complete destructor: runs the inner dtor (which returns `this`), then
 // tail-calls the finisher with that pointer — so `this` need not be saved.
-extern "C" void Mission_dtor(Mission *self) {
-    Mission_dtor_finish(Mission_dtor_inner(self));
+void Mission::dtor() {
+    Mission *self = this;
+    Mission_dtor_finish(((Mission *)(self))->dtor_inner());
 }
 
 // ---- Mission_15b64c.cpp ----
@@ -203,8 +214,8 @@ __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 
 // Mission::Mission(int id, String client, int* targets, int a, int b, int station, int reward)
 // — the freelance-mission constructor.
-extern "C" Mission *
-Mission_ctor7(Mission *self, int id, const void *client, int a, int b, int c, int station, int reward) {
+Mission * Mission::ctor7(int id, const void *client, int a, int b, int c, int station, int reward) {
+    Mission *self = this;
     unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
     *(void **)self = (char *)Mission_vtable + 8;
     String_default_ctor((char *)self + 0x10);
@@ -212,19 +223,19 @@ Mission_ctor7(Mission *self, int id, const void *client, int a, int b, int c, in
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
     self->field_0xc = id;
-    String_assign((char *)self + 0x10, (void *)client);
+    ((String *)((char *)self + 0x10))->assign((void *)client);
     self->field_0x28 = a;
     self->field_0x2c = b;
     self->field_0x30 = c;
     self->field_0x3c = station;
     Station *st = Galaxy_getStation(*g_galaxy, station);
-    Station_getName(tmp, st);
-    String_assign((char *)self + 0x40, tmp);
-    String_dtor(tmp);
+    ((Station *)(tmp))->getName();
+    ((String *)((char *)self + 0x40))->assign(tmp);
+    ((String *)(tmp))->dtor();
     self->field_0x58 = reward;
     String_cstr_ctor(tmp, "", false);
-    String_assign((char *)self + 0x4c, tmp);
-    String_dtor(tmp);
+    ((String *)((char *)self + 0x4c))->assign(tmp);
+    ((String *)(tmp))->dtor();
     self->field_0x74 = 1;
     self->field_0x64 = 0;
     self->field_0x5c = 0;
@@ -239,7 +250,8 @@ Mission_ctor7(Mission *self, int id, const void *client, int a, int b, int c, in
 __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 
 // Mission::Mission(int) — like the default ctor but stores the given id at +0xc.
-extern "C" Mission *Mission_ctor_int(Mission *self, int id) {
+Mission * Mission::ctor_int(int id) {
+    Mission *self = this;
     unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
     *(void **)self = (char *)Mission_vtable + 8;
     String_default_ctor((char *)self + 0x10);
@@ -247,8 +259,8 @@ extern "C" Mission *Mission_ctor_int(Mission *self, int id) {
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
     String_cstr_ctor(tmp, "", false);
-    String_assign((char *)self + 0x10, tmp);
-    String_dtor(tmp);
+    ((String *)((char *)self + 0x10))->assign(tmp);
+    ((String *)(tmp))->dtor();
     self->field_0x64 = 0;
     self->field_0x74 = 0;
     self->field_0x8 = 0;
@@ -278,7 +290,8 @@ __attribute__((visibility("hidden"))) extern Status **g_status;
 
 // Computes the distance (light years) from the player's current system to this
 // mission's target station system, storing the truncated value at +0x60.
-extern "C" void Mission_calcDistance(Mission *self) {
+void Mission::calcDistance() {
+    Mission *self = this;
     Galaxy **gp = g_galaxy;
     Station *st = Galaxy_getStation(*gp, self->field_0x3c);
     Systems *sys = Galaxy_getSystems(*gp);
@@ -289,7 +302,7 @@ extern "C" void Mission_calcDistance(Mission *self) {
     SolarSystem *b = sys->data[i2];
     self->field_0x60 = (int)Galaxy_distance(g, a, b);
     if (st != 0) {
-        Station_dtor_finish(Station_dtor(st));
+        Station_dtor_finish(((Station *)(st))->dtor());
     }
 }
 
@@ -301,8 +314,8 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 
 // Mission::Mission(int id, int goods, int station) — the campaign-mission constructor.
-extern "C" Mission *
-Mission_ctor3(Mission *self, int id, int goods, int station) {
+Mission * Mission::ctor3(int id, int goods, int station) {
+    Mission *self = this;
     unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
     *(void **)self = (char *)Mission_vtable + 8;
     String_default_ctor((char *)self + 0x10);
@@ -318,13 +331,13 @@ Mission_ctor3(Mission *self, int id, int goods, int station) {
         String_cstr_ctor(tmp, "", false);
     } else {
         Station *st = Galaxy_getStation(*g_galaxy, station);
-        Station_getName(tmp, st);
+        ((Station *)(tmp))->getName();
     }
-    String_assign((char *)self + 0x40, tmp);
-    String_dtor(tmp);
+    ((String *)((char *)self + 0x40))->assign(tmp);
+    ((String *)(tmp))->dtor();
     String_cstr_ctor(tmp, "", false);
-    String_assign((char *)self + 0x4c, tmp);
-    String_dtor(tmp);
+    ((String *)((char *)self + 0x4c))->assign(tmp);
+    ((String *)(tmp))->dtor();
     self->field_0x74 = 1;
     self->field_0x64 = 1;
     self->field_0x4 = 0;
@@ -343,7 +356,8 @@ __attribute__((visibility("hidden"))) extern void (*String_dtor_fn)(void *s);
 
 // Inner destructor: installs the vtable, then destroys the four String members
 // (at 0x4c, 0x40, 0x1c, 0x10 — high to low), and returns `this`.
-extern "C" Mission *Mission_dtor_inner(Mission *self) {
+Mission * Mission::dtor_inner() {
+    Mission *self = this;
     void (*dtor)(void *) = String_dtor_fn;
     *(void **)self = (char *)Mission_vtable + 8;
     dtor((char *)self + 0x4c);
@@ -364,7 +378,8 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 // Mission::Mission() — default constructor. Installs the vtable, default-constructs
 // the four String members, sets the name from a literal, and zero-inits the rest.
 // The on-stack String temp triggers the -Oz stack-protector canary.
-extern "C" Mission *Mission_ctor_default(Mission *self) {
+Mission * Mission::ctor_default() {
+    Mission *self = this;
     unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
     *(void **)self = (char *)Mission_vtable + 8;
     String_default_ctor((char *)self + 0x10);
@@ -372,8 +387,8 @@ extern "C" Mission *Mission_ctor_default(Mission *self) {
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
     String_cstr_ctor(tmp, "", false);
-    String_assign((char *)self + 0x10, tmp);
-    String_dtor(tmp);
+    ((String *)((char *)self + 0x10))->assign(tmp);
+    ((String *)(tmp))->dtor();
     self->field_0x64 = 0;
     self->field_0x74 = 0;
     self->field_0x8 = 0;

@@ -1,4 +1,7 @@
 #include "gof2/TractorBeam.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
+#include "gof2/PlayerEgo.h"
 #include "gof2/Radar.h"
 
 // KIPlayer (the grabbed crate) is the minimal vtable-only struct from Radar.h; its
@@ -22,8 +25,8 @@ extern void *const gCanvasRoot __attribute__((visibility("hidden")));
 // TractorBeam::TractorBeam(AEGeometry*, int)
 //   Zeroes the embedded state then constructs the beam mesh geometry. The mesh
 //   id is the base id 0x3798 offset by the (truncated) integer argument.
-void TractorBeam_ctor(TractorBeam *self, AEGeometry * /*unused*/, int param2)
-{
+void TractorBeam::ctor(AEGeometry * /*unused*/, int param2) {
+    TractorBeam *self = this;
     self->field_0x0 = 0.0f;
     self->field_0x4 = 0.0f;
     self->field_0x8 = 0.0f;
@@ -44,8 +47,8 @@ void TractorBeam_ctor(TractorBeam *self, AEGeometry * /*unused*/, int param2)
 
 // TractorBeam::render()
 //   Only draws while the beam is active; forwards to the geometry's render.
-void TractorBeam_render(TractorBeam *self)
-{
+void TractorBeam::render() {
+    TractorBeam *self = this;
     if (self->field_0x10 == 0)
         return;
     AEGeometry_render(self->field_0x14);
@@ -56,17 +59,17 @@ using namespace AbyssEngine::AEMath;
 
 // --- cross-subsystem callees (resolved blx targets) ---------------------------
 extern "C" void *Level_getPlayer(Level *level);                       // 0x72034
-extern "C" int   PlayerEgo_isInTurretMode(void *player);              // 0x7678c
-extern "C" void  PlayerEgo_getPosition(Vector *out, void *player);    // 0x73540
-extern "C" void  PlayerEgo_GetDirVector(Vector *out, void *player);   // 0x73540 family
-extern "C" void  PlayerEgo_GetUpVector(Vector *out, void *player);    // 0x7354c
-extern "C" int   Player_isActive(void *crate);                       // 0x71f14
-extern "C" int   Player_getHitpoints(void *obj);                     // 0x724f0
-extern "C" int   KIPlayer_cargoAvailable(void *crate);               // 0x71f14 family
-extern "C" void  KIPlayer_createCrate(void *crate, int kind);        // 0x75904
-extern "C" void  KIPlayer_captureCrate(void *crate, Hud *hud);       // 0x772fc
-extern "C" int   KIPlayer_isDead(void *crate);                       // 0x71ec0
-extern "C" int   KIPlayer_isDying(void *crate);                      // 0x71f50
+// 0x7678c
+// 0x73540
+// 0x73540 family
+// 0x7354c
+// 0x71f14
+// 0x724f0
+// 0x71f14 family
+// 0x75904
+// 0x772fc
+// 0x71ec0
+// 0x71f50
 
 extern "C" void *Status_getShip(void);                               // 0x71a58
 extern "C" int   Ship_getIndex(void *ship);                          // 0x719c8
@@ -99,8 +102,8 @@ extern const float gCaptureDistance;
 //   Drives the tractor beam: locks onto a nearby crate, animates the beam mesh
 //   from the player ship toward the crate, pulls the crate in, and captures it
 //   once it is close enough.
-void TractorBeam_update(TractorBeam *self, int frameTime, Radar *radar, Level *level, Hud *hud)
-{
+void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
+    TractorBeam *self = this;
     KIPlayer *crate = self->field_0xc;
     KIPlayer *radarCrate = (KIPlayer *)radar->field_0x1c;
 
@@ -109,15 +112,15 @@ void TractorBeam_update(TractorBeam *self, int frameTime, Radar *radar, Level *l
 
     if (crate == 0) {
         void *player = Level_getPlayer(level);
-        if (PlayerEgo_isInTurretMode(player) == 0) {
-            if (KIPlayer_cargoAvailable(radarCrate) == 0) {
+        if (((PlayerEgo *)(player))->isInTurretMode() == 0) {
+            if (((KIPlayer *)(radarCrate))->cargoAvailable() == 0) {
                 self->field_0x10 = 0;
                 radar->field_0x1c = 0;
             } else {
                 if (kiPtr(radarCrate, 0x78) == 0)
-                    KIPlayer_createCrate(radarCrate, 0);
+                    ((KIPlayer *)(radarCrate))->createCrate(0);
                 self->field_0xc = radarCrate;
-                self->field_0x18 = (int)Player_getHitpoints(kiPtr(radarCrate, 0x4));
+                self->field_0x18 = (int)((Player *)(kiPtr(radarCrate, 0x4)))->getHitpoints();
                 self->field_0x10 = 1;
             }
             return;
@@ -129,7 +132,7 @@ void TractorBeam_update(TractorBeam *self, int frameTime, Radar *radar, Level *l
 
     // Drop the beam if the crate has lost its body or the carrier is gone.
     if (kiPtr(crate, 0x78) == 0 ||
-        (kiByte(crate, 0x3c) == 0 && Player_isActive(crate) == 0)) {
+        (kiByte(crate, 0x3c) == 0 && ((Player *)(crate))->isActive() == 0)) {
     detach:
         radar->field_0x8 = 0;
         radar->field_0x1c = 0;
@@ -148,7 +151,7 @@ void TractorBeam_update(TractorBeam *self, int frameTime, Radar *radar, Level *l
     Vector_assign((Vector *)self, &pos);
 
     Vector playerPos;
-    PlayerEgo_getPosition(&playerPos, Level_getPlayer(level));
+    ((PlayerEgo *)(&playerPos))->getPosition();
     Vector_subAssign((Vector *)self, &playerPos);
     float dist = VectorLength((Vector *)self);
 
@@ -157,16 +160,16 @@ void TractorBeam_update(TractorBeam *self, int frameTime, Radar *radar, Level *l
     Vector offset = {0.0f, 0.0f, 0.0f};
     if (idx == 0x2c) {
         Vector dir;
-        PlayerEgo_GetDirVector(&dir, Level_getPlayer(level));
+        ((PlayerEgo *)(&dir))->GetDirVector();
         Vector_scale(&offset, &dir, 0.5f);
     } else {
         ship = Status_getShip();
         idx = Ship_getIndex(ship);
         if (idx == 0x31) {
             Vector dir, up, tmp;
-            PlayerEgo_GetDirVector(&dir, Level_getPlayer(level));
+            ((PlayerEgo *)(&dir))->GetDirVector();
             Vector_scale(&tmp, &dir, 0.5f);
-            PlayerEgo_GetUpVector(&up, Level_getPlayer(level));
+            ((PlayerEgo *)(&up))->GetUpVector();
             Vector_scale(&up, &up, 0.5f);
             offset.x = tmp.x + dir.x;
             offset.y = tmp.y + dir.y;
@@ -183,7 +186,7 @@ void TractorBeam_update(TractorBeam *self, int frameTime, Radar *radar, Level *l
     AEGeometry_setDirection(geo, &n);
 
     Vector tail;
-    PlayerEgo_getPosition(&tail, Level_getPlayer(level));
+    ((PlayerEgo *)(&tail))->getPosition();
     AEGeometry_setPosition(geo, &tail);
 
     if (dist > gCaptureDistance) {
@@ -196,8 +199,8 @@ void TractorBeam_update(TractorBeam *self, int frameTime, Radar *radar, Level *l
         Vector pull = AbyssEngine::AEMath::operator-(n, *(Vector *)self);
         AEGeometry_translate(crateGeo, &pull);
 
-        if (KIPlayer_isDead(self->field_0xc) != 0 ||
-            KIPlayer_isDying(self->field_0xc) != 0) {
+        if (((KIPlayer *)(self->field_0xc))->isDead() != 0 ||
+            ((KIPlayer *)(self->field_0xc))->isDying() != 0) {
             KIPlayer *c = self->field_0xc;
             if (kiByte(c, 0x40) == 0 && kiByte(c, 0x41) == 0) {
                 Vector d = AbyssEngine::AEMath::operator-(n, *(Vector *)self);
@@ -210,7 +213,7 @@ void TractorBeam_update(TractorBeam *self, int frameTime, Radar *radar, Level *l
         }
     } else {
         // Crate reached the ship -- capture it.
-        KIPlayer_captureCrate(self->field_0xc, hud);
+        ((KIPlayer *)(self->field_0xc))->captureCrate(hud);
         self->field_0xc = 0;
         self->field_0x10 = 0;
         radar->field_0x8 = 0;

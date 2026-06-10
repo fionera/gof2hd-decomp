@@ -42,6 +42,22 @@ struct FileInterfaceAndroid {
 
     FileInterfaceAndroid();
     ~FileInterfaceAndroid();
+
+    // ---- methods (converted from free functions) ----
+    void Close();
+    bool FileExist(String12 name);
+    int GetFileSize();
+    FileInterfaceAndroid * OpenRead(String12 name, int p2, bool p3, int p4, int p5, unsigned int p6);
+    FileInterfaceAndroid * OpenWrite(String12 name, int, bool, unsigned int);
+    bool Read(unsigned int n, void *buf);
+    bool Seek(unsigned int n);
+    void SetAppRootDir(void *p);
+    void SetZipDirectory(void *p);
+    bool Write(unsigned int n, const void *buf);
+    void ctor_default();
+    void ctor_file(FILE *f, bool append);
+    FileInterfaceAndroid * ctor_obj(jobject *stream, bool reading);
+    FileInterfaceAndroid * ctor_zip(zip_file *zf, bool append, int start, int p4, int p5);
 };
 
 #endif

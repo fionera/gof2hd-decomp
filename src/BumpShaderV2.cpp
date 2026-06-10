@@ -1,4 +1,5 @@
 #include "gof2/BumpShaderV2.h"
+#include "gof2/String.h"
 
 
 extern "C" int ShaderBaseStruct_shaderIndexIntern;
@@ -118,9 +119,9 @@ BumpShaderV2::BumpShaderV2()
 
     // Name string lives at +0xc; build a temp and copy-assign it in.
     String tmp;
-    String_ctor_char(&tmp, "BumpShaderV2", false);
-    String_assign(&this->field_0xc, &tmp);
-    String_dtor(&tmp);
+    ((String *)(&tmp))->ctor_char("BumpShaderV2", false);
+    ((String *)(&this->field_0xc))->assign(&tmp);
+    ((String *)(&tmp))->dtor();
 
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)

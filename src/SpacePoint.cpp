@@ -5,8 +5,8 @@ extern "C" Vector *Vector_assign(Vector *dst, const Vector *src);
 extern "C" void *memset(void *, int, unsigned long);
 
 // ---- giveFree_1603f0.cpp ----
-extern "C" void SpacePoint_giveFree(SpacePoint *self)
-{
+void SpacePoint::giveFree() {
+    SpacePoint *self = this;
     self->field_0x1c = 1;
 }
 
@@ -27,7 +27,7 @@ SpacePoint::SpacePoint(int param_1, const Vector &param_2, const Vector &param_3
 }
 
 // ---- take_1603ea.cpp ----
-extern "C" void SpacePoint_take(SpacePoint *self)
-{
+void SpacePoint::take() {
+    SpacePoint *self = this;
     self->field_0x1c = 0;
 }

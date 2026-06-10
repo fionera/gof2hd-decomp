@@ -1,4 +1,5 @@
 #include "gof2/BumpShader.h"
+#include "gof2/String.h"
 
 
 extern "C" void BumpShader_setSampler(int location, int unit);
@@ -38,9 +39,9 @@ BumpShader::BumpShader()
 
     // name = String("BumpShader", false); this->name(0xc) = name; ~name.
     String name;
-    String_ctor_char(&name, BumpShader_name, false);
-    String_assign((String *)((char *)this + 0xc), &name);
-    String_dtor(&name);
+    ((String *)(&name))->ctor_char(BumpShader_name, false);
+    ((String *)((String *)((char *)this + 0xc)))->assign(&name);
+    ((String *)(&name))->dtor();
 }
 
 } // namespace AbyssEngine

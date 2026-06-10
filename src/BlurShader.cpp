@@ -1,4 +1,6 @@
 #include "gof2/BlurShader.h"
+#include "gof2/Engine.h"
+#include "gof2/String.h"
 // gof2/Mesh.h is pulled in by gof2/BlurShader.h. gof2/Engine.h is intentionally NOT included
 // (it does not compile standalone); BlurShader.h provides a minimal Engine view instead.
 
@@ -7,8 +9,6 @@ extern "C" void glDisableVertexAttribArray(unsigned int index);
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
 extern "C" void ShaderBaseStruct_ctor(ShaderBaseStruct *self);
 extern "C" void String_ctor_text(void *self, const char *text, bool copy);
-extern "C" void String_assign(void *self, void *other);
-extern "C" void String_dtor(void *self);
 extern "C" char BlurShader_vtable[];
 extern "C" void *BlurShader_typeinfo_source[];
 extern "C" void *BlurShader_typeinfo_dest[];
@@ -27,10 +27,6 @@ extern "C" void glUniform2f(int location, float x, float y);
 extern "C" void glUniform1f(int location, float value);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" int Engine_GetDisplayWidth(Engine *self);
-extern "C" int Engine_GetDisplayHeight(Engine *self);
-extern "C" void Engine_SetWorldViewMatrix(Engine *self);
-extern "C" void Engine_DrawQuad(Engine *self, int x, int y, int width, int height);
 extern "C" void FBOContainer_Activate(FBOContainer *self);
 extern "C" void FBOContainer_BeginCapture(FBOContainer *self);
 extern "C" void FBOContainer_EndCapture(FBOContainer *self);
@@ -61,8 +57,8 @@ extern "C" AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShade
     *(void **)self = BlurShader_vtable + 8;
     *dest = *source;
     String_ctor_text(name, "BlurShader", false);
-    String_assign((char *)self + 0xc, name);
-    String_dtor(name);
+    ((String *)((char *)self + 0xc))->assign(name);
+    ((String *)(name))->dtor();
     self->field_0x58 = 0x92006800;
     self->field_0x5c = 0x40000000;
     uint32_t guardDelta =
@@ -146,13 +142,13 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
 
-    engine->field_0x384 = 2.0f / (float)Engine_GetDisplayWidth(engine);
-    engine->field_0x398 = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    engine->field_0x384 = 2.0f / (float)((Engine *)(engine))->GetDisplayWidth();
+    engine->field_0x398 = -(2.0f / (float)((Engine *)(engine))->GetDisplayHeight());
     engine->field_0x3ac = 0xbf800000;
     engine->field_0x3b4 = 0xbf800000;
     engine->field_0x3b8 = 0x3f800000;
     engine->field_0x3c0 = 0x3f800000;
-    Engine_SetWorldViewMatrix(engine);
+    ((Engine *)(engine))->SetWorldViewMatrix();
 
     glDisable(0xb71);
     glDepthMask(0);
@@ -166,11 +162,11 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         int width;
         int height;
         if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = Engine_GetDisplayWidth(engine);
-            height = Engine_GetDisplayHeight(engine);
+            width = ((Engine *)(engine))->GetDisplayWidth();
+            height = ((Engine *)(engine))->GetDisplayHeight();
         } else {
-            width = Engine_GetDisplayHeight(engine);
-            height = Engine_GetDisplayWidth(engine);
+            width = ((Engine *)(engine))->GetDisplayHeight();
+            height = ((Engine *)(engine))->GetDisplayWidth();
         }
         glViewport(0, 0, width, height);
     } else {
@@ -194,11 +190,11 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         float width;
         int other;
         if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = (float)Engine_GetDisplayWidth(engine);
-            other = Engine_GetDisplayHeight(engine);
+            width = (float)((Engine *)(engine))->GetDisplayWidth();
+            other = ((Engine *)(engine))->GetDisplayHeight();
         } else {
-            width = (float)Engine_GetDisplayHeight(engine);
-            other = Engine_GetDisplayWidth(engine);
+            width = (float)((Engine *)(engine))->GetDisplayHeight();
+            other = ((Engine *)(engine))->GetDisplayWidth();
         }
         glUniform2f(texelLocation, 1.0f / width, 1.0f / (float)other);
     }
@@ -230,8 +226,8 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     }
 
     glClear(0x4000);
-    int width = Engine_GetDisplayWidth(engine);
-    Engine_DrawQuad(engine, 0, 0, width, Engine_GetDisplayHeight(engine));
+    int width = ((Engine *)(engine))->GetDisplayWidth();
+    ((Engine *)(engine))->DrawQuad(0, 0, width, ((Engine *)(engine))->GetDisplayHeight());
     if (position >= 0) {
         glDisableVertexAttribArray(position);
     }
@@ -283,11 +279,11 @@ void BlurShader::UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine)
         float height;
         float one = 1.0f;
         if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = (float)Engine_GetDisplayWidth(engine);
-            height = (float)Engine_GetDisplayHeight(engine);
+            width = (float)((Engine *)(engine))->GetDisplayWidth();
+            height = (float)((Engine *)(engine))->GetDisplayHeight();
         } else {
-            width = (float)Engine_GetDisplayHeight(engine);
-            height = (float)Engine_GetDisplayWidth(engine);
+            width = (float)((Engine *)(engine))->GetDisplayHeight();
+            height = (float)((Engine *)(engine))->GetDisplayWidth();
         }
         glUniform2f(texelLocation, one / width, one / height);
     }

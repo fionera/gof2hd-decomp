@@ -63,6 +63,10 @@ struct Mesh {
     uint32_t field_0x80;                // +0x80
     uint8_t field_0x84;                 // +0x84
     uint8_t field_0x85;                 // +0x85
+
+    // ---- methods (converted from free functions) ----
+    int ReadEnhancedDataFromFile(unsigned int file, unsigned int flags);
+    Mesh * ctor(Mesh *src);
 };
 
 } // namespace AbyssEngine

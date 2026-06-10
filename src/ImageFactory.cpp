@@ -1,4 +1,5 @@
 #include "gof2/ImageFactory.h"
+#include "gof2/ImagePart.h"
 
 
 extern "C" void *Sprite_dtor(void *p);
@@ -12,7 +13,6 @@ extern "C" __attribute__((visibility("hidden"))) GetTextFn *g_reload_getText;
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_reload_canvas;
 extern "C" void PaintCanvas_SetColor(unsigned canvas, unsigned color);
 extern "C" void PaintCanvas_DrawImage2D(unsigned canvas, int image, int x, int y);
-extern "C" void ImagePart_draw(void *part, int x, int y, int flag);
 extern "C" void ImageFactory_drawChar_tail(unsigned canvas, int handle, int x, int y);
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_drawChar_canvas;
 extern "C" void IF_Sprite_setFrame(void *spr, int frame);
@@ -29,9 +29,7 @@ extern "C" __attribute__((visibility("hidden"))) int *g_IF_idTable;
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_IF_drawItem4_canvas;
 extern "C" void Array_ImagePart_ctor(Arr *a);
 extern "C" void ArraySetLength_ImagePart(uint32_t n, Arr *a);
-extern "C" void *ImageFactory_loadImage(ImageFactory *self, int row, int col, int frameBase);
 extern "C" int *ImageFactory_createChar_bi(int param_1, int param_2, int sel);
-extern "C" void ImageFactory_reload(ImageFactory *self);
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagA;
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagB;
 extern "C" __attribute__((visibility("hidden"))) int *g_ctor_dst;
@@ -89,8 +87,8 @@ extern "C" int *ImageFactory_createChar_bi(int param_1, int param_2, int sel)
 // *g_reload_getText -> getText-style fn ptr; *g_reload_canvas -> canvas holder.
 
 // ImageFactory::reload() -- rebuilds the character image-id table + composite sprite.
-extern "C" void ImageFactory_reload(ImageFactory *self)
-{
+void ImageFactory::reload() {
+    ImageFactory *self = this;
     unsigned *ids = (unsigned *)operator new[](0x18);
     unsigned *holder = g_reload_canvas;
     GetTextFn getText = *g_reload_getText;
@@ -116,14 +114,14 @@ extern "C" void ImageFactory_reload(ImageFactory *self)
 // Tail veneer (function-pointer global): draws the foreground glyph layer.
 
 // ImageFactory::drawChar(Array<ImagePart*>*, int, int, bool)
-extern "C" void ImageFactory_drawChar(ImageFactory *self, Arr *parts, int x, int y, int flag)
-{
+void ImageFactory::drawChar(Arr *parts, int x, int y, int flag) {
+    ImageFactory *self = this;
     unsigned *holder = g_drawChar_canvas;
     PaintCanvas_SetColor(*holder, 0xffffffffu);
     PaintCanvas_DrawImage2D(*holder, i32(self, 0x4), x, y);
     for (unsigned i = 0; i < parts->size; ++i) {
         void *part = parts->data[i];
-        if (part != 0) ImagePart_draw(part, x, y, flag);
+        if (part != 0) ((ImagePart *)(part))->draw(x, y, flag);
     }
     return ImageFactory_drawChar_tail(*holder, i32(self, 0x8), x, y);
 }
@@ -132,8 +130,8 @@ extern "C" void ImageFactory_drawChar(ImageFactory *self, Arr *parts, int x, int
 // ImageFactory::drawShip(int shipId, int x, int y) — draws the composite ship sprite (frame 5)
 // at (x,y), then overlays the ship's class icon (image id 0x971+shipId).
 
-extern "C" void ImageFactory_drawShip(ImageFactory *self, int shipId, int x, int y)
-{
+void ImageFactory::drawShip(int shipId, int x, int y) {
+    ImageFactory *self = this;
     unsigned *holder = g_IF_drawShip_canvas;
     unsigned local = 0xffffffffu;
     IF_PaintCanvas_SetColor(*holder, 0xffffffffu);
@@ -175,8 +173,8 @@ extern "C" __attribute__((visibility("hidden"))) int *g_IF_posTableC;     // def
 extern "C" __attribute__((visibility("hidden"))) char *g_IF_flagC;        // selects C vs D
 extern "C" __attribute__((visibility("hidden"))) int *g_IF_posTableD;     // alt default base ptr
 
-extern "C" void *ImageFactory_loadImage(ImageFactory *self, int row, int col, int frameBase)
-{
+void * ImageFactory::loadImage(int row, int col, int frameBase) {
+    ImageFactory *self = this;
     int id = g_IF_idTable[row * 4 + col];   // 0x10-byte rows / 4-byte cells
     if (id < 0)
         return 0;
@@ -209,8 +207,8 @@ extern "C" void *ImageFactory_loadImage(ImageFactory *self, int row, int col, in
 // sprite at the given frame/position, then overlays the item icon (0x898 for ids < 0xb0,
 // otherwise 0xef0, plus itemId).
 
-extern "C" void ImageFactory_drawItem4(ImageFactory *self, int itemId, int frame, int x, int y)
-{
+void ImageFactory::drawItem4(int itemId, int frame, int x, int y) {
+    ImageFactory *self = this;
     unsigned *holder = g_IF_drawItem4_canvas;
     unsigned local = 0xffffffffu;
     IF_PaintCanvas_SetColor(*holder, 0xffffffffu);
@@ -226,8 +224,8 @@ extern "C" void ImageFactory_drawItem4(ImageFactory *self, int itemId, int frame
 
 // ---- loadChar_11c774.cpp ----
 // ImageFactory::loadChar(int*) -> Array<ImagePart*>* of 4 entries (with [0]/[2] swapped).
-extern "C" Arr *ImageFactory_loadChar(ImageFactory *self, int *param_1)
-{
+Arr * ImageFactory::loadChar(int *param_1) {
+    ImageFactory *self = this;
     (void)self;
     if (param_1 == 0) return 0;
     Arr *a = (Arr *)operator new(0xc);
@@ -238,7 +236,7 @@ extern "C" Arr *ImageFactory_loadChar(ImageFactory *self, int *param_1)
         int raw = param_1[i];
         void *part = (void *)(raw + 1);
         if (part != 0)
-            a->data[i] = ImageFactory_loadImage((ImageFactory *)part, first, i, raw);
+            a->data[i] = ((ImageFactory *)((ImageFactory *)part))->loadImage(first, i, raw);
     }
     void *tmp = a->data[0];
     a->data[0] = a->data[2];
@@ -252,8 +250,8 @@ extern "C" Arr *ImageFactory_loadChar(ImageFactory *self, int *param_1)
 extern void *const gCreateCharRng __attribute__((visibility("hidden")));
 
 // ImageFactory::createChar(int) — randomizes a char then forwards to createChar(bool,int).
-extern "C" void ImageFactory_createChar_i(ImageFactory *self, int param_1)
-{
+void ImageFactory::createChar_i(int param_1) {
+    ImageFactory *self = this;
     (void)self;
     int r = AERandom_nextInt(*(int *)gCreateCharRng, 2);
     ImageFactory_createChar_bi((int)__builtin_clz(r), (unsigned)(r == 0), param_1);
@@ -265,8 +263,8 @@ extern "C" void ImageFactory_createChar_i(ImageFactory *self, int param_1)
 extern int g_ctor_src[] __attribute__((visibility("hidden")));
 
 // ImageFactory::ImageFactory() -> this. Copies a 13x4x2 int table when gated, then reload().
-extern "C" ImageFactory *ImageFactory_ctor(ImageFactory *self)
-{
+ImageFactory * ImageFactory::ctor() {
+    ImageFactory *self = this;
     self->field_0x0 = 0;
     if ((*g_ctor_flagA | *g_ctor_flagB) != 0) {
         int *dst = g_ctor_dst;
@@ -284,6 +282,6 @@ extern "C" ImageFactory *ImageFactory_ctor(ImageFactory *self)
             src += 8;
         }
     }
-    ImageFactory_reload(self);
+    ((ImageFactory *)(self))->reload();
     return self;
 }

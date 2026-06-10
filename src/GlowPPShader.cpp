@@ -1,7 +1,8 @@
 #include "gof2/GlowPPShader.h"
+#include "gof2/Engine.h"
+#include "gof2/String.h"
 
 
-extern "C" void GlowPPShader_InternalInit(GlowPPShader *self, Engine *engine);
 extern "C" uint8_t *g_GlowPPShader_internalInitNeededPtr;
 extern "C" uint32_t *g_GlowPPShader_shaderModePtr;
 extern "C" void *operator_new_0(uint32_t size);
@@ -34,15 +35,15 @@ extern "C" void *GlowPPShader_typeinfo_source;
 extern "C" void *GlowPPShader_typeinfo_dest;
 
 // ---- SetInActive_8d0d0.cpp ----
-extern "C" void GlowPPShader_SetInActive(GlowPPShader *self)
-{
+void GlowPPShader::SetInActive() {
+    GlowPPShader *self = this;
     glDisableVertexAttribArray(field_u32(self, 0x90));
     return glDisableVertexAttribArray(field_u32(self, 0x98));
 }
 
 // ---- UpdateMeshData_8d610.cpp ----
-extern "C" void GlowPPShader_UpdateMeshData(GlowPPShader *self, Mesh *mesh, Engine *engine)
-{
+void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
+    GlowPPShader *self = this;
     glUniformMatrix4fv(field_u32(self, 0x80), 1, 0, (char *)engine + 0x104);
     if (field_u8(self, 0x9) != 0) {
         field_u8(self, 0x9) = 0;
@@ -84,21 +85,20 @@ static inline void draw_fullscreen(GlowPPShader *self, Engine *engine, uint32_t 
     glVertexAttribPointer(field_u32(self, texOff), 2, 0x1406, 0, 0,
                           (void *)field_u32((void *)field_u32(engine, 0x380), 8));
     glClear(0x4000);
-    uint32_t width = Engine_GetDisplayWidth(engine);
-    Engine_GetDisplayHeight(engine);
-    Engine_DrawQuad(engine, 0, 0, width);
+    uint32_t width = ((Engine *)(engine))->GetDisplayWidth();
+    ((Engine *)(engine))->GetDisplayHeight();
+    ((Engine *)(engine))->DrawQuad(0, 0, width);
     glDisableVertexAttribArray(field_u32(self, posOff));
     glDisableVertexAttribArray(field_u32(self, texOff));
 }
 
-extern "C" void GlowPPShader_RenderEffect(GlowPPShader *self, FBOContainer *source,
-                                          FBOContainer **target, Engine *engine)
-{
+void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine) {
+    GlowPPShader *self = this;
     void * volatile cookie = __stack_chk_guard;
 
     if (*g_GlowPPShader_internalInitNeededPtr != 0) {
         *g_GlowPPShader_internalInitNeededPtr = 0;
-        GlowPPShader_InternalInit(self, engine);
+        ((GlowPPShader *)(self))->InternalInit(engine);
         FBOContainer_BeginCapture(fbo_field(self, 0xa0));
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
@@ -122,8 +122,8 @@ extern "C" void GlowPPShader_RenderEffect(GlowPPShader *self, FBOContainer *sour
     field_u32(engine, 0x38c) = 0;
     field_u32(engine, 0x390) = 0;
 
-    field_float(engine, 0x384) = 2.0f / (float)(int32_t)Engine_GetDisplayWidth(engine);
-    field_float(engine, 0x398) = -(2.0f / (float)(int32_t)Engine_GetDisplayHeight(engine));
+    field_float(engine, 0x384) = 2.0f / (float)(int32_t)((Engine *)(engine))->GetDisplayWidth();
+    field_float(engine, 0x398) = -(2.0f / (float)(int32_t)((Engine *)(engine))->GetDisplayHeight());
     field_u32(engine, 0x3ac) = 0xbf800000;
     field_u32(engine, 0x3b4) = 0xbf800000;
     field_u32(engine, 0x3b8) = 0x3f800000;
@@ -148,7 +148,7 @@ extern "C" void GlowPPShader_RenderEffect(GlowPPShader *self, FBOContainer *sour
     matrix[15] = 1.0f;
     (void)matrix;
 
-    Engine_SetWorldViewMatrix(engine);
+    ((Engine *)(engine))->SetWorldViewMatrix();
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
@@ -174,9 +174,9 @@ extern "C" void GlowPPShader_RenderEffect(GlowPPShader *self, FBOContainer *sour
         glUniform1f(field_u32(self, 0x54),
                     1.0f / (float)field_i32((void *)field_u32(self, 0x58), 0x0c));
         glClear(0x4000);
-        uint32_t width = Engine_GetDisplayWidth(engine);
-        Engine_GetDisplayHeight(engine);
-        Engine_DrawQuad(engine, 0, 0, width);
+        uint32_t width = ((Engine *)(engine))->GetDisplayWidth();
+        ((Engine *)(engine))->GetDisplayHeight();
+        ((Engine *)(engine))->DrawQuad(0, 0, width);
         glDisableVertexAttribArray(field_u32(self, 0x44));
         glDisableVertexAttribArray(field_u32(self, 0x4c));
 
@@ -194,9 +194,9 @@ extern "C" void GlowPPShader_RenderEffect(GlowPPShader *self, FBOContainer *sour
         glUniform1f(field_u32(self, 0x70),
                     1.0f / (float)field_i32((void *)field_u32(self, 0x74), 0x10));
         glClear(0x4000);
-        width = Engine_GetDisplayWidth(engine);
-        Engine_GetDisplayHeight(engine);
-        Engine_DrawQuad(engine, 0, 0, width);
+        width = ((Engine *)(engine))->GetDisplayWidth();
+        ((Engine *)(engine))->GetDisplayHeight();
+        ((Engine *)(engine))->DrawQuad(0, 0, width);
         glDisableVertexAttribArray(field_u32(self, 0x60));
         glDisableVertexAttribArray(field_u32(self, 0x68));
     }
@@ -221,11 +221,11 @@ extern "C" void GlowPPShader_RenderEffect(GlowPPShader *self, FBOContainer *sour
         uint32_t width;
         uint32_t height;
         if (field_i32((void *)field_u32((void *)field_u32(engine, 0x30), 0), 0x30) == 2) {
-            width = Engine_GetDisplayWidth(engine);
-            height = Engine_GetDisplayHeight(engine);
+            width = ((Engine *)(engine))->GetDisplayWidth();
+            height = ((Engine *)(engine))->GetDisplayHeight();
         } else {
-            width = Engine_GetDisplayHeight(engine);
-            height = Engine_GetDisplayWidth(engine);
+            width = ((Engine *)(engine))->GetDisplayHeight();
+            height = ((Engine *)(engine))->GetDisplayWidth();
         }
         glViewport(0, 0, width, height);
     } else {
@@ -256,8 +256,8 @@ static inline uint32_t stack_guard_diff(uint32_t saved, uint32_t current)
     return current - saved;
 }
 
-extern "C" void GlowPPShader_RenderEffect_simple(GlowPPShader *self, FBOContainer *source, Engine *engine)
-{
+void GlowPPShader::RenderEffect_simple(FBOContainer *source, Engine *engine) {
+    GlowPPShader *self = this;
     void * volatile cookie = __stack_chk_guard;
     FBOContainer *target = 0;
     void **vtable = *(void ***)self;
@@ -271,8 +271,8 @@ extern "C" void GlowPPShader_RenderEffect_simple(GlowPPShader *self, FBOContaine
 }
 
 // ---- InternalInit_8cdbc.cpp ----
-extern "C" void GlowPPShader_InternalInit(GlowPPShader *self, Engine *engine)
-{
+void GlowPPShader::InternalInit(Engine *engine) {
+    GlowPPShader *self = this;
     void * volatile cookie = __stack_chk_guard;
     String name0;
     String name1;
@@ -321,8 +321,8 @@ typedef void UseProgramFn(uint32_t);
 typedef void Uniform1iFn(uint32_t, int32_t);
 
 
-extern "C" void GlowPPShader_Init(GlowPPShader *self)
-{
+void GlowPPShader::Init() {
+    GlowPPShader *self = this;
     const char *vertex = "GlowPPShader.vert";
     LoadProgramFn *loadProgram = g_GlowPPShader_LoadProgram;
     field_u32(self, 0x20) = loadProgram((ShaderBaseStruct *)self, vertex, "GlowPPShader.copy.frag");
@@ -386,9 +386,9 @@ extern "C" GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
     void **dest = (void **)GlowPPShader_typeinfo_dest;
     *(void **)self = (char *)GlowPPShader_vtable + 8;
     *dest = *source;
-    String_ctor_char((String *)name, "GlowPPShader", false);
-    String_assign((String *)((char *)self + 0xc), (String *)name);
-    String_dtor((String *)name);
+    ((String *)((String *)name))->ctor_char("GlowPPShader", false);
+    ((String *)((String *)((char *)self + 0xc)))->assign((String *)name);
+    ((String *)((String *)name))->dtor();
     uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)cookie;
     diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - diff;
     if (diff == 0) {

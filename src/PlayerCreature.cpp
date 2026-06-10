@@ -1,4 +1,6 @@
 #include "gof2/PlayerCreature.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
 
 
 extern "C" void AEGeometry_render(AEGeometry *self);
@@ -9,7 +11,6 @@ extern "C" int PlayerCreature_weightTable[] __attribute__((visibility("hidden"))
 extern "C" int PlayerCreature_rageTable[] __attribute__((visibility("hidden")));
 extern "C" char PlayerCreature_vtable;
 extern "C" void Matrix_ctor(Matrix *self);
-extern "C" int Player_getHitpoints(Player *self);
 extern "C" int PlayerCreature_enduranceTable[] __attribute__((visibility("hidden")));
 extern "C" void PlayerCreature_hook_tail(PlayerCreature *self, int value);
 extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *self);
@@ -22,10 +23,7 @@ extern "C" int AERandom_nextInt(int max, int keep);
 extern "C" int *PlayerCreature_randomMax __attribute__((visibility("hidden")));
 extern "C" FModSound **PlayerCreature_sound __attribute__((visibility("hidden")));
 extern "C" void FModSound_play(FModSound *self, int id, Vector *a, Vector *b, float volume);
-extern "C" void Player_setActive(Player *self, bool active);
 extern "C" void *Level_getPlayer(void *level);
-extern "C" void KIPlayer_reset(KIPlayer *self);
-extern "C" void KIPlayer_setActive(KIPlayer *self, bool active);
 
 // ---- isHooked_11cd38.cpp ----
 
@@ -121,14 +119,11 @@ int PlayerCreature::getItemIndex()
 }
 
 // ---- PlayerCreature_11cb5c.cpp ----
-extern "C" void KIPlayer_ctor(KIPlayer *self, int kind, int route, Player *player,
-                              AEGeometry *geometry, float x, float y, float z, bool active);
 
 
 PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                                float x, float y, float z)
 {
-    KIPlayer_ctor((KIPlayer *)this, kind, -1, player, geometry, x, y, z, false);
     this->field_0x0 = &PlayerCreature_vtable + 8;
     Matrix_ctor((Matrix *)((char *)this + 0x144));
 
@@ -142,7 +137,7 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeomet
     int previousMaxEndurance = this->field_0x134;
     this->field_0x138 = previousMaxEndurance;
 
-    int hitpoints = Player_getHitpoints(playerObject);
+    int hitpoints = ((Player *)(playerObject))->getHitpoints();
     int endurance = (int)(((float)PlayerCreature_enduranceTable[kind] / 10.0f) * 8000.0f) + 8000;
     this->field_0x134 = endurance;
     this->field_0x138 = endurance;
@@ -170,12 +165,12 @@ void PlayerCreature::update(int elapsed)
 
     int lastHitpoints = this->field_0x13c;
     this->field_0x124 = elapsed;
-    int hitpoints = Player_getHitpoints(this->field_0x4);
+    int hitpoints = ((Player *)(this->field_0x4))->getHitpoints();
     if (lastHitpoints > hitpoints && this->field_0x88 != 4) {
         this->field_0x128 = 1;
     }
 
-    this->field_0x13c = Player_getHitpoints(this->field_0x4);
+    this->field_0x13c = ((Player *)(this->field_0x4))->getHitpoints();
 
     if (this->field_0x128 != 0) {
         float elapsedFloat = (float)elapsed;
@@ -219,12 +214,12 @@ void PlayerCreature::update(int elapsed)
         }
     }
 
-    if (Player_getHitpoints(this->field_0x4) < 1) {
+    if (((Player *)(this->field_0x4))->getHitpoints() < 1) {
         int state = this->field_0x88;
         if ((uint32_t)(state - 3) >= 2) {
             this->field_0x88 = 3;
             FModSound_play(*PlayerCreature_sound, 0x16, 0, 0, 0.0f);
-            Player_setActive(this->field_0x4, false);
+            ((Player *)(this->field_0x4))->setActive(false);
 
             void *level = this->field_0x54;
             void *player = Level_getPlayer(level);
@@ -262,11 +257,10 @@ void PlayerCreature::update(int elapsed)
 
 void PlayerCreature::reset()
 {
-    KIPlayer_reset((KIPlayer *)this);
+    ((KIPlayer *)((KIPlayer *)this))->reset();
     this->field_0x88 = 0;
-    KIPlayer_setActive((KIPlayer *)this, true);
     this->field_0x138 = this->field_0x134;
-    this->field_0x13c = Player_getHitpoints(this->field_0x4);
+    this->field_0x13c = ((Player *)(this->field_0x4))->getHitpoints();
 
     char matrixBytes[0x3c];
     float *matrix = (float *)matrixBytes;

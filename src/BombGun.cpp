@@ -1,4 +1,6 @@
 #include "gof2/BombGun.h"
+#include "gof2/Explosion.h"
+#include "gof2/Player.h"
 #include "gof2/Gun.h"
 #include "gof2/PlayerEgo.h"
 
@@ -9,14 +11,12 @@ extern "C" void operator_delete(void *p);
 extern "C" void *BombGun_base_dtor(BombGun *self);
 extern "C" void *_ZN7BombGunD1Ev(BombGun *self);
 extern "C" void RocketGun_render(BombGun *self);
-extern "C" void Explosion_render(Explosion *self);
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_update_canvas_a;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_update_canvas_b;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_sound_play;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_sound_param;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_status;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_sound_stop;
-extern "C" void PlayerEgo_getPosition(void *out, PlayerEgo *self);
 extern "C" void *Vector_assign(void *dst, void *src);
 extern "C" Transform *PaintCanvas_TransformGetTransform(void *canvas, uint32_t transform);
 extern "C" void Transform_Update(Transform *transform, int64_t elapsed, int zero);
@@ -33,31 +33,20 @@ extern "C" void TargetFollowCamera_setTarget(TargetFollowCamera *self, AEGeometr
 extern "C" void TargetFollowCamera_setCamOffset(TargetFollowCamera *self, void *offset);
 extern "C" void TargetFollowCamera_setTargetOffset(TargetFollowCamera *self, void *offset);
 extern "C" void TargetFollowCamera_useTargetsUpVector(TargetFollowCamera *self, bool enabled);
-extern "C" void PlayerEgo_setRocketControl(PlayerEgo *self, Gun *gun, AEGeometry *geometry);
-extern "C" float PlayerEgo_getRocketBanking(PlayerEgo *self);
 extern "C" void FModSound_setParamValue(void *self, int param, int sound, float value);
 extern "C" void RocketGun_update(BombGun *self, int elapsed);
 extern "C" void LevelScript_resetCamera(LevelScript *self, Level *level);
 extern "C" void FModSound_stop(void *self, int sound);
 extern "C" void Vector_sub(void *out, void *a, void *b);
 extern "C" float VectorLength(void *self);
-extern "C" int Gun_getMagnitude(Gun *self);
 extern "C" int Status_hardCoreMode(void *self);
-extern "C" float Player_damage(Player *self, int amount, int zero, int minusOne);
-extern "C" void PlayerEgo_addNukeVolatileForce(PlayerEgo *self, float value);
-extern "C" TargetFollowCamera *PlayerEgo_getTargetFollowCamera(PlayerEgo *self);
-extern "C" void PlayerEgo_GetDirVector(void *out, PlayerEgo *self);
-extern "C" void Explosion_start(Explosion *self, void *position, void *direction);
 extern "C" void Explosion_update(Explosion *self, int elapsed, TargetFollowCamera *camera);
-extern "C" int Explosion_isPlaying(Explosion *self);
-extern "C" void Explosion_reset(Explosion *self);
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_player_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_final_canvas;
 extern "C" void *operator_new(uint32_t size);
 extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
-extern "C" void Explosion_setScaling(Explosion *self, float scaling);
 extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" void PaintCanvas_TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
@@ -95,7 +84,7 @@ void BombGun::render()
 {
     RocketGun_render(this);
     if (this->field_0x8->field_0x88 != 0)
-        return Explosion_render(this->field_0xf0);
+        return ((Explosion *)(this->field_0xf0))->render();
 }
 
 // ---- update_147870.cpp ----
@@ -124,7 +113,7 @@ void BombGun::update(int elapsed)
     Gun *gun = this->field_0x8;
     if (gun->field_0x88 == 0) {
         if (this->field_0x128 == 0x2a) {
-            PlayerEgo_getPosition(position, player);
+            ((PlayerEgo *)(position))->getPosition();
         } else {
             void *gunPos = gun->field_0xc;
             *(uint64_t *)position = *(uint64_t *)gunPos;
@@ -170,14 +159,14 @@ void BombGun::update(int elapsed)
             TargetFollowCamera_setTargetOffset(camera, (char *)this + 0x11c);
             camera = BombGun_getCamera(player);
             TargetFollowCamera_useTargetsUpVector(camera, false);
-            PlayerEgo_setRocketControl(player, gun, geometry);
+            ((PlayerEgo *)(player))->setRocketControl(gun, geometry);
 
             if (*(int *)gun->field_0x3c < gun->field_0x44 - 500) {
                 Transform *transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
                 Transform_Update(transform, (int64_t)elapsed, 0);
             }
 
-            float bank = PlayerEgo_getRocketBanking(player) * kBombScale;
+            float bank = ((PlayerEgo *)(player))->getRocketBanking() * kBombScale;
             this->field_0x20 = bank;
             FModSound_setParamValue(*BombGun_sound_param, 0, 0x45c, bank * 0.5f);
         }
@@ -206,16 +195,16 @@ after_transforms:
         if (this->field_0x24 != 0) {
             player = this->field_0xec;
             LevelScript_resetCamera(player->field_0x10, player->field_0xc);
-            PlayerEgo_setRocketControl(player, 0, this->field_0xe8);
+            ((PlayerEgo *)(player))->setRocketControl(0, this->field_0xe8);
             FModSound_stop(*BombGun_sound_stop, 0x45c);
         }
 
         this->field_0x108 = 0;
         player = this->field_0xec;
-        PlayerEgo_getPosition(work, player);
+        ((PlayerEgo *)(work))->getPosition();
         Vector_sub(position, (char *)this + 0xf8, work);
         float distance = VectorLength(position);
-        float magnitude = (float)Gun_getMagnitude(this->field_0x8);
+        float magnitude = (float)((Gun *)(this->field_0x8))->getMagnitude();
         float force = (((magnitude * 0.5f) - distance) / (magnitude * 0.5f)) * 0.5f;
         if (force > 1.0f)
             force = 1.0f;
@@ -225,26 +214,25 @@ after_transforms:
             force *= kBombScale;
         if (Status_hardCoreMode(*BombGun_status) != 0) {
             Gun *damageGun = this->field_0x8;
-            Player_damage((Player *)player->field_0x0, (int)(force * (float)damageGun->field_0x60),
-                          0, -1);
+            ((Player *)((Player *)player->field_0x0))->damage((int)(force * (float)damageGun->field_0x60));
         }
-        PlayerEgo_addNukeVolatileForce(player, force);
+        ((PlayerEgo *)(player))->addNukeVolatileForce(force);
 
         float capped = kRumbleDistance;
         if (distance < kRumbleDistance)
             capped = distance;
         this->field_0x10c = 1.0f - capped / kRumbleDistance;
-        TargetFollowCamera_setRumblePercentage(PlayerEgo_getTargetFollowCamera(player),
+        TargetFollowCamera_setRumblePercentage(((PlayerEgo *)(player))->getTargetFollowCamera(),
                                                this->field_0x10c, 0x32);
 
         Explosion *explosion = this->field_0xf0;
         if (this->field_0x128 == 0x2a) {
-            PlayerEgo_GetDirVector(position, player);
+            ((PlayerEgo *)(position))->GetDirVector();
         } else {
             *(uint64_t *)position = 0;
             *(uint32_t *)(position + 8) = 0;
         }
-        Explosion_start(explosion, (char *)this + 0xf8, position);
+        ((Explosion *)(explosion))->start((char *)this + 0xf8, position);
         this->field_0x104 = 0;
     }
 
@@ -256,14 +244,14 @@ after_transforms:
 
     player = this->field_0xec;
     float rumble = this->field_0x10c * ((float)timer / kRumbleTime + 1.0f);
-    TargetFollowCamera_setRumblePercentage(PlayerEgo_getTargetFollowCamera(player), rumble, 0x32);
+    TargetFollowCamera_setRumblePercentage(((PlayerEgo *)(player))->getTargetFollowCamera(), rumble, 0x32);
 
-    if (Explosion_isPlaying(this->field_0xf0) == 0) {
-        TargetFollowCamera_setRumblePercentage(PlayerEgo_getTargetFollowCamera(player), 0.0f, 0);
+    if (((Explosion *)(this->field_0xf0))->isPlaying() == 0) {
+        TargetFollowCamera_setRumblePercentage(((PlayerEgo *)(player))->getTargetFollowCamera(), 0.0f, 0);
         this->field_0x108 = 0;
         this->field_0x8->field_0x88 = 0;
         this->field_0x104 = 1;
-        Explosion_reset(this->field_0xf0);
+        ((Explosion *)(this->field_0xf0))->reset();
     }
 }
 
@@ -314,7 +302,7 @@ extern "C" BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
     self->field_0x128 = type;
     self->field_0xf4 = -1;
     if (scaledBomb)
-        Explosion_setScaling(self->field_0xf0, kCtorBombScale);
+        ((Explosion *)(self->field_0xf0))->setScaling(kCtorBombScale);
 
     AEGeometry *geometry;
     if (playerFlag) {

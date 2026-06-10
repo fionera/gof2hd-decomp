@@ -3,15 +3,12 @@
 
 
 extern "C" void Waypoint_reset(Waypoint *wp);
-extern "C" Waypoint *Route_getWaypointAt(Route *self, int index);
-extern "C" Route *Route_clone(Route *self);
 extern "C" void Waypoint_reached(Waypoint *wp);
 extern "C" void ArrayReleaseClasses_Waypoint(Array<Waypoint *> *a);
 extern "C" void *ArrayWaypoint_dtor(Array<Waypoint *> *a);
 extern "C" void *ArrayKIPlayer_dtor(Array<KIPlayer *> *a);
 extern "C" void *ArrayInt_dtor(Array<int> *a);
 extern "C" void operator_delete(void *p);
-extern "C" float Route_update_xyz(Route *self, float x, float y, float z);
 extern "C" void *operator_new(unsigned int sz);
 extern "C" int __aeabi_idiv(int n, int d);
 extern "C" void ArraySetLengthKIPlayer(uint32_t n, void *a);
@@ -23,38 +20,37 @@ extern "C" void ArrayAddInt(int v, void *a);
 extern "C" void ArrayKIPlayer_ctor(void *a);
 extern "C" Route *Route_ctor2(Route *self, int *coords, void *targets, int *times, int count);
 extern "C" Route *Route_ctor1(Route *self, int *coords, int count);
-extern "C" int Route_getDockingTimeAt(Route *self, int index);
 
 // Route::waypointDefined() -> whether the waypoint array has been allocated.
-extern "C" bool Route_waypointDefined(Route *self)
-{
+bool Route::waypointDefined() {
+    Route *self = this;
     return self->field_0xc != 0;
 }
 
 // Route::length() -> number of waypoints.
-extern "C" int Route_length(Route *self)
-{
+int Route::length() {
+    Route *self = this;
     return (int)self->field_0xc->size();
 }
 
 // Route::reset() -> reset every waypoint and rewind to the start.
-extern "C" void Route_reset(Route *self)
-{
+void Route::reset() {
+    Route *self = this;
     for (uint32_t i = 0; i < self->field_0xc->size(); i++)
         Waypoint_reset((*self->field_0xc)[i]);
     self->field_0x0 = 0;
 }
 
 // Route::getWaypoint() -> waypoint at the current index.
-extern "C" Waypoint *Route_getWaypoint(Route *self)
-{
-    return Route_getWaypointAt(self, self->field_0x0);
+Waypoint * Route::getWaypoint() {
+    Route *self = this;
+    return ((Route *)(self))->getWaypointAt(self->field_0x0);
 }
 
 // Route::getExactClone() -> a clone whose reached-waypoints are marked, sharing the current index.
-extern "C" Route *Route_getExactClone(Route *self)
-{
-    Route *result = Route_clone(self);
+Route * Route::getExactClone() {
+    Route *self = this;
+    Route *result = ((Route *)(self))->clone();
     for (uint32_t i = 0; i < result->field_0xc->size(); i++) {
         if ((*self->field_0xc)[i]->field_0x130 != 0)
             Waypoint_reached((*result->field_0xc)[i]);
@@ -64,8 +60,8 @@ extern "C" Route *Route_getExactClone(Route *self)
 }
 
 // Route::getDockingTarget() -> docking target at the current index, or 0.
-extern "C" KIPlayer *Route_getDockingTarget(Route *self)
-{
+KIPlayer * Route::getDockingTarget() {
+    Route *self = this;
     Array<KIPlayer *> *targets = self->field_0x10;
     int index = self->field_0x0;
     if (targets != 0 && (int)targets->size() > index)
@@ -74,8 +70,8 @@ extern "C" KIPlayer *Route_getDockingTarget(Route *self)
 }
 
 // Route::getDockingTime(int) -> docking time at the given index, or 0.
-extern "C" int Route_getDockingTimeAt(Route *self, int index)
-{
+int Route::getDockingTimeAt(int index) {
+    Route *self = this;
     if (self->field_0x10 != 0) {
         Array<int> *times = self->field_0x14;
         if (index < (int)times->size())
@@ -85,8 +81,8 @@ extern "C" int Route_getDockingTimeAt(Route *self, int index)
 }
 
 // Route::setNewCoords(Vector) -> overwrite the first waypoint's target coordinates.
-extern "C" void Route_setNewCoords(Route *self, float x, float y, float z)
-{
+void Route::setNewCoords(float x, float y, float z) {
+    Route *self = this;
     Waypoint *wp = (*self->field_0xc)[0];
     wp->field_0x124 = (int)x;
     wp->field_0x128 = (int)y;
@@ -119,8 +115,8 @@ extern "C" void *_ZN5RouteD2Ev(Route *self)
 }
 
 // Route::getDockingTarget(int) -> docking target at the given index, or 0.
-extern "C" KIPlayer *Route_getDockingTarget_i(Route *self, int index)
-{
+KIPlayer * Route::getDockingTarget_i(int index) {
+    Route *self = this;
     Array<KIPlayer *> *targets = self->field_0x10;
     if (targets != 0 && index < (int)targets->size())
         return (*targets)[index];
@@ -128,9 +124,9 @@ extern "C" KIPlayer *Route_getDockingTarget_i(Route *self, int index)
 }
 
 // Route::update(Vector const&) -> tail-call update(v.x, v.y, v.z).
-extern "C" void Route_update(Route *self, const Vector &v)
-{
-    Route_update_xyz(self, v.x, v.y, v.z);
+void Route::update(const Vector &v) {
+    Route *self = this;
+    ((Route *)(self))->update_xyz(v.x, v.y, v.z);
 }
 
 extern "C" void ArrayWaypoint_ctor(void *a);   // Array<Waypoint*>::Array
@@ -163,14 +159,14 @@ extern "C" Route *_ZN5RouteC2EPii(Route *self, int *coords, int count)
 }
 
 // Route::getLastWaypoint() -> last waypoint in the path.
-extern "C" Waypoint *Route_getLastWaypoint(Route *self)
-{
-    return Route_getWaypointAt(self, (int)self->field_0xc->size() - 1);
+Waypoint * Route::getLastWaypoint() {
+    Route *self = this;
+    return ((Route *)(self))->getWaypointAt((int)self->field_0xc->size() - 1);
 }
 
 // Route::translate(Vector const&) -> shift every waypoint's coords by the given vector.
-extern "C" void Route_translate(Route *self, const Vector &v)
-{
+void Route::translate(const Vector &v) {
+    Route *self = this;
     Array<Waypoint *> *wps = self->field_0xc;
     float vx = v.x, vy = v.y, vz = v.z;
     for (uint32_t i = 0; i != wps->size(); i++) {
@@ -184,8 +180,8 @@ extern "C" void Route_translate(Route *self, const Vector &v)
 extern "C" void Waypoint_activate(Waypoint *wp);   // veneer tail-call target
 
 // Route::reachWaypoint(int) -> advance to the given waypoint, wrapping/resetting when looping.
-extern "C" void Route_reachWaypoint(Route *self, int index)
-{
+void Route::reachWaypoint(int index) {
+    Route *self = this;
     Array<Waypoint *> *wps = self->field_0xc;
     uint32_t len = wps->size();
     if (self->field_0x0 < (int)(len - 1)) {
@@ -228,8 +224,8 @@ extern "C" void *operator_new__(unsigned int sz);   // operator new[]
 extern "C" void operator_delete__(void *p);          // operator delete[]
 
 // Route::clone() -> deep copy of the path; preserves docking targets/times when any are set.
-extern "C" Route *Route_clone(Route *self)
-{
+Route * Route::clone() {
+    Route *self = this;
     Array<Waypoint *> *wps = self->field_0xc;
     int n = (int)wps->size();
     int *coords = (int *)operator_new__(n * 3 * 4);
@@ -281,8 +277,8 @@ static inline void getPos(void *kip, void *out)
 
 // Route::getWaypoint(int) -> snap the waypoint's stored coords to its docking target's position.
 // The on-stack position buffer makes the compiler emit the stack-protector canary.
-extern "C" Waypoint *Route_getWaypointAt(Route *self, int index)
-{
+Waypoint * Route::getWaypointAt(int index) {
+    Route *self = this;
     char pos[12];
     Waypoint *wp = 0;
     if ((int)self->field_0xc->size() > index &&
@@ -303,8 +299,8 @@ extern "C" Waypoint *Route_getWaypointAt(Route *self, int index)
 extern "C" float Waypoint_advance(Waypoint *wp, bool b);   // veneer tail-call target
 
 // Route::update(float, float, float) -> if close enough to the active waypoint, advance to the next.
-extern "C" float Route_update_xyz(Route *self, float x, float y, float z)
-{
+float Route::update_xyz(float x, float y, float z) {
+    Route *self = this;
     int idx = self->field_0x0;
     Array<Waypoint *> *wps = self->field_0xc;
     if (idx >= (int)wps->size())
@@ -344,7 +340,7 @@ extern "C" float Route_update_xyz(Route *self, float x, float y, float z)
 }
 
 // Route::getDockingTime() -> docking time at the current index.
-extern "C" int Route_getDockingTime(Route *self)
-{
-    return Route_getDockingTimeAt(self, self->field_0x0);
+int Route::getDockingTime() {
+    Route *self = this;
+    return ((Route *)(self))->getDockingTimeAt(self->field_0x0);
 }

@@ -1,4 +1,10 @@
 #include "gof2/Player.h"
+#include "gof2/Achievements.h"
+#include "gof2/GameText.h"
+#include "gof2/Hud.h"
+#include "gof2/PlayerEgo.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/Standing.h"
 #include "gof2/Globals.h"
 #include "gof2/Gun.h"
 
@@ -9,14 +15,12 @@ extern "C" void *Player_removeAllGuns_dtor(void *array);
 extern "C" void Player_removeAllGuns_delete(void *p);
 extern "C" void Player_damageShield_tail();
 extern "C" void Player_regenerateArmor_tail();
-extern "C" void Player_updateDamageRate(Player *self);
 extern "C" void Player_setMaxHitpoints_tail();
 extern "C" void Player_regenerateShield_tail();
 extern "C" void Player_setArmorHP_tail();
 extern "C" void Player_setHitpoints_tail();
 extern "C" void Player_setMaxShieldHP_tail();
 extern "C" void Player_setMaxEmpPoints_tail();
-extern "C" void Player_regenerateHull(Player *self);
 extern "C" void Player_setShieldHP_tail();
 extern "C" void Array_Player_ctor(Array<Player *> *array);
 extern "C" void ArrayAdd_Player(Player *value, Array<Player *> *array);
@@ -34,19 +38,13 @@ extern "C" void ArraySetLength_Gun(int len, Array<Gun *> *array);
 extern "C" void MatrixGetPosition(void *out, float *matrix);
 extern "C" void Vector_assign(Vector *dst, Vector *src);
 extern "C" int Status_getSystem();
-extern "C" int KIPlayer_isWingMan();
 extern "C" int SolarSystem_getRace();
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" void Level_friendTurnedEnemy(int level);
 extern "C" void Level_attackWanted(void *level, int a);
 extern "C" void Level_alarmAllFriends(void *level, int a, bool b);
 extern "C" void *Status_getStanding();
-extern "C" void Standing_applyDisable(void *self, int a);
-extern "C" int Achievements_hasMedal(void *self, int a, int b);
-extern "C" int Achievements_getValue(void *self, int a, int b);
 extern "C" void *Level_getPlayer();
-extern "C" void *PlayerEgo_getHUD(void *self);
-extern "C" void Hud_hudEventMedal(void *self, int a, int b);
 extern "C" void Player_damageEmp_tail(Player *self);
 extern "C" int **g_damageEmp_progress;
 extern "C" void **g_damageEmp_achievements;
@@ -84,22 +82,17 @@ extern "C" int FModSound_isPlaying(void *sound, int id);
 void FModSound_updateEvent3DAttributes(void *sound, int id, Vector *pos, Vector *vel, bool b);
 extern "C" void Player_playShootSound_play_tail(float vol, void *sound, int id, Vector *pos, int z);
 extern "C" void Player_playShootSound(Player *self, int type, Vector *channel, float volume);
-extern "C" int SolarSystem_getAttackRace(void *self);
 extern "C" int Status_hardCoreMode();
 extern "C" void Level_almostKillWanted(int level);
 extern "C" void Level_killWanted(int level);
 extern "C" void *Level_getEnemies();
-extern "C" void Hud_hudEvent(int hud, void *a, int b);
 extern "C" void *Status_getShip();
 extern "C" int Ship_getSignatureRace(void *self);
 extern "C" void *Ship_getFirstEquipmentOfSort(int self);
 extern "C" void Ship_removeEquipment(void *self, void *item);
-extern "C" void Standing_applyDelict(void *self, int a, int b);
-extern "C" void Standing_applyKill(void *self, int a);
 extern "C" void Standing_setPlayerSignatureRace(void *self, int r);
 extern "C" int Status_inBlackMarketSystem();
 extern "C" int Status_getCampaignMission();
-extern "C" void *GameText_getText(int id);
 extern "C" int String_Compare(void *a, void *b);
 extern "C" void Mission_getStatusValue();
 extern "C" void Mission_setStatusValue(int v);
@@ -111,7 +104,6 @@ extern "C" unsigned char FModSound_resume(void *self, void *event);
 extern "C" void Player_damage_full(Player *self, int amount, int a, int b);
 extern "C" void Player_stopShootSound(Player *self, int a, int b);
 extern "C" void Player_setMaxArmorHP_tail();
-extern "C" void Gun_ignite(Gun *self);
 extern "C" void Player_StopEngineSound(Player *self);
 extern "C" float Vector_subF(Vector *out, Vector *a, Vector *b);
 extern "C" void Vector_scale(Vector *out, float s, Vector *v);
@@ -133,14 +125,14 @@ __attribute__((minsize)) extern "C" void Player_pitchAllPrimaryGuns(Player *self
 }
 
 // ---- isAlwaysEnemy_a2a2e.cpp ----
-extern "C" unsigned char Player_isAlwaysEnemy(Player *self)
-{
+unsigned char Player::isAlwaysEnemy() {
+    Player *self = this;
     return self->alwaysEnemy;
 }
 
 // ---- setKIPlayer_a2a64.cpp ----
-extern "C" void Player_setKIPlayer(Player *self, KIPlayer *value)
-{
+void Player::setKIPlayer(KIPlayer *value) {
+    Player *self = this;
     self->kiPlayer = value;
 }
 
@@ -176,8 +168,8 @@ extern "C" Array<Player *> *Player_getEnemies(Player *self)
 }
 
 // ---- getShieldDamageRate_a2e82.cpp ----
-extern "C" int Player_getShieldDamageRate(Player *self)
-{
+int Player::getShieldDamageRate() {
+    Player *self = this;
     return self->shieldDamageRate;
 }
 
@@ -188,14 +180,14 @@ extern "C" int Player_replaceGuns(int a, int b, int c, int d, int e, bool f)
 }
 
 // ---- getShieldHP_a2da2.cpp ----
-extern "C" int Player_getShieldHP(Player *self)
-{
+int Player::getShieldHP() {
+    Player *self = this;
     return (int)self->shieldHP;
 }
 
 // ---- removeAllGuns_a3986.cpp ----
-extern "C" void Player_removeAllGuns(Player *self)
-{
+void Player::removeAllGuns() {
+    Player *self = this;
     if (self->guns != 0) {
         Player_removeAllGuns_releaseClasses(self->guns);
         if (self->guns != 0) {
@@ -206,64 +198,64 @@ extern "C" void Player_removeAllGuns(Player *self)
 }
 
 // ---- getArmorDamageRate_a2e88.cpp ----
-extern "C" int Player_getArmorDamageRate(Player *self)
-{
+int Player::getArmorDamageRate() {
+    Player *self = this;
     return self->armorDamageRate;
 }
 
 // ---- getArmorHP_a2dd6.cpp ----
-extern "C" int Player_getArmorHP(Player *self)
-{
+int Player::getArmorHP() {
+    Player *self = this;
     return self->armorHP;
 }
 
 // ---- setRadius_a2a60.cpp ----
-extern "C" void Player_setRadius(Player *self, int value)
-{
+void Player::setRadius(int value) {
+    Player *self = this;
     self->radius = value;
 }
 
 // ---- resetDamageDoneByPlayer_a2f96.cpp ----
-extern "C" void Player_resetDamageDoneByPlayer(Player *self)
-{
+void Player::resetDamageDoneByPlayer() {
+    Player *self = this;
     self->field_dc = 0;
     self->damageDoneByPlayer = 0;
     self->turnedEnemy = 0;
 }
 
 // ---- getKIPlayer_a2a6a.cpp ----
-extern "C" KIPlayer *Player_getKIPlayer(Player *self)
-{
+KIPlayer * Player::getKIPlayer() {
+    Player *self = this;
     return self->kiPlayer;
 }
 
 // ---- isDead_a36ce.cpp ----
-extern "C" bool Player_isDead(Player *self)
-{
+bool Player::isDead() {
+    Player *self = this;
     return self->hitpoints < 1;
 }
 
 // ---- getRadius_a2ce0.cpp ----
-extern "C" int Player_getRadius(Player *self)
-{
+int Player::getRadius() {
+    Player *self = this;
     return self->radius;
 }
 
 // ---- getEmpDamageRate_a2e7c.cpp ----
-extern "C" int Player_getEmpDamageRate(Player *self)
-{
+int Player::getEmpDamageRate() {
+    Player *self = this;
     return self->empDamageRate;
 }
 
 // ---- isAlwaysFriend_a2a28.cpp ----
-extern "C" unsigned char Player_isAlwaysFriend(Player *self)
-{
+unsigned char Player::isAlwaysFriend() {
+    Player *self = this;
     return self->alwaysFriend;
 }
 
 // ---- getHitpoints_a2e6c.cpp ----
-extern "C" int Player_getHitpoints(Player *self)
-{
+int Player::getHitpoints() {
+    Player *self = this;
     return self->hitpoints;
 }
 
@@ -293,8 +285,8 @@ __attribute__((minsize)) extern "C" void Player_damageShield(Player *self, int d
 }
 
 // ---- regenerateArmor_a2e44.cpp ----
-extern "C" void Player_regenerateArmor(Player *self)
-{
+void Player::regenerateArmor() {
+    Player *self = this;
     int v = self->armorHP + 2;
     if (v > self->maxArmorHP) {
         v = self->maxArmorHP;
@@ -304,69 +296,69 @@ extern "C" void Player_regenerateArmor(Player *self)
 }
 
 // ---- damageShip_a2f04.cpp ----
-extern "C" void Player_damageShip(Player *self, int damage)
-{
+void Player::damageShip(int damage) {
+    Player *self = this;
     int v = self->hitpoints - damage;
     v &= ~(v >> 31);
     self->hitpoints = v;
 }
 
 // ---- getMaxHitpoints_a2e70.cpp ----
-extern "C" int Player_getMaxHitpoints(Player *self)
-{
+int Player::getMaxHitpoints() {
+    Player *self = this;
     return self->maxHitpoints;
 }
 
 // ---- getGammaHP_a2de2.cpp ----
-extern "C" int Player_getGammaHP(Player *self)
-{
+int Player::getGammaHP() {
+    Player *self = this;
     return (int)self->gammaHP;
 }
 
 // ---- getBombForce_a2ea6.cpp ----
-extern "C" float Player_getBombForce(Player *self)
-{
+float Player::getBombForce() {
+    Player *self = this;
     return self->bombForce;
 }
 
 // ---- getMaxArmorHP_a2ddc.cpp ----
-extern "C" int Player_getMaxArmorHP(Player *self)
-{
+int Player::getMaxArmorHP() {
+    Player *self = this;
     return self->maxArmorHP;
 }
 
 // ---- getEnemy_a2cd6.cpp ----
-extern "C" Player *Player_getEnemy(Player *self, int index)
-{
+Player * Player::getEnemy(int index) {
+    Player *self = this;
     return self->enemies->data()[index];
 }
 
 // ---- turnEnemy_a36a4.cpp ----
-extern "C" void Player_turnEnemy(Player *self)
-{
+void Player::turnEnemy() {
+    Player *self = this;
     self->turnedEnemy = 1;
 }
 
 // ---- setEmpData_a2a34.cpp ----
-extern "C" void Player_setEmpData(Player *self, int points, int data)
-{
+void Player::setEmpData(int points, int data) {
+    Player *self = this;
     self->empPoints = points;
     if (self->maxEmpPoints < points) {
         self->maxEmpPoints = points;
     }
-    Player_updateDamageRate(self);
+    ((Player *)(self))->updateDamageRate();
     self->empData = data;
 }
 
 // ---- setVulnerable_a2e8e.cpp ----
-extern "C" void Player_setVulnerable(Player *self, bool value)
-{
+void Player::setVulnerable(bool value) {
+    Player *self = this;
     self->vulnerable = value;
 }
 
 // ---- setActive_a36e0.cpp ----
-extern "C" void Player_setActive(Player *self, bool value)
-{
+void Player::setActive(bool value) {
+    Player *self = this;
     self->active = value;
 }
 
@@ -382,8 +374,8 @@ __attribute__((minsize)) extern "C" bool Player_isAsteroid(Player *self)
 }
 
 // ---- updateDamageRate_a2730.cpp ----
-extern "C" void Player_updateDamageRate(Player *self)
-{
+void Player::updateDamageRate() {
+    Player *self = this;
     float maxHp = (float)self->maxHitpoints;
     float hp = (float)self->hitpoints;
     float maxArmor = (float)self->maxArmorHP;
@@ -403,34 +395,34 @@ extern "C" void Player_updateDamageRate(Player *self)
 }
 
 // ---- setBombForce_a2e9a.cpp ----
-extern "C" void Player_setBombForce(Player *self, float value)
-{
+void Player::setBombForce(float value) {
+    Player *self = this;
     self->bombForce = value;
 }
 
 // ---- setMaxHitpoints_a2d6c.cpp ----
-extern "C" void Player_setMaxHitpoints(Player *self, int value)
-{
+void Player::setMaxHitpoints(int value) {
+    Player *self = this;
     self->maxHitpoints = value;
     self->hitpoints = value;
     return Player_setMaxHitpoints_tail();
 }
 
 // ---- getGunRegenRate_a2ec2.cpp ----
-extern "C" int Player_getGunRegenRate(Player *self)
-{
+int Player::getGunRegenRate() {
+    Player *self = this;
     return 0;
 }
 
 // ---- getMaxEmpPoints_a2d96.cpp ----
-extern "C" int Player_getMaxEmpPoints(Player *self)
-{
+int Player::getMaxEmpPoints() {
+    Player *self = this;
     return self->maxEmpPoints;
 }
 
 // ---- regenerateShield_a2df0.cpp ----
-void Player_regenerateShield(Player *self, float amount)
-{
+void Player::regenerateShield() {
+    Player *self = this;
     float f = self->shieldHP + amount;
     float maxF = (float)self->maxShieldHP;
     if (f < maxF) {
@@ -441,26 +433,26 @@ void Player_regenerateShield(Player *self, float amount)
 }
 
 // ---- doesNeverAttack_a29fe.cpp ----
-extern "C" unsigned char Player_doesNeverAttack(Player *self)
-{
+unsigned char Player::doesNeverAttack() {
+    Player *self = this;
     return self->neverAttack;
 }
 
 // ---- getMaxShieldHP_a2d9c.cpp ----
-extern "C" int Player_getMaxShieldHP(Player *self)
-{
+int Player::getMaxShieldHP() {
+    Player *self = this;
     return self->maxShieldHP;
 }
 
 // ---- isDamaged_a36da.cpp ----
-extern "C" unsigned char Player_isDamaged(Player *self)
-{
+unsigned char Player::isDamaged() {
+    Player *self = this;
     return self->damaged;
 }
 
 // ---- isActive_a36e6.cpp ----
-extern "C" unsigned char Player_isActive(Player *self)
-{
+unsigned char Player::isActive() {
+    Player *self = this;
     return self->active;
 }
 
@@ -472,8 +464,8 @@ extern "C" void Player_shoot_full(
     int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7,
     int m8, int m9, int m10, int m11, int m12, int m13, int m14);
 
-int Player_shoot(Player *self, int a, long long pos, bool flag)
-{
+void Player::shoot(int a, int b, long long pos, bool flag) {
+    Player *self = this;
     int *m = (int *)self->transform;
     Player_shoot_full(self, a, (int)pos, (int)((unsigned long long)pos >> 32), flag,
                       m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7],
@@ -482,44 +474,44 @@ int Player_shoot(Player *self, int a, long long pos, bool flag)
 }
 
 // ---- getEmpPoints_a2d92.cpp ----
-extern "C" int Player_getEmpPoints(Player *self)
-{
+int Player::getEmpPoints() {
+    Player *self = this;
     return self->empPoints;
 }
 
 // ---- GetEngineEvent_a4108.cpp ----
-extern "C" int Player_GetEngineEvent(Player *self)
-{
+int Player::GetEngineEvent() {
+    Player *self = this;
     return (int)(__INTPTR_TYPE__)self->engineEvent;
 }
 
 // ---- setEmpForce_a2ea0.cpp ----
-extern "C" void Player_setEmpForce(Player *self, float value)
-{
+void Player::setEmpForce(float value) {
+    Player *self = this;
     self->empForce = value;
 }
 
 // ---- setShootingEnabled_a29c6.cpp ----
-extern "C" void Player_setShootingEnabled(Player *self, bool value)
-{
+void Player::setShootingEnabled(bool value) {
+    Player *self = this;
     self->shootingEnabled = value;
 }
 
 // ---- getDamageRate_a2e76.cpp ----
-extern "C" int Player_getDamageRate(Player *self)
-{
+int Player::getDamageRate() {
+    Player *self = this;
     return self->damageRate;
 }
 
 // ---- getEmpForce_a2eac.cpp ----
-extern "C" float Player_getEmpForce(Player *self)
-{
+float Player::getEmpForce() {
+    Player *self = this;
     return self->empForce;
 }
 
 // ---- turnedEnemy_a369e.cpp ----
-extern "C" unsigned char Player_turnedEnemy(Player *self)
-{
+unsigned char Player::turnedEnemy() {
+    Player *self = this;
     return self->turnedEnemy;
 }
 
@@ -536,8 +528,8 @@ __attribute__((minsize)) extern "C" bool Player_gunAvailable(Player *self, unsig
 }
 
 // ---- getCombinedHP_a2db0.cpp ----
-extern "C" int Player_getCombinedHP(Player *self)
-{
+int Player::getCombinedHP() {
+    Player *self = this;
     return (int)(self->shieldHP + (float)self->armorHP + (float)self->hitpoints);
 }
 
@@ -553,8 +545,8 @@ __attribute__((minsize)) extern "C" bool Player_isGasCloud(Player *self)
 }
 
 // ---- setArmorHP_a2d1c.cpp ----
-extern "C" void Player_setArmorHP(Player *self, int value)
-{
+void Player::setArmorHP(int value) {
+    Player *self = this;
     if (self->maxArmorHP < value) {
         value = self->maxArmorHP;
     }
@@ -563,8 +555,8 @@ extern "C" void Player_setArmorHP(Player *self, int value)
 }
 
 // ---- setHitpoints_a2ce4.cpp ----
-extern "C" void Player_setHitpoints(Player *self, int value)
-{
+void Player::setHitpoints(int value) {
+    Player *self = this;
     self->hitpoints = value;
     if (self->maxHitpoints < value) {
         self->maxHitpoints = value;
@@ -573,30 +565,30 @@ extern "C" void Player_setHitpoints(Player *self, int value)
 }
 
 // ---- setNeverAttack_a29f8.cpp ----
-extern "C" void Player_setNeverAttack(Player *self, bool value)
-{
+void Player::setNeverAttack(bool value) {
+    Player *self = this;
     self->neverAttack = value;
 }
 
 // ---- setMaxShieldHP_a2d76.cpp ----
-extern "C" void Player_setMaxShieldHP(Player *self, int value)
-{
+void Player::setMaxShieldHP(int value) {
+    Player *self = this;
     self->maxShieldHP = value;
     self->shieldHP = (float)value;
     return Player_setMaxShieldHP_tail();
 }
 
 // ---- setMaxEmpPoints_a2d64.cpp ----
-extern "C" void Player_setMaxEmpPoints(Player *self, int value)
-{
+void Player::setMaxEmpPoints(int value) {
+    Player *self = this;
     self->empPoints = value;
     self->maxEmpPoints = value;
     return Player_setMaxEmpPoints_tail();
 }
 
 // ---- getGunSlots_a39a6.cpp ----
-extern "C" int Player_getGunSlots(Player *self)
-{
+int Player::getGunSlots() {
+    Player *self = this;
     return 3;
 }
 
@@ -614,15 +606,15 @@ extern "C" void Player_getHitVector(Vec3 *out, Player *self)
 }
 
 // ---- setPlayShootSound_a2a56.cpp ----
-extern "C" void Player_setPlayShootSound(Player *self, bool play, int id)
-{
+void Player::setPlayShootSound(bool play, int id) {
+    Player *self = this;
     self->playShootSound = play;
     self->playShootSoundId = id;
 }
 
 // ---- regenerateShield_a2e1a.cpp ----
-void Player_regenerateShield(Player *self)
-{
+void Player::regenerateShield() {
+    Player *self = this;
     float f = self->shieldHP + 1.0f;
     float maxF = (float)self->maxShieldHP;
     if (f < maxF) {
@@ -640,7 +632,7 @@ __attribute__((minsize)) extern "C" void Player_heal(Player *self, float amount)
     if (f > 1.0f) {
         int count = (int)f;
         for (int i = 0; i < count; i++) {
-            Player_regenerateHull(self);
+            ((Player *)(self))->regenerateHull();
         }
         self->field_110 = self->field_110 - (float)count;
     }
@@ -700,9 +692,8 @@ void *operator new(__SIZE_TYPE__ size);
 
 
 
-extern "C" Player *Player_ctor(Player *self, int radius, int hitpoints,
-                               int numPrimary, int numSecondary, int numTertiary)
-{
+Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
+    Player *self = this;
     void * volatile cookie = __stack_chk_guard;
     Matrix_ctor((Matrix *)self->transform);
     self->shieldHP = 0.0f;
@@ -730,7 +721,7 @@ extern "C" Player *Player_ctor(Player *self, int radius, int hitpoints,
     self->field_60 = 0;
     self->bombForce = 0.0f;
     self->empForce = 0.0f;
-    Player_updateDamageRate(self);
+    ((Player *)(self))->updateDamageRate();
     self->field_58 = -1;
 
     Array<Array<Gun *> *> *gunArr =
@@ -820,8 +811,8 @@ __attribute__((minsize)) extern "C" float Player_damageGamma(Player *self, float
 }
 
 // ---- damageEmp_a2fa4.cpp ----
-extern "C" void Player_damageEmp(Player *self, int amount, bool flag)
-{
+void Player::damageEmp(int amount, bool flag) {
+    Player *self = this;
     if (self->vulnerable == 0 || self->active == 0) {
         return;
     }
@@ -895,7 +886,7 @@ extern "C" void Player_damageEmp(Player *self, int amount, bool flag)
         }
         {
             void *st = Status_getStanding();
-            Standing_applyDisable(st, *(int *)((char *)self->kiPlayer + 0x28));
+            ((Standing *)(st))->applyDisable(*(int *)((char *)self->kiPlayer + 0x28));
             ki = (char *)self->kiPlayer;
         }
     lab_30e2:
@@ -912,13 +903,13 @@ extern "C" void Player_damageEmp(Player *self, int amount, bool flag)
                 *(int *)((char *)prog + 0x134) = 0;
             }
             void *ach = *g_damageEmp_achievements;
-            if (Achievements_hasMedal(ach, 0x2a, 1) == 0) {
+            if (((Achievements *)(ach))->hasMedal(0x2a, 1) == 0) {
                 int cnt = *(int *)((char *)(*g_damageEmp_progress) + 0x134) + 1;
                 *(int *)((char *)(*g_damageEmp_progress) + 0x134) = cnt;
-                if (Achievements_getValue(*g_damageEmp_achievements, 0x2a, 1) <= cnt) {
+                if (((Achievements *)(*g_damageEmp_achievements))->getValue(0x2a, 1) <= cnt) {
                     void *ego = Level_getPlayer();
-                    void *hud = PlayerEgo_getHUD(ego);
-                    Hud_hudEventMedal(hud, 0x2a, 100);
+                    void *hud = ((PlayerEgo *)(ego))->getHUD();
+                    ((Hud *)(hud))->hudEventMedal(0x2a, 100);
                     *(char *)((char *)(*g_damageEmp_progress) + 0x138) = 1;
                 }
             }
@@ -965,8 +956,8 @@ __attribute__((minsize)) extern "C" void Player_setAlwaysEnemy(Player *self, boo
 }
 
 // ---- regenerateHull_a2e58.cpp ----
-extern "C" void Player_regenerateHull(Player *self)
-{
+void Player::regenerateHull() {
+    Player *self = this;
     int v = self->maxHitpoints;
     if (self->hitpoints + 1 < self->maxHitpoints) {
         v = self->hitpoints + 1;
@@ -1054,7 +1045,7 @@ __attribute__((minsize)) extern "C" void Player_reset(Player *self)
     self->hitpoints = maxHp;
     self->empPoints = maxEmp;
     self->shieldHP = shield;
-    Player_updateDamageRate(self);
+    ((Player *)(self))->updateDamageRate();
     self->vulnerable = 1;
     self->active = 1;  // active = 1, damaged = 0
     self->field_54 = 0;
@@ -1098,8 +1089,8 @@ extern "C" int *g_cws_sound;    // DAT_b3870  -> sound id holder (deref once)
 extern "C" int *g_cws_sound2;   // DAT_b38d8 (deref once)
 extern "C" int *g_cws_sound3;   // DAT_b38dc (array base)
 
-extern "C" void Player_calcWeaponSounds(Player *self, int count)
-{
+void Player::calcWeaponSounds(int count) {
+    Player *self = this;
     Array<Array<Gun *> *> *guns = self->guns;
     if (guns == 0) {
         return;
@@ -1278,17 +1269,11 @@ __attribute__((minsize)) extern "C" void Player_playShootSound(Player *self, int
 }
 
 // ---- shoot_a3b20.cpp ----
-extern "C" int Gun_shootAt(Gun *self,
-                           int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7,
-                           int m8, int m9, int m10, int m11, int m12, int m13, int m14,
-                           int a, void *self2, int b);
 
 extern "C" const float k_shootAt_inc;   // DAT_b3cb4
 
-extern "C" void Player_shoot1(Player *self, unsigned int slot, int idLo, int idHi, int flag,
-                              int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7,
-                              int m8, int m9, int m10, int m11, int m12, int m13, int m14)
-{
+void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8, int m9, int m10, int m11, int m12, int m13, int m14) {
+    Player *self = this;
     void * volatile cookie = __stack_chk_guard;
     (void)idLo; (void)idHi;
 
@@ -1300,9 +1285,7 @@ extern "C" void Player_shoot1(Player *self, unsigned int slot, int idLo, int idH
             for (unsigned int i = 0; i < arr->size(); i++) {
                 Gun *g = self->guns->data()[slot]->data()[i];
                 if (g->field_0x48 < g->field_0x6c) {
-                    int r = Gun_shootAt(g, m0, m1, m2, m3, m4, m5, m6, m7,
-                                        m8, m9, m10, m11, m12, m13, m14,
-                                        flag, self, idLo);
+                    int r = ((Gun *)(g))->shootAt(m0, m1, m2, m3);
                     if (r != 0) {
                         self->field_60 = self->field_60 + k_shootAt_inc;
                         Gun *g2 = self->guns->data()[slot]->data()[i];
@@ -1334,8 +1317,8 @@ extern "C" const float k_damage_full2;  // DAT_b367c
 extern "C" const float k_damage_hc2;    // DAT_b3680
 extern "C" const float k_damage_regen;  // DAT_b3684
 
-void Player_damage(Player *self, int amount, int flag, int missionId)
-{
+void Player::damage(int amount) {
+    Player *self = this;
     if (self->vulnerable == 0) return;
     if (self->active == 0) return;
     if (self->hitpoints < 1) return;
@@ -1368,7 +1351,7 @@ void Player_damage(Player *self, int amount, int flag, int missionId)
             if (!sameRace) {
                 int race2 = *(int *)((char *)self->kiPlayer + 0x28);
                 void *sys = (void *)(long)Status_getSystem();
-                if (race2 != SolarSystem_getAttackRace(sys)) {
+                if (race2 != ((SolarSystem *)(sys))->getAttackRace()) {
                     goto LAB_342a;
                 }
             }
@@ -1393,12 +1376,12 @@ void Player_damage(Player *self, int amount, int flag, int missionId)
                         void *item = Ship_getFirstEquipmentOfSort((int)(long)ship);
                         Ship_removeEquipment(ship, item);
                         void *st2 = Status_getStanding();
-                        Standing_applyDelict(st2, Ship_getSignatureRace(ship), 100);
+                        ((Standing *)(st2))->applyDelict(Ship_getSignatureRace(ship), 100);
                         Standing_setPlayerSignatureRace(standing, -1);
                         void *ego = Level_getPlayer();
-                        int hud = (int)(__INTPTR_TYPE__)PlayerEgo_getHUD(ego);
+                        int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                         int p = (int)(long)Level_getPlayer();
-                        Hud_hudEvent(hud, (void *)0x1f, p);
+                        ((Hud *)(hud))->hudEvent((void *)0x1f, p);
                     }
                 }
             }
@@ -1414,12 +1397,12 @@ void Player_damage(Player *self, int amount, int flag, int missionId)
                     void *item = Ship_getFirstEquipmentOfSort((int)(long)ship);
                     Ship_removeEquipment(ship, item);
                     void *st2 = Status_getStanding();
-                    Standing_applyDelict(st2, Ship_getSignatureRace(ship), 100);
+                    ((Standing *)(st2))->applyDelict(Ship_getSignatureRace(ship), 100);
                     Standing_setPlayerSignatureRace(standing, -1);
                     void *ego = Level_getPlayer();
-                    int hud = (int)(__INTPTR_TYPE__)PlayerEgo_getHUD(ego);
+                    int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                     int p = (int)(long)Level_getPlayer();
-                    Hud_hudEvent(hud, (void *)0x1f, p);
+                    ((Hud *)(hud))->hudEvent((void *)0x1f, p);
                 }
                 self->turnedEnemy = 1;
             }
@@ -1503,11 +1486,11 @@ LAB_3488:
                     Status_inBlackMarketSystem() == 0) {
                     if (*(char *)((char *)self->kiPlayer + 0x42) == 0) {
                         void *st = Status_getStanding();
-                        Standing_applyKill(st, *(int *)((char *)self->kiPlayer + 0x28));
+                        ((Standing *)(st))->applyKill(*(int *)((char *)self->kiPlayer + 0x28));
                     }
                     int mission = Status_getCampaignMission();
                     char *ki3 = (char *)self->kiPlayer;
-                    void *txt = GameText_getText(*g_damage_text[0]);
+                    void *txt = ((GameText *)(*g_damage_text[0]))->getText();
                     int cmp = String_Compare((void *)(ki3 + 0x18), txt);
                     if (missionId == 0xb3 && cmp == 0) {
                         Mission_getStatusValue();
@@ -1523,7 +1506,7 @@ LAB_3488:
 
     self->damaged = 1;
     *(float *)&self->field_60 = *(float *)&self->field_60 + k_damage_regen;
-    Player_updateDamageRate(self);
+    ((Player *)(self))->updateDamageRate();
     if (self->kiPlayer != 0) {
         int slave = *(int *)((char *)self->kiPlayer + 0x10);
         if (slave != 0) {
@@ -1579,8 +1562,8 @@ __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, 
 }
 
 // ---- damage_a3694.cpp ----
-void Player_damage(Player *self, int amount)
-{
+void Player::damage(int amount) {
+    Player *self = this;
     return Player_damage_full(self, amount, 0, -1);
 }
 
@@ -1620,27 +1603,20 @@ __attribute__((minsize)) extern "C" void Player_setAlwaysFriend(Player *self, bo
 }
 
 // ---- setMaxArmorHP_a2d8a.cpp ----
-extern "C" void Player_setMaxArmorHP(Player *self, int value)
-{
+void Player::setMaxArmorHP(int value) {
+    Player *self = this;
     self->armorHP = value;
     self->maxArmorHP = value;
     return Player_setMaxArmorHP_tail();
 }
 
 // ---- shoot_a3d5c.cpp ----
-extern "C" int Gun_shoot(Gun *self,
-                         int a8, int a9, int a10, int a11, int a12, int a13, int a14,
-                         int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22,
-                         int flag, int a7);
 
 extern "C" unsigned int g_shoot_mask;   // DAT_b3f24
 extern "C" const float k_shoot_inc;      // DAT_b3f28
 
-extern "C" int Player_shoot2(Player *self, unsigned int slot, int gunId, int a4_00, int flag,
-                             int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13,
-                             int a14, int a15, int a16, int a17, int a18, int a19, int a20,
-                             int a21, int a22)
-{
+int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22) {
+    Player *self = this;
     void * volatile cookie = __stack_chk_guard;
     unsigned int mask = g_shoot_mask;
     int retval = 1;
@@ -1655,14 +1631,13 @@ extern "C" int Player_shoot2(Player *self, unsigned int slot, int gunId, int a4_
                 unsigned int sortIdx = g->field_0x5c - 6;
                 if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0 &&
                     *(int *)g->field_0x3c >= 0) {
-                    Gun_ignite(g);
+                    ((Gun *)(g))->ignite();
                 } else if (g->field_0x58 == gunId &&
                            g->field_0x48 < g->field_0x6c) {
                     if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
                         *(char *)(g->field_0x38 + 0x69) = 1;
                     }
-                    int r = Gun_shoot(g, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19,
-                                      a20, a21, a22, flag, a7);
+                    int r = ((Gun *)(g))->shoot(a8, a9, a10);
                     if (r != 0) {
                         self->field_60 = self->field_60 + k_shoot_inc;
                         if (self->playShootSound != 0) {
@@ -1699,8 +1674,8 @@ extern "C" const float k_update_a;     // DAT_b42b8
 extern "C" const float k_update_b;     // DAT_b42bc
 extern "C" const float k_update_c;     // DAT_b42c0
 
-extern "C" Vector *Player_update(Player *self, int dt, int doSound)
-{
+Vector * Player::update(int dt, int doSound) {
+    Player *self = this;
     void * volatile cookie = __stack_chk_guard;
 
     int b4 = self->field_b4 + dt;
@@ -1728,7 +1703,7 @@ extern "C" Vector *Player_update(Player *self, int dt, int doSound)
             *(int *)((char *)clk + 0x134) = *(int *)((char *)clk + 0x134) - 1;
             self->empData = 0;
         }
-        Player_updateDamageRate(self);
+        ((Player *)(self))->updateDamageRate();
     }
 
     char *flagObj = *g_update_flag;
@@ -1776,8 +1751,8 @@ extern "C" void Player_shoot_full2(
     int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7,
     int m8, int m9, int m10, int m11, int m12, int m13, int m14);
 
-void Player_shoot(Player *self, int a, int b, long long pos, bool flag)
-{
+void Player::shoot(int a, int b, long long pos, bool flag) {
+    Player *self = this;
     int *m = (int *)self->transform;
     Player_shoot_full2(self, a, b, (int)pos, (int)((unsigned long long)pos >> 32),
                        m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7],
@@ -1809,8 +1784,8 @@ __attribute__((minsize)) void Player_stopShooting(Player *self, int slot)
 }
 
 // ---- setHitVector_a2e94.cpp ----
-extern "C" float *Player_setHitVector(Player *self, float x, float y, float z)
-{
+float * Player::setHitVector(float x, float y, float z) {
+    Player *self = this;
     float *p = self->hitVector;
     *p++ = x;
     *p++ = y;

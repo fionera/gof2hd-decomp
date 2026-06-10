@@ -1,4 +1,5 @@
 #include "gof2/GenericShader.h"
+#include "gof2/String.h"
 
 // Registry slot the constructor links itself into (engine-global, resolved at link).
 extern "C" void *GenericShader_registerSrc;
@@ -144,9 +145,9 @@ GenericShader::GenericShader()
 
     // Initialise the String member at +0xc from a literal.
     String tmp;
-    String_ctor_char(&tmp, "GenericShader", false);
-    String_assign(&field_0xc, &tmp);
-    String_dtor(&tmp);
+    ((String *)(&tmp))->ctor_char("GenericShader", false);
+    ((String *)(&field_0xc))->assign(&tmp);
+    ((String *)(&tmp))->dtor();
 }
 
 } // namespace AbyssEngine

@@ -1,4 +1,6 @@
 #include "gof2/ApplicationManager.h"
+#include "gof2/IApplicationModule.h"
+#include "gof2/String.h"
 #include "gof2/Engine.h"
 
 
@@ -10,7 +12,6 @@ extern "C" void ext_001ab488(void *sound, int soundId, float volume);
 extern "C" void ext_001ab5e8(void *cheats, unsigned short key);
 extern "C" void ext_001ab5d8(void *cheats);
 extern "C" void ext_001ab548(void *sound);
-extern "C" void Engine_Resume(void *engine);
 extern "C" void ext_001ab518(void *sound);
 extern "C" void ext_001ab508(void *sound, int soundId);
 extern "C" void ext_001ab4e8(void *sound, int soundId);
@@ -18,7 +19,6 @@ extern "C" void ext_001ab4d8(void *sound, int soundId);
 extern "C" void ext_001ab598(void *sound);
 extern "C" void ext_001ab558(void *sound, int soundId);
 extern "C" void ext_001ab4c8(void *sound);
-extern "C" void Engine_Suspend(void *engine);
 extern "C" void ext_001ab568(void *sound);
 extern "C" void ext_001ab328(void *engine, unsigned short duration);
 extern "C" void ext_001ab588(void *sound);
@@ -26,7 +26,6 @@ extern "C" void ext_001ab5c8(void *cheats);
 extern "C" void ext_001ab538(void *sound);
 extern "C" void ConfigReader_ParseFile(ConfigReader *reader, String *name);
 extern "C" char g_touchDown;
-extern "C" void ApplicationManager_ConvertTouchCoords(ApplicationManager *self, int *x, int *y);
 extern "C" uint64_t g_perfElapsed;
 extern "C" uint64_t g_perfActionCount;
 extern "C" uint64_t g_perfLimitValue;
@@ -36,10 +35,7 @@ extern "C" char g_perfEnabled;
 extern "C" char g_perfPendingFlag;
 extern "C" void Engine_PreUpdate(void *engine);
 extern "C" void Engine_ClearBuffer(void *engine, int color);
-extern "C" void Engine_ResetLightParam(void *engine);
-extern "C" int Engine_IsPostEffectActivated(void *engine);
 extern "C" void AESoundRessource_checkLooping(void *sound);
-extern "C" void ApplicationManager_CheckForOrientationChange(ApplicationManager *self);
 extern "C" void PaintCanvas_StartDraw2FBO(void *canvas);
 extern "C" void PaintCanvas_StopDraw2FBO(void *canvas);
 extern "C" void PaintCanvas_CheckNUseRefractFBO(void *canvas);
@@ -54,7 +50,6 @@ extern "C" void ConfigReader_ctor(void *reader, void *engine);
 extern "C" void CheatHandler_ctor(void *cheats, void *keys);
 extern "C" void AESoundRessource_SetSound(void *sound, void *info, int count);
 extern "C" void AESoundRessource_init(void *sound, int index);
-extern "C" void IApplicationModule_SetApplicationManager(void *module, ApplicationManager *manager);
 extern "C" void ArrayAdd_IApplicationModule(void *module, void *array);
 extern "C" void ext_001ab5b8(unsigned int id, void *array);
 extern "C" char g_perfPending;
@@ -72,7 +67,6 @@ extern "C" void ArrayAdd_long_long(long long value, void *array);
 extern "C" void ext_001ab5f8(long long key, void *array);
 extern "C" void Array_StringPtr_ctor(void *array);
 extern "C" void ArrayAdd_StringPtr(String *string, void *array);
-extern "C" String *String_assign(String *self, String *other);
 extern "C" int g_orientationLeft;
 extern "C" int g_orientationFlat;
 extern "C" int g_orientationRight;
@@ -94,15 +88,15 @@ extern "C" void operator_delete_array(void *ptr);
 // ---- SetLoadingCallback_82506.cpp ----
 typedef void LoadingCallback_t(PaintCanvas *, int, void *);
 
-extern "C" void ApplicationManager_SetLoadingCallback(ApplicationManager *self, LoadingCallback_t *callback, void *data)
-{
+void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) {
+    ApplicationManager *self = this;
     self->field_0x20 = (void *)callback;
     self->field_0x24 = data;
 }
 
 // ---- SoundSetVolume_82270.cpp ----
-extern "C" void ApplicationManager_SoundSetVolume(ApplicationManager *self, int volume)
-{
+void ApplicationManager::SoundSetVolume(int volume) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab578(sound, volume);
@@ -110,8 +104,8 @@ extern "C" void ApplicationManager_SoundSetVolume(ApplicationManager *self, int 
 }
 
 // ---- SoundStopSounds_821fc.cpp ----
-extern "C" void ApplicationManager_SoundStopSounds(ApplicationManager *self)
-{
+void ApplicationManager::SoundStopSounds() {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab528(sound);
@@ -119,8 +113,8 @@ extern "C" void ApplicationManager_SoundStopSounds(ApplicationManager *self)
 }
 
 // ---- SoundIsPlaying_8229a.cpp ----
-extern "C" int ApplicationManager_SoundIsPlaying(ApplicationManager *self)
-{
+int ApplicationManager::SoundIsPlaying() {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound == 0) {
         return 0;
@@ -129,16 +123,16 @@ extern "C" int ApplicationManager_SoundIsPlaying(ApplicationManager *self)
 }
 
 // ---- GetSystemTimeMillis_83e9e.cpp ----
-extern "C" uint64_t ApplicationManager_GetSystemTimeMillis(ApplicationManager *self)
-{
+uint64_t ApplicationManager::GetSystemTimeMillis() {
+    ApplicationManager *self = this;
     return self->field_0x68;
 }
 
 // ---- LoadingCallbackShow_8250c.cpp ----
 typedef void LoadingShowCallback(PaintCanvas *, int, void *);
 
-extern "C" void ApplicationManager_LoadingCallbackShow(ApplicationManager *self, int mode, void *data)
-{
+void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
+    ApplicationManager *self = this;
     LoadingShowCallback *callback = (LoadingShowCallback *)self->field_0x20;
     if (callback != 0) {
         callback(*(PaintCanvas **)self, mode, data);
@@ -146,8 +140,8 @@ extern "C" void ApplicationManager_LoadingCallbackShow(ApplicationManager *self,
 }
 
 // ---- SoundPlay_821b2.cpp ----
-extern "C" void ApplicationManager_SoundPlay(ApplicationManager *self, int soundId)
-{
+void ApplicationManager::SoundPlay(int soundId) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0 && self->field_0xb0) {
         ext_001ab4f8(sound, soundId);
@@ -155,8 +149,8 @@ extern "C" void ApplicationManager_SoundPlay(ApplicationManager *self, int sound
 }
 
 // ---- SoundPlay_821c6.cpp ----
-extern "C" void ApplicationManager_SoundPlay_vol(ApplicationManager *self, int soundId, float volume)
-{
+void ApplicationManager::SoundPlay_vol(int soundId, float volume) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound == 0) {
         return;
@@ -168,8 +162,8 @@ extern "C" void ApplicationManager_SoundPlay_vol(ApplicationManager *self, int s
 }
 
 // ---- CheatUpdate_8253a.cpp ----
-extern "C" void ApplicationManager_CheatUpdate(ApplicationManager *self, unsigned short key)
-{
+void ApplicationManager::CheatUpdate(unsigned short key) {
+    ApplicationManager *self = this;
     if (self->field_0x34) {
         void *cheats = self->field_0x30;
         if (cheats != 0) {
@@ -179,8 +173,8 @@ extern "C" void ApplicationManager_CheatUpdate(ApplicationManager *self, unsigne
 }
 
 // ---- CheatAddCode_82528.cpp ----
-extern "C" void ApplicationManager_CheatAddCode(ApplicationManager *self, void *code, int value)
-{
+void ApplicationManager::CheatAddCode(void *code, int value) {
+    ApplicationManager *self = this;
     void *cheats = self->field_0x30;
     if (cheats != 0) {
         ext_001ab5d8(cheats);
@@ -188,8 +182,8 @@ extern "C" void ApplicationManager_CheatAddCode(ApplicationManager *self, void *
 }
 
 // ---- SoundPause_82218.cpp ----
-extern "C" void ApplicationManager_SoundPause(ApplicationManager *self)
-{
+void ApplicationManager::SoundPause() {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab548(sound);
@@ -197,8 +191,8 @@ extern "C" void ApplicationManager_SoundPause(ApplicationManager *self)
 }
 
 // ---- GetActionState_83e8a.cpp ----
-extern "C" uint64_t ApplicationManager_GetActionState(ApplicationManager *self)
-{
+uint64_t ApplicationManager::GetActionState() {
+    ApplicationManager *self = this;
     return self->field_0xa0;
 }
 
@@ -206,8 +200,8 @@ extern "C" uint64_t ApplicationManager_GetActionState(ApplicationManager *self)
 typedef void ModuleCallback(void *);
 
 
-extern "C" void ApplicationManager_Resume(ApplicationManager *self)
-{
+void ApplicationManager::Resume() {
+    ApplicationManager *self = this;
     if (self->field_0x3c != 3) {
         return;
     }
@@ -218,7 +212,7 @@ extern "C" void ApplicationManager_Resume(ApplicationManager *self)
         vtable[0x40 / 4](module);
         void *engine = self->field_0xa8;
         if (engine != 0) {
-            Engine_Resume(engine);
+            ((Engine *)(engine))->Resume();
         }
         self->field_0xa0 = 0;
         self->field_0xa4 = 0;
@@ -229,8 +223,8 @@ extern "C" void ApplicationManager_Resume(ApplicationManager *self)
 }
 
 // ---- SoundStop_821ee.cpp ----
-extern "C" void ApplicationManager_SoundStop(ApplicationManager *self)
-{
+void ApplicationManager::SoundStop() {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab518(sound);
@@ -238,8 +232,8 @@ extern "C" void ApplicationManager_SoundStop(ApplicationManager *self)
 }
 
 // ---- SoundPlayLoop_821da.cpp ----
-extern "C" void ApplicationManager_SoundPlayLoop(ApplicationManager *self, int soundId)
-{
+void ApplicationManager::SoundPlayLoop(int soundId) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0 && self->field_0xb0) {
         ext_001ab508(sound, soundId);
@@ -247,8 +241,8 @@ extern "C" void ApplicationManager_SoundPlayLoop(ApplicationManager *self, int s
 }
 
 // ---- SoundPlayMusicLoop_8219e.cpp ----
-extern "C" void ApplicationManager_SoundPlayMusicLoop(ApplicationManager *self, int soundId)
-{
+void ApplicationManager::SoundPlayMusicLoop(int soundId) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0 && self->field_0xb1) {
         ext_001ab4e8(sound, soundId);
@@ -256,38 +250,38 @@ extern "C" void ApplicationManager_SoundPlayMusicLoop(ApplicationManager *self, 
 }
 
 // ---- ResetKeyState_83e90.cpp ----
-extern "C" void ApplicationManager_ResetKeyState(ApplicationManager *self)
-{
+void ApplicationManager::ResetKeyState() {
+    ApplicationManager *self = this;
     self->field_0x80 = 0;
 }
 
 // ---- GetElapsedTimeMillis_827dc.cpp ----
-extern "C" uint64_t ApplicationManager_GetElapsedTimeMillis(ApplicationManager *self)
-{
+uint64_t ApplicationManager::GetElapsedTimeMillis() {
+    ApplicationManager *self = this;
     return self->field_0x70 - self->field_0x78;
 }
 
 // ---- SoundMusicEnable_8226a.cpp ----
-extern "C" void ApplicationManager_SoundMusicEnable(ApplicationManager *self, bool enable)
-{
+void ApplicationManager::SoundMusicEnable(bool enable) {
+    ApplicationManager *self = this;
     self->field_0xb1 = enable;
 }
 
 // ---- CheatEnable_82534.cpp ----
-extern "C" void ApplicationManager_CheatEnable(ApplicationManager *self, bool enable)
-{
+void ApplicationManager::CheatEnable(bool enable) {
+    ApplicationManager *self = this;
     self->field_0x34 = enable;
 }
 
 // ---- GetCurrentTimeMillis_83e98.cpp ----
-extern "C" uint64_t ApplicationManager_GetCurrentTimeMillis(ApplicationManager *self)
-{
+uint64_t ApplicationManager::GetCurrentTimeMillis() {
+    ApplicationManager *self = this;
     return self->field_0x68;
 }
 
 // ---- SoundPlayMusic_8218a.cpp ----
-extern "C" void ApplicationManager_SoundPlayMusic(ApplicationManager *self, int soundId)
-{
+void ApplicationManager::SoundPlayMusic(int soundId) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0 && self->field_0xb1) {
         ext_001ab4d8(sound, soundId);
@@ -295,8 +289,8 @@ extern "C" void ApplicationManager_SoundPlayMusic(ApplicationManager *self, int 
 }
 
 // ---- OnTouchEnd_83c90.cpp ----
-extern "C" void ApplicationManager_OnTouchEndSimple(ApplicationManager *self)
-{
+void ApplicationManager::OnTouchEndSimple() {
+    ApplicationManager *self = this;
     self->field_0x8 = 0;
     self->field_0xc = 0;
     self->field_0x80 = 0;
@@ -309,15 +303,15 @@ extern "C" void ApplicationManager_OnTouchEndSimple(ApplicationManager *self)
 }
 
 // ---- SoundEnable_8225a.cpp ----
-extern "C" void ApplicationManager_SoundEnable(ApplicationManager *self, bool enable)
-{
+void ApplicationManager::SoundEnable(bool enable) {
+    ApplicationManager *self = this;
     self->field_0xb0 = enable;
     self->field_0xb1 = enable;
 }
 
 // ---- SoundSetMusicVolume_8228c.cpp ----
-extern "C" void ApplicationManager_SoundSetMusicVolume(ApplicationManager *self, int volume)
-{
+void ApplicationManager::SoundSetMusicVolume(int volume) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab598(sound);
@@ -327,8 +321,8 @@ extern "C" void ApplicationManager_SoundSetMusicVolume(ApplicationManager *self,
 // ---- SetResumeCallback_82516.cpp ----
 typedef bool ResumeCallback_t(PaintCanvas *, void *);
 
-extern "C" void ApplicationManager_SetResumeCallback(ApplicationManager *self, ResumeCallback_t *callback, void *data)
-{
+void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) {
+    ApplicationManager *self = this;
     self->field_0x28 = (void *)callback;
     self->field_0x2c = data;
 }
@@ -341,14 +335,14 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_GetApplic
 }
 
 // ---- VibrateEnable_822b6.cpp ----
-extern "C" void ApplicationManager_VibrateEnable(ApplicationManager *self, bool enable)
-{
+void ApplicationManager::VibrateEnable(bool enable) {
+    ApplicationManager *self = this;
     self->field_0xb2 = enable;
 }
 
 // ---- SoundResume_82226.cpp ----
-extern "C" void ApplicationManager_SoundResume(ApplicationManager *self, int soundId)
-{
+void ApplicationManager::SoundResume(int soundId) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if ((sound != 0 && self->field_0xb0) || self->field_0xb1) {
         ext_001ab558(sound, soundId);
@@ -356,8 +350,8 @@ extern "C" void ApplicationManager_SoundResume(ApplicationManager *self, int sou
 }
 
 // ---- SoundRelease_8217c.cpp ----
-extern "C" void ApplicationManager_SoundRelease(ApplicationManager *self)
-{
+void ApplicationManager::SoundRelease() {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab4c8(sound);
@@ -367,8 +361,8 @@ extern "C" void ApplicationManager_SoundRelease(ApplicationManager *self)
 // ---- Quit_82476.cpp ----
 typedef void QuitCallback_t();
 
-extern "C" void ApplicationManager_Quit(ApplicationManager *self)
-{
+void ApplicationManager::Quit() {
+    ApplicationManager *self = this;
     QuitCallback_t *callback = (QuitCallback_t *)self->field_0x1c;
     if (callback != 0) {
         callback();
@@ -376,8 +370,8 @@ extern "C" void ApplicationManager_Quit(ApplicationManager *self)
 }
 
 // ---- GetEngine_8249c.cpp ----
-extern "C" void *ApplicationManager_GetEngine(ApplicationManager *self)
-{
+void * ApplicationManager::GetEngine() {
+    ApplicationManager *self = this;
     return self->field_0xa8;
 }
 
@@ -385,8 +379,8 @@ extern "C" void *ApplicationManager_GetEngine(ApplicationManager *self)
 typedef void ModuleCallback(void *);
 
 
-extern "C" void ApplicationManager_Suspend(ApplicationManager *self)
-{
+void ApplicationManager::Suspend() {
+    ApplicationManager *self = this;
     unsigned int state = self->field_0x3c;
     if (state - 3 < 2) {
         return;
@@ -398,7 +392,7 @@ extern "C" void ApplicationManager_Suspend(ApplicationManager *self)
         vtable[0x3c / 4](module);
         void *engine = self->field_0xa8;
         if (engine != 0) {
-            Engine_Suspend(engine);
+            ((Engine *)(engine))->Suspend();
         }
         int oldState = self->field_0x3c;
         self->field_0x3c = 3;
@@ -407,14 +401,14 @@ extern "C" void ApplicationManager_Suspend(ApplicationManager *self)
 }
 
 // ---- SoundFxEnable_82264.cpp ----
-extern "C" void ApplicationManager_SoundFxEnable(ApplicationManager *self, bool enable)
-{
+void ApplicationManager::SoundFxEnable(bool enable) {
+    ApplicationManager *self = this;
     self->field_0xb0 = enable;
 }
 
 // ---- SoundResume_822a8.cpp ----
-extern "C" void ApplicationManager_SoundResumeSelf(ApplicationManager *self)
-{
+void ApplicationManager::SoundResumeSelf() {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab568(sound);
@@ -422,16 +416,16 @@ extern "C" void ApplicationManager_SoundResumeSelf(ApplicationManager *self)
 }
 
 // ---- Vibrate_822c4.cpp ----
-extern "C" void ApplicationManager_Vibrate(ApplicationManager *self, unsigned short duration)
-{
+void ApplicationManager::Vibrate(unsigned short duration) {
+    ApplicationManager *self = this;
     if (self->field_0xb2) {
         ext_001ab328(self->field_0xa8, duration);
     }
 }
 
 // ---- SoundSetFXVolume_8227e.cpp ----
-extern "C" void ApplicationManager_SoundSetFXVolume(ApplicationManager *self, int volume)
-{
+void ApplicationManager::SoundSetFXVolume(int volume) {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab588(sound);
@@ -439,8 +433,8 @@ extern "C" void ApplicationManager_SoundSetFXVolume(ApplicationManager *self, in
 }
 
 // ---- CheatSetCallback_8251c.cpp ----
-extern "C" void ApplicationManager_CheatSetCallback(ApplicationManager *self, void *callback, void *data)
-{
+void ApplicationManager::CheatSetCallback(void *callback, void *data) {
+    ApplicationManager *self = this;
     void *cheats = self->field_0x30;
     if (cheats != 0) {
         ext_001ab5c8(cheats);
@@ -448,8 +442,8 @@ extern "C" void ApplicationManager_CheatSetCallback(ApplicationManager *self, vo
 }
 
 // ---- SoundResumeSounds_82240.cpp ----
-extern "C" void ApplicationManager_SoundResumeSounds(ApplicationManager *self)
-{
+void ApplicationManager::SoundResumeSounds() {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if ((sound != 0 && self->field_0xb0) || self->field_0xb1) {
         ext_001ab568(sound);
@@ -457,8 +451,8 @@ extern "C" void ApplicationManager_SoundResumeSounds(ApplicationManager *self)
 }
 
 // ---- SoundPauseSounds_8220a.cpp ----
-extern "C" void ApplicationManager_SoundPauseSounds(ApplicationManager *self)
-{
+void ApplicationManager::SoundPauseSounds() {
+    ApplicationManager *self = this;
     void *sound = self->field_0xac;
     if (sound != 0) {
         ext_001ab538(sound);
@@ -466,14 +460,14 @@ extern "C" void ApplicationManager_SoundPauseSounds(ApplicationManager *self)
 }
 
 // ---- GetKeyState_83e84.cpp ----
-extern "C" uint64_t ApplicationManager_GetKeyState(ApplicationManager *self)
-{
+uint64_t ApplicationManager::GetKeyState() {
+    ApplicationManager *self = this;
     return self->field_0x80;
 }
 
 // ---- SetApplicationModule_82440.cpp ----
-extern "C" void ApplicationManager_SetApplicationModule(ApplicationManager *self, void *module)
-{
+void ApplicationManager::SetApplicationModule(void *module) {
+    ApplicationManager *self = this;
     void *current = self->field_0x18;
     self->field_0x60 = module;
     self->field_0x3c = current != 0;
@@ -502,8 +496,8 @@ typedef void TouchEndCallback(void *, int, int, void *);
 typedef void TouchReleaseCallback(void *, int, int);
 
 
-extern "C" void ApplicationManager_OnTouchEnd(ApplicationManager *self, int xArg, int yArg, void *touch)
-{
+void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
+    ApplicationManager *self = this;
     g_touchDown = 0;
     void * volatile cookie = __stack_chk_guard;
     int x = xArg;
@@ -511,7 +505,7 @@ extern "C" void ApplicationManager_OnTouchEnd(ApplicationManager *self, int xArg
 
     void *module = self->field_0x18;
     if (module != 0 && self->field_0x3c == 5) {
-        ApplicationManager_ConvertTouchCoords(self, &x, &y);
+        ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
         module = self->field_0x18;
         void **vtable = *(void ***)module;
         ((TouchEndCallback *)vtable[0x2c / 4])(module, x, y, touch);
@@ -547,14 +541,14 @@ typedef bool LoadingCallbackU(PaintCanvas *, int, void *);
 typedef bool ResumeCallbackU(PaintCanvas *, void *);
 
 
-extern "C" void ApplicationManager_OnUpdate(ApplicationManager *self, long long now)
-{
+void ApplicationManager::OnUpdate(long long now) {
+    ApplicationManager *self = this;
     void * volatile cookie = __stack_chk_guard;
     void *engine = self->field_0xa8;
     Engine_PreUpdate(engine);
 
     if (self->field_0x14) {
-        ApplicationManager_CheckForOrientationChange(self);
+        ((ApplicationManager *)(self))->CheckForOrientationChange();
     }
     void *sound = self->field_0xac;
     if (sound != 0 && self->field_0xb0) {
@@ -597,7 +591,7 @@ extern "C" void ApplicationManager_OnUpdate(ApplicationManager *self, long long 
         if (module != 0) {
             void **vtable = *(void ***)module;
             ((ModuleVoidCallback *)vtable[3])(module);
-            Engine_ResetLightParam(engine);
+            ((Engine *)(engine))->ResetLightParam();
             self->field_0x3c = 0;
             self->field_0x18 = 0;
         }
@@ -639,8 +633,8 @@ extern "C" void ApplicationManager_OnUpdate(ApplicationManager *self, long long 
 }
 
 // ---- ApplicationManager_8193c.cpp ----
-extern "C" ApplicationManager *ApplicationManager_ctor(ApplicationManager *self, void *engine)
-{
+ApplicationManager * ApplicationManager::ctor(void *engine) {
+    ApplicationManager *self = this;
     void * volatile cookie = __stack_chk_guard;
 
     ArrayCtor_modules((char *)self + 0x44);
@@ -702,15 +696,15 @@ typedef void TouchMoveCallback(void *, int, int, void *);
 typedef void TouchDragCallback(void *, int, int);
 
 
-extern "C" void ApplicationManager_OnTouchMove(ApplicationManager *self, int xArg, int yArg, void *touch)
-{
+void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
+    ApplicationManager *self = this;
     void * volatile cookie = __stack_chk_guard;
     int x = xArg;
     int y = yArg;
 
     void *module = self->field_0x18;
     if (module != 0 && self->field_0x3c == 5) {
-        ApplicationManager_ConvertTouchCoords(self, &x, &y);
+        ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
         module = self->field_0x18;
         void **vtable = *(void ***)module;
         ((TouchMoveCallback *)vtable[0x28 / 4])(module, x, y, touch);
@@ -730,8 +724,8 @@ extern "C" void ApplicationManager_OnTouchMove(ApplicationManager *self, int xAr
 // ---- OnKeyPress_83ca6.cpp ----
 typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int);
 
-extern "C" void ApplicationManager_OnKeyPress(ApplicationManager *self, int key)
-{
+void ApplicationManager::OnKeyPress(int key) {
+    ApplicationManager *self = this;
     self->field_0x98 = 0;
     self->field_0x8 = key;
     self->field_0xc = key >> 31;
@@ -801,15 +795,15 @@ __attribute__((minsize)) extern "C" void ApplicationManager_SoundSet(Application
 __attribute__((minsize)) extern "C" void ApplicationManager_RegisterApplicationModule(ApplicationManager *self, unsigned int id, void *module)
 {
     if (module != 0) {
-        IApplicationModule_SetApplicationManager(module, self);
+        ((IApplicationModule *)(module))->SetApplicationManager(self);
         ArrayAdd_IApplicationModule(module, (char *)self + 0x44);
         ext_001ab5b8(id, (char *)self + 0x50);
     }
 }
 
 // ---- SetCurrentApplicationModule_823b0.cpp ----
-extern "C" void ApplicationManager_SetCurrentApplicationModule(ApplicationManager *self, unsigned int id)
-{
+void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
+    ApplicationManager *self = this;
     char *pending = &g_perfPending;
     if (*pending != 0) {
         uint64_t *counter = &g_perfCounter;
@@ -838,8 +832,8 @@ extern "C" void ApplicationManager_SetCurrentApplicationModule(ApplicationManage
 }
 
 // ---- ConvertTouchCoords_839de.cpp ----
-extern "C" void ApplicationManager_ConvertTouchCoords(ApplicationManager *self, int *x, int *y)
-{
+void ApplicationManager::ConvertTouchCoords(int *x, int *y) {
+    ApplicationManager *self = this;
     ApplicationManager *manager = self;
     int *xPtr = x;
     int *yPtr = y;
@@ -869,8 +863,8 @@ storeY:
 }
 
 // ---- VibrateSupported_822bc.cpp ----
-extern "C" void ApplicationManager_VibrateSupported(ApplicationManager *self)
-{
+void ApplicationManager::VibrateSupported() {
+    ApplicationManager *self = this;
     ext_001ab318(self->field_0xa8);
 }
 
@@ -879,15 +873,15 @@ typedef void TouchBeginCallback(void *, int, int, void *);
 typedef void TouchPressCallback(void *, int, int);
 
 
-extern "C" void ApplicationManager_OnTouchBegin(ApplicationManager *self, int xArg, int yArg, void *touch)
-{
+void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
+    ApplicationManager *self = this;
     void * volatile cookie = __stack_chk_guard;
     int x = xArg;
     int y = yArg;
 
     void *module = self->field_0x18;
     if (module != 0 && self->field_0x3c == 5) {
-        ApplicationManager_ConvertTouchCoords(self, &x, &y);
+        ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
         module = self->field_0x18;
         void **vtable = *(void ***)module;
         ((TouchBeginCallback *)vtable[0x24 / 4])(module, x, y, touch);
@@ -935,16 +929,16 @@ extern "C" void ApplicationManager_OnTouchBegin(ApplicationManager *self, int xA
 }
 
 // ---- ConfigRegisterAction_82600.cpp ----
-extern "C" void ApplicationManager_ConfigRegisterAction(ApplicationManager *self, long long value, long long key)
-{
+void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
+    ApplicationManager *self = this;
     void *array = (char *)self + 0x88;
     ArrayAdd_long_long(value, array);
     ext_001ab5f8(key, array);
 }
 
 // ---- GetApplicationModule_82452.cpp ----
-extern "C" void *ApplicationManager_GetApplicationModule(ApplicationManager *self, unsigned int id)
-{
+void * ApplicationManager::GetApplicationModule(unsigned int id) {
+    ApplicationManager *self = this;
     unsigned int count = self->field_0x50;
     unsigned int index = 0;
     goto check;
@@ -962,8 +956,8 @@ check:
 }
 
 // ---- ConfigGetKeysForAction_82654.cpp ----
-extern "C" void *ApplicationManager_ConfigGetKeysForAction(ApplicationManager *self, long long action)
-{
+void * ApplicationManager::ConfigGetKeysForAction(long long action) {
+    ApplicationManager *self = this;
     int low = (int)action;
     int high = (int)(action >> 32);
     unsigned int byteOffset = 0;
@@ -1002,8 +996,8 @@ check:
 // ---- OnKeyRelease_83d98.cpp ----
 typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int);
 
-extern "C" void ApplicationManager_OnKeyRelease(ApplicationManager *self, int key)
-{
+void ApplicationManager::OnKeyRelease(int key) {
+    ApplicationManager *self = this;
     self->field_0x98 = 0;
     self->field_0x9c = 0;
 
@@ -1054,8 +1048,8 @@ extern "C" void ApplicationManager_OnKeyRelease(ApplicationManager *self, int ke
 }
 
 // ---- KeyCodeSetMapping_83ea4.cpp ----
-extern "C" void ApplicationManager_KeyCodeSetMapping(ApplicationManager *self, void *array)
-{
+void ApplicationManager::KeyCodeSetMapping(void *array) {
+    ApplicationManager *self = this;
     unsigned int count = *(unsigned int *)array;
     if (count == 0x40) {
         unsigned int index = 0;
@@ -1064,7 +1058,7 @@ extern "C" void ApplicationManager_KeyCodeSetMapping(ApplicationManager *self, v
             uint32_t *mapping = *(uint32_t **)(*(char **)((char *)array + 4) + index * 4);
             char *dst = self->field_0x10 + offset;
             *(uint32_t *)dst = *mapping;
-            String_assign((String *)(dst + 4), (String *)(mapping + 1));
+            ((String *)((String *)(dst + 4)))->assign((String *)(mapping + 1));
             offset += 0x10;
             count = *(unsigned int *)array;
             ++index;
@@ -1081,8 +1075,8 @@ static bool update_orientation_timer(ApplicationManager *self, int *timer)
     return value >= 0xfb;
 }
 
-extern "C" void ApplicationManager_CheckForOrientationChange(ApplicationManager *self)
-{
+void ApplicationManager::CheckForOrientationChange() {
+    ApplicationManager *self = this;
     void *engine = self->field_0xa8;
     double tilt = *(double *)((char *)engine + 0x4b0);
     void *canvas;

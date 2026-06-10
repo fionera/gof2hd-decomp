@@ -42,5 +42,9 @@ struct SpacePoint {
     int field_0x20;                     // +0x20
 
     SpacePoint(int param_1, const Vector &param_2, const Vector &param_3, int param_4);
+
+    // ---- methods (converted from free functions) ----
+    void giveFree();
+    void take();
 };
 #endif

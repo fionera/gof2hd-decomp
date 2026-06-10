@@ -22,5 +22,9 @@ struct SentryGun {
     Gun* field_0x8;                     // +0x8
     void* field_0xc;                    // +0xc
     int field_0xb0;                     // +0xb0
+
+    // ---- methods (converted from free functions) ----
+    SentryGun * ctor(Gun *gun, int p2, int p3, int p4, Level *level);
+    void update(int dt);
 };
 #endif

@@ -96,5 +96,29 @@ struct Gun {
     void* field_0x110;                  // +0x110 (heap array)
 
     ~Gun() noexcept(false);
+
+    // ---- methods (converted from free functions) ----
+    void calcCharacterCollision();
+    Gun * ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel);
+    void * getEnemies();
+    int getMagnitude();
+    void ignite();
+    uint8_t isPlayerGun();
+    void removeAllEnemies();
+    void render();
+    void setEnemy(Player *enemy);
+    void setErrorMagnitudePercentage(int v);
+    void setFriendGun(bool v);
+    void setImpact(Sparks *impact);
+    void setIndex(int index);
+    void setLevelCollision(bool v);
+    void setMagnitude(int v);
+    void setOffset(const Vector *v);
+    void setOffset_ii(int a, int b);
+    void setPlayerGun(bool v);
+    void shoot(Matrix m, int n, bool b);
+    void shootAt(Matrix m, int n, Player *p, bool b);
+    void translate(const Vector *v);
+    void update(int dt);
 };
 #endif

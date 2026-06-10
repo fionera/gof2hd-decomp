@@ -15,7 +15,35 @@ struct Wanted;
 struct GameRecord;
 
 // ---- tiny offset-cast helpers -------------------------------------------------
-static inline char*           B (void* p, int off) { return (char*)p + off; }
+static inline char*           B (void* p, int off) { return (char*)p + off; 
+    // ---- methods (converted from free functions) ----
+    void addHash(int slot);
+    void addHashToOptions();
+    void changeSaveDirectoryToBackupDirectory();
+    void convertSDVersionSaves();
+    RecordHandler * ctor();
+    RecordHandler * dtor();
+    void loadOptions();
+    void loadResolutionValue();
+    void * readAgent(unsigned int fd);
+    void * readAllPreviewRecords();
+    void * readAllRecords();
+    void * readMission(unsigned int fd);
+    int readOptionsFileAsByteArray(signed char **out);
+    int readRecordAsByteArray(signed char **out, int slot, bool fromBackup);
+    void * readWanted(unsigned int fd);
+    void * recordStoreRead(int slot);
+    void * recordStoreReadPreview(int slot);
+    void recordStoreWrite(int slot);
+    int recordStoreWritePreview(void *rec, int slot);
+    int recordStoreWritePreview_int(int slot);
+    void saveOptions();
+    void writeAgent(void *agentPtr, unsigned int fd);
+    void writeByteArrayAsOptionsFile(signed char *buf, int n);
+    int writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup);
+    void writeMission(void *m, unsigned int fd);
+    void writeWanted(void *w, unsigned int fd);
+}
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
 static inline unsigned int&   U (void* p, int off) { return *(unsigned int*)((char*)p + off); }
 static inline float&          F (void* p, int off) { return *(float*)((char*)p + off); }

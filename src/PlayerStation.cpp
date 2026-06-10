@@ -1,4 +1,5 @@
 #include "gof2/PlayerStation.h"
+#include "gof2/Player.h"
 
 // Transform / AEGeometry are only used as opaque pointers and via byte-offset reads
 // on ambiguous locals (helper F below); avoid pulling in the conflicting Transform.h.
@@ -37,8 +38,6 @@ extern "C" long long PaintCanvas_TransformGetTransform(void *canvas, int mesh);
 extern "C" void Transform_Update(long long transform, long long delta, int zero);
 extern "C" TransformGetFn PlayerStation_transformGet __attribute__((visibility("hidden")));
 extern "C" TransformUpdateFn PlayerStation_transformUpdate __attribute__((visibility("hidden")));
-extern "C" void Player_setRadius(void *player, int radius);
-extern "C" void Player_setMaxHitpoints(void *player, int hitpoints);
 extern "C" int Station_getIndex(Station *station);
 extern "C" void *FileRead_constructor(void *self);
 extern "C" void *FileRead_destructor(void *self) __attribute__((nothrow));
@@ -261,13 +260,13 @@ PlayerStation::PlayerStation(Station *station)
     this->field_0x158 = 0;
     this->field_0x15c = 0;
     this->field_0x160 = 0;
-    Player_setRadius(P(this, 0x4), 15000);
+    ((Player *)(P(this, 0x4)))->setRadius(15000);
     this->field_0x58 = 0;
     this->field_0x5c = 0;
     this->field_0x60 = 0;
     this->field_0x130 = 0;
     this->field_0x25 = 0;
-    Player_setMaxHitpoints(P(this, 0x4), 0x0161eb02);
+    ((Player *)(P(this, 0x4)))->setMaxHitpoints(0x0161eb02);
     this->field_0x140 = 0;
     this->field_0x14c = 0;
     this->field_0x154 = 0;
@@ -591,8 +590,8 @@ bool PlayerStation::outerCollide(float x, float y, float z)
 // ---- _PlayerStation_1225ec.cpp ----
 // Deleting destructor variant (D0): runs the base destructor body then frees.
 // Emitted as a named function so it doesn't collide with the in-place ~PlayerStation() above.
-extern "C" void PlayerStation_deleting_dtor(PlayerStation *self)
-{
+void PlayerStation::deleting_dtor() {
+    PlayerStation *self = this;
     operator_delete(PlayerStation_destructor_body(self));
 }
 

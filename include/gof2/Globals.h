@@ -13,6 +13,13 @@ struct Globals;
 // >8-byte struct ABI (sret / on stack), matching the target.
 namespace AbyssEngine {
 
+
+    // ---- methods (converted from free functions) ----
+    Globals * ctor();
+    void * dtor();
+    unsigned getRandomEnemyFighter(int kind);
+    int init(void *app);
+    float sqrt(float x);
 }
 typedef AbyssEngine::String String;
 

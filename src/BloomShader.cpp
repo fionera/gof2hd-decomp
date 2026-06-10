@@ -1,4 +1,5 @@
 #include "gof2/BloomShader.h"
+#include "gof2/Engine.h"
 
 // cross-class field accessors (Engine/Mesh/FBOContainer are not in this batch; opaque here)
 template <class T> static inline T &ae_field(void *base, unsigned int off) {
@@ -24,9 +25,6 @@ extern "C" void glUniform1f(int location, float value);
 extern "C" void glClearColor(float red, float green, float blue, float alpha);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" int Engine_GetDisplayWidth(void *self);
-extern "C" int Engine_GetDisplayHeight(void *self);
-extern "C" void Engine_SetWorldViewMatrix(void *self);
 extern "C" void FBOContainer_Activate(void *self);
 extern "C" void FBOContainer_BeginCapture(void *self);
 extern "C" void FBOContainer_EndCapture(void *self);
@@ -164,8 +162,6 @@ extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transp
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
                                       unsigned char normalized, int stride, const void *pointer);
-extern "C" void Engine_DrawQuad(void *self, int x, int y, unsigned int width,
-                                 unsigned int height);
 
 
 namespace AbyssEngine {
@@ -195,13 +191,13 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     matrix[5] = 1.0f;
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
-    ae_field<float>(engine, 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
-    ae_field<float>(engine, 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    ae_field<float>(engine, 0x384) = 2.0f / (float)((Engine *)(engine))->GetDisplayWidth();
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)((Engine *)(engine))->GetDisplayHeight());
     ae_field<unsigned int>(engine, 0x3ac) = 0xbf800000;
     ae_field<unsigned int>(engine, 0x3b4) = 0xbf800000;
     ae_field<unsigned int>(engine, 0x3b8) = 0x3f800000;
     ae_field<unsigned int>(engine, 0x3c0) = 0x3f800000;
-    Engine_SetWorldViewMatrix(engine);
+    ((Engine *)(engine))->SetWorldViewMatrix();
 
     glDisable(0xb71);
     glDepthMask(0);
@@ -220,7 +216,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     glVertexAttribPointer(this->field_0x2c, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
+    ((Engine *)(engine))->DrawQuad(0, 0, ((Engine *)(engine))->GetDisplayWidth(), ((Engine *)(engine))->GetDisplayHeight());
     glDisableVertexAttribArray(this->field_0x24);
     glDisableVertexAttribArray(this->field_0x2c);
 
@@ -240,8 +236,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
         glUniform1f(this->field_0x4c,
                     (float)*(int *)((char *)this->field_0x50 + 0xc));
         glClear(0x4000);
-        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine),
-                        Engine_GetDisplayHeight(engine));
+        ((Engine *)(engine))->DrawQuad(0, 0, ((Engine *)(engine))->GetDisplayWidth(), ((Engine *)(engine))->GetDisplayHeight());
         glDisableVertexAttribArray(this->field_0x3c);
         glDisableVertexAttribArray(this->field_0x44);
 
@@ -259,8 +254,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
         glUniform1f(this->field_0x68,
                     (float)*(int *)((char *)this->field_0x6c + 0x10));
         glClear(0x4000);
-        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine),
-                        Engine_GetDisplayHeight(engine));
+        ((Engine *)(engine))->DrawQuad(0, 0, ((Engine *)(engine))->GetDisplayWidth(), ((Engine *)(engine))->GetDisplayHeight());
         glDisableVertexAttribArray(this->field_0x58);
         glDisableVertexAttribArray(this->field_0x60);
         blurSource = this->field_0x6c;
@@ -293,11 +287,11 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     unsigned int width;
     unsigned int height;
     if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
-        width = Engine_GetDisplayWidth(engine);
-        height = Engine_GetDisplayHeight(engine);
+        width = ((Engine *)(engine))->GetDisplayWidth();
+        height = ((Engine *)(engine))->GetDisplayHeight();
     } else {
-        width = Engine_GetDisplayHeight(engine);
-        height = Engine_GetDisplayWidth(engine);
+        width = ((Engine *)(engine))->GetDisplayHeight();
+        height = ((Engine *)(engine))->GetDisplayWidth();
     }
     glViewport(0, 0, width, height);
 
@@ -309,7 +303,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     glVertexAttribPointer(this->field_0x80, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
+    ((Engine *)(engine))->DrawQuad(0, 0, ((Engine *)(engine))->GetDisplayWidth(), ((Engine *)(engine))->GetDisplayHeight());
     glDisableVertexAttribArray(this->field_0x78);
     glDisableVertexAttribArray(this->field_0x80);
     glEnable(0xbe2);
@@ -414,8 +408,6 @@ extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transp
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
                                       unsigned char normalized, int stride, const void *pointer);
-extern "C" void Engine_DrawQuad(void *self, int x, int y, unsigned int width,
-                                 unsigned int height);
 
 
 namespace AbyssEngine {
@@ -444,13 +436,13 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     matrix[5] = 1.0f;
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
-    ae_field<float>(engine, 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
-    ae_field<float>(engine, 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    ae_field<float>(engine, 0x384) = 2.0f / (float)((Engine *)(engine))->GetDisplayWidth();
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)((Engine *)(engine))->GetDisplayHeight());
     ae_field<unsigned int>(engine, 0x3ac) = 0xbf800000;
     ae_field<unsigned int>(engine, 0x3b4) = 0xbf800000;
     ae_field<unsigned int>(engine, 0x3b8) = 0x3f800000;
     ae_field<unsigned int>(engine, 0x3c0) = 0x3f800000;
-    Engine_SetWorldViewMatrix(engine);
+    ((Engine *)(engine))->SetWorldViewMatrix();
 
     glDisable(0xb71);
     glDepthMask(0);
@@ -469,7 +461,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     glVertexAttribPointer(this->field_0x2c, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
+    ((Engine *)(engine))->DrawQuad(0, 0, ((Engine *)(engine))->GetDisplayWidth(), ((Engine *)(engine))->GetDisplayHeight());
     glDisableVertexAttribArray(this->field_0x24);
     glDisableVertexAttribArray(this->field_0x2c);
 
@@ -489,8 +481,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
         glUniform1f(this->field_0x4c,
                     (float)*(int *)((char *)this->field_0x50 + 0xc));
         glClear(0x4000);
-        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine),
-                        Engine_GetDisplayHeight(engine));
+        ((Engine *)(engine))->DrawQuad(0, 0, ((Engine *)(engine))->GetDisplayWidth(), ((Engine *)(engine))->GetDisplayHeight());
         glDisableVertexAttribArray(this->field_0x3c);
         glDisableVertexAttribArray(this->field_0x44);
 
@@ -508,8 +499,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
         glUniform1f(this->field_0x68,
                     (float)*(int *)((char *)this->field_0x6c + 0x10));
         glClear(0x4000);
-        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine),
-                        Engine_GetDisplayHeight(engine));
+        ((Engine *)(engine))->DrawQuad(0, 0, ((Engine *)(engine))->GetDisplayWidth(), ((Engine *)(engine))->GetDisplayHeight());
         glDisableVertexAttribArray(this->field_0x58);
         glDisableVertexAttribArray(this->field_0x60);
         blurSource = this->field_0x6c;
@@ -550,7 +540,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     glVertexAttribPointer(this->field_0x80, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
+    ((Engine *)(engine))->DrawQuad(0, 0, ((Engine *)(engine))->GetDisplayWidth(), ((Engine *)(engine))->GetDisplayHeight());
     glDisableVertexAttribArray(this->field_0x78);
     glDisableVertexAttribArray(this->field_0x80);
     glEnable(0xbe2);

@@ -1,4 +1,13 @@
 #include "gof2/MissionsWindow.h"
+#include "gof2/Agent.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/GameText.h"
+#include "gof2/ImageFactory.h"
+#include "gof2/Layout.h"
+#include "gof2/Mission.h"
+#include "gof2/String.h"
+#include "gof2/TouchButton.h"
+#include "gof2/WantedWindow.h"
 
 
 
@@ -152,10 +161,6 @@ void *ArrayImg_dtor(void *self);
 
 void  TouchButton_ctor(void *self, void *text, int kind, int x, int y, char a, char b);
 void  TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char flags);
-int   TouchButton_getWidth(void *self);
-void  TouchButton_setAlwaysPressed(void *self, bool pressed);
-void  TouchButton_setTextColor(void *self, int color);
-void *TouchButton_dtor(void *self);
 
 void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool b);
 void *ScrollTouchWindow_dtor(void *self);
@@ -165,18 +170,12 @@ void *ChoiceWindow_ctor(void *self);
 void *ChoiceWindow_dtor(void *self);
 
 void *WantedWindow_ctor(void *self);
-void  WantedWindow_init(void *self);
 
-void  Layout_setWindowDimensions(void *layout, int x, int y, int w, int h);
-int   Layout_getHelpButtonOffset();
 void  Layout_formatCredits(void *out, int credits);
 
-void *GameText_getText(int id);
 void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
 void  String_fromInt(void *s, int value);
-void  String_dtor(void *s);
-void  String_assign(void *dst, void *src);
 
 int   Status_gameWon();
 int   Status_inAlienOrbit();
@@ -187,23 +186,18 @@ void *Status_getFreelanceMission();
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
 int   Mission_getType(void *mission);
-int   Mission_isEmpty(void *mission);
 int   Mission_getProductionGoodAmount(void *mission);
 int   Mission_getStatusValue(void *mission);
-void  Mission_getTargetStationName(void *mission, void *out);
 void *Mission_getAgent(void *mission);
 int   Mission_getReward(void *mission);
 int   Mission_getBonus(void *mission);
 
 void  Globals_getAgentMissionText(void *out, void *agent);
 
-int   Achievements_gotAllGoldMedals();
 
 void *Status_getShip();
 int   Ship_getIndex(void *ship);
 
-void *Agent_getImageParts(void *agent);
-void *ImageFactory_loadChar(void *factory, void *parts);
 
 int   ApplicationManager_GetCurrentApplicationModule(void *appMgr);
 
@@ -259,22 +253,22 @@ extern "C" int MissionsWindow_init(void *self)
     ArrayTB_setLength(2, tabs);
 
     void *b0 = operator_new(200);
-    void *t0 = GameText_getText(titleId);
+    void *t0 = ((GameText *)(titleId))->getText();
     int helpOff = Layout_getHelpButtonOffset();
     TouchButton_ctorTab(b0, t0, 3, (i32(self, 0x38) + i32(self, 0x30)) - helpOff, i32(self, 0x34), 0x12);
     *(void **)(*(int *)(pp(self, 0x14)) + 4 + 4) = b0;
 
     void *b1 = operator_new(200);
-    void *t1 = GameText_getText(titleId);
+    void *t1 = ((GameText *)(titleId))->getText();
     int helpOff2 = Layout_getHelpButtonOffset();
-    int w1 = TouchButton_getWidth(b1);
+    int w1 = ((TouchButton *)(b1))->getWidth();
     TouchButton_ctorTab(b1, t1, 3,
                         (((i32(self, 0x38) + i32(self, 0x30)) - helpOff2) - w1) +
                             i32(layout, 0x38), i32(self, 0x34), 0x12);
     *(void **)(*(int *)(pp(self, 0x14)) + 4) = b1;
-    TouchButton_setAlwaysPressed(*(void **)(*(int *)(pp(self, 0x14)) + 4), true);
+    ((TouchButton *)(*(void **)(*(int *)(pp(self, 0x14)) + 4)))->setAlwaysPressed(true);
 
-    Layout_setWindowDimensions(layout, i32(self, 0x30), i32(self, 0x34), i32(self, 0x38), i32(self, 0x3c));
+    ((Layout *)(layout))->setWindowDimensions(i32(self, 0x30), i32(self, 0x34), i32(self, 0x38), i32(self, 0x3c));
 
     // --- tear down any previous sub-objects ---
     if (pp(self, 0x18) != 0) {
@@ -288,11 +282,11 @@ extern "C" int MissionsWindow_init(void *self)
     pp(self, 0x4) = 0;
     if (pp(self, 0xc) != 0) operator_delete(ChoiceWindow_dtor(pp(self, 0xc)));
     pp(self, 0xc) = 0;
-    if (pp(self, 0x24) != 0) operator_delete(TouchButton_dtor(pp(self, 0x24)));
+    if (pp(self, 0x24) != 0) operator_delete(((TouchButton *)(pp(self, 0x24)))->dtor());
     pp(self, 0x24) = 0;
-    if (pp(self, 0x28) != 0) operator_delete(TouchButton_dtor(pp(self, 0x28)));
+    if (pp(self, 0x28) != 0) operator_delete(((TouchButton *)(pp(self, 0x28)))->dtor());
     pp(self, 0x28) = 0;
-    if (pp(self, 0x2c) != 0) operator_delete(TouchButton_dtor(pp(self, 0x2c)));
+    if (pp(self, 0x2c) != 0) operator_delete(((TouchButton *)(pp(self, 0x2c)))->dtor());
     pp(self, 0x8) = 0;
     pp(self, 0x2c) = 0;
     i32(self, 0x20) = 0;
@@ -317,8 +311,8 @@ extern "C" int MissionsWindow_init(void *self)
         char text[0xc];
         String_fromC(text, "", false);
         if (Status_getCurrentCampaignMission() < 0xa4) {
-            void *t = GameText_getText(titleId);
-            String_assign(text, t);
+            void *t = ((GameText *)(titleId))->getText();
+            ((String *)(text))->assign(t);
         }
         int type = Mission_getType(Status_getCampaignMission());
         bool production = (type == 0xa7) || (Mission_getType(Status_getCampaignMission()) == 0xae);
@@ -333,32 +327,32 @@ extern "C" int MissionsWindow_init(void *self)
             Status_replaceHash(merged, key, hdr, val, suffix);
         } else {
             String_fromText(hdr, text, false);
-            Mission_getTargetStationName(Status_getCampaignMission(), val);
+            ((Mission *)(Status_getCampaignMission()))->getTargetStationName();
             String_fromC(suffix, "", false);
             Status_replaceHash(merged, key, hdr, val, suffix);
         }
-        String_assign(text, merged);
-        String_dtor(merged); String_dtor(suffix); String_dtor(val); String_dtor(hdr);
+        ((String *)(text))->assign(merged);
+        ((String *)(merged))->dtor(); ((String *)(suffix))->dtor(); ((String *)(val))->dtor(); ((String *)(hdr))->dtor();
 
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
         String_fromText(b, text, false);
         ScrollTouchWindow_setText(pp(self, 0x0), a, b);
-        String_dtor(b); String_dtor(a);
-        String_dtor(text);
+        ((String *)(b))->dtor(); ((String *)(a))->dtor();
+        ((String *)(text))->dtor();
     } else {
         bool useGold = Achievements_gotAllGoldMedals() != 0 && Ship_getIndex(Status_getShip()) != 8;
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
-        void *t = GameText_getText(titleId);
+        void *t = ((GameText *)(titleId))->getText();
         String_fromText(b, t, false);
         ScrollTouchWindow_setText(pp(self, 0x0), a, b);
-        String_dtor(b); String_dtor(a);
+        ((String *)(b))->dtor(); ((String *)(a))->dtor();
         (void)useGold;
     }
 
     // --- right (freelance) scroll window ---
-    int fmEmpty = Mission_isEmpty(Status_getFreelanceMission());
+    int fmEmpty = ((Mission *)(Status_getFreelanceMission()))->isEmpty();
     void *sw1 = operator_new(0x24);
     int half = i32(self, 0x38) >> 1;
     int pad = i32(layout, 0x2c);
@@ -381,18 +375,18 @@ extern "C" int MissionsWindow_init(void *self)
         Layout_formatCredits(reward, rew + bonus);
         String_fromC(suffix, "", false);
         Status_replaceHash(merged, key, body, reward, suffix);
-        String_assign(text, merged);
-        String_dtor(merged); String_dtor(suffix); String_dtor(reward); String_dtor(body);
+        ((String *)(text))->assign(merged);
+        ((String *)(merged))->dtor(); ((String *)(suffix))->dtor(); ((String *)(reward))->dtor(); ((String *)(body))->dtor();
 
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
         String_fromText(b, text, false);
         ScrollTouchWindow_setText(pp(self, 0x4), a, b);
-        String_dtor(b); String_dtor(a);
+        ((String *)(b))->dtor(); ((String *)(a))->dtor();
 
-        void *parts = Agent_getImageParts(Mission_getAgent(Status_getFreelanceMission()));
-        pp(self, 0x18) = ImageFactory_loadChar(*(void **)g_mwi_imageFactory, parts);
-        String_dtor(text);
+        void *parts = ((Agent *)(Mission_getAgent(Status_getFreelanceMission())))->getImageParts();
+        pp(self, 0x18) = ((ImageFactory *)(*(void **)g_mwi_imageFactory))->loadChar(parts);
+        ((String *)(text))->dtor();
     } else {
         ScrollTouchWindow_ctor(sw1, rx, topY, (half - pad) - i32(layout, 0x28),
             ((i32(self, 0x3c) + (i32(self, 0x34) - (topY + pad * 2))) -
@@ -400,10 +394,10 @@ extern "C" int MissionsWindow_init(void *self)
         pp(self, 0x4) = sw1;
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
-        void *t = GameText_getText(titleId);
+        void *t = ((GameText *)(titleId))->getText();
         String_fromText(b, t, false);
         ScrollTouchWindow_setText(pp(self, 0x4), a, b);
-        String_dtor(b); String_dtor(a);
+        ((String *)(b))->dtor(); ((String *)(a))->dtor();
     }
 
     // --- action buttons (Accept / Reject / Auto-pilot) ---
@@ -411,16 +405,16 @@ extern "C" int MissionsWindow_init(void *self)
         int btnY = ((i32(self, 0x38) >> 1) >> 1) - i32(layout, 0x28);
         if (Status_gameWon() == 0) {
             void *bAccept = operator_new(200);
-            void *t = GameText_getText(titleId);
+            void *t = ((GameText *)(titleId))->getText();
             TouchButton_ctor(bAccept, t, 0, i32(layout, 0x28) + i32(self, 0x30),
                              (((i32(self, 0x34) + i32(self, 0x3c)) - i32(layout, 0x10)) -
                               i32(layout, 0x24)) - i32(layout, 0x2c),
                              '!', 4);
             pp(self, 0x24) = bAccept;
         }
-        if (Mission_isEmpty(Status_getFreelanceMission()) == 0) {
+        if (((Mission *)(Status_getFreelanceMission()))->isEmpty() == 0) {
             void *bReject = operator_new(200);
-            void *t = GameText_getText(titleId);
+            void *t = ((GameText *)(titleId))->getText();
             TouchButton_ctor(bReject, t, 0,
                              i32(self, 0x30) + (i32(self, 0x38) >> 1) + i32(layout, 0x2c),
                              (((i32(self, 0x34) - i32(layout, 0x2c)) + i32(self, 0x3c)) -
@@ -430,7 +424,7 @@ extern "C" int MissionsWindow_init(void *self)
 
             if (ApplicationManager_GetCurrentApplicationModule(*(void **)g_mwi_appMgr) == 5) {
                 void *bMap = operator_new(200);
-                void *t2 = GameText_getText(titleId);
+                void *t2 = ((GameText *)(titleId))->getText();
                 TouchButton_ctor(bMap, t2, 0,
                                  i32(self, 0x30) + btnY + (i32(self, 0x38) >> 1) +
                                      i32(layout, 0x2c) * 2,
@@ -438,7 +432,7 @@ extern "C" int MissionsWindow_init(void *self)
                                   i32(layout, 0x10)) - i32(layout, 0x24),
                                  '!', 4);
                 pp(self, 0x2c) = bMap;
-                TouchButton_setTextColor(bMap, g_mwi_actionColor);
+                ((TouchButton *)(bMap))->setTextColor(g_mwi_actionColor);
             }
             void *cw = operator_new(0x5c);
             ChoiceWindow_ctor(cw);
@@ -455,7 +449,7 @@ extern "C" int MissionsWindow_init(void *self)
             WantedWindow_ctor(ww);
             pp(self, 0x10) = ww;
         } else {
-            WantedWindow_init(pp(self, 0x10));
+            ((WantedWindow *)(pp(self, 0x10)))->init();
         }
     }
 
@@ -478,30 +472,19 @@ void  PaintCanvas_SetColor(void *canvas);
 void  PaintCanvas_DrawString(void *canvas, void *font, void *text, int x, int y);
 
 void  Layout_drawHeader(void *layout, void *title);
-void  Layout_drawBox(void *layout, int style, int x, int y, int w, int h, void *label,
-                     void *canvas, void *color);
-void  Layout_drawFooter(void *layout);
 
-void *GameText_getText(int id);
 void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
-void  String_dtor(void *s);
 
 int   Status_wantedBoardAccessible();
 void *Status_getFreelanceMission();
 
-int   Mission_isEmpty(void *mission);
 void *Mission_getAgent(void *mission);
 int   Mission_getType(void *mission);
 
-void  Agent_getName(void *agent, void *out);
-void  Agent_getStationName(void *agent, void *out);
-void *Agent_getMission(void *agent);
 
-void  TouchButton_draw(void *btn);
 void  ScrollTouchWindow_draw(void *win);
 void  ChoiceWindow_draw(void *win);
-void  ImageFactory_drawChar(void *factory, void *arr, int x, int y, bool b);
 
 extern void *g_mwd_canvas;    // *(DAT_16059c): paint canvas
 extern void *g_mwd_layout;    // *(DAT_1605a0): Layout singleton
@@ -529,15 +512,15 @@ extern "C" void MissionsWindow_draw(void *self)
     PaintCanvas_SetColor(canvas);
 
     char header[0xc];
-    void *ht = GameText_getText(titleId);
+    void *ht = ((GameText *)(titleId))->getText();
     String_fromText(header, ht, false);
     Layout_drawHeader(layout, header);
-    String_dtor(header);
+    ((String *)(header))->dtor();
 
     if (Status_wantedBoardAccessible() != 0) {
         void **tabs = (void **)pp(self, 0x14);
         for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
-            TouchButton_draw(((void **)tabs[1])[i]);
+            ((TouchButton *)(((void **)tabs[1])[i]))->draw();
     }
 
     int ox = i32(self, 0x30), oy = i32(self, 0x34);
@@ -546,13 +529,12 @@ extern "C" void MissionsWindow_draw(void *self)
     // Campaign-mission title box + body box.
     {
         char box[0xc];
-        void *t = GameText_getText(titleId);
+        void *t = ((GameText *)(titleId))->getText();
         String_fromText(box, t, false);
         int c = i32(layout, 0xc), p20 = i32(layout, 0x20);
         int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
-        Layout_drawBox(layout, 1, p28 + ox, oy + c + p20, (ow >> 1) - (p2c + p28),
-                       i32(layout, 0x5c), box, canvas, color);
-        String_dtor(box);
+        ((Layout *)(layout))->drawBox(1, p28 + ox, oy + c + p20, (ow >> 1) - (p2c + p28), i32(layout, 0x5c), box, canvas);
+        ((String *)(box))->dtor();
     }
     {
         char box[0xc];
@@ -561,24 +543,22 @@ extern "C" void MissionsWindow_draw(void *self)
         int p20 = i32(layout, 0x20), p24 = i32(layout, 0x24);
         int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
         int p5c = i32(layout, 0x5c);
-        Layout_drawBox(layout, 5, p28 + ox, oy + c + p20 + p5c + p2c, (ow >> 1) - (p2c + p28),
-                       ((oh - (p20 + c + p5c + p2c * 2)) - p10) - p24, box, canvas, color);
-        String_dtor(box);
+        ((Layout *)(layout))->drawBox(5, p28 + ox, oy + c + p20 + p5c + p2c, (ow >> 1) - (p2c + p28), ((oh - (p20 + c + p5c + p2c * 2)) - p10) - p24, box, canvas);
+        ((String *)(box))->dtor();
     }
 
     ScrollTouchWindow_draw(pp(self, 0x0));
-    if (pp(self, 0x24) != 0) TouchButton_draw(pp(self, 0x24));
+    if (pp(self, 0x24) != 0) ((TouchButton *)(pp(self, 0x24)))->draw();
 
     // Freelance-mission title + body box (right column).
     {
         char box[0xc];
-        void *t = GameText_getText(titleId);
+        void *t = ((GameText *)(titleId))->getText();
         String_fromText(box, t, false);
         int c = i32(layout, 0xc), p20 = i32(layout, 0x20);
         int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
-        Layout_drawBox(layout, 1, ox + (ow >> 1) + p2c, oy + c + p20,
-                       ((ow >> 1) - p2c) - p28, i32(layout, 0x5c), box, canvas, color);
-        String_dtor(box);
+        ((Layout *)(layout))->drawBox(1, ox + (ow >> 1) + p2c, oy + c + p20, ((ow >> 1) - p2c) - p28, i32(layout, 0x5c), box, canvas);
+        ((String *)(box))->dtor();
     }
     {
         char box[0xc];
@@ -587,20 +567,15 @@ extern "C" void MissionsWindow_draw(void *self)
         int p20 = i32(layout, 0x20), p24 = i32(layout, 0x24);
         int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
         int p5c = i32(layout, 0x5c);
-        Layout_drawBox(layout, 5, ox + (ow >> 1) + p2c, oy + p2c + c + p20 + p5c,
-                       ((ow >> 1) - p2c) - p28, ((oh - (c + p2c * 2 + p20 + p5c)) - p10) - p24,
-                       box, canvas, color);
-        String_dtor(box);
+        ((Layout *)(layout))->drawBox(5, ox + (ow >> 1) + p2c, oy + p2c + c + p20 + p5c, ((ow >> 1) - p2c) - p28, ((oh - (c + p2c * 2 + p20 + p5c)) - p10) - p24, box, canvas);
+        ((String *)(box))->dtor();
     }
 
     // Active freelance mission details.
     void *fm = Status_getFreelanceMission();
-    if (fm != 0 && Mission_isEmpty(fm) == 0 && pp(self, 0x18) != 0) {
-        ImageFactory_drawChar(*(void **)g_mwd_imageFactory, pp(self, 0x18),
-                              ox + (ow >> 1) + i32(layout, 0x2c),
-                              i32(layout, 0x2c) + oy + i32(layout, 0xc) +
-                                  i32(layout, 0x20) + i32(layout, 0x5c),
-                              false);
+    if (fm != 0 && ((Mission *)(fm))->isEmpty() == 0 && pp(self, 0x18) != 0) {
+        ((ImageFactory *)(*(void **)g_mwd_imageFactory))->drawChar(pp(self, 0x18), ox + (ow >> 1) + i32(layout, 0x2c), i32(layout, 0x2c) + oy + i32(layout, 0xc) +
+                                  i32(layout, 0x20) + i32(layout, 0x5c), false);
 
         int detailX = ox + (ow >> 1) + i32(layout, 0x2d4) +
                       i32(layout, 0x2c) * 2;
@@ -608,24 +583,24 @@ extern "C" void MissionsWindow_draw(void *self)
                       i32(layout, 0x2c) + i32(layout, 0x5c);
 
         char nameStr[0xc];
-        Agent_getName(Mission_getAgent(fm), nameStr);
+        ((Agent *)(Mission_getAgent(fm)))->getName();
         PaintCanvas_DrawString(canvas, font, nameStr, detailX, detailY);
-        String_dtor(nameStr);
+        ((String *)(nameStr))->dtor();
 
         char stationStr[0xc];
-        Agent_getStationName(Mission_getAgent(fm), stationStr);
+        ((Agent *)(Mission_getAgent(fm)))->getStationName();
         PaintCanvas_DrawString(canvas, font, stationStr, detailX, detailY);
-        String_dtor(stationStr);
+        ((String *)(stationStr))->dtor();
 
-        void *typeTxt = GameText_getText(Mission_getType(Agent_getMission(Mission_getAgent(fm))) + 0x162);
+        void *typeTxt = ((GameText *)(Mission_getType(((Agent *)(Mission_getAgent(fm)))->getMission()) + 0x162))->getText();
         PaintCanvas_DrawString(canvas, font, typeTxt, detailX, detailY);
     }
 
     ScrollTouchWindow_draw(pp(self, 0x4));
-    if (pp(self, 0x2c) != 0) TouchButton_draw(pp(self, 0x2c));
-    if (pp(self, 0x28) != 0) TouchButton_draw(pp(self, 0x28));
+    if (pp(self, 0x2c) != 0) ((TouchButton *)(pp(self, 0x2c)))->draw();
+    if (pp(self, 0x28) != 0) ((TouchButton *)(pp(self, 0x28)))->draw();
 
-    Layout_drawFooter(layout);
+    ((Layout *)(layout))->drawFooter();
     if (u8(self, 0x21) != 0 || u8(self, 0x20) != 0)
         ChoiceWindow_draw(pp(self, 0xc));
 
@@ -682,7 +657,6 @@ __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 
 void *operator_new(uint32_t size);
 
-int  WantedWindow_OnTouchEnd(void *win, int y);
 int  ChoiceWindow_OnTouchEnd(void *win, int y);
 void ChoiceWindow_set(void *win, void *text, bool b);
 int  ScrollTouchWindow_OnTouchEnd(void *win, int y);
@@ -690,7 +664,6 @@ int  StarMap_OnTouchEnd(void *map, int y);
 void StarMap_ctor(void *map, bool a, void *mission, bool b, int c);
 void StarMap_init(void *map);
 
-int  TouchButton_OnTouchEnd(void *btn, int y);
 
 int  Status_wantedBoardAccessible();
 void *Status_getCampaignMission();
@@ -708,19 +681,10 @@ int  Item_getIndex(void *item);
 int  Mission_getType(void *mission);
 void *Mission_getAgent(void *mission);
 
-int  Agent_isGenericAgent(void *agent);
-void Agent_setOfferAccepted(void *agent, bool accepted);
 
-void *GameText_getText(int id);
 void String_fromText(void *s, void *text, bool copy);
-void String_dtor(void *s);
 
-void *ApplicationManager_GetApplicationModule(void *appMgr);
 
-int  Layout_OnTouchEnd(void *layout, int y, int z);
-int  Layout_helpPressed(void *layout);
-void Layout_initHelpWindow(void *layout, void *title);
-void Layout_resetWindowDimensions(void *layout);
 
 int MissionsWindow_init(void *self);
 
@@ -745,7 +709,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
 
     // Wanted-board sub-window active.
     if (i32(self, 0x40) == 1) {
-        WantedWindow_OnTouchEnd(pp(self, 0x10), z);
+        ((WantedWindow *)(pp(self, 0x10)))->OnTouchEnd(z);
         if (*(int *)pp(self, 0x10) == 0) {
             i32(self, 0x40) = 0;
             *(int *)pp(self, 0x10) = 1;
@@ -785,8 +749,8 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             }
 
             void *agent = Mission_getAgent(Status_getFreelanceMission());
-            if (Agent_isGenericAgent(agent) == 0)
-                Agent_setOfferAccepted(Mission_getAgent(Status_getFreelanceMission()), false);
+            if (((Agent *)(agent))->isGenericAgent() == 0)
+                ((Agent *)(Mission_getAgent(Status_getFreelanceMission())))->setOfferAccepted(false);
             Status_setFreelanceMission(fsrc);
 
             unsigned char savedFlag = u8(self, 0x23);
@@ -802,49 +766,49 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
         if (Status_wantedBoardAccessible() != 0) {
             void **tabs = (void **)pp(self, 0x14);
             for (unsigned int i = 0; i < *(unsigned int *)tabs; i++) {
-                if (TouchButton_OnTouchEnd(((void **)tabs[1])[i], z) != 0)
+                if (((TouchButton *)(((void **)tabs[1])[i]))->OnTouchEnd(z) != 0)
                     u32(self, 0x40) = i;
             }
         }
         ScrollTouchWindow_OnTouchEnd(pp(self, 0x0), z);
         ScrollTouchWindow_OnTouchEnd(pp(self, 0x4), z);
 
-        if (pp(self, 0x24) != 0 && TouchButton_OnTouchEnd(pp(self, 0x24), z) != 0) {
+        if (pp(self, 0x24) != 0 && ((TouchButton *)(pp(self, 0x24)))->OnTouchEnd(z) != 0) {
             // "Show on map" for the campaign mission.
             void *appMgr = *(void **)g_mwt_appMgr;
-            void *mod = ApplicationManager_GetApplicationModule(appMgr);
+            void *mod = ((ApplicationManager *)(appMgr))->GetApplicationModule();
             void *map = *(void **)((char *)mod + 0x10);
             pp(self, 0x8) = map;
             if (map == 0) {
                 void *m = operator_new(0x1e8);
                 StarMap_ctor(m, true, Status_getCampaignMission(), false, -1);
-                void *mod2 = ApplicationManager_GetApplicationModule(appMgr);
+                void *mod2 = ((ApplicationManager *)(appMgr))->GetApplicationModule();
                 *(void **)((char *)mod2 + 0x10) = m;
-                void *mod3 = ApplicationManager_GetApplicationModule(appMgr);
+                void *mod3 = ((ApplicationManager *)(appMgr))->GetApplicationModule();
                 pp(self, 0x8) = *(void **)((char *)mod3 + 0x10);
             } else {
                 Status_getCampaignMission();
                 StarMap_init(map);
             }
             u8(self, 0x22) = 1;
-            Layout_resetWindowDimensions(*(void **)g_mwt_resetLayout);
+            ((Layout *)(*(void **)g_mwt_resetLayout))->resetWindowDimensions();
         } else {
-            if (pp(self, 0x2c) != 0 && TouchButton_OnTouchEnd(pp(self, 0x2c), z) != 0) {
+            if (pp(self, 0x2c) != 0 && ((TouchButton *)(pp(self, 0x2c)))->OnTouchEnd(z) != 0) {
                 void *cw = pp(self, 0xc);
-                void *t = GameText_getText(0x1a2);
+                void *t = ((GameText *)(0x1a2))->getText();
                 ChoiceWindow_set(cw, t, true);
                 u8(self, 0x20) = 1;
             }
-            if (pp(self, 0x28) != 0 && TouchButton_OnTouchEnd(pp(self, 0x28), z) != 0) {
+            if (pp(self, 0x28) != 0 && ((TouchButton *)(pp(self, 0x28)))->OnTouchEnd(z) != 0) {
                 // "Show on map" for the freelance mission.
                 void *appMgr = *(void **)g_mwt_appMgr;
-                void *mod = ApplicationManager_GetApplicationModule(appMgr);
+                void *mod = ((ApplicationManager *)(appMgr))->GetApplicationModule();
                 void *map = *(void **)((char *)mod + 0x10);
                 pp(self, 0x8) = map;
                 if (map == 0) {
                     void *m = operator_new(0x1e8);
                     StarMap_ctor(m, true, Status_getFreelanceMission(), false, -1);
-                    void *mod2 = ApplicationManager_GetApplicationModule(appMgr);
+                    void *mod2 = ((ApplicationManager *)(appMgr))->GetApplicationModule();
                     *(void **)((char *)mod2 + 0x10) = m;
                     pp(self, 0x8) = m;
                 } else {
@@ -852,20 +816,20 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
                     StarMap_init(map);
                 }
                 u8(self, 0x22) = 1;
-                Layout_resetWindowDimensions(*(void **)g_mwt_resetLayout);
+                ((Layout *)(*(void **)g_mwt_resetLayout))->resetWindowDimensions();
                 goto done;
             }
             void *layout = *(void **)g_mwt_layout;
-            if (Layout_OnTouchEnd(layout, z, 0) != 0) {
-                Layout_resetWindowDimensions(layout);
+            if (((Layout *)(layout))->OnTouchEnd(z, 0) != 0) {
+                ((Layout *)(layout))->resetWindowDimensions();
                 goto done;
             }
-            if (Layout_helpPressed(layout) != 0) {
+            if (((Layout *)(layout))->helpPressed() != 0) {
                 char title[0xc];
-                void *t = GameText_getText(0x27b);
+                void *t = ((GameText *)(0x27b))->getText();
                 String_fromText(title, t, false);
-                Layout_initHelpWindow(layout, title);
-                String_dtor(title);
+                ((Layout *)(layout))->initHelpWindow(title);
+                ((String *)(title))->dtor();
             }
         }
     } else {
@@ -925,14 +889,10 @@ int   Mission_getStatusValue(void *mission);
 void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
 void  String_fromInt(void *s, int value);
-void  String_dtor(void *s);
-void  String_assign(void *dst, void *src);
 
-void *GameText_getText(int id);
 
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
-void  TouchButton_setAlwaysPressed(void *btn, bool pressed);
 
 extern void *g_mw_status;        // *(DAT_160bbc): Status singleton
 extern void *g_mw_campaign;      // *(DAT_160bc0): campaign-state record
@@ -977,9 +937,9 @@ extern "C" void MissionsWindow_update(void *self, int dt)
             String_fromC(text, "", false);
             if (Status_getCurrentCampaignMission() < 0xa4) {
                 int base = *g_mw_textBase;
-                void *titleTxt = GameText_getText(g_mw_titleTable[Status_getCurrentCampaignMission()]);
+                void *titleTxt = ((GameText *)(g_mw_titleTable[Status_getCurrentCampaignMission()]))->getText();
                 (void)base;
-                String_assign(text, titleTxt);
+                ((String *)(text))->assign(titleTxt);
 
                 void *key = *(void **)g_mw_hashSource;
                 char hdr[0xc], amount[0xc], suffix[0xc], merged[0xc];
@@ -989,25 +949,25 @@ extern "C" void MissionsWindow_update(void *self, int dt)
                 String_fromInt(amount, need - have);
                 String_fromC(suffix, "", false);
                 Status_replaceHash(merged, key, hdr, amount, suffix);
-                String_assign(text, merged);
-                String_dtor(merged); String_dtor(suffix); String_dtor(amount); String_dtor(hdr);
+                ((String *)(text))->assign(merged);
+                ((String *)(merged))->dtor(); ((String *)(suffix))->dtor(); ((String *)(amount))->dtor(); ((String *)(hdr))->dtor();
 
                 void *win = pp(self, 0x0);
                 char a[0xc], b[0xc];
                 String_fromC(a, "", false);
                 String_fromText(b, text, false);
                 ScrollTouchWindow_setText(win, a, b);
-                String_dtor(b);
-                String_dtor(a);
+                ((String *)(b))->dtor();
+                ((String *)(a))->dtor();
             }
-            String_dtor(text);
+            ((String *)(text))->dtor();
         }
     }
 
     // Highlight the selected tab.
     void **tabs = (void **)pp(self, 0x14);
     for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
-        TouchButton_setAlwaysPressed(((void **)tabs[1])[i], i == u32(self, 0x40));
+        ((TouchButton *)(((void **)tabs[1])[i]))->setAlwaysPressed(i == u32(self, 0x40));
 
     uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (guardDelta != 0)

@@ -1,4 +1,6 @@
 #include "gof2/SentryGun.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
 #include "gof2/Gun.h"
 
 
@@ -26,9 +28,8 @@ extern "C" void _ZN9SentryGunD0Ev(SentryGun *self)
 extern "C" void ObjectGun_ctor(SentryGun *self, int owner, Gun *gun, int mesh,
                                unsigned int flags, Level *level);
 
-extern "C" SentryGun *SentryGun_ctor(SentryGun *self, Gun *gun, int p2, int p3,
-                                     int p4, Level *level)
-{
+SentryGun * SentryGun::ctor(Gun *gun, int p2, int p3, int p4, Level *level) {
+    SentryGun *self = this;
     ObjectGun_ctor(self, p3, gun, p2, 0, level);
     self->field_0xb0 = gun->field_0x58 * 3 - 0x279;
     return self;
@@ -41,10 +42,10 @@ extern "C" SentryGun *SentryGun_ctor(SentryGun *self, Gun *gun, int p2, int p3,
 struct KIPlayer;
 struct Player;
 
-extern "C" void Gun_update(Gun *self, int dt);                       // Gun::update(int)
-extern "C" int KIPlayer_isDying(KIPlayer *self);                     // KIPlayer::isDying()
-extern "C" unsigned char Player_isActive(Player *self);             // Player::isActive()
-extern "C" int Player_isDead(Player *self);                         // Player::isDead()
+// Gun::update(int)
+// KIPlayer::isDying()
+// Player::isActive()
+// Player::isDead()
 extern "C" void SentryGun_fire_tail(void *obj, int flag);          // tail thunk
 
 // Object pulled from the pool: polymorphic, called through its vtable.
@@ -61,10 +62,10 @@ struct SentryLevel {
     PoolObject **pool;  // +0xb0
 };
 
-extern "C" void SentryGun_update(SentryGun *self, int dt)
-{
+void SentryGun::update(int dt) {
+    SentryGun *self = this;
     Gun *gun = self->field_0x8;
-    Gun_update(gun, dt);
+    ((Gun *)(gun))->update(dt);
 
     gun = self->field_0x8;
     if (gun->field_0x4d == 0)
@@ -76,8 +77,8 @@ extern "C" void SentryGun_update(SentryGun *self, int dt)
     int base = self->field_0xb0;
     for (int i = base; i < base + 3; i++) {
         PoolObject *obj = level->pool[i];
-        if (KIPlayer_isDying((KIPlayer *)obj) == 0 &&
-            (Player_isActive(obj->owner) == 0 || Player_isDead(obj->owner) != 0)) {
+        if (((KIPlayer *)((KIPlayer *)obj))->isDying() == 0 &&
+            (((Player *)(obj->owner))->isActive() == 0 || ((Player *)(obj->owner))->isDead() != 0)) {
             level->spawnCount += 1;
             ((void (*)(PoolObject *))obj->vtable[0x18 / 4])(obj);
             Gun *g = self->field_0x8;

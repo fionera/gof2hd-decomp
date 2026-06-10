@@ -51,5 +51,44 @@ struct ListItem {
     uint8_t  field_0x44;                // +0x44 text flag
 
     ~ListItem();
+
+    // ---- methods (converted from free functions) ----
+    bool checkCredits();
+    int checkSlot();
+    int checkSort();
+    ListItem * ctor_Agent(Agent *a);
+    ListItem * ctor_Array(Array<AbyssEngine::String12 *> *arr);
+    ListItem * ctor_BluePrint(BluePrint *bp);
+    ListItem * ctor_Item(Item *it);
+    ListItem * ctor_Mission(Mission *m);
+    ListItem * ctor_PendingProduct(PendingProduct *pp);
+    ListItem * ctor_Ship(Ship *s);
+    ListItem * ctor_String(const void *src);
+    ListItem * ctor_String_String(const void *p1, const void *p2);
+    ListItem * ctor_String_bool(const void *src, bool b);
+    ListItem * ctor_String_bool_int(const void *src, bool b, int v);
+    ListItem * ctor_String_int(const void *src, int v);
+    ListItem * ctor_copy(ListItem *src);
+    ListItem * ctor_int(int v);
+    ListItem * ctor_int_int(int a, int b);
+    ListItem * ctor_int_int_String(int a, int b, const void *src);
+    int getIndex();
+    int getNumLines();
+    int getPrice();
+    void * init();
+    bool isBluePrint();
+    bool isCargo();
+    bool isImage();
+    bool isItem();
+    bool isMission();
+    bool isMoveToCargoButton();
+    bool isPendingProduct();
+    uint8_t isSelectable();
+    bool isSellButton();
+    bool isShip();
+    bool isSlot();
+    bool isTab();
+    uint8_t isText();
+    uint8_t isTextButton();
 };
 #endif

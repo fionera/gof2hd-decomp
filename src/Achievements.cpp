@@ -1,8 +1,6 @@
 #include "gof2/Achievements.h"
 
 
-extern "C" void Achievements_initCheckEquipmentAndWeapons(Achievements *self);
-extern "C" void Achievements_countMedals(Achievements *self);
 extern "C" void Achievements_onAllMedals(Achievements *self);
 extern "C" int Status_getCurrentCampaignMission(Status *s);
 extern "C" Ship *Status_getShip(Status *s);
@@ -10,8 +8,8 @@ extern "C" unsigned *Ship_getEquipment(Ship *ship);
 extern "C" int Item_getType(Item *it);
 
 // ---- hasMedal_157008.cpp ----
-extern "C" uint8_t Achievements_hasMedal(Achievements *self, int index, int value)
-{
+uint8_t Achievements::hasMedal(int index, int value) {
+    Achievements *self = this;
     return self->field_0x0[index] == value;
 }
 
@@ -31,39 +29,39 @@ Achievements::~Achievements()
 }
 
 // ---- gotAllSupernovaMedals_156ed2.cpp ----
-extern "C" uint8_t Achievements_gotAllSupernovaMedals(Achievements *self)
-{
+uint8_t Achievements::gotAllSupernovaMedals() {
+    Achievements *self = this;
     return self->field_0x22;
 }
 
 // ---- gotAllMedals_156ec6.cpp ----
-extern "C" uint8_t Achievements_gotAllMedals(Achievements *self)
-{
+uint8_t Achievements::gotAllMedals() {
+    Achievements *self = this;
     return self->field_0x20;
 }
 
 // ---- updateCredits_156f0a.cpp ----
-extern "C" void Achievements_updateCredits(Achievements *self, int value)
-{
+void Achievements::updateCredits(int value) {
+    Achievements *self = this;
     if (self->field_0x1c < value)
         self->field_0x1c = value;
 }
 
 // ---- setMedal_156f4c.cpp ----
-extern "C" void Achievements_setMedal(Achievements *self, int index, int value)
-{
+void Achievements::setMedal(int index, int value) {
+    Achievements *self = this;
     self->field_0x0[index] = value;
 }
 
 // ---- incPirateKills_156eec.cpp ----
-extern "C" void Achievements_incPirateKills(Achievements *self)
-{
+void Achievements::incPirateKills() {
+    Achievements *self = this;
     self->field_0x10 += 1;
 }
 
 // ---- init_156f54.cpp ----
-extern "C" int Achievements_init(Achievements *self)
-{
+int Achievements::init() {
+    Achievements *self = this;
     int *medals = self->field_0x0;
     int i;
     for (i = 0; i != 0x2d; i = i + 1)
@@ -83,8 +81,8 @@ extern "C" int Achievements_init(Achievements *self)
 }
 
 // ---- isEliteMedal_157034.cpp ----
-extern "C" uint8_t Achievements_isEliteMedal(Achievements *self, int index)
-{
+uint8_t Achievements::isEliteMedal(int index) {
+    Achievements *self = this;
     return index > 0x23;
 }
 
@@ -101,8 +99,8 @@ Achievements::Achievements()
 }
 
 // ---- resetNewMedals_156f8e.cpp ----
-extern "C" void Achievements_resetNewMedals(Achievements *self)
-{
+void Achievements::resetNewMedals() {
+    Achievements *self = this;
     int *newMedals = self->field_0x4;
     int i;
     for (i = 0; i != 0x2d; i = i + 1)
@@ -115,14 +113,14 @@ extern "C" void Achievements_resetNewMedals(Achievements *self)
 }
 
 // ---- incCatches_156efe.cpp ----
-extern "C" void Achievements_incCatches(Achievements *self)
-{
+void Achievements::incCatches() {
+    Achievements *self = this;
     self->field_0xc += 1;
 }
 
 // ---- incKills_156ee0.cpp ----
-extern "C" void Achievements_incKills(Achievements *self)
-{
+void Achievements::incKills() {
+    Achievements *self = this;
     self->field_0x8 += 1;
 }
 
@@ -131,28 +129,28 @@ extern "C" void Achievements_incKills(Achievements *self)
 // getValue returns table[index*3 + sub - 1].
 extern const int gAchievementValues[] __attribute__((visibility("hidden")));
 
-extern "C" int Achievements_getValue(Achievements *self, int index, int sub)
-{
+int Achievements::getValue(int index, int sub) {
+    Achievements *self = this;
     (void)self;
     const int *row = gAchievementValues + index * 3;
     return row[sub - 1];
 }
 
 // ---- resetPirateKills_156ef8.cpp ----
-extern "C" void Achievements_resetPirateKills(Achievements *self)
-{
+void Achievements::resetPirateKills() {
+    Achievements *self = this;
     self->field_0x10 = 0;
 }
 
 // ---- gotAllGoldMedals_156ecc.cpp ----
-extern "C" uint8_t Achievements_gotAllGoldMedals(Achievements *self)
-{
+uint8_t Achievements::gotAllGoldMedals() {
+    Achievements *self = this;
     return self->field_0x21;
 }
 
 // ---- countMedals_156e48.cpp ----
-extern "C" void Achievements_countMedals(Achievements *self)
-{
+void Achievements::countMedals() {
+    Achievements *self = this;
     int *medals = self->field_0x0;
     int total = 0;
     int golds = 0;
@@ -197,10 +195,10 @@ struct PlayerEgo;
 // pc-rel base for the per-medal requirement table (index*0xc + sub*4).
 extern const int gCFN_req[] __attribute__((visibility("hidden")));
 
-extern "C" void Achievements_checkForNewMedal(Achievements *self, PlayerEgo *ego)
-{
+void Achievements::checkForNewMedal(PlayerEgo *ego) {
+    Achievements *self = this;
     (void)ego;
-    Achievements_initCheckEquipmentAndWeapons(self);
+    ((Achievements *)(self))->initCheckEquipmentAndWeapons();
 
     for (unsigned m = 0; m != 0x2d; m = m + 1) {
         int got = 0;
@@ -226,8 +224,8 @@ extern "C" void Achievements_checkForNewMedal(Achievements *self, PlayerEgo *ego
 // ---- applyNewMedals_156fb0.cpp ----
 // Trailing tail-call through a global callback (resolved PC-relative in the target).
 
-extern "C" void Achievements_applyNewMedals(Achievements *self)
-{
+void Achievements::applyNewMedals() {
+    Achievements *self = this;
     int *newMedals = self->field_0x4;
     int i;
     for (i = 0; i != 0x2d; i = i + 1) {
@@ -243,7 +241,7 @@ extern "C" void Achievements_applyNewMedals(Achievements *self)
             }
         }
     }
-    Achievements_countMedals(self);
+    ((Achievements *)(self))->countMedals();
     if (self->field_0x24 == 0x23) {
         self->field_0x4[0x23] = 1;
         self->field_0x0[0x23] = 1;
@@ -260,8 +258,8 @@ struct Item;
 // Status singleton holder: pc-rel -> holder; *holder is the Status object.
 extern void *const gAchStatusHolder __attribute__((visibility("hidden")));
 
-extern "C" void Achievements_initCheckEquipmentAndWeapons(Achievements *self)
-{
+void Achievements::initCheckEquipmentAndWeapons() {
+    Achievements *self = this;
     uint8_t result;
     if (Status_getCurrentCampaignMission(*(Status **)gAchStatusHolder) < 8) {
         result = 1;
@@ -290,8 +288,8 @@ extern "C" void Achievements_initCheckEquipmentAndWeapons(Achievements *self)
 }
 
 // ---- setMedals_156f14.cpp ----
-extern "C" void Achievements_setMedals(Achievements *self, int *src, int count)
-{
+void Achievements::setMedals(int *src, int count) {
+    Achievements *self = this;
     int i = 0;
     for (i = 0; i < count; i = i + 1) {
         unsigned v = (unsigned)src[i];

@@ -1,4 +1,6 @@
 #include "gof2/PlayerJumpgate.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
 
 // Minimal local layouts for engine types accessed through opaque handles in this
 // translation unit. The full AEGeometry / Transform definitions live in their own
@@ -22,13 +24,11 @@ extern "C" Transform *PaintCanvas_TransformGetTransform(void *canvas, uint32_t h
 extern "C" void Transform_SetAnimationState(Transform *transform, int state, int loop);
 extern "C" void PaintCanvas_TransformRemoveChild(void *canvas, uint32_t parent, uint32_t child);
 extern "C" void AEGeometry_addChild(AEGeometry *geometry, uint32_t handle);
-extern "C" void KIPlayer_setVisible(PlayerJumpgate *self, bool visible);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void Array_BoundingVolumePtr_ctor(Array<BoundingVolume *> *self);
 extern "C" int Status_inAlienOrbit(void *status);
 extern "C" void *Status_getSystem(void *status);
 extern "C" int SolarSystem_getRace(void *system);
-extern "C" void Player_setRadius(void *player, int32_t radius);
 extern "C" void AEGeometry_setRotation(AEGeometry *geometry, float x, float y, float z);
 
 // ---- _PlayerJumpgate_a5100.cpp ----
@@ -128,7 +128,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
 
     void *vtable = g_PlayerJumpgate_vtable;
     this->field_0x0 = (char *)vtable + 8;
-    KIPlayer_setVisible(this, visible);
+    ((KIPlayer *)(this))->setVisible(visible);
 
     if (visible) {
         Array<BoundingVolume *> *volumes =
@@ -149,7 +149,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
             }
         }
 
-        Player_setRadius(this->field_0x4, radius);
+        ((Player *)(this->field_0x4))->setRadius(radius);
 
         BoundingSphere *sphere = (BoundingSphere *)operator_new(0x48);
         BoundingSphere_ctor(sphere, x, y, z, 0.0f, 0.0f, 0.0f, (float)radius);

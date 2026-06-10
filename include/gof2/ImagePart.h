@@ -20,5 +20,9 @@ struct ImagePart {
     int pos_y; // 0x8
     int scale_x; // 0xc
     int scale_y; // 0x10
+
+    // ---- methods (converted from free functions) ----
+    ImagePart * ctor(unsigned id, int field04, int posY);
+    void draw(int x, int y, bool b);
 };
 #endif

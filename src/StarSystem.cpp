@@ -1,4 +1,6 @@
 #include "gof2/StarSystem.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/Engine.h"
 
 
 extern "C" void AEGeometry_setScaling(AEGeometry *geom, const char *scale);
@@ -16,24 +18,12 @@ extern "C" void *Array_int_dtor(void *array);
 extern "C" void ArrayRelease_Vector(void *array);
 extern "C" void *Array_Vector_dtor(void *array);
 extern "C" void operator_delete(void *ptr);
-extern "C" Engine *ApplicationManager_GetEngine(void *app);
 extern "C" void *Status_getSystem(void *status);
 extern "C" uint32_t SolarSystem_getTextureIndex(void *system);
 extern "C" uint32_t SolarSystem_getIndex(void *system);
 extern "C" int Status_getCurrentCampaignMission(void *status);
 extern "C" void *Status_getStation(void *status);
 extern "C" uint32_t Station_getTextureIndex(void *station);
-extern "C" void Engine_LightSetGlobalSceneColorAmbient(Engine *engine, float r, float g, float b);
-extern "C" void Engine_LightSetRimColor(Engine *engine, float r, float g, float b);
-extern "C" void Engine_LightSetMaterialColorAmbient(Engine *engine, float r, float g, float b);
-extern "C" void Engine_LightSetMaterialColorDiffuse(Engine *engine, float r, float g, float b);
-extern "C" void Engine_LightSetMaterialColorSpecular(Engine *engine, float r, float g, float b);
-extern "C" void Engine_LightSetMaterialColorShininess(Engine *engine, float s);
-extern "C" void Engine_LightSetLightDirection(Engine *engine, float x, float y, float z, int light);
-extern "C" void Engine_LightSetLightColorAmbient(Engine *engine, float r, float g, float b, int light);
-extern "C" void Engine_LightSetLightColorDiffuse(Engine *engine, float r, float g, float b, int light);
-extern "C" void Engine_LightSetLightColorSpecular(Engine *engine, float r, float g, float b, int light);
-extern "C" void Engine_LightSetParticleAmbient(Engine *engine, float r, float g, float b);
 extern "C" void PaintCanvas_FogEnable(void *canvas, int enabled, int immediate);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transform_id);
 extern "C" void *PaintCanvas_CameraGetCurrent(void *canvas);
@@ -73,10 +63,8 @@ extern "C" void PaintCanvas_TextureCreate(void *canvas, uint32_t texture, void *
 extern "C" int AERandom_nextInt(int *rng, int max);
 extern "C" void AERandom_setSeed(int *rng, long long seed);
 extern "C" void AERandom_reset(int *rng);
-extern "C" int Engine_IsPostEffectActivated(void *engine);
 extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t mesh_id);
 extern "C" void PlayerStatic_ctor(void *self, int mode, AEGeometry *geom, float x, float y, float z);
-extern "C" void StarSystem_initLight(StarSystem *self);
 extern "C" void Transform_Update(void *transform, int supernova, int dt_lo, int dt_hi, int same_mode);
 extern "C" void AEGeometry_getScaling(char *out, AEGeometry *geom);
 extern "C" void AEGeometry_setScaling3(AEGeometry *geom, float x, float y, float z);
@@ -97,11 +85,10 @@ extern "C" int Status_inPlanetRingOrbit(void *status);
 extern "C" void AEGeometry_setPosition(AEGeometry *geom, const char *pos);
 extern "C" void AEGeometry_render(AEGeometry *geom);
 extern "C" void *AEGeometry_getMatrix(AEGeometry *geom);
-extern "C" void StarSystem_renderSunStreak(StarSystem *self);
 
 // ---- switchSunForSupernovaExpansion_134fc4.cpp ----
-extern "C" void StarSystem_switchSunForSupernovaExpansion(StarSystem *self)
-{
+void StarSystem::switchSunForSupernovaExpansion() {
+    StarSystem *self = this;
     char scaleBytes[12];
     AEGeometry *geom = *(AEGeometry **)P(P(self, 0x1c), 4);
     uint32_t *scale = (uint32_t *)scaleBytes;
@@ -115,8 +102,8 @@ extern "C" void StarSystem_switchSunForSupernovaExpansion(StarSystem *self)
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_sunstreak_canvas;
 
 
-extern "C" void StarSystem_renderSunStreak(StarSystem *self)
-{
+void StarSystem::renderSunStreak() {
+    StarSystem *self = this;
     void **holder = g_StarSystem_sunstreak_canvas;
     void *canvas = *holder;
     void *slot = (B(self, 0x0c) != 0) ? (void *)((char *)self + 0x10) : P(P(self, 0x14), 4);
@@ -126,8 +113,8 @@ extern "C" void StarSystem_renderSunStreak(StarSystem *self)
 }
 
 // ---- getLightDirection_134dbe.cpp ----
-extern "C" Vector StarSystem_getLightDirection(StarSystem *self)
-{
+Vector StarSystem::getLightDirection() {
+    StarSystem *self = this;
     return self->field_0x30;
 }
 
@@ -210,10 +197,10 @@ static inline uint32_t rgba_scaled(uint32_t color, float scale)
     return (r << 24) | (g << 16) | (b << 8) | 0xff;
 }
 
-extern "C" void StarSystem_initLight(StarSystem *self)
-{
+void StarSystem::initLight() {
+    StarSystem *self = this;
     void *app = *g_StarSystem_init_app;
-    Engine *engine = ApplicationManager_GetEngine(app);
+    Engine *engine = ((ApplicationManager *)(app))->GetEngine();
     I(engine, 0x32c) = 2;
 
     void *status = *g_StarSystem_init_status;
@@ -274,25 +261,21 @@ extern "C" void StarSystem_initLight(StarSystem *self)
 
     EngineGetter getEngine = g_StarSystem_init_getEngine;
     engine = getEngine(app);
-    Engine_LightSetGlobalSceneColorAmbient(engine, ambientScale * FL(self, 0x00),
-                                           ambientScale * FL(self, 0x04),
-                                           ambientScale * FL(self, 0x08));
+    ((Engine *)(engine))->LightSetGlobalSceneColorAmbient(ambientScale * FL(self, 0x00), ambientScale * FL(self, 0x04), ambientScale * FL(self, 0x08));
     engine = getEngine(app);
-    Engine_LightSetRimColor(engine, g_StarSystem_init_lightColors[baseIndex] * 3.0f,
-                            g_StarSystem_init_lightColors[baseIndex + 1] * 3.0f,
-                            g_StarSystem_init_lightColors[baseIndex + 2] * 3.0f);
-    Engine_LightSetMaterialColorAmbient(getEngine(app), 1.0f, 1.0f, 1.0f);
-    Engine_LightSetMaterialColorDiffuse(getEngine(app), 1.0f, 1.0f, 1.0f);
-    Engine_LightSetMaterialColorSpecular(getEngine(app), 1.0f, 1.0f, 1.0f);
-    Engine_LightSetMaterialColorShininess(getEngine(app), 0.7f);
-    Engine_LightSetLightDirection(getEngine(app), FL(self, 0x30), FL(self, 0x34), FL(self, 0x38), 0x4000);
-    Engine_LightSetLightColorAmbient(getEngine(app), 0.0f, 0.0f, 0.0f, 0x4000);
-    Engine_LightSetLightColorDiffuse(getEngine(app), FL(self, 0x00), FL(self, 0x04), FL(self, 0x08), 0x4000);
-    Engine_LightSetLightColorSpecular(getEngine(app), 2.0f, 2.0f, 2.0f, 0x4000);
-    Engine_LightSetLightDirection(getEngine(app), 0.0f, 0.0f, 1.0f, 0x4001);
-    Engine_LightSetLightColorDiffuse(getEngine(app), lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
-    Engine_LightSetLightColorSpecular(getEngine(app), lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
-    Engine_LightSetParticleAmbient(getEngine(app), FL(self, 0x00), FL(self, 0x04), FL(self, 0x08));
+    ((Engine *)(engine))->LightSetRimColor(g_StarSystem_init_lightColors[baseIndex] * 3.0f, g_StarSystem_init_lightColors[baseIndex + 1] * 3.0f, g_StarSystem_init_lightColors[baseIndex + 2] * 3.0f);
+    ((Engine *)(getEngine(app)))->LightSetMaterialColorAmbient(1.0f, 1.0f, 1.0f);
+    ((Engine *)(getEngine(app)))->LightSetMaterialColorDiffuse(1.0f, 1.0f, 1.0f);
+    ((Engine *)(getEngine(app)))->LightSetMaterialColorSpecular(1.0f, 1.0f, 1.0f);
+    ((Engine *)(getEngine(app)))->LightSetMaterialColorShininess(0.7f);
+    ((Engine *)(getEngine(app)))->LightSetLightDirection(FL(self, 0x30), FL(self, 0x34), FL(self, 0x38), 0x4000);
+    ((Engine *)(getEngine(app)))->LightSetLightColorAmbient(0.0f, 0.0f, 0.0f, 0x4000);
+    ((Engine *)(getEngine(app)))->LightSetLightColorDiffuse(FL(self, 0x00), FL(self, 0x04), FL(self, 0x08), 0x4000);
+    ((Engine *)(getEngine(app)))->LightSetLightColorSpecular(2.0f, 2.0f, 2.0f, 0x4000);
+    ((Engine *)(getEngine(app)))->LightSetLightDirection(0.0f, 0.0f, 1.0f, 0x4001);
+    ((Engine *)(getEngine(app)))->LightSetLightColorDiffuse(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
+    ((Engine *)(getEngine(app)))->LightSetLightColorSpecular(lr * 1.5f, lg * 1.5f, lb * 1.5f, 0x4001);
+    ((Engine *)(getEngine(app)))->LightSetParticleAmbient(FL(self, 0x00), FL(self, 0x04), FL(self, 0x08));
 
     void *canvas = *g_StarSystem_init_canvas;
     PaintCanvas_FogEnable(canvas, 0, 1);
@@ -352,8 +335,8 @@ extern "C" void StarSystem_initLight(StarSystem *self)
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_render2d_canvas;
 
 
-extern "C" void StarSystem_render2D(StarSystem *self)
-{
+void StarSystem::render2D() {
+    StarSystem *self = this;
     char posBytes[12];
     void *flare = P(self, 0x2c);
     if (flare != 0) {
@@ -389,8 +372,8 @@ static inline void set_vec(char *dst, float x, float y, float z)
     ((float *)dst)[2] = z;
 }
 
-extern "C" StarSystem *StarSystem_StarSystem(StarSystem *self, int mode)
-{
+StarSystem * StarSystem::StarSystem(int mode) {
+    StarSystem *self = this;
     char vec[12];
     char usedSlots[0x60];
     for (unsigned i = 0; i < sizeof(usedSlots); ++i) {
@@ -466,7 +449,7 @@ extern "C" StarSystem *StarSystem_StarSystem(StarSystem *self, int mode)
         P(self, 0x40) = streak;
         set_vec(vec, 250.0f, 15.0f, 1000.0f);
         AEGeometry_setScaling(streak, vec);
-        StarSystem_initLight(self);
+        ((StarSystem *)(self))->initLight();
         return self;
     }
 
@@ -605,7 +588,7 @@ extern "C" StarSystem *StarSystem_StarSystem(StarSystem *self, int mode)
     }
 
     AERandom_reset(g_StarSystem_ctor_rng);
-    StarSystem_initLight(self);
+    ((StarSystem *)(self))->initLight();
     return self;
 }
 
@@ -614,8 +597,8 @@ __attribute__((visibility("hidden"))) extern void **g_StarSystem_update_canvas_a
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_update_canvas_b;
 
 
-extern "C" void StarSystem_updateSupernova(StarSystem *self, int dt)
-{
+void StarSystem::updateSupernova(int dt) {
+    StarSystem *self = this;
     void *streak = P(self, 0x40);
     if (streak != 0) {
         void *transform = PaintCanvas_TransformGetTransform(*g_StarSystem_update_canvas_a, I(streak, 0x0c));
@@ -631,8 +614,8 @@ extern "C" void StarSystem_updateSupernova(StarSystem *self, int dt)
 }
 
 // ---- scaleSunDuringSupernovaIntro_134ffc.cpp ----
-extern "C" void StarSystem_scaleSunDuringSupernovaIntro(StarSystem *self, int amount)
-{
+void StarSystem::scaleSunDuringSupernovaIntro(int amount) {
+    StarSystem *self = this;
     char scaleBytes[12];
     AEGeometry_getScaling(scaleBytes, *(AEGeometry **)P(P(self, 0x1c), 4));
     float scale = *(float *)scaleBytes + (float)amount * -9.769497830779909e32f;
@@ -644,8 +627,8 @@ __attribute__((visibility("hidden"))) extern int *g_StarSystem_planet_guard;
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_planet_canvas;
 
 
-extern "C" void StarSystem_switchPlanetForIntro(StarSystem *self)
-{
+void StarSystem::switchPlanetForIntro() {
+    StarSystem *self = this;
     char scaled[12];
     char current[12];
     int flags = 0;
@@ -660,8 +643,8 @@ extern "C" void StarSystem_switchPlanetForIntro(StarSystem *self)
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_reversal_canvas;
 
 
-extern "C" void StarSystem_switchSunForSupernovaReversal(StarSystem *self)
-{
+void StarSystem::switchSunForSupernovaReversal() {
+    StarSystem *self = this;
     void **canvasHolder = g_StarSystem_reversal_canvas;
     char scaleBytes[12];
     PaintCanvas_TextureCreate(*canvasHolder, 0x2734, P(P(self, 0x14), 4), 0);
@@ -684,8 +667,8 @@ __attribute__((visibility("hidden"))) extern void **g_StarSystem_intro_status;
 __attribute__((visibility("hidden"))) extern uint32_t g_StarSystem_intro_colors[];
 
 
-extern "C" void StarSystem_switchSunForSupernovaIntro(StarSystem *self)
-{
+void StarSystem::switchSunForSupernovaIntro() {
+    StarSystem *self = this;
     void **canvasHolder = g_StarSystem_intro_canvas;
     char scaled[12];
     char current[12];
@@ -723,8 +706,8 @@ __attribute__((visibility("hidden"))) extern uint32_t *g_StarSystem_render_stati
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_render_status;
 
 
-extern "C" void StarSystem_render(StarSystem *self)
-{
+void StarSystem::render() {
+    StarSystem *self = this;
     char cameraPos[12];
     char savedCamera[0x3c];
     char lookAt[0x3c];
@@ -790,7 +773,7 @@ extern "C" void StarSystem_render(StarSystem *self)
                                      ((float *)tempVec)[1],
                                      grow + ((float *)tempVec)[2]);
                     AEGeometry_setMatrix((AEGeometry *)P(self, 0x40), lookAt);
-                    StarSystem_renderSunStreak(self);
+                    ((StarSystem *)(self))->renderSunStreak();
                 }
 
                 MatrixSetScaling(lookAt,

@@ -29,5 +29,8 @@ struct PlayerJunk {
     void* field_0x78;                   // +0x78  AEGeometry
     int field_0x88;                     // +0x88  state machine
     int field_0x124;                    // +0x124 last update tick
+
+    // ---- methods (converted from free functions) ----
+    void update(int elapsed);
 };
 #endif

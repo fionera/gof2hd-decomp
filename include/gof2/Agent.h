@@ -50,5 +50,34 @@ struct Agent {
 
     // Real C++ destructor so the demangled symbol contains "~Agent".
     ~Agent() noexcept(false);
+
+    // ---- methods (converted from free functions) ----
+    Agent * ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11);
+    int * getImageParts();
+    Mission * getMission();
+    RetStr getMissionString();
+    int getModPricePercentage();
+    RetStr getName();
+    int getSellModIndex();
+    RetStr getStationName();
+    RetStr getSystemName();
+    RetStr getWingmanName(int idx);
+    void * getWingmanNames();
+    void giveRewardAtNextChat(bool v);
+    uint8_t hasAcceptedOffer();
+    uint8_t hasReward();
+    bool isGenericAgent();
+    bool isKnown();
+    uint8_t isMale();
+    bool isStoryAgent();
+    void nextEvent();
+    void setImageParts(int *parts);
+    void setMission(Mission *mission);
+    void setMissionString(void *src);
+    void setOfferAccepted(bool v);
+    Triple * setSellItemData(int a, int b, int c);
+    void setStationName(String12 src);
+    void setSystemName(String12 src);
+    void setWingmanFriendNames(uint32_t *param);
 };
 #endif

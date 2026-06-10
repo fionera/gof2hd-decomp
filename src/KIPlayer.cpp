@@ -1,17 +1,20 @@
 #include "gof2/KIPlayer.h"
+#include "gof2/Hud.h"
+#include "gof2/Player.h"
+#include "gof2/Route.h"
+#include "gof2/Standing.h"
+#include "gof2/String.h"
 #include "gof2/AEGeometry.h"
 
 
 extern "C" void FModSound_resumeEvent(void *a, int b);
 extern "C" void FModSound_pauseEvent(void *player);
 extern "C" void AEGeometry_translate(void *geom, const Vector &v);
-extern "C" void Route_translate(Route *route, const Vector &v);
 extern "C" void MatrixGetPosition(Vector *out, float *matrix);
 extern "C" void Object_setVisible(void *obj);
 extern "C" void operator_delete(void *p);
 extern "C" void FModSound_stopEvent(void *player);
 extern "C" void Player_render(void *player);
-extern "C" void Player_setActive(void *player, int active = 0);
 extern "C" void FModSound_playEvent(void *a, int b, int c);
 extern "C" void *Route_dtor(Route *r);
 extern "C" void *Player_dtor(void *p);
@@ -20,14 +23,10 @@ extern "C" void *ArrayUint_dtor(void *p);
 extern "C" void *ArrayInt_dtor(void *p);
 extern "C" void ArrayReleaseClasses_SpacePoint(void *arr);
 extern "C" void *ArraySpacePoint_dtor(void *p);
-extern "C" void String_dtor(void *p);
 extern "C" void Player_awake(void *player, int b);
-extern "C" void KIPlayer_setActive(KIPlayer *self);
 extern "C" void Player_setDead(void *self, int arg);
 extern "C" void Player_addGun_b(void *player);
 extern "C" void Player_reset(void *player);
-extern "C" void KIPlayer_setToSleep(KIPlayer *self);
-extern "C" void Route_reset(Route *route);
 extern "C" void Player_setEnemies(void *player);
 extern "C" void *operator_new(unsigned int sz);
 extern "C" void *gCanvas;
@@ -43,11 +42,10 @@ extern "C" void **gCanvasPtr;
 extern "C" void AEGeometry_ctor(void *self, unsigned short type, void *canvas, bool b);
 extern "C" void AEGeometry_getPosition(Vector *out, void *geom);
 extern "C" void AEGeometry_setPosition_v(void *self, Vector *v);
-extern "C" void Player_setKIPlayer(void *player, KIPlayer *self);
 
 // ---- getType_a61de.cpp ----
-extern "C" int KIPlayer_getType(KIPlayer *self)
-{
+int KIPlayer::getType() {
+    KIPlayer *self = this;
     return self->field_0xac;
 }
 
@@ -60,8 +58,8 @@ extern "C" void KIPlayer_projectCollisionOnSurface(Vector *out)
 }
 
 // ---- isDead_a610c.cpp ----
-extern "C" bool KIPlayer_isDead(KIPlayer *self)
-{
+bool KIPlayer::isDead() {
+    KIPlayer *self = this;
     return self->field_0x88 == 4;
 }
 
@@ -72,35 +70,35 @@ extern "C" Array<SpacePoint *> *KIPlayer_getSpacePoints(KIPlayer *self)
 }
 
 // ---- setJumpSphere_a6224.cpp ----
-extern "C" void KIPlayer_setJumpSphere(KIPlayer *self, uint32_t sphere)
-{
+void KIPlayer::setJumpSphere(uint32_t sphere) {
+    KIPlayer *self = this;
     self->field_0xd4 = sphere;
 }
 
 // ---- isWingMan_a6128.cpp ----
-extern "C" uint8_t KIPlayer_isWingMan(KIPlayer *self)
-{
+uint8_t KIPlayer::isWingMan() {
+    KIPlayer *self = this;
     return self->field_0xdc;
 }
 
 // ---- ResumeEngineSound_a61a8.cpp ----
-extern "C" void KIPlayer_ResumeEngineSound(KIPlayer *self)
-{
+void KIPlayer::ResumeEngineSound() {
+    KIPlayer *self = this;
     if (self->field_0x4 != 0 && self->field_0xf8 != -1) {
         return FModSound_resumeEvent(self->field_0x4, 0);
     }
 }
 
 // ---- setWingmanCommand_a613a.cpp ----
-extern "C" void KIPlayer_setWingmanCommand(KIPlayer *self, int cmd, KIPlayer *target)
-{
+void KIPlayer::setWingmanCommand(int cmd, KIPlayer *target) {
+    KIPlayer *self = this;
     self->field_0xe4 = cmd;
     self->field_0xe8 = target;
 }
 
 // ---- PauseEngineSound_a617e.cpp ----
-extern "C" void KIPlayer_PauseEngineSound(KIPlayer *self)
-{
+void KIPlayer::PauseEngineSound() {
+    KIPlayer *self = this;
     void *player = self->field_0x4;
     if (player != 0 && self->field_0xf8 != -1) {
         return FModSound_pauseEvent(player);
@@ -108,20 +106,20 @@ extern "C" void KIPlayer_PauseEngineSound(KIPlayer *self)
 }
 
 // ---- setRotationSpeed_a6144.cpp ----
-extern "C" void KIPlayer_setRotationSpeed(KIPlayer *self, float speed)
-{
+void KIPlayer::setRotationSpeed(float speed) {
+    KIPlayer *self = this;
     self->field_0xa8 = speed;
 }
 
 // ---- isEnemy_a61e4.cpp ----
-extern "C" uint8_t KIPlayer_isEnemy(KIPlayer *self)
-{
+uint8_t KIPlayer::isEnemy() {
+    KIPlayer *self = this;
     return *(uint8_t *)((char *)self->field_0x4 + 0x5c);
 }
 
 // ---- isDocked_a61fa.cpp ----
-extern "C" bool KIPlayer_isDocked(KIPlayer *self)
-{
+bool KIPlayer::isDocked() {
+    KIPlayer *self = this;
     return self->field_0x88 == 9;
 }
 
@@ -134,34 +132,34 @@ extern "C" void KIPlayer_getProjectionVector(Vector *out)
 }
 
 // ---- isDying_a611a.cpp ----
-extern "C" bool KIPlayer_isDying(KIPlayer *self)
-{
+bool KIPlayer::isDying() {
+    KIPlayer *self = this;
     return self->field_0x88 == 3;
 }
 
 // ---- translate_a6332.cpp ----
-extern "C" void KIPlayer_translate(KIPlayer *self, const Vector &v)
-{
+void KIPlayer::translate(const Vector &v) {
+    KIPlayer *self = this;
     AEGeometry_translate(self->field_0x8, v);
     Route *route = self->field_0x6c;
     if (route == 0) {
         return;
     }
-    return Route_translate(route, v);
+    return ((Route *)(route))->translate(v);
 }
 
 // ---- getPosition_a61ec.cpp ----
 // Returns the ship position by value (sret in r0, this in r1).
-Vector KIPlayer_getPosition(KIPlayer *self)
-{
+Vector KIPlayer::getPosition() {
+    KIPlayer *self = this;
     Vector v;
     MatrixGetPosition(&v, (float *)((char *)self->field_0x4 + 0x4));
     return v;
 }
 
 // ---- setVisible_a5b2c.cpp ----
-extern "C" void KIPlayer_setVisible(KIPlayer *self, bool visible)
-{
+void KIPlayer::setVisible(bool visible) {
+    KIPlayer *self = this;
     void *obj = self->field_0x8;
     self->field_0xf5 = visible;
     if (obj != 0) {
@@ -179,8 +177,8 @@ extern "C" void _ZN8KIPlayerD0Ev(KIPlayer *self)
 }
 
 // ---- StopEngineSound_a61be.cpp ----
-extern "C" void KIPlayer_StopEngineSound(KIPlayer *self)
-{
+void KIPlayer::StopEngineSound() {
+    KIPlayer *self = this;
     void *player = self->field_0x4;
     if (player != 0 && self->field_0xf8 != -1) {
         return FModSound_stopEvent(player);
@@ -188,42 +186,42 @@ extern "C" void KIPlayer_StopEngineSound(KIPlayer *self)
 }
 
 // ---- render_a632c.cpp ----
-extern "C" void KIPlayer_render(KIPlayer *self)
-{
+void KIPlayer::render() {
+    KIPlayer *self = this;
     return Player_render(self->field_0x8);
 }
 
 // ---- setToSleep_a5e2a.cpp ----
-extern "C" void KIPlayer_setToSleep(KIPlayer *self)
-{
+void KIPlayer::setToSleep() {
+    KIPlayer *self = this;
     void *player = self->field_0x4;
     self->field_0x88 = 5;
-    Player_setActive(player, 0);
+    ((Player *)(player))->setActive(0);
     self->field_0xb1 = 1;
 }
 
 // ---- setState_a524e.cpp ----
-extern "C" void KIPlayer_setState(KIPlayer *self, int state)
-{
+void KIPlayer::setState(int state) {
+    KIPlayer *self = this;
     self->field_0x88 = state;
 }
 
 // ---- jump_a6350.cpp ----
-extern "C" void KIPlayer_jump(KIPlayer *self)
-{
+void KIPlayer::jump() {
+    KIPlayer *self = this;
     self->field_0xf4 = 0;
     self->field_0xec = 1;
 }
 
 // ---- setActive_a5e46.cpp ----
-extern "C" void KIPlayer_setActive(KIPlayer *self)
-{
-    return Player_setActive(self->field_0x4);
+void KIPlayer::setActive() {
+    KIPlayer *self = this;
+    return ((Player *)(self->field_0x4))->setActive();
 }
 
 // ---- PlayEngineSound_a6192.cpp ----
-extern "C" void KIPlayer_PlayEngineSound(KIPlayer *self)
-{
+void KIPlayer::PlayEngineSound() {
+    KIPlayer *self = this;
     if (self->field_0x4 != 0 && self->field_0xf8 != -1) {
         return FModSound_playEvent(self->field_0x4,
                                    self->field_0xf8, 0);
@@ -231,8 +229,8 @@ extern "C" void KIPlayer_PlayEngineSound(KIPlayer *self)
 }
 
 // ---- setRoute_a6150.cpp ----
-extern "C" void KIPlayer_setRoute(KIPlayer *self, Route *route)
-{
+void KIPlayer::setRoute(Route *route) {
+    KIPlayer *self = this;
     Route *old = self->field_0x6c;
     if (old != 0) {
         operator_delete(Route_dtor(old));
@@ -245,8 +243,8 @@ extern "C" void KIPlayer_setRoute(KIPlayer *self, Route *route)
 }
 
 // ---- isVisible_a5b26.cpp ----
-extern "C" uint8_t KIPlayer_isVisible(KIPlayer *self)
-{
+uint8_t KIPlayer::isVisible() {
+    KIPlayer *self = this;
     return self->field_0xf5;
 }
 
@@ -294,22 +292,21 @@ extern "C" void *_ZN8KIPlayerD1Ev(KIPlayer *self)
         self->field_0xcc = 0;
     }
 
-    String_dtor((char *)self + 0x18);
+    ((String *)((char *)self + 0x18))->dtor();
     return self;
 }
 
 // ---- awake_a6214.cpp ----
-extern "C" void KIPlayer_awake(KIPlayer *self)
-{
+void KIPlayer::awake() {
+    KIPlayer *self = this;
     void *player = self->field_0x4;
     self->field_0x88 = 1;
     return Player_awake(player, 1);
 }
 
 // ---- setInitActive_a5e4c.cpp ----
-extern "C" void KIPlayer_setInitActive(KIPlayer *self)
-{
-    KIPlayer_setActive(self);
+void KIPlayer::setInitActive() {
+    KIPlayer *self = this;
     self->field_0xb2 = 0;
 }
 
@@ -322,43 +319,43 @@ extern "C" void KIPlayer_getCollisionNormal(Vector *out)
 }
 
 // ---- setWingman_a612e.cpp ----
-extern "C" void KIPlayer_setWingman(KIPlayer *self, bool b, int cmd)
-{
+void KIPlayer::setWingman(bool b, int cmd) {
+    KIPlayer *self = this;
     self->field_0xdc = b;
     self->field_0xe0 = cmd;
     self->field_0xe4 = 1;
 }
 
 // ---- setSpacePoints_a5b3e.cpp ----
-extern "C" void KIPlayer_setSpacePoints(KIPlayer *self, Array<SpacePoint *> *pts)
-{
+void KIPlayer::setSpacePoints(Array<SpacePoint *> *pts) {
+    KIPlayer *self = this;
     *(Array<SpacePoint *> **)((char *)self + 0xcc) = pts;
 }
 
 // ---- isJumper_a5dde.cpp ----
-extern "C" uint8_t KIPlayer_isJumper(KIPlayer *self)
-{
+uint8_t KIPlayer::isJumper() {
+    KIPlayer *self = this;
     return self->field_0xec;
 }
 
 // ---- outerCollide_a5224.cpp ----
 typedef void (*CollideFn)(KIPlayer *, float, float, float);
 
-extern "C" void KIPlayer_outerCollide(KIPlayer *self, const Vector &v)
-{
+void KIPlayer::outerCollide(const Vector &v) {
+    KIPlayer *self = this;
     CollideFn fn = *(CollideFn *)(*(char **)self + 0x3c);
     return fn(self, v.x, v.y, v.z);
 }
 
 // ---- setJumper_a5dd8.cpp ----
-extern "C" void KIPlayer_setJumper(KIPlayer *self, bool b)
-{
+void KIPlayer::setJumper(bool b) {
+    KIPlayer *self = this;
     self->field_0xec = b;
 }
 
 // ---- cargoAvailable_a6304.cpp ----
-extern "C" int KIPlayer_cargoAvailable(KIPlayer *self)
-{
+int KIPlayer::cargoAvailable() {
+    KIPlayer *self = this;
     unsigned int *arr = (unsigned int *)self->field_0x50;
     if (arr != 0) {
         unsigned int len = arr[0];
@@ -375,8 +372,8 @@ extern "C" int KIPlayer_cargoAvailable(KIPlayer *self)
 }
 
 // ---- setDead_a6208.cpp ----
-extern "C" void KIPlayer_setDead(KIPlayer *self)
-{
+void KIPlayer::setDead() {
+    KIPlayer *self = this;
     self->field_0x88 = 4;
     return Player_setDead(self, 0);
 }
@@ -389,8 +386,8 @@ extern "C" {
 extern char KIPlayer_vtable[];                                   // KIPlayer vtable
 
 void String_ctor_default(void *s);                              // 0x6efbc  String::String()
-void String_ctor_char(void *s, const char *t, bool copy);       // 0x6ee18  String(char*,bool)
-void String_assign(void *dst, void *src);                       // 0x6f2b0  operator=
+// 0x6ee18  String(char*,bool)
+// 0x6f2b0  operator=
 
 void AEGeometry_setPosition3f(void *geom, float x, float y, float z);   // 0x73048
 
@@ -401,9 +398,8 @@ extern unsigned KIPlayer_initB;                                 // DAT_000b59e0
 
 // KIPlayer::KIPlayer(int faction, int group, Player* player, AEGeometry* geom,
 //                    float x, float y, float z, bool active)
-extern "C" void KIPlayer_ctor(KIPlayer *self, int faction, int group, void *player, void *geom,
-                              float x, float y, float z, bool active)
-{
+void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, float y, float z, bool active) {
+    KIPlayer *self = this;
     *(int *)self = (int)(intptr_t)(KIPlayer_vtable + 8);
     String_ctor_default((char *)self + 0x18);
 
@@ -458,9 +454,9 @@ extern "C" void KIPlayer_ctor(KIPlayer *self, int faction, int group, void *play
 
     {
         String12 tmp;
-        String_ctor_char(&tmp, "", false);
-        String_assign((char *)self + 0x18, &tmp);
-        String_dtor(&tmp);
+        ((String *)(&tmp))->ctor_char("", false);
+        ((String *)((char *)self + 0x18))->assign(&tmp);
+        ((String *)(&tmp))->dtor();
     }
 
     self->field_0x24 = 0;
@@ -473,7 +469,7 @@ extern "C" void KIPlayer_ctor(KIPlayer *self, int faction, int group, void *play
     self->field_0x84 = -1;
     self->field_0x104 = 0;
 
-    Player_setKIPlayer(self->field_0x4, self);
+    ((Player *)(self->field_0x4))->setKIPlayer(self);
 
     self->field_0x88 = 0;
     self->field_0x10 = 0;
@@ -516,8 +512,8 @@ float AEMath_VectorLength(void *v);                              // 0x6ec44
 // KIPlayer::getNearestDockingPoint(AbyssEngine::AEMath::Vector const& dir)
 //   Returns the nearest space point of type 2 (docking) to the supplied direction vector,
 //   measured from the player's transformed position.
-extern "C" void *KIPlayer_getNearestDockingPoint(KIPlayer *self, Vector *dir)
-{
+void * KIPlayer::getNearestDockingPoint(Vector *dir) {
+    KIPlayer *self = this;
     void *arr = self->field_0xcc;
     if (arr == 0)
         return 0;
@@ -559,8 +555,8 @@ extern "C" void *KIPlayer_getNearestDockingPoint(KIPlayer *self, Vector *dir)
 // KIPlayer::setPosition(float, float, float)
 //   Packs the three floats into a Vector and dispatches through vtable slot +0x44
 //   (the virtual setPosition(Vector const&)).
-extern "C" void KIPlayer_setPosition3(KIPlayer *self, float x, float y, float z)
-{
+void KIPlayer::setPosition3(float x, float y, float z) {
+    KIPlayer *self = this;
     Vector v;
     v.x = x;
     v.y = y;
@@ -571,26 +567,26 @@ extern "C" void KIPlayer_setPosition3(KIPlayer *self, float x, float y, float z)
 }
 
 // ---- addGun_a61d8.cpp ----
-extern "C" void KIPlayer_addGun_b(KIPlayer *self)
-{
+void KIPlayer::addGun_b() {
+    KIPlayer *self = this;
     return Player_addGun_b(self->field_0x4);
 }
 
 // ---- reset_a5de6.cpp ----
-extern "C" void KIPlayer_reset(KIPlayer *self)
-{
+void KIPlayer::reset() {
+    KIPlayer *self = this;
     if (self->field_0x4 != 0) {
         Player_reset(self->field_0x4);
     }
     if (self->field_0xb1 != 0 || self->field_0xb2 == 0) {
-        KIPlayer_setToSleep(self);
+        ((KIPlayer *)(self))->setToSleep();
     }
     Route *r = self->field_0xb4;
     if (r != 0) {
         self->field_0x6c = r;
-        Route_reset(r);
+        ((Route *)(r))->reset();
     } else if (self->field_0x6c != 0) {
-        Route_reset(self->field_0x6c);
+        ((Route *)(self->field_0x6c))->reset();
     }
     self->field_0xfc = 0;
     self->field_0x100 = 0;
@@ -610,7 +606,7 @@ int Ship_getFreeSpace(void *ship);                           // 0x722ec
 void *Item_makeItem(int infoPtr);                            // 0x718c0
 void Level_stealFriendCargo(void *level);                    // 0x73300
 void *Status_getStanding(void);                              // 0x71b84
-void Standing_applyStealCargo(void *standing, int faction);  // 0x7330c
+// 0x7330c
 int Item_getIndex(void *item);                               // 0x718d8
 int Item_getAmount(void *item);                              // 0x7183c
 int Ship_spaceAvailable(void *ship, int amount);             // 0x73318
@@ -620,15 +616,15 @@ int Item_getType(void *item);                                // 0x718fc
 void *Ship_getEquipment(void *ship);                         // 0x7333c
 void Item_changeAmount(void *item, int amount);              // 0x71854
 void Ship_addCargo(void *ship, void *item);                  // 0x72cdc
-void Hud_catchCargo(void *hud, int index, int amount, int flagA, int flagB, int flagC, int flagD); // 0x72ce8 / 0x72cdc area
+// 0x72ce8 / 0x72cdc area
 }
 
 // KIPlayer::captureCrate(Hud* hud)
 //   On a crate capture: rolls/limits the amount against ship free space, creates the item,
 //   applies steal/standing penalties, moves the cargo into the ship's hold or equipment, bumps
 //   the relevant statistics, and notifies the HUD.
-extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
-{
+void KIPlayer::captureCrate(void *hud) {
+    KIPlayer *self = this;
     if ((unsigned)(self->field_0x88 - 3) < 2) {
         self->field_0x4c = 0;
         if (self->field_0x101 != 0)
@@ -679,7 +675,7 @@ extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
             Level_stealFriendCargo(self->field_0x54);
 
         if (self->field_0x3c == 0)
-            Standing_applyStealCargo(Status_getStanding(), self->field_0x28);
+            ((Standing *)(Status_getStanding()))->applyStealCargo(self->field_0x28);
 
         // determine whether this is a special (illegal) cargo item.
         bool special = false;
@@ -704,7 +700,7 @@ extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
             hudIndex = Item_getIndex(item);
             hudAmount = Item_getAmount(item);
             flagB = 1;
-            Hud_catchCargo(hud, hudIndex, hudAmount, flagA, 0, 0, flagB);
+            ((Hud *)(hud))->catchCargo(hudIndex, hudAmount, flagA, 0, 0, flagB);
             return;
         }
 
@@ -749,7 +745,7 @@ extern "C" void KIPlayer_captureCrate(KIPlayer *self, void *hud)
 
         hudIndex = Item_getIndex(item);
         hudAmount = Item_getAmount(item);
-        Hud_catchCargo(hud, hudIndex, hudAmount, flagA, 0, 0, 0);
+        ((Hud *)(hud))->catchCargo(hudIndex, hudAmount, flagA, 0, 0, 0);
         return;
     }
 }
@@ -768,8 +764,8 @@ int SpacePoint_isFree(void *sp);                                 // 0x732c4
 // KIPlayer::getNearestNavigationPoint(AbyssEngine::AEMath::Vector const& dir, SpacePoint* target)
 //   Among the player's space points of type 1 (navigation), returns the nearest free one
 //   (or the explicitly requested `target`) measured against the player's transformed position.
-extern "C" void *KIPlayer_getNearestNavigationPoint(KIPlayer *self, Vector *dir, void *target)
-{
+void * KIPlayer::getNearestNavigationPoint(Vector *dir, void *target) {
+    KIPlayer *self = this;
     void *arr = self->field_0xcc;
     if (arr == 0)
         return 0;
@@ -815,14 +811,14 @@ extern "C" void *KIPlayer_getNearestNavigationPoint(KIPlayer *self, Vector *dir,
 }
 
 // ---- setEnemies_a6178.cpp ----
-extern "C" void KIPlayer_setEnemies(KIPlayer *self)
-{
+void KIPlayer::setEnemies() {
+    KIPlayer *self = this;
     return Player_setEnemies(self->field_0x4);
 }
 
 // ---- setShipGroup_a5d40.cpp ----
-extern "C" void KIPlayer_setShipGroup(KIPlayer *self, int param2, int flag, int cond)
-{
+void KIPlayer::setShipGroup(int param2, int flag, int cond) {
+    KIPlayer *self = this;
     self->field_0x7c = flag;
     if (param2 == 0 || cond == 0) {
         self->field_0x8 = (void *)(intptr_t)param2;
@@ -851,8 +847,8 @@ extern "C" void KIPlayer_setShipGroup(KIPlayer *self, int param2, int flag, int 
 }
 
 // ---- setPosition_a6360.cpp ----
-extern "C" void KIPlayer_setPosition_vec(KIPlayer *self, const Vector &v)
-{
+void KIPlayer::setPosition_vec(const Vector &v) {
+    KIPlayer *self = this;
     void *geom = self->field_0x8;
     if (geom != 0) {
         AEGeometry_setPosition(geom, v);
@@ -867,14 +863,14 @@ extern "C" void KIPlayer_setPosition_vec(KIPlayer *self, const Vector &v)
 }
 
 // ---- addGun_a61d2.cpp ----
-extern "C" void KIPlayer_addGun_a(KIPlayer *self)
-{
+void KIPlayer::addGun_a() {
+    KIPlayer *self = this;
     return Player_addGun_a(self->field_0x4);
 }
 
 // ---- createCrate_a622c.cpp ----
-extern "C" void KIPlayer_createCrate(KIPlayer *self, int type)
-{
+void KIPlayer::createCrate(int type) {
+    KIPlayer *self = this;
     void *crate = operator_new(0xc0);
     unsigned short id;
     if (type == 1) {
@@ -904,5 +900,5 @@ extern "C" void KIPlayer_createCrate(KIPlayer *self, int type)
     AEGeometry_getPosition(&pos, self->field_0x8);
     AEGeometry_setPosition_v(crate, &pos);
     Matrix_assign((char *)self->field_0x4 + 0x4, AEGeometry_getMatrix());
-    Player_setKIPlayer(self->field_0x4, self);
+    ((Player *)(self->field_0x4))->setKIPlayer(self);
 }

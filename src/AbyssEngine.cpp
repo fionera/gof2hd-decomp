@@ -1,4 +1,5 @@
 #include "gof2/AbyssEngine.h"
+#include "gof2/String.h"
 #include "gof2/Mesh.h"
 
 
@@ -30,7 +31,6 @@ extern "C" void AE_Engine_SetColor(float r, float g, float b, float a);
 extern "C" void String_copy(String *self, const String *src, bool b);
 extern "C" void String_fromLongLong(String *self, long long v);
 extern "C" void String_appendEq(String *self, const String *o);
-extern "C" void String_dtor(String *self);
 extern "C" void String_fromFloat(String *self, float v);
 extern "C" void *__aeabi_memclr(void *dst, size_t_ n);
 extern "C" void *__aeabi_memclr4(void *dst, size_t_ n);
@@ -162,7 +162,7 @@ namespace AbyssEngine {
 
 extern "C" void String_copy(String *self, const String *src, bool b);   // String(String const&, bool)
 extern "C" void String_appendEq(String *self, const String *o);          // operator+=
-extern "C" void String_dtor(String *self);                               // ~String
+// ~String
 
 String operator+(const String &a, const String &b)
 {
@@ -172,7 +172,7 @@ String operator+(const String &a, const String &b)
 
     String result;
     String_copy(&result, &tmp, false);
-    String_dtor(&tmp);
+    ((String *)(&tmp))->dtor();
     return result;
 }
 
@@ -1318,11 +1318,11 @@ String operator+(const String &a, const long long &b)
     String num;
     String_fromLongLong(&num, b);
     String_appendEq(&acc, &num);
-    String_dtor(&num);
+    ((String *)(&num))->dtor();
 
     String result;
     String_copy(&result, &acc, false);
-    String_dtor(&acc);
+    ((String *)(&acc))->dtor();
     return result;
 }
 
@@ -1364,7 +1364,7 @@ String operator+(const float &a, const String &b)
 
     String result;
     String_copy(&result, &acc, false);
-    String_dtor(&acc);
+    ((String *)(&acc))->dtor();
     return result;
 }
 
@@ -1850,11 +1850,11 @@ String operator+(const String &a, const int &b)
     String num;
     String_fromInt(&num, b);
     String_appendEq(&acc, &num);
-    String_dtor(&num);
+    ((String *)(&num))->dtor();
 
     String result;
     String_copy(&result, &acc, false);
-    String_dtor(&acc);
+    ((String *)(&acc))->dtor();
     return result;
 }
 
@@ -2090,7 +2090,7 @@ String operator+(const int &a, const String &b)
 
     String result;
     String_copy(&result, &acc, false);
-    String_dtor(&acc);
+    ((String *)(&acc))->dtor();
     return result;
 }
 
@@ -2822,7 +2822,7 @@ String operator+(const long long &a, const String &b)
 
     String result;
     String_copy(&result, &acc, false);
-    String_dtor(&acc);
+    ((String *)(&acc))->dtor();
     return result;
 }
 
@@ -2895,7 +2895,7 @@ bool operator==(const String &a, const String &b)
     String tmp;
     String_copy(&tmp, &a, false);
     int cmp = String_Compare(&tmp, &b);
-    String_dtor(&tmp);
+    ((String *)(&tmp))->dtor();
     return cmp != 0;
 }
 
@@ -2994,11 +2994,11 @@ String operator+(const String &a, const float &b)
     String num;
     String_fromFloat(&num, b);
     String_appendEq(&acc, &num);
-    String_dtor(&num);
+    ((String *)(&num))->dtor();
 
     String result;
     String_copy(&result, &acc, false);
-    String_dtor(&acc);
+    ((String *)(&acc))->dtor();
     return result;
 }
 

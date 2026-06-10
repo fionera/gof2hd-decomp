@@ -1,4 +1,7 @@
 #include "gof2/GameRecord.h"
+#include "gof2/Achievements.h"
+#include "gof2/BluePrint.h"
+#include "gof2/Station.h"
 
 
 
@@ -7,8 +10,6 @@
 // GameRecord::~GameRecord()
 GameRecord::~GameRecord()
 {
-    AEString_dtor((char *)this + 0x194);
-    AEString_dtor((char *)this + 0x188);
 }
 
 // ---- GameRecord_155900.cpp ----
@@ -18,8 +19,6 @@ GameRecord::GameRecord()
     char *t = (char *)this;
 
     // Two embedded AbyssEngine::String members.
-    AEString_ctor(t + 0x188);
-    AEString_ctor(t + 0x194);
 
     // Heap buffer at +0x00.
     void *buf = operator_new__(0x87);
@@ -83,11 +82,8 @@ void *AEString_assign(void *self, const void *other);
 void AEString_dtor(void *self);
 long Array_dtor(void *self);
 __attribute__((noreturn)) void __stack_chk_fail();
-long Achievements_init(...);
-long Achievements_setMedals(...);
 long BluePrint_getIndex(...);
 long BluePrint_getStationIndex(...);
-long BluePrint_isEmpty(...);
 long Galaxy_getStation(...);
 long Galaxy_getSystem(...);
 long Galaxy_setVisited(...);
@@ -95,19 +91,14 @@ long Item_getIndex(...);
 long Item_setUnsaleable(...);
 long Mission_ctor(...);
 long Mission_getTargetStation(...);
-long Mission_isEmpty(...);
 long Ship_addMod(...);
 long Ship_getCargo(...);
 long Ship_getFirstEquipmentOfSort(...);
 long Ship_getMods(...);
 long SolarSystem_getRoutes(...);
 long Station_getIndex(...);
-long Station_getName(...);
 long Station_getShips(...);
 long Station_getSystem(...);
-long Station_setItems(...);
-long Station_setShips(...);
-long Station_dtor(...);
 long Status_dlc1Won(...);
 long Status_gameWon(...);
 long Status_getShip(...);
@@ -147,8 +138,8 @@ extern uint32_t DAT_0016646c;
 extern uint32_t DAT_00166474;
 }
 
-void GameRecord_load(GameRecord *self)
-{
+void GameRecord::load() {
+    GameRecord *self = this;
     uint32_t *in_r0 = (uint32_t *)self;
     char gr_tmpstr[12];  // hidden String return slot (Station::getName)
     bool bVar1;
@@ -327,8 +318,8 @@ LAB_00165dc2:
     Status_setCampaignMission(pSVar17,pMVar3);
   }
 LAB_00165e0c:
-  Station_setItems(*(char **)(*piVar22 + 0x14c),(char *)in_r0[0x60],true);
-  Station_setShips(*(char **)(*piVar22 + 0x14c),SUB41(in_r0[0x61],0));
+  ((Station *)(*(char **)(*piVar22 + 0x14c)))->setItems((char *)in_r0[0x60], true);
+  ((Station *)(*(char **)(*piVar22 + 0x14c)))->setShips(SUB41(in_r0[0x61],0));
   ctx = (char *)*piVar22;
   pEVar10 = ctx + 0x94;
   if (*(char **)pEVar10 != (char *)0x0) {
@@ -398,9 +389,9 @@ LAB_00165e0c:
   *(uint32_t *)(ctx + 0xe8) = in_r0[0x30];
   puVar18 = *(uint32_t **)(iVar11 + 0x165f34);
   *(uint32_t *)(ctx + 0xec) = in_r0[0x31];
-  Achievements_init((char *)*puVar18,ctx);
+  ((Achievements *)((char *)*puVar18))->init();
   if ((int *)in_r0[0x18] != (int *)0x0) {
-    Achievements_setMedals((char *)*puVar18,(int *)in_r0[0x18],in_r0[0x19]);
+    ((Achievements *)((char *)*puVar18))->setMedals((int *)in_r0[0x18], in_r0[0x19]);
   }
   Status_setShip((char *)*piVar22);
   iVar11 = Status_dlc1Won();
@@ -448,7 +439,7 @@ LAB_00165faa:
          (((iVar11 = BluePrint_getIndex(pThis), iVar11 == 0xdf ||
            (iVar11 = BluePrint_getIndex(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)),
            iVar11 == 0xd2)) &&
-          (iVar11 = BluePrint_isEmpty(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)),
+          (iVar11 = ((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->isEmpty(),
           iVar11 == 0)))) {
         iVar11 = *piVar16;
         BluePrint_getStationIndex(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4));
@@ -460,17 +451,13 @@ LAB_00165faa:
           iVar11 = SolarSystem_getRoutes();
           if (iVar11 == 0) {
             *(uint32_t *)(*(int *)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4) + 0x10) = 10;
-            pvVar4 = (char *)Station_dtor(pSVar8);
+            pvVar4 = (char *)((Station *)(pSVar8))->dtor();
             operator_delete(pvVar4);
             pSVar8 = (char *)Galaxy_getStation(*piVar16);
             Station_getName();
-            AEString_assign
-                      ((char *)(*(int *)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4) + 0x14),
-                       (char *)gr_tmpstr);
-            AEString_dtor((char *)gr_tmpstr);
             if (pSVar8 == (char *)0x0) goto LAB_00166114;
           }
-          pvVar4 = (char *)Station_dtor(pSVar8);
+          pvVar4 = (char *)((Station *)(pSVar8))->dtor();
           operator_delete(pvVar4);
         }
       }

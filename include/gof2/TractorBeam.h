@@ -42,6 +42,11 @@ float VectorLength(const Vector *v);                // 0x0006ec44
 Vector operator-(const Vector &a, const Vector &b); // 0x0006ec38
 
 } // namespace AEMath
+
+    // ---- methods (converted from free functions) ----
+    void ctor(AEGeometry * /*unused*/, int param2);
+    void render();
+    void update(int frameTime, Radar *radar, Level *level, Hud *hud);
 } // namespace AbyssEngine
 
 using AbyssEngine::AEMath::Vector;

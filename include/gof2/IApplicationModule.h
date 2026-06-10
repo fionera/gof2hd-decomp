@@ -5,5 +5,8 @@
 struct IApplicationModule {
     ApplicationManager* field_0x4;      // +0x4
     ApplicationManager* field_0x8;      // +0x8
+
+    // ---- methods (converted from free functions) ----
+    void SetApplicationManager(ApplicationManager *manager);
 };
 #endif

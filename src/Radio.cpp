@@ -1,9 +1,11 @@
 #include "gof2/Radio.h"
+#include "gof2/Layout.h"
 
 // Layout::setDrawColor is a Layout method (Layout not in this batch);
 // call its mangled symbol directly via a thin wrapper.
 extern "C" void _ZN13Layout12setDrawColorEi(Layout *self, int color);
-static inline void Layout_setDrawColor(Layout *self, int color) { _ZN13Layout12setDrawColorEi(self, color); }
+static inline void Layout::setDrawColor(int color) {
+    Layout *self = this; _ZN13Layout12setDrawColorEi(self, color); }
 
 extern "C" __attribute__((visibility("hidden"))) void *g_Radio_wantedRoot;
 extern "C" __attribute__((visibility("hidden"))) ImageFactory **g_Radio_imageFactoryCreate;
@@ -295,7 +297,7 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script)
         (*g_Radio_drawCanvas)->SetColor(0xffffffffu);
         int imageId = this->field_0x4->getImageID();
         Layout *layout = *g_Radio_drawLayout;
-        Layout_setDrawColor(layout, -0xd1);
+        ((Layout *)(layout))->setDrawColor(-0xd1);
 
         int width = this->field_0x38;
         int x = this->field_0x3c;
@@ -309,13 +311,13 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script)
 
         if (imageId >= 10000) {
             String title = draw_wanted_for_image(imageId)->getName();
-            Layout_drawBox(layout, 7, x, y, width, boxHeight, &title);
+            ((Layout *)(layout))->drawBox(7, x, y, width, boxHeight, &title);
         } else {
             String title = RadioStringCopy(*(*g_Radio_drawGameText)->getText(imageId + 0x63d));
-            Layout_drawBox(layout, 7, x, y, width, boxHeight, &title);
+            ((Layout *)(layout))->drawBox(7, x, y, width, boxHeight, &title);
         }
 
-        Layout_setDrawColor(layout, -1);
+        ((Layout *)(layout))->setDrawColor(-1);
         (*g_Radio_drawImageFactory)->drawChar(F<Array<ImagePart *> *>(this, 0x0c),
                                               this->field_0x3c + 5,
                                               layout->field_0x8 + this->field_0x40 + 5,

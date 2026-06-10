@@ -1,4 +1,5 @@
 #include "gof2/CubeMapping.h"
+#include "gof2/String.h"
 
 // ---- Init_907d8.cpp ----
 namespace AbyssEngine {
@@ -50,9 +51,9 @@ CubeMapping::CubeMapping()
     CubeMapping_typeInfoDest = CubeMapping_typeInfoSource;
 
     String name;
-    String_ctor_char(&name, CubeMapping_name, false);
-    String_assign(&this->field_0xc, &name);
-    String_dtor(&name);
+    ((String *)(&name))->ctor_char(CubeMapping_name, false);
+    ((String *)(&this->field_0xc))->assign(&name);
+    ((String *)(&name))->dtor();
 }
 
 } // namespace AbyssEngine

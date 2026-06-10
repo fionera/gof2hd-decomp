@@ -1,4 +1,12 @@
 #include "gof2/Generator.h"
+#include "gof2/Achievements.h"
+#include "gof2/Agent.h"
+#include "gof2/Globals.h"
+#include "gof2/Mission.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/Standing.h"
+#include "gof2/Station.h"
+#include "gof2/Wanted.h"
 #include "gof2/Status.h"
 
 
@@ -80,8 +88,7 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
 
         uint32_t systemIndex = 0;
         while (systemIndex < systems->size()) {
-            if (SolarSystem_stationIsInSystem(systems->data()[systemIndex],
-                                              selected) != 0) {
+            if (((SolarSystem *)(systems->data()[systemIndex]))->stationIsInSystem(selected) != 0) {
                 break;
             }
             ++systemIndex;
@@ -189,16 +196,14 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                     int itemId = g_Generator_offerItemIds[index];
                     Item *item = (*g_Generator_agentsItems)->data()[itemId];
                     int amount = ((uint32_t)(index - 3) < 2) ? 10 : 1;
-                    Agent_setSellItemData(agent, itemId, amount,
-                                          Item_getSinglePrice(item) * amount);
-                    Agent_setOfferAccepted(agent, false);
+                    ((Agent *)(agent))->setSellItemData(itemId, amount, Item_getSinglePrice(item) * amount);
+                    ((Agent *)(agent))->setOfferAccepted(false);
                 } else if (offer == 10) {
                     Array<int> *choices = (Array<int> *)operator new(0xc);
                     Array_int_ctor(choices);
                     for (int j = 0; j != 6; ++j) {
                         int shipId = g_Generator_offerShipIds[j];
-                        if (Station_hasShip((Station *)status->field_14c,
-                                            shipId) == 0) {
+                        if (((Station *)((Station *)status->field_14c))->hasShip(shipId) == 0) {
                             Ship *ship = Status_getShip(status);
                             if (Ship_getIndex(ship) != shipId) {
                                 ArrayAdd_int(shipId, choices);
@@ -209,13 +214,11 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                         int pick =
                             AERandom_nextInt(*randomPtr, choices->size());
                         int shipId = choices->data()[pick];
-                        Agent_setSellItemData(
-                            agent, shipId, 1,
-                            Ship_getPrice((*g_Generator_agentsShips)
+                        ((Agent *)(agent))->setSellItemData(shipId, 1, Ship_getPrice((*g_Generator_agentsShips)
                                               ->data()[shipId]));
-                        Agent_setOfferAccepted(agent, false);
+                        ((Agent *)(agent))->setOfferAccepted(false);
                     } else {
-                        Agent_setOfferAccepted(agent, true);
+                        ((Agent *)(agent))->setOfferAccepted(true);
                     }
                     operator delete(Array_int_dtor(choices));
                 }
@@ -232,13 +235,11 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                                   0, 1);
             int stationIndex = Station_getIndex(station);
             int systemIndex = SolarSystem_getIndex(Status_getSystem(status));
-            Agent_ctor(agent, -1, &name, stationIndex, systemIndex, 0, 1, -1,
-                       -1, -1, -1);
+            ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, 0, 1, -1, -1, -1, -1);
             AbyssEngine_String_dtor(&name);
             Agent_setOffer(agent, 2);
-            Agent_setSellItemData(agent, 0x44, 1, 0);
-            Agent_setImageParts(agent,
-                                ImageFactory_createChar(*g_Generator_storyImages,
+            ((Agent *)(agent))->setSellItemData(0x44, 1, 0);
+            ((Agent *)(agent))->setImageParts(ImageFactory_createChar(*g_Generator_storyImages,
                                                         1, 0));
             result->data()[out++] = agent;
         }
@@ -255,7 +256,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                     hasWingman = true;
                 }
             } else if (Agent_getOffer(agent) == 0) {
-                Agent_setMission(agent, createMission(agent, systems));
+                ((Agent *)(agent))->setMission(createMission(agent, systems));
             }
         }
 
@@ -263,10 +264,10 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             void *standing = Status_getStanding(status);
             for (uint32_t raceIndex = 0; raceIndex < 4; ++raceIndex) {
                 int race = g_Generator_enemyRaces[raceIndex];
-                if (Standing_isEnemy(standing, race) != 0) {
+                if (((Standing *)(standing))->isEnemy(race) != 0) {
                     for (uint32_t i = 0; i < result->size(); ++i) {
                         Agent *agent = result->data()[i];
-                        if (Agent_isGenericAgent(agent) &&
+                        if (((Agent *)(agent))->isGenericAgent() &&
                             Agent_getOffer(agent) != 7) {
                             result->data()[i] = 0;
                             agent = (Agent *)operator new(0x98);
@@ -276,13 +277,11 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                             int stationIndex = Station_getIndex(station);
                             int systemIndex =
                                 SolarSystem_getIndex(Status_getSystem(status));
-                            Agent_ctor(agent, -1, &name, stationIndex,
-                                       systemIndex, race, 1, -1, -1, -1, -1);
+                            ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, race, 1, -1, -1, -1, -1);
                             result->data()[i] = agent;
                             AbyssEngine_String_dtor(&name);
                             Agent_setOffer(agent, 7);
-                            Agent_setImageParts(
-                                agent, ImageFactory_createChar(
+                            ((Agent *)(agent))->setImageParts(ImageFactory_createChar(
                                            *g_Generator_enemyImages, 1, race));
                             break;
                         }
@@ -296,9 +295,9 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             AERandom_nextInt(*randomPtr, 100) == 1) {
             for (; out < result->size(); ++out) {
                 Agent *agent = result->data()[out];
-                if (!Agent_isStoryAgent(agent) && Agent_getOffer(agent) == 0 &&
-                    Agent_getMission(agent) != 0) {
-                    Mission *m = Agent_getMission(agent);
+                if (!((Agent *)(agent))->isStoryAgent() && Agent_getOffer(agent) == 0 &&
+                    ((Agent *)(agent))->getMission() != 0) {
+                    Mission *m = ((Agent *)(agent))->getMission();
                     int reward = Mission_getReward(m);
                     if (reward < 50000) {
                         int newReward = 50000;
@@ -426,8 +425,7 @@ Mission *Generator::createMission(Agent *agent,
                     targetStation =
                         generateStationIndex(systems, Agent_getStation(agent));
                     for (uint32_t i = 0; i < systems->size(); ++i) {
-                        if (SolarSystem_stationIsInSystem(systems->data()[i],
-                                                          targetStation) &&
+                        if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem(targetStation) &&
                             (uint32_t)SolarSystem_getRace(systems->data()[i]) ==
                                 race) {
                             ok = true;
@@ -441,7 +439,7 @@ Mission *Generator::createMission(Agent *agent,
     }
 
     AbyssEngine::String agentName;
-    Agent_getName(&agentName, agent);
+    ((Agent *)(&agentName))->getName();
     int difficulty =
         AERandom_nextInt(random,
                          Status_getCurrentCampaignMission(status) < 0x10 ? 2 : 9) +
@@ -480,8 +478,7 @@ Mission *Generator::createMission(Agent *agent,
         case 0xf:
             amount = AERandom_nextInt(random, 90) + 30;
             for (uint32_t i = 0; i < systems->size(); ++i) {
-                if (SolarSystem_stationIsInSystem(systems->data()[i],
-                                                  targetStation)) {
+                if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem(targetStation)) {
                     int *prob = Galaxy_getAsteroidProbabilities(
                         *g_Generator_missionGalaxy,
                         Status_getStation(status));
@@ -530,8 +527,7 @@ Mission *Generator::createMission(Agent *agent,
     int bonus = 0;
     if ((type | 4) != 0xc) {
         int rawBonus =
-            (int)(reward * (float)Standing_getMissionBonus(
-                                Status_getStanding(status), Agent_getRace(agent)));
+            (int)(reward * (float)((Standing *)(Status_getStanding(status)))->getMissionBonus(Agent_getRace(agent)));
         bonus = rawBonus + rawBonus % 50;
         if (bonus % 50 != 0) {
             bonus = rawBonus - rawBonus % 50;
@@ -545,7 +541,7 @@ Mission *Generator::createMission(Agent *agent,
 
     Mission *mission = (Mission *)operator new(0x78);
     AbyssEngine::String missionName;
-    Mission_ctor_full(mission, type, &missionName, Agent_getImageParts(agent),
+    Mission_ctor_full(mission, type, &missionName, ((Agent *)(agent))->getImageParts(),
                       race, rewardInt, targetStation, difficulty);
 
     int costs = rewardInt / 10 + AERandom_nextInt(random, rewardInt / 10);
@@ -554,7 +550,7 @@ Mission *Generator::createMission(Agent *agent,
     } else if (type == 6) {
         AbyssEngine::String targetName;
         Globals_getRandomName(&targetName, *g_Generator_targetNames, 0, 1);
-        Mission_setTargetName(mission, &targetName);
+        ((Mission *)(mission))->setTargetName(&targetName);
         AbyssEngine_String_dtor(&targetName);
     }
     int costRem = costs % 50;
@@ -563,14 +559,14 @@ Mission *Generator::createMission(Agent *agent,
         roundedCosts = costs - costRem;
     }
     Mission_setCosts(mission, roundedCosts);
-    Mission_setProductionGoods(mission, itemId, amount);
+    ((Mission *)(mission))->setProductionGoods(itemId, amount);
     Mission_setBonus(mission, bonus);
 
     for (uint32_t i = 0; i < systems->size(); ++i) {
-        if (SolarSystem_stationIsInSystem(systems->data()[i], targetStation)) {
+        if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem(targetStation)) {
             AbyssEngine::String systemName;
-            SolarSystem_getName(&systemName, systems->data()[i]);
-            Mission_setTargetSystemName(mission, &systemName);
+            ((SolarSystem *)(&systemName))->getName();
+            ((Mission *)(mission))->setTargetSystemName(&systemName);
             AbyssEngine_String_dtor(&systemName);
             break;
         }
@@ -639,12 +635,11 @@ Agent *Generator::createAgent(Station *station) {
     Globals_getRandomName(&name, *names, race, male);
     int stationIndex = Station_getIndex(station);
     int systemIndex = SolarSystem_getIndex(Status_getSystem(status));
-    Agent_ctor(agent, -1, &name, stationIndex, systemIndex, race, male, -1, -1,
-               -1, -1);
+    ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, race, male, -1, -1, -1, -1);
     AbyssEngine_String_dtor(&name);
     Agent_setOffer(agent, offer);
     ImageFactory **factoryPtr = g_Generator_imageFactory;
-    Agent_setImageParts(agent, ImageFactory_createChar(*factoryPtr, male, race));
+    ((Agent *)(agent))->setImageParts(ImageFactory_createChar(*factoryPtr, male, race));
 
     if (Agent_getOffer(agent) == 6) {
         uint32_t count = AERandom_nextInt(*randomPtr, 3);
@@ -658,7 +653,7 @@ Agent *Generator::createAgent(Station *station) {
             Globals_getRandomName(friendName, *names, Agent_getRace(agent), 1);
             friendNames->data()[i] = friendName;
         }
-        Agent_setWingmanFriendNames(agent, friendNames);
+        ((Agent *)(agent))->setWingmanFriendNames(friendNames);
         int costRoll = AERandom_nextInt(*randomPtr, 0x514);
         Agent_setCosts(agent, (costRoll + 700) * (count + 1));
         if (Status_hardCoreMode(status) != 0) {
@@ -688,8 +683,7 @@ Agent *Generator::createAgent(Station *station) {
         float factor =
             (float)(AERandom_nextInt(*randomPtr, 0x78) + 0x28) / 100.0f;
         int price = Item_getSinglePrice((*itemsPtr)->data()[selected]);
-        Agent_setSellItemData(agent, selected, amount,
-                              amount * (int)(factor * (float)price));
+        ((Agent *)(agent))->setSellItemData(selected, amount, amount * (int)(factor * (float)price));
     }
 
     return agent;
@@ -761,7 +755,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
                 const int ships[4] = {0x2d, 0x2e, 0x2f, 0x30};
                 for (int i = 0; i != 4; ++i) {
                     void *w = *(void **)((char *)wanted->data() + offsets[i]);
-                    if (Wanted_isTerminated(w)) {
+                    if (((Wanted *)(w))->isTerminated()) {
                         addShip(result, allShips->data()[ships[i]], 8);
                     }
                 }
@@ -772,7 +766,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
 
     int race = SolarSystem_getRace(Status_getSystem(status));
     bool gold = Station_getIndex(station) == 10 &&
-                Achievements_gotAllGoldMedals(*g_Generator_achievements);
+                ((Achievements *)(*g_Generator_achievements))->gotAllGoldMedals();
     int stationIndex = Station_getIndex(station);
     int count;
     if (gold) {
@@ -800,7 +794,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         while (!unique) {
             if (!forced && (stationIndex != 0x4e || !first)) {
                 shipIndex =
-                    Globals_getRandomEnemyFighter(*g_Generator_globals, race);
+                    ((Globals *)(*g_Generator_globals))->getRandomEnemyFighter(race);
             }
             if (count > 1 &&
                 AERandom_nextInt(*g_Generator_shipRandom, 100) < 0x16) {
@@ -810,8 +804,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
                     if (enemyRace == race || enemyRace == 4) {
                         enemyRace = 8;
                     }
-                    shipIndex = Globals_getRandomEnemyFighter(
-                        *g_Generator_globals, enemyRace);
+                    shipIndex = ((Globals *)(*g_Generator_globals))->getRandomEnemyFighter(enemyRace);
                 }
             }
             unique = true;
@@ -862,7 +855,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         if (Station_getIndex(station) == 0x78 &&
             Status_getCurrentCampaignMission(status) > 0x9e &&
             (Status_hardCoreMode(status) ||
-             Achievements_gotAllSupernovaMedals(*g_Generator_achievements))) {
+             ((Achievements *)(*g_Generator_achievements))->gotAllSupernovaMedals())) {
             addShip(result, allShips->data()[0x2c], 1);
         }
         if (Station_getIndex(station) == 0x78 &&

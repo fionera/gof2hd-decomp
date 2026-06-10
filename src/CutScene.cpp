@@ -1,9 +1,11 @@
 #include "gof2/CutScene.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/Level.h"
+#include "gof2/PlayerEgo.h"
+#include "gof2/PlayerFighter.h"
 
 
 extern "C" void CutScene_update_tail(CutScene *self);
-extern "C" uint64_t ApplicationManager_GetElapsedTimeMillis(void *self);
-extern "C" void Level_update(void *level, long long time, int z);
 extern "C" void Level_render(void *level, uint32_t bg);
 extern "C" void AEGeometry_render(void *geom);
 extern "C" void CutScene_render2D_tail(void *level);
@@ -81,9 +83,9 @@ void CutScene::render3D()
 {
     void *level = pp(this, 0x0);
     if (level != 0) {
-        uint32_t t = (uint32_t)ApplicationManager_GetElapsedTimeMillis(*g_appManager);
+        uint32_t t = (uint32_t)((ApplicationManager *)(*g_appManager))->GetElapsedTimeMillis();
         u32(this, 0x58) = t;
-        Level_update(pp(this, 0x0), (long long)(int)t, 0);
+        ((Level *)(pp(this, 0x0)))->update((long long)(int)t, 0);
         Level_render(pp(this, 0x0), u32(this, 0x58));
     }
     if (pp(this, 0x28) != 0) AEGeometry_render(pp(this, 0x28));
@@ -111,7 +113,6 @@ void CutScene::render2D()
 
 // ---- process_98e8c.cpp ----
 extern "C" {
-unsigned int ApplicationManager_GetCurrentTimeMillis();
 void TargetFollowCamera_update(void *cam);
 float VectorSignedToFloat(int v, int mode);
 void *PaintCanvas_CameraGetLocal(void *canvas);
@@ -428,7 +429,6 @@ void __aeabi_memcpy(void *dst, const void *src, unsigned int n);
 void *Globals_getShipGroup(void *globals, int type, int slot, bool flag);
 void *AEGeometry_setMatrix(void *matrix);
 float VectorSignedToFloat(int v, int mode);
-void PlayerFighter_setExhaustVisible(void *fighter, bool vis);
 void LODManager_removeObject(void *lod, void *geom);
 void *AEGeometry_dtor(void *geom);
 void operator_delete(void *p);
@@ -478,7 +478,7 @@ void CutScene::replacePlayerShip(int a, int b)
         fn(obj, 0, bank, 0);
 
         void *en6 = Level_getEnemies(pp(self, 0x0));
-        PlayerFighter_setExhaustVisible(*(void **)((char *)en6 + 4), false);
+        ((PlayerFighter *)(*(void **)((char *)en6 + 4)))->setExhaustVisible(false);
 
         LODManager_removeObject(*(void **)self, oldGeom);
         operator_delete(AEGeometry_dtor(oldGeom));
@@ -492,9 +492,7 @@ extern "C" {
 void *operator_new(unsigned int size);
 void operator_delete(void *p);
 void Level_ctor(void *self, int mode);
-int Level_init(void *self);
 void *Level_getPlayer(void *self);
-void PlayerEgo_setActive(void *ego, bool active);
 void Level_initParticleSystems(void *self);
 void *Level_getEnemies(void *self);
 void PaintCanvas_CameraCreate(void *canvas, unsigned int *out);
@@ -522,7 +520,6 @@ void AEGeometry_addChild(void *self, unsigned int child);
 void *AEGeometry_dtor(void *self);
 void *AEGeometry_getPosition(void *self);
 void *TargetFollowCamera_dtor(void *self);
-unsigned int ApplicationManager_GetCurrentTimeMillis();
 }
 
 __attribute__((visibility("hidden"))) extern void **g_canvas;
@@ -541,7 +538,7 @@ void CutScene::initialize()
         pp(this, 0x0) = level;
     }
     do {
-        if (Level_init(level) != 0)
+        if (((Level *)(level))->init() != 0)
             break;
         level = pp(this, 0x0);
     } while (true);
@@ -549,7 +546,7 @@ void CutScene::initialize()
     void *player = Level_getPlayer(pp(this, 0x0));
     pp(this, 0x60) = player;
     if (player != 0)
-        PlayerEgo_setActive(player, true);
+        ((PlayerEgo *)(player))->setActive(true);
 
     Level_initParticleSystems(pp(this, 0x0));
 

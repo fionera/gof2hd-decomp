@@ -1,4 +1,5 @@
 #include "gof2/TextureLightShader.h"
+#include "gof2/String.h"
 #include "gof2/Mesh.h"
 
 
@@ -175,10 +176,10 @@ TextureLightShader::TextureLightShader()
 
     // Initialize the shader-name String member at this+0xc.
     String tmp;
-    String_ctor_char(&tmp, g_tls_nameLiteral, false);
+    ((String *)(&tmp))->ctor_char(g_tls_nameLiteral, false);
     String *dst = (String *)((char *)this + 0xc);
-    String_assign(dst, &tmp);
-    String_dtor(&tmp);
+    ((String *)(dst))->assign(&tmp);
+    ((String *)(&tmp))->dtor();
 
     if (*counter - guard != 0)
         __stack_chk_fail(*counter - guard);

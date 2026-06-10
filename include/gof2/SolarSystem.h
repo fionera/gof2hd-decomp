@@ -14,7 +14,26 @@ struct SolarSystem;
 // aggregate (text*, size, ...). Model it opaquely so the ABI matches the target.
 
 
-// Array<int> header layout: { length, data, cap }.
+// Array<int> header layout: { length, data, cap 
+    // ---- methods (converted from free functions) ----
+    SolarSystem * ctor(int p1, const String12 &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14);
+    bool currentOrbitHasWarpGate();
+    void dtor();
+    int getAttackRace();
+    RetStr getName();
+    uint32_t getStationEnumIndex(int idx);
+    int getWarpGateEnumIndex();
+    int hasHiddenBlueprint();
+    uint32_t hasNoOwner();
+    int hasPirateBase();
+    int isFullyDiscovered();
+    uint8_t isVisible();
+    void setCoords(int x, int y);
+    void setVisible(bool v);
+    int stationIsInSystem(Station *st);
+    int stationIsInSystem_int(int idx);
+    int systemIsInSystemRoutes(int sys);
+}.
 
 
 // Field accessors via byte offset from `this`.

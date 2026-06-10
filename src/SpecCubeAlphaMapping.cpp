@@ -1,4 +1,5 @@
 #include "gof2/SpecCubeAlphaMapping.h"
+#include "gof2/String.h"
 
 
 // ---- Init_87a10.cpp ----
@@ -58,9 +59,9 @@ SpecCubeAlphaMapping::SpecCubeAlphaMapping()
     *g_SCAM_globalSlotDst = *g_SCAM_globalSlotSrc;
 
     String name;
-    String_ctor_char(&name, g_SCAM_name, false);
-    String_assign(&this->field_0xc, &name);
-    String_dtor(&name);
+    ((String *)(&name))->ctor_char(g_SCAM_name, false);
+    ((String *)(&this->field_0xc))->assign(&name);
+    ((String *)(&name))->dtor();
 }
 
 } // namespace AbyssEngine

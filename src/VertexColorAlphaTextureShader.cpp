@@ -1,4 +1,5 @@
 #include "gof2/VertexColorAlphaTextureShader.h"
+#include "gof2/String.h"
 
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
 
@@ -173,9 +174,9 @@ VertexColorAlphaTextureShader::VertexColorAlphaTextureShader()
 
     // Store the shader resource name in the embedded String at +0x0c.
     String name;
-    String_ctor_char(&name, "VCATShader", false);
-    String_assign(&this->field_0xc, &name);
-    String_dtor(&name);
+    ((String *)(&name))->ctor_char("VCATShader", false);
+    ((String *)(&this->field_0xc))->assign(&name);
+    ((String *)(&name))->dtor();
 }
 
 } // namespace AbyssEngine

@@ -1,22 +1,22 @@
 #include "gof2/Hud.h"
+#include "gof2/GameText.h"
+#include "gof2/Globals.h"
+#include "gof2/PlayerEgo.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/Station.h"
+#include "gof2/String.h"
+#include "gof2/TouchButton.h"
 #include "gof2/ListItem.h"
 
 
-extern "C" void TouchButton_OnTouchEnd(int self, unsigned int a, void *b);
 extern "C" void operator_delete(void *p);
 extern "C" void Hud_drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y);
 extern "C" void Hud_drawRadar(Hud *self);
 extern "C" void Hud_drawBars(Hud *self, void *ego);
 extern "C" void Hud_drawSecondaryWeaponPanel(Hud *self);
-extern "C" void Hud_drawOrbitInformation(Hud *self);
 extern "C" void Hud_drawMissionBanner(Hud *self);
-extern "C" void Hud_drawEventQueue(Hud *self);
-extern "C" void Hud_drawMenu(Hud *self);
-extern "C" void Hud_drawChallengeModeScore(Hud *self);
-extern "C" void Hud_drawPauseButton(Hud *self);
 extern "C" void Hud_drawMessage(Hud *self);
 extern "C" int  Status_isChallengeMode();
-extern "C" void Layout_drawBG();
 extern "C" int  Status_inAlienOrbit();
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void PaintCanvas_SetColor4(void *canvas, int b1, int b2, int b3, int b4);
@@ -24,30 +24,18 @@ extern "C" int  PaintCanvas_GetImage2DWidth(void *canvas);
 extern "C" void PaintCanvas_DrawImage2D2(void *canvas, int img, int arg);
 extern "C" void PaintCanvas_DrawString2(void *canvas, void *font, void *str, int x, char y);
 extern "C" void *Status_getSystem();
-extern "C" int  SolarSystem_hasNoOwner(void *sys);
 extern "C" void *Status_getStation();
-extern "C" void Station_getName(void *out, void *station);
 extern "C" int  Status_getCurrentCampaignMission();
 extern "C" int  SolarSystem_getSecurityLevel(void *sys);
 extern "C" int  SolarSystem_getIndex(void *sys);
-extern "C" void SolarSystem_getName(void *out, void *sys);
 extern "C" void String_ctor_cstr(void *s, const char *cstr, bool b);
-extern "C" void String_ctor_copy(void *s, void *src, bool b);
 extern "C" void String_concat(void *out, void *lhs, void *rhs);
-extern "C" void String_dtor(void *s);
-extern "C" void *GameText_getText(void *gt, int id);
 extern "C" unsigned int Hud_touchMoveFallback(Hud *self, unsigned int a, void *b);
-extern "C" float Globals_sqrt(void *g, float v);
 extern "C" int __aeabi_idiv(int a, int b);
-extern "C" int TouchButton_OnTouchBegin(void *btn, unsigned int x);
-extern "C" int  Hud_init(Hud *self);
 extern "C" void String_op_assign(void *dst, void *src);
-extern "C" void String_ctor_int(void *s, int v);
 extern "C" void *operator_new(uint32_t);
 extern "C" void ListItem_ctor1(void *li, void *str, int kind);
 extern "C" void ListItem_ctor(void *li, void *str, int kind = 0);
-extern "C" int  Hud_sameHudEventAsBeforeAggregate(Hud *self, String *str);
-extern "C" void Hud_addToEventQueue(Hud *self, ListItem *item);
 extern "C" void *Status_getMission();
 extern "C" int  Mission_getType(void *m);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
@@ -55,15 +43,11 @@ extern "C" int  PaintCanvas_GetTextWidth(void *font, void *str);
 extern "C" void Hud_secondaryWeaponChanged(Hud *self);
 extern "C" int  Item_getIndex(void *item);
 extern "C" int  Item_getAmount(void *item);
-extern "C" unsigned int Hud_touchedElement(Hud *self, unsigned int a, unsigned int b);
 extern "C" void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void *operator_new_arr(uint32_t);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
 extern "C" int  SolarSystem_getRace(void *sys);
-extern "C" void Hud_closeHudMenu(Hud *self);
-extern "C" Hud *Hud_checkIfQuickMenuIsEmpty(Hud *self);
-extern "C" void Hud_releaseAllKeys(Hud *self);
 extern "C" void PaintCanvas_drawImage(void *canvas, int img, int x, int y);
 extern "C" void *Status_getShip();
 extern "C" void *Ship_getEquipment(void *ship, int slot);
@@ -72,38 +56,31 @@ extern "C" int  Status_getWingmen();
 extern "C" unsigned char Ship_hasCloak(void *ship);
 extern "C" void Layout_drawMask();
 extern "C" void PaintCanvas_DrawImage2D5(void *canvas, int img, int x, int y, char anchor);
-extern "C" void TouchButton_draw(void *btn);
 extern "C" int  PaintCanvas_GetImage2DHeight(void *canvas);
 extern "C" int  PaintCanvas_GetTextHeight(void *canvas);
-extern "C" int  PlayerEgo_readyToBoost(void *ego);
 extern "C" int  Sprite_getFrameWidth(void *sprite);
 extern "C" int  Sprite_getFrameHeight(void *sprite);
 extern "C" void Sprite_setFrame(void *sprite, int frame);
 extern "C" void Sprite_setPosition(void *sprite, int x, int y);
 extern "C" void Sprite_draw(void *sprite);
 extern "C" int  String_length(void *s);
-extern "C" void String_SubString(void *out, void *s, int idx);
-extern "C" int  String_ValueOf(void *s);
-extern "C" unsigned int Hud_sameHudEventAsBefore(Hud *self, String *str);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *arr);
 extern "C" void *Array_Item_dtor(void *arr);
 extern "C" void Array_TouchButton_ctor(void *arr);
-extern "C" void Hud_updateSecondaryWeaponString(Hud *self);
 extern "C" void *Array_Item_dtor(void *p);
 extern "C" void *Array_ListItem_dtor(void *p);
 extern "C" void *Array_uint_dtor(void *p);
-extern "C" void String_dtor(void *p);
 
 // ---- enableFireForTutorial_16651c.cpp ----
-extern "C" void Hud_enableFireForTutorial(Hud *self, bool value)
-{
+void Hud::enableFireForTutorial(bool value) {
+    Hud *self = this;
     UC(self, 0x4a5) = value;
 }
 
 // ---- setTimeExtender_1624b8.cpp ----
-extern "C" void Hud_setTimeExtender(Hud *self, bool p1, bool p2, bool p3, bool p4)
-{
+void Hud::setTimeExtender(bool p1, bool p2, bool p3, bool p4) {
+    Hud *self = this;
     UC(self, 0) = p1;
     UC(self, 0x280) = p3;
     UC(self, 0x281) = p4;
@@ -114,15 +91,15 @@ extern "C" void Hud_setTimeExtender(Hud *self, bool p1, bool p2, bool p3, bool p
 }
 
 // ---- playerHit_16323e.cpp ----
-extern "C" void Hud_playerHit(Hud *self)
-{
+void Hud::playerHit() {
+    Hud *self = this;
     UC(self, 0x244) = 1;
     I(self, 0x46c) = 0;
 }
 
 // ---- addToEventQueue_162488.cpp ----
-extern "C" void Hud_addToEventQueue(Hud *self, ListItem *item)
-{
+void Hud::addToEventQueue(ListItem *item) {
+    Hud *self = this;
     unsigned int idx = 0;
     unsigned int data;
     int off;
@@ -140,34 +117,34 @@ extern "C" void Hud_addToEventQueue(Hud *self, ListItem *item)
 }
 
 // ---- firePressed_1636ea.cpp ----
-extern "C" unsigned int Hud_firePressed(Hud *self)
-{
+unsigned int Hud::firePressed() {
+    Hud *self = this;
     return (UC(self, 0x284) >> 4) & 1;
 }
 
 // ---- resetAnalogStick_166004.cpp ----
-extern "C" void Hud_resetAnalogStick(Hud *self)
-{
+void Hud::resetAnalogStick() {
+    Hud *self = this;
     I(self, 0x41e) = I(self, 0x424);
 }
 
 // ---- getAnalogY_16654a.cpp ----
-extern "C" float Hud_getAnalogY(Hud *self)
-{
+float Hud::getAnalogY() {
+    Hud *self = this;
     float num = (float)((int)US(self, 0x420) - (int)US(self, 0x426));
     float den = (float)I(self, 0x4e0);
     return num / den;
 }
 
 // ---- cargoFull_1636d8.cpp ----
-extern "C" uint8_t Hud_cargoFull(Hud *self)
-{
+uint8_t Hud::cargoFull() {
+    Hud *self = this;
     return UC(self, 0x235);
 }
 
 // ---- touchEnd_166b84.cpp ----
-extern "C" unsigned int Hud_touchEnd(Hud *self, unsigned int a, void *b, int key)
-{
+unsigned int Hud::touchEnd(unsigned int a, void *b, int key) {
+    Hud *self = this;
     int i = 0;
     unsigned int ret = 0;
     for (; i != 0x19; i = i + 1) {
@@ -183,7 +160,7 @@ extern "C" unsigned int Hud_touchEnd(Hud *self, unsigned int a, void *b, int key
         unsigned int *btns = (unsigned int *)P(self, 0x18);
         if (btns != 0) {
             for (unsigned int j = 0; j < btns[0]; j = j + 1) {
-                TouchButton_OnTouchEnd(((int *)btns[1])[j], a, b);
+                ((TouchButton *)(((int *)btns[1])[j]))->OnTouchEnd(a, b);
                 btns = (unsigned int *)P(self, 0x18);
             }
         }
@@ -192,8 +169,8 @@ extern "C" unsigned int Hud_touchEnd(Hud *self, unsigned int a, void *b, int key
 }
 
 // ---- releaseAllKeys_161440.cpp ----
-extern "C" void Hud_releaseAllKeys(Hud *self)
-{
+void Hud::releaseAllKeys() {
+    Hud *self = this;
     I(self, 0x284) = 0;
     for (int i = 0; i != 0x19; i++) {
         int *p = *(int *volatile *)((char *)self + 0x28c);
@@ -212,8 +189,8 @@ extern "C" void Hud_releaseAllKeys(Hud *self)
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);   // ArrayReleaseClasses<TouchButton*>
 extern "C" void *Array_TouchButton_dtor(void *arr);           // Array<TouchButton*>::~Array
 
-extern "C" void Hud_closeHudMenu(Hud *self)
-{
+void Hud::closeHudMenu() {
+    Hud *self = this;
     if (P(self, 0x18) != 0) {
         ArrayReleaseClasses_TouchButton(P(self, 0x18));
         if (P(self, 0x18) != 0) {
@@ -226,40 +203,40 @@ extern "C" void Hud_closeHudMenu(Hud *self)
 }
 
 // ---- getAnalogX_166522.cpp ----
-extern "C" float Hud_getAnalogX(Hud *self)
-{
+float Hud::getAnalogX() {
+    Hud *self = this;
     float num = (float)((int)US(self, 0x41e) - (int)US(self, 0x424));
     float den = (float)I(self, 0x4e0);
     return num / den;
 }
 
 // ---- setAutofireEnabled_161354.cpp ----
-extern "C" void Hud_setAutofireEnabled(Hud *self, bool value)
-{
+void Hud::setAutofireEnabled(bool value) {
+    Hud *self = this;
     UC(self, 0x4a0) = value;
 }
 
 // ---- isHackingGameActive_1636e4.cpp ----
-extern "C" uint8_t Hud_isHackingGameActive(Hud *self)
-{
+uint8_t Hud::isHackingGameActive() {
+    Hud *self = this;
     return UC(self, 0x528);
 }
 
 // ---- setHackingGameActive_1636de.cpp ----
-extern "C" void Hud_setHackingGameActive(Hud *self, bool value)
-{
+void Hud::setHackingGameActive(bool value) {
+    Hud *self = this;
     UC(self, 0x528) = value;
 }
 
 // ---- setJumpMapSelected_166516.cpp ----
-extern "C" void Hud_setJumpMapSelected(Hud *self, bool value)
-{
+void Hud::setJumpMapSelected(bool value) {
+    Hud *self = this;
     UC(self, 0x274) = value;
 }
 
 // ---- jumpMapSelected_166510.cpp ----
-extern "C" uint8_t Hud_jumpMapSelected(Hud *self)
-{
+uint8_t Hud::jumpMapSelected() {
+    Hud *self = this;
     return UC(self, 0x274);
 }
 
@@ -275,9 +252,8 @@ extern "C" uint8_t Hud_jumpMapSelected(Hud *self)
 // x/y arrive on the stack.
 
 
-extern "C" void Hud_draw(Hud *self, long long t0, long long t1, void *ego,
-                         bool letterbox, unsigned int x, unsigned int y)
-{
+void Hud::draw(long long t0, long long t1, void *ego, bool letterbox, unsigned int x, unsigned int y) {
+    Hud *self = this;
     (void)t0; (void)t1;
 
     // background/letterbox state recorded for the panel renderers
@@ -292,22 +268,22 @@ extern "C" void Hud_draw(Hud *self, long long t0, long long t1, void *ego,
     Hud_drawSecondaryWeaponPanel(self);
 
     // contextual banners
-    Hud_drawOrbitInformation(self);
+    ((Hud *)(self))->drawOrbitInformation();
     Hud_drawMissionBanner(self);
 
     // transient event lines
-    Hud_drawEventQueue(self);
+    ((Hud *)(self))->drawEventQueue();
 
     // the radial quick-menu, when open
     if (UC(self, 0x282) != 0)
-        Hud_drawMenu(self);
+        ((Hud *)(self))->drawMenu();
 
     // challenge-mode score/time readout
     if (Status_isChallengeMode() != 0)
-        Hud_drawChallengeModeScore(self);
+        ((Hud *)(self))->drawChallengeModeScore();
 
     // pause button and any pending full-screen message
-    Hud_drawPauseButton(self);
+    ((Hud *)(self))->drawPauseButton();
     if (UC(self, 0x4c8) != 0)
         Hud_drawMessage(self);
 }
@@ -315,8 +291,8 @@ extern "C" void Hud_draw(Hud *self, long long t0, long long t1, void *ego,
 // ---- updateQueue_1624dc.cpp ----
 extern "C" void *ListItem_dtor(void *p);   // ListItem::~ListItem
 
-extern "C" void Hud_updateQueue(Hud *self, int dt)
-{
+void Hud::updateQueue(int dt) {
+    Hud *self = this;
     int t = I(self, 0x268) + dt;
     I(self, 0x268) = t;
     int v;
@@ -365,8 +341,8 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_oiGameText;// *holder 
 extern const char g_Hud_oiSep[]    __attribute__((visibility("hidden")));
 extern const unsigned char g_Hud_secColors[] __attribute__((visibility("hidden"))); // 4 x 12-byte RGB rows
 
-extern "C" void Hud_drawOrbitInformation(Hud *self)
-{
+void Hud::drawOrbitInformation() {
+    Hud *self = this;
     if (Status_inAlienOrbit() != 0) return;
 
     void *canvas = *g_Hud_oiCanvas;
@@ -375,7 +351,7 @@ extern "C" void Hud_drawOrbitInformation(Hud *self)
     int x = PaintCanvas_GetImage2DWidth(canvas) + layout[0x87]; // +0x21c
 
     Status_getSystem();
-    if (SolarSystem_hasNoOwner(Status_getSystem()) == 0)
+    if (((SolarSystem *)(Status_getSystem()))->hasNoOwner() == 0)
         PaintCanvas_DrawImage2D2(canvas, I(self, 0x1c4), 3);
 
     void *font = *g_Hud_oiFont;
@@ -383,9 +359,9 @@ extern "C" void Hud_drawOrbitInformation(Hud *self)
     {
         char name[12];
         Status_getStation();
-        Station_getName(name, Status_getStation());
+        ((Station *)(name))->getName();
         PaintCanvas_DrawString2(canvas, font, name, x, (char)layout[0x88] /*+0x220*/);
-        String_dtor(name);
+        ((String *)(name))->dtor();
     }
     PaintCanvas_SetColor(canvas, -1);
 
@@ -402,23 +378,23 @@ extern "C" void Hud_drawOrbitInformation(Hud *self)
     {
         char sysName[12], copy[12], sep[12], acc[12], full[12];
         Status_getSystem();
-        SolarSystem_getName(sysName, Status_getSystem());
-        String_ctor_copy(copy, sysName, false);
+        ((SolarSystem *)(sysName))->getName();
+        ((String *)(copy))->ctor_copy(sysName, false);
         String_ctor_cstr(sep, g_Hud_oiSep, false);
         String_concat(acc, copy, sep);
-        void *txt = GameText_getText(*g_Hud_oiGameText, 0); // id resolved by table
+        void *txt = ((GameText *)(*g_Hud_oiGameText))->getText(0); // id resolved by table
         String_concat(full, acc, txt);
         PaintCanvas_DrawString2(canvas, font, full, x, (char)layout[0x89] /*+0x224*/);
-        String_dtor(full);
-        String_dtor(acc);
-        String_dtor(sep);
-        String_dtor(copy);
-        String_dtor(sysName);
+        ((String *)(full))->dtor();
+        ((String *)(acc))->dtor();
+        ((String *)(sep))->dtor();
+        ((String *)(copy))->dtor();
+        ((String *)(sysName))->dtor();
     }
 
     const unsigned char *row = g_Hud_secColors + sec * 0xc;
     PaintCanvas_SetColor4(canvas, row[0], row[4], row[8], 0xff);
-    void *secTxt = GameText_getText(*g_Hud_oiGameText, sec);
+    void *secTxt = ((GameText *)(*g_Hud_oiGameText))->getText(sec);
     PaintCanvas_DrawString2(canvas, font, secTxt, x, (char)layout[0x8a] /*+0x228*/);
 }
 
@@ -426,8 +402,8 @@ extern "C" void Hud_drawOrbitInformation(Hud *self)
 // Globals singleton (cell value = holder; object = *holder).
 __attribute__((visibility("hidden"))) extern void **g_Hud_globals;
 
-extern "C" unsigned int Hud_touchMove(Hud *self, unsigned int a, void *b, int key)
-{
+unsigned int Hud::touchMove(unsigned int a, void *b, int key) {
+    Hud *self = this;
     int arr = I((void *)I(self, 0x28c), 4);
     unsigned int i = 0;
     for (; i <= 0x18; i = i + 1) {
@@ -439,7 +415,7 @@ found:
     int dx = (int)a - (int)US(self, 0x424);
     int dy = (int)(unsigned int)(uintptr_t)b - (int)US(self, 0x426);
     float f = (float)(dy * dy + dx * dx);
-    float r = Globals_sqrt(*g_Hud_globals, f);
+    float r = ((Globals *)(*g_Hud_globals))->sqrt(f);
     int denom = I(self, 0x4e0);
     int len = (int)r;
     if (denom < len) {
@@ -476,13 +452,13 @@ static inline bool cspan(Hud *self, int off, int w, unsigned int v) {
     return (unsigned int)o - w <= v && v <= (unsigned int)o + w;
 }
 
-extern "C" unsigned int Hud_touchedElement(Hud *self, unsigned int x, unsigned int y)
-{
+unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
+    Hud *self = this;
     unsigned int *menu = (unsigned int *)P(self, 0x18);
     if (UC(self, 0x282) != 0 && menu != 0) {
         // quick-menu open: delegate to its buttons
         for (unsigned int i = 0; i < menu[0]; i++) {
-            if (TouchButton_OnTouchBegin(*(void **)(menu[1] + i * 4), x) != 0)
+            if (((TouchButton *)(*(void **)(menu[1] + i * 4)))->OnTouchBegin(x) != 0)
                 return *(unsigned int *)*(void **)(I(P(self, 0x18), 4) + i * 4);
             menu = (unsigned int *)P(self, 0x18);
         }
@@ -543,22 +519,22 @@ extern "C" unsigned int Hud_touchedElement(Hud *self, unsigned int x, unsigned i
 }
 
 // ---- Hud_1603fc.cpp ----
-extern "C" void String_ctor(void *s);   // AbyssEngine::String::String()
+// AbyssEngine::String::String()
 
-extern "C" Hud *Hud_Hud(Hud *self)
-{
+Hud * Hud::Hud() {
+    Hud *self = this;
     int i = 0x1c;
     do {
-        String_ctor((char *)self + i);
+        ((String *)((char *)self + i))->ctor();
         i = i + 0xc;
     } while (i != 0x10c);
-    String_ctor((char *)self + 0x1e0);
-    String_ctor((char *)self + 500);
-    String_ctor((char *)self + 0x200);
-    String_ctor((char *)self + 0x228);
-    String_ctor((char *)self + 0x3b4);
-    String_ctor((char *)self + 0x51c);
-    Hud_init(self);
+    ((String *)((char *)self + 0x1e0))->ctor();
+    ((String *)((char *)self + 500))->ctor();
+    ((String *)((char *)self + 0x200))->ctor();
+    ((String *)((char *)self + 0x228))->ctor();
+    ((String *)((char *)self + 0x3b4))->ctor();
+    ((String *)((char *)self + 0x51c))->ctor();
+    ((Hud *)(self))->init();
     return self;
 }
 
@@ -575,56 +551,54 @@ extern const char g_Hud_ccHashN[]  __attribute__((visibility("hidden")));
 extern const char g_Hud_ccUnit[]   __attribute__((visibility("hidden")));
 extern const char g_Hud_ccUnit2[]  __attribute__((visibility("hidden")));
 
-extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
-                               bool a, bool docked, bool mission, bool p6, bool p7,
-                               int aggregateKey)
-{
+void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7, int aggregateKey) {
+    Hud *self = this;
     I(self, 0x1d0) = 0;
     UC(self, 0x235) = (unsigned char)docked;
 
     if (mission) {
         // mission cargo: two replaceHash passes producing the localized line
         void *gt = *g_Hud_ccGameText;
-        void *base = GameText_getText(gt, 0x219);
+        void *base = ((GameText *)(gt))->getText(0x219);
         void *dst = B(self, 0x1f4);
         String_op_assign(dst, base);
 
         void *tmpl = *g_Hud_ccTemplate;
-        char a40[12]; String_ctor_copy(a40, dst, false);
+        char a40[12]; ((String *)(a40))->ctor_copy(dst, false);
         Status_getMission();
         Mission_getType(Status_getMission());
-        void *typeTxt = GameText_getText(gt, 0);
-        char a4c[12]; String_ctor_copy(a4c, typeTxt, false);
+        void *typeTxt = ((GameText *)(gt))->getText(0);
+        char a4c[12]; ((String *)(a4c))->ctor_copy(typeTxt, false);
         char a58[12]; String_ctor_cstr(a58, g_Hud_ccHashX, false);
         char out1[12]; Status_replaceHash(out1, tmpl, a40, a4c, a58);
         String_op_assign(dst, out1);
-        String_dtor(out1); String_dtor(a58); String_dtor(a4c); String_dtor(a40);
+        ((String *)(out1))->dtor(); ((String *)(a58))->dtor(); ((String *)(a4c))->dtor(); ((String *)(a40))->dtor();
 
         tmpl = *g_Hud_ccTemplate;
-        char a64[12]; String_ctor_copy(a64, dst, false);
-        char a70[12]; String_ctor_int(a70, 1);
+        char a64[12]; ((String *)(a64))->ctor_copy(dst, false);
+        char a70[12]; ((String *)(a70))->ctor_int(1);
         char a7c[12]; String_ctor_cstr(a7c, g_Hud_ccHashN, false);
         char out2[12]; Status_replaceHash(out2, tmpl, a64, a70, a7c);
         String_op_assign(dst, out2);
-        String_dtor(out2); String_dtor(a7c); String_dtor(a70); String_dtor(a64);
+        ((String *)(out2))->dtor(); ((String *)(a7c))->dtor(); ((String *)(a70))->dtor(); ((String *)(a64))->dtor();
 
         void *item = operator_new(0x48);
         void *str = operator_new(0xc);
-        String_ctor_copy(str, dst, false);
+        ((String *)(str))->ctor_copy(dst, false);
         ListItem_ctor(item, str);
         ((ListItem *)item)->field_0x2c = cargoVal;
-        Hud_addToEventQueue(self, (ListItem *)item);
+        ((Hud *)(self))->addToEventQueue((ListItem *)item);
         return;
     }
 
     if (docked) {
         // docking confirmation line
         void *gt = *g_Hud_ccGameText;
-        void *txt = GameText_getText(gt, 0x18a);
+        void *txt = ((GameText *)(gt))->getText(0x18a);
         String_op_assign(B(self, 0x1f4), txt);
         void *item = operator_new(0x48);
         void *str = operator_new(0xc);
-        String_ctor_copy(str, B(self, 0x1f4), false);
+        ((String *)(str))->ctor_copy(B(self, 0x1f4), false);
         ListItem_ctor1(item, str, 1);
         Hud_catchCargoFinish(self);
         return;
@@ -636,54 +610,54 @@ extern "C" void Hud_catchCargo(Hud *self, int amount, int cargoVal,
 
     // aggregate with previous "+N <unit>" event if allowed
     if (aggregateKey != 0 && P(self, 0x26c) != 0) {
-        char a0[12]; String_ctor_int(a0, I(self, 0x52c));
+        char a0[12]; ((String *)(a0))->ctor_int(I(self, 0x52c));
         char ac[12]; String_ctor_cstr(ac, g_Hud_ccUnit, false);
         char a94[12]; String_concat(a94, a0, ac);
-        char a88[12]; String_ctor_copy(a88, a94, false);
-        void *unit = GameText_getText(gt, 0);
+        char a88[12]; ((String *)(a88))->ctor_copy(a94, false);
+        void *unit = ((GameText *)(gt))->getText(0);
         char k34[12]; String_concat(k34, a88, unit);
-        String_dtor(a88); String_dtor(a94); String_dtor(ac); String_dtor(a0);
+        ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
-        char b8[12]; String_ctor_copy(b8, k34, false);
-        int idx = Hud_sameHudEventAsBeforeAggregate(self, (String *)b8);
-        String_dtor(b8);
+        char b8[12]; ((String *)(b8))->ctor_copy(k34, false);
+        int idx = ((Hud *)(self))->sameHudEventAsBeforeAggregate((String *)b8);
+        ((String *)(b8))->dtor();
         if (idx >= 0) {
             I(self, 0x268) = 2000;
             int newAmt = I(self, 0x52c) + (a ? 1 : 0);
             I(self, 0x52c) = newAmt;
-            char nAc[12]; String_ctor_int(nAc, newAmt);
+            char nAc[12]; ((String *)(nAc))->ctor_int(newAmt);
             char nC4[12]; String_ctor_cstr(nC4, g_Hud_ccUnit2, false);
             char nA0[12]; String_concat(nA0, nAc, nC4);
-            char n94[12]; String_ctor_copy(n94, nA0, false);
-            void *u2 = GameText_getText(gt, 0);
+            char n94[12]; ((String *)(n94))->ctor_copy(nA0, false);
+            void *u2 = ((GameText *)(gt))->getText(0);
             char n88[12]; String_concat(n88, n94, u2);
             String_op_assign(*(void **)(*(int *)(I(P(self, 0x264), 4) + idx * 4) + 0x1c), n88);
-            String_dtor(n88); String_dtor(n94); String_dtor(nA0); String_dtor(nC4); String_dtor(nAc);
-            String_dtor(k34);
+            ((String *)(n88))->dtor(); ((String *)(n94))->dtor(); ((String *)(nA0))->dtor(); ((String *)(nC4))->dtor(); ((String *)(nAc))->dtor();
+            ((String *)(k34))->dtor();
             return;
         }
-        String_dtor(k34);
+        ((String *)(k34))->dtor();
     }
 
     // fresh "+N <unit>" event
     I(self, 0x52c) = (a ? 1 : 0);
-    char a0[12]; String_ctor_int(a0, I(self, 0x52c));
+    char a0[12]; ((String *)(a0))->ctor_int(I(self, 0x52c));
     char ac[12]; String_ctor_cstr(ac, g_Hud_ccUnit, false);
     char a94[12]; String_concat(a94, a0, ac);
-    char a88[12]; String_ctor_copy(a88, a94, false);
-    void *unit = GameText_getText(gt, 0);
+    char a88[12]; ((String *)(a88))->ctor_copy(a94, false);
+    void *unit = ((GameText *)(gt))->getText(0);
     char k34[12]; String_concat(k34, a88, unit);
     String_op_assign(B(self, 0x1f4), k34);
-    String_dtor(k34); String_dtor(a88); String_dtor(a94); String_dtor(ac); String_dtor(a0);
+    ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
     void *item = operator_new(0x48);
     void *str = operator_new(0xc);
-    String_ctor_copy(str, B(self, 0x1f4), false);
+    ((String *)(str))->ctor_copy(B(self, 0x1f4), false);
     ListItem_ctor(item, str);
     ((ListItem *)item)->field_0x2c = cargoVal;
     if (!p7 || p6) ((ListItem *)item)->field_0x30 = 2;
     if (p7) ((ListItem *)item)->field_0x24 = 1;
-    Hud_addToEventQueue(self, (ListItem *)item);
+    ((Hud *)(self))->addToEventQueue((ListItem *)item);
 }
 
 // ---- drawEventString_1636f4.cpp ----
@@ -695,8 +669,8 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_font;   // *holder -> 
 __attribute__((visibility("hidden"))) extern void **g_Hud_canvas2;// *holder -> PaintCanvas
 __attribute__((visibility("hidden"))) extern void **g_Hud_screenW;// *holder -> [0] = screen width
 
-extern "C" void Hud_drawEventString(Hud *self, void *text, int rightAlign)
-{
+void Hud::drawEventString(void *text, int rightAlign) {
+    Hud *self = this;
     void *font = *g_Hud_font;
     void *canvas = *g_Hud_canvas2;
     int x;
@@ -725,8 +699,8 @@ extern "C" void Hud_drawEventString(Hud *self, void *text, int rightAlign)
 }
 
 // ---- setCurrentSecondaryWeapon_1622ec.cpp ----
-extern "C" void Hud_setCurrentSecondaryWeapon(Hud *self, Item *item)
-{
+void Hud::setCurrentSecondaryWeapon(Item *item) {
+    Hud *self = this;
     P(self, 0x258) = item;
     return Hud_secondaryWeaponChanged(self);
 }
@@ -734,8 +708,8 @@ extern "C" void Hud_setCurrentSecondaryWeapon(Hud *self, Item *item)
 // ---- sameHudEventAsBeforeAggregate_163200.cpp ----
 extern "C" int String_Compare(String *a, String *b);   // AbyssEngine::String::Compare
 
-extern "C" int Hud_sameHudEventAsBeforeAggregate(Hud *self, String *str)
-{
+int Hud::sameHudEventAsBeforeAggregate(String *str) {
+    Hud *self = this;
     int i = *(int *)P(self, 0x264);
     int e;
     do {
@@ -759,31 +733,31 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_swScreenW; // [0]=scre
 extern const char g_Hud_swSep[]  __attribute__((visibility("hidden"))); // " x" separator
 extern const char g_Hud_swEnd[]  __attribute__((visibility("hidden"))); // trailing string
 
-extern "C" void Hud_updateSecondaryWeaponString(Hud *self)
-{
+void Hud::updateSecondaryWeaponString() {
+    Hud *self = this;
     void *item = P(self, 0x258);
     if (item == 0) return;
 
     void *gt = *g_Hud_gameText;
     int idx = Item_getIndex(item);
-    void *name = GameText_getText(gt, idx + 0x4fa);
+    void *name = ((GameText *)(gt))->getText(idx + 0x4fa);
 
     char sep[12], acc1[12], amount[12], acc2[12], end[12], acc3[12];
     String_ctor_cstr(sep, g_Hud_swSep, false);
     String_concat(acc1, name, sep);
     int amt = Item_getAmount(item);
-    String_ctor_int(amount, amt);
+    ((String *)(amount))->ctor_int(amt);
     String_concat(acc2, acc1, amount);
     String_ctor_cstr(end, g_Hud_swEnd, false);
     String_concat(acc3, acc2, end);
 
     String_op_assign(B(self, 0x3b4), acc3);
-    String_dtor(acc3);
-    String_dtor(end);
-    String_dtor(acc2);
-    String_dtor(amount);
-    String_dtor(acc1);
-    String_dtor(sep);
+    ((String *)(acc3))->dtor();
+    ((String *)(end))->dtor();
+    ((String *)(acc2))->dtor();
+    ((String *)(amount))->dtor();
+    ((String *)(acc1))->dtor();
+    ((String *)(sep))->dtor();
 
     int screenW = *(int *)*g_Hud_swScreenW;
     int w = PaintCanvas_GetTextWidth(*g_Hud_swCanvas, *g_Hud_swFont);
@@ -802,8 +776,8 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_eqCanvas;    // *holde
 __attribute__((visibility("hidden"))) extern void **g_Hud_eqScreenW;   // *holder -> [0] width
 __attribute__((visibility("hidden"))) extern void **g_Hud_eqFont;      // *holder -> font String
 
-extern "C" void Hud_drawEventQueue(Hud *self)
-{
+void Hud::drawEventQueue() {
+    Hud *self = this;
     char letterbox = *(char *)*g_Hud_eqLetterbox;
     char cinematicY = (letterbox == 0) ? 0 : (char)US(self, 0x3e2);
 
@@ -839,9 +813,9 @@ extern "C" void Hud_drawEventQueue(Hud *self)
 }
 
 // ---- touchBegin_1669fc.cpp ----
-extern "C" unsigned int Hud_touchBegin(Hud *self, unsigned int a, void *b, int key)
-{
-    unsigned int e = Hud_touchedElement(self, a, (unsigned int)(uintptr_t)b);
+unsigned int Hud::touchBegin(unsigned int a, void *b, int key) {
+    Hud *self = this;
+    unsigned int e = ((Hud *)(self))->touchedElement(a, (unsigned int)(uintptr_t)b);
     if (e == 0) {
         for (int i = 0; i != 0x19; i = i + 1) {
             int arr = I((void *)I(self, 0x28c), 4);
@@ -882,8 +856,8 @@ done:
 // ---- sameHudEventAsBefore_162760.cpp ----
 extern "C" int String_Compare(String *a, String *b);   // AbyssEngine::String::Compare
 
-extern "C" unsigned int Hud_sameHudEventAsBefore(Hud *self, String *str)
-{
+unsigned int Hud::sameHudEventAsBefore(String *str) {
+    Hud *self = this;
     int i = *(int *)P(self, 0x264);
     while (--i >= 1) {
         int e = ((int *)I(P(self, 0x264), 4))[i];
@@ -911,8 +885,8 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_initOutY;    // *holde
 __attribute__((visibility("hidden"))) extern const unsigned short g_Hud_raceBadge[]; // race->atlas id
 extern const char g_Hud_initMsg[] __attribute__((visibility("hidden")));
 
-extern "C" int Hud_init(Hud *self)
-{
+int Hud::init() {
+    Hud *self = this;
     Hud_loadImages(self);
 
     UC(self, 0x4c8) = 0;
@@ -946,12 +920,12 @@ extern "C" int Hud_init(Hud *self)
         char tmp[12];
         String_ctor_cstr(tmp, g_Hud_initMsg, false);
         String_op_assign(B(self, 0x51c), tmp);
-        String_dtor(tmp);
+        ((String *)(tmp))->dtor();
     }
 
-    Hud_closeHudMenu(self);
-    Hud_checkIfQuickMenuIsEmpty(self);
-    Hud_releaseAllKeys(self);
+    ((Hud *)(self))->closeHudMenu();
+    ((Hud *)(self))->checkIfQuickMenuIsEmpty();
+    ((Hud *)(self))->releaseAllKeys();
     P(self, 0x530) = 0;
 
     int *layout = (int *)*g_Hud_initLayout;
@@ -966,8 +940,8 @@ extern "C" int Hud_init(Hud *self)
 // PaintCanvas singleton holder (single pc-rel deref -> holder; object is *holder).
 __attribute__((visibility("hidden"))) extern void **g_Hud_canvas;
 
-extern "C" void Hud_drawPauseButton(Hud *self)
-{
+void Hud::drawPauseButton() {
+    Hud *self = this;
     void **holder = g_Hud_canvas;
     PaintCanvas_SetColor(*holder, -1);
     unsigned char flag = UC(self, 0x284);
@@ -984,8 +958,8 @@ extern "C" void Hud_drawPauseButton(Hud *self)
 extern "C" unsigned char Ship_hasCloakNeg(void *ship); // the final inverted-cloak accessor
 extern "C" void Hud_refreshQuickMenu(Hud *self);       // DAT_001ac644 tail thunk
 
-extern "C" Hud *Hud_checkIfQuickMenuIsEmpty(Hud *self)
-{
+Hud * Hud::checkIfQuickMenuIsEmpty() {
+    Hud *self = this;
     void *ship = Status_getShip();
     unsigned int *equip = (unsigned int *)Ship_getEquipment(ship, 1);
     P(self, 0x25c) = equip;
@@ -1023,8 +997,8 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_dmCanvas; // *holder -
 __attribute__((visibility("hidden"))) extern void **g_Hud_dmFont;   // *holder -> font String
 extern const char g_Hud_dmPrefix[] __attribute__((visibility("hidden")));
 
-extern "C" void Hud_drawMenu(Hud *self)
-{
+void Hud::drawMenu() {
+    Hud *self = this;
     Layout_drawMask();
     void *canvas = *g_Hud_dmCanvas;
     int *layout = (int *)*g_Hud_dmLayout;
@@ -1054,7 +1028,7 @@ extern "C" void Hud_drawMenu(Hud *self)
     if (P(self, 0x18) != 0 && *(unsigned int *)P(self, 0x18) != 0) {
         unsigned int n = *(unsigned int *)P(self, 0x18);
         for (unsigned int i = 0; i < n; i++) {
-            TouchButton_draw(((void **)I(P(self, 0x18), 4))[i]);
+            ((TouchButton *)(((void **)I(P(self, 0x18), 4))[i]))->draw();
             n = *(unsigned int *)P(self, 0x18);
         }
     }
@@ -1070,10 +1044,10 @@ extern "C" void Hud_drawMenu(Hud *self)
 
     char prefix[12], num[12], label[12];
     String_ctor_cstr(prefix, g_Hud_dmPrefix, false);
-    String_ctor_int(num, I(self, 0x27c));
+    ((String *)(num))->ctor_int(I(self, 0x27c));
     String_concat(label, prefix, num);
-    String_dtor(num);
-    String_dtor(prefix);
+    ((String *)(num))->dtor();
+    ((String *)(prefix))->dtor();
 
     int gx = I(self, 0x4cc) + I(self, 0x3d4) + I(self, 0x3dc) / 2;
     unsigned char gy = (unsigned char)((char)y + (char)(layout[0xc] /*+0x30*/ / 2)
@@ -1088,14 +1062,14 @@ extern "C" void Hud_drawMenu(Hud *self)
     int th = PaintCanvas_GetTextHeight(canvas);
     char ty = (char)(((gy + (char)(ih / 2)) - (char)(th / 2)) + (char)layout[0x8d] /*+0x234*/);
     PaintCanvas_DrawString2(canvas, font, label, barW + gx, ty);
-    String_dtor(label);
+    ((String *)(label))->dtor();
 }
 
 // ---- clearQueue_162550.cpp ----
 extern "C" void *ListItem_dtor(void *p);   // ListItem::~ListItem
 
-extern "C" void Hud_clearQueue(Hud *self)
-{
+void Hud::clearQueue() {
+    Hud *self = this;
     unsigned int i = 1;
     int off = 4;
     unsigned int *arr;
@@ -1127,8 +1101,8 @@ extern "C" void Hud_clearQueue(Hud *self)
 // Several events are gated on HUD-enable flags (+0x221 autofire, +0x21e boost) before building.
 extern "C" void Hud_hudEventBuild(Hud *self, int eventId, void *ego, int arg); // builds + queues
 
-extern "C" void Hud_hudEvent(Hud *self, int eventId, void *ego, int arg)
-{
+void Hud::hudEvent(int eventId, void *ego, int arg) {
+    Hud *self = this;
     switch (eventId) {
     case 1:
     case 2:
@@ -1137,7 +1111,7 @@ extern "C" void Hud_hudEvent(Hud *self, int eventId, void *ego, int arg)
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
     case 3:
-        if (UC(self, 0x21e) == 0 || PlayerEgo_readyToBoost((void *)(long)arg) == 0) return;
+        if (UC(self, 0x21e) == 0 || ((PlayerEgo *)((void *)(long)arg))->readyToBoost() == 0) return;
         Hud_hudEventBuild(self, eventId, ego, arg);
         return;
     case 4:
@@ -1198,9 +1172,9 @@ static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw
     int x = x0;
     for (int i = 1; (unsigned int)(i - 1) < (unsigned int)len; i++) {
         char ch[12];
-        String_SubString(ch, str, i - 1);
-        int frame = String_ValueOf(ch);
-        String_dtor(ch);
+        ((String *)(ch))->SubString(str, i - 1);
+        int frame = ((String *)(ch))->ValueOf();
+        ((String *)(ch))->dtor();
         Sprite_setFrame(sprite, frame);
         Sprite_setPosition(sprite, x, y);
         Sprite_draw(sprite);
@@ -1208,8 +1182,8 @@ static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw
     }
 }
 
-extern "C" void Hud_drawChallengeModeScore(Hud *self)
-{
+void Hud::drawChallengeModeScore() {
+    Hud *self = this;
     void *canvas = *g_Hud_csCanvas;
     int *layout = (int *)*g_Hud_csLayout;
     int *status = (int *)*g_Hud_csStatus;
@@ -1224,7 +1198,7 @@ extern "C" void Hud_drawChallengeModeScore(Hud *self)
 
     // score string at status+0x184, right-padded to 7 digits
     char score[12];
-    String_ctor_int(score, status[0x61] /*+0x184*/);
+    ((String *)(score))->ctor_int(status[0x61] /*+0x184*/);
     int slen = String_length(score);
     if (slen < 7) {
         for (int k = 0; k < 7 - slen; k++) {
@@ -1232,8 +1206,8 @@ extern "C" void Hud_drawChallengeModeScore(Hud *self)
             String_ctor_cstr(z, g_Hud_csZero, false);
             String_concat(acc, z, score);
             String_op_assign(score, acc);
-            String_dtor(acc);
-            String_dtor(z);
+            ((String *)(acc))->dtor();
+            ((String *)(z))->dtor();
         }
     }
 
@@ -1254,23 +1228,23 @@ extern "C" void Hud_drawChallengeModeScore(Hud *self)
                 float bonus = (float)mult;
                 float base = (float)(mult * 1000);
                 char bonusStr[12];
-                String_ctor_int(bonusStr, (int)((bonus * 0.0f + 1.0f) * base));
+                ((String *)(bonusStr))->ctor_int((int)((bonus * 0.0f + 1.0f) * base));
                 int bl = String_length(bonusStr);
                 int bx = (screenW / 2 - ((bl * dw) >> 1));
                 drawDigits(self, sprite, bonusStr, bx, fh + yRow + pad, dw);
-                String_dtor(bonusStr);
+                ((String *)(bonusStr))->dtor();
             }
         }
         PaintCanvas_DrawImage2D2(canvas, I(self, 0x538), pad + startX);
 
         char timeStr[12];
-        String_ctor_int(timeStr, status[0x63]);
+        ((String *)(timeStr))->ctor_int(status[0x63]);
         int tx = (half + pad) - span + PaintCanvas_GetImage2DWidth(canvas);
         drawDigits(self, sprite, timeStr, tx, yRow, dw);
-        String_dtor(timeStr);
+        ((String *)(timeStr))->dtor();
     }
     PaintCanvas_SetColor(canvas, -1);
-    String_dtor(score);
+    ((String *)(score))->dtor();
 }
 
 // ---- hudEventMedal_1625a0.cpp ----
@@ -1285,40 +1259,40 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_meScreenW;// [0]=scree
 extern const char g_Hud_meSep[] __attribute__((visibility("hidden")));
 extern const char g_Hud_meEnd[] __attribute__((visibility("hidden")));
 
-extern "C" void Hud_hudEventMedal(Hud *self, int medalId, int percent)
-{
+void Hud::hudEventMedal(int medalId, int percent) {
+    Hud *self = this;
     void *gt = *g_Hud_gameText;
-    void *name = GameText_getText(gt, medalId + 0x5e3);
+    void *name = ((GameText *)(gt))->getText(medalId + 0x5e3);
 
     char sep[12], acc1[12], num[12], acc2[12], end[12], acc3[12];
     String_ctor_cstr(sep, g_Hud_meSep, false);
     String_concat(acc1, name, sep);
     if (percent >= 100) percent = 100;
-    String_ctor_int(num, percent);
+    ((String *)(num))->ctor_int(percent);
     String_concat(acc2, acc1, num);
     String_ctor_cstr(end, g_Hud_meEnd, false);
     String_concat(acc3, acc2, end);
 
     void *dst = B(self, 0x1e0);
     String_op_assign(dst, acc3);
-    String_dtor(acc3);
-    String_dtor(end);
-    String_dtor(acc2);
-    String_dtor(num);
-    String_dtor(acc1);
-    String_dtor(sep);
+    ((String *)(acc3))->dtor();
+    ((String *)(end))->dtor();
+    ((String *)(acc2))->dtor();
+    ((String *)(num))->dtor();
+    ((String *)(acc1))->dtor();
+    ((String *)(sep))->dtor();
 
     char probe[12];
-    String_ctor_copy(probe, dst, false);
-    int same = Hud_sameHudEventAsBefore(self, (String *)probe);
-    String_dtor(probe);
+    ((String *)(probe))->ctor_copy(dst, false);
+    int same = ((Hud *)(self))->sameHudEventAsBefore((String *)probe);
+    ((String *)(probe))->dtor();
     if (same != 0) return;
 
     void *item = operator_new(0x48);
     void *str = operator_new(0xc);
-    String_ctor_copy(str, dst, false);
+    ((String *)(str))->ctor_copy(dst, false);
     ListItem_ctor(item, str, 3);
-    Hud_addToEventQueue(self, (ListItem *)item);
+    ((Hud *)(self))->addToEventQueue((ListItem *)item);
 
     int w = PaintCanvas_GetTextWidth(*g_Hud_meCanvas, *g_Hud_meFont);
     int screenW = *(int *)*g_Hud_meScreenW;
@@ -1344,8 +1318,8 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_imCargoB;     // *hold
 __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagA;      // *holder -> [0] byte
 __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagB;      // *holder -> [0] byte
 
-extern "C" void Hud_initHudMenu(Hud *self, int menuType, void *lvl)
-{
+void Hud::initHudMenu(int menuType, void *lvl) {
+    Hud *self = this;
     // tear down old menu buttons
     if (P(self, 0x18) != 0) {
         ArrayReleaseClasses_TouchButton(P(self, 0x18));
@@ -1362,7 +1336,7 @@ extern "C" void Hud_initHudMenu(Hud *self, int menuType, void *lvl)
     P(self, 0x25c) = 0;
     void *ship = Status_getShip();
     P(self, 0x25c) = Ship_getEquipment(ship, 1);
-    Hud_updateSecondaryWeaponString(self);
+    ((Hud *)(self))->updateSecondaryWeaponString();
 
     I(self, 0x4cc) = 0;
     int *layout = (int *)*g_Hud_imLayout;
@@ -1411,8 +1385,8 @@ extern "C" void Hud_initHudMenu(Hud *self, int menuType, void *lvl)
 // String members from +0x10 up to +0x100. Returns this.
 extern "C" void Hud_subObjectDtor(void *p);   // DAT_0017134c shared sub-object dtor thunk
 
-extern "C" Hud *Hud_dtor(Hud *self)
-{
+Hud * Hud::dtor() {
+    Hud *self = this;
     if (P(self, 0x25c) != 0) operator_delete(Array_Item_dtor(P(self, 0x25c)));
     P(self, 0x25c) = 0;
 
@@ -1436,7 +1410,7 @@ extern "C" Hud *Hud_dtor(Hud *self)
     Hud_subObjectDtor(B(self, 0x1e0));
 
     for (int off = 0x100; off != 0x10; off -= 0xc)
-        String_dtor(B(self, off));
+        ((String *)(B(self, off)))->dtor();
 
     return self;
 }

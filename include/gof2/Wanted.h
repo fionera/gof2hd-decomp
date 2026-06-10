@@ -39,5 +39,14 @@ struct Wanted {
     int field_0x4c;                     // +0x4c
     uint8_t field_0x50;                 // +0x50
     uint8_t field_0x51;                 // +0x51
+
+    // ---- methods (converted from free functions) ----
+    Wanted * ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14);
+    Wanted * dtor();
+    RetStr getName();
+    uint8_t isActive();
+    uint8_t isTerminated();
+    void setActive(bool v);
+    void setTerminated(bool v);
 };
 #endif

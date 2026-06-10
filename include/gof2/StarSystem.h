@@ -20,6 +20,19 @@ struct FileRead;
 
 static inline void *&P(void *p, unsigned off) {
     return *(void **)((char *)p + off);
+
+    // ---- methods (converted from free functions) ----
+    Vector getLightDirection();
+    void initLight();
+    void render();
+    void render2D();
+    void renderSunStreak();
+    void scaleSunDuringSupernovaIntro(int amount);
+    void switchPlanetForIntro();
+    void switchSunForSupernovaExpansion();
+    void switchSunForSupernovaIntro();
+    void switchSunForSupernovaReversal();
+    void updateSupernova(int dt);
 }
 
 static inline int &I(void *p, unsigned off) {

@@ -1,9 +1,12 @@
 #include "gof2/PlayerFighter.h"
+#include "gof2/Explosion.h"
+#include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
+#include "gof2/Route.h"
+#include "gof2/Standing.h"
 
 
 extern "C" void PlayerFighter_setShipGroup_base(AEGeometry *self, int a, bool b);
-extern "C" void Player_setActive(int player, int on);
-extern "C" void PlayerFighter_setExhaustVisible(PlayerFighter *self, bool vis);
 extern "C" void PlayerFighter_awake_tail(int geom, int on);
 extern "C" void PlayerFighter_cloak_off_helper();
 extern "C" void operator_delete(void *p);
@@ -29,20 +32,14 @@ extern "C" int *RH_op_new_arr(unsigned int n);
 extern "C" void RH_op_delete_arr(void *p);
 extern "C" void Route_ctor(void *self, int *points, unsigned n);
 extern "C" void Route_setLoop(void *route, int loop);
-extern "C" int Route_clone(void *route);
 extern "C" int Status_getCurrentCampaignMission();
 extern "C" int Status_inAlienOrbit();
-extern "C" int Player_getHitpoints(int player);
 extern "C" void Generator_ctor(void *g);
 extern "C" void *Generator_getLootList(void *g, int a, int b);
 extern "C" void *Generator_dtor(void *g);
 extern "C" void Explosion_ctor(void *e, int flag);
-extern "C" void Explosion_addFireStreaks(void *e);
-extern "C" int Explosion_isPlaying(void *e);
 extern "C" void AEGeometry_getPosition(void *out, int geom);
-extern "C" int KIPlayer_isWingMan(PlayerFighter *self);
 extern "C" int Status_getStanding();
-extern "C" int Standing_isEnemy(int standing);
 extern "C" void PF_update_dead(PlayerFighter *self);
 extern "C" void PF_update_body(PlayerFighter *self, int dt);
 extern "C" void AEGeometry_setPosition3(int geom, float x, float y, float z);
@@ -59,9 +56,7 @@ extern "C" void ArrayInt_add(int val, Array<int> *a);
 extern "C" void PlayerFighter_setMissionCrate_tail(int one, Array<int> *a);
 extern "C" void ArrayBV_ctor(Array<BoundingVolume *> *a);
 extern "C" void PlayerFighter_setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *a);
-extern "C" void KIPlayer_setWingmanCommand(PlayerFighter *self, int cmd, KIPlayer *target);
 extern "C" int Level_getPlayerRoute(int level);
-extern "C" int Route_getExactClone(int route);
 extern "C" int Route_getCurrent(int route);
 extern "C" float AEMath_VectorLength(void *v);
 extern "C" void AEMath_VectorNormalize(void *out, void *v);
@@ -69,8 +64,6 @@ extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" unsigned PaintCanvas_TransformGetTransform(unsigned t);
 extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
 extern "C" void AEGeometry_render(int geom);
-extern "C" int Player_isActive(int player);
-extern "C" void Explosion_render(int e);
 extern "C" int PaintCanvas_TransformGetLocal(unsigned t);
 extern "C" void PaintCanvas_TransformSetLocal(unsigned t, void *m);
 extern "C" void Trail_render(int t);
@@ -78,45 +71,38 @@ extern "C" void PlayerFighter_render_tail(int geom);
 extern "C" void AEGeometry_setMatrix(void *geom);
 extern "C" void AEGeometry_translate(void *geom);
 extern "C" void PF_vscale(void *out, void *vec, float scalar);
-extern "C" void KIPlayer_reset(PlayerFighter *self);
-extern "C" int KIPlayer_isDead(PlayerFighter *self);
 extern "C" void PaintCanvas_MeshCloneMaterial(void *canvas, unsigned mesh, unsigned *out);
 extern "C" int PaintCanvas_MeshGetPointer(void *canvas, unsigned mesh);
 extern "C" int PaintCanvas_MaterialGetMaterial(void *canvas, unsigned mat);
 extern "C" void PaintCanvas_MeshChangeMaterial(void *canvas, unsigned mesh, unsigned short mat);
-extern "C" int Player_turnedEnemy(int player);
 extern "C" void Player_reset(int player);
-extern "C" void Player_turnEnemy(int player);
 extern "C" void AEString_ctor_default(void *s);
 extern "C" void AEString_assign(void *dst, void *src);
 extern "C" void AEString_dtor(void *s);
-extern "C" void Route_reset(int route);
-extern "C" void KIPlayer_setActive(PlayerFighter *self, int on);
-extern "C" void Explosion_reset(void *e);
 extern "C" void AEGeometry_setVisible(int geom, int vis);
 extern "C" void *ArrayInt_dtor(void *p);
 
 // ---- hasMissionCrateLost_dcb7e.cpp ----
-extern "C" uint8_t PlayerFighter_hasMissionCrateLost(PlayerFighter *self)
-{
+uint8_t PlayerFighter::hasMissionCrateLost() {
+    PlayerFighter *self = this;
     return self->field_0x68;
 }
 
 // ---- hasMissionCrateCaptured_dcb78.cpp ----
-extern "C" uint8_t PlayerFighter_hasMissionCrateCaptured(PlayerFighter *self)
-{
+uint8_t PlayerFighter::hasMissionCrateCaptured() {
+    PlayerFighter *self = this;
     return self->field_0x69;
 }
 
 // ---- setShootError_dccf4.cpp ----
-extern "C" void PlayerFighter_setShootError(PlayerFighter *self, int v)
-{
+void PlayerFighter::setShootError(int v) {
+    PlayerFighter *self = this;
     self->field_0x1a8 = (float)v;
 }
 
 // ---- setAIDisabled_dcfcc.cpp ----
-extern "C" void PlayerFighter_setAIDisabled(PlayerFighter *self, bool v)
-{
+void PlayerFighter::setAIDisabled(bool v) {
+    PlayerFighter *self = this;
     self->field_0x2e4 = v;
 }
 
@@ -132,11 +118,11 @@ extern "C" void PlayerFighter_setShipGroup(AEGeometry *self, int a, bool b)
 }
 
 // ---- awake_dff2c.cpp ----
-extern "C" void PlayerFighter_awake(PlayerFighter *self)
-{
+void PlayerFighter::awake() {
+    PlayerFighter *self = this;
     self->field_0x88 = 1;
-    Player_setActive(self->field_0x4, 1);
-    PlayerFighter_setExhaustVisible(self, true);
+    ((Player *)(self->field_0x4))->setActive(1);
+    ((PlayerFighter *)(self))->setExhaustVisible(true);
     int geom = self->field_0xc;
     self->field_0xf5 = 1;
     if (geom == 0) {
@@ -148,20 +134,20 @@ extern "C" void PlayerFighter_awake(PlayerFighter *self)
 // ---- setBV_dfb84.cpp ----
 struct BoundingVolume;
 
-extern "C" void PlayerFighter_setBV_a(PlayerFighter *self, Array<BoundingVolume *> *v)
-{
+void PlayerFighter::setBV_a(Array<BoundingVolume *> *v) {
+    PlayerFighter *self = this;
     self->field_0x150 = v;
 }
 
 // ---- setBoostProb_dcd02.cpp ----
-extern "C" void PlayerFighter_setBoostProb(PlayerFighter *self, int v)
-{
+void PlayerFighter::setBoostProb(int v) {
+    PlayerFighter *self = this;
     self->field_0x1b4 = v;
 }
 
 // ---- setCloakingPossible_dcd9c.cpp ----
-extern "C" void PlayerFighter_setCloakingPossible(PlayerFighter *self, bool v)
-{
+void PlayerFighter::setCloakingPossible(bool v) {
+    PlayerFighter *self = this;
     self->field_0x2d8 = v;
     if (!v && self->field_0x13c != 0) {
         self->field_0x2c8 = self->field_0x2cc + 1;
@@ -172,8 +158,8 @@ extern "C" void PlayerFighter_setCloakingPossible(PlayerFighter *self, bool v)
 // ---- removeTrail_dcd08.cpp ----
 struct Trail;
 
-extern "C" void PlayerFighter_removeTrail(PlayerFighter *self)
-{
+void PlayerFighter::removeTrail() {
+    PlayerFighter *self = this;
     void *t = self->field_0x154;
     if (t != 0) {
         operator_delete(Trail_dtor(t));
@@ -226,8 +212,8 @@ extern "C" void _ZN13PlayerFighterD0Ev(PlayerFighter *self)
 }
 
 // ---- hasCrateCaptured_dcb88.cpp ----
-extern "C" uint8_t PlayerFighter_hasCrateCaptured(PlayerFighter *self)
-{
+uint8_t PlayerFighter::hasCrateCaptured() {
+    PlayerFighter *self = this;
     return self->field_0x4c == 0;
 }
 
@@ -236,15 +222,15 @@ extern "C" uint8_t PlayerFighter_hasCrateCaptured(PlayerFighter *self)
 // three unpacked vector components.
 typedef void (*SetPosFn)(PlayerFighter *, float, float, float);
 
-extern "C" void PlayerFighter_setPosition_ref(PlayerFighter *self, const Vector &v)
-{
+void PlayerFighter::setPosition_ref(const Vector &v) {
+    PlayerFighter *self = this;
     SetPosFn fn = *(SetPosFn *)(*(char **)self + 0x48);
     return fn(self, v.x, v.y, v.z);
 }
 
 // ---- setRotate_dccdc.cpp ----
-extern "C" void PlayerFighter_setRotate(PlayerFighter *self, int v)
-{
+void PlayerFighter::setRotate(int v) {
+    PlayerFighter *self = this;
     float f = (float)v;
     self->field_0x13d = 0;
     self->field_0x1a4 = f;
@@ -252,8 +238,8 @@ extern "C" void PlayerFighter_setRotate(PlayerFighter *self, int v)
 }
 
 // ---- hasCrateLost_dcb94.cpp ----
-extern "C" uint8_t PlayerFighter_hasCrateLost(PlayerFighter *self)
-{
+uint8_t PlayerFighter::hasCrateLost() {
+    PlayerFighter *self = this;
     return self->field_0x6a;
 }
 
@@ -268,8 +254,8 @@ typedef int (*F1)(int geom);
 typedef int (*F2)(int base, int v, int kind, int z);
 typedef void (*F3)(int base, int v, int z);
 
-extern "C" void PlayerFighter_setLevel(PlayerFighter *self, Level *lvl)
-{
+void PlayerFighter::setLevel(Level *lvl) {
+    PlayerFighter *self = this;
     KIPlayer_setLevel(self, lvl);
     F1 f1 = (F1)gSL_f1;
     F2 f2 = (F2)gSL_f2;
@@ -299,8 +285,6 @@ extern "C" void PlayerFighter_setLevel(PlayerFighter *self, Level *lvl)
 }
 
 // ---- PlayerFighter_dc2f8.cpp ----
-extern "C" void KIPlayer_ctor(PlayerFighter *self, int p1, int wingmanCmd, void *player,
-                              void *geom, float a, float b, float c, int flag);
 
 extern void *const gPFC_guard __attribute__((visibility("hidden")));     // DAT_000ec6a4
 extern const int gPFC_vtable __attribute__((visibility("hidden")));      // DAT_000ec6a8 (vptr base)
@@ -309,13 +293,11 @@ extern int *const gPFC_sharedRoute __attribute__((visibility("hidden"))); // DAT
 extern const int gPFC_defaultRoute __attribute__((visibility("hidden"))); // DAT_000ec81c (0x30 bytes)
 
 // PlayerFighter::PlayerFighter(int p1, int wingmanCmd, Player*, AEGeometry*, float, float, float, bool)
-extern "C" void PlayerFighter_ctor(PlayerFighter *self, int p1, int wingmanCmd, void *player,
-                                   void *geom, float a, float b, float c, int flag)
-{
+void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float a, float b, float c, int flag) {
+    PlayerFighter *self = this;
     int *guardP = *(int **)gPFC_guard;
     volatile int saved = *guardP;
 
-    KIPlayer_ctor(self, p1, -1, player, geom, a, b, c, flag);
     *(int *)self = gPFC_vtable + 8;
     self->field_0x200 = 0;
     self->field_0x204 = 0;
@@ -424,9 +406,9 @@ extern "C" void PlayerFighter_ctor(PlayerFighter *self, int p1, int wingmanCmd, 
     if (Status_getCurrentCampaignMission() != 0x29) {
         int cloned;
         if (wingmanCmd == 9) {
-            cloned = Route_clone((void *)(long)*shared);
+            cloned = ((Route *)((void *)(long)*shared))->clone();
         } else {
-            cloned = Route_clone(self->field_0x144);
+            cloned = ((Route *)(self->field_0x144))->clone();
         }
         self->field_0x6c = cloned;
     }
@@ -446,9 +428,9 @@ extern "C" void PlayerFighter_ctor(PlayerFighter *self, int p1, int wingmanCmd, 
     void *exp = operator_new(0x68);
     Explosion_ctor(exp, 0);
     self->field_0x124 = exp;
-    Explosion_addFireStreaks(exp);
+    ((Explosion *)(exp))->addFireStreaks();
     self->field_0x13e = 1;
-    self->field_0x1d8 = Player_getHitpoints(self->field_0x4);
+    self->field_0x1d8 = ((Player *)(self->field_0x4))->getHitpoints();
     self->field_0x1dc = 0;
     self->field_0x1e0 = 0;
     self->field_0xe4 = 1;
@@ -502,13 +484,13 @@ extern "C" void PlayerFighter_ctor(PlayerFighter *self, int p1, int wingmanCmd, 
 extern void *const gUpd_guard __attribute__((visibility("hidden")));   // DAT_000ed348
 
 // PlayerFighter::update(int dt) — self in r0, dt in r1.
-extern "C" void PlayerFighter_update(PlayerFighter *self, int dt)
-{
+void PlayerFighter::update(int dt) {
+    PlayerFighter *self = this;
     int *guardP = *(int **)gUpd_guard;
     volatile int saved = *guardP;
 
     // Dead-and-explosion-finished early-out: tear down via the dead veneer.
-    if (self->field_0x88 == 4 && Explosion_isPlaying(self->field_0x124) == 0 &&
+    if (self->field_0x88 == 4 && ((Explosion *)(self->field_0x124))->isPlaying() == 0 &&
         (self->field_0x4c == 0 || 60000 < self->field_0xd8)) {
         if (*guardP != saved) {
             __stack_chk_fail((unsigned)(*guardP - saved));
@@ -536,10 +518,10 @@ extern "C" void PlayerFighter_update(PlayerFighter *self, int dt)
         unsigned char enemy;
         if ((self->field_0x28 & 0xfffffffe) == 8) {
             enemy = 1;
-        } else if (KIPlayer_isWingMan(self) != 0) {
+        } else if (((KIPlayer *)(self))->isWingMan() != 0) {
             enemy = 0;
         } else {
-            enemy = (unsigned char)Standing_isEnemy(Status_getStanding());
+            enemy = (unsigned char)((Standing *)(Status_getStanding()))->isEnemy();
         }
         *(unsigned char *)(self->field_0x4 + 0x5c) = enemy;
     }
@@ -555,8 +537,8 @@ extern "C" void PlayerFighter_update(PlayerFighter *self, int dt)
 
 // ---- setPosition_dcbb8.cpp ----
 // PlayerFighter::setPosition(float, float, float). r0=self, r1..r3 = x,y,z (raw bits).
-extern "C" void PlayerFighter_setPosition3(PlayerFighter *self, int x, int y, int z)
-{
+void PlayerFighter::setPosition3(int x, int y, int z) {
+    PlayerFighter *self = this;
     volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     self->field_0x58 = x;
@@ -598,8 +580,8 @@ extern const float gRoll_f44 __attribute__((visibility("hidden")));
 extern const float gRoll_f48 __attribute__((visibility("hidden")));
 
 // PlayerFighter::roll(int angle) — self in r0, angle in r1.
-extern "C" void PlayerFighter_roll(PlayerFighter *self, int angle)
-{
+void PlayerFighter::roll(int angle) {
+    PlayerFighter *self = this;
     int *guardP = *(int **)gRoll_guard;
     volatile int saved = *guardP;
 
@@ -676,8 +658,8 @@ done:
 // ---- cloak_dcd58.cpp ----
 extern "C" void *gCloakRand;  // hidden PC-relative global (deref'd twice)
 
-extern "C" void PlayerFighter_cloak(PlayerFighter *self, int dur, bool b)
-{
+void PlayerFighter::cloak(int dur, bool b) {
+    PlayerFighter *self = this;
     unsigned v;
     if (dur > 0) {
         v = (unsigned)dur;
@@ -693,8 +675,8 @@ extern "C" void PlayerFighter_cloak(PlayerFighter *self, int dur, bool b)
 // hidden PC-relative global: the App singleton pointer, deref'd twice.
 extern void *const gMissionCrateApp __attribute__((visibility("hidden")));
 
-extern "C" void PlayerFighter_setMissionCrate(PlayerFighter *self, bool on)
-{
+void PlayerFighter::setMissionCrate(bool on) {
+    PlayerFighter *self = this;
     self->field_0xd0 = on;
     if (on) {
         self->field_0x50 = 0;
@@ -713,8 +695,8 @@ extern "C" void PlayerFighter_setMissionCrate(PlayerFighter *self, bool on)
 struct BV;
 typedef int (*CollFn)(BV *, float, float, float);
 
-extern "C" int PlayerFighter_collide(PlayerFighter *self, float x, float y, float z)
-{
+int PlayerFighter::collide(float x, float y, float z) {
+    PlayerFighter *self = this;
     if ((unsigned)(self->field_0x88 - 3) > 1) {
         Array<BV *> *a = (Array<BV *> *)self->field_0x150;
         if (a != 0) {
@@ -734,8 +716,8 @@ extern "C" int PlayerFighter_collide(PlayerFighter *self, float x, float y, floa
 // ---- setBV_dfb8a.cpp ----
 struct BoundingVolume;
 
-extern "C" void PlayerFighter_setBV_b(PlayerFighter *self, BoundingVolume *bv)
-{
+void PlayerFighter::setBV_b(BoundingVolume *bv) {
+    PlayerFighter *self = this;
     Array<BoundingVolume *> *a = (Array<BoundingVolume *> *)operator_new(0xc);
     ArrayBV_ctor(a);
     self->field_0x150 = a;
@@ -745,10 +727,10 @@ extern "C" void PlayerFighter_setBV_b(PlayerFighter *self, BoundingVolume *bv)
 // ---- setWingmanCommand_dcc2c.cpp ----
 struct KIPlayer;
 
-extern "C" void PlayerFighter_setWingmanCommand(PlayerFighter *self, int cmd, KIPlayer *target)
-{
+void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
+    PlayerFighter *self = this;
     int saved = self->field_0xe4;
-    KIPlayer_setWingmanCommand(self, cmd, target);
+    ((KIPlayer *)(self))->setWingmanCommand(cmd, target);
     if ((unsigned)(cmd - 2) < 2) {
         self->field_0x1b8 = 0x1389;
         if (self->field_0x1e8 != 5.5f) {
@@ -757,7 +739,7 @@ extern "C" void PlayerFighter_setWingmanCommand(PlayerFighter *self, int cmd, KI
         if (cmd == 2) {
             if (Level_getPlayerRoute(self->field_0x54) != 0) {
                 int r = Level_getPlayerRoute(self->field_0x54);
-                self->field_0x14c = Route_getExactClone(r);
+                self->field_0x14c = ((Route *)(r))->getExactClone();
                 self->field_0x1e4 = Route_getCurrent(self->field_0x14c);
                 goto done;
             }
@@ -778,8 +760,8 @@ done:
 }
 
 // ---- setSpeed_dcccc.cpp ----
-extern "C" void PlayerFighter_setSpeed(PlayerFighter *self, float v)
-{
+void PlayerFighter::setSpeed(float v) {
+    PlayerFighter *self = this;
     self->field_0x1ac = v;
     self->field_0x13d = 0;
     self->field_0x1e8 = v;
@@ -789,8 +771,8 @@ extern "C" void PlayerFighter_setSpeed(PlayerFighter *self, float v)
 struct BV;
 typedef int (*CollFn)(BV *, float, float, float);
 
-extern "C" int PlayerFighter_outerCollide(PlayerFighter *self, float x, float y, float z)
-{
+int PlayerFighter::outerCollide(float x, float y, float z) {
+    PlayerFighter *self = this;
     if ((unsigned)(self->field_0x88 - 3) > 1) {
         Array<BV *> *a = (Array<BV *> *)self->field_0x150;
         if (a != 0) {
@@ -821,8 +803,8 @@ typedef void (*GetPosFn)(void *outVec, PlayerFighter *self);
 typedef int (*RngFn)(int rng, int bound);
 
 // PlayerFighter::initPush(Vector const& target, int radius) — target in r1, radius in r2.
-extern "C" void PlayerFighter_initPush(PlayerFighter *self, void *target, int radius)
-{
+void PlayerFighter::initPush(void *target, int radius) {
+    PlayerFighter *self = this;
     int *guardP = *(int **)gIP_guard;
     volatile int saved = *guardP;
 
@@ -871,8 +853,8 @@ extern "C" void PlayerFighter_initPush(PlayerFighter *self, void *target, int ra
 // hidden PC-relative pointer-to-pointer global (deref'd twice).
 extern void *const gExhaustCanvas __attribute__((visibility("hidden")));
 
-extern "C" void PlayerFighter_setExhaustVisible(PlayerFighter *self, bool vis)
-{
+void PlayerFighter::setExhaustVisible(bool vis) {
+    PlayerFighter *self = this;
     int geom = self->field_0x8;
     if (geom != 0) {
         int sub = self->field_0xc;
@@ -889,17 +871,17 @@ extern void *const gR_g3 __attribute__((visibility("hidden")));   // case 3 tran
 extern void *const gR_g4 __attribute__((visibility("hidden")));   // case 4 transform-id global
 extern void *const gR_g5 __attribute__((visibility("hidden")));   // default-case transform-id global
 
-extern "C" void PlayerFighter_render(PlayerFighter *self)
-{
+void PlayerFighter::render() {
+    PlayerFighter *self = this;
     if (self->field_0x78 != 0) {
         AEGeometry_render(0);
     }
-    int active = Player_isActive(self->field_0x4);
+    int active = ((Player *)(self->field_0x4))->isActive();
     int st = self->field_0x88;
     unsigned *idp;
     if (active != 0 && (unsigned)(st - 3) < 2) {
         if (self->field_0x124 != 0) {
-            Explosion_render(0);
+            ((Explosion *)(0))->render();
             st = self->field_0x88;
         }
         if (st == 4) {
@@ -959,8 +941,8 @@ extern void *const gPush_guard __attribute__((visibility("hidden")));     // DAT
 extern const float gPush_div __attribute__((visibility("hidden")));       // DAT_000eff20
 
 // PlayerFighter::push(int dt) — self in r0, dt in r1.
-extern "C" void PlayerFighter_push(PlayerFighter *self, int dt)
-{
+void PlayerFighter::push(int dt) {
+    PlayerFighter *self = this;
     int *guardP = *(int **)gPush_guard;
     volatile int saved = *guardP;
 
@@ -1012,7 +994,7 @@ __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self
 {
     volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
-    KIPlayer_reset(self);
+    ((KIPlayer *)(self))->reset();
     self->field_0x4c = 1;
 
     int v[3];
@@ -1080,11 +1062,11 @@ extern const float gHC_divIn __attribute__((visibility("hidden")));       // DAT
 extern const float gHC_divOut __attribute__((visibility("hidden")));      // DAT_000ecfa8
 
 // PlayerFighter::handleCloaking() — self in r0.
-extern "C" void PlayerFighter_handleCloaking(PlayerFighter *self)
-{
+void PlayerFighter::handleCloaking() {
+    PlayerFighter *self = this;
     if (self->field_0x28 != 10) return;
     if (self->field_0x8 == 0) return;
-    if (KIPlayer_isDead(self) != 0) return;
+    if (((KIPlayer *)(self))->isDead() != 0) return;
     if (*(char *)(self->field_0x4 + 0x68) != 0) return;
     if (self->field_0x2d8 == 0) return;
 
@@ -1122,7 +1104,7 @@ extern "C" void PlayerFighter_handleCloaking(PlayerFighter *self)
 
         if (total - self->field_0x1d0 <= 2000) {
             if (1999 < total) {
-                PlayerFighter_setExhaustVisible(self, false);
+                ((PlayerFighter *)(self))->setExhaustVisible(false);
                 self->field_0x74 = 1;
             }
             void *cv = *(void **)gHC_canvasA;
@@ -1177,33 +1159,30 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
 {
     volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
-    int enemy = Player_turnedEnemy(self->field_0x4);
+    int enemy = ((Player *)(self->field_0x4))->turnedEnemy();
     Player_reset(self->field_0x4);
     if (enemy != 0) {
-        Player_turnEnemy(self->field_0x4);
+        ((Player *)(self->field_0x4))->turnEnemy();
     }
     {
         String s;
         AEString_ctor_default(&s);
-        AEString_assign((char *)self + 0x18, &s);
-        AEString_dtor(&s);
     }
     self->field_0x78 = 0;
     self->field_0x88 = 1;
     self->field_0x12e = 0;
     self->field_0x38 = -1;
-    Route_reset(self->field_0x6c);
-    self->field_0x1d8 = Player_getHitpoints(self->field_0x4);
+    ((Route *)(self->field_0x6c))->reset();
+    self->field_0x1d8 = ((Player *)(self->field_0x4))->getHitpoints();
     self->field_0x1dc = 0;
     self->field_0x1e0 = 0;
     self->field_0xd8 = 0;
-    KIPlayer_setActive(self, 1);
     self->field_0xf0 = 0;
     self->field_0x1e8 = self->field_0x1ac;
-    Explosion_reset(self->field_0x124);
+    ((Explosion *)(self->field_0x124))->reset();
     self->field_0x104 = 0;
     self->field_0x24 = 0;
-    PlayerFighter_setExhaustVisible(self, true);
+    ((PlayerFighter *)(self))->setExhaustVisible(true);
     int geom = self->field_0xc;
     self->field_0xf5 = 1;
     if (geom == 0) {

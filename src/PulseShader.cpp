@@ -1,4 +1,5 @@
 #include "gof2/PulseShader.h"
+#include "gof2/String.h"
 #include "gof2/Mesh.h"
 
 namespace AbyssEngine {
@@ -50,7 +51,6 @@ extern "C" void _ZN11AbyssEngine11PulseShaderD0Ev(PulseShader *self)
 
 // ---- UpdateMeshData_92594.cpp ----
 extern "C" {
-long long ApplicationManager_GetCurrentTimeMillis();
 float __aeabi_l2f(long long v);
 float sinf(float x);
 extern float PulseShader_timeScale;
@@ -135,9 +135,9 @@ PulseShader::PulseShader()
 
     // name = String("PulseShader", false); this->field_0xc = name; ~name.
     String name;
-    String_ctor_char(&name, PulseShader_name, false);
-    String_assign(&this->field_0xc, &name);
-    String_dtor(&name);
+    ((String *)(&name))->ctor_char(PulseShader_name, false);
+    ((String *)(&this->field_0xc))->assign(&name);
+    ((String *)(&name))->dtor();
 }
 
 } // namespace AbyssEngine

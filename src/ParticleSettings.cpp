@@ -1,30 +1,31 @@
 #include "gof2/ParticleSettings.h"
+#include "gof2/String.h"
 #include <arm_neon.h>
 
 
 
 // ---- _ParticleSettings_185474.cpp ----
-extern "C" void String_dtor(void *p);  // AbyssEngine::String::~String
+// AbyssEngine::String::~String
 
 // ParticleSettings::~ParticleSettings(): destruct the embedded String of each
 // ParticleSet entry in reverse (from offset 0x1d60 down to 0, stride 0xa0).
 ParticleSettings::~ParticleSettings() {
     int i = 0x1d60;
     do {
-        String_dtor((char *)this + i);
+        ((String *)((char *)this + i))->dtor();
         i -= 0xa0;
     } while (i != -0xa0);
 }
 
 // ---- ParticleSettings_183fe8.cpp ----
-extern "C" void *String_ctor(void *s);  // AbyssEngine::String::String() -> this
+// AbyssEngine::String::String() -> this
 
 // ParticleSettings::ParticleSettings(): default-construct the embedded String at the
 // head of each of the 48 ParticleSet entries (stride 0xa0, total 0x1e00 bytes).
 ParticleSettings::ParticleSettings() {
     int i = 0;
     do {
-        String_ctor((char *)this + i);
+        ((String *)((char *)this + i))->ctor();
         i += 0xa0;
     } while (i != 0x1e00);
 }
@@ -220,8 +221,8 @@ extern uint32_t DAT_0019546c;
 extern uint32_t DAT_00195470;
 }
 
-int ParticleSettings_init(ParticleSettings *self)
-{
+int ParticleSettings::init() {
+    ParticleSettings *self = this;
     char *t = (char *)self;
     char buf[12];  // local AbyssEngine::String temporary (aSStack_58)
     uint32_t uVar1 = (uint32_t)DAT_00194078;
@@ -234,8 +235,6 @@ int ParticleSettings_init(ParticleSettings *self)
     char *pPVar12 = (char *)(t);
     for (uint32_t uVar13 = 0; uVar13 < 0x30; uVar13 = uVar13 + 1) {
     AEString_ctor_cstr(buf, ParticleSettings_str, false);
-    AEString_assign((void *)pPVar12, buf);
-    AEString_dtor(buf);
     *(uint32_t *)((char *)pPVar12 + 0x18) = (uint32_t)uVar15;
     *(uint32_t *)((char *)pPVar12 + 0x1c) = (uint32_t)uVar17;
     *(uint32_t *)((char *)pPVar12 + 0x20) = (uint32_t)uVar18;
@@ -257,8 +256,6 @@ int ParticleSettings_init(ParticleSettings *self)
     pPVar12 = (char *)(pPVar12 + 0xa0);
     }
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194108, false);
-    AEString_assign((void *)t, buf);
-    AEString_dtor(buf);
     int32_t iVar5 = (int32_t)DAT_00194220;
     uint64_t uVar4 = (uint64_t)DAT_00194218;
     uint64_t uVar3 = (uint64_t)DAT_00194208;
@@ -299,8 +296,6 @@ int ParticleSettings_init(ParticleSettings *self)
     ParticleSettings_initSub((void *)(t + 0x1720), (void *)(t));
     ParticleSettings_initSub((void *)(t + 0x17c0), (void *)(t));
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194238, false);
-    AEString_assign(t + 0x280, buf);
-    AEString_dtor(buf);
     uVar19 = (uint64_t)DAT_00194ec0;
     uVar16 = (uint64_t)DAT_00194eb8;
     iVar5 = (int32_t)DAT_001942ec;
@@ -334,8 +329,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x300) = (uint32_t)uVar18;
     *(uint32_t *)((char *)t + 0x318) = (uint32_t)1;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
-    AEString_assign(t + 800, buf);
-    AEString_dtor(buf);
     uVar2 = (uint64_t)DAT_00194ee0;
     uVar19 = (uint64_t)DAT_00194ed8;
     uVar16 = (uint64_t)DAT_00194ed0;
@@ -368,8 +361,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint64_t *)((char *)t + 0x3b0) = (uint64_t)uVar2;
     *(uint32_t *)((char *)t + 0x3b8) = (uint32_t)1;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar14, false);
-    AEString_assign(t + 0x3c0, buf);
-    AEString_dtor(buf);
     iVar5 = (int32_t)DAT_001943e4;
     uVar15 = (uint32_t)DAT_001943e0;
     *(uint32_t *)((char *)t + 0x3d4) = (uint32_t)DAT_001943e0;
@@ -377,8 +368,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(float *)((char *)t + 0x3e0) = (float)((*(float *)((char *)t + 0x340)) * 5.0);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
     char *this_01 = (char *)(t + 0x140);
-    AEString_assign((void *)this_01, buf);
-    AEString_dtor(buf);
     uVar1 = (uint32_t)DAT_00194498;
     uVar20 = (uint32_t)DAT_00194494;
     uVar18 = (uint32_t)DAT_00194490;
@@ -416,8 +405,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 600) = (uint32_t)uVar17;
     *(uint32_t *)((char *)t + 0x25c) = (uint32_t)uVar15;
     AEString_ctor_cstr(buf, ParticleSettings_str, false);
-    AEString_assign(t + 0x820, buf);
-    AEString_dtor(buf);
     uVar16 = (uint64_t)DAT_00195338;
     iVar5 = (int32_t)DAT_00194544;
     *(uint64_t *)((char *)t + 0x850) = (uint64_t)DAT_00195330;
@@ -441,8 +428,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x8b4) = (uint32_t)0x3f800000;
     *(uint32_t *)((char *)t + 0x8b8) = (uint32_t)1;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
-    AEString_assign(t + 0x500, buf);
-    AEString_dtor(buf);
     uVar2 = (uint64_t)DAT_00195358;
     uVar19 = (uint64_t)DAT_00195348;
     uVar16 = (uint64_t)DAT_00195340;
@@ -464,8 +449,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x57c) = (uint32_t)0;
     *(uint32_t *)((char *)t + 0x580) = (uint32_t)0;
     AEString_ctor_cstr(buf, ParticleSettings_str, false);
-    AEString_assign(t + 0x460, buf);
-    AEString_dtor(buf);
     uVar19 = (uint64_t)DAT_00195368;
     uVar16 = (uint64_t)DAT_00195360;
     iVar5 = (int32_t)DAT_0019466c;
@@ -492,8 +475,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x4e0) = (uint32_t)uVar18;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
     char *this_02 = (char *)(t + 0x5a0);
-    AEString_assign((void *)this_02, buf);
-    AEString_dtor(buf);
     uVar19 = (uint64_t)DAT_00195378;
     uVar16 = (uint64_t)DAT_00195370;
     uVar15 = (uint32_t)DAT_0019473c;
@@ -526,8 +507,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x63c) = (uint32_t)0x10;
     ParticleSet_assign((void *)this_03, (void *)this_02);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194748, false);
-    AEString_assign((void *)this_03, buf);
-    AEString_dtor(buf);
     uVar16 = (uint64_t)DAT_00195388;
     *(uint64_t *)((char *)t + 0xa80) = (uint64_t)DAT_00195380;
     *(uint64_t *)((char *)t + 0xa88) = (uint64_t)uVar16;
@@ -548,22 +527,16 @@ int ParticleSettings_init(ParticleSettings *self)
     ParticleSet_assign(t + 0xaa0, (void *)this_03);
     *(uint32_t *)((char *)t + 0xac8) = (uint32_t)400;
     AEString_ctor_cstr(buf, ParticleSettings_str, false);
-    AEString_assign(t + 0xaa0, buf);
-    AEString_dtor(buf);
     uVar16 = (uint64_t)DAT_00195398;
     *(uint64_t *)((char *)t + 0xb28) = (uint64_t)DAT_00195390;
     *(uint64_t *)((char *)t + 0xb30) = (uint64_t)uVar16;
     ParticleSet_assign(t + 0xb40, (void *)this_03);
     *(uint32_t *)((char *)t + 0xb68) = (uint32_t)200;
     AEString_ctor_cstr(buf, ParticleSettings_str, false);
-    AEString_assign(t + 0xb40, buf);
-    AEString_dtor(buf);
     uVar16 = (uint64_t)DAT_001953a8;
     *(uint64_t *)((char *)t + 0xbc8) = (uint64_t)DAT_001953a0;
     *(uint64_t *)((char *)t + 0xbd0) = (uint64_t)uVar16;
     AEString_ctor_cstr(buf, ParticleSettings_str, false);
-    AEString_assign(t + 0x780, buf);
-    AEString_dtor(buf);
     uVar19 = (uint64_t)DAT_001953b8;
     uVar16 = (uint64_t)DAT_001953b0;
     iVar5 = (int32_t)DAT_00194910;
@@ -594,8 +567,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x814) = (uint32_t)0x3e800000;
     *(uint32_t *)((char *)t + 0x81c) = (uint32_t)0x10;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
-    AEString_assign(t + 0x820, buf);
-    AEString_dtor(buf);
     iVar5 = (int32_t)DAT_001949e4;
     *(uint32_t *)((char *)t + 0x848) = (uint32_t)1000;
     iVar14 = (int32_t)DAT_001949e8;
@@ -625,8 +596,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x8b4) = (uint32_t)0x3e800000;
     *(uint32_t *)((char *)t + 0x8bc) = (uint32_t)0x10;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
-    AEString_assign(t + 0x640, buf);
-    AEString_dtor(buf);
     iVar5 = (int32_t)DAT_00194a98;
     uVar15 = (uint32_t)0;
     uVar17 = (uint32_t)0;
@@ -657,8 +626,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x6d4) = (uint32_t)0x3e800000;
     *(uint32_t *)((char *)t + 0x6dc) = (uint32_t)0x10;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
-    AEString_assign(t + 0x6e0, buf);
-    AEString_dtor(buf);
     iVar5 = (int32_t)DAT_00194b30;
     *(uint32_t *)((char *)t + 0x728) = (uint32_t)uVar15;
     *(uint32_t *)((char *)t + 0x72c) = (uint32_t)uVar17;
@@ -685,8 +652,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x77c) = (uint32_t)0x10;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
     char *this_00 = (char *)(t + 0x960);
-    AEString_assign((void *)this_00, buf);
-    AEString_dtor(buf);
     iVar5 = (int32_t)DAT_00194be8;
     *(uint32_t *)((char *)t + 0x988) = (uint32_t)0x5dc;
     uVar19 = (uint64_t)DAT_001953c8;
@@ -717,8 +682,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint64_t *)((char *)t + 0x9f0) = (uint64_t)uVar19;
     *(uint32_t *)((char *)t + 0x9fc) = (uint32_t)0x10;
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)iVar5, false);
-    AEString_assign(t + 0x1a40, buf);
-    AEString_dtor(buf);
     *(uint32_t *)((char *)t + 0x1a68) = (uint32_t)600;
     *(uint32_t *)((char *)t + 0x1a4c) = (uint32_t)uVar17;
     *(uint32_t *)((char *)t + 0x1a6c) = (uint32_t)uVar15;
@@ -744,8 +707,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint64_t *)((char *)t + 0x1ad0) = (uint64_t)uVar19;
     ParticleSet_assign(t + 0xbe0, (void *)this_00);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194d00, false);
-    AEString_assign(t + 0xbe0, buf);
-    AEString_dtor(buf);
     *(uint32_t *)((char *)t + 0xc28) = (uint32_t)0;
     *(uint32_t *)((char *)t + 0xc2c) = (uint32_t)0;
     *(uint32_t *)((char *)t + 0xc30) = (uint32_t)0;
@@ -766,13 +727,9 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0xc44) = (uint32_t)0;
     ParticleSet_assign(t + 0x8c0, (void *)this_00);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194d8c, false);
-    AEString_assign(t + 0x8c0, buf);
-    AEString_dtor(buf);
     *(uint32_t *)((char *)t + 0x940) = (uint32_t)DAT_00194dc4;
     ParticleSet_assign(t + 0x1900, (void *)this_00);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194dc8, false);
-    AEString_assign(t + 0x1900, buf);
-    AEString_dtor(buf);
     *(uint32_t *)((char *)t + 0x1954) = (uint32_t)5000;
     char *p_Var11 = (char *)(t + 0xc80);
     *(uint32_t *)((char *)t + 0x1980) = (uint32_t)DAT_00194e24;
@@ -780,16 +737,12 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x1918) = (uint32_t)300;
     ParticleSet_assign((void *)p_Var11, t + 0x6e0);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194e2c, false);
-    AEString_assign((void *)p_Var11, buf);
-    AEString_dtor(buf);
     uVar15 = (uint32_t)DAT_00194e6c;
     *(uint32_t *)((char *)t + 0xca8) = (uint32_t)1000;
     *(uint32_t *)((char *)t + 0xc94) = (uint32_t)uVar15;
     *(uint32_t *)((char *)t + 0xc98) = (uint32_t)1000;
     ParticleSet_assign(t + 0xd20, (void *)p_Var11);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194e70, false);
-    AEString_assign(t + 0xd20, buf);
-    AEString_dtor(buf);
     uVar15 = (uint32_t)DAT_00194eb0;
     p_Var11 = (char *)(t + 0xdc0);
     *(uint32_t *)((char *)t + 0xd48) = (uint32_t)1000;
@@ -797,8 +750,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0xd38) = (uint32_t)200;
     ParticleSet_assign((void *)p_Var11, (void *)this_02);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00194eb4, false);
-    AEString_assign((void *)p_Var11, buf);
-    AEString_dtor(buf);
     uVar18 = (uint32_t)DAT_001952cc;
     uVar17 = (uint32_t)DAT_001952c8;
     uVar15 = (uint32_t)DAT_001952c4;
@@ -812,15 +763,11 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0xdd8) = (uint32_t)2000;
     ParticleSet_assign(t + 0x19a0, (void *)p_Var11);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_001952d0, false);
-    AEString_assign(t + 0x19a0, buf);
-    AEString_dtor(buf);
     *(uint32_t *)((char *)t + 0x1a20) = (uint32_t)DAT_001952d4;
     *(uint32_t *)((char *)t + 0x19e8) = (uint32_t)1000;
     *(uint32_t *)((char *)t + 0x1a24) = (uint32_t)DAT_0019530c;
     ParticleSet_assign(t + 0xe60, (void *)this_02);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00195310, false);
-    AEString_assign(t + 0xe60, buf);
-    AEString_dtor(buf);
     uVar18 = (uint32_t)DAT_001952cc;
     *(uint32_t *)((char *)t + 0xe88) = (uint32_t)1000;
     *(uint32_t *)((char *)t + 0xe8c) = (uint32_t)uVar15;
@@ -831,8 +778,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0xeac) = (uint32_t)0x5dc;
     ParticleSet_assign(t + 0xf00, (void *)this_02);
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00195314, false);
-    AEString_assign(t + 0xf00, buf);
-    AEString_dtor(buf);
     uVar15 = (uint32_t)DAT_00195318;
     pPVar12 = (char *)(t + 4000);
     *(uint32_t *)((char *)t + 0xf28) = (uint32_t)1000;
@@ -926,8 +871,6 @@ int ParticleSettings_init(ParticleSettings *self)
     *(uint32_t *)((char *)t + 0x1d54) = (uint32_t)uVar15;
     ParticleSettings_initSub((void *)(t + 0x1d60), (void *)(t + 0x780));
     AEString_ctor_cstr(buf, ParticleSettings_str + (int)DAT_00195470, false);
-    AEString_assign(t + 0x1d60, buf);
-    AEString_dtor(buf);
     *(uint32_t *)((char *)t + 0x1dfc) = (uint32_t)0x10;
     *(uint64_t *)((char *)t + 0x1de8) = (uint64_t)uVar16;
     *(uint64_t *)((char *)t + 0x1df0) = (uint64_t)uVar19;

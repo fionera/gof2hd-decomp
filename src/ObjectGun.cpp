@@ -1,4 +1,6 @@
 #include "gof2/ObjectGun.h"
+#include "gof2/Explosion.h"
+#include "gof2/PlayerEgo.h"
 #include "gof2/Gun.h"
 #include "gof2/Player.h"
 
@@ -25,14 +27,10 @@ extern "C" void Array_Explosion_ctor(Array<Explosion*> *self);
 extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion*> *self);
 extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int weapon);
-extern "C" int Gun_isPlayerGun(Gun *self);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" uint32_t TransformGetTransform(void *canvas, uint32_t transform);
 extern "C" void Transform_Update(uint64_t transform, int64_t dt, int flags);
-extern "C" void Gun_update(Gun *self, int dt);
-extern "C" Player *Player_getKIPlayer(Player *self);
 extern "C" Player *Level_getPlayer(Level *self);
-extern "C" void PlayerEgo_getPosition(Vector *out, Player *self);
 extern "C" void Player_getPosition(Vector *out, Player *self);
 extern "C" void __aeabi_memcpy(void *dst, const void *src, uint32_t size);
 extern "C" void MatrixRotateVector(void *out, const void *matrix, const void *vec);
@@ -50,12 +48,7 @@ extern "C" Vector *Matrix_getVector(void *self);
 extern "C" void Matrix_multiply_out(Matrix *out, const Vector *a, const Vector *b);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const Matrix *matrix);
 extern "C" void AEGeometry_translate(AEGeometry *self, const Vector *offset);
-extern "C" void Explosion_start(Explosion *self, const Vector *position, const Vector *zero);
 extern "C" void Explosion_update(Explosion *self, int dt, TargetFollowCamera *camera);
-extern "C" int Explosion_isPlaying(Explosion *self);
-extern "C" void Explosion_reset(Explosion *self);
-extern "C" void Gun_render(Gun *self);
-extern "C" void Explosion_render(Explosion *self);
 extern "C" void MatrixSetRotation(Matrix *dst, float x, float y, float z);
 extern "C" void Matrix_multiply_inplace(Matrix *self, const Matrix *rhs);
 extern "C" void MatrixSetTranslation(Matrix *dst, float x, float y, float z);
@@ -244,7 +237,7 @@ after_special_type:
 
     AEGeometry *geometry;
     if (gun->field_0xa8 == 0) {
-        if (Gun_isPlayerGun(gun) == 0 ||
+        if (((Gun *)(gun))->isPlayerGun() == 0 ||
             g_ObjectGunPlayerGunIds[gun->field_0x58] < 0) {
             geometry = 0;
             self->field_0x1c = 0;
@@ -301,14 +294,14 @@ void ObjectGun::update(int dt)
 
     this->field_0x34 = dt;
     Gun *gun = this->field_0x8;
-    Gun_update(gun, dt);
+    ((Gun *)(gun))->update(dt);
 
     if (this->field_0x1c == 0) {
-        if (Gun_isPlayerGun(gun) == 0) {
+        if (((Gun *)(gun))->isPlayerGun() == 0) {
             Player *owner = gun->field_0x4;
             if (owner != 0) {
-                Player *ki = Player_getKIPlayer(owner);
-                if (ki != 0 && F<uint8_t>(Player_getKIPlayer(owner), 0x3f) != 0) {
+                Player *ki = ((Player *)(owner))->getKIPlayer();
+                if (ki != 0 && F<uint8_t>(((Player *)(owner))->getKIPlayer(), 0x3f) != 0) {
                     this->field_0x1c = 1;
                     AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);
                     AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[this->field_0x8->field_0x58].id,
@@ -334,15 +327,15 @@ void ObjectGun::update(int dt)
 
     {
         Player *player = Level_getPlayer(this->field_0xc);
-        if (Gun_isPlayerGun(gun) != 0) {
-            PlayerEgo_getPosition(&position, player);
+        if (((Gun *)(gun))->isPlayerGun() != 0) {
+            ((PlayerEgo *)(&position))->getPosition();
         } else {
             Player_getPosition(&position, gun->field_0x4);
         }
 
         gun = this->field_0x8;
         void *matrixSource = player;
-        if (Gun_isPlayerGun(gun) == 0)
+        if (((Gun *)(gun))->isPlayerGun() == 0)
             matrixSource = (char *)gun + 0x4;
         __aeabi_memcpy(&playerMatrix, (char *)F<void *>(matrixSource, 0x0) + 0x4, 0x3c);
 
@@ -421,19 +414,17 @@ after_geometry:
         for (uint32_t i = 0; i < gun->field_0x8; ++i) {
             if (gun->field_0x40[i] != 0) {
                 if (this->field_0x30[i] != 0) {
-                    Explosion_start(explosion_at(this, i),
-                                    (Vector *)((char *)(__INTPTR_TYPE__)gun->field_0x30 + positionOffset),
-                                    &zero);
+                    ((Explosion *)(explosion_at(this, i)))->start((Vector *)((char *)(__INTPTR_TYPE__)gun->field_0x30 + positionOffset), &zero);
                     this->field_0x30[i] = 0;
                 }
                 Explosion *explosion = explosion_at(this, i);
                 Explosion_update(explosion, dt, 0);
-                if (Explosion_isPlaying(explosion) == 0) {
+                if (((Explosion *)(explosion))->isPlaying() == 0) {
                     gun = this->field_0x8;
                     gun->field_0x40[i] = 0;
                     gun->field_0x88 = 0;
                     this->field_0x30[i] = 1;
-                    Explosion_reset(explosion_at(this, i));
+                    ((Explosion *)(explosion_at(this, i)))->reset();
                 }
             }
             positionOffset += 0xc;
@@ -473,12 +464,12 @@ void ObjectGun::render()
     Vector side;
 
     Gun *gun = this->field_0x8;
-    Gun_render(gun);
+    ((Gun *)(gun))->render();
 
     if (gun->field_0x5c == 0x19) {
         for (uint32_t i = 0; i < gun->field_0x8; ++i) {
             if (gun->field_0x40[i] != 0) {
-                Explosion_render(render_explosion_at(this, i));
+                ((Explosion *)(render_explosion_at(this, i)))->render();
                 gun = this->field_0x8;
             }
         }
@@ -540,7 +531,7 @@ void ObjectGun::render()
                 } else if (this->field_0x24 == 0) {
                     Vector *base;
                     if (this->field_0xc == 0 || Level_getPlayer(this->field_0xc) == 0 ||
-                        Gun_isPlayerGun(gun) == 0) {
+                        ((Gun *)(gun))->isPlayerGun() == 0) {
                         up.x = 0.0f;
                         up.y = 1.0f;
                         up.z = 0.0f;

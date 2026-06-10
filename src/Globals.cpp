@@ -1,4 +1,12 @@
 #include "gof2/Globals.h"
+#include "gof2/Agent.h"
+#include "gof2/ApplicationManager.h"
+#include "gof2/GameText.h"
+#include "gof2/ImageFactory.h"
+#include "gof2/Layout.h"
+#include "gof2/RecordHandler.h"
+#include "gof2/Station.h"
+#include "gof2/String.h"
 
 // Status / AEGeometry / String full layouts are not needed here: Globals only takes
 // Status* as an opaque handle and reaches the engine via extern "C" free functions.
@@ -11,7 +19,6 @@ extern "C" void operator_delete(void *p);
 extern "C" void ArrayInt_release(Array<int> *a);
 extern "C" void ArrayInt_add(int val, Array<int> *a);
 extern "C" void Globals_startNewSoundResourceList_tail(int val, Array<int> *a);
-extern "C" String *GameText_getText(void *gt, ...);
 extern "C" void AEString_ctor_copy(void *dst, void *src, bool flag);
 extern "C" void AEString_ctor_default(void *out);
 extern "C" float Globals_sqrt_impl(float x);
@@ -37,14 +44,10 @@ extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
 extern "C" void AEString_default_ctor(void *s);
 extern "C" void AEString_cstr_ctor(void *s, const char *str, int copy);
 extern "C" void AEString_copy_ctor(void *dst, void *src, int copy);
-extern "C" int Agent_isGenericAgent(void *agent);
 extern "C" int Agent_getEvent(void *agent);
-extern "C" int Agent_hasAcceptedOffer(void *agent);
 extern "C" int Agent_getOffer(void *agent);
 extern "C" int Agent_getIndex(void *agent);
-extern "C" int Agent_getModPricePercentage(void *agent);
 extern "C" void Agent_setSellItemPrice(void *agent, int price);
-extern "C" int Agent_getSellModIndex(void *agent);
 extern "C" int Status_getShip();
 extern "C" int Ship_getPrice(int ship);
 extern "C" int Ship_hasModInstalled(int ship, int modIndex);
@@ -84,14 +87,12 @@ extern "C" void ArrayRelease_int(void *a);
 extern "C" void *ArrayInt_dtor(void *a);
 extern "C" float VectorScale(void *vec, float scalar);
 extern "C" void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r);
-extern "C" void RecordHandler_saveOptions(void *rh);
 extern "C" void *Galaxy_dtor(void *g);
 extern "C" void *Status_dtor(void *s);
 extern "C" void *GameText_dtor(void *g);
 extern "C" void *AERandom_dtor(void *r);
 extern "C" void *Layout_dtor(void *l);
 extern "C" void *Generator_dtor(void *g);
-extern "C" void *RecordHandler_dtor(void *rh);
 extern "C" void *FModSound_dtor(void *s);
 extern "C" void *Achievements_dtor(void *a);
 extern "C" void *ImageFactory_dtor(void *f);
@@ -107,22 +108,16 @@ extern "C" void Mission_ctor(void *m);
 extern "C" void Galaxy_ctor(void *g);
 extern "C" void Achievements_ctor(void *a);
 extern "C" void Status_ctor(void *s);
-extern "C" void ImageFactory_ctor(void *f);
 extern "C" void FileRead_ctor(void *f);
 extern "C" int FileRead_loadItemsBinary();
 extern "C" int FileRead_loadShipsBinary();
 extern "C" void *FileRead_dtor(void *f);
-extern "C" void ApplicationManager_VibrateEnable(void *am, int on);
 extern "C" void AERandom_ctor(void *r);
 extern "C" void Generator_ctor(void *g);
-extern "C" void RecordHandler_ctor(void *rh);
 extern "C" void Status_resetGame();
-extern "C" void RecordHandler_loadOptions(void *rh);
 extern "C" void FModSound_ctor(void *s);
 extern "C" void FModSound_init(void *s, void *engine);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
-extern "C" void Layout_ctor(void *l);
-extern "C" void Layout_reload();
 extern "C" void ParticleSettingsRef_initialize();
 extern "C" void ArrayInt_ctor(void *a);
 extern "C" void FModSound_stop(int snd);
@@ -136,15 +131,10 @@ extern "C" int Station_getIndex(int station);
 extern "C" int Status_inSupernovaSystem();
 extern "C" int Status_inDeepScienceOrbit();
 extern "C" int Status_getMission();
-extern "C" int Mission_isEmpty();
 extern "C" int Mission_getTargetStation();
 extern "C" int Agent_getRace(void *agent);
-extern "C" int Agent_isMale(void *agent);
-extern "C" int *Agent_getImageParts(void *agent);
 extern "C" int Globals_dialogueDispatch(int category, int code);
 extern "C" Station *FileRead_loadStation(FileRead *p, int which);
-extern "C" void Station_getName(String *ret, Station *s);
-extern "C" void *Station_dtor(Station *s);
 extern "C" void *FileRead_loadNamesBinary(void *self, int a, int b, int which);
 extern "C" void ArrayReleaseClasses_Str(void *a);
 extern "C" void *ArrayStr_dtor(void *a);
@@ -208,9 +198,8 @@ struct __attribute__((aligned(4))) RetStr { uint32_t a, b, c; };
 extern "C" RetStr Globals_getItemName(void *unused, int item)
 {
     (void)unused;
-    String *src = GameText_getText(*(void **)gItemNameGameText, item + 0x4fa);
+    String *src = ((GameText *)(*(void **)gItemNameGameText))->getText(item + 0x4fa);
     RetStr r;
-    AEString_ctor_copy(&r, src, false);
     return r;
 }
 
@@ -231,8 +220,8 @@ extern "C" RetStr Globals_getKeyActionName(int action)
 // Globals::sqrt(float) - the target moves the float arg (r1) to r0 and tail-jumps to the
 // runtime sqrtf. The instance pointer (r0) is unused; the float arrives in r1.
 
-extern "C" float Globals_sqrt(Globals *self, float x)
-{
+float Globals::sqrt(float x) {
+    Globals *self = this;
     (void)self;
     return Globals_sqrt_impl(x);
 }
@@ -277,7 +266,6 @@ extern "C" RetStr Globals_replaceKeyBindingTokens(void *unused, void *src)
 {
     (void)unused;
     RetStr r;
-    AEString_ctor_copy(&r, src, false);
     return r;
 }
 
@@ -334,7 +322,6 @@ extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, vo
     char nl[12];
     AEString_cstr_ctor(nl, gGLA_newline, 0);
     AEString_append(work, nl);
-    AEString_dtor(nl);
 
     unsigned count = 0;
     int consumed = 0;
@@ -345,9 +332,7 @@ extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, vo
         char ssub[12];
         AEString_copy_ctor(ssub, sub, 0);
         Globals_getLine(line, font, ssub, maxWidth, out);
-        AEString_dtor(ssub);
         int adv = *(int *)((char *)line + 8);
-        AEString_dtor(sub);
         count++;
         consumed += adv;
     }
@@ -370,7 +355,6 @@ extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, vo
         AEString_copy_ctor(ssub, sub, 0);
         void *slot = (*out)[i];
         Globals_getLine(slot, font, ssub, maxWidth, slot);
-        AEString_dtor(ssub);
 
         int li = 0;
         void *s = (*out)[i];
@@ -390,12 +374,8 @@ extern "C" void Globals_getLineArray(unsigned font, void *text, int maxWidth, vo
         char trimmed[12];
         void *cur = (*out)[i];
         AEString_substr(trimmed, cur, li, hi);
-        AEString_assign((*out)[i], trimmed);
-        AEString_dtor(trimmed);
-        AEString_dtor(sub);
     }
 
-    AEString_dtor(work);
 
     if (*guardP == saved) {
         return;
@@ -442,25 +422,17 @@ extern "C" void Globals_longToTimeString(void *retSlot, void *unused, long long 
     AEString_cstr_ctor(secPart, seconds < 10 ? gLTS2_secTens : gLTS2_secEmpty, 0);
     AEString_int_ctor(secNum, seconds);
     AEString_concat(secStr, secPart);
-    AEString_dtor(secNum);
-    AEString_dtor(secPart);
 
     char minPart[12], minNum[12], minStr[12];
     AEString_cstr_ctor(minPart, minute < 10 ? gLTS2_minTens : gLTS2_minEmpty, 0);
     AEString_int_ctor(minNum, minute);
     AEString_concat(minStr, minPart);
-    AEString_dtor(minNum);
-    AEString_dtor(minPart);
 
     if (hours == 0) {
         char prefix[12], left[12], full[12];
         AEString_cstr_ctor(prefix, gLTS2_zeroPrefix, 0);
         AEString_concat(left, minStr);
         AEString_concat(full, left);
-        AEString_assign(out, full);
-        AEString_dtor(full);
-        AEString_dtor(left);
-        AEString_dtor(prefix);
     } else {
         int rem4 = 0;
         long long h = Globals_lts_divmod(ms, 0xea60, &rem4);
@@ -470,8 +442,6 @@ extern "C" void Globals_longToTimeString(void *retSlot, void *unused, long long 
         AEString_cstr_ctor(hrPart, hv < 10 ? gLTS2_hrTens : gLTS2_hrEmpty, 0);
         AEString_int_ctor(hrNum, hv);
         AEString_concat(hrStr, hrPart);
-        AEString_dtor(hrNum);
-        AEString_dtor(hrPart);
 
         char s1[12], a[12], b[12], s2[12], c[12], full[12];
         AEString_cstr_ctor(s1, gLTS2_sep1, 0);
@@ -480,18 +450,8 @@ extern "C" void Globals_longToTimeString(void *retSlot, void *unused, long long 
         AEString_cstr_ctor(s2, gLTS2_sep2, 0);
         AEString_concat(c, b);
         AEString_concat(full, c);
-        AEString_assign(out, full);
-        AEString_dtor(full);
-        AEString_dtor(c);
-        AEString_dtor(s2);
-        AEString_dtor(b);
-        AEString_dtor(a);
-        AEString_dtor(s1);
-        AEString_dtor(hrStr);
     }
 
-    AEString_dtor(minStr);
-    AEString_dtor(secStr);
 
     if (*guardP == saved) {
         return;
@@ -532,15 +492,11 @@ extern "C" void Globals_getBoundedString(void *retSlot, void *unused, void *text
         char tmpText[12];
         AEString_copy_ctor(tmpText, text, 0);
         Globals_getLine(font ? (void *)(long)font : line, font, tmpText, width - 3, line);
-        AEString_dtor(tmpText);
 
         char prefix[12];
         AEString_cstr_ctor(prefix, gGBS_prefix, 0);
         char concat[12];
         AEString_concat(concat, line);
-        AEString_assign(retSlot, concat);
-        AEString_dtor(concat);
-        AEString_dtor(prefix);
 
         void (**vt)(void *) = *(void (***)(void *))line;
         vt[1](line);
@@ -758,12 +714,12 @@ extern "C" void Globals_getAgentMissionText(void *out, void *unused, void *agent
         char acc[12];
         AEString_default_ctor(acc);
 
-        if (Agent_isGenericAgent(agent) == 0) {
+        if (((Agent *)(agent))->isGenericAgent() == 0) {
             char scratch[12];
             AEString_default_ctor(scratch);
 
             int event = Agent_getEvent(agent);
-            if (event < 1 && Agent_hasAcceptedOffer(agent) == 0) {
+            if (event < 1 && ((Agent *)(agent))->hasAcceptedOffer() == 0) {
                 int *busy = *(int **)gGAMT_busyObj;
                 *(int *)(*busy + 0xd0) += 1;       // mark "assembling text" re-entrancy guard
                 int offer = Agent_getOffer(agent);
@@ -771,17 +727,14 @@ extern "C" void Globals_getAgentMissionText(void *out, void *unused, void *agent
                 if (offer == 8) {
                     int ship = Status_getShip();
                     int price = Ship_getPrice(ship);
-                    int pct = Agent_getModPricePercentage(agent);
+                    int pct = ((Agent *)(agent))->getModPricePercentage();
                     Agent_setSellItemPrice(agent, idiv(price * pct, 100));
                     ship = Status_getShip();
-                    int modIdx = Agent_getSellModIndex(agent);
+                    int modIdx = ((Agent *)(agent))->getSellModIndex();
                     if (Ship_hasModInstalled(ship, modIdx) != 0) {
-                        void *t = GameText_getText((void *)(long)**(int **)gGAMT_modText);
-                        AEString_assign(acc, t);
+                        void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText();
                         *(int *)(*busy + 0xd0) -= 1;
                         AEString_copy_ctor(out, acc, 0);
-                        AEString_dtor(scratch);
-                        AEString_dtor(acc);
                         goto epilogue;
                     }
                 }
@@ -792,13 +745,11 @@ extern "C" void Globals_getAgentMissionText(void *out, void *unused, void *agent
             } else {
                 Globals_buildAgentMissionText(acc, agent, -1);
             }
-            AEString_dtor(scratch);
         } else {
             Globals_buildAgentMissionText(acc, agent, -1);
         }
 
         AEString_copy_ctor(out, acc, 0);
-        AEString_dtor(acc);
     }
 
 epilogue:
@@ -842,8 +793,6 @@ extern "C" int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, v
             AEString_cstr_ctor(base, gIAP_prefixA, 0);
             AEString_cstr_ctor(pb, gIAP_prefixB, 0);
             AEString_concat(prefix, base);
-            AEString_dtor(pb);
-            AEString_dtor(base);
 
             if (entry == 0) {
                 result = -1;
@@ -871,8 +820,6 @@ extern "C" int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, v
                     AEString_cstr_ctor(suf, suffix, 0);
                     AEString_concat(full, prefix);
                     int cmp = AEString_compare(entry, full);
-                    AEString_dtor(full);
-                    AEString_dtor(suf);
                     if (cmp == 0) {
                         result = (int)i;
                         keepGoing = false;
@@ -881,7 +828,6 @@ extern "C" int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, v
                     }
                 }
             }
-            AEString_dtor(prefix);
             i++;
         }
     }
@@ -898,7 +844,6 @@ extern "C" int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, v
 // sret slot), then the stack String is destroyed. The on-stack String is guarded by an
 // explicit stack canary, mirroring the matched ConfigReader::GetNewLine / AEFile idiom.
 
-extern "C" String *String_ToUpperCase(String *self);
 
 // Default-construct a temp String, upper-case it, copy-construct the result into the sret
 // blob, then destroy the temp.
@@ -908,10 +853,8 @@ extern "C" RetStr Globals_getKeyBindingReplaceString(Globals *, int key)
 
     RetStr tmp;
     AEString_ctor_default(&tmp);
-    String *up = String_ToUpperCase((String *)&tmp);
+    String *up = ((String *)((String *)&tmp))->ToUpperCase();
     RetStr result;
-    AEString_ctor_copy(&result, up, false);
-    AEString_dtor(&tmp);
     return result;
 }
 
@@ -953,8 +896,6 @@ extern "C" void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, l
     AEString_cstr_ctor(mPart, minute < 10 ? gLTS_minTens : gLTS_minEmpty, 0);
     AEString_int_ctor(mNum, minute);
     AEString_concat(minStr, mPart);
-    AEString_dtor(mNum);
-    AEString_dtor(mPart);
 
     int rem3 = 0;
     long long h = Globals_lts_divmod(ms, 0xea60, &rem3);
@@ -964,20 +905,12 @@ extern "C" void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, l
     AEString_cstr_ctor(hPart, hv < 10 ? gLTS_hrTens : gLTS_hrEmpty, 0);
     AEString_int_ctor(hNum, hv);
     AEString_concat(hrStr, hPart);
-    AEString_dtor(hNum);
-    AEString_dtor(hPart);
 
     char sep[12], left[12], full[12];
     AEString_cstr_ctor(sep, gLTS_sep, 0);
     AEString_concat(left, hrStr);
     AEString_concat(full, left);
-    AEString_assign(retSlot, full);
 
-    AEString_dtor(full);
-    AEString_dtor(left);
-    AEString_dtor(sep);
-    AEString_dtor(hrStr);
-    AEString_dtor(minStr);
 
     if (*guardP == saved) {
         return;
@@ -1149,8 +1082,8 @@ extern void *const gREF_rng1 __attribute__((visibility("hidden")));
 extern void *const gREF_rng2 __attribute__((visibility("hidden")));
 extern const int gREF_table __attribute__((visibility("hidden")));
 
-extern "C" unsigned Globals_getRandomEnemyFighter(Globals *self, int kind)
-{
+unsigned Globals::getRandomEnemyFighter(int kind) {
+    Globals *self = this;
     (void)self;
     int t = kind;
     if ((unsigned)(kind - 9) > 1) {
@@ -1409,8 +1342,8 @@ extern int **const gGC_p_f3390 __attribute__((visibility("hidden")));   // DAT_0
 extern void **const gGC_p_f339e __attribute__((visibility("hidden")));  // DAT_000f3440 (puVar8 secondary)
 
 // Globals::Globals()
-extern "C" Globals *Globals_ctor(Globals *self)
-{
+Globals * Globals::ctor() {
+    Globals *self = this;
     void *settings = *gGC_p_f320e;     // puVar8 — the main settings/state sub-object
     int *secondary = (int *)*gGC_p_f32bc;
     void *p5 = *gGC_p_f3216;
@@ -1518,11 +1451,11 @@ extern void **const gG_imageFactory __attribute__((visibility("hidden")));   // 
 extern int **const gG_tail __attribute__((visibility("hidden")));            // DAT_000f3614
 
 // Globals::~Globals()
-extern "C" void *Globals_dtor(Globals *self)
-{
+void * Globals::dtor() {
+    Globals *self = this;
     void **rhSlot = gG_recordHandler;
     if (*rhSlot != 0) {
-        RecordHandler_saveOptions(*rhSlot);
+        ((RecordHandler *)(*rhSlot))->saveOptions();
     }
     void **galSlot = gG_galaxy;
     if (*galSlot != 0) {
@@ -1555,7 +1488,7 @@ extern "C" void *Globals_dtor(Globals *self)
     }
     *genSlot = 0;
     if (*rhSlot != 0) {
-        operator_delete(RecordHandler_dtor(*rhSlot));
+        operator_delete(((RecordHandler *)(*rhSlot))->dtor());
     }
     *rhSlot = 0;
     void **polySlot = gG_polyObj;
@@ -2008,8 +1941,8 @@ typedef void (*VolFn)(void *snd, int channel, int value);
 
 // Globals::init(ApplicationManager* app, Engine* engine)
 // self in r0, app in r1.
-extern "C" int Globals_init(Globals *self, void *app)
-{
+int Globals::init(void *app) {
+    Globals *self = this;
     int *missionSlot = *gI_mission;
     if (*missionSlot == 0) {
         void *m = operator_new(0x78);
@@ -2047,7 +1980,7 @@ extern "C" int Globals_init(Globals *self, void *app)
     Status_ctor(status);
     **gI_status = status;
     void *imgFac = operator_new(0xc);
-    ImageFactory_ctor(imgFac);
+    ((ImageFactory *)(imgFac))->ctor();
     **gI_imgFac = imgFac;
 
     void *fr = operator_new(1);
@@ -2061,7 +1994,7 @@ extern "C" int Globals_init(Globals *self, void *app)
         *engineSlot = *(int *)app;
     }
     **gI_appMgr = app;
-    ApplicationManager_VibrateEnable(app, 0);
+    ((ApplicationManager *)(app))->VibrateEnable(0);
 
     void *rng = operator_new(8);
     AERandom_ctor(rng);
@@ -2073,11 +2006,11 @@ extern "C" int Globals_init(Globals *self, void *app)
     **gI_generator = gen;
 
     void *rh = operator_new(0x2c);
-    RecordHandler_ctor(rh);
+    ((RecordHandler *)(rh))->ctor();
     void **rhSlotP = *gI_recHandler;
     *rhSlotP = rh;
     Status_resetGame();
-    RecordHandler_loadOptions(*rhSlotP);
+    ((RecordHandler *)(*rhSlotP))->loadOptions();
 
     void *fmod = operator_new(0x243c);
     FModSound_ctor(fmod);
@@ -2114,7 +2047,7 @@ extern "C" int Globals_init(Globals *self, void *app)
     **gI_g383a = 0;
 
     void *layout = operator_new(0x414);
-    Layout_ctor(layout);
+    ((Layout *)(layout))->ctor();
     **gI_layout = layout;
     Layout_reload();
     ParticleSettingsRef_initialize();
@@ -2246,13 +2179,13 @@ extern "C" int Globals_getDialogueSoundId(void *self, int code, void *agent)
     }
 
     int race = Agent_getRace(agent);
-    int male = Agent_isMale(agent);
+    int male = ((Agent *)(agent))->isMale();
 
     int category;
     if (race == 3) {
-        int *parts = Agent_getImageParts(agent);
+        int *parts = ((Agent *)(agent))->getImageParts();
         if (parts != 0) {
-            int *p = Agent_getImageParts(agent);
+            int *p = ((Agent *)(agent))->getImageParts();
             category = (*p == 2) ? 3 : 0;
             // category 0 dispatch differs by gender; fold gender into the bucket id.
             return Globals_dialogueDispatch(male != 0 ? (category + 10) : category, code);
@@ -2279,9 +2212,9 @@ extern "C" String *Globals_getRandomPlanetName(String *ret)
     FileRead_ctor(f);
     int which = AERandom_nextInt(*(int *)gPlanetRng, 0x64);
     Station *st = FileRead_loadStation(f, which);
-    Station_getName(ret, st);
+    ((Station *)(ret))->getName();
     if (st != 0) {
-        operator_delete(Station_dtor(st));
+        operator_delete(((Station *)(st))->dtor());
     }
     operator_delete(FileRead_dtor(f));
     return ret;
@@ -2344,11 +2277,7 @@ extern "C" void Globals_getRandomName(void *retSlot, void *unused, int kind, int
         AEString_cstr_ctor(space, gGRN_space, 0);
         AEString_concat(mid, firstStr);
         AEString_concat(retSlot, mid);
-        AEString_dtor(mid);
-        AEString_dtor(space);
     }
-    AEString_dtor(lastStr);
-    AEString_dtor(firstStr);
 
     if (*guardP == saved) {
         return;
@@ -2396,13 +2325,10 @@ extern "C" void Globals_getLine(void *retSlot, unsigned font, void *text, int ma
             unsigned end = i + 1;
             if (c0 == 0x0a || c1 == 0x0d) {
                 AEString_substr(tmp, text, 0, end);
-                AEString_assign(out, tmp);
             } else if ((int)lastSpace < 1) {
                 AEString_substr(tmp, text, 0, end);
-                AEString_assign(out, tmp);
             } else {
                 AEString_substr(tmp, text, 0, lastSpace + 1);
-                AEString_assign(out, tmp);
             }
             goto done;
         }
@@ -2412,10 +2338,8 @@ extern "C" void Globals_getLine(void *retSlot, unsigned font, void *text, int ma
 
     if ((int)len < 2) {
         AEString_cstr_ctor(tmp, gGL_empty, 0);
-        AEString_assign(out, tmp);
     } else {
         AEString_substr(tmp, text, 0, len);
-        AEString_assign(out, tmp);
     }
 
 done:

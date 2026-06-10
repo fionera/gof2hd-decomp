@@ -43,8 +43,8 @@ extern "C" AEMath::BSphere *_ZN11AbyssEngine6AEMath7BSphereaSERKS1_(
 extern "C" AEMath::Vector *_ZN11AbyssEngine6AEMath6VectoraSERKS1_(
     AEMath::Vector *self, const AEMath::Vector *other);
 
-Mesh *Mesh_ctor(Mesh *self, Mesh *src)
-{
+Mesh * Mesh::ctor(Mesh *src) {
+    Mesh *self = this;
     // Initialize the embedded BSphere at +0x3c.
     self->field_0x3c = 0.0f;
     self->field_0x40 = kBSphereInit[1];
@@ -120,7 +120,7 @@ Mesh *Mesh_ctor(Mesh *self, Mesh *src)
 // Exported under the mangled copy-ctor symbol.
 extern "C" void *_ZN11AbyssEngine4MeshC1EPS0_(void *self, void *src)
 {
-    return AbyssEngine::Mesh_ctor((AbyssEngine::Mesh *)self, (AbyssEngine::Mesh *)src);
+    return AbyssEngine::((Mesh *)((AbyssEngine::Mesh *)self))->ctor((AbyssEngine::Mesh *)src);
 }
 
 // ---- ReadEnhancedDataFromFile_6bbec.cpp ----
@@ -206,8 +206,8 @@ static bool readScalarTrack(int file, Transform *anim, float *maxSlot,
     return true;
 }
 
-int Mesh_ReadEnhancedDataFromFile(Mesh *self, unsigned int file, unsigned int flags)
-{
+int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
+    Mesh *self = this;
     Transform *anim = (Transform *)operator new(0x180);
     _ZN11AbyssEngine9TransformC1Ev(anim);
 
@@ -316,5 +316,5 @@ fail:
 extern "C" void _ZN11AbyssEngine4Mesh24ReadEnhancedDataFromFileEjj(
     void *self, unsigned int file, unsigned int flags)
 {
-    AbyssEngine::Mesh_ReadEnhancedDataFromFile((AbyssEngine::Mesh *)self, file, flags);
+    AbyssEngine::((Mesh *)((AbyssEngine::Mesh *)self))->ReadEnhancedDataFromFile(file, flags);
 }

@@ -1,4 +1,5 @@
 #include "gof2/TexOnlyShader.h"
+#include "gof2/String.h"
 
 // Engine / Mesh are opaque here; their fields are accessed by raw offset since
 // their real layouts live in other (non-batch) classes.
@@ -71,9 +72,9 @@ TexOnlyShader::TexOnlyShader()
     this->field_0x0 = (void *)((char *)g_TexOnlyShader_vtable + 8);
     g_TexOnlyShader_shaderIndex = g_ShaderBaseStruct_shaderIndexIntern;
     String tmp;
-    String_ctor_char(&tmp, "TexOnlyShader", false);
-    String_assign(&this->field_0xc, &tmp);
-    String_dtor(&tmp);
+    ((String *)(&tmp))->ctor_char("TexOnlyShader", false);
+    ((String *)(&this->field_0xc))->assign(&tmp);
+    ((String *)(&tmp))->dtor();
 
     uint32_t guardDelta = (uint32_t)((__UINTPTR_TYPE__)*guard - (__UINTPTR_TYPE__)cookie);
     if (guardDelta != 0) {

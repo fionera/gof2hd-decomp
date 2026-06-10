@@ -9,8 +9,8 @@ extern "C" void SpriteGun_Gun_setEnemy(void *base);
 // ---- update_169abe.cpp ----
 // SpriteGun::update(int) — load this->field_8, tail-call Gun::update on the base.
 
-extern "C" void SpriteGun_update(SpriteGun *this_)
-{
+void SpriteGun::update() {
+    SpriteGun *this_ = this;
     return SpriteGun_Gun_update(this_->field_0x8);
 }
 
@@ -18,8 +18,8 @@ extern "C" void SpriteGun_update(SpriteGun *this_)
 // SpriteGun::setEnemies(Array<Player*>*) — load arg->field_8, tail-call the
 // underlying Gun::setEnemies on the embedded base object.
 
-extern "C" void SpriteGun_setEnemies(SpriteGun *this_)
-{
+void SpriteGun::setEnemies() {
+    SpriteGun *this_ = this;
     return SpriteGun_Gun_setEnemies(this_->field_0x8);
 }
 
@@ -29,8 +29,8 @@ extern "C" void SpriteGun_setEnemies(SpriteGun *this_)
 // single dereference; the two word stores fuse into a single strd.
 __attribute__((visibility("hidden"))) extern "C" char *const g_SpriteGun;
 
-extern "C" void SpriteGun_SpriteGun(SpriteGun *this_, Gun *param_1, int param_2)
-{
+void SpriteGun::SpriteGun(Gun *param_1, int param_2) {
+    SpriteGun *this_ = this;
     this_->field_0x0 = g_SpriteGun + 8;
     this_->field_0x4 = 0;
 }
@@ -38,7 +38,7 @@ extern "C" void SpriteGun_SpriteGun(SpriteGun *this_, Gun *param_1, int param_2)
 // ---- setEnemy_169aca.cpp ----
 // SpriteGun::setEnemy(Player*) — load arg->field_8, tail-call Gun::setEnemy on base.
 
-extern "C" void SpriteGun_setEnemy(SpriteGun *this_)
-{
+void SpriteGun::setEnemy() {
+    SpriteGun *this_ = this;
     return SpriteGun_Gun_setEnemy(this_->field_0x8);
 }

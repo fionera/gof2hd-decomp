@@ -28,6 +28,9 @@ struct SimpleMeshMerger {
     void* f_14; // 0x14
     int f_18; // 0x18
     int f_1c; // 0x1c
+
+    // ---- methods (converted from free functions) ----
+    SimpleMeshMerger * ctor(unsigned *meshIds, unsigned *transforms, void *canvas, float factor);
 };
 
 namespace AbyssEngine {

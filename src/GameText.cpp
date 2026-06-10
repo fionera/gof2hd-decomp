@@ -13,8 +13,6 @@ extern "C" void  AEString_dtor(void *s);
 extern "C" char *AEString_GetAEChar(void *s);
 extern "C" int   _ZN11AbyssEngine6AEFile9FileExistERKNS_6StringE(void *path);
 extern "C" void  _ZN11AbyssEngine6AEFile8OpenReadERKNS_6StringEPj(void *path, unsigned int *fileOut);
-extern "C" void  GameText_ReadLangFile(GameText *self, unsigned int file, int count);
-extern "C" void GameText_release(GameText *self);
 extern "C" void operator_delete_arr(void *p);
 extern "C" void AEString_dtor(void *s);
 extern "C" GameText *GameText_dtor_tail(GameText *self);
@@ -26,7 +24,6 @@ extern "C" __attribute__((visibility("hidden"))) unsigned short *g_GameText_lang
 extern "C" void  AEString_ctor_wide(void *s, const unsigned short *text, bool copy);
 extern "C" void  AEString_SubString(void *out, void *s, unsigned int a, unsigned int b);
 extern "C" void *memcpy(void *, const void *, unsigned long);
-extern "C" void GameText_setLanguage_si(GameText *self, int lang, int param);
 extern "C" int   _ZN11AbyssEngine6AEFile4ReadEjPvj(int size, void *dst, unsigned int file);
 extern "C" void  _ZN11AbyssEngine6AEFile5CloseEj(unsigned int file);
 extern "C" unsigned short *_ZN11AbyssEngine6String15getWCharFromUtf8EPcj(char *utf8, unsigned int len);
@@ -34,8 +31,8 @@ extern "C" void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 
 // ---- release_8174e.cpp ----
 // GameText::release() -- destroys each owned text-table entry via its vtable[1], then nulls it.
-extern "C" void GameText_release(GameText *self)
-{
+void GameText::release() {
+    GameText *self = this;
     void **data = (void **)self->field_0xc;
     if (data == 0) return;
     int i = 0;
@@ -79,8 +76,8 @@ extern "C" RetStr GameText_getRegionCode()
 
 // ---- setSubstituteArray_817a0.cpp ----
 // GameText::setSubstituteArray(int*, unsigned) -- replaces the substitute Array<int> at this+0.
-extern "C" void GameText_setSubstituteArray(GameText *self, int *param_1, unsigned param_2)
-{
+void GameText::setSubstituteArray(int *param_1, unsigned param_2) {
+    GameText *self = this;
     Arr *a = (Arr *)self;
     if (param_2 != 0) {
         if ((param_2 & 1) != 0) return;
@@ -113,12 +110,12 @@ __attribute__((visibility("hidden"))) extern const char *gLangPaths[17];
 __attribute__((visibility("hidden"))) extern const char gLangPathDefault[];
 __attribute__((visibility("hidden"))) extern const char gLangPathEnglish[];
 
-extern "C" void GameText_setLanguage_si(GameText *self, int stringCount, int langId)
-{
+void GameText::setLanguage_si(int stringCount, int langId) {
+    GameText *self = this;
     if ((unsigned int)*g_langCode == ((unsigned int)langId & 0xffff))
         return;
 
-    GameText_release(self);
+    ((GameText *)(self))->release();
     i32(self, 0x1c) = stringCount;
 
     String **table = (String **)operator new[]((uint32_t)((unsigned long long)stringCount * 4));
@@ -154,8 +151,6 @@ extern "C" void GameText_setLanguage_si(GameText *self, int stringCount, int lan
     {
         String tmp;
         AEString_ctor_cstr(&tmp, p, false);
-        AEString_assign(&path, &tmp);
-        AEString_dtor(&tmp);
     }
     *g_langCode = code;
 
@@ -164,15 +159,12 @@ extern "C" void GameText_setLanguage_si(GameText *self, int stringCount, int lan
         operator delete[](AEString_GetAEChar(&path));
         String eng;
         AEString_ctor_cstr(&eng, gLangPathEnglish, false);
-        AEString_assign(&path, &eng);
-        AEString_dtor(&eng);
         *g_langCode = 0;
     }
 
     unsigned int file = 0;
     _ZN11AbyssEngine6AEFile8OpenReadERKNS_6StringEPj(&path, &file);
-    GameText_ReadLangFile(self, 0, stringCount);
-    AEString_dtor(&path);
+    ((GameText *)(self))->ReadLangFile(0, stringCount);
 }
 
 // ---- _GameText_81726.cpp ----
@@ -181,11 +173,10 @@ extern "C" void GameText_setLanguage_si(GameText *self, int stringCount, int lan
 // GameText::~GameText() -> releases owned text table + string, tail-calls base dtor.
 extern "C" GameText *_ZN8GameTextD2Ev(GameText *self)
 {
-    GameText_release(self);
+    ((GameText *)(self))->release();
     void *p = self->field_0xc;
     if (p != 0) operator_delete_arr(p);
     self->field_0xc = 0;
-    AEString_dtor((char *)self + 0x10);
     return GameText_dtor_tail(self);
 }
 
@@ -217,8 +208,8 @@ extern "C" int GameText_isNonArabicString(const unsigned short *param_1, unsigne
 extern const char gInitLangStr[] __attribute__((visibility("hidden")));
 
 // GameText::GameText() -- inits substitute Array<int>, region String, default language string.
-extern "C" void GameText_ctor(GameText *self)
-{
+void GameText::ctor() {
+    GameText *self = this;
     Array_int_ctor(self);
     AEString_ctor_default((char *)self + 0x10);
     *g_GameText_langReset = 0xffff;
@@ -226,8 +217,6 @@ extern "C" void GameText_ctor(GameText *self)
     i32(self, 0x1c) = 0;
     String tmp;
     AEString_ctor_cstr(&tmp, gInitLangStr, false);
-    AEString_assign((char *)self + 0x10, &tmp);
-    AEString_dtor(&tmp);
 }
 
 // ---- convertStringFromArabic_7efe0.cpp ----
@@ -283,7 +272,6 @@ extern "C" void GameText_convertStringFromArabic(void *out, int pad, void *in)
             AEString_ctor_wide(out, buf, false);
             if (buf != 0)
                 operator delete[](buf);
-            AEString_dtor(&work);
             return;
         }
 
@@ -305,10 +293,7 @@ extern "C" void GameText_convertStringFromArabic(void *out, int pad, void *in)
                 String merged;
                 AEString_ctor_wide(&merged, buf, false);
                 String head, tail;
-                AEString_SubString(&head, &merged, 0, i - 1);
-                AEString_SubString(&tail, &merged, i + 1, len);
                 AEString_append(&head, &tail);
-                AEString_dtor(&tail);
 
                 if (buf != 0)
                     operator delete[](buf);
@@ -317,8 +302,6 @@ extern "C" void GameText_convertStringFromArabic(void *out, int pad, void *in)
                 unsigned int mCap = (mLen + 1) * 2;
                 buf = (unsigned short *)operator new[](mCap);
                 memcpy(buf, AEString_data(&head), (unsigned long)(mLen * 2 + 2));
-                AEString_dtor(&head);
-                AEString_dtor(&merged);
                 --i;
             }
 
@@ -365,9 +348,9 @@ extern "C" void GameText_convertStringFromArabic(void *out, int pad, void *in)
 // Tail veneer to GameText::setLanguage(short, int).
 
 // GameText::setLanguage(int) -> forwards to setLanguage(0, param_1).
-extern "C" void GameText_setLanguage_i(GameText *self, int param_1)
-{
-    return GameText_setLanguage_si(self, 0, param_1);
+void GameText::setLanguage_i(int param_1) {
+    GameText *self = this;
+    return ((GameText *)(self))->setLanguage_si(0, param_1);
 }
 
 // ---- getText_81818.cpp ----
@@ -389,8 +372,8 @@ __attribute__((visibility("hidden"))) extern const char gLang5000Fallback[];
 __attribute__((visibility("hidden"))) extern const char gLang5001Primary[];
 __attribute__((visibility("hidden"))) extern const char gLang5001Fallback[];
 
-extern "C" void *GameText_getText(GameText *self, int key)
-{
+void * GameText::getText(int key) {
+    GameText *self = this;
     if (key == 5000) {
         static String s5000;   // function-local guarded static
         const char *txt = (*g_langCode != 1) ? gLang5000Fallback : gLang5000Primary;
@@ -440,8 +423,8 @@ void *operator new[](__SIZE_TYPE__);
 // Active language code; 9 == Arabic.
 __attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
 
-extern "C" void GameText_ReadLangFile(GameText *self, unsigned int file, int count)
-{
+void GameText::ReadLangFile(unsigned int file, int count) {
+    GameText *self = this;
     if (file == 0)
         return;
 
@@ -449,7 +432,7 @@ extern "C" void GameText_ReadLangFile(GameText *self, unsigned int file, int cou
     for (int i = 0; i < count; ++i) {
         unsigned short len;
         if (_ZN11AbyssEngine6AEFile4ReadEjPvj(2, &len, file) == 0) {
-            GameText_release(self);
+            ((GameText *)(self))->release();
             break;
         }
         // Length field is stored big-endian; byte-swap to host order.
@@ -458,7 +441,7 @@ extern "C" void GameText_ReadLangFile(GameText *self, unsigned int file, int cou
         char *utf8 = (char *)operator new[](byteLen + 1);
         if (_ZN11AbyssEngine6AEFile4ReadEjPvj((int)byteLen, utf8, file) == 0) {
             operator delete[](utf8);
-            GameText_release(self);
+            ((GameText *)(self))->release();
             break;
         }
         utf8[byteLen] = '\0';
@@ -472,7 +455,6 @@ extern "C" void GameText_ReadLangFile(GameText *self, unsigned int file, int cou
             AEString_ctor_wide(&tmp, wide, false);
             GameText_convertStringFromArabic(s, 0, &tmp);
             table[i] = s;
-            AEString_dtor(&tmp);
         } else {
             AEString_ctor_wide(s, wide, false);
             table[i] = s;

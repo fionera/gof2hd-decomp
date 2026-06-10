@@ -1,4 +1,5 @@
 #include "gof2/VertexColorShader.h"
+#include "gof2/String.h"
 
 
 extern "C" void glDisableVertexAttribArray(unsigned int index);
@@ -82,9 +83,9 @@ VertexColorShader::VertexColorShader()
 
     // name = String("VertexColorShader", false); this->field_0xc = name; ~name.
     String name;
-    String_ctor_char(&name, "VertexColorShader", false);
-    String_assign(&this->field_0xc, &name);
-    String_dtor(&name);
+    ((String *)(&name))->ctor_char("VertexColorShader", false);
+    ((String *)(&this->field_0xc))->assign(&name);
+    ((String *)(&name))->dtor();
 }
 
 } // namespace AbyssEngine

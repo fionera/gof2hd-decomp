@@ -1,7 +1,12 @@
 #include "gof2/AutoPilotList.h"
+#include "gof2/GameText.h"
+#include "gof2/PlayerEgo.h"
+#include "gof2/Route.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/Station.h"
+#include "gof2/String.h"
 
 
-extern "C" void String_ctor_copy(void *out, const void *src, bool);
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
 
 // ---- touch_1314d0.cpp ----
@@ -10,7 +15,8 @@ extern "C" void _ZN13AutoPilotList4downEv(AutoPilotList *self);   // AutoPilotLi
 // AutoPilotList::touch(int p1, int p2) -> selected index, or -1 if the touch is outside
 // the list window. On a hit, resets the selection to the top then steps down to the row
 // that was touched.
-extern "C" int AutoPilotList_touch(AutoPilotList *self, int p1, int p2) {
+int AutoPilotList::touch(int p1, int p2) {
+    AutoPilotList *self = this;
     int row;
     if (p1 < self->field_0x4 ||
         self->field_0x4 + self->field_0xc <= p1 ||
@@ -65,12 +71,13 @@ extern const char kEmpty[] __attribute__((visibility("hidden")));
 // AutoPilotList::getTargetString() -> String by value (sret in r0, this in r1).
 // Returns a copy of the selected entry's String if the index is in range, else the
 // fallback literal.
-extern "C" RetStr AutoPilotList_getTargetString(AutoPilotList *self) {
+RetStr AutoPilotList::getTargetString() {
+    AutoPilotList *self = this;
     RetStr r;
     int idx = self->field_0x0;
     Array<void *> *entries = ((Array<void *> *)self->field_0x10);
     if (idx >= 0 && (uint32_t)idx < entries->size())
-        String_ctor_copy(&r, entries->data()[idx], false);
+        ((String *)(&r))->ctor_copy(entries->data()[idx], false);
     else
         String_ctor_cstr(&r, kEmpty, false);
     return r;
@@ -95,20 +102,19 @@ extern "C" void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
 namespace AbyssEngine { struct String; }
 using AbyssEngine::String;
 
-extern "C" String *GameText_getText(void *self, int id);                  // 0x72f70
+// 0x72f70
 extern "C" void Array_String_ctor(void *arr);                            // 0x6f628
 extern "C" void ArraySetLength_String(int n, void *arr);                 // 0x6fe08
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);     // 0x6ee18
-extern "C" void String_ctor_copy(void *out, const void *src, bool);
 extern "C" void String_plus(void *out, const void *a, const void *b);    // 0x6ef98 operator+
-extern "C" void Station_getName(void *out, void *station);               // 0x736a8
+// 0x736a8
 extern "C" void *Status_getSystem(void *status);                         // 0x71a10
-extern "C" int SolarSystem_currentOrbitHasWarpGate(void *system);        // 0x73c18
+// 0x73c18
 extern "C" int Status_inEmptyOrbit(void *status);                        // 0x73d20
 extern "C" void *Status_getStation(void *status);                        // 0x71c14
 extern "C" void *Level_getPlayer(void *level);                           // 0x72034
-extern "C" void *PlayerEgo_getRoute(void *player);                       // 0x768b8
-extern "C" void *Route_getLastWaypoint(void *route);                     // 0x71ee4
+// 0x768b8
+// 0x71ee4
 extern "C" int PaintCanvas_GetTextWidth(void *canvas, const String *s);  // 0x6faa8
 extern "C" void _ZN13AutoPilotList4downEv(AutoPilotList *self);          // down()
 
@@ -141,11 +147,11 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
 
     if (**g_APL_apFlag != 0) {
         String *s = (String *)operator new(0xc);
-        String *txt = GameText_getText(*g_APL_gametext, 0x222);
+        String *txt = ((GameText *)(*g_APL_gametext))->getText(0x222);
         char a[12], b[12], c[12];
         String_ctor_cstr(b, kApLit1, false);
         String_plus(c, txt, b);
-        Station_getName(a, *g_APL_status);
+        ((Station *)(a))->getName();
         String_plus(s, c, a);
         entryData(self)[0] = s;
         StringDtorFn d = g_APL_strDtor;
@@ -156,9 +162,9 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     }
 
     void *status = *g_APL_status;
-    if (SolarSystem_currentOrbitHasWarpGate(Status_getSystem(status)) != 0) {
+    if (((SolarSystem *)(Status_getSystem(status)))->currentOrbitHasWarpGate() != 0) {
         String *s = (String *)operator new(0xc);
-        String_ctor_copy(s, GameText_getText(*g_APL_gametext, 0x223), false);
+        ((String *)(s))->ctor_copy(((GameText *)(*g_APL_gametext))->getText(0x223), false);
         entryData(self)[1] = s;
         self->field_0x14 = self->field_0x14 + 1;
     }
@@ -166,10 +172,10 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     if (Status_inEmptyOrbit(status) == 0) {
         String *s = (String *)operator new(0xc);
         char a[12], b[12], c[12];
-        Station_getName(c, Status_getStation(status));
+        ((Station *)(c))->getName();
         String_ctor_cstr(b, kApLit2, false);
         String_plus(a, b, c);
-        String_plus(s, a, GameText_getText(*g_APL_gametext, 0x88));
+        String_plus(s, a, ((GameText *)(*g_APL_gametext))->getText(0x88));
         entryData(self)[2] = s;
         StringDtorFn d = g_APL_strDtor;
         d(a);
@@ -179,15 +185,15 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     }
 
     String *cancel = (String *)operator new(0xc);
-    String_ctor_copy(cancel, GameText_getText(*g_APL_gametext, 0x225), false);
+    ((String *)(cancel))->ctor_copy(((GameText *)(*g_APL_gametext))->getText(0x225), false);
     entryData(self)[3] = cancel;
     self->field_0x14 = self->field_0x14 + 1;
 
-    if (PlayerEgo_getRoute(Level_getPlayer(level)) != 0) {
-        void *route = PlayerEgo_getRoute(Level_getPlayer(level));
-        if (*((uint8_t *)Route_getLastWaypoint(route) + 0x130) == 0) {
+    if (((PlayerEgo *)(Level_getPlayer(level)))->getRoute() != 0) {
+        void *route = ((PlayerEgo *)(Level_getPlayer(level)))->getRoute();
+        if (*((uint8_t *)((Route *)(route))->getLastWaypoint() + 0x130) == 0) {
             String *s = (String *)operator new(0xc);
-            String_ctor_copy(s, GameText_getText(*g_APL_gametext, 0x23d), false);
+            ((String *)(s))->ctor_copy(((GameText *)(*g_APL_gametext))->getText(0x23d), false);
             entryData(self)[4] = s;
             self->field_0x14 = self->field_0x14 + 1;
         }
@@ -224,9 +230,8 @@ extern "C" void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
 namespace AbyssEngine { struct String; }
 using AbyssEngine::String;
 
-extern "C" String *GameText_getText(void *self, int id);                  // 0x72f70
-extern "C" void String_ctor_copy(void *dst, const void *src, bool);
-extern "C" void String_dtor(void *self);                                 // 0x6ee30
+// 0x72f70
+// 0x6ee30
 extern "C" void Layout_drawWindow(void *layout, const String *title, int x, int y,
                                   int w, int h);                          // 0x768d0
 extern "C" void PaintCanvas_DrawString(void *canvas, const String *font, void *text,
@@ -241,12 +246,12 @@ __attribute__((visibility("hidden"))) extern void **g_APL_canvas_draw;     // ->
 // AutoPilotList::draw() - draw the window frame plus one row per non-empty entry.
 void AutoPilotList::draw() {
     void *layout = *g_APL_layout_draw;
-    String *title = GameText_getText(*g_APL_gametext_draw, 0x23c);
+    String *title = ((GameText *)(*g_APL_gametext_draw))->getText(0x23c);
     char tmp[12];
-    String_ctor_copy(tmp, title, false);
+    ((String *)(tmp))->ctor_copy(title, false);
     Layout_drawWindow(layout, (String *)tmp, this->field_0x4, this->field_0x8,
                       this->field_0xc, this->field_0x14 * 0xf + 0x16);
-    String_dtor(tmp);
+    ((String *)(tmp))->dtor();
 
     int drawn = 0;
     void **canvasHolder = g_APL_canvas_draw;

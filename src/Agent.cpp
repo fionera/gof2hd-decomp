@@ -1,4 +1,5 @@
 #include "gof2/Agent.h"
+#include "gof2/String.h"
 
 using AbyssEngine::String12;
 
@@ -10,7 +11,6 @@ struct RetStr { uint32_t a, b, c; };
 struct VObj { void (*vt[8])(void *); };
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
-extern "C" void String_assign(void *dst, String12 src);
 extern "C" void *Agent_operator_new(uint32_t sz);
 extern "C" void Agent_operator_delete(void *p);
 extern "C" void *Array_StringPtr_dtor(void *arr);
@@ -18,59 +18,58 @@ extern "C" void Array_StringPtr_ctor(void *arr);
 extern "C" void ArrayAdd_StringPtr(void *str, void *arr);
 extern "C" void Agent_finishWingman(void);
 extern "C" __attribute__((nothrow)) void Agent_operator_delete_arr(void *p);
-extern "C" void String_dtor(void *s);
 
 // ---- getStationName_17770a.cpp ----
-extern "C" RetStr Agent_getStationName(Agent *self)
-{
+RetStr Agent::getStationName() {
+    Agent *self = this;
     RetStr r;
     String_copy_ctor(&r, (char *)self + 0x78, false);
     return r;
 }
 
 // ---- hasAcceptedOffer_1776f2.cpp ----
-extern "C" uint8_t Agent_hasAcceptedOffer(Agent *self)
-{
+uint8_t Agent::hasAcceptedOffer() {
+    Agent *self = this;
     return self->field_0x84;
 }
 
 // ---- isStoryAgent_17753a.cpp ----
-extern "C" bool Agent_isStoryAgent(Agent *self)
-{
+bool Agent::isStoryAgent() {
+    Agent *self = this;
     return self->field_0x58 == 0;
 }
 
 // ---- getWingmanNames_177670.cpp ----
-extern "C" void *Agent_getWingmanNames(Agent *self)
-{
+void * Agent::getWingmanNames() {
+    Agent *self = this;
     return self->field_0x90;
 }
 
 // ---- getImageParts_177556.cpp ----
-extern "C" int *Agent_getImageParts(Agent *self)
-{
+int * Agent::getImageParts() {
+    Agent *self = this;
     return self->field_0x88;
 }
 
 // ---- getMission_177566.cpp ----
 struct Mission;
 
-extern "C" Mission *Agent_getMission(Agent *self)
-{
+Mission * Agent::getMission() {
+    Agent *self = this;
     return self->field_0x8c;
 }
 
 // ---- setMission_177560.cpp ----
 struct Mission;
 
-extern "C" void Agent_setMission(Agent *self, Mission *mission)
-{
+void Agent::setMission(Mission *mission) {
+    Agent *self = this;
     self->field_0x8c = mission;
 }
 
 // ---- getSellModIndex_177732.cpp ----
-extern "C" int Agent_getSellModIndex(Agent *self)
-{
+int Agent::getSellModIndex() {
+    Agent *self = this;
     return self->field_0x94;
 }
 
@@ -79,22 +78,22 @@ extern "C" int Agent_getSellModIndex(Agent *self)
 
 // Agent::setStationName(String) — this in r0, String by value in r1..r3.
 // Tail-calls operator= on the field at +0x78.
-extern "C" void Agent_setStationName(Agent *self, String12 src)
-{
-    String_assign((char *)self + 0x78, src);
+void Agent::setStationName(String12 src) {
+    Agent *self = this;
+    ((String *)((char *)self + 0x78))->assign(src);
 }
 
 // ---- getMissionString_177676.cpp ----
-extern "C" RetStr Agent_getMissionString(Agent *self)
-{
+RetStr Agent::getMissionString() {
+    Agent *self = this;
     RetStr r;
     String_copy_ctor(&r, (char *)self + 0x6c, false);
     return r;
 }
 
 // ---- isMale_177524.cpp ----
-extern "C" uint8_t Agent_isMale(Agent *self)
-{
+uint8_t Agent::isMale() {
+    Agent *self = this;
     return self->field_0x50;
 }
 
@@ -103,8 +102,8 @@ extern "C" uint8_t Agent_isMale(Agent *self)
 
 // Returns String by value. The copy-ctor returns void, so the compiler cannot
 // assume r0 survives the call and must keep a frame + restore the sret pointer.
-extern "C" RetStr Agent_getName(Agent *self)
-{
+RetStr Agent::getName() {
+    Agent *self = this;
     RetStr r;
     String_copy_ctor(&r, (char *)self + 0x00, false);
     return r;
@@ -114,8 +113,8 @@ extern "C" RetStr Agent_getName(Agent *self)
 // 4-entry price table loaded PC-relative (table contents in local rodata).
 static const int kModPriceTable[4] = { 0, 0, 0, 0 };
 
-extern "C" int Agent_getModPricePercentage(Agent *self)
-{
+int Agent::getModPricePercentage() {
+    Agent *self = this;
     uint32_t i = self->field_0x94;
     if (i < 4)
         return kModPriceTable[i];
@@ -123,52 +122,52 @@ extern "C" int Agent_getModPricePercentage(Agent *self)
 }
 
 // ---- setOfferAccepted_1776f8.cpp ----
-extern "C" void Agent_setOfferAccepted(Agent *self, bool v)
-{
+void Agent::setOfferAccepted(bool v) {
+    Agent *self = this;
     self->field_0x84 = v;
 }
 
 // ---- nextEvent_177532.cpp ----
-extern "C" void Agent_nextEvent(Agent *self)
-{
+void Agent::nextEvent() {
+    Agent *self = this;
     self->field_0x54 = self->field_0x54 + 1;
 }
 
 // ---- hasReward_1776fe.cpp ----
-extern "C" uint8_t Agent_hasReward(Agent *self)
-{
+uint8_t Agent::hasReward() {
+    Agent *self = this;
     return self->field_0x85;
 }
 
 // ---- setImageParts_177550.cpp ----
-extern "C" void Agent_setImageParts(Agent *self, int *parts)
-{
+void Agent::setImageParts(int *parts) {
+    Agent *self = this;
     self->field_0x88 = parts;
 }
 
 // ---- isKnown_17756c.cpp ----
-extern "C" bool Agent_isKnown(Agent *self)
-{
+bool Agent::isKnown() {
+    Agent *self = this;
     return self->field_0x54 > 0;
 }
 
 // ---- isGenericAgent_177544.cpp ----
-extern "C" bool Agent_isGenericAgent(Agent *self)
-{
+bool Agent::isGenericAgent() {
+    Agent *self = this;
     return self->field_0x58 == 1;
 }
 
 // ---- getSystemName_17771e.cpp ----
-extern "C" RetStr Agent_getSystemName(Agent *self)
-{
+RetStr Agent::getSystemName() {
+    Agent *self = this;
     RetStr r;
     String_copy_ctor(&r, (char *)self + 0x18, false);
     return r;
 }
 
 // ---- giveRewardAtNextChat_177704.cpp ----
-extern "C" void Agent_giveRewardAtNextChat(Agent *self, bool v)
-{
+void Agent::giveRewardAtNextChat(bool v) {
+    Agent *self = this;
     self->field_0x85 = v;
 }
 
@@ -176,8 +175,8 @@ extern "C" void Agent_giveRewardAtNextChat(Agent *self, bool v)
 struct Triple { int a, b, c; };
 
 // target: adds r0,#0x34; stmia r0!,{r1,r2,r3}; bx lr  (returns this+0x40)
-extern "C" Triple *Agent_setSellItemData(Agent *self, int a, int b, int c)
-{
+Triple * Agent::setSellItemData(int a, int b, int c) {
+    Agent *self = this;
     Triple *p = (Triple *)((char *)self + 0x34);
     p->a = a;
     p->b = b;
@@ -188,8 +187,8 @@ extern "C" Triple *Agent_setSellItemData(Agent *self, int a, int b, int c)
 // final tail-called veneer (frees the incoming param array's backing)
 
 // Agent::setWingmanFriendNames(Array<String*>*) — this in r0, param in r1.
-extern "C" void Agent_setWingmanFriendNames(Agent *self, uint32_t *param)
-{
+void Agent::setWingmanFriendNames(uint32_t *param) {
+    Agent *self = this;
     VObj *f0c = (VObj *)self->field_0xc;
     if (f0c != 0)
         (*(void (**)(void *))((char *)f0c->vt[0] + 4))(f0c);
@@ -234,8 +233,8 @@ extern "C" void Agent_setWingmanFriendNames(Agent *self, uint32_t *param)
 }
 
 // ---- getWingmanName_177658.cpp ----
-extern "C" RetStr Agent_getWingmanName(Agent *self, int idx)
-{
+RetStr Agent::getWingmanName(int idx) {
+    Agent *self = this;
     void *src;
     if (idx == 1) {
         src = self->field_0xc;
@@ -250,9 +249,9 @@ extern "C" RetStr Agent_getWingmanName(Agent *self, int idx)
 }
 
 // ---- setSystemName_17772c.cpp ----
-extern "C" void Agent_setSystemName(Agent *self, String12 src)
-{
-    String_assign((char *)self + 0x18, src);
+void Agent::setSystemName(String12 src) {
+    Agent *self = this;
+    ((String *)((char *)self + 0x18))->assign(src);
 }
 
 // ---- _Agent_1774b8.cpp ----
@@ -284,12 +283,12 @@ __attribute__((minsize)) Agent::~Agent() noexcept(false)
 // String temp lifecycle helpers (compiler emits the canary via -fstack-protector).
 
 // Agent::setMissionString(String) — this in r0, source String* in r1.
-extern "C" void Agent_setMissionString(Agent *self, void *src)
-{
+void Agent::setMissionString(void *src) {
+    Agent *self = this;
     String12 tmp;
     String_copy_ctor(&tmp, src, false);
-    String_assign((char *)self + 0x6c, tmp);
-    String_dtor(&tmp);
+    ((String *)((char *)self + 0x6c))->assign(tmp);
+    ((String *)(&tmp))->dtor();
 }
 
 // ---- Agent_1773c4.cpp ----
@@ -297,16 +296,14 @@ extern "C" void *String_default_ctor(void *s);         // String::String() -> th
 
 // Agent::Agent(int kind, String name, int p4, int p5, int p6, bool p7,
 //              int p8, int p9, int p10, int p11)
-extern "C" Agent *Agent_ctor(Agent *self, unsigned kind, void *name,
-                             int p4, int p5, int p6, char p7,
-                             int p8, int p9, int p10, int p11)
-{
+Agent * Agent::ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11) {
+    Agent *self = this;
     void *s0 = String_default_ctor(self);
     String_default_ctor((char *)s0 + 0x18);
     String_default_ctor((char *)self + 0x6c);
     String_default_ctor((char *)self + 0x78);
     self->field_0x40 = kind;
-    String_assign(self, *(String12 *)name);
+    ((String *)(self))->assign(*(String12 *)name);
     self->field_0x44 = p4;
     self->field_0x48 = p5;
     self->field_0x4c = p6;
