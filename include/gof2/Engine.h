@@ -34,6 +34,7 @@ void MatrixGetGL(const Matrix &matrix, float *out);
     void DrawCloakFBO(FBOContainer *fbo);
     void DrawLine2D(int vertexCount, int count, bool strip);
     void DrawQuad(int x, int y, int width, int height);
+    void Engine();
     double * GetAccelValue();
     void GetDeviceInfo();
     uint32_t GetDisplayHeight();

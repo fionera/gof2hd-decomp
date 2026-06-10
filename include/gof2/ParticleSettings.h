@@ -38,5 +38,8 @@ struct ParticleSettings {
 
     ParticleSettings();
     ~ParticleSettings();
+
+    // ---- methods (converted from free functions) ----
+    int init();
 };
 #endif

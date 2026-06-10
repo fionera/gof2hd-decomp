@@ -31,6 +31,7 @@ static inline int32_t &i32(void *self, uint32_t off) { return *(int32_t *)((char
     void drawShip(int shipId, int x, int y);
     Arr * loadChar(int *param_1);
     void * loadImage(int row, int col, int frameBase);
+    void reload();
 }
 static inline uint32_t &u32(void *self, uint32_t off) { return *(uint32_t *)((char *)self + off); }
 static inline void *&pp(void *self, uint32_t off) { return *(void **)((char *)self + off); }

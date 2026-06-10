@@ -106,9 +106,10 @@ def update_header(cls):
             depth-=1
             if depth==0: break
         i+=1
+    body=t[m.end()-1:i+1]                         # only the struct's { ... } region
     decls=[]
     for v in sorted(BY_CLASS[cls], key=lambda x:x["method"]):
-        if re.search(r'\b%s\s*\('%re.escape(v["method"]), t): continue   # already declared
+        if re.search(r'\b%s\s*\('%re.escape(v["method"]), body): continue   # already a member decl
         decls.append(f'    {v["ret"]} {v["method"]}({", ".join(v["params_after_self"])});')
     if not decls: return 0
     ins="\n    // ---- methods (converted from free functions) ----\n"+"\n".join(decls)+"\n"

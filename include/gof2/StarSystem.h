@@ -22,6 +22,7 @@ static inline void *&P(void *p, unsigned off) {
     return *(void **)((char *)p + off);
 
     // ---- methods (converted from free functions) ----
+    StarSystem * StarSystem(int mode);
     Vector getLightDirection();
     void initLight();
     void render();
