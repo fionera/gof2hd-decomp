@@ -1,49 +1,49 @@
-# Galaxy on Fire 2 — matching decompilation
+# Galaxy on Fire 2 — native port
 
-A work-in-progress **matching decompilation** of the *Abyss Engine* + *Galaxy on Fire 2* game
-(Fishlabs, ~2012). Goal: C++ source that recompiles to byte-identical binaries, plus tooling
-for all the game's asset formats.
+A work-in-progress **native, runnable port** of the *Abyss Engine* + *Galaxy on Fire 2* game
+(Fishlabs, ~2012), recovered by decompiling the Android `libgof2hdaa.so` and rebuilding it as a
+modern 64-bit C++ program that runs on macOS.
 
-See `docs/DECOMP_NOTES.md` for the full reverse-engineering log and rationale.
+> This project began as a *byte-matching* decompilation (recompile to a binary-identical Android
+> `.so`). That work is preserved in git history; the tree was since collapsed into this single
+> CMake source tree focused on getting the game **running** natively. To browse the matching-era
+> sources/tooling: `git log` for the pre-restructure commits, or
+> `git checkout <commit> -- src/recovered tools matches.tsv`.
 
-## Layout
+See `docs/DECOMP_NOTES.md` for the full reverse-engineering log.
+
+## Layout (single CMake tree)
 ```
-include/   gof2_types.h        — recovered engine/game structs (32 structs, validated)
-src/       engine/  game/      — recovered C++, organized by subsystem
-tools/     aei.py gofbin.py    — asset tools (textures, data tables, strings)  [see tools/README.md]
-build/     flags.sh build_fn.sh extract_target.sh — per-function byte-match harness  [see build/README.md]
-docs/      DECOMP_NOTES.md unified_symbols.tsv
-Makefile                       — builds src/ with the exact original toolchain
+CMakeLists.txt        CMake project: library `gof2` + executable `gof2_host`
+CMakePresets.json     debug/release presets (CLion auto-configures from these)
+include/gof2/         foundation headers + one real-struct header per class
+    common.h            shared types: Array<T> == std::vector<T>, String (UTF-16 game class), aliases
+    math.h              3D math: AEMath::Vector / Matrix, Quaternion
+    fwd.h               forward declarations of every class
+    <Class>.h           real struct (named fields; no byte offsets)
+src/<Class>.cpp       one .cpp per class (188), the engine + game logic
+host/main.cpp         macOS entry point (Milestone 2 placeholder)
+tools/                rewrite_body.py, reconcile.py, build.sh, classmap/fieldmap.json
+docs/                 DECOMP_NOTES.md + reverse-engineering notes
+assets_ref/           reference assets (for Milestone 3 asset mounting)
 ```
 
-## Target & toolchain
-Primary matching target: **Android `libgof2hdaa.so` 2.0.16** (armeabi-v7a, Thumb-2), built with
-**NDK r18b / clang 7.0.2** — exactly reproducible. iOS 1.1.4 HD (unencrypted armv7) and iOS 1.0.5
-are co-references; Windows `GOF2.exe` is reference-only (content-cut; e.g. `items.bin` has 196
-records vs the full 233). The recovered C++ is shared across all platforms.
-
-## Build (in the OrbStack guest where the NDK lives)
+## Build
+Open the folder in **CLion** (it reads `CMakePresets.json` and configures automatically), or from a shell:
 ```
-make NDK=/opt/android-ndk-r18b        # compile src/ to objects
-make asm NDK=/opt/android-ndk-r18b    # emit .s for diffing against the target
+cmake --preset debug
+cmake --build cmake-build-debug --target gof2_host   # runnable placeholder today
+cmake --build cmake-build-debug --target gof2        # the engine/game library (cleanup ongoing)
 ```
+`compile_commands.json` is exported for clangd/CLion code intelligence. Requires a C++14 (gnu++14)
+clang; no external deps yet (SDL2/GLES2 arrive with the platform layer).
 
-## Matching workflow (per function)
-1. In Ghidra, read the decompiled function + apply recovered types.
-2. Author the C++ in `src/<subsystem>/`.
-3. `make asm` → compare to the target via `build/extract_target.sh <elf_vaddr> <n>`.
-4. Iterate source/flags until the disassembly matches (see `build/README.md`).
+## Roadmap
+- **M1 — compile/link**: every TU in `src/` compiles; resolve undefined symbols into the host. *(in progress: the byte-offset → real-struct cleanup is being applied class by class; most TUs compile.)*
+- **M2 — first frame**: real structs + entry point + window/GL (GLES2→OpenGL or ANGLE) + input.
+- **M3 — main menu**: asset mounting (`.aei` textures, `.bin` tables, shaders, sounds).
+- **M4 — playable**: fix logic bugs in coverage-mode functions → in-game.
 
-Proven: `src/engine/array.cpp::ArrayAdd` matches the target **15/15 instructions**.
-
-## Status (high level)
-- ✅ Ghidra project: 3 binaries imported, disassembled (Android Thumb coverage recovered
-  3780→221), demangled (Android 5054 / iOS 1252+209 symbols), Android types imported.
-- ✅ Asset tooling: `.aei` textures (1354 files, →PNG), `.bin` tables (names/items, schema-
-  validated), `.lang` strings (3385). FMOD via stock tools (see tools/README.md).
-- ✅ Byte-match harness + first matched functions (`Array<T>`: ArrayAdd/ArrayRemoveAll 100%, ArraySetLength 95.8%).
-- ✅ iOS function discovery (2407→7822); BSim pipeline (cross-compiler found low-yield — see ROADMAP).
-- ✅ **Automation pipeline** (`make verify`/`coverage`; `tools/{gofdiff.py,Gof2ExtractCtx.java,coverage.py,verify.sh,permuter/}`):
-  extract context → author → diff (MATCH %) → permute → register in `matches.tsv` → CI-gate.
-- 🚧 The long road: authoring matched source across the engine + game at volume. `make coverage`
-  tracks progress (currently 3 functions). Everything needed to scale it is in place.
+## Ground truth
+The original binary is loaded in Ghidra as `android_2.0.16_libgof2hdaa.so` (ARM32). It remains the
+authoritative reference for function signatures, struct field types, and behavior during the port.
