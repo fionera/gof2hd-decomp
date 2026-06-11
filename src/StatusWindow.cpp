@@ -32,20 +32,20 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StatusWindow_ach;
 // StatusWindow::~StatusWindow() -> returns this. Tears down the 4 owned Arrays.
 StatusWindow *_ZN12StatusWindowD2Ev(StatusWindow *self)
 {
-    void *p = self->field_0x4;
+    void *p = self->tabButtons;
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
-        void *q = self->field_0x4;
+        void *q = self->tabButtons;
         if (q != 0) operator_delete(Array_TouchButton_dtor(q));
     }
-    self->field_0x4 = 0;
-    p = self->field_0x8;
+    self->tabButtons = 0;
+    p = self->medalButtons;
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
-        void *q = self->field_0x8;
+        void *q = self->medalButtons;
         if (q != 0) operator_delete(Array_TouchButton_dtor(q));
     }
-    self->field_0x8 = 0;
+    self->medalButtons = 0;
     p = self->field_0xc;
     if (p != 0) {
         ArrayReleaseClasses_ImagePart(p);
@@ -53,13 +53,13 @@ StatusWindow *_ZN12StatusWindowD2Ev(StatusWindow *self)
         if (q != 0) operator_delete(Array_ImagePart_dtor(q));
     }
     self->field_0xc = 0;
-    p = self->field_0x10;
+    p = self->detailLines;
     if (p != 0) {
         ArrayReleaseClasses_String(p);
-        void *q = self->field_0x10;
+        void *q = self->detailLines;
         if (q != 0) operator_delete(Array_String_dtor(q));
     }
-    self->field_0x10 = 0;
+    self->detailLines = 0;
     return self;
 }
 
@@ -79,7 +79,7 @@ int StatusWindow::OnTouchMove(int param_1, int param_2) {
             int e = i32(self, 0x50) - param_2;
             if (e < 0) e = -e;
             if (e > 3) {
-                ((TouchButton *)(self->field_0x8->data[i32(self, 0x34)]))->setAlwaysPressed(0);
+                ((TouchButton *)(self->medalButtons->data[i32(self, 0x34)]))->setAlwaysPressed(0);
                 i32(self, 0x34) = -1;
                 layout = (Layout *)*lh;
             }
@@ -87,15 +87,15 @@ int StatusWindow::OnTouchMove(int param_1, int param_2) {
     }
     ((Layout *)(layout))->OnTouchMove(param_1, param_2);
     if (*g_SWm_btnFlag == 0) {
-        for (unsigned i = 0; i < self->field_0x4->size; ++i)
-            ((TouchButton *)(self->field_0x4->data[i]))->OnTouchMove(param_1, param_2);
+        for (unsigned i = 0; i < self->tabButtons->size; ++i)
+            ((TouchButton *)(self->tabButtons->data[i]))->OnTouchMove(param_1, param_2);
     }
     if (i32(self, 0x30) == 1) {
         void **holder = g_SWm_ach;
         int *medals = (int *)Achievements_getMedals(*holder);
         for (int i = 0; i < i32(self, 0x0); ++i) {
             if (medals[i] != 0 || ((Achievements *)(*holder))->isEliteMedal(i) != 0)
-                ((TouchButton *)(self->field_0x8->data[i]))->OnTouchMove(param_1, param_2);
+                ((TouchButton *)(self->medalButtons->data[i]))->OnTouchMove(param_1, param_2);
         }
     }
     return 0;
@@ -160,7 +160,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     Layout *layout = (Layout *)*(void **)g_swe_layout;
 
     f32(self, 0x48) = 1.0f;                       // DAT_16a494 == 1.0
-    self->field_0x54 = 0;
+    self->isDragging = 0;
     i32(self, 0x38) = newOff;
     i32(self, 0x40) = newOff;
     f32(self, 0x4c) = (absvy > 3) ? vf : 0.0f;    // DAT_16a490 == 0.0
@@ -266,18 +266,18 @@ int StatusWindow::OnTouchBegin(int param_1, int param_2) {
     i32(self, 0x50) = param_2;
     i32(self, 0x3c) = param_2;
     i32(self, 0x44) = 0;
-    self->field_0x54 = 1;
+    self->isDragging = 1;
     ((Layout *)(*lh))->OnTouchBegin(param_1, param_2);
     if (*g_StatusWindow_btnFlag == 0) {
-        for (unsigned i = 0; i < self->field_0x4->size; ++i)
-            ((TouchButton *)(self->field_0x4->data[i]))->OnTouchBegin(param_1, param_2);
+        for (unsigned i = 0; i < self->tabButtons->size; ++i)
+            ((TouchButton *)(self->tabButtons->data[i]))->OnTouchBegin(param_1, param_2);
     }
     if (i32(self, 0x30) == 1) {
         void **holder = g_StatusWindow_ach;
         int *medals = (int *)Achievements_getMedals(*holder);
         for (int i = 0; i < i32(self, 0x0); ++i) {
             if (medals[i] != 0 || ((Achievements *)(*holder))->isEliteMedal(i) != 0)
-                ((TouchButton *)(self->field_0x8->data[i]))->OnTouchBegin(param_1, param_2);
+                ((TouchButton *)(self->medalButtons->data[i]))->OnTouchBegin(param_1, param_2);
         }
     }
     return 0;
@@ -307,7 +307,7 @@ float StatusWindow::getRelativeScrollHeight() {
 void StatusWindow::update() {
     StatusWindow *self = this;
     // Velocity integration while not being dragged (+0x54 == drag flag).
-    if (self->field_0x54 == 0) {
+    if (self->isDragging == 0) {
         float v = f32(self, 0x48) * f32(self, 0x4c);
         f32(self, 0x4c) = v;
         // If |v| >= 1.0 keep scrolling: advance the integer scroll offset (+0x38).
@@ -892,7 +892,7 @@ StatusWindow * StatusWindow::ctor() {
     void *t0 = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
     int helpOff = layout->getHelpButtonOffset();
     TouchButton_ctor_tab(b0, t0, 3, layoutW - helpOff, 0, 0x12);
-    *(void **)(*(int *)(self->field_0x4 + 4) + 4) = b0;
+    *(void **)(*(int *)(self->tabButtons + 4) + 4) = b0;
 
     void *b1 = operator_new(200);
     void *t1 = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
@@ -900,11 +900,11 @@ StatusWindow * StatusWindow::ctor() {
     int w1 = ((TouchButton *)(b1))->getWidth();
     TouchButton_ctor_tab(b1, t1, 3,
                          ((layoutW - helpOff2) - w1) + layout->field_0x38, 0, 0x12);
-    *(void **)(self->field_0x4 + 4) = b1;
+    *(void **)(self->tabButtons + 4) = b1;
 
     unsigned int defTab = *g_sw_tabIndex;
     u32(self, 0x30) = defTab;
-    ((TouchButton *)(*(void **)(*(int *)(self->field_0x4 + 4) + defTab * 4)))->setAlwaysPressed(true);
+    ((TouchButton *)(*(void **)(*(int *)(self->tabButtons + 4) + defTab * 4)))->setAlwaysPressed(true);
 
     i32(self, 0x10) = 0;
     i32(self, 0x78) = layout->field_0x84;
@@ -923,7 +923,7 @@ StatusWindow * StatusWindow::ctor() {
         int medal = medalIds[i];
         void *txt = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
         TouchButton_ctor_medal(btn, i, medal, txt, 0, 0, 'D');
-        *(void **)(*(int *)(self->field_0x8 + 4) + i * 4) = btn;
+        *(void **)(*(int *)(self->medalButtons + 4) + i * 4) = btn;
     }
 
     ((StatusWindow *)(self))->reInit();

@@ -55,35 +55,35 @@ void Explosion::reset() {
     int *canvas = &Explosion_paintCanvas;
 
     Transform_SetAnimationState(
-        PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 3, 0);
+        PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 3, 0);
     Transform_SetAnimationState(
-        PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 1, 0);
+        PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 1, 0);
 
-    int lodTransform = I(self->field_0x4, 0x14);
+    int lodTransform = I(self->primaryMesh, 0x14);
     if (lodTransform != -1) {
         Transform_SetAnimationState(PaintCanvas_TransformGetTransform32(*canvas, lodTransform), 3, 0);
         Transform_SetAnimationState(
-            PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0x14)), 1, 0);
+            PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0x14)), 1, 0);
     }
 
-    AEGeometry *secondary = self->field_0x8;
+    AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
         Transform_SetAnimationState(
             PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc)), 3, 0);
         Transform_SetAnimationState(
-            PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x8, 0xc)), 1, 0);
+            PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)), 1, 0);
     }
 
-    if (self->field_0x0 == 6) {
+    if (self->type == 6) {
         Transform_SetAnimationRangeInTime(
-            PaintCanvas_TransformGetTransform(*canvas, I(self->field_0x4, 0xc)),
+            PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc)),
             0x8fcLL, 10000000LL);
         Transform_SetAnimationRangeInTime(
-            PaintCanvas_TransformGetTransform(*canvas, I(self->field_0x8, 0xc)),
+            PaintCanvas_TransformGetTransform(*canvas, I(self->secondaryMesh, 0xc)),
             0x8fcLL, 10000000LL);
     }
 
-    Array<AEGeometry *> *streaks = self->field_0xc;
+    Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
@@ -91,52 +91,52 @@ void Explosion::reset() {
                 PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 3, 0);
             Transform_SetAnimationState(
                 PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 1, 0);
-            streaks = self->field_0xc;
+            streaks = self->fireStreaks;
         }
     }
 
-    self->field_0x18 = 0;
-    self->field_0x20 = 0;
+    self->elapsed = 0;
+    self->playing = 0;
 }
 
 // ---- _Explosion_a80d8.cpp ----
 Explosion *_ZN9ExplosionD2Ev(Explosion *self)
 {
-    AEGeometry *geometry = self->field_0x4;
+    AEGeometry *geometry = self->primaryMesh;
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    self->field_0x4 = 0;
+    self->primaryMesh = 0;
 
-    geometry = self->field_0x8;
+    geometry = self->secondaryMesh;
     if (geometry != 0) {
         operator_delete(AEGeometry_dtor(geometry));
     }
-    self->field_0x8 = 0;
+    self->secondaryMesh = 0;
 
-    Array<AEGeometry *> *streaks = self->field_0xc;
+    Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         ArrayReleaseClasses_AEGeometryPtr(streaks);
-        streaks = self->field_0xc;
+        streaks = self->fireStreaks;
         if (streaks != 0) {
             operator_delete(Array_AEGeometryPtr_dtor(streaks));
         }
     }
-    self->field_0xc = 0;
+    self->fireStreaks = 0;
     return self;
 }
 
 // ---- isPlaying_a8916.cpp ----
 uint8_t Explosion::isPlaying() {
     Explosion *self = this;
-    return self->field_0x20;
+    return self->playing;
 }
 
 // ---- translate_a8aa0.cpp ----
 void Explosion::translate(const Vector *v) {
     Explosion *self = this;
-    AEGeometry_translate_vec(self->field_0x4, v);
-    void *secondary = self->field_0x8;
+    AEGeometry_translate_vec(self->primaryMesh, v);
+    void *secondary = self->secondaryMesh;
     if (secondary != 0) {
         return Explosion_tail_translate(secondary, v);
     }
@@ -149,10 +149,10 @@ extern void *Explosion_random;
 
 void Explosion::setScaling(float scale) {
     Explosion *self = this;
-    self->field_0x24 = scale;
-    AEGeometry_setScaling3(self->field_0x4, scale, scale, scale);
+    self->scale = scale;
+    AEGeometry_setScaling3(self->primaryMesh, scale, scale, scale);
 
-    AEGeometry *secondary = self->field_0x8;
+    AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
         AEGeometry_setScaling3(secondary, scale, scale, scale);
     }
@@ -162,7 +162,7 @@ void Explosion::setScaling(float scale) {
         speed = (1.0f - scale) * 3.0f + 1.0f;
     }
 
-    int type = self->field_0x0;
+    int type = self->type;
     if (type == 0xb) {
         speed = speed * 0.5f;
     }
@@ -172,31 +172,31 @@ void Explosion::setScaling(float scale) {
 
     int *canvas = &Explosion_paintCanvas;
     Transform_SetAnimationSpeed(
-        PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), speed);
+        PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), speed);
 
-    secondary = self->field_0x8;
+    secondary = self->secondaryMesh;
     if (secondary != 0) {
         Transform_SetAnimationSpeed(
             PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc)), speed);
     }
 
-    Array<AEGeometry *> *streaks = self->field_0xc;
+    Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
             Transform_SetAnimationSpeed(
                 PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), speed);
-            streaks = self->field_0xc;
+            streaks = self->fireStreaks;
         }
     }
 
-    self->field_0x10 = (long long)((float)self->field_0x10 / speed);
+    self->duration = (long long)((float)self->duration / speed);
 }
 
 // ---- peakReached_a8900.cpp ----
 bool Explosion::peakReached() {
     Explosion *self = this;
-    return self->field_0x18 > 0x8fcLL;
+    return self->elapsed > 0x8fcLL;
 }
 
 // ---- start_a83b0.cpp ----
@@ -206,27 +206,27 @@ extern void *Explosion_random;
 
 void Explosion::start(const Vector *position, const Vector *direction) {
     Explosion *self = this;
-    AEGeometry_setPosition(self->field_0x4, position);
+    AEGeometry_setPosition(self->primaryMesh, position);
 
     int *canvas = &Explosion_paintCanvas;
-    UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 0xed) = 1;
+    UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 0xed) = 1;
 
-    int lodTransform = I(self->field_0x4, 0x14);
+    int lodTransform = I(self->primaryMesh, 0x14);
     if (lodTransform != -1) {
         UC((void *)PaintCanvas_TransformGetTransform32(*canvas, lodTransform), 0xed) = 1;
     }
 
-    AEGeometry *secondary = self->field_0x8;
+    AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
         AEGeometry_setPosition(secondary, position);
-        UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x8, 0xc)), 0xed) = 1;
+        UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)), 0xed) = 1;
     }
 
-    int type = self->field_0x0;
+    int type = self->type;
     if ((uint32_t)(type - 8) < 3) {
         Matrix rotation;
         float angle = (float)AERandom_nextInt(Explosion_random, 0xc45) / 1000.0f;
-        MatrixSetRotation(&rotation, &self->field_0x2c, 0, 0, angle);
+        MatrixSetRotation(&rotation, &self->rotation, 0, 0, angle);
 
         float scale = 0.6f + (float)AERandom_nextInt(Explosion_random, 0x28) * 0.01f;
         ((Explosion *)(self))->setScaling(scale);
@@ -235,24 +235,24 @@ void Explosion::start(const Vector *position, const Vector *direction) {
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        AEGeometry_setDirection(self->field_0x4, direction, &up);
+        AEGeometry_setDirection(self->primaryMesh, direction, &up);
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        AEGeometry_setDirection(self->field_0x8, direction, &up);
+        AEGeometry_setDirection(self->secondaryMesh, direction, &up);
     }
 
-    Array<AEGeometry *> *streaks = self->field_0xc;
+    Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
             AEGeometry_setPosition(geometry, position);
             UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xed) = 1;
-            streaks = self->field_0xc;
+            streaks = self->fireStreaks;
         }
     }
 
-    self->field_0x20 = 1;
+    self->playing = 1;
     Vector soundPosition = *position;
     ((Explosion *)(self))->playSound(&soundPosition);
 }
@@ -263,39 +263,39 @@ extern int Explosion_paintCanvas;
 
 void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
     Explosion *self = this;
-    if (self->field_0x20 == 0) {
+    if (self->playing == 0) {
         return;
     }
 
     int *canvas = &Explosion_paintCanvas;
     long long delta = (long long)dt;
-    Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(self->field_0x4, 0xc)), delta, 0);
+    Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc)), delta, 0);
 
-    int lodTransform = I(self->field_0x4, 0x14);
+    int lodTransform = I(self->primaryMesh, 0x14);
     if (lodTransform != -1) {
         Transform_Update(PaintCanvas_TransformGetTransform(*canvas, lodTransform), delta, 0);
     }
 
-    AEGeometry *secondary = self->field_0x8;
+    AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
         Transform_Update32(PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc)), 0, delta, 0);
     }
 
-    Array<AEGeometry *> *streaks = self->field_0xc;
+    Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
             Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(geometry, 0xc)), delta, 0);
-            streaks = self->field_0xc;
+            streaks = self->fireStreaks;
         }
     }
 
-    if (camera != 0 && (uint32_t)self->field_0x0 < 2) {
+    if (camera != 0 && (uint32_t)self->type < 2) {
         char vectors[36];
         Vector *cameraPosition = (Vector *)(vectors + 0);
         Vector *position = (Vector *)(vectors + 12);
         Vector *diff = (Vector *)(vectors + 24);
-        AEGeometry_getPosition(position, self->field_0x4);
+        AEGeometry_getPosition(position, self->primaryMesh);
 
         int canvasValue = *canvas;
         int current = PaintCanvas_CameraGetCurrent(canvasValue);
@@ -303,7 +303,7 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
         Vector_sub(diff, position, cameraPosition);
         float distance = VectorLength(diff);
 
-        uint32_t transform = PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc));
+        uint32_t transform = PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc));
         int anim = I((void *)transform, 0x110);
         if (anim <= 0x7d0) {
             float capped = 30000.0f;
@@ -315,9 +315,9 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
         }
     }
 
-    long long elapsed = self->field_0x18 + delta;
-    self->field_0x18 = elapsed;
-    if (self->field_0x10 < elapsed) {
+    long long elapsed = self->elapsed + delta;
+    self->elapsed = elapsed;
+    if (self->duration < elapsed) {
         ((Explosion *)(self))->reset();
         if (camera != 0) {
             TargetFollowCamera_setRumblePercentage(camera, 0.0f, 0);
@@ -338,12 +338,12 @@ static inline __attribute__((always_inline)) AEGeometry *make_geometry(uint16_t 
 
 Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
 {
-    Matrix_ctor(&self->field_0x2c);
-    self->field_0x24 = 1.0f;
-    self->field_0x0 = type;
-    self->field_0x4 = 0;
-    self->field_0x8 = 0;
-    self->field_0xc = 0;
+    Matrix_ctor(&self->rotation);
+    self->scale = 1.0f;
+    self->type = type;
+    self->primaryMesh = 0;
+    self->secondaryMesh = 0;
+    self->fireStreaks = 0;
 
     int *canvas = &Explosion_paintCanvas;
     AEGeometry *geometry;
@@ -351,79 +351,79 @@ Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
     switch (type) {
     case 0:
     case 6:
-        self->field_0x4 = make_geometry(0x41b5, *canvas);
+        self->primaryMesh = make_geometry(0x41b5, *canvas);
         geometry = make_geometry(0x41b4, *canvas);
-        AEGeometry_addChild(self->field_0x4, U(geometry, 0xc));
+        AEGeometry_addChild(self->primaryMesh, U(geometry, 0xc));
         operator_delete(AEGeometry_dtor(geometry));
         break;
     default:
         if (type == 13) {
-            self->field_0x4 = make_geometry(0x41a9, *canvas);
+            self->primaryMesh = make_geometry(0x41a9, *canvas);
             ((Explosion *)(self))->setScaling(0.25f);
             Transform_SetAnimationSpeed(
-                PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 1.0f);
+                PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 1.0f);
         } else {
-            self->field_0x4 = make_geometry(0x4213, *canvas);
-            self->field_0x8 = make_geometry(0x4211, *canvas);
+            self->primaryMesh = make_geometry(0x4213, *canvas);
+            self->secondaryMesh = make_geometry(0x4211, *canvas);
         }
         break;
     case 3:
-        self->field_0x4 = make_geometry(0x4213, *canvas);
-        self->field_0x8 = make_geometry(0x421d, *canvas);
+        self->primaryMesh = make_geometry(0x4213, *canvas);
+        self->secondaryMesh = make_geometry(0x421d, *canvas);
         break;
     case 4:
-        self->field_0x4 = make_geometry(0x420d, *canvas);
-        self->field_0x8 = make_geometry(0x420c, *canvas);
+        self->primaryMesh = make_geometry(0x420d, *canvas);
+        self->secondaryMesh = make_geometry(0x420c, *canvas);
         break;
     case 5:
-        self->field_0x4 = make_geometry(0x4999, *canvas);
-        self->field_0x8 = make_geometry(0x4998, *canvas);
+        self->primaryMesh = make_geometry(0x4999, *canvas);
+        self->secondaryMesh = make_geometry(0x4998, *canvas);
         break;
     case 7:
-        self->field_0x4 = make_geometry(0x41a5, *canvas);
+        self->primaryMesh = make_geometry(0x41a5, *canvas);
         break;
     case 8:
-        self->field_0x4 = make_geometry(0x41a6, *canvas);
+        self->primaryMesh = make_geometry(0x41a6, *canvas);
         break;
     case 9:
-        self->field_0x4 = make_geometry(0x41a7, *canvas);
+        self->primaryMesh = make_geometry(0x41a7, *canvas);
         break;
     case 10:
-        self->field_0x4 = make_geometry(0x41a8, *canvas);
+        self->primaryMesh = make_geometry(0x41a8, *canvas);
         break;
     case 11:
-        self->field_0x4 = make_geometry(0x4a34, *canvas);
-        self->field_0x8 = make_geometry(0x4a33, *canvas);
+        self->primaryMesh = make_geometry(0x4a34, *canvas);
+        self->secondaryMesh = make_geometry(0x4a33, *canvas);
         break;
     case 12:
-        self->field_0x4 = make_geometry(0x4a7e, *canvas);
+        self->primaryMesh = make_geometry(0x4a7e, *canvas);
         break;
     }
 
     Transform_SetAnimationState(
-        PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 1, 0);
+        PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 1, 0);
 
-    if (self->field_0x8 != 0) {
+    if (self->secondaryMesh != 0) {
         Transform_SetAnimationState(
-            PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x8, 0xc)), 1, 0);
-        F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x8, 0xc)), 0xe0) =
+            PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)), 1, 0);
+        F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)), 0xe0) =
             10000.0f;
     }
 
     uint64_t primaryDuration =
-        *(uint64_t *)((char *)(void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)) + 0xf8);
+        *(uint64_t *)((char *)(void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)) + 0xf8);
     uint64_t duration = 0;
-    if (self->field_0x8 != 0) {
+    if (self->secondaryMesh != 0) {
         uint64_t secondaryDuration =
-            *(uint64_t *)((char *)(void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x8, 0xc)) + 0xf8);
+            *(uint64_t *)((char *)(void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)) + 0xf8);
         duration = secondaryDuration < primaryDuration ? primaryDuration : secondaryDuration;
     } else if (primaryDuration != 0) {
         duration = primaryDuration;
     }
-    self->field_0x10 = duration;
+    self->duration = duration;
 
-    F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 0xe0) = 10000.0f;
-    self->field_0x28 = -1;
+    F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 0xe0) = 10000.0f;
+    self->weaponIndex = -1;
     ((Explosion *)(self))->reset();
     return self;
 }
@@ -439,7 +439,7 @@ extern void *Explosion_random;
 void Explosion::playSound(Vector *pos) {
     Explosion *self = this;
     Vector *soundPos = pos;
-    int soundId = self->field_0x28;
+    int soundId = self->weaponIndex;
     int cue;
     int sound;
     int enabled;
@@ -504,7 +504,7 @@ void Explosion::playSound(Vector *pos) {
         sound = Explosion_soundDefault;
         enabled = Explosion_soundSettings[0xf];
     } else {
-        int type = self->field_0x0;
+        int type = self->type;
         uint32_t typeOffset = (uint32_t)(type - 2);
         if (typeOffset < 4) {
             sound = Explosion_soundSpecial;
@@ -542,43 +542,43 @@ void Explosion::start_matrix(const Matrix *matrix) {
     char positionStorage[12];
     Vector *position = (Vector *)positionStorage;
 
-    int type = self->field_0x0;
+    int type = self->type;
     if (type == 6 || type == 0) {
         MatrixGetPosition(position, matrix);
-        AEGeometry_setPosition(self->field_0x4, position);
+        AEGeometry_setPosition(self->primaryMesh, position);
         MatrixGetPosition(position, matrix);
-        AEGeometry_setPosition(self->field_0x8, position);
+        AEGeometry_setPosition(self->secondaryMesh, position);
     } else {
-        AEGeometry_setMatrix(self->field_0x4, matrix);
-        AEGeometry *secondary = self->field_0x8;
+        AEGeometry_setMatrix(self->primaryMesh, matrix);
+        AEGeometry *secondary = self->secondaryMesh;
         if (secondary != 0) {
             AEGeometry_setMatrix(secondary, matrix);
         }
     }
 
     int *canvas = &Explosion_paintCanvas;
-    Array<AEGeometry *> *streaks = self->field_0xc;
+    Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
             MatrixGetPosition(position, matrix);
             AEGeometry_setPosition(geometry, position);
             UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xed) = 1;
-            streaks = self->field_0xc;
+            streaks = self->fireStreaks;
         }
     }
 
-    UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->field_0x4, 0xc)), 0xed) = 1;
-    int lodTransform = I(self->field_0x4, 0x14);
+    UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 0xed) = 1;
+    int lodTransform = I(self->primaryMesh, 0x14);
     if (lodTransform != -1) {
         UC((void *)PaintCanvas_TransformGetTransform32(*canvas, lodTransform), 0xed) = 1;
     }
-    AEGeometry *secondary = self->field_0x8;
+    AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
         UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc)), 0xed) = 1;
     }
 
-    self->field_0x20 = 1;
+    self->playing = 1;
     MatrixGetPosition(position, matrix);
     ((Explosion *)(self))->playSound(position);
 }
@@ -595,10 +595,10 @@ void Explosion::render() {
     Vector cameraPosition;
     Vector up;
 
-    if (self->field_0x20 != 0) {
-        uint32_t type = (uint32_t)self->field_0x0;
-        if ((type > 0xd || ((1u << (type & 0xff)) & 0x2780u) == 0) && self->field_0x8 != 0) {
-            AEGeometry_render(self->field_0x8);
+    if (self->playing != 0) {
+        uint32_t type = (uint32_t)self->type;
+        if ((type > 0xd || ((1u << (type & 0xff)) & 0x2780u) == 0) && self->secondaryMesh != 0) {
+            AEGeometry_render(self->secondaryMesh);
         }
 
         int *canvas = &Explosion_paintCanvas;
@@ -606,7 +606,7 @@ void Explosion::render() {
         int current = PaintCanvas_CameraGetCurrent(canvasValue);
         __aeabi_memcpy(&cameraLocal, PaintCanvas_CameraGetLocal(canvasValue, current), 0x3c);
 
-        AEGeometry_getPosition(&position, self->field_0x4);
+        AEGeometry_getPosition(&position, self->primaryMesh);
 
         if (type < 0xd && ((1u << (type & 0xff)) & 0x1804u) != 0) {
             MatrixSetTranslation(&work, &cameraLocal, position.x, position.y, position.z);
@@ -617,15 +617,15 @@ void Explosion::render() {
             Matrix_assign(&cameraLocal, &work);
         }
 
-        float scale = self->field_0x24;
+        float scale = self->scale;
         MatrixSetScaling(&work, &cameraLocal, scale, scale, scale);
 
         if (type - 8 < 3) {
-            Matrix_mul_assign(&cameraLocal, &self->field_0x2c);
+            Matrix_mul_assign(&cameraLocal, &self->rotation);
         }
 
-        AEGeometry_setMatrix(self->field_0x4, &cameraLocal);
-        AEGeometry_setPosition(self->field_0x4, &position);
+        AEGeometry_setMatrix(self->primaryMesh, &cameraLocal);
+        AEGeometry_setPosition(self->primaryMesh, &position);
 
         canvasValue = *canvas;
         current = PaintCanvas_CameraGetCurrent(canvasValue);
@@ -633,15 +633,15 @@ void Explosion::render() {
         Vector *direction = (Vector *)&work;
         MatrixGetDir(direction, &cameraLocal);
         MatrixGetUp(&cameraPosition, &cameraLocal);
-        AEGeometry_setDirection(self->field_0x4, direction, &cameraPosition);
-        AEGeometry_render(self->field_0x4);
+        AEGeometry_setDirection(self->primaryMesh, direction, &cameraPosition);
+        AEGeometry_render(self->primaryMesh);
 
-        Array<AEGeometry *> *streaks = self->field_0xc;
+        Array<AEGeometry *> *streaks = self->fireStreaks;
         if (streaks != 0) {
             for (uint32_t i = 0; i < streaks->size(); i++) {
                 AEGeometry *geometry = (*streaks)[i];
                 AEGeometry_render(geometry);
-                streaks = self->field_0xc;
+                streaks = self->fireStreaks;
             }
         }
     }
@@ -653,37 +653,37 @@ extern int Explosion_paintCanvas;
 
 void Explosion::update_vector(int dt, const Vector *position) {
     Explosion *self = this;
-    if (self->field_0x20 == 0) {
+    if (self->playing == 0) {
         return;
     }
 
     int *canvas = &Explosion_paintCanvas;
     long long delta = (long long)dt;
-    Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(self->field_0x4, 0xc)), delta, 0);
+    Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc)), delta, 0);
 
-    int lodTransform = I(self->field_0x4, 0x14);
+    int lodTransform = I(self->primaryMesh, 0x14);
     if (lodTransform != -1) {
         Transform_Update(PaintCanvas_TransformGetTransform(*canvas, lodTransform), delta, 0);
     }
 
-    AEGeometry *secondary = self->field_0x8;
+    AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
         Transform_Update32(PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc)), 0, delta, 0);
     }
 
-    Array<AEGeometry *> *streaks = self->field_0xc;
+    Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
             AEGeometry_setPosition(geometry, position);
             Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(geometry, 0xc)), delta, 0);
-            streaks = self->field_0xc;
+            streaks = self->fireStreaks;
         }
     }
 
-    long long elapsed = self->field_0x18 + delta;
-    self->field_0x18 = elapsed;
-    if (self->field_0x10 < elapsed) {
+    long long elapsed = self->elapsed + delta;
+    self->elapsed = elapsed;
+    if (self->duration < elapsed) {
         return Explosion_reset_tail(self);
     }
 }
@@ -695,33 +695,33 @@ extern void *Explosion_random;
 
 void Explosion::addFireStreaks() {
     Explosion *self = this;
-    if (self->field_0xc != 0) {
+    if (self->fireStreaks != 0) {
         return;
     }
 
     Array<AEGeometry *> *streaks = new Array<AEGeometry *>();
-    self->field_0xc = streaks;
+    self->fireStreaks = streaks;
 
     int length = AERandom_nextInt(Explosion_random, 7) + 3;
-    ArraySetLength_AEGeometryPtr(length, self->field_0xc);
+    ArraySetLength_AEGeometryPtr(length, self->fireStreaks);
 
     int *canvas = &Explosion_paintCanvas;
     int (*nextInt)(void *, int) = AERandom_nextInt;
 
-    for (uint32_t i = 0; i < self->field_0xc->size(); i++) {
+    for (uint32_t i = 0; i < self->fireStreaks->size(); i++) {
         AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);
         AEGeometry_ctor(geometry, 0x37d4, *canvas, false);
-        (*self->field_0xc)[i] = geometry;
+        (*self->fireStreaks)[i] = geometry;
 
-        geometry = (*self->field_0xc)[i];
+        geometry = (*self->fireStreaks)[i];
         Transform_SetAnimationState(
             PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 1, 0);
 
-        geometry = (*self->field_0xc)[i];
+        geometry = (*self->fireStreaks)[i];
         F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xe0) =
             10000.0f;
 
-        geometry = (*self->field_0xc)[i];
+        geometry = (*self->fireStreaks)[i];
         float x = (float)nextInt(Explosion_random, 0x168);
         float y = (float)nextInt(Explosion_random, 0x168);
         float z = (float)nextInt(Explosion_random, 0x168);
@@ -731,7 +731,7 @@ void Explosion::addFireStreaks() {
 
         int scaleInt = nextInt(Explosion_random, 0x32) + 0x32;
         float scale = (float)scaleInt / 100.0f;
-        geometry = (*self->field_0xc)[i];
+        geometry = (*self->fireStreaks)[i];
         AEGeometry_setScaling3(geometry, scale, scale, scale);
     }
 }

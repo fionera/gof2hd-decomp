@@ -11,14 +11,14 @@
 //   0x14 Vector                    extents (x@0x14, y@0x18, z@0x1c)
 
 struct BoundingVolume {
-    void* field_0x0;                    // +0x0  vtable
-    Array<BoundingVolume*>* field_0x4;  // +0x4  children
-    float field_0x8;                    // +0x8  center.x
-    float field_0xc;                    // +0xc  center.y
-    float field_0x10;                   // +0x10 center.z
-    float field_0x14;                   // +0x14 extents.x
-    float field_0x18;                   // +0x18 extents.y
-    float field_0x1c;                   // +0x1c extents.z
+    void* vtable;                    // +0x0  vtable
+    Array<BoundingVolume*>* children;  // +0x4  children
+    float centerX;                    // +0x8  center.x
+    float centerY;                    // +0xc  center.y
+    float centerZ;                   // +0x10 center.z
+    float extentsX;                   // +0x14 extents.x
+    float extentsY;                   // +0x18 extents.y
+    float extentsZ;                   // +0x1c extents.z
 
     BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez);
     ~BoundingVolume();

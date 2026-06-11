@@ -41,9 +41,9 @@ void TextureConference::UpdateMeshData(Mesh *mesh, Engine *engine)
 
     long long elapsed = _ZN11AbyssEngine18ApplicationManager20GetElapsedTimeMillisEv(field_ptr(engine, 0x30));
     long long t = __divdi3_like((int)elapsed, (int)((unsigned long long)elapsed >> 32), 5, 0);
-    t = t + this->field_0x38;
+    t = t + this->animTime;
     long long clamped = (0xe10 > t) ? t : (t - 0xe10);
-    this->field_0x38 = clamped;
+    this->animTime = clamped;
     glUniform1i(field_i32(this, 0x28), (int)clamped);
 
     glEnableVertexAttribArray(field_i32(this, 0x20));
@@ -114,7 +114,7 @@ _ZN11AbyssEngine17TextureConferenceC2Ev(AbyssEngine::TextureConference *self)
         AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
     _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
 
-    self->field_0x38 = 0;
+    self->animTime = 0;
 
     uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - frame.stackGuard;
     if (stackDifference != 0) {

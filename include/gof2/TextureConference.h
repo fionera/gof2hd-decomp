@@ -56,7 +56,7 @@ struct TextureConference : ShaderBaseStruct {
 
     // raw field storage up to the named animation accumulator at +0x38.
     char field_storage[0x38];
-    long long field_0x38;               // +0x38
+    long long animTime;               // +0x38
 };
 
 } // namespace AbyssEngine

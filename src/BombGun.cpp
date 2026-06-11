@@ -140,7 +140,7 @@ void BombGun::update(int elapsed)
         if (this->field_0x128 == 0x2a) {
             ((PlayerEgo *)(position))->getPosition();
         } else {
-            void *gunPos = gun->field_0xc;
+            void *gunPos = gun->positions;
             *(uint64_t *)position = *(uint64_t *)gunPos;
             *(uint32_t *)(position + 8) = *(uint32_t *)((char *)gunPos + 0x8);
         }
@@ -171,8 +171,8 @@ void BombGun::update(int elapsed)
             AEGeometry *geometry = this->field_0xe8;
             void *local = PaintCanvas_TransformGetLocal(*canvas, *activeTransform);
             AEGeometry_setMatrix(geometry, local);
-            Vector_scale_scalar(scaled, kRocketOffsetScale, gun->field_0x18);
-            Vector_add(position, gun->field_0xc, scaled);
+            Vector_scale_scalar(scaled, kRocketOffsetScale, gun->velocities);
+            Vector_add(position, gun->positions, scaled);
             AEGeometry_setPosition(geometry, position);
             AEGeometry_updateReferenceMatrix(geometry);
 
@@ -186,7 +186,7 @@ void BombGun::update(int elapsed)
             TargetFollowCamera_useTargetsUpVector(camera, false);
             ((PlayerEgo *)(player))->setRocketControl(gun, geometry);
 
-            if (*(int *)gun->field_0x3c < gun->field_0x44 - 500) {
+            if (*(int *)gun->lifetimes < gun->initialLifetime - 500) {
                 Transform *transform = PaintCanvas_TransformGetTransform(*canvas, *activeTransform);
                 Transform_Update(transform, (int64_t)elapsed, 0);
             }
@@ -314,12 +314,12 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         explosionType = 0xb;
     } else {
         explosionType = 0;
-        if (gun->field_0x58 == 0xe8)
+        if (gun->itemIndex == 0xe8)
             explosionType = 0xd;
     }
     Explosion_ctor(explosion, explosionType);
     self->field_0xf0 = explosion;
-    Explosion_setWeaponIndex(explosion, gun->field_0x58);
+    Explosion_setWeaponIndex(explosion, gun->itemIndex);
 
     int playerFlag = *(volatile int *)&playerControlled;
     self->field_0x24 = playerFlag;
@@ -344,16 +344,16 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         geometry = (AEGeometry *)operator_new(0xc0);
         AEGeometry_ctor(geometry, 0x37d6, *canvasHolder, false);
         PaintCanvas_TransformAddChild(*canvasHolder, *createdTransform,
-                                      geometry->field_0xc);
+                                      geometry->transform);
         PaintCanvas_TransformRemoveMesh(*canvasHolder, self->field_0x10,
                                         self->field_0x28);
         PaintCanvas_TransformAddChild(*canvasHolder, self->field_0x10,
                                       self->field_0x14);
     } else {
-        int weapon = gun->field_0x58;
+        int weapon = gun->itemIndex;
         bool normal = weapon != 0xe8;
         if (normal)
-            weapon = gun->field_0x5c;
+            weapon = gun->weaponType;
         if (!normal || weapon == 0x22)
             goto after_geometry;
 
@@ -366,9 +366,9 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
             geomMesh = 0x3959;
 
         AEGeometry_ctor(geometry, geomMesh, *canvasHolder, false);
-        self->field_0xf4 = geometry->field_0xc;
+        self->field_0xf4 = geometry->transform;
         PaintCanvas_TransformAddChild(*canvasHolder, self->field_0x10,
-                                      geometry->field_0xc);
+                                      geometry->transform);
 
         Transform *transform;
         if (mesh == 0x395c) {

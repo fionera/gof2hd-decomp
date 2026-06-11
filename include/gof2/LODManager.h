@@ -18,7 +18,7 @@ struct AEGeometry;
 struct LODManager {
     Array<AEGeometry*>* objects;        // +0x0
     AEMath::Vector cameraPos;           // +0x4 (field_0x4/0x8/0xc)
-    int field_0x10;                     // +0x10 (timer)
+    int timer;                     // +0x10 (timer)
 
     LODManager();
     ~LODManager();

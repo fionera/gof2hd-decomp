@@ -21,7 +21,7 @@ struct Player {
 
 // KIPlayer (the grabbed crate) is the minimal vtable-only struct from Radar.h; its
 // data fields are not modeled in any in-batch header, so read them by typed offset.
-// (MISSING FIELD KIPlayer.field_0x4 (void*), field_0x3c (uint8_t), field_0x40 (uint8_t),
+// (MISSING FIELD KIPlayer.player (void*), field_0x3c (uint8_t), field_0x40 (uint8_t),
 //  field_0x41 (uint8_t), field_0x78 (void*) -- belong to out-of-batch KIPlayer.)
 static inline void *&kiPtr(void *p, int off) { return *(void **)((char *)p + off); }
 static inline uint8_t &kiByte(void *p, int off) { return *((uint8_t *)p + off); }
@@ -42,19 +42,19 @@ extern void *const gCanvasRoot __attribute__((visibility("hidden")));
 //   id is the base id 0x3798 offset by the (truncated) integer argument.
 void TractorBeam::ctor(AEGeometry * /*unused*/, int param2) {
     TractorBeam *self = this;
-    self->field_0x0 = 0.0f;
-    self->field_0x4 = 0.0f;
-    self->field_0x8 = 0.0f;
-    self->field_0xc = 0;
-    self->field_0x10 = 0;
+    self->dirX = 0.0f;
+    self->dirY = 0.0f;
+    self->dirZ = 0.0f;
+    self->grabbedCrate = 0;
+    self->active = 0;
 
     AEGeometry *geo = (AEGeometry *)operator new(0xc0);
     uint16_t meshId = (uint16_t)((short)param2 + 0x3798);
     PaintCanvas *canvas = *(PaintCanvas **)(*(void **)gCanvasRoot);
     AEGeometry_ctor(geo, meshId, canvas, false);
 
-    self->field_0x14 = geo;
-    self->field_0x18 = 0;
+    self->beamGeometry = geo;
+    self->storedHitpoints = 0;
 }
 
 // ---- render_151580.cpp ----
@@ -64,9 +64,9 @@ void TractorBeam::ctor(AEGeometry * /*unused*/, int param2) {
 //   Only draws while the beam is active; forwards to the geometry's render.
 void TractorBeam::render() {
     TractorBeam *self = this;
-    if (self->field_0x10 == 0)
+    if (self->active == 0)
         return;
-    AEGeometry_render(self->field_0x14);
+    AEGeometry_render(self->beamGeometry);
 }
 
 // ---- update_15122c.cpp ----
@@ -119,7 +119,7 @@ extern const float gCaptureDistance;
 //   once it is close enough.
 void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     TractorBeam *self = this;
-    KIPlayer *crate = self->field_0xc;
+    KIPlayer *crate = self->grabbedCrate;
     KIPlayer *radarCrate = (KIPlayer *)radar->field_0x1c;
 
     if (radarCrate == 0 && crate == 0)
@@ -129,18 +129,18 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         void *player = Level_getPlayer(level);
         if (((PlayerEgo *)(player))->isInTurretMode() == 0) {
             if (((KIPlayer *)(radarCrate))->cargoAvailable() == 0) {
-                self->field_0x10 = 0;
+                self->active = 0;
                 radar->field_0x1c = 0;
             } else {
                 if (kiPtr(radarCrate, 0x78) == 0)
                     ((KIPlayer *)(radarCrate))->createCrate(0);
-                self->field_0xc = radarCrate;
-                self->field_0x18 = (int)((Player *)(kiPtr(radarCrate, 0x4)))->getHitpoints();
-                self->field_0x10 = 1;
+                self->grabbedCrate = radarCrate;
+                self->storedHitpoints = (int)((Player *)(kiPtr(radarCrate, 0x4)))->getHitpoints();
+                self->active = 1;
             }
             return;
         }
-        crate = self->field_0xc;
+        crate = self->grabbedCrate;
         if (crate == 0)
             goto detach;
     }
@@ -151,8 +151,8 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     detach:
         radar->field_0x8 = 0;
         radar->field_0x1c = 0;
-        self->field_0xc = 0;
-        self->field_0x10 = 0;
+        self->grabbedCrate = 0;
+        self->active = 0;
         return;
     }
 
@@ -162,7 +162,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     Transform_Update(tf, frameTime);
 
     Vector pos;
-    AEGeometry_getPosition(&pos, self->field_0x14);
+    AEGeometry_getPosition(&pos, self->beamGeometry);
     Vector_assign((Vector *)self, &pos);
 
     Vector playerPos;
@@ -191,10 +191,10 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
             offset.z = tmp.z + dir.z;
         }
     }
-    AEGeometry_setScaling(self->field_0x14, offset.x, offset.y, offset.z);
+    AEGeometry_setScaling(self->beamGeometry, offset.x, offset.y, offset.z);
 
     // Aim the beam at the crate and place its tail at the player position.
-    void *geo = self->field_0x14;
+    void *geo = self->beamGeometry;
     Vector beamDir = AbyssEngine::AEMath::operator-(*(Vector *)&offset, *(Vector *)self);
     Vector n;
     VectorNormalize(&n, &beamDir);
@@ -210,30 +210,30 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         VectorNormalize(&n, (Vector *)self);
         Vector_assign((Vector *)self, &n);
         Vector_mulAssign((Vector *)self, (float)(frameTime * 10));
-        void *crateGeo = kiPtr(self->field_0xc, 0x78);
+        void *crateGeo = kiPtr(self->grabbedCrate, 0x78);
         Vector pull = AbyssEngine::AEMath::operator-(n, *(Vector *)self);
         AEGeometry_translate(crateGeo, &pull);
 
-        if (((KIPlayer *)(self->field_0xc))->isDead() != 0 ||
-            ((KIPlayer *)(self->field_0xc))->isDying() != 0) {
-            KIPlayer *c = self->field_0xc;
+        if (((KIPlayer *)(self->grabbedCrate))->isDead() != 0 ||
+            ((KIPlayer *)(self->grabbedCrate))->isDying() != 0) {
+            KIPlayer *c = self->grabbedCrate;
             if (kiByte(c, 0x40) == 0 && kiByte(c, 0x41) == 0) {
                 Vector d = AbyssEngine::AEMath::operator-(n, *(Vector *)self);
                 (void)d;
             }
         }
-        if (self->field_0x11 == 0) {
+        if (self->soundPlaying == 0) {
             FModSound_play(*(void **)gPullSound, 0, 0, 0.0f);
-            self->field_0x11 = 1;
+            self->soundPlaying = 1;
         }
     } else {
         // Crate reached the ship -- capture it.
-        ((KIPlayer *)(self->field_0xc))->captureCrate(hud);
-        self->field_0xc = 0;
-        self->field_0x10 = 0;
+        ((KIPlayer *)(self->grabbedCrate))->captureCrate(hud);
+        self->grabbedCrate = 0;
+        self->active = 0;
         radar->field_0x8 = 0;
         radar->field_0x1c = 0;
-        self->field_0x11 = 0;
+        self->soundPlaying = 0;
         void *snd = *(void **)gCaptureSound;
         FModSound_stop(snd);
         FModSound_play(snd, (void *)4, 0, 0.0f);
@@ -247,11 +247,11 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
 //   Destroys and frees the beam geometry, then clears the slot.
 TractorBeam *_ZN11TractorBeamD2Ev(TractorBeam *self)
 {
-    AEGeometry *geo = self->field_0x14;
+    AEGeometry *geo = self->beamGeometry;
     if (geo != 0) {
         AEGeometry_dtor(geo);
         operator_delete(geo);
     }
-    self->field_0x14 = 0;
+    self->beamGeometry = 0;
     return self;
 }

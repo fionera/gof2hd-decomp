@@ -52,7 +52,7 @@ Route * Route::getExactClone() {
     Route *self = this;
     Route *result = ((Route *)(self))->clone();
     for (uint32_t i = 0; i < result->field_0xc->size(); i++) {
-        if ((*self->field_0xc)[i]->field_0x130 != 0)
+        if ((*self->field_0xc)[i]->state != 0)
             Waypoint_reached((*result->field_0xc)[i]);
     }
     result->field_0x0 = self->field_0x0;
@@ -84,9 +84,9 @@ int Route::getDockingTimeAt(int index) {
 void Route::setNewCoords(float x, float y, float z) {
     Route *self = this;
     Waypoint *wp = (*self->field_0xc)[0];
-    wp->field_0x124 = (int)x;
-    wp->field_0x128 = (int)y;
-    wp->field_0x12c = (int)z;
+    wp->x = (int)x;
+    wp->y = (int)y;
+    wp->z = (int)z;
 }
 
 // Route::~Route() (D2). Returns this.
@@ -171,9 +171,9 @@ void Route::translate(const Vector &v) {
     float vx = v.x, vy = v.y, vz = v.z;
     for (uint32_t i = 0; i != wps->size(); i++) {
         Waypoint *wp = (*wps)[i];
-        wp->field_0x124 = (int)((float)wp->field_0x124 + vx);
-        wp->field_0x128 = (int)((float)wp->field_0x128 + vy);
-        wp->field_0x12c = (int)((float)wp->field_0x12c + vz);
+        wp->x = (int)((float)wp->x + vx);
+        wp->y = (int)((float)wp->y + vy);
+        wp->z = (int)((float)wp->z + vz);
     }
 }
 
@@ -232,9 +232,9 @@ Route * Route::clone() {
     int *p = coords;
     for (int i = 0; i != n; i++) {
         Waypoint *wp = (*wps)[i];
-        p[0] = wp->field_0x124;
-        p[1] = wp->field_0x128;
-        p[2] = wp->field_0x12c;
+        p[0] = wp->x;
+        p[1] = wp->y;
+        p[2] = wp->z;
         p += 3;
     }
     Array<KIPlayer *> *tgt = self->field_0x10;
@@ -286,11 +286,11 @@ Waypoint * Route::getWaypointAt(int index) {
         void *k = (void *)(*self->field_0x10)[index];
         if (k != 0) {
             getPos(k, pos);
-            wp->field_0x124 = (int)*(float *)(pos + 0);
+            wp->x = (int)*(float *)(pos + 0);
             getPos((void *)(*self->field_0x10)[index], pos);
-            wp->field_0x128 = (int)*(float *)(pos + 4);
+            wp->y = (int)*(float *)(pos + 4);
             getPos((void *)(*self->field_0x10)[index], pos);
-            wp->field_0x12c = (int)*(float *)(pos + 8);
+            wp->z = (int)*(float *)(pos + 8);
         }
     }
     return wp;
@@ -308,13 +308,13 @@ float Route::update_xyz(float x, float y, float z) {
     if ((*self->field_0x10)[idx] != 0)
         return x;
     Waypoint *wp = (*wps)[idx];
-    float dx = x - (float)wp->field_0x124;
+    float dx = x - (float)wp->x;
     if (!(dx < 2000.0f) || !(dx > -2000.0f))
         return x;
-    float dy = y - (float)wp->field_0x128;
+    float dy = y - (float)wp->y;
     if (!(dy < 2000.0f) || !(dy > -2000.0f))
         return x;
-    float dz = z - (float)wp->field_0x12c;
+    float dz = z - (float)wp->z;
     if (!(dz < 2000.0f) || !(dz > -2000.0f))
         return x;
 

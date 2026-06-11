@@ -19,16 +19,16 @@ static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
 // Explicit layout so the named members coexist with raw byte-offset macro access.
 struct ModMainMenu {
     void*    field_0x00;   // vtable
-    int      field_0x04;   // paint canvas handle
+    int      paintCanvas;   // paint canvas handle
     void*    f_8;          // 0x08 ApplicationManager*
-    int      field_0x0c;   // state
+    int      state;   // state
     byte     field_0x10[4];
-    int      field_0x14;
+    int      frameTime;
     void*    f_18;         // 0x18 MenuTouchWindow*
     void*    f_1c;         // 0x1c CutScene*
-    int      field_0x20;
-    int      field_0x24;
-    byte     field_0x28;
-    byte     field_0x29;
+    int      logoImage;
+    int      fadeTimer;
+    byte     logoActive;
+    byte     hasSavedGame;
 };
 #endif

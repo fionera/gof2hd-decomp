@@ -25,16 +25,16 @@ void _ZN13AutoPilotList4downEv(AutoPilotList *self);   // AutoPilotList::down()
 int AutoPilotList::touch(int p1, int p2) {
     AutoPilotList *self = this;
     int row;
-    if (p1 < self->field_0x4 ||
-        self->field_0x4 + self->field_0xc <= p1 ||
-        (row = (p2 - self->field_0x8 - 0xe) / 0xf, p2 - self->field_0x8 < -0xf) ||
-        (uint32_t)(row + 1) >= ((Array<void *> *)self->field_0x10)->size()) {
+    if (p1 < self->x ||
+        self->x + self->width <= p1 ||
+        (row = (p2 - self->y - 0xe) / 0xf, p2 - self->y < -0xf) ||
+        (uint32_t)(row + 1) >= ((Array<void *> *)self->entries)->size()) {
         return -1;
     }
-    self->field_0x0 = 0;
+    self->selected = 0;
     for (int i = 0; i <= row; i++)
         _ZN13AutoPilotList4downEv(self);
-    return self->field_0x0;
+    return self->selected;
 }
 
 // ---- _AutoPilotList_131378.cpp ----
@@ -45,19 +45,19 @@ extern "C" void *Array_String_dtor(void *arr);            // blx 0x6f64c
 extern "C" void operator_delete(void *p);                 // blx 0x6eb48
 
 AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
-    ArrayReleaseClasses_String(self->field_0x10);
-    void *a = self->field_0x10;
+    ArrayReleaseClasses_String(self->entries);
+    void *a = self->entries;
     if (a != 0)
         operator_delete(Array_String_dtor(a));
-    self->field_0x10 = 0;
+    self->entries = 0;
     return self;
 }
 
 // ---- down_13135c.cpp ----
 // AutoPilotList::down() - advance selection to the next non-empty entry, wrapping at 4.
 void _ZN13AutoPilotList4downEv(AutoPilotList *self) {
-    void **data = ((Array<void *> *)self->field_0x10)->data();
-    int i = self->field_0x0;
+    void **data = ((Array<void *> *)self->entries)->data();
+    int i = self->selected;
     int n;
     do {
         n = 0;
@@ -65,7 +65,7 @@ void _ZN13AutoPilotList4downEv(AutoPilotList *self) {
             n = i + 1;
         i = n;
     } while (data[i] == 0);
-    self->field_0x0 = i;
+    self->selected = i;
 }
 
 // ---- getTargetString_13139c.cpp ----
@@ -81,8 +81,8 @@ extern const char kEmpty[] __attribute__((visibility("hidden")));
 RetStr AutoPilotList::getTargetString() {
     AutoPilotList *self = this;
     RetStr r;
-    int idx = self->field_0x0;
-    Array<void *> *entries = ((Array<void *> *)self->field_0x10);
+    int idx = self->selected;
+    Array<void *> *entries = ((Array<void *> *)self->entries);
     if (idx >= 0 && (uint32_t)idx < entries->size())
         ((String *)(&r))->ctor_copy((String *)entries->data()[idx], false);
     else
@@ -93,8 +93,8 @@ RetStr AutoPilotList::getTargetString() {
 // ---- up_1313cc.cpp ----
 // AutoPilotList::up() - move selection to the previous non-empty entry, wrapping at 0.
 void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
-    void **data = ((Array<void *> *)self->field_0x10)->data();
-    int i = self->field_0x0;
+    void **data = ((Array<void *> *)self->entries)->data();
+    int i = self->selected;
     int n;
     do {
         n = 4;
@@ -102,7 +102,7 @@ void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
             n = i - 1;
         i = n;
     } while (data[i] == 0);
-    self->field_0x0 = i;
+    self->selected = i;
 }
 
 // ---- AutoPilotList_131064.cpp ----
@@ -139,7 +139,7 @@ extern const char kApLit1[] __attribute__((visibility("hidden")));
 extern const char kApLit2[] __attribute__((visibility("hidden")));
 
 static inline void **entryData(AutoPilotList *self) {
-    return *(void ***)((char *)self->field_0x10 + 0x4);
+    return *(void ***)((char *)self->entries + 0x4);
 }
 
 // AutoPilotList::AutoPilotList(Level*) - build the list of autopilot destinations (current
@@ -148,9 +148,9 @@ static inline void **entryData(AutoPilotList *self) {
 void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     void *arr = operator new(0xc);
     Array_String_ctor(arr);
-    self->field_0x10 = arr;
+    self->entries = arr;
     ArraySetLength_String(5, arr);
-    self->field_0x14 = 0;
+    self->count = 0;
 
     if (**g_APL_apFlag != 0) {
         String *s = (String *)operator new(0xc);
@@ -165,7 +165,7 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
         d(a);
         d(c);
         d(b);
-        self->field_0x14 = self->field_0x14 + 1;
+        self->count = self->count + 1;
     }
 
     void *status = *g_APL_status;
@@ -173,7 +173,7 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
         String *s = (String *)operator new(0xc);
         ((String *)(s))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x223), false);
         entryData(self)[1] = s;
-        self->field_0x14 = self->field_0x14 + 1;
+        self->count = self->count + 1;
     }
 
     if (Status_inEmptyOrbit(status) == 0) {
@@ -188,13 +188,13 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
         d(a);
         d(c);
         d(b);
-        self->field_0x14 = self->field_0x14 + 1;
+        self->count = self->count + 1;
     }
 
     String *cancel = (String *)operator new(0xc);
     ((String *)(cancel))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x225), false);
     entryData(self)[3] = cancel;
-    self->field_0x14 = self->field_0x14 + 1;
+    self->count = self->count + 1;
 
     if (((PlayerEgo *)(Level_getPlayer(level)))->getRoute() != 0) {
         void *route = (void *)(intptr_t)((PlayerEgo *)(Level_getPlayer(level)))->getRoute();
@@ -202,34 +202,34 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
             String *s = (String *)operator new(0xc);
             ((String *)(s))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x23d), false);
             entryData(self)[4] = s;
-            self->field_0x14 = self->field_0x14 + 1;
+            self->count = self->count + 1;
         }
     }
 
-    self->field_0xc = 0;
-    self->field_0x0 = 0;
+    self->width = 0;
+    self->selected = 0;
     void *font = *g_APL_font;
     void *canvas = *g_APL_canvas;
     int width = 0;
-    Array<void *> *entries = ((Array<void *> *)self->field_0x10);
+    Array<void *> *entries = ((Array<void *> *)self->entries);
     for (uint32_t i = 0; i < entries->size(); i++) {
         if (entries->data()[i] != 0) {
             int w = PaintCanvas_GetTextWidth(*(void **)canvas, (String *)*(void **)font) + 0x13;
-            width = self->field_0xc;
+            width = self->width;
             if (width < w) {
-                self->field_0xc = w;
+                self->width = w;
                 width = w;
             }
         }
-        entries = ((Array<void *> *)self->field_0x10);
+        entries = ((Array<void *> *)self->entries);
     }
 
     int screenH = **g_APL_screenH;
-    self->field_0x4 = (**g_APL_screenW - width) / 2;
-    self->field_0x8 = (screenH + self->field_0x14 * -0xf - 0xc) / 2;
-    while (entries->data()[self->field_0x0] == 0) {
+    self->x = (**g_APL_screenW - width) / 2;
+    self->y = (screenH + self->count * -0xf - 0xc) / 2;
+    while (entries->data()[self->selected] == 0) {
         _ZN13AutoPilotList4downEv(self);
-        entries = ((Array<void *> *)self->field_0x10);
+        entries = ((Array<void *> *)self->entries);
     }
 }
 
@@ -256,19 +256,19 @@ void AutoPilotList::draw() {
     String *title = (String *)((GameText *)(*g_APL_gametext_draw))->getText(0x23c);
     char tmp[12];
     ((String *)(tmp))->ctor_copy(title, false);
-    Layout_drawWindow(layout, (String *)tmp, this->field_0x4, this->field_0x8,
-                      this->field_0xc, this->field_0x14 * 0xf + 0x16);
+    Layout_drawWindow(layout, (String *)tmp, this->x, this->y,
+                      this->width, this->count * 0xf + 0x16);
     ((String *)(tmp))->dtor();
 
     int drawn = 0;
     void **canvasHolder = g_APL_canvas_draw;
     void **fontHolder = g_APL_font_draw;
-    for (uint32_t i = 0; i < ((Array<void *> *)this->field_0x10)->size(); i++) {
-        void *text = ((Array<void *> *)this->field_0x10)->data()[i];
+    for (uint32_t i = 0; i < ((Array<void *> *)this->entries)->size(); i++) {
+        void *text = ((Array<void *> *)this->entries)->data()[i];
         if (text != 0) {
             PaintCanvas_DrawString(*canvasHolder, (String *)*fontHolder, text,
-                                   this->field_0x4,
-                                   drawn * 0xf + this->field_0x8 + 0x12, 0);
+                                   this->x,
+                                   drawn * 0xf + this->y + 0x12, 0);
             drawn = drawn + 1;
         }
     }

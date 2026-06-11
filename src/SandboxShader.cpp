@@ -21,42 +21,42 @@ void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine)
     AbyssEngine::Mesh *mesh = (AbyssEngine::Mesh *)meshArg;
     char *e = (char *)engine;
 
-    glUniformMatrix4fv(this->field_0x34, 1, 0, e + 0x104);
+    glUniformMatrix4fv(this->uniformA, 1, 0, e + 0x104);
 
-    if (this->field_0x9 != 0) {
-        glUniform4fv(this->field_0x40, 1, (float *)(e + 0xd0));
-        glUniform3f(this->field_0x38, *(float *)(e + 0x330), *(float *)(e + 0x334),
+    if (this->dirty != 0) {
+        glUniform4fv(this->uniformF, 1, (float *)(e + 0xd0));
+        glUniform3f(this->uniformB, *(float *)(e + 0x330), *(float *)(e + 0x334),
                     *(float *)(e + 0x338));
-        glUniform3f(this->field_0x3c, *(float *)(e + 0x34c), *(float *)(e + 0x350),
+        glUniform3f(this->uniformC, *(float *)(e + 0x34c), *(float *)(e + 0x350),
                     *(float *)(e + 0x354));
-        this->field_0x9 = 0;
+        this->dirty = 0;
     }
 
-    glEnableVertexAttribArray(this->field_0x20);
-    glEnableVertexAttribArray(this->field_0x24);
-    glEnableVertexAttribArray(this->field_0x28);
-    glEnableVertexAttribArray(this->field_0x2c);
-    glEnableVertexAttribArray(this->field_0x30);
+    glEnableVertexAttribArray(this->attrPosition);
+    glEnableVertexAttribArray(this->attrNormal);
+    glEnableVertexAttribArray(this->attrTangent);
+    glEnableVertexAttribArray(this->attrBinormal);
+    glEnableVertexAttribArray(this->attrTexCoord);
 
     if (mesh->field_0x5c != 0) {
         glBindBuffer(0x8892, mesh->field_0x60);
-        glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attrPosition, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x68);
-        glVertexAttribPointer(this->field_0x24, 2, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attrNormal, 2, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x6c);
-        glVertexAttribPointer(this->field_0x28, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attrTangent, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x70);
-        glVertexAttribPointer(this->field_0x2c, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attrBinormal, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x74);
-        glVertexAttribPointer(this->field_0x30, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attrTexCoord, 3, 0x1406, 0, 0, 0);
         return;
     }
 
-    glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, mesh->field_0x4);
-    glVertexAttribPointer(this->field_0x24, 2, 0x1406, 0, 0, mesh->field_0x8);
-    glVertexAttribPointer(this->field_0x28, 3, 0x1406, 0, 0, mesh->field_0x10);
-    glVertexAttribPointer(this->field_0x2c, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x14);
-    glVertexAttribPointer(this->field_0x30, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x18);
+    glVertexAttribPointer(this->attrPosition, 3, 0x1406, 0, 0, mesh->field_0x4);
+    glVertexAttribPointer(this->attrNormal, 2, 0x1406, 0, 0, mesh->field_0x8);
+    glVertexAttribPointer(this->attrTangent, 3, 0x1406, 0, 0, mesh->field_0x10);
+    glVertexAttribPointer(this->attrBinormal, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x14);
+    glVertexAttribPointer(this->attrTexCoord, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x18);
 }
 
 } // namespace AbyssEngine
@@ -67,25 +67,25 @@ namespace AbyssEngine {
 void SandboxShader::Init(Engine *)
 {
     int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("SandboxShader.vsh", "SandboxShader.fsh");
-    this->field_0x4 = program;
+    this->program = program;
 
-    this->field_0x20 = glGetAttribLocation(program, "a_position");
-    this->field_0x24 = glGetAttribLocation(this->field_0x4, "a_normal");
-    this->field_0x28 = glGetAttribLocation(this->field_0x4, "a_tangent");
-    this->field_0x2c = glGetAttribLocation(this->field_0x4, "a_binormal");
-    this->field_0x30 = glGetAttribLocation(this->field_0x4, "a_texCoord");
+    this->attrPosition = glGetAttribLocation(program, "a_position");
+    this->attrNormal = glGetAttribLocation(this->program, "a_normal");
+    this->attrTangent = glGetAttribLocation(this->program, "a_tangent");
+    this->attrBinormal = glGetAttribLocation(this->program, "a_binormal");
+    this->attrTexCoord = glGetAttribLocation(this->program, "a_texCoord");
 
-    this->field_0x34 = glGetUniformLocation(this->field_0x4, "u_a");
-    this->field_0x38 = glGetUniformLocation(this->field_0x4, "u_b");
-    this->field_0x3c = glGetUniformLocation(this->field_0x4, "u_c");
-    this->field_0x44 = glGetUniformLocation(this->field_0x4, "u_d");
-    this->field_0x48 = glGetUniformLocation(this->field_0x4, "u_e");
-    this->field_0x40 = glGetUniformLocation(this->field_0x4, "u_f");
-    this->field_0x4c = glGetUniformLocation(this->field_0x4, "u_g");
+    this->uniformA = glGetUniformLocation(this->program, "u_a");
+    this->uniformB = glGetUniformLocation(this->program, "u_b");
+    this->uniformC = glGetUniformLocation(this->program, "u_c");
+    this->uniformD = glGetUniformLocation(this->program, "u_d");
+    this->uniformE = glGetUniformLocation(this->program, "u_e");
+    this->uniformF = glGetUniformLocation(this->program, "u_f");
+    this->uniformG = glGetUniformLocation(this->program, "u_g");
 
-    glUseProgram(this->field_0x4);
-    glUniform1i(this->field_0x44, 0);
-    glUniform1i(this->field_0x48, 1);
+    glUseProgram(this->program);
+    glUniform1i(this->uniformD, 0);
+    glUniform1i(this->uniformE, 1);
 }
 
 } // namespace AbyssEngine
@@ -95,11 +95,11 @@ namespace AbyssEngine {
 
 void SandboxShader::SetInActive()
 {
-    glDisableVertexAttribArray(this->field_0x20);
-    glDisableVertexAttribArray(this->field_0x24);
-    glDisableVertexAttribArray(this->field_0x28);
-    glDisableVertexAttribArray(this->field_0x2c);
-    glDisableVertexAttribArray(this->field_0x30);
+    glDisableVertexAttribArray(this->attrPosition);
+    glDisableVertexAttribArray(this->attrNormal);
+    glDisableVertexAttribArray(this->attrTangent);
+    glDisableVertexAttribArray(this->attrBinormal);
+    glDisableVertexAttribArray(this->attrTexCoord);
 }
 
 } // namespace AbyssEngine
@@ -129,7 +129,7 @@ SandboxShader::SandboxShader()
     // Initialise the String member at +0xc from a literal.
     String tmp;
     tmp.s = u"SandboxShader";
-    this->field_0xc = tmp;
+    this->name = tmp;
 }
 
 } // namespace AbyssEngine

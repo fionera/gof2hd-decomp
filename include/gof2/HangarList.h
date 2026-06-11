@@ -84,9 +84,9 @@ extern "C" Array<Item *> *g_HangarList_items;
 // The hangar/shop/blueprint list model. field_0x0 holds an Array of per-tab Arrays of ListItem*;
 // field_0x4 is the currently selected tab index; field_0x8 caches the current ListItem*.
 struct HangarList {
-    Array<Array<ListItem *> *>* field_0x0;  // +0x0  per-tab item lists
-    uint32_t                    field_0x4;  // +0x4  current tab index
-    ListItem*                   field_0x8;  // +0x8  current item
+    Array<Array<ListItem *> *>* tabs;  // +0x0  per-tab item lists
+    uint32_t                    currentTab;  // +0x4  current tab index
+    ListItem*                   currentItem;  // +0x8  current item
 
     HangarList();
     ~HangarList();

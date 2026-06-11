@@ -88,31 +88,31 @@ extern "C" void AEGeometry_moveForward(void *geom, float d);
 // ---- getDockingType_154ef0.cpp ----
 int PlayerFixedObject::getDockingType() {
     PlayerFixedObject *self = this;
-    return self->field_0x1a4;
+    return self->dockingType;
 }
 
 // ---- setBV_154016.cpp ----
 void PlayerFixedObject::setBV_arr(Array<BoundingVolume *> *bv) {
     PlayerFixedObject *self = this;
-    self->field_0x128 = bv;
+    self->boundingVolumes = bv;
 }
 
 // ---- hideShip_154f1a.cpp ----
 void PlayerFixedObject::hideShip() {
     PlayerFixedObject *self = this;
-    self->field_0x1b8 = 1;
+    self->shipHidden = 1;
 }
 
 // ---- getTransportID_154efc.cpp ----
 int PlayerFixedObject::getTransportID() {
     PlayerFixedObject *self = this;
-    return self->field_0x1a8;
+    return self->transportID;
 }
 
 // ---- setDockingType_154eea.cpp ----
 void PlayerFixedObject::setDockingType(int v) {
     PlayerFixedObject *self = this;
-    self->field_0x1a4 = v;
+    self->dockingType = v;
 }
 
 // ---- setPosition_153fb4.cpp ----
@@ -131,9 +131,9 @@ typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 // then forwards to vtable slot 0x48.
 void PlayerFixedObject::translate(const Vector &d) {
     PlayerFixedObject *self = this;
-    float x = (float)self->field_0x178;
-    float y = (float)self->field_0x17c;
-    float z = (float)self->field_0x180;
+    float x = (float)self->intPosX;
+    float y = (float)self->intPosY;
+    float z = (float)self->intPosZ;
     SetPosFn fn = *(SetPosFn *)(*(char **)self + 0x48);
     return fn(self, d.x + x, d.y + y, d.z + z);
 }
@@ -172,7 +172,7 @@ void _ZN17PlayerFixedObjectD0Ev(PlayerFixedObject *self)
 // ---- setMoving_153ee4.cpp ----
 void PlayerFixedObject::setMoving(bool v) {
     PlayerFixedObject *self = this;
-    self->field_0x134 = v;
+    self->moving = v;
 }
 
 // ---- projectCollisionOnSurface_154e16.cpp ----
@@ -180,11 +180,11 @@ void PlayerFixedObject::setMoving(bool v) {
 // the projected Vector into the same sret, so the compiler keeps a frame + call (not tail).
 V3 PlayerFixedObject::projectCollisionOnSurface(void *vec) {
     PlayerFixedObject *self = this;
-    void *bv = self->field_0x12c;
-    if (bv != 0 && self->field_0x88 == 4) {
+    void *bv = self->wreckCollision;
+    if (bv != 0 && self->state == 4) {
         return BV_staticProjectCollisionOnSurface(vec, bv);
     }
-    void *bv2 = self->field_0x128;
+    void *bv2 = self->boundingVolumes;
     if (bv2 != 0) {
         return BV_staticProjectCollisionOnSurface(vec, bv2);
     }
@@ -195,7 +195,7 @@ V3 PlayerFixedObject::projectCollisionOnSurface(void *vec) {
 // ---- setTransportID_154ef6.cpp ----
 void PlayerFixedObject::setTransportID(int v) {
     PlayerFixedObject *self = this;
-    self->field_0x1a8 = v;
+    self->transportID = v;
 }
 
 // ---- outerCollide_154e50.cpp ----
@@ -215,9 +215,9 @@ struct PosOut { float x, y, z; };
 
 void PlayerFixedObject_getPosition(PosOut *out, PlayerFixedObject *self)
 {
-    float a = (float)self->field_0x178;
-    float b = (float)self->field_0x17c;
-    float c = (float)self->field_0x180;
+    float a = (float)self->intPosX;
+    float b = (float)self->intPosY;
+    float c = (float)self->intPosZ;
     out->x = a;
     out->y = b;
     out->z = c;
@@ -251,145 +251,145 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_pcMaterial;
 __attribute__((visibility("hidden"))) extern const int g_pfo_dmgVal; // DAT_00164c90
 
 static inline bool typeIsPirateOrE(PlayerFixedObject *self) {
-    int k = self->field_0xac;
+    int k = self->kind;
     return k == 0x37a3 || k == 0xe;
 }
 
 void PlayerFixedObject::update(int dt) {
     PlayerFixedObject *self = this;
-    self->field_0x130 = dt;
+    self->deltaTime = dt;
     bool bdt = (bool)(unsigned char)dt;
 
     // ship's KIPlayer "is active for tutorial" flag derived from 0xf8/0x134
-    bool kiFlag = (self->field_0xf8 + 1 != 0) && (self->field_0x134 != 0);
-    ((Player *)(self->field_0x4))->update(dt, kiFlag);
+    bool kiFlag = (self->field_0xf8 + 1 != 0) && (self->moving != 0);
+    ((Player *)(self->player))->update(dt, kiFlag);
 
     // Player::field_0x5c/0x5d (enemy/friend flags) are not modelled in Player.h
     // (out-of-batch header) -> byte-offset accessed.
-    void *player = self->field_0x4;
+    void *player = self->player;
     unsigned char enemyFlag = 0;
-    if ((self->field_0x28 & 0xfffffffe) == 8) {
+    if ((self->faction & 0xfffffffe) == 8) {
         F<unsigned char>(player, 0x5c) = 1;
         enemyFlag = 0;
     } else {
         int st = Status_getStanding();
-        unsigned char e = ((Standing *)((void *)(long)st))->isEnemy(self->field_0x28);
-        player = self->field_0x4;
+        unsigned char e = ((Standing *)((void *)(long)st))->isEnemy(self->faction);
+        player = self->player;
         F<unsigned char>(player, 0x5c) = e;
-        if ((self->field_0x28 & 0xfffffffe) == 8) {
+        if ((self->faction & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
             void *st2 = (void *)(long)Status_getStanding();
-            enemyFlag = ((Standing *)(st2))->isFriend(self->field_0x28);
-            player = self->field_0x4;
+            enemyFlag = ((Standing *)(st2))->isFriend(self->faction);
+            player = self->player;
         }
     }
     F<unsigned char>(player, 0x5d) = enemyFlag;
 
-    if (Player_turnedEnemy((Player *)self->field_0x4) != 0)
-        F<unsigned short>(self->field_0x4, 0x5c) = 1;
-    if (((Player *)(self->field_0x4))->isAlwaysFriend() != 0)
-        F<unsigned short>(self->field_0x4, 0x5c) = 0x100;
+    if (Player_turnedEnemy((Player *)self->player) != 0)
+        F<unsigned short>(self->player, 0x5c) = 1;
+    if (((Player *)(self->player))->isAlwaysFriend() != 0)
+        F<unsigned short>(self->player, 0x5c) = 0x100;
 
-    if (self->field_0x88 != 6) {
-        float bomb = ((Player *)(self->field_0x4))->getBombForce();
-        float emp = ((Player *)(self->field_0x4))->getEmpForce();
+    if (self->state != 6) {
+        float bomb = ((Player *)(self->player))->getBombForce();
+        float emp = ((Player *)(self->player))->getEmpForce();
         if (bomb > 0.0f) {
             float nb = bomb * 0.95f; // DAT decay factor
             if (nb < 1.0f) nb = 0.0f;
-            ((Player *)(self->field_0x4))->setBombForce(nb);
+            ((Player *)(self->player))->setBombForce(nb);
         }
         if (emp > 0.0f) {
             float ne = emp - (float)dt;
             float clamped = ne;
             if (ne < 1.0f) clamped = 0.0f;
-            self->field_0x24 = (ne >= 1.0f) ? 1 : 0;
-            ((Player *)(self->field_0x4))->setEmpForce(clamped);
+            self->empActive = (ne >= 1.0f) ? 1 : 0;
+            ((Player *)(self->player))->setEmpForce(clamped);
         }
     }
 
-    if (self->field_0x24 == 0 && (unsigned int)(self->field_0x88 - 3) >= 2) {
-        int kind = self->field_0xac;
+    if (self->empActive == 0 && (unsigned int)(self->state - 3) >= 2) {
+        int kind = self->kind;
         bool doMove = (kind != 0x37a3);
-        if (doMove) doMove = (self->field_0x134 != 0);
+        if (doMove) doMove = (self->moving != 0);
         if (doMove) ((PlayerFixedObject *)(self))->moveForward(dt);
 
         int cm = Status_getCurrentCampaignMission();
-        int k2 = self->field_0xac;
+        int k2 = self->kind;
         bool skip = (cm == 0x5b && k2 == 0x494e);
         if (!skip) {
             if (k2 == 0x494a) {
                 if (Status_getCurrentCampaignMission() == 0x91) goto afterMotion;
-                k2 = self->field_0xac;
+                k2 = self->kind;
             }
             if (k2 != 0x4220) {
                 void *t = PaintCanvas_TransformGetTransform(*g_pfo_canvasU,
-                            *(int *)((char *)self->field_0x8 + 0xc));
+                            *(int *)((char *)self->geometry + 0xc));
                 Transform_Update(t, bdt);
             }
         }
     }
 afterMotion:
 
-    if (((Player *)(self->field_0x4))->getHitpoints() < 1 && (unsigned int)(self->field_0x88 - 3) >= 2) {
+    if (((Player *)(self->player))->getHitpoints() < 1 && (unsigned int)(self->state - 3) >= 2) {
         // ---- death transition ----
-        if (F<char>(self->field_0x4, 0x5c) == 0) {
+        if (F<char>(self->player, 0x5c) == 0) {
             Level_friendDied();
         } else {
-            ((Level *)((int)(__INTPTR_TYPE__)self->field_0x54))->enemyDied(0, (bool)(unsigned char)self->field_0xac);
+            ((Level *)((int)(__INTPTR_TYPE__)self->level))->enemyDied(0, (bool)(unsigned char)self->kind);
         }
-        if (self->field_0xac == 0x37a3)
-            Level_pirateStationAction((bool)(unsigned char)(__INTPTR_TYPE__)self->field_0x54);
+        if (self->kind == 0x37a3)
+            Level_pirateStationAction((bool)(unsigned char)(__INTPTR_TYPE__)self->level);
 
-        self->field_0x134 = 0;
-        self->field_0x88 = 3;
+        self->moving = 0;
+        self->state = 3;
         int cargo = ((KIPlayer *)(self))->cargoAvailable();
-        self->field_0x4c = (unsigned char)cargo;
+        self->hasCargo = (unsigned char)cargo;
         if (cargo != 0) ((KIPlayer *)(self))->createCrate(0);
         ((PlayerFixedObject *)(self))->setExhaustVisible(false);
 
-        void *wreck = self->field_0x124;
-        AEGeometry_setMatrix(wreck, AEGeometry_getMatrix(self->field_0x8));
-        wreck = self->field_0x124;
+        void *wreck = self->wreckGeometry;
+        AEGeometry_setMatrix(wreck, AEGeometry_getMatrix(self->geometry));
+        wreck = self->wreckGeometry;
 
         void *expl;
         if (wreck != 0) {
-            AEGeometry_setMatrix(wreck, AEGeometry_getMatrix(self->field_0x8));
+            AEGeometry_setMatrix(wreck, AEGeometry_getMatrix(self->geometry));
             void *t = PaintCanvas_TransformGetTransform(*g_pfo_canvasU,
                         *(int *)((char *)wreck + 0xc));
             Transform_SetAnimationState(t, 1, 0);
-            if (self->field_0x28 == 3 && self->field_0x134 != 0 &&
-                *(int *)((char *)self->field_0x8 + 0x10) != -1) {
-                AEGeometry_addChild(self->field_0x8, self->field_0x124);
+            if (self->faction == 3 && self->moving != 0 &&
+                *(int *)((char *)self->geometry + 0x10) != -1) {
+                AEGeometry_addChild(self->geometry, self->wreckGeometry);
             }
         }
 
         // particle + sound for the explosion (shared tail for both branches)
-        void *lod = self->field_0x54;
+        void *lod = self->level;
         void *mgr = *(void **)((char *)lod + 0x74);
         int sysOff = typeIsPirateOrE(self) ? 0x54 : 0x50;
         int sys = *(int *)((char *)lod + sysOff);
-        void *m = AEGeometry_getMatrix(self->field_0x8);
+        void *m = AEGeometry_getMatrix(self->geometry);
         void *sndHandle = ParticleSystemManager_systemSetMatrix(mgr, sys, m);
         Vector *pos = 0;
         if (*(char *)((char *)*g_pfo_audioFlag + 0xf) != 0)
             pos = (Vector *)((char *)self + 0x2c);
         FModSound_play(*g_pfo_fmod, 0x14, pos, (float)(long)sndHandle);
-        lod = self->field_0x54;
+        lod = self->level;
         ParticleSystemManager_enableSystemEmit(*(void **)((char *)lod + 0x74),
             (bool)(unsigned char)*(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50)));
 
         expl = operator_new(0x68);
         Explosion_ctor(expl, 0);
-        self->field_0x18c = expl;
+        self->explosion = expl;
         ((Explosion *)(expl))->addFireStreaks();
-        expl = self->field_0x18c;
+        expl = self->explosion;
 
         char posBuf[12];
-        AEGeometry_getPosition((Vector *)posBuf, self->field_0x8);
+        AEGeometry_getPosition((Vector *)posBuf, self->geometry);
         ((Explosion *)(expl))->start((Vector *)posBuf, (const Vector *)0);
 
-        if (self->field_0xac == 0xe) {
+        if (self->kind == 0xe) {
             unsigned int *enemies = (unsigned int *)Level_getEnemies();
             for (unsigned int i = 0; i < enemies[0]; i++) {
                 void *en = Level_getEnemies();
@@ -401,8 +401,8 @@ afterMotion:
                 }
                 enemies = (unsigned int *)Level_getEnemies();
             }
-            if (self->field_0xac == 0xe &&
-                *(char *)((char *)self->field_0x4 + 0x44) == 0) {
+            if (self->kind == 0xe &&
+                *(char *)((char *)self->player + 0x44) == 0) {
                 void *egoObj = *g_pfo_egoA;
                 void *ach = *g_pfo_achievements;
                 *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1;
@@ -421,53 +421,53 @@ afterMotion:
         }
     }
 
-    int state = self->field_0x88;
+    int state = self->state;
     if (state == 3) {
         // dying: run explosion, drift, advance the wreck transform until done
-        if (self->field_0x18c != 0)
-            Explosion_update(self->field_0x18c, dt, 0);
-        if (self->field_0xac != 0x37a3) {
-            if (self->field_0x134 != 0) {
-                self->field_0x180 = self->field_0x180 + dt;
-                float d = AEGeometry_moveForward_ret(self->field_0x124, (float)dt);
-                if (self->field_0x78 != 0)
-                    AEGeometry_moveForward_ret(self->field_0x78, d);
+        if (self->explosion != 0)
+            Explosion_update(self->explosion, dt, 0);
+        if (self->kind != 0x37a3) {
+            if (self->moving != 0) {
+                self->intPosZ = self->intPosZ + dt;
+                float d = AEGeometry_moveForward_ret(self->wreckGeometry, (float)dt);
+                if (self->secondaryGeometry != 0)
+                    AEGeometry_moveForward_ret(self->secondaryGeometry, d);
             }
-            void *m = AEGeometry_getMatrix(self->field_0x124);
-            Matrix_assign((char *)self->field_0x4 + 0x4, m);
+            void *m = AEGeometry_getMatrix(self->wreckGeometry);
+            Matrix_assign((char *)self->player + 0x4, m);
             char posBuf[12];
-            AEGeometry_getPosition((Vector *)posBuf, self->field_0x124);
+            AEGeometry_getPosition((Vector *)posBuf, self->wreckGeometry);
             Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)posBuf);
-            Array<void *> *bv = (Array<void *> *)self->field_0x128;
+            Array<void *> *bv = (Array<void *> *)self->boundingVolumes;
             if (bv != 0) {
                 for (unsigned int i = 0; i < bv->size(); i++) {
                     void *o = bv->data()[i];
                     typedef void (*BVFn)(void *, float, float, float);
                     BVFn fn = *(BVFn *)(*(char **)o + 0x4);
-                    fn(o, self->field_0x2c, self->field_0x30, self->field_0x34);
-                    bv = (Array<void *> *)self->field_0x128;
+                    fn(o, self->posX, self->posY, self->posZ);
+                    bv = (Array<void *> *)self->boundingVolumes;
                 }
             }
         }
-        self->field_0x101 = 0;
+        self->finished = 0;
         void *t = PaintCanvas_TransformGetTransform(*g_pfo_canvasU,
-                    *(int *)((char *)self->field_0x124 + 0xc));
+                    *(int *)((char *)self->wreckGeometry + 0xc));
         Transform_Update(t, bdt);
         t = PaintCanvas_TransformGetTransform(*g_pfo_canvasU,
-                    *(int *)((char *)self->field_0x124 + 0xc));
+                    *(int *)((char *)self->wreckGeometry + 0xc));
         if (*(char *)((char *)t + 0xed) == 0) {
-            void *lod = self->field_0x54;
-            self->field_0x88 = 4;
+            void *lod = self->level;
+            self->state = 4;
             ParticleSystemManager_enableSystemEmit(*(void **)((char *)lod + 0x74),
                 (bool)(unsigned char)*(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50)));
-            ((Explosion *)(self->field_0x18c))->reset();
+            ((Explosion *)(self->explosion))->reset();
             float scale = 6.0f;
-            if (self->field_0xac == 0x37e7) scale = 8.0f;
-            if (self->field_0xac == 0x37a3) scale = 8.0f;
-            ((Explosion *)(self->field_0x18c))->setScaling(scale);
-            ((Explosion *)(self->field_0x18c))->start((Vector *)((char *)self + 0x2c), (const Vector *)0);
-            self->field_0x198 = 1;
-            self->field_0x190 = 0;
+            if (self->kind == 0x37e7) scale = 8.0f;
+            if (self->kind == 0x37a3) scale = 8.0f;
+            ((Explosion *)(self->explosion))->setScaling(scale);
+            ((Explosion *)(self->explosion))->start((Vector *)((char *)self + 0x2c), (const Vector *)0);
+            self->rumbleTimer = 1;
+            self->explosionElapsed = 0;
             if (Level_getPlayer() != 0) {
                 void *ego = Level_getPlayer();
                 if (((PlayerEgo *)(ego))->getTargetFollowCamera() != 0) {
@@ -479,83 +479,83 @@ afterMotion:
                     float len = Vector_length((Vector *)cp);
                     float maxd = 50.0f;
                     float use = (len < maxd) ? len : maxd;
-                    self->field_0x19c = 1.0f - use / maxd;
+                    self->rumblePercentage = 1.0f - use / maxd;
                     ego = Level_getPlayer();
                     cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
-                    TargetFollowCamera_setRumblePercentage(self->field_0x19c, cam);
+                    TargetFollowCamera_setRumblePercentage(self->rumblePercentage, cam);
                 }
             }
         }
     } else if (state == 4) {
         // exploding
-        self->field_0x190 = self->field_0x190 + dt;
-        if (self->field_0x18c != 0)
-            Explosion_update(self->field_0x18c, dt, 0);
-        self->field_0xd8 = self->field_0xd8 + dt;
+        self->explosionElapsed = self->explosionElapsed + dt;
+        if (self->explosion != 0)
+            Explosion_update(self->explosion, dt, 0);
+        self->explosionTimer = self->explosionTimer + dt;
 
-        bool spin = self->field_0x4c != 0 && ((Player *)(self->field_0x4))->isActive() != 0 &&
-                    self->field_0x78 != 0;
+        bool spin = self->hasCargo != 0 && ((Player *)(self->player))->isActive() != 0 &&
+                    self->secondaryGeometry != 0;
         if (spin) {
             float r = (float)(dt >> 1) * 0.001f; // DAT scalings
             r = (float)(int)(r * 1.0f);
-            AEGeometry_rotate(self->field_0x78, r, r, r);
-            if (self->field_0xd8 >= 0xea61) {
-                self->field_0x101 = 1;
+            AEGeometry_rotate(self->secondaryGeometry, r, r, r);
+            if (self->explosionTimer >= 0xea61) {
+                self->finished = 1;
             }
         } else {
-            if (self->field_0x18c != 0 && ((Explosion *)(self->field_0x18c))->isPlaying() == 0) {
-                if (self->field_0xd8 >= 0xea61)
-                self->field_0x101 = 1;
+            if (self->explosion != 0 && ((Explosion *)(self->explosion))->isPlaying() == 0) {
+                if (self->explosionTimer >= 0xea61)
+                self->finished = 1;
             }
         }
 
-        if (self->field_0x194 >= 0) {
-            if (self->field_0x12c != 0 && self->field_0x190 >= 0x8d &&
-                (unsigned int)self->field_0x1a0 <= 0x7fffffff) {
+        if (self->wreckType >= 0) {
+            if (self->wreckCollision != 0 && self->explosionElapsed >= 0x8d &&
+                (unsigned int)self->wreckMaterial <= 0x7fffffff) {
                 char posBuf[12];
-                AEGeometry_getPosition((Vector *)posBuf, self->field_0x8);
+                AEGeometry_getPosition((Vector *)posBuf, self->geometry);
                 Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)posBuf);
-                Array<void *> *bv = (Array<void *> *)self->field_0x12c;
+                Array<void *> *bv = (Array<void *> *)self->wreckCollision;
                 for (unsigned int i = 0; i < bv->size(); i++) {
                     void *o = bv->data()[i];
                     typedef void (*BVFn)(void *, float, float, float);
                     BVFn fn = *(BVFn *)(*(char **)o + 0x4);
-                    fn(o, self->field_0x2c, self->field_0x30, self->field_0x34);
+                    fn(o, self->posX, self->posY, self->posZ);
                 }
                 unsigned short mat;
-                switch ((unsigned int)self->field_0x194) {
+                switch ((unsigned int)self->wreckType) {
                     case 1: mat = 0x8248; break;
                     case 2: mat = 0x8249; break;
                     case 3: mat = 0x824a; break;
                     case 4: mat = 0x824b; break;
                     default: mat = 0x824d; break;
                 }
-                self->field_0x1a0 = mat;
+                self->wreckMaterial = mat;
                 void *pc = *g_pfo_pcMaterial;
                 char matOut[4];
                 PaintCanvas_MaterialCreate(pc, mat, matOut);
                 PaintCanvas_MeshChangeMaterial(pc,
-                    *(unsigned int *)((char *)self->field_0x124 + 0x1c),
+                    *(unsigned int *)((char *)self->wreckGeometry + 0x1c),
                     *(unsigned short *)matOut);
             }
             // rumble ramp
             if (Level_getPlayer() != 0) {
                 void *ego = Level_getPlayer();
                 void *cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
-                if (cam != 0 && self->field_0x198 > 0) {
-                    int v = self->field_0x198 + dt;
+                if (cam != 0 && self->rumbleTimer > 0) {
+                    int v = self->rumbleTimer + dt;
                     if (v >= 0x7d0) v = 0x7d0;
-                    self->field_0x198 = v;
+                    self->rumbleTimer = v;
                     ego = Level_getPlayer();
                     cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                     TargetFollowCamera_setRumblePercentage(
-                        self->field_0x19c * ((float)v / 50.0f + 1.0f), cam);
-                    if (self->field_0x18c != 0 &&
-                        ((Explosion *)(self->field_0x18c))->isPlaying() == 0) {
+                        self->rumblePercentage * ((float)v / 50.0f + 1.0f), cam);
+                    if (self->explosion != 0 &&
+                        ((Explosion *)(self->explosion))->isPlaying() == 0) {
                         ego = Level_getPlayer();
                         cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                         TargetFollowCamera_setRumblePercentage(0.0f, cam);
-                        self->field_0x198 = 0;
+                        self->rumbleTimer = 0;
                     }
                 }
             }
@@ -564,46 +564,46 @@ afterMotion:
         // dead-but-selectable: search for a nearby active enemy to re-home on
         unsigned int *enemies = (unsigned int *)Player_getEnemies();
         if (enemies != 0) {
-            self->field_0x168 = 0;
+            self->targetEnemy = 0;
             for (unsigned int i = 0; i < enemies[0]; i++) {
-                if (((Player *)(((Player *)(self->field_0x4))->getEnemy(i)))->isActive() != 0) {
+                if (((Player *)(((Player *)(self->player))->getEnemy(i)))->isActive() != 0) {
                     char pb[12];
                     Player_getPosition((Vector *)pb);
                     Vector_assign((Vector *)((char *)self + 0x90), (Vector *)pb);
-                    float dx = self->field_0x2c - self->field_0x90;
-                    float dy = self->field_0x30 - self->field_0x94;
-                    float dz = self->field_0x34 - self->field_0x98;
+                    float dx = self->posX - self->targetX;
+                    float dy = self->posY - self->targetY;
+                    float dz = self->posZ - self->targetZ;
                     const float lo = 0.0f, hi = 50.0f; // DAT thresholds
                     if (dx < hi && dx > lo && dy < hi && dy > lo && dz < hi && dz > lo) {
-                        self->field_0x168 = (int32_t)(__INTPTR_TYPE__)((Player *)(self->field_0x4))->getEnemy(i);
+                        self->targetEnemy = (int32_t)(__INTPTR_TYPE__)((Player *)(self->player))->getEnemy(i);
                         Player_getPosition((Vector *)pb);
                         Vector_assign((Vector *)((char *)self + 0x90), (Vector *)pb);
-                        self->field_0x144 = self->field_0x90;
-                        self->field_0x148 = self->field_0x94;
-                        self->field_0x14c = self->field_0x98;
+                        self->field_0x144 = self->targetX;
+                        self->field_0x148 = self->targetY;
+                        self->field_0x14c = self->targetZ;
                         break;
                     }
                 }
             }
         }
-        float vx = self->field_0x144 - self->field_0x2c;
-        float vy = self->field_0x148 - self->field_0x30;
-        float vz = self->field_0x14c - self->field_0x34;
+        float vx = self->field_0x144 - self->posX;
+        float vy = self->field_0x148 - self->posY;
+        float vz = self->field_0x14c - self->posZ;
         self->field_0x150 = vx;
         self->field_0x154 = vy;
         self->field_0x158 = vz;
         const float lo = 0.0f, hi = 50.0f;
         if (vx < hi && vx > lo && vz > lo && vy < hi && vy > lo && vz < hi) {
-            self->field_0x88 = 1;
-            ((Player *)(self->field_0x4))->setActive((bool)(unsigned char)(long)self->field_0x4);
+            self->state = 1;
+            ((Player *)(self->player))->setActive((bool)(unsigned char)(long)self->player);
         }
     }
 
     // mirror the integer position into the Player object
-    void *p = self->field_0x4;
-    *(int *)((char *)p + 0x48) = self->field_0x178;
-    *(int *)((char *)p + 0x4c) = self->field_0x17c;
-    *(int *)((char *)p + 0x50) = self->field_0x180;
+    void *p = self->player;
+    *(int *)((char *)p + 0x48) = self->intPosX;
+    *(int *)((char *)p + 0x4c) = self->intPosY;
+    *(int *)((char *)p + 0x50) = self->intPosZ;
 }
 
 // ---- setExhaustVisible_154cb0.cpp ----
@@ -614,7 +614,7 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_canvas;
 // field checks). clang shrink-wraps here (checks before push, bx lr early-exit).
 void PlayerFixedObject::setExhaustVisible(bool v) {
     PlayerFixedObject *self = this;
-    void *geom = self->field_0x8;
+    void *geom = self->geometry;
     if (geom != 0 && *(int *)((char *)geom + 0x14) != -1) {
         void **holder = g_pfo_canvas;
         return Transform_setExhaustVisible(
@@ -631,23 +631,23 @@ typedef int (*CollideFn)(void *bv, float, float, float);
 
 int PlayerFixedObject::collide(float x, float y, float z) {
     PlayerFixedObject *self = this;
-    Array<void *> *a = (Array<void *> *)self->field_0x12c;
-    if ((a != 0 || self->field_0x88 != 4) && self->field_0x8c != 0) {
-        if (a != 0 && self->field_0x88 == 4) {
+    Array<void *> *a = (Array<void *> *)self->wreckCollision;
+    if ((a != 0 || self->state != 4) && self->field_0x8c != 0) {
+        if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
                 void *bv = a->data()[i];
                 CollideFn fn = *(CollideFn *)(*(char **)bv + 0x8);
                 if (fn(bv, x, y, z) != 0) return 1;
-                a = (Array<void *> *)self->field_0x12c;
+                a = (Array<void *> *)self->wreckCollision;
             }
         } else {
-            Array<void *> *b = (Array<void *> *)self->field_0x128;
+            Array<void *> *b = (Array<void *> *)self->boundingVolumes;
             if (b != 0) {
                 for (uint32_t i = 0; i < b->size(); i++) {
                     void *bv = b->data()[i];
                     CollideFn fn = *(CollideFn *)(*(char **)bv + 0x8);
                     if (fn(bv, x, y, z) != 0) return 1;
-                    b = (Array<void *> *)self->field_0x128;
+                    b = (Array<void *> *)self->boundingVolumes;
                 }
             }
         }
@@ -663,7 +663,7 @@ void PlayerFixedObject::setBV(BoundingVolume *bv) {
     PlayerFixedObject *self = this;
     void *arr = operator_new(0xc);
     Array_BV_ctor(arr);
-    self->field_0x128 = arr;
+    self->boundingVolumes = arr;
     return BoundingVolume_setArr(bv, arr);
 }
 
@@ -684,15 +684,15 @@ void PlayerFixedObject::reset() {
 
     // vtable slot 0x48 -> setPosition(this->0x58, 0x5c, 0x60)
     SetPosFn setPos = *(SetPosFn *)(*(char **)self + 0x48);
-    setPos(self, self->field_0x58, self->field_0x5c, self->field_0x60);
+    setPos(self, self->spawnX, self->spawnY, self->spawnZ);
 
-    self->field_0x168 = 0;
+    self->targetEnemy = 0;
 
     // Vector copy: 0x58 -> 0x138
     {
         char buf[12];
-        *(uint64_t *)buf = self->field_0x58;
-        *(uint32_t *)(buf + 8) = self->field_0x60;
+        *(uint64_t *)buf = self->spawnX;
+        *(uint32_t *)(buf + 8) = self->spawnZ;
         Vector_assign((Vector *)((char *)self + 0x138), (Vector *)buf);
     }
     // Vector copy: 0x138 -> 0x2c
@@ -703,9 +703,9 @@ void PlayerFixedObject::reset() {
         Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
     }
 
-    self->field_0x130 = 0;
-    if (self->field_0x88 != 5)
-        self->field_0x88 = 0;
+    self->deltaTime = 0;
+    if (self->state != 5)
+        self->state = 0;
 
     VecAssignFn fn = *g_pfo_vecAssignZero;
     char zero[12];
@@ -731,33 +731,33 @@ __attribute__((visibility("hidden"))) extern void ***g_pfo_globals;
 
 void PlayerFixedObject::setWreckedMeshId(int meshId) {
     PlayerFixedObject *self = this;
-    self->field_0x184 = (uint16_t)meshId;
+    self->wreckMeshId = (uint16_t)meshId;
     void *geom = operator_new(0xc0);
     void **holder = g_pfo_canvas2;
     AEGeometry_ctor(geom, (uint16_t)meshId, *holder, true);
-    self->field_0x124 = geom;
+    self->wreckGeometry = geom;
     void *t = PaintCanvas_TransformGetTransform(*holder, *(int *)((char *)geom + 0xc));
     *(int *)((char *)t + 0xe0) = 0x48f42400; // 500000.0f far-clip constant (raw bits)
 
-    int kind = self->field_0xac;
+    int kind = self->kind;
     int sel;
     if (kind == 0xd) {
         sel = 4;
     } else if (kind == 0xe) {
         sel = 0;
     } else if (kind == 0xf) {
-        if (self->field_0x28 == 3) sel = 1;
-        else sel = (self->field_0x28 == 2) ? 2 : 3;
+        if (self->faction == 3) sel = 1;
+        else sel = (self->faction == 2) ? 2 : 3;
     } else if (kind == 0x37a3) {
         sel = 5;
     } else {
-        sel = self->field_0x194;
+        sel = self->wreckType;
         if (sel < 0) return;
-        self->field_0x12c = Globals_getWreckCollision(**g_pfo_globals, sel, self->field_0x124);
+        self->wreckCollision = Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
         return;
     }
-    self->field_0x194 = sel;
-    self->field_0x12c = Globals_getWreckCollision(**g_pfo_globals, sel, self->field_0x124);
+    self->wreckType = sel;
+    self->wreckCollision = Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
 }
 
 // ---- getProjectionVector_154dd6.cpp ----
@@ -767,15 +767,15 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
 // first bv in a callee reg; clang lays the branches out separately here.
 V3 PlayerFixedObject::getProjectionVector() {
     PlayerFixedObject *self = this;
-    void *bv = self->field_0x12c;
-    if (bv != 0 && self->field_0x88 == 4) {
-        int idx = self->field_0x16c;
+    void *bv = self->wreckCollision;
+    if (bv != 0 && self->state == 4) {
+        int idx = self->collisionIndex;
         void **data = *(void ***)((char *)bv + 0x4);
         return BV_getProjectionVector(data[idx]);
     }
-    void *bv2 = self->field_0x128;
+    void *bv2 = self->boundingVolumes;
     if (bv2 != 0) {
-        int idx = self->field_0x16c;
+        int idx = self->collisionIndex;
         void **data = *(void ***)((char *)bv2 + 0x4);
         return BV_getProjectionVector(data[idx]);
     }
@@ -790,29 +790,29 @@ V3 PlayerFixedObject::getProjectionVector() {
 
 void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
 {
-    void *wreck = self->field_0x124;
+    void *wreck = self->wreckGeometry;
     *(void **)self = &PlayerFixedObject_vtable + 8;
-    if (wreck != self->field_0x8) {
+    if (wreck != self->geometry) {
         if (wreck != 0) operator_delete(AEGeometry_dtor(wreck));
-        self->field_0x124 = 0;
+        self->wreckGeometry = 0;
     }
-    void *bvB = self->field_0x128;
+    void *bvB = self->boundingVolumes;
     if (bvB != 0) {
         ArrayReleaseClasses_BV(bvB);
-        void *b = self->field_0x128;
+        void *b = self->boundingVolumes;
         if (b != 0) operator_delete(Array_BV_dtor(b));
     }
-    self->field_0x128 = 0;
-    void *bvA = self->field_0x12c;
+    self->boundingVolumes = 0;
+    void *bvA = self->wreckCollision;
     if (bvA != 0) {
         ArrayReleaseClasses_BV(bvA);
-        void *a = self->field_0x12c;
+        void *a = self->wreckCollision;
         if (a != 0) operator_delete(Array_BV_dtor(a));
     }
-    self->field_0x12c = 0;
-    void *expl = self->field_0x18c;
+    self->wreckCollision = 0;
+    void *expl = self->explosion;
     if (expl != 0) operator_delete(Explosion_dtor(expl));
-    self->field_0x18c = 0;
+    self->explosion = 0;
     ((String *)((char *)self + 0x1ac))->dtor();
     return PlayerFixedObject_baseDtor(self);
 }
@@ -826,28 +826,28 @@ extern "C" void render_thunk_other(void *expl);     // DAT_001ac2b4 thunk, arg =
 // state5 block instead of sharing it via the original goto; structure differs.
 void PlayerFixedObject::render() {
     PlayerFixedObject *self = this;
-    void *g78 = self->field_0x78;
-    if (g78 != 0 && self->field_0x1b8 == 0) {
+    void *g78 = self->secondaryGeometry;
+    if (g78 != 0 && self->shipHidden == 0) {
         AEGeometry_render(g78);
     }
-    int state = self->field_0x88;
+    int state = self->state;
     void *expl;
     if (state == 5) {
 LAB_538:
-        if (self->field_0x1b8 != 0) return;
-        return render_thunk_state5(self->field_0x8);
+        if (self->shipHidden != 0) return;
+        return render_thunk_state5(self->geometry);
     }
     if (state == 4) {
-        if (self->field_0x1b8 == 0) AEGeometry_render(self->field_0x124);
-        expl = self->field_0x18c;
+        if (self->shipHidden == 0) AEGeometry_render(self->wreckGeometry);
+        expl = self->explosion;
         if (expl == 0) return;
     } else {
         if (state != 3) {
-            if (((Player *)(self->field_0x4))->isActive() == 0) return;
+            if (((Player *)(self->player))->isActive() == 0) return;
             goto LAB_538;
         }
-        if (self->field_0x1b8 == 0) AEGeometry_render(self->field_0x124);
-        expl = self->field_0x18c;
+        if (self->shipHidden == 0) AEGeometry_render(self->wreckGeometry);
+        expl = self->explosion;
     }
     return render_thunk_other(expl);
 }
@@ -879,20 +879,20 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     *(void **)self = &PlayerFixedObject_vtable + 8;
 
     String_ctor_empty((char *)self + 0x1ac);
-    self->field_0x18c = 0;
-    self->field_0x184 = 0;
-    self->field_0x28 = param2;
-    self->field_0x124 = 0;
-    self->field_0x128 = 0;
-    self->field_0x12c = 0;
-    self->field_0x130 = 0;
-    self->field_0x168 = 0;
-    self->field_0x16c = 0;
+    self->explosion = 0;
+    self->wreckMeshId = 0;
+    self->faction = param2;
+    self->wreckGeometry = 0;
+    self->boundingVolumes = 0;
+    self->wreckCollision = 0;
+    self->deltaTime = 0;
+    self->targetEnemy = 0;
+    self->collisionIndex = 0;
     self->field_0x170 = 0;
-    self->field_0x1b8 = 0;
-    self->field_0x190 = 0;
+    self->shipHidden = 0;
+    self->explosionElapsed = 0;
     self->field_0x174 = 0;
-    self->field_0x178 = 0; self->field_0x17c = 0; self->field_0x180 = 0;
+    self->intPosX = 0; self->intPosY = 0; self->intPosZ = 0;
 
     // Vector::operator=(this+0x2c, {sx,sy,sz})
     {
@@ -901,13 +901,13 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
         Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
     }
 
-    self->field_0x134 = 0;
-    self->field_0x194 = -1;
-    self->field_0x1a0 = -1;
-    self->field_0x1a4 = 0;
-    self->field_0x178 = (int32_t)sx;
-    self->field_0x17c = (int32_t)sy;
-    self->field_0x180 = (int32_t)sz;
+    self->moving = 0;
+    self->wreckType = -1;
+    self->wreckMaterial = -1;
+    self->dockingType = 0;
+    self->intPosX = (int32_t)sx;
+    self->intPosY = (int32_t)sy;
+    self->intPosZ = (int32_t)sz;
 
     // Name string from a fixed literal.
     {
@@ -930,10 +930,10 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     }
 
     if (special) {
-        if (self->field_0x50 != 0) {
-            operator_delete(Array_int_dtor(self->field_0x50));
+        if (self->lootList != 0) {
+            operator_delete(Array_int_dtor(self->lootList));
         }
-        self->field_0x50 = 0;
+        self->lootList = 0;
     } else {
         void *gen = operator_new(1);
         Generator_ctor(gen);
@@ -944,12 +944,12 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
             for (uint32_t i = 0; i < 4; i++) {
                 if (g_pfo_stationIdx[i] == sidx) {
                     void *loot = Generator_getLootList(gen, g_pfo_lootParams[i * 2 + 1], 0);
-                    self->field_0x50 = loot;
+                    self->lootList = loot;
                 }
             }
         } else {
             uint32_t *loot = (uint32_t *)Generator_getLootList(gen, -1, -1);
-            self->field_0x50 = loot;
+            self->lootList = loot;
             if (loot != 0) {
                 int second = (kind != 0x498e) ? 0x4a88 : 0x498e;
                 if (kind != 0x498e && kind != second) {
@@ -957,15 +957,15 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
                     for (int idx = 1; (uint32_t)(idx - 1) < loot[0]; idx += 2) {
                         if (kind == 0xe) {
                             int r = AERandom_nextInt((int)(long)rng);
-                            loot = (uint32_t *)self->field_0x50;
+                            loot = (uint32_t *)self->lootList;
                             int *cell = (int *)(loot[1] + idx * 4);
                             *cell = *cell * (r + 5);
                         } else {
                             int r = AERandom_nextInt((int)(long)rng);
-                            int *base = (int *)(*(int *)((char *)self->field_0x50 + 4) + idx * 4);
+                            int *base = (int *)(*(int *)((char *)self->lootList + 4) + idx * 4);
                             *base = *base * (r + 2);
                             int r2 = AERandom_nextInt((int)(long)rng);
-                            loot = (uint32_t *)self->field_0x50;
+                            loot = (uint32_t *)self->lootList;
                             int *cell = (int *)(loot[1] + idx * 4);
                             int v = *cell;
                             if (v < r2 + 8) v = r2 + 8;
@@ -978,12 +978,12 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
         operator_delete(Generator_dtor(gen));
     }
 
-    *(uint8_t *)((char *)self->field_0x4 + 0x45) = 1;
+    *(uint8_t *)((char *)self->player + 0x45) = 1;
     if (kind != 0x37a3) {
         self->field_0xf8 = 0x2f;
         if (kind == 0xe) {
             self->field_0xf8 = -1;
-            self->field_0x134 = 0;
+            self->moving = 0;
         }
     }
 }
@@ -994,33 +994,33 @@ typedef void (*BVSetPosFn)(void *bv, float, float, float);
 // PlayerFixedObject::setPosition(float, float, float)
 void PlayerFixedObject::setPosition3(float x, float y, float z) {
     PlayerFixedObject *self = this;
-    self->field_0x58 = x;
-    self->field_0x5c = y;
-    self->field_0x60 = z;
-    self->field_0x178 = (int32_t)x;
-    self->field_0x17c = (int32_t)y;
-    self->field_0x180 = (int32_t)z;
+    self->spawnX = x;
+    self->spawnY = y;
+    self->spawnZ = z;
+    self->intPosX = (int32_t)x;
+    self->intPosY = (int32_t)y;
+    self->intPosZ = (int32_t)z;
 
-    AEGeometry_setPosition(self->field_0x8, x, y, z);
-    void *m = AEGeometry_getMatrix(self->field_0x8);
-    Matrix_assign((char *)self->field_0x4 + 0x4, m);
+    AEGeometry_setPosition(self->geometry, x, y, z);
+    void *m = AEGeometry_getMatrix(self->geometry);
+    Matrix_assign((char *)self->player + 0x4, m);
 
     char buf[12];
-    AEGeometry_getPosition((Vector *)buf, self->field_0x8);
+    AEGeometry_getPosition((Vector *)buf, self->geometry);
     Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
 
-    Array<void *> *bv = (Array<void *> *)self->field_0x128;
+    Array<void *> *bv = (Array<void *> *)self->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
             void *o = bv->data()[i];
             BVSetPosFn fn = *(BVSetPosFn *)(*(char **)o + 0x4);
-            fn(o, self->field_0x2c, self->field_0x30, self->field_0x34);
-            bv = (Array<void *> *)self->field_0x128;
+            fn(o, self->posX, self->posY, self->posZ);
+            bv = (Array<void *> *)self->boundingVolumes;
         }
     }
 
-    if (self->field_0x124 != 0) {
-        AEGeometry_setPosition(self->field_0x124, x, y, z);
+    if (self->wreckGeometry != 0) {
+        AEGeometry_setPosition(self->wreckGeometry, x, y, z);
     }
 }
 
@@ -1033,16 +1033,16 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_canvas3;
 
 void PlayerFixedObject::setDeadButSelectable() {
     PlayerFixedObject *self = this;
-    void *player = self->field_0x4;
-    self->field_0x134 = 0;
+    void *player = self->player;
+    self->moving = 0;
     ((Player *)(player))->setHitpoints(1);
-    ((Player *)(self->field_0x4))->setVulnerable(false);
-    LODManager_removeObject(*(void **)self->field_0x54, self->field_0x8);
-    void *geom = self->field_0x8;
+    ((Player *)(self->player))->setVulnerable(false);
+    LODManager_removeObject(*(void **)self->level, self->geometry);
+    void *geom = self->geometry;
     if (geom != 0) operator_delete(AEGeometry_dtor(geom));
     void **holder = g_pfo_canvas3;
-    void *newGeom = self->field_0x124;
-    self->field_0x8 = newGeom;
+    void *newGeom = self->wreckGeometry;
+    self->geometry = newGeom;
     void *t = PaintCanvas_TransformGetTransform(*holder, *(int *)((char *)newGeom + 0xc));
     Transform_SetAnimationRangeInTime(t, *(long long *)((char *)t + 0xf8));
 }
@@ -1055,23 +1055,23 @@ typedef int (*CollideFn)(void *bv, float, float, float);
 
 int PlayerFixedObject::outerCollide(float x, float y, float z) {
     PlayerFixedObject *self = this;
-    Array<void *> *a = (Array<void *> *)self->field_0x12c;
-    if ((a != 0 || self->field_0x88 != 4) && self->field_0x8c != 0) {
-        if (a != 0 && self->field_0x88 == 4) {
+    Array<void *> *a = (Array<void *> *)self->wreckCollision;
+    if ((a != 0 || self->state != 4) && self->field_0x8c != 0) {
+        if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
                 void *bv = a->data()[i];
                 CollideFn fn = *(CollideFn *)(*(char **)bv + 0xc);
-                if (fn(bv, x, y, z) != 0) { self->field_0x16c = i; return 1; }
-                a = (Array<void *> *)self->field_0x12c;
+                if (fn(bv, x, y, z) != 0) { self->collisionIndex = i; return 1; }
+                a = (Array<void *> *)self->wreckCollision;
             }
         } else {
-            Array<void *> *b = (Array<void *> *)self->field_0x128;
+            Array<void *> *b = (Array<void *> *)self->boundingVolumes;
             if (b != 0) {
                 for (uint32_t i = 0; i < b->size(); i++) {
                     void *bv = b->data()[i];
                     CollideFn fn = *(CollideFn *)(*(char **)bv + 0xc);
-                    if (fn(bv, x, y, z) != 0) { self->field_0x16c = i; return 1; }
-                    b = (Array<void *> *)self->field_0x128;
+                    if (fn(bv, x, y, z) != 0) { self->collisionIndex = i; return 1; }
+                    b = (Array<void *> *)self->boundingVolumes;
                 }
             }
         }
@@ -1090,24 +1090,24 @@ typedef void (*BVMoveFn)(void *bv, Vector);
 void PlayerFixedObject::moveForward(int amount) {
     PlayerFixedObject *self = this;
     float d = (float)amount;
-    self->field_0x180 = amount + self->field_0x180;
-    AEGeometry_moveForward(self->field_0x8, d);
-    void *m = AEGeometry_getMatrix(self->field_0x8);
-    Matrix_assign((char *)self->field_0x4 + 0x4, m);
+    self->intPosZ = amount + self->intPosZ;
+    AEGeometry_moveForward(self->geometry, d);
+    void *m = AEGeometry_getMatrix(self->geometry);
+    Matrix_assign((char *)self->player + 0x4, m);
     char buf[12];
-    AEGeometry_getPosition((Vector *)buf, self->field_0x8);
+    AEGeometry_getPosition((Vector *)buf, self->geometry);
     Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
-    if (self->field_0x124 != 0) {
-        AEGeometry_moveForward(self->field_0x124, d);
+    if (self->wreckGeometry != 0) {
+        AEGeometry_moveForward(self->wreckGeometry, d);
     }
-    Array<void *> *bv = (Array<void *> *)self->field_0x128;
+    Array<void *> *bv = (Array<void *> *)self->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
             void *o = bv->data()[i];
             BVMoveFn fn = *(BVMoveFn *)(*(char **)o + 0x4);
-            Vector pos = { self->field_0x2c, self->field_0x30, self->field_0x34 };
+            Vector pos = { self->posX, self->posY, self->posZ };
             fn(o, pos);
-            bv = (Array<void *> *)self->field_0x128;
+            bv = (Array<void *> *)self->boundingVolumes;
         }
     }
 }

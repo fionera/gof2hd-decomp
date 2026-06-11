@@ -47,18 +47,18 @@ struct ShaderBaseStruct {
 struct SpecCubeMapping : ShaderBaseStruct {
     static int ShaderIndex;
 
-    int      field_0x4;                  // +0x4   GL program handle
-    uint8_t  field_0x9;                  // +0x9   dirty flag
-    String   field_0xc;                  // +0xc   shader name
-    int      field_0x20;                 // +0x20  attrib a0
-    int      field_0x24;                 // +0x24  attrib a1
-    int      field_0x28;                 // +0x28  attrib a2
-    int      field_0x2c;                 // +0x2c  uniform u0
-    int      field_0x30;                 // +0x30  uniform u1
+    int      programHandle;                  // +0x4   GL program handle
+    uint8_t  lightingDirty;                  // +0x9   dirty flag
+    String   shaderName;                  // +0xc   shader name
+    int      attribPosition;                 // +0x20  attrib a0
+    int      attribNormal;                 // +0x24  attrib a1
+    int      attribTexCoord;                 // +0x28  attrib a2
+    int      mvpMatrixLoc;                 // +0x2c  uniform u0
+    int      normalMatrixLoc;                 // +0x30  uniform u1
     int      field_0x34;                 // +0x34  uniform u2
     int      field_0x38;                 // +0x38  uniform u3
-    int      field_0x3c;                 // +0x3c  uniform u5
-    int      field_0x40;                 // +0x40  uniform u4
+    int      samplerLoc1;                 // +0x3c  uniform u5
+    int      samplerLoc0;                 // +0x40  uniform u4
     int      field_0x44;                 // +0x44  uniform u6
     int      field_0x48;                 // +0x48  uniform u7
     int      field_0x4c;                 // +0x4c  uniform u8

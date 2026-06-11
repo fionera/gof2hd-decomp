@@ -42,12 +42,12 @@ void *operator new(__SIZE_TYPE__);
 // Field accessor via byte offset.
 
 struct AutoPilotList {
-    int field_0x0;                      // +0x0  selected index
-    int field_0x4;                      // +0x4  x
-    int field_0x8;                      // +0x8  y
-    int field_0xc;                      // +0xc  width
-    void* field_0x10;                   // +0x10 Array<String*>* entries
-    int field_0x14;                     // +0x14 count
+    int selected;                      // +0x0  selected index
+    int x;                      // +0x4  x
+    int y;                      // +0x8  y
+    int width;                      // +0xc  width
+    void* entries;                   // +0x10 Array<String*>* entries
+    int count;                     // +0x14 count
 
     void draw();
 

@@ -57,41 +57,41 @@ void NewsTicker::draw()
     int *fontHeightTable = *g_NewsTicker_draw_fontHeight;
     int *screenHeight = g_NewsTicker_draw_screenHeight;
     {
-        int x0 = this->field_0x4;
-        int y0 = this->field_0x8;
+        int x0 = this->x;
+        int y0 = this->y;
         int clipBottom = *screenHeight;
         int fontHeight = fontHeightTable[4];
         int fillHeight = (2 - y0) + clipBottom - fontHeight;
         PaintCanvas_FillRectangle(*canvasHolder, x0, y0 - 2,
-                                  this->field_0xc, fillHeight);
+                                  this->width, fillHeight);
     }
 
-    PaintCanvas_EnableClip(*canvasHolder, this->field_0x4, this->field_0x8,
-                           this->field_0xc, *screenHeight);
+    PaintCanvas_EnableClip(*canvasHolder, this->x, this->y,
+                           this->width, *screenHeight);
     PaintCanvas_SetColor(*canvasHolder, 0x777777ff);
 
     void **fontHolder = g_NewsTicker_draw_font;
-    String *text = &this->field_0x14;
-    float drawX = this->field_0x0 + (float)this->field_0x4;
+    String *text = &this->tickerText;
+    float drawX = this->scrollOffset + (float)this->x;
     PaintCanvas_DrawString(*canvasHolder, *fontHolder, text, (int)drawX,
-                           this->field_0x8, false);
+                           this->y, false);
 
     int language = GameText_getLanguage();
-    int textWidth = this->field_0x10;
-    float x = this->field_0x0;
+    int textWidth = this->textWidth;
+    float x = this->scrollOffset;
     if (language == 9) {
         if (x > (float)textWidth) {
-            x += (float)this->field_0x4;
-            int drawY = this->field_0x8;
+            x += (float)this->x;
+            int drawY = this->y;
             void *font = *fontHolder;
             void *canvas = *canvasHolder;
             PaintCanvas_DrawString(canvas, font, text, (int)x, drawY, false);
         }
     } else {
-        if (x < (float)(textWidth - this->field_0xc)) {
-            x += (float)this->field_0x4;
+        if (x < (float)(textWidth - this->width)) {
+            x += (float)this->x;
             x += (float)textWidth;
-            int drawY = this->field_0x8;
+            int drawY = this->y;
             void *font = *fontHolder;
             void *canvas = *canvasHolder;
             PaintCanvas_DrawString(canvas, font, text, (int)x, drawY, false);
@@ -104,40 +104,40 @@ void NewsTicker::draw()
 // ---- OnTouchEnd_15e374.cpp ----
 uint32_t NewsTicker::OnTouchEnd(int, int)
 {
-    if (this->field_0x28 == 0) {
+    if (this->touched == 0) {
         return 0;
     }
-    this->field_0x28 = 0;
+    this->touched = 0;
     return 1;
 }
 
 // ---- _NewsTicker_15e0d2.cpp ----
 NewsTicker::~NewsTicker()
 {
-    this->field_0x14.~String();
+    this->tickerText.~String();
 }
 
 // ---- update_15e0e4.cpp ----
 void NewsTicker::update(int dt)
 {
-    if (this->field_0x28 != 0) {
+    if (this->touched != 0) {
         return;
     }
 
     float step = ((float)dt / 1000.0f) * 50.0f;
     if (GameText_getLanguage() == 9) {
-        float x = this->field_0x0 + step;
-        float width = (float)this->field_0xc;
-        this->field_0x0 = x;
+        float x = this->scrollOffset + step;
+        float width = (float)this->width;
+        this->scrollOffset = x;
         if (x > width) {
-            this->field_0x0 = (float)-this->field_0x10;
+            this->scrollOffset = (float)-this->textWidth;
         }
     } else {
-        float x = this->field_0x0 - step;
-        float minX = (float)-this->field_0x10;
-        this->field_0x0 = x;
+        float x = this->scrollOffset - step;
+        float minX = (float)-this->textWidth;
+        this->scrollOffset = x;
         if (x < minX) {
-            this->field_0x0 = 0;
+            this->scrollOffset = 0;
         }
     }
 }
@@ -147,18 +147,18 @@ __attribute__((visibility("hidden"))) extern int *g_NewsTicker_touchMove_screenW
 
 bool NewsTicker::OnTouchMove(int x, int)
 {
-    uint8_t touched = this->field_0x28;
+    uint8_t touched = this->touched;
     if (touched != 0) {
-        float delta = (float)(this->field_0x2c - x);
-        float current = this->field_0x0;
+        float delta = (float)(this->lastTouchX - x);
+        float current = this->scrollOffset;
         int *limit = g_NewsTicker_touchMove_screenWidth;
         float next = current - delta;
-        this->field_0x0 = next;
+        this->scrollOffset = next;
         float maxX = (float)*limit;
         if (maxX < next) {
-            this->field_0x0 = maxX;
+            this->scrollOffset = maxX;
         }
-        this->field_0x2c = x;
+        this->lastTouchX = x;
     }
     return touched != 0;
 }
@@ -174,7 +174,7 @@ int NewsTicker::getHeight()
     top += 2;
     int bottom;
     __builtin_sub_overflow(top, fontHeight, &bottom);
-    return bottom - this->field_0x8;
+    return bottom - this->y;
 }
 
 // ---- replaceTokens_15c858.cpp ----
@@ -200,17 +200,17 @@ __attribute__((visibility("hidden"))) extern void **g_NewsTicker_ctor_canvas;
 
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 {
-    String *tickerText = &this->field_0x14;
+    String *tickerText = &this->tickerText;
     ((String *)(tickerText))->ctor();
-    this->field_0x4 = x;
-    this->field_0x8 = y;
-    this->field_0xc = width;
+    this->x = x;
+    this->y = y;
+    this->width = width;
 
     String empty;
     String_cstr_ctor(&empty, g_NewsTicker_ctor_empty, false);
     ((String *)(tickerText))->assign(&empty);
     ((String *)(&empty))->dtor();
-    this->field_0x10 = 0;
+    this->textWidth = 0;
 
     void *reader = operator new(1);
     FileRead_ctor(reader);
@@ -296,23 +296,23 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         ((String *)(&replaced))->dtor();
     }
 
-    this->field_0x10 = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
+    this->textWidth = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
                                                   *g_NewsTicker_ctor_font, tickerText);
-    if (this->field_0x10 < width) {
+    if (this->textWidth < width) {
         String copy;
         String_copy_ctor(&copy, tickerText, false);
         String_plusAssign(tickerText, &copy);
         ((String *)(&copy))->dtor();
-        this->field_0x10 = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
+        this->textWidth = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
                                                       *g_NewsTicker_ctor_font, tickerText);
     }
 
     if (GameText_getLanguage() == 9) {
-        width = -this->field_0x10;
+        width = -this->textWidth;
     }
-    this->field_0x2c = 0;
-    this->field_0x28 = 0;
-    this->field_0x0 = (float)width;
+    this->lastTouchX = 0;
+    this->touched = 0;
+    this->scrollOffset = (float)width;
 
     ArrayReleaseClasses_NewsItem(items);
     operator delete(Array_NewsItem_dtor(items));
@@ -327,17 +327,17 @@ __attribute__((visibility("hidden"))) extern int *g_NewsTicker_touchBegin_screen
 
 uint8_t NewsTicker::OnTouchBegin(int x, int y)
 {
-    if (this->field_0x4 <= x &&
-        x <= this->field_0x4 + this->field_0xc &&
-        this->field_0x8 <= y) {
+    if (this->x <= x &&
+        x <= this->x + this->width &&
+        this->y <= y) {
         int fontHeight = (*g_NewsTicker_touchBegin_font)[4];
         int bottom = *g_NewsTicker_touchBegin_screen;
         bottom += 2;
         __builtin_sub_overflow(bottom, fontHeight, &bottom);
         if (y <= bottom) {
-            this->field_0x2c = x;
-            this->field_0x28 = 1;
+            this->lastTouchX = x;
+            this->touched = 1;
         }
     }
-    return this->field_0x28;
+    return this->touched;
 }

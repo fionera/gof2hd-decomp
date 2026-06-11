@@ -35,11 +35,11 @@ void  LensFlare_restoreState(void *canvas, int saved);           // tail 0x001ac
 }
 
 struct LensFlare {
-    float field_0x0;        // +0x0  intensity
-    void* field_0x4;        // +0x4  PaintCanvas* canvas
-    int field_0x8;          // +0x8  width
-    int field_0xc;          // +0xc  height
-    void* field_0x10;       // +0x10 image handle array (uint[3])
+    float intensity;        // +0x0  intensity
+    void* canvas;        // +0x4  PaintCanvas* canvas
+    int width;          // +0x8  width
+    int height;          // +0xc  height
+    void* images;       // +0x10 image handle array (uint[3])
 
     LensFlare(PaintCanvas *canvas);
     ~LensFlare();

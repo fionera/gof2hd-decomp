@@ -30,12 +30,12 @@ extern void *const gItemDB __attribute__((visibility("hidden")));
 //   otherwise -> batch * item max price, scaled by 1.25.
 int BluePrint::getAutoCompletionPrice() {
     BluePrint *self = this;
-    int idx = self->field_0x20;
+    int idx = self->itemIndex;
     if (idx == 0xd2)
         return ((BluePrint *)(self))->getIngredientsValue() + 0x1e8480;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
     int maxPrice = Item_getMaxPrice(data[idx]);
-    return (int)((float)(self->field_0x24 * maxPrice) * 1.25f);
+    return (int)((float)(self->batchMultiplier * maxPrice) * 1.25f);
 }
 
 // ---- getRemainingAmount_177208.cpp ----
@@ -43,7 +43,7 @@ int BluePrint::getAutoCompletionPrice() {
 int BluePrint::getRemainingAmount(int item) {
     BluePrint *self = this;
     Array<int> *il = BluePrint_getIngredientList(self);
-    Array<int> *counters = self->field_0x0;
+    Array<int> *counters = self->ingredientCounters;
     for (uint32_t i = 0; i < counters->size(); i++) {
         if (il->data()[i] == item)
             return counters->data()[i];
@@ -54,7 +54,7 @@ int BluePrint::getRemainingAmount(int item) {
 // ---- isEmpty_17736a.cpp ----
 bool BluePrint::isEmpty() {
     BluePrint *self = this;
-    return self->field_0x4 == 0;
+    return self->spentValue == 0;
 }
 
 // ---- getStationName_177348.cpp ----
@@ -62,7 +62,7 @@ bool BluePrint::isEmpty() {
 AbyssEngine::String12 BluePrint::getStationName() {
     BluePrint *self = this;
     AbyssEngine::String12 r;
-    String_copy_ctor(&r, &self->field_0x14, false);
+    String_copy_ctor(&r, &self->stationName, false);
     return r;
 }
 
@@ -74,15 +74,15 @@ extern "C" void *ArrayInt_dtor(Array<int> *a);    // Array<int>::~Array
 // BluePrint::~BluePrint() (D2). Returns this.
 void *_ZN9BluePrintD2Ev(BluePrint *self)
 {
-    Array<int> *a = self->field_0x0;
+    Array<int> *a = self->ingredientCounters;
     if (a != 0) {
         ArrayReleaseInt(a);
-        Array<int> *a2 = self->field_0x0;
+        Array<int> *a2 = self->ingredientCounters;
         if (a2 != 0)
             operator_delete(ArrayInt_dtor(a2));
     }
-    self->field_0x0 = 0;
-    ((String *)(&self->field_0x14))->dtor();
+    self->ingredientCounters = 0;
+    ((String *)(&self->stationName))->dtor();
     return self;
 }
 
@@ -90,7 +90,7 @@ void *_ZN9BluePrintD2Ev(BluePrint *self)
 // BluePrint::complete() -> zero every quantity counter in the ingredient array at +0x00.
 void BluePrint::complete() {
     BluePrint *self = this;
-    Array<int> *a = self->field_0x0;
+    Array<int> *a = self->ingredientCounters;
     for (uint32_t i = 0; i < a->size(); i++)
         a->data()[i] = 0;
 }
@@ -108,7 +108,7 @@ int BluePrint::getCurrentAmount(int item) {
 // BluePrint::isCompleted() -> true once every ingredient counter has dropped below 1.
 bool BluePrint::isCompleted() {
     BluePrint *self = this;
-    Array<int> *a = self->field_0x0;
+    Array<int> *a = self->ingredientCounters;
     for (uint32_t i = 0; i < a->size(); i++)
         if (a->data()[i] >= 1)
             return false;
@@ -118,7 +118,7 @@ bool BluePrint::isCompleted() {
 // ---- unlock_17735e.cpp ----
 void BluePrint::unlock() {
     BluePrint *self = this;
-    self->field_0x8 = 1;
+    self->locked = 1;
 }
 
 // ---- reset_177374.cpp ----
@@ -128,21 +128,21 @@ extern void *const gStatusPtr __attribute__((visibility("hidden")));
 // BluePrint::reset() -> bump production count, refill the ingredient counters, clear state.
 void BluePrint::reset() {
     BluePrint *self = this;
-    self->field_0xc += 1;
+    self->productionCount += 1;
     Status_incGoodsProduced(*(void **)gStatusPtr, 1);
     Array<int> *ql = BluePrint_getQuantityList(self);
-    Array<int> *counters = self->field_0x0;
+    Array<int> *counters = self->ingredientCounters;
     for (uint32_t i = 0; i < counters->size(); i++)
         counters->data()[i] = ql->data()[i];
-    self->field_0x10 = -1;
-    self->field_0x28 = self->field_0x24;
-    self->field_0x4 = 0;
+    self->stationIndex = -1;
+    self->remainingBatch = self->batchMultiplier;
+    self->spentValue = 0;
 }
 
 // ---- lock_177364.cpp ----
 void BluePrint::lock() {
     BluePrint *self = this;
-    self->field_0x8 = 1;
+    self->locked = 1;
 }
 
 // ---- getTotalAmount_1771a8.cpp ----
@@ -165,7 +165,7 @@ extern void *const gItemDB __attribute__((visibility("hidden")));
 // BluePrint::getIngredientList() -> tail-call Item::getIngredients(itemDB[index]).
 Array<int> *BluePrint_getIngredientList(BluePrint *self)
 {
-    int idx = self->field_0x20;
+    int idx = self->itemIndex;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
     return Item_getIngredients(data[idx]);
 }
@@ -183,7 +183,7 @@ int BluePrint::getIngredientsValue() {
         for (uint32_t i = 0; i < il->size(); i++) {
             Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
             int price = Item_getSinglePrice(data[il->data()[i]]);
-            total += self->field_0x0->data()[i] * price;
+            total += self->ingredientCounters->data()[i] * price;
         }
     }
     return total;
@@ -196,7 +196,7 @@ extern void *const gItemDB __attribute__((visibility("hidden")));
 // BluePrint::getQuantityList() -> tail-call Item::getQuantities(itemDB[index]).
 Array<int> *BluePrint_getQuantityList(BluePrint *self)
 {
-    int idx = self->field_0x20;
+    int idx = self->itemIndex;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
     return Item_getQuantities(data[idx]);
 }
@@ -210,26 +210,26 @@ extern void *const gItemDB __attribute__((visibility("hidden")));
 // BluePrint::BluePrint(int item)
 BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item)
 {
-    ((String *)(&self->field_0x14))->ctor();
-    self->field_0x20 = item;
+    ((String *)(&self->stationName))->ctor();
+    self->itemIndex = item;
     Item **db = *(Item ***)((char *)*(void **)gItemDB + 0x4);
     Item *it = db[item];
     int type = Item_getType(it);
-    self->field_0x10 = -1;
-    self->field_0x24 = (type == 1) ? 10 : 1;
+    self->stationIndex = -1;
+    self->batchMultiplier = (type == 1) ? 10 : 1;
     Array<int> *quantities = Item_getQuantities(it);
-    self->field_0x0 = 0;
+    self->ingredientCounters = 0;
     if (Item_getIngredients(it) != 0) {
-        self->field_0x0 = new Array<int>();
-        ArraySetLengthInt(Item_getIngredients(it)->size(), self->field_0x0);
-        Array<int> *arr = self->field_0x0;
+        self->ingredientCounters = new Array<int>();
+        ArraySetLengthInt(Item_getIngredients(it)->size(), self->ingredientCounters);
+        Array<int> *arr = self->ingredientCounters;
         for (uint32_t i = 0; i < arr->size(); i++)
             arr->data()[i] = quantities->data()[i];
     }
-    self->field_0xc = 0;
-    self->field_0x8 = 0;
-    self->field_0x4 = 0;
-    self->field_0x28 = self->field_0x24;
+    self->productionCount = 0;
+    self->locked = 0;
+    self->spentValue = 0;
+    self->remainingBatch = self->batchMultiplier;
     return self;
 }
 
@@ -247,20 +247,20 @@ void BluePrint::addItem(Item *item, int amount, int station) {
         if (il != 0) {
             for (uint32_t i = 0; i < il->size(); i++) {
                 if (il->data()[i] == Item_getIndex(item)) {
-                    self->field_0x0->data()[i] -= amount;
-                    self->field_0x4 += Item_getSinglePrice(item) * amount;
-                    if (station >= 0 && self->field_0x10 < 0) {
-                        self->field_0x10 = station;
+                    self->ingredientCounters->data()[i] -= amount;
+                    self->spentValue += Item_getSinglePrice(item) * amount;
+                    if (station >= 0 && self->stationIndex < 0) {
+                        self->stationIndex = station;
                         if (Station_getIndex(Status_getStation()) == station) {
                             char tmp[12];
                             *(RetStr *)tmp = ((Station *)Status_getStation())->getName();
-                            ((String *)(&self->field_0x14))->assign((String *)tmp);
+                            ((String *)(&self->stationName))->assign((String *)tmp);
                             ((String *)(tmp))->dtor();
                         } else {
                             void *st = Galaxy_getStation(*(void **)gGalaxyPtr, station);
                             char tmp[12];
                             *(RetStr *)tmp = ((Station *)(st))->getName();
-                            ((String *)(&self->field_0x14))->assign((String *)tmp);
+                            ((String *)(&self->stationName))->assign((String *)tmp);
                             ((String *)(tmp))->dtor();
                             if (st != 0) {
                                 ((Station *)(st))->dtor();
@@ -282,7 +282,7 @@ void BluePrint::addItem(Item *item, int amount, int station) {
 float BluePrint::getCompletionRate() {
     BluePrint *self = this;
     Array<int> *quantity = BluePrint_getQuantityList(self);
-    Array<int> *counters = self->field_0x0;
+    Array<int> *counters = self->ingredientCounters;
     float rate = 0.0f;
     for (uint32_t i = 0; i < quantity->size(); i++) {
         int target = quantity->data()[i];

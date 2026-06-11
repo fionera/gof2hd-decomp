@@ -54,7 +54,7 @@ void ParticleSystemManager::update(long long dt)
             _ips_update(p, d);
             p = ((void **)this->field_0x1c)[i];
             if (((IParticleSystem*)p)->field_0x4 == 0) {
-                if (accum > 9 || ((IParticleSystem*)p)->field_0x5 != 0) {
+                if (accum > 9 || ((IParticleSystem*)p)->emitterVelocityDirty != 0) {
                     _ips_calcEmitterVelocity(p, this->field_0x10);
                     p = ((void **)this->field_0x1c)[i];
                 }
@@ -70,7 +70,7 @@ void ParticleSystemManager::update(long long dt)
             _ips_update(p, d);
             p = ((void **)this->field_0x40)[i];
             if (((IParticleSystem*)p)->field_0x4 == 0) {
-                if (accum > 9 || ((IParticleSystem*)p)->field_0x5 != 0) {
+                if (accum > 9 || ((IParticleSystem*)p)->emitterVelocityDirty != 0) {
                     _ips_calcEmitterVelocity(p, this->field_0x10);
                     p = ((void **)this->field_0x40)[i];
                 }

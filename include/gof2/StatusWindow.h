@@ -30,11 +30,11 @@ typedef AbyssEngine::String String;
 // Engine Array<T> header layout { length, data, cap } — `struct Arr` comes from ImageFactory.h.
 
 struct StatusWindow {
-    Arr* field_0x4;                     // +0x4
-    Arr* field_0x8;                     // +0x8
+    Arr* tabButtons;                     // +0x4
+    Arr* medalButtons;                     // +0x8
     void* field_0xc;                    // +0xc
-    void* field_0x10;                   // +0x10
-    unsigned char field_0x54;           // +0x54
+    void* detailLines;                   // +0x10
+    unsigned char isDragging;           // +0x54
 
     // ---- methods (converted from free functions) ----
     int OnTouchBegin(int param_1, int param_2);

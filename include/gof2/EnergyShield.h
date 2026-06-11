@@ -51,29 +51,29 @@ struct ShaderBaseStruct {
 // EnergyShield — refraction shield shader. Derives from ShaderBaseStruct
 // (vtable ptr at +0x0). Int fields are GL uniform/attribute locations.
 struct EnergyShield {
-    void *field_0x0;            // +0x0  vtable ptr
-    int field_0x4;              // +0x4  program
+    void *vtable;            // +0x0  vtable ptr
+    int program;              // +0x4  program
     uint8_t pad_0x8;            // +0x8
-    uint8_t field_0x9;          // +0x9  needsRefractInit flag
+    uint8_t needsUniformUpdate;          // +0x9  needsRefractInit flag
     uint16_t pad_0xa;
-    String field_0xc;           // +0xc  shader name ("EnergyShield")
-    // GL locations (block accessed dynamically as &field_0x38 + i*4 for tex units)
-    int field_0x20;             // +0x20 a_position
-    int field_0x24;             // +0x24 a_texCoord
-    int field_0x28;             // +0x28 u_m0
-    int field_0x2c;             // +0x2c u_m1
-    int field_0x30;             // +0x30 u_m2
-    int field_0x34;             // +0x34 u_m3
-    int field_0x38;             // +0x38 u_tex0
-    int field_0x3c;             // +0x3c u_tex1
+    String shaderName;           // +0xc  shader name ("EnergyShield")
+    // GL locations (block accessed dynamically as &uTex0 + i*4 for tex units)
+    int aPosition;             // +0x20 a_position
+    int aTexCoord;             // +0x24 a_texCoord
+    int uM0;             // +0x28 u_m0
+    int uM1;             // +0x2c u_m1
+    int uM2;             // +0x30 u_m2
+    int uM3;             // +0x34 u_m3
+    int uTex0;             // +0x38 u_tex0
+    int uTex1;             // +0x3c u_tex1
     int pad_0x40;
-    int field_0x44;             // +0x44 u_m4
-    int field_0x48;             // +0x48 u_m5
+    int uM4;             // +0x44 u_m4
+    int uM5;             // +0x48 u_m5
     int pad_0x4c;
-    int field_0x50;             // +0x50 u_m7
-    int field_0x54;             // +0x54 u_refract
-    int field_0x58;             // +0x58 u_m6
-    int field_0x5c;             // +0x5c u_m8
+    int uM7;             // +0x50 u_m7
+    int uRefract;             // +0x54 u_refract
+    int uM6;             // +0x58 u_m6
+    int uM8;             // +0x5c u_m8
 
     static int ShaderIndex;
 

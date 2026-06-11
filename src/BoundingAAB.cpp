@@ -10,8 +10,8 @@ extern "C" void BoundingVolume_update(BoundingAAB *self, float x, float y, float
 int BoundingAAB::outerCollide(float x, float y, float z)
 {
     BoundingAAB *self = this;
-    float centerX = self->field_0x8 + self->field_0x14;
-    float extentX = self->field_0x20;
+    float centerX = self->centerX + self->extentsX;
+    float extentX = self->halfExtentX;
     if (!(centerX - extentX < x)) {
         return 0;
     }
@@ -19,8 +19,8 @@ int BoundingAAB::outerCollide(float x, float y, float z)
         return 0;
     }
 
-    float centerY = self->field_0xc + self->field_0x18;
-    float extentY = self->field_0x24;
+    float centerY = self->centerY + self->extentsY;
+    float extentY = self->halfExtentY;
     if (!(centerY - extentY < y)) {
         return 0;
     }
@@ -28,8 +28,8 @@ int BoundingAAB::outerCollide(float x, float y, float z)
         return 0;
     }
 
-    float centerZ = self->field_0x10 + self->field_0x1c;
-    float extentZ = self->field_0x28;
+    float centerZ = self->centerZ + self->extentsZ;
+    float extentZ = self->halfExtentZ;
     if (!(centerZ - extentZ < z)) {
         return 0;
     }
@@ -45,24 +45,24 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     float distances[6];
     Vector offsets[6] = {};   // each candidate face-offset, only one axis non-zero
 
-    float centerX = this->field_0x8 + this->field_0x14;
-    float extentX = this->field_0x20;
+    float centerX = this->centerX + this->extentsX;
+    float extentX = this->halfExtentX;
     float highX = centerX + extentX;
     float lowX = centerX - extentX;
     float pointX = point.x;
     offsets[0].x = pointX - highX;
     offsets[1].x = pointX - lowX;
 
-    float centerY = this->field_0xc + this->field_0x18;
-    float extentY = this->field_0x24;
+    float centerY = this->centerY + this->extentsY;
+    float extentY = this->halfExtentY;
     float highY = centerY + extentY;
     float lowY = centerY - extentY;
     float pointY = point.y;
     offsets[2].y = pointY - highY;
     offsets[3].y = pointY - lowY;
 
-    float centerZ = this->field_0x10 + this->field_0x1c;
-    float extentZ = this->field_0x28;
+    float centerZ = this->centerZ + this->extentsZ;
+    float extentZ = this->halfExtentZ;
     float highZ = centerZ + extentZ;
     float lowZ = centerZ - extentZ;
     float pointZ = point.z;
@@ -115,10 +115,10 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
         extentZ = halfDepth;
     }
 
-    self->field_0x0 = (char *)g_BoundingAAB_vtbl + 8;
-    self->field_0x20 = extentX;
-    self->field_0x24 = extentY;
-    self->field_0x28 = extentZ;
+    self->vtable = (char *)g_BoundingAAB_vtbl + 8;
+    self->halfExtentX = extentX;
+    self->halfExtentY = extentY;
+    self->halfExtentZ = extentZ;
 }
 
 // ---- getCollisionNormal_98270.cpp ----

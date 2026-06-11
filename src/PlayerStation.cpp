@@ -65,7 +65,7 @@ extern "C" void AEGeometry_translate(void *geometry, float x, float y, float z);
 // ---- setVisible_122760.cpp ----
 void PlayerStation::setVisible(bool visible)
 {
-    this->field_0xf5 = visible;
+    this->visible = visible;
 }
 
 // ---- _PlayerStation_122588.cpp ----
@@ -102,9 +102,9 @@ typedef void (*BoundingVolumeSetPositionFn)(void *volume, float x, float y, floa
 
 void PlayerStation::setPosition(const Vector &position)
 {
-    this->field_0x58 = position.x;
-    this->field_0x5c = position.y;
-    this->field_0x60 = position.z;
+    this->posX = position.x;
+    this->posY = position.y;
+    this->posZ = position.z;
     AEGeometry_setPosition(P(this, 0x140), position);
 
     void *volumes = P(this, 0x130);
@@ -140,7 +140,7 @@ Vector PlayerStation::getProjectionVector(const Vector &position)
     void *volumes = P(this, 0x130);
     if (volumes != 0) {
         void *items = P(volumes, 0x4);
-        uint32_t index = this->field_0x150;
+        uint32_t index = this->collisionIndex;
         void *volume = *(void **)((char *)items + index * 4);
         return BoundingVolume_getProjectionVector(volume, position);
     }
@@ -152,7 +152,7 @@ Vector PlayerStation::getProjectionVector(const Vector &position)
 // ---- render_1226e8.cpp ----
 void PlayerStation::render()
 {
-    if (this->field_0xf5 == 0) {
+    if (this->visible == 0) {
         return;
     }
     return AEGeometry_render(P(this, 0x140));
@@ -189,7 +189,7 @@ void PlayerStation::update(int delta)
     bool active = F<int32_t>(P(this, 0x140), 0x14) != -1;
     int type = 0;
     if (active) {
-        type = this->field_0x148;
+        type = this->stationIndex;
     }
     if (!active || type == 0x65) {
         return;
@@ -206,7 +206,7 @@ void PlayerStation::update(int delta)
     Transform_Update(PaintCanvas_TransformGetTransform(canvas, F<int32_t>(root, 0x14)),
                      delta64, 0);
 
-    type = this->field_0x148;
+    type = this->stationIndex;
     if (type == 100) {
         Transform_Update(PaintCanvas_TransformGetTransform(canvas, this->field_0x144),
                          delta64, 0);
@@ -257,18 +257,18 @@ PlayerStation::PlayerStation(Station *station)
     this->field_0x15c = 0;
     this->field_0x160 = 0;
     ((Player *)(P(this, 0x4)))->setRadius(15000);
-    this->field_0x58 = 0;
-    this->field_0x5c = 0;
-    this->field_0x60 = 0;
-    this->field_0x130 = 0;
+    this->posX = 0;
+    this->posY = 0;
+    this->posZ = 0;
+    this->boundingVolumes = 0;
     this->field_0x25 = 0;
     ((Player *)(P(this, 0x4)))->setMaxHitpoints(0x0161eb02);
-    this->field_0x140 = 0;
+    this->rootGeometry = 0;
     this->field_0x14c = 0;
-    this->field_0x154 = 0;
+    this->collisionRadius = 0;
 
     int stationIndex = Station_getIndex(station);
-    this->field_0x148 = stationIndex;
+    this->stationIndex = stationIndex;
 
     void *reader = operator_new(1);
     FileRead_constructor(reader);
@@ -359,7 +359,7 @@ PlayerStation::PlayerStation(Station *station)
 
         void *system = Status_getSystem(status);
         uint32_t race = system == 0 ? 9u : (uint32_t)SolarSystem_getRace(system);
-        stationIndex = this->field_0x148;
+        stationIndex = this->stationIndex;
         if (stationIndex == 0x65) {
             void *root = operator_new(0xc0);
             AEGeometry_constructor(root, 0x4220, canvas, false);
@@ -461,7 +461,7 @@ PlayerStation::PlayerStation(Station *station)
             AEGeometry_constructor(child, (uint16_t)(stationIndex + 0x5528), canvas, false);
             AEGeometry_addChild(*rootSlot, F<uint32_t>(child, 0xc));
             void *child2 = operator_new(0xc0);
-            AEGeometry_constructor(child2, (uint16_t)(this->field_0x148 + 22000), canvas,
+            AEGeometry_constructor(child2, (uint16_t)(this->stationIndex + 22000), canvas,
                                    false);
             AEGeometry_addChild(*rootSlot, F<uint32_t>(child2, 0xc));
             if (race == 3 && stationIndex == 0x6c) {
@@ -538,7 +538,7 @@ PlayerStation::PlayerStation(Station *station)
     AEGeometry_setRotation(P(this, 0x140), 0.0f, 0.0f, 0.0f);
     void *transform =
         PaintCanvas_TransformGetTransformPtr(*canvasHolder, F<uint32_t>(P(this, 0x140), 0xc));
-    this->field_0x154 = (int)(F<float>(transform, 0xe0) + 10.0f);
+    this->collisionRadius = (int)(F<float>(transform, 0xe0) + 10.0f);
 }
 
 // ---- outerCollide_122778.cpp ----
@@ -549,14 +549,14 @@ bool PlayerStation::outerCollide(float x, float y, float z)
     uint32_t rawX = F<uint32_t>(&x, 0);
     uint32_t rawY = F<uint32_t>(&y, 0);
     uint32_t rawZ = F<uint32_t>(&z, 0);
-    float radius = (float)this->field_0x154;
+    float radius = (float)this->collisionRadius;
 
-    if (x < this->field_0x58 + radius) {
-        if (this->field_0x58 - radius < x) {
-            if (y < this->field_0x5c + radius) {
-                if (this->field_0x5c - radius < y) {
-                    if (z < this->field_0x60 + radius) {
-                        if (this->field_0x60 - radius < z) {
+    if (x < this->posX + radius) {
+        if (this->posX - radius < x) {
+            if (y < this->posY + radius) {
+                if (this->posY - radius < y) {
+                    if (z < this->posZ + radius) {
+                        if (this->posZ - radius < z) {
                             void *volumes = P(this, 0x130);
                             if (volumes != 0) {
                                 for (uint32_t i = 0; i < F<uint32_t>(volumes, 0x0);
@@ -567,7 +567,7 @@ bool PlayerStation::outerCollide(float x, float y, float z)
                                         *(BoundingVolumeCollideFn *)((char *)P(volume, 0x0) +
                                                                     0xc);
                                     if (fn(volume, rawX, rawY, rawZ)) {
-                                        this->field_0x150 = i;
+                                        this->collisionIndex = i;
                                         return true;
                                     }
                                     volumes = P(this, 0x130);

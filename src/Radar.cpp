@@ -33,37 +33,37 @@ extern "C" void Radar_elipsoidIntersect(void *out, Radar *self, int x, int y, Ve
 // ---- getTurretScopeWidth_13104e.cpp ----
 int Radar::getTurretScopeWidth()
 {
-    return this->field_0x12c << 1;
+    return this->turretScopeHalfWidth << 1;
 }
 
 // ---- _Radar_12de3c.cpp ----
 Radar::~Radar()
 {
-    Array<KIPlayer *> *players = this->field_0x34;
+    Array<KIPlayer *> *players = this->players;
     if (players != 0) {
         players->~Array<KIPlayer *>();
         operator delete(players);
     }
-    this->field_0x34 = 0;
+    this->players = 0;
     ((AbyssEngine::String *)((char *)this + 0x18c))->~String();
 }
 
 // ---- hasScanner_13105c.cpp ----
 uint8_t Radar::hasScanner()
 {
-    return this->field_0x1ab;
+    return this->scannerAvailable;
 }
 
 // ---- isPlasmaInRange_131056.cpp ----
 uint8_t Radar::isPlasmaInRange()
 {
-    return this->field_0x130;
+    return this->plasmaInRange;
 }
 
 // ---- stationLocked_13103a.cpp ----
 bool Radar::stationLocked()
 {
-    void *station = this->field_0x24;
+    void *station = this->lockedStation;
     if (station != 0) {
         return station_u8(station, 0x71) != 0;
     }
@@ -83,7 +83,7 @@ void Radar::update(KIPlayer *player)
 // ---- unlockAsteroid_131030.cpp ----
 void Radar::unlockAsteroid()
 {
-    this->field_0xc = 0;
+    this->lockedAsteroid = 0;
 }
 
 // ---- getPlanetDockIndex_130974.cpp ----
@@ -91,7 +91,7 @@ int Radar::getPlanetDockIndex()
 {
     SolarSystem *system = gStatus->getSystem();
     Array<Station *> *stations = system->getStations();
-    return (int)(intptr_t)stations->data()[this->field_0x40];
+    return (int)(intptr_t)stations->data()[this->planetDockIndex];
 }
 
 // ---- draw_12e050.cpp ----
@@ -103,12 +103,12 @@ long long Radar::draw(Player *, Hud *, int mode)
     char scratch[0x120];
     (void)scratch;
 
-    if (this->field_0x48 == 0) {
+    if (this->enabled == 0) {
         return 0;
     }
 
-    this->field_0x218 = 0;
-    this->field_0x130 = 0;
+    this->drawMode = 0;
+    this->plasmaInRange = 0;
 
     void *canvas = *(void **)gRadarCanvasForDraw;
     Radar_SetColor(canvas, -1);
@@ -116,7 +116,7 @@ long long Radar::draw(Player *, Hud *, int mode)
     void *mission = *(void **)gRadarMissionSlot;
     int missionState = Radar_GetMissionState(mission);
     if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
-        this->field_0x218 = (uint8_t)mode;
+        this->drawMode = (uint8_t)mode;
     }
 
     return 0;
@@ -141,9 +141,9 @@ Radar::Radar(Level *level)
     this->field_0x168 = 0;
     this->field_0x16c = 0;
     this->field_0x170 = 0;
-    this->field_0x154 = 0;
-    this->field_0x158 = 0;
-    this->field_0x15c = 0;
+    this->radarPosX = 0;
+    this->radarPosY = 0;
+    this->radarPosZ = 0;
     this->field_0x160 = 0;
 
     Radar_StringDefault((char *)this + 0x18c);
@@ -152,53 +152,53 @@ Radar::Radar(Level *level)
     this->field_0x4 = 0;
     this->field_0x8 = 0;
     this->field_0x14 = 0;
-    this->field_0x48 = 1;
+    this->enabled = 1;
     this->field_0x58 = 0;
-    this->field_0x188 = 0;
-    this->field_0xc = 0;
+    this->labelStrings = 0;
+    this->lockedAsteroid = 0;
     this->field_0x10 = 0;
     this->field_0x18 = 0;
     this->field_0x38 = 0;
     this->field_0x3c = 0;
-    this->field_0x40 = 0;
+    this->planetDockIndex = 0;
     this->field_0x20c = 0;
     this->field_0x1b4 = 0;
     this->field_0x1b8 = 0;
     this->field_0x1bc = 0;
     this->field_0x54 = 0;
-    this->field_0x130 = 0;
+    this->plasmaInRange = 0;
     this->field_0x120 = 0;
-    this->field_0x11c = 0;
+    this->onScreen = 0;
     this->field_0x1a8 = 0;
-    this->field_0x0 = level;
+    this->level = level;
 
     void *layout = *(void **)gRadarLayoutSlot;
     if (layout != 0) {
         int width = layout_i32(layout, 0xac);
         int height = layout_i32(layout, 0xa8);
-        this->field_0x21c = width;
-        this->field_0x220 = width >> 1;
-        this->field_0x224 = height;
-        this->field_0x228 = height >> 1;
-        this->field_0x22c = layout_i32(layout, 0xa0);
-        this->field_0x230 = layout_i32(layout, 0xa4);
+        this->screenWidth = width;
+        this->halfScreenWidth = width >> 1;
+        this->screenHeight = height;
+        this->halfScreenHeight = height >> 1;
+        this->originX = layout_i32(layout, 0xa0);
+        this->originY = layout_i32(layout, 0xa4);
     }
 
     void *canvas = *(void **)gRadarCanvasSlot;
     Radar_Image2DCreate(canvas, 0x4c7, (char *)this + 0x1c4);
-    int image = this->field_0x1c4;
+    int image = this->radarImage;
     int imageWidth = Radar_GetImage2DWidth(canvas, image);
     int imageHeight = Radar_GetImage2DHeight(canvas, image);
-    this->field_0x4c = imageWidth;
-    this->field_0x50 = imageHeight;
-    this->field_0x114 = imageWidth * imageWidth;
-    this->field_0x118 = imageHeight * imageHeight;
-    this->field_0x10c = 1.0f / (float)(imageWidth * imageWidth);
-    this->field_0x110 = 1.0f / (float)(imageHeight * imageHeight);
+    this->imageWidth = imageWidth;
+    this->imageHeight = imageHeight;
+    this->imageWidthSq = imageWidth * imageWidth;
+    this->imageHeightSq = imageHeight * imageHeight;
+    this->weightX = 1.0f / (float)(imageWidth * imageWidth);
+    this->weightY = 1.0f / (float)(imageHeight * imageHeight);
 
     void *strings = Radar_operator_new(12);
     Radar_ArrayStringCtor(strings);
-    this->field_0x188 = strings;
+    this->labelStrings = strings;
     Radar_ArraySetLengthString(4, strings);
 
     (void)text6c;
@@ -211,14 +211,14 @@ Radar::Radar(Level *level)
 AbyssEngine::AEMath::Vector Radar::elipsoidIntersect(
     int y, int x, AbyssEngine::AEMath::Vector value)
 {
-    int centerY = this->field_0x108;
+    int centerY = this->centerY;
     float dy = (float)(centerY - x);
     float dy2 = dy * dy;
-    int centerX = this->field_0x104;
+    int centerX = this->centerX;
     float dx = (float)(centerX - y);
     float dx2 = dx * dx;
-    float weightY = this->field_0x110;
-    float weightX = this->field_0x10c;
+    float weightY = this->weightY;
+    float weightX = this->weightX;
     float distance = weightY * dy2 + weightX * dx2;
 
     if (distance >= 0.0f) {
@@ -246,20 +246,20 @@ void Radar::drawCurrentLock(Hud *)
     char text7c[12];
     char text88[12];
 
-    if (this->field_0x48 == 0) {
+    if (this->enabled == 0) {
         return;
     }
 
     *gRadarDrawCurrentLockFlag = 1;
 
     if (this->field_0x14 == 0) {
-        void *locked = this->field_0xc;
+        void *locked = this->lockedAsteroid;
         if (locked == 0) {
             locked = this->field_0x38;
             if (locked == 0) {
                 locked = this->field_0x4;
                 if (locked == 0) {
-                    locked = this->field_0x24;
+                    locked = this->lockedStation;
                     if (locked == 0) {
                         *gRadarDrawCurrentLockFlag = 0;
                         return;
@@ -269,12 +269,12 @@ void Radar::drawCurrentLock(Hud *)
         }
 
         Radar_StringDefault(text40);
-        if (locked == this->field_0x24) {
+        if (locked == this->lockedStation) {
             Radar_StringAssign(text40, text34);
         }
         Radar_StringDtor(text40);
     } else {
-        Radar_StringText(text34, this->field_0x18c, false);
+        Radar_StringText(text34, this->lockLabel, false);
     }
 
     Radar_StringDtor(text34);
@@ -366,22 +366,22 @@ void Radar::update(Vector value)
     Vector *current = (Vector *)((char *)this + 0x154);
     Radar_VectorAssign(current, transformed);
 
-    this->field_0x158 = -this->field_0x158;
-    this->field_0x15c = -this->field_0x15c;
+    this->radarPosY = -this->radarPosY;
+    this->radarPosZ = -this->radarPosZ;
 
     int visible = Radar_GetScreenPosition(gPaintCanvas, positionStorage, positionStorage);
-    this->field_0x11c = (uint8_t)visible;
+    this->onScreen = (uint8_t)visible;
 
     float *position = (float *)positionStorage;
     int screenX = (int)position[0];
-    this->field_0xfc = screenX;
+    this->screenX = screenX;
     int screenY = (int)position[1];
-    this->field_0x100 = screenY;
+    this->screenY = screenY;
 
     if (visible == 0) {
         Radar_elipsoidIntersect(transformed, this, screenX, screenY, *current);
         Radar_VectorAssign(current, transformed);
-        this->field_0xfc = (int)current->x;
-        this->field_0x100 = (int)current->y;
+        this->screenX = (int)current->x;
+        this->screenY = (int)current->y;
     }
 }

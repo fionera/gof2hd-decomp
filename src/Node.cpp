@@ -9,10 +9,10 @@
 Node::Node(int param_1)
 {
     this->field_0x4 = 0;
-    this->field_0x8 = param_1;
+    this->value = param_1;
     void *arr = operator new(0xc);
     Node_ArrayNode_ctor(arr);
-    this->field_0x0 = (Array<Node*>*)arr;
+    this->children = (Array<Node*>*)arr;
 }
 
 // ---- _Node_11b758.cpp ----
@@ -20,5 +20,5 @@ Node::Node(int param_1)
 //   ArrayRelease<Node*>(this->children);
 Node::~Node()
 {
-    Node_ArrayNode_release(this->field_0x0);
+    Node_ArrayNode_release(this->children);
 }

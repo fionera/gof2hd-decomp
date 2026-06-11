@@ -44,27 +44,27 @@ struct Mesh;
 
 struct SpecCubeAlphaMapping {
     void* field_0x0;        // +0x0  vtable
-    int field_0x4;          // +0x4  GL program
+    int program;          // +0x4  GL program
     uint8_t field_0x8;      // +0x8
-    uint8_t field_0x9;      // +0x9  per-frame uniform dirty flag
+    uint8_t uniformsDirty;      // +0x9  per-frame uniform dirty flag
     uint8_t field_0xa;      // +0xa
     uint8_t field_0xb;      // +0xb
-    String field_0xc;       // +0xc  resource name
-    int field_0x20;         // +0x20 attrib a0 (position)
-    int field_0x24;         // +0x24 attrib a1 (normal)
-    int field_0x28;         // +0x28 attrib a2 (texcoord)
-    int field_0x2c;         // +0x2c uniform u0 (mvp)
-    int field_0x30;         // +0x30 uniform u1 (normal matrix)
-    int field_0x34;         // +0x34 uniform u2
-    int field_0x38;         // +0x38 uniform u3
-    int field_0x3c;         // +0x3c uniform u5
-    int field_0x40;         // +0x40 uniform u4
-    int field_0x44;         // +0x44 uniform u6
-    int field_0x48;         // +0x48 uniform u7
-    int field_0x4c;         // +0x4c uniform u8
-    int field_0x50;         // +0x50 uniform u9
-    int field_0x54;         // +0x54 uniform u10
-    int field_0x58;         // +0x58 uniform u11
+    String name;       // +0xc  resource name
+    int attrA0;         // +0x20 attrib a0 (position)
+    int attrA1;         // +0x24 attrib a1 (normal)
+    int attrA2;         // +0x28 attrib a2 (texcoord)
+    int uniU0;         // +0x2c uniform u0 (mvp)
+    int uniU1;         // +0x30 uniform u1 (normal matrix)
+    int uniU2;         // +0x34 uniform u2
+    int uniU3;         // +0x38 uniform u3
+    int uniU5;         // +0x3c uniform u5
+    int uniU4;         // +0x40 uniform u4
+    int uniU6;         // +0x44 uniform u6
+    int uniU7;         // +0x48 uniform u7
+    int uniU8;         // +0x4c uniform u8
+    int uniU9;         // +0x50 uniform u9
+    int uniU10;         // +0x54 uniform u10
+    int uniU11;         // +0x58 uniform u11
 
     SpecCubeAlphaMapping();
     void Init(Engine *engine);

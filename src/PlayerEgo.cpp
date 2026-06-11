@@ -2756,9 +2756,9 @@ void PlayerEgo::update(int dt, void *radar, void *hud, void *radio, void *script
             }
         }
     } else if (C(self, 0x145) == 0 && ((PlayerEgo *)(self))->updateManeuver() == 0) {
-        void *wp = self->field_0x15c;
+        void *wp = self->autoPilotTarget;
         if (C(self, 0x160) != 0 && wp != 0 && I(wp, 0x134) != 0) {
-            wp = ((Route *)(self->field_0x15c))->getWaypoint();
+            wp = ((Route *)(self->autoPilotTarget))->getWaypoint();
             P(self, 0x15c) = wp;
         }
         if (wp == 0 || C(self, 0x1ed) != 0) {
@@ -3433,7 +3433,7 @@ void PlayerEgo::toggleCloaking() {
 
     PaintCanvas_MaterialGetMaterial(canvas, I(self, 0x388));     // returned ptr +0x20 = 0xe below
     I(PaintCanvas_MaterialGetMaterial(canvas, I(self, 0x388)), 0x20) = 0xe;
-    PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0x4) + 0x1c), self->field_0x388);
+    PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0x4) + 0x1c), self->cloakMaterial);
     PaintCanvas_MeshChangeShaderAnimValue(canvas,
         PaintCanvas_MeshGetPointer(canvas, *(unsigned int *)(I(self, 0x4) + 0x1c)), 0.0f, 0);
     PaintCanvas_MeshChangeShaderAnimValue(canvas,
@@ -3442,8 +3442,8 @@ void PlayerEgo::toggleCloaking() {
     if (C(self, 0x170) != 0) {
         I(PaintCanvas_MaterialGetMaterial(canvas, I(self, 0x38c)), 0x20) = 0xe;
         I(PaintCanvas_MaterialGetMaterial(canvas, I(self, 0x390)), 0x20) = 0xe;
-        PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0xdc) + 0x1c), self->field_0x38c);
-        PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0x28) + 0x1c), self->field_0x390);
+        PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0xdc) + 0x1c), self->cloakMaterial2);
+        PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0x28) + 0x1c), self->cloakMaterial3);
 
         void *m;
         m = PaintCanvas_MeshGetPointer(canvas, *(unsigned int *)(I(self, 0xdc) + 0x1c));

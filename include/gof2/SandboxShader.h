@@ -42,21 +42,21 @@ struct ShaderBaseStruct {
 
 
 struct SandboxShader : ShaderBaseStruct {
-    int      field_0x4;                  // +0x4   GL program handle
-    uint8_t  field_0x9;                  // +0x9   dirty flag
-    String   field_0xc;                  // +0xc   shader name
-    int      field_0x20;                 // +0x20  attrib a_position
-    int      field_0x24;                 // +0x24  attrib a_normal
-    int      field_0x28;                 // +0x28  attrib a_tangent
-    int      field_0x2c;                 // +0x2c  attrib a_binormal
-    int      field_0x30;                 // +0x30  attrib a_texCoord
-    int      field_0x34;                 // +0x34  uniform u_a
-    int      field_0x38;                 // +0x38  uniform u_b
-    int      field_0x3c;                 // +0x3c  uniform u_c
-    int      field_0x40;                 // +0x40  uniform u_f
-    int      field_0x44;                 // +0x44  uniform u_d
-    int      field_0x48;                 // +0x48  uniform u_e
-    int      field_0x4c;                 // +0x4c  uniform u_g
+    int      program;                  // +0x4   GL program handle
+    uint8_t  dirty;                  // +0x9   dirty flag
+    String   name;                  // +0xc   shader name
+    int      attrPosition;                 // +0x20  attrib a_position
+    int      attrNormal;                 // +0x24  attrib a_normal
+    int      attrTangent;                 // +0x28  attrib a_tangent
+    int      attrBinormal;                 // +0x2c  attrib a_binormal
+    int      attrTexCoord;                 // +0x30  attrib a_texCoord
+    int      uniformA;                 // +0x34  uniform u_a
+    int      uniformB;                 // +0x38  uniform u_b
+    int      uniformC;                 // +0x3c  uniform u_c
+    int      uniformF;                 // +0x40  uniform u_f
+    int      uniformD;                 // +0x44  uniform u_d
+    int      uniformE;                 // +0x48  uniform u_e
+    int      uniformG;                 // +0x4c  uniform u_g
 
     SandboxShader();
     void Init(Engine *);

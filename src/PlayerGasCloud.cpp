@@ -32,30 +32,30 @@ extern "C" void AEGeometry_render(void *geom);
 // ---- translate_176658.cpp ----
 void PlayerGasCloud::translate(Vector const &param_1)
 {
-    return AEGeometry_translate_v(this->field_0x8, param_1);
+    return AEGeometry_translate_v(this->geometry, param_1);
 }
 
 // ---- isSparkAlive_176610.cpp ----
 bool PlayerGasCloud::isSparkAlive(int param_1)
 {
-    void *arr = this->field_0x138;
+    void *arr = this->sparkGeometries;
     if (arr == 0)
         return false;
     if (F<unsigned int>(arr, 0x0) <= (unsigned int)param_1)
         return false;
-    int *base = F<int *>(this->field_0x14c, 0x4);
+    int *base = F<int *>(this->sparkTimers, 0x4);
     return -1500 < base[param_1];
 }
 
 // ---- setSparkInSight_1765f8.cpp ----
 void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
 {
-    void *arr = this->field_0x138;
+    void *arr = this->sparkGeometries;
     if (arr == 0)
         return;
     unsigned int len = F<unsigned int>(arr, 0x0);
     if ((unsigned int)param_1 < len) {
-        char *base = F<char *>(this->field_0x150, 0x4);
+        char *base = F<char *>(this->sparkInSight, 0x4);
         base[param_1] = (char)param_2;
     }
 }
@@ -63,19 +63,19 @@ void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
 // ---- setPosition_176652.cpp ----
 void PlayerGasCloud::setPosition(Vector const &param_1)
 {
-    return AEGeometry_setPosition_v(this->field_0x8, param_1);
+    return AEGeometry_setPosition_v(this->geometry, param_1);
 }
 
 // ---- getSparks_176640.cpp ----
 void *PlayerGasCloud::getSparks()
 {
-    return this->field_0x138;
+    return this->sparkGeometries;
 }
 
 // ---- getPosition_176646.cpp ----
 Vector PlayerGasCloud::getPosition()
 {
-    return AEGeometry_getPosition_ret(this->field_0x8);
+    return AEGeometry_getPosition_ret(this->geometry);
 }
 
 // ---- _PlayerGasCloud_1765e8.cpp ----
@@ -90,7 +90,7 @@ void _ZN14PlayerGasCloudD0Ev(void *self)
 // ---- hasExploded_1769ac.cpp ----
 uint8_t PlayerGasCloud::hasExploded()
 {
-    return this->field_0x154;
+    return this->exploded;
 }
 
 // ---- PlayerGasCloud_1763cc.cpp ----
@@ -104,17 +104,17 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     ((Player *)(this_00))->ctor(0, 9999999, 0, 0, 0);
 
     *(void **)this = &PlayerGasCloud_vtable + 8;
-    this->field_0x128 = 0;
-    this->field_0x12c = 0;
-    this->field_0x130 = 0;
-    ((Player *)(this->field_0x4))->setKIPlayer((KIPlayer *)this);
-    ((Player *)(this->field_0x4))->setMaxHitpoints(1);
+    this->centerX = 0;
+    this->centerY = 0;
+    this->centerZ = 0;
+    ((Player *)(this->player))->setKIPlayer((KIPlayer *)this);
+    ((Player *)(this->player))->setMaxHitpoints(1);
 
     void **vt = *(void ***)this;
     typedef void (*pfn)(void *, Vector const &);
     ((pfn)vt[0x11])(this, param_4);
 
-    this->field_0x158 = 0;
+    this->elapsedSinceExplosion = 0;
     this->field_0x78 = 0;
     this->field_0x25 = 0;
 
@@ -124,33 +124,33 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     int iVar2 = 0x4a39;
     if ((unsigned int)(param_1 - 0xc9) < 4)
         iVar2 = param_1 + 0x4970;
-    this->field_0x160 = param_1;
-    this->field_0x164 = iVar2;
-    this->field_0x168 = iVar1;
+    this->itemId = param_1;
+    this->sparkMeshId = iVar2;
+    this->cloudMeshId = iVar1;
 
     // Two 16-byte vector stores clear the spark-array pointer block (0x138..0x154).
-    this->field_0x138 = 0;
-    this->field_0x13c = 0;
-    this->field_0x140 = 0;
-    this->field_0x144 = 0;
+    this->sparkGeometries = 0;
+    this->sparkVelocities = 0;
+    this->sparkLife = 0;
+    this->sparkLifeMin = 0;
     this->field_0x145 = 0;
-    this->field_0x148 = 0;
-    this->field_0x14c = 0;
-    this->field_0x150 = 0;
-    this->field_0x154 = 0;
+    this->sparkScale = 0;
+    this->sparkTimers = 0;
+    this->sparkInSight = 0;
+    this->exploded = 0;
 
     Vector_assign((char *)this + 0x128, &param_4);
 
     void *geom = operator_new(0xc0);
-    AEGeometry_ctor(geom, this->field_0x168, *g_pgc_canvas, false);
-    this->field_0x134 = geom;
+    AEGeometry_ctor(geom, this->cloudMeshId, *g_pgc_canvas, false);
+    this->modelGeometry = geom;
     AEGeometry_setPosition_v(geom, param_4);
 
     this->field_0x4c = 1;
     this->field_0x44 = 1;
-    this->field_0x88 = 0;
-    this->field_0xf5 = 1;
-    this->field_0x15c = 0;
+    this->state = 0;
+    this->active = 1;
+    this->settled = 0;
 }
 
 // ---- _PlayerGasCloud_176520.cpp ----
@@ -162,48 +162,48 @@ void *_ZN14PlayerGasCloudD1Ev(void *selfv)
     PlayerGasCloud *self = (PlayerGasCloud *)selfv;
     *(void **)self = &PlayerGasCloud_vtable + 8;
 
-    void *a0 = self->field_0x138;
+    void *a0 = self->sparkGeometries;
     if (a0 != 0) {
         ArrayReleaseClasses_AEGeometry(a0);
-        void *p = self->field_0x138;
+        void *p = self->sparkGeometries;
         if (p != 0)
             operator_delete(Array_AEGeometry_dtor(p));
-        self->field_0x138 = 0;
+        self->sparkGeometries = 0;
     }
 
-    void *a1 = self->field_0x13c;
+    void *a1 = self->sparkVelocities;
     if (a1 != 0) {
         ArrayReleaseClasses_Vector(a1);
-        void *p = self->field_0x13c;
+        void *p = self->sparkVelocities;
         if (p != 0)
             operator_delete(Array_Vector_dtor(p));
-        self->field_0x13c = 0;
+        self->sparkVelocities = 0;
     }
 
-    void *a2 = self->field_0x140;
+    void *a2 = self->sparkLife;
     if (a2 != 0)
         operator_delete(Array_float_dtor(a2));
-    self->field_0x140 = 0;
+    self->sparkLife = 0;
 
-    void *a3 = self->field_0x144;
+    void *a3 = self->sparkLifeMin;
     if (a3 != 0)
         operator_delete(Array_float_dtor(a3));
-    self->field_0x144 = 0;
+    self->sparkLifeMin = 0;
 
-    void *a4 = self->field_0x148;
+    void *a4 = self->sparkScale;
     if (a4 != 0)
         operator_delete(Array_float_dtor(a4));
-    self->field_0x148 = 0;
+    self->sparkScale = 0;
 
-    void *a5 = self->field_0x14c;
+    void *a5 = self->sparkTimers;
     if (a5 != 0)
         operator_delete(Array_int_dtor(a5));
-    self->field_0x14c = 0;
+    self->sparkTimers = 0;
 
-    void *g = self->field_0x134;
+    void *g = self->modelGeometry;
     if (g != 0)
         operator_delete(AEGeometry_dtor(g));
-    self->field_0x134 = 0;
+    self->modelGeometry = 0;
 
     return PlayerGasCloud_baseDtor(self);
 }
@@ -264,24 +264,24 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
     PlayerGasCloud *self = (PlayerGasCloud *)selfv;
     void *volatile cookie = __stack_chk_guard;
 
-    if (self->field_0x154 == 0) {
-        self->field_0x88 = 3;
-        self->field_0x154 = 1;
+    if (self->exploded == 0) {
+        self->state = 3;
+        self->exploded = 1;
 
         void *aGeom = operator_new(0xc);  ArrayGeom_ctor(aGeom);
-        self->field_0x138 = aGeom;
+        self->sparkGeometries = aGeom;
         void *aVec = operator_new(0xc);   ArrayVec_ctor(aVec);
-        self->field_0x13c = aVec;
+        self->sparkVelocities = aVec;
         void *aLife = operator_new(0xc);  ArrayFloat_ctor(aLife);
-        self->field_0x140 = aLife;
+        self->sparkLife = aLife;
         void *aLifeMin = operator_new(0xc); ArrayFloat_ctor(aLifeMin);
-        self->field_0x144 = aLifeMin;
+        self->sparkLifeMin = aLifeMin;
         void *aTimer = operator_new(0xc); ArrayInt_ctor(aTimer);
-        self->field_0x14c = aTimer;
+        self->sparkTimers = aTimer;
         void *aActive = operator_new(0xc); ArrayBool_ctor(aActive);
-        self->field_0x150 = aActive;
+        self->sparkInSight = aActive;
         void *aScale = operator_new(0xc); ArrayFloat_ctor(aScale);
-        self->field_0x148 = aScale;
+        self->sparkScale = aScale;
 
         // Distance from the explosion source to the cloud centre (+0x128).
         Vector delta;
@@ -301,7 +301,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
         int count = (int)((countBase / 1.5f + 10.0f) * attrF);
         for (int i = 0; i < count; i++) {
             void *shard = operator_new(0xc0);
-            AEGeometry_ctor(shard, self->field_0x164,
+            AEGeometry_ctor(shard, self->sparkMeshId,
                             *(void **)g_pgc_canvasRoot, false);
             AEGeometry_setPosition(shard, (Vector *)((char *)self + 0x128));
 
@@ -311,9 +311,9 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             float jz = (float)AERandom_next(rng, 10000);
 
             Vector p;
-            p.x = ((self->field_0x128 + delta.x) - spread) + t * jx;
-            p.y = ((self->field_0x12c + delta.y) - spread) + t * jy;
-            p.z = ((self->field_0x130 + delta.z) - spread) + t * jz;
+            p.x = ((self->centerX + delta.x) - spread) + t * jx;
+            p.y = ((self->centerY + delta.y) - spread) + t * jy;
+            p.z = ((self->centerZ + delta.z) - spread) + t * jz;
 
             // Direction = normalized (p - center).
             Vector d, dn;
@@ -323,16 +323,16 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             float life = ((float)AERandom_next(rng, 200) / lifeDiv) * 3.0f + 3.0f;
             int timer = AERandom_next(rng, 14000);
 
-            ArrayAdd_float(life * 7.0f, self->field_0x140);
-            ArrayAdd_float(life, self->field_0x144);
-            ArrayAdd_int(timer + 8000, self->field_0x14c);
+            ArrayAdd_float(life * 7.0f, self->sparkLife);
+            ArrayAdd_float(life, self->sparkLifeMin);
+            ArrayAdd_int(timer + 8000, self->sparkTimers);
 
             Vector *velCopy = (Vector *)operator_new(0xc);
             *velCopy = dn;
-            ArrayAdd_vec(velCopy, self->field_0x13c);
-            ArrayAdd_geom(shard, self->field_0x138);
-            ArrayAdd_bool(false, self->field_0x150);
-            ArrayAdd_float(1.0f, self->field_0x148);
+            ArrayAdd_vec(velCopy, self->sparkVelocities);
+            ArrayAdd_geom(shard, self->sparkGeometries);
+            ArrayAdd_bool(false, self->sparkInSight);
+            ArrayAdd_float(1.0f, self->sparkScale);
         }
     }
 
@@ -570,9 +570,9 @@ void PlayerGasCloud::render()
     Vector dir;
     char cameraLocal[60];
 
-    if (this->field_0xf5 == 0)
+    if (this->active == 0)
         return;
-    int mode = this->field_0x88;
+    int mode = this->state;
     if (mode != 3 && mode != 0)
         return;
 
@@ -584,20 +584,20 @@ void PlayerGasCloud::render()
     float scale = AbyssEngine::AEMath::operator-(dir, *(Vector *)&local_80);
 
     void *arr;
-    if (this->field_0x154 == 0 || (arr = this->field_0x138) == 0) {
-        void *geom = this->field_0x134;
+    if (this->exploded == 0 || (arr = this->sparkGeometries) == 0) {
+        void *geom = this->modelGeometry;
         AbyssEngine::AEMath::MatrixGetUp((Vector *)&local_80, (Matrix *)cameraLocal);
         AEGeometry_setDirection(geom, &dir, (Vector *)&local_80);
         AEGeometry_render(geom);
     } else {
         for (unsigned int i = 0, off = 0; i < F<unsigned int>(arr, 0x0); i++, off += 4) {
-            void *g = *(void **)((char *)F<void *>(this->field_0x138, 0x4) + off);
-            float si = *(float *)((char *)F<void *>(this->field_0x148, 0x4) + off);
+            void *g = *(void **)((char *)F<void *>(this->sparkGeometries, 0x4) + off);
+            float si = *(float *)((char *)F<void *>(this->sparkScale, 0x4) + off);
             AEGeometry_setScaling(g, si);
             AbyssEngine::AEMath::MatrixGetUp((Vector *)&local_80, (Matrix *)cameraLocal);
             AEGeometry_setDirection(g, &dir, (Vector *)&local_80);
             AEGeometry_render(g);
-            arr = this->field_0x138;
+            arr = this->sparkGeometries;
         }
     }
 }

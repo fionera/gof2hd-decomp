@@ -23,7 +23,7 @@ static inline void*&          P (void* p, int off) { return *(void**)((char*)p +
 #endif
 
 struct RecordHandler {
-    void* field_0x4;                    // +0x4
+    void* currentAgent;                    // +0x4
 
     // ---- methods (converted from free functions) ----
     void addHash(int slot);

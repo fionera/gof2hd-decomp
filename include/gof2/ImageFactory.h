@@ -31,7 +31,7 @@ typedef void (*GetTextFn)(unsigned canvas, int id, void *out);
 struct Arr { uint32_t size; void **data; uint32_t size2; };
 
 struct ImageFactory {
-    void* field_0x0;                    // +0x0
+    void* sprite;                    // +0x0
 
     // ---- methods (converted from free functions) ----
     void createChar_i(int param_1);

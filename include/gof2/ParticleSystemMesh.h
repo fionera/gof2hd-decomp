@@ -20,35 +20,35 @@ void *operator new(__SIZE_TYPE__ size);
 struct ParticleSystemMesh {
     void* field_0x0;                    // +0x0  vtable
     int field_0x4;                      // +0x4
-    void* field_0x8;                    // +0x8  PaintCanvas*
+    void* canvas;                    // +0x8  PaintCanvas*
     uint8_t field_0xc;                  // +0xc
     uint8_t field_0xd;                  // +0xd
-    void* field_0x18;                   // +0x18 Matrix*
-    uint32_t field_0x34;                // +0x34 flags
+    void* matrix;                   // +0x18 Matrix*
+    uint32_t flags;                // +0x34 flags
     uint8_t field_0x35;                 // +0x35
     uint8_t field_0x36;                 // +0x36
-    uint8_t field_0x45;                 // +0x45
-    uint32_t field_0x48;                // +0x48 particle count
+    uint8_t colorMask;                 // +0x45
+    uint32_t particleCount;                // +0x48 particle count
     uint8_t field_0x4c;                 // +0x4c
-    int field_0x50;                     // +0x50 current id
-    uint32_t field_0x54;                // +0x54 mesh handle
-    uint32_t field_0x58;                // +0x58 first point
+    int currentId;                     // +0x50 current id
+    uint32_t mesh;                // +0x54 mesh handle
+    uint32_t firstPoint;                // +0x58 first point
     uint8_t field_0x5c;                 // +0x5c
     uint32_t field_0x60;                // +0x60
-    void* field_0x64;                   // +0x64 positions buffer
-    void* field_0x68;                   // +0x68 ages array
-    void* field_0x6c;                   // +0x6c set-id array
-    uint32_t field_0x70;                // +0x70 point count
-    uint8_t field_0x74;                 // +0x74 wide
+    void* positions;                   // +0x64 positions buffer
+    void* ages;                   // +0x68 ages array
+    void* setIds;                   // +0x6c set-id array
+    uint32_t pointCount;                // +0x70 point count
+    uint8_t wide;                 // +0x74 wide
     uint32_t field_0x78;                // +0x78
     uint32_t field_0x7c;                // +0x7c
     uint32_t field_0x80;                // +0x80
     uint32_t field_0x84;                // +0x84
     uint32_t field_0x88;                // +0x88
-    uint8_t field_0x90;                 // +0x90 new-section flag
+    uint8_t newSectionStarted;                 // +0x90 new-section flag
     uint32_t field_0x94;                // +0x94
-    uint32_t field_0x98;                // +0x98 edge count
-    uint32_t field_0x9c;                // +0x9c stride
+    uint32_t edgeCount;                // +0x98 edge count
+    uint32_t stride;                // +0x9c stride
 
     ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const void *sets, bool a, bool b);
 

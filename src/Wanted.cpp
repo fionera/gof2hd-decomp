@@ -12,25 +12,25 @@ extern "C" Wanted *Wanted_base_dtor(Wanted *self);
 // ---- isTerminated_12298a.cpp ----
 uint8_t Wanted::isTerminated() {
     Wanted *self = this;
-    return self->field_0x50;
+    return self->terminated;
 }
 
 // ---- setTerminated_12296c.cpp ----
 void Wanted::setTerminated(bool v) {
     Wanted *self = this;
-    self->field_0x50 = v;
+    self->terminated = v;
 }
 
 // ---- isActive_122984.cpp ----
 uint8_t Wanted::isActive() {
     Wanted *self = this;
-    return self->field_0x51;
+    return self->active;
 }
 
 // ---- setActive_122972.cpp ----
 void Wanted::setActive(bool v) {
     Wanted *self = this;
-    self->field_0x51 = v;
+    self->active = v;
 }
 
 // ---- getName_122924.cpp ----
@@ -43,7 +43,7 @@ void Wanted::setActive(bool v) {
 RetStr Wanted::getName() {
     Wanted *self = this;
     RetStr r;
-    String_copy_ctor(&r, &self->field_0x0, false);
+    String_copy_ctor(&r, &self->name, false);
     return r;
 }
 
@@ -56,25 +56,25 @@ RetStr Wanted::getName() {
 Wanted * Wanted::ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14) {
     Wanted *self = this;
     Wanted *r = String_default_ctor(self);
-    r->field_0xc = p1;
+    r->index = p1;
     ((String *)(r))->assign((String *)&p2);
-    self->field_0x10 = p3;
-    self->field_0x14 = p4;
-    self->field_0x18 = p5;
-    self->field_0x50 = 0;
-    self->field_0x51 = 0;
-    self->field_0x44 = -1;
-    self->field_0x48 = -1;
-    self->field_0x4c = -1;
-    self->field_0x1c = p6;
-    self->field_0x20 = p7;
-    self->field_0x24 = p8;
-    self->field_0x28 = p9;
-    self->field_0x2c = p10;
-    self->field_0x30 = p11;
-    self->field_0x34 = p12;
-    self->field_0x38 = p13;
-    self->field_0x3c = p14;
+    self->board = p3;
+    self->race = p4;
+    self->male = p5;
+    self->terminated = 0;
+    self->active = 0;
+    self->currentLocation = -1;
+    self->travelsTo = -1;
+    self->lastSeen = -1;
+    self->shipId = p6;
+    self->weapon = p7;
+    self->hitpoints = p8;
+    self->lootItemId = p9;
+    self->lootAmount = p10;
+    self->reward = p11;
+    self->requiredBounties = p12;
+    self->requiredMission = p13;
+    self->numWingmen = p14;
     return self;
 }
 
@@ -85,10 +85,10 @@ Wanted * Wanted::ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p
 // Frees the buffer at +0x40 (array delete), clears it, then tail-calls the base dtor.
 Wanted * Wanted::dtor() {
     Wanted *self = this;
-    void *p = self->field_0x40;
+    void *p = self->imageParts;
     if (p != 0) {
         operator_delete_array(p);
     }
-    self->field_0x40 = 0;
+    self->imageParts = 0;
     return Wanted_base_dtor(self);
 }

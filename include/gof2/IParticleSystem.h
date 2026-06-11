@@ -52,12 +52,12 @@ static inline Vector *vec_at(void *base, int index)
 }
 
 struct IParticleSystem {
-    void* field_0x0;                    // +0x0
+    void* vtable;                    // +0x0
     volatile uint16_t field_0x4;        // +0x4
-    volatile uint8_t field_0x5;         // +0x5
-    PaintCanvas* field_0x8;             // +0x8
-    Matrix const* field_0x18;           // +0x18
-    void* field_0x3c;                   // +0x3c
+    volatile uint8_t emitterVelocityDirty;         // +0x5
+    PaintCanvas* canvas;             // +0x8
+    Matrix const* matrix;           // +0x18
+    void* particleSets;                   // +0x3c
 
     IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
                     bool mirror, bool alphaFade);

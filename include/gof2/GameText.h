@@ -42,12 +42,12 @@ typedef AbyssEngine::String String;
 
 
 struct GameText {
-    uint32_t field_0x0;                 // +0x0  substitute Array<int> size
-    void* field_0x4;                    // +0x4  substitute Array<int> data
-    uint32_t field_0x8;                 // +0x8  substitute Array<int> cap
-    void* field_0xc;                    // +0xc  String** text table
-    unsigned char field_0x10[12];       // +0x10 fallback / region String (12 bytes)
-    int field_0x1c;                     // +0x1c text table count
+    uint32_t substituteCount;                 // +0x0  substitute Array<int> size
+    void* substituteData;                    // +0x4  substitute Array<int> data
+    uint32_t substituteCapacity;                 // +0x8  substitute Array<int> cap
+    void* textTable;                    // +0xc  String** text table
+    unsigned char fallbackText[12];       // +0x10 fallback / region String (12 bytes)
+    int textCount;                     // +0x1c text table count
 
     // ---- methods (converted from free functions) ----
     void ReadLangFile(unsigned int file, int count);

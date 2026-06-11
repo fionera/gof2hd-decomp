@@ -72,10 +72,10 @@ __attribute__((visibility("hidden"))) extern void *g_AEPakFile_vtable;
 
 struct AEPakFile {
     void *field_0x0;    // +0x0 vtable
-    FI *field_0x4;      // +0x4 held FileInterface
-    int field_0x8;      // +0x8 size limit
-    int field_0xc;      // +0xc base offset
-    int field_0x10;     // +0x10 current position
+    FI *fileInterface;      // +0x4 held FileInterface
+    int sizeLimit;      // +0x8 size limit
+    int baseOffset;      // +0xc base offset
+    int position;     // +0x10 current position
 
     AEPakFile(FileInterface *file, int param_2, int param_3);
     uint32_t Release();

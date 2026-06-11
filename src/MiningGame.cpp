@@ -55,7 +55,7 @@ static inline uint8_t &UC(void *p, unsigned off) { return *(uint8_t *)((char *)p
 // ---- getOreAmount_11eb9e.cpp ----
 int MiningGame::getOreAmount()
 {
-    return (int)this->field_0x24;
+    return (int)this->oreAmount;
 }
 
 // ---- isInCurrentLayer_11f0a0.cpp ----
@@ -66,11 +66,11 @@ __attribute__((visibility("hidden"))) extern int *g_MiningGame_layerSizes;
 
 bool MiningGame::isInCurrentLayer()
 {
-    float dx = this->field_0x10 - (float)this->field_0x58;
-    float dy = this->field_0x14 - (float)this->field_0x5c;
+    float dx = this->posX - (float)this->centerX;
+    float dy = this->posY - (float)this->centerY;
     void **sqrtHolder = g_MiningGame_sqrt;
-    int current = this->field_0x78;
-    int layer = this->field_0x7c;
+    int current = this->currentLayer;
+    int layer = this->targetLayer;
     int *row = g_MiningGame_layerSizes + (7 - layer) * 7;
     void **layoutHolder = g_MiningGame_layout;
     void *globals = *sqrtHolder;
@@ -83,53 +83,53 @@ bool MiningGame::isInCurrentLayer()
 // ---- up_11ebb6.cpp ----
 void MiningGame::up(float amount)
 {
-    this->field_0x4 = amount * 3.0f;
+    this->inputY = amount * 3.0f;
 }
 
 // ---- gameWon_11eb92.cpp ----
 uint8_t MiningGame::gameWon()
 {
-    return this->field_0x81;
+    return this->gameWonFlag;
 }
 
 // ---- down_11ebc8.cpp ----
 void MiningGame::down(float amount)
 {
-    this->field_0x4 = amount * 3.0f;
+    this->inputY = amount * 3.0f;
 }
 
 // ---- gotCore_11ebac.cpp ----
 uint8_t MiningGame::gotCore()
 {
-    return this->field_0x83;
+    return this->gotCoreFlag;
 }
 
 // ---- left_11ebda.cpp ----
 void MiningGame::left(float amount)
 {
-    this->field_0x0 = amount * 3.0f;
+    this->inputX = amount * 3.0f;
 }
 
 // ---- gameLost_11eb98.cpp ----
 uint8_t MiningGame::gameLost()
 {
-    return this->field_0x82;
+    return this->gameLostFlag;
 }
 
 // ---- right_11ebec.cpp ----
 void MiningGame::right(float amount)
 {
-    this->field_0x0 = amount * 3.0f;
+    this->inputX = amount * 3.0f;
 }
 
 // ---- _MiningGame_11eb74.cpp ----
 MiningGame::~MiningGame()
 {
-    void *sprite = this->field_0x94;
+    void *sprite = this->drillSprite;
     if (sprite != 0) {
         MiningGame_operator_delete(MiningGame_Sprite_dtor(sprite));
     }
-    this->field_0x94 = 0;
+    this->drillSprite = 0;
 }
 
 // ---- update_11ec00.cpp ----
@@ -145,58 +145,58 @@ __attribute__((visibility("hidden"))) extern void **g_MiningGame_statusMedal;
 
 int MiningGame::update(int delta)
 {
-    int pulse = this->field_0xcc + delta;
+    int pulse = this->promptPulseTimer + delta;
     if (pulse >= 2000) {
         pulse = 0;
     }
-    this->field_0xcc = pulse;
+    this->promptPulseTimer = pulse;
 
     int wasInLayer = isInCurrentLayer();
-    int driftTimer = this->field_0x6c + delta;
-    this->field_0x6c = driftTimer;
+    int driftTimer = this->driftTimer + delta;
+    this->driftTimer = driftTimer;
     if (driftTimer >= 2501) {
         void **randomHolder = g_MiningGame_random;
         int (*next)(void *, int) = g_MiningGame_randomNext;
-        this->field_0x6c = next(*randomHolder, 2000) + 500;
+        this->driftTimer = next(*randomHolder, 2000) + 500;
 
         int value = next(*randomHolder, 7);
         int sign = -1;
         if (next(*randomHolder, 2) == 0) {
             sign = 1;
         }
-        this->field_0x8 = ((float)((value + 5) * sign) / 10.0f) / this->field_0x2c;
+        this->driftX = ((float)((value + 5) * sign) / 10.0f) / this->controlDivisor;
 
         value = next(*randomHolder, 7);
         sign = -1;
         if (next(*randomHolder, 2) == 0) {
             sign = 1;
         }
-        this->field_0xc = ((float)(sign * (value + 5)) / 10.0f) / this->field_0x2c;
+        this->driftY = ((float)(sign * (value + 5)) / 10.0f) / this->controlDivisor;
 
-        if (this->field_0x80 != 0 && this->field_0x78 == this->field_0x7c - 1) {
-            this->field_0x8 *= 0.3f;
-            this->field_0xc *= 0.3f;
+        if (this->isCoreLayer != 0 && this->currentLayer == this->targetLayer - 1) {
+            this->driftX *= 0.3f;
+            this->driftY *= 0.3f;
         }
     }
 
-    if (this->field_0x84 == 0 && !isInCurrentLayer()) {
-        this->field_0x8 = ((float)this->field_0x58 - this->field_0x10) * 0.03f;
-        this->field_0xc = ((float)this->field_0x5c - this->field_0x14) * 0.03f;
+    if (this->campaignFlag == 0 && !isInCurrentLayer()) {
+        this->driftX = ((float)this->centerX - this->posX) * 0.03f;
+        this->driftY = ((float)this->centerY - this->posY) * 0.03f;
     }
 
     void **layoutHolder = g_MiningGame_layoutUpdate;
     void *layout = *layoutHolder;
     float frameScale = (float)delta;
-    this->field_0x10 += ((this->field_0x0 + this->field_0x8) / F(layout, 0xe4)) * frameScale;
-    this->field_0x14 += ((this->field_0x4 + this->field_0xc) / F(layout, 0xe4)) * frameScale;
+    this->posX += ((this->inputX + this->driftX) / F(layout, 0xe4)) * frameScale;
+    this->posY += ((this->inputY + this->driftY) / F(layout, 0xe4)) * frameScale;
 
-    MiningGame_MarqueeImage_update(this->field_0x8c, delta);
-    MiningGame_MarqueeImage_update(this->field_0x90, delta);
+    MiningGame_MarqueeImage_update(this->leftMarquee, delta);
+    MiningGame_MarqueeImage_update(this->rightMarquee, delta);
 
     float *layerSpeed = g_MiningGame_layerSpeedUpdate;
     void **soundHolder = g_MiningGame_sound;
     MiningGame_FModSound_setParamValue(*soundHolder, 0, 1,
-                                       ((layerSpeed[this->field_0x78] - 5.0f) / 33.0f) * 3.0f);
+                                       ((layerSpeed[this->currentLayer] - 5.0f) / 33.0f) * 3.0f);
 
     if (isInCurrentLayer()) {
         if (wasInLayer == 0) {
@@ -204,35 +204,35 @@ int MiningGame::update(int delta)
             MiningGame_FModSound_stop(*soundHolder, 3);
         }
 
-        float anim = this->field_0x68 +
-                     (frameScale / 1000.0f) * F(layout, 0xe0) * layerSpeed[this->field_0x78] * 3.0f;
-        this->field_0x68 = anim;
+        float anim = this->animAccumulator +
+                     (frameScale / 1000.0f) * F(layout, 0xe0) * layerSpeed[this->currentLayer] * 3.0f;
+        this->animAccumulator = anim;
         if (!(anim < 1.0f)) {
-            MiningGame_Sprite_nextFrame(this->field_0x94);
-            this->field_0x68 = 0.0f;
+            MiningGame_Sprite_nextFrame(this->drillSprite);
+            this->animAccumulator = 0.0f;
         }
 
-        MiningGame_MarqueeImage_update(this->field_0x88, delta);
-        int nextLayer = this->field_0x78 + 1;
-        float oldOre = this->field_0x24;
+        MiningGame_MarqueeImage_update(this->oreMarquee, delta);
+        int nextLayer = this->currentLayer + 1;
+        float oldOre = this->oreAmount;
         float layerFactor = 0.15f + ((float)nextLayer / 7.0f) * 2.35f;
-        float newOre = oldOre + ((this->field_0x28 * layerFactor) / 1000.0f) * frameScale;
-        this->field_0x24 = newOre;
-        float alpha = oldOre < newOre ? 0.0f : this->field_0x64;
-        int layerTimer = this->field_0x74 + delta;
-        this->field_0x74 = layerTimer;
+        float newOre = oldOre + ((this->oreRate * layerFactor) / 1000.0f) * frameScale;
+        this->oreAmount = newOre;
+        float alpha = oldOre < newOre ? 0.0f : this->textAlpha;
+        int layerTimer = this->layerTimer + delta;
+        this->layerTimer = layerTimer;
         alpha += frameScale / 500.0f;
         if (alpha > 1.0f) {
             alpha = 1.0f;
         }
-        this->field_0x64 = alpha;
+        this->textAlpha = alpha;
 
         if (layerTimer > 6000) {
-            this->field_0x74 = 0;
-            this->field_0x78 = nextLayer;
-            if (nextLayer >= this->field_0x7c) {
-                this->field_0x81 = 1;
-                this->field_0x83 = this->field_0x7c == 7;
+            this->layerTimer = 0;
+            this->currentLayer = nextLayer;
+            if (nextLayer >= this->targetLayer) {
+                this->gameWonFlag = 1;
+                this->gotCoreFlag = this->targetLayer == 7;
                 void **achHolder = g_MiningGame_achievements;
                 if (MiningGame_Achievements_hasMedal(*achHolder, 0x26, 1) == 0) {
                     void **statusHolder = g_MiningGame_statusMedal;
@@ -246,7 +246,7 @@ int MiningGame::update(int delta)
                                            (float)MiningGame_Achievements_getValue(*achHolder, 0x26, 1)) *
                                           100.0f);
                         if (shown > 29) {
-                            MiningGame_Hud_hudEventMedal(this->field_0xd0, 0x26, shown);
+                            MiningGame_Hud_hudEventMedal(this->hud, 0x26, shown);
                         }
                     }
                     if (MiningGame_Achievements_getValue(*achHolder, 0x26, 1) <= I(*statusHolder, 0x124)) {
@@ -255,23 +255,23 @@ int MiningGame::update(int delta)
                 }
                 return 0;
             }
-            MiningGame_MarqueeImage_setSpeed_update(this->field_0x88, F(layout, 0xe0) * layerSpeed[nextLayer]);
+            MiningGame_MarqueeImage_setSpeed_update(this->oreMarquee, F(layout, 0xe0) * layerSpeed[nextLayer]);
         }
     } else {
         if (wasInLayer != 0) {
             MiningGame_FModSound_stop(*soundHolder, 1);
             MiningGame_FModSound_play(*soundHolder, 3, 0, 0, 0);
         }
-        int lossTimer = this->field_0x20 + delta;
-        this->field_0x20 = lossTimer;
+        int lossTimer = this->lossTimer + delta;
+        this->lossTimer = lossTimer;
         if (lossTimer >= 2501) {
-            this->field_0x20 = 0x9c4;
-            this->field_0x24 = 0.0f;
-            this->field_0x82 = 1;
+            this->lossTimer = 0x9c4;
+            this->oreAmount = 0.0f;
+            this->gameLostFlag = 1;
             I(*g_MiningGame_statusUpdate, 0x124) = 0;
             return 0;
         }
-        this->field_0x64 = 1.0f;
+        this->textAlpha = 1.0f;
     }
 
     return 1;
@@ -298,42 +298,42 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     void **layoutHolder = g_MiningGame_layoutCtor;
     void **statusHolder = g_MiningGame_statusCtor;
 
-    this->field_0x18 = layer;
-    this->field_0x1c = station;
-    this->field_0xd0 = hud;
+    this->layer = layer;
+    this->station = station;
+    this->hud = hud;
 
     void *layout = *layoutHolder;
     int centerX = *screenW >> 1;
-    this->field_0x58 = centerX;
+    this->centerX = centerX;
     int centerY = I(layout, 0xd0) + (*screenH >> 1);
-    this->field_0x5c = centerY;
-    this->field_0xc8 = I(layout, 0xd4);
-    this->field_0x80 = layer == 7;
-    this->field_0x20 = 0;
-    this->field_0x24 = 0.0f;
-    this->field_0x28 = 0.0f;
-    this->field_0x6c = 0;
+    this->centerY = centerY;
+    this->marqueeWidth = I(layout, 0xd4);
+    this->isCoreLayer = layer == 7;
+    this->lossTimer = 0;
+    this->oreAmount = 0.0f;
+    this->oreRate = 0.0f;
+    this->driftTimer = 0;
     this->field_0x70 = 0x9c4;
-    this->field_0x74 = 0;
-    this->field_0x78 = 0;
-    this->field_0x7c = layer;
-    this->field_0x81 = 0;
-    this->field_0x82 = 0;
-    this->field_0x83 = 0;
-    this->field_0x10 = (float)centerX;
-    this->field_0x0 = 0.0f;
-    this->field_0x4 = 0.0f;
-    this->field_0x8 = 0.0f;
-    this->field_0xc = 0.0f;
-    this->field_0x14 = (float)centerY;
+    this->layerTimer = 0;
+    this->currentLayer = 0;
+    this->targetLayer = layer;
+    this->gameWonFlag = 0;
+    this->gameLostFlag = 0;
+    this->gotCoreFlag = 0;
+    this->posX = (float)centerX;
+    this->inputX = 0.0f;
+    this->inputY = 0.0f;
+    this->driftX = 0.0f;
+    this->driftY = 0.0f;
+    this->posY = (float)centerY;
 
     void *ship = MiningGame_Status_getShip(*statusHolder);
     void *equipment = MiningGame_Ship_getFirstEquipmentOfSort(ship, 0x13);
     if (equipment != 0) {
         int value = MiningGame_Item_getAttribute(equipment, 0x20);
-        this->field_0x2c = 0.3f + ((float)value / 100.0f) * 1.5f;
+        this->controlDivisor = 0.3f + ((float)value / 100.0f) * 1.5f;
         value = MiningGame_Item_getAttribute(equipment, 0x21);
-        this->field_0x28 = (float)value / 100.0f;
+        this->oreRate = (float)value / 100.0f;
     }
 
     void **canvasHolder = g_MiningGame_canvasCtor;
@@ -341,10 +341,10 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     int imageHeight = MiningGame_PaintCanvas_GetImage2DHeight(*canvasHolder, imageId[0]);
     void *sprite = MiningGame_operator_new(0x40);
     MiningGame_Sprite_ctor(sprite, imageId[0], imageHeight, imageHeight);
-    this->field_0x94 = sprite;
+    this->drillSprite = sprite;
     MiningGame_Sprite_defineReferencePixel(sprite, imageHeight / 2, imageHeight / 2);
 
-    this->field_0x68 = 0.0f;
+    this->animAccumulator = 0.0f;
     void (*imageCreate)(void *, int, int *) = g_MiningGame_imageCreate;
     imageCreate(*canvasHolder, 0x4e2, &this->field_0xac);
     imageCreate(*canvasHolder, 0x4dd, &this->field_0xb0);
@@ -354,50 +354,50 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     imageCreate(*canvasHolder, 0x4e0, &this->field_0xc0);
     imageCreate(*canvasHolder, 0x4e5, &this->field_0x9c);
     imageCreate(*canvasHolder, 0x4e4, &this->field_0xa0);
-    imageCreate(*canvasHolder, 0x4e7, &this->field_0x98);
+    imageCreate(*canvasHolder, 0x4e7, &this->oreIconImageId);
     imageCreate(*canvasHolder, 0x4e3, &this->field_0xa4);
-    imageCreate(*canvasHolder, 0x4e8, &this->field_0xa8);
+    imageCreate(*canvasHolder, 0x4e8, &this->progressBarImageId);
     imageCreate(*canvasHolder, 0x4ed, &this->field_0xc4);
 
-    if (this->field_0x80 != 0) {
+    if (this->isCoreLayer != 0) {
         int coreImage = 0x523;
         if (station == 0xa4) {
             coreImage = 0x522;
         }
-        MiningGame_PaintCanvas_Image2DCreate(*canvasHolder, coreImage, &this->field_0x60);
+        MiningGame_PaintCanvas_Image2DCreate(*canvasHolder, coreImage, &this->coreImageId);
     }
 
-    this->field_0x48 = MiningGame_PaintCanvas_GetImage2DWidth(*canvasHolder, this->field_0xa8);
-    this->field_0x4c = MiningGame_PaintCanvas_GetImage2DHeight(*canvasHolder, this->field_0xa8);
-    int x = *screenW / 2 - this->field_0x48 / 2;
-    this->field_0x50 = x;
+    this->progressBarWidth = MiningGame_PaintCanvas_GetImage2DWidth(*canvasHolder, this->progressBarImageId);
+    this->progressBarHeight = MiningGame_PaintCanvas_GetImage2DHeight(*canvasHolder, this->progressBarImageId);
+    int x = *screenW / 2 - this->progressBarWidth / 2;
+    this->progressBarX = x;
     int y = I(layout, 0xd8);
-    this->field_0x54 = y;
+    this->progressBarY = y;
 
     void *leftMarquee = MiningGame_operator_new(0x24);
-    MiningGame_MarqueeImage_ctor(leftMarquee, 0x4eb, this->field_0xc8, x, this->field_0x4c + y + 5, 20.0f);
-    this->field_0x8c = leftMarquee;
+    MiningGame_MarqueeImage_ctor(leftMarquee, 0x4eb, this->marqueeWidth, x, this->progressBarHeight + y + 5, 20.0f);
+    this->leftMarquee = leftMarquee;
 
     void *rightMarquee = MiningGame_operator_new(0x24);
-    MiningGame_MarqueeImage_ctor(rightMarquee, 0x4ec, this->field_0xc8,
-                                 (this->field_0x50 - this->field_0xc8) + this->field_0x48,
-                                 this->field_0x4c + this->field_0x54 + 5, 32.0f);
-    this->field_0x90 = rightMarquee;
+    MiningGame_MarqueeImage_ctor(rightMarquee, 0x4ec, this->marqueeWidth,
+                                 (this->progressBarX - this->marqueeWidth) + this->progressBarWidth,
+                                 this->progressBarHeight + this->progressBarY + 5, 32.0f);
+    this->rightMarquee = rightMarquee;
 
     int (*imageWidth)(void *, int) = g_MiningGame_imageWidth;
-    this->field_0x40 = imageWidth(*canvasHolder, this->field_0x98) / 2 + 5;
-    this->field_0x44 = imageWidth(*canvasHolder, this->field_0x9c) / 2;
-    this->field_0x34 = MiningGame_PaintCanvas_GetImage2DHeight(*canvasHolder, this->field_0xa0);
+    this->oreIconOffsetX = imageWidth(*canvasHolder, this->oreIconImageId) / 2 + 5;
+    this->oreIconOffsetY = imageWidth(*canvasHolder, this->field_0x9c) / 2;
+    this->oreImageHeight = MiningGame_PaintCanvas_GetImage2DHeight(*canvasHolder, this->field_0xa0);
 
     void *oreMarquee = MiningGame_operator_new(0x24);
     MiningGame_MarqueeImage_ctor(oreMarquee, 0x4e4, imageWidth(*canvasHolder, this->field_0x9c) - 8, 0, 0,
                                  F(layout, 0xdc));
-    this->field_0x88 = oreMarquee;
-    MiningGame_MarqueeImage_setSpeed(oreMarquee, F(layout, 0xe0) * g_MiningGame_layerSpeed[this->field_0x78]);
+    this->oreMarquee = oreMarquee;
+    MiningGame_MarqueeImage_setSpeed(oreMarquee, F(layout, 0xe0) * g_MiningGame_layerSpeed[this->currentLayer]);
 
-    this->field_0xcc = 0;
-    this->field_0x64 = 1.0f;
-    this->field_0x84 = MiningGame_Status_getCurrentCampaignMission(*statusHolder) > 4;
+    this->promptPulseTimer = 0;
+    this->textAlpha = 1.0f;
+    this->campaignFlag = MiningGame_Status_getCurrentCampaignMission(*statusHolder) > 4;
 }
 
 // ---- render2D_11f12c.cpp ----
@@ -434,8 +434,8 @@ void MiningGame::render2D()
     void *layout = *layoutHolder;
     void (*drawLayer)(void *, int, int, int, int, int, int, int, int) = g_MiningGame_drawLayer;
 
-    for (int layerIndex = this->field_0x78; layerIndex < this->field_0x7c; layerIndex++) {
-        int raw = layerTable[(layerIndex - this->field_0x7c * 7) + 0x31];
+    for (int layerIndex = this->currentLayer; layerIndex < this->targetLayer; layerIndex++) {
+        int raw = layerTable[(layerIndex - this->targetLayer * 7) + 0x31];
         int radius = (int)(F(layout, 0xe8) * (float)raw);
         int *imageSlot;
         if ((layerIndex & 1) == 0) {
@@ -457,47 +457,47 @@ void MiningGame::render2D()
         }
         int image = *imageSlot;
         int half = radius / 2;
-        drawLayer(canvas, image, this->field_0x58, this->field_0x5c, half, half, 0x11, 0x22, 0);
-        drawLayer(canvas, image, this->field_0x58, this->field_0x5c, half, half, 0x11, 0x21, 1);
-        drawLayer(canvas, image, this->field_0x58, this->field_0x5c, half, half, 0x11, 0x12, 2);
-        drawLayer(canvas, image, this->field_0x58, this->field_0x5c, half, half, 0x11, 0x11, 3);
+        drawLayer(canvas, image, this->centerX, this->centerY, half, half, 0x11, 0x22, 0);
+        drawLayer(canvas, image, this->centerX, this->centerY, half, half, 0x11, 0x21, 1);
+        drawLayer(canvas, image, this->centerX, this->centerY, half, half, 0x11, 0x12, 2);
+        drawLayer(canvas, image, this->centerX, this->centerY, half, half, 0x11, 0x11, 3);
     }
 
-    if (this->field_0x80 != 0) {
-        MiningGame_PaintCanvas_DrawImage2D_anchor(canvas, this->field_0x60, this->field_0x58, this->field_0x5c, 0x4411);
+    if (this->isCoreLayer != 0) {
+        MiningGame_PaintCanvas_DrawImage2D_anchor(canvas, this->coreImageId, this->centerX, this->centerY, 0x4411);
     }
 
-    MiningGame_PaintCanvas_DrawImage2D_anchor(canvas, this->field_0x98, (int)this->field_0x10, (int)this->field_0x14,
+    MiningGame_PaintCanvas_DrawImage2D_anchor(canvas, this->oreIconImageId, (int)this->posX, (int)this->posY,
                                              0x4411);
-    MiningGame_Sprite_setRefPixelPosition(this->field_0x94, (int)this->field_0x10, (int)this->field_0x14);
-    MiningGame_Sprite_draw(this->field_0x94, 1.0f, 1.0f);
+    MiningGame_Sprite_setRefPixelPosition(this->drillSprite, (int)this->posX, (int)this->posY);
+    MiningGame_Sprite_draw(this->drillSprite, 1.0f, 1.0f);
 
-    MiningGame_PaintCanvas_DrawImage2D(canvas, this->field_0xa4, this->field_0x50 - I(layout, 0xfc),
-                                       this->field_0x54 - I(layout, 0xfc));
+    MiningGame_PaintCanvas_DrawImage2D(canvas, this->field_0xa4, this->progressBarX - I(layout, 0xfc),
+                                       this->progressBarY - I(layout, 0xfc));
 
-    int lossTimer = this->field_0x20;
+    int lossTimer = this->lossTimer;
     if (lossTimer > 0x341) {
         float red = MiningGame_Layout_getPulseValue(layout, 10.0f) * 255.0f;
         float green = MiningGame_Layout_getPulseValue(layout, 10.0f) * 255.0f;
         MiningGame_PaintCanvas_SetColorRGBA(canvas, 0xff, (int)red, (int)green, 0xff);
     }
 
-    int width = (int)(((2500.0f - (float)lossTimer) / 2500.0f) * (float)this->field_0x48);
-    MiningGame_PaintCanvas_DrawRegion2D(canvas, this->field_0xa8, 0, 0, width, this->field_0x4c, width, 0, 0, 0,
-                                        this->field_0x50);
+    int width = (int)(((2500.0f - (float)lossTimer) / 2500.0f) * (float)this->progressBarWidth);
+    MiningGame_PaintCanvas_DrawRegion2D(canvas, this->progressBarImageId, 0, 0, width, this->progressBarHeight, width, 0, 0, 0,
+                                        this->progressBarX);
     MiningGame_PaintCanvas_SetColor(canvas, -1);
-    MiningGame_PaintCanvas_DrawImage2D_anchor(canvas, this->field_0xc4, this->field_0x58, this->field_0x54 - 3, 0x2411);
+    MiningGame_PaintCanvas_DrawImage2D_anchor(canvas, this->field_0xc4, this->centerX, this->progressBarY - 3, 0x2411);
 
-    MiningGame_MarqueeImage_draw(this->field_0x8c);
-    MiningGame_MarqueeImage_draw(this->field_0x90);
-    MiningGame_MarqueeImage_drawAt(this->field_0x88, (int)(this->field_0x10 + (float)this->field_0x40),
-                                   (int)(this->field_0x14 - (float)this->field_0x34));
+    MiningGame_MarqueeImage_draw(this->leftMarquee);
+    MiningGame_MarqueeImage_draw(this->rightMarquee);
+    MiningGame_MarqueeImage_drawAt(this->oreMarquee, (int)(this->posX + (float)this->oreIconOffsetX),
+                                   (int)(this->posY - (float)this->oreImageHeight));
 
     MiningGame_PaintCanvas_DrawImage2D(canvas, this->field_0x9c,
-                                       (int)((this->field_0x10 + (float)this->field_0x40) - (float)I(layout, 0xfc)),
-                                       (int)(this->field_0x14 - (float)I(layout, 0x100)));
+                                       (int)((this->posX + (float)this->oreIconOffsetX) - (float)I(layout, 0xfc)),
+                                       (int)(this->posY - (float)I(layout, 0x100)));
 
-    MiningGame_String_ctor_int(amountText, (int)this->field_0x24);
+    MiningGame_String_ctor_int(amountText, (int)this->oreAmount);
     MiningGame_String_ctor_char(suffixText, g_MiningGame_oreSuffix, false);
     MiningGame_String_plus(oreText, amountText, suffixText);
     MiningGame_String_dtor(suffixText);
@@ -505,8 +505,8 @@ void MiningGame::render2D()
 
     void *ship = MiningGame_Status_getShip_render(*g_MiningGame_statusRender);
     int freeSpace = MiningGame_Ship_getFreeSpace(ship);
-    int alpha = (int)(this->field_0x64 * 255.0f);
-    if (freeSpace < (int)this->field_0x24) {
+    int alpha = (int)(this->textAlpha * 255.0f);
+    if (freeSpace < (int)this->oreAmount) {
         MiningGame_PaintCanvas_SetColorRGBA(canvas, 0xff, 0x2a, 0, alpha);
     } else {
         MiningGame_PaintCanvas_SetColorRGBA(canvas, 0xff, 0xff, 0xff, alpha);
@@ -514,15 +514,15 @@ void MiningGame::render2D()
 
     String *font = (String *)*g_MiningGame_fontString;
     int textWidth = MiningGame_PaintCanvas_GetTextWidth(canvas, font, oreText);
-    int textX = (int)(((this->field_0x10 + (float)this->field_0x40 + (float)this->field_0x44) -
+    int textX = (int)(((this->posX + (float)this->oreIconOffsetX + (float)this->oreIconOffsetY) -
                       (float)I(layout, 0xfc)) -
                      (float)(textWidth / 2));
-    int textY = (int)(this->field_0x14 + (float)I(layout, 0x104));
+    int textY = (int)(this->posY + (float)I(layout, 0x104));
     MiningGame_PaintCanvas_DrawString(canvas, font, oreText, textX, textY, false);
     MiningGame_PaintCanvas_SetColor(canvas, -1);
 
     if (MiningGame_Status_getCurrentCampaignMission_render(*g_MiningGame_statusRender) < 5) {
-        int promptAlpha = (int)(((float)this->field_0xcc / 2500.0f) * 255.0f);
+        int promptAlpha = (int)(((float)this->promptPulseTimer / 2500.0f) * 255.0f);
         if (promptAlpha > 255) {
             promptAlpha = 255 - promptAlpha;
         }
@@ -531,7 +531,7 @@ void MiningGame::render2D()
         MiningGame_String_ctor_copy(amountText, prompt, false);
         int promptWidth = MiningGame_PaintCanvas_GetTextWidth(canvas, font, amountText);
         MiningGame_PaintCanvas_DrawString(canvas, font, amountText, *g_MiningGame_screenWRender / 2 - promptWidth / 2,
-                                          I(layout, 0x70) + this->field_0x54, false);
+                                          I(layout, 0x70) + this->progressBarY, false);
         MiningGame_PaintCanvas_SetColor(canvas, -1);
         MiningGame_String_dtor(amountText);
     }

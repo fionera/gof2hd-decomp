@@ -31,23 +31,23 @@ struct BlurShader {
     ~BlurShader();
 
     char     pad_0x0[0x9];
-    uint8_t  field_0x9;                 // +0x9  dirty flag
+    uint8_t  dirty;                 // +0x9  dirty flag
     char     pad_0xa[0x24 - 0xa];
-    unsigned int field_0x24;            // +0x24 program handle
-    int      field_0x28;                // +0x28 a_position
-    int      field_0x2c;                // +0x2c u_mvpMatrix
-    int      field_0x30;                // +0x30 a_texCoord
-    int      field_0x34;                // +0x34 s_texture
-    int      field_0x38;                // +0x38 u_texelSize
-    int      field_0x3c;                // +0x3c u_blurAmount
-    int      field_0x40;                // +0x40 u_strength
-    int      field_0x44;                // +0x44 u_center
-    unsigned int field_0x48;            // +0x48 vertex attrib slot
+    unsigned int program;            // +0x24 program handle
+    int      aPosition;                // +0x28 a_position
+    int      uMvpMatrix;                // +0x2c u_mvpMatrix
+    int      aTexCoord;                // +0x30 a_texCoord
+    int      sTexture;                // +0x34 s_texture
+    int      uTexelSize;                // +0x38 u_texelSize
+    int      uBlurAmount;                // +0x3c u_blurAmount
+    int      uStrength;                // +0x40 u_strength
+    int      uCenter;                // +0x44 u_center
+    unsigned int positionAttrib;            // +0x48 vertex attrib slot
     char     pad_0x4c[0x50 - 0x4c];
-    unsigned int field_0x50;            // +0x50 texcoord attrib slot
+    unsigned int texCoordAttrib;            // +0x50 texcoord attrib slot
     char     pad_0x54[0x58 - 0x54];
-    float    field_0x58;                // +0x58 strength
-    float    field_0x5c;                // +0x5c blur scale
+    float    strength;                // +0x58 strength
+    float    blurScale;                // +0x5c blur scale
 };
 
 } // namespace AbyssEngine

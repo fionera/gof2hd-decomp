@@ -11,7 +11,7 @@ extern "C" void SpriteGun_Gun_setEnemy(void *base);
 
 void SpriteGun::update() {
     SpriteGun *this_ = this;
-    return SpriteGun_Gun_update(this_->field_0x8);
+    return SpriteGun_Gun_update(this_->gun);
 }
 
 // ---- setEnemies_169ac4.cpp ----
@@ -20,7 +20,7 @@ void SpriteGun::update() {
 
 void SpriteGun::setEnemies() {
     SpriteGun *this_ = this;
-    return SpriteGun_Gun_setEnemies(this_->field_0x8);
+    return SpriteGun_Gun_setEnemies(this_->gun);
 }
 
 // ---- SpriteGun_169aa4.cpp ----
@@ -40,5 +40,5 @@ SpriteGun::SpriteGun(Gun *param_1, int param_2) {
 
 void SpriteGun::setEnemy() {
     SpriteGun *this_ = this;
-    return SpriteGun_Gun_setEnemy(this_->field_0x8);
+    return SpriteGun_Gun_setEnemy(this_->gun);
 }

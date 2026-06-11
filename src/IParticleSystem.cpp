@@ -27,7 +27,7 @@ extern "C" void Array_ParticleSet_dtor(void *self);
 // ---- setParticleSet_181b1e.cpp ----
 void IParticleSystem::setParticleSet(int set)
 {
-    if (I(this, 0x38) != 0 && *(int *)this->field_0x3c == set) {
+    if (I(this, 0x38) != 0 && *(int *)this->particleSets == set) {
         U8(this, 0x44) = 0;
     }
 }
@@ -76,7 +76,7 @@ typedef void (*RenderOffFn)(IParticleSystem *);
 void IParticleSystem::enableRender(bool enabled)
 {
     if (!enabled && U8(this, 0xd) != 0) {
-        RenderOffFn fn = *(RenderOffFn *)((char *)this->field_0x0 + 8);
+        RenderOffFn fn = *(RenderOffFn *)((char *)this->vtable + 8);
         fn(this);
     }
     U8(this, 0xd) = enabled;
@@ -151,14 +151,14 @@ void IParticleSystem::emit(int delta)
     char velocity[12];
     char emitVelocity[12];
 
-    MatrixGetPosition(matrixPos, this->field_0x18);
-    MatrixGetRight(right, this->field_0x18);
+    MatrixGetPosition(matrixPos, this->matrix);
+    MatrixGetRight(right, this->matrix);
     if (U8(this, 0x4c) != 0) {
         Vector_neg(tmp, right);
         Vector_assign(right, tmp);
     }
-    MatrixGetUp(up, this->field_0x18);
-    MatrixGetDir(dir, this->field_0x18);
+    MatrixGetUp(up, this->matrix);
+    MatrixGetDir(dir, this->matrix);
 
     char *def = ParticleSet_definitions + (set + set * 4) * 32;
     float speed2 = Vector_dot((char *)this + 0x1c, (char *)this + 0x1c);
@@ -437,7 +437,7 @@ __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
 IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
                                  bool mirror, bool alphaFade)
 {
-    this->field_0x8 = canvas;
+    this->canvas = canvas;
     P(this, 0x0) = (char *)IParticleSystem_vtable + 8;
     AERandom_ctor((char *)this + 0x10);
 
@@ -446,7 +446,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
     zero[1] = 0;
     zero[2] = 0;
     zero[3] = 0;
-    this->field_0x18 = matrix;
+    this->matrix = matrix;
     I(this, 0x2c) = 0;
     I(this, 0x30) = 0;
 
@@ -510,7 +510,7 @@ void IParticleSystem::calcEmitterVelocity(int delta)
     char position[12];
     char scaled[12];
     char diff[12];
-    MatrixGetPosition(position, this->field_0x18);
+    MatrixGetPosition(position, this->matrix);
     Vector_sub(diff, position, (char *)this + 0x28);
     Vector_mul(scaled, diff, 1000.0f / (float)delta);
     Vector_assign((char *)this + 0x1c, scaled);
@@ -643,9 +643,9 @@ void IParticleSystem::resetEmitterVelocity()
 {
     char value[12] = {};
     Vector_assign((char *)this + 0x1c, value);
-    this->field_0x5 = 1;
+    this->emitterVelocityDirty = 1;
     char *matrixValue = value;
-    MatrixGetPosition(matrixValue, this->field_0x18);
+    MatrixGetPosition(matrixValue, this->matrix);
     Vector_assign((char *)this + 0x28, matrixValue);
     this->field_0x4 = 0;
 }

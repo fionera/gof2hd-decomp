@@ -7,7 +7,7 @@ extern "C" void *memset(void *, int, unsigned long);
 // ---- giveFree_1603f0.cpp ----
 void SpacePoint::giveFree() {
     SpacePoint *self = this;
-    self->field_0x1c = 1;
+    self->free = 1;
 }
 
 // ---- SpacePoint_1603ac.cpp ----
@@ -19,15 +19,15 @@ void SpacePoint::giveFree() {
 SpacePoint::SpacePoint(int param_1, const Vector &param_2, const Vector &param_3, int param_4)
 {
     memset(__builtin_assume_aligned(this, 4), 0, 0x18);
-    this->field_0x18 = param_1;
+    this->type = param_1;
     Vector_assign((Vector *)this, &param_2);
     Vector_assign((Vector *)((char *)this + 0xc), &param_3);
-    this->field_0x1c = 1;
-    this->field_0x20 = param_4;
+    this->free = 1;
+    this->param = param_4;
 }
 
 // ---- take_1603ea.cpp ----
 void SpacePoint::take() {
     SpacePoint *self = this;
-    self->field_0x1c = 0;
+    self->free = 0;
 }

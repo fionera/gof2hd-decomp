@@ -14,10 +14,10 @@ void operator delete(void *ptr) noexcept;
 // Field accessors --------------------------------------------------------------
 
 struct MenuTouchWindow {
-    unsigned* field_0x4;                // +0x4
+    unsigned* buttons;                // +0x4
     unsigned short field_0x98;          // +0x98
-    unsigned short field_0x108;         // +0x108
-    unsigned short field_0x17a;         // +0x17a
+    unsigned short upButtonPressed;         // +0x108
+    unsigned short dlcMessageShowing;         // +0x17a
 
     // Methods (declarations consolidated from per-method merge artifacts).
     void showSupernovaMessage();

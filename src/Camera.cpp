@@ -10,7 +10,7 @@ namespace AbyssEngine {
 // Default-constructs the projection Matrix at +0x0c, then sets up the perspective.
 Camera::Camera(float fov, float aspect, float nearPlane, float farPlane, float param5)
 {
-    _ZN11AbyssEngine6AEMath6MatrixC1Ev(&this->field_0xc);
+    _ZN11AbyssEngine6AEMath6MatrixC1Ev(&this->projection);
     (void)param5;
     SetPerspective(fov, aspect, nearPlane, farPlane);
 }

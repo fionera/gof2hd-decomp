@@ -40,13 +40,13 @@ struct AEFile {
 };
 
 struct ShaderBaseStruct {
-    void *field_0x0;                    // +0x0  vtable
-    int field_0x4;                      // +0x4  GL program handle (-1 when unset)
-    volatile uint16_t field_0x8;        // +0x8  flags
-    uint8_t field_0x9;                  // +0x9  dirty flag
-    String field_0xc;                   // +0xc  shader name
-    const char *field_0x18;             // +0x18 vertex path
-    const char *field_0x1c;             // +0x1c fragment path
+    void *vtable;                    // +0x0  vtable
+    int program;                      // +0x4  GL program handle (-1 when unset)
+    volatile uint16_t flags;        // +0x8  flags
+    uint8_t dirty;                  // +0x9  dirty flag
+    String name;                   // +0xc  shader name
+    const char *vertexPath;             // +0x18 vertex path
+    const char *fragmentPath;             // +0x1c fragment path
 
     String GetShaderName();
     virtual ~ShaderBaseStruct();
@@ -59,14 +59,14 @@ struct ShaderBaseStruct {
 };
 
 // field accessors (named-field based, no byte-offset arithmetic)
-static inline void *&shader_vtable(ShaderBaseStruct *self)           { return self->field_0x0; }
-static inline int &shader_program(ShaderBaseStruct *self)            { return self->field_0x4; }
-static inline volatile uint16_t &shader_flags(ShaderBaseStruct *self){ return self->field_0x8; }
-static inline uint8_t &shader_dirty(ShaderBaseStruct *self)          { return self->field_0x9; }
-static inline String *shader_name(ShaderBaseStruct *self)            { return &self->field_0xc; }
-static inline const String *shader_name(const ShaderBaseStruct *self){ return &self->field_0xc; }
-static inline const char *&shader_vertex_path(ShaderBaseStruct *self){ return self->field_0x18; }
-static inline const char *&shader_fragment_path(ShaderBaseStruct *self){ return self->field_0x1c; }
+static inline void *&shader_vtable(ShaderBaseStruct *self)           { return self->vtable; }
+static inline int &shader_program(ShaderBaseStruct *self)            { return self->program; }
+static inline volatile uint16_t &shader_flags(ShaderBaseStruct *self){ return self->flags; }
+static inline uint8_t &shader_dirty(ShaderBaseStruct *self)          { return self->dirty; }
+static inline String *shader_name(ShaderBaseStruct *self)            { return &self->name; }
+static inline const String *shader_name(const ShaderBaseStruct *self){ return &self->name; }
+static inline const char *&shader_vertex_path(ShaderBaseStruct *self){ return self->vertexPath; }
+static inline const char *&shader_fragment_path(ShaderBaseStruct *self){ return self->fragmentPath; }
 
 } // namespace AbyssEngine
 

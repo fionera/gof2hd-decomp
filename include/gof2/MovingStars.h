@@ -35,14 +35,14 @@ namespace AEMath {
 // the four parallel arrays at 0x0/0x4/0xc/0x10 plus the texture handle (0x8) keep named fields,
 // remaining scratch is reached through the i32/u32/u8/u16 helpers above.
 struct MovingStars {
-    void *field_0x0;                    // +0x0  billboard ids array
-    uint32_t *field_0x4;                // +0x4  transform handles array
-    uint32_t field_0x8;                 // +0x8  texture handle
-    void *field_0xc;                    // +0xc  life array
-    void *field_0x10;                   // +0x10 velocity array
+    void *billboardIds;                    // +0x0  billboard ids array
+    uint32_t *transformHandles;                // +0x4  transform handles array
+    uint32_t textureHandle;                 // +0x8  texture handle
+    void *lifeArray;                    // +0xc  life array
+    void *velocityArray;                   // +0x10 velocity array
     uint16_t field_0x14;                // +0x14 anim flags
     char field_0x16[2];                 // +0x16 padding
-    uint32_t field_0x18;                // +0x18 tick accumulator
+    uint32_t tickAccumulator;                // +0x18 tick accumulator
     char field_0x1c[4];                 // +0x1c
 
     MovingStars();

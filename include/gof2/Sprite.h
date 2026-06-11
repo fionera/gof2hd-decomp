@@ -19,22 +19,22 @@ extern "C" void PaintCanvas_DrawImage2DScaled(void *canvas, uint32_t image, int 
 __attribute__((visibility("hidden"))) extern void **g_Sprite_canvas;
 
 struct Sprite {
-    uint32_t *field_0x0;   // frame image handle array (null => single image)
-    uint32_t  field_0x4;   // single image handle (-1 when using frame array)
-    int32_t   field_0x8;   // reference pixel X
-    int32_t   field_0xc;   // reference pixel Y
-    int32_t   field_0x10;  // position X
-    int32_t   field_0x14;  // position Y
-    int32_t   field_0x18;  // frame width
-    int32_t   field_0x1c;  // frame height
-    int32_t   field_0x20;  // image width
-    int32_t   field_0x24;  // image height
-    int32_t   field_0x28;  // current frame src X
-    int32_t   field_0x2c;  // current frame src Y
-    int32_t   field_0x30;  // columns
-    int32_t   field_0x34;  // rows
-    int32_t   field_0x38;  // current frame index
-    int32_t   field_0x3c;  // frame count
+    uint32_t *frames;   // frame image handle array (null => single image)
+    uint32_t  image;   // single image handle (-1 when using frame array)
+    int32_t   refPixelX;   // reference pixel X
+    int32_t   refPixelY;   // reference pixel Y
+    int32_t   posX;  // position X
+    int32_t   posY;  // position Y
+    int32_t   frameWidth;  // frame width
+    int32_t   frameHeight;  // frame height
+    int32_t   imageWidth;  // image width
+    int32_t   imageHeight;  // image height
+    int32_t   frameSrcX;  // current frame src X
+    int32_t   frameSrcY;  // current frame src Y
+    int32_t   columns;  // columns
+    int32_t   rows;  // rows
+    int32_t   currentFrame;  // current frame index
+    int32_t   frameCount;  // frame count
 
     Sprite(uint32_t image, int frameWidth, int frameHeight);
     Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight);

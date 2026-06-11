@@ -10,15 +10,15 @@ extern "C" void operator_delete(void *p);              // 0x6eb48
 
 BoundingVolume::~BoundingVolume()
 {
-    this->field_0x0 = (void *)((char *)g_BoundingVolume_vtbl + 8);
-    Array<BoundingVolume*> *children = this->field_0x4;
+    this->vtable = (void *)((char *)g_BoundingVolume_vtbl + 8);
+    Array<BoundingVolume*> *children = this->children;
     if (children != 0) {
         ArrayReleaseClasses_BVPtr(children);
-        if (this->field_0x4 != 0) {
-            operator_delete(ArrayBV_dtor(this->field_0x4));
+        if (this->children != 0) {
+            operator_delete(ArrayBV_dtor(this->children));
         }
     }
-    this->field_0x4 = 0;
+    this->children = 0;
 }
 
 // ---- collide_11f870.cpp ----
@@ -28,15 +28,15 @@ typedef int (*CollideFn)(void *self, float x, float y, float z);
 
 int BoundingVolume::collide(float, float, float)
 {
-    Array<BoundingVolume *> *children = this->field_0x4;
+    Array<BoundingVolume *> *children = this->children;
     if (children != 0) {
         for (uint32_t i = 0; i < children->size(); i++) {
             void *child = children->data()[i];
             CollideFn fn = *(CollideFn *)((char *)*(void **)child + 8);
-            if (fn(child, this->field_0x8, this->field_0xc, this->field_0x10) != 0) {
+            if (fn(child, this->centerX, this->centerY, this->centerZ) != 0) {
                 return 1;
             }
-            children = this->field_0x4;
+            children = this->children;
         }
     }
     return 0;
@@ -61,7 +61,7 @@ extern "C" void BoundingVolume_setVolume_tail(BoundingVolume *src, void *arr);  
 void BoundingVolume::setVolume(BoundingVolume *src)
 {
     Array<BoundingVolume*> *arr = new Array<BoundingVolume*>();
-    this->field_0x4 = arr;
+    this->children = arr;
     return BoundingVolume_setVolume_tail(src, arr);
 }
 
@@ -69,14 +69,14 @@ void BoundingVolume::setVolume(BoundingVolume *src)
 BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez)
 {
     void *vt = (void *)((char *)g_BoundingVolume_vtbl + 8);
-    this->field_0x14 = ex;
-    this->field_0x18 = ey;
-    this->field_0x1c = ez;
-    this->field_0x0 = vt;
-    this->field_0x4 = 0;
-    this->field_0x8 = cx;
-    this->field_0xc = cy;
-    this->field_0x10 = cz;
+    this->extentsX = ex;
+    this->extentsY = ey;
+    this->extentsZ = ez;
+    this->vtable = vt;
+    this->children = 0;
+    this->centerX = cx;
+    this->centerY = cy;
+    this->centerZ = cz;
 }
 
 // ---- staticProjectCollisionOnSurface_11f8b0.cpp ----
@@ -91,21 +91,21 @@ typedef void (*ProjFn)(Vector *out, void *self, void *bv);
 void BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<BoundingVolume *> *vols)
 {
     // this->center = v
-    this->field_0x8 = v.x;
-    this->field_0xc = v.y;
-    this->field_0x10 = v.z;
+    this->centerX = v.x;
+    this->centerY = v.y;
+    this->centerZ = v.z;
 
     if (vols != 0) {
         for (int pass = 0; pass != 2; pass++) {
             for (uint32_t i = 0; i < vols->size(); i++) {
                 void *bv = vols->data()[i];
                 HitFn hit = *(HitFn *)((char *)*(void **)bv + 0xc);
-                if (hit(bv, this->field_0x8, this->field_0xc, this->field_0x10) != 0) {
+                if (hit(bv, this->centerX, this->centerY, this->centerZ) != 0) {
                     void *bv2 = vols->data()[i];
                     ProjFn proj = *(ProjFn *)((char *)*(void **)bv2 + 0x10);
                     Vector out;
                     proj(&out, bv2, this);
-                    AEMath_Vector_assign((Vector *)&this->field_0x8, &out);
+                    AEMath_Vector_assign((Vector *)&this->centerX, &out);
                 }
             }
         }
@@ -119,20 +119,20 @@ typedef void (*UpdateFn)(void *self, float x, float y, float z);
 
 void BoundingVolume::update(float x, float y, float z)
 {
-    Array<BoundingVolume *> *children = this->field_0x4;
+    Array<BoundingVolume *> *children = this->children;
     if (children != 0) {
         for (uint32_t i = 0; i < children->size(); i++) {
             void *child = children->data()[i];
             UpdateFn fn = *(UpdateFn *)((char *)*(void **)child + 4);
             fn(child, x, y, z);
-            children = this->field_0x4;
+            children = this->children;
         }
     }
     Vector v;
     v.x = x;
     v.y = y;
     v.z = z;
-    AEMath_Vector_assign((Vector *)&this->field_0x8, &v);
+    AEMath_Vector_assign((Vector *)&this->centerX, &v);
 }
 
 // ---- getProjectionVector_11f788.cpp ----
@@ -144,7 +144,7 @@ extern "C" void AEMath_VectorNormalize(void *out, const Vector *v);             
 Vector BoundingVolume::getProjectionVector(const Vector &v)
 {
     Vector ret;
-    AEMath_operator_sub(&ret, &v, (const Vector *)&this->field_0x8);
+    AEMath_operator_sub(&ret, &v, (const Vector *)&this->centerX);
     Vector tmp;
     AEMath_VectorNormalize(&tmp, &ret);
     AEMath_Vector_assign(&ret, &tmp);

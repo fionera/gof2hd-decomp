@@ -6,13 +6,13 @@
 
 struct MTitle {
     void* field_0x0;                    // +0x0   vtable pointer
-    void* field_0x4;                    // +0x4   PaintCanvas
-    void* field_0x8;                    // +0x8   ApplicationManager
-    int field_0xc;                      // +0xc   render priority (=100)
-    uint32_t field_0x10;                // +0x10  image handle
-    uint32_t field_0x14;                // +0x14  image handle
-    int field_0x18;                     // +0x18  step
-    int field_0x1c;                     // +0x1c  timer accumulator
+    void* canvas;                    // +0x4   PaintCanvas
+    void* appManager;                    // +0x8   ApplicationManager
+    int renderPriority;                      // +0xc   render priority (=100)
+    uint32_t logoImage;                // +0x10  image handle
+    uint32_t logoImage2;                // +0x14  image handle
+    int step;                     // +0x18  step
+    int timer;                     // +0x1c  timer accumulator
 
     MTitle();
     void OnRelease();

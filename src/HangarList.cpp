@@ -12,30 +12,30 @@ HangarList::~HangarList() {
 
 // ---- getCurrentLength_11e786.cpp ----
 uint32_t HangarList::getCurrentLength() {
-    Array<Array<ListItem *> *> *tabs = this->field_0x0;
-    uint32_t current = this->field_0x4;
+    Array<Array<ListItem *> *> *tabs = this->tabs;
+    uint32_t current = this->currentTab;
     Array<ListItem *> *items = tabs->data()[current];
     return items != 0 ? items->size() : 0;
 }
 
 // ---- getCurrentTabItems_11e772.cpp ----
 Array<ListItem *> *HangarList::getCurrentTabItems() {
-    Array<Array<ListItem *> *> *tabs = this->field_0x0;
-    uint32_t current = this->field_0x4;
+    Array<Array<ListItem *> *> *tabs = this->tabs;
+    uint32_t current = this->currentTab;
     return tabs->data()[current];
 }
 
 // ---- HangarList_11d9f4.cpp ----
 HangarList::HangarList() {
-    this->field_0x0 = 0;
-    this->field_0x4 = 0;
-    this->field_0x8 = 0;
+    this->tabs = 0;
+    this->currentTab = 0;
+    this->currentItem = 0;
 }
 
 // ---- release_11da10.cpp ----
 void HangarList::release() {
     Array<Array<ListItem *> *> *tabs =
-        this->field_0x0;
+        this->tabs;
     if (tabs != 0) {
         uint32_t off = 0;
         uint32_t i = 0;
@@ -49,7 +49,7 @@ void HangarList::release() {
             } else {
                 if (items->size() != 0) {
                     ArrayReleaseClasses_ListItem(items);
-                    tabs = this->field_0x0;
+                    tabs = this->tabs;
                     data = tabs->data();
                     items = *(Array<ListItem *> **)((char *)data + off);
                     if (items == 0) {
@@ -58,23 +58,23 @@ void HangarList::release() {
                     }
                 }
                 operator_delete(Array_ListItem_dtor(items));
-                tabs = this->field_0x0;
+                tabs = this->tabs;
                 slot = (Array<ListItem *> **)((char *)tabs->data() + off);
             }
         clear_slot:
             *slot = 0;
             uint32_t next = i + 1;
             off += 4;
-            tabs = this->field_0x0;
+            tabs = this->tabs;
             i = next;
         }
         ArrayReleaseClasses_ArrayListItem(tabs);
-        tabs = this->field_0x0;
+        tabs = this->tabs;
         if (tabs != 0) {
             operator_delete(Array_ArrayListItem_dtor(tabs));
         }
     }
-    this->field_0x0 = 0;
+    this->tabs = 0;
 }
 
 // ---- getCurrentItem_11e744.cpp ----
@@ -82,12 +82,12 @@ extern "C" ListItem *HangarList_getCurrentItem_tail(HangarList *self,
                                                     ListItem *item);
 
 ListItem *HangarList::getCurrentItem() {
-    return HangarList_getCurrentItem_tail(this, this->field_0x8);
+    return HangarList_getCurrentItem_tail(this, this->currentItem);
 }
 
 // ---- getCurrentItemAt_11e74a.cpp ----
 ListItem *HangarList::getCurrentItemAt(int index) {
-    Array<Array<ListItem *> *> *tabs = this->field_0x0;
+    Array<Array<ListItem *> *> *tabs = this->tabs;
     if (tabs != 0) {
         uint32_t current = ((volatile uint32_t *)this)[1];
         uint32_t dataWord = ((volatile uint32_t *)tabs)[1];
@@ -112,20 +112,20 @@ ListItem *HangarList::getCurrentItemAt(int index) {
 // ---- initBlueprintTab_11e088.cpp ----
 void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
     Array<Array<ListItem *> *> *tabs =
-        this->field_0x0;
+        this->tabs;
     Array<ListItem *> **slot = tabs->data() + 2;
     Array<ListItem *> *old = *slot;
     if (old != 0) {
         if (old->size() != 0) {
             ArrayReleaseClasses_ListItem(old);
-            slot = this->field_0x0->data() + 2;
+            slot = this->tabs->data() + 2;
             old = *slot;
             if (old == 0) {
                 goto clear_old;
             }
         }
         operator_delete(Array_ListItem_dtor(old));
-        slot = this->field_0x0->data() + 2;
+        slot = this->tabs->data() + 2;
     }
 clear_old:
     *slot = 0;
@@ -188,7 +188,7 @@ clear_old:
         }
     }
 
-    this->field_0x0->data()[2] = list;
+    this->tabs->data()[2] = list;
 }
 
 // ---- fillIngredientsList_11e5a8.cpp ----
@@ -234,30 +234,30 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
         --i;
     }
 
-    this->field_0x0->data()[4] = list;
+    this->tabs->data()[4] = list;
     li = (ListItem *)operator_new(0x48);
     ListItem_ctor_Slot(li, 0);
     li->field_0x24 = 0;
-    ArrayAdd_ListItem(li, this->field_0x0->data()[4]);
+    ArrayAdd_ListItem(li, this->tabs->data()[4]);
 }
 
 // ---- fillBuyList_11e2e0.cpp ----
 void HangarList::fillBuyList(ListItem *item) {
     Array<Array<ListItem *> *> *tabs =
-        this->field_0x0;
+        this->tabs;
     Array<ListItem *> **slot = tabs->data() + 3;
     Array<ListItem *> *old = *slot;
     if (old != 0) {
         if (old->size() != 0) {
             ArrayReleaseClasses_ListItem(old);
-            slot = this->field_0x0->data() + 3;
+            slot = this->tabs->data() + 3;
             old = *slot;
             if (old == 0) {
                 goto clear_old;
             }
         }
         operator_delete(Array_ListItem_dtor(old));
-        slot = this->field_0x0->data() + 3;
+        slot = this->tabs->data() + 3;
     }
 clear_old:
     *slot = 0;
@@ -357,26 +357,26 @@ clear_old:
         }
     }
 
-    this->field_0x0->data()[3] = list;
+    this->tabs->data()[3] = list;
 }
 
 // ---- initShipTab_11db48.cpp ----
 void HangarList::initShipTab(Ship *ship) {
     Array<Array<ListItem *> *> *tabs =
-        this->field_0x0;
+        this->tabs;
     Array<ListItem *> **slot = tabs->data();
     Array<ListItem *> *old = *slot;
     if (old != 0) {
         if (old->size() != 0) {
             ArrayReleaseClasses_ListItem(old);
-            slot = this->field_0x0->data();
+            slot = this->tabs->data();
             old = *slot;
             if (old == 0) {
                 goto clear_old;
             }
         }
         operator_delete(Array_ListItem_dtor(old));
-        slot = this->field_0x0->data();
+        slot = this->tabs->data();
     }
 clear_old:
     *slot = 0;
@@ -466,7 +466,7 @@ clear_old:
             }
         }
     }
-    this->field_0x0->data()[0] = items;
+    this->tabs->data()[0] = items;
 }
 
 // ---- initShopTab_11de38.cpp ----
@@ -485,20 +485,20 @@ void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
     int counts[5] = {};
 
     Array<Array<ListItem *> *> *tabs =
-        this->field_0x0;
+        this->tabs;
     Array<ListItem *> **slot = tabs->data() + 1;
     Array<ListItem *> *old = *slot;
     if (old != 0) {
         if (old->size() != 0) {
             ArrayReleaseClasses_ListItem(old);
-            slot = this->field_0x0->data() + 1;
+            slot = this->tabs->data() + 1;
             old = *slot;
             if (old == 0) {
                 goto clear_old;
             }
         }
         operator_delete(Array_ListItem_dtor(old));
-        slot = this->field_0x0->data() + 1;
+        slot = this->tabs->data() + 1;
     }
 clear_old:
     *slot = 0;
@@ -564,7 +564,7 @@ clear_old:
             }
         }
     }
-    this->field_0x0->data()[1] = list;
+    this->tabs->data()[1] = list;
 }
 
 // ---- init_11e234.cpp ----
@@ -578,7 +578,7 @@ int HangarList::init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
     Array<BluePrint *> *bp = blueprints;
     Array<Array<ListItem *> *> *tabs = (Array<Array<ListItem *> *> *)storage;
     Array_ArrayListItem_ctor(tabs);
-    this->field_0x0 = tabs;
+    this->tabs = tabs;
     ArraySetLength_ArrayListItem(5, tabs);
     initShipTab(ship);
     initShopTab(items, ships);

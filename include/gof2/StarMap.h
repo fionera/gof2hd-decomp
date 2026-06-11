@@ -27,7 +27,7 @@ struct StarMap {
     // Raw storage for the parts of the layout accessed by byte offset (everything except
     // the named scratch Vector below).
     char storage_0x0[0x78];             // +0x00 .. +0x78
-    Vector field_0x78;                  // +0x78  scratch screen-space Vector
+    Vector scratchVector;                  // +0x78  scratch screen-space Vector
     char storage_0x84[0x200 - 0x84];    // +0x84 .. (object tail)
 
     StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4);

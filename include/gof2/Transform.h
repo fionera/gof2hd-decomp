@@ -85,10 +85,10 @@ struct Transform {
     uint32_t field_0x2c;                // +0x2c
     uint32_t field_0x30;                // +0x30
     Transform* field_0x34;              // +0x34
-    uint field_0x3c;                    // +0x3c
-    char** field_0x40;                  // +0x40
-    uint field_0x4c;                    // +0x4c
-    Transform** field_0x50;             // +0x50
+    uint meshCount;                    // +0x3c
+    char** meshes;                  // +0x40
+    uint childCount;                    // +0x4c
+    Transform** children;             // +0x50
     uint8_t field_0x5c;                 // +0x5c
     uint32_t field_0x60;                // +0x60
     uint32_t field_0x64;                // +0x64
@@ -100,20 +100,20 @@ struct Transform {
     uint32_t field_0x80;                // +0x80
     unsigned char field_0x84;           // +0x84
     uint8_t field_0x85;                 // +0x85
-    AEMath::Vector field_0xd4;          // +0xd4
-    float field_0xe0;                   // +0xe0
+    AEMath::Vector boundingCenter;          // +0xd4
+    float boundingRadius;                   // +0xe0
     float field_0xe4;                   // +0xe4
-    int field_0xe8;                     // +0xe8
-    bool field_0xec;                    // +0xec
-    bool field_0xed;                    // +0xed
-    float field_0xf0;                   // +0xf0
-    longlong field_0xf8;                // +0xf8
-    longlong field_0x100;               // +0x100
-    longlong field_0x108;               // +0x108
-    longlong field_0x110;               // +0x110
-    int field_0x11c;                    // +0x11c (keyframe array length)
-    KeyFrame** field_0x120;             // +0x120 (keyframe array data)
-    bool field_0x17c;                   // +0x17c
+    int animationStart;                     // +0xe8
+    bool visible;                    // +0xec
+    bool animating;                    // +0xed
+    float animationSpeed;                   // +0xf0
+    longlong animationLength;                // +0xf8
+    longlong rangeStart;               // +0x100
+    longlong rangeEnd;               // +0x108
+    longlong currentTime;               // +0x110
+    int keyFrameCount;                    // +0x11c (keyframe array length)
+    KeyFrame** keyFrames;             // +0x120 (keyframe array data)
+    bool vfcEnabled;                   // +0x17c
 
     Transform();
     Transform(Transform *other);

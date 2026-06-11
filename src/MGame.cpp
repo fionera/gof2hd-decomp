@@ -925,7 +925,7 @@ __attribute__((visibility("hidden"))) extern int **g_deAlienFlag;// @0x18fb9c
 
 static void savePlayerStats(MGame *self, Status *status) {
     PlayerEgo *ego = self->field_0x58;
-    Player *pl = (Player *)ego->field_0x0;
+    Player *pl = (Player *)ego->player;
     // Status fields at +0x5c/0x60/0x64/0x68 are not modeled in gof2/Status.h
     // (owned by another batch); write them via typed byte offsets.
     F<int>(status, 0x64) = ((Player *)(pl))->getHitpoints();
@@ -1351,7 +1351,7 @@ void MGame::OnInitialize() {
                     int n = (int)enemies->size;
                     for (int i = 0; i < n; i++) {
                         KIPlayer *e = enemies->data[i];
-                        if (e->field_0x28 == 8)
+                        if (e->shipGroup == 8)
                             e->field_0x25 = 0;
                     }
                 }
@@ -1368,7 +1368,7 @@ void MGame::OnInitialize() {
                 int n = (int)enemies->size;
                 for (int i = 0; i < n; i++) {
                     KIPlayer *e = enemies->data[i];
-                    if (e->field_0x28 == 8)
+                    if (e->shipGroup == 8)
                         e->field_0x25 = 0;
                 }
             }
@@ -1604,7 +1604,7 @@ void MGame::successCheck() {
                     // PlayerFixedObject layout (field_0x40 "moving" flag).
                     PlayerFixedObject *e = (PlayerFixedObject *)enemies->data[i];
                     if (e->field_0x40 != 0) {
-                        ((Player *)(e->field_0x4))->setHitpoints((int)(intptr_t)e->field_0x4);
+                        ((Player *)(e->player))->setHitpoints((int)(intptr_t)e->player);
                         ((PlayerFixedObject *)(e))->setMoving(1);
                     }
                 }
@@ -1618,7 +1618,7 @@ void MGame::successCheck() {
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     KIPlayer *k = *(KIPlayer **)(*(int *)((char *)enemies + 4) + i * 4);
-                    if (k->field_0x28 == 1) {
+                    if (k->shipGroup == 1) {
                         Route *rc = (Route *)((Route *)(route))->clone();
                         ((KIPlayer *)(k))->setRoute(rc);
                     }
@@ -1629,8 +1629,8 @@ void MGame::successCheck() {
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     KIPlayer *e = enemies->data[i];
-                    if (e->field_0x28 == 8)
-                        ((Player *)((Player *)e->field_0x4))->removeAllGuns();
+                    if (e->shipGroup == 8)
+                        ((Player *)((Player *)e->player))->removeAllGuns();
                 }
             } else if (((Mission *)(Status_getMission()))->isCampaignMission() != 0 && cm == 0x49) {
                 EnemyList *enemies = Level_getEnemies(self->field_0x78);
@@ -1638,7 +1638,7 @@ void MGame::successCheck() {
                 for (unsigned i = 0; i < n; i++) {
                     PlayerFixedObject *o = *(PlayerFixedObject **)(*(int *)((char *)enemies + 4) + i * 4);
                     if (o->field_0x40 != 0) {
-                        ((Player *)(o->field_0x4))->setHitpoints((int)(intptr_t)o->field_0x4);
+                        ((Player *)(o->player))->setHitpoints((int)(intptr_t)o->player);
                         ((PlayerFixedObject *)(o))->setMoving(1);
                     }
                 }

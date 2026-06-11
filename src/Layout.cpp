@@ -84,7 +84,7 @@ int  AERandom_nextInt(...);
 // ldrb.w r0,[r0,#0x400]; bx lr
 uint8_t Layout::isFading() {
     Layout *self = this;
-    return self->field_0x400;
+    return self->fading;
 }
 
 // ---- getHelpButtonOffset_d4bd0.cpp ----
@@ -93,7 +93,7 @@ __attribute__((visibility("hidden"))) extern int **gTouchButtonHolder;  // ldr [
 // Layout::getHelpButtonOffset() -> TouchButton::getWidth(self->f3bc) - (**holder)[0x38/4]
 int Layout::getHelpButtonOffset() {
     Layout *self = this;
-    int w = ((TouchButton *)(self->field_0x3bc))->getWidth();
+    int w = ((TouchButton *)(self->helpButton))->getWidth();
     return w - (*gTouchButtonHolder)[0x38 / 4];
 }
 
@@ -102,22 +102,22 @@ int Layout::getHelpButtonOffset() {
 // Layout::update(int dt)
 void Layout::update(int dt) {
     Layout *self = this;
-    void *cw = self->field_0x3c4;
+    void *cw = self->choiceWindow;
     if (cw)
         ChoiceWindow_update(cw, dt);
-    if (self->field_0x2ec != 0) {
-        int t = self->field_0x3d0 + dt;
-        self->field_0x3d0 = t;
+    if (self->rewardMessageActive != 0) {
+        int t = self->rewardMessageTimer + dt;
+        self->rewardMessageTimer = t;
         if (t >= 6999 + 1)        // 0x1b58 = 7000; cmp r0,#7000; mov.ge
-            self->field_0x2ec = 0;
+            self->rewardMessageActive = 0;
     }
-    if (self->field_0x400 != 0) {
-        int t = self->field_0x408 + dt;
-        int dur = self->field_0x40c;
-        self->field_0x408 = t;
+    if (self->fading != 0) {
+        int t = self->fadeProgress + dt;
+        int dur = self->fadeDuration;
+        self->fadeProgress = t;
         if (t > dur) {
-            self->field_0x400 = 0;
-            self->field_0x408 = 0;
+            self->fading = 0;
+            self->fadeProgress = 0;
         }
     }
 }
@@ -130,8 +130,8 @@ __attribute__((visibility("hidden"))) extern void **gPaintCanvasHolder; // ldr [
 int Layout::getFooterTransitionWidth() {
     Layout *self = this;
     void **holder = gPaintCanvasHolder;
-    int w1 = PaintCanvas_GetImage2DWidth(*holder, self->field_0x33c);
-    int w2 = PaintCanvas_GetImage2DWidth(*holder, self->field_0x334);
+    int w1 = PaintCanvas_GetImage2DWidth(*holder, self->footerImageRight);
+    int w2 = PaintCanvas_GetImage2DWidth(*holder, self->footerImageLeft);
     return w2 + w1;
 }
 
@@ -141,17 +141,17 @@ extern "C" int Layout_dispatchTouchBegin(void *btn, int x, int y);     // tail 0
 // Layout::OnTouchBegin(int x, int y)
 int Layout::OnTouchBegin(int x, int y) {
     Layout *self = this;
-    if (self->field_0x3cc != 0)
-        ((TouchButton *)(self->field_0x3bc))->OnTouchBegin(x, y);
-    if (self->field_0x3c4 != 0 && self->field_0x0 != 0) {
-        ChoiceWindow_OnTouchBegin(self->field_0x3c4, x, y);
+    if (self->helpButtonEnabled != 0)
+        ((TouchButton *)(self->helpButton))->OnTouchBegin(x, y);
+    if (self->choiceWindow != 0 && self->choiceWindowOpen != 0) {
+        ChoiceWindow_OnTouchBegin(self->choiceWindow, x, y);
         return 0;
     }
     void *btn;
-    if (((TouchButton *)(self->field_0x3b4))->isVisible() == 0)
-        btn = self->field_0x3b8;
+    if (((TouchButton *)(self->backButton))->isVisible() == 0)
+        btn = self->secondaryButton;
     else
-        btn = self->field_0x3b4;
+        btn = self->backButton;
     return Layout_dispatchTouchBegin(btn, x, y);
 }
 
@@ -176,7 +176,7 @@ float Layout::getPulseValue(float speed) {
 // str.w r1,[r0,#0x3b0]; bx lr
 void Layout::setDrawColor(int color) {
     Layout *self = this;
-    self->field_0x3b0 = color;
+    self->drawColor = color;
 }
 
 // ---- drawMask_d3140.cpp ----
@@ -201,14 +201,14 @@ void Layout::drawBG() {
     Layout *self = this;
     int p4 = *gA;
     int p5 = *gB;
-    ((Layout *)(self))->drawBGPattern(self->field_0x324, 0, 0, p4, p5);
+    ((Layout *)(self))->drawBGPattern(self->bgPatternImage, 0, 0, p4, p5);
 }
 
 // ---- enableFillScreen_d5032.cpp ----
 // strb.w r1,[r0,#0x410]; bx lr
 void Layout::enableFillScreen(bool v) {
     Layout *self = this;
-    self->field_0x410 = v;
+    self->fillScreen = v;
 }
 
 // ---- _Layout_d2bc8.cpp ----
@@ -216,25 +216,25 @@ void Layout::enableFillScreen(bool v) {
 // operator delete (0x6eb48) frees it. Each owned field is deleted then nulled.
 
 Layout::~Layout() {
-    void *p = this->field_0x3b4;
+    void *p = this->backButton;
     if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
-    this->field_0x3b4 = 0;
-    p = this->field_0x3b8;
+    this->backButton = 0;
+    p = this->secondaryButton;
     if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
-    this->field_0x3b8 = 0;
-    p = this->field_0x3bc;
+    this->secondaryButton = 0;
+    p = this->helpButton;
     if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
-    this->field_0x3bc = 0;
-    p = this->field_0x3c4;
+    this->helpButton = 0;
+    p = this->choiceWindow;
     if (p) operator_delete_li(ChoiceWindow_dtor(p));
-    this->field_0x3c4 = 0;
+    this->choiceWindow = 0;
 }
 
 // ---- helpPressed_d4bc8.cpp ----
 // ldrb.w r0,[r0,#0x3c0]; bx lr
 uint8_t Layout::helpPressed() {
     Layout *self = this;
-    return self->field_0x3c0;
+    return self->helpPressedFlag;
 }
 
 // ---- drawFooterNoBackButton_d4090.cpp ----
@@ -259,17 +259,17 @@ extern "C" int Layout_dispatchTouchMove(void *btn, int x, int y);      // tail 0
 // Layout::OnTouchMove(int x, int y)
 int Layout::OnTouchMove(int x, int y) {
     Layout *self = this;
-    if (self->field_0x3cc != 0)
-        ((TouchButton *)(self->field_0x3bc))->OnTouchMove(x, y);
-    if (self->field_0x3c4 != 0 && self->field_0x0 != 0) {
-        ChoiceWindow_OnTouchMove(self->field_0x3c4, x, y);
+    if (self->helpButtonEnabled != 0)
+        ((TouchButton *)(self->helpButton))->OnTouchMove(x, y);
+    if (self->choiceWindow != 0 && self->choiceWindowOpen != 0) {
+        ChoiceWindow_OnTouchMove(self->choiceWindow, x, y);
         return 0;
     }
     void *btn;
-    if (((TouchButton *)(self->field_0x3b4))->isVisible() == 0)
-        btn = self->field_0x3b8;
+    if (((TouchButton *)(self->backButton))->isVisible() == 0)
+        btn = self->secondaryButton;
     else
-        btn = self->field_0x3b4;
+        btn = self->backButton;
     return Layout_dispatchTouchMove(btn, x, y);
 }
 
@@ -293,15 +293,15 @@ extern "C" int Layout_dispatchTouchEnd(void *btn, int x, int y);       // tail 0
 // Layout::OnTouchEnd(int x, int y)
 int Layout::OnTouchEnd(int x, int y) {
     Layout *self = this;
-    if (self->field_0x0 == 0 && self->field_0x3cc != 0)
-        self->field_0x3c0 = ((TouchButton *)(self->field_0x3bc))->OnTouchEnd(x, y);
-    if (self->field_0x3c4 != 0 && self->field_0x0 != 0)
-        return ChoiceWindow_OnTouchEnd(self->field_0x3c4, x, y) == 0;
+    if (self->choiceWindowOpen == 0 && self->helpButtonEnabled != 0)
+        self->helpPressedFlag = ((TouchButton *)(self->helpButton))->OnTouchEnd(x, y);
+    if (self->choiceWindow != 0 && self->choiceWindowOpen != 0)
+        return ChoiceWindow_OnTouchEnd(self->choiceWindow, x, y) == 0;
     void *btn;
-    if (((TouchButton *)(self->field_0x3b4))->isVisible() == 0)
-        btn = self->field_0x3b8;
+    if (((TouchButton *)(self->backButton))->isVisible() == 0)
+        btn = self->secondaryButton;
     else
-        btn = self->field_0x3b4;
+        btn = self->backButton;
     return Layout_dispatchTouchEnd(btn, x, y);
 }
 
@@ -309,11 +309,11 @@ int Layout::OnTouchEnd(int x, int y) {
 // Layout::startFade(bool, int, int)
 void Layout::startFade(uint8_t fadeOut, int color, int duration) {
     Layout *self = this;
-    self->field_0x401 = fadeOut;
-    self->field_0x400 = 1;
-    self->field_0x404 = color & 0xffffff00u;
-    self->field_0x408 = 0;
-    self->field_0x40c = duration;
+    self->fadeOut = fadeOut;
+    self->fading = 1;
+    self->fadeColor = color & 0xffffff00u;
+    self->fadeProgress = 0;
+    self->fadeDuration = duration;
 }
 
 // ---- initTip_d495c.cpp ----
@@ -382,17 +382,17 @@ void Layout::drawEmptyFooter(int showBack) {
     PaintCanvas_SetColor(color);
     int w = PaintCanvas_GetImage2DWidth(color);
     int screenH = *g_efScreenH;
-    PaintCanvas_DrawImage2D((PaintCanvas *)color, self->field_0x334, 0, screenH, 0x11);
+    PaintCanvas_DrawImage2D((PaintCanvas *)color, self->footerImageLeft, 0, screenH, 0x11);
 
     int screenW = *g_efScreenW;
     int footerH = (*g_efMetric)[0x10 / 4];
-    ((Layout *)(self))->drawBGPattern(self->field_0x344, w, screenH - footerH, screenW - w * 2, footerH);
-    PaintCanvas_DrawImage2D((PaintCanvas *)color, self->field_0x334,
+    ((Layout *)(self))->drawBGPattern(self->footerPatternImage, w, screenH - footerH, screenW - w * 2, footerH);
+    PaintCanvas_DrawImage2D((PaintCanvas *)color, self->footerImageLeft,
                             screenW - w, screenH - (*g_efMetric)[0x10 / 4], 0x01);
     if (showBack == 0) return;
-    ((TouchButton *)(self->field_0x3b4))->setVisible(1);
+    ((TouchButton *)(self->backButton))->setVisible(1);
     unsigned char sp[8] __attribute__((aligned(4)));
-    TouchButton_footerAnim(self->field_0x3b4, 1, footerH, sp);
+    TouchButton_footerAnim(self->backButton, 1, footerH, sp);
 }
 
 // ---- Layout_d1028.cpp ----
@@ -605,7 +605,7 @@ __attribute__((visibility("hidden"))) extern PaintCanvas **g_bgCanvas;  // @0xe3
 void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     Layout *self = this;
     PaintCanvas *pc = *g_bgCanvas;
-    PaintCanvas_SetColor(self->field_0x3b0);
+    PaintCanvas_SetColor(self->drawColor);
     int iw = PaintCanvas_GetImage2DWidth(img);
     int cols = __aeabi_idiv(w, iw);
     int fullW = cols * iw;
@@ -765,16 +765,16 @@ __attribute__((visibility("hidden"))) extern int *gPosY;         // ldr [0xe4d3c
 void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
     Layout *self = this;
     SetPosFn setPos = gSetPos;
-    self->field_0x2dc = p1;
-    self->field_0x2e0 = p2;
-    self->field_0x2e4 = p3;
-    self->field_0x2e8 = p4;
-    setPos(self->field_0x3bc, p3 + p1, p2, 0x12);
+    self->windowX = p1;
+    self->windowY = p2;
+    self->windowWidth = p3;
+    self->windowHeight = p4;
+    setPos(self->helpButton, p3 + p1, p2, 0x12);
     int *tb = *gTB;
-    setPos(self->field_0x3b4, tb[0x28 / 4] + self->field_0x2dc,
-           (self->field_0x2e0 + self->field_0x2e8) - self->field_0x3fc, 0x21);
-    setPos(self->field_0x3b8, tb[0x28 / 4] + self->field_0x2dc,
-           (self->field_0x2e0 + self->field_0x2e8) - self->field_0x3fc, 0x21);
+    setPos(self->backButton, tb[0x28 / 4] + self->windowX,
+           (self->windowY + self->windowHeight) - self->field_0x3fc, 0x21);
+    setPos(self->secondaryButton, tb[0x28 / 4] + self->windowX,
+           (self->windowY + self->windowHeight) - self->field_0x3fc, 0x21);
 }
 
 // ---- showMissionRewardMessage_d4d40.cpp ----
@@ -787,11 +787,11 @@ void Layout::showMissionRewardMessage(int show, bool flag) {
     Layout *self = this;
     if (show == 0)
         return;
-    self->field_0x2ed = flag;
-    self->field_0x2ec = 1;
+    self->rewardMessageFlag = flag;
+    self->rewardMessageActive = 1;
     int *g = *gFmod;
-    self->field_0x3d0 = 0;
-    self->field_0x3d4 = show;
+    self->rewardMessageTimer = 0;
+    self->rewardCredits = show;
     FModSound_play(*g, (Vec3 *)0x24, 0, 0.0f);
 }
 
@@ -889,15 +889,15 @@ __attribute__((visibility("hidden"))) extern int **g_sbMetric;          // @0xe4
 void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     Layout *self = this;
     PaintCanvas *pc = *g_sbCanvas;
-    int iw = PaintCanvas_GetImage2DWidth(self->field_0x374);
-    int ih = PaintCanvas_GetImage2DHeight(self->field_0x374);
+    int iw = PaintCanvas_GetImage2DWidth(self->scrollBarImage);
+    int ih = PaintCanvas_GetImage2DHeight(self->scrollBarImage);
 
     PaintCanvas_SetColor(*(unsigned *)&g_sbColor0);
     PaintCanvas_SetColor(*(unsigned *)&g_sbColor1);
 
     int inset = self->field_0x3e0;
     PaintCanvas_DrawRectangle(pc, x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
-    PaintCanvas_SetColor(self->field_0x3b0);
+    PaintCanvas_SetColor(self->drawColor);
 
     int thumb = range - 1;
     if (thumb <= ih * 2) thumb = ih * 2;
@@ -916,8 +916,8 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
         if (lim <= off) off = lim;
     }
 
-    PaintCanvas_DrawImage2D3(pc, self->field_0x374, handle + x + 1);
-    PaintCanvas_DrawImage2D5(pc, self->field_0x374,
+    PaintCanvas_DrawImage2D3(pc, self->scrollBarImage, handle + x + 1);
+    PaintCanvas_DrawImage2D5(pc, self->scrollBarImage,
                              self->field_0x3e4 + x + 1, (thumb - ih) + y + off, 0x02);
 }
 
@@ -934,31 +934,31 @@ __attribute__((visibility("hidden"))) extern int **g_dfDimB;             // @0xe
 // Layout::drawFade(): overlay the fade-in/out rectangles, returning the active flag.
 uint8_t Layout::drawFade() {
     Layout *self = this;
-    if (self->field_0x400 != 0) {
+    if (self->fading != 0) {
         PaintCanvas *pc = *g_dfCanvasA;
         unsigned saved = PaintCanvas_GetColor(pc);
 
         // progress = duration / endTime  (fields 0x408 / 0x40c, signed->float)
-        float t = (float)self->field_0x408 / (float)self->field_0x40c;
-        if (self->field_0x401 != 0)
+        float t = (float)self->fadeProgress / (float)self->fadeDuration;
+        if (self->fadeOut != 0)
             t = 1.0f - t;
         if (t > 1.0f) t = 1.0f;
 
-        unsigned color = self->field_0x404;
+        unsigned color = self->fadeColor;
         if (t > 0.0f)
             color += (int)(t * 255.0f);
         PaintCanvas_SetColor(color);
         PaintCanvas_FillRectangle(*g_dfCanvasA, 0, 0, **g_dfDimA);
         PaintCanvas_SetColor(saved);
     }
-    if (self->field_0x410 != 0) {
+    if (self->fillScreen != 0) {
         PaintCanvas *pc = *g_dfCanvasB;
         unsigned saved = PaintCanvas_GetColor(pc);
         PaintCanvas_SetColor(0xff);
         PaintCanvas_FillRectangle(*g_dfCanvasB, 0, 0, **g_dfDimB);
         PaintCanvas_SetColor(saved);
     }
-    return self->field_0x400;
+    return self->fading;
 }
 
 // ---- drawBox_d4384.cpp ----
@@ -993,7 +993,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned
     Layout *self = this;
     PaintCanvas *pc = *g_dbCanvas;
     unsigned saved = PaintCanvas_GetColor(pc);
-    PaintCanvas_SetColor(self->field_0x3b0);
+    PaintCanvas_SetColor(self->drawColor);
 
     switch (style) {
     case 0: {
@@ -1039,7 +1039,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned
         break;
     }
     case 2:
-        ((Layout *)(self))->drawBGPattern(self->field_0x324, x, y, w, h);
+        ((Layout *)(self))->drawBGPattern(self->bgPatternImage, x, y, w, h);
         break;
     case 3: {
         int iw = PaintCanvas_GetImage2DWidth(self->field_0x358);
@@ -1082,7 +1082,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned
     case 7: {
         int *mt = *g_dbMetric7;
         int hdr = mt[8 / 4];
-        ((Layout *)(self))->drawBGPattern(self->field_0x324, x, hdr + y, w, h - hdr);
+        ((Layout *)(self))->drawBGPattern(self->bgPatternImage, x, hdr + y, w, h - hdr);
         int ih = PaintCanvas_GetImage2DHeight(self->field_0x394);
         Layout_drawBGBorder8(self, self->field_0x390, self->field_0x394,
                              x, hdr + y, w, h - hdr, -ih, -ih);
@@ -1138,13 +1138,13 @@ void Layout::drawWindow7(void *title, int x, int y, int w, int h, int drawBG) {
     unsigned saved = PaintCanvas_GetColor(pc);
     if (drawBG != 0) {
         int top = (*g_dwBorderTop)[8 / 4];
-        ((Layout *)(self))->drawBGPattern(self->field_0x324, x, top + y, w, h - top);
+        ((Layout *)(self))->drawBGPattern(self->bgPatternImage, x, top + y, w, h - top);
     }
     PaintCanvas_SetColor(*(unsigned *)g_dwCanvas);  // *puVar3 (the color int slot)
     int *m = *g_dwMetric;
     int top = m[8 / 4];
     PaintCanvas_DrawRectangle(*g_dwCanvas, x, top + y, w, h - top);
-    PaintCanvas_SetColor(self->field_0x3b0);
+    PaintCanvas_SetColor(self->drawColor);
     PaintCanvas_DrawImage2D3(*g_dwCanvas, self->field_0x32c, x);
     if (*(int *)((char *)title + 8) != 0 &&
         AbyssString_Compare(title, g_dwCmpLit) == 0) {
@@ -1191,7 +1191,7 @@ void Layout::drawTip() {
     Layout *self = this;
     int *guard = g_dtGuard;
     int g0 = *guard;
-    if (self->field_0x3c8 != 0) {
+    if (self->tipLines != 0) {
         PaintCanvas_SetColor(*g_dtColor);
         int *mA = *g_dtMetricA;
         int dimW = *g_dtDimW;
@@ -1204,12 +1204,12 @@ void Layout::drawTip() {
                        (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box);
         ((String *)(box))->dtor();
 
-        PaintCanvas_DrawImage2D5((PaintCanvas *)*g_dtColor, self->field_0x398,
+        PaintCanvas_DrawImage2D5((PaintCanvas *)*g_dtColor, self->tipBoxImage,
                                  dimH >> 1, (dimW >> 1) + 0x3f, 0x11);
 
-        int lineCount = *self->field_0x3c8;
+        int lineCount = *self->tipLines;
         int y = (dimW >> 1) + 0x3f - ((lineCount * mA[4 / 4]) >> 1);
-        Globals_drawLines(*g_dtLinesB, *(void **)g_dtLinesA, self->field_0x3c8,
+        Globals_drawLines(*g_dtLinesB, *(void **)g_dtLinesA, self->tipLines,
                           dimH >> 1, y);
     }
     if (*guard != g0)
@@ -1234,7 +1234,7 @@ extern "C" void Layout_drawHelpWindowImpl(void *p);  // -> 0x1ac0b8
 // Layout::drawHelpWindow() -> ext(*(this+0x3c4))
 void Layout::drawHelpWindow() {
     Layout *self = this;
-    return Layout_drawHelpWindowImpl(self->field_0x3c4);
+    return Layout_drawHelpWindowImpl(self->choiceWindow);
 }
 
 // ---- initHelpWindow_d4b40.cpp ----
@@ -1245,17 +1245,17 @@ __attribute__((visibility("hidden"))) extern int *gFmodHelp;        // ldr [0xe4
 // Layout::initHelpWindow(String text)
 void Layout::initHelpWindow(void *text) {
     Layout *self = this;
-    if (self->field_0x3c4 == 0) {
+    if (self->choiceWindow == 0) {
         void *cw = operator_new_li(0x5c);
         ChoiceWindow_ctor(cw);
-        self->field_0x3c4 = cw;
+        self->choiceWindow = cw;
     }
     FModSound_play(*gFmodHelp, 0x7e, 0, 0, 0);
-    void *cw = self->field_0x3c4;
+    void *cw = self->choiceWindow;
     void *title = ((GameText *)(gGameText->obj))->getText(0x187);
     ChoiceWindow_set(cw, title, text, false);
-    self->field_0x0 = 1;
-    self->field_0x3c0 = 0;
+    self->choiceWindowOpen = 1;
+    self->helpPressedFlag = 0;
 }
 
 // ---- resetWindowDimensions_d3048.cpp ----
@@ -1279,25 +1279,25 @@ void Layout::resetWindowDimensions() {
     int h = **g_rwH;
     int w = **g_rwW;
 
-    self->field_0x2dc = 0;
-    self->field_0x2e0 = 0;
-    self->field_0x2e4 = w;
-    self->field_0x2e8 = h;
+    self->windowX = 0;
+    self->windowY = 0;
+    self->windowWidth = w;
+    self->windowHeight = h;
 
-    Layout_setBtnRect(self->field_0x3bc, w, 0, 0x12);
+    Layout_setBtnRect(self->helpButton, w, 0, 0x12);
 
     int *m = *g_rwMetric;
     int inset = m[0x28 / 4];
-    Layout_setBtnRect(self->field_0x3b4,
-                      inset + self->field_0x2dc,
-                      (self->field_0x2e0 + self->field_0x2e8) - self->field_0x3fc,
+    Layout_setBtnRect(self->backButton,
+                      inset + self->windowX,
+                      (self->windowY + self->windowHeight) - self->field_0x3fc,
                       0x21);
-    Layout_setBtnRect(self->field_0x3b8,
-                      inset + self->field_0x2dc,
-                      (self->field_0x2e0 + self->field_0x2e8) - self->field_0x3fc,
+    Layout_setBtnRect(self->secondaryButton,
+                      inset + self->windowX,
+                      (self->windowY + self->windowHeight) - self->field_0x3fc,
                       0x21);
 
-    if (self->field_0x3b4 != 0) {
+    if (self->backButton != 0) {
         float pos[2] __attribute__((aligned(4)));
         TouchButton_getPosition((TouchButton *)pos);
         *g_rwOutX = (int)pos[0];
@@ -1368,7 +1368,7 @@ void Layout::reload() {
     int *guard = g_rlGuard;
     int g0 = *guard;
 
-    self->field_0x324 = -1;
+    self->bgPatternImage = -1;
     self->field_0x328 = -1;
     self->field_0x32c = -1;
     self->field_0x3a8 = -1;
@@ -1425,8 +1425,8 @@ void Layout::reload() {
     void *txt = gGameText->obj->getText(*g_rlBackText);
     int sh = *g_rlScreenH;
     TouchButton_ctorStr(bBack, txt, 2, self->field_0x28, sh - 3, '!');
-    self->field_0x3b4 = bBack;
-    self->field_0x2f0 = ((TouchButton *)(bBack))->getWidth();
+    self->backButton = bBack;
+    self->backButtonWidth = ((TouchButton *)(bBack))->getWidth();
 
     // Secondary button (image if available, else string fallback).
     unsigned img535 = 0xffffffff;
@@ -1440,30 +1440,30 @@ void Layout::reload() {
         TouchButton_ctorImg(b2, img535, 2, self->field_0x28,
                             *g_rlScreenH - self->field_0x3fc, '!');
     }
-    self->field_0x3b8 = b2;
+    self->secondaryButton = b2;
 
     // Help button (image).
     unsigned img471 = 0xffffffff;
     PaintCanvas_Image2DCreate((PaintCanvas *)*g_rlCanvas, 0x471, &img471);
     TouchButton *bHelp = (TouchButton *)operator_new(200);
     TouchButton_ctorImg2(bHelp, img471, 1, *g_rlMenuY, 0, self->field_0x3c, 0x12, 0x04);
-    self->field_0x3bc = bHelp;
+    self->helpButton = bHelp;
 
     int th = PaintCanvas_GetTextHeight(*g_rlCanvas);
-    self->field_0x0 = 0;
-    self->field_0x3c4 = 0;
-    self->field_0x3c8 = 0;
+    self->choiceWindowOpen = 0;
+    self->choiceWindow = 0;
+    self->tipLines = 0;
     self->field_0x3ac = th / 2 - 1;
-    self->field_0x3b0 = -1;
+    self->drawColor = -1;
     ((Layout *)(self))->resetWindowDimensions();
-    self->field_0x3d0 = 0;
-    self->field_0x3cc = 0;
+    self->rewardMessageTimer = 0;
+    self->helpButtonEnabled = 0;
     self->field_0x3d8 = 0;
-    self->field_0x400 = 0;
+    self->fading = 0;
     self->field_0x3dc = 0;
-    self->field_0x404 = 0;
-    self->field_0x408 = 0;
-    self->field_0x2ec = 0;
+    self->fadeColor = 0;
+    self->fadeProgress = 0;
+    self->rewardMessageActive = 0;
     self->field_0x40d = 0;
     self->field_0x409 = 0;
 
@@ -1496,31 +1496,31 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     int *guard = g_dfGuard;
     int g0 = *guard;
     PaintCanvas *pc = *g_dfCanvas;
-    PaintCanvas_SetColor(self->field_0x3b0);
-    int wRight = PaintCanvas_GetImage2DWidth(self->field_0x33c);
-    int wLeft = PaintCanvas_GetImage2DWidth(self->field_0x334);
+    PaintCanvas_SetColor(self->drawColor);
+    int wRight = PaintCanvas_GetImage2DWidth(self->footerImageRight);
+    int wLeft = PaintCanvas_GetImage2DWidth(self->footerImageLeft);
 
-    PaintCanvas_DrawImage2D5(pc, self->field_0x334, self->field_0x2dc,
-                             self->field_0x2e0 + self->field_0x2e8, 0x11);
+    PaintCanvas_DrawImage2D5(pc, self->footerImageLeft, self->windowX,
+                             self->windowY + self->windowHeight, 0x11);
     int *m = *g_dfMetric;
     int footerH = m[0x10 / 4];
-    PaintCanvas_DrawImage2D3(pc, self->field_0x33c, self->field_0x2dc + wLeft,
-                             (self->field_0x2e0 + self->field_0x2e8) - footerH);
+    PaintCanvas_DrawImage2D3(pc, self->footerImageRight, self->windowX + wLeft,
+                             (self->windowY + self->windowHeight) - footerH);
     int both = wLeft + wRight;
-    ((Layout *)(self))->drawBGPattern(self->field_0x338, both + self->field_0x2dc, (self->field_0x2e0 + self->field_0x2e8) - footerH, self->field_0x2e4 + both * -2, footerH);
-    PaintCanvas_DrawImage2D5(pc, self->field_0x33c,
-                             (self->field_0x2dc - both) + self->field_0x2e4,
-                             (self->field_0x2e8 + self->field_0x2e0) - footerH, 0x01);
-    PaintCanvas_DrawImage2D5(pc, self->field_0x334,
-                             (self->field_0x2dc - wRight) + self->field_0x2e4,
-                             (self->field_0x2e8 + self->field_0x2e0) - footerH, 0x01);
+    ((Layout *)(self))->drawBGPattern(self->field_0x338, both + self->windowX, (self->windowY + self->windowHeight) - footerH, self->windowWidth + both * -2, footerH);
+    PaintCanvas_DrawImage2D5(pc, self->footerImageRight,
+                             (self->windowX - both) + self->windowWidth,
+                             (self->windowHeight + self->windowY) - footerH, 0x01);
+    PaintCanvas_DrawImage2D5(pc, self->footerImageLeft,
+                             (self->windowX - wRight) + self->windowWidth,
+                             (self->windowHeight + self->windowY) - footerH, 0x01);
 
     int backVis = (!stationMode) && showBack;
-    ((TouchButton *)(self->field_0x3b4))->setVisible(backVis);
+    ((TouchButton *)(self->backButton))->setVisible(backVis);
     if (!backVis) {
-        ((TouchButton *)(self->field_0x3b8))->draw();
+        ((TouchButton *)(self->secondaryButton))->draw();
     } else if (showBack) {
-        ((TouchButton *)(self->field_0x3b4))->draw();
+        ((TouchButton *)(self->backButton))->draw();
     }
 
     // Cargo load text, in warning color if over capacity.
@@ -1559,34 +1559,34 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     ((String *)(sLoad))->dtor();
 
     {
-        int x = self->field_0x2dc;
-        int w = self->field_0x2e4;
+        int x = self->windowX;
+        int w = self->windowWidth;
         void *font = *g_dfFont;
         unsigned cv = *(unsigned *)g_dfCanvas;
         int tw = PaintCanvas_GetTextWidth(cv, font);
         PaintCanvas_DrawString(cv, font, loadStr, (x + w / 2) - tw / 2,
-                               (self->field_0x2e8 + self->field_0x2e0) - self->field_0x14);
+                               (self->windowHeight + self->windowY) - self->field_0x14);
     }
-    PaintCanvas_SetColor(self->field_0x3b0);
+    PaintCanvas_SetColor(self->drawColor);
 
     int credits = Status_getCredits();
     unsigned char credStr[sizeof(String12)] __attribute__((aligned(4)));  // aSStack_40
     Layout_formatCredits(credStr, credits);
 
     {
-        int x = self->field_0x2dc;
-        int w = self->field_0x2e4;
+        int x = self->windowX;
+        int w = self->windowWidth;
         void *font = *g_dfFont;
         unsigned cv = *(unsigned *)g_dfCanvas;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
             int tw = PaintCanvas_GetTextWidth(cv, font);
             PaintCanvas_DrawString(cv, font, credStr, ((w + x) - rightInset) - tw / 2,
-                                   (self->field_0x2e8 + self->field_0x2e0) - self->field_0x14);
+                                   (self->windowHeight + self->windowY) - self->field_0x14);
         } else {
             int tw = PaintCanvas_GetTextWidth(cv, font);
             PaintCanvas_DrawString(cv, font, credStr, (w + x - 10) - tw,
-                                   (self->field_0x2e8 + self->field_0x2e0) - self->field_0x14);
+                                   (self->windowHeight + self->windowY) - self->field_0x14);
         }
     }
 
@@ -1630,26 +1630,26 @@ __attribute__((visibility("hidden"))) extern void ***g_dhFont;      // @0xe41ac
 void Layout::drawHeader7(void *title, int transition) {
     Layout *self = this;
     unsigned img = *g_dhColor;
-    PaintCanvas_SetColor(self->field_0x3b0);
+    PaintCanvas_SetColor(self->drawColor);
     int iw = PaintCanvas_GetImage2DWidth(img);
     int ih = PaintCanvas_GetImage2DHeight(img);
     PaintCanvas_DrawImage2D3((PaintCanvas *)img, self->field_0x330,
-                             self->field_0x2dc, self->field_0x2e0);
-    ((Layout *)(self))->drawBGPattern(self->field_0x328, self->field_0x2dc + iw, self->field_0x2e0, self->field_0x2e4 + iw * -2, ih);
+                             self->windowX, self->windowY);
+    ((Layout *)(self))->drawBGPattern(self->field_0x328, self->windowX + iw, self->windowY, self->windowWidth + iw * -2, ih);
     PaintCanvas_DrawImage2D9((PaintCanvas *)img, self->field_0x330,
-                             self->field_0x2e4 + self->field_0x2dc,
-                             self->field_0x2e0, iw, ih, 0x11, 0x12, 0x01);
+                             self->windowWidth + self->windowX,
+                             self->windowY, iw, ih, 0x11, 0x12, 0x01);
     if (*(int *)((char *)title + 8) != 0) {
         PaintCanvas_DrawImage2D3((PaintCanvas *)img, self->field_0x32c,
-                                 self->field_0x2dc, self->field_0x2e0);
+                                 self->windowX, self->windowY);
         int *m = *g_dhMetric;
         PaintCanvas_DrawString((PaintCanvas *)img, **g_dhFont, title,
-                               m[0x28 / 4] + m[0x44 / 4] + self->field_0x2dc,
-                               self->field_0x18 + self->field_0x2e0);
+                               m[0x28 / 4] + m[0x44 / 4] + self->windowX,
+                               self->field_0x18 + self->windowY);
     }
-    self->field_0x3cc = (uint8_t)transition;
-    if (transition != 0 && self->field_0x0 == 0) {
-        Layout_headerAnim(self->field_0x3bc);
+    self->helpButtonEnabled = (uint8_t)transition;
+    if (transition != 0 && self->choiceWindowOpen == 0) {
+        Layout_headerAnim(self->helpButton);
         return;
     }
 }
@@ -1690,14 +1690,14 @@ void Layout::drawMissionRewardMessage(int transition) {
     Layout *self = this;
     int *guard = g_mrGuard;
     int g0 = *guard;
-    if (self->field_0x2ec != 0) {
+    if (self->rewardMessageActive != 0) {
         PaintCanvas *pc = *g_mrCanvas;
         unsigned saved = PaintCanvas_GetColor(pc);
-        unsigned origColor = self->field_0x3b0;
+        unsigned origColor = self->drawColor;
         PaintCanvas_SetColor(0xffffffff);
 
         // Pulse alpha based on field 0x3d0 (animation timer).
-        int t = self->field_0x3d0;
+        int t = self->rewardMessageTimer;
         float a;
         if (t < 2000) {
             a = (float)t / 6000.0f;
@@ -1714,7 +1714,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         int boxH = self->field_0x3ec;
         int boxX = self->field_0x3f0;
         int boxY = self->field_0x3f4;
-        self->field_0x3b0 = newColor;
+        self->drawColor = newColor;
 
         if (transition != 0) {
             int sw = *g_mrDimA;
@@ -1747,7 +1747,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         unsigned char suffix[sizeof(String12)] __attribute__((aligned(4)));
         String_cstr_ctor(suffix, g_mrLit2, false);
         unsigned char credits[sizeof(String12)] __attribute__((aligned(4)));
-        Layout_formatCredits(credits, self->field_0x3d4);
+        Layout_formatCredits(credits, self->rewardCredits);
         unsigned char joined[sizeof(String12)] __attribute__((aligned(4)));
         String_concat(joined, suffix, credits);
         ((String *)(line))->assign((String *)joined);
@@ -1761,7 +1761,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         PaintCanvas_DrawString(cv, font, line, (sh >> 1) - (tw >> 1),
                                self->field_0x3f8 + boxX);
         PaintCanvas_SetColor(saved);
-        self->field_0x3b0 = origColor;
+        self->drawColor = origColor;
         ((String *)(line))->dtor();
     }
     if (*guard != g0)

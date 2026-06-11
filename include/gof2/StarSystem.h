@@ -41,7 +41,7 @@ static inline void *array_data(void *array) {
 }
 
 struct StarSystem {
-    Vector field_0x30;                  // +0x30  (light direction)
+    Vector lightDirection;                  // +0x30  (light direction)
 
     StarSystem(int mode);
     ~StarSystem();

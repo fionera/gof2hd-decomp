@@ -10,7 +10,7 @@ extern "C" int Item_getType(Item *it);
 // ---- hasMedal_157008.cpp ----
 uint8_t Achievements::hasMedal(int index, int value) {
     Achievements *self = this;
-    return self->field_0x0[index] == value;
+    return self->medals[index] == value;
 }
 
 // ---- _Achievements_1568f2.cpp ----
@@ -19,12 +19,12 @@ uint8_t Achievements::hasMedal(int index, int value) {
 // zeroing each pointer.
 Achievements::~Achievements()
 {
-    if (this->field_0x0 != 0)
-        operator delete[](this->field_0x0);
-    this->field_0x0 = 0;
-    if (this->field_0x4 != 0)
-        operator delete[](this->field_0x4);
-    this->field_0x4 = 0;
+    if (this->medals != 0)
+        operator delete[](this->medals);
+    this->medals = 0;
+    if (this->newMedals != 0)
+        operator delete[](this->newMedals);
+    this->newMedals = 0;
 }
 
 // ---- gotAllSupernovaMedals_156ed2.cpp ----
@@ -42,39 +42,39 @@ uint8_t Achievements::gotAllMedals() {
 // ---- updateCredits_156f0a.cpp ----
 void Achievements::updateCredits(int value) {
     Achievements *self = this;
-    if (self->field_0x1c < value)
-        self->field_0x1c = value;
+    if (self->credits < value)
+        self->credits = value;
 }
 
 // ---- setMedal_156f4c.cpp ----
 void Achievements::setMedal(int index, int value) {
     Achievements *self = this;
-    self->field_0x0[index] = value;
+    self->medals[index] = value;
 }
 
 // ---- incPirateKills_156eec.cpp ----
 void Achievements::incPirateKills() {
     Achievements *self = this;
-    self->field_0x10 += 1;
+    self->pirateKills += 1;
 }
 
 // ---- init_156f54.cpp ----
 int Achievements::init() {
     Achievements *self = this;
-    int *medals = self->field_0x0;
+    int *medals = self->medals;
     int i;
     for (i = 0; i != 0x2d; i = i + 1)
         medals[i] = 0;
     *medals = 1;
-    int *newMedals = self->field_0x4;
+    int *newMedals = self->newMedals;
     int j;
     for (j = 0; j != 0x2d; j = j + 1)
         newMedals[j] = 0;
-    self->field_0x18 = 0;
-    self->field_0x1c = 0;
-    self->field_0x8 = 0;
-    self->field_0xc = 0;
-    self->field_0x10 = 0;
+    self->hasTurretAndWeapon = 0;
+    self->credits = 0;
+    self->kills = 0;
+    self->catches = 0;
+    self->pirateKills = 0;
     self->field_0x14 = 0;
     return (int)(intptr_t)((char *)self + 0x8);
 }
@@ -90,8 +90,8 @@ uint8_t Achievements::isEliteMedal(int index) {
 // Achievements::Achievements() — allocates two 45-int (0xb4) arrays.
 Achievements::Achievements()
 {
-    this->field_0x0 = (int *)operator new[](0xb4);
-    this->field_0x4 = (int *)operator new[](0xb4);
+    this->medals = (int *)operator new[](0xb4);
+    this->newMedals = (int *)operator new[](0xb4);
     this->field_0x22 = 0;
     this->field_0x20 = 0;
 }
@@ -99,27 +99,27 @@ Achievements::Achievements()
 // ---- resetNewMedals_156f8e.cpp ----
 void Achievements::resetNewMedals() {
     Achievements *self = this;
-    int *newMedals = self->field_0x4;
+    int *newMedals = self->newMedals;
     int i;
     for (i = 0; i != 0x2d; i = i + 1)
         newMedals[i] = 0;
-    self->field_0x18 = 0;
-    self->field_0x8 = 0;
-    self->field_0xc = 0;
-    self->field_0x10 = 0;
+    self->hasTurretAndWeapon = 0;
+    self->kills = 0;
+    self->catches = 0;
+    self->pirateKills = 0;
     self->field_0x14 = 0;
 }
 
 // ---- incCatches_156efe.cpp ----
 void Achievements::incCatches() {
     Achievements *self = this;
-    self->field_0xc += 1;
+    self->catches += 1;
 }
 
 // ---- incKills_156ee0.cpp ----
 void Achievements::incKills() {
     Achievements *self = this;
-    self->field_0x8 += 1;
+    self->kills += 1;
 }
 
 // ---- getValue_157018.cpp ----
@@ -137,7 +137,7 @@ int Achievements::getValue(int index, int sub) {
 // ---- resetPirateKills_156ef8.cpp ----
 void Achievements::resetPirateKills() {
     Achievements *self = this;
-    self->field_0x10 = 0;
+    self->pirateKills = 0;
 }
 
 // ---- gotAllGoldMedals_156ecc.cpp ----
@@ -149,20 +149,20 @@ uint8_t Achievements::gotAllGoldMedals() {
 // ---- countMedals_156e48.cpp ----
 void Achievements::countMedals() {
     Achievements *self = this;
-    int *medals = self->field_0x0;
+    int *medals = self->medals;
     int total = 0;
     int golds = 0;
-    self->field_0x24 = 0;
+    self->medalCount = 0;
     int i;
     for (i = 0; i != 0x24; i = i + 1) {
         int v = medals[i];
         if (v != 0) {
             total = total + 1;
             if (v == 1) {
-                self->field_0x24 = total;
+                self->medalCount = total;
                 golds = golds + 1;
             } else {
-                self->field_0x24 = total;
+                self->medalCount = total;
             }
         }
     }
@@ -200,7 +200,7 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
 
     for (unsigned m = 0; m != 0x2d; m = m + 1) {
         int got = 0;
-        int *medals = self->field_0x0;
+        int *medals = self->medals;
         if (medals[m] != 1) {
             for (unsigned tier = 0; tier < 3; tier = tier + 1) {
                 int req = gCFN_req[m * 3 + tier];
@@ -212,9 +212,9 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
             }
             int cur = medals[m];
             if (got < cur || cur == 0)
-                self->field_0x4[m] = got;
+                self->newMedals[m] = got;
         } else {
-            self->field_0x4[m] = got;
+            self->newMedals[m] = got;
         }
     }
 }
@@ -224,12 +224,12 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
 
 void Achievements::applyNewMedals() {
     Achievements *self = this;
-    int *newMedals = self->field_0x4;
+    int *newMedals = self->newMedals;
     int i;
     for (i = 0; i != 0x2d; i = i + 1) {
         int nv = newMedals[i];
         if (0 < nv) {
-            int *medals = self->field_0x0;
+            int *medals = self->medals;
             int cur = medals[i];
             if (nv >= cur) {
                 if (cur == 0)
@@ -240,9 +240,9 @@ void Achievements::applyNewMedals() {
         }
     }
     ((Achievements *)(self))->countMedals();
-    if (self->field_0x24 == 0x23) {
-        self->field_0x4[0x23] = 1;
-        self->field_0x0[0x23] = 1;
+    if (self->medalCount == 0x23) {
+        self->newMedals[0x23] = 1;
+        self->medals[0x23] = 1;
         Achievements_onAllMedals(self);
     }
 }
@@ -282,7 +282,7 @@ void Achievements::initCheckEquipmentAndWeapons() {
         }
         result = (0 < turrets) & (0 < weapons);
     }
-    self->field_0x18 = result;
+    self->hasTurretAndWeapon = result;
 }
 
 // ---- setMedals_156f14.cpp ----
@@ -291,13 +291,13 @@ void Achievements::setMedals(int *src, int count) {
     int i = 0;
     for (i = 0; i < count; i = i + 1) {
         unsigned v = (unsigned)src[i];
-        unsigned *medals = (unsigned *)self->field_0x0;
+        unsigned *medals = (unsigned *)self->medals;
         if (v < 4)
             medals[i] = v;
         else
             medals[i] = 0;
     }
     for (; count < 0x2d; count = count + 1) {
-        self->field_0x0[count] = 0;
+        self->medals[count] = 0;
     }
 }

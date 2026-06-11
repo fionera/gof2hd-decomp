@@ -280,30 +280,30 @@ void GlowPPShader::InternalInit(Engine *engine) {
     FBOContainer *fbo = (FBOContainer *)operator_new_0(0x38);
     String_ctor_char_0(&name0, "GlowPPShader0", false);
     FBOContainer_ctor_0(fbo, engine, &name0);
-    self->field_0x3c = fbo;
+    self->copyTarget = fbo;
     String_dtor_0(&name0);
-    FBOContainer_Create_0(self->field_0x3c, 0x200, 0x200, true, false);
+    FBOContainer_Create_0(self->copyTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_1(0x38);
     String_ctor_char_1(&name1, "GlowPPShader1", false);
     FBOContainer_ctor_1(fbo, engine, &name1);
-    self->field_0x58 = fbo;
+    self->blurXTarget = fbo;
     String_dtor_1(&name1);
-    FBOContainer_Create_1(self->field_0x58, 0x200, 0x200, true, false);
+    FBOContainer_Create_1(self->blurXTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_2(0x38);
     String_ctor_char_2(&name2, "GlowPPShader2", false);
     FBOContainer_ctor_2(fbo, engine, &name2);
-    self->field_0x74 = fbo;
+    self->blurYTarget = fbo;
     String_dtor_2(&name2);
-    FBOContainer_Create_2(self->field_0x74, 0x200, 0x200, true, false);
+    FBOContainer_Create_2(self->blurYTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_3(0x38);
     String_ctor_char_3(&name3, "GlowPPShader3", false);
     FBOContainer_ctor_3(fbo, engine, &name3);
-    self->field_0xa0 = fbo;
+    self->backgroundTarget = fbo;
     String_dtor_3(&name3);
-    FBOContainer_Create_3(self->field_0xa0, 0x200, 0x200, true, false);
+    FBOContainer_Create_3(self->backgroundTarget, 0x200, 0x200, true, false);
 
     uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
     if (diff == 0) {

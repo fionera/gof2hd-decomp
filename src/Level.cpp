@@ -856,7 +856,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
             gun = (Gun *)Level_opnew_cg(0x114);
             Gun_ctor_cg(gun, owner, dmg, 1, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
             Gun_setIndex_cg(gun, idx);
-            gun->field_0x5c = kind;
+            gun->weaponType = kind;
             Gun_setPlayerGun_cg(gun, 1);
             obj = (ObjectGun *)Level_opnew_cg(0x24);
             BeamGun_ctor_cg(obj, owner, gun, idx, thisptr);
@@ -867,7 +867,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
                 Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, g_cg_rocketFx,
                             0, 0, 0);
                 Gun_setIndex_cg(gun, idx);
-                gun->field_0x5c = 3;
+                gun->weaponType = 3;
                 Gun_setPlayerGun_cg(gun, 1);
                 Gun_setErrorMagnitudePercentage_cg(gun, 0x14);
                 obj = (ObjectGun *)Level_opnew_cg(0xe8);
@@ -875,7 +875,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
             } else {
                 Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
                 Gun_setIndex_cg(gun, idx);
-                gun->field_0x5c = kind;
+                gun->weaponType = kind;
                 Gun_setPlayerGun_cg(gun, 1);
                 obj = (ObjectGun *)Level_opnew_cg(0xb0);
                 ObjectGun_ctor_cg(obj, owner, gun, res, 1000, thisptr);
@@ -888,7 +888,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 0x19, hp, cool, rate, color, 0, 0, g_cg_objFx, 0, 0, 0);
         Gun_setIndex_cg(gun, idx);
-        gun->field_0x5c = kind;
+        gun->weaponType = kind;
         Gun_setPlayerGun_cg(gun, 1);
         obj = (ObjectGun *)Level_opnew_cg(0xb0);
         ObjectGun_ctor_cg(obj, owner, gun, ((int *)g_cg_objTable)[idx], 1000, thisptr);
@@ -901,7 +901,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         int barrels = (kind == 0x28) ? (idx - 0xd3) : 5;
         Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
         Gun_setIndex_cg(gun, idx);
-        gun->field_0x5c = kind;
+        gun->weaponType = kind;
         Gun_setPlayerGun_cg(gun, 1);
         obj = (ObjectGun *)Level_opnew_cg(0xe8);
         RocketGun_ctor_cg(obj, owner, gun, ((int *)g_cg_rocketTable)[idx], 0, 0, kind,
@@ -915,7 +915,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 1, hp, cool, rate, color, 0, 0, g_cg_objFx, 0, 0, 0);
         Gun_setIndex_cg(gun, idx);
-        gun->field_0x5c = kind;
+        gun->weaponType = kind;
         Gun_setPlayerGun_cg(gun, 1);
         int attr = Item_getAttribute_cg(*(int *)(*(int *)(*g_cg_itemTableA + 4) + idx * 4));
         obj = (ObjectGun *)Level_opnew_cg(300);
@@ -932,7 +932,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 0xf, hp, cool, rate, color, extra, 0, fx, 0, 0, 0);
         Gun_setIndex_cg(gun, idx);
-        gun->field_0x5c = kind;
+        gun->weaponType = kind;
         Gun_setPlayerGun_cg(gun, 1);
         if ((idx == 0x30 || idx == 0xe0 || idx == 0xb5)) {
             gun->field_0xa4 = 1;
@@ -947,7 +947,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 10, hp, cool, rate, 0x40000000, 0, 0, 0, 0, 0, 0);
         Gun_setIndex_cg(gun, idx);
-        gun->field_0x5c = 0xb;
+        gun->weaponType = 0xb;
         Gun_setPlayerGun_cg(gun, 1);
         obj = (ObjectGun *)Level_opnew_cg(0xd4);
         MineGun_ctor_cg(obj, gun, ((int *)g_cg_mineTable)[idx], 1, 0xb, thisptr);
@@ -958,7 +958,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, 0, 3, hp, cool, rate, 0x40000000, 0, 0, 0, 0, 0, 0);
         Gun_setIndex_cg(gun, idx);
-        gun->field_0x5c = 0x27;
+        gun->weaponType = 0x27;
         Gun_setPlayerGun_cg(gun, 1);
         obj = (ObjectGun *)Level_opnew_cg(0xb4);
         SentryGun_ctor_cg(obj, gun, ((int *)g_cg_sentryTable)[idx], 1, 0x27, thisptr);
@@ -969,7 +969,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 1, hp, 1, rate, color, 0, 0, 0, 0, 0, 0);
         Gun_setIndex_cg(gun, idx);
-        gun->field_0x5c = 0x2a;
+        gun->weaponType = 0x2a;
         Gun_setPlayerGun_cg(gun, 1);
         obj = (ObjectGun *)Level_opnew_cg(300);
         BombGun_ctor_cg(obj, gun, ((unsigned *)g_cg_bombTable2a)[idx], 1, 0x2a, 0, thisptr);
@@ -3321,9 +3321,9 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
 
     int x = 0, y = 0, z = 0;
     if (wp != 0) {
-        x = wp->field_0x124;
-        y = wp->field_0x128;
-        z = wp->field_0x12c;
+        x = wp->x;
+        y = wp->y;
+        z = wp->z;
     }
     if (jitter) {
         int rng = *(int *)g_cso2_rng;
@@ -3460,9 +3460,9 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
 
     int x = 0, y = 0, z = 0;
     if (wp != 0) {
-        x = wp->field_0x124;
-        y = wp->field_0x128;
-        z = wp->field_0x12c;
+        x = wp->x;
+        y = wp->y;
+        z = wp->z;
     }
     int rng = *(int *)g_cs_rng;
     int jx = cs_rand40000(rng);
@@ -3742,21 +3742,21 @@ void Level::assignGuns()
             Gun_setFriendGun_ag(gun, 1);
             Gun_setLevel_ag(gun, this);
             Gun_setIndex_ag(gun, 0);
-            gun->field_0x5c = 0;
+            gun->weaponType = 0;
 
             int res;
             switch (*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x28
                         ? *(int *)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x28)
                         : 0) {
-            case 0:  gun->field_0x5c = 0; Gun_setIndex_ag(gun, 0);    res = 0x1a62; break;
+            case 0:  gun->weaponType = 0; Gun_setIndex_ag(gun, 0);    res = 0x1a62; break;
             case 1:  Gun_setIndex_ag(gun, 3);    res = 0x1a68; break;
-            case 2:  gun->field_0x5c = 0; Gun_setIndex_ag(gun, 7);    res = 0x1a6c; break;
+            case 2:  gun->weaponType = 0; Gun_setIndex_ag(gun, 7);    res = 0x1a6c; break;
             case 3:  Gun_setIndex_ag(gun, 0x19); res = 0x1a92; break;
             case 9:  Gun_setIndex_ag(gun, 5);    res = 0x1a6a; break;
             case 10: Gun_setIndex_ag(gun, 0xe5); res = 0x4a93;
                      gun->field_0x60 = (int)((float)gun->field_0x60 * 1.0f);
                      break;
-            default: gun->field_0x5c = 1; Gun_setIndex_ag(gun, 0x13); res = 0x1a8b; break;
+            default: gun->weaponType = 1; Gun_setIndex_ag(gun, 0x13); res = 0x1a8b; break;
             }
 
             int camp2 = Status_getCurrentCampaignMission_ag();
@@ -3764,18 +3764,18 @@ void Level::assignGuns()
             if (*(unsigned char *)((char *)turret + 0x3e) != 0) {
                 int host = PlayerTurret_getHost_ag(turret);
                 if (host != 0 && (*(int *)(host + 0x7c) == 0x2d || *(int *)(host + 0x7c) == 0x33)) {
-                    gun->field_0x5c = 2; Gun_setIndex_ag(gun, 0x16); res = 0x1a8e;
+                    gun->weaponType = 2; Gun_setIndex_ag(gun, 0x16); res = 0x1a8e;
                 } else {
                     KIPlayer *k = *(KIPlayer **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
                     if (*(unsigned char *)((char *)k + 0x3f) == 0) {
-                        gun->field_0x5c = 1;
+                        gun->weaponType = 1;
                         if (*(unsigned char *)((char *)k + 0x28) == 1) { Gun_setIndex_ag(gun, 0xf);  res = 0x1a87; }
                         else                                 { Gun_setIndex_ag(gun, 0x14); res = 0x1a8c; }
                     } else {
                         int kt = KIPlayer_getType_ag(k);
-                        if (kt == 0x49c1)      { gun->field_0x5c = 1; Gun_setIndex_ag(gun, 0x14); res = 0x1a8d; }
-                        else if (kt == 0x49c0) { gun->field_0x5c = 0; Gun_setIndex_ag(gun, 2);    res = 0x1a64; }
-                        else                   { gun->field_0x5c = 1; Gun_setIndex_ag(gun, 0xe);  res = 0x1a86; }
+                        if (kt == 0x49c1)      { gun->weaponType = 1; Gun_setIndex_ag(gun, 0x14); res = 0x1a8d; }
+                        else if (kt == 0x49c0) { gun->weaponType = 0; Gun_setIndex_ag(gun, 2);    res = 0x1a64; }
+                        else                   { gun->weaponType = 1; Gun_setIndex_ag(gun, 0xe);  res = 0x1a86; }
                         gun->field_0xa8 = 1;
                         // base stats from the ship-stat table (corrupted SIMD in original).
                         if (camp2 == 0x9e && kt == 0x49c2 && Player_isAlwaysEnemy_ag() != 0) {
@@ -3804,20 +3804,20 @@ void Level::assignGuns()
                 Gun_setIndex_ag(gun, w);
                 int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblA + 4) + w * 4));
                 res = ((int *)g_ag_weaponDmg)[w];
-                gun->field_0x5c = attr;
+                gun->weaponType = attr;
                 gun->field_0x60 = gun->field_0x60 << 2;
             }
 
             // wrap the Gun in a Rocket/Object gun and store it.
-            int sc = gun->field_0x5c;
+            int sc = gun->weaponType;
             if (sc == 0x28 || sc == 5) {
                 RocketGun *r = (RocketGun *)Level_opnew_ag(0xe8);
-                RocketGun_ctor_ag(r, gun->field_0x58, gun, res, 0, 0, sc,
+                RocketGun_ctor_ag(r, gun->itemIndex, gun, res, 0, 0, sc,
                                   sc == 5 ? 1 : 0, this);
                 *(RocketGun **)(*(int *)(*(int *)(self + 0xe8) + 4) + outIdx * 4) = r;
                 gun->field_0x50 = 0x41000000;
-                gun->field_0x44 = 10000;
-                gun->field_0x48 = 3000;
+                gun->initialLifetime = 10000;
+                gun->fireDelay = 3000;
                 gun->field_0x60 = gun->field_0x60 << 2;
             } else {
                 ObjectGun *o = (ObjectGun *)Level_opnew_ag(0xb0);
@@ -3837,8 +3837,8 @@ wingmanExtra:
             Gun_ctor_ag(gun, 0x12, 0, 4, -1, 3000, 400, 0x41800000, 0, 0, 0, 0, 0, 0);
             Gun_setFriendGun_ag(gun, 1);
             Gun_setLevel_ag(gun, this);
-            gun->field_0x58 = 0x12;
-            gun->field_0x5c = 1;
+            gun->itemIndex = 0x12;
+            gun->weaponType = 1;
             ObjectGun *o = (ObjectGun *)Level_opnew_ag(0xb0);
             ObjectGun_ctor_ag(o, 0x12, gun, 0x1a8a, 0x2711, this);
             *(ObjectGun **)(*(int *)(*(int *)(self + 0xe8) + 4) + outIdx * 4) = o;

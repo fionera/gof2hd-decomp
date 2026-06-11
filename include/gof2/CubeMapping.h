@@ -43,29 +43,29 @@ struct Mesh;
 
 struct CubeMapping {
     void* field_0x0;        // +0x0  vtable
-    int field_0x4;          // +0x4  GL program
+    int program;          // +0x4  GL program
     uint8_t field_0x8;      // +0x8
-    uint8_t field_0x9;      // +0x9  per-frame uniform dirty flag
+    uint8_t uniformsDirty;      // +0x9  per-frame uniform dirty flag
     uint8_t field_0xa;      // +0xa
     uint8_t field_0xb;      // +0xb
-    String field_0xc;       // +0xc  resource name
+    String name;       // +0xc  resource name
     int field_0x18;         // +0x18
     int field_0x1c;         // +0x1c
-    int field_0x20;         // +0x20 attrib a0 (position)
-    int field_0x24;         // +0x24 attrib a1 (normal)
-    int field_0x28;         // +0x28 attrib a2 (texcoord)
-    int field_0x2c;         // +0x2c uniform u0 (mvp)
-    int field_0x30;         // +0x30 uniform u1 (normal matrix)
-    int field_0x34;         // +0x34 uniform u2
-    int field_0x38;         // +0x38 uniform u3
-    int field_0x3c;         // +0x3c uniform u5
-    int field_0x40;         // +0x40 uniform u4
-    int field_0x44;         // +0x44 uniform u6
-    int field_0x48;         // +0x48 uniform u7
-    int field_0x4c;         // +0x4c uniform u8
-    int field_0x50;         // +0x50 uniform u9
-    int field_0x54;         // +0x54 uniform u10
-    int field_0x58;         // +0x58 uniform u11
+    int aPosition;         // +0x20 attrib a0 (position)
+    int aNormal;         // +0x24 attrib a1 (normal)
+    int aTexCoord;         // +0x28 attrib a2 (texcoord)
+    int uMvp;         // +0x2c uniform u0 (mvp)
+    int uNormalMatrix;         // +0x30 uniform u1 (normal matrix)
+    int uniform2;         // +0x34 uniform u2
+    int uniform3;         // +0x38 uniform u3
+    int uniform5;         // +0x3c uniform u5
+    int uniform4;         // +0x40 uniform u4
+    int uniform6;         // +0x44 uniform u6
+    int uniform7;         // +0x48 uniform u7
+    int uniform8;         // +0x4c uniform u8
+    int uniform9;         // +0x50 uniform u9
+    int uniform10;         // +0x54 uniform u10
+    int uniform11;         // +0x58 uniform u11
 
     CubeMapping();
     void Init(Engine *engine);

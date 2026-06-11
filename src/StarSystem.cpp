@@ -115,7 +115,7 @@ void StarSystem::renderSunStreak() {
 // ---- getLightDirection_134dbe.cpp ----
 Vector StarSystem::getLightDirection() {
     StarSystem *self = this;
-    return self->field_0x30;
+    return self->lightDirection;
 }
 
 // ---- _StarSystem_134d10.cpp ----

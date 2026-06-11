@@ -48,42 +48,42 @@ struct AEGeomCanvas {
 };
 
 struct AEGeometry {
-    uint32_t field_0x0;                 // +0x0  mergerIndex
-    void *field_0x4;                    // +0x4  LodMeshMerger*
-    uint16_t field_0x8;                 // +0x8  mesh
+    uint32_t mergerIndex;                 // +0x0  mergerIndex
+    void *merger;                    // +0x4  LodMeshMerger*
+    uint16_t mesh;                 // +0x8  mesh
     uint16_t pad_0xa;
-    uint32_t field_0xc;                 // +0xc  transform handle
-    uint32_t field_0x10;                // +0x10
-    uint32_t field_0x14;                // +0x14
-    uint32_t field_0x18;                // +0x18
-    uint32_t field_0x1c;                // +0x1c
-    uint32_t field_0x20;                // +0x20
-    uint32_t field_0x24;                // +0x24
-    int32_t field_0x28;                 // +0x28 currentLod
-    void *field_0x2c;                   // +0x2c canvas
-    V4 field_0x30;                      // +0x30 rotation.xyz + (.d == scaling.x at 0x3c)
-    float field_0x40;                   // +0x40 scaling.y
-    float field_0x44;                   // +0x44 scaling.z
-    uint16_t field_0x48;                // +0x48 visibility
+    uint32_t transform;                 // +0xc  transform handle
+    uint32_t parentTransform;                // +0x10
+    uint32_t childTransform;                // +0x14
+    uint32_t baseTransform;                // +0x18
+    uint32_t meshId;                // +0x1c
+    uint32_t meshHandle;                // +0x20
+    uint32_t altTransform;                // +0x24
+    int32_t currentLod;                 // +0x28 currentLod
+    void *canvas;                   // +0x2c canvas
+    V4 rotation;                      // +0x30 rotation.xyz + (.d == scaling.x at 0x3c)
+    float scalingY;                   // +0x40 scaling.y
+    float scalingZ;                   // +0x44 scaling.z
+    uint16_t visibility;                // +0x48 visibility
     uint16_t pad_0x4a;
-    int32_t field_0x4c;                 // +0x4c rotation order
-    int32_t field_0x50;                 // +0x50 lodCount
-    V4 field_0x54;                      // +0x54 lod ptr block (tf/childTf/mesh/childMesh)
+    int32_t rotationOrder;                 // +0x4c rotation order
+    int32_t lodCount;                 // +0x50 lodCount
+    V4 lodPtrs;                      // +0x54 lod ptr block (tf/childTf/mesh/childMesh)
     uint32_t pad_0x64;                  // +0x64 lod distance array ptr
     uint32_t pad_0x67;
-    unsigned long long field_0x68;      // +0x68 distSq
-    uint64_t field_0x70;                // +0x70 lastVisibleDistSq
-    V4 field_0x78;                      // +0x78 cameraDelta
+    unsigned long long distSq;      // +0x68 distSq
+    uint64_t lastVisibleDistSq;                // +0x70 lastVisibleDistSq
+    V4 cameraDelta;                      // +0x78 cameraDelta
     uint32_t pad_0x88;
-    Matrix field_0x84;                  // +0x84 referenceMatrix
+    Matrix referenceMatrix;                  // +0x84 referenceMatrix
 
-    // scaling.x aliases field_0x30.d
-    float &scaleX() { return field_0x30.d; }
+    // scaling.x aliases rotation.d
+    float &scaleX() { return rotation.d; }
     // lod pointer accessors (the V4 block at 0x54 holds 4 pointers)
-    void *&lodTf()        { return *(void **)&field_0x54.a; }   // +0x54
-    void *&lodChildTf()   { return *(void **)&field_0x54.b; }   // +0x58
-    void *&lodMesh()      { return *(void **)&field_0x54.c; }   // +0x5c
-    void *&lodChildMesh() { return *(void **)&field_0x54.d; }   // +0x60
+    void *&lodTf()        { return *(void **)&lodPtrs.a; }   // +0x54
+    void *&lodChildTf()   { return *(void **)&lodPtrs.b; }   // +0x58
+    void *&lodMesh()      { return *(void **)&lodPtrs.c; }   // +0x5c
+    void *&lodChildMesh() { return *(void **)&lodPtrs.d; }   // +0x60
     void *&lodDist()      { return *(void **)&pad_0x64; }       // +0x64
 
     AEGeometry(PaintCanvas *canvas);

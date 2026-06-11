@@ -85,25 +85,25 @@ extern "C" void *ArrayInt_dtor(void *p);
 // ---- hasMissionCrateLost_dcb7e.cpp ----
 uint8_t PlayerFighter::hasMissionCrateLost() {
     PlayerFighter *self = this;
-    return self->field_0x68;
+    return self->missionCrateLost;
 }
 
 // ---- hasMissionCrateCaptured_dcb78.cpp ----
 uint8_t PlayerFighter::hasMissionCrateCaptured() {
     PlayerFighter *self = this;
-    return self->field_0x69;
+    return self->missionCrateCaptured;
 }
 
 // ---- setShootError_dccf4.cpp ----
 void PlayerFighter::setShootError(int v) {
     PlayerFighter *self = this;
-    self->field_0x1a8 = (float)v;
+    self->shootError = (float)v;
 }
 
 // ---- setAIDisabled_dcfcc.cpp ----
 void PlayerFighter::setAIDisabled(bool v) {
     PlayerFighter *self = this;
-    self->field_0x2e4 = v;
+    self->aiDisabled = v;
 }
 
 // ---- setShipGroup_dcb84.cpp ----
@@ -120,13 +120,13 @@ void PlayerFighter_setShipGroup(AEGeometry *self, int a, bool b)
 // ---- awake_dff2c.cpp ----
 void PlayerFighter::awake() {
     PlayerFighter *self = this;
-    self->field_0x88 = 1;
-    ((Player *)(self->field_0x4))->setActive(1);
+    self->state = 1;
+    ((Player *)(self->player))->setActive(1);
     ((PlayerFighter *)(self))->setExhaustVisible(true);
-    int geom = self->field_0xc;
+    int geom = self->subGeometry;
     self->field_0xf5 = 1;
     if (geom == 0) {
-        geom = self->field_0x8;
+        geom = self->geometry;
     }
     return PlayerFighter_awake_tail(geom, 1);
 }
@@ -136,21 +136,21 @@ struct BoundingVolume;
 
 void PlayerFighter::setBV_a(Array<BoundingVolume *> *v) {
     PlayerFighter *self = this;
-    self->field_0x150 = v;
+    self->boundingVolumes = v;
 }
 
 // ---- setBoostProb_dcd02.cpp ----
 void PlayerFighter::setBoostProb(int v) {
     PlayerFighter *self = this;
-    self->field_0x1b4 = v;
+    self->boostProb = v;
 }
 
 // ---- setCloakingPossible_dcd9c.cpp ----
 void PlayerFighter::setCloakingPossible(bool v) {
     PlayerFighter *self = this;
-    self->field_0x2d8 = v;
+    self->cloakingPossible = v;
     if (!v && self->field_0x13c != 0) {
-        self->field_0x2c8 = self->field_0x2cc + 1;
+        self->cloakTimer = self->cloakDuration + 1;
         return PlayerFighter_cloak_off_helper();
     }
 }
@@ -160,11 +160,11 @@ struct Trail;
 
 void PlayerFighter::removeTrail() {
     PlayerFighter *self = this;
-    void *t = self->field_0x154;
+    void *t = self->trail;
     if (t != 0) {
         operator_delete(Trail_dtor(t));
     }
-    self->field_0x154 = 0;
+    self->trail = 0;
 }
 
 // ---- _PlayerFighter_dc824.cpp ----
@@ -176,29 +176,29 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
 {
     *(void **)self = &PlayerFighter_vtable + 8;
 
-    void *r = self->field_0x144;
+    void *r = self->route;
     if (r != 0) operator_delete(Route_dtor(r));
-    self->field_0x144 = 0;
+    self->route = 0;
 
-    void *bv = self->field_0x150;
+    void *bv = self->boundingVolumes;
     if (bv != 0) {
         ArrayReleaseClasses_BV(bv);
-        void *bv2 = self->field_0x150;
+        void *bv2 = self->boundingVolumes;
         if (bv2 != 0) operator_delete(ArrayBV_dtor(bv2));
     }
-    self->field_0x150 = 0;
+    self->boundingVolumes = 0;
 
-    void *t = self->field_0x154;
+    void *t = self->trail;
     if (t != 0) operator_delete(Trail_dtor(t));
-    self->field_0x154 = 0;
+    self->trail = 0;
 
-    void *e = self->field_0x124;
+    void *e = self->explosion;
     if (e != 0) operator_delete(Explosion_dtor(e));
-    self->field_0x124 = 0;
+    self->explosion = 0;
 
-    void *m = self->field_0x2b8;
+    void *m = self->easeMatrix;
     if (m != 0) operator_delete(EaseInOutMatrix_dtor(m));
-    self->field_0x2b8 = 0;
+    self->easeMatrix = 0;
 
     return PlayerFighter_base_dtor(self);
 }
@@ -233,14 +233,14 @@ void PlayerFighter::setRotate(int v) {
     PlayerFighter *self = this;
     float f = (float)v;
     self->field_0x13d = 0;
-    self->field_0x1a4 = f;
-    self->field_0x1f0 = f;
+    self->rotate = f;
+    self->currentRotate = f;
 }
 
 // ---- hasCrateLost_dcb94.cpp ----
 uint8_t PlayerFighter::hasCrateLost() {
     PlayerFighter *self = this;
-    return self->field_0x6a;
+    return self->crateLost;
 }
 
 // ---- setLevel_dca30.cpp ----
@@ -260,28 +260,28 @@ void PlayerFighter::setLevel(Level *lvl) {
     F1 f1 = (F1)gSL_f1;
     F2 f2 = (F2)gSL_f2;
     F3 f3 = (F3)gSL_f3;
-    int base = self->field_0x54;
+    int base = self->level;
 
     int v;
-    v = f2(*(int *)(base + 0x74), f1(self->field_0x8), 9, 0);
+    v = f2(*(int *)(base + 0x74), f1(self->geometry), 9, 0);
     self->field_0x1a0 = v;
-    f3(*(int *)(self->field_0x54 + 0x74), v, 0);
+    f3(*(int *)(self->level + 0x74), v, 0);
 
-    v = f2(*(int *)(self->field_0x54 + 0x78), f1(self->field_0x8), 0xf, 0);
+    v = f2(*(int *)(self->level + 0x78), f1(self->geometry), 0xf, 0);
     self->field_0x80 = v;
-    f3(*(int *)(self->field_0x54 + 0x78), v, 0);
+    f3(*(int *)(self->level + 0x78), v, 0);
 
-    v = f2(*(int *)(self->field_0x54 + 0x84), f1(self->field_0x8), 0x2a, 0);
+    v = f2(*(int *)(self->level + 0x84), f1(self->geometry), 0x2a, 0);
     self->field_0x84 = v;
-    f3(*(int *)(self->field_0x54 + 0x84), v, 0);
+    f3(*(int *)(self->level + 0x84), v, 0);
 
-    v = f2(*(int *)(self->field_0x54 + 0x8c), f1(self->field_0x8), 0x11, 0);
+    v = f2(*(int *)(self->level + 0x8c), f1(self->geometry), 0x11, 0);
     self->field_0x134 = v;
-    f3(*(int *)(self->field_0x54 + 0x8c), v, 0);
+    f3(*(int *)(self->level + 0x8c), v, 0);
 
-    v = f2(*(int *)(self->field_0x54 + 0x8c), f1(self->field_0x8), 0x12, 0);
+    v = f2(*(int *)(self->level + 0x8c), f1(self->geometry), 0x12, 0);
     self->field_0x138 = v;
-    return f3(*(int *)(self->field_0x54 + 0x8c), v, 0);
+    return f3(*(int *)(self->level + 0x8c), v, 0);
 }
 
 // ---- PlayerFighter_dc2f8.cpp ----
@@ -349,7 +349,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     }
     void *route = operator_new(0x18);
     Route_ctor(route, pts, (unsigned)count);
-    self->field_0x144 = route;
+    self->route = route;
     RH_op_delete_arr(pts);
 
     int *shared = gPFC_sharedRoute;
@@ -365,30 +365,30 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     self->field_0x134 = -1;
     self->field_0x138 = -1;
     self->field_0x128 = 50000;
-    self->field_0x1a4 = 2.0f;
-    self->field_0x1a8 = 0;
-    self->field_0x1ac = 2.0f;
+    self->rotate = 2.0f;
+    self->shootError = 0;
+    self->speed = 2.0f;
     self->field_0x1b0 = 0x5dc;
-    self->field_0x1b4 = 5;
+    self->boostProb = 5;
     self->field_0x38 = 0;
     self->field_0x140 = 0;
     self->field_0x12d = 0;
     self->field_0x13d = 0;
     self->field_0x1f8 = 0;
-    self->field_0xd8 = 0;
+    self->deathTimer = 0;
     self->field_0x12f = 0;
     self->field_0x1fc = 0;
     self->field_0x1c8 = 0;
     self->field_0x1e0 = 0;
     self->field_0x1f4 = 0;
-    self->field_0x28 = wingmanCmd;
+    self->wingmanCommand = wingmanCmd;
 
     int zero3[4] = {0, 0, 0, 0};
     self->field_0x1b8 = 0;
     AEMath_VectorAssign((char *)self + 0x1bc, zero3);
     self->field_0x148 = 0;
     AEMath_VectorAssign((char *)self + 0x14c, zero3);
-    self->field_0x1d0 = 0;
+    self->deltaTime = 0;
     AEMath_VectorAssign((char *)self + 0x1d4, zero3);
     self->field_0x1e4 = 0;
     AEMath_VectorAssign((char *)self + 0x1e8, zero3);
@@ -397,29 +397,29 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     AEMath_VectorAssign((char *)self + 0x158, posVec);
     self->field_0x13d = 1;
     self->field_0x4c = 1;
-    self->field_0x1e8 = self->field_0x1ac;
-    self->field_0x1f0 = self->field_0x1a4;
-    Route_setLoop(self->field_0x144, 0);
+    self->currentSpeed = self->speed;
+    self->currentRotate = self->rotate;
+    Route_setLoop(self->route, 0);
     Route_setLoop((void *)(long)*shared, 0);
-    self->field_0x6c = 0;
+    self->routeClone = 0;
 
     if (Status_getCurrentCampaignMission() != 0x29) {
         int cloned;
         if (wingmanCmd == 9) {
             cloned = (int)(intptr_t)((Route *)((void *)(long)*shared))->clone();
         } else {
-            cloned = (int)(intptr_t)((Route *)(self->field_0x144))->clone();
+            cloned = (int)(intptr_t)((Route *)(self->route))->clone();
         }
-        self->field_0x6c = cloned;
+        self->routeClone = cloned;
     }
     self->field_0x12d = 0;
 
     if (wingmanCmd == 9) {
-        self->field_0x50 = 0;
+        self->lootList = 0;
     } else {
         void *g = operator_new(1);
         Generator_ctor(g);
-        self->field_0x50 = Generator_getLootList(g, -1, -1);
+        self->lootList = Generator_getLootList(g, -1, -1);
         operator_delete(Generator_dtor(g));
     }
 
@@ -427,10 +427,10 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
 
     void *exp = operator_new(0x68);
     Explosion_ctor(exp, 0);
-    self->field_0x124 = exp;
+    self->explosion = exp;
     ((Explosion *)(exp))->addFireStreaks();
     self->field_0x13e = 1;
-    self->field_0x1d8 = ((Player *)(self->field_0x4))->getHitpoints();
+    self->hitpoints = ((Player *)(self->player))->getHitpoints();
     self->field_0x1dc = 0;
     self->field_0x1e0 = 0;
     self->field_0xe4 = 1;
@@ -443,7 +443,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     } else {
         fov = (self->field_0xdc == 0) ? 0x2e : 0x30;
     }
-    self->field_0xf8 = fov;
+    self->fov = fov;
 
     self->field_0x20c = 0;
     self->field_0x210 = 0;
@@ -455,18 +455,18 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     }
     self->field_0x2b4 = 0;
     self->field_0x2b0 = 0;
-    self->field_0x100 = 0;
+    self->rollActive = 0;
     self->field_0x254 = 0;
-    self->field_0x2b8 = 0;
+    self->easeMatrix = 0;
     self->field_0x13c = 0;
     self->field_0x2c4 = 0;
-    self->field_0x2c8 = 0;
-    self->field_0x2d4 = 0;
+    self->cloakTimer = 0;
+    self->cloakCooldown = 0;
     self->field_0x2cd = 0;
     self->field_0x2c9 = 0;
-    self->field_0x2d8 = 1;
-    self->field_0x2dc = -1;
-    self->field_0x2e4 = 0;
+    self->cloakingPossible = 1;
+    self->cloakMaterial = -1;
+    self->aiDisabled = 0;
     self->field_0x2e8 = 0;
 
     if (*guardP == saved) {
@@ -490,8 +490,8 @@ void PlayerFighter::update(int dt) {
     volatile int saved = *guardP;
 
     // Dead-and-explosion-finished early-out: tear down via the dead veneer.
-    if (self->field_0x88 == 4 && ((Explosion *)(self->field_0x124))->isPlaying() == 0 &&
-        (self->field_0x4c == 0 || 60000 < self->field_0xd8)) {
+    if (self->state == 4 && ((Explosion *)(self->explosion))->isPlaying() == 0 &&
+        (self->field_0x4c == 0 || 60000 < self->deathTimer)) {
         if (*guardP != saved) {
             __stack_chk_fail((unsigned)(*guardP - saved));
         }
@@ -502,28 +502,28 @@ void PlayerFighter::update(int dt) {
     // Advance per-frame timers.
     self->field_0x1c0 += dt;
     self->field_0x1b8 += dt;
-    if (self->field_0x28 == 1) {
-        self->field_0x28 = 1;
+    if (self->wingmanCommand == 1) {
+        self->wingmanCommand = 1;
     }
-    self->field_0x1d0 = dt;
-    self->field_0x1d4 = dt >> 31;
+    self->deltaTime = dt;
+    self->deltaTimeHi = dt >> 31;
 
     // Sync world position from the geometry.
     float pos[3];
-    AEGeometry_getPosition(pos, self->field_0x8);
+    AEGeometry_getPosition(pos, self->geometry);
     AEMath_VectorAssign((char *)self + 0x2c, pos);
 
     // Recompute the "is enemy" flag unless the ship is in a non-combat mode.
     if (self->field_0x43 == 0) {
         unsigned char enemy;
-        if ((self->field_0x28 & 0xfffffffe) == 8) {
+        if ((self->wingmanCommand & 0xfffffffe) == 8) {
             enemy = 1;
         } else if (((KIPlayer *)(self))->isWingMan() != 0) {
             enemy = 0;
         } else {
-            enemy = (unsigned char)((Standing *)(Status_getStanding()))->isEnemy(self->field_0x28);
+            enemy = (unsigned char)((Standing *)(Status_getStanding()))->isEnemy(self->wingmanCommand);
         }
-        *(unsigned char *)(self->field_0x4 + 0x5c) = enemy;
+        *(unsigned char *)(self->player + 0x5c) = enemy;
     }
 
     // Remaining per-frame state machine.
@@ -541,19 +541,19 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
     PlayerFighter *self = this;
     volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
-    self->field_0x58 = x;
-    self->field_0x5c = y;
-    self->field_0x60 = z;
+    self->posX = x;
+    self->posY = y;
+    self->posZ = z;
 
     int stackVec[3];
-    AEGeometry_setPosition3(self->field_0x8, 0, 0, 0);  // forwards x,y,z via regs
+    AEGeometry_setPosition3(self->geometry, 0, 0, 0);  // forwards x,y,z via regs
     AEMath_VectorAssign((char *)self + 0x158, stackVec);
-    if (self->field_0x154 != 0) {
-        Trail_reset(self->field_0x154, self->field_0x158,
+    if (self->trail != 0) {
+        Trail_reset(self->trail, self->field_0x158,
                     self->field_0x15c, self->field_0x160);
     }
-    int m = AEGeometry_getMatrix2(self->field_0x8);
-    AEMath_MatrixAssign((char *)self->field_0x4 + 4, (void *)m);
+    int m = AEGeometry_getMatrix2(self->geometry);
+    AEMath_MatrixAssign((char *)self->player + 4, (void *)m);
 
     uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (diff == 0) {
@@ -585,12 +585,12 @@ void PlayerFighter::roll(int angle) {
     int *guardP = *(int **)gRoll_guard;
     volatile int saved = *guardP;
 
-    if (self->field_0x100 == 0) {
+    if (self->rollActive == 0) {
         goto done;
     }
 
     {
-        int m = AEGeometry_getMatrix(self->field_0x8);
+        int m = AEGeometry_getMatrix(self->geometry);
         float fwdX = *(float *)(m + 0x10);
         float fwdY = *(float *)(m + 0x14);
         float absX = (0.0f < fwdX) ? fwdX : -fwdX;
@@ -601,7 +601,7 @@ void PlayerFighter::roll(int angle) {
             unsigned char tmp[60];
             AEMath_MatrixIdentity(tmp, (char *)self + 0x258);
             AEMath_MatrixAssign((char *)self + 0x258, tmp);
-            self->field_0x100 = 0;
+            self->rollActive = 0;
             self->field_0x254 = 0;
             goto done;
         }
@@ -642,7 +642,7 @@ void PlayerFighter::roll(int angle) {
             self->field_0x255 = (fwdX < 0.0f) ? 1 : 2;
         }
         float fa = VectorSignedToFloat(angle, 0);
-        self->field_0x100 = 1;
+        self->rollActive = 1;
         unsigned char tmp[60];
         AEMath_MatrixSetRotation(tmp, bank * fa, 0.0f, roll);
         AEMath_MatrixAssign((char *)self + 0x258, tmp);
@@ -666,8 +666,8 @@ void PlayerFighter::cloak(int dur, bool b) {
     } else {
         v = AERandom_nextInt(**(int **)&gCloakRand) + 5000;
     }
-    self->field_0x2d0 = 1;
-    self->field_0x2cc = v + 4000;
+    self->cloakActive = 1;
+    self->cloakDuration = v + 4000;
     self->field_0x2d9 = b;
 }
 
@@ -677,17 +677,17 @@ extern void *const gMissionCrateApp __attribute__((visibility("hidden")));
 
 void PlayerFighter::setMissionCrate(bool on) {
     PlayerFighter *self = this;
-    self->field_0xd0 = on;
+    self->isMissionCrate = on;
     if (on) {
-        self->field_0x50 = 0;
+        self->lootList = 0;
         Array<int> *a = (Array<int> *)operator_new(0xc);
         ArrayInt_ctor(a);
-        self->field_0x50 = a;
+        self->lootList = a;
         int mission = Status_getMission(*(unsigned *)gMissionCrateApp);
         int type = Mission_getType(mission);
         int item = (type == 5) ? 0x74 : 0x75;
-        ArrayInt_add(item, (Array<int> *)self->field_0x50);
-        PlayerFighter_setMissionCrate_tail(1, (Array<int> *)self->field_0x50);
+        ArrayInt_add(item, (Array<int> *)self->lootList);
+        PlayerFighter_setMissionCrate_tail(1, (Array<int> *)self->lootList);
     }
 }
 
@@ -697,8 +697,8 @@ typedef int (*CollFn)(BV *, float, float, float);
 
 int PlayerFighter::collide(float x, float y, float z) {
     PlayerFighter *self = this;
-    if ((unsigned)(self->field_0x88 - 3) > 1) {
-        Array<BV *> *a = (Array<BV *> *)self->field_0x150;
+    if ((unsigned)(self->state - 3) > 1) {
+        Array<BV *> *a = (Array<BV *> *)self->boundingVolumes;
         if (a != 0) {
             for (unsigned i = 0; i < a->size(); i++) {
                 BV *e = a->data()[i];
@@ -706,7 +706,7 @@ int PlayerFighter::collide(float x, float y, float z) {
                 if (fn(e, x, y, z) != 0) {
                     return 1;
                 }
-                a = (Array<BV *> *)self->field_0x150;
+                a = (Array<BV *> *)self->boundingVolumes;
             }
         }
     }
@@ -720,7 +720,7 @@ void PlayerFighter::setBV_b(BoundingVolume *bv) {
     PlayerFighter *self = this;
     Array<BoundingVolume *> *a = (Array<BoundingVolume *> *)operator_new(0xc);
     ArrayBV_ctor(a);
-    self->field_0x150 = a;
+    self->boundingVolumes = a;
     return PlayerFighter_setBV_add(bv, a);
 }
 
@@ -733,14 +733,14 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
     ((KIPlayer *)(self))->setWingmanCommand(cmd, target);
     if ((unsigned)(cmd - 2) < 2) {
         self->field_0x1b8 = 0x1389;
-        if (self->field_0x1e8 != 5.5f) {
+        if (self->currentSpeed != 5.5f) {
             self->field_0x1c0 = 0x1389;
         }
         if (cmd == 2) {
-            if (Level_getPlayerRoute(self->field_0x54) != 0) {
-                int r = Level_getPlayerRoute(self->field_0x54);
-                self->field_0x14c = (int32_t)(intptr_t)((Route *)(r))->getExactClone();
-                self->field_0x1e4 = Route_getCurrent(self->field_0x14c);
+            if (Level_getPlayerRoute(self->level) != 0) {
+                int r = Level_getPlayerRoute(self->level);
+                self->commandRoute = (int32_t)(intptr_t)((Route *)(r))->getExactClone();
+                self->field_0x1e4 = Route_getCurrent(self->commandRoute);
                 goto done;
             }
         } else if (target != 0) {
@@ -755,16 +755,16 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
         self->field_0x1e0 = 0;
     }
 done:
-    self->field_0x1e8 = self->field_0x1ac;
-    self->field_0x1f0 = self->field_0x1a4;
+    self->currentSpeed = self->speed;
+    self->currentRotate = self->rotate;
 }
 
 // ---- setSpeed_dcccc.cpp ----
 void PlayerFighter::setSpeed(float v) {
     PlayerFighter *self = this;
-    self->field_0x1ac = v;
+    self->speed = v;
     self->field_0x13d = 0;
-    self->field_0x1e8 = v;
+    self->currentSpeed = v;
 }
 
 // ---- outerCollide_dfc38.cpp ----
@@ -773,8 +773,8 @@ typedef int (*CollFn)(BV *, float, float, float);
 
 int PlayerFighter::outerCollide(float x, float y, float z) {
     PlayerFighter *self = this;
-    if ((unsigned)(self->field_0x88 - 3) > 1) {
-        Array<BV *> *a = (Array<BV *> *)self->field_0x150;
+    if ((unsigned)(self->state - 3) > 1) {
+        Array<BV *> *a = (Array<BV *> *)self->boundingVolumes;
         if (a != 0) {
             for (unsigned i = 0; i < a->size(); i++) {
                 BV *e = a->data()[i];
@@ -782,7 +782,7 @@ int PlayerFighter::outerCollide(float x, float y, float z) {
                 if (fn(e, x, y, z) != 0) {
                     return 1;
                 }
-                a = (Array<BV *> *)self->field_0x150;
+                a = (Array<BV *> *)self->boundingVolumes;
             }
         }
     }
@@ -820,8 +820,8 @@ void PlayerFighter::initPush(void *target, int radius) {
     float t = 1.0f;
     if (len / r < 1.0f) t = len / r;
     int strength = (int)((1.0f - t) * gIP_strength);
-    self->field_0x104 = strength;
-    self->field_0x108 = strength;
+    self->pushTimer = strength;
+    self->pushDuration = strength;
 
     float pos2[3];
     getPos(pos2, self);
@@ -855,9 +855,9 @@ extern void *const gExhaustCanvas __attribute__((visibility("hidden")));
 
 void PlayerFighter::setExhaustVisible(bool vis) {
     PlayerFighter *self = this;
-    int geom = self->field_0x8;
+    int geom = self->geometry;
     if (geom != 0) {
-        int sub = self->field_0xc;
+        int sub = self->subGeometry;
         int id = (sub != 0) ? *(int *)(sub + 0x14) : *(int *)(geom + 0x14);
         if (id != -1) {
             unsigned t = PaintCanvas_TransformGetTransform(*(unsigned *)gExhaustCanvas);
@@ -876,13 +876,13 @@ void PlayerFighter::render() {
     if (self->field_0x78 != 0) {
         AEGeometry_render(0);
     }
-    int active = ((Player *)(self->field_0x4))->isActive();
-    int st = self->field_0x88;
+    int active = ((Player *)(self->player))->isActive();
+    int st = self->state;
     unsigned *idp;
     if (active != 0 && (unsigned)(st - 3) < 2) {
-        if (self->field_0x124 != 0) {
+        if (self->explosion != 0) {
             ((Explosion *)(0))->render();
-            st = self->field_0x88;
+            st = self->state;
         }
         if (st == 4) {
             if (self->field_0x1f8 >= 300) {
@@ -893,8 +893,8 @@ void PlayerFighter::render() {
             if (st != 3) {
                 goto done;
             }
-            if (self->field_0xc == 0) {
-                return PlayerFighter_render_tail(self->field_0x8);
+            if (self->subGeometry == 0) {
+                return PlayerFighter_render_tail(self->geometry);
             }
             idp = *(unsigned **)gR_g3;
         }
@@ -902,7 +902,7 @@ void PlayerFighter::render() {
         if (active != 0 || st != 5) {
             goto done;
         }
-        if (self->field_0xc == 0) {
+        if (self->subGeometry == 0) {
             AEGeometry_render(0);
         } else {
             idp = *(unsigned **)gR_g5;
@@ -910,11 +910,11 @@ void PlayerFighter::render() {
             unsigned id = *idp;
             void *src = (void *)PaintCanvas_TransformGetLocal(id);
             __aeabi_memcpy(tmp, src, 0x3c);
-            PaintCanvas_TransformSetLocal(*idp, *(void **)(self->field_0xc + 0xc));
+            PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
             AEGeometry_render(0);
-            PaintCanvas_TransformSetLocal(*idp, *(void **)(self->field_0xc + 0xc));
+            PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
         }
-        if (self->field_0x154 != 0) {
+        if (self->trail != 0) {
             Trail_render(0);
         }
         goto done;
@@ -924,9 +924,9 @@ void PlayerFighter::render() {
         unsigned id = *idp;
         void *src = (void *)PaintCanvas_TransformGetLocal(id);
         __aeabi_memcpy(tmp, src, 0x3c);
-        PaintCanvas_TransformSetLocal(*idp, *(void **)(self->field_0xc + 0xc));
+        PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
         AEGeometry_render(0);
-        PaintCanvas_TransformSetLocal(*idp, *(void **)(self->field_0xc + 0xc));
+        PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
     }
 done:
     ;
@@ -946,34 +946,34 @@ void PlayerFighter::push(int dt) {
     int *guardP = *(int **)gPush_guard;
     volatile int saved = *guardP;
 
-    if (0 < self->field_0x104) {
-        int remaining = self->field_0x104 - dt;
+    if (0 < self->pushTimer) {
+        int remaining = self->pushTimer - dt;
         float fr = VectorSignedToFloat(remaining, 0);
-        float ftotal = VectorSignedToFloat(self->field_0x108, 0);
-        self->field_0x104 = remaining;
+        float ftotal = VectorSignedToFloat(self->pushDuration, 0);
+        self->pushTimer = remaining;
         float frac = fr / ftotal;
 
         unsigned char rot[60];
         AEMath_MatrixSetRotation(rot, frac * self->field_0x120, 0.0f,
                                  frac * self->field_0x11c);
 
-        int lo = self->field_0x1d0;
-        int hi = self->field_0x1d4;
+        int lo = self->deltaTime;
+        int hi = self->deltaTimeHi;
         if ((int)(unsigned)(lo == 0) <= hi) {
-            void *geom = (void *)(intptr_t)self->field_0x8;
+            void *geom = (void *)(intptr_t)self->geometry;
             void *m = (void *)(long)AEGeometry_getMatrix((int)(long)geom);
             AEMath_MatrixMul(rot, m);
             AEGeometry_setMatrix(geom);
-            lo = self->field_0x1d0;
-            hi = self->field_0x1d4;
+            lo = self->deltaTime;
+            hi = self->deltaTimeHi;
         }
         float speed = l2f(((long long)hi << 32) | (unsigned)lo);
-        void *geom = (void *)(intptr_t)self->field_0x8;
-        float ftotal2 = VectorSignedToFloat(self->field_0x108, 0);
+        void *geom = (void *)(intptr_t)self->geometry;
+        float ftotal2 = VectorSignedToFloat(self->pushDuration, 0);
 
         unsigned char a[12], b[12], c[60];
         PF_vscale(a, (char *)self + 0x10c, speed);
-        PF_vscale(b, a, self->field_0x1e8);
+        PF_vscale(b, a, self->currentSpeed);
         PF_vscale(c, b, (2.0f - frac) * 3.0f * (ftotal2 / gPush_div));
         AEGeometry_translate(geom);
     }
@@ -998,14 +998,14 @@ __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self
     self->field_0x4c = 1;
 
     int v[3];
-    v[0] = self->field_0x58;
-    v[1] = self->field_0x5c;
-    v[2] = self->field_0x60;
+    v[0] = self->posX;
+    v[1] = self->posY;
+    v[2] = self->posZ;
     AEMath_VectorAssign((char *)self + 0x158, v);
     AEMath_VectorAssign((char *)self + 0x2c, v);
 
-    self->field_0x1d0 = 0;
-    self->field_0x1d4 = 0;
+    self->deltaTime = 0;
+    self->deltaTimeHi = 0;
     self->field_0x38 = 0;
     self->field_0x12e = 0;
     self->field_0x148 = 0;
@@ -1014,8 +1014,8 @@ __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self
     self->field_0x1c0 = 0;
     self->field_0x1c4 = 0;
     self->field_0x1c8 = 0;
-    if (self->field_0x88 != 5) {
-        self->field_0x88 = 0;
+    if (self->state != 5) {
+        self->state = 0;
     }
 
     VFn vfn = (VFn)gReset_vfn;
@@ -1024,19 +1024,19 @@ __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self
     vfn((char *)self + 0x164, z);
     vfn((char *)self + 0x170, z);
 
-    self->field_0xd0 = 0;
-    self->field_0x68 = 0;
-    self->field_0x6a = 0;
+    self->isMissionCrate = 0;
+    self->missionCrateLost = 0;
+    self->crateLost = 0;
     self->field_0x4c = 1;
     self->field_0x140 = 0;
     self->field_0x1fc = 0;
     self->field_0x13c = 0;
-    self->field_0x2d0 = 0;
-    self->field_0x2c8 = 0;
-    self->field_0x2cc = 0;
-    self->field_0x2d4 = 0;
-    self->field_0x2d8 = 1;
-    self->field_0x2e4 = 0;
+    self->cloakActive = 0;
+    self->cloakTimer = 0;
+    self->cloakDuration = 0;
+    self->cloakCooldown = 0;
+    self->cloakingPossible = 1;
+    self->aiDisabled = 0;
 
     uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
     if (diff == 0) {
@@ -1064,76 +1064,76 @@ extern const float gHC_divOut __attribute__((visibility("hidden")));      // DAT
 // PlayerFighter::handleCloaking() — self in r0.
 void PlayerFighter::handleCloaking() {
     PlayerFighter *self = this;
-    if (self->field_0x28 != 10) return;
-    if (self->field_0x8 == 0) return;
+    if (self->wingmanCommand != 10) return;
+    if (self->geometry == 0) return;
     if (((KIPlayer *)(self))->isDead() != 0) return;
-    if (*(char *)(self->field_0x4 + 0x68) != 0) return;
-    if (self->field_0x2d8 == 0) return;
+    if (*(char *)(self->player + 0x68) != 0) return;
+    if (self->cloakingPossible == 0) return;
 
-    if (self->field_0x2d0 != 0) {
-        int delta = self->field_0x2c8;
+    if (self->cloakActive != 0) {
+        int delta = self->cloakTimer;
         if (delta == 0) {
-            unsigned matId = self->field_0x2dc;
+            unsigned matId = self->cloakMaterial;
             self->field_0x13c = 1;
             if (matId == 0xffffffff) {
                 void **cv = *(void ***)gHC_canvasClone;
-                PaintCanvas_MeshCloneMaterial(*cv, *(unsigned *)(self->field_0xc + 0x1c),
+                PaintCanvas_MeshCloneMaterial(*cv, *(unsigned *)(self->subGeometry + 0x1c),
                                               (unsigned *)((char *)self + 0x2dc));
                 int mp = PaintCanvas_MeshGetPointer(*cv,
-                                                    *(unsigned *)(self->field_0xc + 0x1c));
-                matId = self->field_0x2dc;
+                                                    *(unsigned *)(self->subGeometry + 0x1c));
+                matId = self->cloakMaterial;
                 self->field_0x2e0 = *(int *)(*(int *)(mp + 0x30) + 0x20);
             }
             void **cvm = *(void ***)gHC_canvasMat;
             int mat = PaintCanvas_MaterialGetMaterial(*cvm, matId);
             *(int *)(mat + 0x20) = 0xe;
-            PaintCanvas_MeshChangeMaterial(*cvm, *(unsigned *)(self->field_0xc + 0x1c),
-                                           self->field_0x2dc);
+            PaintCanvas_MeshChangeMaterial(*cvm, *(unsigned *)(self->subGeometry + 0x1c),
+                                           self->cloakMaterial);
             if (self->field_0x2d9 == 0) {
-                delta = self->field_0x2c8;
+                delta = self->cloakTimer;
             } else {
                 self->field_0x2d9 = 0;
                 delta = 2000;
-                self->field_0x2c8 = 2000;
+                self->cloakTimer = 2000;
             }
         }
         long long acc = (long long)delta +
-                        (((long long)self->field_0x1d4 << 32) | (unsigned)self->field_0x1d0);
+                        (((long long)self->deltaTimeHi << 32) | (unsigned)self->deltaTime);
         int total = (int)acc;
-        self->field_0x2c8 = total;
+        self->cloakTimer = total;
 
-        if (total - self->field_0x1d0 <= 2000) {
+        if (total - self->deltaTime <= 2000) {
             if (1999 < total) {
                 ((PlayerFighter *)(self))->setExhaustVisible(false);
                 self->field_0x74 = 1;
             }
             void *cv = *(void **)gHC_canvasA;
             cv = *(void **)cv;
-            int mp = PaintCanvas_MeshGetPointer(cv, *(unsigned *)(self->field_0xc + 0x1c));
-            float a = VectorSignedToFloat(self->field_0x2c8, 0) / gHC_divIn;
+            int mp = PaintCanvas_MeshGetPointer(cv, *(unsigned *)(self->subGeometry + 0x1c));
+            float a = VectorSignedToFloat(self->cloakTimer, 0) / gHC_divIn;
             PF_cloakApply((void *)(long)mp, (int)(long)cv, a, 1);
             return;
         } else {
-            if (self->field_0x2cc < total) {
+            if (self->cloakDuration < total) {
                 int restore = self->field_0x2e0;
                 void **cvc = *(void ***)gHC_canvasC;
-                self->field_0x2c8 = 0;
-                self->field_0x2d0 = 0;
+                self->cloakTimer = 0;
+                self->cloakActive = 0;
                 self->field_0x13c = 0;
-                int mat = PaintCanvas_MaterialGetMaterial(*cvc, self->field_0x2dc);
+                int mat = PaintCanvas_MaterialGetMaterial(*cvc, self->cloakMaterial);
                 *(int *)(mat + 0x20) = restore;
                 PF_cloakStop(self, 1);
                 return;
             }
-            if (total <= self->field_0x2cc - 2000) {
+            if (total <= self->cloakDuration - 2000) {
                 return;
             }
             void **cvb = *(void ***)gHC_canvasB;
             self->field_0x74 = 0;
             void *cv = *cvb;
-            int mp = PaintCanvas_MeshGetPointer(cv, *(unsigned *)(self->field_0xc + 0x1c));
-            float a = VectorSignedToFloat(self->field_0x2c8, 0);
-            float b = VectorSignedToFloat(self->field_0x2cc - 2000, 0);
+            int mp = PaintCanvas_MeshGetPointer(cv, *(unsigned *)(self->subGeometry + 0x1c));
+            float a = VectorSignedToFloat(self->cloakTimer, 0);
+            float b = VectorSignedToFloat(self->cloakDuration - 2000, 0);
             float alpha = (a - b) / gHC_divOut + 1.0f;
             PF_cloakApply((void *)(long)mp, (int)(long)cv, alpha, 1);
             return;
@@ -1144,10 +1144,10 @@ void PlayerFighter::handleCloaking() {
         PF_cloakStart(self);
         return;
     }
-    int acc = self->field_0x1d0 + self->field_0x2d4;
-    self->field_0x2d4 = acc;
+    int acc = self->deltaTime + self->cloakCooldown;
+    self->cloakCooldown = acc;
     if (8000 < acc) {
-        self->field_0x2d4 = 0;
+        self->cloakCooldown = 0;
         if (AERandom_nextInt(**(int **)gHC_rng2) < 0x1e) {
             PF_cloakStart(self);
         }
@@ -1159,51 +1159,51 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
 {
     volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
-    int enemy = UC((void *)(intptr_t)(self->field_0x4), 0xe0);
-    Player_reset(self->field_0x4);
+    int enemy = UC((void *)(intptr_t)(self->player), 0xe0);
+    Player_reset(self->player);
     if (enemy != 0) {
-        ((Player *)(self->field_0x4))->turnEnemy();
+        ((Player *)(self->player))->turnEnemy();
     }
     {
         String s;
         AEString_ctor_default(&s);
     }
     self->field_0x78 = 0;
-    self->field_0x88 = 1;
+    self->state = 1;
     self->field_0x12e = 0;
     self->field_0x38 = -1;
-    ((Route *)(self->field_0x6c))->reset();
-    self->field_0x1d8 = ((Player *)(self->field_0x4))->getHitpoints();
+    ((Route *)(self->routeClone))->reset();
+    self->hitpoints = ((Player *)(self->player))->getHitpoints();
     self->field_0x1dc = 0;
     self->field_0x1e0 = 0;
-    self->field_0xd8 = 0;
+    self->deathTimer = 0;
     self->field_0xf0 = 0;
-    self->field_0x1e8 = self->field_0x1ac;
-    ((Explosion *)(self->field_0x124))->reset();
-    self->field_0x104 = 0;
+    self->currentSpeed = self->speed;
+    ((Explosion *)(self->explosion))->reset();
+    self->pushTimer = 0;
     self->field_0x24 = 0;
     ((PlayerFighter *)(self))->setExhaustVisible(true);
-    int geom = self->field_0xc;
+    int geom = self->subGeometry;
     self->field_0xf5 = 1;
     if (geom == 0) {
-        geom = self->field_0x8;
+        geom = self->geometry;
     }
     AEGeometry_setVisible(geom, 1);
-    if ((unsigned)(self->field_0x28 - 9) < 2) {
-        void *a = self->field_0x50;
+    if ((unsigned)(self->wingmanCommand - 9) < 2) {
+        void *a = self->lootList;
         if (a != 0) {
             operator_delete(ArrayInt_dtor(a));
         }
-        self->field_0x50 = 0;
+        self->lootList = 0;
     } else {
         void *g = operator_new(1);
         Generator_ctor(g);
-        void *a = self->field_0x50;
+        void *a = self->lootList;
         if (a != 0) {
             operator_delete(ArrayInt_dtor(a));
-            self->field_0x50 = 0;
+            self->lootList = 0;
         }
-        self->field_0x50 = Generator_getLootList(g, -1, -1);
+        self->lootList = Generator_getLootList(g, -1, -1);
         operator_delete(Generator_dtor(g));
     }
 

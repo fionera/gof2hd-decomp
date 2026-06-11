@@ -20,16 +20,16 @@ static inline char*           B(void* p, int off) { return (char*)p + off; }
 // colliding with the identical static-inline definitions in Explosion.h / Hud.h.
 
 struct PlayerEgo {
-    void* field_0x0;                    // +0x0
+    void* player;                    // +0x0
     AEGeometry* field_0x4;              // +0x4
-    AEGeometry* field_0x8;              // +0x8
-    Level* field_0xc;                   // +0xc
-    LevelScript* field_0x10;            // +0x10
+    AEGeometry* geometry;              // +0x8
+    Level* level;                   // +0xc
+    LevelScript* levelScript;            // +0x10
     uint8_t field_0x25;                 // +0x25
-    void* field_0x15c;                  // +0x15c
-    unsigned short field_0x388;         // +0x388
-    unsigned short field_0x38c;         // +0x38c
-    unsigned short field_0x390;         // +0x390
+    void* autoPilotTarget;                  // +0x15c
+    unsigned short cloakMaterial;         // +0x388
+    unsigned short cloakMaterial2;         // +0x38c
+    unsigned short cloakMaterial3;         // +0x390
 
     // Real C++ ctor/dtor so the demangled symbols match the binary.
     PlayerEgo(Player* player);

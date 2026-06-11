@@ -18,27 +18,27 @@ namespace AbyssEngine {
 // AbyssEngine::PulseShader.
 struct PulseShader {
     void *field_0x0;                    // +0x0  vtable
-    int field_0x4;                      // +0x4  GL program handle
+    int program;                      // +0x4  GL program handle
     uint8_t pad_0x8;                    // +0x8  (padding/unused)
-    uint8_t field_0x9;                  // +0x9  "needs uniform update" flag
+    uint8_t uniformsDirty;                  // +0x9  "needs uniform update" flag
     uint8_t pad_0xa[2];                 // +0xa
     String field_0xc;                   // +0xc  shader name (12 bytes -> ends 0x18)
     uint8_t pad_0x18[8];                // +0x18
-    int field_0x20;                     // +0x20 attrib a0
-    int field_0x24;                     // +0x24 attrib a1
-    int field_0x28;                     // +0x28 attrib a2
-    int field_0x2c;                     // +0x2c attrib a3
-    int field_0x30;                     // +0x30 attrib a4
-    int field_0x34;                     // +0x34 uniform u0
-    int field_0x38;                     // +0x38 uniform u1
-    int field_0x3c;                     // +0x3c uniform u2
-    int field_0x40;                     // +0x40 uniform u3
-    int field_0x44;                     // +0x44 uniform u5
-    int field_0x48;                     // +0x48 uniform u6
-    int field_0x4c;                     // +0x4c uniform u7
-    int field_0x50;                     // +0x50 uniform u8
-    int field_0x54;                     // +0x54 uniform u9
-    int field_0x58;                     // +0x58 uniform u4
+    int attrA0;                     // +0x20 attrib a0
+    int attrA1;                     // +0x24 attrib a1
+    int attrA2;                     // +0x28 attrib a2
+    int attrA3;                     // +0x2c attrib a3
+    int attrA4;                     // +0x30 attrib a4
+    int uniU0;                     // +0x34 uniform u0
+    int uniU1;                     // +0x38 uniform u1
+    int uniU2;                     // +0x3c uniform u2
+    int uniU3;                     // +0x40 uniform u3
+    int uniU5;                     // +0x44 uniform u5
+    int uniU6;                     // +0x48 uniform u6
+    int uniU7;                     // +0x4c uniform u7
+    int uniU8;                     // +0x50 uniform u8
+    int uniU9;                     // +0x54 uniform u9
+    int uniU4;                     // +0x58 uniform u4
 
     PulseShader();
     void Init(::Engine *engine);

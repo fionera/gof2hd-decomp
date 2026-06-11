@@ -37,25 +37,25 @@ extern "C" void TFC_u___stack_chk_fail();
 // ---- zoomTarget_15b498.cpp ----
 // str.w r1,[r0,#0xb0]
 void TFC_zoomTarget(TargetFollowCamera *self, float v) {
-    self->field_0xb0 = v;
+    self->zoom = v;
 }
 
 // ---- isInLookAtMode_15b5ce.cpp ----
 // ldrb.w r0,[r0,#0x45]
 uint8_t TFC_isInLookAtMode(TargetFollowCamera *self) {
-    return self->field_0x45;
+    return self->lookAtCam;
 }
 
 // ---- hideShipForFirstPersonCam_15b32c.cpp ----
 // ldrb.w r0,[r0,#0x100]
 uint8_t TFC_hideShipForFirstPersonCam(TargetFollowCamera *self) {
-    return self->field_0x100;
+    return self->hideShip;
 }
 
 // ---- setLookAtCam_15b49e.cpp ----
 // strb.w r1,[r0,#0x45]
 void TFC_setLookAtCam(TargetFollowCamera *self, bool v) {
-    self->field_0x45 = v;
+    self->lookAtCam = v;
 }
 
 // ---- setBoostPercentage_15b338.cpp ----
@@ -63,8 +63,8 @@ void TFC_setLookAtCam(TargetFollowCamera *self, bool v) {
 void TFC_setBoostPercentage(TargetFollowCamera *self, float pct, int n) {
     if (n > 8) n = 8;
     if (n < 2) n = 2;
-    self->field_0x110 = pct;
-    self->field_0x114 = n;
+    self->shakeAmount = pct;
+    self->shakeFrequency = n;
 }
 
 // ---- enableFirstPersonCam_15b2d8.cpp ----
@@ -74,13 +74,13 @@ void TFC_setBoostPercentage(TargetFollowCamera *self, float pct, int n) {
 
 void TFC_enableFirstPersonCam(TargetFollowCamera *self, bool on) {
     char buf[12];
-    self->field_0xf0 = on;
+    self->firstPerson = on;
     *(volatile float *)(buf + 4) = 150.0f;
     *(volatile float *)(buf + 0) = 0.0f;
     *(volatile float *)(buf + 8) = -800.0f;
     Vector_assign((Vector *)((char *)self + 0xf4), buf);
-    self->field_0x104 = 0;
-    self->field_0x108 = 0;
+    self->shakeAccum = 0;
+    self->shakeReference = 0;
 }
 
 // ---- setFirstPersonMatrix_15b332.cpp ----
@@ -96,59 +96,59 @@ void *TFC_setFirstPersonMatrix(TargetFollowCamera *self, Matrix *m) {
 
 void TFC_setCamOffset(TargetFollowCamera *self, Vector *v) {
     Vector_assign((Vector *)((char *)self + 0x38), v);
-    self->field_0xb0 = AEMath_VectorLength(v);
+    self->zoom = AEMath_VectorLength(v);
 }
 
 // ---- setRoll_15b644.cpp ----
 // str.w r1,[r0,#0x130]
 void TFC_setRoll(TargetFollowCamera *self, float v) {
-    self->field_0x130 = v;
+    self->roll = v;
 }
 
 // ---- hit_15b5ec.cpp ----
 // Guard on byte at 0x47; if clear, arm a big hit: shake timer 1000, flag set,
 // shake mode 6 at 0x120, clear byte at 0x124.
 void TFC_hit(TargetFollowCamera *self) {
-    if (self->field_0x47 != 0) return;
-    self->field_0x48 = 1000;
-    self->field_0x47 = 1;
-    self->field_0x120 = 6;
+    if (self->rumbleActive != 0) return;
+    self->rumbleTimer = 1000;
+    self->rumbleActive = 1;
+    self->rumbleStrength = 6;
     self->field_0x124 = 0;
 }
 
 // ---- roll_15b632.cpp ----
 // this->[0x130] += delta  (float read-modify-write)
 void TFC_roll(TargetFollowCamera *self, float delta) {
-    self->field_0x130 = self->field_0x130 + delta;
+    self->roll = self->roll + delta;
 }
 
 // ---- setRotationAroundTarget_15b464.cpp ----
 // strb.w r1,[r0,#0x4c]
 void TFC_setRotationAroundTarget(TargetFollowCamera *self, bool v) {
-    self->field_0x4c = v;
+    self->rotateAroundTarget = v;
 }
 
 // ---- setFixed_15b350.cpp ----
 // strb.w r1,[r0,#0x138]
 void TFC_setFixed(TargetFollowCamera *self, bool v) {
-    self->field_0x138 = v;
+    self->fixed = v;
 }
 
 // ---- translateNoUpdate_15b280.cpp ----
 // Adds (dx,dy,dz) to both the position Vector at +0x8 and the target Vector at +0x14.
 void TFC_translateNoUpdate(TargetFollowCamera *self, float dx, float dy, float dz) {
-    self->field_0x8 = self->field_0x8 + dx;
-    self->field_0xc = self->field_0xc + dy;
-    self->field_0x10 = self->field_0x10 + dz;
-    self->field_0x14 = self->field_0x14 + dx;
-    self->field_0x18 = self->field_0x18 + dy;
-    self->field_0x1c = self->field_0x1c + dz;
+    self->posX = self->posX + dx;
+    self->posY = self->posY + dy;
+    self->posZ = self->posZ + dz;
+    self->targetX = self->targetX + dx;
+    self->targetY = self->targetY + dy;
+    self->targetZ = self->targetZ + dz;
 }
 
 // ---- setActive_15a99a.cpp ----
 // strb.w r1,[r0,#0x46]
 void TFC_setActive(TargetFollowCamera *self, bool v) {
-    self->field_0x46 = v;
+    self->active = v;
 }
 
 // ---- getLocal_15b3d4.cpp ----
@@ -158,26 +158,26 @@ void TFC_setActive(TargetFollowCamera *self, bool v) {
 // __aeabi_memcpy and needs no register saved across the call.
 
 Mat60 TFC_getLocal(TargetFollowCamera *self) {
-    return self->field_0x13c;
+    return self->localMatrix;
 }
 
 // ---- setRumblePercentage_15b34a.cpp ----
 // strd r1,r2,[r0,#0x110]
 void TFC_setRumblePercentage(TargetFollowCamera *self, float pct, int n) {
-    self->field_0x110 = pct;
-    self->field_0x114 = n;
+    self->shakeAmount = pct;
+    self->shakeFrequency = n;
 }
 
 // ---- translate_15a9e8.cpp ----
 // Same as translateNoUpdate, then tail-calls the shake/update helper (this, 1000).
 
 void TFC_translate(TargetFollowCamera *self, float dx, float dy, float dz) {
-    self->field_0x8 = self->field_0x8 + dx;
-    self->field_0xc = self->field_0xc + dy;
-    self->field_0x10 = self->field_0x10 + dz;
-    self->field_0x14 = self->field_0x14 + dx;
-    self->field_0x18 = self->field_0x18 + dy;
-    self->field_0x1c = self->field_0x1c + dz;
+    self->posX = self->posX + dx;
+    self->posY = self->posY + dy;
+    self->posZ = self->posZ + dz;
+    self->targetX = self->targetX + dx;
+    self->targetY = self->targetY + dy;
+    self->targetZ = self->targetZ + dz;
     return TFC_tail_int(self, 1000);
 }
 
@@ -190,30 +190,30 @@ extern "C" void TFC_aproximate(void *out, float v, double *a, double *b,
 
 void TFC_setFastForwardMode(TargetFollowCamera *self, bool on) {
     char *p = (char *)self;
-    uint8_t cur = self->field_0x4d;
+    uint8_t cur = self->fastForward;
     if (on) {
         if (cur) return;
     } else {
         if (!cur) return;
     }
-    TFC_setShipHandling2(self, self->field_0x134);
-    TFC_aproximate(p + 0x80, self->field_0x128,
+    TFC_setShipHandling2(self, self->shipHandling);
+    TFC_aproximate(p + 0x80, self->handlingDampingA,
                    (double *)(p + 0x60), (double *)(p + 0x68),
                    (double *)(p + 0x70), (double *)(p + 0x78), (double *)(p + 0x80));
-    TFC_aproximate(p + 0xa8, self->field_0x12c,
+    TFC_aproximate(p + 0xa8, self->handlingDampingB,
                    (double *)(p + 0x88), (double *)(p + 0x90),
                    (double *)(p + 0x98), (double *)(p + 0xa0), (double *)(p + 0xa8));
-    self->field_0x4d = on;
+    self->fastForward = on;
 }
 
 // ---- hitSmall_15b60e.cpp ----
 // Guard on byte at 0x47; if clear, arm a small hit: shake timer 0x32, flag set,
 // shake mode 2 at 0x120, set byte at 0x124.
 void TFC_hitSmall(TargetFollowCamera *self) {
-    if (self->field_0x47 != 0) return;
-    self->field_0x48 = 0x32;
-    self->field_0x47 = 1;
-    self->field_0x120 = 2;
+    if (self->rumbleActive != 0) return;
+    self->rumbleTimer = 0x32;
+    self->rumbleActive = 1;
+    self->rumbleStrength = 2;
     self->field_0x124 = 1;
 }
 
@@ -223,22 +223,22 @@ void TFC_hitSmall(TargetFollowCamera *self) {
 
 void TFC_setShipHandling(TargetFollowCamera *self, float v) {
     float s = v * 0.01f;
-    self->field_0x134 = v;
-    self->field_0x128 = 0.003f + (1.0f - s) * 0.015f;
-    self->field_0x12c = 0.001f + s * 0.010986f;
+    self->shipHandling = v;
+    self->handlingDampingA = 0.003f + (1.0f - s) * 0.015f;
+    self->handlingDampingB = 0.001f + s * 0.010986f;
     return TFC_tail_int(self, 0x3f800000);
 }
 
 // ---- isInFastForwardMode_15b5c8.cpp ----
 // ldrb.w r0,[r0,#0x4d]
 uint8_t TFC_isInFastForwardMode(TargetFollowCamera *self) {
-    return self->field_0x4d;
+    return self->fastForward;
 }
 
 // ---- useTargetsUpVector_15b62c.cpp ----
 // strb.w r1,[r0,#0x10c]
 void TFC_useTargetsUpVector(TargetFollowCamera *self, bool v) {
-    self->field_0x10c = v;
+    self->useTargetsUpVector = v;
 }
 
 // ---- setPosition_15a9d6.cpp ----
@@ -246,9 +246,9 @@ void TFC_useTargetsUpVector(TargetFollowCamera *self, bool v) {
 // Copies the source Vector into the position slot at this+0x8.
 void TFC_setPositionV(TargetFollowCamera *self, Vector *src) {
     float a = src->x, b = src->y, c = src->z;
-    self->field_0x8 = a;
-    self->field_0xc = b;
-    self->field_0x10 = c;
+    self->posX = a;
+    self->posY = b;
+    self->posZ = c;
 }
 
 // ---- rotateAroundTarget_15b46c.cpp ----
@@ -273,10 +273,10 @@ extern "C" void TFC_aproximate(void *out, float v, double *a, double *b,
 
 void TFC_calculateCoefficents(TargetFollowCamera *self, float t) {
     char *p = (char *)self;
-    TFC_aproximate(p + 0x80, self->field_0x128 * t,
+    TFC_aproximate(p + 0x80, self->handlingDampingA * t,
                    (double *)(p + 0x60), (double *)(p + 0x68),
                    (double *)(p + 0x70), (double *)(p + 0x78), (double *)(p + 0x80));
-    TFC_aproximate(p + 0xa8, self->field_0x12c * t,
+    TFC_aproximate(p + 0xa8, self->handlingDampingB * t,
                    (double *)(p + 0x88), (double *)(p + 0x90),
                    (double *)(p + 0x98), (double *)(p + 0xa0), (double *)(p + 0xa8));
 }
@@ -291,9 +291,9 @@ void TFC_setLocked(TargetFollowCamera *self, bool locked) {
     char *p = (char *)self;
     char mat[60];    // local matrix copy (char buffer -> stack canary)
     Vector up;
-    self->field_0x44 = locked;
+    self->locked = locked;
     if (locked) {
-        __builtin_memcpy(mat, AEGeometry_getMatrix(self->field_0x4), 0x3c);
+        __builtin_memcpy(mat, AEGeometry_getMatrix(self->target), 0x3c);
         MatrixGetUp(&up, mat);
         Vector_assign((Vector *)(p + 0x20), &up);
         MatrixTransformVector(&up, mat, (const Vector *)(p + 0x38));
@@ -341,33 +341,33 @@ TargetFollowCamera *TFC_ctor(TargetFollowCamera *self, unsigned id, void *target
     char *p = (char *)self;
 
     // position triplet := camOffset, mirror into the three tracked frames
-    self->field_0x8 = 0.0f;
-    self->field_0xc = camOffset.y;
-    self->field_0x10 = camOffset.z;
-    self->field_0x14 = (int)camOffset.x;     // field_14..0x24 initialized like the disasm zero-fill
-    self->field_0x18 = 0;
-    self->field_0x1c = (int)camOffset.y;
-    self->field_0x20 = (int)camOffset.z;
-    self->field_0x24 = (int)camOffset.x;
-    self->field_0x28 = 0;
-    self->field_0x2c = (int)camOffset.y;
-    self->field_0x30 = (int)camOffset.z;
-    self->field_0x34 = (int)camOffset.x;
-    self->field_0x38 = (int)camOffset.y;
-    self->field_0x3c = (int)camOffset.z;
-    self->field_0x40 = (int)camOffset.x;
-    self->field_0x50 = 0;
-    self->field_0x54 = 0;
-    self->field_0x58 = 0;
+    self->posX = 0.0f;
+    self->posY = camOffset.y;
+    self->posZ = camOffset.z;
+    self->targetX = (int)camOffset.x;     // field_14..0x24 initialized like the disasm zero-fill
+    self->targetY = 0;
+    self->targetZ = (int)camOffset.y;
+    self->upX = (int)camOffset.z;
+    self->upY = (int)camOffset.x;
+    self->upZ = 0;
+    self->targetOffsetX = (int)camOffset.y;
+    self->targetOffsetY = (int)camOffset.z;
+    self->targetOffsetZ = (int)camOffset.x;
+    self->camOffsetX = (int)camOffset.y;
+    self->camOffsetY = (int)camOffset.z;
+    self->camOffsetZ = (int)camOffset.x;
+    self->rotX = 0;
+    self->rotY = 0;
+    self->rotZ = 0;
 
     TFC_Matrix_ctor((Matrix *)(p + 0xb4));
-    self->field_0xf4 = 0;
-    self->field_0xf8 = 0;
-    self->field_0xfc = 0;
+    self->fpOffsetX = 0;
+    self->fpOffsetY = 0;
+    self->fpOffsetZ = 0;
     TFC_Matrix_ctor((Matrix *)(p + 0x13c));
 
-    self->field_0x0 = id;
-    self->field_0x4 = target;
+    self->id = id;
+    self->target = target;
 
     TFC_Vector_assign((Vector *)(p + 0x2c), &camOffset);
     TFC_Vector_assign((Vector *)(p + 0x38), &targetOffset);
@@ -388,22 +388,22 @@ TargetFollowCamera *TFC_ctor(TargetFollowCamera *self, unsigned id, void *target
     Vector up = {0.0f, 1.0f, 0.0f};
     TFC_Vector_assign((Vector *)(p + 0x20), &up);
 
-    self->field_0x44 = 0x10000;
-    self->field_0x48 = 0;
-    self->field_0x4c = 0;
-    self->field_0xf0 = 0;
-    self->field_0x100 = 0;
-    self->field_0x10c = 1;
-    self->field_0x110 = 0.0f;       // shake amount
-    self->field_0x114 = 5;            // shake frequency
+    self->locked = 0x10000;
+    self->rumbleTimer = 0;
+    self->rotateAroundTarget = 0;
+    self->firstPerson = 0;
+    self->hideShip = 0;
+    self->useTargetsUpVector = 1;
+    self->shakeAmount = 0.0f;       // shake amount
+    self->shakeFrequency = 5;            // shake frequency
 
     float zoom = TFC_VectorLength(&targetOffset);
 
     // seed second-matrix block + damping inputs
     *(double *)(p + 0x128) = g_TFC_seed0;
     *(double *)(p + 0x130) = g_TFC_seed1;
-    self->field_0xb0 = zoom;
-    self->field_0x138 = 0;
+    self->zoom = zoom;
+    self->fixed = 0;
 
     TFC_aproximateCooefficientsForAproximationOfDampingFunktion(
         (TargetFollowCamera *)(p + 0x80), zoom, (double *)(p + 0x70),
@@ -481,8 +481,8 @@ static inline float bits(uint32_t u) {
 }
 
 void TFC_resetShipHandling(TargetFollowCamera *self) {
-    self->field_0x128 = bits(0x3ba3d70a);  // ~0.005
-    self->field_0x12c = bits(0x3bc49ba6);  // ~0.006
+    self->handlingDampingA = bits(0x3ba3d70a);  // ~0.005
+    self->handlingDampingB = bits(0x3bc49ba6);  // ~0.006
     return TFC_tail_int(self, 0x3f800000);
 }
 
@@ -543,19 +543,19 @@ void TFC_update(TargetFollowCamera *self, int dt)
     int saved = *canary;
     char *p = (char *)self;
 
-    if (self->field_0x138 != 0) {
+    if (self->fixed != 0) {
         // fixed-matrix path
         Matrix lm;
         Vector pos;
         TFC_u_MatrixGetPosition(&pos, &lm);
-        self->field_0x8 = pos.x;
-        self->field_0xc = pos.y;
-        self->field_0x10 = pos.z;
+        self->posX = pos.x;
+        self->posY = pos.y;
+        self->posZ = pos.z;
         TFC_u_Vector_assign((Vector *)(p + 8), &pos);
         TFC_u_CameraSetLocal(*g_TFC_u_camera, *(Matrix **)p);
-        if (self->field_0x4 != 0) {
+        if (self->target != 0) {
             char mat[0x3c];
-            TFC_u_memcpy(mat, TFC_u_AEGeometry_getMatrix(self->field_0x4), 0x3c);
+            TFC_u_memcpy(mat, TFC_u_AEGeometry_getMatrix(self->target), 0x3c);
             Vector up, posv;
             TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
             TFC_u_Vector_assign((Vector *)(p + 0x20), &up);
@@ -567,13 +567,13 @@ void TFC_update(TargetFollowCamera *self, int dt)
         return;
     }
 
-    if (dt > 0 && self->field_0x46 != 0) {
+    if (dt > 0 && self->active != 0) {
         char mat[0x3c];
-        TFC_u_memcpy(mat, TFC_u_AEGeometry_getMatrix(self->field_0x4), 0x3c);
+        TFC_u_memcpy(mat, TFC_u_AEGeometry_getMatrix(self->target), 0x3c);
 
-        if (self->field_0x45 == 0) {           // not look-at cam
-            if (self->field_0x44 == 0) {       // not locked
-                if (self->field_0xf0 == 0) {   // damped follow
+        if (self->lookAtCam == 0) {           // not look-at cam
+            if (self->locked == 0) {       // not locked
+                if (self->firstPerson == 0) {   // damped follow
                     Vector savedPos14 = *(Vector *)(p + 0x14);
                     Vector savedPos08 = *(Vector *)(p + 0x08);
 
@@ -581,16 +581,16 @@ void TFC_update(TargetFollowCamera *self, int dt)
                     TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
                     TFC_u_Vector_assign((Vector *)(p + 0x20), &up);
 
-                    if (self->field_0x4c != 0) {        // rotate-around-target
+                    if (self->rotateAroundTarget != 0) {        // rotate-around-target
                         Matrix rot;
                         TFC_u_MatrixSetRotation(&rot, (const Matrix *)mat,
-                                                self->field_0x50, self->field_0x54,
-                                                self->field_0x58, 2);
+                                                self->rotX, self->rotY,
+                                                self->rotZ, 2);
                         TFC_u_MatrixMul_assign((Matrix *)mat, &rot);
                         float curLen = TFC_u_VectorLength((Vector *)(p + 0x38));
-                        if (curLen != self->field_0xb0)
+                        if (curLen != self->zoom)
                             TFC_u_Vector_mulassign((Vector *)(p + 0x38),
-                                                   self->field_0xb0 / curLen);
+                                                   self->zoom / curLen);
                     }
 
                     double dd = (double)dt;
@@ -623,10 +623,10 @@ void TFC_update(TargetFollowCamera *self, int dt)
                                         *(double *)(p + 0x98) * d3 + *(double *)(p + 0xa0) * d4) * inv);
                     TFC_u_Vector_mulassign(&diff2, kB);
 
-                    if (self->field_0x100 != 0) {
-                        float l = TFC_u_VectorLength(&diff2) + self->field_0x104;
-                        self->field_0x104 = l;
-                        self->field_0x100 = (l < g_TFC_u_shakeMax) ? 1 : 0;
+                    if (self->hideShip != 0) {
+                        float l = TFC_u_VectorLength(&diff2) + self->shakeAccum;
+                        self->shakeAccum = l;
+                        self->hideShip = (l < g_TFC_u_shakeMax) ? 1 : 0;
                     }
 
                     Vector finalPos = diff2;
@@ -646,12 +646,12 @@ void TFC_update(TargetFollowCamera *self, int dt)
                     TFC_u_MatrixTransformVector(&np, (const Vector *)mat);
                     TFC_u_Vector_assign((Vector *)(p + 8), &np);
 
-                    if (self->field_0x108 == 0.0f ||
-                        self->field_0x104 < self->field_0x108 * 1.5f) {
+                    if (self->shakeReference == 0.0f ||
+                        self->shakeAccum < self->shakeReference * 1.5f) {
                         Vector d = np;
                         TFC_u_Vector_sub(&d, (const Vector *)(p + 8));
-                        if (self->field_0x108 == 0.0f)
-                            self->field_0x108 = TFC_u_VectorLength(&d);
+                        if (self->shakeReference == 0.0f)
+                            self->shakeReference = TFC_u_VectorLength(&d);
                         double dd = (double)dt;
                         double d2 = dd * dd;
                         double d3 = d2 * dd;
@@ -663,10 +663,10 @@ void TFC_update(TargetFollowCamera *self, int dt)
                                            *(double *)(p + 0x98) * d2 +
                                            *(double *)(p + 0xa0) * dd) * inv);
                         TFC_u_Vector_mulassign(&d, k);
-                        float l = TFC_u_VectorLength(&d) + self->field_0x104;
-                        float thr = self->field_0x108 * 0.75f;
-                        self->field_0x104 = l;
-                        self->field_0x100 = (l >= thr) ? 1 : 0;
+                        float l = TFC_u_VectorLength(&d) + self->shakeAccum;
+                        float thr = self->shakeReference * 0.75f;
+                        self->shakeAccum = l;
+                        self->hideShip = (l >= thr) ? 1 : 0;
                         TFC_u_Vector_add(&cur, (const Vector *)(p + 8));
                         TFC_u_Vector_assign((Vector *)(p + 8), &cur);
                     }
@@ -680,17 +680,17 @@ void TFC_update(TargetFollowCamera *self, int dt)
                     TFC_u_Vector_assign((Vector *)(p + 0x14), &tv);
                 }
             } else {                               // locked: snap to position
-                self->field_0x100 = 0;
+                self->hideShip = 0;
                 Vector pos;
                 TFC_u_MatrixGetPosition(&pos, (const Matrix *)mat);
                 TFC_u_Vector_assign((Vector *)(p + 0x14), &pos);
-                self->field_0x14 = self->field_0x14 - self->field_0x8;
-                self->field_0x18 = self->field_0x18 - self->field_0xc;
-                self->field_0x1c = self->field_0x1c - self->field_0x10;
+                self->targetX = self->targetX - self->posX;
+                self->targetY = self->targetY - self->posY;
+                self->targetZ = self->targetZ - self->posZ;
             }
         } else {                                   // first-person / look-at cam
             Matrix fp;
-            if (self->field_0x10c == 0) {
+            if (self->useTargetsUpVector == 0) {
                 TFC_u_MatrixIdentity(&fp, (const Matrix *)mat);
             } else {
                 TFC_u_memcpy(&fp, mat, 0x3c);
@@ -700,11 +700,11 @@ void TFC_update(TargetFollowCamera *self, int dt)
             TFC_u_Vector_assign((Vector *)(p + 0x20), &up);
             TFC_u_MatrixGetPosition(&pos, &fp);
             TFC_u_Vector_assign((Vector *)(p + 0x14), &pos);
-            self->field_0x100 = 0;
+            self->hideShip = 0;
         }
 
         // first-person matrix sync
-        if (self->field_0xf0 != 0) {
+        if (self->firstPerson != 0) {
             Matrix fpm;
             Vector v;
             TFC_u_memcpy(&fpm, (char *)self + 0xb4, 0x3c);
@@ -718,37 +718,37 @@ void TFC_update(TargetFollowCamera *self, int dt)
         }
 
         // rumble
-        if (self->field_0x47 != 0) {
-            int t = self->field_0x48 - dt;
-            self->field_0x48 = t;
+        if (self->rumbleActive != 0) {
+            int t = self->rumbleTimer - dt;
+            self->rumbleTimer = t;
             if (t < 1)
-                self->field_0x47 = 0;
-            float scale = (self->field_0xf0 == 0) ? 1.0f : g_TFC_u_rumbleScale;
+                self->rumbleActive = 0;
+            float scale = (self->firstPerson == 0) ? 1.0f : g_TFC_u_rumbleScale;
             void *rng = *g_TFC_u_rng;
-            int amt = self->field_0x120;
+            int amt = self->rumbleStrength;
             float r = (float)(TFC_u_rand(rng, amt << 1) - amt);
-            self->field_0x8 = self->field_0x8 + scale * r;
-            amt = self->field_0x120;
+            self->posX = self->posX + scale * r;
+            amt = self->rumbleStrength;
             r = (float)(TFC_u_rand(rng, amt << 1) - amt);
-            self->field_0xc = self->field_0xc + scale * r;
-            amt = self->field_0x120;
+            self->posY = self->posY + scale * r;
+            amt = self->rumbleStrength;
             r = (float)(TFC_u_rand(rng, amt << 1) - amt);
-            self->field_0x10 = self->field_0x10 + scale * r;
+            self->posZ = self->posZ + scale * r;
         }
 
         // screen-shake
-        float shake = self->field_0x110;
+        float shake = self->shakeAmount;
         if (shake > 0.0f) {
-            int freq = self->field_0x114;
-            float scale = (self->field_0xf0 == 0) ? 1.0f : g_TFC_u_shakeScale;
+            int freq = self->shakeFrequency;
+            float scale = (self->firstPerson == 0) ? 1.0f : g_TFC_u_shakeScale;
             void *rng = *g_TFC_u_rng;
             int b = freq << 1;
             float r = (float)(TFC_u_rand(rng, b) - freq);
-            self->field_0x14 = self->field_0x14 + scale * shake * r;
+            self->targetX = self->targetX + scale * shake * r;
             r = (float)(TFC_u_rand(rng, b) - freq);
-            self->field_0x18 = self->field_0x18 + scale * shake * r;
+            self->targetY = self->targetY + scale * shake * r;
             r = (float)(TFC_u_rand(rng, b) - freq);
-            self->field_0x1c = self->field_0x1c + scale * shake * r;
+            self->targetZ = self->targetZ + scale * shake * r;
         }
 
         // build look-at + roll, push to camera, store local matrix
@@ -758,7 +758,7 @@ void TFC_update(TargetFollowCamera *self, int dt)
         Matrix lm;
         TFC_u_Matrix_assign(&lm, &look);
         Matrix roll;
-        TFC_u_MatrixSetRotation3(&roll, self->field_0x130, 0.0f, 0.0f);
+        TFC_u_MatrixSetRotation3(&roll, self->roll, 0.0f, 0.0f);
         TFC_u_MatrixMul_assign(&lm, &roll);
         TFC_u_CameraSetLocal(*g_TFC_u_camera, *(Matrix **)p);
         TFC_u_Matrix_assign((Matrix *)(p + 0x13c), &lm);

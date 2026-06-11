@@ -90,14 +90,14 @@ typedef void LoadingCallback_t(PaintCanvas *, int, void *);
 
 void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) {
     ApplicationManager *self = this;
-    self->field_0x20 = (void *)callback;
-    self->field_0x24 = data;
+    self->loadingCallback = (void *)callback;
+    self->loadingCallbackData = data;
 }
 
 // ---- SoundSetVolume_82270.cpp ----
 void ApplicationManager::SoundSetVolume(int volume) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab578(sound, volume);
     }
@@ -106,7 +106,7 @@ void ApplicationManager::SoundSetVolume(int volume) {
 // ---- SoundStopSounds_821fc.cpp ----
 void ApplicationManager::SoundStopSounds() {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab528(sound);
     }
@@ -115,7 +115,7 @@ void ApplicationManager::SoundStopSounds() {
 // ---- SoundIsPlaying_8229a.cpp ----
 int ApplicationManager::SoundIsPlaying() {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound == 0) {
         return 0;
     }
@@ -125,7 +125,7 @@ int ApplicationManager::SoundIsPlaying() {
 // ---- GetSystemTimeMillis_83e9e.cpp ----
 uint64_t ApplicationManager::GetSystemTimeMillis() {
     ApplicationManager *self = this;
-    return self->field_0x68;
+    return self->currentTimeMs;
 }
 
 // ---- LoadingCallbackShow_8250c.cpp ----
@@ -133,7 +133,7 @@ typedef void LoadingShowCallback(PaintCanvas *, int, void *);
 
 void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
     ApplicationManager *self = this;
-    LoadingShowCallback *callback = (LoadingShowCallback *)self->field_0x20;
+    LoadingShowCallback *callback = (LoadingShowCallback *)self->loadingCallback;
     if (callback != 0) {
         callback(*(PaintCanvas **)self, mode, data);
     }
@@ -142,8 +142,8 @@ void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
 // ---- SoundPlay_821b2.cpp ----
 void ApplicationManager::SoundPlay(int soundId) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
-    if (sound != 0 && self->field_0xb0) {
+    void *sound = self->soundResource;
+    if (sound != 0 && self->soundFxEnabled) {
         ext_001ab4f8(sound, soundId);
     }
 }
@@ -151,11 +151,11 @@ void ApplicationManager::SoundPlay(int soundId) {
 // ---- SoundPlay_821c6.cpp ----
 void ApplicationManager::SoundPlay_vol(int soundId, float volume) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound == 0) {
         return;
     }
-    if (self->field_0xb0 == 0) {
+    if (self->soundFxEnabled == 0) {
         return;
     }
     ext_001ab488(sound, soundId, volume);
@@ -164,8 +164,8 @@ void ApplicationManager::SoundPlay_vol(int soundId, float volume) {
 // ---- CheatUpdate_8253a.cpp ----
 void ApplicationManager::CheatUpdate(unsigned short key) {
     ApplicationManager *self = this;
-    if (self->field_0x34) {
-        void *cheats = self->field_0x30;
+    if (self->cheatsEnabled) {
+        void *cheats = self->cheatHandler;
         if (cheats != 0) {
             ext_001ab5e8(cheats, key);
         }
@@ -175,7 +175,7 @@ void ApplicationManager::CheatUpdate(unsigned short key) {
 // ---- CheatAddCode_82528.cpp ----
 void ApplicationManager::CheatAddCode(void *code, int value) {
     ApplicationManager *self = this;
-    void *cheats = self->field_0x30;
+    void *cheats = self->cheatHandler;
     if (cheats != 0) {
         ext_001ab5d8(cheats);
     }
@@ -184,7 +184,7 @@ void ApplicationManager::CheatAddCode(void *code, int value) {
 // ---- SoundPause_82218.cpp ----
 void ApplicationManager::SoundPause() {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab548(sound);
     }
@@ -193,7 +193,7 @@ void ApplicationManager::SoundPause() {
 // ---- GetActionState_83e8a.cpp ----
 uint64_t ApplicationManager::GetActionState() {
     ApplicationManager *self = this;
-    return self->field_0xa0;
+    return self->actionState;
 }
 
 // ---- Resume_824d0.cpp ----
@@ -206,18 +206,18 @@ void ApplicationManager::Resume() {
         return;
     }
 
-    void *module = self->field_0x18;
+    void *module = self->currentModule;
     if (module != 0) {
         ModuleCallback **vtable = *(ModuleCallback ***)module;
         vtable[0x40 / 4](module);
-        void *engine = self->field_0xa8;
+        void *engine = self->engine;
         if (engine != 0) {
             ((Engine *)(engine))->Resume();
         }
-        self->field_0xa0 = 0;
-        self->field_0xa4 = 0;
-        self->field_0x80 = 0;
-        self->field_0x84 = 0;
+        self->actionState = 0;
+        self->actionStateHigh = 0;
+        self->keyState = 0;
+        self->keyStateHigh = 0;
         self->field_0x3c = 4;
     }
 }
@@ -225,7 +225,7 @@ void ApplicationManager::Resume() {
 // ---- SoundStop_821ee.cpp ----
 void ApplicationManager::SoundStop() {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab518(sound);
     }
@@ -234,8 +234,8 @@ void ApplicationManager::SoundStop() {
 // ---- SoundPlayLoop_821da.cpp ----
 void ApplicationManager::SoundPlayLoop(int soundId) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
-    if (sound != 0 && self->field_0xb0) {
+    void *sound = self->soundResource;
+    if (sound != 0 && self->soundFxEnabled) {
         ext_001ab508(sound, soundId);
     }
 }
@@ -243,8 +243,8 @@ void ApplicationManager::SoundPlayLoop(int soundId) {
 // ---- SoundPlayMusicLoop_8219e.cpp ----
 void ApplicationManager::SoundPlayMusicLoop(int soundId) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
-    if (sound != 0 && self->field_0xb1) {
+    void *sound = self->soundResource;
+    if (sound != 0 && self->musicEnabled) {
         ext_001ab4e8(sound, soundId);
     }
 }
@@ -252,38 +252,38 @@ void ApplicationManager::SoundPlayMusicLoop(int soundId) {
 // ---- ResetKeyState_83e90.cpp ----
 void ApplicationManager::ResetKeyState() {
     ApplicationManager *self = this;
-    self->field_0x80 = 0;
+    self->keyState = 0;
 }
 
 // ---- GetElapsedTimeMillis_827dc.cpp ----
 uint64_t ApplicationManager::GetElapsedTimeMillis() {
     ApplicationManager *self = this;
-    return self->field_0x70 - self->field_0x78;
+    return self->frameTimeMs - self->previousFrameTimeMs;
 }
 
 // ---- SoundMusicEnable_8226a.cpp ----
 void ApplicationManager::SoundMusicEnable(bool enable) {
     ApplicationManager *self = this;
-    self->field_0xb1 = enable;
+    self->musicEnabled = enable;
 }
 
 // ---- CheatEnable_82534.cpp ----
 void ApplicationManager::CheatEnable(bool enable) {
     ApplicationManager *self = this;
-    self->field_0x34 = enable;
+    self->cheatsEnabled = enable;
 }
 
 // ---- GetCurrentTimeMillis_83e98.cpp ----
 uint64_t ApplicationManager::GetCurrentTimeMillis() {
     ApplicationManager *self = this;
-    return self->field_0x68;
+    return self->currentTimeMs;
 }
 
 // ---- SoundPlayMusic_8218a.cpp ----
 void ApplicationManager::SoundPlayMusic(int soundId) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
-    if (sound != 0 && self->field_0xb1) {
+    void *sound = self->soundResource;
+    if (sound != 0 && self->musicEnabled) {
         ext_001ab4d8(sound, soundId);
     }
 }
@@ -291,28 +291,28 @@ void ApplicationManager::SoundPlayMusic(int soundId) {
 // ---- OnTouchEnd_83c90.cpp ----
 void ApplicationManager::OnTouchEndSimple() {
     ApplicationManager *self = this;
-    self->field_0x8 = 0;
-    self->field_0xc = 0;
-    self->field_0x80 = 0;
-    self->field_0x84 = 0;
+    self->currentKey = 0;
+    self->currentKeyHigh = 0;
+    self->keyState = 0;
+    self->keyStateHigh = 0;
     // Original wrote a 16-byte vector zero across +0x98..+0xa7 (action mask + action state).
-    self->field_0x98 = 0;
-    self->field_0x9c = 0;
-    self->field_0xa0 = 0;
-    self->field_0xa4 = 0;
+    self->actionMask = 0;
+    self->actionMaskHigh = 0;
+    self->actionState = 0;
+    self->actionStateHigh = 0;
 }
 
 // ---- SoundEnable_8225a.cpp ----
 void ApplicationManager::SoundEnable(bool enable) {
     ApplicationManager *self = this;
-    self->field_0xb0 = enable;
-    self->field_0xb1 = enable;
+    self->soundFxEnabled = enable;
+    self->musicEnabled = enable;
 }
 
 // ---- SoundSetMusicVolume_8228c.cpp ----
 void ApplicationManager::SoundSetMusicVolume(int volume) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab598(sound);
     }
@@ -323,8 +323,8 @@ typedef bool ResumeCallback_t(PaintCanvas *, void *);
 
 void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) {
     ApplicationManager *self = this;
-    self->field_0x28 = (void *)callback;
-    self->field_0x2c = data;
+    self->resumeCallback = (void *)callback;
+    self->resumeCallbackData = data;
 }
 
 // ---- GetApplicationVersionString_82480.cpp ----
@@ -337,14 +337,14 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_GetApplic
 // ---- VibrateEnable_822b6.cpp ----
 void ApplicationManager::VibrateEnable(bool enable) {
     ApplicationManager *self = this;
-    self->field_0xb2 = enable;
+    self->vibrateEnabled = enable;
 }
 
 // ---- SoundResume_82226.cpp ----
 void ApplicationManager::SoundResume(int soundId) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
-    if ((sound != 0 && self->field_0xb0) || self->field_0xb1) {
+    void *sound = self->soundResource;
+    if ((sound != 0 && self->soundFxEnabled) || self->musicEnabled) {
         ext_001ab558(sound, soundId);
     }
 }
@@ -352,7 +352,7 @@ void ApplicationManager::SoundResume(int soundId) {
 // ---- SoundRelease_8217c.cpp ----
 void ApplicationManager::SoundRelease() {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab4c8(sound);
     }
@@ -363,7 +363,7 @@ typedef void QuitCallback_t();
 
 void ApplicationManager::Quit() {
     ApplicationManager *self = this;
-    QuitCallback_t *callback = (QuitCallback_t *)self->field_0x1c;
+    QuitCallback_t *callback = (QuitCallback_t *)self->quitCallback;
     if (callback != 0) {
         callback();
     }
@@ -372,7 +372,7 @@ void ApplicationManager::Quit() {
 // ---- GetEngine_8249c.cpp ----
 void * ApplicationManager::GetEngine() {
     ApplicationManager *self = this;
-    return self->field_0xa8;
+    return self->engine;
 }
 
 // ---- Suspend_824a2.cpp ----
@@ -386,30 +386,30 @@ void ApplicationManager::Suspend() {
         return;
     }
 
-    void *module = self->field_0x18;
+    void *module = self->currentModule;
     if (module != 0) {
         ModuleCallback **vtable = *(ModuleCallback ***)module;
         vtable[0x3c / 4](module);
-        void *engine = self->field_0xa8;
+        void *engine = self->engine;
         if (engine != 0) {
             ((Engine *)(engine))->Suspend();
         }
         int oldState = self->field_0x3c;
         self->field_0x3c = 3;
-        self->field_0x40 = oldState;
+        self->savedState = oldState;
     }
 }
 
 // ---- SoundFxEnable_82264.cpp ----
 void ApplicationManager::SoundFxEnable(bool enable) {
     ApplicationManager *self = this;
-    self->field_0xb0 = enable;
+    self->soundFxEnabled = enable;
 }
 
 // ---- SoundResume_822a8.cpp ----
 void ApplicationManager::SoundResumeSelf() {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab568(sound);
     }
@@ -418,15 +418,15 @@ void ApplicationManager::SoundResumeSelf() {
 // ---- Vibrate_822c4.cpp ----
 void ApplicationManager::Vibrate(unsigned short duration) {
     ApplicationManager *self = this;
-    if (self->field_0xb2) {
-        ext_001ab328(self->field_0xa8, duration);
+    if (self->vibrateEnabled) {
+        ext_001ab328(self->engine, duration);
     }
 }
 
 // ---- SoundSetFXVolume_8227e.cpp ----
 void ApplicationManager::SoundSetFXVolume(int volume) {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab588(sound);
     }
@@ -435,7 +435,7 @@ void ApplicationManager::SoundSetFXVolume(int volume) {
 // ---- CheatSetCallback_8251c.cpp ----
 void ApplicationManager::CheatSetCallback(void *callback, void *data) {
     ApplicationManager *self = this;
-    void *cheats = self->field_0x30;
+    void *cheats = self->cheatHandler;
     if (cheats != 0) {
         ext_001ab5c8(cheats);
     }
@@ -444,8 +444,8 @@ void ApplicationManager::CheatSetCallback(void *callback, void *data) {
 // ---- SoundResumeSounds_82240.cpp ----
 void ApplicationManager::SoundResumeSounds() {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
-    if ((sound != 0 && self->field_0xb0) || self->field_0xb1) {
+    void *sound = self->soundResource;
+    if ((sound != 0 && self->soundFxEnabled) || self->musicEnabled) {
         ext_001ab568(sound);
     }
 }
@@ -453,7 +453,7 @@ void ApplicationManager::SoundResumeSounds() {
 // ---- SoundPauseSounds_8220a.cpp ----
 void ApplicationManager::SoundPauseSounds() {
     ApplicationManager *self = this;
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         ext_001ab538(sound);
     }
@@ -462,14 +462,14 @@ void ApplicationManager::SoundPauseSounds() {
 // ---- GetKeyState_83e84.cpp ----
 uint64_t ApplicationManager::GetKeyState() {
     ApplicationManager *self = this;
-    return self->field_0x80;
+    return self->keyState;
 }
 
 // ---- SetApplicationModule_82440.cpp ----
 void ApplicationManager::SetApplicationModule(void *module) {
     ApplicationManager *self = this;
-    void *current = self->field_0x18;
-    self->field_0x60 = module;
+    void *current = self->currentModule;
+    self->pendingModule = module;
     self->field_0x3c = current != 0;
 }
 
@@ -478,7 +478,7 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRea
 {
     void * volatile cookie = __stack_chk_guard;
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
-    ConfigReader *reader = (ConfigReader *)self->field_0x38;
+    ConfigReader *reader = (ConfigReader *)self->configReader;
     if (reader != 0) {
         String *copy = (String *)storage;
         new (copy) String(*name);
@@ -503,17 +503,17 @@ void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
     int x = xArg;
     int y = yArg;
 
-    void *module = self->field_0x18;
+    void *module = self->currentModule;
     if (module != 0 && self->field_0x3c == 5) {
         ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
-        module = self->field_0x18;
+        module = self->currentModule;
         void **vtable = *(void ***)module;
         ((TouchEndCallback *)vtable[0x2c / 4])(module, x, y, touch);
-        module = self->field_0x18;
+        module = self->currentModule;
         vtable = *(void ***)module;
         ((TouchReleaseCallback *)vtable[0x20 / 4])(module, x, y);
-        self->field_0xb4 = x;
-        self->field_0xb8 = y;
+        self->lastTouchX = x;
+        self->lastTouchY = y;
     }
 
     if (cookie == __stack_chk_guard) {
@@ -544,69 +544,69 @@ typedef bool ResumeCallbackU(PaintCanvas *, void *);
 void ApplicationManager::OnUpdate(long long now) {
     ApplicationManager *self = this;
     void * volatile cookie = __stack_chk_guard;
-    void *engine = self->field_0xa8;
+    void *engine = self->engine;
     Engine_PreUpdate(engine);
 
-    if (self->field_0x14) {
+    if (self->orientationTrackingEnabled) {
         ((ApplicationManager *)(self))->CheckForOrientationChange();
     }
-    void *sound = self->field_0xac;
-    if (sound != 0 && self->field_0xb0) {
+    void *sound = self->soundResource;
+    if (sound != 0 && self->soundFxEnabled) {
         AESoundRessource_checkLooping(sound);
     }
 
     switch (self->field_0x3c) {
     case 0: {
-        void *next = self->field_0x60;
-        void *module = next != 0 ? next : self->field_0x18;
+        void *next = self->pendingModule;
+        void *module = next != 0 ? next : self->currentModule;
         if (next != 0) {
-            self->field_0x60 = 0;
-            self->field_0x18 = next;
+            self->pendingModule = 0;
+            self->currentModule = next;
         }
         if (module != 0) {
             void **vtable = *(void ***)module;
             int loading = ((ModuleIntCallback *)vtable[2])(module);
-            LoadingCallbackU *callback = (LoadingCallbackU *)self->field_0x20;
+            LoadingCallbackU *callback = (LoadingCallbackU *)self->loadingCallback;
             if (callback != 0) {
-                callback(*(PaintCanvas **)self, loading, self->field_0x24);
+                callback(*(PaintCanvas **)self, loading, self->loadingCallbackData);
             }
             if (loading == 0) {
-                self->field_0xa0 = 0;
+                self->actionState = 0;
                 self->field_0x3c = 5;
-                self->field_0x68 = 0;
-                self->field_0x70 = now;
-                self->field_0x78 = now - 1;
-                self->field_0x80 = 0;
+                self->currentTimeMs = 0;
+                self->frameTimeMs = now;
+                self->previousFrameTimeMs = now - 1;
+                self->keyState = 0;
             } else {
-                uint64_t previous = self->field_0x70;
-                self->field_0x68 += (uint64_t)now - previous;
-                self->field_0x78 = previous;
-                self->field_0x70 = now;
+                uint64_t previous = self->frameTimeMs;
+                self->currentTimeMs += (uint64_t)now - previous;
+                self->previousFrameTimeMs = previous;
+                self->frameTimeMs = now;
             }
         }
         break;
     }
     case 1: {
-        void *module = self->field_0x18;
+        void *module = self->currentModule;
         if (module != 0) {
             void **vtable = *(void ***)module;
             ((ModuleVoidCallback *)vtable[3])(module);
             ((Engine *)(engine))->ResetLightParam();
             self->field_0x3c = 0;
-            self->field_0x18 = 0;
+            self->currentModule = 0;
         }
         break;
     }
     case 4:
-        self->field_0xa0 = 0;
-        self->field_0x3c = self->field_0x40;
-        self->field_0x68 += 1;
-        self->field_0x70 = now;
-        self->field_0x78 = now - 1;
-        self->field_0x80 = 0;
+        self->actionState = 0;
+        self->field_0x3c = self->savedState;
+        self->currentTimeMs += 1;
+        self->frameTimeMs = now;
+        self->previousFrameTimeMs = now - 1;
+        self->keyState = 0;
         break;
     case 5: {
-        void *module = self->field_0x18;
+        void *module = self->currentModule;
         if (module != 0) {
             void **vtable = *(void ***)module;
             ((ModuleVoidCallback *)vtable[0x30 / 4])(module);
@@ -614,8 +614,8 @@ void ApplicationManager::OnUpdate(long long now) {
             *(uint64_t *)((char *)engine + 0x58) = 0;
             *(int *)((char *)*(void **)self + 4) = 0;
             ((ModuleVoidCallback *)vtable[0x34 / 4])(module);
-            ResumeCallbackU *resume = (ResumeCallbackU *)self->field_0x28;
-            if (resume == 0 || !resume(*(PaintCanvas **)self, self->field_0x2c)) {
+            ResumeCallbackU *resume = (ResumeCallbackU *)self->resumeCallback;
+            if (resume == 0 || !resume(*(PaintCanvas **)self, self->resumeCallbackData)) {
                 ((ModuleVoidCallback *)vtable[0x38 / 4])(module);
             }
         }
@@ -641,15 +641,15 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
     ArrayCtor_uint((char *)self + 0x50);
     ArrayCtor_long_long((char *)self + 0x88);
 
-    self->field_0x70 = 0;
-    self->field_0x78 = 0;
-    self->field_0x60 = 0;
-    self->field_0x68 = 0;
-    self->field_0x8 = 0;
+    self->frameTimeMs = 0;
+    self->previousFrameTimeMs = 0;
+    self->pendingModule = 0;
+    self->currentTimeMs = 0;
+    self->currentKey = 0;
     self->field_0x3c = 5;
-    self->field_0x18 = 0;
-    self->field_0x80 = 0;
-    self->field_0xa8 = engine;
+    self->currentModule = 0;
+    self->keyState = 0;
+    self->engine = engine;
 
     void *canvas = operator_new(0x20c);
     PaintCanvas_ctor(canvas, engine);
@@ -657,17 +657,17 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
 
     void *sound = operator_new(0x14);
     AESoundRessource_ctor(sound);
-    self->field_0x34 = false;
-    self->field_0xac = sound;
+    self->cheatsEnabled = false;
+    self->soundResource = sound;
 
     void *reader = operator_new(0x14);
     ConfigReader_ctor(reader, engine);
-    self->field_0x20 = 0;
-    self->field_0x38 = reader;
-    self->field_0x28 = 0;
-    self->field_0xb0 = 0x101;
-    self->field_0xb2 = true;
-    self->field_0x14 = false;
+    self->loadingCallback = 0;
+    self->configReader = reader;
+    self->resumeCallback = 0;
+    self->soundFxEnabled = 0x101;
+    self->vibrateEnabled = true;
+    self->orientationTrackingEnabled = false;
 
     char *storage = (char *)operator_new(0x408);
     *(uint32_t *)storage = 0x10;
@@ -677,13 +677,13 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
         new ((String *)(keys + offset + 4)) String();
         *(uint32_t *)(keys + offset) = 0;
     }
-    self->field_0x10 = keys;
+    self->keyMappingTable = keys;
 
     void *cheats = operator_new(0x10);
     CheatHandler_ctor(cheats, keys);
-    self->field_0x30 = cheats;
-    self->field_0xb4 = -1;
-    self->field_0xb8 = -1;
+    self->cheatHandler = cheats;
+    self->lastTouchX = -1;
+    self->lastTouchY = -1;
 
     if (cookie == __stack_chk_guard) {
         return self;
@@ -702,17 +702,17 @@ void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
     int x = xArg;
     int y = yArg;
 
-    void *module = self->field_0x18;
+    void *module = self->currentModule;
     if (module != 0 && self->field_0x3c == 5) {
         ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
-        module = self->field_0x18;
+        module = self->currentModule;
         void **vtable = *(void ***)module;
         ((TouchMoveCallback *)vtable[0x28 / 4])(module, x, y, touch);
-        module = self->field_0x18;
+        module = self->currentModule;
         vtable = *(void ***)module;
         ((TouchDragCallback *)vtable[0x1c / 4])(module, x, y);
-        self->field_0xb4 = x;
-        self->field_0xb8 = y;
+        self->lastTouchX = x;
+        self->lastTouchY = y;
     }
 
     if (cookie == __stack_chk_guard) {
@@ -726,17 +726,17 @@ typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned in
 
 void ApplicationManager::OnKeyPress(int key) {
     ApplicationManager *self = this;
-    self->field_0x98 = 0;
-    self->field_0x8 = key;
-    self->field_0xc = key >> 31;
-    self->field_0x9c = 0;
+    self->actionMask = 0;
+    self->currentKey = key;
+    self->currentKeyHigh = key >> 31;
+    self->actionMaskHigh = 0;
 
     unsigned int keyLow = 0;
     unsigned int keyHigh = 0;
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = (int *)self->field_0x10;
+    int *mapping = (int *)self->keyMappingTable;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
             int highIndex = (int)keyIndex - 0x20;
@@ -748,19 +748,19 @@ void ApplicationManager::OnKeyPress(int key) {
             if (highIndex >= 0) {
                 keyHigh = 1u << highIndex;
             }
-            self->field_0x80 =
-                self->field_0x80 | (((uint64_t)keyHigh << 32) | keyLow);
+            self->keyState =
+                self->keyState | (((uint64_t)keyHigh << 32) | keyLow);
 
             unsigned int offset = 0;
-            for (unsigned int i = 0; i < self->field_0x88; i += 2) {
-                char *entry = self->field_0x8c + offset;
+            for (unsigned int i = 0; i < self->actionTableCount; i += 2) {
+                char *entry = self->actionTableData + offset;
                 if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
                     actionLow |= *(uint32_t *)entry;
                     actionHigh |= *(uint32_t *)(entry + 4);
-                    self->field_0x98 = actionLow;
-                    self->field_0x9c = actionHigh;
-                    self->field_0xa0 |= actionLow;
-                    self->field_0xa4 |= actionHigh;
+                    self->actionMask = actionLow;
+                    self->actionMaskHigh = actionHigh;
+                    self->actionState |= actionLow;
+                    self->actionStateHigh |= actionHigh;
                 }
                 offset += 0x10;
             }
@@ -770,7 +770,7 @@ void ApplicationManager::OnKeyPress(int key) {
         ++keyIndex;
     }
 
-    void *module = self->field_0x18;
+    void *module = self->currentModule;
     if (module != 0 && self->field_0x3c == 5) {
         void **vtable = *(void ***)module;
         ((KeyCallback *)vtable[0x10 / 4])(module, module, keyLow, keyHigh, actionLow, actionHigh);
@@ -781,11 +781,11 @@ void ApplicationManager::OnKeyPress(int key) {
 __attribute__((minsize)) extern "C" void ApplicationManager_SoundSet(ApplicationManager *self, void *info, int count)
 {
     if (info != 0) {
-        void *sound = self->field_0xac;
+        void *sound = self->soundResource;
         if (sound != 0) {
             AESoundRessource_SetSound(sound, info, count);
             for (int i = 0; i < count; ++i) {
-                AESoundRessource_init(self->field_0xac, i);
+                AESoundRessource_init(self->soundResource, i);
             }
         }
     }
@@ -816,15 +816,15 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
         }
     }
 
-    unsigned int count = self->field_0x50;
+    unsigned int count = self->moduleIdCount;
     unsigned int index = 0;
     while (index < count) {
-        if (*(unsigned int *)(self->field_0x54 + index * 4) == id) {
-            void *module = *(void **)(self->field_0x48 + index * 4);
-            void *current = self->field_0x18;
+        if (*(unsigned int *)(self->moduleIdData + index * 4) == id) {
+            void *module = *(void **)(self->modulesData + index * 4);
+            void *current = self->currentModule;
             self->field_0x3c = current != 0;
-            self->field_0x5c = id;
-            self->field_0x60 = module;
+            self->currentModuleId = id;
+            self->pendingModule = module;
             return;
         }
         ++index;
@@ -865,7 +865,7 @@ storeY:
 // ---- VibrateSupported_822bc.cpp ----
 void ApplicationManager::VibrateSupported() {
     ApplicationManager *self = this;
-    ext_001ab318(self->field_0xa8);
+    ext_001ab318(self->engine);
 }
 
 // ---- OnTouchBegin_83a38.cpp ----
@@ -879,19 +879,19 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
     int x = xArg;
     int y = yArg;
 
-    void *module = self->field_0x18;
+    void *module = self->currentModule;
     if (module != 0 && self->field_0x3c == 5) {
         ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
-        module = self->field_0x18;
+        module = self->currentModule;
         void **vtable = *(void ***)module;
         ((TouchBeginCallback *)vtable[0x24 / 4])(module, x, y, touch);
-        module = self->field_0x18;
+        module = self->currentModule;
         vtable = *(void ***)module;
         ((TouchPressCallback *)vtable[0x18 / 4])(module, x, y);
-        self->field_0xb4 = x;
-        self->field_0xb8 = y;
+        self->lastTouchX = x;
+        self->lastTouchY = y;
 
-        void *engine = self->field_0xa8;
+        void *engine = self->engine;
         int mode = g_touchMode;
         if (mode <= 3) {
             void *canvas = *(void **)self;
@@ -939,7 +939,7 @@ void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
 // ---- GetApplicationModule_82452.cpp ----
 void * ApplicationManager::GetApplicationModule(unsigned int id) {
     ApplicationManager *self = this;
-    unsigned int count = self->field_0x50;
+    unsigned int count = self->moduleIdCount;
     unsigned int index = 0;
     goto check;
 
@@ -949,10 +949,10 @@ check:
     if (index >= count) {
         return 0;
     }
-    if (*(int *)(self->field_0x54 + index * 4) != (int)id) {
+    if (*(int *)(self->moduleIdData + index * 4) != (int)id) {
         goto advance;
     }
-    return *(void **)(self->field_0x48 + index * 4);
+    return *(void **)(self->modulesData + index * 4);
 }
 
 // ---- ConfigGetKeysForAction_82654.cpp ----
@@ -967,7 +967,7 @@ void * ApplicationManager::ConfigGetKeysForAction(long long action) {
 
 loop:
     {
-        char *actions = self->field_0x8c;
+        char *actions = self->actionTableData;
         int actionLow = *(int *)(actions + byteOffset);
         int actionHigh = *(int *)(actions + byteOffset + 4);
         int mismatch = (actionLow ^ low) | (actionHigh ^ high);
@@ -977,8 +977,8 @@ loop:
                 Array_StringPtr_ctor(result);
             }
             String *string = (String *)operator new(0xc);
-            actions = self->field_0x8c;
-            char *keys = self->field_0x10;
+            actions = self->actionTableData;
+            char *keys = self->keyMappingTable;
             unsigned int keyIndex = *(unsigned int *)(actions + byteOffset + 8);
             new (string) String(*(String *)(keys + keyIndex * 0x10 + 4));
             ArrayAdd_StringPtr(string, result);
@@ -987,7 +987,7 @@ loop:
         index += 2;
     }
 check:
-    if (index < self->field_0x88) {
+    if (index < self->actionTableCount) {
         goto loop;
     }
     return result;
@@ -998,15 +998,15 @@ typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned in
 
 void ApplicationManager::OnKeyRelease(int key) {
     ApplicationManager *self = this;
-    self->field_0x98 = 0;
-    self->field_0x9c = 0;
+    self->actionMask = 0;
+    self->actionMaskHigh = 0;
 
     unsigned int keyLow = 0;
     unsigned int keyHigh = 0;
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = (int *)self->field_0x10;
+    int *mapping = (int *)self->keyMappingTable;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
             int highIndex = (int)keyIndex - 0x20;
@@ -1018,19 +1018,19 @@ void ApplicationManager::OnKeyRelease(int key) {
             if (highIndex >= 0) {
                 keyHigh = 1u << highIndex;
             }
-            self->field_0x80 &= ~keyLow;
-            self->field_0x84 &= ~keyHigh;
+            self->keyState &= ~keyLow;
+            self->keyStateHigh &= ~keyHigh;
 
             unsigned int offset = 0;
-            for (unsigned int i = 0; i < self->field_0x88; i += 2) {
-                char *entry = self->field_0x8c + offset;
+            for (unsigned int i = 0; i < self->actionTableCount; i += 2) {
+                char *entry = self->actionTableData + offset;
                 if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
                     actionLow |= *(uint32_t *)entry;
                     actionHigh |= *(uint32_t *)(entry + 4);
-                    self->field_0x98 = actionLow;
-                    self->field_0x9c = actionHigh;
-                    self->field_0xa0 &= ~actionLow;
-                    self->field_0xa4 &= ~actionHigh;
+                    self->actionMask = actionLow;
+                    self->actionMaskHigh = actionHigh;
+                    self->actionState &= ~actionLow;
+                    self->actionStateHigh &= ~actionHigh;
                 }
                 offset += 0x10;
             }
@@ -1040,7 +1040,7 @@ void ApplicationManager::OnKeyRelease(int key) {
         ++keyIndex;
     }
 
-    void *module = self->field_0x18;
+    void *module = self->currentModule;
     if (module != 0 && self->field_0x3c == 5) {
         void **vtable = *(void ***)module;
         ((KeyCallback *)vtable[0x14 / 4])(module, module, keyLow, keyHigh, actionLow, actionHigh);
@@ -1056,7 +1056,7 @@ void ApplicationManager::KeyCodeSetMapping(void *array) {
         int offset = 0;
         while (index < count) {
             uint32_t *mapping = *(uint32_t **)(*(char **)((char *)array + 4) + index * 4);
-            char *dst = self->field_0x10 + offset;
+            char *dst = self->keyMappingTable + offset;
             *(uint32_t *)dst = *mapping;
             ((String *)((String *)(dst + 4)))->assign((String *)(mapping + 1));
             offset += 0x10;
@@ -1069,7 +1069,7 @@ void ApplicationManager::KeyCodeSetMapping(void *array) {
 // ---- CheckForOrientationChange_826e8.cpp ----
 static bool update_orientation_timer(ApplicationManager *self, int *timer)
 {
-    int elapsed = self->field_0x70 - self->field_0x78;
+    int elapsed = self->frameTimeMs - self->previousFrameTimeMs;
     int value = *timer + elapsed;
     *timer = value;
     return value >= 0xfb;
@@ -1077,7 +1077,7 @@ static bool update_orientation_timer(ApplicationManager *self, int *timer)
 
 void ApplicationManager::CheckForOrientationChange() {
     ApplicationManager *self = this;
-    void *engine = self->field_0xa8;
+    void *engine = self->engine;
     double tilt = *(double *)((char *)engine + 0x4b0);
     void *canvas;
     int orientation;
@@ -1144,7 +1144,7 @@ typedef void ModuleCallback(void *);
 __attribute__((minsize)) ApplicationManager::~ApplicationManager()
 {
     ApplicationManager *self = this;
-    void *module = self->field_0x18;
+    void *module = self->currentModule;
     if (module != 0) {
         ModuleCallback **vtable = *(ModuleCallback ***)module;
         vtable[0x0c / 4](module);
@@ -1153,12 +1153,12 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
     void *modules = (char *)self + 0x44;
     unsigned int offset = 0;
     for (unsigned int i = 0; i < *(unsigned int *)modules; ++i) {
-        void **slot = (void **)(self->field_0x48 + offset);
+        void **slot = (void **)(self->modulesData + offset);
         void *entry = *slot;
         if (entry != 0) {
             ModuleCallback **vtable = *(ModuleCallback ***)entry;
             vtable[1](entry);
-            slot = (void **)(self->field_0x48 + offset);
+            slot = (void **)(self->modulesData + offset);
         }
         *slot = 0;
         offset += 4;
@@ -1173,28 +1173,28 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
     }
     *(void **)self = 0;
 
-    void *sound = self->field_0xac;
+    void *sound = self->soundResource;
     if (sound != 0) {
         AESoundRessource_dtor(sound);
         operator_delete(sound);
     }
-    self->field_0xac = 0;
+    self->soundResource = 0;
 
-    void *cheats = self->field_0x30;
+    void *cheats = self->cheatHandler;
     if (cheats != 0) {
         CheatHandler_dtor(cheats);
         operator_delete(cheats);
     }
-    self->field_0x30 = 0;
+    self->cheatHandler = 0;
 
-    void *reader = self->field_0x38;
+    void *reader = self->configReader;
     if (reader != 0) {
         ConfigReader_dtor(reader);
         operator_delete(reader);
     }
-    self->field_0x38 = 0;
+    self->configReader = 0;
 
-    char *keys = self->field_0x10;
+    char *keys = self->keyMappingTable;
     if (keys != 0) {
         unsigned int count = *(unsigned int *)(keys - 4);
         for (unsigned int i = count; i != 0; --i) {
@@ -1202,7 +1202,7 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
         }
         operator_delete_array(keys - 8);
     }
-    self->field_0x10 = 0;
+    self->keyMappingTable = 0;
 
     ArrayDtor_long_long((char *)self + 0x88);
     ArrayDtor_uint((char *)self + 0x50);
@@ -1220,7 +1220,7 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigReg
 {
     void * volatile cookie = __stack_chk_guard;
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
-    ConfigReader *reader = (ConfigReader *)self->field_0x38;
+    ConfigReader *reader = (ConfigReader *)self->configReader;
     if (reader != 0) {
         String *copy = (String *)storage;
         new (copy) String(*name);

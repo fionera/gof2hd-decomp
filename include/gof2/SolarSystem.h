@@ -27,17 +27,17 @@ struct SolarSystem {
     int field_0x0;                      // +0x0
     int field_0x4;                      // +0x4
     int field_0x8;                      // +0x8
-    int field_0x18;                     // +0x18
-    int field_0x1c;                     // +0x1c
-    uint32_t field_0x20;                // +0x20
-    int field_0x24;                     // +0x24
-    int field_0x28;                     // +0x28
-    int field_0x2c;                     // +0x2c
-    int field_0x30;                     // +0x30
-    int field_0x34;                     // +0x34
-    uint32_t* field_0x38;               // +0x38
+    int systemId;                     // +0x18
+    int securityLevel;                     // +0x1c
+    uint32_t faction;                // +0x20
+    int mapX;                     // +0x24
+    int mapY;                     // +0x28
+    int mapZ;                     // +0x2c
+    int jumpgateStationId;                     // +0x30
+    int textureIndex;                     // +0x34
+    uint32_t* stationIds;               // +0x38
     void* field_0x3c;                   // +0x3c
-    uint32_t* field_0x40;               // +0x40
+    uint32_t* linkedSystemIds;               // +0x40
 
     // ---- methods (converted from free functions) ----
     SolarSystem * ctor(int p1, const String12 &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14);

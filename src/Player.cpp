@@ -648,7 +648,7 @@ __attribute__((minsize)) extern "C" void Player_refillGunDelay(Player *self, int
             int n = arr->size();
             for (int i = 0; n != i; i++) {
                 Gun *gun = arr->data()[i];
-                gun->field_0x6c = gun->field_0x48;
+                gun->timer = gun->fireDelay;
             }
         }
     }
@@ -1137,7 +1137,7 @@ void Player::calcWeaponSounds(int count) {
         if (slot2 != 0 && slot2->size() != 0) {
             Gun *g = slot2->data()[0];
             if (g != 0) {
-                int sid = g_cws_sound3[g->field_0x58];
+                int sid = g_cws_sound3[g->itemIndex];
                 g->field_0x89 = 1;
                 return Player_calcWeaponSounds_tail(*g_cws_sound2, sid);
             }
@@ -1267,7 +1267,7 @@ void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int
         if (arr != 0) {
             for (unsigned int i = 0; i < arr->size(); i++) {
                 Gun *g = self->guns->data()[slot]->data()[i];
-                if (g->field_0x48 < g->field_0x6c) {
+                if (g->fireDelay < g->timer) {
                     // Rebuild the firing transform from the flattened matrix args (m0..m14)
                     // that the decompiler spilled out of the by-value Matrix parameter.
                     Matrix fireMat;
@@ -1282,13 +1282,13 @@ void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int
                     {
                         self->field_60 = self->field_60 + k_shootAt_inc;
                         Gun *g2 = self->guns->data()[slot]->data()[i];
-                        g2->field_0x6c = 0;
+                        g2->timer = 0;
                         if (self->playShootSound != 0 && g2->field_0x89 != 0) {
                             float tmp[3];
                             MatrixGetPosition(tmp, self->transform);
                             Gun *g3 = self->guns->data()[slot]->data()[i];
-                            Player_playShootSound(self, g3->field_0x58,
-                                                  (Vector *)(__INTPTR_TYPE__)g3->field_0x5c,
+                            Player_playShootSound(self, g3->itemIndex,
+                                                  (Vector *)(__INTPTR_TYPE__)g3->weaponType,
                                                   g3->field_0xb0);
                         }
                     }
@@ -1583,7 +1583,7 @@ __attribute__((minsize)) void Player_stopShooting(Player *self, int slot, int ch
     }
     for (unsigned int i = 0; i < arr->size(); i++) {
         Gun *gun = arr->data()[i];
-        Player_stopShootSound(self, gun->field_0x58, gun->field_0x5c);
+        Player_stopShootSound(self, gun->itemIndex, gun->weaponType);
         arr = self->guns->data()[slot];
     }
 }
@@ -1622,12 +1622,12 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
         if (arr != 0) {
             for (unsigned int i = 0; i < arr->size(); i++) {
                 Gun *g = self->guns->data()[slot]->data()[i];
-                unsigned int sortIdx = g->field_0x5c - 6;
+                unsigned int sortIdx = g->weaponType - 6;
                 if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0 &&
-                    *(int *)g->field_0x3c >= 0) {
+                    *(int *)g->lifetimes >= 0) {
                     ((Gun *)(g))->ignite();
-                } else if (g->field_0x58 == gunId &&
-                           g->field_0x48 < g->field_0x6c) {
+                } else if (g->itemIndex == gunId &&
+                           g->fireDelay < g->timer) {
                     if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
                         *(char *)(g->field_0x38 + 0x69) = 1;
                     }
@@ -1647,11 +1647,11 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
                             float tmp[3];
                             MatrixGetPosition(tmp, self->transform);
                             Gun *g2 = self->guns->data()[slot]->data()[i];
-                            Player_playShootSound(self, g2->field_0x58,
-                                                  (Vector *)(__INTPTR_TYPE__)g2->field_0x5c,
+                            Player_playShootSound(self, g2->itemIndex,
+                                                  (Vector *)(__INTPTR_TYPE__)g2->weaponType,
                                                   g2->field_0xb0);
                         }
-                        g->field_0x6c = 0;
+                        g->timer = 0;
                         retval = 1;
                         break;
                     }
@@ -1781,7 +1781,7 @@ __attribute__((minsize)) void Player_stopShooting(Player *self, int slot)
     }
     for (unsigned int i = 0; i < arr->size(); i++) {
         Gun *gun = arr->data()[i];
-        Player_stopShootSound(self, gun->field_0x58, gun->field_0x5c);
+        Player_stopShootSound(self, gun->itemIndex, gun->weaponType);
         arr = self->guns->data()[slot];
     }
 }

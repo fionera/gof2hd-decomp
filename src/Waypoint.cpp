@@ -10,21 +10,21 @@ __attribute__((visibility("hidden"))) extern void *Waypoint_vtable;
 // ---- setActive_157d5e.cpp ----
 void Waypoint::setActive(bool active)
 {
-    return ((Player *)(this->field_0x4))->setActive(active);
+    return ((Player *)(this->player))->setActive(active);
 }
 
 // ---- reached_157d64.cpp ----
 void Waypoint::reached()
 {
-    this->field_0x130 = 0x101;
+    this->state = 0x101;
 }
 
 // ---- getPosition_157d38.cpp ----
 Vector Waypoint::getPosition()
 {
-    float x = (float)this->field_0x124;
-    float y = (float)this->field_0x128;
-    float z = (float)this->field_0x12c;
+    float x = (float)this->x;
+    float y = (float)this->y;
+    float z = (float)this->z;
     Vector result;
     result.x = x;
     result.y = y;
@@ -41,8 +41,8 @@ void _ZN8WaypointD0Ev(Waypoint *self)
 // ---- reset_157d6e.cpp ----
 void Waypoint::reset()
 {
-    Player *player = this->field_0x4;
-    this->field_0x130 = 0;
+    Player *player = this->player;
+    this->state = 0;
     return ((Player *)(player))->setActive(false);
 }
 
@@ -56,17 +56,17 @@ Waypoint::Waypoint(int x, int y, int z, Route *route)
     float yf = (float)y;
     float xf = (float)x;
 
-    this->field_0x134 = route;
+    this->route = route;
     this->field_0x0 = (char *)Waypoint_vtable + 8;
-    ((Player *)(this->field_0x4))->setActive(false);
+    ((Player *)(this->player))->setActive(false);
 
-    this->field_0x124 = x;
-    this->field_0x128 = y;
-    this->field_0x12c = z;
-    this->field_0x58 = xf;
-    this->field_0x5c = yf;
-    this->field_0x60 = zf;
-    this->field_0x130 = 0;
+    this->x = x;
+    this->y = y;
+    this->z = z;
+    this->fx = xf;
+    this->fy = yf;
+    this->fz = zf;
+    this->state = 0;
     this->field_0x72 = 1;
     this->field_0x4c = 0;
 }

@@ -164,7 +164,7 @@ unsigned int Objective::achieved(int value)
         break;
     case 15:
         return Objective_tail_enemy_payload(
-            Level_getEnemies(this->field_0xc)->data()[this->field_0x4]->field_0x4);
+            Level_getEnemies(this->field_0xc)->data()[this->field_0x4]->player);
     case 16: {
         uint32_t i = 0;
         while (i < enemies->size()) {
@@ -203,7 +203,7 @@ unsigned int Objective::achieved(int value)
         int i = this->field_0x4;
         while (i < this->field_0x8) {
             KIPlayer *enemy = enemies->data()[i];
-            if (((KIPlayer *)(enemy))->isDead() != 0 && enemy->field_0x28 == 8)
+            if (((KIPlayer *)(enemy))->isDead() != 0 && enemy->shipGroup == 8)
                 result++;
             i++;
         }

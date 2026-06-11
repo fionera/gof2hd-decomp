@@ -81,10 +81,10 @@ VertexColorShader::VertexColorShader()
     *(void * volatile *)this = g_VertexColorShader_vtable + 8;
     *g_VertexColorShader_typeinfo_dst = *g_VertexColorShader_typeinfo_src;
 
-    // name = String("VertexColorShader", false); this->field_0xc = name; ~name.
+    // name = String("VertexColorShader", false); this->name = name; ~name.
     String name;
     ((String *)(&name))->ctor_char("VertexColorShader", false);
-    ((String *)(&this->field_0xc))->assign(&name);
+    ((String *)(&this->name))->assign(&name);
     ((String *)(&name))->dtor();
 }
 

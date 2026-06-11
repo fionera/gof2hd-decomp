@@ -8,9 +8,9 @@
 //   center@0x8/0xc/0x10, extents@0x14/0x18/0x1c.
 
 struct BoundingAAB : BoundingVolume {
-    float field_0x20;                   // +0x20  box half-extent X
-    float field_0x24;                   // +0x24  box half-extent Y
-    float field_0x28;                   // +0x28  box half-extent Z
+    float halfExtentX;                   // +0x20  box half-extent X
+    float halfExtentY;                   // +0x24  box half-extent Y
+    float halfExtentZ;                   // +0x28  box half-extent Z
 
     BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
                 float width, float height, float depth);

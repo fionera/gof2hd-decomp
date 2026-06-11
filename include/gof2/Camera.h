@@ -9,7 +9,7 @@ namespace AbyssEngine {
 
 struct Camera {
     byte           field_0x0[0xc];      // +0x0  (camera header / position+orientation block)
-    AEMath::Matrix field_0xc;           // +0xc  projection matrix
+    AEMath::Matrix projection;           // +0xc  projection matrix
 
     Camera(float fov, float aspect, float nearPlane, float farPlane, float param5);
     void SetPerspective(float fov, float aspect, float nearPlane, float farPlane);

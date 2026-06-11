@@ -702,14 +702,14 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
     ((Agent *)(s))->getSystemName();
     AEFile_WriteString(s, fd, 1);
 
-    void *f0c = agent->field_0xc;
+    void *f0c = agent->wingman1;
     if (f0c == 0) {
         AEString_cstr_ctor(s, g_WA_empty1, 0);
         AEFile_WriteString(s, fd, 1);
     } else {
         AEFile_WriteString(f0c, fd, 1);
     }
-    void *f10 = agent->field_0x10;
+    void *f10 = agent->wingman2;
     if (f10 == 0) {
         AEString_cstr_ctor(s, g_WA_empty2, 0);
         AEFile_WriteString(s, fd, 1);
@@ -717,7 +717,7 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
         AEFile_WriteString(f10, fd, 1);
     }
 
-    self->field_0x4 = agent;
+    self->currentAgent = agent;
     void *mission = ((Agent *)(agent))->getMission();
     if (mission == 0 || *(void **)self == mission) {
         AEFile_WriteInt(-1, fd);
@@ -776,7 +776,7 @@ void RecordHandler::writeMission(void *m, unsigned int fd) {
 
         *(void **)self = m;
         void *agent = Mission_getAgent(m);
-        if (agent == 0 || self->field_0x4 == agent) {
+        if (agent == 0 || self->currentAgent == agent) {
             AEFile_WriteInt(-1, fd);
         } else {
             AEFile_WriteInt(1, fd);
@@ -1284,14 +1284,14 @@ void * RecordHandler::readAgent(unsigned int fd) {
     if (*((int *)strE + 2) != 0) {
         void *s = RH_op_new(0xc);
         AEString_copy_ctor(s, strE, 0);
-        agent->field_0xc = s;
+        agent->wingman1 = s;
     }
     if (*((int *)strF + 2) != 0) {
         void *s = RH_op_new(0xc);
         AEString_copy_ctor(s, strF, 0);
-        agent->field_0x10 = s;
+        agent->wingman2 = s;
     }
-    agent->field_0x14 = wingmen;
+    agent->wingmanCount = wingmen;
 
     void *arr = RH_op_new(0xc);
     ArrayStr_ctor(arr);

@@ -39,8 +39,8 @@ namespace AbyssEngine {
 
 void BlurShader::SetInActive()
 {
-    glDisableVertexAttribArray(this->field_0x48);
-    return glDisableVertexAttribArray_thunk(this->field_0x50);
+    glDisableVertexAttribArray(this->positionAttrib);
+    return glDisableVertexAttribArray_thunk(this->texCoordAttrib);
 }
 
 } // namespace AbyssEngine
@@ -59,8 +59,8 @@ AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
     ((String *)(&name))->ctor_char("BlurShader", false);
     ((String *)((char *)self + 0xc))->assign(&name);
     ((String *)(&name))->dtor();
-    self->field_0x58 = 0x92006800;
-    self->field_0x5c = 0x40000000;
+    self->strength = 0x92006800;
+    self->blurScale = 0x40000000;
     uint32_t guardDelta =
         stack_guard_delta(*(volatile uint32_t *)&cookie, (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard);
     if (guardDelta == 0) {
@@ -100,26 +100,26 @@ void BlurShader::Init(::Engine *)
     unsigned int program = ShaderBaseStruct_ES2LoadProgram((::ShaderBaseStruct *)this,
                                                            "BlurShader.vsh",
                                                            "BlurShader.fsh");
-    this->field_0x24 = program;
-    this->field_0x28 = glGetAttribLocation(program, "a_position");
-    this->field_0x30 =
-        glGetAttribLocation(this->field_0x24, "a_texCoord");
+    this->program = program;
+    this->aPosition = glGetAttribLocation(program, "a_position");
+    this->aTexCoord =
+        glGetAttribLocation(this->program, "a_texCoord");
 
     int (*uniform)(unsigned int, const char *) = glGetUniformLocation;
-    this->field_0x2c =
-        uniform(this->field_0x24, "u_mvpMatrix");
-    this->field_0x34 =
-        uniform(this->field_0x24, "s_texture");
-    this->field_0x38 =
-        uniform(this->field_0x24, "u_texelSize");
-    this->field_0x44 =
-        uniform(this->field_0x24, "u_center");
-    this->field_0x3c =
-        uniform(this->field_0x24, "u_blurAmount");
-    this->field_0x40 =
-        uniform(this->field_0x24, "u_strength");
-    glUseProgram(this->field_0x24);
-    return glUniform1i(this->field_0x34, 0);
+    this->uMvpMatrix =
+        uniform(this->program, "u_mvpMatrix");
+    this->sTexture =
+        uniform(this->program, "s_texture");
+    this->uTexelSize =
+        uniform(this->program, "u_texelSize");
+    this->uCenter =
+        uniform(this->program, "u_center");
+    this->uBlurAmount =
+        uniform(this->program, "u_blurAmount");
+    this->uStrength =
+        uniform(this->program, "u_strength");
+    glUseProgram(this->program);
+    return glUniform1i(this->sTexture, 0);
 }
 
 } // namespace AbyssEngine
@@ -153,7 +153,7 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
-    glUseProgram(this->field_0x24);
+    glUseProgram(this->program);
     glActiveTexture(0x84c0);
     FBOContainer_Activate(fbo);
 
@@ -173,19 +173,19 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         FBOContainer_BeginCapture(*target);
     }
 
-    int position = this->field_0x28;
+    int position = this->aPosition;
     if (position >= 0) {
         glEnableVertexAttribArray(position);
     }
-    int texCoord = this->field_0x30;
+    int texCoord = this->aTexCoord;
     if (texCoord >= 0) {
         glEnableVertexAttribArray(texCoord);
     }
-    int matrixLocation = this->field_0x2c;
+    int matrixLocation = this->uMvpMatrix;
     if (matrixLocation >= 0) {
         glUniformMatrix4fv(matrixLocation, 1, 0, (char *)engine + 0x104);
     }
-    int texelLocation = this->field_0x38;
+    int texelLocation = this->uTexelSize;
     if (texelLocation >= 0) {
         float width;
         int other;
@@ -198,23 +198,23 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         }
         glUniform2f(texelLocation, 1.0f / width, 1.0f / (float)other);
     }
-    int centerLocation = this->field_0x44;
+    int centerLocation = this->uCenter;
     if (centerLocation >= 0) {
         float x = vector[0];
         float y = vector[1];
         glUniform2f(centerLocation, x, y);
     }
-    int strengthLocation = this->field_0x40;
+    int strengthLocation = this->uStrength;
     if (strengthLocation >= 0) {
-        glUniform1f(strengthLocation, this->field_0x58);
+        glUniform1f(strengthLocation, this->strength);
     }
-    int amountLocation = this->field_0x3c;
+    int amountLocation = this->uBlurAmount;
     if (amountLocation >= 0) {
         float scaled = amount;
         if (scaled < 0.2f) {
             scaled = 0.2f;
         }
-        glUniform1f(amountLocation, scaled * this->field_0x5c);
+        glUniform1f(amountLocation, scaled * this->blurScale);
     }
     if (position >= 0) {
         glVertexAttribPointer(position, 3, 0x1406, 0, 0,
@@ -268,12 +268,12 @@ namespace AbyssEngine {
 
 void BlurShader::UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine)
 {
-    int matrixLocation = this->field_0x2c;
+    int matrixLocation = this->uMvpMatrix;
     if (matrixLocation >= 0) {
         glUniformMatrix4fv(matrixLocation, 1, 0, (char *)engine + 0x104);
     }
 
-    int texelLocation = this->field_0x38;
+    int texelLocation = this->uTexelSize;
     if (texelLocation >= 0) {
         float width;
         float height;
@@ -288,40 +288,40 @@ void BlurShader::UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine)
         glUniform2f(texelLocation, one / width, one / height);
     }
 
-    int centerLocation = this->field_0x44;
+    int centerLocation = this->uCenter;
     if (centerLocation >= 0) {
         glUniform2f(centerLocation, 0.5f, 0.5f);
     }
 
-    int strengthLocation = this->field_0x40;
+    int strengthLocation = this->uStrength;
     if (strengthLocation >= 0) {
-        glUniform1f(strengthLocation, this->field_0x58);
+        glUniform1f(strengthLocation, this->strength);
     }
 
-    int amountLocation = this->field_0x3c;
+    int amountLocation = this->uBlurAmount;
     if (amountLocation >= 0) {
-        glUniform1f(amountLocation, this->field_0x5c);
+        glUniform1f(amountLocation, this->blurScale);
     }
 
-    if (this->field_0x9 != 0) {
-        this->field_0x9 = 0;
+    if (this->dirty != 0) {
+        this->dirty = 0;
     }
 
-    glEnableVertexAttribArray(this->field_0x48);
-    glEnableVertexAttribArray(this->field_0x50);
+    glEnableVertexAttribArray(this->positionAttrib);
+    glEnableVertexAttribArray(this->texCoordAttrib);
 
     const void *texPtr;
     if (mesh->field_0x5c == 0) {
-        glVertexAttribPointer(this->field_0x48, 3, 0x1406, 0, 0,
+        glVertexAttribPointer(this->positionAttrib, 3, 0x1406, 0, 0,
                               mesh->field_0x4);
-        unsigned int texCoord = this->field_0x50;
+        unsigned int texCoord = this->texCoordAttrib;
         texPtr = mesh->field_0x8;
         return glVertexAttribPointer(texCoord, 2, 0x1406, 0, 0, texPtr);
     } else {
         glBindBuffer(0x8892, mesh->field_0x60);
-        glVertexAttribPointer(this->field_0x48, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->positionAttrib, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x68);
-        unsigned int texCoord = this->field_0x50;
+        unsigned int texCoord = this->texCoordAttrib;
         texPtr = 0;
         return glVertexAttribPointer(texCoord, 2, 0x1406, 0, 0, texPtr);
     }

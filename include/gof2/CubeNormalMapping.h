@@ -43,27 +43,27 @@ struct ShaderBaseStruct {
 
 
 struct CubeNormalMapping : ShaderBaseStruct {
-    int      field_0x4;                  // +0x4   GL program handle
-    uint8_t  field_0x9;                  // +0x9   dirty flag
-    String   field_0xc;                  // +0xc   shader name
-    int      field_0x20;                 // +0x20  attrib a0
-    int      field_0x24;                 // +0x24  attrib a1
-    int      field_0x28;                 // +0x28  attrib a2
-    int      field_0x2c;                 // +0x2c  attrib a3
-    int      field_0x30;                 // +0x30  attrib a4
-    int      field_0x34;                 // +0x34  uniform u0
-    int      field_0x38;                 // +0x38  uniform u1
-    int      field_0x3c;                 // +0x3c  uniform u2
-    int      field_0x40;                 // +0x40  uniform u3
-    int      field_0x44;                 // +0x44  uniform u5
-    int      field_0x48;                 // +0x48  uniform u4
-    int      field_0x4c;                 // +0x4c  uniform u6
-    int      field_0x50;                 // +0x50  uniform u7
-    int      field_0x54;                 // +0x54  uniform u8
-    int      field_0x58;                 // +0x58  uniform u9
-    int      field_0x5c;                 // +0x5c  uniform u12
-    int      field_0x60;                 // +0x60  uniform u10
-    int      field_0x64;                 // +0x64  uniform u11
+    int      program;                  // +0x4   GL program handle
+    uint8_t  dirty;                  // +0x9   dirty flag
+    String   name;                  // +0xc   shader name
+    int      attribA0;                 // +0x20  attrib a0
+    int      attribA1;                 // +0x24  attrib a1
+    int      attribA2;                 // +0x28  attrib a2
+    int      attribA3;                 // +0x2c  attrib a3
+    int      attribA4;                 // +0x30  attrib a4
+    int      uniformU0;                 // +0x34  uniform u0
+    int      uniformU1;                 // +0x38  uniform u1
+    int      uniformU2;                 // +0x3c  uniform u2
+    int      uniformU3;                 // +0x40  uniform u3
+    int      uniformU5;                 // +0x44  uniform u5
+    int      uniformU4;                 // +0x48  uniform u4
+    int      uniformU6;                 // +0x4c  uniform u6
+    int      uniformU7;                 // +0x50  uniform u7
+    int      uniformU8;                 // +0x54  uniform u8
+    int      uniformU9;                 // +0x58  uniform u9
+    int      uniformU12;                 // +0x5c  uniform u12
+    int      uniformU10;                 // +0x60  uniform u10
+    int      uniformU11;                 // +0x64  uniform u11
 
     CubeNormalMapping();
     void Init(Engine *);

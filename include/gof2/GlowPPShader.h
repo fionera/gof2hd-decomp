@@ -76,10 +76,10 @@ extern "C" uint32_t g_GlowPPShader_typeInfoSrc;
 extern "C" uint32_t g_GlowPPShader_typeInfoDst;
 
 struct GlowPPShader {
-    FBOContainer* field_0x3c;           // +0x3c  copy target
-    FBOContainer* field_0x58;           // +0x58  blurX target
-    FBOContainer* field_0x74;           // +0x74  blurY target
-    FBOContainer* field_0xa0;           // +0xa0  combine/background target
+    FBOContainer* copyTarget;           // +0x3c  copy target
+    FBOContainer* blurXTarget;           // +0x58  blurX target
+    FBOContainer* blurYTarget;           // +0x74  blurY target
+    FBOContainer* backgroundTarget;           // +0xa0  combine/background target
 
     // raw field storage for the offset-addressed scalar locations (accessed via field_* helpers)
     char field_storage[0xa8];

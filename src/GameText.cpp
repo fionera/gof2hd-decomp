@@ -33,18 +33,18 @@ void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 // GameText::release() -- destroys each owned text-table entry via its vtable[1], then nulls it.
 void GameText::release() {
     GameText *self = this;
-    void **data = (void **)self->field_0xc;
+    void **data = (void **)self->textTable;
     if (data == 0) return;
     int i = 0;
     for (int byteoff = 0; i < i32(self, 0x1c); byteoff += 4) {
-        void *obj = *(void **)((char *)self->field_0xc + byteoff);
+        void *obj = *(void **)((char *)self->textTable + byteoff);
         void **slot;
         if (obj == 0) {
-            slot = (void **)((char *)self->field_0xc + i * 4);
+            slot = (void **)((char *)self->textTable + i * 4);
         } else {
             void (**vt)(void *) = *(void (***)(void *))obj;
             vt[1](obj);
-            slot = (void **)((char *)self->field_0xc + byteoff);
+            slot = (void **)((char *)self->textTable + byteoff);
         }
         *slot = 0;
         ++i;
@@ -116,7 +116,7 @@ void GameText::setLanguage_si(int stringCount, int langId) {
     i32(self, 0x1c) = stringCount;
 
     String **table = (String **)operator new[]((uint32_t)((unsigned long long)stringCount * 4));
-    self->field_0xc = table;
+    self->textTable = table;
     for (int i = 0; i < stringCount; ++i)
         table[i] = 0;
 
@@ -171,9 +171,9 @@ void GameText::setLanguage_si(int stringCount, int langId) {
 GameText *_ZN8GameTextD2Ev(GameText *self)
 {
     ((GameText *)(self))->release();
-    void *p = self->field_0xc;
+    void *p = self->textTable;
     if (p != 0) operator_delete_arr(p);
-    self->field_0xc = 0;
+    self->textTable = 0;
     return GameText_dtor_tail(self);
 }
 
@@ -210,7 +210,7 @@ void GameText::ctor() {
     Array_int_ctor(self);
     AEString_ctor_default((char *)self + 0x10);
     *g_GameText_langReset = 0xffff;
-    self->field_0xc = 0;
+    self->textTable = 0;
     i32(self, 0x1c) = 0;
     String tmp;
     AEString_ctor_cstr(&tmp, gInitLangStr, false);
@@ -384,7 +384,7 @@ void * GameText::getText(int key) {
 
     // Remap via the substitute pair-table: entries are (from,to) int pairs.
     uint32_t pairCount = u32(self, 0x00);
-    int *pairs = (int *)self->field_0x4;
+    int *pairs = (int *)self->substituteData;
     for (uint32_t i = 0; i < pairCount; i += 2) {
         if (pairs[i] == key) {
             key = pairs[i + 1];
@@ -392,8 +392,8 @@ void * GameText::getText(int key) {
         }
     }
 
-    if (key >= 0 && key < i32(self, 0x1c) && self->field_0xc != 0) {
-        String **table = (String **)self->field_0xc;
+    if (key >= 0 && key < i32(self, 0x1c) && self->textTable != 0) {
+        String **table = (String **)self->textTable;
         String *s = table[key];
         if (s != 0)
             return s;
@@ -441,7 +441,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         unsigned short *wide = _ZN11AbyssEngine6String15getWCharFromUtf8EPcj(utf8, byteLen);
 
         String *s = (String *)operator new(0xc);
-        String **table = (String **)self->field_0xc;
+        String **table = (String **)self->textTable;
         if (lang == 9) {
             String tmp;
             AEString_ctor_wide(&tmp, wide, false);

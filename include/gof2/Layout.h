@@ -46,7 +46,7 @@ extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 struct Layout {
     ~Layout();
-    uint8_t field_0x0;                  // +0x0
+    uint8_t choiceWindowOpen;                  // +0x0
     int field_0x4;                      // +0x4
     int field_0x8;                      // +0x8
     int field_0xc;                      // +0xc
@@ -101,13 +101,13 @@ struct Layout {
     int field_0x2cc;                    // +0x2cc
     int field_0x2d4;                    // +0x2d4
     int field_0x2d8;                    // +0x2d8
-    int field_0x2dc;                    // +0x2dc
-    int field_0x2e0;                    // +0x2e0
-    int field_0x2e4;                    // +0x2e4
-    int field_0x2e8;                    // +0x2e8
-    uint8_t field_0x2ec;                // +0x2ec
-    uint8_t field_0x2ed;                // +0x2ed
-    int field_0x2f0;                    // +0x2f0
+    int windowX;                    // +0x2dc
+    int windowY;                    // +0x2e0
+    int windowWidth;                    // +0x2e4
+    int windowHeight;                    // +0x2e8
+    uint8_t rewardMessageActive;                // +0x2ec
+    uint8_t rewardMessageFlag;                // +0x2ed
+    int backButtonWidth;                    // +0x2f0
     int field_0x2f4;                    // +0x2f4
     int field_0x2f8;                    // +0x2f8
     int field_0x2fc;                    // +0x2fc
@@ -120,14 +120,14 @@ struct Layout {
     int field_0x318;                    // +0x318
     int field_0x31c;                    // +0x31c
     int field_0x320;                    // +0x320
-    unsigned field_0x324;               // +0x324
+    unsigned bgPatternImage;               // +0x324
     int field_0x328;                    // +0x328
     int field_0x32c;                    // +0x32c
     int field_0x330;                    // +0x330
-    unsigned field_0x334;               // +0x334
+    unsigned footerImageLeft;               // +0x334
     unsigned field_0x338;               // +0x338
-    int field_0x33c;                    // +0x33c
-    unsigned field_0x344;               // +0x344
+    int footerImageRight;                    // +0x33c
+    unsigned footerPatternImage;               // +0x344
     unsigned field_0x348;               // +0x348
     unsigned field_0x34c;               // +0x34c
     unsigned field_0x350;               // +0x350
@@ -139,7 +139,7 @@ struct Layout {
     unsigned field_0x368;               // +0x368
     unsigned field_0x36c;               // +0x36c
     unsigned field_0x370;               // +0x370
-    int field_0x374;                    // +0x374
+    int scrollBarImage;                    // +0x374
     unsigned field_0x378;               // +0x378
     unsigned field_0x380;               // +0x380
     int field_0x384;                    // +0x384
@@ -147,22 +147,22 @@ struct Layout {
     unsigned field_0x38c;               // +0x38c
     unsigned field_0x390;               // +0x390
     int field_0x394;                    // +0x394
-    int field_0x398;                    // +0x398
+    int tipBoxImage;                    // +0x398
     unsigned field_0x39c;               // +0x39c
     int field_0x3a0;                    // +0x3a0
     int field_0x3a4;                    // +0x3a4
     int field_0x3a8;                    // +0x3a8
     int field_0x3ac;                    // +0x3ac
-    unsigned field_0x3b0;               // +0x3b0
-    void* field_0x3b4;                  // +0x3b4
-    void* field_0x3b8;                  // +0x3b8
-    void* field_0x3bc;                  // +0x3bc
-    uint8_t field_0x3c0;                // +0x3c0
-    void* field_0x3c4;                  // +0x3c4
-    int* field_0x3c8;                   // +0x3c8 (tip line-array; deref'd for line count)
-    uint8_t field_0x3cc;                // +0x3cc
-    int field_0x3d0;                    // +0x3d0
-    int field_0x3d4;                    // +0x3d4
+    unsigned drawColor;               // +0x3b0
+    void* backButton;                  // +0x3b4
+    void* secondaryButton;                  // +0x3b8
+    void* helpButton;                  // +0x3bc
+    uint8_t helpPressedFlag;                // +0x3c0
+    void* choiceWindow;                  // +0x3c4
+    int* tipLines;                   // +0x3c8 (tip line-array; deref'd for line count)
+    uint8_t helpButtonEnabled;                // +0x3cc
+    int rewardMessageTimer;                    // +0x3d0
+    int rewardCredits;                    // +0x3d4
     int field_0x3d8;                    // +0x3d8
     uint8_t field_0x3dc;                // +0x3dc
     int field_0x3e0;                    // +0x3e0
@@ -173,14 +173,14 @@ struct Layout {
     int field_0x3f4;                    // +0x3f4
     int field_0x3f8;                    // +0x3f8
     int field_0x3fc;                    // +0x3fc
-    uint8_t field_0x400;                // +0x400
-    uint8_t field_0x401;                // +0x401
-    uint32_t field_0x404;               // +0x404
-    int field_0x408;                    // +0x408
+    uint8_t fading;                // +0x400
+    uint8_t fadeOut;                // +0x401
+    uint32_t fadeColor;               // +0x404
+    int fadeProgress;                    // +0x408
     int field_0x409;                    // +0x409
-    int field_0x40c;                    // +0x40c
+    int fadeDuration;                    // +0x40c
     int field_0x40d;                    // +0x40d
-    uint8_t field_0x410;                // +0x410
+    uint8_t fillScreen;                // +0x410
 
     // ---- methods (converted from free functions) ----
     int OnTouchBegin(int x, int y);

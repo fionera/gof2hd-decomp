@@ -26,40 +26,40 @@ Sparks::Sparks(int kind)
     uint32_t count = 5;
     if (kind == 0)
         count = 1;
-    uint32_t *outSprite = &this->field_0x4;
+    uint32_t *outSprite = &this->spriteSystem;
     void **canvas = g_Sparks_canvas_ctor;
     uint32_t lifetime = 0x514;
     if (kind == 0)
         lifetime = 0x1f4;
 
-    this->field_0x14 = kind;
-    this->field_0x18 = count;
-    this->field_0x1c = lifetime;
+    this->kind = kind;
+    this->count = count;
+    this->lifetime = lifetime;
 
     PaintCanvas_SpriteSystemCreate(*canvas, (uint16_t)count, false, outSprite);
-    PaintCanvas_SpriteSystemSetAllUv(*canvas, this->field_0x4, 0.626953125f,
+    PaintCanvas_SpriteSystemSetAllUv(*canvas, this->spriteSystem, 0.626953125f,
                                      0.001953125f, 0.748046875f, 0.123046875f);
 
-    uint32_t n = this->field_0x18;
-    this->field_0x10 = 0;
-    this->field_0x0 = new int[n];
-    this->field_0x20 = 0;
+    uint32_t n = this->count;
+    this->active = 0;
+    this->lifetimeThresholds = new int[n];
+    this->totalThreshold = 0;
 
-    if (this->field_0x14 == 1) {
+    if (this->kind == 1) {
         void **rng = g_Sparks_random_ctor;
         for (uint32_t i = 0; i < n; i++) {
-            PaintCanvas_SpriteSystemSetSize(*canvas, this->field_0x4, (uint16_t)i, 1);
+            PaintCanvas_SpriteSystemSetSize(*canvas, this->spriteSystem, (uint16_t)i, 1);
             int value = AERandom_nextInt(*rng, 0x1f4);
-            this->field_0x0[i] = value;
-            n = this->field_0x18;
-            this->field_0x20 = value + this->field_0x20;
+            this->lifetimeThresholds[i] = value;
+            n = this->count;
+            this->totalThreshold = value + this->totalThreshold;
         }
     } else {
-        this->field_0x0[0] = 0;
-        this->field_0x20 = 0;
+        this->lifetimeThresholds[0] = 0;
+        this->totalThreshold = 0;
     }
 
-    this->field_0xc = 0;
+    this->elapsed = 0;
 }
 
 // ---- translate_15e6d4.cpp ----
@@ -73,18 +73,18 @@ __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_translate;
 void Sparks::translate(Vector const &v)
 {
     void **canvas = g_Sparks_canvas_translate;
-    for (uint32_t i = 0; i < this->field_0x18; i++)
-        PaintCanvas_SpriteSystemAddPosition(*canvas, this->field_0x4, (uint16_t)i,
+    for (uint32_t i = 0; i < this->count; i++)
+        PaintCanvas_SpriteSystemAddPosition(*canvas, this->spriteSystem, (uint16_t)i,
                                             v.x, v.y, v.z);
 }
 
 // ---- _Sparks_15e474.cpp ----
 Sparks::~Sparks()
 {
-    void *p = this->field_0x0;
+    void *p = this->lifetimeThresholds;
     if (p != 0)
         operator_delete(p);
-    this->field_0x0 = 0;
+    this->lifetimeThresholds = 0;
 }
 
 // ---- explode_15e594.cpp ----
@@ -96,7 +96,7 @@ void Sparks::explode(Vector const &v)
 // ---- isRocket_15e468.cpp ----
 bool Sparks::isRocket()
 {
-    return this->field_0x14 == 1;
+    return this->kind == 1;
 }
 
 // ---- update_15e660.cpp ----
@@ -107,28 +107,28 @@ __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_update;
 
 void Sparks::update(int step)
 {
-    if (this->field_0x10 == 0)
+    if (this->active == 0)
         return;
 
-    int elapsed0 = this->field_0xc;
+    int elapsed0 = this->elapsed;
     uint32_t i = 0;
     elapsed0 += step;
-    this->field_0xc = elapsed0;
-    for (; i < this->field_0x18; i++) {
-        int *thresholds = this->field_0x0;
-        int elapsed = this->field_0xc;
+    this->elapsed = elapsed0;
+    for (; i < this->count; i++) {
+        int *thresholds = this->lifetimeThresholds;
+        int elapsed = this->elapsed;
         if (elapsed <= thresholds[i])
             continue;
-        int size = this->field_0x1c - (elapsed << 1);
-        PaintCanvas_SpriteSystemSetSize(*g_Sparks_canvas_update, this->field_0x4, (uint16_t)i,
+        int size = this->lifetime - (elapsed << 1);
+        PaintCanvas_SpriteSystemSetSize(*g_Sparks_canvas_update, this->spriteSystem, (uint16_t)i,
                                         (int16_t)size);
     }
 
-    int elapsed = this->field_0xc;
-    int kind = this->field_0x14;
+    int elapsed = this->elapsed;
+    int kind = this->kind;
     if (kind == 1) {
         if (elapsed <= 0x1f4) {
-            int limit = this->field_0x1c;
+            int limit = this->lifetime;
             elapsed += elapsed;
             if (elapsed <= limit)
                 return;
@@ -138,8 +138,8 @@ void Sparks::update(int step)
             return;
     }
 
-    this->field_0x10 = 0;
-    this->field_0xc = 0;
+    this->active = 0;
+    this->elapsed = 0;
 }
 
 // ---- explode_15e48c.cpp ----
@@ -157,16 +157,16 @@ void Sparks::explode(int x, int y, int z)
     int y0 = y;
     int z0 = z;
 
-    if (this->field_0x10 != 0)
+    if (this->active != 0)
         return;
 
-    if (this->field_0x14 == 1) {
+    if (this->kind == 1) {
         uint32_t i = 0;
         void **canvas = g_Sparks_canvas_explode_rocket;
         void **rng = g_Sparks_random_explode;
         int (*nextInt)(void *, int) = g_Sparks_nextInt_explode;
-        for (; i < this->field_0x18; i++) {
-            uint32_t sprite = this->field_0x4;
+        for (; i < this->count; i++) {
+            uint32_t sprite = this->spriteSystem;
             void *canvasObj = *canvas;
             float px = (float)(nextInt(*rng, 0x190) + x0);
             float py = (float)(nextInt(*rng, 0x190) + y0);
@@ -176,11 +176,11 @@ void Sparks::explode(int x, int y, int z)
         }
     } else {
         void **canvas = g_Sparks_canvas_explode_single;
-        PaintCanvas_SpriteSystemSetPosition(*canvas, this->field_0x4, 0,
+        PaintCanvas_SpriteSystemSetPosition(*canvas, this->spriteSystem, 0,
                                             (float)x0, (float)y0, (float)z0);
     }
 
-    this->field_0x10 = 1;
+    this->active = 1;
 }
 
 // ---- render_15e5c0.cpp ----
@@ -192,9 +192,9 @@ void Sparks::render()
 {
     Matrix matrix;
 
-    if (this->field_0x10 != 0) {
+    if (this->active != 0) {
         void **canvas = g_Sparks_canvas_render;
-        PaintCanvas_SetTexture(*canvas, this->field_0x8, 0xffffffff);
+        PaintCanvas_SetTexture(*canvas, this->texture, 0xffffffff);
         PaintCanvas_SetBlendMode(*canvas, 2);
 
         void *canvasObj = *canvas;
@@ -216,6 +216,6 @@ void Sparks::render()
         m[14] = 0x3f800000;
 
         PaintCanvas_SetWorldViewMatrix(canvasObj, matrix);
-        PaintCanvas_DrawSpriteSystem(*canvas, this->field_0x4);
+        PaintCanvas_DrawSpriteSystem(*canvas, this->spriteSystem);
     }
 }

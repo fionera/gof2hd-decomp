@@ -49,17 +49,17 @@ extern "C" char _ZTVN11AbyssEngine11ColorMixAddE[];
 struct ColorMixAdd : ShaderBaseStruct {
     static int ShaderIndex;
 
-    int      field_0x4;                 // +0x4   GL program handle
-    uint8_t  field_0x9;                 // +0x9   dirty flag
-    String   field_0xc;                 // +0xc   shader name
-    int      field_0x20;                // +0x20  attrib a0
-    int      field_0x24;                // +0x24  attrib a1
-    int      field_0x28;                // +0x28  uniform u1
-    int      field_0x2c;                // +0x2c  uniform u2
-    int      field_0x30;                // +0x30  uniform u0
-    int      field_0x34;                // +0x34  uniform u4
-    int      field_0x38;                // +0x38  uniform u3
-    int      field_0x3c;                // +0x3c  uniform u5
+    int      program;                 // +0x4   GL program handle
+    uint8_t  dirty;                 // +0x9   dirty flag
+    String   name;                 // +0xc   shader name
+    int      attribA0;                // +0x20  attrib a0
+    int      attribA1;                // +0x24  attrib a1
+    int      uniformU1;                // +0x28  uniform u1
+    int      uniformU2;                // +0x2c  uniform u2
+    int      uniformU0;                // +0x30  uniform u0
+    int      uniformU4;                // +0x34  uniform u4
+    int      uniformU3;                // +0x38  uniform u3
+    int      uniformU5;                // +0x3c  uniform u5
 
     ColorMixAdd();
     void Init(Engine *);

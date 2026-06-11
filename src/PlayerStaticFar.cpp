@@ -21,7 +21,7 @@ void _ZN15PlayerStaticFarD0Ev(PlayerStaticFar *self)
 // ---- getProjectionVector_11c510.cpp ----
 Vector PlayerStaticFar::getProjectionVector(const Vector &value)
 {
-    void *volumes = this->field_0x130;
+    void *volumes = this->boundingVolumes;
     if (volumes != 0) {
         void *items = *(void **)((char *)volumes + 0x4);
         void *volume = *(void **)items;
@@ -47,7 +47,7 @@ extern "C" Vector BoundingVolume_staticProjectCollisionOnSurface(
 
 Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value)
 {
-    void *volumes = this->field_0x130;
+    void *volumes = this->boundingVolumes;
     if (volumes != 0) {
         return BoundingVolume_staticProjectCollisionOnSurface(value, volumes);
     }
@@ -83,9 +83,9 @@ void *_ZN15PlayerStaticFarD2Ev(PlayerStaticFar *self)
 Vector PlayerStaticFar::getInitPosition(Vector)
 {
     Vector r;
-    r.x = this->field_0x58;
-    r.y = this->field_0x5c;
-    r.z = this->field_0x60;
+    r.x = this->initPosX;
+    r.y = this->initPosY;
+    r.z = this->initPosZ;
     return r;
 }
 
@@ -144,7 +144,7 @@ float g_PlayerStaticFar_scaleFactor;  // DAT_0012c450
 
 void PlayerStaticFar::update(int /*delta*/)
 {
-    if (this->field_0x08 == 0)
+    if (this->geometry == 0)
         return;
 
     void *camera = g_PlayerStaticFar_cameraHolder;
@@ -155,42 +155,42 @@ void PlayerStaticFar::update(int /*delta*/)
     AbyssEngine_AEMath_MatrixGetPosition(&local, matrix);
 
     // this+0x90 = camera position.
-    AEMath_Vector_assign((Vec3 *)&this->field_0x90, &local);
+    AEMath_Vector_assign((Vec3 *)&this->cameraPosX, &local);
 
     // this+0x9c = object's integer position converted to float.
-    local.x = (float)this->field_0x124;
-    local.y = (float)this->field_0x128;
-    local.z = (float)this->field_0x12c;
-    AEMath_Vector_assign((Vec3 *)&this->field_0x9c, &local);
+    local.x = (float)this->posX;
+    local.y = (float)this->posY;
+    local.z = (float)this->posZ;
+    AEMath_Vector_assign((Vec3 *)&this->objectPosX, &local);
 
     // local = (this+0x9c) - (this+0x90); store into this+0x134.
-    AbyssEngine_AEMath_operator_sub(&local, (Vec3 *)&this->field_0x9c,
-                                    (Vec3 *)&this->field_0x90);
-    Vec3 *dir = (Vec3 *)&this->field_0x134;
+    AbyssEngine_AEMath_operator_sub(&local, (Vec3 *)&this->objectPosX,
+                                    (Vec3 *)&this->cameraPosX);
+    Vec3 *dir = (Vec3 *)&this->viewDirX;
     AEMath_Vector_assign(dir, &local);
 
     float len = AbyssEngine_AEMath_VectorLength(dir);
 
     if ((int)len < g_PlayerStaticFar_distLimit) {
         // Close: full-scale at the literal integer position.
-        AEGeometry_setScaling(this->field_0x08, 1.0f, 1.0f, 1.0f);
-        float fx = (float)this->field_0x124;
-        float fy = (float)this->field_0x128;
-        float fz = (float)this->field_0x12c;
-        AEGeometry_setPosition(this->field_0x08, fx, fy, fz);
+        AEGeometry_setScaling(this->geometry, 1.0f, 1.0f, 1.0f);
+        float fx = (float)this->posX;
+        float fy = (float)this->posY;
+        float fz = (float)this->posZ;
+        AEGeometry_setPosition(this->geometry, fx, fy, fz);
     } else {
         // Far: place on a sphere of radius g_radius along the view direction.
         Vec3 n;
         AbyssEngine_AEMath_VectorNormalize(&n, dir);
         AEMath_Vector_assign2(dir, &n);
         AEMath_Vector_mul_eq(dir, g_PlayerStaticFar_radius);
-        AEMath_Vector_add_eq(dir, (Vec3 *)&this->field_0x90);
-        AEGeometry_setPositionVec(this->field_0x08, dir);
+        AEMath_Vector_add_eq(dir, (Vec3 *)&this->cameraPosX);
+        AEGeometry_setPositionVec(this->geometry, dir);
 
         float s = (float)(int)((g_PlayerStaticFar_radius / (float)(int)len) *
                                g_PlayerStaticFar_scaleNum);
         s = s * g_PlayerStaticFar_scaleFactor;
-        AEGeometry_setScaling(this->field_0x08, s, s, s);
+        AEGeometry_setScaling(this->geometry, s, s, s);
     }
 }
 
@@ -200,18 +200,18 @@ void PlayerStaticFar::update(int /*delta*/)
 // radius integer at *(this+4)+0x40 converted to float.
 bool PlayerStaticFar::collide(float x, float y, float z)
 {
-    float px = (float)this->field_0x124;
+    float px = (float)this->posX;
     float dx = x - px;
-    int boundI = *(int *)((char *)this->field_0x04 + 0x40);
+    int boundI = *(int *)((char *)this->player + 0x40);
     float bound = (float)boundI;
     if (dx < bound) {
         float negBound = (float)(-boundI);
         if (dx > negBound) {
-            float py = (float)this->field_0x128;
+            float py = (float)this->posY;
             float dy = y - py;
             if (dy < bound) {
                 if (dy > negBound) {
-                    float pz = (float)this->field_0x12c;
+                    float pz = (float)this->posZ;
                     float dz = z - pz;
                     if (dz < bound && dz > negBound) {
                         return true;
@@ -236,13 +236,13 @@ PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, fl
     PlayerStatic_ctor(this, playerId, geometry, x, y, z);
 
     void *vtable = g_PlayerStaticFar_vtable;
-    this->field_0x134 = 0;
-    this->field_0x138 = 0;
-    this->field_0x13c = 0;
-    this->field_0x58 = x;
-    this->field_0x00 = (char *)vtable + 8;
-    this->field_0x5c = y;
-    this->field_0x60 = z;
-    ((Player *)(this->field_0x04))->setRadius(0x1d4c);
-    this->field_0x130 = 0;
+    this->viewDirX = 0;
+    this->viewDirY = 0;
+    this->viewDirZ = 0;
+    this->initPosX = x;
+    this->vtable = (char *)vtable + 8;
+    this->initPosY = y;
+    this->initPosZ = z;
+    ((Player *)(this->player))->setRadius(0x1d4c);
+    this->boundingVolumes = 0;
 }

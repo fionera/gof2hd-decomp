@@ -975,10 +975,10 @@ void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     g_Engine_shaderDirty = 1;
 
     void **vtable = *(void ***)shader;
-    if (((ShaderBaseStructFull *)shader)->field_0x4 != self->field_0x3e4) {
+    if (((ShaderBaseStructFull *)shader)->program != self->field_0x3e4) {
         ((ShaderEnable *)vtable[0x28 / 4])(shader, hasExtra);
         shader = *(ShaderBaseStruct **)(self->field_0x514 + shaderIndex * 4);
-        self->field_0x3e4 = ((ShaderBaseStructFull *)shader)->field_0x4;
+        self->field_0x3e4 = ((ShaderBaseStructFull *)shader)->program;
         g_Engine_currentShader = shaderIndex;
         vtable = *(void ***)shader;
     }

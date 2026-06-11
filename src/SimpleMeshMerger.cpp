@@ -142,7 +142,7 @@ SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transform
 
     SMM_TransformCreate(canvas, (unsigned *)((char *)self + 0x1c));
     SMM_TransformAddMeshId(canvas, self->f_1c, self->f_18);
-    self->field_0x6 = 1;
+    self->valid = 1;
 
     if (*canary != saved) {
         SMM___stack_chk_fail();

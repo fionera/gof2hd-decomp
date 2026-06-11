@@ -34,49 +34,49 @@ extern "C" __attribute__((visibility("hidden"))) Globals **g_Radio_drawGlobals;
 // ---- isShowingMessage_1555d0.cpp ----
 bool Radio::isShowingMessage()
 {
-    return this->field_0x4 != 0;
+    return this->currentMessage != 0;
 }
 
 // ---- lastMessageShown_15505a.cpp ----
 uint8_t Radio::lastMessageShown()
 {
-    return this->field_0x2c;
+    return this->lastMessageShownFlag;
 }
 
 // ---- _Radio_154fd4.cpp ----
 Radio::~Radio()
 {
-    void *array = this->field_0xc;
+    void *array = this->imageParts;
     if (array != 0) {
         ArrayReleaseClasses_ImagePart(array);
-        array = this->field_0xc;
+        array = this->imageParts;
         if (array != 0) {
             operator_delete(Array_ImagePart_dtor(array));
         }
     }
-    this->field_0xc = 0;
+    this->imageParts = 0;
 
-    void *parts = this->field_0x10;
+    void *parts = this->imagePartBuffer;
     if (parts != 0) {
         operator_delete__(parts);
     }
-    this->field_0x10 = 0;
+    this->imagePartBuffer = 0;
 
-    array = this->field_0x8;
+    array = this->textLines;
     if (array != 0) {
         ArrayReleaseClasses_String(array);
-        array = this->field_0x8;
+        array = this->textLines;
         if (array != 0) {
             operator_delete(Array_String_dtor(array));
         }
     }
-    this->field_0x8 = 0;
+    this->textLines = 0;
 }
 
 // ---- getMessage_155050.cpp ----
 RadioMessage *Radio::getMessage(int index)
 {
-    void *messages = this->field_0x0;
+    void *messages = this->messages;
     void **data = F<void **>(messages, 0x04);
     return (RadioMessage *)data[index];
 }
@@ -100,31 +100,31 @@ void Radio::setMessages(Array<RadioMessage *> *messages)
 
 static ALWAYS_INLINE RadioMessage *radio_message_at(Radio *self, uint32_t index)
 {
-    void *messages = self->field_0x0;
+    void *messages = self->messages;
     void **data = F<void **>(messages, 0x04);
     return (RadioMessage *)data[index];
 }
 
 static ALWAYS_INLINE void release_string_lines(Radio *self)
 {
-    void *lines = self->field_0x8;
+    void *lines = self->textLines;
     if (lines != 0) {
         ArrayReleaseClasses_String(lines);
-        lines = self->field_0x8;
+        lines = self->textLines;
         if (lines != 0) {
             operator_delete(Array_String_dtor(lines));
         }
     }
-    self->field_0x8 = 0;
+    self->textLines = 0;
 }
 
 static ALWAYS_INLINE void release_parts(Radio *self)
 {
-    void *parts = self->field_0x10;
+    void *parts = self->imagePartBuffer;
     if (parts != 0) {
         operator_delete__(parts);
     }
-    self->field_0x10 = 0;
+    self->imagePartBuffer = 0;
 }
 
 static ALWAYS_INLINE Wanted *wanted_for_image(int imageId)
@@ -149,11 +149,11 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                 if (imageId >= 10000) {
                     release_parts(this);
                     parts = (int *)operator_new__(0x14);
-                    this->field_0x10 = parts;
+                    this->imagePartBuffer = parts;
                     int wantedIndex = imageId - 10000;
                     for (int j = 0; j != 5; ++j) {
                         int *source = wanted_for_image(wantedIndex)->getImageParts();
-                        parts = (int *)this->field_0x10;
+                        parts = (int *)this->imagePartBuffer;
                         parts[j] = source[j];
                     }
                     agentIndex = 0;
@@ -163,7 +163,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                         release_parts(this);
                         int *source = g_Radio_imagePartTable[imageId];
                         parts = (int *)operator_new__(0x14);
-                        this->field_0x10 = parts;
+                        this->imagePartBuffer = parts;
                         for (int j = 0; j != 5; ++j) {
                             parts[j] = source[j];
                         }
@@ -189,7 +189,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                         release_parts(this);
                         generated = true;
                         parts = (*g_Radio_imageFactoryCreate)->createChar(1, agentIndex);
-                        this->field_0x10 = parts;
+                        this->imagePartBuffer = parts;
                     }
                 }
 
@@ -198,7 +198,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
 
                 void *lines = operator new(0x0c);
                 Array_String_ctor(lines);
-                this->field_0x8 = lines;
+                this->textLines = lines;
 
                 GameText *gameText = *g_Radio_gameText;
                 int textId = radio_message_at(this, i)->getTextID();
@@ -212,17 +212,17 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                     fontHolder = g_Radio_fontWide;
                 }
                 String *font = *fontHolder;
-                this->field_0x34 = font;
+                this->font = font;
 
                 Layout *layout = *g_Radio_layoutForText;
                 Globals *globals = *g_Radio_globals;
                 globals->getLineArray(font, &text,
-                                      (this->field_0x38 - 10) - layout->field_0x2d4,
+                                      (this->boxWidth - 10) - layout->field_0x2d4,
                                       F<Array<String *> *>(this, 0x08));
 
-                this->field_0x18 = (int64_t)time;
-                this->field_0x2d = 1;
-                this->field_0x28 = F<int>(this->field_0x8, 0x00) * 2000 + 1500;
+                this->startTime = (int64_t)time;
+                this->soundPending = 1;
+                this->displayDuration = F<int>(this->textLines, 0x00) * 2000 + 1500;
 
                 Agent *agent = (Agent *)operator new(0x98);
                 {
@@ -231,7 +231,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                 }
 
                 int soundTextId = radio_message_at(this, i)->getTextID();
-                this->field_0x30 = globals->getDialogueSoundId(soundTextId, agent);
+                this->soundId = globals->getDialogueSoundId(soundTextId, agent);
                 agent->~Agent();
                 operator_delete(agent);
                 break;
@@ -257,19 +257,19 @@ Radio::Radio()
 {
     void **layoutHolder = g_Radio_layout;
 
-    this->field_0x18 = 0;
-    this->field_0x28 = 0;
-    this->field_0x2c = 0;
-    this->field_0x10 = 0;
-    this->field_0x30 = -1;
-    this->field_0x0 = 0;
+    this->startTime = 0;
+    this->displayDuration = 0;
+    this->lastMessageShownFlag = 0;
+    this->imagePartBuffer = 0;
+    this->soundId = -1;
+    this->messages = 0;
 
     Layout *layout = (Layout *)*layoutHolder;
     int x = layout->field_0x98;
     int screenWidth = **g_Radio_screenWidth;
-    this->field_0x38 = x;
-    this->field_0x3c = (screenWidth - x) >> 1;
-    this->field_0x40 = layout->field_0x9c;
+    this->boxWidth = x;
+    this->boxX = (screenWidth - x) >> 1;
+    this->boxY = layout->field_0x9c;
 }
 
 // ---- draw_155378.cpp ----
@@ -288,25 +288,25 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script)
     (void)ego;
     (void)script;
 
-    if (this->field_0x4 == 0) {
+    if (this->currentMessage == 0) {
         return;
     }
 
-    if (this->field_0x18 + 2000 < time) {
-        if (this->field_0x2d != 0 && this->field_0x30 >= 0) {
-            (*g_Radio_drawSound)->play(this->field_0x30, 0, 0, 0.0f);
-            this->field_0x2d = 0;
+    if (this->startTime + 2000 < time) {
+        if (this->soundPending != 0 && this->soundId >= 0) {
+            (*g_Radio_drawSound)->play(this->soundId, 0, 0, 0.0f);
+            this->soundPending = 0;
         }
 
         (*g_Radio_drawCanvas)->SetColor(0xffffffffu);
-        int imageId = this->field_0x4->getImageID();
+        int imageId = this->currentMessage->getImageID();
         Layout *layout = *g_Radio_drawLayout;
         ((Layout *)(layout))->setDrawColor(-0xd1);
 
-        int width = this->field_0x38;
-        int x = this->field_0x3c;
-        int y = this->field_0x40;
-        uint32_t imageHeight = layout->field_0x4 * F<uint32_t>(this->field_0x8, 0x00);
+        int width = this->boxWidth;
+        int x = this->boxX;
+        int y = this->boxY;
+        uint32_t imageHeight = layout->field_0x4 * F<uint32_t>(this->textLines, 0x00);
         uint32_t minHeight = layout->field_0x2d8;
         if (minHeight > imageHeight) {
             imageHeight = minHeight;
@@ -323,28 +323,28 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script)
 
         ((Layout *)(layout))->setDrawColor(-1);
         (*g_Radio_drawImageFactory)->drawChar(F<Array<ImagePart *> *>(this, 0x0c),
-                                              this->field_0x3c + 5,
-                                              layout->field_0x8 + this->field_0x40 + 5,
+                                              this->boxX + 5,
+                                              layout->field_0x8 + this->boxY + 5,
                                               false);
-        (*g_Radio_drawGlobals)->drawLines(this->field_0x34,
+        (*g_Radio_drawGlobals)->drawLines(this->font,
                                           F<Array<String *> *>(this, 0x08),
-                                          layout->field_0x2d4 + this->field_0x3c + 7,
-                                          layout->field_0x8 + this->field_0x40 + 7);
+                                          layout->field_0x2d4 + this->boxX + 7,
+                                          layout->field_0x8 + this->boxY + 7);
 
-        if (this->field_0x2d != 0) {
-            this->field_0x2d = 0;
+        if (this->soundPending != 0) {
+            this->soundPending = 0;
         }
 
         Array<RadioMessage *> *messages = F<Array<RadioMessage *> *>(this, 0x00);
         if (messages != 0 && messages->size() != 0) {
-            int duration = this->field_0x28;
-            if (this->field_0x18 + (int64_t)duration + 2000 < time) {
-                if (this->field_0x4 == messages->data()[messages->size() - 1]) {
-                    this->field_0x2c = 1;
+            int duration = this->displayDuration;
+            if (this->startTime + (int64_t)duration + 2000 < time) {
+                if (this->currentMessage == messages->data()[messages->size() - 1]) {
+                    this->lastMessageShownFlag = 1;
                 }
-                this->field_0x18 = 0;
-                this->field_0x4->finish();
-                this->field_0x4 = 0;
+                this->startTime = 0;
+                this->currentMessage->finish();
+                this->currentMessage = 0;
             }
         }
     }

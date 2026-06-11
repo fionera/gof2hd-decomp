@@ -28,25 +28,25 @@ RetStr Agent::getStationName() {
 // ---- hasAcceptedOffer_1776f2.cpp ----
 uint8_t Agent::hasAcceptedOffer() {
     Agent *self = this;
-    return self->field_0x84;
+    return self->offerAccepted;
 }
 
 // ---- isStoryAgent_17753a.cpp ----
 bool Agent::isStoryAgent() {
     Agent *self = this;
-    return self->field_0x58 == 0;
+    return self->category == 0;
 }
 
 // ---- getWingmanNames_177670.cpp ----
 void * Agent::getWingmanNames() {
     Agent *self = this;
-    return self->field_0x90;
+    return self->wingmanNames;
 }
 
 // ---- getImageParts_177556.cpp ----
 int * Agent::getImageParts() {
     Agent *self = this;
-    return self->field_0x88;
+    return self->imageParts;
 }
 
 // ---- getMission_177566.cpp ----
@@ -54,7 +54,7 @@ struct Mission;
 
 Mission * Agent::getMission() {
     Agent *self = this;
-    return self->field_0x8c;
+    return self->mission;
 }
 
 // ---- setMission_177560.cpp ----
@@ -62,13 +62,13 @@ struct Mission;
 
 void Agent::setMission(Mission *mission) {
     Agent *self = this;
-    self->field_0x8c = mission;
+    self->mission = mission;
 }
 
 // ---- getSellModIndex_177732.cpp ----
 int Agent::getSellModIndex() {
     Agent *self = this;
-    return self->field_0x94;
+    return self->sellModIndex;
 }
 
 // ---- setStationName_177718.cpp ----
@@ -92,7 +92,7 @@ RetStr Agent::getMissionString() {
 // ---- isMale_177524.cpp ----
 uint8_t Agent::isMale() {
     Agent *self = this;
-    return self->field_0x50;
+    return self->male;
 }
 
 // ---- getName_177504.cpp ----
@@ -113,7 +113,7 @@ static const int kModPriceTable[4] = { 0, 0, 0, 0 };
 
 int Agent::getModPricePercentage() {
     Agent *self = this;
-    uint32_t i = self->field_0x94;
+    uint32_t i = self->sellModIndex;
     if (i < 4)
         return kModPriceTable[i];
     return 0x28;
@@ -122,37 +122,37 @@ int Agent::getModPricePercentage() {
 // ---- setOfferAccepted_1776f8.cpp ----
 void Agent::setOfferAccepted(bool v) {
     Agent *self = this;
-    self->field_0x84 = v;
+    self->offerAccepted = v;
 }
 
 // ---- nextEvent_177532.cpp ----
 void Agent::nextEvent() {
     Agent *self = this;
-    self->field_0x54 = self->field_0x54 + 1;
+    self->eventCount = self->eventCount + 1;
 }
 
 // ---- hasReward_1776fe.cpp ----
 uint8_t Agent::hasReward() {
     Agent *self = this;
-    return self->field_0x85;
+    return self->rewardAtNextChat;
 }
 
 // ---- setImageParts_177550.cpp ----
 void Agent::setImageParts(int *parts) {
     Agent *self = this;
-    self->field_0x88 = parts;
+    self->imageParts = parts;
 }
 
 // ---- isKnown_17756c.cpp ----
 bool Agent::isKnown() {
     Agent *self = this;
-    return self->field_0x54 > 0;
+    return self->eventCount > 0;
 }
 
 // ---- isGenericAgent_177544.cpp ----
 bool Agent::isGenericAgent() {
     Agent *self = this;
-    return self->field_0x58 == 1;
+    return self->category == 1;
 }
 
 // ---- getSystemName_17771e.cpp ----
@@ -166,7 +166,7 @@ RetStr Agent::getSystemName() {
 // ---- giveRewardAtNextChat_177704.cpp ----
 void Agent::giveRewardAtNextChat(bool v) {
     Agent *self = this;
-    self->field_0x85 = v;
+    self->rewardAtNextChat = v;
 }
 
 // ---- setSellItemData_1776ec.cpp ----
@@ -187,42 +187,42 @@ Triple * Agent::setSellItemData(int a, int b, int c) {
 // Agent::setWingmanFriendNames(Array<String*>*) — this in r0, param in r1.
 void Agent::setWingmanFriendNames(uint32_t *param) {
     Agent *self = this;
-    VObj *f0c = (VObj *)self->field_0xc;
+    VObj *f0c = (VObj *)self->wingman1;
     if (f0c != 0)
         (*(void (**)(void *))((char *)f0c->vt[0] + 4))(f0c);
-    self->field_0xc = 0;
-    VObj *f10 = (VObj *)self->field_0x10;
+    self->wingman1 = 0;
+    VObj *f10 = (VObj *)self->wingman2;
     if (f10 != 0)
         (*(void (**)(void *))((char *)f10->vt[0] + 4))(f10);
-    self->field_0x10 = 0;
-    if (self->field_0x90 != 0) {
-        Agent_operator_delete(Array_StringPtr_dtor(self->field_0x90));
-        self->field_0x90 = 0;
+    self->wingman2 = 0;
+    if (self->wingmanNames != 0) {
+        Agent_operator_delete(Array_StringPtr_dtor(self->wingmanNames));
+        self->wingmanNames = 0;
     }
     void *na = Agent_operator_new(0xc);
     Array_StringPtr_ctor(na);
-    self->field_0x90 = na;
+    self->wingmanNames = na;
     void *ns = Agent_operator_new(0xc);
     String_copy_ctor(ns, self, false);
-    ArrayAdd_StringPtr(ns, self->field_0x90);
-    self->field_0x14 = 0;
+    ArrayAdd_StringPtr(ns, self->wingmanNames);
+    self->wingmanCount = 0;
     if (param == 0)
         return;
     uint32_t n = param[0];
     if (n != 0) {
         void *w0 = *(void **)(param[1]);
         if (w0 != 0) {
-            self->field_0x14 = 1;
-            self->field_0xc = w0;
-            ArrayAdd_StringPtr(w0, self->field_0x90);
+            self->wingmanCount = 1;
+            self->wingman1 = w0;
+            ArrayAdd_StringPtr(w0, self->wingmanNames);
             n = param[0];
         }
         if (n >= 2) {
             void *w1 = ((void **)param[1])[1];
             if (w1 != 0) {
-                self->field_0x10 = w1;
-                self->field_0x14 = self->field_0x14 + 1;
-                ArrayAdd_StringPtr(w1, self->field_0x90);
+                self->wingman2 = w1;
+                self->wingmanCount = self->wingmanCount + 1;
+                ArrayAdd_StringPtr(w1, self->wingmanNames);
             }
         }
     }
@@ -235,11 +235,11 @@ RetStr Agent::getWingmanName(int idx) {
     Agent *self = this;
     void *src;
     if (idx == 1) {
-        src = self->field_0xc;
+        src = self->wingman1;
     } else if (idx == 0) {
         src = self;
     } else {
-        src = self->field_0x10;
+        src = self->wingman2;
     }
     RetStr r;
     String_copy_ctor(&r, src, false);
@@ -260,14 +260,14 @@ extern dtor_fn const gStringDtor __attribute__((visibility("hidden")));
 
 __attribute__((minsize)) Agent::~Agent() noexcept(false)
 {
-    if (this->field_0x88 != 0)               // +0x88 imageParts
-        Agent_operator_delete_arr(this->field_0x88);
+    if (this->imageParts != 0)               // +0x88 imageParts
+        Agent_operator_delete_arr(this->imageParts);
 
-    VObj *o = (VObj *)this->field_0xc;        // +0xc  virtual; dtor at vt[0]+4
-    this->field_0x88 = 0;
+    VObj *o = (VObj *)this->wingman1;        // +0xc  virtual; dtor at vt[0]+4
+    this->imageParts = 0;
     if (o != 0) {
         (*(void (**)(void *))((char *)o->vt[0] + 4))(o);
-        this->field_0xc = 0;
+        this->wingman1 = 0;
     }
 
     dtor_fn d = gStringDtor;
@@ -300,13 +300,13 @@ Agent * Agent::ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, 
     String_default_ctor((char *)s0 + 0x18);
     String_default_ctor((char *)self + 0x6c);
     String_default_ctor((char *)self + 0x78);
-    self->field_0x40 = kind;
+    self->type = kind;
     ((String *)(self))->assign((String *)name);
     self->field_0x44 = p4;
     self->field_0x48 = p5;
     self->field_0x4c = p6;
-    self->field_0x50 = p7;
-    self->field_0x54 = 0;
+    self->male = p7;
+    self->eventCount = 0;
     self->field_0x30 = -1;
     self->field_0x5c = -1;
     self->field_0x64 = p8;
@@ -315,27 +315,27 @@ Agent * Agent::ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, 
     self->field_0x68 = p9;
     if (p9 >= 0)
         self->field_0x5c = 3;
-    self->field_0x84 = 0;
+    self->offerAccepted = 0;
     self->field_0x24 = 0;
-    self->field_0xc = 0;
-    self->field_0x10 = 0;
-    self->field_0x14 = 0;
+    self->wingman1 = 0;
+    self->wingman2 = 0;
+    self->wingmanCount = 0;
     self->field_0x34 = 0;
     self->field_0x38 = 0;
     self->field_0x3c = p11;
     self->field_0x60 = 0;
-    self->field_0x88 = 0;
-    self->field_0x8c = 0;
-    self->field_0x90 = 0;
+    self->imageParts = 0;
+    self->mission = 0;
+    self->wingmanNames = 0;
     self->field_0x28 = -1;
     self->field_0x2c = -1;
-    self->field_0x58 = kind >> 31;
+    self->category = kind >> 31;
     if (p10 >= 0)
         self->field_0x5c = 8;
     if (kind == 0x19)
         self->field_0x5c = 9;
     else if (kind == 0x1a)
         self->field_0x5c = 10;
-    self->field_0x94 = p10;
+    self->sellModIndex = p10;
     return self;
 }

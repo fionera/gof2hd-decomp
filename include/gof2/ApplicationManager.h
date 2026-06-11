@@ -24,45 +24,45 @@ typedef void LoadingCallback_t(PaintCanvas *, int, void *);
 typedef bool ResumeCallback_t(PaintCanvas *, void *);
 
 struct ApplicationManager {
-    void        *field_0x0;             // +0x0  PaintCanvas* (object starts with the canvas ptr)
-    uint32_t     field_0x8;             // +0x8
-    uint32_t     field_0xc;             // +0xc
-    char        *field_0x10;            // +0x10 key mapping table
-    bool         field_0x14;            // +0x14 orientation-tracking flag
-    void        *field_0x18;            // +0x18 current application module
-    void        *field_0x1c;            // +0x1c QuitCallback*
-    void        *field_0x20;            // +0x20 LoadingCallback*
-    void        *field_0x24;            // +0x24 loading-callback data
-    void        *field_0x28;            // +0x28 ResumeCallback*
-    void        *field_0x2c;            // +0x2c resume-callback data
-    void        *field_0x30;            // +0x30 CheatHandler*
-    bool         field_0x34;            // +0x34 cheats-enabled flag
-    void        *field_0x38;            // +0x38 ConfigReader*
+    void        *paintCanvas;             // +0x0  PaintCanvas* (object starts with the canvas ptr)
+    uint32_t     currentKey;             // +0x8
+    uint32_t     currentKeyHigh;             // +0xc
+    char        *keyMappingTable;            // +0x10 key mapping table
+    bool         orientationTrackingEnabled;            // +0x14 orientation-tracking flag
+    void        *currentModule;            // +0x18 current application module
+    void        *quitCallback;            // +0x1c QuitCallback*
+    void        *loadingCallback;            // +0x20 LoadingCallback*
+    void        *loadingCallbackData;            // +0x24 loading-callback data
+    void        *resumeCallback;            // +0x28 ResumeCallback*
+    void        *resumeCallbackData;            // +0x2c resume-callback data
+    void        *cheatHandler;            // +0x30 CheatHandler*
+    bool         cheatsEnabled;            // +0x34 cheats-enabled flag
+    void        *configReader;            // +0x38 ConfigReader*
     int          field_0x3c;            // +0x3c state machine state
-    int          field_0x40;            // +0x40 saved state
-    char        *field_0x48;            // +0x48 modules data ptr
-    unsigned int field_0x50;            // +0x50 module-id count
-    char        *field_0x54;            // +0x54 module-id data ptr
-    unsigned int field_0x5c;            // +0x5c current module id
-    void        *field_0x60;            // +0x60 pending application module
-    uint64_t     field_0x68;            // +0x68 current time (ms)
-    uint64_t     field_0x70;            // +0x70 frame time (ms)
-    uint64_t     field_0x78;            // +0x78 previous frame time (ms)
-    uint32_t     field_0x80;            // +0x80 key state (low word)
-    uint32_t     field_0x84;            // +0x84 key state (high word)
-    unsigned int field_0x88;            // +0x88 action table count
-    char        *field_0x8c;            // +0x8c action table data ptr
-    uint32_t     field_0x98;            // +0x98 action mask (low word)
-    uint32_t     field_0x9c;            // +0x9c action mask (high word)
-    uint32_t     field_0xa0;            // +0xa0 action state (low word)
-    uint32_t     field_0xa4;            // +0xa4 action state (high word)
-    void        *field_0xa8;            // +0xa8 Engine*
-    void        *field_0xac;            // +0xac AESoundRessource*
-    bool         field_0xb0;            // +0xb0 sound-fx enabled
-    bool         field_0xb1;            // +0xb1 music enabled
-    bool         field_0xb2;            // +0xb2 vibrate enabled
-    int          field_0xb4;            // +0xb4 last touch x
-    int          field_0xb8;            // +0xb8 last touch y
+    int          savedState;            // +0x40 saved state
+    char        *modulesData;            // +0x48 modules data ptr
+    unsigned int moduleIdCount;            // +0x50 module-id count
+    char        *moduleIdData;            // +0x54 module-id data ptr
+    unsigned int currentModuleId;            // +0x5c current module id
+    void        *pendingModule;            // +0x60 pending application module
+    uint64_t     currentTimeMs;            // +0x68 current time (ms)
+    uint64_t     frameTimeMs;            // +0x70 frame time (ms)
+    uint64_t     previousFrameTimeMs;            // +0x78 previous frame time (ms)
+    uint32_t     keyState;            // +0x80 key state (low word)
+    uint32_t     keyStateHigh;            // +0x84 key state (high word)
+    unsigned int actionTableCount;            // +0x88 action table count
+    char        *actionTableData;            // +0x8c action table data ptr
+    uint32_t     actionMask;            // +0x98 action mask (low word)
+    uint32_t     actionMaskHigh;            // +0x9c action mask (high word)
+    uint32_t     actionState;            // +0xa0 action state (low word)
+    uint32_t     actionStateHigh;            // +0xa4 action state (high word)
+    void        *engine;            // +0xa8 Engine*
+    void        *soundResource;            // +0xac AESoundRessource*
+    bool         soundFxEnabled;            // +0xb0 sound-fx enabled
+    bool         musicEnabled;            // +0xb1 music enabled
+    bool         vibrateEnabled;            // +0xb2 vibrate enabled
+    int          lastTouchX;            // +0xb4 last touch x
+    int          lastTouchY;            // +0xb8 last touch y
 
     ~ApplicationManager();
 

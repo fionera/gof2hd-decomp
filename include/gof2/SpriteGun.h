@@ -26,7 +26,7 @@ struct Gun;
 struct SpriteGun {
     char* field_0x0;                    // +0x0
     int field_0x4;                      // +0x4
-    void* field_0x8;                    // +0x8
+    void* gun;                    // +0x8
 
     // ---- methods (converted from free functions) ----
     SpriteGun(Gun *param_1, int param_2);

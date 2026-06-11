@@ -12,8 +12,8 @@ Standing::Standing() {
     int *p = new int[2];
     p[0] = 0x1e;
     p[1] = 0;
-    this->field_0x0 = p;
-    this->field_0x4 = -1;
+    this->standings = p;
+    this->currentRace = -1;
 }
 
 // ---- applyPoints_11d8a8.cpp ----
@@ -22,7 +22,7 @@ Standing::Standing() {
 // leaves the band; otherwise it returns early.
 void Standing::applyPoints(int race, int delta) {
     Standing *self = this;
-    int *p = self->field_0x0;
+    int *p = self->standings;
     int v = delta + p[race];
     p[race] = v;
     int c;
@@ -48,7 +48,7 @@ float Standing::getStandingRate(int race) {
 // Both comparisons are always evaluated (bitwise |) to mirror the branchless target.
 bool Standing::isEnemyWithAnyone() {
     Standing *self = this;
-    int *p = self->field_0x0;
+    int *p = self->standings;
     int a = p[0];
     int b = p[1];
     return (bool)(((unsigned)(b + 0x46) > 0x8c) | ((unsigned)(a + 0x46) > 0x8c));
@@ -78,9 +78,9 @@ unsigned Standing::isNeutral(int race) {
 // ---- _Standing_11d6c8.cpp ----
 // Standing::~Standing(): delete[] the standings array, null the pointer.
 Standing::~Standing() {
-    int *p = this->field_0x0;
+    int *p = this->standings;
     if (p) operator delete[](p);
-    this->field_0x0 = 0;
+    this->standings = 0;
 }
 
 // ---- getStanding_11d6ee.cpp ----
@@ -89,7 +89,7 @@ Standing::~Standing() {
 // on currentRace; otherwise the raw standings[race] value is returned.
 int Standing::getStanding(int race) {
     Standing *self = this;
-    int cr = self->field_0x4;
+    int cr = self->currentRace;
     if (cr >= 0) {
         if (race == 0) {
             int v = 0x46;
@@ -104,7 +104,7 @@ int Standing::getStanding(int race) {
             return v;
         }
     }
-    return self->field_0x0[race];
+    return self->standings[race];
 }
 
 // ---- applyMissionCompleted_11d992.cpp ----
@@ -118,7 +118,7 @@ void Standing::applyMissionCompleted(int race) {
 // Standing::setStanding(int race, int value): standings[race] = value.
 void Standing::setStanding(int race, int value) {
     Standing *self = this;
-    self->field_0x0[race] = value;
+    self->standings[race] = value;
 }
 
 // ---- applyStealCargo_11d98c.cpp ----
@@ -136,7 +136,7 @@ void Standing::applyStealCargo(int race) {
 // choice not reachable from portable C. Left as the faithful decompiled form.
 bool Standing::isEnemy(int race) {
     Standing *self = this;
-    int iVar1 = self->field_0x4;
+    int iVar1 = self->currentRace;
     if (-1 < iVar1) {
         if (race != 1) {
             if (race == 3) {
@@ -223,7 +223,7 @@ void Standing::applyKill(int kind) {
     }
     int delta;
     if (kind == 8) {
-        if (self->field_0x4 >= 0) return;
+        if (self->currentRace >= 0) return;
         delta = 1;
         if (sysRace < 4) {
             kind = g_apk_raceTable[sysRace];
@@ -240,7 +240,7 @@ void Standing::applyKill(int kind) {
 // Standing::isFriend(int race).
 bool Standing::isFriend(int race) {
     Standing *self = this;
-    int iVar1 = self->field_0x4;
+    int iVar1 = self->currentRace;
     if (-1 < iVar1) {
         if (race == 1) {
             iVar1 = iVar1 + -1;
@@ -283,16 +283,16 @@ float Standing::getMissionBonus(unsigned race) {
     float s0;
     switch (race) {
     case 0:
-        s0 = (float)self->field_0x0[0];
+        s0 = (float)self->standings[0];
         break;
     case 1:
-        s0 = (float)(-self->field_0x0[0]);
+        s0 = (float)(-self->standings[0]);
         break;
     case 2:
-        s0 = (float)self->field_0x0[1];
+        s0 = (float)self->standings[1];
         break;
     case 3:
-        s0 = (float)(-self->field_0x0[1]);
+        s0 = (float)(-self->standings[1]);
         break;
     default:
         return 0.0f;
@@ -314,12 +314,12 @@ void Standing::applyDisable(int race) {
 void Standing::rehabilitate(int race) {
     Standing *self = this;
     if (race == 0) {
-        self->field_0x0[0] = -35;
+        self->standings[0] = -35;
     } else if (race == 1) {
-        self->field_0x0[0] = 0x23;
+        self->standings[0] = 0x23;
     } else if (race == 2) {
-        self->field_0x0[1] = -35;
+        self->standings[1] = -35;
     } else if (race == 3) {
-        self->field_0x0[1] = 0x23;
+        self->standings[1] = 0x23;
     }
 }

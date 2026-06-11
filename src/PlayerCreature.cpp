@@ -29,39 +29,39 @@ extern "C" void *Level_getPlayer(void *level);
 
 uint8_t PlayerCreature::isHooked()
 {
-    return this->field_0x129;
+    return this->hooked;
 }
 
 // ---- calmDown_11cc28.cpp ----
 
 void PlayerCreature::calmDown()
 {
-    int maxEndurance = this->field_0x134;
-    this->field_0x130 = 0;
-    this->field_0x128 = 0;
-    this->field_0x138 = maxEndurance;
+    int maxEndurance = this->maxEndurance;
+    this->rageTimer = 0;
+    this->raging = 0;
+    this->endurance = maxEndurance;
 }
 
 // ---- unhook_11cd4e.cpp ----
 
 void PlayerCreature::unhook()
 {
-    int maxEndurance = this->field_0x134;
-    this->field_0x12a = 0;
-    this->field_0x130 = 0;
-    this->field_0x128 = 0;
-    this->field_0x138 = maxEndurance;
+    int maxEndurance = this->maxEndurance;
+    this->caught = 0;
+    this->rageTimer = 0;
+    this->raging = 0;
+    this->endurance = maxEndurance;
 }
 
 // ---- render_11cfb8.cpp ----
 
 void PlayerCreature::render()
 {
-    AEGeometry *geometry = this->field_0x78;
+    AEGeometry *geometry = this->renderGeometry;
     if (geometry != 0) {
         AEGeometry_render(geometry);
     }
-    if ((uint32_t)(this->field_0x88 - 3) >= 2) {
+    if ((uint32_t)(this->state - 3) >= 2) {
         return PlayerCreature_render_tail(this);
     }
 }
@@ -70,7 +70,7 @@ void PlayerCreature::render()
 
 int PlayerCreature::getEndurance()
 {
-    return this->field_0x138;
+    return this->endurance;
 }
 
 // ---- _PlayerCreature_11ccd8.cpp ----
@@ -83,14 +83,14 @@ void _ZN14PlayerCreatureD1Ev(PlayerCreature *self)
 
 int PlayerCreature::getWeight()
 {
-    return PlayerCreature_weightTable[this->field_0xac];
+    return PlayerCreature_weightTable[this->creatureType];
 }
 
 // ---- isCaught_11cd3e.cpp ----
 
 uint8_t PlayerCreature::isCaught()
 {
-    return this->field_0x12a;
+    return this->caught;
 }
 
 // ---- rage_11cce8.cpp ----
@@ -98,24 +98,24 @@ uint8_t PlayerCreature::isCaught()
 void PlayerCreature::rage(int amount)
 {
     float amountScale = (float)amount / -100.0f;
-    float typeScale = (float)PlayerCreature_rageTable[this->field_0xac];
-    this->field_0x130 = 0;
-    this->field_0x128 = 0x101;
-    this->field_0x12c = (amountScale + 1.0f) * (typeScale + 1.0f);
+    float typeScale = (float)PlayerCreature_rageTable[this->creatureType];
+    this->rageTimer = 0;
+    this->raging = 0x101;
+    this->rageScale = (amountScale + 1.0f) * (typeScale + 1.0f);
 }
 
 // ---- getMaxEndurance_11cffe.cpp ----
 
 int PlayerCreature::getMaxEndurance()
 {
-    return this->field_0x134;
+    return this->maxEndurance;
 }
 
 // ---- getItemIndex_11cff8.cpp ----
 
 int PlayerCreature::getItemIndex()
 {
-    return this->field_0x140;
+    return this->itemIndex;
 }
 
 // ---- PlayerCreature_11cb5c.cpp ----
@@ -124,24 +124,24 @@ int PlayerCreature::getItemIndex()
 PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                                float x, float y, float z)
 {
-    this->field_0x0 = &PlayerCreature_vtable + 8;
+    this->vtable = &PlayerCreature_vtable + 8;
     Matrix_ctor((Matrix *)((char *)this + 0x144));
 
-    Player *playerObject = this->field_0x4;
+    Player *playerObject = this->player;
     int oneBits = 0x3f800000;
-    this->field_0x12a = 0;
-    this->field_0x140 = itemIndex;
-    this->field_0x12c = oneBits;
-    this->field_0x130 = 0;
-    this->field_0x128 = 0;
-    int previousMaxEndurance = this->field_0x134;
-    this->field_0x138 = previousMaxEndurance;
+    this->caught = 0;
+    this->itemIndex = itemIndex;
+    this->rageScale = oneBits;
+    this->rageTimer = 0;
+    this->raging = 0;
+    int previousMaxEndurance = this->maxEndurance;
+    this->endurance = previousMaxEndurance;
 
     int hitpoints = ((Player *)(playerObject))->getHitpoints();
     int endurance = (int)(((float)PlayerCreature_enduranceTable[kind] / 10.0f) * 8000.0f) + 8000;
-    this->field_0x134 = endurance;
-    this->field_0x138 = endurance;
-    this->field_0x13c = hitpoints;
+    this->maxEndurance = endurance;
+    this->endurance = endurance;
+    this->lastHitpoints = hitpoints;
     reset();
 }
 
@@ -149,7 +149,7 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeomet
 
 void PlayerCreature::hook(int value)
 {
-    this->field_0x129 = 1;
+    this->hooked = 1;
     return PlayerCreature_hook_tail(this, value);
 }
 
@@ -163,27 +163,27 @@ void PlayerCreature::update(int elapsed)
     Vector zero;
     char workBytes[0x3c];
 
-    int lastHitpoints = this->field_0x13c;
-    this->field_0x124 = elapsed;
-    int hitpoints = ((Player *)(this->field_0x4))->getHitpoints();
-    if (lastHitpoints > hitpoints && this->field_0x88 != 4) {
-        this->field_0x128 = 1;
+    int lastHitpoints = this->lastHitpoints;
+    this->lastElapsed = elapsed;
+    int hitpoints = ((Player *)(this->player))->getHitpoints();
+    if (lastHitpoints > hitpoints && this->state != 4) {
+        this->raging = 1;
     }
 
-    this->field_0x13c = ((Player *)(this->field_0x4))->getHitpoints();
+    this->lastHitpoints = ((Player *)(this->player))->getHitpoints();
 
-    if (this->field_0x128 != 0) {
+    if (this->raging != 0) {
         float elapsedFloat = (float)elapsed;
-        int rageTime = this->field_0x130 + elapsed;
-        this->field_0x130 = rageTime;
-        int endurance = this->field_0x138 - elapsed;
-        float rageScale = this->field_0x12c + elapsedFloat * 0.0007f;
+        int rageTime = this->rageTimer + elapsed;
+        this->rageTimer = rageTime;
+        int endurance = this->endurance - elapsed;
+        float rageScale = this->rageScale + elapsedFloat * 0.0007f;
         elapsed = (int)(rageScale * elapsedFloat);
-        this->field_0x138 = endurance;
-        this->field_0x12c = rageScale;
+        this->endurance = endurance;
+        this->rageScale = rageScale;
 
         if (rageTime < 4000) {
-            AEGeometry *geometry = this->field_0x8;
+            AEGeometry *geometry = this->geometry;
             Matrix *matrix = AEGeometry_getMatrix(geometry);
             Matrix_multiply((Matrix *)workBytes, matrix, (Matrix *)((char *)this + 0x144));
             AEGeometry_setMatrix(geometry, (Matrix *)workBytes);
@@ -198,30 +198,30 @@ void PlayerCreature::update(int elapsed)
             float x = ((negativeHalf + firstFloat) * 0.000244140625f) * 2.0f * 3.1415927f;
             float z = ((negativeHalf + secondFloat) * 0.000244140625f) * 2.0f * 3.1415927f;
             Matrix_setRotation((Matrix *)workBytes, (Matrix *)((char *)this + 0x144), x, z, 0.0f);
-            this->field_0x130 = 0;
+            this->rageTimer = 0;
         }
 
-        if (this->field_0x138 < 1) {
-            if (this->field_0x129 == 0) {
-                int maxEndurance = this->field_0x134;
-                this->field_0x130 = 0;
-                this->field_0x128 = 0;
-                this->field_0x138 = maxEndurance;
+        if (this->endurance < 1) {
+            if (this->hooked == 0) {
+                int maxEndurance = this->maxEndurance;
+                this->rageTimer = 0;
+                this->raging = 0;
+                this->endurance = maxEndurance;
             } else {
-                this->field_0x128 = 0;
-                this->field_0x12a = 1;
+                this->raging = 0;
+                this->caught = 1;
             }
         }
     }
 
-    if (((Player *)(this->field_0x4))->getHitpoints() < 1) {
-        int state = this->field_0x88;
+    if (((Player *)(this->player))->getHitpoints() < 1) {
+        int state = this->state;
         if ((uint32_t)(state - 3) >= 2) {
-            this->field_0x88 = 3;
+            this->state = 3;
             FModSound_play(*PlayerCreature_sound, 0x16, 0, 0, 0.0f);
-            ((Player *)(this->field_0x4))->setActive(false);
+            ((Player *)(this->player))->setActive(false);
 
-            void *level = this->field_0x54;
+            void *level = this->level;
             void *player = Level_getPlayer(level);
             if (*(PlayerCreature **)((char *)(*(void **)((char *)player + 0x14)) + 0x1c) == this) {
                 player = Level_getPlayer(level);
@@ -232,25 +232,25 @@ void PlayerCreature::update(int elapsed)
             zero.y = 0.0f;
             zero.z = 0.0f;
             Vector *position = (Vector *)workBytes;
-            position->x = this->field_0x58;
-            position->y = this->field_0x5c;
-            position->z = this->field_0x60;
-            void *levelObject = this->field_0x54;
+            position->x = this->posX;
+            position->y = this->posY;
+            position->z = this->posZ;
+            void *levelObject = this->level;
             ParticleSystemManager_emitManual(*(int *)((char *)levelObject + 0x74),
                                              *(Vector **)((char *)levelObject + 0x34),
                                              position, 0, &zero, -1.0f);
         }
     }
 
-    int state = this->field_0x88;
+    int state = this->state;
     if (state == 3) {
-        this->field_0x88 = 4;
-    } else if (state == 0 && this->field_0x12a == 0) {
-        AEGeometry_moveForward(this->field_0x8, (float)elapsed);
+        this->state = 4;
+    } else if (state == 0 && this->caught == 0) {
+        AEGeometry_moveForward(this->geometry, (float)elapsed);
     }
 
-    Matrix *matrix = AEGeometry_getMatrix(this->field_0x8);
-    Matrix_assign((Matrix *)((char *)this->field_0x4 + 4), matrix);
+    Matrix *matrix = AEGeometry_getMatrix(this->geometry);
+    Matrix_assign((Matrix *)((char *)this->player + 4), matrix);
 }
 
 // ---- reset_11cc40.cpp ----
@@ -258,9 +258,9 @@ void PlayerCreature::update(int elapsed)
 void PlayerCreature::reset()
 {
     ((KIPlayer *)((KIPlayer *)this))->reset();
-    this->field_0x88 = 0;
-    this->field_0x138 = this->field_0x134;
-    this->field_0x13c = ((Player *)(this->field_0x4))->getHitpoints();
+    this->state = 0;
+    this->endurance = this->maxEndurance;
+    this->lastHitpoints = ((Player *)(this->player))->getHitpoints();
 
     char matrixBytes[0x3c];
     float *matrix = (float *)matrixBytes;

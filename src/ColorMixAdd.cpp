@@ -77,7 +77,7 @@ ColorMixAdd::ColorMixAdd()
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     String tmp;
     tmp.s = u"ColorMixAdd";
-    this->field_0xc = tmp;
+    this->name = tmp;
 }
 
 } // namespace AbyssEngine

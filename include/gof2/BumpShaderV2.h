@@ -71,25 +71,25 @@ namespace AbyssEngine {
 // by name; the only adjacency assumption (the texture-sampler pair) is handled with an array
 // helper member access in the .cpp.
 struct BumpShaderV2 {
-    void*    field_0x0;                 // +0x0  vtable
-    int      field_0x4;                 // +0x4  GL program handle
-    uint8_t  field_0x9;                 // +0x9  lighting-dirty flag
-    String   field_0xc;                 // +0xc  name
-    int      field_0x20;                // +0x20 a_position
-    int      field_0x24;                // +0x24 a_normal
-    int      field_0x28;                // +0x28 a_texCoord
-    int      field_0x2c;                // +0x2c a_tangent
-    int      field_0x30;                // +0x30 a_binormal
-    int      field_0x38;                // +0x38 u_mvpMatrix
-    int      field_0x3c;                // +0x3c u_normalMatrix
-    int      field_0x40;                // +0x40 u_lightDir
-    int      field_0x44;                // +0x44 u_eyePos
-    int      field_0x48;                // +0x48 u_texture0
-    int      field_0x4c;                // +0x4c u_texture1
-    int      field_0x50;                // +0x50 u_ambient
-    int      field_0x54;                // +0x54 u_diffuse
-    int      field_0x58;                // +0x58 u_specular
-    int      field_0x5c;                // +0x5c u_emissive
+    void*    vtable;                 // +0x0  vtable
+    int      program;                 // +0x4  GL program handle
+    uint8_t  lightingDirty;                 // +0x9  lighting-dirty flag
+    String   name;                 // +0xc  name
+    int      aPosition;                // +0x20 a_position
+    int      aNormal;                // +0x24 a_normal
+    int      aTexCoord;                // +0x28 a_texCoord
+    int      aTangent;                // +0x2c a_tangent
+    int      aBinormal;                // +0x30 a_binormal
+    int      uMvpMatrix;                // +0x38 u_mvpMatrix
+    int      uNormalMatrix;                // +0x3c u_normalMatrix
+    int      uLightDir;                // +0x40 u_lightDir
+    int      uEyePos;                // +0x44 u_eyePos
+    int      uTexture0;                // +0x48 u_texture0
+    int      uTexture1;                // +0x4c u_texture1
+    int      uAmbient;                // +0x50 u_ambient
+    int      uDiffuse;                // +0x54 u_diffuse
+    int      uSpecular;                // +0x58 u_specular
+    int      uEmissive;                // +0x5c u_emissive
 
     BumpShaderV2();
     void Init(Engine *engine);

@@ -66,8 +66,8 @@ AbyssEngine::ShaderBaseStruct *ShaderBaseStruct_8e424(AbyssEngine::ShaderBaseStr
 
     shader_vtable(self) = (char *)ShaderBaseStruct_vtable + 8;
     new (shader_name(self)) String();
-    self->field_0x4 = 0xffffffff;
-    self->field_0x8 = 0x100;
+    self->program = 0xffffffff;
+    self->flags = 0x100;
     ++ShaderBaseStruct_count;
     shader_vertex_path(self) = 0;
     shader_fragment_path(self) = 0;

@@ -10,22 +10,22 @@ namespace AbyssEngine {
 
 void TexOnlyShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(this->field_0x28, 1, 0, bytes(engine) + 0x104);
-    if (this->field_0x9 != 0) {
-        this->field_0x9 = 0;
+    glUniformMatrix4fv(this->uWorldMatrix, 1, 0, bytes(engine) + 0x104);
+    if (this->uniformsDirty != 0) {
+        this->uniformsDirty = 0;
     }
-    glEnableVertexAttribArray(this->field_0x20);
-    glEnableVertexAttribArray(this->field_0x24);
+    glEnableVertexAttribArray(this->aPosition);
+    glEnableVertexAttribArray(this->aTexCoord);
 
     char *meshBytes = bytes(mesh);
     if (*(uint8_t *)(meshBytes + 0x5c) == 0) {
-        glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, *(void **)(meshBytes + 0x4));
-        return glVertexAttribPointer(this->field_0x24, 2, 0x1406, 0, 0, *(void **)(meshBytes + 0x8));
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, *(void **)(meshBytes + 0x4));
+        return glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, *(void **)(meshBytes + 0x8));
     } else {
         glBindBuffer(0x8892, *(uint32_t *)(meshBytes + 0x60));
-        glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, *(uint32_t *)(meshBytes + 0x68));
-        return glVertexAttribPointer(this->field_0x24, 2, 0x1406, 0, 0, 0);
+        return glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
     }
 }
 
@@ -36,8 +36,8 @@ namespace AbyssEngine {
 
 void TexOnlyShader::SetInActive()
 {
-    glDisableVertexAttribArray(this->field_0x20);
-    return glDisableVertexAttribArray(this->field_0x24);
+    glDisableVertexAttribArray(this->aPosition);
+    return glDisableVertexAttribArray(this->aTexCoord);
 }
 
 } // namespace AbyssEngine
@@ -48,15 +48,15 @@ namespace AbyssEngine {
 void TexOnlyShader::Init(Engine *)
 {
     uint32_t program = ShaderBaseStruct_ES2LoadProgram(this, "TexOnlyShader.vsh", "TexOnlyShader.fsh");
-    this->field_0x4 = program;
+    this->program = program;
 
-    this->field_0x20 = glGetAttribLocation(program, "a_position");
-    this->field_0x24 = glGetAttribLocation(this->field_0x4, "a_texCoord");
-    this->field_0x28 = glGetUniformLocation(this->field_0x4, "u_WorldMatrix");
-    this->field_0x2c = glGetUniformLocation(this->field_0x4, "s_texture");
+    this->aPosition = glGetAttribLocation(program, "a_position");
+    this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
+    this->uWorldMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
+    this->sTexture = glGetUniformLocation(this->program, "s_texture");
 
-    glUseProgram(this->field_0x4);
-    return glUniform1i(this->field_0x2c, 0);
+    glUseProgram(this->program);
+    return glUniform1i(this->sTexture, 0);
 }
 
 } // namespace AbyssEngine
@@ -73,7 +73,7 @@ TexOnlyShader::TexOnlyShader()
     g_TexOnlyShader_shaderIndex = g_ShaderBaseStruct_shaderIndexIntern;
     String tmp;
     ((String *)(&tmp))->ctor_char("TexOnlyShader", false);
-    ((String *)(&this->field_0xc))->assign(&tmp);
+    ((String *)(&this->name))->assign(&tmp);
     ((String *)(&tmp))->dtor();
 
     uint32_t guardDelta = (uint32_t)((__UINTPTR_TYPE__)*guard - (__UINTPTR_TYPE__)cookie);

@@ -756,7 +756,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
             break;
         }
         _mtw_TouchButton_OnTouchBegin(pp(self, 0xe4), y);
-        self->field_0x108 = 0;
+        self->upButtonPressed = 0;
         int b28 = *(int *)(layout + 0x28);
         int top = b28 + i32(self, 0x19c);
         if (top < y && y < i32(self, 0x158) + top &&
@@ -812,7 +812,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
         }
     } break;
     case 8: {
-        self->field_0x108 = 0;
+        self->upButtonPressed = 0;
         int b28 = *(int *)(layout + 0x28);
         int top = b28 + i32(self, 0x19c);
         if (top < y && y < i32(self, 0x158) + top &&
@@ -1232,7 +1232,7 @@ void MenuTouchWindow::update(int dt)
                 _mtw_ChoiceWindow_set(cw, s);
                 u8(self, 0x17d) = 1;
                 u8(self, 0x170) = 1;
-                self->field_0x17a = 0;
+                self->dlcMessageShowing = 0;
                 *(char *)((char *)appData + 0x42) = 0;
                 u8(self, 0x190) = 0;
             }
@@ -1595,7 +1595,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
                 _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
         } else {
             _mtw_TouchButton_OnTouchMove(pp(self, 0xe4), y);
-            self->field_0x108 = 0;
+            self->upButtonPressed = 0;
             int base = *(int *)(layout + 0x28);
             int top = base + i32(self, 0x19c);
             int bottom = i32(self, 0x158) + top;
@@ -1646,7 +1646,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
         }
         break;
     case 6: { // state 7
-        self->field_0x108 = 0;
+        self->upButtonPressed = 0;
         int base = *(int *)(layout + 0x28);
         int top = base + i32(self, 0x19c);
         int bottom = i32(self, 0x158) + top;

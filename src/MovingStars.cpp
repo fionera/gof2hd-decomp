@@ -231,11 +231,11 @@ void MovingStars::translate(const Vector &v)
     char out[60];
     void **canvas = g_MovingStars_canvas_translate;
     for (int i = 0; i != 0x32; i = i + 1) {
-        uint32_t tf = this->field_0x4[i];
+        uint32_t tf = this->transformHandles[i];
         uint32_t loc = MovingStars_TransformGetLocal(*canvas, tf);
         MovingStars_MatrixGetPosition(pos, (const void *)loc);
         MovingStars_VectorAddAssign(pos, v);
-        uint32_t tf2 = this->field_0x4[i];
+        uint32_t tf2 = this->transformHandles[i];
         uint32_t base = MovingStars_TransformGetLocal(*canvas, tf2);
         MovingStars_MatrixSetTranslationFrom(out, (const void *)base,
                                              *(float *)(pos + 0), *(float *)(pos + 4),
@@ -251,9 +251,9 @@ __attribute__((visibility("hidden"))) extern void **g_MovingStars_canvas_render;
 void MovingStars::render()
 {
     void **canvas = g_MovingStars_canvas_render;
-    PaintCanvas_SetTexture(*canvas, this->field_0x8, 0xffffffff);
+    PaintCanvas_SetTexture(*canvas, this->textureHandle, 0xffffffff);
     PaintCanvas_SetBlendMode(*canvas, 1);
     for (int i = 0; i != 0x32; i = i + 1) {
-        PaintCanvas_DrawTransform(*canvas, this->field_0x4[i], 0);
+        PaintCanvas_DrawTransform(*canvas, this->transformHandles[i], 0);
     }
 }

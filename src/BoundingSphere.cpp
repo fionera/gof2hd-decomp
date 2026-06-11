@@ -1,8 +1,8 @@
 #include "gof2/BoundingSphere.h"
 
 // Helpers to view the inherited center/extents floats as Vectors.
-static inline Vector *centerOf(BoundingVolume *v) { return (Vector *)&v->field_0x8; }
-static inline Vector *extentsOf(BoundingVolume *v) { return (Vector *)&v->field_0x14; }
+static inline Vector *centerOf(BoundingVolume *v) { return (Vector *)&v->centerX; }
+static inline Vector *extentsOf(BoundingVolume *v) { return (Vector *)&v->extentsX; }
 
 // ---- _BoundingSphere_151d64.cpp ----
 BoundingSphere::~BoundingSphere()
@@ -24,7 +24,7 @@ BoundingSphere::BoundingSphere(
 {
     void *vt = (void *)((char *)g_BoundingSphere_vtbl + 8);
     field_0x38 = radius;
-    field_0x0 = vt;
+    vtable = vt;
 }
 
 // ---- projectCollisionOnSurface_151e74.cpp ----
@@ -90,7 +90,7 @@ typedef bool (*CollisionTestFn)(BoundingSphere *self);
 
 bool BoundingSphere::collide(float x, float y, float z)
 {
-    CollisionTestFn fn = *(CollisionTestFn *)((char *)field_0x0 + 0xc);
+    CollisionTestFn fn = *(CollisionTestFn *)((char *)vtable + 0xc);
     if (fn(this)) {
         return true;
     }

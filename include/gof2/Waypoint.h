@@ -12,17 +12,17 @@ using Vector = AbyssEngine::AEMath::Vector;
 
 struct Waypoint {
     void* field_0x0;                    // +0x0
-    Player* field_0x4;                  // +0x4
+    Player* player;                  // +0x4
     uint8_t field_0x4c;                 // +0x4c
-    float field_0x58;                   // +0x58
-    float field_0x5c;                   // +0x5c
-    float field_0x60;                   // +0x60
+    float fx;                   // +0x58
+    float fy;                   // +0x5c
+    float fz;                   // +0x60
     uint8_t field_0x72;                 // +0x72
-    int32_t field_0x124;                // +0x124
-    int32_t field_0x128;                // +0x128
-    int32_t field_0x12c;                // +0x12c
-    uint16_t field_0x130;               // +0x130
-    Route* field_0x134;                 // +0x134
+    int32_t x;                // +0x124
+    int32_t y;                // +0x128
+    int32_t z;                // +0x12c
+    uint16_t state;               // +0x130
+    Route* route;                 // +0x134
 
     Waypoint(int x, int y, int z, Route *route);
     void setActive(bool active);

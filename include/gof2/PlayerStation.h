@@ -38,18 +38,18 @@ extern "C" void operator_delete(void *ptr) __attribute__((nothrow));
 
 struct PlayerStation {
     uint8_t field_0x25;                 // +0x25
-    float field_0x58;                   // +0x58
-    float field_0x5c;                   // +0x5c
-    float field_0x60;                   // +0x60
+    float posX;                   // +0x58
+    float posY;                   // +0x5c
+    float posZ;                   // +0x60
     uint8_t field_0x71;                 // +0x71
-    uint8_t field_0xf5;                 // +0xf5
-    uint32_t field_0x130;               // +0x130
-    uint32_t field_0x140;               // +0x140
+    uint8_t visible;                 // +0xf5
+    uint32_t boundingVolumes;               // +0x130
+    uint32_t rootGeometry;               // +0x140
     int32_t field_0x144;                // +0x144
-    int32_t field_0x148;                // +0x148
+    int32_t stationIndex;                // +0x148
     uint32_t field_0x14c;               // +0x14c
-    uint32_t field_0x150;               // +0x150
-    int32_t field_0x154;                // +0x154
+    uint32_t collisionIndex;               // +0x150
+    int32_t collisionRadius;                // +0x154
     uint32_t field_0x158;               // +0x158
     uint32_t field_0x15c;               // +0x15c
     uint32_t field_0x160;               // +0x160

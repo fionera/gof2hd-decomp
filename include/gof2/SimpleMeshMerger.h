@@ -20,7 +20,7 @@ struct SimpleMeshMerger {
     // @portable-fields
     int f_0; // 0x0
     short f_4; // 0x4  mergeFactor
-    unsigned char field_0x6; // 0x6  valid flag
+    unsigned char valid; // 0x6  valid flag
     unsigned char _pad_7;    // 0x7
     unsigned char _pad_8[4];
     void* f_c; // 0xc

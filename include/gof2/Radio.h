@@ -113,20 +113,20 @@ extern "C" void Layout_drawBox(Layout *layout, int style, int x, int y, int widt
                                 int height, String *title);
 
 struct Radio {
-    void* field_0x0;                    // +0x0
-    RadioMessage* field_0x4;            // +0x4
-    void* field_0x8;                    // +0x8
-    void* field_0xc;                    // +0xc
-    void* field_0x10;                   // +0x10
-    int64_t field_0x18;                 // +0x18
-    int field_0x28;                     // +0x28
-    uint8_t field_0x2c;                 // +0x2c
-    uint8_t field_0x2d;                 // +0x2d
-    int field_0x30;                     // +0x30
-    String* field_0x34;                 // +0x34
-    int field_0x38;                     // +0x38
-    int field_0x3c;                     // +0x3c
-    int field_0x40;                     // +0x40
+    void* messages;                    // +0x0
+    RadioMessage* currentMessage;            // +0x4
+    void* textLines;                    // +0x8
+    void* imageParts;                    // +0xc
+    void* imagePartBuffer;                   // +0x10
+    int64_t startTime;                 // +0x18
+    int displayDuration;                     // +0x28
+    uint8_t lastMessageShownFlag;                 // +0x2c
+    uint8_t soundPending;                 // +0x2d
+    int soundId;                     // +0x30
+    String* font;                 // +0x34
+    int boxWidth;                     // +0x38
+    int boxX;                     // +0x3c
+    int boxY;                     // +0x40
 
     Radio();
     ~Radio();

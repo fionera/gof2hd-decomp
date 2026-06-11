@@ -21,7 +21,7 @@ extern "C" void Station_dtor_finish(Station *s);
 // ---- isInstantActionMission_15bb78.cpp ----
 uint8_t Mission::isInstantActionMission() {
     Mission *self = this;
-    return self->field_0x5c;
+    return self->instantAction;
 }
 
 // ---- getTargetStationName_15bb90.cpp ----
@@ -37,7 +37,7 @@ RetStr Mission::getTargetStationName() {
 // ---- isCampaignMission_15bb7e.cpp ----
 bool Mission::isCampaignMission() {
     Mission *self = this;
-    return self->field_0x64 != 0;
+    return self->campaign != 0;
 }
 
 // ---- getDescription_15bb2c.cpp ----
@@ -75,10 +75,10 @@ __attribute__((visibility("hidden"))) extern GameText **g_gameText;
 RetStr Mission::getName() {
     Mission *self = this;
     RetStr r;
-    if (self->field_0x64 != 0) {
+    if (self->campaign != 0) {
         String_cstr_ctor(&r, "", false);
     } else {
-        void *txt = ((GameText *)(*g_gameText))->getText(self->field_0xc + 0x162);
+        void *txt = ((GameText *)(*g_gameText))->getText(self->id + 0x162);
         String_copy_ctor(&r, txt, false);
     }
     return r;
@@ -87,8 +87,8 @@ RetStr Mission::getName() {
 // ---- setProductionGoods_15bad0.cpp ----
 void Mission::setProductionGoods(int a, int b) {
     Mission *self = this;
-    self->field_0x68 = a;
-    self->field_0x6c = b;
+    self->productionGoodsA = a;
+    self->productionGoodsB = b;
 }
 
 // ---- setTargetName_15bcc2.cpp ----
@@ -116,13 +116,13 @@ RetStr Mission::getClientName() {
 // ---- isVisible_15baba.cpp ----
 uint8_t Mission::isVisible() {
     Mission *self = this;
-    return self->field_0x74;
+    return self->visible;
 }
 
 // ---- isEmpty_15baa8.cpp ----
 bool Mission::isEmpty() {
     Mission *self = this;
-    return self->field_0xc == -1;
+    return self->id == -1;
 }
 
 // ---- getTargetName_15bcb4.cpp ----
@@ -137,7 +137,7 @@ RetStr Mission::getTargetName() {
 // ---- setInstantActionMission_15bb72.cpp ----
 void Mission::setInstantActionMission(bool v) {
     Mission *self = this;
-    self->field_0x5c = v;
+    self->instantAction = v;
 }
 
 // ---- setTargetSystemName_15bbac.cpp ----
@@ -151,7 +151,7 @@ void * Mission::setTargetSystemName(const String12 &rhs) {
 // ---- setVisible_15bab4.cpp ----
 void Mission::setVisible(bool v) {
     Mission *self = this;
-    self->field_0x74 = v;
+    self->visible = v;
 }
 
 // ---- clone_15bccc.cpp ----
@@ -165,11 +165,11 @@ Mission * Mission::clone() {
     Mission *self = this;
     unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
     Mission *m = (Mission *)operator_new(0x78);
-    int id = self->field_0xc;
+    int id = self->id;
     String_copy_ctor(name, (char *)self + 0x10, false);
-    ((Mission *)(m))->ctor7(id, name, self->field_0x28, self->field_0x2c, self->field_0x30, self->field_0x3c, self->field_0x58);
+    ((Mission *)(m))->ctor7(id, name, self->field_0x28, self->field_0x2c, self->field_0x30, self->targetStation, self->reward);
     ((String *)(name))->dtor();
-    m->field_0x5c = self->field_0x5c;
+    m->instantAction = self->instantAction;
     return m;
 }
 
@@ -187,7 +187,7 @@ void Mission::setTargetStation(int idx) {
     Mission *self = this;
     unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
     Galaxy **gp = g_galaxy;
-    self->field_0x3c = idx;
+    self->targetStation = idx;
     Station *st = Galaxy_getStation(*gp, idx);
     ((Station *)(name))->getName();
     ((String *)((char *)self + 0x40))->assign((String *)name);
@@ -222,23 +222,23 @@ Mission * Mission::ctor7(int id, const void *client, int a, int b, int c, int st
     String_default_ctor((char *)self + 0x1c);
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
-    self->field_0xc = id;
+    self->id = id;
     ((String *)((char *)self + 0x10))->assign((String *)client);
     self->field_0x28 = a;
     self->field_0x2c = b;
     self->field_0x30 = c;
-    self->field_0x3c = station;
+    self->targetStation = station;
     Station *st = Galaxy_getStation(*g_galaxy, station);
     ((Station *)(tmp))->getName();
     ((String *)((char *)self + 0x40))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
-    self->field_0x58 = reward;
+    self->reward = reward;
     String_cstr_ctor(tmp, "", false);
     ((String *)((char *)self + 0x4c))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
-    self->field_0x74 = 1;
-    self->field_0x64 = 0;
-    self->field_0x5c = 0;
+    self->visible = 1;
+    self->campaign = 0;
+    self->instantAction = 0;
     self->field_0x4 = 0;
     self->field_0x8 = 0;
     self->field_0x38 = 0;
@@ -261,19 +261,19 @@ Mission * Mission::ctor_int(int id) {
     String_cstr_ctor(tmp, "", false);
     ((String *)((char *)self + 0x10))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
-    self->field_0x64 = 0;
-    self->field_0x74 = 0;
+    self->campaign = 0;
+    self->visible = 0;
     self->field_0x8 = 0;
-    self->field_0xc = id;
+    self->id = id;
     self->field_0x28 = 0;
     self->field_0x2c = 0;
     self->field_0x30 = 0;
-    self->field_0x58 = 0;
-    self->field_0x5c = 0;
+    self->reward = 0;
+    self->instantAction = 0;
     self->field_0x70 = 0;
     self->field_0x4 = 0;
     self->field_0x38 = 0;
-    self->field_0x3c = 0;
+    self->targetStation = 0;
     return self;
 }
 
@@ -293,14 +293,14 @@ __attribute__((visibility("hidden"))) extern Status **g_status;
 void Mission::calcDistance() {
     Mission *self = this;
     Galaxy **gp = g_galaxy;
-    Station *st = Galaxy_getStation(*gp, self->field_0x3c);
+    Station *st = Galaxy_getStation(*gp, self->targetStation);
     Systems *sys = Galaxy_getSystems(*gp);
     Galaxy *g = *gp;
     int i1 = Station_getSystem(Status_getStation(*g_status));
     SolarSystem *a = sys->data[i1];
     int i2 = Station_getSystem(st);
     SolarSystem *b = sys->data[i2];
-    self->field_0x60 = (int)Galaxy_distance(g, a, b);
+    self->distance = (int)Galaxy_distance(g, a, b);
     if (st != 0) {
         // Station::~Station() returns `this` in r0; the finisher consumes that pointer.
         ((Station *)(st))->dtor();
@@ -325,10 +325,10 @@ Mission * Mission::ctor3(int id, int goods, int station) {
     String_default_ctor((char *)self + 0x40);
     String_default_ctor((char *)self + 0x4c);
     self->field_0x30 = goods;
-    self->field_0x3c = station;
+    self->targetStation = station;
     self->field_0x28 = 0;
     self->field_0x8 = 0;
-    self->field_0xc = id;
+    self->id = id;
     if (station < 0) {
         String_cstr_ctor(tmp, "", false);
     } else {
@@ -340,10 +340,10 @@ Mission * Mission::ctor3(int id, int goods, int station) {
     String_cstr_ctor(tmp, "", false);
     ((String *)((char *)self + 0x4c))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
-    self->field_0x74 = 1;
-    self->field_0x64 = 1;
+    self->visible = 1;
+    self->campaign = 1;
     self->field_0x4 = 0;
-    self->field_0x5c = 0;
+    self->instantAction = 0;
     self->field_0x70 = 0;
     self->field_0x38 = 0;
     return self;
@@ -391,18 +391,18 @@ Mission * Mission::ctor_default() {
     String_cstr_ctor(tmp, "", false);
     ((String *)((char *)self + 0x10))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
-    self->field_0x64 = 0;
-    self->field_0x74 = 0;
+    self->campaign = 0;
+    self->visible = 0;
     self->field_0x8 = 0;
-    self->field_0xc = -1;
+    self->id = -1;
     self->field_0x28 = 0;
     self->field_0x2c = 0;
     self->field_0x30 = 0;
-    self->field_0x58 = 0;
-    self->field_0x5c = 0;
+    self->reward = 0;
+    self->instantAction = 0;
     self->field_0x70 = 0;
     self->field_0x4 = 0;
     self->field_0x38 = 0;
-    self->field_0x3c = 0;
+    self->targetStation = 0;
     return self;
 }

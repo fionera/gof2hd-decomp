@@ -12,8 +12,8 @@
 // Defined at top level to match fwd.h's `struct ResourceTexture;` forward decl.
 // (game-qualified name is AbyssEngine::ResourceTexture)
 struct ResourceTexture {
-    char *field_0x0;                    // +0x0  heap copy of name C-string
-    float field_0x4;                    // +0x4  value
+    char *name;                    // +0x0  heap copy of name C-string
+    float value;                    // +0x4  value
 
     ResourceTexture(const char *name, float value);
     ResourceTexture(const String &name, float value);

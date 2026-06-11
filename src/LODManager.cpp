@@ -23,7 +23,7 @@ LODManager::LODManager()
     this->cameraPos.x = 0;
     this->cameraPos.y = 0;
     this->cameraPos.z = 0;
-    this->field_0x10 = 0x3e9;
+    this->timer = 0x3e9;
     this->objects = new Array<AEGeometry*>();
 }
 
@@ -87,10 +87,10 @@ void LODManager::forceUpdate(int dt, bool useParent)
 // ---- update_95384.cpp ----
 void LODManager::update(int dt)
 {
-    int sum = this->field_0x10 + dt;
-    this->field_0x10 = sum;
+    int sum = this->timer + dt;
+    this->timer = sum;
     if (sum > 1000) {
-        this->field_0x10 = 0;
+        this->timer = 0;
         return forceUpdate(0, false);
     }
 }

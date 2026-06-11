@@ -36,10 +36,10 @@ int BluePrint_getQuantity(BluePrint *bp);
 }
 
 struct PendingProduct {
-    String field_0x0;                   // +0x0  station name
-    int field_0xc;                      // +0xc  stationIndex
-    int field_0x10;                     // +0x10 quantity
-    int field_0x14;                     // +0x14 blueprintIndex
+    String stationName;                   // +0x0  station name
+    int stationIndex;                      // +0xc  stationIndex
+    int quantity;                     // +0x10 quantity
+    int blueprintIndex;                     // +0x14 blueprintIndex
 
     // ---- methods (converted from free functions) ----
     PendingProduct * ctor_BluePrint(BluePrint *bp);

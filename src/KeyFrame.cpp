@@ -16,8 +16,8 @@ KeyFrame::KeyFrame()
     __aeabi_memclr4(this, 0x48);
 
     AEMath::Vector one = {1.0f, 1.0f, 1.0f};
-    this->field_0xc = one;
-    this->field_0x30 = one;
+    this->scaleA = one;
+    this->scaleB = one;
 
     this->f_58 = 0;
     this->f_5c = 0;

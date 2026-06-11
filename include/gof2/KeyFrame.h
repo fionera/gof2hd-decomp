@@ -31,9 +31,9 @@ namespace AEMath {
 struct KeyFrame {
     // @portable-fields
     unsigned char _pad_0[12];           // 0x00..0x0c
-    AEMath::Vector field_0xc;           // 0x0c  scale-ish vector A (default 1,1,1)
+    AEMath::Vector scaleA;           // 0x0c  scale-ish vector A (default 1,1,1)
     unsigned char _pad_18[24];          // 0x18..0x30
-    AEMath::Vector field_0x30;          // 0x30  scale-ish vector B (default 1,1,1)
+    AEMath::Vector scaleB;          // 0x30  scale-ish vector B (default 1,1,1)
     unsigned char _pad_3c[12];          // 0x3c..0x48
     int f_48; // 0x48
     unsigned char _pad_4c[4];

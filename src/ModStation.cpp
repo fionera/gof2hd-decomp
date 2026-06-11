@@ -3172,7 +3172,7 @@ void ModStation::showDlcMenu() {
 
     int *bx = g_dlc_btnX;
     int *by = g_dlc_btnY;
-    for (unsigned i = 0; i < *win->field_0x4; i = i + 1) {
+    for (unsigned i = 0; i < *win->buttons; i = i + 1) {
         if (i < 10) {
             float pos[3];
             TouchButton_getPosition_dlc(pos, win, i);
@@ -3182,7 +3182,7 @@ void ModStation::showDlcMenu() {
             win = (MenuTouchWindow *)P(self, 0x50);
         }
     }
-    **g_dlc_btnCount = *win->field_0x4;
+    **g_dlc_btnCount = *win->buttons;
     C(self, 0x66) = 0; // field_64 + 2
     MenuTouchWindow_callDlcMenu_dlc(win);
 }

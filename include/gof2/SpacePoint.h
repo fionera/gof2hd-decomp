@@ -37,9 +37,9 @@ struct SpacePoint {
     Vector direction;                   // +0x0c
     int field_0x10;                     // +0x10
     int field_0x14;                     // +0x14
-    int field_0x18;                     // +0x18
-    uint8_t field_0x1c;                 // +0x1c
-    int field_0x20;                     // +0x20
+    int type;                     // +0x18
+    uint8_t free;                 // +0x1c
+    int param;                     // +0x20
 
     SpacePoint(int param_1, const Vector &param_2, const Vector &param_3, int param_4);
 

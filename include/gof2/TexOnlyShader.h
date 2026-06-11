@@ -35,16 +35,16 @@ struct Mesh;
 // AbyssEngine::TexOnlyShader — minimal GLES2 shader that only samples a texture.
 struct TexOnlyShader {
     void *field_0x0;     // vtable
-    uint32_t field_0x4;  // program handle
+    uint32_t program;  // program handle
     uint8_t field_0x8;
-    uint8_t field_0x9;   // dirty flag
+    uint8_t uniformsDirty;   // dirty flag
     uint8_t field_0xa;
     uint8_t field_0xb;
-    String field_0xc;    // name
-    int field_0x20;      // a_position attrib
-    int field_0x24;      // a_texCoord attrib
-    int field_0x28;      // u_WorldMatrix uniform
-    int field_0x2c;      // s_texture uniform
+    String name;    // name
+    int aPosition;      // a_position attrib
+    int aTexCoord;      // a_texCoord attrib
+    int uWorldMatrix;      // u_WorldMatrix uniform
+    int sTexture;      // s_texture uniform
 
     void UpdateMeshData(Mesh *mesh, Engine *engine);
     void SetInActive();

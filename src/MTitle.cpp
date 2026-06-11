@@ -54,7 +54,7 @@ __attribute__((visibility("hidden"))) extern void **g_MTitle_r2d_screen;
 
 void MTitle::OnRender2D()
 {
-    PaintCanvas_Begin2d(this->field_0x4);
+    PaintCanvas_Begin2d(this->canvas);
 
     void **canvas = g_MTitle_r2d_canvas;
     PaintCanvas_SetColor(*canvas, -1);
@@ -64,31 +64,31 @@ void MTitle::OnRender2D()
     Layout_drawHeader(*layout);
     ((Layout *)(*layout))->drawEmptyFooter(0);
 
-    int t = ((ApplicationManager *)(this->field_0x8))->GetElapsedTimeMillis();
+    int t = ((ApplicationManager *)(this->appManager))->GetElapsedTimeMillis();
     if (0x32 < t)
         t = 0x32;
     else
-        t = ((ApplicationManager *)(this->field_0x8))->GetElapsedTimeMillis();
+        t = ((ApplicationManager *)(this->appManager))->GetElapsedTimeMillis();
 
-    t += this->field_0x1c;
-    this->field_0x1c = t;
+    t += this->timer;
+    this->timer = t;
 
     int image;
     float fade;
     if (t > 0xfa0) {
-        int step = *(volatile int *)(&this->field_0x18) + 1;
-        this->field_0x18 = step;
-        this->field_0x1c = 0;
+        int step = *(volatile int *)(&this->step) + 1;
+        this->step = step;
+        this->timer = 0;
         if (step == 2) {
             MTitle_r2dDone(*g_MTitle_r2d_screen, 1);
             return;
         }
-        image = (int)(step == 0 ? this->field_0x14 : this->field_0x10);
+        image = (int)(step == 0 ? this->logoImage2 : this->logoImage);
         t = 0;
         goto pathC;
     }
 
-    image = (int)(this->field_0x18 == 0 ? this->field_0x14 : this->field_0x10);
+    image = (int)(this->step == 0 ? this->logoImage2 : this->logoImage);
     if (t >= 0x3e8) {
         if (t >= 0xbb9) {
             fade = (float)(t - 0xbb8) / -1000.0f + 1.0f;
@@ -101,10 +101,10 @@ pathC:
     fade = (float)t / 1000.0f;
 common:
     int color = (int)(fade * 255.0f) - 0x100;
-    PaintCanvas_SetColor(this->field_0x4, color);
+    PaintCanvas_SetColor(this->canvas, color);
     PaintCanvas_DrawImage2D(*canvas, image, 0, 0, 0x44, 0x44);
-    PaintCanvas_End2d(this->field_0x4);
-    MTitle_r2dTail(this->field_0x4);
+    PaintCanvas_End2d(this->canvas);
+    MTitle_r2dTail(this->canvas);
 }
 
 // ---- MTitle_97984.cpp ----
@@ -112,7 +112,7 @@ __attribute__((visibility("hidden"))) extern void *volatile g_MTitle_vtable;
 
 MTitle::MTitle()
 {
-    this->field_0xc = 100;
+    this->renderPriority = 100;
     void *vtable = g_MTitle_vtable;
     this->field_0x0 = (char *)vtable + 8;
 }
@@ -128,7 +128,7 @@ MTitle *_ZN6MTitleD2Ev(MTitle *self)
 // ---- OnTouchEnd_97a24.cpp ----
 void MTitle::OnTouchEnd(int x, int y)
 {
-    this->field_0x1c = 5000;
+    this->timer = 5000;
 }
 
 // ---- _MTitle_979bc.cpp ----
@@ -145,8 +145,8 @@ void MTitle::OnRender3D()
 {
     void **canvas = g_MTitle_r3d_canvas;
     PaintCanvas_ClearBuffer(*canvas, 0xff);
-    PaintCanvas_Begin3d(this->field_0x4);
-    MTitle_r3dTail(this->field_0x4);
+    PaintCanvas_Begin3d(this->canvas);
+    MTitle_r3dTail(this->canvas);
 }
 
 // ---- OnInitialize_979cc.cpp ----
@@ -157,14 +157,14 @@ __attribute__((visibility("hidden"))) extern void **g_MTitle_sound;
 int MTitle::OnInitialize()
 {
     void **canvas = g_MTitle_canvas;
-    PaintCanvas_Image2DCreate(*canvas, 7000, (unsigned int *)(&this->field_0x10));
-    PaintCanvas_Image2DCreate(*canvas, 0x1b59, (unsigned int *)(&this->field_0x14));
+    PaintCanvas_Image2DCreate(*canvas, 7000, (unsigned int *)(&this->logoImage));
+    PaintCanvas_Image2DCreate(*canvas, 0x1b59, (unsigned int *)(&this->logoImage2));
 
     int z = 0;
     FModSound_play(*g_MTitle_sound, 0x91, z, z, z);
 
-    this->field_0x18 = z;
-    this->field_0x1c = z;
-    this->field_0xc = 100;
+    this->step = z;
+    this->timer = z;
+    this->renderPriority = 100;
     return z;
 }

@@ -32,12 +32,12 @@ struct zip_file;
 
 struct FileInterfaceAndroid {
     char        *field_0x0;             // +0x0  vtable
-    uint8_t      field_0x4;             // +0x4  alive byte
+    uint8_t      alive;             // +0x4  alive byte
     char         pad_5[3];
-    void        *field_0x8;             // +0x8  stdio FILE*
-    void        *field_0xc;             // +0xc  zip_file*
-    void        *field_0x10;            // +0x10 jobject / jmethodID stream handle
-    uint8_t      field_0x14;            // +0x14 append/write-mode flag
+    void        *file;             // +0x8  stdio FILE*
+    void        *zipFile;             // +0xc  zip_file*
+    void        *jniStream;            // +0x10 jobject / jmethodID stream handle
+    uint8_t      modeFlag;            // +0x14 append/write-mode flag
     char         pad_15[7];
     int32_t      field_0x1c;            // +0x1c
     char         pad_20[4];
@@ -45,8 +45,8 @@ struct FileInterfaceAndroid {
     char         pad_25[3];
     int32_t      field_0x28;            // +0x28
     char         pad_2c[4];
-    const char  *field_0x30;            // +0x30 AppRootDir
-    void        *field_0x34;            // +0x34 ZipDirectory
+    const char  *appRootDir;            // +0x30 AppRootDir
+    void        *zipDirectory;            // +0x34 ZipDirectory
 
     FileInterfaceAndroid();
     ~FileInterfaceAndroid();

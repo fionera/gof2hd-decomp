@@ -12,16 +12,16 @@ struct TargetFollowCamera;
 // (plus an optional vector of fire-streak meshes) through their transform
 // animations. 0x68 bytes in the target; here laid out as a natural struct.
 struct Explosion {
-    int                    field_0x0;   // +0x00 explosion type
-    AEGeometry            *field_0x4;    // +0x04 primary mesh
-    AEGeometry            *field_0x8;    // +0x08 secondary mesh (optional)
-    Array<AEGeometry *>   *field_0xc;    // +0x0c fire-streak meshes (optional)
-    long long              field_0x10;   // +0x10 total duration
-    long long              field_0x18;   // +0x18 elapsed time
-    byte                   field_0x20;   // +0x20 playing flag
-    float                  field_0x24;   // +0x24 scale
-    int                    field_0x28;   // +0x28 sound id (-1 == none)
-    Matrix                 field_0x2c;   // +0x2c rotation matrix
+    int                    type;   // +0x00 explosion type
+    AEGeometry            *primaryMesh;    // +0x04 primary mesh
+    AEGeometry            *secondaryMesh;    // +0x08 secondary mesh (optional)
+    Array<AEGeometry *>   *fireStreaks;    // +0x0c fire-streak meshes (optional)
+    long long              duration;   // +0x10 total duration
+    long long              elapsed;   // +0x18 elapsed time
+    byte                   playing;   // +0x20 playing flag
+    float                  scale;   // +0x24 scale
+    int                    weaponIndex;   // +0x28 sound id (-1 == none)
+    Matrix                 rotation;   // +0x2c rotation matrix
 
     // ---- methods (converted from free functions) ----
     void addFireStreaks();

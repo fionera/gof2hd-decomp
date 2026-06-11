@@ -10,50 +10,50 @@ void CubeNormalMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
 {
     AbyssEngine::Mesh *mesh = (AbyssEngine::Mesh *)meshArg;
     char *e = (char *)engine;
-    if (this->field_0x9 != 0) {
-        glUniform4fv(this->field_0x5c, 1, (float *)(e + 0xd0));
-        glUniform4fv(this->field_0x54, 1, (float *)(e + 0x2cc));
-        glUniform4fv(this->field_0x58, 1, (float *)(e + 0x2fc));
-        glUniform4fv(this->field_0x60, 1, (float *)(e + 0x2e4));
-        glUniform1f(this->field_0x64, *(float *)(e + 0x2c8));
-        this->field_0x9 = 0;
+    if (this->dirty != 0) {
+        glUniform4fv(this->uniformU12, 1, (float *)(e + 0xd0));
+        glUniform4fv(this->uniformU8, 1, (float *)(e + 0x2cc));
+        glUniform4fv(this->uniformU9, 1, (float *)(e + 0x2fc));
+        glUniform4fv(this->uniformU10, 1, (float *)(e + 0x2e4));
+        glUniform1f(this->uniformU11, *(float *)(e + 0x2c8));
+        this->dirty = 0;
     }
 
-    glUniform1f(this->field_0x50, *(float *)(e + 0xcc));
-    glUniformMatrix4fv(this->field_0x34, 1, 0, e + 0x104);
-    glUniformMatrix3fv(this->field_0x38, 1, 0, e + 0x204);
-    glUniform3f(this->field_0x40, *(float *)(e + 0x330), *(float *)(e + 0x334),
+    glUniform1f(this->uniformU7, *(float *)(e + 0xcc));
+    glUniformMatrix4fv(this->uniformU0, 1, 0, e + 0x104);
+    glUniformMatrix3fv(this->uniformU1, 1, 0, e + 0x204);
+    glUniform3f(this->uniformU3, *(float *)(e + 0x330), *(float *)(e + 0x334),
                 *(float *)(e + 0x338));
-    glUniform3f(this->field_0x3c, *(float *)(e + 0x34c), *(float *)(e + 0x350),
+    glUniform3f(this->uniformU2, *(float *)(e + 0x34c), *(float *)(e + 0x350),
                 *(float *)(e + 0x354));
 
-    glEnableVertexAttribArray(this->field_0x20);
-    glEnableVertexAttribArray(this->field_0x28);
-    glEnableVertexAttribArray(this->field_0x24);
-    glEnableVertexAttribArray(this->field_0x2c);
-    glEnableVertexAttribArray(this->field_0x30);
+    glEnableVertexAttribArray(this->attribA0);
+    glEnableVertexAttribArray(this->attribA2);
+    glEnableVertexAttribArray(this->attribA1);
+    glEnableVertexAttribArray(this->attribA3);
+    glEnableVertexAttribArray(this->attribA4);
 
     if (mesh->field_0x5c == 0) {
-        glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, mesh->field_0x4);
+        glVertexAttribPointer(this->attribA0, 3, 0x1406, 0, 0, mesh->field_0x4);
         if ((mesh->field_0x0 & 2) != 0)
-            glVertexAttribPointer(this->field_0x28, 2, 0x1406, 0, 0, mesh->field_0x8);
+            glVertexAttribPointer(this->attribA2, 2, 0x1406, 0, 0, mesh->field_0x8);
         if ((mesh->field_0x0 & 4) != 0)
-            glVertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0, mesh->field_0x10);
-        if (this->field_0x2c >= 0)
-            glVertexAttribPointer(this->field_0x2c, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x14);
-        if (this->field_0x30 >= 0)
-            glVertexAttribPointer(this->field_0x30, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x18);
+            glVertexAttribPointer(this->attribA1, 3, 0x1406, 0, 0, mesh->field_0x10);
+        if (this->attribA3 >= 0)
+            glVertexAttribPointer(this->attribA3, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x14);
+        if (this->attribA4 >= 0)
+            glVertexAttribPointer(this->attribA4, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x18);
     } else {
         glBindBuffer(0x8892, mesh->field_0x60);
-        glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attribA0, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x68);
-        glVertexAttribPointer(this->field_0x28, 2, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attribA2, 2, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x6c);
-        glVertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attribA1, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x70);
-        glVertexAttribPointer(this->field_0x2c, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attribA3, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, mesh->field_0x74);
-        glVertexAttribPointer(this->field_0x30, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->attribA4, 3, 0x1406, 0, 0, 0);
     }
 }
 
@@ -76,32 +76,32 @@ namespace AbyssEngine {
 void CubeNormalMapping::Init(Engine *)
 {
     int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("CubeNormalMapping.vsh", "CubeNormalMapping.fsh");
-    this->field_0x4 = program;
+    this->program = program;
 
-    this->field_0x20 = glGetAttribLocation(program, "a0");
-    this->field_0x24 = glGetAttribLocation(this->field_0x4, "a1");
-    this->field_0x28 = glGetAttribLocation(this->field_0x4, "a2");
-    this->field_0x2c = glGetAttribLocation(this->field_0x4, "a3");
-    this->field_0x30 = glGetAttribLocation(this->field_0x4, "a4");
+    this->attribA0 = glGetAttribLocation(program, "a0");
+    this->attribA1 = glGetAttribLocation(this->program, "a1");
+    this->attribA2 = glGetAttribLocation(this->program, "a2");
+    this->attribA3 = glGetAttribLocation(this->program, "a3");
+    this->attribA4 = glGetAttribLocation(this->program, "a4");
 
-    this->field_0x34 = glGetUniformLocation(this->field_0x4, "u0");
-    this->field_0x38 = glGetUniformLocation(this->field_0x4, "u1");
-    this->field_0x3c = glGetUniformLocation(this->field_0x4, "u2");
-    this->field_0x40 = glGetUniformLocation(this->field_0x4, "u3");
-    this->field_0x48 = glGetUniformLocation(this->field_0x4, "u4");
-    this->field_0x44 = glGetUniformLocation(this->field_0x4, "u5");
-    this->field_0x4c = glGetUniformLocation(this->field_0x4, "u6");
-    this->field_0x50 = glGetUniformLocation(this->field_0x4, "u7");
-    this->field_0x54 = glGetUniformLocation(this->field_0x4, "u8");
-    this->field_0x58 = glGetUniformLocation(this->field_0x4, "u9");
-    this->field_0x60 = glGetUniformLocation(this->field_0x4, "u10");
-    this->field_0x64 = glGetUniformLocation(this->field_0x4, "u11");
-    this->field_0x5c = glGetUniformLocation(this->field_0x4, "u12");
+    this->uniformU0 = glGetUniformLocation(this->program, "u0");
+    this->uniformU1 = glGetUniformLocation(this->program, "u1");
+    this->uniformU2 = glGetUniformLocation(this->program, "u2");
+    this->uniformU3 = glGetUniformLocation(this->program, "u3");
+    this->uniformU4 = glGetUniformLocation(this->program, "u4");
+    this->uniformU5 = glGetUniformLocation(this->program, "u5");
+    this->uniformU6 = glGetUniformLocation(this->program, "u6");
+    this->uniformU7 = glGetUniformLocation(this->program, "u7");
+    this->uniformU8 = glGetUniformLocation(this->program, "u8");
+    this->uniformU9 = glGetUniformLocation(this->program, "u9");
+    this->uniformU10 = glGetUniformLocation(this->program, "u10");
+    this->uniformU11 = glGetUniformLocation(this->program, "u11");
+    this->uniformU12 = glGetUniformLocation(this->program, "u12");
 
-    glUseProgram(this->field_0x4);
-    glUniform1i(this->field_0x48, 0);
-    glUniform1i(this->field_0x4c, 1);
-    glUniform1i(this->field_0x44, 2);
+    glUseProgram(this->program);
+    glUniform1i(this->uniformU4, 0);
+    glUniform1i(this->uniformU6, 1);
+    glUniform1i(this->uniformU5, 2);
 }
 
 } // namespace AbyssEngine
@@ -124,7 +124,7 @@ CubeNormalMapping::CubeNormalMapping()
     CubeNormalMapping_typeInfoSlot = &_ZTIN11AbyssEngine17CubeNormalMappingE;
     String tmp;
     tmp.s = u"CubeNormalMapping";
-    this->field_0xc = tmp;
+    this->name = tmp;
 }
 
 } // namespace AbyssEngine
@@ -134,11 +134,11 @@ namespace AbyssEngine {
 
 void CubeNormalMapping::SetInActive()
 {
-    glDisableVertexAttribArray(this->field_0x20);
-    glDisableVertexAttribArray(this->field_0x24);
-    glDisableVertexAttribArray(this->field_0x28);
-    glDisableVertexAttribArray(this->field_0x2c);
-    glDisableVertexAttribArray(this->field_0x30);
+    glDisableVertexAttribArray(this->attribA0);
+    glDisableVertexAttribArray(this->attribA1);
+    glDisableVertexAttribArray(this->attribA2);
+    glDisableVertexAttribArray(this->attribA3);
+    glDisableVertexAttribArray(this->attribA4);
 }
 
 } // namespace AbyssEngine

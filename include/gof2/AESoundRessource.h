@@ -12,10 +12,10 @@ struct AESoundInfo {
 struct AESoundInterface;
 
 struct AESoundRessource {
-    char* field_0x0;                    // +0x0  AESoundInfo* table base (byte addressed)
-    uint32_t field_0x4;                 // +0x4  count
-    char* field_0x8;                    // +0x8  Array<AESoundInterface*> data
-    volatile int field_0x10;            // +0x10
+    char* soundInfoTable;                    // +0x0  AESoundInfo* table base (byte addressed)
+    uint32_t soundCount;                 // +0x4  count
+    char* sounds;                    // +0x8  Array<AESoundInterface*> data
+    volatile int numSounds;            // +0x10
 
     ~AESoundRessource();
 };

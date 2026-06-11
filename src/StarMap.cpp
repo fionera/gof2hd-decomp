@@ -939,7 +939,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
 {
     void (*vecCtor)(void *) = g_StarMap_ctor_vecCtor;
     Vector zero = {0.0f, 0.0f, 0.0f};
-    this->field_0x78 = zero;
+    this->scratchVector = zero;
     field<int32_t>(this, 0x88) = 0;
     field<int32_t>(this, 0x8c) = 0;
     vecCtor((char *)this + 0xac);

@@ -19,7 +19,7 @@ extern "C" void PlayerJunk_resetTail(void *self, int one);  // b.w 0x1abe08 (ven
 // PlayerJunk::reset() - reset base KIPlayer, clear state, tail-call the show/visible setter.
 void _ZN10PlayerJunk5resetEv(PlayerJunk *self) {
     ((KIPlayer *)(self))->reset();
-    self->field_0x88 = 0;
+    self->state = 0;
     return PlayerJunk_resetTail(self, 1);
 }
 
@@ -44,8 +44,8 @@ __attribute__((visibility("hidden"))) extern int g_PlayerJunk_vtbl;
 void _ZN10PlayerJunkC1EiP6PlayerP10AEGeometryfff(
         PlayerJunk *self, int p1, Player *p2, AEGeometry *p3, float p4, float p5, float p6) {
     // KIPlayer::KIPlayer returns the same object pointer (this), so write through self.
-    self->field_0x3d = 1;
-    self->field_0x0 = (void *)(g_PlayerJunk_vtbl + 8);
+    self->initialized = 1;
+    self->vtable = (void *)(g_PlayerJunk_vtbl + 8);
 }
 
 // ---- update_15e798.cpp ----
@@ -68,36 +68,36 @@ void PlayerJunk::update(int elapsed) {
     PlayerJunk *self = this;
     Vector zero;
 
-    self->field_0x124 = elapsed;
-    if (((Player *)(self->field_0x4))->getHitpoints() < 1) {
-        int state = self->field_0x88;
+    self->lastUpdateTick = elapsed;
+    if (((Player *)(self->player))->getHitpoints() < 1) {
+        int state = self->state;
         if ((uint32_t)(state - 3) >= 2) {
-            Level_junkDied(self->field_0x54);
-            self->field_0x88 = 3;
+            Level_junkDied(self->level);
+            self->state = 3;
             FModSound_play(*g_PJ_sound, 0x16, 0, 0, 0.0f);
             void **randHolder = g_PJ_random;
             if (AERandom_nextInt(*randHolder, 100) < 10) {
-                self->field_0x4c = 1;
+                self->droppedCrate = 1;
                 Array<int> *arr = new Array<int>();
-                self->field_0x50 = arr;
+                self->crateContents = arr;
                 ArrayAdd(99, *arr);
-                ArrayAdd(AERandom_nextInt(*randHolder, 10) + 1, *self->field_0x50);
+                ArrayAdd(AERandom_nextInt(*randHolder, 10) + 1, *self->crateContents);
                 ((KIPlayer *)(self))->createCrate(3);
-                self->field_0x4c = 1;
+                self->droppedCrate = 1;
             } else {
-                ((Player *)(self->field_0x4))->setActive(false);
+                ((Player *)(self->player))->setActive(false);
                 // Level's player object holds a target reference at [0x14]->[0x1c];
                 // clear it if it points at this junk (opaque Level-internal layout).
-                void *player = Level_getPlayer(self->field_0x54);
+                void *player = Level_getPlayer(self->level);
                 void **targetSlot = (void **)((char *)*(void **)((char *)player + 0x14) + 0x1c);
                 if (*targetSlot == self) {
-                    player = Level_getPlayer(self->field_0x54);
+                    player = Level_getPlayer(self->level);
                     targetSlot = (void **)((char *)*(void **)((char *)player + 0x14) + 0x1c);
                     *targetSlot = 0;
                 }
             }
-            void *levelObject = self->field_0x54;
-            Vector position = self->field_0x58;
+            void *levelObject = self->level;
+            Vector position = self->emitPosition;
             zero.x = 0.0f;
             zero.y = 0.0f;
             zero.z = 0.0f;
@@ -110,8 +110,8 @@ void PlayerJunk::update(int elapsed) {
         }
     }
 
-    if (self->field_0x88 == 3)
-        self->field_0x88 = 4;
+    if (self->state == 3)
+        self->state = 4;
 }
 
 // ---- render_15e8cc.cpp ----
@@ -121,9 +121,9 @@ extern "C" void PlayerJunk_renderTail(void *self);  // b.w 0x1ac3a8 (veneer)
 // PlayerJunk::render() - render the geometry if present, then (unless the state is 3 or 4)
 // tail-call the base render veneer.
 void _ZN10PlayerJunk6renderEv(PlayerJunk *self) {
-    void *geom = self->field_0x78;
+    void *geom = self->geometry;
     if (geom != 0)
         AEGeometry_render(geom);
-    if ((uint32_t)(self->field_0x88 - 3) > 1)
+    if ((uint32_t)(self->state - 3) > 1)
         return PlayerJunk_renderTail(self);
 }

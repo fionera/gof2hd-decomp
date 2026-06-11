@@ -12,26 +12,26 @@ struct ScrollTouchWindow;
 // modelled in this batch (config blobs, medal image tables, foreign globals).
 
 struct ChoiceWindow {
-    int field_0x0;                      // +0x0   x
-    int field_0x4;                      // +0x4   y
-    int field_0x8;                      // +0x8   width
-    int field_0xc;                      // +0xc   height
-    void* field_0x10;                   // +0x10  TouchButton* (left)
-    void* field_0x14;                   // +0x14  TouchButton* (right)
-    void* field_0x18;                   // +0x18  TouchButton* (misc)
-    void* field_0x1c;                   // +0x1c  ScrollTouchWindow*
-    String field_0x20;                  // +0x20  title String (12 bytes -> 0x2c)
-    int field_0x2c;                     // +0x2c  count
-    int field_0x30;                     // +0x30  medal
-    int field_0x34;                     // +0x34  medal image handle (-1 = none)
-    int field_0x38;                     // +0x38  medal-bg image handle (-1 = none)
-    String field_0x3c;                  // +0x3c  secondary text String (12 bytes -> 0x48)
-    int field_0x48;                     // +0x48
+    int x;                      // +0x0   x
+    int y;                      // +0x4   y
+    int width;                      // +0x8   width
+    int height;                      // +0xc   height
+    void* leftButton;                   // +0x10  TouchButton* (left)
+    void* rightButton;                   // +0x14  TouchButton* (right)
+    void* miscButton;                   // +0x18  TouchButton* (misc)
+    void* scrollWindow;                   // +0x1c  ScrollTouchWindow*
+    String title;                  // +0x20  title String (12 bytes -> 0x2c)
+    int count;                     // +0x2c  count
+    int medal;                     // +0x30  medal
+    int medalImage;                     // +0x34  medal image handle (-1 = none)
+    int medalBgImage;                     // +0x38  medal-bg image handle (-1 = none)
+    String medalText;                  // +0x3c  secondary text String (12 bytes -> 0x48)
+    int padding;                     // +0x48
     int field_0x4c;                     // +0x4c
     int field_0x50;                     // +0x50
     int field_0x54;                     // +0x54
-    uint8_t field_0x58;                 // +0x58  hasButtons flag
-    uint8_t field_0x59;                 // +0x59  buttons-visible flag
+    uint8_t hasButtons;                 // +0x58  hasButtons flag
+    uint8_t buttonsVisible;                 // +0x59  buttons-visible flag
 
     ChoiceWindow();
     ~ChoiceWindow();

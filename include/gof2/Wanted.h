@@ -25,26 +25,26 @@ using AbyssEngine::String12;
 // Field accessor via byte offset.
 
 struct Wanted {
-    String field_0x0;                   // +0x0  (name, AbyssEngine::String)
-    int field_0xc;                      // +0xc
-    int field_0x10;                     // +0x10
-    int field_0x14;                     // +0x14
-    uint8_t field_0x18;                 // +0x18
-    int field_0x1c;                     // +0x1c
-    int field_0x20;                     // +0x20
-    int field_0x24;                     // +0x24
-    int field_0x28;                     // +0x28
-    int field_0x2c;                     // +0x2c
-    int field_0x30;                     // +0x30
-    int field_0x34;                     // +0x34
-    int field_0x38;                     // +0x38
-    int field_0x3c;                     // +0x3c
-    void* field_0x40;                   // +0x40  (heap buffer freed in dtor)
-    int field_0x44;                     // +0x44
-    int field_0x48;                     // +0x48
-    int field_0x4c;                     // +0x4c
-    uint8_t field_0x50;                 // +0x50
-    uint8_t field_0x51;                 // +0x51
+    String name;                   // +0x0  (name, AbyssEngine::String)
+    int index;                      // +0xc
+    int board;                     // +0x10
+    int race;                     // +0x14
+    uint8_t male;                 // +0x18
+    int shipId;                     // +0x1c
+    int weapon;                     // +0x20
+    int hitpoints;                     // +0x24
+    int lootItemId;                     // +0x28
+    int lootAmount;                     // +0x2c
+    int reward;                     // +0x30
+    int requiredBounties;                     // +0x34
+    int requiredMission;                     // +0x38
+    int numWingmen;                     // +0x3c
+    void* imageParts;                   // +0x40  (heap buffer freed in dtor)
+    int currentLocation;                     // +0x44
+    int travelsTo;                     // +0x48
+    int lastSeen;                     // +0x4c
+    uint8_t terminated;                 // +0x50
+    uint8_t active;                 // +0x51
 
     // ---- methods (converted from free functions) ----
     Wanted * ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14);

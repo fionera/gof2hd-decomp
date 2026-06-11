@@ -13,7 +13,7 @@ struct ShaderBaseStruct;
 // preceding 0xc bytes are the ShaderBaseStruct base (vtable + program id + flags).
 struct VertexColorShader {
     byte   _base[0xc];   // +0x00 ShaderBaseStruct base
-    String field_0xc;    // +0x0c shader name
+    String name;    // +0x0c shader name
     // remaining shader-location ints (+0x20..+0x58) reached via ae_i32/ae_u32 macros
     VertexColorShader();
     ~VertexColorShader();

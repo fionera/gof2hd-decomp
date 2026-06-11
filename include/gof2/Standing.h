@@ -17,8 +17,8 @@
 // Field accessor via byte offset.
 
 struct Standing {
-    int* field_0x0;                     // +0x0
-    int field_0x4;                      // +0x4
+    int* standings;                     // +0x0
+    int currentRace;                      // +0x4
     Standing();
     ~Standing();
 

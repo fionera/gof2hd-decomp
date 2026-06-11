@@ -47,9 +47,9 @@ int ImageFactory::getItemImageId(int param_1)
 // ImageFactory::~ImageFactory() -> returns this. Frees the owned Sprite at +0x00.
 ImageFactory *_ZN12ImageFactoryD2Ev(ImageFactory *self)
 {
-    void *p = self->field_0x0;
+    void *p = self->sprite;
     if (p != 0) operator_delete(Sprite_dtor(p));
-    self->field_0x0 = 0;
+    self->sprite = 0;
     return self;
 }
 
@@ -98,14 +98,14 @@ void ImageFactory::reload() {
     getText(*holder, 0x4f8, ids + 3);
     getText(*holder, 0x4f9, ids + 4);
     getText(*holder, 0x4fc, ids + 5);
-    void *old = self->field_0x0;
+    void *old = self->sprite;
     if (old != 0) operator_delete(Sprite_dtor(old));
-    self->field_0x0 = 0;
+    self->sprite = 0;
     void *spr = operator new(0x40);
     int w = PaintCanvas_GetImage2DWidth(*holder, (int)ids[0]);
     int h = PaintCanvas_GetImage2DHeight(*holder, (int)ids[0]);
     Sprite_ctor(spr, ids, 6, w, h);
-    self->field_0x0 = spr;
+    self->sprite = spr;
     PaintCanvas_Image2DCreate(*holder, 0x485, (unsigned *)((char *)self + 4));
     return ImageFactory_reload_tail(*holder, 0x511, (char *)self + 8);
 }
@@ -135,8 +135,8 @@ void ImageFactory::drawShip(int shipId, int x, int y) {
     unsigned *holder = g_IF_drawShip_canvas;
     unsigned local = 0xffffffffu;
     IF_PaintCanvas_SetColor(*holder, 0xffffffffu);
-    IF_Sprite_setFrame(self->field_0x0, 5);
-    IF_Sprite_setPosition(self->field_0x0, x, y);
+    IF_Sprite_setFrame(self->sprite, 5);
+    IF_Sprite_setPosition(self->sprite, x, y);
     IF_Sprite_draw(1.0f, 1.0f);
     IF_PaintCanvas_Image2DCreate(*holder, (unsigned short)(shipId + 0x971), &local);
     IF_PaintCanvas_DrawImage2D(*holder, (int)local, x, y);
@@ -212,8 +212,8 @@ void ImageFactory::drawItem4(int itemId, int frame, int x, int y) {
     unsigned *holder = g_IF_drawItem4_canvas;
     unsigned local = 0xffffffffu;
     IF_PaintCanvas_SetColor(*holder, 0xffffffffu);
-    IF_Sprite_setFrame(self->field_0x0, frame);
-    IF_Sprite_setPosition(self->field_0x0, x, y);
+    IF_Sprite_setFrame(self->sprite, frame);
+    IF_Sprite_setPosition(self->sprite, x, y);
     IF_Sprite_draw(1.0f, 1.0f);
     int base = 0xef0;
     if (itemId < 0xb0)
@@ -265,7 +265,7 @@ extern int g_ctor_src[] __attribute__((visibility("hidden")));
 // ImageFactory::ImageFactory() -> this. Copies a 13x4x2 int table when gated, then reload().
 ImageFactory * ImageFactory::ctor() {
     ImageFactory *self = this;
-    self->field_0x0 = 0;
+    self->sprite = 0;
     if ((*g_ctor_flagA | *g_ctor_flagB) != 0) {
         int *dst = g_ctor_dst;
         int *src = g_ctor_src;
