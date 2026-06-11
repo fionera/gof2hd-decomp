@@ -55,7 +55,7 @@ def split_top(s):
     return out
 
 CALL=re.compile(r'(?P<pre>.?)\b(?P<sym>[A-Za-z_]\w*?_[A-Za-z_]\w*)\s*\(')
-def rewrite_calls(txt, report, called):
+def rewrite_calls(txt, report, called, owner=None):
     out=[]; i=0
     for m in CALL.finditer(txt):
         if m.start() < i: continue               # inside a region already rewritten this pass
@@ -72,7 +72,12 @@ def rewrite_calls(txt, report, called):
         inner=txt[m.end():j-1]
         v=SYMS[sym]
         args=[a.strip() for a in split_top(inner)]
-        if not args or not args[0]:               # 0-arg call (self lost) -> leave for agent
+        if not args or not args[0]:               # 0-arg call (self lost)
+            # in-class 0-arg, 0-param self-call -> this->method(); else leave for agent
+            if owner and v["class"]==owner and not v["params_after_self"]:
+                pl=1 if m.group('pre') else 0
+                out.append(txt[i:m.start()+pl]); out.append(f'this->{v["method"]}()'); i=j
+                report["calls"]+=1; continue
             out.append(txt[i:j]); i=j; report["noself"]+=1; continue
         arg0=args[0]
         # trust the definition's arity: keep exactly len(params_after_self) args after self, drop
@@ -126,7 +131,7 @@ def main():
         called=set()
         for _ in range(8):
             r2=collections.Counter()
-            txt=rewrite_calls(txt, r2, called)
+            txt=rewrite_calls(txt, r2, called, own)
             rep.update(r2)
             if r2['calls']==0: break
         txt=add_includes(txt, called, own)
