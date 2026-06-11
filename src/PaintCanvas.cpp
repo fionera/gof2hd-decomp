@@ -171,13 +171,11 @@ extern "C" char *tcg_String_GetAEChar(AbyssEngine::String *name);
 extern "C" void tcg_glActiveTexture(unsigned unit);
 extern "C" void tcg_glBindTexture(unsigned target, unsigned tex);
 extern "C" void tcg_operator_delete_arr(void *p);
-extern "C" void tcg___stack_chk_fail();
 extern "C" void grs_String_ctor_copy(String *self, const String *other, bool copy);
 extern "C" void grs_String_ctor_cstr(String *self, const char *text, bool copy);
 extern "C" void grs_String_substr(String *out, const String *self, unsigned begin, unsigned end);
 extern "C" void grs_String_append(String *self, const String *other);
 extern "C" void grs_String_dtor(String *self);
-extern "C" void grs___stack_chk_fail();
 extern "C" int paintcanvas_ext_ss2_sscreate(void *eng, unsigned short id, bool b, void **out);
 extern "C" void paintcanvas_ext_ss2_matcreate(void *self, unsigned short id, unsigned int *out);
 extern "C" void paintcanvas_ext_gsp_vec_assign(void *dst, void *src);
@@ -203,7 +201,6 @@ extern "C" void paintcanvas_ext_tami_finalize(void *tf);
 extern "C" void grs2_String_ctor_copy(String *self, const String *other, bool copy);
 extern "C" void grs2_String_dtor(String *self);
 extern "C" void grs2_GetReverseString_impl(String *out, unsigned r1, String *tmp, int reverse);
-extern "C" void grs2___stack_chk_fail();
 extern "C" void paintcanvas_ext_get_accel(void *);
 extern "C" int paintcanvas_ext_rpm_dispwidth(void *eng);
 extern "C" int paintcanvas_ext_rpm_dispheight(void *eng);
@@ -2256,8 +2253,7 @@ void TextureCreateGlobal(AbyssEngine::PaintCanvas *self, AbyssEngine::String *na
     }
     tcg_operator_delete_arr(path);
 
-    if (*canary != saved)
-        tcg___stack_chk_fail();
+    
 }
 
 // ---- Begin3d_7ce44.cpp ----
@@ -2329,8 +2325,7 @@ void GetReverseString(AbyssEngine::String *out, unsigned int /*r1*/, AbyssEngine
         }
     }
 
-    if (*canary != saved)
-        grs___stack_chk_fail();
+    
 }
 
 // ---- SpriteSystemCreate_7a648.cpp ----
@@ -2620,8 +2615,7 @@ void GetReverseString(AbyssEngine::String *out, int param2, AbyssEngine::String 
     grs2_GetReverseString_impl(out, 0, &tmp, *(char *)((char *)(unsigned long)param2 + 0x1c) == 0);
     grs2_String_dtor(&tmp);
 
-    if (*canary != saved)
-        grs2___stack_chk_fail();
+    
 }
 
 // ---- GetAccelValue_7e7c2.cpp ----

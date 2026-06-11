@@ -81,7 +81,6 @@ void operator_delete(void *ptr);
 void *AEString_assign(void *self, const void *other);
 void AEString_dtor(void *self);
 long Array_dtor(void *self);
-__attribute__((noreturn)) void __stack_chk_fail();
 long BluePrint_getIndex(...);
 long BluePrint_getStationIndex(...);
 long Galaxy_getStation(...);
@@ -598,7 +597,6 @@ LAB_00166114:
   }
   if (*piVar21 != iVar9) {
                     /* WARNING: Subroutine does not return */
-    __stack_chk_fail();
   }
   return;
 }

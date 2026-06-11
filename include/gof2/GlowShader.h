@@ -4,8 +4,6 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 #include <new>
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 extern "C" void glUseProgram(uint32_t program);
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);

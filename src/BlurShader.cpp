@@ -49,7 +49,6 @@ void BlurShader::SetInActive()
 AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
 {
     using AbyssEngine::BlurShader;
-    void *volatile cookie = __stack_chk_guard;
     String name;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)self);
     void **source = BlurShader_typeinfo_source;
@@ -61,12 +60,7 @@ AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
     ((String *)(&name))->dtor();
     self->strength = 0x92006800;
     self->blurScale = 0x40000000;
-    uint32_t guardDelta =
-        stack_guard_delta(*(volatile uint32_t *)&cookie, (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard);
-    if (guardDelta == 0) {
-        return self;
-    }
-    __stack_chk_fail(guardDelta);
+    return self;
 }
 
 // ---- RenderEffect_8a760.cpp ----
@@ -76,16 +70,10 @@ typedef void FBOEffect(FBOContainer *, Engine *, void *, uint32_t, uint32_t, uin
 void BlurShader_RenderEffect(FBOContainer *fbo, Engine *engine, uint32_t amount,
                                         uint32_t x, uint32_t y, uint32_t z, uint32_t w)
 {
-    void *volatile cookie = __stack_chk_guard;
     uint32_t zero = 0;
     void **vtable = *(void ***)fbo;
     ((FBOEffect *)vtable[0x20 / 4])(fbo, engine, &zero, amount, x, y, z, w);
-    uint32_t guardDelta =
-        stack_guard_delta(*(volatile uint32_t *)&cookie, (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard);
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- Init_8a68c.cpp ----
@@ -135,7 +123,6 @@ namespace AbyssEngine {
 void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::Engine *engine,
                               float amount, Vector vector)
 {
-    void *volatile cookie = __stack_chk_guard;
     float matrix[16] = {};
     matrix[0] = 1.0f;
     matrix[5] = 1.0f;
@@ -240,10 +227,7 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
-    if (cookie == __stack_chk_guard) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 } // namespace AbyssEngine

@@ -136,7 +136,6 @@ int BumpShaderParticle::ShaderIndex;
 
 __attribute__((minsize)) BumpShaderParticle::BumpShaderParticle()
 {
-    void *volatile cookie = __stack_chk_guard;
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
     *(void **)this = (void *)(_ZTVN11AbyssEngine18BumpShaderParticleE + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
@@ -147,9 +146,7 @@ __attribute__((minsize)) BumpShaderParticle::BumpShaderParticle()
         _ZN11AbyssEngine6StringaSERKS0_((String *)((char *)this + 0xc), &tmp);
         _ZN11AbyssEngine6StringD1Ev(&tmp);
     }
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail(guardDelta);
+    
 }
 
 } // namespace AbyssEngine

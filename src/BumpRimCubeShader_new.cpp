@@ -104,7 +104,6 @@ namespace AbyssEngine {
 
 void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    void *volatile cookie = __stack_chk_guard;
     if (this->uniform0 >= 0)
         glUniformMatrix4fv(this->uniform0, 1, 0, (char *)engine + 0x104);
     if (this->uniform1 >= 0)
@@ -218,9 +217,7 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
         glBindBuffer(0x8892, field_i32(mesh, 0x74));
         glVertexAttribPointer(this->attrib4, 3, 0x1406, 0, 0, 0);
     }
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail(guardDelta);
+    
 }
 
 } // namespace AbyssEngine
@@ -246,7 +243,6 @@ struct BumpRimConstructorFrame {
 __attribute__((minsize)) BumpRimCubeShader_new::BumpRimCubeShader_new()
 {
     BumpRimConstructorFrame frame;
-    frame.stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
     this->field_0x0 = _ZTVN11AbyssEngine21BumpRimCubeShader_newE + 8;
@@ -256,9 +252,7 @@ __attribute__((minsize)) BumpRimCubeShader_new::BumpRimCubeShader_new()
     _ZN11AbyssEngine6StringaSERKS0_(&this->name, (String *)frame.name);
     _ZN11AbyssEngine6StringD1Ev((String *)frame.name);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - frame.stackGuard;
-    if (guardDelta != 0)
-        __stack_chk_fail(guardDelta);
+    
 }
 
 } // namespace AbyssEngine

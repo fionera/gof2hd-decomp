@@ -50,7 +50,6 @@ typedef uint64_t unaligned_u64 __attribute__((aligned(1)));
 
 void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 {
-    void * volatile cookie = __stack_chk_guard;
     char *self = (char *)this;
     char *engineBytes = (char *)engine;
 
@@ -135,11 +134,7 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     }
     glActiveTexture(0x84c0);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine

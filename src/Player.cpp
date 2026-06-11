@@ -29,8 +29,6 @@ extern "C" void Player_setEnemies(Player *self, Array<Player *> *enemies);
 extern "C" void *Array_Player_dtor(Array<Player *> *array);
 extern "C" void Player_operator_delete_tail(void *p);
 extern "C" void Player_setEnemies_tail(Player *self, Array<Player *> *enemies);
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void Matrix_ctor(Matrix *self);
 extern "C" void Array_GunArrayArray_ctor(Array<Array<Gun *> *> *array);
 extern "C" void Array_Gun_ctor(Array<Gun *> *array);
@@ -681,7 +679,6 @@ __attribute__((minsize)) extern "C" void Player_addEnemies(Player *self, Array<P
 
 Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player *self = this;
-    void * volatile cookie = __stack_chk_guard;
     Matrix_ctor((Matrix *)self->transform);
     self->shieldHP = 0.0f;
     self->armorHP = 0;
@@ -768,11 +765,7 @@ Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondar
     Vector_assign((Vector *)self->position, (Vector *)tmp);
     self->field_f4 = (void *)(__INTPTR_TYPE__)-1;
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return self;
-    }
-    __stack_chk_fail(guardDelta);
+    return self;
 }
 
 // ---- getPosition_a2858.cpp ----
@@ -1257,7 +1250,6 @@ extern "C" const float k_shootAt_inc;   // DAT_b3cb4
 
 void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8, int m9, int m10, int m11, int m12, int m13, int m14) {
     Player *self = this;
-    void * volatile cookie = __stack_chk_guard;
     (void)idLo; (void)idHi;
 
     Array<Array<Gun *> *> *guns = self->guns;
@@ -1297,10 +1289,7 @@ void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int
         }
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0) {
-        __stack_chk_fail(guardDelta);
-    }
+    
 }
 
 // ---- damage_a31c0.cpp ----
@@ -1611,7 +1600,6 @@ extern "C" const float k_shoot_inc;      // DAT_b3f28
 
 int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22) {
     Player *self = this;
-    void * volatile cookie = __stack_chk_guard;
     unsigned int mask = g_shoot_mask;
     int retval = 1;
 
@@ -1660,10 +1648,7 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
         }
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0) {
-        __stack_chk_fail(guardDelta);
-    }
+    
     return retval;
 }
 
@@ -1679,7 +1664,6 @@ extern "C" const float k_update_c;     // DAT_b42c0
 
 Vector * Player::update(int dt, int doSound) {
     Player *self = this;
-    void * volatile cookie = __stack_chk_guard;
 
     int b4 = self->field_b4 + dt;
     self->field_b4 = b4;
@@ -1739,10 +1723,7 @@ Vector * Player::update(int dt, int doSound) {
     *(float *)&self->field_60 = nf;
     FloatVectorMax(&result, nf, k_update_c, 2, 0x20);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0) {
-        __stack_chk_fail(guardDelta);
-    }
+    
     return result;
 }
 

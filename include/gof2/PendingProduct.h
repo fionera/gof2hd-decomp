@@ -15,8 +15,6 @@ struct PendingProduct;
 struct BluePrint;
 
 extern "C" {
-extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 
 // AbyssEngine::String members (mangled).
 void _ZN11AbyssEngine6StringC1Ev(String *self);

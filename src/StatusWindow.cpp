@@ -113,8 +113,6 @@ float StatusWindow::getRelativeScrollStartPos() {
 
 // ---- OnTouchEnd_15a1c4.cpp ----
 extern "C" {
-extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(...);
 
 void *operator_new(uint32_t size);
 void operator_delete(void *p) noexcept;
@@ -150,7 +148,6 @@ extern void *g_swe_font;          // *(DAT_16a4b8): font
 // StatusWindow::OnTouchEnd(int x, int y)
 void StatusWindow::OnTouchEnd(int x, int y) {
     StatusWindow *self = this;
-    void *volatile cookie = __stack_chk_guard;
 
     // Release scroll inertia: snap velocity, clamp scroll position.
     int vy = i32(self, 0x44);
@@ -251,9 +248,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     }
 
 done:
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }
 
 // ---- OnTouchBegin_15a010.cpp ----
@@ -349,8 +344,6 @@ void StatusWindow::update() {
 // ---- getMedalHintText_159ba4.cpp ----
 // Stack String slots are 0xc bytes; we drive them via the engine's String entry points.
 extern "C" {
-extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(...);
 
 void String_default(void *s);                              // String::String()
 void String_fromC(void *s, const char *text, bool copy);   // String::String(char*, bool)
@@ -371,7 +364,6 @@ extern void *g_swh_gameText;     // GameText id source
 // StatusWindow::getMedalHintText(String *out, int medalIndex)
 void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
 {
-    void *volatile cookie = __stack_chk_guard;
 
     int *medals = Achievements_getMedals(*(void **)g_swh_achievements);
     int state = medals[medalIndex];
@@ -490,9 +482,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
         }
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }
 
 // ---- reInit_158044.cpp ----
@@ -553,8 +543,6 @@ void StatusWindow::reInit() {
 // calls are reproduced faithfully. Repetitive DrawString blocks share the local helpers below.
 
 extern "C" {
-extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(...);
 
 // String slots are 0xc bytes, driven via engine entry points.
 void String_default(void *s);
@@ -622,7 +610,6 @@ extern void *g_swd_gameText;   // *(DAT_1684ac): GameText singleton (receiver fo
 // StatusWindow::draw()
 void StatusWindow::draw() {
     StatusWindow *self = this;
-    void *volatile cookie = __stack_chk_guard;
 
     void *canvas = *(void **)g_swd_canvas;
     Layout *layout = (Layout *)*(void **)g_swd_layout;
@@ -839,9 +826,7 @@ void StatusWindow::draw() {
     ((String *)(sep))->dtor();
     ((String *)(creditStr))->dtor();
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }
 
 // ---- StatusWindow_157d80.cpp ----

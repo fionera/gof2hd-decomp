@@ -29,8 +29,6 @@ inline float &field_float(void *self, uint32_t off)
     return *(float *)((char *)self + off);
 }
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 extern "C" __attribute__((visibility("hidden"))) void ShaderBaseStruct_ctor(ShaderBaseStruct *self);
 extern "C" __attribute__((visibility("hidden"))) void *ShaderBaseStruct_dtor(ShaderBaseStruct *self);

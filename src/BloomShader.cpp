@@ -168,7 +168,6 @@ namespace AbyssEngine {
 
 void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
 {
-    void *volatile cookie = __stack_chk_guard;
     ae_field<int>(engine, 0x3e4) = this->field_0x4;
 
     if (g_BloomShader_internalInitNeeded != 0) {
@@ -310,11 +309,7 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
 
-    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard - (unsigned int)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine
@@ -337,16 +332,11 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) BloomShader::BloomShader()
 {
-    void *volatile cookie = __stack_chk_guard;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
     this->field_0x0 = &BloomShader_vtable + 8;
     *(void **)BloomShader_typeinfo_dest = *(void **)BloomShader_typeinfo_source;
     this->field_0xc.s = u"BloomShader";
-    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard - (unsigned int)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine
@@ -360,7 +350,6 @@ namespace AbyssEngine {
 
 void BloomShader::InternalInit(::Engine *engine)
 {
-    void *volatile cookie = __stack_chk_guard;
 
     FBOContainer *fbo = (FBOContainer *)operator new(0x38);
     String luma; luma.s = u"BloomShader fboLuma";
@@ -386,11 +375,7 @@ void BloomShader::InternalInit(::Engine *engine)
     this->field_0x70 = fbo;
     FBOContainer_Create(this->field_0x70, 0x100, 0x100, true, false);
 
-    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard - (unsigned int)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine
@@ -413,7 +398,6 @@ namespace AbyssEngine {
 
 void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::Engine *engine)
 {
-    void *volatile cookie = __stack_chk_guard;
 
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
@@ -549,11 +533,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
         FBOContainer_EndCapture(*target);
     }
 
-    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard - (unsigned int)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine

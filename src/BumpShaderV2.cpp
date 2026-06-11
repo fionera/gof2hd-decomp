@@ -107,7 +107,6 @@ namespace AbyssEngine {
 // AbyssEngine::BumpShaderV2::BumpShaderV2()
 BumpShaderV2::BumpShaderV2()
 {
-    void *volatile cookie = __stack_chk_guard;
 
     ShaderBaseStruct_ctor(this);
 
@@ -123,9 +122,7 @@ BumpShaderV2::BumpShaderV2()
     ((String *)(&this->name))->assign(&tmp);
     ((String *)(&tmp))->dtor();
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }
 
 } // namespace AbyssEngine

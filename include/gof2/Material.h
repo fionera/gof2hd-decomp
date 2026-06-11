@@ -54,8 +54,6 @@ static inline void *&pptr(void *self, uint32_t offset)
 }
 
 extern "C" {
-extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 
 // Array<T> constructors/destructors (zero-init the 12-byte header).
 void Array_Matrix_ctor(void *self);

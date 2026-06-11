@@ -19,8 +19,6 @@ extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *PlayerFighter_base_dtor(PlayerFighter *self);
 void *_ZN13PlayerFighterD1Ev(PlayerFighter *self);
 extern "C" void KIPlayer_setLevel(PlayerFighter *self, Level *lvl);
-extern "C" void *__stack_chk_guard;
-extern "C" void __stack_chk_fail(unsigned diff);
 extern "C" void *__aeabi_memclr4(void *dst, unsigned n);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void AEMath_Matrix_ctor(void *m);
@@ -469,10 +467,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     self->aiDisabled = 0;
     self->field_0x2e8 = 0;
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- update_dcfd8.cpp ----
@@ -492,9 +487,7 @@ void PlayerFighter::update(int dt) {
     // Dead-and-explosion-finished early-out: tear down via the dead veneer.
     if (self->state == 4 && ((Explosion *)(self->explosion))->isPlaying() == 0 &&
         (self->field_0x4c == 0 || 60000 < self->deathTimer)) {
-        if (*guardP != saved) {
-            __stack_chk_fail((unsigned)(*guardP - saved));
-        }
+        
         PF_update_dead(self);
         return;
     }
@@ -529,17 +522,13 @@ void PlayerFighter::update(int dt) {
     // Remaining per-frame state machine.
     PF_update_body(self, dt);
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- setPosition_dcbb8.cpp ----
 // PlayerFighter::setPosition(float, float, float). r0=self, r1..r3 = x,y,z (raw bits).
 void PlayerFighter::setPosition3(int x, int y, int z) {
     PlayerFighter *self = this;
-    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     self->posX = x;
     self->posY = y;
@@ -555,11 +544,7 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
     int m = AEGeometry_getMatrix2(self->geometry);
     AEMath_MatrixAssign((char *)self->player + 4, (void *)m);
 
-    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
-    if (diff == 0) {
-        return;
-    }
-    __stack_chk_fail(diff);
+    return;
 }
 
 // ---- roll_df860.cpp ----
@@ -649,10 +634,7 @@ void PlayerFighter::roll(int angle) {
     }
 
 done:
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- cloak_dcd58.cpp ----
@@ -843,10 +825,7 @@ void PlayerFighter::initPush(void *target, int radius) {
     AEMath_VectorScale(scaled, (float)strength, rnorm);
     AEMath_VectorAssign((char *)self + 0x118, scaled);
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- setExhaustVisible_dcd24.cpp ----
@@ -978,10 +957,7 @@ void PlayerFighter::push(int dt) {
         AEGeometry_translate(geom);
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- reset_dc934.cpp ----
@@ -992,7 +968,6 @@ typedef void (*VFn)(void *dst, void *zeroVec);
 
 __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self)
 {
-    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     ((KIPlayer *)(self))->reset();
     self->field_0x4c = 1;
@@ -1038,11 +1013,7 @@ __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self
     self->cloakingPossible = 1;
     self->aiDisabled = 0;
 
-    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
-    if (diff == 0) {
-        return;
-    }
-    __stack_chk_fail(diff);
+    return;
 }
 
 // ---- handleCloaking_dcdbc.cpp ----
@@ -1157,7 +1128,6 @@ void PlayerFighter::handleCloaking() {
 // ---- revive_dff5c.cpp ----
 __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *self)
 {
-    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     int enemy = UC((void *)(intptr_t)(self->player), 0xe0);
     Player_reset(self->player);
@@ -1207,9 +1177,5 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
         operator_delete(Generator_dtor(g));
     }
 
-    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
-    if (diff == 0) {
-        return;
-    }
-    __stack_chk_fail(diff);
+    return;
 }

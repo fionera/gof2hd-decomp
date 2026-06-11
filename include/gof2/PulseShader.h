@@ -53,7 +53,6 @@ public:
 // in this batch -- the matrices / light vectors it carries are read by fixed offset).
 
 extern "C" {
-extern void *__stack_chk_guard;
 extern char PulseShader_vtable[];
 extern int PulseShader_typeInfoSource;
 extern int PulseShader_typeInfoDest;
@@ -83,7 +82,6 @@ int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const 
 // String_ctor_char / String_assign / String_dtor are declared in gof2/String.h.
 
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(...);
 }
 
 #endif

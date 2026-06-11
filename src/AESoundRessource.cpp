@@ -6,15 +6,12 @@ extern "C" void ArraySetLength_AESoundInterface(int size, void *array);
 extern "C" void AESoundRessource_play_impl(AbyssEngine::AESoundRessource *self, int sound, int volume);
 extern "C" void Array_AESoundInterface_ctor(void *array);
 extern "C" void AESoundRessource_getSoundInfo(AbyssEngine::AESoundRessource *self, int id, AbyssEngine::AESoundInfo *info, int *index);
-extern "C" int __stack_chk_guard;
-extern "C" void __stack_chk_fail(int diff) __attribute__((noreturn));
 extern "C" int AESoundRessource_init(AbyssEngine::AESoundRessource *self, int id);
 extern "C" void *operator_new(unsigned int size);
 extern "C" char AESoundInterface_vtable[];
 extern "C" void AESoundRessource_freeAllRessources(AbyssEngine::AESoundRessource *self);
 extern "C" void ArrayRemoveAll_AESoundInterface(void *array);
 extern "C" void Array_AESoundInterface_dtor(void *array);
-extern "C" void __stack_chk_fail(int value) __attribute__((noreturn));
 
 // ---- freeAllRessources_7fb0c.cpp ----
 void AESoundRessource_freeAllRessources_7fb0c(AbyssEngine::AESoundRessource *self)
@@ -171,7 +168,6 @@ typedef void (*SoundVoidMethod)(void *);
 void AESoundRessource_stop_7ffb0(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
         void *sound = *(void **)(self->sounds + frame.index * 4);
@@ -179,11 +175,7 @@ void AESoundRessource_stop_7ffb0(AbyssEngine::AESoundRessource *self, int id)
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x1c))(sound);
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- play_7feec.cpp ----
@@ -195,7 +187,6 @@ void AESoundRessource_play_7feec(AbyssEngine::AESoundRessource *self, int id, fl
     float savedVolume = volume;
     int savedId = id;
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
@@ -208,11 +199,7 @@ void AESoundRessource_play_7feec(AbyssEngine::AESoundRessource *self, int id, fl
             (*(SoundFloatMethod *)((char *)*(void **)sound + 0xc))(sound, savedVolume);
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- playMusicLoop_7fe88.cpp ----
@@ -222,7 +209,6 @@ typedef void (*SoundVoidMethod)(void *);
 void AESoundRessource_playMusicLoop_7fe88(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
@@ -232,11 +218,7 @@ void AESoundRessource_playMusicLoop_7fe88(AbyssEngine::AESoundRessource *self, i
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x10))(sound);
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- release_7fde8.cpp ----
@@ -245,17 +227,12 @@ typedef void (*SoundVoidMethod)(void *);
 void AESoundRessource_release_7fde8(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
         void *sound = *(void **)(self->sounds + frame.index * 4);
         (*(SoundVoidMethod *)((char *)*(void **)sound + 0x34))(sound);
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- init_7fc38.cpp ----
@@ -268,7 +245,6 @@ void AESoundRessource_init_7fc38(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
     const char *name = defaultSoundName;
-    frame.cookie = __stack_chk_guard;
     *(const char * volatile *)(frame.info + 4) = name;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
@@ -285,11 +261,7 @@ void AESoundRessource_init_7fc38(AbyssEngine::AESoundRessource *self, int id)
         sound = *(void **)(self->sounds + index * 4);
         (*(SoundIntMethod *)((char *)*(void **)sound + 0x24))(sound, *(int *)(frame.info + 8));
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- playMusic_7fe2c.cpp ----
@@ -299,7 +271,6 @@ typedef void (*SoundVoidMethod)(void *);
 void AESoundRessource_playMusic_7fe2c(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
@@ -309,11 +280,7 @@ void AESoundRessource_playMusic_7fe2c(AbyssEngine::AESoundRessource *self, int i
             (*(SoundVoidMethod *)((char *)*(void **)sound + 8))(sound);
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- _AESoundRessource_7faaa.cpp ----
@@ -349,7 +316,6 @@ typedef int (*SoundIntReturnMethod)(void *);
 int AESoundRessource_isPlaying_7fda0(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int result;
     if (frame.index == -1) {
@@ -358,10 +324,7 @@ int AESoundRessource_isPlaying_7fda0(AbyssEngine::AESoundRessource *self, int id
         void *sound = *(void **)(self->sounds + frame.index * 4);
         result = (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound);
     }
-    int diff = __stack_chk_guard - frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(result);
-    }
+    
     return result;
 }
 
@@ -371,7 +334,6 @@ typedef void (*SoundVoidMethod)(void *);
 void AESoundRessource_resume_800a4(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
         void *sound = *(void **)(self->sounds + frame.index * 4);
@@ -379,11 +341,7 @@ void AESoundRessource_resume_800a4(AbyssEngine::AESoundRessource *self, int id)
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x18))(sound);
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- playLoop_7ff54.cpp ----
@@ -393,7 +351,6 @@ typedef void (*SoundVoidMethod)(void *);
 void AESoundRessource_playLoop_7ff54(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
@@ -403,11 +360,7 @@ void AESoundRessource_playLoop_7ff54(AbyssEngine::AESoundRessource *self, int id
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x10))(sound);
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- initWithoutLoading_7fbd0.cpp ----
@@ -416,7 +369,6 @@ void AESoundRessource_initWithoutLoading_7fbd0(AbyssEngine::AESoundRessource *se
 {
     AESoundStackFrame frame;
     const char *name = defaultSoundName;
-    frame.cookie = __stack_chk_guard;
     *(const char * volatile *)(frame.info + 4) = name;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
@@ -428,11 +380,7 @@ void AESoundRessource_initWithoutLoading_7fbd0(AbyssEngine::AESoundRessource *se
             *(void **)(sounds + index * 4) = sound;
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- pause_8003c.cpp ----
@@ -441,7 +389,6 @@ typedef void (*SoundVoidMethod)(void *);
 void AESoundRessource_pause_8003c(AbyssEngine::AESoundRessource *self, int id)
 {
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
         void *sound = *(void **)(self->sounds + frame.index * 4);
@@ -449,11 +396,7 @@ void AESoundRessource_pause_8003c(AbyssEngine::AESoundRessource *self, int id)
             (*(SoundVoidMethod *)((char *)*(void **)sound + 0x14))(sound);
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }
 
 // ---- setVolume_7fcc4.cpp ----
@@ -463,7 +406,6 @@ void AESoundRessource_setVolume_7fcc4(AbyssEngine::AESoundRessource *self, int i
 {
     int savedVolume = volume;
     AESoundStackFrame frame;
-    frame.cookie = __stack_chk_guard;
     AESoundRessource_getSoundInfo(self, id, (AbyssEngine::AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
         void *sound = *(void **)(self->sounds + frame.index * 4);
@@ -471,9 +413,5 @@ void AESoundRessource_setVolume_7fcc4(AbyssEngine::AESoundRessource *self, int i
             (*(SoundIntMethod *)((char *)*(void **)sound + 0x28))(sound, savedVolume);
         }
     }
-    int diff = __stack_chk_guard;
-    diff -= frame.cookie;
-    if (diff != 0) {
-        __stack_chk_fail(diff);
-    }
+    
 }

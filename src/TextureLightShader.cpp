@@ -181,8 +181,7 @@ TextureLightShader::TextureLightShader()
     ((String *)(dst))->assign(&tmp);
     ((String *)(&tmp))->dtor();
 
-    if (*counter - guard != 0)
-        __stack_chk_fail(*counter - guard);
+    
 }
 
 } // namespace AbyssEngine

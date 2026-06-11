@@ -66,7 +66,6 @@ AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::TextureShad
     } frame;
 
     frame.nameStorage[0] = self;
-    frame.cookie = __stack_chk_guard;
 
     ShaderBaseStruct_ctor(self);
 
@@ -79,12 +78,7 @@ AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::TextureShad
     ((String *)(&self->name))->assign((String *)frame.nameStorage);
     ((String *)((String *)frame.nameStorage))->dtor();
 
-    uint32_t guardDelta =
-        (uint32_t)((__UINTPTR_TYPE__)__stack_chk_guard - (__UINTPTR_TYPE__)frame.cookie);
-    if (guardDelta == 0) {
-        return self;
-    }
-    __stack_chk_fail(guardDelta);
+    return self;
 }
 
 // ---- UpdateMeshData_910f8.cpp ----

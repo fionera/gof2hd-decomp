@@ -94,7 +94,6 @@ static inline void draw_fullscreen(GlowPPShader *self, Engine *engine, uint32_t 
 
 void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine) {
     GlowPPShader *self = this;
-    void * volatile cookie = __stack_chk_guard;
 
     if (*g_GlowPPShader_internalInitNeededPtr != 0) {
         *g_GlowPPShader_internalInitNeededPtr = 0;
@@ -239,11 +238,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
 
-    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (diff == 0) {
-        return;
-    }
-    __stack_chk_fail(diff);
+    return;
 }
 
 // ---- RenderEffect_8d0ec.cpp ----
@@ -256,22 +251,15 @@ static inline uint32_t stack_guard_diff(uint32_t saved, uint32_t current)
 
 void GlowPPShader::RenderEffect_simple(FBOContainer *source, Engine *engine) {
     GlowPPShader *self = this;
-    void * volatile cookie = __stack_chk_guard;
     FBOContainer *target = 0;
     void **vtable = *(void ***)self;
     ((RenderEffectFn *)vtable[0x1c / 4])(self, source, &target, engine);
-    uint32_t saved = (uint32_t)(__UINTPTR_TYPE__)cookie;
-    uint32_t diff = stack_guard_diff(saved, (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard);
-    if (diff == 0) {
-        return;
-    }
-    __stack_chk_fail(diff);
+    return;
 }
 
 // ---- InternalInit_8cdbc.cpp ----
 void GlowPPShader::InternalInit(Engine *engine) {
     GlowPPShader *self = this;
-    void * volatile cookie = __stack_chk_guard;
     String name0;
     String name1;
     String name2;
@@ -305,11 +293,7 @@ void GlowPPShader::InternalInit(Engine *engine) {
     String_dtor_3(&name3);
     FBOContainer_Create_3(self->backgroundTarget, 0x200, 0x200, true, false);
 
-    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (diff == 0) {
-        return;
-    }
-    __stack_chk_fail(diff);
+    return;
 }
 
 // ---- Init_8cf20.cpp ----
@@ -378,7 +362,6 @@ GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
 {
     void *name[3];
     name[0] = self;
-    void * volatile cookie = __stack_chk_guard;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)self);
     void **source = (void **)GlowPPShader_typeinfo_source;
     void **dest = (void **)GlowPPShader_typeinfo_dest;
@@ -387,10 +370,5 @@ GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
     ((String *)((String *)name))->ctor_char("GlowPPShader", false);
     ((String *)((String *)((char *)self + 0xc)))->assign((String *)name);
     ((String *)((String *)name))->dtor();
-    uint32_t diff = (uint32_t)(__UINTPTR_TYPE__)cookie;
-    diff = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - diff;
-    if (diff == 0) {
-        return self;
-    }
-    __stack_chk_fail(diff);
+    return self;
 }

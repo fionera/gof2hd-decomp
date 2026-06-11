@@ -16,7 +16,6 @@ extern "C" int Galaxy_SS_getZ(void *ss);
 extern "C" int Galaxy_idiv(int a, int b);
 extern "C" float Galaxy_dist_sqrt(void *g, float v);
 extern "C" void Galaxy_Vector_subassign(void *dst, const void *src);
-extern "C" void Galaxy_dist_stack_chk_fail();
 extern "C" int Galaxy_pp_inAlienOrbit(void *status);
 extern "C" void *Galaxy_pp_new(unsigned int size);
 extern "C" void Galaxy_pp_delete(void *p);
@@ -147,9 +146,7 @@ float Galaxy_distance(void *self, void *a, void *b)
         result = Galaxy_dist_sqrt(*g_Galaxy_dist_globals, sq) * g_Galaxy_dist_scale;
     }
 
-    if (*canary != saved) {
-        Galaxy_dist_stack_chk_fail();
-    }
+    
     return result;
 }
 

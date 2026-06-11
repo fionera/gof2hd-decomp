@@ -2,12 +2,9 @@
 #include "gof2/ApplicationManager.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
-// ShaderBaseStruct.h declares __stack_chk_guard as uint32_t, conflicting with the
 // canonical void* declaration in ApplicationManager.h (included above). Neutralize the
 // duplicate declaration just for this header; the void* symbol is the one actually used.
-#define __stack_chk_guard __stack_chk_guard_sbs_unused
 #include "gof2/ShaderBaseStruct.h"
-#undef __stack_chk_guard
 #include <arm_neon.h>
 
 // ShaderBaseStruct lives in AbyssEngine (complete type with field_0x4).
@@ -601,7 +598,6 @@ void Engine::SetFrameBufferTexture(int slot0, int slot1) {
 // ---- LightSetLightDirection_858d0.cpp ----
 void Engine::LightSetLightDirection(float x, float y, float z, unsigned int light) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     unsigned int index = light - 0x4000;
     if (index < 8) {
         int count = light - 0x3fff;
@@ -620,16 +616,12 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
         *(Vector *)((char *)self + 0x468 + index * 0x0c) = normalized;
         *(uint32_t *)((char *)self + 0x378 + index * 4) = 0;
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- RenderMesh_85f24.cpp ----
 void Engine::RenderMesh(MeshFull *mesh) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     if (mesh == 0 || mesh->field_0x28 == 0) {
         goto done;
     }
@@ -687,10 +679,7 @@ void Engine::RenderMesh(MeshFull *mesh) {
     }
 
 done:
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- DrawQuad_868f0.cpp ----
@@ -808,7 +797,6 @@ Engine::~Engine()
 // ---- AfterGLInit_8428c.cpp ----
 void Engine::AfterGLInit() {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     ((Engine *)(self))->ResetLightParam();
     MeshCreate(self, 4, 2, 0x13, (char *)self + 0x380);
 
@@ -826,10 +814,7 @@ void Engine::AfterGLInit() {
     ((String *)(g_Engine_rendererString))->assign(text);
     ((String *)(text))->dtor();
 
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- DrawCloakFBO_868b0.cpp ----
@@ -851,7 +836,6 @@ typedef void ShaderInitFn(ShaderBaseStruct *, Engine *);
 
 void Engine::ShaderRegister(ShaderBaseStruct *shader) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     if (shader != 0) {
         char nameStorage[sizeof(String)];
         String *name = (String *)nameStorage;
@@ -865,10 +849,7 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
         ArrayAdd_int(0, (char *)self + 0x3d8);
         operator_delete(text);
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- SetTextureSlot_84ffc.cpp ----
@@ -999,7 +980,6 @@ typedef void ShaderPostDrawSwap(ShaderBaseStruct *, void *, void **, Engine *);
 
 void Engine::DoPostEffect() {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     uint32_t flags = self->field_0x410;
     void *current = self->field_0x414;
     void *other = self->field_0x418;
@@ -1044,10 +1024,7 @@ void Engine::DoPostEffect() {
             ((Engine *)(self))->SetPostEffect(g_Engine_postEffectBW, false);
         }
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- LightSetMaterialColorSpecular_85d44.cpp ----
@@ -1110,7 +1087,6 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
 // ---- SetPostEffect_865fc.cpp ----
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     if (self->field_0x414 == 0 && enable) {
         FBOContainer *fbo = (FBOContainer *)operator new(0x38);
         char nameStorage[sizeof(String)];
@@ -1153,10 +1129,7 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
         flags = enable ? (flags | 1) : (flags & ~1u);
     }
     self->field_0x410 = flags;
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- LightSetMaterialColorDiffuse_85c14.cpp ----
@@ -1198,7 +1171,6 @@ void Engine::initFileInterface() {
 // ---- SetOrthoMatrix_854e8.cpp ----
 void Engine::SetOrthoMatrix(const uint32_t *projection, const uint32_t *view, bool multiply) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         for (int i = 0; i < 16; i += 1) {
             *(uint32_t *)((char *)self + 0x384 + i * 4) = projection[i];
@@ -1209,16 +1181,12 @@ void Engine::SetOrthoMatrix(const uint32_t *projection, const uint32_t *view, bo
             esMatrixMultiply((char *)self + 0x384, local, (char *)self + 0x384);
         }
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- InitGL_6db20.cpp ----
 int Engine::InitGL(bool shaders, int width, int height) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     self->field_0x418 = 0;
     self->field_0x368 = width;
     self->field_0x36c = height;
@@ -1277,10 +1245,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
                             self->field_0x36c, false, true);
     }
 
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return 1;
-    }
-    __stack_chk_fail();
+    return 1;
 }
 
 // ---- ClearBuffer_84558.cpp ----
@@ -1298,7 +1263,6 @@ void Engine_ClearBuffer(Engine *, uint32_t color)
 // ---- LightSetLightPosition_8595c.cpp ----
 void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     unsigned int index = light - 0x4000;
     if (index < 8) {
         int count = light - 0x3fff;
@@ -1315,10 +1279,7 @@ void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light
         *(Vector *)((char *)self + 0x468 + index * 0x0c) = value;
         *(uint32_t *)((char *)self + 0x378 + index * 4) = 0x3f800000;
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- LightSetLightColorAmbient_85a94.cpp ----
@@ -1398,7 +1359,6 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
 // ---- Engine_83eec.cpp ----
 Engine::Engine() {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     ((String *)((String *)self))->ctor();
     ((String *)((String *)((char *)self + 0x14)))->ctor();
     ((String *)((String *)((char *)self + 0x3c)))->ctor();
@@ -1475,10 +1435,7 @@ Engine::Engine() {
     up.z = 0.0f;
     self->field_0x3f0 = up;
     ((Engine *)(self))->initFileInterface();
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- SetTextures_84c44.cpp ----
@@ -1541,25 +1498,17 @@ extern "C" void Vector_assign(Vector *dst, const Vector *src);   // 0x6eb3c
 
 uint64_t Engine::SetEyePosition(uint32_t x, uint32_t y, uint32_t z) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     uint32_t buf[3];
     buf[0] = x;
     buf[1] = y;
     buf[2] = z;
     Vector_assign((Vector *)((char *)self + 0x3fc), (const Vector *)buf);
-    uint32_t saved = (uint32_t)(__UINTPTR_TYPE__)cookie;
-    uint32_t current = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
-    uint32_t guardDelta = current - saved;
-    if (guardDelta == 0) {
-        return (uint64_t)buf[0] | ((uint64_t)buf[1] << 32);
-    }
-    __stack_chk_fail(guardDelta);
+    return (uint64_t)buf[0] | ((uint64_t)buf[1] << 32);
 }
 
 // ---- SetModelMatrix_851f4.cpp ----
 void Engine::SetModelMatrix(const uint32_t *matrix) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         self->field_0x204 = matrix[0];
         self->field_0x208 = matrix[4];
@@ -1604,16 +1553,12 @@ void Engine::SetModelMatrix(const uint32_t *matrix) {
         self->field_0x350 /= *(float *)(matrix + 13);
         self->field_0x354 /= *(float *)(matrix + 14);
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- LightSetLight_85788.cpp ----
 void Engine::LightSetLight(unsigned int light) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     uint32_t values[4] = {0, 0, 0, 0};
     unsigned int index = light - 0x4000;
     if (index < 8) {
@@ -1633,16 +1578,12 @@ void Engine::LightSetLight(unsigned int light) {
             glLightfv(light, 0x1203, values);
         }
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- SetTexturesExt_84b0c.cpp ----
 void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     char *manager = *self->field_0x30;   // external texture-manager (no named struct)
     if (*(uint32_t *)(manager + 0x10) != 0) {
         uint32_t values[3] = {first, second, third};
@@ -1658,16 +1599,12 @@ void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...
         }
         glActiveTexture(0x84c0);
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- SetWorldViewMatrix_853b0.cpp ----
 void Engine::SetWorldViewMatrix(const uint32_t *matrix) {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     if (g_Engine_useShaders != 0) {
         uint32_t gl[16] = {
             matrix[0], matrix[4], matrix[8], 0,
@@ -1679,27 +1616,14 @@ void Engine::SetWorldViewMatrix(const uint32_t *matrix) {
         esMatrixMultiply((char *)self + 0x104, gl, (char *)self + 0x384);
     } else {
         MatrixGetGL((const Matrix *)matrix, (float *)((char *)self + 0x428));
-        uint32_t saved0 = (uint32_t)(__UINTPTR_TYPE__)cookie;
-        uint32_t current0 = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
-        uint32_t delta0 = current0 - saved0;
-        if (delta0 == 0) {
-            return glLoadMatrixf((float *)((char *)self + 0x428));
-        }
-        __stack_chk_fail(delta0);
+        return glLoadMatrixf((float *)((char *)self + 0x428));
     }
-    uint32_t saved1 = (uint32_t)(__UINTPTR_TYPE__)cookie;
-    uint32_t current1 = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
-    uint32_t delta1 = current1 - saved1;
-    if (delta1 == 0) {
-        return;
-    }
-    __stack_chk_fail(delta1);
+    return;
 }
 
 // ---- ResetLightParam_84348.cpp ----
 void Engine::ResetLightParam() {
     Engine *self = this;
-    void * volatile cookie = __stack_chk_guard;
     self->field_0x488 = 0x3f800000;
     self->field_0x32c = 1;
     self->field_0x298 = 0.8f;
@@ -1735,10 +1659,7 @@ void Engine::ResetLightParam() {
         glMaterialfv(0x408, 0x1202, (char *)self + 0x2b8);
         glMaterialf(0x408, 0x1601, self->field_0x2c8);
     }
-    if ((uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie == 0) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- LightSetLightColorSpecular_85b60.cpp ----

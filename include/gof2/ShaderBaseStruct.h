@@ -3,8 +3,6 @@
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 
-extern "C" uint32_t __stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void *malloc(__SIZE_TYPE__ size);
 extern "C" void free(void *ptr);
 extern "C" void *ShaderBaseStruct_vtable[];

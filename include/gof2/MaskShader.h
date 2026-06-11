@@ -40,8 +40,6 @@ public:
 
 } // namespace AbyssEngine
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 extern "C" {
 void ShaderBaseStruct_ctor(void *self);

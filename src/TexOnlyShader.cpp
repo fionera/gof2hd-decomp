@@ -66,8 +66,6 @@ namespace AbyssEngine {
 
 TexOnlyShader::TexOnlyShader()
 {
-    void **guard = (void **)&__stack_chk_guard;
-    void *volatile cookie = *guard;
     ShaderBaseStruct_ctor(this);
     this->field_0x0 = (void *)((char *)g_TexOnlyShader_vtable + 8);
     g_TexOnlyShader_shaderIndex = g_ShaderBaseStruct_shaderIndexIntern;
@@ -76,10 +74,7 @@ TexOnlyShader::TexOnlyShader()
     ((String *)(&this->name))->assign(&tmp);
     ((String *)(&tmp))->dtor();
 
-    uint32_t guardDelta = (uint32_t)((__UINTPTR_TYPE__)*guard - (__UINTPTR_TYPE__)cookie);
-    if (guardDelta != 0) {
-        __stack_chk_fail(guardDelta);
-    }
+    
 }
 
 } // namespace AbyssEngine

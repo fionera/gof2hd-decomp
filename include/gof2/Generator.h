@@ -26,7 +26,6 @@ static inline void *B(void *p, unsigned off) { return (char *)p + off; }
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
-extern "C" void __stack_chk_fail(void);
 
 extern "C" void Array_int_ctor(Array<int> *array);
 extern "C" void Array_string_ptr_ctor(Array<AbyssEngine::String *> *array);

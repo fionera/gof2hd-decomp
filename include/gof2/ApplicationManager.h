@@ -9,8 +9,6 @@
 // those raw accesses compile against char*/void* casts.
 #include <new>   // placement operator new
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 struct ConfigReader;
 struct PaintCanvas;

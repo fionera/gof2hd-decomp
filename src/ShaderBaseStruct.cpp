@@ -61,8 +61,6 @@ void ShaderBaseStruct::Update()
 AbyssEngine::ShaderBaseStruct *ShaderBaseStruct_8e424(AbyssEngine::ShaderBaseStruct *self)
 {
     using namespace AbyssEngine;
-    register uint32_t *stackGuardPtr = &__stack_chk_guard;
-    volatile uint32_t stackGuard = *stackGuardPtr;
 
     shader_vtable(self) = (char *)ShaderBaseStruct_vtable + 8;
     new (shader_name(self)) String();
@@ -75,10 +73,7 @@ AbyssEngine::ShaderBaseStruct *ShaderBaseStruct_8e424(AbyssEngine::ShaderBaseStr
     // name initialized to the empty string
     shader_name(self)->s.clear();
 
-    uint32_t stackDifference = *stackGuardPtr - stackGuard;
-    if (stackDifference != 0) {
-        __stack_chk_fail(stackDifference);
-    }
+    
     return self;
 }
 
@@ -87,11 +82,9 @@ namespace AbyssEngine {
 
 uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *fragmentSource)
 {
-    uint32_t guard = __stack_chk_guard;
-    volatile uint32_t stackGuard = guard;
     uint32_t program = 0;
 
-    uint32_t vertexShader = ((ShaderBaseStruct *)(guard))->ES2LoadShader(0x8b31, vertexSource);
+    uint32_t vertexShader = this->ES2LoadShader(0x8b31, vertexSource);
     if (vertexShader != 0) {
         uint32_t fragmentShader = ((ShaderBaseStruct *)(vertexShader))->ES2LoadShader(0x8b30, fragmentSource);
         if (fragmentShader == 0) {
@@ -127,11 +120,7 @@ uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *
         }
     }
 
-    uint32_t stackDifference = __stack_chk_guard - stackGuard;
-    if (stackDifference == 0) {
-        return program;
-    }
-    __stack_chk_fail(stackDifference);
+    return program;
 }
 
 } // namespace AbyssEngine
@@ -141,11 +130,8 @@ namespace AbyssEngine {
 
 uint32_t ShaderBaseStruct::ES2LoadShader(uint32_t type, const char *source)
 {
-    volatile uint32_t stackGuard;
     const char *localSource;
-    uint32_t guard = __stack_chk_guard;
     localSource = source;
-    stackGuard = guard;
     uint32_t shader = glCreateShader(type);
     uint32_t shaderId = shader;
 
@@ -171,11 +157,7 @@ uint32_t ShaderBaseStruct::ES2LoadShader(uint32_t type, const char *source)
     }
 
 done:
-    uint32_t stackDifference = __stack_chk_guard - stackGuard;
-    if (stackDifference == 0) {
-        return shader;
-    }
-    __stack_chk_fail(stackDifference);
+    return shader;
 }
 
 } // namespace AbyssEngine
@@ -185,7 +167,6 @@ namespace AbyssEngine {
 
 uint32_t ShaderBaseStruct::LoadBindShader(const char *vertexPath, const char *fragmentPath)
 {
-    volatile uint32_t stackGuard = __stack_chk_guard;
     register const char *fragment = fragmentPath;
     uint32_t result = 0;
 
@@ -223,13 +204,7 @@ uint32_t ShaderBaseStruct::LoadBindShader(const char *vertexPath, const char *fr
         }
     }
 
-    uint32_t savedGuard = stackGuard;
-    uint32_t currentGuard = *(volatile uint32_t *)&__stack_chk_guard;
-    uint32_t stackDifference = currentGuard - savedGuard;
-    if (stackDifference == 0) {
-        return result;
-    }
-    __stack_chk_fail(stackDifference);
+    return result;
 }
 
 } // namespace AbyssEngine

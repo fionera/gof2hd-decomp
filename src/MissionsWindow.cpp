@@ -253,7 +253,6 @@ extern int   g_mwi_actionColor;  // DAT_1603f0: action-button text colour
 extern "C" int MissionsWindow_init(void *self)
 {
     char *s = (char *)self;
-    void *volatile cookie = __stack_chk_guard;
 
     void *layout = *(void **)g_mwi_layout;
     int titleId = *g_mwi_titleTable;
@@ -487,9 +486,7 @@ extern "C" int MissionsWindow_init(void *self)
         }
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
     return 0;
 }
 
@@ -530,7 +527,6 @@ extern void *g_mwd_font;      // *(DAT_1609a4): default font
 extern "C" void MissionsWindow_draw(void *self)
 {
     char *s = (char *)self;
-    void *volatile cookie = __stack_chk_guard;
 
     if (i32(self, 0x40) == 1) { MissionsWindow_drawWanted(self);  return; }
     if (u8(self, 0x22) != 0)  { MissionsWindow_drawStarMap(self); return; }
@@ -636,9 +632,7 @@ extern "C" void MissionsWindow_draw(void *self)
     if (u8(self, 0x21) != 0 || u8(self, 0x20) != 0)
         ChoiceWindow_draw(pp(self, 0xc));
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }
 
 // ---- MissionsWindow_14fa10.cpp ----
@@ -735,7 +729,6 @@ extern void *g_mwt_starmapMod;    // *(DAT_161178): starmap module store
 extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
 {
     char *s = (char *)self;
-    void *volatile cookie = __stack_chk_guard;
 
     // Wanted-board sub-window active.
     if (i32(self, 0x40) == 1) {
@@ -891,9 +884,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
     }
 
 done:
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }
 
 // ---- update_1509b0.cpp ----
@@ -932,7 +923,6 @@ extern void *g_mw_hashSource;    // *(DAT_160bbc): replaceHash key source (== st
 // MissionsWindow::update(int dt)
 extern "C" void MissionsWindow_update(void *self, int dt)
 {
-    void *volatile cookie = __stack_chk_guard;
 
     // Mode 1: confirm/accept and bail out.
     if (i32(self, 0x40) == 1) {
@@ -997,7 +987,5 @@ extern "C" void MissionsWindow_update(void *self, int dt)
     for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
         ((TouchButton *)(((void **)tabs[1])[i]))->setAlwaysPressed(i == u32(self, 0x40));
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }

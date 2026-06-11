@@ -58,7 +58,6 @@ public:
 
 } // namespace AbyssEngine
 
-extern "C" void __stack_chk_fail(...);
 
 extern "C" {
 extern void *PostBWShader_vtable[];

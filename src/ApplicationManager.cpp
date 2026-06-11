@@ -476,7 +476,6 @@ void ApplicationManager::SetApplicationModule(void *module) {
 // ---- ConfigReadFile_8254c.cpp ----
 extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigReadFile(ApplicationManager *self, String *name)
 {
-    void * volatile cookie = __stack_chk_guard;
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
     ConfigReader *reader = (ConfigReader *)self->configReader;
     if (reader != 0) {
@@ -485,10 +484,7 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRea
         ConfigReader_ParseFile(reader, copy);
         ((String *)storage)->~String();
     }
-    if (cookie == __stack_chk_guard) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- OnTouchEnd_83c18.cpp ----
@@ -499,7 +495,6 @@ typedef void TouchReleaseCallback(void *, int, int);
 void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
     ApplicationManager *self = this;
     g_touchDown = 0;
-    void * volatile cookie = __stack_chk_guard;
     int x = xArg;
     int y = yArg;
 
@@ -516,10 +511,7 @@ void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
         self->lastTouchY = y;
     }
 
-    if (cookie == __stack_chk_guard) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- EnablePerformanceTest_82334.cpp ----
@@ -543,7 +535,6 @@ typedef bool ResumeCallbackU(PaintCanvas *, void *);
 
 void ApplicationManager::OnUpdate(long long now) {
     ApplicationManager *self = this;
-    void * volatile cookie = __stack_chk_guard;
     void *engine = self->engine;
     Engine_PreUpdate(engine);
 
@@ -625,17 +616,13 @@ void ApplicationManager::OnUpdate(long long now) {
         break;
     }
 
-    if (cookie == __stack_chk_guard) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
     ext_001ab610();
 }
 
 // ---- ApplicationManager_8193c.cpp ----
 ApplicationManager * ApplicationManager::ctor(void *engine) {
     ApplicationManager *self = this;
-    void * volatile cookie = __stack_chk_guard;
 
     ArrayCtor_modules((char *)self + 0x44);
     ArrayCtor_uint((char *)self + 0x50);
@@ -685,10 +672,7 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
     self->lastTouchX = -1;
     self->lastTouchY = -1;
 
-    if (cookie == __stack_chk_guard) {
-        return self;
-    }
-    __stack_chk_fail();
+    return self;
 }
 
 // ---- OnTouchMove_83bb0.cpp ----
@@ -698,7 +682,6 @@ typedef void TouchDragCallback(void *, int, int);
 
 void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
     ApplicationManager *self = this;
-    void * volatile cookie = __stack_chk_guard;
     int x = xArg;
     int y = yArg;
 
@@ -715,10 +698,7 @@ void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
         self->lastTouchY = y;
     }
 
-    if (cookie == __stack_chk_guard) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- OnKeyPress_83ca6.cpp ----
@@ -875,7 +855,6 @@ typedef void TouchPressCallback(void *, int, int);
 
 void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
     ApplicationManager *self = this;
-    void * volatile cookie = __stack_chk_guard;
     int x = xArg;
     int y = yArg;
 
@@ -922,10 +901,7 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
         }
     }
 
-    if (cookie == __stack_chk_guard) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- ConfigRegisterAction_82600.cpp ----
@@ -1218,7 +1194,6 @@ extern "C" void ConfigReader_RegisterTokenReadFunction(
 extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRegisterTokenReadFunction(
     ApplicationManager *self, String *name, ConfigTokenReadFunction *read, void *context)
 {
-    void * volatile cookie = __stack_chk_guard;
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
     ConfigReader *reader = (ConfigReader *)self->configReader;
     if (reader != 0) {
@@ -1227,8 +1202,5 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigReg
         ConfigReader_RegisterTokenReadFunction(reader, copy, read, context);
         ((String *)storage)->~String();
     }
-    if (cookie == __stack_chk_guard) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }

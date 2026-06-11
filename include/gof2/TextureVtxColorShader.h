@@ -12,8 +12,6 @@
 
 #include <new>
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" char _ZTVN11AbyssEngine21TextureVtxColorShaderE[];
 
 extern "C" void glUseProgram(uint32_t program);

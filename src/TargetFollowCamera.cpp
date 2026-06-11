@@ -15,7 +15,6 @@ extern "C" void *TFC_AEGeometry_getMatrix(void *geom);
 extern "C" void *TFC_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void TFC_MatrixTransformVector(Vector *out, const Vector *v);
 extern "C" float TFC_VectorLength(const Vector *v);
-extern "C" void TFC___stack_chk_fail();
 extern "C" void *TFC_u_AEGeometry_getMatrix(void *geom);
 extern "C" void *TFC_u_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void TFC_u_MatrixGetUp(Vector *out, const Matrix *m);
@@ -32,7 +31,6 @@ extern "C" void TFC_u_Vector_sub(Vector *out, const Vector *a);
 extern "C" float TFC_u_VectorLength(const Vector *v);
 extern "C" int TFC_u_rand(void *rng, int bound);
 extern "C" void TFC_u_CameraSetLocal(unsigned camera, const Matrix *m);
-extern "C" void TFC_u___stack_chk_fail();
 
 // ---- zoomTarget_15b498.cpp ----
 // str.w r1,[r0,#0xb0]
@@ -414,9 +412,7 @@ TargetFollowCamera *TFC_ctor(TargetFollowCamera *self, unsigned id, void *target
         (double *)(p + 0x88), (double *)(p + 0x90), (double *)(p + 0xa0),
         (double *)(p + 0x88), &g_TFC_dampY);
 
-    if (*canary != saved) {
-        TFC___stack_chk_fail();
-    }
+    
     return self;
 }
 
@@ -562,8 +558,7 @@ void TFC_update(TargetFollowCamera *self, int dt)
             TFC_u_MatrixGetPosition(&posv, (const Matrix *)mat);
             TFC_u_Vector_assign((Vector *)(p + 0x14), &posv);
         }
-        if (*canary != saved)
-            TFC_u___stack_chk_fail();
+        
         return;
     }
 
@@ -764,6 +759,5 @@ void TFC_update(TargetFollowCamera *self, int dt)
         TFC_u_Matrix_assign((Matrix *)(p + 0x13c), &lm);
     }
 
-    if (*canary != saved)
-        TFC_u___stack_chk_fail();
+    
 }

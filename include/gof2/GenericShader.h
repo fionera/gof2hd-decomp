@@ -10,7 +10,6 @@ struct Mesh;     // global mesh object (opaque here; only raw GL data is read)
 using Vector = AbyssEngine::AEMath::Vector;
 
 extern "C" {
-extern void *__stack_chk_guard;
 extern char GenericShader_vtable[];
 extern int GenericShader_typeInfoSource;
 extern int GenericShader_typeInfoDest;
@@ -40,7 +39,6 @@ int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const 
 float *Vector_cast_to_float(Vector *self);
 
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 namespace AbyssEngine {

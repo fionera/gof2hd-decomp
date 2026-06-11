@@ -20,7 +20,6 @@ struct Vector;
 // Engine, Mesh are forward-declared globally in fwd.h; Vector is aliased in common.h.
 
 extern "C" {
-extern void *__stack_chk_guard;
 extern char BumpShaderV2_vtable[];
 extern int BumpShaderV2_typeInfoSource;
 extern int BumpShaderV2_typeInfoDest;
@@ -52,7 +51,6 @@ int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const 
 float *Vector_cast_to_float(Vector *self);
 
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 namespace AbyssEngine {

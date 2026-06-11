@@ -80,7 +80,6 @@ int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const 
 float *Vector_cast_to_float(Vector *self);
 
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 #endif

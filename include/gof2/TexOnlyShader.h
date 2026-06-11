@@ -3,8 +3,6 @@
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(uint32_t diff);
 
 void operator delete(void *ptr) noexcept;
 

@@ -19,8 +19,6 @@
 //   +0x68 u64  distSq (field_0x68)  +0x70 u64 lastVisibleDistSq (field_0x70)
 //   +0x78 V4   cameraDelta          +0x84 Matrix referenceMatrix (field_0x84)
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
 struct PaintCanvas;   // ::PaintCanvas (defined in Radio.h); used by pointer here

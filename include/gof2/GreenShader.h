@@ -23,7 +23,6 @@ struct ShaderBaseStruct;
 
 
 extern "C" {
-extern void *__stack_chk_guard;
 extern char GreenShader_vtable[];
 extern int GreenShader_typeInfoSource;
 extern int GreenShader_typeInfoDest;
@@ -49,7 +48,6 @@ void *ShaderBaseStruct_dtor(void *self) noexcept;
 int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const char *fragmentSource);
 
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 namespace AbyssEngine {

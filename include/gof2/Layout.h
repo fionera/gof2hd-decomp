@@ -37,8 +37,6 @@ using AbyssEngine::String12;
 // placement new is provided by <new> (pulled in via common.h's standard headers).
 
 // Stack-protector guard (the engine resolves this to a PC-relative game global).
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 
 

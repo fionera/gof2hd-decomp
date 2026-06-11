@@ -24,14 +24,11 @@ void BumpShaderRefract::SetInActive()
 // AbyssEngine::BumpShaderRefract::BumpShaderRefract()
 __attribute__((minsize)) BumpShaderRefract::BumpShaderRefract()
 {
-    void *volatile cookie = __stack_chk_guard;
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
     field_0x0 = (char *)_ZTVN11AbyssEngine17BumpShaderRefractE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     field_0xc.s = u"BumpShaderRefract";
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail(guardDelta);
+    
 }
 
 // AbyssEngine::BumpShaderRefract::Init(AbyssEngine::Engine*)

@@ -7,8 +7,6 @@
 // at 0x4, dirty flag byte at 0x9, name String at 0xc, attribute/uniform locations 0x20..0x68.
 // Offset-addressed fields go through the field_* accessor helpers (shared shader-storage idiom).
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" char _ZTVN11AbyssEngine18BumpShaderParticleE[];
 
 extern "C" void glUseProgram(uint32_t program);

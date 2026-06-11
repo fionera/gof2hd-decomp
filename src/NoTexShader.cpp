@@ -52,16 +52,11 @@ void NoTexShader::Init(Engine *)
 // AbyssEngine::NoTexShader::NoTexShader()
 NoTexShader::NoTexShader()
 {
-    void *volatile cookie = __stack_chk_guard;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
     field_0x0 = (char *)NoTexShader_vtable + 8;
     NoTexShader_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
     field_0xc.s = u"NoTexShader";
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine

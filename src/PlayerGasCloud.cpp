@@ -215,8 +215,6 @@ struct PlayerGasCloud;
 
 // --- engine callees ---------------------------------------------------------
 extern "C" {
-extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 
 void *operator_new(uint32_t size);
 
@@ -262,7 +260,6 @@ extern float g_pgc_lifeDiv;      // DAT_18694c
 void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius)
 {
     PlayerGasCloud *self = (PlayerGasCloud *)selfv;
-    void *volatile cookie = __stack_chk_guard;
 
     if (self->exploded == 0) {
         self->state = 3;
@@ -336,9 +333,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
         }
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }
 
 // ---- update_1769b4.cpp ----
@@ -346,8 +341,6 @@ using AbyssEngine::AEMath::Vector;
 
 // --- engine callees ---------------------------------------------------------
 extern "C" {
-extern void *__stack_chk_guard;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 
 void *Level_getPlayer();
 void *PlayerEgo_getTurretPosition(void *ego, Vector *out);
@@ -404,7 +397,6 @@ extern float g_pgcu_growDiv;      // DAT_186dfc
 void PlayerGasCloud_update(void *self, int dt)
 {
     char *s = (char *)self;
-    void *volatile cookie = __stack_chk_guard;
 
     if (dt != 0) {
         void *arr = *(void **)(s + 0x138);
@@ -550,9 +542,7 @@ void PlayerGasCloud_update(void *self, int dt)
         }
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
 }
 
 // ---- render_176e18.cpp ----

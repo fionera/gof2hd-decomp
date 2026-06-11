@@ -109,7 +109,6 @@ int BumpShaderCloak::ShaderIndex;
 // AbyssEngine::BumpShaderCloak::BumpShaderCloak()
 BumpShaderCloak::BumpShaderCloak()
 {
-    void *volatile cookie = __stack_chk_guard;
 
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
     *(void **)this = (void *)(_ZTVN11AbyssEngine15BumpShaderCloakE + 8);
@@ -121,9 +120,7 @@ BumpShaderCloak::BumpShaderCloak()
         _ZN11AbyssEngine6StringD1Ev(&tmp);
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail(guardDelta);
+    
 }
 
 } // namespace AbyssEngine

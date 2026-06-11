@@ -5,7 +5,6 @@
 // Derives from ShaderBaseStruct; holds one GL program plus its attrib/uniform locations.
 
 extern "C" {
-extern void *__stack_chk_guard;
 extern char CubeMapping_vtable[];
 extern int CubeMapping_typeInfoSource;
 extern int CubeMapping_typeInfoDest;
@@ -33,7 +32,6 @@ void *ShaderBaseStruct_dtor(void *self) noexcept;
 int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const char *fragmentSource);
 
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 namespace AbyssEngine {

@@ -5,7 +5,6 @@
 // Derives from ShaderBaseStruct; holds one GL program plus its attrib/uniform locations.
 
 extern "C" {
-extern void *__stack_chk_guard;
 extern char SpecCubeAlphaMapping_vtable[];
 extern const char g_SCAM_name[];      // resource-name string literal
 extern void **g_SCAM_globalSlotSrc;
@@ -34,7 +33,6 @@ int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const 
 int ShaderBaseStruct_LoadBindShader(void *self, const char *vertexPath, const char *fragmentPath);
 
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 namespace AbyssEngine {

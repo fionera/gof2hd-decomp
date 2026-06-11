@@ -65,7 +65,6 @@ int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, Came
 } // namespace AbyssEngine
 
 extern "C" float __aeabi_l2f(longlong value);
-extern "C" void __stack_chk_fail();
 extern "C" int *g_transform_insert_counter;
 extern "C" bool g_transform_matrix_flag;
 

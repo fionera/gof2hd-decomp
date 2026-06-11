@@ -162,14 +162,11 @@ int BumpRimCubeShader::ShaderIndex;
 
 __attribute__((minsize)) BumpRimCubeShader::BumpRimCubeShader()
 {
-    void *volatile cookie = __stack_chk_guard;
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
     this->field_0x0 = _ZTVN11AbyssEngine17BumpRimCubeShaderE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->field_0xc.s = u"BumpRimCubeShader";
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail(guardDelta);
+    
 }
 
 } // namespace AbyssEngine

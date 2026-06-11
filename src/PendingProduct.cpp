@@ -29,7 +29,6 @@ PendingProduct * PendingProduct::ctor_fields(int blueprintIndex, const String *s
 // PendingProduct::PendingProduct(BluePrint*)
 PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
     PendingProduct *self = this;
-    void *volatile cookie = __stack_chk_guard;
 
     // Construct the embedded String (station name) at +0x00.
     _ZN11AbyssEngine6StringC1Ev((String *)self);
@@ -45,8 +44,6 @@ PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
     self->stationIndex = BluePrint_getStationIndex(bp);
     self->quantity = BluePrint_getQuantity(bp);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail((int)guardDelta);
+    
     return self;
 }

@@ -6,8 +6,6 @@
 // FMOD wrapper. FMOD_* funcs are modeled as extern "C". Soft-float ABI: float args in core regs.
 #include <new>
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 // FMOD designer-API handle types (opaque wrappers, manipulated through the FMOD_* shims).
 namespace FMOD {

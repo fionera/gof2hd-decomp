@@ -43,8 +43,6 @@ inline void *&ae_ptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 // GLES2 entry-point function-pointer types (the engine dispatches some GL calls through
 // loaded function pointers, e.g. glGetAttribLocation_ptr / glBindBuffer_ptr).

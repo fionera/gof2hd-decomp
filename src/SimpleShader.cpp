@@ -40,16 +40,11 @@ void SimpleShader::Init(Engine *)
 // AbyssEngine::SimpleShader::SimpleShader()
 __attribute__((minsize)) SimpleShader::SimpleShader()
 {
-    void *volatile cookie = __stack_chk_guard;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
     field_0xc.s = u"SimpleShader";
     field_0x0 = (char *)SimpleShader_vtable + 8;
     SimpleShader_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine

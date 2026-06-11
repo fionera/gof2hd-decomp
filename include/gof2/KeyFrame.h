@@ -17,8 +17,6 @@
 //   +0x5c  int     0
 
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void *__aeabi_memclr4(void *dst, uint32_t n);
 
 namespace AbyssEngine {

@@ -3,8 +3,6 @@
 
 extern "C" float (*gof2_sinf)(float);
 extern "C" float (*gof2_cosf)(float);
-extern "C" void *__stack_chk_guard;
-extern "C" void __stack_chk_fail(unsigned int delta) __attribute__((noreturn));
 
 // ---- Quaternion_8102a.cpp ----
 namespace AbyssEngine {
@@ -197,7 +195,6 @@ namespace AbyssEngine {
 void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
     typedef float Vec4 __attribute__((vector_size(16)));
 
-    void *volatile cookie = __stack_chk_guard;
     alignas(16) unsigned char result_storage[sizeof(Quaternion)];
     alignas(16) unsigned char delta_storage[sizeof(Quaternion)];
     Quaternion *delta = reinterpret_cast<Quaternion *>(delta_storage);
@@ -211,11 +208,7 @@ void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
     *reinterpret_cast<Vec4 *>(result) = result_vec;
     quaternion_normalized(this, result);
 
-    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)cookie - (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine
@@ -270,7 +263,6 @@ namespace AbyssEngine {
 void Quaternion::Lerp(const float *a, const float *b, float t) {
     typedef float Vec4 __attribute__((vector_size(16)));
 
-    void *volatile cookie = __stack_chk_guard;
 
     float32x4_t bv = vld1q_f32(b);
     float32x4_t av = vld1q_f32(a);
@@ -292,11 +284,7 @@ void Quaternion::Lerp(const float *a, const float *b, float t) {
     *reinterpret_cast<Vec4 *>(storage) = result;
     quaternion_normalized(this, reinterpret_cast<Quaternion *>(storage));
 
-    unsigned int guardDelta = (unsigned int)(__UINTPTR_TYPE__)cookie - (unsigned int)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 } // namespace AbyssEngine

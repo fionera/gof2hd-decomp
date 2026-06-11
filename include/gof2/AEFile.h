@@ -91,8 +91,6 @@ struct FileInterface {
 // 0x1c byte layout no longer holds. The low-level file structs derive from AELowLevelFile (a
 // vtable-pointer base), which is the natural native layout: vtable at 0x0, then members.
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 void *operator new[](__SIZE_TYPE__ size);

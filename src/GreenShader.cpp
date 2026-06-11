@@ -97,7 +97,6 @@ namespace AbyssEngine {
 
 GreenShader::GreenShader()
 {
-    void *volatile cookie = __stack_chk_guard;
 
     ShaderBaseStruct_ctor(this);
     i32(this, 0x0) = (int)(__UINTPTR_TYPE__)GreenShader_vtable + 8;
@@ -111,9 +110,7 @@ GreenShader::GreenShader()
         _ZN11AbyssEngine6StringD1Ev(temp);
     }
 
-    uint32_t delta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (delta != 0)
-        __stack_chk_fail(delta);
+    
 }
 
 } // namespace AbyssEngine

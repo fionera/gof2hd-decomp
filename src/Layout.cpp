@@ -729,8 +729,7 @@ void Layout_formatNumber(void *out, int value) {
     ((String *)(sep))->dtor();
     ((String *)(digits))->dtor();
 
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- drawWindow_d36f4.cpp ----
@@ -1212,8 +1211,7 @@ void Layout::drawTip() {
         Globals_drawLines(*g_dtLinesB, *(void **)g_dtLinesA, self->tipLines,
                           dimH >> 1, y);
     }
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- drawHeader_d4200.cpp ----
@@ -1305,8 +1303,7 @@ void Layout::resetWindowDimensions() {
         *g_rwOutY = (int)pos[1];
     }
 
-    if (*guard - g0 != 0)
-        __stack_chk_fail();
+    
 }
 
 // ---- tagString_d31b0.cpp ----
@@ -1467,8 +1464,7 @@ void Layout::reload() {
     self->field_0x40d = 0;
     self->field_0x409 = 0;
 
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- drawFooter_d3c3c.cpp ----
@@ -1592,8 +1588,7 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
 
     ((String *)(credStr))->dtor();
     ((String *)(loadStr))->dtor();
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- drawHeader_d40a0.cpp ----
@@ -1764,6 +1759,5 @@ void Layout::drawMissionRewardMessage(int transition) {
         self->drawColor = origColor;
         ((String *)(line))->dtor();
     }
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }

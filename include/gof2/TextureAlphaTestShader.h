@@ -43,7 +43,6 @@ extern uint8_t g_TextureAlphaTestShader_programIndex;
 extern char g_TextureAlphaTestShader_vtable[];
 extern int g_TextureAlphaTestShader_staticSource;
 extern int g_TextureAlphaTestShader_staticDest;
-extern uint32_t __stack_chk_guard;
 
 int glGetUniformLocation(int program, const char *name);
 int glGetAttribLocation(int program, const char *name);
@@ -65,7 +64,6 @@ int ShaderBaseStruct_ES2LoadProgram(ShaderBaseStruct *self, const char *vertexSo
                                     const char *fragmentSource);
 void *ShaderBaseStruct_dtor(ShaderBaseStruct *self) noexcept;
 void operator_delete(void *ptr) noexcept;
-__attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 }
 
 #endif

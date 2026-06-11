@@ -23,8 +23,6 @@ extern "C" void *RH_op_new(unsigned int sz);
 extern "C" void Array_GR_ctor(void *a);
 extern "C" void ArraySetLength_GR(unsigned int n, void *a);
 extern "C" int AEFile_GetDeviceFreeSpace();
-extern "C" void *__stack_chk_guard;
-extern "C" void __stack_chk_fail(unsigned diff);
 extern "C" void Array_SC_ctor(void *a);
 extern "C" void ArraySetLength_SC(unsigned int n, void *a);
 extern "C" signed char *RH_op_new_arr(unsigned int n);
@@ -300,10 +298,7 @@ void RecordHandler::convertSDVersionSaves() {
     RH_op_delete_arr(sizes0);
     RH_op_delete_arr(sizes1);
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- addHash_cdea0.cpp ----
@@ -347,10 +342,7 @@ void RecordHandler::addHash(int slot) {
         RH_op_delete(c);
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- readRecordAsByteArray_cdbfc.cpp ----
@@ -444,10 +436,7 @@ void * RecordHandler::readWanted(unsigned int fd) {
     Wanted_setTravelsTo(w, travelsTo);
     Wanted_setLastSeen(w, lastSeen);
 
-    if (*guardP == saved) {
-        return w;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return w;
 }
 
 // ---- changeSaveDirectoryToBackupDirectory_d0258.cpp ----
@@ -726,10 +715,7 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
         ((RecordHandler *)(self))->writeMission(mission, fd);
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- writeMission_cf840.cpp ----
@@ -784,10 +770,7 @@ void RecordHandler::writeMission(void *m, unsigned int fd) {
         }
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- loadOptions_cd450.cpp ----
@@ -912,10 +895,7 @@ void RecordHandler::loadOptions() {
         }
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- loadResolutionValue_cd260.cpp ----
@@ -985,10 +965,7 @@ void RecordHandler::loadResolutionValue() {
         AEFile_Close(fd);
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- writeByteArrayAsRecord_cdcb0.cpp ----
@@ -1101,10 +1078,7 @@ void * RecordHandler::readMission(unsigned int fd) {
 
     }
 
-    if (*guardP == saved) {
-        return mission;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return mission;
 }
 
 // ---- saveOptions_cd8c8.cpp ----
@@ -1192,10 +1166,7 @@ void RecordHandler::saveOptions() {
     AEFile_Close(fd);
     ((RecordHandler *)(self))->addHashToOptions();
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- readAgent_ce250.cpp ----
@@ -1320,10 +1291,7 @@ void * RecordHandler::readAgent(unsigned int fd) {
     agent->field_0x25 = raw25;
 
 
-    if (*guardP == saved) {
-        return agent;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return agent;
 }
 
 // ---- writeWanted_cfc40.cpp ----
@@ -1365,10 +1333,7 @@ void RecordHandler::writeWanted(void *w, unsigned int fd) {
         AEFile_WriteInt(parts[i], fd);
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- recordStoreWritePreview_cfea4.cpp ----
@@ -1469,10 +1434,7 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile_Close(fd);
     ((RecordHandler *)(self))->addHash(slot);
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- readOptionsFileAsByteArray_cdd4c.cpp ----
@@ -1582,10 +1544,7 @@ void * RecordHandler::recordStoreRead(int slot) {
         }
     }
 
-    if (*guardP == saved) {
-        return rec;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return rec;
     return rec;
 }
 
@@ -1635,10 +1594,7 @@ int RecordHandler_checkHash(unsigned int fd)
         }
     }
 
-    if (*guardP == saved) {
-        return result;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return result;
 }
 
 // ---- addHashToOptions_cdafc.cpp ----

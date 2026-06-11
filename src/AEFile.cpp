@@ -146,7 +146,6 @@ __attribute__((minsize)) void AEFile::Release()
 // ---- OpenAppend_70b94.cpp ----
 __attribute__((minsize)) uint32_t AEFile::OpenAppend(const char *path, uint32_t *handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     uint32_t result;
     {
         String string;
@@ -154,11 +153,7 @@ __attribute__((minsize)) uint32_t AEFile::OpenAppend(const char *path, uint32_t 
         result = OpenAppend(string, handle);
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return result;
-    }
-    __stack_chk_fail(guardDelta);
+    return result;
 }
 
 // ---- ReadSwitched_70d06.cpp ----
@@ -202,7 +197,6 @@ __attribute__((minsize)) uint32_t AEFile::Read(String &value, uint32_t handle, b
     uint32_t locals[2];
     uint32_t result = 0;
 
-    locals[1] = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
     result = Read(4, &locals[0], handle);
 
     if (wide) {
@@ -235,11 +229,7 @@ __attribute__((minsize)) uint32_t AEFile::Read(String &value, uint32_t handle, b
         }
     }
 
-    uint32_t stack_difference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - locals[1];
-    if (stack_difference == 0) {
-        return result;
-    }
-    __stack_chk_fail(stack_difference);
+    return result;
 }
 
 // ---- GetDeviceFreeSpace_71228.cpp ----
@@ -273,7 +263,6 @@ __attribute__((minsize)) void AEFile::SetAppRootDir(const char *path) {
 // ---- OpenRead_70aec.cpp ----
 __attribute__((minsize)) uint32_t AEFile::OpenRead(const char *path, uint32_t *handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     uint32_t result;
     {
         String string;
@@ -281,11 +270,7 @@ __attribute__((minsize)) uint32_t AEFile::OpenRead(const char *path, uint32_t *h
         result = OpenRead(string, handle);
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return result;
-    }
-    __stack_chk_fail(guardDelta);
+    return result;
 }
 
 // ---- Read_70bfe.cpp ----
@@ -297,7 +282,6 @@ uint32_t AEFile::Read(uint16_t &value, uint32_t handle)
 // ---- Write_70fe4.cpp ----
 uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide)
 {
-    void * volatile cookie = __stack_chk_guard;
     uint32_t result;
 
     if (wide) {
@@ -319,11 +303,7 @@ uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide)
         operator delete(text);
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return result;
-    }
-    __stack_chk_fail(guardDelta);
+    return result;
 }
 
 // ---- ResetSaveDirectory_712f0.cpp ----
@@ -345,7 +325,6 @@ void AEFile::ResetSaveDirectory()
 // ---- OpenWrite_70b40.cpp ----
 __attribute__((minsize)) uint32_t AEFile::OpenWrite(const char *path, uint32_t *handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     uint32_t result;
     {
         String string;
@@ -353,11 +332,7 @@ __attribute__((minsize)) uint32_t AEFile::OpenWrite(const char *path, uint32_t *
         result = OpenWrite(string, handle);
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return result;
-    }
-    __stack_chk_fail(guardDelta);
+    return result;
 }
 
 // ---- ReadSwitched_70d22.cpp ----
@@ -467,7 +442,6 @@ uint32_t AEFile::Read(int8_t &value, uint32_t handle)
 // ---- ReadSwitched_70d40.cpp ----
 __attribute__((minsize)) uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
 {
-    void * volatile cookie = __stack_chk_guard;
     uint16_t length;
     uint32_t result = 0;
 
@@ -482,11 +456,7 @@ __attribute__((minsize)) uint32_t AEFile::ReadSwitched(String &value, uint32_t h
         operator delete(buffer);
     }
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta == 0) {
-        return result;
-    }
-    __stack_chk_fail(guardDelta);
+    return result;
 }
 
 // ---- ReadSwitched_70cec.cpp ----
@@ -598,15 +568,10 @@ done:
 // ---- Write_70ee8.cpp ----
 __attribute__((minsize)) void AEFile::Write(uint8_t value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     uint8_t local = value;
     Write(1, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- FileDelete_711b8.cpp ----
@@ -614,7 +579,6 @@ extern FileInterface *gAEFileFileInterface;
 
 __attribute__((minsize)) uint32_t AEFile::FileDelete(const String &path)
 {
-    void * volatile cookie = __stack_chk_guard;
 
     FileInterface *fileInterface = gAEFileFileInterface;
     uint32_t result = 0;
@@ -623,13 +587,7 @@ __attribute__((minsize)) uint32_t AEFile::FileDelete(const String &path)
         result = fileInterface->vtable->FileDelete(fileInterface, localPath);
     }
 
-    uint32_t saved = (uint32_t)(__UINTPTR_TYPE__)cookie;
-    uint32_t current = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
-    uint32_t guardDelta = current - saved;
-    if (guardDelta == 0) {
-        return result;
-    }
-    __stack_chk_fail(guardDelta);
+    return result;
 }
 
 // ---- collectPakFiles_70668.cpp ----
@@ -688,7 +646,6 @@ __attribute__((minsize)) uint32_t AEFile::FileExist(const String &path)
 extern FileInterface *gAEFileInterface;
 
 __attribute__((minsize)) void AEFile::SetSaveDirectory(String path) {
-    void * volatile cookie = __stack_chk_guard;
 
     FileInterface *fileInterface = gAEFileInterface;
     if (fileInterface != 0) {
@@ -696,13 +653,7 @@ __attribute__((minsize)) void AEFile::SetSaveDirectory(String path) {
         fileInterface->vtable->SetSaveDirectory(fileInterface, savePath);
     }
 
-    uint32_t saved = (uint32_t)(__UINTPTR_TYPE__)cookie;
-    uint32_t current = (uint32_t)(__UINTPTR_TYPE__)*(void *volatile *)&__stack_chk_guard;
-    uint32_t guardDelta = current - saved;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- findPakFile_7075c.cpp ----
@@ -792,15 +743,10 @@ done:
 // ---- Write_70f1c.cpp ----
 __attribute__((minsize)) void AEFile::Write(int8_t value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     int8_t local = value;
     Write(1, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- sortPakFileEntryList_7035c.cpp ----
@@ -830,29 +776,19 @@ __attribute__((minsize)) void AEFile::sortPakFileEntryList()
 // ---- Write_70dec.cpp ----
 __attribute__((minsize)) void AEFile::Write(char value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     char local = value;
     Write(1, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- Write_70e50.cpp ----
 __attribute__((minsize)) void AEFile::Write(int32_t value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     int32_t local = value;
     Write(4, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- SetInterface_7019c.cpp ----
@@ -886,29 +822,19 @@ __attribute__((minsize)) void AEFile::SetInterface(FileInterface *fileInterface)
 // ---- Write_70eb4.cpp ----
 __attribute__((minsize)) void AEFile::Write(int16_t value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     int16_t local = value;
     Write(2, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- Write_70e80.cpp ----
 __attribute__((minsize)) void AEFile::Write(uint16_t value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     uint16_t local = value;
     Write(2, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- collectFilesInPakFiles_703bc.cpp ----
@@ -918,7 +844,6 @@ extern Array<AEPakFileEntry *> *g_pakFileEntries;
 __attribute__((minsize)) void AEFile::collectFilesInPakFiles(String &path)
 {
     FileInterface *fileInterface = g_fileInterface;
-    volatile __UINTPTR_TYPE__ cookie = reinterpret_cast<__UINTPTR_TYPE__>(__stack_chk_guard);
 
     if (fileInterface != 0 && fileInterface->enabled != 0) {
         AEFile::OpenRead(path, 0);
@@ -970,10 +895,7 @@ __attribute__((minsize)) void AEFile::collectFilesInPakFiles(String &path)
         AEFile::Close(0);
     }
 
-    if (cookie == reinterpret_cast<__UINTPTR_TYPE__>(__stack_chk_guard)) {
-        return;
-    }
-    __stack_chk_fail();
+    return;
 }
 
 // ---- crc32_ccitt_70570.cpp ----
@@ -1063,55 +985,35 @@ __attribute__((minsize)) uint32_t AEFile::crc32_ccitt(const String &text)
 // ---- Write_70f50.cpp ----
 __attribute__((minsize)) void AEFile::Write(int64_t value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     int64_t local = value;
     Write(8, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- Write_70f80.cpp ----
 __attribute__((minsize)) void AEFile::Write(bool value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     bool local = value;
     Write(1, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- Write_70fb4.cpp ----
 __attribute__((minsize)) void AEFile::Write(float value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     float local = value;
     Write(4, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }
 
 // ---- Write_70e20.cpp ----
 __attribute__((minsize)) void AEFile::Write(uint32_t value, uint32_t handle)
 {
-    void * volatile cookie = __stack_chk_guard;
     uint32_t local = value;
     Write(4, &local, handle);
 
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)cookie - (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
-    if (guardDelta == 0) {
-        return;
-    }
-    __stack_chk_fail(guardDelta);
+    return;
 }

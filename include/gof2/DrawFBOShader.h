@@ -55,8 +55,6 @@ public:
 
 } // namespace AbyssEngine
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 extern "C" int glGetAttribLocation(uint32_t program, const char *name);
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);

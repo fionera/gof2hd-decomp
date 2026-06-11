@@ -29,8 +29,6 @@ extern "C" void glVertexAttribPointer(uint32_t index, int size, uint32_t type, u
                                       const void *pointer);
 extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(uint32_t diff);
 
 void operator delete(void *ptr) noexcept;
 

@@ -91,14 +91,11 @@ void MaskShader::Init(::Engine *)
 // AbyssEngine::MaskShader::MaskShader()
 MaskShader::MaskShader()
 {
-    void *volatile cookie = __stack_chk_guard;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
     field_0x0 = (char *)MaskShader_vtable + 8;
     ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
     field_0xc.s = u"MaskShader";
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail(guardDelta);
+    
 }
 
 } // namespace AbyssEngine

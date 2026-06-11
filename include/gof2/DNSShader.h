@@ -7,8 +7,6 @@
 // flag byte at 0x9, the name String at 0xc, attribute/uniform locations at 0x20..0x60. Fields
 // are read/written through the i32/u8/f32/ptr accessor helpers below (shared shader-storage idiom).
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 extern "C" void glUseProgram(uint32_t program);
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);

@@ -11,7 +11,6 @@ extern "C" void SMM_MatrixRotateVector(Matrix *out, const Vector *v);
 extern "C" void SMM_MeshSetNormal(void *canvas, unsigned meshId, unsigned short idx, Vector *n);
 extern "C" void SMM_TransformCreate(void *canvas, unsigned *out);
 extern "C" void SMM_TransformAddMeshId(void *canvas, unsigned transformId, unsigned meshId);
-extern "C" void SMM___stack_chk_fail();
 
 // ---- SimpleMeshMerger_180ecc.cpp ----
 // SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short>& meshIds,
@@ -144,8 +143,6 @@ SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transform
     SMM_TransformAddMeshId(canvas, self->f_1c, self->f_18);
     self->valid = 1;
 
-    if (*canary != saved) {
-        SMM___stack_chk_fail();
-    }
+    
     return self;
 }

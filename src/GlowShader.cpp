@@ -87,7 +87,6 @@ extern "C" AbyssEngine::GlowShader *
 _ZN11AbyssEngine10GlowShaderC2Ev(AbyssEngine::GlowShader *self)
 {
     AbyssEngine::ConstructorFrame frame;
-    frame.stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
     *(void *volatile *)self = _ZTVN11AbyssEngine10GlowShaderE + 8;
@@ -100,10 +99,7 @@ _ZN11AbyssEngine10GlowShaderC2Ev(AbyssEngine::GlowShader *self)
         AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
     _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
 
-    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - frame.stackGuard;
-    if (stackDifference != 0) {
-        __stack_chk_fail(stackDifference);
-    }
+    
     return self;
 }
 

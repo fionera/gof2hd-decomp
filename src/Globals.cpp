@@ -31,8 +31,6 @@ extern "C" void AEString_ctor_default(void *out);
 extern "C" float Globals_sqrt_impl(float x);
 extern "C" void Globals_getRandomSystemForDrinks_tail(int a, int b);
 extern "C" void Globals_addSoundResource_tail(int val, Array<int> *a);
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void AEString_default_ctor(void *dst);
 extern "C" void AEString_copy_ctor(void *dst, void *src, int c);
 extern "C" void AEString_cstr_ctor(void *dst, const char *s, int c);
@@ -384,10 +382,7 @@ void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
     }
 
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- longToTimeString_e3994.cpp ----
@@ -460,10 +455,7 @@ void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
     }
 
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- getBoundedString_e469c.cpp ----
@@ -509,10 +501,7 @@ void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width
         vt[1](line);
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- setCoordsSteer_e8404.cpp ----
@@ -760,10 +749,7 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
     }
 
 epilogue:
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- getInAppPurchaseArrayIndex_e8c88.cpp ----
@@ -839,10 +825,7 @@ int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
         }
     }
 
-    if (*guardP == saved) {
-        return result;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return result;
 }
 
 // ---- getKeyBindingReplaceString_e8c1c.cpp ----
@@ -919,10 +902,7 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
     AEString_concat(full, left);
 
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- getShipGroup_e4e14.cpp ----
@@ -1077,10 +1057,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
     }
 
 done:
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- getRandomEnemyFighter_e49dc.cpp ----
@@ -1220,10 +1197,7 @@ void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, f
     Mesh_setVertex((void *)(long)cv, mesh, 10, ph, ph, 0);
     Mesh_setVertex((void *)(long)cv, mesh, 0xb, ph, nh, 0);
 
-    if (*counter == (unsigned)snapshot) {
-        return;
-    }
-    __stack_chk_fail(*counter - snapshot);
+    return;
 }
 
 // ---- getWreckCollision_e4bb8.cpp ----
@@ -1308,10 +1282,7 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
         operator_delete(ArrayInt_dtor(data));
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- Globals_e31e0.cpp ----
@@ -2287,10 +2258,7 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
         AEString_concat(retSlot, mid);
     }
 
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }
 
 // ---- getLine_e4230.cpp ----
@@ -2352,8 +2320,5 @@ void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
 
 done:
     AEString_dtor(tmp);
-    if (*guardP == saved) {
-        return;
-    }
-    __stack_chk_fail((unsigned)(*guardP - saved));
+    return;
 }

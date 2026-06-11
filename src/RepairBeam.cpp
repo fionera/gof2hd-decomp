@@ -56,7 +56,6 @@ extern "C" int RB_FModSound_isPlaying(int snd);
 extern "C" void RB_FModSound_play(int snd, void *ev, void *p, float f);
 extern "C" void RB_FModSound_stop(int snd);
 extern "C" void RB_FModSound_updateEvent3DAttributes(void *snd, int ev, Vector *pos, void *p, bool b);
-extern "C" void RB___stack_chk_fail();
 
 // ---- render_a7a48.cpp ----
 // RepairBeam::render() — render each beam geometry whose target id slot is active (!= -1).
@@ -439,7 +438,5 @@ void RepairBeam::update(int dt, void *level, void *hud) {
         }
     }
 
-    if (*canary != saved) {
-        RB___stack_chk_fail();
-    }
+    
 }

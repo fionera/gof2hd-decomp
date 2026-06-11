@@ -36,7 +36,6 @@
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void Music_resume(Music *m, int one, int v);
 extern "C" void PaintCanvas_End3d(unsigned color);
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void PlayerEgo_syncFirstPerson(PlayerEgo *p, int v);
 // PlayerEgo.h (owned by another batch) declares these as returning void, but the
 // callers below consume their (int) result. Use the original free-function form
@@ -430,8 +429,7 @@ void MGame::startJumpScene() {
     }
     TFC_setPosition(self->field_0xf4, camX, camY, camZ);
 
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- switchCamera_17c4e8.cpp ----
@@ -852,8 +850,7 @@ void MGame::OnUpdate() {
     // Run the full per-frame update.
     MGame_tick(self, delta);
 
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- OnSuspend_180800.cpp ----
@@ -962,7 +959,7 @@ void MGame::dockEvent() {
             ((PlayerEgo *)(self->field_0x58))->isAutoPilot() != 0) {
             ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58, 0);
         }
-        if (*guard != g0) __stack_chk_fail();
+        
         return;
     }
 
@@ -974,7 +971,7 @@ void MGame::dockEvent() {
             ((PlayerEgo *)(self->field_0x58))->dockToStream(0);
             self->field_0x15c = 0;
             self->field_0x111 = 1;
-            if (*guard != g0) __stack_chk_fail();
+            
             return;
         }
         if (self->field_0xcb != 0) {
@@ -987,12 +984,12 @@ void MGame::dockEvent() {
                 if (self->field_0xc7 != 0) {
                     self->field_0x30 = 0;
                     self->field_0x34 = 0;
-                    if (*guard != g0) __stack_chk_fail();
+                    
                     return;
                 }
                 ((PlayerEgo *)(self->field_0x58))->isAutoPilot();
                 if (((PlayerEgo *)(self->field_0x58))->goingToStream() == 0) {
-                    if (*guard != g0) __stack_chk_fail();
+                    
                     return;
                 }
                 if (*autoFlag == 0) {
@@ -1012,10 +1009,10 @@ void MGame::dockEvent() {
                     self->field_0xc7 = 1;
                     ((MGame *)(self))->pauseSounds();
                     self->field_0x111 = 1;
-                    if (*guard != g0) __stack_chk_fail();
+                    
                     return;
                 }
-                if (self->field_0xc5 != 0) { if (*guard != g0) __stack_chk_fail(); return; }
+                if (self->field_0xc5 != 0) {  return; }
                 self->field_0x15c = 0;
                 ChoiceWindow *cw = self->field_0x94;
                 self->field_0x111 = 1;
@@ -1026,7 +1023,7 @@ void MGame::dockEvent() {
                 }
                 MGame_buildDockChoice(self, g_deTextB, g_deLitB0, g_deLitB1);
             } else {
-                if (self->field_0xc5 != 0) { if (*guard != g0) __stack_chk_fail(); return; }
+                if (self->field_0xc5 != 0) {  return; }
                 self->field_0x15c = 0;
                 ChoiceWindow *cw = self->field_0x94;
                 self->field_0x111 = 1;
@@ -1041,7 +1038,7 @@ void MGame::dockEvent() {
             self->field_0xc5 = 1;
             ((MGame *)(self))->pauseSounds();
             ((PlayerEgo *)(self->field_0x58))->setAutoPilot(0);
-            if (*guard != g0) __stack_chk_fail();
+            
             return;
         }
     }
@@ -1051,7 +1048,7 @@ void MGame::dockEvent() {
         int lm = Level_getLandmarks(self->field_0x78);
         if (tgt != *(int *)((char *)lm + 4) ||
             ((PlayerEgo *)(self->field_0x58))->collidesWithStation() == 0) {
-            if (*guard != g0) __stack_chk_fail();
+            
             return;
         }
     }
@@ -1060,7 +1057,7 @@ void MGame::dockEvent() {
     if (cm > 0x30 && Status_getCurrentCampaignMission() < 0x37) {
         if (Station_getIndex(Status_getStation()) != 0x4a) {
             ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58, 0);
-            if (*guard != g0) __stack_chk_fail();
+            
             return;
         }
     }
@@ -1074,7 +1071,7 @@ void MGame::dockEvent() {
         self->field_0x54 = 0;
     }
 
-    if (*guard != g0) __stack_chk_fail();
+    
 }
 
 // ---- freeCamTouchEnd_178d30.cpp ----
@@ -1290,7 +1287,7 @@ void MGame::OnInitialize() {
 
     if (((Level *)(level))->init() == 0) {
         self->field_0xc = 100;
-        if (*guard != g0) __stack_chk_fail();
+        
         return;
     }
 
@@ -1378,8 +1375,7 @@ void MGame::OnInitialize() {
     // Weapon selection, particle effects, audio and music init.
     MGame_setupWeaponsAndAudio(self);
 
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- freeCamTouchMove_178af8.cpp ----
@@ -1406,9 +1402,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
 
     if (((PlayerEgo *)(self->field_0x58))->isMining() != 0) {
         self->field_0x111 = 1;
-        if (*guard - g0 == 0)
-            return MGame_freeCamPanDone(self, ty);
-        __stack_chk_fail();
+        return MGame_freeCamPanDone(self, ty);
         return;
     }
     self->field_0x111 = 0;
@@ -1435,7 +1429,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
             float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
             Vector_assign((Vector *)((char *)self + 0xa4), (Vector *)v);
         }
-        if (*guard != g0) __stack_chk_fail();
+        
         return;
     }
 
@@ -1466,7 +1460,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
     }
     TFC_zoomTarget(self->field_0xf4, zoom);
 
-    if (*guard != g0) __stack_chk_fail();
+    
 }
 
 // ---- OnTouchEnd_17a144.cpp ----
@@ -1515,8 +1509,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     // All button-press reactions live in the dispatch helper.
     MGame_dispatchTouchEndAction(self, p1, p2, touchId, hr, wasAutoPilot);
 
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- successCheck_17ff58.cpp ----
@@ -1667,8 +1660,7 @@ deliverFollowup:
     MGame_buildMissionFollowup(self);
 
 done:
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- _MGame_177c08.cpp ----
@@ -2334,8 +2326,7 @@ afterCam:
     }
 
 done:
-    if (*guard != g0)
-        __stack_chk_fail();
+    
 }
 
 // ---- MGame_177b30.cpp ----
@@ -2582,7 +2573,7 @@ void MGame::OnRender2D() {
     int *guard = g_r2dGuard;
     int g0 = *guard;
     if (self->field_0x54 == 0) {
-        if (*guard != g0) __stack_chk_fail();
+        
         return;
     }
 
@@ -2606,7 +2597,7 @@ void MGame::OnRender2D() {
         Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
         Vector_assign((char *)eng + 0x3cc, v);
         PaintCanvas_End2d();
-        if (*guard != g0) __stack_chk_fail();
+        
         return;
     }
 
@@ -2683,7 +2674,7 @@ void MGame::OnRender2D() {
     }
 
     PaintCanvas_End2d();
-    if (*guard != g0) __stack_chk_fail();
+    
 }
 
 // ---- dialogueEvent_17fe34.cpp ----

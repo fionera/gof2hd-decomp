@@ -35,7 +35,6 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) ConfigReader::ConfigReader(Engine *engine)
 {
-    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
 
     new ((Array<TokenStruct *> *)this) Array<TokenStruct *>();
     config_engine(this) = engine;
@@ -50,10 +49,7 @@ __attribute__((minsize)) ConfigReader::ConfigReader(Engine *engine)
         StringFromAscii("ConfigRegisterTokenReadFunction"),
         (ConfigTokenReadFunction)config_reader_register_token_callback, engine);
 
-    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
-    if (stackDifference != 0) {
-        __stack_chk_fail(stackDifference);
-    }
+    
 }
 
 } // namespace AbyssEngine
@@ -78,7 +74,6 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) String ConfigReader::GetNewLine()
 {
-    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
     String line;
     char c = 0;
 
@@ -115,10 +110,7 @@ __attribute__((minsize)) String ConfigReader::GetNewLine()
             StringSetAscii(line, "EOF");
         }
     }
-    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
-    if (stackDifference != 0) {
-        __stack_chk_fail(stackDifference);
-    }
+    
     return line;
 }
 
@@ -129,7 +121,6 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) void ConfigReader::ParseFile(String name)
 {
-    volatile uint32_t stackGuard = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard;
     if (AEFile::OpenRead(name, &config_file_handle(this)) != 0) {
         String line = GetNewLine();
         while (StringCompareAscii(line, "EOF") != 0) {
@@ -159,10 +150,7 @@ __attribute__((minsize)) void ConfigReader::ParseFile(String name)
         }
         AEFile::Close(config_file_handle(this));
     }
-    uint32_t stackDifference = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - stackGuard;
-    if (stackDifference != 0) {
-        __stack_chk_fail(stackDifference);
-    }
+    
 }
 
 } // namespace AbyssEngine

@@ -10,8 +10,6 @@
 
 #include <new>
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
 struct MovingStars;

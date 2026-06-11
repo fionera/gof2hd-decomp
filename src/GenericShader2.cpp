@@ -98,14 +98,11 @@ void GenericShader2::UpdateMeshData(Mesh *mesh, Engine *engine)
 // AbyssEngine::GenericShader2::GenericShader2()
 GenericShader2::GenericShader2()
 {
-    void *volatile cookie = __stack_chk_guard;
     ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
     field_0x0 = (char *)GenericShader2_vtable + 8;
     ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
     field_0xc.s = u"GenericShader2";
-    uint32_t guardDelta = (uint32_t)(__UINTPTR_TYPE__)__stack_chk_guard - (uint32_t)(__UINTPTR_TYPE__)cookie;
-    if (guardDelta != 0)
-        __stack_chk_fail(guardDelta);
+    
 }
 
 } // namespace AbyssEngine

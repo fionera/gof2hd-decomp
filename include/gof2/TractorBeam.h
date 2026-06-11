@@ -28,8 +28,6 @@ struct PaintCanvas;
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
-extern "C" void *__stack_chk_guard;
-extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 namespace AbyssEngine {
 namespace AEMath {
