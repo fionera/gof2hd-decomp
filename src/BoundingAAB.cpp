@@ -1,10 +1,9 @@
 #include "gof2/BoundingAAB.h"
+#include "gof2/BoundingVolume.h"
 
 
 extern "C" float external_fabsf(float value);
 extern "C" Vector AEMath_operator_sub(const Vector &a, const Vector &b);
-extern "C" int BoundingVolume_collide(BoundingAAB *self, float x, float y, float z);
-extern "C" void BoundingVolume_update(BoundingAAB *self, float x, float y, float z);
 
 // ---- outerCollide_981d2.cpp ----
 int BoundingAAB::outerCollide(float x, float y, float z)
@@ -141,11 +140,11 @@ int BoundingAAB::collide(float x, float y, float z)
     if (fn(this, x, y, z) == 0) {
         return 0;
     }
-    return BoundingVolume_collide(this, x, y, z);
+    return ((BoundingVolume *)(this))->collide(x, y, z);
 }
 
 // ---- update_9827a.cpp ----
 void BoundingAAB::update(float x, float y, float z)
 {
-    return BoundingVolume_update(this, x, y, z);
+    return ((BoundingVolume *)(this))->update(x, y, z);
 }

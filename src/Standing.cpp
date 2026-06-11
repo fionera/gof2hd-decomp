@@ -1,9 +1,7 @@
 #include "gof2/Standing.h"
+#include "gof2/Status.h"
 #include <arm_neon.h>
 
-extern "C" int Status_hardCoreMode(Status *self);
-extern "C" int Status_inAlienOrbit(Status *self);
-extern "C" SolarSystem *Status_getSystem(Status *self);
 extern "C" int SolarSystem_getRace();
 
 // ---- Standing_11d6a8.cpp ----
@@ -177,7 +175,7 @@ __attribute__((visibility("hidden"))) extern Status **g_adl_status;
 // odd slot, with 0/2 applied as a penalty (negated) — all routed through applyPoints.
 void Standing::applyDelict(unsigned kind, int severity) {
     Standing *self = this;
-    int hc = Status_hardCoreMode(*g_adl_status);
+    int hc = ((Status *)(*g_adl_status))->hardCoreMode();
     int delta = severity << hc;
     int sign;
     switch (kind) {
@@ -215,10 +213,10 @@ void Standing::applyKill(int kind) {
     Standing *self = this;
     Status **holder = g_apk_status;
     unsigned sysRace;
-    if (Status_inAlienOrbit(*holder) != 0) {
+    if (((Status *)(*holder))->inAlienOrbit() != 0) {
         sysRace = 9;
     } else {
-        Status_getSystem(*holder);
+        ((Status *)(*holder))->getSystem();
         sysRace = SolarSystem_getRace();
     }
     int delta;

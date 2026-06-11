@@ -91,9 +91,9 @@ uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *
     volatile uint32_t stackGuard = guard;
     uint32_t program = 0;
 
-    uint32_t vertexShader = ShaderBaseStruct_ES2LoadShader(guard, 0x8b31, vertexSource);
+    uint32_t vertexShader = ((ShaderBaseStruct *)(guard))->ES2LoadShader(0x8b31, vertexSource);
     if (vertexShader != 0) {
-        uint32_t fragmentShader = ShaderBaseStruct_ES2LoadShader(vertexShader, 0x8b30, fragmentSource);
+        uint32_t fragmentShader = ((ShaderBaseStruct *)(vertexShader))->ES2LoadShader(0x8b30, fragmentSource);
         if (fragmentShader == 0) {
             glDeleteShader(vertexShader);
         } else {

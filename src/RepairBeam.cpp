@@ -1,7 +1,7 @@
 #include "gof2/RepairBeam.h"
+#include "gof2/AEGeometry.h"
 
 
-extern "C" void AEGeometry_render(void *geom);
 extern "C" int RepairBeam_Status_getShip();
 extern "C" int RepairBeam_Ship_getFirstEquipmentOfSort(int ship);
 extern "C" int RepairBeam_Item_getAttribute(int item);
@@ -67,7 +67,7 @@ void RepairBeam::render() {
     for (unsigned i = 0; i < (unsigned)targetIds[0][0]; i = i + 1) {
         if (targetIds[1][i] != -1) {
             void ***geoms = (void ***)self->field_0x10;
-            AEGeometry_render(geoms[1][i]);
+            ((AEGeometry *)(geoms[1][i]))->render();
         }
     }
 }

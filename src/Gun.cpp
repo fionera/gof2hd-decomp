@@ -1,4 +1,6 @@
 #include "gof2/Gun.h"
+#include "gof2/Item.h"
+#include "gof2/Sparks.h"
 #include "gof2/AEGeometry.h"
 
 // NOTE: gof2/Player.h is intentionally NOT included. That (out-of-batch) header has
@@ -12,7 +14,6 @@ struct Player {
 
 extern "C" void AEGeometry_ctor(AEGeometry *self, unsigned short idx, void *canvas, bool b);
 extern "C" int  Player_isAsteroid(Player *p);
-extern "C" int  Item_getAttribute(int item, int attr);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void Gun_VecArray_ctor(void *a);
 extern "C" void Gun_VecPtrArray_ctor(void *a);
@@ -142,7 +143,7 @@ namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); } // 0x
 namespace Transform { void SetAnimationState(unsigned tf, int a, int b); } // 0x6fd18
 }
 
-extern "C" int Item_getAttribute(int item, int attr);         // 0x718e4
+// 0x718e4
 extern "C" void *Gun_operator_new(unsigned size);             // operator new(uint)
 extern "C" void *Gun_operator_new_arr(unsigned size);         // operator new[](uint)
 extern "C" __attribute__((nothrow)) void Gun_operator_delete(void *p); // operator delete(void*)
@@ -160,7 +161,7 @@ void Gun::setIndex(int index) {
     self->itemIndex = index;
     int *items = gSI_items;
     self->field_0x108 = (index == 0xe4) || ((unsigned)(index - 9) < 3);
-    self->field_0x64 = Item_getAttribute(*(int *)(*(int *)(*items + 4) + index * 4), 0xa);
+    self->field_0x64 = ((Item *)(*(int *)(*(int *)(*items + 4) + index * 4)))->getAttribute(0xa);
     int g = gSI_table[index];
     if (g >= 0) {
         unsigned count = self->count;
@@ -266,7 +267,7 @@ void Gun::ignite() {
             if (dist < self->magnitude) {
                 ((uint8_t *)self->hitFlags)[i] = 1;
                 AbyssEngine::AEMath::Vector_assign((Vector *)(self->field_0x30 + off), base);
-                Item_getAttribute(*(int *)(*(int *)(*gIG_status + 4) + self->itemIndex * 4), 0);
+                ((Item *)(*(int *)(*(int *)(*gIG_status + 4) + self->itemIndex * 4)))->getAttribute(0);
             }
             off = off + 0xc;
         }
@@ -292,7 +293,7 @@ void DrawTransform(unsigned canvas, AEMath::Matrix *m);              // 0x7306c
 }
 }
 
-extern "C" void Sparks_render(Sparks *s);                            // 0x773ec
+// 0x773ec
 
 // pc-rel global: holder for the gun-transform canvas pointer (*holder used each iter).
 extern unsigned *const gGunRenderCanvas __attribute__((visibility("hidden")));
@@ -304,7 +305,7 @@ void Gun::render() {
 
     Sparks *impact = self->impact;
     if (impact != 0)
-        Sparks_render(impact);
+        ((Sparks *)(impact))->render();
 
     if (self->geometries != 0) {
         unsigned canvas = *gGunRenderCanvas;
@@ -492,7 +493,7 @@ namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); } // 0x
 namespace Transform { void Update(long long tf, char b); }                 // 0x6f7cc
 }
 
-extern "C" void Sparks_update(Sparks *s, int dt);                 // 0x773d4
+// 0x773d4
 // 0x773e0
 // 0x72fdc
 
@@ -510,7 +511,7 @@ void Gun::update(int dt) {
     }
     Sparks *impact = self->impact;
     if (impact != 0)
-        Sparks_update(impact, dt);
+        ((Sparks *)(impact))->update(dt);
 
     if (self->geometries != 0) {
         int canvas = *gUP_canvas;

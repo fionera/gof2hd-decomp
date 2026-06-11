@@ -1,11 +1,11 @@
 #include "gof2/TargetFollowCamera.h"
+#include "gof2/AEGeometry.h"
 
 
 extern "C" void *Vector_assign(void *dst, const void *src);
 extern "C" float AEMath_VectorLength(Vector *v);
 extern "C" void TFC_tail_int(TargetFollowCamera *self, int n);
 extern "C" void TFC_setShipHandling2(TargetFollowCamera *self, float v);
-extern "C" float *AEGeometry_getMatrix(void *geom);
 void *MatrixGetUp(Vector *out, const void *m);
 void *MatrixTransformVector(Vector *out, const void *m, const Vector *v);
 void TFC_update(TargetFollowCamera *self, int n);
@@ -293,7 +293,7 @@ void TFC_setLocked(TargetFollowCamera *self, bool locked) {
     Vector up;
     self->locked = locked;
     if (locked) {
-        __builtin_memcpy(mat, AEGeometry_getMatrix(self->target), 0x3c);
+        __builtin_memcpy(mat, ((AEGeometry *)(self->target))->getMatrix(), 0x3c);
         MatrixGetUp(&up, mat);
         Vector_assign((Vector *)(p + 0x20), &up);
         MatrixTransformVector(&up, mat, (const Vector *)(p + 0x38));

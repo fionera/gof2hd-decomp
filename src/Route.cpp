@@ -2,8 +2,6 @@
 #include "gof2/Waypoint.h"
 
 
-extern "C" void Waypoint_reset(Waypoint *wp);
-extern "C" void Waypoint_reached(Waypoint *wp);
 extern "C" void ArrayReleaseClasses_Waypoint(Array<Waypoint *> *a);
 extern "C" void *ArrayWaypoint_dtor(Array<Waypoint *> *a);
 extern "C" void *ArrayKIPlayer_dtor(Array<KIPlayer *> *a);
@@ -15,7 +13,6 @@ extern "C" void ArraySetLengthKIPlayer(uint32_t n, void *a);
 extern "C" void ArraySetLengthInt(uint32_t n, void *a);
 extern "C" void Waypoint_ctor(void *wp, int x, int y, int z, Route *route);
 extern "C" void ArrayAddWaypoint(void *wp, void *a);
-extern "C" void Waypoint_setActive(Waypoint *wp, bool active);
 extern "C" void ArrayAddInt(int v, void *a);
 extern "C" void ArrayKIPlayer_ctor(void *a);
 extern "C" Route *Route_ctor2(Route *self, int *coords, void *targets, int *times, int count);
@@ -37,7 +34,7 @@ int Route::length() {
 void Route::reset() {
     Route *self = this;
     for (uint32_t i = 0; i < self->field_0xc->size(); i++)
-        Waypoint_reset((*self->field_0xc)[i]);
+        ((Waypoint *)((*self->field_0xc)[i]))->reset();
     self->field_0x0 = 0;
 }
 
@@ -53,7 +50,7 @@ Route * Route::getExactClone() {
     Route *result = ((Route *)(self))->clone();
     for (uint32_t i = 0; i < result->field_0xc->size(); i++) {
         if ((*self->field_0xc)[i]->state != 0)
-            Waypoint_reached((*result->field_0xc)[i]);
+            ((Waypoint *)((*result->field_0xc)[i]))->reached();
     }
     result->field_0x0 = self->field_0x0;
     return result;
@@ -189,12 +186,12 @@ void Route::reachWaypoint(int index) {
     } else if (self->field_0x4 != 0) {
         self->field_0x0 = 0;
         for (uint32_t i = 0; i < len; i++) {
-            Waypoint_reset((*self->field_0xc)[i]);
+            ((Waypoint *)((*self->field_0xc)[i]))->reset();
             len = self->field_0xc->size();
         }
-        Waypoint_setActive((*self->field_0xc)[0], true);
+        ((Waypoint *)((*self->field_0xc)[0]))->setActive(true);
     }
-    Waypoint_setActive((*self->field_0xc)[index], false);
+    ((Waypoint *)((*self->field_0xc)[index]))->setActive(false);
     return Waypoint_activate((*self->field_0xc)[index]);
 }
 
@@ -318,8 +315,8 @@ float Route::update_xyz(float x, float y, float z) {
     if (!(dz < 2000.0f) || !(dz > -2000.0f))
         return x;
 
-    Waypoint_setActive(wp, false);
-    Waypoint_reached((*self->field_0xc)[self->field_0x0]);
+    ((Waypoint *)(wp))->setActive(false);
+    ((Waypoint *)((*self->field_0xc)[self->field_0x0]))->reached();
     int cur = self->field_0x0;
     Array<Waypoint *> *w = self->field_0xc;
     int next = cur + 1;
@@ -328,7 +325,7 @@ float Route::update_xyz(float x, float y, float z) {
     if (self->field_0x4 != 0 && (int)(len - 1) <= cur) {
         self->field_0x0 = 0;
         for (uint32_t i = 0; i < len; i++) {
-            Waypoint_reset((*w)[i]);
+            ((Waypoint *)((*w)[i]))->reset();
             w = self->field_0xc;
             len = w->size();
         }

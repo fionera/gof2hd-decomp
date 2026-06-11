@@ -1,11 +1,10 @@
 #include "gof2/Achievements.h"
+#include "gof2/Item.h"
+#include "gof2/Status.h"
 
 
 extern "C" void Achievements_onAllMedals(Achievements *self);
-extern "C" int Status_getCurrentCampaignMission(Status *s);
-extern "C" Ship *Status_getShip(Status *s);
 extern "C" unsigned *Ship_getEquipment(Ship *ship);
-extern "C" int Item_getType(Item *it);
 
 // ---- hasMedal_157008.cpp ----
 uint8_t Achievements::hasMedal(int index, int value) {
@@ -259,20 +258,20 @@ extern void *const gAchStatusHolder __attribute__((visibility("hidden")));
 void Achievements::initCheckEquipmentAndWeapons() {
     Achievements *self = this;
     uint8_t result;
-    if (Status_getCurrentCampaignMission(*(Status **)gAchStatusHolder) < 8) {
+    if (((Status *)(*(Status **)gAchStatusHolder))->getCurrentCampaignMission() < 8) {
         result = 1;
     } else {
-        Ship *ship = Status_getShip(*(Status **)gAchStatusHolder);
+        Ship *ship = ((Status *)(*(Status **)gAchStatusHolder))->getShip();
         unsigned *eq = Ship_getEquipment(ship);
         int weapons = 0;
         int turrets = 0;
         if (eq != 0) {
             for (unsigned i = 0; i < *eq; i = i + 1) {
                 Item *it = ((Item **)eq[1])[i];
-                if (it != 0 && Item_getType(it) != 4) {
-                    if (Item_getType(((Item **)eq[1])[i]) == 0) {
+                if (it != 0 && ((Item *)(it))->getType() != 4) {
+                    if (((Item *)(((Item **)eq[1])[i]))->getType() == 0) {
                         self->field_0x14 += 1;
-                    } else if (Item_getType(((Item **)eq[1])[i]) == 3) {
+                    } else if (((Item *)(((Item **)eq[1])[i]))->getType() == 3) {
                         turrets = turrets + 1;
                         continue;
                     }

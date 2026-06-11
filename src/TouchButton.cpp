@@ -1,4 +1,5 @@
 #include "gof2/TouchButton.h"
+#include "gof2/FModSound.h"
 #include "gof2/Achievements.h"
 #include "gof2/Layout.h"
 #include "gof2/String.h"
@@ -7,7 +8,6 @@
 extern "C" void TB_assignString(void *dst, String *src);
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" int  PaintCanvas_GetTextWidth(void *canvas, void *text, void *extra = 0);
-extern "C" void FModSound_play(void *snd, int id, void *a, void *b, float f);
 extern "C" void  String_ctor_cstr(void *s, const char *text, bool copy);
 extern "C" void  PaintCanvas_Image2DCreate(void *canvas, unsigned short imgId, unsigned int *outHandle);
 extern "C" int   PaintCanvas_GetImage2DWidth(void *canvas);
@@ -190,7 +190,7 @@ bool TouchButton::OnTouchBegin(int px, int py) {
     UC(self, 0xb0) = (unsigned char)r;
     if (r == 0)
         return false;
-    FModSound_play(*g_TB_sound, 0x7c, 0, 0, 0.0f);
+    ((FModSound *)(*g_TB_sound))->play(0x7c, 0, 0, 0.0f);
     return UC(self, 0xb0) != 0;
 }
 
@@ -208,7 +208,7 @@ unsigned int TouchButton::OnTouchEnd(int px, int py) {
         UC(self, 0xb0) = 0;
     } else {
         UC(self, 0xb0) = 0;
-        FModSound_play(*g_TB_sound, 0x7b, 0, 0, 0.0f);
+        ((FModSound *)(*g_TB_sound))->play(0x7b, 0, 0, 0.0f);
         res = 1;
     }
     return res;

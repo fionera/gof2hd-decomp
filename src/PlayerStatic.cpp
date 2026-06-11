@@ -1,11 +1,11 @@
 #include "gof2/PlayerStatic.h"
+#include "gof2/AEGeometry.h"
 #include "gof2/Player.h"
 
 
 extern "C" void *KIPlayer_dtor(PlayerStatic *self);
 extern "C" void *PlayerStatic_dtor_tail();
 extern "C" void PlayerStatic_render_geometry(void *geometry);
-extern "C" Vector AEGeometry_getPosition(AEGeometry *geometry);
 
 // ---- _PlayerStatic_e0970.cpp ----
 void *_ZN12PlayerStaticD1Ev(PlayerStatic *self)
@@ -25,7 +25,7 @@ Vector PlayerStatic::getPosition()
 {
     AEGeometry *geometry = field_0x8;
     if (geometry != 0) {
-        return AEGeometry_getPosition(geometry);
+        return ((AEGeometry *)(geometry))->getPosition();
     }
 
     Vector result;

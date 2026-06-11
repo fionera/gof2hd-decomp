@@ -1,4 +1,7 @@
 #include "gof2/ChoiceWindow.h"
+#include "gof2/FModSound.h"
+#include "gof2/ScrollTouchWindow.h"
+#include "gof2/Status.h"
 #include "gof2/Achievements.h"
 #include "gof2/GameText.h"
 #include "gof2/Layout.h"
@@ -9,30 +12,21 @@
 
 // ---- foreign helpers (defined in the engine; linked elsewhere) -----------------------
 extern "C" {
-void ScrollTouchWindow_OnTouchMove(void *self, int x, int y);
-void ScrollTouchWindow_OnTouchEnd(void *self, int x, int y);
-void ScrollTouchWindow_update(void *self, int dt);
-void ScrollTouchWindow_OnTouchBegin(void *self, int x, int y);
 void *ScrollTouchWindow_dtor(void *self);
-void ScrollTouchWindow_setTextCentered(void *self, bool centered);
 void PaintCanvas_Image2DCreate(void *self, unsigned short image, unsigned int *out);
 int String_Compare(String *a, String const &b);
-void FModSound_play(void *self, int sound, void *pos, void *vel, float volume);
 void Array_StringPtr_ctor(void *self);
 void Globals_getLineArray(void *self, void *font, String const &text, int width, void *array);
 void ScrollTouchWindow_ctor(void *self, int x, int y, int width, int height, bool centered);
-void ScrollTouchWindow_setText(void *self, String const &title, String const &message);
 void ArrayReleaseClasses_StringPtr(void *self);
 void *Array_StringPtr_dtor(void *self);
 void ScrollTouchWindow_setPosition(void *self, int y);
 void Layout_drawMask(void *self);
 void PaintCanvas_SetColor(void *self, unsigned int color);
 void PaintCanvas_DrawImage2D(void *self, int image, int x, int y, int anchor);
-int Status_hardCoreMode(void *self);
 void Layout_formatCredits(String *out, void *layout, int value);
 int PaintCanvas_GetTextWidth(void *self, void *font, String const &text);
 void PaintCanvas_DrawString(void *self, void *font, String const &text, int x, int y, bool shadow);
-void ScrollTouchWindow_draw(void *self);
 void TouchButton_getPosition(float *out, void *self);
 void TouchButton_ctor(void *self, String const &text, int value, int x, int y,
                       int width, int anchor, int mode);
@@ -49,7 +43,7 @@ int ChoiceWindow::OnTouchMove(int x, int y)
         if (this->rightButton != 0) ((TouchButton *)(this->rightButton))->OnTouchMove(x, y);
         if (this->miscButton != 0) ((TouchButton *)(this->miscButton))->OnTouchMove(x, y);
     }
-    if (this->scrollWindow != 0) ScrollTouchWindow_OnTouchMove(this->scrollWindow, x, y);
+    if (this->scrollWindow != 0) ((ScrollTouchWindow *)(this->scrollWindow))->OnTouchMove(x, y);
     return 0;
 }
 
@@ -112,7 +106,7 @@ int ChoiceWindow::OnTouchEnd(int x, int y)
         if (this->miscButton != 0 && ((TouchButton *)(this->miscButton))->OnTouchEnd(x, y) != 0)
             return 2;
     }
-    if (this->scrollWindow != 0) ScrollTouchWindow_OnTouchEnd(this->scrollWindow, x, y);
+    if (this->scrollWindow != 0) ((ScrollTouchWindow *)(this->scrollWindow))->OnTouchEnd(x, y);
     return -1;
 }
 
@@ -128,7 +122,7 @@ void ChoiceWindow::set(String const &text)
 // ---- update_1471b4.cpp ----
 void ChoiceWindow::update(int dt)
 {
-    ScrollTouchWindow_update(this->scrollWindow, dt);
+    ((ScrollTouchWindow *)(this->scrollWindow))->update(dt);
 }
 
 // ---- removeButtons_146d94.cpp ----
@@ -145,7 +139,7 @@ int ChoiceWindow::OnTouchBegin(int x, int y)
         if (this->rightButton != 0) ((TouchButton *)(this->rightButton))->OnTouchBegin(x, y);
         if (this->miscButton != 0) ((TouchButton *)(this->miscButton))->OnTouchBegin(x, y);
     }
-    if (this->scrollWindow != 0) ScrollTouchWindow_OnTouchBegin(this->scrollWindow, x, y);
+    if (this->scrollWindow != 0) ((ScrollTouchWindow *)(this->scrollWindow))->OnTouchBegin(x, y);
     return 0;
 }
 
@@ -234,7 +228,7 @@ void ChoiceWindow::setMedal(int medal, int count)
     String finalText = replaced;  // prefix "" + replaced + suffix "" == replaced
 
     set(*(String *)((GameText *)(gameText))->getText(0x161), finalText, false);
-    ScrollTouchWindow_setTextCentered(this->scrollWindow, true);
+    ((ScrollTouchWindow *)(this->scrollWindow))->setTextCentered(true);
 
     void *canvas = *g_ChoiceWindow_canvas_146e8c;
     if (count < 0x24) {
@@ -309,7 +303,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
 
     this->width = width;
     this->x = *g_ChoiceWindow_screenWidth_1469b0 / 2 - width / 2;
-    FModSound_play(*g_ChoiceWindow_sound_1469b0, 0x7e, 0, 0, 0.0f);
+    ((FModSound *)(*g_ChoiceWindow_sound_1469b0))->play(0x7e, 0, 0, 0.0f);
     this->title = title;
 
     if (this->scrollWindow != 0) operator delete(ScrollTouchWindow_dtor(this->scrollWindow));
@@ -342,7 +336,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
                            false);
     this->scrollWindow = scroll;
 
-    ScrollTouchWindow_setText(scroll, title, message);
+    ((ScrollTouchWindow *)(scroll))->setText(title, message);
 
     ArrayReleaseClasses_StringPtr(lines);
     operator delete(Array_StringPtr_dtor(lines));
@@ -471,7 +465,7 @@ void ChoiceWindow::draw()
                                 this->x + (this->width >> 1),
                                 this->y + this->field_0x4c, 0x11);
 
-        if (Status_hardCoreMode(*g_ChoiceWindow_status_1471bc) == 0 &&
+        if (((Status *)(*g_ChoiceWindow_status_1471bc))->hardCoreMode() == 0 &&
             ((Achievements *)(*g_ChoiceWindow_achievements_1471bc))->isEliteMedal(this->medal) == 0) {
             String credits;
             Layout_formatCredits(&credits, layout,
@@ -494,7 +488,7 @@ void ChoiceWindow::draw()
                                this->y + this->field_0x54, false);
     }
 
-    ScrollTouchWindow_draw(this->scrollWindow);
+    ((ScrollTouchWindow *)(this->scrollWindow))->draw();
 
     if (this->buttonsVisible != 0) {
         if (this->leftButton != 0) ((TouchButton *)(this->leftButton))->draw();

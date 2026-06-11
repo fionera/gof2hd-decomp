@@ -1,5 +1,7 @@
 #include "gof2/AutoPilotList.h"   // also pulls in gof2/SolarSystem.h (RetStr + SolarSystem)
 #include "gof2/GameText.h"
+#include "gof2/Level.h"
+#include "gof2/Status.h"
 #include "gof2/PlayerEgo.h"
 #include "gof2/Route.h"
 #include "gof2/String.h"
@@ -115,11 +117,11 @@ extern "C" void ArraySetLength_String(int n, void *arr);                 // 0x6f
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);     // 0x6ee18
 extern "C" void String_plus(void *out, const void *a, const void *b);    // 0x6ef98 operator+
 // 0x736a8
-extern "C" void *Status_getSystem(void *status);                         // 0x71a10
+// 0x71a10
 // 0x73c18
-extern "C" int Status_inEmptyOrbit(void *status);                        // 0x73d20
-extern "C" void *Status_getStation(void *status);                        // 0x71c14
-extern "C" void *Level_getPlayer(void *level);                           // 0x72034
+// 0x73d20
+// 0x71c14
+// 0x72034
 // 0x768b8
 // 0x71ee4
 extern "C" int PaintCanvas_GetTextWidth(void *canvas, const String *s);  // 0x6faa8
@@ -169,14 +171,14 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     }
 
     void *status = *g_APL_status;
-    if (((SolarSystem *)(Status_getSystem(status)))->currentOrbitHasWarpGate() != 0) {
+    if (((SolarSystem *)(((Status *)(status))->getSystem()))->currentOrbitHasWarpGate() != 0) {
         String *s = (String *)operator new(0xc);
         ((String *)(s))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x223), false);
         entryData(self)[1] = s;
         self->count = self->count + 1;
     }
 
-    if (Status_inEmptyOrbit(status) == 0) {
+    if (((Status *)(status))->inEmptyOrbit() == 0) {
         String *s = (String *)operator new(0xc);
         char a[12], b[12], c[12];
         ((Station *)(c))->getName();
@@ -196,8 +198,8 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     entryData(self)[3] = cancel;
     self->count = self->count + 1;
 
-    if (((PlayerEgo *)(Level_getPlayer(level)))->getRoute() != 0) {
-        void *route = (void *)(intptr_t)((PlayerEgo *)(Level_getPlayer(level)))->getRoute();
+    if (((PlayerEgo *)(((Level *)(level))->getPlayer()))->getRoute() != 0) {
+        void *route = (void *)(intptr_t)((PlayerEgo *)(((Level *)(level))->getPlayer()))->getRoute();
         if (*((uint8_t *)((Route *)(route))->getLastWaypoint() + 0x130) == 0) {
             String *s = (String *)operator new(0xc);
             ((String *)(s))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x23d), false);

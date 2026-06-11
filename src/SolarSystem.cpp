@@ -1,4 +1,5 @@
 #include "gof2/SolarSystem.h"
+#include "gof2/Status.h"
 #include "gof2/String.h"
 
 
@@ -6,7 +7,6 @@ extern "C" void ArrayRelease_int(void *a) __attribute__((nothrow));
 extern "C" void *Array_int_dtor(void *a) __attribute__((nothrow));
 extern "C" void SolarSystem_operator_delete(void *p) __attribute__((nothrow));
 extern "C" void SolarSystem_baseStringDtor(void *strField) __attribute__((nothrow));
-extern "C" Station *Status_getStation(Status *s);
 extern "C" int Station_getIndex(Station *st);
 extern "C" void String_copy_ctor(void *out, const void *src, bool);
 extern "C" int SolarSystem_warpGateLookup(SolarSystem *self, int idx);
@@ -59,7 +59,7 @@ extern Status *gStatusOrbit __attribute__((visibility("hidden")));
 bool SolarSystem::currentOrbitHasWarpGate() {
     SolarSystem *self = this;
     int orbit = self->jumpgateStationId;
-    Station *st = Status_getStation(*(Status **)gStatusOrbit);
+    Station *st = ((Status *)(*(Status **)gStatusOrbit))->getStation();
     return orbit == Station_getIndex(st);
 }
 
