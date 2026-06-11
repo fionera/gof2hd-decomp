@@ -1,4 +1,6 @@
 #include "gof2/ObjectGun.h"
+#include "gof2/Level.h"
+#include "gof2/Transform.h"
 #include "gof2/Explosion.h"
 #include "gof2/PlayerEgo.h"
 #include "gof2/Gun.h"
@@ -30,25 +32,19 @@ extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int weapon);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 uint32_t TransformGetTransform(void *canvas, uint32_t transform);
-extern "C" void Transform_Update(uint64_t transform, int64_t dt, int flags);
-extern "C" Player *Level_getPlayer(Level *self);
 extern "C" void Player_getPosition(Vector *out, Player *self);
 // __aeabi_memcpy is declared by gof2/AEGeometry.h (returns void*)
 void MatrixRotateVector(void *out, const void *matrix, const void *vec);
 extern "C" void Vector_add_assign(Vector *self, const Vector *rhs);
-extern "C" void AEGeometry_setPosition(AEGeometry *self, const Vector *position);
 void *CameraGetCurrent(void *canvas);
 void *CameraGetLocal(void *canvas, void *camera);
 extern "C" void Matrix_copy(Matrix *dst, const Matrix *src);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 void MatrixGetUp(Vector *out, const Matrix *matrix);
-extern "C" void AEGeometry_setDirection(AEGeometry *self, const Vector *dir, const Vector *up);
-extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *self);
 extern "C" void Matrix_multiply(Matrix *out, const Matrix *rhs);
 extern "C" Vector *Matrix_getVector(void *self);
 extern "C" void Matrix_multiply_out(Matrix *out, const Vector *a, const Vector *b);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const Matrix *matrix);
-extern "C" void AEGeometry_translate(AEGeometry *self, const Vector *offset);
 extern "C" void Explosion_update(Explosion *self, int dt, TargetFollowCamera *camera);
 void MatrixSetRotation(Matrix *dst, float x, float y, float z);
 extern "C" void Matrix_multiply_inplace(Matrix *self, const Matrix *rhs);
@@ -63,7 +59,6 @@ void VectorCross(Vector *out, const Vector *a, const Vector *b);
 extern "C" void MatrixSetScaling(Matrix *dst, float x, float y, float z);
 void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix);
 void DrawTransform(void *canvas, uint32_t transform, int flags);
-extern "C" void AEGeometry_render(AEGeometry *self);
 
 // ---- _ObjectGun_15f94c.cpp ----
 void _ZN9ObjectGunD0Ev(ObjectGun *self)
@@ -291,7 +286,7 @@ void ObjectGun::update(int dt)
 
     void **canvas = (void **)g_PaintCanvas;
     uint32_t transform = TransformGetTransform(*canvas, this->field_0x10);
-    Transform_Update((uint64_t)transform, (int64_t)dt, 0);
+    ((AbyssEngine::Transform *)((uint64_t)transform))->Update((int64_t)dt, 0);
 
     this->field_0x34 = dt;
     Gun *gun = this->field_0x8;
@@ -327,7 +322,7 @@ void ObjectGun::update(int dt)
     }
 
     {
-        Player *player = Level_getPlayer(this->field_0xc);
+        Player *player = (Player *)(uint64_t)((Level *)(this->field_0xc))->getPlayer();
         if (((Gun *)(gun))->isPlayerGun() != 0) {
             ((PlayerEgo *)(&position))->getPosition();
         } else {
@@ -345,10 +340,10 @@ void ObjectGun::update(int dt)
         offsets.z = gun->offsetZ + 8.0f;
         MatrixRotateVector(&workMatrix, &playerMatrix, &offsets);
         Vector_add_assign(&position, (Vector *)&workMatrix);
-        AEGeometry_setPosition(this->field_0x18, &position);
+        ((AEGeometry *)(this->field_0x18))->setPosition(position);
 
         transform = TransformGetTransform(*canvas, this->field_0x18->transform);
-        Transform_Update((uint64_t)transform, (int64_t)dt, 0);
+        ((AbyssEngine::Transform *)((uint64_t)transform))->Update((int64_t)dt, 0);
 
         if (this->field_0x8->weaponType != 8) {
             void *paint = *canvas;
@@ -356,12 +351,12 @@ void ObjectGun::update(int dt)
             Matrix_copy(&cameraMatrix, (Matrix *)CameraGetLocal(paint, camera));
             MatrixGetDir(&dir, &cameraMatrix);
             MatrixGetUp(&up, &cameraMatrix);
-            AEGeometry_setDirection(this->field_0x18, &dir, &up);
+            ((AEGeometry *)(this->field_0x18))->setDirection(dir, up);
             goto after_geometry;
         }
 
-        Matrix *m0 = AEGeometry_getMatrix(this->field_0x18);
-        Matrix *m1 = AEGeometry_getMatrix(this->field_0x18);
+        Matrix *m0 = &((AEGeometry *)(this->field_0x18))->getMatrix();
+        Matrix *m1 = &((AEGeometry *)(this->field_0x18))->getMatrix();
         Matrix_multiply(&workMatrix, m0);
 
         gun = this->field_0x8;
@@ -403,7 +398,7 @@ void ObjectGun::update(int dt)
         }
         MatrixRotateVector(&cameraMatrix, &workMatrix, &offsets);
         AEGeometry_setMatrix(this->field_0x18, &workMatrix);
-        AEGeometry_translate(this->field_0x18, (Vector *)&cameraMatrix);
+        ((AEGeometry *)(this->field_0x18))->translate(*(Vector *)&cameraMatrix);
         (void)m1;
     }
 
@@ -531,7 +526,7 @@ void ObjectGun::render()
                     }
                 } else if (this->field_0x24 == 0) {
                     Vector *base;
-                    if (this->field_0xc == 0 || Level_getPlayer(this->field_0xc) == 0 ||
+                    if (this->field_0xc == 0 || ((Level *)(this->field_0xc))->getPlayer() == 0 ||
                         ((Gun *)(gun))->isPlayerGun() == 0) {
                         up.x = 0.0f;
                         up.y = 1.0f;
@@ -567,7 +562,7 @@ void ObjectGun::render()
                             gun->field_0x4d = 0;
                     }
                 } else {
-                    Player *player = Level_getPlayer(this->field_0xc);
+                    Player *player = (Player *)(uint64_t)((Level *)(this->field_0xc))->getPlayer();
                     identity(&local);
                     // Player::field_0x7c / field_0x80 are not yet modelled in Player.h
                     // (out-of-batch header) -> byte-offset accessed via F<float>.
@@ -618,6 +613,6 @@ void ObjectGun::render()
     }
 
     if (this->field_0x1d != 0 && this->field_0x18 != 0)
-        AEGeometry_render(this->field_0x18);
+        ((AEGeometry *)(this->field_0x18))->render();
     this->field_0x34 = 0;
 }

@@ -1,10 +1,20 @@
 #include "gof2/PlayerGasCloud.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/FModSound.h"
+#include "gof2/Item.h"
+#include "gof2/Status.h"
+#include "gof2/Transform.h"
 #include "gof2/Hud.h"
 #include "gof2/Level.h"
 #include "gof2/Mission.h"
 #include "gof2/Player.h"
 #include "gof2/PlayerEgo.h"
 
+
+// Status singleton: getShip/getCurrentCampaignMission are real Status methods
+// that the decompiler emitted without their receiver. The receiver is the
+// global Status singleton, reached via *gStatus (same pattern as Hud/Player).
+__attribute__((visibility("hidden"))) extern Status **gStatus;
 
 extern "C" void AEGeometry_translate_v(void *geom, Vector const &v);
 extern "C" void AEGeometry_setPosition_v(void *geom, Vector const &v);
@@ -25,9 +35,6 @@ extern "C" void *PlayerGasCloud_baseDtor(void *self);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 extern "C" int PaintCanvas_CameraGetCurrent(void *canvas);
 extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, int current);
-extern "C" void AEGeometry_setScaling(void *geom, float s);
-extern "C" void AEGeometry_setDirection(void *geom, Vector const *dir, Vector const *up);
-extern "C" void AEGeometry_render(void *geom);
 
 // ---- translate_176658.cpp ----
 void PlayerGasCloud::translate(Vector const &param_1)
@@ -233,9 +240,7 @@ void ArrayAdd_vec(void *value, void *arr);
 void ArrayAdd_bool(bool value, void *arr);
 
 void AEGeometry_ctor(void *self, uint16_t id, void *canvas, bool b);
-void AEGeometry_setPosition(void *geom, const Vector *pos);
 
-int Item_getAttribute(void *item);
 
 int AERandom_next(void *rng, int bound);
 
@@ -290,7 +295,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
         // Item-defined intensity multiplier.
         void *itemTable = *(void **)((char *)*(void **)g_pgc_itemList);
         void *item = *(void **)((char *)*(void **)((char *)itemTable + 4) + itemIndex * 4);
-        int attr = Item_getAttribute(item);
+        int attr = ((Item *)(item))->getAttribute(0);
         float attrF = (float)attr / g_pgc_attrDiv;
         float spread = t * g_pgc_spread;
         float lifeDiv = g_pgc_lifeDiv;
@@ -300,7 +305,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             void *shard = operator_new(0xc0);
             AEGeometry_ctor(shard, self->sparkMeshId,
                             *(void **)g_pgc_canvasRoot, false);
-            AEGeometry_setPosition(shard, (Vector *)((char *)self + 0x128));
+            ((AEGeometry *)(shard))->setPosition(*(Vector *)((char *)self + 0x128));
 
             void *rng = *(void **)g_pgc_rng;
             float jx = (float)AERandom_next(rng, 10000);
@@ -342,32 +347,21 @@ using AbyssEngine::AEMath::Vector;
 // --- engine callees ---------------------------------------------------------
 extern "C" {
 
-void *Level_getPlayer();
 void *PlayerEgo_getTurretPosition(void *ego, Vector *out);
 int PlayerEgo_getCampaignProgress(void *ego);
 
-void AEGeometry_getPosition(void *geom, Vector *out);
-void AEGeometry_setPosition(void *geom, const Vector *pos);
 
-void *Status_getShip();
-void *Status_getMission(void *m);
-int Status_getCurrentCampaignMission();
 
 int Ship_getFreeSpace(void *ship);
 int Ship_getFirstEquipmentOfSort(void *ship, int sort);
 void Ship_addCargo(void *ship, void *item);
 
-void *Item_makeItem(void *def);
-int Item_getAttribute(void *item);
 
 
-float FModSound_stop(void *snd);
-void FModSound_play(void *snd, void *a, void *b, float vol);
 
 
 
 void *PaintCanvas_TransformGetTransform(void *canvas);
-void Transform_Update(void *transform, int withChildren, bool b);
 
 // Vector math.
 void Vector_sub(Vector *out, const Vector *a, const Vector *b);
@@ -403,7 +397,7 @@ void PlayerGasCloud_update(void *self, int dt)
         if (*(char *)(s + 0x154) == 0 || *(char *)(s + 0x15c) != 0 || arr == 0) {
             // Idle / pre-explosion: just advance the bound transform.
             void *t = PaintCanvas_TransformGetTransform(*(void **)g_pgcu_canvasRoot);
-            Transform_Update(t, 1, (bool)dt);
+            ((AbyssEngine::Transform *)(t))->Update(1, (bool)dt);
         } else {
             float dtf = (float)dt;
             *(unsigned char *)(s + 0x15c) = 1;
@@ -423,43 +417,43 @@ void PlayerGasCloud_update(void *self, int dt)
                     *life = lifeMin;
 
                 // Distance from this shard to the player's turret.
-                void *player = Level_getPlayer();
+                void *player = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
                 Vector turretPos, shardPos, delta;
                 PlayerEgo_getTurretPosition(player, &turretPos);
                 void *geom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
-                AEGeometry_getPosition(geom, &shardPos);
+                ((AEGeometry *)(geom))->getPosition();
                 Vector_sub(&delta, &turretPos, &shardPos);
                 float dist = VectorLength(&delta);
 
                 bool collected = false;
                 if (dist < g_pgcu_catchDist && *(int *)(s + 0x158) >= 2000) {
-                    void *p2 = Level_getPlayer();
+                    void *p2 = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
                     if (((PlayerEgo *)(p2))->isInTurretMode() != 0 &&
                         *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4) >= g_pgcu_minTimer) {
                         *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4) = g_pgcu_resetTimer;
-                        void *ship = Status_getShip();
+                        void *ship = ((Status *)(*gStatus))->getShip();
                         int itemId = *(int *)(s + 0x160);
                         if (Ship_getFreeSpace(ship) < 1) {
-                            if (Level_getPlayer() != 0) {
-                                float v = FModSound_stop(g_pgcu_pickupSound);
-                                FModSound_play(g_pgcu_pickupSound, (void *)0x8d0, (void *)0, v);
-                                void *ego = Level_getPlayer();
+                            if (((Level *)(*(void **)(s + 0x54)))->getPlayer() != 0) {
+                                ((FModSound *)(g_pgcu_pickupSound))->stop(0x8d0);
+                                ((FModSound *)(g_pgcu_pickupSound))->play(0x8d0, 0, 0, 0.0f);
+                                void *ego = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
                                 int hud = ((PlayerEgo *)(ego))->getHUD();
                                 ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), false, true, false, true, false, 0, 0);
                             }
                         } else {
                             void *def = *(void **)(*(int *)(*(int *)g_pgcu_itemDefs + 4) + itemId * 4);
-                            Item_makeItem(def);
-                            if (Level_getPlayer() != 0) {
-                                void *ego = Level_getPlayer();
+                            ((Item *)(def))->makeItem();
+                            if (((Level *)(*(void **)(s + 0x54)))->getPlayer() != 0) {
+                                void *ego = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
                                 int hud = ((PlayerEgo *)(ego))->getHUD();
                                 ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), true, false, false, false, false, 0, 0);
 
                                 void *camp = *(void **)g_pgcu_campaign;
                                 if (*(char *)((char *)camp + 0x2d) == 0 &&
-                                    Status_getCurrentCampaignMission() > 0x8e) {
+                                    ((Status *)(*gStatus))->getCurrentCampaignMission() > 0x8e) {
                                     Vector missionBuf;
-                                    Status_getMission(&missionBuf);
+                                    ((Status *)(&missionBuf))->getMission();
                                     if (((Mission *)(&missionBuf))->isEmpty() != 0 &&
                                         *(int *)(s + 0x160) == 0xcc) {
                                         *(char *)((char *)camp + 0x2d) = 1;
@@ -467,9 +461,9 @@ void PlayerGasCloud_update(void *self, int dt)
                                     }
                                 }
                             }
-                            float v = FModSound_stop(g_pgcu_pickupSound);
-                            FModSound_play(g_pgcu_pickupSound, (void *)0x8d0, (void *)0, v);
-                            void *ship2 = Status_getShip();
+                            ((FModSound *)(g_pgcu_pickupSound))->stop(0x8d0);
+                            ((FModSound *)(g_pgcu_pickupSound))->play(0x8d0, 0, 0, 0.0f);
+                            void *ship2 = ((Status *)(*gStatus))->getShip();
                             Ship_addCargo(ship2, def);
                         }
                         *(int *)(*(int *)(*(int *)(s + 0x148) + 4) + i * 4) = 0;
@@ -490,7 +484,7 @@ void PlayerGasCloud_update(void *self, int dt)
                         *scale = (dist + g_pgcu_fadeAdd) / g_pgcu_fadeDiv;
                     }
                     void *t = PaintCanvas_TransformGetTransform(*(void **)g_pgcu_canvasRoot);
-                    Transform_Update(t, 1, (bool)dt);
+                    ((AbyssEngine::Transform *)(t))->Update(1, (bool)dt);
                 }
 
                 // Advance the shard's position.
@@ -499,7 +493,7 @@ void PlayerGasCloud_update(void *self, int dt)
                 bool homing = *(char *)(*(int *)(*(int *)(s + 0x150) + 4) + i) != 0 &&
                               *(int *)(s + 0x158) >= 2000;
                 if (homing) {
-                    void *ship = Status_getShip();
+                    void *ship = ((Status *)(*gStatus))->getShip();
                     if (Ship_getFirstEquipmentOfSort(ship, 0x23) != 0) {
                         // Steer toward the turret.
                         Vector dir, dn;
@@ -508,15 +502,15 @@ void PlayerGasCloud_update(void *self, int dt)
                         Vector_assign(*(Vector **)(*(int *)(*(int *)(s + 0x13c) + 4) + i * 4), &dn);
                         moveGeom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
 
-                        void *ship2 = Status_getShip();
+                        void *ship2 = ((Status *)(*gStatus))->getShip();
                         int eq = Ship_getFirstEquipmentOfSort(ship2, 0x23);
-                        int attr = Item_getAttribute((void *)(long)eq);
+                        int attr = ((Item *)((void *)(long)eq))->getAttribute(0);
                         float step = (float)(attr * dt);
                         Vector vel; Vector_assign(&vel, &turretPos);
                         Vector_scale(step, &vel);
                         Vector_add(&vel, &shardPos);
                         moved = vel;
-                        AEGeometry_setPosition(moveGeom, &moved);
+                        ((AEGeometry *)(moveGeom))->setPosition(moved);
                         goto advance;
                     }
                 }
@@ -527,7 +521,7 @@ void PlayerGasCloud_update(void *self, int dt)
                     Vector_scale(*(float *)(*(int *)(*(int *)(s + 0x140) + 4) + i * 4) * dtf, &vel);
                     Vector_add(&vel, &shardPos);
                     moved = vel;
-                    AEGeometry_setPosition(moveGeom, &moved);
+                    ((AEGeometry *)(moveGeom))->setPosition(moved);
                 }
 
             advance:
@@ -577,16 +571,16 @@ void PlayerGasCloud::render()
     if (this->exploded == 0 || (arr = this->sparkGeometries) == 0) {
         void *geom = this->modelGeometry;
         AbyssEngine::AEMath::MatrixGetUp((Vector *)&local_80, (Matrix *)cameraLocal);
-        AEGeometry_setDirection(geom, &dir, (Vector *)&local_80);
-        AEGeometry_render(geom);
+        ((AEGeometry *)(geom))->setDirection(dir, *(Vector *)&local_80);
+        ((AEGeometry *)(geom))->render();
     } else {
         for (unsigned int i = 0, off = 0; i < F<unsigned int>(arr, 0x0); i++, off += 4) {
             void *g = *(void **)((char *)F<void *>(this->sparkGeometries, 0x4) + off);
             float si = *(float *)((char *)F<void *>(this->sparkScale, 0x4) + off);
-            AEGeometry_setScaling(g, si);
+            ((AEGeometry *)(g))->setScaling(si);
             AbyssEngine::AEMath::MatrixGetUp((Vector *)&local_80, (Matrix *)cameraLocal);
-            AEGeometry_setDirection(g, &dir, (Vector *)&local_80);
-            AEGeometry_render(g);
+            ((AEGeometry *)(g))->setDirection(dir, *(Vector *)&local_80);
+            ((AEGeometry *)(g))->render();
             arr = this->sparkGeometries;
         }
     }

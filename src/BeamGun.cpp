@@ -1,4 +1,6 @@
 #include "gof2/BeamGun.h"
+#include "gof2/Level.h"
+#include "gof2/Transform.h"
 #include "gof2/Gun.h"
 #include "gof2/PlayerEgo.h"
 #include "gof2/AEGeometry.h"
@@ -10,26 +12,17 @@
 extern "C" AEGeometry *AEGeometry_dtor(AEGeometry *self);
 extern "C" void operator_delete(void *ptr);
 extern "C" void BeamGun_setEnemies_tail(void *data);
-extern "C" void AEGeometry_render(AEGeometry *self);
 extern "C" void BeamGun_render_tail(AEGeometry *self);
 BeamGun *_ZN7BeamGunD1Ev(BeamGun *self);
 extern "C" void BeamGun_setEnemy_tail(void *data);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, PaintCanvas *canvas, bool flag);
 extern "C" Transform *PaintCanvas_TransformGetTransform(PaintCanvas *canvas, int transformId);
-extern "C" void Transform_SetAnimationState(Transform *self, int state, void *arg);
-extern "C" void Transform_Update(Transform *self, long long elapsed, bool flag);
-extern "C" void AEGeometry_setScaling(AEGeometry *self, float x, float y, float z);
-extern "C" void AEGeometry_setDirection(AEGeometry *self, const Vector *direction, const void *up);
-extern "C" PlayerEgo *Level_getPlayer(Level *self);
 extern "C" int Vector_ne(const Vector *lhs, const Vector *rhs);
-extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *self);
 extern "C" void Matrix_mul(Matrix *out, const Matrix *lhs, const Matrix *rhs);
 extern "C" void Vector_add(Vector *out, const Vector *lhs, const Vector *rhs);
 void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector);
 extern "C" void Vector_add_assign(void *self, const Vector *rhs);
-extern "C" void AEGeometry_setPosition(AEGeometry *self, const void *position);
-extern "C" void AEGeometry_setVisible(AEGeometry *self, bool visible);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 
 // ---- _BeamGun_177834.cpp ----
@@ -68,7 +61,7 @@ void BeamGun::render()
     if (gun->field_0x4c == 0)
         return;
 
-    AEGeometry_render(this->field_0x18);
+    ((AEGeometry *)(this->field_0x18))->render();
 
     if (this->field_0x21 != 0) {
         AEGeometry *secondary = this->field_0x1c;
@@ -165,7 +158,7 @@ void BeamGun::update(int elapsed)
 
     gun = this->field_0x8;
     if (gun->field_0x4c == 0) {
-        AEGeometry_setVisible(this->field_0x18, false);
+        ((AEGeometry *)(this->field_0x18))->setVisible(false);
         return;
     }
 
@@ -175,10 +168,10 @@ void BeamGun::update(int elapsed)
         Transform *transform =
             PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
                                               geometry->transform);
-        Transform_SetAnimationState(transform, 3, 0);
+        ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
         transform = PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
                                                       geometry->transform);
-        Transform_SetAnimationState(transform, 1, 0);
+        ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
         this->field_0x8->field_0x4d = 0;
     }
 
@@ -186,29 +179,28 @@ void BeamGun::update(int elapsed)
     AEGeometry *primary = this->field_0x18;
     Transform *transform =
         PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder, primary->transform);
-    Transform_Update(transform, (long long)elapsed, false);
+    ((AbyssEngine::Transform *)(transform))->Update((long long)elapsed, false);
 
     gun = this->field_0x8;
-    AEGeometry_setScaling(this->field_0x18, 1.0f, 1.0f,
-                          (float)gun->field_0x8c);
+    ((AEGeometry *)(this->field_0x18))->setScaling(1.0f);
 
     Vector *up = (Vector *)&playerMatrix;
     up->x = 0.0f;
     up->y = 1.0f;
     up->z = 0.0f;
-    AEGeometry_setDirection(this->field_0x18, (Vector *)((char *)gun + 0x90), up);
+    ((AEGeometry *)(this->field_0x18))->setDirection(*(Vector *)((char *)gun + 0x90), *up);
 
-    PlayerEgo *player = Level_getPlayer(this->field_0xc);
+    PlayerEgo *player = (PlayerEgo *)((Level *)(this->field_0xc))->getPlayer();
     ((PlayerEgo *)(&position))->getPosition();
 
     up->x = 0.0f;
     up->y = 0.0f;
     up->z = 0.0f;
     if (Vector_ne((Vector *)((char *)this->field_0x8 + 0x7c), up) != 0) {
-        player = Level_getPlayer(this->field_0xc);
-        Matrix *firstMatrix = AEGeometry_getMatrix(player->geometry);
-        player = Level_getPlayer(this->field_0xc);
-        Matrix *secondMatrix = AEGeometry_getMatrix(player->field_0x4);
+        player = (PlayerEgo *)((Level *)(this->field_0xc))->getPlayer();
+        Matrix *firstMatrix = &((AEGeometry *)(player->geometry))->getMatrix();
+        player = (PlayerEgo *)((Level *)(this->field_0xc))->getPlayer();
+        Matrix *secondMatrix = &((AEGeometry *)(player->field_0x4))->getMatrix();
         Matrix_mul(&playerMatrix, firstMatrix, secondMatrix);
 
         gun = this->field_0x8;
@@ -220,8 +212,8 @@ void BeamGun::update(int elapsed)
         Vector_add_assign(position, &transformed);
     }
 
-    AEGeometry_setPosition(this->field_0x18, position);
-    AEGeometry_setVisible(this->field_0x18, true);
+    ((AEGeometry *)(this->field_0x18))->setPosition(*(Vector *)position);
+    ((AEGeometry *)(this->field_0x18))->setVisible(true);
 
     if (this->field_0x20 != 0) {
         gun = this->field_0x8;
@@ -239,7 +231,7 @@ void BeamGun::update(int elapsed)
                 getTransform((PaintCanvas *)*canvasHolder, secondary->transform);
             setAnimation(secondaryTransform, 1, 0);
         } else {
-            player = Level_getPlayer(this->field_0xc);
+            player = (PlayerEgo *)((Level *)(this->field_0xc))->getPlayer();
             ((PlayerEgo *)(&playerMatrix))->getPosition();
 
             gun = this->field_0x8;
@@ -249,18 +241,18 @@ void BeamGun::update(int elapsed)
             MatrixRotateVector(&rotated, (Matrix *)((char *)player->player + 4),
                                &transformed);
             Vector_add_assign(&playerMatrix, &rotated);
-            AEGeometry_setPosition(this->field_0x1c, &playerMatrix);
+            ((AEGeometry *)(this->field_0x1c))->setPosition(*(Vector *)&playerMatrix);
 
             AEGeometry *secondary = this->field_0x1c;
             transform = PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
                                                           secondary->transform);
-            Transform_Update(transform, (long long)elapsed, false);
+            ((AbyssEngine::Transform *)(transform))->Update((long long)elapsed, false);
 
             MatrixGetDir(&rotated, (Matrix *)((char *)player->player + 4));
             back.x = 0.0f;
             back.y = 1.0f;
             back.z = 0.0f;
-            AEGeometry_setDirection(this->field_0x1c, &rotated, &back);
+            ((AEGeometry *)(this->field_0x1c))->setDirection(rotated, back);
         }
     }
 

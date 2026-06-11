@@ -258,7 +258,7 @@ void MeshMerger::update()
 }
 
 // ---- init_173ca6.cpp ----
-extern "C" void *MeshMerger_transformMesh(void *mesh, const Matrix &m);   // 0x77e00
+// 0x77e00
 extern "C" void PaintCanvas_MeshCreate2(void *canvas, uint16_t nv, uint16_t ni, int flags); // 0x75da8
 extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t id);   // 0x72370
 extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out); // 0x720ac
@@ -282,8 +282,7 @@ int MeshMerger::init()
         for (int c = 0; c < i32(this, 0x30); c++) {
             void *mesh = ((void **)pp(this, 0x8))[i32(this, 0x0) * c + i];
             if (mesh != 0) {
-                void *t = MeshMerger_transformMesh(
-                    mesh, *(const Matrix *)((char *)pp(this, 0x1c) + i * 0x3c));
+                void *t = this->transformMesh((Mesh *)mesh, *(const Matrix *)((char *)pp(this, 0x1c) + i * 0x3c));
                 ((void **)pp(this, 0x18))[i32(this, 0x0) * c + i] = t;
             }
         }

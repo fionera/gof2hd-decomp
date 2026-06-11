@@ -1,4 +1,16 @@
 #include "gof2/Status.h"
+// FileRead.h is intentionally NOT included: it defines layout-stub structs
+// (Station, Item, SolarSystem, Agent, Wanted, Ship, ...) that collide with the
+// real class headers included below. This TU only needs FileRead itself, which
+// is declared locally (see `struct FileRead` further down) plus the extern "C"
+// FileRead_* entry points.
+struct FileRead;
+#include "gof2/Galaxy.h"
+#include "gof2/Item.h"
+// SystemPathFinder.h is intentionally NOT included: it defines layout-stub
+// structs Status and SolarSystem that collide with the real Status.h/SolarSystem.h.
+// The only SystemPathFinder entry point used here is getSystemPath; it is declared
+// locally below with the decompiler-observed ABI (int* path, opaque void* systems).
 #include "gof2/Achievements.h"
 // Agent.h, Station.h, SolarSystem.h and Wanted.h each define an identical,
 // layout-compatible `struct RetStr` at global scope. Including more than one in a
@@ -72,7 +84,6 @@ extern "C" int SolarSystem_getRoutes(SolarSystem *s);
 extern "C" void Wanted_setLastSeen(Wanted *w, int v);
 extern "C" void Wanted_setTravelsTo(Wanted *w, int v);
 extern "C" int AERandom_nextInt(int rnd);
-extern "C" int *SystemPathFinder_getSystemPath(SystemPathFinder *p, void *systems, int from, int to);
 extern "C" int SolarSystem_getStations_i(SolarSystem *s);
 extern "C" void Wanted_setCurrentLocation(Wanted *w, int v);
 extern "C" void *Array_int_dtor(void *a);
@@ -87,11 +98,8 @@ extern "C" void PendingProduct_add(int *pp, int arr);
 extern "C" void FileRead_ctor(FileRead *);
 extern "C" int FileRead_loadWanted();
 extern "C" void operator_delete_tail(void *);
-extern "C" Station *Status_isOnStack(Status *self, Station *s);
 extern "C" void Status_setStationTail(Status *self, Station *s);
 extern "C" int Mission_getAgent(Mission *m);
-extern "C" int Galaxy_getSystem(Galaxy *g, int sysIdx);
-extern "C" void *FileRead_loadStationsBinary(FileRead *fr, SolarSystem *sys);
 extern "C" void ArrayReleaseClasses_String(void *a);
 extern "C" void *Array_String_dtor(Array<String *> *a);
 extern "C" void Array_String_ctor(Array<String *> *a);
@@ -108,7 +116,7 @@ extern "C" void String_copyctor(String *dst, String *src, bool b);
 
 // Local engine helper types used across several member functions in this translation unit.
 // Defined once here; the per-function blocks below merely forward-declare them.
-struct FileRead { FileRead(); ~FileRead(); };
+struct FileRead { FileRead(); ~FileRead(); int loadStationsBinary(); };
 struct Generator { Generator(); };
 
 // ---- getPlanetNames_ac5d4.cpp ----
@@ -711,12 +719,12 @@ int Station_getIndex2(Station *s);                                   // 0x71824
 void AERandom_setSeed(long long seed);                               // 0x739c0
 int Status_inAlienOrbit2(void);                                      // 0x723d0
 int SolarSystem_getIndex2(int sys);                                  // 0x71a7c
-int Item_getMinPriceSystem(void *item);                              // 0x73864-area accessor 1
-int Item_getMaxPriceSystem(void *item);                              // 0x739cc
-int Galaxy_distancePercent(Galaxy *g, int a, int b, int c, int d);   // 0x739d8
-int Item_getMinPrice(void *item);                                    // 0x739e4
-int Item_getMaxPrice(void *item);                                    // 0x71cbc
-int Item_getSinglePrice(void *item);                                 // 0x71944
+// 0x73864-area accessor 1
+// 0x739cc
+// 0x739d8
+// 0x739e4
+// 0x71cbc
+// 0x71944
 int AERandom_nextInt2(int rng, int bound);                           // 0x71848
 void Item_setPrice2(void *item, int price);                          // 0x73864
 void AERandom_reset2(int rng);                                       // 0x718cc
@@ -764,9 +772,9 @@ void Status::calcCargoPrices()
             // distance percent for the item's min-price system pair.
             int aMin = Item_coordA(*(int *)(*(int *)(systems + 4) + Item_getIndex2(item) * 4));
             int aMax = Item_coordB(*(int *)(*(int *)(systems + 4) + Item_getIndex2(item) * 4));
-            int bMin = Item_coordA(*(int *)(*(int *)(systems + 4) + Item_getMaxPriceSystem(item) * 4));
-            int bMax = Item_coordB(*(int *)(*(int *)(systems + 4) + Item_getMaxPriceSystem(item) * 4));
-            int dItem = Galaxy_distancePercent(gal, aMin, aMax, bMin, bMax);
+            int bMin = Item_coordA(*(int *)(*(int *)(systems + 4) + ((Item *)(item))->getMaxPriceSystem() * 4));
+            int bMax = Item_coordB(*(int *)(*(int *)(systems + 4) + ((Item *)(item))->getMaxPriceSystem() * 4));
+            int dItem = ((Galaxy *)(gal))->distancePercent(aMin, aMax, bMin, bMax);
 
             // distance percent for the current station's system.
             int cMin = Item_coordA(*(int *)(*(int *)(systems + 4) + Item_getIndex2(item) * 4));
@@ -774,17 +782,17 @@ void Status::calcCargoPrices()
             int sSys = Station_getIndex2(this->station);
             int sMin = Item_coordA(*(int *)(*(int *)(systems + 4) + sSys * 4));
             int sMax = Item_coordB(*(int *)(*(int *)(systems + 4) + sSys * 4));
-            int dHere = Galaxy_distancePercent(gal, cMin, cMax, sMin, sMax);
+            int dHere = ((Galaxy *)(gal))->distancePercent(cMin, cMax, sMin, sMax);
 
             float t = ((kPriceScale / (float)dItem) * (float)dHere) / kPriceScale;
-            int minPrice = Item_getMinPrice(item);
-            int band = Item_getMaxPrice(item) - Item_getMinPrice(item);
+            int minPrice = ((Item *)(item))->getMinPrice();
+            int band = ((Item *)(item))->getMaxPrice() - ((Item *)(item))->getMinPrice();
             float clamp = t < 1.0f ? t : 1.0f;
 
-            if (Item_getSinglePrice(item) > 0) {
+            if (((Item *)(item))->getSinglePrice() > 0) {
                 int price;
                 if (ringWorld) {
-                    price = Item_getMaxPrice(item);
+                    price = ((Item *)(item))->getMaxPrice();
                 } else {
                     int base = minPrice + (int)(clamp * (float)band);
                     int jitterMax = (int)((float)base * kJitter);
@@ -829,9 +837,8 @@ bool Status::inAlienOrbit() {
 // ---- resetGame_ad304.cpp ----
 // Local offset-cast helpers (the Status header models fields by name, but resetGame
 // touches many raw offsets so byte-offset access is clearer here).
-static inline int&   I(void *p, int off) { return *(int *)((char *)p + off); }
-// C(void*,int) is provided by common.h; keep only the locally-needed I/P helpers.
-static inline void*& P(void *p, int off) { return *(void **)((char *)p + off); }
+// I(void*,int), P(void*,int) and C(void*,int) are provided by gof2/Galaxy.h /
+// common.h; no local redefinition needed here.
 
 struct Standing;
 struct Galaxy;
@@ -871,10 +878,7 @@ void   ArrayReleaseClasses_BP(void *a);
 void  *ArrayPP_dtor(void *a);
 void   ArrayReleaseClasses_PP(void *a);
 void   Globals_resetHints();
-void   Galaxy_reset(Galaxy *g);
 int    Galaxy_getSystems(Galaxy *g);
-void  *Galaxy_getStation(int gptr);
-int    Item_getIngredients();
 void   BluePrint_ctor(void *bp, unsigned int index);
 void   Standing_ctor(Standing *s);
 void  *Standing_dtor(Standing *s);
@@ -885,7 +889,6 @@ void   Ship_setCargo(Ship *s, void *cargo);
 int    Ship_getMaxHP(Ship *s);
 int    Ship_getMaxShieldHP();
 int    Ship_getMaxArmorHP(Ship *s);
-int    Item_makeItem(int itemDesc);
 void   Status_rg_loadAgents(Status *self);
 void   Status_rg_loadWanted(Status *self);
 void   Status_rg_setCampaignMission(Status *self, void *m);
@@ -999,7 +1002,7 @@ void Status::resetGame()
 
     Globals_resetHints();
     Galaxy *gal = *g_rg_galaxy;
-    Galaxy_reset(gal);
+    ((Galaxy *)(gal))->reset();
 
     ba = (int *)P(self, 0x50);
     for (int j = 0; *ba != j; j = j + 1)
@@ -1102,7 +1105,7 @@ void Status::resetGame()
     int *itHolder = *g_rg_itemTable;
     unsigned *items = (unsigned *)*itHolder;
     for (unsigned k = 0; k < *items; k = k + 1) {
-        if (Item_getIngredients() != 0)
+        if (((Item **)items[1])[k]->getIngredients() != 0)
             bpCount = bpCount + 1;
     }
 
@@ -1119,7 +1122,7 @@ void Status::resetGame()
         ArraySetLength_BP(bpCount, a);
         int idx = 0;
         for (unsigned k = 0; k < *items; k = k + 1) {
-            if (Item_getIngredients() != 0) {
+            if (((Item **)items[1])[k]->getIngredients() != 0) {
                 void *bp = Status_opnew(0x2c);
                 BluePrint_ctor(bp, k);
                 ((void **)(*(int *)((char *)P(self, 0x18) + 4)))[idx] = bp;
@@ -1162,7 +1165,7 @@ void Status::resetGame()
     int newShip = Ship_makeShip(*(int *)((*(int *)(*slotB + 4)) + 0x28));
     Status_rg_setShip(this, newShip);
     Ship_priceDecline(*(Ship **)(self + 0x190));
-    Status_rg_setStation(this, Galaxy_getStation((int)(intptr_t)gal));
+    Status_rg_setStation(this, (void *)(intptr_t)((Galaxy *)(gal))->getStation(0));  // new-game home station (index 0)
     Ship_setCargo(*(Ship **)(self + 0x190), 0);
 
     int (*makeItemB)(int) = g_rg_makeItemB;
@@ -1177,7 +1180,7 @@ void Status::resetGame()
     addCargo(shipObj, makeItemB(*(int *)(srcShip + 0x148)), 2);
     addCargo(shipObj, makeItemB(*(int *)(srcShip + 0x124)), 3);
     addCargo(*(int *)((intptr_t)(*(int **)(*g_rg_statusSlotA)) + 0x190),
-             Item_makeItem(*(int *)(srcShip + 0x90)), 0);
+             (int)(intptr_t)((Item *)(*(int *)(srcShip + 0x90)))->makeItem(), 0);
 
     if (C(srec, 0x35) != 0)
         ((char *)(*(int *)((char *)P(self, 0x38) + 4)))[0x19] = 1;
@@ -1192,8 +1195,10 @@ void Status::resetGame()
 }
 
 // ---- activateNewWanted_acedc.cpp ----
-struct SystemPathFinder;
-struct SolarSystem;
+struct SystemPathFinder {
+    void *_opaque;
+    int *getSystemPath(void *systems, int from, int to);
+};
 
 __attribute__((visibility("hidden"))) extern Status **g_anwStatus;     // bceec
 __attribute__((visibility("hidden"))) extern int g_anwSysMask;          // bd290
@@ -1312,7 +1317,7 @@ int Status::activateNewWanted() {
             if (b != 0) {
                 (((Station *)(b))->dtor(), operator_delete((void *)b));
             }
-            path = SystemPathFinder_getSystemPath(pf, systems, fromSys, toSys);
+            path = ((SystemPathFinder *)(pf))->getSystemPath(systems, fromSys, toSys);
         } while (path == 0 || (unsigned)*path < lo || hi < (unsigned)*path);
         int *rnd = g_anwRandom;
         int pick = path[1] + AERandom_nextInt(*rnd) * 4;
@@ -1449,7 +1454,7 @@ int Status::getGammaRayDamagePerSecond(int a, int b) {
 // Pushes `s` onto the 3-deep station stack (shifting older entries down), unless it is
 // already present. Returns 1 if the stack was modified, 0 otherwise.
 int Status::addStationToStack(Station *s) {
-    Station *found = Status_isOnStack(this, s);
+    Station *found = (Station *)(intptr_t)((Status *)(this))->isOnStack(s);
     if (found != 0) {
         Status_setStationTail(this, found);
         return 0;
@@ -1662,14 +1667,14 @@ void Status::setStation(Station *s) {
     }
     station = s;
     Galaxy *gal = *g_galaxy;
-    system = Galaxy_getSystem(gal, Station_getSystem(s));
+    system = ((Galaxy *)(gal))->getSystem(Station_getSystem(s));
     if (system == 0) {
         return;
     }
     (*field_b4)[Station_getSystem(station)] = true;
     FileRead *fr = (FileRead *)operator new(1);
     FileRead_ctor(fr);
-    Array<Station *> *list = (Array<Station *> *)FileRead_loadStationsBinary(fr, (SolarSystem *)(void *)(uint32_t)system);
+    Array<Station *> *list = (Array<Station *> *)((FileRead *)(fr))->loadStationsBinary();
     operator_delete(FileRead_dtor(fr));
     if (planetNames != 0) {
         ArrayReleaseClasses_String((Array<String *> *)(void *)(uint32_t)planetNames);
@@ -2021,10 +2026,6 @@ void *Ship_getCargo();
 int Ship_getCurrentLoad();
 int Ship_hasCargo(int ship, int item);
 int Ship_hasEquipment(int ship, int item);
-int Item_getIndex(void *item);
-int Item_getType(void *item);
-int Item_getSort(void *item);
-int Item_isInList(int a, int b, void *list);
 int Item_isInList2(int a, void *list);
 void *BluePrint_getIngredientList(void *bp);
 void BluePrint_getQuantityList(void *bp);
@@ -2072,7 +2073,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
             unsigned *eq = (unsigned *)Ship_getEquipment(self->ship);
             for (unsigned j = 0; j < *eq; j = j + 1) {
                 void *it = *(void **)(eq[1] + j * 4);
-                if (it != 0 && Item_getIndex(it) == Mission_getStatusValue())
+                if (it != 0 && ((Item *)(it))->getIndex() == Mission_getStatusValue())
                     return m;
             }
             break;
@@ -2104,7 +2105,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
             unsigned *eq = (unsigned *)Ship_getEquipment(self->ship);
             for (unsigned j = 0; j < *eq; j = j + 1) {
                 void *it = *(void **)(eq[1] + j * 4);
-                if (it != 0 && Item_getType(it) == Mission_getStatusValue())
+                if (it != 0 && ((Item *)(it))->getType() == Mission_getStatusValue())
                     return m;
             }
             break;
@@ -2115,9 +2116,9 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
             for (unsigned j = 0; j < *eq; j = j + 1) {
                 void *it = *(void **)(eq[1] + j * 4);
                 if (it != 0) {
-                    if (Item_getType(it) == 0)
+                    if (((Item *)(it))->getType() == 0)
                         hasGood = true;
-                    else if (Item_getSort(it) == 10)
+                    else if (((Item *)(it))->getSort() == 10)
                         hasSpecial = true;
                 }
             }
@@ -2169,7 +2170,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 if (Station_getIndex(self->station) == Mission_getTargetStation()) {
                     int idx = Mission_getProductionGoodIndex(m);
                     int amt = Mission_getProductionGoodAmount();
-                    if (Item_isInList(idx, amt, Ship_getCargo()) != 0) return m;
+                    if (Item::isInList(idx, amt, (ItemArray *)Ship_getCargo()) != 0) return m;
                 }
             }
             break;
@@ -2178,7 +2179,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 if (Station_getIndex(self->station) == Mission_getTargetStation()) {
                     int idx = Mission_getProductionGoodIndex(m);
                     int amt = Mission_getProductionGoodAmount();
-                    if (Item_isInList(idx, amt, Ship_getCargo()) != 0) return m;
+                    if (Item::isInList(idx, amt, (ItemArray *)Ship_getCargo()) != 0) return m;
                     if (Ship_hasEquipment((int)(long)((*g_mcStatusA)->ship),
                                           Mission_getProductionGoodIndex(m)) == 0) return m;
                 }
@@ -2199,7 +2200,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 unsigned *eq = (unsigned *)Ship_getEquipment(self->ship);
                 for (unsigned j = 0; j < *eq; j = j + 1) {
                     void *it = *(void **)(eq[1] + j * 4);
-                    if (it != 0 && Item_getSort(it) == Mission_getStatusValue())
+                    if (it != 0 && ((Item *)(it))->getSort() == Mission_getStatusValue())
                         return m;
                 }
             }
@@ -2210,7 +2211,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 if (docked && Station_getIndex(self->station) == Mission_getTargetStation()) {
                     int idx = Mission_getProductionGoodIndex(m);
                     int amt = Mission_getProductionGoodAmount();
-                    if (Item_isInList(idx, amt, Ship_getCargo()) != 0) return m;
+                    if (Item::isInList(idx, amt, (ItemArray *)Ship_getCargo()) != 0) return m;
                 }
             } else if (type == 0xd) {
                 if (docked && self->field_0xf0 != 0) return m;
@@ -2281,7 +2282,7 @@ void Wanted_setCurrentLocation_mw(Wanted *w, int loc);               // 0x737bc
 void Wanted_setTravelsTo_mw(Wanted *w, int loc);                     // 0x737ec
 void *Station_dtor_mw(void *s);                                      // 0x7360c
 void *Globals_getRandomStation_mw();                                 // 0x737d4
-int *SystemPathFinder_getSystemPath(SystemPathFinder *p, void *sys, int from, int to); // 0x737e0
+// 0x737e0
 int SolarSystem_getRoutes_mw();                                      // 0x71aac
 int SolarSystem_getWarpGateIndex_mw(void *ss);                       // 0x737f8
 void ArrayReleaseClasses_SolarSystem(void *a);                       // 0x73804
@@ -2354,7 +2355,7 @@ void Status::moveWanted()
             toSt = Globals_getRandomStation_mw();
             toSys = Station_getSystem_mw(toSt);
             for (;;) {
-                path = SystemPathFinder_getSystemPath(pf, systemsTable, fromSys, toSys);
+                path = ((SystemPathFinder *)(pf))->getSystemPath(systemsTable, fromSys, toSys);
                 Station_getSystem_mw(toSt);
                 int routes = SolarSystem_getRoutes_mw();
                 int dsys = Station_getSystem_mw(toSt);
@@ -2377,7 +2378,7 @@ void Status::moveWanted()
             Wanted_setCurrentLocation_mw(pw, Wanted_getTravelsTo_mw(pw));
             path = 0;
         } else {
-            path = SystemPathFinder_getSystemPath(pf, systemsTable, fromSys, toSys);
+            path = ((SystemPathFinder *)(pf))->getSystemPath(systemsTable, fromSys, toSys);
             int wg = SolarSystem_getWarpGateIndex_mw(
                 *(void **)(*(int *)((char *)systemsTable + 4) + *(int *)(*(int *)((char *)path + 4) + 4) * 4));
             Wanted_setCurrentLocation_mw((*self->wanted)[i], wg);

@@ -1,9 +1,9 @@
 #include "gof2/LODManager.h"
+#include "gof2/AEGeometry.h"
 
 extern "C" void LODManager_addObject_tail(AEGeometry *g, void *objects);
 uint32_t CameraGetCurrent(void *canvas);
 Matrix *CameraGetLocal(void *canvas, uint32_t index);
-extern "C" void AEGeometry_updateLod(AEGeometry *g, const void *pos, float factor);
 
 // ---- addObject_9520c.cpp ----
 extern "C" int LODManager_hasLod(AEGeometry *g);              // AEGeometry::hasLod()
@@ -61,7 +61,7 @@ __attribute__((visibility("hidden"))) extern void *g_LOD_settings;  // float at 
 
 void MatrixGetPosition(void *out, const Matrix *m);     // RetStr
 extern "C" void Vector_assign(Vector *dst, const void *src);       // Vector::operator=
-extern "C" void AEGeometry_getParentPosition(void *out, AEGeometry *g);  // RetStr
+// RetStr
 
 void LODManager::forceUpdate(int dt, bool useParent)
 {
@@ -77,10 +77,10 @@ void LODManager::forceUpdate(int dt, bool useParent)
     for (uint32_t i = 0; i < this->objects->size(); i++) {
         AEGeometry *g = (*this->objects)[i];
         if (useParent)
-            AEGeometry_getParentPosition(&local, g);
+            ((AEGeometry *)(&local))->getParentPosition();
         else
             local = this->cameraPos;
-        AEGeometry_updateLod(g, &local, factor);
+        ((AEGeometry *)(g))->updateLod(local, factor);
     }
 }
 

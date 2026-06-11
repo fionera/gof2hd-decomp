@@ -1,4 +1,13 @@
+// Galaxy.h defines the B/I/P offset-cast helpers unconditionally; include it first
+// and mark them as already provided so ModMainMenu.h does not redefine them.
+#include "gof2/Galaxy.h"
+#define GOF2_BIP_HELPERS
 #include "gof2/ModMainMenu.h"
+#include "gof2/CutScene.h"
+#include "gof2/FModSound.h"
+#include "gof2/Level.h"
+#include "gof2/MenuTouchWindow.h"
+#include "gof2/Status.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
@@ -7,7 +16,6 @@
 
 
 extern "C" void *CutScene_dtor(void *self);
-extern "C" void *MenuTouchWindow_dtor(void *self);
 extern "C" void operator_delete(void *ptr);
 extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
 int GameText_getLanguage();
@@ -17,49 +25,30 @@ extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModMainMenu_resumeTail(int obj, int one, int arg);
 extern "C" void PaintCanvas_ClearBuffer(void *canvas, int value);
 extern "C" void PaintCanvas_Begin3d(void *canvas);
-extern "C" void CutScene_renderBG(void *scene);
-extern "C" void CutScene_render3D(void *scene);
 extern "C" void ModMainMenu_r3dTail(void *canvas);
 ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self);
 extern "C" void ModMainMenu_deleteTail(ModMainMenu *self);
-extern "C" void MenuTouchWindow_OnTouchMove(void *self, int x, int y, void *touch);
 extern "C" void ModMainMenu_suspendTail(int obj);
-extern "C" void MenuTouchWindow_OnTouchEnd(void *self, int x, int y, void *touch);
-extern "C" void *Level_getStarSystem(void *level);
 extern "C" void ModMainMenu_touchEndTail(void *starSystem);
-extern "C" void MenuTouchWindow_OnTouchBegin(void *self, int x, int y, void *touch);
 void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self);
 extern "C" void PaintCanvas_Begin2d(int canvas);
 extern "C" void PaintCanvas_SetColor(int canvas, int color);
 extern "C" void PaintCanvas_SetColor4(int canvas, int r, int g, int b, int a);
 extern "C" int PaintCanvas_GetTextWidth(int canvas, void *str, int text);
 extern "C" int PaintCanvas_GetImage2DHeight(int canvas, int image);
-extern "C" void CutScene_render2D(void *scene);
-extern "C" void MenuTouchWindow_draw(void *window);
 extern "C" float AEMath_Sinf(float value);
 extern "C" void ModMainMenu_r2dTail(int canvas);
 void Globals_startNewSoundResourceList(void *soundRes);
-extern "C" void Status_resetGame(void *status);
 extern "C" void AERandom_reset(void *random);
 extern "C" int AERandom_nextInt(void *random, int limit);
-extern "C" void *Galaxy_getStation(void *galaxy, int index);
-extern "C" void Status_setStation(void *status, void *station);
 extern "C" void *operator_new(unsigned int size);
 extern "C" void CutScene_ctor(void *self, int mode);
-extern "C" void CutScene_initialize(void *self);
-extern "C" int Status_inAlienOrbit(void *status);
-extern "C" void *Status_getSystem(void *status);
 extern "C" int SolarSystem_getTextureIndex(void *system);
 extern "C" void PaintCanvas_TextureCreate(int canvas, int texture, int *out, int flags);
 extern "C" void PaintCanvas_ChangeCubeTexture(int canvas, int texture);
 extern "C" void *GameRecord_dtor(void *record);
-extern "C" void Status_setPlayingTime(int time, long long zero);
-extern "C" void MenuTouchWindow_ctor(void *self, int mode);
-extern "C" void MenuTouchWindow_showSupernovaMessage(void *self);
 extern "C" void PaintCanvas_Image2DCreate(void *factory, int image, int *out);
 void Globals_playMusicAndFadeOutCurrent(int music);
-extern "C" void CutScene_update(void *scene, int elapsed);
-extern "C" void MenuTouchWindow_update(void *window, int elapsed);
 
 // ---- ModMainMenu_1757a0.cpp ----
 __attribute__((visibility("hidden"))) extern void *volatile g_ModMainMenu_vtable;
@@ -93,7 +82,7 @@ void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
     void *touchWindow = P(self, 0x18);
     P(self, 0x1c) = 0;
     if (touchWindow != 0)
-        operator_delete(MenuTouchWindow_dtor(touchWindow));
+        operator_delete(((MenuTouchWindow *)(touchWindow))->dtor());
 
     P(self, 0x18) = 0;
     PaintCanvas_ReleaseAllResources(*g_ModMainMenu_releaseCanvas);
@@ -138,9 +127,9 @@ void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
 {
     void **canvas = g_ModMainMenu_r3d_canvas;
     PaintCanvas_ClearBuffer(*canvas, 0);
-    CutScene_renderBG(P(self, 0x1c));
+    ((CutScene *)(P(self, 0x1c)))->renderBG();
     PaintCanvas_Begin3d(*canvas);
-    CutScene_render3D(P(self, 0x1c));
+    ((CutScene *)(P(self, 0x1c)))->render3D();
     ModMainMenu_r3dTail(*canvas);
 }
 
@@ -156,7 +145,7 @@ extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu11OnTouchMov
 {
     if (UC(self, 0x28) != 0)
         return;
-    MenuTouchWindow_OnTouchMove(P(self, 0x18), x, y, touch);
+    ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchMove(x, y);
 }
 
 // ---- OnSuspend_17582c.cpp ----
@@ -178,8 +167,8 @@ void _ZN11ModMainMenu10OnTouchEndEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
 {
     if (UC(self, 0x28) == 0) {
-        MenuTouchWindow_OnTouchEnd(P(self, 0x18), x, y, touch);
-        ModMainMenu_touchEndTail(Level_getStarSystem(*(void **)P(self, 0x1c)));
+        ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchEnd(x, y);
+        ModMainMenu_touchEndTail((void *)(intptr_t)((Level *)(*(void **)P(self, 0x1c)))->getStarSystem());
         return;
     }
 
@@ -193,7 +182,7 @@ extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu12OnTouchBeg
 {
     if (UC(self, 0x28) != 0)
         return;
-    MenuTouchWindow_OnTouchBegin(P(self, 0x18), x, y, touch);
+    ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchBegin(x, y, (int)(intptr_t)touch);
 }
 
 // ---- _ModMainMenu_1757c4.cpp ----
@@ -223,10 +212,10 @@ void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
 {
     PaintCanvas_Begin2d(I(self, 0x04));
     PaintCanvas_SetColor(I(self, 0x04), -1);
-    CutScene_render2D(self->f_1c);
+    ((CutScene *)(self->f_1c))->render2D();
 
     if (UC(self, 0x28) == 0) {
-        MenuTouchWindow_draw(self->f_18);
+        ((MenuTouchWindow *)(self->f_18))->draw();
     } else {
         int color;
         int time = I(self, 0x24);
@@ -315,26 +304,26 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
         addSound(*soundRes, 0x14);
 
         void **statusHolder = g_ModMainMenu_initStatus;
-        Status_resetGame(*statusHolder);
+        ((Status *)(*statusHolder))->resetGame();
         void **randomHolder = g_ModMainMenu_initRandom;
         AERandom_reset(*randomHolder);
 
         void *status = *statusHolder;
         void *galaxy = *g_ModMainMenu_initGalaxy;
-        void *station = Galaxy_getStation(galaxy, AERandom_nextInt(*randomHolder, 100));
-        Status_setStation(status, station);
+        void *station = (void *)(intptr_t)((Galaxy *)(galaxy))->getStation(AERandom_nextInt(*randomHolder, 100));
+        ((Status *)(status))->setStation((Station *)station);
 
         void *cutscene = operator_new(0xa0);
         CutScene_ctor(cutscene, 2);
         self->f_1c = cutscene;
-        CutScene_initialize(cutscene);
+        ((CutScene *)(cutscene))->initialize();
 
         int canvas = I(self, 0x04);
         int texture;
-        if (Status_inAlienOrbit(*statusHolder) != 0) {
+        if (((Status *)(*statusHolder))->inAlienOrbit() != 0) {
             texture = 0x2f08;
         } else {
-            texture = (SolarSystem_getTextureIndex(Status_getSystem(*statusHolder)) +
+            texture = (SolarSystem_getTextureIndex((void *)(intptr_t)((Status *)(*statusHolder))->getSystem()) +
                        0x2efe) &
                       0xffff;
         }
@@ -365,12 +354,12 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
         ((RecordHandler *)(*recordHolder))->saveOptions();
     }
 
-    Status_setPlayingTime(*g_ModMainMenu_initPlayingTime, 0);
+    ((Status *)(*g_ModMainMenu_initPlayingTime))->setPlayingTime(0);
     window = operator_new(0x240);
-    MenuTouchWindow_ctor(window, 0);
+    ((MenuTouchWindow *)(window))->ctor(0);
     self->f_18 = window;
     if (UC(self, 0x29) != 0) {
-        MenuTouchWindow_showSupernovaMessage(window);
+        ((MenuTouchWindow *)(window))->showSupernovaMessage();
         UC(self, 0x29) = 0;
     }
     I(self, 0x0c) = 0x50;
@@ -405,8 +394,6 @@ state80:
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_updateLayout;
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_updateListener;
 
-extern "C" void FModSound_updateAll(
-    void *listener, void *position, void *velocity, void *forward, void *up);
 
 void _ZN11ModMainMenu8OnUpdateEv(ModMainMenu *self)
 {
@@ -427,13 +414,13 @@ void _ZN11ModMainMenu8OnUpdateEv(ModMainMenu *self)
 
     void **layout = g_ModMainMenu_updateLayout;
     ((Layout *)(*layout))->update(frameTime);
-    CutScene_update(self->f_1c, I(self, 0x14));
+    ((CutScene *)(self->f_1c))->update();
     if (UC(self, 0x28) == 0)
-        MenuTouchWindow_update(self->f_18, I(self, 0x14));
+        ((MenuTouchWindow *)(self->f_18))->update(I(self, 0x14));
     ((Layout *)(*layout))->update(I(self, 0x14));
 
     void **listener = g_ModMainMenu_updateListener;
     I(self, 0x24) = I(self, 0x14) + I(self, 0x24);
     void *zero = 0;
-    FModSound_updateAll(*listener, zero, zero, zero, zero);
+    ((FModSound *)(*listener))->updateAll((Vector *)zero, (Vector *)zero, (Vector *)zero, (Vector *)zero);
 }

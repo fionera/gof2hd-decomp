@@ -1,4 +1,9 @@
 #include "gof2/PlayerStation.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/BoundingVolume.h"
+#include "gof2/FileRead.h"
+#include "gof2/Status.h"
+#include "gof2/Transform.h"
 #include "gof2/Player.h"
 
 // Transform / AEGeometry are only used as opaque pointers and via byte-offset reads
@@ -23,35 +28,19 @@ extern "C" void *PlayerStation_vtable __attribute__((visibility("hidden")));
 extern "C" void *AEGeometry_destructor(void *geometry) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_BoundingVolumePtr(void *array) __attribute__((nothrow));
 extern "C" void *Array_BoundingVolumePtr_destructor(void *array) __attribute__((nothrow));
-extern "C" void AEGeometry_setPosition(void *geometry, const Vector &position);
-extern "C" Vector BoundingVolume_getProjectionVector(void *volume, const Vector &position);
-extern "C" void AEGeometry_render(void *geometry);
-extern "C" Vector AEGeometry_getPosition(void *geometry);
 extern "C" void *Status_holder __attribute__((visibility("hidden")));
-extern "C" int Status_inAlienOrbit(void *status);
 extern "C" void *PaintCanvas_holder __attribute__((visibility("hidden")));
 extern "C" long long PaintCanvas_TransformGetTransform(void *canvas, int mesh);
-extern "C" void Transform_Update(long long transform, long long delta, int zero);
 extern "C" TransformGetFn PlayerStation_transformGet __attribute__((visibility("hidden")));
 extern "C" TransformUpdateFn PlayerStation_transformUpdate __attribute__((visibility("hidden")));
 extern "C" int Station_getIndex(Station *station);
 extern "C" void *FileRead_constructor(void *self);
 extern "C" void *FileRead_destructor(void *self) __attribute__((nothrow));
-extern "C" void *FileRead_loadStationCollision(void *self, int stationIndex);
-extern "C" void *FileRead_loadStaticCollision(void *self);
-extern "C" int Status_dlc1Won(void *status);
-extern "C" void *Status_getSystem(void *status);
-extern "C" int Status_getCurrentCampaignMission(void *status);
-extern "C" Station *Status_getStation(void *status);
 extern "C" int SolarSystem_getRace(void *system);
 extern "C" void AEGeometry_constructor(void *self, uint16_t mesh, void *canvas, bool flag);
-extern "C" void AEGeometry_addChild(void *root, uint32_t child);
-extern "C" void AEGeometry_setRotation(void *geometry, float x, float y, float z);
-extern "C" void AEGeometry_setLodChildMeshes(void *geometry, uint16_t *meshes);
 extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out);
 extern "C" void *PaintCanvas_TransformGetTransformPtr(void *canvas, uint32_t transform);
 extern "C" void Transform_UpdatePtr(void *transform, uint32_t lo, uint32_t hi, int zero);
-extern "C" void Transform_SetAnimationState(void *transform, int state, int frame);
 extern "C" void Transform_SetActive(void *transform);
 extern "C" void Transform_SetInactive(void *transform);
 extern "C" void Array_int_destructor(void *array) __attribute__((nothrow));
@@ -60,7 +49,6 @@ extern "C" void Array_BoundingVolumePtr_constructor(void *array);
 extern "C" void ArraySetLength_BoundingVolumePtr(uint32_t length, void *array);
 extern "C" void Vector_scale(Vector *vector, float scale);
 extern "C" void *PlayerStation_destructor_body(PlayerStation *self) __attribute__((nothrow));
-extern "C" void AEGeometry_translate(void *geometry, float x, float y, float z);
 
 // ---- setVisible_122760.cpp ----
 void PlayerStation::setVisible(bool visible)
@@ -105,7 +93,7 @@ void PlayerStation::setPosition(const Vector &position)
     this->posX = position.x;
     this->posY = position.y;
     this->posZ = position.z;
-    AEGeometry_setPosition(P(this, 0x140), position);
+    ((AEGeometry *)(P(this, 0x140)))->setPosition(position);
 
     void *volumes = P(this, 0x130);
     if (volumes != 0) {
@@ -120,12 +108,16 @@ void PlayerStation::setPosition(const Vector &position)
 }
 
 // ---- projectCollisionOnSurface_12287c.cpp ----
-extern "C" Vector BoundingVolume_staticProjectCollisionOnSurface(
-    const Vector &position, void *volumes);
 
 Vector PlayerStation::projectCollisionOnSurface(const Vector &position)
 {
-    return BoundingVolume_staticProjectCollisionOnSurface(position, P(this, 0x130));
+    // staticProjectCollisionOnSurface seeds a BoundingVolume's center with `position`,
+    // projects it onto every colliding volume in the list, and leaves the result in the
+    // volume's center. Reconstruct that: run it on a scratch volume and return its center.
+    BoundingVolume scratch(0, 0, 0, 0, 0, 0);
+    scratch.staticProjectCollisionOnSurface(position,
+                                            (Array<BoundingVolume *> *)P(this, 0x130));
+    return *(Vector *)&scratch.centerX;
 }
 
 // ---- getRoot_12275a.cpp ----
@@ -142,7 +134,7 @@ Vector PlayerStation::getProjectionVector(const Vector &position)
         void *items = P(volumes, 0x4);
         uint32_t index = this->collisionIndex;
         void *volume = *(void **)((char *)items + index * 4);
-        return BoundingVolume_getProjectionVector(volume, position);
+        return ((BoundingVolume *)(volume))->getProjectionVector(position);
     }
 
     Vector result = {0.0f, 0.0f, 0.0f};
@@ -155,7 +147,7 @@ void PlayerStation::render()
     if (this->visible == 0) {
         return;
     }
-    return AEGeometry_render(P(this, 0x140));
+    return ((AEGeometry *)(P(this, 0x140)))->render();
 }
 
 // ---- outerCollide_12283c.cpp ----
@@ -170,7 +162,7 @@ void PlayerStation::outerCollide(const Vector &position)
 // ---- getPosition_12274c.cpp ----
 Vector PlayerStation::getPosition()
 {
-    return AEGeometry_getPosition(P(this, 0x140));
+    return ((AEGeometry *)(P(this, 0x140)))->getPosition();
 }
 
 // ---- collide_12276e.cpp ----
@@ -195,7 +187,7 @@ void PlayerStation::update(int delta)
         return;
     }
 
-    if (Status_inAlienOrbit(P(Status_holder, 0x0)) != 0) {
+    if (((Status *)(P(Status_holder, 0x0)))->inAlienOrbit() != 0) {
         return;
     }
 
@@ -203,13 +195,11 @@ void PlayerStation::update(int delta)
     void *canvas = *canvasHolder;
     void *root = P(this, 0x140);
     long long delta64 = (long long)savedDelta;
-    Transform_Update(PaintCanvas_TransformGetTransform(canvas, F<int32_t>(root, 0x14)),
-                     delta64, 0);
+    ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(canvas, F<int32_t>(root, 0x14))))->Update(delta64, 0);
 
     type = this->stationIndex;
     if (type == 100) {
-        Transform_Update(PaintCanvas_TransformGetTransform(canvas, this->field_0x144),
-                         delta64, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(canvas, this->field_0x144)))->Update(delta64, 0);
     } else if (type == 0x6c) {
         TransformGetFn getTransform = PlayerStation_transformGet;
         long long transform = getTransform(canvas, this->field_0x164);
@@ -231,8 +221,6 @@ void PlayerStation::update(int delta)
 }
 
 // ---- PlayerStation_121818.cpp ----
-extern "C" void AEGeometry_setLodMeshes(void *geometry, uint16_t *meshes, int *distances,
-                                        int count);
 extern "C" void PaintCanvas_TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh,
                                              bool flag);
 extern "C" void BoundingSphere_constructor(void *self, float x, float y, float z, float radius,
@@ -272,11 +260,11 @@ PlayerStation::PlayerStation(Station *station)
 
     void *reader = operator_new(1);
     FileRead_constructor(reader);
-    void *collision = FileRead_loadStationCollision(reader, stationIndex);
+    void *collision = ((FileRead *)(reader))->loadStationCollision(stationIndex);
     operator_delete(FileRead_destructor(reader));
 
     void *status = P(Status_holder, 0x0);
-    int alienOrbit = Status_inAlienOrbit(status);
+    int alienOrbit = ((Status *)(status))->inAlienOrbit();
     void **canvasHolder = (void **)PaintCanvas_holder;
     void *canvas = *canvasHolder;
     void **rootSlot = (void **)((char *)this + 0x140);
@@ -288,31 +276,31 @@ PlayerStation::PlayerStation(Station *station)
             *rootSlot = root;
             void *child = operator_new(0xc0);
             AEGeometry_constructor(child, 0x4037, canvas, false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
             void *child2 = operator_new(0xc0);
             AEGeometry_constructor(child2, 0x403a, canvas, false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child2, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
             operator_delete(AEGeometry_destructor(child));
             operator_delete(AEGeometry_destructor(child2));
             reader = operator_new(1);
             FileRead_constructor(reader);
-            collision = FileRead_loadStationCollision(reader, 0x3e8);
+            collision = ((FileRead *)(reader))->loadStationCollision(0x3e8);
             operator_delete(FileRead_destructor(reader));
-        } else if (Status_dlc1Won(status) != 0) {
+        } else if (((Status *)(status))->dlc1Won() != 0) {
             void *root = operator_new(0xc0);
             AEGeometry_constructor(root, 0x4220, canvas, false);
             *rootSlot = root;
             local_64 = -1.0f;
             PaintCanvas_TransformCreate(canvas, (uint32_t *)&local_64);
             PaintCanvas_TransformAddMesh(canvas, (uint32_t)local_64, 0x4221, true);
-            AEGeometry_addChild(*rootSlot, (uint32_t)local_64);
+            ((AEGeometry *)(*rootSlot))->addChild((uint32_t)local_64);
             local_58[1] = 0xffffffff;
             PaintCanvas_TransformCreate(canvas, local_58 + 1);
             PaintCanvas_TransformAddMesh(canvas, local_58[1], 0x4222, true);
-            AEGeometry_addChild(*rootSlot, local_58[1]);
+            ((AEGeometry *)(*rootSlot))->addChild(local_58[1]);
             reader = operator_new(1);
             FileRead_constructor(reader);
-            collision = FileRead_loadStationCollision(reader, 0x3eb);
+            collision = ((FileRead *)(reader))->loadStationCollision(0x3eb);
             operator_delete(FileRead_destructor(reader));
             void *transform = PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0xc));
             void *transformAgain =
@@ -333,15 +321,15 @@ PlayerStation::PlayerStation(Station *station)
             *rootSlot = root;
             void *child = operator_new(0xc0);
             AEGeometry_constructor(child, 0x403e, canvas, false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
             void *child2 = operator_new(0xc0);
             AEGeometry_constructor(child2, 0x4041, canvas, false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child2, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
             operator_delete(AEGeometry_destructor(child));
             operator_delete(AEGeometry_destructor(child2));
             reader = operator_new(1);
             FileRead_constructor(reader);
-            collision = FileRead_loadStationCollision(reader, 0x3e9);
+            collision = ((FileRead *)(reader))->loadStationCollision(0x3e9);
             operator_delete(FileRead_destructor(reader));
         }
     }
@@ -357,7 +345,7 @@ PlayerStation::PlayerStation(Station *station)
             *rootSlot = root;
         }
 
-        void *system = Status_getSystem(status);
+        void *system = (void *)(long)((Status *)(status))->getSystem();
         uint32_t race = system == 0 ? 9u : (uint32_t)SolarSystem_getRace(system);
         stationIndex = this->stationIndex;
         if (stationIndex == 0x65) {
@@ -367,51 +355,51 @@ PlayerStation::PlayerStation(Station *station)
             local_64 = -1.0f;
             PaintCanvas_TransformCreate(canvas, (uint32_t *)&local_64);
             PaintCanvas_TransformAddMesh(canvas, (uint32_t)local_64, 0x4221, true);
-            AEGeometry_addChild(*rootSlot, (uint32_t)local_64);
+            ((AEGeometry *)(*rootSlot))->addChild((uint32_t)local_64);
             local_58[1] = 0xffffffff;
             PaintCanvas_TransformCreate(canvas, local_58 + 1);
             PaintCanvas_TransformAddMesh(canvas, local_58[1], 0x4222, true);
-            AEGeometry_addChild(*rootSlot, local_58[1]);
-            if (Status_getCurrentCampaignMission(status) == 0x9d &&
-                Station_getIndex(Status_getStation(status)) == 0x70) {
+            ((AEGeometry *)(*rootSlot))->addChild(local_58[1]);
+            if (((Status *)(status))->getCurrentCampaignMission() == 0x9d &&
+                Station_getIndex(((Status *)(status))->getStation()) == 0x70) {
                 local_58[0] = 0xffffffff;
                 PaintCanvas_TransformCreate(canvas, local_58);
                 PaintCanvas_TransformAddMesh(canvas, local_58[0], 0x4950, true);
-                AEGeometry_addChild(*rootSlot, local_58[0]);
+                ((AEGeometry *)(*rootSlot))->addChild(local_58[0]);
                 local_48 = 0xffffffff;
                 PaintCanvas_TransformCreate(canvas, &local_48);
                 PaintCanvas_TransformAddMesh(canvas, local_48, 0x4952, true);
-                AEGeometry_addChild(*rootSlot, local_48);
+                ((AEGeometry *)(*rootSlot))->addChild(local_48);
                 local_4c = 0xffffffff;
                 PaintCanvas_TransformCreate(canvas, &local_4c);
                 PaintCanvas_TransformAddMesh(canvas, local_4c, 0x4951, true);
-                AEGeometry_addChild(*rootSlot, local_4c);
+                ((AEGeometry *)(*rootSlot))->addChild(local_4c);
             }
         } else if ((uint32_t)(stationIndex - 0x6d) < 2 ||
-                   (stationIndex == 0x6f && Status_getCurrentCampaignMission(status) > 0x5e)) {
+                   (stationIndex == 0x6f && ((Status *)(status))->getCurrentCampaignMission() > 0x5e)) {
             void *root = operator_new(0xc0);
             AEGeometry_constructor(root, 0x4953, canvas, false);
             *rootSlot = root;
             void *child = operator_new(0xc0);
             AEGeometry_constructor(child, 0x4954, canvas, false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
             void *child2 = operator_new(0xc0);
             AEGeometry_constructor(child2, 0x4955, canvas, false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child2, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
             void *child3 = operator_new(0xc0);
             AEGeometry_constructor(child3, 0x4956, canvas, false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child3, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child3, 0xc));
             if (collision != 0) {
                 operator_delete((Array_int_destructor(collision), collision));
             }
             reader = operator_new(1);
             FileRead_constructor(reader);
-            collision = FileRead_loadStaticCollision(reader);
+            collision = ((FileRead *)(reader))->loadStaticCollision(stationIndex);
             FileRead_destructor(reader);
             operator_delete(reader);
         } else if (stationIndex == 100) {
-            int mission = Status_getCurrentCampaignMission(status);
-            int dlcWon = Status_dlc1Won(status);
+            int mission = ((Status *)(status))->getCurrentCampaignMission();
+            int dlcWon = ((Status *)(status))->dlc1Won();
             uint16_t rootMesh = dlcWon != 0 ? 0x3823 : 0x4223;
             if (mission == 0x50) {
                 rootMesh = 0x381f;
@@ -425,61 +413,58 @@ PlayerStation::PlayerStation(Station *station)
             local_64 = 0xffffffffu;
             PaintCanvas_TransformCreate(canvas, (uint32_t *)&local_64);
             PaintCanvas_TransformAddMesh(canvas, (uint32_t)local_64, mesh1, false);
-            AEGeometry_addChild(*rootSlot, (uint32_t)local_64);
+            ((AEGeometry *)(*rootSlot))->addChild((uint32_t)local_64);
             this->field_0x144 = (uint32_t)local_64;
             local_58[1] = 0xffffffff;
             PaintCanvas_TransformCreate(canvas, local_58 + 1);
             PaintCanvas_TransformAddMesh(canvas, local_58[1], mesh2, false);
-            AEGeometry_addChild(*rootSlot, local_58[1]);
+            ((AEGeometry *)(*rootSlot))->addChild(local_58[1]);
             local_58[0] = 0xffffffff;
             PaintCanvas_TransformCreate(canvas, local_58);
             PaintCanvas_TransformAddMesh(canvas, local_58[0], mesh3, false);
-            AEGeometry_addChild(*rootSlot, local_58[0]);
+            ((AEGeometry *)(*rootSlot))->addChild(local_58[0]);
             if (mission == 0x50 || dlcWon != 0) {
-                Transform_SetAnimationState(PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0xc)),
-                                            0, 0);
-                Transform_SetAnimationState(PaintCanvas_TransformGetTransformPtr(canvas, local_58[1]),
-                                            0, 0);
-                Transform_SetAnimationState(PaintCanvas_TransformGetTransformPtr(canvas, local_58[0]),
-                                            0, 0);
+                ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
+                ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransformPtr(canvas, local_58[1])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
+                ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransformPtr(canvas, local_58[0])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
                 if (collision != 0) {
                     operator_delete((Array_int_destructor(collision), collision));
                 }
                 reader = operator_new(1);
                 FileRead_constructor(reader);
-                collision = FileRead_loadStationCollision(reader, 0x3ed);
+                collision = ((FileRead *)(reader))->loadStationCollision(0x3ed);
                 operator_delete(FileRead_destructor(reader));
             } else {
                 local_4c = 0x4226;
                 local_48 = 0xf72c2200;
-                AEGeometry_setLodMeshes(*rootSlot, (uint16_t *)&local_4c, (int *)&local_48, 1);
+                ((AEGeometry *)(*rootSlot))->setLodMeshes((uint16_t *)&local_4c, (int *)&local_48, 1);
                 local_4e = 0x4227;
-                AEGeometry_setLodChildMeshes(*rootSlot, &local_4e);
+                ((AEGeometry *)(*rootSlot))->setLodChildMeshes(&local_4e);
             }
         } else if ((race | 2) == 2 || race == 3) {
             void *child = operator_new(0xc0);
             AEGeometry_constructor(child, (uint16_t)(stationIndex + 0x5528), canvas, false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
             void *child2 = operator_new(0xc0);
             AEGeometry_constructor(child2, (uint16_t)(this->stationIndex + 22000), canvas,
                                    false);
-            AEGeometry_addChild(*rootSlot, F<uint32_t>(child2, 0xc));
+            ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
             if (race == 3 && stationIndex == 0x6c) {
                 void *extra = operator_new(0xc0);
                 AEGeometry_constructor(extra, 0x5974, canvas, false);
-                AEGeometry_addChild(*rootSlot, F<uint32_t>(extra, 0xc));
+                ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x164 = F<uint32_t>(extra, 0xc);
                 extra = operator_new(0xc0);
                 AEGeometry_constructor(extra, 0x5975, canvas, false);
-                AEGeometry_addChild(*rootSlot, F<uint32_t>(extra, 0xc));
+                ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x168 = F<uint32_t>(extra, 0xc);
                 extra = operator_new(0xc0);
                 AEGeometry_constructor(extra, 0x5976, canvas, false);
-                AEGeometry_addChild(*rootSlot, F<uint32_t>(extra, 0xc));
+                ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x16c = F<uint32_t>(extra, 0xc);
                 extra = operator_new(0xc0);
                 AEGeometry_constructor(extra, 0x5977, canvas, false);
-                AEGeometry_addChild(*rootSlot, F<uint32_t>(extra, 0xc));
+                ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x170 = F<uint32_t>(extra, 0xc);
             }
             operator_delete(AEGeometry_destructor(child));
@@ -535,7 +520,7 @@ PlayerStation::PlayerStation(Station *station)
     }
 
     this->field_0x71 = 1;
-    AEGeometry_setRotation(P(this, 0x140), 0.0f, 0.0f, 0.0f);
+    ((AEGeometry *)(P(this, 0x140)))->setRotation(0.0f, 0.0f, 0.0f);
     void *transform =
         PaintCanvas_TransformGetTransformPtr(*canvasHolder, F<uint32_t>(P(this, 0x140), 0xc));
     this->collisionRadius = (int)(F<float>(transform, 0xe0) + 10.0f);
@@ -594,5 +579,5 @@ void PlayerStation::deleting_dtor() {
 // ---- translate_122766.cpp ----
 void PlayerStation::translate(float x, float y, float z)
 {
-    return AEGeometry_translate(P(this, 0x140), x, y, z);
+    return ((AEGeometry *)(P(this, 0x140)))->translate(x, y, z);
 }

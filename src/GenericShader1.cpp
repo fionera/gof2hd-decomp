@@ -1,4 +1,8 @@
 #include "gof2/GenericShader1.h"
+// NOTE: do not include gof2/ShaderBaseStruct.h here — GenericShader1.h already declares
+// the minimal AbyssEngine::ShaderBaseStruct base layout this shader derives from, and the
+// full class in ShaderBaseStruct.h would redefine it. The base's loader is reached via the
+// ShaderBaseStruct_ES2LoadProgram free function declared in GenericShader1.h.
 
 // ---- UpdateMeshData_8ed8a.cpp ----
 namespace AbyssEngine {
@@ -83,8 +87,7 @@ namespace AbyssEngine {
 // AbyssEngine::GenericShader1::Init(AbyssEngine::Engine*)
 void GenericShader1::Init(Engine *)
 {
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram(
-        (ShaderBaseStruct *)this, "GenericShader1.vsh", "GenericShader1.fsh");
+    uint32_t program = ShaderBaseStruct_ES2LoadProgram(this, "GenericShader1.vsh", "GenericShader1.fsh");
     field_0x4 = (int)program;
 
     field_0x20 = glGetAttribLocation(program, "a_position");

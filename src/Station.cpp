@@ -1,4 +1,6 @@
 #include "gof2/Station.h"
+#include "gof2/Item.h"
+#include "gof2/Status.h"
 #include "gof2/Agent.h"
 #include "gof2/String.h"
 
@@ -6,8 +8,6 @@
 extern "C" void *Station_operator_new(uint32_t sz);
 extern "C" void Array_Item_ctor(void *arr);
 extern "C" void ArraySetLength_Item(uint32_t len, void *arr);
-extern "C" void *Item_clone(Item *item);
-extern "C" void Status_visitStation(Status *s);
 extern "C" void Galaxy_setSystemVisited(Galaxy *g, int systemId);
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void Array_Ship_ctor(void *arr);
@@ -16,21 +16,17 @@ extern "C" void *Ship_clone(Ship *ship);
 extern "C" void Station_arrayRemoveShip(Ship *ship, void *ships);
 extern "C" char *Galaxy_getVisited(Galaxy *g);
 extern "C" int Item_equals(Item *a, Item *b);
-extern "C" int Item_getAmount(Item *item);
 extern "C" void ArrayReleaseClasses_Ship(void *arr) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Item(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Ship_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Item_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Agent_dtor(void *arr) __attribute__((nothrow));
 extern "C" void Station_operator_delete(void *p) __attribute__((nothrow));
-extern "C" Mission *Status_getCampaignMission(Status *s) __attribute__((nothrow));
-extern "C" Mission *Status_getFreelanceMission(Status *s) __attribute__((nothrow));
 extern "C" Agent *Mission_getAgent(Mission *m) __attribute__((nothrow));
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 extern "C" void Station_baseDtor(void *self) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Agent(void *arr) __attribute__((nothrow));
 extern "C" int Ship_getIndex(Ship *ship);
-extern "C" int Item_getIndex(Item *item);
 extern "C" int Ship_equals(Ship *a, Ship *b);
 
 // ---- removeShips_a6c74.cpp ----
@@ -110,7 +106,7 @@ void Station::setItems(uint32_t *items, bool deep) {
         self->items = na;
         ArraySetLength_Item(items[0], na);
         for (uint32_t i = 0; i < items[0]; i++) {
-            void *cloned = Item_clone(((Item **)items[1])[i]);
+            void *cloned = ((Item *)(((Item **)items[1])[i]))->clone();
             ((void **)((uint32_t *)self->items)[1])[i] = cloned;
         }
     }
@@ -137,7 +133,7 @@ void Station::visit() {
     if (((Station *)(self))->isDiscovered() != 0)
         return;
     self->visited = 1;
-    Status_visitStation(*gStatusSingleton);
+    ((Status *)(*gStatusSingleton))->visitStation();
     Galaxy_setSystemVisited(*gGalaxyVisit, self->index);
 }
 
@@ -274,7 +270,7 @@ void Station::addItem(Item *item) {
                         break;
                     uint32_t *cur = (uint32_t *)self->items;
                     Item *found = ((Item **)cur[1])[i];
-                    Item_addAmount(found, Item_getAmount(item));
+                    Item_addAmount(found, ((Item *)(item))->getAmount());
                     return;
                 }
                 arr = (uint32_t *)self->items;
@@ -326,12 +322,12 @@ void Station::dtor() {
     if (agents != 0) {
         for (uint32_t i = 0; i < agents->length; i++) {
             Agent *a = (Agent *)agents->data[i];
-            Agent *campA = Status_getCampaignMission(STATUS) == 0
+            Agent *campA = ((Status *)(STATUS))->getCampaignMission() == 0
                                ? (Agent *)0
-                               : Mission_getAgent(Status_getCampaignMission(STATUS));
-            Agent *freeA = Status_getFreelanceMission(STATUS) == 0
+                               : Mission_getAgent((Mission *)(intptr_t)((Status *)(STATUS))->getCampaignMission());
+            Agent *freeA = ((Status *)(STATUS))->getFreelanceMission() == 0
                                ? (Agent *)0
-                               : Mission_getAgent(Status_getFreelanceMission(STATUS));
+                               : Mission_getAgent(((Status *)(STATUS))->getFreelanceMission());
             if (a != 0 && a != campA && a != freeA && ((Agent *)(a))->isStoryAgent() == 0)
                 Station_operator_delete(Agent_dtor(a));
             agents = (StationArray *)self->agents;
@@ -417,7 +413,7 @@ uint32_t Station::hasItem(int index) {
         for (uint32_t i = 0; i < arr[0]; i++) {
             Item *it = ((Item **)arr[1])[i];
             if (it != 0) {
-                if (Item_getIndex(it) == index)
+                if (((Item *)(it))->getIndex() == index)
                     return 1;
                 arr = (uint32_t *)self->items;
             }

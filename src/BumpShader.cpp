@@ -1,4 +1,5 @@
 #include "gof2/BumpShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
 
@@ -56,7 +57,7 @@ namespace AbyssEngine {
 //   activates the program and binds sampler u(0x40)=0, sampler u(0x44)=7.
 void BumpShader::Init(Engine *)
 {
-    int program = ShaderBaseStruct_ES2LoadProgram(this, "BumpShader.vsh", "BumpShader.fsh");
+    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("BumpShader.vsh", "BumpShader.fsh");
     i32(this, 0x04) = program;
 
     i32(this, 0x20) = glGetAttribLocation(program, "a0");

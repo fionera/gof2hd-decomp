@@ -1,9 +1,9 @@
 #include "gof2/VertexColorShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
 
 extern "C" void glDisableVertexAttribArray(unsigned int index);
-extern "C" unsigned int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertex, const char *fragment);
 extern "C" void glUseProgram(unsigned int program);
 extern "C" void glUniform1i(int location, int value);
 extern "C" __attribute__((visibility("hidden"))) GetShaderLocation *glGetAttribLocation_ptr;
@@ -47,7 +47,7 @@ void VertexColorShader_SetInActive(AbyssEngine::VertexColorShader *self)
 // ---- Init_901fc.cpp ----
 void VertexColorShader_Init(AbyssEngine::VertexColorShader *self)
 {
-    unsigned int program = ShaderBaseStruct_ES2LoadProgram(self, "vtx_color_vs", "vtx_color_fs");
+    unsigned int program = ((AbyssEngine::ShaderBaseStruct *)(self))->ES2LoadProgram("vtx_color_vs", "vtx_color_fs");
     ae_u32(self, 4) = program;
 
     GetShaderLocation *getAttribLocation = glGetAttribLocation_ptr;

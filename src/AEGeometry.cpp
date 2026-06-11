@@ -1,4 +1,11 @@
 #include "gof2/AEGeometry.h"
+#include "gof2/LodMeshMerger.h"
+// NOTE: gof2/Transform.h is intentionally NOT included here. It declares an
+// AbyssEngine::Mesh that conflicts with the complete AbyssEngine::Mesh from
+// gof2/Mesh.h (pulled in via gof2/LodMeshMerger.h). The only Transform method
+// this translation unit needs is SetCurrentAnimationTime, reached below via a
+// minimal extern "C" thunk to avoid the header clash.
+extern "C" void Transform_SetCurrentAnimationTime(void *self, long long value);
 
 using namespace AbyssEngine::AEMath;
 
@@ -393,8 +400,8 @@ extern "C" Vector AEMath_MatrixGetPosition_ret(const void *m);                 /
 extern "C" unsigned long long __aeabi_f2ulz_(float f);                          // 0x73078
 extern "C" float __aeabi_ul2f_(unsigned long long v);                          // 0x73084
 extern "C" uint32_t Transform_GetTransform(uint32_t tf);                       // 0x72088
-extern "C" void Transform_SetCurrentAnimationTime(uint32_t t, uint32_t a, uint32_t b); // 0x73090
-extern "C" void LodMeshMerger_setLod(void *lmm, uint32_t idx, int lod);        // 0x7309c
+// 0x73090
+// 0x7309c
 extern "C" void _ae_matrix_assign(void *dst, const void *src);                 // 0x6f148
 extern "C" void _ae_vector_assign(void *dst, const void *src);                 // 0x6eb3c
 
@@ -457,14 +464,14 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
                                             this->transform, (Matrix *)lodMat);
             this->transform = (uint32_t)(uintptr_t)((void **)this->lodTf())[idx];
             uint32_t t = Transform_GetTransform((uint32_t)(uintptr_t)this->canvas);
-            Transform_SetCurrentAnimationTime(t, 0, 0);
+            Transform_SetCurrentAnimationTime((void *)(uintptr_t)t, 0);
             t = Transform_GetTransform((uint32_t)(uintptr_t)this->canvas);
-            Transform_SetCurrentAnimationTime(t, 0, 0);
+            Transform_SetCurrentAnimationTime((void *)(uintptr_t)t, 0);
             this->currentLod = level;
             _ae_matrix_assign(&this->referenceMatrix, matrixCopy);
             void *lmm = this->merger;
             if (lmm != 0)
-                LodMeshMerger_setLod(lmm, this->mergerIndex, (signed char)level);
+                ((LodMeshMerger *)(lmm))->setLod(this->mergerIndex, (signed char)level);
         }
         return;
     }
@@ -476,7 +483,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
     this->transform = this->baseTransform;
     void *lmm = this->merger;
     if (lmm != 0)
-        LodMeshMerger_setLod(lmm, this->mergerIndex, 0);
+        ((LodMeshMerger *)(lmm))->setLod(this->mergerIndex, 0);
 }
 
 // ---- setDirection_a4688.cpp ----

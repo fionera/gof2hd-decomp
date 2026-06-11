@@ -1,4 +1,5 @@
 #include "gof2/ParticleSystemSprite.h"
+#include "gof2/IParticleSystem.h"
 
 
 extern "C" char ParticleSystemSprite_vtable;
@@ -17,8 +18,6 @@ extern "C" void  PaintCanvas_SpriteSystemAddSize(unsigned int h, unsigned short 
 extern "C" void  PaintCanvas_SpriteSystemAddPosition(unsigned int h, unsigned short id, float x, float y, float z);
 extern "C" void  PaintCanvas_SpriteSystemSetRGBA(unsigned int h, unsigned short id, float r, float g, float b, float a);
 extern "C" void  PaintCanvas_SpriteSystemSetUv(unsigned int h, unsigned short id, float u0, float v0, float u1, float v1);
-extern "C" void  IParticleSystem_interpolateColor(void *self, int index, float *r, float *g, float *b);
-extern "C" float *IParticleSystem_rotateUVs(void *self, float *uv, int index);
 extern "C" void ParticleSystem_updateAreaExitParticleImpl(void *self, int param_1, float param_2);
 extern "C" void PaintCanvas_SpriteSystemSetSize(unsigned int handle, unsigned short id, short size);
 extern "C" float VectorUnsignedToFloat(unsigned int v, unsigned char mode);
@@ -189,8 +188,8 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
     PaintCanvas_SpriteSystemAddSize(handle, id, (short)this->idOffset + (short)index);
 
     // Color.
-    float cr, cg, cb;
-    IParticleSystem_interpolateColor(this, index, &cr, &cg, &cb);
+    float ca, cr, cg, cb;
+    ((IParticleSystem *)(this))->interpolateColor(index, &ca, &cr, &cg, &cb);
     PaintCanvas_SpriteSystemSetRGBA(handle, id, cg, 0.0f, cb, 0.0f);
 
     // UV flipbook animation (when the set has frames at +0x9c).
@@ -218,9 +217,10 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
             uv[3] = dv + v0;
 
             float *out = uv;
+            float uvRot[4];
             // UV rotation flag: sign bit of (flagByte2 << 30).
             if ((int)((unsigned int)this->flags2 << 0x1e) < 0)
-                out = IParticleSystem_rotateUVs(this, uv, index);
+                out = ((IParticleSystem *)(this))->rotateUVs(uv, index, uvRot);
 
             PaintCanvas_SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
         }

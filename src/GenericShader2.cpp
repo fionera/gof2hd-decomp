@@ -1,4 +1,9 @@
 #include "gof2/GenericShader2.h"
+// gof2/ShaderBaseStruct.h is intentionally NOT included: it defines a second,
+// layout-incompatible AbyssEngine::ShaderBaseStruct that collides with the
+// minimal base declared in GenericShader2.h. The only symbol needed from it,
+// ES2LoadProgram, is reached via the ShaderBaseStruct_ES2LoadProgram free
+// function declared in GenericShader2.h.
 
 namespace AbyssEngine {
 

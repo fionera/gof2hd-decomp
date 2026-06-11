@@ -222,7 +222,7 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
 }
 
 // ---- init_18145a.cpp ----
-extern "C" void *LodMeshMerger_transformMesh(void *mesh, const Matrix &m);            // 0x7882c
+// 0x7882c
 extern "C" void PaintCanvas_MeshCreate2(void *canvas, uint16_t nv, uint16_t ni, int flags); // 0x75da8
 extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out);             // 0x720ac
 extern "C" void PaintCanvas_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh); // 0x73030
@@ -245,8 +245,7 @@ int LodMeshMerger::init()
         for (int c = 0; c < field_0x38; c++) {
             AEMesh *mesh = field_0x8.data()[field_0x0 * c + i];
             if (mesh != 0) {
-                void *t = LodMeshMerger_transformMesh(
-                    mesh, *(const Matrix *)((char *)field_0x28 + i * 0x3c));
+                void *t = this->transformMesh(mesh, *(const Matrix *)((char *)field_0x28 + i * 0x3c));
                 field_0x24[field_0x0 * c + i] = t;
             }
         }

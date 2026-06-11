@@ -1,4 +1,8 @@
 #include "gof2/WantedWindow.h"
+#include "gof2/Galaxy.h"
+#include "gof2/ScrollTouchWindow.h"
+#include "gof2/StarMap.h"
+#include "gof2/Status.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
@@ -13,33 +17,29 @@
 #include "gof2/Station.h"
 #undef RetStr
 #define RetStr RetStr
+#define B B_TouchButton
+#define I I_TouchButton
+#define P P_TouchButton
 #include "gof2/TouchButton.h"
 #undef RetStr
+#undef B
+#undef I
+#undef P
 #define RetStr RetStr
 #include "gof2/Wanted.h"
 #undef RetStr
 #include "gof2/String.h"
 
 
-extern "C" void StarMap_OnTouchMove(void *self, int x, int y);
-extern "C" void ScrollTouchWindow_OnTouchMove(void *self, int x, int y);
 extern "C" void WantedWindow_update_tail(void *starMap, int dt);
-extern "C" void ScrollTouchWindow_update(void *window, int dt);
-extern "C" void StarMap_OnTouchBegin(void *self, int x, int y);
-extern "C" void ScrollTouchWindow_OnTouchBegin(void *self, int x, int y);
 extern "C" void WantedWindow_render3D_tail(void *starMap);
 extern "C" int __aeabi_idiv(int numerator, int denominator);
 extern "C" void StarMap_OnTouchEnd_tail(void);
-extern "C" int StarMap_OnTouchEnd(void *self, int x, int y);
-extern "C" void ScrollTouchWindow_OnTouchEnd(void *self, int x, int y);
 extern "C" int Wanted_getLastSeen(void *wanted);
 extern "C" int Wanted_getTravelsTo(void *wanted);
-extern "C" void *Galaxy_getStation(void *galaxy, int id);
 extern "C" void *Mission_ctor(void *mission, int a, int b, int dest);
 extern "C" void *StarMap_ctor(void *map, bool jumpMapMode, void *mission, bool flag, int idx);
-extern "C" void StarMap_init(void *map, bool jumpMapMode, void *mission, bool flag, int idx);
 extern "C" int Station_getSystem(void *station);
-extern "C" void StarMap_setStart(void *map, int system, int lastSeen);
 extern "C" void String_copy_ctor(String *dst, String *src, bool copy);
 extern "C" void WantedWindow_draw_tail(void *starMap);
 extern "C" void PaintCanvas_EnableClip(void *canvas, int x, int y, int w, int h);
@@ -50,16 +50,13 @@ extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *font, String *text);
 extern "C" void PaintCanvas_DrawString(void *canvas, void *font, String *text, int x, int y, bool flag);
 extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y);
 extern "C" void Layout_drawHeader(void *layout, String *text);
-extern "C" int Status_getCurrentCampaignMission(void *status);
 extern "C" void String_cstr_ctor(String *s, const char *text, bool copy);
 extern "C" void String_copy_ctor(String *s, String *src, bool copy);
 extern "C" void String_plus(String *out, String *a, String *b);
-extern "C" void ScrollTouchWindow_draw(void *scroll);
 extern "C" void Array_Wanted_ctor(void *arr);
 extern "C" void ArrayAdd_Wanted(void *wanted, void *arr);
 extern "C" void *Status_getWanted(void *status);
-extern "C" void *Status_getSystem(void *status);
-extern "C" int SolarSystem_getRace(void *system);
+extern "C" int SolarSystem_getRace(SolarSystem *system);
 extern "C" int Wanted_getBoard(void *wanted);
 extern "C" void Array_TouchButton_ctor(void *arr);
 extern "C" void ArraySetLength_TouchButton(int length, void *arr);
@@ -78,7 +75,6 @@ extern "C" int Wanted_getIndex(void *wanted);
 extern "C" void String_int_ctor(String *s, int value);
 extern "C" void String_plusAssign(String *dst, String *src);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
-extern "C" void ScrollTouchWindow_setText(void *self, String *a, String *b);
 
 // ---- OnTouchMove_e21a0.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_move_layout;
@@ -91,7 +87,7 @@ __attribute__((visibility("hidden"))) extern int *g_WantedWindow_move_screen_w_b
 int WantedWindow::OnTouchMove(int x, int y) {
     WantedWindow *self = this;
     if (self->showingMap != 0) {
-        StarMap_OnTouchMove(self->starMap, x, y);
+        ((StarMap *)(self->starMap))->OnTouchMove(x, y);
         return 0;
     }
 
@@ -109,7 +105,7 @@ int WantedWindow::OnTouchMove(int x, int y) {
     }
 
     if (*g_WantedWindow_move_screen_w_b / 2 < x) {
-        ScrollTouchWindow_OnTouchMove(self->scrollWindow, x, y);
+        ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchMove(x, y);
     }
 
     uint32_t i = 0;
@@ -146,7 +142,7 @@ void WantedWindow::update(int dt) {
     }
 
     ((TouchButton *)(*(void **)((char *)F<void *>(self->buttons, 0x4) + 4)))->setAlwaysPressed(true);
-    ScrollTouchWindow_update(self->scrollWindow, dt);
+    ((ScrollTouchWindow *)(self->scrollWindow))->update(dt);
 
     if (self->dragging == 0) {
         float speed = self->scrollDamping;
@@ -187,7 +183,7 @@ __attribute__((visibility("hidden"))) extern void **g_WantedWindow_touch_layout;
 int WantedWindow::OnTouchBegin(int x, int y) {
     WantedWindow *self = this;
     if (self->showingMap != 0) {
-        StarMap_OnTouchBegin(self->starMap, x, y);
+        ((StarMap *)(self->starMap))->OnTouchBegin(x, y);
         return 0;
     }
 
@@ -195,7 +191,7 @@ int WantedWindow::OnTouchBegin(int x, int y) {
     self->touchStartY = y;
     self->dragDelta = 0;
     self->dragging = 1;
-    ScrollTouchWindow_OnTouchBegin(self->scrollWindow, x, y);
+    ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchBegin(x, y);
 
     uint32_t i = 0;
     while (i < F<uint32_t>(self->buttons, 0x0)) {
@@ -277,7 +273,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
     String help;
 
     if (self->showingMap != 0) {
-        if (StarMap_OnTouchEnd(self->starMap, x, y) != 0) {
+        if ((((StarMap *)(self->starMap))->OnTouchEnd(x, y), true)) {
             uint32_t h;
             uint32_t w;
             uint32_t halfW = 0;
@@ -324,7 +320,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         self->scrollOffsetSnapshot = pos;
         self->scrollVelocity = velocity;
 
-        ScrollTouchWindow_OnTouchEnd(self->scrollWindow, x, y);
+        ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchEnd(x, y);
         for (uint32_t i = 0; i < F<uint32_t>(self->buttons, 0x0); ++i) {
             if (((TouchButton *)(ArrayItem(self->buttons, i)))->OnTouchEnd(x, y) != 0) {
                 self->field_0x0 = i;
@@ -353,7 +349,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             self->starMap = F<void *>(module, 0x10);
             void *wanted = ArrayItem(self->wantedList, self->selectedWanted);
             int lastSeen = Wanted_getLastSeen(wanted);
-            void *station = Galaxy_getStation(*g_WantedWindow_end_galaxy, lastSeen);
+            void *station = (void *)(long)((Galaxy *)(*g_WantedWindow_end_galaxy))->getStation(lastSeen);
             void *oldMission = self->mission;
             if (oldMission != 0) {
                 (*(void (**)(void *))(*(int *)oldMission + 4))(oldMission);
@@ -373,12 +369,12 @@ void WantedWindow::OnTouchEnd(int x, int y) {
                 map = F<void *>(((ApplicationManager *)(*appHolder))->GetApplicationModule(5), 0x10);
                 self->starMap = map;
             } else {
-                StarMap_init(map, true, mission, false, -1);
+                ((StarMap *)(map))->init(true, (Mission *)mission, false, -1);
             }
 
             int system = Station_getSystem(station);
             lastSeen = Wanted_getLastSeen(wanted);
-            StarMap_setStart(map, system, lastSeen);
+            ((StarMap *)(map))->setStart(system, lastSeen);
             if (station != 0) {
                 ((Station *)(station))->dtor(); operator_delete(station);
             }
@@ -480,9 +476,9 @@ void WantedWindow::draw() {
                                textY, false);
         ((String *)(&s4c))->dtor();
 
-        int campaign = Status_getCurrentCampaignMission(*g_WantedWindow_draw_status);
+        int campaign = ((Status *)(*g_WantedWindow_draw_status))->getCurrentCampaignMission();
         if ((i == 0 && campaign == 0x80) ||
-            (i == 1 && Status_getCurrentCampaignMission(*g_WantedWindow_draw_status) == 0x82)) {
+            (i == 1 && ((Status *)(*g_WantedWindow_draw_status))->getCurrentCampaignMission() == 0x82)) {
             ((Wanted *)(&s58))->getName();
             String_cstr_ctor(&s64, g_WantedWindow_draw_mark, false);
             String_plus(&s4c, &s58, &s64);
@@ -561,7 +557,7 @@ void WantedWindow::draw() {
         ((String *)(&s58))->dtor();
         ((String *)(&s64))->dtor();
 
-        ScrollTouchWindow_draw(self->scrollWindow);
+        ((ScrollTouchWindow *)(self->scrollWindow))->draw();
     }
 
     if (self->detailButton != 0 &&
@@ -608,13 +604,13 @@ int WantedWindow::init() {
     int activeWidth = wLimit - wBase - wExtra;
 
     for (uint32_t i = 0; i < F<uint32_t>(allWanted, 0x0); ++i) {
-        int race = SolarSystem_getRace(Status_getSystem(status));
+        int race = SolarSystem_getRace((SolarSystem *)(long)((Status *)(status))->getSystem());
         void *wanted = ArrayItem(allWanted, i);
         if (race == Wanted_getBoard(wanted)) {
-            race = SolarSystem_getRace(Status_getSystem(status));
-            if (race != 0 || Status_getCurrentCampaignMission(status) < 0x80) {
-                race = SolarSystem_getRace(Status_getSystem(status));
-                if (race == 0 && Status_getCurrentCampaignMission(status) >= 0xa2) {
+            race = SolarSystem_getRace((SolarSystem *)(long)((Status *)(status))->getSystem());
+            if (race != 0 || ((Status *)(status))->getCurrentCampaignMission() < 0x80) {
+                race = SolarSystem_getRace((SolarSystem *)(long)((Status *)(status))->getSystem());
+                if (race == 0 && ((Status *)(status))->getCurrentCampaignMission() >= 0xa2) {
                     ArrayAdd_Wanted(wanted, self->wantedList);
                 }
             } else {
@@ -924,9 +920,9 @@ void WantedWindow::selectWanted(int idx) {
 
     if (((Wanted *)(wanted))->isActive() != 0) {
         void *galaxy = *g_WantedWindow_select_galaxy;
-        void *last = Galaxy_getStation(galaxy, Wanted_getLastSeen(wanted));
-        void *travel = Galaxy_getStation(galaxy, Wanted_getTravelsTo(wanted));
-        void *current = Galaxy_getStation(galaxy, Wanted_getCurrentLocation(wanted));
+        void *last = (void *)(long)((Galaxy *)(galaxy))->getStation(Wanted_getLastSeen(wanted));
+        void *travel = (void *)(long)((Galaxy *)(galaxy))->getStation(Wanted_getTravelsTo(wanted));
+        void *current = (void *)(long)((Galaxy *)(galaxy))->getStation(Wanted_getCurrentLocation(wanted));
 
         ((Station *)(&s58))->getName();
         String_cstr_ctor(&s64, g_WantedWindow_s_from, false);
@@ -1059,7 +1055,7 @@ void WantedWindow::selectWanted(int idx) {
 
     String_cstr_ctor(&s88, g_WantedWindow_s_empty, false);
     String_copy_ctor(&s94, &s34, false);
-    ScrollTouchWindow_setText(self->scrollWindow, &s88, &s94);
+    ((ScrollTouchWindow *)(self->scrollWindow))->setText(s88, s94);
     ((String *)(&s94))->dtor();
     ((String *)(&s88))->dtor();
     ((String *)(&s34))->dtor();

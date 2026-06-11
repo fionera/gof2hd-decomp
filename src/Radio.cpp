@@ -9,7 +9,7 @@ extern "C" void _ZN13Layout12setDrawColorEi(Layout *self, int color);
 void Layout::setDrawColor(int color) {
     Layout *self = this; _ZN13Layout12setDrawColorEi(self, color); }
 void Layout::drawBox(int style, int x, int y, int width, int height, String *title) {
-    Layout_drawBox(this, style, x, y, width, height, title); }
+    ((Layout *)(this))->drawBox(style, x, y, width, height, title); }
 
 extern "C" __attribute__((visibility("hidden"))) void *g_Radio_wantedRoot;
 extern "C" __attribute__((visibility("hidden"))) ImageFactory **g_Radio_imageFactoryCreate;

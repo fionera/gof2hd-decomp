@@ -1,4 +1,5 @@
 #include "gof2/TextureShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
 // Engine / Mesh are opaque to this translation unit; their fields are accessed
@@ -11,11 +12,11 @@ namespace AbyssEngine {
 void TextureShader::Init(Engine *)
 {
     const char *vertexShader = "TextureShader.vsh";
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram(this, vertexShader, "TextureShader.fsh");
+    uint32_t program = ((ShaderBaseStruct *)(this))->ES2LoadProgram(vertexShader, "TextureShader.fsh");
     this->program = program;
     ConnectShaderComponents(program, 0);
 
-    program = ShaderBaseStruct_ES2LoadProgram(this, vertexShader, "TextureShaderExt.fsh");
+    program = ((ShaderBaseStruct *)(this))->ES2LoadProgram(vertexShader, "TextureShaderExt.fsh");
     this->programExt = program;
     return ConnectShaderComponents(program, 1);
 }

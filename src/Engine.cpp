@@ -1,3 +1,4 @@
+#include "gof2/FBOContainer.h"
 #include "gof2/Engine.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/String.h"
@@ -11,6 +12,9 @@
 // The bare ::ShaderBaseStruct from fwd.h stays incomplete and is only used by
 // pointer; member access casts to the complete type via this alias.
 typedef AbyssEngine::ShaderBaseStruct ShaderBaseStructFull;
+// FBOContainer is defined in the AbyssEngine namespace (FBOContainer.h); the complete
+// type is needed for member access. ::FBOContainer (fwd.h) is only a forward decl.
+typedef AbyssEngine::FBOContainer FBOContainerFull;
 // Mesh is defined in the AbyssEngine namespace (Mesh.h); the complete type is
 // needed for field access. ::Mesh (fwd.h) is only an incomplete forward decl.
 typedef AbyssEngine::Mesh MeshFull;
@@ -39,7 +43,6 @@ extern "C" uint32_t NFC_getHeight();
 extern "C" void glEnable(unsigned int cap);
 extern "C" void glDepthMask(unsigned int flag);
 extern "C" void glDisable(unsigned int cap);
-extern "C" void ShaderBaseStruct_Update(ShaderBaseStruct *self);
 extern "C" const char *glGetString(unsigned int name);
 extern "C" void glMaterialf(unsigned int face, unsigned int pname, float value);
 extern "C" void glActiveTexture(unsigned int texture);
@@ -70,7 +73,6 @@ void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh)
 extern "C" String *g_Engine_vendorString;
 extern "C" String *g_Engine_rendererString;
 extern "C" int g_Engine_cloakShader;
-extern "C" void ShaderBaseStruct_GetShaderName(String *result, ShaderBaseStruct *self);
 // String_GetAEChar declared in ShaderBaseStruct.h (returns void*)
 extern "C" void ArrayAdd_ShaderBaseStruct_ptr(ShaderBaseStruct *item, void *array);
 extern "C" void ArrayAdd_int(int item, void *array);
@@ -91,7 +93,6 @@ extern "C" int g_Engine_shaderPostC;
 extern "C" void glMaterialfv(unsigned int face, unsigned int pname, const void *params);
 extern "C" void glLightModelfv(unsigned int pname, const void *params);
 extern "C" void FBOContainer_ctor(FBOContainer *self, Engine *engine, String *name);
-extern "C" void FBOContainer_Create(FBOContainer *self, int width, int height, bool depth, bool color);
 extern "C" int g_Engine_postEffectBlur;
 extern "C" int g_Engine_postEffectCounter;
 extern "C" int g_Engine_postEffectPending;
@@ -462,8 +463,7 @@ void Engine::ShaderUpdate() {
     Engine *self = this;
     uint32_t index = 0;
     while (index < self->field_0x510) {
-        ShaderBaseStruct_Update(
-            *(ShaderBaseStruct **)(self->field_0x514 + index * 4));
+        ((ShaderBaseStructFull *)(*(ShaderBaseStructFull **)(self->field_0x514 + index * 4)))->Update();
         index += 1;
     }
 }
@@ -839,7 +839,7 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
     if (shader != 0) {
         char nameStorage[sizeof(String)];
         String *name = (String *)nameStorage;
-        ShaderBaseStruct_GetShaderName(name, shader);
+        ((ShaderBaseStructFull *)(name))->GetShaderName();
         char *text = (char *)((String *)(name))->GetAEChar();
         ((String *)(name))->dtor();
 
@@ -1104,7 +1104,7 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
             width = self->field_0x36c;
             height = self->field_0x368;
         }
-        FBOContainer_Create(self->field_0x414, width, height, false, true);
+        ((FBOContainerFull *)(self->field_0x414))->Create(width, height, false, true);
     }
 
     uint32_t flags = self->field_0x410;
@@ -1241,8 +1241,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
         FBOContainer_ctor(fbo, self, name);
         self->field_0x418 = fbo;
         ((String *)(name))->dtor();
-        FBOContainer_Create(fbo, self->field_0x368,
-                            self->field_0x36c, false, true);
+        ((FBOContainerFull *)(fbo))->Create(self->field_0x368, self->field_0x36c, false, true);
     }
 
     return 1;

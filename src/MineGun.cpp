@@ -1,9 +1,10 @@
 #include "gof2/MineGun.h"
+#include "gof2/ObjectGun.h"
+#include "gof2/Transform.h"
 #include "gof2/Explosion.h"
 #include "gof2/PlayerEgo.h"
 
 
-extern "C" void ObjectGun_render(MineGun *self);
 extern "C" __attribute__((visibility("hidden"))) void *MineGun_vtable;
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion *> *array);
 extern "C" void *Array_Explosion_dtor(Array<Explosion *> *array);
@@ -22,9 +23,6 @@ extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" void PaintCanvas_TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
 extern "C" uint32_t PaintCanvas_TransformGetTransform(void *canvas, uint32_t transform);
-extern "C" void Transform_SetAnimationState(uint32_t transform, int state, int frame);
-extern "C" void ObjectGun_update(MineGun *self, int delta);
-extern "C" void Transform_Update(uint32_t transform, long long delta, int zero);
 extern "C" void AEMath_operator_sub(Vector *out, const Vector *a, const Vector *b);
 float VectorLength(const Vector *self);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
@@ -32,7 +30,7 @@ extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera 
 // ---- render_1566bc.cpp ----
 void MineGun::render()
 {
-    ObjectGun_render(this);
+    ((ObjectGun *)(this))->render();
     for (uint32_t i = 0; i < U(P(this, 0x8), 0x8); ++i) {
         if (F<uint8_t>(P(P(this, 0x8), 0x40), i) != 0) {
             Array<Explosion *> *explosions = (Array<Explosion *> *)P(this, 0xb4);
@@ -128,7 +126,7 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
     uint32_t transformId = U(stored, 0xc);
     void *getCanvas = *holder;
     uint32_t transform = PaintCanvas_TransformGetTransform(getCanvas, transformId);
-    Transform_SetAnimationState(transform, 2, 0);
+    ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
     return self;
 }
 
@@ -145,11 +143,11 @@ void MineGun::update(int delta)
 {
     char vectorBytes[24];
 
-    ObjectGun_update(this, delta);
+    ((ObjectGun *)(this))->update(delta);
     if (UC(P(this, 0x8), 0x4c) != 0) {
         void **holder = MineGun_canvas_holder;
         uint32_t transform = PaintCanvas_TransformGetTransform(*holder, U(P(this, 0xbc), 0xc));
-        Transform_Update(transform, (long long)delta, 0);
+        ((AbyssEngine::Transform *)(transform))->Update((long long)delta, 0);
     }
 
     float one = 1.0f;

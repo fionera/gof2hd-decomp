@@ -1,4 +1,6 @@
 #include "gof2/NewsTicker.h"
+#include "gof2/NewsItem.h"
+#include "gof2/Status.h"
 #include "gof2/GameText.h"
 #include "gof2/String.h"
 
@@ -37,10 +39,7 @@ extern "C" void *Array_NewsItem_dtor(NewsItemArray *self);
 extern "C" void ArrayReleaseClasses_NewsItem(NewsItemArray *self);
 extern "C" void ArrayAdd_NewsItem(void *item, NewsItemArray *array);
 extern "C" int AERandom_nextInt(void *random, int max);
-extern "C" void *NewsItem_clone(void *item);
-extern "C" void *Status_getSystem(void *status);
 extern "C" int SolarSystem_getIndex(void *system);
-extern "C" int64_t Status_getPlayingTime(void *status);
 extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *font, String *text);
 
 // ---- draw_15e174.cpp ----
@@ -229,7 +228,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         if (minLevel > 0 && minLevel <= level && level <= item->field_0x14) {
             int *factions = item->field_0x8;
             if (((uint8_t *)factions)[faction] != 0) {
-                ArrayAdd_NewsItem(NewsItem_clone(item), items);
+                ArrayAdd_NewsItem(((NewsItem *)(item))->clone(), items);
             }
         }
     }
@@ -242,7 +241,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
             break;
         }
         NewsItemView *item = (*allItems)[AERandom_nextInt(random, allItems->size())];
-        void *system = Status_getSystem(*g_NewsTicker_ctor_status);
+        void *system = (void *)((Status *)(*g_NewsTicker_ctor_status))->getSystem();
         if (SolarSystem_getIndex(system) > 0x15 && item->field_0x0 == 0x0d) {
             continue;
         }
@@ -257,7 +256,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         }
         if (item->field_0x4 != 0) {
             char *status = (char *)*g_NewsTicker_ctor_status;
-            int64_t now = Status_getPlayingTime(*g_NewsTicker_ctor_status);
+            int64_t now = ((Status *)(*g_NewsTicker_ctor_status))->getPlayingTime();
             int64_t last = *(int64_t *)(status + 0x160);
             if ((uint32_t)(now - last) <= 0x493e0) {
                 continue;
@@ -265,7 +264,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
             *(int64_t *)(status + 0x160) = now;
             *(int *)(status + 0x174) = item->field_0x0;
         }
-        ArrayAdd_NewsItem(NewsItem_clone(item), items);
+        ArrayAdd_NewsItem(((NewsItem *)(item))->clone(), items);
         item->field_0x18 = 1;
         ++added;
     }

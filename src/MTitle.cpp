@@ -1,4 +1,5 @@
 #include "gof2/MTitle.h"
+#include "gof2/FModSound.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
@@ -22,7 +23,6 @@ extern "C" void PaintCanvas_ClearBuffer(void *canvas, int value);
 extern "C" void PaintCanvas_Begin3d(void *arg);
 extern "C" void MTitle_r3dTail(void *arg);
 extern "C" void PaintCanvas_Image2DCreate(void *canvas, unsigned short image, unsigned int *out);
-extern "C" void FModSound_play(void *self, int sound, int pos, int vel, int extra);
 
 // ---- OnRelease_97a2c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MTitle_or_canvas;
@@ -161,7 +161,7 @@ int MTitle::OnInitialize()
     PaintCanvas_Image2DCreate(*canvas, 0x1b59, (unsigned int *)(&this->logoImage2));
 
     int z = 0;
-    FModSound_play(*g_MTitle_sound, 0x91, z, z, z);
+    ((FModSound *)(*g_MTitle_sound))->play(0x91, (Vector *)z, (Vector *)z, (float)z);
 
     this->step = z;
     this->timer = z;

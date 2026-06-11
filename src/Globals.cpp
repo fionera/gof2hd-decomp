@@ -1,4 +1,10 @@
 #include "gof2/Globals.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/FModSound.h"
+// gof2/FileRead.h intentionally NOT included: its stub `struct Station`/`struct Agent`
+// collide with the canonical Station.h/Agent.h definitions this file relies on. FileRead
+// is only used here as an opaque handle via local extern "C" declarations.
+#include "gof2/Status.h"
 #include "gof2/Agent.h"          // defines the canonical global `struct RetStr` (12-byte String sret)
 #include "gof2/ApplicationManager.h"
 #include "gof2/GameText.h"
@@ -20,7 +26,6 @@
 struct Status;
 
 
-extern "C" int Status_getKills(Status *s);
 extern "C" void *operator_new(unsigned int sz);
 extern "C" void operator_delete(void *p);
 extern "C" void ArrayInt_release(Array<int> *a);
@@ -53,7 +58,6 @@ extern "C" int Agent_getEvent(void *agent);
 extern "C" int Agent_getOffer(void *agent);
 extern "C" int Agent_getIndex(void *agent);
 extern "C" void Agent_setSellItemPrice(void *agent, int price);
-extern "C" int Status_getShip();
 extern "C" int Ship_getPrice(int ship);
 extern "C" int Ship_hasModInstalled(int ship, int modIndex);
 extern "C" int AERandom_nextInt(int rng, ...);
@@ -63,11 +67,6 @@ extern "C" int AEString_compare(void *a, void *b);
 extern "C" unsigned short *operator_new_arr(unsigned int n);
 extern "C" void operator_delete_arr(void *p);
 extern "C" void AEGeometry_ctor(void *self, int resId, void *canvas, int flag);
-extern "C" void AEGeometry_addChild(unsigned self);
-extern "C" void AEGeometry_setLodMeshes(void *self, unsigned short *meshes, int *dist, int n);
-extern "C" void AEGeometry_setLodChildMeshes(void *self, unsigned short *meshes);
-extern "C" void AEGeometry_setScaling(float x, float y, float z);
-extern "C" void AEGeometry_setLodLastVisibleDistance(void *self);
 extern "C" void PaintCanvas_TransformCreate(void *canvas, unsigned *out);
 extern "C" void PaintCanvas_TransformAddMesh(unsigned canvas, unsigned short t, int flag);
 extern "C" void PaintCanvas_TransformAddMeshId(void *canvas, unsigned t, unsigned mesh);
@@ -78,14 +77,16 @@ extern "C" void PaintCanvas_MeshCreate(void *canvas, unsigned short mesh, unsign
 extern "C" void PaintCanvas_MaterialCreate(void *canvas, unsigned short mat, unsigned *out);
 void MatrixSetTranslation(void *m, float x, float y, float z);
 extern "C" void Globals_buildShipGroup0f(void *self, int param_2, void *canvas);
-extern "C" int Status_dlc1Won(int status);
 extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" void Mesh_setFace(void *canvas, int mesh, int face, int i0, int i1, int i2);
 extern "C" void Mesh_setUV(void *canvas, int mesh, int vert, float u, float v);
 extern "C" void Mesh_setVertex(void *canvas, int mesh, int vert, float x, float y, float z);
 extern "C" void FileRead_ctor(void *self);
-extern "C" void *FileRead_loadWreckCollision(int self);
 extern "C" void *FileRead_dtor(void *self);
+// FileRead is used as an opaque handle here (gof2/FileRead.h not included; see top of file).
+// loadStation returns an int32 station id; loadWreckCollision returns an Array<int>* (as void*).
+extern "C" int32_t FileRead_loadStation(void *self, int32_t id);
+extern "C" void *FileRead_loadWreckCollision(void *self, int32_t id);
 extern "C" void ArrayBV_ctor(void *a);
 extern "C" void ArraySetLength_BV(unsigned n, void *a);
 extern "C" void ArrayRelease_int(void *a);
@@ -119,27 +120,27 @@ extern "C" int FileRead_loadShipsBinary();
 extern "C" void *FileRead_dtor(void *f);
 extern "C" void AERandom_ctor(void *r);
 extern "C" void Generator_ctor(void *g);
-extern "C" void Status_resetGame();
 extern "C" void FModSound_ctor(void *s);
-extern "C" void FModSound_init(void *s, void *engine);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 void ParticleSettingsRef_initialize();
 extern "C" void ArrayInt_ctor(void *a);
-extern "C" void FModSound_stop(int snd);
-extern "C" int FModSound_play(int snd, int track, int zero, int vol);
-extern "C" int Status_inAlienOrbit();
-extern "C" int Status_getCurrentCampaignMission();
-extern "C" int Status_getSystem();
 extern "C" int SolarSystem_getRace();
-extern "C" int Status_getStation();
 extern "C" int Station_getIndex(int station);
-extern "C" int Status_inSupernovaSystem();
 extern "C" int Status_inDeepScienceOrbit();
+// Dropped-self thunks for the global Status singleton (receiver passed implicitly in the
+// original; same idiom as Status_inDeepScienceOrbit above). The receiver lives in different
+// local scopes / is not materialised in every branch, so these stay as extern "C" thunks.
+extern "C" int Status_getStation();
+extern "C" int Status_getCurrentCampaignMission();
 extern "C" int Status_getMission();
+extern "C" int Status_getShip();
+extern "C" int Status_getSystem();
+extern "C" int Status_inAlienOrbit();
+extern "C" int Status_inSupernovaSystem();
+extern "C" void Status_resetGame();
 extern "C" int Mission_getTargetStation();
 extern "C" int Agent_getRace(void *agent);
 extern "C" int Globals_dialogueDispatch(int category, int code);
-extern "C" Station *FileRead_loadStation(FileRead *p, int which);
 extern "C" void *FileRead_loadNamesBinary(void *self, int a, int b, int which);
 extern "C" void ArrayReleaseClasses_Str(void *a);
 extern "C" void *ArrayStr_dtor(void *a);
@@ -154,7 +155,7 @@ extern void *const gLB_dest __attribute__((visibility("hidden")));
 
 void Globals_reportLeaderboards()
 {
-    int kills = Status_getKills(*(Status **)gLB_status);
+    int kills = ((Status *)(*(Status **)gLB_status))->getKills();
     *(int *)gLB_dest = kills;
 }
 
@@ -906,8 +907,6 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
 }
 
 // ---- getShipGroup_e4e14.cpp ----
-extern "C" void AEGeometry_setLodMeshesWithMeshIds(void *self, unsigned short *meshes,
-                                                   unsigned *ids, int *dist, int n);
 
 extern "C" void PaintCanvas_MeshChangeResourceMaterial(void *canvas, unsigned mesh,
                                                        unsigned short mat);
@@ -942,20 +941,20 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         unsigned t0 = 0xffffffff;
         PaintCanvas_TransformCreate(*canvasP, &t0);
         PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t0, 1);
-        AEGeometry_addChild((unsigned)(long)geom);
+        ((AEGeometry *)((unsigned)(long)geom))->addChild(t0);
         unsigned t1 = 0xffffffff;
         PaintCanvas_TransformCreate(*canvasP, &t1);
         PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t1, 1);
-        AEGeometry_addChild((unsigned)(long)geom);
+        ((AEGeometry *)((unsigned)(long)geom))->addChild(t1);
         unsigned short lodMeshes[2] = {0, 0};
         int dist[2];
         dist[0] = (kind == 0xe) ? 35000 : 35000;
         dist[1] = (kind == 0xe) ? 60000 : 45000;
-        AEGeometry_setLodMeshes(geom, lodMeshes, dist, 2);
+        ((AEGeometry *)(geom))->setLodMeshes(lodMeshes, dist, 2);
         unsigned short childMeshes[1] = {0};
-        AEGeometry_setLodChildMeshes(geom, childMeshes);
+        ((AEGeometry *)(geom))->setLodChildMeshes(childMeshes);
         if (kind == 0xe) {
-            AEGeometry_setScaling(1.0f, 1.0f, 1.0f);
+            ((AEGeometry *)(geom))->setScaling(1.0f);
         }
         goto done;
     }
@@ -971,7 +970,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
             PaintCanvas_MeshCreate(*canvasP, mesh, &mainMesh, 1);
             PaintCanvas_TransformCreate(*canvasP, &mainT);
             PaintCanvas_TransformAddMeshId(*canvasP, mainT, mainMesh);
-            AEGeometry_addChild((unsigned)(long)geom);
+            ((AEGeometry *)((unsigned)(long)geom))->addChild(mainT);
             *(unsigned *)((char *)geom + 0x20) = mainMesh;
         }
         if (!wireframe) {
@@ -987,7 +986,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
             PaintCanvas_TransformCreate(*canvasP, &t);
             PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t,
                                          (int)(unsigned char)(char)extra);
-            AEGeometry_addChild((unsigned)(long)geom);
+            ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
         }
         if (wireframe) {
             if (kind != 0x27 && kind != 0x29) {
@@ -995,17 +994,18 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
                 PaintCanvas_TransformCreate(*canvasP, &t);
                 PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t,
                                              (int)(char)(-0x14 + (char)kind));
-                AEGeometry_addChild((unsigned)(long)geom);
+                ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
             }
         } else {
             unsigned t = 0xffffffff;
             PaintCanvas_TransformCreate(*canvasP, &t);
             PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t,
                                          (int)(char)(0x50 + (char)kind));
-            AEGeometry_addChild((unsigned)(long)geom);
+            ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
         }
 
         // Count up to 2 LOD meshes for this ship.
+        unsigned lastVisibleDist = 5000;   // last accumulated LOD distance (see loop below)
         const unsigned *lod = &gGSG_lodTable[kind * 3];
         unsigned count = 0;
         for (int i = 0; i != 2; i++) {
@@ -1031,10 +1031,11 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
                 idp++;
                 src++;
             }
+            lastVisibleDist = (unsigned)d;
             if (wireframe) {
-                AEGeometry_setLodMeshes(geom, meshes, dist, count);
+                ((AEGeometry *)(geom))->setLodMeshes(meshes, dist, count);
             } else {
-                AEGeometry_setLodMeshesWithMeshIds(geom, meshes, ids, dist, count);
+                ((AEGeometry *)(geom))->setLodMeshesWithMeshIds(meshes, ids, dist, count);
             }
 
             const unsigned *childSrc = &gGSG_childTable[kind * 3];
@@ -1047,13 +1048,13 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
                 for (int i = 0; i != childCount; i++) {
                     childMeshes[i] = (unsigned short)childSrc[i];
                 }
-                AEGeometry_setLodChildMeshes(geom, childMeshes);
+                ((AEGeometry *)(geom))->setLodChildMeshes(childMeshes);
                 operator_delete_arr(childMeshes);
             }
             operator_delete_arr(meshes);
             operator_delete_arr(dist);
         }
-        AEGeometry_setLodLastVisibleDistance(geom);
+        ((AEGeometry *)(geom))->setLodLastVisibleDistance(lastVisibleDist);
     }
 
 done:
@@ -1078,7 +1079,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
     }
     unsigned r;
     if (t == 1) {
-        if (Status_dlc1Won(*(int *)gREF_dlc) == 0) {
+        if (((Status *)(*(int *)gREF_dlc))->dlc1Won() == 0) {
             r = 9;
         } else {
             int n = AERandom_nextIntB(*(int *)gREF_rng1, 0x64);
@@ -1218,7 +1219,7 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
 
     void *fr = operator_new(1);
     FileRead_ctor(fr);
-    int *data = (int *)FileRead_loadWreckCollision((int)(long)fr);
+    int *data = (int *)FileRead_loadWreckCollision(fr, kind);
     operator_delete(FileRead_dtor(fr));
 
     void *outArr = 0;
@@ -1994,7 +1995,7 @@ int Globals::init(void *app) {
     FModSound_ctor(fmod);
     void **fmodSlotP = *gI_fmod;
     *fmodSlotP = fmod;
-    FModSound_init(fmod, 0);
+    ((FModSound *)(fmod))->init();
 
     VolFn setMus = (VolFn)*gI_setMusVol;
     setMus(*fmodSlotP, 1, *(unsigned char *)(s + 0xd));
@@ -2052,37 +2053,42 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
 
     if (mode == 2) {
         int *sndP = *(int **)gPM_snd2;
-        FModSound_stop(*sndP);
+        ((FModSound *)(*sndP))->stop(0);
         snd = *sndP;
         track = 0x91;
-        return FModSound_play(snd, track, 0, vol);
+        ((FModSound *)(snd))->play(track, 0, 0, (float)vol);
+        return 0;
     }
     if (mode == 1) {
         int *statSnd = *(int **)gPM_sndStatus;
         if (Status_inAlienOrbit() != 0) {
             int *sndP = *(int **)gPM_snd1;
-            FModSound_stop(*sndP);
+            ((FModSound *)(*sndP))->stop(0);
             snd = *sndP;
             track = 0x88;
             int m = Status_getCurrentCampaignMission();
             if (m > 0x92 && Status_getCurrentCampaignMission() < 0x9a) {
                 track = 0x91;
             }
-            return FModSound_play(snd, track, 0, vol);
+            ((FModSound *)(snd))->play(track, 0, 0, (float)vol);
+            return 0;
         }
         Status_getSystem();
         SolarSystem_getRace();
         int *sndP = *(int **)gPM_snd1;
-        FModSound_stop(*sndP);
+        ((FModSound *)(*sndP))->stop(0);
         if (Station_getIndex(Status_getStation()) == 0x6c) {
-            return FModSound_play(*sndP, 0x92, 0, vol);
+            ((FModSound *)(*sndP))->play(0x92, 0, 0, (float)vol);
+            return 0;
         }
         if (Station_getIndex(Status_getStation()) == 0x65) {
-            return FModSound_play(*sndP, 0x93, 0, vol);
+            ((FModSound *)(*sndP))->play(0x93, 0, 0, (float)vol);
+            return 0;
         }
         if (Status_inSupernovaSystem() != 0) {
             if (Status_getCurrentCampaignMission() == 0x59) {
-                return FModSound_play(*sndP, 0x8be, 0, vol);
+                ((FModSound *)(*sndP))->play(0x8be, 0, 0, (float)vol);
+                return 0;
             }
             if (Status_getMission() != 0 && ((Mission *)(long)Status_getMission())->isEmpty() == 0) {
                 Status_getMission();
@@ -2090,22 +2096,27 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
                 if (tgt == Station_getIndex(Status_getStation())) {
                     int cm = Status_getCurrentCampaignMission();
                     track = cm < 0x6a ? 0x8c1 : 0x8c2;
-                    return FModSound_play(*sndP, track, 0, vol);
+                    ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
+                    return 0;
                 }
             }
-            return FModSound_play(*sndP, 0x94, 0, vol);
+            ((FModSound *)(*sndP))->play(0x94, 0, 0, (float)vol);
+            return 0;
         }
         if (Status_inDeepScienceOrbit() != 0) {
-            return FModSound_play(*sndP, 0x98, 0, vol);
+            ((FModSound *)(*sndP))->play(0x98, 0, 0, (float)vol);
+            return 0;
         }
         if (Station_getIndex(Status_getStation()) == 0x78 &&
             (Status_getCurrentCampaignMission() == 0x7e ||
              Status_getCurrentCampaignMission() == 0x85)) {
-            return FModSound_play(*sndP, 0x8bf, 0, vol);
+            ((FModSound *)(*sndP))->play(0x8bf, 0, 0, (float)vol);
+            return 0;
         }
         const int *table = &gPM_table1;
         track = table[SolarSystem_getRace()];
-        return FModSound_play(*sndP, track, 0, vol);
+        ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
+        return 0;
     }
     if (mode != 0) {
         return prev;
@@ -2114,24 +2125,29 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
     Status_getSystem();
     int race = SolarSystem_getRace();
     int *sndP = *(int **)gPM_snd0;
-    FModSound_stop(*sndP);
+    ((FModSound *)(*sndP))->stop(0);
     if (Station_getIndex(Status_getStation()) == 0x6c) {
-        return FModSound_play(*sndP, 0x84, 0, vol);
+        ((FModSound *)(*sndP))->play(0x84, 0, 0, (float)vol);
+        return 0;
     }
     if (Station_getIndex(Status_getStation()) == 0x65) {
-        return FModSound_play(*sndP, 0x83, 0, vol);
+        ((FModSound *)(*sndP))->play(0x83, 0, 0, (float)vol);
+        return 0;
     }
     int idx = Station_getIndex(Status_getStation());
     if (idx == 10 || Station_getIndex(Status_getStation()) == 100) {
         if (Station_getIndex(Status_getStation()) == 10 &&
             Status_getCurrentCampaignMission() == 0x9f) {
-            return FModSound_play(*sndP, 0x90, 0, vol);
+            ((FModSound *)(*sndP))->play(0x90, 0, 0, (float)vol);
+            return 0;
         }
-        return FModSound_play(*sndP, 0x85, 0, vol);
+        ((FModSound *)(*sndP))->play(0x85, 0, 0, (float)vol);
+        return 0;
     }
     const int *table = &gPM_table0;
     track = table[race];
-    return FModSound_play(*sndP, track, 0, vol);
+    ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
+    return 0;
 }
 
 // ---- getDialogueSoundId_e5818.cpp ----
@@ -2189,7 +2205,7 @@ String *Globals_getRandomPlanetName(String *ret)
     FileRead *f = (FileRead *)operator_new(1);
     FileRead_ctor(f);
     int which = AERandom_nextInt(*(int *)gPlanetRng, 0x64);
-    Station *st = FileRead_loadStation(f, which);
+    Station *st = (Station *)(long)FileRead_loadStation(f, which);
     ((Station *)(ret))->getName();
     if (st != 0) {
         ((Station *)(st))->dtor();   // dtor() returns void

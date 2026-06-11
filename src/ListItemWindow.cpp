@@ -1,4 +1,7 @@
 #include "gof2/ListItemWindow.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Item.h"
+#include "gof2/ScrollTouchWindow.h"
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
@@ -18,12 +21,8 @@ extern "C" void  PaintCanvas_DrawImage2D(uint32_t c, int img, int y);
 extern "C" void  PaintCanvas_DrawImage2D4(uint32_t c, int img, int x, int y, char flag);
 extern "C" void  PaintCanvas_DrawString(uint32_t c, void *str, int x, int y, bool centered);
 extern "C" int   BluePrint_getIndex(void *bp);
-extern "C" int   Item_getIndex(void *it);
-extern "C" int   Item_getType(void *it);
 extern "C" int   Ship_getIndex(void *ship);
 extern "C" void  ImageFactory_drawItem(void *fac, int idx, int type, int x, int y);
-extern "C" void  ScrollTouchWindow_drawTextBG(void *self);
-extern "C" void  ScrollTouchWindow_draw(void *self);
 extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" void _liw_String_ctor(void *s);
 extern "C" void _liw_Matrix_ctor(void *m);
@@ -437,8 +436,8 @@ void ListItemWindow::draw()
         }
 
         void *fac = *g_liw_d_imageFactory;
-        int idx = Item_getIndex(itemPtr);
-        int type = Item_getType(itemPtr);
+        int idx = ((Item *)(itemPtr))->getIndex();
+        int type = ((Item *)(itemPtr))->getType();
         ImageFactory_drawItem(fac, idx, type,
             i32(L, 0x28) + i32(this, 0x64) + i32(L, 0x2c),
             i32(L, 0x124) + ((i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2));
@@ -529,18 +528,18 @@ void ListItemWindow::draw()
         PaintCanvas_DrawImage2D4(canvas, i32(this, 0x44), i32(this, 0x24), i32(this, 0x28) - half, 1);
     }
 
-    ScrollTouchWindow_drawTextBG(pp(this, 0x18));
-    ScrollTouchWindow_draw(pp(this, 0x18));
+    ((ScrollTouchWindow *)(pp(this, 0x18)))->drawTextBG();
+    ((ScrollTouchWindow *)(pp(this, 0x18)))->draw();
 }
 
 // ---- update_133868.cpp ----
 // Callees (resolved blx targets).
-extern "C" void  ScrollTouchWindow_update(void *self);                  // 0x75b98
+// 0x75b98
 extern "C" int   Ship_getIndex(void *ship);                            // 0x719c8
 extern "C" uint32_t PaintCanvas_TransformGetLocal(uint32_t tf);        // 0x720c4
 void  MatrixSetRotation(void *m, float x, float y, float z); // 0x72094
 extern "C" void  MatrixSetScaling(void *m, float x, float y, float z);  // 0x6f814
-extern "C" void  AEGeometry_setRotation(void *geo, float x, float y, float z); // 0x73054
+// 0x73054
 extern "C" int   VectorSignedToFloat_i(int v);                          // s32->f32 helper
 
 // Hidden PC-relative roots.
@@ -552,9 +551,9 @@ extern const float g_liw_u_angleScale;                                 // 0x1439
 // ListItemWindow::update(int frameTime)
 //   Advances the scroll window, applies inertial spin damping to the rotating
 //   3D ship preview, and pushes the resulting rotation onto its geometry.
-void ListItemWindow::update(int /*frameTime*/)
+void ListItemWindow::update(int frameTime)
 {
-    ScrollTouchWindow_update(pp(this, 0x18));
+    ((ScrollTouchWindow *)(pp(this, 0x18)))->update(frameTime);
 
     if (u8(this, 0x54) == 0)
         return;
@@ -590,7 +589,7 @@ void ListItemWindow::update(int /*frameTime*/)
         MatrixSetScaling((void *)loc, tableAngle, tableAngle, tableAngle);
     }
 
-    AEGeometry_setRotation(pp(this, 0x10), tableAngle, tableAngle, tableAngle);
+    ((AEGeometry *)(pp(this, 0x10)))->setRotation(tableAngle, tableAngle, tableAngle);
 }
 
 // ---- ListItemWindow_131528.cpp ----

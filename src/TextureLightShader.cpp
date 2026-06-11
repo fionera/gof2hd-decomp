@@ -1,4 +1,5 @@
 #include "gof2/TextureLightShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
 
@@ -16,7 +17,7 @@ namespace AbyssEngine {
 
 void TextureLightShader::Init(Engine *)
 {
-    int program = ShaderBaseStruct_ES2LoadProgram(this, "TextureLightShader.vsh", "TextureLightShader.fsh");
+    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("TextureLightShader.vsh", "TextureLightShader.fsh");
     this->f_4 = program;
 
     int (*uniformFn)(int, const char *) = glGetUniformLocation;

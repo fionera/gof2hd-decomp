@@ -1,4 +1,6 @@
 #include "gof2/Hud.h"
+#include "gof2/Item.h"
+#include "gof2/Sprite.h"
 #include "gof2/GameText.h"
 #include "gof2/Globals.h"
 #include "gof2/PlayerEgo.h"
@@ -20,6 +22,11 @@
 #undef I
 #undef P
 #include "gof2/ListItem.h"
+#include "gof2/Status.h"
+
+// Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls are
+// method calls on this global instance.
+__attribute__((visibility("hidden"))) extern Status **gStatus;
 
 
 extern "C" void operator_delete(void *p);
@@ -30,15 +37,10 @@ extern "C" void Hud_drawSecondaryWeaponPanel(Hud *self);
 extern "C" void Hud_drawMissionBanner(Hud *self);
 extern "C" void Hud_drawMessage(Hud *self);
 extern "C" int  Status_isChallengeMode();
-extern "C" int  Status_inAlienOrbit();
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void PaintCanvas_SetColor4(void *canvas, int b1, int b2, int b3, int b4);
-extern "C" int  PaintCanvas_GetImage2DWidth(void *canvas);
 extern "C" void PaintCanvas_DrawImage2D2(void *canvas, int img, int arg);
 extern "C" void PaintCanvas_DrawString2(void *canvas, void *font, void *str, int x, char y);
-extern "C" void *Status_getSystem();
-extern "C" void *Status_getStation();
-extern "C" int  Status_getCurrentCampaignMission();
 extern "C" int  SolarSystem_getSecurityLevel(void *sys);
 extern "C" int  SolarSystem_getIndex(void *sys);
 extern "C" void String_ctor_cstr(void *s, const char *cstr, bool b);
@@ -49,33 +51,25 @@ extern "C" void String_op_assign(void *dst, void *src);
 extern "C" void *operator_new(uint32_t);
 extern "C" void ListItem_ctor1(void *li, void *str, int kind);
 extern "C" void ListItem_ctor(void *li, void *str, int kind = 0);
-extern "C" void *Status_getMission();
 extern "C" int  Mission_getType(void *m);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
 extern "C" int  PaintCanvas_GetTextWidth(void *font, void *str);
 extern "C" void Hud_secondaryWeaponChanged(Hud *self);
-extern "C" int  Item_getIndex(void *item);
-extern "C" int  Item_getAmount(void *item);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void *operator_new_arr(uint32_t);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
 extern "C" int  SolarSystem_getRace(void *sys);
 extern "C" void PaintCanvas_drawImage(void *canvas, int img, int x, int y);
-extern "C" void *Status_getShip();
 extern "C" void *Ship_getEquipment(void *ship, int slot);
 extern "C" int  Ship_hasJumpDrive(void *ship);
 extern "C" int  Status_getWingmen();
 extern "C" unsigned char Ship_hasCloak(void *ship);
 extern "C" void Layout_drawMask();
 extern "C" void PaintCanvas_DrawImage2D5(void *canvas, int img, int x, int y, char anchor);
-extern "C" int  PaintCanvas_GetImage2DHeight(void *canvas);
 extern "C" int  PaintCanvas_GetTextHeight(void *canvas);
 extern "C" int  Sprite_getFrameWidth(void *sprite);
 extern "C" int  Sprite_getFrameHeight(void *sprite);
-extern "C" void Sprite_setFrame(void *sprite, int frame);
-extern "C" void Sprite_setPosition(void *sprite, int x, int y);
-extern "C" void Sprite_draw(void *sprite);
 extern "C" int  String_length(void *s);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *arr);
@@ -356,41 +350,41 @@ extern const unsigned char g_Hud_secColors[] __attribute__((visibility("hidden")
 
 void Hud::drawOrbitInformation() {
     Hud *self = this;
-    if (Status_inAlienOrbit() != 0) return;
+    if (((Status *)(*gStatus))->inAlienOrbit() != 0) return;
 
     void *canvas = *g_Hud_oiCanvas;
     int *layout = (int *)*g_Hud_oiLayout;
     PaintCanvas_SetColor(canvas, -1);
-    int x = PaintCanvas_GetImage2DWidth(canvas) + layout[0x87]; // +0x21c
+    int x = PaintCanvas_GetImage2DWidth(canvas, 0) + layout[0x87]; // +0x21c
 
-    Status_getSystem();
-    if (((SolarSystem *)(Status_getSystem()))->hasNoOwner() == 0)
+    ((void *)(long)((Status *)(*gStatus))->getSystem());
+    if (((SolarSystem *)(((void *)(long)((Status *)(*gStatus))->getSystem())))->hasNoOwner() == 0)
         PaintCanvas_DrawImage2D2(canvas, I(self, 0x1c4), 3);
 
     void *font = *g_Hud_oiFont;
     // station name
     {
         char name[12];
-        Status_getStation();
+        (void *)((Status *)(*gStatus))->getStation();
         ((Station *)(name))->getName();
         PaintCanvas_DrawString2(canvas, font, name, x, (char)layout[0x88] /*+0x220*/);
         ((String *)(name))->dtor();
     }
     PaintCanvas_SetColor(canvas, -1);
 
-    if (Status_getCurrentCampaignMission() <= 0xf) return;
+    if (((Status *)(*gStatus))->getCurrentCampaignMission() <= 0xf) return;
 
-    void *sys = Status_getSystem();
+    void *sys = ((void *)(long)((Status *)(*gStatus))->getSystem());
     int sec = SolarSystem_getSecurityLevel(sys);
-    Status_getSystem();
-    int idx = SolarSystem_getIndex(Status_getSystem());
+    ((void *)(long)((Status *)(*gStatus))->getSystem());
+    int idx = SolarSystem_getIndex(((void *)(long)((Status *)(*gStatus))->getSystem()));
     int *status = (int *)*g_Hud_oiStatus;
     if (idx == 0x1a && status[0x45] /*+0x114*/ > 1) sec = 3;
 
     // system name + separator
     {
         char sysName[12], copy[12], sep[12], acc[12], full[12];
-        Status_getSystem();
+        ((void *)(long)((Status *)(*gStatus))->getSystem());
         ((SolarSystem *)(sysName))->getName();
         ((String *)(copy))->ctor_copy((String *)(sysName), false);
         String_ctor_cstr(sep, g_Hud_oiSep, false);
@@ -578,8 +572,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
 
         void *tmpl = *g_Hud_ccTemplate;
         char a40[12]; ((String *)(a40))->ctor_copy((String *)(dst), false);
-        Status_getMission();
-        Mission_getType(Status_getMission());
+        (void *)((Status *)(*gStatus))->getMission();
+        Mission_getType((void *)((Status *)(*gStatus))->getMission());
         void *typeTxt = ((GameText *)(gt))->getText(0);
         char a4c[12]; ((String *)(a4c))->ctor_copy((String *)(typeTxt), false);
         char a58[12]; String_ctor_cstr(a58, g_Hud_ccHashX, false);
@@ -752,13 +746,13 @@ void Hud::updateSecondaryWeaponString() {
     if (item == 0) return;
 
     void *gt = *g_Hud_gameText;
-    int idx = Item_getIndex(item);
+    int idx = ((Item *)(item))->getIndex();
     void *name = ((GameText *)(gt))->getText(idx + 0x4fa);
 
     char sep[12], acc1[12], amount[12], acc2[12], end[12], acc3[12];
     String_ctor_cstr(sep, g_Hud_swSep, false);
     String_concat(acc1, name, sep);
-    int amt = Item_getAmount(item);
+    int amt = ((Item *)(item))->getAmount();
     ((String *)(amount))->ctor_int(amt);
     String_concat(acc2, acc1, amount);
     String_ctor_cstr(end, g_Hud_swEnd, false);
@@ -919,10 +913,10 @@ int Hud::init() {
     I(self, 0x284) = 0;
 
     // current system faction badge
-    if (Status_inAlienOrbit() == 0) {
+    if (((Status *)(*gStatus))->inAlienOrbit() == 0) {
         void *canvas = *g_Hud_initCanvas;
-        Status_getSystem();
-        int race = SolarSystem_getRace(Status_getSystem());
+        ((void *)(long)((Status *)(*gStatus))->getSystem());
+        int race = SolarSystem_getRace(((void *)(long)((Status *)(*gStatus))->getSystem()));
         Image2DCreate(canvas, g_Hud_raceBadge[race], B(self, 0x1c4));
     }
 
@@ -942,7 +936,7 @@ int Hud::init() {
     P(self, 0x530) = 0;
 
     int *layout = (int *)*g_Hud_initLayout;
-    int w = PaintCanvas_GetImage2DWidth(*g_Hud_initCanvas);
+    int w = PaintCanvas_GetImage2DWidth(*g_Hud_initCanvas, 0);
     int bound = *(int *)*g_Hud_initBound;
     *(int *)*g_Hud_initOutX = (bound - w) - layout[0x65]; // +0x194
     *(int *)*g_Hud_initOutY = layout[0x66];               // +0x198
@@ -973,7 +967,7 @@ extern "C" void Hud_refreshQuickMenu(Hud *self);       // DAT_001ac644 tail thun
 
 Hud * Hud::checkIfQuickMenuIsEmpty() {
     Hud *self = this;
-    void *ship = Status_getShip();
+    void *ship = (void *)((Status *)(*gStatus))->getShip();
     unsigned int *equip = (unsigned int *)Ship_getEquipment(ship, 1);
     P(self, 0x25c) = equip;
 
@@ -987,10 +981,10 @@ Hud * Hud::checkIfQuickMenuIsEmpty() {
     if (hasSecondary) {
         empty = 0;
     } else {
-        Status_getShip();
-        if (Ship_hasJumpDrive(Status_getShip()) == 0 && Status_getWingmen() == 0) {
-            Status_getShip();
-            empty = (unsigned char)(Ship_hasCloakNeg(Status_getShip()) ^ 1);
+        (void *)((Status *)(*gStatus))->getShip();
+        if (Ship_hasJumpDrive((void *)((Status *)(*gStatus))->getShip()) == 0 && Status_getWingmen() == 0) {
+            (void *)((Status *)(*gStatus))->getShip();
+            empty = (unsigned char)(Ship_hasCloakNeg((void *)((Status *)(*gStatus))->getShip()) ^ 1);
         } else {
             empty = 0;
         }
@@ -1048,11 +1042,11 @@ void Hud::drawMenu() {
 
     if (I(self, 0x238) != 0) return;
 
-    Status_getShip();
-    int cloak = Ship_hasCloak(Status_getShip());
+    (void *)((Status *)(*gStatus))->getShip();
+    int cloak = Ship_hasCloak((void *)((Status *)(*gStatus))->getShip());
     if (cloak == 0) {
-        Status_getShip();
-        if (Ship_hasJumpDrive(Status_getShip()) == 0) return;
+        (void *)((Status *)(*gStatus))->getShip();
+        if (Ship_hasJumpDrive((void *)((Status *)(*gStatus))->getShip()) == 0) return;
     }
 
     char prefix[12], num[12], label[12];
@@ -1071,7 +1065,7 @@ void Hud::drawMenu() {
 
     int barW = layout[0x8c];
     void *font = *g_Hud_dmFont;
-    int ih = PaintCanvas_GetImage2DHeight(canvas);
+    int ih = PaintCanvas_GetImage2DHeight(canvas, 0);
     int th = PaintCanvas_GetTextHeight(canvas);
     char ty = (char)(((gy + (char)(ih / 2)) - (char)(th / 2)) + (char)layout[0x8d] /*+0x234*/);
     PaintCanvas_DrawString2(canvas, font, label, barW + gx, ty);
@@ -1188,9 +1182,9 @@ static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw
         ((String *)(ch))->SubString((String *)str, i - 1, i);
         int frame = ((String *)(ch))->ValueOf();
         ((String *)(ch))->dtor();
-        Sprite_setFrame(sprite, frame);
-        Sprite_setPosition(sprite, x, y);
-        Sprite_draw(sprite);
+        ((Sprite *)(sprite))->setFrame(frame);
+        ((Sprite *)(sprite))->setPosition(x, y);
+        ((Sprite *)(sprite))->draw(1.0f, 1.0f);
         x += dw;
     }
 }
@@ -1252,7 +1246,7 @@ void Hud::drawChallengeModeScore() {
 
         char timeStr[12];
         ((String *)(timeStr))->ctor_int(status[0x63]);
-        int tx = (half + pad) - span + PaintCanvas_GetImage2DWidth(canvas);
+        int tx = (half + pad) - span + PaintCanvas_GetImage2DWidth(canvas, 0);
         drawDigits(self, sprite, timeStr, tx, yRow, dw);
         ((String *)(timeStr))->dtor();
     }
@@ -1347,7 +1341,7 @@ void Hud::initHudMenu(int menuType, void *lvl) {
     // refresh secondary-weapon equipment + label
     if (P(self, 0x25c) != 0) operator_delete(Array_Item_dtor(P(self, 0x25c)));
     P(self, 0x25c) = 0;
-    void *ship = Status_getShip();
+    void *ship = (void *)((Status *)(*gStatus))->getShip();
     P(self, 0x25c) = Ship_getEquipment(ship, 1);
     ((Hud *)(self))->updateSecondaryWeaponString();
 

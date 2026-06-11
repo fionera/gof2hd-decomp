@@ -1,10 +1,11 @@
 #include "gof2/PlayerStaticFar.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/BoundingVolume.h"
 #include "gof2/Player.h"
 
 
 extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);
 extern "C" void operator_delete(void *p);
-extern "C" Vector BoundingVolume_getProjectionVector(void *volume, const Vector &value);
 extern "C" void PlayerStaticFar_render_tail(PlayerStaticFar *self);
 extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
 
@@ -25,7 +26,7 @@ Vector PlayerStaticFar::getProjectionVector(const Vector &value)
     if (volumes != 0) {
         void *items = *(void **)((char *)volumes + 0x4);
         void *volume = *(void **)items;
-        return BoundingVolume_getProjectionVector(volume, value);
+        return ((BoundingVolume *)(volume))->getProjectionVector(value);
     }
 
     Vector r = {0.0f, 0.0f, 0.0f};
@@ -42,14 +43,22 @@ void PlayerStaticFar::render()
 }
 
 // ---- projectCollisionOnSurface_11c52e.cpp ----
-extern "C" Vector BoundingVolume_staticProjectCollisionOnSurface(
-    const Vector &value, void *volumes);
+
+// Static helper returning a Vector via sret. The decompiler dropped the receiver
+// (self) of BoundingVolume::staticProjectCollisionOnSurface and only forwarded the
+// (v, vols) pair; the receiver is unrecoverable in this scope, so model the original
+// sret ABI directly: out = staticProjectCollisionOnSurface(&out, value, volumes).
+extern "C" void BoundingVolume_staticProjectCollisionOnSurface(Vector *sret,
+                                                               const Vector &v,
+                                                               void *vols);
 
 Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value)
 {
     void *volumes = this->boundingVolumes;
     if (volumes != 0) {
-        return BoundingVolume_staticProjectCollisionOnSurface(value, volumes);
+        Vector out;
+        BoundingVolume_staticProjectCollisionOnSurface(&out, value, volumes);
+        return out;
     }
 
     Vector r = {0.0f, 0.0f, 0.0f};
@@ -131,8 +140,8 @@ void AEMath_Vector_add_eq(Vec3 *v, const Vec3 *o);                       // 0x73
 
 // AEGeometry placement.
 void AEGeometry_setPositionVec(void *geometry, const Vec3 *v);          // 0x72148
-void AEGeometry_setPosition(void *geometry, float x, float y, float z); // 0x73048
-void AEGeometry_setScaling(void *geometry, float x, float y, float z);  // 0x727b4
+// 0x73048
+// 0x727b4
 
 // Globals (camera object holder, limits/factors materialized as PC-relative loads).
 void *g_PlayerStaticFar_cameraHolder; // **(DAT_0012c458 + 0x12c30a)
@@ -173,11 +182,12 @@ void PlayerStaticFar::update(int /*delta*/)
 
     if ((int)len < g_PlayerStaticFar_distLimit) {
         // Close: full-scale at the literal integer position.
-        AEGeometry_setScaling(this->geometry, 1.0f, 1.0f, 1.0f);
-        float fx = (float)this->posX;
-        float fy = (float)this->posY;
-        float fz = (float)this->posZ;
-        AEGeometry_setPosition(this->geometry, fx, fy, fz);
+        ((AEGeometry *)(this->geometry))->setScaling(1.0f);
+        Vec3 pos;
+        pos.x = (float)this->posX;
+        pos.y = (float)this->posY;
+        pos.z = (float)this->posZ;
+        AEGeometry_setPositionVec(this->geometry, &pos);
     } else {
         // Far: place on a sphere of radius g_radius along the view direction.
         Vec3 n;
@@ -190,7 +200,7 @@ void PlayerStaticFar::update(int /*delta*/)
         float s = (float)(int)((g_PlayerStaticFar_radius / (float)(int)len) *
                                g_PlayerStaticFar_scaleNum);
         s = s * g_PlayerStaticFar_scaleFactor;
-        AEGeometry_setScaling(this->geometry, s, s, s);
+        ((AEGeometry *)(this->geometry))->setScaling(s);
     }
 }
 

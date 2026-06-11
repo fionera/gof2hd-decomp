@@ -30,6 +30,16 @@ inline float &field_float(void *self, uint32_t off)
 }
 
 
+// Minimal view of FBOContainer (full definition lives in gof2/FBOContainer.h, owned by
+// another batch, where it sits in namespace AbyssEngine). Here we only need the three
+// render-to-texture capture methods invoked from GlowPPShader's post-process passes.
+class FBOContainer {
+public:
+    void BeginCapture();
+    void EndCapture();
+    void Activate();
+};
+
 extern "C" __attribute__((visibility("hidden"))) void ShaderBaseStruct_ctor(ShaderBaseStruct *self);
 extern "C" __attribute__((visibility("hidden"))) void *ShaderBaseStruct_dtor(ShaderBaseStruct *self);
 // String_ctor_char / String_assign / String_dtor are declared in gof2/String.h

@@ -1,4 +1,5 @@
 #include "gof2/StatusWindow.h"
+#include "gof2/Status.h"
 #include "gof2/Achievements.h"
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
@@ -568,17 +569,6 @@ void Layout_drawHeader(void *layout, void *title);
 void Layout_formatCredits(void *out, int credits);
 
 
-void *Status_getShip();
-void *Status_getStanding();
-int   Status_getCredits();
-int   Status_getLevel();
-unsigned long long Status_getPlayingTime();
-int   Status_getMissionCount(void *st);
-int   Status_getKills(void *st);
-int   Status_getCapturedCrates(void *st);
-int   Status_getStationsVisited(void *st);
-int   Status_getJumpgateUsed(void *st);
-int   Status_getGoodsProduced(void *st);
 
 int   Ship_getIndex(void *ship);
 int   Ship_getFirePower(void *ship);
@@ -676,7 +666,7 @@ void StatusWindow::draw() {
         ((String *)(lbl))->dtor();
         ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawChar((Arr *)pp(self, 0xc), layout->field_0x4c + x0, y, false);
         char credTmp[0xc];
-        Layout_formatCredits(credTmp, Status_getCredits());
+        Layout_formatCredits(credTmp, ((Status *)(*(void **)g_swd_status))->getCredits());
         ((String *)(creditStr))->assign((String *)credTmp);
         ((String *)(credTmp))->dtor();
         int tw = PaintCanvas_GetTextWidth(canvas, font);
@@ -687,7 +677,7 @@ void StatusWindow::draw() {
         void *lt = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
         String_fromC(lvlPrefix, " ", false);
         String_concatText(lvlText, lt);
-        int lvl = Status_getLevel();
+        int lvl = ((Status *)(*(void **)g_swd_status))->getLevel();
         String_concatInt(lvlFull, lvlText, &lvl);
         ((String *)(creditStr))->assign((String *)lvlFull);
         ((String *)(lvlFull))->dtor(); ((String *)(lvlText))->dtor(); ((String *)(lvlPrefix))->dtor();
@@ -696,7 +686,7 @@ void StatusWindow::draw() {
 
         // Playing-time line.
         char timeStr[0xc];
-        Globals_longToTimeStringNoSeconds(*(void **)g_swd_globals, timeStr, Status_getPlayingTime());
+        Globals_longToTimeStringNoSeconds(*(void **)g_swd_globals, timeStr, ((Status *)(*(void **)g_swd_status))->getPlayingTime());
         tw = PaintCanvas_GetTextWidth(canvas, font);
         PaintCanvas_DrawString(canvas, font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y);
 
@@ -704,16 +694,16 @@ void StatusWindow::draw() {
         String_fromC(lbl, "", false);
         ((Layout *)(layout))->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         ((String *)(lbl))->dtor();
-        ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawShip(Ship_getIndex(Status_getShip()), x0 + (boxW >> 1) + pad * 2, y);
-        void *shipNameTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(Ship_getIndex(Status_getShip()));
+        ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawShip(Ship_getIndex(((Status *)(*(void **)g_swd_status))->getShip()), x0 + (boxW >> 1) + pad * 2, y);
+        void *shipNameTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(Ship_getIndex(((Status *)(*(void **)g_swd_status))->getShip()));
         PaintCanvas_DrawString(canvas, font, shipNameTxt,
                                x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y);
 
         // Fire-power line.
         char fpStr[0xc], fpPre[0xc], fpFull[0xc];
-        int firePow = Ship_getFirePower(Status_getShip());
+        int firePow = Ship_getFirePower(((Status *)(*(void **)g_swd_status))->getShip());
         String_fromInt(fpStr, (int)((float)firePow * 1.0f));
-        int fp2 = Ship_getFirePower(Status_getShip());
+        int fp2 = Ship_getFirePower(((Status *)(*(void **)g_swd_status))->getShip());
         String_fromC(fpPre, "%", false);
         String_concatInt(fpFull, fpPre, &fp2);
         String_concatText(fpStr, fpFull);
@@ -724,13 +714,13 @@ void StatusWindow::draw() {
 
         // Combined-HP line.
         char hpStr[0xc];
-        String_fromInt(hpStr, Ship_getCombinedHP(Status_getShip()));
+        String_fromInt(hpStr, Ship_getCombinedHP(((Status *)(*(void **)g_swd_status))->getShip()));
         tw = PaintCanvas_GetTextWidth(canvas, font);
         PaintCanvas_DrawString(canvas, font, hpStr, ((y + x0) - pad) - tw, y);
         ((String *)(hpStr))->dtor();
 
         // Standing emblem panel + bars.
-        void *standing = Status_getStanding();
+        void *standing = (void *)(intptr_t)((Status *)(*(void **)g_swd_status))->getStanding();
         float rate = ((Standing *)(standing))->getStandingRate(0);
         PaintCanvas_DrawImage2D(canvas, i32(self, 0x24), x0 + (boxW >> 2), y, '\x11');
         PaintCanvas_DrawRegion2D(canvas, i32(self, 0x28), i32(self, 0x70), 0,
@@ -739,17 +729,22 @@ void StatusWindow::draw() {
         PaintCanvas_DrawImage2D(canvas, i32(self, 0x2c), x0, y, '\x11');
 
         // Career-stat rows from the Status singleton.
-        void *st = *(void **)g_swd_status;
+        Status *st = (Status *)(*(void **)g_swd_status);
         char rowStr[0xc];
         int rowX = layout->field_0x4c + x0;
-        struct { int (*get)(void *); } rows[] = {
-            { Status_getMissionCount }, { Status_getKills }, { Status_getCapturedCrates },
-            { Status_getStationsVisited }, { Status_getJumpgateUsed }, { Status_getGoodsProduced },
-        };
-        for (unsigned r = 0; r < sizeof(rows) / sizeof(rows[0]); r++) {
+        for (unsigned r = 0; r < 6; r++) {
+            int rowVal;
+            switch (r) {
+                case 0:  rowVal = st->getMissionCount();    break;
+                case 1:  rowVal = st->getKills();           break;
+                case 2:  rowVal = st->getCapturedCrates();  break;
+                case 3:  rowVal = st->getStationsVisited(); break;
+                case 4:  rowVal = st->getJumpgateUsed();    break;
+                default: rowVal = st->getGoodsProduced();   break;
+            }
             void *labelTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
             PaintCanvas_DrawString(canvas, font, labelTxt, rowX, y);
-            String_fromInt(rowStr, rows[r].get(st));
+            String_fromInt(rowStr, rowVal);
             tw = PaintCanvas_GetTextWidth(canvas, font);
             PaintCanvas_DrawString(canvas, font, rowStr, ((y + x0) - pad) - tw, y);
             ((String *)(rowStr))->dtor();

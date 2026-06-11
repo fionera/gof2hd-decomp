@@ -1,4 +1,5 @@
 #include "gof2/BumpShaderV2.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
 
@@ -135,7 +136,7 @@ void BumpShaderV2::Init(Engine *engine)
 {
     (void)engine;
 
-    int program = ShaderBaseStruct_ES2LoadProgram(this, "BumpShaderV2.vsh", "BumpShaderV2.fsh");
+    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("BumpShaderV2.vsh", "BumpShaderV2.fsh");
     this->program = program;
 
     this->aPosition = glGetAttribLocation(program, "a_position");

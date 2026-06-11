@@ -1,4 +1,9 @@
 #include "gof2/PlayerWormHole.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Level.h"
+#include "gof2/PlayerStaticFar.h"
+#include "gof2/Status.h"
+#include "gof2/Transform.h"
 #include "gof2/GameText.h"
 #include "gof2/Hud.h"
 #include "gof2/KIPlayer.h"
@@ -18,25 +23,13 @@ extern "C" void *PlayerStaticFar_dtor(void *self);
 extern "C" void operator_delete(void *self);
 extern "C" void PlayerStaticFar_ctor(PlayerWormHole *self, int playerId, AEGeometry *geometry, float x, float y, float z);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transform);
-extern "C" void Transform_SetAnimationState(void *transform, int state, int frame);
-extern "C" void AEGeometry_render(void *geometry);
 extern "C" void AEGeometry_positionChanged(void *geometry);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transformId);
-extern "C" void Transform_Update(void *transform, long long elapsed, bool flag);
-extern "C" int Status_getCurrentCampaignMission(void *status);
-extern "C" int Status_inAlienOrbit(void *status);
-extern "C" void *Status_getStation(void *status);
-extern "C" void AEGeometry_setVisible(void *geometry, bool visible);
-extern "C" void PlayerStaticFar_update(PlayerWormHole *self, int elapsed);
 extern "C" int PaintCanvas_CameraGetCurrent(void *canvas);
 extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, int current);
 void MatrixGetPosition(void *out, void *matrix);
-extern "C" void AEGeometry_setScaling(void *geometry, float x, float y, float z);
-extern "C" void AEGeometry_getPosition(void *out, void *geometry);
 extern "C" void Vector_sub_assign(Vector *self, Vector *rhs);
 void VectorNormalize(void *out, Vector *value);
-extern "C" void AEGeometry_setDirection(void *geometry, Vector *direction, Vector *up);
-extern "C" void *Level_getPlayer(void *level);
 
 // ---- isShrinking_a5324.cpp ----
 
@@ -88,7 +81,7 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
     ((KIPlayer *)(this))->setVisible(visible);
     ((Player *)(this->player))->setRadius(40000);
     void *transform = PaintCanvas_TransformGetTransform(*g_playerWormHole_canvas, F<int>(this->geometry, 0xc));
-    Transform_SetAnimationState(transform, 2, 0);
+    ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
     this->missionLock = 1;
     this->timer = 0;
     this->field_0x154 = 0x1000;
@@ -108,7 +101,7 @@ void PlayerWormHole::render()
 {
     if (this->visible == 0)
         return;
-    return AEGeometry_render(this->geometry);
+    return ((AEGeometry *)(this->geometry))->render();
 }
 
 // ---- reset_a52ec.cpp ----
@@ -167,7 +160,7 @@ void PlayerWormHole::update(int elapsed)
     void *canvas = *canvasHolder;
     void *transform =
         PaintCanvas_TransformGetTransform(canvas, F<int>(this->geometry, 0xc));
-    Transform_Update(transform, (long long)elapsed, false);
+    ((AbyssEngine::Transform *)(transform))->Update((long long)elapsed, false);
 
     if (this->visible == 0)
         return;
@@ -180,15 +173,15 @@ void PlayerWormHole::update(int elapsed)
     } else if (time > 60000) {
         void **statusHolder = g_playerWormHole_update_status;
         void *status = *statusHolder;
-        int mission = Status_getCurrentCampaignMission(status);
+        int mission = ((Status *)(status))->getCurrentCampaignMission();
         int current = time;
 
         if (this->missionLock != 0) {
             bool lockTime = false;
             if (mission != 0x2a) {
-                if (mission == 0x28 && Status_inAlienOrbit(status) == 0)
+                if (mission == 0x28 && ((Status *)(status))->inAlienOrbit() == 0)
                     lockTime = true;
-            } else if (Status_inAlienOrbit(status) != 0) {
+            } else if (((Status *)(status))->inAlienOrbit() != 0) {
                 lockTime = true;
             }
             if (lockTime) {
@@ -201,19 +194,19 @@ void PlayerWormHole::update(int elapsed)
             0x1000 - (int)(((float)(current - 60000) / 3000.0f) * 4096.0f);
 
         if (current > 63000) {
-            int alien = Status_inAlienOrbit(status);
+            int alien = ((Status *)(status))->inAlienOrbit();
             if (alien != 0 ||
-                ((Station *)(Status_getStation(status)))->isAttackedByAliens() != 0) {
+                ((Station *)(((Status *)(status))->getStation()))->isAttackedByAliens() != 0) {
                 bool closeWormhole = false;
                 if (this->missionLock != 0) {
-                    int alienNow = Status_inAlienOrbit(status);
+                    int alienNow = ((Status *)(status))->inAlienOrbit();
                     if (mission == 0x2a && alienNow == 0)
                         closeWormhole = true;
                 }
                 if (!closeWormhole) {
                     this->timer = -3000;
 
-                    alien = Status_inAlienOrbit(status);
+                    alien = ((Status *)(status))->inAlienOrbit();
                     void **randomHolder = g_playerWormHole_update_random;
                     void *random = *randomHolder;
                     int x;
@@ -238,7 +231,7 @@ void PlayerWormHole::update(int elapsed)
                     Vector *position = (Vector *)((char *)this + 0x90);
                     void *level = this->level;
                     if (mission == 0x1d || mission == 0x29) {
-                        void *player = Level_getPlayer(level);
+                        void *player = (void *)(intptr_t)((Level *)(level))->getPlayer();
                         ((PlayerEgo *)(tmpOut))->getPosition();
                         VectorAssignFn assign = g_playerWormHole_update_vectorAssign;
                         assign(position, tmpOut);
@@ -252,7 +245,7 @@ void PlayerWormHole::update(int elapsed)
                         *(SetPositionFn *)((char *)this->vtable + 0x48);
                     setPosition(this, (float)x, (float)y, (float)z);
 
-                    void *player = Level_getPlayer(this->level);
+                    void *player = (void *)(intptr_t)((Level *)(this->level))->getPlayer();
                     if (((PlayerEgo *)(player))->goingToWormhole() != 0) {
                         GetPlayerFn getPlayer = g_playerWormHole_update_getPlayer;
                         void *target = getPlayer(this->level);
@@ -264,16 +257,16 @@ void PlayerWormHole::update(int elapsed)
                     }
                 } else {
                     this->visible = 0;
-                    AEGeometry_setVisible(this->geometry, false);
+                    ((AEGeometry *)(this->geometry))->setVisible(false);
                 }
             } else {
                 this->visible = 0;
-                AEGeometry_setVisible(this->geometry, false);
+                ((AEGeometry *)(this->geometry))->setVisible(false);
             }
         }
     }
 
-    PlayerStaticFar_update(this, elapsed);
+    ((PlayerStaticFar *)(this))->update(elapsed);
     canvas = *canvasHolder;
     int currentCamera = PaintCanvas_CameraGetCurrent(canvas);
     MatrixGetPosition(tmpOut, PaintCanvas_CameraGetLocal(canvas, currentCamera));
@@ -283,9 +276,9 @@ void PlayerWormHole::update(int elapsed)
     assign(direction, tmpOut);
 
     float scale = (float)(this->field_0x154 << 4) * 0.0000152587890625f;
-    AEGeometry_setScaling(this->geometry, scale, scale, scale);
+    ((AEGeometry *)(this->geometry))->setScaling(scale);
 
-    AEGeometry_getPosition(tmpOut, this->geometry);
+    ((AEGeometry *)(tmpOut))->getPosition();
     Vector *geometryPosition = (Vector *)((char *)this + 0x134);
     assign(geometryPosition, tmpOut);
     Vector_sub_assign(direction, geometryPosition);
@@ -296,5 +289,5 @@ void PlayerWormHole::update(int elapsed)
     tmp[0].x = 0.0f;
     tmp[0].y = 1.0f;
     tmp[0].z = 0.0f;
-    AEGeometry_setDirection(this->geometry, direction, tmp);
+    ((AEGeometry *)(this->geometry))->setDirection(*direction, *tmp);
 }

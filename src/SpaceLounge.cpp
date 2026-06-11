@@ -1,4 +1,12 @@
 #include "gof2/SpaceLounge.h"
+#include "gof2/ChoiceWindow.h"
+#include "gof2/CutScene.h"
+#include "gof2/EaseInOut.h"
+#include "gof2/EaseInOutMatrix.h"
+#include "gof2/Level.h"
+#include "gof2/ListItemWindow.h"
+#include "gof2/ScrollTouchWindow.h"
+#include "gof2/StarMap.h"
 #include "gof2/Agent.h"
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
@@ -15,36 +23,29 @@
 #undef RetStr
 
 
-extern "C" void ChoiceWindow_OnTouchMove(void *choice, int x, int y);
-extern "C" void StarMap_OnTouchMove(void *map, int x, int y);
-extern "C" void ScrollTouchWindow_OnTouchMove(void *scroll, int x, int y);
-extern "C" void ListItemWindow_OnTouchMove(void *list, int x, int y);
 extern "C" void *SpaceLounge_layout_move;
 extern "C" void SpaceLounge_OnRender3D_map_tail(void *map);
-extern "C" int ListItemWindow_shows3DShip(void *item);
 extern "C" void SpaceLounge_OnRender3D_cutscene_tail(void *cutscene);
 extern "C" void SpaceLounge_OnRenderBG_tail();
 extern "C" void SpaceLounge_draw3DShip_tail(void *ship);
-extern "C" void ChoiceWindow_OnTouchBegin(void *choice, int x, int y);
-extern "C" void StarMap_OnTouchBegin(void *map, int x, int y);
-extern "C" void ListItemWindow_OnTouchBegin(void *list, int x, int y);
-extern "C" void ScrollTouchWindow_OnTouchBegin(void *scroll, int x, int y);
 extern "C" void *SpaceLounge_layout_begin;
 extern "C" int ChoiceWindow_touch_end(void *choice, int x, int y);
 extern "C" int StarMap_touch_end(void *map, int x, int y);
-extern "C" void CutScene_resetCamera(void *cutscene);
 extern "C" int Layout_touch_end(void *layout, int x, int y);
 extern "C" void Agent_setEvent(void *agent, int event);
 extern "C" int ListItemWindow_touch_end(void *list, int x, int y);
 extern "C" int TouchButton_touch_end(void *button, int x, int y);
 extern "C" void ScrollTouchWindow_touch_end(void *scroll, int x, int y);
-extern "C" void *Status_getSystem();
 extern "C" int SolarSystem_getRace(void *system);
+// Dropped-self Status singleton accessors: the decompiler emitted these calls
+// with no receiver argument (the Status* singleton is loaded inside the thunk).
+// The receiver is not recoverable from this TU, so they stay as extern "C".
+extern "C" void *Status_getSystem();
+extern "C" void *Status_getStation();
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
 void MatrixSetRotation(void *matrix, float x, float y, float z);
 extern "C" void *PaintCanvas_CameraGetCurrent(void *canvas);
 extern "C" void PaintCanvas_CameraSetLocal(void *canvas, void *matrix);
-extern "C" void EaseInOutMatrix_SetRange(void *ease, void *from, void *to);
 extern "C" void *SpaceLounge_touch_layout_slot;
 extern "C" void *SpaceLounge_touch_help_text_slot;
 extern "C" void *SpaceLounge_touch_list_help_text_slot;
@@ -74,7 +75,6 @@ extern "C" void *SpaceLounge_getSoundId_specialRandom;
 extern "C" void ChoiceWindow_left(void *choice);
 extern "C" void ChoiceWindow_right(void *choice);
 extern "C" void ScrollTouchWindow_scroll(void *scroll, int amount);
-extern "C" void *Level_getEnemies(void *level);
 extern "C" void *PaintCanvas_CameraGetLocal(void *canvas);
 extern "C" void PaintCanvas_GetScreenPosition(void *canvas, void *vec);
 void MatrixGetRight(void *out, void *matrix);
@@ -99,14 +99,12 @@ extern "C" void PaintCanvas_DrawString(void *canvas, void *font, void *text, int
 extern "C" void *String_ctor_cstr(void *dst, const char *src, bool copy);
 extern "C" void String_add(void *dst, void *a, void *b);
 extern "C" int Mission_isOutsideMission(void *mission);
-extern "C" void ScrollTouchWindow_draw(void *scroll);
 extern "C" void TouchButton_setPosition3(void *button, int x, int y, int align);
 extern "C" void *SpaceLounge_lounge_canvas_slot;
 extern "C" void *SpaceLounge_lounge_layout_slot;
 extern "C" void *SpaceLounge_lounge_image_factory_slot;
 extern "C" void *SpaceLounge_lounge_text_slot;
 extern "C" void *SpaceLounge_lounge_font_slot;
-extern "C" void *Status_getStation();
 extern "C" void *Station_getAgents(void *station);
 extern "C" void *operator_new(unsigned int size);
 extern "C" void *operator_new_arr(unsigned int size);
@@ -125,8 +123,6 @@ extern "C" void *SpaceLounge_init_camera_slot;
 extern "C" void String_ctor_default(void *s);
 extern "C" void Matrix_ctor(void *m);
 extern "C" void CutScene_ctor(void *cutscene, int id);
-extern "C" int CutScene_isInitialized(void *cutscene);
-extern "C" void CutScene_initialize(void *cutscene);
 extern "C" void ArrayRemove_AgentPtr(void *agent, void *array);
 extern "C" void EaseInOutMatrix_ctor(void *ease, void *from, void *to, int duration);
 extern "C" void *SpaceLounge_ctor_camera_slot;
@@ -148,7 +144,6 @@ extern "C" void ArrayRelease_ArrayImagePartPtr(void *p);
 extern "C" void ArrayRelease_VectorPtr(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void operator_delete_arr(void *p);
-extern "C" int ListItemWindow_shows3DShip(void *list);
 extern "C" void ListItemWindow_draw_call(void *list);
 extern "C" void SpaceLounge_draw_cutscene_tail();
 extern "C" void SpaceLounge_draw_map_tail(void *map);
@@ -165,19 +160,11 @@ extern "C" void *SpaceLounge_draw_canvas_slot;
 extern "C" void *SpaceLounge_draw_text_slot;
 extern "C" void SpaceLounge_update_map_tail(void *map, int dt);
 extern "C" void SpaceLounge_update_ship_tail(void *list, int dt);
-extern "C" void EaseInOutMatrix_Increase(void *ease, float dt);
-extern "C" void EaseInOutMatrix_GetMaxValue(void *out, void *ease);
-extern "C" void EaseInOutMatrix_GetValue(void *out, void *ease);
 extern "C" int Matrix_equal(void *a, void *b);
 float Sinf(float value);
 extern "C" void EaseInOut_ctor(void *ease, float start, float end);
 extern "C" float EaseInOut_GetValue(void *ease);
-extern "C" float EaseInOut_GetMaxValue(void *ease);
-extern "C" void EaseInOut_SetRange(void *ease, float start, float end);
-extern "C" void EaseInOut_Increase(void *ease, float value);
 extern "C" void Matrix_mul_assign(void *lhs, void *rhs);
-extern "C" void ScrollTouchWindow_update(void *scroll, int dt);
-extern "C" void CutScene_update(void *cutscene);
 extern "C" void *SpaceLounge_update_camera_slot_a;
 extern "C" void *SpaceLounge_update_camera_slot_b;
 extern "C" void *SpaceLounge_update_camera_slot_c;
@@ -193,12 +180,12 @@ int SpaceLounge::OnTouchMove(int x, int y) {
     I(self, 0xb8) = y;
 
     if (UC(self, 0x1b) != 0 || UC(self, 0x19) != 0) {
-        ChoiceWindow_OnTouchMove(P(self, 0x8), x, y);
+        ((ChoiceWindow *)(P(self, 0x8)))->OnTouchMove(x, y);
         return 0;
     }
 
     if (UC(self, 0x34) != 0) {
-        StarMap_OnTouchMove(P(self, 0x4), x, y);
+        ((StarMap *)(P(self, 0x4)))->OnTouchMove(x, y);
         return 0;
     }
 
@@ -236,9 +223,9 @@ int SpaceLounge::OnTouchMove(int x, int y) {
 
     ((Layout *)(*(void **)SpaceLounge_layout_move))->OnTouchMove(x, y);
     if (UC(self, 0x1c) != 0) {
-        ListItemWindow_OnTouchMove(P(self, 0xc), x, y);
+        ((ListItemWindow *)(P(self, 0xc)))->OnTouchMove(x, y);
     } else {
-        ScrollTouchWindow_OnTouchMove(P(self, 0x60), x, y);
+        ((ScrollTouchWindow *)(P(self, 0x60)))->OnTouchMove(x, y);
     }
     return 0;
 }
@@ -256,7 +243,7 @@ void SpaceLounge::OnRender3D() {
     }
 
     if (UC(self, 0x1c) != 0) {
-        if (ListItemWindow_shows3DShip(P(self, 0xc)) != 0) {
+        if (((ListItemWindow *)(P(self, 0xc)))->shows3DShip() != 0) {
             return;
         }
         cutscene = P(self, 0x44);
@@ -320,19 +307,19 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
     I(self, 0x88) = -1;
 
     if (UC(self, 0x1b) != 0 || UC(self, 0x19) != 0) {
-        ChoiceWindow_OnTouchBegin(P(self, 0x8), x, y);
+        ((ChoiceWindow *)(P(self, 0x8)))->OnTouchBegin(x, y);
         return 0;
     }
 
     if (UC(self, 0x34) != 0) {
-        StarMap_OnTouchBegin(P(self, 0x4), x, y);
+        ((StarMap *)(P(self, 0x4)))->OnTouchBegin(x, y);
         return 0;
     }
 
     if (UC(self, 0x1c) != 0) {
-        ListItemWindow_OnTouchBegin(P(self, 0xc), x, y);
+        ((ListItemWindow *)(P(self, 0xc)))->OnTouchBegin(x, y);
         ((Layout *)(*(void **)SpaceLounge_layout_begin))->OnTouchBegin(x, y);
-        ScrollTouchWindow_OnTouchBegin(P(self, 0x60), x, y);
+        ((ScrollTouchWindow *)(P(self, 0x60)))->OnTouchBegin(x, y);
         return 0;
     }
 
@@ -370,7 +357,7 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
     }
 
     ((Layout *)(*(void **)SpaceLounge_layout_begin))->OnTouchBegin(x, y);
-    ScrollTouchWindow_OnTouchBegin(P(self, 0x60), x, y);
+    ((ScrollTouchWindow *)(P(self, 0x60)))->OnTouchBegin(x, y);
     return 0;
 }
 
@@ -463,7 +450,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
 
     if (UC(self, 0x34) != 0) {
         if (StarMap_touch_end(P(self, 0x4), x, y) != 0) {
-            CutScene_resetCamera(P(self, 0x44));
+            ((CutScene *)(P(self, 0x44)))->resetCamera();
             UC(self, 0x34) = 0;
         }
         return;
@@ -513,7 +500,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             void *current = PaintCanvas_CameraGetCurrent(camera);
             PaintCanvas_CameraSetLocal(camera, current);
             if (P(self, 0x48) != 0) {
-                EaseInOutMatrix_SetRange(P(self, 0x48), matrix, matrix);
+                ((AbyssEngine::EaseInOutMatrix *)(P(self, 0x48)))->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
             }
             UC(self, 0xbd) = 1;
             I(self, 0x104) = 0;
@@ -791,7 +778,7 @@ void SpaceLounge::updateScreenPositions() {
     }
 
     void *level = *(void **)&SpaceLounge_screen_level_slot;
-    void *enemies = Level_getEnemies(level);
+    void *enemies = (void *)(intptr_t)((Level *)(level))->getEnemies();
     void *canvasSlot = *(void **)&SpaceLounge_screen_canvas_slot;
     void *canvas = *(void **)canvasSlot;
     void *project = *(void **)&SpaceLounge_screen_projector;
@@ -942,7 +929,7 @@ void SpaceLounge::drawLounge() {
     ((String *)(s0))->dtor();
     PaintCanvas_DrawRectangle(canvas, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c));
     ((ImageFactory *)(factory))->drawChar((Arr *)((void **)P(P(self, 0x38), 0x4))[I(self, 0x20)], I(layout, 0x4c) + I(self, 0x70), I(layout, 0x4c) + I(self, 0x74), false);
-    ScrollTouchWindow_draw(P(self, 0x60));
+    ((ScrollTouchWindow *)(P(self, 0x60)))->draw();
 
     if ((I(self, 0x14) & 0xfffffffe) != 2) {
         return;
@@ -1020,7 +1007,7 @@ int SpaceLounge::init() {
     UC(self, 0x35) = 0;
 
     if (P(self, 0x44) != 0) {
-        CutScene_resetCamera(P(self, 0x44));
+        ((CutScene *)(P(self, 0x44)))->resetCamera();
     }
 
     UC(self, 0x18) = 0;
@@ -1079,7 +1066,7 @@ int SpaceLounge::init() {
     void *current = PaintCanvas_CameraGetCurrent(camera);
     PaintCanvas_CameraSetLocal(camera, current);
     if (P(self, 0x48) != 0) {
-        EaseInOutMatrix_SetRange(P(self, 0x48), matrix, matrix);
+        ((AbyssEngine::EaseInOutMatrix *)(P(self, 0x48)))->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
     }
     UC(self, 0xbd) = 1;
     I(self, 0x104) = 0;
@@ -1152,8 +1139,8 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
         CutScene_ctor(cutscene, 4);
         P(self, 0x44) = cutscene;
     }
-    while (CutScene_isInitialized(cutscene) == 0) {
-        CutScene_initialize(cutscene);
+    while (((CutScene *)(cutscene))->isInitialized() == 0) {
+        ((CutScene *)(cutscene))->initialize();
         cutscene = P(self, 0x44);
     }
 
@@ -1334,7 +1321,7 @@ void SpaceLounge::draw() {
     char title[12];
 
     if (UC(self, 0x1c) != 0) {
-        if (ListItemWindow_shows3DShip(P(self, 0xc)) != 0) {
+        if (((ListItemWindow *)(P(self, 0xc)))->shows3DShip() != 0) {
             void *canvasSlot = *(void **)&SpaceLounge_draw_canvas_slot;
             void *canvas = *(void **)canvasSlot;
             PaintCanvas_SetColor4(canvas, 0xff, 0, 0, 0);
@@ -1394,21 +1381,21 @@ void SpaceLounge::update(int dt) {
     }
 
     if (UC(self, 0xbc) == 0) {
-        EaseInOutMatrix_Increase(P(self, 0x48), (float)dt);
+        ((AbyssEngine::EaseInOutMatrix *)(P(self, 0x48)))->Increase((float)dt);
     }
 
     void *cameraSlot;
     void *camera;
     void *current;
     if (UC(self, 0xbd) == 0) {
-        EaseInOutMatrix_GetMaxValue(maxMatrix, P(self, 0x48));
-        EaseInOutMatrix_GetValue(valueMatrix, P(self, 0x48));
+        ((AbyssEngine::EaseInOutMatrix *)(maxMatrix))->GetMaxValue();
+        ((AbyssEngine::EaseInOutMatrix *)(valueMatrix))->GetValue();
         if (Matrix_equal(maxMatrix, valueMatrix) == 0) {
             UC(self, 0xbc) = 0;
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_c;
             camera = *(void **)cameraSlot;
             current = PaintCanvas_CameraGetCurrent(camera);
-            EaseInOutMatrix_GetValue(valueMatrix, P(self, 0x48));
+            ((AbyssEngine::EaseInOutMatrix *)(valueMatrix))->GetValue();
             PaintCanvas_CameraSetLocal(camera, valueMatrix);
         } else {
             goto idle_camera;
@@ -1440,12 +1427,12 @@ idle_camera:
                 EaseInOut_ctor(ease, 0.0f, (float)amount);
                 P(self, 0xc0) = ease;
             } else {
-                EaseInOut_SetRange(P(self, 0xc0), 0.0f, (float)amount);
+                ((AbyssEngine::EaseInOut *)(P(self, 0xc0)))->SetRange(0.0f, (float)amount);
             }
             I(self, 0x108) = 2;
         } else {
             float value = EaseInOut_GetValue(P(self, 0xc0));
-            float maxValue = EaseInOut_GetMaxValue(P(self, 0xc0));
+            float maxValue = ((AbyssEngine::EaseInOut *)(P(self, 0xc0)))->GetMaxValue();
             float distance = value - maxValue;
             if (distance < 0.0f) {
                 distance = -distance;
@@ -1456,14 +1443,14 @@ idle_camera:
                 amount = AERandom_nextInt(random, 10);
                 float next = (float)(5 - amount);
                 UC(self, 0xc4) = value > next;
-                EaseInOut_SetRange(P(self, 0xc0), value, next);
+                ((AbyssEngine::EaseInOut *)(P(self, 0xc0)))->SetRange(value, next);
                 I(self, 0x108) = AERandom_nextInt(random, 4) + 1;
                 amount = I(self, 0x108);
             }
             if (UC(self, 0xc4) != 0) {
                 amount = -amount;
             }
-            EaseInOut_Increase(P(self, 0xc0), (float)(dt * amount));
+            ((AbyssEngine::EaseInOut *)(P(self, 0xc0)))->Increase((float)(dt * amount));
         }
 
         float value = EaseInOut_GetValue(P(self, 0xc0));
@@ -1478,9 +1465,9 @@ idle_camera:
 
     ((SpaceLounge *)(self))->updateScreenPositions();
     if (I(self, 0x14) != 0) {
-        ScrollTouchWindow_update(P(self, 0x60), dt);
+        ((ScrollTouchWindow *)(P(self, 0x60)))->update(dt);
     }
-    CutScene_update(P(self, 0x44));
+    ((CutScene *)(P(self, 0x44)))->update();
 
     if (UC(self, 0xb2) != 0) {
         int x = I(self, 0xb4);

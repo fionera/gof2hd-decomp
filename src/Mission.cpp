@@ -1,4 +1,6 @@
 #include "gof2/Mission.h"
+#include "gof2/Galaxy.h"
+#include "gof2/Status.h"
 #include "gof2/GameText.h"
 #include "gof2/Station.h"
 #include "gof2/String.h"
@@ -9,11 +11,9 @@ extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void String_cstr_ctor(void *out, const char *s, bool);
 extern "C" void *String_assign_ref(void *self, const String12 &rhs);
 extern "C" void *operator_new(uint32_t n);
-extern "C" Station *Galaxy_getStation(Galaxy *g, int idx);
 extern "C" void Mission_dtor_finish(Mission *self);
 extern "C" void String_default_ctor(void *s);
 extern "C" Systems *Galaxy_getSystems(Galaxy *g);
-extern "C" Station *Status_getStation(Status *s);
 extern "C" int Station_getSystem(Station *s);
 float Galaxy_distance(Galaxy *g, SolarSystem *a, SolarSystem *b);
 extern "C" void Station_dtor_finish(Station *s);
@@ -188,7 +188,7 @@ void Mission::setTargetStation(int idx) {
     unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
     Galaxy **gp = g_galaxy;
     self->targetStation = idx;
-    Station *st = Galaxy_getStation(*gp, idx);
+    Station *st = (Station *)((Galaxy *)(*gp))->getStation(idx);
     ((Station *)(name))->getName();
     ((String *)((char *)self + 0x40))->assign((String *)name);
     ((String *)(name))->dtor();
@@ -228,7 +228,7 @@ Mission * Mission::ctor7(int id, const void *client, int a, int b, int c, int st
     self->field_0x2c = b;
     self->field_0x30 = c;
     self->targetStation = station;
-    Station *st = Galaxy_getStation(*g_galaxy, station);
+    Station *st = (Station *)((Galaxy *)(*g_galaxy))->getStation(station);
     ((Station *)(tmp))->getName();
     ((String *)((char *)self + 0x40))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
@@ -293,10 +293,10 @@ __attribute__((visibility("hidden"))) extern Status **g_status;
 void Mission::calcDistance() {
     Mission *self = this;
     Galaxy **gp = g_galaxy;
-    Station *st = Galaxy_getStation(*gp, self->targetStation);
+    Station *st = (Station *)((Galaxy *)(*gp))->getStation(self->targetStation);
     Systems *sys = Galaxy_getSystems(*gp);
     Galaxy *g = *gp;
-    int i1 = Station_getSystem(Status_getStation(*g_status));
+    int i1 = Station_getSystem(((Status *)(*g_status))->getStation());
     SolarSystem *a = sys->data[i1];
     int i2 = Station_getSystem(st);
     SolarSystem *b = sys->data[i2];
@@ -332,7 +332,7 @@ Mission * Mission::ctor3(int id, int goods, int station) {
     if (station < 0) {
         String_cstr_ctor(tmp, "", false);
     } else {
-        Station *st = Galaxy_getStation(*g_galaxy, station);
+        Station *st = (Station *)((Galaxy *)(*g_galaxy))->getStation(station);
         ((Station *)(tmp))->getName();
     }
     ((String *)((char *)self + 0x40))->assign((String *)tmp);

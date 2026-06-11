@@ -1,10 +1,11 @@
 #include "gof2/Explosion.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/FModSound.h"
+#include "gof2/Transform.h"
 
 
 extern "C" uint32_t PaintCanvas_TransformGetTransform32(int canvas, int transform);
 extern "C" long long PaintCanvas_TransformGetTransform(int canvas, int transform);
-extern "C" void Transform_SetAnimationState(uint32_t transform, int state, int value);
-extern "C" void Transform_SetAnimationRangeInTime(long long transform, long long end, long long start);
 extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void operator_delete(void *ptr);
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(Array<AEGeometry *> *self);
@@ -13,13 +14,8 @@ extern "C" void AEGeometry_translate_vec(AEGeometry *self, const Vector *v);
 extern "C" void Explosion_tail_translate(void *geometry, const Vector *v);
 extern "C" void AEGeometry_setScaling3(AEGeometry *self, float x, float y, float z);
 extern "C" int AERandom_nextInt(void *self, int bound);
-extern "C" void Transform_SetAnimationSpeed(uint32_t transform, float speed);
-extern "C" void AEGeometry_setPosition(AEGeometry *self, const Vector *position);
-extern "C" void AEGeometry_setDirection(AEGeometry *self, const Vector *direction, const Vector *up);
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
-extern "C" void Transform_Update(long long transform, long long elapsed, int zero);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
-extern "C" void AEGeometry_getPosition(Vector *out, AEGeometry *self);
 extern "C" int PaintCanvas_CameraGetCurrent(int canvas);
 extern "C" void *PaintCanvas_CameraGetLocal(int canvas, int current);
 extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
@@ -28,12 +24,9 @@ extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self,
 extern "C" void Matrix_ctor(Matrix *self);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, int canvas, bool flag);
-extern "C" void AEGeometry_addChild(AEGeometry *self, uint32_t child);
-extern "C" void FModSound_play(int sound, int id, Vector *pos, int zero, int zero2);
 void MatrixGetPosition(Vector *out, const Matrix *matrix);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const Matrix *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
-extern "C" void AEGeometry_render(AEGeometry *self);
 void MatrixSetTranslation(Matrix *out, Matrix *base, float x, float y, float z);
 extern "C" void MatrixSetScaling(Matrix *out, Matrix *base, float x, float y, float z);
 void MatrixGetUp(Vector *out, const Matrix *matrix);
@@ -54,43 +47,32 @@ void Explosion::reset() {
     Explosion *self = this;
     int *canvas = &Explosion_paintCanvas;
 
-    Transform_SetAnimationState(
-        PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 3, 0);
-    Transform_SetAnimationState(
-        PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 1, 0);
+    ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
+    ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
 
     int lodTransform = I(self->primaryMesh, 0x14);
     if (lodTransform != -1) {
-        Transform_SetAnimationState(PaintCanvas_TransformGetTransform32(*canvas, lodTransform), 3, 0);
-        Transform_SetAnimationState(
-            PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0x14)), 1, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, lodTransform)))->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0x14))))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
     }
 
     AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
-        Transform_SetAnimationState(
-            PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc)), 3, 0);
-        Transform_SetAnimationState(
-            PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)), 1, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
     }
 
     if (self->type == 6) {
-        Transform_SetAnimationRangeInTime(
-            PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc)),
-            0x8fcLL, 10000000LL);
-        Transform_SetAnimationRangeInTime(
-            PaintCanvas_TransformGetTransform(*canvas, I(self->secondaryMesh, 0xc)),
-            0x8fcLL, 10000000LL);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc))))->SetAnimationRangeInTime(0x8fcLL, 10000000LL);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(*canvas, I(self->secondaryMesh, 0xc))))->SetAnimationRangeInTime(0x8fcLL, 10000000LL);
     }
 
     Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            Transform_SetAnimationState(
-                PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 3, 0);
-            Transform_SetAnimationState(
-                PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 1, 0);
+            ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
+            ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
             streaks = self->fireStreaks;
         }
     }
@@ -171,21 +153,18 @@ void Explosion::setScaling(float scale) {
     }
 
     int *canvas = &Explosion_paintCanvas;
-    Transform_SetAnimationSpeed(
-        PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), speed);
+    ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc))))->SetAnimationSpeed(speed);
 
     secondary = self->secondaryMesh;
     if (secondary != 0) {
-        Transform_SetAnimationSpeed(
-            PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc)), speed);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(secondary, 0xc))))->SetAnimationSpeed(speed);
     }
 
     Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            Transform_SetAnimationSpeed(
-                PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), speed);
+            ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc))))->SetAnimationSpeed(speed);
             streaks = self->fireStreaks;
         }
     }
@@ -206,7 +185,7 @@ extern void *Explosion_random;
 
 void Explosion::start(const Vector *position, const Vector *direction) {
     Explosion *self = this;
-    AEGeometry_setPosition(self->primaryMesh, position);
+    ((AEGeometry *)(self->primaryMesh))->setPosition(*position);
 
     int *canvas = &Explosion_paintCanvas;
     UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 0xed) = 1;
@@ -218,7 +197,7 @@ void Explosion::start(const Vector *position, const Vector *direction) {
 
     AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
-        AEGeometry_setPosition(secondary, position);
+        ((AEGeometry *)(secondary))->setPosition(*position);
         UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)), 0xed) = 1;
     }
 
@@ -235,18 +214,18 @@ void Explosion::start(const Vector *position, const Vector *direction) {
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        AEGeometry_setDirection(self->primaryMesh, direction, &up);
+        ((AEGeometry *)(self->primaryMesh))->setDirection(*direction, up);
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        AEGeometry_setDirection(self->secondaryMesh, direction, &up);
+        ((AEGeometry *)(self->secondaryMesh))->setDirection(*direction, up);
     }
 
     Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            AEGeometry_setPosition(geometry, position);
+            ((AEGeometry *)(geometry))->setPosition(*position);
             UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xed) = 1;
             streaks = self->fireStreaks;
         }
@@ -269,11 +248,11 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
 
     int *canvas = &Explosion_paintCanvas;
     long long delta = (long long)dt;
-    Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc)), delta, 0);
+    ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc))))->Update(delta, 0);
 
     int lodTransform = I(self->primaryMesh, 0x14);
     if (lodTransform != -1) {
-        Transform_Update(PaintCanvas_TransformGetTransform(*canvas, lodTransform), delta, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(*canvas, lodTransform)))->Update(delta, 0);
     }
 
     AEGeometry *secondary = self->secondaryMesh;
@@ -285,7 +264,7 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(geometry, 0xc)), delta, 0);
+            ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(*canvas, I(geometry, 0xc))))->Update(delta, 0);
             streaks = self->fireStreaks;
         }
     }
@@ -295,7 +274,7 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
         Vector *cameraPosition = (Vector *)(vectors + 0);
         Vector *position = (Vector *)(vectors + 12);
         Vector *diff = (Vector *)(vectors + 24);
-        AEGeometry_getPosition(position, self->primaryMesh);
+        ((AEGeometry *)(position))->getPosition();
 
         int canvasValue = *canvas;
         int current = PaintCanvas_CameraGetCurrent(canvasValue);
@@ -353,15 +332,14 @@ Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
     case 6:
         self->primaryMesh = make_geometry(0x41b5, *canvas);
         geometry = make_geometry(0x41b4, *canvas);
-        AEGeometry_addChild(self->primaryMesh, U(geometry, 0xc));
+        ((AEGeometry *)(self->primaryMesh))->addChild(U(geometry, 0xc));
         operator_delete(AEGeometry_dtor(geometry));
         break;
     default:
         if (type == 13) {
             self->primaryMesh = make_geometry(0x41a9, *canvas);
             ((Explosion *)(self))->setScaling(0.25f);
-            Transform_SetAnimationSpeed(
-                PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 1.0f);
+            ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc))))->SetAnimationSpeed(1.0f);
         } else {
             self->primaryMesh = make_geometry(0x4213, *canvas);
             self->secondaryMesh = make_geometry(0x4211, *canvas);
@@ -400,12 +378,10 @@ Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
         break;
     }
 
-    Transform_SetAnimationState(
-        PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc)), 1, 0);
+    ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(self->primaryMesh, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
 
     if (self->secondaryMesh != 0) {
-        Transform_SetAnimationState(
-            PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)), 1, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
         F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(self->secondaryMesh, 0xc)), 0xe0) =
             10000.0f;
     }
@@ -512,7 +488,7 @@ void Explosion::playSound(Vector *pos) {
             if (enabled == 0) {
                 soundPos = 0;
             }
-            FModSound_play(sound, 0x15, soundPos, 0, 0);
+            ((FModSound *)(sound))->play(0x15, soundPos, 0, 0);
             return;
         }
         if (type != 0) {
@@ -530,7 +506,7 @@ void Explosion::playSound(Vector *pos) {
     if (enabled == 0) {
         soundPos = 0;
     }
-    FModSound_play(sound, cue, soundPos, 0, 0);
+    ((FModSound *)(sound))->play(cue, soundPos, 0, 0);
 }
 
 // ---- start_a853c.cpp ----
@@ -545,9 +521,9 @@ void Explosion::start_matrix(const Matrix *matrix) {
     int type = self->type;
     if (type == 6 || type == 0) {
         MatrixGetPosition(position, matrix);
-        AEGeometry_setPosition(self->primaryMesh, position);
+        ((AEGeometry *)(self->primaryMesh))->setPosition(*position);
         MatrixGetPosition(position, matrix);
-        AEGeometry_setPosition(self->secondaryMesh, position);
+        ((AEGeometry *)(self->secondaryMesh))->setPosition(*position);
     } else {
         AEGeometry_setMatrix(self->primaryMesh, matrix);
         AEGeometry *secondary = self->secondaryMesh;
@@ -562,7 +538,7 @@ void Explosion::start_matrix(const Matrix *matrix) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
             MatrixGetPosition(position, matrix);
-            AEGeometry_setPosition(geometry, position);
+            ((AEGeometry *)(geometry))->setPosition(*position);
             UC((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xed) = 1;
             streaks = self->fireStreaks;
         }
@@ -598,7 +574,7 @@ void Explosion::render() {
     if (self->playing != 0) {
         uint32_t type = (uint32_t)self->type;
         if ((type > 0xd || ((1u << (type & 0xff)) & 0x2780u) == 0) && self->secondaryMesh != 0) {
-            AEGeometry_render(self->secondaryMesh);
+            ((AEGeometry *)(self->secondaryMesh))->render();
         }
 
         int *canvas = &Explosion_paintCanvas;
@@ -606,7 +582,7 @@ void Explosion::render() {
         int current = PaintCanvas_CameraGetCurrent(canvasValue);
         __aeabi_memcpy(&cameraLocal, PaintCanvas_CameraGetLocal(canvasValue, current), 0x3c);
 
-        AEGeometry_getPosition(&position, self->primaryMesh);
+        ((AEGeometry *)(&position))->getPosition();
 
         if (type < 0xd && ((1u << (type & 0xff)) & 0x1804u) != 0) {
             MatrixSetTranslation(&work, &cameraLocal, position.x, position.y, position.z);
@@ -625,7 +601,7 @@ void Explosion::render() {
         }
 
         AEGeometry_setMatrix(self->primaryMesh, &cameraLocal);
-        AEGeometry_setPosition(self->primaryMesh, &position);
+        ((AEGeometry *)(self->primaryMesh))->setPosition(position);
 
         canvasValue = *canvas;
         current = PaintCanvas_CameraGetCurrent(canvasValue);
@@ -633,14 +609,14 @@ void Explosion::render() {
         Vector *direction = (Vector *)&work;
         MatrixGetDir(direction, &cameraLocal);
         MatrixGetUp(&cameraPosition, &cameraLocal);
-        AEGeometry_setDirection(self->primaryMesh, direction, &cameraPosition);
-        AEGeometry_render(self->primaryMesh);
+        ((AEGeometry *)(self->primaryMesh))->setDirection(*direction, cameraPosition);
+        ((AEGeometry *)(self->primaryMesh))->render();
 
         Array<AEGeometry *> *streaks = self->fireStreaks;
         if (streaks != 0) {
             for (uint32_t i = 0; i < streaks->size(); i++) {
                 AEGeometry *geometry = (*streaks)[i];
-                AEGeometry_render(geometry);
+                ((AEGeometry *)(geometry))->render();
                 streaks = self->fireStreaks;
             }
         }
@@ -659,11 +635,11 @@ void Explosion::update_vector(int dt, const Vector *position) {
 
     int *canvas = &Explosion_paintCanvas;
     long long delta = (long long)dt;
-    Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc)), delta, 0);
+    ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(*canvas, I(self->primaryMesh, 0xc))))->Update(delta, 0);
 
     int lodTransform = I(self->primaryMesh, 0x14);
     if (lodTransform != -1) {
-        Transform_Update(PaintCanvas_TransformGetTransform(*canvas, lodTransform), delta, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(*canvas, lodTransform)))->Update(delta, 0);
     }
 
     AEGeometry *secondary = self->secondaryMesh;
@@ -675,8 +651,8 @@ void Explosion::update_vector(int dt, const Vector *position) {
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            AEGeometry_setPosition(geometry, position);
-            Transform_Update(PaintCanvas_TransformGetTransform(*canvas, I(geometry, 0xc)), delta, 0);
+            ((AEGeometry *)(geometry))->setPosition(*position);
+            ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(*canvas, I(geometry, 0xc))))->Update(delta, 0);
             streaks = self->fireStreaks;
         }
     }
@@ -714,8 +690,7 @@ void Explosion::addFireStreaks() {
         (*self->fireStreaks)[i] = geometry;
 
         geometry = (*self->fireStreaks)[i];
-        Transform_SetAnimationState(
-            PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 1, 0);
+        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
 
         geometry = (*self->fireStreaks)[i];
         F<float>((void *)PaintCanvas_TransformGetTransform32(*canvas, I(geometry, 0xc)), 0xe0) =

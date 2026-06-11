@@ -1,25 +1,18 @@
 #include "gof2/BluePrint.h"
+#include "gof2/Galaxy.h"
+#include "gof2/Item.h"
+#include "gof2/Status.h"
 #include "gof2/Station.h"
 #include "gof2/String.h"
 
 
-extern "C" int Item_getMaxPrice(Item *it);
 Array<int> *BluePrint_getIngredientList(BluePrint *self);
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void operator_delete(void *p);
 Array<int> *BluePrint_getQuantityList(BluePrint *self);
-extern "C" void Status_incGoodsProduced(void *status, int n);
-extern "C" Array<int> *Item_getIngredients(Item *it);
-extern "C" int Item_getSinglePrice(Item *it);
-extern "C" Array<int> *Item_getQuantities(Item *it);
-extern "C" int Item_getType(Item *it);
 extern "C" void *operator_new(unsigned int sz);
 extern "C" void ArraySetLengthInt(uint32_t n, Array<int> *a);
-extern "C" void Item_setBlueprintAmount(Item *it, int amount);
-extern "C" int Item_getIndex(Item *it);
-extern "C" void *Status_getStation(void);
 extern "C" int Station_getIndex(void *station);
-extern "C" void *Galaxy_getStation(void *galaxy, int idx);
 
 // ---- getAutoCompletionPrice_1772f0.cpp ----
 // Hidden PC-relative pointer-to-the-item-database root.
@@ -34,7 +27,7 @@ int BluePrint::getAutoCompletionPrice() {
     if (idx == 0xd2)
         return ((BluePrint *)(self))->getIngredientsValue() + 0x1e8480;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
-    int maxPrice = Item_getMaxPrice(data[idx]);
+    int maxPrice = ((Item *)(data[idx]))->getMaxPrice();
     return (int)((float)(self->batchMultiplier * maxPrice) * 1.25f);
 }
 
@@ -129,7 +122,7 @@ extern void *const gStatusPtr __attribute__((visibility("hidden")));
 void BluePrint::reset() {
     BluePrint *self = this;
     self->productionCount += 1;
-    Status_incGoodsProduced(*(void **)gStatusPtr, 1);
+    ((Status *)(*(void **)gStatusPtr))->incGoodsProduced(1);
     Array<int> *ql = BluePrint_getQuantityList(self);
     Array<int> *counters = self->ingredientCounters;
     for (uint32_t i = 0; i < counters->size(); i++)
@@ -167,7 +160,7 @@ Array<int> *BluePrint_getIngredientList(BluePrint *self)
 {
     int idx = self->itemIndex;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
-    return Item_getIngredients(data[idx]);
+    return (Array<int> *)((Item *)(data[idx]))->getIngredients();
 }
 
 // ---- getIngredientsValue_177298.cpp ----
@@ -182,7 +175,7 @@ int BluePrint::getIngredientsValue() {
     if (il != 0) {
         for (uint32_t i = 0; i < il->size(); i++) {
             Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
-            int price = Item_getSinglePrice(data[il->data()[i]]);
+            int price = ((Item *)(data[il->data()[i]]))->getSinglePrice();
             total += self->ingredientCounters->data()[i] * price;
         }
     }
@@ -198,7 +191,7 @@ Array<int> *BluePrint_getQuantityList(BluePrint *self)
 {
     int idx = self->itemIndex;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
-    return Item_getQuantities(data[idx]);
+    return (Array<int> *)((Item *)(data[idx]))->getQuantities();
 }
 
 // ---- BluePrint_176f20.cpp ----
@@ -214,14 +207,14 @@ BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item)
     self->itemIndex = item;
     Item **db = *(Item ***)((char *)*(void **)gItemDB + 0x4);
     Item *it = db[item];
-    int type = Item_getType(it);
+    int type = ((Item *)(it))->getType();
     self->stationIndex = -1;
     self->batchMultiplier = (type == 1) ? 10 : 1;
-    Array<int> *quantities = Item_getQuantities(it);
+    Array<int> *quantities = (Array<int> *)((Item *)(it))->getQuantities();
     self->ingredientCounters = 0;
-    if (Item_getIngredients(it) != 0) {
+    if (((Item *)(it))->getIngredients() != 0) {
         self->ingredientCounters = new Array<int>();
-        ArraySetLengthInt(Item_getIngredients(it)->size(), self->ingredientCounters);
+        ArraySetLengthInt(((Item *)(it))->getIngredients()->size(), self->ingredientCounters);
         Array<int> *arr = self->ingredientCounters;
         for (uint32_t i = 0; i < arr->size(); i++)
             arr->data()[i] = quantities->data()[i];
@@ -242,22 +235,22 @@ extern void *const gGalaxyPtr __attribute__((visibility("hidden")));
 void BluePrint::addItem(Item *item, int amount, int station) {
     BluePrint *self = this;
     if (amount != 0) {
-        Item_setBlueprintAmount(item, 0);
+        ((Item *)(item))->setBlueprintAmount(0);
         Array<int> *il = BluePrint_getIngredientList(self);
         if (il != 0) {
             for (uint32_t i = 0; i < il->size(); i++) {
-                if (il->data()[i] == Item_getIndex(item)) {
+                if (il->data()[i] == ((Item *)(item))->getIndex()) {
                     self->ingredientCounters->data()[i] -= amount;
-                    self->spentValue += Item_getSinglePrice(item) * amount;
+                    self->spentValue += ((Item *)(item))->getSinglePrice() * amount;
                     if (station >= 0 && self->stationIndex < 0) {
                         self->stationIndex = station;
-                        if (Station_getIndex(Status_getStation()) == station) {
+                        if (Station_getIndex(((Status *)(*(void **)gStatusPtr))->getStation()) == station) {
                             char tmp[12];
-                            *(RetStr *)tmp = ((Station *)Status_getStation())->getName();
+                            *(RetStr *)tmp = ((Station *)(((Status *)(*(void **)gStatusPtr))->getStation()))->getName();
                             ((String *)(&self->stationName))->assign((String *)tmp);
                             ((String *)(tmp))->dtor();
                         } else {
-                            void *st = Galaxy_getStation(*(void **)gGalaxyPtr, station);
+                            void *st = (void *)(intptr_t)((Galaxy *)(*(void **)gGalaxyPtr))->getStation(station);
                             char tmp[12];
                             *(RetStr *)tmp = ((Station *)(st))->getName();
                             ((String *)(&self->stationName))->assign((String *)tmp);

@@ -13,6 +13,8 @@ struct ShaderBaseStruct {
     void *field_0x0;                    // +0x0 vtable
     int field_0x4;                      // +0x4 GL program handle
     volatile uint16_t field_0x8;        // +0x8
+
+    uint32_t ES2LoadProgram(const char *vertexSource, const char *fragmentSource);
 };
 
 // AbyssEngine::SimpleShader

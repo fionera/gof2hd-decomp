@@ -1,4 +1,8 @@
 #include "gof2/PlayerJunk.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/FModSound.h"
+#include "gof2/Level.h"
+#include "gof2/ParticleSystemManager.h"
 #include "gof2/KIPlayer.h"
 // Player is dereferenced here only for getHitpoints()/setActive(); we declare a
 // minimal local view of those two methods rather than pull in the full Player.h
@@ -50,14 +54,13 @@ void _ZN10PlayerJunkC1EiP6PlayerP10AEGeometryfff(
 
 // ---- update_15e798.cpp ----
 // 0x724f0
-extern "C" int Level_junkDied(void *level);                            // 0x77908
-extern "C" void FModSound_play(void *self, int id, Vector *a, Vector *b, float volume); // 0x71548
+// 0x77908
+// 0x71548
 extern "C" int AERandom_nextInt(void *self, int max);                  // 0x71848
 // 0x75904
 // 0x72580
-extern "C" void *Level_getPlayer(void *level);                        // 0x72034
-extern "C" void ParticleSystemManager_emitManual(int manager, Vector *emitter, Vector *position,
-                                                 int unused, Vector *zero, float value); // 0x72a30
+// 0x72034
+// 0x72a30
 
 __attribute__((visibility("hidden"))) extern void **g_PJ_sound;       // -> FModSound
 __attribute__((visibility("hidden"))) extern void **g_PJ_random;      // -> AERandom
@@ -72,9 +75,9 @@ void PlayerJunk::update(int elapsed) {
     if (((Player *)(self->player))->getHitpoints() < 1) {
         int state = self->state;
         if ((uint32_t)(state - 3) >= 2) {
-            Level_junkDied(self->level);
+            ((Level *)(self->level))->junkDied();
             self->state = 3;
-            FModSound_play(*g_PJ_sound, 0x16, 0, 0, 0.0f);
+            ((FModSound *)(*g_PJ_sound))->play(0x16, 0, 0, 0.0f);
             void **randHolder = g_PJ_random;
             if (AERandom_nextInt(*randHolder, 100) < 10) {
                 self->droppedCrate = 1;
@@ -88,10 +91,10 @@ void PlayerJunk::update(int elapsed) {
                 ((Player *)(self->player))->setActive(false);
                 // Level's player object holds a target reference at [0x14]->[0x1c];
                 // clear it if it points at this junk (opaque Level-internal layout).
-                void *player = Level_getPlayer(self->level);
+                void *player = (void *)((Level *)(self->level))->getPlayer();
                 void **targetSlot = (void **)((char *)*(void **)((char *)player + 0x14) + 0x1c);
                 if (*targetSlot == self) {
-                    player = Level_getPlayer(self->level);
+                    player = (void *)((Level *)(self->level))->getPlayer();
                     targetSlot = (void **)((char *)*(void **)((char *)player + 0x14) + 0x1c);
                     *targetSlot = 0;
                 }
@@ -105,8 +108,7 @@ void PlayerJunk::update(int elapsed) {
             // Vector* at +0x34 (opaque Level-internal layout, not modeled here).
             int psManager = *(int *)((char *)levelObject + 0x74);
             Vector *emitter = *(Vector **)((char *)levelObject + 0x34);
-            ParticleSystemManager_emitManual(psManager, emitter,
-                                             &position, 0, &zero, -1.0f);
+            ((ParticleSystemManager *)(psManager))->emitManual((int)(intptr_t)emitter, (const float *)&position, 0, (float)(intptr_t)&zero);
         }
     }
 
@@ -115,7 +117,7 @@ void PlayerJunk::update(int elapsed) {
 }
 
 // ---- render_15e8cc.cpp ----
-extern "C" void AEGeometry_render(void *geom);   // blx 0x72238
+// blx 0x72238
 extern "C" void PlayerJunk_renderTail(void *self);  // b.w 0x1ac3a8 (veneer)
 
 // PlayerJunk::render() - render the geometry if present, then (unless the state is 3 or 4)
@@ -123,7 +125,7 @@ extern "C" void PlayerJunk_renderTail(void *self);  // b.w 0x1ac3a8 (veneer)
 void _ZN10PlayerJunk6renderEv(PlayerJunk *self) {
     void *geom = self->geometry;
     if (geom != 0)
-        AEGeometry_render(geom);
+        ((AEGeometry *)(geom))->render();
     if ((uint32_t)(self->state - 3) > 1)
         return PlayerJunk_renderTail(self);
 }

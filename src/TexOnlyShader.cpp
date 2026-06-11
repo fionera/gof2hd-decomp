@@ -1,4 +1,5 @@
 #include "gof2/TexOnlyShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
 // Engine / Mesh are opaque here; their fields are accessed by raw offset since
@@ -47,7 +48,7 @@ namespace AbyssEngine {
 
 void TexOnlyShader::Init(Engine *)
 {
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram(this, "TexOnlyShader.vsh", "TexOnlyShader.fsh");
+    uint32_t program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("TexOnlyShader.vsh", "TexOnlyShader.fsh");
     this->program = program;
 
     this->aPosition = glGetAttribLocation(program, "a_position");

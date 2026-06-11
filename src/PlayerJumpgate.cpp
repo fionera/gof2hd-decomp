@@ -1,4 +1,7 @@
 #include "gof2/PlayerJumpgate.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Status.h"
+#include "gof2/Transform.h"
 #include "gof2/KIPlayer.h"
 
 // Minimal local layouts for engine types accessed through opaque handles in this
@@ -13,31 +16,22 @@ struct Player {
     void setRadius(int value);
 };
 
-struct AEGeometry {
-    uint16_t field_0x8;                 // +0x8
-    int32_t  field_0xc;                 // +0xc
-    uint32_t field_0x14;                // +0x14
-    void setPosition();
-};
+// AEGeometry is the canonical global type from gof2/AEGeometry.h (included above).
 
 struct Transform {
     int64_t field_0x110;                // +0x110 (current animation time)
     bool    field_0xed;                 // +0xed  (animation running flag)
     void Update(bool active, int64_t delta, bool enabled);
+    void SetAnimationState(int mode, void *param);
 };
 
 extern "C" void PlayerStaticFar_dtor(PlayerStaticFar *self);
 extern "C" void *PlayerJumpgate_delete_tail();
 extern "C" Transform *PaintCanvas_TransformGetTransform(void *canvas, uint32_t handle);
-extern "C" void Transform_SetAnimationState(Transform *transform, int state, int loop);
 extern "C" void PaintCanvas_TransformRemoveChild(void *canvas, uint32_t parent, uint32_t child);
-extern "C" void AEGeometry_addChild(AEGeometry *geometry, uint32_t handle);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void Array_BoundingVolumePtr_ctor(Array<BoundingVolume *> *self);
-extern "C" int Status_inAlienOrbit(void *status);
-extern "C" void *Status_getSystem(void *status);
 extern "C" int SolarSystem_getRace(void *system);
-extern "C" void AEGeometry_setRotation(AEGeometry *geometry, float x, float y, float z);
 
 // ---- _PlayerJumpgate_a5100.cpp ----
 void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
@@ -67,12 +61,12 @@ void PlayerJumpgate::activate()
     if (handle != 0xffffffffU) {
         void **canvasOwner = (void **)PaintCanvas_global;
         Transform *transform = PaintCanvas_TransformGetTransform(*canvasOwner, handle);
-        Transform_SetAnimationState(transform, 1, 0);
+        ((Transform *)(transform))->SetAnimationState(1, 0);
 
         AEGeometry *geometry = this->field_0x8;
-        PaintCanvas_TransformRemoveChild(*canvasOwner, geometry->field_0xc,
-                                         geometry->field_0x14);
-        AEGeometry_addChild(this->field_0x8, this->field_0x144);
+        PaintCanvas_TransformRemoveChild(*canvasOwner, geometry->transform,
+                                         geometry->childTransform);
+        ((AEGeometry *)(this->field_0x8))->addChild(this->field_0x144);
     }
 
     this->field_0x140 = 1;
@@ -102,7 +96,7 @@ void PlayerJumpgate::update(int delta)
     if (this->field_0xf5 != 0) {
         AEGeometry *geometry = this->field_0x8;
         Transform *transform = PaintCanvas_TransformGetTransform(*(void **)PaintCanvas_global,
-                                                                 geometry->field_0xc);
+                                                                 geometry->transform);
         bool active = true;
         int64_t wideDelta = delta;
         transform->Update(active, wideDelta, active);
@@ -115,7 +109,8 @@ void PlayerJumpgate::setPosition(float x, float y, float z)
     this->field_0x124 = (int32_t)x;
     this->field_0x128 = (int32_t)y;
     this->field_0x12c = (int32_t)z;
-    this->field_0x8->setPosition();
+    Vector pos = { x, y, z };
+    this->field_0x8->setPosition(pos);
 }
 
 // ---- PlayerJumpgate_a4fa4.cpp ----
@@ -147,10 +142,10 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
 
         void **statusOwner = (void **)g_Status;
         int32_t radius;
-        if (Status_inAlienOrbit(*statusOwner) != 0) {
+        if (((Status *)(*statusOwner))->inAlienOrbit() != 0) {
             radius = 0x1d4c;
         } else {
-            void *system = Status_getSystem(*statusOwner);
+            void *system = (void *)(intptr_t)((Status *)(*statusOwner))->getSystem();
             radius = 0x1d4c;
             if (SolarSystem_getRace(system) == 1) {
                 radius = 0x2bf2;
@@ -166,5 +161,5 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
 
     this->field_0x144 = 0xffffffffU;
     this->field_0x140 = 0;
-    AEGeometry_setRotation(this->field_0x8, 0.0f, 3.1415927f, 0.0f);
+    ((AEGeometry *)(this->field_0x8))->setRotation(0.0f, 3.1415927f, 0.0f);
 }

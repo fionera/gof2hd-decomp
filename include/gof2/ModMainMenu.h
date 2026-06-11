@@ -9,6 +9,10 @@ struct GameRecord;
 struct RecordHandler;
 struct Station;
 
+// NOTE: the B/I/P offset-cast helpers are also defined (unconditionally) by other
+// class headers such as gof2/Galaxy.h. They are only declared here when no other
+// header has already provided them (the including TU may #define GOF2_BIP_HELPERS
+// after including such a header to avoid a redefinition).
 #ifndef GOF2_BIP_HELPERS
 #define GOF2_BIP_HELPERS
 static inline char *B(void *p, int off) { return (char *)p + off; }

@@ -41,7 +41,7 @@ void NoTexShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 // AbyssEngine::NoTexShader::Init(AbyssEngine::Engine*)
 void NoTexShader::Init(Engine *)
 {
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "NoTexShader.vsh", "NoTexShader.fsh");
+    uint32_t program = ((ShaderBaseStruct *)((ShaderBaseStruct *)this))->ES2LoadProgram("NoTexShader.vsh", "NoTexShader.fsh");
     field_0x4 = (int)program;
     field_0x20 = glGetAttribLocation(program, "a_position");
     field_0x24 = glGetUniformLocation(field_0x4, "u_mvp");

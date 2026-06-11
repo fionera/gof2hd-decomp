@@ -1,27 +1,31 @@
 #include "gof2/PlayerTurret.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/FModSound.h"
+#include "gof2/Level.h"
+#include "gof2/ParticleSystemManager.h"
+#include "gof2/Transform.h"
 #include "gof2/Explosion.h"
 #include "gof2/KIPlayer.h"
 #include "gof2/Player.h"
 #include "gof2/Standing.h"
 
+// Status singleton accessor. The decompiler emitted bare Status_getStanding() (the self
+// argument was dropped); the original reads the global Status* singleton (DAT_189d44) and
+// calls Status::getStanding(). Status isn't otherwise modeled in this TU, so declare the
+// minimal surface needed: the singleton global plus getStanding().
+class Status {
+public:
+    Standing *getStanding();
+};
+extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 
-extern "C" void PlayerTurret_pickEnemy(PlayerTurret *self);
-extern "C" void PlayerTurret_handleRotation(PlayerTurret *self, int delta, AEGeometry *main, AEGeometry *turret);
 extern "C" Vector *Vector_assign(Vector *dst, const Vector *src);
-extern "C" void AEGeometry_render(void *self);
 extern "C" void PlayerTurret_renderBase(PlayerTurret *self);
 extern "C" void Player_reset(Player *self);
-extern "C" void AEGeometry_setVisible(void *self, bool visible);
-extern "C" void AEGeometry_setPosition(AEGeometry *self, const Vector *position);
 extern "C" void KIPlayer_setLevel(PlayerTurret *self, Level *level);
 extern "C" int AEGeometry_getReferenceMatrix(AEGeometry *self);
-extern "C" int ParticleSystemManager_addSystem(int manager, int matrix, int kind, int flags);
-extern "C" void ParticleSystemManager_enableSystemEmit(int manager, int system, int enable);
 extern "C" PlayerTurret *PlayerTurret_completeDtor(PlayerTurret *self);
 extern "C" void PlayerTurret_operator_delete(void *ptr);
-extern "C" void AEGeometry_setScaling(AEGeometry *self, float x, float y, float z);
-extern "C" void *AEGeometry_getMatrix(AEGeometry *self);
-extern "C" void AEGeometry_rotate(AEGeometry *self, float x, float y, float z);
 extern "C" void *KIPlayer_dtor(void *self);
 extern "C" void Player_getPosition(Vector *out, Player *self);
 void MatrixGetDir(Vector *out, const void *matrix);
@@ -32,14 +36,8 @@ extern "C" void Matrix_assign(void *dst, const void *src);
 extern "C" void Matrix_mul(void *out, const void *a, const void *b);
 void MatrixInverseTransformVector(Vector *out, const void *matrix, const Vector *v);
 extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas, uint32_t transform);
-extern "C" void Transform_Update(uint32_t transform, int amount, int amountHigh, int flags);
-extern "C" int Level_getPlayer(Level *self);
-extern "C" int Status_getStanding();
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const void *matrix);
-extern "C" void AEGeometry_translate(AEGeometry *self, const Vector *position);
-extern "C" void AEGeometry_getPosition(Vector *out, AEGeometry *self);
 void MatrixRotateVector(Vector *out, const void *matrix, const Vector *vector);
-extern "C" void *FModSound_play(int sound, int id, Vector *pos, float volume);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 extern "C" int AERandom_nextInt(int rng, int max);
 extern "C" void Array_int_ctor(IntArray *array);
@@ -52,7 +50,6 @@ extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void AEGeometry_ctorMesh(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" void AEGeometry_ctor(AEGeometry *self, void *canvas);
 extern "C" void AEGeometry_setRotationOrder(AEGeometry *self, int order);
-extern "C" void AEGeometry_addChild(AEGeometry *self, uint32_t child);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
 
 // ---- setTurretRange_157418.cpp ----
@@ -67,11 +64,11 @@ void PlayerTurret::setTurretRange(int range)
 void PlayerTurret::handleSentryGun(int delta)
 {
     I(this, 0x130) = I(this, 0x130) + delta;
-    PlayerTurret_pickEnemy(this);
+    ((PlayerTurret *)(this))->pickEnemy();
     void *enemy = P(this, 0x14c);
     if (enemy != 0 && UC(enemy, 0x5e) == 0) {
         AEGeometry *geometry = TP<AEGeometry>(this, 0x8);
-        PlayerTurret_handleRotation(this, delta, geometry, geometry);
+        ((PlayerTurret *)(this))->handleRotation(delta, geometry, geometry);
     }
 }
 
@@ -92,7 +89,7 @@ void PlayerTurret::render()
 {
     void *visible = P(this, 0x78);
     if (visible != 0) {
-        AEGeometry_render(visible);
+        ((AEGeometry *)(visible))->render();
     }
     int state = I(this, 0x88);
     if (state == 3) {
@@ -109,10 +106,10 @@ void PlayerTurret::render()
 void PlayerTurret::handleTurret(int delta)
 {
     I(this, 0x130) = I(this, 0x130) + delta;
-    PlayerTurret_pickEnemy(this);
+    ((PlayerTurret *)(this))->pickEnemy();
     void *enemy = P(this, 0x14c);
     if (enemy != 0 && UC(enemy, 0x5e) == 0) {
-        PlayerTurret_handleRotation(this, delta, TP<AEGeometry>(this, 0x148), TP<AEGeometry>(this, 0x144));
+        ((PlayerTurret *)(this))->handleRotation(delta, TP<AEGeometry>(this, 0x148), TP<AEGeometry>(this, 0x144));
     }
 }
 
@@ -133,7 +130,7 @@ void PlayerTurret::revive()
     if (geometry == 0) {
         geometry = P(this, 0x8);
     }
-    AEGeometry_setVisible(geometry, true);
+    ((AEGeometry *)(geometry))->setVisible(true);
 }
 
 // ---- setPosition_1573fc.cpp ----
@@ -143,7 +140,7 @@ using AbyssEngine::AEMath::Vector;
 
 void PlayerTurret::setPosition(const Vector &position)
 {
-    AEGeometry_setPosition(TP<AEGeometry>(this, 0x8), &position);
+    ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->setPosition(position);
     I(this, 0x58) = *(const int *)B(&position, 0x0);
     I(this, 0x5c) = *(const int *)B(&position, 0x4);
     I(this, 0x60) = *(const int *)B(&position, 0x8);
@@ -164,9 +161,9 @@ void PlayerTurret::setLevel(Level *level)
     KIPlayer_setLevel(this, level);
     int manager = I(P(this, 0x54), 0x74);
     int matrix = AEGeometry_getReferenceMatrix(TP<AEGeometry>(this, 0x8));
-    int system = ParticleSystemManager_addSystem(manager, matrix, 9, 0);
+    int system = ((ParticleSystemManager *)(manager))->addSystem((const void *)(long)matrix, 9, 0);
     I(this, 0x138) = system;
-    ParticleSystemManager_enableSystemEmit(I(P(this, 0x54), 0x74), system, 0);
+    ((ParticleSystemManager *)(I(P(this, 0x54), 0x74)))->enableSystemEmit(system, 0);
 }
 
 // ---- getHost_15742c.cpp ----
@@ -187,7 +184,7 @@ void _ZN12PlayerTurretD0Ev(PlayerTurret *self)
 
 void PlayerTurret::setScaling(float scale)
 {
-    AEGeometry_setScaling(TP<AEGeometry>(this, 0x148), scale, scale, scale);
+    ((AEGeometry *)(TP<AEGeometry>(this, 0x148)))->setScaling(scale);
 }
 
 // ---- handleRotation_157908.cpp ----
@@ -217,14 +214,14 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     Vector_assign((Vector *)B(this, 0x9c), (Vector *)sumBytes);
 
     if (UC(this, 0x3f) == 0) {
-        void *base = AEGeometry_getMatrix(TP<AEGeometry>(this, 0x8));
-        void *turret = AEGeometry_getMatrix(turretGeometry);
+        void *base = ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getMatrix();
+        void *turret = ((AEGeometry *)(turretGeometry))->getMatrix();
         Matrix_mul(tmpMatrixA, base, turret);
-        void *main = AEGeometry_getMatrix(mainGeometry);
+        void *main = ((AEGeometry *)(mainGeometry))->getMatrix();
         Matrix_mul(tmpMatrixB, tmpMatrixA, main);
         Matrix_assign(matrixBytes, tmpMatrixB);
     } else {
-        Matrix_assign(matrixBytes, AEGeometry_getMatrix(TP<AEGeometry>(this, 0x8)));
+        Matrix_assign(matrixBytes, ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getMatrix());
     }
 
     MatrixInverseTransformVector((Vector *)positionBytes, matrixBytes, (Vector *)B(this, 0x9c));
@@ -235,10 +232,10 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     float yaw = 0.0f;
     if (normal->x > 0.0f) {
         yaw = (float)delta;
-        AEGeometry_rotate(turretGeometry, 0.0f, yaw * 0.001f * 0.25f, 0.0f);
+        ((AEGeometry *)(turretGeometry))->rotate(0.0f, yaw * 0.001f * 0.25f, 0.0f);
     } else if (normal->x < -0.05f) {
         yaw = (float)-delta;
-        AEGeometry_rotate(turretGeometry, 0.0f, yaw * 0.001f * 0.25f, 0.0f);
+        ((AEGeometry *)(turretGeometry))->rotate(0.0f, yaw * 0.001f * 0.25f, 0.0f);
     } else {
         ready = true;
     }
@@ -252,7 +249,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
         float step = (float)I(this, 0x124);
         float next = (float)I(this, 0x134) - step;
         I(this, 0x134) = (int)next;
-        AEGeometry_rotate(mainGeometry, next, 0.0f, step * 0.001f * 0.25f);
+        ((AEGeometry *)(mainGeometry))->rotate(next, 0.0f, step * 0.001f * 0.25f);
         this->f_150 = 0;
         return;
     }
@@ -265,7 +262,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
         float step = (float)I(this, 0x124);
         float next = (float)I(this, 0x134) + step;
         I(this, 0x134) = (int)next;
-        AEGeometry_rotate(mainGeometry, next, 0.0f, step * 0.001f * -0.25f);
+        ((AEGeometry *)(mainGeometry))->rotate(next, 0.0f, step * 0.001f * -0.25f);
         this->f_150 = 0;
         return;
     }
@@ -274,7 +271,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
         ((Player *)(TP<Player>(this, 0x4)))->shoot(0, delta, delta >> 31, 0);
         uint32_t transform = PaintCanvas_TransformGetTransform(*gPlayerTurretCanvas_rotation,
                                                                U(turretGeometry, 0xc));
-        Transform_Update(transform, delta, delta >> 31, 0);
+        ((AbyssEngine::Transform *)(transform))->Update(delta, delta >> 31);
     }
 }
 
@@ -282,8 +279,6 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
 using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
 
-extern "C" void ParticleSystemManager_emitManual(int manager, int settings, Vector *pos,
-                                                 Vector *velocity, float value);
 
 extern int *gPlayerTurretSound __attribute__((visibility("hidden")));
 extern int *gPlayerTurretRandom __attribute__((visibility("hidden")));
@@ -315,12 +310,12 @@ void PlayerTurret::update(int delta)
         MatrixRotateVector((Vector *)vectorBytes, matrixBytes, (Vector *)B(this, 0x158));
         Vector_assign((Vector *)B(this, 0x90), (Vector *)vectorBytes);
         AEGeometry_setMatrix(TP<AEGeometry>(this, 0x8), matrixBytes);
-        AEGeometry_translate(TP<AEGeometry>(this, 0x8), (Vector *)B(this, 0x90));
+        ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->translate(*(Vector *)B(this, 0x90));
     }
 
-    void *matrix = AEGeometry_getMatrix(TP<AEGeometry>(this, 0x8));
+    void *matrix = ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getMatrix();
     Matrix_assign(B(player, 0x4), matrix);
-    AEGeometry_getPosition((Vector *)vectorBytes, TP<AEGeometry>(this, 0x8));
+    ((AEGeometry *)((Vector *)vectorBytes))->getPosition();
     Vector_assign((Vector *)B(this, 0x2c), (Vector *)vectorBytes);
 
     int hp = ((Player *)(player))->getHitpoints();
@@ -328,11 +323,13 @@ void PlayerTurret::update(int delta)
     if (hp < 1 && (uint32_t)(state - 3) >= 2) {
         I(this, 0x12c) = 0;
         I(this, 0x88) = 3;
-        float value = (float)(uint32_t)(__UINTPTR_TYPE__)FModSound_play(**(int **)gPlayerTurretSound, 0x16, 0, 0.0f);
+        // The original reads play()'s sound-handle return into `value` and forwards it as the
+        // (unused) p4 selector to emitManual; the modeled play() is void, so just emit the call.
+        ((FModSound *)(**(int **)gPlayerTurretSound))->play(0x16, 0, 0, 0.0f);
+        float value = 0.0f;
         Vector zero = {0.0f, 0.0f, 0.0f};
-        ParticleSystemManager_emitManual(I(this->f_54, 0x74), I(this->f_54, 0x3c),
-                                         (Vector *)B(this, 0x2c), &zero, value);
-        ParticleSystemManager_enableSystemEmit(I(this->f_54, 0x74), I(this, 0x138), 1);
+        ((ParticleSystemManager *)(I(this->f_54, 0x74)))->emitManual(I(this->f_54, 0x3c), (const float *)B(this, 0x2c), (int)(long)&zero, value);
+        ((ParticleSystemManager *)(I(this->f_54, 0x74)))->enableSystemEmit(I(this, 0x138), 1);
         ((Explosion *)(TP<Explosion>(this, 0x13c)))->start((Vector *)B(this, 0x2c), &zero);
 
         int random = AERandom_nextInt(*gPlayerTurretRandom, 100);
@@ -346,13 +343,13 @@ void PlayerTurret::update(int delta)
             ((KIPlayer *)(this))->createCrate(3);
             UC(this, 0x4c) = 1;
         } else {
-            int levelPlayer = Level_getPlayer((Level *)this->f_54);
+            int levelPlayer = ((Level *)((Level *)this->f_54))->getPlayer();
             if (levelPlayer != 0) {
-                levelPlayer = Level_getPlayer((Level *)this->f_54);
+                levelPlayer = ((Level *)((Level *)this->f_54))->getPlayer();
                 if (I((void *)levelPlayer, 0x14) != 0) {
-                    levelPlayer = Level_getPlayer((Level *)this->f_54);
+                    levelPlayer = ((Level *)((Level *)this->f_54))->getPlayer();
                     if (P(P((void *)levelPlayer, 0x14), 0x1c) == this) {
-                        levelPlayer = Level_getPlayer((Level *)this->f_54);
+                        levelPlayer = ((Level *)((Level *)this->f_54))->getPlayer();
                         P(P((void *)levelPlayer, 0x14), 0x1c) = 0;
                     }
                 }
@@ -368,7 +365,7 @@ void PlayerTurret::update(int delta)
         I(this, 0x12c) = I(this, 0x12c) + delta;
         Explosion_update(TP<Explosion>(this, 0x13c), delta, 0);
         if (I(this, 0x12c) > 4500) {
-            ParticleSystemManager_enableSystemEmit(I(this->f_54, 0x74), I(this, 0x138), 0);
+            ((ParticleSystemManager *)(I(this->f_54, 0x74)))->enableSystemEmit(I(this, 0x138), 0);
             I(this, 0x12c) = 0;
             I(this, 0x88) = 4;
             ((Player *)(player))->setActive(false);
@@ -384,12 +381,12 @@ void PlayerTurret::update(int delta)
         UC(player, 0x5c) = 1;
         UC(player, 0x5d) = 0;
     } else {
-        int s = Status_getStanding();
+        Standing *s = ((Status *)(*g_status))->getStanding();
         UC(player, 0x5c) = ((Standing *)(s))->isEnemy(standing);
         if ((standing & 0xfffffffeU) == 8) {
             UC(player, 0x5d) = 0;
         } else {
-            UC(player, 0x5d) = ((Standing *)(Status_getStanding()))->isFriend(standing);
+            UC(player, 0x5d) = ((Standing *)(((Status *)(*g_status))->getStanding()))->isFriend(standing);
         }
     }
     if (Player_turnedEnemy((Player *)(player)) != 0) {
@@ -539,7 +536,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         v->x = 0.0f;
         v->y = 0.0f;
         v->z = 0.0f;
-        AEGeometry_setPosition(turret, v);
+        ((AEGeometry *)(turret))->setPosition(*v);
     } else if (mesh == 0x1a76) {
         AEGeometry *turret = (AEGeometry *)operator new(0xc0);
         AEGeometry_ctorMesh(turret, 0x1a77, (void *)*canvasHolder, false);
@@ -549,7 +546,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         v->x = 0.0f;
         v->y = 0.0f;
         v->z = 0.0f;
-        AEGeometry_setPosition(turret, v);
+        ((AEGeometry *)(turret))->setPosition(*v);
     } else if (mesh == 0x1a74) {
         AEGeometry *turret = (AEGeometry *)operator new(0xc0);
         AEGeometry_ctorMesh(turret, 0x1a75, (void *)*canvasHolder, false);
@@ -559,7 +556,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         v->x = 0.0f;
         v->y = 0.0f;
         v->z = 0.0f;
-        AEGeometry_setPosition(turret, v);
+        ((AEGeometry *)(turret))->setPosition(*v);
     }
 
     AEGeometry *helper = (AEGeometry *)operator new(0xc0);
@@ -576,11 +573,11 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
     setPosition(this, initial);
 
     if (mesh == 0x381b) {
-        AEGeometry_rotate(TP<AEGeometry>(this, 0x140), 0.0f, 0.0f, 0.0f);
-        AEGeometry_rotate(TP<AEGeometry>(this, 0x144), 0.0f, 0.0f, 0.0f);
-        AEGeometry_addChild(TP<AEGeometry>(this, 0x148), U(this->f_144, 0xc));
+        ((AEGeometry *)(TP<AEGeometry>(this, 0x140)))->rotate(0.0f, 0.0f, 0.0f);
+        ((AEGeometry *)(TP<AEGeometry>(this, 0x144)))->rotate(0.0f, 0.0f, 0.0f);
+        ((AEGeometry *)(TP<AEGeometry>(this, 0x148)))->addChild(U(this->f_144, 0xc));
     } else if ((mesh | 2U) == 0x1a76) {
-        AEGeometry_addChild(TP<AEGeometry>(this, 0x148), U(this->f_144, 0xc));
+        ((AEGeometry *)(TP<AEGeometry>(this, 0x148)))->addChild(U(this->f_144, 0xc));
     } else if ((uint32_t)(mesh - 0x49c0) < 3) {
         UC(this, 0x3f) = 1;
         AEGeometry *child = (AEGeometry *)operator new(0xc0);
@@ -592,14 +589,14 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
             childMesh = 0x49c6;
         }
         AEGeometry_ctorMesh(child, childMesh, (void *)*canvasHolder, false);
-        AEGeometry_addChild(geometry, U(child, 0xc));
+        ((AEGeometry *)(geometry))->addChild(U(child, 0xc));
         PlayerTurret_operator_delete(AEGeometry_dtor(child));
-        AEGeometry_setScaling(geometry, 0.5f, 0.5f, 0.5f);
+        ((AEGeometry *)(geometry))->setScaling(0.5f);
     }
 
-    AEGeometry_addChild(TP<AEGeometry>(this, 0x148), U(this->f_140, 0xc));
+    ((AEGeometry *)(TP<AEGeometry>(this, 0x148)))->addChild(U(this->f_140, 0xc));
     if (UC(this, 0x3f) == 0) {
-        AEGeometry_addChild(geometry, U(this->f_148, 0xc));
+        ((AEGeometry *)(geometry))->addChild(U(this->f_148, 0xc));
     }
 
     Explosion *explosion = (Explosion *)operator new(0x68);

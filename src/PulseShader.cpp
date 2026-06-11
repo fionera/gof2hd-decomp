@@ -1,4 +1,5 @@
 #include "gof2/PulseShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
 #include "gof2/ApplicationManager.h"
@@ -23,7 +24,7 @@ void PulseShader::SetInActive()
 // ---- Init_92424.cpp ----
 void PulseShader::Init(::Engine *)
 {
-    int program = ShaderBaseStruct_ES2LoadProgram(this, "PulseShader.vsh", "PulseShader.fsh");
+    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("PulseShader.vsh", "PulseShader.fsh");
     this->program = program;
 
     this->attrA0 = glGetAttribLocation(program, "a0");

@@ -1,4 +1,7 @@
 #include "gof2/RecordHandler.h"
+#include "gof2/AEFile.h"
+#include "gof2/FModSound.h"
+#include "gof2/Status.h"
 // Station.h is the canonical home of `struct RetStr`; pull it in first so the
 // shared definition wins. SolarSystem.h / Wanted.h / Agent.h each redefine an
 // identical `struct RetStr` unguarded, which would be a redefinition error here.
@@ -40,9 +43,6 @@ extern "C" void *RH_memcpy(void *dst, const void *src, unsigned int n);
 extern "C" void String_int_ctor(void *dst, int v);
 extern "C" void *String_concat(void *dst, void *a, void *b);
 extern "C" int AEFile_FileExist(void *s);
-extern "C" void AEFile_OpenRead(void *s, unsigned int *fd);
-extern "C" int AEFile_GetFileSize(unsigned int fd);
-extern "C" void AEFile_Read(int n, signed char *buf, unsigned int fd);
 extern "C" void AEFile_Close(unsigned int fd);
 extern "C" void AEFile_ReadBool(void *out, unsigned int fd);
 extern "C" void AEFile_ReadInt(void *out, unsigned int fd);
@@ -64,19 +64,10 @@ extern "C" void String_default_ctor(void *s);
 extern "C" void String_cstr_ctor(void *s, const char *cs, bool b);
 extern "C" void *String_copy_ctor(void *dst, void *src, bool b);
 extern "C" void AEFile_FileDelete(void *s);
-extern "C" void AEFile_OpenWrite(void *s, unsigned int *fd);
-extern "C" void AEFile_Write(int n, signed char *buf, unsigned int fd);
 extern "C" void AEFile_Write_i64(long long v, unsigned int fd);
 extern "C" void AEFile_Write_i32(int v, unsigned int fd);
 extern "C" void AEFile_Write_str(void *s, unsigned int fd, int b);
 extern "C" void AEFile_Write_f32(int v, unsigned int fd);
-extern "C" long long Status_getPlayingTime(Status *s);
-extern "C" int Status_getCredits(Status *s);
-extern "C" Station *Status_getStation(Status *s);
-extern "C" SolarSystem *Status_getSystem(Status *s);
-extern "C" int Status_getCurrentCampaignMission(Status *s);
-extern "C" int Status_getLevel(Status *s);
-extern "C" Ship *Status_getShip(Status *s);
 extern "C" int Ship_getIndex(Ship *sh);
 extern "C" void AEFile_WriteInt(int v, unsigned int fd);
 extern "C" void AEFile_WriteBool(int v, unsigned int fd);
@@ -113,15 +104,11 @@ extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
 int RecordHandler_checkHash(unsigned int fd);
 extern "C" void GameText_setLanguage(short obj, int lang);
 void Globals_loadFont(int kind);
-extern "C" void FModSound_setAudioLanguage(void *s, int lang);
-extern "C" int FModSound_enableCategory(void *s, int on);
-extern "C" int FModSound_setVolume(void *s, int v);
 extern "C" void Mission_ctorEmpty(void *self, int type, int reward, int targetStation);
 extern "C" void Mission_setCosts(void *m, int v);
 extern "C" void Mission_setBonus(void *m, int v);
 extern "C" void Mission_setStatusValue(void *m, int v);
 extern "C" void Mission_setAgent(void *m, void *agent);
-extern "C" void AEFile_OpenWrite(void *path, unsigned int *fd);
 extern "C" void AEFile_WriteByte(int v, unsigned int fd);
 extern "C" void AEFile_WriteFloat(int v, unsigned int fd);
 extern "C" void AEFile_WriteShort(int v, unsigned int fd);
@@ -150,18 +137,6 @@ extern "C" int Wanted_getNumWingmen(void *w);
 extern "C" int *Wanted_getImageParts(void *w);
 extern "C" void AEFile_WriteLong(long long v, unsigned int fd);
 extern "C" int Galaxy_getVisited(void *g);
-extern "C" int Status_getRating(void *st);
-extern "C" int Status_getKills(void *st);
-extern "C" int Status_getMissionCount(void *st);
-extern "C" int Status_getLastXP(void *st);
-extern "C" int Status_getGoodsProduced(void *st);
-extern "C" int Status_getStationsVisited(void *st);
-extern "C" void *Status_getFreelanceMission();
-extern "C" void *Status_getCampaignMission();
-extern "C" int Status_getJumpgateUsed(void *st);
-extern "C" int Status_getCapturedCrates(void *st);
-extern "C" int Status_getBoughtEquipment(void *st);
-extern "C" int Status_getPirateKills(void *st);
 extern "C" void RecordHandler_recordStoreWrite_body(RecordHandler *self, unsigned int fd);
 extern "C" void AEFile_ReadLong(void *out, unsigned int fd);
 extern "C" void Array_bool_ctor(void *a);
@@ -360,11 +335,11 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     ((String *)(num))->dtor();
 
     if (AEFile_FileExist(path) != 0) {
-        AEFile_OpenRead(path, &fd);
-        sz = AEFile_GetFileSize(fd);
+        AEFile::OpenRead(*(String *)path, &fd);
+        sz = AEFile::GetFileSize(fd);
         signed char *b = RH_op_new_arr(sz | (sz >> 31));
         *out = b;
-        AEFile_Read(sz, b, fd);
+        AEFile::Read(sz, b, fd);
         AEFile_Close(fd);
     } else {
         sz = -1;
@@ -521,7 +496,7 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
     unsigned int &fd = *(unsigned int *)num;  // reuse the now-dead String temp slot
     void *gr = 0;
     if (AEFile_FileExist(path) != 0) {
-        AEFile_OpenRead(path, &fd);
+        AEFile::OpenRead(*(String *)path, &fd);
         gr = GR_op_new(0x1c8);
         GameRecord_ctor(gr);
         AEFile_Read_i64((char *)gr + 0x10, fd);
@@ -582,8 +557,8 @@ void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
 
     if (AEFile_FileExist(String_copy_ctor(tmp, (char *)self + 0x8, false)) != 0)
         AEFile_FileDelete(tmp);
-    AEFile_OpenWrite(tmp, &fd);
-    AEFile_Write(n, buf, fd);
+    AEFile::OpenWrite(*(String *)tmp, &fd);
+    ((AEFile *)(n))->Write(buf, fd);
     AEFile_Close(fd);
     ((String *)(tmp))->dtor();
 }
@@ -614,11 +589,11 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
 
     if (AEFile_FileExist(path) != 0)
         AEFile_FileDelete(path);
-    AEFile_OpenWrite(path, &fd);
+    AEFile::OpenWrite(*(String *)path, &fd);
 
     Status **sh = g_RH_wp_status;
-    AEFile_Write_i64(Status_getPlayingTime(*sh), fd);
-    AEFile_Write_i32(Status_getCredits(*sh), fd);
+    AEFile_Write_i64(((Status *)(*sh))->getPlayingTime(), fd);
+    AEFile_Write_i32(((Status *)(*sh))->getCredits(), fd);
 
     ((Station *)(num))->getName();
     AEFile_Write_str(num, fd, true);
@@ -628,10 +603,10 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
     AEFile_Write_str(num, fd, true);
     ((String *)(num))->dtor();
 
-    AEFile_Write_i32(Status_getCurrentCampaignMission(*sh), fd);
-    AEFile_Write_i32(Status_getLevel(*sh), fd);
+    AEFile_Write_i32(((Status *)(*sh))->getCurrentCampaignMission(), fd);
+    AEFile_Write_i32(((Status *)(*sh))->getLevel(), fd);
     AEFile_Write_f32(I(*(void **)g_RH_wp_float, 0x2c), fd);
-    AEFile_Write_i32(Ship_getIndex(Status_getShip(*sh)), fd);
+    AEFile_Write_i32(Ship_getIndex(((Status *)(*sh))->getShip()), fd);
     AEFile_Close(fd);
     ((String *)(path))->dtor();
     return 1;
@@ -794,11 +769,11 @@ void RecordHandler::loadOptions() {
     void *path = (char *)self + 8;
     if (AEFile_FileExist(path) != 0) {
         unsigned int fd;
-        AEFile_OpenRead(path, &fd);
+        AEFile::OpenRead(*(String *)path, &fd);
         int valid = RecordHandler_checkHash(fd);
         AEFile_Close(fd);
         if (valid != 0) {
-            AEFile_OpenRead(path, &fd);
+            AEFile::OpenRead(*(String *)path, &fd);
             unsigned char *s = g_LO_settings;
 
             AEFile_ReadByte(s + 0x10, fd);
@@ -882,13 +857,16 @@ void RecordHandler::loadOptions() {
             int *fmodSlot = g_LO_fmodSlot;
             if (*fmodSlot != 0) {
                 void *fm = (void *)(long)*fmodSlot;
-                FModSound_setAudioLanguage(fm, lang);
-                FModSound_enableCategory(fm, 1);
-                FModSound_enableCategory(fm, 1);
-                int v = FModSound_enableCategory(fm, 1);
-                v = FModSound_setVolume(fm, v);
-                v = FModSound_setVolume(fm, v);
-                FModSound_setVolume(fm, v);
+                ((FModSound *)(fm))->setAudioLanguage(lang);
+                // Decompiler collapsed the per-category enable/volume args; reconstructed
+                // from the just-read flag fields (s+0x32/0x33/0x34) and volume floats
+                // (s+0x08/0x20/0x44). enableCategory(int,bool); setVolume(int,float).
+                ((FModSound *)(fm))->enableCategory(0, *(bool *)(s + 0x32));
+                ((FModSound *)(fm))->enableCategory(1, *(bool *)(s + 0x33));
+                ((FModSound *)(fm))->enableCategory(2, *(bool *)(s + 0x34));
+                ((FModSound *)(fm))->setVolume(0, *(float *)(s + 0x08));
+                ((FModSound *)(fm))->setVolume(1, *(float *)(s + 0x20));
+                ((FModSound *)(fm))->setVolume(2, *(float *)(s + 0x44));
             }
 
             AEFile_ReadBool(s + 0x62, fd);
@@ -911,7 +889,7 @@ void RecordHandler::loadResolutionValue() {
     void *path = (char *)self + 8;
     if (AEFile_FileExist(path) != 0) {
         unsigned int fd;
-        AEFile_OpenRead(path, &fd);
+        AEFile::OpenRead(*(String *)path, &fd);
 
         // Scratch settings record (mirrors the on-stack layout the target fills in).
         unsigned char buf[0x4c];
@@ -983,8 +961,8 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
 
     if (AEFile_FileExist(path) != 0)
         AEFile_FileDelete(path);
-    AEFile_OpenWrite(path, &fd);
-    AEFile_Write(n, buf, fd);
+    AEFile::OpenWrite(*(String *)path, &fd);
+    ((AEFile *)(n))->Write(buf, fd);
     AEFile_Close(fd);
     ((String *)(path))->dtor();
     return n;
@@ -1101,7 +1079,7 @@ void RecordHandler::saveOptions() {
         AEFile_FileDelete(path);
     }
     unsigned int fd;
-    AEFile_OpenWrite(path, &fd);
+    AEFile::OpenWrite(*(String *)path, &fd);
 
     unsigned char *s = g_SO_settings;
 
@@ -1357,7 +1335,7 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
 
     if (AEFile_FileExist(path) != 0)
         AEFile_FileDelete(path);
-    AEFile_OpenWrite(path, &fd);
+    AEFile::OpenWrite(*(String *)path, &fd);
 
     AEFile_Write_i64(*(long long *)((char *)rec + 0x10), fd);
     AEFile_Write_i32(I(rec, 0x8), fd);
@@ -1399,7 +1377,7 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_FileDelete(path);
     }
     unsigned int fd;
-    AEFile_OpenWrite(path, &fd);
+    AEFile::OpenWrite(*(String *)path, &fd);
 
     // Visited-systems bitmap (0x87 entries).
     int visited = Galaxy_getVisited(*g_RSW_galaxy);
@@ -1410,22 +1388,22 @@ void RecordHandler::recordStoreWrite(int slot) {
 
     int *status = g_RSW_status;
     Status *st = (Status *)(void *)(long)*status;
-    AEFile_WriteInt(Status_getCredits(st), fd);
-    AEFile_WriteInt(Status_getRating(st), fd);
-    AEFile_WriteLong(Status_getPlayingTime(st), fd);
-    AEFile_WriteInt(Status_getKills(st), fd);
-    AEFile_WriteInt(Status_getMissionCount(st), fd);
-    AEFile_WriteInt(Status_getLevel(st), fd);
-    AEFile_WriteInt(Status_getLastXP(st), fd);
-    AEFile_WriteInt(Status_getGoodsProduced(st), fd);
-    AEFile_WriteInt(Status_getStationsVisited(st), fd);
-    AEFile_WriteInt(Status_getCurrentCampaignMission(st), fd);
-    ((RecordHandler *)(self))->writeMission(Status_getFreelanceMission(), fd);
-    ((RecordHandler *)(self))->writeMission(Status_getCampaignMission(), fd);
-    AEFile_WriteInt(Status_getJumpgateUsed(st), fd);
-    AEFile_WriteInt(Status_getCapturedCrates(st), fd);
-    AEFile_WriteInt(Status_getBoughtEquipment(st), fd);
-    AEFile_WriteInt(Status_getPirateKills(st), fd);
+    AEFile_WriteInt(((Status *)(st))->getCredits(), fd);
+    AEFile_WriteInt(((Status *)(st))->getRating(), fd);
+    AEFile_WriteLong(((Status *)(st))->getPlayingTime(), fd);
+    AEFile_WriteInt(((Status *)(st))->getKills(), fd);
+    AEFile_WriteInt(((Status *)(st))->getMissionCount(), fd);
+    AEFile_WriteInt(((Status *)(st))->getLevel(), fd);
+    AEFile_WriteInt(((Status *)(st))->getLastXP(), fd);
+    AEFile_WriteInt(((Status *)(st))->getGoodsProduced(), fd);
+    AEFile_WriteInt(((Status *)(st))->getStationsVisited(), fd);
+    AEFile_WriteInt(((Status *)(st))->getCurrentCampaignMission(), fd);
+    ((RecordHandler *)(self))->writeMission(st->getFreelanceMission(), fd);
+    ((RecordHandler *)(self))->writeMission((void *)(intptr_t)st->getCampaignMission(), fd);
+    AEFile_WriteInt(((Status *)(st))->getJumpgateUsed(), fd);
+    AEFile_WriteInt(((Status *)(st))->getCapturedCrates(), fd);
+    AEFile_WriteInt(((Status *)(st))->getBoughtEquipment(), fd);
+    AEFile_WriteInt(((Status *)(st))->getPirateKills(), fd);
     AEFile_WriteInt(*(int *)(*status + 0x80), fd);
 
     // Remaining object-graph serialization.
@@ -1447,11 +1425,11 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 
     String_copy_ctor(tmp, (char *)self + 0x8, false);
     if (AEFile_FileExist(tmp) != 0) {
-        AEFile_OpenRead(tmp, &fd);
-        sz = AEFile_GetFileSize(fd);
+        AEFile::OpenRead(*(String *)tmp, &fd);
+        sz = AEFile::GetFileSize(fd);
         signed char *buf = RH_op_new_arr(sz | (sz >> 31));
         *out = buf;
-        AEFile_Read(sz, buf, fd);
+        AEFile::Read(sz, buf, fd);
         AEFile_Close(fd);
     } else {
         sz = -1;
@@ -1480,11 +1458,11 @@ void * RecordHandler::recordStoreRead(int slot) {
 
     if (AEFile_FileExist(path) != 0) {
         unsigned int fd;
-        AEFile_OpenRead(path, &fd);
+        AEFile::OpenRead(*(String *)path, &fd);
         int valid = RecordHandler_checkHash(fd);
         AEFile_Close(fd);
         if (valid != 0) {
-            AEFile_OpenRead(path, &fd);
+            AEFile::OpenRead(*(String *)path, &fd);
             rec = (char *)RH_op_new(0x1c8);
             GameRecord_ctor(rec);
 
@@ -1560,10 +1538,10 @@ int RecordHandler_checkHash(unsigned int fd)
     volatile int saved = *guardP;
     int result = 0;
 
-    int sz = AEFile_GetFileSize(fd);
+    int sz = AEFile::GetFileSize(fd);
     if (-1 < sz) {
         unsigned char *buf = (unsigned char *)RH_op_new_arr((unsigned)sz);
-        AEFile_Read((unsigned)sz, (signed char *)buf, fd);
+        AEFile::Read((unsigned)sz, (signed char *)buf, fd);
         void *arr = RH_op_new(0xc);
         Array_UC_ctor(arr);
         ArrayAdd_UC(buf, (unsigned)sz, arr);

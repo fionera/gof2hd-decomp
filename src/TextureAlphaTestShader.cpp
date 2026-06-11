@@ -15,15 +15,11 @@ extern "C" void String_ctor_cstr(String *self, const char *text, bool copy);
 
 void TextureAlphaTestShader::Init(Engine *)
 {
-    int program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this,
-                                                  "TextureAlphaTestShader.vsh",
-                                                  "TextureAlphaTestShader.fsh");
+    int program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "TextureAlphaTestShader.vsh", "TextureAlphaTestShader.fsh");
     i32(this, 0x04) = program;
     ConnectShaderComponents(program, 0);
 
-    program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this,
-                                              "TextureAlphaTestShader.vsh",
-                                              "TextureAlphaTestShaderAlpha.fsh");
+    program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "TextureAlphaTestShader.vsh", "TextureAlphaTestShaderAlpha.fsh");
     i32(this, 0x20) = program;
     ConnectShaderComponents(program, 1);
 }

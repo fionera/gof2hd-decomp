@@ -1,6 +1,11 @@
 #include "gof2/TractorBeam.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/FModSound.h"
+#include "gof2/Level.h"
+#include "gof2/Transform.h"
 #include "gof2/KIPlayer.h"
 #include "gof2/PlayerEgo.h"
+#include "gof2/Status.h"
 
 // Player.h cannot be included here: it both declares a data member 'turnedEnemy'
 // (field 0xe0) and a method 'turnedEnemy()' inside the same struct, which is
@@ -15,9 +20,18 @@ struct Player {
 // guard), which collides with the full definition pulled in from KIPlayer.h above.
 // Rename Radar.h's copy via the preprocessor so only the 'Radar' struct is taken
 // from it; the cpp always uses the full KIPlayer from KIPlayer.h.
+// Radar.h also defines a minimal global 'struct Status' (only getSystem) and declares
+// 'gStatus' against it; that collides with the full Status from Status.h above. Rename
+// Radar.h's copy via the preprocessor and re-declare gStatus against the real Status.
 #define KIPlayer KIPlayer_RadarUnused
+#define Status Status_RadarUnused
+#define gStatus gStatus_RadarUnused
 #include "gof2/Radar.h"
+#undef gStatus
+#undef Status
 #undef KIPlayer
+
+extern Status *gStatus;
 
 // KIPlayer (the grabbed crate) is the minimal vtable-only struct from Radar.h; its
 // data fields are not modeled in any in-batch header, so read them by typed offset.
@@ -28,7 +42,6 @@ static inline uint8_t &kiByte(void *p, int off) { return *((uint8_t *)p + off); 
 
 
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t meshId, PaintCanvas *canvas, bool visible);
-extern "C" void AEGeometry_render(AEGeometry *geo);
 extern "C" void AEGeometry_dtor(AEGeometry *self);
 extern "C" void operator_delete(void *p);
 
@@ -66,14 +79,14 @@ void TractorBeam::render() {
     TractorBeam *self = this;
     if (self->active == 0)
         return;
-    AEGeometry_render(self->beamGeometry);
+    ((AEGeometry *)(self->beamGeometry))->render();
 }
 
 // ---- update_15122c.cpp ----
 using namespace AbyssEngine::AEMath;
 
 // --- cross-subsystem callees (resolved blx targets) ---------------------------
-extern "C" void *Level_getPlayer(Level *level);                       // 0x72034
+// 0x72034
 // 0x7678c
 // 0x73540
 // 0x73540 family
@@ -86,20 +99,20 @@ extern "C" void *Level_getPlayer(Level *level);                       // 0x72034
 // 0x71ec0
 // 0x71f50
 
-extern "C" void *Status_getShip(void);                               // 0x71a58
+// 0x71a58
 extern "C" int   Ship_getIndex(void *ship);                          // 0x719c8
 
 extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas); // 0x72088
-extern "C" void  Transform_Update(uint32_t tf, int frameTime);          // 0x6f7cc
+// 0x6f7cc
 
-extern "C" void  AEGeometry_getPosition(Vector *out, void *geo);     // 0x720b8
-extern "C" void  AEGeometry_setScaling(void *geo, float x, float y, float z); // 0x727b4
-extern "C" void  AEGeometry_setDirection(void *geo, Vector *dir);    // 0x726ac
-extern "C" void  AEGeometry_setPosition(void *geo, Vector *pos);     // 0x72148
-extern "C" void  AEGeometry_translate(void *geo, Vector *delta);     // 0x72628 family
+// 0x720b8
+// 0x727b4
+// 0x726ac
+// 0x72148
+// 0x72628 family
 
-extern "C" int   FModSound_play(void *snd, void *a, void *b, float c); // 0x71548
-extern "C" int   FModSound_stop(void *snd);                            // 0x724a8
+// 0x71548
+// 0x724a8
 
 // Vector aggregate ops resolved as helpers.
 extern "C" void  Vector_assign(Vector *dst, const Vector *src);      // 0x6eb3c
@@ -126,7 +139,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         return;
 
     if (crate == 0) {
-        void *player = Level_getPlayer(level);
+        void *player = (void *)(intptr_t)((Level *)(level))->getPlayer();
         if (((PlayerEgo *)(player))->isInTurretMode() == 0) {
             if (((KIPlayer *)(radarCrate))->cargoAvailable() == 0) {
                 self->active = 0;
@@ -159,10 +172,10 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     // Animate the visible beam.
     uint32_t canvas = *(uint32_t *)(*(void **)gCanvasRoot);
     uint32_t tf = PaintCanvas_TransformGetTransform(canvas);
-    Transform_Update(tf, frameTime);
+    ((AbyssEngine::Transform *)(tf))->Update(frameTime, false);
 
     Vector pos;
-    AEGeometry_getPosition(&pos, self->beamGeometry);
+    ((AEGeometry *)(&pos))->getPosition();
     Vector_assign((Vector *)self, &pos);
 
     Vector playerPos;
@@ -170,7 +183,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     Vector_subAssign((Vector *)self, &playerPos);
     float dist = VectorLength((Vector *)self);
 
-    void *ship = Status_getShip();
+    void *ship = gStatus->getShip();
     int idx = Ship_getIndex(ship);
     Vector offset = {0.0f, 0.0f, 0.0f};
     if (idx == 0x2c) {
@@ -178,7 +191,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         ((PlayerEgo *)(&dir))->GetDirVector();
         Vector_scale(&offset, &dir, 0.5f);
     } else {
-        ship = Status_getShip();
+        ship = gStatus->getShip();
         idx = Ship_getIndex(ship);
         if (idx == 0x31) {
             Vector dir, up, tmp;
@@ -191,18 +204,18 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
             offset.z = tmp.z + dir.z;
         }
     }
-    AEGeometry_setScaling(self->beamGeometry, offset.x, offset.y, offset.z);
+    ((AEGeometry *)(self->beamGeometry))->setScaling(offset.x);
 
     // Aim the beam at the crate and place its tail at the player position.
     void *geo = self->beamGeometry;
     Vector beamDir = AbyssEngine::AEMath::operator-(*(Vector *)&offset, *(Vector *)self);
     Vector n;
     VectorNormalize(&n, &beamDir);
-    AEGeometry_setDirection(geo, &n);
+    ((AEGeometry *)(geo))->setDirection(n, n);
 
     Vector tail;
     ((PlayerEgo *)(&tail))->getPosition();
-    AEGeometry_setPosition(geo, &tail);
+    ((AEGeometry *)(geo))->setPosition(tail);
 
     if (dist > gCaptureDistance) {
         // Crate still far -- pull it toward the ship along the beam.
@@ -212,7 +225,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         Vector_mulAssign((Vector *)self, (float)(frameTime * 10));
         void *crateGeo = kiPtr(self->grabbedCrate, 0x78);
         Vector pull = AbyssEngine::AEMath::operator-(n, *(Vector *)self);
-        AEGeometry_translate(crateGeo, &pull);
+        ((AEGeometry *)(crateGeo))->translate(pull);
 
         if (((KIPlayer *)(self->grabbedCrate))->isDead() != 0 ||
             ((KIPlayer *)(self->grabbedCrate))->isDying() != 0) {
@@ -223,7 +236,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
             }
         }
         if (self->soundPlaying == 0) {
-            FModSound_play(*(void **)gPullSound, 0, 0, 0.0f);
+            ((FModSound *)(*(void **)gPullSound))->play(0, 0, 0, 0.0f);
             self->soundPlaying = 1;
         }
     } else {
@@ -235,8 +248,8 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         radar->field_0x1c = 0;
         self->soundPlaying = 0;
         void *snd = *(void **)gCaptureSound;
-        FModSound_stop(snd);
-        FModSound_play(snd, (void *)4, 0, 0.0f);
+        ((FModSound *)(snd))->stop((void *)0);
+        ((FModSound *)(snd))->play(4, 0, 0, 0.0f);
     }
 }
 

@@ -29,7 +29,7 @@ void SimpleShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 // AbyssEngine::SimpleShader::Init(AbyssEngine::Engine*)
 void SimpleShader::Init(Engine *)
 {
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "SimpleShader.vsh", "SimpleShader.fsh");
+    uint32_t program = ((ShaderBaseStruct *)((ShaderBaseStruct *)this))->ES2LoadProgram("SimpleShader.vsh", "SimpleShader.fsh");
     field_0x4 = (int)program;
     field_0x20 = glGetAttribLocation(program, "a_position");
     field_0x24 = glGetUniformLocation(field_0x4, "u_WorldMatrix");

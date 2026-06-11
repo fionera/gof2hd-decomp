@@ -60,7 +60,7 @@ extern const char PulseShader_name[];
 
 int glGetAttribLocation(int program, const char *name);
 int glGetUniformLocation(int program, const char *name);
-void glUseProgram(int program);
+void glUseProgram(uint32_t program);
 void glUniform1i(int location, int value);
 void glUniform1f(int location, float value);
 void glUniform3f(int location, float x, float y, float z);

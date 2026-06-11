@@ -1,4 +1,5 @@
 #include "gof2/GreenShader.h"
+#include "gof2/ShaderBaseStruct.h"
 
 extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
     AbyssEngine::String *self, const char *text, bool copy);
@@ -36,7 +37,7 @@ namespace AbyssEngine {
 
 void GreenShader::Init(Engine *)
 {
-    int program = ShaderBaseStruct_ES2LoadProgram(this, "GreenShader.vsh", "GreenShader.fsh");
+    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("GreenShader.vsh", "GreenShader.fsh");
     i32(this, 0x04) = program;
 
     i32(this, 0x20) = glGetAttribLocation(program, "a0");

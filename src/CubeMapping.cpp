@@ -1,4 +1,5 @@
 #include "gof2/CubeMapping.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
 // ---- Init_907d8.cpp ----
@@ -6,7 +7,7 @@ namespace AbyssEngine {
 
 void CubeMapping::Init(Engine *)
 {
-    int program = ShaderBaseStruct_ES2LoadProgram(this, "CubeMapping.vsh", "CubeMapping.fsh");
+    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("CubeMapping.vsh", "CubeMapping.fsh");
     this->program = program;
 
     this->aPosition = glGetAttribLocation(program, "a0");

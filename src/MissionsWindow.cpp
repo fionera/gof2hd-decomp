@@ -1,4 +1,9 @@
 #include "gof2/MissionsWindow.h"
+#include "gof2/ChoiceWindow.h"
+#include "gof2/Item.h"
+#include "gof2/ScrollTouchWindow.h"
+#include "gof2/StarMap.h"
+#include "gof2/Status.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
@@ -198,7 +203,6 @@ void  TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char f
 
 void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool b);
 void *ScrollTouchWindow_dtor(void *self);
-void  ScrollTouchWindow_setText(void *self, void *a, void *b);
 
 void *ChoiceWindow_ctor(void *self);
 void *ChoiceWindow_dtor(void *self);
@@ -211,12 +215,7 @@ void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
 void  String_fromInt(void *s, int value);
 
-int   Status_gameWon();
-int   Status_inAlienOrbit();
 int   Status_wantedBoardAccessible();
-int   Status_getCurrentCampaignMission();
-void *Status_getCampaignMission();
-void *Status_getFreelanceMission();
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
 int   Mission_getType(void *mission);
@@ -229,7 +228,6 @@ int   Mission_getBonus(void *mission);
 void  Globals_getAgentMissionText(void *out, void *agent);
 
 
-void *Status_getShip();
 int   Ship_getIndex(void *ship);
 
 
@@ -327,7 +325,7 @@ extern "C" int MissionsWindow_init(void *self)
     // --- left (campaign) scroll window ---
     int topY = i32(layout, 0xc) + i32(self, 0x34) + i32(layout, 0x20) +
                i32(layout, 0x5c) + i32(layout, 0x2c);
-    int reserve = (Status_gameWon() == 0) ? i32(layout, 0x30) : 0;
+    int reserve = (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) ? i32(layout, 0x30) : 0;
     void *sw0 = operator_new(0x24);
     ScrollTouchWindow_ctor(sw0,
         i32(layout, 0x28) + i32(self, 0x30), topY,
@@ -337,30 +335,30 @@ extern "C" int MissionsWindow_init(void *self)
     pp(self, 0x0) = sw0;
 
     // --- campaign-mission summary text ---
-    bool campShow = (Status_gameWon() == 0) ||
+    bool campShow = (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) ||
                     (*(char *)(*(char **)g_mwi_campaign + 0x37) != 0 ||
                      *(char *)(*(char **)g_mwi_campaign + 0x35) != 0);
     if (campShow) {
         char text[0xc];
         String_fromC(text, "", false);
-        if (Status_getCurrentCampaignMission() < 0xa4) {
+        if (((Status *)(*(void **)g_mwi_status))->getCurrentCampaignMission() < 0xa4) {
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
             ((String *)(text))->assign((String *)t);
         }
-        int type = Mission_getType(Status_getCampaignMission());
-        bool production = (type == 0xa7) || (Mission_getType(Status_getCampaignMission()) == 0xae);
+        int type = Mission_getType((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission());
+        bool production = (type == 0xa7) || (Mission_getType((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()) == 0xae);
         void *key = *(void **)g_mwi_status;
         char hdr[0xc], val[0xc], suffix[0xc], merged[0xc];
         if (production) {
             String_fromText(hdr, text, false);
-            int need = Mission_getProductionGoodAmount(Status_getCampaignMission());
-            int have = Mission_getStatusValue(Status_getCampaignMission());
+            int need = Mission_getProductionGoodAmount((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission());
+            int have = Mission_getStatusValue((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission());
             String_fromInt(val, need - have);
             String_fromC(suffix, "", false);
             Status_replaceHash(merged, key, hdr, val, suffix);
         } else {
             String_fromText(hdr, text, false);
-            ((Mission *)(Status_getCampaignMission()))->getTargetStationName();
+            ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()))->getTargetStationName();
             String_fromC(suffix, "", false);
             Status_replaceHash(merged, key, hdr, val, suffix);
         }
@@ -370,22 +368,22 @@ extern "C" int MissionsWindow_init(void *self)
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
         String_fromText(b, text, false);
-        ScrollTouchWindow_setText(pp(self, 0x0), a, b);
+        ((ScrollTouchWindow *)(pp(self, 0x0)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
         ((String *)(text))->dtor();
     } else {
-        bool useGold = Achievements_gotAllGoldMedals() != 0 && Ship_getIndex(Status_getShip()) != 8;
+        bool useGold = Achievements_gotAllGoldMedals() != 0 && Ship_getIndex(((Status *)(*(void **)g_mwi_status))->getShip()) != 8;
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
         String_fromText(b, t, false);
-        ScrollTouchWindow_setText(pp(self, 0x0), a, b);
+        ((ScrollTouchWindow *)(pp(self, 0x0)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
         (void)useGold;
     }
 
     // --- right (freelance) scroll window ---
-    int fmEmpty = ((Mission *)(Status_getFreelanceMission()))->isEmpty();
+    int fmEmpty = ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->isEmpty();
     void *sw1 = operator_new(0x24);
     int half = i32(self, 0x38) >> 1;
     int pad = i32(layout, 0x2c);
@@ -399,12 +397,12 @@ extern "C" int MissionsWindow_init(void *self)
         pp(self, 0x4) = sw1;
 
         char text[0xc], reward[0xc], suffix[0xc], merged[0xc];
-        Globals_getAgentMissionText(text, Mission_getAgent(Status_getFreelanceMission()));
+        Globals_getAgentMissionText(text, Mission_getAgent(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()));
         void *key = *(void **)g_mwi_status;
         char body[0xc];
         String_fromText(body, text, false);
-        int rew = Mission_getReward(Status_getFreelanceMission());
-        int bonus = Mission_getBonus(Status_getFreelanceMission());
+        int rew = Mission_getReward(((Status *)(*(void **)g_mwi_status))->getFreelanceMission());
+        int bonus = Mission_getBonus(((Status *)(*(void **)g_mwi_status))->getFreelanceMission());
         Layout_formatCredits(reward, rew + bonus);
         String_fromC(suffix, "", false);
         Status_replaceHash(merged, key, body, reward, suffix);
@@ -414,10 +412,10 @@ extern "C" int MissionsWindow_init(void *self)
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
         String_fromText(b, text, false);
-        ScrollTouchWindow_setText(pp(self, 0x4), a, b);
+        ((ScrollTouchWindow *)(pp(self, 0x4)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
 
-        void *parts = ((Agent *)(Mission_getAgent(Status_getFreelanceMission())))->getImageParts();
+        void *parts = ((Agent *)(Mission_getAgent(((Status *)(*(void **)g_mwi_status))->getFreelanceMission())))->getImageParts();
         pp(self, 0x18) = ((ImageFactory *)(*(void **)g_mwi_imageFactory))->loadChar((int *)parts);
         ((String *)(text))->dtor();
     } else {
@@ -429,14 +427,14 @@ extern "C" int MissionsWindow_init(void *self)
         String_fromC(a, "", false);
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
         String_fromText(b, t, false);
-        ScrollTouchWindow_setText(pp(self, 0x4), a, b);
+        ((ScrollTouchWindow *)(pp(self, 0x4)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
     }
 
     // --- action buttons (Accept / Reject / Auto-pilot) ---
-    if (Status_inAlienOrbit() == 0) {
+    if (((Status *)(*(void **)g_mwi_status))->inAlienOrbit() == 0) {
         int btnY = ((i32(self, 0x38) >> 1) >> 1) - i32(layout, 0x28);
-        if (Status_gameWon() == 0) {
+        if (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) {
             void *bAccept = operator_new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
             TouchButton_ctor(bAccept, t, 0, i32(layout, 0x28) + i32(self, 0x30),
@@ -445,7 +443,7 @@ extern "C" int MissionsWindow_init(void *self)
                              '!', 4);
             pp(self, 0x24) = bAccept;
         }
-        if (((Mission *)(Status_getFreelanceMission()))->isEmpty() == 0) {
+        if (((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->isEmpty() == 0) {
             void *bReject = operator_new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
             TouchButton_ctor(bReject, t, 0,
@@ -506,14 +504,14 @@ void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
 
 int   Status_wantedBoardAccessible();
+// Draw uses the Status singleton via free-function helpers (no receiver in scope here);
+// the dropped-self getFreelanceMission keeps that extern "C" form.
 void *Status_getFreelanceMission();
 
 void *Mission_getAgent(void *mission);
 int   Mission_getType(void *mission);
 
 
-void  ScrollTouchWindow_draw(void *win);
-void  ChoiceWindow_draw(void *win);
 
 extern void *g_mwd_canvas;    // *(DAT_16059c): paint canvas
 extern void *g_mwd_layout;    // *(DAT_1605a0): Layout singleton
@@ -575,7 +573,7 @@ extern "C" void MissionsWindow_draw(void *self)
         ((String *)(box))->dtor();
     }
 
-    ScrollTouchWindow_draw(pp(self, 0x0));
+    ((ScrollTouchWindow *)(pp(self, 0x0)))->draw();
     if (pp(self, 0x24) != 0) ((TouchButton *)(pp(self, 0x24)))->draw();
 
     // Freelance-mission title + body box (right column).
@@ -624,13 +622,13 @@ extern "C" void MissionsWindow_draw(void *self)
         PaintCanvas_DrawString(canvas, font, typeTxt, detailX, detailY);
     }
 
-    ScrollTouchWindow_draw(pp(self, 0x4));
+    ((ScrollTouchWindow *)(pp(self, 0x4)))->draw();
     if (pp(self, 0x2c) != 0) ((TouchButton *)(pp(self, 0x2c)))->draw();
     if (pp(self, 0x28) != 0) ((TouchButton *)(pp(self, 0x28)))->draw();
 
     ((Layout *)(layout))->drawFooter();
     if (u8(self, 0x21) != 0 || u8(self, 0x20) != 0)
-        ChoiceWindow_draw(pp(self, 0xc));
+        ((ChoiceWindow *)(pp(self, 0xc)))->draw();
 
     
 }
@@ -681,26 +679,17 @@ extern "C" {
 
 void *operator_new(uint32_t size);
 
-int  ChoiceWindow_OnTouchEnd(void *win, int y);
-void ChoiceWindow_set(void *win, void *text, bool b);
-int  ScrollTouchWindow_OnTouchEnd(void *win, int y);
-int  StarMap_OnTouchEnd(void *map, int y);
 void StarMap_ctor(void *map, bool a, void *mission, bool b, int c);
-void StarMap_init(void *map);
+// StarMap::OnTouchEnd returns void in the (offset-derived) header, but the original
+// returns a hit flag here; declare the real ABI signature so the test compiles.
+int  StarMap_OnTouchEnd(StarMap *map, int x, int y);
 
 
 int  Status_wantedBoardAccessible();
-void *Status_getCampaignMission();
-void *Status_getFreelanceMission();
-void  Status_setFreelanceMission(void *st);
-void *Status_getShip();
-void  Status_setPassengers(void *st, int n);
 
 void *Ship_getCargo(void *ship);
 void  Ship_removeCargo(void *ship, void *item);
 
-int  Item_isUnsaleable(void *item);
-int  Item_getIndex(void *item);
 
 int  Mission_getType(void *mission);
 void *Mission_getAgent(void *mission);
@@ -742,7 +731,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
 
     if (u8(self, 0x20) != 0) {
         // Confirmation dialog open.
-        int r = ChoiceWindow_OnTouchEnd(pp(self, 0xc), z);
+        int r = ((ChoiceWindow *)(pp(self, 0xc)))->OnTouchEnd(y, z);
         if (r == 1) {
             u8(self, 0x20) = 0;
             goto done;
@@ -750,31 +739,32 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
         if (r == 0) {
             // Confirmed: clear out the freelance-mission cargo/passengers and re-init.
             void *fsrc = *(void **)g_mwt_freelanceSrc;
-            int type = Mission_getType(Status_getFreelanceMission());
+            int type = Mission_getType(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission());
             bool clearCargo = (type == 0);
-            if (!clearCargo && Mission_getType(Status_getFreelanceMission()) == 3) clearCargo = true;
-            if (!clearCargo && Mission_getType(Status_getFreelanceMission()) == 5) clearCargo = true;
+            if (!clearCargo && Mission_getType(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()) == 3) clearCargo = true;
+            if (!clearCargo && Mission_getType(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()) == 5) clearCargo = true;
             if (clearCargo) {
-                void *cargo = Ship_getCargo(Status_getShip());
+                void *cargo = Ship_getCargo(((Status *)(*(void **)g_mwt_freelanceSrc))->getShip());
                 if (cargo != 0) {
                     unsigned int *c = (unsigned int *)cargo;
                     for (unsigned int i = 0; i < *c; i++) {
                         void *item = *(void **)(c[1] + i * 4);
-                        if (Item_isUnsaleable(item) != 0 && Item_getIndex(item) == 0x74) {
-                            Ship_removeCargo(Status_getShip(), item);
+                        if (((Item *)(item))->isUnsaleable() != 0 && ((Item *)(item))->getIndex() == 0x74) {
+                            Ship_removeCargo(((Status *)(*(void **)g_mwt_freelanceSrc))->getShip(), item);
                             u8(self, 0x23) = 1;
                             break;
                         }
                     }
                 }
-            } else if (Mission_getType(Status_getFreelanceMission()) == 0xb) {
-                Status_setPassengers(fsrc, 0);
+            } else if (Mission_getType(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()) == 0xb) {
+                ((Status *)(fsrc))->setPassengers(0);
             }
 
-            void *agent = Mission_getAgent(Status_getFreelanceMission());
+            void *agent = Mission_getAgent(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission());
             if (((Agent *)(agent))->isGenericAgent() == 0)
-                ((Agent *)(Mission_getAgent(Status_getFreelanceMission())))->setOfferAccepted(false);
-            Status_setFreelanceMission(fsrc);
+                ((Agent *)(Mission_getAgent(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission())))->setOfferAccepted(false);
+            // NOTE: decompiler dropped the Mission* argument; reset path clears the slot.
+            ((Status *)(fsrc))->setFreelanceMission((Mission *)0);
 
             unsigned char savedFlag = u8(self, 0x23);
             MissionsWindow_init(self);
@@ -793,8 +783,8 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
                     u32(self, 0x40) = i;
             }
         }
-        ScrollTouchWindow_OnTouchEnd(pp(self, 0x0), z);
-        ScrollTouchWindow_OnTouchEnd(pp(self, 0x4), z);
+        ((ScrollTouchWindow *)(pp(self, 0x0)))->OnTouchEnd(y, z);
+        ((ScrollTouchWindow *)(pp(self, 0x4)))->OnTouchEnd(y, z);
 
         if (pp(self, 0x24) != 0 && ((TouchButton *)(pp(self, 0x24)))->OnTouchEnd(z) != 0) {
             // "Show on map" for the campaign mission.
@@ -804,14 +794,13 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             pp(self, 0x8) = map;
             if (map == 0) {
                 void *m = operator_new(0x1e8);
-                StarMap_ctor(m, true, Status_getCampaignMission(), false, -1);
+                StarMap_ctor(m, true, (void *)(intptr_t)((Status *)(*(void **)g_mwt_freelanceSrc))->getCampaignMission(), false, -1);
                 void *mod2 = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
                 *(void **)((char *)mod2 + 0x10) = m;
                 void *mod3 = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
                 pp(self, 0x8) = *(void **)((char *)mod3 + 0x10);
             } else {
-                Status_getCampaignMission();
-                StarMap_init(map);
+                ((StarMap *)(map))->init(true, (Mission *)(void *)(intptr_t)((Status *)(*(void **)g_mwt_freelanceSrc))->getCampaignMission(), false, -1);
             }
             u8(self, 0x22) = 1;
             ((Layout *)(*(void **)g_mwt_resetLayout))->resetWindowDimensions();
@@ -819,7 +808,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             if (pp(self, 0x2c) != 0 && ((TouchButton *)(pp(self, 0x2c)))->OnTouchEnd(z) != 0) {
                 void *cw = pp(self, 0xc);
                 void *t = ((GameText *)g_mw_gameText)->getText(0x1a2);
-                ChoiceWindow_set(cw, t, true);
+                ((ChoiceWindow *)(cw))->set(*(String *)t, true);
                 u8(self, 0x20) = 1;
             }
             if (pp(self, 0x28) != 0 && ((TouchButton *)(pp(self, 0x28)))->OnTouchEnd(z) != 0) {
@@ -830,13 +819,12 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
                 pp(self, 0x8) = map;
                 if (map == 0) {
                     void *m = operator_new(0x1e8);
-                    StarMap_ctor(m, true, Status_getFreelanceMission(), false, -1);
+                    StarMap_ctor(m, true, ((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission(), false, -1);
                     void *mod2 = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
                     *(void **)((char *)mod2 + 0x10) = m;
                     pp(self, 0x8) = m;
                 } else {
-                    Status_getFreelanceMission();
-                    StarMap_init(map);
+                    ((StarMap *)(map))->init(true, ((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission(), false, -1);
                 }
                 u8(self, 0x22) = 1;
                 ((Layout *)(*(void **)g_mwt_resetLayout))->resetWindowDimensions();
@@ -857,7 +845,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
         }
     } else {
         // StarMap overlay is showing.
-        if (StarMap_OnTouchEnd(pp(self, 0x8), z) != 0) {
+        if (StarMap_OnTouchEnd((StarMap *)(pp(self, 0x8)), y, z) != 0) {
             int wantW, wantH, posX;
             if (*g_mwt_flagA == 0) {
                 i32(self, 0x30) = 0;
@@ -894,12 +882,7 @@ extern "C" {
 void MissionsWindow_acceptAction(void *self);   // DAT_1ac514 thunk (mode == 1)
 void MissionsWindow_cancelAction(void *self);   // DAT_1ac284 thunk (flag @0x22)
 
-void ScrollTouchWindow_update(void *win, int dt);
-void ScrollTouchWindow_setText(void *win, void *a, void *b);
 
-void *Status_getCampaignMission();
-int   Status_gameWon();
-int   Status_getCurrentCampaignMission();
 
 int   Mission_getType(void *mission);
 int   Mission_getProductionGoodAmount(void *mission);
@@ -935,35 +918,35 @@ extern "C" void MissionsWindow_update(void *self, int dt)
         return;
     }
 
-    ScrollTouchWindow_update(pp(self, 0x0), dt);
-    ScrollTouchWindow_update(pp(self, 0x4), dt);
+    ((ScrollTouchWindow *)(pp(self, 0x0)))->update(dt);
+    ((ScrollTouchWindow *)(pp(self, 0x4)))->update(dt);
 
     void *status = *(void **)g_mw_status;
-    int type = Mission_getType(Status_getCampaignMission());
+    int type = Mission_getType((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission());
     bool relevant = (type == 0xa7);
     if (!relevant) {
-        if (Mission_getType(Status_getCampaignMission()) == 0xae)
+        if (Mission_getType((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission()) == 0xae)
             relevant = true;
     }
 
     if (relevant) {
         void *camp = *(void **)g_mw_campaign;
-        bool show = (Status_gameWon() == 0) ||
+        bool show = (((Status *)(*(void **)g_mw_status))->gameWon() == 0) ||
                     (*(char *)((char *)camp + 0x37) != 0 || *(char *)((char *)camp + 0x35) != 0);
         if (show) {
             char text[0xc];
             String_fromC(text, "", false);
-            if (Status_getCurrentCampaignMission() < 0xa4) {
+            if (((Status *)(*(void **)g_mw_status))->getCurrentCampaignMission() < 0xa4) {
                 int base = *g_mw_textBase;
-                void *titleTxt = ((GameText *)g_mw_gameText)->getText(g_mw_titleTable[Status_getCurrentCampaignMission()]);
+                void *titleTxt = ((GameText *)g_mw_gameText)->getText(g_mw_titleTable[((Status *)(*(void **)g_mw_status))->getCurrentCampaignMission()]);
                 (void)base;
                 ((String *)(text))->assign((String *)titleTxt);
 
                 void *key = *(void **)g_mw_hashSource;
                 char hdr[0xc], amount[0xc], suffix[0xc], merged[0xc];
                 String_fromText(hdr, text, false);
-                int need = Mission_getProductionGoodAmount(Status_getCampaignMission());
-                int have = Mission_getStatusValue(Status_getCampaignMission());
+                int need = Mission_getProductionGoodAmount((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission());
+                int have = Mission_getStatusValue((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission());
                 String_fromInt(amount, need - have);
                 String_fromC(suffix, "", false);
                 Status_replaceHash(merged, key, hdr, amount, suffix);
@@ -974,7 +957,7 @@ extern "C" void MissionsWindow_update(void *self, int dt)
                 char a[0xc], b[0xc];
                 String_fromC(a, "", false);
                 String_fromText(b, text, false);
-                ScrollTouchWindow_setText(win, a, b);
+                ((ScrollTouchWindow *)(win))->setText(*(String *)a, *(String *)b);
                 ((String *)(b))->dtor();
                 ((String *)(a))->dtor();
             }

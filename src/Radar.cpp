@@ -28,7 +28,6 @@ extern "C" unsigned __aeabi_uidiv(unsigned numerator, unsigned denominator);
 extern "C" void Radar_MatrixTransformVector(void *out, Matrix const *matrix, void const *value);
 extern "C" void Radar_VectorAssign(Vector *dst, void const *src);
 extern "C" int Radar_GetScreenPosition(AbyssEngine::PaintCanvas *canvas, void const *value, void *screen);
-extern "C" void Radar_elipsoidIntersect(void *out, Radar *self, int x, int y, Vector value);
 
 // ---- getTurretScopeWidth_13104e.cpp ----
 int Radar::getTurretScopeWidth()
@@ -379,7 +378,7 @@ void Radar::update(Vector value)
     this->screenY = screenY;
 
     if (visible == 0) {
-        Radar_elipsoidIntersect(transformed, this, screenX, screenY, *current);
+        transformedValue = this->elipsoidIntersect(screenX, screenY, *current);
         Radar_VectorAssign(current, transformed);
         this->screenX = (int)current->x;
         this->screenY = (int)current->y;

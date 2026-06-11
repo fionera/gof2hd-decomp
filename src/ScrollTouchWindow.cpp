@@ -1,23 +1,15 @@
 #include "gof2/ScrollTouchWindow.h"
+#include "gof2/ScrollTouchBox.h"
 #include "gof2/Layout.h"
 #include "gof2/String.h"
 
 
-extern "C" void ScrollTouchBox_OnTouchEnd(void *self, int x, int y);
-extern "C" void ScrollTouchBox_OnTouchMove(void *self, int x, int y);
-extern "C" void ScrollTouchBox_setTextCentered(void *self, bool centered);
 extern "C" void ScrollTouchBox_setYPosition(void *self, int y);
 extern "C" void *ScrollTouchBox_dtor(void *self);
 extern "C" void operator_delete(void *self);
-extern "C" void ScrollTouchBox_update(void *self, int dt);
-extern "C" void ScrollTouchBox_OnTouchBegin(void *self, int x, int y);
 extern "C" int PaintCanvas_GetColor(void *canvas);
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
-extern "C" void ScrollTouchBox_draw(void *self);
-extern "C" float ScrollTouchBox_getRelativeScrollStartPos(void *self);
-extern "C" float ScrollTouchBox_getRelativeScrollHeight(void *self);
 extern "C" void String_ctor_cstr(void *dst, const char *text, bool copy);
-extern "C" void ScrollTouchBox_setText(void *self, AbyssEngine::String *text);
 extern "C" void String_ctor_default(void *self);
 extern "C" void *operator_new(unsigned int size);
 extern "C" void ScrollTouchBox_ctor(void *self, int x, int y, int w, int h);
@@ -30,21 +22,21 @@ static inline int   &LayoutI(void *p, int off) { return *(int *)((char *)p + off
 // ---- OnTouchEnd_17456a.cpp ----
 void ScrollTouchWindow::OnTouchEnd(int x, int y)
 {
-    ScrollTouchBox_OnTouchEnd(this->scrollBox, x, y);
+    ((ScrollTouchBox *)(this->scrollBox))->OnTouchEnd(x, y);
     this->touchActive = 0;
 }
 
 // ---- OnTouchMove_174558.cpp ----
 void ScrollTouchWindow::OnTouchMove(int x, int y)
 {
-    ScrollTouchBox_OnTouchMove(this->scrollBox, x, y);
+    ((ScrollTouchBox *)(this->scrollBox))->OnTouchMove(x, y);
     this->touchActive = 1;
 }
 
 // ---- setTextCentered_174484.cpp ----
 void ScrollTouchWindow::setTextCentered(bool centered)
 {
-    return ScrollTouchBox_setTextCentered(this->scrollBox, centered);
+    return ((ScrollTouchBox *)(this->scrollBox))->setTextCentered(centered);
 }
 
 // ---- setYPosition_174328.cpp ----
@@ -67,13 +59,13 @@ ScrollTouchWindow::~ScrollTouchWindow()
 // ---- update_17454c.cpp ----
 void ScrollTouchWindow::update(int dt)
 {
-    return ScrollTouchBox_update(this->scrollBox, dt);
+    return ((ScrollTouchBox *)(this->scrollBox))->update(dt);
 }
 
 // ---- OnTouchBegin_174552.cpp ----
 void ScrollTouchWindow::OnTouchBegin(int x, int y)
 {
-    return ScrollTouchBox_OnTouchBegin(this->scrollBox, x, y);
+    return ((ScrollTouchBox *)(this->scrollBox))->OnTouchBegin(x, y);
 }
 
 // ---- draw_174330.cpp ----
@@ -116,11 +108,11 @@ void ScrollTouchWindow::draw()
         }
     }
 
-    ScrollTouchBox_draw(this->scrollBox);
+    ((ScrollTouchBox *)(this->scrollBox))->draw();
     int scrollHeight = scrollOffset + contentHeight;
     float scale = (float)scrollHeight;
-    float start = ScrollTouchBox_getRelativeScrollStartPos(this->scrollBox);
-    float height = ScrollTouchBox_getRelativeScrollHeight(this->scrollBox);
+    float start = ((ScrollTouchBox *)(this->scrollBox))->getRelativeScrollStartPos();
+    float height = ((ScrollTouchBox *)(this->scrollBox))->getRelativeScrollHeight();
     int startPx = (int)(start * scale);
     int heightPx = (int)(height * scale);
 
@@ -151,7 +143,7 @@ void ScrollTouchWindow::drawTextBG()
     int y = this->y;
     int w = this->width;
     int pad = LayoutI(layout, 0x2c);
-    float relHeight = ScrollTouchBox_getRelativeScrollHeight(this->scrollBox);
+    float relHeight = ((ScrollTouchBox *)(this->scrollBox))->getRelativeScrollHeight();
     void *layoutNow = *layoutHolder;
     int widthInset;
     int heightInset;
@@ -178,7 +170,7 @@ void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String t
         void *box = this->scrollBox;
         char tmp[sizeof(AbyssEngine::String)];
         ((String *)(tmp))->ctor_copy(&text, false);
-        ScrollTouchBox_setText(box, (AbyssEngine::String *)tmp);
+        ((ScrollTouchBox *)(box))->setText(*(AbyssEngine::String *)tmp);
         ((String *)(tmp))->dtor();
     }
     this->title = title;

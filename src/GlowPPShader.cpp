@@ -98,10 +98,10 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     if (*g_GlowPPShader_internalInitNeededPtr != 0) {
         *g_GlowPPShader_internalInitNeededPtr = 0;
         ((GlowPPShader *)(self))->InternalInit(engine);
-        FBOContainer_BeginCapture(fbo_field(self, 0xa0));
+        ((FBOContainer *)(fbo_field(self, 0xa0)))->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        FBOContainer_EndCapture(fbo_field(self, 0xa0));
+        ((FBOContainer *)(fbo_field(self, 0xa0)))->EndCapture();
     }
 
     field_u32(engine, 0x3b4) = 0;
@@ -152,15 +152,15 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
 
     glUseProgram(field_u32(self, 0x20));
     glActiveTexture(0x84c0);
-    FBOContainer_Activate(source);
-    FBOContainer_BeginCapture(fbo_field(self, 0x3c));
+    ((FBOContainer *)(source))->Activate();
+    ((FBOContainer *)(fbo_field(self, 0x3c)))->BeginCapture();
     draw_fullscreen(self, engine, 0x24, 0x2c, 0x28);
 
     for (int32_t i = 3; i != 0; --i) {
         glUseProgram(field_u32(self, 0x40));
         glActiveTexture(0x84c0);
-        FBOContainer_Activate(fbo_field(self, 0x3c));
-        FBOContainer_BeginCapture(fbo_field(self, 0x58));
+        ((FBOContainer *)(fbo_field(self, 0x3c)))->Activate();
+        ((FBOContainer *)(fbo_field(self, 0x58)))->BeginCapture();
         glEnableVertexAttribArray(field_u32(self, 0x44));
         glEnableVertexAttribArray(field_u32(self, 0x4c));
         glUniformMatrix4fv(field_u32(self, 0x48), 1, 0, (char *)engine + 0x104);
@@ -179,8 +179,8 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
 
         glUseProgram(field_u32(self, 0x5c));
         glActiveTexture(0x84c0);
-        FBOContainer_Activate(fbo_field(self, 0x58));
-        FBOContainer_BeginCapture(fbo_field(self, 0x74));
+        ((FBOContainer *)(fbo_field(self, 0x58)))->Activate();
+        ((FBOContainer *)(fbo_field(self, 0x74)))->BeginCapture();
         glEnableVertexAttribArray(field_u32(self, 0x60));
         glEnableVertexAttribArray(field_u32(self, 0x68));
         glUniformMatrix4fv(field_u32(self, 0x64), 1, 0, (char *)engine + 0x104);
@@ -209,9 +209,9 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
 
     glUseProgram(field_u32(self, 0x78));
     glActiveTexture(0x84c0);
-    FBOContainer_Activate(firstTexture);
+    ((FBOContainer *)(firstTexture))->Activate();
     glActiveTexture(0x84c1);
-    FBOContainer_Activate(secondTexture);
+    ((FBOContainer *)(secondTexture))->Activate();
 
     if (*target == 0) {
         glBindFramebuffer(0x8d40, field_u32(engine, 0x40c));
@@ -226,12 +226,12 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         }
         glViewport(0, 0, width, height);
     } else {
-        FBOContainer_BeginCapture(*target);
+        ((FBOContainer *)(*target))->BeginCapture();
     }
 
     draw_fullscreen(self, engine, 0x7c, 0x84, 0x80);
     if (*target != 0) {
-        FBOContainer_EndCapture(*target);
+        ((FBOContainer *)(*target))->EndCapture();
     }
 
     glEnable(0xbe2);

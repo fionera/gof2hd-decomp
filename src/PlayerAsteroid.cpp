@@ -1,4 +1,6 @@
 #include "gof2/PlayerAsteroid.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Level.h"
 #include "gof2/Explosion.h"
 #include "gof2/KIPlayer.h"
 #include "gof2/Player.h"
@@ -17,30 +19,21 @@ struct TransformFields { char _pad[0xe0]; float field_0xe0; };
 struct PlayerRadiusFields { char _pad[0x40]; int field_0x40; };
 
 
-extern "C" void AEGeometry_translate(AEGeometry *geometry, const Vector *delta);
-extern "C" void AEGeometry_render(AEGeometry *geometry);
 extern "C" void AEGeometry_renderBase(AEGeometry *geometry);
-extern "C" void AEGeometry_setPosition(AEGeometry *geometry, const Vector *position);
-extern "C" Vector AEGeometry_getPosition(AEGeometry *geometry);
 extern "C" void *PlayerAsteroid_complete_dtor(PlayerAsteroid *self);
 extern "C" void Explosion_update(Explosion *explosion, int delta, TargetFollowCamera *camera);
 extern "C" Vector Vector_scale(const Vector *vector, float scale);
-extern "C" void AEGeometry_rotate(AEGeometry *geometry, const Vector *rotation);
 Vector Player_getHitVector(Player *player);
 extern "C" Vector *Vector_assign(Vector *self, const Vector *other);
 extern "C" Vector *Vector_scale_assign(Vector *self, float scale);
-extern "C" void Level_asteroidDied(void *level);
 extern "C" int AERandom_nextInt(void *random, int max);
 extern "C" void ArrayInt_ctor(ArrayInt *array);
 extern "C" void ArrayAdd_int(int value, ArrayInt *array);
-extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *geometry);
 extern "C" void Explosion_setMatrix(Explosion *explosion, Matrix *matrix);
 extern "C" Vector *Vector_sub_assign(Vector *self, const Vector *other);
 Vector VectorNormalize(const Vector *vector);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transformId);
 extern "C" void Explosion_ctor(Explosion *self, int type);
-extern "C" void AEGeometry_setScaling(AEGeometry *geometry, float x, float y, float z);
-extern "C" void AEGeometry_setRotation(AEGeometry *geometry, float x, float y, float z);
 float VectorLength(const Vector *vector);
 void MatrixSetRotation(Matrix *out, const Matrix *base, float x, float y, float z);
 extern "C" Matrix Matrix_mul(const Matrix *a, const Matrix *b);
@@ -58,7 +51,7 @@ void PlayerAsteroid::setAsteroidIndex(int asteroidIndex)
 // ---- translate_e29dc.cpp ----
 void PlayerAsteroid::translate(const Vector &delta)
 {
-    return AEGeometry_translate(this->geometry, &delta);
+    return ((AEGeometry *)(this->geometry))->translate(delta);
 }
 
 // ---- render_e3038.cpp ----
@@ -66,7 +59,7 @@ void PlayerAsteroid::render()
 {
     if (this->visible != 0) {
         if (this->secondaryGeometry != 0) {
-            AEGeometry_render(this->secondaryGeometry);
+            ((AEGeometry *)(this->secondaryGeometry))->render();
         }
         int state = this->state;
         if (state != 0) {
@@ -82,7 +75,7 @@ void PlayerAsteroid::render()
 // ---- setPosition_e29d6.cpp ----
 void PlayerAsteroid::setPosition(const Vector &position)
 {
-    return AEGeometry_setPosition(this->geometry, &position);
+    return ((AEGeometry *)(this->geometry))->setPosition(position);
 }
 
 // ---- outerCollide_e3078.cpp ----
@@ -96,7 +89,7 @@ void PlayerAsteroid::outerCollide(Vector value)
 // ---- getPosition_e29ca.cpp ----
 Vector PlayerAsteroid::getPosition()
 {
-    return AEGeometry_getPosition(this->geometry);
+    return ((AEGeometry *)(this->geometry))->getPosition();
 }
 
 // ---- setRotationEnabled_e2a90.cpp ----
@@ -189,7 +182,7 @@ void PlayerAsteroid::update(int delta)
     int state = this->state;
     if (hitpoints <= 0 && state == 0) {
         this->state = 3;
-        Level_asteroidDied(PlayerAsteroid_level);
+        ((Level *)(PlayerAsteroid_level))->asteroidDied();
 
         if (this->dropsLoot != 0) {
             int quality = this->quality;
@@ -229,7 +222,8 @@ void PlayerAsteroid::update(int delta)
             this->loot = 0;
         }
 
-        Explosion_setMatrix(this->explosion, AEGeometry_getMatrix(this->geometry));
+        Matrix geometryMatrix = ((AEGeometry *)(this->geometry))->getMatrix();
+        Explosion_setMatrix(this->explosion, &geometryMatrix);
         return;
     }
 
@@ -253,7 +247,7 @@ void PlayerAsteroid::update(int delta)
 
     if (this->rotationEnabled != 0) {
         Vector rotation = Vector_scale((Vector *)((char *)this + 0x140), (float)delta * 0.001f);
-        AEGeometry_rotate(this->geometry, &rotation);
+        ((AEGeometry *)(this->geometry))->rotate(rotation);
     }
 
     float bombForce = ((Player *)(player))->getBombForce();
@@ -275,7 +269,7 @@ void PlayerAsteroid::update(int delta)
         (*(PushFn *)((char *)*(void **)this + 0x20))(this, hitSlot);
         ((Explosion *)(this->explosion))->translate(hitSlot);
         if (this->secondaryGeometry != 0) {
-            AEGeometry_translate(this->secondaryGeometry, hitSlot);
+            ((AEGeometry *)(this->secondaryGeometry))->translate(*hitSlot);
         }
         float nextForce = bombForce * 0.75f;
         if (nextForce < 0.01f) {
@@ -295,7 +289,7 @@ __attribute__((visibility("hidden"))) extern VectorAssignFn PlayerAsteroid_vecto
 Vector PlayerAsteroid::getProjectionVector(const Vector &value)
 {
     Vector result = value;
-    Vector position = AEGeometry_getPosition(this->geometry);
+    Vector position = ((AEGeometry *)(this->geometry))->getPosition();
     Vector *scratch = PlayerAsteroid_projectionScratch;
     VectorAssignFn assign = PlayerAsteroid_vectorAssign;
     assign(scratch, &position);
@@ -347,7 +341,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     Explosion_ctor(explosion, explosionType + 2);
     this->explosion = explosion;
     ((Explosion *)(explosion))->setScaling(scaling);
-    AEGeometry_setScaling(this->geometry, scaling, scaling, scaling);
+    ((AEGeometry *)(this->geometry))->setScaling(scaling);
     this->setPosition(position);
 
     void *random = PlayerAsteroid_random;
@@ -359,10 +353,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     Vector_assign(PlayerAsteroid_rotationVector, &spin);
 
     AEGeometry *ownedGeometry = this->geometry;
-    AEGeometry_setRotation(ownedGeometry,
-                           (float)AERandom_nextInt(random, 100) * 0.01f * 6.2831855f,
-                           (float)AERandom_nextInt(random, 100) * 0.01f * 6.2831855f,
-                           (float)AERandom_nextInt(random, 100) * 0.01f * 6.2831855f);
+    ((AEGeometry *)(ownedGeometry))->setRotation((float)AERandom_nextInt(random, 100) * 0.01f * 6.2831855f, (float)AERandom_nextInt(random, 100) * 0.01f * 6.2831855f, (float)AERandom_nextInt(random, 100) * 0.01f * 6.2831855f);
 
     this->secondaryGeometry = 0;
     this->rotationEnabled = 1;
@@ -457,7 +448,8 @@ void PlayerAsteroid::push(int delta)
         int frameDelta = this->lastDelta;
         AEGeometry *geometry = this->geometry;
         if (frameDelta > 0) {
-            Matrix combined = Matrix_mul(&rotation, AEGeometry_getMatrix(geometry));
+            Matrix geometryMatrix = ((AEGeometry *)(geometry))->getMatrix();
+            Matrix combined = Matrix_mul(&rotation, &geometryMatrix);
             AEGeometry_setMatrix(geometry, &combined);
             frameDelta = this->lastDelta;
         }
@@ -465,7 +457,7 @@ void PlayerAsteroid::push(int delta)
         Vector baseMove = Vector_scale((Vector *)((char *)this + 0x10c), (float)frameDelta);
         float scale = (2.0f - t) * 3.0f * ((float)this->pushDuration / 1000.0f);
         Vector move = Vector_scale(&baseMove, scale);
-        AEGeometry_translate(geometry, &move);
+        ((AEGeometry *)(geometry))->translate(move);
     }
 }
 

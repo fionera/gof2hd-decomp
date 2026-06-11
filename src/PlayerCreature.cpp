@@ -1,9 +1,12 @@
 #include "gof2/PlayerCreature.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/FModSound.h"
+#include "gof2/Level.h"
+#include "gof2/ParticleSystemManager.h"
 #include "gof2/KIPlayer.h"
 #include "gof2/Player.h"
 
 
-extern "C" void AEGeometry_render(AEGeometry *self);
 extern "C" void PlayerCreature_render_tail(PlayerCreature *self);
 extern "C" PlayerCreature *KIPlayer_dtor(KIPlayer *self);
 extern "C" void PlayerCreature_dtor_tail(PlayerCreature *self);
@@ -13,17 +16,15 @@ extern "C" char PlayerCreature_vtable;
 extern "C" void Matrix_ctor(Matrix *self);
 extern "C" int PlayerCreature_enduranceTable[] __attribute__((visibility("hidden")));
 extern "C" void PlayerCreature_hook_tail(PlayerCreature *self, int value);
-extern "C" Matrix *AEGeometry_getMatrix(AEGeometry *self);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, Matrix *matrix);
-extern "C" void AEGeometry_moveForward(AEGeometry *self, float distance);
 extern "C" void Matrix_multiply(Matrix *out, Matrix *lhs, Matrix *rhs);
+void *ParticleSystemManager_emitManual_v(
+    void *self, int handle, const float *pos, void *ret, const float *vel, float p5);
 extern "C" void Matrix_setRotation(Matrix *out, Matrix *matrix, float x, float y, float z);
 extern "C" void Matrix_assign(Matrix *dst, const void *src);
 extern "C" int AERandom_nextInt(int max, int keep);
 extern "C" int *PlayerCreature_randomMax __attribute__((visibility("hidden")));
 extern "C" FModSound **PlayerCreature_sound __attribute__((visibility("hidden")));
-extern "C" void FModSound_play(FModSound *self, int id, Vector *a, Vector *b, float volume);
-extern "C" void *Level_getPlayer(void *level);
 
 // ---- isHooked_11cd38.cpp ----
 
@@ -59,7 +60,7 @@ void PlayerCreature::render()
 {
     AEGeometry *geometry = this->renderGeometry;
     if (geometry != 0) {
-        AEGeometry_render(geometry);
+        ((AEGeometry *)(geometry))->render();
     }
     if ((uint32_t)(this->state - 3) >= 2) {
         return PlayerCreature_render_tail(this);
@@ -154,8 +155,6 @@ void PlayerCreature::hook(int value)
 }
 
 // ---- update_11cd68.cpp ----
-extern "C" void ParticleSystemManager_emitManual(int manager, Vector *emitter, Vector *position,
-                                                  int unused, Vector *zero, float value);
 
 
 void PlayerCreature::update(int elapsed)
@@ -184,7 +183,7 @@ void PlayerCreature::update(int elapsed)
 
         if (rageTime < 4000) {
             AEGeometry *geometry = this->geometry;
-            Matrix *matrix = AEGeometry_getMatrix(geometry);
+            Matrix *matrix = &((AEGeometry *)(geometry))->getMatrix();
             Matrix_multiply((Matrix *)workBytes, matrix, (Matrix *)((char *)this + 0x144));
             AEGeometry_setMatrix(geometry, (Matrix *)workBytes);
         } else {
@@ -218,13 +217,13 @@ void PlayerCreature::update(int elapsed)
         int state = this->state;
         if ((uint32_t)(state - 3) >= 2) {
             this->state = 3;
-            FModSound_play(*PlayerCreature_sound, 0x16, 0, 0, 0.0f);
+            ((FModSound *)(*PlayerCreature_sound))->play(0x16, 0, 0, 0.0f);
             ((Player *)(this->player))->setActive(false);
 
             void *level = this->level;
-            void *player = Level_getPlayer(level);
+            void *player = (void *)(intptr_t)((Level *)(level))->getPlayer();
             if (*(PlayerCreature **)((char *)(*(void **)((char *)player + 0x14)) + 0x1c) == this) {
-                player = Level_getPlayer(level);
+                player = (void *)(intptr_t)((Level *)(level))->getPlayer();
                 *(PlayerCreature **)((char *)(*(void **)((char *)player + 0x14)) + 0x1c) = 0;
             }
 
@@ -236,9 +235,7 @@ void PlayerCreature::update(int elapsed)
             position->y = this->posY;
             position->z = this->posZ;
             void *levelObject = this->level;
-            ParticleSystemManager_emitManual(*(int *)((char *)levelObject + 0x74),
-                                             *(Vector **)((char *)levelObject + 0x34),
-                                             position, 0, &zero, -1.0f);
+            ParticleSystemManager_emitManual_v((void *)(intptr_t)(*(int *)((char *)levelObject + 0x74)), (int)(intptr_t)(*(Vector **)((char *)levelObject + 0x34)), (const float *)position, 0, (const float *)&zero, 0.0f);
         }
     }
 
@@ -246,10 +243,10 @@ void PlayerCreature::update(int elapsed)
     if (state == 3) {
         this->state = 4;
     } else if (state == 0 && this->caught == 0) {
-        AEGeometry_moveForward(this->geometry, (float)elapsed);
+        ((AEGeometry *)(this->geometry))->moveForward((float)elapsed);
     }
 
-    Matrix *matrix = AEGeometry_getMatrix(this->geometry);
+    Matrix *matrix = &((AEGeometry *)(this->geometry))->getMatrix();
     Matrix_assign((Matrix *)((char *)this->player + 4), matrix);
 }
 

@@ -1,4 +1,9 @@
 #include "gof2/Level.h"
+// NOTE: gof2/ParticleSystemManager.h and gof2/Status.h are intentionally NOT included.
+// Level reaches those classes only through a handful of accessor methods and opaque
+// pointers, and uses local minimal interface structs (below) whose signatures match the
+// recovered code (e.g. Status::getSystem() -> SolarSystem*, PSM static-style helpers).
+// The full headers model different (32-bit-layout) signatures and would conflict.
 #include "gof2/Achievements.h"
 #include "gof2/Hud.h"
 #include "gof2/Player.h"
@@ -31,6 +36,7 @@ struct Status {
     int getWanted();
     void setMission(int m);
     void setCampaignMission(int m);
+    void incKills();
 };
 
 struct SolarSystem {
@@ -71,6 +77,7 @@ struct RadioMessage {
 struct ParticleSystemManager {
     static void enableSystemEmit(int mgr, int id);
     static void enableSystemRender(int mgr, int id, bool enable);
+    void render3d();
 };
 
 // Engine Array<T> raw view: the recovered code casts opaque int handles to
@@ -90,7 +97,6 @@ extern "C" int Level_checkObjective_call(int objective);
 extern "C" void Level_enableFog_call(int mgr, int sys, bool enable);
 extern "C" void Level_wanted_action(Level *self, int a, int b);
 extern "C" void Level_pirateStationAction_tail(Level *self, int code, int arg);
-extern "C" void ParticleSystemManager_render3d(int mgr);
 extern "C" void Level_render_tail(int sys);
 extern "C" void *dtor_Objective(void *p);
 extern "C" void *dtor_BoundingVolume(void *p);
@@ -590,34 +596,34 @@ void Level::render(int ctx) {
         }
     }
     if (field_80 != 0) {
-        ParticleSystemManager_render3d(field_80);
+        ((ParticleSystemManager *)(field_80))->render3d();
     }
     if (field_74 != 0) {
-        ParticleSystemManager_render3d(field_74);
+        ((ParticleSystemManager *)(field_74))->render3d();
     }
     if (particleEmitBoolPtr != 0) {
-        ParticleSystemManager_render3d(particleEmitBoolPtr);
+        ((ParticleSystemManager *)(particleEmitBoolPtr))->render3d();
     }
     if (particleSystemMgr != 0) {
-        ParticleSystemManager_render3d(particleSystemMgr);
+        ((ParticleSystemManager *)(particleSystemMgr))->render3d();
     }
     if (skybox2Mesh != 0) {
-        ParticleSystemManager_render3d(skybox2Mesh);
+        ((ParticleSystemManager *)(skybox2Mesh))->render3d();
     }
     if (particleRenderBoolPtr != 0) {
-        ParticleSystemManager_render3d(particleRenderBoolPtr);
+        ((ParticleSystemManager *)(particleRenderBoolPtr))->render3d();
     }
     if (field_8c != 0) {
-        ParticleSystemManager_render3d(field_8c);
+        ((ParticleSystemManager *)(field_8c))->render3d();
     }
     if (field_98 != 0) {
-        ParticleSystemManager_render3d(field_98);
+        ((ParticleSystemManager *)(field_98))->render3d();
     }
     if (field_94 != 0) {
-        ParticleSystemManager_render3d(field_94);
+        ((ParticleSystemManager *)(field_94))->render3d();
     }
     if (field_9c != 0) {
-        ParticleSystemManager_render3d(field_9c);
+        ((ParticleSystemManager *)(field_9c))->render3d();
     }
     return Level_render_tail(starSystem);
 }
@@ -2750,7 +2756,6 @@ __attribute__((visibility("hidden"))) extern Achievements **g_ed_achB;  // [DAT_
 __attribute__((visibility("hidden"))) extern float          g_ed_100;   // DAT_000d4418 == 100.0f
 
 extern "C" {
-void Status_incKills(Status *s);
 int  aeabi_idivmod_ed(int a, int b);
 }
 
@@ -2772,7 +2777,7 @@ void Level::enemyDied(int r1, bool r2arg) {
     }
 
     Status **statusHolder = g_ed_status;
-    Status_incKills(*statusHolder);
+    ((Status *)(*statusHolder))->incKills();
     *(int *)(self + 0x24) = *(int *)(self + 0x24) + 1;
     if (*(int *)(self + 0xf0) == 0)
         return;

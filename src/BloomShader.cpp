@@ -1,4 +1,5 @@
 #include "gof2/BloomShader.h"
+#include "gof2/FBOContainer.h"
 #include "gof2/Engine.h"
 
 // cross-class field accessors (Engine/Mesh/FBOContainer are not in this batch; opaque here)
@@ -19,19 +20,16 @@ extern "C" void glEnable(unsigned int cap);
 extern "C" void glDepthMask(unsigned char flag);
 extern "C" void glActiveTexture(unsigned int texture);
 extern "C" void glBindFramebuffer(unsigned int target, unsigned int framebuffer);
-extern "C" void glViewport(int x, int y, unsigned int width, unsigned int height);
 extern "C" void glDisableVertexAttribArray(unsigned int index);
 extern "C" void glUniform1f(int location, float value);
 extern "C" void glClearColor(float red, float green, float blue, float alpha);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" void FBOContainer_Activate(void *self);
-extern "C" void FBOContainer_BeginCapture(void *self);
-extern "C" void FBOContainer_EndCapture(void *self);
 extern "C" unsigned char g_BloomShader_internalInitNeeded;
 extern "C" unsigned int g_BloomShader_shaderMode;
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
 extern "C" void ShaderBaseStruct_ctor(void *self);
+extern "C" unsigned int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const char *fragmentSource);
 extern "C" char BloomShader_vtable;
 extern "C" void *BloomShader_typeinfo_source;
 extern "C" void *BloomShader_typeinfo_dest;
@@ -39,9 +37,6 @@ extern "C" void FBOContainer_ctor(void *self, void *engine, String *name);
 extern "C" void *ShaderBaseStruct_dtor(void *self);
 
 // ---- Init_895ec.cpp ----
-extern "C" unsigned int ShaderBaseStruct_ES2LoadProgram(void *self,
-                                                        const char *vertex,
-                                                        const char *fragment);
 
 namespace AbyssEngine {
 
@@ -173,10 +168,10 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
         InternalInit(engine);
-        FBOContainer_BeginCapture(this->field_0x70);
+        ((FBOContainer *)(this->field_0x70))->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        FBOContainer_EndCapture(this->field_0x70);
+        ((FBOContainer *)(this->field_0x70))->EndCapture();
     }
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
@@ -204,8 +199,8 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
 
     glUseProgram(this->field_0x20);
     glActiveTexture(0x84c0);
-    FBOContainer_Activate(source);
-    FBOContainer_BeginCapture(this->field_0x34);
+    ((FBOContainer *)(source))->Activate();
+    ((FBOContainer *)(this->field_0x34))->BeginCapture();
     glEnableVertexAttribArray(this->field_0x24);
     glEnableVertexAttribArray(this->field_0x2c);
     const void *mvp = (char *)engine + 0x104;
@@ -223,8 +218,8 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     for (int i = 6; i != 0; i -= 1) {
         glUseProgram(this->field_0x38);
         glActiveTexture(0x84c0);
-        FBOContainer_Activate(blurSource);
-        FBOContainer_BeginCapture(this->field_0x50);
+        ((FBOContainer *)(blurSource))->Activate();
+        ((FBOContainer *)(this->field_0x50))->BeginCapture();
         glEnableVertexAttribArray(this->field_0x3c);
         glEnableVertexAttribArray(this->field_0x44);
         glUniformMatrix4fv(this->field_0x40, 1, 0, mvp);
@@ -241,8 +236,8 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
 
         glUseProgram(this->field_0x54);
         glActiveTexture(0x84c0);
-        FBOContainer_Activate(this->field_0x50);
-        FBOContainer_BeginCapture(this->field_0x6c);
+        ((FBOContainer *)(this->field_0x50))->Activate();
+        ((FBOContainer *)(this->field_0x6c))->BeginCapture();
         glEnableVertexAttribArray(this->field_0x58);
         glEnableVertexAttribArray(this->field_0x60);
         glUniformMatrix4fv(this->field_0x5c, 1, 0, mvp);
@@ -279,9 +274,9 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
 
     glUseProgram(this->field_0x74);
     glActiveTexture(0x84c0);
-    FBOContainer_Activate(base);
+    ((FBOContainer *)(base))->Activate();
     glActiveTexture(0x84c1);
-    FBOContainer_Activate(bloom);
+    ((FBOContainer *)(bloom))->Activate();
     glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
     unsigned int width;
     unsigned int height;
@@ -343,8 +338,6 @@ __attribute__((minsize)) BloomShader::BloomShader()
 
 // ---- InternalInit_8948c.cpp ----
 
-extern "C" void FBOContainer_Create(void *self, unsigned int width, unsigned int height,
-                                    bool depth, bool stencil);
 
 namespace AbyssEngine {
 
@@ -355,25 +348,25 @@ void BloomShader::InternalInit(::Engine *engine)
     String luma; luma.s = u"BloomShader fboLuma";
     FBOContainer_ctor(fbo, engine, &luma);
     this->field_0x34 = fbo;
-    FBOContainer_Create(this->field_0x34, 0x100, 0x100, true, false);
+    ((FBOContainer *)(this->field_0x34))->Create(0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String blurH; blurH.s = u"BloomShader fboBlurH";
     FBOContainer_ctor(fbo, engine, &blurH);
     this->field_0x50 = fbo;
-    FBOContainer_Create(this->field_0x50, 0x100, 0x100, true, false);
+    ((FBOContainer *)(this->field_0x50))->Create(0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String blurV; blurV.s = u"BloomShader fboBlurV";
     FBOContainer_ctor(fbo, engine, &blurV);
     this->field_0x6c = fbo;
-    FBOContainer_Create(this->field_0x6c, 0x100, 0x100, true, false);
+    ((FBOContainer *)(this->field_0x6c))->Create(0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String black; black.s = u"BloomShader fboBlack";
     FBOContainer_ctor(fbo, engine, &black);
     this->field_0x70 = fbo;
-    FBOContainer_Create(this->field_0x70, 0x100, 0x100, true, false);
+    ((FBOContainer *)(this->field_0x70))->Create(0x100, 0x100, true, false);
 
     return;
 }
@@ -402,10 +395,10 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
         InternalInit(engine);
-        FBOContainer_BeginCapture(this->field_0x70);
+        ((FBOContainer *)(this->field_0x70))->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        FBOContainer_EndCapture(this->field_0x70);
+        ((FBOContainer *)(this->field_0x70))->EndCapture();
     }
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
@@ -433,8 +426,8 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
 
     glUseProgram(this->field_0x20);
     glActiveTexture(0x84c0);
-    FBOContainer_Activate(source);
-    FBOContainer_BeginCapture(this->field_0x34);
+    ((FBOContainer *)(source))->Activate();
+    ((FBOContainer *)(this->field_0x34))->BeginCapture();
     glEnableVertexAttribArray(this->field_0x24);
     glEnableVertexAttribArray(this->field_0x2c);
     const void *mvp = (char *)engine + 0x104;
@@ -452,8 +445,8 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
     for (int i = 6; i != 0; i -= 1) {
         glUseProgram(this->field_0x38);
         glActiveTexture(0x84c0);
-        FBOContainer_Activate(blurSource);
-        FBOContainer_BeginCapture(this->field_0x50);
+        ((FBOContainer *)(blurSource))->Activate();
+        ((FBOContainer *)(this->field_0x50))->BeginCapture();
         glEnableVertexAttribArray(this->field_0x3c);
         glEnableVertexAttribArray(this->field_0x44);
         glUniformMatrix4fv(this->field_0x40, 1, 0, mvp);
@@ -470,8 +463,8 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
 
         glUseProgram(this->field_0x54);
         glActiveTexture(0x84c0);
-        FBOContainer_Activate(this->field_0x50);
-        FBOContainer_BeginCapture(this->field_0x6c);
+        ((FBOContainer *)(this->field_0x50))->Activate();
+        ((FBOContainer *)(this->field_0x6c))->BeginCapture();
         glEnableVertexAttribArray(this->field_0x58);
         glEnableVertexAttribArray(this->field_0x60);
         glUniformMatrix4fv(this->field_0x5c, 1, 0, mvp);
@@ -508,11 +501,11 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
 
     glUseProgram(this->field_0x74);
     glActiveTexture(0x84c0);
-    FBOContainer_Activate(base);
+    ((FBOContainer *)(base))->Activate();
     glActiveTexture(0x84c1);
-    FBOContainer_Activate(bloom);
+    ((FBOContainer *)(bloom))->Activate();
     if (*target != 0) {
-        FBOContainer_BeginCapture(*target);
+        ((FBOContainer *)(*target))->BeginCapture();
     }
 
     glEnableVertexAttribArray(this->field_0x78);
@@ -530,7 +523,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
     if (*target != 0) {
-        FBOContainer_EndCapture(*target);
+        ((FBOContainer *)(*target))->EndCapture();
     }
 
     return;

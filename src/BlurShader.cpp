@@ -1,4 +1,6 @@
+#include "gof2/FBOContainer.h"
 #include "gof2/BlurShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/Engine.h"
 #include "gof2/String.h"
 // gof2/Mesh.h is pulled in by gof2/BlurShader.h. gof2/Engine.h is intentionally NOT included
@@ -27,10 +29,7 @@ extern "C" void glUniform2f(int location, float x, float y);
 extern "C" void glUniform1f(int location, float value);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" void FBOContainer_Activate(FBOContainer *self);
-extern "C" void FBOContainer_BeginCapture(FBOContainer *self);
-extern "C" void FBOContainer_EndCapture(FBOContainer *self);
-extern "C" void *ShaderBaseStruct_dtor(ShaderBaseStruct *self);
+extern "C" void *ShaderBaseStruct_dtor(AbyssEngine::ShaderBaseStruct *self);
 extern "C" void operator_delete(void *self);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
 
@@ -63,31 +62,13 @@ AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
     return self;
 }
 
-// ---- RenderEffect_8a760.cpp ----
-typedef void FBOEffect(FBOContainer *, Engine *, void *, uint32_t, uint32_t, uint32_t, uint32_t,
-                       uint32_t);
-
-void BlurShader_RenderEffect(FBOContainer *fbo, Engine *engine, uint32_t amount,
-                                        uint32_t x, uint32_t y, uint32_t z, uint32_t w)
-{
-    uint32_t zero = 0;
-    void **vtable = *(void ***)fbo;
-    ((FBOEffect *)vtable[0x20 / 4])(fbo, engine, &zero, amount, x, y, z, w);
-    return;
-}
-
 // ---- Init_8a68c.cpp ----
-extern "C" unsigned int ShaderBaseStruct_ES2LoadProgram(ShaderBaseStruct *self,
-                                                        const char *vertex,
-                                                        const char *fragment);
 
 namespace AbyssEngine {
 
 void BlurShader::Init(::Engine *)
 {
-    unsigned int program = ShaderBaseStruct_ES2LoadProgram((::ShaderBaseStruct *)this,
-                                                           "BlurShader.vsh",
-                                                           "BlurShader.fsh");
+    unsigned int program = ((ShaderBaseStruct *)((::ShaderBaseStruct *)this))->ES2LoadProgram("BlurShader.vsh", "BlurShader.fsh");
     this->program = program;
     this->aPosition = glGetAttribLocation(program, "a_position");
     this->aTexCoord =
@@ -142,7 +123,7 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     glDisable(0xbe2);
     glUseProgram(this->program);
     glActiveTexture(0x84c0);
-    FBOContainer_Activate(fbo);
+    ((FBOContainer *)(fbo))->Activate();
 
     if (*target == 0) {
         glBindFramebuffer(0x8d40, engine->field_0x40c);
@@ -157,7 +138,7 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         }
         glViewport(0, 0, width, height);
     } else {
-        FBOContainer_BeginCapture(*target);
+        ((FBOContainer *)(*target))->BeginCapture();
     }
 
     int position = this->aPosition;
@@ -222,7 +203,7 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         glDisableVertexAttribArray(texCoord);
     }
     if (*target != 0) {
-        FBOContainer_EndCapture(*target);
+        ((FBOContainer *)(*target))->EndCapture();
     }
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);

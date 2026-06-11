@@ -1,4 +1,5 @@
 #include "gof2/GenericShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
 // Registry slot the constructor links itself into (engine-global, resolved at link).
@@ -10,7 +11,7 @@ namespace AbyssEngine {
 // ---- Init_8e7dc.cpp ----
 void GenericShader::Init(Engine *)
 {
-    int program = ShaderBaseStruct_ES2LoadProgram(this, "GenericShader.vsh", "GenericShader.fsh");
+    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("GenericShader.vsh", "GenericShader.fsh");
     field_0x4 = program;
 
     field_0x20 = glGetAttribLocation(program, "a0");

@@ -1,4 +1,7 @@
 #include "gof2/Player.h"
+#include "gof2/FModSound.h"
+#include "gof2/Item.h"
+#include "gof2/Level.h"
 #include "gof2/Achievements.h"
 #include "gof2/KIPlayer.h"
 #include "gof2/GameText.h"
@@ -8,6 +11,16 @@
 #include "gof2/Standing.h"
 #include "gof2/Globals.h"
 #include "gof2/Gun.h"
+#include "gof2/Status.h"
+
+// Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls in
+// the decompiler are method calls on this global instance.
+__attribute__((visibility("hidden"))) extern Status **gStatus;
+// Level::getPlayer / Level::getEnemies were emitted by the decompiler with their
+// receiver dropped and no Level singleton in this translation unit; kept as the
+// original engine entry points.
+extern "C" PlayerEgo *Level_getPlayer();
+extern "C" Array<Player *> *Level_getEnemies();
 
 
 extern "C" void Player_damageHull_tail();
@@ -36,14 +49,8 @@ extern "C" void ArraySetLength_GunArrayArray(int len, Array<Array<Gun *> *> *arr
 extern "C" void ArraySetLength_Gun(int len, Array<Gun *> *array);
 void MatrixGetPosition(void *out, float *matrix);
 extern "C" void Vector_assign(Vector *dst, Vector *src);
-extern "C" int Status_getSystem();
 extern "C" int SolarSystem_getRace();
 extern "C" int __aeabi_idiv(int a, int b);
-extern "C" void Level_friendTurnedEnemy(int level);
-extern "C" void Level_attackWanted(void *level, int a);
-extern "C" void Level_alarmAllFriends(void *level, int a, bool b);
-extern "C" void *Status_getStanding();
-extern "C" void *Level_getPlayer();
 extern "C" void Player_damageEmp_tail(Player *self);
 extern "C" int **g_damageEmp_progress;
 extern "C" void **g_damageEmp_achievements;
@@ -60,38 +67,25 @@ extern "C" int gStopSoundIds[];
 extern "C" void *gFModSound;
 extern "C" void *gFModSoundAlt;
 extern "C" void Player_stopShootSound_play_tail(void *sound, int id);
-extern "C" int Item_getSinglePrice(void *item);
 void Globals_addSoundResourceToList(int id);
 extern "C" void Player_calcWeaponSounds_tail(int a, int b);
-extern "C" unsigned char FModSound_pause(void *self);
 extern "C" void *gAppManager;
 extern "C" void **gFModSoundPtr;
 // Two engine overloads share this name; declared as C++ overloads (not extern "C")
 // so overload resolution by arity/argument types selects the right one.
-void *FModSound_updateEvent3DAttributes(void *sound, void *event, void *vec, Vector *pos, Vector *vel, bool b);
 extern "C" void ArrayAdd_PlayerArray(Array<Player *> *src, Array<Player *> *dst);
 extern "C" void Gun_setEnemies(void *gun);
-extern "C" void FModSound_stop(void *self, void *event);
 extern "C" int gShootSoundsByType[];
 extern "C" int gShootSoundsByIndex[];
 extern "C" void *gAppManagerA;
 extern "C" void *gAppManagerB;
 extern "C" void *gAppManagerC;
-extern "C" int FModSound_isPlaying(void *sound, int id);
-void FModSound_updateEvent3DAttributes(void *sound, int id, Vector *pos, Vector *vel, bool b);
 extern "C" void Player_playShootSound_play_tail(float vol, void *sound, int id, Vector *pos, int z);
 extern "C" void Player_playShootSound(Player *self, int type, Vector *channel, float volume);
-extern "C" int Status_hardCoreMode();
-extern "C" void Level_almostKillWanted(int level);
-extern "C" void Level_killWanted(int level);
-extern "C" void *Level_getEnemies();
-extern "C" void *Status_getShip();
 extern "C" int Ship_getSignatureRace(void *self);
 extern "C" void *Ship_getFirstEquipmentOfSort(int self);
 extern "C" void Ship_removeEquipment(void *self, void *item);
 extern "C" void Standing_setPlayerSignatureRace(void *self, int r);
-extern "C" int Status_inBlackMarketSystem();
-extern "C" int Status_getCampaignMission();
 extern "C" int String_Compare(void *a, void *b);
 extern "C" void Mission_getStatusValue();
 extern "C" void Mission_setStatusValue(int v);
@@ -99,7 +93,6 @@ extern "C" void Player_damage2(Player *self, int amount);
 extern "C" int **g_damage_globals;
 extern "C" int **g_damage_text;
 extern "C" void Player_setEnemy_tail(Player *self, Player *enemy);
-extern "C" unsigned char FModSound_resume(void *self, void *event);
 void Player_damage_full(Player *self, int amount, int a, int b);
 extern "C" void Player_stopShootSound(Player *self, int a, int b);
 extern "C" void Player_setMaxArmorHP_tail();
@@ -808,11 +801,11 @@ void Player::damageEmp(int amount, bool flag) {
         char *ki = (char *)self->kiPlayer;
         bool runLab = true;
         if ((unsigned int)(*(int *)(ki + 0x28) - 9) >= 2) {
-            int sys = Status_getSystem();
+            int sys = ((Status *)(*gStatus))->getSystem();
             ki = (char *)self->kiPlayer;
             if (sys != 0 && *(char *)(ki + 0x42) != 0) {
                 if (amount > 0) {
-                    Level_attackWanted(*(void **)(ki + 0x54), *(int *)(ki + 0x48));
+                    ((Level *)(*(void **)(ki + 0x54)))->attackWanted(*(int *)(ki + 0x48));
                 }
                 runLab = false;
             } else if (self->kiPlayer == 0) {
@@ -822,15 +815,15 @@ void Player::damageEmp(int amount, bool flag) {
         // LAB_000b3016
         if (runLab && self->alwaysEnemy == 0 && ((KIPlayer *)self->kiPlayer)->isWingMan() == 0 &&
             (unsigned int)(*(int *)((char *)self->kiPlayer + 0x28) - 9) > 1 &&
-            Status_getSystem() != 0) {
+            ((Status *)(*gStatus))->getSystem() != 0) {
             int race = *(int *)((char *)self->kiPlayer + 0x28);
-            Status_getSystem();
+            ((Status *)(*gStatus))->getSystem();
             if (race == SolarSystem_getRace()) {
                 int prev = self->field_dc;
                 self->field_dc = prev + amount;
                 if (__aeabi_idiv(self->maxEmpPoints, 3) < prev + amount) {
                     self->turnedEnemy = 1;
-                    Level_friendTurnedEnemy(*(int *)((char *)self->kiPlayer + 0x54));
+                    ((Level *)(*(int *)((char *)self->kiPlayer + 0x54)))->friendTurnedEnemy();
                 }
             }
         }
@@ -846,12 +839,11 @@ void Player::damageEmp(int amount, bool flag) {
     if (!flag && self->kiPlayer != 0) {
         if (self->alwaysEnemy == 0 &&
             (unsigned int)(*(int *)((char *)self->kiPlayer + 0x28) - 9) > 1 &&
-            Status_getSystem() != 0) {
+            ((Status *)(*gStatus))->getSystem() != 0) {
             int race = *(int *)((char *)self->kiPlayer + 0x28);
-            Status_getSystem();
+            ((Status *)(*gStatus))->getSystem();
             if (race == SolarSystem_getRace()) {
-                Level_alarmAllFriends(*(void **)((char *)self->kiPlayer + 0x54),
-                                      *(int *)((char *)self->kiPlayer + 0x28), false);
+                ((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->alarmAllFriends(*(int *)((char *)self->kiPlayer + 0x28), false);
             }
         }
         char *ki = (char *)self->kiPlayer;
@@ -865,7 +857,7 @@ void Player::damageEmp(int amount, bool flag) {
             goto lab_30f4;
         }
         {
-            void *st = Status_getStanding();
+            void *st = (void *)(long)((Status *)(*gStatus))->getStanding();
             ((Standing *)(st))->applyDisable(*(int *)((char *)self->kiPlayer + 0x28));
             ki = (char *)self->kiPlayer;
         }
@@ -1085,9 +1077,9 @@ void Player::calcWeaponSounds(int count) {
         do {
             for (; i < (int)n; i++) {
                 int *dataArr = *(int **)((char *)(*(void **)table) + 4);
-                int a = Item_getSinglePrice(*(void **)&dataArr[order[i - 1]]);
+                int a = ((Item *)(*(void **)&dataArr[order[i - 1]]))->getSinglePrice();
                 dataArr = *(int **)((char *)table + 4);
-                int b = Item_getSinglePrice(*(void **)&dataArr[order[i]]);
+                int b = ((Item *)(*(void **)&dataArr[order[i]]))->getSinglePrice();
                 if (a < b) {
                     sorted = false;
                     int t = order[i - 1];
@@ -1143,7 +1135,7 @@ __attribute__((minsize)) extern "C" void Player_PauseEngineSound(Player *self)
 {
     void *event = self->engineEvent;
     if (event != 0) {
-        self->field_f8 = FModSound_pause(gFModSound);
+        self->field_f8 = ((FModSound *)(gFModSound))->pause(event);
     }
 }
 
@@ -1156,11 +1148,7 @@ __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Ve
     if (*((char *)gAppManager + 0xf) != 0) {
         Mat pos;
         MatrixGetPosition(&pos, self->transform);
-        void *ev = FModSound_updateEvent3DAttributes(
-            gFModSoundPtr[0],
-            self->engineEvent,
-            self->field_f4,
-            (Vector *)&pos, 0, true);
+        void *ev = ((FModSound *)(gFModSoundPtr[0]))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)self->field_f4, (Vector *)&pos, false);
         self->engineEvent = ev;
         self->field_108 = 1;
     }
@@ -1204,7 +1192,7 @@ __attribute__((minsize)) extern "C" void Player_StopEngineSound(Player *self)
 {
     void *event = self->engineEvent;
     if (event != 0) {
-        FModSound_stop(gFModSound, event);
+        ((FModSound *)(gFModSound))->stop(event);
         self->field_108 = 0;
         self->engineEvent = 0;
     }
@@ -1228,9 +1216,9 @@ __attribute__((minsize)) extern "C" void Player_playShootSound(Player *self, int
     void *sound = fmodPtr[0];
     Vector *pos = channel;
     if ((unsigned int)(__UINTPTR_TYPE__)channel < 9 && ((1 << ((unsigned int)(__UINTPTR_TYPE__)channel & 0xff)) & 0x10c) != 0) {
-        if (FModSound_isPlaying(sound, soundId) != 0) {
+        if (((FModSound *)(sound))->isPlaying(soundId) != 0) {
             if (*((char *)gAppManagerA + 0xf) != 0) {
-                FModSound_updateEvent3DAttributes(fmodPtr[0], soundId, pos, 0, false);
+                ((FModSound *)(fmodPtr[0]))->updateEvent3DAttributes(soundId, pos, 0, false);
             }
             return;
         }
@@ -1310,13 +1298,13 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
         char *ki = (char *)self->kiPlayer;
         if (self->alwaysEnemy == 0 &&
             (unsigned int)(*(int *)(ki + 0x28) - 9) > 1 &&
-            Status_getSystem() != 0 &&
+            ((Status *)(*gStatus))->getSystem() != 0 &&
             ((self->enemyFlags == 0) || (self->turnedEnemy != 0))) {
             ki = (char *)self->kiPlayer;
             if (*(char *)(ki + 0x42) != 0) {
                 if (amount > 0) {
                     self->damageDoneByPlayer = self->damageDoneByPlayer + amount;
-                    Level_attackWanted(*(void **)(ki + 0x54), *(int *)(ki + 0x48));
+                    ((Level *)(*(void **)(ki + 0x54)))->attackWanted(*(int *)(ki + 0x48));
                 }
                 goto LAB_3488;
             }
@@ -1326,20 +1314,20 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
 
         if (ki != 0 && self->alwaysEnemy == 0 &&
             (unsigned int)(*(int *)(ki + 0x28) - 9) > 1 &&
-            ((KIPlayer *)self->kiPlayer)->isWingMan() == 0 && Status_getSystem() != 0 &&
+            ((KIPlayer *)self->kiPlayer)->isWingMan() == 0 && ((Status *)(*gStatus))->getSystem() != 0 &&
             ((self->enemyFlags == 0) || (self->turnedEnemy != 0))) {
             int race = *(int *)((char *)self->kiPlayer + 0x28);
-            Status_getSystem();
+            ((Status *)(*gStatus))->getSystem();
             bool sameRace = (race == SolarSystem_getRace());
             if (!sameRace) {
                 int race2 = *(int *)((char *)self->kiPlayer + 0x28);
-                void *sys = (void *)(long)Status_getSystem();
+                void *sys = (void *)(long)((Status *)(*gStatus))->getSystem();
                 if (race2 != ((SolarSystem *)(sys))->getAttackRace()) {
                     goto LAB_342a;
                 }
             }
             self->damageDoneByPlayer = self->damageDoneByPlayer + amount;
-            int hc = Status_hardCoreMode();
+            int hc = ((Status *)(*gStatus))->hardCoreMode();
             float thr1 = (hc != 0) ? k_damage_hc : k_damage_full;
             float f1 = thr1 * (float)self->maxHitpoints;
             float dmgF = (float)self->damageDoneByPlayer;
@@ -1347,9 +1335,9 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
             float thr3 = (hc != 0) ? k_damage_hc2 : k_damage_full2;
 
             if (f1 < dmgF) {
-                Level_friendTurnedEnemy(*(int *)((char *)self->kiPlayer + 0x54));
-                void *ship = Status_getShip();
-                void *standing = Status_getStanding();
+                ((Level *)(*(int *)((char *)self->kiPlayer + 0x54)))->friendTurnedEnemy();
+                void *ship = (void *)((Status *)(*gStatus))->getShip();
+                void *standing = (void *)(long)((Status *)(*gStatus))->getStanding();
                 if (Ship_getSignatureRace(ship) >= 0) {
                     bool match = ((unsigned int)Ship_getSignatureRace(ship) ==
                                   *(unsigned int *)((char *)self->kiPlayer + 0x28));
@@ -1358,7 +1346,7 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
                     if (match && dis == 0) {
                         void *item = Ship_getFirstEquipmentOfSort((int)(long)ship);
                         Ship_removeEquipment(ship, item);
-                        void *st2 = Status_getStanding();
+                        void *st2 = (void *)(long)((Status *)(*gStatus))->getStanding();
                         ((Standing *)(st2))->applyDelict(Ship_getSignatureRace(ship), 100);
                         Standing_setPlayerSignatureRace(standing, -1);
                         void *ego = Level_getPlayer();
@@ -1372,14 +1360,14 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
             float f3 = (float)self->maxHitpoints;
             float dmgF3 = (float)self->damageDoneByPlayer;
             if (frac2 * f3 < dmgF3) {
-                void *ship = Status_getShip();
-                void *standing = Status_getStanding();
+                void *ship = (void *)((Status *)(*gStatus))->getShip();
+                void *standing = (void *)(long)((Status *)(*gStatus))->getStanding();
                 if (Ship_getSignatureRace(ship) >= 0 &&
                     *(int *)((char *)self->kiPlayer + 0x28) < 4 &&
                     *(char *)((char *)self->kiPlayer + 0x42) == 0) {
                     void *item = Ship_getFirstEquipmentOfSort((int)(long)ship);
                     Ship_removeEquipment(ship, item);
-                    void *st2 = Status_getStanding();
+                    void *st2 = (void *)(long)((Status *)(*gStatus))->getStanding();
                     ((Standing *)(st2))->applyDelict(Ship_getSignatureRace(ship), 100);
                     Standing_setPlayerSignatureRace(standing, -1);
                     void *ego = Level_getPlayer();
@@ -1393,8 +1381,7 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
             float f4a = (float)self->maxHitpoints;
             float dmgF4 = (float)self->damageDoneByPlayer;
             if (thr3 * f4a < dmgF4) {
-                Level_alarmAllFriends(*(void **)((char *)self->kiPlayer + 0x54),
-                                      *(int *)((char *)self->kiPlayer + 0x28), true);
+                ((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->alarmAllFriends(*(int *)((char *)self->kiPlayer + 0x28), true);
             }
             goto LAB_3488;
         }
@@ -1403,11 +1390,11 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
 LAB_342a:
     {
         Globals *globals = (Globals *)*g_damage_globals;
-        if (Status_inBlackMarketSystem() != 0) {
+        if (((Status *)(*gStatus))->inBlackMarketSystem() != 0) {
             char *ki = (char *)self->kiPlayer;
             if (ki != 0 && *(int *)(ki + 0x28) == 8) {
                 self->turnedEnemy = 1;
-                Level_alarmAllFriends(*(void **)(ki + 0x54), 8, true);
+                ((Level *)(*(void **)(ki + 0x54)))->alarmAllFriends(8, true);
                 int *enemies = (int *)Level_getEnemies();
                 if (enemies != 0) {
                     int count = enemies[0];
@@ -1452,7 +1439,7 @@ LAB_3488:
             *(char *)(ki + 0x42) != 0) {
             hp = self->hitpoints;
             if (__aeabi_idiv(self->maxHitpoints, 3) > hp) {
-                Level_almostKillWanted(*(int *)(ki + 0x54));
+                ((Level *)(*(int *)(ki + 0x54)))->almostKillWanted(*(int *)(ki + 0x48));
             } else {
                 goto LAB_34f8_hp;
             }
@@ -1466,12 +1453,12 @@ LAB_3488:
             } else {
                 char *ki2 = (char *)self->kiPlayer;
                 if (ki2 != 0 && *(char *)(ki2 + 0x3c) == 0 && *(char *)(ki2 + 0x3d) == 0 &&
-                    Status_inBlackMarketSystem() == 0) {
+                    ((Status *)(*gStatus))->inBlackMarketSystem() == 0) {
                     if (*(char *)((char *)self->kiPlayer + 0x42) == 0) {
-                        void *st = Status_getStanding();
+                        void *st = (void *)(long)((Status *)(*gStatus))->getStanding();
                         ((Standing *)(st))->applyKill(*(int *)((char *)self->kiPlayer + 0x28));
                     }
-                    int mission = Status_getCampaignMission();
+                    int mission = ((Status *)(*gStatus))->getCampaignMission();
                     char *ki3 = (char *)self->kiPlayer;
                     // NOTE: original text-table key for this name lookup was dropped by the
                     // decompiler; using missionId (the only contextual id) to keep it compiling.
@@ -1482,7 +1469,7 @@ LAB_3488:
                         Mission_setStatusValue(mission);
                     }
                     if (*(char *)((char *)self->kiPlayer + 0x42) != 0) {
-                        Level_killWanted(*(int *)((char *)self->kiPlayer + 0x54));
+                        ((Level *)(*(int *)((char *)self->kiPlayer + 0x54)))->killWanted();
                     }
                 }
             }
@@ -1540,7 +1527,7 @@ __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, 
 {
     void *event = self->engineEvent;
     if (event != 0 && (self->field_f8 != 0 || force)) {
-        self->field_f8 = FModSound_resume(gFModSound, event) ^ 1;
+        self->field_f8 = ((FModSound *)(gFModSound))->resume(event) ^ 1;
     }
 }
 
@@ -1710,8 +1697,7 @@ Vector * Player::update(int dt, int doSound) {
         Vector_div((Vector *)tmpC, (Vector *)tmpB, (float)dt);
         (void)spd;
         fn(tmpB, local, (int)(long)transform);
-        void *ev = FModSound_updateEvent3DAttributes(*g_update_sound, self->engineEvent,
-                                                   self->field_f4, (Vector *)tmpB, (Vector *)tmpC, false);
+        void *ev = ((FModSound *)(*g_update_sound))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)tmpB, (Vector *)tmpC, false);
         self->engineEvent = ev;
         self->field_108 = 1;
         fn(tmpA, local, (int)(long)transform);

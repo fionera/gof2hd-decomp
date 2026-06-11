@@ -1,4 +1,9 @@
 #include "gof2/PlayerFighter.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Generator.h"
+#include "gof2/Level.h"
+#include "gof2/Status.h"
+#include "gof2/Trail.h"
 #include "gof2/Explosion.h"
 #include "gof2/KIPlayer.h"
 #include "gof2/Player.h"
@@ -23,51 +28,43 @@ extern "C" void *__aeabi_memclr4(void *dst, unsigned n);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void AEMath_Matrix_ctor(void *m);
 extern "C" void AEMath_VectorAssign(void *dst, void *src);
-extern "C" int AERandom_nextInt(int rng);
+// No-bound AERandom::nextInt() variant: the decompiler dropped the bound arg and
+// Generator.h declares the (self,bound) overload, so this distinct shim avoids the
+// conflict. Real first arg is the AERandom* receiver (held here as an int).
+extern "C" int AERandom_nextInt_nobound(int rng);
+static inline int PF_nextInt(int rng) { return AERandom_nextInt_nobound(rng); }
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" void *operator_new(unsigned int sz);
 extern "C" int *RH_op_new_arr(unsigned int n);
 extern "C" void RH_op_delete_arr(void *p);
 extern "C" void Route_ctor(void *self, int *points, unsigned n);
 extern "C" void Route_setLoop(void *route, int loop);
-extern "C" int Status_getCurrentCampaignMission();
-extern "C" int Status_inAlienOrbit();
 extern "C" void Generator_ctor(void *g);
-extern "C" void *Generator_getLootList(void *g, int a, int b);
 extern "C" void *Generator_dtor(void *g);
 extern "C" void Explosion_ctor(void *e, int flag);
-extern "C" void AEGeometry_getPosition(void *out, int geom);
-extern "C" int Status_getStanding();
 extern "C" void PF_update_dead(PlayerFighter *self);
 extern "C" void PF_update_body(PlayerFighter *self, int dt);
 extern "C" void AEGeometry_setPosition3(int geom, float x, float y, float z);
-extern "C" void Trail_reset(void *trail, int a, int b, int c);
 extern "C" int AEGeometry_getMatrix2(int geom);
 extern "C" void AEMath_MatrixAssign(void *dst, void *src);
-extern "C" int AEGeometry_getMatrix(int geom);
 extern "C" void AEMath_MatrixIdentity(void *out, void *m);
 extern "C" void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz);
 extern "C" void ArrayInt_ctor(Array<int> *a);
-extern "C" int Status_getMission(unsigned status);
 extern "C" int Mission_getType(int mission);
 extern "C" void ArrayInt_add(int val, Array<int> *a);
 extern "C" void PlayerFighter_setMissionCrate_tail(int one, Array<int> *a);
 extern "C" void ArrayBV_ctor(Array<BoundingVolume *> *a);
 extern "C" void PlayerFighter_setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *a);
-extern "C" int Level_getPlayerRoute(int level);
 extern "C" int Route_getCurrent(int route);
 extern "C" float AEMath_VectorLength(void *v);
 extern "C" void AEMath_VectorNormalize(void *out, void *v);
 extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" unsigned PaintCanvas_TransformGetTransform(unsigned t);
 extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
-extern "C" void AEGeometry_render(int geom);
 extern "C" int PaintCanvas_TransformGetLocal(unsigned t);
 extern "C" void PaintCanvas_TransformSetLocal(unsigned t, void *m);
-extern "C" void Trail_render(int t);
 extern "C" void PlayerFighter_render_tail(int geom);
 extern "C" void AEGeometry_setMatrix(void *geom);
-extern "C" void AEGeometry_translate(void *geom);
 extern "C" void PF_vscale(void *out, void *vec, float scalar);
 extern "C" void PaintCanvas_MeshCloneMaterial(void *canvas, unsigned mesh, unsigned *out);
 extern "C" int PaintCanvas_MeshGetPointer(void *canvas, unsigned mesh);
@@ -77,8 +74,13 @@ extern "C" void Player_reset(int player);
 extern "C" void AEString_ctor_default(void *s);
 extern "C" void AEString_assign(void *dst, void *src);
 extern "C" void AEString_dtor(void *s);
-extern "C" void AEGeometry_setVisible(int geom, int vis);
 extern "C" void *ArrayInt_dtor(void *p);
+
+// Status singleton holder. The original code loads the Status* receiver from a PC-relative
+// global before each of these calls; the decompiler dropped that first (self) arg. We recover
+// it via the same hidden holder used by setMissionCrate (gMissionCrateApp).
+extern void *const gMissionCrateApp __attribute__((visibility("hidden")));
+static inline Status *PF_status() { return *(Status **)gMissionCrateApp; }
 
 // ---- hasMissionCrateLost_dcb7e.cpp ----
 uint8_t PlayerFighter::hasMissionCrateLost() {
@@ -308,28 +310,28 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     // 9 candidate waypoints (3 floats each) drawn from the RNG.
     float wp[27];
     int r;
-    r = AERandom_nextInt(rng); wp[0] = VectorSignedToFloat(r - 30000, 0);
-    int r1 = AERandom_nextInt(rng);
-    int r2 = AERandom_nextInt(rng);
+    r = PF_nextInt(rng); wp[0] = VectorSignedToFloat(r - 30000, 0);
+    int r1 = PF_nextInt(rng);
+    int r2 = PF_nextInt(rng);
     wp[2] = VectorSignedToFloat(r2 + 20000, 0);
     wp[1] = VectorSignedToFloat(r1 - 10000, 0);
-    r = AERandom_nextInt(rng); wp[3] = VectorSignedToFloat(r + 5000, 0);
-    r1 = AERandom_nextInt(rng);
-    r2 = AERandom_nextInt(rng);
+    r = PF_nextInt(rng); wp[3] = VectorSignedToFloat(r + 5000, 0);
+    r1 = PF_nextInt(rng);
+    r2 = PF_nextInt(rng);
     wp[5] = VectorSignedToFloat(r2 + 20000, 0);
     wp[4] = VectorSignedToFloat(r1 - 10000, 0);
-    r = AERandom_nextInt(rng); wp[6] = VectorSignedToFloat(r + 5000, 0);
-    r1 = AERandom_nextInt(rng);
-    r2 = AERandom_nextInt(rng);
+    r = PF_nextInt(rng); wp[6] = VectorSignedToFloat(r + 5000, 0);
+    r1 = PF_nextInt(rng);
+    r2 = PF_nextInt(rng);
     wp[8] = VectorSignedToFloat(r2 + 55000, 0);
     wp[7] = VectorSignedToFloat(r1 - 10000, 0);
-    r = AERandom_nextInt(rng); wp[9] = VectorSignedToFloat(r - 30000, 0);
-    r1 = AERandom_nextInt(rng);
-    r2 = AERandom_nextInt(rng);
+    r = PF_nextInt(rng); wp[9] = VectorSignedToFloat(r - 30000, 0);
+    r1 = PF_nextInt(rng);
+    r2 = PF_nextInt(rng);
     wp[10] = VectorSignedToFloat(r1 - 10000, 0);
     wp[11] = VectorSignedToFloat(r2 + 55000, 0);
 
-    int count = AERandom_nextInt(rng) * 3 + 6;
+    int count = PF_nextInt(rng) * 3 + 6;
     char used[16];
     for (int i = 0; i < 13; i++) used[i] = 0;
     unsigned long long bytes = (unsigned long long)(unsigned)count * 4;
@@ -338,7 +340,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     for (int i = 0; i < count; i += 3) {
         int idx;
         do {
-            idx = AERandom_nextInt(rng);
+            idx = PF_nextInt(rng);
         } while (used[idx] != 0);
         used[idx] = 1;
         pts[i] = (int)wp[idx * 3];
@@ -401,7 +403,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     Route_setLoop((void *)(long)*shared, 0);
     self->routeClone = 0;
 
-    if (Status_getCurrentCampaignMission() != 0x29) {
+    if (PF_status()->getCurrentCampaignMission() != 0x29) {
         int cloned;
         if (wingmanCmd == 9) {
             cloned = (int)(intptr_t)((Route *)((void *)(long)*shared))->clone();
@@ -417,11 +419,11 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     } else {
         void *g = operator_new(1);
         Generator_ctor(g);
-        self->lootList = Generator_getLootList(g, -1, -1);
+        self->lootList = ((Generator *)(g))->getLootList(-1, -1);
         operator_delete(Generator_dtor(g));
     }
 
-    self->field_0x128 = (Status_inAlienOrbit() != 0) ? 100000 : 50000;
+    self->field_0x128 = (PF_status()->inAlienOrbit() != 0) ? 100000 : 50000;
 
     void *exp = operator_new(0x68);
     Explosion_ctor(exp, 0);
@@ -436,7 +438,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     self->field_0x1a0 = -1;
 
     int fov;
-    if (Status_getCurrentCampaignMission() == 1) {
+    if (PF_status()->getCurrentCampaignMission() == 1) {
         fov = -1;
     } else {
         fov = (self->field_0xdc == 0) ? 0x2e : 0x30;
@@ -503,7 +505,7 @@ void PlayerFighter::update(int dt) {
 
     // Sync world position from the geometry.
     float pos[3];
-    AEGeometry_getPosition(pos, self->geometry);
+    ((AEGeometry *)(pos))->getPosition();
     AEMath_VectorAssign((char *)self + 0x2c, pos);
 
     // Recompute the "is enemy" flag unless the ship is in a non-combat mode.
@@ -514,7 +516,7 @@ void PlayerFighter::update(int dt) {
         } else if (((KIPlayer *)(self))->isWingMan() != 0) {
             enemy = 0;
         } else {
-            enemy = (unsigned char)((Standing *)(Status_getStanding()))->isEnemy(self->wingmanCommand);
+            enemy = (unsigned char)((Standing *)(PF_status()->getStanding()))->isEnemy(self->wingmanCommand);
         }
         *(unsigned char *)(self->player + 0x5c) = enemy;
     }
@@ -538,8 +540,7 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
     AEGeometry_setPosition3(self->geometry, 0, 0, 0);  // forwards x,y,z via regs
     AEMath_VectorAssign((char *)self + 0x158, stackVec);
     if (self->trail != 0) {
-        Trail_reset(self->trail, self->field_0x158,
-                    self->field_0x15c, self->field_0x160);
+        ((Trail *)(self->trail))->reset(*(Vector *)((char *)self + 0x158));
     }
     int m = AEGeometry_getMatrix2(self->geometry);
     AEMath_MatrixAssign((char *)self->player + 4, (void *)m);
@@ -575,7 +576,7 @@ void PlayerFighter::roll(int angle) {
     }
 
     {
-        int m = AEGeometry_getMatrix(self->geometry);
+        int m = (int)(intptr_t)&((AEGeometry *)(self->geometry))->getMatrix();
         float fwdX = *(float *)(m + 0x10);
         float fwdY = *(float *)(m + 0x14);
         float absX = (0.0f < fwdX) ? fwdX : -fwdX;
@@ -646,7 +647,7 @@ void PlayerFighter::cloak(int dur, bool b) {
     if (dur > 0) {
         v = (unsigned)dur;
     } else {
-        v = AERandom_nextInt(**(int **)&gCloakRand) + 5000;
+        v = PF_nextInt(**(int **)&gCloakRand) + 5000;
     }
     self->cloakActive = 1;
     self->cloakDuration = v + 4000;
@@ -665,7 +666,7 @@ void PlayerFighter::setMissionCrate(bool on) {
         Array<int> *a = (Array<int> *)operator_new(0xc);
         ArrayInt_ctor(a);
         self->lootList = a;
-        int mission = Status_getMission(*(unsigned *)gMissionCrateApp);
+        int mission = (int)(intptr_t)((Status *)(*(unsigned *)gMissionCrateApp))->getMission();
         int type = Mission_getType(mission);
         int item = (type == 5) ? 0x74 : 0x75;
         ArrayInt_add(item, (Array<int> *)self->lootList);
@@ -719,8 +720,8 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
             self->field_0x1c0 = 0x1389;
         }
         if (cmd == 2) {
-            if (Level_getPlayerRoute(self->level) != 0) {
-                int r = Level_getPlayerRoute(self->level);
+            if (((Level *)(self->level))->getPlayerRoute() != 0) {
+                int r = ((Level *)(self->level))->getPlayerRoute();
                 self->commandRoute = (int32_t)(intptr_t)((Route *)(r))->getExactClone();
                 self->field_0x1e4 = Route_getCurrent(self->commandRoute);
                 goto done;
@@ -853,7 +854,7 @@ extern void *const gR_g5 __attribute__((visibility("hidden")));   // default-cas
 void PlayerFighter::render() {
     PlayerFighter *self = this;
     if (self->field_0x78 != 0) {
-        AEGeometry_render(0);
+        ((AEGeometry *)(0))->render();
     }
     int active = ((Player *)(self->player))->isActive();
     int st = self->state;
@@ -882,7 +883,7 @@ void PlayerFighter::render() {
             goto done;
         }
         if (self->subGeometry == 0) {
-            AEGeometry_render(0);
+            ((AEGeometry *)(0))->render();
         } else {
             idp = *(unsigned **)gR_g5;
             unsigned char tmp[60];
@@ -890,11 +891,11 @@ void PlayerFighter::render() {
             void *src = (void *)PaintCanvas_TransformGetLocal(id);
             __aeabi_memcpy(tmp, src, 0x3c);
             PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
-            AEGeometry_render(0);
+            ((AEGeometry *)(0))->render();
             PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
         }
         if (self->trail != 0) {
-            Trail_render(0);
+            ((Trail *)(0))->render();
         }
         goto done;
     }
@@ -904,7 +905,7 @@ void PlayerFighter::render() {
         void *src = (void *)PaintCanvas_TransformGetLocal(id);
         __aeabi_memcpy(tmp, src, 0x3c);
         PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
-        AEGeometry_render(0);
+        ((AEGeometry *)(0))->render();
         PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
     }
 done:
@@ -940,7 +941,7 @@ void PlayerFighter::push(int dt) {
         int hi = self->deltaTimeHi;
         if ((int)(unsigned)(lo == 0) <= hi) {
             void *geom = (void *)(intptr_t)self->geometry;
-            void *m = (void *)(long)AEGeometry_getMatrix((int)(long)geom);
+            void *m = (void *)&((AEGeometry *)((int)(long)geom))->getMatrix();
             AEMath_MatrixMul(rot, m);
             AEGeometry_setMatrix(geom);
             lo = self->deltaTime;
@@ -954,7 +955,7 @@ void PlayerFighter::push(int dt) {
         PF_vscale(a, (char *)self + 0x10c, speed);
         PF_vscale(b, a, self->currentSpeed);
         PF_vscale(c, b, (2.0f - frac) * 3.0f * (ftotal2 / gPush_div));
-        AEGeometry_translate(geom);
+        ((AEGeometry *)(geom))->translate(*(Vector *)c);
     }
 
     return;
@@ -1111,7 +1112,7 @@ void PlayerFighter::handleCloaking() {
         }
     }
 
-    if (self->field_0x1e0 != 0 && AERandom_nextInt(**(int **)gHC_rng1) < 0x32) {
+    if (self->field_0x1e0 != 0 && PF_nextInt(**(int **)gHC_rng1) < 0x32) {
         PF_cloakStart(self);
         return;
     }
@@ -1119,7 +1120,7 @@ void PlayerFighter::handleCloaking() {
     self->cloakCooldown = acc;
     if (8000 < acc) {
         self->cloakCooldown = 0;
-        if (AERandom_nextInt(**(int **)gHC_rng2) < 0x1e) {
+        if (PF_nextInt(**(int **)gHC_rng2) < 0x1e) {
             PF_cloakStart(self);
         }
     }
@@ -1158,7 +1159,7 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
     if (geom == 0) {
         geom = self->geometry;
     }
-    AEGeometry_setVisible(geom, 1);
+    ((AEGeometry *)(geom))->setVisible(1);
     if ((unsigned)(self->wingmanCommand - 9) < 2) {
         void *a = self->lootList;
         if (a != 0) {
@@ -1173,7 +1174,7 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
             operator_delete(ArrayInt_dtor(a));
             self->lootList = 0;
         }
-        self->lootList = Generator_getLootList(g, -1, -1);
+        self->lootList = ((Generator *)(g))->getLootList(-1, -1);
         operator_delete(Generator_dtor(g));
     }
 

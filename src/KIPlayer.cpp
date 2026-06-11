@@ -1,4 +1,7 @@
 #include "gof2/KIPlayer.h"
+#include "gof2/Item.h"
+#include "gof2/Level.h"
+#include "gof2/Status.h"
 #include "gof2/Hud.h"
 #include "gof2/Player.h"
 #include "gof2/Route.h"
@@ -9,7 +12,6 @@
 
 extern "C" void FModSound_resumeEvent(void *a, int b);
 extern "C" void FModSound_pauseEvent(void *player);
-extern "C" void AEGeometry_translate(void *geom, const Vector &v);
 void MatrixGetPosition(Vector *out, float *matrix);
 extern "C" void Object_setVisible(void *obj);
 extern "C" void operator_delete(void *p);
@@ -31,16 +33,12 @@ extern "C" void Player_setEnemies(void *player);
 extern "C" void *operator_new(unsigned int sz);
 extern "C" void *gCanvas;
 extern "C" void AEGeometry_ctor2(void *self, void *canvas);
-extern "C" void AEGeometry_addChild(void *self, int child);
 extern "C" void AEGeometry_setPosition4(void *geom, int a, int b, int c);
-extern "C" void AEGeometry_setPosition(void *geom, const Vector &v);
-extern "C" void *AEGeometry_getMatrix(void *geom = 0);
 extern "C" void *Matrix_assign(void *dst, void *src);
 extern "C" void *Matrix_mulassign(void *dst, void *src);
 extern "C" void Player_addGun_a(void *player);
 extern "C" void **gCanvasPtr;
 extern "C" void AEGeometry_ctor(void *self, unsigned short type, void *canvas, bool b);
-extern "C" void AEGeometry_getPosition(Vector *out, void *geom);
 extern "C" void AEGeometry_setPosition_v(void *self, Vector *v);
 
 // ---- getType_a61de.cpp ----
@@ -140,7 +138,7 @@ bool KIPlayer::isDying() {
 // ---- translate_a6332.cpp ----
 void KIPlayer::translate(const Vector &v) {
     KIPlayer *self = this;
-    AEGeometry_translate(self->geometry, v);
+    ((AEGeometry *)(self->geometry))->translate(v);
     Route *route = self->route;
     if (route == 0) {
         return;
@@ -426,7 +424,7 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
         void *child = operator_new(0xc0);
         AEGeometry_ctor2(child, *(void **)gCanvas);
         self->geometry = child;
-        AEGeometry_addChild(child, *(int *)((char *)self->parentGeometry + 0xc));
+        ((AEGeometry *)(child))->addChild(*(int *)((char *)self->parentGeometry + 0xc));
         *(int *)((char *)self->parentGeometry + 0x24) = *(int *)((char *)self->geometry + 0xc);
     } else {
         self->geometry = geom;
@@ -482,9 +480,9 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
 
     if (geom != 0) {
         AEGeometry_setPosition3f(geom, x, y, z);
-        Matrix_assign((char *)self->player + 4, AEGeometry_getMatrix());
+        Matrix_assign((char *)self->player + 4, &((AEGeometry *)(geom))->getMatrix());
         if (self->parentGeometry != 0)
-            Matrix_mulassign((char *)self->player + 4, AEGeometry_getMatrix());
+            Matrix_mulassign((char *)self->player + 4, &((AEGeometry *)(self->parentGeometry))->getMatrix());
     }
 
     self->posX = x;
@@ -600,20 +598,20 @@ extern void *const gItemDb __attribute__((visibility("hidden")));     // DAT_000
 extern "C" {
 void KIPlayer_setActive_732f4(KIPlayer *self, int v);         // 0x732f4
 int AERandom_nextInt(void *rng, int bound);                  // 0x71848
-void *Status_getShip(void);                                  // 0x71a58
+// 0x71a58
 int Ship_getFreeSpace(void *ship);                           // 0x722ec
-void *Item_makeItem(int infoPtr);                            // 0x718c0
-void Level_stealFriendCargo(void *level);                    // 0x73300
-void *Status_getStanding(void);                              // 0x71b84
+// 0x718c0
+// 0x73300
+// 0x71b84
 // 0x7330c
-int Item_getIndex(void *item);                               // 0x718d8
-int Item_getAmount(void *item);                              // 0x7183c
+// 0x718d8
+// 0x7183c
 int Ship_spaceAvailable(void *ship, int amount);             // 0x73318
-void Status_crateCaptured(void *status, int amount);         // 0x73324
-void Item_setUnsaleable(void *item, int v);                  // 0x73330
-int Item_getType(void *item);                                // 0x718fc
+// 0x73324
+// 0x73330
+// 0x718fc
 void *Ship_getEquipment(void *ship);                         // 0x7333c
-void Item_changeAmount(void *item, int amount);              // 0x71854
+// 0x71854
 void Ship_addCargo(void *ship, void *item);                  // 0x72cdc
 // 0x72ce8 / 0x72cdc area
 }
@@ -648,46 +646,46 @@ void KIPlayer::captureCrate(void *hud) {
         void *status = *(void **)gStatus;
 
         // clamp to the ship's free space.
-        Status_getShip();
-        int free1 = Ship_getFreeSpace(Status_getShip());
+        ((Status *)status)->getShip();
+        int free1 = Ship_getFreeSpace(((Status *)status)->getShip());
         int amt = amount;
         if (free1 <= amount)
-            amt = Ship_getFreeSpace(Status_getShip());
+            amt = Ship_getFreeSpace(((Status *)status)->getShip());
         if (amt < 1) {
             amount = 1;
         } else {
-            int free2 = Ship_getFreeSpace(Status_getShip());
+            int free2 = Ship_getFreeSpace(((Status *)status)->getShip());
             if (free2 <= amount)
-                amount = Ship_getFreeSpace(Status_getShip());
+                amount = Ship_getFreeSpace(((Status *)status)->getShip());
         }
 
         // resolve the item info and decrement the crate's remaining count.
         int itemId = *(int *)(*(char **)((char *)self->cargo + 4) + i * 4);
         int infoPtr = *(int *)(*(char **)(*(char **)gItemDb + 4) + itemId * 4);
-        void *item = Item_makeItem(infoPtr);
+        void *item = ((Item *)(infoPtr))->makeItem();
         int *slot = (int *)(*(char **)((char *)self->cargo + 4) + i * 4);
         slot[1] = slot[1] - amount;
         if (item == 0)
             return;
 
         if (*(char *)((char *)self->player + 0x5d) != 0)
-            Level_stealFriendCargo(self->level);
+            ((Level *)(self->level))->stealFriendCargo();
 
         if (self->stealFlag == 0)
-            ((Standing *)(Status_getStanding()))->applyStealCargo(self->shipGroup);
+            ((Standing *)(intptr_t)(((Status *)status)->getStanding()))->applyStealCargo(self->shipGroup);
 
         // determine whether this is a special (illegal) cargo item.
         bool special = false;
         if (self->field_0xd0 != 0) {
-            int idx = Item_getIndex(item);
+            int idx = ((Item *)(item))->getIndex();
             if (idx == 0x74)
                 special = true;
             else
-                special = (Item_getIndex(item) == 0x75);
+                special = (((Item *)(item))->getIndex() == 0x75);
         }
 
-        void *ship = Status_getShip();
-        int avail = Ship_spaceAvailable(ship, Item_getAmount(item));
+        void *ship = ((Status *)status)->getShip();
+        int avail = Ship_spaceAvailable(ship, ((Item *)(item))->getAmount());
         int hudIndex;
         int hudAmount;
         int flagA = special ? 1 : 0;
@@ -696,54 +694,54 @@ void KIPlayer::captureCrate(void *hud) {
         if (avail == 0) {
             if (special)
                 self->field_0x68 = 1;
-            hudIndex = Item_getIndex(item);
-            hudAmount = Item_getAmount(item);
+            hudIndex = ((Item *)(item))->getIndex();
+            hudAmount = ((Item *)(item))->getAmount();
             flagB = 1;
             ((Hud *)(hud))->catchCargo(hudIndex, hudAmount, flagA, 0, 0, flagB, 0, 0);
             return;
         }
 
-        Status_crateCaptured(status, Item_getAmount(item));
+        ((Status *)(status))->crateCaptured(((Item *)(item))->getAmount());
         if (special)
-            Item_setUnsaleable(item, 1);
+            ((Item *)(item))->setUnsaleable(1);
 
         bool merged = false;
-        if (Item_getType(item) == 1) {
-            void *equip = Ship_getEquipment(Status_getShip());
+        if (((Item *)(item))->getType() == 1) {
+            void *equip = Ship_getEquipment(((Status *)status)->getShip());
             if (equip != 0) {
                 unsigned ecount = *(unsigned *)equip;
                 for (unsigned j = 0; j < ecount; j = j + 1) {
                     void *e = ((void **)(*(char **)((char *)equip + 4)))[j];
-                    if (e != 0 && Item_getIndex(e) == Item_getIndex(item)) {
+                    if (e != 0 && ((Item *)(e))->getIndex() == ((Item *)(item))->getIndex()) {
                         void *e2 = ((void **)(*(char **)((char *)equip + 4)))[j];
-                        Item_changeAmount(e2, Item_getAmount(item));
+                        ((Item *)(e2))->changeAmount(((Item *)(item))->getAmount());
                         merged = true;
                     }
                 }
             }
         }
         if (!merged)
-            Ship_addCargo(Status_getShip(), item);
+            Ship_addCargo(((Status *)status)->getShip(), item);
 
         *(int *)((char *)self->level + 0x1c) =
-            Item_getAmount(item) + *(int *)((char *)self->level + 0x1c);
+            ((Item *)(item))->getAmount() + *(int *)((char *)self->level + 0x1c);
 
         if (special) {
             self->field_0x69 = 1;
         } else if (self->shipGroup == 9) {
             void *st = *(void **)gStatus;
-            *(int *)((char *)st + 0xcc) = Item_getAmount(item) + *(int *)((char *)st + 0xcc);
+            *(int *)((char *)st + 0xcc) = ((Item *)(item))->getAmount() + *(int *)((char *)st + 0xcc);
         } else {
-            int idx = Item_getIndex(item);
-            if (idx >= 0x84 && Item_getIndex(item) < 0x9a) {
+            int idx = ((Item *)(item))->getIndex();
+            if (idx >= 0x84 && ((Item *)(item))->getIndex() < 0x9a) {
                 void *st = *(void **)gStatus;
                 char *tbl = *(char **)((char *)st + 0xac);
-                *(char *)(*(char **)(tbl + 4) + Item_getIndex(item) - 0x84) = 1;
+                *(char *)(*(char **)(tbl + 4) + ((Item *)(item))->getIndex() - 0x84) = 1;
             }
         }
 
-        hudIndex = Item_getIndex(item);
-        hudAmount = Item_getAmount(item);
+        hudIndex = ((Item *)(item))->getIndex();
+        hudAmount = ((Item *)(item))->getAmount();
         ((Hud *)(hud))->catchCargo(hudIndex, hudAmount, flagA, 0, 0, 0, 0, 0);
         return;
     }
@@ -832,16 +830,16 @@ void KIPlayer::setShipGroup(int param2, int flag, int cond) {
             AEGeometry_ctor2(grp, gCanvas);
             self->geometry = grp;
         }
-        AEGeometry_addChild(grp, *(int *)((char *)self->parentGeometry + 0xc));
+        ((AEGeometry *)(grp))->addChild(*(int *)((char *)self->parentGeometry + 0xc));
         *(int *)((char *)self->parentGeometry + 0x24) = *(int *)((char *)self->geometry + 0xc);
     }
     AEGeometry_setPosition4(self->geometry,
                             self->posX,
                             self->posY,
                             self->posZ);
-    Matrix_assign((char *)self->player + 0x4, AEGeometry_getMatrix());
+    Matrix_assign((char *)self->player + 0x4, &((AEGeometry *)(self->geometry))->getMatrix());
     if (self->parentGeometry != 0) {
-        Matrix_mulassign((char *)self->player + 0x4, AEGeometry_getMatrix());
+        Matrix_mulassign((char *)self->player + 0x4, &((AEGeometry *)(self->parentGeometry))->getMatrix());
     }
 }
 
@@ -850,12 +848,12 @@ void KIPlayer::setPosition_vec(const Vector &v) {
     KIPlayer *self = this;
     void *geom = self->geometry;
     if (geom != 0) {
-        AEGeometry_setPosition(geom, v);
-        void *m = AEGeometry_getMatrix(self->geometry);
+        ((AEGeometry *)(geom))->setPosition(v);
+        void *m = ((AEGeometry *)(self->geometry))->getMatrix();
         Matrix_assign((char *)self->player + 0x4, m);
         void *cond = self->parentGeometry;
         if (cond != 0) {
-            void *m2 = AEGeometry_getMatrix(cond);
+            void *m2 = ((AEGeometry *)(cond))->getMatrix();
             Matrix_mulassign((char *)self->player + 0x4, m2);
         }
     }
@@ -896,8 +894,8 @@ void KIPlayer::createCrate(int type) {
     AEGeometry_ctor(crate, id, gCanvasPtr[0], false);
     self->crateGeometry = crate;
     Vector pos;
-    AEGeometry_getPosition(&pos, self->geometry);
+    ((AEGeometry *)(&pos))->getPosition();
     AEGeometry_setPosition_v(crate, &pos);
-    Matrix_assign((char *)self->player + 0x4, AEGeometry_getMatrix());
+    Matrix_assign((char *)self->player + 0x4, &((AEGeometry *)(crate))->getMatrix());
     ((Player *)(self->player))->setKIPlayer(self);
 }

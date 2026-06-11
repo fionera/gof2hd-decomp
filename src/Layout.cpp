@@ -1,4 +1,7 @@
 #include "gof2/Layout.h"
+#include "gof2/ChoiceWindow.h"
+#include "gof2/FModSound.h"
+#include "gof2/Status.h"
 #include "gof2/GameText.h"
 #include "gof2/String.h"
 #include "gof2/TouchButton.h"
@@ -51,18 +54,9 @@ void    TouchButton_ctorStr(...);
 void    TouchButton_ctorImg(...);
 void    TouchButton_ctorImg2(...);
 
-void ChoiceWindow_update(...);
-void ChoiceWindow_OnTouchBegin(...);
-void ChoiceWindow_OnTouchMove(...);
-int  ChoiceWindow_OnTouchEnd(...);
 void *ChoiceWindow_ctor(...);
-void ChoiceWindow_set(...);
 
-void FModSound_play(...);
 
-long long Status_getPlayingTime(...);
-void *Status_getShip(...);
-int  Status_getCredits(...);
 int  Ship_getCurrentLoad(...);
 int  Ship_getMaxLoad(...);
 
@@ -104,7 +98,7 @@ void Layout::update(int dt) {
     Layout *self = this;
     void *cw = self->choiceWindow;
     if (cw)
-        ChoiceWindow_update(cw, dt);
+        ((ChoiceWindow *)(cw))->update(dt);
     if (self->rewardMessageActive != 0) {
         int t = self->rewardMessageTimer + dt;
         self->rewardMessageTimer = t;
@@ -144,7 +138,7 @@ int Layout::OnTouchBegin(int x, int y) {
     if (self->helpButtonEnabled != 0)
         ((TouchButton *)(self->helpButton))->OnTouchBegin(x, y);
     if (self->choiceWindow != 0 && self->choiceWindowOpen != 0) {
-        ChoiceWindow_OnTouchBegin(self->choiceWindow, x, y);
+        ((ChoiceWindow *)(self->choiceWindow))->OnTouchBegin(x, y);
         return 0;
     }
     void *btn;
@@ -167,8 +161,8 @@ float Sinf(float);   // AbyssEngine::AEMath::Sinf -> 0x6f1a8
 float Layout::getPulseValue(float speed) {
     Layout *self = this;
     Status **holder = gStatus;
-    float a = Sinf(__aeabi_l2f(Status_getPlayingTime(*holder)) * speed);
-    float b = Sinf(__aeabi_l2f(Status_getPlayingTime(*holder)) * speed);
+    float a = Sinf(__aeabi_l2f(((Status *)(*holder))->getPlayingTime()) * speed);
+    float b = Sinf(__aeabi_l2f(((Status *)(*holder))->getPlayingTime()) * speed);
     return a > 0.0f ? b : -b;
 }
 
@@ -262,7 +256,7 @@ int Layout::OnTouchMove(int x, int y) {
     if (self->helpButtonEnabled != 0)
         ((TouchButton *)(self->helpButton))->OnTouchMove(x, y);
     if (self->choiceWindow != 0 && self->choiceWindowOpen != 0) {
-        ChoiceWindow_OnTouchMove(self->choiceWindow, x, y);
+        ((ChoiceWindow *)(self->choiceWindow))->OnTouchMove(x, y);
         return 0;
     }
     void *btn;
@@ -296,7 +290,7 @@ int Layout::OnTouchEnd(int x, int y) {
     if (self->choiceWindowOpen == 0 && self->helpButtonEnabled != 0)
         self->helpPressedFlag = ((TouchButton *)(self->helpButton))->OnTouchEnd(x, y);
     if (self->choiceWindow != 0 && self->choiceWindowOpen != 0)
-        return ChoiceWindow_OnTouchEnd(self->choiceWindow, x, y) == 0;
+        return ((ChoiceWindow *)(self->choiceWindow))->OnTouchEnd(x, y) == 0;
     void *btn;
     if (((TouchButton *)(self->backButton))->isVisible() == 0)
         btn = self->secondaryButton;
@@ -791,7 +785,7 @@ void Layout::showMissionRewardMessage(int show, bool flag) {
     int *g = *gFmod;
     self->rewardMessageTimer = 0;
     self->rewardCredits = show;
-    FModSound_play(*g, (Vec3 *)0x24, 0, 0.0f);
+    ((FModSound *)(*g))->play(0x24, 0, 0, 0.0f);
 }
 
 // ---- drawWindow_d38d4.cpp ----
@@ -1248,10 +1242,10 @@ void Layout::initHelpWindow(void *text) {
         ChoiceWindow_ctor(cw);
         self->choiceWindow = cw;
     }
-    FModSound_play(*gFmodHelp, 0x7e, 0, 0, 0);
+    ((FModSound *)(*gFmodHelp))->play(0x7e, 0, 0, 0);
     void *cw = self->choiceWindow;
     void *title = ((GameText *)(gGameText->obj))->getText(0x187);
-    ChoiceWindow_set(cw, title, text, false);
+    ((ChoiceWindow *)(cw))->set(*(String *)title, *(String *)text);
     self->choiceWindowOpen = 1;
     self->helpPressedFlag = 0;
 }
@@ -1520,15 +1514,15 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     }
 
     // Cargo load text, in warning color if over capacity.
-    Status_getShip();
-    int load = Ship_getCurrentLoad(Status_getShip());
-    Status_getShip();
-    int maxLoad = Ship_getMaxLoad(Status_getShip());
+    ((Status *)(*gStatus))->getShip();
+    int load = Ship_getCurrentLoad(((Status *)(*gStatus))->getShip());
+    ((Status *)(*gStatus))->getShip();
+    int maxLoad = Ship_getMaxLoad(((Status *)(*gStatus))->getShip());
     if (maxLoad < load)
         PaintCanvas_SetColor(*(unsigned *)&g_dfWarnColor);
 
-    Status_getShip();
-    int cur = Ship_getCurrentLoad(Status_getShip());
+    ((Status *)(*gStatus))->getShip();
+    int cur = Ship_getCurrentLoad(((Status *)(*gStatus))->getShip());
     unsigned char sLoad[sizeof(String12)] __attribute__((aligned(4)));   // aSStack_58
     String_from_uint(sLoad, cur);
     unsigned char sSep[sizeof(String12)] __attribute__((aligned(4)));    // aSStack_64
@@ -1536,8 +1530,8 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     unsigned char s1[sizeof(String12)] __attribute__((aligned(4)));      // aSStack_4c
     String_concat(s1, sLoad, sSep);
 
-    Status_getShip();
-    int mx = Ship_getMaxLoad(Status_getShip());
+    ((Status *)(*gStatus))->getShip();
+    int mx = Ship_getMaxLoad(((Status *)(*gStatus))->getShip());
     unsigned char sMax[sizeof(String12)] __attribute__((aligned(4)));    // aSStack_70
     String_from_uint(sMax, mx);
     unsigned char s2[sizeof(String12)] __attribute__((aligned(4)));      // aSStack_40
@@ -1565,7 +1559,7 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     }
     PaintCanvas_SetColor(self->drawColor);
 
-    int credits = Status_getCredits();
+    int credits = ((Status *)(*gStatus))->getCredits();
     unsigned char credStr[sizeof(String12)] __attribute__((aligned(4)));  // aSStack_40
     Layout_formatCredits(credStr, credits);
 

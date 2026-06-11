@@ -1,4 +1,5 @@
 #include "gof2/SpecCubeAlphaMapping.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
 
@@ -7,10 +8,10 @@ namespace AbyssEngine {
 
 void SpecCubeAlphaMapping::Init(Engine *)
 {
-    int program = ShaderBaseStruct_LoadBindShader(this, "SpecCubeAlphaMapping.vsh", "SpecCubeAlphaMapping.fsh");
+    int program = ((ShaderBaseStruct *)(this))->LoadBindShader("SpecCubeAlphaMapping.vsh", "SpecCubeAlphaMapping.fsh");
     this->program = program;
     if (program == 0) {
-        program = ShaderBaseStruct_ES2LoadProgram(this, "SpecCubeAlphaMapping.vsh", "SpecCubeAlphaMapping2.fsh");
+        program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("SpecCubeAlphaMapping.vsh", "SpecCubeAlphaMapping2.fsh");
         this->program = program;
     }
 

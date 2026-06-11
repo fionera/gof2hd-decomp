@@ -1,9 +1,18 @@
 #include "gof2/StarSystem.h"
+// AEGeometry.h declares __aeabi_memcpy with a uint32_t length, which clashes with
+// Engine.h's unsigned-long version. Rename the loose decl away while parsing AEGeometry.h
+// so only one canonical prototype survives.
+#define __aeabi_memcpy __aeabi_memcpy_aegeom_unused
+#include "gof2/AEGeometry.h"
+#undef __aeabi_memcpy
+#include "gof2/FileRead.h"
+#include "gof2/LensFlare.h"
+#include "gof2/Status.h"
+#include "gof2/Transform.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/Engine.h"
 
 
-extern "C" void AEGeometry_setScaling(AEGeometry *geom, const char *scale);
 extern "C" void PaintCanvas_SetTexture(void *canvas, uint32_t texture, int mode);
 extern "C" void PaintCanvas_SetBlendMode(void *canvas, int mode);
 extern "C" void StarSystem_renderSunStreak_tail(void *geom);
@@ -18,26 +27,18 @@ extern "C" void *Array_int_dtor(void *array);
 extern "C" void ArrayRelease_Vector(void *array);
 extern "C" void *Array_Vector_dtor(void *array);
 extern "C" void operator_delete(void *ptr);
-extern "C" void *Status_getSystem(void *status);
 extern "C" uint32_t SolarSystem_getTextureIndex(void *system);
 extern "C" uint32_t SolarSystem_getIndex(void *system);
-extern "C" int Status_getCurrentCampaignMission(void *status);
-extern "C" void *Status_getStation(void *status);
 extern "C" uint32_t Station_getTextureIndex(void *station);
 extern "C" void PaintCanvas_FogEnable(void *canvas, int enabled, int immediate);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transform_id);
 extern "C" void *PaintCanvas_CameraGetCurrent(void *canvas);
 extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, void *current);
-extern "C" void LensFlare_update(void *flare, int mode);
 extern "C" int PaintCanvas_GetScreenPosition(void *canvas, char *world, char *screen);
-extern "C" void LensFlare_render2D(void *flare, float x, float y, float z, int color);
 extern "C" void *operator_new(unsigned size);
-extern "C" int Status_inSupernovaSystem(void *status);
-extern "C" int Status_orbitHasPlanetRing(void *status, int station_index);
 extern "C" void *SolarSystem_getStations(void *system);
 extern "C" int Station_getIndex(void *station);
 extern "C" void FileRead_ctor(void *self);
-extern "C" void *FileRead_loadStationsBinary(void *self, void *system);
 extern "C" void *FileRead_dtor(void *self);
 extern "C" void Array_uint_ctor(void *array);
 extern "C" void Array_int_ctor(void *array);
@@ -53,11 +54,7 @@ extern "C" void ArraySetLength_AEGeometry(int length, void *array);
 extern "C" void ArraySetLength_Vector(int length, void *array);
 extern "C" void LensFlare_ctor(void *self, void *canvas);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint32_t mesh, void *canvas, bool dynamic);
-extern "C" void AEGeometry_setRotation(AEGeometry *geom, const char *rot);
-extern "C" void AEGeometry_moveForward(AEGeometry *geom, uint32_t distance_bits);
 extern "C" void AEGeometry_getDirection(char *out, AEGeometry *geom);
-extern "C" void AEGeometry_getPosition(char *out, AEGeometry *geom);
-extern "C" void AEGeometry_rotate(AEGeometry *geom, const char *rot);
 extern "C" void Vector_assign(char *dst, const char *src);
 extern "C" void PaintCanvas_TextureCreate(void *canvas, uint32_t texture, void *slot, int flags);
 extern "C" int AERandom_nextInt(int *rng, int max);
@@ -65,11 +62,8 @@ extern "C" void AERandom_setSeed(int *rng, long long seed);
 extern "C" void AERandom_reset(int *rng);
 extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t mesh_id);
 extern "C" void PlayerStatic_ctor(void *self, int mode, AEGeometry *geom, float x, float y, float z);
-extern "C" void Transform_Update(void *transform, int supernova, int dt_lo, int dt_hi, int same_mode);
-extern "C" void AEGeometry_getScaling(char *out, AEGeometry *geom);
 extern "C" void AEGeometry_setScaling3(AEGeometry *geom, float x, float y, float z);
 extern "C" void Vector_scale(char *out, const char *in, float scale);
-extern "C" void AEGeometry_setMesh(AEGeometry *geom, uint32_t mesh);
 extern "C" void AEGeometry_setScaling1(AEGeometry *geom, uint32_t scale_bits);
 void MatrixGetPosition(char *out, void *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned long n);
@@ -81,10 +75,6 @@ extern "C" void AEGeometry_setRotation3(AEGeometry *geom, float x, float y, floa
 extern "C" void MatrixSetScaling(char *matrix, float x, float y, float z);
 extern "C" void AEGeometry_setMatrix(AEGeometry *geom, const char *matrix);
 extern "C" void Vector_mul_assign(char *vec, float scale);
-extern "C" int Status_inPlanetRingOrbit(void *status);
-extern "C" void AEGeometry_setPosition(AEGeometry *geom, const char *pos);
-extern "C" void AEGeometry_render(AEGeometry *geom);
-extern "C" void *AEGeometry_getMatrix(AEGeometry *geom);
 
 // ---- switchSunForSupernovaExpansion_134fc4.cpp ----
 void StarSystem::switchSunForSupernovaExpansion() {
@@ -95,7 +85,7 @@ void StarSystem::switchSunForSupernovaExpansion() {
     scale[0] = 0x46311048;
     scale[1] = 0x46311048;
     scale[2] = 0x46311048;
-    AEGeometry_setScaling(geom, scaleBytes);
+    ((AEGeometry *)(geom))->setScaling(*(const Vector *)scaleBytes);
 }
 
 // ---- renderSunStreak_1350c8.cpp ----
@@ -207,7 +197,7 @@ void StarSystem::initLight() {
     uint32_t baseIndex;
     bool normalSystem;
     if (B(self, 0x28) == 0) {
-        void *system = Status_getSystem(status);
+        void *system = (void *)(intptr_t)((Status *)(status))->getSystem();
         baseIndex = SolarSystem_getTextureIndex(system) * 3;
         normalSystem = true;
     } else {
@@ -221,19 +211,19 @@ void StarSystem::initLight() {
     FL(self, 0x08) = g_StarSystem_init_sunColors[baseIndex + 2];
 
     if (normalSystem) {
-        void *system = Status_getSystem(status);
+        void *system = (void *)(intptr_t)((Status *)(status))->getSystem();
         uint32_t tex = SolarSystem_getTextureIndex(system);
-        int mission = Status_getCurrentCampaignMission(status);
+        int mission = ((Status *)(status))->getCurrentCampaignMission();
         if (tex == 0x0f && (mission == 0x59 || mission > 0x9d)) {
             FL(self, 0x00) *= 0.5f;
             FL(self, 0x04) *= 0.5f;
             FL(self, 0x08) *= 0.5f;
         }
         if (B(self, 0x28) == 0) {
-            system = Status_getSystem(status);
+            system = (void *)(intptr_t)((Status *)(status))->getSystem();
             tex = SolarSystem_getTextureIndex(system);
             ambientScale = 0.5f;
-            mission = Status_getCurrentCampaignMission(status);
+            mission = ((Status *)(status))->getCurrentCampaignMission();
             if (tex == 0x0f && mission != 0x59) {
                 ambientScale = mission < 0x9e ? 0.35f : 0.6f;
             }
@@ -242,7 +232,7 @@ void StarSystem::initLight() {
 
     uint32_t stationColorIndex = 0x17;
     if (normalSystem && B(self, 0x28) == 0) {
-        void *station = Status_getStation(status);
+        void *station = ((Status *)(status))->getStation();
         stationColorIndex = Station_getTextureIndex(station) * 3;
     }
 
@@ -250,10 +240,10 @@ void StarSystem::initLight() {
     float lg = g_StarSystem_init_stationColors[stationColorIndex + 1];
     float lb = g_StarSystem_init_stationColors[stationColorIndex + 2];
     if (normalSystem && B(self, 0x28) == 0) {
-        void *system = Status_getSystem(status);
+        void *system = (void *)(intptr_t)((Status *)(status))->getSystem();
         if (SolarSystem_getTextureIndex(system) == 0x0f &&
-            Status_getCurrentCampaignMission(status) != 0x59) {
-            if (Status_getCurrentCampaignMission(status) < 0x9e) {
+            ((Status *)(status))->getCurrentCampaignMission() != 0x59) {
+            if (((Status *)(status))->getCurrentCampaignMission() < 0x9e) {
                 lr = lr;
             }
         }
@@ -284,7 +274,7 @@ void StarSystem::initLight() {
         return;
     }
 
-    uint32_t tex = SolarSystem_getTextureIndex(Status_getSystem(status));
+    uint32_t tex = SolarSystem_getTextureIndex((void *)(intptr_t)((Status *)(status))->getSystem());
     uint32_t fogColor = 0;
     switch (tex) {
     case 0x0b:
@@ -294,7 +284,7 @@ void StarSystem::initLight() {
         fogColor = 0xa0a0a0ff;
         break;
     case 0x0f:
-        if (Status_getCurrentCampaignMission(status) == 0x59) {
+        if (((Status *)(status))->getCurrentCampaignMission() == 0x59) {
             return;
         }
         fogColor = 0x707070ff;
@@ -348,9 +338,9 @@ void StarSystem::render2D() {
         pos[0] = FL(local, 0x0c) + FL(self, 0x30) * 65536.0f;
         pos[1] = FL(local, 0x1c) + FL(self, 0x34) * 65536.0f;
         pos[2] = FL(local, 0x2c) + FL(self, 0x38) * 65536.0f;
-        LensFlare_update(P(self, 0x2c), 0);
+        ((LensFlare *)(P(self, 0x2c)))->update();
         if (PaintCanvas_GetScreenPosition(*canvasHolder, posBytes, posBytes) != 0) {
-            LensFlare_render2D(P(self, 0x2c), pos[0], pos[1], pos[2], I(self, 0x3c));
+            ((LensFlare *)(P(self, 0x2c)))->render2D(pos[0], pos[1], pos[2], I(self, 0x3c));
         }
     }
 }
@@ -389,8 +379,8 @@ StarSystem::StarSystem(int mode) {
     P(self, 0x1c) = 0;
 
     void *status = *g_StarSystem_ctor_status;
-    B(self, 0x28) = Status_getSystem(status) == 0;
-    B(self, 0x0c) = (uint8_t)Status_inSupernovaSystem(status);
+    B(self, 0x28) = ((Status *)(status))->getSystem() == 0;
+    B(self, 0x0c) = (uint8_t)((Status *)(status))->inSupernovaSystem();
 
     void *flare = operator_new(0x14);
     LensFlare_ctor(flare, *g_StarSystem_ctor_canvas);
@@ -408,8 +398,8 @@ StarSystem::StarSystem(int mode) {
         AEGeometry_ctor(sun, 0x1a70, *g_StarSystem_ctor_canvas, false);
         ((AEGeometry **)array_data(P(self, 0x1c)))[0] = sun;
         set_vec(vec, 1000.0f, 1000.0f, 1000.0f);
-        AEGeometry_setScaling(sun, vec);
-        AEGeometry_moveForward(sun, 0x447a0000);
+        ((AEGeometry *)(sun))->setScaling(*(const Vector *)vec);
+        ((AEGeometry *)(sun))->moveForward(0x447a0000);
         AEGeometry_getDirection(vec, sun);
         Vector_assign((char *)self + 0x30, vec);
         FL(self, 0x30) = -FL(self, 0x30);
@@ -422,10 +412,10 @@ StarSystem::StarSystem(int mode) {
         int rnd = AERandom_nextInt(g_StarSystem_ctor_rng, 0x4e20);
         float scale = (float)(rnd + 0x4e20) * 0.001f;
         set_vec(vec, scale, scale, scale);
-        AEGeometry_setScaling(planet, vec);
+        ((AEGeometry *)(planet))->setScaling(*(const Vector *)vec);
         set_vec(vec, 0.0f, 90.0f, 0.0f);
-        AEGeometry_setRotation(planet, vec);
-        AEGeometry_moveForward(planet, 0x447a0000);
+        ((AEGeometry *)(planet))->setRotation(*(const Vector *)vec);
+        ((AEGeometry *)(planet))->moveForward(0x447a0000);
 
         void *textures = operator_new(0x0c);
         Array_uint_ctor(textures);
@@ -439,25 +429,25 @@ StarSystem::StarSystem(int mode) {
         Array_Vector_ctor(positions);
         P(self, 0x20) = positions;
         ArraySetLength_Vector(2, positions);
-        AEGeometry_getPosition(vec, sun);
+        ((AEGeometry *)(vec))->getPosition();
         Vector_assign((char *)array_data(P(self, 0x20)), vec);
-        AEGeometry_getPosition(vec, planet);
+        ((AEGeometry *)(vec))->getPosition();
         Vector_assign((char *)array_data(P(self, 0x20)) + 0x0c, vec);
 
         AEGeometry *streak = (AEGeometry *)operator_new(0xc0);
         AEGeometry_ctor(streak, 0x1a70, *g_StarSystem_ctor_canvas, false);
         P(self, 0x40) = streak;
         set_vec(vec, 250.0f, 15.0f, 1000.0f);
-        AEGeometry_setScaling(streak, vec);
+        ((AEGeometry *)(streak))->setScaling(*(const Vector *)vec);
         ((StarSystem *)(self))->initLight();
         return;
     }
 
-    void *system = Status_getSystem(status);
+    void *system = (void *)(intptr_t)((Status *)(status))->getSystem();
     void *stations = SolarSystem_getStations(system);
     void *reader = operator_new(1);
     FileRead_ctor(reader);
-    void *stationArray = FileRead_loadStationsBinary(reader, system);
+    void *stationArray = (void *)(intptr_t)((FileRead *)(reader))->loadStationsBinary();
     operator_delete(FileRead_dtor(reader));
 
     void *textures = operator_new(0x0c);
@@ -470,26 +460,26 @@ StarSystem::StarSystem(int mode) {
     P(self, 0x24) = stationIndexes;
     ArraySetLength_int(array_len(stations), stationIndexes);
 
-    int mission = Status_getCurrentCampaignMission(status);
+    int mission = ((Status *)(status))->getCurrentCampaignMission();
     if ((mission == 0x59 && B(self, 0x0c) != 0) ||
-        (mission > 0x9d && SolarSystem_getIndex(Status_getSystem(status)) == 0x1b)) {
+        (mission > 0x9d && SolarSystem_getIndex((void *)(intptr_t)((Status *)(status))->getSystem()) == 0x1b)) {
         PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x2dde, array_data(P(self, 0x14)), 0);
         U(self, 0x3c) = 3;
     } else {
-        uint32_t tex = SolarSystem_getTextureIndex(Status_getSystem(status));
+        uint32_t tex = SolarSystem_getTextureIndex((void *)(intptr_t)((Status *)(status))->getSystem());
         PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, g_StarSystem_ctor_planetTextures[tex],
                                   array_data(P(self, 0x14)), 0);
-        U(self, 0x3c) = g_StarSystem_ctor_systemColors[SolarSystem_getIndex(Status_getSystem(status))];
+        U(self, 0x3c) = g_StarSystem_ctor_systemColors[SolarSystem_getIndex((void *)(intptr_t)((Status *)(status))->getSystem())];
     }
 
     uint32_t count = array_len(stations);
     for (uint32_t i = 1, off = 0; i < array_len(P(self, 0x14)); ++i, off += 4) {
         int stationIndex = ((int *)array_data(stations))[off / 4];
-        int currentStation = Station_getIndex(Status_getStation(status));
+        int currentStation = Station_getIndex(((Status *)(status))->getStation());
         void *station = ((void **)array_data(stationArray))[off / 4];
         uint32_t stationTex = Station_getTextureIndex(station);
         if (stationIndex == currentStation) {
-            if (mode == 3 && Status_getCurrentCampaignMission(status) == 0) {
+            if (mode == 3 && ((Status *)(status))->getCurrentCampaignMission() == 0) {
                 U(self, 0x50) = i;
                 PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x273b,
                                           (char *)array_data(P(self, 0x14)) + off + 4, 0);
@@ -503,7 +493,7 @@ StarSystem::StarSystem(int mode) {
                                       g_StarSystem_ctor_stationTextures[stationTex],
                                       (char *)array_data(P(self, 0x14)) + off + 4, 0);
             int idx = Station_getIndex(station);
-            if (Status_orbitHasPlanetRing(*g_StarSystem_ctor_status_obj, idx) != 0) {
+            if (((Status *)(*g_StarSystem_ctor_status_obj))->orbitHasPlanetRing(idx) != 0) {
                 AEGeometry *ring = (AEGeometry *)operator_new(0xc0);
                 AEGeometry_ctor(ring, 0x1a70, *g_StarSystem_ctor_canvas, false);
                 P(self, 0x44) = ring;
@@ -533,7 +523,7 @@ StarSystem::StarSystem(int mode) {
     ArraySetLength_Vector(count + 1, positions);
 
     AERandom_setSeed(g_StarSystem_ctor_rng,
-                     (long long)Station_getIndex(Status_getStation(status)) * 300);
+                     (long long)Station_getIndex(((Status *)(status))->getStation()) * 300);
 
     int sunSlot = AERandom_nextInt(g_StarSystem_ctor_rng, 14);
     for (uint32_t i = 0; i < array_len(P(self, 0x1c)); ++i) {
@@ -544,14 +534,14 @@ StarSystem::StarSystem(int mode) {
         if (i == 0) {
             float sunScale = B(self, 0x0c) == 0 ? 1000.0f : 2000.0f;
             set_vec(vec, sunScale, sunScale, sunScale);
-            AEGeometry_setScaling(geom, vec);
+            ((AEGeometry *)(geom))->setScaling(*(const Vector *)vec);
             AEGeometry *streak = (AEGeometry *)operator_new(0xc0);
             AEGeometry_ctor(streak, 0x1a70, *g_StarSystem_ctor_canvas, false);
             P(self, 0x40) = streak;
             set_vec(vec, B(self, 0x0c) == 0 ? 250.0f : 500.0f,
                     B(self, 0x0c) == 0 ? 15.0f : 25.0f,
                     B(self, 0x0c) == 0 ? 1000.0f : 2000.0f);
-            AEGeometry_setScaling(streak, vec);
+            ((AEGeometry *)(streak))->setScaling(*(const Vector *)vec);
             if (B(self, 0x0c) != 0) {
                 PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x2dde, (char *)self + 0x10, 0);
             }
@@ -563,19 +553,19 @@ StarSystem::StarSystem(int mode) {
             int slot = AERandom_nextInt(g_StarSystem_ctor_rng, 11) + 7;
             usedSlots[slot * 4] = 1;
             int dist = AERandom_nextInt(g_StarSystem_ctor_rng, 0x4e20) + 0x4e20;
-            if (Status_getCurrentCampaignMission(status) == 0) {
+            if (((Status *)(status))->getCurrentCampaignMission() == 0) {
                 dist = (int)((float)dist * 0.5f);
             }
             float scale = (float)dist * 0.001f;
             FL(self, 0x58) = scale;
             set_vec(vec, scale, scale, scale);
-            AEGeometry_setScaling(geom, vec);
+            ((AEGeometry *)(geom))->setScaling(*(const Vector *)vec);
         }
 
         int angleSlot = (i == 0) ? sunSlot : (int)i + 6;
         set_vec(vec, 0.0f, (float)(angleSlot * 0xaaa) * 0.001f, 0.0f);
-        AEGeometry_setRotation(geom, vec);
-        AEGeometry_moveForward(geom, 0x447a0000);
+        ((AEGeometry *)(geom))->setRotation(*(const Vector *)vec);
+        ((AEGeometry *)(geom))->moveForward(0x447a0000);
         if (i == 0) {
             AEGeometry_getDirection(vec, geom);
             Vector_assign((char *)self + 0x30, vec);
@@ -583,7 +573,7 @@ StarSystem::StarSystem(int mode) {
             FL(self, 0x34) = -FL(self, 0x34);
             FL(self, 0x38) = -FL(self, 0x38);
         }
-        AEGeometry_getPosition(vec, geom);
+        ((AEGeometry *)(vec))->getPosition();
         Vector_assign((char *)array_data(P(self, 0x20)) + i * 0x0c, vec);
     }
 
@@ -603,13 +593,13 @@ void StarSystem::updateSupernova(int dt) {
     if (streak != 0) {
         void *transform = PaintCanvas_TransformGetTransform(*g_StarSystem_update_canvas_a, I(streak, 0x0c));
         int mode = 0;
-        Transform_Update(transform, mode, dt, dt >> 31, mode);
+        ((AbyssEngine::Transform *)(transform))->Update(mode, dt);
     }
     void *sun = *(void **)P(P(self, 0x1c), 4);
     if (sun != 0) {
         void *transform = PaintCanvas_TransformGetTransform(*g_StarSystem_update_canvas_b, I(sun, 0x0c));
         int mode = 1;
-        Transform_Update(transform, mode, dt, dt >> 31, mode);
+        ((AbyssEngine::Transform *)(transform))->Update(mode, dt);
     }
 }
 
@@ -617,7 +607,7 @@ void StarSystem::updateSupernova(int dt) {
 void StarSystem::scaleSunDuringSupernovaIntro(int amount) {
     StarSystem *self = this;
     char scaleBytes[12];
-    AEGeometry_getScaling(scaleBytes, *(AEGeometry **)P(P(self, 0x1c), 4));
+    ((AEGeometry *)(scaleBytes))->getScaling();
     float scale = *(float *)scaleBytes + (float)amount * -9.769497830779909e32f;
     AEGeometry_setScaling3(*(AEGeometry **)P(P(self, 0x1c), 4), scale, scale, scale);
 }
@@ -634,9 +624,9 @@ void StarSystem::switchPlanetForIntro() {
     int flags = 0;
     PaintCanvas_TextureCreate(*g_StarSystem_planet_canvas, 0x273a,
                               (char *)P(P(self, 0x14), 4) + U(self, 0x50) * 4, flags);
-    AEGeometry_getScaling(current, ((AEGeometry **)P(P(self, 0x1c), 4))[U(self, 0x50)]);
+    ((AEGeometry *)(current))->getScaling();
     Vector_scale(scaled, current, 2.0f);
-    AEGeometry_setScaling(((AEGeometry **)P(P(self, 0x1c), 4))[U(self, 0x50)], scaled);
+    ((AEGeometry *)(((AEGeometry **)P(P(self, 0x1c), 4))[U(self, 0x50)]))->setScaling(*(const Vector *)scaled);
 }
 
 // ---- switchSunForSupernovaReversal_134e4c.cpp ----
@@ -653,7 +643,7 @@ void StarSystem::switchSunForSupernovaReversal() {
     scale[0] = 0x68009815;
     scale[1] = 0x68009815;
     scale[2] = 0x68009815;
-    AEGeometry_setScaling(geom, scaleBytes);
+    ((AEGeometry *)(geom))->setScaling(*(const Vector *)scaleBytes);
 }
 
 // ---- switchSunForSupernovaIntro_134ea0.cpp ----
@@ -676,14 +666,14 @@ void StarSystem::switchSunForSupernovaIntro() {
     PaintCanvas_TextureCreate(canvas, 0x2df3, P(P(self, 0x14), 4), 0);
     PaintCanvas_TextureCreate(*canvasHolder, 0x2df4, (char *)self + 0x10, 0);
 
-    AEGeometry_setMesh((AEGeometry *)P(self, 0x40), 0x2df2);
+    ((AEGeometry *)((AEGeometry *)P(self, 0x40)))->setMesh(0x2df2);
     AEGeometry *streak = (AEGeometry *)P(self, 0x40);
-    AEGeometry_getScaling(current, streak);
+    ((AEGeometry *)(current))->getScaling();
     Vector_scale(scaled, current, 5.0f);   // 0x40a00000
-    AEGeometry_setScaling(streak, scaled);
+    ((AEGeometry *)(streak))->setScaling(*(const Vector *)scaled);
 
     AEGeometry *sun = *(AEGeometry **)P(P(self, 0x1c), 4);
-    AEGeometry_setMesh(sun, 0x2df1);
+    ((AEGeometry *)(sun))->setMesh(0x2df1);
     AEGeometry_setScaling1(*(AEGeometry **)P(P(self, 0x1c), 4), 0x3f2fc800);
 
     GetTransformFn getTransform = g_StarSystem_intro_getTransform;
@@ -696,7 +686,7 @@ void StarSystem::switchSunForSupernovaIntro() {
     transformId = I(*(void **)P(P(self, 0x1c), 4), 0x0c);
     setTransformMode(getTransform(*canvasHolder, transformId), 1, 0);
 
-    void *system = Status_getSystem(*g_StarSystem_intro_status);
+    void *system = (void *)(intptr_t)((Status *)(*g_StarSystem_intro_status))->getSystem();
     U(self, 0x3c) = g_StarSystem_intro_colors[SolarSystem_getIndex(system)];
 }
 
@@ -743,7 +733,7 @@ void StarSystem::render() {
                 MatrixGetLookAt(lookAt, tempVec, cameraPos, up);
                 Matrix_assign(savedCamera, lookAt);
                 AEGeometry_setRotation3(geoms[0], 0.0f, 0.0f, 0.0f);
-                AEGeometry_getScaling(tempVec, geoms[0]);
+                ((AEGeometry *)(tempVec))->getScaling();
 
                 float grow = (FL(P(self, 0x2c), 0) - 10.0f) * 0.001f;
                 if (grow < 0.0f) {
@@ -786,7 +776,7 @@ void StarSystem::render() {
             uint32_t stationIndex = *g_StarSystem_render_station_index;
             bool selected = (i - 1) == stationIndex;
             if (selected && B(self, 0x28) == 0 &&
-                Status_inPlanetRingOrbit(*g_StarSystem_render_status) == 0) {
+                ((Status *)(*g_StarSystem_render_status))->inPlanetRingOrbit() == 0) {
                 float ring = ((float *)cameraPos)[2] / 65536.0f;
                 float clamped = ring < 0.0f ? ring : 0.0f;
                 if (clamped < -1.0f) {
@@ -801,7 +791,7 @@ void StarSystem::render() {
             Vector_add(tempMatrix,
                        (const char *)array_data(P(self, 0x20)) + posOffset,
                        cameraPos);
-            AEGeometry_setPosition(geoms[i], tempMatrix);
+            ((AEGeometry *)(geoms[i]))->setPosition(*(const Vector *)tempMatrix);
         }
 
         PaintCanvas_SetTexture(*canvasHolder, ((uint32_t *)array_data(P(self, 0x14)))[i], -1);
@@ -812,15 +802,15 @@ void StarSystem::render() {
             blend = B(self, 0x54) == 0 ? 1 : 0x15;
         }
         PaintCanvas_SetBlendMode(*canvasHolder, blend);
-        AEGeometry_render(((AEGeometry **)array_data(P(self, 0x1c)))[i]);
+        ((AEGeometry *)(((AEGeometry **)array_data(P(self, 0x1c)))[i]))->render();
 
         if (i == U(self, 0x4c)) {
             PaintCanvas_SetTexture(*canvasHolder, U(self, 0x48), -1);
             PaintCanvas_SetBlendMode(*canvasHolder, 1);
-            __aeabi_memcpy(savedCamera, AEGeometry_getMatrix(((AEGeometry **)array_data(P(self, 0x1c)))[i]), 0x3c);
+            __aeabi_memcpy(savedCamera, ((AEGeometry *)(((AEGeometry **)array_data(P(self, 0x1c)))[i]))->getMatrix(), 0x3c);
             MatrixSetScaling(lookAt, 4.0f, 4.0f, 4.0f);
             AEGeometry_setMatrix((AEGeometry *)P(self, 0x44), lookAt);
-            AEGeometry_render((AEGeometry *)P(self, 0x44));
+            ((AEGeometry *)((AEGeometry *)P(self, 0x44)))->render();
         }
     }
 }

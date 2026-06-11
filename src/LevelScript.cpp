@@ -3,6 +3,18 @@
 #include "gof2/LevelScript.h"   // defines P()
 #include "gof2/Explosion.h"     // defines I()
 #include "gof2/KIPlayer.h"
+#include "gof2/AEGeometry.h"
+#include "gof2/Level.h"
+// RadioMessage.h is intentionally NOT included here: it defines stub structs
+// (PlayerEgo, Route, Level, Player, LevelScript, ...) that collide with the real
+// class headers used by this TU. This TU only needs RadioMessage::trigger/finish,
+// so forward-declare that minimal interface instead.
+class RadioMessage {
+public:
+    void finish();
+    void trigger();
+};
+#include "gof2/Status.h"
 #include "gof2/Player.h"
 #include "gof2/PlayerEgo.h"     // defines B()
 #include "gof2/PlayerFighter.h"
@@ -28,34 +40,23 @@ struct StackVector {
     }
 };
 
-extern "C" void AEGeometry_render(void *geometry);
-extern "C" void *Level_getPlayer(Level *level);
 extern "C" void TargetFollowCamera_setTarget(void *camera, void *target);
 extern "C" void TargetFollowCamera_setTargetOffset(void *camera, const StackVector &offset);
 extern "C" void TargetFollowCamera_setCamOffset(void *camera, const StackVector &offset);
 extern "C" void *gStatus;
-extern "C" int Status_getCurrentCampaignMission(void *status);
 extern "C" void Player_setUnknown(void *player, bool enabled);
 extern "C" void *gProgrammedStation;
-extern "C" void *Status_getStation(void *status);
-extern "C" void *Status_getSystem(void *status);
 extern "C" int Station_getIndex(void *station);
-extern "C" void *Level_getStarSystem(Level *level);
-extern "C" void *Level_getLandmarks(Level *level);
 extern "C" void *StarSystem_getPlanetTargets(void *starSystem);
 extern "C" void Player_setAutoPilotTarget(void *player, void *target);
 extern "C" void *AEGeometry_dtor(void *geometry);
 extern "C" void *Explosion_dtor(void *explosion);
 extern "C" void operator_delete(void *ptr);
-extern "C" void *Level_getMessages(Level *level);
-extern "C" void RadioMessage_trigger(void *message);
-extern "C" void RadioMessage_finish(void *message);
 extern "C" void *KIPlayer_getRoute(void *player);
 extern "C" void *Level_getActiveMessages(Level *level);
 extern "C" void TargetFollowCamera_update(TargetFollowCamera *camera, float delta, int a, int b);
 extern "C" void Matrix_ctor(void *matrix);
 extern "C" void Hud_drawTitleImage(Hud *hud, bool visible);
-extern "C" int Level_getTimeLimit(Level *level);
 extern "C" void TargetFollowCamera_setLookAtCam(TargetFollowCamera *camera, bool enabled);
 
 // ---- render3D_145d84.cpp ----
@@ -67,22 +68,22 @@ static volatile RenderProc gRenderProc;
 void LevelScript::render3D()
 {
     if (P(this, 0xdc) != 0) {
-        AEGeometry_render(P(this, 0xdc));
+        ((AEGeometry *)(P(this, 0xdc)))->render();
     }
     if (P(this, 0xd8) != 0) {
-        AEGeometry_render(P(this, 0xd8));
+        ((AEGeometry *)(P(this, 0xd8)))->render();
     }
     if (P(this, 0xb8) != 0) {
-        AEGeometry_render(P(this, 0xb8));
+        ((AEGeometry *)(P(this, 0xb8)))->render();
     }
     if (P(this, 0xbc) != 0) {
-        AEGeometry_render(P(this, 0xbc));
+        ((AEGeometry *)(P(this, 0xbc)))->render();
     }
     if (P(this, 0xc0) != 0) {
-        AEGeometry_render(P(this, 0xc0));
+        ((AEGeometry *)(P(this, 0xc0)))->render();
     }
     if (P(this, 0xc4) != 0) {
-        AEGeometry_render(P(this, 0xc4));
+        ((AEGeometry *)(P(this, 0xc4)))->render();
     }
     if (P(this, 0xc8) != 0 && ((Explosion *)(P(this, 0xc8)))->isPlaying() != 0) {
         ((Explosion *)(P(this, 0xc8)))->render();
@@ -104,9 +105,9 @@ uint8_t LevelScript::startSequenceOver()
 // ---- resetCamera_145ca8.cpp ----
 void LevelScript::resetCamera(Level *level)
 {
-    if (Level_getPlayer(level) != 0) {
+    if (((Level *)(level))->getPlayer() != 0) {
         void *camera = P(this, 0x14);
-        void *player = Level_getPlayer(level);
+        void *player = (void *)((Level *)(level))->getPlayer();
         TargetFollowCamera_setTarget(camera, P(player, 0x8));
         TargetFollowCamera_setTargetOffset(P(this, 0x14), StackVector(0.0f, 600.0f, -650.0f));
         TargetFollowCamera_setCamOffset(P(this, 0x14), StackVector(0.0f, 600.0f, -1338.0f));
@@ -116,9 +117,9 @@ void LevelScript::resetCamera(Level *level)
 // ---- skipSequence_145e08.cpp ----
 void LevelScript::skipSequence()
 {
-    if (I(this, 0x24) > 0 && Status_getCurrentCampaignMission(gStatus) > 0) {
+    if (I(this, 0x24) > 0 && ((Status *)(gStatus))->getCurrentCampaignMission() > 0) {
         I(this, 0x24) = 0x1b59;
-        void *player = Level_getPlayer((Level *)P(this, 0x18));
+        void *player = (void *)((Level *)((Level *)P(this, 0x18)))->getPlayer();
         return Player_setUnknown(P(player, 0), true);
     }
 }
@@ -135,31 +136,31 @@ void LevelScript::setAutoPilotToProgrammedStation()
     void **programmedStation = &gProgrammedStation;
     if (*programmedStation != 0) {
         void **status = &gStatus;
-        if (((Station *)(Status_getStation(*status)))->equals((Station *)*programmedStation) != 0) {
+        if (((Station *)(((Status *)(*status))->getStation()))->equals((Station *)*programmedStation) != 0) {
             *programmedStation = 0;
             return;
         }
 
         void *target;
         void *player;
-        if (((SolarSystem *)(Status_getSystem(*status)))->stationIsInSystem((Station *)*programmedStation) != 0) {
-            player = Level_getPlayer((Level *)P(this, 0x18));
-            void *targets = StarSystem_getPlanetTargets(Level_getStarSystem((Level *)P(this, 0x18)));
-            void *system = Status_getSystem(*status);
+        if (((SolarSystem *)(((Status *)(*status))->getSystem()))->stationIsInSystem((Station *)*programmedStation) != 0) {
+            player = (void *)((Level *)((Level *)P(this, 0x18)))->getPlayer();
+            void *targets = StarSystem_getPlanetTargets((void *)((Level *)((Level *)P(this, 0x18)))->getStarSystem());
+            void *system = (void *)((Status *)(*status))->getSystem();
             int stationIndex = Station_getIndex(*programmedStation);
             int targetIndex = ((SolarSystem *)(system))->getStationEnumIndex(stationIndex);
             target = ((void **)P(targets, 4))[targetIndex];
-        } else if (((SolarSystem *)(Status_getSystem(*status)))->currentOrbitHasWarpGate() != 0) {
-            player = Level_getPlayer((Level *)P(this, 0x18));
-            void *landmarks = Level_getLandmarks((Level *)P(this, 0x18));
+        } else if (((SolarSystem *)(((Status *)(*status))->getSystem()))->currentOrbitHasWarpGate() != 0) {
+            player = (void *)((Level *)((Level *)P(this, 0x18)))->getPlayer();
+            void *landmarks = (void *)((Level *)((Level *)P(this, 0x18)))->getLandmarks();
             target = ((void **)P(landmarks, 4))[1];
         } else {
-            int warpGateIndex = ((SolarSystem *)(Status_getSystem(*status)))->getWarpGateEnumIndex();
+            int warpGateIndex = ((SolarSystem *)(((Status *)(*status))->getSystem()))->getWarpGateEnumIndex();
             if (warpGateIndex < 0) {
                 return;
             }
-            player = Level_getPlayer((Level *)P(this, 0x18));
-            void *targets = StarSystem_getPlanetTargets(Level_getStarSystem((Level *)P(this, 0x18)));
+            player = (void *)((Level *)((Level *)P(this, 0x18)))->getPlayer();
+            void *targets = StarSystem_getPlanetTargets((void *)((Level *)((Level *)P(this, 0x18)))->getStarSystem());
             target = ((void **)P(targets, 4))[warpGateIndex];
         }
         return Player_setAutoPilotTarget(player, target);
@@ -240,15 +241,15 @@ LevelScript::~LevelScript()
 uint32_t LevelScript::canSkipCutsceneNow()
 {
     void **status = &gStatus;
-    if (Status_getCurrentCampaignMission(*status) == 0x9a) {
+    if (((Status *)(*status))->getCurrentCampaignMission() == 0x9a) {
         if (!((uint32_t)(I(this, 0x1c) - 1) < 9)) {
             return 0;
         }
-    } else if (Status_getCurrentCampaignMission(*status) == 0x9d) {
+    } else if (((Status *)(*status))->getCurrentCampaignMission() == 0x9d) {
         if (!((uint32_t)(I(this, 0x1c) - 2) < 3)) {
             return 0;
         }
-    } else if (Status_getCurrentCampaignMission(*status) == 0x9e && I(this, 0x1c) > 1) {
+    } else if (((Status *)(*status))->getCurrentCampaignMission() == 0x9e && I(this, 0x1c) > 1) {
         return 0;
     }
     return 1;
@@ -281,15 +282,15 @@ void LevelScript::skipCutscene()
     StackVector position;
     void **status = &gStatus;
 
-    int mission = Status_getCurrentCampaignMission(*status);
+    int mission = ((Status *)(*status))->getCurrentCampaignMission();
     if (mission == 0x9a) {
         if ((uint32_t)(I(this, 0x1c) - 1) < 9) {
             I(this, 0x1c) = 9;
             for (int i = 0; i != 8; ++i) {
-                void *messages = Level_getMessages((Level *)P(this, 0x18));
-                RadioMessage_trigger(((void **)P(messages, 4))[i]);
-                messages = Level_getMessages((Level *)P(this, 0x18));
-                RadioMessage_finish(((void **)P(messages, 4))[i]);
+                void *messages = (void *)((Level *)((Level *)P(this, 0x18)))->getMessages();
+                ((RadioMessage *)(((void **)P(messages, 4))[i]))->trigger();
+                messages = (void *)((Level *)((Level *)P(this, 0x18)))->getMessages();
+                ((RadioMessage *)(((void **)P(messages, 4))[i]))->finish();
             }
 
             I(this, 0x90) = 0x7d1;
@@ -310,26 +311,26 @@ void LevelScript::skipCutscene()
             SetVectorProc setVector = *(SetVectorProc *)((char *)P(fighter, 0) + 0x44);
             setVector(fighter, &position);
         }
-    } else if (Status_getCurrentCampaignMission(*status) == 0x9d) {
+    } else if (((Status *)(*status))->getCurrentCampaignMission() == 0x9d) {
         if (I(this, 0x1c) <= 4) {
             for (int i = 0; i != 4; ++i) {
-                void *messages = Level_getMessages((Level *)P(this, 0x18));
-                RadioMessage_trigger(((void **)P(messages, 4))[i]);
-                messages = Level_getMessages((Level *)P(this, 0x18));
-                RadioMessage_finish(((void **)P(messages, 4))[i]);
+                void *messages = (void *)((Level *)((Level *)P(this, 0x18)))->getMessages();
+                ((RadioMessage *)(((void **)P(messages, 4))[i]))->trigger();
+                messages = (void *)((Level *)((Level *)P(this, 0x18)))->getMessages();
+                ((RadioMessage *)(((void **)P(messages, 4))[i]))->finish();
             }
             I(this, 0x90) = 0x4651;
             I(this, 0x94) = 0;
             I(this, 0x1c) = 4;
         }
-    } else if (Status_getCurrentCampaignMission(*status) == 0x9e) {
+    } else if (((Status *)(*status))->getCurrentCampaignMission() == 0x9e) {
         I(this, 0x98) = 0x2ee1;
         I(this, 0x9c) = 0;
         for (int i = 0; i != 3; ++i) {
-            void *messages = Level_getMessages((Level *)P(this, 0x18));
-            RadioMessage_trigger(((void **)P(messages, 4))[i]);
-            messages = Level_getMessages((Level *)P(this, 0x18));
-            RadioMessage_finish(((void **)P(messages, 4))[i]);
+            void *messages = (void *)((Level *)((Level *)P(this, 0x18)))->getMessages();
+            ((RadioMessage *)(((void **)P(messages, 4))[i]))->trigger();
+            messages = (void *)((Level *)((Level *)P(this, 0x18)))->getMessages();
+            ((RadioMessage *)(((void **)P(messages, 4))[i]))->finish();
         }
 
         LevelListProc getList = gLevelListProc;
@@ -350,10 +351,10 @@ void LevelScript::skipCutscene()
 void LevelScript::process(int delta)
 {
     Level *level = (Level *)P(this, 0x18);
-    void *messages = Level_getMessages(level);
-    void *player = Level_getPlayer(level);
+    void *messages = (void *)((Level *)(level))->getMessages();
+    void *player = (void *)((Level *)(level))->getPlayer();
     void *activeMessages = Level_getActiveMessages(level);
-    int mission = Status_getCurrentCampaignMission(gStatus);
+    int mission = ((Status *)(gStatus))->getCurrentCampaignMission();
 
     (void)messages;
     (void)player;
@@ -412,7 +413,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     P(this, 0xcc) = 0;
     I(this, 0x8) = 0;
     I(this, 0xc) = 0;
-    I(this, 0x0) = Level_getTimeLimit(level);
+    I(this, 0x0) = ((Level *)(level))->getTimeLimit();
     I(this, 0x24) = 0;
     P(this, 0xd8) = 0;
     P(this, 0xdc) = 0;
@@ -420,17 +421,17 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
 
     TargetFollowCamera_setLookAtCam(camera, true);
 
-    void *player = Level_getPlayer(level);
+    void *player = (void *)((Level *)(level))->getPlayer();
     if (player == 0) {
         UC(this, 0x20) = 0;
     } else {
         ((Player *)(P(player, 0)))->setVulnerable(false);
     }
 
-    player = Level_getPlayer(level);
+    player = (void *)((Level *)(level))->getPlayer();
     ((PlayerEgo *)(player))->setCollide(false);
 
-    if (Status_getCurrentCampaignMission(gStatus) == 0) {
+    if (((Status *)(gStatus))->getCurrentCampaignMission() == 0) {
         I(this, 0x90) = 0;
         I(this, 0x94) = 0;
         UC(this, 0x21) = 1;

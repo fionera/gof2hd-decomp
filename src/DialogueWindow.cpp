@@ -1,4 +1,8 @@
 #include "gof2/DialogueWindow.h"
+#include "gof2/ChoiceWindow.h"
+#include "gof2/FModSound.h"
+#include "gof2/ScrollTouchWindow.h"
+#include "gof2/Status.h"
 #include "gof2/Agent.h"   // defines the canonical (identical-layout) `struct RetStr`
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
@@ -19,52 +23,33 @@
 // the full Layout.h is not required here.
 
 
-extern "C" int ScrollTouchWindow_OnTouchBegin(void *self, int x, int y);
-extern "C" int ChoiceWindow_OnTouchBegin(void *self, int x, int y);
 extern "C" int Mission_getTargetStation(Mission *self);
 extern "C" void ArrayReleaseClasses_ImagePartPtr(void *self);
 extern "C" void *Array_ImagePartPtr_dtor(void *self);
 extern "C" void *ScrollTouchWindow_dtor(void *self);
 extern "C" void operator_delete(void *self);
 extern "C" void operator_delete_arr(void *self);
-extern "C" int ScrollTouchWindow_OnTouchMove(void *self, int x, int y);
-extern "C" int ChoiceWindow_OnTouchMove(void *self, int x, int y);
 extern "C" Agent *Mission_getAgent(Mission *self);
 extern "C" void Mission_setWon(Mission *self, bool won);
 extern "C" void Mission_setFailed(Mission *self, bool failed);
-extern "C" int Status_getCurrentCampaignMission(void *status);
-extern "C" int FModSound_stop(void *self, int sound);
-extern "C" void FModSound_play(void *self, int sound, void *pos, int volume, int extra);
-extern "C" int FModSound_getEventPauseLength(void *self, int sound);
 extern "C" int Mission_getType(Mission *self);
 extern "C" void *Mission_getClientImage(Mission *self);
 extern "C" int Mission_getClientRace(Mission *self);
 extern "C" int Mission_getStatusValue(Mission *self);
-extern "C" void *Status_getStanding(void *status);
 extern "C" int AERandom_nextInt(void *self, int max);
 int GameText_getLanguage(void);
 extern "C" void String_ctor_literal(StringSlot *self, const char *text, bool copy);
 extern "C" void String_assign_slot(String *self, StringSlot *other);
 extern "C" void ScrollTouchWindow_setText4(void *self, StringSlot *style, StringSlot *text, int color);
 int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
-extern "C" void ScrollTouchWindow_update(void *self, int dt);
-extern "C" void ChoiceWindow_update(void *self, int dt);
-extern "C" void FModSound_getPlayingProgress(void *self, int sound);
-extern "C" int FModSound_isPlaying(void *self, int sound);
-extern "C" int ScrollTouchWindow_OnTouchEnd(void *self, int x, int y);
-extern "C" int ChoiceWindow_OnTouchEnd(void *self, int x, int y);
-extern "C" void ChoiceWindow_set(void *self, String *text, bool flag);
 extern "C" void *operator_new(unsigned size);
 extern "C" void *operator_new_arr(unsigned size);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void ChoiceWindow_ctor(void *self);
 extern "C" void TouchButton_ctor(void *self, String *text, int type, int x, int y, int width, int icon, int style);
-extern "C" void ScrollTouchWindow_setText(void *self, StringSlot *style, StringSlot *text);
 extern "C" int Agent_getRace(Agent *self);
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void Layout_drawMask(void *layout);
-extern "C" void ScrollTouchWindow_draw(void *self);
-extern "C" void ChoiceWindow_draw(void *self);
 struct Vec2;  // defined below (float x, y) -- only the pointer type is needed here
 void TouchButton_getPosition(Vec2 *out, void *self);
 
@@ -80,9 +65,9 @@ __attribute__((visibility("hidden"))) extern TouchHandler g_dw_touchButtonOnTouc
 int DialogueWindow::OnTouchBegin(int x, int y) {
     DialogueWindow *self = this;
     if (self->choiceActive != 0) {
-        ChoiceWindow_OnTouchBegin(self->choiceWindow, x, y);
+        ((ChoiceWindow *)(self->choiceWindow))->OnTouchBegin(x, y);
     } else {
-        ScrollTouchWindow_OnTouchBegin(self->scrollWindow, x, y);
+        ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchBegin(x, y);
         void *button = self->prevButton;
         TouchHandler fn = g_dw_touchButtonOnTouchBegin;
         fn(button, x, y);
@@ -189,9 +174,9 @@ __attribute__((visibility("hidden"))) extern TouchHandler g_dw_touchButtonOnTouc
 int DialogueWindow::OnTouchMove(int x, int y) {
     DialogueWindow *self = this;
     if (self->choiceActive != 0) {
-        ChoiceWindow_OnTouchMove(self->choiceWindow, x, y);
+        ((ChoiceWindow *)(self->choiceWindow))->OnTouchMove(x, y);
     } else {
-        ScrollTouchWindow_OnTouchMove(self->scrollWindow, x, y);
+        ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchMove(x, y);
         void *button = self->prevButton;
         TouchHandler fn = g_dw_touchButtonOnTouchMove;
         fn(button, x, y);
@@ -272,7 +257,7 @@ won:
 finish:
     self->page = 0;
     if (campaign == -1) {
-        campaign = Status_getCurrentCampaignMission(*g_dw_statusForSet);
+        campaign = ((Status *)(*g_dw_statusForSet))->getCurrentCampaignMission();
     }
     self->campaignMission = campaign;
     ((DialogueWindow *)(self))->loadContent();
@@ -302,7 +287,7 @@ void DialogueWindow::loadContent() {
     self->field_0x70 = 0;
     self->autoAdvanceTimer = 0;
     self->pauseLength = 0;
-    FModSound_stop(*sound, self->voiceSound);
+    ((FModSound *)(*sound))->stop(self->voiceSound);
     self->voiceSound = -1;
     ((TouchButton *)(self->nextButton))->setPressProgress(0);
 
@@ -359,7 +344,7 @@ void DialogueWindow::loadContent() {
         ((String *)((String *)((char *)self + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
 
         if (kind == 1) {
-            void *standing = Status_getStanding(*g_dw_statusLoad);
+            void *standing = (void *)(intptr_t)((Status *)(*g_dw_statusLoad))->getStanding();
             ((Standing *)(standing))->applyMissionCompleted(Mission_getClientRace(mission));
         }
         if (Mission_getTargetStation(mission) == 0x6c && kind == 0) {
@@ -395,8 +380,8 @@ void DialogueWindow::loadContent() {
     int soundId = Globals_getDialogueSoundId(*g_dw_globalsLoad, textId, agent);
     self->voiceSound = soundId;
     if (soundId >= 0) {
-        FModSound_play(*sound, soundId, 0, 0, 0);
-        self->pauseLength = FModSound_getEventPauseLength(*sound, soundId);
+        ((FModSound *)(*sound))->play(soundId, 0, 0, 0);
+        self->pauseLength = ((FModSound *)(*sound))->getEventPauseLength(soundId);
     }
 }
 
@@ -417,17 +402,17 @@ void DialogueWindow::update(int dt) {
     DialogueWindow *self = this;
     void *scroll = self->scrollWindow;
     if (scroll != 0) {
-        ScrollTouchWindow_update(scroll, dt);
+        ((ScrollTouchWindow *)(scroll))->update(dt);
     }
     if (self->choiceActive != 0) {
-        ChoiceWindow_update(self->choiceWindow, dt);
+        ((ChoiceWindow *)(self->choiceWindow))->update(dt);
     }
     if (F<uint8_t>(g_dw_soundConfig, 0xe) != 0 && self->voiceSound != -1) {
         void **sound = g_dw_fmodSound;
-        FModSound_getPlayingProgress(*sound, self->voiceSound);
+        ((FModSound *)(*sound))->getPlayingProgress(self->voiceSound);
         void *playingSound = *sound;
         int playingId = self->voiceSound;
-        if (FModSound_isPlaying(playingSound, playingId) == 0 &&
+        if (((FModSound *)(playingSound))->isPlaying(playingId) == 0 &&
             ((DialogueWindow *)(self))->isLastPage() == 0) {
             int elapsed = self->autoAdvanceTimer;
             if (elapsed >= self->pauseLength) {
@@ -450,20 +435,20 @@ __attribute__((visibility("hidden"))) extern void **g_dw_gameTextTouchEnd;
 int DialogueWindow::OnTouchEnd(int x, int y) {
     DialogueWindow *self = this;
     if (self->choiceActive != 0) {
-        int r = ChoiceWindow_OnTouchEnd(self->choiceWindow, x, y);
+        int r = ((ChoiceWindow *)(self->choiceWindow))->OnTouchEnd(x, y);
         if (r == 1) {
             goto choice_close;
         }
         if (r != 0) goto choice_return_zero;
         self->choiceActive = 0;
-        if (Status_getCurrentCampaignMission(*g_dw_statusTouchEnd) == 0x0f) {
+        if (((Status *)(*g_dw_statusTouchEnd))->getCurrentCampaignMission() == 0x0f) {
             void **sound = g_dw_soundChoice;
-            FModSound_play(*sound, 0xa2, 0, 0, 0);
-            FModSound_stop(*sound, F<int>(*sound, 0));
-            FModSound_play(*sound, 0x88, 0, 0, 0);
+            ((FModSound *)(*sound))->play(0xa2, 0, 0, 0);
+            ((FModSound *)(*sound))->stop(F<int>(*sound, 0));
+            ((FModSound *)(*sound))->play(0x88, 0, 0, 0);
         }
         if (self->voiceSound != -1) {
-            FModSound_stop(*g_dw_soundVoice, self->voiceSound);
+            ((FModSound *)(*g_dw_soundVoice))->stop(self->voiceSound);
         }
         return 1;
 
@@ -473,13 +458,13 @@ choice_return_zero:
         return 0;
     }
 
-    ScrollTouchWindow_OnTouchEnd(self->scrollWindow, x, y);
+    ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchEnd(x, y);
     if (((TouchButton *)(self->prevButton))->OnTouchEnd(x, y) != 0) {
-        FModSound_stop(*g_dw_soundPrev, self->voiceSound);
+        ((FModSound *)(*g_dw_soundPrev))->stop(self->voiceSound);
         ((DialogueWindow *)(self))->previousPage();
     }
     if (((TouchButton *)(self->nextButton))->OnTouchEnd(x, y) != 0) {
-        FModSound_stop(*g_dw_soundNext, self->voiceSound);
+        ((FModSound *)(*g_dw_soundNext))->stop(self->voiceSound);
         if (((DialogueWindow *)(self))->nextPage() == 0) {
             return 1;
         }
@@ -487,7 +472,7 @@ choice_return_zero:
     if (((TouchButton *)(self->moreButton))->OnTouchEnd(x, y) != 0) {
         void *choice = self->choiceWindow;
         String *text = (String *)((GameText *)(*g_dw_gameTextTouchEnd))->getText(0x18c);
-        ChoiceWindow_set(choice, text, true);
+        ((ChoiceWindow *)(choice))->set(*text, true);
         self->choiceActive = 1;
     }
     return 0;
@@ -617,7 +602,7 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     void *scroll = self->scrollWindow;
     String_ctor_literal(&blank, g_dw_emptyString, false);
     ((String *)(&copy))->ctor_copy(text, false);
-    ScrollTouchWindow_setText(scroll, &blank, &copy);
+    ((ScrollTouchWindow *)(scroll))->setText(*(String *)(&blank), *(String *)(&copy));
     ((String *)(&copy))->dtor();
     ((String *)(&blank))->dtor();
 
@@ -744,7 +729,7 @@ void DialogueWindow::draw() {
     ((Layout *)(layout))->drawBox(7, self->frameX, self->frameY, self->frameWidth, self->frameHeight, &title, 1);
     ((String *)(&title))->dtor();
 
-    ScrollTouchWindow_draw(self->scrollWindow);
+    ((ScrollTouchWindow *)(self->scrollWindow))->draw();
 
     layout = *g_dw_layoutDraw;
     int margin = F<int>(layout, 0x4c);
@@ -756,7 +741,7 @@ void DialogueWindow::draw() {
     drawButton(self->moreButton);
 
     if (self->choiceActive != 0) {
-        ChoiceWindow_draw(self->choiceWindow);
+        ((ChoiceWindow *)(self->choiceWindow))->draw();
     }
 
     if (*g_dw_drawPositionsReady == 0) {

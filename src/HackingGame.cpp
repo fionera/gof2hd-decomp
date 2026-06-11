@@ -1,7 +1,7 @@
 #include "gof2/HackingGame.h"
+#include "gof2/FModSound.h"
 
 
-extern "C" void FModSound_play(void *sound, int id, void *pos, void *vel, float volume);
 extern "C" void PaintCanvas_Image2DCreate(void *canvas, uint16_t image, uint32_t *out);
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" int PaintCanvas_GetImage2DWidth(void *canvas, int image);
@@ -26,7 +26,7 @@ void HackingGame::rotateLeftCW(bool sound)
     if (I(this, 0x130) != 0)
         return;
     if (sound)
-        FModSound_play(*g_HackingGame_sound_left, 0x8e2, 0, 0, 0.0f);
+        ((FModSound *)(*g_HackingGame_sound_left))->play(0x8e2, 0, 0, 0.0f);
     return rotateLeftCW((int *)((char *)this + 0x34));
 }
 
@@ -76,7 +76,7 @@ void HackingGame::rotateRightCW(bool sound)
     if (I(this, 0x130) != 0)
         return;
     if (sound)
-        FModSound_play(*g_HackingGame_sound_right, 0x8e2, 0, 0, 0.0f);
+        ((FModSound *)(*g_HackingGame_sound_right))->play(0x8e2, 0, 0, 0.0f);
     return rotateRightCW((int *)((char *)this + 0x34));
 }
 
@@ -462,10 +462,6 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
 }
 
 // ---- update_14f138.cpp ----
-struct FModSound {
-    void play(int id, void *pos, void *vel, float volume);
-};
-
 __attribute__((visibility("hidden"))) extern FModSound **g_HackingGame_update_sound;
 
 int HackingGame::update(int dt)

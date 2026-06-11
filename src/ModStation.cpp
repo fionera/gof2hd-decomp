@@ -1,4 +1,15 @@
 #include "gof2/ModStation.h"
+#include "gof2/FModSound.h"
+#include "gof2/ChoiceWindow.h"
+#include "gof2/CutScene.h"
+#include "gof2/EaseInOut.h"
+#include "gof2/Item.h"
+#include "gof2/MissionsWindow.h"
+#include "gof2/NewsTicker.h"
+// Radio.h omitted: it embeds conflicting inline defs of Layout/ImageFactory/Agent.
+// ModStation only needs Radio::lastMessageShown(); supply a minimal decl instead.
+struct Radio { unsigned char lastMessageShown(); };
+#include "gof2/StarMap.h"
 #include "gof2/Achievements.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/DialogueWindow.h"
@@ -43,14 +54,11 @@ struct StatusWindow {
     int OnTouchMove(int param_1, int param_2);
 };
 
-extern "C" long long Status_getPlayingTime(Status *s);
 extern "C" void *ModStation_op_new(unsigned int sz);
 extern "C" void ModStation_op_delete(void *p);
 extern "C" void ModStation_autosaveTail();
-extern "C" Station *Status_getStation(void *s);
 extern "C" Item *Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
 extern "C" int Ship_getIndex(Ship *ship);
-extern "C" int Item_getIndex(Item *it);
 extern "C" void ModStation_suspendTail(void *obj, void **holder);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModStation_resumeTail(void *obj, int one, int arg);
@@ -58,43 +66,26 @@ extern "C" void ModStation_dtor_finish(ModStation *self);
 extern "C" void ModStation_String_dtor(void *s);
 extern "C" void ModStation_leaveStation_impl(ModStation *self);
 void Globals_reportLeaderboards(void *obj);
-extern "C" int Status_getCurrentCampaignMission(void *s);
 extern "C" int *Achievements_getNewMedals(Achievements *a);
 extern "C" void *cm_op_new(unsigned int sz);
 extern "C" void Array_int_ctor(void *a);
 extern "C" void ArraySetLength_int(unsigned int n, void *a);
 extern "C" void *cm_op_new_arr(unsigned int sz);
 extern "C" void ChoiceWindow_ctor(void *cw);
-extern "C" void ChoiceWindow_setMedal(void *cw, int a, int b);
-extern "C" int Status_hardCoreMode();
 extern "C" void Status_changeCredits(int delta);
 extern "C" void ModStation_cm_tail(void *p, int a, int b);
 extern "C" void PaintCanvas_ClearBuffer(void *c);
 extern "C" void PaintCanvas_Begin3d(void *c);
 extern "C" void StarMap_renderBG(void *p);
-extern "C" void CutScene_renderBG();
-extern "C" void StarMap_render(void *p);
-extern "C" void MissionsWindow_render3D(void *p);
-extern "C" void CutScene_render3D(void *p);
 extern "C" void ModStation_r3d_endTail(void *c);
-extern "C" void CutScene_resetCamera();
 extern "C" void *ric_op_new(unsigned int sz);
 extern "C" void EaseInOut_ctor(void *self, int a, int b);
-extern "C" void EaseInOut_SetRange(void *self, int a, int b);
 extern "C" void *PaintCanvas_CameraGetCurrent(void *c);
 extern "C" void *PaintCanvas_CameraGetLocal(void *c);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
 extern "C" void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int a4, int a5);
 extern "C" int Station_getIndex(Station *st);
-extern "C" void Status_getSystem(void *s);
 extern "C" int SolarSystem_getRace();
-extern "C" void StarMap_OnTouchMove(void *w, int x, int y);
-extern "C" void MissionsWindow_OnTouchMove(void *w, int x, int y);
-extern "C" void MenuTouchWindow_OnTouchMove(void *w, int x, int y);
-extern "C" void ChoiceWindow_OnTouchMove(void *w, int x, int y);
-extern "C" int NewsTicker_OnTouchMove(void *w, int x, int y);
-extern "C" void FModSound_disableReverb();
-extern "C" void FModSound_stopAllSoundFXEvents();
 extern "C" void PaintCanvas_FogEnable(void *c, int a, int b);
 extern "C" void PaintCanvas_ReleaseAllResources();
 int GameText_getLanguage();
@@ -110,19 +101,12 @@ extern "C" void *DialogueWindow_dtor(void *p);
 extern "C" void *ChoiceWindow_dtor(void *p);
 extern "C" void *StatusWindow_dtor(void *p);
 extern "C" void *CutScene_dtor(void *p);
-extern "C" void *MenuTouchWindow_dtor(void *p);
 extern "C" void *Radio_dtor(void *p);
 extern "C" void *Array_RM_dtor(void *p);
 extern "C" void *NewsTicker_dtor(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *ScrollTouchBox_dtor(void *p);
 extern "C" void ModStation_or_tail();
-extern "C" int Radio_lastMessageShown(void *radio);
-extern "C" void StarMap_OnTouchBegin(void *w, int x, int y);
-extern "C" void MissionsWindow_OnTouchBegin(void *w, int x, int y);
-extern "C" void MenuTouchWindow_OnTouchBegin(void *w, int x, int y);
-extern "C" void ChoiceWindow_OnTouchBegin(void *w, int x, int y);
-extern "C" int NewsTicker_OnTouchBegin(void *w, int x, int y);
 
 // ---- autosave_d7054.cpp ----
 struct Status;
@@ -134,7 +118,7 @@ __attribute__((visibility("hidden"))) extern Status **g_ModStation_statusHolder;
 void ModStation::autosave() {
     ModStation *self = this;
     Status *st = *g_ModStation_statusHolder;
-    if (Status_getPlayingTime(st) - 1LL < 0)
+    if (((Status *)(st))->getPlayingTime() - 1LL < 0)
         return;
     void *rh = ModStation_op_new(0x2c);
     ((RecordHandler *)(rh))->ctor();
@@ -172,9 +156,9 @@ void ModStation_enterStation()
     {
         void (Status::*depart)(Station *) =
             reinterpret_cast<void (Status::*)(Station *)>(&Status::departStation);
-        (((Status *)status)->*depart)(Status_getStation(status));
+        (((Status *)status)->*depart)(((Status *)(status))->getStation());
     }
-    ((Station *)(Status_getStation(holder[0])))->visit();
+    ((Station *)(((Status *)(holder[0]))->getStation()))->visit();
     ((Achievements *)(g_ModStation_es_ach[0]))->applyNewMedals();
 
     Ship *(*getShip)(Status *) = g_ModStation_es_getShip;
@@ -188,7 +172,7 @@ void ModStation_enterStation()
     if (e10 == 0) {
         v = -1;
     } else {
-        v = Item_getIndex(e10);
+        v = ((Item *)(e10))->getIndex();
         s = holder[0];
     }
     I(s, 0x154) = v;
@@ -196,7 +180,7 @@ void ModStation_enterStation()
     if (e9 == 0) {
         v = -1;
     } else {
-        v = Item_getIndex(e9);
+        v = ((Item *)(e9))->getIndex();
         s = holder[0];
     }
     I(s, 0x158) = v;
@@ -598,9 +582,9 @@ void ModStation::checkMedals() {
             return;
         }
         int *medal = *(int **)(I(P(self, 0xbc), 4) + idx * 4);
-        ChoiceWindow_setMedal(P(self, 0x88), medal[0], medal[1]);
+        ((ChoiceWindow *)(P(self, 0x88)))->setMedal(medal[0], medal[1]);
         int delta = *g_ModStation_cm_credit2;
-        if (Status_hardCoreMode() == 0)
+        if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
             Status_changeCredits(delta);
         int *p = *(int **)(I(P(self, 0xbc), 4) + I(self, 0xc0) * 4);
         ModStation_cm_tail(p, p[0], p[1]);
@@ -608,7 +592,7 @@ void ModStation::checkMedals() {
     }
 
     int delta = *g_ModStation_cm_credit1;
-    if (Status_getCurrentCampaignMission(*g_ModStation_cm_status) == 1)
+    if (((Status *)(*g_ModStation_cm_status))->getCurrentCampaignMission() == 1)
         ((ModStation *)((ModStation *)1))->addAchievement(0, 1);
     P(self, 0xbc) = 0;
     int *medals = Achievements_getNewMedals(g_ModStation_cm_ach[0]);
@@ -646,8 +630,8 @@ void ModStation::checkMedals() {
     ChoiceWindow_ctor(cw);
     P(self, 0x88) = cw;
     int *medal = (int *)*(int **)(I(P(self, 0xbc), 4));
-    ChoiceWindow_setMedal(cw, medal[0], medal[1]);
-    if (Status_hardCoreMode() == 0)
+    ((ChoiceWindow *)(cw))->setMedal(medal[0], medal[1]);
+    if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
         Status_changeCredits(delta);
     int *p = (int *)*(int **)(I(P(self, 0xbc), 4));
     ModStation_cm_tail(p, p[0], p[1]);
@@ -682,17 +666,17 @@ void ModStation::OnRender3D() {
             ((SpaceLounge *)(P(self, 0x74)))->OnRenderBG();
         }
     } else {
-        CutScene_renderBG();
+        ((CutScene *)(P(self, 0x14)))->renderBG();
     }
     PaintCanvas_Begin3d(*holder);
     if (*p65 != 0)
         ((SpaceLounge *)(P(self, 0x74)))->OnRender3D();
     else if (C(self, 0x67) != 0)
-        StarMap_render(P(self, 0x10));
+        ((StarMap *)(P(self, 0x10)))->render();
     else if (C(self, 0x64) != 0)
-        MissionsWindow_render3D(P(self, 0x80));
+        ((MissionsWindow *)(P(self, 0x80)))->render3D();
     else if (C(self, 0x66) == 0 && P(self, 0x14) != 0)
-        CutScene_render3D(P(self, 0x14));
+        ((CutScene *)(P(self, 0x14)))->render3D();
     ModStation_r3d_endTail(*holder);
 }
 
@@ -1166,24 +1150,24 @@ void ModStation::resetIdleCamForHangar() {
     char matrix[60];
 
     if (P(self, 0x14) != 0)
-        CutScene_resetCamera();
+        ((CutScene *)(P(self, 0x14)))->resetCamera();
 
     if (P(self, 0x13c) != 0) {
-        EaseInOut_SetRange(P(self, 0x13c), I(self, 0x130), I(self, 0x130));
+        ((AbyssEngine::EaseInOut *)(P(self, 0x13c)))->SetRange(I(self, 0x130), I(self, 0x130));
     } else {
         void *p = ric_op_new(0x10);
         EaseInOut_ctor(p, I(self, 0x130), I(self, 0x130));
         P(self, 0x13c) = p;
     }
     if (P(self, 0x140) != 0) {
-        EaseInOut_SetRange(P(self, 0x140), I(self, 0x134), I(self, 0x134));
+        ((AbyssEngine::EaseInOut *)(P(self, 0x140)))->SetRange(I(self, 0x134), I(self, 0x134));
     } else {
         void *p = ric_op_new(0x10);
         EaseInOut_ctor(p, I(self, 0x134), I(self, 0x134));
         P(self, 0x140) = p;
     }
     if (P(self, 0x144) != 0) {
-        EaseInOut_SetRange(P(self, 0x144), I(self, 0x138), I(self, 0x138));
+        ((AbyssEngine::EaseInOut *)(P(self, 0x144)))->SetRange(I(self, 0x138), I(self, 0x138));
     } else {
         void *p = ric_op_new(0x10);
         EaseInOut_ctor(p, I(self, 0x138), I(self, 0x138));
@@ -1197,15 +1181,15 @@ void ModStation::resetIdleCamForHangar() {
     AEMath_MatrixSetTranslation(matrix, I(self, 0x130), I(self, 0x134), I(self, 0x138));
 
     int race;
-    Station *st = Status_getStation(*g_ModStation_ric_status);
+    Station *st = ((Status *)(*g_ModStation_ric_status))->getStation();
     if (Station_getIndex(st) == 0x65) {
         race = 8;
     } else {
-        st = Status_getStation(*g_ModStation_ric_status);
+        st = ((Status *)(*g_ModStation_ric_status))->getStation();
         if (Station_getIndex(st) == 100) {
             race = 7;
         } else {
-            Status_getSystem(*g_ModStation_ric_status);
+            ((Status *)(*g_ModStation_ric_status))->getSystem();
             race = SolarSystem_getRace();
         }
     }
@@ -1367,11 +1351,11 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
         return;
     }
     if (C(self, 0x63) != 0) {
-        ChoiceWindow_OnTouchMove(P(self, 0x70), x, y);
+        ((ChoiceWindow *)(P(self, 0x70)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x6a) != 0) {
-        ChoiceWindow_OnTouchMove(P(self, 0x88), x, y);
+        ((ChoiceWindow *)(P(self, 0x88)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x66) != 0) {
@@ -1379,7 +1363,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
         return;
     }
     if (C(self, 0x67) != 0) {
-        StarMap_OnTouchMove(P(self, 0x10), x, y);
+        ((StarMap *)(P(self, 0x10)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x65) != 0) {
@@ -1391,11 +1375,11 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
         return;
     }
     if (C(self, 0x64) != 0) {
-        MissionsWindow_OnTouchMove(P(self, 0x80), x, y);
+        ((MissionsWindow *)(P(self, 0x80)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x62) != 0) {
-        MenuTouchWindow_OnTouchMove(P(self, 0x50), x, y);
+        ((MenuTouchWindow *)(P(self, 0x50)))->OnTouchMove(x, y);
         return;
     }
     if (C(self, 0x61) == 0)
@@ -1405,7 +1389,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     for (int i = 0; i != 5; i++)
         ((TouchButton *)(*(void **)(I(P(self, 0x8c), 4) + i * 4)))->OnTouchMove(x, y);
     ((Layout *)(layoutObj))->OnTouchMove(x, y);
-    if (NewsTicker_OnTouchMove(P(self, 0x1c), x, y) != 0)
+    if (((NewsTicker *)(P(self, 0x1c)))->OnTouchMove(x, y) != 0)
         return;
     int *layout = (int *)layoutObj;
     if (y <= layout[0xc / 4])
@@ -1439,8 +1423,8 @@ void ModStation::OnRelease() {
     ModStation *self = this;
     void **soundHolder = g_ModStation_or_sound;
     if (*soundHolder != 0) {
-        FModSound_disableReverb();
-        FModSound_stopAllSoundFXEvents();
+        ((FModSound *)(*soundHolder))->disableReverb();
+        ((FModSound *)(*soundHolder))->stopAllSoundFXEvents();
     }
     PaintCanvas_FogEnable(*g_ModStation_or_canvas, 0, 1);
 
@@ -1484,7 +1468,7 @@ void ModStation::OnRelease() {
     P(self, 0x14) = 0;
 
     if (P(self, 0x50) != 0)
-        ms_op_delete(MenuTouchWindow_dtor(P(self, 0x50)));
+        ms_op_delete(((MenuTouchWindow *)(P(self, 0x50)))->dtor());
     P(self, 0x50) = 0;
 
     if (P(self, 0x54) != 0)
@@ -2353,7 +2337,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     I(self, 0x110) = x;
     I(self, 0x114) = y;
     if (flag != 0) {
-        if (Radio_lastMessageShown(P(self, 0x54)) != 0) {
+        if (((Radio *)(P(self, 0x54)))->lastMessageShown() != 0) {
             UC(self, 0x24) = 0;
             ((Status *)((char)*(int *)*g_ModStation_tb_campaign))->nextCampaignMission();
             unsigned int mod = *(unsigned int *)*g_ModStation_tb_appmod;
@@ -2375,11 +2359,11 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         return;
     }
     if (C(self, 0x63) != 0) {
-        ChoiceWindow_OnTouchBegin(P(self, 0x70), x, y);
+        ((ChoiceWindow *)(P(self, 0x70)))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x6a) != 0) {
-        ChoiceWindow_OnTouchBegin(P(self, 0x88), x, y);
+        ((ChoiceWindow *)(P(self, 0x88)))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x66) != 0) {
@@ -2391,7 +2375,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         return;
     }
     if (C(self, 0x67) != 0) {
-        StarMap_OnTouchBegin(P(self, 0x10), x, y);
+        ((StarMap *)(P(self, 0x10)))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x68) != 0) {
@@ -2399,11 +2383,11 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         return;
     }
     if (C(self, 0x64) != 0) {
-        MissionsWindow_OnTouchBegin(P(self, 0x80), x, y);
+        ((MissionsWindow *)(P(self, 0x80)))->OnTouchBegin(x, y);
         return;
     }
     if (C(self, 0x62) != 0) {
-        MenuTouchWindow_OnTouchBegin(P(self, 0x50), x, y);
+        ((MenuTouchWindow *)(P(self, 0x50)))->OnTouchBegin(x, y, (int)(intptr_t)touch);
         return;
     }
     if (C(self, 0x61) == 0)
@@ -2413,7 +2397,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     for (int i = 0; i != 5; i++)
         ((TouchButton *)(*(void **)(I(P(self, 0x8c), 4) + i * 4)))->OnTouchBegin(x, y);
     ((Layout *)(layoutObj))->OnTouchBegin(x, y);
-    if (NewsTicker_OnTouchBegin(P(self, 0x1c), x, y) != 0)
+    if (((NewsTicker *)(P(self, 0x1c)))->OnTouchBegin(x, y) != 0)
         return;
     int *layout = (int *)layoutObj;
     if (y <= layout[0xc / 4])
