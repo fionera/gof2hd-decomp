@@ -46,7 +46,8 @@ extern "C" char _ZTVN11AbyssEngine11ColorMixAddE[];
 
 
 
-struct ColorMixAdd : ShaderBaseStruct {
+class ColorMixAdd : public ShaderBaseStruct  {
+public:
     static int ShaderIndex;
 
     int      program;                 // +0x4   GL program handle

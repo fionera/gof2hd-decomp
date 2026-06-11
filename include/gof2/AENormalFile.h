@@ -56,7 +56,8 @@ static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
 // by +8 past the RTTI header when installed into the object.
 __attribute__((visibility("hidden"))) extern void *g_AENormalFile_vtable;
 
-struct AENormalFile {
+class AENormalFile {
+public:
     void *vtable;     // +0x0  vtable ptr (installed as g_AENormalFile_vtable + 8)
     FI   *held;       // +0x4  held FileInterface, see fi_held()
 

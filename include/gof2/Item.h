@@ -10,7 +10,8 @@ struct Item;
 // attribute/quantity blobs loaded from the .bin tables).
 typedef Array<Item*> ItemArray;
 
-struct Item {
+class Item {
+public:
     int index;
     int type;
     int sort;

@@ -22,7 +22,8 @@ struct Triple { int a, b, c; };
 
 // Field accessors via byte offsets.
 
-struct Agent {
+class Agent {
+public:
     void* wingman1;                    // +0xc
     void* wingman2;                   // +0x10
     int wingmanCount;                     // +0x14

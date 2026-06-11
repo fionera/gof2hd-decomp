@@ -10,7 +10,8 @@ struct Level;
 
 // Field accessors via byte offset.
 
-struct CutScene {
+class CutScene {
+public:
     // raw field storage (offsets referenced through the i32/u32/u8/f32/pp helpers above)
     char field_storage[0x90];
 

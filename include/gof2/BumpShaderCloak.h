@@ -50,7 +50,8 @@ struct ShaderBaseStruct {
 
 
 // AbyssEngine::BumpShaderCloak — GLES2 refraction/cloak shader (derives from ShaderBaseStruct).
-struct BumpShaderCloak {
+class BumpShaderCloak {
+public:
     static int ShaderIndex;
 
     void Init(Engine *engine);

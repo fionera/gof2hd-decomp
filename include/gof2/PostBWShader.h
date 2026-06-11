@@ -38,7 +38,8 @@ struct ShaderBaseStruct {
 };
 
 // AbyssEngine::PostBWShader
-struct PostBWShader : ShaderBaseStruct {
+class PostBWShader : public ShaderBaseStruct  {
+public:
     uint8_t field_0x9;                  // +0x9 dirty flag
     String field_0xc;                   // +0xc shader name
     uint32_t field_0x4_program;         // GL program handle (stored at base +0x4)

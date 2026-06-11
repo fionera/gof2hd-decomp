@@ -20,7 +20,8 @@ static inline uint8_t &B(HackingGame *self, uint32_t off)
     return *(uint8_t *)((char *)self + off);
 }
 
-struct HackingGame {
+class HackingGame {
+public:
     HackingGame(int type, int canvas, int rewardItem, int rewardAmount, int dockingIndex);
 
     int  getDockingIndex();

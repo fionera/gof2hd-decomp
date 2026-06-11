@@ -11,7 +11,8 @@ struct TouchSlider;
 
 // Templated byte-offset field accessor: F<int>(this, 0x14) etc.
 
-struct TouchSlider {
+class TouchSlider {
+public:
     int x;                      // +0x0
     int y;                      // +0x4
     int knobX;                      // +0x8

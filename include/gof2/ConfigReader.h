@@ -59,7 +59,8 @@ struct TokenStruct {
     void *context;
 };
 
-struct ConfigReader {
+class ConfigReader {
+public:
     Array<TokenStruct *> tokens; // 0x0  { count@0x0, data@0x4, cap@0x8 }
     Engine *engine;              // 0xc
     uint32_t file_handle;        // 0x10

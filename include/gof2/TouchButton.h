@@ -16,7 +16,8 @@ static inline char*           B (void* p, int off) { return (char*)p + off; }
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 
-struct TouchButton { void* _opaque; 
+class TouchButton {
+public: void* _opaque; 
     // ---- methods (converted from free functions) ----
     bool OnTouchBegin(int px, int py);
     unsigned int OnTouchEnd(int px, int py);

@@ -19,7 +19,8 @@ static inline char*           B(void* p, int off) { return (char*)p + off; }
 // I()/P() byte-offset accessors are provided as macros in PlayerEgo.cpp to avoid
 // colliding with the identical static-inline definitions in Explosion.h / Hud.h.
 
-struct PlayerEgo {
+class PlayerEgo {
+public:
     void* player;                    // +0x0
     AEGeometry* field_0x4;              // +0x4
     AEGeometry* geometry;              // +0x8

@@ -69,7 +69,8 @@ typedef AbyssEngine::AEMath::Vector Vector;
 
 // Field accessors via byte offset.
 
-struct KIPlayer {
+class KIPlayer {
+public:
     void* player;                    // +0x4   Player*
     void* geometry;                    // +0x8
     void* parentGeometry;                    // +0xc

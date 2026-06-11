@@ -21,7 +21,8 @@ struct AEGeometry;
 // PlayerStaticFar derives from PlayerStatic; only the fields touched by the
 // recovered methods are named, the rest of the base layout is preserved as
 // padding so the byte offsets stay correct (0x140 bytes total).
-struct PlayerStaticFar {
+class PlayerStaticFar {
+public:
     void *vtable;            // +0x00  vtable pointer
     void *player;            // +0x04  Player*
     void *geometry;            // +0x08  AEGeometry*

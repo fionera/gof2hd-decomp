@@ -10,7 +10,8 @@ using Vector = AbyssEngine::AEMath::Vector;
 // Layout:
 //   0x00..0x1f  BoundingVolume base (vtable, children, center, extents)
 //   0x38        float radius
-struct BoundingSphere : BoundingVolume {
+class BoundingSphere : public BoundingVolume  {
+public:
     // BoundingVolume base occupies 0x00..0x1f (size 0x20). The compiler-laid
     // base is followed by sphere-specific fields. The real binary places the
     // radius at object offset 0x38; padding members keep the layout faithful.

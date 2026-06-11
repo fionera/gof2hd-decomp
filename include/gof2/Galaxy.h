@@ -17,7 +17,8 @@ static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
 
 // Galaxy — owns the per-station visited-flag array (at +0x0) and the SolarSystem* Array (+0x4).
 // Field access is via the B/I/U/P offset-cast helpers above; storage covers offsets 0x0..0x8.
-struct Galaxy {
+class Galaxy {
+public:
     Galaxy();
 
     void reset();

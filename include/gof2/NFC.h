@@ -29,7 +29,8 @@ extern "C" void NFC_DeleteLocalRef(void *env);
 // metrics). All members are static-style entry points operating on global JNI slots
 // (nfc_env / nfc_class_slot / nfc_method_name / nfc_method_sig); the class itself
 // carries no instance state.
-struct NFC {
+class NFC {
+public:
     void* _opaque;  // no offset accesses observed
 
     void iap_buy_dlc_full_package();

@@ -27,7 +27,8 @@ struct PlayerFixedObject;
 
 // Galaxy on Fire 2 — Level (the in-flight game world / mission space).
 // Layout deduced from getter/setter disassembly. Total size 0x2a0.
-struct Level {
+class Level {
+public:
     // --- header / skybox + objective state (0x00..0xb0) ---
     uint vtable;             // 0x00 (4-byte vtable slot; ARM32 32-bit pointer layout)
     int skyboxMesh;          // 0x04

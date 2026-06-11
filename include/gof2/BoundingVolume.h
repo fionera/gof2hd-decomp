@@ -10,7 +10,8 @@
 //   0x08 Vector                    center  (x@0x08, y@0x0c, z@0x10)
 //   0x14 Vector                    extents (x@0x14, y@0x18, z@0x1c)
 
-struct BoundingVolume {
+class BoundingVolume {
+public:
     void* vtable;                    // +0x0  vtable
     Array<BoundingVolume*>* children;  // +0x4  children
     float centerX;                    // +0x8  center.x

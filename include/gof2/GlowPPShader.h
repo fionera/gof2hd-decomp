@@ -75,7 +75,8 @@ extern "C" uint32_t g_GlowPPShader_vtable;
 extern "C" uint32_t g_GlowPPShader_typeInfoSrc;
 extern "C" uint32_t g_GlowPPShader_typeInfoDst;
 
-struct GlowPPShader {
+class GlowPPShader {
+public:
     FBOContainer* copyTarget;           // +0x3c  copy target
     FBOContainer* blurXTarget;           // +0x58  blurX target
     FBOContainer* blurYTarget;           // +0x74  blurY target

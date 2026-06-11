@@ -17,7 +17,8 @@ typedef AbyssEngine::String String;
 
 // Field accessor via byte offset (used by the few stateful methods).
 
-struct Globals {
+class Globals {
+public:
     Array<int>* field_0x4;              // +0x4  (sound-resource id list)
     int field_0x34;                     // +0x34
     void* field_0x3c;                   // +0x3c

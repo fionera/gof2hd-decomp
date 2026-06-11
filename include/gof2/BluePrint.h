@@ -30,7 +30,8 @@ struct Station;
 
 // Field accessor via byte offset.
 
-struct BluePrint {
+class BluePrint {
+public:
     Array<int>* ingredientCounters;              // +0x0  ingredient remaining-quantity counters
     int32_t spentValue;                  // +0x4  spent value
     uint8_t locked;                  // +0x8  locked flag

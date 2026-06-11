@@ -70,7 +70,8 @@ static inline int &I(void *p, int off)   { return *(int *)((char *)p + off); }
 // past the RTTI header when installed.
 __attribute__((visibility("hidden"))) extern void *g_AEPakFile_vtable;
 
-struct AEPakFile {
+class AEPakFile {
+public:
     void *field_0x0;    // +0x0 vtable
     FI *fileInterface;      // +0x4 held FileInterface
     int sizeLimit;      // +0x8 size limit

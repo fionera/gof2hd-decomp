@@ -89,7 +89,8 @@ struct Engine {
     unsigned char field_0xfc;           // +0xfc
 };
 
-struct PaintCanvas {
+class PaintCanvas {
+public:
     int field_0x4;                      // +0x4
     char* field_0x8;                    // +0x8
     int field_0xc;                      // +0xc

@@ -33,7 +33,8 @@ struct Engine;
 struct Mesh;
 
 // AbyssEngine::TexOnlyShader — minimal GLES2 shader that only samples a texture.
-struct TexOnlyShader {
+class TexOnlyShader {
+public:
     void *field_0x0;     // vtable
     uint32_t program;  // program handle
     uint8_t field_0x8;

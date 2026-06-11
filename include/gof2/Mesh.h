@@ -27,7 +27,8 @@ struct Vector;
 }
 
 // AbyssEngine::Mesh — renderable mesh with optional animation track.
-struct Mesh {
+class Mesh {
+public:
     uint8_t field_0x0;                  // +0x0
     uint16_t field_0x2;                 // +0x2
     void* field_0x4;                    // +0x4

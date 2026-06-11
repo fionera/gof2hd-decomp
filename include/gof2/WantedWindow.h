@@ -53,7 +53,8 @@ struct Blk16 { int a, b, c, d; };
 extern "C" void *operator_new(unsigned size);
 extern "C" void operator_delete(void *p);
 
-struct WantedWindow {
+class WantedWindow {
+public:
     uint32_t field_0x0;                 // +0x0
     void* starMap;                    // +0x4
     void* imageParts;                    // +0x8

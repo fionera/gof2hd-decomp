@@ -10,7 +10,8 @@ struct AEGeometry;
 
 using Vector = AbyssEngine::AEMath::Vector;
 
-struct Waypoint {
+class Waypoint {
+public:
     void* field_0x0;                    // +0x0
     Player* player;                  // +0x4
     uint8_t field_0x4c;                 // +0x4c

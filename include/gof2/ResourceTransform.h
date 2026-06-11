@@ -17,7 +17,8 @@ struct ResourceTransform;
 
 // Field accessor via byte offset.
 
-struct ResourceTransform {
+class ResourceTransform {
+public:
     void* field_0x40;                   // +0x40
     void* field_0x48;                   // +0x48
 };

@@ -41,7 +41,8 @@ typedef AbyssEngine::String String;
 // Field accessors via byte offset.
 
 
-struct GameText {
+class GameText {
+public:
     uint32_t substituteCount;                 // +0x0  substitute Array<int> size
     void* substituteData;                    // +0x4  substitute Array<int> data
     uint32_t substituteCapacity;                 // +0x8  substitute Array<int> cap

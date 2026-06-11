@@ -15,7 +15,8 @@ namespace AbyssEngine {
 String operator+(const String &left, const String &right);
 }
 
-struct NewsTicker {
+class NewsTicker {
+public:
     float scrollOffset;                    // +0x0   scroll offset
     int x;                      // +0x4   x
     int y;                      // +0x8   y

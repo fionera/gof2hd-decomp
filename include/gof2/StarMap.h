@@ -23,7 +23,8 @@ void operator delete(void *ptr) noexcept;
 void *operator new[](__SIZE_TYPE__ size);
 void operator delete[](void *ptr) noexcept;
 
-struct StarMap {
+class StarMap {
+public:
     // Raw storage for the parts of the layout accessed by byte offset (everything except
     // the named scratch Vector below).
     char storage_0x0[0x78];             // +0x00 .. +0x78

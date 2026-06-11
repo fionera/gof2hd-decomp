@@ -25,7 +25,8 @@ struct Mesh;   // global Mesh view (full definition in gof2/Mesh.h)
 
 // Field accessors via byte offset (recovered code reads fields by raw offset).
 
-struct MeshMerger {
+class MeshMerger {
+public:
     int      field_0x0;    // +0x0   rows (mesh count)
     uint16_t flags;    // +0x4   flags
     uint8_t  initialized;    // +0x6   initialized flag

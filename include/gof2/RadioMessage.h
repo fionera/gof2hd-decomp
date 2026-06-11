@@ -68,7 +68,8 @@ struct LevelScript {
     int getEvent();
 };
 
-struct RadioMessage {
+class RadioMessage {
+public:
     RadioMessage(int param_1, int param_2, int param_3, int param_4, int param_5);
     RadioMessage(int param_1, int param_2, int param_3, int param_4);
     RadioMessage(int param_1, int param_2, Objective *param_3);

@@ -104,7 +104,8 @@ extern "C" void *__aeabi_memcpy(void *dest, const void *src, unsigned long n);
 extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
 
 // Engine is defined at top level (matches fwd.h ::Engine).
-struct Engine {
+class Engine {
+public:
     uint32_t field_0x0;                 // +0x0  display width
     uint32_t field_0x4;                 // +0x4  display height (fieldmap lists Player*, but
                                         //       GetDeviceInfo stores NFC::getHeight() here)

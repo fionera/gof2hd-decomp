@@ -38,7 +38,8 @@ struct ShaderBaseStruct {
 // AbyssEngine::DrawFBOShader — GLES2 full-screen FBO blit shader (derives from ShaderBaseStruct).
 // Fields (program handle at 0x4, dirty byte at 0x9, attribute/uniform locations 0x48..0x54)
 // are accessed through raw byte casts; storage covers offsets 0x00..0x54.
-struct DrawFBOShader : ShaderBaseStruct {
+class DrawFBOShader : public ShaderBaseStruct  {
+public:
     static int32_t ShaderIndex;
 
     DrawFBOShader();

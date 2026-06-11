@@ -30,7 +30,8 @@ struct EngString {
     EngString(const void *src, bool copy);
 };
 
-struct ListItem {
+class ListItem {
+public:
     void*    field_0x0;                 // +0x0  Array<String*>* (text lines)
     void*    field_0x4;                 // +0x4  Agent*
     BluePrint* field_0x8;               // +0x8

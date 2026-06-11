@@ -12,7 +12,8 @@ float Sinf(float value);
 // reproducing the target's literal-pool double values (N * (double)PI).
 static const float PI = 3.1415927f;
 
-struct EaseInOut {
+class EaseInOut {
+public:
     float m_min;      // +0x0  base/start output value
     float m_range;    // +0x4  span (max - min)
     float m_t;        // +0x8  angle parameter (radians)

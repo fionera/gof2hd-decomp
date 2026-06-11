@@ -18,7 +18,8 @@ extern "C" void PaintCanvas_DrawImage2DScaled(void *canvas, uint32_t image, int 
 
 __attribute__((visibility("hidden"))) extern void **g_Sprite_canvas;
 
-struct Sprite {
+class Sprite {
+public:
     uint32_t *frames;   // frame image handle array (null => single image)
     uint32_t  image;   // single image handle (-1 when using frame array)
     int32_t   refPixelX;   // reference pixel X

@@ -30,7 +30,8 @@ void Node_ArrayNode_release(void *arr);
 
 // Field accessors via byte offset.
 
-struct Node {
+class Node {
+public:
     Array<Node*>* children;            // +0x0 children
     Node* field_0x4;                    // +0x4
     int value;                      // +0x8

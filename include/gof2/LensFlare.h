@@ -34,7 +34,8 @@ void  LensFlare_drawFinal(void *canvas, void *img, int a, int b); // 0x00074de8
 void  LensFlare_restoreState(void *canvas, int saved);           // tail 0x001ac088
 }
 
-struct LensFlare {
+class LensFlare {
+public:
     float intensity;        // +0x0  intensity
     void* canvas;        // +0x4  PaintCanvas* canvas
     int width;          // +0x8  width

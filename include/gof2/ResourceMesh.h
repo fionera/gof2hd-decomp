@@ -8,7 +8,8 @@
 //   +0x06 bool           flag
 namespace AbyssEngine {
 
-struct ResourceMesh {
+class ResourceMesh {
+public:
     char *field_0x0;                    // +0x0 heap copy of name
     uint16_t field_0x4;                 // +0x4 id
     uint8_t field_0x6;                  // +0x6 flag

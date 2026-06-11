@@ -13,7 +13,8 @@ void operator delete(void *ptr) noexcept;
 
 // Field accessors --------------------------------------------------------------
 
-struct MenuTouchWindow {
+class MenuTouchWindow {
+public:
     unsigned* buttons;                // +0x4
     unsigned short field_0x98;          // +0x98
     unsigned short upButtonPressed;         // +0x108

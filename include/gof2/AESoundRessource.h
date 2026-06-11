@@ -11,7 +11,8 @@ struct AESoundInfo {
 };
 struct AESoundInterface;
 
-struct AESoundRessource {
+class AESoundRessource {
+public:
     char* soundInfoTable;                    // +0x0  AESoundInfo* table base (byte addressed)
     uint32_t soundCount;                 // +0x4  count
     char* sounds;                    // +0x8  Array<AESoundInterface*> data

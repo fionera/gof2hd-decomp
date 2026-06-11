@@ -50,7 +50,8 @@ static inline void *&ptr(void *self, uint32_t off) { return *(void **)((char *)s
 // Trail: fields accessed via i32/u32/ptr offset helpers (deterministic field_0xNN layout).
 // Method signatures recovered from the decompiled bodies in src/Trail.cpp and cross-checked
 // against Ghidra (Trail @ 0016bd58, ~Trail @ 0016bf8c, changeType @ 0016bef4, setWidth @ 0016c184).
-struct Trail {
+class Trail {
+public:
     Trail(int type, int segments);
     ~Trail();
 

@@ -33,7 +33,8 @@ struct ParticleSet {
     uint32_t field_0x9c;
 };
 
-struct ParticleSettings {
+class ParticleSettings {
+public:
     ParticleSet sets[48];    // 48 * 0xa0 == 0x1e00 bytes
 
     ParticleSettings();

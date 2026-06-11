@@ -23,7 +23,8 @@ using AbyssEngine::String12;
 // Field accessors via byte offset from `this`.
 
 
-struct SolarSystem {
+class SolarSystem {
+public:
     int field_0x0;                      // +0x0
     int field_0x4;                      // +0x4
     int field_0x8;                      // +0x8

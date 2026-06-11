@@ -44,7 +44,8 @@ struct ShaderBaseStruct {
 
 
 
-struct SpecCubeMapping : ShaderBaseStruct {
+class SpecCubeMapping : public ShaderBaseStruct  {
+public:
     static int ShaderIndex;
 
     int      programHandle;                  // +0x4   GL program handle

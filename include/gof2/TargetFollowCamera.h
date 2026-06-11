@@ -42,7 +42,8 @@ using Matrix = AbyssEngine::AEMath::Matrix;
 // Local matrix payload (this+0x13c, 0x3c = 60 bytes), returned by value from getLocal().
 struct Mat60 { float m[15]; };
 
-struct TargetFollowCamera {
+class TargetFollowCamera {
+public:
     unsigned id;                 // +0x0
     void* target;                    // +0x4
     float posX;                    // +0x8

@@ -45,7 +45,8 @@ static inline T *TP(void *self, uint32_t off)
 
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
-struct PlayerTurret {
+class PlayerTurret {
+public:
     // Named pointer slots (offset encoded in the name). Padding keeps every named slot
     // at its real byte offset so the I()/P()/UC()/TP() helpers and the named members
     // address the same storage.

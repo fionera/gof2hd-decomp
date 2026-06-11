@@ -18,7 +18,8 @@ struct Level;
 
 // Field accessor via byte offset.
 
-struct SentryGun {
+class SentryGun {
+public:
     Gun* gun;                     // +0x8
     void* level;                    // +0xc
     int cooldown;                     // +0xb0

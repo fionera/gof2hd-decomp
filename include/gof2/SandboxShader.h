@@ -41,7 +41,8 @@ struct ShaderBaseStruct {
 
 
 
-struct SandboxShader : ShaderBaseStruct {
+class SandboxShader : public ShaderBaseStruct  {
+public:
     int      program;                  // +0x4   GL program handle
     uint8_t  dirty;                  // +0x9   dirty flag
     String   name;                  // +0xc   shader name

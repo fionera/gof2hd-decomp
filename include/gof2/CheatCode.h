@@ -5,7 +5,8 @@
 //   +0x0 keys  (Array<unsigned short>*),  +0x4 value (int),  +0x8 pos (int)
 namespace AbyssEngine {
 
-struct CheatCode {
+class CheatCode {
+public:
     Array<uint16_t> *keys;   // +0x0 sequence of key codes
     int              value;  // +0x4 reward/value associated with the code
     int              pos;    // +0x8 current match position

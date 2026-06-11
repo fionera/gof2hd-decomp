@@ -22,7 +22,8 @@ static inline int&            I (void* p, int off) { return *(int*)((char*)p + o
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 #endif
 
-struct RecordHandler {
+class RecordHandler {
+public:
     void* currentAgent;                    // +0x4
 
     // ---- methods (converted from free functions) ----

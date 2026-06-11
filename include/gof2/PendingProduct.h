@@ -35,7 +35,8 @@ int BluePrint_getQuantity(BluePrint *bp);
     void dtor();
 }
 
-struct PendingProduct {
+class PendingProduct {
+public:
     String stationName;                   // +0x0  station name
     int stationIndex;                      // +0xc  stationIndex
     int quantity;                     // +0x10 quantity

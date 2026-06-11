@@ -40,7 +40,8 @@ static inline void *array_data(void *array) {
     return P(array, 4);
 }
 
-struct StarSystem {
+class StarSystem {
+public:
     Vector lightDirection;                  // +0x30  (light direction)
 
     StarSystem(int mode);

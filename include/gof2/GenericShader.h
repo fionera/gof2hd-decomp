@@ -45,7 +45,8 @@ __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 
 namespace AbyssEngine {
 
-struct GenericShader {
+class GenericShader {
+public:
     void*    field_0x0;     // +0x00 vtable
     int32_t  field_0x4;     // +0x04 GL program handle
     uint8_t  field_0x9;     // +0x09 lighting-uniforms-dirty flag

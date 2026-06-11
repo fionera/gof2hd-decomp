@@ -112,7 +112,8 @@ enum FileOpenType : uint32_t {
 
 // AEFile is a fully static utility class (a namespace of file I/O routines over the active
 // FileInterface plus the registered .pak archives). No instance state.
-struct AEFile {
+class AEFile {
+public:
     static void        SetInterface(FileInterface *fileInterface);
     static void        Release();
 

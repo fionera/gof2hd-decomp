@@ -57,7 +57,8 @@ extern AbyssEngine::PaintCanvas *gPaintCanvas;
 
 void operator delete(void *) noexcept;
 
-struct Radar {
+class Radar {
+public:
     void* level;                    // +0x0
     void* field_0x4;                    // +0x4
     void* field_0x8;                    // +0x8

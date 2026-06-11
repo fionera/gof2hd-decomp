@@ -16,7 +16,8 @@
 
 void *operator new(__SIZE_TYPE__ size);
 
-struct SimpleMeshMerger {
+class SimpleMeshMerger {
+public:
     // @portable-fields
     int f_0; // 0x0
     short f_4; // 0x4  mergeFactor

@@ -58,7 +58,8 @@ typedef AbyssEngine::String String;
 
 // Field accessor via byte offset.
 
-struct PlayerFighter {
+class PlayerFighter {
+public:
     int32_t player;                  // +0x4
     int32_t geometry;                  // +0x8
     int32_t subGeometry;                  // +0xc

@@ -112,7 +112,8 @@ extern "C" void *Array_String_dtor(void *array);
 extern "C" void Layout_drawBox(Layout *layout, int style, int x, int y, int width,
                                 int height, String *title);
 
-struct Radio {
+class Radio {
+public:
     void* messages;                    // +0x0
     RadioMessage* currentMessage;            // +0x4
     void* textLines;                    // +0x8

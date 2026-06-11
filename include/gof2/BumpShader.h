@@ -16,7 +16,8 @@ struct Mesh;
 
 
 // AbyssEngine::BumpShader — GLES2 bump-mapping shader (derives from ShaderBaseStruct).
-struct BumpShader {
+class BumpShader {
+public:
     void Init(Engine *engine);
     void SetInActive();
     void UpdateMeshData(Mesh *mesh, Engine *engine);

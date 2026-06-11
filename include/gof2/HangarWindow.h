@@ -116,7 +116,8 @@ struct GameText {
 
 // Field accessors via byte offset.
 
-struct HangarWindow {
+class HangarWindow {
+public:
     uint8_t field_0x0;                  // +0x0
     void* tabButtons;                    // +0x4
     int lastDelta;                      // +0x8

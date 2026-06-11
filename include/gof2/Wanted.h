@@ -24,7 +24,8 @@ using AbyssEngine::String12;
 
 // Field accessor via byte offset.
 
-struct Wanted {
+class Wanted {
+public:
     String name;                   // +0x0  (name, AbyssEngine::String)
     int index;                      // +0xc
     int board;                     // +0x10

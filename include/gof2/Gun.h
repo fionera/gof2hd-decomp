@@ -25,7 +25,8 @@ struct Gun;
 // geometry/transform handle is read here; forward-declare so Gun.h stays standalone.
 struct AEGeometry;
 
-struct Gun {
+class Gun {
+public:
     int field_0x0;                      // +0x0
     Player* field_0x4;                  // +0x4
     unsigned count;                 // +0x8

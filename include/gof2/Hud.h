@@ -23,7 +23,8 @@ static inline int&            I (void* p, int off) { return *(int*)((char*)p + o
 #endif
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 
-struct Hud {
+class Hud {
+public:
     void* _opaque;  // no offset accesses observed
 
     // ---- methods (converted from free functions) ----

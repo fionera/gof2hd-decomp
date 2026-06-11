@@ -5,7 +5,8 @@
 // title + scroll bar. Field layout recovered from byte-offset accesses in the merged
 // source (offsets shown in comments). The underlying ScrollTouchBox is held opaque.
 
-struct ScrollTouchWindow {
+class ScrollTouchWindow {
+public:
     void*  scrollBox;        // +0x00  ScrollTouchBox* (the scrollable content box)
     String title;        // +0x04  title text
     unsigned char touchActive;// +0x10  touch-active flag (set by OnTouchMove/End)

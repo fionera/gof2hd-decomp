@@ -17,7 +17,8 @@ struct ParticleSettings {
     struct ParticleSet;
 };
 
-struct ParticleSystemSprite {
+class ParticleSystemSprite {
+public:
     uint8_t field_0x4;                  // +0x4
     unsigned int canvasHandle;             // +0x8
     unsigned char flags;           // +0x34

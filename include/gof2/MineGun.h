@@ -29,7 +29,8 @@ static inline int32_t &I(void *self, unsigned off) { return *(int32_t *)((char *
 
 typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 
-struct MineGun {
+class MineGun {
+public:
     void* _opaque;  // raw byte-offset access via I/U/P/UC/FL macros
     void render();
     void setPlayer(PlayerEgo *player);

@@ -32,7 +32,8 @@ struct Item;
 // =====================================================================================
 // Status — the persistent player/game state.  Field offsets recovered from the target.
 // =====================================================================================
-struct Status {
+class Status {
+public:
     Array<Wanted *> *wanted;               // 0x000
     int32_t collectedBounties[4];          // 0x004 .. 0x010  (getCollectedBounties: this+idx*4+4)
     int32_t standing;                      // 0x014

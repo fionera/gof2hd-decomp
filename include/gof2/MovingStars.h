@@ -34,7 +34,8 @@ namespace AEMath {
 // Top-level class (not in AbyssEngine namespace). Field offsets are recovered from disasm;
 // the four parallel arrays at 0x0/0x4/0xc/0x10 plus the texture handle (0x8) keep named fields,
 // remaining scratch is reached through the i32/u32/u8/u16 helpers above.
-struct MovingStars {
+class MovingStars {
+public:
     void *billboardIds;                    // +0x0  billboard ids array
     uint32_t *transformHandles;                // +0x4  transform handles array
     uint32_t textureHandle;                 // +0x8  texture handle

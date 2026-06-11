@@ -17,7 +17,8 @@ struct Transform;   // opaque; only ever taken by pointer
 
 namespace AEMath {
 
-struct BSphere {
+class BSphere {
+public:
     float cx, cy, cz;   // 0x00, 0x04, 0x08
     float radius;       // 0x0c
     float maxRadius;    // 0x10

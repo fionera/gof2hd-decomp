@@ -27,7 +27,8 @@ template <class T> void  ArraySetLength(unsigned int n, Array<T>& a);
 // out to Item:: members via extern "C" thunks.
 struct Item;
 
-struct Ship {
+class Ship {
+public:
     int          index;            // 0x00  ship id / type
     int          baseHP;           // 0x04
     int          value;            // 0x08

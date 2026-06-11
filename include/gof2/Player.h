@@ -13,7 +13,8 @@ struct KIPlayer;
 
 
 
-struct Player {
+class Player {
+public:
     Array<Array<Gun *> *> *guns;     // 0x00  gun slots (array of arrays of guns)
     float transform[15];             // 0x04  AEMath::Matrix (this+4), 0x3c bytes -> ends 0x40
     int32_t radius;                  // 0x40

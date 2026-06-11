@@ -35,7 +35,8 @@ static const uint32_t OFF_FLAG2404  = 0x2404;
 // FModSound — FMOD designer-API sound manager. Named fields live at recovered byte offsets;
 // the large event-handle array (0x18..0x23ec) and category/system slots are reached via the
 // i32/u32/u8/pp byte-offset helpers above.
-struct FModSound {
+class FModSound {
+public:
     int     f_0;                 // 0x00 current music event id
     int     f_4;                 // 0x04
     int     f_8;                 // 0x08

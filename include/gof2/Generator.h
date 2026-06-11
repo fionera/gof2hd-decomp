@@ -165,7 +165,8 @@ extern "C" Mission *Agent_getMission(Agent *self);
 
 // Generator is a stateless helper class: all methods operate on globals and the
 // arguments passed in (no instance fields are accessed).
-struct Generator {
+class Generator {
+public:
     void computerTradeGoods(Station *station);
     int generateStationIndex(Array<SolarSystem *> *systems, int station);
     Array<Agent *> *createAgents(Station *station);

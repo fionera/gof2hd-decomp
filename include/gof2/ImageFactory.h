@@ -30,7 +30,8 @@ typedef void (*GetTextFn)(unsigned canvas, int id, void *out);
 // drawChar / loadChar paths.
 struct Arr { uint32_t size; void **data; uint32_t size2; };
 
-struct ImageFactory {
+class ImageFactory {
+public:
     void* sprite;                    // +0x0
 
     // ---- methods (converted from free functions) ----

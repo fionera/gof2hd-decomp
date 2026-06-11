@@ -47,7 +47,8 @@ struct ShaderBaseStruct {
 // AbyssEngine::TextureConference — GLES2 scrolling-texture shader (derives from ShaderBaseStruct).
 // Most members are accessed through the field_i32/field_u8/field_ptr helpers above; only the
 // byte-match-recovered animation accumulator at +0x38 keeps a named field.
-struct TextureConference : ShaderBaseStruct {
+class TextureConference : public ShaderBaseStruct  {
+public:
     static int ShaderIndex;
 
     void SetInActive();

@@ -26,7 +26,8 @@ using Matrix = AbyssEngine::AEMath::Matrix;
 // Typed byte-offset accessor for foreign opaque pointers (e.g. the AEGeometry/Transform
 // objects this class holds but whose layout is owned by other classes).
 
-struct PlayerWormHole {
+class PlayerWormHole {
+public:
     char* vtable;                    // +0x0   vtable
     void* player;                    // +0x4   Player*
     void* geometry;                    // +0x8   AEGeometry*

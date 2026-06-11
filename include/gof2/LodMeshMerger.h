@@ -32,7 +32,8 @@ using Matrix = AbyssEngine::AEMath::Matrix;
 using Vector = AbyssEngine::AEMath::Vector;
 using AEMesh = AbyssEngine::Mesh;
 
-struct LodMeshMerger {
+class LodMeshMerger {
+public:
     int32_t            field_0x0;    // +0x00 rows
     uint16_t           field_0x4;    // +0x04 flags
     uint8_t            field_0x6;    // +0x06 initFlag

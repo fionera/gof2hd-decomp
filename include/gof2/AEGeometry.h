@@ -47,7 +47,8 @@ struct AEGeomCanvas {
     static void TransformAddChild(PaintCanvas *canvas, uint32_t tf, uint32_t child);    // 0x000720d0
 };
 
-struct AEGeometry {
+class AEGeometry {
+public:
     uint32_t mergerIndex;                 // +0x0  mergerIndex
     void *merger;                    // +0x4  LodMeshMerger*
     uint16_t mesh;                 // +0x8  mesh

@@ -12,7 +12,8 @@ struct Mesh;
 // AbyssEngine::TextureLightShader — GLES2 lit-texture shader (derives from ShaderBaseStruct).
 // Layout mirrors the recovered field offsets: vtable slot at 0x0, program handle at 0x4,
 // per-frame dirty byte at 0x9, name String at 0xc, attribute/uniform locations 0x20..0x6c.
-struct TextureLightShader {
+class TextureLightShader {
+public:
     int   f_0;                 // 0x00 vtable slot
     int   f_4;                 // 0x04 shader program handle
     uint8_t f_8;               // 0x08

@@ -71,7 +71,8 @@ using AbyssEngine::String12;
 
 // Field accessor via byte offset.
 
-struct MGame {
+class MGame {
+public:
     int field_0x0;                      // +0x0
     unsigned field_0x4;                 // +0x4
     int field_0x8;                      // +0x8

@@ -51,7 +51,8 @@ static inline Vector *vec_at(void *base, int index)
     return (Vector *)((char *)base + index * 12);
 }
 
-struct IParticleSystem {
+class IParticleSystem {
+public:
     void* vtable;                    // +0x0
     volatile uint16_t field_0x4;        // +0x4
     volatile uint8_t emitterVelocityDirty;         // +0x5

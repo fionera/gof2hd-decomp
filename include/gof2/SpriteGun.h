@@ -23,7 +23,8 @@ struct Gun;
 
 // Field accessor via byte offset.
 
-struct SpriteGun {
+class SpriteGun {
+public:
     char* field_0x0;                    // +0x0
     int field_0x4;                      // +0x4
     void* gun;                    // +0x8

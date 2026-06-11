@@ -8,5 +8,6 @@
 
 struct ParticleSettingsRef;
 
-struct ParticleSettingsRef { void* _opaque; };  // no offset accesses observed
+class ParticleSettingsRef {
+public: void* _opaque; };  // no offset accesses observed
 #endif

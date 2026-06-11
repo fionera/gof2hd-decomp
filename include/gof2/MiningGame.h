@@ -7,7 +7,8 @@ struct Hud;
 struct Sprite;
 struct MarqueeImage;
 
-struct MiningGame {
+class MiningGame {
+public:
     float inputX;     // +0x00  velocity x (input)
     float inputY;     // +0x04  velocity y (input)
     float driftX;     // +0x08  drift x

@@ -46,7 +46,8 @@ struct ShaderBaseStruct {
 
 
 // AbyssEngine::BumpShaderParticle — derives from ShaderBaseStruct (shared shader storage layout).
-struct BumpShaderParticle {
+class BumpShaderParticle {
+public:
     static int ShaderIndex;
 
     void Init(Engine *engine);

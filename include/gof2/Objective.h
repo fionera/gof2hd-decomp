@@ -47,7 +47,8 @@ extern "C" unsigned int Objective_tail_level(Level *level);
 extern "C" unsigned int Objective_tail_message(void *message);
 extern "C" unsigned int Objective_tail_enemy_final(KIPlayer *player);
 
-struct Objective {
+class Objective {
+public:
     int field_0x0;                      // +0x0 objective type
     int field_0x4;                      // +0x4 value
     int field_0x8;                      // +0x8 calc value

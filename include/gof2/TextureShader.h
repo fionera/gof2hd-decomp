@@ -50,7 +50,8 @@ extern "C" float *Vector_to_float(AEMath::Vector *self);
 // AbyssEngine::TextureShader — GLES2 textured-mesh shader. Holds two shader
 // programs (base + extended); per-slot uniform/attribute locations are stored as
 // 2-element arrays indexed by the active slot (slot*4 byte stride == one int).
-struct TextureShader {
+class TextureShader {
+public:
     void *vtable;       // vtable
     uint32_t program;    // program slot 0
     uint8_t field_0x8;

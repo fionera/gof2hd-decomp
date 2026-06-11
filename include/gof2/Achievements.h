@@ -23,7 +23,8 @@ struct Achievements;
 
 // Field accessor via byte offset.
 
-struct Achievements {
+class Achievements {
+public:
     int* medals;                     // +0x0
     int* newMedals;                     // +0x4
     int kills;                      // +0x8

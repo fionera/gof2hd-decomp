@@ -51,7 +51,8 @@ Vector operator-(const Vector &a, const Vector &b); // 0x0006ec38
 
 using AbyssEngine::AEMath::Vector;
 
-struct TractorBeam {
+class TractorBeam {
+public:
     float dirX;                    // +0x00  working vector .x
     float dirY;                    // +0x04  working vector .y
     float dirZ;                    // +0x08  working vector .z

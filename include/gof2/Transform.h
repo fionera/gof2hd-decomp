@@ -71,7 +71,8 @@ extern "C" bool g_transform_matrix_flag;
 
 namespace AbyssEngine {
 
-struct Transform {
+class Transform {
+public:
     uint8_t field_0x0;                  // +0x0
     uint16_t field_0x2;                 // +0x2
     uint32_t field_0x4;                 // +0x4

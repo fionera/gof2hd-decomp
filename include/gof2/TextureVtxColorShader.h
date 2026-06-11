@@ -63,7 +63,8 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
 
-struct TextureVtxColorShader {
+class TextureVtxColorShader {
+public:
     void    *vtable;                  // +0x00
     int      program;                 // +0x04
     uint8_t  field_0x08;              // +0x08

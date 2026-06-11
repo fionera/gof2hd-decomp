@@ -55,7 +55,8 @@ __attribute__((noreturn)) void __stack_chk_fail(int diff) noexcept;
 namespace AbyssEngine {
 
 // AbyssEngine::GreenShader — GLES2 green shader (derives from ShaderBaseStruct).
-struct GreenShader {
+class GreenShader {
+public:
     GreenShader();
     void Init(Engine *engine);
     void SetInActive();

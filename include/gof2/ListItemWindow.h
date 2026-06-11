@@ -17,7 +17,8 @@ void operator delete(void *ptr) noexcept;
 struct Str { uint32_t a, b, c; };
 
 // ListItemWindow instance: opaque storage reached via the typed offset helpers.
-struct ListItemWindow {
+class ListItemWindow {
+public:
     ListItemWindow();
     ~ListItemWindow();
     void OnTouchBegin(int x, int y);

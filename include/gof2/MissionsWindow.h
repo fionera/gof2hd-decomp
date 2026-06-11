@@ -16,7 +16,8 @@ void operator delete(void *ptr) noexcept;
 // 16-byte aggregate cleared in the ctor (4 ints).
 struct __attribute__((aligned(4))) Blk16 { int a, b, c, d; };
 
-struct MissionsWindow {
+class MissionsWindow {
+public:
     Blk16 field_0xc;                    // +0xc
     MissionsWindow();
     ~MissionsWindow();

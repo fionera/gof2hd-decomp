@@ -16,7 +16,8 @@ struct ShaderBaseStruct {
 };
 
 // AbyssEngine::GenericShader2
-struct GenericShader2 : ShaderBaseStruct {
+class GenericShader2 : public ShaderBaseStruct  {
+public:
     uint8_t field_0x9;                  // +0x9 lighting-dirty flag
     String field_0xc;                   // +0xc shader name
     int field_0x20;                     // +0x20 attribute a_position

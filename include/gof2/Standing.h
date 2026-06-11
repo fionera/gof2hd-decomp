@@ -16,7 +16,8 @@
 
 // Field accessor via byte offset.
 
-struct Standing {
+class Standing {
+public:
     int* standings;                     // +0x0
     int currentRace;                      // +0x4
     Standing();

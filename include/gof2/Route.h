@@ -19,7 +19,8 @@ struct KIPlayer;
 // AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.
 typedef AbyssEngine::AEMath::Vector Vector;
 
-struct Route {
+class Route {
+public:
     int32_t              field_0x0;     // +0x0  current waypoint index
     uint8_t              field_0x4;     // +0x4  looping flag
     Array<Waypoint *>   *field_0xc;     // +0xc  waypoints

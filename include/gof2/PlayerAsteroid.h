@@ -33,7 +33,8 @@ struct ArrayInt;
 extern "C" void *operator_new(uint32_t size);
 extern "C" void operator_delete(void *ptr);
 
-struct PlayerAsteroid {
+class PlayerAsteroid {
+public:
     void* vtable;                    // +0x0
     Player* player;                  // +0x4
     AEGeometry* geometry;              // +0x8

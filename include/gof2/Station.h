@@ -13,7 +13,8 @@ struct Station;
 // RetStr (AbyssEngine::String by value: 12-byte trivially-copied aggregate)
 // is provided by gof2/Agent.h (included above) to avoid a duplicate definition.
 
-struct Station {
+class Station {
+public:
     int index;                      // +0xc
     int systemIndex;                     // +0x10
     int textureIndex;                     // +0x18

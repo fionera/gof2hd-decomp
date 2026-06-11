@@ -21,7 +21,8 @@ typedef AbyssEngine::AEMath::Vector Vector;
 
 // Field accessors via byte offset.
 
-struct PlayerFixedObject {
+class PlayerFixedObject {
+public:
     void* player;                    // +0x4
     void* geometry;                    // +0x8
     unsigned char empActive;           // +0x24

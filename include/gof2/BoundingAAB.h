@@ -7,7 +7,8 @@
 // Inherited layout (from BoundingVolume): vtable@0x0, children@0x4,
 //   center@0x8/0xc/0x10, extents@0x14/0x18/0x1c.
 
-struct BoundingAAB : BoundingVolume {
+class BoundingAAB : public BoundingVolume  {
+public:
     float halfExtentX;                   // +0x20  box half-extent X
     float halfExtentY;                   // +0x24  box half-extent Y
     float halfExtentZ;                   // +0x28  box half-extent Z

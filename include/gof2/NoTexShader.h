@@ -16,7 +16,8 @@ struct ShaderBaseStruct {
 };
 
 // AbyssEngine::NoTexShader
-struct NoTexShader : ShaderBaseStruct {
+class NoTexShader : public ShaderBaseStruct  {
+public:
     uint8_t field_0x9;                  // +0x9 color-dirty flag
     String field_0xc;                   // +0xc shader name
     int field_0x20;                     // +0x20 attribute a_position

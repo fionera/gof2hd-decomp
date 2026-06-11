@@ -16,7 +16,8 @@
 
 
 // POD-ish ticker entry; 0x1c bytes.
-struct NewsItem {
+class NewsItem {
+public:
     int   field_0x00;  // id (param_1)
     byte  field_0x04;  // flag (param_2)
     void *field_0x08;  // data (byte buffer, new[]/delete[])

@@ -25,7 +25,8 @@ struct Matrix;
 //   +0x50  Array<uint32_t>
 //   +0x5c  Array<Matrix>
 //   +0x68  Vector (3 floats)
-struct Material {
+class Material {
+public:
     // @portable-fields
     int f_0; // 0x0
     unsigned char _pad_4[28];

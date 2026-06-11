@@ -35,7 +35,8 @@ typedef AbyssEngine::AEMath::Matrix Matrix;
 
 typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 
-struct BombGun {
+class BombGun {
+public:
     Gun* field_0x8;                     // +0x8
     uint32_t field_0x10;                // +0x10
     uint32_t field_0x14;                // +0x14

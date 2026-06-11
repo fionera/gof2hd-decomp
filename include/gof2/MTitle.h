@@ -4,7 +4,8 @@
 // MTitle — title screen. Top-level class (NO namespace).
 // Fields recovered from per-method byte-offset access; named field_0xNN.
 
-struct MTitle {
+class MTitle {
+public:
     void* field_0x0;                    // +0x0   vtable pointer
     void* canvas;                    // +0x4   PaintCanvas
     void* appManager;                    // +0x8   ApplicationManager

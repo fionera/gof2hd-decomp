@@ -10,7 +10,8 @@ namespace AbyssEngine {
 
 enum BlendMode { BlendMode_dummy };
 
-struct ResourceMaterial {
+class ResourceMaterial {
+public:
     // @portable-fields
     uint16_t f_0; // 0x0
     uint16_t f_2; // 0x2

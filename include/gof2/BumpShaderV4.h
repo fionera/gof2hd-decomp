@@ -50,7 +50,8 @@ struct ShaderBaseStruct {
 
 
 // AbyssEngine::BumpShaderV4 — GLES2 bump-mapping shader variant (derives from ShaderBaseStruct).
-struct BumpShaderV4 {
+class BumpShaderV4 {
+public:
     static int ShaderIndex;
 
     void Init(Engine *engine);

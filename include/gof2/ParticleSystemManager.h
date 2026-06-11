@@ -27,7 +27,8 @@
 
 void *operator new(__SIZE_TYPE__ size);
 
-struct ParticleSystemManager {
+class ParticleSystemManager {
+public:
     uint16_t field_0x0;                 // +0x0   state/flags word
     uint8_t  pad_0x2[2];                // +0x2
     void*    field_0x4;                 // +0x4   PaintCanvas*

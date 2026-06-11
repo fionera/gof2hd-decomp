@@ -17,7 +17,8 @@ static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
 #endif
 
 // Explicit layout so the named members coexist with raw byte-offset macro access.
-struct ModMainMenu {
+class ModMainMenu {
+public:
     void*    field_0x00;   // vtable
     int      paintCanvas;   // paint canvas handle
     void*    f_8;          // 0x08 ApplicationManager*

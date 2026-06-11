@@ -18,7 +18,8 @@ using Vector = AbyssEngine::AEMath::Vector;
 // objects share the {count@+0,data@+4,capacity@+8} layout). F<int>(arr, 0x0) reads the count,
 // F<int*>(arr, 0x4) reads the data pointer, etc.
 
-struct PlayerGasCloud {
+class PlayerGasCloud {
+public:
     void* player;                    // +0x4
     void* geometry;                    // +0x8
     uint8_t field_0x25;                 // +0x25

@@ -28,7 +28,8 @@ namespace AEMath {
 
 } // namespace AEMath
 
-struct KeyFrame {
+class KeyFrame {
+public:
     // @portable-fields
     unsigned char _pad_0[12];           // 0x00..0x0c
     AEMath::Vector scaleA;           // 0x0c  scale-ish vector A (default 1,1,1)

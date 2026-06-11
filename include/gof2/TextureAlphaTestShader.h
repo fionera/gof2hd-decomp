@@ -18,7 +18,8 @@ struct ShaderBaseStruct {
     ~ShaderBaseStruct();
 };
 
-struct TextureAlphaTestShader : ShaderBaseStruct {
+class TextureAlphaTestShader : public ShaderBaseStruct  {
+public:
     TextureAlphaTestShader();
     ~TextureAlphaTestShader();
     void Init(Engine *);

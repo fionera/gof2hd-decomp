@@ -39,7 +39,8 @@ struct AEFile {
     static void Close(uint32_t handle);
 };
 
-struct ShaderBaseStruct {
+class ShaderBaseStruct {
+public:
     void *vtable;                    // +0x0  vtable
     int program;                      // +0x4  GL program handle (-1 when unset)
     volatile uint16_t flags;        // +0x8  flags

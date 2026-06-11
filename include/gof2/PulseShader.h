@@ -16,7 +16,8 @@ struct Engine;            // top-level, matches fwd.h (layout not modelled in th
 namespace AbyssEngine {
 
 // AbyssEngine::PulseShader.
-struct PulseShader {
+class PulseShader {
+public:
     void *field_0x0;                    // +0x0  vtable
     int program;                      // +0x4  GL program handle
     uint8_t pad_0x8;                    // +0x8  (padding/unused)

@@ -21,7 +21,8 @@ Matrix MatrixSetRotation(Matrix &matrix, float x, float y, float z);
 }
 }
 
-struct PlayerCreature {
+class PlayerCreature {
+public:
     char* vtable;                    // +0x0
     Player* player;                  // +0x4
     AEGeometry* geometry;              // +0x8

@@ -30,7 +30,8 @@ namespace AEMath {
 }
 using Vector = AbyssEngine::AEMath::Vector;
 
-struct RepairBeam {
+class RepairBeam {
+public:
     int field_0x0;                      // +0x0
     int field_0x4;                      // +0x4
     int field_0x8;                      // +0x8

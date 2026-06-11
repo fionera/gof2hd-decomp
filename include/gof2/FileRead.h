@@ -129,7 +129,8 @@ inline void ConvertFromUTF8(String &) {}
 
 // AbyssEngine::FileRead — loads the game's *.bin data tables (stations, systems, ships, items, ...).
 // All methods are instance methods on the (stateless) loader object.
-struct FileRead {
+class FileRead {
+public:
     int32_t loadStation(int32_t id);
     int32_t loadStationsBinary();
     Array<Array<Vector *> *> *loadWeaponPositions(int32_t id);

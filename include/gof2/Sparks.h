@@ -4,7 +4,8 @@
 #include "gof2/math.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 
-struct Sparks {
+class Sparks {
+public:
     int* lifetimeThresholds;                     // +0x0   per-spark lifetime thresholds
     uint32_t spriteSystem;                 // +0x4   sprite system handle
     uint32_t texture;                 // +0x8   texture handle

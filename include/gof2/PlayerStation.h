@@ -36,7 +36,8 @@ static inline void *&P(void *self, uint32_t off)
 extern "C" void *operator_new(uint32_t size);
 extern "C" void operator_delete(void *ptr) __attribute__((nothrow));
 
-struct PlayerStation {
+class PlayerStation {
+public:
     uint8_t field_0x25;                 // +0x25
     float posX;                   // +0x58
     float posY;                   // +0x5c

@@ -21,7 +21,8 @@
 
 namespace AbyssEngine {
 
-struct EaseInOutMatrix {
+class EaseInOutMatrix {
+public:
     AEMath::Matrix field_0x0;           // +0x0   start transform (m_min)
     Quaternion     m_q0;                // +0x3c  start orientation
     AEMath::Vector field_0x4c;          // +0x4c  start translation (m_minPos)

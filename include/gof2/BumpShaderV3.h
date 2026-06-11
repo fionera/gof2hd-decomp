@@ -49,7 +49,8 @@ struct ShaderBaseStruct {
 // AbyssEngine::BumpShaderV3 — GLES2 bump-mapping shader (derives from ShaderBaseStruct).
 // Members accessed via field_i32(this, 0xNN) helpers above; backing storage holds the
 // shader-program handle, attribute/uniform locations and the dirty flag.
-struct BumpShaderV3 : ShaderBaseStruct {
+class BumpShaderV3 : public ShaderBaseStruct  {
+public:
     void Init(Engine *engine);
     void SetInActive();
     void UpdateMeshData(Mesh *mesh, Engine *engine);

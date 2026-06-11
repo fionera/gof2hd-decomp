@@ -17,7 +17,8 @@ using ParticleSet = ParticleSettings::ParticleSet;
 
 void *operator new(__SIZE_TYPE__ size);
 
-struct ParticleSystemMesh {
+class ParticleSystemMesh {
+public:
     void* field_0x0;                    // +0x0  vtable
     int field_0x4;                      // +0x4
     void* canvas;                    // +0x8  PaintCanvas*

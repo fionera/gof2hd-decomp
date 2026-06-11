@@ -27,7 +27,8 @@ struct MeshId {
     uint16_t pad;
 };
 
-struct ObjectGun {
+class ObjectGun {
+public:
     void* field_0x0;                    // +0x0
     int field_0x4;                      // +0x4
     Gun* field_0x8;                     // +0x8

@@ -21,7 +21,8 @@ namespace AbyssEngine {
 // AbyssEngine::BlurShader — derives from ShaderBaseStruct (shared shader storage layout).
 // Engine/Mesh/FBOContainer are the global (gof2/fwd.h + gof2/Mesh.h) types; qualified with :: so
 // name lookup does not resolve them to the AbyssEngine-namespace forward declarations.
-struct BlurShader {
+class BlurShader {
+public:
     void Init(::Engine *engine);
     void SetInActive();
     void UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine);

@@ -29,7 +29,8 @@ typedef AbyssEngine::String String;
 
 // Engine Array<T> header layout { length, data, cap } — `struct Arr` comes from ImageFactory.h.
 
-struct StatusWindow {
+class StatusWindow {
+public:
     Arr* tabButtons;                     // +0x4
     Arr* medalButtons;                     // +0x8
     void* field_0xc;                    // +0xc

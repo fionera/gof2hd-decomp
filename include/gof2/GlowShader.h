@@ -52,7 +52,8 @@ struct ShaderBaseStruct {
 
 
 // AbyssEngine::GlowShader — GLES2 glow shader (derives from ShaderBaseStruct).
-struct GlowShader {
+class GlowShader {
+public:
     static int ShaderIndex;
 
     void Init(Engine *engine);

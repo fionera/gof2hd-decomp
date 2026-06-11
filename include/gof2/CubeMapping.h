@@ -41,7 +41,8 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-struct CubeMapping {
+class CubeMapping {
+public:
     void* field_0x0;        // +0x0  vtable
     int program;          // +0x4  GL program
     uint8_t field_0x8;      // +0x8

@@ -14,7 +14,8 @@ struct PlayerStaticFar;
 
 
 
-struct PlayerJumpgate {
+class PlayerJumpgate {
+public:
     void* field_0x0;                    // +0x0
     void* field_0x4;                    // +0x4
     AEGeometry* field_0x8;              // +0x8

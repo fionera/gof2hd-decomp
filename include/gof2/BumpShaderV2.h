@@ -70,7 +70,8 @@ namespace AbyssEngine {
 // 12-byte layout), so the absolute byte offsets are not reproduced here. Fields are accessed
 // by name; the only adjacency assumption (the texture-sampler pair) is handled with an array
 // helper member access in the .cpp.
-struct BumpShaderV2 {
+class BumpShaderV2 {
+public:
     void*    vtable;                 // +0x0  vtable
     int      program;                 // +0x4  GL program handle
     uint8_t  lightingDirty;                 // +0x9  lighting-dirty flag

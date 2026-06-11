@@ -23,7 +23,8 @@ using String = AbyssEngine::String;
 typedef void LoadingCallback_t(PaintCanvas *, int, void *);
 typedef bool ResumeCallback_t(PaintCanvas *, void *);
 
-struct ApplicationManager {
+class ApplicationManager {
+public:
     void        *paintCanvas;             // +0x0  PaintCanvas* (object starts with the canvas ptr)
     uint32_t     currentKey;             // +0x8
     uint32_t     currentKeyHigh;             // +0xc

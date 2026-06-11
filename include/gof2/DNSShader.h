@@ -49,7 +49,8 @@ struct ShaderBaseStruct {
 
 
 // AbyssEngine::DNSShader — derives from ShaderBaseStruct (shared shader storage layout).
-struct DNSShader {
+class DNSShader {
+public:
     static int ShaderIndex;
 
     void Init(Engine *engine);

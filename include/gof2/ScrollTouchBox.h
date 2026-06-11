@@ -13,7 +13,8 @@
 //   +0x30  uint8 dragging    +0x34 int  scrollOffset
 //   +0x38  uint8 centered    +0x3c String* font
 
-struct ScrollTouchBox {
+class ScrollTouchBox {
+public:
     Array<String*>* lines;          // +0x0  line array
     int x;                      // +0x4
     int y;                      // +0x8

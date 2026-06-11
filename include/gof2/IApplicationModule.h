@@ -2,7 +2,8 @@
 #define GOF2_IAPPLICATIONMODULE_H
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
-struct IApplicationModule {
+class IApplicationModule {
+public:
     ApplicationManager* paintCanvas;      // +0x4
     ApplicationManager* applicationManager;      // +0x8
 

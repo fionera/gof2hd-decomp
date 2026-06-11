@@ -15,7 +15,8 @@ struct ShaderBaseStruct {
 };
 
 // AbyssEngine::BloomShader
-struct BloomShader : ShaderBaseStruct {
+class BloomShader : public ShaderBaseStruct  {
+public:
     uint8_t field_0x9;                  // +0x9
     String field_0xc;                   // +0xc shader name
     unsigned int field_0x20;            // +0x20

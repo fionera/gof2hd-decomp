@@ -27,7 +27,8 @@ typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 // engine helpers (AEGeometry / ParticleSystemManager / Player internals) whose owning structs
 // are outside this translation unit. Named-field access is used everywhere the type is known.
 
-struct RocketGun {
+class RocketGun {
+public:
     void render();
     RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
               uint32_t param_5, int param_6, bool param_7, Level *param_8);

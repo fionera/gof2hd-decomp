@@ -7,7 +7,8 @@
 
 namespace AbyssEngine {
 
-struct Camera {
+class Camera {
+public:
     byte           field_0x0[0xc];      // +0x0  (camera header / position+orientation block)
     AEMath::Matrix projection;           // +0xc  projection matrix
 

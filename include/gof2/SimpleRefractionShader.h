@@ -46,7 +46,8 @@ struct ShaderBaseStruct {
 
 // AbyssEngine::SimpleRefractionShader — GLES2 refraction shader (derives from ShaderBaseStruct).
 // Fields accessed through the field_i32/field_u8 helpers; storage covers offsets 0x00..0x54.
-struct SimpleRefractionShader : ShaderBaseStruct {
+class SimpleRefractionShader : public ShaderBaseStruct  {
+public:
     static int ShaderIndex;
 
     void Init(Engine *engine);

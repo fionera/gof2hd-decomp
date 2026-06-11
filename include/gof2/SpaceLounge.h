@@ -13,7 +13,8 @@ static inline float &F(void *p, int off) { return *(float *)((char *)p + off); }
 
 // B/I/P offset-cast helpers are provided by gof2/TouchButton.h (included by the .cpp).
 
-struct SpaceLounge { void* _opaque;
+class SpaceLounge {
+public: void* _opaque;
     // ---- methods (converted from free functions) ----
     void OnRender3D();
     void OnRenderBG();

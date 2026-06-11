@@ -50,7 +50,8 @@ struct Engine;
 //   0x18 bool created
 //   0x1c String name
 //   0x2c .. 0x34 extra GL ids
-struct FBOContainer {
+class FBOContainer {
+public:
     GLuint field_0x0;                   // +0x0  framebuffer id
     GLuint field_0x4;                   // +0x4  color texture id
     GLuint field_0x8;                   // +0x8  depth renderbuffer id

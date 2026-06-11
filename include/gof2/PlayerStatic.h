@@ -15,7 +15,8 @@ using Vector = AbyssEngine::AEMath::Vector;
 
 struct AEGeometry;
 
-struct PlayerStatic {
+class PlayerStatic {
+public:
     void *field_0x0;                    // +0x0 vtable
     char field_pad_4[0x4];              // +0x4
     AEGeometry *field_0x8;              // +0x8 geometry

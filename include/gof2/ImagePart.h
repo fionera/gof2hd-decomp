@@ -13,7 +13,8 @@
 
 void *operator new(__SIZE_TYPE__ size);
 
-struct ImagePart {
+class ImagePart {
+public:
     // @portable-fields
     int id; // 0x0
     int f_4; // 0x4

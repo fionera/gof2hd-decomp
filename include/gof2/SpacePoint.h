@@ -32,7 +32,8 @@ struct SpacePoint;
 
 // Field accessor via byte offset.
 
-struct SpacePoint {
+class SpacePoint {
+public:
     Vector position;                    // +0x00
     Vector direction;                   // +0x0c
     int field_0x10;                     // +0x10

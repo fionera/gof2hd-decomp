@@ -9,7 +9,8 @@
 // the class embeds 8 AbyssEngine::String members at offsets
 // 0x18, 0x24, 0x30, 0x7c, 0x88, 0x94, 0xa8, 0xb8.
 
-struct GameData {
+class GameData {
+public:
     AbyssEngine::String field_0x18;     // +0x18
     AbyssEngine::String field_0x24;     // +0x24
     AbyssEngine::String field_0x30;     // +0x30

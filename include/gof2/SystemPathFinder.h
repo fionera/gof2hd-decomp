@@ -38,7 +38,8 @@ struct Status {
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
     g_SystemPathFinder_status;
 
-struct SystemPathFinder {
+class SystemPathFinder {
+public:
     void *_opaque;  // no offset accesses observed
     int contains(Array<Node *> *nodes, Node *node);
     Array<Node *> *search(Node *start, Node *goal);

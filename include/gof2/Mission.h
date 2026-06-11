@@ -31,7 +31,8 @@ using AbyssEngine::String12;
 // Full Mission layout recovered from the per-method disassembly. The four embedded
 // String members (0x10/0x1c/0x40/0x4c) are reached via byte-offset casts, so they are
 // kept as raw 12-byte slots here.
-struct Mission {
+class Mission {
+public:
     void* field_0x0;                    // +0x0  vtable ptr
     int field_0x4;                      // +0x4
     int field_0x8;                      // +0x8

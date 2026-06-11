@@ -45,7 +45,8 @@ struct ShaderBaseStruct {
 // AbyssEngine::VertexColorAlphaTextureShader — GLES2 shader with per-vertex color +
 // alpha (derives from ShaderBaseStruct). Holds the program handle, six vertex
 // attribute locations and nine uniform locations.
-struct VertexColorAlphaTextureShader {
+class VertexColorAlphaTextureShader {
+public:
     void *vtable;     // vtable
     int program;       // program handle
     uint8_t field_0x8;

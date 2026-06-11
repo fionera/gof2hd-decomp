@@ -35,7 +35,8 @@ struct KeyCode;
 
 typedef void (*CheatFunc)(int, void *);
 
-struct CheatHandler {
+class CheatHandler {
+public:
     CheatFunc func;             // 0x00
     void *context;              // 0x04
     Array<CheatCode *> *codes;  // 0x08

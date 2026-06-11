@@ -11,7 +11,8 @@ struct TargetFollowCamera;
 // Explosion: a transient VFX object that drives one or two AEGeometry meshes
 // (plus an optional vector of fire-streak meshes) through their transform
 // animations. 0x68 bytes in the target; here laid out as a natural struct.
-struct Explosion {
+class Explosion {
+public:
     int                    type;   // +0x00 explosion type
     AEGeometry            *primaryMesh;    // +0x04 primary mesh
     AEGeometry            *secondaryMesh;    // +0x08 secondary mesh (optional)

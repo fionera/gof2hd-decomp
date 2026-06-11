@@ -11,7 +11,8 @@ struct ShaderBaseStruct;
 
 // VertexColorShader: ES2 shader wrapper. Embeds a String name at +0xc; the
 // preceding 0xc bytes are the ShaderBaseStruct base (vtable + program id + flags).
-struct VertexColorShader {
+class VertexColorShader {
+public:
     byte   _base[0xc];   // +0x00 ShaderBaseStruct base
     String name;    // +0x0c shader name
     // remaining shader-location ints (+0x20..+0x58) reached via ae_i32/ae_u32 macros

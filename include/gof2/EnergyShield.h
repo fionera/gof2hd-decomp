@@ -50,7 +50,8 @@ struct ShaderBaseStruct {
 
 // EnergyShield — refraction shield shader. Derives from ShaderBaseStruct
 // (vtable ptr at +0x0). Int fields are GL uniform/attribute locations.
-struct EnergyShield {
+class EnergyShield {
+public:
     void *vtable;            // +0x0  vtable ptr
     int program;              // +0x4  program
     uint8_t pad_0x8;            // +0x8

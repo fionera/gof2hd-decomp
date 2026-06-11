@@ -17,7 +17,8 @@ extern "C" void PaintCanvas_DrawRegion2D(void *canvas, uint32_t image, int srcX,
 
 __attribute__((visibility("hidden"))) extern void **g_MarqueeImage_canvas;
 
-struct MarqueeImage {
+class MarqueeImage {
+public:
     uint32_t image;    // +0x00  image2D handle (filled by PaintCanvas_Image2DCreate)
     int32_t  imageWidth;    // +0x04  image width
     int32_t  imageHeight;    // +0x08  image height

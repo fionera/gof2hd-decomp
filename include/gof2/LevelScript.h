@@ -24,7 +24,8 @@ struct Station;
 // within the same translation unit.
 static inline void *&P(void *self, int offset) { return *(void **)((char *)self + offset); }
 
-struct LevelScript {
+class LevelScript {
+public:
     void* _opaque;  // offset-accessed via the B/I/U/F/UC/US/P helpers
 
     LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamera *camera);

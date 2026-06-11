@@ -14,7 +14,8 @@ struct Transform;
 
 // Vector/Matrix already provided at global scope by common.h (math.h).
 
-struct BeamGun {
+class BeamGun {
+public:
     void* field_0x0;                    // +0x0  vtable
     int32_t field_0x4;                  // +0x4
     Gun* field_0x8;                     // +0x8  gun

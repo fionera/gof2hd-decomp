@@ -21,7 +21,8 @@ static inline char*           B (void* p, int off) { return (char*)p + off; }
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
 #endif
-struct ModStation {
+class ModStation {
+public:
     // ---- methods (converted from free functions) ----
     ModStation();
     void OnInitialize();

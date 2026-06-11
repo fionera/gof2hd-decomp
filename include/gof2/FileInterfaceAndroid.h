@@ -30,7 +30,8 @@ typedef struct _jobject *jobject;
 
 struct zip_file;
 
-struct FileInterfaceAndroid {
+class FileInterfaceAndroid {
+public:
     char        *field_0x0;             // +0x0  vtable
     uint8_t      alive;             // +0x4  alive byte
     char         pad_5[3];

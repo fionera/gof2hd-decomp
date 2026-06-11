@@ -44,7 +44,8 @@ extern "C" __attribute__((noreturn)) void __stack_chk_fail(...);
 
 // Field accessor via byte offset.
 
-struct Layout {
+class Layout {
+public:
     ~Layout();
     uint8_t choiceWindowOpen;                  // +0x0
     int field_0x4;                      // +0x4

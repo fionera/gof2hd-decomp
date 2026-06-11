@@ -9,7 +9,8 @@ struct StringSlot {
     char bytes[12];
 };
 
-struct DialogueWindow {
+class DialogueWindow {
+public:
     void* prevButton;                    // +0x0
     void* nextButton;                    // +0x4
     void* moreButton;                    // +0x8
