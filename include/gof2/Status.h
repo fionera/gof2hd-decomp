@@ -134,6 +134,9 @@ public:
     bool gameWon();
     int getCurrentCampaignMission();
     int getCampaignMission();
+    // Same slot as getCampaignMission() (missions[0]), but typed as the Mission*
+    // it really is. MGame uses it to fetch the active campaign mission object.
+    Mission *getCampaignMissionPtr();
     Mission *getMission();
     void moveWanted();
     int getPassengers();

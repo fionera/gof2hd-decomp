@@ -73,7 +73,6 @@ extern "C" float VectorScale(void *vec, float scalar);
 extern "C" void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r);
 extern "C" void *Galaxy_dtor(void *g);
 extern "C" void *Status_dtor(void *s);
-extern "C" void *GameText_dtor(void *g);
 extern "C" void *AERandom_dtor(void *r);
 extern "C" void *Layout_dtor(void *l);
 extern "C" void *Generator_dtor(void *g);
@@ -1408,7 +1407,7 @@ void * Globals::dtor() {
     *statSlot = 0;
     void **gtSlot = gG_gameText;
     if (*gtSlot != 0) {
-        ::operator delete(GameText_dtor(*gtSlot));
+        ::operator delete(((GameText *)(*gtSlot))->dtor());
     }
     *gtSlot = 0;
     void **rngSlot = gG_random;

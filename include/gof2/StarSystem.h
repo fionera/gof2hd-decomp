@@ -56,6 +56,7 @@ public:
     void render();
     void render2D();
     void renderSunStreak();
+    void renderSunStreak_tail(void *geom);
     void scaleSunDuringSupernovaIntro(int amount);
     void switchPlanetForIntro();
     void switchSunForSupernovaExpansion();

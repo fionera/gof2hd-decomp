@@ -849,3 +849,41 @@ void CutScene::checkForTurret()
     Array_ArrayVectorPtr_dtor(positions);
     CutScene_turretFinalize();
 }
+
+// ---- update_tail / render2D_tail / renderBG_tail -----------------------------
+// The decompiler split the trailing unconditional branch of update()/render2D()/
+// renderBG() into its own thunk (a PLT/GOT veneer). Each simply delegates the
+// cutscene's per-frame work to the embedded Level (field +0x0):
+//   update()    advances the level world by the current frame delta (field +0x58),
+//   render2D()  draws the level's 2D HUD overlay,
+//   renderBG()  draws the level's animated background at the current time.
+
+void CutScene::update_tail()
+{
+    Level *level = (Level *)pp(this, 0x0);
+    if (level == 0)
+        return;
+    // Level::update(long long time, unsigned dt, int flag) — call through a typed
+    // member-function pointer (the in-flight Level.h still declares update() void).
+    unsigned int dt = u32(this, 0x58);
+    typedef void (Level::*LevelUpdateFn)(long long, unsigned, int);
+    LevelUpdateFn fn = (LevelUpdateFn)(&Level::update);
+    (level->*fn)((long long)(int)dt, 0u, 0);
+}
+
+void CutScene::render2D_tail(Level *level)
+{
+    if (level != 0)
+        level->render2D();
+}
+
+void CutScene::renderBG_tail(Level *level, uint32_t t)
+{
+    if (level != 0) {
+        // The original passes the raw 32-bit time word in r1; renderBG() reads it
+        // as its float time parameter.
+        float ft;
+        __builtin_memcpy(&ft, &t, sizeof ft);
+        level->renderBG(ft);
+    }
+}

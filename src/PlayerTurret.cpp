@@ -89,6 +89,14 @@ void PlayerTurret::render()
     }
 }
 
+// PlayerTurret::renderBase() -- tail of render(): draw the inherited KIPlayer
+// representation (the actual turret geometry). render() falls through to this
+// whenever the turret is not in the mid-explosion states (0x88 in {3,4}).
+void PlayerTurret::renderBase()
+{
+    ((KIPlayer *)this)->render();
+}
+
 // ---- handleTurret_157782.cpp ----
 
 void PlayerTurret::handleTurret(int delta)

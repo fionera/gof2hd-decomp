@@ -20,9 +20,12 @@ public:
 
     uint8_t isInitialized();
     void update();
+    void update_tail();
     void render3D();
     void render2D();
+    void render2D_tail(Level *level);
     void renderBG();
+    void renderBG_tail(Level *level, uint32_t t);
     void process(int delta);
     void replacePlayerShip(int a, int b);
     void initialize();

@@ -385,6 +385,13 @@ int Status::getCampaignMission() {
     return (int)(intptr_t)(*missions)[0];
 }
 
+// Mission*-typed view of the same slot getCampaignMission() returns: the first
+// entry of the missions array is the active campaign mission. MGame uses this to
+// reach the mission's agent, dialogue, type and status fields.
+Mission *Status::getCampaignMissionPtr() {
+    return (*missions)[0];
+}
+
 // ---- setJumpgateUsed_ac4d0.cpp ----
 void Status::setJumpgateUsed(int v) { jumpgatesUsed = v; }
 

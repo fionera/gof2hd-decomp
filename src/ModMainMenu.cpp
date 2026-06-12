@@ -20,14 +20,9 @@
 extern "C" void *CutScene_dtor(void *self);
 int GameText_getLanguage();
 void Globals_loadFont(int obj, int language);
-extern "C" void ModMainMenu_releaseTail(void *sound);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
-extern "C" void ModMainMenu_resumeTail(int obj, int one, int arg);
 extern "C" void ModMainMenu_r3dTail(void *canvas);
 ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self);
-extern "C" void ModMainMenu_deleteTail(ModMainMenu *self);
-extern "C" void ModMainMenu_suspendTail(int obj);
-extern "C" void ModMainMenu_touchEndTail(void *starSystem);
 void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self);
 namespace AbyssEngine { namespace AEMath { float Sinf(float value); } }
 extern "C" void ModMainMenu_r2dTail(int canvas);
@@ -47,43 +42,10 @@ void Globals_playMusicAndFadeOutCurrent(int music);
 // the targets were resolved from the PLT veneers in the binary.
 extern "C" void _ZN10StarSystem9initLightEv(void *self);   // StarSystem::initLight()
 
-// OnRelease(): once the menu's sound resource list is torn down, free every
-// remaining FMOD event handle owned by the sound manager.
-extern "C" void ModMainMenu_releaseTail(void *sound)
-{
-    ((FModSound *)sound)->freeAllEvents();
-}
-
-// OnResume(): the background-music event is still live, so restore its volume
-// to bring the track back up after the app regained focus.
-extern "C" void ModMainMenu_resumeTail(int obj, int channel, int arg)
-{
-    ((FModSound *)(intptr_t)obj)->setVolume(channel, (float)arg);
-}
-
 // OnRender3D(): finish the 3D pass that drew the rotating cut-scene backdrop.
 extern "C" void ModMainMenu_r3dTail(void *canvas)
 {
     ((PaintCanvas *)canvas)->End3d();
-}
-
-// D0 (deleting destructor): the D2 body has already run, so release storage.
-extern "C" void ModMainMenu_deleteTail(ModMainMenu *self)
-{
-    ::operator delete(self);
-}
-
-// OnSuspend(): persist the player's option block when the app is backgrounded.
-extern "C" void ModMainMenu_suspendTail(int obj)
-{
-    ((RecordHandler *)(intptr_t)obj)->saveOptions();
-}
-
-// OnTouchEnd(): the tap dismissed the menu, so (re)initialise the lighting of
-// the star system the level is about to display.
-extern "C" void ModMainMenu_touchEndTail(void *starSystem)
-{
-    _ZN10StarSystem9initLightEv(starSystem);
 }
 
 // OnRender2D(): close the 2D overlay pass (HUD/loading text) for this frame.
@@ -92,10 +54,13 @@ extern "C" void ModMainMenu_r2dTail(int canvas)
     ((PaintCanvas *)(intptr_t)canvas)->End2d();
 }
 
-// ---- the same fragments, as real ModMainMenu members --------------------------
-// These mirror the extern "C" helpers above; the engine/runtime object each one
-// completes against is passed in (the menu owns none of them directly).
+// ---- the recovered tail fragments, as real ModMainMenu members ----------------
+// Each OnXxx() peels its final tail-call out into one of these helpers; the body
+// forwards into the engine/runtime method the original code branched to (the
+// menu owns none of those objects directly, so each is passed in).
 
+// OnRelease(): once the menu's sound resource list is torn down, free every
+// remaining FMOD event handle owned by the sound manager.
 void ModMainMenu::releaseTail(void *sound)
 {
     ((FModSound *)sound)->freeAllEvents();
@@ -180,7 +145,7 @@ void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
 
     void *sound = *g_ModMainMenu_releaseSound;
     if (sound != 0)
-        ModMainMenu_releaseTail(sound);
+        ModMainMenu::releaseTail(sound);
 }
 
 // ---- OnResume_1757f8.cpp ----
@@ -197,7 +162,7 @@ void _ZN11ModMainMenu8OnResumeEv(ModMainMenu *self)
     if (FModSound_tryToStopMusicForBGMusic() != 0)
         return;
     int arg = *g_ModMainMenu_resumeArg;
-    ModMainMenu_resumeTail(*holder, 1, arg);
+    ModMainMenu::resumeTail(*holder, 1, arg);
 }
 
 // ---- OnRender3D_175dc4.cpp ----
@@ -217,7 +182,7 @@ void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
 // ---- _ModMainMenu_1757e8.cpp ----
 void _ZN11ModMainMenuD0Ev(ModMainMenu *self)
 {
-    ModMainMenu_deleteTail(_ZN11ModMainMenuD2Ev(self));
+    ModMainMenu::deleteTail(_ZN11ModMainMenuD2Ev(self));
 }
 
 // ---- OnTouchMove_175a98.cpp ----
@@ -237,7 +202,7 @@ void _ZN11ModMainMenu9OnSuspendEv(ModMainMenu *self)
 {
     int obj = *g_ModMainMenu_suspendObj;
     if (obj != 0)
-        ModMainMenu_suspendTail(obj);
+        ModMainMenu::suspendTail(obj);
 }
 
 // ---- OnTouchEnd_175ab4.cpp ----
@@ -249,7 +214,7 @@ void _ZN11ModMainMenu10OnTouchEndEiiPv(
 {
     if (UC(self, 0x28) == 0) {
         ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchEnd(x, y);
-        ModMainMenu_touchEndTail((void *)(intptr_t)((Level *)(*(void **)P(self, 0x1c)))->getStarSystem());
+        ModMainMenu::touchEndTail((void *)(intptr_t)((Level *)(*(void **)P(self, 0x1c)))->getStarSystem());
         return;
     }
 

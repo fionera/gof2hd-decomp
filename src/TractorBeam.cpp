@@ -297,3 +297,18 @@ TractorBeam::~TractorBeam() {
     }
     this->beamGeometry = 0;
 }
+
+// TractorBeam::create(AEGeometry*, int) -- heap factory.
+//   PlayerEgo::equip allocates a TractorBeam (operator new) and constructs it in
+//   place; this is the real face of the C-ABI `TractorBeam_new` shim.
+TractorBeam *TractorBeam::create(AEGeometry *geo, int kind) {
+    return new TractorBeam(geo, kind);
+}
+
+// TractorBeam::dtor() -- non-deleting (D2) destructor.
+//   Runs ~TractorBeam() in place and returns the storage so the caller can hand
+//   it to operator delete (matches the C-ABI dtor shim contract).
+TractorBeam *TractorBeam::dtor() {
+    this->~TractorBeam();
+    return this;
+}

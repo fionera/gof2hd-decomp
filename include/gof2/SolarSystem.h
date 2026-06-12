@@ -54,10 +54,19 @@ public:
     int getZ();
     int getWarpGateIndex();
     uint32_t *getStations();
+    // Array<int>*-typed view of the station-id list (same +0x38 member as
+    // getStations()); callers read the embedded data pointer at +4.
+    uint32_t *getStations_i();
     uint32_t *getRoutes();
     RetStr getName();
     uint32_t getStationEnumIndex(int idx);
     int getWarpGateEnumIndex();
+    // Resolve the warp-gate's enum index — the same table lookup as an ordinary
+    // station, so it forwards to getStationEnumIndex().
+    int warpGateLookup(int idx);
+    // Run AbyssEngine::String::~String() on the in-place `name` member (the base,
+    // non-deleting string destructor invoked from ~SolarSystem()).
+    static void baseStringDtor(void *strField);
     int hasHiddenBlueprint();
     uint32_t hasNoOwner();
     int hasPirateBase();

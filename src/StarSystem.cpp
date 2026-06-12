@@ -83,6 +83,15 @@ void StarSystem::renderSunStreak() {
     return StarSystem_renderSunStreak_tail(P(self, 0x40));
 }
 
+// ---- renderSunStreak_tail ----------------------------------------------------
+// The trailing tail-call of renderSunStreak() (a GOT veneer) draws the sun-streak
+// billboard geometry held at field +0x40: AEGeometry::render().
+void StarSystem::renderSunStreak_tail(void *geom)
+{
+    if (geom != 0)
+        ((AEGeometry *)geom)->render();
+}
+
 // ---- getPlanetTargets / getPlanets ----
 // Simple accessors for the two planet geometry arrays held at +0x18 and +0x1c.
 void *StarSystem::getPlanetTargets() {

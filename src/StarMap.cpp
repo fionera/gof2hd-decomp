@@ -92,7 +92,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_canvas;
 extern "C" int Station_getSystem(void *station);
 extern "C" void ArrayReleaseClasses_Station(void *arr);
 extern "C" void *Array_Station_dtor(void *arr);
-extern "C" void StarMap_depart_tail(void *canvas, int mode);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_layout;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_status;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_canvas;
@@ -512,7 +511,7 @@ cleanup:
     }
     ((FModSound *)(*g_StarMap_depart_sound))->stop(0x66);
     *g_StarMap_depart_modstation_flag = 1;
-    return StarMap_depart_tail(*g_StarMap_depart_canvas, 2);
+    return this->depart_tail(*g_StarMap_depart_canvas, 2);
 }
 
 // depart() tail (binary: module-switch trampoline @0x1ab908): the player has committed

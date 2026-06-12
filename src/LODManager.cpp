@@ -15,6 +15,15 @@ void LODManager::addObject(AEGeometry *g)
     return LODManager_addObject_tail(g, this->objects);
 }
 
+// ---- addObject_tail ----------------------------------------------------------
+// The decompiler peeled addObject()'s trailing tail-call (a GOT veneer) into its
+// own thunk. It is ArrayAdd<AEGeometry*>(g, objects): append the geometry to the
+// managed object list.
+void LODManager::addObject_tail(AEGeometry *g, Array<AEGeometry*> *objects)
+{
+    ArrayAdd(g, *objects);
+}
+
 // ---- LODManager_9518c.cpp ----
 // LODManager::LODManager() — real C++ constructor; symbol demangles to contain "LODManager".
 

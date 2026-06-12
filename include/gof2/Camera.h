@@ -14,6 +14,7 @@ public:
 
     Camera(float fov, float aspect, float nearPlane, float farPlane, float param5);
     void SetPerspective(float fov, float aspect, float nearPlane, float farPlane);
+    void shake(float dx, float dy, float dz);
 };
 
 } // namespace AbyssEngine

@@ -24,6 +24,7 @@ public:
     LODManager();
     ~LODManager();
     void addObject(AEGeometry *g);
+    void addObject_tail(AEGeometry *g, Array<AEGeometry*> *objects);
     void removeObject(AEGeometry *g);
     void forceUpdate(int dt, bool useParent);
     void update(int dt);

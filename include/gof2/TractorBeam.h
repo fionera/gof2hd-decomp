@@ -67,5 +67,12 @@ public:
     void ctor(AEGeometry * /*unused*/, int param2);
     void render();
     void update(int frameTime, Radar *radar, Level *level, Hud *hud);
+
+    // Heap factory: allocate + construct a beam mesh of the given kind. Used by
+    // PlayerEgo when a tractor-beam module is equipped.
+    static TractorBeam *create(AEGeometry *geo, int kind);
+    // Non-deleting destructor: runs ~TractorBeam() and returns the storage so the
+    // caller can hand it to operator delete (matches the C-ABI dtor shim).
+    TractorBeam *dtor();
 };
 #endif

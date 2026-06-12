@@ -21,7 +21,9 @@ struct TouchButton;
 #ifndef GOF2_EXPLOSION_H
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
 #endif
+#ifndef GOF2_LEVELSCRIPT_H
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
+#endif
 
 class Hud {
 public:

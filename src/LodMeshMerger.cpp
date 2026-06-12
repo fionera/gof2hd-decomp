@@ -3,7 +3,6 @@
 #include "gof2/PaintCanvasClass.h"
 
 
-extern "C" void LodMeshMerger_setMatrix_tail(void *dst, const Matrix &m);
 
 // ---- setEnabled_181438.cpp ----
 void LodMeshMerger::setEnabled(int index, bool enabled)
@@ -38,7 +37,7 @@ void LodMeshMerger::setLod(int index, signed char lod)
 void LodMeshMerger::setMatrix(int index, const Matrix &m)
 {
     char *base = (char *)field_0x28;
-    return LodMeshMerger_setMatrix_tail(base + index * 0x3c, m);
+    return ((LodMeshMerger *)(base + index * 0x3c))->setMatrix_tail(m);
 }
 
 // setMatrix() tail: store the source transform into its per-row matrix slot. The
@@ -228,7 +227,7 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
 // ---- init_18145a.cpp ----
 // 0x7882c
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                            // 0x6ec2c (__aeabi_uidiv)
-extern "C" int LodMeshMerger_init_tail(LodMeshMerger *self, int r1, uint16_t flags, uint32_t *meshId); // 0x1ac878
+// 0x1ac878
 
 int LodMeshMerger::init()
 {
@@ -273,7 +272,7 @@ int LodMeshMerger::init()
     field_0x14->TransformCreate(&field_0x1c);
     field_0x14->TransformAddMeshId(field_0x1c, field_0x18);
     field_0x3c = 1;
-    return LodMeshMerger_init_tail(this, 0, flags, &field_0x18);
+    return ((LodMeshMerger *)(this))->init_tail(0, flags, &field_0x18);
 }
 
 // init() tail: the merged mesh, its pointer and the shared transform have all been
@@ -406,7 +405,7 @@ void *LodMeshMerger::transformMesh(AEMesh *src, const Matrix &m)
 __attribute__((visibility("hidden"))) extern void (*const g_freeFn)(void *);
 
 // Tail-call into the engine base destructor.
-extern "C" void LodMeshMerger_base_dtor(void *self);  // 0x1ac888
+// 0x1ac888
 
 LodMeshMerger::~LodMeshMerger()
 {
@@ -453,7 +452,7 @@ LodMeshMerger::~LodMeshMerger()
 
     if (field_0x28 != 0) ::operator delete[](field_0x28);
     field_0x28 = 0;
-    LodMeshMerger_base_dtor(this);
+    ((LodMeshMerger *)(this))->base_dtor();
 }
 
 // ~LodMeshMerger() tail: the final owned member is the embedded source-mesh array

@@ -198,17 +198,5 @@ public:
     void setSpeed(float v);
     void setWingmanCommand(int cmd, KIPlayer *target);
     void update(int dt);
-
-    // Tail-call / base-class veneer fragments. Each forwards to the relocated
-    // base-class (AEGeometry / Fighter / Player) implementation that the
-    // original Thumb code reaches through a GOT veneer (b.w to a relocated slot).
-    void setShipGroup_base(AEGeometry *self, int group, bool flag);
-    void awake_tail(int geom, int on);
-    void cloak_off_helper();
-    void *base_dtor(PlayerFighter *self);
-    void setMissionCrate_tail(int one, Array<int> *loot);
-    void setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *list);
-    void setExhaustVisible_apply(unsigned transform, bool vis);
-    void render_tail(int geom);
 };
 #endif

@@ -19,14 +19,12 @@ extern "C" void Galaxy_setSystemVisited(Galaxy *g, int systemId);
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void Array_Ship_ctor(void *arr);
 extern "C" void ArraySetLength_Ship(uint32_t len, void *arr);
-extern "C" void Station_arrayRemoveShip(Ship *ship, void *ships);
 extern "C" void ArrayReleaseClasses_Ship(void *arr) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Item(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Ship_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Item_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Agent_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
-extern "C" void Station_baseDtor(void *self) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Agent(void *arr) __attribute__((nothrow));
 
 // ---- removeShips_a6c74.cpp ----
@@ -244,7 +242,7 @@ void Station::removeShip(Ship *ship) {
     void *ships = self->ships;
     if (ships == 0)
         return;
-    Station_arrayRemoveShip(ship, ships);
+    Station::arrayRemoveShip(ship, ships);
 }
 
 // ---- getHiddenBlueprintIndex_a7050.cpp ----
@@ -385,7 +383,7 @@ void Station::dtor() {
             ::operator delete(Array_Agent_dtor(agents));
         self->agents = 0;
     }
-    Station_baseDtor(self);
+    ((Station *)(self))->baseDtor();
 }
 
 // ---- setAgents_a6dce.cpp ----

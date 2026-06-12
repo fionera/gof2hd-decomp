@@ -63,7 +63,6 @@ extern "C" void SpaceLounge_OnRenderBG_tail();
 extern "C" void SpaceLounge_draw3DShip_tail(void *ship);
 extern "C" void *SpaceLounge_layout_begin;
 extern "C" int StarMap_touch_end(void *map, int x, int y);
-extern "C" int ListItemWindow_touch_end(void *list, int x, int y);
 // Dropped-self Status singleton accessors: the decompiler emitted these calls
 // with no receiver argument (the Status* singleton is loaded inside the thunk).
 // The singleton is `*g_status`; call the real methods through it.
@@ -459,7 +458,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     }
 
     if (UC(self, 0x1c) != 0) {
-        ListItemWindow_touch_end(P(self, 0xc), x, y);
+        ((ListItemWindow *)(P(self, 0xc)))->touch_end(x, y);
         if (((Layout *)(layout))->helpPressed() != 0) {
             void *texts = *(void **)&SpaceLounge_touch_list_help_text_slot;
             void *text = ((GameText *)(*(void **)texts))->getText(0x283);

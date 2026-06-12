@@ -24,4 +24,16 @@ void Camera::SetPerspective(float fov, float aspect, float nearPlane, float farP
     CameraSetPerspective(fov, aspect, nearPlane, farPlane, this);
 }
 
+// AbyssEngine::Camera::shake(float, float, float)
+// Applies a per-frame jitter offset to the camera position block (+0x0, three
+// floats). PlayerEgo::shake() feeds in a random (dx,dy,dz) whose magnitude scales
+// with the configured shake intensity; here we simply add it to the position.
+void Camera::shake(float dx, float dy, float dz)
+{
+    float *pos = (float *)this->field_0x0;
+    pos[0] += dx;
+    pos[1] += dy;
+    pos[2] += dz;
+}
+
 } // namespace AbyssEngine

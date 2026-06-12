@@ -8,14 +8,11 @@
 #include "gof2/PlayerJunk.h"
 
 
-extern "C" void PlayerCreature_render_tail(PlayerCreature *self);
 extern "C" PlayerCreature *KIPlayer_dtor(KIPlayer *self);
-extern "C" void PlayerCreature_dtor_tail(PlayerCreature *self);
 extern "C" int PlayerCreature_weightTable[] __attribute__((visibility("hidden")));
 extern "C" int PlayerCreature_rageTable[] __attribute__((visibility("hidden")));
 extern "C" char PlayerCreature_vtable;
 extern "C" int PlayerCreature_enduranceTable[] __attribute__((visibility("hidden")));
-extern "C" void PlayerCreature_hook_tail(PlayerCreature *self, int value);
 void _ZN10PlayerJunk6renderEv(PlayerJunk *self);   // PlayerJunk::render() (base render)
 void *ParticleSystemManager_emitManual_v(
     void *self, int handle, const float *pos, void *ret, const float *vel, float p5);
@@ -64,7 +61,7 @@ void PlayerCreature::render()
         ((AEGeometry *)(geometry))->render();
     }
     if ((uint32_t)(this->state - 3) >= 2) {
-        return PlayerCreature_render_tail(this);
+        return ((PlayerCreature *)(this))->render_tail();
     }
 }
 
@@ -104,7 +101,7 @@ int PlayerCreature::getEndurance()
 // ---- _PlayerCreature_11ccd8.cpp ----
 void _ZN14PlayerCreatureD1Ev(PlayerCreature *self)
 {
-    PlayerCreature_dtor_tail(KIPlayer_dtor((KIPlayer *)self));
+    ((PlayerCreature *)(KIPlayer_dtor((KIPlayer *)self)))->dtor_tail();
 }
 
 // ---- getWeight_11cfe4.cpp ----
@@ -178,7 +175,7 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeomet
 void PlayerCreature::hook(int value)
 {
     this->hooked = 1;
-    return PlayerCreature_hook_tail(this, value);
+    return ((PlayerCreature *)(this))->hook_tail(value);
 }
 
 // ---- update_11cd68.cpp ----

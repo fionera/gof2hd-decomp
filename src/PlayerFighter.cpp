@@ -33,12 +33,16 @@ public:
 extern "C" void PlayerFighter_setShipGroup_base(AEGeometry *self, int a, bool b);
 extern "C" void PlayerFighter_awake_tail(int geom, int on);
 extern "C" void PlayerFighter_cloak_off_helper();
+extern "C" void *PlayerFighter_base_dtor(PlayerFighter *self);
+extern "C" void PlayerFighter_setMissionCrate_tail(int one, Array<int> *a);
+extern "C" void PlayerFighter_setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *a);
+extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
+extern "C" void PlayerFighter_render_tail(int geom);
 extern "C" void ArrayReleaseClasses_BV(void *arr);
 extern "C" void *ArrayBV_dtor(void *p);
 extern "C" void *Trail_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
-extern "C" void *PlayerFighter_base_dtor(PlayerFighter *self);
 void *_ZN13PlayerFighterD1Ev(PlayerFighter *self);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void AEMath_Matrix_ctor(void *m);
@@ -60,9 +64,7 @@ extern "C" void AEMath_MatrixIdentity(void *out, void *m);
 extern "C" void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz);
 extern "C" void ArrayInt_ctor(Array<int> *a);
 extern "C" void ArrayInt_add(int val, Array<int> *a);
-extern "C" void PlayerFighter_setMissionCrate_tail(int one, Array<int> *a);
 extern "C" void ArrayBV_ctor(Array<BoundingVolume *> *a);
-extern "C" void PlayerFighter_setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *a);
 namespace AbyssEngine { namespace AEMath {
 float VectorLength(const Vector &value);
 Vector operator-(const Vector &lhs, const Vector &rhs);
@@ -72,8 +74,6 @@ static inline float AEMath_VectorLength(void *v) {
     return AbyssEngine::AEMath::VectorLength(*(const AbyssEngine::AEMath::Vector *)v);
 }
 extern "C" int AERandom_nextIntB(int rng, int bound);
-extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
-extern "C" void PlayerFighter_render_tail(int geom);
 extern "C" void PF_vscale(void *out, void *vec, float scalar);
 extern "C" void AEString_ctor_default(void *s);
 extern "C" void AEString_assign(void *dst, void *src);
@@ -1212,52 +1212,7 @@ void PlayerFighter::revive()
 // In the original Thumb image each of these is the terminal b.w of a
 // PlayerFighter method into a relocated slot that lands in the inherited
 // AEGeometry / Fighter / Player implementation. They carry no static body of
-// their own (pure GOT veneer), so the real work lives behind the extern shim
-// that the linker resolves to the relocated target. Modeling them as member
-// methods that forward to that shim gives every fragment a real C++ home while
-// staying byte-identical to the original control flow.
-
-// setShipGroup() thunk: forward the (geometry, group, flag) triple to the
-// AEGeometry-level setShipGroup implementation.
-void PlayerFighter::setShipGroup_base(AEGeometry *self, int group, bool flag) {
-    PlayerFighter_setShipGroup_base(self, group, flag);
-}
-
-// awake() tail: show the active hull/sub geometry once the fighter wakes up.
-void PlayerFighter::awake_tail(int geom, int on) {
-    PlayerFighter_awake_tail(geom, on);
-}
-
-// setCloakingPossible() helper: terminal branch that forces the cloak off when
-// cloaking is disabled mid-flight.
-void PlayerFighter::cloak_off_helper() {
-    PlayerFighter_cloak_off_helper();
-}
-
-// Destructor tail: chain into the Fighter/Player base destructor and return
-// `this` (the base D1 returns the object pointer, matching the ARM ABI thunk).
-void *PlayerFighter::base_dtor(PlayerFighter *self) {
-    return PlayerFighter_base_dtor(self);
-}
-
-// setMissionCrate() tail: hand the freshly built loot list to the level so the
-// mission crate spawns the correct cargo.
-void PlayerFighter::setMissionCrate_tail(int one, Array<int> *loot) {
-    PlayerFighter_setMissionCrate_tail(one, loot);
-}
-
-// setBV() tail: append a bounding volume to the collision-volume array.
-void PlayerFighter::setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *list) {
-    PlayerFighter_setBV_add(bv, list);
-}
-
-// setExhaustVisible() tail: toggle visibility on the resolved exhaust transform.
-void PlayerFighter::setExhaustVisible_apply(unsigned transform, bool vis) {
-    PlayerFighter_setExhaustVisible_apply(transform, vis);
-}
-
-// render() tail: the active-cloak branch that defers to AEGeometry::render for
-// the hull geometry.
-void PlayerFighter::render_tail(int geom) {
-    PlayerFighter_render_tail(geom);
-}
+// their own (pure GOT veneer): the real work lives behind the extern "C" shim
+// declared at the top of this TU that the linker resolves to the relocated
+// target (mirroring PlayerFighter_cloak_off_helper). There is no local C++
+// body to define here.

@@ -44,9 +44,7 @@ extern "C" void Status_replaceHash(...);
 void Layout_formatCredits(...);
 // Decompiled sections disagree on arity (1 vs 2 args) / return type; extern "C" ABI symbol.
 // Own method forward-declared here; the definition (returns int) lives later in this file.
-extern "C" void HangarWindow_render3D_thunk(void *arg);
 extern "C" void *HangarList_dtor(void *p);
-extern "C" void *ListItemWindow_dtor(void *p);
 extern "C" void *ChoiceWindow_dtor(void *p);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *p);
@@ -117,7 +115,7 @@ bool HangarWindow::readyToClose() {
 void HangarWindow::render3D() {
     HangarWindow *self = this;
     if (self->viewMode == 1) {
-        return HangarWindow_render3D_thunk(self->listItemWindow);
+        return this->render3D_thunk(self->listItemWindow);
     }
 }
 
@@ -145,7 +143,7 @@ HangarWindow *_ZN12HangarWindowD2Ev(HangarWindow *self)
     if (p != 0) ::operator delete(HangarList_dtor(p));
     self->hangarList = 0;
     p = self->listItemWindow;
-    if (p != 0) ::operator delete(ListItemWindow_dtor(p));
+    if (p != 0) ::operator delete(((ListItemWindow *)(p))->dtor());
     self->listItemWindow = 0;
     p = self->choiceWindow;
     if (p != 0) ::operator delete(ChoiceWindow_dtor(p));

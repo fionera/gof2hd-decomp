@@ -96,7 +96,6 @@ typedef AbyssEngine::Transform TransformFull;
 
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void Music_resume(Music *m, int one, int v);
-extern "C" void PlayerEgo_syncFirstPerson(PlayerEgo *p, int v);
 // PlayerEgo.h (owned by another batch) declares these as returning void, but the
 // callers below consume their (int) result. Use the original free-function form
 // so this TU sees the real int return type without editing PlayerEgo.h.
@@ -119,13 +118,10 @@ void Globals_startNewSoundResourceList();
 void Globals_addSoundResourceToList(int list);
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 int DialogueWindow_hasSuccessDialogue(int cm);
-extern "C" void PlayerEgo_rollRight(PlayerEgo *p, int shipField, float amt);
-extern "C" void PlayerEgo_rollLeft(PlayerEgo *p, int shipField, float amt);
 extern "C" void applyThrust(MGame *self, int y);
 uint8_t TFC_isInLookAtMode(TargetFollowCamera *c);
 void TFC_setLookAtCam(TargetFollowCamera *c, int v);
 extern "C" void Cam_setCinematic(TargetFollowCamera *c, int on);
-extern "C" void Hud_enterCinematic(...);
 extern "C" void FModSound_restoreState();
 int DialogueWindow_hasBriefingDialogue(...);
 extern "C" void DialogueWindow_ctor(...);
@@ -521,7 +517,7 @@ firstPerson: {
             v = TFC_hideShipForFirstPersonCam(self->field_0xf4);
         else
             v = 1;
-        PlayerEgo_syncFirstPerson(ego, v);
+        ((PlayerEgo *)(ego))->syncFirstPerson(v);
     }
 }
 
@@ -2354,18 +2350,15 @@ afterYaw: {
     if (roll <= 1.0f) {
         rollMag = -1.0f;
         if (roll < -1.0f) {
-            return PlayerEgo_rollRight(self->field_0x58,
-                                       F<int>(self, shipOff), rollMag * rollMag);
+            return ((PlayerEgo *)(self->field_0x58))->rollRight(F<int>(self, shipOff), rollMag * rollMag);
         }
         rollMag = roll;
         if (roll < 0.0f) {
-            return PlayerEgo_rollRight(self->field_0x58,
-                                       F<int>(self, shipOff), rollMag * rollMag);
+            return ((PlayerEgo *)(self->field_0x58))->rollRight(F<int>(self, shipOff), rollMag * rollMag);
         }
         if (roll == 0.0f) return;
     }
-    return PlayerEgo_rollLeft(self->field_0x58,
-                              F<int>(self, shipOff), rollMag * rollMag);
+    return ((PlayerEgo *)(self->field_0x58))->rollLeft(F<int>(self, shipOff), rollMag * rollMag);
 }
 }
 
@@ -2504,7 +2497,7 @@ void MGame::setCinematicMode(bool on) {
         self->field_0x164 = TFC_isInLookAtMode(self->field_0xf4);
         TFC_setLookAtCam(self->field_0xf4, 0);
         ((MGame *)(self))->switchCamera(3);
-        return Hud_enterCinematic(*(void **)self->field_0x78, self->field_0x40, 1);
+        return ((Hud *)(*(void **)self->field_0x78))->enterCinematic(self->field_0x40, 1);
     }
 }
 

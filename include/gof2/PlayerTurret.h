@@ -79,6 +79,7 @@ public:
     void handleSentryGun(int delta);
     void setHost(KIPlayer *host, const Vector &offset);
     void render();
+    void renderBase();                  // render() tail: inherited KIPlayer::render()
     void handleTurret(int delta);
     void revive();
     void setPosition(const Vector &position);

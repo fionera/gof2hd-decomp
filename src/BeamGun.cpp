@@ -15,10 +15,7 @@ Matrix operator*(const Matrix &lhs, const Matrix &rhs);
 // global forward declaration with a minimal view exposing field_0xc (transform id),
 // which is the only AEGeometry field this TU reads by name.
 
-extern "C" void BeamGun_setEnemies_tail(void *data);
-extern "C" void BeamGun_render_tail(AEGeometry *self);
 BeamGun *_ZN7BeamGunD1Ev(BeamGun *self);
-extern "C" void BeamGun_setEnemy_tail(void *data);
 namespace AbyssEngine { namespace PaintCanvas {
 ::Transform *TransformGetTransform(::PaintCanvas *canvas, int transformId);
 } }
@@ -55,7 +52,7 @@ BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
 // engine handler.
 void BeamGun::setEnemies(Array<Player *> *enemies)
 {
-    return BeamGun_setEnemies_tail(enemies->data());
+    return this->setEnemies_tail(enemies->data());
 }
 
 // ---- render_17787c.cpp ----
@@ -70,7 +67,7 @@ void BeamGun::render()
     if (this->field_0x21 != 0) {
         AEGeometry *secondary = this->field_0x1c;
         if (secondary != 0)
-            return BeamGun_render_tail(secondary);
+            return this->render_tail(secondary);
     }
 }
 
@@ -85,7 +82,7 @@ void _ZN7BeamGunD0Ev(BeamGun *self)
 // (object field at +0x8) to the engine handler.
 void BeamGun::setEnemy(Player *enemy)
 {
-    return BeamGun_setEnemy_tail(((void **)enemy)[2]);
+    return this->setEnemy_tail(((void **)enemy)[2]);
 }
 
 // ---- BeamGun_177754.cpp ----
@@ -270,17 +267,23 @@ void BeamGun::update(int elapsed)
 // (pure GOT veneer), so the work lives behind the extern shim the linker
 // resolves. Modeling them as members keeps the original control flow intact.
 
+// The veneers do a terminal b.w into a relocated slot that lands in the inherited
+// engine implementation. We model those landing pads as extern engine routines.
+extern "C" void BeamGun_setEnemiesEngine(void *data);   // shared enemy-list handler
+extern "C" void BeamGun_setEnemyEngine(void *data);     // shared enemy handler
+void AEGeometryRender(AEGeometry *self);                // AEGeometry::render landing pad
+
 // setEnemies() tail: hand the enemy list's raw element buffer to the engine.
 void BeamGun::setEnemies_tail(void *data) {
-    BeamGun_setEnemies_tail(data);
+    BeamGun_setEnemiesEngine(data);
 }
 
 // setEnemy() tail: hand the single enemy's secondary geometry pointer to the engine.
 void BeamGun::setEnemy_tail(void *data) {
-    BeamGun_setEnemy_tail(data);
+    BeamGun_setEnemyEngine(data);
 }
 
 // render() tail: render the secondary beam geometry via AEGeometry::render.
 void BeamGun::render_tail(AEGeometry *self) {
-    BeamGun_render_tail(self);
+    AEGeometryRender(self);
 }

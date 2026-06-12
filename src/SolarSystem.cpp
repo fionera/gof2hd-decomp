@@ -90,6 +90,27 @@ int SolarSystem::getWarpGateIndex()  { return jumpgateStationId; }   // +0x30
 uint32_t *SolarSystem::getStations() { return stationIds; }          // +0x38
 uint32_t *SolarSystem::getRoutes()   { return linkedSystemIds; }     // +0x40
 
+// Array<int>*-typed view of the station-id list — the very same member at +0x38
+// that getStations() returns. Status::activateNewWanted() uses it to pick a
+// random station in a destination system (it then reads the embedded data
+// pointer at +4 and indexes into it).
+uint32_t *SolarSystem::getStations_i() { return stationIds; }        // +0x38
+
+// SolarSystem::warpGateLookup(int) — getWarpGateEnumIndex() forwards here with
+// the orbit's jump-gate station id. Resolving the warp-gate enum index is the
+// same array lookup used for ordinary stations, so reuse getStationEnumIndex().
+int SolarSystem::warpGateLookup(int idx) {
+    return (int)getStationEnumIndex(idx);
+}
+
+// SolarSystem::baseStringDtor() — runs AbyssEngine::String::~String() on the
+// in-place `name` member (passed by address from ~SolarSystem()). This is the
+// base (non-deleting) destructor: it releases the string's backing buffer but
+// does not free the SolarSystem itself.
+void SolarSystem::baseStringDtor(void *strField) {
+    ((String *)strField)->dtor();
+}
+
 // ---- isVisible_1558d6.cpp ----
 // SolarSystem::isVisible() — ldrb.w r0,[r0,#0x44]; bx lr
 uint8_t SolarSystem::isVisible() {

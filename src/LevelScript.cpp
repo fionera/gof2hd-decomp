@@ -3,6 +3,7 @@
 #include "gof2/LevelScript.h"   // defines P()
 #include "gof2/Explosion.h"     // defines I()
 #include "gof2/KIPlayer.h"
+#include "gof2/Hud.h"
 #include "gof2/StarSystem.h"
 #include "gof2/TargetFollowCamera.h"
 #include "gof2/AEGeometry.h"
@@ -52,7 +53,6 @@ extern "C" void *gProgrammedStation;
 extern "C" int Station_getIndex(void *station);
 extern "C" void Player_setAutoPilotTarget(void *player, void *target);
 extern "C" void *Explosion_dtor(void *explosion);
-extern "C" void Hud_drawTitleImage(Hud *hud, bool visible);
 
 // ---- render3D_145d84.cpp ----
 typedef void (*RenderProc)(void *);
@@ -397,7 +397,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     P(this, 0xd4) = radar;
     P(this, 0x14) = camera;
     P(this, 0x18) = level;
-    Hud_drawTitleImage(hud, false);
+    ((Hud *)(hud))->drawTitleImage(false);
 
     I(this, 0x1c) = 0;
     US(this, 0x20) = 1;

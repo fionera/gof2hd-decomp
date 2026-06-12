@@ -1374,7 +1374,6 @@ void  Level_createWingmen_init(Level *self);
 void  Level_assignGuns_init(Level *self);
 void  Level_connectPlayers_init(Level *self);
 int   KIPlayer_isWingMan_init();
-void  PlayerEgo_setRoute_init(int route);
 // Places the player at the appropriate spawn (station/warpgate/planet/origin); all the candidate
 // positions involve SIMD vector math the decompiler corrupted, so delegate the whole choice.
 void  Level_init_placePlayer(Level *self, int statusA, int stationStack);
@@ -1534,7 +1533,7 @@ int Level::init() {
         *(int *)(self + 0xc0) = 3;
     Level_connectPlayers_init(thisptr);
     if (*(Route **)(self + 0xf0) != 0)
-        PlayerEgo_setRoute_init(*(int *)(self + 0xf0));
+        ((PlayerEgo *)(*(int *)(self + 0xf0)))->setRoute_init();
 
     // recompute enemiesLeft.
     unsigned *list = *(unsigned **)(self + 0xf8);
@@ -2393,9 +2392,7 @@ int  Ship_getFirstEquipmentOfSort_up(int ship);
 int  Item_getAttribute_up(int item);
 int  Player_getGammaHP_up();
 void Player_damageGamma_up(Player *p, float dmg);
-int  PlayerEgo_getHUD_up(int ego);
 void Hud_hudEvent_up(int hud, int code, int ego);
-void PlayerEgo_getPosition_up(void *dst, int ego);
 void ParticleSystemManager_update_up(int mgr, unsigned dt);
 void LODManager_update_up(LODManager *m, unsigned dt);
 }
@@ -2477,7 +2474,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         int hpBefore = Player_getGammaHP_up();
         Player_damageGamma_up((Player *)*(int *)(self + 0xf0), factor);
         if (hpBefore > 0xe && Player_getGammaHP_up() < 0xf) {
-            int hud = PlayerEgo_getHUD_up(*(int *)(self + 0xf0));
+            int hud = ((PlayerEgo *)(*(int *)(self + 0xf0)))->getHUD_up();
             Hud_hudEvent_up(hud, 0x2c, *(int *)(self + 0xf0));
         }
         ego = *(int *)(self + 0xf0);
@@ -2487,14 +2484,14 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     if (ego != 0) {
         char dummy[16];
         if (*(int *)(self + 0x80) != 0) {
-            PlayerEgo_getPosition_up(dummy, ego);
+            ((PlayerEgo *)(dummy))->getPosition_up();
             *(int *)(self + 0xb4) = *(int *)dummy;
             ParticleSystemManager_update_up(*(int *)(self + 0x80), dt);
         }
         if (*(int *)(self + 0x74) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x74), dt);
         if (*(int *)(self + 0x78) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x78), dt);
         if (*(int *)(self + 0x88) != 0) {
-            PlayerEgo_getPosition_up(dummy, ego);
+            ((PlayerEgo *)(dummy))->getPosition_up();
             *(int *)(self + 0xb4) = *(int *)dummy;
             ParticleSystemManager_update_up(*(int *)(self + 0x88), dt);
         }

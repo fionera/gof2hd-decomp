@@ -1,4 +1,9 @@
 #include "gof2/RecordHandler.h"
+#include "gof2/Achievements.h"
+#include "gof2/BluePrint.h"
+#include "gof2/GameText.h"
+#include "gof2/Item.h"
+#include "gof2/Standing.h"
 #include "gof2/Ship.h"
 #include "gof2/Galaxy.h"
 #include "gof2/AEFile.h"
@@ -67,7 +72,6 @@ extern "C" void AEFile_ReadByte(void *out, unsigned int fd);
 extern "C" void AEFile_ReadFloat(void *out, unsigned int fd);
 extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
 int RecordHandler_checkHash(unsigned int fd);
-extern "C" void GameText_setLanguage(short obj, int lang);
 void Globals_loadFont(int kind);
 extern "C" void Mission_ctorEmpty(void *self, int type, int reward, int targetStation);
 extern "C" void AEFile_WriteByte(int v, unsigned int fd);
@@ -80,7 +84,6 @@ extern "C" void AEFile_WriteLong(long long v, unsigned int fd);
 extern "C" void AEFile_ReadLong(void *out, unsigned int fd);
 extern "C" void Array_bool_ctor(void *a);
 extern "C" void ArraySetLength_bool(unsigned n, void *a);
-extern "C" void RecordHandler_recordStoreRead_body(RecordHandler *self, void *rec, unsigned int fd);
 extern "C" void Array_UC_ctor(void *a);
 extern "C" void ArrayAdd_UC(unsigned char *src, unsigned int n, void *a);
 
@@ -808,7 +811,7 @@ void RecordHandler::loadOptions() {
             int langVal = lang;
             if (-1 < langVal) {
                 if (langVal == 9) langVal = 0;
-                GameText_setLanguage((short)**(int **)g_LO_textObj, langVal);
+                ((GameText *)((short)**(int **)g_LO_textObj))->setLanguage_i(langVal);
                 Globals_loadFont(**(int **)g_LO_fontKind);
             }
 
@@ -1386,13 +1389,6 @@ __attribute__((visibility("hidden"))) extern int    g_RSW_modVersion; // ship-mo
 
 // Item / Achievements / Standing live in out-of-batch headers whose full layout is not
 // pulled in here; their accessors are reached through extern "C" shims (codebase style).
-extern "C" int   Item_getIndex(void *it);
-extern "C" int   Item_getAmount(void *it);
-extern "C" int   Item_getSinglePrice(void *it);
-extern "C" bool  Item_isUnsaleable(void *it);
-extern "C" void *Achievements_getMedals(void *a);
-extern "C" void *Standing_getStandings(void *s);
-extern "C" void *Status_getStanding(void *status);
 
 // Helper: write a length-prefixed bool[] backed by an Array<bool> at status+off.
 static void RSW_writeBoolArray(void *status, int off, unsigned int fd) {
@@ -1420,9 +1416,9 @@ static void RSW_writeEquipment(Ship *ship, unsigned int fd) {
     for (unsigned i = 0; i < *eq; i++) {
         Item *it = *(Item **)(eq[1] + i * 4);
         if (it == 0) { AEFile_WriteInt(-1, fd); continue; }
-        AEFile_WriteInt(Item_getIndex(it), fd);
-        AEFile_WriteInt(Item_getAmount(it), fd);
-        AEFile_WriteBool(Item_isUnsaleable(it), fd);
+        AEFile_WriteInt(((Item *)(it))->getIndex(), fd);
+        AEFile_WriteInt(((Item *)(it))->getAmount(), fd);
+        AEFile_WriteBool(((Item *)(it))->isUnsaleable(), fd);
     }
 }
 
@@ -1433,10 +1429,10 @@ static void RSW_writeCargo(Ship *ship, unsigned int fd) {
     AEFile_WriteInt(*cg, fd);
     for (unsigned i = 0; i < *cg; i++) {
         Item *it = *(Item **)(cg[1] + i * 4);
-        AEFile_WriteInt(Item_getIndex(it), fd);
-        AEFile_WriteInt(Item_getAmount(it), fd);
-        AEFile_WriteInt(Item_getSinglePrice(it), fd);
-        AEFile_WriteBool(Item_isUnsaleable(it), fd);
+        AEFile_WriteInt(((Item *)(it))->getIndex(), fd);
+        AEFile_WriteInt(((Item *)(it))->getAmount(), fd);
+        AEFile_WriteInt(((Item *)(it))->getSinglePrice(), fd);
+        AEFile_WriteBool(((Item *)(it))->isUnsaleable(), fd);
     }
 }
 
@@ -1476,7 +1472,7 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Achievement medals (0x2d entries).
-    int medals = (int)(intptr_t)Achievements_getMedals(*g_RSW_achievements);
+    int medals = (int)(intptr_t)((Achievements *)(*g_RSW_achievements))->getMedals();
     AEFile_WriteInt(0x2d, fd);
     for (unsigned i = 0; i < 0x2d; i++) {
         AEFile_WriteInt(*(int *)(medals + i * 4), fd);
@@ -1504,10 +1500,10 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
             AEFile_WriteInt(*items, fd);
             for (unsigned j = 0; j < *items; j++) {
                 Item *it = *(Item **)(items[1] + j * 4);
-                AEFile_WriteInt(Item_getIndex(it), fd);
-                AEFile_WriteInt(Item_getAmount(it), fd);
-                AEFile_WriteInt(Item_getSinglePrice(it), fd);
-                AEFile_WriteBool(Item_isUnsaleable(it), fd);
+                AEFile_WriteInt(((Item *)(it))->getIndex(), fd);
+                AEFile_WriteInt(((Item *)(it))->getAmount(), fd);
+                AEFile_WriteInt(((Item *)(it))->getSinglePrice(), fd);
+                AEFile_WriteBool(((Item *)(it))->isUnsaleable(), fd);
             }
         }
         unsigned int *ships = (unsigned int *)((Station *)cur)->getShips();
@@ -1532,7 +1528,7 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Standings (2 races).
-    int standings = (int)(intptr_t)Standing_getStandings(Status_getStanding(status));
+    int standings = (int)(intptr_t)((Standing *)(((Status *)(status))->getStanding()))->getStandings();
     AEFile_WriteInt(2, fd);
     for (unsigned i = 0; i < 2; i++) {
         AEFile_WriteInt(*(int *)(standings + i * 4), fd);
@@ -1646,10 +1642,10 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
         AEFile_WriteInt(*sItems, fd);
         for (unsigned i = 0; i < *sItems; i++) {
             Item *it = *(Item **)(sItems[1] + i * 4);
-            AEFile_WriteInt(Item_getIndex(it), fd);
-            AEFile_WriteInt(Item_getAmount(it), fd);
-            AEFile_WriteInt(Item_getSinglePrice(it), fd);
-            AEFile_WriteBool(Item_isUnsaleable(it), fd);
+            AEFile_WriteInt(((Item *)(it))->getIndex(), fd);
+            AEFile_WriteInt(((Item *)(it))->getAmount(), fd);
+            AEFile_WriteInt(((Item *)(it))->getSinglePrice(), fd);
+            AEFile_WriteBool(((Item *)(it))->isUnsaleable(), fd);
         }
     }
     unsigned int *sShips = (unsigned int *)((Station *)station)->getShips();
@@ -1730,25 +1726,10 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
 // `rec` (ship/wingman/station inventories, standings, blueprints, pending products, wingmen,
 // agents, bitmaps, flags, mods, wanteds and bounties) from the already-open file `fd`. The
 // caller handled open/prefix/hash and performs Close.
-extern "C" void *Ship_makeShip(int shipDef);
-extern "C" void  Ship_setRace(void *ship, int race);
-extern "C" void  Ship_replaceEquipment(void *ship, void *items);
-extern "C" void  Ship_replaceCargo(void *ship, void *items);
-extern "C" void  Ship_setMods(void *ship, void *mods);
-extern "C" void  Ship_addMod(void *ship, int mod);
-extern "C" void *Item_makeItem(void *itemDef, int amount);
-extern "C" void  Item_getMaxPrice(void *itemDef);
-extern "C" void  Item_setPrice(void *item, int price);
-extern "C" void  Item_setUnsaleable(void *item, bool v);
 extern "C" void *Galaxy_getStationByIndex(int idx);
-extern "C" void  Station_setItems(void *st, void *items, bool b);
-extern "C" void  Station_setShipsArr(void *st, void *ships);
-extern "C" void  Station_setAgents(void *st, void *agents);
-extern "C" void  Station_setAttackedFriends(void *st, bool v);
 extern "C" void *Standing_new();                         // operator new + Standing::Standing
 extern "C" void  Standing_setStandingsArr(void *st, int *standings);
-extern "C" void *BluePrint_make(int index);              // operator new + BluePrint(index)
-extern "C" int   BluePrint_getIndexOf(void *bp);
+// operator new + BluePrint(index)
 extern "C" void *PendingProduct_make(int a, void *name, int c, int d);
 extern "C" void *Array_Item_new();                       // operator new + Array<Item*>::Array
 extern "C" void *Array_Ship_new();
@@ -1783,10 +1764,10 @@ static void *RSR_readItem(unsigned int fd, bool withPrice) {
     if (withPrice) AEFile_ReadInt(&price, fd);
     AEFile_Read_bool(&uns, fd, 0);
     void *def = (*(void ***)g_RSR_itemDefs)[idx];
-    Item_getMaxPrice(def);
-    void *it = Item_makeItem(def, amount);
-    if (withPrice) Item_setPrice(it, price);
-    Item_setUnsaleable(it, uns);
+    ((Item *)(def))->getMaxPrice();
+    void *it = ((Item *)(def))->makeItem(amount);
+    if (withPrice) ((Item *)(it))->setPrice(price);
+    ((Item *)(it))->setUnsaleable(uns);
     return it;
 }
 
@@ -1826,23 +1807,23 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
 
     // Player ship: definition index, race, equipment, cargo.
     int shipIdx = 0; AEFile_ReadInt(&shipIdx, fd);
-    void *pship = Ship_makeShip((int)(intptr_t)shipDefs[shipIdx]);
+    void *pship = ((Ship *)((int)(intptr_t)shipDefs[shipIdx]))->makeShip(-1);
     *(void **)(rec + 0x130) = pship;
-    int race = 0; AEFile_ReadInt(&race, fd); Ship_setRace(pship, race);
+    int race = 0; AEFile_ReadInt(&race, fd); ((Ship *)(pship))->setRace(race);
 
     int eqN = 0; AEFile_ReadInt(&eqN, fd);
     if (eqN > 0) {
         void *items = Array_Item_new(); ArraySetLength_Item(eqN, items);
         for (int i = 0; i < eqN; i++)
             *(void **)(*(int *)((char *)items + 4) + i * 4) = RSR_readItem(fd, false);
-        Ship_replaceEquipment(pship, items);
+        ((Ship *)(pship))->replaceEquipment((Array<Item*>*)items);
     }
     int cgN = 0; AEFile_ReadInt(&cgN, fd);
     if (cgN > 0) {
         void *items = Array_Item_new(); ArraySetLength_Item(cgN, items);
         for (int i = 0; i < cgN; i++)
             *(void **)(*(int *)((char *)items + 4) + i * 4) = RSR_readItem(fd, true);
-        Ship_replaceCargo(pship, items);
+        ((Ship *)(pship))->replaceCargo((Array<Item*>*)items);
     }
 
     // Station stack (3 slots + current). For each present station: items, ships, agents, flag.
@@ -1859,28 +1840,28 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
                 void *items = Array_Item_new(); ArraySetLength_Item(iN, items);
                 for (int i = 0; i < iN; i++)
                     *(void **)(*(int *)((char *)items + 4) + i * 4) = RSR_readItem(fd, true);
-                Station_setItems(st, items, false);
+                ((Station *)(st))->setItems((uint32_t *)items, false);
             }
             int shN = 0; AEFile_ReadInt(&shN, fd);
             if (shN > 0) {
                 void *ships = Array_Ship_new(); ArraySetLength_Ship(shN, ships);
                 for (int i = 0; i < shN; i++) {
                     int si = 0; AEFile_ReadInt(&si, fd);
-                    void *sh = Ship_makeShip((int)(intptr_t)shipDefs[si]);
+                    void *sh = ((Ship *)((int)(intptr_t)shipDefs[si]))->makeShip(-1);
                     *(void **)(*(int *)((char *)ships + 4) + i * 4) = sh;
-                    int r = 0; AEFile_ReadInt(&r, fd); Ship_setRace(sh, r);
+                    int r = 0; AEFile_ReadInt(&r, fd); ((Ship *)(sh))->setRace(r);
                 }
-                Station_setShipsArr(st, ships);
+                ((Station *)(st))->setShipsArr(ships);
             }
             int agN = 0; AEFile_ReadInt(&agN, fd);
             if (agN > 0) {
                 void *agents = Array_Agent_new(); ArraySetLength_Agent(agN, agents);
                 for (int i = 0; i < agN; i++)
                     *(void **)(*(int *)((char *)agents + 4) + i * 4) = self->readAgent(fd);
-                Station_setAgents(st, agents);
+                ((Station *)(st))->setAgents(agents);
             }
             bool atk = false; AEFile_Read_bool(&atk, fd, 0);
-            Station_setAttackedFriends(st, atk);
+            ((Station *)(st))->setAttackedFriends(atk);
         }
         if (k == *(unsigned *)stationArr) *(void **)(rec + 0x138) = st;
         else *(void **)(*(int *)((char *)stationArr + 4) + k * 4) = st;
@@ -1901,8 +1882,8 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     void *statusG = *g_RSR_status_p;
     for (unsigned i = 0; i < *(unsigned *)bpArr; i++) {
         unsigned int *liveBps = (unsigned int *)((Status *)statusG)->getBluePrints();
-        int liveIdx = BluePrint_getIndexOf(*(void **)(liveBps[1] + i * 4));
-        int *bp = (int *)BluePrint_make(liveIdx);
+        int liveIdx = ((BluePrint *)(*(void **)(liveBps[1] + i * 4)))->getIndexOf();
+        int *bp = (int *)BluePrint::make(liveIdx);
         *(void **)(*(int *)((char *)bpArr + 4) + i * 4) = bp;
         unsigned int *ingredients = (unsigned int *)bp[0];
         int byteoff = 0;
@@ -1996,22 +1977,22 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     int hasWing = 0; AEFile_ReadInt(&hasWing, fd);
     if (hasWing > 0) {
         int wi = 0; AEFile_ReadInt(&wi, fd);
-        void *wship = Ship_makeShip((int)(intptr_t)shipDefs[wi]);
+        void *wship = ((Ship *)((int)(intptr_t)shipDefs[wi]))->makeShip(-1);
         *(void **)(rec + 0x134) = wship;
-        int r = 0; AEFile_ReadInt(&r, fd); Ship_setRace(wship, r);
+        int r = 0; AEFile_ReadInt(&r, fd); ((Ship *)(wship))->setRace(r);
         int eN = 0; AEFile_ReadInt(&eN, fd);
         if (eN > 0) {
             void *items = Array_Item_new(); ArraySetLength_Item(eN, items);
             for (int i = 0; i < eN; i++)
                 *(void **)(*(int *)((char *)items + 4) + i * 4) = RSR_readItem(fd, false);
-            Ship_replaceEquipment(wship, items);
+            ((Ship *)(wship))->replaceEquipment((Array<Item*>*)items);
         }
         int cN = 0; AEFile_ReadInt(&cN, fd);
         if (cN > 0) {
             void *items = Array_Item_new(); ArraySetLength_Item(cN, items);
             for (int i = 0; i < cN; i++)
                 *(void **)(*(int *)((char *)items + 4) + i * 4) = RSR_readItem(fd, true);
-            Ship_replaceCargo(wship, items);
+            ((Ship *)(wship))->replaceCargo((Array<Item*>*)items);
         }
     }
 
@@ -2038,9 +2019,9 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
         void *ships = Array_Ship_new(); ArraySetLength_Ship(ssN, ships);
         for (int i = 0; i < ssN; i++) {
             int si = 0; AEFile_ReadInt(&si, fd);
-            void *sh = Ship_makeShip((int)(intptr_t)shipDefs[si]);
+            void *sh = ((Ship *)((int)(intptr_t)shipDefs[si]))->makeShip(-1);
             *(void **)(*(int *)((char *)ships + 4) + i * 4) = sh;
-            int r = 0; AEFile_ReadInt(&r, fd); Ship_setRace(sh, r);
+            int r = 0; AEFile_ReadInt(&r, fd); ((Ship *)(sh))->setRace(r);
         }
         *(void **)(rec + 0x184) = ships;
     }
@@ -2063,18 +2044,18 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     int m0 = 0; AEFile_ReadInt(&m0, fd);
     if (m0 > 0) { void *a = RH_op_new(0xc); Array_int_ctor(a); ArraySetLength_int(m0, a);
         int bo = 0; for (int i = 0; i < m0; i++) { AEFile_ReadInt((void *)(intptr_t)(*(int *)((char *)a + 4) + bo), fd); bo += 4; }
-        Ship_setMods(*(void **)(rec + 0x130), a); }
+        ((Ship *)(*(void **)(rec + 0x130)))->setMods((Array<int>*)a); }
     int m1 = 0; AEFile_ReadInt(&m1, fd);
     if (m1 > 0) { void *a = RH_op_new(0xc); Array_int_ctor(a); ArraySetLength_int(m1, a);
         int bo = 0; for (int i = 0; i < m1; i++) { AEFile_ReadInt((void *)(intptr_t)(*(int *)((char *)a + 4) + bo), fd); bo += 4; }
-        Ship_setMods(*(void **)(rec + 0x134), a); }
+        ((Ship *)(*(void **)(rec + 0x134)))->setMods((Array<int>*)a); }
 
     int stShipGroups = 0; AEFile_ReadInt(&stShipGroups, fd);
     for (int g = 0; g < stShipGroups; g++) {
         int mc = 0; AEFile_ReadInt(&mc, fd);
         if (mc > 0) { void *a = RH_op_new(0xc); Array_int_ctor(a); ArraySetLength_int(mc, a);
             int bo = 0; for (int i = 0; i < mc; i++) { AEFile_ReadInt((void *)(intptr_t)(*(int *)((char *)a + 4) + bo), fd); bo += 4; }
-            Ship_setMods(*(void **)(*(int *)(*(int *)(rec + 0x184) + 4) + g * 4), a); }
+            ((Ship *)(*(void **)(*(int *)(*(int *)(rec + 0x184) + 4) + g * 4)))->setMods((Array<int>*)a); }
     }
 
     // Per-station ship mods (applied incrementally via addMod).
@@ -2089,7 +2070,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
             for (int j = 0; j < mc; j++) {
                 int mod = 0; AEFile_ReadInt(&mod, fd);
                 unsigned int *cShips = (unsigned int *)((Station *)cur)->getShips();
-                Ship_addMod(*(void **)(cShips[1] + i * 4), mod);
+                ((Ship *)(*(void **)(cShips[1] + i * 4)))->addMod(mod);
             }
         }
     }
@@ -2229,7 +2210,7 @@ void * RecordHandler::recordStoreRead(int slot) {
             }
 
             // Remaining object-graph read.
-            RecordHandler_recordStoreRead_body(self, rec, fd);
+            ((RecordHandler *)(self))->recordStoreRead_body(rec, fd);
 
             AEFile::Close(fd);
         }

@@ -31,7 +31,6 @@ extern "C" void ArrayReleaseClasses_Vector(void *arr);
 extern "C" void *Array_Vector_dtor(void *p);
 extern "C" void *Array_float_dtor(void *p);
 extern "C" void *Array_int_dtor(void *p);
-extern "C" void *PlayerGasCloud_baseDtor(void *self);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
 // ---- translate_176658.cpp ----
@@ -212,7 +211,7 @@ void *_ZN14PlayerGasCloudD1Ev(void *selfv)
     }
     self->modelGeometry = 0;
 
-    return PlayerGasCloud_baseDtor(self);
+    return ((PlayerGasCloud *)(self))->baseDtor();
 }
 
 // PlayerGasCloud::~PlayerGasCloud() -- real complete-object destructor.
@@ -261,7 +260,7 @@ PlayerGasCloud::~PlayerGasCloud()
     }
     this->modelGeometry = 0;
 
-    PlayerGasCloud_baseDtor(this);
+    ((PlayerGasCloud *)(this))->baseDtor();
 }
 
 // ~PlayerGasCloud() tail (binary: tail-call to SpacePoint::~SpacePoint @0x732b4).
