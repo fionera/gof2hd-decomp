@@ -94,7 +94,6 @@ extern "C" void PaintCanvas_DrawLine(uint32_t canvas, int x0, int y0, int x1, in
 extern "C" void PaintCanvas_DrawImage2D(uint32_t canvas, uint32_t image, int x, int y, int anchor);
 extern "C" void PaintCanvas_DrawString(uint32_t canvas, void *font, String *text, int x, int y, bool flag);
 extern "C" int PaintCanvas_GetImage2DWidth(uint32_t canvas, uint32_t image);
-extern "C" void Layout_drawHeader(void *layout, String *text);
 extern "C" void String_add(String *out, String *a, String *b);
 extern "C" void Vector_assign(Vector *dst, Vector *src);
 extern "C" int Ship_hasJumpDriveIntegrated(void *ship);
@@ -465,7 +464,7 @@ void StarMap::draw()
         drawKey();
     }
     ((String *)(&tmp))->ctor_copy((String *)((GameText *)(*g_StarMap_draw_text))->getText(0x190), false);
-    Layout_drawHeader(*g_StarMap_draw_layout, &tmp);
+    ((Layout *)(*g_StarMap_draw_layout))->drawHeader1(&tmp);
     ((String *)(&tmp))->dtor();
     ((Layout *)(*g_StarMap_draw_layout))->drawEmptyFooter(1);
     ((TouchButton *)(ptr_field(this, 0x4c)))->draw();

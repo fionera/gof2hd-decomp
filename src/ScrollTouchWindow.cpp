@@ -69,9 +69,6 @@ void ScrollTouchWindow::OnTouchBegin(int x, int y)
 }
 
 // ---- draw_174330.cpp ----
-extern "C" void Layout_drawWindow(void *layout, AbyssEngine::String *title, int x, int y,
-                                  int w, int h, int framed) __attribute__((nothrow));
-
 __attribute__((visibility("hidden"))) extern void **g_STW_canvas_draw;
 __attribute__((visibility("hidden"))) extern void **g_STW_layout_draw_plain;
 __attribute__((visibility("hidden"))) extern void **g_STW_layout_draw_window;
@@ -95,7 +92,7 @@ void ScrollTouchWindow::draw()
         {
             char title[sizeof(AbyssEngine::String)];
             ((String *)(title))->ctor_copy(&this->title, false);
-            Layout_drawWindow(layout, (AbyssEngine::String *)title, this->x, this->y,
+            ((Layout *)layout)->drawWindow7((AbyssEngine::String *)title, this->x, this->y,
                               this->width, this->height, 1);
             ((String *)(title))->dtor();
         }

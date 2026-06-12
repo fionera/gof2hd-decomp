@@ -144,7 +144,6 @@ extern "C" void ArrayRelease_ArrayImagePartPtr(void *p);
 extern "C" void ArrayRelease_VectorPtr(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void operator_delete_arr(void *p);
-extern "C" void ListItemWindow_draw_call(void *list);
 extern "C" void SpaceLounge_draw_cutscene_tail();
 extern "C" void SpaceLounge_draw_map_tail(void *map);
 extern "C" void PaintCanvas_SetColor4(void *canvas, int a, int r, int g, int b);
@@ -152,9 +151,6 @@ extern "C" int PaintCanvas_GetWidth(void *canvas);
 extern "C" int PaintCanvas_GetHeight(void *canvas);
 extern "C" void PaintCanvas_FillRectangle(void *canvas, int x, int y, int w, int h);
 extern "C" void Layout_drawHeader_call(void *layout, void *title);
-extern "C" void Layout_drawFooterNoBackButton_call(void *layout);
-extern "C" void Layout_drawFooter_call(void *layout);
-extern "C" void ChoiceWindow_draw_call(void *choice);
 extern "C" void *SpaceLounge_draw_layout_slot;
 extern "C" void *SpaceLounge_draw_canvas_slot;
 extern "C" void *SpaceLounge_draw_text_slot;
@@ -1330,7 +1326,7 @@ void SpaceLounge::draw() {
             PaintCanvas_FillRectangle(canvas, 0, 0, width, height);
             PaintCanvas_SetColor(canvas, -1);
         }
-        ListItemWindow_draw_call(P(self, 0xc));
+        ((ListItemWindow *)(P(self, 0xc)))->draw();
         return SpaceLounge_draw_cutscene_tail();
     }
 
@@ -1350,13 +1346,13 @@ void SpaceLounge::draw() {
 
     layout = *(void **)layoutSlot;
     if ((I(self, 0x14) & 0xfffffffe) == 2) {
-        Layout_drawFooterNoBackButton_call(layout);
+        ((Layout *)layout)->drawFooterNoBackButton();
     } else {
-        Layout_drawFooter_call(layout);
+        ((Layout *)layout)->drawFooter();
     }
 
     if (UC(self, 0x19) != 0 || UC(self, 0x1a) != 0 || UC(self, 0x1b) != 0) {
-        ChoiceWindow_draw_call(P(self, 0x8));
+        ((ChoiceWindow *)(P(self, 0x8)))->draw();
     }
 }
 

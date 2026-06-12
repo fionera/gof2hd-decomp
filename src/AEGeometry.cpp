@@ -24,7 +24,6 @@ extern "C" void _ae_TransformSetLocal(uint32_t canvas, uint32_t tf, void *m);
 extern "C" void _ae_MeshCreate(PaintCanvas *c, uint16_t mesh, uint32_t *out, bool flag);
 extern "C" void _ae_getDirection(void *self, Vector *out);
 extern "C" void _ae_getPosition(void *self, Vector *out);
-extern "C" void _ae_setPosition_v(void *self, Vector *v);
 
 // ---- getPosition_a4592.cpp ----
 // AEGeometry::getPosition() -> TransformGetLocal(canvas,tf); return MatrixGetPosition(loc)
@@ -390,7 +389,7 @@ void AEGeometry::moveForward(float dist)
     pos.x = pos.x + n.x * dist;
     pos.y = pos.y + n.y * dist;
     pos.z = pos.z + n.z * dist;
-    _ae_setPosition_v(this, &pos);
+    this->setPosition(pos);
 }
 
 // ---- updateLod_a4d80.cpp ----

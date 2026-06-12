@@ -2,14 +2,11 @@
 #include "gof2/AEFile.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
+#include "gof2/Engine.h"
 
 
 extern "C" void AE_FileInterfaceAndroid_ctor(void *self);
-extern "C" void AE_AEFile_SetInterface(void *iface);
-extern "C" void AE_Engine_ResetLightParam(Engine *self);
-extern "C" void AE_Engine_ShaderInit(Engine *self);
 extern "C" void AE_Engine_GlEnable(Engine *self, bool on);
-extern "C" void AE_Engine_AfterGLInit(Engine *self);
 extern "C" void AE_PaintCanvas_Initialize(PaintCanvas *self, bool flag);
 extern "C" void AE_Vector_assign(void *dst, const void *src);
 extern "C" void AE_FBOContainer_ctor(void *self);
@@ -17,18 +14,12 @@ extern "C" void AE_FBOContainer_Create(void *self, int w, char h, bool flag);
 extern "C" void AE_String_fromCStr(String *self, const char *s, bool b);
 extern "C" void AE_String_dtor(void *self);
 extern "C" float sqrtf(float);
-extern "C" void AE_Engine_AEClientState(Engine *self, unsigned int cap, bool on);
-extern "C" void AE_Engine_RenderMesh(Engine *self, AbyssEngine::Mesh *mesh);
 extern "C" float _ZN11AbyssEngine6AEMath4SinfEf(float);
 extern "C" float _ZN11AbyssEngine6AEMath4CosfEf(float);
 extern "C" float _ZN11AbyssEngine6AEMath5ATanfEf(float);
-extern "C" void AE_Engine_SetAddData(Engine *self, void *data, int count);
 extern "C" void AE_Engine_LightSetAmbient(float r, float g, float b, Engine *self);
 extern "C" void AE_AEMath_matMul(Matrix *out, const Matrix *in);
 extern "C" void AE_PaintCanvas_SetWorldViewMatrix(void *self);
-extern "C" void AE_Engine_SetModelMatrix(Matrix *self);
-extern "C" void AE_Engine_SetUVMatrix(Engine *self, const Matrix *uv);
-extern "C" void AE_Engine_SetColor(float r, float g, float b, float a);
 extern "C" void String_copy(String *self, const String *src, bool b);
 extern "C" void String_fromLongLong(String *self, long long v);
 extern "C" void String_appendEq(String *self, const String *o);
@@ -42,7 +33,7 @@ extern "C" void *__aeabi_memcpy4(void *dst, const void *src, size_t_ n);
 extern "C" int String_Compare(String *self, const String *o);
 extern "C" void glDeleteBuffers(int n, const void *buffers);
 extern "C" void *AE_Transform_dtor(void *self);
-extern "C" void *__aeabi_memcpy(void *dst, const void *src, size_t_ n);
+// __aeabi_memcpy is declared by gof2/Engine.h
 
 // ---- ImageFontSetYOffset_72278.cpp ----
 // AbyssEngine::ImageFontSetYOffset(AbyssEngine::ImageFont*, short)
@@ -70,7 +61,7 @@ namespace AbyssEngine {
 extern "C" char *g_Camera_frustumEnabledFlag; // **(DAT + 0x81466)
 
 extern "C" {
-void *__aeabi_memcpy(void *dst, const void *src, size_t_ n);
+// __aeabi_memcpy is declared by gof2/Engine.h
 // Engine math helpers (referenced by C-name; real symbols are AbyssEngine::AEMath::*).
 void AE_Matrix_mulAssign(void *self, const void *rhs);
 void AE_Vector_assign(void *self, const void *rhs);
@@ -250,7 +241,7 @@ void getAppVersion()
     void *fileIface = operator new(0x38);
     AE_FileInterfaceAndroid_ctor(fileIface);
     pp(c, 0x24) = fileIface;
-    AE_AEFile_SetInterface(fileIface);
+    AEFile::SetInterface((FileInterface *)fileIface);
 
     u32(c, 0x10) = 0;
     u8(c, 0x2c) = 0;
@@ -258,7 +249,7 @@ void getAppVersion()
 
     char *shaderFlag = g_Engine_shaderModeFlag;
     u32(c, 0x40c) = 0;
-    AE_Engine_ResetLightParam(self);
+    self->ResetLightParam();
     glViewport(0, 0, (int)i32(c, 0x374), (int)i32(c, 0x370));
 
     if (*shaderFlag == 0) {
@@ -266,7 +257,7 @@ void getAppVersion()
         glDisable(0xb50);
         glLineWidth(1.0f);
     } else {
-        AE_Engine_ShaderInit(self);
+        self->ShaderInit();
     }
 
     float zero3[3] = {0, 0, 0};
@@ -280,7 +271,7 @@ void getAppVersion()
     glDisable(0xbe2);
     glCullFace(0x405);
     glEnable(0xb44);
-    AE_Engine_AfterGLInit(self);
+    self->AfterGLInit();
     AE_PaintCanvas_Initialize((PaintCanvas *)*(void **)pp(c, 0x30), false);
 
     u32(c, 0xc) = 0;
@@ -610,7 +601,7 @@ void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr)
 void glNormalPointer(unsigned int type, int stride, const void *ptr);
 void glColorPointer(int size, unsigned int type, int stride, const void *ptr);
 void glDrawElements(unsigned int mode, int count, unsigned int type, const void *indices);
-int __aeabi_uidiv(int, int);
+// __aeabi_uidiv is declared by gof2/Engine.h
 }
 
 // AbyssEngine::MeshDraw(AbyssEngine::Engine*, AbyssEngine::Mesh*)
@@ -631,32 +622,32 @@ int MeshDraw(Engine *engine, Mesh *mesh)
     unsigned char flags = u8(mesh, 0x0);
     if (*g_Mesh_shaderPathFlag == 0 && u8(mesh, 0x5c) != 0) {
         glBindBuffer(0x8892, u32(mesh, 0x60));
-        AE_Engine_AEClientState(engine, 0x8074, true);
+        engine->AEClientState(0x8074, true);
         glVertexPointer(3, 0x1406, 0, 0);
         glBindBuffer(0x8893, u32(mesh, 0x64));
 
         if (flags & 4) { // (flags<<0x1e) negative -> uv present
             glBindBuffer(0x8892, u32(mesh, 0x68));
-            AE_Engine_AEClientState(engine, 0x8078, true);
+            engine->AEClientState(0x8078, true);
             glTexCoordPointer(2, 0x1406, 0, 0);
         } else {
-            AE_Engine_AEClientState(engine, 0x8078, false);
+            engine->AEClientState(0x8078, false);
         }
 
         if (flags & 8) { // (flags<<0x1d) negative -> normals present
             glBindBuffer(0x8892, u32(mesh, 0x6c));
-            AE_Engine_AEClientState(engine, 0x8075, true);
+            engine->AEClientState(0x8075, true);
             glNormalPointer(0x1406, 0, 0);
         } else {
-            AE_Engine_AEClientState(engine, 0x8075, false);
+            engine->AEClientState(0x8075, false);
         }
 
         if (flags & 0x10) { // (flags<<0x1c) negative -> colors present
             glBindBuffer(0x8892, u32(mesh, 0x78));
-            AE_Engine_AEClientState(engine, 0x8076, true);
+            engine->AEClientState(0x8076, true);
             glColorPointer(4, 0x1406, 0, 0);
         } else {
-            AE_Engine_AEClientState(engine, 0x8076, false);
+            engine->AEClientState(0x8076, false);
         }
 
         glDrawElements(4, (int)(unsigned short)u16(mesh, 0x28), 0x1403, 0);
@@ -675,7 +666,7 @@ int MeshDraw(Engine *engine, Mesh *mesh)
         glBindBuffer(0x8892, 0);
         glBindBuffer(0x8893, 0);
     } else {
-        AE_Engine_RenderMesh(engine, mesh);
+        engine->RenderMesh(mesh);
     }
     return 1;
 }
@@ -837,8 +828,6 @@ void CurveRelease(Curve **slot)
 // Ghidra output is normalized here.
 namespace AbyssEngine {
 
-extern "C" void AE_Engine_SetTexturesExt(Engine *self, unsigned int t0, unsigned int t1,
-                                         unsigned int t2, unsigned int t3);
 
 int MeshDraw(Engine *engine, Mesh *mesh);
 
@@ -850,9 +839,9 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
     char *m = (char *)mat;
 
     if (setTextures) {
-        AE_Engine_SetTexturesExt(engine, u32(m, 0x0), u32(m, 0x4), u32(m, 0x8), 0xffffffff);
+        engine->SetTexturesExt(u32(m, 0x0), u32(m, 0x4), u32(m, 0x8), 0xffffffff);
     }
-    AE_Engine_SetAddData(engine, pp(m, 0x24), i32(m, 0x28));
+    engine->SetAddData(pp(m, 0x24), i32(m, 0x28));
 
     float ambient = f32(m, 0x68);
     if (ambient != -10.0f) {
@@ -865,14 +854,14 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
         Matrix world;
         AE_AEMath_matMul(&world, (const Matrix *)((char *)pp(m, 0x60) + matOff));
         AE_PaintCanvas_SetWorldViewMatrix((Matrix *)canvas);
-        AE_Engine_SetModelMatrix((Matrix *)engine);
-        AE_Engine_SetUVMatrix(engine, (const Matrix *)((char *)pp(m, 0x3c) + matOff));
+        engine->SetModelMatrix((const uint32_t *)&world);
+        engine->SetUVMatrix((const uint32_t *)((char *)pp(m, 0x3c) + matOff));
 
         unsigned int packed = *(unsigned int *)((char *)pp(m, 0x54) + i * 4);
         float cr = (float)((packed >> 16) & 0xff);
         float cg = (float)((packed >> 8) & 0xff);
         float cb = (float)(packed & 0xff);
-        AE_Engine_SetColor(cb * inv255, cg * inv255, cr * inv255, 0.0f);
+        engine->SetColor(cb * inv255, cg * inv255, cr * inv255, 0.0f);
 
         MeshDraw(engine, *(Mesh **)((char *)pp(m, 0x48) + i * 4));
         matOff += 0x3c;
@@ -954,7 +943,7 @@ extern "C" {
 void *AE_operator_new(size_t_ n);
 void *AE_operator_new_arr(size_t_ n);
 void  AE_operator_delete_arr(void *p);
-int   __aeabi_uidiv(int a, int b);
+// __aeabi_uidiv is declared by gof2/Engine.h
 float AE_VectorSignedToFloat(int v, unsigned char mode);
 float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
 float AE_VectorLength(const void *v);
@@ -2577,7 +2566,7 @@ void glTexParameterf(unsigned int target, unsigned int pname, float param);
 void glTexImage2D(unsigned int t, int lvl, int ifmt, int w, int h, int b, int fmt, int type, const void *px);
 void glCompressedTexImage2D(unsigned int t, int lvl, int ifmt, int w, int h, int b, int sz, const void *px);
 void glGenerateMipmap(unsigned int target);
-int  __aeabi_uidiv(int a, int b);
+// __aeabi_uidiv is declared by gof2/Engine.h
 
 void *AE_operator_new(size_t_ n);
 void  AE_String_ctor(void *self, const char *s, bool b);
@@ -3187,7 +3176,7 @@ namespace AbyssEngine {
 extern "C" char *g_Camera_frustumEnabledFlag; // **(DAT + 0x815f2)
 
 extern "C" {
-void *__aeabi_memcpy(void *dst, const void *src, size_t_ n);
+// __aeabi_memcpy is declared by gof2/Engine.h
 void AE_Matrix_mulAssign(void *self, const void *rhs);
 void AE_Vector_assign(void *self, const void *rhs);
 void AE_MatrixInverseTransformVector(void *out, const void *in);

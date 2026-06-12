@@ -13,7 +13,6 @@ extern "C" void PaintCanvas_Begin2d(void *canvas);
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y, int ax, int ay);
 extern "C" void PaintCanvas_End2d(void *canvas);
-extern "C" void Layout_drawHeader(void *layout);
 extern "C" void MTitle_r2dDone(void *screen, int arg);
 extern "C" void MTitle_r2dTail(void *canvas);
 extern "C" void _ZN6MTitle9OnReleaseEv(MTitle *self);
@@ -61,7 +60,7 @@ void MTitle::OnRender2D()
 
     void **layout = g_MTitle_r2d_layout;
     ((Layout *)(*layout))->drawBG();
-    Layout_drawHeader(*layout);
+    ((Layout *)(*layout))->drawHeader0();
     ((Layout *)(*layout))->drawEmptyFooter(0);
 
     int t = ((ApplicationManager *)(this->appManager))->GetElapsedTimeMillis();

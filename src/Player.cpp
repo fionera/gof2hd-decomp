@@ -89,7 +89,6 @@ extern "C" void Standing_setPlayerSignatureRace(void *self, int r);
 extern "C" int String_Compare(void *a, void *b);
 extern "C" void Mission_getStatusValue();
 extern "C" void Mission_setStatusValue(int v);
-extern "C" void Player_damage2(Player *self, int amount);
 extern "C" int **g_damage_globals;
 extern "C" int **g_damage_text;
 extern "C" void Player_setEnemy_tail(Player *self, Player *enemy);
@@ -1484,7 +1483,7 @@ LAB_3488:
         if (slave != 0) {
             Player *other = *(Player **)(slave + 4);
             other->vulnerable = 1;
-            Player_damage2(other, amount);
+            other->damage(amount);
             *(char *)(*(int *)(*(int *)((char *)self->kiPlayer + 0x10) + 4) + 0xc2) = 0;
         }
     }

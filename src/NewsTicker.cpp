@@ -31,8 +31,12 @@ extern "C" void String_cstr_ctor(void *self, const char *text, bool copy);
 extern "C" void String_plus(void *out, void *left, void *right);
 extern "C" void String_plusAssign(void *self, void *other);
 typedef Array<NewsItemView *> NewsItemArray;
+// Minimal view of FileRead so loadTicker() resolves to the real FileRead::loadTicker.
+class FileRead {
+public:
+    Array<NewsItem *> *loadTicker();
+};
 extern "C" void FileRead_ctor(void *self);
-extern "C" NewsItemArray *FileRead_loadTicker(void *self);
 extern "C" void *FileRead_dtor(void *self);
 extern "C" void Array_NewsItem_ctor(NewsItemArray *self);
 extern "C" void *Array_NewsItem_dtor(NewsItemArray *self);
@@ -213,7 +217,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 
     void *reader = operator new(1);
     FileRead_ctor(reader);
-    NewsItemArray *allItems = FileRead_loadTicker(reader);
+    NewsItemArray *allItems = (NewsItemArray *)((FileRead *)reader)->loadTicker();
     operator delete(FileRead_dtor(reader));
 
     NewsItemArray *items = (NewsItemArray *)operator new(sizeof(NewsItemArray));

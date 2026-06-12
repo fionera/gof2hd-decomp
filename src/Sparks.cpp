@@ -4,7 +4,6 @@
 extern "C" void *operator_new(uint32_t size);
 extern "C" int AERandom_nextInt(void *rng, int bound);
 extern "C" void operator_delete(void *ptr);
-extern "C" void Sparks_explode_int(Sparks *self, int x, int y, int z);
 extern "C" void PaintCanvas_SetTexture(void *canvas, uint32_t texture, uint32_t mode);
 extern "C" void PaintCanvas_SetBlendMode(void *canvas, int mode);
 extern "C" void PaintCanvas_SetWorldViewMatrix(void *canvas, Matrix const &m);
@@ -90,7 +89,7 @@ Sparks::~Sparks()
 // ---- explode_15e594.cpp ----
 void Sparks::explode(Vector const &v)
 {
-    return Sparks_explode_int(this, (int)v.x, (int)v.y, (int)v.z);
+    return this->explode((int)v.x, (int)v.y, (int)v.z);
 }
 
 // ---- isRocket_15e468.cpp ----

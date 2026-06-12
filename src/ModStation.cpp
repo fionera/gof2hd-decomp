@@ -1,5 +1,6 @@
 #include "gof2/ModStation.h"
 #include "gof2/FModSound.h"
+#include <new>
 #include "gof2/ChoiceWindow.h"
 #include "gof2/CutScene.h"
 #include "gof2/EaseInOut.h"
@@ -71,15 +72,12 @@ extern "C" void *cm_op_new(unsigned int sz);
 extern "C" void Array_int_ctor(void *a);
 extern "C" void ArraySetLength_int(unsigned int n, void *a);
 extern "C" void *cm_op_new_arr(unsigned int sz);
-extern "C" void ChoiceWindow_ctor(void *cw);
-extern "C" void Status_changeCredits(int delta);
 extern "C" void ModStation_cm_tail(void *p, int a, int b);
 extern "C" void PaintCanvas_ClearBuffer(void *c);
 extern "C" void PaintCanvas_Begin3d(void *c);
 extern "C" void StarMap_renderBG(void *p);
 extern "C" void ModStation_r3d_endTail(void *c);
 extern "C" void *ric_op_new(unsigned int sz);
-extern "C" void EaseInOut_ctor(void *self, int a, int b);
 extern "C" void *PaintCanvas_CameraGetCurrent(void *c);
 extern "C" void *PaintCanvas_CameraGetLocal(void *c);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
@@ -585,7 +583,7 @@ void ModStation::checkMedals() {
         ((ChoiceWindow *)(P(self, 0x88)))->setMedal(medal[0], medal[1]);
         int delta = *g_ModStation_cm_credit2;
         if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
-            Status_changeCredits(delta);
+            ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
         int *p = *(int **)(I(P(self, 0xbc), 4) + I(self, 0xc0) * 4);
         ModStation_cm_tail(p, p[0], p[1]);
         return;
@@ -627,12 +625,12 @@ void ModStation::checkMedals() {
     I(self, 0xc0) = 0;
     UC(self, 0x6a) = 1;
     void *cw = cm_op_new(0x5c);
-    ChoiceWindow_ctor(cw);
+    new (cw) ChoiceWindow();
     P(self, 0x88) = cw;
     int *medal = (int *)*(int **)(I(P(self, 0xbc), 4));
     ((ChoiceWindow *)(cw))->setMedal(medal[0], medal[1]);
     if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
-        Status_changeCredits(delta);
+        ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
     int *p = (int *)*(int **)(I(P(self, 0xbc), 4));
     ModStation_cm_tail(p, p[0], p[1]);
 }
@@ -1156,21 +1154,21 @@ void ModStation::resetIdleCamForHangar() {
         ((AbyssEngine::EaseInOut *)(P(self, 0x13c)))->SetRange(I(self, 0x130), I(self, 0x130));
     } else {
         void *p = ric_op_new(0x10);
-        EaseInOut_ctor(p, I(self, 0x130), I(self, 0x130));
+        new (p) AbyssEngine::EaseInOut(I(self, 0x130), I(self, 0x130));
         P(self, 0x13c) = p;
     }
     if (P(self, 0x140) != 0) {
         ((AbyssEngine::EaseInOut *)(P(self, 0x140)))->SetRange(I(self, 0x134), I(self, 0x134));
     } else {
         void *p = ric_op_new(0x10);
-        EaseInOut_ctor(p, I(self, 0x134), I(self, 0x134));
+        new (p) AbyssEngine::EaseInOut(I(self, 0x134), I(self, 0x134));
         P(self, 0x140) = p;
     }
     if (P(self, 0x144) != 0) {
         ((AbyssEngine::EaseInOut *)(P(self, 0x144)))->SetRange(I(self, 0x138), I(self, 0x138));
     } else {
         void *p = ric_op_new(0x10);
-        EaseInOut_ctor(p, I(self, 0x138), I(self, 0x138));
+        new (p) AbyssEngine::EaseInOut(I(self, 0x138), I(self, 0x138));
         P(self, 0x144) = p;
     }
 

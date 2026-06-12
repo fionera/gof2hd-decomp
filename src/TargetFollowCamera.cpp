@@ -11,11 +11,9 @@ void *MatrixTransformVector(Vector *out, const void *m, const Vector *v);
 void TFC_update(TargetFollowCamera *self, int n);
 extern "C" void *Matrix_assign(void *dst, const void *src);
 extern "C" void TFC_Matrix_ctor(Matrix *m);
-extern "C" void *TFC_AEGeometry_getMatrix(void *geom);
 extern "C" void *TFC_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void TFC_MatrixTransformVector(Vector *out, const Vector *v);
 extern "C" float TFC_VectorLength(const Vector *v);
-extern "C" void *TFC_u_AEGeometry_getMatrix(void *geom);
 extern "C" void *TFC_u_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void TFC_u_MatrixGetUp(Vector *out, const Matrix *m);
 extern "C" void TFC_u_MatrixGetDir(Vector *out, const Matrix *m);
@@ -376,7 +374,7 @@ TargetFollowCamera *TFC_ctor(TargetFollowCamera *self, unsigned id, void *target
 
     // initial position from the target's current matrix
     char mat[0x3c];
-    TFC_memcpy(mat, TFC_AEGeometry_getMatrix(target), 0x3c);
+    TFC_memcpy(mat, &((AEGeometry *)target)->getMatrix(), 0x3c);
     Vector v;
     TFC_MatrixTransformVector(&v, (const Vector *)mat);
     TFC_Vector_assign((Vector *)(p + 0x14), &v);
@@ -551,7 +549,7 @@ void TFC_update(TargetFollowCamera *self, int dt)
         TFC_u_CameraSetLocal(*g_TFC_u_camera, *(Matrix **)p);
         if (self->target != 0) {
             char mat[0x3c];
-            TFC_u_memcpy(mat, TFC_u_AEGeometry_getMatrix(self->target), 0x3c);
+            TFC_u_memcpy(mat, &((AEGeometry *)self->target)->getMatrix(), 0x3c);
             Vector up, posv;
             TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
             TFC_u_Vector_assign((Vector *)(p + 0x20), &up);
@@ -564,7 +562,7 @@ void TFC_update(TargetFollowCamera *self, int dt)
 
     if (dt > 0 && self->active != 0) {
         char mat[0x3c];
-        TFC_u_memcpy(mat, TFC_u_AEGeometry_getMatrix(self->target), 0x3c);
+        TFC_u_memcpy(mat, &((AEGeometry *)self->target)->getMatrix(), 0x3c);
 
         if (self->lookAtCam == 0) {           // not look-at cam
             if (self->locked == 0) {       // not locked

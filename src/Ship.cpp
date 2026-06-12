@@ -9,7 +9,6 @@ extern "C" void operatorDelete(void *p);
 extern "C" void Ship_recomputeAfterSlots(Ship *self);
 Ship* clone(Ship *self);
 extern "C" void *ArrayItemDtor(Array<Item*> *a);
-extern "C" int Item_equals(Item *it, Item *other);
 extern "C" void Array_Item_ctor(Array<Item*> *a);
 extern "C" int *operatorNewArrayInt(unsigned int n);
 void refreshValue(Ship *self);
@@ -116,7 +115,7 @@ void freeSlot(Ship *self, Item *item) {
     unsigned int i = 0;
     while (i < self->equipment->size()) {
         Item *it = self->equipment->data()[i];
-        if (it != 0 && Item_equals(it, item) != 0) {
+        if (it != 0 && it->equals(item) != 0) {
             self->equipment->data()[i] = 0;
             break;
         }
@@ -361,7 +360,7 @@ void freeSlot(Ship *self, Item *item, int slot) {
     while (i < self->equipment->size()) {
         Item *it = self->equipment->data()[i];
         if (it != 0) {
-            int r = Item_equals(it, item);
+            int r = it->equals(item);
             if ((unsigned int)slot == i && r != 0) {
                 self->equipment->data()[slot] = 0;
                 break;
@@ -649,7 +648,7 @@ void removeEquipment(Ship *self, Item *item) {
         for (unsigned int i = 0; i < eq->size(); i = i + 1) {
             Item *it = eq->data()[i];
             if (it != 0) {
-                int r = Item_equals(it, item);
+                int r = it->equals(item);
                 eq = self->equipment;
                 if (r != 0) {
                     eq->data()[i] = 0;

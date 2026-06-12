@@ -2,15 +2,10 @@
 #include "gof2/IParticleSystem.h"
 
 
-extern "C" void _ips_update(void *sys, int dt);
-extern "C" void _ips_resetEmitterVelocity(void *sys);
-extern "C" void _ips_calcEmitterVelocity(void *sys, int accum);
 extern "C" void _psm_ArrayReleaseSprites(void *arr);
 extern "C" void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
 extern "C" void _psm_renderMeshes(void *self);
 extern "C" void _psm_renderSpritesExt(void *self);
-extern "C" void _ips_setParticleSetByIndex(void *sys, unsigned char setIndex);
-extern "C" void _ips_enableRender(void *sys, bool enable);
 extern "C" void _psm_construct(void *self);
 extern "C" void _psm_releaseSprites(void *self);
 extern "C" void _psm_releaseMeshArray(void *arr);
@@ -20,8 +15,6 @@ extern "C" void _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigne
 extern "C" void _psm_spriteRender2(void *canvas, unsigned a);
 extern "C" void _psm_arraySpriteCtor(void *arr);
 extern "C" void _psm_arrayMeshCtor(void *arr);
-extern "C" void _ips_setMatrix(void *sys, const void *matrix);
-extern "C" void _ips_setParticleSetBySet(void *sys, unsigned int set);
 extern "C" void _ips_enableUpdate(void *sys, bool enable);
 extern "C" void  PaintCanvas_TextureCreate(unsigned short canvas, unsigned int texId, bool b);
 extern "C" void  PaintCanvas_SpriteSystemSetAllSize(void *canvas, short size);
@@ -30,7 +23,6 @@ extern "C" void PaintCanvas_MeshCreate(void *canvas, int verts, int indices, int
 extern "C" void PaintCanvas_TextureCreate(unsigned short canvas, unsigned int texId, bool b);
 extern "C" void PaintCanvas_TransformCreate(void *canvas, unsigned int *out);
 extern "C" void PaintCanvas_TransformAddMeshId(void *canvas, unsigned int transform, unsigned int mesh);
-extern "C" void _ips_enableEmit(void *sys, bool enable);
 extern "C" int _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
 extern "C" void _psm_initSprites(void *self);
 extern "C" void _psm_initMesh(void *self);
@@ -51,32 +43,32 @@ void ParticleSystemManager::update(long long dt)
     for (unsigned i = 0; i < this->field_0x18; i++) {
         void *p = ((void **)this->field_0x1c)[i];
         if (p != 0) {
-            _ips_update(p, d);
+            ((IParticleSystem*)(p))->update(d);
             p = ((void **)this->field_0x1c)[i];
             if (((IParticleSystem*)p)->field_0x4 == 0) {
                 if (accum > 9 || ((IParticleSystem*)p)->emitterVelocityDirty != 0) {
-                    _ips_calcEmitterVelocity(p, this->field_0x10);
+                    ((IParticleSystem*)(p))->calcEmitterVelocity(this->field_0x10);
                     p = ((void **)this->field_0x1c)[i];
                 }
                 (*(void (**)(void *, int))(*(int *)p + 4))(p, d);
             } else {
-                _ips_resetEmitterVelocity(p);
+                ((IParticleSystem*)(p))->resetEmitterVelocity();
             }
         }
     }
     for (unsigned i = 0; i < this->field_0x3c; i++) {
         void *p = ((void **)this->field_0x40)[i];
         if (p != 0) {
-            _ips_update(p, d);
+            ((IParticleSystem*)(p))->update(d);
             p = ((void **)this->field_0x40)[i];
             if (((IParticleSystem*)p)->field_0x4 == 0) {
                 if (accum > 9 || ((IParticleSystem*)p)->emitterVelocityDirty != 0) {
-                    _ips_calcEmitterVelocity(p, this->field_0x10);
+                    ((IParticleSystem*)(p))->calcEmitterVelocity(this->field_0x10);
                     p = ((void **)this->field_0x40)[i];
                 }
                 (*(void (**)(void *, int))(*(int *)p + 4))(p, d);
             } else {
-                _ips_resetEmitterVelocity(p);
+                ((IParticleSystem*)(p))->resetEmitterVelocity();
             }
         }
     }
@@ -158,7 +150,7 @@ void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setI
         arr = (void **)this->field_0x1c;
         idx = handle;
     }
-    _ips_setParticleSetByIndex(arr[idx], setIndex);
+    ((IParticleSystem*)(arr[idx]))->setParticleSetIndex(setIndex);
 }
 
 // ---- enableSystemRender_183b90.cpp ----
@@ -180,7 +172,7 @@ void ParticleSystemManager::enableSystemRender(int handle, bool enable)
         arr = (void **)this->field_0x1c;
         idx = handle;
     }
-    _ips_enableRender(arr[idx], enable);
+    ((IParticleSystem*)(arr[idx]))->enableRender(enable);
 }
 
 // ---- ParticleSystemManager_18357c.cpp ----
@@ -355,7 +347,7 @@ void ParticleSystemManager::systemSetMatrix(int handle, const void *matrix)
         arr = (void **)this->field_0x1c;
         idx = handle;
     }
-    _ips_setMatrix(arr[idx], matrix);
+    ((IParticleSystem*)(arr[idx]))->setMatrix((Matrix const*)(matrix));
 }
 
 // ---- setParticleSetBySet_183b48.cpp ----
@@ -377,7 +369,7 @@ void ParticleSystemManager::setParticleSetBySet(unsigned int handle, unsigned in
         arr = (void **)this->field_0x1c;
         idx = handle;
     }
-    _ips_setParticleSetBySet(arr[idx], set);
+    ((IParticleSystem*)(arr[idx]))->setParticleSet(set);
 }
 
 // ---- enableSystemUpdate_183ab8.cpp ----
@@ -581,7 +573,7 @@ void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
         arr = (void **)this->field_0x1c;
         idx = handle;
     }
-    _ips_enableEmit(arr[idx], enable);
+    ((IParticleSystem*)(arr[idx]))->enableEmit(enable);
 }
 
 // ---- addSystem_183924.cpp ----

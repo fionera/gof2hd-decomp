@@ -1,3 +1,4 @@
+#include <new>
 #include "gof2/PlayerGasCloud.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/FModSound.h"
@@ -23,14 +24,12 @@ extern "C" void operator_delete(void *p);
 extern "C" void *operator_new(uint32_t);
 extern "C" char PlayerGasCloud_vtable;
 extern "C" void Vector_assign(void *dst, const void *src);   // Vector::operator=(Vector const&)
-extern "C" void AEGeometry_ctor(void *self, uint16_t meshId, void *canvas, bool b);
 extern "C" void ArrayReleaseClasses_AEGeometry(void *arr);
 extern "C" void *Array_AEGeometry_dtor(void *p);
 extern "C" void ArrayReleaseClasses_Vector(void *arr);
 extern "C" void *Array_Vector_dtor(void *p);
 extern "C" void *Array_float_dtor(void *p);
 extern "C" void *Array_int_dtor(void *p);
-extern "C" void *AEGeometry_dtor(void *p);
 extern "C" void *PlayerGasCloud_baseDtor(void *self);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 extern "C" int PaintCanvas_CameraGetCurrent(void *canvas);
@@ -149,7 +148,7 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     Vector_assign((char *)this + 0x128, &param_4);
 
     void *geom = operator_new(0xc0);
-    AEGeometry_ctor(geom, this->cloudMeshId, *g_pgc_canvas, false);
+    new (geom) AEGeometry(this->cloudMeshId, (PaintCanvas *)*g_pgc_canvas, false);
     this->modelGeometry = geom;
     AEGeometry_setPosition_v(geom, param_4);
 
@@ -208,8 +207,10 @@ void *_ZN14PlayerGasCloudD1Ev(void *selfv)
     self->sparkTimers = 0;
 
     void *g = self->modelGeometry;
-    if (g != 0)
-        operator_delete(AEGeometry_dtor(g));
+    if (g != 0) {
+        ((AEGeometry *)g)->~AEGeometry();
+        operator_delete(g);
+    }
     self->modelGeometry = 0;
 
     return PlayerGasCloud_baseDtor(self);
@@ -238,8 +239,6 @@ void ArrayAdd_float(float value, void *arr);
 void ArrayAdd_geom(void *value, void *arr);
 void ArrayAdd_vec(void *value, void *arr);
 void ArrayAdd_bool(bool value, void *arr);
-
-void AEGeometry_ctor(void *self, uint16_t id, void *canvas, bool b);
 
 
 int AERandom_next(void *rng, int bound);
@@ -303,8 +302,8 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
         int count = (int)((countBase / 1.5f + 10.0f) * attrF);
         for (int i = 0; i < count; i++) {
             void *shard = operator_new(0xc0);
-            AEGeometry_ctor(shard, self->sparkMeshId,
-                            *(void **)g_pgc_canvasRoot, false);
+            new (shard) AEGeometry(self->sparkMeshId,
+                            (PaintCanvas *)*(void **)g_pgc_canvasRoot, false);
             ((AEGeometry *)(shard))->setPosition(*(Vector *)((char *)self + 0x128));
 
             void *rng = *(void **)g_pgc_rng;

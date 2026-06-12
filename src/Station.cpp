@@ -15,7 +15,6 @@ extern "C" void ArraySetLength_Ship(uint32_t len, void *arr);
 extern "C" void *Ship_clone(Ship *ship);
 extern "C" void Station_arrayRemoveShip(Ship *ship, void *ships);
 extern "C" char *Galaxy_getVisited(Galaxy *g);
-extern "C" int Item_equals(Item *a, Item *b);
 extern "C" void ArrayReleaseClasses_Ship(void *arr) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Item(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Ship_dtor(void *arr) __attribute__((nothrow));
@@ -265,7 +264,7 @@ void Station::addItem(Item *item) {
         uint32_t n = arr[0];
         if (n != 0) {
             for (uint32_t i = 0; i < n; i++) {
-                if (Item_equals(((Item **)arr[1])[i], item) != 0) {
+                if (((Item *)((Item **)arr[1])[i])->equals(item) != 0) {
                     if ((int)i < 0)
                         break;
                     uint32_t *cur = (uint32_t *)self->items;

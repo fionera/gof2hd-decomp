@@ -10,9 +10,7 @@ extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void operator_delete(void *ptr);
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(Array<AEGeometry *> *self);
 extern "C" void *Array_AEGeometryPtr_dtor(Array<AEGeometry *> *self);
-extern "C" void AEGeometry_translate_vec(AEGeometry *self, const Vector *v);
 extern "C" void Explosion_tail_translate(void *geometry, const Vector *v);
-extern "C" void AEGeometry_setScaling3(AEGeometry *self, float x, float y, float z);
 extern "C" int AERandom_nextInt(void *self, int bound);
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
@@ -37,7 +35,6 @@ extern "C" void Matrix_mul_assign(Matrix *self, const Matrix *other);
 extern "C" void Explosion_reset_tail(Explosion *self);
 extern "C" void Array_AEGeometryPtr_ctor(Array<AEGeometry *> *self);
 extern "C" void ArraySetLength_AEGeometryPtr(int length, Array<AEGeometry *> *self);
-extern "C" void AEGeometry_setRotation3(AEGeometry *self, float x, float y, float z);
 
 // ---- reset_a7fb0.cpp ----
 extern int Explosion_paintCanvas;
@@ -117,7 +114,7 @@ uint8_t Explosion::isPlaying() {
 // ---- translate_a8aa0.cpp ----
 void Explosion::translate(const Vector *v) {
     Explosion *self = this;
-    AEGeometry_translate_vec(self->primaryMesh, v);
+    self->primaryMesh->translate(*v);
     void *secondary = self->secondaryMesh;
     if (secondary != 0) {
         return Explosion_tail_translate(secondary, v);
@@ -132,11 +129,11 @@ extern void *Explosion_random;
 void Explosion::setScaling(float scale) {
     Explosion *self = this;
     self->scale = scale;
-    AEGeometry_setScaling3(self->primaryMesh, scale, scale, scale);
+    self->primaryMesh->setScaling(scale, scale, scale);
 
     AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
-        AEGeometry_setScaling3(secondary, scale, scale, scale);
+        secondary->setScaling(scale, scale, scale);
     }
 
     float speed = 1.0f;
@@ -700,13 +697,13 @@ void Explosion::addFireStreaks() {
         float x = (float)nextInt(Explosion_random, 0x168);
         float y = (float)nextInt(Explosion_random, 0x168);
         float z = (float)nextInt(Explosion_random, 0x168);
-        AEGeometry_setRotation3(geometry, (x / 180.0f) * 3.1415927f,
+        geometry->setRotation((x / 180.0f) * 3.1415927f,
                                 (y / 180.0f) * 3.1415927f,
                                 (z / 180.0f) * 3.1415927f);
 
         int scaleInt = nextInt(Explosion_random, 0x32) + 0x32;
         float scale = (float)scaleInt / 100.0f;
         geometry = (*self->fireStreaks)[i];
-        AEGeometry_setScaling3(geometry, scale, scale, scale);
+        geometry->setScaling(scale, scale, scale);
     }
 }

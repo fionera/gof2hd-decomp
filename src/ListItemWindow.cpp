@@ -15,14 +15,12 @@ extern "C" void  operator_delete_(void *p);
 extern "C" void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void  liw_set_buildShipPreview(void *self, void *item, void *layout);
 extern "C" void  Str_dtor(Str *s);
-extern "C" void  Layout_drawHeader(void *layout, Str *text);
 extern "C" int   PaintCanvas_GetTextWidth(uint32_t c, void *str);
 extern "C" void  PaintCanvas_DrawImage2D(uint32_t c, int img, int y);
 extern "C" void  PaintCanvas_DrawImage2D4(uint32_t c, int img, int x, int y, char flag);
 extern "C" void  PaintCanvas_DrawString(uint32_t c, void *str, int x, int y, bool centered);
 extern "C" int   BluePrint_getIndex(void *bp);
 extern "C" int   Ship_getIndex(void *ship);
-extern "C" void  ImageFactory_drawItem(void *fac, int idx, int type, int x, int y);
 extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" void _liw_String_ctor(void *s);
 extern "C" void _liw_Matrix_ctor(void *m);
@@ -386,7 +384,7 @@ void ListItemWindow::draw()
 
     {
         Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
-        Layout_drawHeader(layout, &s);
+        ((Layout *)(layout))->drawHeader1(&s);
         Str_dtor(&s);
     }
 
@@ -438,7 +436,7 @@ void ListItemWindow::draw()
         void *fac = *g_liw_d_imageFactory;
         int idx = ((Item *)(itemPtr))->getIndex();
         int type = ((Item *)(itemPtr))->getType();
-        ImageFactory_drawItem(fac, idx, type,
+        ((ImageFactory *)(fac))->drawItem4(idx, type,
             i32(L, 0x28) + i32(this, 0x64) + i32(L, 0x2c),
             i32(L, 0x124) + ((i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2));
     }

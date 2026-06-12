@@ -49,13 +49,11 @@ extern "C" int PaintCanvas_GetTextHeight(void *canvas, unsigned int font);
 extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *font, String *text);
 extern "C" void PaintCanvas_DrawString(void *canvas, void *font, String *text, int x, int y, bool flag);
 extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y);
-extern "C" void Layout_drawHeader(void *layout, String *text);
 extern "C" void String_cstr_ctor(String *s, const char *text, bool copy);
 extern "C" void String_copy_ctor(String *s, String *src, bool copy);
 extern "C" void String_plus(String *out, String *a, String *b);
 extern "C" void Array_Wanted_ctor(void *arr);
 extern "C" void ArrayAdd_Wanted(void *wanted, void *arr);
-extern "C" void *Status_getWanted(void *status);
 extern "C" int SolarSystem_getRace(SolarSystem *system);
 extern "C" int Wanted_getBoard(void *wanted);
 extern "C" void Array_TouchButton_ctor(void *arr);
@@ -498,7 +496,7 @@ void WantedWindow::draw() {
     PaintCanvas_DisableClip(canvas);
     PaintCanvas_SetColor(canvas, 0xffffffffu);
     String_copy_ctor(&s70, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93), false);
-    Layout_drawHeader(layout, &s70);
+    ((Layout *)layout)->drawHeader1(&s70);
     ((String *)(&s70))->dtor();
 
     for (uint32_t i = 0; i < F<uint32_t>(self->buttons, 0x0); ++i) {
@@ -595,7 +593,7 @@ int WantedWindow::init() {
     self->wantedList = wantedList;
 
     void *status = *g_WantedWindow_init_status;
-    void *allWanted = Status_getWanted(status);
+    void *allWanted = ((Status *)status)->getWanted();
     void **layoutHolder = g_WantedWindow_init_layout;
     void *layout = *layoutHolder;
     int wBase = F<int>(layout, 0x28);

@@ -29,7 +29,6 @@ extern "C" unsigned char g_BloomShader_internalInitNeeded;
 extern "C" unsigned int g_BloomShader_shaderMode;
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
 extern "C" void ShaderBaseStruct_ctor(void *self);
-extern "C" unsigned int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const char *fragmentSource);
 extern "C" char BloomShader_vtable;
 extern "C" void *BloomShader_typeinfo_source;
 extern "C" void *BloomShader_typeinfo_dest;
@@ -42,8 +41,6 @@ namespace AbyssEngine {
 
 void BloomShader::Init(::Engine *)
 {
-    unsigned int (*loadProgram)(void *, const char *, const char *) =
-        ShaderBaseStruct_ES2LoadProgram;
     int (*attrib)(unsigned int, const char *) = glGetAttribLocation;
     int (*uniform)(unsigned int, const char *) = glGetUniformLocation;
     void (*useProgram)(unsigned int) = glUseProgram;
@@ -57,15 +54,15 @@ void BloomShader::Init(::Engine *)
     const char *texSizeName = "texSize";
 
     this->field_0x4 =
-        loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderLuma.fsh");
+        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderLuma.fsh");
     this->field_0x20 =
-        loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderDownSample.fsh");
+        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderDownSample.fsh");
     this->field_0x38 =
-        loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderBlurH.fsh");
+        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderBlurH.fsh");
     this->field_0x54 =
-        loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderBlurV.fsh");
+        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderBlurV.fsh");
     this->field_0x74 =
-        loadProgram((ShaderBaseStruct *)this, vertex, "BloomShaderFinal.fsh");
+        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderFinal.fsh");
 
     this->field_0x8c = attrib(this->field_0x4, positionName);
     this->field_0x94 = attrib(this->field_0x4, texCoordName);

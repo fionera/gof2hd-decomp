@@ -28,7 +28,6 @@ extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transformId
 extern "C" int PaintCanvas_CameraGetCurrent(void *canvas);
 extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, int current);
 void MatrixGetPosition(void *out, void *matrix);
-extern "C" void Vector_sub_assign(Vector *self, Vector *rhs);
 void VectorNormalize(void *out, Vector *value);
 
 // ---- isShrinking_a5324.cpp ----
@@ -281,7 +280,7 @@ void PlayerWormHole::update(int elapsed)
     ((AEGeometry *)(tmpOut))->getPosition();
     Vector *geometryPosition = (Vector *)((char *)this + 0x134);
     assign(geometryPosition, tmpOut);
-    Vector_sub_assign(direction, geometryPosition);
+    *direction -= *geometryPosition;
     VectorNormalize(tmpOut, direction);
     assign(direction, tmpOut);
     this->directionX = this->directionX + 0.5f;

@@ -6,7 +6,6 @@ char *MatrixGetPosition(char *out, Matrix const *matrix);
 char *MatrixGetRight(char *out, Matrix const *matrix);
 char *MatrixGetUp(char *out, Matrix const *matrix);
 char *MatrixGetDir(char *out, Matrix const *matrix);
-extern "C" void *Vector_assign(void *self, char *other);
 extern "C" void *Vector_neg(void *out, void *a);
 extern "C" void *Vector_sub(void *out, char *a, void *b);
 extern "C" float Vector_dot(void *a, void *b);
@@ -14,8 +13,6 @@ extern "C" void *Vector_mul(void *out, void *a, float scale);
 extern "C" void *Vector_div(void *out, void *a, float scale);
 extern "C" void *Vector_add(void *out, void *a, void *b);
 extern "C" void *Vector_mul_scalar(void *out, float scale, void *a);
-extern "C" void *Vector_plus_equal(void *self, void *other);
-extern "C" void *Vector_minus_equal(void *self, void *other);
 extern "C" void *AERandom_seed_ctor(void *self, long long seed);
 extern "C" void AERandom_dtor(void *self);
 extern "C" void AERandom_ctor(void *self);
@@ -155,7 +152,7 @@ void IParticleSystem::emit(int delta)
     MatrixGetRight(right, this->matrix);
     if (U8(this, 0x4c) != 0) {
         Vector_neg(tmp, right);
-        Vector_assign(right, tmp);
+        *(Vector *)(right) = *(Vector *)(tmp);
     }
     MatrixGetUp(up, this->matrix);
     MatrixGetDir(dir, this->matrix);
@@ -231,24 +228,24 @@ void IParticleSystem::emit(int delta)
         }
 
         void *slot = vec_at(P(this, 0x64), current);
-        Vector_assign(slot, velocity);
+        *(Vector *)(slot) = *(Vector *)(velocity);
 
         float drag = *(float *)(def + 0x64);
         if (drag != 0.0f) {
             Vector_mul(velocity, (char *)this + 0x1c, drag);
-            Vector_minus_equal(slot, velocity);
+            *(Vector *)(slot) -= *(Vector *)(velocity);
         }
         if (*(float *)(def + 0x68) != 0.0f) {
             Vector_mul(velocity, right, *(float *)(def + 0x68));
-            Vector_plus_equal(slot, velocity);
+            *(Vector *)(slot) += *(Vector *)(velocity);
         }
         if (*(float *)(def + 0x6c) != 0.0f) {
             Vector_mul(velocity, up, *(float *)(def + 0x6c));
-            Vector_plus_equal(slot, velocity);
+            *(Vector *)(slot) += *(Vector *)(velocity);
         }
         if (*(float *)(def + 0x70) != 0.0f) {
             Vector_mul(velocity, dir, *(float *)(def + 0x70));
-            Vector_plus_equal(slot, velocity);
+            *(Vector *)(slot) += *(Vector *)(velocity);
         }
 
         float phase;
@@ -265,16 +262,16 @@ void IParticleSystem::emit(int delta)
                                                            : distance / (float)emitCount;
                 Vector_mul(tmp, travelDiv, phase * step);
                 Vector_mul(tmp2, tmp, pathScale);
-                Vector_assign(particlePos, tmp2);
+                *(Vector *)(particlePos) = *(Vector *)(tmp2);
                 Vector_add(tmp2, baseDelta, particlePos);
-                Vector_assign(particlePos, tmp2);
+                *(Vector *)(particlePos) = *(Vector *)(tmp2);
             } else {
-                Vector_assign(particlePos, matrixPos);
+                *(Vector *)(particlePos) = *(Vector *)(matrixPos);
                 phase = (float)(i + 1);
                 emitCount = i + 1;
             }
         } else {
-            Vector_assign(particlePos, matrixPos);
+            *(Vector *)(particlePos) = *(Vector *)(matrixPos);
             phase = 0.0f;
         }
 
@@ -284,30 +281,30 @@ void IParticleSystem::emit(int delta)
             ((float *)tmp)[0] = (float)(AERandom_nextInt((char *)this + 0x10, range) - posRange);
             ((float *)tmp)[1] = (float)(AERandom_nextInt((char *)this + 0x10, range) - posRange);
             ((float *)tmp)[2] = (float)(AERandom_nextInt((char *)this + 0x10, range) - posRange);
-            Vector_plus_equal(particlePos, tmp);
+            *(Vector *)(particlePos) += *(Vector *)(tmp);
         } else {
             if (*(float *)(def + 0x78) != 0.0f) {
                 Vector_mul(tmp, right, *(float *)(def + 0x78));
-                Vector_plus_equal(particlePos, tmp);
+                *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             if (*(float *)(def + 0x7c) != 0.0f) {
                 Vector_mul(tmp, up, *(float *)(def + 0x7c));
-                Vector_plus_equal(particlePos, tmp);
+                *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             if (*(float *)(def + 0x80) != 0.0f) {
                 Vector_mul(tmp, dir, *(float *)(def + 0x80));
-                Vector_plus_equal(particlePos, tmp);
+                *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             if (*(float *)(def + 0x84) != 0.0f) {
                 Vector_mul(tmp, dir, (float)AERandom_nextInt((char *)this + 0x10, (int)*(float *)(def + 0x84)));
-                Vector_plus_equal(particlePos, tmp);
+                *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             int posSpread = *(int *)(def + 0x48);
             if (posSpread != 0) {
                 ((float *)tmp)[0] = (float)(AERandom_nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
                 ((float *)tmp)[1] = 0.0f;
                 ((float *)tmp)[2] = (float)(AERandom_nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
-                Vector_plus_equal(particlePos, tmp);
+                *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             int ySpread = *(int *)(def + 0x4c);
             if (ySpread != 0) {
@@ -346,7 +343,7 @@ void IParticleSystem::emit(int delta)
         if (*(float *)(def + 0x64) != 0.0f) {
             Vector_mul(tmp, (char *)this + 0x1c, *(float *)(def + 0x64));
             Vector_mul(tmp2, tmp, 2.0f);
-            Vector_plus_equal(slot, tmp2);
+            *(Vector *)(slot) += *(Vector *)(tmp2);
         }
 
         float remaining = pathScale * invLen * ((float)emitCount - phase) * 1000.0f;
@@ -513,9 +510,9 @@ void IParticleSystem::calcEmitterVelocity(int delta)
     MatrixGetPosition(position, this->matrix);
     Vector_sub(diff, position, (char *)this + 0x28);
     Vector_mul(scaled, diff, 1000.0f / (float)delta);
-    Vector_assign((char *)this + 0x1c, scaled);
+    *(Vector *)((char *)this + 0x1c) = *(Vector *)(scaled);
     U8(this, 0x5) = 0;
-    Vector_assign((char *)this + 0x28, position);
+    *(Vector *)((char *)this + 0x28) = *(Vector *)(position);
 }
 
 // ---- emitManual_182790.cpp ----
@@ -557,14 +554,14 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         }
 
         void *slot = vec_at(P(this, 0x64), current);
-        Vector_assign(slot, randomVelocity);
+        *(Vector *)(slot) = *(Vector *)(randomVelocity);
 
         if (velocity != 0) {
             float drag = *(float *)(def + 0x64);
             if (drag != 0.0f) {
                 char tmp[12];
                 Vector_mul(tmp, (void *)velocity, drag);
-                Vector_minus_equal(slot, tmp);
+                *(Vector *)(slot) -= *(Vector *)(tmp);
             }
         }
 
@@ -576,7 +573,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
             ((float *)randomPosition)[1] = 0.0f;
             ((float *)randomPosition)[2] =
                 (float)(AERandom_nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
-            Vector_plus_equal(&position, randomPosition);
+            *(Vector *)(&position) += *(Vector *)(randomPosition);
         }
 
         int ySpread = *(int *)(def + 0x4c);
@@ -627,7 +624,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
             char tmp2[12];
             Vector_mul(tmp, (char *)this + 0x1c, drag);
             Vector_mul(tmp2, tmp, 2.0f);
-            Vector_plus_equal(slot, tmp2);
+            *(Vector *)(slot) += *(Vector *)(tmp2);
         }
 
         current = I(this, 0x50) + 1;
@@ -642,11 +639,11 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
 void IParticleSystem::resetEmitterVelocity()
 {
     char value[12] = {};
-    Vector_assign((char *)this + 0x1c, value);
+    *(Vector *)((char *)this + 0x1c) = *(Vector *)(value);
     this->emitterVelocityDirty = 1;
     char *matrixValue = value;
     MatrixGetPosition(matrixValue, this->matrix);
-    Vector_assign((char *)this + 0x28, matrixValue);
+    *(Vector *)((char *)this + 0x28) = *(Vector *)(matrixValue);
     this->field_0x4 = 0;
 }
 

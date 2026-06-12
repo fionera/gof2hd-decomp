@@ -3,6 +3,8 @@
 #include "gof2/Status.h"
 #include "gof2/Transform.h"
 #include "gof2/KIPlayer.h"
+#include "gof2/BoundingSphere.h"
+#include <new>
 
 // Minimal local layouts for engine types accessed through opaque handles in this
 // translation unit. The full AEGeometry / Transform definitions live in their own
@@ -118,8 +120,6 @@ extern "C" void PlayerStaticFar_ctor(PlayerStaticFar *self, int playerId, AEGeom
                                       float x, float y, float z);
 extern "C" void ArraySetLength_BoundingVolumePtr(uint32_t length,
                                                   Array<BoundingVolume *> *self);
-extern "C" void BoundingSphere_ctor(BoundingSphere *self, float x, float y, float z,
-                                     float a, float b, float c, float radius);
 
 __attribute__((visibility("hidden"))) extern void *volatile g_PlayerJumpgate_vtable;
 __attribute__((visibility("hidden"))) extern void *volatile g_Status;
@@ -155,7 +155,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
         ((Player *)(this->field_0x4))->setRadius(radius);
 
         BoundingSphere *sphere = (BoundingSphere *)operator_new(0x48);
-        BoundingSphere_ctor(sphere, x, y, z, 0.0f, 0.0f, 0.0f, (float)radius);
+        new (sphere) BoundingSphere(x, y, z, 0.0f, 0.0f, 0.0f, (float)radius);
         (*this->field_0x130)[0] = (BoundingVolume *)sphere;
     }
 

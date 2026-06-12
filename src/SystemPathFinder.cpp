@@ -1,8 +1,6 @@
 #include "gof2/SystemPathFinder.h"
 
 
-extern "C" Array<Node *> *SystemPathFinder_constructPath(Node *node);
-
 // ---- contains_11bb54.cpp ----
 int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
     uint32_t i = 0;
@@ -29,7 +27,7 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
         Node *current = open->data()[0];
         ArrayRemove<Node *>(current, *open);
         if (current == goal) {
-            return SystemPathFinder_constructPath(goal);
+            return this->constructPath(goal);
         }
 
         ArrayAdd<Node *>(current, *closed);

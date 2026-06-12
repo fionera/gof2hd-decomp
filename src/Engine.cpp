@@ -1,6 +1,8 @@
+#include <new>
 #include "gof2/FBOContainer.h"
 #include "gof2/Engine.h"
 #include "gof2/ApplicationManager.h"
+#include "gof2/AEFile.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
 // canonical void* declaration in ApplicationManager.h (included above). Neutralize the
@@ -60,11 +62,8 @@ extern "C" void glGetIntegerv(unsigned int name, void *out);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
 extern "C" void ShaderUpdateMaterialColor();
 extern "C" void glColor4f(float red, float green, float blue, float alpha);
-extern "C" void ApplicationManager_dtor(ApplicationManager *self);
 extern "C" void operator_delete(void *ptr);
-extern "C" void AEFile_Release();
 extern "C" void ArrayReleaseClasses_ShaderBaseStruct_ptr(void *array);
-extern "C" void FBOContainer_dtor(FBOContainer *self);
 void MeshRelease(Engine *self, void *meshSlot);
 extern "C" void Engine_ReleaseGL(Engine *self);
 extern "C" void Array_ShaderBaseStruct_ptr_dtor(void *array);
@@ -92,12 +91,10 @@ extern "C" int g_Engine_shaderPostB;
 extern "C" int g_Engine_shaderPostC;
 extern "C" void glMaterialfv(unsigned int face, unsigned int pname, const void *params);
 extern "C" void glLightModelfv(unsigned int pname, const void *params);
-extern "C" void FBOContainer_ctor(FBOContainer *self, Engine *engine, String *name);
 extern "C" int g_Engine_postEffectBlur;
 extern "C" int g_Engine_postEffectCounter;
 extern "C" int g_Engine_postEffectPending;
 extern "C" void FileInterfaceAndroid_ctor(void *self);
-extern "C" void AEFile_SetInterface(void *fileInterface);
 void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
 extern "C" void PaintCanvas_Initialize(void *canvas, bool value);
 extern "C" void glLineWidth(float width);
@@ -754,7 +751,7 @@ Engine::~Engine()
 
     ApplicationManager *manager = (ApplicationManager *)this->field_0x30;
     if (manager != 0) {
-        ApplicationManager_dtor(manager);
+        manager->~ApplicationManager();
         operator_delete(manager);
     }
     this->field_0x30 = 0;
@@ -766,20 +763,20 @@ Engine::~Engine()
     }
     this->field_0x24 = 0;
 
-    AEFile_Release();
+    AEFile::Release();
     void *shaders = (char *)this + 0x510;
     ArrayReleaseClasses_ShaderBaseStruct_ptr(shaders);
 
     FBOContainer *fbo = this->field_0x414;
     if (fbo != 0) {
-        FBOContainer_dtor(fbo);
+        ((FBOContainerFull *)fbo)->~FBOContainer();
         operator_delete(fbo);
     }
     this->field_0x414 = 0;
 
     fbo = this->field_0x418;
     if (fbo != 0) {
-        FBOContainer_dtor(fbo);
+        ((FBOContainerFull *)fbo)->~FBOContainer();
         operator_delete(fbo);
     }
     this->field_0x418 = 0;
@@ -1092,7 +1089,7 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
         char nameStorage[sizeof(String)];
         String *name = (String *)nameStorage;
         ((String *)(name))->ctor_char("posteffect", false);
-        FBOContainer_ctor(fbo, self, name);
+        new (fbo) FBOContainerFull((AbyssEngine::Engine *)self, *name);
         self->field_0x414 = fbo;
         ((String *)(name))->dtor();
         int width;
@@ -1165,7 +1162,7 @@ void Engine::initFileInterface() {
     void *fileInterface = operator new(0x38);
     FileInterfaceAndroid_ctor(fileInterface);
     self->field_0x24 = fileInterface;
-    return AEFile_SetInterface(fileInterface);
+    return AEFile::SetInterface((FileInterface *)fileInterface);
 }
 
 // ---- SetOrthoMatrix_854e8.cpp ----
@@ -1196,7 +1193,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
     void *fileInterface = operator new(0x38);
     FileInterfaceAndroid_ctor(fileInterface);
     self->field_0x24 = fileInterface;
-    AEFile_SetInterface(fileInterface);
+    AEFile::SetInterface((FileInterface *)fileInterface);
 
     self->field_0x10 = 0;
     self->field_0x2c = 0;
@@ -1238,7 +1235,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
         char nameStorage[sizeof(String)];
         String *name = (String *)nameStorage;
         ((String *)(name))->ctor_char("refract", false);
-        FBOContainer_ctor(fbo, self, name);
+        new (fbo) FBOContainerFull((AbyssEngine::Engine *)self, *name);
         self->field_0x418 = fbo;
         ((String *)(name))->dtor();
         ((FBOContainerFull *)(fbo))->Create(self->field_0x368, self->field_0x36c, false, true);

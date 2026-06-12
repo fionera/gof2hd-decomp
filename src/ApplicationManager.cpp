@@ -2,6 +2,7 @@
 #include "gof2/IApplicationModule.h"
 #include "gof2/String.h"
 #include "gof2/Engine.h"
+#include "gof2/ConfigReader.h"
 
 
 extern "C" void ext_001ab578(void *sound, int volume);
@@ -24,7 +25,6 @@ extern "C" void ext_001ab328(void *engine, unsigned short duration);
 extern "C" void ext_001ab588(void *sound);
 extern "C" void ext_001ab5c8(void *cheats);
 extern "C" void ext_001ab538(void *sound);
-extern "C" void ConfigReader_ParseFile(ConfigReader *reader, String *name);
 extern "C" char g_touchDown;
 extern "C" uint64_t g_perfElapsed;
 extern "C" uint64_t g_perfActionCount;
@@ -481,7 +481,7 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRea
     if (reader != 0) {
         String *copy = (String *)storage;
         new (copy) String(*name);
-        ConfigReader_ParseFile(reader, copy);
+        ((::AbyssEngine::ConfigReader *)reader)->ParseFile(*copy);
         ((String *)storage)->~String();
     }
     return;
@@ -1188,9 +1188,6 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
 // ---- ConfigRegisterTokenReadFunction_825a4.cpp ----
 typedef void ConfigTokenReadFunction(ConfigReader *, void *);
 
-extern "C" void ConfigReader_RegisterTokenReadFunction(
-    ConfigReader *reader, String *name, ConfigTokenReadFunction *read, void *context);
-
 extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRegisterTokenReadFunction(
     ApplicationManager *self, String *name, ConfigTokenReadFunction *read, void *context)
 {
@@ -1199,7 +1196,8 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigReg
     if (reader != 0) {
         String *copy = (String *)storage;
         new (copy) String(*name);
-        ConfigReader_RegisterTokenReadFunction(reader, copy, read, context);
+        ((::AbyssEngine::ConfigReader *)reader)->RegisterTokenReadFunction(
+            *copy, (::AbyssEngine::ConfigTokenReadFunction)read, context);
         ((String *)storage)->~String();
     }
     return;

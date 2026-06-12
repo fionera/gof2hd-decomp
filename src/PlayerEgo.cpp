@@ -229,7 +229,6 @@ void  Globals_addSoundResourceToList(int snd);
 extern "C" void *RepairBeam_new(int idx, int sort);
 extern "C" void  ArrayAdd_RepairBeam(void *rb, void *arr);
 extern "C" void *Array_RepairBeam_new();
-extern "C" int   Status_inSupernovaOrbit();
 extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void **canvasHolder);
 extern "C" void Player_addGun2(void*, void*, int);
 extern "C" void PlayerEgo_addGun2_ext(PlayerEgo*);
@@ -3274,7 +3273,7 @@ void PlayerEgo::setShip(int race, int group) {
     }
 
     // supernova scaling
-    if (PE_status()->inSupernovaSystem() != 0 || Status_inSupernovaOrbit() != 0) {
+    if (PE_status()->inSupernovaSystem() != 0 || PE_status()->inSupernovaOrbit() != 0) {
         void *tf = PaintCanvas_TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
         F(self, 0x3c) = F(tf, 0xe0) * 1.75f;
     }

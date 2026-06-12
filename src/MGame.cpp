@@ -1,3 +1,4 @@
+#include <new>
 #include "gof2/MGame.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/ChoiceWindow.h"
@@ -87,7 +88,6 @@ extern "C" Vector *TFC_getCamOffset(TargetFollowCamera *c);
 extern "C" float AEMath_VectorLength(Vector *v);
 extern "C" void *Vector_assign(void *dst, void *src);
 extern "C" void *MGame_opnew(unsigned sz);
-extern "C" void ChoiceWindow_ctor(ChoiceWindow *w);
 extern "C" int Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
 extern "C" void String_cstr_ctor(String12 *out, const char *s, bool copy);
 extern "C" void String_concat(String12 *out, String12 *lhs, String12 *rhs);
@@ -104,7 +104,6 @@ void Globals_startNewSoundResourceList();
 void Globals_addSoundResourceToList(int list);
 extern "C" int Status_getWingmen();
 extern "C" void Status_checkForLevelUp();
-extern "C" void Level_ctor(Level *l, int a);
 extern "C" void Player_setShieldHP(Player *p, int hp);
 extern "C" void Player_setGammaHP(Player *p, int hp);
 extern "C" int Radar_hasScanner();
@@ -316,7 +315,6 @@ extern "C" void PaintCanvas_CameraSetPerspective(unsigned cam, float fov, float 
 extern "C" void AEGeometry_setRotation3(void *g, int x, int y, int z);  // 0x73054
 // 0x78448
 extern "C" void *operator_new(unsigned sz);  // 0x6eb24
-extern "C" void AEGeometry_ctor(AEGeometry *g, int id, PaintCanvas *pc, int b);  // 0x7207c
 extern "C" int PaintCanvas_TransformGetTransform(unsigned cam);  // 0x72088
 // 0x6fd18
 // 0x72574
@@ -416,7 +414,7 @@ void MGame::startJumpScene() {
         ((PlayerEgo *)(self->field_0x58))->resetMovement();
         ((PlayerEgo *)(self->field_0x58))->setComputerControlled(1);
         AEGeometry *geo = (AEGeometry *)operator_new(0xc0);
-        AEGeometry_ctor(geo, 0x3ab2, *g_jsCanvas, 0);
+        new (geo) AEGeometry((uint16_t)0x3ab2, *g_jsCanvas, false);
         self->field_0x114 = geo;
         int tr = PaintCanvas_TransformGetTransform(*(unsigned *)g_jsCanvas);
         ((TransformFull *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
@@ -611,7 +609,7 @@ void MGame::useCloak() {
     if (PlayerEgo_toggleCloaking((PlayerEgo *)(self->field_0x58)) != 0) return;
     if (self->field_0x94 == 0) {
         ChoiceWindow *w = (ChoiceWindow *)MGame_opnew(0x5c);
-        ChoiceWindow_ctor(w);
+        new (w) ChoiceWindow();
         self->field_0x94 = w;
     }
     int eq = Ship_getFirstEquipmentOfSort(((Status *)(*g_status))->getShip(), 0x15);
@@ -934,7 +932,6 @@ void MGame::OnSuspend() {
 // 0x72928
 // 0x72814
 // 0x76d20
-extern "C" void StarMap_ctor(StarMap *m, int a, Mission *b, int c, int d);  // 0x75424
 // 0x78298
 // 0x75430
 // 0x71c14
@@ -1029,7 +1026,7 @@ void MGame::dockEvent() {
                     self->field_0x111 = 1;
                     if (self->field_0x90 == 0) {
                         StarMap *sm = (StarMap *)operator_new(0x1e8);
-                        StarMap_ctor(sm, 0, 0, 0, -1);
+                        new (sm) StarMap(false, nullptr, false, -1);
                         self->field_0x90 = sm;
                     }
                     Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
@@ -1050,7 +1047,7 @@ void MGame::dockEvent() {
                 self->field_0x111 = 1;
                 if (cw == 0) {
                     cw = (ChoiceWindow *)operator_new(0x5c);
-                    ChoiceWindow_ctor(cw);
+                    new (cw) ChoiceWindow();
                     self->field_0x94 = cw;
                 }
                 MGame_buildDockChoice(self, g_deTextB, g_deLitB0, g_deLitB1);
@@ -1061,7 +1058,7 @@ void MGame::dockEvent() {
                 self->field_0x111 = 1;
                 if (cw == 0) {
                     cw = (ChoiceWindow *)operator_new(0x5c);
-                    ChoiceWindow_ctor(cw);
+                    new (cw) ChoiceWindow();
                     self->field_0x94 = cw;
                 }
                 MGame_buildDockChoice(self, g_deTextA, g_deLitA0, g_deLitA1);
@@ -1241,7 +1238,7 @@ void MGame::UseKhadorDrive() {
         }
         if (self->field_0x90 == 0) {
             StarMap *sm = (StarMap *)operator_new(0x1e8);
-            StarMap_ctor(sm, 0, 0, 0, -1);
+            new (sm) StarMap(false, nullptr, false, -1);
             self->field_0x90 = sm;
         }
         Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
@@ -1313,7 +1310,7 @@ void MGame::OnInitialize() {
 
         Status_checkForLevelUp();
         level = (Level *)operator_new(0x2a0);
-        Level_ctor(level, 3);
+        new (level) Level(3);
         self->field_0x78 = level;
     }
 
@@ -1744,7 +1741,7 @@ void MGame::startChargingJumpDrive() {
         ChoiceWindow *w = self->field_0x94;
         if (w == 0) {
             w = (ChoiceWindow *)MGame_opnew(0x5c);
-            ChoiceWindow_ctor(w);
+            new (w) ChoiceWindow();
             self->field_0x94 = w;
         }
         void *txt = ((GameText *)(**(int **)g_status))->getText(0x243);
@@ -1770,7 +1767,7 @@ void MGame::startChargingJumpDrive() {
         ChoiceWindow *w = self->field_0x94;
         if (w == 0) {
             w = (ChoiceWindow *)MGame_opnew(0x5c);
-            ChoiceWindow_ctor(w);
+            new (w) ChoiceWindow();
             self->field_0x94 = w;
         }
         int hc2 = Status_hardCoreMode();
@@ -1822,8 +1819,6 @@ extern "C" void PaintCanvas_CameraSetCurrent(PaintCanvas *pc, unsigned cam);  //
 // 0x78130
 extern "C" void TargetFollowCamera_resetShipHandling(TargetFollowCamera *c);  // 0x72a18
 extern "C" void Radar_ctor(Radar *r, Level *l);  // 0x7813c
-extern "C" void LevelScript_ctor(LevelScript *s, Hud *hud, Level *level,
-                                 Radar *radar, TargetFollowCamera *cam);  // 0x78148
 // 0x7204c
 
 __attribute__((visibility("hidden"))) extern int g_resAspectA;    // @0x1886dc (DAT)
@@ -1894,14 +1889,14 @@ void MGame::reset() {
         self->field_0x61 = (uint8_t)((Mission *)(Status_getMission()))->isCampaignMission();
 
     LevelScript *script = (LevelScript *)operator_new(0xe8);
-    LevelScript_ctor(script, self->field_0x74, self->field_0x78,
-                     self->field_0x80, self->field_0xf4);
+    new (script) LevelScript(self->field_0x78, self->field_0x74,
+                             self->field_0x80, self->field_0xf4);
     self->field_0x7c = script;
     ((LevelScript *)(script))->lookBehind();
     ((Level *)(self->field_0x78))->initParticleSystems();
 
     ChoiceWindow *cw = (ChoiceWindow *)operator_new(0x5c);
-    ChoiceWindow_ctor(cw);
+    new (cw) ChoiceWindow();
     self->field_0x94 = cw;
 
     self->field_0x48 = 0; self->field_0x4c = 0;
@@ -2434,18 +2429,12 @@ MGame * MGame::ctor() {
 // 0x74f74
 // 0x75310
 // 0x7531c
-extern "C" void *Level_dtor(Level *l);  // 0x71fd4
-extern "C" void *AEGeometry_dtor(...);  // 0x71fc8
 // 0x7846c
-extern "C" void *LevelScript_dtor(LevelScript *s);  // 0x78478
 extern "C" void *Radar_dtor(void *r);  // 0x78484
 extern "C" void *Radio_dtor(...);  // 0x75388
 // 0x75bd4
-extern "C" void *StarMap_dtor(...);  // 0x75340
 // 0x7537c
 extern "C" void *DialogueWindow_dtor(...);  // 0x75010
-extern "C" void *ChoiceWindow_dtor(void *w);  // 0x74d88
-extern "C" void *GameRecord_dtor(...);  // 0x765ac
 extern "C" void PaintCanvas_ReleaseAllResources(int x);  // 0x6f964
 unsigned short GameText_getLanguage();  // 0x6f544
 void Globals_loadFont(int font, int lang);  // 0x71d04
@@ -2476,8 +2465,10 @@ void MGame::OnRelease() {
         ((FModSound *)((Engine *)*soundFlag))->stopAllSoundFXEvents();
     }
 
-    if (self->field_0x78 != 0)
-        operator_delete(Level_dtor(self->field_0x78));
+    if (self->field_0x78 != 0) {
+        self->field_0x78->~Level();
+        operator_delete(self->field_0x78);
+    }
 
     self->field_0x48 = 0; self->field_0x4c = 0;
     self->field_0x14 = 0;
@@ -2491,16 +2482,20 @@ void MGame::OnRelease() {
     for (unsigned i = 0; i < 4; i++) F<int>(self, 0x30 + i * 4) = 0;
     for (unsigned i = 0; i < 4; i++) F<int>(self, 0x20 + i * 4) = 0;
 
-    if (self->field_0x114 != 0)
-        operator_delete(AEGeometry_dtor(self->field_0x114));
+    if (self->field_0x114 != 0) {
+        self->field_0x114->~AEGeometry();
+        operator_delete(self->field_0x114);
+    }
     self->field_0x114 = 0;
 
     if (self->field_0x74 != 0)
         operator_delete(((Hud *)(self->field_0x74))->dtor());
     self->field_0x74 = 0;
 
-    if (self->field_0x7c != 0)
-        operator_delete(LevelScript_dtor(self->field_0x7c));
+    if (self->field_0x7c != 0) {
+        self->field_0x7c->~LevelScript();
+        operator_delete(self->field_0x7c);
+    }
     self->field_0x7c = 0;
 
     if (self->field_0x80 != 0)
@@ -2516,8 +2511,10 @@ void MGame::OnRelease() {
     if (*(int *)((char *)m1 + 0x10) != 0) {
         void *m2 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
         StarMap *sm = *(StarMap **)((char *)m2 + 0x10);
-        if (sm != 0)
-            operator_delete(StarMap_dtor(sm));
+        if (sm != 0) {
+            sm->~StarMap();
+            operator_delete(sm);
+        }
     }
     void *m3 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
     *(int *)((char *)m3 + 0x10) = 0;
@@ -2530,12 +2527,16 @@ void MGame::OnRelease() {
         operator_delete(DialogueWindow_dtor(self->field_0x8c));
     self->field_0x8c = 0;
 
-    if (self->field_0x90 != 0)
-        operator_delete(StarMap_dtor(self->field_0x90));
+    if (self->field_0x90 != 0) {
+        self->field_0x90->~StarMap();
+        operator_delete(self->field_0x90);
+    }
     self->field_0x90 = 0;
 
-    if (self->field_0x94 != 0)
-        operator_delete(ChoiceWindow_dtor(self->field_0x94));
+    if (self->field_0x94 != 0) {
+        self->field_0x94->~ChoiceWindow();
+        operator_delete(self->field_0x94);
+    }
     self->field_0x94 = 0;
 
     self->field_0xd8 = 0; self->field_0xdc = 0;
@@ -2547,8 +2548,10 @@ void MGame::OnRelease() {
         operator_delete(TargetFollowCamera_dtor(self->field_0xf4));
     self->field_0xf4 = 0;
 
-    if (self->field_0x1e8 != 0)
-        operator_delete(GameRecord_dtor(self->field_0x1e8));
+    if (self->field_0x1e8 != 0) {
+        ((GameRecord *)(intptr_t)self->field_0x1e8)->~GameRecord();
+        operator_delete((void *)(intptr_t)self->field_0x1e8);
+    }
     self->field_0x1e8 = 0;
 
     // GetApplicationData()->[0] : release-all-resources target.

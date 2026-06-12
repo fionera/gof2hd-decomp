@@ -30,7 +30,6 @@ static const String g_HangarWindow_emptyDialogText;
 // declarations (matching these call sites) live in gof2/HangarWindow.h instead.
 
 
-extern "C" int *HangarList_getCurrentTabItems(void *list);
 extern "C" int HangarList_getCurrentTab(void *list);
 extern "C" int BluePrint_getStationIndex(void *bp);
 extern "C" int Station_getIndex(void *station);
@@ -80,7 +79,7 @@ __attribute__((visibility("hidden"))) extern void **g_hw_globals;
 
 void HangarWindow::refreshCurrentContentHeight() {
     HangarWindow *self = this;
-    int *items = HangarList_getCurrentTabItems(self->hangarList);
+    int *items = (int *)((HangarList *)self->hangarList)->getCurrentTabItems();
     if (items != 0) {
         int n = *items;
         int rowH = G<int>(*g_hw_globals, 0x70);
@@ -272,7 +271,7 @@ void HangarWindow::render() {
         if (tab2 == 0) {
             ((Layout *)(layout))->drawBG();
             unsigned int tab = HangarList_getCurrentTab(self->hangarList);
-            Array<void *> *items = (Array<void *> *)HangarList_getCurrentTabItems(self->hangarList);
+            Array<void *> *items = (Array<void *> *)((HangarList *)self->hangarList)->getCurrentTabItems();
             if (items != 0) {
                 float startPos = ((HangarWindow *)(self))->getRelativeScrollStartPos();
                 float visH = (float)self->visibleHeight;
@@ -1097,7 +1096,7 @@ void HangarWindow::update(int delta) {
         self->velocity = f * 0.5f;
     }
 
-    if (HangarList_getCurrentTabItems(self->hangarList) != 0) {
+    if (((HangarList *)self->hangarList)->getCurrentTabItems() != 0) {
         int diff = self->visibleHeight - self->currentContentHeight;
         if (diff < 0) {
             if (self->scrollOffset < diff) {
@@ -1608,7 +1607,7 @@ void HangarWindow::setSellMode() {
         self->dialogActive = completedFlag;
 
         if (completedFlag) {
-            Array<void *> *items2 = (Array<void *> *)HangarList_getCurrentTabItems(self->hangarList);
+            Array<void *> *items2 = (Array<void *> *)((HangarList *)self->hangarList)->getCurrentTabItems();
             for (unsigned int i = 0; i < items2->size(); i++) {
                 void *li = items2->data()[i];
                 if (li != 0 && ((ListItem *)(li))->isItem() != 0 &&

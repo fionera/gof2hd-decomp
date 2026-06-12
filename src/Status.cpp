@@ -76,7 +76,6 @@ extern "C" int SolarSystem_getRace(int sys);
 extern "C" void SystemPathFinder_ctor(SystemPathFinder *p);
 extern "C" void *SystemPathFinder_dtor(SystemPathFinder *p);
 extern "C" void FileRead_ctor(FileRead *fr);
-extern "C" int FileRead_loadSystemsBinary();
 extern "C" void *FileRead_dtor(FileRead *fr);
 Station *Globals_getRandomStation();
 extern "C" int Station_getSystem(Station *s);
@@ -96,7 +95,6 @@ extern "C" int BluePrint_getQuantity(BluePrint *bp);
 extern "C" void PendingProduct_ctor(int *pp, BluePrint *bp);
 extern "C" void PendingProduct_add(int *pp, int arr);
 extern "C" void FileRead_ctor(FileRead *);
-extern "C" int FileRead_loadWanted();
 extern "C" void operator_delete_tail(void *);
 extern "C" void Status_setStationTail(Status *self, Station *s);
 extern "C" int Mission_getAgent(Mission *m);
@@ -111,12 +109,18 @@ extern "C" void String_ctor_empty(String *s);
 extern "C" int Station_getTextureIndex(Station *s);
 extern "C" void ArrayReleaseClasses_Station(void *a);
 extern "C" void Array_Station_dtor_tail(void *a);
-extern "C" int FileRead_loadAgents();
 extern "C" void String_copyctor(String *dst, String *src, bool b);
 
 // Local engine helper types used across several member functions in this translation unit.
 // Defined once here; the per-function blocks below merely forward-declare them.
-struct FileRead { FileRead(); ~FileRead(); int loadStationsBinary(); };
+struct FileRead {
+    FileRead();
+    ~FileRead();
+    int loadStationsBinary();
+    Array<SolarSystem *> *loadSystemsBinary();
+    Array<Wanted *> *loadWanted();
+    Array<Agent *> *loadAgents();
+};
 struct Generator { Generator(); };
 
 // ---- getPlanetNames_ac5d4.cpp ----
@@ -1263,7 +1267,7 @@ int Status::activateNewWanted() {
             SystemPathFinder_ctor(pf);
             FileRead *fr = (FileRead *)operator new(1);
             FileRead_ctor(fr);
-            systems = (void *)FileRead_loadSystemsBinary();
+            systems = (void *)fr->loadSystemsBinary();
             operator_delete(FileRead_dtor(fr));
         }
         activated = activated + 1;
@@ -1409,7 +1413,7 @@ bool Status::inEmptyOrbit() {
 void Status::loadWanted() {
     FileRead *fr = (FileRead *)operator new(1);
     FileRead_ctor(fr);
-    wanted = (Array<Wanted *> *)FileRead_loadWanted();
+    wanted = fr->loadWanted();
     FileRead_dtor(fr);
     operator_delete_tail(fr);
 }
@@ -2236,7 +2240,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
 void Status::loadAgents() {
     FileRead *fr = (FileRead *)operator new(1);
     FileRead_ctor(fr);
-    agents = (Array<Agent *> *)FileRead_loadAgents();
+    agents = fr->loadAgents();
     FileRead_dtor(fr);
     operator_delete_tail(fr);
 }
