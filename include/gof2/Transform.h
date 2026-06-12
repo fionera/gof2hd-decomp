@@ -132,6 +132,7 @@ public:
     void SetAnimationLength(longlong value);
     void SetAnimationRangeInTime(longlong start, longlong end);
     void InsertKeyFrame(KeyFrame *keyFrame, int index);
+    void InsertKeyFrame(unsigned int channel, float value);
     void InsertKeyFrame(const float *values, longlong flags, int time);
     void InsertKeyFrame_old(const float *values, longlong flags, int time);
     void Update(longlong time, bool updateBounds);

@@ -470,18 +470,17 @@ struct Vec2 { float u, v; };
 Vec2 MeshIntersect(float qx, float qz, Mesh *mesh)
 {
     Vec2 out;
-    char *m = (char *)mesh;
     unsigned int i = 0;
 
     for (;;) {
-        if ((unsigned int)(unsigned short)u16(m, 0x28) <= i) {
+        if ((unsigned int)mesh->indexCount <= i) {
             out.u = g_MeshIntersect_missValue;
             out.v = g_MeshIntersect_missValue;
             return out;
         }
 
-        float *pos = (float *)pp(m, 0x4);
-        unsigned short *idx = (unsigned short *)((char *)pp(m, 0x2c) + i * 2);
+        float *pos = (float *)mesh->positions;
+        unsigned short *idx = (unsigned short *)mesh->indices + i;
         float *a = pos + (unsigned int)idx[0] * 3;
         float *b = pos + (unsigned int)idx[1] * 3;
         float *c = pos + (unsigned int)idx[2] * 3;
@@ -517,7 +516,7 @@ Vec2 MeshIntersect(float qx, float qz, Mesh *mesh)
                     side = (ex / len) * qz + (-ez / len) * qx -
                            (cz * (ex / len) + cx * (-ez / len));
                     if (side <= 0.0f) {
-                        float *uv = (float *)pp(m, 0x8);
+                        float *uv = (float *)mesh->texCoords;
                         unsigned int i0 = idx[0], i1 = idx[1], i2 = idx[2];
                         out.u = (uv[i0 * 2] + uv[i1 * 2] + uv[i2 * 2]) / 3.0f;
                         float vv = (uv[i0 * 2 + 1] + uv[i1 * 2 + 1] + uv[i2 * 2 + 1]) / 3.0f;
@@ -557,44 +556,44 @@ namespace AbyssEngine {
 
 int MeshDraw(Engine *engine, Mesh *mesh)
 {
-    if (mesh == 0 || s16(mesh, 0x2) == 0 || (u8(mesh, 0x0) & 1) == 0)
+    if (mesh == 0 || (short)mesh->vertexCount == 0 || (mesh->vertexFormat & 1) == 0)
         return -4;
 
-    unsigned char flags = u8(mesh, 0x0);
-    if (*g_Mesh_shaderPathFlag == 0 && u8(mesh, 0x5c) != 0) {
-        glBindBuffer(0x8892, u32(mesh, 0x60));
+    unsigned char flags = mesh->vertexFormat;
+    if (*g_Mesh_shaderPathFlag == 0 && mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
         engine->AEClientState(0x8074, true);
         glVertexPointer(3, 0x1406, 0, 0);
-        glBindBuffer(0x8893, u32(mesh, 0x64));
+        glBindBuffer(0x8893, mesh->indexVBO);
 
-        if (flags & 4) { // (flags<<0x1e) negative -> uv present
-            glBindBuffer(0x8892, u32(mesh, 0x68));
+        if (flags & 4) { // has UVs
+            glBindBuffer(0x8892, mesh->texCoordVBO);
             engine->AEClientState(0x8078, true);
             glTexCoordPointer(2, 0x1406, 0, 0);
         } else {
             engine->AEClientState(0x8078, false);
         }
 
-        if (flags & 8) { // (flags<<0x1d) negative -> normals present
-            glBindBuffer(0x8892, u32(mesh, 0x6c));
+        if (flags & 8) { // has normals
+            glBindBuffer(0x8892, mesh->normalVBO);
             engine->AEClientState(0x8075, true);
             glNormalPointer(0x1406, 0, 0);
         } else {
             engine->AEClientState(0x8075, false);
         }
 
-        if (flags & 0x10) { // (flags<<0x1c) negative -> colors present
-            glBindBuffer(0x8892, u32(mesh, 0x78));
+        if (flags & 0x10) { // has colors
+            glBindBuffer(0x8892, mesh->colorVBO);
             engine->AEClientState(0x8076, true);
             glColorPointer(4, 0x1406, 0, 0);
         } else {
             engine->AEClientState(0x8076, false);
         }
 
-        glDrawElements(4, (int)(unsigned short)u16(mesh, 0x28), 0x1403, 0);
+        glDrawElements(4, (int)mesh->indexCount, 0x1403, 0);
 
         if (u8(engine, 0xfe) != 0) {
-            int tris = __aeabi_uidiv((int)(unsigned short)u16(mesh, 0x28), 3);
+            int tris = __aeabi_uidiv((int)mesh->indexCount, 3);
             if (u8(engine, 0xfd) == 0) {
                 i32(engine, 0x64) += 1;
                 i32(engine, 0x68) += tris;
@@ -1181,7 +1180,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
 
     // Enhanced data / submesh recursion.
     if (subBit != 0) {
-        if (AE_Mesh_ReadEnhancedDataFromFile(*slot, handle, flags) == 0)
+        if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
             return -1;
         unsigned short childCount = 0;
         if (AEFile::Read((uint32_t)(2), &childCount, handle) == 0)
@@ -2234,69 +2233,69 @@ unsigned int glGetError();
 namespace AbyssEngine {
 
 
-static inline void freeIf(Mesh *m, unsigned int off)
+static inline void freeArray(void *&arr)
 {
-    if (pp(m, off) != 0)
-        operator delete[](pp(m, off));
-    pp(m, off) = 0;
+    if (arr != 0)
+        operator delete[](arr);
+    arr = 0;
 }
 
 int MeshConvertToVBOIntern(Mesh *m)
 {
     if (m == 0 || *g_Mesh_vboEnabledFlag == 0)
         return -4;
-    if (u8(m, 0x5c) != 0 || s16(m, 0x28) == 0)
+    if (m->uploaded != 0 || (short)m->indexCount == 0)
         return -4;
 
-    void *posArr = pp(m, 0x4);
-    void *uvArr = pp(m, 0x8);
+    unsigned int vcount = m->vertexCount;
+
+    // The colors/tangents/binormals slots hold array pointers (kept as 32-bit-wide fields
+    // to preserve the struct layout); read them back as real pointers for the GL calls.
     void *colArr = pp(m, 0xc);
-    void *normArr = pp(m, 0x10);
     void *tanArr = pp(m, 0x14);
     void *binArr = pp(m, 0x18);
 
-    unsigned int vcount = (unsigned int)(unsigned short)u16(m, 0x2);
+    // Position buffer (always present).
+    glGenBuffers(1, &m->positionVBO);
+    glBindBuffer(0x8892, m->positionVBO);
+    glBufferData(0x8892, vcount * 0xc, m->positions, 0x88e4);
 
-    glGenBuffers(1, (char *)m + 0x60);
-    glBindBuffer(0x8892, u32(m, 0x60));
-    glBufferData(0x8892, vcount * 0xc, posArr, 0x88e4);
+    unsigned char flags = m->vertexFormat;
+    if (flags & 2) { // has UVs -> upload uv buffer and the index buffer
+        glGenBuffers(1, &m->texCoordVBO);
+        glBindBuffer(0x8892, m->texCoordVBO);
+        glBufferData(0x8892, vcount << 3, m->texCoords, 0x88e4);
+        m->vboByteSize += (int)(vcount * 8);
 
-    unsigned char flags = u8(m, 0x0);
-    if (flags & 2) {
-        glGenBuffers(1, (char *)m + 0x68);
-        glBindBuffer(0x8892, u32(m, 0x68));
-        glBufferData(0x8892, vcount << 3, uvArr, 0x88e4);
-        i32(m, 0x7c) += (int)(vcount * 8);
-
-        glGenBuffers(1, (char *)m + 0x64);
-        glBindBuffer(0x8893, u32(m, 0x64));
-        glBufferData(0x8893, (unsigned int)(unsigned short)u16(m, 0x28) << 1, pp(m, 0x2c), 0x88e4);
-        i32(m, 0x7c) += (int)((unsigned int)(unsigned short)u16(m, 0x28) * 2);
-        flags = u8(m, 0x0);
+        glGenBuffers(1, &m->indexVBO);
+        glBindBuffer(0x8893, m->indexVBO);
+        glBufferData(0x8893, (unsigned int)m->indexCount << 1, m->indices, 0x88e4);
+        m->vboByteSize += (int)(m->indexCount * 2);
+        flags = m->vertexFormat;
     }
 
-    if (flags & 8) {
-        glGenBuffers(1, (char *)m + 0x6c);
-        glBindBuffer(0x8892, u32(m, 0x6c));
-        glBufferData(0x8892, vcount * 0xc, normArr, 0x88e4);
-        i32(m, 0x7c) += (int)(vcount * 0xc);
+    if (flags & 8) { // has normals (+ optional tangent/binormal pair)
+        glGenBuffers(1, &m->normalVBO);
+        glBindBuffer(0x8892, m->normalVBO);
+        glBufferData(0x8892, vcount * 0xc, m->normals, 0x88e4);
+        m->vboByteSize += (int)(vcount * 0xc);
         if (*g_Mesh_tangentEnabledFlag != 0) {
-            glGenBuffers(1, (char *)m + 0x70);
-            glBindBuffer(0x8892, u32(m, 0x70));
+            glGenBuffers(1, &m->tangentVBO);
+            glBindBuffer(0x8892, m->tangentVBO);
             glBufferData(0x8892, vcount * 0xc, tanArr, 0x88e4);
-            i32(m, 0x7c) += (int)(vcount * 0xc);
-            glGenBuffers(1, (char *)m + 0x74);
-            glBindBuffer(0x8892, u32(m, 0x74));
+            m->vboByteSize += (int)(vcount * 0xc);
+            glGenBuffers(1, &m->binormalVBO);
+            glBindBuffer(0x8892, m->binormalVBO);
             glBufferData(0x8892, vcount * 0xc, binArr, 0x88e4);
-            i32(m, 0x7c) += (int)(vcount * 0xc);
+            m->vboByteSize += (int)(vcount * 0xc);
         }
     }
 
-    if (u8(m, 0x0) & 0x10) {
-        glGenBuffers(1, (char *)m + 0x78);
-        glBindBuffer(0x8892, u32(m, 0x78));
+    if (m->vertexFormat & 0x10) { // has colors
+        glGenBuffers(1, &m->colorVBO);
+        glBindBuffer(0x8892, m->colorVBO);
         glBufferData(0x8892, vcount << 4, colArr, 0x88e4);
-        i32(m, 0x7c) += (int)(vcount * 0x10);
+        m->vboByteSize += (int)(vcount * 0x10);
     }
 
     glBindBuffer(0x8892, 0);
@@ -2304,39 +2303,39 @@ int MeshConvertToVBOIntern(Mesh *m)
 
     if (glGetError() == 0) {
         if (*g_Mesh_keepCpuCopyFlag == 0) {
-            freeIf(m, 0x4);
-            freeIf(m, 0x8);
-            freeIf(m, 0x2c);
-            freeIf(m, 0x10);
-            freeIf(m, 0xc);
-            freeIf(m, 0x14);
-            freeIf(m, 0x18);
+            freeArray(m->positions);
+            freeArray(m->texCoords);
+            freeArray(m->indices);
+            freeArray(m->normals);
+            freeArray(pp(m, 0xc));   // colors
+            freeArray(pp(m, 0x14));  // tangents
+            freeArray(pp(m, 0x18));  // binormals
         }
-        u8(m, 0x5c) = 1;
-        *g_Mesh_vboByteCounter += i32(m, 0x7c);
+        m->uploaded = 1;
+        *g_Mesh_vboByteCounter += m->vboByteSize;
         return 1;
     }
 
     // GL error path: delete whatever buffers were created.
-    if (u8(m, 0x5c) != 0) {
-        glDeleteBuffers(1, (char *)m + 0x60);
-        glDeleteBuffers(1, (char *)m + 0x64);
-        unsigned char f = u8(m, 0x0);
+    if (m->uploaded != 0) {
+        glDeleteBuffers(1, &m->positionVBO);
+        glDeleteBuffers(1, &m->indexVBO);
+        unsigned char f = m->vertexFormat;
         if (f & 2) {
-            glDeleteBuffers(1, (char *)m + 0x68);
-            f = u8(m, 0x0);
+            glDeleteBuffers(1, &m->texCoordVBO);
+            f = m->vertexFormat;
         }
         if (f & 8) {
-            glDeleteBuffers(1, (char *)m + 0x6c);
+            glDeleteBuffers(1, &m->normalVBO);
             if (*g_Mesh_tangentDelFlag != 0) {
-                glDeleteBuffers(1, (char *)m + 0x70);
-                glDeleteBuffers(1, (char *)m + 0x74);
+                glDeleteBuffers(1, &m->tangentVBO);
+                glDeleteBuffers(1, &m->binormalVBO);
             }
         }
-        if (u8(m, 0x0) & 0x10)
-            glDeleteBuffers(1, (char *)m + 0x78);
+        if (m->vertexFormat & 0x10)
+            glDeleteBuffers(1, &m->colorVBO);
     }
-    i32(m, 0x7c) = 0;
+    m->vboByteSize = 0;
     return -1;
 }
 
@@ -2714,66 +2713,60 @@ namespace AbyssEngine {
 
 
 
-static inline void freeArray(Mesh **slot, unsigned int off)
+static inline void releaseArray(void *&arr)
 {
-    void *p = pp(*slot, off);
-    if (p != 0)
-        operator delete[](p);
-    pp(*slot, off) = 0;
+    if (arr != 0)
+        operator delete[](arr);
+    arr = 0;
 }
 
 void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot)
 {
-    Mesh *m = (Mesh *)*slot;
+    Mesh *m = *slot;
     if (m == 0)
         return;
 
-    if (u8(m, 0x38) == 0) {
-        if (u8(m, 0x5c) != 0) {
-            glDeleteBuffers(1, (char *)m + 0x60);
-            glDeleteBuffers(1, (char *)*slot + 0x64);
-            m = (Mesh *)*slot;
-            unsigned char flags = u8(m, 0x0);
+    // Skip GL/array teardown for a shared/aliased mesh: it does not own them.
+    if (m->shared == 0) {
+        if (m->uploaded != 0) {
+            glDeleteBuffers(1, &m->positionVBO);
+            glDeleteBuffers(1, &m->indexVBO);
+            unsigned char flags = m->vertexFormat;
             if (flags & 2) {
-                glDeleteBuffers(1, (char *)m + 0x68);
-                m = (Mesh *)*slot;
-                flags = u8(m, 0x0);
+                glDeleteBuffers(1, &m->texCoordVBO);
+                flags = m->vertexFormat;
             }
-            if ((flags & 4) != 0) { // bit set when (flags<<0x1d) is negative
-                glDeleteBuffers(1, (char *)m + 0x6c);
+            if (flags & 4) {
+                glDeleteBuffers(1, &m->normalVBO);
                 if (*g_Mesh_tangentEnabledFlag != 0) {
-                    glDeleteBuffers(1, (char *)*slot + 0x70);
-                    glDeleteBuffers(1, (char *)*slot + 0x74);
+                    glDeleteBuffers(1, &m->tangentVBO);
+                    glDeleteBuffers(1, &m->binormalVBO);
                 }
             }
-            m = (Mesh *)*slot;
-            if (u8(m, 0x0) & 8) { // bit set when (flags<<0x1c) is negative
-                glDeleteBuffers(1, (char *)m + 0x78);
-                m = (Mesh *)*slot;
-            }
+            if (m->vertexFormat & 8)
+                glDeleteBuffers(1, &m->colorVBO);
         }
 
-        freeArray(slot, 0x2c);
-        freeArray(slot, 0x4);
-        freeArray(slot, 0x8);
-        freeArray(slot, 0xc);
-        freeArray(slot, 0x10);
+        releaseArray(m->indices);
+        releaseArray(m->positions);
+        releaseArray(m->texCoords);
+        releaseArray(pp(m, 0xc));   // colors
+        releaseArray(m->normals);
 
         if (*g_Mesh_extraArraysFlag != 0) {
-            freeArray(slot, 0x14);
-            freeArray(slot, 0x18);
+            releaseArray(pp(m, 0x14));  // tangents
+            releaseArray(pp(m, 0x18));  // binormals
         }
     }
 
-    Transform *t = (Transform *)pp(*slot, 0x34);
+    Transform *t = m->animation;
     if (t != 0) {
         t->~Transform();
         operator delete(t);
     }
-    pp(*slot, 0x34) = 0;
+    m->animation = 0;
 
-    if (*slot != 0)
-        operator delete((void *)*slot);
+    operator delete((void *)m);
     *slot = 0;
 }
 
@@ -2810,12 +2803,10 @@ int MeshConvertToVBO(Mesh *mesh)
 {
     int result = -4;
     if (mesh != 0 && *g_Mesh_vboEnabledFlag != 0) {
-        if (u8(mesh, 0x5c) != 0 || u8(mesh, 0x84) == 0)
+        if (mesh->uploaded != 0 || mesh->vboEligible == 0)
             return -4;
         MeshConvertToVBOIntern(mesh);
-        // mesh is AbyssEngine::Mesh (complete struct from Mesh.h); field_0x34 is the embedded
-        // Transform pointer (AbyssEngine::Transform*).
-        TransformConvertToVBO(mesh->field_0x34);
+        TransformConvertToVBO(mesh->animation);
         result = 1;
     }
     return result;

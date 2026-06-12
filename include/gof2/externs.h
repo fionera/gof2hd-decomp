@@ -143,7 +143,6 @@ int AE_Engine_GetDisplayHeight();
 int AE_Engine_GetDisplayWidth();
 int AE_GameText_getLanguage();
 int AE_GameText_isNonArabicString(const unsigned short *text, unsigned int len);
-int AE_Mesh_ReadEnhancedDataFromFile(void *self, unsigned int handle, unsigned int flags);
 void AE_PaintCanvas_SetWorldViewMatrix(void *canvas);
 float AE_VectorSignedToFloat(int v, unsigned char mode);
 float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);

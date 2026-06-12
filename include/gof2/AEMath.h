@@ -107,15 +107,20 @@ float InvSqrt(float value);
 struct Transform {
     AEMath::Matrix matrix;
     char pad_3c[0x98];
-    AEMath::BSphere bounds;
+    AEMath::BSphere bounds;             // +0xd4
+    int  animationStart;               // +0xe8 animation rate (frames)
+    char pad_ec_to_11c[0x11c - 0xe8 - 4];
+    int  keyFrameCount;                // +0x11c keyframe array length
 
     // Out-of-line definitions live in src/Transform.cpp; declared here so the
-    // mesh-loader call sites in AbyssEngine.cpp can reach them (the full class
-    // with all fields/methods is in gof2/Transform.h, which can't be included
+    // mesh-loader call sites in AbyssEngine.cpp / Mesh.cpp can reach them (the full
+    // class with all fields/methods is in gof2/Transform.h, which can't be included
     // alongside AEMath.h's layout-only view).
     Transform();
+    Transform(Transform *other);
     ~Transform();
     void CollectAnimationData();
+    void InsertKeyFrame(unsigned int channel, float value);
     void SetAnimationRangeInTime(long long start, long long end);
 };
 
