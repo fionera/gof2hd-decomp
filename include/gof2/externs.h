@@ -116,7 +116,6 @@ void AE_ArrayAddCached_MeshPtr(AbyssEngine::Mesh *value, void *array);
 void AE_ArrayAddCached_uint(unsigned int value, void *array);
 void AE_Engine_LightSetAmbient(float r, float g, float b, Engine *self);
 void AE_FBOContainer_ctor(void *self);
-void AE_FileInterfaceAndroid_ctor(void *self);
 void AE_PaintCanvas_Initialize(PaintCanvas *self, bool flag);
 void AE_PaintCanvas_SetWorldViewMatrix(void *self);
 void AE_SpriteSystem_pushMatrix(
@@ -139,7 +138,6 @@ void glDeleteBuffers(int n, const void *buffers);
 
 // ---- AbyssEngine engine glue (renderer/engine fns; external) ----
 extern "C" {
-void AEFile_Close(unsigned int handle);
 void AELabelObject(unsigned int type, unsigned int id, const char *name);
 void AE_ArrayAdd_MeshPtr(void *item, void *arr);
 void AE_ArrayAdd_TexPtr(void *item, void *arr);

@@ -1,6 +1,7 @@
 #include "gof2/AbyssEngine.h"
 #include "gof2/externs.h"
 #include "gof2/AEFile.h"
+#include "gof2/FileInterfaceAndroid.h"
 #include "gof2/AEMath.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
@@ -194,8 +195,8 @@ void getAppVersion()
     u32(c, 0x370) = u32(c, 0x368);
     u32(c, 0x374) = u32(c, 0x36c);
 
-    void *fileIface = operator new(0x38);
-    AE_FileInterfaceAndroid_ctor(fileIface);
+    FileInterfaceAndroid *fileIface = (FileInterfaceAndroid *)operator new(0x38);
+    fileIface->ctor_default();
     pp(c, 0x24) = fileIface;
     AEFile::SetInterface((FileInterface *)fileIface);
 
@@ -403,7 +404,7 @@ int ImageCreateRegionFromFile(Engine *engine, char *path, unsigned short index, 
         }
     }
 
-    AEFile_Close(handle);
+    AEFile::Close(handle);
     return 1;
 
 fail:
@@ -1523,13 +1524,13 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
             break;
         }
 
-        AEFile_Close(handle);
+        AEFile::Close(handle);
         return 1;
     }
 
 fail:
     ImageRelease(out);
-    AEFile_Close(handle);
+    AEFile::Close(handle);
     return -1;
 }
 
@@ -2077,7 +2078,7 @@ int ImageCreateFontFromFile(Engine *engine, char *path, unsigned short index, Im
         }
     }
 
-    AEFile_Close(handle);
+    AEFile::Close(handle);
     return 1;
 
 fail:
@@ -2896,7 +2897,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
     for (int i = 0; i < 4; ++i) magic[i] = '*';
     if (AEFile::Read((uint32_t)(7), magic, handle) == 0) {
         MeshRelease(engine, out);
-        AEFile_Close(handle);
+        AEFile::Close(handle);
         return -1;
     }
 
@@ -2918,19 +2919,19 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 
     if (fmt == 0) {
         MeshRelease(engine, out);
-        AEFile_Close(handle);
+        AEFile::Close(handle);
         return -1;
     }
 
     // Optional version word for some formats.
     if ((fmt & 0x1b) != 0) {
         unsigned short ver = 0;
-        if (AEFile::Read((uint32_t)(2), &ver, handle) == 0) { MeshRelease(engine, out); AEFile_Close(handle); return -1; }
+        if (AEFile::Read((uint32_t)(2), &ver, handle) == 0) { MeshRelease(engine, out); AEFile::Close(handle); return -1; }
     }
     // Read the first byte (vertex-format flag) into mesh+0x00.
     if (AEFile::Read((uint32_t)(1), (char *)*out, handle) == 0 || u8((char *)*out, 0x0) == 0) {
         MeshRelease(engine, out);
-        AEFile_Close(handle);
+        AEFile::Close(handle);
         return -1;
     }
 
@@ -2942,7 +2943,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
         unsigned short subCount = 0;
         if (AEFile::Read((uint32_t)(2), &subCount, handle) == 0) {
             MeshRelease(engine, out);
-            AEFile_Close(handle);
+            AEFile::Close(handle);
             return -1;
         }
         if (subCount < 2) {
@@ -2961,7 +2962,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
                 Mesh *childPtr = (Mesh *)child;
                 if (MeshReadData(engine, &handle, fmt, &childPtr, mat) == -1) {
                     MeshRelease(engine, out);
-                    AEFile_Close(handle);
+                    AEFile::Close(handle);
                     return -1;
                 }
                 AE_BSphere_Merge((char *)*out + 0x3c, (char *)childPtr + 0x3c);
@@ -2972,7 +2973,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
     }
 
     if (ok) {
-        AEFile_Close(handle);
+        AEFile::Close(handle);
         void *xf = pp((char *)*out + 0x34, 0);
         if (xf != 0) {
             AE_Transform_CollectAnimationData(xf);
@@ -2983,7 +2984,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
     }
 
     MeshRelease(engine, out);
-    AEFile_Close(handle);
+    AEFile::Close(handle);
     return -1;
 }
 
