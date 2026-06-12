@@ -2,6 +2,8 @@
 #define GOF2_EXTERNS_H
 #include <cstdint>
 #include <cstddef>
+#include "gof2/common.h"        // String, Matrix, Vector, Quaternion (+ fwd.h: Engine, PaintCanvas, ...)
+namespace AbyssEngine { class Mesh; }   // engine-opaque, namespaced
 // Centralized declarations of GENUINE externals — engine/host symbols defined in libgof2hd,
 // not in this source tree. First section: engine data globals (basic-typed flags/sentinels).
 
@@ -104,6 +106,42 @@ int ** g_update_clock;
 char ** g_update_flag;
 void ** g_update_sound;
 float ** g_update_speed;
+}
+
+
+// ---- engine & runtime functions (defined in libgof2hd / host runtime; not in this tree) ----
+extern "C" {
+void AE_AEMath_matMul(Matrix *out, const Matrix *in);
+void AE_ArrayAddCached_MeshPtr(AbyssEngine::Mesh *value, void *array);
+void AE_ArrayAddCached_uint(unsigned int value, void *array);
+void AE_Engine_LightSetAmbient(float r, float g, float b, Engine *self);
+void AE_FBOContainer_ctor(void *self);
+void AE_FileInterfaceAndroid_ctor(void *self);
+void AE_PaintCanvas_Initialize(PaintCanvas *self, bool flag);
+void AE_PaintCanvas_SetWorldViewMatrix(void *self);
+void AE_SpriteSystem_pushMatrix(
+    unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3, unsigned int m4,
+    unsigned int m5, unsigned int m6, unsigned int m7, unsigned int m8, unsigned int m9,
+    unsigned int m10, unsigned int m11, unsigned int m12, unsigned int m13, unsigned int m14,
+    int dst);
+void AE_String_fromCStr(String *self, const char *s, bool b);
+void *AE_Transform_dtor(void *self);
+void AE_Vector_assign(void *dst, const void *src);
+Engine *AE_getInitGLThis();
+int String_Compare(const void *self, const void *o);
+void String_appendEq(String *self, const String *o);
+void String_copy(String *self, const String *src, bool b);
+void String_fromFloat(String *self, float v);
+void String_fromInt(String *self, int v);
+void String_fromLongLong(String *self, long long v);
+void _ZN11AbyssEngine10QuaternionC1Effff(Quaternion *self, float x, float y, float z,
+                                                    float w);
+void *__aeabi_memclr(void *dst, size_t n);
+void *__aeabi_memclr4(void *dst, size_t n);
+void *__aeabi_memcpy4(void *dst, const void *src, size_t n);
+long long __aeabi_uldivmod(unsigned int nlo, unsigned int nhi, unsigned int dlo,
+                                      unsigned int dhi);
+void glDeleteBuffers(int n, const void *buffers);
 }
 
 #endif // GOF2_EXTERNS_H

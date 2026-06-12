@@ -17,28 +17,6 @@ public:
 }
 
 
-extern "C" void AE_FileInterfaceAndroid_ctor(void *self);
-extern "C" void AE_PaintCanvas_Initialize(PaintCanvas *self, bool flag);
-extern "C" void AE_Vector_assign(void *dst, const void *src);
-extern "C" void AE_FBOContainer_ctor(void *self);
-extern "C" void AE_String_fromCStr(String *self, const char *s, bool b);
-extern "C" float sqrtf(float);
-extern "C" void AE_Engine_LightSetAmbient(float r, float g, float b, Engine *self);
-extern "C" void AE_AEMath_matMul(Matrix *out, const Matrix *in);
-extern "C" void AE_PaintCanvas_SetWorldViewMatrix(void *self);
-extern "C" void String_copy(String *self, const String *src, bool b);
-extern "C" void String_fromLongLong(String *self, long long v);
-extern "C" void String_appendEq(String *self, const String *o);
-extern "C" void String_fromFloat(String *self, float v);
-extern "C" void *__aeabi_memclr(void *dst, size_t_ n);
-extern "C" void *__aeabi_memclr4(void *dst, size_t_ n);
-extern "C" void String_fromInt(String *self, int v);
-extern "C" void AE_ArrayAddCached_MeshPtr(AbyssEngine::Mesh *value, void *array);
-extern "C" void AE_ArrayAddCached_uint(unsigned int value, void *array);
-extern "C" void *__aeabi_memcpy4(void *dst, const void *src, size_t_ n);
-extern "C" int String_Compare(String *self, const String *o);
-extern "C" void glDeleteBuffers(int n, const void *buffers);
-extern "C" void *AE_Transform_dtor(void *self);
 // __aeabi_memcpy is declared by gof2/Engine.h
 
 // ---- ImageFontSetYOffset_72278.cpp ----
@@ -138,8 +116,6 @@ int CameraIsPointinViewFrustum(Vector *point, Matrix *extra, Camera *cam)
 // Quaternion scaled by a scalar (only .y/.w lanes materialized, see operator-).
 namespace AbyssEngine {
 
-extern "C" void _ZN11AbyssEngine10QuaternionC1Effff(Quaternion *self, float x, float y, float z,
-                                                    float w);
 
 Quaternion operator*(const Quaternion &a, float s)
 {
@@ -157,8 +133,6 @@ Quaternion operator*(const Quaternion &a, float s)
 // Concatenate two strings: copy lhs into a temp, append rhs, return the temp.
 namespace AbyssEngine {
 
-extern "C" void String_copy(String *self, const String *src, bool b);   // String(String const&, bool)
-extern "C" void String_appendEq(String *self, const String *o);          // operator+=
 // ~String
 
 String operator+(const String &a, const String &b)
@@ -227,7 +201,6 @@ void *operator_new_helper(size_t_); // placeholder, see operator new below
 namespace AbyssEngine {
 
 // Sibling/member callees (resolved by the linker via their real mangled names).
-extern "C" AbyssEngine::Engine *AE_getInitGLThis();      // the r0 engine pointer
 
 
 void getAppVersion()
@@ -349,8 +322,6 @@ int ImageFontGetYOffset(ImageFont *font)
 // reproduce that by constructing the result through the 4-float Quaternion ctor.
 namespace AbyssEngine {
 
-extern "C" void _ZN11AbyssEngine10QuaternionC1Effff(Quaternion *self, float x, float y, float z,
-                                                    float w);
 
 Quaternion operator-(const Quaternion &a, const Quaternion &b)
 {
@@ -2203,8 +2174,6 @@ fail:
 // Component-wise quaternion addition (only .y/.w lanes materialized, see operator-).
 namespace AbyssEngine {
 
-extern "C" void _ZN11AbyssEngine10QuaternionC1Effff(Quaternion *self, float x, float y, float z,
-                                                    float w);
 
 Quaternion operator+(const Quaternion &a, const Quaternion &b)
 {
@@ -2269,11 +2238,6 @@ int MeshDraw(Engine *engine, Mesh *mesh);
 
 // Array<T>::AddCached helpers (templated in the binary).
 
-extern "C" void AE_SpriteSystem_pushMatrix(
-    unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3, unsigned int m4,
-    unsigned int m5, unsigned int m6, unsigned int m7, unsigned int m8, unsigned int m9,
-    unsigned int m10, unsigned int m11, unsigned int m12, unsigned int m13, unsigned int m14,
-    int dst);
 
 
 void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem *sys)
@@ -3231,8 +3195,6 @@ int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Cam
 } // namespace AbyssEngine
 
 // ---- CurveGetValue_74194.cpp ----
-extern "C" long long __aeabi_uldivmod(unsigned int nlo, unsigned int nhi, unsigned int dlo,
-                                      unsigned int dhi);
 
 // AbyssEngine::CurveGetValue(unsigned long long time, AbyssEngine::Curve* curve)
 //

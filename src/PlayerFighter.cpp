@@ -1,4 +1,5 @@
 #include "gof2/PlayerFighter.h"
+#include "gof2/externs.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/Generator.h"
 #include "gof2/Level.h"
@@ -23,7 +24,6 @@ extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *PlayerFighter_base_dtor(PlayerFighter *self);
 void *_ZN13PlayerFighterD1Ev(PlayerFighter *self);
 extern "C" void KIPlayer_setLevel(PlayerFighter *self, Level *lvl);
-extern "C" void *__aeabi_memclr4(void *dst, unsigned n);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void AEMath_Matrix_ctor(void *m);
 // No-bound AERandom::nextInt() variant: the decompiler dropped the bound arg and

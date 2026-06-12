@@ -79,7 +79,6 @@ extern "C" int Ship_getSignatureRace(void *self);
 extern "C" void *Ship_getFirstEquipmentOfSort(int self);
 extern "C" void Ship_removeEquipment(void *self, void *item);
 extern "C" void Standing_setPlayerSignatureRace(void *self, int r);
-extern "C" int String_Compare(void *a, void *b);
 extern "C" void Mission_getStatusValue();
 extern "C" void Mission_setStatusValue(int v);
 extern "C" void Player_setEnemy_tail(Player *self, Player *enemy);

@@ -1,4 +1,5 @@
 #include "gof2/SpaceLounge.h"
+#include "gof2/externs.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/CutScene.h"
 #include "gof2/EaseInOut.h"
@@ -60,7 +61,6 @@ extern "C" int Agent_getOffer(void *agent);
 extern "C" int Mission_getType(void *mission);
 void Globals_getAgentMissionText(void *out, int textId, void *agent);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
-extern "C" int String_Compare(void *lhs, void *rhs);
 int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate);
 extern "C" int *SpaceLounge_getSoundId_missionText;
 extern "C" void *SpaceLounge_getSoundId_offerText;

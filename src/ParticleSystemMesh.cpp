@@ -1,4 +1,5 @@
 #include "gof2/ParticleSystemMesh.h"
+#include "gof2/externs.h"
 
 
 extern "C" void _psm_emitTrail(ParticleSystemMesh *self, int id);
@@ -10,7 +11,6 @@ extern "C" void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t cam
 extern "C" void _psm_vectorMinus(Vector *out, const Vector *a, const Vector *b);
 extern "C" void _psm_vectorPlus(void *out, const Vector *a, const Vector *b);
 extern "C" char g_ParticleSetData[];
-extern "C" void __aeabi_memclr4(void *dst, uint32_t size);
 extern "C" void _psm_matrixGetRight(Vector *out, const Matrix *m);
 extern "C" void _psm_matrixGetUp(Vector *out, const Matrix *m);
 extern "C" void _psm_matrixGetDir(Vector *out, const Matrix *m);

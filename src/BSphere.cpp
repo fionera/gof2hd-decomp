@@ -1,7 +1,7 @@
 #include "gof2/BSphere.h"
+#include "gof2/externs.h"
 
 
-extern "C" float sqrtf(float);
 
 // ---- Merge_74000.cpp ----
 // AbyssEngine::AEMath::BSphere::Merge(BSphere const&)

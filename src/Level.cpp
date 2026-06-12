@@ -1,4 +1,5 @@
 #include "gof2/Level.h"
+#include "gof2/externs.h"
 // NOTE: gof2/ParticleSystemManager.h and gof2/Status.h are intentionally NOT included.
 // Level reaches those classes only through a handful of accessor methods and opaque
 // pointers, and uses local minimal interface structs (below) whose signatures match the
@@ -131,7 +132,6 @@ extern "C" void ArrayAdd(int item, int arr);
 extern "C" void Level_createPlayer_impl(Level *self);
 extern "C" void Level_wingmanDied_all(Status *obj, int zero);
 extern "C" void Level_wingmanDied_one(String *ship, unsigned int *list);
-extern "C" void __aeabi_memclr4(void *dst, unsigned int n);
 extern "C" void *Level_opnew_akw(unsigned int size);
 extern "C" void Mission_ctor_akw(int m, int a, int b, int idx);
 extern "C" void Mission_setCampaign_akw(int m, int flag);
