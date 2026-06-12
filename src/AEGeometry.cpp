@@ -401,14 +401,22 @@ void AEGeometry::moveForward(float dist)
 // ---- updateLod_a4d80.cpp ----
 // AEGeometry::updateLod(const Vector& camPos, float screenScale)
 extern "C" void *__aeabi_memcpy_b(void *dst, const void *src, uint32_t n);     // 0x6f1e4
-extern "C" Vector AEMath_MatrixGetPosition_ret(const void *m);                 // 0x6f16c
 extern "C" unsigned long long __aeabi_f2ulz_(float f);                          // 0x73078
 extern "C" float __aeabi_ul2f_(unsigned long long v);                          // 0x73084
 extern "C" uint32_t Transform_GetTransform(uint32_t tf);                       // 0x72088
-// 0x73090
-// 0x7309c
-extern "C" void _ae_matrix_assign(void *dst, const void *src);                 // 0x6f148
-extern "C" void _ae_vector_assign(void *dst, const void *src);                 // 0x6eb3c
+
+namespace AbyssEngine { namespace AEMath {
+Vector MatrixGetPosition(const Matrix &matrix);
+} }
+static inline Vector AEMath_MatrixGetPosition_ret(const void *m) {
+    return AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix *)m);
+}
+static inline void _ae_matrix_assign(void *dst, const void *src) {
+    *(AbyssEngine::AEMath::Matrix *)dst = *(const AbyssEngine::AEMath::Matrix *)src;
+}
+static inline void _ae_vector_assign(void *dst, const void *src) {
+    *(AbyssEngine::AEMath::Vector *)dst = *(const AbyssEngine::AEMath::Vector *)src;
+}
 
 void AEGeometry::updateLod(const Vector &camPos, float screenScale)
 {

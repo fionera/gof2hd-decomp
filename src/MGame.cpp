@@ -93,7 +93,10 @@ extern "C" void PlayerEgo_syncFirstPerson(PlayerEgo *p, int v);
 // callers below consume their (int) result. Use the original free-function form
 // so this TU sees the real int return type without editing PlayerEgo.h.
 extern "C" Vector *TFC_getCamOffset(TargetFollowCamera *c);
-extern "C" float AEMath_VectorLength(Vector *v);
+namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &value); } }
+static inline float AEMath_VectorLength(Vector *v) {
+    return AbyssEngine::AEMath::VectorLength(*v);
+}
 extern "C" void *Vector_assign(void *dst, void *src);
 extern "C" void *MGame_opnew(unsigned sz);
 extern "C" int Ship_getFirstEquipmentOfSort(Ship *ship, int sort);

@@ -38,10 +38,6 @@ static const float kBSphereInit[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
 // Global byte flag: when set, meshes carry the extra per-vertex normal data.
 __attribute__((visibility("hidden"))) extern unsigned char *g_hasNormalsFlag;
 
-extern "C" AEMath::BSphere *_ZN11AbyssEngine6AEMath7BSphereaSERKS1_(
-    AEMath::BSphere *self, const AEMath::BSphere *other);
-extern "C" AEMath::Vector *_ZN11AbyssEngine6AEMath6VectoraSERKS1_(
-    AEMath::Vector *self, const AEMath::Vector *other);
 
 Mesh * Mesh::ctor(Mesh *src) {
     Mesh *self = this;
@@ -60,9 +56,9 @@ Mesh * Mesh::ctor(Mesh *src) {
     if (src->field_0x84 != 0)
         _ZN11AbyssEngine4Mesh12ConvertToVBOEv(src);
 
-    _ZN11AbyssEngine6AEMath7BSphereaSERKS1_(
-        (AEMath::BSphere *)((char *)self + 0x3c),
-        (const AEMath::BSphere *)((char *)src + 0x3c));
+    // BSphere::operator=: copy center (3 floats) + radius + radius2 = 0x14 bytes.
+    for (int i = 0; i < 5; ++i)
+        ((float *)((char *)self + 0x3c))[i] = ((const float *)((char *)src + 0x3c))[i];
 
     unsigned char hasNormals = *g_hasNormalsFlag;
 
@@ -93,9 +89,7 @@ Mesh * Mesh::ctor(Mesh *src) {
         self->field_0x34 = anim;
     }
 
-    _ZN11AbyssEngine6AEMath6VectoraSERKS1_(
-        (AEMath::Vector *)((char *)self + 0x50),
-        (const AEMath::Vector *)((char *)src + 0x50));
+    *(AEMath::Vector *)((char *)self + 0x50) = *(const AEMath::Vector *)((char *)src + 0x50);
 
     self->field_0x38 = 1;
     self->field_0x85 = src->field_0x85;

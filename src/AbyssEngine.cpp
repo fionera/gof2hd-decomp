@@ -1,6 +1,7 @@
 #include "gof2/AbyssEngine.h"
 #include "gof2/externs.h"
 #include "gof2/AEFile.h"
+#include "gof2/AEMath.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
 #include "gof2/Engine.h"
@@ -60,35 +61,35 @@ int CameraIsPointinViewFrustum(Vector *point, Matrix *extra, Camera *cam)
         dstMatrix = &local;
     } else {
         __aeabi_memcpy(&local, srcMatrix, 0x3c);
-        AE_Matrix_mulAssign(&local, extra);
+        local *= *extra;
         dstMatrix = &transformed;
         srcMatrix = &local;
     }
 
-    AE_MatrixInverseTransformVector(dstMatrix, srcMatrix);
-    AE_Vector_assign(&camPoint, dstMatrix);
+    *(Vector *)dstMatrix = AEMath::MatrixInverseTransformVector(*srcMatrix, *(Vector *)dstMatrix);
+    camPoint = *(Vector *)dstMatrix;
 
-    AE_MatrixGetPosition(&pos);
-    AE_VectorSub(&pos, point);
-    AE_MatrixGetDir(&dir);
-    AE_VectorSub(&axis, &dir);
-    AE_VectorNormalize(&transformed, &axis);
-    float fwd = AE_VectorDot(&pos, &transformed);
+    pos = AEMath::MatrixGetPosition(*dstMatrix);
+    pos -= *point;
+    dir = AEMath::MatrixGetDir(*dstMatrix);
+    axis -= dir;
+    Vector normAxis = AEMath::VectorNormalize(axis);
+    float fwd = AEMath::VectorDot(pos, normAxis);
 
     if (fwd > f32(c, 0x8) || fwd < f32(c, 0x4))
         return 0;
 
-    AE_MatrixGetUp(&axis);
-    AE_VectorNormalize(&transformed, &axis);
-    float up = AE_VectorDot(&pos, &transformed);
+    axis = AEMath::MatrixGetUp(*dstMatrix);
+    normAxis = AEMath::VectorNormalize(axis);
+    float up = AEMath::VectorDot(pos, normAxis);
 
     float hLimit = fwd * f32(c, 0x48);
     if (up > hLimit || up < -hLimit)
         return 0;
 
-    AE_MatrixGetRight(&axis);
-    AE_VectorNormalize(&transformed, &axis);
-    float right = AE_VectorDot(&pos, &transformed);
+    axis = AEMath::MatrixGetRight(*dstMatrix);
+    normAxis = AEMath::VectorNormalize(axis);
+    float right = AEMath::VectorDot(pos, normAxis);
 
     float vLimit = hLimit * f32(c, 0x50);
     return (right <= vLimit && right >= -vLimit) ? 1 : 0;
@@ -221,9 +222,9 @@ void getAppVersion()
     }
 
     float zero3[3] = {0, 0, 0};
-    AE_Vector_assign(c + 0x468, zero3);
+    *(Vector *)(c + 0x468) = *(const Vector *)zero3;
     u32(c, 0x378) = 0;
-    AE_Vector_assign(c + 0x474, zero3);
+    *(Vector *)(c + 0x474) = *(const Vector *)zero3;
     u32(c, 0x37c) = 0;
 
     glEnable(0xb71);
@@ -988,10 +989,10 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
     center[0] = (maxv[0] + minv[0]) * 0.5f;
     center[1] = (maxv[1] + minv[1]) * 0.5f;
     center[2] = (maxv[2] + minv[2]) * 0.5f;
-    AE_Vector_assign((char *)*slot + 0x3c, center);
+    *(Vector *)((char *)*slot + 0x3c) = *(const Vector *)center;
     float halfDiag[3] = {minv[0], minv[1], minv[2]};
-    AE_VectorSub(center, halfDiag);
-    f32((char *)*slot, 0x48) = AE_VectorLength(center);
+    *(Vector *)center -= *(const Vector *)halfDiag;
+    f32((char *)*slot, 0x48) = AEMath::VectorLength(*(const Vector *)center);
 
     m = (char *)*slot;
     // UV coordinates.
@@ -1138,18 +1139,18 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 tg[0] = *(float *)((char *)accum + off);
                 tg[1] = *(float *)((char *)accum + off + 4);
                 tg[2] = *(float *)((char *)accum + off + 8);
-                float d = AE_VectorDot(nrm, tg);
+                float d = AEMath::VectorDot(*(const Vector *)nrm, *(const Vector *)tg);
                 float scaled[3] = {nrm[0], nrm[1], nrm[2]};
-                AE_VectorMul(scaled, d);
-                AE_VectorSub(tg, scaled);
+                *(Vector *)scaled *= d;
+                *(Vector *)tg -= *(const Vector *)scaled;
                 float tanOut[3];
-                AE_VectorNormalize(tanOut, tg);
+                *(Vector *)tanOut = AEMath::VectorNormalize(*(const Vector *)tg);
                 int tb = *(int *)((char *)*slot + 0x14) + off;
                 *(float *)(tb) = tanOut[0];
                 *(float *)(tb + 4) = tanOut[1];
                 *(float *)(tb + 8) = tanOut[2];
                 float binOut[3] = {tg[0], tg[1], tg[2]};
-                AE_VectorCross(binOut, nrm);
+                *(Vector *)binOut = AEMath::VectorCross(*(const Vector *)binOut, *(const Vector *)nrm);
                 int bb = *(int *)((char *)*slot + 0x18) + off;
                 *(float *)(bb) = binOut[0];
                 *(float *)(bb + 4) = binOut[1];
@@ -3063,20 +3064,20 @@ int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Cam
         dstMatrix = &local;
     } else {
         __aeabi_memcpy(&local, srcMatrix, 0x3c);
-        AE_Matrix_mulAssign(&local, extra);
+        local *= *extra;
         dstMatrix = &transformed;
         srcMatrix = &local;
     }
 
-    AE_MatrixInverseTransformVector(dstMatrix, srcMatrix);
-    AE_Vector_assign(&camPoint, dstMatrix);
+    *(Vector *)dstMatrix = AEMath::MatrixInverseTransformVector(*srcMatrix, *(Vector *)dstMatrix);
+    camPoint = *(Vector *)dstMatrix;
 
-    AE_MatrixGetPosition(&pos);
-    AE_VectorSub(&pos, center);
-    AE_MatrixGetDir(&dir);
-    AE_VectorSub(&axis, &dir);
-    AE_VectorNormalize(&transformed, &axis);
-    float fwd = AE_VectorDot(&pos, &transformed);
+    pos = AEMath::MatrixGetPosition(*dstMatrix);
+    pos -= *center;
+    dir = AEMath::MatrixGetDir(*dstMatrix);
+    axis -= dir;
+    Vector normAxis = AEMath::VectorNormalize(axis);
+    float fwd = AEMath::VectorDot(pos, normAxis);
 
     // Near/far range padded by the radius.
     if (fwd > f32(c, 0x8) + radius)
@@ -3084,9 +3085,9 @@ int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Cam
     if (fwd < f32(c, 0x4) - radius)
         return 0;
 
-    AE_MatrixGetRight(&axis);
-    AE_VectorNormalize(&transformed, &axis);
-    float right = AE_VectorDot(&pos, &transformed);
+    axis = AEMath::MatrixGetRight(*dstMatrix);
+    normAxis = AEMath::VectorNormalize(axis);
+    float right = AEMath::VectorDot(pos, normAxis);
 
     float rightPad = f32(c, 0x54) * radius;
     float rightLimit = fwd * f32(c, 0x48) * f32(c, 0x50);
@@ -3095,9 +3096,9 @@ int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Cam
     if (right < -rightLimit - rightPad)
         return 0;
 
-    AE_MatrixGetUp(&axis);
-    AE_VectorNormalize(&transformed, &axis);
-    float up = AE_VectorDot(&pos, &transformed);
+    axis = AEMath::MatrixGetUp(*dstMatrix);
+    normAxis = AEMath::VectorNormalize(axis);
+    float up = AEMath::VectorDot(pos, normAxis);
 
     float upPad = f32(c, 0x58) * radius;
     float upLimit = fwd * f32(c, 0x48);

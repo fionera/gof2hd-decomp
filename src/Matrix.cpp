@@ -1,8 +1,6 @@
 #include "gof2/Matrix.h"
 
 
-extern "C" Vector *_ZN11AbyssEngine6AEMath6VectormLERKS1_(Vector *self, const Vector *other);
-extern "C" Vector *_ZN11AbyssEngine6AEMath6VectoraSERKS1_(Vector *self, const Vector *other);
 
 // ---- Matrix_6e8d8.cpp ----
 // AbyssEngine::AEMath::Matrix::Matrix()
@@ -82,7 +80,7 @@ Matrix &Matrix::operator*=(const Matrix &p)
     t[10] = e1 * b[6] + b[2] * e0 + b[10] * e2;
     t[11] = t[11] + e1 * b[7] + b[3] * e0 + b[11] * e2;
 
-    _ZN11AbyssEngine6AEMath6VectormLERKS1_((Vector *)&this->m[12], (const Vector *)&p.m[12]);
+    *(Vector *)&this->m[12] *= *(const Vector *)&p.m[12];
     return *this;
 }
 
@@ -102,7 +100,7 @@ Matrix &Matrix::operator=(const Matrix &other)
 {
     for (int i = 0; i < 12; ++i)
         this->m[i] = other.m[i];
-    _ZN11AbyssEngine6AEMath6VectoraSERKS1_((Vector *)&this->m[12], (const Vector *)&other.m[12]);
+    *(Vector *)&this->m[12] = *(const Vector *)&other.m[12];
     return *this;
 }
 

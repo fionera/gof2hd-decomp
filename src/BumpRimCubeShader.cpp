@@ -3,7 +3,6 @@
 
 
 extern "C" void glUniform3fv(int location, int count, const float *value);
-extern "C" float *_ZN11AbyssEngine6AEMath6VectorcvPfEv(void *self);
 
 // ---- UpdateMeshData_8fe0c.cpp ----
 namespace AbyssEngine {
@@ -41,7 +40,7 @@ void BumpRimCubeShader::UpdateMeshData(Mesh *mesh, Engine *engine)
             glUniform3fv(this->field_0x78, 1, (float *)((char *)engine + 800));
         int loc88 = this->field_0x88;
         if (loc88 >= 0) {
-            float *v = _ZN11AbyssEngine6AEMath6VectorcvPfEv((char *)engine + 0x3f0);
+            float *v = *(AEMath::Vector *)((char *)engine + 0x3f0);
             glUniform3fv(loc88, 1, v);
         }
         if (this->field_0x90 >= 0)

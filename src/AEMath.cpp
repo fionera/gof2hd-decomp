@@ -222,6 +222,7 @@ namespace AEMath {
 
 float Sqrtf(float value)
 {
+    return ::sqrtf(value);
 }
 
 } // namespace AEMath
@@ -392,6 +393,7 @@ namespace AEMath {
 
 float VectorLength(const Vector &value)
 {
+    return ::sqrtf(value.x * value.x + value.y * value.y + value.z * value.z);
 }
 
 } // namespace AEMath

@@ -19,8 +19,6 @@ public:
 } // namespace AbyssEngine
 
 extern "C" {
-// AEMath::Matrix default ctor (mangled).
-void _ZN11AbyssEngine6AEMath6MatrixC1Ev(AbyssEngine::AEMath::Matrix *self);
 // Camera::SetPerspective (mangled).
 void _ZN11AbyssEngine6Camera14SetPerspectiveEffff(
     AbyssEngine::Camera *self, float fov, float aspect, float nearPlane, float farPlane);

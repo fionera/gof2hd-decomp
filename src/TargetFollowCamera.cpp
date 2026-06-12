@@ -6,8 +6,10 @@ extern "C" void *Vector_assign(void *dst, const void *src);
 namespace AbyssEngine { namespace AEMath { float VectorLength(Vector *v); } }
 extern "C" void TFC_tail_int(TargetFollowCamera *self, int n);
 extern "C" void TFC_setShipHandling2(TargetFollowCamera *self, float v);
-void *MatrixGetUp(Vector *out, const void *m);
-void *MatrixTransformVector(Vector *out, const void *m, const Vector *v);
+namespace AbyssEngine { namespace AEMath {
+Vector MatrixGetUp(const Matrix &matrix);
+Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
+} }
 void TFC_update(TargetFollowCamera *self, int n);
 extern "C" void *Matrix_assign(void *dst, const void *src);
 extern "C" void TFC_Matrix_ctor(Matrix *m);
@@ -290,9 +292,11 @@ void TFC_setLocked(TargetFollowCamera *self, bool locked) {
     self->locked = locked;
     if (locked) {
         __builtin_memcpy(mat, ((AEGeometry *)(self->target))->getMatrix(), 0x3c);
-        MatrixGetUp(&up, mat);
+        up = AbyssEngine::AEMath::MatrixGetUp(*(const AbyssEngine::AEMath::Matrix *)mat);
         Vector_assign((Vector *)(p + 0x20), &up);
-        MatrixTransformVector(&up, mat, (const Vector *)(p + 0x38));
+        up = AbyssEngine::AEMath::MatrixTransformVector(
+            *(const AbyssEngine::AEMath::Matrix *)mat,
+            *(const AbyssEngine::AEMath::Vector *)(p + 0x38));
         Vector_assign((Vector *)(p + 0x8), &up);
         TFC_update(self, 0x32);
     }

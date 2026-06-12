@@ -52,7 +52,14 @@ extern "C" void PlayerFighter_setMissionCrate_tail(int one, Array<int> *a);
 extern "C" void ArrayBV_ctor(Array<BoundingVolume *> *a);
 extern "C" void PlayerFighter_setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *a);
 extern "C" int Route_getCurrent(int route);
-extern "C" float AEMath_VectorLength(void *v);
+namespace AbyssEngine { namespace AEMath {
+float VectorLength(const Vector &value);
+Vector operator-(const Vector &lhs, const Vector &rhs);
+Vector operator*(float lhs, const Vector &rhs);
+} }
+static inline float AEMath_VectorLength(void *v) {
+    return AbyssEngine::AEMath::VectorLength(*(const AbyssEngine::AEMath::Vector *)v);
+}
 extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" unsigned PaintCanvas_TransformGetTransform(unsigned t);
 extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
@@ -768,8 +775,14 @@ int PlayerFighter::outerCollide(float x, float y, float z) {
 }
 
 // ---- initPush_dfc88.cpp ----
-extern "C" void AEMath_VectorSub(void *out, void *a, void *b);     // operator-(out, a) with b in r2
-extern "C" void AEMath_VectorScale(void *out, float s, void *v);   // operator*(s, v)
+static inline void AEMath_VectorSub(void *out, void *a, void *b) {  // out = a - b
+    *(AbyssEngine::AEMath::Vector *)out =
+        *(const AbyssEngine::AEMath::Vector *)a - *(const AbyssEngine::AEMath::Vector *)b;
+}
+static inline void AEMath_VectorScale(void *out, float s, void *v) {  // out = s * v
+    *(AbyssEngine::AEMath::Vector *)out =
+        s * *(const AbyssEngine::AEMath::Vector *)v;
+}
 
 extern void *const gIP_guard __attribute__((visibility("hidden")));    // DAT_000efdbc
 extern const float gIP_strength __attribute__((visibility("hidden"))); // DAT_000efdb4

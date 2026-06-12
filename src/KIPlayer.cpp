@@ -499,11 +499,14 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
 // ---- getNearestDockingPoint_a5c54.cpp ----
 extern "C" {
 void *AEGeometry_getMatrix2(void *geom);                          // 0x721cc
-void AEMath_MatrixRotateVector(void *out, void *m, void *v);      // 0x6f694
-void AEMath_VectorAdd(void *out, void *a, void *b);              // 0x6f1cc
-void AEMath_VectorSub(void *out, void *a, void *b);              // 0x6ec38
-float AEMath_VectorLength(void *v);                              // 0x6ec44
 }
+
+namespace AbyssEngine { namespace AEMath {
+Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
+float VectorLength(const Vector &value);
+Vector operator+(const Vector &lhs, const Vector &rhs);
+Vector operator-(const Vector &lhs, const Vector &rhs);
+} }
 
 // KIPlayer::getNearestDockingPoint(AbyssEngine::AEMath::Vector const& dir)
 //   Returns the nearest space point of type 2 (docking) to the supplied direction vector,
@@ -530,13 +533,12 @@ void * KIPlayer::getNearestDockingPoint(Vector *dir) {
             continue;
 
         void *mat = AEGeometry_getMatrix2(self->geometry);
-        Vector rotated;
-        AEMath_MatrixRotateVector(&rotated, mat, ((void **)(*(char **)((char *)arr + 4)))[i]);
-        Vector world;
-        AEMath_VectorAdd(&world, &selfPos, &rotated);
-        Vector delta;
-        AEMath_VectorSub(&delta, &world, dir);
-        float len = AEMath_VectorLength(&delta);
+        Vector rotated = AEMath::MatrixRotateVector(
+            *(const AEMath::Matrix *)mat,
+            *(const Vector *)((void **)(*(char **)((char *)arr + 4)))[i]);
+        Vector world = selfPos + rotated;
+        Vector delta = world - *dir;
+        float len = AEMath::VectorLength(delta);
         float alen = len < 0.0f ? -len : len;
         if (alen < bestLen) {
             best = ((void **)(*(char **)((char *)self->spacePoints + 4)))[i];
@@ -748,10 +750,6 @@ void KIPlayer::captureCrate(void *hud) {
 // ---- getNearestNavigationPoint_a5b4c.cpp ----
 extern "C" {
 void *AEGeometry_getMatrix2(void *geom);                          // 0x721cc (this->0x8 matrix)
-void AEMath_MatrixRotateVector(void *out, void *m, void *v);      // 0x6f694
-void AEMath_VectorAdd(void *out, void *a, void *b);              // 0x6f1cc
-void AEMath_VectorSub(void *out, void *a, void *b);              // 0x6ec38
-float AEMath_VectorLength(void *v);                              // 0x6ec44
 int SpacePoint_isFree(void *sp);                                 // 0x732c4
 // virtual getPosition(out) at vtable slot +0x28.
 }
@@ -782,13 +780,12 @@ void * KIPlayer::getNearestNavigationPoint(Vector *dir, void *target) {
             continue;
 
         void *mat = AEGeometry_getMatrix2(self->geometry);
-        Vector rotated;
-        AEMath_MatrixRotateVector(&rotated, mat, ((void **)(*(char **)((char *)arr + 4)))[i]);
-        Vector world;
-        AEMath_VectorAdd(&world, &selfPos, &rotated);
-        Vector delta;
-        AEMath_VectorSub(&delta, &world, dir);
-        float len = AEMath_VectorLength(&delta);
+        Vector rotated = AEMath::MatrixRotateVector(
+            *(const AEMath::Matrix *)mat,
+            *(const Vector *)((void **)(*(char **)((char *)arr + 4)))[i]);
+        Vector world = selfPos + rotated;
+        Vector delta = world - *dir;
+        float len = AEMath::VectorLength(delta);
         float alen = len < 0.0f ? -len : len;
         if (alen < bestLen) {
             void *cand = ((void **)(*(char **)((char *)self->spacePoints + 4)))[i];

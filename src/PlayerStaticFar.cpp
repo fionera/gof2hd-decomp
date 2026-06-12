@@ -122,20 +122,39 @@ void PlayerStaticFar::outerCollide(Vector value)
 
 struct Vec3 { float x, y, z; };
 
+// Typed wrappers over the real AbyssEngine::AEMath vector/matrix ops.
+namespace AbyssEngine { namespace AEMath {
+Vector MatrixGetPosition(const Matrix &matrix);
+float VectorLength(const Vector &value);
+Vector VectorNormalize(const Vector &value);
+Vector operator-(const Vector &lhs, const Vector &rhs);
+} }
+typedef AbyssEngine::AEMath::Vector AEVec;
+static inline void AbyssEngine_AEMath_MatrixGetPosition(Vec3 *out, void *matrix) {
+    *(AEVec *)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix *)matrix);
+}
+static inline Vec3 *AEMath_Vector_assign(Vec3 *dst, const Vec3 *src) {
+    *(AEVec *)dst = *(const AEVec *)src; return dst;
+}
+static inline void AbyssEngine_AEMath_operator_sub(Vec3 *out, const Vec3 *a, const Vec3 *b) {
+    *(AEVec *)out = *(const AEVec *)a - *(const AEVec *)b;
+}
+static inline float AbyssEngine_AEMath_VectorLength(const Vec3 *v) {
+    return AbyssEngine::AEMath::VectorLength(*(const AEVec *)v);
+}
+static inline void AbyssEngine_AEMath_VectorNormalize(Vec3 *out, const Vec3 *v) {
+    *(AEVec *)out = AbyssEngine::AEMath::VectorNormalize(*(const AEVec *)v);
+}
+static inline float AEMath_Vector_assign2(Vec3 *dst, const Vec3 *src) {
+    *(AEVec *)dst = *(const AEVec *)src; return 0.0f;
+}
+static inline void AEMath_Vector_mul_eq(Vec3 *v, float s) { *(AEVec *)v *= s; }
+static inline void AEMath_Vector_add_eq(Vec3 *v, const Vec3 *o) { *(AEVec *)v += *(const AEVec *)o; }
+
 extern "C" {
-// Camera / matrix helpers (PaintCanvas + AEMath).
+// Camera / matrix helpers (PaintCanvas).
 void *AbyssEngine_PaintCanvas_CameraGetCurrent(void *camera);   // 0x717f4
 void *AbyssEngine_PaintCanvas_CameraGetLocal(void *camera, void *cur); // 0x6ff1c
-void AbyssEngine_AEMath_MatrixGetPosition(Vec3 *out, void *matrix);     // 0x6f16c
-
-// Vector ops.
-Vec3 *AEMath_Vector_assign(Vec3 *dst, const Vec3 *src);                  // *pcVar3 (0x73534 path uses r5)
-void AbyssEngine_AEMath_operator_sub(Vec3 *out, const Vec3 *a, const Vec3 *b); // 0x6ec38
-float AbyssEngine_AEMath_VectorLength(const Vec3 *v);                    // 0x6ec44
-void AbyssEngine_AEMath_VectorNormalize(Vec3 *out, const Vec3 *v);       // 0x6ec80
-float AEMath_Vector_assign2(Vec3 *dst, const Vec3 *src);                 // 0x6eb3c
-void AEMath_Vector_mul_eq(Vec3 *v, float s);                             // 0x72628
-void AEMath_Vector_add_eq(Vec3 *v, const Vec3 *o);                       // 0x73534
 
 // AEGeometry placement.
 void AEGeometry_setPositionVec(void *geometry, const Vec3 *v);          // 0x72148

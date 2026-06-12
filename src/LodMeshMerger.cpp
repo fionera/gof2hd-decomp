@@ -272,13 +272,25 @@ int LodMeshMerger::init()
 }
 
 // ---- transformMesh_181550.cpp ----
+// Typed wrappers over the real AbyssEngine::AEMath ops.
+namespace AbyssEngine { namespace AEMath {
+Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
+Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
+Vector VectorNormalize(const Vector &value);
+} }
+static inline void AEMath_MatrixTransformVector(Vector *out, const Matrix &m, const Vector &v) {
+    *out = AbyssEngine::AEMath::MatrixTransformVector(m, v);
+}
+static inline void AEMath_MatrixRotateVector(Vector *out, const Matrix &m, const Vector &v) {
+    *out = AbyssEngine::AEMath::MatrixRotateVector(m, v);
+}
+static inline void AEMath_VectorNormalize(Vector *out, const Vector &v) {
+    *out = AbyssEngine::AEMath::VectorNormalize(v);
+}
+static inline void AEMath_VectorAssign(Vector *dst, const Vector *src) { *dst = *src; }
+
 extern "C" {
 void *operator_new_mesh(uint32_t size);                           // 0x6eb24 (operator new)
-// AEMath helpers.
-void AEMath_MatrixTransformVector(Vector *out, const Matrix &m, const Vector &v);  // 0x6f688
-void AEMath_MatrixRotateVector(Vector *out, const Matrix &m, const Vector &v);     // 0x6f694
-void AEMath_VectorNormalize(Vector *out, const Vector &v);                          // 0x6ec80
-void AEMath_VectorAssign(Vector *dst, const Vector *src);                           // 0x6eb3c
 void AEMath_BSphereAssign(void *dst, const void *src);                              // 0x6eb18
 }
 

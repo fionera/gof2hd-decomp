@@ -27,12 +27,40 @@ public:
     Vector getCollisionNormal(const Vector &position);
 };
 
-extern "C" void AEMath_VectorAdd(void *out, const void *lhs, const void *rhs);
-extern "C" void AEMath_VectorSub(void *out, const void *lhs, const void *rhs);
-extern "C" void AEMath_VectorScale(void *out, float scale, const void *value);
-extern "C" float AEMath_VectorDot(const void *lhs, const void *rhs);
-extern "C" void AEMath_VectorNormalize(void *out, const void *value);
-extern "C" float AEMath_VectorLength(const void *value);
-extern "C" void *AEMath_VectorAssign(void *out, const void *value);
+// Real AbyssEngine::AEMath vector ops (defined in src/AEMath.cpp). Declared here
+// directly (rather than including gof2/AEMath.h) to avoid pulling in AEMath.h's
+// BSphere/Transform definitions, which clash with gof2/Transform.h in some TUs.
+namespace AbyssEngine { namespace AEMath {
+float VectorDot(const Vector &lhs, const Vector &rhs);
+Vector VectorNormalize(const Vector &value);
+float VectorLength(const Vector &value);
+Vector operator+(const Vector &lhs, const Vector &rhs);
+Vector operator-(const Vector &lhs, const Vector &rhs);
+Vector operator*(const Vector &lhs, float rhs);
+} }
+
+// Thin typed wrappers over the real AbyssEngine::AEMath vector ops.
+inline void AEMath_VectorAdd(void *out, const void *lhs, const void *rhs) {
+    *(Vector *)out = *(const Vector *)lhs + *(const Vector *)rhs;
+}
+inline void AEMath_VectorSub(void *out, const void *lhs, const void *rhs) {
+    *(Vector *)out = *(const Vector *)lhs - *(const Vector *)rhs;
+}
+inline void AEMath_VectorScale(void *out, float scale, const void *value) {
+    *(Vector *)out = *(const Vector *)value * scale;
+}
+inline float AEMath_VectorDot(const void *lhs, const void *rhs) {
+    return AbyssEngine::AEMath::VectorDot(*(const Vector *)lhs, *(const Vector *)rhs);
+}
+inline void AEMath_VectorNormalize(void *out, const void *value) {
+    *(Vector *)out = AbyssEngine::AEMath::VectorNormalize(*(const Vector *)value);
+}
+inline float AEMath_VectorLength(const void *value) {
+    return AbyssEngine::AEMath::VectorLength(*(const Vector *)value);
+}
+inline void *AEMath_VectorAssign(void *out, const void *value) {
+    *(Vector *)out = *(const Vector *)value;
+    return out;
+}
 
 #endif

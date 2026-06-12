@@ -87,13 +87,15 @@ MovingStars::MovingStars()
 using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::Matrix;
 
+namespace AbyssEngine { namespace AEMath {
+Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
+} }
+
 extern "C" {
 float VectorSignedToFloat(int v, int mode);
 uint32_t MovingStars_TransformGetLocal(void *canvas, uint32_t tf);     // PaintCanvas::TransformGetLocal
 void MovingStars_TransformSetLocal(void *canvas, void *matrix);        // PaintCanvas::TransformSetLocal
 int MovingStars_nextInt(void *rng);                                    // AERandom::nextInt
-void MovingStars_MatrixTransformVector(void *m, Vector *v);            // AEMath::MatrixTransformVector
-void MovingStars_VectorAssign(Vector *dst, const Vector *src);         // AEMath::Vector::operator=
 void MovingStars_MatrixSetTranslation(void *m, float x, float y, float z);
 void MovingStars_SetAnimVec(void *transform, uint32_t tf, int idx, float x, float y, float z);
 }
@@ -188,8 +190,9 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
             spawn.x = VectorSignedToFloat(r0 - 10000, 0);
             spawn.y = VectorSignedToFloat(r1 - 9000, 0);
             spawn.z = MovingStars_kZSpawn;
-            MovingStars_MatrixTransformVector(localMatrix, &spawn);
-            MovingStars_VectorAssign(&spawn, (Vector *)localMatrix);
+            *(Vector *)localMatrix =
+                AEMath::MatrixTransformVector(*(const Matrix *)localMatrix, spawn);
+            spawn = *(const Vector *)localMatrix;
             MovingStars_TransformSetLocal(canvas, *(void **)(self[1] + i * 4));
             MovingStars_TransformGetLocal(canvas, 0);
             MovingStars_MatrixSetTranslation(localMatrix, spawn.z, 0.0f, 0.0f);

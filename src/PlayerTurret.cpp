@@ -33,10 +33,12 @@ extern "C" void Vector_scale(Vector *out, const Vector *v, float value);
 extern "C" void Vector_add(Vector *out, const Vector *a, const Vector *b);
 extern "C" void Matrix_assign(void *dst, const void *src);
 extern "C" void Matrix_mul(void *out, const void *a, const void *b);
-void MatrixInverseTransformVector(Vector *out, const void *matrix, const Vector *v);
 extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas, uint32_t transform);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const void *matrix);
-void MatrixRotateVector(Vector *out, const void *matrix, const Vector *vector);
+namespace AbyssEngine { namespace AEMath {
+Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
+Vector MatrixInverseTransformVector(const Matrix &matrix, const Vector &vector);
+} }
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int max); } }
 extern "C" void Array_int_ctor(IntArray *array);
@@ -223,7 +225,9 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
         Matrix_assign(matrixBytes, ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getMatrix());
     }
 
-    MatrixInverseTransformVector((Vector *)positionBytes, matrixBytes, (Vector *)B(this, 0x9c));
+    *(AbyssEngine::AEMath::Vector *)positionBytes = AbyssEngine::AEMath::MatrixInverseTransformVector(
+        *(const AbyssEngine::AEMath::Matrix *)matrixBytes,
+        *(const AbyssEngine::AEMath::Vector *)B(this, 0x9c));
     VectorNormalize((Vector *)sumBytes, (Vector *)positionBytes);
     Vector *normal = (Vector *)sumBytes;
 
@@ -306,7 +310,9 @@ void PlayerTurret::update(int delta)
 
     if (this->f_154 != 0) {
         __aeabi_memcpy(matrixBytes, B(P(TP<KIPlayer>(this, 0x154), 0x4), 0x4), 0x3c);
-        MatrixRotateVector((Vector *)vectorBytes, matrixBytes, (Vector *)B(this, 0x158));
+        *(AbyssEngine::AEMath::Vector *)vectorBytes = AbyssEngine::AEMath::MatrixRotateVector(
+            *(const AbyssEngine::AEMath::Matrix *)matrixBytes,
+            *(const AbyssEngine::AEMath::Vector *)B(this, 0x158));
         Vector_assign((Vector *)B(this, 0x90), (Vector *)vectorBytes);
         AEGeometry_setMatrix(TP<AEGeometry>(this, 0x8), matrixBytes);
         ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->translate(*(Vector *)B(this, 0x90));
