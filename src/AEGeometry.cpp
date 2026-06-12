@@ -3,9 +3,15 @@
 // NOTE: gof2/Transform.h is intentionally NOT included here. It declares an
 // AbyssEngine::Mesh that conflicts with the complete AbyssEngine::Mesh from
 // gof2/Mesh.h (pulled in via gof2/LodMeshMerger.h). The only Transform method
-// this translation unit needs is SetCurrentAnimationTime, reached below via a
-// minimal extern "C" thunk to avoid the header clash.
-extern "C" void Transform_SetCurrentAnimationTime(void *self, long long value);
+// this translation unit needs is SetCurrentAnimationTime, so we forward-declare
+// a minimal AbyssEngine::Transform exposing just that member to avoid the header
+// clash. The call links to the real out-of-line definition in Transform.cpp.
+namespace AbyssEngine {
+class Transform {
+public:
+    void SetCurrentAnimationTime(long long value);
+};
+} // namespace AbyssEngine
 
 using namespace AbyssEngine::AEMath;
 
@@ -463,9 +469,9 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
                                             this->transform, (Matrix *)lodMat);
             this->transform = (uint32_t)(uintptr_t)((void **)this->lodTf())[idx];
             uint32_t t = Transform_GetTransform((uint32_t)(uintptr_t)this->canvas);
-            Transform_SetCurrentAnimationTime((void *)(uintptr_t)t, 0);
+            ((AbyssEngine::Transform *)(uintptr_t)t)->SetCurrentAnimationTime(0);
             t = Transform_GetTransform((uint32_t)(uintptr_t)this->canvas);
-            Transform_SetCurrentAnimationTime((void *)(uintptr_t)t, 0);
+            ((AbyssEngine::Transform *)(uintptr_t)t)->SetCurrentAnimationTime(0);
             this->currentLod = level;
             _ae_matrix_assign(&this->referenceMatrix, matrixCopy);
             void *lmm = this->merger;

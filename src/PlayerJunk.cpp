@@ -56,7 +56,9 @@ void _ZN10PlayerJunkC1EiP6PlayerP10AEGeometryfff(
 // 0x724f0
 // 0x77908
 // 0x71548
-extern "C" int AERandom_nextInt(void *self, int max);                  // 0x71848
+// AERandom::nextInt(rng, max) — bounded PRNG draw at 0x71848. Matches the codebase-wide
+// AbyssEngine::AERandom::nextInt(rng, bound) call convention (AERandom used as a namespace).
+namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
 // 0x75904
 // 0x72580
 // 0x72034
@@ -79,12 +81,12 @@ void PlayerJunk::update(int elapsed) {
             self->state = 3;
             ((FModSound *)(*g_PJ_sound))->play(0x16, 0, 0, 0.0f);
             void **randHolder = g_PJ_random;
-            if (AERandom_nextInt(*randHolder, 100) < 10) {
+            if (AbyssEngine::AERandom::nextInt(*randHolder, 100) < 10) {
                 self->droppedCrate = 1;
                 Array<int> *arr = new Array<int>();
                 self->crateContents = arr;
                 ArrayAdd(99, *arr);
-                ArrayAdd(AERandom_nextInt(*randHolder, 10) + 1, *self->crateContents);
+                ArrayAdd(AbyssEngine::AERandom::nextInt(*randHolder, 10) + 1, *self->crateContents);
                 ((KIPlayer *)(self))->createCrate(3);
                 self->droppedCrate = 1;
             } else {

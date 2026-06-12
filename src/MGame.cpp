@@ -64,10 +64,18 @@
 #include "gof2/PlayerFixedObject.h"
 #include "gof2/Status.h"
 
+// The Status singleton. The original 0-argument Status_* calls below loaded this global and
+// invoked the corresponding instance method; the decompiler dropped the implicit receiver.
+// (Some functions re-declare this same hidden global at block scope; both are consistent.)
+extern "C" __attribute__((visibility("hidden"))) Status **g_status;
+
 // Minimal Radar/Radio interfaces (full headers omitted above to avoid duplicate-struct
 // clashes). fwd.h forward-declares both as struct; only the methods MGame calls are needed.
+// Radar::hasScanner is modeled as a nullary static here (matching Level.cpp), since the
+// original loaded the Radar singleton internally and the decompiler dropped the receiver.
 struct Radar {
     void drawCurrentLock(Hud *hud);
+    static uint8_t hasScanner();
 };
 struct Radio {
     void setMessages(Array<RadioMessage *> *messages);
@@ -102,11 +110,8 @@ extern "C" int SolarSystem_getTextureIndex(void *ss);
 extern "C" void PaintCanvas_ChangeCubeTexture(unsigned tex);
 void Globals_startNewSoundResourceList();
 void Globals_addSoundResourceToList(int list);
-extern "C" int Status_getWingmen();
-extern "C" void Status_checkForLevelUp();
 extern "C" void Player_setShieldHP(Player *p, int hp);
 extern "C" void Player_setGammaHP(Player *p, int hp);
-extern "C" int Radar_hasScanner();
 extern "C" void MGame_freeCamPanDone(MGame *self, int p3);
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 int DialogueWindow_hasSuccessDialogue(int cm);
@@ -130,22 +135,6 @@ int DialogueWindow_hasBriefingDialogue(...);
 extern "C" int Mission_getType(Mission *m);
 extern "C" void DialogueWindow_ctor(...);
 void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
-
-// Status singleton accessors. The original code loads the global Status singleton
-// internally (the decompiler dropped the implicit receiver), so these appear as
-// zero-argument free functions throughout this TU. Declared with the real Status
-// method return types (see gof2/Status.h). The full Status.h declares them as
-// instance methods on a 32-bit layout that does not match this TU's needs, so the
-// singleton thunks are used directly here.
-extern "C" Mission *Status_getMission();
-extern "C" int      Status_getCurrentCampaignMission();
-extern "C" Mission *Status_getCampaignMission();
-extern "C" Station *Status_getStation();
-extern "C" int      Status_getSystem();
-extern "C" bool     Status_hardCoreMode();
-extern "C" bool     Status_inAlienOrbit();
-extern "C" bool     Status_inBlackMarketSystem();
-extern "C" bool     Status_dlc1Won();
 
 // ---- maneuverTouchEnd_1789b4.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
@@ -373,8 +362,8 @@ void MGame::startJumpScene() {
     PaintCanvas *pc = *g_jsCanvas;
     unsigned cam = self->field_0xf0;
     float fov = *(float *)&g_jsFovDefault;
-    if (Status_inAlienOrbit() != 0) {
-        int cm = Status_getCurrentCampaignMission();
+    if ((*g_status)->inAlienOrbit() != 0) {
+        int cm = (*g_status)->getCurrentCampaignMission();
         fov = (cm < 0x50) ? *(float *)&g_jsFovAlienB : *(float *)&g_jsFovAlienA;
     }
     PaintCanvas_CameraSetPerspective(cam, fov, *(float *)&g_jsHudFlag, 0);
@@ -599,14 +588,17 @@ __attribute__((visibility("hidden"))) extern GameText **g_gameText; // DAT_189d4
 // MGame::useCloak(): toggle the cloaking device. If it engaged, build a choice dialogue
 // "<text><cloak-attr><text>" describing the cloak and pause the game. Stack-protected
 // (six temporary Strings on the stack).
-// PlayerEgo.h (another batch) declares toggleCloaking() as returning void, but the caller
-// branches on its result (the new cloak state). Use the original free-function form so this
-// TU sees the real int return type without editing PlayerEgo.h.
-extern "C" int PlayerEgo_toggleCloaking(PlayerEgo *self);
-
+// PlayerEgo::toggleCloaking() is declared (and defined, in PlayerEgo.cpp) as returning
+// void, but this caller branches on the value the original left in r0. Reinterpret the
+// method's address through an int-returning free-function signature so the ABI return is
+// read without touching the void definition (the call ABI is identical for a thiscall on
+// this target).
 void MGame::useCloak() {
     MGame *self = this;
-    if (PlayerEgo_toggleCloaking((PlayerEgo *)(self->field_0x58)) != 0) return;
+    void (::PlayerEgo::*pmf)() = &::PlayerEgo::toggleCloaking;
+    int (*toggleCloaking)(::PlayerEgo *);
+    __builtin_memcpy(&toggleCloaking, &pmf, sizeof(toggleCloaking));
+    if (toggleCloaking((::PlayerEgo *)(self->field_0x58)) != 0) return;
     if (self->field_0x94 == 0) {
         ChoiceWindow *w = (ChoiceWindow *)MGame_opnew(0x5c);
         new (w) ChoiceWindow();
@@ -673,7 +665,7 @@ static void bindDialogueLevel(MGame *self) {
         Level *lvl = self->field_0x78;
         if (lvl != 0) DialogueWindow_setLevel(self->field_0x8c, lvl);
     }
-    ((DialogueWindow *)(self->field_0x8c))->set(Status_getMission(), 2, -1);
+    ((DialogueWindow *)(self->field_0x8c))->set((*g_status)->getMission(), 2, -1);
 }
 
 // MGame::gameOverCheck(): handle player death/explosion and end-of-level dialogue.
@@ -703,9 +695,9 @@ void MGame::gameOverCheck() {
         }
 
         if (self->field_0x60 != 0) {
-            if (Status_getMission() != 0 &&
-                ((Mission *)(Status_getMission()))->isCampaignMission() != 0) {
-                int cm = Status_getCurrentCampaignMission();
+            if ((*g_status)->getMission() != 0 &&
+                ((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) {
+                int cm = (*g_status)->getCurrentCampaignMission();
                 int *sa = *g_goStatusA;
                 int v;
                 if (cm == *sa) {
@@ -742,7 +734,7 @@ void MGame::gameOverCheck() {
             bool done = !((long long)(unsigned)sc[0] - ((long long)sc[3] << 32 | (unsigned)sc[2]) < 0);
             bool survival = false;
             if (!done) {
-                int cm = Status_getCurrentCampaignMission();
+                int cm = (*g_status)->getCurrentCampaignMission();
                 if (cm != 0x2a) {
                     Objective *obj = *(Objective **)((char *)self->field_0x78 + 0x28);
                     survival = (obj == 0) || (((Objective *)(obj))->isSurvivalObjective() != 0);
@@ -789,7 +781,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
     if (self->field_0x5d == 0) {
         // Game-over / replay splash tap dispatch.
         if (self->field_0x60 != 0 && self->field_0x50 >= 4000) {
-            int cm = Status_getCurrentCampaignMission();
+            int cm = (*g_status)->getCurrentCampaignMission();
             if (cm == 0x9e) {
                 self->field_0x54 = 0;
                 return MGame_endRunModule(self->field_0x8, 2);
@@ -975,13 +967,13 @@ void MGame::dockEvent() {
     self->field_0xcc = ((Level *)(self->field_0x78))->collideStation(*(Vector *)pos);
 
     Status *status = (Status *)g_deStatus;
-    Mission *m = Status_getMission();
+    Mission *m = (*g_status)->getMission();
     bool special = ((Mission *)(m))->isEmpty() != 0 ||
-                   Mission_getType(Status_getMission()) == 0xb ||
-                   Mission_getType(Status_getMission()) == 0 ||
-                   Mission_getType(Status_getMission()) == 0xbd ||
-                   Mission_getType(Status_getMission()) == 0xab ||
-                   Mission_getType(Status_getMission()) == 0xac;
+                   Mission_getType((*g_status)->getMission()) == 0xb ||
+                   Mission_getType((*g_status)->getMission()) == 0 ||
+                   Mission_getType((*g_status)->getMission()) == 0xbd ||
+                   Mission_getType((*g_status)->getMission()) == 0xab ||
+                   Mission_getType((*g_status)->getMission()) == 0xac;
 
     if (!special) {
         if ((self->field_0xcc != 0 || self->field_0xcb != 0) &&
@@ -1082,16 +1074,16 @@ void MGame::dockEvent() {
         }
     }
 
-    int cm = Status_getCurrentCampaignMission();
-    if (cm > 0x30 && Status_getCurrentCampaignMission() < 0x37) {
-        if (Station_getIndex(Status_getStation()) != 0x4a) {
+    int cm = (*g_status)->getCurrentCampaignMission();
+    if (cm > 0x30 && (*g_status)->getCurrentCampaignMission() < 0x37) {
+        if (Station_getIndex((*g_status)->getStation()) != 0x4a) {
             ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58, 0);
             
             return;
         }
     }
     if (((PlayerEgo *)(self->field_0x58))->goingToStation() != 0 &&
-        Status_inAlienOrbit() == 0 &&
+        (*g_status)->inAlienOrbit() == 0 &&
         ((Status *)(*(Station **)status))->inEmptyOrbit() == 0) {
         ((Achievements *)(*g_deAchieve))->checkForNewMedal(self->field_0x58);
         **g_deAlienFlag = 0;
@@ -1186,10 +1178,10 @@ void MGame::UseKhadorDrive() {
     if (((PlayerEgo *)(self->field_0x58))->isChargingDrive() != 0) return;
 
     int *status = g_kdStatus;
-    Mission *m = Status_getMission();
+    Mission *m = (*g_status)->getMission();
     bool special =
         ((Mission *)(m))->isEmpty() != 0 ||
-        Status_getCurrentCampaignMission() == 0x4e ||
+        (*g_status)->getCurrentCampaignMission() == 0x4e ||
         Mission_getType(m) == 0xb ||
         Mission_getType(m) == 0 ||
         Mission_getType(m) == 0xbd ||
@@ -1198,10 +1190,10 @@ void MGame::UseKhadorDrive() {
         Mission_getType(m) == 0xac;
 
     if (!special) {
-        if (Status_getCurrentCampaignMission() == 0x41 && Status_inAlienOrbit() == 0) {
-            int idx = Station_getIndex(Status_getStation());
-            Status_getCampaignMission();
-            if (idx == Mission_getTargetStation(Status_getCampaignMission()))
+        if ((*g_status)->getCurrentCampaignMission() == 0x41 && (*g_status)->inAlienOrbit() == 0) {
+            int idx = Station_getIndex((*g_status)->getStation());
+            (*g_status)->getCampaignMission();
+            if (idx == Mission_getTargetStation((Mission *)(*g_status)->getCampaignMission()))
                 special = true;
         }
     }
@@ -1212,7 +1204,7 @@ void MGame::UseKhadorDrive() {
     }
 
     ((PlayerEgo *)(self->field_0x58))->resetGunDelay();
-    if (Status_getCurrentCampaignMission() == 0x4e) {
+    if ((*g_status)->getCurrentCampaignMission() == 0x4e) {
         **g_kdJumpDst = *(int *)((char *)*status + 0x78);
         self->field_0xdd = 1;
         ((MGame *)(self))->startChargingJumpDrive();
@@ -1223,7 +1215,7 @@ void MGame::UseKhadorDrive() {
         return MGame_jumpFinish(status, 1);
     }
 
-    if (Status_inAlienOrbit() == 0) {
+    if ((*g_status)->inAlienOrbit() == 0) {
         if (((PlayerEgo *)(self->field_0x58))->hasVolatileGoods() != 0) {
             void *txt = ((GameText *)(**g_kdVolText))->getText(0);
             ((ChoiceWindow *)(self->field_0x94))->set(*(String *)txt);
@@ -1246,7 +1238,7 @@ void MGame::UseKhadorDrive() {
         ((StarMap *)(self->field_0x90))->initLights();
         self->field_0xdd = 1;
         ((StarMap *)(self->field_0x90))->setJumpMapMode(1, 1);
-        if (Status_inAlienOrbit() == 0)
+        if ((*g_status)->inAlienOrbit() == 0)
             ((StarMap *)(self->field_0x90))->askForJumpIntoAlienWorld();
         self->field_0x5d = 1;
         self->field_0xc7 = 1;
@@ -1256,9 +1248,9 @@ void MGame::UseKhadorDrive() {
     }
 
     // In alien orbit.
-    if (Status_getCurrentCampaignMission() == 0x50)
+    if ((*g_status)->getCurrentCampaignMission() == 0x50)
         *(int *)((char *)*status + 0x84) = 100;
-    int station = ((Galaxy *)(**g_kdGalaxy))->getStation(Status_getCurrentCampaignMission() /* index: arg lost in decomp */);
+    int station = ((Galaxy *)(**g_kdGalaxy))->getStation((*g_status)->getCurrentCampaignMission() /* index: arg lost in decomp */);
     **g_kdAlienDst = station;
     self->field_0xdd = 1;
     ((MGame *)(self))->startChargingJumpDrive();
@@ -1295,8 +1287,8 @@ void MGame::OnInitialize() {
     if (level == 0) {
         // Create skybox cube texture from the current system / alien orbit.
         unsigned texSel;
-        if (Status_inAlienOrbit() == 0) {
-            Status_getSystem();
+        if ((*g_status)->inAlienOrbit() == 0) {
+            (*g_status)->getSystem();
             int ti = SolarSystem_getTextureIndex(0);
             texSel = (ti + 0x2efe) & 0xffff;
         } else {
@@ -1308,7 +1300,7 @@ void MGame::OnInitialize() {
         // Build the per-session sound-resource list (long sequential block).
         MGame_loadSoundResources(self);
 
-        Status_checkForLevelUp();
+        (*g_status)->checkForLevelUp();
         level = (Level *)operator_new(0x2a0);
         new (level) Level(3);
         self->field_0x78 = level;
@@ -1327,11 +1319,11 @@ void MGame::OnInitialize() {
     ((PlayerEgo *)(self->field_0x58))->resetLastHP();
 
     // Per-mission HP cap and alien-orbit station bookkeeping.
-    if (Status_getCurrentCampaignMission() != 0x5f) {
+    if ((*g_status)->getCurrentCampaignMission() != 0x5f) {
         // (Ship max-HP restore delegated within restorePlayerStats variant)
     }
-    if (Status_inAlienOrbit() == 0)
-        *(int *)((char *)*status + 0x84) = Station_getIndex(Status_getStation());
+    if ((*g_status)->inAlienOrbit() == 0)
+        *(int *)((char *)*status + 0x84) = Station_getIndex((*g_status)->getStation());
 
     unsigned t = ((ApplicationManager *)(self->field_0x8))->GetCurrentTimeMillis();
     self->field_0x1ac = 0;   // this[1].field_A4
@@ -1341,7 +1333,7 @@ void MGame::OnInitialize() {
     self->field_0x28 = t & 0xffff;
     self->field_0x2c = 0;
 
-    if (Radar_hasScanner() != 0)
+    if (Radar::hasScanner() != 0)
         *(int *)((char *)*status + 0x11c) = 0;
     *(int *)((char *)*status + 300) = 0;
     *(int *)((char *)*status + 0x134) = 0;
@@ -1356,14 +1348,14 @@ void MGame::OnInitialize() {
     }
 
     // Alien-orbit / black-market radio messages.
-    if (Status_dlc1Won() != 0 && Status_inAlienOrbit() != 0 &&
-        Status_getCurrentCampaignMission() < 0x93) {
+    if ((*g_status)->dlc1Won() != 0 && (*g_status)->inAlienOrbit() != 0 &&
+        (*g_status)->getCurrentCampaignMission() < 0x93) {
         if (self->field_0x58 != 0 && self->field_0x84 != 0)
             *(Radio **)((char *)self->field_0x58 + 0x18) = self->field_0x84;
         ((Level *)(self->field_0x78))->createRadioMessage(8, 0);
     }
 
-    if (Status_inBlackMarketSystem() == 0) {
+    if ((*g_status)->inBlackMarketSystem() == 0) {
         *(uint16_t *)((char *)*status + 0x110) = 0;
     } else {
         if (self->field_0x58 != 0 && self->field_0x84 != 0)
@@ -1574,7 +1566,7 @@ void MGame::successCheck() {
 
     bool timed = !(self->field_0x4c < (int)(self->field_0x48 < 0x1389));
     if (timed || self->field_0xdc != 0) {
-        if (Mission_getType(Status_getCampaignMission()) != 0xaa) goto done;
+        if (Mission_getType((Mission *)(*g_status)->getCampaignMission()) != 0xaa) goto done;
     }
 
     {
@@ -1584,41 +1576,41 @@ void MGame::successCheck() {
         if (mc == 0 && obj == 0) goto done;
     }
 
-    if (Mission_getType(Status_getMission()) == 5) goto deliverFollowup;
-    if (Mission_getType(Status_getMission()) == 3) goto deliverFollowup;
+    if (Mission_getType((*g_status)->getMission()) == 5) goto deliverFollowup;
+    if (Mission_getType((*g_status)->getMission()) == 3) goto deliverFollowup;
 
     {
         int *status = g_scStatus;
-        if (((Mission *)(Status_getMission()))->isCampaignMission() == 0)
+        if (((Mission *)((*g_status)->getMission()))->isCampaignMission() == 0)
             ((Status *)(status))->incMissionCount();
 
-        if (((Mission *)(Status_getMission()))->isCampaignMission() != 0) {
+        if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) {
             bool hasSuccess = false;
-            if (((Mission *)(Status_getMission()))->isCampaignMission() != 0) {
-                int cm = Status_getCurrentCampaignMission();
+            if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) {
+                int cm = (*g_status)->getCurrentCampaignMission();
                 if (DialogueWindow_hasSuccessDialogue(cm) != 0)
                     hasSuccess = true;
             }
             if (!hasSuccess) {
-                int cm = Status_getCurrentCampaignMission();
-                if (cm > 0x2d && ((Mission *)(Status_getMission()))->isCampaignMission() != 0) {
-                    int cm2 = Status_getCurrentCampaignMission();
+                int cm = (*g_status)->getCurrentCampaignMission();
+                if (cm > 0x2d && ((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) {
+                    int cm2 = (*g_status)->getCurrentCampaignMission();
                     if (DialogueWindow_hasSuccessDialogue(cm2) == 0) {
                         ((Status *)(*status))->nextCampaignMission();
                         ((Level *)(self->field_0x78))->removeObjectives();
-                        ((Status *)(status))->setMission(Status_getCampaignMission() /* mission: arg lost in decomp */);
+                        ((Status *)(status))->setMission((Mission *)(*g_status)->getCampaignMission() /* mission: arg lost in decomp */);
                     }
                 }
                 goto done;
             }
             // fallthrough: has success dialogue -> show it.
             bindDlg(self);
-            ((DialogueWindow *)(self->field_0x8c))->set(Status_getMission(), 1, -1);
+            ((DialogueWindow *)(self->field_0x8c))->set((*g_status)->getMission(), 1, -1);
             self->field_0x5d = 0x101;
             ((MGame *)(self))->pauseSounds();
 
-            int cm = Status_getCurrentCampaignMission();
-            if (((Mission *)(Status_getMission()))->isCampaignMission() != 0 && cm == 0x26) {
+            int cm = (*g_status)->getCurrentCampaignMission();
+            if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x26) {
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
@@ -1630,7 +1622,7 @@ void MGame::successCheck() {
                         ((PlayerFixedObject *)(e))->setMoving(1);
                     }
                 }
-            } else if (((Mission *)(Status_getMission()))->isCampaignMission() != 0 && cm == 0x38) {
+            } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x38) {
                 StarSystem *ss = (StarSystem *)(intptr_t)((Level *)(self->field_0x78))->getStarSystem();
                 StarSystem_getPlanets(ss);
                 int pts[3] = {0, 0, 0};
@@ -1646,7 +1638,7 @@ void MGame::successCheck() {
                     }
                 }
                 operator_delete(Route_dtor(route));
-            } else if (((Mission *)(Status_getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
+            } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
@@ -1654,7 +1646,7 @@ void MGame::successCheck() {
                     if (e->shipGroup == 8)
                         ((Player *)((Player *)e->player))->removeAllGuns();
                 }
-            } else if (((Mission *)(Status_getMission()))->isCampaignMission() != 0 && cm == 0x49) {
+            } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x49) {
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
@@ -1665,8 +1657,8 @@ void MGame::successCheck() {
                     }
                 }
             } else {
-                if (Station_getIndex(Status_getStation()) == 0x70 &&
-                    Status_getCurrentCampaignMission() == 0x8f)
+                if (Station_getIndex((*g_status)->getStation()) == 0x70 &&
+                    (*g_status)->getCurrentCampaignMission() == 0x8f)
                     **g_scFlag = 1;
             }
             goto done;
@@ -1675,9 +1667,9 @@ void MGame::successCheck() {
         bindDlg(self);
         // Slot holds either a Mission* (non-campaign) or a campaign mission id;
         // use a pointer-width carrier so neither is truncated on a 64-bit host.
-        intptr_t m = Status_getCurrentCampaignMission() == 0
-                         ? (intptr_t)Status_getMission()
-                         : (intptr_t)Status_getCurrentCampaignMission();
+        intptr_t m = (*g_status)->getCurrentCampaignMission() == 0
+                         ? (intptr_t)(*g_status)->getMission()
+                         : (intptr_t)(*g_status)->getCurrentCampaignMission();
         ((DialogueWindow *)(self->field_0x8c))->set((Mission *)m, 1, -1);
         self->field_0x5d = 0x101;
         ((MGame *)(self))->pauseSounds();
@@ -1752,7 +1744,7 @@ void MGame::startChargingJumpDrive() {
         **g_jumpCost = 0;
         return;
     }
-    int hc = Status_hardCoreMode();
+    int hc = (*g_status)->hardCoreMode();
     int *jf = g_jumpFlag;
     if (hc != 0) needed = 2;
     int cost;
@@ -1760,7 +1752,7 @@ void MGame::startChargingJumpDrive() {
         cost = needed << 1;
     } else {
         cost = **g_alienAmt;
-        if (Status_inAlienOrbit() != 0) cost = needed;
+        if ((*g_status)->inAlienOrbit() != 0) cost = needed;
     }
     Ship_getCargo(((Status *)(*sp))->getShip(), 0x7a);
     if (((Item *)(0))->getAmount() < cost) {
@@ -1770,7 +1762,7 @@ void MGame::startChargingJumpDrive() {
             new (w) ChoiceWindow();
             self->field_0x94 = w;
         }
-        int hc2 = Status_hardCoreMode();
+        int hc2 = (*g_status)->hardCoreMode();
         void *txt = ((GameText *)(**(int **)g_status))->getText(hc2 != 0 ? 0x243 : 0x244);
         ((ChoiceWindow *)(w))->set(*(String *)txt);
         self->field_0x5d = 1;
@@ -1781,7 +1773,7 @@ void MGame::startChargingJumpDrive() {
     }
     ((PlayerEgo *)(self->field_0x58))->startJumpDrive();
     if (*jf != F<int>((MGame *)*sp, 0x78)) {
-        if (Status_inAlienOrbit() == 0) needed = **g_alienCost;
+        if ((*g_status)->inAlienOrbit() == 0) needed = **g_alienCost;
     }
     ((Hud *)(self->field_0x74))->hudEvent(0x1e, self->field_0x58, needed);
     Ship_removeCargo(((Status *)(*sp))->getShip(), 0x7a, needed);
@@ -1863,8 +1855,8 @@ void MGame::reset() {
     int *status = g_resStatus;
 
     float fov = *(float *)&g_resAspectC;  // DAT_001886e8 default
-    if (Status_inAlienOrbit() != 0) {
-        int cm = Status_getCurrentCampaignMission();
+    if ((*g_status)->inAlienOrbit() != 0) {
+        int cm = (*g_status)->getCurrentCampaignMission();
         fov = (cm < 0x50) ? *(float *)&g_resInitB : *(float *)&g_resAspectC;
     }
     PaintCanvas_CameraSetPerspective(cam, fov, 0, 0);
@@ -1885,8 +1877,8 @@ void MGame::reset() {
     Radar_ctor(radar, self->field_0x78);
     self->field_0x80 = radar;
 
-    if (Status_getMission() != 0)
-        self->field_0x61 = (uint8_t)((Mission *)(Status_getMission()))->isCampaignMission();
+    if ((*g_status)->getMission() != 0)
+        self->field_0x61 = (uint8_t)((Mission *)((*g_status)->getMission()))->isCampaignMission();
 
     LevelScript *script = (LevelScript *)operator_new(0xe8);
     new (script) LevelScript(self->field_0x78, self->field_0x74,
@@ -2312,7 +2304,7 @@ afterCam:
 
     {
         int *status = g_ujStatus;
-        if (Status_getCurrentCampaignMission() == 0x2a && Status_inAlienOrbit() != 0) {
+        if ((*g_status)->getCurrentCampaignMission() == 0x2a && (*g_status)->inAlienOrbit() != 0) {
             LevelScript_setEvent(self->field_0x7c, 6);
             ((PlayerEgo *)(self->field_0x58))->setSpeed(0.0f);
             int lm = ((Level *)(self->field_0x78))->getLandmarks();
@@ -2653,7 +2645,7 @@ void MGame::OnRender2D() {
             if (**g_r2dPauseFlag == 0)
                 ((Hud *)(self->field_0x74))->drawPauseButton();
 
-            if (Mission_getType(Status_getCampaignMission()) == 0xaa) {
+            if (Mission_getType((Mission *)(*g_status)->getCampaignMission()) == 0xaa) {
                 if (LevelScript_getEvent(self->field_0x7c) == 0)
                     ((Hud *)(self->field_0x74))->drawOrbitInformation();
                 MGame_drawRadio(self);
@@ -2662,7 +2654,7 @@ void MGame::OnRender2D() {
                 self->field_0x111 = 0;
                 self->field_0x5d = 0;
             } else if (self->field_0x5f != 0 || self->field_0x15d != 0) {
-                int cm = Status_getCurrentCampaignMission();
+                int cm = (*g_status)->getCurrentCampaignMission();
                 if (cm > 7 && self->field_0x80 == 0 && self->field_0x15d == 0 &&
                     ((PlayerEgo *)(self->field_0x58))->isDockingToPlanet() == 0 &&
                     LevelScript_getEvent(self->field_0x7c) == 0)
@@ -2720,21 +2712,21 @@ void MGame::dialogueEvent() {
     MGame *self = this;
     if (((LevelScript *)(self->field_0x7c))->startSequenceOver() == 0) return;
     Status **sp = g_status;
-    if (DialogueWindow_hasBriefingDialogue(Status_getCurrentCampaignMission()) == 0) {
-        if (((Mission *)(Status_getMission()))->isCampaignMission() != 0) return;
+    if (DialogueWindow_hasBriefingDialogue((*g_status)->getCurrentCampaignMission()) == 0) {
+        if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) return;
     }
-    if (((Mission *)(Status_getMission()))->isEmpty() != 0) return;
-    if (Mission_getType(Status_getMission()) == 8) return;
-    if (Mission_getType(Status_getMission()) == 0xa6) return;
-    if (Mission_getType(Status_getMission()) == 0) return;
-    if (Mission_getType(Status_getMission()) == 0xb7) return;
-    if (((Mission *)(Status_getMission()))->isVisible() == 0) return;
-    if (((Mission *)(Status_getMission()))->isCampaignMission() == 0) {
-        if (Mission_getType(Status_getMission()) == 0xb) return;
+    if (((Mission *)((*g_status)->getMission()))->isEmpty() != 0) return;
+    if (Mission_getType((*g_status)->getMission()) == 8) return;
+    if (Mission_getType((*g_status)->getMission()) == 0xa6) return;
+    if (Mission_getType((*g_status)->getMission()) == 0) return;
+    if (Mission_getType((*g_status)->getMission()) == 0xb7) return;
+    if (((Mission *)((*g_status)->getMission()))->isVisible() == 0) return;
+    if (((Mission *)((*g_status)->getMission()))->isCampaignMission() == 0) {
+        if (Mission_getType((*g_status)->getMission()) == 0xb) return;
     }
     if (self->field_0x8c == 0) {
         DialogueWindow *w = (DialogueWindow *)MGame_opnew(0x74);
-        DialogueWindow_ctor(w, Status_getMission(), self->field_0x78, 0);
+        DialogueWindow_ctor(w, (*g_status)->getMission(), self->field_0x78, 0);
         self->field_0x8c = w;
     }
     ((PlayerEgo *)(self->field_0x58))->setTurretMode(0);

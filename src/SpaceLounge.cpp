@@ -13,6 +13,7 @@
 #include "gof2/Layout.h"
 #include "gof2/Mission.h"
 #include "gof2/String.h"
+#include "gof2/Status.h"
 // gof2/TouchButton.h and gof2/Station.h (pulled in via Mission.h above) both define
 // `struct RetStr` unconditionally with identical layout, which is a C++ redefinition error.
 // We need TouchButton.h for the TouchButton struct/methods used below, so include it with
@@ -39,9 +40,8 @@ extern "C" void ScrollTouchWindow_touch_end(void *scroll, int x, int y);
 extern "C" int SolarSystem_getRace(void *system);
 // Dropped-self Status singleton accessors: the decompiler emitted these calls
 // with no receiver argument (the Status* singleton is loaded inside the thunk).
-// The receiver is not recoverable from this TU, so they stay as extern "C".
-extern "C" void *Status_getSystem();
-extern "C" void *Status_getStation();
+// The singleton is `*g_status`; call the real methods through it.
+extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
 void MatrixSetRotation(void *matrix, float x, float y, float z);
 namespace AbyssEngine { namespace PaintCanvas {
@@ -488,7 +488,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     switch (I(self, 0x14)) {
     case 0:
         if (UC(self, 0xbd) == 0) {
-            void *system = Status_getSystem();
+            void *system = (void *)(*g_status)->getSystem();
             int race = SolarSystem_getRace(system);
             int *v = &SpaceLounge_touch_race_vectors[race * 3];
             MatrixSetTranslation(matrix, (float)v[2], (float)v[0], (float)v[1]);
@@ -820,7 +820,7 @@ void SpaceLounge::updateScreenPositions() {
 
         ((void (*)(void *, void *))(*(void ***)mapped)[0x44 / 4])(mapped, B(self, 0x4c));
 
-        if (SolarSystem_getRace(Status_getSystem()) == 0) {
+        if (SolarSystem_getRace((void *)(*g_status)->getSystem()) == 0) {
             MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
             Matrix_mul_assign(camera, look);
         }
@@ -993,7 +993,7 @@ int SpaceLounge::init() {
     UC(self, 0xb2) = 0;
     UC(self, 0xb0) = 0;
     UC(self, 0xbc) = 0;
-    P(self, 0x24) = Station_getAgents(Status_getStation());
+    P(self, 0x24) = Station_getAgents((*g_status)->getStation());
 
     if (P(self, 0x8) != 0) {
         operator_delete(ChoiceWindow_dtor(P(self, 0x8)));
@@ -1142,7 +1142,7 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
         cutscene = P(self, 0x44);
     }
 
-    int race = SolarSystem_getRace(Status_getSystem());
+    int race = SolarSystem_getRace((void *)(*g_status)->getSystem());
     MatrixSetTranslation(from, (float)race, 0.0f, 0.0f);
     MatrixSetRotation(from, 0.0f, 0.0f, 0.0f);
     MatrixSetTranslation(to, (float)race, 0.0f, 0.0f);

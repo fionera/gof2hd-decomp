@@ -10,7 +10,7 @@ extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y);
 extern "C" void PaintCanvas_DrawImage2D_anchor(void *canvas, int image, int x, int y, bool anchor);
 extern "C" unsigned __aeabi_uidiv(unsigned value, unsigned divisor);
 extern "C" int __aeabi_idiv(int value, int divisor);
-extern "C" int AERandom_nextInt(void *random, int limit);
+namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 
 // ---- getDockingIndex_14f10a.cpp ----
 int HackingGame::getDockingIndex()
@@ -347,12 +347,12 @@ void HackingGame::reInit()
         for (int i = 0; i != 4; ++i)
             I(this, 4 + i * 4) = i;
         void **random = g_HackingGame_reinit_random2;
-        I(this, 0x14) = AERandom_nextInt(*random, 4);
-        I(this, 0x18) = AERandom_nextInt(*random, 4);
+        I(this, 0x14) = AbyssEngine::AERandom::nextInt(*random, 4);
+        I(this, 0x18) = AbyssEngine::AERandom::nextInt(*random, 4);
     } else if (type == 3) {
         for (int i = 0; i != 5; ++i)
             I(this, 4 + i * 4) = i;
-        I(this, 0x18) = AERandom_nextInt(*g_HackingGame_reinit_random3, 5);
+        I(this, 0x18) = AbyssEngine::AERandom::nextInt(*g_HackingGame_reinit_random3, 5);
     } else {
         for (int i = 0; i != 6; ++i)
             I(this, 4 + i * 4) = i;
@@ -360,8 +360,8 @@ void HackingGame::reInit()
 
     void **random = g_HackingGame_reinit_random_shuffle;
     for (int i = 0x28; i != 0; --i) {
-        int a = AERandom_nextInt(*random, 6);
-        int b = AERandom_nextInt(*random, 6);
+        int a = AbyssEngine::AERandom::nextInt(*random, 6);
+        int b = AbyssEngine::AERandom::nextInt(*random, 6);
         int value = I(this, 4 + a * 4);
         I(this, 4 + a * 4) = I(this, 4 + b * 4);
         I(this, 4 + b * 4) = value;
@@ -374,7 +374,7 @@ void HackingGame::reInit()
     }
 
     for (unsigned i = 0; (int)i < I(this, 0) * 2; ++i) {
-        int count = AERandom_nextInt(*random, 2);
+        int count = AbyssEngine::AERandom::nextInt(*random, 2);
         for (int j = 0; j <= count; ++j) {
             if ((i & 1) == 0)
                 rotateRightCW(false);

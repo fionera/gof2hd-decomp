@@ -30,7 +30,6 @@ extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void operator_delete(void *p);
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int id);
-extern "C" void  Level_friendDied();
 extern "C" void  AEGeometry_setMatrix(void *geom, void *m);
 extern "C" float AEGeometry_moveForward_ret(void *geom, float d);
 extern "C" void *Matrix_assign(void *dst, void *src);
@@ -315,7 +314,7 @@ afterMotion:
     if (((Player *)(self->player))->getHitpoints() < 1 && (unsigned int)(self->state - 3) >= 2) {
         // ---- death transition ----
         if (F<char>(self->player, 0x5c) == 0) {
-            Level_friendDied();
+            ((Level *)(self->level))->friendDied();
         } else {
             ((Level *)((int)(__INTPTR_TYPE__)self->level))->enemyDied(0, (bool)(unsigned char)self->kind);
         }

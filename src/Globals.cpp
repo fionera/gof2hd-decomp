@@ -60,7 +60,13 @@ extern "C" int Agent_getIndex(void *agent);
 extern "C" void Agent_setSellItemPrice(void *agent, int price);
 extern "C" int Ship_getPrice(int ship);
 extern "C" int Ship_hasModInstalled(int ship, int modIndex);
-extern "C" int AERandom_nextInt(int rng, ...);
+// AERandom::nextInt — the real defs are free functions in AERandom.cpp:
+//   nextInt_71aa4(self)        -> unbounded 32-bit draw (1-arg call form)
+//   nextInt_71ad0(self, bound) -> bounded draw            (2-arg call form)
+// The decompiler folded both into one variadic AERandom_nextInt thunk; call the real symbols.
+namespace AbyssEngine { class AERandom; }
+uint32_t nextInt_71aa4(AbyssEngine::AERandom *self);
+int      nextInt_71ad0(AbyssEngine::AERandom *self, int bound);
 extern "C" int idiv(int a, int b);
 extern "C" void Globals_buildAgentMissionText(void *out, void *agent, int offer);
 extern "C" int AEString_compare(void *a, void *b);
@@ -122,17 +128,10 @@ void ParticleSettingsRef_initialize();
 extern "C" void ArrayInt_ctor(void *a);
 extern "C" int SolarSystem_getRace();
 extern "C" int Station_getIndex(int station);
-extern "C" int Status_inDeepScienceOrbit();
-// Dropped-self thunks for the global Status singleton (receiver passed implicitly in the
-// original; same idiom as Status_inDeepScienceOrbit above). The receiver lives in different
-// local scopes / is not materialised in every branch, so these stay as extern "C" thunks.
-extern "C" int Status_getStation();
-extern "C" int Status_getCurrentCampaignMission();
-extern "C" int Status_getMission();
-extern "C" int Status_getShip();
-extern "C" int Status_getSystem();
-extern "C" int Status_inAlienOrbit();
-extern "C" int Status_inSupernovaSystem();
+// The dropped-self Status singleton. The original loaded the global Status* implicitly for
+// each of these 0-arg calls; the singleton lives at the hidden global g_status (same one
+// MGame/Mission/PlayerTurret reach). Recover the receiver as (*g_status)->method().
+extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 extern "C" void Status_resetGame();
 extern "C" int Mission_getTargetStation();
 extern "C" int Agent_getRace(void *agent);
@@ -234,7 +233,7 @@ extern void *const gDrinks_rng __attribute__((visibility("hidden")));
 void Globals_getRandomSystemForDrinks()
 {
     int a = *(int *)gDrinks_a;
-    int r = AERandom_nextInt(*(int *)gDrinks_rng, 0x16);
+    int r = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gDrinks_rng, 0x16);
     return Globals_getRandomSystemForDrinks_tail(a, r);
 }
 
@@ -287,7 +286,7 @@ int Globals_getRandomStation()
 {
     FileRead *f = (FileRead *)operator_new(1);
     FileRead_ctor(f);
-    int which = AERandom_nextInt(*(int *)gStationRng, 0x87);
+    int which = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gStationRng, 0x87);
     int r = (int)(long)f->loadStation(which);
     operator_delete(FileRead_dtor(f));
     return r;
@@ -726,11 +725,11 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
                 int offer = Agent_getOffer(agent);
 
                 if (offer == 8) {
-                    int ship = Status_getShip();
+                    int ship = (int)(long)(*g_status)->getShip();
                     int price = Ship_getPrice(ship);
                     int pct = ((Agent *)(agent))->getModPricePercentage();
                     Agent_setSellItemPrice(agent, idiv(price * pct, 100));
-                    ship = Status_getShip();
+                    ship = (int)(long)(*g_status)->getShip();
                     int modIdx = ((Agent *)(agent))->getSellModIndex();
                     if (Ship_hasModInstalled(ship, modIdx) != 0) {
                         void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText(modIdx);
@@ -2065,40 +2064,40 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
     }
     if (mode == 1) {
         int *statSnd = *(int **)gPM_sndStatus;
-        if (Status_inAlienOrbit() != 0) {
+        if ((*g_status)->inAlienOrbit() != 0) {
             int *sndP = *(int **)gPM_snd1;
             ((FModSound *)(*sndP))->stop(0);
             snd = *sndP;
             track = 0x88;
-            int m = Status_getCurrentCampaignMission();
-            if (m > 0x92 && Status_getCurrentCampaignMission() < 0x9a) {
+            int m = (*g_status)->getCurrentCampaignMission();
+            if (m > 0x92 && (*g_status)->getCurrentCampaignMission() < 0x9a) {
                 track = 0x91;
             }
             ((FModSound *)(snd))->play(track, 0, 0, (float)vol);
             return 0;
         }
-        Status_getSystem();
+        (*g_status)->getSystem();
         SolarSystem_getRace();
         int *sndP = *(int **)gPM_snd1;
         ((FModSound *)(*sndP))->stop(0);
-        if (Station_getIndex(Status_getStation()) == 0x6c) {
+        if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x6c) {
             ((FModSound *)(*sndP))->play(0x92, 0, 0, (float)vol);
             return 0;
         }
-        if (Station_getIndex(Status_getStation()) == 0x65) {
+        if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x65) {
             ((FModSound *)(*sndP))->play(0x93, 0, 0, (float)vol);
             return 0;
         }
-        if (Status_inSupernovaSystem() != 0) {
-            if (Status_getCurrentCampaignMission() == 0x59) {
+        if ((*g_status)->inSupernovaSystem() != 0) {
+            if ((*g_status)->getCurrentCampaignMission() == 0x59) {
                 ((FModSound *)(*sndP))->play(0x8be, 0, 0, (float)vol);
                 return 0;
             }
-            if (Status_getMission() != 0 && ((Mission *)(long)Status_getMission())->isEmpty() == 0) {
-                Status_getMission();
+            if ((*g_status)->getMission() != 0 && ((Mission *)(long)(*g_status)->getMission())->isEmpty() == 0) {
+                (*g_status)->getMission();
                 int tgt = Mission_getTargetStation();
-                if (tgt == Station_getIndex(Status_getStation())) {
-                    int cm = Status_getCurrentCampaignMission();
+                if (tgt == Station_getIndex((int)(long)(*g_status)->getStation())) {
+                    int cm = (*g_status)->getCurrentCampaignMission();
                     track = cm < 0x6a ? 0x8c1 : 0x8c2;
                     ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
                     return 0;
@@ -2107,13 +2106,13 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
             ((FModSound *)(*sndP))->play(0x94, 0, 0, (float)vol);
             return 0;
         }
-        if (Status_inDeepScienceOrbit() != 0) {
+        if ((*g_status)->inDeepScienceOrbit() != 0) {
             ((FModSound *)(*sndP))->play(0x98, 0, 0, (float)vol);
             return 0;
         }
-        if (Station_getIndex(Status_getStation()) == 0x78 &&
-            (Status_getCurrentCampaignMission() == 0x7e ||
-             Status_getCurrentCampaignMission() == 0x85)) {
+        if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x78 &&
+            ((*g_status)->getCurrentCampaignMission() == 0x7e ||
+             (*g_status)->getCurrentCampaignMission() == 0x85)) {
             ((FModSound *)(*sndP))->play(0x8bf, 0, 0, (float)vol);
             return 0;
         }
@@ -2126,22 +2125,22 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
         return prev;
     }
 
-    Status_getSystem();
+    (*g_status)->getSystem();
     int race = SolarSystem_getRace();
     int *sndP = *(int **)gPM_snd0;
     ((FModSound *)(*sndP))->stop(0);
-    if (Station_getIndex(Status_getStation()) == 0x6c) {
+    if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x6c) {
         ((FModSound *)(*sndP))->play(0x84, 0, 0, (float)vol);
         return 0;
     }
-    if (Station_getIndex(Status_getStation()) == 0x65) {
+    if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x65) {
         ((FModSound *)(*sndP))->play(0x83, 0, 0, (float)vol);
         return 0;
     }
-    int idx = Station_getIndex(Status_getStation());
-    if (idx == 10 || Station_getIndex(Status_getStation()) == 100) {
-        if (Station_getIndex(Status_getStation()) == 10 &&
-            Status_getCurrentCampaignMission() == 0x9f) {
+    int idx = Station_getIndex((int)(long)(*g_status)->getStation());
+    if (idx == 10 || Station_getIndex((int)(long)(*g_status)->getStation()) == 100) {
+        if (Station_getIndex((int)(long)(*g_status)->getStation()) == 10 &&
+            (*g_status)->getCurrentCampaignMission() == 0x9f) {
             ((FModSound *)(*sndP))->play(0x90, 0, 0, (float)vol);
             return 0;
         }
@@ -2208,7 +2207,7 @@ String *Globals_getRandomPlanetName(String *ret)
 {
     FileRead *f = (FileRead *)operator_new(1);
     FileRead_ctor(f);
-    int which = AERandom_nextInt(*(int *)gPlanetRng, 0x64);
+    int which = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gPlanetRng, 0x64);
     Station *st = (Station *)(long)f->loadStation(which);
     ((Station *)(ret))->getName();
     if (st != 0) {
@@ -2248,13 +2247,13 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
     if (first == 0) {
         AEString_cstr_ctor(firstStr, gGRN_noFirst, 0);
     } else {
-        int idx = AERandom_nextInt(**(int **)gGRN_rng1);
+        int idx = nextInt_71aa4((AbyssEngine::AERandom *)**(int **)gGRN_rng1);
         AEString_copy_ctor(firstStr, (*first)[idx], 0);
     }
     if (last == 0) {
         AEString_cstr_ctor(lastStr, gGRN_noLast, 0);
     } else {
-        int idx = AERandom_nextInt(**(int **)gGRN_rng2);
+        int idx = nextInt_71aa4((AbyssEngine::AERandom *)**(int **)gGRN_rng2);
         AEString_copy_ctor(lastStr, (*last)[idx], 0);
     }
 

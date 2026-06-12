@@ -39,7 +39,7 @@ extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas, uint32_t 
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const void *matrix);
 void MatrixRotateVector(Vector *out, const void *matrix, const Vector *vector);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
-extern "C" int AERandom_nextInt(int rng, int max);
+namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int max); } }
 extern "C" void Array_int_ctor(IntArray *array);
 extern "C" void ArrayAdd_int(int value, IntArray *array);
 extern "C" PlayerArray *Player_getEnemies(Player *self);
@@ -332,14 +332,14 @@ void PlayerTurret::update(int delta)
         ((ParticleSystemManager *)(I(this->f_54, 0x74)))->enableSystemEmit(I(this, 0x138), 1);
         ((Explosion *)(TP<Explosion>(this, 0x13c)))->start((Vector *)B(this, 0x2c), &zero);
 
-        int random = AERandom_nextInt(*gPlayerTurretRandom, 100);
+        int random = AbyssEngine::AERandom::nextInt(*gPlayerTurretRandom, 100);
         if (random < 0) {
             UC(this, 0x4c) = 1;
             IntArray *array = (IntArray *)operator new(0xc);
             Array_int_ctor(array);
             this->f_50 = array;
             ArrayAdd_int(99, array);
-            ArrayAdd_int(AERandom_nextInt(*gPlayerTurretRandom, 10) + 1, (IntArray *)this->f_50);
+            ArrayAdd_int(AbyssEngine::AERandom::nextInt(*gPlayerTurretRandom, 10) + 1, (IntArray *)this->f_50);
             ((KIPlayer *)(this))->createCrate(3);
             UC(this, 0x4c) = 1;
         } else {

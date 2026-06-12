@@ -42,7 +42,7 @@ extern "C" void Array_NewsItem_ctor(NewsItemArray *self);
 extern "C" void *Array_NewsItem_dtor(NewsItemArray *self);
 extern "C" void ArrayReleaseClasses_NewsItem(NewsItemArray *self);
 extern "C" void ArrayAdd_NewsItem(void *item, NewsItemArray *array);
-extern "C" int AERandom_nextInt(void *random, int max);
+namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int bound); } }
 extern "C" int SolarSystem_getIndex(void *system);
 extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *font, String *text);
 
@@ -224,7 +224,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     Array_NewsItem_ctor(items);
 
     void *random = *g_NewsTicker_ctor_random;
-    int wanted = AERandom_nextInt(random, 1) + 2;
+    int wanted = AbyssEngine::AERandom::nextInt(random, 1) + 2;
 
     for (uint32_t i = 0; i < allItems->size(); ++i) {
         NewsItemView *item = (*allItems)[i];
@@ -244,7 +244,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         if (allItems->size() == 0) {
             break;
         }
-        NewsItemView *item = (*allItems)[AERandom_nextInt(random, allItems->size())];
+        NewsItemView *item = (*allItems)[AbyssEngine::AERandom::nextInt(random, allItems->size())];
         void *system = (void *)((Status *)(*g_NewsTicker_ctor_status))->getSystem();
         if (SolarSystem_getIndex(system) > 0x15 && item->field_0x0 == 0x0d) {
             continue;
@@ -252,7 +252,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         if (item->field_0x14 < 0xa1 || item->field_0x10 > level) {
             continue;
         }
-        if (AERandom_nextInt(random, 100) > 0x31) {
+        if (AbyssEngine::AERandom::nextInt(random, 100) > 0x31) {
             continue;
         }
         if (((uint8_t *)item->field_0x8)[faction] == 0 || item->field_0x18 != 0) {

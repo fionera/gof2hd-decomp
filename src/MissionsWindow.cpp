@@ -9,6 +9,7 @@
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
 #include "gof2/String.h"
+#include "gof2/Achievements.h"
 
 // NOTE on includes: Agent.h, Mission.h, TouchButton.h and WantedWindow.h cannot be
 // included here. Agent.h/Mission.h/TouchButton.h each define an unguarded helper
@@ -48,7 +49,10 @@ struct WantedWindow {
 // dropped the explicit key argument. The active GameText table is reachable through these
 // hidden PC-relative globals (one per recovered function), used here only as the receiver.
 __attribute__((visibility("hidden"))) extern void *g_mw_gameText;
-extern "C" int Achievements_gotAllGoldMedals();
+// Achievements singleton holder (PC-relative DAT, same global address as gG_achievements /
+// g_ch_ach). The decompiler folded the receiver into a 0-arg call; recovered as
+// (*(Achievements **)g_mw_ach)->gotAllGoldMedals().
+__attribute__((visibility("hidden"))) extern void *g_mw_ach;
 
 
 
@@ -372,7 +376,7 @@ extern "C" int MissionsWindow_init(void *self)
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
         ((String *)(text))->dtor();
     } else {
-        bool useGold = Achievements_gotAllGoldMedals() != 0 && Ship_getIndex(((Status *)(*(void **)g_mwi_status))->getShip()) != 8;
+        bool useGold = ((Achievements *)(*(void **)g_mw_ach))->gotAllGoldMedals() != 0 && Ship_getIndex(((Status *)(*(void **)g_mwi_status))->getShip()) != 8;
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);

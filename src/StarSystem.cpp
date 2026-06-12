@@ -57,7 +57,6 @@ extern "C" void AEGeometry_ctor(AEGeometry *self, uint32_t mesh, void *canvas, b
 extern "C" void AEGeometry_getDirection(char *out, AEGeometry *geom);
 extern "C" void Vector_assign(char *dst, const char *src);
 extern "C" void PaintCanvas_TextureCreate(void *canvas, uint32_t texture, void *slot, int flags);
-extern "C" int AERandom_nextInt(int *rng, int max);
 extern "C" void AERandom_setSeed(int *rng, long long seed);
 extern "C" void AERandom_reset(int *rng);
 extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t mesh_id);
@@ -406,7 +405,7 @@ StarSystem::StarSystem(int mode) {
         AEGeometry *planet = (AEGeometry *)operator_new(0xc0);
         AEGeometry_ctor(planet, 0x1a70, *g_StarSystem_ctor_canvas, false);
         ((AEGeometry **)array_data(P(self, 0x1c)))[1] = planet;
-        int rnd = AERandom_nextInt(g_StarSystem_ctor_rng, 0x4e20);
+        int rnd = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(0x4e20);
         float scale = (float)(rnd + 0x4e20) * 0.001f;
         set_vec(vec, scale, scale, scale);
         ((AEGeometry *)(planet))->setScaling(*(const Vector *)vec);
@@ -522,7 +521,7 @@ StarSystem::StarSystem(int mode) {
     AERandom_setSeed(g_StarSystem_ctor_rng,
                      (long long)Station_getIndex(((Status *)(status))->getStation()) * 300);
 
-    int sunSlot = AERandom_nextInt(g_StarSystem_ctor_rng, 14);
+    int sunSlot = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(14);
     for (uint32_t i = 0; i < array_len(P(self, 0x1c)); ++i) {
         AEGeometry *geom = (AEGeometry *)operator_new(0xc0);
         AEGeometry_ctor(geom, 0x1a70, *g_StarSystem_ctor_canvas, false);
@@ -547,9 +546,9 @@ StarSystem::StarSystem(int mode) {
             void *player = operator_new(0x130);
             PlayerStatic_ctor(player, 0, geom, 0.0f, 0.0f, 0.0f);
             ((void **)array_data(P(self, 0x18)))[i - 1] = player;
-            int slot = AERandom_nextInt(g_StarSystem_ctor_rng, 11) + 7;
+            int slot = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(11) + 7;
             usedSlots[slot * 4] = 1;
-            int dist = AERandom_nextInt(g_StarSystem_ctor_rng, 0x4e20) + 0x4e20;
+            int dist = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(0x4e20) + 0x4e20;
             if (((Status *)(status))->getCurrentCampaignMission() == 0) {
                 dist = (int)((float)dist * 0.5f);
             }

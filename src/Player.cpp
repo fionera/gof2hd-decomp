@@ -16,11 +16,6 @@
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls in
 // the decompiler are method calls on this global instance.
 __attribute__((visibility("hidden"))) extern Status **gStatus;
-// Level::getPlayer / Level::getEnemies were emitted by the decompiler with their
-// receiver dropped and no Level singleton in this translation unit; kept as the
-// original engine entry points.
-extern "C" PlayerEgo *Level_getPlayer();
-extern "C" Array<Player *> *Level_getEnemies();
 
 
 extern "C" void Player_damageHull_tail();
@@ -878,7 +873,7 @@ void Player::damageEmp(int amount, bool flag) {
                 int cnt = *(int *)((char *)(*g_damageEmp_progress) + 0x134) + 1;
                 *(int *)((char *)(*g_damageEmp_progress) + 0x134) = cnt;
                 if (((Achievements *)(*g_damageEmp_achievements))->getValue(0x2a, 1) <= cnt) {
-                    void *ego = Level_getPlayer();
+                    void *ego = (void *)(__INTPTR_TYPE__)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
                     void *hud = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                     ((Hud *)(hud))->hudEventMedal(0x2a, 100);
                     *(char *)((char *)(*g_damageEmp_progress) + 0x138) = 1;
@@ -1348,9 +1343,9 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
                         void *st2 = (void *)(long)((Status *)(*gStatus))->getStanding();
                         ((Standing *)(st2))->applyDelict(Ship_getSignatureRace(ship), 100);
                         Standing_setPlayerSignatureRace(standing, -1);
-                        void *ego = Level_getPlayer();
+                        void *ego = (void *)(__INTPTR_TYPE__)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
                         int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
-                        int p = (int)(long)Level_getPlayer();
+                        int p = (int)(long)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
                         ((Hud *)(hud))->hudEvent(0x1f, (void *)(__INTPTR_TYPE__)p, 0);
                     }
                 }
@@ -1369,9 +1364,9 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
                     void *st2 = (void *)(long)((Status *)(*gStatus))->getStanding();
                     ((Standing *)(st2))->applyDelict(Ship_getSignatureRace(ship), 100);
                     Standing_setPlayerSignatureRace(standing, -1);
-                    void *ego = Level_getPlayer();
+                    void *ego = (void *)(__INTPTR_TYPE__)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
                     int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
-                    int p = (int)(long)Level_getPlayer();
+                    int p = (int)(long)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
                     ((Hud *)(hud))->hudEvent(0x1f, (void *)(__INTPTR_TYPE__)p, 0);
                 }
                 self->turnedEnemy = 1;
@@ -1394,7 +1389,7 @@ LAB_342a:
             if (ki != 0 && *(int *)(ki + 0x28) == 8) {
                 self->turnedEnemy = 1;
                 ((Level *)(*(void **)(ki + 0x54)))->alarmAllFriends(8, true);
-                int *enemies = (int *)Level_getEnemies();
+                int *enemies = (int *)(__INTPTR_TYPE__)((Level *)(*(void **)(ki + 0x54)))->getEnemies();
                 if (enemies != 0) {
                     int count = enemies[0];
                     int i = 0;

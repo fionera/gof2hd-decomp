@@ -4,15 +4,23 @@
 #include "gof2/Mesh.h"
 #include "gof2/Engine.h"
 
+// AbyssEngine::FBOContainer is defined fully in gof2/FBOContainer.h, but that header
+// forward-declares AbyssEngine::Engine which clashes with the `using ::Engine;` re-export
+// pulled in by gof2/AbyssEngine.h. We only need to call the (out-of-line) Create method
+// through a raw pointer here, so declare the minimal class surface locally instead.
+namespace AbyssEngine {
+class FBOContainer {
+public:
+    void Create(int width, int height, bool a, bool linear);
+};
+}
+
 
 extern "C" void AE_FileInterfaceAndroid_ctor(void *self);
-extern "C" void AE_Engine_GlEnable(Engine *self, bool on);
 extern "C" void AE_PaintCanvas_Initialize(PaintCanvas *self, bool flag);
 extern "C" void AE_Vector_assign(void *dst, const void *src);
 extern "C" void AE_FBOContainer_ctor(void *self);
-extern "C" void AE_FBOContainer_Create(void *self, int w, char h, bool flag);
 extern "C" void AE_String_fromCStr(String *self, const char *s, bool b);
-extern "C" void AE_String_dtor(void *self);
 extern "C" float sqrtf(float);
 extern "C" float _ZN11AbyssEngine6AEMath4SinfEf(float);
 extern "C" float _ZN11AbyssEngine6AEMath4CosfEf(float);
@@ -267,7 +275,7 @@ void getAppVersion()
     u32(c, 0x37c) = 0;
 
     glEnable(0xb71);
-    AE_Engine_GlEnable(self, true);
+    self->GlEnable(0xde1, true);
     glDisable(0xbe2);
     glCullFace(0x405);
     glEnable(0xb44);
@@ -283,9 +291,9 @@ void getAppVersion()
         AE_String_fromCStr(&name, "", false);
         AE_FBOContainer_ctor(fbo);
         pp(c, 0x418) = fbo;
-        AE_String_dtor(&name);
-        AE_FBOContainer_Create((void *)pp(c, 0x418), (int)i32(c, 0x368),
-                               (char)i32(c, 0x36c), true);
+        ((::String *)&name)->dtor();
+        ((AbyssEngine::FBOContainer *)pp(c, 0x418))->Create(
+            (int)i32(c, 0x368), (int)i32(c, 0x36c), false, true);
     }
 }
 
@@ -2571,7 +2579,6 @@ void glGenerateMipmap(unsigned int target);
 void *AE_operator_new(size_t_ n);
 void  AE_String_ctor(void *self, const char *s, bool b);
 void  AE_String_assign(void *dst, void *src);
-void  AE_String_dtor(void *self);
 void  AE_String_Set(void *self, const char *s);
 void  AELabelObject(unsigned int type, unsigned int id, const char *name);
 void  AE_ArrayAdd_TexPtr(void *item, void *arr);
@@ -2743,7 +2750,7 @@ int TextureCreateFromFileIntern(Engine *engine, char *path, void (*cb)(Image *, 
             char tmp[16];
             AE_String_ctor(tmp, path, false);
             AE_String_assign(en + 0x14, tmp);
-            AE_String_dtor(tmp);
+            ((::String *)tmp)->dtor();
             glDeleteTextures(1, outIds);
             ImageRelease(&imgPtr);
             return -4;

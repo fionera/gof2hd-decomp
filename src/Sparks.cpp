@@ -2,7 +2,7 @@
 
 
 extern "C" void *operator_new(uint32_t size);
-extern "C" int AERandom_nextInt(void *rng, int bound);
+namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
 extern "C" void operator_delete(void *ptr);
 extern "C" void PaintCanvas_SetTexture(void *canvas, uint32_t texture, uint32_t mode);
 extern "C" void PaintCanvas_SetBlendMode(void *canvas, int mode);
@@ -48,7 +48,7 @@ Sparks::Sparks(int kind)
         void **rng = g_Sparks_random_ctor;
         for (uint32_t i = 0; i < n; i++) {
             PaintCanvas_SpriteSystemSetSize(*canvas, this->spriteSystem, (uint16_t)i, 1);
-            int value = AERandom_nextInt(*rng, 0x1f4);
+            int value = AbyssEngine::AERandom::nextInt(*rng, 0x1f4);
             this->lifetimeThresholds[i] = value;
             n = this->count;
             this->totalThreshold = value + this->totalThreshold;
