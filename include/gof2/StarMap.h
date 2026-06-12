@@ -39,6 +39,7 @@ public:
     void initStarSystem();
 
     void render();
+    void render_tail();     // render tail: draw the optional jump-route overlay geometry (+0xf8)
     void renderBG();
     void draw();
     void drawKey();
@@ -51,6 +52,7 @@ public:
     void OnTouchEnd(int x, int y);
 
     void depart(bool jump);
+    void depart_tail(void *app, int moduleId); // depart tail: hand the application to module `moduleId`
     void setStart(int start, int target);
     void setJumpMapMode(bool enabled, bool value);
     void askForJumpIntoAlienWorld();

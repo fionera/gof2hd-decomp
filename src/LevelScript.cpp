@@ -52,7 +52,6 @@ extern "C" void *gProgrammedStation;
 extern "C" int Station_getIndex(void *station);
 extern "C" void Player_setAutoPilotTarget(void *player, void *target);
 extern "C" void *Explosion_dtor(void *explosion);
-extern "C" void *Level_getActiveMessages(Level *level);
 extern "C" void Hud_drawTitleImage(Hud *hud, bool visible);
 
 // ---- render3D_145d84.cpp ----
@@ -359,7 +358,7 @@ void LevelScript::process(int delta)
     Level *level = (Level *)P(this, 0x18);
     void *messages = (void *)((Level *)(level))->getMessages();
     void *player = (void *)((Level *)(level))->getPlayer();
-    void *activeMessages = Level_getActiveMessages(level);
+    void *activeMessages = ((Level *)(level))->getActiveMessages();
     int mission = ((Status *)(gStatus))->getCurrentCampaignMission();
 
     (void)messages;

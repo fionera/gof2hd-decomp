@@ -23,11 +23,12 @@ public:
     int OnInitialize();
 
     // Tail fragments of the methods above (interworking-return veneers in the
-    // binary that resolve to a single concrete engine call each).
-    void or_tail(void *layout);             // OnRelease tail: ImageFactory/Layout reload completion
-    void r2dDone(void *app, int moduleId);  // OnRender2D: logo sequence finished -> switch module
-    void r2dTail(void *canvas);             // OnRender2D tail: PaintCanvas::End2d completion
-    void r3dTail(void *canvas);             // OnRender3D tail: PaintCanvas::Begin3d completion
-    void deleteTail();                      // deleting-dtor tail: operator delete(this)
+    // binary that resolve to a single concrete engine call each). The receiver
+    // (`this`) is the engine object the veneer operated on, reinterpreted.
+    void or_tail();             // OnRelease tail: ImageFactory/Layout reload completion (this=ImageFactory)
+    void r2dDone(int moduleId); // OnRender2D: logo sequence finished -> switch module (this=ApplicationManager)
+    void r2dTail();             // OnRender2D tail: PaintCanvas::End2d completion (this=PaintCanvas)
+    void r3dTail();             // OnRender3D tail: PaintCanvas::Begin3d completion (this=PaintCanvas)
+    void deleteTail();          // deleting-dtor tail: operator delete(this)
 };
 #endif

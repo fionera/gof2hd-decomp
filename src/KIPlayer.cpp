@@ -42,14 +42,6 @@ int KIPlayer::getType() {
     return self->type;
 }
 
-// ---- projectCollisionOnSurface_a63d4.cpp ----
-void KIPlayer_projectCollisionOnSurface(Vector *out)
-{
-    out->x = 0.0f;
-    out->y = 0.0f;
-    out->z = 0.0f;
-}
-
 // ---- isDead_a610c.cpp ----
 bool KIPlayer::isDead() {
     KIPlayer *self = this;
@@ -114,14 +106,6 @@ uint8_t KIPlayer::isEnemy() {
 bool KIPlayer::isDocked() {
     KIPlayer *self = this;
     return self->state == 9;
-}
-
-// ---- getProjectionVector_a63ca.cpp ----
-void KIPlayer_getProjectionVector(Vector *out)
-{
-    out->x = 0.0f;
-    out->y = 0.0f;
-    out->z = 0.0f;
 }
 
 // ---- isDying_a611a.cpp ----
@@ -301,14 +285,6 @@ void KIPlayer::awake() {
 void KIPlayer::setInitActive() {
     KIPlayer *self = this;
     self->initActiveFlag = 0;
-}
-
-// ---- getCollisionNormal_a5244.cpp ----
-void KIPlayer_getCollisionNormal(Vector *out)
-{
-    out->x = 0.0f;
-    out->y = 0.0f;
-    out->z = 0.0f;
 }
 
 // ---- setWingman_a612e.cpp ----

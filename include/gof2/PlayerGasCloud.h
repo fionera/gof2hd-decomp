@@ -58,5 +58,6 @@ public:
     Vector getPosition();
     uint8_t hasExploded();
     void render();
+    void *baseDtor();   // ~PlayerGasCloud tail: SpacePoint base-subobject teardown
 };
 #endif

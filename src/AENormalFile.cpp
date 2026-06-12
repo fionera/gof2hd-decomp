@@ -2,7 +2,6 @@
 
 
 AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self);
-extern "C" void AENormalFile_deleteTail(AENormalFile *self);
 extern "C" uint32_t _ZN12AENormalFile7ReleaseEv(AENormalFile *self);
 
 // ---- Read_70162.cpp ----
@@ -18,7 +17,7 @@ uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
 // ---- _AENormalFile_70130.cpp ----
 void _ZN12AENormalFileD0Ev(AENormalFile *self)
 {
-    AENormalFile_deleteTail(_ZN12AENormalFileD2Ev(self));
+    ((AENormalFile *)(_ZN12AENormalFileD2Ev(self)))->deleteTail();
 }
 
 // Deleting-destructor tail: the D2 body has already run, so just free the object.

@@ -45,8 +45,8 @@ public:
     void * recordStoreRead(int slot);
     void recordStoreRead_body(void *rec, unsigned int fd);
     void recordStoreWrite_body(unsigned int fd);
-    void readRecordTail(int slot);
-    void csd_tail(void *sizes1, int one, int count, void *backupRecords);
+    void readRecordTail();
+    void csd_tail(int one, int count, void *backupRecords);
     void * recordStoreReadPreview(int slot);
     void recordStoreWrite(int slot);
     int recordStoreWritePreview(void *rec, int slot);

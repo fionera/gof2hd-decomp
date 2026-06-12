@@ -172,7 +172,7 @@ void Route::translate(const Vector &v) {
     }
 }
 
-extern "C" void Waypoint_activate(Waypoint *wp);   // veneer tail-call target
+// veneer tail-call target
 
 // Route::reachWaypoint(int) -> advance to the given waypoint, wrapping/resetting when looping.
 void Route::reachWaypoint(int index) {
@@ -190,7 +190,7 @@ void Route::reachWaypoint(int index) {
         ((Waypoint *)((*self->field_0xc)[0]))->setActive(true);
     }
     ((Waypoint *)((*self->field_0xc)[index]))->setActive(false);
-    return Waypoint_activate((*self->field_0xc)[index]);
+    return ((Waypoint *)((*self->field_0xc)[index]))->activate();
 }
 
 // Route::Route(int *coords, Array<KIPlayer*> *targets, int *times, int count)
@@ -289,7 +289,7 @@ Waypoint * Route::getWaypointAt(int index) {
     return wp;
 }
 
-extern "C" float Waypoint_advance(Waypoint *wp, bool b);   // veneer tail-call target
+// veneer tail-call target
 
 // Route::update(float, float, float) -> if close enough to the active waypoint, advance to the next.
 float Route::update_xyz(float x, float y, float z) {
@@ -328,7 +328,7 @@ float Route::update_xyz(float x, float y, float z) {
         next = self->field_0x0;
     }
     if (next < (int)len)
-        return Waypoint_advance((*w)[next], true);
+        return ((Waypoint *)((*w)[next]))->advance(true);
     return x;
 }
 

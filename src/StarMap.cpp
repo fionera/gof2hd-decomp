@@ -202,6 +202,14 @@ void StarMap::render()
     }
 }
 
+// render() tail (binary: indirect AEGeometry::render thunk @0x1abdd4 reached when the
+// optional overlay mesh at +0xf8 is present): draws the highlighted jump-route /
+// selected-system overlay geometry that sits on top of the system map.
+void StarMap::render_tail()
+{
+    ((AEGeometry *)(ptr_field(this, 0xf8)))->render();
+}
+
 // ---- renderBG_d8056.cpp ----
 // Background-render hook. The star map paints its whole scene (3D systems plus the
 // 2D overlay) from render()/draw(); the dedicated "render background" entry point that
@@ -505,6 +513,14 @@ cleanup:
     ((FModSound *)(*g_StarMap_depart_sound))->stop(0x66);
     *g_StarMap_depart_modstation_flag = 1;
     return StarMap_depart_tail(*g_StarMap_depart_canvas, 2);
+}
+
+// depart() tail (binary: module-switch trampoline @0x1ab908): the player has committed
+// to leaving the current station / jumping, so the running star-map module hands control
+// back to the application, switching it to the in-flight module (`moduleId` == 2).
+void StarMap::depart_tail(void *app, int moduleId)
+{
+    ((ApplicationManager *)app)->SetCurrentApplicationModule((unsigned)moduleId);
 }
 
 // ---- OnTouchEnd_cae90.cpp ----

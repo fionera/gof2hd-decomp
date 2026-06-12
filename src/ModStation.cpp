@@ -1,4 +1,5 @@
 #include "gof2/ModStation.h"
+#include "gof2/Globals.h"
 #include "gof2/Ship.h"
 #include "gof2/FModSound.h"
 #include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
@@ -2589,7 +2590,6 @@ void  CutScene_replacePlayerShip_oi(int cs, int shipIndex);
 void  TouchButton_setHalfTransparent_oi(int flag);
 
 void  Globals_startNewSoundResourceList_oi();
-void  Globals_addSoundResource_oi(int sound, int id);
 void  Globals_playMusicAndFadeOutCurrent_oi(int id);
 
 void  FModSound_play_oi(int sound, int id, void *pos, float vol);
@@ -3063,7 +3063,7 @@ void ModStation::OnInitialize() {
         static const int snd[] = {0x5f, 0x7a, 0x6c, 0x60, 0x61, 0x62, 99, 0x65, 100,
                                   0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e};
         for (unsigned i = 0; i < sizeof(snd) / sizeof(snd[0]); i = i + 1)
-            Globals_addSoundResource_oi(*sound, snd[i]);
+            ((Globals *)(*sound))->addSoundResource_oi(snd[i]);
 
         I(s, 0xcc) = 0x32;
         int *st = *(int **)g_oi_status;

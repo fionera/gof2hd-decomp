@@ -218,8 +218,8 @@ extern int   g_mwi_actionColor;  // DAT_1603f0: action-button text colour
 }
 
 // MissionsWindow::init() -- rebuild the whole missions screen layout & sub-windows.
-extern "C" int MissionsWindow_init(void *self)
-{
+int MissionsWindow::init() {
+    MissionsWindow *self = this;
     char *s = (char *)self;
 
     void *layout = *(void **)g_mwi_layout;
@@ -477,8 +477,8 @@ extern void *g_mwd_font;      // *(DAT_1609a4): default font
 }
 
 // MissionsWindow::draw()
-extern "C" void MissionsWindow_draw(void *self)
-{
+void MissionsWindow::draw() {
+    MissionsWindow *self = this;
     char *s = (char *)self;
 
     if (i32(self, 0x40) == 1) { MissionsWindow_drawWanted(self);  return; }
@@ -649,7 +649,6 @@ void String_fromText(void *s, void *text, bool copy);
 
 
 
-int MissionsWindow_init(void *self);
 
 extern void *g_mwt_freelanceSrc;  // *(DAT_161174): freelance mission source
 extern void *g_mwt_appMgr;        // *(DAT_16119c / 1611a8): application manager
@@ -717,7 +716,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             ((Status *)(fsrc))->setFreelanceMission((Mission *)0);
 
             unsigned char savedFlag = u8(self, 0x23);
-            MissionsWindow_init(self);
+            ((MissionsWindow *)(self))->init();
             u8(self, 0x23) = savedFlag;
             goto done;
         }
@@ -851,8 +850,8 @@ extern void *g_mw_hashSource;    // *(DAT_160bbc): replaceHash key source (== st
 }
 
 // MissionsWindow::update(int dt)
-extern "C" void MissionsWindow_update(void *self, int dt)
-{
+void MissionsWindow::update(int dt) {
+    MissionsWindow *self = this;
 
     // Mode 1: confirm/accept and bail out.
     if (i32(self, 0x40) == 1) {
@@ -925,28 +924,10 @@ extern "C" void MissionsWindow_update(void *self, int dt)
 // layout, paint, dispatch a touch-release, advance one frame) through the real
 // MissionsWindow:: interface used by the rest of the engine.
 
-// MissionsWindow::init() -- rebuild the whole missions screen layout & sub-windows.
-int MissionsWindow::init()
-{
-    return MissionsWindow_init(this);
-}
-
-// MissionsWindow::draw() -- paint the current view (missions / wanted / star map).
-void MissionsWindow::draw()
-{
-    MissionsWindow_draw(this);
-}
-
 // MissionsWindow::OnTouchEnd(int, int) -- route a touch-release to the active sub-view.
 void MissionsWindow::OnTouchEnd(int y, int z)
 {
     MissionsWindow_OnTouchEnd(this, y, z);
-}
-
-// MissionsWindow::update(int) -- advance the window by one frame.
-void MissionsWindow::update(int dt)
-{
-    MissionsWindow_update(this, dt);
 }
 
 // MissionsWindow_dtor -- C-ABI complete-object destructor wrapper: run the real

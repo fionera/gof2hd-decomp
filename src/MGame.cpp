@@ -1,5 +1,6 @@
 #include <new>
 #include "gof2/MGame.h"
+#include "gof2/Globals.h"
 #include "gof2/PlayerFighter.h"
 #include "gof2/Ship.h"
 #include "gof2/SolarSystem.h"
@@ -113,13 +114,9 @@ extern "C" void String_cstr_ctor(String12 *out, const char *s, bool copy);
 extern "C" void String_concat(String12 *out, String12 *lhs, String12 *rhs);
 extern "C" void String_int_ctor(String12 *out, int v);
 void Globals_playMusicAndFadeOutCurrent(int track);
-extern "C" void MGame_endRunModule(int field8, int code);
-extern "C" void MGame_handleHudTouchAction(MGame *self, int p1, int p2, void *p3, unsigned hudResult);
-extern "C" void MGame_tick(MGame *self, int frameDeltaMs);
 extern "C" void MGame_opdelete(void *p);
 void Globals_startNewSoundResourceList();
 void Globals_addSoundResourceToList(int list);
-extern "C" void MGame_freeCamPanDone(MGame *self, int p3);
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 int DialogueWindow_hasSuccessDialogue(int cm);
 extern "C" void PlayerEgo_rollRight(PlayerEgo *p, int shipField, float amt);
@@ -772,13 +769,13 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             int cm = (*g_status)->getCurrentCampaignMission();
             if (cm == 0x9e) {
                 self->field_0x54 = 0;
-                return MGame_endRunModule(self->field_0x8, 2);
+                return ((MGame *)(self->field_0x8))->endRunModule(2);
             }
             if (self->field_0x1e8 != 0) {
                 ((GameRecord *)(self->field_0x1e8))->load();
                 Globals_playMusicAndFadeOutCurrent(**g_tbRecordTrack);
                 self->field_0x54 = 0;
-                return MGame_endRunModule(self->field_0x8, 5);
+                return ((MGame *)(self->field_0x8))->endRunModule(5);
             }
             Globals_playMusicAndFadeOutCurrent(**g_tbMenuTrack);
             self->field_0x54 = 0;
@@ -815,14 +812,14 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             if (((MenuTouchWindow *)(self->field_0x88))->isShowingMessage() != 0) return;
             if (((MenuTouchWindow *)(self->field_0x88))->isMakingScreenshot() != 0) return;
             // fall through to free-cam handler.
-            return MGame_handleHudTouchAction(self, p1, p2, touchId, 0);
+            return ((MGame *)(self))->handleHudTouchAction(p1, p2, touchId, 0);
         }
     }
 
     // World HUD touch: dispatch on the hud's touch result bitmask.
     unsigned hr = ((Hud *)(self->field_0x74))->touchBegin(p1, (void *)(intptr_t)p2, (int)(intptr_t)touchId);
     self->field_0xf8 = hr;
-    MGame_handleHudTouchAction(self, p1, p2, touchId, hr);
+    ((MGame *)(self))->handleHudTouchAction(p1, p2, touchId, hr);
 }
 
 // ---- OnUpdate_17c8d8.cpp ----
@@ -860,7 +857,7 @@ void MGame::OnUpdate() {
     self->field_0x30 += delta;
 
     // Run the full per-frame update.
-    MGame_tick(self, delta);
+    ((MGame *)(self))->tick(delta);
 
     
 }
@@ -1181,8 +1178,8 @@ void MGame::deleting_dtor() {
 // 0x782a4
 // 0x71c44
 // Tail helpers.
-extern "C" void MGame_jumpFinish(int *globals, int one);  // @0x1ac808
-extern "C" void MGame_starMapShown(...);  // @0x1ac818
+// @0x1ac808
+// @0x1ac818
 
 __attribute__((visibility("hidden"))) extern int *g_kdStatus;     // @0x189d7e (*piVar6)
 __attribute__((visibility("hidden"))) extern int **g_kdJumpDst;   // @0x189e36
@@ -1231,7 +1228,7 @@ void MGame::UseKhadorDrive() {
         ((MGame *)(self))->resumeSounds();
         self->field_0xd6 = 0;
         ((Hud *)(self->field_0x74))->closeHudMenu();
-        return MGame_jumpFinish(status, 1);
+        return ((MGame *)(status))->jumpFinish();
     }
 
     if ((*g_status)->inAlienOrbit() == 0) {
@@ -1263,7 +1260,7 @@ void MGame::UseKhadorDrive() {
         self->field_0xc7 = 1;
         ((MGame *)(self))->pauseSounds();
         self->field_0xd6 = 0;
-        return MGame_starMapShown(self->field_0x74);
+        return ((MGame *)(self->field_0x74))->starMapShown();
     }
 
     // In alien orbit.
@@ -1276,7 +1273,7 @@ void MGame::UseKhadorDrive() {
     self->field_0x5d = 0;
     ((MGame *)(self))->resumeSounds();
     self->field_0xd6 = 0;
-    return MGame_starMapShown(self->field_0x74);
+    return ((MGame *)(self->field_0x74))->starMapShown();
 }
 
 // ---- OnInitialize_177c50.cpp ----
@@ -1294,7 +1291,6 @@ __attribute__((visibility("hidden"))) extern int *g_initSoundList; // @0x187cc6 
 
 // Add a specific resource id to the running sound-resource list (2-arg variant; the
 // 1-arg Globals_addSoundResourceToList above appends the list's "next" default).
-extern "C" void Globals_addSoundResource_oi(int list, int id);
 
 // MGame::loadSoundResources(): build the per-session FMOD resource list. Always loads the
 // common cockpit/weapon/explosion set, then appends wingman, early-mission, warp-gate and
@@ -1309,14 +1305,14 @@ void MGame::loadSoundResources() {
         0x12, 0x13, 0x14, 0x1c, 0x1d, 0x1b, 0x25, 0x1a, 0x2e, 0x2f,
     };
     for (int id : kCommon)
-        Globals_addSoundResource_oi(list, id);
+        ((Globals *)(list))->addSoundResource_oi(id);
 
     if ((*g_status)->getWingmen() != 0)
         Globals_addSoundResourceToList(list);
 
-    Globals_addSoundResource_oi(list, 0x3e);
-    Globals_addSoundResource_oi(list, 0x3d);
-    Globals_addSoundResource_oi(list, 0x24);
+    ((Globals *)(list))->addSoundResource_oi(0x3e);
+    ((Globals *)(list))->addSoundResource_oi(0x3d);
+    ((Globals *)(list))->addSoundResource_oi(0x24);
 
     if ((*g_status)->getCurrentCampaignMission() < 2) {
         Globals_addSoundResourceToList(list);
@@ -1331,18 +1327,18 @@ void MGame::loadSoundResources() {
 
     int cm = (*g_status)->getCurrentCampaignMission();
     if (cm == 0) {
-        Globals_addSoundResource_oi(list, 0x8f);
-        Globals_addSoundResource_oi(list, 0x9d);
-        Globals_addSoundResource_oi(list, 0x9e);
-        Globals_addSoundResource_oi(list, 0xa1);
-        Globals_addSoundResource_oi(list, 0xa0);
-        Globals_addSoundResource_oi(list, 0x9f);
+        ((Globals *)(list))->addSoundResource_oi(0x8f);
+        ((Globals *)(list))->addSoundResource_oi(0x9d);
+        ((Globals *)(list))->addSoundResource_oi(0x9e);
+        ((Globals *)(list))->addSoundResource_oi(0xa1);
+        ((Globals *)(list))->addSoundResource_oi(0xa0);
+        ((Globals *)(list))->addSoundResource_oi(0x9f);
     } else if (cm == 0xe || cm == 0x18 || cm == 0x1d) {
         Globals_addSoundResourceToList(list);
     } else if (cm == 0x29) {
-        Globals_addSoundResource_oi(list, 0x9b);
-        Globals_addSoundResource_oi(list, 0x99);
-        Globals_addSoundResource_oi(list, 0x9a);
+        ((Globals *)(list))->addSoundResource_oi(0x9b);
+        ((Globals *)(list))->addSoundResource_oi(0x99);
+        ((Globals *)(list))->addSoundResource_oi(0x9a);
     }
 }
 
@@ -1679,7 +1675,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
 
     if (((PlayerEgo *)(self->field_0x58))->isMining() != 0) {
         self->field_0x111 = 1;
-        return MGame_freeCamPanDone(self, ty);
+        return ((MGame *)(self))->freeCamPanDone(ty);
         return;
     }
     self->field_0x111 = 0;
@@ -1748,8 +1744,6 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
 // helper so the entry point stays faithful and compiling; it consumes the same
 // hud-result that the inline body branches on, and performs all field writes and
 // engine calls on `self`.
-extern "C" void MGame_dispatchTouchEndAction(MGame *self, int p1, int p2, void *p3,
-                                             unsigned hudResult, int wasAutoPilot);
 
 __attribute__((visibility("hidden"))) extern int *g_teGuard;   // @0x18a15c (stack guard [0])
 
@@ -1784,7 +1778,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     }
 
     // All button-press reactions live in the dispatch helper.
-    MGame_dispatchTouchEndAction(self, p1, p2, touchId, hr, wasAutoPilot);
+    ((MGame *)(self))->dispatchTouchEndAction(p1, p2, touchId, hr, wasAutoPilot);
 
     
 }
@@ -1817,7 +1811,7 @@ static void bindDlg(MGame *self) {
 // Follow-up-mission setup helpers: getCampaignMission() yields the active campaign Mission*
 // (header types it as int); Mission::setType is not declared in the shared header.
 extern "C" Mission *Status_getCampaignMissionPtr(Status *status);  // Status::getCampaignMission
-extern "C" void     Mission_setType(Mission *m, int type);          // Mission::setType
+// Mission::setType
 extern "C" void    *Objective_dtor(Objective *o);                   // Objective::~Objective
 // Status::replaceHash(String haystack, String needle, String replacement) -> String (sret),
 // modelled as a free function on String12 like the other TUs (see HangarWindow.cpp/Status.cpp).
@@ -1842,7 +1836,7 @@ void MGame::buildMissionFollowup() {
 
     // Raise the briefing for the (now retargeted) mission and convert it to a delivery type.
     ((DialogueWindow *)(self->field_0x8c))->set(Status_getCampaignMissionPtr(status), 1, -1);
-    Mission_setType(Status_getCampaignMissionPtr(status), 0xb);
+    ((Mission *)(Status_getCampaignMissionPtr(status)))->setType(0xb);
 
     // Leave turret / first-person and reset the flight camera.
     self->field_0x58->setTurretMode(0);
@@ -2907,13 +2901,13 @@ void MGame::OnRelease() {
 // ---- OnRender2D_1808c0.cpp ----
 
 // 0x74458
-extern "C" void MGame_drawRadio(MGame *self);  // Radio::draw wrapper
-extern "C" void MGame_drawRadar(MGame *self);  // Radar::draw wrapper
+// Radio::draw wrapper
+// Radar::draw wrapper
 // 0x18c624 nextCamId
-extern "C" void MGame_drawHud(MGame *self);  // Hud::draw wrapper
+// Hud::draw wrapper
 // 0x... drawFade
 // 0x755d4
-extern "C" void MGame_drawFadeMessage(MGame *self, int pc);  // splash/fade text helper
+// splash/fade text helper
 
 __attribute__((visibility("hidden"))) extern int *g_r2dGuard;    // @0x1908d4 (stack guard [0])
 __attribute__((visibility("hidden"))) extern unsigned **g_r2dCanvas; // @0x1908e8
@@ -2964,7 +2958,7 @@ void MGame::OnRender2D() {
             ((StarSystem *)(0))->render2D();
             if (((LevelScript *)(self->field_0x7c))->startSequenceOver() != 0 ||
                 ((LevelScript *)(self->field_0x7c))->startSequence() == 0)
-                MGame_drawRadio(self);
+                ((MGame *)(self))->drawRadio();
         } else if (self->field_0xc7 != 0) {
             ((StarMap *)(self->field_0x90))->draw();
             Layout *hl = **g_r2dHelpLayout;
@@ -2978,7 +2972,7 @@ void MGame::OnRender2D() {
             if (((Mission *)((Mission *)(*g_status)->getCampaignMission()))->getType() == 0xaa) {
                 if (((LevelScript *)(self->field_0x7c))->getEvent() == 0)
                     ((Hud *)(self->field_0x74))->drawOrbitInformation();
-                MGame_drawRadio(self);
+                ((MGame *)(self))->drawRadio();
                 if (self->field_0x5e != 0)
                     ((DialogueWindow *)(self->field_0x8c))->draw();
                 self->field_0x111 = 0;
@@ -2991,7 +2985,7 @@ void MGame::OnRender2D() {
                     ((Hud *)(self->field_0x74))->drawOrbitInformation();
                 if (((LevelScript *)(self->field_0x7c))->startSequenceOver() != 0 ||
                     ((LevelScript *)(self->field_0x7c))->startSequence() == 0)
-                    MGame_drawRadio(self);
+                    ((MGame *)(self))->drawRadio();
                 if (self->field_0x5e != 0)
                     ((DialogueWindow *)(self->field_0x8c))->draw();
                 self->field_0x111 = 0;
@@ -3002,11 +2996,11 @@ void MGame::OnRender2D() {
                     self->field_0xc7 == 0 &&
                     (((PlayerEgo *)(self->field_0x58))->isHacking() == 0 ||
                      self->field_0xc9 != 0))
-                    MGame_drawRadar(self);
+                    ((MGame *)(self))->drawRadar();
                 if (self->field_0x5e == 0) {
                     ((MGame *)(self))->nextCamId(self->field_0x14);
-                    MGame_drawHud(self);
-                    MGame_drawRadio(self);
+                    ((MGame *)(self))->drawHud();
+                    ((MGame *)(self))->drawRadio();
                     ((Radar *)(self->field_0x80))->drawCurrentLock((Hud *)(self->field_0x74) /* hud: arg lost in decomp */);
                     ((Layout *)(**g_r2dRewardLayout))->drawMissionRewardMessage(1 /* transition: arg lost in decomp */);
                 } else {
@@ -3022,7 +3016,7 @@ void MGame::OnRender2D() {
                 ((PaintCanvas*)g_PaintCanvas)->SetColor((unsigned)self->field_0x4);
                 ((PaintCanvas*)(long)(*(int *)g_r2dCanvas))->DrawImage2D((unsigned)self->field_0x10, 0, 0, (unsigned char)'D');
                 if (self->field_0x50 >= 4000)
-                    MGame_drawFadeMessage(self, *(int *)g_r2dCanvas);
+                    ((MGame *)(self))->drawFadeMessage(*(int *)g_r2dCanvas);
             }
             ((Layout *)(**g_r2dFadeLayout))->drawFade();
         }
@@ -3231,38 +3225,6 @@ extern "C" void *MGame_accelCtxBegin(int field8) {
 
 extern "C" double *MGame_accelCtxValue() {
     return ((Engine *)g_accelEngine)->GetAccelValue();
-}
-
-// ---- C-ABI shims wiring the synthetic call sites to the real methods ----
-extern "C" void MGame_jumpFinish(int *globals, int /*one*/) {
-    ((Status *)globals)->nextCampaignMission();
-}
-extern "C" void MGame_endRunModule(int field8, int code) {
-    ((ApplicationManager *)(intptr_t)field8)->SetCurrentApplicationModule((unsigned)code);
-}
-extern "C" void MGame_freeCamPanDone(MGame *self, int p3) { self->freeCamPanDone(p3); }
-extern "C" void MGame_tick(MGame *self, int frameDeltaMs) { self->tick(frameDeltaMs); }
-extern "C" void MGame_handleHudTouchAction(MGame *self, int p1, int p2, void *p3,
-                                           unsigned hudResult) {
-    self->handleHudTouchAction(p1, p2, p3, hudResult);
-}
-extern "C" void MGame_drawRadio(MGame *self) { self->drawRadio(); }
-extern "C" void MGame_drawRadar(MGame *self) { self->drawRadar(); }
-extern "C" void MGame_drawHud(MGame *self) { self->drawHud(); }
-extern "C" void MGame_drawFadeMessage(MGame *self, int pc) { self->drawFadeMessage(pc); }
-
-// Declared variadic at the call site (the decompiler dropped the receiver type);
-// the single forwarded argument is the Hud* whose open menu we close.
-extern "C" void MGame_starMapShown(...) {
-    __builtin_va_list ap;
-    __builtin_va_start(ap, 0);
-    Hud *hud = __builtin_va_arg(ap, Hud *);
-    __builtin_va_end(ap);
-    hud->closeHudMenu();
-}
-extern "C" void MGame_dispatchTouchEndAction(MGame *self, int p1, int p2, void *p3,
-                                             unsigned hudResult, int wasAutoPilot) {
-    self->dispatchTouchEndAction(p1, p2, p3, hudResult, wasAutoPilot);
 }
 
 // operator new / delete used by MGame's window allocations.

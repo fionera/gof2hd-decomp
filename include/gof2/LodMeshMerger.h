@@ -55,9 +55,12 @@ public:
     void setEnabled(int index, bool enabled);
     void setLod(int index, signed char lod);
     void setMatrix(int index, const Matrix &m);
+    void setMatrix_tail(const Matrix &m);   // setMatrix tail: copy `m` into the slot (`this` == &slot)
     void setMesh(int index, signed char lod, uint16_t meshId);
     void update();
     int  init();
+    int  init_tail(int r1, uint16_t flags, uint32_t *meshId); // init tail: mark initialized + build first merge
     void *transformMesh(AEMesh *src, const Matrix &m);
+    void base_dtor();                       // ~LodMeshMerger tail: release the embedded source-mesh array
 };
 #endif

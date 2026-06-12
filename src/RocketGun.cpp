@@ -32,7 +32,6 @@ extern "C" void Array_Matrix_ctor(void *self);
 extern "C" void Array_int_ctor(void *self);
 extern "C" void ArraySetLength_Matrix(uint32_t length, void *array);
 extern "C" void ArraySetLength_int(uint32_t length, void *array);
-extern "C" void ParticleSystemManager_attachSystem(int manager, int system, int zero);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func)(void *out, void *in);
 extern "C" int Player_getEnemies(void *player);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder3;
@@ -263,14 +262,14 @@ non_special:
         int local = (int)(long)((PaintCanvas*)*holder)->TransformGetLocal(this->transformId);
         int system = ((ParticleSystemManager *)(manager))->addSystem((void *)local, 0x2f, false);
         this->particleSystem = system;
-        ParticleSystemManager_attachSystem(F<int>(radar->level, 0x9c), system, 0);
+        ((ParticleSystemManager *)(F<int>(radar->level, 0x9c)))->attachSystem(system, 0);
     } else {
         int manager = F<int>(radarObj, 0x84);
         void **holder = RocketGun_canvas_holder2;
         int local = (int)(long)((PaintCanvas*)*holder)->TransformGetLocal(this->transformId);
         int system = ((ParticleSystemManager *)(manager))->addSystem((void *)local, 0xc, false);
         this->particleSystem = system;
-        ParticleSystemManager_attachSystem(F<int>(radar->level, 0x84), system, 0);
+        ((ParticleSystemManager *)(F<int>(radar->level, 0x84)))->attachSystem(system, 0);
     }
 }
 

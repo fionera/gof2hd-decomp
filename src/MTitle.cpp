@@ -8,13 +8,8 @@
 
 int GameText_getLanguage();
 void Globals_loadFont(void *obj, int lang);
-extern "C" void MTitle_or_tail(void *p);
-extern "C" void MTitle_r2dDone(void *screen, int arg);
-extern "C" void MTitle_r2dTail(void *canvas);
 extern "C" void _ZN6MTitle9OnReleaseEv(MTitle *self);
 MTitle *_ZN6MTitleD2Ev(MTitle *self);
-extern "C" void MTitle_deleteTail(MTitle *self);
-extern "C" void MTitle_r3dTail(void *arg);
 
 // ---- OnRelease_97a2c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MTitle_or_canvas;
@@ -34,7 +29,7 @@ void MTitle::OnRelease()
     if (*reload != 0) {
         ((Layout *)(*reload))->reload();
         ((ImageFactory *)(*g_MTitle_or_imgfac))->reload();
-        MTitle_or_tail(*reload);
+        ((MTitle *)(*reload))->or_tail();
     }
 }
 
@@ -72,7 +67,7 @@ void MTitle::OnRender2D()
         this->step = step;
         this->timer = 0;
         if (step == 2) {
-            MTitle_r2dDone(*g_MTitle_r2d_screen, 1);
+            ((MTitle *)(*g_MTitle_r2d_screen))->r2dDone(1);
             return;
         }
         image = (int)(step == 0 ? this->logoImage2 : this->logoImage);
@@ -96,7 +91,7 @@ common:
     ((PaintCanvas *)this->canvas)->SetColor((unsigned int)color);
     ((PaintCanvas *)*canvas)->DrawImage2D(image, 0, 0, (unsigned char)0x44, (unsigned char)0x44);
     ((PaintCanvas *)this->canvas)->End2d();
-    MTitle_r2dTail(this->canvas);
+    ((MTitle *)(this->canvas))->r2dTail();
 }
 
 // ---- MTitle_97984.cpp ----
@@ -126,7 +121,7 @@ void MTitle::OnTouchEnd(int x, int y)
 // ---- _MTitle_979bc.cpp ----
 void _ZN6MTitleD0Ev(MTitle *self)
 {
-    MTitle_deleteTail(_ZN6MTitleD2Ev(self));
+    ((MTitle *)(_ZN6MTitleD2Ev(self)))->deleteTail();
 }
 
 // ---- OnRender3D_97bc4.cpp ----
@@ -138,7 +133,7 @@ void MTitle::OnRender3D()
     void **canvas = g_MTitle_r3d_canvas;
     ((PaintCanvas *)*canvas)->ClearBuffer(0xff);
     ((PaintCanvas *)this->canvas)->Begin3d();
-    MTitle_r3dTail(this->canvas);
+    ((MTitle *)(this->canvas))->r3dTail();
 }
 
 // ---- tail fragments ----
@@ -149,29 +144,31 @@ void MTitle::OnRender3D()
 // faithful to the original control flow while remaining real engine calls.
 
 // OnRelease tail: after the active Layout and the ImageFactory have been
-// reloaded, finish by reloading the screen's image factory resources.
-void MTitle::or_tail(void *layout)
+// reloaded, finish by reloading the screen's image factory resources. The
+// receiver is the ImageFactory the veneer was invoked on.
+void MTitle::or_tail()
 {
-    ((ImageFactory *)layout)->reload();
+    ((ImageFactory *)this)->reload();
 }
 
 // OnRender2D: the two-frame logo intro has elapsed (step == 2); hand control to
-// the next application module.
-void MTitle::r2dDone(void *app, int moduleId)
+// the next application module. The receiver is the ApplicationManager.
+void MTitle::r2dDone(int moduleId)
 {
-    ((ApplicationManager *)app)->SetCurrentApplicationModule((unsigned)moduleId);
+    ((ApplicationManager *)this)->SetCurrentApplicationModule((unsigned)moduleId);
 }
 
-// OnRender2D tail: close the 2D pass on the canvas.
-void MTitle::r2dTail(void *canvas)
+// OnRender2D tail: close the 2D pass on the canvas (receiver is the PaintCanvas).
+void MTitle::r2dTail()
 {
-    ((PaintCanvas *)canvas)->End2d();
+    ((PaintCanvas *)this)->End2d();
 }
 
-// OnRender3D tail: open (and so flush) the 3D pass on the canvas.
-void MTitle::r3dTail(void *canvas)
+// OnRender3D tail: open (and so flush) the 3D pass on the canvas (receiver is
+// the PaintCanvas).
+void MTitle::r3dTail()
 {
-    ((PaintCanvas *)canvas)->Begin3d();
+    ((PaintCanvas *)this)->Begin3d();
 }
 
 // Deleting-destructor tail: the complete-object destructor has run, free the

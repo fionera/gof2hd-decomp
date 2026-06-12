@@ -86,6 +86,16 @@ void _ZN7BombGunD0Ev(BombGun *self)
     return ::operator delete(_ZN7BombGunD1Ev(self));
 }
 
+// BombGun's destructor chains into the RocketGun base destructor once its own
+// Explosion member has been released. base_dtor is exactly that base sub-object
+// teardown: forward to RocketGun::~RocketGun (the non-deleting D1) and hand the
+// object back so the caller can free the storage.
+void *_ZN9RocketGunD1Ev(RocketGun *self);
+extern "C" void *BombGun_base_dtor(BombGun *self)
+{
+    return _ZN9RocketGunD1Ev((RocketGun *)self);
+}
+
 // ---- BombGun_1575cc.cpp ----
 // PaintCanvas singleton holder used by the ctor to register the bomb's geometry/
 // transform with the active scene (same engine-global the update/render paths use).
@@ -226,6 +236,16 @@ void BombGun::render()
 // ---- update_147870.cpp ----
 extern "C" __attribute__((visibility("hidden"))) TargetFollowCamera *(*BombGun_getCamera)(
     PlayerEgo *player);
+
+// The bomb's rocket-cam steering reads back the player's follow camera through an
+// indirect call; the slot resolves to PlayerEgo::getTargetFollowCamera. Provide a
+// thin forwarder and point the function-pointer global at it.
+static TargetFollowCamera *BombGun_getCamera_impl(PlayerEgo *player)
+{
+    return player->getTargetFollowCamera();
+}
+extern "C" __attribute__((visibility("hidden")))
+    TargetFollowCamera *(*BombGun_getCamera)(PlayerEgo *) = &BombGun_getCamera_impl;
 
 
 static const float kRocketOffsetScale = 350.0f;

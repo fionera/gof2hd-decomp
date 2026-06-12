@@ -327,7 +327,7 @@ extern "C" void  Str_ctor_copy(Str *s, const void *src, bool copy);  // String(S
 // Layout / drawing callees (resolved blx targets).
 extern "C" void  Layout_drawMask(void *layout);                              // 0x7696c
 // 0x74de8
-extern "C" void  Layout_drawBox8(void *layout, int kind, int x, int y, int w, int color, Str *text, int z); // 8-arg form
+// 8-arg form
 
 // Hidden PC-relative roots.
 __attribute__((visibility("hidden"))) extern char *g_liw_d_maskFlag;     // 0x143118
@@ -389,7 +389,7 @@ void ListItemWindow::draw()
             int textId = *g_liw_d_headerId;
             ((Ship *)(0))->getIndex();
             Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(textId), false);
-            Layout_drawBox8(layout, 1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
+            ((Layout *)(layout))->drawBox8(1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
             Str_dtor(&s);
 
             void *fac = *g_liw_d_imageFactory;
@@ -404,7 +404,7 @@ void ListItemWindow::draw()
         int textId = *g_liw_d_headerId;
         ((ListItem *)(li))->getIndex();
         Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(textId), false);
-        Layout_drawBox8(layout, 1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
+        ((Layout *)(layout))->drawBox8(1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
         Str_dtor(&s);
 
         void *itemPtr;

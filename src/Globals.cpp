@@ -1,4 +1,5 @@
 #include "gof2/Globals.h"
+#include "gof2/Mesh.h"
 #include "gof2/Ship.h"
 #include "gof2/PaintCanvasClass.h"
 #include "gof2/AEGeometry.h"
@@ -31,12 +32,8 @@ struct Status;
 
 extern "C" void ArrayInt_release(Array<int> *a);
 extern "C" void ArrayInt_add(int val, Array<int> *a);
-extern "C" void Globals_startNewSoundResourceList_tail(int val, Array<int> *a);
 extern "C" void AEString_ctor_copy(void *dst, void *src, bool flag);
 extern "C" void AEString_ctor_default(void *out);
-extern "C" float Globals_sqrt_impl(float x);
-extern "C" void Globals_getRandomSystemForDrinks_tail(int a, int b);
-extern "C" void Globals_addSoundResource_tail(int val, Array<int> *a);
 extern "C" void AEString_default_ctor(void *dst);
 extern "C" void AEString_copy_ctor(void *dst, void *src, int c);
 extern "C" void AEString_cstr_ctor(void *dst, const char *s, int c);
@@ -45,7 +42,6 @@ extern "C" void AEString_assign(void *dst, void *src);
 extern "C" void AEString_dtor(void *s);
 extern "C" short *AEString_index(void *s, int i);
 extern "C" void ArraySetLength_Str(unsigned n, void *a);
-extern "C" long long Globals_lts_divmod(long long num, int den, int *rem);
 extern "C" void AEString_int_ctor(void *dst, int v);
 extern "C" void AEString_concat(void *dst, void *a);
 void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth, void *lineArr);
@@ -62,14 +58,9 @@ namespace AbyssEngine { class AERandom; }
 uint32_t nextInt_71aa4(AbyssEngine::AERandom *self);
 int      nextInt_71ad0(AbyssEngine::AERandom *self, int bound);
 extern "C" int idiv(int a, int b);
-extern "C" void Globals_buildAgentMissionText(void *out, void *agent, int offer);
 extern "C" int AEString_compare(void *a, void *b);
 void MatrixSetTranslation(void *m, float x, float y, float z);
-extern "C" void Globals_buildShipGroup0f(void *self, int param_2, void *canvas);
 extern "C" int AERandom_nextIntB(int rng, int bound);
-extern "C" void Mesh_setFace(void *canvas, int mesh, int face, int i0, int i1, int i2);
-extern "C" void Mesh_setUV(void *canvas, int mesh, int vert, float u, float v);
-extern "C" void Mesh_setVertex(void *canvas, int mesh, int vert, float x, float y, float z);
 extern "C" void FileRead_ctor(void *self);
 extern "C" void *FileRead_dtor(void *self);
 // FileRead is used as an opaque handle here (gof2/FileRead.h not included; see top of file).
@@ -93,7 +84,6 @@ extern "C" void ArrayReleaseClasses_Item(void *a);
 extern "C" void *ArrayItem_dtor(void *a);
 extern "C" void ArrayReleaseClasses_Ship(void *a);
 extern "C" void *ArrayShip_dtor(void *a);
-extern "C" void Globals_releaseResources_tail(void *arg);
 extern "C" void Mission_ctor(void *m);
 extern "C" void Galaxy_ctor(void *g);
 extern "C" void Achievements_ctor(void *a);
@@ -112,7 +102,6 @@ extern "C" int Station_getIndex(int station);
 // MGame/Mission/PlayerTurret reach). Recover the receiver as (*g_status)->method().
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 extern "C" void Status_resetGame();
-extern "C" int Globals_dialogueDispatch(int category, int code);
 extern "C" void ArrayReleaseClasses_Str(void *a);
 extern "C" void *ArrayStr_dtor(void *a);
 int GameText_getLanguage();
@@ -162,7 +151,7 @@ void Globals_startNewSoundResourceList(void *self)
     Array<int> *a = new Array<int>();
     ((Globals*)self)->field_0x4 = a;
     ArrayInt_add(0x7c, a);
-    return Globals_startNewSoundResourceList_tail(0x7b, ((Globals*)self)->field_0x4);
+    return ((Globals*)self)->startNewSoundResourceList_tail(0x7b, ((Globals*)self)->field_0x4);
 }
 
 // ---- getItemName_e4b68.cpp ----
@@ -200,7 +189,7 @@ RetStr Globals_getKeyActionName(int action)
 float Globals::sqrt(float x) {
     Globals *self = this;
     (void)self;
-    return Globals_sqrt_impl(x);
+    return Globals::sqrt_impl(x);
 }
 
 // ---- getRandomSystemForDrinks_e4b38.cpp ----
@@ -211,7 +200,7 @@ void Globals_getRandomSystemForDrinks()
 {
     int a = *(int *)gDrinks_a;
     int r = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gDrinks_rng, 0x16);
-    return Globals_getRandomSystemForDrinks_tail(a, r);
+    return Globals::getRandomSystemForDrinks_tail(a, r);
 }
 
 // ---- addSoundResourceToList_e55a6.cpp ----
@@ -223,7 +212,7 @@ void Globals_addSoundResourceToList(void *self, int val)
         unsigned i = 0;
         for (;;) {
             if (i >= a->size()) {
-                return Globals_addSoundResource_tail(val, a);
+                return ((Globals*)self)->addSoundResource_tail(val, a);
             }
             int e = (*a)[i];
             i = i + 1;
@@ -389,17 +378,17 @@ void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
     void *out = retSlot;   // sret slot lives at [r7+8] in target; reuse param
 
     int rem = 0;
-    long long secQ = Globals_lts_divmod(ms, 1000, &rem);
+    long long secQ = Globals::lts_divmod(ms, 1000, &rem);
     int seconds = 0;
-    Globals_lts_divmod(secQ, 0x3c, &seconds);
+    Globals::lts_divmod(secQ, 0x3c, &seconds);
 
-    long long minQ = Globals_lts_divmod(ms, 0xea60, &rem);
+    long long minQ = Globals::lts_divmod(ms, 0xea60, &rem);
     int minute = 0;
-    Globals_lts_divmod(minQ, 0x3c, &minute);
+    Globals::lts_divmod(minQ, 0x3c, &minute);
 
-    long long hrQ = Globals_lts_divmod(ms, 0xea60, &rem);
+    long long hrQ = Globals::lts_divmod(ms, 0xea60, &rem);
     int hours = 0;
-    Globals_lts_divmod(hrQ, 0x18, &hours);
+    Globals::lts_divmod(hrQ, 0x18, &hours);
 
     char secPart[12], secNum[12], secStr[12];
     AEString_cstr_ctor(secPart, seconds < 10 ? gLTS2_secTens : gLTS2_secEmpty, 0);
@@ -418,7 +407,7 @@ void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
         AEString_concat(full, left);
     } else {
         int rem4 = 0;
-        long long h = Globals_lts_divmod(ms, 0xea60, &rem4);
+        long long h = Globals::lts_divmod(ms, 0xea60, &rem4);
         int hv = (int)h * 0x18 + hours;
 
         char hrPart[12], hrNum[12], hrStr[12];
@@ -717,13 +706,13 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
                 }
 
                 // General offer/event briefing text: data-driven assembly into `acc`.
-                Globals_buildAgentMissionText(acc, agent, offer);
+                Globals::buildAgentMissionText((String *)acc, agent, offer);
                 *(int *)(*busy + 0xd0) -= 1;
             } else {
-                Globals_buildAgentMissionText(acc, agent, -1);
+                Globals::buildAgentMissionText((String *)acc, agent, -1);
             }
         } else {
-            Globals_buildAgentMissionText(acc, agent, -1);
+            Globals::buildAgentMissionText((String *)acc, agent, -1);
         }
 
         AEString_copy_ctor(out, acc, 0);
@@ -855,13 +844,13 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
 
     int rem = 0;
     // ms / 60000 -> total minutes (quotient), then minute-of-hour via %60.
-    long long q = Globals_lts_divmod(ms, 0xea60, &rem);
+    long long q = Globals::lts_divmod(ms, 0xea60, &rem);
     int minute = 0;
-    Globals_lts_divmod(q, 0x3c, &minute);   // minute = q % 60 (remainder)
+    Globals::lts_divmod(q, 0x3c, &minute);   // minute = q % 60 (remainder)
 
-    long long q2 = Globals_lts_divmod(ms, 0xea60, &rem);
+    long long q2 = Globals::lts_divmod(ms, 0xea60, &rem);
     int hours = 0;
-    Globals_lts_divmod(q2, 0x18, &hours);   // hours = q2 % 24
+    Globals::lts_divmod(q2, 0x18, &hours);   // hours = q2 % 24
 
     char mPart[12], mNum[12], minStr[12];
     AEString_cstr_ctor(mPart, minute < 10 ? gLTS_minTens : gLTS_minEmpty, 0);
@@ -869,7 +858,7 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
     AEString_concat(minStr, mPart);
 
     int rem3 = 0;
-    long long h = Globals_lts_divmod(ms, 0xea60, &rem3);
+    long long h = Globals::lts_divmod(ms, 0xea60, &rem3);
     int hv = (int)h * 0x18 + hours;
 
     char hPart[12], hNum[12], hrStr[12];
@@ -909,7 +898,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
     void **canvasP = *(void ***)gGSG_canvas;
 
     if (kind == 0xf) {
-        Globals_buildShipGroup0f(self, variant, *canvasP);
+        ((Globals*)self)->buildShipGroup0f(variant, *canvasP);
         goto done;
     }
     if (kind == 0xe || kind == 0xd) {
@@ -1131,43 +1120,43 @@ void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, f
     int mesh = (int)mesh64;
     int cv = *canvasP;
 
-    Mesh_setFace((void *)(long)cv, mesh, 0, 0, 1, 2);
-    Mesh_setFace((void *)(long)cv, mesh, 1, 2, 1, 3);
-    Mesh_setFace((void *)(long)cv, mesh, 2, 4, 5, 6);
-    Mesh_setFace((void *)(long)cv, mesh, 3, 6, 5, 7);
-    Mesh_setFace((void *)(long)cv, mesh, 4, 8, 9, 10);
-    Mesh_setFace((void *)(long)cv, mesh, 5, 10, 9, 0xb);
+    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 0, 0, 1, 2);
+    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 1, 2, 1, 3);
+    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 2, 4, 5, 6);
+    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 3, 6, 5, 7);
+    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 4, 8, 9, 10);
+    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 5, 10, 9, 0xb);
 
     // UV coords: pairs (u0,v0) and (u0,v1) drive the texture mapping of each face.
-    Mesh_setUV((void *)(long)cv, mesh, 0, u0, 0);
-    Mesh_setUV((void *)(long)cv, mesh, 1, u1, 0);
-    Mesh_setUV((void *)(long)cv, mesh, 2, v1, u0);
-    Mesh_setUV((void *)(long)cv, mesh, 3, v1, v0);
-    Mesh_setUV((void *)(long)cv, mesh, 4, u0, 0);
-    Mesh_setUV((void *)(long)cv, mesh, 5, u1, 0);
-    Mesh_setUV((void *)(long)cv, mesh, 6, v1, u0);
-    Mesh_setUV((void *)(long)cv, mesh, 7, v1, v0);
-    Mesh_setUV((void *)(long)cv, mesh, 8, u0, 0);
-    Mesh_setUV((void *)(long)cv, mesh, 9, u1, 0);
-    Mesh_setUV((void *)(long)cv, mesh, 10, v1, u0);
-    Mesh_setUV((void *)(long)cv, mesh, 0xb, v1, v0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 0, u0, 0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 1, u1, 0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 2, v1, u0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 3, v1, v0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 4, u0, 0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 5, u1, 0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 6, v1, u0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 7, v1, v0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 8, u0, 0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 9, u1, 0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 10, v1, u0);
+    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 0xb, v1, v0);
 
     float pw = VectorSignedToFloat(width, 0);
     float nh = VectorSignedToFloat(-height, 0);
-    Mesh_setVertex((void *)(long)cv, mesh, 0, nh, 0, pw);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 0, nh, 0, pw);
     float nw = VectorSignedToFloat(-width, 0);
-    Mesh_setVertex((void *)(long)cv, mesh, 1, nh, 0, nw);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 1, nh, 0, nw);
     float ph = VectorSignedToFloat(height, 0);
-    Mesh_setVertex((void *)(long)cv, mesh, 2, ph, 0, pw);
-    Mesh_setVertex((void *)(long)cv, mesh, 3, ph, 0, nw);
-    Mesh_setVertex((void *)(long)cv, mesh, 4, 0, nh, pw);
-    Mesh_setVertex((void *)(long)cv, mesh, 5, 0, nh, nw);
-    Mesh_setVertex((void *)(long)cv, mesh, 6, 0, ph, pw);
-    Mesh_setVertex((void *)(long)cv, mesh, 7, 0, ph, nw);
-    Mesh_setVertex((void *)(long)cv, mesh, 8, nh, ph, 0);
-    Mesh_setVertex((void *)(long)cv, mesh, 9, nh, nh, 0);
-    Mesh_setVertex((void *)(long)cv, mesh, 10, ph, ph, 0);
-    Mesh_setVertex((void *)(long)cv, mesh, 0xb, ph, nh, 0);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 2, ph, 0, pw);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 3, ph, 0, nw);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 4, 0, nh, pw);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 5, 0, nh, nw);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 6, 0, ph, pw);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 7, 0, ph, nw);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 8, nh, ph, 0);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 9, nh, nh, 0);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 10, ph, ph, 0);
+    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 0xb, ph, nh, 0);
 
     return;
 }
@@ -1726,11 +1715,11 @@ extern void *const gRR_arg __attribute__((visibility("hidden")));
 void Globals_releaseResources()
 {
     ((PaintCanvas *)*(void **)gRR_canvas)->ReleaseAllResources();
-    return Globals_releaseResources_tail(*(void **)gRR_arg);
+    return Globals::releaseResources_tail(*(void **)gRR_arg);
 }
 
 // ---- loadFont_e47c4.cpp ----
-extern "C" void Globals_loadFont_tail(int canvas, int font, int zero);  // veneer at 0x1ac2c8
+// veneer at 0x1ac2c8
 
 // Per-font canvas+font globals (PC-relative). canvasP/fontP each *(void**) -> object pointer.
 extern void *const gLF_canvas9 __attribute__((visibility("hidden")));   // DAT_000f4980
@@ -1846,7 +1835,7 @@ epilogue: {
     ((PaintCanvas *)(long)*mainCanvas)->FontSetSpacing(*mainFont, 0);
     unsigned *extra = *(unsigned **)gLF_fontExtra;
     ((PaintCanvas *)(long)*mainCanvas)->FontCreate((unsigned short)0x2d7a, (unsigned int *)extra, false);
-    Globals_loadFont_tail(*mainCanvas, (int)*extra, 0);
+    Globals::loadFont_tail((void *)(long)*mainCanvas, (void *)(long)(int)*extra, 0);
 }
 }
 
@@ -2144,15 +2133,15 @@ int Globals_getDialogueSoundId(void *self, int code, void *agent)
             int *p = ((Agent *)(agent))->getImageParts();
             category = (*p == 2) ? 3 : 0;
             // category 0 dispatch differs by gender; fold gender into the bucket id.
-            return Globals_dialogueDispatch(male != 0 ? (category + 10) : category, code);
+            return ((Globals*)self)->dialogueDispatch(male != 0 ? (category + 10) : category, code);
         }
         // No image parts: race-3 fallback uses the "case 2/3" generic dialogue table.
-        return Globals_dialogueDispatch(2, code);
+        return ((Globals*)self)->dialogueDispatch(2, code);
     }
 
     // Non-Klingon races: bucket by race index, gendered.
     category = race;
-    return Globals_dialogueDispatch(male != 0 ? (category + 10) : category, code);
+    return ((Globals*)self)->dialogueDispatch(male != 0 ? (category + 10) : category, code);
 }
 
 // ---- getRandomPlanetName_e4a8c.cpp ----
@@ -2593,7 +2582,6 @@ void Globals::buildAgentMissionText(String *out, void *agentArg, int offer)
         void *line = ((GameText *)(void *)(long)**(int **)&g_status)->getText(0x300);
         AEString_assign(acc, line);
         AEString_copy_ctor(out, acc, 0);
-        AEString_dtor(acc);
         return;
     }
 
@@ -2617,9 +2605,7 @@ void Globals::buildAgentMissionText(String *out, void *agentArg, int offer)
         AEString_default_ctor(tok);
         // getName() returns a String by value; reuse the agent's name text directly.
         ((Agent *)agent)->getName();
-        AEString_dtor(tok);
     }
 
     AEString_copy_ctor(out, acc, 0);
-    AEString_dtor(acc);
 }

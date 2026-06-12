@@ -3,7 +3,6 @@
 
 extern "C" uint32_t _ZN9AEPakFile7ReleaseEv(AEPakFile *self);
 AEPakFile *_ZN9AEPakFileD2Ev(AEPakFile *self);
-extern "C" void AEPakFile_deleteTail(AEPakFile *self);
 
 // ---- _AEPakFile_70034.cpp ----
 __attribute__((visibility("hidden"))) extern void *g_AEPakFile_vtable;
@@ -42,7 +41,7 @@ uint32_t AEPakFile::Release()
 // ---- _AEPakFile_70058.cpp ----
 void _ZN9AEPakFileD0Ev(AEPakFile *self)
 {
-    AEPakFile_deleteTail(_ZN9AEPakFileD2Ev(self));
+    ((AEPakFile *)(_ZN9AEPakFileD2Ev(self)))->deleteTail();
 }
 
 // ---- Read_70068.cpp ----

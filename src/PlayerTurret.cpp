@@ -21,7 +21,6 @@ public:
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 
 extern "C" void PlayerTurret_renderBase(PlayerTurret *self);
-extern "C" PlayerTurret *PlayerTurret_completeDtor(PlayerTurret *self);
 extern "C" void *KIPlayer_dtor(void *self);
 void MatrixGetDir(Vector *out, const void *matrix);
 void VectorNormalize(Vector *out, const Vector *v);
@@ -166,7 +165,7 @@ KIPlayer *PlayerTurret::getHost()
 // PlayerTurret deleting destructor (D0): run the complete dtor, then free.
 void _ZN12PlayerTurretD0Ev(PlayerTurret *self)
 {
-    ::operator delete(PlayerTurret_completeDtor(self));
+    ::operator delete(((PlayerTurret *)(self))->completeDtor());
 }
 
 // ---- setScaling_1573f0.cpp ----

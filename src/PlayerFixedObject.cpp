@@ -43,7 +43,6 @@ extern "C" char PlayerFixedObject_vtable;
 extern "C" void ArrayReleaseClasses_BV(void *arr);
 extern "C" void *Array_BV_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
-extern "C" void *PlayerFixedObject_baseDtor(PlayerFixedObject *self);
 extern "C" void String_ctor_empty(void *s);
 extern "C" void String_ctor_cstr(void *s, const char *cstr, bool b);
 extern "C" void *String_op_assign(void *dst, void *src);
@@ -779,7 +778,7 @@ void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
     if (expl != 0) ::operator delete(Explosion_dtor(expl));
     self->explosion = 0;
     ((String *)((char *)self + 0x1ac))->dtor();
-    return PlayerFixedObject_baseDtor(self);
+    return ((PlayerFixedObject *)(self))->baseDtor();
 }
 
 // PlayerFixedObject::~PlayerFixedObject() -- real destructor.
@@ -812,7 +811,7 @@ PlayerFixedObject::~PlayerFixedObject() {
     if (expl != 0) ::operator delete(Explosion_dtor(expl));
     self->explosion = 0;
     ((String *)((char *)self + 0x1ac))->dtor();
-    PlayerFixedObject_baseDtor(self);
+    ((PlayerFixedObject *)(self))->baseDtor();
 }
 
 // PlayerFixedObject::~PlayerFixedObject() destructor tail.

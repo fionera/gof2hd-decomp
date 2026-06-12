@@ -18,8 +18,6 @@
 GameRecord::~GameRecord()
 {
     char *t = (char *)this;
-    AEString_dtor(t + 0x194);
-    AEString_dtor(t + 0x188);
 }
 
 // ---- GameRecord_155900.cpp ----

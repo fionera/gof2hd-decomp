@@ -63,7 +63,6 @@ extern "C" void SpaceLounge_OnRenderBG_tail();
 extern "C" void SpaceLounge_draw3DShip_tail(void *ship);
 extern "C" void *SpaceLounge_layout_begin;
 extern "C" int StarMap_touch_end(void *map, int x, int y);
-extern "C" int Layout_touch_end(void *layout, int x, int y);
 extern "C" int ListItemWindow_touch_end(void *list, int x, int y);
 // Dropped-self Status singleton accessors: the decompiler emitted these calls
 // with no receiver argument (the Status* singleton is loaded inside the thunk).
@@ -141,7 +140,6 @@ extern "C" void ArrayRelease_VectorPtr(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void SpaceLounge_draw_cutscene_tail();
 extern "C" void SpaceLounge_draw_map_tail(void *map);
-extern "C" void Layout_drawHeader_call(void *layout, void *title);
 extern "C" void *SpaceLounge_draw_layout_slot;
 extern "C" void *SpaceLounge_draw_canvas_slot;
 extern "C" void *SpaceLounge_draw_text_slot;
@@ -443,7 +441,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
 
     void *layoutSlot = *(void **)&SpaceLounge_touch_layout_slot;
     void *layout = *(void **)layoutSlot;
-    if (Layout_touch_end(layout, x, y) != 0) {
+    if (((Layout *)(layout))->touch_end(x, y) != 0) {
         if (UC(self, 0x1c) != 0) {
             ((Layout *)(layout))->resetWindowDimensions();
             UC(self, 0x1c) = 0;
@@ -1300,7 +1298,6 @@ SpaceLounge::~SpaceLounge()
     }
     P(self, 0xc0) = 0;
     ((String *)(B(self, 0xa4)))->dtor();
-    return self;
 }
 
 // ---- draw_170bec.cpp ----
@@ -1332,7 +1329,7 @@ void SpaceLounge::draw() {
     void *textsSlot = *(void **)&SpaceLounge_draw_text_slot;
     void *text = ((GameText *)(*(void **)textsSlot))->getText(0x18e);
     ((String *)(title))->ctor_copy((String *)text, false);
-    Layout_drawHeader_call(layout, title);
+    ((Layout *)(layout))->drawHeader_call(title);
     ((String *)(title))->dtor();
 
     ((SpaceLounge *)(self))->drawLounge();

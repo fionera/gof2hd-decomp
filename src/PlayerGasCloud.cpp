@@ -264,6 +264,17 @@ PlayerGasCloud::~PlayerGasCloud()
     PlayerGasCloud_baseDtor(this);
 }
 
+// ~PlayerGasCloud() tail (binary: tail-call to SpacePoint::~SpacePoint @0x732b4).
+//   PlayerGasCloud derives from the SpacePoint base game-object; once the cloud's own
+//   spark arrays and model geometry have been released, the base subobject is torn
+//   down here. SpacePoint owns no heap members (its destructor only re-seats the
+//   vtable, work already done by the derived dtor above), so the base teardown reduces
+//   to yielding the object pointer back to the deleting destructor that frees it.
+void *PlayerGasCloud::baseDtor()
+{
+    return this;
+}
+
 // ---- explode_176660.cpp ----
 using AbyssEngine::AEMath::Vector;
 

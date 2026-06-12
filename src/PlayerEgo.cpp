@@ -84,7 +84,6 @@ extern "C" void PlayerEgo_hackingShuffle_ext(int);
 extern "C" void PlayerEgo_setRocketControl_ext(PlayerEgo*, int);
 extern "C" void PlayerEgo_turnHorizontal_neg(PlayerEgo*);
 extern "C" void PlayerEgo_turnHorizontal_pos(PlayerEgo*);
-extern "C" void ParticleSystemManager_enableSystemEmit2(void*, int, int);
 extern "C" void PlayerEgo_setPosition_v(PlayerEgo*);
 extern "C" void PlayerEgo_PauseEngineSound_ext(void*);
 extern "C" void PlayerEgo_setActive_ext(void*);
@@ -94,7 +93,6 @@ extern "C" int PlayerEgo_hackingWon_ext(int);
 extern "C" int PlayerEgo_getCurrentMiningAmount_ext(int);
 extern "C" void PlayerEgo_hackingRotateLCW_ext(int, int);
 extern "C" void PlayerEgo_ResumeEngineSound_ext(void*, int);
-extern "C" void ParticleSystemManager_enableSystemEmit3(void*, int, int);
 extern "C" void Explosion_ctor(void*, int);
 extern "C" void Player_setActive_(int);
 extern "C" void PlayerEgo_explode_ext(PlayerEgo*, int);
@@ -444,7 +442,7 @@ void PlayerEgo::setExhaustVisible(bool param) {
   if (arr != 0) {
     for (unsigned i = 0; i < arr[0]; i++) {
       int* p = (int*)arr[1];
-      ParticleSystemManager_enableSystemEmit2(P(P(self, 0xc), 0x80), p[i], param);
+      ((ParticleSystemManager *)(P(P(self, 0xc), 0x80)))->enableSystemEmit2(p[i], param);
     }
   }
 }
@@ -574,7 +572,7 @@ extern void* g_explode_obj;
 extern void (*g_explode_fn)(void*, int);
 void PlayerEgo::explode() {
     PlayerEgo *self = this;
-  ParticleSystemManager_enableSystemEmit3(P(P(self, 0xc), 0x74), I(self, 0x2fc), 1);
+  ((ParticleSystemManager *)(P(P(self, 0xc), 0x74)))->enableSystemEmit3(I(self, 0x2fc), 1);
   if (I(self, 0x8c) != 0) return;
   ((TargetFollowCamera *)(P(self, 0x88)))->setActive(0);
   void* e = ::operator new(0x68);
@@ -1460,13 +1458,13 @@ void PlayerEgo::setLevel(void* level) {
   void* gm = (void*)&((AEGeometry *)P(self, 8))->getMatrix();
   void* sys = (void *)((ParticleSystemManager *)(src))->addSystem(gm, 9, 0);
   I(self, 0x2fc) = (int)(intptr_t)sys;
-  ParticleSystemManager_enableSystemEmit3(P(P(self, 0xc), 0x74), (int)(intptr_t)sys, 0);
+  ((ParticleSystemManager *)(P(P(self, 0xc), 0x74)))->enableSystemEmit3((int)(intptr_t)sys, 0);
   if (((Status *)(g_setLevel_status))->getCurrentCampaignMission() > 1) return;
   void* src2 = P(P(self, 0xc), 0x78);
   void* gm2 = (void*)&((AEGeometry *)P(self, 8))->getMatrix();
   void* sys2 = (void *)((ParticleSystemManager *)(src2))->addSystem(gm2, 0xf, 0);
   I(self, 0x300) = (int)(intptr_t)sys2;
-  ParticleSystemManager_enableSystemEmit3(P(P(self, 0xc), 0x78), (int)(intptr_t)sys2, 0);
+  ((ParticleSystemManager *)(P(P(self, 0xc), 0x78)))->enableSystemEmit3((int)(intptr_t)sys2, 0);
   void* src3 = P(P(self, 0xc), 0x84);
   void* gm3 = (void*)&((AEGeometry *)P(self, 8))->getMatrix();
   void* sys3 = (void *)((ParticleSystemManager *)(src3))->addSystem(gm3, 0x2a, 0);

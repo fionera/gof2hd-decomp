@@ -48,7 +48,7 @@ void SolarSystem::dtor() {
 // but does not free the SolarSystem itself.
 extern "C" void SolarSystem_baseStringDtor(void *strField)
 {
-    String_dtor((String *)strField);
+    ((String *)((String *)strField))->dtor();
 }
 
 // SolarSystem::getWarpGateEnumIndex() forwards here with the orbit's jump-gate

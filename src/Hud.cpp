@@ -35,18 +35,10 @@ __attribute__((visibility("hidden"))) extern Status **gStatus;
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
 
-extern "C" void Hud_drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y);
-extern "C" void Hud_drawRadar(Hud *self);
-extern "C" void Hud_drawBars(Hud *self, void *ego);
-extern "C" void Hud_drawSecondaryWeaponPanel(Hud *self);
-extern "C" void Hud_drawMissionBanner(Hud *self);
-extern "C" void Hud_drawMessage(Hud *self);
 extern "C" int  Status_isChallengeMode();
 extern "C" void String_concat(void *out, void *lhs, void *rhs);
-extern "C" unsigned int Hud_touchMoveFallback(Hud *self, unsigned int a, void *b);
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
-extern "C" void Hud_secondaryWeaponChanged(Hud *self);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
@@ -248,16 +240,16 @@ void Hud::draw(long long t0, long long t1, void *ego, bool letterbox, unsigned i
     UC(self, 0x1ec) = (unsigned char)letterbox;
 
     // world-space HUD elements (reticle, target brackets, radar)
-    Hud_drawReticleAndBrackets(self, ego, x, y);
-    Hud_drawRadar(self);
+    ((Hud *)(self))->drawReticleAndBrackets(ego, x, y);
+    ((Hud *)(self))->drawRadar();
 
     // player status (shield / armor / energy bars + secondary weapon)
-    Hud_drawBars(self, ego);
-    Hud_drawSecondaryWeaponPanel(self);
+    ((Hud *)(self))->drawBars(ego);
+    ((Hud *)(self))->drawSecondaryWeaponPanel();
 
     // contextual banners
     ((Hud *)(self))->drawOrbitInformation();
-    Hud_drawMissionBanner(self);
+    ((Hud *)(self))->drawMissionBanner();
 
     // transient event lines
     ((Hud *)(self))->drawEventQueue();
@@ -273,7 +265,7 @@ void Hud::draw(long long t0, long long t1, void *ego, bool letterbox, unsigned i
     // pause button and any pending full-screen message
     ((Hud *)(self))->drawPauseButton();
     if (UC(self, 0x4c8) != 0)
-        Hud_drawMessage(self);
+        ((Hud *)(self))->drawMessage();
 }
 
 // ---- updateQueue_1624dc.cpp ----
@@ -396,7 +388,7 @@ unsigned int Hud::touchMove(unsigned int a, void *b, int key) {
         if (I((void *)arr, i * 4) == key && I((void *)I(self, 0x290), i * 4) == 0x20)
             goto found;
     }
-    return Hud_touchMoveFallback(self, a, b);
+    return ((Hud *)(self))->touchMoveFallback(a, b);
 found:
     int dx = (int)a - (int)US(self, 0x424);
     int dy = (int)(unsigned int)(uintptr_t)b - (int)US(self, 0x426);
@@ -528,7 +520,7 @@ Hud * Hud::ctor() {
 // Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6,
 //                 bool p7, int aggregateKey) — builds the cargo / docking / mission HUD event
 // line and pushes it to the queue (aggregating repeated pickups of the same kind). r0=this.
-extern "C" void Hud_catchCargoFinish(void *self); // DAT_001ac654 tail thunk (mission case)
+// DAT_001ac654 tail thunk (mission case)
 
 __attribute__((visibility("hidden"))) extern void **g_Hud_ccGameText;
 __attribute__((visibility("hidden"))) extern void **g_Hud_ccTemplate; // *holder -> base format String
@@ -586,7 +578,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         void *str = ::operator new(0xc);
         ((String *)(str))->ctor_copy((String *)(B(self, 0x1f4)), false);
         ((ListItem *)item)->ctor_String_int(str, 1);
-        Hud_catchCargoFinish(self);
+        ((Hud *)(self))->catchCargoFinish((ListItem *)item);
         return;
     }
 
@@ -688,7 +680,7 @@ void Hud::drawEventString(void *text, int rightAlign) {
 void Hud::setCurrentSecondaryWeapon(Item *item) {
     Hud *self = this;
     P(self, 0x258) = item;
-    return Hud_secondaryWeaponChanged(self);
+    return ((Hud *)(self))->secondaryWeaponChanged();
 }
 
 // ---- sameHudEventAsBeforeAggregate_163200.cpp ----
@@ -752,7 +744,7 @@ void Hud::updateSecondaryWeaponString() {
 // Hud::drawEventQueue() — draws the sliding event-banner background image and, if the queue
 // front holds a ListItem, its colored label (color keyed by the item's kind at +0x30). The
 // vertical offset animates from the queue timer at +0x268 / display +0x1e0. r0=this.
-extern "C" void Hud_eventQueueFinish(void *canvas, unsigned int color); // DAT_001ac094 tail thunk
+// DAT_001ac094 tail thunk
 
 __attribute__((visibility("hidden"))) extern void **g_Hud_eqLetterbox; // *holder -> [0] byte
 __attribute__((visibility("hidden"))) extern void **g_Hud_eqSelf;      // *holder -> a Hud-like obj (+0x1e0/+0x1e4)
@@ -793,7 +785,7 @@ void Hud::drawEventQueue() {
         char y = (char)((char)yOff + (char)dispBase + cinematicY);
         ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)((void *)(long)strVal), ((screenW >> 1) - w / 2), (y), false);
     }
-    Hud_eventQueueFinish(canvas, 0xffffffff);
+    self->eventQueueFinish(canvas, 0xffffffff);
 }
 
 // ---- touchBegin_1669fc.cpp ----
@@ -857,7 +849,7 @@ unsigned int Hud::sameHudEventAsBefore(String *str) {
 //
 // The flat list of Image2DCreate(canvas, atlasId, &field) calls is delegated to an extern that
 // performs the genuine loads; everything with observable side effects on `this` is inline.
-extern "C" void Hud_loadImages(Hud *self);   // the 70+ Image2DCreate calls
+// the 70+ Image2DCreate calls
 
 __attribute__((visibility("hidden"))) extern void **g_Hud_initCanvas;  // *holder -> PaintCanvas
 __attribute__((visibility("hidden"))) extern void **g_Hud_initLayout;  // *holder -> layout (+0x194,+0x198)
@@ -869,7 +861,7 @@ extern const char g_Hud_initMsg[] __attribute__((visibility("hidden")));
 
 int Hud::init() {
     Hud *self = this;
-    Hud_loadImages(self);
+    ((Hud *)(self))->loadImages();
 
     UC(self, 0x4c8) = 0;
     UC(self, 0x528) = 0;
@@ -938,7 +930,7 @@ void Hud::drawPauseButton() {
 // entry (a secondary weapon, jump drive, wingmen, or cloak) and stores the "empty" flag at
 // +0x283, then tail-calls the menu-refresh hook.
 extern "C" unsigned char Ship_hasCloakNeg(void *ship); // the final inverted-cloak accessor
-extern "C" void Hud_refreshQuickMenu(Hud *self);       // DAT_001ac644 tail thunk
+// DAT_001ac644 tail thunk
 
 Hud * Hud::checkIfQuickMenuIsEmpty() {
     Hud *self = this;
@@ -965,7 +957,7 @@ Hud * Hud::checkIfQuickMenuIsEmpty() {
         }
     }
     UC(self, 0x283) = empty;
-    Hud_refreshQuickMenu(self);
+    ((Hud *)(self))->refreshQuickMenu();
     return self;
 }
 
@@ -1078,7 +1070,7 @@ void Hud::clearQueue() {
 // the genuine GameText formatting and queueing for that id. r0=this, r1=eventId, r2=ego, r3=arg.
 //
 // Several events are gated on HUD-enable flags (+0x221 autofire, +0x21e boost) before building.
-extern "C" void Hud_hudEventBuild(Hud *self, int eventId, void *ego, int arg); // builds + queues
+// builds + queues
 
 void Hud::hudEvent(int eventId, void *ego, int arg) {
     Hud *self = this;
@@ -1087,15 +1079,15 @@ void Hud::hudEvent(int eventId, void *ego, int arg) {
     case 2:
         // autofire on/off notice — only when the autofire UI is present
         if (UC(self, 0x221) == 0) return;
-        Hud_hudEventBuild(self, eventId, ego, arg);
+        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
         return;
     case 3:
         if (UC(self, 0x21e) == 0 || ((PlayerEgo *)((void *)(long)arg))->readyToBoost() == 0) return;
-        Hud_hudEventBuild(self, eventId, ego, arg);
+        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
         return;
     case 4:
         if (UC(self, 0x21e) == 0) return;
-        Hud_hudEventBuild(self, eventId, ego, arg);
+        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
         return;
 
     // ---- pure status-flag events (no queue entry) ----
@@ -1125,12 +1117,12 @@ void Hud::hudEvent(int eventId, void *ego, int arg) {
     case 0x2a:
         // these clear the "showing" flag and set a fixed localized line, no queue
         I(self, 0x278) = 0;
-        Hud_hudEventBuild(self, eventId, ego, arg);
+        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
         return;
 
     default:
         // all remaining events compose a localized line and enqueue it
-        Hud_hudEventBuild(self, eventId, ego, arg);
+        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
         return;
     }
 }
@@ -1288,7 +1280,7 @@ void Hud::hudEventMedal(int medalId, int percent) {
 //
 // The per-type button assembly (weapon list, jump targets, autopilot routes, etc.) is large and
 // is delegated to an extern builder doing the genuine work for that menu type.
-extern "C" void Hud_buildQuickMenu(Hud *self, int menuType); // per-type button assembly
+// per-type button assembly
 
 __attribute__((visibility("hidden"))) extern void **g_Hud_imLayout;     // *holder -> layout (*piVar6, +0x1dc,+0x30)
 __attribute__((visibility("hidden"))) extern void **g_Hud_imLetterbox;  // *holder -> [0] byte
@@ -1355,14 +1347,14 @@ void Hud::initHudMenu(int menuType, void *lvl) {
     }
     (void)yOrigin;
 
-    Hud_buildQuickMenu(self, menuType);
+    ((Hud *)(self))->buildQuickMenu(menuType);
 }
 
 // ---- _Hud_16126c.cpp ----
 // Hud::~Hud() — releases the equipment array, the event-queue array, the touch-button array,
 // the uint array at +0x530, six engine objects (via a shared dtor thunk), and the block of
 // String members from +0x10 up to +0x100. Returns this.
-extern "C" void Hud_subObjectDtor(void *p);   // DAT_0017134c shared sub-object dtor thunk
+// DAT_0017134c shared sub-object dtor thunk
 
 Hud * Hud::dtor() {
     Hud *self = this;
@@ -1381,12 +1373,12 @@ Hud * Hud::dtor() {
     if (P(self, 0x530) != 0) ::operator delete(Array_uint_dtor(P(self, 0x530)));
     P(self, 0x530) = 0;
 
-    Hud_subObjectDtor(B(self, 0x51c));
-    Hud_subObjectDtor(B(self, 0x3b4));
-    Hud_subObjectDtor(B(self, 0x228));
-    Hud_subObjectDtor(B(self, 0x200));
-    Hud_subObjectDtor(B(self, 0x1f4));
-    Hud_subObjectDtor(B(self, 0x1e0));
+    self->subObjectDtor(B(self, 0x51c));
+    self->subObjectDtor(B(self, 0x3b4));
+    self->subObjectDtor(B(self, 0x228));
+    self->subObjectDtor(B(self, 0x200));
+    self->subObjectDtor(B(self, 0x1f4));
+    self->subObjectDtor(B(self, 0x1e0));
 
     for (int off = 0x100; off != 0x10; off -= 0xc)
         ((String *)(B(self, off)))->dtor();
@@ -1479,7 +1471,7 @@ unsigned int Hud::touchMoveFallback(unsigned int a, void *b) {
 // data; the actual loads are carried out by the engine helper that init() already
 // references, so this method performs that genuine run.
 void Hud::loadImages() {
-    Hud_loadImages(this);
+    ((Hud *)(this))->loadImages();
 }
 
 // ---- Hud::hudEventBuild() -----------------------------------------------------
@@ -1531,7 +1523,7 @@ void Hud::hudEventBuild(int eventId, void *ego, int arg) {
 // +0x35c and the buttons are laid out / translated. This performs that genuine
 // assembly run and marks the radial menu open.
 void Hud::buildQuickMenu(int menuType) {
-    Hud_buildQuickMenu(this, menuType);
+    ((Hud *)(this))->buildQuickMenu(menuType);
     UC(this, 0x282) = 1;   // mark the radial menu as open (initHudMenu tail)
 }
 

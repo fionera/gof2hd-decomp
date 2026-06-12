@@ -44,21 +44,21 @@ public:
     static long long lts_divmod(long long num, int den, int *rem);
     // Tail of startNewSoundResourceList()/addSoundResourceToList(): append a sound-resource
     // id to the list. Both routed through the same Array<int>::add veneer in the target.
-    void startNewSoundResourceList_tail(int val, Array<int> *list);
-    void addSoundResource_tail(int val, Array<int> *list);
+    static void startNewSoundResourceList_tail(int val, Array<int> *list);
+    static void addSoundResource_tail(int val, Array<int> *list);
     // Public "add one sound resource to the active list" entry (the (list,id) overload form).
     void addSoundResource_oi(int val);
     // Tail of getRandomSystemForDrinks(): record the drawn system index for the chosen slot.
-    void getRandomSystemForDrinks_tail(int systemSlot, int picked);
+    static void getRandomSystemForDrinks_tail(int systemSlot, int picked);
     // Tail of loadFont(): set the spacing of the freshly created extra font to 0.
-    void loadFont_tail(void *canvas, void *font, int spacing);
+    static void loadFont_tail(void *canvas, void *font, int spacing);
     // Tail of releaseResources(): release the secondary canvas' resources too.
-    void releaseResources_tail(void *secondaryCanvas);
+    static void releaseResources_tail(void *secondaryCanvas);
     // Second stage of getDialogueSoundId(): map a resolved race/gender bucket + dialogue
     // code to a sound id (returns -1 when unmapped).
     int dialogueDispatch(int category, int code);
     // Offer/event briefing-text assembly used by getAgentMissionText().
-    void buildAgentMissionText(String *out, void *agent, int offer);
+    static void buildAgentMissionText(String *out, void *agent, int offer);
     // The kind==0xf (capital-ship) branch of getShipGroup(): build the articulated LOD geometry.
     void buildShipGroup0f(int variant, void *canvas);
 };

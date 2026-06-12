@@ -74,7 +74,6 @@ extern "C" void Array_PendingProduct_ctor(int *a);
 extern "C" void PendingProduct_ctor(int *pp, BluePrint *bp);
 extern "C" void FileRead_ctor(FileRead *);
 extern "C" void operator_delete_tail(void *);
-extern "C" void Status_setStationTail(Status *self, Station *s);
 extern "C" void ArrayReleaseClasses_String(void *a);
 extern "C" void *Array_String_dtor(Array<String *> *a);
 extern "C" void Array_String_ctor(Array<String *> *a);
@@ -1427,7 +1426,7 @@ int Status::getGammaRayDamagePerSecond(int a, int b) {
 int Status::addStationToStack(Station *s) {
     Station *found = (Station *)(intptr_t)((Status *)(this))->isOnStack(s);
     if (found != 0) {
-        Status_setStationTail(this, found);
+        ((Status *)(this))->setStationTail(found);
         return 0;
     }
     Station **base = stationStack->data();
@@ -1452,7 +1451,7 @@ int Status::addStationToStack(Station *s) {
         }
         base[0] = s;
     }
-    Status_setStationTail(this, s);
+    ((Status *)(this))->setStationTail(s);
     return 1;
 }
 

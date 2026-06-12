@@ -41,6 +41,14 @@ void LodMeshMerger::setMatrix(int index, const Matrix &m)
     return LodMeshMerger_setMatrix_tail(base + index * 0x3c, m);
 }
 
+// setMatrix() tail: store the source transform into its per-row matrix slot. The
+// merger keeps a packed table of 0x3c-byte matrices (field_0x28); `this` is the
+// address of the target slot computed by setMatrix().
+void LodMeshMerger::setMatrix_tail(const Matrix &m)
+{
+    *(Matrix *)this = m;
+}
+
 // ---- setMesh_1813ac.cpp ----
 void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
@@ -268,6 +276,18 @@ int LodMeshMerger::init()
     return LodMeshMerger_init_tail(this, 0, flags, &field_0x18);
 }
 
+// init() tail: the merged mesh, its pointer and the shared transform have all been
+// created, so finish initialisation by flagging the merger as built and forcing the
+// first merge pass (the dirty flag was just raised, so update() copies every enabled
+// LOD slice into the merged mesh). Returns the now-set init flag, which is what the
+// public init() yields.
+int LodMeshMerger::init_tail(int /*r1*/, uint16_t /*flags*/, uint32_t * /*meshId*/)
+{
+    field_0x6 = 1;
+    this->update();
+    return field_0x6;
+}
+
 // ---- transformMesh_181550.cpp ----
 // Typed wrappers over the real AbyssEngine::AEMath ops.
 namespace AbyssEngine { namespace AEMath {
@@ -434,4 +454,13 @@ LodMeshMerger::~LodMeshMerger()
     if (field_0x28 != 0) ::operator delete[](field_0x28);
     field_0x28 = 0;
     LodMeshMerger_base_dtor(this);
+}
+
+// ~LodMeshMerger() tail: the final owned member is the embedded source-mesh array
+// (field_0x8, an Array<Mesh*> stored in-place, not a pointer). Release its backing
+// buffer to complete teardown of the object's heap allocations.
+void LodMeshMerger::base_dtor()
+{
+    field_0x8.clear();
+    field_0x8.shrink_to_fit();
 }

@@ -769,6 +769,31 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, void *target,
 TargetFollowCamera::~TargetFollowCamera() {
 }
 
+// ---- ABI shims --------------------------------------------------------------
+// MGame/CutScene allocate the camera with a raw operator new and then drive the
+// special members through these extern "C" entry points. The constructor takes
+// the camera id, the followed geometry, and two by-value Vectors; under the
+// soft-float ABI those six float components arrive in core registers, so they
+// reach this shim as ints holding the float bit patterns.
+extern "C" void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
+                                        int cx, int cy, int cz,
+                                        int tx, int ty, int tz)
+{
+    union { int i; float f; } camX{cx}, camY{cy}, camZ{cz},
+                              tgtX{tx}, tgtY{ty}, tgtZ{tz};
+    Vector camOffset    = { camX.f, camY.f, camZ.f };
+    Vector targetOffset = { tgtX.f, tgtY.f, tgtZ.f };
+    new (c) TargetFollowCamera((unsigned)cam, (void *)(intptr_t)target,
+                               camOffset, targetOffset);
+}
+
+// Non-deleting destructor: returns the object so the caller can operator delete it.
+extern "C" void *TargetFollowCamera_dtor(TargetFollowCamera *c)
+{
+    c->~TargetFollowCamera();
+    return c;
+}
+
 // TargetFollowCamera::getPosition() -- returns the live position vector (this+0x8).
 Vector *TargetFollowCamera::getPosition() {
     return (Vector *)&this->posX;

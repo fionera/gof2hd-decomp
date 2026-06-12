@@ -18,23 +18,23 @@ struct Player {
 
 // ---- reset_15e77c.cpp ----
 // blx 0x74518
-extern "C" void PlayerJunk_resetTail(void *self, int one);  // b.w 0x1abe08 (veneer)
+// b.w 0x1abe08 (veneer)
 
 // PlayerJunk::reset() - reset base KIPlayer, clear state, tail-call the show/visible setter.
 void _ZN10PlayerJunk5resetEv(PlayerJunk *self) {
     ((KIPlayer *)(self))->reset();
     self->state = 0;
-    return PlayerJunk_resetTail(self, 1);
+    return ((PlayerJunk *)(self))->resetTail(1);
 }
 
 // ---- _PlayerJunk_15e76c.cpp ----
 extern "C" void *KIPlayer_dtor(void *self);                 // blx 0x732b8 (returns this)
-extern "C" void PlayerJunk_dtorTail(void *self);            // b.w 0x1ab098 (veneer -> delete)
+// b.w 0x1ab098 (veneer -> delete)
 
 // PlayerJunk::~PlayerJunk() - destroy the base KIPlayer then tail-call the deleting veneer
 // with the pointer the base dtor returns. Mangled so the symbol demangles to ~PlayerJunk.
 void _ZN10PlayerJunkD0Ev(void *self) {
-    return PlayerJunk_dtorTail(KIPlayer_dtor(self));
+    return ((PlayerJunk *)(KIPlayer_dtor(self)))->dtorTail();
 }
 
 // ---- PlayerJunk_15e720.cpp ----
@@ -120,7 +120,7 @@ void PlayerJunk::update(int elapsed) {
 
 // ---- render_15e8cc.cpp ----
 // blx 0x72238
-extern "C" void PlayerJunk_renderTail(void *self);  // b.w 0x1ac3a8 (veneer)
+// b.w 0x1ac3a8 (veneer)
 
 // PlayerJunk::render() - render the geometry if present, then (unless the state is 3 or 4)
 // tail-call the base render veneer.
@@ -129,7 +129,7 @@ void _ZN10PlayerJunk6renderEv(PlayerJunk *self) {
     if (geom != 0)
         ((AEGeometry *)(geom))->render();
     if ((uint32_t)(self->state - 3) > 1)
-        return PlayerJunk_renderTail(self);
+        return ((PlayerJunk *)(self))->renderTail();
 }
 
 // ---- reset/render/dtor tail fragments ----

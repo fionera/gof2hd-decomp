@@ -13,7 +13,6 @@ extern "C" void  AEString_assign(void *dst, void *src);
 extern "C" void  AEString_dtor(void *s);
 extern "C" char *AEString_GetAEChar(void *s);
 extern "C" void AEString_dtor(void *s);
-extern "C" GameText *GameText_dtor_tail(GameText *self);
 extern "C" void Array_int_ctor(void *a);
 extern "C" void AEString_ctor_default(void *s);
 extern "C" void AEString_ctor_cstr(void *s, const char *text, bool copy);
@@ -169,7 +168,7 @@ GameText *_ZN8GameTextD2Ev(GameText *self)
     void *p = self->textTable;
     if (p != 0) ::operator delete[](p);
     self->textTable = 0;
-    return GameText_dtor_tail(self);
+    return ((GameText *)(self))->dtor_tail();
 }
 
 // Destructor tail: tear down the embedded base Array<int> substitute table by freeing its
