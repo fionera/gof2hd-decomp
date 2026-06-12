@@ -1,4 +1,5 @@
 #include <new>
+#include "gof2/externs.h"
 #include "gof2/FBOContainer.h"
 #include "gof2/Engine.h"
 #include "gof2/ApplicationManager.h"
@@ -24,7 +25,6 @@ typedef AbyssEngine::Mesh MeshFull;
 extern "C" void FBOContainer_ActivateRender2Texture(FBOContainer *self);
 extern "C" void PaintCanvas_Resume(void *canvas);
 extern "C" void PaintCanvas_Suspend(void *canvas);
-extern "C" uint8_t g_Engine_useShaders;
 extern "C" void ShaderUpdateRimColor();
 extern "C" void glMatrixMode(unsigned int mode);
 void MatrixGetGL(const Matrix *matrix, float *out);
@@ -49,8 +49,6 @@ extern "C" const char *glGetString(unsigned int name);
 extern "C" void glMaterialf(unsigned int face, unsigned int pname, float value);
 extern "C" void glActiveTexture(unsigned int texture);
 extern "C" void glBindTexture(unsigned int target, unsigned int texture);
-extern "C" uint8_t g_Engine_shaderDrew;
-extern "C" int g_Engine_defaultShader;
 extern "C" void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
 extern "C" void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr);
 extern "C" void glNormalPointer(unsigned int type, int stride, const void *ptr);
@@ -69,37 +67,20 @@ extern "C" void Array_int_dtor(void *array);
 void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
 extern "C" String *g_Engine_vendorString;
 extern "C" String *g_Engine_rendererString;
-extern "C" int g_Engine_cloakShader;
 // String_GetAEChar declared in ShaderBaseStruct.h (returns void*)
 extern "C" void ArrayAdd_ShaderBaseStruct_ptr(ShaderBaseStruct *item, void *array);
 extern "C" void ArrayAdd_int(int item, void *array);
-extern "C" float g_Engine_texEnv;
-extern "C" uint8_t g_Engine_texEnvDirty;
 extern "C" void glTexEnvf(unsigned int target, unsigned int pname, float value);
 extern "C" void glEnableClientState(unsigned int array);
 extern "C" void glDisableClientState(unsigned int array);
-extern "C" int g_Engine_lineShader;
-extern "C" int g_Engine_altShader;
-extern "C" uint8_t g_Engine_shaderDirty;
-extern "C" int g_Engine_currentShader;
-extern "C" uint8_t g_Engine_postEffectFlag;
-extern "C" int g_Engine_postEffectBW;
-extern "C" int g_Engine_shaderPostA;
-extern "C" int g_Engine_shaderPostB;
-extern "C" int g_Engine_shaderPostC;
 extern "C" void glMaterialfv(unsigned int face, unsigned int pname, const void *params);
 extern "C" void glLightModelfv(unsigned int pname, const void *params);
-extern "C" int g_Engine_postEffectBlur;
-extern "C" int g_Engine_postEffectCounter;
-extern "C" int g_Engine_postEffectPending;
 extern "C" void FileInterfaceAndroid_ctor(void *self);
 void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
 extern "C" void PaintCanvas_Initialize(void *canvas, bool value);
 extern "C" void glLineWidth(float width);
 extern "C" void glCullFace(unsigned int mode);
-extern "C" uint8_t g_Engine_supportsFBO;
 extern "C" void glLightfv(unsigned int light, unsigned int pname, const void *params);
-extern "C" int g_Engine_activeShader;
 extern "C" void Array_int_ctor(void *array);
 extern "C" void Array_ShaderBaseStruct_ptr_ctor(void *array);
 extern "C" void glGetError();

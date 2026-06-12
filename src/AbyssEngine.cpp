@@ -1,4 +1,5 @@
 #include "gof2/AbyssEngine.h"
+#include "gof2/externs.h"
 #include "gof2/AEFile.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
@@ -63,7 +64,6 @@ void ImageFontSetYOffset(ImageFont *font, short yOffset)
 // +0x48 horizontal slope, +0x50 vertical slope.
 namespace AbyssEngine {
 
-extern "C" char *g_Camera_frustumEnabledFlag; // **(DAT + 0x81466)
 
 extern "C" {
 // __aeabi_memcpy is declared by gof2/Engine.h
@@ -229,8 +229,6 @@ namespace AbyssEngine {
 // Sibling/member callees (resolved by the linker via their real mangled names).
 extern "C" AbyssEngine::Engine *AE_getInitGLThis();      // the r0 engine pointer
 
-extern "C" char *g_Engine_shaderModeFlag;  // *pcVar5
-extern "C" char *g_Engine_fboEnabledFlag;  // *(DAT_0007dcb0 + 0x7dc32)
 
 void getAppVersion()
 {
@@ -303,7 +301,6 @@ void getAppVersion()
 // "v" lanes are flipped (1.0 - v). Slot layout mirrors the shipped routine.
 namespace AbyssEngine {
 
-extern "C" char *g_SpriteSystem_uvFlipFlag; // *(DAT_00096d40 + 0x96cfe)
 
 void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys)
 {
@@ -527,8 +524,6 @@ namespace AbyssEngine {
 
 struct Vec2 { float u, v; };
 
-extern "C" float g_MeshIntersect_missValue; // DAT_0007dab8 sentinel
-extern "C" char *g_MeshIntersect_flipVFlag; // *(DAT_0007dabc + 0x7da96)
 
 Vec2 MeshIntersect(float qx, float qz, Mesh *mesh)
 {
@@ -616,7 +611,6 @@ void glDrawElements(unsigned int mode, int count, unsigned int type, const void 
 // for the shader path. Returns 1 on draw, -4 when the mesh is empty/disabled.
 namespace AbyssEngine {
 
-extern "C" char *g_Mesh_shaderPathFlag; // *(DAT_0007d50c + 0x7d3cc)
 
 
 int MeshDraw(Engine *engine, Mesh *mesh)
@@ -1361,7 +1355,6 @@ String operator+(const float &a, const String &b)
 // to the identity basis. Returns 1, -1 on mesh failure, -4 on count == 0.
 namespace AbyssEngine {
 
-extern "C" char *g_SpriteSystem_tangentFlag; // *(DAT_00096c68 + 0x96c30)
 
 int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
                unsigned int fmt, void **out);
@@ -1670,7 +1663,6 @@ void Image2DRelease(Engine *engine, Image2D **slot)
 // arrays selected by the vertex-format flag bits. Returns 1, or -4 on invalid arguments.
 namespace AbyssEngine {
 
-extern "C" char *g_Mesh_tangentEnabledFlag; // *(DAT_0007c604 + 0x7c5c8)
 
 int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short triCount,
                unsigned int vertexFormat, void **out)
@@ -1892,7 +1884,6 @@ void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int 
 // each glyph mesh. RTL ordering (or the canvas batch flag) reverses the scan direction.
 namespace AbyssEngine {
 
-extern "C" char *g_GameText_arabicEnabledFlag; // **(DAT + 0x81c5c)
 
 extern "C" {
 int  AE_Engine_GetDisplayWidth();
@@ -2284,7 +2275,6 @@ extern "C" void AE_SpriteSystem_pushMatrix(
     unsigned int m10, unsigned int m11, unsigned int m12, unsigned int m13, unsigned int m14,
     int dst);
 
-extern "C" unsigned int g_SpriteSystem_oneHalf; // DAT_00097058 (0.5 bit pattern)
 
 void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem *sys)
 {
@@ -2366,11 +2356,6 @@ unsigned int glGetError();
 // back down. Returns 1 / -1 / -4.
 namespace AbyssEngine {
 
-extern "C" char *g_Mesh_vboEnabledFlag;     // *(DAT_0007d7cc + 0x7d526)
-extern "C" char *g_Mesh_tangentEnabledFlag; // *(DAT_0007d7d0 + 0x7d61c)
-extern "C" char *g_Mesh_keepCpuCopyFlag;    // *(DAT_0007d7d8 + 0x7d764)
-extern "C" char *g_Mesh_tangentDelFlag;     // *(DAT_0007d7d4 + 0x7d72c)
-extern "C" int *g_Mesh_vboByteCounter;      // *(DAT_0007d7dc + 0x7d7be)
 
 static inline void freeIf(Mesh *m, unsigned int off)
 {
@@ -2863,8 +2848,6 @@ bool operator==(const String &a, const String &b)
 // the mesh. Skips GL/array teardown entirely when it is a shared/aliased mesh (byte@0x38).
 namespace AbyssEngine {
 
-extern "C" char *g_Mesh_tangentEnabledFlag; // *(DAT_0007c4cc + 0x7c3de)
-extern "C" char *g_Mesh_extraArraysFlag;    // *(DAT_0007c4d0 + 0x7c478)
 
 
 static inline void freeArray(Mesh **slot, unsigned int off)
@@ -2962,7 +2945,6 @@ String operator+(const String &a, const float &b)
 // (flag@0x5c clear and pointer@0x84 set). Returns 1 on success, -4 (0xfffffffc) otherwise.
 namespace AbyssEngine {
 
-extern "C" char *g_Mesh_vboEnabledFlag; // *(DAT_0007bbe8 + 0x7bbbe)
 
 int MeshConvertToVBOIntern(Mesh *mesh);
 int TransformConvertToVBO(Transform *t);
@@ -3166,7 +3148,6 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 // +0x48 fwd-h slope, +0x50 fwd-v slope, +0x54 right radius scale, +0x58 up radius scale.
 namespace AbyssEngine {
 
-extern "C" char *g_Camera_frustumEnabledFlag; // **(DAT + 0x815f2)
 
 extern "C" {
 // __aeabi_memcpy is declared by gof2/Engine.h

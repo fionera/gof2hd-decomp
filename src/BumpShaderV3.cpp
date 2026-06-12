@@ -1,9 +1,8 @@
 #include "gof2/BumpShaderV3.h"
+#include "gof2/externs.h"
 #include "gof2/Mesh.h"
 
 
-extern "C" float *g_bsv3_floatA;
-extern "C" float *g_bsv3_floatB;
 
 // ---- Init_8c1a8.cpp ----
 namespace AbyssEngine {

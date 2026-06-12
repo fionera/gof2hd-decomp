@@ -1,9 +1,8 @@
 #include "gof2/BumpShaderParticle.h"
+#include "gof2/externs.h"
 
 
 extern "C" void glUniform3fv(int location, int count, const float *value);
-extern "C" float g_particleGlobalA;
-extern "C" float g_particleGlobalB;
 
 // ---- UpdateMeshData_87f8c.cpp ----
 namespace AbyssEngine {

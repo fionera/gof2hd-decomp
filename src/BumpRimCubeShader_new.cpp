@@ -1,12 +1,9 @@
 #include "gof2/BumpRimCubeShader_new.h"
+#include "gof2/externs.h"
 
 
 extern "C" void glUniform3fv(int location, int count, const float *value);
 extern "C" float *_ZN11AbyssEngine6AEMath6VectorcvPfEv(void *self);
-extern "C" float g_rimnGlobalA;
-extern "C" float g_rimnGlobalB;
-extern "C" float g_rimnGlobalC;
-extern "C" unsigned char g_rimnByteGlobal;
 
 // ---- SetInActive_88b18.cpp ----
 namespace AbyssEngine {

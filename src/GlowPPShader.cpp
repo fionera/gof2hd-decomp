@@ -1,10 +1,9 @@
 #include "gof2/GlowPPShader.h"
+#include "gof2/externs.h"
 #include "gof2/Engine.h"
 #include "gof2/String.h"
 
 
-extern "C" uint8_t *g_GlowPPShader_internalInitNeededPtr;
-extern "C" uint32_t *g_GlowPPShader_shaderModePtr;
 extern "C" void *operator_new_0(uint32_t size);
 extern "C" void *operator_new_1(uint32_t size);
 extern "C" void *operator_new_2(uint32_t size);

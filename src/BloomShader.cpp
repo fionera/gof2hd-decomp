@@ -1,4 +1,5 @@
 #include "gof2/BloomShader.h"
+#include "gof2/externs.h"
 #include "gof2/FBOContainer.h"
 #include "gof2/Engine.h"
 
@@ -24,8 +25,6 @@ extern "C" void glUniform1f(int location, float value);
 extern "C" void glClearColor(float red, float green, float blue, float alpha);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" unsigned char g_BloomShader_internalInitNeeded;
-extern "C" unsigned int g_BloomShader_shaderMode;
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
 extern "C" void ShaderBaseStruct_ctor(void *self);
 extern "C" char BloomShader_vtable;

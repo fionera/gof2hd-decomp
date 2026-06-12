@@ -1,4 +1,5 @@
 #include "gof2/PlayerEgo.h"
+#include "gof2/externs.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/FModSound.h"
 #include "gof2/HackingGame.h"
@@ -77,7 +78,6 @@ extern "C" void  TargetFollowCamera_setActive(void* cam, int active);
 extern "C" void* AEGeometry_newMesh(int meshId, void* canvas, bool b);
 
 extern "C" void PlayerEgo_setVisible_ext();
-extern "C" void* g_boost_fmod;
 extern "C" int PlayerEgo_getHitpoints_ext(void*);
 extern "C" int PlayerEgo_getHackingGameDockIndex_ext(int);
 extern "C" void PlayerEgo_dockToStream_ext(PlayerEgo*, int);
@@ -103,7 +103,6 @@ extern "C" void PlayerEgo_explode_ext(PlayerEgo*, int);
 extern "C" int __aeabi_idiv(int, int);
 extern "C" void PlayerEgo_turnVertical_neg();
 extern "C" void PlayerEgo_turnVertical_pos(PlayerEgo*);
-extern "C" void* g_FMod_singleton;
 extern "C" int Station_getIndex(void*);
 extern "C" void Player_addGun(void*, void*, int);
 extern "C" void PlayerEgo_addGun_ext(PlayerEgo*);
@@ -123,7 +122,6 @@ extern "C" void stopShooting_extA(void*, int);
 extern "C" void stopShooting_extB(void*, int, int);
 extern "C" int  AERandom_next(void *rng, int bound);
 extern "C" void Camera_shake(void *cam, float dx, float dy, float dz);
-extern "C" void* g_setRotation_transform;
 void* TransformGetLocal(void*, int);
 void MatrixSetRotation(void*, void*, float, float, float);
 extern "C" void PlayerEgo_StopEngineSound_ext(void*);
@@ -180,14 +178,12 @@ extern "C" void  PE_cc_wormhole(PlayerEgo *self, void *obj);
 extern "C" void  PE_cc_obstacle(PlayerEgo *self, void *obj, unsigned idx);
 extern "C" void  PE_cc_destructible(PlayerEgo *self, void *obj);
 extern "C" float PlayerEgo_resetGunDelay_f(PlayerEgo*);
-extern "C" void* g_dockToPlanet_fmod;
 extern "C" int   Player_shootSecondary(void *player, int kind, int idx, int hi, int zero);
 extern "C" int   Player_shootPrimary(void *player, int kind, int weapon, int hi, int zero);
 extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self);
 extern "C" void  PaintCanvas_CameraSetCurrent(void *canvas, unsigned int cam);
 extern "C" void  PaintCanvas_CameraCreate(void *canvas, unsigned int *out);
 extern "C" int   Ship_getFirstEquipmentOfSort(void *ship, int sort);
-extern "C" void* g_rotate_transform;
 extern "C" void  PlayEngineSound_(PlayerEgo *self);
 extern "C" void *EaseInOutMatrix_dtor(void *m);
 extern "C" void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint);
@@ -218,7 +214,6 @@ extern "C" int   PE_aa_approachStep(PlayerEgo *self, int hud2, void *radar);
 extern "C" void  Mat_mul(void *out, const void *a, const void *b);
 namespace AbyssEngine { namespace PaintCanvas { void TransformSetLocal(unsigned int tf, const void *m); } }
 extern "C" void  PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHandle);
-extern "C" void* g_stopBoost_obj;
 extern "C" void (*g_stopBoost_fn)(void*, int);
 void *Globals_getShipGroup(void *g, int race, int group, bool b);
 extern "C" int   Ship_hasEmergencySystem(void *ship);

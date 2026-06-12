@@ -1,4 +1,5 @@
 #include "gof2/ApplicationManager.h"
+#include "gof2/externs.h"
 #include "gof2/IApplicationModule.h"
 #include "gof2/String.h"
 #include "gof2/Engine.h"
@@ -25,14 +26,6 @@ extern "C" void ext_001ab328(void *engine, unsigned short duration);
 extern "C" void ext_001ab588(void *sound);
 extern "C" void ext_001ab5c8(void *cheats);
 extern "C" void ext_001ab538(void *sound);
-extern "C" char g_touchDown;
-extern "C" uint64_t g_perfElapsed;
-extern "C" uint64_t g_perfActionCount;
-extern "C" uint64_t g_perfLimitValue;
-extern "C" uint64_t g_perfTotal;
-extern "C" uint64_t g_perfFrame;
-extern "C" char g_perfEnabled;
-extern "C" char g_perfPendingFlag;
 extern "C" void Engine_PreUpdate(void *engine);
 void Engine_ClearBuffer(void *engine, int color);
 extern "C" void AESoundRessource_checkLooping(void *sound);
@@ -51,26 +44,13 @@ extern "C" void AESoundRessource_SetSound(void *sound, void *info, int count);
 extern "C" void AESoundRessource_init(void *sound, int index);
 extern "C" void ArrayAdd_IApplicationModule(void *module, void *array);
 extern "C" void ext_001ab5b8(unsigned int id, void *array);
-extern "C" char g_perfPending;
-extern "C" uint64_t g_perfCounter;
-extern "C" uint64_t g_perfLimit;
-extern "C" char g_perfExpired;
 extern "C" int PaintCanvas_GetWidth(void *canvas);
 extern "C" int PaintCanvas_GetHeight(void *canvas);
 extern "C" void ext_001ab318(void *engine);
-extern "C" int g_touchMode;
-extern "C" char g_touchToggle;
-extern "C" int g_touchValue;
-extern "C" float g_touchFloat;
 extern "C" void ArrayAdd_long_long(long long value, void *array);
 extern "C" void ext_001ab5f8(long long key, void *array);
 extern "C" void Array_StringPtr_ctor(void *array);
 extern "C" void ArrayAdd_StringPtr(String *string, void *array);
-extern "C" int g_orientationLeft;
-extern "C" int g_orientationFlat;
-extern "C" int g_orientationRight;
-extern "C" int g_orientationUpsideDown;
-extern "C" int g_orientationInactive;
 extern "C" void PaintCanvas_SetGameOrientation(void *canvas, int orientation);
 extern "C" void ArrayRelease_modules(void *array);
 extern "C" void ArrayRelease_uint(void *array);

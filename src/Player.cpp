@@ -1,4 +1,5 @@
 #include "gof2/Player.h"
+#include "gof2/externs.h"
 #include "gof2/FModSound.h"
 #include "gof2/Item.h"
 #include "gof2/Level.h"
@@ -47,8 +48,6 @@ extern "C" void Vector_assign(Vector *dst, Vector *src);
 extern "C" int SolarSystem_getRace();
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" void Player_damageEmp_tail(Player *self);
-extern "C" int **g_damageEmp_progress;
-extern "C" void **g_damageEmp_achievements;
 extern "C" void ArrayAdd_Gun(Gun *gun, Array<Gun *> *array);
 extern "C" void Player_shoot_tail(Player *self, int soundId);
 extern "C" void Player_regenerateHull_tail();
@@ -83,8 +82,6 @@ extern "C" void Standing_setPlayerSignatureRace(void *self, int r);
 extern "C" int String_Compare(void *a, void *b);
 extern "C" void Mission_getStatusValue();
 extern "C" void Mission_setStatusValue(int v);
-extern "C" int **g_damage_globals;
-extern "C" int **g_damage_text;
 extern "C" void Player_setEnemy_tail(Player *self, Player *enemy);
 void Player_damage_full(Player *self, int amount, int a, int b);
 extern "C" void Player_stopShootSound(Player *self, int a, int b);
@@ -1046,10 +1043,6 @@ __attribute__((minsize)) void Player_addGun(Player *self, Gun *gun, int slot)
 // ---- calcWeaponSounds_a3774.cpp ----
 
 
-extern "C" int *g_cws_items;   // DAT_b37da  -> item table (GOT pointer)
-extern "C" int *g_cws_sound;    // DAT_b3870  -> sound id holder (deref once)
-extern "C" int *g_cws_sound2;   // DAT_b38d8 (deref once)
-extern "C" int *g_cws_sound3;   // DAT_b38dc (array base)
 
 void Player::calcWeaponSounds(int count) {
     Player *self = this;
@@ -1575,7 +1568,6 @@ void Player::setMaxArmorHP(int value) {
 
 // ---- shoot_a3d5c.cpp ----
 
-extern "C" unsigned int g_shoot_mask;   // DAT_b3f24
 extern "C" const float k_shoot_inc;      // DAT_b3f28
 
 int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22) {
@@ -1633,11 +1625,7 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
 }
 
 // ---- update_a4110.cpp ----
-extern "C" int **g_update_clock;       // DAT_b41a0
-extern "C" char **g_update_flag;       // DAT_b41be
-extern "C" float **g_update_speed;     // DAT_b41e0
 extern "C" void (**g_update_transform)(void *, void *, int);  // DAT_b41e2 fn ptr table
-extern "C" void **g_update_sound;      // DAT_b423c
 extern "C" const float k_update_a;     // DAT_b42b8
 extern "C" const float k_update_b;     // DAT_b42bc
 extern "C" const float k_update_c;     // DAT_b42c0

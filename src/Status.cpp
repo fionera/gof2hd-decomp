@@ -1,4 +1,5 @@
 #include "gof2/Status.h"
+#include "gof2/externs.h"
 // FileRead.h is intentionally NOT included: it defines layout-stub structs
 // (Station, Item, SolarSystem, Agent, Wanted, Ship, ...) that collide with the
 // real class headers included below. This TU only needs FileRead itself, which
@@ -39,7 +40,6 @@ extern "C" void *Ship_dtor(Ship *);
 extern "C" void op_delete(void *);
 extern "C" int SolarSystem_getTextureIndex(int system);
 extern "C" void Mission_setCampaignMission(Mission *m, bool flag);
-extern "C" int *g_campaignSentinel;
 extern "C" int Wanted_getCurrentLocation(Wanted *w);
 extern "C" int Wanted_getRequiredBounties(Wanted *w);
 extern "C" int Station_getIndex(Station *s);
@@ -50,13 +50,11 @@ extern "C" void ArrayReleaseClasses_Station(void *a);
 extern "C" void *Array_Station_dtor(Array<Station *> *a);
 extern "C" void ArrayReleaseClasses_Wanted(Array<Wanted *> *a);
 extern "C" void *Array_Wanted_dtor(Array<Wanted *> *a);
-extern "C" void *g_incKillsHook;
 extern "C" void incKills_notify(void *arg);
 extern "C" int Station_getIndex(Station *);
 extern "C" int SolarSystem_getRace(int system);
 extern "C" int Wanted_getBoard(Wanted *w);
 extern "C" int Wanted_getRequiredMission(Wanted *w);
-extern "C" void *g_incPirateKillsHook;
 extern "C" void incPirateKills_notify(void *arg);
 extern "C" int Mission_hasFailed(Mission *m);
 extern "C" int Mission_getType(Mission *m);
