@@ -37,6 +37,12 @@ struct Matrix {
     void initIdentity();
 };
 
+
+// Engine math free-functions (defined in libgof2hd; calls re-mangle to AbyssEngine::AEMath::*)
+float Sinf(float);
+float Cosf(float);
+float ATanf(float);
+float Pow(float, float);
 } // namespace AEMath
 
 struct Quaternion {

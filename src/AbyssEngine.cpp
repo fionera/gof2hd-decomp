@@ -22,9 +22,6 @@ extern "C" void AE_Vector_assign(void *dst, const void *src);
 extern "C" void AE_FBOContainer_ctor(void *self);
 extern "C" void AE_String_fromCStr(String *self, const char *s, bool b);
 extern "C" float sqrtf(float);
-extern "C" float _ZN11AbyssEngine6AEMath4SinfEf(float);
-extern "C" float _ZN11AbyssEngine6AEMath4CosfEf(float);
-extern "C" float _ZN11AbyssEngine6AEMath5ATanfEf(float);
 extern "C" void AE_Engine_LightSetAmbient(float r, float g, float b, Engine *self);
 extern "C" void AE_AEMath_matMul(Matrix *out, const Matrix *in);
 extern "C" void AE_PaintCanvas_SetWorldViewMatrix(void *self);
@@ -724,15 +721,15 @@ float CameraSetPerspective(float fov, float aspectNum, float aspectDen, float ne
         f[1] = near;
         f[2] = fov;
 
-        float s = ::_ZN11AbyssEngine6AEMath4SinfEf(fov);
-        float c = ::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
+        float s = AbyssEngine::AEMath::Sinf(fov);
+        float c = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
         float scale = s / c;
         f[0x12] = scale;
         f[0x13] = (aspectNum / aspectDen) * scale;
         f[0x14] = aspectNum / aspectDen;
 
-        float at = ::_ZN11AbyssEngine6AEMath5ATanfEf(scale);
-        float ca = ::_ZN11AbyssEngine6AEMath4CosfEf(at);
+        float at = AbyssEngine::AEMath::ATanf(scale);
+        float ca = AbyssEngine::AEMath::Cosf(at);
         ret = 1.0f / ca;
         f[0x15] = ret;
     }
@@ -1754,17 +1751,17 @@ float CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen
         f[1] = aspectNum;
         f[2] = fov;
 
-        float s = ::_ZN11AbyssEngine6AEMath4SinfEf(fov);
-        float c = ::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
+        float s = AbyssEngine::AEMath::Sinf(fov);
+        float c = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
         f[0x12] = s / c;
         f[0x13] = (aspectDen / near) * (s / c);
         f[0x14] = aspectDen / near;
 
-        float c2 = ::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
+        float c2 = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
         f[0x16] = 1.0f / c2;
 
-        ::_ZN11AbyssEngine6AEMath5ATanfEf(f[0x12] * f[0x14]);
-        float c3 = ::_ZN11AbyssEngine6AEMath4CosfEf(f[0] * 0.5f);
+        AbyssEngine::AEMath::ATanf(f[0x12] * f[0x14]);
+        float c3 = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
         ret = 1.0f / c3;
         f[0x15] = ret;
     }

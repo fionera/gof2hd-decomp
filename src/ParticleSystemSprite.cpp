@@ -9,7 +9,6 @@ extern "C" void PaintCanvas_SetBlendMode(void *canvas, int blend);
 extern "C" void PaintCanvas_SetWorldViewMatrix(void *canvas, const void *matrix);
 extern "C" void PaintCanvas_DrawSpriteSystem(unsigned int canvas);
 extern "C" void *memset(void *, int, unsigned long);
-extern "C" float _ZN11AbyssEngine6AEMath3PowEff(float base, float exp);
 extern "C" char _ZTV20ParticleSystemSprite[];
 extern "C" float VectorSignedToFloat(int v, unsigned char mode);
 extern "C" void  PaintCanvas_SpriteSystemSetPosition(unsigned int h, unsigned short id, float x, float y, float z);
@@ -140,7 +139,7 @@ void *ParticleSystemSprite_ctor(
         memset(arr, 0, (unsigned long)count * 0xc);
     self->spriteData = arr;
 
-    self->cachedPow = _ZN11AbyssEngine6AEMath3PowEff(0.0f, 0.0f);
+    self->cachedPow = AbyssEngine::AEMath::Pow(0.0f, 0.0f);
     return self;
 }
 
