@@ -6,6 +6,7 @@
 #include "gof2/KIPlayer.h"
 #include "gof2/PlayerEgo.h"
 #include "gof2/Status.h"
+#include "gof2/PaintCanvasClass.h"
 
 // Player.h cannot be included here: it both declares a data member 'turnedEnemy'
 // (field 0xe0) and a method 'turnedEnemy()' inside the same struct, which is
@@ -26,7 +27,9 @@ struct Player {
 #define KIPlayer KIPlayer_RadarUnused
 #define Status Status_RadarUnused
 #define gStatus gStatus_RadarUnused
+#define PaintCanvas PaintCanvas_RadarUnused
 #include "gof2/Radar.h"
+#undef PaintCanvas
 #undef gStatus
 #undef Status
 #undef KIPlayer
@@ -101,9 +104,6 @@ using namespace AbyssEngine::AEMath;
 // 0x71a58
 extern "C" int   Ship_getIndex(void *ship);                          // 0x719c8
 
-// PaintCanvas::TransformGetTransform is an engine static helper; PaintCanvas is a
-// class type in this TU (not an openable namespace), so it stays an external symbol.
-extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas); // 0x72088
 // 0x6f7cc
 
 // 0x720b8
@@ -174,7 +174,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
 
     // Animate the visible beam.
     uint32_t canvas = *(uint32_t *)(*(void **)gCanvasRoot);
-    uint32_t tf = PaintCanvas_TransformGetTransform(canvas);
+    uint32_t tf = (uint32_t)(uintptr_t)((PaintCanvas*)(long)canvas)->TransformGetTransform(canvas);
     ((AbyssEngine::Transform *)(tf))->Update(frameTime, false);
 
     Vector pos;

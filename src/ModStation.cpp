@@ -1,5 +1,6 @@
 #include "gof2/ModStation.h"
 #include "gof2/FModSound.h"
+#include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
 #include <new>
 #include "gof2/ChoiceWindow.h"
 #include "gof2/CutScene.h"
@@ -73,19 +74,14 @@ extern "C" void Array_int_ctor(void *a);
 extern "C" void ArraySetLength_int(unsigned int n, void *a);
 extern "C" void *cm_op_new_arr(unsigned int sz);
 extern "C" void ModStation_cm_tail(void *p, int a, int b);
-extern "C" void PaintCanvas_ClearBuffer(void *c);
-extern "C" void PaintCanvas_Begin3d(void *c);
 extern "C" void StarMap_renderBG(void *p);
 extern "C" void ModStation_r3d_endTail(void *c);
 extern "C" void *ric_op_new(unsigned int sz);
-extern "C" void *PaintCanvas_CameraGetCurrent(void *c);
-extern "C" void *PaintCanvas_CameraGetLocal(void *c);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
 extern "C" void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int a4, int a5);
 extern "C" int Station_getIndex(Station *st);
 extern "C" int SolarSystem_getRace();
-extern "C" void PaintCanvas_FogEnable(void *c, int a, int b);
-extern "C" void PaintCanvas_ReleaseAllResources();
+extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 int GameText_getLanguage();
 void Globals_loadFont(int obj, int lang);
 extern "C" void *ms_op_delete(void *p);
@@ -465,8 +461,6 @@ int   Status_getSystem_msc();
 int   SolarSystem_getRace_msc();
 void *ModStation_opnew_msc(unsigned size);
 void  EaseInOut_ctor_msc(EaseInOut *e);
-int   PaintCanvas_CameraGetCurrent_msc();
-void  PaintCanvas_CameraSetLocal_msc(unsigned cam, Matrix *m);
 // Builds the two hangar camera key matrices for the given station race (MatrixSetTranslation /
 // MatrixSetRotation cascade the decompiler corrupted) and constructs the 3000ms EaseInOutMatrix
 // camera tween; returns the new EaseInOutMatrix and writes the resting cam coords into self+0x278.
@@ -518,8 +512,9 @@ ModStation::ModStation() {
     P(self, 0x20) = cam;
 
     unsigned camHandle = **(unsigned **)g_msc_canvas;
-    Matrix *cur = (Matrix *)PaintCanvas_CameraGetCurrent_msc();
-    PaintCanvas_CameraSetLocal_msc(camHandle, cur);
+    PaintCanvas *mscCanvas = (PaintCanvas *)*g_msc_canvas;
+    Matrix *cur = (Matrix *)mscCanvas->CameraGetCurrent();
+    mscCanvas->CameraSetLocal(camHandle, *cur);
 
     // three scalar EaseInOut tweens (fov / fade etc.) stored at self+0x288..0x290.
     EaseInOut *e;
@@ -652,7 +647,7 @@ void ModStation::OnRender3D() {
     if (C(self, 0x24) == 0)
         return;
     void **holder = g_ModStation_r3d_canvas;
-    PaintCanvas_ClearBuffer(*holder);
+    ((PaintCanvas *)*holder)->ClearBuffer((unsigned int)(long)*holder);
 
     char *p65 = (char *)self + 0x65;
     if (P(self, 0x14) == 0 || C(self, 0x66) != 0 || C(self, 0x64) != 0 ||
@@ -666,7 +661,7 @@ void ModStation::OnRender3D() {
     } else {
         ((CutScene *)(P(self, 0x14)))->renderBG();
     }
-    PaintCanvas_Begin3d(*holder);
+    ((PaintCanvas *)*holder)->Begin3d();
     if (*p65 != 0)
         ((SpaceLounge *)(P(self, 0x74)))->OnRender3D();
     else if (C(self, 0x67) != 0)
@@ -1174,8 +1169,8 @@ void ModStation::resetIdleCamForHangar() {
 
     void **canvasHolder = g_ModStation_ric_canvas;
     void *canvas = *canvasHolder;
-    PaintCanvas_CameraGetCurrent(canvas);
-    void *loc = PaintCanvas_CameraGetLocal(canvas);
+    ((PaintCanvas *)canvas)->CameraGetCurrent();
+    void *loc = ((PaintCanvas *)canvas)->CameraGetLocal((unsigned int)(long)canvas);
     AEMath_MatrixSetTranslation(matrix, I(self, 0x130), I(self, 0x134), I(self, 0x138));
 
     int race;
@@ -1193,8 +1188,8 @@ void ModStation::resetIdleCamForHangar() {
     }
 
     canvas = *canvasHolder;
-    PaintCanvas_CameraGetCurrent(canvas);
-    void *loc2 = PaintCanvas_CameraGetLocal(canvas);
+    ((PaintCanvas *)canvas)->CameraGetCurrent();
+    void *loc2 = ((PaintCanvas *)canvas)->CameraGetLocal((unsigned int)(long)canvas);
     AEMath_MatrixSetRotation(matrix, loc2, g_ModStation_ric_rotX[race], g_ModStation_ric_rotY[race], 0, 2);
     (void)loc;
 }
@@ -1424,7 +1419,7 @@ void ModStation::OnRelease() {
         ((FModSound *)(*soundHolder))->disableReverb();
         ((FModSound *)(*soundHolder))->stopAllSoundFXEvents();
     }
-    PaintCanvas_FogEnable(*g_ModStation_or_canvas, 0, 1);
+    ((PaintCanvas *)*g_ModStation_or_canvas)->FogEnable(0, 1);
 
     if (P(self, 0x8c) != 0) {
         ArrayReleaseClasses_TouchButton(P(self, 0x8c));
@@ -1485,7 +1480,7 @@ void ModStation::OnRelease() {
         ms_op_delete(ChoiceWindow_dtor(P(self, 0x70)));
     P(self, 0x70) = 0;
 
-    PaintCanvas_ReleaseAllResources();
+    ((PaintCanvas *)g_PaintCanvas)->ReleaseAllResources();
     int langObj = *(int *)*g_ModStation_or_lang;
     Globals_loadFont(langObj, GameText_getLanguage());
 
@@ -2417,10 +2412,6 @@ __attribute__((visibility("hidden"))) extern int  *g_r2d_stack;       // [DAT_00
 __attribute__((visibility("hidden"))) extern int **g_r2d_helpLayout;  // [DAT_000eba30]
 
 extern "C" {
-void PaintCanvas_Begin2d_r2d();
-void PaintCanvas_End2d_r2d();
-void PaintCanvas_SwapBuffer_r2d();
-void PaintCanvas_SetColor_r2d(unsigned c);
 void HangarWindow_render_r2d(ModStation *self);
 void HangarWindow_render3D_r2d();
 void SpaceLounge_draw_r2d(ModStation *self);
@@ -2443,8 +2434,8 @@ void ModStation_r2d_drawStationHud(ModStation *self);
 // currently open, then overlays the choice/dialogue/help windows.
 void ModStation::OnRender2D() {
     ModStation *self = this;
-    PaintCanvas_Begin2d_r2d();
-    PaintCanvas_SetColor_r2d(U(self, 4));
+    ((PaintCanvas *)g_PaintCanvas)->Begin2d();
+    ((PaintCanvas *)g_PaintCanvas)->SetColor(U(self, 4));
 
     if (C(self, 0x24) == 0) {
         // station screen not active yet — nothing to draw this frame.
@@ -2480,7 +2471,7 @@ void ModStation::OnRender2D() {
     if (*(char *)*help != 0)
         Layout_drawHelpWindow_r2d((Layout *)*help);
 
-    PaintCanvas_End2d_r2d();
+    ((PaintCanvas *)g_PaintCanvas)->End2d();
 
     // 3D hangar/ship pass when no help window is up.
     if (*(char *)*help == 0) {
@@ -2491,7 +2482,7 @@ void ModStation::OnRender2D() {
             SpaceLounge_draw3DShip_r2d();
     }
 
-    PaintCanvas_SwapBuffer_r2d();
+    ((PaintCanvas *)g_PaintCanvas)->SwapBuffer();
 }
 
 // ---- OnInitialize_d5708.cpp ----

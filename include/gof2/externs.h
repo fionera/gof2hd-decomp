@@ -121,8 +121,6 @@ extern "C" {
 void AE_AEMath_matMul(Matrix *out, const Matrix *in);
 void AE_ArrayAddCached_MeshPtr(AbyssEngine::Mesh *value, void *array);
 void AE_ArrayAddCached_uint(unsigned int value, void *array);
-void AE_PaintCanvas_Initialize(PaintCanvas *self, bool flag);
-void AE_PaintCanvas_SetWorldViewMatrix(void *self);
 // Copies a 4x4 transform (15 explicit row words; m33 implicit) into a deferred-batch command
 // slot during SpriteSystemDraw's shadow/batch path. Resolved through a GOT pointer at runtime —
 // no statically visible body, so it is kept as a documented extern.
@@ -149,7 +147,6 @@ void AELabelObject(unsigned int type, unsigned int id, const char *name);
 void AE_ArrayAdd_MeshPtr(void *item, void *arr);
 void AE_ArrayAdd_TexPtr(void *item, void *arr);
 void AE_BSphere_Merge(void *dst, const void *src);
-void AE_PaintCanvas_SetWorldViewMatrix(void *canvas);
 float AE_VectorSignedToFloat(int v, unsigned char mode);
 float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
 long long __aeabi_f2lz(float v);

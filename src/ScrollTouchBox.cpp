@@ -1,5 +1,6 @@
 #include "gof2/ScrollTouchBox.h"
 #include "gof2/String.h"
+#include "gof2/PaintCanvas.h"
 
 
 extern "C" void ArrayReleaseClasses_StringPtr(void *self);
@@ -7,10 +8,6 @@ extern "C" void *Array_StringPtr_dtor(void *self);
 extern "C" void String_ctor_string(void *self, String *src, bool copy);
 extern "C" void ScrollTouchBox_setText2(ScrollTouchBox *self, String *text, int font);
 int GameText_getLanguage();
-extern "C" void PaintCanvas_SetColor(void *canvas, int color);
-extern "C" int PaintCanvas_GetTextHeight(void *canvas, String *font);
-extern "C" int PaintCanvas_GetTextWidth(void *canvas, String *font, String *text);
-extern "C" void PaintCanvas_DrawString(void *canvas, String *font, String *text, int x, int y, int unknown);
 extern "C" void Array_StringPtr_ctor(void *self);
 void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);
 extern "C" void String_ctor_cstr(void *self, char const *text, bool copy);
@@ -190,7 +187,7 @@ void ScrollTouchBox::draw()
 
     void **canvasHolder = g_ScrollTouchBox_canvas_135778;
     void *canvas = *canvasHolder;
-    PaintCanvas_SetColor(canvas, -1);
+    ((PaintCanvas*)canvas)->SetColor((unsigned int)-1);
 
     Array<String*> *firstLineArray = this->lines;
     if (firstLineArray != 0) {
@@ -215,7 +212,7 @@ void ScrollTouchBox::draw()
             int lineY = (*fontHolder)->field_0x4 * (int)i + yBase + this->scrollOffset;
             if (count == 1 ||
                 (yBase <= lineY &&
-                 lineY + lastOffset <= (this->height + yBase) - PaintCanvas_GetTextHeight(canvas, this->font))) {
+                 lineY + lastOffset <= (this->height + yBase) - ((PaintCanvas*)canvas)->GetTextHeight((unsigned int)(unsigned long)this->font))) {
                 int x;
                 String *font = this->font;
                 String *line = lineArray->data()[i];
@@ -225,18 +222,18 @@ void ScrollTouchBox::draw()
                     int left = this->x;
                     int width = this->width;
                     if (this->centered == 0) {
-                        x = (left + width) - PaintCanvas_GetTextWidth(canvas, font, line);
+                        x = (left + width) - ((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, line);
                     } else {
-                        x = (left + (width >> 1)) - (PaintCanvas_GetTextWidth(canvas, font, line) >> 1);
+                        x = (left + (width >> 1)) - (((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, line) >> 1);
                     }
                 } else {
                     x = this->x;
                     if (this->centered != 0) {
                         int width = this->width;
-                        x = (x + (width >> 1)) - (PaintCanvas_GetTextWidth(canvas, font, line) >> 1);
+                        x = (x + (width >> 1)) - (((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, line) >> 1);
                     }
                 }
-                PaintCanvas_DrawString(canvas, font, line, x, lineY, 0);
+                ((PaintCanvas*)canvas)->DrawString((unsigned int)(unsigned long)font, line, x, lineY, false);
             }
         }
     }

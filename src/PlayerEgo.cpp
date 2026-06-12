@@ -1,5 +1,6 @@
 #include "gof2/PlayerEgo.h"
 #include "gof2/externs.h"
+#include "gof2/PaintCanvasClass.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/FModSound.h"
 #include "gof2/HackingGame.h"
@@ -72,7 +73,6 @@ extern "C" Vec3 AEGeometry_getDirection(void*, ...);
 // Their first argument is sometimes an int handle, sometimes a void*, so these
 // are declared fully variadic to accept either.
 extern "C" void TargetFollowCamera_setLookAtCam(...);
-extern "C" void* PaintCanvas_MeshGetPointer(void* canvas, unsigned int mesh);
 // (int|void* hud, int ev, PlayerEgo*, [int])
 extern "C" void  TargetFollowCamera_setActive(void* cam, int active);
 extern "C" void* AEGeometry_newMesh(int meshId, void* canvas, bool b);
@@ -115,8 +115,6 @@ extern "C" int   Player_gunAvailable(void *player);
 extern "C" void *AEGeometry_new(void *canvas);
 extern "C" void  AEGeometry_setRotationOrder(void *geo, int order);
 extern "C" void *AEGeometry_dtor(void *geo);
-namespace AbyssEngine { namespace PaintCanvas { void *TransformGetTransform(unsigned int handle); } }
-extern "C" void  PaintCanvas_MeshCloneMaterial(void *canvas, int mesh, unsigned int *out);
 extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void*);
 extern "C" void stopShooting_extA(void*, int);
 extern "C" void stopShooting_extB(void*, int, int);
@@ -146,8 +144,6 @@ extern "C" int   PE_adp_glide(PlayerEgo *self);
 extern "C" void  PE_adp_apply(PlayerEgo *self);
 extern "C" void* AEGeometry_getMatrix2(void*);
 extern "C" void PlayerEgo_setLevel_ext(void*, int, int);
-extern "C" void  PaintCanvas_CameraCreate(void *canvas, unsigned int *outHandle);
-extern "C" void  PaintCanvas_CameraSetPerspective(unsigned int cam, float fov, float a, float b);
 extern "C" void  AEGeometry_setMatrix(void *geo, const void *m);
 extern "C" void  AEGeometry_rotateY(void *geo, int a, float ang, int b);
 extern "C" float PE_yawRampDelta(float rate, int frameTime);
@@ -181,23 +177,16 @@ extern "C" float PlayerEgo_resetGunDelay_f(PlayerEgo*);
 extern "C" int   Player_shootSecondary(void *player, int kind, int idx, int hi, int zero);
 extern "C" int   Player_shootPrimary(void *player, int kind, int weapon, int hi, int zero);
 extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self);
-extern "C" void  PaintCanvas_CameraSetCurrent(void *canvas, unsigned int cam);
-extern "C" void  PaintCanvas_CameraCreate(void *canvas, unsigned int *out);
 extern "C" int   Ship_getFirstEquipmentOfSort(void *ship, int sort);
 extern "C" void  PlayEngineSound_(PlayerEgo *self);
 extern "C" void *EaseInOutMatrix_dtor(void *m);
 extern "C" void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint);
-extern "C" void  PaintCanvas_SetColor(unsigned int c);
 extern "C" void Player_stopShooting(void *player);
 extern "C" void KIPlayer_setAutoPilot(PlayerEgo *self);
 extern "C" float Ship_getHandling(void *ship);
 extern "C" void PE_upd_boost(PlayerEgo *self, int dt);
 extern "C" void PE_upd_docksFinishDelivery(PlayerEgo *self, void *radio);
 extern "C" void *Explosion_dtor(void *exp);
-extern "C" int   PaintCanvas_GetImage2DWidth(void *canvas);
-extern "C" int   PaintCanvas_GetImage2DHeight(void *canvas);
-extern "C" int   PaintCanvas_GetTextWidth(void *canvas, void *str);
-extern "C" void  PaintCanvas_DrawString(void *canvas, void *str, void *posStr, int x, bool centered);
 extern "C" void  PE_um_dodgeStep(PlayerEgo *self);
 extern "C" void  PE_um_strafeTarget(PlayerEgo *self, float *out);
 extern "C" void  PE_um_strafeGlide(PlayerEgo *self);
@@ -206,13 +195,10 @@ extern "C" void  Mat_getPosition(void *out, const void *m);
 extern "C" void  Mat_getUp(void *out, const void *m);
 extern "C" void  Mat_getDir(void *out, const void *m);
 extern "C" void  Mat_getLookAt(void *out, const void *eye, const void *dir, const void *up);
-namespace AbyssEngine { namespace PaintCanvas { void CameraSetLocal(unsigned int cam, const void *m); } }
-namespace AbyssEngine { namespace PaintCanvas { unsigned int TransformGetLocal(unsigned int tf); } }
 extern "C" void  PE_htv_applyShake(PlayerEgo *self, int dt, void *eye, void *dir);
 extern "C" void *MiningGame_new(int quality, int seed, void *hud);
 extern "C" int   PE_aa_approachStep(PlayerEgo *self, int hud2, void *radar);
 extern "C" void  Mat_mul(void *out, const void *a, const void *b);
-namespace AbyssEngine { namespace PaintCanvas { void TransformSetLocal(unsigned int tf, const void *m); } }
 extern "C" void  PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHandle);
 extern "C" void (*g_stopBoost_fn)(void*, int);
 void *Globals_getShipGroup(void *g, int race, int group, bool b);
@@ -229,10 +215,6 @@ extern "C" void Matrix_mul(void*, void*, void*);
 void MatrixGetPosition(void*, void*);
 extern "C" void *Ship_getCargo(void *ship, int item);
 extern "C" void  Ship_removeCargo(void *ship, int item);
-extern "C" void *PaintCanvas_MaterialGetMaterial(void *canvas, int handle);
-extern "C" void  PaintCanvas_MeshChangeMaterial(void *canvas, unsigned int mesh, unsigned short mat);
-extern "C" void  PaintCanvas_MeshChangeShaderAnimValue(void *canvas, void *mesh, float v, int i);
-extern "C" void  PaintCanvas_MaterialCreate(void *canvas, unsigned short id, unsigned int *out);
 
 // ---- setVisible_a1c88.cpp ----
 void PlayerEgo::setVisible(bool v) {
@@ -1141,13 +1123,13 @@ void PlayerEgo::checkForTurret() {
         void *g = AEGeometry_newMesh((unsigned short)extra2, canvas, false);
         P(self, 0x3c) = g;
         ((AEGeometry *)(P(self, 0x34)))->addChild((uint32_t)(uintptr_t)g);
-        void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)canvasHolder);
+        void *tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)canvasHolder));
         ((AbyssEngine::Transform *)(tf))->SetVisible(C(self, 0x2c4) != 0);
     }
 
-    void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)canvasHolder);
+    void *tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)canvasHolder));
     F(tf, 0xe0) = g_PE_cft_transformVal;
-    tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)canvasHolder);
+    tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)canvasHolder));
     ((AbyssEngine::Transform *)(tf))->SetAnimationState((AbyssEngine::AnimationMode)2, (void *)0);
 
     ((AEGeometry *)(P(self, 0xf4)))->setPosition(*(Vector *)((char *)self + 0x23c));
@@ -1159,7 +1141,7 @@ void PlayerEgo::checkForTurret() {
     ((AEGeometry *)(P(self, 0x38)))->addChild((uint32_t)(uintptr_t)P(self, 0x34));
 
     if (P(self, 0x2c0) != 0 && C(self, 0x170) != 0) {
-        PaintCanvas_MeshCloneMaterial(canvas, I(P(self, 0xf4), 0x1c), &U(self, 0x388));
+        ((PaintCanvas*)(long)(canvas))->MeshCloneMaterial((unsigned int)(I(P(self, 0xf4), 0x1c)), (unsigned int *)(&U(self, 0x388)));
         PE_cft_finishMaterials(canvas, I(P(self, 0x34), 0x1c), (char *)self + 0x38c);
     }
 }
@@ -1541,7 +1523,6 @@ void PlayerEgo::setLevel(void* level) {
 //   and makes the camera current.
 
 extern "C" void *AEGeometry_new(void *canvas);            // operator new + AEGeometry::AEGeometry
-extern "C" void  PaintCanvas_CameraSetCurrent(void *canvas, unsigned int cam); // 0x1ab2d8 veneer
 
 __attribute__((visibility("hidden"))) extern void **g_PE_dc_canvas;   // 0xaab84 PaintCanvas
 __attribute__((visibility("hidden"))) extern void **g_PE_dc_canvas2;  // 0xaab8c PaintCanvas (current)
@@ -1554,11 +1535,11 @@ void PlayerEgo::setDockingCamera() {
     PlayerEgo *self = this;
     if (P(self, 0x178) == 0) {
         void **holder = g_PE_dc_canvas;
-        PaintCanvas_CameraCreate(*holder, &U(self, 0x174));
+        ((PaintCanvas*)(long)(*holder))->CameraCreate((unsigned int *)(&U(self, 0x174)));
         unsigned int cam = (unsigned int)(unsigned long)*holder;
 
         float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_dc_fovAlien : g_PE_dc_fovNormal;
-        PaintCanvas_CameraSetPerspective(cam, fov, 0.0f, g_PE_dc_fovAlien);
+        ((PaintCanvas*)g_PaintCanvas)->CameraSetPerspective((unsigned int)(cam), fov, 0.0f, g_PE_dc_fovAlien);
 
         void *node = AEGeometry_new(*holder);
         P(self, 0x178) = node;
@@ -1585,7 +1566,7 @@ void PlayerEgo::setDockingCamera() {
     void *leaf = P(self, 0x17c);
     AEGeometry_setMatrix(leaf, ((AEGeometry *)(P(self, 0x8)))->getMatrix());
 
-    PaintCanvas_CameraSetCurrent(*g_PE_dc_canvas2, U(self, 0x174));
+    ((PaintCanvas*)(long)(*g_PE_dc_canvas2))->CameraSetCurrent((unsigned int)(U(self, 0x174)));
 }
 
 // ---- right_a0704.cpp ----
@@ -2343,7 +2324,7 @@ void PlayerEgo::setTurretMode(int enable) {
     if (C(self, 0x170) == 0 || P(self, 0x1e4) != 0 || C(self, 0x180) != 0) {
         // turret view unavailable -> restore default camera if a maneuver runs.
         if (P(self, 0x194) != 0) {
-            PaintCanvas_CameraSetCurrent(*g_PE_tm_canvasA, U(P(self, 0x88), 0));
+            ((PaintCanvas*)(long)(*g_PE_tm_canvasA))->CameraSetCurrent((unsigned int)(U(P(self, 0x88), 0)));
             ((LevelScript *)(P(self, 0xc)))->resetCamera((Level *)P(P(self, 0xc), 0x18));
         }
         return;
@@ -2352,17 +2333,17 @@ void PlayerEgo::setTurretMode(int enable) {
     C(self, 0x1a0) = (unsigned char)enable;
     if (enable == 0) {
         ((PlayerEgo *)(self))->stopShooting(0);
-        PaintCanvas_CameraSetCurrent(*g_PE_tm_canvasE, U(P(self, 0x88), 0));
+        ((PaintCanvas*)(long)(*g_PE_tm_canvasE))->CameraSetCurrent((unsigned int)(U(P(self, 0x88), 0)));
         ((LevelScript *)(P(self, 0xc)))->resetCamera((Level *)P(P(self, 0xc), 0x18));
     } else {
         if (P(self, 0x194) != 0)
             return;
         if (P(self, 0x178) == 0) {
             void **holder = g_PE_tm_canvasB;
-            PaintCanvas_CameraCreate(*holder, &U(self, 0x174));
+            ((PaintCanvas*)(long)(*holder))->CameraCreate((unsigned int *)(&U(self, 0x174)));
             unsigned int cam = (unsigned int)(unsigned long)*holder;
             float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_tm_fovAlien : g_PE_tm_fovNormal;
-            PaintCanvas_CameraSetPerspective(cam, fov, 0.0f, g_PE_tm_fovAlien);
+            ((PaintCanvas*)g_PaintCanvas)->CameraSetPerspective((unsigned int)(cam), fov, 0.0f, g_PE_tm_fovAlien);
 
             void *node = AEGeometry_new(*holder);
             P(self, 0x178) = node;
@@ -2384,12 +2365,12 @@ void PlayerEgo::setTurretMode(int enable) {
         ((AEGeometry *)(P(self, 0x17c)))->setPosition(*(Vector *)((char *)self + 0x148));
         void *leaf = P(self, 0x17c);
         AEGeometry_setMatrix(leaf, ((AEGeometry *)(P(self, 0x8)))->getMatrix());
-        PaintCanvas_CameraSetCurrent(*g_PE_tm_canvasD, U(self, 0x174));
+        ((PaintCanvas*)(long)(*g_PE_tm_canvasD))->CameraSetCurrent((unsigned int)(U(self, 0x174)));
         Player_stopShooting(P(self, 0x0));
     }
 
     if (P(self, 0x30) != 0) {
-        void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(U(*g_PE_tm_transform, 0));
+        void *tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(U(*g_PE_tm_transform, 0)));
         ((AbyssEngine::Transform *)(tf))->SetVisible(enable != 0);
         int v = (enable != 0);
         if (enable == 0)
@@ -2497,7 +2478,7 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
 
             ((PlayerEgo *)(self))->setTurretMode(0);
             C(self, 0x1a1) = 0;
-            PaintCanvas_CameraSetCurrent(*g_PE_dtdp_canvas, U(P(self, 0x88), 0));
+            ((PaintCanvas*)(long)(*g_PE_dtdp_canvas))->CameraSetCurrent((unsigned int)(U(P(self, 0x88), 0)));
             ((LevelScript *)(P(self, 0x10)))->resetCamera((Level *)P(P(self, 0x10), 0x18));
             PlayEngineSound_(self);
             I(self, 0x1c4) = 3;
@@ -2553,8 +2534,6 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
 //   appropriate reticle image depending on turret mode / plasma lock / blink
 //   state, and finally the throttle gauge.
 
-extern "C" void  PaintCanvas_DrawImage2DEx(void *canvas, int img, int x, int y,
-                                           int anchor, int flags);
 extern "C" void  PlayerEgo_draw_tailA(void);   // 0x1abc48 veneer
 extern "C" void  PlayerEgo_draw_tailB(void);   // 0x1abc58 veneer
 extern "C" void  PlayerEgo_draw_tailC(void);   // 0x1abc68 veneer
@@ -2611,30 +2590,30 @@ void PlayerEgo::draw(int allowHud) {
         Mat_assign(m, ((AEGeometry *)(P(self, 0x8)))->getMatrix());
 
     void *canvas = *g_PE_dr_canvas;
-    PaintCanvas_SetColor(0xffffffff);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor((unsigned int)(0xffffffff));
 
     if (C(self, 0x1a0) != 0
         && Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x23) != 0) {
         // turret crosshair: plasma lock changes the marker + position.
         if (((Radar *)(P(self, 0x14)))->isPlasmaInRange() != 0) {
             float *p = g_PE_dr_posLock;
-            PaintCanvas_DrawImage2DEx(canvas, I(self, 0x248), (int)p[0], (int)p[1], 0x11, 0x44);
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(I(self, 0x248)), (int)p[0], (int)p[1], (unsigned char)(0x11), (unsigned char)(0x44));
         } else {
             float *p = g_PE_dr_posNoLock;
-            PaintCanvas_DrawImage2DEx(canvas, I(self, 0x244), (int)p[0], (int)p[1], 0x11, 0x44);
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(I(self, 0x244)), (int)p[0], (int)p[1], (unsigned char)(0x11), (unsigned char)(0x44));
         }
     } else {
         // standard lock-on reticle: blink while acquiring.
         if (C(P(self, 0xc), 0x30) != 0) {
             float *p = g_PE_dr_posBlink;
-            PaintCanvas_DrawImage2DEx(canvas, I(self, 0x240), (int)p[0], (int)p[1], 0x11, 0x44);
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(I(self, 0x240)), (int)p[0], (int)p[1], (unsigned char)(0x11), (unsigned char)(0x44));
             int t = I(self, 0x24c) + I(self, 0x134);
             I(self, 0x24c) = t;
             if (t >= 0xc9)
                 C(P(self, 0xc), 0x30) = 0;
         } else {
             float *p = g_PE_dr_posNormal;
-            PaintCanvas_DrawImage2DEx(canvas, I(self, 0x23c), (int)p[0], (int)p[1], 0x11, 0x44);
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(I(self, 0x23c)), (int)p[0], (int)p[1], (unsigned char)(0x11), (unsigned char)(0x44));
             I(self, 0x24c) = 0;
         }
     }
@@ -2844,8 +2823,6 @@ void PlayerEgo::revive() {
 //   centred under it. The boost timer (0x374) folds back past its midpoint so
 //   the bar pulses symmetrically.
 
-extern "C" void  PaintCanvas_DrawRegion2D(void *canvas, int img, int sx, int sy, int w,
-                                          int h, int dh, int a, int b, int c, int dx);
 // String::String(int)
 
 __attribute__((visibility("hidden"))) extern void **g_PE_t_canvas;     // PaintCanvas singleton
@@ -2868,31 +2845,27 @@ void PlayerEgo::drawThrottle() {
         frac = 1.0f;
 
     void *canvas = *g_PE_t_canvas;
-    PaintCanvas_SetColor(0xffffff00 | (unsigned int)(int)(frac * 255.0f) - 0x100);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor((unsigned int)(0xffffff00 | (unsigned int)(int)(frac * 255.0f) - 0x100));
 
     int img = I(self, 0x238);
-    int w = PaintCanvas_GetImage2DWidth(canvas);
-    int h = PaintCanvas_GetImage2DHeight(canvas);
+    int w = ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned int)(img));
+    int h = ((PaintCanvas*)(long)(canvas))->GetImage2DHeight((unsigned int)(img));
 
     float thrust = F(self, 0xbc);
     int fillH = (int)(thrust * (float)h);
     float *anchor = g_PE_t_anchor;
 
-    PaintCanvas_DrawRegion2D(canvas, img, 0, h - fillH, w, fillH,
-        (int)((anchor[1] + (float)h) - (float)fillH), 0, 0, 0,
-        (int)(anchor[0] - (float)(w / 2)));
+    ((PaintCanvas*)(long)(canvas))->DrawRegion2D((unsigned int)(img), 0, h - fillH, w, fillH, (float)((int)((anchor[1] + (float)h) - (float)fillH)), 0, 0, 0, (int)(anchor[0] - (float)(w / 2)));
 
     // percentage label
     unsigned char pct[12];
     ((String *)(pct))->ctor_int((int)(thrust * g_PE_t_pctScale));
 
-    int th = PaintCanvas_GetImage2DHeight(canvas);
+    int th = ((PaintCanvas*)(long)(canvas))->GetImage2DHeight((unsigned int)(img));
     void *pctStr = *g_PE_t_pctStr;
-    int tw = PaintCanvas_GetTextWidth(canvas, pctStr);
-    PaintCanvas_DrawString(canvas, pctStr, pct,
-        (int)((anchor[0] - (float)(tw / 2)) - 1.0f),
-        (bool)(int)(anchor[1] + (float)th / g_PE_t_textDiv));
-    PaintCanvas_SetColor(0xffffffff);
+    int tw = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(canvas), (void *)(pctStr));
+    ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(canvas), (void *)(pctStr), (int)(long)(pct), (int)((anchor[0] - (float)(tw / 2)) - 1.0f), (bool)(int)(anchor[1] + (float)th / g_PE_t_textDiv));
+    ((PaintCanvas*)g_PaintCanvas)->SetColor((unsigned int)(0xffffffff));
 
     ((String *)(pct))->dtor();
 }
@@ -3042,15 +3015,15 @@ void PlayerEgo::handleTurretView(int dt) {
     }
 
     unsigned int cam = (unsigned int)(unsigned long)*g_PE_htv_camera;
-    AbyssEngine::PaintCanvas::CameraSetLocal(cam, (char *)self + 0x174);
+    ((PaintCanvas*)g_PaintCanvas)->CameraSetLocal((unsigned int)(cam), *(const AbyssEngine::AEMath::Matrix *)((char *)self + 0x174));
 
     I(self, 0x100) = 0;
     I(self, 0x104) = 0;
     ((PlayerEgo *)(self))->roll(I(self, 0x134));
 
     // HUD transform local = hullLocal * reticleLocal
-    unsigned int hull = AbyssEngine::PaintCanvas::TransformGetLocal(*(unsigned int *)((char *)P(self, 0x8) + 0xc));
-    unsigned int ret  = AbyssEngine::PaintCanvas::TransformGetLocal(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+    unsigned int hull = (unsigned int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetLocal((unsigned int)(*(unsigned int *)((char *)P(self, 0x8) + 0xc)));
+    unsigned int ret  = (unsigned int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetLocal((unsigned int)(*(unsigned int *)((char *)P(self, 0x4) + 0xc)));
     unsigned char tmp[0x30];
     Mat_mul(tmp, (void *)(unsigned long)hull, (void *)(unsigned long)ret);
     Mat_assign((char *)P(self, 0x0) + 0x4, tmp);
@@ -3169,8 +3142,8 @@ void PlayerEgo::handleShip(int dt) {
     I(self, 0x268) = 0;
 
     // HUD transform local = hullLocal * reticleLocal
-    unsigned int hull = AbyssEngine::PaintCanvas::TransformGetLocal(*(unsigned int *)((char *)P(self, 0x8) + 0xc));
-    unsigned int ret  = AbyssEngine::PaintCanvas::TransformGetLocal(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+    unsigned int hull = (unsigned int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetLocal((unsigned int)(*(unsigned int *)((char *)P(self, 0x8) + 0xc)));
+    unsigned int ret  = (unsigned int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetLocal((unsigned int)(*(unsigned int *)((char *)P(self, 0x4) + 0xc)));
     unsigned char tmp[0x30];
     Mat_mul(tmp, (void *)(unsigned long)hull, (void *)(unsigned long)ret);
     Mat_assign((char *)P(self, 0x0) + 0x4, tmp);
@@ -3217,7 +3190,7 @@ void PlayerEgo::setShip(int race, int group) {
 
     void **canvasHolder = g_PE_ss_canvas;
     void *canvas = *canvasHolder;
-    void *mesh = PaintCanvas_MeshGetPointer(canvas, I(grp, 0x1c));
+    void *mesh = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(I(grp, 0x1c)));
     P(self, 0x394) = *(void **)(I(mesh, 0x30) + 0x20);
 
     void *hull = AEGeometry_new(*canvasHolder);
@@ -3259,15 +3232,15 @@ void PlayerEgo::setShip(int race, int group) {
         P(self, 0xac) = geo;
         Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x1b);
         I(self, 0x310) = ((Item *)((void *)Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x29)))->getAttribute(0);
-        void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+        void *tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)((char *)P(self, 0x4) + 0xc)));
         Vec_assign((char *)self + 0x314, (char *)tf + 0xd4);
-        tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+        tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)((char *)P(self, 0x4) + 0xc)));
         F(self, 0x320) = F(tf, 0xe0) / g_PE_ss_emDiv + g_PE_ss_emBias;
     }
 
     // supernova scaling
     if (PE_status()->inSupernovaSystem() != 0 || PE_status()->inSupernovaOrbit() != 0) {
-        void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+        void *tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)((char *)P(self, 0x4) + 0xc)));
         F(self, 0x3c) = F(tf, 0xe0) * 1.75f;
     }
 
@@ -3372,8 +3345,6 @@ void PlayerEgo_getTurretPosition(void* out, void* src) {
 //   anim values, and -- for the appropriate ship variant -- creates and binds
 //   the resource material.
 
-extern "C" void  PaintCanvas_MeshChangeResourceMaterial(void *canvas, unsigned int mesh,
-                                                        unsigned short mat);
 
 __attribute__((visibility("hidden"))) extern int  *g_PE_tc_sound;     // 0xaa786 cloak sound
 __attribute__((visibility("hidden"))) extern void **g_PE_tc_canvas;   // 0xaa798 PaintCanvas
@@ -3406,29 +3377,27 @@ void PlayerEgo::toggleCloaking() {
     I(self, 0x208) = 0;
     C(self, 0x1ac) = 1;
 
-    PaintCanvas_MaterialGetMaterial(canvas, I(self, 0x388));     // returned ptr +0x20 = 0xe below
-    I(PaintCanvas_MaterialGetMaterial(canvas, I(self, 0x388)), 0x20) = 0xe;
-    PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0x4) + 0x1c), self->cloakMaterial);
-    PaintCanvas_MeshChangeShaderAnimValue(canvas,
-        PaintCanvas_MeshGetPointer(canvas, *(unsigned int *)(I(self, 0x4) + 0x1c)), 0.0f, 0);
-    PaintCanvas_MeshChangeShaderAnimValue(canvas,
-        PaintCanvas_MeshGetPointer(canvas, *(unsigned int *)(I(self, 0x4) + 0x1c)), 0.0f, 0);
+    ((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(I(self, 0x388)));     // returned ptr +0x20 = 0xe below
+    I(((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(I(self, 0x388))), 0x20) = 0xe;
+    ((PaintCanvas*)(long)(canvas))->MeshChangeMaterial((unsigned int)(*(unsigned int *)(I(self, 0x4) + 0x1c)), (unsigned int)(self->cloakMaterial));
+    ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(*(unsigned int *)(I(self, 0x4) + 0x1c)))), 0.0f, (unsigned int)(0));
+    ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(*(unsigned int *)(I(self, 0x4) + 0x1c)))), 0.0f, (unsigned int)(0));
 
     if (C(self, 0x170) != 0) {
-        I(PaintCanvas_MaterialGetMaterial(canvas, I(self, 0x38c)), 0x20) = 0xe;
-        I(PaintCanvas_MaterialGetMaterial(canvas, I(self, 0x390)), 0x20) = 0xe;
-        PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0xdc) + 0x1c), self->cloakMaterial2);
-        PaintCanvas_MeshChangeMaterial(canvas, *(unsigned int *)(I(self, 0x28) + 0x1c), self->cloakMaterial3);
+        I(((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(I(self, 0x38c))), 0x20) = 0xe;
+        I(((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(I(self, 0x390))), 0x20) = 0xe;
+        ((PaintCanvas*)(long)(canvas))->MeshChangeMaterial((unsigned int)(*(unsigned int *)(I(self, 0xdc) + 0x1c)), (unsigned int)(self->cloakMaterial2));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeMaterial((unsigned int)(*(unsigned int *)(I(self, 0x28) + 0x1c)), (unsigned int)(self->cloakMaterial3));
 
         void *m;
-        m = PaintCanvas_MeshGetPointer(canvas, *(unsigned int *)(I(self, 0xdc) + 0x1c));
-        PaintCanvas_MeshChangeShaderAnimValue(canvas, m, 0.0f, 1);
-        m = PaintCanvas_MeshGetPointer(canvas, *(unsigned int *)(I(self, 0xdc) + 0x1c));
-        PaintCanvas_MeshChangeShaderAnimValue(canvas, m, 0.0f, 2);
-        m = PaintCanvas_MeshGetPointer(canvas, *(unsigned int *)(I(self, 0x28) + 0x1c));
-        PaintCanvas_MeshChangeShaderAnimValue(canvas, m, 0.0f, 1);
-        m = PaintCanvas_MeshGetPointer(canvas, *(unsigned int *)(I(self, 0x28) + 0x1c));
-        PaintCanvas_MeshChangeShaderAnimValue(canvas, m, 0.0f, 2);
+        m = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(*(unsigned int *)(I(self, 0xdc) + 0x1c)));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(m), 0.0f, (unsigned int)(1));
+        m = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(*(unsigned int *)(I(self, 0xdc) + 0x1c)));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(m), 0.0f, (unsigned int)(2));
+        m = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(*(unsigned int *)(I(self, 0x28) + 0x1c)));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(m), 0.0f, (unsigned int)(1));
+        m = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(*(unsigned int *)(I(self, 0x28) + 0x1c)));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(m), 0.0f, (unsigned int)(2));
 
         if (C(self, 0x170) != 0) {
             unsigned short mat = 0x4e8e;
@@ -3443,9 +3412,9 @@ void PlayerEgo::toggleCloaking() {
                 if (idx == 0xc6) mat = 0x7161;
             }
             unsigned int out;
-            PaintCanvas_MaterialCreate(canvas, mat, &out);
-            PaintCanvas_MeshChangeResourceMaterial(canvas, *(unsigned int *)(I(self, 0xdc) + 0x1c), mat);
-            PaintCanvas_MeshChangeResourceMaterial(canvas, *(unsigned int *)(I(self, 0x28) + 0x1c), mat);
+            ((PaintCanvas*)(long)(canvas))->MaterialCreate((unsigned short)(mat), (unsigned int *)(&out));
+            ((PaintCanvas*)(long)(canvas))->MeshChangeResourceMaterial((unsigned int)(*(unsigned int *)(I(self, 0xdc) + 0x1c)), (unsigned int)(mat));
+            ((PaintCanvas*)(long)(canvas))->MeshChangeResourceMaterial((unsigned int)(*(unsigned int *)(I(self, 0x28) + 0x1c)), (unsigned int)(mat));
         }
     }
 }

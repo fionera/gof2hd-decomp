@@ -1,4 +1,5 @@
 #include "gof2/StatusWindow.h"
+#include "gof2/PaintCanvas.h"
 #include "gof2/Status.h"
 #include "gof2/Achievements.h"
 #include "gof2/GameText.h"
@@ -487,9 +488,6 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
 extern "C" {
 void *Achievements_get();            // *(DAT_168150): achievements singleton (via getter at DAT_168154)
 int Achievements_isUnlocked(void *ach, int index);
-void PaintCanvas_setImage2D(void *canvas, int imageId, void *out);
-int PaintCanvas_GetImage2DWidth(void *canvas);
-int PaintCanvas_GetImage2DHeight(void *canvas);
 
 extern void *g_sw_imageFactory;   // **(DAT_168148): image factory root
 extern int   g_sw_charDef;        // DAT_16814c: character definition arg
@@ -514,25 +512,25 @@ void StatusWindow::reInit() {
     int id = 0x493;
     if (a1) id = 0x494;
     if (a0) id = 0x495;
-    PaintCanvas_setImage2D(canvas, id, (char *)self + 0x14);
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)((char *)self + 0x14));
 
     id = 0x492;
     if (a0) id = 0x496;
     if (a1) id = 0x497;
-    PaintCanvas_setImage2D(canvas, id, (char *)self + 0x18);
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)((char *)self + 0x18));
 
     id = 0x490;
     if (a3) id = 0x498;
     if (a2) id = 0x499;
-    PaintCanvas_setImage2D(canvas, id, (char *)self + 0x1c);
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)((char *)self + 0x1c));
 
     id = 0x491;
     if (a2) id = 0x49a;
     if (a3) id = 0x49b;
-    PaintCanvas_setImage2D(canvas, id, (char *)self + 0x20);
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)((char *)self + 0x20));
 
-    i32(self, 0x60) = PaintCanvas_GetImage2DWidth(canvas);
-    i32(self, 0x64) = PaintCanvas_GetImage2DHeight(canvas);
+    i32(self, 0x60) = ((PaintCanvas *)canvas)->GetImage2DWidth(0);
+    i32(self, 0x64) = ((PaintCanvas *)canvas)->GetImage2DHeight(0);
 }
 
 // ---- draw_15831c.cpp ----
@@ -552,15 +550,6 @@ void String_concatInt(void *out, void *lhs, int *v);   // operator+(String, int)
 void String_subString(void *self, void *other);
 
 int   GameText_getLanguage();
-
-void PaintCanvas_SetColor(void *canvas);
-void PaintCanvas_FillRectangle(void *canvas, int x, int y, int wh);
-int  PaintCanvas_GetTextWidth(void *canvas, void *text);
-void PaintCanvas_DrawString(void *canvas, void *font, void *text, int x, int y);
-void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y, char anchor);
-void PaintCanvas_DrawImage2D_xy(void *canvas, int image, int x, int y);
-void PaintCanvas_DrawRegion2D(void *canvas, int image, int w, int sx, int sy, int h,
-                              float fy, int a, int b, int c, int x);
 
 void Layout_drawHeader(void *layout, void *title);
 void Layout_formatCredits(void *out, int credits);
@@ -606,9 +595,9 @@ void StatusWindow::draw() {
     int screenH = *g_swd_dimH;
 
     // --- background + scrollbar ---
-    PaintCanvas_SetColor(canvas);
-    PaintCanvas_FillRectangle(canvas, 0, 0, screenW);
-    PaintCanvas_SetColor(canvas);
+    ((PaintCanvas *)canvas)->SetColor(0u);
+    ((PaintCanvas *)canvas)->FillRectangle(0, 0, screenW, screenH);
+    ((PaintCanvas *)canvas)->SetColor(0u);
     ((Layout *)(layout))->drawBG();
 
     float relStart = ((StatusWindow *)(self))->getRelativeScrollStartPos();
@@ -666,8 +655,8 @@ void StatusWindow::draw() {
         Layout_formatCredits(credTmp, ((Status *)(*(void **)g_swd_status))->getCredits());
         ((String *)(creditStr))->assign((String *)credTmp);
         ((String *)(credTmp))->dtor();
-        int tw = PaintCanvas_GetTextWidth(canvas, font);
-        PaintCanvas_DrawString(canvas, font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y);
+        int tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Level line.
         char lvlPrefix[0xc], lvlText[0xc], lvlFull[0xc];
@@ -678,14 +667,14 @@ void StatusWindow::draw() {
         String_concatInt(lvlFull, lvlText, &lvl);
         ((String *)(creditStr))->assign((String *)lvlFull);
         ((String *)(lvlFull))->dtor(); ((String *)(lvlText))->dtor(); ((String *)(lvlPrefix))->dtor();
-        tw = PaintCanvas_GetTextWidth(canvas, font);
-        PaintCanvas_DrawString(canvas, font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y);
+        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Playing-time line.
         char timeStr[0xc];
         Globals_longToTimeStringNoSeconds(*(void **)g_swd_globals, timeStr, ((Status *)(*(void **)g_swd_status))->getPlayingTime());
-        tw = PaintCanvas_GetTextWidth(canvas, font);
-        PaintCanvas_DrawString(canvas, font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y);
+        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Ship picture panel.
         String_fromC(lbl, "", false);
@@ -693,8 +682,8 @@ void StatusWindow::draw() {
         ((String *)(lbl))->dtor();
         ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawShip(Ship_getIndex(((Status *)(*(void **)g_swd_status))->getShip()), x0 + (boxW >> 1) + pad * 2, y);
         void *shipNameTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(Ship_getIndex(((Status *)(*(void **)g_swd_status))->getShip()));
-        PaintCanvas_DrawString(canvas, font, shipNameTxt,
-                               x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, shipNameTxt,
+                               x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y, false);
 
         // Fire-power line.
         char fpStr[0xc], fpPre[0xc], fpFull[0xc];
@@ -706,24 +695,24 @@ void StatusWindow::draw() {
         String_concatText(fpStr, fpFull);
         ((String *)(creditStr))->assign((String *)fpStr);
         ((String *)(fpFull))->dtor(); ((String *)(fpPre))->dtor(); ((String *)(fpStr))->dtor();
-        tw = PaintCanvas_GetTextWidth(canvas, font);
-        PaintCanvas_DrawString(canvas, font, creditStr, ((y + x0) - pad) - tw, y);
+        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, creditStr, ((y + x0) - pad) - tw, y, false);
 
         // Combined-HP line.
         char hpStr[0xc];
         String_fromInt(hpStr, Ship_getCombinedHP(((Status *)(*(void **)g_swd_status))->getShip()));
-        tw = PaintCanvas_GetTextWidth(canvas, font);
-        PaintCanvas_DrawString(canvas, font, hpStr, ((y + x0) - pad) - tw, y);
+        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, hpStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, hpStr, ((y + x0) - pad) - tw, y, false);
         ((String *)(hpStr))->dtor();
 
         // Standing emblem panel + bars.
         void *standing = (void *)(intptr_t)((Status *)(*(void **)g_swd_status))->getStanding();
         float rate = ((Standing *)(standing))->getStandingRate(0);
-        PaintCanvas_DrawImage2D(canvas, i32(self, 0x24), x0 + (boxW >> 2), y, '\x11');
-        PaintCanvas_DrawRegion2D(canvas, i32(self, 0x28), i32(self, 0x70), 0,
+        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)i32(self, 0x24), x0 + (boxW >> 2), y, (unsigned char)'\x11');
+        ((PaintCanvas *)canvas)->DrawRegion2D((unsigned)i32(self, 0x28), i32(self, 0x70), 0,
                                  (int)-(rate * (float)i32(self, 0x70)), i32(self, 0x74),
                                  -(rate * (float)i32(self, 0x70)), 0, 0, 0, x0 + (boxW >> 2));
-        PaintCanvas_DrawImage2D(canvas, i32(self, 0x2c), x0, y, '\x11');
+        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)i32(self, 0x2c), x0, y, (unsigned char)'\x11');
 
         // Career-stat rows from the Status singleton.
         Status *st = (Status *)(*(void **)g_swd_status);
@@ -740,10 +729,10 @@ void StatusWindow::draw() {
                 default: rowVal = st->getGoodsProduced();   break;
             }
             void *labelTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
-            PaintCanvas_DrawString(canvas, font, labelTxt, rowX, y);
+            ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, labelTxt, rowX, y, false);
             String_fromInt(rowStr, rowVal);
-            tw = PaintCanvas_GetTextWidth(canvas, font);
-            PaintCanvas_DrawString(canvas, font, rowStr, ((y + x0) - pad) - tw, y);
+            tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, rowStr);
+            ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, rowStr, ((y + x0) - pad) - tw, y, false);
             ((String *)(rowStr))->dtor();
         }
 
@@ -779,7 +768,7 @@ void StatusWindow::draw() {
 
         // Selected-medal detail panel.
         if (i32(self, 0x34) >= 0) {
-            PaintCanvas_SetColor(canvas);
+            ((PaintCanvas *)canvas)->SetColor(0u);
             int lines = *(int *)pp(self, 0x10);
             int lineH = layout->field_0x4;
             char lbl[0xc];
@@ -833,10 +822,6 @@ void TouchButton_ctor_medal(void *self, int index, int medal, void *text, int x,
 
 
 int  *Achievements_getMedals(void *ach);
-
-void PaintCanvas_setImage2D(void *canvas, int imageId, void *out);
-int  PaintCanvas_GetImage2DWidth(void *canvas);
-int  PaintCanvas_GetImage2DHeight(void *canvas);
 
 int  __aeabi_idiv(int a, int b);
 
@@ -904,11 +889,11 @@ StatusWindow * StatusWindow::ctor() {
     ((StatusWindow *)(self))->reInit();
 
     void *canvas = *(void **)g_sw_canvas;
-    PaintCanvas_setImage2D(canvas, 0x48e, (char *)self + 0x24);
-    PaintCanvas_setImage2D(canvas, 0x48f, (char *)self + 0x28);
-    PaintCanvas_setImage2D(canvas, 0x48d, (char *)self + 0x2c);
-    i32(self, 0x70) = PaintCanvas_GetImage2DWidth(canvas) / 2;
-    int img3h = PaintCanvas_GetImage2DHeight(canvas);
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48e, (unsigned int *)((char *)self + 0x24));
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48f, (unsigned int *)((char *)self + 0x28));
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48d, (unsigned int *)((char *)self + 0x2c));
+    i32(self, 0x70) = ((PaintCanvas *)canvas)->GetImage2DWidth(0) / 2;
+    int img3h = ((PaintCanvas *)canvas)->GetImage2DHeight(0);
 
     // Zero the inertia/colour state blocks (+0x45..+0x54, +0x38..+0x44).
     for (int o = 0x45; o < 0x55; o++) *((unsigned char *)self + o) = 0;

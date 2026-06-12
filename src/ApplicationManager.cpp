@@ -4,6 +4,15 @@
 #include "gof2/String.h"
 #include "gof2/Engine.h"
 #include "gof2/ConfigReader.h"
+#include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
+
+// PaintCanvas::GetWidth()/GetHeight() return void in the recovered class; the
+// underlying int-returning implementation is exposed as pc_GetWidth/pc_GetHeight
+// (defined alongside PaintCanvas.cpp). The ctor/dtor remain free functions.
+extern "C" int pc_GetWidth(PaintCanvas *self);
+extern "C" int pc_GetHeight(PaintCanvas *self);
+extern AbyssEngine::PaintCanvas *PaintCanvasCtor(AbyssEngine::PaintCanvas *, AbyssEngine::Engine *);
+extern AbyssEngine::PaintCanvas *PaintCanvasDtor(AbyssEngine::PaintCanvas *);
 
 
 extern "C" void ext_001ab578(void *sound, int volume);
@@ -28,14 +37,10 @@ extern "C" void ext_001ab5c8(void *cheats);
 extern "C" void ext_001ab538(void *sound);
 extern "C" void Engine_PreUpdate(void *engine);
 extern "C" void AESoundRessource_checkLooping(void *sound);
-extern "C" void PaintCanvas_StartDraw2FBO(void *canvas);
-extern "C" void PaintCanvas_StopDraw2FBO(void *canvas);
-extern "C" void PaintCanvas_CheckNUseRefractFBO(void *canvas);
 extern "C" void ext_001ab610(void);
 extern "C" void ArrayCtor_modules(void *array);
 extern "C" void ArrayCtor_uint(void *array);
 extern "C" void ArrayCtor_long_long(void *array);
-extern "C" void PaintCanvas_ctor(void *canvas, void *engine);
 extern "C" void AESoundRessource_ctor(void *sound);
 extern "C" void ConfigReader_ctor(void *reader, void *engine);
 extern "C" void CheatHandler_ctor(void *cheats, void *keys);
@@ -43,20 +48,16 @@ extern "C" void AESoundRessource_SetSound(void *sound, void *info, int count);
 extern "C" void AESoundRessource_init(void *sound, int index);
 extern "C" void ArrayAdd_IApplicationModule(void *module, void *array);
 extern "C" void ext_001ab5b8(unsigned int id, void *array);
-extern "C" int PaintCanvas_GetWidth(void *canvas);
-extern "C" int PaintCanvas_GetHeight(void *canvas);
 extern "C" void ext_001ab318(void *engine);
 extern "C" void ArrayAdd_long_long(long long value, void *array);
 extern "C" void ext_001ab5f8(long long key, void *array);
 extern "C" void Array_StringPtr_ctor(void *array);
 extern "C" void ArrayAdd_StringPtr(String *string, void *array);
-extern "C" void PaintCanvas_SetGameOrientation(void *canvas, int orientation);
 extern "C" void ArrayRelease_modules(void *array);
 extern "C" void ArrayRelease_uint(void *array);
 extern "C" void ArrayDtor_long_long(void *array);
 extern "C" void ArrayDtor_uint(void *array);
 extern "C" void ArrayDtor_modules(void *array);
-extern "C" void PaintCanvas_dtor(void *canvas);
 extern "C" void AESoundRessource_dtor(void *sound);
 extern "C" void CheatHandler_dtor(void *cheats);
 extern "C" void ConfigReader_dtor(void *reader);
@@ -615,7 +616,7 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
     self->engine = engine;
 
     void *canvas = ::operator new(0x20c);
-    PaintCanvas_ctor(canvas, engine);
+    PaintCanvasCtor((AbyssEngine::PaintCanvas *)canvas, (AbyssEngine::Engine *)engine);
     *(void **)self = canvas;
 
     void *sound = ::operator new(0x14);
@@ -803,16 +804,16 @@ void ApplicationManager::ConvertTouchCoords(int *x, int *y) {
                 return;
             }
             newY = *xPtr;
-            *xPtr = PaintCanvas_GetWidth(canvas) - *yPtr;
+            *xPtr = pc_GetWidth((PaintCanvas *)canvas) - *yPtr;
             goto storeY;
         }
         int oldX = *xPtr;
         *xPtr = *yPtr;
-        *yPtr = PaintCanvas_GetHeight(canvas) - oldX;
+        *yPtr = pc_GetHeight((PaintCanvas *)canvas) - oldX;
         canvas = *(void **)manager;
     }
-    *xPtr = PaintCanvas_GetWidth(canvas) - *xPtr;
-    newY = PaintCanvas_GetHeight(canvas) - *yPtr;
+    *xPtr = pc_GetWidth((PaintCanvas *)canvas) - *xPtr;
+    newY = pc_GetHeight((PaintCanvas *)canvas) - *yPtr;
 
 storeY:
     *yPtr = newY;
@@ -852,21 +853,21 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
             void *canvas = *(void **)self;
             if (mode == 0 && x <= 0x31 && y <= 0x31) {
                 g_touchMode = 1;
-            } else if (mode == 1 && x > PaintCanvas_GetWidth(canvas) - 0x32 &&
-                       y > PaintCanvas_GetHeight(canvas) - 0x32) {
+            } else if (mode == 1 && x > pc_GetWidth((PaintCanvas *)canvas) - 0x32 &&
+                       y > pc_GetHeight((PaintCanvas *)canvas) - 0x32) {
                 g_touchMode = 2;
-            } else if (mode == 2 && x <= 0x31 && y > PaintCanvas_GetHeight(canvas) - 0x32) {
+            } else if (mode == 2 && x <= 0x31 && y > pc_GetHeight((PaintCanvas *)canvas) - 0x32) {
                 uint8_t *flag = (uint8_t *)((char *)engine + 0x74);
                 *flag = !*flag;
-            } else if (mode == 3 && y <= 0x31 && x > PaintCanvas_GetWidth(canvas) - 0x32) {
+            } else if (mode == 3 && y <= 0x31 && x > pc_GetWidth((PaintCanvas *)canvas) - 0x32) {
                 g_touchMode = 4;
             }
         } else if (*(uint8_t *)((char *)engine + 0x74)) {
             if (y < 100) {
                 g_touchToggle ^= 1;
             } else {
-                int height = PaintCanvas_GetHeight(*(void **)self);
-                int width = PaintCanvas_GetWidth(*(void **)self);
+                int height = pc_GetHeight((PaintCanvas *)*(void **)self);
+                int width = pc_GetWidth((PaintCanvas *)*(void **)self);
                 int half = width / 2;
                 if (height - 100 < y) {
                     g_touchValue = x < half ? 0 : 1;
@@ -1063,7 +1064,7 @@ void ApplicationManager::CheckForOrientationChange() {
         if (orientation == 1) {
             timer = &g_orientationFlat;
             if (update_orientation_timer(self, timer)) {
-                PaintCanvas_SetGameOrientation(canvas, 0);
+                ((PaintCanvas *)canvas)->SetGameOrientation(0);
                 *timer = 0;
             }
             return;
@@ -1086,7 +1087,7 @@ void ApplicationManager::CheckForOrientationChange() {
     return;
 
 setOrientation:
-    PaintCanvas_SetGameOrientation(canvas, target);
+    ((PaintCanvas *)canvas)->SetGameOrientation(target);
     *timer = 0;
 }
 
@@ -1120,7 +1121,7 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
 
     void *canvas = *(void **)self;
     if (canvas != 0) {
-        PaintCanvas_dtor(canvas);
+        PaintCanvasDtor((AbyssEngine::PaintCanvas *)canvas);
         ::operator delete(canvas);
     }
     *(void **)self = 0;

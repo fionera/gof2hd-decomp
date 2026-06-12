@@ -3,6 +3,7 @@
 #include "gof2/Status.h"
 #include "gof2/GameText.h"
 #include "gof2/String.h"
+#include "gof2/PaintCanvas.h"
 
 // Minimal view of NewsItem fields read here (NewsItem.h is opaque; not in this batch).
 // Layout confirmed from Ghidra NewsTicker::NewsTicker @ 0x16c468.
@@ -20,12 +21,8 @@ struct NewsItemView {
 }
 using AbyssEngine::NewsItemView;
 
-extern "C" void PaintCanvas_SetColor(void *canvas, uint32_t color);
-extern "C" void PaintCanvas_FillRectangle(void *canvas, int x, int y, int w, int h);
-extern "C" void PaintCanvas_EnableClip(void *canvas, int x, int y, int w, int h);
-extern "C" void PaintCanvas_DrawString(void *canvas, void *font, String *text, int x, int y, bool flag);
+extern void DisableClip();  // AbyssEngine::PaintCanvas::DisableClip (free fn, not methodized)
 int GameText_getLanguage();
-extern "C" void PaintCanvas_DisableClip(void *canvas);
 extern "C" void String_cstr_ctor(void *self, const char *text, bool copy);
 extern "C" void String_plus(void *out, void *left, void *right);
 extern "C" void String_plusAssign(void *self, void *other);
@@ -43,7 +40,6 @@ extern "C" void ArrayReleaseClasses_NewsItem(NewsItemArray *self);
 extern "C" void ArrayAdd_NewsItem(void *item, NewsItemArray *array);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int bound); } }
 extern "C" int SolarSystem_getIndex(void *system);
-extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *font, String *text);
 
 // ---- draw_15e174.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_NewsTicker_draw_canvas;
@@ -54,7 +50,7 @@ __attribute__((visibility("hidden"))) extern void **g_NewsTicker_draw_font;
 void NewsTicker::draw()
 {
     void **canvasHolder = g_NewsTicker_draw_canvas;
-    PaintCanvas_SetColor(*canvasHolder, 0x6f);
+    ((PaintCanvas *)*canvasHolder)->SetColor(0x6f);
 
     int *fontHeightTable = *g_NewsTicker_draw_fontHeight;
     int *screenHeight = g_NewsTicker_draw_screenHeight;
@@ -64,18 +60,18 @@ void NewsTicker::draw()
         int clipBottom = *screenHeight;
         int fontHeight = fontHeightTable[4];
         int fillHeight = (2 - y0) + clipBottom - fontHeight;
-        PaintCanvas_FillRectangle(*canvasHolder, x0, y0 - 2,
+        ((PaintCanvas *)*canvasHolder)->FillRectangle(x0, y0 - 2,
                                   this->width, fillHeight);
     }
 
-    PaintCanvas_EnableClip(*canvasHolder, this->x, this->y,
+    ((PaintCanvas *)*canvasHolder)->EnableClip(this->x, this->y,
                            this->width, *screenHeight);
-    PaintCanvas_SetColor(*canvasHolder, 0x777777ff);
+    ((PaintCanvas *)*canvasHolder)->SetColor(0x777777ff);
 
     void **fontHolder = g_NewsTicker_draw_font;
     String *text = &this->tickerText;
     float drawX = this->scrollOffset + (float)this->x;
-    PaintCanvas_DrawString(*canvasHolder, *fontHolder, text, (int)drawX,
+    ((PaintCanvas *)*canvasHolder)->DrawString((unsigned int)(unsigned long)*fontHolder, (void *)text, (int)drawX,
                            this->y, false);
 
     int language = GameText_getLanguage();
@@ -87,7 +83,7 @@ void NewsTicker::draw()
             int drawY = this->y;
             void *font = *fontHolder;
             void *canvas = *canvasHolder;
-            PaintCanvas_DrawString(canvas, font, text, (int)x, drawY, false);
+            ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)text, (int)x, drawY, false);
         }
     } else {
         if (x < (float)(textWidth - this->width)) {
@@ -96,11 +92,11 @@ void NewsTicker::draw()
             int drawY = this->y;
             void *font = *fontHolder;
             void *canvas = *canvasHolder;
-            PaintCanvas_DrawString(canvas, font, text, (int)x, drawY, false);
+            ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)text, (int)x, drawY, false);
         }
     }
 
-    return PaintCanvas_DisableClip(*canvasHolder);
+    return DisableClip();
 }
 
 // ---- OnTouchEnd_15e374.cpp ----
@@ -297,15 +293,15 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         ((String *)(&replaced))->dtor();
     }
 
-    this->textWidth = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
-                                                  *g_NewsTicker_ctor_font, tickerText);
+    this->textWidth = ((PaintCanvas *)*g_NewsTicker_ctor_canvas)->GetTextWidth(
+                          (unsigned int)(unsigned long)*g_NewsTicker_ctor_font, (void *)tickerText);
     if (this->textWidth < width) {
         String copy;
         ((String *)(&copy))->ctor_copy((String *)(tickerText), false);
         String_plusAssign(tickerText, &copy);
         ((String *)(&copy))->dtor();
-        this->textWidth = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,
-                                                      *g_NewsTicker_ctor_font, tickerText);
+        this->textWidth = ((PaintCanvas *)*g_NewsTicker_ctor_canvas)->GetTextWidth(
+                              (unsigned int)(unsigned long)*g_NewsTicker_ctor_font, (void *)tickerText);
     }
 
     if (GameText_getLanguage() == 9) {

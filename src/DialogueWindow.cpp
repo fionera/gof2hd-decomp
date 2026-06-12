@@ -7,6 +7,7 @@
 #include "gof2/GameText.h"
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
+#include "gof2/PaintCanvas.h"
 // Mission.h (-> Station.h) and TouchButton.h each re-declare an identical, unguarded
 // `struct RetStr`, which collides with Agent.h's. None of the RetStr-returning accessors
 // are used in this TU, so the duplicate definitions are renamed away here to avoid the
@@ -44,7 +45,7 @@ extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, b
 extern "C" void ChoiceWindow_ctor(void *self);
 extern "C" void TouchButton_ctor(void *self, String *text, int type, int x, int y, int width, int icon, int style);
 extern "C" int Agent_getRace(Agent *self);
-extern "C" void PaintCanvas_SetColor(void *canvas, int color);
+using AbyssEngine::PaintCanvas;
 extern "C" void Layout_drawMask(void *layout);
 struct Vec2;  // defined below (float x, y) -- only the pointer type is needed here
 void TouchButton_getPosition(Vec2 *out, void *self);
@@ -718,7 +719,7 @@ void DialogueWindow::draw() {
     StringSlot title;
     Vec2 pos;
 
-    PaintCanvas_SetColor(*g_dw_paintCanvas, -1);
+    ((PaintCanvas*)*g_dw_paintCanvas)->SetColor((unsigned int)-1);
     void *layout = *g_dw_layoutDraw;
     Layout_drawMask(layout);
     ((String *)(&title))->ctor_copy((String *)((char *)self + 0x34), false);

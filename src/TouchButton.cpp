@@ -3,22 +3,13 @@
 #include "gof2/Achievements.h"
 #include "gof2/Layout.h"
 #include "gof2/String.h"
+#include "gof2/PaintCanvas.h"
 
+extern void *g_PaintCanvas;
 
 extern "C" void TB_assignString(void *dst, String *src);
-extern "C" int  PaintCanvas_GetTextWidth(void *canvas, void *text, void *extra = 0);
 extern "C" void  String_ctor_cstr(void *s, const char *text, bool copy);
-extern "C" void  PaintCanvas_Image2DCreate(void *canvas, unsigned short imgId, unsigned int *outHandle);
-extern "C" int   PaintCanvas_GetImage2DWidth(void *canvas);
-extern "C" int   PaintCanvas_GetImage2DHeight(void *canvas);
-extern "C" int   PaintCanvas_GetTextHeight(void *canvas);
 unsigned int GameText_getLanguage();
-extern "C" int   PaintCanvas_FontGetSpacing(void *canvas);
-extern "C" unsigned int PaintCanvas_GetColor(void *canvas);
-extern "C" void  PaintCanvas_SetColor(unsigned int c);
-extern "C" void  PaintCanvas_FontSetSpacing(void *canvas, unsigned int spacing, short kerning);
-extern "C" void  PaintCanvas_DrawImage2D(void *canvas, int img, int x, int y);
-extern "C" int PaintCanvas_GetTextWidth2(void *canvas, void *s, String *t);
 extern "C" void  String_ctor_default(void *s);
 
 // ---- setVisible_1693a4.cpp ----
@@ -136,7 +127,7 @@ void TouchButton::replaceTextKeepSize(String *text) {
     ((String *)((char *)self + 0xc))->assign(text);
     if (I(self, 0x70) == 10) {
         int w = I(self, 0x90);
-        int tw = PaintCanvas_GetTextWidth(*g_TB_canvas2, P(self, 8), text);
+        int tw = ((PaintCanvas*)(*g_TB_canvas2))->GetTextWidth((unsigned int)(U(self,8)), (void*)(text));
         I(self, 0xa4) = w / 2 - tw / 2;
     }
 }
@@ -279,15 +270,15 @@ __attribute__((visibility("hidden"))) extern const char g_TB_emptyStr[];
 // centred label X offset. Used by several of the simple image-only kinds.
 static void tb_basicImageGeometry(TouchButton *self, void *canvas)
 {
-    I(self, 0x88) = PaintCanvas_GetImage2DHeight(canvas);
-    int w = PaintCanvas_GetImage2DWidth(canvas);
+    I(self, 0x88) = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+    int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
     I(self, 0x8c) = I(self, 0x88);
     I(self, 0x90) = w;
     I(self, 0x94) = w;
-    int tw = PaintCanvas_GetImage2DWidth(canvas);
+    int tw = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
     int h = I(self, 0x88);
     I(self, 0xa4) = w / 2 - tw / 2;
-    int th = PaintCanvas_GetImage2DHeight(canvas);
+    int th = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
     I(self, 0xa8) = h / 2 - th / 2;
 }
 
@@ -327,72 +318,72 @@ int TouchButton::init(String *text, unsigned int kind, int achId, int achStage, 
         void *ach = *g_TB_achievements;
         int elite = (((Achievements *)(ach))->isEliteMedal(achId) != 0) ? 1 : 0;
         U(self, 0xb4) = TB_iconTexId(elite, achStage);
-        PaintCanvas_Image2DCreate(canvas, TB_iconImgId(elite, achStage), &U(self, 0x60));
-        I(self, 0x88) = PaintCanvas_GetImage2DHeight(canvas);
-        int w = PaintCanvas_GetImage2DWidth(canvas);
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_iconImgId(elite, achStage)),(unsigned int*)(&U(self, 0x60)));
+        I(self, 0x88) = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+        int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
         I(self, 0x8c) = I(self, 0x88);
         I(self, 0x90) = w;
         I(self, 0x94) = w;
         I(self, 0xa8) = I(self, 0x88) + 5;
-        int tw = PaintCanvas_GetTextWidth(canvas, (String *)((char *)self + 8));
+        int tw = ((PaintCanvas*)(canvas))->GetTextWidth((unsigned int)(U(self,8)),(void*)((String *)((char *)self + 8)));
         I(self, 0x64) = -1;
         I(self, 0xa4) = w / 2 - tw / 2;
         I(self, 0x68) = -1;
-        PaintCanvas_Image2DCreate(canvas, TB_medalSmallId(achId), &U(self, 0x68));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_medalSmallId(achId)),(unsigned int*)(&U(self, 0x68)));
         if (achStage != 0 || ((Achievements *)(ach))->isEliteMedal(achId) != 0)
-            PaintCanvas_Image2DCreate(canvas, 0x96c, &U(self, 0x64));
+            ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x96c),(unsigned int*)(&U(self, 0x64)));
         break;
     }
     case 10: {  // toggle-style button with a 0x2329 background
-        PaintCanvas_Image2DCreate(canvas, 9000, &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, 0x2329, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(9000),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x2329),(unsigned int*)(&U(self, 0x3c)));
         I(self, 0x54) = I(self, 0x3c);
-        I(self, 0x88) = PaintCanvas_GetImage2DHeight(canvas);
-        int w = PaintCanvas_GetImage2DWidth(canvas);
+        I(self, 0x88) = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+        int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
         I(self, 0x8c) = I(self, 0x88);
         I(self, 0x90) = w;
         I(self, 0x94) = w;
-        int tw = PaintCanvas_GetTextWidth(canvas, (String *)((char *)self + 8));
+        int tw = ((PaintCanvas*)(canvas))->GetTextWidth((unsigned int)(U(self,8)),(void*)((String *)((char *)self + 8)));
         I(self, 0xa4) = w / 2 - tw / 2;
-        I(self, 0xa8) = PaintCanvas_GetTextHeight(canvas);
+        I(self, 0xa8) = ((PaintCanvas*)(canvas))->GetTextHeight((unsigned int)(U(self,8)));
         I(self, 0xc0) = I(*g_TB_layoutMetrics, 0x80);
         break;
     }
     case 0xc:   // simple two-image button (0x472 / 0x473)
-        PaintCanvas_Image2DCreate(canvas, 0x472, &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, 0x473, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x472),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x473),(unsigned int*)(&U(self, 0x3c)));
         tb_basicImageGeometry(self, canvas);
         break;
     case 0xd:
-        PaintCanvas_Image2DCreate(canvas, 0x517, &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, 0x518, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x517),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x518),(unsigned int*)(&U(self, 0x3c)));
         I(self, 0x54) = I(self, 0x3c);
         tb_basicImageGeometry(self, canvas);
         break;
     case 0xe:
-        PaintCanvas_Image2DCreate(canvas, 0x53c, &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, 0x53b, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x53c),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x53b),(unsigned int*)(&U(self, 0x3c)));
         goto wide_text_layout;
     case 0xf:
-        PaintCanvas_Image2DCreate(canvas, 0x53e, &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, 0x53d, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x53e),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x53d),(unsigned int*)(&U(self, 0x3c)));
         goto wide_text_layout;
     case 0x10:  // background supplied by caller at 0x48
         I(self, 0x48) = achStage;
-        PaintCanvas_Image2DCreate(canvas, 0xbb9, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0xbb9),(unsigned int*)(&U(self, 0x3c)));
         tb_basicImageGeometry(self, canvas);
         break;
     case 0x11:
-        PaintCanvas_Image2DCreate(canvas, 0xbc0, &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, 0xbc1, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0xbc0),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0xbc1),(unsigned int*)(&U(self, 0x3c)));
         goto wide_text_layout;
     case 0x12:
-        PaintCanvas_Image2DCreate(canvas, 0xbc0, &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, 0xbc1, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0xbc0),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0xbc1),(unsigned int*)(&U(self, 0x3c)));
         goto wide_text_layout;
     case 0x14:
-        PaintCanvas_Image2DCreate(canvas, 0x1f6e, &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, 0x1f6f, &U(self, 0x3c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x1f6e),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(0x1f6f),(unsigned int*)(&U(self, 0x3c)));
         goto wide_text_layout;
     case 0x13:  // pre-supplied images at 0x48 (caller) and 0x28 (ctor variant)
         I(self, 0x48) = achStage;
@@ -401,20 +392,20 @@ int TouchButton::init(String *text, unsigned int kind, int achId, int achStage, 
         break;
     default: {  // generic menu button: 9-patch frame from the skin table
         int alt = (*g_TB_useAltSkin != 0) ? 1 : 0;
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 0), &U(self, 0x48));
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 1), &U(self, 0x4c));
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 2), &U(self, 0x50));
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 3), &U(self, 0x3c));
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 4), &U(self, 0x40));
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 5), &U(self, 0x44));
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 6), &U(self, 0x54));
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 7), &U(self, 0x58));
-        PaintCanvas_Image2DCreate(canvas, TB_frameId(alt, kind, 8), &U(self, 0x5c));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 0)),(unsigned int*)(&U(self, 0x48)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 1)),(unsigned int*)(&U(self, 0x4c)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 2)),(unsigned int*)(&U(self, 0x50)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 3)),(unsigned int*)(&U(self, 0x3c)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 4)),(unsigned int*)(&U(self, 0x40)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 5)),(unsigned int*)(&U(self, 0x44)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 6)),(unsigned int*)(&U(self, 0x54)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 7)),(unsigned int*)(&U(self, 0x58)));
+        ((PaintCanvas*)(canvas))->Image2DCreate((unsigned short)(TB_frameId(alt, kind, 8)),(unsigned int*)(&U(self, 0x5c)));
 
-        I(self, 0x88) = PaintCanvas_GetImage2DHeight(canvas);
-        I(self, 0x94) = PaintCanvas_GetImage2DWidth(canvas);   // left frame width
-        I(self, 0x98) = PaintCanvas_GetImage2DWidth(canvas);   // mid frame width
-        int rightW = PaintCanvas_GetImage2DWidth(canvas);
+        I(self, 0x88) = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+        I(self, 0x94) = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);   // left frame width
+        I(self, 0x98) = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);   // mid frame width
+        int rightW = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
         I(self, 0x9c) = rightW;
         // height: kind 0xb uses the raw image height; otherwise a layout default
         if (kind != 0xb)
@@ -450,15 +441,15 @@ wide_text_layout: {
             factor = (lang == 0xe) ? 1.0f : 1.5f;
 
         I(self, 0x54) = I(self, 0x3c);
-        I(self, 0x88) = PaintCanvas_GetImage2DHeight(canvas);
-        int w = PaintCanvas_GetImage2DWidth(canvas);
+        I(self, 0x88) = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+        int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
         I(self, 0x8c) = I(self, 0x88);
         I(self, 0x90) = w;
         I(self, 0x94) = w;
-        int tw = PaintCanvas_GetTextWidth(canvas, (String *)((char *)self + 8));
+        int tw = ((PaintCanvas*)(canvas))->GetTextWidth((unsigned int)(U(self,8)),(void*)((String *)((char *)self + 8)));
         int h = I(self, 0x88);
         I(self, 0xa4) = w / 2 - tw / 2;
-        int th = PaintCanvas_GetTextHeight(canvas);
+        int th = ((PaintCanvas*)(canvas))->GetTextHeight((unsigned int)(U(self,8)));
         I(self, 0xa8) = (int)((float)(h / 2) + factor * (float)th);
         I(self, 0xc0) = I(*g_TB_layoutMetrics, 0x80);
     }
@@ -491,7 +482,7 @@ void TouchButton_168ffc(TouchButton *self, unsigned int kind,
 
     void *canvas = *g_TB_canvas_ctor;
     U(self, 0x8)  = *g_TB_defSpacing;
-    I(self, 0xc4) = PaintCanvas_FontGetSpacing(canvas);
+    I(self, 0xc4) = ((PaintCanvas*)(canvas))->FontGetSpacing((unsigned int)(U(self,8)));
 
     unsigned char tmp[12];       // String is a 12-byte value type (ctor/dtor are engine calls)
     String_ctor_cstr(tmp, g_TB_emptyStr, false);
@@ -506,15 +497,6 @@ void TouchButton_168ffc(TouchButton *self, unsigned int kind,
 //   progress fill, or a plain image) depending on `kind` (offset 0x70) and the
 //   pressed/highlight flags, then restores spacing and colour.
 
-extern "C" void  PaintCanvas_SetColorARGB(unsigned char a, unsigned char r,
-                                          unsigned char g, unsigned char b);
-extern "C" void  PaintCanvas_DrawImage2DEx(void *canvas, int img, int x, int y,
-                                           int anchor, int flags);
-extern "C" void  PaintCanvas_DrawString(void *canvas, String *text, void *posStr,
-                                         int x, bool centered);
-extern "C" int   PaintCanvas_DrawRegion2D(void *canvas, unsigned int img, int sx, int sy,
-                                          int w, int h, int dw, int a, int b, int c, int y);
-
 // Singletons (deref twice). Hidden -> single pc-rel load.
 __attribute__((visibility("hidden"))) extern void **g_TB_d_canvas;
 __attribute__((visibility("hidden"))) extern void **g_TB_d_layoutA;   // pressed/disabled tint layout
@@ -527,20 +509,20 @@ __attribute__((visibility("hidden"))) extern unsigned int g_TB_d_frameMask; // k
 void TouchButton::draw() {
     TouchButton *self = this;
     void *canvas = *g_TB_d_canvas;
-    unsigned int savedColor = PaintCanvas_GetColor(canvas);
+    unsigned int savedColor = ((PaintCanvas*)(canvas))->GetColor();
 
     if (C(self, 0xb2) == 0)
         return;
 
     if (C(self, 0xb3) != 0) {
-        PaintCanvas_SetColor(0xffffff2f);   // mvn #0xd0 == 0xffffff2f
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffff2f);   // mvn #0xd0 == 0xffffff2f
         ((Layout *)(*g_TB_d_layoutA))->setDrawColor(-0xd1);
     } else {
-        PaintCanvas_SetColor(0xffffffff);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
     }
 
-    short savedSpacing = (short)PaintCanvas_FontGetSpacing(canvas);
-    PaintCanvas_FontSetSpacing(canvas, U(self, 0x8), (short)I(self, 0xc4));
+    short savedSpacing = (short)((PaintCanvas*)(canvas))->FontGetSpacing((unsigned int)(U(self,8)));
+    ((PaintCanvas*)(canvas))->FontSetSpacing((unsigned int)(U(self, 0x8)),(short)((short)I(self, 0xc4)));
 
     unsigned int kind = U(self, 0x70);
     int icon = -1;       // image to draw at the tail (offset 0x78 position)
@@ -548,26 +530,23 @@ void TouchButton::draw() {
     bool tailIcon = false;
 
     if (kind == 0x10) {
-        PaintCanvas_DrawImage2D(canvas, I(self, 0x48), I(self, 0x78), I(self, 0x7c));
+        ((PaintCanvas*)(canvas))->DrawImage2D((unsigned int)(I(self, 0x48)),(int)(I(self, 0x78)),(int)(I(self, 0x7c)));
         if (C(self, 0xb0) != 0 || C(self, 0xb1) != 0) {
             icon = I(self, 0x3c);
             iconY = I(self, 0x78);
             tailIcon = true;
         }
     } else if (kind == 4) {
-        PaintCanvas_DrawImage2D(canvas, I(self, 0x60), I(self, 0x78), I(self, 0x7c));
+        ((PaintCanvas*)(canvas))->DrawImage2D((unsigned int)(I(self, 0x60)),(int)(I(self, 0x78)),(int)(I(self, 0x7c)));
         if (I(self, 0x68) != -1) {
-            PaintCanvas_SetColor(0xffffffff);
-            PaintCanvas_DrawImage2DEx(canvas, I(self, 0x68),
-                I(self, 0x78) + (I(self, 0x90) >> 1),
-                (I(self, 0x7c) + (I(self, 0x88) >> 1)) - 1, 0x11, 0x44);
-            PaintCanvas_SetColor(0xffffffff);
+            ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
+            ((PaintCanvas*)(canvas))->DrawImage2D((unsigned int)(I(self, 0x68)),(int)(I(self, 0x78) + (I(self, 0x90) >> 1)),(int)((I(self, 0x7c) + (I(self, 0x88) >> 1)) - 1),(unsigned char)(0x11),(unsigned char)(0x44));
+            ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
             if (C(self, 0xb0) != 0 || C(self, 0xb1) != 0)
-                PaintCanvas_DrawImage2D(canvas, I(self, 0x64), I(self, 0x78), I(self, 0x7c));
+                ((PaintCanvas*)(canvas))->DrawImage2D((unsigned int)(I(self, 0x64)),(int)(I(self, 0x78)),(int)(I(self, 0x7c)));
         }
-        PaintCanvas_SetColor(0xffffffff);
-        PaintCanvas_DrawString(canvas, (String *)((char *)self + 8), (char *)self + 0xc,
-            I(self, 0x78) + I(self, 0xa4), (bool)(I(self, 0x7c) + I(self, 0xa8)));
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
+        ((PaintCanvas*)(canvas))->DrawString((unsigned int)(U(self,8)),(void*)((char *)self + 0xc),(int)(I(self, 0x78) + I(self, 0xa4)),(int)(I(self, 0x7c) + I(self, 0xa8)),false);
     } else {
         // generic frame / label kinds.
         int base;
@@ -593,10 +572,9 @@ void TouchButton::draw() {
                 frameMid  = I(self, 0x50);
             }
             ((Layout *)(*g_TB_d_layoutBG))->drawBGPattern(frameLeft, I(self, 0x94) + I(self, 0x78), I(self, 0x7c), I(self, 0xa0), I(self, 0x88));
-            PaintCanvas_DrawImage2D(canvas, frameMid,
-                I(self, 0x78) + I(self, 0x94) + I(self, 0xa0), I(self, 0x7c));
+            ((PaintCanvas*)(canvas))->DrawImage2D((unsigned int)(frameMid),(int)(I(self, 0x78) + I(self, 0x94) + I(self, 0xa0)),(int)(I(self, 0x7c)));
         }
-        PaintCanvas_DrawImage2D(canvas, base, I(self, 0x78), I(self, 0x7c));
+        ((PaintCanvas*)(canvas))->DrawImage2D((unsigned int)(base),(int)(I(self, 0x78)),(int)(I(self, 0x7c)));
 
         void *layoutC = *g_TB_d_layoutC;
         ((Layout *)(layoutC))->setDrawColor(-1);
@@ -604,15 +582,14 @@ void TouchButton::draw() {
         // optional progress fill (when 0xbc > 0).
         float prog = F<float>(self, 0xbc);
         if (prog > 0.0f) {
-            PaintCanvas_SetColor(0xffffffff);
+            ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
             ((Layout *)(layoutC))->setDrawColor(-0x80);
             int span = I(self, 0x94);
             int total = I(self, 0x9c) + I(self, 0xa0) + span;
             int filled = (int)(prog * (float)total);
             int leftImg = (C(self, 0xb8) == 0) ? I(self, 0x48) : I(self, 0x3c);
             int drawW = (filled < span) ? filled : span;
-            PaintCanvas_DrawRegion2D(canvas, (unsigned int)leftImg, 0, 0, drawW,
-                I(self, 0x88), filled, 0, 0, 0, I(self, 0x78));
+            ((PaintCanvas*)(canvas))->DrawRegion2D((unsigned int)((unsigned int)leftImg),(int)(0),(int)(0),(int)(drawW),(int)(I(self, 0x88)),(float)(filled),(int)(0),(int)(0),(int)(0),(int)(I(self, 0x78)));
 
             int mid = I(self, 0x94);
             if (mid < filled) {
@@ -627,8 +604,7 @@ void TouchButton::draw() {
                 int rImg = (C(self, 0xb8) == 0) ? I(self, 0x50) : I(self, 0x44);
                 int rW = (filled - mid) - I(self, 0xa0);
                 if (I(self, 0x9c) < rW) rW = I(self, 0x9c);
-                PaintCanvas_DrawRegion2D(canvas, (unsigned int)rImg, 0, 0, rW,
-                    I(self, 0x88), filled, 0, 0, 0, rstart + I(self, 0x78));
+                ((PaintCanvas*)(canvas))->DrawRegion2D((unsigned int)((unsigned int)rImg),(int)(0),(int)(0),(int)(rW),(int)(I(self, 0x88)),(float)(filled),(int)(0),(int)(0),(int)(0),(int)(rstart + I(self, 0x78)));
             }
             ((Layout *)(layoutC))->setDrawColor(-1);
         }
@@ -636,16 +612,13 @@ void TouchButton::draw() {
         // label colour: tinted when disabled (0xb3).
         unsigned int lblColor = U(self, 0xac);
         if (C(self, 0xb3) != 0)
-            PaintCanvas_SetColorARGB((unsigned char)(lblColor >> 24),
-                (unsigned char)(lblColor >> 16), (unsigned char)(lblColor >> 8),
-                (unsigned char)lblColor);
+            ((PaintCanvas*)g_PaintCanvas)->SetColor((unsigned char)((unsigned char)(lblColor >> 16)),(unsigned char)((unsigned char)(lblColor >> 8)),(unsigned char)((unsigned char)lblColor),(unsigned char)((unsigned char)(lblColor >> 24)));
         else
-            PaintCanvas_SetColor(0xffffffff);
+            ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
 
         if (I(self, 0x24) == -1) {
             // primary label
-            PaintCanvas_DrawString(canvas, (String *)((char *)self + 8), (char *)self + 0xc,
-                I(self, 0x78) + I(self, 0xa4), (bool)(I(self, 0x7c) + I(self, 0xa8)));
+            ((PaintCanvas*)(canvas))->DrawString((unsigned int)(U(self,8)),(void*)((char *)self + 0xc),(int)(I(self, 0x78) + I(self, 0xa4)),(int)(I(self, 0x7c) + I(self, 0xa8)),false);
 
             // secondary / value label (offset 0x18) when 0x20 set.
             if (I(self, 0x20) != 0) {
@@ -654,36 +627,33 @@ void TouchButton::draw() {
                 int w  = I(self, 0x90);
                 int tx, ty;
                 if (I(self, 0x70) == 10) {
-                    int tw = PaintCanvas_GetTextWidth(canvas, t);
-                    int th = PaintCanvas_GetTextHeight(canvas);
+                    int tw = ((PaintCanvas*)(canvas))->GetTextWidth((unsigned int)(U(self,8)),(void*)(t));
+                    int th = ((PaintCanvas*)(canvas))->GetTextHeight((unsigned int)(U(self,8)));
                     ty = I(self, 0x7c) + I(self, 0x88) + th * -2;
                     tx = (px + w / 2) - tw / 2;
                 } else {
                     int off = I(self, 0xa4);
-                    int tw  = PaintCanvas_GetTextWidth(canvas, t);
+                    int tw  = ((PaintCanvas*)(canvas))->GetTextWidth((unsigned int)(U(self,8)),(void*)(t));
                     ty = I(self, 0x7c) + I(self, 0xa8);
                     tx = ((w + px) - off) - tw;
                 }
-                PaintCanvas_DrawString(canvas, t, (char *)self + 0x18, tx, (bool)ty);
+                ((PaintCanvas*)(canvas))->DrawString((unsigned int)(U(self,8)),(void*)((char *)self + 0x18),(int)(tx),(int)(ty),false);
             }
 
             // shortcut / corner label (offset 0x2c) when 0x34 set.
             if (I(self, 0x34) != 0) {
-                PaintCanvas_SetColor(0xffffffff);
+                ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
                 String *u = (String *)(*g_TB_d_unitStr);
-                int tw = PaintCanvas_GetTextWidth(canvas, u);
-                PaintCanvas_DrawString(canvas, u, (char *)self + 0x2c,
-                    (I(self, 0x94) + I(self, 0x78)) - tw, (bool)(I(self, 0x7c) + I(self, 0xa8)));
-                PaintCanvas_SetColor(0xffffffff);
+                int tw = ((PaintCanvas*)(canvas))->GetTextWidth((unsigned int)(U(self,8)),(void*)(u));
+                ((PaintCanvas*)(canvas))->DrawString((unsigned int)(U(self,8)),(void*)((char *)self + 0x2c),(int)((I(self, 0x94) + I(self, 0x78)) - tw),(int)(I(self, 0x7c) + I(self, 0xa8)),false);
+                ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
             }
 
             // small adornment image (offset 0x38) when set.
             if (I(self, 0x38) != -1) {
-                PaintCanvas_SetColor(0xffffffff);
-                PaintCanvas_DrawImage2DEx(canvas, I(self, 0x38),
-                    (I(self, 0x78) + I(self, 0x90) + 6) - I(self, 0x94),
-                    I(self, 0x7c) + 1, 0x11, 0x14);
-                PaintCanvas_SetColor(0xffffffff);
+                ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
+                ((PaintCanvas*)(canvas))->DrawImage2D((unsigned int)(I(self, 0x38)),(int)((I(self, 0x78) + I(self, 0x90) + 6) - I(self, 0x94)),(int)(I(self, 0x7c) + 1),(unsigned char)(0x11),(unsigned char)(0x14));
+                ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
             }
         } else if (I(self, 0x70) != 0x13) {
             icon = base;
@@ -693,11 +663,11 @@ void TouchButton::draw() {
     }
 
     if (tailIcon)
-        PaintCanvas_DrawImage2D(canvas, icon, I(self, 0x78) + I(self, 0xa4) + 0, iconY);
+        ((PaintCanvas*)(canvas))->DrawImage2D((unsigned int)(icon),(int)(I(self, 0x78) + I(self, 0xa4) + 0),(int)(iconY));
 
     ((Layout *)(*g_TB_d_layoutEnd))->setDrawColor(-1);
-    PaintCanvas_FontSetSpacing(canvas, U(self, 0x8), savedSpacing);
-    PaintCanvas_SetColor(savedColor);
+    ((PaintCanvas*)(canvas))->FontSetSpacing((unsigned int)(U(self, 0x8)),(short)(savedSpacing));
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(savedColor);
 }
 
 // ---- TouchButton_168e88.cpp ----
@@ -715,7 +685,7 @@ TouchButton * TouchButton::ctor7(String *text, int type, int x, int y, int p5, u
     ((String *)((char *)self + 0x18))->ctor();
     ((String *)((char *)self + 0x2c))->ctor();
     I(self, 8) = *(int *)*g_TB_c1;
-    I(self, 0xc4) = PaintCanvas_FontGetSpacing(*g_TB_c2);
+    I(self, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(self,8)));
     ((TouchButton *)(self))->init(text, (unsigned int)type, x, y, p5, 0, 0, 0, p6, p7);
     return self;
 }
@@ -729,9 +699,9 @@ void TouchButton::setText(String *text) {
     TouchButton *self = this;
     ((String *)((char *)self + 0xc))->assign(text);
     void **holder = g_TB_canvas3;
-    int w = PaintCanvas_GetTextWidth2(*holder, P(self, 8), text);
+    int w = ((PaintCanvas*)(*holder))->GetTextWidth((unsigned int)(U(self,8)),(void*)(text));
     if (I(self, 0x24) != -1)
-        w = PaintCanvas_GetImage2DWidth(*holder);
+        w = ((PaintCanvas*)(*holder))->GetImage2DWidth(0);
     int a94 = I(self, 0x94);
     int x;
     if (I(self, 0x6c) < 1)
@@ -762,14 +732,14 @@ void TouchButton::setText(String *text) {
     I(self, 0xa4) = x;
 height:
     int h = I(self, 0x88);
-    int th = PaintCanvas_GetTextHeight(*holder);
+    int th = ((PaintCanvas*)(*holder))->GetTextHeight((unsigned int)(U(self,8)));
     th = (h - th) / 2;
     I(self, 0xa8) = th;
     if (I(self, 0x70) == 3)
         I(self, 0xa8) = th + 2;
     if (I(self, 0x24) != -1) {
         h = I(self, 0x88);
-        int ih = PaintCanvas_GetImage2DHeight(*holder);
+        int ih = ((PaintCanvas*)(*holder))->GetImage2DHeight(0);
         I(self, 0xa8) = (h - ih) / 2;
         if (I(self, 0x70) == 1)
             I(self, 0xa4) = I(self, 0xa4) + 3;
@@ -841,7 +811,7 @@ void TouchButton_168d9c(TouchButton *self, unsigned int kind, unsigned int image
     void *canvas = *g_TB_canvas_ctor;
     U(self, 0x28) = image;
     U(self, 0x8)  = *g_TB_defSpacing;
-    I(self, 0xc4) = PaintCanvas_FontGetSpacing(canvas);
+    I(self, 0xc4) = ((PaintCanvas*)(canvas))->FontGetSpacing((unsigned int)(U(self,8)));
 
     unsigned char tmp[12];       // String is a 12-byte value type
     String_ctor_cstr(tmp, g_TB_emptyStr, false);
@@ -863,7 +833,7 @@ TouchButton * TouchButton::ctor5(String *text, int x, int y, int p4, unsigned ch
     ((String *)((char *)self + 0x18))->ctor();
     ((String *)((char *)self + 0x2c))->ctor();
     I(self, 8) = *(int *)*g_TB_c1;
-    I(self, 0xc4) = PaintCanvas_FontGetSpacing(*g_TB_c2);
+    I(self, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(self,8)));
     ((TouchButton *)(self))->init(text, 0xffffffff, 4, x, y, p4, 0, 0, p5, 0x44);
     return self;
 }
@@ -894,12 +864,12 @@ TouchButton *TouchButton_168f30(TouchButton *self, String *text,
     U(self, 0x8)  = spacing;
 
     void *canvas = *g_TB_canvas_ctor;
-    short prev = PaintCanvas_FontGetSpacing(canvas);
-    PaintCanvas_FontSetSpacing(canvas, spacing, (short)kerning);
+    short prev = ((PaintCanvas*)(canvas))->FontGetSpacing((unsigned int)(U(self,8)));
+    ((PaintCanvas*)(canvas))->FontSetSpacing((unsigned int)(spacing),(short)((short)kerning));
 
     ((TouchButton *)(self))->init(text, spacing, a, b, c, d, -1, -1, flags0, flags1);
 
-    PaintCanvas_FontSetSpacing(canvas, spacing, prev);
+    ((PaintCanvas*)(canvas))->FontSetSpacing((unsigned int)(spacing),(short)(prev));
     return self;
 }
 
@@ -915,7 +885,7 @@ TouchButton * TouchButton::ctor6(int x, int y, String *text, int p4, int p5, uns
     ((String *)((char *)self + 0x18))->ctor();
     ((String *)((char *)self + 0x2c))->ctor();
     I(self, 8) = *(int *)*g_TB_c1;
-    I(self, 0xc4) = PaintCanvas_FontGetSpacing(*g_TB_c2);
+    I(self, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(self,8)));
     ((TouchButton *)(self))->init(text, 0xffffffff, 4, x, y, p4, p5, 0, p6, 0x44);
     return self;
 }
@@ -941,7 +911,7 @@ void TouchButton_168cb0(TouchButton *self, unsigned int kind,
 
     void *canvas = *g_TB_canvas_ctor;
     U(self, 0x8)  = *g_TB_defSpacing;
-    I(self, 0xc4) = PaintCanvas_FontGetSpacing(canvas);
+    I(self, 0xc4) = ((PaintCanvas*)(canvas))->FontGetSpacing((unsigned int)(U(self,8)));
 
     unsigned char tmp[12];       // String is a 12-byte value type
     String_ctor_cstr(tmp, g_TB_emptyStr, false);

@@ -1,11 +1,9 @@
 #include "gof2/LodMeshMerger.h"
 #include "gof2/Vector.h"
+#include "gof2/PaintCanvasClass.h"
 
 
 extern "C" void LodMeshMerger_setMatrix_tail(void *dst, const Matrix &m);
-extern "C" void PaintCanvas_MeshCreate(void *canvas, uint16_t meshId, uint32_t *out, bool flag);
-extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t id);
-extern "C" uint8_t PaintCanvas_CameraIsSphereInViewFrustum(void *canvas, const Vector *center, float r);
 
 // ---- setEnabled_181438.cpp ----
 void LodMeshMerger::setEnabled(int index, bool enabled)
@@ -47,8 +45,8 @@ void LodMeshMerger::setMatrix(int index, const Matrix &m)
 void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
-    PaintCanvas_MeshCreate(field_0x14, meshId, &id, false);
-    void *ptr = PaintCanvas_MeshGetPointer(field_0x14, id);
+    field_0x14->MeshCreate(meshId, &id, false);
+    void *ptr = field_0x14->MeshGetPointer(id);
     AEMesh **meshes = field_0x8.data();
     meshes[field_0x0 * lod + index] = (AEMesh *)ptr;
 }
@@ -61,9 +59,8 @@ void LodMeshMerger::update()
     int rows = field_0x0;
     for (int i = 0; i < rows; i++) {
         void *sph = field_0x24[i];
-        uint8_t vis = PaintCanvas_CameraIsSphereInViewFrustum(
-            field_0x14,
-            (const Vector *)((char *)sph + 0x3c),
+        uint8_t vis = (uint8_t)field_0x14->CameraIsSphereinViewFrustum(
+            (void *)((char *)sph + 0x3c),
             *(float *)((char *)sph + 0x48));
         int8_t *visArr = (int8_t *)field_0x34;
         if (vis != (uint8_t)visArr[i]) {
@@ -222,9 +219,6 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
 
 // ---- init_18145a.cpp ----
 // 0x7882c
-extern "C" void PaintCanvas_MeshCreate2(void *canvas, uint16_t nv, uint16_t ni, int flags); // 0x75da8
-extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out);             // 0x720ac
-extern "C" void PaintCanvas_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh); // 0x73030
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                            // 0x6ec2c (__aeabi_uidiv)
 extern "C" int LodMeshMerger_init_tail(LodMeshMerger *self, int r1, uint16_t flags, uint32_t *meshId); // 0x1ac878
 
@@ -261,12 +255,15 @@ int LodMeshMerger::init()
     }
 
     uint16_t flags = field_0x4;
-    PaintCanvas_MeshCreate2(field_0x14, nv, ni,
-                            (int)field_0x8.data()[0]->field_0x0);
-    void *ptr = PaintCanvas_MeshGetPointer(field_0x14, field_0x18);
+    // 5-arg MeshCreate(a, b, c, d, out): a=ni, b=nv, c=(schar)**field_0xc,
+    // d=field_0x4(flags), out=&field_0x18 (recovered from 0x191518 call site).
+    field_0x14->MeshCreate((uint16_t)ni, (uint16_t)nv,
+                           (signed char)field_0x8.data()[0]->field_0x0,
+                           field_0x4, &field_0x18);
+    void *ptr = field_0x14->MeshGetPointer(field_0x18);
     field_0x20 = ptr;
-    PaintCanvas_TransformCreate(field_0x14, &field_0x1c);
-    PaintCanvas_TransformAddMeshId(field_0x14, field_0x1c, field_0x18);
+    field_0x14->TransformCreate(&field_0x1c);
+    field_0x14->TransformAddMeshId(field_0x1c, field_0x18);
     field_0x3c = 1;
     return LodMeshMerger_init_tail(this, 0, flags, &field_0x18);
 }

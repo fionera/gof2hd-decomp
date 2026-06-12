@@ -6,6 +6,7 @@
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
 #include "gof2/Engine.h"
+#include "gof2/PaintCanvasClass.h"
 
 // AbyssEngine::FBOContainer is defined fully in gof2/FBOContainer.h, but that header
 // forward-declares AbyssEngine::Engine which clashes with the `using ::Engine;` re-export
@@ -233,7 +234,7 @@ void getAppVersion()
     glCullFace(0x405);
     glEnable(0xb44);
     self->AfterGLInit();
-    AE_PaintCanvas_Initialize((PaintCanvas *)*(void **)pp(c, 0x30), false);
+    ((PaintCanvas *)*(void **)pp(c, 0x30))->Initialize(false);
 
     u32(c, 0xc) = 0;
     glGetIntegerv(0xd33, c + 0xc);
@@ -799,7 +800,7 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
     for (unsigned int i = 0; i < u32(m, 0x44); ++i) {
         Matrix world;
         AE_AEMath_matMul(&world, (const Matrix *)((char *)pp(m, 0x60) + matOff));
-        AE_PaintCanvas_SetWorldViewMatrix((Matrix *)canvas);
+        ((PaintCanvas *)canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)canvas);
         engine->SetModelMatrix((const uint32_t *)&world);
         engine->SetUVMatrix((const uint32_t *)((char *)pp(m, 0x3c) + matOff));
 
@@ -1869,7 +1870,7 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
 
             if (x + advance >= 0 && x <= (int)engine->GetDisplayWidth()) {
                 if (!shaderMode) {
-                    AE_PaintCanvas_SetWorldViewMatrix(canvas);
+                    ((PaintCanvas *)canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)canvas);
                     MeshDraw(engine, *(Mesh **)(*(int *)(f + 0xc) + slot * 4));
                 } else {
                     // Batched path: append this glyph's quad into the sprite buffer at
@@ -1900,7 +1901,7 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
 
                     if (n > 0x62) {
                         s16(*(void **)(pc + 8), 0x28) = (short)((n + 1) * 6);
-                        AE_PaintCanvas_SetWorldViewMatrix(canvas);
+                        ((PaintCanvas *)canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)canvas);
                         MeshDraw(engine, *(Mesh **)(pc + 8));
                         *(int *)(pc + 0xc) = 0;
                     }
@@ -1924,7 +1925,7 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
         int n = *(int *)(pc + 0xc);
         if (n > 0) {
             s16(*(void **)(pc + 8), 0x28) = (short)((n + (n << 1)) * 2);
-            AE_PaintCanvas_SetWorldViewMatrix(canvas);
+            ((PaintCanvas *)canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)canvas);
             MeshDraw(engine, *(Mesh **)(pc + 8));
             *(int *)(pc + 0xc) = 0;
         }

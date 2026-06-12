@@ -4,6 +4,7 @@
 #include "gof2/Transform.h"
 #include "gof2/KIPlayer.h"
 #include "gof2/BoundingSphere.h"
+#include "gof2/PaintCanvasClass.h"
 #include <new>
 
 // Minimal local layouts for engine types accessed through opaque handles in this
@@ -29,10 +30,6 @@ struct Transform {
 
 extern "C" void PlayerStaticFar_dtor(PlayerStaticFar *self);
 extern "C" void *PlayerJumpgate_delete_tail();
-namespace AbyssEngine { namespace PaintCanvas {
-::Transform *TransformGetTransform(void *canvas, uint32_t handle);
-void TransformRemoveChild(void *canvas, uint32_t parent, uint32_t child);
-} }
 extern "C" void Array_BoundingVolumePtr_ctor(Array<BoundingVolume *> *self);
 extern "C" int SolarSystem_getRace(void *system);
 
@@ -44,12 +41,11 @@ void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
 }
 
 // ---- timeToJump_a5164.cpp ----
-__attribute__((visibility("hidden"))) extern void *volatile PaintCanvas_global;
+extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
 bool PlayerJumpgate::timeToJump()
 {
-    Transform *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*(void **)PaintCanvas_global,
-                                                             this->field_0x144);
+    Transform *transform = (Transform *)((PaintCanvas*)*(void **)g_PaintCanvas)->TransformGetTransform(this->field_0x144);
     return transform->field_0x110 > 1000LL;
 }
 
@@ -62,12 +58,12 @@ void PlayerJumpgate::activate()
 
     uint32_t handle = this->field_0x144;
     if (handle != 0xffffffffU) {
-        void **canvasOwner = (void **)PaintCanvas_global;
-        Transform *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasOwner, handle);
+        void **canvasOwner = (void **)g_PaintCanvas;
+        Transform *transform = (Transform *)((PaintCanvas*)*canvasOwner)->TransformGetTransform(handle);
         ((Transform *)(transform))->SetAnimationState(1, 0);
 
         AEGeometry *geometry = this->field_0x8;
-        AbyssEngine::PaintCanvas::TransformRemoveChild(*canvasOwner, geometry->transform,
+        ((PaintCanvas*)*canvasOwner)->TransformRemoveChild(geometry->transform,
                                          geometry->childTransform);
         ((AEGeometry *)(this->field_0x8))->addChild(this->field_0x144);
     }
@@ -88,8 +84,7 @@ bool PlayerJumpgate::animationEnded()
         return false;
     }
 
-    Transform *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*(void **)PaintCanvas_global,
-                                                             this->field_0x144);
+    Transform *transform = (Transform *)((PaintCanvas*)*(void **)g_PaintCanvas)->TransformGetTransform(this->field_0x144);
     return transform->field_0xed == 0;
 }
 
@@ -98,8 +93,7 @@ void PlayerJumpgate::update(int delta)
 {
     if (this->field_0xf5 != 0) {
         AEGeometry *geometry = this->field_0x8;
-        Transform *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*(void **)PaintCanvas_global,
-                                                                 geometry->transform);
+        Transform *transform = (Transform *)((PaintCanvas*)*(void **)g_PaintCanvas)->TransformGetTransform(geometry->transform);
         bool active = true;
         int64_t wideDelta = delta;
         transform->Update(active, wideDelta, active);

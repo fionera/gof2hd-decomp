@@ -1,12 +1,5 @@
 #include "gof2/TouchSlider.h"
-
-
-extern "C" void PaintCanvas_Image2DCreate(void *self, unsigned short image, int *out);
-extern "C" int PaintCanvas_GetImage2DWidth(void *self, int image);
-extern "C" int PaintCanvas_GetImage2DHeight(void *self, int image);
-extern "C" void PaintCanvas_SetColor(void *canvas, int color);
-extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y);
-extern "C" void PaintCanvas_DrawImage2D6(void *canvas, int image, int x, int y, int a, int b);
+#include "gof2/PaintCanvas.h"
 
 // ---- setPosition_a232c.cpp ----
 void TouchSlider::setPosition(int param_1, int param_2)
@@ -30,19 +23,19 @@ TouchSlider::TouchSlider(int param_1, int param_2, int param_3, float param_4)
     this->type = param_1;
     this->value = param_4;
     void **holder = g_TouchSlider_canvas;
-    PaintCanvas_Image2DCreate(*holder, 0x51a, &this->knobImage);
+    ((PaintCanvas*)*holder)->Image2DCreate(0x51a, (unsigned int*)&this->knobImage);
 
     unsigned short uVar4 = 0x51b;
     if (param_1 == 1)
         uVar4 = 0x51c;
     if (param_1 == 0)
         uVar4 = 0x519;
-    PaintCanvas_Image2DCreate(*holder, uVar4, &this->trackImage);
+    ((PaintCanvas*)*holder)->Image2DCreate(uVar4, (unsigned int*)&this->trackImage);
 
-    this->knobWidth = PaintCanvas_GetImage2DWidth(*holder, this->knobImage);
-    this->knobHeight = PaintCanvas_GetImage2DHeight(*holder, this->knobImage);
-    this->trackWidth = PaintCanvas_GetImage2DWidth(*holder, this->trackImage);
-    this->trackHeight = PaintCanvas_GetImage2DHeight(*holder, this->trackImage);
+    this->knobWidth = ((PaintCanvas*)*holder)->GetImage2DWidth(this->knobImage);
+    this->knobHeight = ((PaintCanvas*)*holder)->GetImage2DHeight(this->knobImage);
+    this->trackWidth = ((PaintCanvas*)*holder)->GetImage2DWidth(this->trackImage);
+    this->trackHeight = ((PaintCanvas*)*holder)->GetImage2DHeight(this->trackImage);
 
     this->isDragging = 0;
     setPosition(param_2, param_3);
@@ -103,9 +96,9 @@ void TouchSlider::draw()
 {
     void **holder = g_TouchSlider_canvas;
     int color = this->isDisabled != 0 ? 0xFFFFFF2F : -1;
-    PaintCanvas_SetColor(*holder, color);
-    PaintCanvas_DrawImage2D(*holder, this->trackImage, this->x, this->y);
-    PaintCanvas_DrawImage2D6(*holder, this->knobImage, this->knobX, this->knobY, 0x11, 0x44);
+    ((PaintCanvas*)*holder)->SetColor((unsigned int)color);
+    ((PaintCanvas*)*holder)->DrawImage2D(this->trackImage, this->x, this->y);
+    ((PaintCanvas*)*holder)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char)0x11, (unsigned char)0x44);
 }
 
 // ---- OnTouchMove_a2494.cpp ----

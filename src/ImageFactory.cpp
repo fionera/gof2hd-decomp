@@ -1,27 +1,20 @@
 #include "gof2/ImageFactory.h"
 #include "gof2/ImagePart.h"
+#include "gof2/PaintCanvas.h"
 
 
 extern "C" void *Sprite_dtor(void *p);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
-extern "C" int PaintCanvas_GetImage2DWidth(unsigned canvas, int id);
-extern "C" int PaintCanvas_GetImage2DHeight(unsigned canvas, int id);
 extern "C" void Sprite_ctor(void *self, void *ids, int n, int w, int h);
 extern "C" void ImageFactory_reload_tail(unsigned canvas, int id, void *out);
 extern "C" __attribute__((visibility("hidden"))) GetTextFn *g_reload_getText;
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_reload_canvas;
-extern "C" void PaintCanvas_SetColor(unsigned canvas, unsigned color);
-extern "C" void PaintCanvas_DrawImage2D(unsigned canvas, int image, int x, int y);
 extern "C" void ImageFactory_drawChar_tail(unsigned canvas, int handle, int x, int y);
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_drawChar_canvas;
 extern "C" void IF_Sprite_setFrame(void *spr, int frame);
 extern "C" long long IF_Sprite_setPosition(void *spr, int x, int y);
 extern "C" void IF_Sprite_draw(float sx, float sy);
-extern "C" void IF_PaintCanvas_SetColor(unsigned canvas, unsigned color);
-extern "C" void IF_PaintCanvas_Image2DCreate(unsigned canvas, unsigned short id, unsigned *out);
-extern "C" void IF_PaintCanvas_DrawImage2D(unsigned canvas, int image, int x, int y);
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_IF_drawShip_canvas;
-extern "C" void PaintCanvas_Image2DCreate(unsigned canvas, unsigned short id, unsigned *out);
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_drawItem_canvas;
 extern "C" void IF_ImagePart_ctor(void *self, unsigned id, int x, int y);
 extern "C" __attribute__((visibility("hidden"))) int *g_IF_idTable;
@@ -101,11 +94,11 @@ void ImageFactory::reload() {
     if (old != 0) ::operator delete(Sprite_dtor(old));
     self->sprite = 0;
     void *spr = operator new(0x40);
-    int w = PaintCanvas_GetImage2DWidth(*holder, (int)ids[0]);
-    int h = PaintCanvas_GetImage2DHeight(*holder, (int)ids[0]);
+    int w = ((PaintCanvas*)(long)*holder)->GetImage2DWidth((int)ids[0]);
+    int h = ((PaintCanvas*)(long)*holder)->GetImage2DHeight((int)ids[0]);
     Sprite_ctor(spr, ids, 6, w, h);
     self->sprite = spr;
-    PaintCanvas_Image2DCreate(*holder, 0x485, (unsigned *)((char *)self + 4));
+    ((PaintCanvas*)(long)*holder)->Image2DCreate(0x485, (unsigned int *)((char *)self + 4));
     return ImageFactory_reload_tail(*holder, 0x511, (char *)self + 8);
 }
 
@@ -116,8 +109,8 @@ void ImageFactory::reload() {
 void ImageFactory::drawChar(Arr *parts, int x, int y, int flag) {
     ImageFactory *self = this;
     unsigned *holder = g_drawChar_canvas;
-    PaintCanvas_SetColor(*holder, 0xffffffffu);
-    PaintCanvas_DrawImage2D(*holder, i32(self, 0x4), x, y);
+    ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
+    ((PaintCanvas*)(long)*holder)->DrawImage2D(i32(self, 0x4), x, y);
     for (unsigned i = 0; i < parts->size; ++i) {
         void *part = parts->data[i];
         if (part != 0) ((ImagePart *)(part))->draw(x, y, flag);
@@ -133,12 +126,12 @@ void ImageFactory::drawShip(int shipId, int x, int y) {
     ImageFactory *self = this;
     unsigned *holder = g_IF_drawShip_canvas;
     unsigned local = 0xffffffffu;
-    IF_PaintCanvas_SetColor(*holder, 0xffffffffu);
+    ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
     IF_Sprite_setFrame(self->sprite, 5);
     IF_Sprite_setPosition(self->sprite, x, y);
     IF_Sprite_draw(1.0f, 1.0f);
-    IF_PaintCanvas_Image2DCreate(*holder, (unsigned short)(shipId + 0x971), &local);
-    IF_PaintCanvas_DrawImage2D(*holder, (int)local, x, y);
+    ((PaintCanvas*)(long)*holder)->Image2DCreate((unsigned short)(shipId + 0x971), &local);
+    ((PaintCanvas*)(long)*holder)->DrawImage2D((int)local, x, y);
 }
 
 // ---- drawItem_11ca60.cpp ----
@@ -149,12 +142,12 @@ void ImageFactory_drawItem3(int param_1, int param_2, int param_3)
 {
     unsigned *holder = g_drawItem_canvas;
     unsigned local;
-    PaintCanvas_SetColor(*holder, 0xffffffffu);
+    ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
     local = 0xffffffffu;
     int base = 0xef0;
     if (param_1 < 0xb0) base = 0x898;
-    PaintCanvas_Image2DCreate(*holder, (unsigned short)(base + param_1), &local);
-    PaintCanvas_DrawImage2D(*holder, local, param_2, param_3);
+    ((PaintCanvas*)(long)*holder)->Image2DCreate((unsigned short)(base + param_1), &local);
+    ((PaintCanvas*)(long)*holder)->DrawImage2D(local, param_2, param_3);
 }
 
 // ---- loadImage_11c834.cpp ----
@@ -179,7 +172,7 @@ void * ImageFactory::loadImage(int row, int col, int frameBase) {
         return 0;
 
     unsigned local = 0;
-    IF_PaintCanvas_Image2DCreate(*g_IF_li_canvas, (unsigned short)((short)id + (short)frameBase),
+    ((PaintCanvas*)(long)*g_IF_li_canvas)->Image2DCreate((unsigned short)((short)id + (short)frameBase),
                                  &local);
     void *part = operator new(0x14);
 
@@ -210,15 +203,15 @@ void ImageFactory::drawItem4(int itemId, int frame, int x, int y) {
     ImageFactory *self = this;
     unsigned *holder = g_IF_drawItem4_canvas;
     unsigned local = 0xffffffffu;
-    IF_PaintCanvas_SetColor(*holder, 0xffffffffu);
+    ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
     IF_Sprite_setFrame(self->sprite, frame);
     IF_Sprite_setPosition(self->sprite, x, y);
     IF_Sprite_draw(1.0f, 1.0f);
     int base = 0xef0;
     if (itemId < 0xb0)
         base = 0x898;
-    IF_PaintCanvas_Image2DCreate(*holder, (unsigned short)(base + itemId), &local);
-    IF_PaintCanvas_DrawImage2D(*holder, (int)local, x, y);
+    ((PaintCanvas*)(long)*holder)->Image2DCreate((unsigned short)(base + itemId), &local);
+    ((PaintCanvas*)(long)*holder)->DrawImage2D((int)local, x, y);
 }
 
 // ---- loadChar_11c774.cpp ----

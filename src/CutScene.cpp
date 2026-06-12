@@ -1,4 +1,5 @@
 #include "gof2/CutScene.h"
+#include "gof2/PaintCanvasClass.h"
 #include "gof2/Status.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/Item.h"
@@ -22,7 +23,6 @@ __attribute__((visibility("hidden"))) extern Status **gStatus;
 // ---- _CutScene_98420.cpp ----
 extern "C" void *AEGeometry_dtor(void *geom);              // 0x71fc8
 extern "C" void *Level_dtor(void *level);                  // 0x71fd4
-extern "C" void PaintCanvas_FogEnable(void *canvas, int a, int b); // 0x71fe0
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(void *arr);      // 0x71fec
 extern "C" void *Array_AEGeometryPtr_dtor(void *arr);             // 0x717c4
 
@@ -42,7 +42,7 @@ CutScene::~CutScene()
     if (g != 0) ::operator delete(Level_dtor(g));
     pp(this, 0x0) = 0;
 
-    PaintCanvas_FogEnable(*g_canvasFog, 0, 1);
+    ((PaintCanvas*)(*g_canvasFog))->FogEnable(0, 1);
 
     g = pp(this, 0x28);
     if (g != 0) ::operator delete(AEGeometry_dtor(g));
@@ -130,17 +130,10 @@ void CutScene::render2D()
 extern "C" {
 void TargetFollowCamera_update(void *cam);
 float VectorSignedToFloat(int v, int mode);
-void *PaintCanvas_CameraGetLocal(void *canvas);
-void PaintCanvas_CameraSetLocal(void *canvas, void *matrix);
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
 void MatrixSetRotation(void *m, float x, float y, float z);
 int Station_getIndex(void *station);
 int SolarSystem_getRace();
-void PaintCanvas_FogSetParameter(void *canvas, int mode, int a, float b, float c, float d);
-void PaintCanvas_FogEnable(void *canvas, int a, int b);
-void *PaintCanvas_TransformGetTransform(void *canvas);
-void *PaintCanvas_TransformGetLocal(void *canvas);
-void PaintCanvas_TransformSetLocal(void *canvas, void *matrix);
 int AERandom_nextInt(void *rng);
 void CutScene_processAux(void *self);
 }
@@ -183,10 +176,10 @@ void CutScene::process(int delta)
         void *canvas = *g_canvas;
         f32(self, 0x4) = f32(self, 0x4) + f32(self, 0x24) * ft;
         char tmp[0x3c];
-        __aeabi_memcpy(tmp, PaintCanvas_CameraGetLocal(canvas), 0x3c);
+        __aeabi_memcpy(tmp, ((PaintCanvas*)(canvas))->CameraGetLocal(0), 0x3c);
         char mtx[0x3c];
         MatrixSetRotation(mtx, 0.0f, 0.0f, 0.0f);
-        PaintCanvas_CameraSetLocal(canvas, pp(self, 0x74));
+        ((PaintCanvas*)(canvas))->CameraSetLocal(0, *(const AbyssEngine::AEMath::Matrix*)(pp(self, 0x74)));
 
         long long pt = ((Status *)(*gStatus))->getPlayingTime();
         unsigned int *enemies = (unsigned int *)((Level *)(pp(self, 0x0)))->getEnemies();
@@ -228,14 +221,14 @@ void CutScene::process(int delta)
         i32(self, 0x84) = i32(self, 0x58) + i32(self, 0x84);
         ((Status *)(*gStatus))->getSystem();
         if (SolarSystem_getRace() == 1) {
-            PaintCanvas_FogSetParameter(*g_canvas, 0x2601, 0, CutScene_fogColorMode17,
+            ((PaintCanvas*)(*g_canvas))->FogSetParameter(0x2601, 0, CutScene_fogColorMode17,
                                         1.0f, CutScene_fogDensityMode17);
         } else if (kind == 2 && pp(self, 0x38) != 0) {
             void *canvas = *g_canvas;
             unsigned int *arr = (unsigned int *)pp(self, 0x38);
             unsigned int n = arr[0];
             for (unsigned int i = 0; i < n; i++) {
-                void *t = PaintCanvas_TransformGetTransform(canvas);
+                void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                 ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
                 arr = (unsigned int *)pp(self, 0x38);
                 n = arr[0];
@@ -245,18 +238,18 @@ void CutScene::process(int delta)
                 void *rng = *g_random;
                 for (unsigned int i = 0; i < n; i++) {
                     if (AERandom_nextInt(rng) < 0x14) {
-                        void *t = PaintCanvas_TransformGetTransform(canvas);
+                        void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         if (((AbyssEngine::Transform *)(t))->IsRunning() == 0) {
                             char *data = *(char **)((char *)pp(self, 0x38) + 4);
                             void *c0 = *(void **)(data + i * 4);
                             void *tr;
-                            tr = PaintCanvas_TransformGetTransform(*(void **)((char *)c0 + 0xc));
+                            tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0xc)))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
-                            tr = PaintCanvas_TransformGetTransform(*(void **)((char *)c0 + 0xc));
+                            tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0xc)))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)1, (void *)0);
-                            tr = PaintCanvas_TransformGetTransform(*(void **)((char *)c0 + 0x14));
+                            tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0x14)))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
-                            tr = PaintCanvas_TransformGetTransform(*(void **)((char *)c0 + 0x14));
+                            tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0x14)))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)1, (void *)0);
                         }
                     }
@@ -268,18 +261,18 @@ void CutScene::process(int delta)
         void *canvas = *g_canvas;
         ((Level *)(pp(self, 0x0)))->getEnemies();
         char tmp[0x3c];
-        __aeabi_memcpy(tmp, PaintCanvas_TransformGetLocal(canvas), 0x3c);
+        __aeabi_memcpy(tmp, ((PaintCanvas*)(canvas))->TransformGetLocal(0), 0x3c);
         char mtx[0x3c];
         MatrixSetRotation(mtx, 0.0f, 0.0f, 0.0f);
         void *enemies = (void *)(intptr_t)((Level *)(pp(self, 0x0)))->getEnemies();
-        PaintCanvas_TransformSetLocal(canvas,
-            *(void **)(*(char **)(*(char **)((char *)enemies + 4) + 8) + 0xc));
+        ((PaintCanvas*)(canvas))->TransformSetLocal(0,
+            *(const AbyssEngine::AEMath::Matrix*)(*(void **)(*(char **)(*(char **)((char *)enemies + 4) + 8) + 0xc)));
         unsigned int *arr = (unsigned int *)((Level *)(pp(self, 0x0)))->getEnemies();
         for (unsigned int i = 0; i < arr[0]; i++) {
             void *en = (void *)(intptr_t)((Level *)(pp(self, 0x0)))->getEnemies();
             if (*(void **)(*(char **)((char *)en + 4) + i * 4) != 0) {
                 ((Level *)(pp(self, 0x0)))->getEnemies();
-                void *t = PaintCanvas_TransformGetTransform(canvas);
+                void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                 ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
             }
             arr = (unsigned int *)((Level *)(pp(self, 0x0)))->getEnemies();
@@ -291,7 +284,7 @@ void CutScene::process(int delta)
             void *en = (void *)(intptr_t)((Level *)(pp(self, 0x0)))->getEnemies();
             if (*(void **)(*(char **)((char *)en + 4) + i * 4) != 0) {
                 ((Level *)(pp(self, 0x0)))->getEnemies();
-                void *t = PaintCanvas_TransformGetTransform(canvas);
+                void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                 ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
             }
             arr = (unsigned int *)((Level *)(pp(self, 0x0)))->getEnemies();
@@ -300,45 +293,45 @@ void CutScene::process(int delta)
         ((Status *)(*gStatus))->getSystem();
         int race = SolarSystem_getRace();
         if (race == 0) {
-            void *t = PaintCanvas_TransformGetTransform(canvas);
+            void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
             ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
         } else {
             ((Status *)(*gStatus))->getSystem();
             int race1 = SolarSystem_getRace();
             if (race1 == 1) {
-                PaintCanvas_FogSetParameter(canvas, 0x2601, 0, CutScene_fogColorMode4,
+                ((PaintCanvas*)(canvas))->FogSetParameter(0x2601, 0, CutScene_fogColorMode4,
                                             1.0f, CutScene_fogDensityMode4);
-                PaintCanvas_FogEnable(canvas, 1, 1);
+                ((PaintCanvas*)(canvas))->FogEnable(1, 1);
                 ((Level *)(pp(self, 0x0)))->getEnemies();
                 ((Level *)(pp(self, 0x0)))->getEnemies();
-                void *t = PaintCanvas_TransformGetTransform(canvas);
+                void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                 ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
                 if (pp(self, 0x30) != 0) {
-                    void *t2 = PaintCanvas_TransformGetTransform(canvas);
+                    void *t2 = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                     ((AbyssEngine::Transform *)(t2))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
                     int acc = i32(self, 0x58) + i32(self, 0x7c);
                     i32(self, 0x7c) = acc;
                     if (acc > 20000) {
                         i32(self, 0x7c) = 0;
                         if (AERandom_nextInt(*g_random) < 100) {
-                            void *a = PaintCanvas_TransformGetTransform(canvas);
+                            void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
-                            a = PaintCanvas_TransformGetTransform(canvas);
+                            a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)1, (void *)0);
                         }
                     }
                 }
                 if (pp(self, 0x34) != 0) {
-                    void *t2 = PaintCanvas_TransformGetTransform(canvas);
+                    void *t2 = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                     ((AbyssEngine::Transform *)(t2))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
                     int acc = i32(self, 0x58) + i32(self, 0x80);
                     i32(self, 0x80) = acc;
                     if (acc > 22000) {
                         i32(self, 0x80) = 0;
                         if (AERandom_nextInt(*g_random) < 100) {
-                            void *a = PaintCanvas_TransformGetTransform(canvas);
+                            void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
-                            PaintCanvas_TransformGetTransform(canvas);
+                            ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                             CutScene_processAux(self);
                             return;
                         }
@@ -352,13 +345,13 @@ void CutScene::process(int delta)
             if (race3 == 3) {
                 ((Level *)(pp(self, 0x0)))->getEnemies();
                 ((Level *)(pp(self, 0x0)))->getEnemies();
-                void *t = PaintCanvas_TransformGetTransform(canvas);
+                void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                 ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
                 if (pp(self, 0x28) != 0) {
-                    void *t2 = PaintCanvas_TransformGetTransform(canvas);
+                    void *t2 = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                     ((AbyssEngine::Transform *)(t2))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
                 }
-                void *t3 = PaintCanvas_TransformGetTransform(canvas);
+                void *t3 = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                 ((AbyssEngine::Transform *)(t3))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
                 int acc7c = i32(self, 0x7c) + i32(self, 0x58);
                 int acc80 = i32(self, 0x58) + i32(self, 0x80);
@@ -367,9 +360,9 @@ void CutScene::process(int delta)
                 if (acc7c > 1000 && pp(self, 0x28) != 0) {
                     i32(self, 0x7c) = 0;
                     if (AERandom_nextInt(*g_random) < 0x28) {
-                        void *a = PaintCanvas_TransformGetTransform(canvas);
+                        void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
-                        a = PaintCanvas_TransformGetTransform(canvas);
+                        a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)1, (void *)0);
                     }
                     acc80 = i32(self, 0x80);
@@ -377,9 +370,9 @@ void CutScene::process(int delta)
                 if (acc80 > 2000) {
                     i32(self, 0x80) = 0;
                     if (AERandom_nextInt(*g_random) < 0x1e) {
-                        void *a = PaintCanvas_TransformGetTransform(canvas);
+                        void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
-                        PaintCanvas_TransformGetTransform(canvas);
+                        ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         CutScene_processAux(self);
                         return;
                     }
@@ -392,11 +385,11 @@ void CutScene::process(int delta)
                 return;
             CutScene_processAux(self);
             CutScene_processAux(self);
-            void *t = PaintCanvas_TransformGetTransform(canvas);
+            void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
             ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
             CutScene_processAux(self);
             CutScene_processAux(self);
-            void *t2 = PaintCanvas_TransformGetTransform(canvas);
+            void *t2 = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
             ((AbyssEngine::Transform *)(t2))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
         }
     }
@@ -430,7 +423,6 @@ CutScene::CutScene(int param)
 
 // ---- replacePlayerShip_99668.cpp ----
 extern "C" {
-void PaintCanvas_TransformRemoveChild(void *canvas, unsigned int parent, unsigned int child);
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
 void *Globals_getShipGroup(void *globals, int type, int slot, bool flag);
 void *AEGeometry_setMatrix(void *matrix);
@@ -458,7 +450,7 @@ void CutScene::replacePlayerShip(int a, int b)
             void *en2 = (void *)(intptr_t)((Level *)(pp(self, 0x0)))->getEnemies();
             unsigned int parent = u32(*(void **)(*(char **)((char *)en2 + 4) + 8), 0xc);
             unsigned int child = u32(pp(self, 0x64), 0xc);
-            PaintCanvas_TransformRemoveChild(canvas, parent, child);
+            ((PaintCanvas*)(canvas))->TransformRemoveChild(parent, child);
         }
 
         char matrix[0x3c];
@@ -494,15 +486,6 @@ void CutScene::replacePlayerShip(int a, int b)
 // ---- initialize_98628.cpp ----
 extern "C" {
 void Level_ctor(void *self, int mode);
-void PaintCanvas_CameraCreate(void *canvas, unsigned int *out);
-void PaintCanvas_CameraSetPerspective(void *canvas, float fov, float znear, float zfar);
-void PaintCanvas_CameraSetCurrent(void *canvas, unsigned int cam);
-void *PaintCanvas_CameraGetLocal(void *canvas);
-void PaintCanvas_CameraSetLocal(void *canvas, void *matrix);
-void PaintCanvas_TransformCreate(void *canvas, unsigned int *out);
-void *PaintCanvas_TransformGetLocal(void *canvas);
-void *PaintCanvas_TransformGetTransform(void *canvas);
-void PaintCanvas_TransformAddChild(void *canvas, unsigned int parent, unsigned int child);
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
 int AERandom_nextInt(void *rng);
 float VectorSignedToFloat(int v, int mode);
@@ -556,12 +539,12 @@ void CutScene::initialize()
 
     if (mode == 2) {
         void *canvas = *g_canvas;
-        PaintCanvas_CameraCreate(canvas, (unsigned int *)((char *)this + 0x74));
-        PaintCanvas_CameraSetPerspective(canvas, CutScene_persp_fov, CutScene_persp_znear,
+        ((PaintCanvas*)(canvas))->CameraCreate((unsigned int *)((char *)this + 0x74));
+        ((PaintCanvas*)(canvas))->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear,
                                          CutScene_persp_zfar);
-        PaintCanvas_CameraSetCurrent(canvas, u32(this, 0x74));
+        ((PaintCanvas*)(canvas))->CameraSetCurrent(u32(this, 0x74));
         char tmp[0x3c];
-        __aeabi_memcpy(tmp, PaintCanvas_CameraGetLocal(canvas), 0x3c);
+        __aeabi_memcpy(tmp, ((PaintCanvas*)(canvas))->CameraGetLocal(0), 0x3c);
 
         void *rng = *g_random;
         int rx = AERandom_nextInt(rng);
@@ -571,7 +554,7 @@ void CutScene::initialize()
         MatrixSetTranslation(localMatrix, tx, ty, 0.0f);
         f32(this, 0x4) = CutScene_initStartXRotMode2;
         MatrixSetRotation(localMatrix, 0.0f, 0.0f, 0.0f);
-        PaintCanvas_CameraSetLocal(canvas, pp(this, 0x74));
+        ((PaintCanvas*)(canvas))->CameraSetLocal(0, *(const AbyssEngine::AEMath::Matrix*)(pp(this, 0x74)));
 
         long long pt = ((Status *)(*gStatus))->getPlayingTime();
         unsigned int *enemies = (unsigned int *)((Level *)(pp(this, 0x0)))->getEnemies();
@@ -595,33 +578,33 @@ void CutScene::initialize()
     } else if (mode == 0x17) {
         pp(this, 0x64) = 0;
         void *canvas = *g_canvas;
-        PaintCanvas_CameraCreate(canvas, (unsigned int *)((char *)this + 0x70));
-        PaintCanvas_CameraSetPerspective(canvas, CutScene_persp_fov, CutScene_persp_znear,
+        ((PaintCanvas*)(canvas))->CameraCreate((unsigned int *)((char *)this + 0x70));
+        ((PaintCanvas*)(canvas))->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear,
                                          CutScene_persp_zfar);
-        PaintCanvas_CameraSetCurrent(canvas, u32(this, 0x70));
+        ((PaintCanvas*)(canvas))->CameraSetCurrent(u32(this, 0x70));
         char tmp[0x3c];
-        __aeabi_memcpy(tmp, PaintCanvas_CameraGetLocal(canvas), 0x3c);
+        __aeabi_memcpy(tmp, ((PaintCanvas*)(canvas))->CameraGetLocal(0), 0x3c);
         MatrixSetRotation(localMatrix, 0.0f, 0.0f, 0.0f);
         MatrixSetTranslation(localMatrix, 0.0f, 0.0f, 0.0f);
-        PaintCanvas_CameraSetLocal(canvas, pp(this, 0x70));
-        PaintCanvas_TransformCreate(canvas, (unsigned int *)((char *)this + 0x78));
+        ((PaintCanvas*)(canvas))->CameraSetLocal(0, *(const AbyssEngine::AEMath::Matrix*)(pp(this, 0x70)));
+        ((PaintCanvas*)(canvas))->TransformCreate((unsigned int *)((char *)this + 0x78));
         ((Level *)(pp(this, 0x0)))->getEnemies();
         ((AEGeometry *)(0))->getPosition();
-        PaintCanvas_TransformGetLocal(canvas);
+        ((PaintCanvas*)(canvas))->TransformGetLocal(0);
         MatrixSetTranslation(localMatrix, 0.0f, 0.0f, 0.0f);
-        PaintCanvas_TransformAddChild(canvas, u32(this, 0x78), u32(this, 0x70));
+        ((PaintCanvas*)(canvas))->TransformAddChild(u32(this, 0x78), u32(this, 0x70));
         resetCamera();
         checkForTurret();
     } else if (mode == 4) {
         void *canvas = *g_canvas;
-        PaintCanvas_CameraCreate(canvas, (unsigned int *)((char *)this + 0x6c));
-        PaintCanvas_CameraSetPerspective(canvas, CutScene_persp_fov, CutScene_persp_znear,
+        ((PaintCanvas*)(canvas))->CameraCreate((unsigned int *)((char *)this + 0x6c));
+        ((PaintCanvas*)(canvas))->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear,
                                          CutScene_persp_zfar);
         if (pp(this, 0x68) != 0) {
             ::operator delete(TargetFollowCamera_dtor(pp(this, 0x68)));
             pp(this, 0x68) = 0;
         }
-        PaintCanvas_CameraSetCurrent(canvas, u32(this, 0x6c));
+        ((PaintCanvas*)(canvas))->CameraSetCurrent(u32(this, 0x6c));
         resetCamera();
         ((Status *)(*gStatus))->getSystem();
         int race = SolarSystem_getRace();
@@ -629,7 +612,7 @@ void CutScene::initialize()
             void *g = ::operator new(0xc0);
             AEGeometry_ctor_id(g, 0x36d6, canvas, false);
             pp(this, 0x2c) = g;
-            void *t = PaintCanvas_TransformGetTransform(canvas);
+            void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
             ((AbyssEngine::Transform *)(t))->SetAnimationState((AbyssEngine::AnimationMode)0, (void *)0);
         } else {
             ((Status *)(*gStatus))->getSystem();
@@ -673,10 +656,6 @@ void CutScene::initialize()
 // ---- resetCamera_98514.cpp ----
 extern "C" {
 int SolarSystem_getRace();
-void PaintCanvas_FogSetParameter(void *canvas, int mode, int a, float b, float c, float d);
-void PaintCanvas_FogEnable(void *canvas, int a, int b);
-void PaintCanvas_CameraSetCurrent(void *canvas, unsigned int cam);
-void PaintCanvas_CameraSetPerspective(void *canvas, float fov, float znear, float zfar);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_canvas;
@@ -701,13 +680,13 @@ void CutScene::resetCamera()
         ((Status *)(*gStatus))->getSystem();
         if (SolarSystem_getRace() == 1) {
             void *canvas = *g_canvas;
-            PaintCanvas_FogSetParameter(canvas, 0x2601, 0, CutScene_fogColor,
+            ((PaintCanvas*)(canvas))->FogSetParameter(0x2601, 0, CutScene_fogColor,
                                         1.0f, CutScene_fogDensity_mode17);
-            PaintCanvas_FogEnable(canvas, 1, 1);
+            ((PaintCanvas*)(canvas))->FogEnable(1, 1);
         }
         void *canvas = *g_canvas;
-        PaintCanvas_CameraSetCurrent(canvas, u32(this, 0x70));
-        PaintCanvas_CameraSetPerspective(canvas, CutScene_persp_fov_mode17,
+        ((PaintCanvas*)(canvas))->CameraSetCurrent(u32(this, 0x70));
+        ((PaintCanvas*)(canvas))->CameraSetPerspective(0, CutScene_persp_fov_mode17,
                                          CutScene_persp_znear, CutScene_persp_zfar);
         // Tail: notify the lead enemy ship.
         void *enemies = (void *)(intptr_t)((Level *)(pp(this, 0x0)))->getEnemies();
@@ -722,19 +701,18 @@ void CutScene::resetCamera()
     ((Status *)(*gStatus))->getSystem();
     if (SolarSystem_getRace() == 1) {
         void *canvas = *g_canvas;
-        PaintCanvas_FogSetParameter(canvas, 0x2601, 0, CutScene_fogColor,
+        ((PaintCanvas*)(canvas))->FogSetParameter(0x2601, 0, CutScene_fogColor,
                                     1.0f, CutScene_fogDensity_mode4);
-        PaintCanvas_FogEnable(canvas, 1, 1);
+        ((PaintCanvas*)(canvas))->FogEnable(1, 1);
     }
     void *canvas = *g_canvas;
-    PaintCanvas_CameraSetCurrent(canvas, u32(this, 0x6c));
-    PaintCanvas_CameraSetPerspective(canvas, CutScene_persp_fov_mode4,
+    ((PaintCanvas*)(canvas))->CameraSetCurrent(u32(this, 0x6c));
+    ((PaintCanvas*)(canvas))->CameraSetPerspective(0, CutScene_persp_fov_mode4,
                                      CutScene_persp_znear, CutScene_persp_zfar);
 }
 
 // ---- checkForTurret_98a68.cpp ----
 extern "C" {
-void PaintCanvas_TransformRemoveChild(void *canvas, unsigned int parent, unsigned int child);
 void AEGeometry_ctor_id(void *self, unsigned short id, void *canvas, bool flag);
 void AEGeometry_ctor_default(void *self, void *canvas);
 void AEGeometry_setRotationOrder(void *self, int order);
@@ -764,7 +742,7 @@ void CutScene::checkForTurret()
         void *enemies = (void *)(intptr_t)((Level *)(pp(this, 0x0)))->getEnemies();
         unsigned int parent = u32(*(void **)(*(char **)((char *)enemies + 4) + 8), 0xc);
         unsigned int child = u32(pp(this, 0x64), 0xc);
-        PaintCanvas_TransformRemoveChild(canvas, parent, child);
+        ((PaintCanvas*)(canvas))->TransformRemoveChild(parent, child);
     }
 
     void *ship = ((Status *)(*gStatus))->getShip();

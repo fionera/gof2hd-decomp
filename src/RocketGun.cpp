@@ -7,6 +7,18 @@
 #include "gof2/Player.h"
 #include "gof2/Radar.h"
 
+// Radar.h defines a competing AbyssEngine::PaintCanvas stub, so the real
+// PaintCanvas headers cannot be co-included here. Complete the global
+// ::PaintCanvas (forward-declared by AEGeometry.h) with only the methods this
+// TU calls; signatures are byte-identical to PaintCanvas.h so the mangled
+// ::PaintCanvas:: symbols resolve to the real definitions.
+class PaintCanvas {
+public:
+    void TransformAddChild(unsigned int parent, unsigned int child);
+    void *TransformGetLocal(unsigned int index);
+    void TransformSetLocal(unsigned int index, const Matrix &matrix);
+};
+
 
 extern "C" void RocketGun_render_tail();
 extern "C" __attribute__((visibility("hidden"))) void *RocketGun_vtable;
@@ -16,14 +28,12 @@ extern "C" void *RocketGun_base_dtor(RocketGun *self);
 void *_ZN9RocketGunD1Ev(RocketGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder;
 extern "C" void AEGeometry_ctor(void *self, uint16_t mesh, void *canvas, bool flag);
-extern "C" void PaintCanvas_TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
 extern "C" void *AEGeometry_dtor(void *self);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder2;
 extern "C" void Array_Matrix_ctor(void *self);
 extern "C" void Array_int_ctor(void *self);
 extern "C" void ArraySetLength_Matrix(uint32_t length, void *array);
 extern "C" void ArraySetLength_int(uint32_t length, void *array);
-extern "C" int PaintCanvas_TransformGetLocal(void *canvas, uint32_t id);
 extern "C" void ParticleSystemManager_attachSystem(int manager, int system, int zero);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func)(void *out, void *in);
 extern "C" int Player_getEnemies(void *player);
@@ -43,7 +53,6 @@ void MatrixSetTranslation(void *matrix, float x, float y, float z);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 void VectorCross(void *out, void *a, void *b);
 void VectorNormalize(void *out, void *in);
-extern "C" void PaintCanvas_TransformSetLocal(void *canvas, uint32_t transformId, const void *matrix);
 extern "C" void Matrix_assign(void *dst, void *src);
 extern "C" uint32_t __aeabi_uidiv(uint32_t a, uint32_t b);
 extern "C" float AEMath_Sinf(float v);
@@ -123,7 +132,7 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
         if (param_1 == 0x37a7)
             mesh = 0x37a8;
         AEGeometry_ctor(geom, mesh, *holder, false);
-        PaintCanvas_TransformAddChild(*holder, this->transformId,
+        ((PaintCanvas*)*holder)->TransformAddChild(this->transformId,
                                       F<uint32_t>(geom, 0xc));
         ::operator delete(AEGeometry_dtor(geom));
     }
@@ -232,14 +241,14 @@ non_special:
     if (gunType == 0xe8) {
         int manager = F<int>(radarObj, 0x9c);
         void **holder = RocketGun_canvas_holder2;
-        int local = PaintCanvas_TransformGetLocal(*holder, this->transformId);
+        int local = (int)(long)((PaintCanvas*)*holder)->TransformGetLocal(this->transformId);
         int system = ((ParticleSystemManager *)(manager))->addSystem((void *)local, 0x2f, false);
         this->particleSystem = system;
         ParticleSystemManager_attachSystem(F<int>(radar->level, 0x9c), system, 0);
     } else {
         int manager = F<int>(radarObj, 0x84);
         void **holder = RocketGun_canvas_holder2;
-        int local = PaintCanvas_TransformGetLocal(*holder, this->transformId);
+        int local = (int)(long)((PaintCanvas*)*holder)->TransformGetLocal(this->transformId);
         int system = ((ParticleSystemManager *)(manager))->addSystem((void *)local, 0xc, false);
         this->particleSystem = system;
         ParticleSystemManager_attachSystem(F<int>(radar->level, 0x84), system, 0);
@@ -355,7 +364,7 @@ void RocketGun::update(int elapsed)
         gun->field_0x4d = 0;
 
         void **holder = RocketGun_canvas_holder3;
-        int local = PaintCanvas_TransformGetLocal(*holder, this->transformId);
+        int local = (int)(long)((PaintCanvas*)*holder)->TransformGetLocal(this->transformId);
         int shot = F<int>(this->gun, 0xa0);
         char *basePos = (char *)F<void *>(this->gun, 0xc) + shot * 0xc;
         MatrixSetTranslation(matrix, *(float *)basePos, *(float *)(basePos + 4), *(float *)(basePos + 8));
@@ -365,7 +374,7 @@ void RocketGun::update(int elapsed)
         *(uint32_t *)(gunVec + 4) = *(uint32_t *)(vel + 4);
         *(uint32_t *)(gunVec + 8) = *(uint32_t *)(vel + 8);
 
-        local = PaintCanvas_TransformGetLocal(*holder, this->transformId);
+        local = (int)(long)((PaintCanvas*)*holder)->TransformGetLocal(this->transformId);
         __aeabi_memcpy(matrix, (void *)local, 0x3c);
         *(float *)axis = 0.0f;
         *(float *)(axis + 4) = 1.0f;
@@ -388,7 +397,7 @@ void RocketGun::update(int elapsed)
         *(uint32_t *)(matrix + 0x20) = *(uint32_t *)(dir + 8);
         *(uint32_t *)(matrix + 0x24) = *(uint32_t *)(axis + 8);
         *(uint32_t *)(matrix + 0x28) = *(uint32_t *)(gunVec + 8);
-        PaintCanvas_TransformSetLocal(*holder, this->transformId, matrix);
+        ((PaintCanvas*)*holder)->TransformSetLocal(this->transformId, *(const Matrix *)matrix);
 
         if (this->trailMatrices == 0) {
             int kind = this->rocketKind;

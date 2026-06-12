@@ -13,28 +13,21 @@
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
 #include "gof2/RecordHandler.h"
+#include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
 
 
 extern "C" void *CutScene_dtor(void *self);
-extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
 int GameText_getLanguage();
 void Globals_loadFont(int obj, int language);
 extern "C" void ModMainMenu_releaseTail(void *sound);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModMainMenu_resumeTail(int obj, int one, int arg);
-extern "C" void PaintCanvas_ClearBuffer(void *canvas, int value);
-extern "C" void PaintCanvas_Begin3d(void *canvas);
 extern "C" void ModMainMenu_r3dTail(void *canvas);
 ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self);
 extern "C" void ModMainMenu_deleteTail(ModMainMenu *self);
 extern "C" void ModMainMenu_suspendTail(int obj);
 extern "C" void ModMainMenu_touchEndTail(void *starSystem);
 void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self);
-extern "C" void PaintCanvas_Begin2d(int canvas);
-extern "C" void PaintCanvas_SetColor(int canvas, int color);
-extern "C" void PaintCanvas_SetColor4(int canvas, int r, int g, int b, int a);
-extern "C" int PaintCanvas_GetTextWidth(int canvas, void *str, int text);
-extern "C" int PaintCanvas_GetImage2DHeight(int canvas, int image);
 namespace AbyssEngine { namespace AEMath { float Sinf(float value); } }
 extern "C" void ModMainMenu_r2dTail(int canvas);
 void Globals_startNewSoundResourceList(void *soundRes);
@@ -44,10 +37,7 @@ int nextInt(void *random, int limit);
 } }
 extern "C" void CutScene_ctor(void *self, int mode);
 extern "C" int SolarSystem_getTextureIndex(void *system);
-extern "C" void PaintCanvas_TextureCreate(int canvas, int texture, int *out, int flags);
-extern "C" void PaintCanvas_ChangeCubeTexture(int canvas, int texture);
 extern "C" void *GameRecord_dtor(void *record);
-extern "C" void PaintCanvas_Image2DCreate(void *factory, int image, int *out);
 void Globals_playMusicAndFadeOutCurrent(int music);
 
 // ---- ModMainMenu_1757a0.cpp ----
@@ -85,7 +75,7 @@ void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
         ::operator delete(((MenuTouchWindow *)(touchWindow))->dtor());
 
     P(self, 0x18) = 0;
-    PaintCanvas_ReleaseAllResources(*g_ModMainMenu_releaseCanvas);
+    ((PaintCanvas *)*g_ModMainMenu_releaseCanvas)->ReleaseAllResources();
 
     int fontObj = *g_ModMainMenu_releaseFontObj;
     Globals_loadFont(fontObj, GameText_getLanguage());
@@ -126,9 +116,9 @@ __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_r3d_canvas;
 void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
 {
     void **canvas = g_ModMainMenu_r3d_canvas;
-    PaintCanvas_ClearBuffer(*canvas, 0);
+    ((PaintCanvas *)*canvas)->ClearBuffer(0);
     ((CutScene *)(P(self, 0x1c)))->renderBG();
-    PaintCanvas_Begin3d(*canvas);
+    ((PaintCanvas *)*canvas)->Begin3d();
     ((CutScene *)(P(self, 0x1c)))->render3D();
     ModMainMenu_r3dTail(*canvas);
 }
@@ -203,15 +193,11 @@ __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_r2d_textId;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_r2d_screenW;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_r2d_screenH;
 
-extern "C" void PaintCanvas_DrawImage2D(
-    int canvas, int image, int x, int y, int alignX, int alignY);
-extern "C" void PaintCanvas_DrawString(
-    int canvas, void *str, int text, int x, int y, bool shadow);
 
 void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
 {
-    PaintCanvas_Begin2d(I(self, 0x04));
-    PaintCanvas_SetColor(I(self, 0x04), -1);
+    ((PaintCanvas *)(long)I(self, 0x04))->Begin2d();
+    ((PaintCanvas *)(long)I(self, 0x04))->SetColor((unsigned int)I(self, 0x04));
     ((CutScene *)(self->f_1c))->render2D();
 
     if (UC(self, 0x28) == 0) {
@@ -224,10 +210,11 @@ void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
         else
             color = -1;
 
-        PaintCanvas_SetColor(I(self, 0x04), color);
+        (void)color;
+        ((PaintCanvas *)(long)I(self, 0x04))->SetColor((unsigned int)I(self, 0x04));
 
         int *imageHolder = g_ModMainMenu_r2d_image;
-        PaintCanvas_DrawImage2D(*imageHolder, I(self, 0x20), 0, 0, 'D', 'D');
+        ((PaintCanvas *)(long)*imageHolder)->DrawImage2D((unsigned int)I(self, 0x20), 0, 0, (unsigned char)'D');
 
         if (I(self, 0x24) >= 0x0f3c) {
             int canvas = *imageHolder;
@@ -240,7 +227,8 @@ void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
                             0.003f);
             float signedPulse = pulseA > 0.0f ? pulseB : -pulseB;
             int alpha = (unsigned int)(signedPulse * 255.0f);
-            PaintCanvas_SetColor4(canvas, 0xff, 0xff, 0xff, alpha);
+            (void)alpha;
+            ((PaintCanvas *)(long)canvas)->SetColor((unsigned char)canvas, 0xff, 0xff, 0xff);
 
             void **stringHolder = g_ModMainMenu_r2d_string;
             int *textIdHolder = g_ModMainMenu_r2d_textId;
@@ -254,15 +242,14 @@ void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
             int screenW = *g_ModMainMenu_r2d_screenW;
             void *measureStr = *stringHolder;
             int measureCanvas = *imageHolder;
-            int measureText = (int)(long)((GameText *)(*textIdHolder))->getText(0xc7);
-            int textWidth = PaintCanvas_GetTextWidth(measureCanvas, measureStr, measureText);
+            int textWidth = ((PaintCanvas *)(long)measureCanvas)->GetTextWidth((unsigned int)measureCanvas, measureStr);
 
             int image = I(self, 0x20);
             int screenH = *g_ModMainMenu_r2d_screenH;
-            int imageHeight = PaintCanvas_GetImage2DHeight(*imageHolder, image);
-            PaintCanvas_DrawString(draw.canvas, draw.str, text,
+            int imageHeight = ((PaintCanvas *)(long)*imageHolder)->GetImage2DHeight((unsigned int)*imageHolder);
+            ((PaintCanvas *)(long)draw.canvas)->DrawString((unsigned int)draw.canvas, draw.str, text,
                                    (screenW >> 1) - (textWidth >> 1),
-                                   (screenH >> 1) + (imageHeight >> 1) + 10, false);
+                                   (bool)((char)(screenH >> 1) + (char)(imageHeight >> 1) + '\n'));
         }
     }
 
@@ -327,8 +314,9 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
                        0x2efe) &
                       0xffff;
         }
-        PaintCanvas_TextureCreate(canvas, texture, (int *)textureOut, 0);
-        PaintCanvas_ChangeCubeTexture(I(self, 0x04), *(int *)textureOut);
+        unsigned int texSlot = 0xffffffff;
+        ((PaintCanvas *)(long)canvas)->TextureCreate((unsigned short)texture, &texSlot, true);
+        ((PaintCanvas *)(long)I(self, 0x04))->ChangeCubeTexture((unsigned int)I(self, 0x04));
         return;
     }
 
@@ -382,8 +370,8 @@ music:
     return;
 
 state80:
-    PaintCanvas_Image2DCreate(*g_ModMainMenu_initImageFactory, 0x1b5a,
-                              (int *)B(self, 0x20));
+    ((PaintCanvas *)*g_ModMainMenu_initImageFactory)->Image2DCreate(0x1b5a,
+                              (unsigned int *)B(self, 0x20));
     UC(self, 0x28) = 1;
     I(self, 0x24) = 0;
     *g_ModMainMenu_initTouchFlag = 1;

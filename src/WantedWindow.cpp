@@ -29,6 +29,7 @@
 #include "gof2/Wanted.h"
 #undef RetStr
 #include "gof2/String.h"
+#include "gof2/PaintCanvas.h"
 
 
 extern "C" void WantedWindow_update_tail(void *starMap, int dt);
@@ -41,13 +42,7 @@ extern "C" void *Mission_ctor(void *mission, int a, int b, int dest);
 extern "C" void *StarMap_ctor(void *map, bool jumpMapMode, void *mission, bool flag, int idx);
 extern "C" int Station_getSystem(void *station);
 extern "C" void WantedWindow_draw_tail(void *starMap);
-extern "C" void PaintCanvas_EnableClip(void *canvas, int x, int y, int w, int h);
-extern "C" void PaintCanvas_DisableClip(void *canvas);
-extern "C" void PaintCanvas_SetColor(void *canvas, unsigned int color);
-extern "C" int PaintCanvas_GetTextHeight(void *canvas, unsigned int font);
-extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *font, String *text);
-extern "C" void PaintCanvas_DrawString(void *canvas, void *font, String *text, int x, int y, bool flag);
-extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y);
+extern void DisableClip();  // AbyssEngine::PaintCanvas::DisableClip (free fn, not methodized)
 extern "C" void String_cstr_ctor(String *s, const char *text, bool copy);
 extern "C" void String_plus(String *out, String *a, String *b);
 extern "C" void Array_Wanted_ctor(void *arr);
@@ -63,7 +58,6 @@ extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *arr);
 extern "C" void *Array_Wanted_dtor(void *arr);
 extern "C" void *ScrollTouchWindow_dtor(void *window);
-extern "C" void PaintCanvas_Image2DCreate(void *canvas, int image, void *out);
 extern "C" void *Wanted_getImageParts(void *wanted);
 extern "C" int Wanted_getCurrentLocation(void *wanted);
 extern "C" int Wanted_getReward(void *wanted);
@@ -431,7 +425,7 @@ void WantedWindow::draw() {
     void *canvas = *g_WantedWindow_draw_canvas;
     void *font = *g_WantedWindow_draw_font;
 
-    PaintCanvas_EnableClip(canvas, self->windowX,
+    ((PaintCanvas *)canvas)->EnableClip(self->windowX,
                            self->windowY + F<int>(layout, 0xc) +
                                F<int>(layout, 0x20) + F<int>(layout, 0x5c),
                            self->windowWidth,
@@ -462,11 +456,11 @@ void WantedWindow::draw() {
         ((String *)(&s40))->dtor();
 
         void *wanted = draw_wanted_at(self, i);
-        PaintCanvas_SetColor(canvas, ((Wanted *)(wanted))->isActive() ? 0xffffffffu : 0xff808080u);
+        ((PaintCanvas *)canvas)->SetColor(((Wanted *)(wanted))->isActive() ? 0xffffffffu : 0xff808080u);
         ((Wanted *)(&s4c))->getName();
         int textY = y + F<int>(layout, 0x70) / 2 -
-                    PaintCanvas_GetTextHeight(canvas, (unsigned int)(unsigned long)font) / 2;
-        PaintCanvas_DrawString(canvas, font, &s4c,
+                    ((PaintCanvas *)canvas)->GetTextHeight((unsigned int)(unsigned long)font) / 2;
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&s4c,
                                self->windowX + F<int>(layout, 0x28) +
                                    F<int>(layout, 0x44),
                                textY, false);
@@ -478,8 +472,8 @@ void WantedWindow::draw() {
             ((Wanted *)(&s58))->getName();
             String_cstr_ctor(&s64, g_WantedWindow_draw_mark, false);
             String_plus(&s4c, &s58, &s64);
-            int textW = PaintCanvas_GetTextWidth(canvas, font, &s4c);
-            PaintCanvas_DrawImage2D(canvas, self->bgImage,
+            int textW = ((PaintCanvas *)canvas)->GetTextWidth((unsigned int)(unsigned long)font, (void *)&s4c);
+            ((PaintCanvas *)canvas)->DrawImage2D(self->bgImage,
                                     self->windowX + F<int>(layout, 0x28) +
                                         F<int>(layout, 0x44) + textW,
                                     textY);
@@ -491,8 +485,8 @@ void WantedWindow::draw() {
         y += F<int>(layout, 0x34) + F<int>(layout, 0x70);
     }
 
-    PaintCanvas_DisableClip(canvas);
-    PaintCanvas_SetColor(canvas, 0xffffffffu);
+    DisableClip();
+    ((PaintCanvas *)canvas)->SetColor(0xffffffffu);
     ((String *)(&s70))->ctor_copy((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93), false);
     ((Layout *)layout)->drawHeader1(&s70);
     ((String *)(&s70))->dtor();
@@ -535,12 +529,12 @@ void WantedWindow::draw() {
                     F<int>(layout, 0xc) + F<int>(layout, 0x20);
         ((ImageFactory *)(*g_WantedWindow_draw_factory))->drawChar((Arr *)self->imageParts, charX, charY, false);
         int textX = F<int>(layout, 0x2d4) + charX + F<int>(layout, 0x2c);
-        PaintCanvas_DrawString(canvas, font, (String *)((char *)self + 0x54), textX, charY, false);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)((char *)self + 0x54), textX, charY, false);
 
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_a, false);
         String_plus(&s58, &s64, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93));
         String_plus(&s4c, &s58, (String *)((char *)self + 0x3c));
-        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + F<int>(layout, 0x4) * 2, false);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&s4c, textX, charY + F<int>(layout, 0x4) * 2, false);
         ((String *)(&s4c))->dtor();
         ((String *)(&s58))->dtor();
         ((String *)(&s64))->dtor();
@@ -548,7 +542,7 @@ void WantedWindow::draw() {
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_b, false);
         String_plus(&s58, &s64, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93));
         String_plus(&s4c, &s58, (String *)((char *)self + 0x48));
-        PaintCanvas_DrawString(canvas, font, &s4c, textX, charY + F<int>(layout, 0x4) * 3, false);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&s4c, textX, charY + F<int>(layout, 0x4) * 3, false);
         ((String *)(&s4c))->dtor();
         ((String *)(&s58))->dtor();
         ((String *)(&s64))->dtor();
@@ -814,13 +808,13 @@ WantedWindow *_ZN12WantedWindowC2Ev(WantedWindow *self)
     self->starMap = 0;
     self->imageParts = 0;
     unsigned int *fontHolder = *g_WantedWindow_ctor_font;
-    int h = PaintCanvas_GetTextHeight(*canvasHolder, *fontHolder);
+    int h = ((PaintCanvas *)*canvasHolder)->GetTextHeight(*fontHolder);
     self->wantedList = 0;
     self->mission = 0;
     self->scrollWindow = 0;
     self->buttons = 0;
     self->halfTextHeight = h / 2 - 1;
-    PaintCanvas_Image2DCreate(*canvasHolder, 0x454, (char *)self + 0xac);
+    ((PaintCanvas *)*canvasHolder)->Image2DCreate(0x454, (unsigned int *)((char *)self + 0xac));
     ((WantedWindow *)(self))->init();
     return self;
 }

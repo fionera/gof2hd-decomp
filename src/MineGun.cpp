@@ -3,6 +3,7 @@
 #include "gof2/Transform.h"
 #include "gof2/Explosion.h"
 #include "gof2/PlayerEgo.h"
+#include "gof2/PaintCanvasClass.h"
 
 
 namespace AbyssEngine { namespace AEMath {
@@ -22,8 +23,6 @@ extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion *> *se
 extern "C" void Explosion_ctor(Explosion *self, int kind);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
-extern "C" void PaintCanvas_TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
-extern "C" uint32_t PaintCanvas_TransformGetTransform(void *canvas, uint32_t transform);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 
 // ---- render_1566bc.cpp ----
@@ -120,11 +119,11 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
     P(self, 0xbc) = geometry;
     void *addCanvas = *holder;
     uint32_t child = U(geometry, 0xc);
-    PaintCanvas_TransformAddChild(addCanvas, parent, child);
+    ((PaintCanvas*)addCanvas)->TransformAddChild(parent, child);
     AEGeometry *stored = (AEGeometry *)P(self, 0xbc);
     uint32_t transformId = U(stored, 0xc);
     void *getCanvas = *holder;
-    uint32_t transform = PaintCanvas_TransformGetTransform(getCanvas, transformId);
+    uint32_t transform = (uint32_t)(uintptr_t)((PaintCanvas*)getCanvas)->TransformGetTransform(transformId);
     ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
     return self;
 }
@@ -145,7 +144,7 @@ void MineGun::update(int delta)
     ((ObjectGun *)(this))->update(delta);
     if (UC(P(this, 0x8), 0x4c) != 0) {
         void **holder = MineGun_canvas_holder;
-        uint32_t transform = PaintCanvas_TransformGetTransform(*holder, U(P(this, 0xbc), 0xc));
+        uint32_t transform = (uint32_t)(uintptr_t)((PaintCanvas*)*holder)->TransformGetTransform(U(P(this, 0xbc), 0xc));
         ((AbyssEngine::Transform *)(transform))->Update((long long)delta, 0);
     }
 

@@ -6,6 +6,7 @@
 #include "gof2/AEFile.h"
 #include "gof2/String.h"
 #include "gof2/Mesh.h"
+#include "gof2/PaintCanvasClass.h"
 // canonical void* declaration in ApplicationManager.h (included above). Neutralize the
 // duplicate declaration just for this header; the void* symbol is the one actually used.
 #include "gof2/ShaderBaseStruct.h"
@@ -23,8 +24,6 @@ typedef AbyssEngine::FBOContainer FBOContainerFull;
 typedef AbyssEngine::Mesh MeshFull;
 
 extern "C" void FBOContainer_ActivateRender2Texture(FBOContainer *self);
-extern "C" void PaintCanvas_Resume(void *canvas);
-extern "C" void PaintCanvas_Suspend(void *canvas);
 extern "C" void ShaderUpdateRimColor();
 extern "C" void glMatrixMode(unsigned int mode);
 void MatrixGetGL(const Matrix *matrix, float *out);
@@ -76,7 +75,6 @@ extern "C" void glMaterialfv(unsigned int face, unsigned int pname, const void *
 extern "C" void glLightModelfv(unsigned int pname, const void *params);
 extern "C" void FileInterfaceAndroid_ctor(void *self);
 void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
-extern "C" void PaintCanvas_Initialize(void *canvas, bool value);
 extern "C" void glLineWidth(float width);
 extern "C" void glCullFace(unsigned int mode);
 extern "C" void glLightfv(unsigned int light, unsigned int pname, const void *params);
@@ -123,7 +121,7 @@ void Engine::ActivateRender2FracFBO() {
 // ---- Resume_845ee.cpp ----
 uint32_t Engine::Resume() {
     Engine *self = this;
-    PaintCanvas_Resume(*self->field_0x30);
+    ((PaintCanvas*)*self->field_0x30)->Resume();
     for (int index = 0; index != 0x14; index += 1) {
         *(int *)((char *)self + 0x7c + index * 4) = -1;
     }
@@ -133,7 +131,7 @@ uint32_t Engine::Resume() {
 // ---- Suspend_845de.cpp ----
 uint32_t Engine::Suspend() {
     Engine *self = this;
-    PaintCanvas_Suspend(*self->field_0x30);
+    ((PaintCanvas*)*self->field_0x30)->Suspend();
     return 1;
 }
 
@@ -1212,7 +1210,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
     glCullFace(0x405);
     glEnable(0xb44);
     ((Engine *)(self))->AfterGLInit();
-    PaintCanvas_Initialize(*self->field_0x30, false);
+    ((PaintCanvas*)*self->field_0x30)->Initialize(false);
     self->field_0xc = 0;
     glGetIntegerv(0xd33, (char *)self + 0x0c);
 

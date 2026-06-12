@@ -8,6 +8,7 @@
 #include "gof2/KIPlayer.h"
 #include "gof2/Player.h"
 #include "gof2/Standing.h"
+#include "gof2/PaintCanvasClass.h"
 
 // Status singleton accessor. The decompiler emitted bare Status_getStanding() (the self
 // argument was dropped); the original reads the global Status* singleton (DAT_189d44) and
@@ -33,7 +34,6 @@ extern "C" void Vector_scale(Vector *out, const Vector *v, float value);
 extern "C" void Vector_add(Vector *out, const Vector *a, const Vector *b);
 extern "C" void Matrix_assign(void *dst, const void *src);
 extern "C" void Matrix_mul(void *out, const void *a, const void *b);
-extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas, uint32_t transform);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const void *matrix);
 namespace AbyssEngine { namespace AEMath {
 Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
@@ -272,7 +272,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
 
     if (ready) {
         ((Player *)(TP<Player>(this, 0x4)))->shoot(0, delta, delta >> 31, 0);
-        uint32_t transform = PaintCanvas_TransformGetTransform(*gPlayerTurretCanvas_rotation,
+        uint32_t transform = (uint32_t)(uintptr_t)((PaintCanvas*)(long)*gPlayerTurretCanvas_rotation)->TransformGetTransform(
                                                                U(turretGeometry, 0xc));
         ((AbyssEngine::Transform *)(transform))->Update(delta, delta >> 31);
     }
@@ -567,7 +567,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
     AEGeometry *helper = (AEGeometry *)operator new(0xc0);
     AEGeometry_ctor(helper, (void *)*canvasHolder);
     this->f_148 = helper;
-    uint32_t transform = PaintCanvas_TransformGetTransform(*canvasHolder, U(helper, 0xc));
+    uint32_t transform = (uint32_t)(uintptr_t)((PaintCanvas*)(long)*canvasHolder)->TransformGetTransform(U(helper, 0xc));
     I((void *)transform, 0xe0) = 0;
 
     Vector *initial = (Vector *)vectorBytes;

@@ -1,5 +1,6 @@
 #include "gof2/ParticleSystemManager.h"
 #include "gof2/IParticleSystem.h"
+#include "gof2/PaintCanvas.h"
 
 
 extern "C" void _psm_ArrayReleaseSprites(void *arr);
@@ -16,13 +17,7 @@ extern "C" void _psm_spriteRender2(void *canvas, unsigned a);
 extern "C" void _psm_arraySpriteCtor(void *arr);
 extern "C" void _psm_arrayMeshCtor(void *arr);
 extern "C" void _ips_enableUpdate(void *sys, bool enable);
-extern "C" void  PaintCanvas_TextureCreate(unsigned short canvas, unsigned int texId, bool b);
-extern "C" void  PaintCanvas_SpriteSystemSetAllSize(void *canvas, short size);
 extern "C" short _ips_getParticleCount16(void *sys);
-extern "C" void PaintCanvas_MeshCreate(void *canvas, int verts, int indices, int fmt, unsigned int *out);
-extern "C" void PaintCanvas_TextureCreate(unsigned short canvas, unsigned int texId, bool b);
-extern "C" void PaintCanvas_TransformCreate(void *canvas, unsigned int *out);
-extern "C" void PaintCanvas_TransformAddMeshId(void *canvas, unsigned int transform, unsigned int mesh);
 extern "C" int _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
 extern "C" void _psm_initSprites(void *self);
 extern "C" void _psm_initMesh(void *self);
@@ -403,13 +398,6 @@ void ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
 // size/UV from the active particle-set's frame rect, then walks every sub-system, binding it to
 // the sprite-system handle at its running particle offset.
 
-extern "C" void  PaintCanvas_SpriteSystemCreate(void *canvas, unsigned short count, bool b,
-                                                unsigned int *out);
-extern "C" void  PaintCanvas_SpriteSystemCreateTex(void *canvas, unsigned short count, bool b,
-                                                   unsigned short tex, unsigned int *out);
-extern "C" void  PaintCanvas_SpriteSystemSetAllUv(void *canvas, unsigned int handle,
-                                                 float u, float v0, float w, float v1);
-
 // Active particle-set descriptor (the engine resolves it from a global table).
 __attribute__((visibility("hidden"))) extern char *g_activeParticleSet;
 
@@ -425,23 +413,24 @@ void ParticleSystemManager::initSprites()
     void *canvas = this->field_0x4;
     if (this->field_0x24 == 0xffff) {
         if ((short)this->field_0x26 != -1) {
-            PaintCanvas_SpriteSystemCreate(canvas, (unsigned short)this->field_0x34, false,
+            ((PaintCanvas *)canvas)->SpriteSystemCreate((unsigned short)this->field_0x34, false,
                                            (unsigned int *)(&this->field_0x30));
-            PaintCanvas_TextureCreate((unsigned short)(unsigned long)this->field_0x4,
-                                      this->field_0x26, (((char)(unsigned long)this + ',') != 0));
+            ((PaintCanvas *)canvas)->TextureCreate((unsigned short)this->field_0x26,
+                                      (unsigned int *)(&this->field_0x30),
+                                      (((char)(unsigned long)this + ',') != 0));
         }
     } else {
-        PaintCanvas_SpriteSystemCreateTex(canvas, (unsigned short)this->field_0x34, false,
-                                          this->field_0x24,
+        ((PaintCanvas *)canvas)->SpriteSystemCreate((unsigned short)this->field_0x34, false,
+                                          (unsigned short)this->field_0x24,
                                           (unsigned int *)(&this->field_0x30));
     }
 
     short offset = 0;
-    PaintCanvas_SpriteSystemSetAllSize(this->field_0x4, (short)this->field_0x30);
+    ((PaintCanvas *)this->field_0x4)->SpriteSystemSetAllSize((unsigned int)(short)this->field_0x30, 0);
 
     float u = *(float *)(g_activeParticleSet + 0x90);
     float w = *(float *)(g_activeParticleSet + 0x94);
-    PaintCanvas_SpriteSystemSetAllUv(this->field_0x4, this->field_0x30, u, 0.0f, w, 0.0f);
+    ((PaintCanvas *)this->field_0x4)->SpriteSystemSetAllUv(this->field_0x30, u, 0.0f, w, 0.0f);
 
     for (unsigned i = 0; i < this->field_0x18; ++i) {
         void *sys = ((void **)this->field_0x1c)[i];
@@ -481,9 +470,6 @@ int ParticleSystemManager::addSpriteSystem(const void *matrix, const void *sets,
 // stores the mesh handle at +0x54, builds a transform (+0x58) bound to that mesh, then binds
 // every sub-system at its running vertex offset (4 bytes per particle).
 
-extern "C" void PaintCanvas_MeshCreateTex(void *canvas, int verts, int indices, int fmt,
-                                          short tex, unsigned int *out);
-
 void ParticleSystemManager::initMesh()
 {
     if (this->field_0x3c == 0)
@@ -498,18 +484,20 @@ void ParticleSystemManager::initMesh()
 
     if ((short)this->field_0x48 == -1) {
         if ((short)this->field_0x4a != -1) {
-            PaintCanvas_MeshCreate(canvas, verts, indices, 0x1b,
-                                   (unsigned int *)(&this->field_0x54));
-            PaintCanvas_TextureCreate((unsigned short)(unsigned long)this->field_0x4,
-                                      this->field_0x4a, (((char)(unsigned long)this + 'P') != 0));
+            ((PaintCanvas *)canvas)->MeshCreate((unsigned short)verts, (unsigned short)indices,
+                                   (signed char)0x1b, (unsigned int *)(&this->field_0x54));
+            ((PaintCanvas *)canvas)->TextureCreate((unsigned short)this->field_0x4a,
+                                      (unsigned int *)(&this->field_0x54),
+                                      (((char)(unsigned long)this + 'P') != 0));
         }
     } else {
-        PaintCanvas_MeshCreateTex(canvas, verts, indices, 0x1b, (short)this->field_0x48,
+        ((PaintCanvas *)canvas)->MeshCreate((unsigned short)verts, (unsigned short)indices,
+                                  (signed char)0x1b, (unsigned short)this->field_0x48,
                                   (unsigned int *)(&this->field_0x54));
     }
 
-    PaintCanvas_TransformCreate(this->field_0x4, (unsigned int *)(&this->field_0x58));
-    PaintCanvas_TransformAddMeshId(this->field_0x4, this->field_0x58, this->field_0x54);
+    ((PaintCanvas *)this->field_0x4)->TransformCreate((unsigned int *)(&this->field_0x58));
+    ((PaintCanvas *)this->field_0x4)->TransformAddMeshId(this->field_0x58, this->field_0x54);
 
     short offset = 0;
     for (unsigned i = 0; i < this->field_0x3c; ++i) {

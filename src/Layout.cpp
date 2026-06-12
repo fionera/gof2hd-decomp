@@ -5,6 +5,11 @@
 #include "gof2/GameText.h"
 #include "gof2/String.h"
 #include "gof2/TouchButton.h"
+#include "gof2/PaintCanvas.h"
+
+// The PaintCanvas singleton lives in externs.h as a definition; declare it here
+// for the single-arg SetColor sites that target the global canvas.
+extern void *g_PaintCanvas;
 
 
 extern "C" float __aeabi_l2f(long long);
@@ -26,26 +31,8 @@ __attribute__((visibility("hidden"))) extern GameTextHolder *gGameText;
 // `extern "C"` these cannot overload, so we declare each ONCE here with an
 // unspecified-argument (variadic) signature.  That accepts every call site's
 // argument list and is link-compatible with the real engine entry point.
-struct PaintCanvas;
 struct TouchButton;
 extern "C" {
-int  PaintCanvas_GetImage2DWidth(...);
-int  PaintCanvas_GetImage2DHeight(...);
-unsigned PaintCanvas_GetColor(...);
-void PaintCanvas_SetColor(...);
-void PaintCanvas_restoreColor(...);
-void PaintCanvas_FillRectangle(...);
-void PaintCanvas_DrawRectangle(...);
-void PaintCanvas_DrawImage2D3(...);
-void PaintCanvas_DrawImage2D5(...);
-void PaintCanvas_DrawImage2D9(...);
-void PaintCanvas_DrawString(...);
-void PaintCanvas_DrawRegion2D(...);
-int  PaintCanvas_GetTextWidth(...);
-int  PaintCanvas_GetTextHeight(...);
-void PaintCanvas_Image2DCreate(...);
-void PaintCanvas_GetLineArray(...);
-
 void    TouchButton_footerAnim(...);
 void    TouchButton_getPosition(...);
 void    TouchButton_ctorStr(...);
@@ -122,8 +109,8 @@ __attribute__((visibility("hidden"))) extern void **gPaintCanvasHolder; // ldr [
 int Layout::getFooterTransitionWidth() {
     Layout *self = this;
     void **holder = gPaintCanvasHolder;
-    int w1 = PaintCanvas_GetImage2DWidth(*holder, self->footerImageRight);
-    int w2 = PaintCanvas_GetImage2DWidth(*holder, self->footerImageLeft);
+    int w1 = ((PaintCanvas*)(*holder))->GetImage2DWidth(self->footerImageRight);
+    int w2 = ((PaintCanvas*)(*holder))->GetImage2DWidth(self->footerImageLeft);
     return w2 + w1;
 }
 
@@ -309,7 +296,6 @@ void Layout::startFade(uint8_t fadeOut, int color, int duration) {
 }
 
 // ---- initTip_d495c.cpp ----
-struct PaintCanvas;
 
 extern "C" void ArrayReleaseClasses_StringPtr(void *arr);    // 0x6facc
 extern "C" void *ArrayStringPtr_dtor(void *arr);             // 0x6f64c
@@ -349,15 +335,12 @@ void Layout::initTip() {
     *tipArr = arr;
     int *m = *g_tipMetric;
     int width = m[0x78 / 4] + m[0x4c / 4] * -2;
-    PaintCanvas_GetLineArray(canvas, color, str, width, *tipArr);
+    ((PaintCanvas*)(canvas))->GetLineArray(color, str, width, (char *)*tipArr);
 }
 
 // ---- drawEmptyFooter_d3fbc.cpp ----
-struct PaintCanvas;
 struct TouchButton;
 
-extern "C" void PaintCanvas_DrawImage2D(PaintCanvas *pc, unsigned img, int x,
-                                        int y, int anchor);                 // 0x71d70
 // 0x74e00
 // Footer "scroll into place" tail-called helper at 0x1ac0a8.
 
@@ -371,16 +354,16 @@ __attribute__((visibility("hidden"))) extern int **g_efMetric;      // @0xe401c 
 void Layout::drawEmptyFooter(int showBack) {
     Layout *self = this;
     unsigned color = *g_efColor;
-    PaintCanvas_SetColor(color);
-    int w = PaintCanvas_GetImage2DWidth(color);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(color);
+    int w = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(color);
     int screenH = *g_efScreenH;
-    PaintCanvas_DrawImage2D((PaintCanvas *)color, self->footerImageLeft, 0, screenH, 0x11);
+    ((PaintCanvas*)((PaintCanvas *)color))->DrawImage2D(self->footerImageLeft, 0, screenH, (unsigned char)(0x11));
 
     int screenW = *g_efScreenW;
     int footerH = (*g_efMetric)[0x10 / 4];
     ((Layout *)(self))->drawBGPattern(self->footerPatternImage, w, screenH - footerH, screenW - w * 2, footerH);
-    PaintCanvas_DrawImage2D((PaintCanvas *)color, self->footerImageLeft,
-                            screenW - w, screenH - (*g_efMetric)[0x10 / 4], 0x01);
+    ((PaintCanvas*)((PaintCanvas *)color))->DrawImage2D(self->footerImageLeft,
+                            screenW - w, screenH - (*g_efMetric)[0x10 / 4], (unsigned char)(0x01));
     if (showBack == 0) return;
     ((TouchButton *)(self->backButton))->setVisible(1);
     unsigned char sp[8] __attribute__((aligned(4)));
@@ -565,9 +548,9 @@ extern "C" int Layout_drawMaskTail(void *pc, int color, int p4, void *st); // ta
 // Layout::drawMask(int p1, int p2, int p3, int p4) — singleton reloaded each call.
 int Layout::drawMask4(int p1, int p2, int p3, int p4) {
     Layout *self = this;
-    int saved = PaintCanvas_GetColor(*gPC);
-    PaintCanvas_SetColor(*gPC, 0x80);
-    PaintCanvas_FillRectangle(*gPC, p1, p2, p3);
+    int saved = ((PaintCanvas*)(*gPC))->GetColor();
+    ((PaintCanvas*)(*gPC))->SetColor(0x80);
+    ((PaintCanvas*)(*gPC))->FillRectangle(p1, p2, p3, 0);
     return Layout_drawMaskTail(*gPC, saved, p4, (void *)0);
 }
 
@@ -586,7 +569,6 @@ void Layout_formatCredits(void *out, int n) {
 }
 
 // ---- drawBGPattern_d3574.cpp ----
-struct PaintCanvas;
 
 extern "C" int __aeabi_idiv(int a, int b);                                 // 0x7198c
 
@@ -597,11 +579,11 @@ __attribute__((visibility("hidden"))) extern PaintCanvas **g_bgCanvas;  // @0xe3
 void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     Layout *self = this;
     PaintCanvas *pc = *g_bgCanvas;
-    PaintCanvas_SetColor(self->drawColor);
-    int iw = PaintCanvas_GetImage2DWidth(img);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
+    int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(img);
     int cols = __aeabi_idiv(w, iw);
     int fullW = cols * iw;
-    int ih = PaintCanvas_GetImage2DHeight(img);
+    int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(img);
     int rows = __aeabi_idiv(h, ih);
     int fullH = rows * ih;
 
@@ -609,7 +591,7 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
         int py = y + r * ih;
         int px = x;
         for (int c = 0; c < cols; c++) {
-            PaintCanvas_DrawImage2D3(pc, img, px, py);
+            ((PaintCanvas*)(pc))->DrawImage2D(img, px, py);
             px += iw;
         }
     }
@@ -619,7 +601,7 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     if (remW > 0) {
         int py = y + fullH;
         for (int r = 0; r < rows; r++) {
-            PaintCanvas_DrawRegion2D(pc, img, 0, 0, remW, ih, 0, 0, 0, 0, x + fullW, py);
+            ((PaintCanvas*)(pc))->DrawRegion2D(img, 0, 0, remW, ih, 0, 0, 0, x + fullW, py);
             py += ih;
         }
     }
@@ -628,12 +610,12 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
         (void)px;
         int px2 = x;
         for (int c = 0; c < cols; c++) {
-            PaintCanvas_DrawRegion2D(pc, img, 0, 0, iw, remH, 0, 0, 0, 0, px2, y + fullH);
+            ((PaintCanvas*)(pc))->DrawRegion2D(img, 0, 0, iw, remH, 0, 0, 0, px2, y + fullH);
             px2 += iw;
         }
     }
     if (remW > 0 || remH > 0) {
-        PaintCanvas_DrawRegion2D(pc, img, 0, 0, remW, remH, 0, 0, 0, 0,
+        ((PaintCanvas*)(pc))->DrawRegion2D(img, 0, 0, remW, remH, 0, 0, 0,
                                  x + fullW, y + fullH);
     }
 }
@@ -801,7 +783,6 @@ void Layout::drawWindow5(const void *param, int p3, int p4, int p5, int p6) {
 }
 
 // ---- drawBGBorder_d395c.cpp ----
-struct PaintCanvas;
 
 extern "C" int __aeabi_idiv(int a, int b);                                 // 0x7198c
 
@@ -815,18 +796,18 @@ __attribute__((visibility("hidden"))) extern int g_bbFlipR;             // @0xe3
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
     Layout *self = this;
     PaintCanvas *pc = *g_bbCanvas;
-    int cw = PaintCanvas_GetImage2DWidth(corner);
-    int ch = PaintCanvas_GetImage2DHeight(corner);
-    int ew = PaintCanvas_GetImage2DWidth(edge);
-    int eh = PaintCanvas_GetImage2DHeight(edge);
+    int cw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(corner);
+    int ch = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(corner);
+    int ew = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(edge);
+    int eh = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(edge);
 
     // Four corners (top-left at base; others mirrored via the 5-arg variant).
-    PaintCanvas_DrawImage2D3(pc, corner, inset + x, inset + y);
+    ((PaintCanvas*)(pc))->DrawImage2D(corner, inset + x, inset + y);
     int rightX = ((w + x) - cw) - inset;
-    PaintCanvas_DrawImage2D5(pc, corner, rightX, inset + y, 1);
+    ((PaintCanvas*)(pc))->DrawImage2D(corner, rightX, inset + y, (unsigned char)(1));
     int bottomY = ((y + h) - ch) - inset;
-    PaintCanvas_DrawImage2D5(pc, corner, inset + x, bottomY, 2);
-    PaintCanvas_DrawImage2D5(pc, corner, rightX, bottomY, 3);
+    ((PaintCanvas*)(pc))->DrawImage2D(corner, inset + x, bottomY, (unsigned char)(2));
+    ((PaintCanvas*)(pc))->DrawImage2D(corner, rightX, bottomY, (unsigned char)(3));
 
     // Top/bottom edges (horizontal tiling of `edge`).
     int spanW = w + cw * -2 + inset * -2;
@@ -836,15 +817,15 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     int topRowY = pad + y;
     int botRowY = (h - inset) + pad + y;
     for (int i = 0; i < colsH; i++) {
-        PaintCanvas_DrawImage2D3(pc, edge, tileX, topRowY);
-        PaintCanvas_DrawImage2D5(pc, edge, tileX, botRowY, 2);
+        ((PaintCanvas*)(pc))->DrawImage2D(edge, tileX, topRowY);
+        ((PaintCanvas*)(pc))->DrawImage2D(edge, tileX, botRowY, (unsigned char)(2));
         tileX += ew;
     }
     int remW = spanW - colsH * ew;
     if (remW > 0) {
-        PaintCanvas_DrawRegion2D(pc, edge, 0, 0, remW, eh, 0, 0, 0, 0,
+        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, remW, eh, 0, 0, 0,
                                  colsH * ew + baseX + cw, topRowY);
-        PaintCanvas_DrawRegion2D(pc, edge, 0, 0, remW, eh, 0, g_bbFlipTR, 0, 0,
+        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, remW, eh, 0, g_bbFlipTR, 0,
                                  spanW + baseX + cw, botRowY);
     }
 
@@ -854,19 +835,18 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     int leftX = pad + x + inset;
     int rightEdgeX = w + x + pad;
     for (int i = 0; i < rowsV; i++) {
-        PaintCanvas_DrawRegion2D(pc, edge, 0, 0, ew, eh, 0, g_bbFlipL, 0, 0, leftX, 0);
-        PaintCanvas_DrawRegion2D(pc, edge, 0, 0, ew, eh, 0, g_bbFlipR, 0, 0, rightEdgeX, 0);
+        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, ew, eh, 0, g_bbFlipL, 0, leftX, 0);
+        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, ew, eh, 0, g_bbFlipR, 0, rightEdgeX, 0);
     }
     int remH = spanH - rowsV * ew;
     if (remH > 0) {
-        PaintCanvas_DrawRegion2D(pc, edge, 0, 0, remH, eh, 0, g_bbFlipL, 0, 0, leftX, 0);
-        PaintCanvas_DrawRegion2D(pc, edge, 0, 0, remH, eh, 0, g_bbFlipR, 0, 0,
+        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, remH, eh, 0, g_bbFlipL, 0, leftX, 0);
+        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, remH, eh, 0, g_bbFlipR, 0,
                                  rightEdgeX + inset * -2, 0);
     }
 }
 
 // ---- drawScrollBar_d4258.cpp ----
-struct PaintCanvas;
 
 // 0x74e00
 
@@ -880,15 +860,15 @@ __attribute__((visibility("hidden"))) extern int **g_sbMetric;          // @0xe4
 void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     Layout *self = this;
     PaintCanvas *pc = *g_sbCanvas;
-    int iw = PaintCanvas_GetImage2DWidth(self->scrollBarImage);
-    int ih = PaintCanvas_GetImage2DHeight(self->scrollBarImage);
+    int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->scrollBarImage);
+    int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(self->scrollBarImage);
 
-    PaintCanvas_SetColor(*(unsigned *)&g_sbColor0);
-    PaintCanvas_SetColor(*(unsigned *)&g_sbColor1);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_sbColor0);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_sbColor1);
 
     int inset = self->field_0x3e0;
-    PaintCanvas_DrawRectangle(pc, x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
-    PaintCanvas_SetColor(self->drawColor);
+    ((PaintCanvas*)(pc))->DrawRectangle(x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
 
     int thumb = range - 1;
     if (thumb <= ih * 2) thumb = ih * 2;
@@ -907,13 +887,12 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
         if (lim <= off) off = lim;
     }
 
-    PaintCanvas_DrawImage2D3(pc, self->scrollBarImage, handle + x + 1);
-    PaintCanvas_DrawImage2D5(pc, self->scrollBarImage,
-                             self->field_0x3e4 + x + 1, (thumb - ih) + y + off, 0x02);
+    ((PaintCanvas*)(pc))->DrawImage2D(self->scrollBarImage, handle + x + 1, 0);
+    ((PaintCanvas*)(pc))->DrawImage2D(self->scrollBarImage,
+                             self->field_0x3e4 + x + 1, (thumb - ih) + y + off, (unsigned char)(0x02));
 }
 
 // ---- drawFade_d5038.cpp ----
-struct PaintCanvas;
 
 
 // Hidden globals from drawFade disasm.
@@ -927,7 +906,7 @@ uint8_t Layout::drawFade() {
     Layout *self = this;
     if (self->fading != 0) {
         PaintCanvas *pc = *g_dfCanvasA;
-        unsigned saved = PaintCanvas_GetColor(pc);
+        unsigned saved = ((PaintCanvas*)(pc))->GetColor();
 
         // progress = duration / endTime  (fields 0x408 / 0x40c, signed->float)
         float t = (float)self->fadeProgress / (float)self->fadeDuration;
@@ -938,22 +917,21 @@ uint8_t Layout::drawFade() {
         unsigned color = self->fadeColor;
         if (t > 0.0f)
             color += (int)(t * 255.0f);
-        PaintCanvas_SetColor(color);
-        PaintCanvas_FillRectangle(*g_dfCanvasA, 0, 0, **g_dfDimA);
-        PaintCanvas_SetColor(saved);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(color);
+        ((PaintCanvas*)(*g_dfCanvasA))->FillRectangle(0, 0, **g_dfDimA, 0);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
     }
     if (self->fillScreen != 0) {
         PaintCanvas *pc = *g_dfCanvasB;
-        unsigned saved = PaintCanvas_GetColor(pc);
-        PaintCanvas_SetColor(0xff);
-        PaintCanvas_FillRectangle(*g_dfCanvasB, 0, 0, **g_dfDimB);
-        PaintCanvas_SetColor(saved);
+        unsigned saved = ((PaintCanvas*)(pc))->GetColor();
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xff);
+        ((PaintCanvas*)(*g_dfCanvasB))->FillRectangle(0, 0, **g_dfDimB, 0);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
     }
     return self->fading;
 }
 
 // ---- drawBox_d4384.cpp ----
-struct PaintCanvas;
 
 // 0x74e00
 extern "C" void Layout_drawBGBorder8(Layout *self, unsigned a, unsigned b, int x,
@@ -983,134 +961,133 @@ __attribute__((visibility("hidden"))) extern void **g_dbFont7;          // @0xe4
 void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned flags) {
     Layout *self = this;
     PaintCanvas *pc = *g_dbCanvas;
-    unsigned saved = PaintCanvas_GetColor(pc);
-    PaintCanvas_SetColor(self->drawColor);
+    unsigned saved = ((PaintCanvas*)(pc))->GetColor();
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
 
     switch (style) {
     case 0: {
-        int iw = PaintCanvas_GetImage2DWidth(self->field_0x348);
-        PaintCanvas_DrawImage2D3(pc, self->field_0x348, x, y);
+        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->field_0x348);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x348, x, y);
         ((Layout *)(self))->drawBGPattern(self->field_0x34c, iw + x, y, w + iw * -2, h);
-        PaintCanvas_DrawImage2D5(pc, self->field_0x348, (w + x) - iw, y, 0x01);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x348, (w + x) - iw, y, (unsigned char)(0x01));
         if (*(int *)((char *)text + 8) == 0) break;
         int *mt = *g_dbMetric0;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = PaintCanvas_GetTextWidth(*(unsigned *)g_dbCanvas, *g_dbFont0c);
+                int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0c), (void *)0);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = PaintCanvas_GetTextWidth(*(unsigned *)g_dbCanvas, *g_dbFont0r);
+            int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0r), (void *)0);
             tx = (w - tx) - tw;
         }
         int ty = (y + (mt[0x1c / 4] >> 1) + 1) - self->field_0x3ac;
-        PaintCanvas_DrawString(*(unsigned *)g_dbCanvas, *g_dbFont0, text, tx + x, ty);
+        ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont0), text, tx + x, ty, false);
         break;
     }
     case 1: {
-        int iw = PaintCanvas_GetImage2DWidth(self->field_0x350);
-        PaintCanvas_DrawImage2D3(pc, self->field_0x350, x, y);
+        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->field_0x350);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x350, x, y);
         ((Layout *)(self))->drawBGPattern(self->field_0x354, iw + x, y, w + iw * -2, h);
-        PaintCanvas_DrawImage2D5(pc, self->field_0x350, (w + x) - iw, y, 0x01);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x350, (w + x) - iw, y, (unsigned char)(0x01));
         if (*(int *)((char *)text + 8) == 0) break;
         int *mt = *g_dbMetric1;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = PaintCanvas_GetTextWidth(*(unsigned *)g_dbCanvas, *g_dbFont1c);
+                int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1c), (void *)0);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = PaintCanvas_GetTextWidth(*(unsigned *)g_dbCanvas, *g_dbFont1r);
+            int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1r), (void *)0);
             tx = (w - tx) - tw;
         }
         int ty = (y + (mt[0x5c / 4] >> 1) + 1) - self->field_0x3ac;
-        PaintCanvas_DrawString(*(unsigned *)g_dbCanvas, *g_dbFont1, text, tx + x, ty);
+        ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont1), text, tx + x, ty, false);
         break;
     }
     case 2:
         ((Layout *)(self))->drawBGPattern(self->bgPatternImage, x, y, w, h);
         break;
     case 3: {
-        int iw = PaintCanvas_GetImage2DWidth(self->field_0x358);
-        PaintCanvas_DrawImage2D3(pc, self->field_0x358, x, y);
+        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->field_0x358);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x358, x, y);
         ((Layout *)(self))->drawBGPattern(self->field_0x35c, iw + x, y, w + iw * -2, h);
-        PaintCanvas_DrawImage2D5(pc, self->field_0x358, (w + x) - iw, y, 0x01);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x358, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     case 4: {
-        int iw = PaintCanvas_GetImage2DWidth(self->field_0x36c);
-        PaintCanvas_DrawImage2D3(pc, self->field_0x36c, x, y);
+        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->field_0x36c);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x36c, x, y);
         ((Layout *)(self))->drawBGPattern(self->field_0x370, iw + x, y, w + iw * -2, h);
-        PaintCanvas_DrawImage2D5(pc, self->field_0x36c, (w + x) - iw, y, 0x01);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x36c, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     case 5:
         Layout_drawBGBorder6(self, self->field_0x380, self->field_0x384, x, y, w);
         break;
     case 6: {
-        int iw = PaintCanvas_GetImage2DWidth(self->field_0x388);
-        PaintCanvas_DrawImage2D3(pc, self->field_0x388, x, y);
+        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->field_0x388);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x388, x, y);
         ((Layout *)(self))->drawBGPattern(self->field_0x38c, iw + x, y, w + iw * -2, h);
-        PaintCanvas_DrawImage2D5(pc, self->field_0x388, (w + x) - iw, y, 0x01);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x388, (w + x) - iw, y, (unsigned char)(0x01));
         if (*(int *)((char *)text + 8) == 0) break;
         int *mt = *g_dbMetric6;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = PaintCanvas_GetTextWidth(*(unsigned *)g_dbCanvas, *g_dbFont6c);
+                int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6c), (void *)0);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = PaintCanvas_GetTextWidth(*(unsigned *)g_dbCanvas, *g_dbFont6r);
+            int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6r), (void *)0);
             tx = (w - tx) - tw;
         }
         int ty = (y + (h >> 1) + 1) - self->field_0x3ac;
-        PaintCanvas_DrawString(*(unsigned *)g_dbCanvas, *g_dbFont6, text, tx + x, ty);
+        ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont6), text, tx + x, ty, false);
         break;
     }
     case 7: {
         int *mt = *g_dbMetric7;
         int hdr = mt[8 / 4];
         ((Layout *)(self))->drawBGPattern(self->bgPatternImage, x, hdr + y, w, h - hdr);
-        int ih = PaintCanvas_GetImage2DHeight(self->field_0x394);
+        int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(self->field_0x394);
         Layout_drawBGBorder8(self, self->field_0x390, self->field_0x394,
                              x, hdr + y, w, h - hdr, -ih, -ih);
         if (*(int *)((char *)text + 8) == 0) break;
-        PaintCanvas_SetColor(0xffffffff);
-        PaintCanvas_DrawImage2D3(pc, self->field_0x32c, x, y);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x32c, x, y);
         int ty = (y + (mt[8 / 4] / 2) + 1) - self->field_0x3ac;
-        PaintCanvas_DrawString(*(unsigned *)g_dbCanvas, *g_dbFont7, text,
-                               mt[0x28 / 4] + x, ty);
+        ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont7), text,
+                               mt[0x28 / 4] + x, ty, false);
         break;
     }
     case 8:
         Layout_drawBGBorder6(self, self->field_0x39c, self->field_0x3a0, x, y, w);
         break;
     case 9: {
-        int iw = PaintCanvas_GetImage2DWidth(self->field_0x360);
-        PaintCanvas_DrawImage2D3(pc, self->field_0x360, x, y);
+        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->field_0x360);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x360, x, y);
         ((Layout *)(self))->drawBGPattern(self->field_0x364, iw + x, y, w + iw * -2, h);
-        PaintCanvas_DrawImage2D5(pc, self->field_0x360, (w + x) - iw, y, 0x01);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x360, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     case 10: {
-        int iw = PaintCanvas_GetImage2DWidth(self->field_0x368);
-        PaintCanvas_DrawImage2D3(pc, self->field_0x368, x, y);
+        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->field_0x368);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x368, x, y);
         ((Layout *)(self))->drawBGPattern(self->field_0x370, iw + x, y, w + iw * -2, h);
-        PaintCanvas_DrawImage2D5(pc, self->field_0x368, (w + x) - iw, y, 0x01);
+        ((PaintCanvas*)(pc))->DrawImage2D(self->field_0x368, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     default:
         break;
     }
 
-    PaintCanvas_restoreColor(*(unsigned *)g_dbCanvas, saved);
+    ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->SetColor(saved);
 }
 
 // ---- drawWindow_d3780.cpp ----
-struct PaintCanvas;
 
 // 0x74e00
 // Color-restore tail helper @0x1ac088.
@@ -1126,26 +1103,26 @@ __attribute__((visibility("hidden"))) extern void ***g_dwFont;          // @0xe3
 void Layout::drawWindow7(void *title, int x, int y, int w, int h, int drawBG) {
     Layout *self = this;
     PaintCanvas *pc = *g_dwCanvas;
-    unsigned saved = PaintCanvas_GetColor(pc);
+    unsigned saved = ((PaintCanvas*)(pc))->GetColor();
     if (drawBG != 0) {
         int top = (*g_dwBorderTop)[8 / 4];
         ((Layout *)(self))->drawBGPattern(self->bgPatternImage, x, top + y, w, h - top);
     }
-    PaintCanvas_SetColor(*(unsigned *)g_dwCanvas);  // *puVar3 (the color int slot)
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)g_dwCanvas);  // *puVar3 (the color int slot)
     int *m = *g_dwMetric;
     int top = m[8 / 4];
-    PaintCanvas_DrawRectangle(*g_dwCanvas, x, top + y, w, h - top);
-    PaintCanvas_SetColor(self->drawColor);
-    PaintCanvas_DrawImage2D3(*g_dwCanvas, self->field_0x32c, x);
+    ((PaintCanvas*)(*g_dwCanvas))->DrawRectangle(x, top + y, w, h - top);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
+    ((PaintCanvas*)(*g_dwCanvas))->DrawImage2D(self->field_0x32c, x, 0);
     if (*(int *)((char *)title + 8) != 0 &&
         AbyssString_Compare(title, g_dwCmpLit) == 0) {
         int *mm = *g_dwMetric;
         int half = mm[8 / 4];
         half += half >> 31;
         int ty = (y + (half >> 1) + 1) - self->field_0x3ac;
-        PaintCanvas_DrawString(*g_dwCanvas, **g_dwFont, title, mm[0x28 / 4] + x, ty);
+        ((PaintCanvas*)(*g_dwCanvas))->DrawString((unsigned)(unsigned long)(**g_dwFont), title, mm[0x28 / 4] + x, ty, false);
     }
-    PaintCanvas_restoreColor(*g_dwCanvas, saved);
+    ((PaintCanvas*)(*g_dwCanvas))->SetColor(saved);
 }
 
 // ---- drawBox_d48f0.cpp ----
@@ -1162,7 +1139,6 @@ void Layout::drawBox6(int p2, int p3, int p4, int p5, int p6, const void *str) {
 }
 
 // ---- drawTip_d4a14.cpp ----
-struct PaintCanvas;
 
 extern "C" void Layout_drawBoxStr(PaintCanvas *pc, int p2, int x, int y,
                                int w, int h, void *str);                   // 0x7462c
@@ -1183,7 +1159,7 @@ void Layout::drawTip() {
     int *guard = g_dtGuard;
     int g0 = *guard;
     if (self->tipLines != 0) {
-        PaintCanvas_SetColor(*g_dtColor);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(*g_dtColor);
         int *mA = *g_dtMetricA;
         int dimW = *g_dtDimW;
         int dimH = *g_dtDimH;
@@ -1195,8 +1171,8 @@ void Layout::drawTip() {
                        (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box);
         ((String *)(box))->dtor();
 
-        PaintCanvas_DrawImage2D5((PaintCanvas *)*g_dtColor, self->tipBoxImage,
-                                 dimH >> 1, (dimW >> 1) + 0x3f, 0x11);
+        ((PaintCanvas*)((PaintCanvas *)*g_dtColor))->DrawImage2D(self->tipBoxImage,
+                                 dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char)(0x11));
 
         int lineCount = *self->tipLines;
         int y = (dimW >> 1) + 0x3f - ((lineCount * mA[4 / 4]) >> 1);
@@ -1337,7 +1313,6 @@ void Layout_tagString(void *out, const void *in) {
 }
 
 // ---- reload_d2c20.cpp ----
-struct PaintCanvas;
 struct TouchButton;
 
 extern "C" void __aeabi_memset4(void *dst, int n, int v);                // 0x74d94
@@ -1419,7 +1394,7 @@ void Layout::reload() {
 
     // Secondary button (image if available, else string fallback).
     unsigned img535 = 0xffffffff;
-    PaintCanvas_Image2DCreate((PaintCanvas *)*g_rlCanvas, 0x535, &img535);
+    ((PaintCanvas*)((PaintCanvas *)*g_rlCanvas))->Image2DCreate(0x535, &img535);
     TouchButton *b2 = (TouchButton *)::operator new(200);
     if (img535 == 0xffffffff) {
         void *t = gGameText->obj->getText(*g_rlBackText);
@@ -1433,12 +1408,12 @@ void Layout::reload() {
 
     // Help button (image).
     unsigned img471 = 0xffffffff;
-    PaintCanvas_Image2DCreate((PaintCanvas *)*g_rlCanvas, 0x471, &img471);
+    ((PaintCanvas*)((PaintCanvas *)*g_rlCanvas))->Image2DCreate(0x471, &img471);
     TouchButton *bHelp = (TouchButton *)::operator new(200);
     TouchButton_ctorImg2(bHelp, img471, 1, *g_rlMenuY, 0, self->field_0x3c, 0x12, 0x04);
     self->helpButton = bHelp;
 
-    int th = PaintCanvas_GetTextHeight(*g_rlCanvas);
+    int th = ((PaintCanvas*)(*g_rlCanvas))->GetTextHeight(0);
     self->choiceWindowOpen = 0;
     self->choiceWindow = 0;
     self->tipLines = 0;
@@ -1460,7 +1435,6 @@ void Layout::reload() {
 }
 
 // ---- drawFooter_d3c3c.cpp ----
-struct PaintCanvas;
 struct TouchButton;
 struct Status;
 struct Ship;
@@ -1484,24 +1458,24 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     int *guard = g_dfGuard;
     int g0 = *guard;
     PaintCanvas *pc = *g_dfCanvas;
-    PaintCanvas_SetColor(self->drawColor);
-    int wRight = PaintCanvas_GetImage2DWidth(self->footerImageRight);
-    int wLeft = PaintCanvas_GetImage2DWidth(self->footerImageLeft);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
+    int wRight = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->footerImageRight);
+    int wLeft = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(self->footerImageLeft);
 
-    PaintCanvas_DrawImage2D5(pc, self->footerImageLeft, self->windowX,
-                             self->windowY + self->windowHeight, 0x11);
+    ((PaintCanvas*)(pc))->DrawImage2D(self->footerImageLeft, self->windowX,
+                             self->windowY + self->windowHeight, (unsigned char)(0x11));
     int *m = *g_dfMetric;
     int footerH = m[0x10 / 4];
-    PaintCanvas_DrawImage2D3(pc, self->footerImageRight, self->windowX + wLeft,
+    ((PaintCanvas*)(pc))->DrawImage2D(self->footerImageRight, self->windowX + wLeft,
                              (self->windowY + self->windowHeight) - footerH);
     int both = wLeft + wRight;
     ((Layout *)(self))->drawBGPattern(self->field_0x338, both + self->windowX, (self->windowY + self->windowHeight) - footerH, self->windowWidth + both * -2, footerH);
-    PaintCanvas_DrawImage2D5(pc, self->footerImageRight,
+    ((PaintCanvas*)(pc))->DrawImage2D(self->footerImageRight,
                              (self->windowX - both) + self->windowWidth,
-                             (self->windowHeight + self->windowY) - footerH, 0x01);
-    PaintCanvas_DrawImage2D5(pc, self->footerImageLeft,
+                             (self->windowHeight + self->windowY) - footerH, (unsigned char)(0x01));
+    ((PaintCanvas*)(pc))->DrawImage2D(self->footerImageLeft,
                              (self->windowX - wRight) + self->windowWidth,
-                             (self->windowHeight + self->windowY) - footerH, 0x01);
+                             (self->windowHeight + self->windowY) - footerH, (unsigned char)(0x01));
 
     int backVis = (!stationMode) && showBack;
     ((TouchButton *)(self->backButton))->setVisible(backVis);
@@ -1517,7 +1491,7 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     ((Status *)(*gStatus))->getShip();
     int maxLoad = Ship_getMaxLoad(((Status *)(*gStatus))->getShip());
     if (maxLoad < load)
-        PaintCanvas_SetColor(*(unsigned *)&g_dfWarnColor);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_dfWarnColor);
 
     ((Status *)(*gStatus))->getShip();
     int cur = Ship_getCurrentLoad(((Status *)(*gStatus))->getShip());
@@ -1551,11 +1525,11 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
         int w = self->windowWidth;
         void *font = *g_dfFont;
         unsigned cv = *(unsigned *)g_dfCanvas;
-        int tw = PaintCanvas_GetTextWidth(cv, font);
-        PaintCanvas_DrawString(cv, font, loadStr, (x + w / 2) - tw / 2,
-                               (self->windowHeight + self->windowY) - self->field_0x14);
+        int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+        ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), loadStr, (x + w / 2) - tw / 2,
+                               (self->windowHeight + self->windowY) - self->field_0x14, false);
     }
-    PaintCanvas_SetColor(self->drawColor);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
 
     int credits = ((Status *)(*gStatus))->getCredits();
     unsigned char credStr[sizeof(String12)] __attribute__((aligned(4)));  // aSStack_40
@@ -1568,13 +1542,13 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
         unsigned cv = *(unsigned *)g_dfCanvas;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
-            int tw = PaintCanvas_GetTextWidth(cv, font);
-            PaintCanvas_DrawString(cv, font, credStr, ((w + x) - rightInset) - tw / 2,
-                                   (self->windowHeight + self->windowY) - self->field_0x14);
+            int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+            ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), credStr, ((w + x) - rightInset) - tw / 2,
+                                   (self->windowHeight + self->windowY) - self->field_0x14, false);
         } else {
-            int tw = PaintCanvas_GetTextWidth(cv, font);
-            PaintCanvas_DrawString(cv, font, credStr, (w + x - 10) - tw,
-                                   (self->windowHeight + self->windowY) - self->field_0x14);
+            int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+            ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), credStr, (w + x - 10) - tw,
+                                   (self->windowHeight + self->windowY) - self->field_0x14, false);
         }
     }
 
@@ -1603,7 +1577,6 @@ void Layout::drawFooterStation() {
 }
 
 // ---- drawHeader_d4100.cpp ----
-struct PaintCanvas;
 
 // 0x74e00
 // Header transition tail helper @0x1ac0a8.
@@ -1617,22 +1590,22 @@ __attribute__((visibility("hidden"))) extern void ***g_dhFont;      // @0xe41ac
 void Layout::drawHeader7(void *title, int transition) {
     Layout *self = this;
     unsigned img = *g_dhColor;
-    PaintCanvas_SetColor(self->drawColor);
-    int iw = PaintCanvas_GetImage2DWidth(img);
-    int ih = PaintCanvas_GetImage2DHeight(img);
-    PaintCanvas_DrawImage2D3((PaintCanvas *)img, self->field_0x330,
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
+    int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(img);
+    int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(img);
+    ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->field_0x330,
                              self->windowX, self->windowY);
     ((Layout *)(self))->drawBGPattern(self->field_0x328, self->windowX + iw, self->windowY, self->windowWidth + iw * -2, ih);
-    PaintCanvas_DrawImage2D9((PaintCanvas *)img, self->field_0x330,
+    ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->field_0x330,
                              self->windowWidth + self->windowX,
-                             self->windowY, iw, ih, 0x11, 0x12, 0x01);
+                             self->windowY, iw, ih, (unsigned char)(0x11), (unsigned char)(0x12), (unsigned char)(0x01));
     if (*(int *)((char *)title + 8) != 0) {
-        PaintCanvas_DrawImage2D3((PaintCanvas *)img, self->field_0x32c,
+        ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->field_0x32c,
                                  self->windowX, self->windowY);
         int *m = *g_dhMetric;
-        PaintCanvas_DrawString((PaintCanvas *)img, **g_dhFont, title,
+        ((PaintCanvas*)((PaintCanvas *)img))->DrawString((unsigned)(unsigned long)(**g_dhFont), title,
                                m[0x28 / 4] + m[0x44 / 4] + self->windowX,
-                               self->field_0x18 + self->windowY);
+                               self->field_0x18 + self->windowY, false);
     }
     self->helpButtonEnabled = (uint8_t)transition;
     if (transition != 0 && self->choiceWindowOpen == 0) {
@@ -1655,7 +1628,6 @@ void Layout::drawWindow1(const void *param) {
 }
 
 // ---- drawMissionRewardMessage_d4d74.cpp ----
-struct PaintCanvas;
 
 extern "C" void Layout_drawBoxStr(PaintCanvas *pc, int p2, int x, int y,
                                int w, int h, void *str);                   // 0x7462c
@@ -1679,9 +1651,9 @@ void Layout::drawMissionRewardMessage(int transition) {
     int g0 = *guard;
     if (self->rewardMessageActive != 0) {
         PaintCanvas *pc = *g_mrCanvas;
-        unsigned saved = PaintCanvas_GetColor(pc);
+        unsigned saved = ((PaintCanvas*)(pc))->GetColor();
         unsigned origColor = self->drawColor;
-        PaintCanvas_SetColor(0xffffffff);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
 
         // Pulse alpha based on field 0x3d0 (animation timer).
         int t = self->rewardMessageTimer;
@@ -1694,9 +1666,9 @@ void Layout::drawMissionRewardMessage(int transition) {
             a = 1.0f;
         }
         unsigned col = (unsigned)((int)(a * 256.0f)) - 0x100;
-        PaintCanvas_SetColor(col);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(col);
 
-        unsigned newColor = PaintCanvas_GetColor(pc);
+        unsigned newColor = ((PaintCanvas*)(pc))->GetColor();
         int boxW = self->field_0x3e8;
         int boxH = self->field_0x3ec;
         int boxX = self->field_0x3f0;
@@ -1718,8 +1690,8 @@ void Layout::drawMissionRewardMessage(int transition) {
         }
 
         int sh = *g_mrDimB;
-        PaintCanvas_DrawImage2D5(*g_mrCanvas, self->field_0x3a4, sh >> 1,
-                                 (char)boxX, 0x11);
+        ((PaintCanvas*)(*g_mrCanvas))->DrawImage2D(self->field_0x3a4, sh >> 1,
+                                 (char)boxX, (unsigned char)(0x11));
 
         void *txt = gGameText->obj->getText(*g_mrTextId);
         unsigned char line[sizeof(String12)] __attribute__((aligned(4)));
@@ -1728,8 +1700,8 @@ void Layout::drawMissionRewardMessage(int transition) {
         sh = *g_mrDimB;
         void *font = *g_mrFont;
         unsigned cv = *(unsigned *)g_mrCanvas;
-        int tw = PaintCanvas_GetTextWidth(cv, font);
-        PaintCanvas_DrawString(cv, font, line, (sh >> 1) - (tw >> 1), boxX + boxY);
+        int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+        ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
 
         unsigned char suffix[sizeof(String12)] __attribute__((aligned(4)));
         String_cstr_ctor(suffix, g_mrLit2, false);
@@ -1744,10 +1716,10 @@ void Layout::drawMissionRewardMessage(int transition) {
 
         sh = *g_mrDimB;
         cv = *(unsigned *)g_mrCanvas;
-        tw = PaintCanvas_GetTextWidth(cv, font);
-        PaintCanvas_DrawString(cv, font, line, (sh >> 1) - (tw >> 1),
-                               self->field_0x3f8 + boxX);
-        PaintCanvas_SetColor(saved);
+        tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+        ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1),
+                               self->field_0x3f8 + boxX, false);
+        ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
         self->drawColor = origColor;
         ((String *)(line))->dtor();
     }

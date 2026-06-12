@@ -1,5 +1,6 @@
 #include "gof2/RepairBeam.h"
 #include "gof2/AEGeometry.h"
+#include "gof2/PaintCanvasClass.h"
 
 
 extern "C" int RepairBeam_Status_getShip();
@@ -49,7 +50,6 @@ extern "C" void RB_AEGeometry_setPosition(void *geom, Vector *pos);
 extern "C" void RB_AEGeometry_setScaling(float x, float y, float z);
 extern "C" float RB_PlayerEgo_GetDirVector();
 extern "C" float RB_PlayerEgo_GetUpVector();
-extern "C" long long RB_PaintCanvas_TransformGetTransform(void *canvas);
 extern "C" void RB_Transform_Update(long long t, bool b);
 extern "C" int RB_FModSound_isPlaying(int snd);
 extern "C" void RB_FModSound_play(int snd, void *ev, void *p, float f);
@@ -298,7 +298,8 @@ void RepairBeam::update(int dt, void *level, void *hud) {
             for (unsigned i = 0; i < (unsigned)targetCount(self); i = i + 1) {
                 if (((int *)targetIds(self)[1])[off / 4] != -1 &&
                     *(int *)((char *)((int *)targetIds(self)[1]) + off) != -1) {
-                    long long t = RB_PaintCanvas_TransformGetTransform(*canvas);
+                    long long t = (long long)((PaintCanvas *)*canvas)->TransformGetTransform(
+                        ((AEGeometry *)((void **)self->field_0x10[1])[off / 4])->transform);
                     RB_Transform_Update(t, (bool)dt);
                     Vector tmp;
                     RB_Player_getPosition(&tmp);
@@ -369,7 +370,8 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                     RB_PlayerEgo_getPosition(&ndir);
                     RB_AEGeometry_setPosition(geo2, &ndir);
 
-                    long long t2 = RB_PaintCanvas_TransformGetTransform(*canvas);
+                    long long t2 = (long long)((PaintCanvas *)*canvas)->TransformGetTransform(
+                        ((AEGeometry *)((void **)self->field_0x10[1])[off / 4])->transform);
                     RB_Transform_Update(t2, (bool)dt);
 
                     if (self->field_0x1c == 0x29) {

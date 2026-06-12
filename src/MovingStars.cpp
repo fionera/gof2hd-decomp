@@ -1,10 +1,9 @@
 #include "gof2/MovingStars.h"
+#include "gof2/PaintCanvas.h"
 
+using AbyssEngine::PaintCanvas;
 
 extern "C" int MovingStars_kSpawnI_value;
-extern "C" void PaintCanvas_SetTexture(void *canvas, uint32_t texture, uint32_t mode);
-extern "C" void PaintCanvas_SetBlendMode(void *canvas, int mode);
-extern "C" void PaintCanvas_DrawTransform(void *canvas, uint32_t tf, int z);
 
 // ---- _MovingStars_146190.cpp ----
 // MovingStars::~MovingStars() -> delete[] four arrays in order 0x0,0x4,0xc,0x10; returns this.
@@ -254,9 +253,9 @@ __attribute__((visibility("hidden"))) extern void **g_MovingStars_canvas_render;
 void MovingStars::render()
 {
     void **canvas = g_MovingStars_canvas_render;
-    PaintCanvas_SetTexture(*canvas, this->textureHandle, 0xffffffff);
-    PaintCanvas_SetBlendMode(*canvas, 1);
+    ((PaintCanvas*)*canvas)->SetTexture(this->textureHandle, 0xffffffff);
+    ((PaintCanvas*)*canvas)->SetBlendMode(1);
     for (int i = 0; i != 0x32; i = i + 1) {
-        PaintCanvas_DrawTransform(*canvas, this->transformHandles[i], 0);
+        ((PaintCanvas*)*canvas)->DrawTransform(this->transformHandles[i], (const float*)0);
     }
 }

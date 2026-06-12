@@ -1,26 +1,23 @@
+// The PaintCanvas methods now live on the real ::PaintCanvas class (lean header).
+// ParticleSystemSprite.h / IParticleSystem.h forward-declare AbyssEngine::PaintCanvas
+// only as an opaque pointer type (never dereferenced here), which would clash with the
+// lean header's `using ::PaintCanvas`. Rename that opaque forward-decl in those two
+// headers to a private tag so the real ::PaintCanvas class can be used for the calls.
+#define PaintCanvas AE_PaintCanvasOpaque
 #include "gof2/ParticleSystemSprite.h"
 #include "gof2/IParticleSystem.h"
+#undef PaintCanvas
+#include "gof2/PaintCanvasClass.h"
+#include "gof2/externs.h"
 
 
 extern "C" char ParticleSystemSprite_vtable;
 extern "C" void *ParticleSystemSprite_baseDtor(void *self);
-extern "C" void PaintCanvas_SetTexture(unsigned int canvas, unsigned int texture);
-extern "C" void PaintCanvas_SetBlendMode(void *canvas, int blend);
-extern "C" void PaintCanvas_SetWorldViewMatrix(void *canvas, const void *matrix);
-extern "C" void PaintCanvas_DrawSpriteSystem(unsigned int canvas);
 extern "C" void *memset(void *, int, unsigned long);
 extern "C" char _ZTV20ParticleSystemSprite[];
 extern "C" float VectorSignedToFloat(int v, unsigned char mode);
-extern "C" void  PaintCanvas_SpriteSystemSetPosition(unsigned int h, unsigned short id, float x, float y, float z);
-extern "C" void  PaintCanvas_SpriteSystemAddSize(unsigned int h, unsigned short id, short d);
-extern "C" void  PaintCanvas_SpriteSystemAddPosition(unsigned int h, unsigned short id, float x, float y, float z);
-extern "C" void  PaintCanvas_SpriteSystemSetRGBA(unsigned int h, unsigned short id, float r, float g, float b, float a);
-extern "C" void  PaintCanvas_SpriteSystemSetUv(unsigned int h, unsigned short id, float u0, float v0, float u1, float v1);
 extern "C" void ParticleSystem_updateAreaExitParticleImpl(void *self, int param_1, float param_2);
-extern "C" void PaintCanvas_SpriteSystemSetSize(unsigned int handle, unsigned short id, short size);
 extern "C" float VectorUnsignedToFloat(unsigned int v, unsigned char mode);
-extern "C" void  PaintCanvas_CameraGetCurrent();
-extern "C" float *PaintCanvas_CameraGetLocal(unsigned int canvas);
 
 // ---- _ParticleSystemSprite_182c58.cpp ----
 // Complete object destructor (D1): set vtable, run release(), tail-call base dtor.
@@ -37,10 +34,10 @@ void *_ZN20ParticleSystemSpriteD1Ev(void *self)
 void ParticleSystemSprite::reset()
 {
     for (int i = 0; i < this->particleCount; i++) {
-        PaintCanvas_SpriteSystemSetPosition(this->canvasHandle,
+        ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetPosition(this->canvasHandle, 
                                             (unsigned short)(this->idOffset + i),
                                             4294967296.0f, 4294967296.0f, 4294967296.0f);
-        PaintCanvas_SpriteSystemSetSize(this->canvasHandle,
+        ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetSize(this->canvasHandle, 
                                         (unsigned short)(this->idOffset + i), 0);
         this->ages[i] = 0xffffffff;
     }
@@ -86,8 +83,8 @@ void ParticleSystemSprite::render(void *canvas, int handle, unsigned int texture
     if (handle == -1)
         return;
 
-    PaintCanvas_SetTexture((unsigned int)(unsigned long)canvas, texture);
-    PaintCanvas_SetBlendMode(canvas, blend);
+    ((PaintCanvas*)(long)canvas)->SetTexture(texture, 0);
+    ((PaintCanvas*)(long)canvas)->SetBlendMode(blend);
 
     // Identity affine transform (3x4 rows + trailing vector).
     float m[16];
@@ -107,8 +104,8 @@ void ParticleSystemSprite::render(void *canvas, int handle, unsigned int texture
     m[13] = kIdentTail[3];
     m[14] = 1.0f;       // local_20
 
-    PaintCanvas_SetWorldViewMatrix(canvas, m);
-    PaintCanvas_DrawSpriteSystem((unsigned int)(unsigned long)canvas);
+    ((PaintCanvas*)(long)canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)m);
+    ((PaintCanvas*)(long)canvas)->DrawSpriteSystem((unsigned int)(unsigned long)canvas);
 }
 
 // ---- ParticleSystemSprite_182b88.cpp ----
@@ -177,18 +174,18 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
     int lifetime = *(int *)(set + 0x28);
     if ((int)age > lifetime) {
         ages[index] = -1;
-        PaintCanvas_SpriteSystemSetPosition(handle, id, age, 0.0f, 0.0f);
+        ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetPosition(handle, id, age, 0.0f, 0.0f);
         return;
     }
 
     // Grow size.
     VectorSignedToFloat(*(int *)(set + 0x44), 0);
-    PaintCanvas_SpriteSystemAddSize(handle, id, (short)this->idOffset + (short)index);
+    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemAddSize(handle, id, (short)this->idOffset + (short)index);
 
     // Color.
     float ca, cr, cg, cb;
     ((IParticleSystem *)(this))->interpolateColor(index, &ca, &cr, &cg, &cb);
-    PaintCanvas_SpriteSystemSetRGBA(handle, id, cg, 0.0f, cb, 0.0f);
+    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetRGBA(handle, id, cg, 0.0f, cb, 0.0f);
 
     // UV flipbook animation (when the set has frames at +0x9c).
     int frames = *(int *)(set + 0x9c);
@@ -220,13 +217,13 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
             if ((int)((unsigned int)this->flags2 << 0x1e) < 0)
                 out = ((IParticleSystem *)(this))->rotateUVs(uv, index, uvRot);
 
-            PaintCanvas_SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
+            ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
         }
     }
 
     // Integrate velocity into position.
     float pos[4] = { 0, 0, 0, 0 };
-    PaintCanvas_SpriteSystemAddPosition(handle, id, pos[1], 0.0f, pos[2]);
+    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemAddPosition(handle, id, pos[1], 0.0f, pos[2]);
 }
 
 // ---- setAlpha_183028.cpp ----
@@ -250,7 +247,7 @@ void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float par
         c3 = c3 * param_3;
     }
 
-    PaintCanvas_SpriteSystemSetRGBA(this->canvasHandle,
+    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetRGBA(this->canvasHandle, 
                                     (unsigned short)(this->idOffset + param_1),
                                     c3, c2, c1, c0);
 }
@@ -288,13 +285,13 @@ void ParticleSystemSprite::setParticle(const void *pos, float p2, unsigned int c
     unsigned short id = (unsigned short)this->spriteId;
 
     const float *posv = (const float *)pos;
-    PaintCanvas_SpriteSystemSetPosition(handle, id, posv[1], p4, posv[2]);
+    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetPosition(handle, id, posv[1], p4, posv[2]);
 
     short size = (short)this->baseSize + (short)this->idOffset;
-    PaintCanvas_SpriteSystemSetSize(handle, id, size);
+    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetSize(handle, id, size);
 
     const float *uvv = (const float *)uv;
-    PaintCanvas_SpriteSystemSetUv(handle, id, uvv[0], uvv[1], uvv[2], uvv[3]);
+    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetUv(handle, id, uvv[0], uvv[1], uvv[2], uvv[3]);
 
     if (clearColor)
         color &= 0xffffff00;
@@ -305,7 +302,7 @@ void ParticleSystemSprite::setParticle(const void *pos, float p2, unsigned int c
     float r = VectorUnsignedToFloat((color & 0xffffff) >> 0x10, 0);
     (void)a; (void)b; (void)g;
 
-    PaintCanvas_SpriteSystemSetRGBA(handle, id, r * g_colorScale, g, g_colorScale, b);
+    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetRGBA(handle, id, r * g_colorScale, g, g_colorScale, b);
 }
 
 // ---- render_18347c.cpp ----
@@ -314,27 +311,19 @@ void ParticleSystemSprite::setParticle(const void *pos, float p2, unsigned int c
 // the active camera between the two queries) and forwards both 15-float matrices to the
 // sprite-system draw entry. A handle of 0xffffffff means "no system" and is skipped.
 
-extern "C" void  PaintCanvas_DrawSpriteSystemCam(
-    void *canvas, unsigned int handle,
-    float a00, float a01, float a02, float a03, float a04, float a05, float a06, float a07,
-    float a08, float a09, float a10, float a11, float a12, float a13, float a14,
-    float b00, float b01, float b02, float b03, float b04, float b05, float b06, float b07,
-    float b08, float b09, float b10, float b11, float b12, float b13, float b14);
-
 void ParticleSystemSprite::render(void *canvas, unsigned int handle)
 {
     if (handle == 0xffffffffu)
         return;
 
-    PaintCanvas_CameraGetCurrent();
-    float *a = PaintCanvas_CameraGetLocal((unsigned int)(unsigned long)canvas);
+    PaintCanvas *pc = (PaintCanvas *)(long)canvas;
+
+    float *a = (float *)pc->CameraGetLocal(pc->CameraGetCurrent());
     float a0=a[0],a1=a[1],a2=a[2],a3=a[3],a4=a[4],a5=a[5],a6=a[6],a7=a[7];
     float a8=a[8],a9=a[9],a10=a[10],a11=a[11],a12=a[12],a13=a[13],a14=a[14];
+    float am[15]={a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14};
 
-    PaintCanvas_CameraGetCurrent();
-    float *b = PaintCanvas_CameraGetLocal((unsigned int)(unsigned long)canvas);
+    float *b = (float *)pc->CameraGetLocal(pc->CameraGetCurrent());
 
-    PaintCanvas_DrawSpriteSystemCam(canvas, handle,
-        a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,
-        b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14]);
+    pc->DrawSpriteSystem(handle, am, b);
 }

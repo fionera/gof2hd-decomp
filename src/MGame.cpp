@@ -63,6 +63,8 @@
 #undef B
 #include "gof2/PlayerFixedObject.h"
 #include "gof2/Status.h"
+#include "gof2/PaintCanvasClass.h"
+extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
 // The Status singleton. The original 0-argument Status_* calls below loaded this global and
 // invoked the corresponding instance method; the decompiler dropped the implicit receiver.
@@ -87,7 +89,6 @@ typedef AbyssEngine::Transform TransformFull;
 
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void Music_resume(Music *m, int one, int v);
-extern "C" void PaintCanvas_End3d(unsigned color);
 extern "C" void PlayerEgo_syncFirstPerson(PlayerEgo *p, int v);
 // PlayerEgo.h (owned by another batch) declares these as returning void, but the
 // callers below consume their (int) result. Use the original free-function form
@@ -110,7 +111,6 @@ extern "C" void MGame_tick(MGame *self, int frameDeltaMs);
 extern "C" void MGame_buildDockChoice(MGame *self, int textId, int prefixLit, int suffixLit);
 extern "C" void MGame_opdelete(void *p);
 extern "C" int SolarSystem_getTextureIndex(void *ss);
-extern "C" void PaintCanvas_ChangeCubeTexture(unsigned tex);
 void Globals_startNewSoundResourceList();
 void Globals_addSoundResourceToList(int list);
 extern "C" void Player_setShieldHP(Player *p, int hp);
@@ -209,9 +209,7 @@ void MGame::maneuverTouchBegin(int x, int y) {
 
 // ---- OnRender3D_180dcc.cpp ----
 
-extern "C" void PaintCanvas_ClearBuffer(unsigned color);  // 0x71d94
 // 0x72214
-extern "C" void PaintCanvas_Begin3d();  // 0x71da0
 // 0x7222c
 // 0x78730
 // 0x72238
@@ -227,7 +225,7 @@ void MGame::OnRender3D() {
     MGame *self = this;
     if (self->field_0x54 == 0) return;
     unsigned canvas = *g_r3dCanvas;
-    PaintCanvas_ClearBuffer(canvas);
+    ((PaintCanvas*)(long)canvas)->ClearBuffer(0);
 
     uint8_t inMenuLevel = self->field_0x5d;
     uint8_t flag15e = self->field_0x15e;
@@ -235,7 +233,7 @@ void MGame::OnRender3D() {
     if (inMenuLevel == 0) {
         // World render.
         ((Level *)(self->field_0x78))->renderBG(0);
-        PaintCanvas_Begin3d();
+        ((PaintCanvas*)(long)canvas)->Begin3d();
         int arg = (flag15e == 0) ? self->field_0x40 : 0;
         ((Level *)(self->field_0x78))->render(arg);
         int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
@@ -243,44 +241,44 @@ void MGame::OnRender3D() {
         if (self->field_0x114 != 0)
             ((AEGeometry *)(self->field_0x58))->render();
         ((LevelScript *)(self->field_0x7c))->render3D();
-        return PaintCanvas_End3d(canvas);
+        return ((PaintCanvas*)(long)canvas)->End3d();
     }
 
     if (flag15e != 0) {
         // Free-cam / cinematic world render.
         ((Level *)(self->field_0x78))->renderBG(0);
-        PaintCanvas_Begin3d();
+        ((PaintCanvas*)(long)canvas)->Begin3d();
         ((Level *)(self->field_0x78))->render(self->field_0x40);
         int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
         ((PlayerEgo *)(self->field_0x58))->render(egoFlag);
         if (self->field_0x114 != 0)
             ((AEGeometry *)(self->field_0x58))->render();
         ((LevelScript *)(self->field_0x7c))->render3D();
-        return PaintCanvas_End3d(canvas);
+        return ((PaintCanvas*)(long)canvas)->End3d();
     }
 
     if (self->field_0xc9 != 0) {
-        PaintCanvas_Begin3d();
+        ((PaintCanvas*)(long)canvas)->Begin3d();
         ((MenuTouchWindow *)(self->field_0x88))->render3D();
-        return PaintCanvas_End3d(canvas);
+        return ((PaintCanvas*)(long)canvas)->End3d();
     }
 
     if (self->field_0xc7 != 0) {
-        PaintCanvas_Begin3d();
+        ((PaintCanvas*)(long)canvas)->Begin3d();
         ((StarMap *)(self->field_0x90))->render();
-        return PaintCanvas_End3d(canvas);
+        return ((PaintCanvas*)(long)canvas)->End3d();
     }
 
     // Fallback world render.
     ((Level *)(self->field_0x78))->renderBG(0);
-    PaintCanvas_Begin3d();
+    ((PaintCanvas*)(long)canvas)->Begin3d();
     ((Level *)(self->field_0x78))->render(0);
     int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
     ((PlayerEgo *)(self->field_0x58))->render(egoFlag);
     if (self->field_0x114 != 0)
         ((AEGeometry *)(self->field_0x58))->render();
     ((LevelScript *)(self->field_0x7c))->render3D();
-    return PaintCanvas_End3d(canvas);
+    return ((PaintCanvas*)(long)canvas)->End3d();
 }
 
 // ---- startJumpScene_17c0d4.cpp ----
@@ -295,7 +293,6 @@ float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);  // 0x7267c
 // 0x7678c
 // 0x724a8
 // 0x77a1c
-extern "C" void PaintCanvas_CameraSetPerspective(unsigned cam, float fov, float a, float b);  // 0x72004
 // 0x728d4
 // 0x76a80
 // 0x72cac
@@ -306,7 +303,6 @@ extern "C" void PaintCanvas_CameraSetPerspective(unsigned cam, float fov, float 
 // 0x76aa4
 extern "C" void AEGeometry_setRotation3(void *g, int x, int y, int z);  // 0x73054
 // 0x78448
-extern "C" int PaintCanvas_TransformGetTransform(unsigned cam);  // 0x72088
 // 0x6fd18
 // 0x72574
 extern "C" void Vector_copy(Vector *dst, Vector *src);  // fn @0x18c268 (pcVar8)
@@ -368,7 +364,7 @@ void MGame::startJumpScene() {
         int cm = (*g_status)->getCurrentCampaignMission();
         fov = (cm < 0x50) ? *(float *)&g_jsFovAlienB : *(float *)&g_jsFovAlienA;
     }
-    PaintCanvas_CameraSetPerspective(cam, fov, *(float *)&g_jsHudFlag, 0);
+    pc->CameraSetPerspective(cam, fov, *(float *)&g_jsHudFlag, 0);
     ((PlayerEgo *)(self->field_0x58))->setAutoPilot(0);
     self->field_0x5d = 0;
     self->field_0xd6 = 0;
@@ -407,7 +403,7 @@ void MGame::startJumpScene() {
         AEGeometry *geo = (AEGeometry *)::operator new(0xc0);
         new (geo) AEGeometry((uint16_t)0x3ab2, *g_jsCanvas, false);
         self->field_0x114 = geo;
-        int tr = PaintCanvas_TransformGetTransform(*(unsigned *)g_jsCanvas);
+        int tr = (int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetTransform(*(unsigned *)g_jsCanvas);
         ((TransformFull *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
 
         float pos[4];
@@ -1264,7 +1260,6 @@ void MGame::UseKhadorDrive() {
 
 // ---- OnInitialize_177c50.cpp ----
 
-extern "C" void PaintCanvas_TextureCreate(unsigned a, unsigned *b, int c);  // TextureCreate
 // 0x178470
 // 0x713d4
 // Heavily-corrupt sub-blocks are delegated to documented helpers:
@@ -1295,8 +1290,8 @@ void MGame::OnInitialize() {
         } else {
             texSel = 0x2f08;
         }
-        PaintCanvas_TextureCreate(self->field_0x4, &texSel, 0);
-        PaintCanvas_ChangeCubeTexture(self->field_0x4);
+        ((PaintCanvas*)g_PaintCanvas)->TextureCreate((unsigned short)self->field_0x4, &texSel, (void *)0, &texSel, false);
+        ((PaintCanvas*)g_PaintCanvas)->ChangeCubeTexture((unsigned)self->field_0x4);
 
         // Build the per-session sound-resource list (long sequential block).
         MGame_loadSoundResources(self);
@@ -1804,11 +1799,9 @@ void MGame::pauseSounds() {
 extern "C" void Radio_ctor(Radio *r);  // 0x75160
 // 0x71ef0
 // 0x74488
-extern "C" void PaintCanvas_CameraCreate(PaintCanvas *pc, unsigned *out);  // 0x72058
 extern "C" void *TargetFollowCamera_dtor(void *c);  // 0x72064
 extern "C" void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
                                         int a, int b, int d, int e, int f, int g); // 0x78124
-extern "C" void PaintCanvas_CameraSetCurrent(PaintCanvas *pc, unsigned cam);  // 0x6fd9c
 // 0x78130
 extern "C" void TargetFollowCamera_resetShipHandling(TargetFollowCamera *c);  // 0x72a18
 extern "C" void Radar_ctor(Radar *r, Level *l);  // 0x7813c
@@ -1851,7 +1844,7 @@ void MGame::reset() {
     ((Radio *)(radio))->setMessages((Array<RadioMessage *> *)(intptr_t)((Level *)(self->field_0x78))->getMessages());
 
     PaintCanvas *pc = *g_resCanvas;
-    PaintCanvas_CameraCreate(pc, (unsigned *)((char *)self + 0xf0));
+    pc->CameraCreate((unsigned *)((char *)self + 0xf0));
     unsigned cam = *(unsigned *)g_resCanvas;
     int *status = g_resStatus;
 
@@ -1860,7 +1853,7 @@ void MGame::reset() {
         int cm = (*g_status)->getCurrentCampaignMission();
         fov = (cm < 0x50) ? *(float *)&g_resInitB : *(float *)&g_resAspectC;
     }
-    PaintCanvas_CameraSetPerspective(cam, fov, 0, 0);
+    pc->CameraSetPerspective(cam, fov, 0, 0);
 
     if (self->field_0xf4 != 0) {
         ::operator delete(TargetFollowCamera_dtor(self->field_0xf4));
@@ -1870,7 +1863,7 @@ void MGame::reset() {
     TargetFollowCamera_ctor(tfc, self->field_0xf0,
                             *(int *)((char *)self->field_0x58 + 8), 0, 0, 0, 0, 0, 0);
     self->field_0xf4 = tfc;
-    PaintCanvas_CameraSetCurrent(pc, self->field_0xf0);
+    pc->CameraSetCurrent(self->field_0xf0);
     ((PlayerEgo *)(self->field_0x58))->setTargetFollowCamera(self->field_0xf4);
     TargetFollowCamera_resetShipHandling(self->field_0xf4);
 
@@ -2224,7 +2217,7 @@ void MGame::updateJumpScene() {
     bool fadeOut = true;
 
     if (self->field_0xdd != 0 && self->field_0x114 != 0) {
-        int tr = PaintCanvas_TransformGetTransform(**g_ujCanvasA);
+        int tr = (int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetTransform(**g_ujCanvasA);
         int prog = *(int *)((char *)tr + 0x114);
         int over = (*(unsigned *)((char *)tr + 0x110) > 0x6a4);
         if ((0 - over) - prog < 0) goto camMove;
@@ -2261,7 +2254,7 @@ camMove: {
 
 afterCam:
     if (self->field_0xdd != 0) {
-        unsigned tr = PaintCanvas_TransformGetTransform(**g_ujCanvasB);
+        unsigned tr = (unsigned)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetTransform(**g_ujCanvasB);
         ((TransformFull *)(tr))->Update(self->field_0x40, false /* updateBounds: arg lost in decomp */);
     }
 
@@ -2295,7 +2288,7 @@ afterCam:
     // Animation-end check.
     bool ended;
     if (self->field_0xdd != 0) {
-        int tr = PaintCanvas_TransformGetTransform(**g_ujCanvasC);
+        int tr = (int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetTransform(**g_ujCanvasC);
         ended = *(uint8_t *)((char *)tr + 0xed) != 0;
     } else {
         int lm = ((Level *)(self->field_0x78))->getLandmarks();
@@ -2427,7 +2420,6 @@ extern "C" void *Radio_dtor(...);  // 0x75388
 // 0x75bd4
 // 0x7537c
 extern "C" void *DialogueWindow_dtor(...);  // 0x75010
-extern "C" void PaintCanvas_ReleaseAllResources(int x);  // 0x6f964
 unsigned short GameText_getLanguage();  // 0x6f544
 void Globals_loadFont(int font, int lang);  // 0x71d04
 // 0x71d10
@@ -2549,7 +2541,7 @@ void MGame::OnRelease() {
     {
         int *p = (int *)0; (void)p;
     }
-    PaintCanvas_ReleaseAllResources(0);
+    ((PaintCanvas*)g_PaintCanvas)->ReleaseAllResources();
 
     int font = **(int **)&g_relFont;
     int lang = GameText_getLanguage();
@@ -2573,17 +2565,13 @@ void MGame::OnRelease() {
 
 // ---- OnRender2D_1808c0.cpp ----
 
-extern "C" void PaintCanvas_Begin2d();  // 0x71d34
 // 0x74458
 extern "C" void MGame_drawRadio(MGame *self);  // Radio::draw wrapper
 extern "C" void MGame_drawRadar(MGame *self);  // Radar::draw wrapper
 // 0x18c624 nextCamId
 extern "C" void MGame_drawHud(MGame *self);  // Hud::draw wrapper
-extern "C" void PaintCanvas_SetColor(unsigned color);  // 0x6fac0
-extern "C" void PaintCanvas_DrawImage2D5(int pc, int img, int x, int y, int anchor);  // 0x71d70
 // 0x... drawFade
 // 0x755d4
-extern "C" void PaintCanvas_End2d();  // 0x71d40? End2d
 extern "C" void MGame_drawFadeMessage(MGame *self, int pc);  // splash/fade text helper
 
 __attribute__((visibility("hidden"))) extern int *g_r2dGuard;    // @0x1908d4 (stack guard [0])
@@ -2603,7 +2591,7 @@ void MGame::OnRender2D() {
         return;
     }
 
-    PaintCanvas_Begin2d();
+    ((PaintCanvas*)g_PaintCanvas)->Begin2d();
 
     if (self->field_0x5d != 0 && self->field_0xc9 != 0) {
         // Menu-touch-window / star-system background path.
@@ -2622,7 +2610,7 @@ void MGame::OnRender2D() {
         float v[4]; *(int *)&v[0] = 0x3f000000; *(int *)&v[1] = 0x3f000000; v[2] = 0;
         Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
         Vector_assign((char *)eng + 0x3cc, v);
-        PaintCanvas_End2d();
+        ((PaintCanvas*)g_PaintCanvas)->End2d();
         
         return;
     }
@@ -2690,8 +2678,8 @@ void MGame::OnRender2D() {
                     ((Hud *)(self->field_0x74))->drawMenu();
             } else if (!(self->field_0x4c < (int)(self->field_0x48 < 0xbb9))) {
                 // Loading/jump splash text.
-                PaintCanvas_SetColor(self->field_0x4);
-                PaintCanvas_DrawImage2D5(*(int *)g_r2dCanvas, self->field_0x10, 0, 0, 'D');
+                ((PaintCanvas*)g_PaintCanvas)->SetColor((unsigned)self->field_0x4);
+                ((PaintCanvas*)(long)(*(int *)g_r2dCanvas))->DrawImage2D((unsigned)self->field_0x10, 0, 0, (unsigned char)'D');
                 if (self->field_0x50 >= 4000)
                     MGame_drawFadeMessage(self, *(int *)g_r2dCanvas);
             }
@@ -2699,7 +2687,7 @@ void MGame::OnRender2D() {
         }
     }
 
-    PaintCanvas_End2d();
+    ((PaintCanvas*)g_PaintCanvas)->End2d();
     
 }
 

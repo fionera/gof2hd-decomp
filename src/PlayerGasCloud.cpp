@@ -10,6 +10,7 @@
 #include "gof2/Mission.h"
 #include "gof2/Player.h"
 #include "gof2/PlayerEgo.h"
+#include "gof2/PaintCanvasClass.h"
 
 
 // Status singleton: getShip/getCurrentCampaignMission are real Status methods
@@ -26,8 +27,6 @@ extern "C" void *Array_float_dtor(void *p);
 extern "C" void *Array_int_dtor(void *p);
 extern "C" void *PlayerGasCloud_baseDtor(void *self);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
-extern "C" int PaintCanvas_CameraGetCurrent(void *canvas);
-extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, int current);
 
 // ---- translate_176658.cpp ----
 void PlayerGasCloud::translate(Vector const &param_1)
@@ -353,8 +352,6 @@ void Ship_addCargo(void *ship, void *item);
 
 
 
-void *PaintCanvas_TransformGetTransform(void *canvas);
-
 // Vector math.
 void Vector_sub(Vector *out, const Vector *a, const Vector *b);
 void Vector_scale(float s, Vector *inout);      // operator*(float, Vector&)
@@ -388,7 +385,8 @@ void PlayerGasCloud_update(void *self, int dt)
         void *arr = *(void **)(s + 0x138);
         if (*(char *)(s + 0x154) == 0 || *(char *)(s + 0x15c) != 0 || arr == 0) {
             // Idle / pre-explosion: just advance the bound transform.
-            void *t = PaintCanvas_TransformGetTransform(*(void **)g_pgcu_canvasRoot);
+            void *t = ((PaintCanvas *)*(void **)g_pgcu_canvasRoot)->TransformGetTransform(
+                          *(unsigned int *)((char *)*(void **)(s + 0x134) + 0xc));
             ((AbyssEngine::Transform *)(t))->Update(1, (bool)dt);
         } else {
             float dtf = (float)dt;
@@ -475,7 +473,8 @@ void PlayerGasCloud_update(void *self, int dt)
                     } else if (dist < g_pgcu_fadeLo) {
                         *scale = (dist + g_pgcu_fadeAdd) / g_pgcu_fadeDiv;
                     }
-                    void *t = PaintCanvas_TransformGetTransform(*(void **)g_pgcu_canvasRoot);
+                    void *t = ((PaintCanvas *)*(void **)g_pgcu_canvasRoot)->TransformGetTransform(
+                                  *(unsigned int *)((char *)geom + 0xc));
                     ((AbyssEngine::Transform *)(t))->Update(1, (bool)dt);
                 }
 
@@ -553,8 +552,8 @@ void PlayerGasCloud::render()
         return;
 
     void *cam = *g_pgc_canvas2;
-    int cur = PaintCanvas_CameraGetCurrent(cam);
-    __aeabi_memcpy(cameraLocal, PaintCanvas_CameraGetLocal(cam, cur), 0x3c);
+    int cur = ((PaintCanvas *)cam)->CameraGetCurrent();
+    __aeabi_memcpy(cameraLocal, ((PaintCanvas *)cam)->CameraGetLocal(cur), 0x3c);
 
     AbyssEngine::AEMath::MatrixGetDir((Vector *)&local_80, (Matrix *)cameraLocal);
     float scale = AbyssEngine::AEMath::operator-(dir, *(Vector *)&local_80);

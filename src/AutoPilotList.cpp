@@ -5,6 +5,7 @@
 #include "gof2/PlayerEgo.h"
 #include "gof2/Route.h"
 #include "gof2/String.h"
+#include "gof2/PaintCanvasClass.h"
 
 // Station is declared minimally here rather than via gof2/Station.h: that header
 // defines RetStr unconditionally, which would clash with the identical definition
@@ -123,7 +124,6 @@ extern "C" void String_plus(void *out, const void *a, const void *b);    // 0x6e
 // 0x72034
 // 0x768b8
 // 0x71ee4
-extern "C" int PaintCanvas_GetTextWidth(void *canvas, const String *s);  // 0x6faa8
 void _ZN13AutoPilotList4downEv(AutoPilotList *self);          // down()
 
 typedef void (*StringDtorFn)(void *self);
@@ -215,7 +215,8 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     Array<void *> *entries = ((Array<void *> *)self->entries);
     for (uint32_t i = 0; i < entries->size(); i++) {
         if (entries->data()[i] != 0) {
-            int w = PaintCanvas_GetTextWidth(*(void **)canvas, (String *)*(void **)font) + 0x13;
+            void *fontStr = (void *)*(void **)font;
+            int w = ((PaintCanvas*)*(void **)canvas)->GetTextWidth((unsigned int)(uintptr_t)fontStr, fontStr) + 0x13;
             width = self->width;
             if (width < w) {
                 self->width = w;
@@ -242,9 +243,6 @@ using AbyssEngine::String;
 // 0x6ee30
 extern "C" void Layout_drawWindow(void *layout, const String *title, int x, int y,
                                   int w, int h);                          // 0x768d0
-extern "C" void PaintCanvas_DrawString(void *canvas, const String *font, void *text,
-                                       int x, int y, int shadow);         // 0x6fe14
-
 // PC-relative GOT holders. **holder yields the live object.
 __attribute__((visibility("hidden"))) extern void **g_APL_layout_draw;     // -> Layout
 __attribute__((visibility("hidden"))) extern void **g_APL_gametext_draw;   // -> GameText
@@ -267,9 +265,9 @@ void AutoPilotList::draw() {
     for (uint32_t i = 0; i < ((Array<void *> *)this->entries)->size(); i++) {
         void *text = ((Array<void *> *)this->entries)->data()[i];
         if (text != 0) {
-            PaintCanvas_DrawString(*canvasHolder, (String *)*fontHolder, text,
+            ((PaintCanvas*)*canvasHolder)->DrawString((unsigned int)(uintptr_t)(String *)*fontHolder, text,
                                    this->x,
-                                   drawn * 0xf + this->y + 0x12, 0);
+                                   drawn * 0xf + this->y + 0x12, false);
             drawn = drawn + 1;
         }
     }

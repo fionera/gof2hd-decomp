@@ -6,6 +6,7 @@
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
 #include "gof2/ListItem.h"
+#include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
 
 
 extern "C" void _liw_stw_OnTouchBegin(void *stw, int x);
@@ -14,16 +15,11 @@ extern "C" void _liw_stw_OnTouchEnd(void *stw, int y);
 extern "C" void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void  liw_set_buildShipPreview(void *self, void *item, void *layout);
 extern "C" void  Str_dtor(Str *s);
-extern "C" int   PaintCanvas_GetTextWidth(uint32_t c, void *str);
-extern "C" void  PaintCanvas_DrawImage2D(uint32_t c, int img, int y);
-extern "C" void  PaintCanvas_DrawImage2D4(uint32_t c, int img, int x, int y, char flag);
-extern "C" void  PaintCanvas_DrawString(uint32_t c, void *str, int x, int y, bool centered);
 extern "C" int   BluePrint_getIndex(void *bp);
 extern "C" int   Ship_getIndex(void *ship);
 extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" void _liw_String_ctor(void *s);
 extern "C" void _liw_Matrix_ctor(void *m);
-extern "C" int  _liw_GetTextHeight(void *canvas);
 
 // ---- OnTouchBegin_133a74.cpp ----
 // Base sub-window at +0x18.
@@ -92,13 +88,8 @@ void ListItemWindow::OnTouchEnd(int x, int y)
 }
 
 // ---- render_1339c8.cpp ----
-extern "C" void  _liw_Begin3d();                                       // 0x71da0
-extern "C" void  _liw_EnableClip(void *c, int x, int y, int w, int h); // 0x75b38
-extern "C" void  _liw_SetColor(void *c, int color);                    // 0x6fac0
-extern "C" void *_liw_CameraGetLocal(void *c);                         // 0x6ff1c
 extern "C" void  _liw_Matrix_assign(void *dst, void *src);             // 0x6f148
 extern "C" void  _liw_AEGeometry_render(void *g);                      // 0x72238
-extern "C" void  _liw_End3d(void *c);                                  // 0x71dac
 extern "C" void  _liw_render_tail(void *c, int a, int h, void *sp);    // 0x1ac428 tail
 
 __attribute__((visibility("hidden"))) extern void **g_liw_r_canvas;   // 0x1439e0
@@ -110,24 +101,24 @@ void ListItemWindow::render()
     if (!u8(this, 0x54))
         return;
 
-    void *canvas = *g_liw_r_canvas;
-    _liw_Begin3d();
+    PaintCanvas *canvas = (PaintCanvas *)*g_liw_r_canvas;
+    canvas->Begin3d();
 
     int *obj = (int *)*g_liw_r_obj;
     int s = obj[0x128 / 4];
     int h = i32(this, 0x20) - s * 2;
-    _liw_EnableClip(canvas,
+    canvas->EnableClip(
         i32(this, 0x64) + s + (i32(this, 0x6c) >> 1) + obj[0x2c / 4],
         i32(this, 0x68) + s + obj[0xc / 4] + obj[0x20 / 4],
         ((i32(this, 0x6c) >> 1) - (obj[0x2c / 4] + s * 2)) - obj[0x28 / 4],
         h);
-    _liw_SetColor(canvas, -1);
-    void *m = _liw_CameraGetLocal(canvas);
+    canvas->SetColor((unsigned int)(long)canvas);
+    void *m = canvas->CameraGetLocal((unsigned int)(long)canvas);
     _liw_Matrix_assign((char *)this + 0x98, m);
     _liw_AEGeometry_render(pp(this, 0x10));
-    _liw_End3d(canvas);
+    canvas->End3d();
     int dummy;
-    return _liw_render_tail(canvas, 0, h, &dummy);
+    return _liw_render_tail((void *)canvas, 0, h, &dummy);
 }
 
 // ---- set_131658.cpp ----
@@ -338,8 +329,6 @@ extern "C" void  Str_ctor_copy(Str *s, const void *src, bool copy);  // String(S
 extern "C" void  Layout_drawMask(void *layout);                              // 0x7696c
 // 0x74de8
 extern "C" void  Layout_drawBox8(void *layout, int kind, int x, int y, int w, int color, Str *text, int z); // 8-arg form
-extern "C" void  PaintCanvas_SetColor(uint32_t c);                           // 0x6fac0
-extern "C" void  PaintCanvas_FillRectangle(uint32_t c, int x, int y, int w); // 0x... fill
 
 // Hidden PC-relative roots.
 __attribute__((visibility("hidden"))) extern char *g_liw_d_maskFlag;     // 0x143118
@@ -367,8 +356,8 @@ void ListItemWindow::draw()
     if (masked)
         Layout_drawMask(layout);
 
-    PaintCanvas_SetColor(canvas);
-    PaintCanvas_FillRectangle(canvas, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c));
+    ((PaintCanvas *)(long)canvas)->SetColor(canvas);
+    ((PaintCanvas *)(long)canvas)->FillRectangle((int)canvas, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c));
 
     {
         Str s; Str_ctor_cstr(&s, "", false);
@@ -389,7 +378,7 @@ void ListItemWindow::draw()
 
     void *li = pp(this, 0x14);
     int isShip = ((ListItem *)(li))->isShip();
-    PaintCanvas_SetColor(canvas);
+    ((PaintCanvas *)(long)canvas)->SetColor(canvas);
 
     int isItemish = ((ListItem *)(li))->isItem();
     if (isItemish == 0 && ((ListItem *)(li))->isBluePrint() == 0 && ((ListItem *)(li))->isPendingProduct() == 0) {
@@ -451,13 +440,13 @@ void ListItemWindow::draw()
             rowH = 2;
         int ycur = yTop;
         for (uint32_t i = 0; i < n; i++) {
-            PaintCanvas_SetColor(canvas);
+            ((PaintCanvas *)(long)canvas)->SetColor(canvas);
             int color = i32(L, 0x1c);
             Str s;
             Str_ctor_copy(&s, *(void **)(*(int *)((char *)rows + 4) + i * 4), false);
             ((Layout *)(layout))->drawBox(6, i32(L, 0x28) + i32(this, 0x64), ycur, (i32(this, 0x6c) >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s, 0);
             Str_dtor(&s);
-            PaintCanvas_SetColor(canvas);
+            ((PaintCanvas *)(long)canvas)->SetColor(canvas);
 
             int textX, textY;
             void *valStr;
@@ -472,13 +461,13 @@ void ListItemWindow::draw()
                         int img = 0x50;        // equal
                         if (a < b) img = 0x4c; // down
                         if (b < a) img = 0x48; // up
-                        PaintCanvas_DrawImage2D(canvas, i32(this, img),
-                            ((i32(this, 0x64) + (i32(this, 0x6c) >> 1)) - i32(L, 0x2c)) - i32(this, 0x60));
+                        ((PaintCanvas *)(long)canvas)->DrawImage2D(i32(this, img),
+                            ((i32(this, 0x64) + (i32(this, 0x6c) >> 1)) - i32(L, 0x2c)) - i32(this, 0x60), 0);
                     }
                     int sep = i32(this, 0x60);
                     valStr = *(void **)(*(int *)(i32(this, 0x4) + 4) + i * 4);
                     void *arrowStr = *g_liw_d_arrowR;
-                    int tw = PaintCanvas_GetTextWidth(canvas, arrowStr);
+                    int tw = ((PaintCanvas *)(long)canvas)->GetTextWidth(canvas, arrowStr);
                     centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)i32(this, 0x1c));
                     textX = (((i32(this, 0x64) + (i32(this, 0x6c) >> 1) + 10) - i32(L, 0x2c)) - sep) - tw;
                     textY = i32(L, 0x1c);
@@ -488,12 +477,12 @@ void ListItemWindow::draw()
             if (!drewArrow) {
                 valStr = *(void **)(*(int *)(i32(this, 0x4) + 4) + i * 4);
                 void *arrowStr = *g_liw_d_arrowL;
-                int tw = PaintCanvas_GetTextWidth(canvas, arrowStr);
+                int tw = ((PaintCanvas *)(long)canvas)->GetTextWidth(canvas, arrowStr);
                 centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)i32(this, 0x1c));
                 textX = (i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c) * -2) - tw;
                 textY = i32(L, 0x1c);
             }
-            PaintCanvas_DrawString(canvas, valStr, textX, textY, centered);
+            ((PaintCanvas *)(long)canvas)->DrawString(canvas, valStr, textX, textY, centered);
             ycur = ycur + rowH + i32(L, 0x1c);
         }
     }
@@ -504,7 +493,7 @@ void ListItemWindow::draw()
         ((Layout *)(layout))->drawBox(1, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x5c), &s, 0);
         Str_dtor(&s);
     } else {
-        PaintCanvas_SetColor(canvas);
+        ((PaintCanvas *)(long)canvas)->SetColor(canvas);
         {
             Str s; Str_ctor_cstr(&s, "", false);
             ((Layout *)(layout))->drawBox(8, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(this, 0x20), &s, 0);
@@ -518,11 +507,11 @@ void ListItemWindow::draw()
             ((Layout *)(layout))->drawBox(0, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), yBox, ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s, 0);
             Str_dtor(&s);
         }
-        PaintCanvas_SetColor(canvas);
+        ((PaintCanvas *)(long)canvas)->SetColor(canvas);
         aeabi_idiv_(i32(this, 0x30), 3);
-        PaintCanvas_DrawImage2D(canvas, i32(this, 0x44), i32(this, 0x24) - i32(this, 0x2c));
+        ((PaintCanvas *)(long)canvas)->DrawImage2D(i32(this, 0x44), i32(this, 0x24) - i32(this, 0x2c), 0);
         int half = aeabi_idiv_(i32(this, 0x30), 3);
-        PaintCanvas_DrawImage2D4(canvas, i32(this, 0x44), i32(this, 0x24), i32(this, 0x28) - half, 1);
+        ((PaintCanvas *)(long)canvas)->DrawImage2D(i32(this, 0x44), i32(this, 0x24), i32(this, 0x28) - half, (unsigned char)1);
     }
 
     ((ScrollTouchWindow *)(pp(this, 0x18)))->drawTextBG();
@@ -533,7 +522,6 @@ void ListItemWindow::draw()
 // Callees (resolved blx targets).
 // 0x75b98
 extern "C" int   Ship_getIndex(void *ship);                            // 0x719c8
-extern "C" uint32_t PaintCanvas_TransformGetLocal(uint32_t tf);        // 0x720c4
 void  MatrixSetRotation(void *m, float x, float y, float z); // 0x72094
 extern "C" void  MatrixSetScaling(void *m, float x, float y, float z);  // 0x6f814
 // 0x73054
@@ -573,16 +561,16 @@ void ListItemWindow::update(int frameTime)
     f32(this, 0x118) = angle;
 
     uint32_t tf = *g_liw_u_tf;
-    uint32_t loc = PaintCanvas_TransformGetLocal(tf);
+    uint32_t loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
     MatrixSetRotation((void *)loc, angle, 0.0f, 0.0f);
-    loc = PaintCanvas_TransformGetLocal(tf);
+    loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
     float tableAngle = g_liw_u_angleTable[idx] + baseAngle;
     MatrixSetScaling((void *)loc, tableAngle, tableAngle, tableAngle);
 
     if (i32(this, 0x90) != -1) {
-        loc = PaintCanvas_TransformGetLocal(tf);
+        loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
         MatrixSetRotation((void *)loc, angle, 0.0f, 0.0f);
-        loc = PaintCanvas_TransformGetLocal(tf);
+        loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
         MatrixSetScaling((void *)loc, tableAngle, tableAngle, tableAngle);
     }
 
@@ -611,7 +599,7 @@ ListItemWindow::ListItemWindow()
     void *canvas = *b;
     pp(this, 0x18) = 0;
     (void)av;
-    int h = _liw_GetTextHeight(canvas);
+    int h = ((PaintCanvas *)canvas)->GetTextHeight((unsigned int)(long)canvas);
     i32(this, 0x1c) = h / 2 - 1;
     i32(this, 0x20) = 0;
 }

@@ -1,4 +1,7 @@
 #include "gof2/MenuTouchWindow.h"
+#include "gof2/PaintCanvasClass.h"
+
+extern void *g_PaintCanvas;
 
 
 extern "C" void *_mtw_GameText_getText(void *gt, int id);
@@ -63,8 +66,6 @@ extern "C" void _mtw_ScrollTouchWindow_OnTouchBegin(void *w, int y);
 extern "C" void _mtw_MissionsWindow_OnTouchBegin(void *w, int y);
 extern "C" void _mtw_FModSound_play(void *snd, int id, void *pos, float v);
 extern "C" int  _mtw_idiv(int a, int b);
-extern "C" int  _mtw_PaintCanvas_GetImage2DWidth(void *pc);
-extern "C" int  _mtw_PaintCanvas_GetImage2DHeight(void *pc);
 extern "C" void _mtw_RecordHandler_ctor(void *rh);
 extern "C" void *_mtw_RecordHandler_readRecord(void *rh);
 extern "C" void *_mtw_RecordHandler_dtor(void *rh);
@@ -105,10 +106,6 @@ extern "C" int  _mtw_FModSound_tryToStopMusicForBGMusic();
 extern "C" void _mtw_FModSound_setVolume(void *snd, float v);
 extern "C" void _mtw_Array_TB_ctor(void *a);
 extern "C" void _mtw_loadPreviewRecords(void *self);
-extern "C" void _mtw_PaintCanvas_SetColor(unsigned int color);
-extern "C" void _mtw_PaintCanvas_DrawImage2D(void *pc, unsigned int img, int x, int y, char anchor);
-extern "C" void _mtw_PaintCanvas_DrawString(void *pc, void *str, int val, int x, char y);
-extern "C" void _mtw_PaintCanvas_DrawStringFull(void *pc, void *str, void *s, int x, int y, int z);
 extern "C" void _mtw_TouchButton_draw(void *btn);
 extern "C" void _mtw_Layout_drawBox(void *layout, int mode, int x, int y, int w, int h, void *str);
 extern "C" void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y);
@@ -894,18 +891,18 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
         void *img = *(void **)gBgScrollImg;
         int bound = *(int *)*(void **)gBgScreenW2;
         int b28 = *(int *)(*(char **)gBgLayout + 0x28);
-        int iw = _mtw_PaintCanvas_GetImage2DWidth(img);
+        int iw = ((PaintCanvas *)g_PaintCanvas)->GetImage2DWidth((unsigned int)(long)img);
         unsigned char hit;
         if ((bound - b28) - iw < y) {
             int lc = *(int *)(*(char **)gBgLayout + 0xc);
             int tp = *(int *)(*(char **)gBgLayout + 0x20);
-            int ih = _mtw_PaintCanvas_GetImage2DHeight(img);
+            int ih = ((PaintCanvas *)g_PaintCanvas)->GetImage2DHeight((unsigned int)(long)img);
             hit = (x < ih + tp + lc) ? 1 : 0;
         } else hit = 0;
         u8(self, 0x1d9) = hit;
 
         b28 = *(int *)(*(char **)gBgLayout + 0x28);
-        iw = _mtw_PaintCanvas_GetImage2DWidth(img);
+        iw = ((PaintCanvas *)g_PaintCanvas)->GetImage2DWidth((unsigned int)(long)img);
         if (y < iw + b28) {
             pp(self, 0x220) = (void *)(long)x;
             pp(self, 0x20c) = (void *)(long)x;
@@ -1209,7 +1206,7 @@ void MenuTouchWindow::update(int dt)
             void *canvas = *(void **)gUpCanvas;
             i32(self, 0x228) = (((*(int *)*(void **)gUpScreenW - layout[4]) - layout[3])
                                 - layout[8]) - layout[9];
-            int ih = _mtw_PaintCanvas_GetImage2DHeight(canvas);
+            int ih = ((PaintCanvas *)canvas)->GetImage2DHeight(u32(self, 0x11c));
             i32(self, 0x1e4) = ih;
             void *optObj = *(void **)gUpOptObj;
             int rowH = layout[0xb]; // +0x2c
@@ -1808,7 +1805,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
     unsigned int color = *(unsigned int *)*(void **)gDlsColor;
 
     int rowBaseY = layout[0x43];        // +0x10c
-    _mtw_PaintCanvas_SetColor(color);
+    ((PaintCanvas *)canvas)->SetColor(color);
 
     int scrollOff = i32(self, 0x198);
     int margin = layout[0xa];            // +0x28
@@ -1825,15 +1822,15 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
         } else {
             strip58 = 8; strip5c = 5;
         }
-        int iw = _mtw_PaintCanvas_GetImage2DWidth(canvas);
-        int ih = _mtw_PaintCanvas_GetImage2DHeight(canvas);
+        int iw = ((PaintCanvas *)canvas)->GetImage2DWidth(u32(self, 0x11c));
+        int ih = ((PaintCanvas *)canvas)->GetImage2DHeight(u32(self, 0x11c));
         int count = _mtw_idiv((int)(long)*(void **)gDlsTileCnt, 1);
         int yy = 0;
         for (int k = 0; k <= count; k++) {
-            _mtw_PaintCanvas_DrawImage2D(canvas, u32(self, 0x11c),
-                (layout[0xa] - iw) + i32(self, 0x198), yy, 1);
-            _mtw_PaintCanvas_DrawImage2D(canvas, u32(self, 0x11c),
-                layout[0xa] + inner + i32(self, 0x198), yy, 0);
+            ((PaintCanvas *)canvas)->DrawImage2D(u32(self, 0x11c),
+                (layout[0xa] - iw) + i32(self, 0x198), yy, (unsigned char)1);
+            ((PaintCanvas *)canvas)->DrawImage2D(u32(self, 0x11c),
+                layout[0xa] + inner + i32(self, 0x198), yy, (unsigned char)0);
             yy += ih;
         }
         scrollOff = i32(self, 0x198);
@@ -1852,7 +1849,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
         int rowY = (layout[0x1c] + i32(self, 0x1b4)) * i + i32(self, 0x194) + layout[8] + layout[3];
         if (rowY < 0 || rowY > rowMax) continue;
 
-        _mtw_PaintCanvas_SetColor(color);
+        ((PaintCanvas *)canvas)->SetColor(color);
         int boxX = layout[0xa] + i32(self, 0x198);
         char box[12]; _mtw_String_ctor_cstr(box, gDlsBoxStr, false);
         int mode = (i == i32(self, 0x18c)) ? 4 : 3;
@@ -1863,8 +1860,8 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
         int yName = strip58 + rowY;
         int *cols = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4);
 
-        _mtw_PaintCanvas_DrawString(canvas, font, *(int *)(((void **)cols)[0]),
-            layout[0xa] + i32(self, 0x198) + layout[0xb] /*+0x2c*/, (char)yName);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, (void *)(long)*(int *)(((void **)cols)[0]),
+            layout[0xa] + i32(self, 0x198) + layout[0xb] /*+0x2c*/, (char)yName, false);
 
         int slot = *(int *)(i32(pp(self, 0xbc), 4) + i * 4);
         if (slot != 0) {
@@ -1876,27 +1873,27 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
             }
         }
 
-        _mtw_PaintCanvas_DrawStringFull(canvas, font, ((void **)cols)[1],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[1],
             layout[0xa] + i32(self, 0x198) + layout[0xb] * 2 + i32(self, 0x1bc) + layout[0xb1] /*+0x2c4*/,
-            yName, 0);
+            yName, (bool)0);
 
-        _mtw_PaintCanvas_SetColor(color);
+        ((PaintCanvas *)canvas)->SetColor(color);
         int rowY2 = rowY + strip5c;
-        _mtw_PaintCanvas_DrawStringFull(canvas, font, ((void **)cols)[2],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[2],
             layout[0xa] + i32(self, 0x198) + layout[0xb],
-            rowY2 + layout[0x1c] / 2, 0);
+            rowY2 + layout[0x1c] / 2, (bool)0);
 
-        _mtw_PaintCanvas_DrawStringFull(canvas, font, ((void **)cols)[3],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[3],
             layout[0xa] + i32(self, 0x198) + layout[0xb] * 2 + i32(self, 0x1bc) + layout[0xb1],
-            rowY2 + layout[0x1c] / 2, 0);
+            rowY2 + layout[0x1c] / 2, (bool)0);
 
-        _mtw_PaintCanvas_DrawStringFull(canvas, font, ((void **)cols)[4],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[4],
             layout[0xa] + i32(self, 0x198) + layout[0xb1] + (layout[0xb] + i32(self, 0x1b8)) * 2,
-            yName, 0);
+            yName, (bool)0);
 
-        _mtw_PaintCanvas_DrawStringFull(canvas, font, ((void **)cols)[5],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[5],
             layout[0xa] + i32(self, 0x198) + layout[0xb1] + (layout[0xb] + i32(self, 0x1b8)) * 2,
-            rowY2 + layout[0x1c] / 2, 0);
+            rowY2 + layout[0x1c] / 2, (bool)0);
 
         if (i == i32(self, 0x18c))
             _mtw_TouchButton_draw(pp(self, 0xc4));

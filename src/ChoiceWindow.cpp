@@ -6,6 +6,7 @@
 #include "gof2/GameText.h"
 #include "gof2/Layout.h"
 #include "gof2/TouchButton.h"
+#include "gof2/PaintCanvas.h"
 // NOTE: the foreign Layout object is read by byte offset via F<int>(layout, ...) -- its
 // header (gof2/Layout.h) is not included here because Layout is not part of this batch and
 // its full layout is not modelled.
@@ -13,7 +14,6 @@
 // ---- foreign helpers (defined in the engine; linked elsewhere) -----------------------
 extern "C" {
 void *ScrollTouchWindow_dtor(void *self);
-void PaintCanvas_Image2DCreate(void *self, unsigned short image, unsigned int *out);
 void Array_StringPtr_ctor(void *self);
 void Globals_getLineArray(void *self, void *font, String const &text, int width, void *array);
 void ScrollTouchWindow_ctor(void *self, int x, int y, int width, int height, bool centered);
@@ -21,11 +21,7 @@ void ArrayReleaseClasses_StringPtr(void *self);
 void *Array_StringPtr_dtor(void *self);
 void ScrollTouchWindow_setPosition(void *self, int y);
 void Layout_drawMask(void *self);
-void PaintCanvas_SetColor(void *self, unsigned int color);
-void PaintCanvas_DrawImage2D(void *self, int image, int x, int y, int anchor);
 void Layout_formatCredits(String *out, void *layout, int value);
-int PaintCanvas_GetTextWidth(void *self, void *font, String const &text);
-void PaintCanvas_DrawString(void *self, void *font, String const &text, int x, int y, bool shadow);
 void TouchButton_getPosition(float *out, void *self);
 void TouchButton_ctor(void *self, String const &text, int value, int x, int y,
                       int width, int anchor, int mode);
@@ -231,13 +227,13 @@ void ChoiceWindow::setMedal(int medal, int count)
 
     void *canvas = *g_ChoiceWindow_canvas_146e8c;
     if (count < 0x24) {
-        PaintCanvas_Image2DCreate(canvas, F<unsigned short>(g_ChoiceWindow_medalImagesLow_146e8c, count * 4),
+        ((PaintCanvas *)canvas)->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImagesLow_146e8c, count * 4),
                                   (unsigned int *)&this->medalImage);
     } else {
-        PaintCanvas_Image2DCreate(canvas, F<unsigned short>(g_ChoiceWindow_medalImagesHigh_146e8c, count * 4),
+        ((PaintCanvas *)canvas)->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImagesHigh_146e8c, count * 4),
                                   (unsigned int *)&this->medalImage);
     }
-    PaintCanvas_Image2DCreate(*g_ChoiceWindow_canvas_146e8c,
+    ((PaintCanvas *)*g_ChoiceWindow_canvas_146e8c)->Image2DCreate(
                               F<unsigned short>(g_ChoiceWindow_medalImages_146e8c, medal * 4),
                               (unsigned int *)&this->medalBgImage);
 
@@ -448,21 +444,21 @@ void ChoiceWindow::draw()
     ((Layout *)(layout))->drawBox6(7, this->x, this->y, this->width, this->height, &this->title);
 
     void *canvas = *g_ChoiceWindow_canvas_1471bc;
-    PaintCanvas_SetColor(canvas, 0xffffffff);
+    ((PaintCanvas *)canvas)->SetColor(0xffffffff);
 
     if (this->medalImage != -1) {
-        PaintCanvas_DrawImage2D(canvas, this->medalImage,
+        ((PaintCanvas *)canvas)->DrawImage2D(this->medalImage,
                                 this->x + (this->width >> 1),
-                                this->y + this->field_0x4c + 1, 0x11);
+                                this->y + this->field_0x4c + 1, (unsigned char)0x11);
         int color;
         if (this->count < 0x24)
             color = F<int>(g_ChoiceWindow_medalColorsLow_1471bc, this->count * 4);
         else
             color = F<int>(g_ChoiceWindow_medalColorsHigh_1471bc, this->count * 4);
-        PaintCanvas_SetColor(canvas, color);
-        PaintCanvas_DrawImage2D(canvas, this->medalBgImage,
+        ((PaintCanvas *)canvas)->SetColor(color);
+        ((PaintCanvas *)canvas)->DrawImage2D(this->medalBgImage,
                                 this->x + (this->width >> 1),
-                                this->y + this->field_0x4c, 0x11);
+                                this->y + this->field_0x4c, (unsigned char)0x11);
 
         if (((Status *)(*g_ChoiceWindow_status_1471bc))->hardCoreMode() == 0 &&
             ((Achievements *)(*g_ChoiceWindow_achievements_1471bc))->isEliteMedal(this->medal) == 0) {
@@ -472,17 +468,17 @@ void ChoiceWindow::draw()
             String creditsText = credits;  // prefix "" + credits
 
             void *font = *g_ChoiceWindow_font_1471bc_a;
-            int textWidth = PaintCanvas_GetTextWidth(canvas, font, creditsText);
-            PaintCanvas_DrawString(canvas, font, creditsText,
+            int textWidth = ((PaintCanvas *)canvas)->GetTextWidth((unsigned int)(unsigned long)font, (void *)&creditsText);
+            ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&creditsText,
                                    this->x + (this->width >> 1) - textWidth / 2,
                                    this->y + this->height - this->field_0x50,
                                    false);
         }
 
-        PaintCanvas_SetColor(canvas, 0xffffffff);
+        ((PaintCanvas *)canvas)->SetColor(0xffffffff);
         void *font = *g_ChoiceWindow_font_1471bc_b;
-        int textWidth = PaintCanvas_GetTextWidth(canvas, font, this->medalText);
-        PaintCanvas_DrawString(canvas, font, this->medalText,
+        int textWidth = ((PaintCanvas *)canvas)->GetTextWidth((unsigned int)(unsigned long)font, (void *)&this->medalText);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&this->medalText,
                                this->x + (this->width >> 1) - textWidth / 2,
                                this->y + this->field_0x54, false);
     }

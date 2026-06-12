@@ -1,4 +1,5 @@
 #include "gof2/HangarWindow.h"
+#include "gof2/PaintCanvasClass.h"
 #include "gof2/externs.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/FModSound.h"
@@ -43,7 +44,6 @@ extern "C" int Station_getIndex(void *station);
 extern "C" void Status_replaceHash(...);
 extern "C" void ChoiceWindow_setMsg(...);
 void Layout_formatCredits(...);
-extern "C" int PaintCanvas_GetTextWidth(...);
 // Decompiled sections disagree on arity (1 vs 2 args) / return type; extern "C" ABI symbol.
 extern "C" unsigned int Ship_addEquipment(...);
 // Own method forward-declared here; the definition (returns int) lives later in this file.
@@ -193,14 +193,6 @@ void HangarWindow::hideMessage() {
 
 
 extern "C" {
-void PaintCanvas_SetColor(unsigned int color);
-int PaintCanvas_GetImage2DWidth(void *canvas);
-int PaintCanvas_GetImage2DHeight(void *canvas);
-int PaintCanvas_GetTextHeight(void *canvas);
-void PaintCanvas_DrawImage2D(void *canvas, int img, int x, int y, char anchor);
-void PaintCanvas_DrawRegion2D(void *canvas, unsigned int img, int sx, int sy, int sw, int sh,
-                              float fw, int a, int b, int c, int y);
-void PaintCanvas_DrawString(void *canvas, void *font, int text, int x, char anchor);
 
 
 
@@ -261,7 +253,7 @@ void HangarWindow::render() {
     HangarWindow *self = this;
     Layout *layout = (Layout *)*g_hw_layout;
     void *canvas = *g_hw_canvas;
-    PaintCanvas_SetColor((unsigned int)(uintptr_t)canvas);
+    ((PaintCanvas *)canvas)->SetColor(0u);
 
     void *dlc = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
     bool dlcShown = dlc != 0 && G<uint8_t>(dlc, 0x18) != 0;
@@ -297,16 +289,16 @@ void HangarWindow::render() {
 
                 // Black-market scrolling hint strip.
                 if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {
-                    int iw = PaintCanvas_GetImage2DWidth(canvas);
-                    int ih = PaintCanvas_GetImage2DHeight(canvas);
+                    int iw = ((PaintCanvas *)canvas)->GetImage2DWidth(0);
+                    int ih = ((PaintCanvas *)canvas)->GetImage2DHeight(0);
                     int rows = __aeabi_idiv(*g_hw_screenHeight, 1);
                     int y = 0;
                     for (int r = 0; r <= rows; r++) {
-                        PaintCanvas_DrawImage2D(canvas, self->field_0xf0,
-                            (layout->field_0x28 - iw) + self->hintOffsetX, y, 1);
+                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)self->field_0xf0,
+                            (layout->field_0x28 - iw) + self->hintOffsetX, y, (unsigned char)1);
                         int off = (scrollPx < 1) ? 0 : (layout->field_0x48 + layout->field_0x2c);
-                        PaintCanvas_DrawImage2D(canvas, self->field_0xf0,
-                            self->hintOffsetX + layout->field_0x28 + topY + off, y, 0);
+                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)self->field_0xf0,
+                            self->hintOffsetX + layout->field_0x28 + topY + off, y, (unsigned char)0);
                         y += ih;
                     }
                 }
@@ -351,20 +343,20 @@ void HangarWindow::render() {
                         ((Layout *)(layout))->drawBox(9, self->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
                     }
 
-                    PaintCanvas_SetColor((unsigned int)(uintptr_t)canvas);
+                    ((PaintCanvas *)canvas)->SetColor(0u);
                     String12 label;
 
                     if (((ListItem *)(li))->isItem() == 0) {
                         if (((ListItem *)(li))->isShip() != 0) {
                             // Ship row: name + price + ship icon.
                             Ship_getIndex(G<void *>(li, 0xc));
-                            PaintCanvas_SetColor((unsigned int)(uintptr_t)canvas);
+                            ((PaintCanvas *)canvas)->SetColor(0u);
                             String12 price;
                             Layout_formatCredits(&price, Ship_getPrice(G<void *>(li, 0xc)));
-                            PaintCanvas_DrawString(canvas, *g_hw_font, (int)(uintptr_t)&price,
-                                contentBase + layout->field_0x28 + self->hintOffsetX, 1);
+                            ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&price,
+                                contentBase + layout->field_0x28 + self->hintOffsetX, 0, (bool)1);
                             ((ImageFactory *)(*g_hw_globals))->drawShip(Ship_getIndex(G<void *>(li, 0xc)), self->hintOffsetX + layout->field_0x28 + rowGap, self->iconOffsetY + y);
-                            PaintCanvas_SetColor((unsigned int)(uintptr_t)canvas);
+                            ((PaintCanvas *)canvas)->SetColor(0u);
                         } else if (((ListItem *)(li))->isSlot() != 0) {
                             if (tab == 4 && i == items->size() - 1) {
                                 ((TouchButton *)(G<void *>(G<void *>(self->buttons, 4), 0x5c)))->setPosition(self->hintOffsetX + layout->field_0x28 + topY / 2, layout->field_0x114 + y, 0x14);
@@ -376,19 +368,19 @@ void HangarWindow::render() {
                             BluePrint_getIndex((BluePrint *)(G<void *>(li, 0x8)));
                             float rate = ((BluePrint *)(G<void *>(li, 0x8)))->getCompletionRate();
                             if (rate > 0.0f) {
-                                PaintCanvas_DrawImage2D(canvas, self->field_0x78,
-                                    layout->field_0x28 + contentBase + 2 + self->hintOffsetX, 0, 0);
+                                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)self->field_0x78,
+                                    layout->field_0x28 + contentBase + 2 + self->hintOffsetX, 0, (unsigned char)0);
                                 float dcw = (float)self->progressBarWidth;
-                                PaintCanvas_DrawRegion2D(canvas, self->field_0x7c, 0, 0,
+                                ((PaintCanvas *)canvas)->DrawRegion2D((unsigned)self->field_0x7c, 0, 0,
                                     (int)(rate * dcw), self->progressBarHeight, (float)(int)(rate * dcw),
                                     0, 0, 0,
                                     layout->field_0x28 + contentBase + 3 + self->hintOffsetX);
                                 String12 pct, sfx, sum;
                                 AEString_add(&sum, &pct, &sfx);
-                                PaintCanvas_DrawString(canvas, *g_hw_font, (int)(uintptr_t)&sum,
+                                ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&sum,
                                     contentBase + 2 + layout->field_0x28 + self->hintOffsetX +
-                                        self->progressBarWidth + layout->field_0x2c, 0);
-                                PaintCanvas_SetColor((unsigned int)(uintptr_t)canvas);
+                                        self->progressBarWidth + layout->field_0x2c, 0, (bool)0);
+                                ((PaintCanvas *)canvas)->SetColor(0u);
                             }
                             int bpIdx = BluePrint_getIndex((BluePrint *)(G<void *>(li, 0x8)));
                             int type = ((Item *)(G<void *>(G<void *>(*g_hw_globals, 0x4), bpIdx)))->getType();
@@ -426,13 +418,13 @@ void HangarWindow::render() {
                     } else {
                         // Regular item row: name + amounts + price + icon.
                         ((Item *)(G<void *>(li, 0x10)))->getIndex();
-                        PaintCanvas_SetColor((unsigned int)(uintptr_t)canvas);
+                        ((PaintCanvas *)canvas)->SetColor(0u);
                         if (self->upgradeMode == 0) {
                             String12 price;
                             ((Item *)(G<void *>(li, 0x10)))->getSinglePrice();
                             Layout_formatCredits(&price, ((Item *)(G<void *>(li, 0x10)))->getSinglePrice());
-                            PaintCanvas_DrawString(canvas, *g_hw_font, (int)(uintptr_t)&price,
-                                contentBase + layout->field_0x28 + self->hintOffsetX, 1);
+                            ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&price,
+                                contentBase + layout->field_0x28 + self->hintOffsetX, 0, (bool)1);
                         }
                         int iidx = ((Item *)(G<void *>(li, 0x10)))->getIndex();
                         int itype = ((Item *)(G<void *>(li, 0x10)))->getType();
@@ -441,8 +433,8 @@ void HangarWindow::render() {
                             self->iconOffsetY + y);
                     }
 
-                    PaintCanvas_DrawString(canvas, *g_hw_font, (int)(uintptr_t)&label,
-                        self->hintOffsetX + layout->field_0x28 + contentBase, 0);
+                    ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&label,
+                        self->hintOffsetX + layout->field_0x28 + contentBase, 0, (bool)0);
 
                 }
 
@@ -543,15 +535,15 @@ void HangarWindow::render() {
                 ((TouchButton *)(b))->replaceTextKeepSize(&label);
                 ((TouchButton *)(b))->setSplitText(&split);
                 ((TouchButton *)(b))->draw();
-                PaintCanvas_DrawImage2D(canvas, G<int>(self->tabIcons, i * 4), x,
-                                        yy - layout->field_0x2c, 0x11);
+                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)G<int>(self->tabIcons, i * 4), x,
+                                        yy - layout->field_0x2c, (unsigned char)0x11);
             }
         }
 
         if (self->listModeFlag == 0) {
             int h17 = layout->field_0x30;
             int h34 = layout->field_0x34;
-            int th = PaintCanvas_GetTextHeight(canvas);
+            int th = ((PaintCanvas *)canvas)->GetTextHeight(0);
             ((ChoiceWindow *)(self->dialog))->setHeight((h34 + h17) * 6 + th * 2);
         }
     }
@@ -2256,7 +2248,7 @@ void HangarWindow::showFreeCreditsWindow() {
     int maxW = 0;
     for (int i = 5; i != 0; i--) {
         ((GameText *)(*g_hw_freeCreditsTextId))->getText();
-        int w = PaintCanvas_GetTextWidth((unsigned int)(uintptr_t)*g_hw_canvas, 0);
+        int w = ((PaintCanvas *)*g_hw_canvas)->GetTextWidth(0, (void *)0);
         if (maxW < w)
             maxW = w;
     }
@@ -2293,10 +2285,6 @@ void TouchButton_ctor_text2(void *btn, void *text, int a, int b, int c, int d, c
 void TouchButton_ctor_img(void *btn, void *img, int a, int b, int c, int d, char k, char m);
 void TouchButton_ctor_img2(void *btn, void *imgA, void *imgB, int a, int b, int c, char k);
 void TouchButton_getPosition(void *btn, float *x, float *y);
-
-void PaintCanvas_Image2DCreate(void *canvas, int id, unsigned int *out);
-int PaintCanvas_GetImage2DWidth(void *canvas);
-int PaintCanvas_GetImage2DHeight(void *canvas);
 
 void ListItemWindow_ctor(void *win);
 void ChoiceWindow_ctor(void *win);
@@ -2377,7 +2365,7 @@ void HangarWindow::initialize() {
     void *icons = ::operator new[](0x18);
     self->tabIcons = icons;
     for (int i = 0; i != 6; i++)
-        PaintCanvas_Image2DCreate(*g_hw_canvas, i + 0x232a, (unsigned int *)((char *)icons + i * 4));
+        ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(i + 0x232a), (unsigned int *)((unsigned int *)((char *)icons + i * 4)));
 
     int *posX = (int *)*g_hw_posXArray;
     int *posY = (int *)*g_hw_posYArray;
@@ -2393,8 +2381,8 @@ void HangarWindow::initialize() {
     }
 
     *(unsigned int *)*g_hw_imageCountSlot = tabArr->size();
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x52e, (unsigned int *)((char *)self + 0xe8));
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x544, (unsigned int *)((char *)self + 0xec));
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x52e), (unsigned int *)((unsigned int *)((char *)self + 0xe8)));
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x544), (unsigned int *)((unsigned int *)((char *)self + 0xec)));
 
     // Action button bank (24 entries).
     void *btns = ::operator new(0xc);
@@ -2404,7 +2392,7 @@ void HangarWindow::initialize() {
 
     unsigned int img;
     img = 0xffffffff;
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x470, &img);
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x470), (unsigned int *)(&img));
     void *e0 = ::operator new(200);
     TouchButton_ctor_img((void *)e0, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x60, 0x11, 4);
     G<void *>(G<void *>(self->buttons, 4), 0) = e0;
@@ -2420,13 +2408,13 @@ void HangarWindow::initialize() {
     G<void *>(G<void *>(self->buttons, 4), 8) = e2;
 
     img = 0xffffffff;
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x533, &img);
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x533), (unsigned int *)(&img));
     void *e3 = ::operator new(200);
     TouchButton_ctor_img((void *)e3, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x64, 0x11, 4);
     G<void *>(G<void *>(self->buttons, 4), 0xc) = e3;
 
     img = 0xffffffff;
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x532, &img);
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x532), (unsigned int *)(&img));
     void *e4 = ::operator new(200);
     TouchButton_ctor_img((void *)e4, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x64, 0x11, 4);
     G<void *>(G<void *>(self->buttons, 4), 0x10) = e4;
@@ -2497,8 +2485,8 @@ void HangarWindow::initialize() {
         ((TouchButton *)(G<void *>(G<void *>(self->buttons, 4), 0x44)))->setVisible(false);
     }
 
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x233e, (unsigned int *)((char *)self + 0x34));
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x233f, (unsigned int *)((char *)self + 0x38));
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x233e), (unsigned int *)((unsigned int *)((char *)self + 0x34)));
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x233f), (unsigned int *)((unsigned int *)((char *)self + 0x38)));
     {
         String12 lbl;
         void *btn = ::operator new(200);
@@ -2511,12 +2499,12 @@ void HangarWindow::initialize() {
     for (int i = 0x12; (unsigned int)(i - 0x12) < 5; i++) {
         imgB = 0xffffffff;
         if (i == 0x12) {
-            PaintCanvas_Image2DCreate(*g_hw_canvas, 0x233c, &imgA);
-            PaintCanvas_Image2DCreate(*g_hw_canvas, 0x233d, &imgB);
+            ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x233c), (unsigned int *)(&imgA));
+            ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x233d), (unsigned int *)(&imgB));
         } else {
             short s = (short)(i - 0x12);
-            PaintCanvas_Image2DCreate(*g_hw_canvas, s * 2 + 0x2330, &imgA);
-            PaintCanvas_Image2DCreate(*g_hw_canvas, s * 2 + 0x2331, &imgB);
+            ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(s * 2 + 0x2330), (unsigned int *)(&imgA));
+            ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(s * 2 + 0x2331), (unsigned int *)(&imgB));
         }
         void *btn = ::operator new(200);
         TouchButton_ctor_img2(btn, (void *)(uintptr_t)imgA, (void *)(uintptr_t)imgB, 0x13, 0, 0, 1);
@@ -2530,11 +2518,11 @@ void HangarWindow::initialize() {
     self->gridSpacingX = (int)((float)(-self->buttonWidth) * g_hw_posScale);
     self->gridSpacingY = (int)((float)(-h) * g_hw_posScale);
 
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x475, (unsigned int *)((char *)self + 0x78));
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x476, (unsigned int *)((char *)self + 0x7c));
-    PaintCanvas_Image2DCreate(*g_hw_canvas, 0x477, (unsigned int *)((char *)self + 0x74));
-    self->progressBarWidth = PaintCanvas_GetImage2DWidth(*g_hw_canvas);
-    self->progressBarHeight = PaintCanvas_GetImage2DHeight(*g_hw_canvas);
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x475), (unsigned int *)((unsigned int *)((char *)self + 0x78)));
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x476), (unsigned int *)((unsigned int *)((char *)self + 0x7c)));
+    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x477), (unsigned int *)((unsigned int *)((char *)self + 0x74)));
+    self->progressBarWidth = ((PaintCanvas *)*g_hw_canvas)->GetImage2DWidth(0);
+    self->progressBarHeight = ((PaintCanvas *)*g_hw_canvas)->GetImage2DHeight(0);
 
     // Recompute best cargo prices from known equipment when not in a black market.
     if (self->itemList != 0 && ((Status *)(*gStatus))->inBlackMarketSystem() == 0 &&
@@ -2617,7 +2605,7 @@ void HangarWindow::initialize() {
 
     int extra = 0;
     if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {
-        PaintCanvas_Image2DCreate(*g_hw_canvas, 0x6a4, (unsigned int *)((char *)self + 0xf0));
+        ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x6a4), (unsigned int *)((unsigned int *)((char *)self + 0xf0)));
         extra = (int)((float)(*g_hw_screenWidth) * g_hw_posScale);
     }
     self->selectedItem = 0;

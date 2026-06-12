@@ -1,4 +1,7 @@
 #include "gof2/MarqueeImage.h"
+#include "gof2/PaintCanvas.h"
+
+using AbyssEngine::PaintCanvas;
 
 // ---- setPosition_15f5f2.cpp ----
 void MarqueeImage::setPosition(int x, int y)
@@ -12,15 +15,15 @@ MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
 {
     void **holder = g_MarqueeImage_canvas;
 
-    PaintCanvas_Image2DCreate(*holder, image, &this->image);
+    ((PaintCanvas*)*holder)->Image2DCreate(image, &this->image);
 
     this->x = x;
     this->y = y;
     this->visibleWidth = width;
     this->speed = speed;
 
-    this->imageWidth = PaintCanvas_GetImage2DWidth(*holder, this->image);
-    this->imageHeight = PaintCanvas_GetImage2DHeight(*holder, this->image);
+    this->imageWidth = ((PaintCanvas*)*holder)->GetImage2DWidth(this->image);
+    this->imageHeight = ((PaintCanvas*)*holder)->GetImage2DHeight(this->image);
     this->scrollPosition = 0;
 }
 
@@ -61,15 +64,15 @@ void MarqueeImage::draw(int x, int y)
             drawWidth = visibleWidth;
         }
 
-        PaintCanvas_DrawRegion2D(*g_MarqueeImage_canvas, this->image, (int)this->scrollPosition,
-                                 0, drawWidth, this->imageHeight, 0LL, 0, x, y);
+        ((PaintCanvas*)*g_MarqueeImage_canvas)->DrawRegion2D(this->image, (int)this->scrollPosition,
+                                 0, drawWidth, this->imageHeight, 0.0f, 0, 0, x, y);
         offset = this->scrollOffset;
     }
 
     if (offset <= visibleWidth) {
-        PaintCanvas_DrawRegion2D(*g_MarqueeImage_canvas, this->image, 0, 0,
+        ((PaintCanvas*)*g_MarqueeImage_canvas)->DrawRegion2D(this->image, 0, 0,
                                  visibleWidth - offset,
-                                 this->imageHeight, 0LL, 0,
+                                 this->imageHeight, 0.0f, 0, 0,
                                  offset + x, y);
     }
 }

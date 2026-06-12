@@ -24,6 +24,27 @@
 #include "gof2/TouchButton.h"
 #undef RetStr
 
+// This translation unit pulls in externs.h/fwd.h (which forward-declares the global
+// `PaintCanvas` type) and additionally used `AbyssEngine::PaintCanvas` as a *namespace*
+// of free thunks. Both clash with including the real PaintCanvas class header, so we
+// declare the global PaintCanvas class (whose mangled `PaintCanvas::` symbols match the
+// definitions in PaintCanvas.cpp) with exactly the methods this unit calls and cast the
+// engine canvas pointer to it. GetWidth()/GetHeight() return void in the recovered class;
+// the int-returning impl is exposed as pc_GetWidth/pc_GetHeight.
+struct PaintCanvas {
+    void SetColor(unsigned int color);
+    void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+    void FillRectangle(int x, int y, int w, int h);
+    void DrawRectangle(int x, int y, int w, int h);
+    int  GetTextWidth(unsigned int index, void *str);
+    void DrawString(unsigned int index, void *str, int x, int y, bool b);
+    unsigned int CameraGetCurrent();
+    void *CameraGetLocal(unsigned int index);
+    void CameraSetLocal(unsigned int index, const AbyssEngine::AEMath::Matrix &matrix);
+    void *GetScreenPosition(AbyssEngine::AEMath::Vector *a, AbyssEngine::AEMath::Vector *b);
+};
+extern "C" int pc_GetWidth(PaintCanvas *self);
+extern "C" int pc_GetHeight(PaintCanvas *self);
 
 extern "C" void *SpaceLounge_layout_move;
 extern "C" void SpaceLounge_OnRender3D_map_tail(void *map);
@@ -45,12 +66,6 @@ extern "C" int SolarSystem_getRace(void *system);
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
 void MatrixSetRotation(void *matrix, float x, float y, float z);
-namespace AbyssEngine { namespace PaintCanvas {
-void *CameraGetCurrent(void *canvas);
-void CameraSetLocal(void *canvas, void *matrix);
-void *CameraGetLocal(void *canvas);
-void GetScreenPosition(void *canvas, void *vec);
-} }
 extern "C" void *SpaceLounge_touch_layout_slot;
 extern "C" void *SpaceLounge_touch_help_text_slot;
 extern "C" void *SpaceLounge_touch_list_help_text_slot;
@@ -94,10 +109,6 @@ extern "C" void AEGeometry_setMatrix(void *matrix);
 extern "C" void *SpaceLounge_screen_level_slot;
 extern "C" void *SpaceLounge_screen_canvas_slot;
 extern "C" void *SpaceLounge_screen_projector;
-extern "C" void PaintCanvas_SetColor(void *canvas, int color);
-extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *text);
-extern "C" void PaintCanvas_DrawRectangle(void *canvas, int x, int y, int w, int h);
-extern "C" void PaintCanvas_DrawString(void *canvas, void *font, void *text, int x, int y);
 extern "C" void *String_ctor_cstr(void *dst, const char *src, bool copy);
 extern "C" void String_add(void *dst, void *a, void *b);
 extern "C" int Mission_isOutsideMission(void *mission);
@@ -144,10 +155,6 @@ extern "C" void ArrayRelease_VectorPtr(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void SpaceLounge_draw_cutscene_tail();
 extern "C" void SpaceLounge_draw_map_tail(void *map);
-extern "C" void PaintCanvas_SetColor4(void *canvas, int a, int r, int g, int b);
-extern "C" int PaintCanvas_GetWidth(void *canvas);
-extern "C" int PaintCanvas_GetHeight(void *canvas);
-extern "C" void PaintCanvas_FillRectangle(void *canvas, int x, int y, int w, int h);
 extern "C" void Layout_drawHeader_call(void *layout, void *title);
 extern "C" void *SpaceLounge_draw_layout_slot;
 extern "C" void *SpaceLounge_draw_canvas_slot;
@@ -491,8 +498,8 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
             void *cameraSlot = *(void **)&SpaceLounge_touch_camera_slot;
             void *camera = *(void **)cameraSlot;
-            void *current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
-            AbyssEngine::PaintCanvas::CameraSetLocal(camera, current);
+            void *current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
+            ((PaintCanvas *)camera)->CameraSetLocal((unsigned int)(long)camera, *(const AbyssEngine::AEMath::Matrix *)current);
             if (P(self, 0x48) != 0) {
                 ((AbyssEngine::EaseInOutMatrix *)(P(self, 0x48)))->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
             }
@@ -777,8 +784,8 @@ void SpaceLounge::updateScreenPositions() {
     void *canvas = *(void **)canvasSlot;
     void *project = *(void **)&SpaceLounge_screen_projector;
 
-    void *current = AbyssEngine::PaintCanvas::CameraGetCurrent(canvas);
-    void *local = AbyssEngine::PaintCanvas::CameraGetLocal(canvas);
+    void *current = (void *)(long)((PaintCanvas *)canvas)->CameraGetCurrent();
+    void *local = ((PaintCanvas *)canvas)->CameraGetLocal((unsigned int)(long)canvas);
     MatrixGetRight(pos, local);
     Vector_mul(halfRight, pos, 0.5f);
 
@@ -791,14 +798,14 @@ void SpaceLounge::updateScreenPositions() {
         ((void (*)(void *, void *))project)(screen, target);
         Vector_sub(pos, target, halfRight);
         ((void (*)(void *, void *))project)(screen, pos);
-        AbyssEngine::PaintCanvas::GetScreenPosition(canvas, screen);
+        ((PaintCanvas *)canvas)->GetScreenPosition((AbyssEngine::AEMath::Vector *)canvas, (AbyssEngine::AEMath::Vector *)screen);
 
         Vector_add(pos, target, halfRight);
         ((void (*)(void *, void *))project)(screen, pos);
-        AbyssEngine::PaintCanvas::GetScreenPosition(canvas, screen);
+        ((PaintCanvas *)canvas)->GetScreenPosition((AbyssEngine::AEMath::Vector *)canvas, (AbyssEngine::AEMath::Vector *)screen);
 
-        current = AbyssEngine::PaintCanvas::CameraGetCurrent(canvas);
-        local = AbyssEngine::PaintCanvas::CameraGetLocal(canvas);
+        current = (void *)(long)((PaintCanvas *)canvas)->CameraGetCurrent();
+        local = ((PaintCanvas *)canvas)->CameraGetLocal((unsigned int)(long)canvas);
         Matrix_assign(camera, local);
         MatrixGetPosition(pos, camera);
         MatrixGetUp(up, camera);
@@ -854,7 +861,7 @@ void SpaceLounge::drawLounge() {
             int cx = (int)(left[0] + (right[0] - left[0]) * 0.5f);
             int y = (int)(right[1] - (float)(pad * 2));
 
-            PaintCanvas_SetColor(canvas, -1);
+            ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
             if (((Agent *)(agent))->isKnown() != 0 || ((Agent *)(agent))->isStoryAgent() != 0) {
                 ((Agent *)(agent))->getName();
             } else {
@@ -887,26 +894,26 @@ void SpaceLounge::drawLounge() {
             }
 
             void *font = *(void **)*(void **)&SpaceLounge_lounge_font_slot;
-            int textWidth = PaintCanvas_GetTextWidth(canvas, font);
+            int textWidth = ((PaintCanvas *)canvas)->GetTextWidth((unsigned int)(long)canvas, font);
             int boxX = cx - pad;
             int boxY = y - pad;
             int width = pad * 2 + textWidth;
             String_ctor_cstr(s2, "", false);
             ((Layout *)(layout))->drawBox6(2, boxX, boxY, width, I(layout, 0x30), s2);
             ((String *)(s2))->dtor();
-            PaintCanvas_DrawRectangle(canvas, boxX, boxY, width, I(layout, 0x30));
+            ((PaintCanvas *)canvas)->DrawRectangle(boxX, boxY, width, I(layout, 0x30));
 
             String_ctor_cstr(s3, ((Agent *)(agent))->isKnown() == 0 ? "?" : "", false);
             String_add(s4, s3, s0);
-            PaintCanvas_DrawString(canvas, font, s4, cx, y + I(layout, 0x2c0));
+            ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, s4, cx, y + I(layout, 0x2c0), false);
             ((String *)(s4))->dtor();
             ((String *)(s3))->dtor();
 
             if (((Agent *)(agent))->isKnown() != 0) {
                 String_ctor_cstr(s5, " ", false);
                 String_add(s6, s5, s0);
-                int nameWidth = PaintCanvas_GetTextWidth(canvas, font);
-                PaintCanvas_DrawString(canvas, font, s1, cx + nameWidth, y + I(layout, 0x2c0));
+                int nameWidth = ((PaintCanvas *)canvas)->GetTextWidth((unsigned int)(long)canvas, font);
+                ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, s1, cx + nameWidth, y + I(layout, 0x2c0), false);
                 ((String *)(s6))->dtor();
                 ((String *)(s5))->dtor();
             }
@@ -917,11 +924,11 @@ void SpaceLounge::drawLounge() {
         return;
     }
 
-    PaintCanvas_SetColor(canvas, -1);
+    ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
     String_ctor_cstr(s0, "", false);
     ((Layout *)(layout))->drawBox6(2, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c), s0);
     ((String *)(s0))->dtor();
-    PaintCanvas_DrawRectangle(canvas, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c));
+    ((PaintCanvas *)canvas)->DrawRectangle(I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c));
     ((ImageFactory *)(factory))->drawChar((Arr *)((void **)P(P(self, 0x38), 0x4))[I(self, 0x20)], I(layout, 0x4c) + I(self, 0x70), I(layout, 0x4c) + I(self, 0x74), false);
     ((ScrollTouchWindow *)(P(self, 0x60)))->draw();
 
@@ -966,7 +973,7 @@ void SpaceLounge::drawLounge() {
     String_ctor_cstr(s0, "", false);
     ((Layout *)(layout))->drawBox6(2, I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight, s0);
     ((String *)(s0))->dtor();
-    PaintCanvas_DrawRectangle(canvas, I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight);
+    ((PaintCanvas *)canvas)->DrawRectangle(I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight);
     ((ImageFactory *)(factory))->drawChar((Arr *)P(self, 0x3c), I(layout, 0x4c) + I(self, 0x70), I(self, 0x78) + I(layout, 0x4c), true);
 
     ((TouchButton *)(button_at(self, 0)))->setVisible(true);
@@ -1057,8 +1064,8 @@ int SpaceLounge::init() {
     MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
     void *cameraSlot = *(void **)&SpaceLounge_init_camera_slot;
     void *camera = *(void **)cameraSlot;
-    void *current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
-    AbyssEngine::PaintCanvas::CameraSetLocal(camera, current);
+    void *current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
+    ((PaintCanvas *)camera)->CameraSetLocal((unsigned int)(long)camera, *(const AbyssEngine::AEMath::Matrix *)current);
     if (P(self, 0x48) != 0) {
         ((AbyssEngine::EaseInOutMatrix *)(P(self, 0x48)))->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
     }
@@ -1149,8 +1156,8 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
 
     void *cameraSlot = *(void **)&SpaceLounge_ctor_camera_slot;
     void *camera = *(void **)cameraSlot;
-    void *current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
-    AbyssEngine::PaintCanvas::CameraSetLocal(camera, current);
+    void *current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
+    ((PaintCanvas *)camera)->CameraSetLocal((unsigned int)(long)camera, *(const AbyssEngine::AEMath::Matrix *)current);
     UC(self, 0xb0) = 1;
     UC(self, 0xbd) = 0;
     return self;
@@ -1318,11 +1325,12 @@ void SpaceLounge::draw() {
         if (((ListItemWindow *)(P(self, 0xc)))->shows3DShip() != 0) {
             void *canvasSlot = *(void **)&SpaceLounge_draw_canvas_slot;
             void *canvas = *(void **)canvasSlot;
-            PaintCanvas_SetColor4(canvas, 0xff, 0, 0, 0);
-            int width = PaintCanvas_GetWidth(canvas);
-            int height = PaintCanvas_GetHeight(canvas);
-            PaintCanvas_FillRectangle(canvas, 0, 0, width, height);
-            PaintCanvas_SetColor(canvas, -1);
+            ((PaintCanvas *)canvas)->SetColor((unsigned char)(long)canvas, 0, 0, 0);
+            int width = pc_GetWidth((PaintCanvas *)canvas);
+            int height = pc_GetHeight((PaintCanvas *)canvas);
+            (void)height;
+            ((PaintCanvas *)canvas)->FillRectangle((int)(long)canvas, 0, 0, width);
+            ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
         }
         ((ListItemWindow *)(P(self, 0xc)))->draw();
         return SpaceLounge_draw_cutscene_tail();
@@ -1388,9 +1396,9 @@ void SpaceLounge::update(int dt) {
             UC(self, 0xbc) = 0;
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_c;
             camera = *(void **)cameraSlot;
-            current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
+            current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
             ((AbyssEngine::EaseInOutMatrix *)(valueMatrix))->GetValue();
-            AbyssEngine::PaintCanvas::CameraSetLocal(camera, valueMatrix);
+            ((PaintCanvas *)camera)->CameraSetLocal((unsigned int)(long)camera, *(const AbyssEngine::AEMath::Matrix *)valueMatrix);
         } else {
             goto idle_camera;
         }
@@ -1411,7 +1419,7 @@ idle_camera:
         if (UC(self, 0xbc) == 0) {
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_a;
             camera = *(void **)cameraSlot;
-            current = AbyssEngine::PaintCanvas::CameraGetLocal(camera);
+            current = ((PaintCanvas *)camera)->CameraGetLocal((unsigned int)(long)camera);
             (void)current;
             UC(self, 0xbc) = 1;
             int amount = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_update_random_slot, 10);
@@ -1453,8 +1461,8 @@ idle_camera:
         Matrix_mul_assign(valueMatrix, B(self, 0xc8));
         cameraSlot = *(void **)&SpaceLounge_update_camera_slot_b;
         camera = *(void **)cameraSlot;
-        current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
-        AbyssEngine::PaintCanvas::CameraSetLocal(camera, valueMatrix);
+        current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
+        ((PaintCanvas *)camera)->CameraSetLocal((unsigned int)(long)camera, *(const AbyssEngine::AEMath::Matrix *)valueMatrix);
     }
 
     ((SpaceLounge *)(self))->updateScreenPositions();

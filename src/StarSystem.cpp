@@ -11,10 +11,9 @@
 #include "gof2/Transform.h"
 #include "gof2/ApplicationManager.h"
 #include "gof2/Engine.h"
+#include "gof2/PaintCanvasClass.h"
 
 
-extern "C" void PaintCanvas_SetTexture(void *canvas, uint32_t texture, int mode);
-extern "C" void PaintCanvas_SetBlendMode(void *canvas, int mode);
 extern "C" void StarSystem_renderSunStreak_tail(void *geom);
 extern "C" void *Array_AEGeometry_dtor(void *array);
 extern "C" void ArrayRelease_KIPlayer(void *array);
@@ -29,11 +28,6 @@ extern "C" void *Array_Vector_dtor(void *array);
 extern "C" uint32_t SolarSystem_getTextureIndex(void *system);
 extern "C" uint32_t SolarSystem_getIndex(void *system);
 extern "C" uint32_t Station_getTextureIndex(void *station);
-extern "C" void PaintCanvas_FogEnable(void *canvas, int enabled, int immediate);
-extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transform_id);
-extern "C" void *PaintCanvas_CameraGetCurrent(void *canvas);
-extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, void *current);
-extern "C" int PaintCanvas_GetScreenPosition(void *canvas, char *world, char *screen);
 extern "C" void *SolarSystem_getStations(void *system);
 extern "C" int Station_getIndex(void *station);
 extern "C" void FileRead_ctor(void *self);
@@ -54,10 +48,8 @@ extern "C" void LensFlare_ctor(void *self, void *canvas);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint32_t mesh, void *canvas, bool dynamic);
 extern "C" void AEGeometry_getDirection(char *out, AEGeometry *geom);
 extern "C" void Vector_assign(char *dst, const char *src);
-extern "C" void PaintCanvas_TextureCreate(void *canvas, uint32_t texture, void *slot, int flags);
 extern "C" void AERandom_setSeed(int *rng, long long seed);
 extern "C" void AERandom_reset(int *rng);
-extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t mesh_id);
 extern "C" void PlayerStatic_ctor(void *self, int mode, AEGeometry *geom, float x, float y, float z);
 extern "C" void Vector_scale(char *out, const char *in, float scale);
 void MatrixGetPosition(char *out, void *matrix);
@@ -91,8 +83,8 @@ void StarSystem::renderSunStreak() {
     void **holder = g_StarSystem_sunstreak_canvas;
     void *canvas = *holder;
     void *slot = (B(self, 0x0c) != 0) ? (void *)((char *)self + 0x10) : P(P(self, 0x14), 4);
-    PaintCanvas_SetTexture(canvas, *(uint32_t *)slot, -1);
-    PaintCanvas_SetBlendMode(*holder, 2);
+    ((PaintCanvas *)canvas)->SetTexture(*(uint32_t *)slot, (unsigned)-1);
+    ((PaintCanvas *)*holder)->SetBlendMode(2);
     return StarSystem_renderSunStreak_tail(P(self, 0x40));
 }
 
@@ -169,9 +161,6 @@ __attribute__((visibility("hidden"))) extern EngineGetter g_StarSystem_init_getE
 __attribute__((visibility("hidden"))) extern float g_StarSystem_init_sunColors[];
 __attribute__((visibility("hidden"))) extern float g_StarSystem_init_lightColors[];
 __attribute__((visibility("hidden"))) extern float g_StarSystem_init_stationColors[];
-
-extern "C" void PaintCanvas_FogSetParameter(void *canvas, int pname, int mode, float density,
-                                             float start, uint32_t color);
 
 static inline uint32_t rgba_scaled(uint32_t color, float scale)
 {
@@ -262,7 +251,7 @@ void StarSystem::initLight() {
     ((Engine *)(getEngine(app)))->LightSetParticleAmbient(FL(self, 0x00), FL(self, 0x04), FL(self, 0x08));
 
     void *canvas = *g_StarSystem_init_canvas;
-    PaintCanvas_FogEnable(canvas, 0, 1);
+    ((PaintCanvas *)canvas)->FogEnable(0, 1);
     B(self, 0x54) = 0;
     if (B(self, 0x28) != 0) {
         return;
@@ -282,12 +271,12 @@ void StarSystem::initLight() {
             return;
         }
         fogColor = 0x707070ff;
-        PaintCanvas_FogSetParameter(canvas, 0x2601, 0, 0.0f, 1.0f, fogColor);
-        PaintCanvas_FogEnable(canvas, 1, 1);
+        ((PaintCanvas *)canvas)->FogSetParameter(0x2601, 0.0f, 0.0f, 1.0f, fogColor);
+        ((PaintCanvas *)canvas)->FogEnable(1, 1);
         B(self, 0x54) = 1;
         for (uint32_t i = 1; i < array_len(P(self, 0x1c)); ++i) {
             AEGeometry **geoms = (AEGeometry **)array_data(P(self, 0x1c));
-            void *transform = PaintCanvas_TransformGetTransform(canvas, I(geoms[i], 0x0c));
+            void *transform = ((PaintCanvas *)canvas)->TransformGetTransform(I(geoms[i], 0x0c));
             U(transform, 0x48) = fogColor;
         }
         return;
@@ -304,13 +293,13 @@ void StarSystem::initLight() {
         return;
     }
 
-    PaintCanvas_FogSetParameter(canvas, 0x2601, 0, 0.0f, 1.0f, fogColor);
-    PaintCanvas_FogEnable(canvas, 1, 1);
+    ((PaintCanvas *)canvas)->FogSetParameter(0x2601, 0.0f, 0.0f, 1.0f, fogColor);
+    ((PaintCanvas *)canvas)->FogEnable(1, 1);
     B(self, 0x54) = 1;
     uint32_t scaled = rgba_scaled(fogColor, 0.65f);
     for (uint32_t i = 1; i < array_len(P(self, 0x1c)); ++i) {
         AEGeometry **geoms = (AEGeometry **)array_data(P(self, 0x1c));
-        void *transform = PaintCanvas_TransformGetTransform(canvas, I(geoms[i], 0x0c));
+        void *transform = ((PaintCanvas *)canvas)->TransformGetTransform(I(geoms[i], 0x0c));
         U(transform, 0x48) = scaled;
     }
 }
@@ -326,14 +315,14 @@ void StarSystem::render2D() {
     if (flare != 0) {
         void **canvasHolder = g_StarSystem_render2d_canvas;
         void *canvas = *canvasHolder;
-        void *current = PaintCanvas_CameraGetCurrent(canvas);
-        void *local = PaintCanvas_CameraGetLocal(canvas, current);
+        unsigned current = ((PaintCanvas *)canvas)->CameraGetCurrent();
+        void *local = ((PaintCanvas *)canvas)->CameraGetLocal(current);
         float *pos = (float *)posBytes;
         pos[0] = FL(local, 0x0c) + FL(self, 0x30) * 65536.0f;
         pos[1] = FL(local, 0x1c) + FL(self, 0x34) * 65536.0f;
         pos[2] = FL(local, 0x2c) + FL(self, 0x38) * 65536.0f;
         ((LensFlare *)(P(self, 0x2c)))->update();
-        if (PaintCanvas_GetScreenPosition(*canvasHolder, posBytes, posBytes) != 0) {
+        if (((PaintCanvas *)*canvasHolder)->GetScreenPosition((Vector *)posBytes, (Vector *)posBytes) != 0) {
             ((LensFlare *)(P(self, 0x2c)))->render2D(pos[0], pos[1], pos[2], I(self, 0x3c));
         }
     }
@@ -415,9 +404,8 @@ StarSystem::StarSystem(int mode) {
         Array_uint_ctor(textures);
         P(self, 0x14) = textures;
         ArraySetLength_uint(2, textures);
-        PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x2739, array_data(P(self, 0x14)), 0);
-        PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x2719,
-                                  (char *)array_data(P(self, 0x14)) + 4, 0);
+        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2739), (unsigned int *)(array_data(P(self, 0x14))), (bool)(0));
+        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2719), (unsigned int *)((char *)array_data(P(self, 0x14)) + 4), (bool)(0));
 
         void *positions = ::operator new(0x0c);
         Array_Vector_ctor(positions);
@@ -457,12 +445,11 @@ StarSystem::StarSystem(int mode) {
     int mission = ((Status *)(status))->getCurrentCampaignMission();
     if ((mission == 0x59 && B(self, 0x0c) != 0) ||
         (mission > 0x9d && SolarSystem_getIndex((void *)(intptr_t)((Status *)(status))->getSystem()) == 0x1b)) {
-        PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x2dde, array_data(P(self, 0x14)), 0);
+        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2dde), (unsigned int *)(array_data(P(self, 0x14))), (bool)(0));
         U(self, 0x3c) = 3;
     } else {
         uint32_t tex = SolarSystem_getTextureIndex((void *)(intptr_t)((Status *)(status))->getSystem());
-        PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, g_StarSystem_ctor_planetTextures[tex],
-                                  array_data(P(self, 0x14)), 0);
+        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_planetTextures[tex]), (unsigned int *)(array_data(P(self, 0x14))), (bool)(0));
         U(self, 0x3c) = g_StarSystem_ctor_systemColors[SolarSystem_getIndex((void *)(intptr_t)((Status *)(status))->getSystem())];
     }
 
@@ -475,23 +462,18 @@ StarSystem::StarSystem(int mode) {
         if (stationIndex == currentStation) {
             if (mode == 3 && ((Status *)(status))->getCurrentCampaignMission() == 0) {
                 U(self, 0x50) = i;
-                PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x273b,
-                                          (char *)array_data(P(self, 0x14)) + off + 4, 0);
+                ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x273b), (unsigned int *)((char *)array_data(P(self, 0x14)) + off + 4), (bool)(0));
             } else {
-                PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas,
-                                          g_StarSystem_ctor_planetTextures[stationTex],
-                                          (char *)array_data(P(self, 0x14)) + off + 4, 0);
+                ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_planetTextures[stationTex]), (unsigned int *)((char *)array_data(P(self, 0x14)) + off + 4), (bool)(0));
             }
         } else {
-            PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas,
-                                      g_StarSystem_ctor_stationTextures[stationTex],
-                                      (char *)array_data(P(self, 0x14)) + off + 4, 0);
+            ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_stationTextures[stationTex]), (unsigned int *)((char *)array_data(P(self, 0x14)) + off + 4), (bool)(0));
             int idx = Station_getIndex(station);
             if (((Status *)(*g_StarSystem_ctor_status_obj))->orbitHasPlanetRing(idx) != 0) {
                 AEGeometry *ring = (AEGeometry *)::operator new(0xc0);
                 AEGeometry_ctor(ring, 0x1a70, *g_StarSystem_ctor_canvas, false);
                 P(self, 0x44) = ring;
-                PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x7198, (char *)self + 0x48, 0);
+                ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x7198), (unsigned int *)((char *)self + 0x48), (bool)(0));
                 U(self, 0x4c) = i;
             }
         }
@@ -537,7 +519,7 @@ StarSystem::StarSystem(int mode) {
                     B(self, 0x0c) == 0 ? 1000.0f : 2000.0f);
             ((AEGeometry *)(streak))->setScaling(*(const Vector *)vec);
             if (B(self, 0x0c) != 0) {
-                PaintCanvas_TextureCreate(*g_StarSystem_ctor_canvas, 0x2dde, (char *)self + 0x10, 0);
+                ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2dde), (unsigned int *)((char *)self + 0x10), (bool)(0));
             }
             usedSlots[sunSlot * 4] = 1;
         } else {
@@ -585,13 +567,13 @@ void StarSystem::updateSupernova(int dt) {
     StarSystem *self = this;
     void *streak = P(self, 0x40);
     if (streak != 0) {
-        void *transform = PaintCanvas_TransformGetTransform(*g_StarSystem_update_canvas_a, I(streak, 0x0c));
+        void *transform = ((PaintCanvas *)*g_StarSystem_update_canvas_a)->TransformGetTransform(I(streak, 0x0c));
         int mode = 0;
         ((AbyssEngine::Transform *)(transform))->Update(mode, dt);
     }
     void *sun = *(void **)P(P(self, 0x1c), 4);
     if (sun != 0) {
-        void *transform = PaintCanvas_TransformGetTransform(*g_StarSystem_update_canvas_b, I(sun, 0x0c));
+        void *transform = ((PaintCanvas *)*g_StarSystem_update_canvas_b)->TransformGetTransform(I(sun, 0x0c));
         int mode = 1;
         ((AbyssEngine::Transform *)(transform))->Update(mode, dt);
     }
@@ -616,8 +598,7 @@ void StarSystem::switchPlanetForIntro() {
     char scaled[12];
     char current[12];
     int flags = 0;
-    PaintCanvas_TextureCreate(*g_StarSystem_planet_canvas, 0x273a,
-                              (char *)P(P(self, 0x14), 4) + U(self, 0x50) * 4, flags);
+    ((PaintCanvas *)(*g_StarSystem_planet_canvas))->TextureCreate((unsigned short)(0x273a), (unsigned int *)((char *)P(P(self, 0x14), 4) + U(self, 0x50) * 4), (bool)(flags));
     ((AEGeometry *)(current))->getScaling();
     Vector_scale(scaled, current, 2.0f);
     ((AEGeometry *)(((AEGeometry **)P(P(self, 0x1c), 4))[U(self, 0x50)]))->setScaling(*(const Vector *)scaled);
@@ -631,7 +612,7 @@ void StarSystem::switchSunForSupernovaReversal() {
     StarSystem *self = this;
     void **canvasHolder = g_StarSystem_reversal_canvas;
     char scaleBytes[12];
-    PaintCanvas_TextureCreate(*canvasHolder, 0x2734, P(P(self, 0x14), 4), 0);
+    ((PaintCanvas *)(*canvasHolder))->TextureCreate((unsigned short)(0x2734), (unsigned int *)(P(P(self, 0x14), 4)), (bool)(0));
     AEGeometry *geom = *(AEGeometry **)P(P(self, 0x1c), 4);
     uint32_t *scale = (uint32_t *)scaleBytes;
     scale[0] = 0x68009815;
@@ -657,8 +638,8 @@ void StarSystem::switchSunForSupernovaIntro() {
     char scaled[12];
     char current[12];
     void *canvas = *canvasHolder;
-    PaintCanvas_TextureCreate(canvas, 0x2df3, P(P(self, 0x14), 4), 0);
-    PaintCanvas_TextureCreate(*canvasHolder, 0x2df4, (char *)self + 0x10, 0);
+    ((PaintCanvas *)(canvas))->TextureCreate((unsigned short)(0x2df3), (unsigned int *)(P(P(self, 0x14), 4)), (bool)(0));
+    ((PaintCanvas *)(*canvasHolder))->TextureCreate((unsigned short)(0x2df4), (unsigned int *)((char *)self + 0x10), (bool)(0));
 
     ((AEGeometry *)((AEGeometry *)P(self, 0x40)))->setMesh(0x2df2);
     AEGeometry *streak = (AEGeometry *)P(self, 0x40);
@@ -705,8 +686,8 @@ void StarSystem::render() {
 
     void **canvasHolder = g_StarSystem_render_canvas;
     void *canvas = *canvasHolder;
-    void *current = PaintCanvas_CameraGetCurrent(canvas);
-    void *local = PaintCanvas_CameraGetLocal(canvas, current);
+    unsigned current = ((PaintCanvas *)canvas)->CameraGetCurrent();
+    void *local = ((PaintCanvas *)canvas)->CameraGetLocal(current);
     MatrixGetPosition(cameraPos, local);
 
     uint32_t count = array_len(P(self, 0x1c));
@@ -716,8 +697,8 @@ void StarSystem::render() {
         if (count > 1) {
             if (posOffset == 0) {
                 void *canvas2 = *canvasHolder;
-                void *current2 = PaintCanvas_CameraGetCurrent(canvas2);
-                void *local2 = PaintCanvas_CameraGetLocal(canvas2, current2);
+                unsigned current2 = ((PaintCanvas *)canvas2)->CameraGetCurrent();
+                void *local2 = ((PaintCanvas *)canvas2)->CameraGetLocal(current2);
                 __aeabi_memcpy(savedCamera, local2, 0x3c);
                 Vector_add(tempVec, (const char *)array_data(P(self, 0x20)), cameraPos);
                 if (B(self, 0x0c) == 0) {
@@ -749,8 +730,8 @@ void StarSystem::render() {
                 if (B(self, 0x0c) != 0) {
                     Vector_mul_assign(tempVec, grow);
                     void *canvas3 = *canvasHolder;
-                    void *current3 = PaintCanvas_CameraGetCurrent(canvas3);
-                    void *local3 = PaintCanvas_CameraGetLocal(canvas3, current3);
+                    unsigned current3 = ((PaintCanvas *)canvas3)->CameraGetCurrent();
+                    void *local3 = ((PaintCanvas *)canvas3)->CameraGetLocal(current3);
                     Matrix_assign(savedCamera, (const char *)local3);
                     Vector_add(up, (const char *)array_data(P(self, 0x20)), cameraPos);
                     MatrixGetUp(scaleBytes, savedCamera);
@@ -791,19 +772,19 @@ void StarSystem::render() {
             ((AEGeometry *)(geoms[i]))->setPosition(*(const Vector *)tempMatrix);
         }
 
-        PaintCanvas_SetTexture(*canvasHolder, ((uint32_t *)array_data(P(self, 0x14)))[i], -1);
+        ((PaintCanvas *)*canvasHolder)->SetTexture(((uint32_t *)array_data(P(self, 0x14)))[i], (unsigned)-1);
         int blend;
         if (posOffset == 0) {
             blend = 2;
         } else {
             blend = B(self, 0x54) == 0 ? 1 : 0x15;
         }
-        PaintCanvas_SetBlendMode(*canvasHolder, blend);
+        ((PaintCanvas *)*canvasHolder)->SetBlendMode(blend);
         ((AEGeometry *)(((AEGeometry **)array_data(P(self, 0x1c)))[i]))->render();
 
         if (i == U(self, 0x4c)) {
-            PaintCanvas_SetTexture(*canvasHolder, U(self, 0x48), -1);
-            PaintCanvas_SetBlendMode(*canvasHolder, 1);
+            ((PaintCanvas *)*canvasHolder)->SetTexture(U(self, 0x48), (unsigned)-1);
+            ((PaintCanvas *)*canvasHolder)->SetBlendMode(1);
             __aeabi_memcpy(savedCamera, ((AEGeometry *)(((AEGeometry **)array_data(P(self, 0x1c)))[i]))->getMatrix(), 0x3c);
             MatrixSetScaling(lookAt, 4.0f, 4.0f, 4.0f);
             AEGeometry_setMatrix((AEGeometry *)P(self, 0x44), lookAt);

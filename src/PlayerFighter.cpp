@@ -11,6 +11,23 @@
 #include "gof2/Route.h"
 #include "gof2/Standing.h"
 
+// Local minimal view of the real global-scope ::PaintCanvas (the full headers
+// gof2/PaintCanvas.h / PaintCanvasClass.h cannot be included here: Trail.h
+// already declares a distinct AbyssEngine::PaintCanvas stub that conflicts).
+// Only the methods called in this TU are declared; signatures/scope match the
+// real ::PaintCanvas definitions in src/PaintCanvas.cpp so the mangled
+// _ZN11PaintCanvas... symbols resolve at link time.
+class PaintCanvas {
+public:
+    void *TransformGetTransform(unsigned int index);
+    void *TransformGetLocal(unsigned int index);
+    void TransformSetLocal(unsigned int index, const AbyssEngine::AEMath::Matrix &matrix);
+    void MeshCloneMaterial(unsigned int index, unsigned int *out);
+    void *MeshGetPointer(unsigned int index);
+    void *MaterialGetMaterial(unsigned int index);
+    void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
+};
+
 
 extern "C" void PlayerFighter_setShipGroup_base(AEGeometry *self, int a, bool b);
 extern "C" void PlayerFighter_awake_tail(int geom, int on);
@@ -61,17 +78,10 @@ static inline float AEMath_VectorLength(void *v) {
     return AbyssEngine::AEMath::VectorLength(*(const AbyssEngine::AEMath::Vector *)v);
 }
 extern "C" int AERandom_nextIntB(int rng, int bound);
-extern "C" unsigned PaintCanvas_TransformGetTransform(unsigned t);
 extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
-extern "C" int PaintCanvas_TransformGetLocal(unsigned t);
-extern "C" void PaintCanvas_TransformSetLocal(unsigned t, void *m);
 extern "C" void PlayerFighter_render_tail(int geom);
 extern "C" void AEGeometry_setMatrix(void *geom);
 extern "C" void PF_vscale(void *out, void *vec, float scalar);
-extern "C" void PaintCanvas_MeshCloneMaterial(void *canvas, unsigned mesh, unsigned *out);
-extern "C" int PaintCanvas_MeshGetPointer(void *canvas, unsigned mesh);
-extern "C" int PaintCanvas_MaterialGetMaterial(void *canvas, unsigned mat);
-extern "C" void PaintCanvas_MeshChangeMaterial(void *canvas, unsigned mesh, unsigned short mat);
 extern "C" void Player_reset(int player);
 extern "C" void AEString_ctor_default(void *s);
 extern "C" void AEString_assign(void *dst, void *src);
@@ -847,7 +857,7 @@ void PlayerFighter::setExhaustVisible(bool vis) {
         int sub = self->subGeometry;
         int id = (sub != 0) ? *(int *)(sub + 0x14) : *(int *)(geom + 0x14);
         if (id != -1) {
-            unsigned t = PaintCanvas_TransformGetTransform(*(unsigned *)gExhaustCanvas);
+            unsigned t = (unsigned)(unsigned long)((PaintCanvas *)g_PaintCanvas)->TransformGetTransform(*(unsigned *)gExhaustCanvas);
             return PlayerFighter_setExhaustVisible_apply(t, vis);
         }
     }
@@ -895,11 +905,11 @@ void PlayerFighter::render() {
             idp = *(unsigned **)gR_g5;
             unsigned char tmp[60];
             unsigned id = *idp;
-            void *src = (void *)PaintCanvas_TransformGetLocal(id);
+            void *src = ((PaintCanvas *)g_PaintCanvas)->TransformGetLocal(id);
             __aeabi_memcpy(tmp, src, 0x3c);
-            PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
+            ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(self->subGeometry + 0xc)));
             ((AEGeometry *)(0))->render();
-            PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
+            ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(self->subGeometry + 0xc)));
         }
         if (self->trail != 0) {
             ((Trail *)(0))->render();
@@ -909,11 +919,11 @@ void PlayerFighter::render() {
     {
         unsigned char tmp[60];
         unsigned id = *idp;
-        void *src = (void *)PaintCanvas_TransformGetLocal(id);
+        void *src = ((PaintCanvas *)g_PaintCanvas)->TransformGetLocal(id);
         __aeabi_memcpy(tmp, src, 0x3c);
-        PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
+        ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(self->subGeometry + 0xc)));
         ((AEGeometry *)(0))->render();
-        PaintCanvas_TransformSetLocal(*idp, *(void **)(self->subGeometry + 0xc));
+        ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(self->subGeometry + 0xc)));
     }
 done:
     ;
@@ -1056,17 +1066,17 @@ void PlayerFighter::handleCloaking() {
             self->field_0x13c = 1;
             if (matId == 0xffffffff) {
                 void **cv = *(void ***)gHC_canvasClone;
-                PaintCanvas_MeshCloneMaterial(*cv, *(unsigned *)(self->subGeometry + 0x1c),
+                ((PaintCanvas *)*cv)->MeshCloneMaterial(*(unsigned *)(self->subGeometry + 0x1c),
                                               (unsigned *)((char *)self + 0x2dc));
-                int mp = PaintCanvas_MeshGetPointer(*cv,
+                int mp = (int)(long)((PaintCanvas *)*cv)->MeshGetPointer(
                                                     *(unsigned *)(self->subGeometry + 0x1c));
                 matId = self->cloakMaterial;
                 self->field_0x2e0 = *(int *)(*(int *)(mp + 0x30) + 0x20);
             }
             void **cvm = *(void ***)gHC_canvasMat;
-            int mat = PaintCanvas_MaterialGetMaterial(*cvm, matId);
+            int mat = (int)(long)((PaintCanvas *)*cvm)->MaterialGetMaterial(matId);
             *(int *)(mat + 0x20) = 0xe;
-            PaintCanvas_MeshChangeMaterial(*cvm, *(unsigned *)(self->subGeometry + 0x1c),
+            ((PaintCanvas *)*cvm)->MeshChangeMaterial(*(unsigned *)(self->subGeometry + 0x1c),
                                            self->cloakMaterial);
             if (self->field_0x2d9 == 0) {
                 delta = self->cloakTimer;
@@ -1088,7 +1098,7 @@ void PlayerFighter::handleCloaking() {
             }
             void *cv = *(void **)gHC_canvasA;
             cv = *(void **)cv;
-            int mp = PaintCanvas_MeshGetPointer(cv, *(unsigned *)(self->subGeometry + 0x1c));
+            int mp = (int)(long)((PaintCanvas *)cv)->MeshGetPointer(*(unsigned *)(self->subGeometry + 0x1c));
             float a = VectorSignedToFloat(self->cloakTimer, 0) / gHC_divIn;
             PF_cloakApply((void *)(long)mp, (int)(long)cv, a, 1);
             return;
@@ -1099,7 +1109,7 @@ void PlayerFighter::handleCloaking() {
                 self->cloakTimer = 0;
                 self->cloakActive = 0;
                 self->field_0x13c = 0;
-                int mat = PaintCanvas_MaterialGetMaterial(*cvc, self->cloakMaterial);
+                int mat = (int)(long)((PaintCanvas *)*cvc)->MaterialGetMaterial(self->cloakMaterial);
                 *(int *)(mat + 0x20) = restore;
                 PF_cloakStop(self, 1);
                 return;
@@ -1110,7 +1120,7 @@ void PlayerFighter::handleCloaking() {
             void **cvb = *(void ***)gHC_canvasB;
             self->field_0x74 = 0;
             void *cv = *cvb;
-            int mp = PaintCanvas_MeshGetPointer(cv, *(unsigned *)(self->subGeometry + 0x1c));
+            int mp = (int)(long)((PaintCanvas *)cv)->MeshGetPointer(*(unsigned *)(self->subGeometry + 0x1c));
             float a = VectorSignedToFloat(self->cloakTimer, 0);
             float b = VectorSignedToFloat(self->cloakDuration - 2000, 0);
             float alpha = (a - b) / gHC_divOut + 1.0f;

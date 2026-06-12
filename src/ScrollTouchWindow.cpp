@@ -2,12 +2,12 @@
 #include "gof2/ScrollTouchBox.h"
 #include "gof2/Layout.h"
 #include "gof2/String.h"
+#include "gof2/PaintCanvas.h"
 
+using AbyssEngine::PaintCanvas;
 
 extern "C" void ScrollTouchBox_setYPosition(void *self, int y);
 extern "C" void *ScrollTouchBox_dtor(void *self);
-extern "C" int PaintCanvas_GetColor(void *canvas);
-extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void String_ctor_cstr(void *dst, const char *text, bool copy);
 extern "C" void String_ctor_default(void *self);
 extern "C" void ScrollTouchBox_ctor(void *self, int x, int y, int w, int h);
@@ -76,7 +76,7 @@ void ScrollTouchWindow::draw()
 {
     void **canvasHolder = g_STW_canvas_draw;
     void *canvas = *canvasHolder;
-    int color = PaintCanvas_GetColor(canvas);
+    int color = ((PaintCanvas*)canvas)->GetColor();
 
     int scrollOffset;
     int contentHeight;
@@ -122,7 +122,7 @@ void ScrollTouchWindow::draw()
         ((Layout *)(layout))->drawScrollBar((this->x + this->width) - LayoutI(layout, 0x48) - LayoutI(layout, 0x2c), this->y + LayoutI(layout, 0x2c) + yOffset, scrollHeight, startPx, heightPx);
     }
 
-    PaintCanvas_SetColor(*canvasHolder, color);
+    ((PaintCanvas*)*canvasHolder)->SetColor((unsigned int)color);
 }
 
 // ---- drawTextBG_17448c.cpp ----

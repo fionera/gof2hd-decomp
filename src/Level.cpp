@@ -1,5 +1,6 @@
 #include "gof2/Level.h"
 #include "gof2/externs.h"
+#include "gof2/PaintCanvasClass.h"
 // NOTE: gof2/ParticleSystemManager.h and gof2/Status.h are intentionally NOT included.
 // Level reaches those classes only through a handful of accessor methods and opaque
 // pointers, and uses local minimal interface structs (below) whose signatures match the
@@ -45,14 +46,11 @@ struct SolarSystem {
     int getRace();
 };
 
+static unsigned int g_level_texOutScratch;
+
 struct Station {
     int getPirateStationIndex();
     int getIndex();
-};
-
-struct PaintCanvas {
-    static void MeshCreate(PaintCanvas *self, int mesh, unsigned int *dst, bool flag);
-    static void TextureCreate(PaintCanvas *self, int id, unsigned int *dst, bool flag);
 };
 
 struct KIPlayer {
@@ -310,8 +308,8 @@ __attribute__((visibility("hidden"))) extern PaintCanvas **g_paintCanvas_intro;
 
 void Level::switchSkyboxForIntro() {
     PaintCanvas **pc = g_paintCanvas_intro;
-    PaintCanvas::MeshCreate(*pc, 0x4591, (unsigned int *)((char *)this + 4), false);
-    PaintCanvas::TextureCreate(*pc, 0x275a, (unsigned int *)((char *)this + 0x198), false);
+    ((PaintCanvas*)(*pc))->MeshCreate((unsigned short)(0x4591), (unsigned int *)((unsigned int *)((char *)this + 4)), false);
+    ((PaintCanvas*)(*pc))->TextureCreate((unsigned short)(0x275a), (void *)0, (void *)0, (unsigned int *)((unsigned int *)((char *)this + 0x198)), false);
     RawArray *list = (RawArray *)(intptr_t)asteroids;
     if (list != 0) {
         for (unsigned int i = 0; i < list->size; i = i + 1) {
@@ -332,10 +330,10 @@ void Level::switchSkyboxForSupernovaReversal() {
     Status **st = g_status_snr;
     PaintCanvas *canvas = *pc;
     int tex = (*st)->getSystem()->getTextureIndex();
-    PaintCanvas::MeshCreate(canvas, (unsigned short)(tex + 0x4588), (unsigned int *)((char *)this + 4), false);
+    ((PaintCanvas*)(canvas))->MeshCreate((unsigned short)((unsigned short)(tex + 0x4588)), (unsigned int *)((unsigned int *)((char *)this + 4)), false);
     PaintCanvas *canvas2 = *pc;
     int tex2 = (*st)->getSystem()->getTextureIndex();
-    PaintCanvas::TextureCreate(canvas2, (unsigned short)(tex2 + 0x2751), (unsigned int *)((char *)this + 0x198), false);
+    ((PaintCanvas*)(canvas2))->TextureCreate((unsigned short)((unsigned short)(tex2 + 0x2751)), (void *)0, (void *)0, (unsigned int *)((unsigned int *)((char *)this + 0x198)), false);
     skyboxTexture = -1;
 }
 
@@ -1014,7 +1012,6 @@ struct Station;
 struct StarSystem;
 struct SolarSystem;
 struct Engine;
-struct PaintCanvas;
 
 __attribute__((visibility("hidden"))) extern int    *g_csp_stack;   // [DAT_000be974]
 __attribute__((visibility("hidden"))) extern Status **g_csp_status;  // [DAT_000be978]
@@ -1036,15 +1033,12 @@ int  SolarSystem_getTextureIndex_csp();
 int  Station_getIndex_csp(Station *s);
 int  Station_isAttackedByAliens_csp(Station *s);
 int  aeabi_idivmod_csp(int a, int b);
-void PaintCanvas_MeshCreate_csp(PaintCanvas *c, int mesh, unsigned *out, int flag);
-void PaintCanvas_TextureCreate_csp(unsigned c, unsigned tex, int flag);
 void *Level_opnew_csp(unsigned size);
 void StarSystem_ctor_csp(StarSystem *s, int mode);
 void ArrayKIPlayer_ctor_csp(void *a);
 void ArraySetLength_KIPlayer_csp(unsigned n, void *a);
 int  ApplicationManager_GetEngine_csp();
 int  Engine_IsPostEffectActivated_csp(Engine *e);
-int  PaintCanvas_MeshGetPointer_csp(PaintCanvas *c, unsigned mesh);
 // Builds the skybox detail meshes (rings/storm/supernova flare/jumpgates), the station object and
 // the agent gallery, plus all the SIMD light-direction / jumpgate-placement math the decompiler
 // mangled. Profile selects the orbit context.
@@ -1068,11 +1062,10 @@ void Level::createSpace()
         if (alien == 0) {
             Status_getSystem_csp();
             int sysVariant = aeabi_idivmod_csp(SolarSystem_getIndex_csp(), 3);
-            PaintCanvas_MeshCreate_csp((PaintCanvas *)canvas, sysVariant + 0x45ba,
-                                       (unsigned *)(self + 8), 0);
+            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(sysVariant + 0x45ba), (unsigned int *)((unsigned *)(self + 8)), (bool)(0));
             Status_getSystem_csp();
             sysVariant = aeabi_idivmod_csp(SolarSystem_getIndex_csp(), 3);
-            PaintCanvas_TextureCreate_csp(canvas, (sysVariant + 0x2766) & 0xffff, 0);
+            ((PaintCanvas*)(long)(canvas))->TextureCreate((unsigned short)((sysVariant + 0x2766) & 0xffff), (void *)0, (void *)0, &g_level_texOutScratch, (bool)(0));
             // the rest (campaign/supernova/storm/ring detail) is built by the helper.
             Level_csp_buildDetail(this);
 
@@ -1080,16 +1073,15 @@ void Level::createSpace()
             if (0xf < SolarSystem_getTextureIndex_csp()) {
                 Engine *eng = (Engine *)ApplicationManager_GetEngine_csp();
                 if (Engine_IsPostEffectActivated_csp(eng) != 0) {
-                    int mp = PaintCanvas_MeshGetPointer_csp((PaintCanvas *)canvas,
-                                                            *(unsigned *)(self + 4));
+                    int mp = (int)(long)((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshGetPointer((unsigned int)(*(unsigned *)(self + 4)));
                     *(int *)(mp + 0x1c) = 0;
                 }
             }
         } else {
-            PaintCanvas_MeshCreate_csp((PaintCanvas *)canvas, 0x45bc, (unsigned *)(self + 8), 0);
-            PaintCanvas_TextureCreate_csp(canvas, 0x2768, 0);
-            PaintCanvas_MeshCreate_csp((PaintCanvas *)canvas, 0x4592, (unsigned *)(self + 4), 0);
-            PaintCanvas_TextureCreate_csp(canvas, 0x275b, 0);
+            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(0x45bc), (unsigned int *)((unsigned *)(self + 8)), (bool)(0));
+            ((PaintCanvas*)(long)(canvas))->TextureCreate((unsigned short)(0x2768), (void *)0, (void *)0, &g_level_texOutScratch, (bool)(0));
+            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(0x4592), (unsigned int *)((unsigned *)(self + 4)), (bool)(0));
+            ((PaintCanvas*)(long)(canvas))->TextureCreate((unsigned short)(0x275b), (void *)0, (void *)0, &g_level_texOutScratch, (bool)(0));
         }
 
         // randomized skybox spin (light direction), unless in fog orbit.
@@ -4087,8 +4079,6 @@ int   KIPlayer_getType_ips(KIPlayer *k);
 int   ParticleSystemManager_addSystem_ips(int mgr, void *ref, int kind, int flag);
 void  ParticleSystemManager_init_ips(ParticleSystemManager *m, void *ctx);
 void  ParticleSystemManager_enableSystemEmit_ips(int mgr, int sys);
-void  PaintCanvas_CameraGetCurrent_ips();
-int   PaintCanvas_CameraGetLocal_ips(unsigned c);
 int   AEGeometry_getReferenceMatrix_ips();
 void  AEGeometry_updateReferenceMatrix_ips();
 // Builds the per-asteroid dust descriptor block (huge SIMD struct init Ghidra mangled) and writes
@@ -4119,8 +4109,8 @@ void Level::initParticleSystems()
 
         // camera-locked sky particle system.
         unsigned canvas = *g_ips_canvas;
-        PaintCanvas_CameraGetCurrent_ips();
-        int local = PaintCanvas_CameraGetLocal_ips(canvas);
+        ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
+        int local = (int)(long)((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         int sys = ParticleSystemManager_addSystem_ips(*(int *)(self + 0x88), (void *)local, 4, 0);
         *(int *)(self + 0x64) = sys;
 
@@ -4142,8 +4132,8 @@ void Level::initParticleSystems()
             }
         }
 
-        PaintCanvas_CameraGetCurrent_ips();
-        local = PaintCanvas_CameraGetLocal_ips(canvas);
+        ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
+        local = (int)(long)((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         sys = ParticleSystemManager_addSystem_ips(*(int *)(self + 0x7c), (void *)local, 7, 0);
         *(int *)(self + 0x284) = sys;
 
@@ -4546,17 +4536,6 @@ __attribute__((visibility("hidden"))) extern void   **g_rbg_rng;      // [DAT_00
 __attribute__((visibility("hidden"))) extern int    **g_rbg_engine;   // [DAT_000d4b0c]
 
 extern "C" {
-void PaintCanvas_SetColor_rbg(unsigned c);
-void PaintCanvas_BeginBG_rbg();
-void PaintCanvas_EndBG_rbg(unsigned c);
-void PaintCanvas_CameraGetCurrent_rbg();
-void PaintCanvas_CameraGetLocal_rbg(unsigned c);
-void PaintCanvas_SetWorldViewMatrix_rbg(unsigned c);
-void PaintCanvas_SetTexture_rbg(unsigned c, unsigned tex);
-void PaintCanvas_SetBlendMode_rbg(unsigned c, int mode);
-void PaintCanvas_DrawMesh_rbg(unsigned c, unsigned mesh);
-void PaintCanvas_DrawTransform_rbg(unsigned c, Matrix *m);
-int  PaintCanvas_TransformGetTransform_rbg(unsigned c);
 void Matrix_getInverse_rbg(Matrix *dst);
 void Matrix_assign_rbg(Matrix *dst, Matrix *src);
 void Matrix_mulEq_rbg(Matrix *dst, Matrix *rhs);
@@ -4584,10 +4563,10 @@ void Level::renderBG(float t) {
     char *self = (char *)thisptr;
     unsigned canvas = *g_rbg_canvas;
 
-    PaintCanvas_SetColor_rbg(canvas);
-    PaintCanvas_BeginBG_rbg();
-    PaintCanvas_CameraGetCurrent_rbg();
-    PaintCanvas_CameraGetLocal_rbg(canvas);
+    ((PaintCanvas*)(long)(canvas))->SetColor(0xffffffffu);
+    ((PaintCanvas*)(long)(canvas))->BeginBG();
+    ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
+    ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
 
     Matrix *sky = (Matrix *)(self + 0x1d0);
     Matrix_getInverse_rbg(sky);
@@ -4604,27 +4583,27 @@ void Level::renderBG(float t) {
     Level_rbg_buildSkyMatrix(self, alienRing ? 1 : 0, t);
     Matrix_mulEq_rbg(sky, (Matrix *)(self + 0x20c));
 
-    PaintCanvas_SetWorldViewMatrix_rbg(canvas);
-    PaintCanvas_SetTexture_rbg(canvas, *(unsigned *)(self + 0x19c));
-    PaintCanvas_SetBlendMode_rbg(canvas, 0);
-    PaintCanvas_DrawMesh_rbg(canvas, *(unsigned *)(self + 8));
-    PaintCanvas_SetTexture_rbg(canvas, *(unsigned *)(self + 0x198));
-    PaintCanvas_SetBlendMode_rbg(canvas, 2);
-    PaintCanvas_DrawMesh_rbg(canvas, *(unsigned *)(self + 4));
+    ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)(self + 0x1d0));
+    ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x19c)), 0);
+    ((PaintCanvas*)(long)(canvas))->SetBlendMode(0);
+    ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)(self + 8)));
+    ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x198)), 0);
+    ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
+    ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)(self + 4)));
 
     // optional far cloud layer.
     if (*(int *)(self + 0x1b4) != -1) {
-        PaintCanvas_SetTexture_rbg(canvas, *(unsigned *)(self + 0x1b8));
-        PaintCanvas_SetBlendMode_rbg(canvas, 1);
-        PaintCanvas_CameraGetCurrent_rbg();
-        PaintCanvas_CameraGetLocal_rbg(canvas);
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x1b8)), 0);
+        ((PaintCanvas*)(long)(canvas))->SetBlendMode(1);
+        ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
+        ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         Matrix_getInverse_rbg(sky);
         Matrix_assign_rbg(sky, sky);
         *(int *)(self + 0x1ec) = 0;
         *(int *)(self + 0x1dc) = 0;
         *(int *)(self + 0x1fc) = 0;
         Matrix_getInverse_rbg(sky);
-        PaintCanvas_DrawTransform_rbg(canvas, *(Matrix **)(self + 0x1b4));
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)(self + 0x1b4)), (const float *)0);
     }
 
     StarSystem_render_rbg(*(StarSystem **)(self + 0xec));
@@ -4632,30 +4611,30 @@ void Level::renderBG(float t) {
     // supernova glow billboards.
     if (Status_inSupernovaSystem_rbg() != 0 && *(int *)(self + 0xc) != -1) {
         int camp = Status_getCurrentCampaignMission_rbg();
-        PaintCanvas_SetTexture_rbg(canvas, *(unsigned *)(self + 0x1a0));
-        PaintCanvas_SetBlendMode_rbg(canvas, 2);
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x1a0)), 0);
+        ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
         float scale = (0x6a < camp) ? 1.5f : 1.0f;
         int flag = (int)(scale * t);
-        int xf = PaintCanvas_TransformGetTransform_rbg(canvas);
+        int xf = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         Transform_Update_rbg(xf, flag);
         Matrix_getInverse_rbg(sky);
-        PaintCanvas_DrawTransform_rbg(canvas, *(Matrix **)(self + 0x10));
-        xf = PaintCanvas_TransformGetTransform_rbg(canvas);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)(self + 0x10)), (const float *)0);
+        xf = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         Transform_Update_rbg(xf, flag);
-        PaintCanvas_DrawTransform_rbg(canvas, *(Matrix **)(self + 0x18));
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)(self + 0x18)), (const float *)0);
     }
 
     // rotating planet ring.
     if (*(int *)(self + 0x1bc) != -1) {
-        PaintCanvas_SetTexture_rbg(canvas, *(unsigned *)(self + 0x1c0));
-        PaintCanvas_SetBlendMode_rbg(canvas, 2);
-        PaintCanvas_CameraGetCurrent_rbg();
-        PaintCanvas_CameraGetLocal_rbg(canvas);
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x1c0)), 0);
+        ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
+        ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
+        ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         Matrix_getInverse_rbg(sky);
         Matrix_assign_rbg(sky, sky);
-        int xf = PaintCanvas_TransformGetTransform_rbg(canvas);
+        int xf = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         int before = *(int *)(xf + 0x110);
-        int xf2 = PaintCanvas_TransformGetTransform_rbg(canvas);
+        int xf2 = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         Transform_Update_rbg(xf2, (int)t);
         if (*(int *)(xf + 0x110) < before) {
             // re-randomize the ring tilt — corrupted SIMD in the original; rebuild via helper.
@@ -4670,31 +4649,31 @@ void Level::renderBG(float t) {
         *(int *)(self + 0x1ec) = 0;
         *(int *)(self + 0x1fc) = 0;
         Matrix_getInverse_rbg(sky);
-        PaintCanvas_DrawTransform_rbg(canvas, *(Matrix **)(self + 0x1bc));
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)(self + 0x1bc)), (const float *)0);
     }
 
     // supernova flare mesh (when the explosion timeline is past its trigger).
     if (*(char *)(self + 0x289) != 0 &&
         1.0f <= *(float *)(*(int *)g_rbg_engine + 0x28)) {
-        PaintCanvas_CameraGetCurrent_rbg();
-        PaintCanvas_CameraGetLocal_rbg(canvas);
+        ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
+        ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         Matrix_getInverse_rbg(sky);
         Matrix_assign_rbg(sky, sky);
         *(int *)(self + 0x1ec) = 0;
         *(int *)(self + 0x1dc) = 0;
         *(int *)(self + 0x1fc) = 0;
-        PaintCanvas_SetWorldViewMatrix_rbg(canvas);
-        PaintCanvas_SetColor_rbg(canvas);
+        ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)(self + 0x1d0));
+        ((PaintCanvas*)(long)(canvas))->SetColor(0xffffffffu);
         Engine *eng = *(Engine **)(canvas + 0x34);
         Engine_SetModelMatrix_rbg((Matrix *)eng);
-        PaintCanvas_SetTexture_rbg(canvas, *(unsigned *)(self + 0x1c4));
-        PaintCanvas_SetBlendMode_rbg(canvas, 8);
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x1c4)), 0);
+        ((PaintCanvas*)(long)(canvas))->SetBlendMode(8);
         Engine_LightSetLight_rbg(*(Engine **)(canvas + 0x34), 0x4000);
         Engine_GlEnable_rbg(*(unsigned *)(canvas + 0x34), 0);
-        PaintCanvas_DrawMesh_rbg(canvas, *(unsigned *)(self + 0x1cc));
+        ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)(self + 0x1cc)));
         Engine_GlEnable_rbg(*(unsigned *)(canvas + 0x34), 0);
         Engine_LightEnable_rbg(*(int *)(canvas + 0x34));
     }
 
-    PaintCanvas_EndBG_rbg(canvas);
+    ((PaintCanvas*)(long)(canvas))->EndBG();
 }

@@ -3,25 +3,18 @@
 #include "gof2/ApplicationManager.h"
 #include "gof2/ImageFactory.h"
 #include "gof2/Layout.h"
+#include "gof2/PaintCanvas.h"
 
 
-extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
 int GameText_getLanguage();
 void Globals_loadFont(void *obj, int lang);
 extern "C" void MTitle_or_tail(void *p);
-extern "C" void PaintCanvas_Begin2d(void *canvas);
-extern "C" void PaintCanvas_SetColor(void *canvas, int color);
-extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y, int ax, int ay);
-extern "C" void PaintCanvas_End2d(void *canvas);
 extern "C" void MTitle_r2dDone(void *screen, int arg);
 extern "C" void MTitle_r2dTail(void *canvas);
 extern "C" void _ZN6MTitle9OnReleaseEv(MTitle *self);
 MTitle *_ZN6MTitleD2Ev(MTitle *self);
 extern "C" void MTitle_deleteTail(MTitle *self);
-extern "C" void PaintCanvas_ClearBuffer(void *canvas, int value);
-extern "C" void PaintCanvas_Begin3d(void *arg);
 extern "C" void MTitle_r3dTail(void *arg);
-extern "C" void PaintCanvas_Image2DCreate(void *canvas, unsigned short image, unsigned int *out);
 
 // ---- OnRelease_97a2c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MTitle_or_canvas;
@@ -32,7 +25,7 @@ __attribute__((visibility("hidden"))) extern void **g_MTitle_or_imgfac;
 
 void MTitle::OnRelease()
 {
-    PaintCanvas_ReleaseAllResources(*g_MTitle_or_canvas);
+    ((PaintCanvas *)*g_MTitle_or_canvas)->ReleaseAllResources();
 
     void *fontObj = *g_MTitle_or_font;
     Globals_loadFont(fontObj, GameText_getLanguage());
@@ -53,10 +46,10 @@ __attribute__((visibility("hidden"))) extern void **g_MTitle_r2d_screen;
 
 void MTitle::OnRender2D()
 {
-    PaintCanvas_Begin2d(this->canvas);
+    ((PaintCanvas *)this->canvas)->Begin2d();
 
     void **canvas = g_MTitle_r2d_canvas;
-    PaintCanvas_SetColor(*canvas, -1);
+    ((PaintCanvas *)*canvas)->SetColor((unsigned int)-1);
 
     void **layout = g_MTitle_r2d_layout;
     ((Layout *)(*layout))->drawBG();
@@ -100,9 +93,9 @@ pathC:
     fade = (float)t / 1000.0f;
 common:
     int color = (int)(fade * 255.0f) - 0x100;
-    PaintCanvas_SetColor(this->canvas, color);
-    PaintCanvas_DrawImage2D(*canvas, image, 0, 0, 0x44, 0x44);
-    PaintCanvas_End2d(this->canvas);
+    ((PaintCanvas *)this->canvas)->SetColor((unsigned int)color);
+    ((PaintCanvas *)*canvas)->DrawImage2D(image, 0, 0, (unsigned char)0x44, (unsigned char)0x44);
+    ((PaintCanvas *)this->canvas)->End2d();
     MTitle_r2dTail(this->canvas);
 }
 
@@ -143,8 +136,8 @@ __attribute__((visibility("hidden"))) extern void **g_MTitle_r3d_canvas;
 void MTitle::OnRender3D()
 {
     void **canvas = g_MTitle_r3d_canvas;
-    PaintCanvas_ClearBuffer(*canvas, 0xff);
-    PaintCanvas_Begin3d(this->canvas);
+    ((PaintCanvas *)*canvas)->ClearBuffer(0xff);
+    ((PaintCanvas *)this->canvas)->Begin3d();
     MTitle_r3dTail(this->canvas);
 }
 
@@ -156,8 +149,8 @@ __attribute__((visibility("hidden"))) extern void **g_MTitle_sound;
 int MTitle::OnInitialize()
 {
     void **canvas = g_MTitle_canvas;
-    PaintCanvas_Image2DCreate(*canvas, 7000, (unsigned int *)(&this->logoImage));
-    PaintCanvas_Image2DCreate(*canvas, 0x1b59, (unsigned int *)(&this->logoImage2));
+    ((PaintCanvas *)*canvas)->Image2DCreate(7000, (unsigned int *)(&this->logoImage));
+    ((PaintCanvas *)*canvas)->Image2DCreate(0x1b59, (unsigned int *)(&this->logoImage2));
 
     int z = 0;
     ((FModSound *)(*g_MTitle_sound))->play(0x91, (Vector *)z, (Vector *)z, (float)z);

@@ -1,4 +1,5 @@
 #include "gof2/Sprite.h"
+#include "gof2/PaintCanvas.h"
 
 
 
@@ -42,8 +43,6 @@ void Sprite::nextFrame()
 // ---- draw_d0e68.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Sprite_draw_image_canvas;
 __attribute__((visibility("hidden"))) extern void **g_Sprite_draw_region_canvas;
-extern "C" void PaintCanvas_DrawRegion2DForDraw(void *canvas, uint32_t image, int srcX, int srcY, int w, int h,
-                                                long long zeroPair, int flags, int x, int y);
 
 void Sprite::draw(float scaleX, float scaleY)
 {
@@ -59,9 +58,9 @@ void Sprite::draw(float scaleX, float scaleY)
         int y = posY - refX;
         posY = 0;
         int x = posX - refX;
-        PaintCanvas_DrawRegion2DForDraw(*g_Sprite_draw_region_canvas, image,
+        ((PaintCanvas*)*g_Sprite_draw_region_canvas)->DrawRegion2D(image,
                                         this->frameSrcX, this->frameSrcY, w, h,
-                                        (long long)(uint32_t)posY, posY, x, y);
+                                        0.0f, 0, 0, x, y);
         return;
     }
 
@@ -75,7 +74,7 @@ void Sprite::draw(float scaleX, float scaleY)
     void *canvas = holderValue;
 
     if (scaleX == 1.0f || scaleY == 1.0f) {
-        return PaintCanvas_DrawImage2D(canvas, image, x, this->posY - refX);
+        return ((PaintCanvas*)canvas)->DrawImage2D(image, x, this->posY - refX);
     }
 
     float frameHeight = (float)this->frameHeight;
@@ -86,7 +85,7 @@ void Sprite::draw(float scaleX, float scaleY)
     int drawY = (int)((float)y - ((scaleY - 1.0f) * frameHeight) * 0.5f);
     int drawX = (int)((float)x - ((scaleX - 1.0f) * frameWidth) * 0.5f);
 
-    PaintCanvas_DrawImage2DScaled(canvas, image, drawX, drawY, scaledWidth, scaledHeight, 0x11, 0x11, 0);
+    ((PaintCanvas*)canvas)->DrawImage2D(image, drawX, drawY, scaledWidth, scaledHeight, (unsigned char)0x11, (unsigned char)0x11, (unsigned char)0);
 }
 
 // ---- Sprite_d0d18.cpp ----
@@ -100,8 +99,8 @@ Sprite::Sprite(uint32_t image, int frameWidth, int frameHeight)
     this->frameHeight = frameHeight;
 
     void *canvas = *holder;
-    this->imageWidth = PaintCanvas_GetImage2DWidth(canvas, image);
-    int imageHeight = PaintCanvas_GetImage2DHeight(*holder, this->image);
+    this->imageWidth = ((PaintCanvas*)canvas)->GetImage2DWidth(image);
+    int imageHeight = ((PaintCanvas*)*holder)->GetImage2DHeight(this->image);
 
     int rows = imageHeight / this->frameHeight;
     int columns = this->imageWidth / this->frameWidth;
@@ -138,7 +137,7 @@ void Sprite::drawRegion(int srcX, int srcY, int w, int h)
         uint32_t image = frames[this->currentFrame];
         int y = posY + srcY - refX;
         int x = posX + srcX - refX;
-        PaintCanvas_DrawRegion2D(canvas, image, srcX, srcY, w, h, 0.0f, 0, 0, x, y);
+        ((PaintCanvas*)canvas)->DrawRegion2D(image, srcX, srcY, w, h, 0.0f, 0, 0, x, y);
         return;
     }
 
@@ -152,7 +151,7 @@ void Sprite::drawRegion(int srcX, int srcY, int w, int h)
     int x = posX + srcX - refX;
     srcX += frameX;
     srcY += frameY;
-    PaintCanvas_DrawRegion2D(canvas, image, srcX, srcY, w, h, 0.0f, 0, 0, x, y);
+    ((PaintCanvas*)canvas)->DrawRegion2D(image, srcX, srcY, w, h, 0.0f, 0, 0, x, y);
 }
 
 // ---- Sprite_d0dd0.cpp ----
@@ -166,8 +165,8 @@ Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight
     this->frameHeight = frameHeight;
 
     void *canvas = *holder;
-    this->imageWidth = PaintCanvas_GetImage2DWidth(canvas, *frames);
-    int imageHeight = PaintCanvas_GetImage2DHeight(*holder, *this->frames);
+    this->imageWidth = ((PaintCanvas*)canvas)->GetImage2DWidth(*frames);
+    int imageHeight = ((PaintCanvas*)*holder)->GetImage2DHeight(*this->frames);
 
     this->refPixelX = 0;
     this->refPixelY = 0;

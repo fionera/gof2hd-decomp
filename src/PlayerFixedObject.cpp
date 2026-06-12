@@ -17,6 +17,7 @@
 #include "gof2/String.h"
 #include "gof2/BoundingVolume.h"
 #include "gof2/Player.h"
+#include "gof2/PaintCanvasClass.h"
 
 // V3 (3-float by-value vector return type) is provided by gof2/PlayerFixedObject.h
 // as a typedef of AbyssEngine::AEMath::Vector.
@@ -27,7 +28,6 @@
 template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
-extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int id);
 extern "C" void  AEGeometry_setMatrix(void *geom, void *m);
 extern "C" float AEGeometry_moveForward_ret(void *geom, float d);
 extern "C" void *Matrix_assign(void *dst, void *src);
@@ -40,8 +40,6 @@ extern "C" void  Vector_sub(Vector *a, Vector *b);
 extern "C" float Vector_length(Vector *v);
 extern "C" void *Player_getEnemies();
 extern "C" void  Player_getPosition(Vector *out);
-extern "C" void  PaintCanvas_MaterialCreate(void *pc, unsigned short mat, void *out);
-extern "C" void  PaintCanvas_MeshChangeMaterial(void *pc, unsigned int mesh, unsigned short mat);
 extern "C" void Transform_setExhaustVisible(void *transform, bool v);
 extern "C" void Array_BV_ctor(void *arr);
 extern "C" void BoundingVolume_setArr(BoundingVolume *bv, void *arr);
@@ -300,7 +298,7 @@ void PlayerFixedObject::update(int dt) {
                 k2 = self->kind;
             }
             if (k2 != 0x4220) {
-                void *t = PaintCanvas_TransformGetTransform(*g_pfo_canvasU,
+                void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
                             *(int *)((char *)self->geometry + 0xc));
                 ((AbyssEngine::Transform *)(t))->Update((long long)dt, true);
             }
@@ -332,7 +330,7 @@ afterMotion:
         void *expl;
         if (wreck != 0) {
             AEGeometry_setMatrix(wreck, ((AEGeometry *)(self->geometry))->getMatrix());
-            void *t = PaintCanvas_TransformGetTransform(*g_pfo_canvasU,
+            void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
                         *(int *)((char *)wreck + 0xc));
             ((AbyssEngine::Transform *)(t))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
             if (self->faction == 3 && self->moving != 0 &&
@@ -430,10 +428,10 @@ afterMotion:
             }
         }
         self->finished = 0;
-        void *t = PaintCanvas_TransformGetTransform(*g_pfo_canvasU,
+        void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
                     *(int *)((char *)self->wreckGeometry + 0xc));
         ((AbyssEngine::Transform *)(t))->Update((long long)dt, true);
-        t = PaintCanvas_TransformGetTransform(*g_pfo_canvasU,
+        t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
                     *(int *)((char *)self->wreckGeometry + 0xc));
         if (*(char *)((char *)t + 0xed) == 0) {
             void *lod = self->level;
@@ -515,8 +513,8 @@ afterMotion:
                 self->wreckMaterial = mat;
                 void *pc = *g_pfo_pcMaterial;
                 char matOut[4];
-                PaintCanvas_MaterialCreate(pc, mat, matOut);
-                PaintCanvas_MeshChangeMaterial(pc,
+                ((PaintCanvas*)pc)->MaterialCreate(mat, (unsigned int *)matOut);
+                ((PaintCanvas*)pc)->MeshChangeMaterial(
                     *(unsigned int *)((char *)self->wreckGeometry + 0x1c),
                     *(unsigned short *)matOut);
             }
@@ -600,7 +598,7 @@ void PlayerFixedObject::setExhaustVisible(bool v) {
     if (geom != 0 && *(int *)((char *)geom + 0x14) != -1) {
         void **holder = g_pfo_canvas;
         return Transform_setExhaustVisible(
-            PaintCanvas_TransformGetTransform(*holder, *(int *)((char *)geom + 0xc)), v);
+            ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc)), v);
     }
 }
 
@@ -718,7 +716,7 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     void **holder = g_pfo_canvas2;
     AEGeometry_ctor(geom, (uint16_t)meshId, *holder, true);
     self->wreckGeometry = geom;
-    void *t = PaintCanvas_TransformGetTransform(*holder, *(int *)((char *)geom + 0xc));
+    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc));
     *(int *)((char *)t + 0xe0) = 0x48f42400; // 500000.0f far-clip constant (raw bits)
 
     int kind = self->kind;
@@ -1030,7 +1028,7 @@ void PlayerFixedObject::setDeadButSelectable() {
     void **holder = g_pfo_canvas3;
     void *newGeom = self->wreckGeometry;
     self->geometry = newGeom;
-    void *t = PaintCanvas_TransformGetTransform(*holder, *(int *)((char *)newGeom + 0xc));
+    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)newGeom + 0xc));
     // NOTE: the decompiler emitted a single 64-bit argument; SetAnimationRangeInTime
     // takes (start, end). Passing the recovered value as start and 0 as end.
     ((AbyssEngine::Transform *)(t))->SetAnimationRangeInTime(*(long long *)((char *)t + 0xf8), 0);

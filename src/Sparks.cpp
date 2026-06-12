@@ -1,20 +1,10 @@
 #include "gof2/Sparks.h"
+#include "gof2/PaintCanvas.h"
 
 
 namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
-extern "C" void PaintCanvas_SetTexture(void *canvas, uint32_t texture, uint32_t mode);
-extern "C" void PaintCanvas_SetBlendMode(void *canvas, int mode);
-extern "C" void PaintCanvas_SetWorldViewMatrix(void *canvas, Matrix const &m);
-extern "C" void PaintCanvas_DrawSpriteSystem(void *canvas, uint32_t sprite);
 
 // ---- Sparks_15e38c.cpp ----
-extern "C" void PaintCanvas_SpriteSystemCreate(void *canvas, uint16_t count, bool dynamic,
-                                                uint32_t *outSprite);
-extern "C" void PaintCanvas_SpriteSystemSetAllUv(void *canvas, uint32_t sprite, float u0,
-                                                  float v0, float u1, float v1);
-extern "C" void PaintCanvas_SpriteSystemSetSize(void *canvas, uint32_t sprite, uint16_t index,
-                                                 int16_t size);
-
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_ctor;
 __attribute__((visibility("hidden"))) extern void **g_Sparks_random_ctor;
 
@@ -33,8 +23,8 @@ Sparks::Sparks(int kind)
     this->count = count;
     this->lifetime = lifetime;
 
-    PaintCanvas_SpriteSystemCreate(*canvas, (uint16_t)count, false, outSprite);
-    PaintCanvas_SpriteSystemSetAllUv(*canvas, this->spriteSystem, 0.626953125f,
+    ((PaintCanvas *)*canvas)->SpriteSystemCreate((uint16_t)count, false, outSprite);
+    ((PaintCanvas *)*canvas)->SpriteSystemSetAllUv(this->spriteSystem, 0.626953125f,
                                      0.001953125f, 0.748046875f, 0.123046875f);
 
     uint32_t n = this->count;
@@ -45,7 +35,7 @@ Sparks::Sparks(int kind)
     if (this->kind == 1) {
         void **rng = g_Sparks_random_ctor;
         for (uint32_t i = 0; i < n; i++) {
-            PaintCanvas_SpriteSystemSetSize(*canvas, this->spriteSystem, (uint16_t)i, 1);
+            ((PaintCanvas *)*canvas)->SpriteSystemSetSize(this->spriteSystem, (uint16_t)i, 1);
             int value = AbyssEngine::AERandom::nextInt(*rng, 0x1f4);
             this->lifetimeThresholds[i] = value;
             n = this->count;
@@ -62,16 +52,13 @@ Sparks::Sparks(int kind)
 // ---- translate_15e6d4.cpp ----
 using AbyssEngine::AEMath::Vector;
 
-extern "C" void PaintCanvas_SpriteSystemAddPosition(void *canvas, uint32_t sprite, uint16_t index,
-                                                     float x, float y, float z);
-
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_translate;
 
 void Sparks::translate(Vector const &v)
 {
     void **canvas = g_Sparks_canvas_translate;
     for (uint32_t i = 0; i < this->count; i++)
-        PaintCanvas_SpriteSystemAddPosition(*canvas, this->spriteSystem, (uint16_t)i,
+        ((PaintCanvas *)*canvas)->SpriteSystemAddPosition(this->spriteSystem, (uint16_t)i,
                                             v.x, v.y, v.z);
 }
 
@@ -97,9 +84,6 @@ bool Sparks::isRocket()
 }
 
 // ---- update_15e660.cpp ----
-extern "C" void PaintCanvas_SpriteSystemSetSize(void *canvas, uint32_t sprite, uint16_t index,
-                                                 int16_t size);
-
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_update;
 
 void Sparks::update(int step)
@@ -117,7 +101,7 @@ void Sparks::update(int step)
         if (elapsed <= thresholds[i])
             continue;
         int size = this->lifetime - (elapsed << 1);
-        PaintCanvas_SpriteSystemSetSize(*g_Sparks_canvas_update, this->spriteSystem, (uint16_t)i,
+        ((PaintCanvas *)*g_Sparks_canvas_update)->SpriteSystemSetSize(this->spriteSystem, (uint16_t)i,
                                         (int16_t)size);
     }
 
@@ -140,9 +124,6 @@ void Sparks::update(int step)
 }
 
 // ---- explode_15e48c.cpp ----
-extern "C" void PaintCanvas_SpriteSystemSetPosition(void *canvas, uint32_t sprite,
-                                                     uint16_t index, float x, float y, float z);
-
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_explode_rocket;
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_explode_single;
 __attribute__((visibility("hidden"))) extern void **g_Sparks_random_explode;
@@ -168,12 +149,12 @@ void Sparks::explode(int x, int y, int z)
             float px = (float)(nextInt(*rng, 0x190) + x0);
             float py = (float)(nextInt(*rng, 0x190) + y0);
             float pz = (float)(nextInt(*rng, 0x190) + z0);
-            PaintCanvas_SpriteSystemSetPosition(canvasObj, sprite, (uint16_t)i,
+            ((PaintCanvas *)canvasObj)->SpriteSystemSetPosition(sprite, (uint16_t)i,
                                                 px, py, pz);
         }
     } else {
         void **canvas = g_Sparks_canvas_explode_single;
-        PaintCanvas_SpriteSystemSetPosition(*canvas, this->spriteSystem, 0,
+        ((PaintCanvas *)*canvas)->SpriteSystemSetPosition(this->spriteSystem, 0,
                                             (float)x0, (float)y0, (float)z0);
     }
 
@@ -191,8 +172,8 @@ void Sparks::render()
 
     if (this->active != 0) {
         void **canvas = g_Sparks_canvas_render;
-        PaintCanvas_SetTexture(*canvas, this->texture, 0xffffffff);
-        PaintCanvas_SetBlendMode(*canvas, 2);
+        ((PaintCanvas *)*canvas)->SetTexture(this->texture, 0xffffffff);
+        ((PaintCanvas *)*canvas)->SetBlendMode(2);
 
         void *canvasObj = *canvas;
         uint32_t *m = (uint32_t *)&matrix;
@@ -212,7 +193,7 @@ void Sparks::render()
         m[13] = 0x3f800000;
         m[14] = 0x3f800000;
 
-        PaintCanvas_SetWorldViewMatrix(canvasObj, matrix);
-        PaintCanvas_DrawSpriteSystem(*canvas, this->spriteSystem);
+        ((PaintCanvas *)canvasObj)->SetWorldViewMatrix(matrix);
+        ((PaintCanvas *)*canvas)->DrawSpriteSystem(this->spriteSystem);
     }
 }

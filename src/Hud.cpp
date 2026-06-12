@@ -24,10 +24,12 @@
 #include "gof2/ListItem.h"
 #include "gof2/Status.h"
 #include "gof2/Ship.h"
+#include "gof2/PaintCanvas.h"
 
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls are
 // method calls on this global instance.
 __attribute__((visibility("hidden"))) extern Status **gStatus;
+extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
 
 extern "C" void Hud_drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y);
@@ -37,10 +39,6 @@ extern "C" void Hud_drawSecondaryWeaponPanel(Hud *self);
 extern "C" void Hud_drawMissionBanner(Hud *self);
 extern "C" void Hud_drawMessage(Hud *self);
 extern "C" int  Status_isChallengeMode();
-extern "C" void PaintCanvas_SetColor(void *canvas, int color);
-extern "C" void PaintCanvas_SetColor4(void *canvas, int b1, int b2, int b3, int b4);
-extern "C" void PaintCanvas_DrawImage2D2(void *canvas, int img, int arg);
-extern "C" void PaintCanvas_DrawString2(void *canvas, void *font, void *str, int x, char y);
 extern "C" int  SolarSystem_getSecurityLevel(void *sys);
 extern "C" int  SolarSystem_getIndex(void *sys);
 extern "C" void String_concat(void *out, void *lhs, void *rhs);
@@ -48,18 +46,14 @@ extern "C" unsigned int Hud_touchMoveFallback(Hud *self, unsigned int a, void *b
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" int  Mission_getType(void *m);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
-extern "C" int  PaintCanvas_GetTextWidth(void *font, void *str);
 extern "C" void Hud_secondaryWeaponChanged(Hud *self);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
 extern "C" int  SolarSystem_getRace(void *sys);
-extern "C" void PaintCanvas_drawImage(void *canvas, int img, int x, int y);
 extern "C" int  Ship_hasJumpDrive(void *ship);
 extern "C" unsigned char Ship_hasCloak(void *ship);
 extern "C" void Layout_drawMask();
-extern "C" void PaintCanvas_DrawImage2D5(void *canvas, int img, int x, int y, char anchor);
-extern "C" int  PaintCanvas_GetTextHeight(void *canvas);
 extern "C" int  Sprite_getFrameWidth(void *sprite);
 extern "C" int  Sprite_getFrameHeight(void *sprite);
 extern "C" int  String_length(void *s);
@@ -344,12 +338,12 @@ void Hud::drawOrbitInformation() {
 
     void *canvas = *g_Hud_oiCanvas;
     int *layout = (int *)*g_Hud_oiLayout;
-    PaintCanvas_SetColor(canvas, -1);
-    int x = PaintCanvas_GetImage2DWidth(canvas, 0) + layout[0x87]; // +0x21c
+    ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
+    int x = ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned)(0)) + layout[0x87]; // +0x21c
 
     ((void *)(long)((Status *)(*gStatus))->getSystem());
     if (((SolarSystem *)(((void *)(long)((Status *)(*gStatus))->getSystem())))->hasNoOwner() == 0)
-        PaintCanvas_DrawImage2D2(canvas, I(self, 0x1c4), 3);
+        ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x1c4), 3, 0);
 
     void *font = *g_Hud_oiFont;
     // station name
@@ -357,10 +351,10 @@ void Hud::drawOrbitInformation() {
         char name[12];
         (void *)((Status *)(*gStatus))->getStation();
         ((Station *)(name))->getName();
-        PaintCanvas_DrawString2(canvas, font, name, x, (char)layout[0x88] /*+0x220*/);
+        ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)(name), (x), (char)layout[0x88] /*+0x220*/, false);
         ((String *)(name))->dtor();
     }
-    PaintCanvas_SetColor(canvas, -1);
+    ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
 
     if (((Status *)(*gStatus))->getCurrentCampaignMission() <= 0xf) return;
 
@@ -381,7 +375,7 @@ void Hud::drawOrbitInformation() {
         String_concat(acc, copy, sep);
         void *txt = ((GameText *)(*g_Hud_oiGameText))->getText(0); // id resolved by table
         String_concat(full, acc, txt);
-        PaintCanvas_DrawString2(canvas, font, full, x, (char)layout[0x89] /*+0x224*/);
+        ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)(full), (x), (char)layout[0x89] /*+0x224*/, false);
         ((String *)(full))->dtor();
         ((String *)(acc))->dtor();
         ((String *)(sep))->dtor();
@@ -390,9 +384,9 @@ void Hud::drawOrbitInformation() {
     }
 
     const unsigned char *row = g_Hud_secColors + sec * 0xc;
-    PaintCanvas_SetColor4(canvas, row[0], row[4], row[8], 0xff);
+    ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(row[0]), (unsigned char)(row[4]), (unsigned char)(row[8]), (unsigned char)(0xff));
     void *secTxt = ((GameText *)(*g_Hud_oiGameText))->getText(sec);
-    PaintCanvas_DrawString2(canvas, font, secTxt, x, (char)layout[0x8a] /*+0x228*/);
+    ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)(secTxt), (x), (char)layout[0x8a] /*+0x228*/, false);
 }
 
 // ---- touchMove_166ab8.cpp ----
@@ -675,7 +669,7 @@ void Hud::drawEventString(void *text, int rightAlign) {
         int base = I(self, 0x4e8);
         int yBase = I(self, 0x160);
         if (rightAlign == 0) {
-            int w = PaintCanvas_GetTextWidth(canvas, font);
+            int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(canvas), (font));
             x = (base + 3) - w;
         } else {
             x = -3 - base;
@@ -685,14 +679,14 @@ void Hud::drawEventString(void *text, int rightAlign) {
         if (rightAlign == 0) {
             int margin = I(self, 0x4f0);
             int screenW = *(int *)*g_Hud_screenW;
-            int w = PaintCanvas_GetTextWidth(canvas, font);
+            int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(canvas), (font));
             x = ((screenW - 1) - margin) - w;
         } else {
             x = I(self, 0x4f0) + 1;
         }
     }
     char y = (char)(I(self, 0x164) - 1);
-    PaintCanvas_DrawString2(canvas, font, text, x, y);
+    ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)(text), (x), (y), false);
 }
 
 // ---- setCurrentSecondaryWeapon_1622ec.cpp ----
@@ -755,7 +749,7 @@ void Hud::updateSecondaryWeaponString() {
     ((String *)(sep))->dtor();
 
     int screenW = *(int *)*g_Hud_swScreenW;
-    int w = PaintCanvas_GetTextWidth(*g_Hud_swCanvas, *g_Hud_swFont);
+    int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(*g_Hud_swCanvas), (*g_Hud_swFont));
     I(self, 0x3c0) = (screenW >> 1) - (w >> 1);
 }
 
@@ -781,11 +775,11 @@ void Hud::drawEventQueue() {
     int dispBase = I(src, 0x1e4);
     float dispScale = F<float>(src, 0x1e0);
 
-    PaintCanvas_SetColor4(canvas, 0xff, 0xff, 0xff, 0); // alpha derived below replaced inline
+    ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0)); // alpha derived below replaced inline
     float mul = (letterbox == 0) ? -2.0f : -1.0f;
     int yOff = (int)(mul * dispScale);
 
-    PaintCanvas_DrawImage2D2(canvas, I(self, 0x354), US(self, 0x3e0));
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x354), US(self, 0x3e0), 0);
 
     int item = *(int *)(I(P(self, 0x264), 4) + 4);
     if (item != 0) {
@@ -795,14 +789,14 @@ void Hud::drawEventQueue() {
         else if (kind == 1) { b2 = 0xff; b3 = 0x2a; b4 = 0; }
         else if (kind == 3) { b2 = 0xff; b3 = 0x80; b4 = 0; }
         else                { b2 = 0xff; b3 = 0xff; b4 = 0xff; }
-        PaintCanvas_SetColor4(canvas, 0xff, b2, b3, b4);
+        ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(b2), (unsigned char)(b3), (unsigned char)(b4));
 
         int strVal = *(int *)(item + 0x1c);
         void *font = *g_Hud_eqFont;
         int screenW = *(int *)*g_Hud_eqScreenW;
-        int w = PaintCanvas_GetTextWidth(canvas, font);
+        int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(canvas), (font));
         char y = (char)((char)yOff + (char)dispBase + cinematicY);
-        PaintCanvas_DrawString2(canvas, font, (void *)(long)strVal, (screenW >> 1) - w / 2, y);
+        ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)((void *)(long)strVal), ((screenW >> 1) - w / 2), (y), false);
     }
     Hud_eventQueueFinish(canvas, 0xffffffff);
 }
@@ -922,7 +916,7 @@ int Hud::init() {
     P(self, 0x530) = 0;
 
     int *layout = (int *)*g_Hud_initLayout;
-    int w = PaintCanvas_GetImage2DWidth(*g_Hud_initCanvas, 0);
+    int w = ((PaintCanvas*)(long)(*g_Hud_initCanvas))->GetImage2DWidth((unsigned)(0));
     int bound = *(int *)*g_Hud_initBound;
     *(int *)*g_Hud_initOutX = (bound - w) - layout[0x65]; // +0x194
     *(int *)*g_Hud_initOutY = layout[0x66];               // +0x198
@@ -936,12 +930,12 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_canvas;
 void Hud::drawPauseButton() {
     Hud *self = this;
     void **holder = g_Hud_canvas;
-    PaintCanvas_SetColor(*holder, -1);
+    ((PaintCanvas*)(long)(*holder))->SetColor((unsigned)(-1));
     unsigned char flag = UC(self, 0x284);
     int y = US(self, 0x40c);
     int x = US(self, 0x40a);
     int img = (flag & 1) == 0 ? I(self, 0x2f8) : I(self, 0x2f4);
-    return PaintCanvas_drawImage(*holder, img, x, y);
+    return ((PaintCanvas*)(long)(*holder))->DrawImage2D((unsigned)(img), (x), (y));
 }
 
 // ---- checkIfQuickMenuIsEmpty_1613d0.cpp ----
@@ -997,25 +991,25 @@ void Hud::drawMenu() {
     int *layout = (int *)*g_Hud_dmLayout;
 
     // top cap
-    PaintCanvas_DrawImage2D2(canvas, I(self, 0x298), I(self, 0x3c4) + I(self, 0x4cc));
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x298), I(self, 0x3c4) + I(self, 0x4cc), 0);
     // header glyph (centered)
     int hx = I(self, 0x4cc) + I(self, 0x3d4) + I(self, 0x3dc) / 2;
     char hy = (char)((char)I(self, 0x4d0) + (char)I(self, 0x3c8) + (char)(I(self, 0x3cc) / 2)
                      - (char)layout[0x8b] /*+0x22c*/);
-    PaintCanvas_DrawImage2D5(canvas, I(self, 0x35c), hx, hy, 0x11);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x35c), hx, hy, (unsigned char)0x11);
 
     int y = I(self, 0x3c8) + I(self, 0x4d0) + I(self, 0x3cc);
     // repeated middle slices (one per button beyond the first)
     if (P(self, 0x18) != 0 && *(int *)P(self, 0x18) != 0) {
         int count = *(int *)P(self, 0x18);
         for (unsigned int i = 0; i < (unsigned int)(count - 1); i++) {
-            PaintCanvas_DrawImage2D2(canvas, I(self, 0x2a0), I(self, 0x3c4) + I(self, 0x4cc));
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x2a0), I(self, 0x3c4) + I(self, 0x4cc), 0);
             y += I(self, 0x3d0);
             count = *(int *)P(self, 0x18);
         }
     }
     // bottom cap
-    PaintCanvas_DrawImage2D2(canvas, I(self, 0x29c), I(self, 0x3c4) + I(self, 0x4cc));
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x29c), I(self, 0x3c4) + I(self, 0x4cc), 0);
 
     // the actual buttons
     if (P(self, 0x18) != 0 && *(unsigned int *)P(self, 0x18) != 0) {
@@ -1045,16 +1039,15 @@ void Hud::drawMenu() {
     int gx = I(self, 0x4cc) + I(self, 0x3d4) + I(self, 0x3dc) / 2;
     unsigned char gy = (unsigned char)((char)y + (char)(layout[0xc] /*+0x30*/ / 2)
                         + (char)layout[0xa2] /*+0x288*/);
-    PaintCanvas_DrawImage2D5(canvas, I(self, 0x374), gx, gy, 0x11);
-    PaintCanvas_DrawImage2D5(canvas, I(self, 0x370), gx - layout[0x8c] /*+0x230*/,
-        (char)layout[0xc] + (char)gy + (char)layout[0xa3] /*+0x28c*/, 0x11);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x374), gx, gy, (unsigned char)0x11);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x370), gx - layout[0x8c] /*+0x230*/, (char)layout[0xc] + (char)gy + (char)layout[0xa3] /*+0x28c*/, (unsigned char)0x11);
 
     int barW = layout[0x8c];
     void *font = *g_Hud_dmFont;
-    int ih = PaintCanvas_GetImage2DHeight(canvas, 0);
-    int th = PaintCanvas_GetTextHeight(canvas);
+    int ih = ((PaintCanvas*)(long)(canvas))->GetImage2DHeight((unsigned)(0));
+    int th = ((PaintCanvas*)(long)(canvas))->GetTextHeight(0);
     char ty = (char)(((gy + (char)(ih / 2)) - (char)(th / 2)) + (char)layout[0x8d] /*+0x234*/);
-    PaintCanvas_DrawString2(canvas, font, label, barW + gx, ty);
+    ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)(label), (barW + gx), (ty), false);
     ((String *)(label))->dtor();
 }
 
@@ -1181,7 +1174,7 @@ void Hud::drawChallengeModeScore() {
     int screenW = *(int *)*g_Hud_csScreenW;
     void *sprite = P(self, 0x534);
 
-    PaintCanvas_SetColor(canvas, -1);
+    ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
     int fw = Sprite_getFrameWidth(sprite);
     int pad = layout[0xb]; // +0x2c
     int fh = Sprite_getFrameHeight(sprite);
@@ -1202,7 +1195,7 @@ void Hud::drawChallengeModeScore() {
         }
     }
 
-    PaintCanvas_SetColor(canvas, -1);
+    ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
     int dw = fw - pad;
     int half = screenW / 2;
     int span = (dw * 7) / 2;
@@ -1210,7 +1203,7 @@ void Hud::drawChallengeModeScore() {
     drawDigits(self, sprite, score, startX, y, dw);
 
     if (status[0x60] /*+0x180*/ > 0 && status[0x63] /*+0x18c*/ > 1) {
-        PaintCanvas_SetColor(canvas, -1);
+        ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
         int yRow = y + fh + pad;
         int scoreVal = status[0x60];
         if (scoreVal < 0xbb9) {
@@ -1226,15 +1219,15 @@ void Hud::drawChallengeModeScore() {
                 ((String *)(bonusStr))->dtor();
             }
         }
-        PaintCanvas_DrawImage2D2(canvas, I(self, 0x538), pad + startX);
+        ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x538), pad + startX, 0);
 
         char timeStr[12];
         ((String *)(timeStr))->ctor_int(status[0x63]);
-        int tx = (half + pad) - span + PaintCanvas_GetImage2DWidth(canvas, 0);
+        int tx = (half + pad) - span + ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned)(0));
         drawDigits(self, sprite, timeStr, tx, yRow, dw);
         ((String *)(timeStr))->dtor();
     }
-    PaintCanvas_SetColor(canvas, -1);
+    ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
     ((String *)(score))->dtor();
 }
 
@@ -1285,7 +1278,7 @@ void Hud::hudEventMedal(int medalId, int percent) {
     ((ListItem *)item)->ctor_String_int(str, 3);
     ((Hud *)(self))->addToEventQueue((ListItem *)item);
 
-    int w = PaintCanvas_GetTextWidth(*g_Hud_meCanvas, *g_Hud_meFont);
+    int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(*g_Hud_meCanvas), (*g_Hud_meFont));
     int screenW = *(int *)*g_Hud_meScreenW;
     I(self, 0x1d8) = 0;
     UC(self, 0x1de) = 1;

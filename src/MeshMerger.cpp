@@ -3,6 +3,30 @@
 #include "gof2/Vector.h"
 #include "gof2/AEMath.h"
 
+// MeshMerger.h forward-declares AbyssEngine::PaintCanvas as a *native* class, which
+// conflicts with the `using ::PaintCanvas` re-export inside PaintCanvasClass.h, so we
+// cannot include that header here. Instead declare the real global PaintCanvas class
+// (whose mangled `PaintCanvas::` symbols match the definitions in PaintCanvas.cpp)
+// with exactly the member methods this translation unit calls, and reinterpret_cast
+// the engine canvas pointer to it. `PCReal` aliases this complete type so the later
+// `#define PaintCanvas AEPaintCanvas` macro does not rewrite the calls.
+class PaintCanvas {
+public:
+    void MeshCreate(unsigned short, unsigned int *, bool);
+    void MeshCreate(unsigned short, unsigned short, signed char, unsigned int *);
+    void MeshCreate(unsigned short, unsigned short, signed char, unsigned short, unsigned int *);
+    void *MeshGetPointer(unsigned int);
+    float MeshSetPoint(unsigned int, unsigned short, float, float, float);
+    void MeshSetUv(unsigned int, unsigned short, float, float);
+    void MeshSetNormal(unsigned int, unsigned short, const AbyssEngine::AEMath::Vector &);
+    void MeshSetColor(unsigned int, unsigned short, float, float, float, float);
+    void MeshSetTriangle(unsigned int, unsigned short, unsigned short, unsigned short, unsigned short);
+    void TransformCreate(unsigned int *);
+    void TransformAddMeshId(unsigned int, unsigned int);
+    int CameraIsSphereinViewFrustum(void *, float);
+};
+typedef PaintCanvas PCReal;
+
 // Mesh and PaintCanvas are AbyssEngine types. fwd.h also declares conflicting *global*
 // forward decls of the same bare names, so we cannot pull the engine types to global
 // scope with `using` (the names already exist). Use the fully-qualified engine names
@@ -15,17 +39,7 @@ typedef AbyssEngine::PaintCanvas AEPaintCanvas;
 
 extern "C" void MeshMerger_setMatrix_tail(void *dst, const Matrix &m);
 extern "C" void MeshMerger_render_tail(void *a, void *b, int z);
-extern "C" void *PaintCanvas_MeshGetPointer(void *c, uint32_t id);
-extern "C" void PaintCanvas_MeshSetPoint(PaintCanvas *c, uint16_t mesh, float x, float y, float z);
-extern "C" void PaintCanvas_MeshSetNormal(PaintCanvas *c, uint32_t mesh, int16_t idx, Vector *n);
-extern "C" void PaintCanvas_MeshSetUv(PaintCanvas *c, uint16_t mesh, float u, float v);
-extern "C" void PaintCanvas_MeshSetColor(PaintCanvas *c, uint32_t mesh, int16_t idx, float r, float g, float b, float a);
-extern "C" void PaintCanvas_MeshSetTriangle(PaintCanvas *c, uint16_t mesh, int16_t tri, int16_t a, int16_t b);
-extern "C" void PaintCanvas_TransformCreate(void *c, uint32_t *out);
-extern "C" void PaintCanvas_TransformAddMeshId(void *c, uint32_t tf, uint32_t mesh);
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
-extern "C" uint8_t PaintCanvas_CameraIsSphereInViewFrustum(void *canvas, const Vector *center, float r);
-extern "C" void PaintCanvas_MeshCreate(void *canvas, uint16_t meshId, uint32_t *out, bool flag);
 
 // ---- setMatrix_173c74.cpp ----
 // setMatrix(index, m): tail-call the engine matrix-assign with the per-index
@@ -72,10 +86,6 @@ void MeshMerger::setEnabled(int index, bool enabled)
 }
 
 // ---- MeshMerger_1737a0.cpp ----
-// PaintCanvas mesh-building entry points (resolved blx targets).
-extern "C" void PaintCanvas_MeshCreate_simple(PaintCanvas *c, uint16_t nv, uint32_t *outId, bool b); // 0x75d.. (MeshCreate 4-arg)
-extern "C" void PaintCanvas_MeshCreate_full(PaintCanvas *c, int16_t nv, int16_t ni, int flags, uint16_t f, void *outId); // MeshCreate 6-arg
-
 void MatrixTransformVector(Matrix *out, Vector *v);   // 0x.. transform point
 void MatrixRotateVector(Matrix *out, Vector *v);      // 0x.. rotate normal
 
@@ -101,8 +111,8 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     int16_t totalI = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {
         uint32_t localId;
-        PaintCanvas_MeshCreate_simple(canvas, meshIds.data()[i], &localId, false);
-        void *ptr = PaintCanvas_MeshGetPointer(canvas, localId);
+        ((PCReal *)canvas)->MeshCreate(meshIds.data()[i], &localId, false);
+        void *ptr = ((PCReal *)canvas)->MeshGetPointer(localId);
         ((uint32_t **)pp(this, 0x8))[i] = (uint32_t *)ptr;
         char *m = (char *)((uint32_t **)pp(this, 0x8))[i];
         totalV = (int16_t)(totalV + *(uint16_t *)(m + 2));
@@ -111,8 +121,8 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
 
     // Create the combined target mesh.
     char *m0 = (char *)((uint32_t **)pp(this, 0x8))[0];
-    PaintCanvas_MeshCreate_full(canvas, totalV, totalI, (int)*(int8_t *)m0, flags,
-                                (void *)((char *)this + 0x10));
+    ((PCReal *)canvas)->MeshCreate((uint16_t)totalV, (uint16_t)totalI, (signed char)*(int8_t *)m0, flags,
+                       (uint32_t *)((char *)this + 0x10));
 
     int16_t triBase = 0;
     int16_t vtxBase = 0;
@@ -128,23 +138,23 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
             Vector tmp;
             if (fl & 1) {
                 MatrixTransformVector((Matrix *)&tmp, (Vector *)xf);
-                PaintCanvas_MeshSetPoint(canvas, (uint16_t)u32(this, 0x10), tmp.x, tmp.y, tmp.z);
+                ((PCReal *)canvas)->MeshSetPoint((unsigned int)(long)canvas, (uint16_t)u32(this, 0x10), tmp.x, tmp.y, tmp.z);
                 fl = *(uint8_t *)m;
             }
             if (((uint32_t)fl << 0x1d) & 0x80000000u) {
                 MatrixRotateVector((Matrix *)&tmp, (Vector *)xf);
-                PaintCanvas_MeshSetNormal(canvas, u32(this, 0x10), (int16_t)(vtxBase + v), &tmp);
+                ((PCReal *)canvas)->MeshSetNormal(u32(this, 0x10), (int16_t)(vtxBase + v), tmp);
                 fl = *(uint8_t *)m;
             }
             if (((uint32_t)fl << 0x1e) & 0x80000000u) {
                 float *uv = (float *)(*(int *)(m + 8) + uvOff);
-                PaintCanvas_MeshSetUv(canvas, (uint16_t)u32(this, 0x10), uv[1], uv[0]);
+                ((PCReal *)canvas)->MeshSetUv((unsigned int)(long)canvas, (uint16_t)u32(this, 0x10), uv[1], uv[0]);
                 fl = *(uint8_t *)m;
             }
             if (((uint32_t)fl << 0x1c) & 0x80000000u) {
                 float *col = (float *)(*(int *)(m + 0xc) + colOff);
-                PaintCanvas_MeshSetColor(canvas, u32(this, 0x10), (int16_t)(vtxBase + v),
-                                         col[1], col[0], col[2], col[3]);
+                ((PCReal *)canvas)->MeshSetColor(u32(this, 0x10), (int16_t)(vtxBase + v),
+                                     col[1], col[0], col[2], col[3]);
             }
             uvOff += 8;
             colOff += 0x10;
@@ -155,9 +165,9 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
         for (uint16_t t = 0; t < tris; t++) {
             if (((uint32_t)(*(uint8_t *)m) << 0x1b) & 0x80000000u) {
                 int16_t *ix = (int16_t *)(*(int *)(m + 0x2c) + triOff);
-                PaintCanvas_MeshSetTriangle(canvas, (uint16_t)u32(this, 0x10),
-                                            (int16_t)(triBase + t),
-                                            (int16_t)(ix[0] + vtxBase), (int16_t)(ix[1] + vtxBase));
+                ((PCReal *)canvas)->MeshSetTriangle((unsigned int)(long)canvas, (uint16_t)u32(this, 0x10),
+                                        (int16_t)(triBase + t),
+                                        (int16_t)(ix[0] + vtxBase), (int16_t)(ix[1] + vtxBase));
                 m = (char *)((uint32_t **)pp(this, 0x8))[i];
             }
             triOff += 6;
@@ -166,8 +176,8 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
         vtxBase = (int16_t)(vtxBase + *(uint16_t *)(m + 2));
     }
 
-    PaintCanvas_TransformCreate(canvas, (uint32_t *)((char *)this + 0x14));
-    PaintCanvas_TransformAddMeshId(canvas, u32(this, 0x14), u32(this, 0x10));
+    ((PCReal *)canvas)->TransformCreate((uint32_t *)((char *)this + 0x14));
+    ((PCReal *)canvas)->TransformAddMeshId(u32(this, 0x14), u32(this, 0x10));
     pp(this, 0x18) = 0;
     u8(this, 0x6) = 1;
     i32(this, 0x20) = 0;
@@ -183,9 +193,8 @@ void MeshMerger::update()
     int rows = i32(this, 0x0);
     for (int i = 0; i < rows; i++) {
         void *sph = ((void **)pp(this, 0x18))[i];
-        uint8_t vis = PaintCanvas_CameraIsSphereInViewFrustum(
-            pp(this, 0xc),
-            (const Vector *)((char *)sph + 0x3c),
+        uint8_t vis = (uint8_t)((PCReal *)pp(this, 0xc))->CameraIsSphereinViewFrustum(
+            (void *)((char *)sph + 0x3c),
             *(float *)((char *)sph + 0x48));
         int8_t *visArr = (int8_t *)pp(this, 0x2c);
         if (vis != (uint8_t)visArr[i]) {
@@ -259,10 +268,6 @@ void MeshMerger::update()
 
 // ---- init_173ca6.cpp ----
 // 0x77e00
-extern "C" void PaintCanvas_MeshCreate2(void *canvas, uint16_t nv, uint16_t ni, int flags); // 0x75da8
-extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t id);   // 0x72370
-extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out); // 0x720ac
-extern "C" void PaintCanvas_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh); // 0x73030
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                // 0x6ec2c (__aeabi_uidiv)
 extern "C" int MeshMerger_init_tail(MeshMerger *self, int r1, uint16_t flags, uint32_t *meshId); // 0x1ac6c8
 
@@ -299,12 +304,13 @@ int MeshMerger::init()
     }
 
     uint16_t flags = u16(this, 0x4);
-    PaintCanvas_MeshCreate2(pp(this, 0xc), nv, ni,
-                            (int)*(int8_t *)*(void **)pp(this, 0x8));
-    void *ptr = PaintCanvas_MeshGetPointer(pp(this, 0xc), u32(this, 0x10));
+    PaintCanvas *canvas = (PaintCanvas *)pp(this, 0xc);
+    ((PCReal *)canvas)->MeshCreate(nv, ni, (signed char)*(int8_t *)*(void **)pp(this, 0x8),
+                       (uint32_t *)((char *)this + 0x10));
+    void *ptr = ((PCReal *)canvas)->MeshGetPointer(u32(this, 0x10));
     pp(this, 0x20) = ptr;   // field_0x20: merged-mesh pointer (full-width store)
-    PaintCanvas_TransformCreate(pp(this, 0xc), (uint32_t *)((char *)this + 0x14));
-    PaintCanvas_TransformAddMeshId(pp(this, 0xc), u32(this, 0x14), u32(this, 0x10));
+    ((PCReal *)canvas)->TransformCreate((uint32_t *)((char *)this + 0x14));
+    ((PCReal *)canvas)->TransformAddMeshId(u32(this, 0x14), u32(this, 0x10));
     u8(this, 0x34) = 1;
     return MeshMerger_init_tail(this, 0, flags, (uint32_t *)((char *)this + 0x10));
 }
@@ -373,9 +379,9 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
-    void *canvas = pp(this, 0xc);
-    PaintCanvas_MeshCreate(canvas, meshId, &id, false);
-    void *ptr = PaintCanvas_MeshGetPointer(pp(this, 0xc), id);
+    PaintCanvas *canvas = (PaintCanvas *)pp(this, 0xc);
+    ((PCReal *)canvas)->MeshCreate(meshId, &id, false);
+    void *ptr = ((PCReal *)canvas)->MeshGetPointer(id);
     void **meshes = (void **)pp(this, 0x8);
     meshes[i32(this, 0x0) * lod + index] = ptr;
 }

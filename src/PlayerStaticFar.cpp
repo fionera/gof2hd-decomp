@@ -2,6 +2,7 @@
 #include "gof2/AEGeometry.h"
 #include "gof2/BoundingVolume.h"
 #include "gof2/Player.h"
+#include "gof2/PaintCanvasClass.h"
 
 
 extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);
@@ -152,10 +153,6 @@ static inline void AEMath_Vector_mul_eq(Vec3 *v, float s) { *(AEVec *)v *= s; }
 static inline void AEMath_Vector_add_eq(Vec3 *v, const Vec3 *o) { *(AEVec *)v += *(const AEVec *)o; }
 
 extern "C" {
-// Camera / matrix helpers (PaintCanvas).
-void *AbyssEngine_PaintCanvas_CameraGetCurrent(void *camera);   // 0x717f4
-void *AbyssEngine_PaintCanvas_CameraGetLocal(void *camera, void *cur); // 0x6ff1c
-
 // AEGeometry placement.
 void AEGeometry_setPositionVec(void *geometry, const Vec3 *v);          // 0x72148
 // 0x73048
@@ -177,8 +174,8 @@ void PlayerStaticFar::update(int /*delta*/)
     void *camera = g_PlayerStaticFar_cameraHolder;
 
     Vec3 local;
-    void *cur = AbyssEngine_PaintCanvas_CameraGetCurrent(camera);
-    void *matrix = AbyssEngine_PaintCanvas_CameraGetLocal(camera, cur);
+    unsigned int cur = ((PaintCanvas *)camera)->CameraGetCurrent();
+    void *matrix = ((PaintCanvas *)camera)->CameraGetLocal(cur);
     AbyssEngine_AEMath_MatrixGetPosition(&local, matrix);
 
     // this+0x90 = camera position.

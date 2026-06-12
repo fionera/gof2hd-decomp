@@ -9,17 +9,11 @@ static inline const T &field(const void *self, uint32_t off)
     return *(const T *)((const char *)self + off);
 }
 
-extern "C" void PaintCanvas_Image2DCreate(void *canvas, uint16_t image, uint32_t *out);
-extern "C" int PaintCanvas_GetImage2DWidth(void *canvas, uint32_t image);
-extern "C" int PaintCanvas_GetImage2DHeight(void *canvas, uint32_t image);
-extern "C" void PaintCanvas_DrawRegion2D(void *canvas, uint32_t image, int srcX, int srcY, int w, int h,
-                                         long long zeroPair, int flags, int x, int y);
-
 __attribute__((visibility("hidden"))) extern void **g_MarqueeImage_canvas;
 
 class MarqueeImage {
 public:
-    uint32_t image;    // +0x00  image2D handle (filled by PaintCanvas_Image2DCreate)
+    uint32_t image;    // +0x00  image2D handle (filled by PaintCanvas::Image2DCreate)
     int32_t  imageWidth;    // +0x04  image width
     int32_t  imageHeight;    // +0x08  image height
     int32_t  x;    // +0x0c  x

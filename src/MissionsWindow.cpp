@@ -1,4 +1,5 @@
 #include "gof2/MissionsWindow.h"
+#include "gof2/PaintCanvasClass.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/Item.h"
 #include "gof2/ScrollTouchWindow.h"
@@ -497,9 +498,6 @@ extern "C" {
 void MissionsWindow_drawWanted(void *self);   // DAT_1ac504 thunk
 void MissionsWindow_drawStarMap(void *self);  // DAT_1ac274 thunk
 
-void  PaintCanvas_SetColor(void *canvas);
-void  PaintCanvas_DrawString(void *canvas, void *font, void *text, int x, int y);
-
 void  Layout_drawHeader(void *layout, void *title);
 
 void  String_fromC(void *s, const char *text, bool copy);
@@ -535,7 +533,7 @@ extern "C" void MissionsWindow_draw(void *self)
     void *font = *(void **)g_mwd_font;
     int titleId = *g_mwd_textId;
 
-    PaintCanvas_SetColor(canvas);
+    ((PaintCanvas*)canvas)->SetColor((unsigned int)(uintptr_t)color);
 
     char header[0xc];
     void *ht = ((GameText *)g_mw_gameText)->getText(titleId);
@@ -610,16 +608,16 @@ extern "C" void MissionsWindow_draw(void *self)
 
         char nameStr[0xc];
         ((Agent *)(Mission_getAgent(fm)))->getName();
-        PaintCanvas_DrawString(canvas, font, nameStr, detailX, detailY);
+        ((PaintCanvas*)canvas)->DrawString((unsigned int)(uintptr_t)font, (void*)nameStr, detailX, detailY, false);
         ((String *)(nameStr))->dtor();
 
         char stationStr[0xc];
         ((Agent *)(Mission_getAgent(fm)))->getStationName();
-        PaintCanvas_DrawString(canvas, font, stationStr, detailX, detailY);
+        ((PaintCanvas*)canvas)->DrawString((unsigned int)(uintptr_t)font, (void*)stationStr, detailX, detailY, false);
         ((String *)(stationStr))->dtor();
 
         void *typeTxt = ((GameText *)g_mw_gameText)->getText(Mission_getType(((Agent *)(Mission_getAgent(fm)))->getMission()) + 0x162);
-        PaintCanvas_DrawString(canvas, font, typeTxt, detailX, detailY);
+        ((PaintCanvas*)canvas)->DrawString((unsigned int)(uintptr_t)font, (void*)typeTxt, detailX, detailY, false);
     }
 
     ((ScrollTouchWindow *)(pp(self, 0x4)))->draw();

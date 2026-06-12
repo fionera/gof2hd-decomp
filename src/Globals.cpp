@@ -1,4 +1,5 @@
 #include "gof2/Globals.h"
+#include "gof2/PaintCanvasClass.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/FModSound.h"
 // gof2/FileRead.h intentionally NOT included: its stub `struct Station`/`struct Agent`
@@ -45,7 +46,6 @@ extern "C" void ArraySetLength_Str(unsigned n, void *a);
 extern "C" long long Globals_lts_divmod(long long num, int den, int *rem);
 extern "C" void AEString_int_ctor(void *dst, int v);
 extern "C" void AEString_concat(void *dst, void *a);
-extern "C" int PaintCanvas_GetTextWidth(int canvas, void *font);
 void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth, void *lineArr);
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
@@ -69,14 +69,6 @@ extern "C" int idiv(int a, int b);
 extern "C" void Globals_buildAgentMissionText(void *out, void *agent, int offer);
 extern "C" int AEString_compare(void *a, void *b);
 extern "C" void AEGeometry_ctor(void *self, int resId, void *canvas, int flag);
-extern "C" void PaintCanvas_TransformCreate(void *canvas, unsigned *out);
-extern "C" void PaintCanvas_TransformAddMesh(unsigned canvas, unsigned short t, int flag);
-extern "C" void PaintCanvas_TransformAddMeshId(void *canvas, unsigned t, unsigned mesh);
-extern "C" void PaintCanvas_TransformAddChild(void *canvas, unsigned parent, unsigned child);
-extern "C" int PaintCanvas_TransformGetLocal(unsigned canvas);
-extern "C" int PaintCanvas_TransformGetTransform(unsigned canvas);
-extern "C" void PaintCanvas_MeshCreate(void *canvas, unsigned short mesh, unsigned *out, int flag);
-extern "C" void PaintCanvas_MaterialCreate(void *canvas, unsigned short mat, unsigned *out);
 void MatrixSetTranslation(void *m, float x, float y, float z);
 extern "C" void Globals_buildShipGroup0f(void *self, int param_2, void *canvas);
 extern "C" int AERandom_nextIntB(int rng, int bound);
@@ -106,10 +98,7 @@ extern "C" void ArrayReleaseClasses_Item(void *a);
 extern "C" void *ArrayItem_dtor(void *a);
 extern "C" void ArrayReleaseClasses_Ship(void *a);
 extern "C" void *ArrayShip_dtor(void *a);
-extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
 extern "C" void Globals_releaseResources_tail(void *arg);
-extern "C" void PaintCanvas_FontCreate(unsigned short canvas, unsigned *glyph, int fontGlobal);
-extern "C" void PaintCanvas_FontSetSpacing(void *canvas, unsigned font, short spacing);
 extern "C" void Mission_ctor(void *m);
 extern "C" void Galaxy_ctor(void *g);
 extern "C" void Achievements_ctor(void *a);
@@ -482,7 +471,7 @@ void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width
 
     void **strPtr = *(void ***)gGBS_strPtr;
     int **canvas = *(int ***)gGBS_canvas;
-    int w = PaintCanvas_GetTextWidth(**canvas, *strPtr);
+    int w = ((PaintCanvas *)(long)**canvas)->GetTextWidth(0, *strPtr);
     if (width < w) {
         void *line = ::operator new(0xc);
         AEString_default_ctor(line);
@@ -907,8 +896,6 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
 
 // ---- getShipGroup_e4e14.cpp ----
 
-extern "C" void PaintCanvas_MeshChangeResourceMaterial(void *canvas, unsigned mesh,
-                                                       unsigned short mat);
 
 // Per-group builders for the special param_1 == 0xf sub-cases that build articulated
 // transform chains (capital ships). Each delegates to the engine the same way the target
@@ -938,12 +925,12 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
         AEGeometry_ctor(geom, resId, *canvasP, 0);
         unsigned t0 = 0xffffffff;
-        PaintCanvas_TransformCreate(*canvasP, &t0);
-        PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t0, 1);
+        ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t0);
+        ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t0, 0, (bool)(1));
         ((AEGeometry *)((unsigned)(long)geom))->addChild(t0);
         unsigned t1 = 0xffffffff;
-        PaintCanvas_TransformCreate(*canvasP, &t1);
-        PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t1, 1);
+        ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t1);
+        ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t1, 0, (bool)(1));
         ((AEGeometry *)((unsigned)(long)geom))->addChild(t1);
         unsigned short lodMeshes[2] = {0, 0};
         int dist[2];
@@ -966,40 +953,37 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         unsigned mainT = 0xffffffff;
         unsigned mainMesh = 0xffffffff;
         if (mesh != 0xffff) {
-            PaintCanvas_MeshCreate(*canvasP, mesh, &mainMesh, 1);
-            PaintCanvas_TransformCreate(*canvasP, &mainT);
-            PaintCanvas_TransformAddMeshId(*canvasP, mainT, mainMesh);
+            ((PaintCanvas *)*canvasP)->MeshCreate(mesh, &mainMesh, true);
+            ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&mainT);
+            ((PaintCanvas *)*canvasP)->TransformAddMeshId(mainT, mainMesh);
             ((AEGeometry *)((unsigned)(long)geom))->addChild(mainT);
             *(unsigned *)((char *)geom + 0x20) = mainMesh;
         }
         if (!wireframe) {
             unsigned short mat = (unsigned short)((short)kind + 0x7dc8);
             unsigned matH = 0xffffffff;
-            PaintCanvas_MaterialCreate(*canvasP, mat, &matH);
-            PaintCanvas_MeshChangeResourceMaterial(*canvasP, *(unsigned *)((char *)geom + 0x1c),
+            ((PaintCanvas *)*canvasP)->MaterialCreate(mat, &matH);
+            ((PaintCanvas *)*canvasP)->MeshChangeResourceMaterial(*(unsigned *)((char *)geom + 0x1c),
                                                    mat);
         }
         short extra = gGSG_extraTable[kind];
         if (extra != -1) {
             unsigned t = 0xffffffff;
-            PaintCanvas_TransformCreate(*canvasP, &t);
-            PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t,
-                                         (int)(unsigned char)(char)extra);
+            ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t);
+            ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t, 0, (bool)((int)(unsigned char)(char)extra));
             ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
         }
         if (wireframe) {
             if (kind != 0x27 && kind != 0x29) {
                 unsigned t = 0xffffffff;
-                PaintCanvas_TransformCreate(*canvasP, &t);
-                PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t,
-                                             (int)(char)(-0x14 + (char)kind));
+                ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t);
+                ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(-0x14 + (char)kind)));
                 ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
             }
         } else {
             unsigned t = 0xffffffff;
-            PaintCanvas_TransformCreate(*canvasP, &t);
-            PaintCanvas_TransformAddMesh((unsigned)(long)*canvasP, (unsigned short)t,
-                                         (int)(char)(0x50 + (char)kind));
+            ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t);
+            ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(0x50 + (char)kind)));
             ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
         }
 
@@ -1022,8 +1006,8 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
                 dist[i] = d;
                 meshes[i] = (unsigned short)m;
                 if (!wireframe) {
-                    PaintCanvas_MeshCreate(*canvasP, (unsigned short)m, idp, 1);
-                    PaintCanvas_MeshChangeResourceMaterial(*canvasP, *idp,
+                    ((PaintCanvas *)*canvasP)->MeshCreate((unsigned short)m, idp, true);
+                    ((PaintCanvas *)*canvasP)->MeshChangeResourceMaterial(*idp,
                                                            (unsigned short)((short)kind + 0x7dc8));
                 }
                 d += 8000;
@@ -1108,8 +1092,6 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
 }
 
 // ---- drawLines_e4608.cpp ----
-extern "C" void PaintCanvas_DrawString(int canvas, void *font, int str, int x, int y,
-                                       int flag);
 extern void *const gDL2_canvas __attribute__((visibility("hidden")));     // DAT_000f4680
 extern void *const gDL2_lineHeight __attribute__((visibility("hidden"))); // DAT_000f4684
 
@@ -1125,18 +1107,16 @@ void Globals_drawLines7(unsigned font, Array<int> *lines, int baseX, int startY,
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
         if (centered == 0) {
-            int w = PaintCanvas_GetTextWidth(*cv, (void *)font);
+            int w = ((PaintCanvas *)(long)*cv)->GetTextWidth(font, (void *)(uintptr_t)(*lines)[i]);
             dx = (int)rightX - w;
         }
-        PaintCanvas_DrawString(*cv, (void *)font, (*lines)[i], dx + baseX, yacc, 0);
+        ((PaintCanvas *)(long)*cv)->DrawString(font, (void *)(uintptr_t)(*lines)[i], dx + baseX, yacc, false);
         yacc += *(int *)((char *)*lh + 4);
     }
 }
 
 // ---- createBillBoard_e3e08.cpp ----
-// Distinct PaintCanvas::MeshCreate overload (explicit vertex/face/uv counts) -> own wrapper name.
-extern "C" void PaintCanvas_MeshCreateBillboard(void *canvas, int a, int b, int c, unsigned short d,
-                                                void *meshOut);
+// Distinct PaintCanvas::MeshCreate overload (explicit vertex/face/uv counts).
 // per-face index triple setter
 // per-vertex UV/attr setter (variadic-ish; extra floats are uv coords)
 // per-vertex position setter (x, y, z)
@@ -1155,7 +1135,7 @@ void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, f
     int snapshot = *counter;
 
     long long mesh64 = 0;
-    PaintCanvas_MeshCreateBillboard((void *)(long)*canvasP, 0xc, 6, 0x13, 0, &mesh64);
+    ((PaintCanvas *)(long)*canvasP)->MeshCreate((unsigned short)0xc, (unsigned short)6, (signed char)0x13, (unsigned short)0, (unsigned int *)&mesh64);
     int mesh = (int)mesh64;
     int cv = *canvasP;
 
@@ -1529,8 +1509,6 @@ void * Globals::dtor() {
 }
 
 // ---- drawLines_e458c.cpp ----
-extern "C" void PaintCanvas_DrawString(int canvas, void *font, int str, int x, int y,
-                                       int flag);
 extern void *const gDL_canvas __attribute__((visibility("hidden")));
 extern void *const gDL_lineHeight __attribute__((visibility("hidden")));
 
@@ -1547,10 +1525,10 @@ void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
         if (centered != 0) {
-            int w = PaintCanvas_GetTextWidth(*cv, font);
+            int w = ((PaintCanvas *)(long)*cv)->GetTextWidth((unsigned)(uintptr_t)font, (void *)(uintptr_t)(*lines)[i]);
             dx = -(w >> 1);
         }
-        PaintCanvas_DrawString(*cv, font, (*lines)[i], dx + baseX, yacc, 0);
+        ((PaintCanvas *)(long)*cv)->DrawString((unsigned)(uintptr_t)font, (void *)(uintptr_t)(*lines)[i], dx + baseX, yacc, false);
         yacc += *(int *)((char *)*lh + 4);
     }
 }
@@ -1755,7 +1733,7 @@ extern void *const gRR_arg __attribute__((visibility("hidden")));
 
 void Globals_releaseResources()
 {
-    PaintCanvas_ReleaseAllResources(*(void **)gRR_canvas);
+    ((PaintCanvas *)*(void **)gRR_canvas)->ReleaseAllResources();
     return Globals_releaseResources_tail(*(void **)gRR_arg);
 }
 
@@ -1803,14 +1781,13 @@ void Globals_loadFont(void *self, int kind)
     case 9: {
         canvasP = *(void ***)gLF_canvas9;
         fontP = *(void ***)gLF_font9;
-        PaintCanvas_FontCreate((unsigned short)(unsigned long)*canvasP, (unsigned *)0x2d74,
-                               (int)(long)*fontP);
+        ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x2d74, (unsigned int *)(long)*fontP, false);
         if (flag(gLF_flagA) != 0) {
             spacing = -6;
         } else {
             spacing = flag(gLF_flagB) != 0 ? -8 : -4;
         }
-        PaintCanvas_FontSetSpacing(*canvasP, *(unsigned *)fontP, spacing);
+        ((PaintCanvas *)*canvasP)->FontSetSpacing(*(unsigned *)fontP, spacing);
         isMainFontPersian = 0;
         goto epilogue;
     }
@@ -1833,8 +1810,7 @@ void Globals_loadFont(void *self, int kind)
         canvasP = *(void ***)gLF_canvasD;
         if (kind == 0xf) {
             fontP = *(void ***)gLF_font15;
-            PaintCanvas_FontCreate((unsigned short)(unsigned long)*canvasP, (unsigned *)0x2d7e,
-                                   (int)(long)*fontP);
+            ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x2d7e, (unsigned int *)(long)*fontP, false);
             if (flag(gLF_flagC) != 0) {
                 spacing = -7;
             } else {
@@ -1842,8 +1818,7 @@ void Globals_loadFont(void *self, int kind)
             }
         } else {
             fontP = *(void ***)gLF_fontDef;
-            PaintCanvas_FontCreate((unsigned short)(unsigned long)*canvasP, (unsigned *)0x457,
-                                   (int)(long)*fontP);
+            ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x457, (unsigned int *)(long)*fontP, false);
             if (flag(gLF_flagE) != 0) {
                 spacing = -5;
             } else if (flag(gLF_flagF) != 0) {
@@ -1854,20 +1829,19 @@ void Globals_loadFont(void *self, int kind)
                 spacing = -2;
             }
         }
-        PaintCanvas_FontSetSpacing(*canvasP, *(unsigned *)fontP, spacing);
+        ((PaintCanvas *)*canvasP)->FontSetSpacing(*(unsigned *)fontP, spacing);
         goto setMain;
     }
     }
 
     // cases 10/11/14: common creation tail
-    PaintCanvas_FontCreate((unsigned short)(unsigned long)*canvasP, (unsigned *)(unsigned long)glyph,
-                           (int)(long)*fontP);
+    ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)glyph, (unsigned int *)(long)*fontP, false);
     if (flag(gLF_flagA) != 0) {
         spacing = -6;
     } else {
         spacing = flag(gLF_flagB) != 0 ? -8 : -4;
     }
-    PaintCanvas_FontSetSpacing(*canvasP, *(unsigned *)fontP, spacing);
+    ((PaintCanvas *)*canvasP)->FontSetSpacing(*(unsigned *)fontP, spacing);
 
 setMain:
     isMainFontPersian = 1;
@@ -1876,10 +1850,10 @@ epilogue: {
     unsigned *mainFont = *(unsigned **)gLF_fontMain;
     int cv = *mainCanvas;
     *(unsigned char *)(cv + 0x1c) = isMainFontPersian;
-    PaintCanvas_FontCreate((unsigned short)cv, (unsigned *)0x51e, (int)(long)mainFont);
-    PaintCanvas_FontSetSpacing((void *)(long)*mainCanvas, *mainFont, 0);
+    ((PaintCanvas *)(long)cv)->FontCreate((unsigned short)0x51e, (unsigned int *)mainFont, false);
+    ((PaintCanvas *)(long)*mainCanvas)->FontSetSpacing(*mainFont, 0);
     unsigned *extra = *(unsigned **)gLF_fontExtra;
-    PaintCanvas_FontCreate((unsigned short)*mainCanvas, (unsigned *)0x2d7a, (int)(long)extra);
+    ((PaintCanvas *)(long)*mainCanvas)->FontCreate((unsigned short)0x2d7a, (unsigned int *)extra, false);
     Globals_loadFont_tail(*mainCanvas, (int)*extra, 0);
 }
 }
@@ -2277,9 +2251,6 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
 }
 
 // ---- getLine_e4230.cpp ----
-extern "C" int PaintCanvas_GetTextWidthRange(int canvas, unsigned font, void *s,
-                                             unsigned from, unsigned to);
-
 extern void *const gGL_guardHolder __attribute__((visibility("hidden")));  // DAT_000f4378
 extern void *const gGL_canvas __attribute__((visibility("hidden")));       // DAT_000f437c
 extern const char gGL_empty[] __attribute__((visibility("hidden")));       // DAT_000f4380
@@ -2306,7 +2277,7 @@ void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
 
     while (i < len) {
         short ch = *AEString_index(text, i);
-        width += PaintCanvas_GetTextWidthRange(*canvas, font, text, i, i + 1);
+        width += ((PaintCanvas *)(long)*canvas)->GetTextWidth(font, text, i, i + 1);
         if (ch == 0x20) {
             lastSpace = i;
         }
