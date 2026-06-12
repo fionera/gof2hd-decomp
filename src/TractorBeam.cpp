@@ -44,8 +44,6 @@ static inline void *&kiPtr(void *p, int off) { return *(void **)((char *)p + off
 static inline uint8_t &kiByte(void *p, int off) { return *((uint8_t *)p + off); }
 
 
-extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t meshId, PaintCanvas *canvas, bool visible);
-extern "C" void AEGeometry_dtor(AEGeometry *self);
 
 // ---- TractorBeam_1511b4.cpp ----
 // AEGeometry::AEGeometry(mesh-id, canvas, visible) ctor @ 0x0007207c.
@@ -66,7 +64,7 @@ void TractorBeam::ctor(AEGeometry * /*unused*/, int param2) {
     AEGeometry *geo = (AEGeometry *)operator new(0xc0);
     uint16_t meshId = (uint16_t)((short)param2 + 0x3798);
     PaintCanvas *canvas = *(PaintCanvas **)(*(void **)gCanvasRoot);
-    AEGeometry_ctor(geo, meshId, canvas, false);
+    new ((void *)geo) AEGeometry((uint16_t)meshId, (PaintCanvas *)canvas, false);
 
     self->beamGeometry = geo;
     self->storedHitpoints = 0;
@@ -115,12 +113,9 @@ extern "C" int   Ship_getIndex(void *ship);                          // 0x719c8
 // 0x71548
 // 0x724a8
 
-// Vector aggregate ops resolved as AEMath helpers.
+// AEMath free operators used below; declared minimally to avoid pulling in AEMath.h.
 namespace AbyssEngine { namespace AEMath {
-void  Vector_assign(Vector *dst, const Vector *src);      // 0x6eb3c
-void  Vector_subAssign(Vector *dst, const Vector *src);   // 0x72694
-void  Vector_mulAssign(Vector *dst, float s);             // 0x726ac family
-void  Vector_scale(Vector *out, const Vector *v, float s);// 0x6ec74
+Vector operator*(const Vector &v, float s);
 } }
 
 // Hidden PC-relative roots.
@@ -179,11 +174,11 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
 
     Vector pos;
     ((AEGeometry *)(&pos))->getPosition();
-    Vector_assign((Vector *)self, &pos);
+    *(Vector *)self = *(const Vector *)&pos;
 
     Vector playerPos;
     ((PlayerEgo *)(&playerPos))->getPosition();
-    Vector_subAssign((Vector *)self, &playerPos);
+    *(Vector *)self -= *(const Vector *)&playerPos;
     float dist = VectorLength((Vector *)self);
 
     void *ship = gStatus->getShip();
@@ -192,16 +187,16 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     if (idx == 0x2c) {
         Vector dir;
         ((PlayerEgo *)(&dir))->GetDirVector();
-        Vector_scale(&offset, &dir, 0.5f);
+        *(Vector *)&offset = *(const Vector *)&dir * 0.5f;
     } else {
         ship = gStatus->getShip();
         idx = Ship_getIndex(ship);
         if (idx == 0x31) {
             Vector dir, up, tmp;
             ((PlayerEgo *)(&dir))->GetDirVector();
-            Vector_scale(&tmp, &dir, 0.5f);
+            *(Vector *)&tmp = *(const Vector *)&dir * 0.5f;
             ((PlayerEgo *)(&up))->GetUpVector();
-            Vector_scale(&up, &up, 0.5f);
+            *(Vector *)&up = *(const Vector *)&up * 0.5f;
             offset.x = tmp.x + dir.x;
             offset.y = tmp.y + dir.y;
             offset.z = tmp.z + dir.z;
@@ -224,8 +219,8 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         // Crate still far -- pull it toward the ship along the beam.
         radar->field_0x1c = 0;
         VectorNormalize(&n, (Vector *)self);
-        Vector_assign((Vector *)self, &n);
-        Vector_mulAssign((Vector *)self, (float)(frameTime * 10));
+        *(Vector *)self = *(const Vector *)&n;
+        *(Vector *)self *= (float)(frameTime * 10);
         void *crateGeo = kiPtr(self->grabbedCrate, 0x78);
         Vector pull = AbyssEngine::AEMath::operator-(n, *(Vector *)self);
         ((AEGeometry *)(crateGeo))->translate(pull);
@@ -265,7 +260,7 @@ TractorBeam *_ZN11TractorBeamD2Ev(TractorBeam *self)
 {
     AEGeometry *geo = self->beamGeometry;
     if (geo != 0) {
-        AEGeometry_dtor(geo);
+        ((AEGeometry *)geo)->~AEGeometry();
         ::operator delete(geo);
     }
     self->beamGeometry = 0;

@@ -4,29 +4,26 @@
 #include "gof2/Transform.h"
 #include "gof2/PaintCanvasClass.h"
 
+namespace AbyssEngine { namespace AEMath {
+    Vector operator-(const Vector &, const Vector &);
+    void MatrixMultiply(Matrix &, const Matrix &);
+} }
 
-extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(Array<AEGeometry *> *self);
 extern "C" void *Array_AEGeometryPtr_dtor(Array<AEGeometry *> *self);
 extern "C" void Explosion_tail_translate(void *geometry, const Vector *v);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
-extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
 float VectorLength(const Vector *self);
 extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self, float value, int duration);
-extern "C" void Matrix_ctor(Matrix *self);
-extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, int canvas, bool flag);
 void MatrixGetPosition(Vector *out, const Matrix *matrix);
-extern "C" void AEGeometry_setMatrix(AEGeometry *self, const Matrix *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 void MatrixSetTranslation(Matrix *out, Matrix *base, float x, float y, float z);
 extern "C" void MatrixSetScaling(Matrix *out, Matrix *base, float x, float y, float z);
 void MatrixGetUp(Vector *out, const Matrix *matrix);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
-extern "C" void Matrix_assign(Matrix *self, const Matrix *other);
-extern "C" void Matrix_mul_assign(Matrix *self, const Matrix *other);
 extern "C" void Explosion_reset_tail(Explosion *self);
 extern "C" void Array_AEGeometryPtr_ctor(Array<AEGeometry *> *self);
 extern "C" void ArraySetLength_AEGeometryPtr(int length, Array<AEGeometry *> *self);
@@ -78,13 +75,13 @@ Explosion *_ZN9ExplosionD2Ev(Explosion *self)
 {
     AEGeometry *geometry = self->primaryMesh;
     if (geometry != 0) {
-        ::operator delete(AEGeometry_dtor(geometry));
+        { geometry->~AEGeometry(); ::operator delete(geometry); }
     }
     self->primaryMesh = 0;
 
     geometry = self->secondaryMesh;
     if (geometry != 0) {
-        ::operator delete(AEGeometry_dtor(geometry));
+        { geometry->~AEGeometry(); ::operator delete(geometry); }
     }
     self->secondaryMesh = 0;
 
@@ -271,7 +268,7 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
         int canvasValue = *canvas;
         int current = ((PaintCanvas*)(long)canvasValue)->CameraGetCurrent();
         MatrixGetPosition(cameraPosition, (const Matrix *)((PaintCanvas*)(long)canvasValue)->CameraGetLocal(current));
-        Vector_sub(diff, position, cameraPosition);
+        *(Vector *)(diff) = *(const Vector *)(position) - *(const Vector *)(cameraPosition);
         float distance = VectorLength(diff);
 
         uint32_t transform = (uint32_t)(long)((PaintCanvas*)(long)*canvas)->TransformGetTransform(I(self->primaryMesh, 0xc));
@@ -303,13 +300,13 @@ extern int Explosion_paintCanvas;
 static inline __attribute__((always_inline)) AEGeometry *make_geometry(uint16_t mesh, int canvas)
 {
     AEGeometry *geometry = (AEGeometry *)::operator new(0xc0);
-    AEGeometry_ctor(geometry, mesh, canvas, false);
+    new ((void *)geometry) AEGeometry((uint16_t)mesh, (PaintCanvas *)(intptr_t)canvas, false);
     return geometry;
 }
 
 Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
 {
-    Matrix_ctor(&self->rotation);
+    ((Matrix *)(&self->rotation))->initIdentity();
     self->scale = 1.0f;
     self->type = type;
     self->primaryMesh = 0;
@@ -325,7 +322,7 @@ Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
         self->primaryMesh = make_geometry(0x41b5, *canvas);
         geometry = make_geometry(0x41b4, *canvas);
         ((AEGeometry *)(self->primaryMesh))->addChild(U(geometry, 0xc));
-        ::operator delete(AEGeometry_dtor(geometry));
+        { geometry->~AEGeometry(); ::operator delete(geometry); }
         break;
     default:
         if (type == 13) {
@@ -517,10 +514,10 @@ void Explosion::start_matrix(const Matrix *matrix) {
         MatrixGetPosition(position, matrix);
         ((AEGeometry *)(self->secondaryMesh))->setPosition(*position);
     } else {
-        AEGeometry_setMatrix(self->primaryMesh, matrix);
+        ((AEGeometry *)(self->primaryMesh))->setMatrix(*(const AbyssEngine::AEMath::Matrix *)matrix);
         AEGeometry *secondary = self->secondaryMesh;
         if (secondary != 0) {
-            AEGeometry_setMatrix(secondary, matrix);
+            ((AEGeometry *)(secondary))->setMatrix(*(const AbyssEngine::AEMath::Matrix *)matrix);
         }
     }
 
@@ -582,22 +579,22 @@ void Explosion::render() {
             MatrixGetPosition(&cameraPosition, &cameraLocal);
             MatrixGetUp(&up, &cameraLocal);
             MatrixGetLookAt(&work, &cameraPosition, &position, &up);
-            Matrix_assign(&cameraLocal, &work);
+            *(Matrix *)(&cameraLocal) = *(const Matrix *)(&work);
         }
 
         float scale = self->scale;
         MatrixSetScaling(&work, &cameraLocal, scale, scale, scale);
 
         if (type - 8 < 3) {
-            Matrix_mul_assign(&cameraLocal, &self->rotation);
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)(&cameraLocal), *(const Matrix *)(&self->rotation));
         }
 
-        AEGeometry_setMatrix(self->primaryMesh, &cameraLocal);
+        ((AEGeometry *)(self->primaryMesh))->setMatrix(*(const AbyssEngine::AEMath::Matrix *)&cameraLocal);
         ((AEGeometry *)(self->primaryMesh))->setPosition(position);
 
         canvasValue = *canvas;
         current = ((PaintCanvas*)(long)canvasValue)->CameraGetCurrent();
-        Matrix_assign(&cameraLocal, (Matrix *)((PaintCanvas*)(long)canvasValue)->CameraGetLocal(current));
+        *(Matrix *)(&cameraLocal) = *(const Matrix *)((Matrix *)((PaintCanvas*)(long)canvasValue)->CameraGetLocal(current));
         Vector *direction = (Vector *)&work;
         MatrixGetDir(direction, &cameraLocal);
         MatrixGetUp(&cameraPosition, &cameraLocal);
@@ -678,7 +675,7 @@ void Explosion::addFireStreaks() {
 
     for (uint32_t i = 0; i < self->fireStreaks->size(); i++) {
         AEGeometry *geometry = (AEGeometry *)::operator new(0xc0);
-        AEGeometry_ctor(geometry, 0x37d4, *canvas, false);
+        new ((void *)geometry) AEGeometry((uint16_t)0x37d4, (PaintCanvas *)(intptr_t)*canvas, false);
         (*self->fireStreaks)[i] = geometry;
 
         geometry = (*self->fireStreaks)[i];

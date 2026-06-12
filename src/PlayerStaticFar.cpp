@@ -154,7 +154,6 @@ static inline void AEMath_Vector_add_eq(Vec3 *v, const Vec3 *o) { *(AEVec *)v +=
 
 extern "C" {
 // AEGeometry placement.
-void AEGeometry_setPositionVec(void *geometry, const Vec3 *v);          // 0x72148
 // 0x73048
 // 0x727b4
 
@@ -202,7 +201,7 @@ void PlayerStaticFar::update(int /*delta*/)
         pos.x = (float)this->posX;
         pos.y = (float)this->posY;
         pos.z = (float)this->posZ;
-        AEGeometry_setPositionVec(this->geometry, &pos);
+        ((AEGeometry *)this->geometry)->setPosition(*(const AbyssEngine::AEMath::Vector *)(&pos));
     } else {
         // Far: place on a sphere of radius g_radius along the view direction.
         Vec3 n;
@@ -210,7 +209,7 @@ void PlayerStaticFar::update(int /*delta*/)
         AEMath_Vector_assign2(dir, &n);
         AEMath_Vector_mul_eq(dir, g_PlayerStaticFar_radius);
         AEMath_Vector_add_eq(dir, (Vec3 *)&this->cameraPosX);
-        AEGeometry_setPositionVec(this->geometry, dir);
+        ((AEGeometry *)this->geometry)->setPosition(*(const AbyssEngine::AEMath::Vector *)(dir));
 
         float s = (float)(int)((g_PlayerStaticFar_radius / (float)(int)len) *
                                g_PlayerStaticFar_scaleNum);

@@ -20,7 +20,6 @@ extern "C" void Player_render(void *player);
 extern "C" void FModSound_playEvent(void *a, int b, int c);
 extern "C" void *Route_dtor(Route *r);
 extern "C" void *Player_dtor(void *p);
-extern "C" void *AEGeometry_dtor(void *p);
 extern "C" void *ArrayUint_dtor(void *p);
 extern "C" void *ArrayInt_dtor(void *p);
 extern "C" void ArrayReleaseClasses_SpacePoint(void *arr);
@@ -31,14 +30,13 @@ extern "C" void Player_addGun_b(void *player);
 extern "C" void Player_reset(void *player);
 extern "C" void Player_setEnemies(void *player);
 extern "C" void *gCanvas;
-extern "C" void AEGeometry_ctor2(void *self, void *canvas);
-extern "C" void AEGeometry_setPosition4(void *geom, int a, int b, int c);
-extern "C" void *Matrix_assign(void *dst, void *src);
-extern "C" void *Matrix_mulassign(void *dst, void *src);
 extern "C" void Player_addGun_a(void *player);
+
+// Free math function (defined in libgof2hd; not declared in math.h): lhs *= rhs.
+namespace AbyssEngine { namespace AEMath {
+    void MatrixMultiply(Matrix&, const Matrix&);
+} }
 extern "C" void **gCanvasPtr;
-extern "C" void AEGeometry_ctor(void *self, unsigned short type, void *canvas, bool b);
-extern "C" void AEGeometry_setPosition_v(void *self, Vector *v);
 
 // ---- getType_a61de.cpp ----
 int KIPlayer::getType() {
@@ -262,7 +260,7 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
     self->route = 0;
 
     void *g1 = self->crateGeometry;
-    if (g1 != 0) ::operator delete(AEGeometry_dtor(g1));
+    if (g1 != 0) { ((AEGeometry *)g1)->~AEGeometry(); ::operator delete(g1); }
     self->crateGeometry = 0;
 
     void *au = self->field_0xc4;
@@ -270,11 +268,11 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
     self->field_0xc4 = 0;
 
     void *g2 = self->geometry;
-    if (g2 != 0) ::operator delete(AEGeometry_dtor(g2));
+    if (g2 != 0) { ((AEGeometry *)g2)->~AEGeometry(); ::operator delete(g2); }
     self->geometry = 0;
 
     void *g3 = self->parentGeometry;
-    if (g3 != 0) ::operator delete(AEGeometry_dtor(g3));
+    if (g3 != 0) { ((AEGeometry *)g3)->~AEGeometry(); ::operator delete(g3); }
     self->parentGeometry = 0;
 
     void *ai = self->cargo;
@@ -385,8 +383,6 @@ void String_ctor_default(void *s);                              // 0x6efbc  Stri
 // 0x6ee18  String(char*,bool)
 // 0x6f2b0  operator=
 
-void AEGeometry_setPosition3f(void *geom, float x, float y, float z);   // 0x73048
-
 // Two engine constants captured from PC-relative slots (init colour/flags).
 extern unsigned KIPlayer_initA;                                 // DAT_000b59dc
 extern unsigned KIPlayer_initB;                                 // DAT_000b59e0
@@ -421,7 +417,7 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
     if (geom != 0 && haveChild) {
         self->parentGeometry = geom;
         void *child = ::operator new(0xc0);
-        AEGeometry_ctor2(child, *(void **)gCanvas);
+        new ((void *)child) AEGeometry((PaintCanvas *)*(void **)gCanvas);
         self->geometry = child;
         ((AEGeometry *)(child))->addChild(*(int *)((char *)self->parentGeometry + 0xc));
         *(int *)((char *)self->parentGeometry + 0x24) = *(int *)((char *)self->geometry + 0xc);
@@ -478,10 +474,10 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
     self->field_0x64 = KIPlayer_initA;
 
     if (geom != 0) {
-        AEGeometry_setPosition3f(geom, x, y, z);
-        Matrix_assign((char *)self->player + 4, &((AEGeometry *)(geom))->getMatrix());
+        ((AEGeometry *)(geom))->setPosition((float)x, (float)y, (float)z);
+        *(Matrix *)((char *)self->player + 4) = ((AEGeometry *)(geom))->getMatrix();
         if (self->parentGeometry != 0)
-            Matrix_mulassign((char *)self->player + 4, &((AEGeometry *)(self->parentGeometry))->getMatrix());
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)self->player + 4), ((AEGeometry *)(self->parentGeometry))->getMatrix());
     }
 
     self->posX = x;
@@ -497,10 +493,6 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
 }
 
 // ---- getNearestDockingPoint_a5c54.cpp ----
-extern "C" {
-void *AEGeometry_getMatrix2(void *geom);                          // 0x721cc
-}
-
 namespace AbyssEngine { namespace AEMath {
 Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
 float VectorLength(const Vector &value);
@@ -532,7 +524,7 @@ void * KIPlayer::getNearestDockingPoint(Vector *dir) {
         if (*(int *)((char *)pt + 0x18) != 2)
             continue;
 
-        void *mat = AEGeometry_getMatrix2(self->geometry);
+        void *mat = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
         Vector rotated = AEMath::MatrixRotateVector(
             *(const AEMath::Matrix *)mat,
             *(const Vector *)((void **)(*(char **)((char *)arr + 4)))[i]);
@@ -749,7 +741,6 @@ void KIPlayer::captureCrate(void *hud) {
 
 // ---- getNearestNavigationPoint_a5b4c.cpp ----
 extern "C" {
-void *AEGeometry_getMatrix2(void *geom);                          // 0x721cc (this->0x8 matrix)
 int SpacePoint_isFree(void *sp);                                 // 0x732c4
 // virtual getPosition(out) at vtable slot +0x28.
 }
@@ -779,7 +770,7 @@ void * KIPlayer::getNearestNavigationPoint(Vector *dir, void *target) {
         if (*(int *)((char *)pt + 0x18) != 1)
             continue;
 
-        void *mat = AEGeometry_getMatrix2(self->geometry);
+        void *mat = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
         Vector rotated = AEMath::MatrixRotateVector(
             *(const AEMath::Matrix *)mat,
             *(const Vector *)((void **)(*(char **)((char *)arr + 4)))[i]);
@@ -815,26 +806,25 @@ void KIPlayer::setShipGroup(int param2, int flag, int cond) {
     if (param2 == 0 || cond == 0) {
         self->geometry = (void *)(intptr_t)param2;
         void *g = self->parentGeometry;
-        if (g != 0) ::operator delete(AEGeometry_dtor(g));
+        if (g != 0) { ((AEGeometry *)g)->~AEGeometry(); ::operator delete(g); }
         self->parentGeometry = 0;
     } else {
         void *grp = self->geometry;
         self->parentGeometry = (void *)(intptr_t)param2;
         if (grp == 0) {
             grp = ::operator new(0xc0);
-            AEGeometry_ctor2(grp, gCanvas);
+            new ((void *)grp) AEGeometry((PaintCanvas *)gCanvas);
             self->geometry = grp;
         }
         ((AEGeometry *)(grp))->addChild(*(int *)((char *)self->parentGeometry + 0xc));
         *(int *)((char *)self->parentGeometry + 0x24) = *(int *)((char *)self->geometry + 0xc);
     }
-    AEGeometry_setPosition4(self->geometry,
-                            self->posX,
-                            self->posY,
-                            self->posZ);
-    Matrix_assign((char *)self->player + 0x4, &((AEGeometry *)(self->geometry))->getMatrix());
+    ((AEGeometry *)(self->geometry))->setPosition((float)self->posX,
+                            (float)self->posY,
+                            (float)self->posZ);
+    *(Matrix *)((char *)self->player + 0x4) = ((AEGeometry *)(self->geometry))->getMatrix();
     if (self->parentGeometry != 0) {
-        Matrix_mulassign((char *)self->player + 0x4, &((AEGeometry *)(self->parentGeometry))->getMatrix());
+        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)self->player + 0x4), ((AEGeometry *)(self->parentGeometry))->getMatrix());
     }
 }
 
@@ -845,11 +835,11 @@ void KIPlayer::setPosition_vec(const Vector &v) {
     if (geom != 0) {
         ((AEGeometry *)(geom))->setPosition(v);
         void *m = ((AEGeometry *)(self->geometry))->getMatrix();
-        Matrix_assign((char *)self->player + 0x4, m);
+        *(Matrix *)((char *)self->player + 0x4) = *(const Matrix *)m;
         void *cond = self->parentGeometry;
         if (cond != 0) {
             void *m2 = ((AEGeometry *)(cond))->getMatrix();
-            Matrix_mulassign((char *)self->player + 0x4, m2);
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)self->player + 0x4), *(const Matrix *)m2);
         }
     }
 }
@@ -886,11 +876,11 @@ void KIPlayer::createCrate(int type) {
             }
         }
     }
-    AEGeometry_ctor(crate, id, gCanvasPtr[0], false);
+    new ((void *)crate) AEGeometry((uint16_t)id, (PaintCanvas *)gCanvasPtr[0], false);
     self->crateGeometry = crate;
     Vector pos;
     ((AEGeometry *)(&pos))->getPosition();
-    AEGeometry_setPosition_v(crate, &pos);
-    Matrix_assign((char *)self->player + 0x4, &((AEGeometry *)(crate))->getMatrix());
+    ((AEGeometry *)(crate))->setPosition(*(const AbyssEngine::AEMath::Vector *)&pos);
+    *(Matrix *)((char *)self->player + 0x4) = ((AEGeometry *)(crate))->getMatrix();
     ((Player *)(self->player))->setKIPlayer(self);
 }

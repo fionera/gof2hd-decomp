@@ -19,28 +19,28 @@ struct TransformFields { char _pad[0xe0]; float field_0xe0; };
 struct PlayerRadiusFields { char _pad[0x40]; int field_0x40; };
 
 
-extern "C" void AEGeometry_renderBase(AEGeometry *geometry);
 extern "C" void *PlayerAsteroid_complete_dtor(PlayerAsteroid *self);
 extern "C" void Explosion_update(Explosion *explosion, int delta, TargetFollowCamera *camera);
-extern "C" Vector Vector_scale(const Vector *vector, float scale);
 Vector Player_getHitVector(Player *player);
-extern "C" Vector *Vector_assign(Vector *self, const Vector *other);
-extern "C" Vector *Vector_scale_assign(Vector *self, float scale);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
 extern "C" void ArrayInt_ctor(ArrayInt *array);
 extern "C" void ArrayAdd_int(int value, ArrayInt *array);
 extern "C" void Explosion_setMatrix(Explosion *explosion, Matrix *matrix);
-extern "C" Vector *Vector_sub_assign(Vector *self, const Vector *other);
 Vector VectorNormalize(const Vector *vector);
 namespace AbyssEngine { namespace PaintCanvas { ::Transform *TransformGetTransform(void *canvas, uint32_t handle); } }
 extern "C" void Explosion_ctor(Explosion *self, int type);
 float VectorLength(const Vector *vector);
 void MatrixSetRotation(Matrix *out, const Matrix *base, float x, float y, float z);
-extern "C" Matrix Matrix_mul(const Matrix *a, const Matrix *b);
-extern "C" void AEGeometry_setMatrix(AEGeometry *geometry, const Matrix *matrix);
 extern "C" void *Explosion_dtor(Explosion *self);
 extern "C" void *KIPlayer_dtor(PlayerAsteroid *self);
-extern "C" Vector Vector_sub(const Vector *a, const Vector *b);
+
+// Free math operators (defined in libgof2hd / AEMath.cpp); declared here to avoid
+// pulling in gof2/AEMath.h, which conflicts with the local opaque forward-decls above.
+namespace AbyssEngine { namespace AEMath {
+Vector operator*(const Vector &lhs, float rhs);
+Vector operator-(const Vector &lhs, const Vector &rhs);
+Matrix operator*(const Matrix &lhs, const Matrix &rhs);
+} }
 
 // ---- setAsteroidIndex_e29c4.cpp ----
 void PlayerAsteroid::setAsteroidIndex(int asteroidIndex)
@@ -68,7 +68,7 @@ void PlayerAsteroid::render()
             }
             return;
         }
-        return AEGeometry_renderBase(this->geometry);
+        return ((AEGeometry *)this->geometry)->render();
     }
 }
 
@@ -246,7 +246,7 @@ void PlayerAsteroid::update(int delta)
     }
 
     if (this->rotationEnabled != 0) {
-        Vector rotation = Vector_scale((Vector *)((char *)this + 0x140), (float)delta * 0.001f);
+        Vector rotation = *(const Vector*)((char *)this + 0x140) * ((float)delta * 0.001f);
         ((AEGeometry *)(this->geometry))->rotate(rotation);
     }
 
@@ -254,7 +254,7 @@ void PlayerAsteroid::update(int delta)
     if (bombForce > 0.0f && this->state == 3) {
         Vector hit = Player_getHitVector(player);
         Vector *hitSlot = (Vector *)((char *)this + 0x90);
-        Vector_assign(hitSlot, &hit);
+        *(Vector*)(hitSlot) = *(const Vector*)(&hit);
         float scaling = this->scaling;
         float clamped = scaling;
         if (clamped > 1.0f) {
@@ -264,7 +264,7 @@ void PlayerAsteroid::update(int delta)
             clamped = 1.0f;
         }
         float force = (float)(int)(bombForce * 0.1f * (clamped / 2.0f + 1.0f));
-        Vector_scale_assign(hitSlot, force);
+        *(Vector*)(hitSlot) *= (force);
         typedef void (*PushFn)(PlayerAsteroid *, Vector *);
         (*(PushFn *)((char *)*(void **)this + 0x20))(this, hitSlot);
         ((Explosion *)(this->explosion))->translate(hitSlot);
@@ -293,7 +293,7 @@ Vector PlayerAsteroid::getProjectionVector(const Vector &value)
     Vector *scratch = PlayerAsteroid_projectionScratch;
     VectorAssignFn assign = PlayerAsteroid_vectorAssign;
     assign(scratch, &position);
-    Vector_sub_assign(scratch, &result);
+    *(Vector*)(scratch) -= *(const Vector*)(&result);
     assign(&result, scratch);
     Vector normalized = VectorNormalize(&result);
     assign(&result, &normalized);
@@ -350,7 +350,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
         (float)(AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 0x2000) - 0x1000) * 0.001f,
         (float)(AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 0x2000) - 0x1000) * 0.001f,
     };
-    Vector_assign(PlayerAsteroid_rotationVector, &spin);
+    *(Vector*)(PlayerAsteroid_rotationVector) = *(const Vector*)(&spin);
 
     AEGeometry *ownedGeometry = this->geometry;
     ((AEGeometry *)(ownedGeometry))->setRotation((float)AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 100) * 0.01f * 6.2831855f, (float)AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 100) * 0.01f * 6.2831855f, (float)AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 100) * 0.01f * 6.2831855f);
@@ -362,8 +362,8 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
         (float)(AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 3) - 1),
         (float)(AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 3) - 1),
     };
-    Vector scaledAxis = Vector_scale(&axis, 1.0f);
-    Vector_assign((Vector *)((char *)this + 0x140), &scaledAxis);
+    Vector scaledAxis = *(const Vector*)(&axis) * (1.0f);
+    *(Vector*)((char *)this + 0x140) = *(const Vector*)(&scaledAxis);
 
     this->dropsLoot = 1;
     this->field_0x3c = 1;
@@ -383,7 +383,7 @@ void PlayerAsteroid::setAsteroidCenter(Vector center)
     volatile char localBytes[13];
     Vector *local = (Vector *)(void *)localBytes;
     *local = center;
-    Vector_assign(PlayerAsteroid_center, local);
+    *(Vector*)(PlayerAsteroid_center) = *(const Vector*)(local);
     *PlayerAsteroid_centerLength = (int)VectorLength(local);
 }
 
@@ -449,14 +449,14 @@ void PlayerAsteroid::push(int delta)
         AEGeometry *geometry = this->geometry;
         if (frameDelta > 0) {
             Matrix geometryMatrix = ((AEGeometry *)(geometry))->getMatrix();
-            Matrix combined = Matrix_mul(&rotation, &geometryMatrix);
-            AEGeometry_setMatrix(geometry, &combined);
+            Matrix combined = *(const Matrix*)(&rotation) * *(const Matrix*)(&geometryMatrix);
+            ((AEGeometry *)geometry)->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(&combined));
             frameDelta = this->lastDelta;
         }
 
-        Vector baseMove = Vector_scale((Vector *)((char *)this + 0x10c), (float)frameDelta);
+        Vector baseMove = *(const Vector*)((char *)this + 0x10c) * ((float)frameDelta);
         float scale = (2.0f - t) * 3.0f * ((float)this->pushDuration / 1000.0f);
-        Vector move = Vector_scale(&baseMove, scale);
+        Vector move = *(const Vector*)(&baseMove) * (scale);
         ((AEGeometry *)(geometry))->translate(move);
     }
 }
@@ -485,7 +485,7 @@ void PlayerAsteroid::initPush(const Vector &target, int duration)
 {
     VirtualVectorFn getVector = *(VirtualVectorFn *)((char *)*(void **)this + 0x28);
     Vector current = getVector(this);
-    Vector delta = Vector_sub(&target, &current);
+    Vector delta = *(const Vector*)(&target) - *(const Vector*)(&current);
     float ratio = VectorLength(&delta) / (float)duration;
     float clamped = 1.0f;
     if (ratio < 1.0f) {
@@ -496,9 +496,9 @@ void PlayerAsteroid::initPush(const Vector &target, int duration)
     this->pushDuration = pushFrames;
 
     Vector here = getVector(this);
-    Vector directionSource = Vector_sub(&here, &target);
+    Vector directionSource = *(const Vector*)(&here) - *(const Vector*)(&target);
     Vector direction = VectorNormalize(&directionSource);
-    Vector_assign((Vector *)((char *)this + 0x10c), &direction);
+    *(Vector*)((char *)this + 0x10c) = *(const Vector*)(&direction);
 
     void *random = PlayerAsteroid_random;
     Vector randomVector = {
@@ -507,6 +507,6 @@ void PlayerAsteroid::initPush(const Vector &target, int duration)
         (float)(AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 200) - 100),
     };
     Vector randomDirection = VectorNormalize(&randomVector);
-    Vector randomScaled = Vector_scale(&randomDirection, 0.01f);
-    Vector_assign((Vector *)((char *)this + 0x118), &randomScaled);
+    Vector randomScaled = *(const Vector*)(&randomDirection) * (0.01f);
+    *(Vector*)((char *)this + 0x118) = *(const Vector*)(&randomScaled);
 }

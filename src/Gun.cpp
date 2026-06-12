@@ -12,16 +12,12 @@ struct Player {
 };
 
 
-extern "C" void AEGeometry_ctor(AEGeometry *self, unsigned short idx, void *canvas, bool b);
 extern "C" int  Player_isAsteroid(Player *p);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void Gun_VecArray_ctor(void *a);
 extern "C" void Gun_VecPtrArray_ctor(void *a);
 extern "C" void Gun_VecArray_setLength(int n, void *a);
 extern "C" void Gun_VecPtrArray_setLength(int n, void *a);
-extern "C" float Vector_assign(Vector *dst, const Vector *src);
-extern "C" void Vector_mulAssign(Vector *dst, float s);
-extern "C" float Vector_addAssign(Vector *dst, const Vector *src);
 
 // ---- _Gun_152134.cpp ----
 // Gun::~Gun() — real C++ destructor so the demangled symbol contains "~Gun".
@@ -143,7 +139,6 @@ namespace Transform { void SetAnimationState(unsigned tf, int a, int b); } // 0x
 
 // 0x718e4
 // AEGeometry::AEGeometry(AEGeometry*, unsigned short, PaintCanvas*, bool)
-extern "C" void *AEGeometry_dtor(AEGeometry *self);           // AEGeometry::~AEGeometry
 
 // pc-rel globals (each a holder; *holder used).
 extern int *const gSI_items   __attribute__((visibility("hidden")));
@@ -170,14 +165,14 @@ void Gun::setIndex(int index) {
         int *rngHolder = gSI_rng;
         for (unsigned i = 0; i < count; i = i + 1) {
             AEGeometry *geom = (AEGeometry *)::operator new(0xc0);
-            AEGeometry_ctor(geom, (unsigned short)g, (void *)*canvasHolder, false);
+            new ((void *)geom) AEGeometry((uint16_t)g, (PaintCanvas *)*canvasHolder, false);
             ((int *)self->geometries)[i] = geom->transform;
             int r = AbyssEngine::AERandom::nextInt(*rngHolder);
             ((uint8_t *)self->randomFlags)[i] = (r == 0);
             unsigned tf = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder);
             AbyssEngine::Transform::SetAnimationState(tf, 0, 0);
-            void *p = AEGeometry_dtor(geom);
-            ::operator delete(p);
+            geom->~AEGeometry();
+            ::operator delete(geom);
             count = self->count;
         }
     }
@@ -190,7 +185,7 @@ void Gun::setIndex(int index) {
 // matches the decompile (table lookup of a packed 3*int16 offset, added to the gun's
 // offset Vector, then Vector::operator=).
 
-// Vector is provided by gof2/math.h (via common.h). Vector_assign is declared above.
+// Vector is provided by gof2/math.h (via common.h).
 
 // pc-rel globals.
 extern int *const gSO_holder __attribute__((visibility("hidden")));
@@ -206,7 +201,7 @@ void Gun::setOffset_ii(int a, int b) {
     local.x = self->offsetX + local.x;
     local.y = self->offsetY + local.y;
     local.z = self->offsetZ + local.z;
-    Vector_assign((Vector *)((char *)self + 0x7c), &local);
+    *(Vector *)((char *)self + 0x7c) = *(const Vector *)(&local);
 }
 
 // ---- ignite_152b7c.cpp ----
@@ -219,8 +214,6 @@ void Gun::setOffset_ii(int a, int b) {
 struct Player;
 
 namespace AbyssEngine { namespace AEMath {
-void   Vector_assign(Vector *dst, const Vector *src);   // 0x6eb3c
-void   Vector_subAssign(Vector *dst, const Vector *src);
 float  VectorLength(const Vector *v);
 } }
 
@@ -255,13 +248,13 @@ void Gun::ignite() {
         int off = 0;
         for (unsigned i = 0; i < self->count; i = i + 1) {
             Vector v = *(Vector *)(self->positions + off);
-            AbyssEngine::AEMath::Vector_assign(base, &v);
-            AbyssEngine::AEMath::Vector_assign(posOut, &v);
-            AbyssEngine::AEMath::Vector_subAssign(posOut, base);
+            *(Vector *)(base) = *(const Vector *)(&v);
+            *(Vector *)(posOut) = *(const Vector *)(&v);
+            *(Vector *)(posOut) -= *(const Vector *)(base);
             int dist = (int)AbyssEngine::AEMath::VectorLength(posOut);
             if (dist < self->magnitude) {
                 ((uint8_t *)self->hitFlags)[i] = 1;
-                AbyssEngine::AEMath::Vector_assign((Vector *)(self->field_0x30 + off), base);
+                *(Vector *)(self->field_0x30 + off) = *(const Vector *)(base);
                 ((Item *)(*(int *)(*(int *)(*gIG_status + 4) + self->itemIndex * 4)))->getAttribute(0);
             }
             off = off + 0xc;
@@ -276,7 +269,6 @@ namespace AbyssEngine {
 namespace AEMath {
 void MatrixGetPosition(Matrix *out, const Matrix *m);                 // 0x6f16c
 void MatrixSetTranslation(Matrix *m, float x, float y, float z);     // 0x6f820
-void Vector_assign(Vector *dst, const Vector *src);                  // 0x6eb3c
 }
 namespace PaintCanvas {
 unsigned TransformGetTransform(unsigned canvas); // 0x72088
@@ -313,7 +305,7 @@ void Gun::render() {
                 __aeabi_memcpy(camBuf, (const void *)camLocal, 0x3c);
                 unsigned tl = AbyssEngine::PaintCanvas::TransformGetLocal(canvas);
                 AbyssEngine::AEMath::MatrixGetPosition(&local, (const Matrix *)tl);
-                AbyssEngine::AEMath::Vector_assign((Vector *)((char *)self + 0xd8), (Vector *)&local);
+                *(Vector *)((char *)self + 0xd8) = *(const Vector *)((Vector *)&local);
                 AbyssEngine::AEMath::MatrixSetTranslation(&local, self->field_0xe0, 0, 0);
                 Matrix *m = ((Matrix **)self->geometries)[i];
                 AbyssEngine::PaintCanvas::TransformSetLocal(canvas, m);
@@ -375,9 +367,12 @@ Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float 
     self->field_0x78 = 0;
     self->playerGun = 0;
     self->field_0xa8 = 0;
-    float sp = ::Vector_assign((Vector *)(s + 0x7c), &dir);
-    Vector_mulAssign(&vel, sp);
-    ::Vector_assign((Vector *)(s + 0xe4), &vel);
+    // Store the firing direction, then scale the velocity by the muzzle speed (p7)
+    // before caching it. The decompiler had fused the assignment and the live p7
+    // register into a bogus float-returning Vector_assign.
+    *(Vector *)(s + 0x7c) = dir;
+    vel *= p7;
+    *(Vector *)(s + 0xe4) = vel;
     self->initialLifetime = p5;
     self->fireDelay = p6;
     self->timer = p6;
@@ -467,7 +462,7 @@ void Gun::setOffset(const Vector *v) {
     local->x = v->x;
     local->y = v->y;
     local->z = v->z + kZOffset;
-    ::Vector_assign((Vector *)((char *)self + 0x7c), local);
+    *(Vector *)((char *)self + 0x7c) = *(const Vector *)(local);
 }
 
 // ---- update_153754.cpp ----
@@ -480,7 +475,6 @@ struct Sparks;
 namespace AbyssEngine {
 namespace AEMath {
 void operator_mul(Vector *out, float s);                 // 0x6ec74 (Vector operator*(scale))
-float Vector_addAssign(Vector *dst, const Vector *src);  // 0x73534
 }
 namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); } // 0x72088
 namespace Transform { void Update(long long tf, char b); }                 // 0x6f7cc
@@ -538,8 +532,7 @@ void Gun::update(int dt) {
                     *(long long *)&scaled = (long long)self->velocities;
                     AbyssEngine::AEMath::operator_mul(&scaled, fdt);
                 }
-                AbyssEngine::AEMath::Vector_addAssign(
-                    (Vector *)(self->positions + off), &scaled);
+                *(Vector *)(self->positions + off) += *(const Vector *)(&scaled);
                 int v = ((int *)self->lifetimes)[i];
                 if (v < 1) {
                     unsigned k = self->weaponType - 6;
@@ -579,7 +572,7 @@ void Gun::translate(const Vector *v) {
     Gun *self = this;
     int off = 0;
     for (unsigned i = 0; i < self->count; i = i + 1) {
-        ::Vector_addAssign((Vector *)(self->positions + off), v);
+        *(Vector *)(self->positions + off) += *(const Vector *)(v);
         off = off + 0xc;
     }
 }

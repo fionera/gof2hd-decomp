@@ -94,11 +94,14 @@ extern "C" void PlayerEgo_syncFirstPerson(PlayerEgo *p, int v);
 // callers below consume their (int) result. Use the original free-function form
 // so this TU sees the real int return type without editing PlayerEgo.h.
 extern "C" Vector *TFC_getCamOffset(TargetFollowCamera *c);
-namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &value); } }
+namespace AbyssEngine { namespace AEMath {
+float VectorLength(const Vector &value);
+Vector operator-(const Vector &lhs, const Vector &rhs);
+Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
+} }
 static inline float AEMath_VectorLength(Vector *v) {
     return AbyssEngine::AEMath::VectorLength(*v);
 }
-extern "C" void *Vector_assign(void *dst, void *src);
 extern "C" void *MGame_opnew(unsigned sz);
 extern "C" int Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
 extern "C" void String_cstr_ctor(String12 *out, const char *s, bool copy);
@@ -301,17 +304,12 @@ float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);  // 0x7267c
 // 0x725b0
 // 0x72cb8
 // 0x76aa4
-extern "C" void AEGeometry_setRotation3(void *g, int x, int y, int z);  // 0x73054
 // 0x78448
 // 0x6fd18
 // 0x72574
-extern "C" void Vector_copy(Vector *dst, Vector *src);  // fn @0x18c268 (pcVar8)
-extern "C" void Vector_scale(Vector *v, float s);  // 0x6ec74
-extern "C" void Vector_addAssign(Vector *dst, Vector *src);  // 0x73534
 // 0x72148
 // 0x727b4
 // 0x726ac
-extern "C" void Matrix_rotateVector(void *mat, Vector *v);  // 0x6f694
 extern "C" void FModSound_setProp(int snd, int id);  // fn @0x18c30e (pcVar8)
 // 0x71548
 extern "C" void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);  // 0x76abc
@@ -384,12 +382,12 @@ void MGame::startJumpScene() {
         void *vt = *(void **)obj;
         float vtmp[4];
         (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, vtmp);
-        Vector_assign((Vector *)((char *)self + 0xe4), (Vector *)vtmp);
+        *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)vtmp);
         float nz = (float)self->field_0xec + *(float *)&g_jsOffsetZ;
         self->field_0xec = (int)nz;
         ((PlayerEgo *)(self->field_0x58))->setPosition();
         ((PlayerEgo *)(self->field_0x58))->setComputerControlled(1);
-        AEGeometry_setRotation3(*(void **)((char *)self->field_0x58 + 8), 0, 0, 0);
+        ((AEGeometry *)*(void **)((char *)self->field_0x58 + 8))->setRotation((float)0, (float)0, (float)0);
         self->field_0xe4 = (int)((float)self->field_0xe4 + *(float *)&g_jsOffsetX);
         self->field_0xe8 = (int)((float)self->field_0xe8 + *(float *)&g_jsOffsetY);
         self->field_0xec = (int)((float)self->field_0xec + *(float *)&g_jsOffsetZ2);
@@ -409,12 +407,12 @@ void MGame::startJumpScene() {
         float pos[4];
         ((PlayerEgo *)(pos))->getPosition();
         Vector *dst = (Vector *)((char *)self + 0xe4);
-        Vector_copy(dst, (Vector *)pos);
+        *(Vector*)(dst) = *(const Vector*)((Vector *)pos);
 
         float dir[4];
         ((PlayerEgo *)(dir))->getPosition();
-        Vector_scale((Vector *)dir, *(float *)&g_jsOffsetX);
-        Vector_addAssign(dst, (Vector *)dir);
+        *(Vector*)((Vector *)dir) *= (*(float *)&g_jsOffsetX);
+        *(Vector*)(dst) += *(const Vector*)((Vector *)dir);
         ((AEGeometry *)(self->field_0x114))->setPosition(*dst);
 
         ((AEGeometry *)(self->field_0x114))->setScaling(0x40000000);
@@ -422,10 +420,10 @@ void MGame::startJumpScene() {
         ((AEGeometry *)(self->field_0x114))->setDirection(*(Vector *)zero, *(Vector *)zero /* up: arg lost in decomp */);
 
         float off[4]; off[0] = (float)g_jsOffsetX; off[1] = (float)g_jsOffsetY; off[2] = (float)g_jsOffsetX;
-        Vector_copy((Vector *)off, (Vector *)off);
-        Matrix_rotateVector(off, (Vector *)((char *)*(int *)((char *)self->field_0x58) + 4));
-        Vector_copy((Vector *)off, (Vector *)off);
-        Vector_addAssign(dst, (Vector *)off);
+        *(Vector*)((Vector *)off) = *(const Vector*)((Vector *)off);
+        *(Vector*)((Vector *)((char *)*(int *)((char *)self->field_0x58) + 4)) = AbyssEngine::AEMath::MatrixRotateVector(*(const Matrix*)(off), *(const Vector*)((Vector *)((char *)*(int *)((char *)self->field_0x58) + 4)));
+        *(Vector*)((Vector *)off) = *(const Vector*)((Vector *)off);
+        *(Vector*)(dst) += *(const Vector*)((Vector *)off);
 
         FModSound_setProp(*snd, self->field_0x1c);
         FModSound_setProp(*snd, 0x23);
@@ -567,7 +565,7 @@ void MGame::freeCamTouchBegin(int x, int y, int id) {
         slot = 0xb0;
         self->field_0x9c = id;
     }
-    Vector_assign((Vector *)((char *)self + slot), buf);
+    *(Vector*)((Vector *)((char *)self + slot)) = *(const Vector*)(buf);
 tail:
     self->field_0x124 = x;
     self->field_0x128 = y;
@@ -1398,8 +1396,6 @@ void MGame::OnInitialize() {
 // ---- freeCamTouchMove_178af8.cpp ----
 
 // 0x77adc
-extern "C" void Vector_sub(Vector *out, Vector *a, Vector *b);  // 0x6ec38
-extern "C" float Vector_length(Vector *v);  // 0x6ec44
 void TFC_zoomTarget(void *cam, float z);  // 0x78178
 // Pan-finish tail helper @0x1ac798 (no-op stack-guard-ok path).
 
@@ -1441,10 +1437,10 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
 
         if (t0 == 0) {
             float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
-            Vector_assign((Vector *)((char *)self + 0xb0), (Vector *)v);
+            *(Vector*)((Vector *)((char *)self + 0xb0)) = *(const Vector*)((Vector *)v);
         } else if (t1 == 0) {
             float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
-            Vector_assign((Vector *)((char *)self + 0xa4), (Vector *)v);
+            *(Vector*)((Vector *)((char *)self + 0xa4)) = *(const Vector*)((Vector *)v);
         }
         
         return;
@@ -1453,20 +1449,20 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
     // Two-finger pinch: zoom by the change in finger distance.
     Vector *base = (Vector *)((char *)self + 0xa4);
     float tmp[4];
-    Vector_sub((Vector *)tmp, base, (Vector *)((char *)self + 0xb0));
-    float oldLen = Vector_length((Vector *)tmp);
+    *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)((char *)self + 0xb0));
+    float oldLen = AbyssEngine::AEMath::VectorLength(*(const Vector*)((Vector *)tmp));
     float newLen = oldLen;
 
     if (self->field_0x98 == ty) {
         float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
-        Vector_sub((Vector *)tmp, base, (Vector *)v);
-        newLen = Vector_length((Vector *)tmp);
-        Vector_assign(base, (Vector *)v);
+        *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)v);
+        newLen = AbyssEngine::AEMath::VectorLength(*(const Vector*)((Vector *)tmp));
+        *(Vector*)(base) = *(const Vector*)((Vector *)v);
     } else if (self->field_0x9c == ty) {
         float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
-        Vector_sub((Vector *)tmp, base, (Vector *)v);
-        newLen = Vector_length((Vector *)tmp);
-        Vector_assign((Vector *)((char *)self + 0xb0), (Vector *)v);
+        *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)v);
+        newLen = AbyssEngine::AEMath::VectorLength(*(const Vector*)((Vector *)tmp));
+        *(Vector*)((Vector *)((char *)self + 0xb0)) = *(const Vector*)((Vector *)v);
     }
 
     float zoom = self->field_0xbc + (newLen - oldLen) * g_fcRotScale;
@@ -2236,8 +2232,8 @@ camMove: {
         int speed = self->field_0x40;
         int ego = *(int *)((char *)self->field_0x58);
         float mtx[4];
-        Matrix_rotateVector(mtx, (Vector *)((char *)ego + 4));
-        Vector_assign((Vector *)((char *)self + 0xe4), (Vector *)mtx);
+        *(Vector*)((Vector *)((char *)ego + 4)) = AbyssEngine::AEMath::MatrixRotateVector(*(const Matrix*)(mtx), *(const Vector*)((Vector *)((char *)ego + 4)));
+        *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)mtx);
         TFC_translate(self->field_0xf4, 0, 0, 0);
         (void)speed;
         if (self->field_0xdd != 0) {
@@ -2248,7 +2244,7 @@ camMove: {
             void *vt = *(void **)obj;
             (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, mtx);
         }
-        Vector_assign((Vector *)((char *)self + 0xe4), (Vector *)mtx);
+        *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)mtx);
         fadeOut = false;
     }
 
@@ -2308,7 +2304,7 @@ afterCam:
             void *node2 = *(void **)((char *)*(int *)((char *)lm + 4) + 0xc);
             float mtx[4];
             (*(void (**)(void *, void *))((char *)*(void **)node2 + 0x28))(node2, mtx);
-            Vector_assign((Vector *)((char *)self + 0xe4), (Vector *)mtx);
+            *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)mtx);
             ((PlayerEgo *)(self->field_0x58))->setPosition();
             PlayerEgo *p = self->field_0x58;
             p->field_0x25 = 1;
@@ -2609,7 +2605,7 @@ void MGame::OnRender2D() {
         }
         float v[4]; *(int *)&v[0] = 0x3f000000; *(int *)&v[1] = 0x3f000000; v[2] = 0;
         Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
-        Vector_assign((char *)eng + 0x3cc, v);
+        *(Vector*)((char *)eng + 0x3cc) = *(const Vector*)(v);
         ((PaintCanvas*)g_PaintCanvas)->End2d();
         
         return;

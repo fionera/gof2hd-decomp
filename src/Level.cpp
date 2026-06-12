@@ -1,6 +1,8 @@
 #include "gof2/Level.h"
+extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engine shim (setDirection up-vec unrecoverable)
 #include "gof2/externs.h"
 #include "gof2/PaintCanvasClass.h"
+#include "gof2/AEGeometry.h"
 // NOTE: gof2/ParticleSystemManager.h and gof2/Status.h are intentionally NOT included.
 // Level reaches those classes only through a handful of accessor methods and opaque
 // pointers, and uses local minimal interface structs (below) whose signatures match the
@@ -1788,8 +1790,6 @@ void  ArraySetLength_KIPlayer_ca(int n, void *a);
 
 void  Waypoint_ctor_ca(Waypoint *w, int x, int y, int z, void *route);
 void  BoundingSphere_ctor_ca(BoundingSphere *bs);
-void  AEGeometry_ctor_ca(AEGeometry *g, unsigned short mesh, void *canvas, int flag);
-void  AEGeometry_setLodMeshes_ca(AEGeometry *g, short *meshes, int *dists, int count);
 void  LODManager_addObject_ca(LODManager *m, AEGeometry *g);
 
 void  PlayerAsteroid_ctor_ca(PlayerAsteroid *a, int x_or_id, AEGeometry *geo, int colVariant,
@@ -1986,7 +1986,7 @@ void Level::createAsteroids()
         }
 
         AEGeometry *geo = (AEGeometry *)Level_opnew_ca(0xc0);
-        AEGeometry_ctor_ca(geo, (unsigned short)mesh, canvas, 0);
+        new ((void*)geo) AEGeometry((uint16_t)mesh, (PaintCanvas*)canvas, 0);
 
         // install LOD meshes + register with the LOD manager (detail-dependent distance table).
         bool near = (int)i < density;
@@ -3196,7 +3196,8 @@ int  Status_getCurrentCampaignMission_cso();
 int  Level_createStaticObject_cso(Level *self, int wp, int type, int turret);
 void PlayerFixedObject_setMoving_cso(PlayerFixedObject *o, int flag);
 void StarSystem_getLightDirection_cso(void *dst);
-void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);
+// UNRECOVERED up-vector: AEGeometry::setDirection takes (dir, up); the binary's `up`
+// argument was not recovered at this call, so the single-direction shim is retained.
 int  GameText_getText_cso(int id);
 void String_assign_cso(String *dst, String *src);
 void String_ctor_cso(String *dst, String *src, int own);
@@ -3872,7 +3873,6 @@ int  AERandom_nextInt_cgc(int rng);
 void *Level_opnew_cgc(unsigned size);
 void ArrayGasCloud_ctor_cgc(void *a);
 void ArraySetLength_GasCloud_cgc(int n, void *a);
-void AEGeometry_ctor_cgc(AEGeometry *g, int mesh, void *canvas, int flag);
 void PlayerGasCloud_ctor_cgc(PlayerGasCloud *c, int kind, ParticleSystemManager *psm,
                              AEGeometry *geo, Vector *pos);
 // Generates a random spawn position for cloud index `i` that is far enough from the player and
@@ -3926,7 +3926,7 @@ void Level::createGasClouds()
         Level_cgc_randomPos(rng, boss ? 1 : 0, i, &pos);
 
         AEGeometry *geo = (AEGeometry *)Level_opnew_cgc(0xc0);
-        AEGeometry_ctor_cgc(geo, 0x37d1, canvas, 0);
+        new ((void*)geo) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
         PlayerGasCloud *cloud = (PlayerGasCloud *)Level_opnew_cgc(0x16c);
         PlayerGasCloud_ctor_cgc(cloud, kind,
                                 *(ParticleSystemManager **)(self + 0x94), geo, &pos);
@@ -4079,8 +4079,6 @@ int   KIPlayer_getType_ips(KIPlayer *k);
 int   ParticleSystemManager_addSystem_ips(int mgr, void *ref, int kind, int flag);
 void  ParticleSystemManager_init_ips(ParticleSystemManager *m, void *ctx);
 void  ParticleSystemManager_enableSystemEmit_ips(int mgr, int sys);
-int   AEGeometry_getReferenceMatrix_ips();
-void  AEGeometry_updateReferenceMatrix_ips();
 // Builds the per-asteroid dust descriptor block (huge SIMD struct init Ghidra mangled) and writes
 // the resulting system handle into the array at self+0xa8.
 void  Level_ips_buildAsteroidDust(Level *self, void *arr);
@@ -4122,8 +4120,11 @@ void Level::initParticleSystems()
                 for (unsigned i = 0; i < *en; i = i + 1) {
                     KIPlayer *k = *(KIPlayer **)(en[1] + i * 4);
                     if (k != 0 && KIPlayer_getType_ips(k) == 0x37a3) {
-                        AEGeometry_updateReferenceMatrix_ips();
-                        int ref = AEGeometry_getReferenceMatrix_ips();
+                        // The flagship's geometry (KIPlayer::geometry at +0x8) drives the
+                        // smoke plume's reference frame.
+                        AEGeometry *kg = *(AEGeometry **)((char *)k + 8);
+                        kg->updateReferenceMatrix();
+                        int ref = (int)(intptr_t)&kg->getReferenceMatrix();
                         ParticleSystemManager_addSystem_ips(*(int *)(self + 0x7c), (void *)ref, 8, 0);
                         break;
                     }
@@ -4317,10 +4318,6 @@ int   Agent_isMale_csc(Agent *a);
 int   AERandom_nextInt_csc(int rng);
 int   Globals_getRandomEnemyFighter_csc(Globals *g, int race);
 int   Level_createShip_csc(Level *self, int a, int b, int shipDesc, int wp, int flagA, int flagB);
-void  AEGeometry_ctor_csc(AEGeometry *g, unsigned mesh, void *canvas, int flag);
-void *AEGeometry_dtor_csc(AEGeometry *g);
-void  AEGeometry_addChild_csc(AEGeometry *parent, AEGeometry *child);
-void  AEGeometry_setRotation_csc(AEGeometry *g, Vector *r);
 void  PlayerStatic_ctor_csc(PlayerStatic *p, int a, AEGeometry *geo);
 void  PlayerFighter_removeTrail_csc(int pf);
 void  PlayerFighter_setExhaustVisible_csc(int pf);
@@ -4351,12 +4348,12 @@ void Level::createScene()
         if (Status_getCurrentCampaignMission_csc() == 0x2b) {
             void *canvas = *g_csc_canvas;
             AEGeometry *g = (AEGeometry *)Level_opnew_csc(0xc0);
-            AEGeometry_ctor_csc(g, 0x37d0, canvas, 0);
+            new ((void*)g) AEGeometry((uint16_t)0x37d0, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)Level_opnew_csc(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
             ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)(self + 0xf8));
             g = (AEGeometry *)Level_opnew_csc(0xc0);
-            AEGeometry_ctor_csc(g, 0x37d1, canvas, 0);
+            new ((void*)g) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
             p = (PlayerStatic *)Level_opnew_csc(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
             ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)(self + 0xf8));
@@ -4401,20 +4398,20 @@ void Level::createScene()
                 taken[seat] = 1;
 
                 AEGeometry *g = (AEGeometry *)Level_opnew_csc(0xc0);
-                AEGeometry_ctor_csc(g, (unsigned)part, canvas, 0);
+                new ((void*)g) AEGeometry((uint16_t)(unsigned)part, (PaintCanvas*)canvas, 0);
                 PlayerStatic *p = (PlayerStatic *)Level_opnew_csc(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
                 *(PlayerStatic **)(*(int *)(*(int *)(self + 0xf8) + 4) + a * 4) = p;
                 Level_csc_placeActor(this, (int)(intptr_t)p, seat, 0);
 
                 g = (AEGeometry *)Level_opnew_csc(0xc0);
-                AEGeometry_ctor_csc(g, (unsigned)mode, canvas, 0);
+                new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)Level_opnew_csc(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
                 *(PlayerStatic **)(*(int *)(*(int *)(self + 0xf8) + 4) + (nAgents + a) * 4) = p;
 
                 g = (AEGeometry *)Level_opnew_csc(0xc0);
-                AEGeometry_ctor_csc(g, 0x380c, canvas, 0);
+                new ((void*)g) AEGeometry((uint16_t)0x380c, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)Level_opnew_csc(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
                 *(PlayerStatic **)(*(int *)(*(int *)(self + 0xf8) + 4) + (nAgents * 2 + a) * 4) = p;
@@ -4422,7 +4419,7 @@ void Level::createScene()
         }
         for (unsigned u = 0; u < crew; u = u + 1) {
             AEGeometry *g = (AEGeometry *)Level_opnew_csc(0xc0);
-            AEGeometry_ctor_csc(g, (unsigned)mode, canvas, 0);
+            new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)Level_opnew_csc(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
             *(PlayerStatic **)((*(int **)(self + 0xf8))[1] +
@@ -4464,16 +4461,16 @@ void Level::createScene()
         for (unsigned u = 0; u < 4; u = u + 1) {
             // decoration meshes around the showroom ship.
             AEGeometry *g = (AEGeometry *)Level_opnew_csc(0xc0);
-            AEGeometry_ctor_csc(g, (unsigned)(0x3800 + u), canvas, 0);
+            new ((void*)g) AEGeometry((uint16_t)(unsigned)(0x3800 + u), (PaintCanvas*)canvas, 0);
             Vector rot = {0, 0, 0};
-            AEGeometry_setRotation_csc(g, &rot);
+            ((AEGeometry*)g)->setRotation(*(const AbyssEngine::AEMath::Vector*)(&rot));
             PlayerStatic *p = (PlayerStatic *)Level_opnew_csc(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
             if ((int)race < 4 && race != 1) {
                 AEGeometry *child = (AEGeometry *)Level_opnew_csc(0xc0);
-                AEGeometry_ctor_csc(child, (unsigned)u, canvas, 0);
-                AEGeometry_addChild_csc(g, child);
-                operator_delete_csc(AEGeometry_dtor_csc(child));
+                new ((void*)child) AEGeometry((uint16_t)(unsigned)u, (PaintCanvas*)canvas, 0);
+                ((AEGeometry*)g)->addChild(((AEGeometry*)child)->transform);
+                [&]{ AEGeometry *g_=(AEGeometry*)(child); if(g_){ g_->~AEGeometry(); operator_delete_csc(g_);} }();
             }
             ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)(self + 0xf8));
         }

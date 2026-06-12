@@ -2,17 +2,15 @@
 #include "gof2/AEGeometry.h"
 
 
-extern "C" void *Vector_assign(void *dst, const void *src);
 namespace AbyssEngine { namespace AEMath { float VectorLength(Vector *v); } }
 extern "C" void TFC_tail_int(TargetFollowCamera *self, int n);
 extern "C" void TFC_setShipHandling2(TargetFollowCamera *self, float v);
 namespace AbyssEngine { namespace AEMath {
 Vector MatrixGetUp(const Matrix &matrix);
 Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
+void MatrixMultiply(Matrix&, const Matrix&);   // lhs *= rhs
 } }
 void TFC_update(TargetFollowCamera *self, int n);
-extern "C" void *Matrix_assign(void *dst, const void *src);
-extern "C" void TFC_Matrix_ctor(Matrix *m);
 extern "C" void *TFC_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void TFC_MatrixTransformVector(Vector *out, const Vector *v);
 extern "C" float TFC_VectorLength(const Vector *v);
@@ -23,11 +21,6 @@ extern "C" void TFC_u_MatrixGetPosition(Vector *out, const Matrix *m);
 extern "C" void TFC_u_MatrixIdentity(Matrix *out, const Matrix *m);
 extern "C" void TFC_u_MatrixSetRotation3(Matrix *out, float x, float y, float z);
 extern "C" void TFC_u_MatrixTransformVector(Vector *out, const Vector *m);
-extern "C" void TFC_u_Matrix_assign(Matrix *dst, const Matrix *src);
-extern "C" void TFC_u_Vector_addassign(Vector *dst, const Vector *src);
-extern "C" void TFC_u_Vector_mulassign(Vector *dst, float s);
-extern "C" void TFC_u_Vector_add(Vector *out, const Vector *a);
-extern "C" void TFC_u_Vector_sub(Vector *out, const Vector *a);
 extern "C" float TFC_u_VectorLength(const Vector *v);
 extern "C" int TFC_u_rand(void *rng, int bound);
 extern "C" void TFC_u_CameraSetLocal(unsigned camera, const Matrix *m);
@@ -76,7 +69,7 @@ void TFC_enableFirstPersonCam(TargetFollowCamera *self, bool on) {
     *(volatile float *)(buf + 4) = 150.0f;
     *(volatile float *)(buf + 0) = 0.0f;
     *(volatile float *)(buf + 8) = -800.0f;
-    Vector_assign((Vector *)((char *)self + 0xf4), buf);
+    *(Vector *)((char *)self + 0xf4) = *(const Vector *)buf;
     self->shakeAccum = 0;
     self->shakeReference = 0;
 }
@@ -86,14 +79,14 @@ void TFC_enableFirstPersonCam(TargetFollowCamera *self, bool on) {
 // slot at this+0xb4 (the source Matrix& stays in r1).
 
 void *TFC_setFirstPersonMatrix(TargetFollowCamera *self, Matrix *m) {
-    return Matrix_assign((Matrix *)((char *)self + 0xb4), m);
+    return &(*(Matrix *)((char *)self + 0xb4) = *m);
 }
 
 // ---- setCamOffset_15a9b2.cpp ----
 // Vector::operator=(this+0x38, v); this->[0xb0] = VectorLength(v).
 
 void TFC_setCamOffset(TargetFollowCamera *self, Vector *v) {
-    Vector_assign((Vector *)((char *)self + 0x38), v);
+    *(Vector *)((char *)self + 0x38) = *v;
     self->zoom = AbyssEngine::AEMath::VectorLength(v);
 }
 
@@ -260,7 +253,7 @@ void TFC_rotateAroundTarget(TargetFollowCamera *self, float x, float y, float z)
     __builtin_memcpy(buf + 0, &x, 4);
     __builtin_memcpy(buf + 4, &y, 4);
     __builtin_memcpy(buf + 8, &z, 4);
-    Vector_assign((Vector *)((char *)self + 0x50), buf);
+    *(Vector *)((char *)self + 0x50) = *(const Vector *)buf;
 }
 
 // ---- calculateCoefficents_15b4a4.cpp ----
@@ -293,11 +286,11 @@ void TFC_setLocked(TargetFollowCamera *self, bool locked) {
     if (locked) {
         __builtin_memcpy(mat, ((AEGeometry *)(self->target))->getMatrix(), 0x3c);
         up = AbyssEngine::AEMath::MatrixGetUp(*(const AbyssEngine::AEMath::Matrix *)mat);
-        Vector_assign((Vector *)(p + 0x20), &up);
+        *(Vector *)(p + 0x20) = up;
         up = AbyssEngine::AEMath::MatrixTransformVector(
             *(const AbyssEngine::AEMath::Matrix *)mat,
             *(const AbyssEngine::AEMath::Vector *)(p + 0x38));
-        Vector_assign((Vector *)(p + 0x8), &up);
+        *(Vector *)(p + 0x8) = up;
         TFC_update(self, 0x32);
     }
 }
@@ -309,7 +302,7 @@ void TFC_setLocked(TargetFollowCamera *self, bool locked) {
 struct Mat64 { float m[16]; };
 
 void TFC_setLocal(TargetFollowCamera *self, Mat64 m) {
-    Matrix_assign((char *)self + 0x13c, &m);
+    *(Matrix *)((char *)self + 0x13c) = *(const Matrix *)&m;
 }
 
 // ---- TargetFollowCamera_15a4c8.cpp ----
@@ -322,7 +315,6 @@ void TFC_setLocal(TargetFollowCamera *self, Mat64 m) {
 // camOffset/targetOffset arrive by value (3 floats each); the decompile reads them off the
 // incoming arg slots. We model them as Vector by value.
 
-extern "C" void TFC_Vector_assign(Vector *dst, const Vector *src);   // pcVar8
 void TFC_aproximateCooefficientsForAproximationOfDampingFunktion(
     TargetFollowCamera *self, float t, double *outB, double *outA, double *outC,
     double *outD, double *outE, double *outF);
@@ -360,33 +352,33 @@ TargetFollowCamera *TFC_ctor(TargetFollowCamera *self, unsigned id, void *target
     self->rotY = 0;
     self->rotZ = 0;
 
-    TFC_Matrix_ctor((Matrix *)(p + 0xb4));
+    ((Matrix *)(p + 0xb4))->initIdentity();
     self->fpOffsetX = 0;
     self->fpOffsetY = 0;
     self->fpOffsetZ = 0;
-    TFC_Matrix_ctor((Matrix *)(p + 0x13c));
+    ((Matrix *)(p + 0x13c))->initIdentity();
 
     self->id = id;
     self->target = target;
 
-    TFC_Vector_assign((Vector *)(p + 0x2c), &camOffset);
-    TFC_Vector_assign((Vector *)(p + 0x38), &targetOffset);
+    *(Vector *)(p + 0x2c) = camOffset;
+    *(Vector *)(p + 0x38) = targetOffset;
 
     Vector zero = {0.0f, 0.0f, 0.0f};
-    TFC_Vector_assign((Vector *)(p + 0x08), &zero);
-    TFC_Vector_assign((Vector *)(p + 0x14), &zero);
+    *(Vector *)(p + 0x08) = zero;
+    *(Vector *)(p + 0x14) = zero;
 
     // initial position from the target's current matrix
     char mat[0x3c];
     TFC_memcpy(mat, &((AEGeometry *)target)->getMatrix(), 0x3c);
     Vector v;
     TFC_MatrixTransformVector(&v, (const Vector *)mat);
-    TFC_Vector_assign((Vector *)(p + 0x14), &v);
+    *(Vector *)(p + 0x14) = v;
     TFC_MatrixTransformVector(&v, (const Vector *)mat);
-    TFC_Vector_assign((Vector *)(p + 0x08), &v);
+    *(Vector *)(p + 0x08) = v;
 
     Vector up = {0.0f, 1.0f, 0.0f};
-    TFC_Vector_assign((Vector *)(p + 0x20), &up);
+    *(Vector *)(p + 0x20) = up;
 
     self->locked = 0x10000;
     self->rumbleTimer = 0;
@@ -489,7 +481,7 @@ void TFC_resetShipHandling(TargetFollowCamera *self) {
 // slot at this+0x2c (source Vector& stays in r1).
 
 void *TFC_setTargetOffset(TargetFollowCamera *self, Vector *v) {
-    return Vector_assign((Vector *)((char *)self + 0x2c), v);
+    return &(*(Vector *)((char *)self + 0x2c) = *v);
 }
 
 // ---- setPosition_15a9d0.cpp ----
@@ -522,9 +514,6 @@ extern "C" void TFC_u_MatrixGetLookAt(Matrix *out, const Vector *pos, const Vect
                                       const Vector *up);
 extern "C" void TFC_u_MatrixSetRotation(Matrix *out, const Matrix *base, float x, float y, float z,
                                         int order);
-extern "C" void TFC_u_MatrixMul_assign(Matrix *lhs, const Matrix *rhs);   // operator*=
-extern "C" void TFC_u_MatrixMul(Matrix *lhs, const Matrix *rhs);          // operator*
-extern "C" void TFC_u_Vector_assign(Vector *dst, const Vector *src);      // pcVar16
 
 __attribute__((visibility("hidden"))) extern int **g_TFC_u_canary;
 __attribute__((visibility("hidden"))) extern void **g_TFC_u_rng;        // rumble/shake rng holder
@@ -549,16 +538,16 @@ void TFC_update(TargetFollowCamera *self, int dt)
         self->posX = pos.x;
         self->posY = pos.y;
         self->posZ = pos.z;
-        TFC_u_Vector_assign((Vector *)(p + 8), &pos);
+        *(Vector *)((p + 8)) = pos;
         TFC_u_CameraSetLocal(*g_TFC_u_camera, *(Matrix **)p);
         if (self->target != 0) {
             char mat[0x3c];
             TFC_u_memcpy(mat, &((AEGeometry *)self->target)->getMatrix(), 0x3c);
             Vector up, posv;
             TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
-            TFC_u_Vector_assign((Vector *)(p + 0x20), &up);
+            *(Vector *)((p + 0x20)) = up;
             TFC_u_MatrixGetPosition(&posv, (const Matrix *)mat);
-            TFC_u_Vector_assign((Vector *)(p + 0x14), &posv);
+            *(Vector *)((p + 0x14)) = posv;
         }
         
         return;
@@ -576,18 +565,17 @@ void TFC_update(TargetFollowCamera *self, int dt)
 
                     Vector up;
                     TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
-                    TFC_u_Vector_assign((Vector *)(p + 0x20), &up);
+                    *(Vector *)((p + 0x20)) = up;
 
                     if (self->rotateAroundTarget != 0) {        // rotate-around-target
                         Matrix rot;
                         TFC_u_MatrixSetRotation(&rot, (const Matrix *)mat,
                                                 self->rotX, self->rotY,
                                                 self->rotZ, 2);
-                        TFC_u_MatrixMul_assign((Matrix *)mat, &rot);
+                        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)(mat), rot);
                         float curLen = TFC_u_VectorLength((Vector *)(p + 0x38));
                         if (curLen != self->zoom)
-                            TFC_u_Vector_mulassign((Vector *)(p + 0x38),
-                                                   self->zoom / curLen);
+                            *(Vector *)((p + 0x38)) *= (self->zoom / curLen);
                     }
 
                     double dd = (double)dt;
@@ -598,27 +586,27 @@ void TFC_update(TargetFollowCamera *self, int dt)
 
                     Vector dir;
                     TFC_u_MatrixTransformVector(&dir, (const Vector *)mat);
-                    TFC_u_Vector_assign((Vector *)(p + 8), &dir);
+                    *(Vector *)((p + 8)) = dir;
                     TFC_u_MatrixTransformVector(&dir, (const Vector *)mat);
-                    TFC_u_Vector_assign((Vector *)(p + 0x14), &dir);
+                    *(Vector *)((p + 0x14)) = dir;
 
                     Vector diff = *(Vector *)(p + 0x14);
-                    TFC_u_Vector_sub(&diff, (const Vector *)(p + 8));
+                    diff -= *(const Vector *)((p + 8));
                     // position-axis spring: const at +0x80, coefficient doubles at +0x60..
                     double c0 = *(double *)(p + 0x80);
                     double *cc = (double *)(p + 0x60);
                     float kA = (float)((c0 + cc[1] * d2 + cc[0] * dd + cc[2] * d3 + cc[3] * d4) * inv);
-                    TFC_u_Vector_mulassign(&diff, kA);
-                    TFC_u_Vector_add(&diff, &savedPos14);
-                    TFC_u_Vector_assign((Vector *)(p + 0x14), &diff);
+                    diff *= (kA);
+                    diff += savedPos14;
+                    *(Vector *)((p + 0x14)) = diff;
 
                     Vector diff2 = *(Vector *)(p + 0x14);
-                    TFC_u_Vector_sub(&diff2, (const Vector *)(p + 8));
+                    diff2 -= *(const Vector *)((p + 8));
                     double c0b = *(double *)(p + 0xa8);
                     double *ccb = (double *)(p + 0x88);
                     float kB = (float)((c0b + ccb[1] * d2 + ccb[0] * dd +
                                         *(double *)(p + 0x98) * d3 + *(double *)(p + 0xa0) * d4) * inv);
-                    TFC_u_Vector_mulassign(&diff2, kB);
+                    diff2 *= (kB);
 
                     if (self->hideShip != 0) {
                         float l = TFC_u_VectorLength(&diff2) + self->shakeAccum;
@@ -627,26 +615,26 @@ void TFC_update(TargetFollowCamera *self, int dt)
                     }
 
                     Vector finalPos = diff2;
-                    TFC_u_Vector_add(&finalPos, &savedPos08);
-                    TFC_u_Vector_assign((Vector *)(p + 0x14), &finalPos);
+                    finalPos += savedPos08;
+                    *(Vector *)((p + 0x14)) = finalPos;
                 } else {                           // identity-rotation follow
                     Matrix id;
                     TFC_u_MatrixIdentity(&id, (const Matrix *)mat);
-                    TFC_u_Matrix_assign((Matrix *)mat, &id);
+                    *(Matrix *)(mat) = id;
                     Matrix rot;
                     TFC_u_MatrixSetRotation3(&rot, 0.0f, 0.0f, 0.0f);
-                    TFC_u_MatrixMul(&rot, (const Matrix *)(p + 0xb4));
-                    TFC_u_Matrix_assign((Matrix *)mat, &rot);
+                    AbyssEngine::AEMath::MatrixMultiply(rot, *(const Matrix *)((p + 0xb4)));
+                    *(Matrix *)(mat) = rot;
 
                     Vector cur = *(Vector *)(p + 8);
                     Vector np;
                     TFC_u_MatrixTransformVector(&np, (const Vector *)mat);
-                    TFC_u_Vector_assign((Vector *)(p + 8), &np);
+                    *(Vector *)((p + 8)) = np;
 
                     if (self->shakeReference == 0.0f ||
                         self->shakeAccum < self->shakeReference * 1.5f) {
                         Vector d = np;
-                        TFC_u_Vector_sub(&d, (const Vector *)(p + 8));
+                        d -= *(const Vector *)((p + 8));
                         if (self->shakeReference == 0.0f)
                             self->shakeReference = TFC_u_VectorLength(&d);
                         double dd = (double)dt;
@@ -659,28 +647,28 @@ void TFC_update(TargetFollowCamera *self, int dt)
                                            *(double *)(p + 0x88) * d4 +
                                            *(double *)(p + 0x98) * d2 +
                                            *(double *)(p + 0xa0) * dd) * inv);
-                        TFC_u_Vector_mulassign(&d, k);
+                        d *= (k);
                         float l = TFC_u_VectorLength(&d) + self->shakeAccum;
                         float thr = self->shakeReference * 0.75f;
                         self->shakeAccum = l;
                         self->hideShip = (l >= thr) ? 1 : 0;
-                        TFC_u_Vector_add(&cur, (const Vector *)(p + 8));
-                        TFC_u_Vector_assign((Vector *)(p + 8), &cur);
+                        cur += *(const Vector *)((p + 8));
+                        *(Vector *)((p + 8)) = cur;
                     }
 
                     Vector up, dir2;
                     TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
-                    TFC_u_Vector_assign((Vector *)(p + 0x20), &up);
+                    *(Vector *)((p + 0x20)) = up;
                     TFC_u_MatrixGetDir(&dir2, (const Matrix *)mat);
                     Vector tv;
                     TFC_u_MatrixTransformVector(&tv, (const Vector *)mat);
-                    TFC_u_Vector_assign((Vector *)(p + 0x14), &tv);
+                    *(Vector *)((p + 0x14)) = tv;
                 }
             } else {                               // locked: snap to position
                 self->hideShip = 0;
                 Vector pos;
                 TFC_u_MatrixGetPosition(&pos, (const Matrix *)mat);
-                TFC_u_Vector_assign((Vector *)(p + 0x14), &pos);
+                *(Vector *)((p + 0x14)) = pos;
                 self->targetX = self->targetX - self->posX;
                 self->targetY = self->targetY - self->posY;
                 self->targetZ = self->targetZ - self->posZ;
@@ -694,9 +682,9 @@ void TFC_update(TargetFollowCamera *self, int dt)
             }
             Vector up, pos;
             TFC_u_MatrixGetUp(&up, &fp);
-            TFC_u_Vector_assign((Vector *)(p + 0x20), &up);
+            *(Vector *)((p + 0x20)) = up;
             TFC_u_MatrixGetPosition(&pos, &fp);
-            TFC_u_Vector_assign((Vector *)(p + 0x14), &pos);
+            *(Vector *)((p + 0x14)) = pos;
             self->hideShip = 0;
         }
 
@@ -706,12 +694,12 @@ void TFC_update(TargetFollowCamera *self, int dt)
             Vector v;
             TFC_u_memcpy(&fpm, (char *)self + 0xb4, 0x3c);
             TFC_u_MatrixGetPosition(&v, &fpm);
-            TFC_u_Vector_assign((Vector *)(p + 8), &v);
+            *(Vector *)((p + 8)) = v;
             TFC_u_MatrixGetUp(&v, &fpm);
-            TFC_u_Vector_assign((Vector *)(p + 0x20), &v);
+            *(Vector *)((p + 0x20)) = v;
             TFC_u_MatrixGetDir(&v, &fpm);
-            TFC_u_Vector_sub(&v, (const Vector *)(p + 8));
-            TFC_u_Vector_assign((Vector *)(p + 0x14), &v);
+            v -= *(const Vector *)((p + 8));
+            *(Vector *)((p + 0x14)) = v;
         }
 
         // rumble
@@ -753,12 +741,12 @@ void TFC_update(TargetFollowCamera *self, int dt)
         TFC_u_MatrixGetLookAt(&look, (const Vector *)(p + 8), (const Vector *)(p + 0x14),
                               (const Vector *)(p + 0x20));
         Matrix lm;
-        TFC_u_Matrix_assign(&lm, &look);
+        lm = look;
         Matrix roll;
         TFC_u_MatrixSetRotation3(&roll, self->roll, 0.0f, 0.0f);
-        TFC_u_MatrixMul_assign(&lm, &roll);
+        AbyssEngine::AEMath::MatrixMultiply(lm, roll);
         TFC_u_CameraSetLocal(*g_TFC_u_camera, *(Matrix **)p);
-        TFC_u_Matrix_assign((Matrix *)(p + 0x13c), &lm);
+        *(Matrix *)((p + 0x13c)) = lm;
     }
 
     

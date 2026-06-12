@@ -1,4 +1,5 @@
 #include "gof2/MineGun.h"
+#include "gof2/AEGeometry.h"
 #include "gof2/ObjectGun.h"
 #include "gof2/Transform.h"
 #include "gof2/Explosion.h"
@@ -14,7 +15,6 @@ float VectorLength(const Vector &value);
 extern "C" __attribute__((visibility("hidden"))) void *MineGun_vtable;
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion *> *array);
 extern "C" void *Array_Explosion_dtor(Array<Explosion *> *array);
-extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void *ObjectGun_dtor(MineGun *self);
 void *_ZN7MineGunD1Ev(MineGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **MineGun_canvas_holder;
@@ -22,7 +22,6 @@ extern "C" void Array_Explosion_ctor(Array<Explosion *> *self);
 extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion *> *self);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
-extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 
 // ---- render_1566bc.cpp ----
@@ -55,7 +54,8 @@ void *_ZN7MineGunD1Ev(MineGun *self)
     AEGeometry *geometry = (AEGeometry *)P(self, 0xbc);
     P(self, 0xb8) = 0;
     if (geometry != 0) {
-        ::operator delete(AEGeometry_dtor(geometry));
+        ((AEGeometry *)geometry)->~AEGeometry();
+        ::operator delete(geometry);
     }
     P(self, 0xbc) = 0;
     return ObjectGun_dtor(self);
@@ -114,7 +114,7 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
     void **holder = MineGun_canvas_holder;
     void *canvas = *holder;
     uint16_t mesh = (uint16_t)(param_2 + 1);
-    AEGeometry_ctor(geometry, mesh, canvas, false);
+    new ((void *)geometry) AEGeometry((uint16_t)mesh, (PaintCanvas *)canvas, false);
     uint32_t parent = U(self, 0x10);
     P(self, 0xbc) = geometry;
     void *addCanvas = *holder;

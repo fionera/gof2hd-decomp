@@ -1474,15 +1474,13 @@ uint32_t Engine::ShaderInit() {
 }
 
 // ---- SetEyePosition_850c0.cpp ----
-extern "C" void Vector_assign(Vector *dst, const Vector *src);   // 0x6eb3c
-
 uint64_t Engine::SetEyePosition(uint32_t x, uint32_t y, uint32_t z) {
     Engine *self = this;
     uint32_t buf[3];
     buf[0] = x;
     buf[1] = y;
     buf[2] = z;
-    Vector_assign((Vector *)((char *)self + 0x3fc), (const Vector *)buf);
+    *(Vector *)((char *)self + 0x3fc) = *(const Vector *)buf;
     return (uint64_t)buf[0] | ((uint64_t)buf[1] << 32);
 }
 

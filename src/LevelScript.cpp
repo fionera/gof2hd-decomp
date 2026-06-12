@@ -53,7 +53,6 @@ extern "C" void *Explosion_dtor(void *explosion);
 extern "C" void *KIPlayer_getRoute(void *player);
 extern "C" void *Level_getActiveMessages(Level *level);
 extern "C" void TargetFollowCamera_update(TargetFollowCamera *camera, float delta, int a, int b);
-extern "C" void Matrix_ctor(void *matrix);
 extern "C" void Hud_drawTitleImage(Hud *hud, bool visible);
 extern "C" void TargetFollowCamera_setLookAtCam(TargetFollowCamera *camera, bool enabled);
 
@@ -394,7 +393,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     I(this, 0x30) = 0;
     I(this, 0x34) = 0;
 
-    Matrix_ctor(B(this, 0x4c));
+    ((Matrix *)B(this, 0x4c))->initIdentity();
 
     P(this, 0xd0) = hud;
     P(this, 0xd4) = radar;

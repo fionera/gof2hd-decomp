@@ -21,7 +21,6 @@ extern "C" void CutScene_renderBG_tail(void *level, uint32_t bg);
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
 // ---- _CutScene_98420.cpp ----
-extern "C" void *AEGeometry_dtor(void *geom);              // 0x71fc8
 extern "C" void *Level_dtor(void *level);                  // 0x71fd4
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(void *arr);      // 0x71fec
 extern "C" void *Array_AEGeometryPtr_dtor(void *arr);             // 0x717c4
@@ -31,11 +30,11 @@ __attribute__((visibility("hidden"))) extern void **g_canvasFog; // FogEnable ta
 CutScene::~CutScene()
 {
     void *g = pp(this, 0x20);
-    if (g != 0) ::operator delete(AEGeometry_dtor(g));
+    if (g != 0) { ((AEGeometry*)g)->~AEGeometry(); ::operator delete(g); }
     pp(this, 0x20) = 0;
 
     g = pp(this, 0x64);
-    if (g != 0) ::operator delete(AEGeometry_dtor(g));
+    if (g != 0) { ((AEGeometry*)g)->~AEGeometry(); ::operator delete(g); }
     pp(this, 0x64) = 0;
 
     g = pp(this, 0x0);
@@ -45,19 +44,19 @@ CutScene::~CutScene()
     ((PaintCanvas*)(*g_canvasFog))->FogEnable(0, 1);
 
     g = pp(this, 0x28);
-    if (g != 0) ::operator delete(AEGeometry_dtor(g));
+    if (g != 0) { ((AEGeometry*)g)->~AEGeometry(); ::operator delete(g); }
     pp(this, 0x28) = 0;
 
     g = pp(this, 0x2c);
-    if (g != 0) ::operator delete(AEGeometry_dtor(g));
+    if (g != 0) { ((AEGeometry*)g)->~AEGeometry(); ::operator delete(g); }
     pp(this, 0x2c) = 0;
 
     g = pp(this, 0x30);
-    if (g != 0) ::operator delete(AEGeometry_dtor(g));
+    if (g != 0) { ((AEGeometry*)g)->~AEGeometry(); ::operator delete(g); }
     pp(this, 0x30) = 0;
 
     g = pp(this, 0x34);
-    if (g != 0) ::operator delete(AEGeometry_dtor(g));
+    if (g != 0) { ((AEGeometry*)g)->~AEGeometry(); ::operator delete(g); }
     pp(this, 0x34) = 0;
 
     void *arr = pp(this, 0x38);
@@ -425,9 +424,7 @@ CutScene::CutScene(int param)
 extern "C" {
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
 void *Globals_getShipGroup(void *globals, int type, int slot, bool flag);
-void *AEGeometry_setMatrix(void *matrix);
 float VectorSignedToFloat(int v, int mode);
-void *AEGeometry_dtor(void *geom);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_canvas;
@@ -463,7 +460,11 @@ void CutScene::replacePlayerShip(int a, int b)
         *(void **)(*(char **)((char *)en3 + 4) + 8) = grp;
 
         void *en4 = (void *)(intptr_t)((Level *)(pp(self, 0x0)))->getEnemies();
-        AEGeometry_setMatrix(*(void **)(*(char **)((char *)en4 + 4) + 8));
+        // The shim's single pointer is the replacement geometry; the matrix it installs
+        // is the old ship's local transform saved into `matrix` above (the decompiler
+        // dropped the implicit second argument).
+        ((AEGeometry *)(*(void **)(*(char **)((char *)en4 + 4) + 8)))
+            ->setMatrix(*(const AbyssEngine::AEMath::Matrix *)matrix);
 
         void *en5 = (void *)(intptr_t)((Level *)(pp(self, 0x0)))->getEnemies();
         void *ship = *(void **)((char *)en5 + 4);
@@ -477,7 +478,8 @@ void CutScene::replacePlayerShip(int a, int b)
         ((PlayerFighter *)(*(void **)((char *)en6 + 4)))->setExhaustVisible(false);
 
         ((LODManager *)(*(void **)self))->removeObject((AEGeometry *)oldGeom);
-        ::operator delete(AEGeometry_dtor(oldGeom));
+        ((AEGeometry *)oldGeom)->~AEGeometry();
+        ::operator delete(oldGeom);
     }
 
     checkForTurret();
@@ -492,10 +494,6 @@ float VectorSignedToFloat(int v, int mode);
 void MatrixSetTranslation(void *m, float x, float y, float z);
 void MatrixSetRotation(void *m, float x, float y, float z);
 int SolarSystem_getRace();
-void AEGeometry_ctor_id(void *self, unsigned short id, void *canvas, bool flag);
-void AEGeometry_ctor_default(void *self, void *canvas);
-void AEGeometry_setRotationOrder(void *self, int order);
-void *AEGeometry_dtor(void *self);
 void *TargetFollowCamera_dtor(void *self);
 }
 
@@ -610,7 +608,7 @@ void CutScene::initialize()
         int race = SolarSystem_getRace();
         if (race == 3) {
             void *g = ::operator new(0xc0);
-            AEGeometry_ctor_id(g, 0x36d6, canvas, false);
+            new ((void*)g) AEGeometry((uint16_t)(0x36d6), (PaintCanvas*)canvas, false);
             pp(this, 0x2c) = g;
             void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
             ((AbyssEngine::Transform *)(t))->SetAnimationState((AbyssEngine::AnimationMode)0, (void *)0);
@@ -618,14 +616,14 @@ void CutScene::initialize()
             ((Status *)(*gStatus))->getSystem();
             if (SolarSystem_getRace() == 0) {
                 void *g = ::operator new(0xc0);
-                AEGeometry_ctor_id(g, 0x37c8, canvas, false);
+                new ((void*)g) AEGeometry((uint16_t)(0x37c8), (PaintCanvas*)canvas, false);
                 pp(this, 0x30) = g;
                 void *g2 = ::operator new(0xc0);
-                AEGeometry_ctor_id(g2, 0x37c7, canvas, false);
+                new ((void*)g2) AEGeometry((uint16_t)(0x37c7), (PaintCanvas*)canvas, false);
                 pp(this, 0x34) = g2;
                 ((AEGeometry *)(pp(this, 0x30)))->addChild(u32(g2, 0xc));
                 if (pp(this, 0x34) != 0)
-                    ::operator delete(AEGeometry_dtor(pp(this, 0x34)));
+                    [&]{ AEGeometry *g_ = (AEGeometry *)pp(this, 0x34); g_->~AEGeometry(); ::operator delete(g_); }();
                 pp(this, 0x34) = 0;
             } else {
                 ((Status *)(*gStatus))->getSystem();
@@ -635,9 +633,9 @@ void CutScene::initialize()
     }
 
     void *root = ::operator new(0xc0);
-    AEGeometry_ctor_default(root, *g_canvas);
+    new ((void*)root) AEGeometry((PaintCanvas*)(*g_canvas));
     pp(this, 0x20) = root;
-    AEGeometry_setRotationOrder(root, 2);
+    ((AEGeometry*)(root))->setRotationOrder(2);
 
     i32(this, 0x50) = 0;
     i32(this, 0x54) = 0;
@@ -713,10 +711,6 @@ void CutScene::resetCamera()
 
 // ---- checkForTurret_98a68.cpp ----
 extern "C" {
-void AEGeometry_ctor_id(void *self, unsigned short id, void *canvas, bool flag);
-void AEGeometry_ctor_default(void *self, void *canvas);
-void AEGeometry_setRotationOrder(void *self, int order);
-void *AEGeometry_dtor(void *self);
 void FileRead_ctor(void *self);
 void *FileRead_dtor(void *self);
 void *FileRead_loadWeaponPositions(void *self, int shipIndex);
@@ -782,37 +776,40 @@ void CutScene::checkForTurret()
     void *canvas = *g_canvas;
 
     void *geom0 = ::operator new(0xc0);
-    AEGeometry_ctor_id(geom0, id0, canvas, false);
+    new ((void*)geom0) AEGeometry((uint16_t)(id0), (PaintCanvas*)canvas, false);
 
     void *geom1 = ::operator new(0xc0);
-    AEGeometry_ctor_id(geom1, id1, canvas, false);
-    AEGeometry_setRotationOrder(geom1, 2);
+    new ((void*)geom1) AEGeometry((uint16_t)(id1), (PaintCanvas*)canvas, false);
+    ((AEGeometry*)(geom1))->setRotationOrder(2);
 
     if (child0 != -1) {
         void *c = ::operator new(0xc0);
-        AEGeometry_ctor_id(c, (unsigned short)child0, canvas, false);
+        new ((void*)c) AEGeometry((uint16_t)((unsigned short)child0), (PaintCanvas*)canvas, false);
         ((AEGeometry *)(geom0))->addChild(u32(c, 0xc));
-        ::operator delete(AEGeometry_dtor(c));
+        ((AEGeometry *)c)->~AEGeometry();
+        ::operator delete(c);
     }
     if (child1 != -1) {
         void *c = ::operator new(0xc0);
-        AEGeometry_ctor_id(c, (unsigned short)child1, canvas, false);
+        new ((void*)c) AEGeometry((uint16_t)((unsigned short)child1), (PaintCanvas*)canvas, false);
         ((AEGeometry *)(geom1))->addChild(u32(c, 0xc));
-        ::operator delete(AEGeometry_dtor(c));
+        ((AEGeometry *)c)->~AEGeometry();
+        ::operator delete(c);
     }
     if (child2 != -1) {
         void *c = ::operator new(0xc0);
-        AEGeometry_ctor_id(c, (unsigned short)child2, canvas, false);
+        new ((void*)c) AEGeometry((uint16_t)((unsigned short)child2), (PaintCanvas*)canvas, false);
         ((AEGeometry *)(geom1))->addChild(u32(c, 0xc));
-        ::operator delete(AEGeometry_dtor(c));
+        ((AEGeometry *)c)->~AEGeometry();
+        ::operator delete(c);
     }
 
     if (pp(this, 0x64) != 0)
-        ::operator delete(AEGeometry_dtor(pp(this, 0x64)));
+        [&]{ AEGeometry *g_ = (AEGeometry *)pp(this, 0x64); g_->~AEGeometry(); ::operator delete(g_); }();
     pp(this, 0x64) = 0;
 
     void *root = ::operator new(0xc0);
-    AEGeometry_ctor_default(root, canvas);
+    new ((void*)root) AEGeometry((PaintCanvas*)(canvas));
     pp(this, 0x64) = root;
 
     void *fr = ::operator new(1);

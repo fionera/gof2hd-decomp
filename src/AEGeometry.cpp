@@ -169,6 +169,42 @@ Matrix &AEGeometry::getMatrix()
     return *(Matrix *)AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
 }
 
+// ---- getDirection_a45ac.cpp ----
+// AEGeometry::getDirection() -> forward axis of the local transform matrix
+Vector AEGeometry::getDirection()
+{
+    Matrix &loc = *(Matrix *)AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
+    return MatrixGetDir(loc);
+}
+
+// ---- getReferenceMatrix_a462e.cpp ----
+// AEGeometry::getReferenceMatrix() -> &field_0x84 (cached reference matrix)
+Matrix &AEGeometry::getReferenceMatrix()
+{
+    return this->referenceMatrix;
+}
+
+// ---- setMatrix_a4624.cpp ----
+// AEGeometry::setMatrix(const Matrix&) -> install m as the local transform
+void AEGeometry::setMatrix(const Matrix &m)
+{
+    AEGeomCanvas::TransformSetLocal((PaintCanvas *)this->canvas, this->transform, (Matrix *)&m);
+}
+
+// ---- setRotationOrder_a4a66.cpp ----
+// AEGeometry::setRotationOrder(RotationOrder) -> store field_0x4c
+void AEGeometry::setRotationOrder(int order)
+{
+    this->rotationOrder = order;
+}
+
+// ---- setPosition_a4640.cpp ----
+// AEGeometry::setPosition(float,float,float)
+void AEGeometry::setPosition(float x, float y, float z)
+{
+    return _ae_setPosition3(this, x, y, z);
+}
+
 // ---- getScaling_a4608.cpp ----
 Vector AEGeometry::getScaling()
 {
@@ -242,7 +278,7 @@ void AEGeometry::setRotation(const Vector &v)
 // ---- setPosition_a4632.cpp ----
 void AEGeometry::setPosition(const Vector &v)
 {
-    return _ae_setPosition3(this, v.x, v.y, v.z);
+    return setPosition(v.x, v.y, v.z);
 }
 
 // ---- setLodChildMeshes_a4a98.cpp ----

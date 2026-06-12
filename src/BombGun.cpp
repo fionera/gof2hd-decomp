@@ -8,6 +8,12 @@
 #include "gof2/Gun.h"
 #include "gof2/AEGeometry.h"
 
+namespace AbyssEngine { namespace AEMath {
+    Vector operator+(const Vector &, const Vector &);
+    Vector operator-(const Vector &, const Vector &);
+    Vector operator*(float, const Vector &);
+} }
+
 // NOTE: gof2/Player.h and gof2/PlayerEgo.h are intentionally NOT included. Those
 // (out-of-batch) headers have pre-existing self-collisions that break compilation
 // (Player.h: method 'turnedEnemy()' vs. field 'turnedEnemy'; PlayerEgo.h: redefines
@@ -45,7 +51,6 @@ extern "C" __attribute__((visibility("hidden"))) void **BombGun_sound_play;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_sound_param;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_status;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_sound_stop;
-extern "C" void *Vector_assign(void *dst, void *src);
 namespace AbyssEngine { namespace PaintCanvas {
 AbyssEngine::Transform *TransformGetTransform(void *canvas, uint32_t transform);
 void *TransformGetLocal(void *canvas, uint32_t transform);
@@ -54,15 +59,10 @@ void TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
 void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
 void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
 } }
-extern "C" void Matrix_assign(void *dst, void *src);
-extern "C" void AEGeometry_setMatrix(AEGeometry *self, void *matrix);
-extern "C" void Vector_scale_scalar(void *out, float scale, void *vec);
-extern "C" void Vector_add(void *out, void *a, void *b);
 extern "C" void TargetFollowCamera_setTarget(TargetFollowCamera *self, AEGeometry *target);
 extern "C" void TargetFollowCamera_setCamOffset(TargetFollowCamera *self, void *offset);
 extern "C" void TargetFollowCamera_setTargetOffset(TargetFollowCamera *self, void *offset);
 extern "C" void TargetFollowCamera_useTargetsUpVector(TargetFollowCamera *self, bool enabled);
-extern "C" void Vector_sub(void *out, void *a, void *b);
 float VectorLength(void *self);
 extern "C" void Explosion_update(Explosion *self, int elapsed, TargetFollowCamera *camera);
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_player_canvas;
@@ -70,9 +70,6 @@ extern "C" __attribute__((visibility("hidden"))) void **BombGun_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_final_canvas;
 extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
-extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
-extern "C" void *AEGeometry_dtor(AEGeometry *self);
-extern "C" void AEGeometry_ctor_canvas(AEGeometry *self, void *canvas);
 
 // ---- _BombGun_147824.cpp ----
 void *_ZN7BombGunD1Ev(BombGun *self)
@@ -139,7 +136,7 @@ void BombGun::update(int elapsed)
             *(uint64_t *)position = *(uint64_t *)gunPos;
             *(uint32_t *)(position + 8) = *(uint32_t *)((char *)gunPos + 0x8);
         }
-        Vector_assign((char *)this + 0xf8, position);
+        *(Vector *)((char *)this + 0xf8) = *(const Vector *)(position);
     }
 
     gun = this->field_0x8;
@@ -159,15 +156,15 @@ void BombGun::update(int elapsed)
                 ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
                 transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvas, *activeTransform);
                 ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
-                Matrix_assign((char *)player + 0x10, (char *)player->field_0x0 + 4);
+                *(Matrix *)((char *)player + 0x10) = *(const Matrix *)((char *)player->field_0x0 + 4);
                 ((FModSound *)(*BombGun_sound_play))->play(0x45c, 0, 0, 0.0f);
             }
 
             AEGeometry *geometry = this->field_0xe8;
             void *local = AbyssEngine::PaintCanvas::TransformGetLocal(*canvas, *activeTransform);
-            AEGeometry_setMatrix(geometry, local);
-            Vector_scale_scalar(scaled, kRocketOffsetScale, gun->velocities);
-            Vector_add(position, gun->positions, scaled);
+            ((AEGeometry *)geometry)->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(local));
+            *(Vector *)(scaled) = (kRocketOffsetScale) * *(const Vector *)(gun->velocities);
+            *(Vector *)(position) = *(const Vector *)(gun->positions) + *(const Vector *)(scaled);
             ((AEGeometry *)(geometry))->setPosition(*(Vector *)position);
             ((AEGeometry *)(geometry))->updateReferenceMatrix();
 
@@ -222,7 +219,7 @@ after_transforms:
         this->field_0x108 = 0;
         player = this->field_0xec;
         ((PlayerEgo *)(work))->getPosition();
-        Vector_sub(position, (char *)this + 0xf8, work);
+        *(Vector *)(position) = *(const Vector *)((char *)this + 0xf8) - *(const Vector *)(work);
         float distance = VectorLength(position);
         float magnitude = (float)((Gun *)(this->field_0x8))->getMagnitude();
         float force = (((magnitude * 0.5f) - distance) / (magnitude * 0.5f)) * 0.5f;
@@ -335,7 +332,7 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
 
         geometry = (AEGeometry *)::operator new(0xc0);
-        AEGeometry_ctor(geometry, 0x37d6, *canvasHolder, false);
+        new ((void *)geometry) AEGeometry((uint16_t)0x37d6, (PaintCanvas *)*canvasHolder, false);
         AbyssEngine::PaintCanvas::TransformAddChild(*canvasHolder, *createdTransform,
                                       geometry->transform);
         AbyssEngine::PaintCanvas::TransformRemoveMesh(*canvasHolder, self->field_0x10,
@@ -358,7 +355,7 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         if (mesh == 0x3958)
             geomMesh = 0x3959;
 
-        AEGeometry_ctor(geometry, geomMesh, *canvasHolder, false);
+        new ((void *)geometry) AEGeometry((uint16_t)geomMesh, (PaintCanvas *)*canvasHolder, false);
         self->field_0xf4 = geometry->transform;
         AbyssEngine::PaintCanvas::TransformAddChild(*canvasHolder, self->field_0x10,
                                       geometry->transform);
@@ -373,23 +370,23 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         }
     }
 
-    ::operator delete(AEGeometry_dtor(geometry));
+    [&]{ AEGeometry *g_ = (AEGeometry *)(geometry); if (g_) { g_->~AEGeometry(); ::operator delete(g_); } }();
 
 after_geometry:
     *(volatile float *)(local + 0x4) = kOffsetY;
     *(volatile float *)(local + 0x0) = 0.0f;
     *(volatile float *)(local + 0x8) = kOffsetZ;
-    Vector_assign((char *)self + 0x110, local);
+    *(Vector *)((char *)self + 0x110) = *(const Vector *)(local);
 
     *(volatile float *)(local + 0x0) = 0.0f;
     *(volatile float *)(local + 0x4) = 0.0f;
     *(volatile float *)(local + 0x8) = kRocketOffsetZ;
-    Vector_assign((char *)self + 0x11c, local);
+    *(Vector *)((char *)self + 0x11c) = *(const Vector *)(local);
 
     self->field_0xec = 0;
     AEGeometry *finalGeometry = (AEGeometry *)::operator new(0xc0);
     void **finalCanvas = BombGun_final_canvas;
-    AEGeometry_ctor_canvas(finalGeometry, *finalCanvas);
+    new ((void *)finalGeometry) AEGeometry((PaintCanvas *)*finalCanvas);
     self->field_0xe8 = finalGeometry;
     return self;
 }

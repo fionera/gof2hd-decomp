@@ -13,6 +13,12 @@
 #include "gof2/Engine.h"
 #include "gof2/PaintCanvasClass.h"
 
+// Free AEMath operators used below (declared in AEMath.cpp; not pulling in AEMath.h
+// here because it redefines BSphere/Transform which clash in this TU).
+namespace AbyssEngine { namespace AEMath {
+Vector operator+(const Vector &lhs, const Vector &rhs);
+Vector operator*(const Vector &lhs, float rhs);
+} }
 
 extern "C" void StarSystem_renderSunStreak_tail(void *geom);
 extern "C" void *Array_AEGeometry_dtor(void *array);
@@ -45,22 +51,14 @@ extern "C" void ArraySetLength_KIPlayer(int length, void *array);
 extern "C" void ArraySetLength_AEGeometry(int length, void *array);
 extern "C" void ArraySetLength_Vector(int length, void *array);
 extern "C" void LensFlare_ctor(void *self, void *canvas);
-extern "C" void AEGeometry_ctor(AEGeometry *self, uint32_t mesh, void *canvas, bool dynamic);
-extern "C" void AEGeometry_getDirection(char *out, AEGeometry *geom);
-extern "C" void Vector_assign(char *dst, const char *src);
 extern "C" void AERandom_setSeed(int *rng, long long seed);
 extern "C" void AERandom_reset(int *rng);
 extern "C" void PlayerStatic_ctor(void *self, int mode, AEGeometry *geom, float x, float y, float z);
-extern "C" void Vector_scale(char *out, const char *in, float scale);
 void MatrixGetPosition(char *out, void *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned long n);
-extern "C" void Vector_add(char *out, const char *a, const char *b);
 void MatrixGetUp(char *out, const char *matrix);
 void MatrixGetLookAt(char *out, const char *from, const char *to, const char *up);
-extern "C" void Matrix_assign(char *dst, const char *src);
 extern "C" void MatrixSetScaling(char *matrix, float x, float y, float z);
-extern "C" void AEGeometry_setMatrix(AEGeometry *geom, const char *matrix);
-extern "C" void Vector_mul_assign(char *vec, float scale);
 
 // ---- switchSunForSupernovaExpansion_134fc4.cpp ----
 void StarSystem::switchSunForSupernovaExpansion() {
@@ -378,19 +376,19 @@ StarSystem::StarSystem(int mode) {
         ArraySetLength_AEGeometry(2, geomArray);
 
         AEGeometry *sun = (AEGeometry *)::operator new(0xc0);
-        AEGeometry_ctor(sun, 0x1a70, *g_StarSystem_ctor_canvas, false);
+        new ((void*)sun) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
         ((AEGeometry **)array_data(P(self, 0x1c)))[0] = sun;
         set_vec(vec, 1000.0f, 1000.0f, 1000.0f);
         ((AEGeometry *)(sun))->setScaling(*(const Vector *)vec);
         ((AEGeometry *)(sun))->moveForward(0x447a0000);
-        AEGeometry_getDirection(vec, sun);
-        Vector_assign((char *)self + 0x30, vec);
+        *(AbyssEngine::AEMath::Vector*)(vec) = ((AEGeometry*)sun)->getDirection();
+        *(Vector *)((char *)self + 0x30) = *(const Vector *)(vec);
         FL(self, 0x30) = -FL(self, 0x30);
         FL(self, 0x34) = -FL(self, 0x34);
         FL(self, 0x38) = -FL(self, 0x38);
 
         AEGeometry *planet = (AEGeometry *)::operator new(0xc0);
-        AEGeometry_ctor(planet, 0x1a70, *g_StarSystem_ctor_canvas, false);
+        new ((void*)planet) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
         ((AEGeometry **)array_data(P(self, 0x1c)))[1] = planet;
         int rnd = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(0x4e20);
         float scale = (float)(rnd + 0x4e20) * 0.001f;
@@ -412,12 +410,12 @@ StarSystem::StarSystem(int mode) {
         P(self, 0x20) = positions;
         ArraySetLength_Vector(2, positions);
         ((AEGeometry *)(vec))->getPosition();
-        Vector_assign((char *)array_data(P(self, 0x20)), vec);
+        *(Vector *)((char *)array_data(P(self, 0x20))) = *(const Vector *)(vec);
         ((AEGeometry *)(vec))->getPosition();
-        Vector_assign((char *)array_data(P(self, 0x20)) + 0x0c, vec);
+        *(Vector *)((char *)array_data(P(self, 0x20)) + 0x0c) = *(const Vector *)(vec);
 
         AEGeometry *streak = (AEGeometry *)::operator new(0xc0);
-        AEGeometry_ctor(streak, 0x1a70, *g_StarSystem_ctor_canvas, false);
+        new ((void*)streak) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
         P(self, 0x40) = streak;
         set_vec(vec, 250.0f, 15.0f, 1000.0f);
         ((AEGeometry *)(streak))->setScaling(*(const Vector *)vec);
@@ -471,7 +469,7 @@ StarSystem::StarSystem(int mode) {
             int idx = Station_getIndex(station);
             if (((Status *)(*g_StarSystem_ctor_status_obj))->orbitHasPlanetRing(idx) != 0) {
                 AEGeometry *ring = (AEGeometry *)::operator new(0xc0);
-                AEGeometry_ctor(ring, 0x1a70, *g_StarSystem_ctor_canvas, false);
+                new ((void*)ring) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
                 P(self, 0x44) = ring;
                 ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x7198), (unsigned int *)((char *)self + 0x48), (bool)(0));
                 U(self, 0x4c) = i;
@@ -504,7 +502,7 @@ StarSystem::StarSystem(int mode) {
     int sunSlot = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(14);
     for (uint32_t i = 0; i < array_len(P(self, 0x1c)); ++i) {
         AEGeometry *geom = (AEGeometry *)::operator new(0xc0);
-        AEGeometry_ctor(geom, 0x1a70, *g_StarSystem_ctor_canvas, false);
+        new ((void*)geom) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
         ((AEGeometry **)array_data(P(self, 0x1c)))[i] = geom;
 
         if (i == 0) {
@@ -512,7 +510,7 @@ StarSystem::StarSystem(int mode) {
             set_vec(vec, sunScale, sunScale, sunScale);
             ((AEGeometry *)(geom))->setScaling(*(const Vector *)vec);
             AEGeometry *streak = (AEGeometry *)::operator new(0xc0);
-            AEGeometry_ctor(streak, 0x1a70, *g_StarSystem_ctor_canvas, false);
+            new ((void*)streak) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
             P(self, 0x40) = streak;
             set_vec(vec, B(self, 0x0c) == 0 ? 250.0f : 500.0f,
                     B(self, 0x0c) == 0 ? 15.0f : 25.0f,
@@ -543,14 +541,14 @@ StarSystem::StarSystem(int mode) {
         ((AEGeometry *)(geom))->setRotation(*(const Vector *)vec);
         ((AEGeometry *)(geom))->moveForward(0x447a0000);
         if (i == 0) {
-            AEGeometry_getDirection(vec, geom);
-            Vector_assign((char *)self + 0x30, vec);
+            *(AbyssEngine::AEMath::Vector*)(vec) = ((AEGeometry*)geom)->getDirection();
+            *(Vector *)((char *)self + 0x30) = *(const Vector *)(vec);
             FL(self, 0x30) = -FL(self, 0x30);
             FL(self, 0x34) = -FL(self, 0x34);
             FL(self, 0x38) = -FL(self, 0x38);
         }
         ((AEGeometry *)(vec))->getPosition();
-        Vector_assign((char *)array_data(P(self, 0x20)) + i * 0x0c, vec);
+        *(Vector *)((char *)array_data(P(self, 0x20)) + i * 0x0c) = *(const Vector *)(vec);
     }
 
     AERandom_reset(g_StarSystem_ctor_rng);
@@ -600,7 +598,7 @@ void StarSystem::switchPlanetForIntro() {
     int flags = 0;
     ((PaintCanvas *)(*g_StarSystem_planet_canvas))->TextureCreate((unsigned short)(0x273a), (unsigned int *)((char *)P(P(self, 0x14), 4) + U(self, 0x50) * 4), (bool)(flags));
     ((AEGeometry *)(current))->getScaling();
-    Vector_scale(scaled, current, 2.0f);
+    *(Vector *)(scaled) = *(const Vector *)(current) * (2.0f);
     ((AEGeometry *)(((AEGeometry **)P(P(self, 0x1c), 4))[U(self, 0x50)]))->setScaling(*(const Vector *)scaled);
 }
 
@@ -644,7 +642,7 @@ void StarSystem::switchSunForSupernovaIntro() {
     ((AEGeometry *)((AEGeometry *)P(self, 0x40)))->setMesh(0x2df2);
     AEGeometry *streak = (AEGeometry *)P(self, 0x40);
     ((AEGeometry *)(current))->getScaling();
-    Vector_scale(scaled, current, 5.0f);   // 0x40a00000
+    *(Vector *)(scaled) = *(const Vector *)(current) * (5.0f);   // 0x40a00000
     ((AEGeometry *)(streak))->setScaling(*(const Vector *)scaled);
 
     AEGeometry *sun = *(AEGeometry **)P(P(self, 0x1c), 4);
@@ -700,7 +698,7 @@ void StarSystem::render() {
                 unsigned current2 = ((PaintCanvas *)canvas2)->CameraGetCurrent();
                 void *local2 = ((PaintCanvas *)canvas2)->CameraGetLocal(current2);
                 __aeabi_memcpy(savedCamera, local2, 0x3c);
-                Vector_add(tempVec, (const char *)array_data(P(self, 0x20)), cameraPos);
+                *(Vector *)(tempVec) = *(const Vector *)((const char *)array_data(P(self, 0x20))) + *(const Vector *)(cameraPos);
                 if (B(self, 0x0c) == 0) {
                     MatrixGetUp(up, savedCamera);
                 } else {
@@ -709,7 +707,7 @@ void StarSystem::render() {
                     ((float *)up)[2] = 0.0f;
                 }
                 MatrixGetLookAt(lookAt, tempVec, cameraPos, up);
-                Matrix_assign(savedCamera, lookAt);
+                *(Matrix *)(savedCamera) = *(const Matrix *)(lookAt);
                 geoms[0]->setRotation(0.0f, 0.0f, 0.0f);
                 ((AEGeometry *)(tempVec))->getScaling();
 
@@ -725,22 +723,22 @@ void StarSystem::render() {
                     sy += grow;
                 }
                 MatrixSetScaling(lookAt, sx, sy, sz);
-                AEGeometry_setMatrix(geoms[0], lookAt);
+                ((AEGeometry*)geoms[0])->setMatrix(*(const AbyssEngine::AEMath::Matrix*)(lookAt));
 
                 if (B(self, 0x0c) != 0) {
-                    Vector_mul_assign(tempVec, grow);
+                    *(Vector *)(tempVec) *= (grow);
                     void *canvas3 = *canvasHolder;
                     unsigned current3 = ((PaintCanvas *)canvas3)->CameraGetCurrent();
                     void *local3 = ((PaintCanvas *)canvas3)->CameraGetLocal(current3);
-                    Matrix_assign(savedCamera, (const char *)local3);
-                    Vector_add(up, (const char *)array_data(P(self, 0x20)), cameraPos);
+                    *(Matrix *)(savedCamera) = *(const Matrix *)((const char *)local3);
+                    *(Vector *)(up) = *(const Vector *)((const char *)array_data(P(self, 0x20))) + *(const Vector *)(cameraPos);
                     MatrixGetUp(scaleBytes, savedCamera);
                     MatrixGetLookAt(lookAt, up, cameraPos, scaleBytes);
-                    Matrix_assign(savedCamera, lookAt);
+                    *(Matrix *)(savedCamera) = *(const Matrix *)(lookAt);
                     MatrixSetScaling(lookAt, grow + ((float *)tempVec)[0],
                                      ((float *)tempVec)[1],
                                      grow + ((float *)tempVec)[2]);
-                    AEGeometry_setMatrix((AEGeometry *)P(self, 0x40), lookAt);
+                    ((AEGeometry*)(AEGeometry *)P(self, 0x40))->setMatrix(*(const AbyssEngine::AEMath::Matrix*)(lookAt));
                     ((StarSystem *)(self))->renderSunStreak();
                 }
 
@@ -748,7 +746,7 @@ void StarSystem::render() {
                                  grow * (grow + ((float *)tempVec)[0] + 1.0f),
                                  ((float *)tempVec)[1],
                                  ((float *)tempVec)[1] / ((1.0f - grow) * 6.0f + 6.0f));
-                AEGeometry_setMatrix((AEGeometry *)P(self, 0x40), lookAt);
+                ((AEGeometry*)(AEGeometry *)P(self, 0x40))->setMatrix(*(const AbyssEngine::AEMath::Matrix*)(lookAt));
             }
 
             uint32_t stationIndex = *g_StarSystem_render_station_index;
@@ -766,9 +764,7 @@ void StarSystem::render() {
                                      FL(self, 0x58) + clamped);
             }
 
-            Vector_add(tempMatrix,
-                       (const char *)array_data(P(self, 0x20)) + posOffset,
-                       cameraPos);
+            *(Vector *)(tempMatrix) = *(const Vector *)((const char *)array_data(P(self, 0x20)) + posOffset) + *(const Vector *)(cameraPos);
             ((AEGeometry *)(geoms[i]))->setPosition(*(const Vector *)tempMatrix);
         }
 
@@ -785,9 +781,9 @@ void StarSystem::render() {
         if (i == U(self, 0x4c)) {
             ((PaintCanvas *)*canvasHolder)->SetTexture(U(self, 0x48), (unsigned)-1);
             ((PaintCanvas *)*canvasHolder)->SetBlendMode(1);
-            __aeabi_memcpy(savedCamera, ((AEGeometry *)(((AEGeometry **)array_data(P(self, 0x1c)))[i]))->getMatrix(), 0x3c);
+            __aeabi_memcpy(savedCamera, &((AEGeometry *)(((AEGeometry **)array_data(P(self, 0x1c)))[i]))->getMatrix(), 0x3c);
             MatrixSetScaling(lookAt, 4.0f, 4.0f, 4.0f);
-            AEGeometry_setMatrix((AEGeometry *)P(self, 0x44), lookAt);
+            ((AEGeometry*)(AEGeometry *)P(self, 0x44))->setMatrix(*(const AbyssEngine::AEMath::Matrix*)(lookAt));
             ((AEGeometry *)((AEGeometry *)P(self, 0x44)))->render();
         }
     }

@@ -1,5 +1,7 @@
 #include "gof2/PlayerFixedObject.h"
 #include "gof2/AEGeometry.h"
+
+namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &value); } }
 #include "gof2/FModSound.h"
 #include "gof2/Generator.h"
 #include "gof2/LODManager.h"
@@ -28,26 +30,18 @@
 template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
-extern "C" void  AEGeometry_setMatrix(void *geom, void *m);
-extern "C" float AEGeometry_moveForward_ret(void *geom, float d);
-extern "C" void *Matrix_assign(void *dst, void *src);
-extern "C" void *Vector_assign(Vector *dst, Vector *src);
 extern "C" void *Explosion_ctor(void *e, int a);
 extern "C" void  Explosion_update(void *e, int dt, void *cam);
 extern "C" void  TargetFollowCamera_getPosition(Vector *out, void *cam);
 extern "C" void  TargetFollowCamera_setRumblePercentage(float pct, void *cam);
-extern "C" void  Vector_sub(Vector *a, Vector *b);
-extern "C" float Vector_length(Vector *v);
 extern "C" void *Player_getEnemies();
 extern "C" void  Player_getPosition(Vector *out);
 extern "C" void Transform_setExhaustVisible(void *transform, bool v);
 extern "C" void Array_BV_ctor(void *arr);
 extern "C" void BoundingVolume_setArr(BoundingVolume *bv, void *arr);
-extern "C" void AEGeometry_ctor(void *geom, uint16_t meshId, void *canvas, bool b);
 void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 extern "C" V3 BV_getProjectionVector(void *bv);
 extern "C" char PlayerFixedObject_vtable;
-extern "C" void *AEGeometry_dtor(void *p);
 extern "C" void ArrayReleaseClasses_BV(void *arr);
 extern "C" void *Array_BV_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
@@ -57,7 +51,6 @@ extern "C" void String_ctor_cstr(void *s, const char *cstr, bool b);
 extern "C" void *String_op_assign(void *dst, void *src);
 extern "C" void Generator_ctor(void *g);
 extern "C" void *Generator_dtor(void *g);
-extern "C" void *AEGeometry_dtor(void *geom);
 
 // ---- getDockingType_154ef0.cpp ----
 int PlayerFixedObject::getDockingType() {
@@ -324,12 +317,12 @@ afterMotion:
         ((PlayerFixedObject *)(self))->setExhaustVisible(false);
 
         void *wreck = self->wreckGeometry;
-        AEGeometry_setMatrix(wreck, ((AEGeometry *)(self->geometry))->getMatrix());
+        ((AEGeometry *)(wreck))->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
         wreck = self->wreckGeometry;
 
         void *expl;
         if (wreck != 0) {
-            AEGeometry_setMatrix(wreck, ((AEGeometry *)(self->geometry))->getMatrix());
+            ((AEGeometry *)(wreck))->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
             void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
                         *(int *)((char *)wreck + 0xc));
             ((AbyssEngine::Transform *)(t))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
@@ -407,15 +400,16 @@ afterMotion:
         if (self->kind != 0x37a3) {
             if (self->moving != 0) {
                 self->intPosZ = self->intPosZ + dt;
-                float d = AEGeometry_moveForward_ret(self->wreckGeometry, (float)dt);
+                // AEGeometry::moveForward returns void; the binary forwards the same
+                // distance (dt, held live in r0/s0) to the secondary geometry.
+                ((AEGeometry *)self->wreckGeometry)->moveForward((float)dt);
                 if (self->secondaryGeometry != 0)
-                    AEGeometry_moveForward_ret(self->secondaryGeometry, d);
+                    ((AEGeometry *)self->secondaryGeometry)->moveForward((float)dt);
             }
-            void *m = ((AEGeometry *)(self->wreckGeometry))->getMatrix();
-            Matrix_assign((char *)self->player + 0x4, m);
-            char posBuf[12];
-            ((AEGeometry *)((Vector *)posBuf))->getPosition();
-            Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)posBuf);
+            Matrix &m = ((AEGeometry *)(self->wreckGeometry))->getMatrix();
+            *(Matrix *)((char *)self->player + 0x4) = m;
+            Vector pos = ((AEGeometry *)(self->wreckGeometry))->getPosition();
+            *(Vector *)((char *)self + 0x2c) = pos;
             Array<void *> *bv = (Array<void *> *)self->boundingVolumes;
             if (bv != 0) {
                 for (unsigned int i = 0; i < bv->size(); i++) {
@@ -455,8 +449,8 @@ afterMotion:
                     void *cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                     char cp[12];
                     TargetFollowCamera_getPosition((Vector *)cp, cam);
-                    Vector_sub((Vector *)cp, (Vector *)((char *)self + 0x2c));
-                    float len = Vector_length((Vector *)cp);
+                    *(Vector *)cp -= *(const Vector *)((char *)self + 0x2c);
+                    float len = AbyssEngine::AEMath::VectorLength(*(const Vector *)cp);
                     float maxd = 50.0f;
                     float use = (len < maxd) ? len : maxd;
                     self->rumblePercentage = 1.0f - use / maxd;
@@ -494,7 +488,7 @@ afterMotion:
                 (unsigned int)self->wreckMaterial <= 0x7fffffff) {
                 char posBuf[12];
                 ((AEGeometry *)((Vector *)posBuf))->getPosition();
-                Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)posBuf);
+                *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)posBuf);
                 Array<void *> *bv = (Array<void *> *)self->wreckCollision;
                 for (unsigned int i = 0; i < bv->size(); i++) {
                     void *o = bv->data()[i];
@@ -549,7 +543,7 @@ afterMotion:
                 if (((Player *)(((Player *)(self->player))->getEnemy(i)))->isActive() != 0) {
                     char pb[12];
                     Player_getPosition((Vector *)pb);
-                    Vector_assign((Vector *)((char *)self + 0x90), (Vector *)pb);
+                    *(Vector *)((Vector *)((char *)self + 0x90)) = *(const Vector *)((Vector *)pb);
                     float dx = self->posX - self->targetX;
                     float dy = self->posY - self->targetY;
                     float dz = self->posZ - self->targetZ;
@@ -557,7 +551,7 @@ afterMotion:
                     if (dx < hi && dx > lo && dy < hi && dy > lo && dz < hi && dz > lo) {
                         self->targetEnemy = (int32_t)(__INTPTR_TYPE__)((Player *)(self->player))->getEnemy(i);
                         Player_getPosition((Vector *)pb);
-                        Vector_assign((Vector *)((char *)self + 0x90), (Vector *)pb);
+                        *(Vector *)((Vector *)((char *)self + 0x90)) = *(const Vector *)((Vector *)pb);
                         self->field_0x144 = self->targetX;
                         self->field_0x148 = self->targetY;
                         self->field_0x14c = self->targetZ;
@@ -673,14 +667,14 @@ void PlayerFixedObject::reset() {
         char buf[12];
         *(uint64_t *)buf = self->spawnX;
         *(uint32_t *)(buf + 8) = self->spawnZ;
-        Vector_assign((Vector *)((char *)self + 0x138), (Vector *)buf);
+        *(Vector *)((Vector *)((char *)self + 0x138)) = *(const Vector *)((Vector *)buf);
     }
     // Vector copy: 0x138 -> 0x2c
     {
         char buf[12];
         *(uint64_t *)buf = self->field_0x138;
         *(uint32_t *)(buf + 8) = self->field_0x140;
-        Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
+        *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
     }
 
     self->deltaTime = 0;
@@ -714,7 +708,7 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     self->wreckMeshId = (uint16_t)meshId;
     void *geom = ::operator new(0xc0);
     void **holder = g_pfo_canvas2;
-    AEGeometry_ctor(geom, (uint16_t)meshId, *holder, true);
+    new ((void *)geom) AEGeometry((uint16_t)meshId, (PaintCanvas *)*holder, true);
     self->wreckGeometry = geom;
     void *t = ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc));
     *(int *)((char *)t + 0xe0) = 0x48f42400; // 500000.0f far-clip constant (raw bits)
@@ -773,7 +767,7 @@ void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
     void *wreck = self->wreckGeometry;
     *(void **)self = &PlayerFixedObject_vtable + 8;
     if (wreck != self->geometry) {
-        if (wreck != 0) ::operator delete(AEGeometry_dtor(wreck));
+        if (wreck != 0) { ((AEGeometry *)wreck)->~AEGeometry(); ::operator delete(wreck); }
         self->wreckGeometry = 0;
     }
     void *bvB = self->boundingVolumes;
@@ -878,7 +872,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     {
         char buf[12];
         *(float *)(buf + 0) = sx; *(float *)(buf + 4) = sy; *(float *)(buf + 8) = sz;
-        Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
+        *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
     }
 
     self->moving = 0;
@@ -988,11 +982,11 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
     Vector posVec = {x, y, z};
     ((AEGeometry *)(self->geometry))->setPosition(posVec);
     void *m = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
-    Matrix_assign((char *)self->player + 0x4, m);
+    *(Matrix *)((char *)self->player + 0x4) = *(const Matrix *)(m);
 
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();
-    Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
+    *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
 
     Array<void *> *bv = (Array<void *> *)self->boundingVolumes;
     if (bv != 0) {
@@ -1024,7 +1018,7 @@ void PlayerFixedObject::setDeadButSelectable() {
     ((Player *)(self->player))->setVulnerable(false);
     ((LODManager *)(*(void **)self->level))->removeObject((AEGeometry *)self->geometry);
     void *geom = self->geometry;
-    if (geom != 0) ::operator delete(AEGeometry_dtor(geom));
+    if (geom != 0) { ((AEGeometry *)geom)->~AEGeometry(); ::operator delete(geom); }
     void **holder = g_pfo_canvas3;
     void *newGeom = self->wreckGeometry;
     self->geometry = newGeom;
@@ -1080,10 +1074,10 @@ void PlayerFixedObject::moveForward(int amount) {
     self->intPosZ = amount + self->intPosZ;
     ((AEGeometry *)(self->geometry))->moveForward(d);
     void *m = ((AEGeometry *)(self->geometry))->getMatrix();
-    Matrix_assign((char *)self->player + 0x4, m);
+    *(Matrix *)((char *)self->player + 0x4) = *(const Matrix *)(m);
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();
-    Vector_assign((Vector *)((char *)self + 0x2c), (Vector *)buf);
+    *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
     if (self->wreckGeometry != 0) {
         ((AEGeometry *)(self->wreckGeometry))->moveForward(d);
     }

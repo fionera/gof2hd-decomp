@@ -13,15 +13,14 @@ extern "C" void PlayerCreature_dtor_tail(PlayerCreature *self);
 extern "C" int PlayerCreature_weightTable[] __attribute__((visibility("hidden")));
 extern "C" int PlayerCreature_rageTable[] __attribute__((visibility("hidden")));
 extern "C" char PlayerCreature_vtable;
-extern "C" void Matrix_ctor(Matrix *self);
 extern "C" int PlayerCreature_enduranceTable[] __attribute__((visibility("hidden")));
 extern "C" void PlayerCreature_hook_tail(PlayerCreature *self, int value);
-extern "C" void AEGeometry_setMatrix(AEGeometry *self, Matrix *matrix);
-extern "C" void Matrix_multiply(Matrix *out, Matrix *lhs, Matrix *rhs);
 void *ParticleSystemManager_emitManual_v(
     void *self, int handle, const float *pos, void *ret, const float *vel, float p5);
-extern "C" void Matrix_setRotation(Matrix *out, Matrix *matrix, float x, float y, float z);
-extern "C" void Matrix_assign(Matrix *dst, const void *src);
+namespace AbyssEngine { namespace AEMath {
+Matrix operator*(const Matrix &, const Matrix &);
+Matrix MatrixSetRotation(Matrix &, float, float, float);
+} }
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
 extern "C" int *PlayerCreature_randomMax __attribute__((visibility("hidden")));
 extern "C" FModSound **PlayerCreature_sound __attribute__((visibility("hidden")));
@@ -126,7 +125,7 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeomet
                                float x, float y, float z)
 {
     this->vtable = &PlayerCreature_vtable + 8;
-    Matrix_ctor((Matrix *)((char *)this + 0x144));
+    ((Matrix *)((char *)this + 0x144))->initIdentity();
 
     Player *playerObject = this->player;
     int oneBits = 0x3f800000;
@@ -184,8 +183,8 @@ void PlayerCreature::update(int elapsed)
         if (rageTime < 4000) {
             AEGeometry *geometry = this->geometry;
             Matrix *matrix = &((AEGeometry *)(geometry))->getMatrix();
-            Matrix_multiply((Matrix *)workBytes, matrix, (Matrix *)((char *)this + 0x144));
-            AEGeometry_setMatrix(geometry, (Matrix *)workBytes);
+            *(Matrix *)(workBytes) = *(const Matrix *)(matrix) * *(const Matrix *)((char *)this + 0x144);
+            ((AEGeometry *)geometry)->setMatrix(*(const AbyssEngine::AEMath::Matrix *)((Matrix *)workBytes));
         } else {
             int half = elapsed >> 1;
             float negativeHalf = (float)half * -0.5f;
@@ -196,7 +195,7 @@ void PlayerCreature::update(int elapsed)
             float secondFloat = (float)second;
             float x = ((negativeHalf + firstFloat) * 0.000244140625f) * 2.0f * 3.1415927f;
             float z = ((negativeHalf + secondFloat) * 0.000244140625f) * 2.0f * 3.1415927f;
-            Matrix_setRotation((Matrix *)workBytes, (Matrix *)((char *)this + 0x144), x, z, 0.0f);
+            *(Matrix *)(workBytes) = AbyssEngine::AEMath::MatrixSetRotation(*(Matrix *)((char *)this + 0x144), (float)(x), (float)(z), (float)0.0f);
             this->rageTimer = 0;
         }
 
@@ -247,7 +246,7 @@ void PlayerCreature::update(int elapsed)
     }
 
     Matrix *matrix = &((AEGeometry *)(this->geometry))->getMatrix();
-    Matrix_assign((Matrix *)((char *)this->player + 4), matrix);
+    *(Matrix *)((char *)this->player + 4) = *(const Matrix *)(matrix);
 }
 
 // ---- reset_11cc40.cpp ----
@@ -276,5 +275,5 @@ void PlayerCreature::reset()
     matrix[12] = 1.0f;
     matrix[13] = 1.0f;
     matrix[14] = 1.0f;
-    Matrix_assign((Matrix *)((char *)this + 0x144), matrix);
+    *(Matrix *)((char *)this + 0x144) = *(const Matrix *)(matrix);
 }

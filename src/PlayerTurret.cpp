@@ -20,37 +20,29 @@ public:
 };
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 
-extern "C" Vector *Vector_assign(Vector *dst, const Vector *src);
 extern "C" void PlayerTurret_renderBase(PlayerTurret *self);
 extern "C" void Player_reset(Player *self);
 extern "C" void KIPlayer_setLevel(PlayerTurret *self, Level *level);
-extern "C" int AEGeometry_getReferenceMatrix(AEGeometry *self);
 extern "C" PlayerTurret *PlayerTurret_completeDtor(PlayerTurret *self);
 extern "C" void *KIPlayer_dtor(void *self);
 extern "C" void Player_getPosition(Vector *out, Player *self);
 void MatrixGetDir(Vector *out, const void *matrix);
 void VectorNormalize(Vector *out, const Vector *v);
-extern "C" void Vector_scale(Vector *out, const Vector *v, float value);
-extern "C" void Vector_add(Vector *out, const Vector *a, const Vector *b);
-extern "C" void Matrix_assign(void *dst, const void *src);
-extern "C" void Matrix_mul(void *out, const void *a, const void *b);
-extern "C" void AEGeometry_setMatrix(AEGeometry *self, const void *matrix);
 namespace AbyssEngine { namespace AEMath {
 Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
 Vector MatrixInverseTransformVector(const Matrix &matrix, const Vector &vector);
+Vector operator+(const Vector &, const Vector &);
+Vector operator-(const Vector &, const Vector &);
+Vector operator*(const Vector &, float);
+Matrix operator*(const Matrix &, const Matrix &);
 } }
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int max); } }
 extern "C" void Array_int_ctor(IntArray *array);
 extern "C" void ArrayAdd_int(int value, IntArray *array);
 extern "C" PlayerArray *Player_getEnemies(Player *self);
-extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
 float VectorLength(const Vector *v);
 extern "C" void *Explosion_dtor(Explosion *self);
-extern "C" void *AEGeometry_dtor(AEGeometry *self);
-extern "C" void AEGeometry_ctorMesh(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
-extern "C" void AEGeometry_ctor(AEGeometry *self, void *canvas);
-extern "C" void AEGeometry_setRotationOrder(AEGeometry *self, int order);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
 
 // ---- setTurretRange_157418.cpp ----
@@ -81,7 +73,7 @@ using AbyssEngine::AEMath::Vector;
 void PlayerTurret::setHost(KIPlayer *host, const Vector &offset)
 {
     P(this, 0x154) = host;
-    Vector_assign((Vector *)B(this, 0x158), &offset);
+    *(Vector *)((Vector *)B(this, 0x158)) = *(const Vector *)(&offset);
 }
 
 // ---- render_157bcc.cpp ----
@@ -161,7 +153,7 @@ void PlayerTurret::setLevel(Level *level)
 {
     KIPlayer_setLevel(this, level);
     int manager = I(P(this, 0x54), 0x74);
-    int matrix = AEGeometry_getReferenceMatrix(TP<AEGeometry>(this, 0x8));
+    int matrix = (int)(intptr_t)(void *)&((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getReferenceMatrix();
     int system = ((ParticleSystemManager *)(manager))->addSystem((const void *)(long)matrix, 9, 0);
     I(this, 0x138) = system;
     ((ParticleSystemManager *)(I(P(this, 0x54), 0x74)))->enableSystemEmit(system, 0);
@@ -210,19 +202,19 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     Player_getPosition((Vector *)positionBytes, (Player *)this->f_14c);
     MatrixGetDir((Vector *)dirBytes, matrixBytes);
     VectorNormalize((Vector *)normalBytes, (Vector *)dirBytes);
-    Vector_scale((Vector *)scaledBytes, (Vector *)normalBytes, 3000.0f);
-    Vector_add((Vector *)sumBytes, (Vector *)positionBytes, (Vector *)scaledBytes);
-    Vector_assign((Vector *)B(this, 0x9c), (Vector *)sumBytes);
+    *(Vector *)((Vector *)scaledBytes) = *(const Vector *)((Vector *)normalBytes) * (3000.0f);
+    *(Vector *)((Vector *)sumBytes) = *(const Vector *)((Vector *)positionBytes) + *(const Vector *)((Vector *)scaledBytes);
+    *(Vector *)((Vector *)B(this, 0x9c)) = *(const Vector *)((Vector *)sumBytes);
 
     if (UC(this, 0x3f) == 0) {
         void *base = ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getMatrix();
         void *turret = ((AEGeometry *)(turretGeometry))->getMatrix();
-        Matrix_mul(tmpMatrixA, base, turret);
+        *(Matrix *)(tmpMatrixA) = *(const Matrix *)(base) * *(const Matrix *)(turret);
         void *main = ((AEGeometry *)(mainGeometry))->getMatrix();
-        Matrix_mul(tmpMatrixB, tmpMatrixA, main);
-        Matrix_assign(matrixBytes, tmpMatrixB);
+        *(Matrix *)(tmpMatrixB) = *(const Matrix *)(tmpMatrixA) * *(const Matrix *)(main);
+        *(Matrix *)(matrixBytes) = *(const Matrix *)(tmpMatrixB);
     } else {
-        Matrix_assign(matrixBytes, ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getMatrix());
+        *(Matrix *)(matrixBytes) = ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getMatrix();
     }
 
     *(AbyssEngine::AEMath::Vector *)positionBytes = AbyssEngine::AEMath::MatrixInverseTransformVector(
@@ -313,15 +305,15 @@ void PlayerTurret::update(int delta)
         *(AbyssEngine::AEMath::Vector *)vectorBytes = AbyssEngine::AEMath::MatrixRotateVector(
             *(const AbyssEngine::AEMath::Matrix *)matrixBytes,
             *(const AbyssEngine::AEMath::Vector *)B(this, 0x158));
-        Vector_assign((Vector *)B(this, 0x90), (Vector *)vectorBytes);
-        AEGeometry_setMatrix(TP<AEGeometry>(this, 0x8), matrixBytes);
+        *(Vector *)((Vector *)B(this, 0x90)) = *(const Vector *)((Vector *)vectorBytes);
+        ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->setMatrix(*(const AbyssEngine::AEMath::Matrix *)matrixBytes);
         ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->translate(*(Vector *)B(this, 0x90));
     }
 
     void *matrix = ((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getMatrix();
-    Matrix_assign(B(player, 0x4), matrix);
+    *(Matrix *)(B(player, 0x4)) = *(const Matrix *)(matrix);
     ((AEGeometry *)((Vector *)vectorBytes))->getPosition();
-    Vector_assign((Vector *)B(this, 0x2c), (Vector *)vectorBytes);
+    *(Vector *)((Vector *)B(this, 0x2c)) = *(const Vector *)((Vector *)vectorBytes);
 
     int hp = ((Player *)(player))->getHitpoints();
     int state = I(this, 0x88);
@@ -445,7 +437,7 @@ void PlayerTurret::pickEnemy()
 
                     if (accepted) {
                         Player_getPosition((Vector *)vectorFrame, enemy);
-                        Vector_sub((Vector *)(vectorFrame + 12), position, (Vector *)vectorFrame);
+                        *(Vector *)((Vector *)(vectorFrame + 12)) = *(const Vector *)(position) - *(const Vector *)((Vector *)vectorFrame);
                         int distance = (int)VectorLength((Vector *)(vectorFrame + 12));
                         if (distance < bestRange) {
                             void *current = this->f_14c;
@@ -483,19 +475,19 @@ PlayerTurret::~PlayerTurret() noexcept(false)
 
     AEGeometry *base = TP<AEGeometry>(this, 0x140);
     if (base != 0) {
-        ::operator delete(AEGeometry_dtor(base));
+        base->~AEGeometry(); ::operator delete(base);
     }
     this->f_140 = 0;
 
     AEGeometry *turret = TP<AEGeometry>(this, 0x144);
     if (turret != 0) {
-        ::operator delete(AEGeometry_dtor(turret));
+        turret->~AEGeometry(); ::operator delete(turret);
     }
     this->f_144 = 0;
 
     AEGeometry *helper = TP<AEGeometry>(this, 0x148);
     if (helper != 0) {
-        ::operator delete(AEGeometry_dtor(helper));
+        helper->~AEGeometry(); ::operator delete(helper);
     }
     this->f_148 = 0;
 
@@ -529,14 +521,14 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
 
     AEGeometry *base = (AEGeometry *)operator new(0xc0);
     uint32_t *canvasHolder = gPlayerTurretCanvas;
-    AEGeometry_ctorMesh(base, (uint16_t)mesh, (void *)*canvasHolder, false);
+    new ((void *)base) AEGeometry((uint16_t)mesh, (PaintCanvas *)(void *)*canvasHolder, false);
     this->f_140 = base;
 
     if (mesh == 0x381b) {
         AEGeometry *turret = (AEGeometry *)operator new(0xc0);
-        AEGeometry_ctorMesh(turret, 0x381c, (void *)*canvasHolder, false);
+        new ((void *)turret) AEGeometry((uint16_t)0x381c, (PaintCanvas *)(void *)*canvasHolder, false);
         this->f_144 = turret;
-        AEGeometry_setRotationOrder(turret, 2);
+        turret->setRotationOrder(2);
         Vector *v = (Vector *)vectorBytes;
         v->x = 0.0f;
         v->y = 0.0f;
@@ -544,9 +536,9 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         ((AEGeometry *)(turret))->setPosition(*v);
     } else if (mesh == 0x1a76) {
         AEGeometry *turret = (AEGeometry *)operator new(0xc0);
-        AEGeometry_ctorMesh(turret, 0x1a77, (void *)*canvasHolder, false);
+        new ((void *)turret) AEGeometry((uint16_t)0x1a77, (PaintCanvas *)(void *)*canvasHolder, false);
         this->f_144 = turret;
-        AEGeometry_setRotationOrder(turret, 2);
+        turret->setRotationOrder(2);
         Vector *v = (Vector *)vectorBytes;
         v->x = 0.0f;
         v->y = 0.0f;
@@ -554,9 +546,9 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         ((AEGeometry *)(turret))->setPosition(*v);
     } else if (mesh == 0x1a74) {
         AEGeometry *turret = (AEGeometry *)operator new(0xc0);
-        AEGeometry_ctorMesh(turret, 0x1a75, (void *)*canvasHolder, false);
+        new ((void *)turret) AEGeometry((uint16_t)0x1a75, (PaintCanvas *)(void *)*canvasHolder, false);
         this->f_144 = turret;
-        AEGeometry_setRotationOrder(turret, 2);
+        turret->setRotationOrder(2);
         Vector *v = (Vector *)vectorBytes;
         v->x = 0.0f;
         v->y = 0.0f;
@@ -565,7 +557,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
     }
 
     AEGeometry *helper = (AEGeometry *)operator new(0xc0);
-    AEGeometry_ctor(helper, (void *)*canvasHolder);
+    new ((void *)helper) AEGeometry((PaintCanvas *)(void *)*canvasHolder);
     this->f_148 = helper;
     uint32_t transform = (uint32_t)(uintptr_t)((PaintCanvas*)(long)*canvasHolder)->TransformGetTransform(U(helper, 0xc));
     I((void *)transform, 0xe0) = 0;
@@ -593,9 +585,9 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         if (mesh == 0x49c0) {
             childMesh = 0x49c6;
         }
-        AEGeometry_ctorMesh(child, childMesh, (void *)*canvasHolder, false);
+        new ((void *)child) AEGeometry((uint16_t)childMesh, (PaintCanvas *)(void *)*canvasHolder, false);
         ((AEGeometry *)(geometry))->addChild(U(child, 0xc));
-        ::operator delete(AEGeometry_dtor(child));
+        [&]{ AEGeometry *g_ = (AEGeometry *)(child); if (g_) { g_->~AEGeometry(); ::operator delete(g_); } }();
         ((AEGeometry *)(geometry))->setScaling(0.5f);
     }
 

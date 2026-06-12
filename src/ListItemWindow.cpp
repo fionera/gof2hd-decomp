@@ -89,7 +89,6 @@ void ListItemWindow::OnTouchEnd(int x, int y)
 
 // ---- render_1339c8.cpp ----
 extern "C" void  _liw_Matrix_assign(void *dst, void *src);             // 0x6f148
-extern "C" void  _liw_AEGeometry_render(void *g);                      // 0x72238
 extern "C" void  _liw_render_tail(void *c, int a, int h, void *sp);    // 0x1ac428 tail
 
 __attribute__((visibility("hidden"))) extern void **g_liw_r_canvas;   // 0x1439e0
@@ -115,7 +114,7 @@ void ListItemWindow::render()
     canvas->SetColor((unsigned int)(long)canvas);
     void *m = canvas->CameraGetLocal((unsigned int)(long)canvas);
     _liw_Matrix_assign((char *)this + 0x98, m);
-    _liw_AEGeometry_render(pp(this, 0x10));
+    ((AEGeometry *)pp(this, 0x10))->render();
     canvas->End3d();
     int dummy;
     return _liw_render_tail((void *)canvas, 0, h, &dummy);

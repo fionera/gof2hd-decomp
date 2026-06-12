@@ -63,7 +63,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_alien_text;
 extern "C" void *Array_int_dtor(void *arr);
 extern "C" void ArrayReleaseClasses_Vector(void *arr);
 extern "C" void *Array_Vector_dtor(void *arr);
-extern "C" void *AEGeometry_dtor(void *geometry);
 extern "C" void *SystemPathFinder_dtor(void *finder);
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_draw_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_draw_status;
@@ -73,7 +72,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_draw_font;
 extern "C" float EaseInOut_GetValue(void *ease);
 extern "C" float EaseInOut_GetMinValue(void *ease);
 extern "C" void String_add(String *out, String *a, String *b);
-extern "C" void Vector_assign(Vector *dst, Vector *src);
 extern "C" int Ship_hasJumpDriveIntegrated(void *ship);
 extern "C" int SolarSystem_getIndex(void *system);
 extern "C" void *SolarSystem_getRoutes(void *system);
@@ -114,7 +112,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_update_sound;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_update_screenW;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_update_screenH;
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
-extern "C" void Vector_sub_assign(Vector *dst, Vector *src);
 void VectorNormalize(Vector *out, Vector *value);
 extern "C" void EaseInOut_Update(void *ease, float dt);
 extern "C" float EaseInOut_GetCurrentValue(void *ease);
@@ -128,8 +125,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_ctor_galaxy;
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_ctor_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_ctor_random;
 extern "C" void *Galaxy_getSystems(void *galaxy);
-extern "C" void *AEGeometry_ctor_canvas(void *geometry, uint32_t canvas);
-extern "C" void *AEGeometry_ctor_image(void *geometry, uint16_t image, uint32_t canvas, bool flag);
 extern "C" void Array_AEGeometry_ctor(void *arr);
 extern "C" void Array_Vector_ctor(void *arr);
 extern "C" void ArraySetLength_AEGeometry(uint32_t n, void *arr);
@@ -296,25 +291,25 @@ StarMap::~StarMap()
 
     p = ptr_field(this, 0x1bc);
     if (p != 0) {
-        operator delete(AEGeometry_dtor(p));
+        [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
     ptr_field(this, 0x1bc) = 0;
 
     p = ptr_field(this, 0x1b0);
     if (p != 0) {
-        operator delete(AEGeometry_dtor(p));
+        [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
     ptr_field(this, 0x1b0) = 0;
 
     p = ptr_field(this, 0x1b4);
     if (p != 0) {
-        operator delete(AEGeometry_dtor(p));
+        [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
     ptr_field(this, 0x1b4) = 0;
 
     p = ptr_field(this, 0x1b8);
     if (p != 0) {
-        operator delete(AEGeometry_dtor(p));
+        [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
     ptr_field(this, 0x1b8) = 0;
 
@@ -338,7 +333,7 @@ StarMap::~StarMap()
 
     p = ptr_field(this, 0xf8);
     if (p != 0) {
-        operator delete(AEGeometry_dtor(p));
+        [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
     ptr_field(this, 0xf8) = 0;
 
@@ -373,14 +368,14 @@ void StarMap::draw()
         ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
         Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
         for (uint32_t i = 0; i < positions->size(); i++) {
-            Vector_assign((Vector *)((char *)this + 0x78), positions->data()[i]);
+            *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(positions->data()[i]);
             void *routes = SolarSystem_getRoutes(((Array<void *> *)ptr_field(this, 0x54))->data()[i]);
             if (routes != 0) {
                 Array<int> *r = (Array<int> *)routes;
                 for (uint32_t j = 0; j < r->size(); j++) {
                     uint32_t to = (uint32_t)r->data()[j];
                     if (to < positions->size()) {
-                        Vector_assign((Vector *)((char *)this + 0x84), positions->data()[to]);
+                        *(Vector *)((Vector *)((char *)this + 0x84)) = *(const Vector *)(positions->data()[to]);
                         if (field<float>(this, 0x80) >= 0.0f || field<float>(this, 0x8c) >= 0.0f) {
                             ((PaintCanvas*)(long)(canvas))->DrawLine((int)field<float>(this, 0x78), (int)field<float>(this, 0x7c), (int)field<float>(this, 0x84), (int)field<float>(this, 0x88));
                         }
@@ -630,10 +625,10 @@ void StarMap::OnTouchEnd(int x, int y)
                 field<uint8_t>(this, 0x138) = 1;
                 Vector p;
                 ((AEGeometry *)(&p))->getPosition();
-                Vector_assign((Vector *)((char *)this + 0x78), &p);
+                *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&p);
                 field<float>(this, 0x80) += 20.0f;
                 MatrixGetPosition(&p, ((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraGetLocal(((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraGetCurrent()));
-                Vector_assign((Vector *)((char *)this + 0x84), &p);
+                *(Vector *)((Vector *)((char *)this + 0x84)) = *(const Vector *)(&p);
                 ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x17c)))->SetRange(field<float>(this, 0x84), field<float>(this, 0x78));
                 ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x180)))->SetRange(field<float>(this, 0x88), field<float>(this, 0x7c));
                 ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x184)))->SetRange(field<float>(this, 0x8c), field<float>(this, 0x80));
@@ -722,11 +717,11 @@ void StarMap::update(int dt)
         void *canvas = *g_StarMap_update_canvas;
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         MatrixGetPosition(&tmp, ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent()));
-        Vector_assign((Vector *)((char *)this + 0x78), &tmp);
+        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&tmp);
         ((AEGeometry *)(&tmp))->getPosition();
-        Vector_sub_assign((Vector *)((char *)this + 0x78), &tmp);
+        *(Vector *)((char *)this + 0x78) -= *(const Vector *)(&tmp);
         VectorNormalize(&tmp, (Vector *)((char *)this + 0x78));
-        Vector_assign((Vector *)((char *)this + 0x78), &tmp);
+        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&tmp);
         field<float>(this, 0x78) += 0.5f;
         Vector worldUp = {0.0f, 1.0f, 0.0f};
         ((AEGeometry *)(ptr_field(this, 0xf8)))->setDirection(*(Vector *)((char *)this + 0x78), worldUp);
@@ -741,7 +736,7 @@ void StarMap::update(int dt)
         tmp.x = EaseInOut_GetCurrentValue(ptr_field(this, 0x17c));
         tmp.y = EaseInOut_GetCurrentValue(ptr_field(this, 0x180));
         tmp.z = EaseInOut_GetCurrentValue(ptr_field(this, 0x184));
-        Vector_assign((Vector *)((char *)this + 0x78), &tmp);
+        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&tmp);
         void *canvas = *g_StarMap_update_canvas;
         __builtin_memcpy(&matrix, ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent()), 0x3c);
         MatrixSetTranslation(&matrix, field<float>(this, 0x78), field<float>(this, 0x7c), field<float>(this, 0x80));
@@ -774,7 +769,7 @@ void StarMap::update(int dt)
                 }
                 ptr_field(this, 0x100) = 0;
                 if (ptr_field(this, 0xa4) != 0) {
-                    operator delete(AEGeometry_dtor(ptr_field(this, 0xa4)));
+                    [&]{ AEGeometry *g_=(AEGeometry*)(ptr_field(this, 0xa4)); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
                 }
                 field<int32_t>(this, 4) = 0;
                 ptr_field(this, 0xa4) = 0;
@@ -865,8 +860,7 @@ void StarMap::update(int dt)
             Array<uint8_t> *vis = (Array<uint8_t> *)((Status *)(*g_StarMap_update_status))->getSystemVisibilities();
             uint32_t selected = field<uint32_t>(this, 0x60);
             if (vis != 0 && selected < vis->size() && vis->data()[selected] != 0) {
-                Vector_assign((Vector *)((char *)this + 0x78),
-                              ((Array<Vector *> *)ptr_field(this, 0x194))->data()[selected]);
+                *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(((Array<Vector *> *)ptr_field(this, 0x194))->data()[selected]);
                 float targetX = (float)(*g_StarMap_update_screenW >> 1);
                 float targetY = (float)(*g_StarMap_update_screenH >> 1);
                 float sx = (field<float>(this, 0x78) - targetX) / -30.0f;
@@ -923,7 +917,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     field<int32_t>(this, 0x14) = 500;
 
     void *root = operator new(0xc0);
-    AEGeometry_ctor_canvas(root, *g_StarMap_ctor_canvas);
+    new ((void*)root) AEGeometry((PaintCanvas*)(long)(*g_StarMap_ctor_canvas));
     ptr_field(this, 0x6c) = root;
 
     void *systemsGeom = operator new(0xc);
@@ -946,7 +940,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
             image = 0x469b;
         }
         void *geom = operator new(0xc0);
-        AEGeometry_ctor_image(geom, image, *g_StarMap_ctor_canvas, false);
+        new ((void*)geom) AEGeometry((uint16_t)image, (PaintCanvas*)(long)(*g_StarMap_ctor_canvas), false);
         geoms->data()[i] = geom;
         ((AEGeometry *)(geom))->setScaling(1.0f);
         float px = (float)((int)(((100 - SolarSystem_getX(sys)) / 100.0f) * 20000.0f) - 10000);
@@ -966,7 +960,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     if (((Status *)(*g_StarMap_ctor_status))->getCurrentCampaignMission() > 0x1f &&
         field<int32_t>(*g_StarMap_ctor_status, 0x7c) >= 0) {
         void *marker = operator new(0xc0);
-        AEGeometry_ctor_image(marker, 0x4262, *g_StarMap_ctor_canvas, false);
+        new ((void*)marker) AEGeometry((uint16_t)0x4262, (PaintCanvas*)(long)(*g_StarMap_ctor_canvas), false);
         ptr_field(this, 0xf8) = marker;
         Vector p;
         ((AEGeometry *)(&p))->getPosition();
@@ -1032,8 +1026,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y)
         for (uint32_t i = 0; i < systems->size(); i++) {
             Array<uint8_t> *vis = (Array<uint8_t> *)((Status *)(status))->getSystemVisibilities();
             if (vis != 0 && i < vis->size() && vis->data()[i] != 0) {
-                Vector_assign((Vector *)((char *)this + 0x78),
-                              ((Array<Vector *> *)ptr_field(this, 0x194))->data()[i]);
+                *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(((Array<Vector *> *)ptr_field(this, 0x194))->data()[i]);
                 if (field<float>(this, 0x80) > 0.0f &&
                     absf_local(field<float>(this, 0x78) - fx) < (float)field<int32_t>(this, 0x1c8) &&
                     absf_local(field<float>(this, 0x7c) - fy) < (float)field<int32_t>(this, 0x1c8)) {
@@ -1076,7 +1069,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y)
     } else if (field<int32_t>(this, 4) == 3) {
         Array<Vector *> *stations = (Array<Vector *> *)ptr_field(this, 0x198);
         for (uint32_t i = 0; i < stations->size(); i++) {
-            Vector_assign((Vector *)((char *)this + 0x78), stations->data()[i]);
+            *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(stations->data()[i]);
             if (field<float>(this, 0x80) > 0.0f &&
                 absf_local(field<float>(this, 0x78) - fx) < (float)field<int32_t>(this, 0x1c8) &&
                 absf_local(field<float>(this, 0x7c) - fy) < (float)field<int32_t>(this, 0x1c8)) {
@@ -1249,7 +1242,7 @@ void StarMap::initStarSystem()
     ArraySetLength_AEGeometry(count + 1, stationGeoms);
 
     void *root = operator new(0xc0);
-    AEGeometry_ctor_canvas(root, *g_StarMap_system_canvas);
+    new ((void*)root) AEGeometry((PaintCanvas*)(long)(*g_StarMap_system_canvas));
     ptr_field(this, 0xa4) = root;
 
     void *used = operator new(0xc);
@@ -1266,7 +1259,7 @@ void StarMap::initStarSystem()
         uint32_t stationIndex = i - 1;
         int tex = Station_getTextureIndex(stationArr->data()[stationIndex]);
         void *geom = operator new(0xc0);
-        AEGeometry_ctor_image(geom, (uint16_t)(tex + 0x4704), *g_StarMap_system_canvas, false);
+        new ((void*)geom) AEGeometry((uint16_t)(tex + 0x4704), (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
         geomArr->data()[i] = geom;
         ((int *)ptr_field(this, 0x98))[stationIndex] =
             AbyssEngine::AERandom::nextInt(*g_StarMap_system_random, ((Array<uint8_t> *)used)->size()) *
@@ -1293,7 +1286,7 @@ void StarMap::initStarSystem()
     ArraySetLength_AEGeometry(count, rings);
     for (uint32_t i = 0; i < ((Array<void *> *)rings)->size(); i++) {
         void *ring = operator new(0xc0);
-        AEGeometry_ctor_image(ring, 0x1a7b, *g_StarMap_system_canvas, false);
+        new ((void*)ring) AEGeometry((uint16_t)0x1a7b, (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
         ((Array<void *> *)rings)->data()[i] = ring;
         ((AEGeometry *)(root))->addChild(field<uint32_t>(ring, 0xc));
         float scale = (float)(((int *)ptr_field(this, 0x9c))[i] << 1) * 0.001f;
@@ -1331,7 +1324,7 @@ void StarMap::initStarSystem()
 
     ((Engine *)(*g_StarMap_system_engine))->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
     if (ptr_field(this, 0x1bc) != 0) {
-        operator delete(AEGeometry_dtor(ptr_field(this, 0x1bc)));
+        [&]{ AEGeometry *g_=(AEGeometry*)(ptr_field(this, 0x1bc)); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
     field<uint32_t>(this, 0x178) = 0xffffffffu;
     ptr_field(this, 0x1bc) = 0;
@@ -1341,7 +1334,7 @@ void StarMap::initStarSystem()
     }
     ((PaintCanvas*)(long)(*g_StarMap_system_canvas))->TextureCreate((unsigned short)(texture), (void *)0, (void *)0, (unsigned int *)((char *)this + 0x178), false);
     void *planet = operator new(0xc0);
-    AEGeometry_ctor_image(planet, 0x1a70, *g_StarMap_system_canvas, false);
+    new ((void*)planet) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
     ptr_field(this, 0x1bc) = planet;
     ((AEGeometry *)(planet))->setPosition(selected);
     ((AEGeometry *)(planet))->setRotation(0.0f, 0.0f, 0.0f);
@@ -1358,7 +1351,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
 
     Array<Vector *> *positions =
         stationMode ? (Array<Vector *> *)ptr_field(this, 0x198) : (Array<Vector *> *)ptr_field(this, 0x194);
-    Vector_assign((Vector *)((char *)this + 0x78), positions->data()[index]);
+    *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(positions->data()[index]);
     float x = field<float>(this, 0x78);
     float y = field<float>(this, 0x7c);
     if (x < 0.0f || x > (float)(*g_StarMap_info_screenW + 0x32) ||
@@ -1545,10 +1538,10 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
 
     if (param3 != 0) {
         ((AEGeometry *)(&pos))->getPosition();
-        Vector_assign((Vector *)((char *)this + 0x78), &pos);
+        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&pos);
     } else if (!jumpMapMode || field<uint8_t>(this, 0xf4) == 0) {
         ((AEGeometry *)(&pos))->getPosition();
-        Vector_assign((Vector *)((char *)this + 0x78), &pos);
+        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&pos);
     }
 
     field<float>(this, 8) = field<float>(this, 0x78) / 20.0f;
@@ -1627,13 +1620,13 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     void *cargo = (void *)Ship_getCargo(((Status *)(status))->getShip());
     field<int32_t>(this, 0x1d8) = cargo != 0 ? ((Item *)(cargo))->getAmount() : 0;
 
-    ptr_field(this, 0x1b0) = AEGeometry_ctor_image(operator new(0xc0), 0x41d2, canvas, false);
+    ptr_field(this, 0x1b0) = (void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d2, (PaintCanvas*)(long)(canvas), false);
     ((AEGeometry *)(ptr_field(this, 0x1b0)))->setRotation(0.0f, 0.0f, 0.0f);
     ((AEGeometry *)(ptr_field(this, 0x1b0)))->setPosition((Vector){0.0f, 0.0f, 0.0f});
-    ptr_field(this, 0x1b4) = AEGeometry_ctor_image(operator new(0xc0), 0x41d3, canvas, false);
+    ptr_field(this, 0x1b4) = (void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d3, (PaintCanvas*)(long)(canvas), false);
     ((AEGeometry *)(ptr_field(this, 0x1b4)))->setRotation(0.0f, 0.0f, 0.0f);
     ((AEGeometry *)(ptr_field(this, 0x1b4)))->setPosition((Vector){0.0f, 0.0f, 0.0f});
-    ptr_field(this, 0x1b8) = AEGeometry_ctor_image(operator new(0xc0), 0x41d4, canvas, false);
+    ptr_field(this, 0x1b8) = (void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d4, (PaintCanvas*)(long)(canvas), false);
     ((AEGeometry *)(ptr_field(this, 0x1b8)))->setRotation(0.0f, 0.0f, 0.0f);
     ((AEGeometry *)(ptr_field(this, 0x1b8)))->setPosition((Vector){0.0f, 0.0f, 0.0f});
     return 0;

@@ -60,8 +60,6 @@ __attribute__((visibility("hidden"))) extern void **g_LOD_canvas;   // *holder =
 __attribute__((visibility("hidden"))) extern void *g_LOD_settings;  // float at +0x28 = LOD factor
 
 void MatrixGetPosition(void *out, const Matrix *m);     // RetStr
-extern "C" void Vector_assign(Vector *dst, const void *src);       // Vector::operator=
-// RetStr
 
 void LODManager::forceUpdate(int dt, bool useParent)
 {
@@ -72,7 +70,7 @@ void LODManager::forceUpdate(int dt, bool useParent)
     uint32_t cam = CameraGetCurrent(canvas);
     Matrix *m = CameraGetLocal(canvas, cam);
     MatrixGetPosition(&local, m);
-    Vector_assign(&this->cameraPos, &local);
+    this->cameraPos = local;
 
     for (uint32_t i = 0; i < this->objects->size(); i++) {
         AEGeometry *g = (*this->objects)[i];

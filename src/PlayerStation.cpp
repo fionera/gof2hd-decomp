@@ -26,7 +26,6 @@ extern "C" void PlayerStaticFar_ctor(void *self, int playerId, AEGeometry *geome
                                      float x, float y, float z);
 
 extern "C" void *PlayerStation_vtable __attribute__((visibility("hidden")));
-extern "C" void *AEGeometry_destructor(void *geometry) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_BoundingVolumePtr(void *array) __attribute__((nothrow));
 extern "C" void *Array_BoundingVolumePtr_destructor(void *array) __attribute__((nothrow));
 extern "C" void *Status_holder __attribute__((visibility("hidden")));
@@ -37,7 +36,6 @@ extern "C" int Station_getIndex(Station *station);
 extern "C" void *FileRead_constructor(void *self);
 extern "C" void *FileRead_destructor(void *self) __attribute__((nothrow));
 extern "C" int SolarSystem_getRace(void *system);
-extern "C" void AEGeometry_constructor(void *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" void Transform_UpdatePtr(void *transform, uint32_t lo, uint32_t hi, int zero);
 extern "C" void Transform_SetActive(void *transform);
 extern "C" void Transform_SetInactive(void *transform);
@@ -45,7 +43,6 @@ extern "C" void Array_int_destructor(void *array) __attribute__((nothrow));
 extern "C" void ArrayRelease_int(void *array) __attribute__((nothrow));
 extern "C" void Array_BoundingVolumePtr_constructor(void *array);
 extern "C" void ArraySetLength_BoundingVolumePtr(uint32_t length, void *array);
-extern "C" void Vector_scale(Vector *vector, float scale);
 extern "C" void *PlayerStation_destructor_body(PlayerStation *self) __attribute__((nothrow));
 
 // ---- setVisible_122760.cpp ----
@@ -61,13 +58,15 @@ PlayerStation::~PlayerStation() noexcept(false)
 
     void *geometry = P(this, 0x140);
     if (geometry != 0) {
-        ::operator delete(AEGeometry_destructor(geometry));
+        ((AEGeometry *)geometry)->~AEGeometry();
+        ::operator delete(geometry);
     }
     P(this, 0x140) = 0;
 
     geometry = P(this, 0x14c);
     if (geometry != 0) {
-        ::operator delete(AEGeometry_destructor(geometry));
+        ((AEGeometry *)geometry)->~AEGeometry();
+        ::operator delete(geometry);
     }
     P(this, 0x14c) = 0;
 
@@ -268,23 +267,25 @@ PlayerStation::PlayerStation(Station *station)
     if ((uint32_t)(stationIndex - 0x6d) > 2 && collision == 0) {
         if (alienOrbit == 0) {
             void *root = ::operator new(0xc0);
-            AEGeometry_constructor(root, 0x4034, canvas, false);
+            new ((void*)root) AEGeometry((uint16_t)(0x4034), (PaintCanvas*)canvas, false);
             *rootSlot = root;
             void *child = ::operator new(0xc0);
-            AEGeometry_constructor(child, 0x4037, canvas, false);
+            new ((void*)child) AEGeometry((uint16_t)(0x4037), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
             void *child2 = ::operator new(0xc0);
-            AEGeometry_constructor(child2, 0x403a, canvas, false);
+            new ((void*)child2) AEGeometry((uint16_t)(0x403a), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
-            ::operator delete(AEGeometry_destructor(child));
-            ::operator delete(AEGeometry_destructor(child2));
+            ((AEGeometry *)child)->~AEGeometry();
+            ::operator delete(child);
+            ((AEGeometry *)child2)->~AEGeometry();
+            ::operator delete(child2);
             reader = ::operator new(1);
             FileRead_constructor(reader);
             collision = ((FileRead *)(reader))->loadStationCollision(0x3e8);
             ::operator delete(FileRead_destructor(reader));
         } else if (((Status *)(status))->dlc1Won() != 0) {
             void *root = ::operator new(0xc0);
-            AEGeometry_constructor(root, 0x4220, canvas, false);
+            new ((void*)root) AEGeometry((uint16_t)(0x4220), (PaintCanvas*)canvas, false);
             *rootSlot = root;
             local_64 = -1.0f;
             ((PaintCanvas*)canvas)->TransformCreate((uint32_t *)&local_64);
@@ -313,16 +314,18 @@ PlayerStation::PlayerStation(Station *station)
                                 F<uint32_t>(transformAgain, 0xfc), 0);
         } else {
             void *root = ::operator new(0xc0);
-            AEGeometry_constructor(root, 0x403b, canvas, false);
+            new ((void*)root) AEGeometry((uint16_t)(0x403b), (PaintCanvas*)canvas, false);
             *rootSlot = root;
             void *child = ::operator new(0xc0);
-            AEGeometry_constructor(child, 0x403e, canvas, false);
+            new ((void*)child) AEGeometry((uint16_t)(0x403e), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
             void *child2 = ::operator new(0xc0);
-            AEGeometry_constructor(child2, 0x4041, canvas, false);
+            new ((void*)child2) AEGeometry((uint16_t)(0x4041), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
-            ::operator delete(AEGeometry_destructor(child));
-            ::operator delete(AEGeometry_destructor(child2));
+            ((AEGeometry *)child)->~AEGeometry();
+            ::operator delete(child);
+            ((AEGeometry *)child2)->~AEGeometry();
+            ::operator delete(child2);
             reader = ::operator new(1);
             FileRead_constructor(reader);
             collision = ((FileRead *)(reader))->loadStationCollision(0x3e9);
@@ -333,11 +336,11 @@ PlayerStation::PlayerStation(Station *station)
     if (*rootSlot == 0) {
         if ((uint32_t)(stationIndex - 0x6d) < 3) {
             void *root = ::operator new(0xc0);
-            AEGeometry_constructor(root, 0x5254, canvas, false);
+            new ((void*)root) AEGeometry((uint16_t)(0x5254), (PaintCanvas*)canvas, false);
             *rootSlot = root;
         } else {
             void *root = ::operator new(0xc0);
-            AEGeometry_constructor(root, (uint16_t)(stationIndex + 21000), canvas, false);
+            new ((void*)root) AEGeometry((uint16_t)((uint16_t)(stationIndex + 21000)), (PaintCanvas*)canvas, false);
             *rootSlot = root;
         }
 
@@ -346,7 +349,7 @@ PlayerStation::PlayerStation(Station *station)
         stationIndex = this->stationIndex;
         if (stationIndex == 0x65) {
             void *root = ::operator new(0xc0);
-            AEGeometry_constructor(root, 0x4220, canvas, false);
+            new ((void*)root) AEGeometry((uint16_t)(0x4220), (PaintCanvas*)canvas, false);
             *rootSlot = root;
             local_64 = -1.0f;
             ((PaintCanvas*)canvas)->TransformCreate((uint32_t *)&local_64);
@@ -374,16 +377,16 @@ PlayerStation::PlayerStation(Station *station)
         } else if ((uint32_t)(stationIndex - 0x6d) < 2 ||
                    (stationIndex == 0x6f && ((Status *)(status))->getCurrentCampaignMission() > 0x5e)) {
             void *root = ::operator new(0xc0);
-            AEGeometry_constructor(root, 0x4953, canvas, false);
+            new ((void*)root) AEGeometry((uint16_t)(0x4953), (PaintCanvas*)canvas, false);
             *rootSlot = root;
             void *child = ::operator new(0xc0);
-            AEGeometry_constructor(child, 0x4954, canvas, false);
+            new ((void*)child) AEGeometry((uint16_t)(0x4954), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
             void *child2 = ::operator new(0xc0);
-            AEGeometry_constructor(child2, 0x4955, canvas, false);
+            new ((void*)child2) AEGeometry((uint16_t)(0x4955), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
             void *child3 = ::operator new(0xc0);
-            AEGeometry_constructor(child3, 0x4956, canvas, false);
+            new ((void*)child3) AEGeometry((uint16_t)(0x4956), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child3, 0xc));
             if (collision != 0) {
                 ::operator delete((Array_int_destructor(collision), collision));
@@ -404,7 +407,7 @@ PlayerStation::PlayerStation(Station *station)
             uint16_t mesh2 = mission == 0x50 ? 0x3820 : (dlcWon != 0 ? 0x3824 : 0x4224);
             uint16_t mesh3 = mission == 0x50 ? 0x3821 : (dlcWon != 0 ? 0x3825 : 0x4225);
             void *root = ::operator new(0xc0);
-            AEGeometry_constructor(root, rootMesh, canvas, false);
+            new ((void*)root) AEGeometry((uint16_t)(rootMesh), (PaintCanvas*)canvas, false);
             *rootSlot = root;
             local_64 = 0xffffffffu;
             ((PaintCanvas*)canvas)->TransformCreate((uint32_t *)&local_64);
@@ -439,32 +442,33 @@ PlayerStation::PlayerStation(Station *station)
             }
         } else if ((race | 2) == 2 || race == 3) {
             void *child = ::operator new(0xc0);
-            AEGeometry_constructor(child, (uint16_t)(stationIndex + 0x5528), canvas, false);
+            new ((void*)child) AEGeometry((uint16_t)((uint16_t)(stationIndex + 0x5528)), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
             void *child2 = ::operator new(0xc0);
-            AEGeometry_constructor(child2, (uint16_t)(this->stationIndex + 22000), canvas,
-                                   false);
+            new ((void*)child2) AEGeometry((uint16_t)((uint16_t)(this->stationIndex + 22000)), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
             if (race == 3 && stationIndex == 0x6c) {
                 void *extra = ::operator new(0xc0);
-                AEGeometry_constructor(extra, 0x5974, canvas, false);
+                new ((void*)extra) AEGeometry((uint16_t)(0x5974), (PaintCanvas*)canvas, false);
                 ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x164 = F<uint32_t>(extra, 0xc);
                 extra = ::operator new(0xc0);
-                AEGeometry_constructor(extra, 0x5975, canvas, false);
+                new ((void*)extra) AEGeometry((uint16_t)(0x5975), (PaintCanvas*)canvas, false);
                 ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x168 = F<uint32_t>(extra, 0xc);
                 extra = ::operator new(0xc0);
-                AEGeometry_constructor(extra, 0x5976, canvas, false);
+                new ((void*)extra) AEGeometry((uint16_t)(0x5976), (PaintCanvas*)canvas, false);
                 ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x16c = F<uint32_t>(extra, 0xc);
                 extra = ::operator new(0xc0);
-                AEGeometry_constructor(extra, 0x5977, canvas, false);
+                new ((void*)extra) AEGeometry((uint16_t)(0x5977), (PaintCanvas*)canvas, false);
                 ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x170 = F<uint32_t>(extra, 0xc);
             }
-            ::operator delete(AEGeometry_destructor(child));
-            ::operator delete(AEGeometry_destructor(child2));
+            ((AEGeometry *)child)->~AEGeometry();
+            ::operator delete(child);
+            ((AEGeometry *)child2)->~AEGeometry();
+            ::operator delete(child2);
         }
     }
 
@@ -487,7 +491,7 @@ PlayerStation::PlayerStation(Station *station)
                 local_64 = (float)entry[4];
                 local_5c = (float)entry[5];
                 local_60 = (float)entry[6];
-                Vector_scale((Vector *)&local_64, local_60);
+                *(Vector *)&local_64 *= (local_60);
                 void *volume = ::operator new(0x2c);
                 BoundingAAB_constructor(volume, local_64 + local_64, (float)entry[3],
                                         local_60 + local_60, (float)entry[2],
@@ -499,9 +503,9 @@ PlayerStation::PlayerStation(Station *station)
                 int *entry = data + cursor;
                 float radius = (float)-data[next];
                 local_64 = (float)entry[4];
-                Vector_scale((Vector *)&local_64, radius);
+                *(Vector *)&local_64 *= (radius);
                 if (local_64 < 0.0f) {
-                    Vector_scale((Vector *)&local_64, local_64);
+                    *(Vector *)&local_64 *= (local_64);
                 }
                 void *volume = ::operator new(0x48);
                 BoundingSphere_constructor(volume, local_64, (float)entry[3], (float)entry[2],

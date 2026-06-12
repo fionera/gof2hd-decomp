@@ -4,25 +4,25 @@
 #include "gof2/Gun.h"
 #include "gof2/PlayerEgo.h"
 #include "gof2/AEGeometry.h"
+#include <cstring>
+
+namespace AbyssEngine { namespace AEMath {
+Vector operator+(const Vector &lhs, const Vector &rhs);
+Matrix operator*(const Matrix &lhs, const Matrix &rhs);
+} }
 
 // AEGeometry's full header is not yet native-clean; Gun.h already completes the
 // global forward declaration with a minimal view exposing field_0xc (transform id),
 // which is the only AEGeometry field this TU reads by name.
 
-extern "C" AEGeometry *AEGeometry_dtor(AEGeometry *self);
 extern "C" void BeamGun_setEnemies_tail(void *data);
 extern "C" void BeamGun_render_tail(AEGeometry *self);
 BeamGun *_ZN7BeamGunD1Ev(BeamGun *self);
 extern "C" void BeamGun_setEnemy_tail(void *data);
-extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, PaintCanvas *canvas, bool flag);
 namespace AbyssEngine { namespace PaintCanvas {
 ::Transform *TransformGetTransform(::PaintCanvas *canvas, int transformId);
 } }
-extern "C" int Vector_ne(const Vector *lhs, const Vector *rhs);
-extern "C" void Matrix_mul(Matrix *out, const Matrix *lhs, const Matrix *rhs);
-extern "C" void Vector_add(Vector *out, const Vector *lhs, const Vector *rhs);
 void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector);
-extern "C" void Vector_add_assign(void *self, const Vector *rhs);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 
 // ---- _BeamGun_177834.cpp ----
@@ -34,13 +34,17 @@ BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
     self->field_0x0 = (char *)BeamGun_vtable + 8;
 
     AEGeometry *primary = self->field_0x18;
-    if (primary != 0)
-        ::operator delete(AEGeometry_dtor(primary));
+    if (primary != 0) {
+        ((AEGeometry *)primary)->~AEGeometry();
+        ::operator delete(primary);
+    }
     self->field_0x18 = 0;
 
     AEGeometry *secondary = self->field_0x1c;
-    if (secondary != 0)
-        ::operator delete(AEGeometry_dtor(secondary));
+    if (secondary != 0) {
+        ((AEGeometry *)secondary)->~AEGeometry();
+        ::operator delete(secondary);
+    }
     self->field_0x1c = 0;
 
     return self;
@@ -112,7 +116,7 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
     uint32_t primaryMesh = (uint32_t)(param_3 + 0x3795);
     if (type == 0xe4)
         primaryMesh = 0x4a92;
-    AEGeometry_ctor(geometry, (uint16_t)primaryMesh, (PaintCanvas *)*canvasHolder, false);
+    new ((void *)geometry) AEGeometry((uint16_t)primaryMesh, (PaintCanvas *)*canvasHolder, false);
     this->field_0x18 = geometry;
 
     mesh = ((Gun *)(gun))->isPlayerGun();
@@ -127,7 +131,7 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
             geometry = 0;
         } else {
             geometry = (AEGeometry *)::operator new(0xc0);
-            AEGeometry_ctor(geometry, (uint16_t)mesh, (PaintCanvas *)*canvasHolder, false);
+            new ((void *)geometry) AEGeometry((uint16_t)mesh, (PaintCanvas *)*canvasHolder, false);
         }
     }
 
@@ -196,20 +200,20 @@ void BeamGun::update(int elapsed)
     up->x = 0.0f;
     up->y = 0.0f;
     up->z = 0.0f;
-    if (Vector_ne((Vector *)((char *)this->field_0x8 + 0x7c), up) != 0) {
+    if ((memcmp(((Vector *)((char *)this->field_0x8 + 0x7c)), (up), sizeof(float) * 3) != 0) != 0) {
         player = (PlayerEgo *)((Level *)(this->field_0xc))->getPlayer();
         Matrix *firstMatrix = &((AEGeometry *)(player->geometry))->getMatrix();
         player = (PlayerEgo *)((Level *)(this->field_0xc))->getPlayer();
         Matrix *secondMatrix = &((AEGeometry *)(player->field_0x4))->getMatrix();
-        Matrix_mul(&playerMatrix, firstMatrix, secondMatrix);
+        *(Matrix *)(&playerMatrix) = *(const Matrix *)(firstMatrix) * *(const Matrix *)(secondMatrix);
 
         gun = this->field_0x8;
         back.x = 0.0f;
         back.y = 0.0f;
         back.z = -100.0f;
-        Vector_add(&rotated, (Vector *)((char *)gun + 0x7c), &back);
+        *(Vector *)(&rotated) = *(const Vector *)((Vector *)((char *)gun + 0x7c)) + *(const Vector *)(&back);
         MatrixRotateVector(&transformed, &playerMatrix, &rotated);
-        Vector_add_assign(position, &transformed);
+        *(Vector *)(position) += *(const Vector *)(&transformed);
     }
 
     ((AEGeometry *)(this->field_0x18))->setPosition(*(Vector *)position);
@@ -240,7 +244,7 @@ void BeamGun::update(int elapsed)
 
             MatrixRotateVector(&rotated, (Matrix *)((char *)player->player + 4),
                                &transformed);
-            Vector_add_assign(&playerMatrix, &rotated);
+            *(Vector *)(&playerMatrix) += *(const Vector *)(&rotated);
             ((AEGeometry *)(this->field_0x1c))->setPosition(*(Vector *)&playerMatrix);
 
             AEGeometry *secondary = this->field_0x1c;

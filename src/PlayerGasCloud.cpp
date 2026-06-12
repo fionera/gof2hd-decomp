@@ -12,6 +12,10 @@
 #include "gof2/PlayerEgo.h"
 #include "gof2/PaintCanvasClass.h"
 
+// AEMath free operators used below; declared minimally to avoid pulling in AEMath.h.
+namespace AbyssEngine { namespace AEMath {
+Vector operator-(const Vector &a, const Vector &b);
+} }
 
 // Status singleton: getShip/getCurrentCampaignMission are real Status methods
 // that the decompiler emitted without their receiver. The receiver is the
@@ -236,7 +240,6 @@ void ArrayAdd_bool(bool value, void *arr);
 int AERandom_next(void *rng, int bound);
 
 // Vector math helpers.
-void Vector_sub(Vector *out, const Vector *a, const Vector *b); // out = a - b (binary operator-)
 float VectorLength(const Vector *v);
 void VectorNormalize(Vector *out, const Vector *v);
 
@@ -278,7 +281,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
 
         // Distance from the explosion source to the cloud centre (+0x128).
         Vector delta;
-        Vector_sub(&delta, &src, (Vector *)((char *)self + 0x128));
+        delta = src - *(Vector *)((Vector *)((char *)self + 0x128));
         float dist = VectorLength(&delta);
         float t = 1.5f - dist / radius;
         float countBase = t * g_pgc_countScale;
@@ -310,7 +313,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
 
             // Direction = normalized (p - center).
             Vector d, dn;
-            Vector_sub(&d, &p, (Vector *)((char *)self + 0x128));
+            d = p - *(Vector *)((Vector *)((char *)self + 0x128));
             VectorNormalize(&dn, &d);
 
             float life = ((float)AERandom_next(rng, 200) / lifeDiv) * 3.0f + 3.0f;
@@ -412,7 +415,7 @@ void PlayerGasCloud_update(void *self, int dt)
                 PlayerEgo_getTurretPosition(player, &turretPos);
                 void *geom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
                 ((AEGeometry *)(geom))->getPosition();
-                Vector_sub(&delta, &turretPos, &shardPos);
+                delta = turretPos - *(Vector *)(&shardPos);
                 float dist = VectorLength(&delta);
 
                 bool collected = false;
@@ -488,7 +491,7 @@ void PlayerGasCloud_update(void *self, int dt)
                     if (Ship_getFirstEquipmentOfSort(ship, 0x23) != 0) {
                         // Steer toward the turret.
                         Vector dir, dn;
-                        Vector_sub(&dir, &turretPos, &shardPos);
+                        dir = turretPos - *(Vector *)(&shardPos);
                         VectorNormalize(&dn, &dir);
                         *(*(Vector **)(*(int *)(*(int *)(s + 0x13c) + 4) + i * 4)) = dn;
                         moveGeom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);

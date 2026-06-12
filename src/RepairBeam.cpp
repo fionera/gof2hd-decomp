@@ -2,6 +2,14 @@
 #include "gof2/AEGeometry.h"
 #include "gof2/PaintCanvasClass.h"
 
+// Minimal forward decls for the AEMath free-functions used in this file.
+namespace AbyssEngine {
+namespace AEMath {
+float  VectorLength(const Vector &v);
+Vector VectorNormalize(const Vector &v);
+} // namespace AEMath
+} // namespace AbyssEngine
+
 
 extern "C" int RepairBeam_Status_getShip();
 extern "C" int RepairBeam_Ship_getFirstEquipmentOfSort(int ship);
@@ -12,7 +20,6 @@ extern "C" void RepairBeam_Array_float_ctor(void *arr);
 extern "C" void RepairBeam_ArraySetLength_Geo(int n, void *arr);
 extern "C" void RepairBeam_ArraySetLength_int(int n, void *arr);
 extern "C" void RepairBeam_ArraySetLength_float(int n, void *arr);
-extern "C" void RepairBeam_AEGeometry_ctor(void *geom, unsigned short id, void *canvas, bool b);
 extern "C" __attribute__((visibility("hidden"))) void **g_RepairBeam_canvas;
 extern "C" void RepairBeam_ArrayReleaseClasses_Geo(void *arr);
 extern "C" void *RepairBeam_Array_Geo_dtor(void *arr);
@@ -35,19 +42,6 @@ extern "C" void RB_PlayerEgo_getPosition(Vector *out);
 extern "C" void RB_Player_damage(int pl, bool b, int z);
 extern "C" void RB_Player_heal(int pl, float amt);
 extern "C" void RB_Player_regenerateShield(void *pl, float amt);
-extern "C" float RB_VectorLength(Vector *v);
-extern "C" void RB_VectorNormalize(Vector *out, Vector *in);
-extern "C" void RB_Vector_assign(Vector *dst, const Vector *src);
-extern "C" void RB_Vector_subassign(Vector *dst, const Vector *src);
-extern "C" void RB_Vector_addassign(Vector *dst, const Vector *src);
-extern "C" void RB_Vector_add(Vector *out, const Vector *a);
-extern "C" void RB_Vector_sub(Vector *out, const Vector *a);
-extern "C" void RB_Vector_mul(Vector *out, float s);
-extern "C" void RB_AEGeometry_getDirection(void *geom, Vector *out);
-extern "C" void RB_AEGeometry_getUpVector(void *geom, Vector *out);
-extern "C" void RB_AEGeometry_setDirection(void *geom, Vector *dir);
-extern "C" void RB_AEGeometry_setPosition(void *geom, Vector *pos);
-extern "C" void RB_AEGeometry_setScaling(float x, float y, float z);
 extern "C" float RB_PlayerEgo_GetDirVector();
 extern "C" float RB_PlayerEgo_GetUpVector();
 extern "C" void RB_Transform_Update(long long t, bool b);
@@ -99,7 +93,7 @@ RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
     void **canvas = g_RepairBeam_canvas;
     for (int i = 0; i < count; i = i + 1) {
         void *geo = operator new(0xc0);
-        RepairBeam_AEGeometry_ctor(geo, geoId, *canvas, false);
+        new ((void *)geo) AEGeometry((uint16_t)geoId, (PaintCanvas *)*canvas, false);
         ((void **)self->field_0x10[1])[i] = geo;
     }
 
@@ -246,11 +240,11 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                         if (consider) {
                             Vector tmp;
                             RB_Player_getPosition(&tmp);
-                            RB_Vector_assign(beamPos, &tmp);
+                            *(Vector *)(beamPos) = *(const Vector *)(&tmp);
                             RB_Level_getPlayer(level);
                             RB_PlayerEgo_getPosition(&tmp);
-                            RB_Vector_subassign(beamPos, &tmp);
-                            float dist = RB_VectorLength(beamPos);
+                            *(Vector *)(beamPos) -= *(const Vector *)(&tmp);
+                            float dist = AbyssEngine::AEMath::VectorLength(*(const Vector *)(beamPos));
                             if (dist <= attrF) {
                                 int *t = targetIds(self);
                                 bool placed = false;
@@ -303,7 +297,7 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                     RB_Transform_Update(t, (bool)dt);
                     Vector tmp;
                     RB_Player_getPosition(&tmp);
-                    RB_Vector_assign(beamPos2, &tmp);
+                    *(Vector *)(beamPos2) = *(const Vector *)(&tmp);
 
                     int idSlot = *(int *)((char *)((int *)targetIds(self)[1]) + off);
                     int *enemyObj = (int *)(((int *)(*enData))[idSlot]);
@@ -311,44 +305,44 @@ void RepairBeam::update(int dt, void *level, void *hud) {
 
                     Vector dir, up, contrib;
                     if (kind == 0x2c) {
-                        RB_AEGeometry_getDirection(enemyObj, &dir);
-                        RB_VectorNormalize(&dir, &dir);
-                        RB_Vector_mul(&dir, RB_PlayerEgo_GetDirVector());
-                        RB_Vector_assign(&contrib, &dir);
+                        *(AbyssEngine::AEMath::Vector *)(&dir) = ((AEGeometry *)enemyObj)->getDirection();
+                        *(Vector *)(&dir) = AbyssEngine::AEMath::VectorNormalize(*(const Vector *)(&dir));
+                        *(Vector *)(&dir) *= (RB_PlayerEgo_GetDirVector());
+                        *(Vector *)(&contrib) = *(const Vector *)(&dir);
                     } else if (kind == 0x31) {
-                        RB_AEGeometry_getDirection(enemyObj, &dir);
-                        RB_VectorNormalize(&dir, &dir);
-                        RB_Vector_mul(&dir, RB_PlayerEgo_GetDirVector());
-                        RB_AEGeometry_getUpVector(enemyObj, &up);
-                        RB_VectorNormalize(&up, &up);
-                        RB_Vector_mul(&up, RB_PlayerEgo_GetUpVector());
-                        RB_Vector_add(&dir, &up);
-                        RB_Vector_assign(&contrib, &dir);
+                        *(AbyssEngine::AEMath::Vector *)(&dir) = ((AEGeometry *)enemyObj)->getDirection();
+                        *(Vector *)(&dir) = AbyssEngine::AEMath::VectorNormalize(*(const Vector *)(&dir));
+                        *(Vector *)(&dir) *= (RB_PlayerEgo_GetDirVector());
+                        *(AbyssEngine::AEMath::Vector *)(&up) = ((AEGeometry *)enemyObj)->getUpVector();
+                        *(Vector *)(&up) = AbyssEngine::AEMath::VectorNormalize(*(const Vector *)(&up));
+                        *(Vector *)(&up) *= (RB_PlayerEgo_GetUpVector());
+                        *(Vector *)(&dir) += *(const Vector *)(&up);
+                        *(Vector *)(&contrib) = *(const Vector *)(&dir);
                     } else {
                         contrib.x = 0;
                         contrib.y = 0;
                         contrib.z = 0;
                     }
-                    RB_Vector_addassign(beamPos2, &contrib);
+                    *(Vector *)(beamPos2) += *(const Vector *)(&contrib);
                     RB_Level_getPlayer(level);
                     RB_PlayerEgo_getPosition(&tmp);
-                    RB_Vector_subassign(beamPos2, &tmp);
+                    *(Vector *)(beamPos2) -= *(const Vector *)(&tmp);
 
                     RB_Status_getShip();
                     int idx = RB_Ship_getIndex();
                     Vector ddir;
                     if (idx == 0x2c) {
                         RB_Level_getPlayer(level);
-                        RB_Vector_mul(&ddir, RB_PlayerEgo_GetDirVector());
+                        *(Vector *)(&ddir) *= (RB_PlayerEgo_GetDirVector());
                     } else {
                         RB_Status_getShip();
                         if (RB_Ship_getIndex() == 0x31) {
                             RB_Level_getPlayer(level);
-                            RB_Vector_mul(&ddir, RB_PlayerEgo_GetDirVector());
+                            *(Vector *)(&ddir) *= (RB_PlayerEgo_GetDirVector());
                             Vector dup;
                             RB_Level_getPlayer(level);
-                            RB_Vector_mul(&dup, RB_PlayerEgo_GetUpVector());
-                            RB_Vector_add(&ddir, &dup);
+                            *(Vector *)(&dup) *= (RB_PlayerEgo_GetUpVector());
+                            *(Vector *)(&ddir) += *(const Vector *)(&dup);
                         } else {
                             ddir.x = 0;
                             ddir.y = 0;
@@ -356,19 +350,19 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                         }
                     }
 
-                    float len = RB_VectorLength(beamPos2);
-                    RB_AEGeometry_setScaling(len, 0.5f, 0.5f);
+                    float len = AbyssEngine::AEMath::VectorLength(*(const Vector *)(beamPos2));
+                    ((AEGeometry *)(((void **)self->field_0x10[1])[off / 4]))->setScaling(len, 0.5f, 0.5f);
 
                     void *geo = ((void **)self->field_0x10[1])[off / 4];
                     Vector ndir;
-                    RB_Vector_sub(&ndir, beamPos2);   // (placeholder) - beamPos2 - geom-frame
-                    RB_VectorNormalize(&ndir, &ndir);
-                    RB_AEGeometry_setDirection(geo, &ndir);
+                    *(Vector *)(&ndir) -= *(const Vector *)(beamPos2);   // (placeholder) - beamPos2 - geom-frame
+                    *(Vector *)(&ndir) = AbyssEngine::AEMath::VectorNormalize(*(const Vector *)(&ndir));
+                    { AbyssEngine::AEMath::Vector rbUp; rbUp.x = 0.0f; rbUp.y = 1.0f; rbUp.z = 0.0f; ((AEGeometry *)(geo))->setDirection(*(const AbyssEngine::AEMath::Vector *)(&ndir), rbUp); }
 
                     void *geo2 = ((void **)self->field_0x10[1])[off / 4];
                     RB_Level_getPlayer(level);
                     RB_PlayerEgo_getPosition(&ndir);
-                    RB_AEGeometry_setPosition(geo2, &ndir);
+                    ((AEGeometry *)(geo2))->setPosition(*(const AbyssEngine::AEMath::Vector *)&ndir);
 
                     long long t2 = (long long)((PaintCanvas *)*canvas)->TransformGetTransform(
                         ((AEGeometry *)((void **)self->field_0x10[1])[off / 4])->transform);
@@ -433,7 +427,7 @@ void RepairBeam::update(int dt, void *level, void *hud) {
             RB_Level_getPlayer(level);
             Vector tmp;
             RB_PlayerEgo_getPosition(&tmp);
-            RB_Vector_assign((Vector *)((char *)self + 4), &tmp);
+            *(Vector *)((char *)self + 4) = *(const Vector *)(&tmp);
             RB_FModSound_updateEvent3DAttributes(snd, evArr[shipIdx],
                                                  (Vector *)((char *)self + 4), 0, false);
         }

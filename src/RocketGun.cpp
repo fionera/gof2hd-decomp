@@ -27,8 +27,6 @@ extern "C" void *Array_int_dtor(void *p);
 extern "C" void *RocketGun_base_dtor(RocketGun *self);
 void *_ZN9RocketGunD1Ev(RocketGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder;
-extern "C" void AEGeometry_ctor(void *self, uint16_t mesh, void *canvas, bool flag);
-extern "C" void *AEGeometry_dtor(void *self);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder2;
 extern "C" void Array_Matrix_ctor(void *self);
 extern "C" void Array_int_ctor(void *self);
@@ -38,12 +36,6 @@ extern "C" void ParticleSystemManager_attachSystem(int manager, int system, int 
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func)(void *out, void *in);
 extern "C" int Player_getEnemies(void *player);
 extern "C" void Player_getPosition(void *out, void *player);
-extern "C" void Vector_sub(void *out, void *a, void *b);
-extern "C" void *Vector_assign(void *dst, void *src);
-extern "C" void Vector_isub(void *dst, void *src);
-extern "C" void Vector_idiv(void *dst, float value);
-extern "C" void Vector_iadd(void *dst, void *src);
-extern "C" void Vector_imul(void *dst, float value);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder3;
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func2)(void *out, void *in);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_scale_func)(void *out, void *in, float scale);
@@ -53,12 +45,17 @@ void MatrixSetTranslation(void *matrix, float x, float y, float z);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 void VectorCross(void *out, void *a, void *b);
 void VectorNormalize(void *out, void *in);
-extern "C" void Matrix_assign(void *dst, void *src);
 extern "C" uint32_t __aeabi_uidiv(uint32_t a, uint32_t b);
 extern "C" float AEMath_Sinf(float v);
 extern "C" float AEMath_Cosf(float v);
-extern "C" void Vector_scale(void *out, void *vec, float scale);
-extern "C" void Vector_add(void *out, void *a, void *b);
+
+namespace AbyssEngine {
+namespace AEMath {
+Vector operator+(const Vector &a, const Vector &b);
+Vector operator-(const Vector &a, const Vector &b);
+Vector operator*(const Vector &v, float scale);
+}
+}
 
 // ---- render_15ecd4.cpp ----
 void RocketGun::render()
@@ -131,10 +128,10 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
         void **holder = RocketGun_canvas_holder;
         if (param_1 == 0x37a7)
             mesh = 0x37a8;
-        AEGeometry_ctor(geom, mesh, *holder, false);
+        new ((void *)geom) AEGeometry((uint16_t)mesh, (PaintCanvas *)*holder, false);
         ((PaintCanvas*)*holder)->TransformAddChild(this->transformId,
                                       F<uint32_t>(geom, 0xc));
-        ::operator delete(AEGeometry_dtor(geom));
+        [&]{ AEGeometry *g_ = (AEGeometry *)(geom); if (g_) { g_->~AEGeometry(); ::operator delete(g_); } }();
     }
 }
 
@@ -297,19 +294,18 @@ fallback:
 have_enemy:
     if (enemy != 0) {
         Player_getPosition(enemyPos, enemy);
-        Vector_sub(tmp0, enemyPos, (char *)F<void *>(this->gun, 0xc) + index * 0xc);
+        *(Vector *)(tmp0) = *(const Vector *)(enemyPos) - *(const Vector *)((char *)F<void *>(this->gun, 0xc) + index * 0xc);
         void (*fn)(void *, void *) = RocketGun_vector_func;
         fn(tmp1, tmp0);
         void *steer = (char *)this + 0xb4;
-        Vector_assign(steer, tmp1);
+        *(Vector *)(steer) = *(const Vector *)(tmp1);
         fn(tmp1, (char *)F<void *>(this->gun, 0x18) + index * 0xc);
-        Vector_isub(steer, tmp1);
-        Vector_idiv(steer, this->turnRate * 20.0f);
-        Vector_iadd(tmp1, steer);
+        *(Vector *)(steer) -= *(const Vector *)(tmp1);
+        *(Vector *)(steer) /= (this->turnRate * 20.0f);
+        *(Vector *)(tmp1) += *(const Vector *)(steer);
         fn(tmp0, tmp1);
-        Vector_assign((char *)F<void *>(this->gun, 0x18) + index * 0xc, tmp0);
-        Vector_imul((char *)F<void *>(this->gun, 0x18) + index * 0xc,
-                    F<float>(this->gun, 0x50));
+        *(Vector *)((char *)F<void *>(this->gun, 0x18) + index * 0xc) = *(const Vector *)(tmp0);
+        *(Vector *)((char *)F<void *>(this->gun, 0x18) + index * 0xc) *= (F<float>(this->gun, 0x50));
     }
 }
 
@@ -340,7 +336,7 @@ void RocketGun::update(int elapsed)
         *(uint32_t *)(gunVec + 4) = F<uint32_t>(this->gun, 0x80);
         *(float *)(gunVec + 8) = F<float>(this->gun, 0x84) + kMuzzleZAdd;
         MatrixRotateVector(axis, (char *)F<void *>(player, 0x0) + 4, gunVec);
-        Vector_iadd(matrix, axis);
+        *(Vector *)(matrix) += *(const Vector *)(axis);
         ((AEGeometry *)(this->geometry))->setPosition(*(Vector *)matrix);
 
         float scaling = (float)F<int>(this->gun, 0x70);
@@ -418,7 +414,7 @@ void RocketGun::update(int elapsed)
             char *shotPos = (char *)F<void *>(this->gun, 0xc) + shotIndex * 0xc;
             int system = *(int *)(F<char *>(this->trailSystems, 0x4) + shotIndex * 4);
             if (*(float *)(shotPos + 8) != kZeroCompare) {
-                Matrix_assign(F<char *>(this->trailMatrices, 0x4) + shotIndex * 0x3c, matrix);
+                *(Matrix *)(F<char *>(this->trailMatrices, 0x4) + shotIndex * 0x3c) = *(const Matrix *)(matrix);
                 ((ParticleSystemManager *)(this->particleManager))->resetSystem(system);
                 ((ParticleSystemManager *)(this->particleManager))->enableSystemEmit(system, true);
                 ((ParticleSystemManager *)(this->particleManager))->enableSystemRender(system, true);
@@ -473,10 +469,10 @@ void RocketGun::update(int elapsed)
     for (uint32_t i = 0, vecOff = 0, matOff = 0; i < F<uint32_t>(this->gun, 0x8);
          i++, vecOff += 0xc, matOff += 0x3c) {
         gun = this->gun;
-        Vector_scale(axis, (char *)gun->velocities + vecOff, dt);
-        Vector_scale(gunVec, axis, 0.5f);
-        Vector_add(matrix, (char *)gun->positions + vecOff, gunVec);
-        Vector_assign(&zero, matrix);
+        *(Vector *)(axis) = *(const Vector *)((char *)gun->velocities + vecOff) * (dt);
+        *(Vector *)(gunVec) = *(const Vector *)(axis) * (0.5f);
+        *(Vector *)(matrix) = *(const Vector *)((char *)gun->positions + vecOff) + *(const Vector *)(gunVec);
+        *(Vector *)(&zero) = *(const Vector *)(matrix);
 
         gun = this->gun;
         if (gun->field_0x4c != 0) {
@@ -502,10 +498,10 @@ void RocketGun::update(int elapsed)
                     void (*scaleFn)(void *, void *, float) = RocketGun_vector_scale_func;
                     scaleFn(axis, matrix, s + s);
                     scaleFn(gunVec, axis, dt);
-                    Vector_iadd((char *)F<void *>(this->gun, 0xc) + vecOff, gunVec);
+                    *(Vector *)((char *)F<void *>(this->gun, 0xc) + vecOff) += *(const Vector *)(gunVec);
                     scaleFn(axis, (char *)F<void *>(this->gun, 0x24) + vecOff, c + c);
                     scaleFn(gunVec, axis, dt);
-                    Vector_iadd((char *)F<void *>(this->gun, 0xc) + vecOff, gunVec);
+                    *(Vector *)((char *)F<void *>(this->gun, 0xc) + vecOff) += *(const Vector *)(gunVec);
                 }
             } else {
                 if (this->trailMatrices != 0) {
@@ -519,10 +515,10 @@ void RocketGun::update(int elapsed)
 
             if (this->trailMatrices != 0) {
                 gun = this->gun;
-                Vector_scale(axis, (char *)gun->velocities + vecOff, dt);
-                Vector_scale(gunVec, axis, 0.5f);
-                Vector_add(matrix, (char *)gun->positions + vecOff, gunVec);
-                Vector_assign(&zero, matrix);
+                *(Vector *)(axis) = *(const Vector *)((char *)gun->velocities + vecOff) * (dt);
+                *(Vector *)(gunVec) = *(const Vector *)(axis) * (0.5f);
+                *(Vector *)(matrix) = *(const Vector *)((char *)gun->positions + vecOff) + *(const Vector *)(gunVec);
+                *(Vector *)(&zero) = *(const Vector *)(matrix);
                 MatrixSetTranslation(matrix, zero.x, zero.y, zero.z);
                 VectorNormalize(gunVec, (char *)F<void *>(this->gun, 0x18) + vecOff);
                 char *m = F<char *>(this->trailMatrices, 0x4) + matOff;

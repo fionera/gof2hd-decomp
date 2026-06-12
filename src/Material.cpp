@@ -38,7 +38,7 @@ Material::Material(Material *other)
     if (other == 0) {
         this->f_20 = 0;
         int zero[3] = {0, 0, 0};
-        Vector_assign(vec, (Vector *)zero);
+        *(Vector *)vec = *(const Vector *)zero;
         for (int i = 0; i != 8; ++i)
             i32(this, i * 4) = -1;
     } else {
@@ -53,7 +53,7 @@ Material::Material(Material *other)
         else
             buf = ::operator new[](size | ((int)size >> 31));
         pptr(this, 0x24) = buf;
-        Vector_assign(vec, (Vector *)((char *)other + 0x68));
+        *(Vector *)vec = *(const Vector *)((char *)other + 0x68);
     }
 }
 

@@ -65,9 +65,6 @@ void Array_uint_dtor(void *self);
 
 void *operator_new_array(uint32_t size);
 
-// AEMath::Vector::operator=(const Vector&)
-void Vector_assign(Vector *self, const Vector *other);
-
 // Default zero Vector value loaded by the default constructor.
 extern float Material_defaultVectorX;
 }

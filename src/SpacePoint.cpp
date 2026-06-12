@@ -1,7 +1,6 @@
 #include "gof2/SpacePoint.h"
 
 
-extern "C" Vector *Vector_assign(Vector *dst, const Vector *src);
 extern "C" void *memset(void *, int, unsigned long);
 
 // ---- giveFree_1603f0.cpp ----
@@ -20,8 +19,8 @@ SpacePoint::SpacePoint(int param_1, const Vector &param_2, const Vector &param_3
 {
     memset(__builtin_assume_aligned(this, 4), 0, 0x18);
     this->type = param_1;
-    Vector_assign((Vector *)this, &param_2);
-    Vector_assign((Vector *)((char *)this + 0xc), &param_3);
+    *(Vector *)this = param_2;
+    *(Vector *)((char *)this + 0xc) = param_3;
     this->free = 1;
     this->param = param_4;
 }

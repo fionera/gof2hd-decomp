@@ -58,7 +58,6 @@ extern "C" void *Generator_dtor(void *g);
 extern "C" void Explosion_ctor(void *e, int flag);
 extern "C" void PF_update_dead(PlayerFighter *self);
 extern "C" void PF_update_body(PlayerFighter *self, int dt);
-extern "C" void AEGeometry_setPosition3(int geom, float x, float y, float z);
 extern "C" void AEMath_MatrixAssign(void *dst, void *src);
 extern "C" void AEMath_MatrixIdentity(void *out, void *m);
 extern "C" void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz);
@@ -80,7 +79,6 @@ static inline float AEMath_VectorLength(void *v) {
 extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
 extern "C" void PlayerFighter_render_tail(int geom);
-extern "C" void AEGeometry_setMatrix(void *geom);
 extern "C" void PF_vscale(void *out, void *vec, float scalar);
 extern "C" void Player_reset(int player);
 extern "C" void AEString_ctor_default(void *s);
@@ -549,7 +547,7 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
     self->posZ = z;
 
     int stackVec[3];
-    AEGeometry_setPosition3(self->geometry, 0, 0, 0);  // forwards x,y,z via regs
+    ((AEGeometry *)(intptr_t)self->geometry)->setPosition(0.0f, 0.0f, 0.0f);  // forwards x,y,z via regs
     *(Vector *)((char *)self + 0x158) = *(Vector *)stackVec;
     if (self->trail != 0) {
         ((Trail *)(self->trail))->reset(*(Vector *)((char *)self + 0x158));
@@ -960,7 +958,9 @@ void PlayerFighter::push(int dt) {
             void *geom = (void *)(intptr_t)self->geometry;
             void *m = (void *)&((AEGeometry *)((int)(long)geom))->getMatrix();
             AEMath_MatrixMul(rot, m);
-            AEGeometry_setMatrix(geom);
+            // The recovered argument is the rot buffer just multiplied above; the
+            // decompiler had dropped the second (matrix) operand of setMatrix.
+            ((AEGeometry *)((int)(long)geom))->setMatrix(*(const Matrix *)rot);
             lo = self->deltaTime;
             hi = self->deltaTimeHi;
         }

@@ -34,6 +34,7 @@ Vector operator-(const Vector &a, const Vector &b);      // 0x0006ec38
 Vector MatrixGetUp(const Matrix &m);                     // 0x0006f4d8
 Vector MatrixGetRight(const Matrix &m);                  // 0x0006f4e4
 Vector MatrixGetPosition(const Matrix &m);               // 0x0006f16c
+Vector MatrixGetDir(const Matrix &m);                    // 0x00080720
 } // namespace AEMath
 } // namespace AbyssEngine
 
@@ -95,7 +96,11 @@ public:
     Vector getRightVector();
     Vector getUpVector();
     Vector getParentPosition();
+    Vector getDirection();
     Matrix &getMatrix();
+    Matrix &getReferenceMatrix();
+    void setMatrix(const Matrix &m);
+    void setRotationOrder(int order);
 
     bool hasLod();
     uint8_t isVisible();
@@ -114,6 +119,7 @@ public:
     void setRotation(float x, float y, float z);
     void setRotation(const Vector &v);
     void setPosition(const Vector &v);
+    void setPosition(float x, float y, float z);
     void rotate(float x, float y, float z);
     void rotate(const Vector &v);
     void moveForward(float dist);

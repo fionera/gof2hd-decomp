@@ -14,6 +14,13 @@
 #include "gof2/Gun.h"
 #include "gof2/Status.h"
 
+// Free math operators/functions (defined in libgof2hd; not declared in math.h).
+namespace AbyssEngine { namespace AEMath {
+    Vector operator-(const Vector&, const Vector&);
+    Vector operator*(float, const Vector&);
+    float VectorLength(const Vector&);
+} }
+
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls in
 // the decompiler are method calls on this global instance.
 __attribute__((visibility("hidden"))) extern Status **gStatus;
@@ -38,13 +45,11 @@ extern "C" void Player_setEnemies(Player *self, Array<Player *> *enemies);
 extern "C" void *Array_Player_dtor(Array<Player *> *array);
 extern "C" void Player_operator_delete_tail(void *p);
 extern "C" void Player_setEnemies_tail(Player *self, Array<Player *> *enemies);
-extern "C" void Matrix_ctor(Matrix *self);
 extern "C" void Array_GunArrayArray_ctor(Array<Array<Gun *> *> *array);
 extern "C" void Array_Gun_ctor(Array<Gun *> *array);
 extern "C" void ArraySetLength_GunArrayArray(int len, Array<Array<Gun *> *> *array);
 extern "C" void ArraySetLength_Gun(int len, Array<Gun *> *array);
 void MatrixGetPosition(void *out, float *matrix);
-extern "C" void Vector_assign(Vector *dst, Vector *src);
 extern "C" int SolarSystem_getRace();
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" void Player_damageEmp_tail(Player *self);
@@ -86,9 +91,6 @@ void Player_damage_full(Player *self, int amount, int a, int b);
 extern "C" void Player_stopShootSound(Player *self, int a, int b);
 extern "C" void Player_setMaxArmorHP_tail();
 extern "C" void Player_StopEngineSound(Player *self);
-extern "C" float Vector_subF(Vector *out, Vector *a, Vector *b);
-extern "C" void Vector_scale(Vector *out, float s, Vector *v);
-extern "C" void Vector_div(Vector *out, Vector *v, float s);
 extern "C" void FloatVectorMax(void *out, float a, float b, int c, int d);
 
 // ---- pitchAllPrimaryGuns_a433a.cpp ----
@@ -661,7 +663,7 @@ __attribute__((minsize)) extern "C" void Player_addEnemies(Player *self, Array<P
 
 Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player *self = this;
-    Matrix_ctor((Matrix *)self->transform);
+    ((Matrix *)self->transform)->initIdentity();
     self->shieldHP = 0.0f;
     self->armorHP = 0;
     self->maxArmorHP = 0;
@@ -744,7 +746,7 @@ Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondar
 
     float tmp[3];
     MatrixGetPosition(tmp, self->transform);
-    Vector_assign((Vector *)self->position, (Vector *)tmp);
+    *(Vector *)self->position = *(Vector *)tmp;
     self->field_f4 = (void *)(__INTPTR_TYPE__)-1;
 
     return self;
@@ -1672,16 +1674,17 @@ Vector * Player::update(int dt, int doSound) {
         float spd = (float)(**g_update_speed);
         fn(*g_update_speed, local, (int)(long)transform);
         float tmpA[3], tmpB[3], tmpC[3];
-        float d = (float)Vector_subF((Vector *)tmpA, (Vector *)self->position, (Vector *)local);
-        Vector_scale((Vector *)tmpB, d, (Vector *)tmpA);
-        Vector_div((Vector *)tmpC, (Vector *)tmpB, (float)dt);
+        float d = (*(Vector *)tmpA = *(const Vector *)self->position - *(const Vector *)local,
+                   AbyssEngine::AEMath::VectorLength(*(const Vector *)tmpA));
+        *(Vector *)tmpB = d * *(const Vector *)tmpA;
+        *(Vector *)tmpC = *(const Vector *)tmpB; *(Vector *)tmpC /= (float)dt;
         (void)spd;
         fn(tmpB, local, (int)(long)transform);
         void *ev = ((FModSound *)(*g_update_sound))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)tmpB, (Vector *)tmpC, false);
         self->engineEvent = ev;
         self->field_108 = 1;
         fn(tmpA, local, (int)(long)transform);
-        Vector_assign((Vector *)self->position, (Vector *)tmpA);
+        *(Vector *)self->position = *(Vector *)tmpA;
     }
 
     float speed = (float)dt;

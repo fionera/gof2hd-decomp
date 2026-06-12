@@ -6,13 +6,15 @@ char *MatrixGetPosition(char *out, Matrix const *matrix);
 char *MatrixGetRight(char *out, Matrix const *matrix);
 char *MatrixGetUp(char *out, Matrix const *matrix);
 char *MatrixGetDir(char *out, Matrix const *matrix);
-extern "C" void *Vector_neg(void *out, void *a);
-extern "C" void *Vector_sub(void *out, char *a, void *b);
-extern "C" float Vector_dot(void *a, void *b);
-extern "C" void *Vector_mul(void *out, void *a, float scale);
-extern "C" void *Vector_div(void *out, void *a, float scale);
-extern "C" void *Vector_add(void *out, void *a, void *b);
-extern "C" void *Vector_mul_scalar(void *out, float scale, void *a);
+// Free math operators/functions (defined in libgof2hd; not declared in math.h).
+namespace AbyssEngine { namespace AEMath {
+    Vector operator-(const Vector&);
+    Vector operator-(const Vector&, const Vector&);
+    Vector operator+(const Vector&, const Vector&);
+    Vector operator*(const Vector&, float);
+    Vector operator*(float, const Vector&);
+    float VectorDot(const Vector&, const Vector&);
+} }
 extern "C" void *AERandom_seed_ctor(void *self, long long seed);
 extern "C" void AERandom_dtor(void *self);
 extern "C" void AERandom_ctor(void *self);
@@ -150,23 +152,23 @@ void IParticleSystem::emit(int delta)
     MatrixGetPosition(matrixPos, this->matrix);
     MatrixGetRight(right, this->matrix);
     if (U8(this, 0x4c) != 0) {
-        Vector_neg(tmp, right);
+        *(Vector *)tmp = -*(const Vector *)right;
         *(Vector *)(right) = *(Vector *)(tmp);
     }
     MatrixGetUp(up, this->matrix);
     MatrixGetDir(dir, this->matrix);
 
     char *def = ParticleSet_definitions + (set + set * 4) * 32;
-    float speed2 = Vector_dot((char *)this + 0x1c, (char *)this + 0x1c);
+    float speed2 = AbyssEngine::AEMath::VectorDot(*(const Vector *)((char *)this + 0x1c), *(const Vector *)((char *)this + 0x1c));
     if (speed2 < (float)*(int *)(def + 0x98)) {
         return;
     }
 
     float fdelta = (float)delta;
     float elapsed = FL(this, 0x60) + fdelta;
-    Vector_mul(travel, (char *)this + 0x1c, elapsed);
-    Vector_div(travelDiv, travel, 1000.0f);
-    float travelLen2 = Vector_dot(travelDiv, travelDiv);
+    *(Vector *)travel = *(const Vector *)((char *)this + 0x1c) * elapsed;
+    *(Vector *)travelDiv = *(const Vector *)travel; *(Vector *)travelDiv /= 1000.0f;
+    float travelLen2 = AbyssEngine::AEMath::VectorDot(*(const Vector *)travelDiv, *(const Vector *)travelDiv);
     float invGuess = bits_float(0x5f3759df - (float_bits(travelLen2) >> 1));
     float invLen = (travelLen2 * -0.5f * invGuess * invGuess + 1.5f) * invGuess;
     float distance = 1.0f / invLen;
@@ -191,7 +193,7 @@ void IParticleSystem::emit(int delta)
         return;
     }
 
-    Vector_sub(baseDelta, matrixPos, travelDiv);
+    *(Vector *)baseDelta = *(const Vector *)matrixPos - *(const Vector *)travelDiv;
     float spreadScale = 0.0f;
     float pathScale = 0.0f;
     if ((U8(this, 0x34) & 0xc0) == 0) {
@@ -231,19 +233,19 @@ void IParticleSystem::emit(int delta)
 
         float drag = *(float *)(def + 0x64);
         if (drag != 0.0f) {
-            Vector_mul(velocity, (char *)this + 0x1c, drag);
+            *(Vector *)velocity = *(const Vector *)((char *)this + 0x1c) * drag;
             *(Vector *)(slot) -= *(Vector *)(velocity);
         }
         if (*(float *)(def + 0x68) != 0.0f) {
-            Vector_mul(velocity, right, *(float *)(def + 0x68));
+            *(Vector *)velocity = *(const Vector *)right * *(float *)(def + 0x68);
             *(Vector *)(slot) += *(Vector *)(velocity);
         }
         if (*(float *)(def + 0x6c) != 0.0f) {
-            Vector_mul(velocity, up, *(float *)(def + 0x6c));
+            *(Vector *)velocity = *(const Vector *)up * *(float *)(def + 0x6c);
             *(Vector *)(slot) += *(Vector *)(velocity);
         }
         if (*(float *)(def + 0x70) != 0.0f) {
-            Vector_mul(velocity, dir, *(float *)(def + 0x70));
+            *(Vector *)velocity = *(const Vector *)dir * *(float *)(def + 0x70);
             *(Vector *)(slot) += *(Vector *)(velocity);
         }
 
@@ -259,10 +261,10 @@ void IParticleSystem::emit(int delta)
             if (distance >= 1.0f) {
                 float step = ((U(this, 0x34) & 0x10) != 0) ? *(float *)(def + 0x2c)
                                                            : distance / (float)emitCount;
-                Vector_mul(tmp, travelDiv, phase * step);
-                Vector_mul(tmp2, tmp, pathScale);
+                *(Vector *)tmp = *(const Vector *)travelDiv * (phase * step);
+                *(Vector *)tmp2 = *(const Vector *)tmp * pathScale;
                 *(Vector *)(particlePos) = *(Vector *)(tmp2);
-                Vector_add(tmp2, baseDelta, particlePos);
+                *(Vector *)tmp2 = *(const Vector *)baseDelta + *(const Vector *)particlePos;
                 *(Vector *)(particlePos) = *(Vector *)(tmp2);
             } else {
                 *(Vector *)(particlePos) = *(Vector *)(matrixPos);
@@ -283,19 +285,19 @@ void IParticleSystem::emit(int delta)
             *(Vector *)(particlePos) += *(Vector *)(tmp);
         } else {
             if (*(float *)(def + 0x78) != 0.0f) {
-                Vector_mul(tmp, right, *(float *)(def + 0x78));
+                *(Vector *)tmp = *(const Vector *)right * *(float *)(def + 0x78);
                 *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             if (*(float *)(def + 0x7c) != 0.0f) {
-                Vector_mul(tmp, up, *(float *)(def + 0x7c));
+                *(Vector *)tmp = *(const Vector *)up * *(float *)(def + 0x7c);
                 *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             if (*(float *)(def + 0x80) != 0.0f) {
-                Vector_mul(tmp, dir, *(float *)(def + 0x80));
+                *(Vector *)tmp = *(const Vector *)dir * *(float *)(def + 0x80);
                 *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             if (*(float *)(def + 0x84) != 0.0f) {
-                Vector_mul(tmp, dir, (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, (int)*(float *)(def + 0x84)));
+                *(Vector *)tmp = *(const Vector *)dir * (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, (int)*(float *)(def + 0x84));
                 *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             int posSpread = *(int *)(def + 0x48);
@@ -325,7 +327,7 @@ void IParticleSystem::emit(int delta)
         if (*(float *)(def + 0x24) == 0.0f) {
             zero_vec(emitVelocity);
         } else {
-            Vector_mul_scalar(emitVelocity, *(float *)(def + 0x24), slot);
+            *(Vector *)emitVelocity = *(float *)(def + 0x24) * *(const Vector *)slot;
         }
 
         int colorFlag;
@@ -340,8 +342,8 @@ void IParticleSystem::emit(int delta)
                colorFlag, size0, size1, emitVelocity);
 
         if (*(float *)(def + 0x64) != 0.0f) {
-            Vector_mul(tmp, (char *)this + 0x1c, *(float *)(def + 0x64));
-            Vector_mul(tmp2, tmp, 2.0f);
+            *(Vector *)tmp = *(const Vector *)((char *)this + 0x1c) * *(float *)(def + 0x64);
+            *(Vector *)tmp2 = *(const Vector *)tmp * 2.0f;
             *(Vector *)(slot) += *(Vector *)(tmp2);
         }
 
@@ -507,8 +509,8 @@ void IParticleSystem::calcEmitterVelocity(int delta)
     char scaled[12];
     char diff[12];
     MatrixGetPosition(position, this->matrix);
-    Vector_sub(diff, position, (char *)this + 0x28);
-    Vector_mul(scaled, diff, 1000.0f / (float)delta);
+    *(Vector *)diff = *(const Vector *)position - *(const Vector *)((char *)this + 0x28);
+    *(Vector *)scaled = *(const Vector *)diff * (1000.0f / (float)delta);
     *(Vector *)((char *)this + 0x1c) = *(Vector *)(scaled);
     U8(this, 0x5) = 0;
     *(Vector *)((char *)this + 0x28) = *(Vector *)(position);
@@ -559,7 +561,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
             float drag = *(float *)(def + 0x64);
             if (drag != 0.0f) {
                 char tmp[12];
-                Vector_mul(tmp, (void *)velocity, drag);
+                *(Vector *)tmp = *(const Vector *)velocity * drag;
                 *(Vector *)(slot) -= *(Vector *)(tmp);
             }
         }
@@ -593,7 +595,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 *(uint32_t *)(emitVelocity + 4) = 0;
                 *(uint32_t *)(emitVelocity + 8) = 0;
             } else {
-                Vector_mul_scalar(emitVelocity, velocityScale, slot);
+                *(Vector *)emitVelocity = velocityScale * *(const Vector *)slot;
             }
 
             EmitParticleFn fn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
@@ -609,7 +611,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 *(uint32_t *)(emitVelocity + 4) = 0;
                 *(uint32_t *)(emitVelocity + 8) = 0;
             } else {
-                Vector_mul_scalar(emitVelocity, velocityScale, slot);
+                *(Vector *)emitVelocity = velocityScale * *(const Vector *)slot;
             }
 
             EmitParticleFn fn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
@@ -621,8 +623,8 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         if (drag != 0.0f) {
             char tmp[12];
             char tmp2[12];
-            Vector_mul(tmp, (char *)this + 0x1c, drag);
-            Vector_mul(tmp2, tmp, 2.0f);
+            *(Vector *)tmp = *(const Vector *)((char *)this + 0x1c) * drag;
+            *(Vector *)tmp2 = *(const Vector *)tmp * 2.0f;
             *(Vector *)(slot) += *(Vector *)(tmp2);
         }
 

@@ -68,7 +68,6 @@ int      nextInt_71ad0(AbyssEngine::AERandom *self, int bound);
 extern "C" int idiv(int a, int b);
 extern "C" void Globals_buildAgentMissionText(void *out, void *agent, int offer);
 extern "C" int AEString_compare(void *a, void *b);
-extern "C" void AEGeometry_ctor(void *self, int resId, void *canvas, int flag);
 void MatrixSetTranslation(void *m, float x, float y, float z);
 extern "C" void Globals_buildShipGroup0f(void *self, int param_2, void *canvas);
 extern "C" int AERandom_nextIntB(int rng, int bound);
@@ -923,7 +922,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
     if (kind == 0xe || kind == 0xd) {
         void *geom = ::operator new(0xc0);
         int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
-        AEGeometry_ctor(geom, resId, *canvasP, 0);
+        new ((void *)geom) AEGeometry((uint16_t)resId, (PaintCanvas *)*canvasP, false);
         unsigned t0 = 0xffffffff;
         ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t0);
         ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t0, 0, (bool)(1));
@@ -948,7 +947,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
     // Generic path: per-ship table-driven build indexed by `kind`.
     {
         void *geom = ::operator new(0xc0);
-        AEGeometry_ctor(geom, gGSG_resTable[kind], *canvasP, 1);
+        new ((void *)geom) AEGeometry((uint16_t)gGSG_resTable[kind], (PaintCanvas *)*canvasP, true);
         unsigned short mesh = gGSG_meshTable[kind];
         unsigned mainT = 0xffffffff;
         unsigned mainMesh = 0xffffffff;

@@ -1,4 +1,5 @@
 #include "gof2/PlayerWormHole.h"
+extern "C" void AEGeometry_positionChanged(void *geometry);  // engine shim (unmapped)
 #include "gof2/AEGeometry.h"
 #include "gof2/Level.h"
 #include "gof2/PlayerStaticFar.h"
@@ -21,7 +22,9 @@ struct Player {
 
 extern "C" void *PlayerStaticFar_dtor(void *self);
 extern "C" void PlayerStaticFar_ctor(PlayerWormHole *self, int playerId, AEGeometry *geometry, float x, float y, float z);
-extern "C" void AEGeometry_positionChanged(void *geometry);
+// UNRECOVERED: this AEGeometry callback is reached through a runtime ARM->Thumb
+// veneer (PlayerWormHole::setPosition at a5336 calls *(fp)(geometry)); the indirect
+// target could not be resolved to a named AEGeometry method, so the shim is retained.
 namespace AbyssEngine { namespace PaintCanvas {
 void *TransformGetTransform(void *canvas, int transformId);
 int   CameraGetCurrent(void *canvas);

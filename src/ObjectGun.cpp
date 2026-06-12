@@ -11,46 +11,37 @@
 // modelled in their (out-of-batch) header (currently a few Player fields).
 template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
+namespace AbyssEngine { namespace AEMath {
+void MatrixMultiply(Matrix &, const Matrix &);
+Vector operator-(const Vector &);
+} }
+
 
 ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self);
 extern "C" void ObjectGun_delete(ObjectGun *self);
-extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion*> *self);
 extern "C" void *Array_Explosion_dtor(Array<Explosion*> *self);
 void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
 void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
 extern "C" void ObjectGun_setEnemies_impl(void *items);
-extern "C" void Matrix_ctor(Matrix *self);
 void TransformCreate(void *canvas, uint32_t *transform);
 extern "C" void Array_Explosion_ctor(Array<Explosion*> *self);
 extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion*> *self);
 extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int weapon);
-extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 uint32_t TransformGetTransform(void *canvas, uint32_t transform);
 extern "C" void Player_getPosition(Vector *out, Player *self);
 // __aeabi_memcpy is declared by gof2/AEGeometry.h (returns void*)
 void MatrixRotateVector(void *out, const void *matrix, const void *vec);
-extern "C" void Vector_add_assign(Vector *self, const Vector *rhs);
 void *CameraGetCurrent(void *canvas);
 void *CameraGetLocal(void *canvas, void *camera);
-extern "C" void Matrix_copy(Matrix *dst, const Matrix *src);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 void MatrixGetUp(Vector *out, const Matrix *matrix);
-extern "C" void Matrix_multiply(Matrix *out, const Matrix *rhs);
-extern "C" Vector *Matrix_getVector(void *self);
-extern "C" void Matrix_multiply_out(Matrix *out, const Vector *a, const Vector *b);
-extern "C" void AEGeometry_setMatrix(AEGeometry *self, const Matrix *matrix);
 extern "C" void Explosion_update(Explosion *self, int dt, TargetFollowCamera *camera);
 void MatrixSetRotation(Matrix *dst, float x, float y, float z);
-extern "C" void Matrix_multiply_inplace(Matrix *self, const Matrix *rhs);
 void MatrixSetTranslation(Matrix *dst, float x, float y, float z);
 void VectorNormalize(Vector *out, const Vector *in);
-extern "C" void Vector_assign(Vector *dst, const Vector *src);
-extern "C" void Vector_negate(Vector *out, const Vector *in);
-extern "C" void Vector_scale(Vector *self, float scale);
 extern "C" void MatrixGetTranslation(Vector *out, const Matrix *matrix);
-extern "C" void Vector_add_scaled(Vector *out, const Vector *dir, float scale);
 void VectorCross(Vector *out, const Vector *a, const Vector *b);
 extern "C" void MatrixSetScaling(Matrix *dst, float x, float y, float z);
 void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix);
@@ -78,8 +69,10 @@ ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
     self->field_0x0 = (char *)ObjectGun_vtable + 8;
 
     AEGeometry *geometry = self->field_0x18;
-    if (geometry != 0)
-        ::operator delete(AEGeometry_dtor(geometry));
+    if (geometry != 0) {
+        ((AEGeometry *)geometry)->~AEGeometry();
+        ::operator delete(geometry);
+    }
 
     Array<Explosion*> *explosions = self->field_0x2c;
     self->field_0x18 = 0;
@@ -134,7 +127,7 @@ ObjectGun::ObjectGun(int, Gun *gun, int mesh, uint32_t, Level *level)
     self->field_0x58 = 0.0f;
     self->field_0x70 = 0.0f;
     self->field_0x0 = (char *)ObjectGun_vtable + 8;
-    Matrix_ctor((Matrix *)((char *)self + 0x74));
+    ((Matrix *)((char *)self + 0x74))->initIdentity();
 
     void **canvas = (void **)g_PaintCanvas;
     self->field_0x24 = 0;
@@ -248,7 +241,7 @@ after_special_type:
     }
 
     geometry = (AEGeometry *)::operator new(0xc0);
-    AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[gun->itemIndex].id, *canvas, false);
+    new ((void *)geometry) AEGeometry((uint16_t)g_ObjectGunGeometryIds[gun->itemIndex].id, (PaintCanvas *)*canvas, false);
 
 done:
     self->field_0x1d = 0;
@@ -296,8 +289,8 @@ void ObjectGun::update(int dt)
                 if (ki != 0 && F<uint8_t>(((Player *)(owner))->getKIPlayer(), 0x3f) != 0) {
                     this->field_0x1c = 1;
                     AEGeometry *geometry = (AEGeometry *)::operator new(0xc0);
-                    AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[this->field_0x8->itemIndex].id,
-                                    *canvas, false);
+                    new ((void *)geometry) AEGeometry((uint16_t)g_ObjectGunGeometryIds[this->field_0x8->itemIndex].id,
+                                    (PaintCanvas *)*canvas, false);
                     this->field_0x18 = geometry;
                 }
             }
@@ -335,7 +328,7 @@ void ObjectGun::update(int dt)
         offsets.y = gun->offsetY;
         offsets.z = gun->offsetZ + 8.0f;
         MatrixRotateVector(&workMatrix, &playerMatrix, &offsets);
-        Vector_add_assign(&position, (Vector *)&workMatrix);
+        *(Vector *)&position += *(const Vector *)((Vector *)&workMatrix);
         ((AEGeometry *)(this->field_0x18))->setPosition(position);
 
         transform = TransformGetTransform(*canvas, this->field_0x18->transform);
@@ -344,7 +337,7 @@ void ObjectGun::update(int dt)
         if (this->field_0x8->weaponType != 8) {
             void *paint = *canvas;
             void *camera = CameraGetCurrent(paint);
-            Matrix_copy(&cameraMatrix, (Matrix *)CameraGetLocal(paint, camera));
+            *(Matrix *)&cameraMatrix = *(const Matrix *)((Matrix *)CameraGetLocal(paint, camera));
             MatrixGetDir(&dir, &cameraMatrix);
             MatrixGetUp(&up, &cameraMatrix);
             ((AEGeometry *)(this->field_0x18))->setDirection(dir, up);
@@ -353,7 +346,7 @@ void ObjectGun::update(int dt)
 
         Matrix *m0 = &((AEGeometry *)(this->field_0x18))->getMatrix();
         Matrix *m1 = &((AEGeometry *)(this->field_0x18))->getMatrix();
-        Matrix_multiply(&workMatrix, m0);
+        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)&workMatrix, *(const Matrix *)m0);
 
         gun = this->field_0x8;
         int weapon = gun->itemIndex;
@@ -393,7 +386,7 @@ void ObjectGun::update(int dt)
             }
         }
         MatrixRotateVector(&cameraMatrix, &workMatrix, &offsets);
-        AEGeometry_setMatrix(this->field_0x18, &workMatrix);
+        ((AEGeometry *)this->field_0x18)->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(&workMatrix));
         ((AEGeometry *)(this->field_0x18))->translate(*(Vector *)&cameraMatrix);
         (void)m1;
     }
@@ -473,12 +466,12 @@ void ObjectGun::render()
             void **canvas = (void **)g_PaintCanvas;
             void *paint = *canvas;
             void *camera = CameraGetCurrent(paint);
-            Matrix_copy(&cameraLocal, (Matrix *)CameraGetLocal(paint, camera));
+            *(Matrix *)&cameraLocal = *(const Matrix *)((Matrix *)CameraGetLocal(paint, camera));
             if (this->field_0x4c != 0) {
                 identity(&rotate);
                 MatrixSetRotation(&scaleMatrix, this->field_0x48, 0.0f, 0.0f);
-                Matrix_copy(&rotate, &scaleMatrix);
-                Matrix_multiply_inplace(&cameraLocal, &rotate);
+                *(Matrix *)&rotate = *(const Matrix *)&scaleMatrix;
+                AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)&cameraLocal, *(const Matrix *)&rotate);
             }
         }
 
@@ -489,17 +482,17 @@ void ObjectGun::render()
             if (position->x != -1000.0f) {
                 MatrixSetTranslation(&local, position->x, position->y, position->z);
                 VectorNormalize((Vector *)&local, (Vector *)((char *)gun->velocities + offset));
-                Vector_assign((Vector *)((char *)this + 0x50), (Vector *)&local);
+                *(Vector *)((char *)this + 0x50) = *(const Vector *)((Vector *)&local);
 
                 if (this->field_0x4c != 0) {
-                    Vector_negate(&muzzle, (Vector *)((char *)this + 0x50));
+                    *(Vector *)&muzzle = -*(const Vector *)((Vector *)((char *)this + 0x50));
                     if ((uint32_t)(gun->itemIndex - 0xb4) > 2) {
                         void **canvas = (void **)g_PaintCanvas;
                         void *paint = *canvas;
                         void *camera = CameraGetCurrent(paint);
-                        Matrix_copy(&cameraLocal, (Matrix *)CameraGetLocal(paint, camera));
+                        *(Matrix *)&cameraLocal = *(const Matrix *)((Matrix *)CameraGetLocal(paint, camera));
                         MatrixGetDir(&dir, &cameraLocal);
-                        Vector_assign(&muzzle, &dir);
+                        *(Vector *)&muzzle = *(const Vector *)&dir;
                         gun = this->field_0x8;
                     }
 
@@ -531,7 +524,7 @@ void ObjectGun::render()
                     } else {
                         base = (Vector *)((char *)gun->field_0x24 + offset);
                     }
-                    Vector_assign((Vector *)((char *)this + 0x5c), base);
+                    *(Vector *)((char *)this + 0x5c) = *(const Vector *)base;
                     VectorCross(&side, (Vector *)((char *)this + 0x5c), (Vector *)((char *)this + 0x50));
                     VectorNormalize((Vector *)((char *)this + 0x68), &side);
                     VectorCross(&side, (Vector *)((char *)this + 0x68), (Vector *)((char *)this + 0x50));
@@ -563,13 +556,13 @@ void ObjectGun::render()
                     // Player::field_0x7c / field_0x80 are not yet modelled in Player.h
                     // (out-of-batch header) -> byte-offset accessed via F<float>.
                     MatrixSetRotation(&scaleMatrix, F<float>(player, 0x7c), F<float>(player, 0x80), 0.0f);
-                    Matrix_multiply_inplace((Matrix *)((char *)player + 0x40), &local);
-                    Matrix_copy((Matrix *)((char *)this + 0x74), (Matrix *)((char *)player + 0x40));
+                    AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)player + 0x40), *(const Matrix *)&local);
+                    *(Matrix *)((char *)this + 0x74) = *(const Matrix *)((Matrix *)((char *)player + 0x40));
                     MatrixSetTranslation(&scaleMatrix, position->x, position->y, position->z);
                     MatrixGetDir(&dir, &scaleMatrix);
                     VectorNormalize(&muzzle, &dir);
-                    Vector_scale(&muzzle, gun->field_0x50);
-                    Vector_assign((Vector *)((char *)gun->velocities + offset), &muzzle);
+                    *(Vector *)&muzzle *= (gun->field_0x50);
+                    *(Vector *)((char *)gun->velocities + offset) = *(const Vector *)&muzzle;
                     F<float>(player, 0x7c) = 0.0f;
                     F<float>(player, 0x80) = 0.0f;
                     MatrixSetRotation(&scaleMatrix, this->field_0x20, 0.0f, 0.0f);

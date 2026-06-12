@@ -42,6 +42,12 @@ public:
 #include "gof2/TractorBeam.h"
 #include "gof2/Ship.h"
 
+// Free AEMath operator used by getTurretPosition (declared in AEMath.cpp; AEMath.h
+// is not included here because it redefines BSphere/Transform which clash in this TU).
+namespace AbyssEngine { namespace AEMath {
+Matrix operator*(const Matrix &lhs, const Matrix &rhs);
+} }
+
 // Explosion.h and Hud.h each define an identical file-scope `static inline I(...)`
 // (and Hud.h a `P(...)`), making unqualified calls ambiguous. Use macros here so
 // the offset accessors resolve unambiguously to a plain pointer cast.
@@ -62,12 +68,6 @@ static inline Status *PE_status() { return (Status *)g_mining_status; }
 // Vec3 is `typedef Vector Vec3;` from PlayerEgo.h (AbyssEngine::AEMath::Vector).
 // Several AEGeometry/PlayerEgo accessors return it by value.
 
-// These accessors are used in the decomp both as value-returning (Vec3 r = f(geo))
-// and as out-param (f(geo, out)) forms — the same sret ABI function viewed two ways.
-// Declared variadic so both call shapes type-check (the trailing out-ptr, when
-// present, is passed as a variadic argument and the returned value discarded).
-extern "C" Vec3 AEGeometry_getDirection(void*, ...);
-
 // Functions whose merged prototypes disagree on argument lists / return type.
 // Unified here as variadic so every call site compiles (compile-only target).
 // Their first argument is sometimes an int handle, sometimes a void*, so these
@@ -75,14 +75,12 @@ extern "C" Vec3 AEGeometry_getDirection(void*, ...);
 extern "C" void TargetFollowCamera_setLookAtCam(...);
 // (int|void* hud, int ev, PlayerEgo*, [int])
 extern "C" void  TargetFollowCamera_setActive(void* cam, int active);
-extern "C" void* AEGeometry_newMesh(int meshId, void* canvas, bool b);
 
 extern "C" void PlayerEgo_setVisible_ext();
 extern "C" int PlayerEgo_getHitpoints_ext(void*);
 extern "C" int PlayerEgo_getHackingGameDockIndex_ext(int);
 extern "C" void PlayerEgo_dockToStream_ext(PlayerEgo*, int);
 extern "C" void PlayerEgo_hackingShuffle_ext(int);
-extern "C" void* AEGeometry_getReferenceMatrix(void*);
 extern "C" void PlayerEgo_setRocketControl_ext(PlayerEgo*, int);
 extern "C" void PlayerEgo_turnHorizontal_neg(PlayerEgo*);
 extern "C" void PlayerEgo_turnHorizontal_pos(PlayerEgo*);
@@ -112,9 +110,6 @@ extern "C" float Ship_removeEquipment(void*, int);
 extern "C" void PlayerEgo_hackingRotateRCW_ext(int, int);
 extern "C" void PlayerEgo_refillGunDelay_ext(void*, int);
 extern "C" int   Player_gunAvailable(void *player);
-extern "C" void *AEGeometry_new(void *canvas);
-extern "C" void  AEGeometry_setRotationOrder(void *geo, int order);
-extern "C" void *AEGeometry_dtor(void *geo);
 extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void*);
 extern "C" void stopShooting_extA(void*, int);
 extern "C" void stopShooting_extB(void*, int, int);
@@ -142,13 +137,9 @@ extern "C" void *HackingGame_dtor(void *hg);
 extern "C" int   PE_adp_approach(PlayerEgo *self, void *station);
 extern "C" int   PE_adp_glide(PlayerEgo *self);
 extern "C" void  PE_adp_apply(PlayerEgo *self);
-extern "C" void* AEGeometry_getMatrix2(void*);
 extern "C" void PlayerEgo_setLevel_ext(void*, int, int);
-extern "C" void  AEGeometry_setMatrix(void *geo, const void *m);
-extern "C" void  AEGeometry_rotateY(void *geo, int a, float ang, int b);
 extern "C" float PE_yawRampDelta(float rate, int frameTime);
 extern "C" void *Player_dtor(void *);
-extern "C" void *AEGeometry_dtor(void *);
 extern "C" void *Route_dtor(void *);
 extern "C" void *TractorBeam_dtor(void *);
 extern "C" void *MiningGame_dtor(void *);
@@ -166,7 +157,6 @@ extern "C" float Vec_length(const void *v);
 extern "C" void  Player_stopShooting(void *player);
 extern "C" int   PE_hat_aimAndFire(PlayerEgo *self, int dt);
 extern "C" void *MiningGame_dtor(void *mg);
-extern "C" void Vector_assign(void*, void*);
 extern "C" float PE_roll_bankFactor(PlayerEgo *self, float rx, float ry, float *outZ);
 extern "C" void PlayerEgo_setTargetFollowCamera_ext(void*, void*);
 extern "C" void  hitCamera_(PlayerEgo *self);
@@ -211,7 +201,6 @@ extern "C" void *Array_RepairBeam_new();
 extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void **canvasHolder);
 extern "C" void Player_addGun2(void*, void*, int);
 extern "C" void PlayerEgo_addGun2_ext(PlayerEgo*);
-extern "C" void Matrix_mul(void*, void*, void*);
 void MatrixGetPosition(void*, void*);
 extern "C" void *Ship_getCargo(void *ship, int item);
 extern "C" void  Ship_removeCargo(void *ship, int item);
@@ -433,7 +422,7 @@ void PlayerEgo::setRocketControl(void* gun, void* geo) {
     I(self, 0x198) = 0;
     return;
   }
-  void* m = AEGeometry_getReferenceMatrix(geo);
+  void* m = (void*)&((AEGeometry *)geo)->getReferenceMatrix();
   ((ParticleSystemManager *)(psm))->systemSetMatrix(psm_arg, m);
   return PlayerEgo_setRocketControl_ext(self, 0);
 }
@@ -648,7 +637,7 @@ int PlayerEgo::goingToStream() {
 
 // ---- GetDirVector_9b7dc.cpp ----
 Vec3 PlayerEgo::GetDirVector() {
-    PlayerEgo *self = this; return AEGeometry_getDirection(P(self, 8)); }
+    PlayerEgo *self = this; return ((AEGeometry *)P(self, 8))->getDirection(); }
 
 // ---- hideShipForFirstPersonCameraView_a1c56.cpp ----
 void PlayerEgo::hideShipForFirstPersonCameraView(bool param) {
@@ -1017,7 +1006,7 @@ void PlayerEgo::initManeuver(int type) {
             ((PlayerEgo *)(self))->getPosition();
 
             float dir[3];
-            AEGeometry_getDirection(P(self, 0x8), dir);
+            *(AbyssEngine::AEMath::Vector *)dir = ((AEGeometry *)P(self, 0x8))->getDirection();
 
             float scaled[3];
             Vec_scale(scaled, dir, g_PE_strafeDist);
@@ -1026,7 +1015,7 @@ void PlayerEgo::initManeuver(int type) {
             Vec_sub(target, pos, scaled);
             Vec_assign((char *)self + 0x338, target);
 
-            AEGeometry_getDirection(P(self, 0x8), target);
+            *(AbyssEngine::AEMath::Vector *)target = ((AEGeometry *)P(self, 0x8))->getDirection();
             Vec_assign((char *)self + 0x344, target);
         }
     }
@@ -1096,31 +1085,31 @@ void PlayerEgo::checkForTurret() {
     void **canvasHolder = g_PE_cft_canvas;
     void *canvas = *canvasHolder;
 
-    void *baseGeo = AEGeometry_newMesh(base, canvas, false);
+    void *baseGeo = (void*)new AEGeometry((uint16_t)base, (PaintCanvas*)canvas, false);
     P(self, 0xf4) = baseGeo;
-    void *yawGeo = AEGeometry_newMesh(barrel, canvas, false);
+    void *yawGeo = (void*)new AEGeometry((uint16_t)barrel, (PaintCanvas*)canvas, false);
     P(self, 0x34) = yawGeo;
-    AEGeometry_setRotationOrder(yawGeo, 2);
-    void *muzzleRoot = AEGeometry_new(canvas);
+    ((AEGeometry *)yawGeo)->setRotationOrder(2);
+    void *muzzleRoot = (void*)new AEGeometry((PaintCanvas*)canvas);
     P(self, 0x38) = muzzleRoot;
 
     if (muzzle != -1) {
-        void *g = AEGeometry_newMesh((unsigned short)muzzle, canvas, false);
+        void *g = (void*)new AEGeometry((uint16_t)(unsigned short)muzzle, (PaintCanvas*)canvas, false);
         ((AEGeometry *)(P(self, 0xf4)))->addChild((uint32_t)(uintptr_t)g);
-        ::operator delete(AEGeometry_dtor(g));
+        ((AEGeometry *)g)->~AEGeometry(); ::operator delete(g);
     }
     if (child != -1) {
-        void *g = AEGeometry_newMesh((unsigned short)child, canvas, false);
+        void *g = (void*)new AEGeometry((uint16_t)(unsigned short)child, (PaintCanvas*)canvas, false);
         ((AEGeometry *)(P(self, 0x34)))->addChild((uint32_t)(uintptr_t)g);
-        ::operator delete(AEGeometry_dtor(g));
+        ((AEGeometry *)g)->~AEGeometry(); ::operator delete(g);
     }
     if (extra != -1) {
-        void *g = AEGeometry_newMesh((unsigned short)extra, canvas, false);
+        void *g = (void*)new AEGeometry((uint16_t)(unsigned short)extra, (PaintCanvas*)canvas, false);
         ((AEGeometry *)(P(self, 0x34)))->addChild((uint32_t)(uintptr_t)g);
-        ::operator delete(AEGeometry_dtor(g));
+        ((AEGeometry *)g)->~AEGeometry(); ::operator delete(g);
     }
     if (extra2 != -1) {
-        void *g = AEGeometry_newMesh((unsigned short)extra2, canvas, false);
+        void *g = (void*)new AEGeometry((uint16_t)(unsigned short)extra2, (PaintCanvas*)canvas, false);
         P(self, 0x3c) = g;
         ((AEGeometry *)(P(self, 0x34)))->addChild((uint32_t)(uintptr_t)g);
         void *tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)canvasHolder));
@@ -1245,8 +1234,6 @@ void PlayerEgo::startSmokeEmission() {
 
 extern "C" float MiningGame_steerY(void *mg, float d);                 // 0x1abb18 veneer
 extern "C" float MiningGame_steerYAlt(void);                          // 0x1abb38 veneer
-extern "C" void  AEGeometry_rotateX(void *geo, float ang, int a, float b); // 0x72160
-extern "C" float AEGeometry_rotateXr(void *geo, float ang, int a, int b);  // 0x1abb28 veneer
 
 __attribute__((visibility("hidden"))) extern char **g_PE_d_miningGate; // 0xb0bb0 -> flags (+0x10)
 extern const float g_PE_d_eps;      // 0xb0dc0 free-look limit
@@ -1270,14 +1257,14 @@ float PlayerEgo::down(int frameTime, float delta) {
         if (F(self, 0x1a8) < g_PE_d_eps) {
             float ang = ft * delta + F(self, 0x1a8);
             F(self, 0x1a8) = ang;
-            AEGeometry_rotateX(P(self, 0x28), ang * g_PE_d_lookK1 * g_PE_d_lookK2, 0, 0);
+            ((AEGeometry *)P(self, 0x28))->rotate((float)(ang * g_PE_d_lookK1 * g_PE_d_lookK2), 0.0f, 0.0f);
         }
         float p = F(self, 0x1a4);
         if (p < g_PE_d_eps) {
             float half = ft * delta * 0.5f;
             float ang = half * g_PE_d_lookK1 * g_PE_d_lookK2;
             F(self, 0x1a4) = half + p;
-            return AEGeometry_rotateXr(P(self, 0x19c), ang, 0, 0);
+            return (((AEGeometry *)P(self, 0x19c))->rotate((float)ang, 0.0f, 0.0f), 0.0f);
         }
         return p;
     }
@@ -1497,18 +1484,18 @@ void PlayerEgo::setLevel(void* level) {
     PlayerEgo *self = this;
   I(self, 0xc) = (int)(intptr_t)level;
   void* src = P(level, 0x74);
-  void* gm = AEGeometry_getMatrix2(P(self, 8));
+  void* gm = (void*)&((AEGeometry *)P(self, 8))->getMatrix();
   void* sys = (void *)((ParticleSystemManager *)(src))->addSystem(gm, 9, 0);
   I(self, 0x2fc) = (int)(intptr_t)sys;
   ParticleSystemManager_enableSystemEmit3(P(P(self, 0xc), 0x74), (int)(intptr_t)sys, 0);
   if (((Status *)(g_setLevel_status))->getCurrentCampaignMission() > 1) return;
   void* src2 = P(P(self, 0xc), 0x78);
-  void* gm2 = AEGeometry_getMatrix2(P(self, 8));
+  void* gm2 = (void*)&((AEGeometry *)P(self, 8))->getMatrix();
   void* sys2 = (void *)((ParticleSystemManager *)(src2))->addSystem(gm2, 0xf, 0);
   I(self, 0x300) = (int)(intptr_t)sys2;
   ParticleSystemManager_enableSystemEmit3(P(P(self, 0xc), 0x78), (int)(intptr_t)sys2, 0);
   void* src3 = P(P(self, 0xc), 0x84);
-  void* gm3 = AEGeometry_getMatrix2(P(self, 8));
+  void* gm3 = (void*)&((AEGeometry *)P(self, 8))->getMatrix();
   void* sys3 = (void *)((ParticleSystemManager *)(src3))->addSystem(gm3, 0x2a, 0);
   I(self, 0x304) = (int)(intptr_t)sys3;
   return PlayerEgo_setLevel_ext(P(P(self, 0xc), 0x84), (int)(intptr_t)sys3, 0);
@@ -1521,8 +1508,6 @@ void PlayerEgo::setLevel(void* level) {
 //   seeding a default offset vector at 0x224 when none is set, then positions
 //   the leaf node at the dock offset (0x148), copies the ship matrix onto it,
 //   and makes the camera current.
-
-extern "C" void *AEGeometry_new(void *canvas);            // operator new + AEGeometry::AEGeometry
 
 __attribute__((visibility("hidden"))) extern void **g_PE_dc_canvas;   // 0xaab84 PaintCanvas
 __attribute__((visibility("hidden"))) extern void **g_PE_dc_canvas2;  // 0xaab8c PaintCanvas (current)
@@ -1541,9 +1526,9 @@ void PlayerEgo::setDockingCamera() {
         float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_dc_fovAlien : g_PE_dc_fovNormal;
         ((PaintCanvas*)g_PaintCanvas)->CameraSetPerspective((unsigned int)(cam), fov, 0.0f, g_PE_dc_fovAlien);
 
-        void *node = AEGeometry_new(*holder);
+        void *node = (void*)new AEGeometry((PaintCanvas*)(*holder));
         P(self, 0x178) = node;
-        AEGeometry_setRotationOrder(node, 2);
+        ((AEGeometry *)node)->setRotationOrder(2);
 
         // seed the default rig offset (0x224..0x22c) only when fully zero.
         if (F(self, 0x224) == 0.0f && F(self, 0x228) == 0.0f && F(self, 0x22c) == 0.0f) {
@@ -1552,19 +1537,19 @@ void PlayerEgo::setDockingCamera() {
         }
         ((AEGeometry *)(P(self, 0x178)))->translate(*(Vector *)((char *)self + 0x224));
 
-        void *mid = AEGeometry_new(*holder);
+        void *mid = (void*)new AEGeometry((PaintCanvas*)(*holder));
         P(self, 0x19c) = mid;
         ((AEGeometry *)(mid))->translate(*(Vector *)((char *)mid + 0xc));
         ((AEGeometry *)(P(self, 0x178)))->addChild((uint32_t)(uintptr_t)*(void **)((char *)P(self, 0x19c) + 0xc));
 
-        void *leaf = AEGeometry_new(*holder);
+        void *leaf = (void*)new AEGeometry((PaintCanvas*)(*holder));
         P(self, 0x17c) = leaf;
         ((AEGeometry *)(P(self, 0x178)))->addChild((uint32_t)(uintptr_t)*(void **)((char *)P(self, 0x178) + 0xc));
     }
 
     ((AEGeometry *)(P(self, 0x17c)))->setPosition(*(Vector *)((char *)self + 0x148));
     void *leaf = P(self, 0x17c);
-    AEGeometry_setMatrix(leaf, ((AEGeometry *)(P(self, 0x8)))->getMatrix());
+    ((AEGeometry *)leaf)->setMatrix(((AEGeometry *)(P(self, 0x8)))->getMatrix());
 
     ((PaintCanvas*)(long)(*g_PE_dc_canvas2))->CameraSetCurrent((unsigned int)(U(self, 0x174)));
 }
@@ -1595,9 +1580,9 @@ float PlayerEgo::right(int frameTime, float delta) {
         float pitch = (float)I(self, 0x1f8);
         float ft = (float)frameTime;
         float ang = ((ft * delta) / (g_PE_r_turK1 / pitch)) * g_PE_r_turK2 * g_PE_r_turK3;
-        AEGeometry_rotateY(P(self, 0x178), 0, ang, 0);
-        AEGeometry_rotateY(P(self, 0xdc), 0, ang, 0);
-        AEGeometry_rotateY(P(self, 0x28), 0, ang, 0);
+        ((AEGeometry *)P(self, 0x178))->rotate(0.0f, (float)ang, 0.0f);
+        ((AEGeometry *)P(self, 0xdc))->rotate(0.0f, (float)ang, 0.0f);
+        ((AEGeometry *)P(self, 0x28))->rotate(0.0f, (float)ang, 0.0f);
         return ang;
     }
 
@@ -1647,7 +1632,6 @@ float PlayerEgo::right(int frameTime, float delta) {
 //   by PE_yawRampDelta to keep the FP-flag soup out of line.
 
 extern "C" float MiningGame_steerX(void *mg, float d);                 // 0x1abb08 veneer
-extern "C" void  AEGeometry_rotateY(void *geo, int a, float ang, int b);// turret yaw veneer
 // Ramp helper: given base rate and inputs, returns the accumulator increment.
 
 extern const float g_PE_l_loadK;    // 0xb0b68
@@ -1669,9 +1653,9 @@ float PlayerEgo::left(int frameTime, float delta) {
         float pitch = (float)I(self, 0x1f8);
         float ft = (float)frameTime;
         float ang = ((ft * delta) / (g_PE_l_turK1 / pitch)) * g_PE_l_turK2 * g_PE_l_turK3;
-        AEGeometry_rotateY(P(self, 0x178), 0, ang, 0);
-        AEGeometry_rotateY(P(self, 0xdc), 0, ang, 0);
-        AEGeometry_rotateY(P(self, 0x28), 0, ang, 0);
+        ((AEGeometry *)P(self, 0x178))->rotate(0.0f, (float)ang, 0.0f);
+        ((AEGeometry *)P(self, 0xdc))->rotate(0.0f, (float)ang, 0.0f);
+        ((AEGeometry *)P(self, 0x28))->rotate(0.0f, (float)ang, 0.0f);
         return ang;
     }
 
@@ -1727,27 +1711,27 @@ __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
     void *self = this;
     if (PP(self, 0x0))   ::operator delete(Player_dtor(PP(self, 0x0)));
     PP(self, 0x0) = 0;
-    if (PP(self, 0x4))   ::operator delete(AEGeometry_dtor(PP(self, 0x4)));
+    if (PP(self, 0x4))   { ((AEGeometry *)PP(self, 0x4))->~AEGeometry(); ::operator delete(PP(self, 0x4)); }
     PP(self, 0x4) = 0;
-    if (PP(self, 0x8))   ::operator delete(AEGeometry_dtor(PP(self, 0x8)));
+    if (PP(self, 0x8))   { ((AEGeometry *)PP(self, 0x8))->~AEGeometry(); ::operator delete(PP(self, 0x8)); }
     PP(self, 0x8) = 0;
-    if (PP(self, 0xdc))  ::operator delete(AEGeometry_dtor(PP(self, 0xdc)));
+    if (PP(self, 0xdc))  { ((AEGeometry *)PP(self, 0xdc))->~AEGeometry(); ::operator delete(PP(self, 0xdc)); }
     PP(self, 0xdc) = 0;
-    if (PP(self, 0x28))  ::operator delete(AEGeometry_dtor(PP(self, 0x28)));
+    if (PP(self, 0x28))  { ((AEGeometry *)PP(self, 0x28))->~AEGeometry(); ::operator delete(PP(self, 0x28)); }
     PP(self, 0x28) = 0;
     if (PP(self, 0xfc))  ::operator delete(Route_dtor(PP(self, 0xfc)));
     PP(self, 0xfc) = 0;
-    if (PP(self, 0x178)) ::operator delete(AEGeometry_dtor(PP(self, 0x178)));
+    if (PP(self, 0x178)) { ((AEGeometry *)PP(self, 0x178))->~AEGeometry(); ::operator delete(PP(self, 0x178)); }
     PP(self, 0x178) = 0;
-    if (PP(self, 0x17c)) ::operator delete(AEGeometry_dtor(PP(self, 0x17c)));
+    if (PP(self, 0x17c)) { ((AEGeometry *)PP(self, 0x17c))->~AEGeometry(); ::operator delete(PP(self, 0x17c)); }
     PP(self, 0x17c) = 0;
-    if (PP(self, 0x2c))  ::operator delete(AEGeometry_dtor(PP(self, 0x2c)));
+    if (PP(self, 0x2c))  { ((AEGeometry *)PP(self, 0x2c))->~AEGeometry(); ::operator delete(PP(self, 0x2c)); }
     PP(self, 0x2c) = 0;
-    if (PP(self, 0x30))  ::operator delete(AEGeometry_dtor(PP(self, 0x30)));
+    if (PP(self, 0x30))  { ((AEGeometry *)PP(self, 0x30))->~AEGeometry(); ::operator delete(PP(self, 0x30)); }
     PP(self, 0x30) = 0;
-    if (PP(self, 0x34))  ::operator delete(AEGeometry_dtor(PP(self, 0x34)));
+    if (PP(self, 0x34))  { ((AEGeometry *)PP(self, 0x34))->~AEGeometry(); ::operator delete(PP(self, 0x34)); }
     PP(self, 0x34) = 0;
-    if (PP(self, 0x19c)) ::operator delete(AEGeometry_dtor(PP(self, 0x19c)));
+    if (PP(self, 0x19c)) { ((AEGeometry *)PP(self, 0x19c))->~AEGeometry(); ::operator delete(PP(self, 0x19c)); }
     PP(self, 0x19c) = 0;
     if (PP(self, 0x1b4)) ::operator delete(TractorBeam_dtor(PP(self, 0x1b4)));
     PP(self, 0x1b4) = 0;
@@ -1800,15 +1784,14 @@ void PlayerEgo::throttleChanged() {
 // coverage, the bulk is performed by PlayerEgo_initFields, while the two matrix
 // constructors and the player store stay inline.
 
-extern "C" void Matrix_ctor(void *m);                       // AEMath::Matrix::Matrix()
 extern "C" void PlayerEgo_initFields(void *self, Player *player); // field init + boost + MovingStars
 
 PlayerEgo::PlayerEgo(Player *player)
 {
     void *self = this;
     // embedded orientation matrices.
-    Matrix_ctor((char *)self + 0x2ac);     // roll matrix
-    Matrix_ctor((char *)self + 0x4c8);     // turret/HUD matrix
+    ((Matrix *)((char *)self + 0x2ac))->initIdentity();     // roll matrix
+    ((Matrix *)((char *)self + 0x4c8))->initIdentity();     // turret/HUD matrix
 
     // record the wrapped player (offset 0).
     PP(self, 0x0) = (void *)player;
@@ -1877,7 +1860,7 @@ void PlayerEgo::moveToPosition(float tx, float ty, float tz, int steer, float sp
         float v = slide * dt;
         TargetFollowCamera_translateNoUpdate(P(self, 0x88), v, 0.0f, 0.0f);
         F(self, 0x37c) = F(self, 0x37c) * g_PE_mtp_strafeK;
-        AEGeometry_setMatrix(P(self, 0x8), m);
+        ((AEGeometry *)P(self, 0x8))->setMatrix(*(const AbyssEngine::AEMath::Matrix*)m);
     }
 
     Mat_assign((char *)P(self, 0x0) + 0x4, ((AEGeometry *)(P(self, 0x8)))->getMatrix());
@@ -2013,7 +1996,7 @@ void PlayerEgo::killLiberator() {
     int* e = (int*)(*(int*)((char*)arr + 4) + i * 4);
     if (e[0x16] == 0xb3) {
       *(int*)e[0xf] = -1;
-      Vector_assign((void*)e[3], sv);
+      *(Vector *)((void*)e[3]) = *(const Vector *)(sv);
       void* arr2 = P(P(p, 4), 4);
       int* e2 = (int*)(*(int*)((char*)arr2 + 4) + i * 4);
       *((char*)e2 + 0x4c) = 0;
@@ -2182,8 +2165,6 @@ void PlayerEgo::dockToPlanet() {
 
 extern "C" float MiningGame_steerY(void *mg, float d);                 // 0x1abb18 veneer
 extern "C" float MiningGame_steerYAlt(void);                          // 0x1abb38 veneer
-extern "C" void  AEGeometry_rotateX(void *geo, float ang, int a, float b); // 0x72160
-extern "C" float AEGeometry_rotateXr(void *geo, float ang, int a, int b);  // 0x1abb28 veneer
 
 __attribute__((visibility("hidden"))) extern char **g_PE_u_miningGate; // 0xb0e1c -> flags (+0x10)
 extern const float g_PE_u_eps;      // 0xb1030 free-look limit
@@ -2208,14 +2189,14 @@ float PlayerEgo::up(int frameTime, float delta) {
         if (F(self, 0x1a8) > g_PE_u_eps) {
             float ang = F(self, 0x1a8) - ft * delta;
             F(self, 0x1a8) = ang;
-            AEGeometry_rotateX(P(self, 0x28), ang * g_PE_u_lookK1 * g_PE_u_lookK2, 0, 0);
+            ((AEGeometry *)P(self, 0x28))->rotate((float)(ang * g_PE_u_lookK1 * g_PE_u_lookK2), 0.0f, 0.0f);
         }
         float p = F(self, 0x1a4);
         if (p > g_PE_u_eps2) {
             float half = ft * delta * 0.5f;
             float ang = half * g_PE_u_lookK1 * g_PE_u_lookK2;
             F(self, 0x1a4) = p - half;
-            return AEGeometry_rotateXr(P(self, 0x19c), ang, 0, 0);
+            return (((AEGeometry *)P(self, 0x19c))->rotate((float)ang, 0.0f, 0.0f), 0.0f);
         }
         return p;
     }
@@ -2345,17 +2326,17 @@ void PlayerEgo::setTurretMode(int enable) {
             float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_tm_fovAlien : g_PE_tm_fovNormal;
             ((PaintCanvas*)g_PaintCanvas)->CameraSetPerspective((unsigned int)(cam), fov, 0.0f, g_PE_tm_fovAlien);
 
-            void *node = AEGeometry_new(*holder);
+            void *node = (void*)new AEGeometry((PaintCanvas*)(*holder));
             P(self, 0x178) = node;
-            AEGeometry_setRotationOrder(node, 2);
+            ((AEGeometry *)node)->setRotationOrder(2);
             ((AEGeometry *)(node))->translate(*(Vector *)((char *)self + 0x224));
 
-            void *mid = AEGeometry_new(*holder);
+            void *mid = (void*)new AEGeometry((PaintCanvas*)(*holder));
             P(self, 0x19c) = mid;
             ((AEGeometry *)(mid))->translate(*(Vector *)((char *)mid + 0xc));
             ((AEGeometry *)(P(self, 0x178)))->addChild((uint32_t)(uintptr_t)*(void **)((char *)P(self, 0x19c) + 0xc));
 
-            void *leaf = AEGeometry_new(*holder);
+            void *leaf = (void*)new AEGeometry((PaintCanvas*)(*holder));
             P(self, 0x17c) = leaf;
             ((AEGeometry *)(P(self, 0x178)))->addChild((uint32_t)(uintptr_t)*(void **)((char *)P(self, 0x178) + 0xc));
 
@@ -2364,7 +2345,7 @@ void PlayerEgo::setTurretMode(int enable) {
         }
         ((AEGeometry *)(P(self, 0x17c)))->setPosition(*(Vector *)((char *)self + 0x148));
         void *leaf = P(self, 0x17c);
-        AEGeometry_setMatrix(leaf, ((AEGeometry *)(P(self, 0x8)))->getMatrix());
+        ((AEGeometry *)leaf)->setMatrix(((AEGeometry *)(P(self, 0x8)))->getMatrix());
         ((PaintCanvas*)(long)(*g_PE_tm_canvasD))->CameraSetCurrent((unsigned int)(U(self, 0x174)));
         Player_stopShooting(P(self, 0x0));
     }
@@ -2768,7 +2749,7 @@ void PlayerEgo::setTurretPosition(float x, float y, float z) {
   *(float*)(v + 0) = x;
   *(float*)(v + 4) = y;
   *(float*)(v + 8) = z;
-  Vector_assign(B(self, 0x224), v);
+  *(Vector *)(B(self, 0x224)) = *(const Vector *)(v);
 }
 
 // ---- revive_a14a4.cpp ----
@@ -3193,7 +3174,7 @@ void PlayerEgo::setShip(int race, int group) {
     void *mesh = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(I(grp, 0x1c)));
     P(self, 0x394) = *(void **)(I(mesh, 0x30) + 0x20);
 
-    void *hull = AEGeometry_new(*canvasHolder);
+    void *hull = (void*)new AEGeometry((PaintCanvas*)(*canvasHolder));
     P(self, 0x8) = hull;
     ((AEGeometry *)(hull))->addChild((uint32_t)(uintptr_t)*(void **)((char *)P(self, 0x4) + 0xc));
 
@@ -3228,7 +3209,7 @@ void PlayerEgo::setShip(int race, int group) {
     // emergency system effect geometry
     if (Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x1b) != 0
         && Ship_hasEmergencySystem(PE_status()->getShip()) != 0) {
-        void *geo = AEGeometry_newMesh(0x3826, *canvasHolder, false);
+        void *geo = (void*)new AEGeometry((uint16_t)0x3826, (PaintCanvas*)(*canvasHolder), false);
         P(self, 0xac) = geo;
         Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x1b);
         I(self, 0x310) = ((Item *)((void *)Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x29)))->getAttribute(0);
@@ -3331,7 +3312,7 @@ void PlayerEgo_getTurretPosition(void* out, void* src) {
   char local[60];
   void* m1 = ((AEGeometry *)(P(src, 8)))->getMatrix();
   void* m2 = ((AEGeometry *)(P(src, 0x28)))->getMatrix();
-  Matrix_mul(local, m1, m2);
+  *(Matrix *)(local) = *(const Matrix *)(m1) * *(const Matrix *)(m2);
   MatrixGetPosition(out, local);
 }
 

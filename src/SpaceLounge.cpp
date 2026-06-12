@@ -1,4 +1,6 @@
+#include <cstring>
 #include "gof2/SpaceLounge.h"
+#include "gof2/AEGeometry.h"
 #include "gof2/externs.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/CutScene.h"
@@ -45,6 +47,13 @@ struct PaintCanvas {
 };
 extern "C" int pc_GetWidth(PaintCanvas *self);
 extern "C" int pc_GetHeight(PaintCanvas *self);
+
+namespace AbyssEngine { namespace AEMath {
+    Vector operator+(const Vector&, const Vector&);
+    Vector operator-(const Vector&, const Vector&);
+    Vector operator*(const Vector&, float);
+    void MatrixMultiply(Matrix&, const Matrix&);
+} }
 
 extern "C" void *SpaceLounge_layout_move;
 extern "C" void SpaceLounge_OnRender3D_map_tail(void *map);
@@ -99,13 +108,6 @@ void MatrixGetPosition(void *out, void *matrix);
 void MatrixGetUp(void *out, void *matrix);
 void MatrixGetLookAt(void *out, void *pos, void *target, void *up);
 void MatrixGetDir(void *out, void *matrix);
-extern "C" void Vector_mul(void *out, void *vec, float scale);
-extern "C" void Vector_assign(void *dst, void *src);
-extern "C" void Vector_sub(void *out, void *a, void *b);
-extern "C" void Vector_add(void *out, void *a, void *b);
-extern "C" void Matrix_assign(void *dst, void *src);
-extern "C" void Matrix_mul_assign(void *dst, void *rhs);
-extern "C" void AEGeometry_setMatrix(void *matrix);
 extern "C" void *SpaceLounge_screen_level_slot;
 extern "C" void *SpaceLounge_screen_canvas_slot;
 extern "C" void *SpaceLounge_screen_projector;
@@ -131,7 +133,6 @@ extern "C" void *SpaceLounge_init_layout_slot;
 extern "C" void *SpaceLounge_init_text_slot;
 extern "C" void *SpaceLounge_init_camera_slot;
 extern "C" void String_ctor_default(void *s);
-extern "C" void Matrix_ctor(void *m);
 extern "C" void CutScene_ctor(void *cutscene, int id);
 extern "C" void ArrayRemove_AgentPtr(void *agent, void *array);
 extern "C" void EaseInOutMatrix_ctor(void *ease, void *from, void *to, int duration);
@@ -161,11 +162,9 @@ extern "C" void *SpaceLounge_draw_canvas_slot;
 extern "C" void *SpaceLounge_draw_text_slot;
 extern "C" void SpaceLounge_update_map_tail(void *map, int dt);
 extern "C" void SpaceLounge_update_ship_tail(void *list, int dt);
-extern "C" int Matrix_equal(void *a, void *b);
 float Sinf(float value);
 extern "C" void EaseInOut_ctor(void *ease, float start, float end);
 extern "C" float EaseInOut_GetValue(void *ease);
-extern "C" void Matrix_mul_assign(void *lhs, void *rhs);
 extern "C" void *SpaceLounge_update_camera_slot_a;
 extern "C" void *SpaceLounge_update_camera_slot_b;
 extern "C" void *SpaceLounge_update_camera_slot_c;
@@ -787,7 +786,7 @@ void SpaceLounge::updateScreenPositions() {
     void *current = (void *)(long)((PaintCanvas *)canvas)->CameraGetCurrent();
     void *local = ((PaintCanvas *)canvas)->CameraGetLocal((unsigned int)(long)canvas);
     MatrixGetRight(pos, local);
-    Vector_mul(halfRight, pos, 0.5f);
+    *(Vector*)(halfRight) = *(const Vector*)(pos) * (0.5f);
 
     unsigned count = U(P(self, 0x24), 0x0);
     for (unsigned i = 0; i < count; ++i) {
@@ -796,24 +795,24 @@ void SpaceLounge::updateScreenPositions() {
         ((void (*)(void *, void *))vt[0x28 / 4])(enemy, target);
 
         ((void (*)(void *, void *))project)(screen, target);
-        Vector_sub(pos, target, halfRight);
+        *(Vector*)(pos) = *(const Vector*)(target) - *(const Vector*)(halfRight);
         ((void (*)(void *, void *))project)(screen, pos);
         ((PaintCanvas *)canvas)->GetScreenPosition((AbyssEngine::AEMath::Vector *)canvas, (AbyssEngine::AEMath::Vector *)screen);
 
-        Vector_add(pos, target, halfRight);
+        *(Vector*)(pos) = *(const Vector*)(target) + *(const Vector*)(halfRight);
         ((void (*)(void *, void *))project)(screen, pos);
         ((PaintCanvas *)canvas)->GetScreenPosition((AbyssEngine::AEMath::Vector *)canvas, (AbyssEngine::AEMath::Vector *)screen);
 
         current = (void *)(long)((PaintCanvas *)canvas)->CameraGetCurrent();
         local = ((PaintCanvas *)canvas)->CameraGetLocal((unsigned int)(long)canvas);
-        Matrix_assign(camera, local);
+        *(Matrix*)(camera) = *(const Matrix*)(local);
         MatrixGetPosition(pos, camera);
         MatrixGetUp(up, camera);
         MatrixGetLookAt(look, pos, target, up);
-        Matrix_assign(camera, look);
+        *(Matrix*)(camera) = *(const Matrix*)(look);
 
         void *mapped = ((void **)P(enemies, 0x4))[U(P(self, 0x24), 0x0) + i];
-        AEGeometry_setMatrix(P(mapped, 0x8));
+        ((AEGeometry *)P(mapped, 0x8))->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(camera));
 
         ((void (*)(void *, void *))project)(B(self, 0x4c), target);
         MatrixGetDir(pos, look);
@@ -825,10 +824,10 @@ void SpaceLounge::updateScreenPositions() {
 
         if (SolarSystem_getRace((void *)(*g_status)->getSystem()) == 0) {
             MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
-            Matrix_mul_assign(camera, look);
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix*)(camera),*(const Matrix*)(look));
         }
 
-        AEGeometry_setMatrix(P(enemy, 0x8));
+        ((AEGeometry *)P(enemy, 0x8))->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(camera));
         ((void (*)(void *, void *))vt[0x44 / 4])(enemy, target);
     }
 }
@@ -1091,7 +1090,7 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     I(self, 0x9c) = 0;
     I(self, 0xa0) = 0;
     String_ctor_default(B(self, 0xa4));
-    Matrix_ctor(B(self, 0xc8));
+    ((Matrix*)(B(self, 0xc8)))->initIdentity();
 
     UC(self, 0xb0) = 0;
     P(self, 0x4) = 0;
@@ -1392,7 +1391,7 @@ void SpaceLounge::update(int dt) {
     if (UC(self, 0xbd) == 0) {
         ((AbyssEngine::EaseInOutMatrix *)(maxMatrix))->GetMaxValue();
         ((AbyssEngine::EaseInOutMatrix *)(valueMatrix))->GetValue();
-        if (Matrix_equal(maxMatrix, valueMatrix) == 0) {
+        if ((memcmp((maxMatrix),(valueMatrix),sizeof(float)*16)==0) == 0) {
             UC(self, 0xbc) = 0;
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_c;
             camera = *(void **)cameraSlot;
@@ -1458,7 +1457,7 @@ idle_camera:
         float value = EaseInOut_GetValue(P(self, 0xc0));
         MatrixSetRotation(valueMatrix, value / 90.0f, 0.0f, value);
         MatrixSetTranslation(maxMatrix, 0.0f, 0.0f, wave * maxRot);
-        Matrix_mul_assign(valueMatrix, B(self, 0xc8));
+        AbyssEngine::AEMath::MatrixMultiply(*(Matrix*)(valueMatrix),*(const Matrix*)(B(self, 0xc8)));
         cameraSlot = *(void **)&SpaceLounge_update_camera_slot_b;
         camera = *(void **)cameraSlot;
         current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
