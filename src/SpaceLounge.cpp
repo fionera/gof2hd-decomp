@@ -637,13 +637,13 @@ int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
     if (checkSpecialText) {
         void *texts = *(void **)&SpaceLounge_getSoundId_specialText;
         void *text = ((GameText *)(*(void **)texts))->getText(0x334);
-        if (String_Compare(missionText, text) != 0) {
+        if (((String *)missionText)->Compare_str((String *)text) != 0) {
             text = ((GameText *)(*(void **)texts))->getText(0x338);
-            if (String_Compare(missionText, text) != 0) {
+            if (((String *)missionText)->Compare_str((String *)text) != 0) {
                 text = ((GameText *)(*(void **)texts))->getText(0x33b);
-                if (String_Compare(missionText, text) != 0) {
+                if (((String *)missionText)->Compare_str((String *)text) != 0) {
                     text = ((GameText *)(*(void **)texts))->getText(0x341);
-                    dummy = String_Compare(missionText, text);
+                    dummy = ((String *)missionText)->Compare_str((String *)text);
                     if (dummy != 0) {
                         goto special_done;
                     }

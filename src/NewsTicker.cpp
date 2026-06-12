@@ -26,7 +26,6 @@ extern "C" void PaintCanvas_EnableClip(void *canvas, int x, int y, int w, int h)
 extern "C" void PaintCanvas_DrawString(void *canvas, void *font, String *text, int x, int y, bool flag);
 int GameText_getLanguage();
 extern "C" void PaintCanvas_DisableClip(void *canvas);
-extern "C" void String_copy_ctor(void *self, void *other, bool copy);
 extern "C" void String_cstr_ctor(void *self, const char *text, bool copy);
 extern "C" void String_plus(void *out, void *left, void *right);
 extern "C" void String_plusAssign(void *self, void *other);
@@ -184,7 +183,7 @@ int NewsTicker::getHeight()
 String NewsTicker::replaceTokens(String text)
 {
     String out;
-    String_copy_ctor(&out, &text, false);
+    ((String *)(&out))->ctor_copy((String *)(&text), false);
     return out;
 }
 
@@ -278,8 +277,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     for (uint32_t i = 0; i < items->size(); ++i) {
         NewsItemView *item = (*items)[i];
         String line;
-        String_copy_ctor(&line, ((GameText *)(*g_NewsTicker_ctor_text))->getText(item->field_0x0 + 0x0cbe),
-                         false);
+        ((String *)(&line))->ctor_copy((String *)(((GameText *)(*g_NewsTicker_ctor_text))->getText(item->field_0x0 + 0x0cbe)), false);
         String replaced = replaceTokens(line);
         ((String *)(&line))->dtor();
 
@@ -303,7 +301,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
                                                   *g_NewsTicker_ctor_font, tickerText);
     if (this->textWidth < width) {
         String copy;
-        String_copy_ctor(&copy, tickerText, false);
+        ((String *)(&copy))->ctor_copy((String *)(tickerText), false);
         String_plusAssign(tickerText, &copy);
         ((String *)(&copy))->dtor();
         this->textWidth = PaintCanvas_GetTextWidth(*g_NewsTicker_ctor_canvas,

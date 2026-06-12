@@ -8,7 +8,6 @@ using AbyssEngine::String12;
 // Minimal view of a virtual object whose deleting-dtor lives at vt[0]+4.
 struct VObj { void (*vt[8])(void *); };
 
-extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void *Array_StringPtr_dtor(void *arr);
 extern "C" void Array_StringPtr_ctor(void *arr);
 extern "C" void ArrayAdd_StringPtr(void *str, void *arr);
@@ -18,7 +17,7 @@ extern "C" void Agent_finishWingman(void);
 RetStr Agent::getStationName() {
     Agent *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x78, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x78), false);
     return r;
 }
 
@@ -82,7 +81,7 @@ void Agent::setStationName(String12 src) {
 RetStr Agent::getMissionString() {
     Agent *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x6c, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x6c), false);
     return r;
 }
 
@@ -100,7 +99,7 @@ uint8_t Agent::isMale() {
 RetStr Agent::getName() {
     Agent *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x00, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x00), false);
     return r;
 }
 
@@ -156,7 +155,7 @@ bool Agent::isGenericAgent() {
 RetStr Agent::getSystemName() {
     Agent *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x18, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x18), false);
     return r;
 }
 
@@ -200,7 +199,7 @@ void Agent::setWingmanFriendNames(uint32_t *param) {
     Array_StringPtr_ctor(na);
     self->wingmanNames = na;
     void *ns = ::operator new(0xc);
-    String_copy_ctor(ns, self, false);
+    ((String *)(ns))->ctor_copy((String *)(self), false);
     ArrayAdd_StringPtr(ns, self->wingmanNames);
     self->wingmanCount = 0;
     if (param == 0)
@@ -239,7 +238,7 @@ RetStr Agent::getWingmanName(int idx) {
         src = self->wingman2;
     }
     RetStr r;
-    String_copy_ctor(&r, src, false);
+    ((String *)(&r))->ctor_copy((String *)(src), false);
     return r;
 }
 
@@ -281,7 +280,7 @@ __attribute__((minsize)) Agent::~Agent() noexcept(false)
 void Agent::setMissionString(void *src) {
     Agent *self = this;
     String12 tmp;
-    String_copy_ctor(&tmp, src, false);
+    ((String *)(&tmp))->ctor_copy((String *)(src), false);
     ((String *)((char *)self + 0x6c))->assign((String *)&tmp);
     ((String *)(&tmp))->dtor();
 }

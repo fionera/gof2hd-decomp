@@ -7,7 +7,6 @@ extern "C" void ArrayRelease_int(void *a) __attribute__((nothrow));
 extern "C" void *Array_int_dtor(void *a) __attribute__((nothrow));
 extern "C" void SolarSystem_baseStringDtor(void *strField) __attribute__((nothrow));
 extern "C" int Station_getIndex(Station *st);
-extern "C" void String_copy_ctor(void *out, const void *src, bool);
 extern "C" int SolarSystem_warpGateLookup(SolarSystem *self, int idx);
 extern "C" char *Galaxy_getVisited(Galaxy *g);
 
@@ -131,7 +130,7 @@ uint32_t SolarSystem::getStationEnumIndex(int idx) {
 RetStr SolarSystem::getName() {
     SolarSystem *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0xc, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0xc), false);
     return r;
 }
 
@@ -234,7 +233,7 @@ SolarSystem * SolarSystem::ctor(int p1, const String12 &p2, int p3, bool p4, int
     String_default_ctor((char *)self + 0xc);
     self->systemId = p1;
     char tmp[12];
-    String_copy_ctor(tmp, &p2, false);
+    ((String *)(tmp))->ctor_copy((String *)(&p2), false);
     ((String *)((char *)self + 0xc))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
     u8(self, 0x44) = p4;

@@ -7,7 +7,6 @@
 
 
 Array<int> *BluePrint_getIngredientList(BluePrint *self);
-extern "C" void String_copy_ctor(void *out, void *src, bool);
 Array<int> *BluePrint_getQuantityList(BluePrint *self);
 extern "C" void ArraySetLengthInt(uint32_t n, Array<int> *a);
 extern "C" int Station_getIndex(void *station);
@@ -53,7 +52,7 @@ bool BluePrint::isEmpty() {
 AbyssEngine::String12 BluePrint::getStationName() {
     BluePrint *self = this;
     AbyssEngine::String12 r;
-    String_copy_ctor(&r, &self->stationName, false);
+    ((String *)(&r))->ctor_copy((String *)(&self->stationName), false);
     return r;
 }
 

@@ -124,15 +124,8 @@ void AE_SpriteSystem_pushMatrix(
     unsigned int m5, unsigned int m6, unsigned int m7, unsigned int m8, unsigned int m9,
     unsigned int m10, unsigned int m11, unsigned int m12, unsigned int m13, unsigned int m14,
     int dst);
-void AE_String_fromCStr(String *self, const char *s, bool b);
 void *AE_Transform_dtor(void *self);
 Engine *AE_getInitGLThis();
-int String_Compare(const void *self, const void *o);
-void String_appendEq(String *self, const String *o);
-void String_copy(String *self, const String *src, bool b);
-void String_fromFloat(String *self, float v);
-void String_fromInt(String *self, int v);
-void String_fromLongLong(String *self, long long v);
 void _ZN11AbyssEngine10QuaternionC1Effff(Quaternion *self, float x, float y, float z,
                                                     float w);
 void *__aeabi_memclr(void *dst, size_t n);
@@ -157,9 +150,6 @@ int AE_GameText_getLanguage();
 int AE_GameText_isNonArabicString(const unsigned short *text, unsigned int len);
 int AE_Mesh_ReadEnhancedDataFromFile(void *self, unsigned int handle, unsigned int flags);
 void AE_PaintCanvas_SetWorldViewMatrix(void *canvas);
-void AE_String_Set(void *self, const char *s);
-void AE_String_assign(void *dst, void *src);
-void AE_String_ctor(void *self, const char *s, bool b);
 void AE_Transform_CollectAnimationData(void *self);
 void AE_Transform_SetAnimationRangeInTime(void *self, long long t);
 void AE_Transform_ctor(void *self);

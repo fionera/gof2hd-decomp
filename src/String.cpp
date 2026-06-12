@@ -506,7 +506,7 @@ void String::ConvertFromUTF8() {
         return;
 
     char *bytes = ((String *)(self))->GetAEChar();
-    uint16_t *wide = String_getWCharFromUtf8(bytes, (int)self->s.size());
+    uint16_t *wide = String::getWCharFromUtf8(bytes, (int)self->s.size());
     ((String *)(self))->Set_wchar(wide);
     ::operator delete[](bytes);
     ::operator delete[](wide);
@@ -685,7 +685,7 @@ void String::SubString(String *self, unsigned int start, unsigned int end) {
 // ---- getWCharFromUtf8_725d0.cpp ----
 // AbyssEngine::String::getWCharFromUtf8(char* utf8, int len)
 // Decode `len` UTF-8 bytes into a wide buffer, transliterating Cyrillic to Latin.
-uint16_t *String_getWCharFromUtf8(char *s, int len)
+uint16_t *String::getWCharFromUtf8(char *s, int len)
 {
     // First pass: count output code units (continuation bytes collapse multi-byte sequences).
     int outCount = 0;

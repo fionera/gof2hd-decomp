@@ -60,6 +60,7 @@ public:
 
     // raw field storage (offsets referenced through the field_i32/field_u8/field_ptr helpers)
     char field_storage[0x34];
+    String shaderName;                // shader name ("GlowShader")
 };
 
 } // namespace AbyssEngine

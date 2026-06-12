@@ -4,7 +4,6 @@
 extern "C" float DNSShader_g0;
 extern "C" float DNSShader_g1;
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 // ---- _DNSShader_8f750.cpp ----
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
@@ -153,41 +152,15 @@ void DNSShader::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- DNSShader_8f2d4.cpp ----
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-
-namespace AbyssEngine {
-
-struct ConstructorFrame {
-    char name[sizeof(String)];
-    volatile uint32_t stackGuard;
-};
-
-static inline String *shaderName(DNSShader *self)
-{
-    return (String *)((char *)self + 0x0c);
-}
-
-} // namespace AbyssEngine
-
 extern "C" AbyssEngine::DNSShader *
 _ZN11AbyssEngine9DNSShaderC2Ev(AbyssEngine::DNSShader *self)
 {
-    AbyssEngine::ConstructorFrame frame;
-
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
     *(void *volatile *)self = _ZTVN11AbyssEngine9DNSShaderE + 8;
     AbyssEngine::DNSShader::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
 
-    _ZN11AbyssEngine6StringC1EPKcb(
-        (AbyssEngine::String *)frame.name, "DNSShader", false);
-    _ZN11AbyssEngine6StringaSERKS0_(
-        AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
-    _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
-
-    
+    String name("DNSShader");
+    self->shaderName.assign(&name);
     return self;
 }

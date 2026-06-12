@@ -25,7 +25,6 @@ extern "C" void  AEString_SubString(void *out, void *s, unsigned int a, unsigned
 extern "C" void *memcpy(void *, const void *, unsigned long);
 extern "C" int   _ZN11AbyssEngine6AEFile4ReadEjPvj(int size, void *dst, unsigned int file);
 extern "C" void  _ZN11AbyssEngine6AEFile5CloseEj(unsigned int file);
-extern "C" unsigned short *_ZN11AbyssEngine6String15getWCharFromUtf8EPcj(char *utf8, unsigned int len);
 void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 
 // ---- release_8174e.cpp ----
@@ -437,7 +436,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         }
         utf8[byteLen] = '\0';
 
-        unsigned short *wide = _ZN11AbyssEngine6String15getWCharFromUtf8EPcj(utf8, byteLen);
+        unsigned short *wide = String::getWCharFromUtf8(utf8, (int)byteLen);
 
         String *s = (String *)operator new(0xc);
         String **table = (String **)self->textTable;

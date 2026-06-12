@@ -1,12 +1,6 @@
 #include "gof2/GreenShader.h"
 #include "gof2/ShaderBaseStruct.h"
 
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
-
 // ---- SetInActive_883c0.cpp ----
 namespace AbyssEngine {
 
@@ -104,11 +98,8 @@ GreenShader::GreenShader()
     GreenShader_typeInfoDest = GreenShader_typeInfoSource;
 
     {
-        char tempStorage[sizeof(String)];
-        String *temp = (String *)tempStorage;
-        _ZN11AbyssEngine6StringC1EPKcb(temp, GreenShader_name, false);
-        _ZN11AbyssEngine6StringaSERKS0_(&this->field_0xc, temp);
-        _ZN11AbyssEngine6StringD1Ev(temp);
+        String temp(GreenShader_name);
+        this->field_0xc.assign(&temp);
     }
 
     

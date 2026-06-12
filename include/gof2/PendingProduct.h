@@ -16,11 +16,6 @@ struct BluePrint;
 
 extern "C" {
 
-// AbyssEngine::String members (mangled).
-void _ZN11AbyssEngine6StringC1Ev(String *self);
-String *_ZN11AbyssEngine6StringaSERKS0_(String *self, const String *other);
-void _ZN11AbyssEngine6StringD1Ev(String *self);
-
 // BluePrint accessors used by the ctor.
 int BluePrint_getIndex(BluePrint *bp);
 void BluePrint_getStationName(String *out, BluePrint *bp);

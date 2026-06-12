@@ -6,7 +6,6 @@
 
 
 extern "C" void TB_assignString(void *dst, String *src);
-extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" int  PaintCanvas_GetTextWidth(void *canvas, void *text, void *extra = 0);
 extern "C" void  String_ctor_cstr(void *s, const char *text, bool copy);
 extern "C" void  PaintCanvas_Image2DCreate(void *canvas, unsigned short imgId, unsigned int *outHandle);
@@ -123,7 +122,7 @@ uint8_t TouchButton::isTouched() {
 RetStr TouchButton::getText() {
     TouchButton *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0xc, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0xc), false);
     return r;
 }
 

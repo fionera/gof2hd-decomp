@@ -9,7 +9,7 @@
 // (Tail-call to the String destructor; PendingProduct adds no other owned members.)
 void PendingProduct::dtor() {
     PendingProduct *self = this;
-    _ZN11AbyssEngine6StringD1Ev((String *)self);
+    self->stationName.~String();
 }
 
 // ---- PendingProduct_12d448.cpp ----
@@ -17,7 +17,7 @@ void PendingProduct::dtor() {
 PendingProduct * PendingProduct::ctor_fields(int blueprintIndex, const String *stationName, int stationIndex, int quantity) {
     PendingProduct *self = this;
     // Construct embedded String, then fill scalar fields.
-    _ZN11AbyssEngine6StringC1Ev((String *)self);
+    new (&self->stationName) String();
     self->blueprintIndex = blueprintIndex;
     self->stationName = *stationName;
     self->stationIndex = stationIndex;
@@ -31,7 +31,7 @@ PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
     PendingProduct *self = this;
 
     // Construct the embedded String (station name) at +0x00.
-    _ZN11AbyssEngine6StringC1Ev((String *)self);
+    new (&self->stationName) String();
 
     self->blueprintIndex = BluePrint_getIndex(bp);
 

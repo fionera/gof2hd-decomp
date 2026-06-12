@@ -1448,7 +1448,7 @@ LAB_3488:
                     // NOTE: original text-table key for this name lookup was dropped by the
                     // decompiler; using missionId (the only contextual id) to keep it compiling.
                     void *txt = ((GameText *)(*g_damage_text[0]))->getText(missionId);
-                    int cmp = String_Compare((void *)(ki3 + 0x18), txt);
+                    int cmp = ((String *)(ki3 + 0x18))->Compare_str((String *)txt);
                     if (missionId == 0xb3 && cmp == 0) {
                         Mission_getStatusValue();
                         Mission_setStatusValue(mission);

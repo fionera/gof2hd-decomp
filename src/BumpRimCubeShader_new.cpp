@@ -221,34 +221,19 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
 // ---- BumpRimCubeShader_new_88820.cpp ----
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
     AbyssEngine::ShaderBaseStruct *self);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 namespace AbyssEngine {
 
 int BumpRimCubeShader_new::ShaderIndex;
 
-struct BumpRimConstructorFrame {
-    char name[sizeof(String)];
-    volatile uint32_t stackGuard;
-};
-
 __attribute__((minsize)) BumpRimCubeShader_new::BumpRimCubeShader_new()
 {
-    BumpRimConstructorFrame frame;
-
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
     this->field_0x0 = _ZTVN11AbyssEngine21BumpRimCubeShader_newE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 
-    _ZN11AbyssEngine6StringC1EPKcb((String *)frame.name, "BumpRimCubeShader_new", false);
-    _ZN11AbyssEngine6StringaSERKS0_(&this->name, (String *)frame.name);
-    _ZN11AbyssEngine6StringD1Ev((String *)frame.name);
-
-    
+    String name("BumpRimCubeShader_new");
+    this->name.assign(&name);
 }
 
 } // namespace AbyssEngine

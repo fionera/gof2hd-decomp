@@ -11,7 +11,6 @@ extern "C" unsigned int zip_fread(void *zf, void *buf, unsigned int n);
 extern "C" unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
 extern "C" void *FileInterfaceAndroid_completeDtor(FileInterfaceAndroid *self);
 extern "C" void JNI_CallVoidMethod(void *env, void *m, void *arg, ...);
-extern "C" void String_copy_ctor(void *out, const void *src, bool);
 extern "C" void String_append(void *self, const void *rhs);
 extern "C" void String_concat(void *out, const void *a, const void *b);
 extern "C" zip_file *zip_fopen(void *za, const char *name, int flags);
@@ -247,7 +246,7 @@ bool FileInterfaceAndroid::Write(unsigned int n, const void *buf) {
 void FileInterfaceAndroid_FileDelete(String12 s)
 {
     char tmp[12];
-    String_copy_ctor(tmp, &s, false);
+    ((String *)(tmp))->ctor_copy((String *)(&s), false);
     ((String *)(tmp))->dtor();
 }
 

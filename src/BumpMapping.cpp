@@ -2,9 +2,6 @@
 
 
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(void *self);
-extern "C" void _ZN11AbyssEngine6StringC2EPKcb(AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(AbyssEngine::String *self, const AbyssEngine::String *other);
-extern "C" void _ZN11AbyssEngine6StringD2Ev(AbyssEngine::String *self);
 
 // ---- _BumpMapping_914d0.cpp ----
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(

@@ -4,7 +4,6 @@
 
 using AbyssEngine::String12;
 
-extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" Wanted *String_default_ctor(Wanted *self);
 extern "C" Wanted *Wanted_base_dtor(Wanted *self);
 
@@ -42,7 +41,7 @@ void Wanted::setActive(bool v) {
 RetStr Wanted::getName() {
     Wanted *self = this;
     RetStr r;
-    String_copy_ctor(&r, &self->name, false);
+    ((String *)(&r))->ctor_copy((String *)(&self->name), false);
     return r;
 }
 

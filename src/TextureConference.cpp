@@ -4,7 +4,6 @@
 extern "C" long long _ZN11AbyssEngine18ApplicationManager20GetElapsedTimeMillisEv(void *self);
 extern "C" long long __divdi3_like(int a_lo, int a_hi, int b_lo, int b_hi);
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 // ---- SetInActive_8cc34.cpp ----
 namespace AbyssEngine {
@@ -78,43 +77,17 @@ void TextureConference::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- TextureConference_8cb08.cpp ----
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-
-namespace AbyssEngine {
-
-struct ConstructorFrame {
-    char name[sizeof(String)];
-    volatile uint32_t stackGuard;
-};
-
-static inline String *shaderName(TextureConference *self)
-{
-    return (String *)((char *)self + 0x0c);
-}
-
-} // namespace AbyssEngine
-
 extern "C" AbyssEngine::TextureConference *
 _ZN11AbyssEngine17TextureConferenceC2Ev(AbyssEngine::TextureConference *self)
 {
-    AbyssEngine::ConstructorFrame frame;
-
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
     *(void *volatile *)self = _ZTVN11AbyssEngine17TextureConferenceE + 8;
     AbyssEngine::TextureConference::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
 
-    _ZN11AbyssEngine6StringC1EPKcb(
-        (AbyssEngine::String *)frame.name, "TextureConference", false);
-    _ZN11AbyssEngine6StringaSERKS0_(
-        AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
-    _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
+    String name("TextureConference");
+    self->shaderName.assign(&name);
 
     self->animTime = 0;
-
-    
     return self;
 }

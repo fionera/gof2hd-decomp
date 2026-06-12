@@ -90,11 +90,6 @@ void BumpShaderV3::SetInActive()
 extern "C" {
 // AbyssEngine::ShaderBaseStruct::ShaderBaseStruct(this) -- 0x00070930.
 void *_ZN11AbyssEngine16ShaderBaseStructC2Ev(void *self);
-// AbyssEngine::String::String(char const*, bool) / operator= / ~String.
-void _ZN11AbyssEngine6StringC2EPKcb(AbyssEngine::String *self, const char *text, bool copy);
-AbyssEngine::String &_ZN11AbyssEngine6StringaSERKS0_(AbyssEngine::String *self,
-                                                     const AbyssEngine::String *other);
-void _ZN11AbyssEngine6StringD2Ev(AbyssEngine::String *self);
 
 // BumpShaderV3 vtable; the ctor stores (&vtable + 8) into this[0].
 extern char _ZTVN11AbyssEngine12BumpShaderV3E[];
@@ -116,10 +111,8 @@ BumpShaderV3::BumpShaderV3()
         _ZN11AbyssEngine12BumpShaderV311ShaderIndexE;
 
     // name = String("BumpShaderV3"); this->name(0xc) = name; ~name.
-    String name;
-    _ZN11AbyssEngine6StringC2EPKcb(&name, "BumpShaderV3", false);
-    _ZN11AbyssEngine6StringaSERKS0_((String *)((char *)this + 0xc), &name);
-    _ZN11AbyssEngine6StringD2Ev(&name);
+    String name("BumpShaderV3");
+    ((String *)((char *)this + 0xc))->assign(&name);
 }
 
 } // namespace AbyssEngine

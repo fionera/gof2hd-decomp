@@ -14,7 +14,6 @@
 extern "C" {
 void *ScrollTouchWindow_dtor(void *self);
 void PaintCanvas_Image2DCreate(void *self, unsigned short image, unsigned int *out);
-int String_Compare(String *a, String const &b);
 void Array_StringPtr_ctor(void *self);
 void Globals_getLineArray(void *self, void *font, String const &text, int width, void *array);
 void ScrollTouchWindow_ctor(void *self, int x, int y, int width, int height, bool centered);
@@ -293,8 +292,8 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
 
     void *gameText = *g_ChoiceWindow_gameText_1469b0;
     bool defaultButtons = false;
-    if (String_Compare((String *)((GameText *)(gameText))->getText(0x86), left) == 0)
-        defaultButtons = String_Compare((String *)((GameText *)(gameText))->getText(0x87), right) == 0;
+    if (((String *)((GameText *)(gameText))->getText(0x86))->Compare_str((String *)&(left)) == 0)
+        defaultButtons = ((String *)((GameText *)(gameText))->getText(0x87))->Compare_str((String *)&(right)) == 0;
 
     if (width == -1)
         width = F<int>(*g_ChoiceWindow_defaultConfig_1469b0, 0x264);

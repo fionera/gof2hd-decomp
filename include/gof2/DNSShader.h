@@ -58,6 +58,7 @@ public:
 
     // raw field storage (offsets referenced through the field_* helpers above)
     char field_storage[0x64];
+    String shaderName;                // shader name ("DNSShader")
 };
 
 } // namespace AbyssEngine

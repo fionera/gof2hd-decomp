@@ -40,7 +40,6 @@ extern "C" int Wanted_getTravelsTo(void *wanted);
 extern "C" void *Mission_ctor(void *mission, int a, int b, int dest);
 extern "C" void *StarMap_ctor(void *map, bool jumpMapMode, void *mission, bool flag, int idx);
 extern "C" int Station_getSystem(void *station);
-extern "C" void String_copy_ctor(String *dst, String *src, bool copy);
 extern "C" void WantedWindow_draw_tail(void *starMap);
 extern "C" void PaintCanvas_EnableClip(void *canvas, int x, int y, int w, int h);
 extern "C" void PaintCanvas_DisableClip(void *canvas);
@@ -50,7 +49,6 @@ extern "C" int PaintCanvas_GetTextWidth(void *canvas, void *font, String *text);
 extern "C" void PaintCanvas_DrawString(void *canvas, void *font, String *text, int x, int y, bool flag);
 extern "C" void PaintCanvas_DrawImage2D(void *canvas, int image, int x, int y);
 extern "C" void String_cstr_ctor(String *s, const char *text, bool copy);
-extern "C" void String_copy_ctor(String *s, String *src, bool copy);
 extern "C" void String_plus(String *out, String *a, String *b);
 extern "C" void Array_Wanted_ctor(void *arr);
 extern "C" void ArrayAdd_Wanted(void *wanted, void *arr);
@@ -384,7 +382,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             if (((Layout *)(layout))->OnTouchEnd(x, y) != 0) {
                 ((Layout *)(layout))->resetWindowDimensions();
             } else if (((Layout *)(layout))->helpPressed() != 0) {
-                String_copy_ctor(&help, (String *)((GameText *)(*g_WantedWindow_end_text))->getText(0x27b), false);
+                ((String *)(&help))->ctor_copy((String *)((GameText *)(*g_WantedWindow_end_text))->getText(0x27b), false);
                 ((Layout *)(layout))->initHelpWindow(&help);
                 ((String *)(&help))->dtor();
             }
@@ -495,7 +493,7 @@ void WantedWindow::draw() {
 
     PaintCanvas_DisableClip(canvas);
     PaintCanvas_SetColor(canvas, 0xffffffffu);
-    String_copy_ctor(&s70, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93), false);
+    ((String *)(&s70))->ctor_copy((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93), false);
     ((Layout *)layout)->drawHeader1(&s70);
     ((String *)(&s70))->dtor();
 
@@ -503,7 +501,7 @@ void WantedWindow::draw() {
         ((TouchButton *)(ArrayItem(self->buttons, i)))->draw();
     }
 
-    String_copy_ctor(&s7c, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
+    ((String *)(&s7c))->ctor_copy((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
     ((Layout *)(layout))->drawBox(1, F<int>(layout, 0x28) + self->windowX, self->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20), (self->windowWidth >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)), F<int>(layout, 0x5c), &s7c, 0);
     ((String *)(&s7c))->dtor();
 
@@ -516,7 +514,7 @@ void WantedWindow::draw() {
                        F<int>(layout, 0x24), &s88, 0);
     ((String *)(&s88))->dtor();
 
-    String_copy_ctor(&s94, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
+    ((String *)(&s94))->ctor_copy((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
     ((Layout *)(layout))->drawBox(1, self->windowX + (self->windowWidth >> 1) +
                                   F<int>(layout, 0x2c), self->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20), ((self->windowWidth >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28), F<int>(layout, 0x5c), &s94, 0);
     ((String *)(&s94))->dtor();
@@ -1052,7 +1050,7 @@ void WantedWindow::selectWanted(int idx) {
                  (String *)((char *)self + 0x78));
 
     String_cstr_ctor(&s88, g_WantedWindow_s_empty, false);
-    String_copy_ctor(&s94, &s34, false);
+    ((String *)(&s94))->ctor_copy((String *)(&s34), false);
     ((ScrollTouchWindow *)(self->scrollWindow))->setText(s88, s94);
     ((String *)(&s94))->dtor();
     ((String *)(&s88))->dtor();

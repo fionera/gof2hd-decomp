@@ -7,7 +7,6 @@
 
 struct Systems;
 
-extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void String_cstr_ctor(void *out, const char *s, bool);
 extern "C" void *String_assign_ref(void *self, const String12 &rhs);
 extern "C" void Mission_dtor_finish(Mission *self);
@@ -29,7 +28,7 @@ uint8_t Mission::isInstantActionMission() {
 RetStr Mission::getTargetStationName() {
     Mission *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x40, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x40), false);
     return r;
 }
 
@@ -55,7 +54,7 @@ RetStr Mission::getDescription() {
 RetStr Mission::getTargetSystemName() {
     Mission *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x4c, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x4c), false);
     return r;
 }
 
@@ -78,7 +77,7 @@ RetStr Mission::getName() {
         String_cstr_ctor(&r, "", false);
     } else {
         void *txt = ((GameText *)(*g_gameText))->getText(self->id + 0x162);
-        String_copy_ctor(&r, txt, false);
+        ((String *)(&r))->ctor_copy((String *)(txt), false);
     }
     return r;
 }
@@ -108,7 +107,7 @@ void * Mission::setTargetName(const String12 &rhs) {
 RetStr Mission::getClientName() {
     Mission *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x10, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x10), false);
     return r;
 }
 
@@ -129,7 +128,7 @@ bool Mission::isEmpty() {
 RetStr Mission::getTargetName() {
     Mission *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x1c, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x1c), false);
     return r;
 }
 
@@ -165,7 +164,7 @@ Mission * Mission::clone() {
     unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
     Mission *m = (Mission *)::operator new(0x78);
     int id = self->id;
-    String_copy_ctor(name, (char *)self + 0x10, false);
+    ((String *)(name))->ctor_copy((String *)((char *)self + 0x10), false);
     ((Mission *)(m))->ctor7(id, name, self->field_0x28, self->field_0x2c, self->field_0x30, self->targetStation, self->reward);
     ((String *)(name))->dtor();
     m->instantAction = self->instantAction;

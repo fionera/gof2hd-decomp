@@ -107,7 +107,6 @@ extern "C" void String_ctor_empty(String *s);
 extern "C" int Station_getTextureIndex(Station *s);
 extern "C" void ArrayReleaseClasses_Station(void *a);
 extern "C" void Array_Station_dtor_tail(void *a);
-extern "C" void String_copyctor(String *dst, String *src, bool b);
 
 // Local engine helper types used across several member functions in this translation unit.
 // Defined once here; the per-function blocks below merely forward-declare them.
@@ -2414,7 +2413,7 @@ void Status::setWingmen(Array<String *> *list) {
         ArraySetLength_String(list->size(), na);
         for (unsigned i = 0; i < list->size(); i = i + 1) {
             String *s = (String *)operator new(0xc);
-            String_copyctor(s, (*list)[i], 0);
+            ((String *)(s))->ctor_copy((*list)[i], false);
             (*((Array<String *> *)(void *)wingmen))[i] = s;
         }
     }

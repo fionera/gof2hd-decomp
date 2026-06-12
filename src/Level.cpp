@@ -3088,11 +3088,6 @@ void Level::createPlayer() {
 }
 
 // ---- wingmanDied_c4484.cpp ----
-namespace AbyssEngine {
-    int String_Compare(String *a, String *b);
-}
-
-
 __attribute__((visibility("hidden"))) extern Status **g_wingmanDied;
 
 void Level::wingmanDied(int name) {
@@ -3106,7 +3101,7 @@ void Level::wingmanDied(int name) {
     }
     for (unsigned int i = 0; i < *list; i = i + 1) {
         String *w = ((String **)list[1])[i];
-        if (AbyssEngine::String_Compare(w, (String *)name) == 0) {
+        if (w->Compare_str((String *)name) == 0) {
             return Level_wingmanDied_one(((String **)list[1])[i], list);
         }
     }

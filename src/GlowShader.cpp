@@ -2,7 +2,6 @@
 
 
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 // ---- SetInActive_92050.cpp ----
 namespace AbyssEngine {
@@ -64,42 +63,16 @@ void GlowShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 } // namespace AbyssEngine
 
 // ---- GlowShader_91f38.cpp ----
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-
-namespace AbyssEngine {
-
-struct ConstructorFrame {
-    char name[sizeof(String)];
-    volatile uint32_t stackGuard;
-};
-
-static inline String *shaderName(GlowShader *self)
-{
-    return (String *)((char *)self + 0x0c);
-}
-
-} // namespace AbyssEngine
-
 extern "C" AbyssEngine::GlowShader *
 _ZN11AbyssEngine10GlowShaderC2Ev(AbyssEngine::GlowShader *self)
 {
-    AbyssEngine::ConstructorFrame frame;
-
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
     *(void *volatile *)self = _ZTVN11AbyssEngine10GlowShaderE + 8;
     AbyssEngine::GlowShader::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
 
-    _ZN11AbyssEngine6StringC1EPKcb(
-        (AbyssEngine::String *)frame.name, "GlowShader", false);
-    _ZN11AbyssEngine6StringaSERKS0_(
-        AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
-    _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
-
-    
+    String name("GlowShader");
+    self->shaderName.assign(&name);
     return self;
 }
 

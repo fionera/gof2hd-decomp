@@ -123,13 +123,8 @@ namespace AbyssEngine {
 
 String operator+(const String &a, const String &b)
 {
-    String tmp;
-    String_copy(&tmp, &a, false);
-    String_appendEq(&tmp, &b);
-
-    String result;
-    String_copy(&result, &tmp, false);
-    ((String *)(&tmp))->dtor();
+    String result(a);
+    result += b;
     return result;
 }
 
@@ -241,7 +236,7 @@ void getAppVersion()
     if (*shaderFlag != 0 && *g_Engine_fboEnabledFlag != 0) {
         void *fbo = operator new(0x38);
         String name;
-        AE_String_fromCStr(&name, "", false);
+        name.ctor_char("", false);
         AE_FBOContainer_ctor(fbo);
         pp(c, 0x418) = fbo;
         ((::String *)&name)->dtor();
@@ -1225,17 +1220,10 @@ namespace AbyssEngine {
 
 String operator+(const String &a, const long long &b)
 {
-    String acc;
-    String_copy(&acc, &a, false);
-
+    String result(a);
     String num;
-    String_fromLongLong(&num, b);
-    String_appendEq(&acc, &num);
-    ((String *)(&num))->dtor();
-
-    String result;
-    String_copy(&result, &acc, false);
-    ((String *)(&acc))->dtor();
+    num.ctor_longlong(b);
+    result += num;
     return result;
 }
 
@@ -1271,13 +1259,9 @@ namespace AbyssEngine {
 
 String operator+(const float &a, const String &b)
 {
-    String acc;
-    String_fromFloat(&acc, a);
-    String_appendEq(&acc, &b);
-
     String result;
-    String_copy(&result, &acc, false);
-    ((String *)(&acc))->dtor();
+    result.ctor_float(a);
+    result += b;
     return result;
 }
 
@@ -1736,17 +1720,10 @@ namespace AbyssEngine {
 
 String operator+(const String &a, const int &b)
 {
-    String acc;
-    String_copy(&acc, &a, false);
-
+    String result(a);
     String num;
-    String_fromInt(&num, b);
-    String_appendEq(&acc, &num);
-    ((String *)(&num))->dtor();
-
-    String result;
-    String_copy(&result, &acc, false);
-    ((String *)(&acc))->dtor();
+    num.ctor_int(b);
+    result += num;
     return result;
 }
 
@@ -1772,9 +1749,7 @@ namespace AbyssEngine {
 
 String operator+(const String &a)
 {
-    String result;
-    String_copy(&result, &a, false);
-    return result;
+    return String(a);
 }
 
 } // namespace AbyssEngine
@@ -1966,13 +1941,9 @@ namespace AbyssEngine {
 
 String operator+(const int &a, const String &b)
 {
-    String acc;
-    String_fromInt(&acc, a);
-    String_appendEq(&acc, &b);
-
     String result;
-    String_copy(&result, &acc, false);
-    ((String *)(&acc))->dtor();
+    result.ctor_int(a);
+    result += b;
     return result;
 }
 
@@ -2626,10 +2597,8 @@ int TextureCreateFromFileIntern(Engine *engine, char *path, void (*cb)(Image *, 
         int err = (int)glGetError();
         u32(en, 0x10) = (unsigned int)err;
         if (err != 0) {
-            char tmp[16];
-            AE_String_ctor(tmp, path, false);
-            AE_String_assign(en + 0x14, tmp);
-            ((::String *)tmp)->dtor();
+            String tmp(path);
+            ((::String *)(en + 0x14))->assign(&tmp);
             glDeleteTextures(1, outIds);
             ImageRelease(&imgPtr);
             return -4;
@@ -2665,13 +2634,9 @@ namespace AbyssEngine {
 
 String operator+(const long long &a, const String &b)
 {
-    String acc;
-    String_fromLongLong(&acc, a);
-    String_appendEq(&acc, &b);
-
     String result;
-    String_copy(&result, &acc, false);
-    ((String *)(&acc))->dtor();
+    result.ctor_longlong(a);
+    result += b;
     return result;
 }
 
@@ -2737,10 +2702,8 @@ namespace AbyssEngine {
 
 bool operator==(const String &a, const String &b)
 {
-    String tmp;
-    String_copy(&tmp, &a, false);
-    int cmp = String_Compare(&tmp, &b);
-    ((String *)(&tmp))->dtor();
+    String tmp(a);
+    int cmp = tmp.Compare_str(const_cast<String *>(&b));
     return cmp != 0;
 }
 
@@ -2829,17 +2792,10 @@ namespace AbyssEngine {
 
 String operator+(const String &a, const float &b)
 {
-    String acc;
-    String_copy(&acc, &a, false);
-
+    String result(a);
     String num;
-    String_fromFloat(&num, b);
-    String_appendEq(&acc, &num);
-    ((String *)(&num))->dtor();
-
-    String result;
-    String_copy(&result, &acc, false);
-    ((String *)(&acc))->dtor();
+    num.ctor_float(b);
+    result += num;
     return result;
 }
 

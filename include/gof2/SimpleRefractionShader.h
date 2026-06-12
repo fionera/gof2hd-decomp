@@ -54,6 +54,7 @@ public:
 
     // raw field storage (offsets referenced through the field_i32/field_u8 helpers)
     char field_storage[0x58];
+    String shaderName;                // shader name ("SimpleRefractionShader")
 };
 
 } // namespace AbyssEngine

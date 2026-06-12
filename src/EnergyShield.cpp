@@ -6,7 +6,6 @@ extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *e
 extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *engine);
 extern "C" void _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(AbyssEngine::Engine *engine);
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 // ---- _EnergyShield_8a5d0.cpp ----
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
@@ -136,41 +135,15 @@ void EnergyShield::Init(Engine *engine)
 } // namespace AbyssEngine
 
 // ---- EnergyShield_8a200.cpp ----
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-
-namespace AbyssEngine {
-
-struct ConstructorFrame {
-    char name[sizeof(String)];
-    volatile uint32_t stackGuard;
-};
-
-static inline String *shaderName(EnergyShield *self)
-{
-    return &self->shaderName;
-}
-
-} // namespace AbyssEngine
-
 extern "C" AbyssEngine::EnergyShield *
 _ZN11AbyssEngine12EnergyShieldC2Ev(AbyssEngine::EnergyShield *self)
 {
-    AbyssEngine::ConstructorFrame frame;
-
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
     *(void *volatile *)self = _ZTVN11AbyssEngine12EnergyShieldE + 8;
     AbyssEngine::EnergyShield::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
 
-    _ZN11AbyssEngine6StringC1EPKcb(
-        (AbyssEngine::String *)frame.name, "EnergyShield", false);
-    _ZN11AbyssEngine6StringaSERKS0_(
-        AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
-    _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
-
-    
+    String name("EnergyShield");
+    self->shaderName.assign(&name);
     return self;
 }

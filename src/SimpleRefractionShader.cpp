@@ -6,7 +6,6 @@ extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *e
 extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *engine);
 extern "C" void _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(AbyssEngine::Engine *engine);
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 // ---- UpdateMeshData_8c8e0.cpp ----
 namespace AbyssEngine {
@@ -150,41 +149,15 @@ void SimpleRefractionShader::Init(Engine *engine)
 } // namespace AbyssEngine
 
 // ---- SimpleRefractionShader_8c6c0.cpp ----
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-
-namespace AbyssEngine {
-
-struct ConstructorFrame {
-    char name[sizeof(String)];
-    volatile uint32_t stackGuard;
-};
-
-static inline String *shaderName(SimpleRefractionShader *self)
-{
-    return (String *)((char *)self + 0x0c);
-}
-
-} // namespace AbyssEngine
-
 extern "C" AbyssEngine::SimpleRefractionShader *
 _ZN11AbyssEngine22SimpleRefractionShaderC2Ev(AbyssEngine::SimpleRefractionShader *self)
 {
-    AbyssEngine::ConstructorFrame frame;
-
     _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
     *(void *volatile *)self = _ZTVN11AbyssEngine22SimpleRefractionShaderE + 8;
     AbyssEngine::SimpleRefractionShader::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
 
-    _ZN11AbyssEngine6StringC1EPKcb(
-        (AbyssEngine::String *)frame.name, "SimpleRefractionShader", false);
-    _ZN11AbyssEngine6StringaSERKS0_(
-        AbyssEngine::shaderName(self), (AbyssEngine::String *)frame.name);
-    _ZN11AbyssEngine6StringD1Ev((AbyssEngine::String *)frame.name);
-
-    
+    String name("SimpleRefractionShader");
+    self->shaderName.assign(&name);
     return self;
 }

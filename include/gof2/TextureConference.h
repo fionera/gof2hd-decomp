@@ -56,6 +56,7 @@ public:
     // raw field storage up to the named animation accumulator at +0x38.
     char field_storage[0x38];
     long long animTime;               // +0x38
+    String shaderName;                // shader name ("TextureConference")
 };
 
 } // namespace AbyssEngine

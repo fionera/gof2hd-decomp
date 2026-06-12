@@ -8,6 +8,11 @@
 extern "C" void Array_Item_ctor(void *arr);
 extern "C" void ArraySetLength_Item(uint32_t len, void *arr);
 extern "C" void Galaxy_setSystemVisited(Galaxy *g, int systemId);
+// NOTE: Station's name is an AbyssEngine::String passed/returned BY VALUE through the engine's
+// 12-byte RetStr/String12 aggregate ABI (getName() returns RetStr, callers do `*(RetStr*)tmp = ...`).
+// That trivially-copied 12-byte aggregate does not match our 24-byte std::u16string-backed String,
+// so these by-value-String copy/format entry points are kept as documented engine externs rather
+// than rewritten to std::u16string methods (doing so would require rewriting the whole RetStr ABI).
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void Array_Ship_ctor(void *arr);
 extern "C" void ArraySetLength_Ship(uint32_t len, void *arr);

@@ -141,11 +141,6 @@ void TextureVtxColorShader::UpdateMeshData(AbyssEngine::Mesh *mesh, Engine *engi
 // ---- TextureVtxColorShader_8bd1c.cpp (constructor) ----
 extern "C" void *_ZN11AbyssEngine16ShaderBaseStructC2Ev(
     AbyssEngine::ShaderBaseStruct *self);
-extern "C" void _ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 extern "C" AbyssEngine::TextureVtxColorShader *
 _ZN11AbyssEngine21TextureVtxColorShaderC2Ev(AbyssEngine::TextureVtxColorShader *self)
@@ -155,10 +150,8 @@ _ZN11AbyssEngine21TextureVtxColorShaderC2Ev(AbyssEngine::TextureVtxColorShader *
     AbyssEngine::TextureVtxColorShader::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
 
-    AbyssEngine::String name;
-    _ZN11AbyssEngine6StringC1EPKcb(&name, "TextureVtxColorShader", false);
-    _ZN11AbyssEngine6StringaSERKS0_(&self->shaderName, &name);
-    _ZN11AbyssEngine6StringD1Ev(&name);
+    AbyssEngine::String name("TextureVtxColorShader");
+    self->shaderName.assign(&name);
     return self;
 }
 

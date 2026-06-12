@@ -26,7 +26,6 @@
 // in their out-of-batch headers).
 template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
-extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int id);
 extern "C" void  AEGeometry_setMatrix(void *geom, void *m);
@@ -124,7 +123,7 @@ void PlayerFixedObject::translate(const Vector &d) {
 RetStr PlayerFixedObject::getName() {
     PlayerFixedObject *self = this;
     RetStr r;
-    String_copy_ctor(&r, (char *)self + 0x1ac, false);
+    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x1ac), false);
     return r;
 }
 

@@ -38,6 +38,16 @@ namespace AbyssEngine {
 struct String {
     std::u16string s;
     String() {}
+    // Convenience C++ constructors/operators layered on the recovered engine methods, so call
+    // sites read like ordinary string code. The recovered ctor_*/assign/addAssign_* bodies in
+    // src/String.cpp do the actual work.
+    String(const char *cstr, bool reverse = false) { ctor_char(cstr, reverse); }
+    String(const String &other) { s = other.s; }
+    String &operator=(const String &other) { s = other.s; return *this; }
+    String &operator=(const char *cstr) { Set_char(cstr); return *this; }
+    String &operator+=(const String &other) { s.append(other.s); return *this; }
+    // copy(src, reverse): copy-assign from another String, optionally reversing (RTL languages).
+    void copy(const String *src, bool reverse) { ctor_copy(const_cast<String *>(src), reverse); }
     // (method declarations are folded in from the recovered String header during the merge)
     const char16_t* text() const { return s.c_str(); }
     uint32_t        size() const { return (uint32_t)s.size(); }
@@ -84,8 +94,14 @@ struct String {
     void dtor_del();
     uint16_t * index(int i);
     uint16_t * index_const(int i);
+    // Decode `len` UTF-8 bytes into a freshly allocated NUL-terminated wide buffer (caller frees
+    // with operator delete[]); transliterates Cyrillic to Latin approximations.
+    static uint16_t * getWCharFromUtf8(char *utf8, int len);
 };
 struct String12 { uint32_t a, b, c; };   // 12-byte by-value String aggregate (sret/stack ABI)
+
+// AbyssEngine::operator+(String const&, String const&) - concatenate (body in src/AbyssEngine.cpp).
+String operator+(const String &a, const String &b);
 } // namespace AbyssEngine
 
 using AbyssEngine::String;

@@ -123,11 +123,6 @@ void _ZN11AbyssEngine18BumpShaderParticleD0Ev(
 // ---- BumpShaderParticle_87d34.cpp ----
 extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
     AbyssEngine::ShaderBaseStruct *self);
-extern "C" void _ZN11AbyssEngine6StringC1EPKcb(
-    AbyssEngine::String *self, const char *text, bool copy);
-extern "C" AbyssEngine::String *_ZN11AbyssEngine6StringaSERKS0_(
-    AbyssEngine::String *self, const AbyssEngine::String *other);
-extern "C" void _ZN11AbyssEngine6StringD1Ev(AbyssEngine::String *self);
 
 namespace AbyssEngine {
 
@@ -140,10 +135,8 @@ __attribute__((minsize)) BumpShaderParticle::BumpShaderParticle()
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {
         // name = String("BumpShaderParticle", false); this->name(0xc) = name; ~name.
-        String tmp;
-        _ZN11AbyssEngine6StringC1EPKcb(&tmp, "BumpShaderParticle", false);
-        _ZN11AbyssEngine6StringaSERKS0_((String *)((char *)this + 0xc), &tmp);
-        _ZN11AbyssEngine6StringD1Ev(&tmp);
+        String tmp("BumpShaderParticle");
+        ((String *)((char *)this + 0xc))->assign(&tmp);
     }
     
 }
