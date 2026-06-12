@@ -14,6 +14,14 @@ HangarList::~HangarList() {
 }
 
 // ---- getCurrentLength_11e786.cpp ----
+uint32_t HangarList::getCurrentTab() {
+    return this->currentTab;
+}
+
+Array<Array<ListItem *> *> *HangarList::getItems() {
+    return this->tabs;
+}
+
 uint32_t HangarList::getCurrentLength() {
     Array<Array<ListItem *> *> *tabs = this->tabs;
     uint32_t current = this->currentTab;

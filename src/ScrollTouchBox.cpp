@@ -344,3 +344,10 @@ bool ScrollTouchBox::touchIsInside(int x, int y)
         inside = y < top + this->height;
     return inside;
 }
+
+// ---- setYPosition_145772.cpp ----
+// Move the box vertically without re-laying out its text (the line array and
+// content height are unaffected; only the top edge changes).
+void ScrollTouchBox::setYPosition(int y) {
+    this->y = y;
+}

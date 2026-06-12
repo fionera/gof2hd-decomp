@@ -232,17 +232,31 @@ void *Galaxy::getPlasmaProbabilities(void *station)
 }
 
 // ---- _Galaxy_175e54.cpp ----
-Galaxy *_ZN6GalaxyD2Ev(Galaxy *self)
+// Destructor: free the visited-flag array, release/destroy the SolarSystem* Array.
+Galaxy::~Galaxy()
 {
-    ::operator delete[](P(self, 0x0));
-    void *systems = P(self, 0x4);
-    P(self, 0x0) = 0;
+    ::operator delete[](P(this, 0x0));
+    void *systems = P(this, 0x4);
+    P(this, 0x0) = 0;
     Galaxy_ArrayReleaseClasses_SolarSystem(systems);
-    if (P(self, 0x4) != 0) {
-        ::operator delete(Galaxy_Array_SolarSystem_dtor(P(self, 0x4)));
+    if (P(this, 0x4) != 0) {
+        ::operator delete(Galaxy_Array_SolarSystem_dtor(P(this, 0x4)));
     }
-    P(self, 0x4) = 0;
-    return self;
+    P(this, 0x4) = 0;
+}
+
+// ---- getSystems_175e94.cpp ----
+// Returns the owned Array<SolarSystem*> (stored at +0x4).
+void *Galaxy::getSystems()
+{
+    return P(this, 0x4);
+}
+
+// ---- getVisited_175f22.cpp ----
+// Returns the per-station visited-flag array (0x87 bytes, stored at +0x0).
+void *Galaxy::getVisited()
+{
+    return P(this, 0x0);
 }
 
 // ---- getAsteroidProbabilities_176098.cpp ----

@@ -18,6 +18,7 @@
 
 
 struct Mission;
+struct Agent;
 
 // AbyssEngine::String passed by value is a 12-byte aggregate. In the engine it has
 // a non-trivial copy ctor/dtor, so by-value params are passed by invisible
@@ -34,27 +35,27 @@ using AbyssEngine::String12;
 class Mission {
 public:
     void* field_0x0;                    // +0x0  vtable ptr
-    int field_0x4;                      // +0x4
-    int field_0x8;                      // +0x8
-    int id;                      // +0xc  id
+    int field_0x4;                      // +0x4  status flags: failed (byte +0x4), won (byte +0x5)
+    int field_0x8;                      // +0x8  agent pointer slot
+    int id;                      // +0xc  id (also reported as "type")
     unsigned char name[12];       // +0x10 String name
     unsigned char targetName[12];       // +0x1c String targetName
-    int field_0x28;                     // +0x28
-    int field_0x2c;                     // +0x2c
-    int field_0x30;                     // +0x30
-    int field_0x34;                     // +0x34
-    int field_0x38;                     // +0x38
+    int field_0x28;                     // +0x28 clientImage
+    int field_0x2c;                     // +0x2c clientRace
+    int field_0x30;                     // +0x30 reward / costs (getCosts reads this slot)
+    int field_0x34;                     // +0x34 costs (setCosts writes this slot)
+    int field_0x38;                     // +0x38 bonus
     int targetStation;                     // +0x3c targetStation
     unsigned char targetStationName[12];       // +0x40 String targetStationName
     unsigned char targetSystemName[12];       // +0x4c String targetSystemName
-    int reward;                     // +0x58 reward
+    int reward;                     // +0x58 difficulty (getDifficulty reads this slot)
     uint8_t instantAction;                 // +0x5c instantAction
     unsigned char _pad_5d[3];
-    int distance;                     // +0x60 distance
-    int campaign;                     // +0x64 campaign
-    int productionGoodsA;                     // +0x68 production goods a
-    int productionGoodsB;                     // +0x6c production goods b
-    int field_0x70;                     // +0x70
+    int distance;                     // +0x60 distance  getDistance()
+    int campaign;                     // +0x64 campaign  setCampaignMission()
+    int productionGoodsA;                     // +0x68 production good index
+    int productionGoodsB;                     // +0x6c production good amount
+    int field_0x70;                     // +0x70 status value
     uint8_t visible;                 // +0x74 visible
 
     // ---- methods (converted from free functions) ----
@@ -82,5 +83,31 @@ public:
     void setTargetStation(int idx);
     void * setTargetSystemName(const String12 &rhs);
     void setVisible(bool v);
+
+    // ---- recovered accessors / mutators ----
+    int getType();
+    int getReward();
+    void setReward(int reward);
+    int getCosts();
+    void setCosts(int costs);
+    int getBonus();
+    void setBonus(int bonus);
+    int getDifficulty();
+    int getDistance();
+    int getStatusValue();
+    void setStatusValue(int value);
+    Agent *getAgent();
+    void setAgent(Agent *agent);
+    int getClientImage();
+    int getClientRace();
+    int getProductionGoodIndex();
+    int getProductionGoodAmount();
+    int getTargetStation();
+    bool hasFailed();
+    void setFailed(bool failed);
+    bool hasWon();
+    void setWon(bool won);
+    void setCampaignMission(bool flag);
+    bool isOutsideMission();
 };
 #endif

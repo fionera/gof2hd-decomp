@@ -1034,6 +1034,59 @@ __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self
     return;
 }
 
+// PlayerFighter::reset() -- re-initialise the fighter's transient state in place:
+// reset the KIPlayer base, snap the working/render position back to the spawn
+// position, clear timers, cloaking and crate flags, and re-arm cloaking.
+void PlayerFighter::reset()
+{
+    PlayerFighter *self = this;
+
+    ((KIPlayer *)(self))->reset();
+    self->field_0x4c = 1;
+
+    // Snap the working (+0x158) and render (+0x2c) positions back to the spawn point.
+    int spawn[3];
+    spawn[0] = self->posX;
+    spawn[1] = self->posY;
+    spawn[2] = self->posZ;
+    *(Vector *)((char *)self + 0x158) = *(Vector *)spawn;
+    *(Vector *)((char *)self + 0x2c)  = *(Vector *)spawn;
+
+    self->deltaTime = 0;
+    self->deltaTimeHi = 0;
+    self->field_0x38 = 0;
+    self->field_0x12e = 0;
+    self->field_0x148 = 0;
+    self->field_0x12c = 0;
+    self->field_0x1b8 = 0;
+    self->field_0x1c0 = 0;
+    self->field_0x1c4 = 0;
+    self->field_0x1c8 = 0;
+    if (self->state != 5) {
+        self->state = 0;
+    }
+
+    VFn vfn = (VFn)gReset_vfn;
+    int z[3] = {0, 0, 0};
+    vfn((char *)self + 0x90, z);
+    vfn((char *)self + 0x164, z);
+    vfn((char *)self + 0x170, z);
+
+    self->isMissionCrate = 0;
+    self->missionCrateLost = 0;
+    self->crateLost = 0;
+    self->field_0x4c = 1;
+    self->field_0x140 = 0;
+    self->field_0x1fc = 0;
+    self->field_0x13c = 0;
+    self->cloakActive = 0;
+    self->cloakTimer = 0;
+    self->cloakDuration = 0;
+    self->cloakCooldown = 0;
+    self->cloakingPossible = 1;
+    self->aiDisabled = 0;
+}
+
 // ---- handleCloaking_dcdbc.cpp ----
 // Tail-call veneers (cloak start / stop / material-fade-apply).
 extern "C" void PF_cloakStart(PlayerFighter *self);                       // -> 0x1ac1e8
@@ -1196,4 +1249,63 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
     }
 
     return;
+}
+
+// PlayerFighter::revive() -- bring a (re-)spawning fighter back to life: reset the
+// owning Player, restore enemy alignment, re-arm route/explosion/exhaust, refill
+// hitpoints and speed, make the ship geometry visible again, and rebuild its loot
+// list (cleared for wingman commands 9/10, regenerated otherwise).
+void PlayerFighter::revive()
+{
+    PlayerFighter *self = this;
+
+    int enemy = UC((void *)(intptr_t)(self->player), 0xe0);
+    Player_reset(self->player);
+    if (enemy != 0) {
+        ((Player *)(self->player))->turnEnemy();
+    }
+    {
+        String s;
+        AEString_ctor_default(&s);
+    }
+    self->field_0x78 = 0;
+    self->state = 1;
+    self->field_0x12e = 0;
+    self->field_0x38 = -1;
+    ((Route *)(self->routeClone))->reset();
+    self->hitpoints = ((Player *)(self->player))->getHitpoints();
+    self->field_0x1dc = 0;
+    self->field_0x1e0 = 0;
+    self->deathTimer = 0;
+    self->field_0xf0 = 0;
+    self->currentSpeed = self->speed;
+    ((Explosion *)(self->explosion))->reset();
+    self->pushTimer = 0;
+    self->field_0x24 = 0;
+    self->setExhaustVisible(true);
+
+    int geom = self->subGeometry;
+    self->field_0xf5 = 1;
+    if (geom == 0) {
+        geom = self->geometry;
+    }
+    ((AEGeometry *)(geom))->setVisible(1);
+
+    if ((unsigned)(self->wingmanCommand - 9) < 2) {
+        void *a = self->lootList;
+        if (a != 0) {
+            ::operator delete(ArrayInt_dtor(a));
+        }
+        self->lootList = 0;
+    } else {
+        void *g = ::operator new(1);
+        Generator_ctor(g);
+        void *a = self->lootList;
+        if (a != 0) {
+            ::operator delete(ArrayInt_dtor(a));
+            self->lootList = 0;
+        }
+        self->lootList = ((Generator *)(g))->getLootList(-1, -1);
+        ::operator delete(Generator_dtor(g));
+    }
 }

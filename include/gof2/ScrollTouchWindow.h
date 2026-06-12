@@ -23,6 +23,8 @@ public:
     void OnTouchBegin(int x, int y);
     void OnTouchMove(int x, int y);
     void OnTouchEnd(int x, int y);
+    // Touch-release handler exposed under the engine's "touch_end" name; forwards to OnTouchEnd.
+    void touch_end(int x, int y);
     void setTextCentered(bool centered);
     void setYPosition(int y);
     void update(int dt);
@@ -30,5 +32,7 @@ public:
     void drawTextBG();
     void setText(AbyssEngine::String title, AbyssEngine::String text);
     void setText(AbyssEngine::String title, AbyssEngine::String text, int color);
+    // Title+coloured-text setter exposed under the engine's "setText4" name; forwards to setText.
+    void setText4(AbyssEngine::String title, AbyssEngine::String text, int color);
 };
 #endif

@@ -47,6 +47,7 @@ public:
     int   viewDirZ;           // +0x13c view direction (Vec3.z)
 
     PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z);
+    void dtor();
     Vector getProjectionVector(const Vector &value);
     void render();
     Vector projectCollisionOnSurface(const Vector &value);

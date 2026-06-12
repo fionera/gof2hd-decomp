@@ -51,6 +51,8 @@ public:
     void setMiscButton(String const &text);
     void removeButtons();
     uint8_t hasChoice();
+    void left();
+    void right();
 
     void update(int dt);
     void draw();

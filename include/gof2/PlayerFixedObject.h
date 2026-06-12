@@ -81,6 +81,8 @@ public:
     uint8_t shipHidden;                // +0x1b8
 
     // ---- methods (converted from free functions) ----
+    PlayerFixedObject(int kind, int param2, void *player, void *geom, float p5, float p6, float p7, float sx, float sy, float sz);
+    ~PlayerFixedObject();
     int collide(float x, float y, float z);
     void ctor(int kind, int param2, void *player, void *geom, float p5, float p6, float p7, float sx, float sy, float sz);
     int getDockingType();

@@ -26,6 +26,11 @@
 
 
 
+// ---- ctor/dtor ----
+// Generator is a stateless helper: nothing to initialise or release.
+Generator::Generator() {}
+Generator::~Generator() {}
+
 // ---- computerTradeGoods_953a0.cpp ----
 static AbyssEngine::AERandom **volatile g_Generator_tradeRandom;
 

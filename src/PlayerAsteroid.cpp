@@ -510,3 +510,16 @@ void PlayerAsteroid::initPush(const Vector &target, int duration)
     Vector randomScaled = *(const Vector*)(&randomDirection) * (0.01f);
     *(Vector*)((char *)this + 0x118) = *(const Vector*)(&randomScaled);
 }
+
+// ---- ~PlayerAsteroid_f2980.cpp ----
+// Destroys the owned Explosion (+0x12c) and chains into the KIPlayer base dtor.
+PlayerAsteroid::~PlayerAsteroid()
+{
+    this->vtable = (char *)PlayerAsteroid_vtable + 8;
+    if (this->explosion != 0) {
+        void *p = Explosion_dtor(this->explosion);
+        operator_delete(p);
+    }
+    this->explosion = 0;
+    KIPlayer_dtor(this);
+}

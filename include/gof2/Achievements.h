@@ -49,6 +49,8 @@ public:
     uint8_t gotAllGoldMedals();
     uint8_t gotAllMedals();
     uint8_t gotAllSupernovaMedals();
+    int *getMedals();
+    int *getNewMedals();
     uint8_t hasMedal(int index, int value);
     void incCatches();
     void incKills();

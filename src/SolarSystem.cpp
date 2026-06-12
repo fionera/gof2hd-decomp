@@ -61,6 +61,19 @@ bool SolarSystem::currentOrbitHasWarpGate() {
     return orbit == Station_getIndex(st);
 }
 
+// ---- simple field accessors (1656ec..1658aa) ----
+// Plain getters; each is a single load from the corresponding member.
+int SolarSystem::getIndex()          { return systemId; }            // +0x18
+int SolarSystem::getRace()           { return (int)faction; }        // +0x20
+int SolarSystem::getSecurityLevel()  { return securityLevel; }       // +0x1c
+int SolarSystem::getTextureIndex()   { return textureIndex; }        // +0x34
+int SolarSystem::getX()              { return mapX; }                // +0x24
+int SolarSystem::getY()              { return mapY; }                // +0x28
+int SolarSystem::getZ()              { return mapZ; }                // +0x2c
+int SolarSystem::getWarpGateIndex()  { return jumpgateStationId; }   // +0x30
+uint32_t *SolarSystem::getStations() { return stationIds; }          // +0x38
+uint32_t *SolarSystem::getRoutes()   { return linkedSystemIds; }     // +0x40
+
 // ---- isVisible_1558d6.cpp ----
 // SolarSystem::isVisible() — ldrb.w r0,[r0,#0x44]; bx lr
 uint8_t SolarSystem::isVisible() {

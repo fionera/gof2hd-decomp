@@ -28,6 +28,11 @@ public:
     Array<int>          *field_0x14;    // +0x14 docking times
 
     // ---- methods (converted from free functions) ----
+    Route * ctor(int *coords, int count);
+    Route * ctorWithTargets(int *coords, Array<KIPlayer *> *targets, int *times, int count);
+    Route * dtor();
+    int getCurrent();
+    void setLoop(bool loop);
     Route * clone();
     KIPlayer * getDockingTarget();
     KIPlayer * getDockingTarget_i(int index);

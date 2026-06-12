@@ -757,3 +757,10 @@ void DialogueWindow::draw() {
         *g_dw_drawReadyFlag = 1;
     }
 }
+
+// ---- setLevel_1780c0.cpp ----
+// Attach the campaign Level whose briefing/success text this window is showing.
+// hasLevel() reports whether a level was bound this way.
+void DialogueWindow::setLevel(Level *level) {
+    this->level = level;
+}

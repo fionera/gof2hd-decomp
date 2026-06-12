@@ -55,5 +55,27 @@ public:
     uint8_t isTerminated();
     void setActive(bool v);
     void setTerminated(bool v);
+
+    int  getIndex();
+    int  getBoard();
+    int  getRace();
+    int  isMale();
+    int  getShip();
+    int  getWeapon();
+    int  getHitpoints();
+    int  getLoot();
+    int  getLootAmount();
+    int  getReward();
+    int  getRequiredBounties();
+    int  getRequiredMission();
+    int  getNumWingmen();
+    int  getCurrentLocation();
+    int  getTravelsTo();
+    int  getLastSeen();
+    int *getImageParts();
+    void setImageParts(int *parts);
+    void setCurrentLocation(int v);
+    void setTravelsTo(int v);
+    void setLastSeen(int v);
 };
 #endif

@@ -12,6 +12,7 @@ struct KIPlayer;
 struct Route;
 struct Gun;
 struct SpacePoint;
+struct Level;
 
 
 
@@ -193,5 +194,8 @@ public:
     void setWingman(bool b, int cmd);
     void setWingmanCommand(int cmd, KIPlayer *target);
     void translate(const Vector &v);
+    Route *getRoute();
+    Array<SpacePoint *> *getSpacePoints();
+    void setLevel(Level *lvl);
 };
 #endif

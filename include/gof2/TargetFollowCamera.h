@@ -79,7 +79,7 @@ public:
     uint8_t hideShip;                // +0x100
     float shakeAccum;                  // +0x104
     float shakeReference;                  // +0x108
-    uint8_t useTargetsUpVector;                // +0x10c
+    uint8_t useTargetsUpVec;                // +0x10c
     float shakeAmount;                  // +0x110
     int shakeFrequency;                    // +0x114
     int rumbleStrength;                    // +0x120
@@ -90,5 +90,20 @@ public:
     float shipHandling;                  // +0x134
     uint8_t fixed;                // +0x138
     Mat60 localMatrix;                  // +0x13c
+
+    // ---- recovered member methods ----
+    TargetFollowCamera(unsigned id, void *target, Vector camOffset, Vector targetOffset);
+    ~TargetFollowCamera();
+    Vector *getPosition();
+    void setTarget(void *target);
+    void setCamOffset(Vector *offset);
+    void setTargetOffset(Vector *offset);
+    void setLookAtCam(bool enabled);
+    void setActive(bool enabled);
+    void useTargetsUpVector(bool enabled);
+    void setRumblePercentage(float pct, int duration);
+    void translateNoUpdate(float dx, float dy, float dz);
+    void resetShipHandling();
+    void update(int dt);
 };
 #endif

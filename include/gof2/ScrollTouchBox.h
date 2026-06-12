@@ -38,6 +38,7 @@ public:
     void setText(AbyssEngine::String text, int font);
     void setTextCentered(bool centered);
     void setPosition(int x, int y);
+    void setYPosition(int y);
     void update(int dt);
     void draw();
     void OnTouchBegin(int x, int y);

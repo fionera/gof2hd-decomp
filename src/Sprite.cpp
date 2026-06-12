@@ -180,6 +180,18 @@ Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight
     setFrame(0);
 }
 
+// ---- getFrameWidth_d0e60.cpp ----
+int Sprite::getFrameWidth()
+{
+    return this->frameWidth;
+}
+
+// ---- getFrameHeight_d0e64.cpp ----
+int Sprite::getFrameHeight()
+{
+    return this->frameHeight;
+}
+
 // ---- setFrame_d0d88.cpp ----
 void Sprite::setFrame(int frame)
 {

@@ -1070,6 +1070,132 @@ int getCargoValue(Ship *self) {
     return total;
 }
 
+// ===========================================================================
+// Recovered real Ship members.
+// ===========================================================================
+
+// ---- Ship::Ship(...) ctor @ 0x18457c ----
+// Builds a fresh ship from its base stats: id, hull/load/value, the four
+// slot-counts (weapon/secondary/shield/device), and the handling rating
+// (stored normalised to 0..1 by dividing the design value by 100).
+Ship::Ship(int index, int baseHP, int baseLoad, int value,
+           int slot0, int slot1, int slot2, int slot3, float handling) {
+    this->index       = index;
+    this->baseHP      = baseHP;
+    this->value       = value;
+    this->baseLoad    = baseLoad;
+    this->currentLoad = 0;
+    this->price       = value;
+
+    int *slotCounts = operatorNewArrayInt(4);
+    this->slots = slotCounts;
+    slotCounts[0] = slot0;
+    slotCounts[1] = slot1;
+    slotCounts[2] = slot2;
+    slotCounts[3] = slot3;
+
+    this->handling = handling / 100.0f;
+
+    Array<Item*> *eq = operatorNewArr(0xc);
+    Array_Item_ctor(eq);
+    this->equipment = eq;
+    ArraySetLength<Item*>(slot0 + slot1 + slot2 + slot3, *eq);
+
+    this->race                = 0;
+    this->cargo               = 0;
+    this->mods                = 0;
+    this->numAddedDeviceSlots = 0;
+
+    refreshValue(this);
+}
+
+// ---- Ship::~Ship() dtor @ 0x1849a4 ----
+// Releases the owned equipment / cargo item lists, the slot-count array and
+// the installed-mods list.
+Ship::~Ship() {
+    if (this->equipment != 0) {
+        if (this->equipment->size() != 0) {
+            ArrayReleaseClassesItem(this->equipment);
+        }
+        if (this->equipment != 0) {
+            operatorDelete(ArrayItemDtor(this->equipment));
+        }
+    }
+    this->equipment = 0;
+
+    if (this->cargo != 0) {
+        if (this->cargo->size() != 0) {
+            ArrayReleaseClassesItem(this->cargo);
+        }
+        if (this->cargo != 0) {
+            operatorDelete(ArrayItemDtor(this->cargo));
+        }
+    }
+    this->cargo = 0;
+
+    if (this->slots != 0) {
+        operatorDelete(this->slots);
+    }
+    this->slots = 0;
+
+    if (this->mods != 0) {
+        operatorDelete(ArrayIntDtor(this->mods));
+    }
+    this->mods = 0;
+}
+
+// ---- Ship::recomputeAfterSlots() @ refreshValue core ----
+// Invoked after any equipment-slot mutation to re-derive the ship's stats
+// (shield/armor/firepower/boost/etc.) and re-price it.
+void Ship::recomputeAfterSlots() {
+    refreshValue(this);
+}
+
+// ---- Ship::addCargo(Array<Item*>*) core @ 0x184fe8 ----
+// Merges the supplied items into the current cargo hold (stacking matching
+// goods) and commits the combined list as the new cargo.
+void Ship::addCargo(Array<Item*> *items) {
+    setCargo(this, Item::combineItems(this->cargo, items));
+}
+
+// ---- Ship::removeCargo(int, int) @ 0x184e64 ----
+// Removes up to `amount` units of the good with the given index from the
+// cargo hold. Returns 1 if the good was fully depleted (and the hold
+// compacted), 0 otherwise.
+int Ship::removeCargo(int index, int amount) {
+    Array<Item*> *c = this->cargo;
+    if (c == 0) {
+        return 0;
+    }
+    for (unsigned int i = 0; i < c->size(); i = i + 1) {
+        if (c->data()[i]->getIndex() == index) {
+            this->cargo->data()[i]->changeAmount(-amount);
+            c = this->cargo;
+            if (this->cargo->data()[i]->getAmount() < 1) {
+                setCargo(this, Item::extractItems(c, true));
+                return 1;
+            }
+            break;
+        }
+        c = this->cargo;
+    }
+    setCargo(this, c);
+    return 0;
+}
+
+// ---- Ship::setEquipment(Item*) @ 0x18509c ----
+// Places `item` into the first empty equipment slot, then recomputes stats.
+void Ship::setEquipment(Item *item) {
+    Array<Item*> *eq = this->equipment;
+    for (unsigned int i = 0; i < eq->size(); i = i + 1) {
+        if (eq->data()[i] == 0) {
+            eq->data()[i] = item;
+            break;
+        }
+    }
+    recomputeAfterSlots();
+}
+
 // ---- setMods_1756ce.cpp ----
 void setMods(Ship *self, Array<int> *mods) {
     self->mods = mods;

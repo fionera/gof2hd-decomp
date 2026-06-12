@@ -41,6 +41,13 @@ extern "C" __attribute__((visibility("hidden"))) Status **volatile
 class SystemPathFinder {
 public:
     void *_opaque;  // no offset accesses observed
+
+    // The path finder keeps no persistent state of its own — every search()
+    // builds and tears down its open/closed node sets locally — so both the
+    // constructor and destructor are trivial.
+    SystemPathFinder();
+    ~SystemPathFinder();
+
     int contains(Array<Node *> *nodes, Node *node);
     Array<Node *> *search(Node *start, Node *goal);
     int getJumpDistance(Array<SolarSystem *> *systems, int from, int to);

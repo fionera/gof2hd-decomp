@@ -960,3 +960,11 @@ void FModSound::enableCategory(int p1, bool enable)
     } while (u8(this, i - 1) == 0);
     u8(this, OFF_ENABLED) = any;
 }
+
+// ---- tryToStopMusicForBGMusic_a2da8 ----
+// Stub in the shipped build: it never stops the current track and reports that
+// nothing was stopped, so callers fall back to their own background music.
+int FModSound::tryToStopMusicForBGMusic()
+{
+    return 0;
+}

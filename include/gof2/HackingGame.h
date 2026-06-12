@@ -23,6 +23,8 @@ static inline uint8_t &B(HackingGame *self, uint32_t off)
 class HackingGame {
 public:
     HackingGame(int type, int canvas, int rewardItem, int rewardAmount, int dockingIndex);
+    // State is a plain block of ints/bytes; destruction is trivial.
+    ~HackingGame();
 
     int  getDockingIndex();
     int  getRewardAmount();

@@ -84,3 +84,12 @@ AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self)
     _ZN12AENormalFile7ReleaseEv(self);
     return self;
 }
+
+// ---- ~AENormalFile (base destructor) -----------------------------------------
+// Re-installs the class vtable then discards/frees the held FileInterface via
+// Release(). Matches the recovered base-destructor body at 0x8010c.
+AENormalFile::~AENormalFile()
+{
+    P(this, 0) = (char *)g_AENormalFile_vtable + 8;
+    Release();
+}

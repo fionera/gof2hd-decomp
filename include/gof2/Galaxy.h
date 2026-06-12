@@ -20,6 +20,11 @@ static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
 class Galaxy {
 public:
     Galaxy();
+    ~Galaxy();
+
+    // Accessors for the two owned members.
+    void *getSystems();   // Array<SolarSystem*>* held at +0x4
+    void *getVisited();   // uint8_t[0x87] visited-flag array held at +0x0
 
     void reset();
     int distancePercent(int x1, int y1, int x2, int y2);

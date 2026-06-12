@@ -29,6 +29,16 @@ struct Item;
 
 class Ship {
 public:
+    // Recovered real members (constructor / destructor + slot/cargo mutators).
+    Ship(int index, int baseHP, int baseLoad, int value,
+         int slot0, int slot1, int slot2, int slot3, float handling);
+    ~Ship();
+
+    void          recomputeAfterSlots();
+    void          addCargo(Array<Item*>* items);
+    int           removeCargo(int index, int amount);
+    void          setEquipment(Item* item);
+
     Array<Item*>* getEquipment();
     Array<Item*>* getEquipment(int type);
     int          index;            // 0x00  ship id / type

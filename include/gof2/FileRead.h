@@ -131,6 +131,12 @@ inline void ConvertFromUTF8(String &) {}
 // All methods are instance methods on the (stateless) loader object.
 class FileRead {
 public:
+    // FileRead is a stateless loader: it owns no members, so construction and
+    // destruction are trivial. They exist as real special members so the call
+    // sites that build a transient reader on the stack/heap behave correctly.
+    FileRead();
+    ~FileRead();
+
     int32_t loadStation(int32_t id);
     int32_t loadStationsBinary();
     Array<Array<Vector *> *> *loadWeaponPositions(int32_t id);

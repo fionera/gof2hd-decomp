@@ -7,6 +7,10 @@ extern "C" unsigned __aeabi_uidiv(unsigned value, unsigned divisor);
 extern "C" int __aeabi_idiv(int value, int divisor);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 
+// ---- ~HackingGame ----
+// The game state is a POD block of ints/bytes; nothing to free.
+HackingGame::~HackingGame() {}
+
 // ---- getDockingIndex_14f10a.cpp ----
 int HackingGame::getDockingIndex()
 {

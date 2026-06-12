@@ -223,6 +223,14 @@ void StarMap::render()
     }
 }
 
+// ---- renderBG_d8056.cpp ----
+// Background-render hook. The star map paints its whole scene (3D systems plus the
+// 2D overlay) from render()/draw(); the dedicated "render background" entry point that
+// the station shell dispatches per-frame is intentionally a no-op for this screen.
+void StarMap::renderBG()
+{
+}
+
 // ---- isInPlanetMode_c8040.cpp ----
 bool StarMap::isInPlanetMode()
 {

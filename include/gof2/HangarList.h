@@ -93,6 +93,8 @@ public:
     ~HangarList();
 
     void release();
+    uint32_t getCurrentTab();
+    Array<Array<ListItem *> *> *getItems();
     uint32_t getCurrentLength();
     Array<ListItem *> *getCurrentTabItems();
     ListItem *getCurrentItem();

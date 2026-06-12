@@ -266,3 +266,33 @@ TractorBeam *_ZN11TractorBeamD2Ev(TractorBeam *self)
     self->beamGeometry = 0;
     return self;
 }
+
+// TractorBeam::TractorBeam(AEGeometry*, int) -- real constructor.
+//   Zeroes the working state then constructs the beam mesh geometry from the base
+//   mesh id 0x3798 offset by the (truncated) integer argument.
+TractorBeam::TractorBeam(AEGeometry * /*unused*/, int kind) {
+    this->dirX = 0.0f;
+    this->dirY = 0.0f;
+    this->dirZ = 0.0f;
+    this->grabbedCrate = 0;
+    this->active = 0;
+
+    AEGeometry *geo = (AEGeometry *)operator new(0xc0);
+    uint16_t meshId = (uint16_t)((short)kind + 0x3798);
+    PaintCanvas *canvas = *(PaintCanvas **)(*(void **)gCanvasRoot);
+    new ((void *)geo) AEGeometry((uint16_t)meshId, (PaintCanvas *)canvas, false);
+
+    this->beamGeometry = geo;
+    this->storedHitpoints = 0;
+}
+
+// TractorBeam::~TractorBeam() -- real destructor.
+//   Destroys and frees the beam geometry, then clears the slot.
+TractorBeam::~TractorBeam() {
+    AEGeometry *geo = this->beamGeometry;
+    if (geo != 0) {
+        ((AEGeometry *)geo)->~AEGeometry();
+        ::operator delete(geo);
+    }
+    this->beamGeometry = 0;
+}

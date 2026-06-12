@@ -884,3 +884,21 @@ void KIPlayer::createCrate(int type) {
     *(Matrix *)((char *)self->player + 0x4) = ((AEGeometry *)(crate))->getMatrix();
     ((Player *)(self->player))->setKIPlayer(self);
 }
+
+// ---- getRoute (a5b4c) ----
+// Accessor for the AI route this player follows.
+Route *KIPlayer::getRoute() {
+    return this->route;
+}
+
+// ---- getSpacePoints (a5b44) ----
+// Accessor for the patrol/space-point list (field +0xcc).
+Array<SpacePoint *> *KIPlayer::getSpacePoints() {
+    return (Array<SpacePoint *> *)this->spacePoints;
+}
+
+// ---- setLevel (base, called by PlayerFighter/PlayerTurret) ----
+// Binds this AI object to the active Level it lives in.
+void KIPlayer::setLevel(Level *lvl) {
+    this->level = lvl;
+}

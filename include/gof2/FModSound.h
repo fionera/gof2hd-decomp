@@ -95,5 +95,9 @@ public:
     uint8_t IsCategoryEnabled(int p1);
     void pauseAllPlayingSoundFXEvents();
     void enableCategory(int p1, bool enable);
+
+    // Hook used when entering a context that wants its own background music; the
+    // shipped build is a no-op that always reports "nothing stopped".
+    int tryToStopMusicForBGMusic();
 };
 #endif

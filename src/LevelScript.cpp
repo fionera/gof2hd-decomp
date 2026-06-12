@@ -445,3 +445,14 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
         TargetFollowCamera_setLookAtCam(camera, true);
     }
 }
+
+// LevelScript::getEvent() / setEvent() -- accessors for the current scripted-event
+// id (m_nState, +0x1c). The cinematic/start-sequence state machine reads this to
+// decide which step of the level intro is playing.
+int LevelScript::getEvent() {
+    return I(this, 0x1c);
+}
+
+void LevelScript::setEvent(int event) {
+    I(this, 0x1c) = event;
+}

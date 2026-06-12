@@ -1,6 +1,11 @@
 #include "gof2/FileRead.h"
 
 
+// ---- FileRead_11f944 / ~FileRead_11f946 ----
+// FileRead carries no state of its own (every loadXxx() opens, reads and closes
+// its file locally), so both the constructor and destructor have empty bodies.
+FileRead::FileRead() {}
+FileRead::~FileRead() {}
 
 
 // ---- loadStation_11f948.cpp ----

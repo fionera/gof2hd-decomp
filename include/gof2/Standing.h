@@ -39,6 +39,7 @@ public:
     bool isFriend(int race);
     unsigned isNeutral(int race);
     void rehabilitate(int race);
+    void setPlayerSignatureRace(int race);
     void setStanding(int race, int value);
 };
 #endif

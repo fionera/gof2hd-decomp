@@ -62,6 +62,7 @@ public:
     FI   *held;       // +0x4  held FileInterface, see fi_held()
 
     AENormalFile(FileInterface *file);
+    ~AENormalFile();
     uint32_t Read(uint32_t bytes, void *buffer);
     uint32_t Write(uint32_t bytes, const void *buffer);
     uint32_t Skip(uint32_t bytes);

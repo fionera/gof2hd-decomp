@@ -40,5 +40,7 @@ public:
     void prevFrame();
     void draw(float scaleX, float scaleY);
     void drawRegion(int srcX, int srcY, int w, int h);
+    int getFrameWidth();
+    int getFrameHeight();
 };
 #endif

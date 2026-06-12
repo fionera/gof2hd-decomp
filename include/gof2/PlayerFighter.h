@@ -166,6 +166,8 @@ public:
 
     // ---- methods (converted from free functions) ----
     void awake();
+    void reset();
+    void revive();
     void cloak(int dur, bool b);
     int collide(float x, float y, float z);
     void ctor(int p1, int wingmanCmd, void *player, void *geom, float a, float b, float c, int flag);

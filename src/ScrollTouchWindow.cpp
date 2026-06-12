@@ -24,6 +24,18 @@ void ScrollTouchWindow::OnTouchEnd(int x, int y)
     this->touchActive = 0;
 }
 
+// ---- touch_end (engine-name forwarder for OnTouchEnd) ----
+void ScrollTouchWindow::touch_end(int x, int y)
+{
+    this->OnTouchEnd(x, y);
+}
+
+// ---- setText4 (engine-name forwarder for the coloured setText) ----
+void ScrollTouchWindow::setText4(AbyssEngine::String title, AbyssEngine::String text, int color)
+{
+    this->setText(title, text, color);
+}
+
 // ---- OnTouchMove_174558.cpp ----
 void ScrollTouchWindow::OnTouchMove(int x, int y)
 {

@@ -105,6 +105,16 @@ bool BluePrint::isCompleted() {
     return true;
 }
 
+// ---- simple field accessors (187184..18735a) ----
+// BluePrint::getIndex() -> the produced item's database index (+0x20).
+int BluePrint::getIndex()        { return itemIndex; }
+// BluePrint::getStationIndex() -> station where the blueprint is being built (+0x10).
+int BluePrint::getStationIndex() { return stationIndex; }
+// BluePrint::getQuantity() -> remaining batch count (+0x28).
+int BluePrint::getQuantity()     { return remainingBatch; }
+// BluePrint::isUnlocked() -> the unlock flag at +0x8 (set to 1 by unlock()).
+bool BluePrint::isUnlocked()     { return locked != 0; }
+
 // ---- unlock_17735e.cpp ----
 void BluePrint::unlock() {
     BluePrint *self = this;

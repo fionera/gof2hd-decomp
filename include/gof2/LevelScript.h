@@ -41,5 +41,7 @@ public:
     void skipCutscene();
     void process(int delta);
     void lookBehind();
+    int getEvent();
+    void setEvent(int event);
 };
 #endif

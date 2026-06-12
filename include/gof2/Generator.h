@@ -166,6 +166,10 @@ extern "C" Mission *Agent_getMission(Agent *self);
 // arguments passed in (no instance fields are accessed).
 class Generator {
 public:
+    // Generator holds no state: construction and destruction are trivial.
+    Generator();
+    ~Generator();
+
     void computerTradeGoods(Station *station);
     int generateStationIndex(Array<SolarSystem *> *systems, int station);
     Array<Agent *> *createAgents(Station *station);

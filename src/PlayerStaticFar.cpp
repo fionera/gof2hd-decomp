@@ -19,6 +19,14 @@ void _ZN15PlayerStaticFarD0Ev(PlayerStaticFar *self)
     return ::operator delete(PlayerStatic_base_dtor(self));
 }
 
+// ---- ~PlayerStaticFar (D2) — non-deleting destructor.
+// PlayerStaticFar owns no members of its own, so the destructor simply chains
+// into the PlayerStatic base destructor.
+void PlayerStaticFar::dtor()
+{
+    PlayerStatic_base_dtor(this);
+}
+
 // ---- getProjectionVector_11c510.cpp ----
 Vector PlayerStaticFar::getProjectionVector(const Vector &value)
 {

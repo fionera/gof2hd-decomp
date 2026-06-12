@@ -29,6 +29,11 @@ public:
     // ---- methods (converted from free functions) ----
     void addItem(Item *item);
     void addShip(Ship *ship);
+    int getIndex() const { return index; }
+    int getSystem() const { return systemIndex; }
+    int getTecLevel() const { return techLevel; }
+    int getTextureIndex() const { return textureIndex; }
+    void *getAgents() const { return agents; }
     Station * clone();
     Station * ctor(void *name, int p3, int p4, int p5, int p6);
     void ctor_default();

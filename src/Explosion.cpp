@@ -70,9 +70,10 @@ void Explosion::reset() {
     self->playing = 0;
 }
 
-// ---- _Explosion_a80d8.cpp ----
-Explosion *_ZN9ExplosionD2Ev(Explosion *self)
+// ---- ~Explosion (a80d8) ----
+Explosion::~Explosion()
 {
+    Explosion *self = this;
     AEGeometry *geometry = self->primaryMesh;
     if (geometry != 0) {
         { geometry->~AEGeometry(); ::operator delete(geometry); }
@@ -94,13 +95,29 @@ Explosion *_ZN9ExplosionD2Ev(Explosion *self)
         }
     }
     self->fireStreaks = 0;
-    return self;
 }
 
 // ---- isPlaying_a8916.cpp ----
 uint8_t Explosion::isPlaying() {
     Explosion *self = this;
     return self->playing;
+}
+
+// ---- setWeaponIndex (b82a4) ----
+// Selects which explosion sound cue is used (-1 == derive from explosion type).
+void Explosion::setWeaponIndex(int index) {
+    this->weaponIndex = index;
+}
+
+// ---- setMatrix (engine-name entry for start_matrix) ----
+// Places the explosion meshes from a full transform matrix.
+void Explosion::setMatrix(const Matrix *matrix) {
+    this->start_matrix(matrix);
+}
+
+// ---- update (engine-name entry for the camera-aware update path) ----
+void Explosion::update(int dt, TargetFollowCamera *camera) {
+    this->update_camera(dt, camera);
 }
 
 // ---- translate_a8aa0.cpp ----
@@ -304,8 +321,9 @@ static inline __attribute__((always_inline)) AEGeometry *make_geometry(uint16_t 
     return geometry;
 }
 
-Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
+Explosion::Explosion(int type)
 {
+    Explosion *self = this;
     ((Matrix *)(&self->rotation))->initIdentity();
     self->scale = 1.0f;
     self->type = type;
@@ -390,7 +408,6 @@ Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
     F<float>((void *)((PaintCanvas*)(long)*canvas)->TransformGetTransform( I(self->primaryMesh, 0xc)), 0xe0) = 10000.0f;
     self->weaponIndex = -1;
     ((Explosion *)(self))->reset();
-    return self;
 }
 
 // ---- playSound_a82a8.cpp ----

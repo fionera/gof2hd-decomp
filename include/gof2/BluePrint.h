@@ -48,6 +48,10 @@ public:
     int getAutoCompletionPrice();
     float getCompletionRate();
     int getCurrentAmount(int item);
+    int getIndex();
+    int getStationIndex();
+    int getQuantity();
+    bool isUnlocked();
     int getIngredientsValue();
     int getRemainingAmount(int item);
     AbyssEngine::String12 getStationName();

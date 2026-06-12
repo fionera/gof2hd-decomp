@@ -149,6 +149,40 @@ public:
     // below as a non-member equivalent. The field is load-bearing and kept intact.
     Vector * update(int dt, int doSound);
     void updateDamageRate();
+
+    // ---- additional recovered methods ----
+    void pitchAllPrimaryGuns(float pitch);
+    void damageHull(int damage);
+    void damageShield(int damage);
+    float damageGamma(float amount);
+    Array<Player *> *getEnemies();
+    void getPosition(Vector *out);
+    bool isAsteroid();
+    bool isGasCloud();
+    bool gunAvailable(unsigned int slot);
+    void heal(float amount);
+    void setShieldHP(int value);
+    void setGammaHP(int value);
+    void refillGunDelay(int slot);
+    void resetGunDelay(int slot);
+    void setAlwaysEnemy(bool value);
+    void setAlwaysFriend(bool value);
+    void reset();
+    void setEnemies(Array<Player *> *enemies);
+    void addEnemies(Array<Player *> *enemies);
+    void setEnemy(Player *enemy);
+    void addEnemy(Player *enemy);
+    void addGun(Array<Gun *> *gunsIn, int slot);
+    void addGun(Gun *gun, int slot);
+    void stopShooting(int slot, int channel);
+    void stopShootSound(int index, int channel);
+    // NOTE: 'playShootSound' is a data member (flag at 0x70); C++ forbids a member function
+    // sharing its name, so the recovered sound-playback method is exposed out-of-struct below
+    // as Player_playShootSound (same pattern as the turnedEnemy accessor).
+    void PlayEngineSound(Vector *vec);
+    void PauseEngineSound();
+    void ResumeEngineSound(bool force);
+    void StopEngineSound();
 };
 
 // Non-member equivalent of the 'turnedEnemy' accessor (see NOTE above): C++ forbids a

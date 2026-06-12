@@ -791,6 +791,48 @@ void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
     return PlayerFixedObject_baseDtor(self);
 }
 
+// PlayerFixedObject::~PlayerFixedObject() -- real destructor.
+//   Tears down the wrecked-mesh geometry (unless it aliases the main geometry),
+//   the two bounding-volume arrays, the explosion, and the name String, then runs
+//   the base-class teardown.
+PlayerFixedObject::~PlayerFixedObject() {
+    PlayerFixedObject *self = this;
+    void *wreck = self->wreckGeometry;
+    *(void **)self = &PlayerFixedObject_vtable + 8;
+    if (wreck != self->geometry) {
+        if (wreck != 0) { ((AEGeometry *)wreck)->~AEGeometry(); ::operator delete(wreck); }
+        self->wreckGeometry = 0;
+    }
+    void *bvB = self->boundingVolumes;
+    if (bvB != 0) {
+        ArrayReleaseClasses_BV(bvB);
+        void *b = self->boundingVolumes;
+        if (b != 0) ::operator delete(Array_BV_dtor(b));
+    }
+    self->boundingVolumes = 0;
+    void *bvA = self->wreckCollision;
+    if (bvA != 0) {
+        ArrayReleaseClasses_BV(bvA);
+        void *a = self->wreckCollision;
+        if (a != 0) ::operator delete(Array_BV_dtor(a));
+    }
+    self->wreckCollision = 0;
+    void *expl = self->explosion;
+    if (expl != 0) ::operator delete(Explosion_dtor(expl));
+    self->explosion = 0;
+    ((String *)((char *)self + 0x1ac))->dtor();
+    PlayerFixedObject_baseDtor(self);
+}
+
+// PlayerFixedObject::PlayerFixedObject(...) -- real constructor.
+//   Delegates to the recovered initialization body (ctor) which spawns the fixed
+//   object, seeds its position, name, faction and loot list.
+PlayerFixedObject::PlayerFixedObject(int kind, int param2, void *player, void *geom,
+                                     float p5, float p6, float p7,
+                                     float sx, float sy, float sz) {
+    this->ctor(kind, param2, player, geom, p5, p6, p7, sx, sy, sz);
+}
+
 // ---- render_154cdc.cpp ----
 // Tail-call thunks selected by object state.
 extern "C" void render_thunk_state5(void *geom);   // DAT_001abdd4 thunk, arg = this->0x8

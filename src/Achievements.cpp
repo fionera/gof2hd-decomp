@@ -11,6 +11,16 @@ uint8_t Achievements::hasMedal(int index, int value) {
     return self->medals[index] == value;
 }
 
+// ---- getMedals_166ed8 / getNewMedals_166edc ----
+// Simple accessors for the two 45-int medal arrays.
+int *Achievements::getMedals() {
+    return this->medals;
+}
+
+int *Achievements::getNewMedals() {
+    return this->newMedals;
+}
+
 // ---- _Achievements_1568f2.cpp ----
 
 // Achievements::~Achievements() — delete[] the two arrays (with null checks),

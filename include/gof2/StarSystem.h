@@ -48,6 +48,9 @@ public:
     ~StarSystem();
 
     // ---- methods (converted from free functions) ----
+    // The planet/target geometry arrays live at byte offsets +0x18 / +0x1c.
+    void *getPlanetTargets();   // +0x18  Array<AEGeometry*>* of intro camera targets
+    void *getPlanets();         // +0x1c  Array<AEGeometry*>* of planet meshes
     Vector getLightDirection();
     void initLight();
     void render();

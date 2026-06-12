@@ -53,6 +53,7 @@ public:
     int pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent);
     int previousPage();
     void set(Mission *mission, int kind, int campaign);
+    void setLevel(Level *level);
     void update(int dt);
 };
 #endif

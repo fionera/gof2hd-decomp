@@ -516,3 +516,16 @@ void ChoiceWindow::draw()
         if (this->miscButton != 0) ((TouchButton *)(this->miscButton))->draw();
     }
 }
+
+// ---- left_1575c4.cpp ----
+// Invoked when the left choice button is pressed. The decision result is read
+// back through hasChoice(); this callback itself performs no work in the
+// shipped build (the dialog merely records the press via the button state).
+void ChoiceWindow::left() {
+}
+
+// ---- right_1575c6.cpp ----
+// Invoked when the right choice button is pressed; an intentional no-op, the
+// caller queries hasChoice() / the button state for the actual decision.
+void ChoiceWindow::right() {
+}

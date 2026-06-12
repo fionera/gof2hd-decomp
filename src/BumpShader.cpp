@@ -5,6 +5,17 @@
 
 extern "C" void BumpShader_setSampler(int location, int unit);
 
+// ---- setSampler ----
+namespace AbyssEngine {
+
+// Sets the sampler uniform at `location` to texture unit `unit`.
+void BumpShader::setSampler(int location, int unit)
+{
+    glUniform1i(location, unit);
+}
+
+} // namespace AbyssEngine
+
 // ---- SetInActive_8ba5c.cpp ----
 namespace AbyssEngine {
 

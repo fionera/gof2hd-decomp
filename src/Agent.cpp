@@ -285,6 +285,78 @@ void Agent::setMissionString(void *src) {
     ((String *)(&tmp))->dtor();
 }
 
+// ---- simple field accessors (recovered) ----
+// Single-instruction veneers that load/store a member; offsets confirmed from
+// the constructor's initializer list above.
+
+int Agent::getStation() {
+    return this->field_0x44;
+}
+
+int Agent::getSystem() {
+    return this->field_0x48;
+}
+
+int Agent::getRace() {
+    return this->field_0x4c;
+}
+
+int Agent::getIndex() {
+    return (int)this->type;
+}
+
+int Agent::getCosts() {
+    return this->field_0x60;
+}
+
+void Agent::setCosts(int costs) {
+    this->field_0x60 = costs;
+}
+
+int Agent::getOffer() {
+    return this->field_0x5c;
+}
+
+void Agent::setOffer(int offer) {
+    this->field_0x5c = offer;
+}
+
+int Agent::getEvent() {
+    return this->eventCount;
+}
+
+void Agent::setEvent(int event) {
+    this->eventCount = event;
+}
+
+int Agent::getSellItemIndex() {
+    return this->field_0x34;
+}
+
+int Agent::getSellItemQuantity() {
+    return this->field_0x38;
+}
+
+int Agent::getSellItemPrice() {
+    return this->field_0x3c;
+}
+
+void Agent::setSellItemPrice(int price) {
+    this->field_0x3c = price;
+}
+
+int Agent::getSellSystemIndex() {
+    return this->field_0x64;
+}
+
+int Agent::getSellBlueprintIndex() {
+    return this->field_0x68;
+}
+
+int Agent::getWingmanFriendsCount() {
+    return this->wingmanCount;
+}
+
 // ---- Agent_1773c4.cpp ----
 extern "C" void *String_default_ctor(void *s);         // String::String() -> this
 

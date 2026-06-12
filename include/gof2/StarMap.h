@@ -39,6 +39,7 @@ public:
     void initStarSystem();
 
     void render();
+    void renderBG();
     void draw();
     void drawKey();
     void drawOnScreenInfo(int index, bool stationMode);

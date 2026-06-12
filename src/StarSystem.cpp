@@ -86,6 +86,16 @@ void StarSystem::renderSunStreak() {
     return StarSystem_renderSunStreak_tail(P(self, 0x40));
 }
 
+// ---- getPlanetTargets / getPlanets ----
+// Simple accessors for the two planet geometry arrays held at +0x18 and +0x1c.
+void *StarSystem::getPlanetTargets() {
+    return P(this, 0x18);
+}
+
+void *StarSystem::getPlanets() {
+    return P(this, 0x1c);
+}
+
 // ---- getLightDirection_134dbe.cpp ----
 Vector StarSystem::getLightDirection() {
     StarSystem *self = this;

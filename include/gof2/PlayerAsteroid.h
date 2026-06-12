@@ -69,6 +69,7 @@ public:
 
     PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType, int asteroidIndex,
                    const Vector &position, float scaling, int quality);
+    ~PlayerAsteroid();
     void setAsteroidIndex(int asteroidIndex);
     void translate(const Vector &delta);
     void render();

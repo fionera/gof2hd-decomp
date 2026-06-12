@@ -404,3 +404,114 @@ Mission * Mission::ctor_default() {
     self->targetStation = 0;
     return self;
 }
+
+// ---- recovered accessors / mutators (0x16baXX..0x16bcXX cluster) ----
+// Field offsets are taken verbatim from the per-method disassembly. Where the
+// existing struct already names a slot we use it; the few slots accessed only by
+// these methods are reached via explicit byte offsets to keep the layout
+// byte-compatible with the other translation units.
+
+// Mission::getType() (0x16bae6): the mission "type" is just its id (+0xc).
+int Mission::getType() {
+    return this->id;
+}
+
+// Mission::getReward()/getCosts() both read +0x30; setReward() writes +0x30.
+int Mission::getReward() {
+    return this->field_0x30;
+}
+
+void Mission::setReward(int reward) {
+    this->field_0x30 = reward;
+}
+
+int Mission::getCosts() {
+    return this->field_0x30;     // 0x16bb62: reads +0x30, same slot as reward
+}
+
+// Mission::setCosts(int) (0x16bb66): writes the separate costs slot at +0x34.
+void Mission::setCosts(int costs) {
+    this->field_0x34 = costs;
+}
+
+int Mission::getBonus() {
+    return this->field_0x38;
+}
+
+void Mission::setBonus(int bonus) {
+    this->field_0x38 = bonus;
+}
+
+// Mission::getDifficulty() (0x16bc20): reads +0x58 (the slot the header calls reward).
+int Mission::getDifficulty() {
+    return this->reward;
+}
+
+int Mission::getDistance() {
+    return this->distance;
+}
+
+int Mission::getStatusValue() {
+    return this->field_0x70;
+}
+
+void Mission::setStatusValue(int value) {
+    this->field_0x70 = value;
+}
+
+// Mission::getAgent()/setAgent() (0x16bcac/0x16bcb0): pointer slot at +0x8.
+Agent *Mission::getAgent() {
+    return *(Agent **)((char *)this + 0x8);
+}
+
+void Mission::setAgent(Agent *agent) {
+    *(Agent **)((char *)this + 0x8) = agent;
+}
+
+int Mission::getClientImage() {
+    return this->field_0x28;
+}
+
+int Mission::getClientRace() {
+    return this->field_0x2c;
+}
+
+// Production-good index lives at +0x68, amount at +0x6c.
+int Mission::getProductionGoodIndex() {
+    return this->productionGoodsA;
+}
+
+int Mission::getProductionGoodAmount() {
+    return this->productionGoodsB;
+}
+
+int Mission::getTargetStation() {
+    return this->targetStation;
+}
+
+// Status flags packed into the int at +0x4: failed at byte +0x4, won at byte +0x5.
+bool Mission::hasFailed() {
+    return *((uint8_t *)this + 0x4) != 0;
+}
+
+void Mission::setFailed(bool failed) {
+    *((uint8_t *)this + 0x4) = failed ? 1 : 0;
+}
+
+bool Mission::hasWon() {
+    return *((uint8_t *)this + 0x5) != 0;
+}
+
+void Mission::setWon(bool won) {
+    *((uint8_t *)this + 0x5) = won ? 1 : 0;
+}
+
+// Mission::setCampaignMission(bool) (0x16bb88): writes the campaign flag at +0x64.
+void Mission::setCampaignMission(bool flag) {
+    this->campaign = flag ? 1 : 0;
+}
+
+// Mission::isOutsideMission() (0x16bb40): base implementation always reports true.
+bool Mission::isOutsideMission() {
+    return true;
+}

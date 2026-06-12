@@ -89,6 +89,33 @@ ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
     return self;
 }
 
+// ObjectGun::~ObjectGun() -- real destructor.
+//   Resets the vtable slot, then releases the gun geometry, the per-explosion
+//   array (releasing each element first), and the ready-flag buffer.
+ObjectGun::~ObjectGun()
+{
+    this->field_0x0 = (char *)ObjectGun_vtable + 8;
+
+    AEGeometry *geometry = this->field_0x18;
+    if (geometry != 0) {
+        ((AEGeometry *)geometry)->~AEGeometry();
+        ::operator delete(geometry);
+    }
+
+    Array<Explosion*> *explosions = this->field_0x2c;
+    this->field_0x18 = 0;
+    if (explosions != 0) {
+        ArrayReleaseClasses_Explosion(explosions);
+        explosions = this->field_0x2c;
+        if (explosions != 0)
+            ::operator delete(Array_Explosion_dtor(explosions));
+        this->field_0x2c = 0;
+    }
+
+    ::operator delete[](this->field_0x30);
+    this->field_0x30 = 0;
+}
+
 // ---- replaceGun_160374.cpp ----
 __attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;
 

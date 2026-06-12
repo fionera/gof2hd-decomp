@@ -337,3 +337,80 @@ int Route::getDockingTime() {
     Route *self = this;
     return ((Route *)(self))->getDockingTimeAt(self->field_0x0);
 }
+
+// ---- Route(int*, int) — build a route from a flat [x,y,z, x,y,z, ...] coord array.
+// ctor1: coords + count(=3*numWaypoints). Allocates empty docking-target/time arrays.
+Route * Route::ctor(int *coords, int count) {
+    Route *self = this;
+    self->field_0x4 = 0;
+    self->field_0x0 = 0;
+    void *wps = ::operator new(0xc);
+    ArrayWaypoint_ctor(wps);
+    self->field_0xc = (Array<Waypoint *> *)wps;
+    void *tgts = ::operator new(0xc);
+    ArrayKIPlayer_ctor(tgts);
+    self->field_0x10 = (Array<KIPlayer *> *)tgts;
+    void *times = ::operator new(0xc);
+    ArrayInt_ctor(times);
+    self->field_0x14 = (Array<int> *)times;
+    uint32_t n = __aeabi_idiv(count, 3);
+    ArraySetLengthKIPlayer(n, self->field_0x10);
+    ArraySetLengthInt(n, self->field_0x14);
+    for (int i = 0; i < count; i += 3) {
+        void *wp = ::operator new(0x138);
+        Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
+        ArrayAddWaypoint(wp, self->field_0xc);
+    }
+    return self;
+}
+
+// ---- Route(int*, Array<KIPlayer*>*, int*, int) — coords + pre-built docking targets + times.
+// ctor2: the docking-target array is adopted as-is; docking times are copied in.
+Route * Route::ctorWithTargets(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
+    Route *self = this;
+    self->field_0x4 = 0;
+    self->field_0x0 = 0;
+    void *wps = ::operator new(0xc);
+    ArrayWaypoint_ctor(wps);
+    self->field_0xc = (Array<Waypoint *> *)wps;
+    void *timesArr = ::operator new(0xc);
+    ArrayInt_ctor(timesArr);
+    self->field_0x10 = targets;
+    self->field_0x14 = (Array<int> *)timesArr;
+    for (int i = 0; i < count; i += 3)
+        ArrayAddInt(times[i / 3], self->field_0x14);
+    for (int i = 0; i < count; i += 3) {
+        void *wp = ::operator new(0x138);
+        Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
+        ArrayAddWaypoint(wp, self->field_0xc);
+    }
+    return self;
+}
+
+// ---- ~Route() — release the waypoint array (deep) and the docking target/time arrays.
+Route * Route::dtor() {
+    Route *self = this;
+    if (self->field_0xc != 0) {
+        ArrayReleaseClasses_Waypoint(self->field_0xc);
+        if (self->field_0xc != 0)
+            ::operator delete(ArrayWaypoint_dtor(self->field_0xc));
+    }
+    self->field_0xc = 0;
+    if (self->field_0x10 != 0)
+        ::operator delete(ArrayKIPlayer_dtor(self->field_0x10));
+    self->field_0x10 = 0;
+    if (self->field_0x14 != 0)
+        ::operator delete(ArrayInt_dtor(self->field_0x14));
+    self->field_0x14 = 0;
+    return self;
+}
+
+// ---- getCurrent() — index of the active waypoint.
+int Route::getCurrent() {
+    return this->field_0x0;
+}
+
+// ---- setLoop(bool) — toggle whether the route restarts after the final waypoint.
+void Route::setLoop(bool loop) {
+    this->field_0x4 = loop;
+}

@@ -62,6 +62,8 @@ public:
     int storedHitpoints;                     // +0x18  stored hitpoints snapshot
 
     // ---- methods (converted from free functions) ----
+    TractorBeam(AEGeometry *unused, int kind);
+    ~TractorBeam();
     void ctor(AEGeometry * /*unused*/, int param2);
     void render();
     void update(int frameTime, Radar *radar, Level *level, Hud *hud);

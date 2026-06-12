@@ -71,6 +71,7 @@ public:
     float field_0x9c;                   // +0x9c
 
     ObjectGun(int, Gun *gun, int mesh, uint32_t, Level *level);
+    ~ObjectGun();
     void setScaling(int x, int y);
     void replaceGun(int mesh);
     void setEnemies(Array<Player*> *enemies);

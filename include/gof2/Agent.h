@@ -84,5 +84,24 @@ public:
     void setStationName(String12 src);
     void setSystemName(String12 src);
     void setWingmanFriendNames(uint32_t *param);
+
+    // ---- simple field accessors (recovered) ----
+    int getStation();
+    int getSystem();
+    int getRace();
+    int getIndex();
+    int getCosts();
+    void setCosts(int costs);
+    int getOffer();
+    void setOffer(int offer);
+    int getEvent();
+    void setEvent(int event);
+    int getSellItemIndex();
+    int getSellItemQuantity();
+    int getSellItemPrice();
+    void setSellItemPrice(int price);
+    int getSellSystemIndex();
+    int getSellBlueprintIndex();
+    int getWingmanFriendsCount();
 };
 #endif

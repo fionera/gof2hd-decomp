@@ -411,5 +411,48 @@ void AESoundRessource_setVolume_7fcc4(AbyssEngine::AESoundRessource *self, int i
             (*(SoundIntMethod *)((char *)*(void **)sound + 0x28))(sound, savedVolume);
         }
     }
-    
+
 }
+
+// ---- class methods (real member wrappers over the recovered bodies above) ----
+namespace AbyssEngine {
+
+// Constructs the AESoundInterface array, then zeroes the count and info-table pointer.
+AESoundRessource::AESoundRessource()
+{
+    Array_AESoundInterface_ctor((char *)this + 4);
+    this->numSounds = 0;
+    this->soundInfoTable = 0;
+}
+
+void AESoundRessource::freeAllRessources()
+{
+    AESoundRessource_freeAllRessources_7fb0c(this);
+}
+
+void AESoundRessource::SetSound(AESoundInfo *info, int count)
+{
+    AESoundRessource_SetSound_7fb74(this, info, count);
+}
+
+void AESoundRessource::getSoundInfo(int id, AESoundInfo *info, int *index)
+{
+    AESoundRessource_getSoundInfo_7fa30(this, id, info, index);
+}
+
+void AESoundRessource::init(int id)
+{
+    AESoundRessource_init_7fc38(this, id);
+}
+
+void AESoundRessource::play_impl(int id, int volume)
+{
+    AESoundRessource_play_7feec(this, id, (float)volume);
+}
+
+// Empty in this build (the looping bookkeeping was compiled out).
+void AESoundRessource::checkLooping()
+{
+}
+
+} // namespace AbyssEngine

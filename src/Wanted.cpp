@@ -7,6 +7,31 @@ using AbyssEngine::String12;
 extern "C" Wanted *String_default_ctor(Wanted *self);
 extern "C" Wanted *Wanted_base_dtor(Wanted *self);
 
+// ---- trivial field accessors (inlined in the binary; recovered from the
+//      ctor's field layout). These back the Wanted_getX/setX extern shims. ----
+int  Wanted::getIndex()            { return index; }
+int  Wanted::getBoard()            { return board; }
+int  Wanted::getRace()             { return race; }
+int  Wanted::isMale()              { return male; }
+int  Wanted::getShip()             { return shipId; }
+int  Wanted::getWeapon()           { return weapon; }
+int  Wanted::getHitpoints()        { return hitpoints; }
+int  Wanted::getLoot()             { return lootItemId; }
+int  Wanted::getLootAmount()       { return lootAmount; }
+int  Wanted::getReward()           { return reward; }
+int  Wanted::getRequiredBounties() { return requiredBounties; }
+int  Wanted::getRequiredMission()  { return requiredMission; }
+int  Wanted::getNumWingmen()       { return numWingmen; }
+int  Wanted::getCurrentLocation()  { return currentLocation; }
+int  Wanted::getTravelsTo()        { return travelsTo; }
+int  Wanted::getLastSeen()         { return lastSeen; }
+int *Wanted::getImageParts()       { return (int *)imageParts; }
+
+void Wanted::setImageParts(int *parts)   { imageParts = parts; }
+void Wanted::setCurrentLocation(int v)   { currentLocation = v; }
+void Wanted::setTravelsTo(int v)         { travelsTo = v; }
+void Wanted::setLastSeen(int v)          { lastSeen = v; }
+
 // ---- isTerminated_12298a.cpp ----
 uint8_t Wanted::isTerminated() {
     Wanted *self = this;

@@ -35,6 +35,7 @@ public:
     void* setIndices;                   // +0x6c  per-particle set-index array
     float cachedPow;                   // +0x70
 
+    ~ParticleSystemSprite();
     void reset();
     int init(unsigned int param_1, unsigned short param_2);
     void release();

@@ -45,6 +45,16 @@ public:
     bool currentOrbitHasWarpGate();
     void dtor();
     int getAttackRace();
+    int getIndex();
+    int getRace();
+    int getSecurityLevel();
+    int getTextureIndex();
+    int getX();
+    int getY();
+    int getZ();
+    int getWarpGateIndex();
+    uint32_t *getStations();
+    uint32_t *getRoutes();
     RetStr getName();
     uint32_t getStationEnumIndex(int idx);
     int getWarpGateEnumIndex();

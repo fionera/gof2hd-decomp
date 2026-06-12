@@ -18,7 +18,21 @@ public:
     char* sounds;                    // +0x8  Array<AESoundInterface*> data
     volatile int numSounds;            // +0x10
 
+    AESoundRessource();
     ~AESoundRessource();
+
+    // Release every loaded AESoundInterface and clear its slot.
+    void freeAllRessources();
+    // Install the sound-info table (`info`, `count` entries) and size the sound array.
+    void SetSound(AESoundInfo *info, int count);
+    // Look up the entry whose id == `id`; copies it to `info` and reports the slot in `index`.
+    void getSoundInfo(int id, AESoundInfo *info, int *index);
+    // Lazily create + load the AESoundInterface for sound `id`.
+    void init(int id);
+    // Play sound `id` at the given volume.
+    void play_impl(int id, int volume);
+    // No-op in this build (kept for the loop-mode bookkeeping hook).
+    void checkLooping();
 };
 
 } // namespace AbyssEngine

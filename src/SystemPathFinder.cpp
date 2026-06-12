@@ -1,6 +1,13 @@
 #include "gof2/SystemPathFinder.h"
 
 
+// ---- SystemPathFinder_12b77c / ~SystemPathFinder_12b77e ----
+// Stateless A* helper: the open/closed sets used by search() are created and
+// released within each call, so construction and destruction do nothing.
+SystemPathFinder::SystemPathFinder() {}
+SystemPathFinder::~SystemPathFinder() {}
+
+
 // ---- contains_11bb54.cpp ----
 int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
     uint32_t i = 0;

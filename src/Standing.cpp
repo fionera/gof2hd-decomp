@@ -119,6 +119,15 @@ void Standing::setStanding(int race, int value) {
     self->standings[race] = value;
 }
 
+// ---- setPlayerSignatureRace_12d74c.cpp ----
+// Standing::setPlayerSignatureRace(int race): records the player's signature race in
+// currentRace, switching the table into "derived" mode. With a non-negative race set,
+// getStanding() returns fixed standings for factions 0/1 keyed off this value instead
+// of reading the raw standings[] array (see getStanding above).
+void Standing::setPlayerSignatureRace(int race) {
+    this->currentRace = race;
+}
+
 // ---- applyStealCargo_11d98c.cpp ----
 // Standing::applyStealCargo(int race): -2 reputation toward that race.
 void Standing::applyStealCargo(int race) {

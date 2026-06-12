@@ -23,6 +23,9 @@ public:
     void UpdateMeshData(Mesh *mesh, Engine *engine);
     BumpShader();
 
+    // Bind a sampler uniform to a texture unit (thin glUniform1i wrapper).
+    static void setSampler(int location, int unit);
+
     // raw field storage (offsets referenced through the i32/u8/f32 helpers above)
     char field_storage[0x84];
 };

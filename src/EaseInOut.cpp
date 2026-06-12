@@ -128,3 +128,26 @@ void EaseInOut::Increase(float dt) {
 }
 
 } // namespace AbyssEngine
+
+// ---- accessors / per-frame Update ----
+namespace AbyssEngine {
+
+// Update(dt): advance the animation parameter forward each frame, clamping at the
+// maximum, then recompute the eased output. Equivalent to Increase().
+void EaseInOut::Update(float dt) {
+    Increase(dt);
+}
+
+float EaseInOut::GetValue() {
+    return m_current;
+}
+
+float EaseInOut::GetCurrentValue() {
+    return m_current;
+}
+
+float EaseInOut::GetMinValue() {
+    return m_min;
+}
+
+} // namespace AbyssEngine

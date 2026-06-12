@@ -30,6 +30,17 @@ void *_ZN20ParticleSystemSpriteD1Ev(void *self)
     return ParticleSystemSprite_baseDtor(self);
 }
 
+// ---- ~ParticleSystemSprite (complete-object destructor) ----------------------
+// Re-installs the derived vtable, frees the per-particle sprite scratch arrays via
+// release(), then chains into the IParticleSystem base destructor. Mirrors the
+// recovered D1 body at 0x192c58.
+ParticleSystemSprite::~ParticleSystemSprite()
+{
+    *(void **)this = &ParticleSystemSprite_vtable + 8;
+    this->release();
+    ParticleSystemSprite_baseDtor(this);
+}
+
 // ---- reset_18335c.cpp ----
 void ParticleSystemSprite::reset()
 {
