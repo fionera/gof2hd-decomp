@@ -190,6 +190,9 @@ public:
 
     // ---- methods (converted from free functions) ----
     void AEClientState(unsigned int state, bool enable);
+    void ClearBuffer(uint32_t color);
+    bool IsExtensionSupported(const char *extension);
+    void ReleaseGL();
     void ActivateRefractFBO();
     void ActivateRender2FracFBO();
     void ActivateRender2TextureFBO();

@@ -12,6 +12,13 @@ extern "C" {
 unsigned char g_BloomShader_internalInitNeeded;
 unsigned int g_BloomShader_shaderMode;
 char * g_Camera_frustumEnabledFlag;
+// g_Engine_* : module-static renderer state. In the binary these are absolute-addressed
+// .data/.bss globals (the engine is a singleton), read/written by Engine methods and the
+// renderer free functions WITHOUT going through an Engine `this`. They are deliberately kept
+// as globals rather than promoted to Engine members so they keep aliasing the same storage
+// across every call site. Shader slots (default/alt/line/cloak/post* are indices into the
+// Engine shader array); useShaders/supportsFBO/texEnv* are GL-capability/feature flags;
+// shaderDirty/shaderDrew and postEffect* are per-frame draw bookkeeping.
 int g_Engine_activeShader;
 int g_Engine_altShader;
 int g_Engine_cloakShader;
@@ -114,7 +121,6 @@ extern "C" {
 void AE_AEMath_matMul(Matrix *out, const Matrix *in);
 void AE_ArrayAddCached_MeshPtr(AbyssEngine::Mesh *value, void *array);
 void AE_ArrayAddCached_uint(unsigned int value, void *array);
-void AE_Engine_LightSetAmbient(float r, float g, float b, Engine *self);
 void AE_FBOContainer_ctor(void *self);
 void AE_PaintCanvas_Initialize(PaintCanvas *self, bool flag);
 void AE_PaintCanvas_SetWorldViewMatrix(void *self);
@@ -123,6 +129,8 @@ void AE_SpriteSystem_pushMatrix(
     unsigned int m5, unsigned int m6, unsigned int m7, unsigned int m8, unsigned int m9,
     unsigned int m10, unsigned int m11, unsigned int m12, unsigned int m13, unsigned int m14,
     int dst);
+// Returns the Engine singleton currently being GL-initialized (the InitGL `this`), supplied
+// by the host runtime in a register the decompiler can't model; kept as a documented extern.
 Engine *AE_getInitGLThis();
 void *__aeabi_memclr(void *dst, size_t n);
 void *__aeabi_memclr4(void *dst, size_t n);
@@ -139,8 +147,6 @@ void AELabelObject(unsigned int type, unsigned int id, const char *name);
 void AE_ArrayAdd_MeshPtr(void *item, void *arr);
 void AE_ArrayAdd_TexPtr(void *item, void *arr);
 void AE_BSphere_Merge(void *dst, const void *src);
-int AE_Engine_GetDisplayHeight();
-int AE_Engine_GetDisplayWidth();
 int AE_GameText_getLanguage();
 int AE_GameText_isNonArabicString(const unsigned short *text, unsigned int len);
 void AE_PaintCanvas_SetWorldViewMatrix(void *canvas);

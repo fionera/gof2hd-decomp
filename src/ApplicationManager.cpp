@@ -27,7 +27,6 @@ extern "C" void ext_001ab588(void *sound);
 extern "C" void ext_001ab5c8(void *cheats);
 extern "C" void ext_001ab538(void *sound);
 extern "C" void Engine_PreUpdate(void *engine);
-void Engine_ClearBuffer(void *engine, int color);
 extern "C" void AESoundRessource_checkLooping(void *sound);
 extern "C" void PaintCanvas_StartDraw2FBO(void *canvas);
 extern "C" void PaintCanvas_StopDraw2FBO(void *canvas);

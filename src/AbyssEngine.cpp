@@ -785,7 +785,7 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
 
     float ambient = f32(m, 0x68);
     if (ambient != -10.0f) {
-        AE_Engine_LightSetAmbient(ambient, 0.0f, 0.0f, engine);
+        engine->LightSetGlobalSceneColorAmbient(ambient, 0.0f, 0.0f);
     }
 
     const float inv255 = 1.0f / 255.0f;
@@ -808,7 +808,7 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
     }
 
     if (f32(m, 0x68) != -10.0f) {
-        AE_Engine_LightSetAmbient(f32(m, 0x68), 0.0f, 0.0f, engine);
+        engine->LightSetGlobalSceneColorAmbient(f32(m, 0x68), 0.0f, 0.0f);
     }
 
     // Reset per-frame submesh accumulators.
@@ -1810,7 +1810,7 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
 
     int top = (int)(short)s16(f, 0x12);
     int h = ImageFontGetHeight(font);
-    int dispW = AE_Engine_GetDisplayWidth();
+    int dispW = engine->GetDisplayWidth();
     int bottom = dispW;
     if (x <= dispW) {
         top = top + y;
@@ -1820,7 +1820,7 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
     // Off-screen clip on X.
     if ((side < 0) != (dispW < x))
         return 0;
-    if (top > AE_Engine_GetDisplayHeight())
+    if (top > (int)engine->GetDisplayHeight())
         return 0;
 
     // Scan direction: forward by default; reversed for RTL or when batching is requested.
@@ -1861,7 +1861,7 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
             int glyphMesh = *(int *)(*(int *)(f + 0xc) + slot * 4);
             int advance = (int)*(float *)(*(int *)(glyphMesh + 4) + 0xc);
 
-            if (x + advance >= 0 && x <= AE_Engine_GetDisplayWidth()) {
+            if (x + advance >= 0 && x <= (int)engine->GetDisplayWidth()) {
                 if (!shaderMode) {
                     AE_PaintCanvas_SetWorldViewMatrix(canvas);
                     MeshDraw(engine, *(Mesh **)(*(int *)(f + 0xc) + slot * 4));

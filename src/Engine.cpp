@@ -61,7 +61,6 @@ extern "C" void ShaderUpdateMaterialColor();
 extern "C" void glColor4f(float red, float green, float blue, float alpha);
 extern "C" void ArrayReleaseClasses_ShaderBaseStruct_ptr(void *array);
 void MeshRelease(Engine *self, void *meshSlot);
-extern "C" void Engine_ReleaseGL(Engine *self);
 extern "C" void Array_ShaderBaseStruct_ptr_dtor(void *array);
 extern "C" void Array_int_dtor(void *array);
 void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
@@ -448,7 +447,7 @@ void Engine::ShaderUpdate() {
 }
 
 // ---- IsExtensionSupported_86452.cpp ----
-bool Engine_IsExtensionSupported(Engine *, const char *extension)
+bool Engine::IsExtensionSupported(const char *extension)
 {
     const char *extensions = glGetString(0x1f03);
 
@@ -763,13 +762,19 @@ Engine::~Engine()
     this->field_0x418 = 0;
 
     MeshRelease(this, (char *)this + 0x380);
-    Engine_ReleaseGL(this);
+    this->ReleaseGL();
     Array_ShaderBaseStruct_ptr_dtor(shaders);
     Array_int_dtor((char *)this + 0x3d8);
     ((String *)((String *)((char *)this + 0x4c)))->dtor();
     ((String *)((String *)((char *)this + 0x3c)))->dtor();
     ((String *)((String *)((char *)this + 0x14)))->dtor();
     ((String *)((String *)this))->dtor();
+}
+
+// ---- ReleaseGL_7dcba.cpp ----
+// Releases GL-side resources owned by the engine. Empty in this build (GL teardown is
+// handled by the driver / deferred), but kept as a real method invoked from ~Engine().
+void Engine::ReleaseGL() {
 }
 
 // ---- AfterGLInit_8428c.cpp ----
@@ -1226,7 +1231,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
 }
 
 // ---- ClearBuffer_84558.cpp ----
-void Engine_ClearBuffer(Engine *, uint32_t color)
+void Engine::ClearBuffer(uint32_t color)
 {
     const double scale = 255.0;
     double red = (double)(color >> 24) / scale;
