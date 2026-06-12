@@ -108,6 +108,15 @@ struct Transform {
     AEMath::Matrix matrix;
     char pad_3c[0x98];
     AEMath::BSphere bounds;
+
+    // Out-of-line definitions live in src/Transform.cpp; declared here so the
+    // mesh-loader call sites in AbyssEngine.cpp can reach them (the full class
+    // with all fields/methods is in gof2/Transform.h, which can't be included
+    // alongside AEMath.h's layout-only view).
+    Transform();
+    ~Transform();
+    void CollectAnimationData();
+    void SetAnimationRangeInTime(long long start, long long end);
 };
 
 static_assert(sizeof(AEMath::Vector) == 0x0c, "AEMath::Vector size");

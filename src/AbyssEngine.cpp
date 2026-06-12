@@ -106,11 +106,9 @@ namespace AbyssEngine {
 
 Quaternion operator*(const Quaternion &a, float s)
 {
-    Quaternion r;
-    float yv = *(const float *)((const char *)&a + 4) * s;
-    float wv = *(const float *)((const char *)&a + 0xc) * s;
-    _ZN11AbyssEngine10QuaternionC1Effff(&r, wv, 0.0f, yv, 0.0f);
-    return r;
+    float yv = a.y * s;
+    float wv = a.w * s;
+    return Quaternion(wv, 0.0f, yv, 0.0f);
 }
 
 } // namespace AbyssEngine
@@ -306,11 +304,9 @@ namespace AbyssEngine {
 
 Quaternion operator-(const Quaternion &a, const Quaternion &b)
 {
-    Quaternion r;
-    float yv = *(const float *)((const char *)&a + 4) - *(const float *)((const char *)&b + 4);
-    float wv = *(const float *)((const char *)&a + 0xc) - *(const float *)((const char *)&b + 0xc);
-    _ZN11AbyssEngine10QuaternionC1Effff(&r, wv, 0.0f, yv, 0.0f);
-    return r;
+    float yv = a.y - b.y;
+    float wv = a.w - b.w;
+    return Quaternion(wv, 0.0f, yv, 0.0f);
 }
 
 } // namespace AbyssEngine
@@ -2096,11 +2092,9 @@ namespace AbyssEngine {
 
 Quaternion operator+(const Quaternion &a, const Quaternion &b)
 {
-    Quaternion r;
-    float yv = *(const float *)((const char *)&a + 4) + *(const float *)((const char *)&b + 4);
-    float wv = *(const float *)((const char *)&a + 0xc) + *(const float *)((const char *)&b + 0xc);
-    _ZN11AbyssEngine10QuaternionC1Effff(&r, wv, 0.0f, yv, 0.0f);
-    return r;
+    float yv = a.y + b.y;
+    float wv = a.w + b.w;
+    return Quaternion(wv, 0.0f, yv, 0.0f);
 }
 
 } // namespace AbyssEngine
@@ -2771,10 +2765,10 @@ void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot)
         }
     }
 
-    void *t = pp(*slot, 0x34);
+    Transform *t = (Transform *)pp(*slot, 0x34);
     if (t != 0) {
-        void *freed = AE_Transform_dtor(t);
-        operator delete(freed);
+        t->~Transform();
+        operator delete(t);
     }
     pp(*slot, 0x34) = 0;
 
@@ -2951,7 +2945,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
                 ok = true;
         } else {
             char *xf = (char *)::operator new(0x180);
-            AE_Transform_ctor(xf);
+            new (xf) Transform();
             pp((char *)*out + 0x34, 0) = xf;
             for (unsigned int s = 0; s < subCount; ++s) {
                 char *child = (char *)::operator new(0x88);
@@ -2974,11 +2968,11 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 
     if (ok) {
         AEFile::Close(handle);
-        void *xf = pp((char *)*out + 0x34, 0);
+        Transform *xf = (Transform *)pp((char *)*out + 0x34, 0);
         if (xf != 0) {
-            AE_Transform_CollectAnimationData(xf);
+            xf->CollectAnimationData();
             long long t = __aeabi_f2lz(0.0f);
-            AE_Transform_SetAnimationRangeInTime(pp((char *)*out + 0x34, 0), t);
+            xf->SetAnimationRangeInTime(t, t);
         }
         return 1;
     }

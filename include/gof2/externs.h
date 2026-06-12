@@ -123,10 +123,7 @@ void AE_SpriteSystem_pushMatrix(
     unsigned int m5, unsigned int m6, unsigned int m7, unsigned int m8, unsigned int m9,
     unsigned int m10, unsigned int m11, unsigned int m12, unsigned int m13, unsigned int m14,
     int dst);
-void *AE_Transform_dtor(void *self);
 Engine *AE_getInitGLThis();
-void _ZN11AbyssEngine10QuaternionC1Effff(Quaternion *self, float x, float y, float z,
-                                                    float w);
 void *__aeabi_memclr(void *dst, size_t n);
 void *__aeabi_memclr4(void *dst, size_t n);
 void *__aeabi_memcpy4(void *dst, const void *src, size_t n);
@@ -148,9 +145,6 @@ int AE_GameText_getLanguage();
 int AE_GameText_isNonArabicString(const unsigned short *text, unsigned int len);
 int AE_Mesh_ReadEnhancedDataFromFile(void *self, unsigned int handle, unsigned int flags);
 void AE_PaintCanvas_SetWorldViewMatrix(void *canvas);
-void AE_Transform_CollectAnimationData(void *self);
-void AE_Transform_SetAnimationRangeInTime(void *self, long long t);
-void AE_Transform_ctor(void *self);
 float AE_VectorSignedToFloat(int v, unsigned char mode);
 float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
 long long __aeabi_f2lz(float v);

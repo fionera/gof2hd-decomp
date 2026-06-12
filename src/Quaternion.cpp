@@ -2,9 +2,6 @@
 #include "gof2/externs.h"
 #include <arm_neon.h>
 
-extern "C" float (*gof2_sinf)(float);
-extern "C" float (*gof2_cosf)(float);
-
 // ---- Quaternion_8102a.cpp ----
 namespace AbyssEngine {
 
@@ -27,10 +24,7 @@ float Quaternion::Dot(const Quaternion &a, const Quaternion &b) {
 namespace AbyssEngine {
 
 float Quaternion::Length() const {
-    float length = x * x;
-    length += y * y;
-    length += z * z;
-    length += w * w;
+    return sqrtf(x * x + y * y + z * z + w * w);
 }
 
 } // namespace AbyssEngine
@@ -148,17 +142,14 @@ void Quaternion::Set(const AEMath::Matrix &matrix) {
 // ---- Inverse_81328.cpp ----
 namespace AbyssEngine {
 
-void AbyssEngine_Quaternion_Inverse(Quaternion *result, const Quaternion *self) {
-    float x = self->x;
-    float y = self->y;
-    float z = self->z;
-    float w = self->w;
-    float inv = 1.0f / (y * y + x * x + z * z + w * w);
-    float ninv = -inv;
-    result->x = ninv * x;
-    result->y = ninv * y;
-    result->z = ninv * z;
-    result->w = w * inv;
+Quaternion Quaternion::Inverse() const {
+    float inv = 1.0f / (x * x + y * y + z * z + w * w);
+    Quaternion result;
+    result.x = -(inv * x);
+    result.y = -(inv * y);
+    result.z = -(inv * z);
+    result.w = w * inv;
+    return result;
 }
 
 } // namespace AbyssEngine
@@ -167,48 +158,32 @@ void AbyssEngine_Quaternion_Inverse(Quaternion *result, const Quaternion *self) 
 namespace AbyssEngine {
 
 void Quaternion::Set(float x_angle, float y_angle, float z_angle) {
-    float (*pSin)(float) = gof2_sinf;
-    float fVar1 = pSin(z_angle * 0.5f);
-    float fVar2 = pSin(y_angle * 0.5f);
-    float (*pCos)(float) = gof2_cosf;
-    float fVar3 = pSin(x_angle * 0.5f);
-    float fVar4 = pCos(z_angle * 0.5f);
-    float fVar5 = pCos(y_angle * 0.5f);
-    float fVar6 = pCos(x_angle * 0.5f);
-    x = fVar3 * fVar4 * fVar5 - fVar1 * fVar2 * fVar6;
-    y = -(fVar2 * fVar4 * fVar6) + -(fVar3 * fVar1 * fVar5);
-    z = fVar1 * fVar5 * fVar6 - fVar3 * fVar2 * fVar4;
-    w = fVar4 * fVar5 * fVar6 + fVar1 * fVar2 * fVar3;
+    float sinZ = sinf(z_angle * 0.5f);
+    float sinY = sinf(y_angle * 0.5f);
+    float sinX = sinf(x_angle * 0.5f);
+    float cosZ = cosf(z_angle * 0.5f);
+    float cosY = cosf(y_angle * 0.5f);
+    float cosX = cosf(x_angle * 0.5f);
+    x = sinX * cosZ * cosY - sinZ * sinY * cosX;
+    y = -(sinY * cosZ * cosX) + -(sinX * sinZ * cosY);
+    z = sinZ * cosY * cosX - sinX * sinY * cosZ;
+    w = cosZ * cosY * cosX + sinZ * sinY * sinX;
 }
 
 } // namespace AbyssEngine
 
 // ---- Lerp_813a8.cpp ----
-extern "C" void quaternion_sub(AbyssEngine::Quaternion *out,
-                               const AbyssEngine::Quaternion *a,
-                               const AbyssEngine::Quaternion *b);
-extern "C" void quaternion_normalized(AbyssEngine::Quaternion *out,
-                                      AbyssEngine::Quaternion *self);
-
 namespace AbyssEngine {
 
+// Straight (non-shortest-path) lerp: result = a + t * (b - a), then normalize.
 void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
-    typedef float Vec4 __attribute__((vector_size(16)));
+    float32x4_t av = vld1q_f32(&a.x);
+    float32x4_t bv = vld1q_f32(&b.x);
+    float32x4_t delta = vsubq_f32(bv, av);
+    float32x4_t result = vmlaq_f32(av, vdupq_n_f32(t), delta);
 
-    alignas(16) unsigned char result_storage[sizeof(Quaternion)];
-    alignas(16) unsigned char delta_storage[sizeof(Quaternion)];
-    Quaternion *delta = reinterpret_cast<Quaternion *>(delta_storage);
-    Quaternion *result = reinterpret_cast<Quaternion *>(result_storage);
-
-    quaternion_sub(delta, &b, &a);
-
-    float32x4_t delta_vec = *reinterpret_cast<Vec4 *>(delta);
-    float32x4_t a_vec = vld1q_f32(&a.x);
-    float32x4_t result_vec = vmlaq_f32(a_vec, vdupq_n_f32(t), delta_vec);
-    *reinterpret_cast<Vec4 *>(result) = result_vec;
-    quaternion_normalized(this, result);
-
-    return;
+    vst1q_f32(&x, result);
+    *this = Normalized();
 }
 
 } // namespace AbyssEngine
@@ -255,36 +230,25 @@ void Quaternion::Convert(AEMath::Matrix &matrix) {
 // 4-float ctor is defined inline in math.h.
 
 // ---- Lerp_8145c.cpp ----
-extern "C" void quaternion_normalized(AbyssEngine::Quaternion *out,
-                                      AbyssEngine::Quaternion *self);
-
 namespace AbyssEngine {
 
+// Shortest-path lerp over raw float[4] quaternions: if the two point in opposite
+// hemispheres (dot < 0) negate b first, then result = a + t * (delta), normalize.
 void Quaternion::Lerp(const float *a, const float *b, float t) {
-    typedef float Vec4 __attribute__((vector_size(16)));
-
-
-    float32x4_t bv = vld1q_f32(b);
     float32x4_t av = vld1q_f32(a);
+    float32x4_t bv = vld1q_f32(b);
 
-    float dot = vgetq_lane_f32(av, 1) * vgetq_lane_f32(bv, 1);
-    dot += vgetq_lane_f32(av, 0) * vgetq_lane_f32(bv, 0);
+    float dot = vgetq_lane_f32(av, 0) * vgetq_lane_f32(bv, 0);
+    dot += vgetq_lane_f32(av, 1) * vgetq_lane_f32(bv, 1);
     dot += vgetq_lane_f32(av, 2) * vgetq_lane_f32(bv, 2);
     dot += vgetq_lane_f32(av, 3) * vgetq_lane_f32(bv, 3);
 
-    float32x4_t delta;
-    if (dot < 0.0f) {
-        delta = vsubq_f32(vnegq_f32(bv), av);
-    } else {
-        delta = vsubq_f32(bv, av);
-    }
+    float32x4_t delta = (dot < 0.0f) ? vsubq_f32(vnegq_f32(bv), av)
+                                     : vsubq_f32(bv, av);
 
     float32x4_t result = vmlaq_f32(av, vdupq_n_f32(t), delta);
-    alignas(16) float storage[4];
-    *reinterpret_cast<Vec4 *>(storage) = result;
-    quaternion_normalized(this, reinterpret_cast<Quaternion *>(storage));
-
-    return;
+    vst1q_f32(&x, result);
+    *this = Normalized();
 }
 
 } // namespace AbyssEngine
