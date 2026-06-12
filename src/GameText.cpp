@@ -172,6 +172,19 @@ GameText *_ZN8GameTextD2Ev(GameText *self)
     return GameText_dtor_tail(self);
 }
 
+// Destructor tail: tear down the embedded base Array<int> substitute table by freeing its
+// backing buffer, then hand `this` back to the caller (the D2 forwarder).
+GameText *GameText::dtor_tail()
+{
+    if (substituteData != 0) {
+        ::operator delete[](substituteData);
+        substituteData = 0;
+    }
+    substituteCount = 0;
+    substituteCapacity = 0;
+    return this;
+}
+
 // ---- isNonArabicString_7f798.cpp ----
 // Arabic codepoint table: 0x29 rows x 5 u32 columns (PC-relative base address).
 extern unsigned gArabicTable[] __attribute__((visibility("hidden")));

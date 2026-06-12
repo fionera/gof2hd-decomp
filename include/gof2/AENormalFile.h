@@ -68,5 +68,8 @@ public:
     uint32_t Skip(uint32_t bytes);
     uint32_t GetFileSize();
     uint32_t Release();
+
+    // Deleting-destructor tail: after the D2 body has run, release the storage.
+    void deleteTail();
 };
 #endif

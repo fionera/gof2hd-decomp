@@ -82,5 +82,6 @@ public:
     uint32_t Release();
     uint32_t Read(uint32_t bytes, void *buffer);
     uint32_t Skip(uint32_t bytes);
+    void deleteTail();   // D0 deleting-destructor tail: operator delete(this)
 };
 #endif

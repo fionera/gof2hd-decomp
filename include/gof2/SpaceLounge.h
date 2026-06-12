@@ -16,6 +16,7 @@ static inline float &F(void *p, int off) { return *(float *)((char *)p + off); }
 class SpaceLounge {
 public: void* _opaque;
     // ---- methods (converted from free functions) ----
+    ~SpaceLounge();
     void OnRender3D();
     void OnRenderBG();
     int OnTouchBegin(int x, int y);

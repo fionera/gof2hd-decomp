@@ -209,6 +209,7 @@ public:
     int getEnemiesLeft();
     int getFriendsLeft();
     int getMessages();
+    void *getActiveMessages();
     int getTimeLimit();
     int collide(Vector v);
     void isInAsteroidCenterRange(Vector v);

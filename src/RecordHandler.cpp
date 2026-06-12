@@ -96,6 +96,23 @@ void RecordHandler_readRecord(int param)
     return RecordHandler_readRecordTail(param);
 }
 
+// readRecord()'s tail veneer: dispatches the slot to the record-store reader.
+void RecordHandler::readRecordTail(int slot)
+{
+    recordStoreRead(slot);
+}
+
+// changeSaveDirectoryToBackupDirectory() cleanup tail: the two byte-array Arrays and the
+// primary size buffer have already been released by the caller; free the backup size
+// buffer here (`sizes1`). The trailing args are the caller's residual registers.
+void RecordHandler::csd_tail(void *sizes1, int one, int count, void *backupRecords)
+{
+    (void)one;
+    (void)count;
+    (void)backupRecords;
+    RH_op_delete_arr(sizes1);
+}
+
 // ---- readAllRecords_cbcdc.cpp ----
 // Global holder: g -> P, *P -> the record count.
 __attribute__((visibility("hidden"))) extern int *g_RH_recordCount;
@@ -1355,6 +1372,348 @@ void RecordHandler::recordStoreWrite(int slot) {
     ((RecordHandler *)(self))->addHash(slot);
 
     return;
+}
+
+// ---- recordStoreWrite body (game object-graph serialization) ----
+// Continuation of recordStoreWrite(): writes the live object graph (boolean bitmaps, item
+// and ship inventories for the player/wingman/stations, standings, blueprints, pending
+// products, wingmen list, agents, option flags, wanteds, bounties and the ship-mod tables)
+// to the already-open file `fd`. The caller handles open/prefix, Close and addHash.
+__attribute__((visibility("hidden"))) extern void **g_RSW_status_p;   // -> Status*
+__attribute__((visibility("hidden"))) extern void **g_RSW_achievements; // -> Achievements*
+__attribute__((visibility("hidden"))) extern void  *g_RSW_optFlags;   // option-flag block base
+__attribute__((visibility("hidden"))) extern void  *g_RSW_uiFlags;    // secondary flag block base
+__attribute__((visibility("hidden"))) extern int    g_RSW_modVersion; // ship-mod table version tag
+
+// Helper: write a length-prefixed bool[] backed by an Array<bool> at status+off.
+static void RSW_writeBoolArray(void *status, int off, unsigned int fd) {
+    unsigned int *arr = *(unsigned int **)((char *)status + off);
+    AEFile_WriteInt(*arr, fd);
+    for (unsigned i = 0; i < *arr; i++) {
+        AEFile_WriteBool(*(bool *)(arr[1] + i), fd);
+    }
+}
+
+// Helper: write a length-prefixed int[] backed by an Array<int> at status+off.
+static void RSW_writeIntArray(void *status, int off, unsigned int fd) {
+    unsigned int *arr = *(unsigned int **)((char *)status + off);
+    AEFile_WriteInt(*arr, fd);
+    for (unsigned i = 0; i < *arr; i++) {
+        AEFile_WriteInt(*(int *)(arr[1] + i * 4), fd);
+    }
+}
+
+// Helper: write a ship's equipment list (index, amount, unsaleable) or 0 when absent.
+static void RSW_writeEquipment(Ship *ship, unsigned int fd) {
+    unsigned int *eq = (unsigned int *)((Ship *)ship)->getEquipment();
+    if (eq == 0) { AEFile_WriteInt(0, fd); return; }
+    AEFile_WriteInt(*eq, fd);
+    for (unsigned i = 0; i < *eq; i++) {
+        Item *it = *(Item **)(eq[1] + i * 4);
+        if (it == 0) { AEFile_WriteInt(-1, fd); continue; }
+        AEFile_WriteInt(((Item *)it)->getIndex(), fd);
+        AEFile_WriteInt(((Item *)it)->getAmount(), fd);
+        AEFile_WriteBool(((Item *)it)->isUnsaleable(), fd);
+    }
+}
+
+// Helper: write a ship's cargo list (index, amount, single price, unsaleable) or 0.
+static void RSW_writeCargo(Ship *ship, unsigned int fd) {
+    unsigned int *cg = (unsigned int *)((Ship *)ship)->getCargo();
+    if (cg == 0) { AEFile_WriteInt(0, fd); return; }
+    AEFile_WriteInt(*cg, fd);
+    for (unsigned i = 0; i < *cg; i++) {
+        Item *it = *(Item **)(cg[1] + i * 4);
+        AEFile_WriteInt(((Item *)it)->getIndex(), fd);
+        AEFile_WriteInt(((Item *)it)->getAmount(), fd);
+        AEFile_WriteInt(((Item *)it)->getSinglePrice(), fd);
+        AEFile_WriteBool(((Item *)it)->isUnsaleable(), fd);
+    }
+}
+
+// Helper: write a ship's installed-mod list or 0 when the ship has none.
+static void RSW_writeMods(Ship *ship, unsigned int fd) {
+    if (ship == 0) { AEFile_WriteInt(0, fd); return; }
+    unsigned int *mods = (unsigned int *)((Ship *)ship)->getMods();
+    if (mods == 0) { AEFile_WriteInt(0, fd); return; }
+    AEFile_WriteInt(*mods, fd);
+    for (unsigned i = 0; i < *mods; i++) {
+        AEFile_WriteInt(*(int *)(mods[1] + i * 4), fd);
+    }
+}
+
+void RecordHandler::recordStoreWrite_body(unsigned int fd) {
+    void *status = *g_RSW_status_p;
+    char *flags = (char *)g_RSW_optFlags;   // option/progress flag block
+    char *ui = (char *)g_RSW_uiFlags;       // secondary flag block
+
+    // Standings unlock bitmap and the various progress / discovery bitmaps.
+    AEFile_WriteInt(*(int *)((char *)status + 0x7c), fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0x84), fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0x88), fd);
+    RSW_writeBoolArray(status, 0x94, fd);
+    RSW_writeBoolArray(status, 0x98, fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0x9c), fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0xa0), fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0xa4), fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0xa8), fd);
+    RSW_writeBoolArray(status, 0xac, fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0xb0), fd);
+    RSW_writeBoolArray(status, 0xb4, fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0xb8), fd);
+    AEFile_WriteLong(*(long long *)((char *)status + 0xc0), fd);
+    for (int off = 0xc8; off <= 0xec; off += 4) {
+        AEFile_WriteInt(*(int *)((char *)status + off), fd);
+    }
+
+    // Achievement medals (0x2d entries).
+    int medals = (int)(intptr_t)((Achievements *)(*g_RSW_achievements))->getMedals();
+    AEFile_WriteInt(0x2d, fd);
+    for (unsigned i = 0; i < 0x2d; i++) {
+        AEFile_WriteInt(*(int *)(medals + i * 4), fd);
+    }
+
+    // Player ship: index, race, equipment, cargo.
+    Ship *ship = ((Status *)status)->getShip();
+    AEFile_WriteInt(((Ship *)ship)->getIndex(), fd);
+    AEFile_WriteInt(((Ship *)ship)->getRace(), fd);
+    RSW_writeEquipment(ship, fd);
+    RSW_writeCargo(ship, fd);
+
+    // Station stack (3 fixed slots + current station): items, ships, agents, hostility flag.
+    unsigned int *stack = (unsigned int *)((Status *)status)->getStationStack();
+    AEFile_WriteInt(3, fd);
+    for (unsigned i = 0; i < *stack + 1; i++) {
+        Station *cur = (i == *stack) ? (Station *)((Status *)status)->getStation()
+                                     : *(Station **)(stack[1] + i * 4);
+        if (cur == 0) { AEFile_WriteInt(-1, fd); continue; }
+        AEFile_WriteInt(((Station *)cur)->getIndex(), fd);
+
+        unsigned int *items = (unsigned int *)((Station *)cur)->getItems();
+        if (items == 0) { AEFile_WriteInt(0, fd); }
+        else {
+            AEFile_WriteInt(*items, fd);
+            for (unsigned j = 0; j < *items; j++) {
+                Item *it = *(Item **)(items[1] + j * 4);
+                AEFile_WriteInt(((Item *)it)->getIndex(), fd);
+                AEFile_WriteInt(((Item *)it)->getAmount(), fd);
+                AEFile_WriteInt(((Item *)it)->getSinglePrice(), fd);
+                AEFile_WriteBool(((Item *)it)->isUnsaleable(), fd);
+            }
+        }
+        unsigned int *ships = (unsigned int *)((Station *)cur)->getShips();
+        if (ships == 0) { AEFile_WriteInt(0, fd); }
+        else {
+            AEFile_WriteInt(*ships, fd);
+            for (unsigned j = 0; j < *ships; j++) {
+                Ship *s = *(Ship **)(ships[1] + j * 4);
+                AEFile_WriteInt(((Ship *)s)->getIndex(), fd);
+                AEFile_WriteInt(((Ship *)s)->getRace(), fd);
+            }
+        }
+        unsigned int *agents = (unsigned int *)((Station *)cur)->getAgents();
+        if (agents == 0) { AEFile_WriteInt(0, fd); }
+        else {
+            AEFile_WriteInt(*agents, fd);
+            for (unsigned j = 0; j < *agents; j++) {
+                ((RecordHandler *)this)->writeAgent(*(void **)(agents[1] + j * 4), fd);
+            }
+        }
+        AEFile_WriteBool(((Station *)cur)->hasAttackedFriends(), fd);
+    }
+
+    // Standings (2 races).
+    int standings = (int)(intptr_t)((Standing *)((Status *)status)->getStanding())->getStandings();
+    AEFile_WriteInt(2, fd);
+    for (unsigned i = 0; i < 2; i++) {
+        AEFile_WriteInt(*(int *)(standings + i * 4), fd);
+    }
+
+    // Blueprints: per blueprint the ingredient list, then its scalar fields and name.
+    unsigned int *bps = (unsigned int *)((Status *)status)->getBluePrints();
+    AEFile_WriteInt(*bps, fd);
+    for (unsigned i = 0; i < *bps; i++) {
+        int *bp = *(int **)(bps[1] + i * 4);
+        unsigned int *ingredients = (unsigned int *)bp[0];
+        for (unsigned j = 0; j < *ingredients; j++) {
+            AEFile_WriteInt(*(int *)(ingredients[1] + j * 4), fd);
+        }
+        AEFile_WriteInt(bp[1], fd);
+        AEFile_WriteBool((bool)(char)bp[2], fd);
+        AEFile_WriteInt(bp[3], fd);
+        AEFile_WriteInt(bp[4], fd);
+        AEFile_WriteString((char *)(bp + 5), fd, true);
+    }
+
+    // Pending products (only the populated slots are written; -1 when none).
+    unsigned int *pending = (unsigned int *)((Status *)status)->getPendingProducts();
+    if (pending == 0) { AEFile_WriteInt(-1, fd); }
+    else {
+        int count = 0;
+        for (unsigned i = 0; i < *pending; i++) {
+            if (*(int *)(pending[1] + i * 4) != 0) count++;
+        }
+        if (count == 0) { AEFile_WriteInt(-1, fd); }
+        else {
+            AEFile_WriteInt(count, fd);
+            for (unsigned i = 0; i < *pending; i++) {
+                int pp = *(int *)(pending[1] + i * 4);
+                if (pp == 0) continue;
+                AEFile_WriteInt(*(int *)(pp + 0x14), fd);
+                AEFile_WriteInt(*(int *)(pp + 0x10), fd);
+                AEFile_WriteInt(*(int *)(pp + 0xc), fd);
+                AEFile_WriteString(*(char **)(pending[1] + i * 4), fd, true);
+            }
+        }
+    }
+
+    // Wingmen list (String[]) + its trailing scalar fields, or -1 when absent.
+    unsigned int *wingmen = *(unsigned int **)((char *)status + 0x24);
+    if (wingmen == 0) { AEFile_WriteInt(-1, fd); }
+    else {
+        AEFile_WriteInt(*wingmen, fd);
+        for (unsigned i = 0; i < *wingmen; i++) {
+            AEFile_WriteString(*(char **)(wingmen[1] + i * 4), fd, true);
+        }
+        AEFile_WriteInt(*(int *)((char *)status + 0x2c), fd);
+        AEFile_WriteInt(*(int *)((char *)status + 0x30), fd);
+        AEFile_WriteInt(5, fd);
+        for (unsigned i = 0; i < 5; i++) {
+            AEFile_WriteInt(*(int *)(*(int *)((char *)status + 0x28) + i * 4), fd);
+        }
+    }
+
+    AEFile_WriteInt(*(int *)((char *)status + 0x34), fd);
+    RSW_writeBoolArray(status, 0x38, fd);
+    RSW_writeIntArray(status, 0x40, fd);
+    RSW_writeIntArray(status, 0x3c, fd);
+    RSW_writeIntArray(status, 0x48, fd);
+    RSW_writeIntArray(status, 0x44, fd);
+    RSW_writeBoolArray(status, 0x4c, fd);
+
+    // Agents.
+    unsigned int *agents = (unsigned int *)((Status *)status)->getAgents();
+    AEFile_WriteInt(*agents, fd);
+    for (unsigned i = 0; i < *agents; i++) {
+        ((RecordHandler *)this)->writeAgent(*(void **)(agents[1] + i * 4), fd);
+    }
+
+    // Tutorial / one-shot progress flags (option block +0x8 .. +0x24).
+    for (int off = 0x8; off <= 0x20; off++) {
+        if (off == 0x21) continue;            // 0x22 is written before 0x21 below
+        AEFile_WriteBool(*(bool *)(flags + off), fd);
+    }
+    AEFile_WriteBool(*(bool *)(flags + 0x22), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x21), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x23), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x24), fd);
+
+    AEFile_WriteLong(*(long long *)((char *)status + 0x100), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x25), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x26), fd);
+
+    // Optional wingman ship (index, race, equipment, cargo) or 0.
+    Ship *wingShip = *(Ship **)((char *)status + 0x8c);
+    if (wingShip == 0) { AEFile_WriteInt(0, fd); }
+    else {
+        AEFile_WriteInt(1, fd);
+        AEFile_WriteInt(((Ship *)wingShip)->getIndex(), fd);
+        AEFile_WriteInt(((Ship *)wingShip)->getRace(), fd);
+        RSW_writeEquipment(wingShip, fd);
+        RSW_writeCargo(wingShip, fd);
+    }
+
+    RSW_writeIntArray(status, 0x90, fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0x10c), fd);
+    AEFile_WriteBool(*(bool *)((char *)status + 0x110), fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0x114), fd);
+    AEFile_WriteBool(*(bool *)((char *)status + 0x111), fd);
+
+    // Current station's items / ships (re-read off the current station).
+    Station *station = (Station *)((Status *)status)->getStation();
+    unsigned int *sItems = (unsigned int *)((Station *)station)->getItems();
+    if (sItems == 0) { AEFile_WriteInt(0, fd); }
+    else {
+        AEFile_WriteInt(*sItems, fd);
+        for (unsigned i = 0; i < *sItems; i++) {
+            Item *it = *(Item **)(sItems[1] + i * 4);
+            AEFile_WriteInt(((Item *)it)->getIndex(), fd);
+            AEFile_WriteInt(((Item *)it)->getAmount(), fd);
+            AEFile_WriteInt(((Item *)it)->getSinglePrice(), fd);
+            AEFile_WriteBool(((Item *)it)->isUnsaleable(), fd);
+        }
+    }
+    unsigned int *sShips = (unsigned int *)((Station *)station)->getShips();
+    if (sShips == 0) { AEFile_WriteInt(0, fd); }
+    else {
+        AEFile_WriteInt(*sShips, fd);
+        for (unsigned i = 0; i < *sShips; i++) {
+            Ship *s = *(Ship **)(sShips[1] + i * 4);
+            AEFile_WriteInt(((Ship *)s)->getIndex(), fd);
+            AEFile_WriteInt(((Ship *)s)->getRace(), fd);
+        }
+    }
+
+    AEFile_WriteBool(*(bool *)(flags + 0x27), fd);
+    AEFile_WriteBool(*(bool *)(ui + 0x35), fd);
+    AEFile_WriteBool(*(bool *)(ui + 0x36), fd);
+    RSW_writeBoolArray(status, 0x54, fd);
+
+    // Ship-mod table version tag + mod lists for player, wingman and every station ship.
+    AEFile_WriteInt(g_RSW_modVersion, fd);
+    RSW_writeMods(ship, fd);
+    RSW_writeMods(wingShip, fd);
+    if (sShips == 0) { AEFile_WriteInt(0, fd); }
+    else {
+        AEFile_WriteInt(*sShips, fd);
+        for (unsigned i = 0; i < *sShips; i++) {
+            RSW_writeMods(*(Ship **)(sShips[1] + i * 4), fd);
+        }
+    }
+    for (unsigned i = 0; i < *stack + 1; i++) {
+        Station *cur = (i == *stack) ? (Station *)((Status *)status)->getStation()
+                                     : *(Station **)(stack[1] + i * 4);
+        if (cur == 0) continue;
+        unsigned int *cShips = (unsigned int *)((Station *)cur)->getShips();
+        if (cShips == 0) { AEFile_WriteInt(0, fd); continue; }
+        AEFile_WriteInt(*cShips, fd);
+        for (unsigned j = 0; j < *cShips; j++) {
+            RSW_writeMods(*(Ship **)(cShips[1] + j * 4), fd);
+        }
+    }
+
+    // Wanted board, collected bounties, and the remaining one-shot UI/progress flags.
+    unsigned int *wanted = *(unsigned int **)status;
+    AEFile_WriteInt(*wanted, fd);
+    for (unsigned i = 0; i < *wanted; i++) {
+        ((RecordHandler *)this)->writeWanted(*(void **)(wanted[1] + i * 4), fd);
+    }
+    for (unsigned i = 0; i < 4; i++) {
+        AEFile_WriteInt(((Status *)status)->getCollectedBounties(i), fd);
+    }
+    AEFile_WriteBool(*(bool *)(ui + 0x37), fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0x178), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x28), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x29), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x2c), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x2a), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x2b), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x2e), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x2f), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x30), fd);
+    RSW_writeBoolArray(status, 0x58, fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x31), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x2d), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x32), fd);
+    AEFile_WriteInt(*(int *)((char *)status + 0x118), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x33), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x34), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x35), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x36), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x37), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x38), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x39), fd);
+    AEFile_WriteBool(*(bool *)(flags + 0x3a), fd);
 }
 
 // ---- readOptionsFileAsByteArray_cdd4c.cpp ----

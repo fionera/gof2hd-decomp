@@ -73,6 +73,7 @@ public:
 
     PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z);
     ~PlayerTurret() noexcept(false);
+    PlayerTurret *completeDtor();
 
     void setTurretRange(int range);
     void handleSentryGun(int delta);

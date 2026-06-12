@@ -77,6 +77,13 @@ public:
     // ---- methods (recovered from the binary) ----
     Mesh(Mesh *src);                    // copy constructor
     int ReadEnhancedDataFromFile(unsigned int file, unsigned int flags);
+
+    // Thin per-mesh editing helpers used by Globals_createBillBoard. The mesh lives
+    // inside a PaintCanvas's mesh table (addressed by the `mesh` index); each call
+    // forwards to the matching PaintCanvas primitive.
+    static void setFace(void *canvas, int mesh, int face, int i0, int i1, int i2);
+    static void setUV(void *canvas, int mesh, int vert, float u, float v);
+    static void setVertex(void *canvas, int mesh, int vert, float x, float y, float z);
 };
 
 } // namespace AbyssEngine

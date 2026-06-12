@@ -34,6 +34,46 @@
 Generator::Generator() {}
 Generator::~Generator() {}
 
+// ---- ABI shims --------------------------------------------------------------
+// Generator is allocated on demand (operator new(1)) at several call sites that
+// only have the raw object pointer, so these extern "C" entry points wrap the
+// real special members and methods. Generator holds no state, so construction
+// and destruction are trivial in-place operations.
+extern "C" void Generator_ctor(Generator *g)
+{
+    new (g) Generator();
+}
+
+extern "C" void *Generator_dtor(Generator *g)
+{
+    g->~Generator();
+    return g;
+}
+
+// "_oi" variants: identical work, reached from the inlined ModStation station
+// setup. They forward straight to the corresponding Generator members. The
+// Generator pointer arrives in r0 and the Station in r1 (mirroring the binary).
+extern "C" void Generator_ctor_oi(Generator *g)
+{
+    new (g) Generator();
+}
+
+extern "C" void *Generator_dtor_oi(Generator *g)
+{
+    g->~Generator();
+    return g;
+}
+
+extern "C" void Generator_computerTradeGoods_oi(Generator *g, Station *station)
+{
+    g->computerTradeGoods(station);
+}
+
+extern "C" int Generator_getShipBuyList_oi(Generator *g, Station *station)
+{
+    return (int)(intptr_t)g->getShipBuyList(station);
+}
+
 // ---- computerTradeGoods_953a0.cpp ----
 static AbyssEngine::AERandom **volatile g_Generator_tradeRandom;
 

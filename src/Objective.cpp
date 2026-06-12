@@ -80,6 +80,29 @@ Objective *_ZN9ObjectiveD2Ev(Objective *self)
     return self;
 }
 
+// ---- Objective::~Objective() ----
+// Real destructor (the "Objective_dtor" target): releases the child-objective array and
+// the achieved-text String, mirroring the D2Ev teardown above.
+Objective::~Objective()
+{
+    Array<Objective *> *children = this->field_0x10;
+    if (children != 0) {
+        ArrayReleaseClasses_Objective(children);
+        children = this->field_0x10;
+        if (children != 0)
+            ::operator delete(Array_ObjectivePtr_dtor(children));
+    }
+    this->field_0x10 = 0;
+
+    void *text = this->field_0x14;
+    if (text != 0) {
+        typedef void (*ReleaseFn)(void *);
+        ReleaseFn release = *(ReleaseFn *)((char *)*(void **)text + 4);
+        release(text);
+    }
+    this->field_0x14 = 0;
+}
+
 // ---- setAchievedText_980cc.cpp ----
 void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective *self,
                                                                         String *text)

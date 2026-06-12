@@ -387,6 +387,13 @@ int Level::getMessages() {
     return messages;
 }
 
+// Level::getActiveMessages() — accessor for the level's live radio-message queue
+// (the Array<RadioMessage*> that createRadioMessage()/createRadioMessages() build at
+// this+0x114). Returned as an opaque pointer; callers re-cast to the message array.
+void *Level::getActiveMessages() {
+    return (void *)(intptr_t)messages;
+}
+
 // ---- getEnemyRoute_c40d4.cpp ----
 int Level::getEnemyRoute() {
     return enemyRoute;

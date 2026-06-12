@@ -224,5 +224,27 @@ public:
     void showMissionRewardMessage(int show, bool flag);
     void startFade(uint8_t fadeOut, int color, int duration);
     void update(int dt);
+
+    // ---- recovered internal helpers (batch 4) ----
+    void drawWindowImpl(const void *str, int flag);
+    void drawWindowImpl5(void *str, int x, int y, int w, int h, int flag);
+    void drawHeaderImpl(void *title, int transition);
+    void drawBoxImpl(int style, int x, int y, int w, int h, void *text, int flags);
+    void drawBoxStr(int style, int x, int y, int w, int h, void *text);
+    void drawBox8(int kind, int x, int y, int w, int color, void *text, int z);
+    void drawMaskImpl(int x, int y, int w, int h);
+    void drawMaskTail(void *pc, int savedColor);
+    void drawHelpWindowImpl();
+    void drawBGBorder6(unsigned corner, unsigned edge, int x, int y, int w);
+    void drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
+    void setBtnRect(void *btn, int x, int y, int anchor);
+    void loadImage(unsigned canvas, int imageId, void *field);
+    void headerAnim(void *btn);
+    void initConstBlock(int hd, int wide, int scale, int res);
+    int  dispatchTouchBegin(void *btn, int x, int y);
+    int  dispatchTouchMove(void *btn, int x, int y);
+    int  dispatchTouchEnd(void *btn, int x, int y);
+    int  touch_end(int x, int y);
+    void drawHeader_call(void *title);
 };
 #endif

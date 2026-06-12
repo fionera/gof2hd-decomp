@@ -131,3 +131,22 @@ void _ZN10PlayerJunk6renderEv(PlayerJunk *self) {
     if ((uint32_t)(self->state - 3) > 1)
         return PlayerJunk_renderTail(self);
 }
+
+// ---- reset/render/dtor tail fragments ----
+// These are the veneers each of reset()/render()/~PlayerJunk() tail-calls. They simply
+// complete the operation with the corresponding KIPlayer base behaviour.
+
+// reset() tail: re-show the junk (the base visible/show setter, called with show==1).
+void PlayerJunk::resetTail(int show) {
+    ((KIPlayer *)this)->setVisible(show != 0);
+}
+
+// render() tail: render through the KIPlayer base.
+void PlayerJunk::renderTail() {
+    ((KIPlayer *)this)->render();
+}
+
+// deleting-destructor tail: the base subobject is already torn down, so just free.
+void PlayerJunk::dtorTail() {
+    ::operator delete(this);
+}

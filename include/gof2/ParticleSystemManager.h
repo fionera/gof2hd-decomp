@@ -79,6 +79,9 @@ public:
     int  addSpriteSystem(const void *matrix, const void *sets, bool flag);
     void initMesh();
     void enableSystemEmit(int handle, bool enable);
+    void enableSystemEmit2(int handle, bool enable);
+    void enableSystemEmit3(int handle, bool enable);
+    void attachSystem(int handle, bool enable);
     int  addSystem(const void *matrix, unsigned int set, bool flag);
     int  init();
     void resetSystem(int handle);

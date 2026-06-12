@@ -124,6 +124,7 @@ public:
     int addStationToStack(Station *station);
     bool isOnStack(Station *station);
     void setStation(Station *station);
+    void setStationTail(Station *station);
     void departStation(Station *dest);
     bool inAlienOrbit();
     Station *getStation();

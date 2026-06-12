@@ -21,5 +21,13 @@ public:
     void OnRender3D();
     void OnTouchEnd(int x, int y);
     int OnInitialize();
+
+    // Tail fragments of the methods above (interworking-return veneers in the
+    // binary that resolve to a single concrete engine call each).
+    void or_tail(void *layout);             // OnRelease tail: ImageFactory/Layout reload completion
+    void r2dDone(void *app, int moduleId);  // OnRender2D: logo sequence finished -> switch module
+    void r2dTail(void *canvas);             // OnRender2D tail: PaintCanvas::End2d completion
+    void r3dTail(void *canvas);             // OnRender3D tail: PaintCanvas::Begin3d completion
+    void deleteTail();                      // deleting-dtor tail: operator delete(this)
 };
 #endif

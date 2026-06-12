@@ -43,6 +43,22 @@ void SolarSystem::dtor() {
     SolarSystem_baseStringDtor((char *)self + 0xc);
 }
 
+// AbyssEngine::String::~String() run on the in-place `name` member at +0xc. This
+// is the base (non-deleting) destructor: it releases the string's backing buffer
+// but does not free the SolarSystem itself.
+extern "C" void SolarSystem_baseStringDtor(void *strField)
+{
+    String_dtor((String *)strField);
+}
+
+// SolarSystem::getWarpGateEnumIndex() forwards here with the orbit's jump-gate
+// station id; resolving the warp-gate enum index is the same table lookup used
+// for ordinary stations, so reuse getStationEnumIndex().
+extern "C" int SolarSystem_warpGateLookup(SolarSystem *self, int idx)
+{
+    return (int)self->getStationEnumIndex(idx);
+}
+
 // ---- currentOrbitHasWarpGate_155818.cpp ----
 struct Status;
 struct Station;

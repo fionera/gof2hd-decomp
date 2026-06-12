@@ -513,3 +513,8 @@ void Mission::setCampaignMission(bool flag) {
 bool Mission::isOutsideMission() {
     return true;
 }
+
+// Mission::setType(int) (0x16bcc8): the "type" is stored in the same slot as the id at +0xc.
+void Mission::setType(int type) {
+    this->id = type;
+}

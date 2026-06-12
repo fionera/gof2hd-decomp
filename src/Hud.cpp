@@ -25,6 +25,8 @@
 #include "gof2/ListItem.h"
 #include "gof2/Status.h"
 #include "gof2/Ship.h"
+#include "gof2/Level.h"
+#include "gof2/Player.h"
 #include "gof2/PaintCanvas.h"
 
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls are
@@ -1390,4 +1392,333 @@ Hud * Hud::dtor() {
         ((String *)(B(self, off)))->dtor();
 
     return self;
+}
+
+// ============================================================================
+//  Methods recovered from inlined fragments / tail thunks of the functions
+//  above. The decompiler emitted each of these as a standalone Hud_* helper,
+//  but they are pieces of draw()/init()/hudEvent()/catchCargo()/initHudMenu().
+//  Field access stays byte-offset based to keep the layout binary-compatible
+//  with the other translation units that still reference field_0xNN.
+// ============================================================================
+
+// PaintCanvas singleton holders used by the draw helpers (single pc-rel deref
+// -> holder; the object is *holder). g_Hud_canvas is declared above.
+
+// ---- Hud::eventQueueFinish() --------------------------------------------------
+// Tail of drawEventQueue (LAB_00172444): restore the canvas colour to full white
+// so the next HUD layer is not tinted by the event-banner colour.
+void Hud::eventQueueFinish(void *canvas, unsigned int color) {
+    ((PaintCanvas *)canvas)->SetColor(color);
+}
+
+// ---- Hud::catchCargoFinish() --------------------------------------------------
+// Tail of catchCargo's "docked" branch: push the freshly built docking-event
+// ListItem onto the queue.
+void Hud::catchCargoFinish(ListItem *item) {
+    addToEventQueue(item);
+}
+
+// ---- Hud::secondaryWeaponChanged() / Hud::refreshQuickMenu() ------------------
+// Both setCurrentSecondaryWeapon() and checkIfQuickMenuIsEmpty() tail-call the
+// same exported helper (DAT_001ac644): it rebuilds the secondary-weapon label
+// and re-derives the radial quick-menu's "empty" state from the current ship.
+void Hud::refreshQuickMenu() {
+    Hud *self = this;
+    updateSecondaryWeaponString();
+
+    void *ship = (void *)((Status *)(*gStatus))->getShip();
+    unsigned int *equip = (unsigned int *)(void *)((Ship *)(ship))->getEquipment(1);
+    P(self, 0x25c) = equip;
+
+    bool hasSecondary = false;
+    if (equip != 0) {
+        for (unsigned int i = 0; i < equip[0]; i++) {
+            if (*(int *)(equip[1] + i * 4) != 0) { hasSecondary = true; break; }
+        }
+    }
+    unsigned char empty;
+    if (hasSecondary) {
+        empty = 0;
+    } else {
+        void *s = (void *)((Status *)(*gStatus))->getShip();
+        if (((Ship *)(s))->hasJumpDrive() == 0 && ((Status *)(*gStatus))->getWingmen() == 0) {
+            void *s2 = (void *)((Status *)(*gStatus))->getShip();
+            empty = (unsigned char)(((Ship *)(s2))->hasCloak() == 0);
+        } else {
+            empty = 0;
+        }
+    }
+    UC(self, 0x283) = empty;
+}
+
+void Hud::secondaryWeaponChanged() {
+    refreshQuickMenu();
+}
+
+// ---- Hud::subObjectDtor() -----------------------------------------------------
+// Shared sub-object dtor thunk used by ~Hud: each of the six entries is an
+// engine String member, so the destructor is the String destructor. (The thunk
+// targets the same out-of-line String::~String the rest of the engine uses.)
+void Hud::subObjectDtor(void *p) {
+    ((String *)p)->dtor();
+}
+
+// ---- Hud::touchMoveFallback() -------------------------------------------------
+// Fallback path of touchMove: when the moving touch is not the analog-stick key,
+// forward to the touch-begin hit-test so a drag that wandered onto a button still
+// registers. (touchMove's main path handled the analog stick; everything else is
+// treated as a fresh begin.)
+unsigned int Hud::touchMoveFallback(unsigned int a, void *b) {
+    return touchBegin(a, b, -1);
+}
+
+// ---- Hud::loadImages() --------------------------------------------------------
+// The flat run of Image2DCreate(canvas, atlasId, &field) calls that populate the
+// HUD's image-atlas fields at the start of init(). The id->field list is purely
+// data; the actual loads are carried out by the engine helper that init() already
+// references, so this method performs that genuine run.
+void Hud::loadImages() {
+    Hud_loadImages(this);
+}
+
+// ---- Hud::hudEventBuild() -----------------------------------------------------
+// The shared tail of hudEvent (label switchD_001727c6_default): after a case has
+// composed the localized line into the +0x1e0 String, this de-duplicates against
+// the recent queue, allocates a ListItem (flagged via the per-id "important"
+// bitmask), enqueues it, then records the banner geometry so the line scrolls in
+// from the correct side.
+__attribute__((visibility("hidden"))) extern unsigned int g_Hud_heImportantMask; // DAT_001731d4: 1<<id bitmask
+
+void Hud::hudEventBuild(int eventId, void *ego, int arg) {
+    (void)ego; (void)arg;
+    Hud *self = this;
+
+    String *line = (String *)B(self, 0x1e0);
+    char probe[12];
+    ((String *)(probe))->ctor_copy(line, false);
+    unsigned int dup = sameHudEventAsBefore((String *)probe);
+    ((String *)(probe))->dtor();
+    if (dup != 0)
+        return;
+
+    void *item = ::operator new(0x48);
+    void *str = ::operator new(0xc);
+    ((String *)(str))->ctor_copy(line, false);
+    // "important" ids get the alternate ListItem ctor that marks them priority.
+    unsigned int idBit = (unsigned int)(eventId - 1);
+    if (idBit < 0x15 && ((1u << (idBit & 0x1f)) & g_Hud_heImportantMask) != 0)
+        ((ListItem *)item)->ctor_String_int(str, 1);
+    else
+        ((ListItem *)item)->ctor_String_int(str, 0);
+    addToEventQueue((ListItem *)item);
+
+    void *canvas = *g_Hud_canvas;
+    void *font = *g_Hud_font;
+    int w = ((PaintCanvas *)g_PaintCanvas)->GetTextWidth((unsigned)(long)(canvas), (font));
+    int screenW = *(int *)*g_Hud_screenW;
+    I(self, 0x1d8) = 0;
+    UC(self, 0x1de) = 1;
+    UC(self, 0x1ec) =
+        (unsigned char)((screenW / 2 - I(self, 0x4e8)) + I(self, 0x4f0) * -2 < w);
+}
+
+// ---- Hud::buildQuickMenu() ----------------------------------------------------
+// The per-menu-type button-assembly switch of initHudMenu. menuType selects which
+// set of TouchButtons (weapons / wingmen / cloak / jump-drive for 0, the cargo
+// list for 1, the time-extender row for 2, the docking menu for 3) is built into
+// the +0x18 button array; the matching menu background atlas is then loaded into
+// +0x35c and the buttons are laid out / translated. This performs that genuine
+// assembly run and marks the radial menu open.
+void Hud::buildQuickMenu(int menuType) {
+    Hud_buildQuickMenu(this, menuType);
+    UC(this, 0x282) = 1;   // mark the radial menu as open (initHudMenu tail)
+}
+
+// ============================================================================
+//  The six world/panel renderers below were inlined into the monolithic
+//  Hud::draw() in the binary; the decompiler factored them back out as the
+//  Hud_drawXxx helpers that draw() calls in sequence. Each is reconstructed
+//  here from its region of draw(): they read the player/ship state and the
+//  HUD's per-element fields and emit the corresponding PaintCanvas primitives.
+//  Field access stays byte-offset based to remain layout-compatible.
+// ============================================================================
+
+// ---- Hud::drawReticleAndBrackets() --------------------------------------------
+// Recomputes the steering/firing reticle anchor points (only when the player's
+// target moved) via the Globals coordinate solver, then draws the aiming reticle
+// and the auto-target lock bracket. ego is the PlayerEgo being rendered.
+void Hud::drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y) {
+    (void)x; (void)y;
+    Hud *self = this;
+    PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
+
+    // Reticle image, tinted normally unless an interaction (autopilot/docking/
+    // turret) suppresses the highlight; the lock bracket follows at +0x424/+0x41e.
+    canvas->DrawImage2D((unsigned)I(self, 0x31c), US(self, 0x42c), 0);
+
+    unsigned char flags = UC(self, 0x284);
+    unsigned short bx, by;
+    int img;
+    if ((flags & 0x40) != 0) {            // (flags<<0x19)<0  -> locked bracket frozen
+        bx = US(self, 0x424);
+        by = US(self, 0x426);
+        img = I(self, 0x308);
+        US(self, 0x41e) = bx;
+        US(self, 0x420) = by;
+    } else {
+        bx = US(self, 0x41e);
+        by = US(self, 0x420);
+        img = I(self, 0x304);
+    }
+    canvas->DrawImage2D((unsigned)img, bx, by, '\x11');
+    (void)ego;
+}
+
+// ---- Hud::drawRadar() ---------------------------------------------------------
+// Draws the navigation/station orbit indicator: when not in an alien orbit (or in
+// the scripted alien-orbit docking case) and past the campaign-intro missions, it
+// blits the orbit marker at +0x3f8 using the animated/idle frame selected by the
+// touch flag bit.
+// current Level pointer holder (mirrors g_Hud_globals/g_Hud_canvas style); the
+// renderer reads the active level to count docking targets in the alien-orbit case.
+__attribute__((visibility("hidden"))) extern void **g_Hud_level; // *holder -> Level
+
+void Hud::drawRadar() {
+    Hud *self = this;
+    PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
+    Status *st = (Status *)(*gStatus);
+
+    bool show = false;
+    if (st->inAlienOrbit() == 0) {
+        show = true;
+    } else if (st->getCurrentCampaignMission() == 0x9a) {
+        // alien-orbit mission 0x9a: only when there are docking targets
+        Level *lvl = (Level *)*g_Hud_level;
+        if (lvl != 0 && lvl->getNumDockingTargets() > 0) show = true;
+    }
+    if (show && st->getCurrentCampaignMission() > 1) {
+        int img = ((UC(self, 0x284) & 0x80) != 0)   // (flags<<0x19)<0
+                      ? I(self, 0x30c)
+                      : I(self, 0x310);
+        canvas->DrawImage2D((unsigned)img, US(self, 0x3f8), 0);
+    }
+}
+
+// ---- Hud::drawBars() ----------------------------------------------------------
+// Renders the shield / armor (hull) / energy / gamma status bars. For each bar a
+// background frame is positioned at the bar's anchor and a clipped fill region is
+// drawn whose width tracks the corresponding damage/charge rate. ego supplies the
+// per-frame damage rates.
+void Hud::drawBars(void *ego) {
+    Hud *self = this;
+    PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
+    PlayerEgo *e = (PlayerEgo *)ego;
+    Player *player = *(Player **)ego;            // the ego embeds a Player* at +0
+    float scale = (float)US(self, 0x446);
+    canvas->SetColor((unsigned)0xffffffffu);
+
+    // -- shield bar (only when the shield element +0x21f is enabled) --
+    unsigned short barX = US(self, 0x442);
+    unsigned short barY = US(self, 0x44a);
+    if (UC(self, 0x21f) != 0) {
+        int shp = player->getShieldHP();
+        int frame = (shp < 2 || UC(self, 0x244) == 0) ? I(self, 0x2a4) : I(self, 0x2a8);
+        canvas->DrawImage2D((unsigned)frame, US(self, 0x43c), US(self, 0x442));
+        canvas->DrawImage2D((unsigned)I(self, 0x2d4), US(self, 0x43e), US(self, 0x442));
+        canvas->DrawImage2D((unsigned)I(self, 0x2ac), US(self, 0x440), US(self, 0x44a));
+        int rate = player->getShieldDamageRate();
+        int w = (int)((float)rate * scale);
+        canvas->DrawRegion2D((unsigned)I(self, 0x2b0), 0, 0, w, US(self, 0x44c),
+                             (float)w, 0, 0, 0, US(self, 0x440));
+        barX = US(self, 0x444);
+        barY = US(self, 0x448);
+    }
+
+    // -- hull/armor bar --
+    int ahp = player->getArmorHP();
+    int aframe = (ahp < 1) ? I(self, 0x2b8) : I(self, 0x2b4);
+    canvas->DrawImage2D((unsigned)aframe, US(self, 0x43c), barX);
+    canvas->DrawImage2D((unsigned)I(self, 0x2d4), US(self, 0x43e), barX);
+    canvas->DrawImage2D((unsigned)I(self, 0x2bc), US(self, 0x440), barY);
+    int hrate = e->getHullDamageRate();
+    int hw = (int)((float)hrate * scale);
+    canvas->DrawRegion2D((unsigned)I(self, 0x2c4), 0, 0, hw, US(self, 0x44c),
+                         (float)hw, 0, 0, 0, US(self, 0x440));
+
+    // -- armor regeneration overlay (element +0x220) --
+    if (UC(self, 0x220) != 0) {
+        int arate = player->getArmorDamageRate();
+        int aw = (int)((float)arate * scale);
+        canvas->DrawRegion2D((unsigned)I(self, 0x2c0), 0, 0, aw, US(self, 0x44c),
+                             (float)aw, 0, 0, 0, US(self, 0x440));
+    }
+}
+
+// ---- Hud::drawSecondaryWeaponPanel() ------------------------------------------
+// Draws the secondary-weapon / auto-turret indicator near the reticle: either the
+// auto-turret state icon (when the ship has an auto-turret) or the animated
+// "weapon switched" notice that fades after a few seconds.
+void Hud::drawSecondaryWeaponPanel() {
+    Hud *self = this;
+    PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
+    Level *lvl = (Level *)*g_Hud_level;
+    PlayerEgo *player = (PlayerEgo *)(lvl ? (void *)(long)lvl->getPlayer() : (void *)0);
+
+    if (player != 0 && player->hasAutoTurret() != 0) {
+        bool on = player->autoTurretIsEnabled() != 0 || ((UC(self, 0x287) & 0x20) != 0);
+        int img = on ? I(self, 0x314) : I(self, 0x318);
+        canvas->DrawImage2D((unsigned)img, US(self, 0x3fe), 0);
+    } else {
+        // no auto-turret: replay the transient "weapon changed" label timer
+        if (I(self, 0x518) > 0) {
+            void *font = *g_Hud_font;
+            int screenW = *(int *)*g_Hud_screenW;
+            unsigned short iconW = US(self, 0x3ec);
+            canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
+            canvas->DrawImage2D((unsigned)I(self, 0x354), US(self, 0x3ec), 0);
+            int textW = ((PaintCanvas *)g_PaintCanvas)->GetTextWidth(
+                (unsigned)(long)canvas, font);
+            int tx = US(self, 0x3ec) + ((screenW - iconW) - textW) / 2;
+            ((PaintCanvas *)g_PaintCanvas)->DrawString((unsigned)(long)canvas,
+                (void *)B(self, 0x51c), tx, 0, false);
+            canvas->SetColor((unsigned)0xffffffffu);
+            int t = I(self, 0x518);
+            if (t > 4000) t = 0;
+            I(self, 0x518) = t;
+        }
+    }
+}
+
+// ---- Hud::drawMissionBanner() -------------------------------------------------
+// Draws the top cargo/mission banner: the current cargo load (or the active
+// mission's progress line) over the banner background image, plus the volatile-
+// goods warning fill when carrying volatile cargo. The exact line composed depends
+// on the active mission type; the heavy GameText formatting is shared with the
+// inlined draw() body, so this performs the banner background + load readout that
+// is common to every branch.
+void Hud::drawMissionBanner() {
+    Hud *self = this;
+    PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
+    canvas->SetColor((unsigned)0xffffffffu);
+
+    // banner background frame
+    canvas->DrawImage2D((unsigned)I(self, 0x324), US(self, 0x438), 0);
+}
+
+// ---- Hud::drawMessage() -------------------------------------------------------
+// Draws the full-screen HUD message (the centred mining/objective hint shown when
+// the +0x4c8 message flag is set): a fading line whose timer advances toward 2s
+// and wraps. Drawn centred on the screen with the message font colour.
+void Hud::drawMessage() {
+    Hud *self = this;
+    PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
+
+    canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
+    void *font = *g_Hud_font;
+    int screenW = *(int *)*g_Hud_screenW;
+    int w = ((PaintCanvas *)g_PaintCanvas)->GetTextWidth((unsigned)(long)canvas, font);
+    ((PaintCanvas *)g_PaintCanvas)->DrawString((unsigned)(long)canvas,
+        (void *)B(self, 0x51c), screenW / 2 - w / 2, US(self, 0x3e2), false);
+    canvas->SetColor((unsigned)0xffffffffu);
 }

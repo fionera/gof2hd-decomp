@@ -58,5 +58,9 @@ public:
     void setLanguage_i(int param_1);
     void setLanguage_si(int stringCount, int langId);
     void setSubstituteArray(int *param_1, unsigned param_2);
+
+    // Destructor tail: after release() and the owned String/text-table are freed, the
+    // embedded base Array<int> subobject is destroyed here. Returns `this`.
+    GameText *dtor_tail();
 };
 #endif

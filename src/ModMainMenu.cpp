@@ -40,6 +40,58 @@ extern "C" void CutScene_ctor(void *self, int mode);
 extern "C" void *GameRecord_dtor(void *record);
 void Globals_playMusicAndFadeOutCurrent(int music);
 
+// ---- recovered tail-call fragments ----------------------------------------
+// Each OnXxx() above peels its final tail-call out into a small *_Tail helper
+// (the decompiler split the basic block at the tail branch). The body of each
+// helper forwards into the engine/runtime method the original code branched to;
+// the targets were resolved from the PLT veneers in the binary.
+extern "C" void _ZN10StarSystem9initLightEv(void *self);   // StarSystem::initLight()
+
+// OnRelease(): once the menu's sound resource list is torn down, free every
+// remaining FMOD event handle owned by the sound manager.
+extern "C" void ModMainMenu_releaseTail(void *sound)
+{
+    ((FModSound *)sound)->freeAllEvents();
+}
+
+// OnResume(): the background-music event is still live, so restore its volume
+// to bring the track back up after the app regained focus.
+extern "C" void ModMainMenu_resumeTail(int obj, int channel, int arg)
+{
+    ((FModSound *)(intptr_t)obj)->setVolume(channel, (float)arg);
+}
+
+// OnRender3D(): finish the 3D pass that drew the rotating cut-scene backdrop.
+extern "C" void ModMainMenu_r3dTail(void *canvas)
+{
+    ((PaintCanvas *)canvas)->End3d();
+}
+
+// D0 (deleting destructor): the D2 body has already run, so release storage.
+extern "C" void ModMainMenu_deleteTail(ModMainMenu *self)
+{
+    ::operator delete(self);
+}
+
+// OnSuspend(): persist the player's option block when the app is backgrounded.
+extern "C" void ModMainMenu_suspendTail(int obj)
+{
+    ((RecordHandler *)(intptr_t)obj)->saveOptions();
+}
+
+// OnTouchEnd(): the tap dismissed the menu, so (re)initialise the lighting of
+// the star system the level is about to display.
+extern "C" void ModMainMenu_touchEndTail(void *starSystem)
+{
+    _ZN10StarSystem9initLightEv(starSystem);
+}
+
+// OnRender2D(): close the 2D overlay pass (HUD/loading text) for this frame.
+extern "C" void ModMainMenu_r2dTail(int canvas)
+{
+    ((PaintCanvas *)(intptr_t)canvas)->End2d();
+}
+
 // ---- ModMainMenu_1757a0.cpp ----
 __attribute__((visibility("hidden"))) extern void *volatile g_ModMainMenu_vtable;
 

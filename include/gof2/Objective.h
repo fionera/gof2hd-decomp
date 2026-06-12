@@ -59,6 +59,7 @@ public:
 
     Objective(int type, int value, Level *level);
     Objective(int type, int value, int calcValue, Level *level);
+    ~Objective();
     Objective *addObjective(Objective *objective);
     bool isSurvivalObjective();
     bool getCalcValue();

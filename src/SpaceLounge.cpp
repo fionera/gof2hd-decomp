@@ -1208,8 +1208,12 @@ void SpaceLounge::startChat() {
 }
 
 // ---- _SpaceLounge_16a89a.cpp ----
-void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
+// SpaceLounge::~SpaceLounge() — tears down the owned ChoiceWindow / CutScene, the
+// agent-text and button arrays, the per-system ImagePart grid and silhouette-vector
+// array, the camera-ease matrix, and the cached canvas buffer + title String.
+SpaceLounge::~SpaceLounge()
 {
+    SpaceLounge *self = this;
     void *p = P(self, 0x8);
     if (p != 0) {
         ::operator delete(ChoiceWindow_dtor(p));
@@ -1246,7 +1250,7 @@ void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
     P(self, 0x5c) = 0;
 
     if (I(self, 0x3c) != 0) {
-        return self;
+        return;
     }
     I(self, 0x3c) = 0;
 

@@ -900,3 +900,29 @@ Array<SpacePoint *> *KIPlayer::getSpacePoints() {
 void KIPlayer::setLevel(Level *lvl) {
     this->level = lvl;
 }
+
+// ---- collision-query virtuals (getProjectionVector b63ca / getCollisionNormal b5244
+//      / projectCollisionOnSurface b63d4) ----
+// A KIPlayer is not a solid bounding volume, so these overrides ignore the query point
+// and hand back a zero vector. (The free KIPlayer_* helpers above fill an out-param;
+// these method forms return the same zero vector by value.)
+Vector KIPlayer::getProjectionVector(const Vector &v) {
+    (void)v;
+    Vector out;
+    out.x = 0.0f; out.y = 0.0f; out.z = 0.0f;
+    return out;
+}
+
+Vector KIPlayer::getCollisionNormal(const Vector &position) {
+    (void)position;
+    Vector out;
+    out.x = 0.0f; out.y = 0.0f; out.z = 0.0f;
+    return out;
+}
+
+Vector KIPlayer::projectCollisionOnSurface(const Vector &position) {
+    (void)position;
+    Vector out;
+    out.x = 0.0f; out.y = 0.0f; out.z = 0.0f;
+    return out;
+}

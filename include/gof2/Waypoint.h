@@ -31,5 +31,7 @@ public:
     void reached();
     Vector getPosition();
     void reset();
+    void activate();
+    float advance(bool active);
 };
 #endif

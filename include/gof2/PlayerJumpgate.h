@@ -28,6 +28,7 @@ public:
     uint32_t field_0x144;               // +0x144
 
     PlayerJumpgate(int playerId, AEGeometry *geometry, float x, float y, float z, bool visible);
+    ~PlayerJumpgate();
     bool timeToJump();
     void activate();
     void addJumpAnimationHandle(uint32_t handle);

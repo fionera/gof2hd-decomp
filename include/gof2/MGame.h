@@ -239,6 +239,28 @@ public:
     void updateJumpScene();
     void useCloak();
 
+    // ---- per-frame / dispatch bodies (recovered, called by the thin entry points) ----
+    // Full per-frame world update (the body of OnUpdate); receives the clamped delta.
+    void tick(int frameDeltaMs);
+    // Button-action dispatch tail of OnTouchEnd (consumes the hud touch-result bits).
+    void dispatchTouchEndAction(int p1, int p2, void *touchId, unsigned hudResult,
+                                int wasAutoPilot);
+    // HUD touch-result dispatch tail of OnTouchBegin.
+    void handleHudTouchAction(int p1, int p2, void *touchId, unsigned hudResult);
+    // Finish a hyperspace jump: advance to the next campaign mission.
+    void jumpFinish();
+    // The jump star map / direct-jump just became visible: close the open HUD menu.
+    void starMapShown();
+    // Pan/zoom gesture finished while mining: clean no-op exit path.
+    void freeCamPanDone(int touchY);
+    // End the running game module and hand control back to application module `code`.
+    void endRunModule(int code);
+    // 2D overlay helpers (sub-draws inlined in OnRender2D).
+    void drawRadio();
+    void drawRadar();
+    void drawHud();
+    void drawFadeMessage(int canvas);
+
     // ---- recovered factored helpers (wave 2) ----
     // Build the per-session FMOD sound-resource list (part of OnInitialize).
     void loadSoundResources();

@@ -21,6 +21,12 @@ void _ZN12AENormalFileD0Ev(AENormalFile *self)
     AENormalFile_deleteTail(_ZN12AENormalFileD2Ev(self));
 }
 
+// Deleting-destructor tail: the D2 body has already run, so just free the object.
+void AENormalFile::deleteTail()
+{
+    ::operator delete(this);
+}
+
 // ---- AENormalFile_700f8.cpp ----
 AENormalFile::AENormalFile(FileInterface *file)
 {

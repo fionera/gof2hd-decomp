@@ -33,5 +33,11 @@ public:
 
     // ---- methods (converted from free functions) ----
     void update(int elapsed);
+
+    // Tail fragments of reset()/render()/~PlayerJunk(): the veneers that complete each
+    // operation by handing control to the KIPlayer base behaviour.
+    void resetTail(int show);   // final step of reset(): re-show the junk geometry
+    void renderTail();          // final step of render(): base KIPlayer::render()
+    void dtorTail();            // deleting destructor tail: free the object
 };
 #endif

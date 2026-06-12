@@ -1815,3 +1815,144 @@ void Player::StopEngineSound() {
     }
 }
 
+// =====================================================================
+// Recovered tail-merge fragments.
+//
+// The decompiler split several Player methods at their final tail-branch
+// (a `b.w` through an ARM/Thumb interworking veneer) into a separate
+// `Player_<method>_tail` symbol that the caller forwards to. Each veneer
+// was resolved to its real target; the fragments below carry the work
+// that target performs. They are kept as the same `extern "C"` symbols the
+// call sites already reference (the later wiring pass folds them back into
+// their callers), so only definitions are added here.
+// =====================================================================
+
+// All HP/armor/shield/emp setters and the regen/damage helpers end by
+// recomputing the cached damage rate. The veneer at these tails resolves
+// to Player::updateDamageRate (0x72df0), with `this` still live in r0.
+// The standalone C shims have no receiver, so they're documented forwarders;
+// the wiring pass turns each `return Player_xxx_tail();` into
+// `this->updateDamageRate();` inside the owning method.
+
+// setEnemies(Array*) inner-loop tail: when the player has no enemy list yet,
+// addEnemies short-circuits straight into setEnemies (veneer -> Player::setEnemies).
+extern "C" void Player_setEnemies_tail(Player *self, Array<Player *> *enemies) {
+    self->setEnemies(enemies);
+}
+
+// setEnemy(Player*) tail: wrap a single enemy in a fresh list and install it.
+extern "C" void Player_setEnemy_tail(Player *self, Player *enemy) {
+    self->setEnemy(enemy);
+}
+
+// operator delete tail: the terminal `b.w` of the addEnemies/addEnemy/setEnemy
+// helpers releases the temporary list (veneer -> operator delete).
+extern "C" void Player_operator_delete_tail(void *p) {
+    ::operator delete(p);
+}
+
+// addGun/shoot tail: after mutating the gun slots, recompute the weapon-sound
+// table for the player (veneer -> Player::calcWeaponSounds).
+extern "C" void Player_shoot_tail(Player *self, int soundId) {
+    self->calcWeaponSounds(soundId);
+}
+
+// calcWeaponSounds tail: register the secondary-slot weapon's fire sound with
+// the global resource list (veneer -> Globals::addSoundResourceToList).
+extern "C" void Player_calcWeaponSounds_tail(int soundId, int /*sid*/) {
+    Globals_addSoundResourceToList(soundId);
+}
+
+// damageEmp tail: like the HP setters, recompute the damage rate once the EMP
+// hit has been applied (veneer -> Player::updateDamageRate, `this` in r0).
+// Provided with the explicit receiver the call sites already pass.
+extern "C" void Player_damageEmp_tail(Player *self) {
+    self->updateDamageRate();
+}
+
+// stopShootSound tail: stop the looping weapon-fire FMOD event for this gun
+// (veneer -> FModSound::stop(int)).
+extern "C" void Player_stopShootSound_play_tail(void *sound, int id) {
+    ((FModSound *)sound)->stop(id);
+}
+
+// playShootSound tail: actually start the weapon-fire FMOD event at the muzzle
+// position (veneer -> FModSound::play(int, Vector*, Vector*, float)).
+extern "C" void Player_playShootSound_play_tail(float vol, void *sound, int id,
+                                                Vector *pos, int /*z*/) {
+    ((FModSound *)sound)->play(id, pos, 0, vol);
+}
+
+// =====================================================================
+// Cross-class forwarders.
+//
+// Level / KIPlayer call a handful of Player methods through thin
+// `Player_<method>_<caller>` shims (the suffix names the spawning call
+// site, e.g. _cp = createPlayer, _cs = createStation, _cm/_ccm = campaign
+// mission, _cwm = create-wingman, _csc/_cso = create-static/object,
+// _ag = addGroup, _cft = create-fighter). Each shim is a plain forward to
+// the corresponding real Player member. They are recovered here with their
+// existing C++-linkage signatures so the references resolve; the wiring pass
+// rewrites the call sites to direct member calls.
+// =====================================================================
+
+void Player_setEnemies_cp(Player *p, void *arr) {
+    p->setEnemies(static_cast<Array<Player *> *>(arr));
+}
+
+void Player_addEnemies_cp(Player *p, void *arr) {
+    p->addEnemies(static_cast<Array<Player *> *>(arr));
+}
+
+void Player_setEnemy_cp(Player *p, Player *e) {
+    p->setEnemy(e);
+}
+
+void Player_setMaxHitpoints_ag(Player *p, int hp) {
+    p->setMaxHitpoints(hp);
+}
+
+void Player_setMaxHitpoints_cft(Player *p, int hp) {
+    p->setMaxHitpoints(hp);
+}
+
+void Player_setAlwaysEnemy_ccm(Player *p) {
+    p->setAlwaysEnemy(true);
+}
+
+void Player_setAlwaysEnemy_cm(Player *p) {
+    p->setAlwaysEnemy(true);
+}
+
+void Player_setAlwaysFriend_csc(Player *p, int flag) {
+    p->setAlwaysFriend(flag != 0);
+}
+
+void Player_setAlwaysFriend_cso(Player *p, int flag) {
+    p->setAlwaysFriend(flag != 0);
+}
+
+void Player_setAlwaysFriend_cwm(Player *p, int flag) {
+    p->setAlwaysFriend(flag != 0);
+}
+
+void Player_setVulnerable_cft(Player *player, int flag) {
+    player->setVulnerable(flag != 0);
+}
+
+void Player_setPlayShootSound_ag(Player *p, int flag, int v) {
+    p->setPlayShootSound(flag != 0, v);
+}
+
+void Player_setEmpData_cs(Player *p, int a, int b) {
+    p->setEmpData(a, b);
+}
+
+void Player_ctor_cs(Player *p, int hp, int dmg, int a, int b, int c) {
+    p->ctor(hp, dmg, a, b, c);
+}
+
+void Player_damageGamma_up(Player *p, float dmg) {
+    p->damageGamma(dmg);
+}
+

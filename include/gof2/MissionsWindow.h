@@ -26,8 +26,12 @@ public:
     ~MissionsWindow();
     int OnTouchMove(int, int);
     int OnTouchBegin(int, int);
+    void OnTouchEnd(int y, int z);
     void setHangarUpdate(bool);
     uint8_t hangarNeedsUpdate();
     void render3D();
+    int init();
+    void draw();
+    void update(int dt);
 };
 #endif

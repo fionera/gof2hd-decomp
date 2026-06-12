@@ -2620,3 +2620,10 @@ void HangarWindow::ctor() {
     self->field_0x114 = G<int>(lay, 0x24c);
     self->iconOffsetY = G<int>(lay, 0x250);
 }
+
+// ---- statusShip ----
+// The hangar always edits the player's current ship, which the global Status owns. The
+// decompiler inlined this everywhere as a bare call returning the ship in r0.
+void *HangarWindow::statusShip() {
+    return ((Status *)(*gStatus))->getShip();
+}

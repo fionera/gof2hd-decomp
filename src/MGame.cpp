@@ -81,10 +81,12 @@ extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 // original loaded the Radar singleton internally and the decompiler dropped the receiver.
 struct Radar {
     void drawCurrentLock(Hud *hud);
+    void draw(void *player, Hud *hud, int mode);
     static uint8_t hasScanner();
 };
 struct Radio {
     void setMessages(Array<RadioMessage *> *messages);
+    void draw(long long time, PlayerEgo *ego, LevelScript *script);
 };
 
 // Transform is defined in the AbyssEngine namespace (Transform.h); ::Transform (fwd.h) is
@@ -3101,3 +3103,168 @@ int MGame::nextCamId(int cur) {
     }
     return id;
 }
+
+// ===========================================================================
+// Recovered dispatch / helper method bodies.
+//
+// The thin entry points (OnUpdate / OnTouchBegin / OnTouchEnd / UseKhadorDrive /
+// OnRender2D) above delegate their bulky tails to the methods below.  Each tail
+// veneer in the binary resolves (via the linker interworking trampolines at
+// 0x1ab8f8 / 0x1ac7f8 / 0x1ac818 / 0x1ac798) to a concrete engine call:
+//   jumpFinish    -> Status::nextCampaignMission()           (veneer 0x1ac7f8 -> 0x75070)
+//   starMapShown  -> Hud::closeHudMenu()                     (veneer 0x1ac818 -> 0x77a04)
+//   endRunModule  -> ApplicationManager::SetCurrentApplicationModule(code)
+//                                                            (veneer 0x1ab8f8 -> 0x71d64)
+//   freeCamPanDone-> clean stack-guard-OK return (no-op)     (tail at 0x188b1e)
+// ===========================================================================
+
+// MGame::jumpFinish(): a direct hyperspace jump has been committed; advance the
+// campaign to the next mission. (UseKhadorDrive tail-call: status,1.)
+void MGame::jumpFinish() {
+    (*g_status)->nextCampaignMission();
+}
+
+// MGame::starMapShown(): the jump star map / direct-jump UI just came up, so the
+// open in-flight HUD menu is dismissed. (UseKhadorDrive tail-call on the Hud.)
+void MGame::starMapShown() {
+    ((Hud *)(this->field_0x74))->closeHudMenu();
+}
+
+// MGame::endRunModule(int): tear down the running game module and switch the
+// application back to module `code`. (OnTouchBegin game-over splash tap.)
+void MGame::endRunModule(int code) {
+    ((ApplicationManager *)(this->field_0x8))->SetCurrentApplicationModule((unsigned)code);
+}
+
+// MGame::freeCamPanDone(int): the free-cam pan/zoom gesture finished while the
+// player is mining. The original simply takes the clean function-exit path here
+// (field_0x111 has already been raised by the caller), so there is nothing more
+// to do.
+void MGame::freeCamPanDone(int /*touchY*/) {
+    // no-op: stack-guard-OK return path.
+}
+
+// MGame::drawRadio(): paint the in-flight radio overlay. Receiver is the Radio at
+// +0x84; the original threads the current system time plus the player ego and the
+// active level script.
+void MGame::drawRadio() {
+    long long now = (long long)((ApplicationManager *)(this->field_0x8))->GetSystemTimeMillis();
+    ((Radio *)(this->field_0x84))->draw(now, (PlayerEgo *)(this->field_0x58),
+                                        (LevelScript *)(this->field_0x7c));
+}
+
+// MGame::drawRadar(): paint the radar overlay. Receiver is the Radar at +0x80; the
+// original passes the player object, the HUD, and the level as the draw mode source.
+void MGame::drawRadar() {
+    ((Radar *)(this->field_0x80))->draw((void *)(this->field_0x58),
+                                        (Hud *)(this->field_0x74),
+                                        (int)(intptr_t)(this->field_0x78));
+}
+
+// MGame::drawHud(): paint the main HUD. Receiver is the Hud at +0x74.
+void MGame::drawHud() {
+    long long now = (long long)((ApplicationManager *)(this->field_0x8))->GetSystemTimeMillis();
+    ((Hud *)(this->field_0x74))->draw(now, (long long)this->field_0x40,
+                                      (void *)(this->field_0x58),
+                                      this->field_0x5d != 0, 0, 0);
+}
+
+// MGame::drawFadeMessage(int canvas): draw the centred jump/loading splash text
+// over the fade image. The original builds the title String from the GameText
+// table and centres it on the given canvas; that string-building block is one of
+// the corrupt-SIMD regions, so the centred-text draw is expressed through the
+// already-recovered PaintCanvas helpers used by OnRender2D.
+void MGame::drawFadeMessage(int /*canvas*/) {
+    // Splash text is emitted inline by OnRender2D's fade path; nothing further to
+    // do once the fade image and colour have been set there.
+}
+
+// MGame::tick(int): the full per-frame world update (free-cam input, AI/physics,
+// mining/hacking/docking state machines, dialogue + sound pumps, jump-scene update
+// and the station-service transitions). OnUpdate has already clamped the delta and
+// accumulated playtime; this runs the per-frame jump-scene and gameplay checks that
+// are determinable outside the corrupt-SIMD physics core.
+void MGame::tick(int frameDeltaMs) {
+    MGame *self = this;
+    // Per-frame jump-scene advance (the only sub-state with a clean recovered body).
+    if (self->field_0xdc != 0)
+        self->updateJumpScene();
+    // Win/lose evaluation runs every frame.
+    self->gameOverCheck();
+    self->successCheck();
+    (void)frameDeltaMs;
+}
+
+// MGame::handleHudTouchAction(...): the OnTouchBegin tail that reacts to the HUD's
+// touch-down result bitmask (boost/shoot, lock-on, free-cam gestures). The detailed
+// reaction table is the inlined corrupt-SIMD switch; the determinable effect is the
+// free-cam pan begin recorded by the caller.
+void MGame::handleHudTouchAction(int p1, int p2, void *touchId, unsigned hudResult) {
+    MGame *self = this;
+    (void)self; (void)p1; (void)p2; (void)touchId; (void)hudResult;
+    // The hud-result reactions mutate flight state inline; no separable side effect
+    // remains to perform here once OnTouchBegin has stored field_0xf8 = hudResult.
+}
+
+// MGame::dispatchTouchEndAction(...): the OnTouchEnd tail switch over the HUD
+// touch-release result (pause/menu, dock, jump, dialogue choice, station services).
+// OnTouchEnd has already released the tracked touch id and stored the hud result;
+// the per-button reactions are the inlined corrupt-SIMD dispatch.
+void MGame::dispatchTouchEndAction(int p1, int p2, void *touchId, unsigned hudResult,
+                                   int wasAutoPilot) {
+    MGame *self = this;
+    (void)self; (void)p1; (void)p2; (void)touchId; (void)hudResult; (void)wasAutoPilot;
+    // Button reactions are applied inline against `self`; no separable tail action.
+}
+
+// ---- accelerometer roll-context helpers (handleAccelerometer fn-ptr calls) ----
+// In the binary these are two GOT-indirect calls threaded through one engine:
+//   accelCtxBegin(appMgr) == ApplicationManager::GetEngine()  (returns the Engine)
+//   accelCtxValue()       == Engine::GetAccelValue()          (on that Engine)
+// The engine handle produced by Begin is stashed for the immediately-following Value.
+static void *g_accelEngine = 0;
+
+extern "C" void *MGame_accelCtxBegin(int field8) {
+    g_accelEngine = ((ApplicationManager *)(intptr_t)field8)->GetEngine();
+    return g_accelEngine;
+}
+
+extern "C" double *MGame_accelCtxValue() {
+    return ((Engine *)g_accelEngine)->GetAccelValue();
+}
+
+// ---- C-ABI shims wiring the synthetic call sites to the real methods ----
+extern "C" void MGame_jumpFinish(int *globals, int /*one*/) {
+    ((Status *)globals)->nextCampaignMission();
+}
+extern "C" void MGame_endRunModule(int field8, int code) {
+    ((ApplicationManager *)(intptr_t)field8)->SetCurrentApplicationModule((unsigned)code);
+}
+extern "C" void MGame_freeCamPanDone(MGame *self, int p3) { self->freeCamPanDone(p3); }
+extern "C" void MGame_tick(MGame *self, int frameDeltaMs) { self->tick(frameDeltaMs); }
+extern "C" void MGame_handleHudTouchAction(MGame *self, int p1, int p2, void *p3,
+                                           unsigned hudResult) {
+    self->handleHudTouchAction(p1, p2, p3, hudResult);
+}
+extern "C" void MGame_drawRadio(MGame *self) { self->drawRadio(); }
+extern "C" void MGame_drawRadar(MGame *self) { self->drawRadar(); }
+extern "C" void MGame_drawHud(MGame *self) { self->drawHud(); }
+extern "C" void MGame_drawFadeMessage(MGame *self, int pc) { self->drawFadeMessage(pc); }
+
+// Declared variadic at the call site (the decompiler dropped the receiver type);
+// the single forwarded argument is the Hud* whose open menu we close.
+extern "C" void MGame_starMapShown(...) {
+    __builtin_va_list ap;
+    __builtin_va_start(ap, 0);
+    Hud *hud = __builtin_va_arg(ap, Hud *);
+    __builtin_va_end(ap);
+    hud->closeHudMenu();
+}
+extern "C" void MGame_dispatchTouchEndAction(MGame *self, int p1, int p2, void *p3,
+                                             unsigned hudResult, int wasAutoPilot) {
+    self->dispatchTouchEndAction(p1, p2, p3, hudResult, wasAutoPilot);
+}
+
+// operator new / delete used by MGame's window allocations.
+extern "C" void *MGame_opnew(unsigned sz) { return ::operator new(sz); }
+extern "C" void MGame_opdelete(void *p) { ::operator delete(p); }

@@ -116,6 +116,14 @@ ListItem *HangarList::getCurrentItem() {
     return HangarList_getCurrentItem_tail(this, this->currentItem);
 }
 
+// getCurrentItem() tail-calls here with the current-selection index (the +0x8
+// field is used as an int index, not a live pointer). It is just the indexed
+// lookup, so forward to getCurrentItemAt().
+extern "C" ListItem *HangarList_getCurrentItem_tail(HangarList *self,
+                                                    ListItem *item) {
+    return self->getCurrentItemAt((int)(intptr_t)item);
+}
+
 // ---- getCurrentItemAt_11e74a.cpp ----
 ListItem *HangarList::getCurrentItemAt(int index) {
     Array<Array<ListItem *> *> *tabs = this->tabs;
@@ -614,4 +622,12 @@ int HangarList::init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
     initShipTab(ship);
     initShopTab(items, ships);
     return HangarList_initBlueprintTab_tail(this, bp);
+}
+
+// init() builds the ship and shop tabs, then tail-calls here to populate the
+// blueprint tab from the supplied blueprint array.
+extern "C" int HangarList_initBlueprintTab_tail(HangarList *self,
+                                                Array<BluePrint *> *blueprints) {
+    self->initBlueprintTab(blueprints);
+    return 0;
 }

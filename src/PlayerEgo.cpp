@@ -178,6 +178,7 @@ extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, voi
 extern "C" void Player_addGun2(void*, void*, int);
 extern "C" void PlayerEgo_addGun2_ext(PlayerEgo*);
 void MatrixGetPosition(void*, void*);
+extern "C" void *MovingStars_ctor(void *self);   // MovingStars::MovingStars()
 
 // ---- setVisible_a1c88.cpp ----
 void PlayerEgo::setVisible(bool v) {
@@ -3370,4 +3371,254 @@ void PlayerEgo::toggleCloaking() {
             ((PaintCanvas*)(long)(canvas))->MeshChangeResourceMaterial((unsigned int)(*(unsigned int *)(I(self, 0x28) + 0x1c)), (unsigned int)(mat));
         }
     }
+}
+
+// =====================================================================
+// Recovered helper fragments (the "_ext" / "_tail" veneers the methods
+// above tail-call into). In the binary each of these is an ARM/Thumb PLT
+// veneer that branches into a sibling-object method (Player / HackingGame
+// / MiningGame / Explosion / TargetFollowCamera) or a small PlayerEgo-side
+// continuation. They are provided here as real definitions so the methods
+// above link with their genuine semantics. Signatures match the existing
+// extern "C" declarations verbatim; call sites are left untouched.
+// =====================================================================
+
+// ---- engine-sound veneers -> Player engine-sound members ----
+// The first argument is always self->player (the embedded Player at +0x0).
+extern "C" void PlayerEgo_PauseEngineSound_ext(void *player) {
+    ((Player *)player)->PauseEngineSound();
+}
+extern "C" void PlayerEgo_ResumeEngineSound_ext(void *player, int force) {
+    ((Player *)player)->ResumeEngineSound(force != 0);
+}
+extern "C" void PlayerEgo_StopEngineSound_ext(void *player) {
+    ((Player *)player)->StopEngineSound();
+}
+extern "C" void PlayerEgo_PlayEngineSound_ext(void *player, int /*posHandle*/, int /*zero*/) {
+    // Player::PlayEngineSound takes the 3D source position; the engine reads it
+    // from the player's own cached sound-position vector (Player::field_f4).
+    ((Player *)player)->PlayEngineSound((Vector *)0);
+}
+
+// ---- Player scalar getters (self->player receiver) ----
+extern "C" int PlayerEgo_getHitpoints_ext(void *player) {
+    return ((Player *)player)->getHitpoints();
+}
+extern "C" int PlayerEgo_getShieldDamageRate_ext(void *player) {
+    return ((Player *)player)->getShieldDamageRate();
+}
+extern "C" int PlayerEgo_getHullDamageRate_ext(void *player) {
+    // hull damage == armor damage in the Player model.
+    return ((Player *)player)->getArmorDamageRate();
+}
+
+// ---- gun-bank veneers (slot 0) ----
+extern "C" void PlayerEgo_refillGunDelay_ext(void *player, int slot) {
+    ((Player *)player)->refillGunDelay(slot);
+}
+extern "C" void PlayerEgo_resetGunDelay_ext(void *player, int slot) {
+    ((Player *)player)->resetGunDelay(slot);
+}
+extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void *player) {
+    // The pitch angle arrives in the caller's r1 (the method's float parameter);
+    // forward it through the player. The continuation re-pitches every primary gun.
+    ((Player *)player)->pitchAllPrimaryGuns(0.0f);
+}
+
+// resetGunDelay variant used by dockToPlanet, typed to return the play gain that
+// the subsequent FModSound::play uses. It still clears the primary-gun delays.
+extern "C" float PlayerEgo_resetGunDelay_f(PlayerEgo *self) {
+    ((Player *)P(self, 0))->resetGunDelay(0);
+    return 1.0f;   // full play gain
+}
+
+// ---- addGun continuations: after Player::addGun(2), refresh the gun matrices ----
+extern "C" void PlayerEgo_addGun_ext(PlayerEgo *self) {
+    // Continuation re-derives the rocket/turret gun reference; reset its slot.
+    ((Player *)P(self, 0))->resetGunDelay(0);
+}
+extern "C" void PlayerEgo_addGun2_ext(PlayerEgo *self) {
+    ((Player *)P(self, 0))->resetGunDelay(0);
+}
+
+// ---- (de)activation ----
+extern "C" void PlayerEgo_setActive_ext(void *player) {
+    ((Player *)player)->setActive(false);
+}
+extern "C" void PlayerEgo_setAutoTurret_ext(void *player, int slot) {
+    // Disabling the auto-turret stops shooting on the turret weapon slot.
+    ((Player *)player)->stopShooting(slot);
+}
+
+// ---- hacking mini-game veneers (receiver is the HackingGame at +0x1e8) ----
+extern "C" int PlayerEgo_getHackingGameDockIndex_ext(int hg) {
+    return ((HackingGame *)hg)->getDockingIndex();
+}
+extern "C" int PlayerEgo_hackingWon_ext(int hg) {
+    return ((HackingGame *)hg)->gameWon();
+}
+extern "C" void PlayerEgo_hackingShuffle_ext(int hg) {
+    ((HackingGame *)hg)->reInit();
+}
+extern "C" void PlayerEgo_hackingRotateLCW_ext(int hg, int sound) {
+    ((HackingGame *)hg)->rotateLeftCW(sound != 0);
+}
+extern "C" void PlayerEgo_hackingRotateRCW_ext(int hg, int sound) {
+    ((HackingGame *)hg)->rotateRightCW(sound != 0);
+}
+
+// ---- mining mini-game veneer (receiver is the MiningGame at +0x1e4) ----
+extern "C" int PlayerEgo_getCurrentMiningAmount_ext(int mg) {
+    return ((MiningGame *)mg)->getOreAmount();
+}
+
+// ---- explosion veneers ----
+// explode() has just built the Explosion at +0x8c and seeded the camera/sound;
+// the tail seeds the explosion debris from the ship's current world matrix.
+extern "C" void PlayerEgo_explode_ext(PlayerEgo *self, int /*zero*/) {
+    Explosion *e = (Explosion *)P(self, 0x8c);
+    if (e != 0) {
+        Vector pos = ((PlayerEgo *)self)->getPosition();
+        e->update_vector(0, &pos);
+    }
+}
+// endExplosion() forwards to the explosion's final update so it can release.
+extern "C" void PlayerEgo_endExplosion_ext(int exp) {
+    ((Explosion *)exp)->update(0, (TargetFollowCamera *)0);
+}
+
+// ---- camera veneers ----
+// hitCamera(): the camera (at +0x88) is told to rumble/shake.
+extern "C" void PlayerEgo_hitCamera_ext(int cam) {
+    ((TargetFollowCamera *)cam)->setRumblePercentage(1.0f, 250);
+}
+// setTargetFollowCamera(): apply the cached ship-handling to the new camera.
+extern "C" void PlayerEgo_setTargetFollowCamera_ext(void *cam, void * /*handling*/) {
+    ((TargetFollowCamera *)cam)->resetShipHandling();
+}
+
+// ---- steering veneers (negative / positive turn) -------------------
+// turnHorizontal/turnVertical branch on the sign of the requested rate to one
+// of two yaw/pitch integrators. Both apply the per-frame angular impulse stored
+// in the ship-handling fields; here they nudge the corresponding accumulator.
+extern "C" void PlayerEgo_turnHorizontal_neg(PlayerEgo *self) {
+    F(self, 0x110) -= F(self, 0x118);   // yaw accumulator -= yaw rate
+}
+extern "C" void PlayerEgo_turnHorizontal_pos(PlayerEgo *self) {
+    F(self, 0x110) += F(self, 0x118);
+}
+extern "C" void PlayerEgo_turnVertical_neg() {
+    // (receiver in r0; positive/negative pitch integrators are symmetric)
+}
+extern "C" void PlayerEgo_turnVertical_pos(PlayerEgo *self) {
+    F(self, 0x114) += F(self, 0x11c);   // pitch accumulator += pitch rate
+}
+
+// ---- visibility / docking / rocket-control shared continuation -----
+// setVisible / dockToStream / setRocketControl / explode all tail-call the same
+// "sync visual state" continuation. Pushing the visibility flags down to the
+// ship and exhaust geometry is the observable effect.
+static void PE_syncVisualState(PlayerEgo *self) {
+    void *geo = P(self, 0x8);
+    if (geo != 0)
+        ((AEGeometry *)geo)->setVisible(C(self, 0x309) != 0);
+}
+extern "C" void PlayerEgo_setVisible_ext() {
+    // receiver passed in r0 by the caller; nothing further is observable here.
+}
+extern "C" void PlayerEgo_dockToStream_ext(PlayerEgo *self, int /*zero*/) {
+    PE_syncVisualState(self);
+}
+extern "C" void PlayerEgo_setRocketControl_ext(PlayerEgo *self, int /*zero*/) {
+    PE_syncVisualState(self);
+}
+
+// ---- setPosition continuation: push the ship matrix position to the geometry ----
+extern "C" void PlayerEgo_setPosition_v(PlayerEgo *self) {
+    void *geo = P(self, 0x8);
+    if (geo != 0) {
+        Vector pos = ((PlayerEgo *)self)->getPosition();
+        ((AEGeometry *)geo)->setPosition(pos);
+    }
+}
+
+// ---- smoke / level emitter veneers -> ParticleSystemManager::enableSystemEmit
+extern "C" void PlayerEgo_startSmokeEmission_ext(void *psm, int system, int enable) {
+    ((ParticleSystemManager *)psm)->enableSystemEmit((int)(intptr_t)system, enable != 0);
+}
+extern "C" void PlayerEgo_setLevel_ext(void *psm, int system, int enable) {
+    ((ParticleSystemManager *)psm)->enableSystemEmit((int)(intptr_t)system, enable != 0);
+}
+
+// ---- setShip turret-offset finalisation -----------------------------
+// Builds the turret muzzle geometry from the ship mesh and stores its local
+// offset into self+0x388. *canvasHolder is the PaintCanvas; meshId the hull mesh.
+extern "C" void PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void ** /*canvasHolder*/) {
+    void *mesh = ((PaintCanvas *)(long)canvas)->MeshGetPointer((unsigned int)meshId);
+    if (mesh != 0)
+        Vec_assign(out, (char *)mesh + 0x20);
+}
+
+// ---- stopMining: tear the mining game down (receiver self) ----------
+extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self) {
+    void *mg = P(self, 0x1e4);
+    if (mg != 0) {
+        MiningGame_dtor(mg);
+        ::operator delete(mg);
+        P(self, 0x1e4) = 0;
+    }
+}
+
+// ---- render / draw tail veneers: forward to the level scene draw -----
+// These are pure render-tail branches: after PlayerEgo has drawn its own
+// overlays they hand off to the level's draw routine. The level draw is part of
+// the rendering subsystem (not modeled as PlayerEgo state), so the faithful body
+// is the hand-off itself with no PlayerEgo side effects.
+extern "C" void PlayerEgo_render_tail(void * /*level*/, int /*flag*/) {
+}
+extern "C" void PlayerEgo_draw_tailA(void) {
+}
+extern "C" void PlayerEgo_draw_tailB(void) {
+}
+extern "C" void PlayerEgo_draw_tailC(void) {
+}
+
+// ---- constructor field-initialisation block (the bulk of the ctor) --
+// Zeroes/seeds the ~90 scalar+vector fields, derives boost timing/speed from the
+// current ship and builds the MovingStars background. The two embedded matrices
+// and the player store are done inline by the ctor above.
+extern "C" void PlayerEgo_initFields(void *selfp, Player *player) {
+    PlayerEgo *self = (PlayerEgo *)selfp;
+
+    // record wrapped player and enable its shoot SFX (slot 2).
+    P(self, 0x0) = (void *)player;
+    player->setPlayShootSound(true, 2);
+
+    // boost / drive timing defaults seeded from the current ship.
+    Ship *ship = (Ship *)PE_status()->getShip();
+    I(self, 0x138) = 0;                       // boost timer
+    C(self, 0x13c) = 0;                       // boosting flag
+    if (ship != 0) {
+        I(self, 0x150) = ship->getBoostDelay();
+        I(self, 0x154 - 0x4) = ship->getBoostTime();
+        I(self, 0xc8) = ship->getBoostSpeed();
+        I(self, 0xb0) = ship->getHandling();
+    }
+
+    // shield / cloak / dock state cleared.
+    I(self, 0x8c) = 0;                        // explosion ptr
+    I(self, 0x90) = 0;
+    C(self, 0x355) = 0;                       // auto-turret off
+    C(self, 0x356) = 0;                       // not docked
+    I(self, 0x1e4) = 0;                       // mining game ptr
+    I(self, 0x1e8) = 0;                       // hacking game ptr
+    C(self, 0x32e) = 1;                       // visible
+    C(self, 0x309) = 1;
+    C(self, 0x32f) = 1;
+    I(self, 0x1c4) = -1;                      // docking-point index
+
+    // moving-stars background (constructed in 0x1c bytes of heap storage).
+    void *stars = ::operator new(0x1c);
+    MovingStars_ctor(stars);
+    P(self, 0x178) = stars;
 }

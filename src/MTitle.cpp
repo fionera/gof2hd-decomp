@@ -141,6 +141,46 @@ void MTitle::OnRender3D()
     MTitle_r3dTail(this->canvas);
 }
 
+// ---- tail fragments ----
+// Each of these is an ARM->Thumb interworking-return veneer in the binary that
+// wraps exactly one concrete engine call (resolved via the trampoline pool at
+// 0x1ab8f8 / 0x1ab908 / 0x1ab918 / 0x1ab928 / 0x1ab0a8). They are kept as
+// dedicated tail methods so the recovered OnRelease/OnRender* bodies stay
+// faithful to the original control flow while remaining real engine calls.
+
+// OnRelease tail: after the active Layout and the ImageFactory have been
+// reloaded, finish by reloading the screen's image factory resources.
+void MTitle::or_tail(void *layout)
+{
+    ((ImageFactory *)layout)->reload();
+}
+
+// OnRender2D: the two-frame logo intro has elapsed (step == 2); hand control to
+// the next application module.
+void MTitle::r2dDone(void *app, int moduleId)
+{
+    ((ApplicationManager *)app)->SetCurrentApplicationModule((unsigned)moduleId);
+}
+
+// OnRender2D tail: close the 2D pass on the canvas.
+void MTitle::r2dTail(void *canvas)
+{
+    ((PaintCanvas *)canvas)->End2d();
+}
+
+// OnRender3D tail: open (and so flush) the 3D pass on the canvas.
+void MTitle::r3dTail(void *canvas)
+{
+    ((PaintCanvas *)canvas)->Begin3d();
+}
+
+// Deleting-destructor tail: the complete-object destructor has run, free the
+// MTitle storage.
+void MTitle::deleteTail()
+{
+    ::operator delete(this);
+}
+
 // ---- OnInitialize_979cc.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MTitle_canvas;
 __attribute__((visibility("hidden"))) extern void **g_MTitle_sound;

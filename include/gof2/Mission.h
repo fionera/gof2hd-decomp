@@ -86,6 +86,7 @@ public:
 
     // ---- recovered accessors / mutators ----
     int getType();
+    void setType(int type);
     int getReward();
     void setReward(int reward);
     int getCosts();

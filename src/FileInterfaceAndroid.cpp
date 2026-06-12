@@ -2,6 +2,7 @@
 #include "gof2/String.h"
 #include <cstdio>
 #include <cstdlib>
+#include <new>
 
 struct zip_file;
 using AbyssEngine::String12;
@@ -543,4 +544,28 @@ void FileInterfaceAndroid::Close() {
         JNI_CallVoidMethod(env, m, *(void **)modePtr);
         self->jniStream = 0;
     }
+}
+
+// ---- default constructor + C-ABI ctor/dtor wrappers ----
+
+// FileInterfaceAndroid::FileInterfaceAndroid() — default ctor. Marks the instance
+// alive, installs the vtable, and zeroes the directory / mode bookkeeping. This is
+// the real special-member face of the recovered ctor_default() body.
+FileInterfaceAndroid::FileInterfaceAndroid()
+{
+    ctor_default();
+}
+
+// FileInterfaceAndroid_ctor — C-ABI default constructor (C1). Construct in place.
+extern "C" void FileInterfaceAndroid_ctor(void *self)
+{
+    new (self) FileInterfaceAndroid();
+}
+
+// FileInterfaceAndroid_completeDtor — C-ABI complete-object destructor (D1). Runs
+// the destructor and hands the storage back so the caller can release it.
+extern "C" void *FileInterfaceAndroid_completeDtor(FileInterfaceAndroid *self)
+{
+    if (self) self->~FileInterfaceAndroid();
+    return self;
 }

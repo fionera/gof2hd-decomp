@@ -490,6 +490,14 @@ PlayerTurret::~PlayerTurret() noexcept(false)
     KIPlayer_dtor(this);
 }
 
+// PlayerTurret complete destructor (D1): runs the object destructor in place and returns `this`
+// so the deleting-destructor caller can hand the same pointer to operator delete.
+PlayerTurret *PlayerTurret::completeDtor()
+{
+    this->~PlayerTurret();
+    return this;
+}
+
 // ---- PlayerTurret_157040.cpp ----
 using AbyssEngine::AEMath::Vector;
 

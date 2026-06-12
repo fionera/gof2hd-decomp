@@ -624,3 +624,39 @@ void ParticleSystemManager::renderMeshes()
     if (this->field_0x26 != -1)
         return _psm_meshRender4(this->field_0x4, this->field_0x58, this->field_0x50, this->field_0x4c);
 }
+
+// ParticleSystemManager::attachSystem(int handle, bool enable)
+// Binds a previously added sub-system (identified by its handle) into the active set. The handle's
+// top bit (bit 17 of the shifted value) selects the mesh array (+0x40) vs the sprite array (+0x1c);
+// the resolved IParticleSystem is then armed via its emit-enable entry, exactly like the sibling
+// enableSystem* dispatchers.
+void ParticleSystemManager::attachSystem(int handle, bool enable)
+{
+    if (handle == -1)
+        return;
+    void **arr;
+    int idx;
+    if (handle << 0x11 < 0) {
+        arr = (void **)this->field_0x40;
+        idx = handle & 0x3fffffff;
+    } else {
+        arr = (void **)this->field_0x1c;
+        idx = handle;
+    }
+    ((IParticleSystem *)(arr[idx]))->enableEmit(enable);
+}
+
+// ParticleSystemManager::enableSystemEmit2(int handle, bool enable)
+// Secondary entry of the emit-enable dispatcher (same bit-17 sprite/mesh handle split as
+// enableSystemEmit), used by the ego-craft thruster bookkeeping.
+void ParticleSystemManager::enableSystemEmit2(int handle, bool enable)
+{
+    enableSystemEmit(handle, enable);
+}
+
+// ParticleSystemManager::enableSystemEmit3(int handle, bool enable)
+// Tertiary entry of the emit-enable dispatcher; identical handle dispatch.
+void ParticleSystemManager::enableSystemEmit3(int handle, bool enable)
+{
+    enableSystemEmit(handle, enable);
+}

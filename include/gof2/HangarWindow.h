@@ -234,5 +234,9 @@ public:
     void showFreeCreditsWindow();
     void transaction(bool buy);
     void update(int delta);
+
+    // The ship the hangar acts on: always the player's current ship held by the global
+    // Status. A static helper because it depends on no per-window state.
+    static void *statusShip();
 };
 #endif

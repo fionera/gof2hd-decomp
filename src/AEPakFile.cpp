@@ -16,6 +16,14 @@ AEPakFile *_ZN9AEPakFileD2Ev(AEPakFile *self)
     return self;
 }
 
+// ---- deleteTail (D0 deleting-destructor tail) --------------------------------
+// The deleting destructor ~AEPakFile() runs the D2 body then tail-calls the global
+// operator delete on the object. That tail is what AEPakFile_deleteTail refers to.
+void AEPakFile::deleteTail()
+{
+    ::operator delete(this);
+}
+
 // ---- Release_700d4.cpp ----
 uint32_t AEPakFile::Release()
 {

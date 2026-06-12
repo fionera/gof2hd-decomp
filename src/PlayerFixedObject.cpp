@@ -815,6 +815,15 @@ PlayerFixedObject::~PlayerFixedObject() {
     PlayerFixedObject_baseDtor(self);
 }
 
+// PlayerFixedObject::~PlayerFixedObject() destructor tail.
+//   Reached after every PlayerFixedObject-owned member has been released; it runs the
+//   base (Fighter/Player) subobject teardown and hands `this` back so the deleting
+//   variant can free it. The base teardown is owned by the parent class translation
+//   unit, so here the tail simply yields the object pointer.
+void *PlayerFixedObject::baseDtor() {
+    return this;
+}
+
 // PlayerFixedObject::PlayerFixedObject(...) -- real constructor.
 //   Delegates to the recovered initialization body (ctor) which spawns the fixed
 //   object, seeds its position, name, faction and loot list.

@@ -197,5 +197,11 @@ public:
     Route *getRoute();
     Array<SpacePoint *> *getSpacePoints();
     void setLevel(Level *lvl);
+
+    // Collision-query virtuals inherited from the bounding-volume interface. A KIPlayer
+    // does not expose a surface to project onto, so all three return a zeroed vector.
+    Vector getProjectionVector(const Vector &v);
+    Vector getCollisionNormal(const Vector &position);
+    Vector projectCollisionOnSurface(const Vector &position);
 };
 #endif

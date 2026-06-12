@@ -1722,5 +1722,134 @@ void Layout::drawMissionRewardMessage(int transition) {
         self->drawColor = origColor;
         ((String *)(line))->dtor();
     }
-    
+
+}
+
+// ===========================================================================
+// Recovered internal helper methods (batch 4)
+//
+// These are the small dispatch/forwarder/init helpers that the public Layout
+// drawing API delegates to.  In the stripped .so they appear only as PLT/GOT
+// veneers (0x74xxx) into the engine bodies (0xe****); each one's semantics are
+// reproduced here as a real Layout:: method so the per-method call sites can be
+// wired to a proper member call by the mechanical pass.
+// ===========================================================================
+
+// drawWindow(String, bool flag): centre a window using the cached screen
+// metrics, then forward to the full 7-arg renderer.  Equivalent to drawWindow2.
+void Layout::drawWindowImpl(const void *str, int flag) {
+    this->drawWindow2(str, flag);
+}
+
+// drawWindow(String, x, y, w, h, bool): the 7-arg core renderer (drawWindow7),
+// reached from the 2-arg / 5-arg wrappers.
+void Layout::drawWindowImpl5(void *str, int x, int y, int w, int h, int flag) {
+    this->drawWindow7(str, x, y, w, h, flag);
+}
+
+// drawHeader(String, bool transition): the header-bar renderer core.
+void Layout::drawHeaderImpl(void *title, int transition) {
+    this->drawHeader7(title, transition);
+}
+
+// drawBox(style, x, y, w, h, String, flags): owning-String variant of drawBox.
+void Layout::drawBoxImpl(int style, int x, int y, int w, int h, void *text, int flags) {
+    this->drawBox(style, x, y, w, h, text, (unsigned)flags);
+}
+
+// drawBox over a borrowed String (no copy): the static-style entry the engine
+// uses when the caller already owns the text (flags default to 0).
+void Layout::drawBoxStr(int style, int x, int y, int w, int h, void *text) {
+    this->drawBox(style, x, y, w, h, text, 0u);
+}
+
+// 8-arg drawBox variant used by external callers: (kind, x, y, w, color, text, z).
+// `color` overrides the draw colour for the duration of the box; `z` selects the
+// height metric (passed through as the box height).
+void Layout::drawBox8(int kind, int x, int y, int w, int color, void *text, int z) {
+    unsigned saved = this->drawColor;
+    this->drawColor = (unsigned)color;
+    this->drawBox(kind, x, y, w, z, text, 0u);
+    this->drawColor = saved;
+}
+
+// drawMask(x, y, w, h): dim the whole screen behind a modal by filling a
+// translucent rectangle with the mask colour, restoring the previous colour.
+void Layout::drawMaskImpl(int x, int y, int w, int h) {
+    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
+    unsigned saved = pc->GetColor();
+    pc->SetColor(this->drawColor);
+    pc->FillRectangle(x, y, w, h);
+    pc->SetColor(saved);
+}
+
+// Colour-restore tail shared by the mask/footer renderers: restore the canvas
+// colour that was saved before the draw.
+void Layout::drawMaskTail(void *pc, int savedColor) {
+    ((PaintCanvas *)pc)->SetColor((unsigned)savedColor);
+}
+
+// drawHelpWindow tail: paint the active help/choice window.
+void Layout::drawHelpWindowImpl() {
+    if (this->choiceWindow != 0)
+        ((ChoiceWindow *)this->choiceWindow)->draw();
+}
+
+// drawBGBorder rounded-rect helpers: thin overloads onto the full 8-parameter
+// renderer.  The 6-arg form reuses the corner image's height as inset/pad.
+void Layout::drawBGBorder6(unsigned corner, unsigned edge, int x, int y, int w) {
+    int ch = ((PaintCanvas *)g_PaintCanvas)->GetImage2DHeight(corner);
+    this->drawBGBorder(corner, edge, x, y, w, ch, 0, 0);
+}
+
+void Layout::drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
+    this->drawBGBorder(corner, edge, x, y, w, h, inset, pad);
+}
+
+// Position a child TouchButton (back/secondary/help) at (x, y) with an anchor.
+void Layout::setBtnRect(void *btn, int x, int y, int anchor) {
+    ((TouchButton *)btn)->setPosition(x, y, (unsigned char)anchor);
+}
+
+// Create an Image2D resource into a layout field slot.
+void Layout::loadImage(unsigned canvas, int imageId, void *field) {
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)imageId, (unsigned int *)field);
+}
+
+// Slide the help button into the header when the header animates in.  The engine
+// entry is a PLT veneer into the shared TouchButton "anim" routine; forward to it.
+void Layout::headerAnim(void *btn) {
+    unsigned char sp[8] __attribute__((aligned(4)));
+    TouchButton_footerAnim(btn, 0, 0, sp);
+}
+
+// Bulk constant-block initialiser for the SIMD-copied header geometry region
+// (0x04..0x2d8).  The constant vectors live in the engine .rodata and are NEON
+// block-copied; the readable scalar tail is handled by the ctor.  This entry just
+// zero-seeds the block so the ctor's explicit writes land on a clean object.
+void Layout::initConstBlock(int hd, int wide, int scale, int res) {
+    (void)hd; (void)wide; (void)scale; (void)res;
+    __aeabi_memset4((char *)this + 0x04, 0x2d8 - 0x04, 0);
+}
+
+// Touch dispatch tails: forward the event to the resolved child TouchButton.
+int Layout::dispatchTouchBegin(void *btn, int x, int y) {
+    return ((TouchButton *)btn)->OnTouchBegin(x, y);
+}
+
+int Layout::dispatchTouchMove(void *btn, int x, int y) {
+    return (int)((TouchButton *)btn)->OnTouchMove(x, y);
+}
+
+int Layout::dispatchTouchEnd(void *btn, int x, int y) {
+    return (int)((TouchButton *)btn)->OnTouchEnd(x, y);
+}
+
+// Engine-named aliases routed to the canonical handlers.
+int Layout::touch_end(int x, int y) {
+    return this->OnTouchEnd(x, y);
+}
+
+void Layout::drawHeader_call(void *title) {
+    this->drawHeader7(title, 0);
 }

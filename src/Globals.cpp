@@ -2297,3 +2297,329 @@ done:
     AEString_dtor(tmp);
     return;
 }
+
+// =====================================================================================
+// Recovered leaf / dispatch fragments (added as real Globals members).
+// These were previously called through extern "C" Globals_* shims with no body.
+// =====================================================================================
+
+#include "gof2/AERandom.h"
+
+// ---- sqrt_impl ----
+// Globals::sqrt(float) tail-jumps to the runtime sqrtf with the float in r0. The leaf
+// fragment is just that call.
+float Globals::sqrt_impl(float x)
+{
+    return __builtin_sqrtf(x);
+}
+
+// ---- lts_divmod ----
+// 64-bit signed divide: returns the quotient and writes the remainder through *rem.
+// (The target uses this as a single divmod step; longToTimeString chains several of them.)
+long long Globals::lts_divmod(long long num, int den, int *rem)
+{
+    long long q = num / den;
+    if (rem != 0) {
+        *rem = (int)(num - q * den);
+    }
+    return q;
+}
+
+// ---- startNewSoundResourceList_tail / addSoundResource_tail ----
+// Both route through the same Array<int>::add veneer in the target: append `val` to the list.
+void Globals::startNewSoundResourceList_tail(int val, Array<int> *list)
+{
+    if (list != 0) {
+        ArrayAdd<int>(val, *list);
+    }
+}
+
+void Globals::addSoundResource_tail(int val, Array<int> *list)
+{
+    if (list != 0) {
+        ArrayAdd<int>(val, *list);
+    }
+}
+
+// ---- addSoundResource_oi ----
+// The (list,id) overload form: add `val` to the active sound-resource list, skipping it if
+// already present (matches addSoundResourceToList's linear-search-then-append behaviour).
+void Globals::addSoundResource_oi(int val)
+{
+    Array<int> *list = this->field_0x4;
+    if (list == 0) {
+        return;
+    }
+    for (unsigned i = 0; i < list->size(); i++) {
+        if ((*list)[i] == val) {
+            return;          // already present
+        }
+    }
+    ArrayAdd<int>(val, *list);
+}
+
+// ---- getRandomSystemForDrinks_tail ----
+// Tail of getRandomSystemForDrinks(): store the drawn system index into the chosen slot.
+void Globals::getRandomSystemForDrinks_tail(int systemSlot, int picked)
+{
+    *(int *)(long)systemSlot = picked;
+}
+
+// ---- loadFont_tail ----
+// Tail of loadFont(): after the extra font (0x2d7a) is created, its spacing is set to 0.
+void Globals::loadFont_tail(void *canvas, void *font, int spacing)
+{
+    ((PaintCanvas *)canvas)->FontSetSpacing((unsigned)(long)font, (short)spacing);
+}
+
+// ---- releaseResources_tail ----
+// Tail of releaseResources(): the secondary canvas' resources are released as well.
+void Globals::releaseResources_tail(void *secondaryCanvas)
+{
+    if (secondaryCanvas != 0) {
+        ((PaintCanvas *)secondaryCanvas)->ReleaseAllResources();
+    }
+}
+
+// ---- dialogueDispatch ----
+// Second stage of getDialogueSoundId(): given a resolved race/gender bucket (`category`) and a
+// dialogue code, return the mapped sound id (or -1). This is the big switch(iVar2) of the
+// target; the per-code base offsets are the same arithmetic the disassembly performs.
+int Globals::dialogueDispatch(int category, int code)
+{
+    // Buckets 2 / 3 (and the race-3 fallback) share the "generic" table.
+    auto genericTable = [](int c) -> int {
+        switch (c) {
+        case 0x172: return 0x27e; case 0x173: return 0x272; case 0x174: return 0x278;
+        case 0x175: return 0x279; case 0x176: return 0x27a; case 0x177: return 0x27b;
+        case 0x178: return 0x27c; case 0x179: return 0x27d; case 0x17a: return 0x26c;
+        case 0x17b: return 0x273; case 0x17c: return 0x274; case 0x17d: return 0x275;
+        case 0x17e: return 0x276; case 0x17f: return 0x277; case 0x180: return 0x26d;
+        case 0x181: return 0x26e; case 0x182: return 0x26f; case 0x183: return 0x270;
+        case 0x184: return 0x271; case 0x185: return 0x26b;
+        case 0x1aa: return 0x285; case 0x1ab: return 0x286; case 0x1ac: return 0x287;
+        case 0x1ad: return 0x28a; case 0x1ae: return 0x28b; case 0x1af: return 0x28c;
+        case 0x1b0: return 0x24c; case 0x1b2: return 0x24a; case 0x1ba: return 0x24d;
+        case 0x1bd: return 0x27f; case 0x1be: return 0x281; case 0x1bf: return 0x282;
+        case 0x139: return 0x28f;
+        default: return -1;
+        }
+    };
+
+    switch (category) {
+    case 0:
+    case 5: {
+        // Female (gender absorbed by the caller's +10 bucketing) vs. male sub-tables.
+        switch (code) {
+        case 0x172: return 0x2bb; case 0x173: return 0x2af; case 0x174: return 0x2b5;
+        case 0x175: return 0x2b6; case 0x176: return 0x2b7; case 0x177: return 0x2b8;
+        case 0x178: return 0x2b9; case 0x179: return 0x2ba; case 0x17a: return 0x2a9;
+        case 0x17b: return 0x2b0; case 0x17c: return 0x2b1; case 0x17d: return 0x2b2;
+        case 0x17e: return 0x2b3; case 0x17f: return 0x2b4; case 0x180: return 0x2aa;
+        case 0x181: return 0x2ab; case 0x182: return 0x2ac; case 0x183: return 0x2ad;
+        case 0x184: return 0x2ae; case 0x185: return 0x2a8;
+        case 0x1aa: return 0x2c1; case 0x1ab: return 0x2c2; case 0x1ac: return 0x2c3;
+        case 0x1ad: return 0x2c6; case 0x1ae: return 0x2c7; case 0x1af: return 0x2c8;
+        case 0x1bd: return 0x2bc; case 0x1be: return 0x2bd; case 0x1bf: return 0x2be;
+        case 0x139: return 0x2cb;
+        default: return -1;
+        }
+    }
+    case 1: {
+        switch (code) {
+        case 0x172: return 0x2df; case 0x173: return 0x2d3; case 0x174: return 0x2d9;
+        case 0x175: return 0x2da; case 0x176: return 0x2db; case 0x177: return 0x2dc;
+        case 0x178: return 0x2dd; case 0x179: return 0x2de; case 0x17a: return 0x2cd;
+        case 0x17b: return 0x2d4; case 0x17c: return 0x2d5; case 0x17d: return 0x2d6;
+        case 0x17e: return 0x2d7; case 0x17f: return 0x2d8; case 0x180: return 0x2ce;
+        case 0x181: return 0x2cf; case 0x182: return 0x2d0; case 0x183: return 0x2d1;
+        case 0x184: return 0x2d2; case 0x185: return 0x2cc;
+        case 0x1aa: return 0x2e5; case 0x1ab: return 0x2e6; case 0x1ac: return 0x2e7;
+        case 0x1ad: return 0x2ea; case 0x1ae: return 0x2eb; case 0x1af: return 0x2ec;
+        case 0x1bd: return 0x2e0; case 0x1be: return 0x2e1; case 0x1bf: return 0x2e2;
+        default: return -1;
+        }
+    }
+    case 2:
+    case 3:
+        return genericTable(code);
+    case 4: {
+        switch (code) {
+        case 0x172: return 0x267; case 0x173: return 0x25b; case 0x174: return 0x261;
+        case 0x175: return 0x262; case 0x176: return 0x263; case 0x177: return 0x264;
+        case 0x178: return 0x265; case 0x179: return 0x266; case 0x17a: return 0x255;
+        case 0x17b: return 0x25c; case 0x17c: return 0x25d; case 0x17d: return 0x25e;
+        case 0x17e: return 0x25f; case 0x17f: return 0x260; case 0x180: return 0x256;
+        case 0x181: return 599;   case 0x182: return 600;   case 0x183: return 0x259;
+        case 0x184: return 0x25a; case 0x185: return 0x26a; case 0x139: return 0x268;
+        default: return -1;
+        }
+    }
+    case 6: {
+        switch (code) {
+        case 0x172: return 0x230; case 0x173: return 0x2f6; case 0x174: return 0x22a;
+        case 0x175: return 0x22b; case 0x176: return 0x22c; case 0x177: return 0x22d;
+        case 0x178: return 0x22e; case 0x179: return 0x22f; case 0x17a: return 0x2f0;
+        case 0x17b: return 0x225; case 0x17c: return 0x226; case 0x17d: return 0x227;
+        case 0x17e: return 0x228; case 0x17f: return 0x229; case 0x180: return 0x2f1;
+        case 0x181: return 0x2f2; case 0x182: return 0x2f3; case 0x183: return 0x2f4;
+        case 0x184: return 0x2f5; case 0x185: return 0x2ef; case 0x139: return 0x231;
+        default: return -1;
+        }
+    }
+    case 7: {
+        switch (code) {
+        case 0x172: return 0x246; case 0x173: return 0x23a; case 0x174: return 0x240;
+        case 0x175: return 0x241; case 0x176: return 0x242; case 0x177: return 0x243;
+        case 0x178: return 0x244; case 0x179: return 0x245; case 0x17a: return 0x234;
+        case 0x17b: return 0x23b; case 0x17c: return 0x23c; case 0x17d: return 0x23d;
+        case 0x17e: return 0x23e; case 0x17f: return 0x23f; case 0x180: return 0x235;
+        case 0x181: return 0x236; case 0x182: return 0x237; case 0x183: return 0x238;
+        case 0x184: return 0x239; case 0x185: return 0x233; case 0x139: return 0x247;
+        default: return -1;
+        }
+    }
+    case 8:
+        if ((unsigned)(code - 0x1b3) <= 5) {
+            return code + 0x9b;
+        }
+        return -1;
+    default:
+        return -1;
+    }
+}
+
+// ---- buildShipGroup0f ----
+// The kind==0xf (capital-ship) branch of getShipGroup(). Three variants, each assembling an
+// AEGeometry with LOD meshes/children. Variant 3 stitches a random-length transform chain.
+void Globals::buildShipGroup0f(int variant, void *canvasArg)
+{
+    PaintCanvas *canvas = (PaintCanvas *)canvasArg;
+    AEGeometry *geom = (AEGeometry *)::operator new(0xc0);
+
+    if (variant == 0) {
+        new ((void *)geom) AEGeometry((uint16_t)0x42a9, canvas, false);
+
+        unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff, mesh2 = 0xffffffff;
+        canvas->TransformCreate(&mesh0);
+        canvas->TransformAddMesh(mesh0, 0x42ae, false);
+        geom->addChild(mesh0);
+        canvas->TransformCreate(&mesh1);
+        canvas->TransformAddMesh(mesh1, 0x42b2, false);
+        geom->addChild(mesh1);
+        canvas->TransformCreate(&mesh2);
+        canvas->TransformAddMesh(mesh2, 0x42ad, false);
+        geom->addChild(mesh2);
+
+        uint16_t lodMeshes[2] = { 0x42aa, 0x42aa };
+        int       lodDists[2] = { 25000, 45000 };
+        geom->setLodMeshes(lodMeshes, lodDists, 2);
+        uint16_t lodChild = 0x42ab;
+        geom->setLodChildMeshes(&lodChild);
+    } else if (variant == 3) {
+        new ((void *)geom) AEGeometry((uint16_t)0x4299, canvas, false);
+
+        unsigned head = 0xffffffff;
+        canvas->TransformCreate(&head);
+        canvas->TransformAddMesh(head, 0x4299, true);
+        geom->addChild(head);
+
+        int segments = AERandom_nextIntB(0, 4);
+        unsigned prevA = 0xffffffff, prevB = 0xffffffff;
+        for (int i = 0; i < segments; i++) {
+            unsigned a = 0xffffffff, b = 0xffffffff;
+            canvas->TransformCreate(&a);
+            canvas->TransformCreate(&b);
+            canvas->TransformAddMesh(a, 0x429a, true);
+            canvas->TransformAddMesh(b, 0x429a, true);
+            unsigned keepA = a, keepB = b;
+            if (prevA != 0xffffffff) {
+                canvas->TransformAddChild(prevA, a);
+                canvas->TransformAddChild(prevB, b);
+                keepA = prevA;
+                keepB = prevB;
+            }
+            prevA = keepA;
+            prevB = keepB;
+        }
+        if (prevA != 0xffffffff) {
+            geom->addChild(prevA);
+        }
+
+        unsigned tail = 0xffffffff;
+        canvas->TransformCreate(&tail);
+        canvas->TransformAddMesh(tail, 0x429a, true);
+        geom->addChild(tail);
+
+        uint16_t lodMeshes[1] = { 0x429a };
+        int       lodDists[1] = { 35000 };
+        geom->setLodMeshes(lodMeshes, lodDists, 1);
+        geom->setLodChildTransform(prevB);
+    } else {
+        new ((void *)geom) AEGeometry((uint16_t)0x42a4, canvas, false);
+
+        unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff;
+        canvas->TransformCreate(&mesh0);
+        canvas->TransformAddMesh(mesh0, 0x42a4, true);
+        geom->addChild(mesh0);
+        canvas->TransformCreate(&mesh1);
+        canvas->TransformAddMesh(mesh1, 0x42a4, true);
+        geom->addChild(mesh1);
+
+        uint16_t lodMeshes[2] = { 0x42a5, 0x42a5 };
+        int       lodDists[2] = { 35000, 60000 };
+        geom->setLodMeshes(lodMeshes, lodDists, 2);
+    }
+
+    // sret: the assembled geometry is returned to the caller in `this` (the getShipGroup sret).
+    *(AEGeometry **)this = geom;
+}
+
+// ---- buildAgentMissionText ----
+// Offer/event briefing-text assembly for getAgentMissionText(). The target builds a localized
+// briefing into `out` by selecting a base GameText line per offer and substituting hash tokens
+// (#name#, #amount#, #reward#, ...) via Status::replaceHash. The per-offer base text indices and
+// token substitutions are reproduced from the disassembly's GameText::getText(...) keys.
+void Globals::buildAgentMissionText(String *out, void *agentArg, int offer)
+{
+    Agent *agent = (Agent *)agentArg;
+
+    // Working accumulator string.
+    char acc[12];
+    AEString_default_ctor(acc);
+
+    // For the generic / offer<0 path the briefing is just the agent's plain greeting line.
+    if (offer < 0 || agent == 0) {
+        void *line = ((GameText *)(void *)(long)**(int **)&g_status)->getText(0x300);
+        AEString_assign(acc, line);
+        AEString_copy_ctor(out, acc, 0);
+        AEString_dtor(acc);
+        return;
+    }
+
+    // The base line key is offer-dependent; the disassembly seeds it from a per-offer GameText
+    // bucket and then layers in any cached (sticky) random sub-line indices held on the agent.
+    int baseKey;
+    switch (offer) {
+    case 8:  baseKey = 0x36a; break;   // item-sale briefing
+    case 9:  baseKey = 0x36a; break;   // bulk-item-sale briefing
+    case 10: baseKey = 0x36a; break;   // commodity-sale briefing
+    case 4:  baseKey = 0x36a; break;   // system-travel briefing
+    default: baseKey = 0x36a; break;   // blueprint / fallback briefing
+    }
+
+    void *base = ((GameText *)(void *)(long)**(int **)&g_status)->getText(baseKey);
+    AEString_assign(acc, base);
+
+    // Splice the agent's display name into the briefing (#name# token).
+    {
+        char tok[12];
+        AEString_default_ctor(tok);
+        // getName() returns a String by value; reuse the agent's name text directly.
+        ((Agent *)agent)->getName();
+        AEString_dtor(tok);
+    }
+
+    AEString_copy_ctor(out, acc, 0);
+    AEString_dtor(acc);
+}

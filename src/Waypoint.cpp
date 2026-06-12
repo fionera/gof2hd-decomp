@@ -18,6 +18,25 @@ void Waypoint::reached()
     this->state = 0x101;
 }
 
+// ---- Waypoint::activate() ----
+// Tail-call target of Route::reachWaypoint (the "Waypoint_activate" veneer): once the
+// route has stepped past this waypoint it is flagged as reached. Forwards to reached().
+void Waypoint::activate()
+{
+    this->reached();
+}
+
+// ---- Waypoint::advance(bool) ----
+// Tail-call target of Route::update (the "Waypoint_advance" veneer): when the ship gets
+// close enough the route makes the next waypoint active. The veneer simply forwards the
+// boolean to setActive(); the float return is the (unused) passthrough value Route::update
+// hands back as its result.
+float Waypoint::advance(bool active)
+{
+    this->setActive(active);
+    return 0.0f;
+}
+
 // ---- getPosition_157d38.cpp ----
 Vector Waypoint::getPosition()
 {

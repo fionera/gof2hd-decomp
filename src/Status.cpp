@@ -1629,6 +1629,12 @@ struct SolarSystem;
 
 __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 
+// Tail dispatch shared by addStationToStack()/visitStation(): commits `s` as the current
+// station by routing through the full setStation() travel logic.
+void Status::setStationTail(Station *s) {
+    setStation(s);
+}
+
 // Travels to `s`: marks its system visible, then rebuilds the planet name and texture tables
 // for every station in the destination system.
 void Status::setStation(Station *s) {

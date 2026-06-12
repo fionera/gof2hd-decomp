@@ -40,6 +40,15 @@ void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
     return PlayerJumpgate_delete_tail();
 }
 
+// PlayerJumpgate::~PlayerJumpgate() -- complete-object destructor. There is no
+// state owned directly by PlayerJumpgate that the base PlayerStaticFar dtor does
+// not already release (the BoundingVolume array + BoundingSphere are torn down by
+// the base subobject), so the destructor simply chains to the base destructor.
+PlayerJumpgate::~PlayerJumpgate()
+{
+    ((PlayerStaticFar *)this)->dtor();
+}
+
 // ---- timeToJump_a5164.cpp ----
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 

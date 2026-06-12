@@ -110,5 +110,10 @@ public:
     void setWreckedMeshId(int meshId);
     void translate(const Vector &d);
     void update(int dt);
+
+    // Destructor tail: after the PlayerFixedObject-owned members are released, the base
+    // (Fighter/Player) subobject is torn down here. Returns `this` (the deleting variant
+    // forwards the result to operator delete).
+    void *baseDtor();
 };
 #endif

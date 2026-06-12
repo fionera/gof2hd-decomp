@@ -69,5 +69,25 @@ public:
     unsigned int touchedElement(unsigned int x, unsigned int y);
     void updateQueue(int dt);
     void updateSecondaryWeaponString();
+
+    // ---- methods recovered from inlined fragments / tail thunks ----
+    // The decompiler emitted these as standalone Hud_* helpers, but they are
+    // really pieces of draw()/init()/hudEvent()/catchCargo()/initHudMenu()/
+    // touchMove()/checkIfQuickMenuIsEmpty() (inlined or tail-called).
+    void drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y);
+    void drawRadar();
+    void drawBars(void *ego);
+    void drawSecondaryWeaponPanel();
+    void drawMissionBanner();
+    void drawMessage();
+    unsigned int touchMoveFallback(unsigned int a, void *b);
+    void secondaryWeaponChanged();
+    void refreshQuickMenu();
+    void catchCargoFinish(ListItem *item);
+    void eventQueueFinish(void *canvas, unsigned int color);
+    void loadImages();
+    void hudEventBuild(int eventId, void *ego, int arg);
+    void buildQuickMenu(int menuType);
+    void subObjectDtor(void *p);
 };
 #endif

@@ -34,6 +34,8 @@ public:
     int getTecLevel() const { return techLevel; }
     int getTextureIndex() const { return textureIndex; }
     void *getAgents() const { return agents; }
+    void *getItems() const { return items; }   // +0x28 Array<Item*>*
+    void *getShips() const { return ships; }    // +0x2c Array<Ship*>*
     Station * clone();
     Station * ctor(void *name, int p3, int p4, int p5, int p6);
     void ctor_default();

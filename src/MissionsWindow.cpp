@@ -917,5 +917,42 @@ extern "C" void MissionsWindow_update(void *self, int dt)
     for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
         ((TouchButton *)(((void **)tabs[1])[i]))->setAlwaysPressed(i == u32(self, 0x40));
 
-    
+
+}
+
+// ---- public member faces over the recovered window logic ----
+// These thin members expose the already-recovered window behaviour (rebuild
+// layout, paint, dispatch a touch-release, advance one frame) through the real
+// MissionsWindow:: interface used by the rest of the engine.
+
+// MissionsWindow::init() -- rebuild the whole missions screen layout & sub-windows.
+int MissionsWindow::init()
+{
+    return MissionsWindow_init(this);
+}
+
+// MissionsWindow::draw() -- paint the current view (missions / wanted / star map).
+void MissionsWindow::draw()
+{
+    MissionsWindow_draw(this);
+}
+
+// MissionsWindow::OnTouchEnd(int, int) -- route a touch-release to the active sub-view.
+void MissionsWindow::OnTouchEnd(int y, int z)
+{
+    MissionsWindow_OnTouchEnd(this, y, z);
+}
+
+// MissionsWindow::update(int) -- advance the window by one frame.
+void MissionsWindow::update(int dt)
+{
+    MissionsWindow_update(this, dt);
+}
+
+// MissionsWindow_dtor -- C-ABI complete-object destructor wrapper: run the real
+// destructor and hand the storage back to the caller for release.
+extern "C" void *MissionsWindow_dtor(void *p)
+{
+    if (p) ((MissionsWindow *)p)->~MissionsWindow();
+    return p;
 }
