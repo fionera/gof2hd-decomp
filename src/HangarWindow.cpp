@@ -11,6 +11,7 @@
 #include "gof2/Globals.h"
 #include "gof2/Status.h"
 #include "gof2/ListItem.h"
+#include "gof2/Ship.h"
 
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls are
 // method calls on this global instance.
@@ -2540,7 +2541,7 @@ void HangarWindow::initialize() {
     // Recompute best cargo prices from known equipment when not in a black market.
     if (self->itemList != 0 && ((Status *)(*gStatus))->inBlackMarketSystem() == 0 &&
         self->upgradeMode == 0) {
-        unsigned int *equip = (unsigned int *)Ship_getEquipment(((Status *)(*gStatus))->getShip());
+        unsigned int *equip = (unsigned int *)((Ship*)(((Status *)(*gStatus))->getShip()))->getEquipment();
         Array<void *> *cargo = (Array<void *> *)self->itemList;
         unsigned int n = cargo->size() + (equip ? equip[0] : 0);
         for (unsigned int i = 0; i < n; i++) {

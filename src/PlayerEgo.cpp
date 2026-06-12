@@ -38,6 +38,7 @@ public:
 #include "gof2/SpacePoint.h"
 #include "gof2/String.h"
 #include "gof2/TractorBeam.h"
+#include "gof2/Ship.h"
 
 // Explosion.h and Hud.h each define an identical file-scope `static inline I(...)`
 // (and Hud.h a `P(...)`), making unqualified calls ambiguous. Use macros here so
@@ -112,7 +113,6 @@ extern "C" float Ship_removeEquipment(void*, int);
 extern "C" void PlayerEgo_hackingRotateRCW_ext(int, int);
 extern "C" void PlayerEgo_refillGunDelay_ext(void*, int);
 extern "C" int   Player_gunAvailable(void *player);
-extern "C" int   Ship_getEquipment(void *ship, int slot);
 extern "C" void *AEGeometry_new(void *canvas);
 extern "C" void  AEGeometry_setRotationOrder(void *geo, int order);
 extern "C" void *AEGeometry_dtor(void *geo);
@@ -1086,7 +1086,7 @@ void PlayerEgo::checkForTurret() {
         return;
 
     C(self, 0x180) = 0;
-    int equip = Ship_getEquipment(PE_status()->getShip(), 2);
+    int equip = (int)(intptr_t)((Ship*)(PE_status()->getShip()))->getEquipment(2);
     void *item = *(void **)(equip + 4);
     I(self, 0x1f8) = (int)((double)((Item *)(*(void **)(item)))->getAttribute(0) * 1.5);
 

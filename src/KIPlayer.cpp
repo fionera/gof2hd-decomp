@@ -8,6 +8,7 @@
 #include "gof2/Standing.h"
 #include "gof2/String.h"
 #include "gof2/AEGeometry.h"
+#include "gof2/Ship.h"
 
 
 extern "C" void FModSound_resumeEvent(void *a, int b);
@@ -608,7 +609,6 @@ int Ship_spaceAvailable(void *ship, int amount);             // 0x73318
 // 0x73324
 // 0x73330
 // 0x718fc
-void *Ship_getEquipment(void *ship);                         // 0x7333c
 // 0x71854
 void Ship_addCargo(void *ship, void *item);                  // 0x72cdc
 // 0x72ce8 / 0x72cdc area
@@ -705,7 +705,7 @@ void KIPlayer::captureCrate(void *hud) {
 
         bool merged = false;
         if (((Item *)(item))->getType() == 1) {
-            void *equip = Ship_getEquipment(((Status *)status)->getShip());
+            void *equip = ((Ship*)(((Status *)status)->getShip()))->getEquipment();
             if (equip != 0) {
                 unsigned ecount = *(unsigned *)equip;
                 for (unsigned j = 0; j < ecount; j = j + 1) {

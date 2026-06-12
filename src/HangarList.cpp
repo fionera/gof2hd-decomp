@@ -3,6 +3,7 @@
 #include "gof2/Status.h"
 #include "gof2/GameText.h"
 #include "gof2/ListItem.h"
+#include "gof2/Ship.h"
 
 
 
@@ -385,7 +386,7 @@ clear_old:
 
     Array<ListItem *> *items = (Array<ListItem *> *)::operator new(0xc);
     Array_ListItem_ctor(items);
-    Array<Item *> *equipment = Ship_getEquipment(ship);
+    Array<Item *> *equipment = ((Ship*)(ship))->getEquipment();
     Array<Item *> *cargo = Ship_getCargo(ship);
     Array<Item *> *available;
     int baseLength;

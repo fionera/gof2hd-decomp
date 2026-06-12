@@ -8,6 +8,7 @@
 #include "gof2/Level.h"
 #include "gof2/PlayerEgo.h"
 #include "gof2/PlayerFighter.h"
+#include "gof2/Ship.h"
 
 
 extern "C" void CutScene_update_tail(CutScene *self);
@@ -734,7 +735,6 @@ void CutScene::resetCamera()
 // ---- checkForTurret_98a68.cpp ----
 extern "C" {
 void PaintCanvas_TransformRemoveChild(void *canvas, unsigned int parent, unsigned int child);
-int *Ship_getEquipment(void *ship, int slot);
 void AEGeometry_ctor_id(void *self, unsigned short id, void *canvas, bool flag);
 void AEGeometry_ctor_default(void *self, void *canvas);
 void AEGeometry_setRotationOrder(void *self, int order);
@@ -768,7 +768,7 @@ void CutScene::checkForTurret()
     }
 
     void *ship = ((Status *)(*gStatus))->getShip();
-    int *equip = Ship_getEquipment(ship, 2);
+    int *equip = (int *)((Ship*)(ship))->getEquipment(2);
     if (equip == 0 || equip[0] == 0)
         return;
     void *item = *(void **)(equip[1]);

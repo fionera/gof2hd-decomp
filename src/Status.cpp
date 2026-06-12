@@ -29,6 +29,7 @@ struct FileRead;
 #undef RetStr
 #define RetStr RetStr
 #include "gof2/Wanted.h"
+#include "gof2/Ship.h"
 #undef RetStr
 
 
@@ -2021,7 +2022,6 @@ int Mission_getProductionGoodIndex(Mission *m);
 int Mission_getProductionGoodAmount();
 void Mission_setWon(Mission *m, bool v);
 int Station_getIndex(Station *s);
-void *Ship_getEquipment(Ship *ship);
 void *Ship_getCargo();
 int Ship_getCurrentLoad();
 int Ship_hasCargo(int ship, int item);
@@ -2070,7 +2070,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
             if (Mission_getStatusValue() <= self->goodsProduced) { Mission_setWon(m, true); return m; }
             break;
         case 0x98: {
-            unsigned *eq = (unsigned *)Ship_getEquipment(self->ship);
+            unsigned *eq = (unsigned *)((Ship*)(self->ship))->getEquipment();
             for (unsigned j = 0; j < *eq; j = j + 1) {
                 void *it = *(void **)(eq[1] + j * 4);
                 if (it != 0 && ((Item *)(it))->getIndex() == Mission_getStatusValue())
@@ -2102,7 +2102,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
             }
             break;
         case 0x9d: {
-            unsigned *eq = (unsigned *)Ship_getEquipment(self->ship);
+            unsigned *eq = (unsigned *)((Ship*)(self->ship))->getEquipment();
             for (unsigned j = 0; j < *eq; j = j + 1) {
                 void *it = *(void **)(eq[1] + j * 4);
                 if (it != 0 && ((Item *)(it))->getType() == Mission_getStatusValue())
@@ -2111,7 +2111,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
             break;
         }
         case 0x9e: {
-            unsigned *eq = (unsigned *)Ship_getEquipment(self->ship);
+            unsigned *eq = (unsigned *)((Ship*)(self->ship))->getEquipment();
             bool hasGood = false, hasSpecial = false;
             for (unsigned j = 0; j < *eq; j = j + 1) {
                 void *it = *(void **)(eq[1] + j * 4);
@@ -2197,7 +2197,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
             break;
         case 0xbd:
             if (docked) {
-                unsigned *eq = (unsigned *)Ship_getEquipment(self->ship);
+                unsigned *eq = (unsigned *)((Ship*)(self->ship))->getEquipment();
                 for (unsigned j = 0; j < *eq; j = j + 1) {
                     void *it = *(void **)(eq[1] + j * 4);
                     if (it != 0 && ((Item *)(it))->getSort() == Mission_getStatusValue())

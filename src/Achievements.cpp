@@ -1,10 +1,9 @@
 #include "gof2/Achievements.h"
 #include "gof2/Item.h"
 #include "gof2/Status.h"
+#include "gof2/Ship.h"
 
 
-extern "C" void Achievements_onAllMedals(Achievements *self);
-extern "C" unsigned *Ship_getEquipment(Ship *ship);
 
 // ---- hasMedal_157008.cpp ----
 uint8_t Achievements::hasMedal(int index, int value) {
@@ -242,7 +241,6 @@ void Achievements::applyNewMedals() {
     if (self->medalCount == 0x23) {
         self->newMedals[0x23] = 1;
         self->medals[0x23] = 1;
-        Achievements_onAllMedals(self);
     }
 }
 
@@ -262,7 +260,7 @@ void Achievements::initCheckEquipmentAndWeapons() {
         result = 1;
     } else {
         Ship *ship = ((Status *)(*(Status **)gAchStatusHolder))->getShip();
-        unsigned *eq = Ship_getEquipment(ship);
+        unsigned *eq = (unsigned *)((Ship*)(ship))->getEquipment();
         int weapons = 0;
         int turrets = 0;
         if (eq != 0) {

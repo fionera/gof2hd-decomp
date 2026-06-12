@@ -390,7 +390,7 @@ bool spaceAvailable(Ship *self, int n) { return n + self->currentLoad <= self->b
 Array<int>* getMods(Ship *self) { return self->mods; }
 
 // ---- getEquipment_174c88.cpp ----
-Array<Item*>* getEquipment(Ship *self) { return self->equipment; }
+Array<Item*>* Ship::getEquipment() { Ship *self = this; return self->equipment; }
 
 // ---- getHandlingForShop_174a1c.cpp ----
 float getHandlingForShop(Ship *self) {
@@ -547,7 +547,7 @@ int hasCargoType(Ship *self, int type) {
 }
 
 // ---- getEquipment_1750cc.cpp ----
-Array<Item*>* getEquipment(Ship *self, int type) {
+Array<Item*>* Ship::getEquipment(int type) { Ship *self = this;
     if (type >= 4 || self->slots[type] == 0) {
         return 0;
     }

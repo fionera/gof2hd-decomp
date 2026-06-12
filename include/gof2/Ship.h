@@ -29,6 +29,8 @@ struct Item;
 
 class Ship {
 public:
+    Array<Item*>* getEquipment();
+    Array<Item*>* getEquipment(int type);
     int          index;            // 0x00  ship id / type
     int          baseHP;           // 0x04
     int          value;            // 0x08

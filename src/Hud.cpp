@@ -23,6 +23,7 @@
 #undef P
 #include "gof2/ListItem.h"
 #include "gof2/Status.h"
+#include "gof2/Ship.h"
 
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls are
 // method calls on this global instance.
@@ -54,7 +55,6 @@ extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
 extern "C" int  SolarSystem_getRace(void *sys);
 extern "C" void PaintCanvas_drawImage(void *canvas, int img, int x, int y);
-extern "C" void *Ship_getEquipment(void *ship, int slot);
 extern "C" int  Ship_hasJumpDrive(void *ship);
 extern "C" unsigned char Ship_hasCloak(void *ship);
 extern "C" void Layout_drawMask();
@@ -954,7 +954,7 @@ extern "C" void Hud_refreshQuickMenu(Hud *self);       // DAT_001ac644 tail thun
 Hud * Hud::checkIfQuickMenuIsEmpty() {
     Hud *self = this;
     void *ship = (void *)((Status *)(*gStatus))->getShip();
-    unsigned int *equip = (unsigned int *)Ship_getEquipment(ship, 1);
+    unsigned int *equip = (unsigned int *)(void *)((Ship*)(ship))->getEquipment(1);
     P(self, 0x25c) = equip;
 
     unsigned char empty;
@@ -1326,7 +1326,7 @@ void Hud::initHudMenu(int menuType, void *lvl) {
     if (P(self, 0x25c) != 0) ::operator delete(Array_Item_dtor(P(self, 0x25c)));
     P(self, 0x25c) = 0;
     void *ship = (void *)((Status *)(*gStatus))->getShip();
-    P(self, 0x25c) = Ship_getEquipment(ship, 1);
+    P(self, 0x25c) = (void *)((Ship*)(ship))->getEquipment(1);
     ((Hud *)(self))->updateSecondaryWeaponString();
 
     I(self, 0x4cc) = 0;
