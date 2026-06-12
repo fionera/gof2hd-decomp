@@ -41,6 +41,30 @@ extern "C" void MeshMerger_setMatrix_tail(void *dst, const Matrix &m);
 extern "C" void MeshMerger_render_tail(void *a, void *b, int z);
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 
+// ---- engine-veneer forwarders ----
+// In the binary, init()/render()/setMatrix() each end in a tail-call through a
+// PC-relative GOT/veneer slot into the AbyssEngine PaintCanvas/Matrix entry points.
+// We reproduce that dispatch through the same hidden function-pointer slots so the
+// real methods can forward to the engine without an inline indirect-call expression.
+__attribute__((visibility("hidden"))) extern int  (**g_mmInitFn)(MeshMerger *, int, uint16_t, uint32_t *);
+__attribute__((visibility("hidden"))) extern void (**g_mmRenderFn)(void *, void *, int);
+__attribute__((visibility("hidden"))) extern void (**g_mmMatrixAssignFn)(void *, const Matrix &);
+
+int MeshMerger::initTail(int r1, uint16_t flags, uint32_t *meshId)
+{
+    return (*g_mmInitFn)(this, r1, flags, meshId);
+}
+
+void MeshMerger::renderTail(void *canvas, void *transformId, int z)
+{
+    (*g_mmRenderFn)(canvas, transformId, z);
+}
+
+void MeshMerger::setMatrixTail(void *matrixSlot, const Matrix &m)
+{
+    (*g_mmMatrixAssignFn)(matrixSlot, m);
+}
+
 // ---- setMatrix_173c74.cpp ----
 // setMatrix(index, m): tail-call the engine matrix-assign with the per-index
 // slot (matrices[index], each 0x3c bytes) and the source matrix.

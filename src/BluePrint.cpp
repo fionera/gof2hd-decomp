@@ -8,6 +8,7 @@
 
 Array<int> *BluePrint_getIngredientList(BluePrint *self);
 Array<int> *BluePrint_getQuantityList(BluePrint *self);
+BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item);   // BluePrint::BluePrint(int)
 extern "C" void ArraySetLengthInt(uint32_t n, Array<int> *a);
 extern "C" int Station_getIndex(void *station);
 
@@ -231,6 +232,16 @@ BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item)
     self->spentValue = 0;
     self->remainingBatch = self->batchMultiplier;
     return self;
+}
+
+// ---- getIndexOf / make ----
+// BluePrint::getIndexOf() — index accessor reached via the ListItem/record-handler
+// wrapper path; returns the produced item's database index, same as getIndex().
+int BluePrint::getIndexOf() { return itemIndex; }
+
+// BluePrint::make(int) — heap factory: operator new + BluePrint(index).
+BluePrint *BluePrint::make(int index) {
+    return _ZN9BluePrintC2Ei((BluePrint *)::operator new(sizeof(BluePrint)), index);
 }
 
 // ---- addItem_177008.cpp ----

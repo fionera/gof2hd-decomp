@@ -18,6 +18,11 @@
 GameRecord::~GameRecord()
 {
     char *t = (char *)this;
+
+    // Destroy the two embedded AbyssEngine::String members (last constructed
+    // first): the slot at +0x194 then the slot at +0x188.
+    AEString_dtor(t + 0x194);
+    AEString_dtor(t + 0x188);
 }
 
 // ---- GameRecord_155900.cpp ----
@@ -26,7 +31,9 @@ GameRecord::GameRecord()
 {
     char *t = (char *)this;
 
-    // Two embedded AbyssEngine::String members.
+    // Two embedded AbyssEngine::String members, default-constructed first.
+    AEString_ctor(t + 0x188);
+    AEString_ctor(t + 0x194);
 
     // Heap buffer at +0x00.
     void *buf = ::operator new[](0x87);

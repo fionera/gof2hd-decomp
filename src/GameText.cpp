@@ -466,3 +466,19 @@ void GameText::ReadLangFile(unsigned int file, int count) {
 
     AEFile::Close(file);
 }
+
+// ---- public/C-ABI fragments ----
+
+// GameText::setLanguage(short, int): the two-argument language switch the
+// savegame loader invokes. The string-table count is passed as a short here;
+// the behaviour is otherwise identical to setLanguage_si, so forward to it.
+void GameText::setLanguage(short stringCount, int langId) {
+    this->setLanguage_si((int)stringCount, langId);
+}
+
+// GameText::dtor(): C-ABI form of the complete-object destructor. Runs the
+// recovered destructor body (release + owned-table free + base Array<int>
+// teardown) and returns `this` so the caller can free the storage.
+void *GameText::dtor() {
+    return _ZN8GameTextD2Ev(this);
+}

@@ -199,5 +199,16 @@ public:
     float up(int frameTime, float delta);
     void update(int dt, void *radar, void *hud, void *radio, void *script, int arg5, bool arg6, int arg7);
     int updateManeuver();
+
+    // ---- veneer / fragment entry points (forward to the canonical methods) ----
+    // These are the secondary symbols the decompiler split out of the matching
+    // full methods; they exist as their own thunks in the binary and are wired up
+    // by other translation units, so they get real definitions here.
+    int getHUD_up();                        // alias of getHUD()
+    Vec3 getPosition_up();                  // alias of getPosition()
+    void setRoute_init();                   // re-apply the current route (Level init path)
+    void rollLeft(int shipField, float amt);   // bank input -> turnHorizontal()
+    void rollRight(int shipField, float amt);  // bank input -> turnHorizontal()
+    void syncFirstPerson(int v);            // -> hideShipForFirstPersonCameraView()
 };
 #endif

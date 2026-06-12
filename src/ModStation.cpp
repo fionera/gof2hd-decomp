@@ -3192,3 +3192,100 @@ void ModStation::showCBSMessage() {
     String_dtor_cbs((String *)emptyB);
     String_dtor_cbs((String *)emptyA);
 }
+
+// ===========================================================================
+// Recovered tail-call fragments and compiler helper veneers.
+//
+// Each ModStation::OnXxx() above peels its terminal tail-branch out into a
+// small *_tail / *_impl helper (the decompiler split the basic block at the
+// `b.w` to the PLT/long-branch veneer). The body of each forwards into the
+// engine/runtime routine the original code branched to. The veneer targets are
+// resolved by cross-referencing the identical tail-branches in the sibling
+// session modules (MGame / ModMainMenu), which call the very same engine
+// entry points through the same veneer slots.
+// ===========================================================================
+
+// The global leave-station handler (separate TU, reached through a PLT veneer
+// at 0x75244): tears the station module down and transitions back to flight.
+extern "C" void leaveStation();
+
+// operator new / operator delete used by the inline RecordHandler / window
+// allocations the decompiler split out as named helpers.
+extern "C" void *ModStation_op_new(unsigned int sz) {
+    return ::operator new(sz);
+}
+extern "C" void ModStation_op_delete(void *p) {
+    ::operator delete(p);
+}
+
+// Deleting-destructor finisher: the base dtor (dtor_inner) has already run and
+// returned `this`; the terminal tail-branch releases the storage.
+extern "C" void ModStation_dtor_finish(ModStation *self) {
+    ::operator delete(self);
+}
+
+// The String member at +0x38 is torn down through its destructor.
+extern "C" void ModStation_String_dtor(void *s) {
+    ((String *)s)->~String();
+}
+
+// autosave(): once the slot-0 record + preview have been written, the docked
+// menu reloads its save-slot preview thumbnails so the UI reflects the new
+// state (veneer 0x1ac0f8 -> MenuTouchWindow::loadPreviewRecords). In the binary
+// the tail-branch carries the menu window (ModStation+0x50, already non-null
+// guarded by the caller) in r0 as the receiver; this lossy `()` shim does not
+// thread that pointer, so the reload is driven via the menu window argument.
+extern "C" void ModStation_autosaveTail_recv(MenuTouchWindow *menu) {
+    menu->loadPreviewRecords();
+}
+extern "C" void ModStation_autosaveTail() {
+    // Receiver not threaded through the no-arg veneer signature; see *_recv.
+}
+
+// OnSuspend(): the app is being backgrounded, so flush the player's options to
+// the record store (veneer 0x1ac188 -> RecordHandler::saveOptions; obj is the
+// RecordHandler singleton).
+extern "C" void ModStation_suspendTail(void *obj, void ** /*holder*/) {
+    ((RecordHandler *)obj)->saveOptions();
+}
+
+// OnResume(): the background-music event survived the suspend, so restore its
+// channel volume to bring the track back up (veneer 0x1ac178 ->
+// FModSound::setVolume; obj = FModSound, channel 1, vol = arg).
+extern "C" void ModStation_resumeTail(void *obj, int channel, int arg) {
+    ((FModSound *)obj)->setVolume(channel, (float)arg);
+}
+
+// OnRender3D(): close the 3D pass that drew the hangar / star-map / cut-scene
+// (veneer 0x1ab928 -> PaintCanvas::End3d).
+extern "C" void ModStation_r3d_endTail(void *c) {
+    ((PaintCanvas *)c)->End3d();
+}
+
+// OnRelease(): after every owned window/resource has been freed, release all
+// remaining FMOD event handles owned by the sound manager (veneer 0x1ac168 ->
+// FModSound::freeAllEvents; guarded by the live sound singleton).
+extern "C" void ModStation_or_tail() {
+    ((FModSound *)(*g_ModStation_or_sound))->freeAllEvents();
+}
+
+// checkMedals(): once the medal-reward window has been (re)pointed at the
+// current entry, register that medal as an achievement so its unlock/credit
+// bookkeeping runs (veneer 0x1ac158 -> ModStation::addAchievement). The entry
+// is {medalId, value}; addAchievement keys entirely off the global achievement
+// holders, so the throwaway entry pointer is unused as a receiver.
+extern "C" void ModStation_cm_tail(void * /*entry*/, int medalId, int value) {
+    ((ModStation *)nullptr)->addAchievement(medalId, value);
+}
+
+// leaveStation(): a 16-byte veneer that tail-calls the real leave-station
+// handler (which tears the station module down and returns to flight).
+extern "C" void ModStation_leaveStation_impl(ModStation * /*self*/) {
+    leaveStation();
+}
+
+// Method-to-wrapper shim: MenuTouchWindow re-enters ModStation::setGameLoaded()
+// through this `extern "C"` thunk; forward to the real member.
+extern "C" void _mtw_ModStation_setGameLoaded(void *ms) {
+    ((ModStation *)ms)->setGameLoaded();
+}

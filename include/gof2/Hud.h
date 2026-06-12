@@ -89,5 +89,12 @@ public:
     void hudEventBuild(int eventId, void *ego, int arg);
     void buildQuickMenu(int menuType);
     void subObjectDtor(void *p);
+
+    // drawTitleImage(visible): in this build the title-image draw was compiled down
+    // to an identity stub that just yields back its `visible` argument.
+    bool drawTitleImage(bool visible);
+    // enterCinematic(arg, flag): forward into the engine cinematic-mode entry point
+    // (reached through a GOT/veneer slot in the binary) to toggle the HUD overlay.
+    void enterCinematic(int arg, int flag);
 };
 #endif

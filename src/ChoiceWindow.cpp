@@ -548,3 +548,52 @@ int ChoiceWindow::touch_end(int x, int y)
 {
     return this->OnTouchEnd(x, y);
 }
+
+// ===========================================================================
+// extern "C" interop shims.
+//
+// Other modules (MenuTouchWindow / DialogueWindow / SpaceLounge / StarMap /
+// MissionsWindow / HangarWindow) reach into ChoiceWindow through `extern "C"`
+// veneers the decompiler peeled out of their bodies (placement-new'd dialogs,
+// deleting-destructor chains, and the touch/update dispatch). Each forwards to
+// the real ChoiceWindow member. Construct/destruct shims return `this` so the
+// callers' `operator delete(ChoiceWindow_dtor(p))` chains stay byte-faithful.
+// ===========================================================================
+
+// In-place construction of a ChoiceWindow at an already-allocated slot.
+extern "C" void *ChoiceWindow_ctor(void *self) {
+    new (self) ChoiceWindow();
+    return self;
+}
+
+// Base destructor (returns `this`); the caller tail-calls operator delete.
+extern "C" void *ChoiceWindow_dtor(void *p) {
+    ((ChoiceWindow *)p)->~ChoiceWindow();
+    return p;
+}
+extern "C" void *_mtw_ChoiceWindow_dtor(void *p) {
+    ((ChoiceWindow *)p)->~ChoiceWindow();
+    return p;
+}
+extern "C" void *_mw_ChoiceWindow_dtor(void *w) {
+    ((ChoiceWindow *)w)->~ChoiceWindow();
+    return w;
+}
+
+// Per-frame update of the embedded scroll window.
+extern "C" void _mtw_ChoiceWindow_update(void *cw) {
+    ((ChoiceWindow *)cw)->update(0);
+}
+
+// Touch dispatch from the menu's master handler. The veneers carry a single
+// coordinate (the menu's primary touch axis, which lands in the handler's first
+// argument); the orthogonal coordinate is not threaded through the veneer.
+extern "C" void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y) {
+    ((ChoiceWindow *)cw)->OnTouchBegin(y, 0);
+}
+extern "C" int _mtw_ChoiceWindow_OnTouchEnd(void *cw, int y) {
+    return ((ChoiceWindow *)cw)->OnTouchEnd(y, 0);
+}
+extern "C" void _mtw_ChoiceWindow_OnTouchMove(void *cw, int y) {
+    ((ChoiceWindow *)cw)->OnTouchMove(y, 0);
+}

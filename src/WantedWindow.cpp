@@ -807,6 +807,18 @@ WantedWindow *_ZN12WantedWindowC2Ev(WantedWindow *self)
     return self;
 }
 
+// Real special members. The shipped binary emitted the base ctor/dtor as the
+// mangled free functions above (_ZN12WantedWindowC2Ev / _ZN12WantedWindowD2Ev);
+// these forward to that already-recovered logic so call sites can use the natural
+// C++ special members while the byte-exact field handling lives in one place.
+WantedWindow::WantedWindow() {
+    _ZN12WantedWindowC2Ev(this);
+}
+
+WantedWindow::~WantedWindow() {
+    _ZN12WantedWindowD2Ev(this);
+}
+
 // ---- getRelativeScrollHeight_e17d8.cpp ----
 float WantedWindow::getRelativeScrollHeight() {
     WantedWindow *self = this;

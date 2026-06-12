@@ -338,3 +338,13 @@ uint8_t NewsTicker::OnTouchBegin(int x, int y)
     }
     return this->touched;
 }
+
+// ---- C-ABI dtor wrapper (recovered shim) ----
+
+// NewsTicker_dtor — C-ABI destructor. Runs ~NewsTicker() (which releases the
+// ticker String) and returns the storage for the caller's operator delete.
+extern "C" void *NewsTicker_dtor(void *p)
+{
+    if (p) ((NewsTicker *)p)->~NewsTicker();
+    return p;
+}

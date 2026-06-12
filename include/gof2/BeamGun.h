@@ -32,5 +32,12 @@ public:
     void update(int elapsed);
     void setEnemies(Array<Player *> *enemies);
     void setEnemy(Player *enemy);
+
+    // Tail-call veneer fragments: the terminal b.w of the matching method into a
+    // relocated slot reaching the inherited engine implementation (the enemy
+    // handler / AEGeometry::render). They carry no static body of their own.
+    void setEnemies_tail(void *data);
+    void setEnemy_tail(void *data);
+    void render_tail(AEGeometry *self);
 };
 #endif

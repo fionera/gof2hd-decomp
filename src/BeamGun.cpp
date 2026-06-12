@@ -262,3 +262,25 @@ void BeamGun::update(int elapsed)
 
     this->field_0x21 = this->field_0x8->delayActive;
 }
+
+// ---- tail-call veneer fragments ----
+// Each is the terminal b.w of a BeamGun method into a relocated slot that lands
+// in the inherited engine implementation (the enemy-list handler shared by the
+// gun hierarchy, and AEGeometry::render). They have no static body of their own
+// (pure GOT veneer), so the work lives behind the extern shim the linker
+// resolves. Modeling them as members keeps the original control flow intact.
+
+// setEnemies() tail: hand the enemy list's raw element buffer to the engine.
+void BeamGun::setEnemies_tail(void *data) {
+    BeamGun_setEnemies_tail(data);
+}
+
+// setEnemy() tail: hand the single enemy's secondary geometry pointer to the engine.
+void BeamGun::setEnemy_tail(void *data) {
+    BeamGun_setEnemy_tail(data);
+}
+
+// render() tail: render the secondary beam geometry via AEGeometry::render.
+void BeamGun::render_tail(AEGeometry *self) {
+    BeamGun_render_tail(self);
+}

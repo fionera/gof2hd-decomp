@@ -1714,3 +1714,20 @@ void Hud::drawMessage() {
         (void *)B(self, 0x51c), screenW / 2 - w / 2, US(self, 0x3e2), false);
     canvas->SetColor((unsigned)0xffffffffu);
 }
+
+// ---- Hud::drawTitleImage(bool) ------------------------------------------------
+// The title-image overlay was compiled out in this build: the method survives only
+// as an identity stub that returns its `visible` argument unchanged.
+bool Hud::drawTitleImage(bool visible) {
+    return visible;
+}
+
+// ---- Hud::enterCinematic(int, int) --------------------------------------------
+// Toggle the HUD's cinematic overlay. In the binary this is reached through a
+// GOT/veneer slot into the engine Hud entry point; we forward through the same
+// hidden function-pointer slot the dispatch uses.
+__attribute__((visibility("hidden"))) extern void (**g_Hud_enterCinematicFn)(Hud *, int, int);
+
+void Hud::enterCinematic(int arg, int flag) {
+    (*g_Hud_enterCinematicFn)(this, arg, flag);
+}

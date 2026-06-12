@@ -89,5 +89,8 @@ public:
     bool collide(float x, float y, float z);
     void push(int delta);
     void initPush(const Vector &target, int duration);
+    // Complete-object destructor helper (the D0 deleting destructor's first half):
+    // run ~PlayerAsteroid() and hand back `this` so the caller can free the storage.
+    void *completeDtor();
 };
 #endif

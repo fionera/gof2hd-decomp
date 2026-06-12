@@ -23,6 +23,11 @@ public:
     Standing();
     ~Standing();
 
+    static Standing *create();          // heap factory: operator new + ctor
+
+    int *getStandings();                // raw per-race standings array
+    void setStandings(int *arr);        // replace the standings array pointer
+
     // ---- methods (converted from free functions) ----
     void applyDelict(unsigned kind, int severity);
     void applyDisable(int race);

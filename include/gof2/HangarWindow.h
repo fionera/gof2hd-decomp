@@ -238,5 +238,10 @@ public:
     // The ship the hangar acts on: always the player's current ship held by the global
     // Status. A static helper because it depends on no per-window state.
     static void *statusShip();
+
+    // render3D()'s tail-call thunk: when the hangar is in the embedded item-list view
+    // mode, the 3D pass is delegated to the item-list sub-window. Static because it
+    // operates on that sub-window (this->listItemWindow), not on the hangar itself.
+    static void render3D_thunk(void *listItemWindow);
 };
 #endif

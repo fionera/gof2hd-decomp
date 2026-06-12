@@ -66,5 +66,11 @@ public:
     void reset();
     void hook(int value);
     void update(int elapsed);
+
+    // Tail fragments split out of render()/hook()/the deleting destructor: each one
+    // completes its operation by handing control to the corresponding base behaviour.
+    void render_tail();         // render()'s tail: render through the PlayerJunk base
+    void hook_tail(int value);  // hook()'s tail: enrage the creature with the hook amount
+    void dtor_tail();           // deleting destructor tail: free the object
 };
 #endif

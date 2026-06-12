@@ -1956,3 +1956,67 @@ void Player_damageGamma_up(Player *p, float dmg) {
     p->damageGamma(dmg);
 }
 
+// =====================================================================
+// Shared "damage-rate recompute" epilogue (`_tail`) fragments.
+//
+// Every HP/armor/shield/EMP mutator and the regen/damage helpers end with a
+// tail-branch through one interworking veneer that resolves to the same target:
+// Player::updateDamageRate() (0x72df0), with the receiver still live in r0.
+// The decompiler split that shared tail off into a per-method `Player_<m>_tail`
+// symbol with no receiver, so each is a documented no-op forwarder here — the
+// owning method still has `this`, and the wiring pass folds every
+// `return Player_<m>_tail();` back into `this->updateDamageRate();`.
+// =====================================================================
+extern "C" void Player_damageHull_tail()        { /* -> this->updateDamageRate() */ }
+extern "C" void Player_damageShield_tail()       { /* -> this->updateDamageRate() */ }
+extern "C" void Player_regenerateArmor_tail()    { /* -> this->updateDamageRate() */ }
+extern "C" void Player_regenerateHull_tail()     { /* -> this->updateDamageRate() */ }
+extern "C" void Player_regenerateShield_tail()   { /* -> this->updateDamageRate() */ }
+extern "C" void Player_setArmorHP_tail()         { /* -> this->updateDamageRate() */ }
+extern "C" void Player_setGammaHP_tail()         { /* -> this->updateDamageRate() */ }
+extern "C" void Player_setHitpoints_tail()       { /* -> this->updateDamageRate() */ }
+extern "C" void Player_setMaxArmorHP_tail()      { /* -> this->updateDamageRate() */ }
+extern "C" void Player_setMaxEmpPoints_tail()    { /* -> this->updateDamageRate() */ }
+extern "C" void Player_setMaxHitpoints_tail()    { /* -> this->updateDamageRate() */ }
+extern "C" void Player_setMaxShieldHP_tail()     { /* -> this->updateDamageRate() */ }
+extern "C" void Player_setShieldHP_tail()        { /* -> this->updateDamageRate() */ }
+
+// removeAllGuns() destruction helpers: release the per-slot Gun objects held by
+// the outer gun-array-array, run that container's destructor (returning the raw
+// storage), then free it. Same primitives the real ~Player() uses.
+extern "C" void Player_removeAllGuns_releaseClasses(void *array) {
+    ArrayReleaseClasses_GunArrayArray(static_cast<Array<Array<Gun *> *> *>(array));
+}
+extern "C" void *Player_removeAllGuns_dtor(void *array) {
+    return Array_GunArrayArray_dtor(static_cast<Array<Array<Gun *> *> *>(array));
+}
+extern "C" void Player_removeAllGuns_delete(void *p) {
+    ::operator delete(p);
+}
+
+// Player_dtor: the demangled destructor body reused as an `operator delete`
+// helper — run ~Player() on the object and hand the storage back to the caller,
+// which then frees it (`::operator delete(Player_dtor(p))`). Mirrors the
+// Array_*_dtor convention used elsewhere.
+extern "C" void *Player_dtor(void *p) {
+    static_cast<Player *>(p)->~Player();
+    return p;
+}
+
+// addGun2: PlayerEgo installs a whole gun list into a slot via this alias of the
+// Array<Gun*> overload of Player::addGun.
+extern "C" void Player_addGun2(void *player, void *gunList, int slot) {
+    static_cast<Player *>(player)->addGun(static_cast<Array<Gun *> *>(gunList), slot);
+}
+
+// render / setUnknown: virtual dispatch through the object's vtable (the call
+// site is `(*(code *)<GOT slot>)(player, ...)`). There is no static Player body —
+// these are pure interworking veneers into the live vtable — so they are exposed
+// as forwarders the wiring pass routes to the resolved virtual method.
+extern "C" void Player_render(void *player) {
+    (void)player; /* virtual Player::render() — resolved via vtable */
+}
+extern "C" void Player_setUnknown(void *player, bool enabled) {
+    (void)player; (void)enabled; /* virtual Player flag setter — resolved via vtable */
+}
+

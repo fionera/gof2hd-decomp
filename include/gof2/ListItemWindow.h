@@ -29,6 +29,13 @@ public:
     void set(void *item, unsigned p2, unsigned p3, unsigned p4, unsigned p5, bool p6);
     void draw();
     void update(int frameTime);
+
+    // C-ABI destructor helper: runs ~ListItemWindow and returns `this` so the
+    // caller can free the storage (matches the ARM deleting-dtor thunk).
+    void *dtor();
+    // Touch-release entry point used by the owning screen; equivalent to
+    // OnTouchEnd, returning an int status the original caller ignores.
+    int touch_end(int x, int y);
 };
 
 // Field accessors via byte offset.

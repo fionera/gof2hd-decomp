@@ -92,6 +92,45 @@ extern "C" void ModMainMenu_r2dTail(int canvas)
     ((PaintCanvas *)(intptr_t)canvas)->End2d();
 }
 
+// ---- the same fragments, as real ModMainMenu members --------------------------
+// These mirror the extern "C" helpers above; the engine/runtime object each one
+// completes against is passed in (the menu owns none of them directly).
+
+void ModMainMenu::releaseTail(void *sound)
+{
+    ((FModSound *)sound)->freeAllEvents();
+}
+
+void ModMainMenu::resumeTail(int sound, int channel, int arg)
+{
+    ((FModSound *)(intptr_t)sound)->setVolume(channel, (float)arg);
+}
+
+void ModMainMenu::renderBackdropEnd(void *canvas)
+{
+    ((PaintCanvas *)canvas)->End3d();
+}
+
+void ModMainMenu::deleteTail(ModMainMenu *self)
+{
+    ::operator delete(self);
+}
+
+void ModMainMenu::suspendTail(int recordHandler)
+{
+    ((RecordHandler *)(intptr_t)recordHandler)->saveOptions();
+}
+
+void ModMainMenu::touchEndTail(void *starSystem)
+{
+    _ZN10StarSystem9initLightEv(starSystem);
+}
+
+void ModMainMenu::renderOverlayEnd(int canvas)
+{
+    ((PaintCanvas *)(intptr_t)canvas)->End2d();
+}
+
 // ---- ModMainMenu_1757a0.cpp ----
 __attribute__((visibility("hidden"))) extern void *volatile g_ModMainMenu_vtable;
 

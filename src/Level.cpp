@@ -4680,3 +4680,152 @@ void Level::renderBG(float t) {
 
     ((PaintCanvas*)(long)(canvas))->EndBG();
 }
+
+// ============================================================================
+//  Recovered helper fragments (batch-3 gap fill)
+//
+//  These are the private, decompiler-split sub-routines that the Level methods
+//  above call through. They are file-scope (extern "C") helpers — not new
+//  public members — matching the established convention for split fragments
+//  (cf. MGame_opnew / per-element array release callbacks).
+// ============================================================================
+
+#include <new>
+
+// ---- per-mesh allocation helpers ------------------------------------------
+// Every `Level_opnew*` fragment is the same global `operator new(size)` — the
+// decompiler emitted a distinct inlined copy per call context. They allocate a
+// raw block of `size` bytes that the caller then placement-constructs.
+void *Level_opnew_init(unsigned size)    { return ::operator new(size); }
+void *Level_opnew_csp(unsigned size)     { return ::operator new(size); }
+void *Level_opnew_crm(unsigned size)     { return ::operator new(size); }
+void *Level_opnew_crms(unsigned size)    { return ::operator new(size); }
+void *Level_opnew_cg(unsigned size)      { return ::operator new(size); }
+void *Level_opnew_ag(unsigned size)      { return ::operator new(size); }
+void *Level_opnew_ca(unsigned size)      { return ::operator new(size); }
+void *Level_opnew_cgc(unsigned size)     { return ::operator new(size); }
+void *Level_opnew_cm(unsigned size)      { return ::operator new(size); }
+void *Level_opnew_ccm(unsigned size)     { return ::operator new(size); }
+void *Level_opnew_cp(unsigned size)      { return ::operator new(size); }
+void *Level_opnew_cs(unsigned size)      { return ::operator new(size); }
+void *Level_opnew_cso(unsigned size)     { return ::operator new(size); }
+void *Level_opnew_csc(unsigned size)     { return ::operator new(size); }
+void *Level_opnew_arr_csc(unsigned size) { return ::operator new(size); }
+void *Level_opnew_cwm(unsigned size)     { return ::operator new(size); }
+void *Level_opnew_ips(unsigned size)     { return ::operator new(size); }
+extern "C" void *Level_opnew_gbv(unsigned size) { return ::operator new(size); }
+
+extern "C" void *Level_opnew_akw(unsigned int size) { return ::operator new(size); }
+extern "C" int  Level_opnew(unsigned int size)
+{
+    return (int)(intptr_t)::operator new(size);
+}
+
+// ---- array element release callbacks --------------------------------------
+// Each callback runs over an Array<T>: it destroys every live element
+// (element destructor + operator delete), nulls the slot, then frees the
+// element buffer with operator delete[] and nulls the data pointer. This is
+// exactly the engine `ArrayReleaseClasses<T>` / `ArrayRelease<int>` loop;
+// the callbacks differ only in the element type.
+namespace {
+// Layout-compatible Array<T> view: {size, data, capacity}. The engine stores
+// data at +4 and length at +8 in the raw recovery; RawArray mirrors that.
+template <class T>
+void releaseClassArray(void *p)
+{
+    RawArray *a = (RawArray *)p;
+    T **data = (T **)a->data;
+    for (unsigned i = 0; i < a->capacity; ++i) {  // capacity field == element count
+        if (data[i] != 0) {
+            data[i]->~T();
+            ::operator delete(data[i]);
+        }
+        data[i] = 0;
+    }
+    if (data != 0)
+        ::operator delete[](data);
+    a->data = 0;
+}
+} // namespace
+
+// AbstractGun / KIPlayer / RadioMessage / AEGeometry are opaque here; they are
+// released through their first vtable entry's deleting-destructor, which is the
+// same observable effect as the typed ArrayReleaseClasses<T> loop.
+namespace {
+void releasePolymorphicArray(void *p)
+{
+    RawArray *a = (RawArray *)p;
+    void **data = (void **)a->data;
+    for (unsigned i = 0; i < a->capacity; ++i) {
+        void *e = data[i];
+        if (e != 0) {
+            // virtual deleting destructor lives at vtable slot 0 (offset +0).
+            void *vt = *(void **)e;
+            (*(void (**)(void *))((char *)vt + 0))(e);
+        }
+        data[i] = 0;
+    }
+    if (data != 0)
+        ::operator delete[](data);
+    a->data = 0;
+}
+} // namespace
+
+extern "C" void Level_releaseAEGeometry(void *p)  { releasePolymorphicArray(p); }
+extern "C" void Level_releaseAbstractGun(void *p) { releasePolymorphicArray(p); }
+extern "C" void Level_releaseKI(void *p)          { releasePolymorphicArray(p); }
+extern "C" void Level_releaseRadioMessage(void *p){ releasePolymorphicArray(p); }
+
+// Array<int>: no element destructors — just free the buffer and clear it.
+extern "C" void Level_releaseInt(void *p)
+{
+    RawArray *a = (RawArray *)p;
+    for (unsigned i = 0; i < a->capacity; ++i)
+        ((int *)a->data)[i] = 0;
+    if (a->data != 0)
+        ::operator delete[](a->data);
+    a->data = 0;
+}
+
+// ---- enemy-flag forwarders ------------------------------------------------
+// Both operate on a Player object (the level passes player = *(obj+4)). These
+// mirror Player::setAlwaysEnemy / Player::turnEnemy, which only flip a handful
+// of state flags. Kept as raw offset writes so the byte layout matches the
+// Player struct that other TUs still address by offset.
+extern "C" void Level_setAlwaysEnemy(int player, int flag)
+{
+    char *p = (char *)(intptr_t)player;
+    *(unsigned char  *)(p + 0xec) = (unsigned char)flag;  // alwaysEnemy
+    *(unsigned short *)(p + 0x5c) = 1;                     // faction dirty
+    *(unsigned char  *)(p + 0xe0) = 1;                     // hostile
+}
+
+extern "C" void Level_turnEnemy(int player)
+{
+    *(unsigned char *)((char *)(intptr_t)player + 0xe0) = 1; // hostile
+}
+
+// ---- Wanted::getNumWingmen accessor ---------------------------------------
+// The level reaches the active Wanted through the enemy KIPlayer chain; the
+// accessor is a single field read (Wanted+0x3c == wingman count).
+extern "C" int Level_getNumWingmen(int wanted)
+{
+    if (wanted == 0)
+        return 0;
+    return *(int *)((char *)(intptr_t)wanted + 0x3c);
+}
+
+// ---- construction / destruction bridges -----------------------------------
+// CutScene allocates/frees a Level by raw pointer. Level_ctor placement-builds
+// the object; Level_dtor runs the destructor and (ARM ABI) yields `this` so the
+// caller can hand it straight to operator delete.
+extern "C" void Level_ctor(void *self, int mode)
+{
+    new (self) Level(mode);
+}
+
+extern "C" void *Level_dtor(void *level)
+{
+    ((Level *)level)->~Level();
+    return level;
+}

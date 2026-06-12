@@ -331,3 +331,23 @@ void Standing::rehabilitate(int race) {
         self->standings[1] = 0x23;
     }
 }
+
+// ---- getStandings_11d6ea.cpp ----
+// Standing::getStandings(): return the raw per-race standings array.
+int *Standing::getStandings() {
+    return this->standings;
+}
+
+// ---- setStandings_11d6e6.cpp ----
+// Standing::setStandings(int*): replace the standings array pointer (used when
+// restoring a Standing from a saved record).
+void Standing::setStandings(int *arr) {
+    this->standings = arr;
+}
+
+// ---- Standing_new_11d6a8.cpp ----
+// Standing::create(): heap factory (operator new + Standing::Standing). Used by
+// RecordHandler when reconstructing a Standing from a save slot.
+Standing *Standing::create() {
+    return new Standing();
+}

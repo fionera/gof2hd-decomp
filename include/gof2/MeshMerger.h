@@ -56,5 +56,13 @@ public:
     void update();
     int  init();
     void *transformMesh(AbyssEngine::Mesh *mesh, const AbyssEngine::AEMath::Matrix &m);
+
+    // Engine-veneer forwarders. In the binary the matching tail-calls go through a
+    // GOT/veneer slot into the AbyssEngine PaintCanvas/Matrix entry points; these thin
+    // wrappers reproduce exactly that dispatch so init()/render()/setMatrix() can call
+    // the engine without an inline indirect-call expression.
+    int  initTail(int r1, uint16_t flags, uint32_t *meshId);
+    void renderTail(void *canvas, void *transformId, int z);
+    static void setMatrixTail(void *matrixSlot, const AbyssEngine::AEMath::Matrix &m);
 };
 #endif

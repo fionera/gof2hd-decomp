@@ -451,4 +451,97 @@ void AESoundRessource::checkLooping()
 {
 }
 
+// ---- one-shot / loop playback ----------------------------------------------
+void AESoundRessource::initWithoutLoading(int id)
+{
+    AESoundRessource_initWithoutLoading_7fbd0(this, id);
+}
+
+void AESoundRessource::play(int id, float volume)
+{
+    AESoundRessource_play_7feec(this, id, volume);
+}
+
+void AESoundRessource::playLoop(int id)
+{
+    AESoundRessource_playLoop_7ff54(this, id);
+}
+
+void AESoundRessource::playMusic(int id)
+{
+    AESoundRessource_playMusic_7fe2c(this, id);
+}
+
+void AESoundRessource::playMusicLoop(int id)
+{
+    AESoundRessource_playMusicLoop_7fe88(this, id);
+}
+
+// ---- stop / pause / resume / suspend ---------------------------------------
+void AESoundRessource::stop(int id)
+{
+    AESoundRessource_stop_7ffb0(this, id);
+}
+
+void AESoundRessource::stopAll()
+{
+    AESoundRessource_stop_7fff4(this);
+}
+
+void AESoundRessource::pause(int id)
+{
+    AESoundRessource_pause_8003c(this, id);
+}
+
+int AESoundRessource::pauseAll()
+{
+    return AESoundRessource_pause_80080(this);
+}
+
+void AESoundRessource::resume(int id)
+{
+    AESoundRessource_resume_800a4(this, id);
+}
+
+void AESoundRessource::resumeAll()
+{
+    AESoundRessource_resume_800e8(this);
+}
+
+void AESoundRessource::suspendAll()
+{
+    AESoundRessource_supend_80018(this);
+}
+
+void AESoundRessource::release(int id)
+{
+    AESoundRessource_release_7fde8(this, id);
+}
+
+bool AESoundRessource::isPlaying(int id)
+{
+    return AESoundRessource_isPlaying_7fda0(this, id) != 0;
+}
+
+// ---- volume control --------------------------------------------------------
+void AESoundRessource::setVolume(int id, int volume)
+{
+    AESoundRessource_setVolume_7fcc4(this, id, volume);
+}
+
+void AESoundRessource::setVolume(int volume)
+{
+    AESoundRessource_setVolume_7fd14(this, volume);
+}
+
+void AESoundRessource::setSoundVolume(int volume)
+{
+    AESoundRessource_setSoundVolume_7fd42(this, volume);
+}
+
+void AESoundRessource::setMusicVolume(int volume)
+{
+    AESoundRessource_setMusicVolume_7fd70(this, volume);
+}
+
 } // namespace AbyssEngine

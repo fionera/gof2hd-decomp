@@ -49,7 +49,12 @@ public:
     float getCompletionRate();
     int getCurrentAmount(int item);
     int getIndex();
+    // Index accessor used when a BluePrint is reached through a ListItem/record
+    // wrapper; same semantics as getIndex() (returns the produced item index).
+    int getIndexOf();
     int getStationIndex();
+    // Heap factory: operator new + BluePrint(index).
+    static BluePrint *make(int index);
     int getQuantity();
     bool isUnlocked();
     int getIngredientsValue();

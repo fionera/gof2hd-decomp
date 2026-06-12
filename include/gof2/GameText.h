@@ -62,5 +62,12 @@ public:
     // Destructor tail: after release() and the owned String/text-table are freed, the
     // embedded base Array<int> subobject is destroyed here. Returns `this`.
     GameText *dtor_tail();
+
+    // Public language switch (the short/int two-argument entry the savegame loader
+    // calls). Identical behaviour to setLanguage_si.
+    void setLanguage(short stringCount, int langId);
+    // C-ABI destructor helper: runs ~GameText and returns `this` so the caller can
+    // free the storage (matches the ARM deleting-dtor thunk).
+    void *dtor();
 };
 #endif

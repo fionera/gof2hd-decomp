@@ -631,3 +631,17 @@ extern "C" int HangarList_initBlueprintTab_tail(HangarList *self,
     self->initBlueprintTab(blueprints);
     return 0;
 }
+
+// ---- C-ABI dtor / accessor wrappers (recovered shims) ----
+
+// HangarList_dtor — C-ABI destructor. Runs ~HangarList() (which releases the
+// tab arrays) and returns the storage for the caller's operator delete.
+extern "C" void *HangarList_dtor(void *p) {
+    if (p) ((HangarList *)p)->~HangarList();
+    return p;
+}
+
+// HangarList_getItems — C-ABI accessor for the tab/item table.
+extern "C" void *HangarList_getItems(void *list) {
+    return ((HangarList *)list)->getItems();
+}

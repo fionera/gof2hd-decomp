@@ -521,3 +521,13 @@ PlayerAsteroid::~PlayerAsteroid()
     this->explosion = 0;
     KIPlayer_dtor(this);
 }
+
+// ---- PlayerAsteroid::completeDtor() -------------------------------------------
+// The deleting destructor (D0) splits into a complete-object destructor that runs
+// the member/base teardown and returns `this`, followed by an operator delete on
+// the result. This is that first half.
+void *PlayerAsteroid::completeDtor()
+{
+    this->~PlayerAsteroid();
+    return this;
+}

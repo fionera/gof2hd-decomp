@@ -1207,3 +1207,57 @@ void PlayerFighter::revive()
         ::operator delete(Generator_dtor(g));
     }
 }
+
+// ---- base-class / tail-call veneer fragments ----
+// In the original Thumb image each of these is the terminal b.w of a
+// PlayerFighter method into a relocated slot that lands in the inherited
+// AEGeometry / Fighter / Player implementation. They carry no static body of
+// their own (pure GOT veneer), so the real work lives behind the extern shim
+// that the linker resolves to the relocated target. Modeling them as member
+// methods that forward to that shim gives every fragment a real C++ home while
+// staying byte-identical to the original control flow.
+
+// setShipGroup() thunk: forward the (geometry, group, flag) triple to the
+// AEGeometry-level setShipGroup implementation.
+void PlayerFighter::setShipGroup_base(AEGeometry *self, int group, bool flag) {
+    PlayerFighter_setShipGroup_base(self, group, flag);
+}
+
+// awake() tail: show the active hull/sub geometry once the fighter wakes up.
+void PlayerFighter::awake_tail(int geom, int on) {
+    PlayerFighter_awake_tail(geom, on);
+}
+
+// setCloakingPossible() helper: terminal branch that forces the cloak off when
+// cloaking is disabled mid-flight.
+void PlayerFighter::cloak_off_helper() {
+    PlayerFighter_cloak_off_helper();
+}
+
+// Destructor tail: chain into the Fighter/Player base destructor and return
+// `this` (the base D1 returns the object pointer, matching the ARM ABI thunk).
+void *PlayerFighter::base_dtor(PlayerFighter *self) {
+    return PlayerFighter_base_dtor(self);
+}
+
+// setMissionCrate() tail: hand the freshly built loot list to the level so the
+// mission crate spawns the correct cargo.
+void PlayerFighter::setMissionCrate_tail(int one, Array<int> *loot) {
+    PlayerFighter_setMissionCrate_tail(one, loot);
+}
+
+// setBV() tail: append a bounding volume to the collision-volume array.
+void PlayerFighter::setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *list) {
+    PlayerFighter_setBV_add(bv, list);
+}
+
+// setExhaustVisible() tail: toggle visibility on the resolved exhaust transform.
+void PlayerFighter::setExhaustVisible_apply(unsigned transform, bool vis) {
+    PlayerFighter_setExhaustVisible_apply(transform, vis);
+}
+
+// render() tail: the active-cloak branch that defers to AEGeometry::render for
+// the hull geometry.
+void PlayerFighter::render_tail(int geom) {
+    PlayerFighter_render_tail(geom);
+}

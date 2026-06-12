@@ -3620,3 +3620,42 @@ extern "C" void PlayerEgo_initFields(void *selfp, Player *player) {
     MovingStars_ctor(stars);
     P(self, 0x178) = stars;
 }
+
+// ---- veneer / fragment entry points -----------------------------------------
+// The following are the secondary symbols the disassembly split out of the
+// matching full methods. Each is a real thunk in the binary that simply forwards
+// into the canonical method, so they get faithful forwarding definitions here.
+
+// getHUD_up (0xb21e0 thunk) -- the HUD getter, called from Level::update.
+int PlayerEgo::getHUD_up() {
+    return getHUD();
+}
+
+// getPosition_up (0xab7e8 thunk) -- the world-position getter, called from
+// Level::update when feeding the in-flight particle-system managers.
+Vec3 PlayerEgo::getPosition_up() {
+    return getPosition();
+}
+
+// setRoute_init (0xab150 thunk) -- re-applies the currently assigned route on the
+// Level init path (Level::connectPlayers): the route slot at 0xfc is re-stored.
+void PlayerEgo::setRoute_init() {
+    setRoute(getRoute());
+}
+
+// rollLeft / rollRight (0x1abb74 / 0x1abb84 veneers) -- accelerometer banking
+// input. Both veneers forward to PlayerEgo::turnHorizontal(shipField, amount),
+// whose sign branch (amount < 0 vs > 0) selects the turn direction.
+void PlayerEgo::rollLeft(int shipField, float amt) {
+    turnHorizontal(shipField, amt);
+}
+
+void PlayerEgo::rollRight(int shipField, float amt) {
+    turnHorizontal(shipField, amt);
+}
+
+// syncFirstPerson (0x1ac874 veneer) -- camera-mode sync from MGame::switchCamera;
+// forwards to hideShipForFirstPersonCameraView(hide).
+void PlayerEgo::syncFirstPerson(int v) {
+    hideShipForFirstPersonCameraView(v != 0);
+}

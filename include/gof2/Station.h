@@ -55,6 +55,14 @@ public:
     void setAttackedFriends(bool v);
     void setItems(uint32_t *items, bool deep);
     void setShips(uint32_t *ships, bool deep);
+    // Take ownership of a ready-built ship array (no deep clone) — used by save loading.
+    void setShipsArr(void *ships);
+    // ArrayRemove<Ship*>: compact `ships`, dropping every slot equal to `ship`.
+    static void arrayRemoveShip(Ship *ship, void *ships);
+    // Destroy the AbyssEngine::String name base sub-object (last step of ~Station).
+    void baseDtor();
+    // Deleting-destructor tail: release the object's storage after ~Station has run.
+    void dtorFinish();
     uint32_t stationHasHiddenBlueprint(bool ignoreFound);
     uint32_t stationHasPirateBase();
     void visit();

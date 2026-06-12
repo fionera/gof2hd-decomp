@@ -40,6 +40,15 @@ void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
     return PlayerJumpgate_delete_tail();
 }
 
+// PlayerJumpgate::operatorDeleteTail() -- tail of the deleting destructor (D0).
+// The base PlayerStaticFar destructor has already run in place; this fragment is
+// the trailing `operator delete(this)` that returns the storage to the heap.
+void *PlayerJumpgate::operatorDeleteTail()
+{
+    ::operator delete(this);
+    return this;
+}
+
 // PlayerJumpgate::~PlayerJumpgate() -- complete-object destructor. There is no
 // state owned directly by PlayerJumpgate that the base PlayerStaticFar dtor does
 // not already release (the BoundingVolume array + BoundingSphere are torn down by

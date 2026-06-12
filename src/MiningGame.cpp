@@ -525,3 +525,33 @@ void MiningGame::render2D()
 
     MiningGame_String_dtor(oreText);
 }
+
+// ---- C-ABI ctor/dtor/arith wrappers (recovered shims) ----
+
+// MiningGame::create — heap factory. PlayerEgo::approachAsteroid does
+// operator_new(0xd4) followed by the constructor; this is the real face of it.
+MiningGame *MiningGame::create(int quality, int seed, Hud *hud)
+{
+    return new MiningGame(quality, seed, hud);
+}
+
+// MiningGame_new — C-ABI factory used at the asteroid-docking call site.
+extern "C" void *MiningGame_new(int quality, int seed, void *hud)
+{
+    return MiningGame::create(quality, seed, (Hud *)hud);
+}
+
+// MiningGame_dtor — C-ABI destructor. Runs ~MiningGame() and returns the
+// storage so the caller can hand it to operator delete.
+extern "C" void *MiningGame_dtor(void *mg)
+{
+    if (mg) ((MiningGame *)mg)->~MiningGame();
+    return mg;
+}
+
+// MiningGame_idivmod — the original update() emits a single __aeabi_idivmod;
+// the quotient (r0) is what the call site consumes. Plain integer divide.
+extern "C" int MiningGame_idivmod(int value, int divisor)
+{
+    return value / divisor;
+}

@@ -576,6 +576,26 @@ void ListItemWindow::update(int frameTime)
     ((AEGeometry *)(pp(this, 0x10)))->setRotation(tableAngle, tableAngle, tableAngle);
 }
 
+// ---- C-ABI fragments ----
+
+// ListItemWindow::dtor(): the C-ABI form of the complete-object destructor. The
+// original deleting-destructor thunk runs ~ListItemWindow and returns the object
+// pointer so the caller can hand it to operator delete.
+void *ListItemWindow::dtor()
+{
+    this->~ListItemWindow();
+    return this;
+}
+
+// ListItemWindow::touch_end(int, int): touch-release entry point invoked by the
+// owning screen. Semantically identical to OnTouchEnd (release the drag-scroll
+// of the 3D ship preview); returns a status int the caller discards.
+int ListItemWindow::touch_end(int x, int y)
+{
+    this->OnTouchEnd(x, y);
+    return 0;
+}
+
 // ---- ListItemWindow_131528.cpp ----
 // Two PC-relative singletons (each holds the address of a pointer).
 __attribute__((visibility("hidden"))) extern void ***g_liw_a;

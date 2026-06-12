@@ -121,6 +121,13 @@ void HangarWindow::render3D() {
     }
 }
 
+// render3D()'s tail-call thunk (resolved from the PLT veneer at 0x1ac4b8): in the
+// embedded item-list view mode the hangar has no 3D content of its own, so it hands
+// the 3D pass off to the item-list sub-window.
+void HangarWindow::render3D_thunk(void *listItemWindow) {
+    ((ListItemWindow *)listItemWindow)->render();
+}
+
 // ---- currentItemIsHighlighted_14e550.cpp ----
 bool HangarWindow::currentItemIsHighlighted() {
     HangarWindow *self = this;

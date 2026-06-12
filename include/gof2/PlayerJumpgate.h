@@ -29,6 +29,7 @@ public:
 
     PlayerJumpgate(int playerId, AEGeometry *geometry, float x, float y, float z, bool visible);
     ~PlayerJumpgate();
+    void *operatorDeleteTail();         // deleting-dtor tail: operator delete(this)
     bool timeToJump();
     void activate();
     void addJumpAnimationHandle(uint32_t handle);

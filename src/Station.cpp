@@ -176,6 +176,55 @@ void Station::setShips(uint32_t *ships, bool deep) {
     }
 }
 
+// ---- setShipsArr ----
+// Station::setShips(Array<Ship*>*) — the single-argument overload used by save
+// loading: drop any existing ships array and adopt the freshly-built one as-is
+// (the elements are already owned by us, so no per-element clone like setShips()).
+void Station::setShipsArr(void *ships) {
+    Station *self = this;
+    void *old = self->ships;
+    if (old != ships) {
+        if (old != 0) {
+            ArrayReleaseClasses_Ship(old);
+            void *o2 = self->ships;
+            if (o2 != 0)
+                ::operator delete(Array_Ship_dtor(o2));
+        }
+        self->ships = ships;
+    }
+}
+
+// ---- ArrayRemove<Ship*> ----
+// Compact the ships array in place, removing every slot that equals `ship`, then
+// shrink the backing storage. Engine container layout: { length, data, cap }.
+void Station::arrayRemoveShip(Ship *ship, void *ships) {
+    struct ShipArray { uint32_t length; Ship **data; uint32_t cap; };
+    ShipArray *arr = (ShipArray *)ships;
+    uint32_t n = arr->length;
+    uint32_t kept = 0;
+    for (uint32_t i = 0; i < n; i++) {
+        Ship *cur = arr->data[i];
+        if (cur != ship)
+            arr->data[kept++] = cur;
+    }
+    uint32_t cap = (kept == 0) ? 1 : kept;
+    arr->cap = cap;
+    arr->length = kept;
+    arr->data = (Ship **)realloc(arr->data, cap * sizeof(Ship *));
+}
+
+// ---- baseDtor / dtorFinish ----
+// Base-class teardown: the Station's first member is the engine String name, so the
+// final step of ~Station destroys that String sub-object.
+void Station::baseDtor() {
+    ((String *)this)->dtor();
+}
+
+// Deleting-destructor tail: once ~Station has released the members, free the object.
+void Station::dtorFinish() {
+    ::operator delete(this);
+}
+
 // ---- isAttackedByAliens_a6bec.cpp ----
 // Global slot holding a pointer P; *P -> Q; *(Q+0x80) is the compared value.
 extern int **const gAlienAttackSingleton __attribute__((visibility("hidden")));

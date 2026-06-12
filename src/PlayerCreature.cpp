@@ -5,6 +5,7 @@
 #include "gof2/ParticleSystemManager.h"
 #include "gof2/KIPlayer.h"
 #include "gof2/Player.h"
+#include "gof2/PlayerJunk.h"
 
 
 extern "C" void PlayerCreature_render_tail(PlayerCreature *self);
@@ -15,6 +16,7 @@ extern "C" int PlayerCreature_rageTable[] __attribute__((visibility("hidden")));
 extern "C" char PlayerCreature_vtable;
 extern "C" int PlayerCreature_enduranceTable[] __attribute__((visibility("hidden")));
 extern "C" void PlayerCreature_hook_tail(PlayerCreature *self, int value);
+void _ZN10PlayerJunk6renderEv(PlayerJunk *self);   // PlayerJunk::render() (base render)
 void *ParticleSystemManager_emitManual_v(
     void *self, int handle, const float *pos, void *ret, const float *vel, float p5);
 namespace AbyssEngine { namespace AEMath {
@@ -64,6 +66,32 @@ void PlayerCreature::render()
     if ((uint32_t)(this->state - 3) >= 2) {
         return PlayerCreature_render_tail(this);
     }
+}
+
+// ---- recovered tail-call fragments -----------------------------------------
+// PlayerCreature derives from PlayerJunk (-> KIPlayer). render()/hook()/the
+// deleting destructor each peel their final tail-branch out into one of these
+// helpers; the branch targets were resolved from the PLT veneers in the binary.
+
+// render() tail: once the creature's own geometry has been drawn (and it is not
+// in the dying states 3/4), render through the PlayerJunk base.
+void PlayerCreature::render_tail()
+{
+    _ZN10PlayerJunk6renderEv((PlayerJunk *)this);
+}
+
+// hook() tail: hooking the creature also enrages it, so forward the hook amount
+// into rage().
+void PlayerCreature::hook_tail(int value)
+{
+    this->rage(value);
+}
+
+// deleting-destructor tail: the KIPlayer base subobject has already been torn
+// down, so just release the storage.
+void PlayerCreature::dtor_tail()
+{
+    ::operator delete(this);
 }
 
 // ---- getEndurance_11d004.cpp ----
