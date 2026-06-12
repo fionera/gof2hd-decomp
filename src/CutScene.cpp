@@ -21,7 +21,6 @@ __attribute__((visibility("hidden"))) extern Status **gStatus;
 // ---- _CutScene_98420.cpp ----
 extern "C" void *AEGeometry_dtor(void *geom);              // 0x71fc8
 extern "C" void *Level_dtor(void *level);                  // 0x71fd4
-extern "C" void operator_delete(void *p);                  // 0x6eb48
 extern "C" void PaintCanvas_FogEnable(void *canvas, int a, int b); // 0x71fe0
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(void *arr);      // 0x71fec
 extern "C" void *Array_AEGeometryPtr_dtor(void *arr);             // 0x717c4
@@ -31,40 +30,40 @@ __attribute__((visibility("hidden"))) extern void **g_canvasFog; // FogEnable ta
 CutScene::~CutScene()
 {
     void *g = pp(this, 0x20);
-    if (g != 0) operator_delete(AEGeometry_dtor(g));
+    if (g != 0) ::operator delete(AEGeometry_dtor(g));
     pp(this, 0x20) = 0;
 
     g = pp(this, 0x64);
-    if (g != 0) operator_delete(AEGeometry_dtor(g));
+    if (g != 0) ::operator delete(AEGeometry_dtor(g));
     pp(this, 0x64) = 0;
 
     g = pp(this, 0x0);
-    if (g != 0) operator_delete(Level_dtor(g));
+    if (g != 0) ::operator delete(Level_dtor(g));
     pp(this, 0x0) = 0;
 
     PaintCanvas_FogEnable(*g_canvasFog, 0, 1);
 
     g = pp(this, 0x28);
-    if (g != 0) operator_delete(AEGeometry_dtor(g));
+    if (g != 0) ::operator delete(AEGeometry_dtor(g));
     pp(this, 0x28) = 0;
 
     g = pp(this, 0x2c);
-    if (g != 0) operator_delete(AEGeometry_dtor(g));
+    if (g != 0) ::operator delete(AEGeometry_dtor(g));
     pp(this, 0x2c) = 0;
 
     g = pp(this, 0x30);
-    if (g != 0) operator_delete(AEGeometry_dtor(g));
+    if (g != 0) ::operator delete(AEGeometry_dtor(g));
     pp(this, 0x30) = 0;
 
     g = pp(this, 0x34);
-    if (g != 0) operator_delete(AEGeometry_dtor(g));
+    if (g != 0) ::operator delete(AEGeometry_dtor(g));
     pp(this, 0x34) = 0;
 
     void *arr = pp(this, 0x38);
     if (arr != 0) {
         ArrayReleaseClasses_AEGeometryPtr(arr);
         arr = pp(this, 0x38);
-        if (arr != 0) operator_delete(Array_AEGeometryPtr_dtor(arr));
+        if (arr != 0) ::operator delete(Array_AEGeometryPtr_dtor(arr));
     }
     pp(this, 0x38) = 0;
 }
@@ -436,7 +435,6 @@ void *Globals_getShipGroup(void *globals, int type, int slot, bool flag);
 void *AEGeometry_setMatrix(void *matrix);
 float VectorSignedToFloat(int v, int mode);
 void *AEGeometry_dtor(void *geom);
-void operator_delete(void *p);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_canvas;
@@ -486,7 +484,7 @@ void CutScene::replacePlayerShip(int a, int b)
         ((PlayerFighter *)(*(void **)((char *)en6 + 4)))->setExhaustVisible(false);
 
         ((LODManager *)(*(void **)self))->removeObject((AEGeometry *)oldGeom);
-        operator_delete(AEGeometry_dtor(oldGeom));
+        ::operator delete(AEGeometry_dtor(oldGeom));
     }
 
     checkForTurret();
@@ -494,8 +492,6 @@ void CutScene::replacePlayerShip(int a, int b)
 
 // ---- initialize_98628.cpp ----
 extern "C" {
-void *operator_new(unsigned int size);
-void operator_delete(void *p);
 void Level_ctor(void *self, int mode);
 void PaintCanvas_CameraCreate(void *canvas, unsigned int *out);
 void PaintCanvas_CameraSetPerspective(void *canvas, float fov, float znear, float zfar);
@@ -530,7 +526,7 @@ void CutScene::initialize()
 {
     void *level = pp(this, 0x0);
     if (level == 0) {
-        level = operator_new(0x2a0);
+        level = ::operator new(0x2a0);
         Level_ctor(level, i32(this, 0x88));
         pp(this, 0x0) = level;
     }
@@ -621,7 +617,7 @@ void CutScene::initialize()
         PaintCanvas_CameraSetPerspective(canvas, CutScene_persp_fov, CutScene_persp_znear,
                                          CutScene_persp_zfar);
         if (pp(this, 0x68) != 0) {
-            operator_delete(TargetFollowCamera_dtor(pp(this, 0x68)));
+            ::operator delete(TargetFollowCamera_dtor(pp(this, 0x68)));
             pp(this, 0x68) = 0;
         }
         PaintCanvas_CameraSetCurrent(canvas, u32(this, 0x6c));
@@ -629,7 +625,7 @@ void CutScene::initialize()
         ((Status *)(*gStatus))->getSystem();
         int race = SolarSystem_getRace();
         if (race == 3) {
-            void *g = operator_new(0xc0);
+            void *g = ::operator new(0xc0);
             AEGeometry_ctor_id(g, 0x36d6, canvas, false);
             pp(this, 0x2c) = g;
             void *t = PaintCanvas_TransformGetTransform(canvas);
@@ -637,15 +633,15 @@ void CutScene::initialize()
         } else {
             ((Status *)(*gStatus))->getSystem();
             if (SolarSystem_getRace() == 0) {
-                void *g = operator_new(0xc0);
+                void *g = ::operator new(0xc0);
                 AEGeometry_ctor_id(g, 0x37c8, canvas, false);
                 pp(this, 0x30) = g;
-                void *g2 = operator_new(0xc0);
+                void *g2 = ::operator new(0xc0);
                 AEGeometry_ctor_id(g2, 0x37c7, canvas, false);
                 pp(this, 0x34) = g2;
                 ((AEGeometry *)(pp(this, 0x30)))->addChild(u32(g2, 0xc));
                 if (pp(this, 0x34) != 0)
-                    operator_delete(AEGeometry_dtor(pp(this, 0x34)));
+                    ::operator delete(AEGeometry_dtor(pp(this, 0x34)));
                 pp(this, 0x34) = 0;
             } else {
                 ((Status *)(*gStatus))->getSystem();
@@ -654,7 +650,7 @@ void CutScene::initialize()
         }
     }
 
-    void *root = operator_new(0xc0);
+    void *root = ::operator new(0xc0);
     AEGeometry_ctor_default(root, *g_canvas);
     pp(this, 0x20) = root;
     AEGeometry_setRotationOrder(root, 2);
@@ -739,8 +735,6 @@ void CutScene::resetCamera()
 extern "C" {
 void PaintCanvas_TransformRemoveChild(void *canvas, unsigned int parent, unsigned int child);
 int *Ship_getEquipment(void *ship, int slot);
-void *operator_new(unsigned int size);
-void operator_delete(void *p);
 void AEGeometry_ctor_id(void *self, unsigned short id, void *canvas, bool flag);
 void AEGeometry_ctor_default(void *self, void *canvas);
 void AEGeometry_setRotationOrder(void *self, int order);
@@ -809,46 +803,46 @@ void CutScene::checkForTurret()
 
     void *canvas = *g_canvas;
 
-    void *geom0 = operator_new(0xc0);
+    void *geom0 = ::operator new(0xc0);
     AEGeometry_ctor_id(geom0, id0, canvas, false);
 
-    void *geom1 = operator_new(0xc0);
+    void *geom1 = ::operator new(0xc0);
     AEGeometry_ctor_id(geom1, id1, canvas, false);
     AEGeometry_setRotationOrder(geom1, 2);
 
     if (child0 != -1) {
-        void *c = operator_new(0xc0);
+        void *c = ::operator new(0xc0);
         AEGeometry_ctor_id(c, (unsigned short)child0, canvas, false);
         ((AEGeometry *)(geom0))->addChild(u32(c, 0xc));
-        operator_delete(AEGeometry_dtor(c));
+        ::operator delete(AEGeometry_dtor(c));
     }
     if (child1 != -1) {
-        void *c = operator_new(0xc0);
+        void *c = ::operator new(0xc0);
         AEGeometry_ctor_id(c, (unsigned short)child1, canvas, false);
         ((AEGeometry *)(geom1))->addChild(u32(c, 0xc));
-        operator_delete(AEGeometry_dtor(c));
+        ::operator delete(AEGeometry_dtor(c));
     }
     if (child2 != -1) {
-        void *c = operator_new(0xc0);
+        void *c = ::operator new(0xc0);
         AEGeometry_ctor_id(c, (unsigned short)child2, canvas, false);
         ((AEGeometry *)(geom1))->addChild(u32(c, 0xc));
-        operator_delete(AEGeometry_dtor(c));
+        ::operator delete(AEGeometry_dtor(c));
     }
 
     if (pp(this, 0x64) != 0)
-        operator_delete(AEGeometry_dtor(pp(this, 0x64)));
+        ::operator delete(AEGeometry_dtor(pp(this, 0x64)));
     pp(this, 0x64) = 0;
 
-    void *root = operator_new(0xc0);
+    void *root = ::operator new(0xc0);
     AEGeometry_ctor_default(root, canvas);
     pp(this, 0x64) = root;
 
-    void *fr = operator_new(1);
+    void *fr = ::operator new(1);
     FileRead_ctor(fr);
     ((Status *)(*gStatus))->getShip();
     int shipIdx = Ship_getIndex(((Status *)(*gStatus))->getShip());
     void *positions = FileRead_loadWeaponPositions(fr, shipIdx);
-    operator_delete(FileRead_dtor(fr));
+    ::operator delete(FileRead_dtor(fr));
 
     void *posVec = *(void **)(*(char **)(*(char **)((char *)positions + 4) + 8) + 4);
     ((AEGeometry *)(geom0))->setPosition(*(const Vector *)posVec);
@@ -876,7 +870,7 @@ void CutScene::checkForTurret()
             ArrayReleaseClasses_VectorPtr(slot);
             void *s2 = *(void **)(data + i * 4);
             if (s2 != 0)
-                operator_delete(Array_VectorPtr_dtor(s2));
+                ::operator delete(Array_VectorPtr_dtor(s2));
             *(void **)(data + i * 4) = 0;
         }
     }

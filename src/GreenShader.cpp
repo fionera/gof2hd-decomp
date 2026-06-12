@@ -29,7 +29,7 @@ void GreenShader::SetInActive()
 // ---- _GreenShader_8847e.cpp ----
 void _ZN11AbyssEngine11GreenShaderD0Ev(AbyssEngine::GreenShader *self)
 {
-    operator_delete(ShaderBaseStruct_dtor(self));
+    ::operator delete(ShaderBaseStruct_dtor(self));
 }
 
 // ---- Init_882a0.cpp ----

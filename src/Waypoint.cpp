@@ -3,7 +3,6 @@
 
 
 extern "C" void *KIPlayer_dtor(KIPlayer *self);
-extern "C" void operator_delete(void *ptr);
 
 __attribute__((visibility("hidden"))) extern void *Waypoint_vtable;
 
@@ -35,7 +34,7 @@ Vector Waypoint::getPosition()
 // ---- _Waypoint_157d28.cpp ----
 void _ZN8WaypointD0Ev(Waypoint *self)
 {
-    return operator_delete(KIPlayer_dtor((KIPlayer *)self));
+    return ::operator delete(KIPlayer_dtor((KIPlayer *)self));
 }
 
 // ---- reset_157d6e.cpp ----

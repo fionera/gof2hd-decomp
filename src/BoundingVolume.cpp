@@ -7,7 +7,6 @@ __attribute__((visibility("hidden"))) extern void *const g_BoundingVolume_vtbl;
 
 extern "C" void ArrayReleaseClasses_BVPtr(void *arr);  // 0x757a8
 extern "C" void *ArrayBV_dtor(void *arr);              // 0x757b4  Array<BoundingVolume*>::~Array
-extern "C" void operator_delete(void *p);              // 0x6eb48
 
 BoundingVolume::~BoundingVolume()
 {
@@ -16,7 +15,7 @@ BoundingVolume::~BoundingVolume()
     if (children != 0) {
         ArrayReleaseClasses_BVPtr(children);
         if (this->children != 0) {
-            operator_delete(ArrayBV_dtor(this->children));
+            ::operator delete(ArrayBV_dtor(this->children));
         }
     }
     this->children = 0;
@@ -54,7 +53,6 @@ void BoundingVolume::getCollisionNormal(const Vector &out)
 }
 
 // ---- setVolume_11f750.cpp ----
-extern "C" void *operator_new(uint32_t size);                       // 0x6eb24
 extern "C" void ArrayBV_ctor(void *a);                             // 0x730c0  Array<BoundingVolume*>::Array()
 // Tail-call: copy the source volume's children into the new array.
 extern "C" void BoundingVolume_setVolume_tail(BoundingVolume *src, void *arr);  // 0x1ac218

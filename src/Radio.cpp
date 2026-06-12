@@ -51,14 +51,14 @@ Radio::~Radio()
         ArrayReleaseClasses_ImagePart(array);
         array = this->imageParts;
         if (array != 0) {
-            operator_delete(Array_ImagePart_dtor(array));
+            ::operator delete(Array_ImagePart_dtor(array));
         }
     }
     this->imageParts = 0;
 
     void *parts = this->imagePartBuffer;
     if (parts != 0) {
-        operator_delete__(parts);
+        ::operator delete[](parts);
     }
     this->imagePartBuffer = 0;
 
@@ -67,7 +67,7 @@ Radio::~Radio()
         ArrayReleaseClasses_String(array);
         array = this->textLines;
         if (array != 0) {
-            operator_delete(Array_String_dtor(array));
+            ::operator delete(Array_String_dtor(array));
         }
     }
     this->textLines = 0;
@@ -112,7 +112,7 @@ static ALWAYS_INLINE void release_string_lines(Radio *self)
         ArrayReleaseClasses_String(lines);
         lines = self->textLines;
         if (lines != 0) {
-            operator_delete(Array_String_dtor(lines));
+            ::operator delete(Array_String_dtor(lines));
         }
     }
     self->textLines = 0;
@@ -122,7 +122,7 @@ static ALWAYS_INLINE void release_parts(Radio *self)
 {
     void *parts = self->imagePartBuffer;
     if (parts != 0) {
-        operator_delete__(parts);
+        ::operator delete[](parts);
     }
     self->imagePartBuffer = 0;
 }
@@ -148,7 +148,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
 
                 if (imageId >= 10000) {
                     release_parts(this);
-                    parts = (int *)operator_new__(0x14);
+                    parts = (int *)::operator new[](0x14);
                     this->imagePartBuffer = parts;
                     int wantedIndex = imageId - 10000;
                     for (int j = 0; j != 5; ++j) {
@@ -162,7 +162,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                     if (imageId < 0x3f && imageId != 0x15) {
                         release_parts(this);
                         int *source = g_Radio_imagePartTable[imageId];
-                        parts = (int *)operator_new__(0x14);
+                        parts = (int *)::operator new[](0x14);
                         this->imagePartBuffer = parts;
                         for (int j = 0; j != 5; ++j) {
                             parts[j] = source[j];
@@ -233,7 +233,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                 int soundTextId = radio_message_at(this, i)->getTextID();
                 this->soundId = globals->getDialogueSoundId(soundTextId, agent);
                 agent->~Agent();
-                operator_delete(agent);
+                ::operator delete(agent);
                 break;
             }
             messages = F<Array<RadioMessage *> *>(this, 0x00);

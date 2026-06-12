@@ -12,11 +12,9 @@ extern "C" void RocketGun_render_tail();
 extern "C" __attribute__((visibility("hidden"))) void *RocketGun_vtable;
 extern "C" void *Array_Matrix_dtor(void *p);
 extern "C" void *Array_int_dtor(void *p);
-extern "C" void operator_delete(void *p);
 extern "C" void *RocketGun_base_dtor(RocketGun *self);
 void *_ZN9RocketGunD1Ev(RocketGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder;
-extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(void *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" void PaintCanvas_TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
 extern "C" void *AEGeometry_dtor(void *self);
@@ -66,17 +64,17 @@ void *_ZN9RocketGunD1Ev(RocketGun *self)
 
     void *a0 = self->trailMatrices;
     if (a0 != 0)
-        operator_delete(Array_Matrix_dtor(a0));
+        ::operator delete(Array_Matrix_dtor(a0));
 
     void *a1 = self->trailSystems;
     self->trailMatrices = 0;
     if (a1 != 0)
-        operator_delete(Array_int_dtor(a1));
+        ::operator delete(Array_int_dtor(a1));
 
     void *a2 = self->trailTimers;
     self->trailSystems = 0;
     if (a2 != 0)
-        operator_delete(Array_int_dtor(a2));
+        ::operator delete(Array_int_dtor(a2));
 
     self->trailTimers = 0;
     return RocketGun_base_dtor(self);
@@ -85,7 +83,7 @@ void *_ZN9RocketGunD1Ev(RocketGun *self)
 // ---- _RocketGun_15ea28.cpp ----
 void _ZN9RocketGunD0Ev(RocketGun *self)
 {
-    return operator_delete(_ZN9RocketGunD1Ev(self));
+    return ::operator delete(_ZN9RocketGunD1Ev(self));
 }
 
 // ---- RocketGun_15e8f8.cpp ----
@@ -119,7 +117,7 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
     if (param_3 != 0x37a9)
         gate = 0x37a7;
     if (param_3 == 0x37a9 || param_3 == gate) {
-        void *geom = operator_new(0xc0);
+        void *geom = ::operator new(0xc0);
         uint16_t mesh = 0x37aa;
         void **holder = RocketGun_canvas_holder;
         if (param_1 == 0x37a7)
@@ -127,7 +125,7 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
         AEGeometry_ctor(geom, mesh, *holder, false);
         PaintCanvas_TransformAddChild(*holder, this->transformId,
                                       F<uint32_t>(geom, 0xc));
-        operator_delete(AEGeometry_dtor(geom));
+        ::operator delete(AEGeometry_dtor(geom));
     }
 }
 
@@ -155,13 +153,13 @@ void RocketGun::setRadar(Radar *radar)
     }
 
     {
-        void *matrices = operator_new(0xc);
+        void *matrices = ::operator new(0xc);
         Array_Matrix_ctor(matrices);
         this->trailMatrices = matrices;
-        void *systems = operator_new(0xc);
+        void *systems = ::operator new(0xc);
         Array_int_ctor(systems);
         this->trailSystems = systems;
-        void *timers = operator_new(0xc);
+        void *timers = ::operator new(0xc);
         Array_int_ctor(timers);
         this->trailTimers = timers;
 
@@ -205,13 +203,13 @@ void RocketGun::setRadar(Radar *radar)
 non_special:
     int rocketKind = this->rocketKind;
     if ((uint32_t)(rocketKind - 4) < 2 || rocketKind == 0x28) {
-        void *matrices = operator_new(0xc);
+        void *matrices = ::operator new(0xc);
         Array_Matrix_ctor(matrices);
         this->trailMatrices = matrices;
-        void *systems = operator_new(0xc);
+        void *systems = ::operator new(0xc);
         Array_int_ctor(systems);
         this->trailSystems = systems;
-        void *timers = operator_new(0xc);
+        void *timers = ::operator new(0xc);
         Array_int_ctor(timers);
         this->trailTimers = timers;
 

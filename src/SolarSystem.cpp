@@ -5,7 +5,6 @@
 
 extern "C" void ArrayRelease_int(void *a) __attribute__((nothrow));
 extern "C" void *Array_int_dtor(void *a) __attribute__((nothrow));
-extern "C" void SolarSystem_operator_delete(void *p) __attribute__((nothrow));
 extern "C" void SolarSystem_baseStringDtor(void *strField) __attribute__((nothrow));
 extern "C" int Station_getIndex(Station *st);
 extern "C" void String_copy_ctor(void *out, const void *src, bool);
@@ -27,19 +26,19 @@ void SolarSystem::dtor() {
     if (self->stationIds != 0) {
         ArrayRelease_int(self->stationIds);
         if (self->stationIds != 0)
-            SolarSystem_operator_delete(Array_int_dtor(self->stationIds));
+            ::operator delete(Array_int_dtor(self->stationIds));
     }
     self->stationIds = 0;
     if (self->field_0x3c != 0) {
         ArrayRelease_int(self->field_0x3c);
         if (self->field_0x3c != 0)
-            SolarSystem_operator_delete(Array_int_dtor(self->field_0x3c));
+            ::operator delete(Array_int_dtor(self->field_0x3c));
     }
     self->field_0x3c = 0;
     if (self->linkedSystemIds != 0) {
         ArrayRelease_int(self->linkedSystemIds);
         if (self->linkedSystemIds != 0)
-            SolarSystem_operator_delete(Array_int_dtor(self->linkedSystemIds));
+            ::operator delete(Array_int_dtor(self->linkedSystemIds));
     }
     self->linkedSystemIds = 0;
     SolarSystem_baseStringDtor((char *)self + 0xc);

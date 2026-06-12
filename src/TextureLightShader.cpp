@@ -9,7 +9,7 @@
 // ---- _TextureLightShader_8df1c.cpp ----
 void _ZN11AbyssEngine18TextureLightShaderD0Ev(TextureLightShader *self)
 {
-    operator_delete(ShaderBaseStruct_dtor(self));
+    ::operator delete(ShaderBaseStruct_dtor(self));
 }
 
 // ---- Init_8db68.cpp ----

@@ -161,7 +161,6 @@ void LodMeshMerger::update()
 }
 
 // ---- LodMeshMerger_181200.cpp ----
-extern "C" void *operator_new_array(uint32_t size);              // 0x6ec08
 extern "C" void aeabi_memclr4(void *p, uint32_t n);              // 0x6ec14
 extern "C" void aeabi_memclr(void *p, uint32_t n);              // 0x6ec20
 
@@ -179,15 +178,15 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
     field_0x8.resize((uint32_t)(cols * rows));
 
     uint32_t n = (uint32_t)field_0x0;
-    void *slots = operator_new_array(n * cols * 4);
+    void *slots = ::operator new[](n * cols * 4);
     field_0x24 = (void **)slots;
     aeabi_memclr4(slots, n * cols * 4);
 
-    void *lods = operator_new_array(n | ((int)n >> 31));
+    void *lods = ::operator new[](n | ((int)n >> 31));
     field_0x2c = (int8_t *)lods;
     aeabi_memclr(lods, n);
 
-    char *mats = (char *)operator_new_array(n * 0x3c);
+    char *mats = (char *)::operator new[](n * 0x3c);
     for (uint32_t off = 0; off != n * 0x3c; off += 0x3c) {
         new ((Matrix *)(mats + off)) Matrix();
     }
@@ -208,11 +207,11 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
 
     uint32_t rn = (uint32_t)field_0x0;
     uint32_t signedN = rn | ((int)rn >> 31);
-    char *enabled = (char *)operator_new_array(signedN);
+    char *enabled = (char *)::operator new[](signedN);
     field_0x30 = (uint8_t *)enabled;
     for (int i = 0; i < (int)rn; i++) enabled[i] = 1;
 
-    char *visible = (char *)operator_new_array(signedN);
+    char *visible = (char *)::operator new[](signedN);
     field_0x34 = (uint8_t *)visible;
     for (int i = 0; i < (int)rn; i++) visible[i] = 1;
 
@@ -313,7 +312,7 @@ void *LodMeshMerger::transformMesh(AEMesh *src, const Matrix &m)
 
     // --- transform vertex positions (flag bit 0) ---------------------------
     if (flags & 0x1) {
-        char *dstV = (char *)operator_new_array(vcount * 0xc);
+        char *dstV = (char *)::operator new[](vcount * 0xc);
         *(void **)(out + 0x4) = dstV;
         int o = 0;
         for (uint32_t i = 0; i < vcount; i = i + 1) {
@@ -328,7 +327,7 @@ void *LodMeshMerger::transformMesh(AEMesh *src, const Matrix &m)
 
     // --- rotate + normalise normals (flag bit 5 / << 0x1d) -----------------
     if (flags & 0x4) {
-        char *dstN = (char *)operator_new_array(vcount * 0xc);
+        char *dstN = (char *)::operator new[](vcount * 0xc);
         *(void **)(out + 0x10) = dstN;
         int o = 0;
         for (uint32_t i = 0; i < vcount; i = i + 1) {
@@ -372,8 +371,6 @@ void *LodMeshMerger::transformMesh(AEMesh *src, const Matrix &m)
 }
 
 // ---- _LodMeshMerger_181914.cpp ----
-extern "C" void operator_delete_array(void *p);  // 0x6ebfc  (operator delete[])
-extern "C" void operator_delete(void *p);        // 0x6eb48
 
 // Per-array-slot release thunk read from a hidden PC-relative global (used to
 // free the lod/enabled/visible byte arrays at 0x2c/0x30/0x34).
@@ -394,20 +391,20 @@ LodMeshMerger::~LodMeshMerger()
         void **cell = (void **)((char *)slots + idx);  // slots[idx]
         void **m4 = (void **)((char *)*cell + 4);
         if (*m4 != 0) {
-            operator_delete_array(*m4);
+            ::operator delete[](*m4);
             cell = (void **)((char *)field_0x24 + idx);
             m4 = (void **)((char *)*cell + 4);
         }
         *m4 = 0;
         void **m10 = (void **)((char *)*cell + 0x10);
         if (*m10 != 0) {
-            operator_delete_array(*m10);
+            ::operator delete[](*m10);
             cell = (void **)((char *)field_0x24 + idx);
             m10 = (void **)((char *)*cell + 0x10);
         }
         *m10 = 0;
         if (*cell != 0) {
-            operator_delete(*cell);
+            ::operator delete(*cell);
             cell = (void **)((char *)field_0x24 + idx);
         }
         *cell = 0;
@@ -415,7 +412,7 @@ LodMeshMerger::~LodMeshMerger()
         idx += 4;
         i += 1;
     }
-    if (slots != 0) operator_delete_array(slots);
+    if (slots != 0) ::operator delete[](slots);
     field_0x24 = 0;
 
     g_freeFn(field_0x2c);
@@ -425,7 +422,7 @@ LodMeshMerger::~LodMeshMerger()
     g_freeFn(field_0x34);
     field_0x34 = 0;
 
-    if (field_0x28 != 0) operator_delete_array(field_0x28);
+    if (field_0x28 != 0) ::operator delete[](field_0x28);
     field_0x28 = 0;
     LodMeshMerger_base_dtor(this);
 }

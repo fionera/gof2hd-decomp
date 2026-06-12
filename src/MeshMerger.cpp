@@ -23,7 +23,6 @@ extern "C" void PaintCanvas_MeshSetColor(PaintCanvas *c, uint32_t mesh, int16_t 
 extern "C" void PaintCanvas_MeshSetTriangle(PaintCanvas *c, uint16_t mesh, int16_t tri, int16_t a, int16_t b);
 extern "C" void PaintCanvas_TransformCreate(void *c, uint32_t *out);
 extern "C" void PaintCanvas_TransformAddMeshId(void *c, uint32_t tf, uint32_t mesh);
-extern "C" void *operator_new_array(uint32_t n);
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 extern "C" uint8_t PaintCanvas_CameraIsSphereInViewFrustum(void *canvas, const Vector *center, float r);
 extern "C" void PaintCanvas_MeshCreate(void *canvas, uint16_t meshId, uint32_t *out, bool flag);
@@ -94,7 +93,7 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     i32(this, 0x00) = (int)transforms.size();
 
     uint32_t count = meshIds.size();
-    uint32_t **table = (uint32_t **)operator_new_array(count * 4);
+    uint32_t **table = (uint32_t **)::operator new[](count * 4);
     pp(this, 0x8) = table;
 
     // Per-source meshes: create them and tally vertex/index totals.
@@ -311,7 +310,6 @@ int MeshMerger::init()
 }
 
 // ---- MeshMerger_173a60.cpp ----
-extern "C" void *operator_new_array(uint32_t n);                   // 0x6ec08 family
 extern "C" void *aeabi_memclr4(void *p, uint32_t n);              // 0x6ec14
 extern "C" void *aeabi_memclr(void *p, uint32_t n);              // 0x6ec20
 // Raw allocator thunk fetched from a hidden global (DAT_00183bf4).
@@ -358,11 +356,11 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
         *(Matrix *)(mp + off) = ident;
 
     n = i32(this, 0x00);
-    uint8_t *en = (uint8_t *)operator_new_array(n | (n >> 31));
+    uint8_t *en = (uint8_t *)::operator new[](n | (n >> 31));
     pp(this, 0x28) = en;
     for (int i = 0; i < n; i++) en[i] = 1;
 
-    uint8_t *vis = (uint8_t *)operator_new_array(n | (n >> 31));
+    uint8_t *vis = (uint8_t *)::operator new[](n | (n >> 31));
     pp(this, 0x2c) = vis;
     for (int i = 0; i < n; i++) vis[i] = 1;
 
@@ -383,15 +381,13 @@ void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 }
 
 // ---- transformMesh_173d90.cpp ----
-extern "C" void *operator_new(uint32_t size);                       // 0x6eb24
-extern "C" void *operator_new_array(uint32_t size);                 // 0x6ec08
 extern "C" void AEMath_MatrixTransformVector(Vector *out, const Vector *v); // 0x6f688
 extern "C" void AEMath_MatrixRotateVector(Vector *out, const Vector *v);    // 0x6f694
 extern "C" void AEMath_BSphere_assign(void *dst, const void *src);          // 0x6eb18
 
 void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
 {
-    char *out = (char *)operator_new(0x88);
+    char *out = (char *)::operator new(0x88);
     // Zero/identity initialize the new Mesh header.
     *(uint32_t *)(out + 0x82) = 0;
     *(uint32_t *)(out + 0x7e) = 0;
@@ -424,7 +420,7 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
         *(void **)(out + 0x2c) = mesh->field_0x2c;   // pointer field (full-width store)
     }
     if (flags & 1) {
-        void *buf = operator_new_array((uint32_t)nv * 0xc);
+        void *buf = ::operator new[]((uint32_t)nv * 0xc);
         *(void **)(out + 4) = buf;
         int off = 0;
         for (uint32_t k = 0; k < nv; k++) {
@@ -437,7 +433,7 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
         flags = *(uint8_t *)mesh;
     }
     if (flags & 4) {
-        void *buf = operator_new_array((uint32_t)nv * 0xc);
+        void *buf = ::operator new[]((uint32_t)nv * 0xc);
         *(void **)(out + 0x10) = buf;
         int off = 0;
         for (uint32_t k = 0; k < nv; k++) {
@@ -464,8 +460,6 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
 }
 
 // ---- _MeshMerger_174078.cpp ----
-extern "C" void operator_delete_array(void *p);  // 0x6ebfc  (operator delete[])
-extern "C" void operator_delete(void *p);        // 0x6eb48
 
 // Per-array-slot release thunk fetched from a hidden global (called for the
 // lod/enabled/visible byte arrays at 0x24/0x28/0x2c).
@@ -473,7 +467,7 @@ __attribute__((visibility("hidden"))) extern void (**g_freeFn)(void *);
 
 MeshMerger::~MeshMerger()
 {
-    if (pp(this, 0x8) != 0) operator_delete_array(pp(this, 0x8));
+    if (pp(this, 0x8) != 0) ::operator delete[](pp(this, 0x8));
     pp(this, 0x8) = 0;
 
     int i = 0;         // element index (iVar4)
@@ -486,20 +480,20 @@ MeshMerger::~MeshMerger()
         void **cell = (void **)((char *)slots + idx);  // slots[i]
         void **m4 = (void **)((char *)*cell + 4);
         if (*m4 != 0) {
-            operator_delete_array(*m4);
+            ::operator delete[](*m4);
             cell = (void **)((char *)pp(this, 0x18) + idx);
             m4 = (void **)((char *)*cell + 4);
         }
         *m4 = 0;
         void **m10 = (void **)((char *)*cell + 0x10);
         if (*m10 != 0) {
-            operator_delete_array(*m10);
+            ::operator delete[](*m10);
             cell = (void **)((char *)pp(this, 0x18) + idx);
             m10 = (void **)((char *)*cell + 0x10);
         }
         *m10 = 0;
         if (*cell != 0) {
-            operator_delete(*cell);
+            ::operator delete(*cell);
             cell = (void **)((char *)pp(this, 0x18) + idx);
         }
         *cell = 0;
@@ -507,7 +501,7 @@ MeshMerger::~MeshMerger()
         idx += 4;
         i += 1;
     }
-    if (slots != 0) operator_delete_array(slots);
+    if (slots != 0) ::operator delete[](slots);
     pp(this, 0x18) = 0;
 
     void (*freeFn)(void *) = *g_freeFn;
@@ -518,6 +512,6 @@ MeshMerger::~MeshMerger()
     freeFn(pp(this, 0x2c));
     pp(this, 0x2c) = 0;
 
-    if (pp(this, 0x1c) != 0) operator_delete_array(pp(this, 0x1c));
+    if (pp(this, 0x1c) != 0) ::operator delete[](pp(this, 0x1c));
     pp(this, 0x1c) = 0;
 }

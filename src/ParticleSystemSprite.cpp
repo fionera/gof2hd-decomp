@@ -4,7 +4,6 @@
 
 extern "C" char ParticleSystemSprite_vtable;
 extern "C" void *ParticleSystemSprite_baseDtor(void *self);
-extern "C" void operator_delete__(void *p);
 extern "C" void PaintCanvas_SetTexture(unsigned int canvas, unsigned int texture);
 extern "C" void PaintCanvas_SetBlendMode(void *canvas, int blend);
 extern "C" void PaintCanvas_SetWorldViewMatrix(void *canvas, const void *matrix);
@@ -65,12 +64,12 @@ int ParticleSystemSprite::init(unsigned int param_1, unsigned short param_2)
 void ParticleSystemSprite::release()
 {
     if (this->spriteData != 0)
-        operator_delete__(this->spriteData);
+        ::operator delete[](this->spriteData);
     this->spriteData = 0;
     if (this->ages != 0)
-        operator_delete__(this->ages);
+        ::operator delete[](this->ages);
     this->ages = 0;
-    operator_delete__(this->setIndices);
+    ::operator delete[](this->setIndices);
     this->setIndices = 0;
 }
 

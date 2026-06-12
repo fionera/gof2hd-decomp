@@ -7,7 +7,6 @@
 extern "C" uint32_t PaintCanvas_TransformGetTransform32(int canvas, int transform);
 extern "C" long long PaintCanvas_TransformGetTransform(int canvas, int transform);
 extern "C" void *AEGeometry_dtor(AEGeometry *self);
-extern "C" void operator_delete(void *ptr);
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(Array<AEGeometry *> *self);
 extern "C" void *Array_AEGeometryPtr_dtor(Array<AEGeometry *> *self);
 extern "C" void Explosion_tail_translate(void *geometry, const Vector *v);
@@ -22,7 +21,6 @@ extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
 float VectorLength(const Vector *self);
 extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self, float value, int duration);
 extern "C" void Matrix_ctor(Matrix *self);
-extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, int canvas, bool flag);
 void MatrixGetPosition(Vector *out, const Matrix *matrix);
 extern "C" void AEGeometry_setMatrix(AEGeometry *self, const Matrix *matrix);
@@ -85,13 +83,13 @@ Explosion *_ZN9ExplosionD2Ev(Explosion *self)
 {
     AEGeometry *geometry = self->primaryMesh;
     if (geometry != 0) {
-        operator_delete(AEGeometry_dtor(geometry));
+        ::operator delete(AEGeometry_dtor(geometry));
     }
     self->primaryMesh = 0;
 
     geometry = self->secondaryMesh;
     if (geometry != 0) {
-        operator_delete(AEGeometry_dtor(geometry));
+        ::operator delete(AEGeometry_dtor(geometry));
     }
     self->secondaryMesh = 0;
 
@@ -100,7 +98,7 @@ Explosion *_ZN9ExplosionD2Ev(Explosion *self)
         ArrayReleaseClasses_AEGeometryPtr(streaks);
         streaks = self->fireStreaks;
         if (streaks != 0) {
-            operator_delete(Array_AEGeometryPtr_dtor(streaks));
+            ::operator delete(Array_AEGeometryPtr_dtor(streaks));
         }
     }
     self->fireStreaks = 0;
@@ -309,7 +307,7 @@ extern int Explosion_paintCanvas;
 
 static inline __attribute__((always_inline)) AEGeometry *make_geometry(uint16_t mesh, int canvas)
 {
-    AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);
+    AEGeometry *geometry = (AEGeometry *)::operator new(0xc0);
     AEGeometry_ctor(geometry, mesh, canvas, false);
     return geometry;
 }
@@ -332,7 +330,7 @@ Explosion *_ZN9ExplosionC2Ei(Explosion *self, int type)
         self->primaryMesh = make_geometry(0x41b5, *canvas);
         geometry = make_geometry(0x41b4, *canvas);
         ((AEGeometry *)(self->primaryMesh))->addChild(U(geometry, 0xc));
-        operator_delete(AEGeometry_dtor(geometry));
+        ::operator delete(AEGeometry_dtor(geometry));
         break;
     default:
         if (type == 13) {
@@ -684,7 +682,7 @@ void Explosion::addFireStreaks() {
     int (*nextInt)(void *, int) = &AbyssEngine::AERandom::nextInt;
 
     for (uint32_t i = 0; i < self->fireStreaks->size(); i++) {
-        AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);
+        AEGeometry *geometry = (AEGeometry *)::operator new(0xc0);
         AEGeometry_ctor(geometry, 0x37d4, *canvas, false);
         (*self->fireStreaks)[i] = geometry;
 

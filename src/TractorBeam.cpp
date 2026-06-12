@@ -43,7 +43,6 @@ static inline uint8_t &kiByte(void *p, int off) { return *((uint8_t *)p + off); 
 
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t meshId, PaintCanvas *canvas, bool visible);
 extern "C" void AEGeometry_dtor(AEGeometry *self);
-extern "C" void operator_delete(void *p);
 
 // ---- TractorBeam_1511b4.cpp ----
 // AEGeometry::AEGeometry(mesh-id, canvas, visible) ctor @ 0x0007207c.
@@ -267,7 +266,7 @@ TractorBeam *_ZN11TractorBeamD2Ev(TractorBeam *self)
     AEGeometry *geo = self->beamGeometry;
     if (geo != 0) {
         AEGeometry_dtor(geo);
-        operator_delete(geo);
+        ::operator delete(geo);
     }
     self->beamGeometry = 0;
     return self;

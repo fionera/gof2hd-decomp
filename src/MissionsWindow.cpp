@@ -194,8 +194,6 @@ int MissionsWindow::OnTouchBegin(int p1, int p2)
 // ---- init_14fa68.cpp ----
 extern "C" {
 
-void *operator_new(uint32_t size);
-void  operator_delete(void *p);
 
 void  ArrayTB_ctor(void *self);
 void  ArrayTB_setLength(int n, void *self);
@@ -282,18 +280,18 @@ extern "C" int MissionsWindow_init(void *self)
     }
 
     // --- two tab buttons ---
-    void *tabs = operator_new(0xc);
+    void *tabs = ::operator new(0xc);
     ArrayTB_ctor(tabs);
     pp(self, 0x14) = tabs;
     ArrayTB_setLength(2, tabs);
 
-    void *b0 = operator_new(200);
+    void *b0 = ::operator new(200);
     void *t0 = ((GameText *)g_mw_gameText)->getText(titleId);
     int helpOff = ((Layout *)layout)->getHelpButtonOffset();
     TouchButton_ctorTab(b0, t0, 3, (i32(self, 0x38) + i32(self, 0x30)) - helpOff, i32(self, 0x34), 0x12);
     *(void **)(*(int *)(pp(self, 0x14)) + 4 + 4) = b0;
 
-    void *b1 = operator_new(200);
+    void *b1 = ::operator new(200);
     void *t1 = ((GameText *)g_mw_gameText)->getText(titleId);
     int helpOff2 = ((Layout *)layout)->getHelpButtonOffset();
     int w1 = ((TouchButton *)(b1))->getWidth();
@@ -308,20 +306,20 @@ extern "C" int MissionsWindow_init(void *self)
     // --- tear down any previous sub-objects ---
     if (pp(self, 0x18) != 0) {
         ArrayImg_releaseClasses(pp(self, 0x18));
-        if (pp(self, 0x18) != 0) operator_delete(ArrayImg_dtor(pp(self, 0x18)));
+        if (pp(self, 0x18) != 0) ::operator delete(ArrayImg_dtor(pp(self, 0x18)));
     }
     pp(self, 0x18) = 0;
-    if (pp(self, 0x0) != 0) operator_delete(ScrollTouchWindow_dtor(pp(self, 0x0)));
+    if (pp(self, 0x0) != 0) ::operator delete(ScrollTouchWindow_dtor(pp(self, 0x0)));
     pp(self, 0x0) = 0;
-    if (pp(self, 0x4) != 0) operator_delete(ScrollTouchWindow_dtor(pp(self, 0x4)));
+    if (pp(self, 0x4) != 0) ::operator delete(ScrollTouchWindow_dtor(pp(self, 0x4)));
     pp(self, 0x4) = 0;
-    if (pp(self, 0xc) != 0) operator_delete(ChoiceWindow_dtor(pp(self, 0xc)));
+    if (pp(self, 0xc) != 0) ::operator delete(ChoiceWindow_dtor(pp(self, 0xc)));
     pp(self, 0xc) = 0;
-    if (pp(self, 0x24) != 0) { void *b = pp(self, 0x24); ((TouchButton *)b)->dtor(); operator_delete(b); }
+    if (pp(self, 0x24) != 0) { void *b = pp(self, 0x24); ((TouchButton *)b)->dtor(); ::operator delete(b); }
     pp(self, 0x24) = 0;
-    if (pp(self, 0x28) != 0) { void *b = pp(self, 0x28); ((TouchButton *)b)->dtor(); operator_delete(b); }
+    if (pp(self, 0x28) != 0) { void *b = pp(self, 0x28); ((TouchButton *)b)->dtor(); ::operator delete(b); }
     pp(self, 0x28) = 0;
-    if (pp(self, 0x2c) != 0) { void *b = pp(self, 0x2c); ((TouchButton *)b)->dtor(); operator_delete(b); }
+    if (pp(self, 0x2c) != 0) { void *b = pp(self, 0x2c); ((TouchButton *)b)->dtor(); ::operator delete(b); }
     pp(self, 0x8) = 0;
     pp(self, 0x2c) = 0;
     i32(self, 0x20) = 0;
@@ -330,7 +328,7 @@ extern "C" int MissionsWindow_init(void *self)
     int topY = i32(layout, 0xc) + i32(self, 0x34) + i32(layout, 0x20) +
                i32(layout, 0x5c) + i32(layout, 0x2c);
     int reserve = (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) ? i32(layout, 0x30) : 0;
-    void *sw0 = operator_new(0x24);
+    void *sw0 = ::operator new(0x24);
     ScrollTouchWindow_ctor(sw0,
         i32(layout, 0x28) + i32(self, 0x30), topY,
         (i32(self, 0x38) >> 1) - (i32(layout, 0x2c) + i32(layout, 0x28)),
@@ -388,7 +386,7 @@ extern "C" int MissionsWindow_init(void *self)
 
     // --- right (freelance) scroll window ---
     int fmEmpty = ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->isEmpty();
-    void *sw1 = operator_new(0x24);
+    void *sw1 = ::operator new(0x24);
     int half = i32(self, 0x38) >> 1;
     int pad = i32(layout, 0x2c);
     int rx = i32(self, 0x30) + half + pad;
@@ -439,7 +437,7 @@ extern "C" int MissionsWindow_init(void *self)
     if (((Status *)(*(void **)g_mwi_status))->inAlienOrbit() == 0) {
         int btnY = ((i32(self, 0x38) >> 1) >> 1) - i32(layout, 0x28);
         if (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) {
-            void *bAccept = operator_new(200);
+            void *bAccept = ::operator new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
             TouchButton_ctor(bAccept, t, 0, i32(layout, 0x28) + i32(self, 0x30),
                              (((i32(self, 0x34) + i32(self, 0x3c)) - i32(layout, 0x10)) -
@@ -448,7 +446,7 @@ extern "C" int MissionsWindow_init(void *self)
             pp(self, 0x24) = bAccept;
         }
         if (((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->isEmpty() == 0) {
-            void *bReject = operator_new(200);
+            void *bReject = ::operator new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
             TouchButton_ctor(bReject, t, 0,
                              i32(self, 0x30) + (i32(self, 0x38) >> 1) + i32(layout, 0x2c),
@@ -458,7 +456,7 @@ extern "C" int MissionsWindow_init(void *self)
             pp(self, 0x28) = bReject;
 
             if (ApplicationManager_GetCurrentApplicationModule(*(void **)g_mwi_appMgr) == 5) {
-                void *bMap = operator_new(200);
+                void *bMap = ::operator new(200);
                 void *t2 = ((GameText *)g_mw_gameText)->getText(titleId);
                 TouchButton_ctor(bMap, t2, 0,
                                  i32(self, 0x30) + btnY + (i32(self, 0x38) >> 1) +
@@ -469,7 +467,7 @@ extern "C" int MissionsWindow_init(void *self)
                 pp(self, 0x2c) = bMap;
                 ((TouchButton *)(bMap))->setTextColor(g_mwi_actionColor);
             }
-            void *cw = operator_new(0x5c);
+            void *cw = ::operator new(0x5c);
             ChoiceWindow_ctor(cw);
             pp(self, 0xc) = cw;
         }
@@ -480,7 +478,7 @@ extern "C" int MissionsWindow_init(void *self)
 
     if (Status_wantedBoardAccessible() != 0) {
         if (pp(self, 0x10) == 0) {
-            void *ww = operator_new(0xb4);
+            void *ww = ::operator new(0xb4);
             WantedWindow_ctor(ww);
             pp(self, 0x10) = ww;
         } else {
@@ -679,7 +677,6 @@ void MissionsWindow::render3D()
 // ---- OnTouchEnd_150d74.cpp ----
 extern "C" {
 
-void *operator_new(uint32_t size);
 
 void StarMap_ctor(void *map, bool a, void *mission, bool b, int c);
 // StarMap::OnTouchEnd returns void in the (offset-derived) header, but the original
@@ -795,7 +792,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             void *map = *(void **)((char *)mod + 0x10);
             pp(self, 0x8) = map;
             if (map == 0) {
-                void *m = operator_new(0x1e8);
+                void *m = ::operator new(0x1e8);
                 StarMap_ctor(m, true, (void *)(intptr_t)((Status *)(*(void **)g_mwt_freelanceSrc))->getCampaignMission(), false, -1);
                 void *mod2 = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
                 *(void **)((char *)mod2 + 0x10) = m;
@@ -820,7 +817,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
                 void *map = *(void **)((char *)mod + 0x10);
                 pp(self, 0x8) = map;
                 if (map == 0) {
-                    void *m = operator_new(0x1e8);
+                    void *m = ::operator new(0x1e8);
                     StarMap_ctor(m, true, ((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission(), false, -1);
                     void *mod2 = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
                     *(void **)((char *)mod2 + 0x10) = m;

@@ -303,7 +303,6 @@ extern "C" void PaintCanvas_CameraSetPerspective(unsigned cam, float fov, float 
 // 0x76aa4
 extern "C" void AEGeometry_setRotation3(void *g, int x, int y, int z);  // 0x73054
 // 0x78448
-extern "C" void *operator_new(unsigned sz);  // 0x6eb24
 extern "C" int PaintCanvas_TransformGetTransform(unsigned cam);  // 0x72088
 // 0x6fd18
 // 0x72574
@@ -402,7 +401,7 @@ void MGame::startJumpScene() {
         // Charged jump: spawn the warp-tunnel geometry.
         ((PlayerEgo *)(self->field_0x58))->resetMovement();
         ((PlayerEgo *)(self->field_0x58))->setComputerControlled(1);
-        AEGeometry *geo = (AEGeometry *)operator_new(0xc0);
+        AEGeometry *geo = (AEGeometry *)::operator new(0xc0);
         new (geo) AEGeometry((uint16_t)0x3ab2, *g_jsCanvas, false);
         self->field_0x114 = geo;
         int tr = PaintCanvas_TransformGetTransform(*(unsigned *)g_jsCanvas);
@@ -656,7 +655,7 @@ __attribute__((visibility("hidden"))) extern int **g_goSnd;        // @0x190746
 // Helper to (re)bind a DialogueWindow to the current level (the duplicated block).
 static void bindDialogueLevel(MGame *self) {
     if (self->field_0x8c == 0) {
-        DialogueWindow *w = (DialogueWindow *)operator_new(0x74);
+        DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
         DialogueWindow_ctor(w);
         Level *lvl = self->field_0x78;
         self->field_0x8c = w;
@@ -1017,7 +1016,7 @@ void MGame::dockEvent() {
                     self->field_0x15c = 0;
                     self->field_0x111 = 1;
                     if (self->field_0x90 == 0) {
-                        StarMap *sm = (StarMap *)operator_new(0x1e8);
+                        StarMap *sm = (StarMap *)::operator new(0x1e8);
                         new (sm) StarMap(false, nullptr, false, -1);
                         self->field_0x90 = sm;
                     }
@@ -1038,7 +1037,7 @@ void MGame::dockEvent() {
                 ChoiceWindow *cw = self->field_0x94;
                 self->field_0x111 = 1;
                 if (cw == 0) {
-                    cw = (ChoiceWindow *)operator_new(0x5c);
+                    cw = (ChoiceWindow *)::operator new(0x5c);
                     new (cw) ChoiceWindow();
                     self->field_0x94 = cw;
                 }
@@ -1049,7 +1048,7 @@ void MGame::dockEvent() {
                 ChoiceWindow *cw = self->field_0x94;
                 self->field_0x111 = 1;
                 if (cw == 0) {
-                    cw = (ChoiceWindow *)operator_new(0x5c);
+                    cw = (ChoiceWindow *)::operator new(0x5c);
                     new (cw) ChoiceWindow();
                     self->field_0x94 = cw;
                 }
@@ -1229,7 +1228,7 @@ void MGame::UseKhadorDrive() {
             return;
         }
         if (self->field_0x90 == 0) {
-            StarMap *sm = (StarMap *)operator_new(0x1e8);
+            StarMap *sm = (StarMap *)::operator new(0x1e8);
             new (sm) StarMap(false, nullptr, false, -1);
             self->field_0x90 = sm;
         }
@@ -1263,7 +1262,6 @@ void MGame::UseKhadorDrive() {
 // ---- OnInitialize_177c50.cpp ----
 
 extern "C" void PaintCanvas_TextureCreate(unsigned a, unsigned *b, int c);  // TextureCreate
-extern "C" void operator_delete(void *p);  // 0x6eb48
 // 0x178470
 // 0x713d4
 // Heavily-corrupt sub-blocks are delegated to documented helpers:
@@ -1301,7 +1299,7 @@ void MGame::OnInitialize() {
         MGame_loadSoundResources(self);
 
         (*g_status)->checkForLevelUp();
-        level = (Level *)operator_new(0x2a0);
+        level = (Level *)::operator new(0x2a0);
         new (level) Level(3);
         self->field_0x78 = level;
     }
@@ -1547,7 +1545,7 @@ __attribute__((visibility("hidden"))) extern uint8_t **g_scFlag; // @0x1904aa
 // Bind a DialogueWindow to the current level (duplicated block at 0x1019020c/0x190020).
 static void bindDlg(MGame *self) {
     if (self->field_0x8c == 0) {
-        DialogueWindow *w = (DialogueWindow *)operator_new(0x74);
+        DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
         DialogueWindow_ctor(w);
         Level *lvl = self->field_0x78;
         self->field_0x8c = w;
@@ -1626,7 +1624,7 @@ void MGame::successCheck() {
                 StarSystem *ss = (StarSystem *)(intptr_t)((Level *)(self->field_0x78))->getStarSystem();
                 StarSystem_getPlanets(ss);
                 int pts[3] = {0, 0, 0};
-                Route *route = (Route *)operator_new(0x18);
+                Route *route = (Route *)::operator new(0x18);
                 Route_ctor(route, pts, 3);
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
@@ -1637,7 +1635,7 @@ void MGame::successCheck() {
                         ((KIPlayer *)(k))->setRoute(rc);
                     }
                 }
-                operator_delete(Route_dtor(route));
+                ::operator delete(Route_dtor(route));
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
@@ -1840,11 +1838,11 @@ void MGame::reset() {
 
     self->field_0x58 = (PlayerEgo *)(intptr_t)((Level *)(self))->getPlayer();
 
-    Hud *hud = (Hud *)operator_new(0x53c);
+    Hud *hud = (Hud *)::operator new(0x53c);
     ((Hud *)(hud))->ctor();
     self->field_0x74 = hud;
 
-    Radio *radio = (Radio *)operator_new(0x48);
+    Radio *radio = (Radio *)::operator new(0x48);
     Radio_ctor(radio);
     self->field_0x84 = radio;
     ((Radio *)(radio))->setMessages((Array<RadioMessage *> *)(intptr_t)((Level *)(self->field_0x78))->getMessages());
@@ -1862,10 +1860,10 @@ void MGame::reset() {
     PaintCanvas_CameraSetPerspective(cam, fov, 0, 0);
 
     if (self->field_0xf4 != 0) {
-        operator_delete(TargetFollowCamera_dtor(self->field_0xf4));
+        ::operator delete(TargetFollowCamera_dtor(self->field_0xf4));
         self->field_0xf4 = 0;
     }
-    TargetFollowCamera *tfc = (TargetFollowCamera *)operator_new(0x178);
+    TargetFollowCamera *tfc = (TargetFollowCamera *)::operator new(0x178);
     TargetFollowCamera_ctor(tfc, self->field_0xf0,
                             *(int *)((char *)self->field_0x58 + 8), 0, 0, 0, 0, 0, 0);
     self->field_0xf4 = tfc;
@@ -1873,21 +1871,21 @@ void MGame::reset() {
     ((PlayerEgo *)(self->field_0x58))->setTargetFollowCamera(self->field_0xf4);
     TargetFollowCamera_resetShipHandling(self->field_0xf4);
 
-    Radar *radar = (Radar *)operator_new(0x248);
+    Radar *radar = (Radar *)::operator new(0x248);
     Radar_ctor(radar, self->field_0x78);
     self->field_0x80 = radar;
 
     if ((*g_status)->getMission() != 0)
         self->field_0x61 = (uint8_t)((Mission *)((*g_status)->getMission()))->isCampaignMission();
 
-    LevelScript *script = (LevelScript *)operator_new(0xe8);
+    LevelScript *script = (LevelScript *)::operator new(0xe8);
     new (script) LevelScript(self->field_0x78, self->field_0x74,
                              self->field_0x80, self->field_0xf4);
     self->field_0x7c = script;
     ((LevelScript *)(script))->lookBehind();
     ((Level *)(self->field_0x78))->initParticleSystems();
 
-    ChoiceWindow *cw = (ChoiceWindow *)operator_new(0x5c);
+    ChoiceWindow *cw = (ChoiceWindow *)::operator new(0x5c);
     new (cw) ChoiceWindow();
     self->field_0x94 = cw;
 
@@ -2457,7 +2455,7 @@ void MGame::OnRelease() {
 
     if (self->field_0x78 != 0) {
         self->field_0x78->~Level();
-        operator_delete(self->field_0x78);
+        ::operator delete(self->field_0x78);
     }
 
     self->field_0x48 = 0; self->field_0x4c = 0;
@@ -2474,26 +2472,26 @@ void MGame::OnRelease() {
 
     if (self->field_0x114 != 0) {
         self->field_0x114->~AEGeometry();
-        operator_delete(self->field_0x114);
+        ::operator delete(self->field_0x114);
     }
     self->field_0x114 = 0;
 
     if (self->field_0x74 != 0)
-        operator_delete(((Hud *)(self->field_0x74))->dtor());
+        ::operator delete(((Hud *)(self->field_0x74))->dtor());
     self->field_0x74 = 0;
 
     if (self->field_0x7c != 0) {
         self->field_0x7c->~LevelScript();
-        operator_delete(self->field_0x7c);
+        ::operator delete(self->field_0x7c);
     }
     self->field_0x7c = 0;
 
     if (self->field_0x80 != 0)
-        operator_delete(Radar_dtor(self->field_0x80));
+        ::operator delete(Radar_dtor(self->field_0x80));
     self->field_0x80 = 0;
 
     if (self->field_0x84 != 0)
-        operator_delete(Radio_dtor(self->field_0x84));
+        ::operator delete(Radio_dtor(self->field_0x84));
     self->field_0x84 = 0;
 
     int *appMod = g_relAppMod;
@@ -2503,29 +2501,29 @@ void MGame::OnRelease() {
         StarMap *sm = *(StarMap **)((char *)m2 + 0x10);
         if (sm != 0) {
             sm->~StarMap();
-            operator_delete(sm);
+            ::operator delete(sm);
         }
     }
     void *m3 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
     *(int *)((char *)m3 + 0x10) = 0;
 
     if (self->field_0x88 != 0)
-        operator_delete(((MenuTouchWindow *)(self->field_0x88))->dtor());
+        ::operator delete(((MenuTouchWindow *)(self->field_0x88))->dtor());
     self->field_0x88 = 0;
 
     if (self->field_0x8c != 0)
-        operator_delete(DialogueWindow_dtor(self->field_0x8c));
+        ::operator delete(DialogueWindow_dtor(self->field_0x8c));
     self->field_0x8c = 0;
 
     if (self->field_0x90 != 0) {
         self->field_0x90->~StarMap();
-        operator_delete(self->field_0x90);
+        ::operator delete(self->field_0x90);
     }
     self->field_0x90 = 0;
 
     if (self->field_0x94 != 0) {
         self->field_0x94->~ChoiceWindow();
-        operator_delete(self->field_0x94);
+        ::operator delete(self->field_0x94);
     }
     self->field_0x94 = 0;
 
@@ -2535,12 +2533,12 @@ void MGame::OnRelease() {
     self->field_0xcb = 0;
 
     if (self->field_0xf4 != 0)
-        operator_delete(TargetFollowCamera_dtor(self->field_0xf4));
+        ::operator delete(TargetFollowCamera_dtor(self->field_0xf4));
     self->field_0xf4 = 0;
 
     if (self->field_0x1e8 != 0) {
         ((GameRecord *)(intptr_t)self->field_0x1e8)->~GameRecord();
-        operator_delete((void *)(intptr_t)self->field_0x1e8);
+        ::operator delete((void *)(intptr_t)self->field_0x1e8);
     }
     self->field_0x1e8 = 0;
 
@@ -2563,7 +2561,7 @@ void MGame::OnRelease() {
 
     ArrayReleaseClasses_StringPtr(self->field_0x1ec);
     if (self->field_0x1ec != 0)
-        operator_delete(ArrayStringPtr_dtor(self->field_0x1ec));
+        ::operator delete(ArrayStringPtr_dtor(self->field_0x1ec));
     self->field_0x1ec = 0;
 
     if (*soundFlag != 0)

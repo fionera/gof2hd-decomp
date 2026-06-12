@@ -13,7 +13,6 @@ extern "C" void  AEString_dtor(void *s);
 extern "C" char *AEString_GetAEChar(void *s);
 extern "C" int   _ZN11AbyssEngine6AEFile9FileExistERKNS_6StringE(void *path);
 extern "C" void  _ZN11AbyssEngine6AEFile8OpenReadERKNS_6StringEPj(void *path, unsigned int *fileOut);
-extern "C" void operator_delete_arr(void *p);
 extern "C" void AEString_dtor(void *s);
 extern "C" GameText *GameText_dtor_tail(GameText *self);
 extern "C" void Array_int_ctor(void *a);
@@ -172,7 +171,7 @@ GameText *_ZN8GameTextD2Ev(GameText *self)
 {
     ((GameText *)(self))->release();
     void *p = self->textTable;
-    if (p != 0) operator_delete_arr(p);
+    if (p != 0) ::operator delete[](p);
     self->textTable = 0;
     return GameText_dtor_tail(self);
 }

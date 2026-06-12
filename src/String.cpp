@@ -12,10 +12,6 @@ int   GameText_getLanguage();                              // 0x6f544
 int   atoi(const char *s);                                 // libc
 void  String_printImpl(const char *s);                     // 0x1ab108 platform print
 uint16_t *String_computeFloatString(float v, int base, int *outExp, int *outNeg);
-void  operator_delete__(void *p);
-void *operator_new__(unsigned int n);
-void *operator_new(unsigned int n);
-void  operator_delete(void *p);
 
 // Array<String*> container helpers used by Split / SplitTags.
 void  String_ArrayString_ctor(void *arr);                  // Array<String*>::Array()
@@ -35,7 +31,7 @@ char * String::GetAEChar() {
     String *self = this;
     unsigned int len = self->s.size();
     unsigned int n = len + 1;
-    char *out = (char *)operator_new(n);
+    char *out = (char *)::operator new(n);
     for (unsigned int i = 0; i < len; i++)
         out[i] = (char)(self->s[i] & 0xff);
     out[len] = 0;
@@ -152,7 +148,7 @@ int String::ValueOf() {
     String *self = this;
     char *bytes = ((String *)(self))->GetAEChar();
     int v = atoi(bytes);
-    operator_delete__(bytes);
+    ::operator delete[](bytes);
     return v;
 }
 
@@ -161,21 +157,21 @@ int String::ValueOf() {
 void * String::Split(String *sep) {
     String *self = this;
     if (!self->s.empty() && !sep->s.empty()) {
-        void *arr = operator_new(0xc);
+        void *arr = ::operator new(0xc);
         String_ArrayString_ctor(arr);
 
         unsigned int pos = 0;
         unsigned int idx;
         while ((idx = ((String *)(self))->IndexOf_from(pos, sep)) != 0xffffffff) {
             if (pos < idx) {
-                String *piece = (String *)operator_new(0xc);
+                String *piece = (String *)::operator new(0xc);
                 ((String *)(piece))->SubString(self, pos, idx);
                 String_ArrayString_add(piece, arr);
             }
             pos = (unsigned int)sep->s.size() + idx;
         }
         if (pos != 0 && pos < self->s.size()) {
-            String *piece = (String *)operator_new(0xc);
+            String *piece = (String *)::operator new(0xc);
             ((String *)(piece))->SubString(self, pos, self->s.size());
             String_ArrayString_add(piece, arr);
         }
@@ -185,7 +181,7 @@ void * String::Split(String *sep) {
 
         // No elements collected: tear the array down and report failure.
         String_ArrayString_removeAll(arr);
-        operator_delete(String_ArrayString_dtor(arr));
+        ::operator delete(String_ArrayString_dtor(arr));
     }
     return 0;
 }
@@ -512,8 +508,8 @@ void String::ConvertFromUTF8() {
     char *bytes = ((String *)(self))->GetAEChar();
     uint16_t *wide = String_getWCharFromUtf8(bytes, (int)self->s.size());
     ((String *)(self))->Set_wchar(wide);
-    operator_delete__(bytes);
-    operator_delete__(wide);
+    ::operator delete[](bytes);
+    ::operator delete[](wide);
 }
 
 // ---- _String_725b8.cpp ----
@@ -521,7 +517,7 @@ void String::ConvertFromUTF8() {
 void String::dtor_del() {
     String *self = this;
     ((String *)(self))->dtor();
-    operator_delete(self);
+    ::operator delete(self);
 }
 
 // ---- SplitTags_73368.cpp ----
@@ -546,7 +542,7 @@ void String::SplitTags(String *tag) {
         tag->s = wrapped;
     }
 
-    void *arr = operator_new(0xc);
+    void *arr = ::operator new(0xc);
     String_ArrayString_ctor(arr);
 
     int endPos = 0;
@@ -554,7 +550,7 @@ void String::SplitTags(String *tag) {
     unsigned int idx;
     while ((idx = ((String *)(self))->IndexOf_from(pos, tag)) != 0xffffffff) {
         if (pos <= idx) {
-            String *piece = (String *)operator_new(0xc);
+            String *piece = (String *)::operator new(0xc);
             ((String *)(piece))->SubString(self, pos, idx);
             String_ArrayString_add(piece, arr);
 
@@ -565,7 +561,7 @@ void String::SplitTags(String *tag) {
             if (endPos == -1)
                 goto done;
 
-            String *piece2 = (String *)operator_new(0xc);
+            String *piece2 = (String *)::operator new(0xc);
             ((String *)(piece2))->SubString(self, afterTag, (unsigned int)endPos);
             String_ArrayString_add(piece2, arr);
         }
@@ -573,14 +569,14 @@ void String::SplitTags(String *tag) {
     }
 
     if (pos != 0 && pos < self->s.size()) {
-        String *piece = (String *)operator_new(0xc);
+        String *piece = (String *)::operator new(0xc);
         ((String *)(piece))->SubString(self, pos, self->s.size());
         String_ArrayString_add(piece, arr);
     }
 
     if (((Array<String *> *)arr)->size() == 0) {
         String_ArrayString_removeAll(arr);
-        operator_delete(String_ArrayString_dtor(arr));
+        ::operator delete(String_ArrayString_dtor(arr));
     }
 done:
     ;
@@ -639,7 +635,7 @@ void String::Set_float(float v) {
         acc = sign + acc;
     }
 
-    operator_delete__(digitsW);
+    ::operator delete[](digitsW);
     self->s = acc;
 }
 
@@ -701,7 +697,7 @@ uint16_t *String_getWCharFromUtf8(char *s, int len)
         outCount = outCount + 1;
     }
 
-    uint16_t *out = (uint16_t *)operator_new__((unsigned int)((outCount + 1) * 2));
+    uint16_t *out = (uint16_t *)::operator new[]((unsigned int)((outCount + 1) * 2));
     uint16_t *w = out;
 
     // Second pass: decode each sequence to a code point.

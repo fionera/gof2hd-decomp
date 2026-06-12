@@ -3,7 +3,6 @@
 
 extern "C" float MiningGame_sqrt(void *globals, float value);
 extern "C" void *MiningGame_Sprite_dtor(void *sprite);
-extern "C" void MiningGame_operator_delete(void *ptr);
 extern "C" void MiningGame_MarqueeImage_update(void *self, int delta);
 extern "C" void MiningGame_MarqueeImage_setSpeed_update(void *self, float speed);
 extern "C" void MiningGame_FModSound_setParamValue(void *sound, int index, int param, float value);
@@ -20,7 +19,6 @@ extern "C" int MiningGame_Item_getAttribute(void *item, int attribute);
 extern "C" void MiningGame_PaintCanvas_Image2DCreate(void *canvas, int imageId, int *outId);
 extern "C" int MiningGame_PaintCanvas_GetImage2DHeight(void *canvas, int imageId);
 extern "C" int MiningGame_PaintCanvas_GetImage2DWidth(void *canvas, int imageId);
-extern "C" void *MiningGame_operator_new(uint32_t size);
 extern "C" void MiningGame_Sprite_ctor(void *sprite, int imageId, int width, int height);
 extern "C" void MiningGame_Sprite_defineReferencePixel(void *sprite, int x, int y);
 extern "C" void MiningGame_MarqueeImage_ctor(void *self, int imageId, int width, int x, int y, float value);
@@ -127,7 +125,7 @@ MiningGame::~MiningGame()
 {
     void *sprite = this->drillSprite;
     if (sprite != 0) {
-        MiningGame_operator_delete(MiningGame_Sprite_dtor(sprite));
+        ::operator delete(MiningGame_Sprite_dtor(sprite));
     }
     this->drillSprite = 0;
 }
@@ -339,7 +337,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     void **canvasHolder = g_MiningGame_canvasCtor;
     MiningGame_PaintCanvas_Image2DCreate(*canvasHolder, 0x4e6, imageId);
     int imageHeight = MiningGame_PaintCanvas_GetImage2DHeight(*canvasHolder, imageId[0]);
-    void *sprite = MiningGame_operator_new(0x40);
+    void *sprite = ::operator new(0x40);
     MiningGame_Sprite_ctor(sprite, imageId[0], imageHeight, imageHeight);
     this->drillSprite = sprite;
     MiningGame_Sprite_defineReferencePixel(sprite, imageHeight / 2, imageHeight / 2);
@@ -374,11 +372,11 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     int y = I(layout, 0xd8);
     this->progressBarY = y;
 
-    void *leftMarquee = MiningGame_operator_new(0x24);
+    void *leftMarquee = ::operator new(0x24);
     MiningGame_MarqueeImage_ctor(leftMarquee, 0x4eb, this->marqueeWidth, x, this->progressBarHeight + y + 5, 20.0f);
     this->leftMarquee = leftMarquee;
 
-    void *rightMarquee = MiningGame_operator_new(0x24);
+    void *rightMarquee = ::operator new(0x24);
     MiningGame_MarqueeImage_ctor(rightMarquee, 0x4ec, this->marqueeWidth,
                                  (this->progressBarX - this->marqueeWidth) + this->progressBarWidth,
                                  this->progressBarHeight + this->progressBarY + 5, 32.0f);
@@ -389,7 +387,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     this->oreIconOffsetY = imageWidth(*canvasHolder, this->field_0x9c) / 2;
     this->oreImageHeight = MiningGame_PaintCanvas_GetImage2DHeight(*canvasHolder, this->field_0xa0);
 
-    void *oreMarquee = MiningGame_operator_new(0x24);
+    void *oreMarquee = ::operator new(0x24);
     MiningGame_MarqueeImage_ctor(oreMarquee, 0x4e4, imageWidth(*canvasHolder, this->field_0x9c) - 8, 0, 0,
                                  F(layout, 0xdc));
     this->oreMarquee = oreMarquee;

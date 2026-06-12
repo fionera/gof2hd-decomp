@@ -62,13 +62,13 @@ PlayerStation::~PlayerStation() noexcept(false)
 
     void *geometry = P(this, 0x140);
     if (geometry != 0) {
-        operator_delete(AEGeometry_destructor(geometry));
+        ::operator delete(AEGeometry_destructor(geometry));
     }
     P(this, 0x140) = 0;
 
     geometry = P(this, 0x14c);
     if (geometry != 0) {
-        operator_delete(AEGeometry_destructor(geometry));
+        ::operator delete(AEGeometry_destructor(geometry));
     }
     P(this, 0x14c) = 0;
 
@@ -77,7 +77,7 @@ PlayerStation::~PlayerStation() noexcept(false)
         ArrayReleaseClasses_BoundingVolumePtr(volumes);
         volumes = P(this, 0x130);
         if (volumes != 0) {
-            operator_delete(Array_BoundingVolumePtr_destructor(volumes));
+            ::operator delete(Array_BoundingVolumePtr_destructor(volumes));
         }
     }
     P(this, 0x130) = 0;
@@ -257,10 +257,10 @@ PlayerStation::PlayerStation(Station *station)
     int stationIndex = Station_getIndex(station);
     this->stationIndex = stationIndex;
 
-    void *reader = operator_new(1);
+    void *reader = ::operator new(1);
     FileRead_constructor(reader);
     void *collision = ((FileRead *)(reader))->loadStationCollision(stationIndex);
-    operator_delete(FileRead_destructor(reader));
+    ::operator delete(FileRead_destructor(reader));
 
     void *status = P(Status_holder, 0x0);
     int alienOrbit = ((Status *)(status))->inAlienOrbit();
@@ -270,23 +270,23 @@ PlayerStation::PlayerStation(Station *station)
 
     if ((uint32_t)(stationIndex - 0x6d) > 2 && collision == 0) {
         if (alienOrbit == 0) {
-            void *root = operator_new(0xc0);
+            void *root = ::operator new(0xc0);
             AEGeometry_constructor(root, 0x4034, canvas, false);
             *rootSlot = root;
-            void *child = operator_new(0xc0);
+            void *child = ::operator new(0xc0);
             AEGeometry_constructor(child, 0x4037, canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
-            void *child2 = operator_new(0xc0);
+            void *child2 = ::operator new(0xc0);
             AEGeometry_constructor(child2, 0x403a, canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
-            operator_delete(AEGeometry_destructor(child));
-            operator_delete(AEGeometry_destructor(child2));
-            reader = operator_new(1);
+            ::operator delete(AEGeometry_destructor(child));
+            ::operator delete(AEGeometry_destructor(child2));
+            reader = ::operator new(1);
             FileRead_constructor(reader);
             collision = ((FileRead *)(reader))->loadStationCollision(0x3e8);
-            operator_delete(FileRead_destructor(reader));
+            ::operator delete(FileRead_destructor(reader));
         } else if (((Status *)(status))->dlc1Won() != 0) {
-            void *root = operator_new(0xc0);
+            void *root = ::operator new(0xc0);
             AEGeometry_constructor(root, 0x4220, canvas, false);
             *rootSlot = root;
             local_64 = -1.0f;
@@ -297,10 +297,10 @@ PlayerStation::PlayerStation(Station *station)
             AbyssEngine::PaintCanvas::TransformCreate(canvas, local_58 + 1);
             AbyssEngine::PaintCanvas::TransformAddMesh(canvas, local_58[1], 0x4222, true);
             ((AEGeometry *)(*rootSlot))->addChild(local_58[1]);
-            reader = operator_new(1);
+            reader = ::operator new(1);
             FileRead_constructor(reader);
             collision = ((FileRead *)(reader))->loadStationCollision(0x3eb);
-            operator_delete(FileRead_destructor(reader));
+            ::operator delete(FileRead_destructor(reader));
             void *transform = AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0xc));
             void *transformAgain =
                 AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0xc));
@@ -315,31 +315,31 @@ PlayerStation::PlayerStation(Station *station)
             Transform_UpdatePtr(transform, F<uint32_t>(transformAgain, 0xf8),
                                 F<uint32_t>(transformAgain, 0xfc), 0);
         } else {
-            void *root = operator_new(0xc0);
+            void *root = ::operator new(0xc0);
             AEGeometry_constructor(root, 0x403b, canvas, false);
             *rootSlot = root;
-            void *child = operator_new(0xc0);
+            void *child = ::operator new(0xc0);
             AEGeometry_constructor(child, 0x403e, canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
-            void *child2 = operator_new(0xc0);
+            void *child2 = ::operator new(0xc0);
             AEGeometry_constructor(child2, 0x4041, canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
-            operator_delete(AEGeometry_destructor(child));
-            operator_delete(AEGeometry_destructor(child2));
-            reader = operator_new(1);
+            ::operator delete(AEGeometry_destructor(child));
+            ::operator delete(AEGeometry_destructor(child2));
+            reader = ::operator new(1);
             FileRead_constructor(reader);
             collision = ((FileRead *)(reader))->loadStationCollision(0x3e9);
-            operator_delete(FileRead_destructor(reader));
+            ::operator delete(FileRead_destructor(reader));
         }
     }
 
     if (*rootSlot == 0) {
         if ((uint32_t)(stationIndex - 0x6d) < 3) {
-            void *root = operator_new(0xc0);
+            void *root = ::operator new(0xc0);
             AEGeometry_constructor(root, 0x5254, canvas, false);
             *rootSlot = root;
         } else {
-            void *root = operator_new(0xc0);
+            void *root = ::operator new(0xc0);
             AEGeometry_constructor(root, (uint16_t)(stationIndex + 21000), canvas, false);
             *rootSlot = root;
         }
@@ -348,7 +348,7 @@ PlayerStation::PlayerStation(Station *station)
         uint32_t race = system == 0 ? 9u : (uint32_t)SolarSystem_getRace(system);
         stationIndex = this->stationIndex;
         if (stationIndex == 0x65) {
-            void *root = operator_new(0xc0);
+            void *root = ::operator new(0xc0);
             AEGeometry_constructor(root, 0x4220, canvas, false);
             *rootSlot = root;
             local_64 = -1.0f;
@@ -376,26 +376,26 @@ PlayerStation::PlayerStation(Station *station)
             }
         } else if ((uint32_t)(stationIndex - 0x6d) < 2 ||
                    (stationIndex == 0x6f && ((Status *)(status))->getCurrentCampaignMission() > 0x5e)) {
-            void *root = operator_new(0xc0);
+            void *root = ::operator new(0xc0);
             AEGeometry_constructor(root, 0x4953, canvas, false);
             *rootSlot = root;
-            void *child = operator_new(0xc0);
+            void *child = ::operator new(0xc0);
             AEGeometry_constructor(child, 0x4954, canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
-            void *child2 = operator_new(0xc0);
+            void *child2 = ::operator new(0xc0);
             AEGeometry_constructor(child2, 0x4955, canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
-            void *child3 = operator_new(0xc0);
+            void *child3 = ::operator new(0xc0);
             AEGeometry_constructor(child3, 0x4956, canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child3, 0xc));
             if (collision != 0) {
-                operator_delete((Array_int_destructor(collision), collision));
+                ::operator delete((Array_int_destructor(collision), collision));
             }
-            reader = operator_new(1);
+            reader = ::operator new(1);
             FileRead_constructor(reader);
             collision = ((FileRead *)(reader))->loadStaticCollision(stationIndex);
             FileRead_destructor(reader);
-            operator_delete(reader);
+            ::operator delete(reader);
         } else if (stationIndex == 100) {
             int mission = ((Status *)(status))->getCurrentCampaignMission();
             int dlcWon = ((Status *)(status))->dlc1Won();
@@ -406,7 +406,7 @@ PlayerStation::PlayerStation(Station *station)
             uint16_t mesh1 = (mission == 0x50 || dlcWon != 0) ? 0x422a : 0x4228;
             uint16_t mesh2 = mission == 0x50 ? 0x3820 : (dlcWon != 0 ? 0x3824 : 0x4224);
             uint16_t mesh3 = mission == 0x50 ? 0x3821 : (dlcWon != 0 ? 0x3825 : 0x4225);
-            void *root = operator_new(0xc0);
+            void *root = ::operator new(0xc0);
             AEGeometry_constructor(root, rootMesh, canvas, false);
             *rootSlot = root;
             local_64 = 0xffffffffu;
@@ -427,12 +427,12 @@ PlayerStation::PlayerStation(Station *station)
                 ((AbyssEngine::Transform *)(AbyssEngine::PaintCanvas::TransformGetTransform(canvas, local_58[1])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
                 ((AbyssEngine::Transform *)(AbyssEngine::PaintCanvas::TransformGetTransform(canvas, local_58[0])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
                 if (collision != 0) {
-                    operator_delete((Array_int_destructor(collision), collision));
+                    ::operator delete((Array_int_destructor(collision), collision));
                 }
-                reader = operator_new(1);
+                reader = ::operator new(1);
                 FileRead_constructor(reader);
                 collision = ((FileRead *)(reader))->loadStationCollision(0x3ed);
-                operator_delete(FileRead_destructor(reader));
+                ::operator delete(FileRead_destructor(reader));
             } else {
                 local_4c = 0x4226;
                 local_48 = 0xf72c2200;
@@ -441,33 +441,33 @@ PlayerStation::PlayerStation(Station *station)
                 ((AEGeometry *)(*rootSlot))->setLodChildMeshes(&local_4e);
             }
         } else if ((race | 2) == 2 || race == 3) {
-            void *child = operator_new(0xc0);
+            void *child = ::operator new(0xc0);
             AEGeometry_constructor(child, (uint16_t)(stationIndex + 0x5528), canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child, 0xc));
-            void *child2 = operator_new(0xc0);
+            void *child2 = ::operator new(0xc0);
             AEGeometry_constructor(child2, (uint16_t)(this->stationIndex + 22000), canvas,
                                    false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child2, 0xc));
             if (race == 3 && stationIndex == 0x6c) {
-                void *extra = operator_new(0xc0);
+                void *extra = ::operator new(0xc0);
                 AEGeometry_constructor(extra, 0x5974, canvas, false);
                 ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x164 = F<uint32_t>(extra, 0xc);
-                extra = operator_new(0xc0);
+                extra = ::operator new(0xc0);
                 AEGeometry_constructor(extra, 0x5975, canvas, false);
                 ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x168 = F<uint32_t>(extra, 0xc);
-                extra = operator_new(0xc0);
+                extra = ::operator new(0xc0);
                 AEGeometry_constructor(extra, 0x5976, canvas, false);
                 ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x16c = F<uint32_t>(extra, 0xc);
-                extra = operator_new(0xc0);
+                extra = ::operator new(0xc0);
                 AEGeometry_constructor(extra, 0x5977, canvas, false);
                 ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(extra, 0xc));
                 this->field_0x170 = F<uint32_t>(extra, 0xc);
             }
-            operator_delete(AEGeometry_destructor(child));
-            operator_delete(AEGeometry_destructor(child2));
+            ::operator delete(AEGeometry_destructor(child));
+            ::operator delete(AEGeometry_destructor(child2));
         }
     }
 
@@ -476,7 +476,7 @@ PlayerStation::PlayerStation(Station *station)
         local_64 = 0.0f;
         local_60 = 0.0f;
         local_5c = 0.0f;
-        void *volumes = operator_new(0xc);
+        void *volumes = ::operator new(0xc);
         Array_BoundingVolumePtr_constructor(volumes);
         P(this, 0x130) = volumes;
         ArraySetLength_BoundingVolumePtr(count, volumes);
@@ -491,7 +491,7 @@ PlayerStation::PlayerStation(Station *station)
                 local_5c = (float)entry[5];
                 local_60 = (float)entry[6];
                 Vector_scale((Vector *)&local_64, local_60);
-                void *volume = operator_new(0x2c);
+                void *volume = ::operator new(0x2c);
                 BoundingAAB_constructor(volume, local_64 + local_64, (float)entry[3],
                                         local_60 + local_60, (float)entry[2],
                                         local_5c + local_5c, (float)-data[next], 0.0f, 0.0f,
@@ -506,7 +506,7 @@ PlayerStation::PlayerStation(Station *station)
                 if (local_64 < 0.0f) {
                     Vector_scale((Vector *)&local_64, local_64);
                 }
-                void *volume = operator_new(0x48);
+                void *volume = ::operator new(0x48);
                 BoundingSphere_constructor(volume, local_64, (float)entry[3], (float)entry[2],
                                            radius, 0.0f, 0.0f, 0.0f);
                 next = cursor + 5;
@@ -515,7 +515,7 @@ PlayerStation::PlayerStation(Station *station)
             cursor = next;
         }
         ArrayRelease_int(collision);
-        operator_delete((Array_int_destructor(collision), collision));
+        ::operator delete((Array_int_destructor(collision), collision));
     }
 
     this->field_0x71 = 1;
@@ -572,7 +572,7 @@ bool PlayerStation::outerCollide(float x, float y, float z)
 // Emitted as a named function so it doesn't collide with the in-place ~PlayerStation() above.
 void PlayerStation::deleting_dtor() {
     PlayerStation *self = this;
-    operator_delete(PlayerStation_destructor_body(self));
+    ::operator delete(PlayerStation_destructor_body(self));
 }
 
 // ---- translate_122766.cpp ----

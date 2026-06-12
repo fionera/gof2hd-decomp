@@ -107,7 +107,7 @@ int PlayerAsteroid::getQualityFrameIndex()
 // ---- _PlayerAsteroid_e29b4.cpp ----
 void _ZN14PlayerAsteroidD0Ev(PlayerAsteroid *self)
 {
-    return operator_delete(PlayerAsteroid_complete_dtor(self));
+    return ::operator delete(PlayerAsteroid_complete_dtor(self));
 }
 
 // ---- outerCollide_e306e.cpp ----
@@ -195,7 +195,7 @@ void PlayerAsteroid::update(int delta)
             }
 
             if (spawn) {
-                ArrayInt *items = (ArrayInt *)operator_new(0xc);
+                ArrayInt *items = (ArrayInt *)::operator new(0xc);
                 ArrayInt_ctor(items);
                 this->loot = items;
                 int item = this->asteroidIndex;
@@ -311,7 +311,7 @@ __attribute__((visibility("hidden"))) extern int *PlayerAsteroid_someCounter;
 PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType, int asteroidIndex,
                                const Vector &position, float scaling, int quality)
 {
-    Player *player = (Player *)operator_new(0x114);
+    Player *player = (Player *)::operator new(0x114);
     ((Player *)(player))->ctor(0x5dc, 0x1e, 0, 0, 0);
 
     this->vtable = (char *)PlayerAsteroid_vtable + 8;
@@ -337,7 +337,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->minable = quality > 3;
     this->lastHitpoints = hitpoints;
 
-    Explosion *explosion = (Explosion *)operator_new(0x68);
+    Explosion *explosion = (Explosion *)::operator new(0x68);
     Explosion_ctor(explosion, explosionType + 2);
     this->explosion = explosion;
     ((Explosion *)(explosion))->setScaling(scaling);
@@ -469,7 +469,7 @@ void *_ZN14PlayerAsteroidD1Ev(PlayerAsteroid *self)
     self->vtable = (char *)PlayerAsteroid_vtable + 8;
     Explosion *explosion = self->explosion;
     if (explosion != 0) {
-        operator_delete(Explosion_dtor(explosion));
+        ::operator delete(Explosion_dtor(explosion));
     }
     self->explosion = 0;
     return KIPlayer_dtor(self);

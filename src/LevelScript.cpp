@@ -50,7 +50,6 @@ extern "C" int Station_getIndex(void *station);
 extern "C" void *StarSystem_getPlanetTargets(void *starSystem);
 extern "C" void Player_setAutoPilotTarget(void *player, void *target);
 extern "C" void *Explosion_dtor(void *explosion);
-extern "C" void operator_delete(void *ptr);
 extern "C" void *KIPlayer_getRoute(void *player);
 extern "C" void *Level_getActiveMessages(Level *level);
 extern "C" void TargetFollowCamera_update(TargetFollowCamera *camera, float delta, int a, int b);
@@ -172,76 +171,76 @@ LevelScript::~LevelScript()
     void *geometry = P(this, 0xdc);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xdc) = 0;
 
     geometry = P(this, 0xd8);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xd8) = 0;
 
     geometry = P(this, 0xb8);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xb8) = 0;
 
     geometry = P(this, 0xbc);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xbc) = 0;
 
     geometry = P(this, 0xc0);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xc0) = 0;
 
     geometry = P(this, 0xc4);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xc4) = 0;
 
     geometry = P(this, 0xac);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xac) = 0;
 
     geometry = P(this, 0xb0);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xb0) = 0;
 
     geometry = P(this, 0xb4);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xb4) = 0;
 
     void *explosion = P(this, 0xc8);
     if (explosion != 0) {
-        operator_delete(Explosion_dtor(explosion));
+        ::operator delete(Explosion_dtor(explosion));
     }
     P(this, 0xc8) = 0;
 
     geometry = P(this, 0xcc);
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
-        operator_delete(geometry);
+        ::operator delete(geometry);
     }
     P(this, 0xcc) = 0;
 }

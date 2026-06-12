@@ -26,8 +26,6 @@
 struct Status;
 
 
-extern "C" void *operator_new(unsigned int sz);
-extern "C" void operator_delete(void *p);
 extern "C" void ArrayInt_release(Array<int> *a);
 extern "C" void ArrayInt_add(int val, Array<int> *a);
 extern "C" void Globals_startNewSoundResourceList_tail(int val, Array<int> *a);
@@ -70,8 +68,6 @@ int      nextInt_71ad0(AbyssEngine::AERandom *self, int bound);
 extern "C" int idiv(int a, int b);
 extern "C" void Globals_buildAgentMissionText(void *out, void *agent, int offer);
 extern "C" int AEString_compare(void *a, void *b);
-extern "C" unsigned short *operator_new_arr(unsigned int n);
-extern "C" void operator_delete_arr(void *p);
 extern "C" void AEGeometry_ctor(void *self, int resId, void *canvas, int flag);
 extern "C" void PaintCanvas_TransformCreate(void *canvas, unsigned *out);
 extern "C" void PaintCanvas_TransformAddMesh(unsigned canvas, unsigned short t, int flag);
@@ -178,7 +174,7 @@ void Globals_startNewSoundResourceList(void *self)
     if (((Globals*)self)->field_0x4 != 0) {
         ArrayInt_release(((Globals*)self)->field_0x4);
         if (((Globals*)self)->field_0x4 != 0) {
-            operator_delete(ArrayInt_dtor(((Globals*)self)->field_0x4));
+            ::operator delete(ArrayInt_dtor(((Globals*)self)->field_0x4));
         }
     }
     ((Globals*)self)->field_0x4 = 0;
@@ -284,11 +280,11 @@ extern void *const gStationRng __attribute__((visibility("hidden")));
 
 int Globals_getRandomStation()
 {
-    FileRead *f = (FileRead *)operator_new(1);
+    FileRead *f = (FileRead *)::operator new(1);
     FileRead_ctor(f);
     int which = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gStationRng, 0x87);
     int r = (int)(long)f->loadStation(which);
-    operator_delete(FileRead_dtor(f));
+    ::operator delete(FileRead_dtor(f));
     return r;
 }
 
@@ -323,7 +319,7 @@ void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
     int *guardP = *(int **)gGLA_guardHolder;
     volatile int saved = *guardP;
 
-    void *line = operator_new(0xc);
+    void *line = ::operator new(0xc);
     AEString_default_ctor(line);
 
     char work[12];
@@ -352,7 +348,7 @@ void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
 
     ArraySetLength_Str(count, out);
     for (unsigned i = 0; i < count; i++) {
-        void *s = operator_new(0xc);
+        void *s = ::operator new(0xc);
         AEString_default_ctor(s);
         (*out)[i] = s;
     }
@@ -488,7 +484,7 @@ void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width
     int **canvas = *(int ***)gGBS_canvas;
     int w = PaintCanvas_GetTextWidth(**canvas, *strPtr);
     if (width < w) {
-        void *line = operator_new(0xc);
+        void *line = ::operator new(0xc);
         AEString_default_ctor(line);
 
         int font = (int)(long)*strPtr;
@@ -938,7 +934,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         goto done;
     }
     if (kind == 0xe || kind == 0xd) {
-        void *geom = operator_new(0xc0);
+        void *geom = ::operator new(0xc0);
         int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
         AEGeometry_ctor(geom, resId, *canvasP, 0);
         unsigned t0 = 0xffffffff;
@@ -964,7 +960,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
 
     // Generic path: per-ship table-driven build indexed by `kind`.
     {
-        void *geom = operator_new(0xc0);
+        void *geom = ::operator new(0xc0);
         AEGeometry_ctor(geom, gGSG_resTable[kind], *canvasP, 1);
         unsigned short mesh = gGSG_meshTable[kind];
         unsigned mainT = 0xffffffff;
@@ -1015,9 +1011,9 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
             if (lod[i] != 0xffff) count++;
         }
         if (count != 0) {
-            unsigned short *meshes = operator_new_arr(count << 1);
-            unsigned *ids = (unsigned *)operator_new_arr(count * 4);
-            int *dist = (int *)operator_new_arr(count * 4);
+            unsigned short *meshes = (unsigned short *)::operator new[](count << 1);
+            unsigned *ids = (unsigned *)::operator new[](count * 4);
+            int *dist = (int *)::operator new[](count * 4);
             int d = 5000;
             unsigned *idp = ids;
             const unsigned *src = lod;
@@ -1047,15 +1043,15 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
                 if (childSrc[i] != 0xffff) childCount++;
             }
             if (childCount != 0) {
-                unsigned short *childMeshes = operator_new_arr(childCount << 1);
+                unsigned short *childMeshes = (unsigned short *)::operator new[](childCount << 1);
                 for (int i = 0; i != childCount; i++) {
                     childMeshes[i] = (unsigned short)childSrc[i];
                 }
                 ((AEGeometry *)(geom))->setLodChildMeshes(childMeshes);
-                operator_delete_arr(childMeshes);
+                ::operator delete[](childMeshes);
             }
-            operator_delete_arr(meshes);
-            operator_delete_arr(dist);
+            ::operator delete[](meshes);
+            ::operator delete[](dist);
         }
         ((AEGeometry *)(geom))->setLodLastVisibleDistance(lastVisibleDist);
     }
@@ -1220,10 +1216,10 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
     int *guardP = *(int **)gGWC_guardHolder;
     volatile int saved = *guardP;
 
-    void *fr = operator_new(1);
+    void *fr = ::operator new(1);
     FileRead_ctor(fr);
     int *data = (int *)((FileRead *)fr)->loadWreckCollision(kind);
-    operator_delete(FileRead_dtor(fr));
+    ::operator delete(FileRead_dtor(fr));
 
     void *outArr = 0;
     if (data != 0) {
@@ -1232,7 +1228,7 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
         float v[3] = {0, 0, 0};       // local_40..local_38 vector
         float c[3] = {0, 0, 0};       // local_34/2c/30 scalar parts
 
-        outArr = operator_new(0xc);
+        outArr = ::operator new(0xc);
         ArrayBV_ctor(outArr);
         ArraySetLength_BV((unsigned)count, outArr);
 
@@ -1254,7 +1250,7 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
                     mag = VectorScale(c, mag);
                     VectorScale(v, mag);
                 }
-                bound = operator_new(0x2c);
+                bound = ::operator new(0x2c);
                 BoundingAAB_ctor(bound, v[2] + v[2], c[1] + c[1], v[1] + v[1], c[2], c[0], v[0]);
                 pos += 7;
             } else if (kindWord == 0) {
@@ -1272,7 +1268,7 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
                     mag = VectorScale(c, mag);
                     VectorScale(v, mag);
                 }
-                bound = operator_new(0x48);
+                bound = ::operator new(0x48);
                 BoundingSphere_ctor(bound, c[2], c[1], c[0], v[0]);
                 pos += 5;
             } else {
@@ -1283,7 +1279,7 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
         }
 
         ArrayRelease_int(data);
-        operator_delete(ArrayInt_dtor(data));
+        ::operator delete(ArrayInt_dtor(data));
     }
 
     return;
@@ -1441,36 +1437,36 @@ void * Globals::dtor() {
     }
     void **galSlot = gG_galaxy;
     if (*galSlot != 0) {
-        operator_delete(Galaxy_dtor(*galSlot));
+        ::operator delete(Galaxy_dtor(*galSlot));
     }
     *galSlot = 0;
     void **statSlot = gG_status;
     if (*statSlot != 0) {
-        operator_delete(Status_dtor(*statSlot));
+        ::operator delete(Status_dtor(*statSlot));
     }
     *statSlot = 0;
     void **gtSlot = gG_gameText;
     if (*gtSlot != 0) {
-        operator_delete(GameText_dtor(*gtSlot));
+        ::operator delete(GameText_dtor(*gtSlot));
     }
     *gtSlot = 0;
     void **rngSlot = gG_random;
     if (*rngSlot != 0) {
-        operator_delete(AERandom_dtor(*rngSlot));
+        ::operator delete(AERandom_dtor(*rngSlot));
     }
     *rngSlot = 0;
     void **laySlot = gG_layout;
     if (*laySlot != 0) {
-        operator_delete(Layout_dtor(*laySlot));
+        ::operator delete(Layout_dtor(*laySlot));
     }
     *laySlot = 0;
     void **genSlot = gG_generator;
     if (*genSlot != 0) {
-        operator_delete(Generator_dtor(*genSlot));
+        ::operator delete(Generator_dtor(*genSlot));
     }
     *genSlot = 0;
     if (*rhSlot != 0) {
-        operator_delete(((RecordHandler *)(*rhSlot))->dtor());
+        ::operator delete(((RecordHandler *)(*rhSlot))->dtor());
     }
     *rhSlot = 0;
     void **polySlot = gG_polyObj;
@@ -1482,14 +1478,14 @@ void * Globals::dtor() {
     *polySlot = 0;
     void **fmodSlot = gG_fmod;
     if (*fmodSlot != 0) {
-        operator_delete(FModSound_dtor(*fmodSlot));
+        ::operator delete(FModSound_dtor(*fmodSlot));
     }
     *fmodSlot = 0;
     void **itemSlot = gG_items;
     if (*itemSlot != 0) {
         ArrayReleaseClasses_Item(*itemSlot);
         if (*itemSlot != 0) {
-            operator_delete(ArrayItem_dtor(*itemSlot));
+            ::operator delete(ArrayItem_dtor(*itemSlot));
         }
     }
     *itemSlot = 0;
@@ -1497,26 +1493,26 @@ void * Globals::dtor() {
     if (*shipSlot != 0) {
         ArrayReleaseClasses_Ship(*shipSlot);
         if (*shipSlot != 0) {
-            operator_delete(ArrayShip_dtor(*shipSlot));
+            ::operator delete(ArrayShip_dtor(*shipSlot));
         }
     }
     *shipSlot = 0;
     if (*galSlot != 0) {
-        operator_delete(Galaxy_dtor(*galSlot));
+        ::operator delete(Galaxy_dtor(*galSlot));
     }
     *galSlot = 0;
     void **achSlot = gG_achievements;
     if (*achSlot != 0) {
-        operator_delete(Achievements_dtor(*achSlot));
+        ::operator delete(Achievements_dtor(*achSlot));
     }
     *achSlot = 0;
     if (*statSlot != 0) {
-        operator_delete(Status_dtor(*statSlot));
+        ::operator delete(Status_dtor(*statSlot));
     }
     *statSlot = 0;
     void **ifSlot = gG_imageFactory;
     if (*ifSlot != 0) {
-        operator_delete(ImageFactory_dtor(*ifSlot));
+        ::operator delete(ImageFactory_dtor(*ifSlot));
     }
     *ifSlot = 0;
 
@@ -1524,7 +1520,7 @@ void * Globals::dtor() {
     if (selfArr != 0) {
         ArrayRelease_int(selfArr);
         if (self->field_0x4 != 0) {
-            operator_delete(ArrayInt_dtor(self->field_0x4));
+            ::operator delete(ArrayInt_dtor(self->field_0x4));
         }
     }
     self->field_0x4 = 0;
@@ -1927,7 +1923,7 @@ int Globals::init(void *app) {
     Globals *self = this;
     int *missionSlot = *gI_mission;
     if (*missionSlot == 0) {
-        void *m = operator_new(0x78);
+        void *m = ::operator new(0x78);
         Mission_ctor(m);
         *missionSlot = (int)(long)m;
     }
@@ -1952,24 +1948,24 @@ int Globals::init(void *app) {
     *flagFFFF = -1;
     *uVar7slot = (lang == 0) ? 6 : 0xc;
 
-    void *galaxy = operator_new(8);
+    void *galaxy = ::operator new(8);
     Galaxy_ctor(galaxy);
     **gI_galaxy = galaxy;
-    void *ach = operator_new(0x28);
+    void *ach = ::operator new(0x28);
     Achievements_ctor(ach);
     **gI_achieve = ach;
-    void *status = operator_new(0x1f0);
+    void *status = ::operator new(0x1f0);
     Status_ctor(status);
     **gI_status = status;
-    void *imgFac = operator_new(0xc);
+    void *imgFac = ::operator new(0xc);
     ((ImageFactory *)(imgFac))->ctor();
     **gI_imgFac = imgFac;
 
-    void *fr = operator_new(1);
+    void *fr = ::operator new(1);
     FileRead_ctor(fr);
     **gI_items = (int *)(long)((FileRead *)fr)->loadItemsBinary();
     **gI_ships = (int *)(long)((FileRead *)fr)->loadShipsBinary();
-    operator_delete(FileRead_dtor(fr));
+    ::operator delete(FileRead_dtor(fr));
 
     int *engineSlot = *gI_engineSlot;
     if (*engineSlot == 0) {
@@ -1978,23 +1974,23 @@ int Globals::init(void *app) {
     **gI_appMgr = app;
     ((ApplicationManager *)(app))->VibrateEnable(0);
 
-    void *rng = operator_new(8);
+    void *rng = ::operator new(8);
     AERandom_ctor(rng);
     **gI_ctxSlot = self;
     **gI_random = (void *)rng;
 
-    void *gen = operator_new(1);
+    void *gen = ::operator new(1);
     Generator_ctor(gen);
     **gI_generator = gen;
 
-    void *rh = operator_new(0x2c);
+    void *rh = ::operator new(0x2c);
     ((RecordHandler *)(rh))->ctor();
     void **rhSlotP = *gI_recHandler;
     *rhSlotP = rh;
     Status_resetGame();
     ((RecordHandler *)(*rhSlotP))->loadOptions();
 
-    void *fmod = operator_new(0x243c);
+    void *fmod = ::operator new(0x243c);
     FModSound_ctor(fmod);
     void **fmodSlotP = *gI_fmod;
     *fmodSlotP = fmod;
@@ -2028,7 +2024,7 @@ int Globals::init(void *app) {
     **gI_g3824 = 0;
     **gI_g383a = 0;
 
-    void *layout = operator_new(0x414);
+    void *layout = ::operator new(0x414);
     ((Layout *)(layout))->ctor();
     **gI_layout = layout;
     ((Layout *)(layout))->reload();
@@ -2205,16 +2201,16 @@ extern void *const gPlanetRng __attribute__((visibility("hidden")));
 // delete is a regular call, not a tail call).
 String *Globals_getRandomPlanetName(String *ret)
 {
-    FileRead *f = (FileRead *)operator_new(1);
+    FileRead *f = (FileRead *)::operator new(1);
     FileRead_ctor(f);
     int which = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gPlanetRng, 0x64);
     Station *st = (Station *)(long)f->loadStation(which);
     ((Station *)(ret))->getName();
     if (st != 0) {
         ((Station *)(st))->dtor();   // dtor() returns void
-        operator_delete(st);
+        ::operator delete(st);
     }
-    operator_delete(FileRead_dtor(f));
+    ::operator delete(FileRead_dtor(f));
     return ret;
 }
 
@@ -2238,7 +2234,7 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
     int *guardP = *(int **)gGRN_guardHolder;
     volatile int saved = *guardP;
 
-    void *fr = operator_new(1);
+    void *fr = ::operator new(1);
     FileRead_ctor(fr);
     Array<void *> *first = (Array<void *> *)((FileRead *)fr)->loadNamesBinary(kind, both, 1);
     Array<void *> *last = (Array<void *> *)((FileRead *)fr)->loadNamesBinary(kind, both, 0);
@@ -2259,13 +2255,13 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
 
     if (first != 0) {
         ArrayReleaseClasses_Str(first);
-        operator_delete(ArrayStr_dtor(first));
+        ::operator delete(ArrayStr_dtor(first));
     }
     if (last != 0) {
         ArrayReleaseClasses_Str(last);
-        operator_delete(ArrayStr_dtor(last));
+        ::operator delete(ArrayStr_dtor(last));
     }
-    operator_delete(FileRead_dtor(fr));
+    ::operator delete(FileRead_dtor(fr));
 
     // local_34 holds the high field of firstStr (size); when 0 (empty), just copy firstStr.
     if (*((int *)firstStr + 2) == 0) {

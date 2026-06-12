@@ -12,11 +12,10 @@
 // (operator delete). Symbol demangles to contain "~SentryGun".
 
 extern "C" SentryGun *ObjectGun_dtor(SentryGun *self);   // ObjectGun::~ObjectGun(ObjectGun*)
-extern "C" void SentryGun_operator_delete(void *p);      // tail thunk
 
 void _ZN9SentryGunD0Ev(SentryGun *self)
 {
-    return SentryGun_operator_delete(ObjectGun_dtor(self));
+    return ::operator delete(ObjectGun_dtor(self));
 }
 
 // ---- SentryGun_15c380.cpp ----

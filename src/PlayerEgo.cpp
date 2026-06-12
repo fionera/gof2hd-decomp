@@ -74,7 +74,6 @@ extern "C" void* PaintCanvas_MeshGetPointer(void* canvas, unsigned int mesh);
 // (int|void* hud, int ev, PlayerEgo*, [int])
 extern "C" void  TargetFollowCamera_setActive(void* cam, int active);
 extern "C" void* AEGeometry_newMesh(int meshId, void* canvas, bool b);
-extern "C" void  operator_delete_(void*) noexcept;
 
 extern "C" void PlayerEgo_setVisible_ext();
 extern "C" void* g_boost_fmod;
@@ -97,7 +96,6 @@ extern "C" int PlayerEgo_getCurrentMiningAmount_ext(int);
 extern "C" void PlayerEgo_hackingRotateLCW_ext(int, int);
 extern "C" void PlayerEgo_ResumeEngineSound_ext(void*, int);
 extern "C" void ParticleSystemManager_enableSystemEmit3(void*, int, int);
-extern "C" void* operator_new_(unsigned);
 extern "C" void Explosion_ctor(void*, int);
 extern "C" void Player_setActive_(int);
 extern "C" void PlayerEgo_explode_ext(PlayerEgo*, int);
@@ -638,7 +636,7 @@ void PlayerEgo::explode() {
   ParticleSystemManager_enableSystemEmit3(P(P(self, 0xc), 0x74), I(self, 0x2fc), 1);
   if (I(self, 0x8c) != 0) return;
   TargetFollowCamera_setActive(P(self, 0x88), 0);
-  void* e = operator_new_(0x68);
+  void* e = ::operator new(0x68);
   Explosion_ctor(e, 0);
   int pl = I(self, 0);
   I(self, 0x8c) = (int)(intptr_t)e;
@@ -1132,17 +1130,17 @@ void PlayerEgo::checkForTurret() {
     if (muzzle != -1) {
         void *g = AEGeometry_newMesh((unsigned short)muzzle, canvas, false);
         ((AEGeometry *)(P(self, 0xf4)))->addChild((uint32_t)(uintptr_t)g);
-        operator_delete_(AEGeometry_dtor(g));
+        ::operator delete(AEGeometry_dtor(g));
     }
     if (child != -1) {
         void *g = AEGeometry_newMesh((unsigned short)child, canvas, false);
         ((AEGeometry *)(P(self, 0x34)))->addChild((uint32_t)(uintptr_t)g);
-        operator_delete_(AEGeometry_dtor(g));
+        ::operator delete(AEGeometry_dtor(g));
     }
     if (extra != -1) {
         void *g = AEGeometry_newMesh((unsigned short)extra, canvas, false);
         ((AEGeometry *)(P(self, 0x34)))->addChild((uint32_t)(uintptr_t)g);
-        operator_delete_(AEGeometry_dtor(g));
+        ::operator delete(AEGeometry_dtor(g));
     }
     if (extra2 != -1) {
         void *g = AEGeometry_newMesh((unsigned short)extra2, canvas, false);
@@ -1505,7 +1503,7 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
                 P(self, 0x380) = 0;
             }
             if (P(self, 0x1e8) != 0) {
-                operator_delete_(HackingGame_dtor(P(self, 0x1e8)));
+                ::operator delete(HackingGame_dtor(P(self, 0x1e8)));
                 P(self, 0x1e8) = 0;
                 ((Hud *)(hud))->setHackingGameActive(false);
             }
@@ -1751,44 +1749,44 @@ static inline void *&PP(void *self, uint32_t off) { return *(void **)((char *)se
 __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
 {
     void *self = this;
-    if (PP(self, 0x0))   operator_delete_(Player_dtor(PP(self, 0x0)));
+    if (PP(self, 0x0))   ::operator delete(Player_dtor(PP(self, 0x0)));
     PP(self, 0x0) = 0;
-    if (PP(self, 0x4))   operator_delete_(AEGeometry_dtor(PP(self, 0x4)));
+    if (PP(self, 0x4))   ::operator delete(AEGeometry_dtor(PP(self, 0x4)));
     PP(self, 0x4) = 0;
-    if (PP(self, 0x8))   operator_delete_(AEGeometry_dtor(PP(self, 0x8)));
+    if (PP(self, 0x8))   ::operator delete(AEGeometry_dtor(PP(self, 0x8)));
     PP(self, 0x8) = 0;
-    if (PP(self, 0xdc))  operator_delete_(AEGeometry_dtor(PP(self, 0xdc)));
+    if (PP(self, 0xdc))  ::operator delete(AEGeometry_dtor(PP(self, 0xdc)));
     PP(self, 0xdc) = 0;
-    if (PP(self, 0x28))  operator_delete_(AEGeometry_dtor(PP(self, 0x28)));
+    if (PP(self, 0x28))  ::operator delete(AEGeometry_dtor(PP(self, 0x28)));
     PP(self, 0x28) = 0;
-    if (PP(self, 0xfc))  operator_delete_(Route_dtor(PP(self, 0xfc)));
+    if (PP(self, 0xfc))  ::operator delete(Route_dtor(PP(self, 0xfc)));
     PP(self, 0xfc) = 0;
-    if (PP(self, 0x178)) operator_delete_(AEGeometry_dtor(PP(self, 0x178)));
+    if (PP(self, 0x178)) ::operator delete(AEGeometry_dtor(PP(self, 0x178)));
     PP(self, 0x178) = 0;
-    if (PP(self, 0x17c)) operator_delete_(AEGeometry_dtor(PP(self, 0x17c)));
+    if (PP(self, 0x17c)) ::operator delete(AEGeometry_dtor(PP(self, 0x17c)));
     PP(self, 0x17c) = 0;
-    if (PP(self, 0x2c))  operator_delete_(AEGeometry_dtor(PP(self, 0x2c)));
+    if (PP(self, 0x2c))  ::operator delete(AEGeometry_dtor(PP(self, 0x2c)));
     PP(self, 0x2c) = 0;
-    if (PP(self, 0x30))  operator_delete_(AEGeometry_dtor(PP(self, 0x30)));
+    if (PP(self, 0x30))  ::operator delete(AEGeometry_dtor(PP(self, 0x30)));
     PP(self, 0x30) = 0;
-    if (PP(self, 0x34))  operator_delete_(AEGeometry_dtor(PP(self, 0x34)));
+    if (PP(self, 0x34))  ::operator delete(AEGeometry_dtor(PP(self, 0x34)));
     PP(self, 0x34) = 0;
-    if (PP(self, 0x19c)) operator_delete_(AEGeometry_dtor(PP(self, 0x19c)));
+    if (PP(self, 0x19c)) ::operator delete(AEGeometry_dtor(PP(self, 0x19c)));
     PP(self, 0x19c) = 0;
-    if (PP(self, 0x1b4)) operator_delete_(TractorBeam_dtor(PP(self, 0x1b4)));
+    if (PP(self, 0x1b4)) ::operator delete(TractorBeam_dtor(PP(self, 0x1b4)));
     PP(self, 0x1b4) = 0;
-    if (PP(self, 0x1e4)) operator_delete_(MiningGame_dtor(PP(self, 0x1e4)));
+    if (PP(self, 0x1e4)) ::operator delete(MiningGame_dtor(PP(self, 0x1e4)));
     PP(self, 0x1e4) = 0;
-    if (PP(self, 0x8c))  operator_delete_(Explosion_dtor(PP(self, 0x8c)));
+    if (PP(self, 0x8c))  ::operator delete(Explosion_dtor(PP(self, 0x8c)));
     PP(self, 0x8c) = 0;
-    if (PP(self, 0x90))  operator_delete_(Explosion_dtor(PP(self, 0x90)));
+    if (PP(self, 0x90))  ::operator delete(Explosion_dtor(PP(self, 0x90)));
     PP(self, 0x90) = 0;
-    if (PP(self, 0x358)) operator_delete_(EaseInOutMatrix_dtor(PP(self, 0x358)));
+    if (PP(self, 0x358)) ::operator delete(EaseInOutMatrix_dtor(PP(self, 0x358)));
     PP(self, 0x358) = 0;
     if (PP(self, 0x1b8)) {
         Array_releaseRepairBeams(PP(self, 0x1b8));
         if (PP(self, 0x1b8))
-            operator_delete_(ArrayRB_dtor(PP(self, 0x1b8)));
+            ::operator delete(ArrayRB_dtor(PP(self, 0x1b8)));
     }
     PP(self, 0x1b8) = 0;
 }
@@ -2005,7 +2003,7 @@ void PlayerEgo::dockToAsteroid(void *radar) {
         TargetFollowCamera_setActive(P(self, 0x88), true);
         Player_resetGunDelay(P(self, 0x0), 0);
         if (P(self, 0x1e4) != 0)
-            operator_delete_(MiningGame_dtor(P(self, 0x1e4)));
+            ::operator delete(MiningGame_dtor(P(self, 0x1e4)));
         P(self, 0x1e4) = 0;
         ((Radar *)(radar))->unlockAsteroid();
         I(self, 0x1c4) = 0;
@@ -2512,7 +2510,7 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
             TargetFollowCamera_useTargetsUpVector(P(self, 0x88), false);
 
             if (P(self, 0x358) != 0)
-                operator_delete_(EaseInOutMatrix_dtor(P(self, 0x358)));
+                ::operator delete(EaseInOutMatrix_dtor(P(self, 0x358)));
             P(self, 0x358) = 0;
 
             ((PlayerEgo *)(self))->getPosition();
@@ -2544,7 +2542,7 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
     }
 
     if (P(self, 0x1e8) != 0) {
-        operator_delete_(HackingGame_dtor(P(self, 0x1e8)));
+        ::operator delete(HackingGame_dtor(P(self, 0x1e8)));
         P(self, 0x1e8) = 0;
         ((Hud *)(P(self, 0x220)))->setHackingGameActive(false);
     }
@@ -2817,7 +2815,7 @@ void PlayerEgo::revive() {
     ((ParticleSystemManager *)(psm))->enableSystemRender(I(self, 0x2fc), en);
 
     if (P(self, 0x8c) != 0)
-        operator_delete_(Explosion_dtor(P(self, 0x8c)));
+        ::operator delete(Explosion_dtor(P(self, 0x8c)));
     P(self, 0x8c) = 0;
 
     TargetFollowCamera_setActive(P(self, 0x88), true);

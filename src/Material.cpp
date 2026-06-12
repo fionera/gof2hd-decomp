@@ -51,7 +51,7 @@ Material::Material(Material *other)
         if (size == 0)
             buf = 0;
         else
-            buf = operator_new_array(size | ((int)size >> 31));
+            buf = ::operator new[](size | ((int)size >> 31));
         pptr(this, 0x24) = buf;
         Vector_assign(vec, (Vector *)((char *)other + 0x68));
     }

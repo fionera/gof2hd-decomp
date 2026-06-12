@@ -61,7 +61,6 @@ extern "C" void glGetIntegerv(unsigned int name, void *out);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
 extern "C" void ShaderUpdateMaterialColor();
 extern "C" void glColor4f(float red, float green, float blue, float alpha);
-extern "C" void operator_delete(void *ptr);
 extern "C" void ArrayReleaseClasses_ShaderBaseStruct_ptr(void *array);
 void MeshRelease(Engine *self, void *meshSlot);
 extern "C" void Engine_ReleaseGL(Engine *self);
@@ -753,7 +752,7 @@ Engine::~Engine()
     ApplicationManager *manager = (ApplicationManager *)this->field_0x30;
     if (manager != 0) {
         manager->~ApplicationManager();
-        operator_delete(manager);
+        ::operator delete(manager);
     }
     this->field_0x30 = 0;
 
@@ -771,14 +770,14 @@ Engine::~Engine()
     FBOContainer *fbo = this->field_0x414;
     if (fbo != 0) {
         ((FBOContainerFull *)fbo)->~FBOContainer();
-        operator_delete(fbo);
+        ::operator delete(fbo);
     }
     this->field_0x414 = 0;
 
     fbo = this->field_0x418;
     if (fbo != 0) {
         ((FBOContainerFull *)fbo)->~FBOContainer();
-        operator_delete(fbo);
+        ::operator delete(fbo);
     }
     this->field_0x418 = 0;
 
@@ -845,7 +844,7 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
         ((ShaderInitFn *)vtable[0x08 / 4])(shader, self);
         ArrayAdd_ShaderBaseStruct_ptr(shader, (char *)self + 0x510);
         ArrayAdd_int(0, (char *)self + 0x3d8);
-        operator_delete(text);
+        ::operator delete(text);
     }
     return;
 }

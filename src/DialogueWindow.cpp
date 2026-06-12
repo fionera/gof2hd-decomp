@@ -27,8 +27,6 @@ extern "C" int Mission_getTargetStation(Mission *self);
 extern "C" void ArrayReleaseClasses_ImagePartPtr(void *self);
 extern "C" void *Array_ImagePartPtr_dtor(void *self);
 extern "C" void *ScrollTouchWindow_dtor(void *self);
-extern "C" void operator_delete(void *self);
-extern "C" void operator_delete_arr(void *self);
 extern "C" Agent *Mission_getAgent(Mission *self);
 extern "C" void Mission_setWon(Mission *self, bool won);
 extern "C" void Mission_setFailed(Mission *self, bool failed);
@@ -42,8 +40,6 @@ extern "C" void String_ctor_literal(StringSlot *self, const char *text, bool cop
 extern "C" void String_assign_slot(String *self, StringSlot *other);
 extern "C" void ScrollTouchWindow_setText4(void *self, StringSlot *style, StringSlot *text, int color);
 int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
-extern "C" void *operator_new(unsigned size);
-extern "C" void *operator_new_arr(unsigned size);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void ChoiceWindow_ctor(void *self);
 extern "C" void TouchButton_ctor(void *self, String *text, int type, int x, int y, int width, int icon, int style);
@@ -132,33 +128,33 @@ DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
         ArrayReleaseClasses_ImagePartPtr(p);
         p = self->faceParts;
         if (p != 0) {
-            operator_delete(Array_ImagePartPtr_dtor(p));
+            ::operator delete(Array_ImagePartPtr_dtor(p));
         }
     }
     self->faceParts = 0;
 
     p = self->briefingOffsets;
-    if (p != 0) operator_delete_arr(p);
+    if (p != 0) ::operator delete[](p);
     self->briefingOffsets = 0;
 
     p = self->successOffsets;
-    if (p != 0) operator_delete_arr(p);
+    if (p != 0) ::operator delete[](p);
     self->successOffsets = 0;
 
     p = self->scrollWindow;
-    if (p != 0) operator_delete(ScrollTouchWindow_dtor(p));
+    if (p != 0) ::operator delete(ScrollTouchWindow_dtor(p));
     self->scrollWindow = 0;
 
     p = self->prevButton;
-    if (p != 0) { ((TouchButton *)(p))->dtor(); operator_delete(p); }
+    if (p != 0) { ((TouchButton *)(p))->dtor(); ::operator delete(p); }
     self->prevButton = 0;
 
     p = self->nextButton;
-    if (p != 0) { ((TouchButton *)(p))->dtor(); operator_delete(p); }
+    if (p != 0) { ((TouchButton *)(p))->dtor(); ::operator delete(p); }
     self->nextButton = 0;
 
     p = self->moreButton;
-    if (p != 0) { ((TouchButton *)(p))->dtor(); operator_delete(p); }
+    if (p != 0) { ((TouchButton *)(p))->dtor(); ::operator delete(p); }
     self->moreButton = 0;
 
     ((String *)((String *)((char *)self + 0x34)))->dtor();
@@ -295,7 +291,7 @@ void DialogueWindow::loadContent() {
     if (parts != 0) {
         ArrayReleaseClasses_ImagePartPtr(parts);
         parts = self->faceParts;
-        if (parts != 0) operator_delete(Array_ImagePartPtr_dtor(parts));
+        if (parts != 0) ::operator delete(Array_ImagePartPtr_dtor(parts));
     }
     self->faceParts = 0;
 
@@ -496,9 +492,9 @@ int DialogueWindow::init() {
     DialogueWindow *self = this;
     StringSlot name;
 
-    int *briefingOffsets = (int *)operator_new_arr(0x288);
+    int *briefingOffsets = (int *)::operator new[](0x288);
     self->briefingOffsets = briefingOffsets;
-    int *successOffsets = (int *)operator_new_arr(0x288);
+    int *successOffsets = (int *)::operator new[](0x288);
     self->successOffsets = successOffsets;
 
     int briefingSum = 0;
@@ -535,7 +531,7 @@ int DialogueWindow::init() {
     self->frameX = frameX;
     self->frameY = frameY;
 
-    void *scroll = operator_new(0x24);
+    void *scroll = ::operator new(0x24);
     int margin = F<int>(layout, 0x4c);
     ScrollTouchWindow_ctor(scroll,
                            frameX + margin * 2 + F<int>(layout, 0x2d4),
@@ -545,12 +541,12 @@ int DialogueWindow::init() {
                            false);
     self->scrollWindow = scroll;
 
-    void *choice = operator_new(0x5c);
+    void *choice = ::operator new(0x5c);
     ChoiceWindow_ctor(choice);
     self->choiceWindow = choice;
 
     void **gameText = g_dw_gameTextInit;
-    void *button = operator_new(0xc8);
+    void *button = ::operator new(0xc8);
     String *label = (String *)((GameText *)(*gameText))->getText(0xb3);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
@@ -560,7 +556,7 @@ int DialogueWindow::init() {
                      F<int>(layout, 0x50), 0x21, 4);
     self->prevButton = button;
 
-    button = operator_new(0xc8);
+    button = ::operator new(0xc8);
     label = (String *)((GameText *)(*gameText))->getText(0xb4);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
@@ -570,7 +566,7 @@ int DialogueWindow::init() {
                      F<int>(layout, 0x50), 0x22, 4);
     self->nextButton = button;
 
-    button = operator_new(0xc8);
+    button = ::operator new(0xc8);
     label = (String *)((GameText *)(*gameText))->getText(0x18b);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
@@ -613,11 +609,11 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     void *old = self->nextButton;
     if (old != 0) {
         ((TouchButton *)(old))->dtor();
-        operator_delete(old);
+        ::operator delete(old);
     }
     self->nextButton = 0;
 
-    void *button = operator_new(0xc8);
+    void *button = ::operator new(0xc8);
     String *buttonText = (String *)((GameText *)(*g_dw_gameTextCtor))->getText(0x20c);
     void *layout = *g_dw_layoutCtor;
     int margin = F<int>(layout, 0x4c);

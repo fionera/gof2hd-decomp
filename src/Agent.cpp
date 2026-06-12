@@ -9,13 +9,10 @@ using AbyssEngine::String12;
 struct VObj { void (*vt[8])(void *); };
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
-extern "C" void *Agent_operator_new(uint32_t sz);
-extern "C" void Agent_operator_delete(void *p);
 extern "C" void *Array_StringPtr_dtor(void *arr);
 extern "C" void Array_StringPtr_ctor(void *arr);
 extern "C" void ArrayAdd_StringPtr(void *str, void *arr);
 extern "C" void Agent_finishWingman(void);
-extern "C" __attribute__((nothrow)) void Agent_operator_delete_arr(void *p);
 
 // ---- getStationName_17770a.cpp ----
 RetStr Agent::getStationName() {
@@ -196,13 +193,13 @@ void Agent::setWingmanFriendNames(uint32_t *param) {
         (*(void (**)(void *))((char *)f10->vt[0] + 4))(f10);
     self->wingman2 = 0;
     if (self->wingmanNames != 0) {
-        Agent_operator_delete(Array_StringPtr_dtor(self->wingmanNames));
+        ::operator delete(Array_StringPtr_dtor(self->wingmanNames));
         self->wingmanNames = 0;
     }
-    void *na = Agent_operator_new(0xc);
+    void *na = ::operator new(0xc);
     Array_StringPtr_ctor(na);
     self->wingmanNames = na;
-    void *ns = Agent_operator_new(0xc);
+    void *ns = ::operator new(0xc);
     String_copy_ctor(ns, self, false);
     ArrayAdd_StringPtr(ns, self->wingmanNames);
     self->wingmanCount = 0;
@@ -261,7 +258,7 @@ extern dtor_fn const gStringDtor __attribute__((visibility("hidden")));
 __attribute__((minsize)) Agent::~Agent() noexcept(false)
 {
     if (this->imageParts != 0)               // +0x88 imageParts
-        Agent_operator_delete_arr(this->imageParts);
+        ::operator delete[](this->imageParts);
 
     VObj *o = (VObj *)this->wingman1;        // +0xc  virtual; dtor at vt[0]+4
     this->imageParts = 0;

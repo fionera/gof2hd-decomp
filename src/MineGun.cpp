@@ -13,14 +13,10 @@ float VectorLength(const Vector &value);
 extern "C" __attribute__((visibility("hidden"))) void *MineGun_vtable;
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion *> *array);
 extern "C" void *Array_Explosion_dtor(Array<Explosion *> *array);
-extern "C" void operator_delete(void *ptr);
-extern "C" void operator_delete_array(void *ptr);
 extern "C" void *AEGeometry_dtor(AEGeometry *self);
 extern "C" void *ObjectGun_dtor(MineGun *self);
 void *_ZN7MineGunD1Ev(MineGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **MineGun_canvas_holder;
-extern "C" void *operator_new(uint32_t size);
-extern "C" void *operator_new_array(uint32_t size);
 extern "C" void Array_Explosion_ctor(Array<Explosion *> *self);
 extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion *> *self);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
@@ -51,16 +47,16 @@ void *_ZN7MineGunD1Ev(MineGun *self)
     if (explosions != 0) {
         ArrayReleaseClasses_Explosion(explosions);
         if (P(self, 0xb4) != 0) {
-            operator_delete(Array_Explosion_dtor((Array<Explosion *> *)P(self, 0xb4)));
+            ::operator delete(Array_Explosion_dtor((Array<Explosion *> *)P(self, 0xb4)));
         }
         P(self, 0xb4) = 0;
     }
 
-    operator_delete_array(P(self, 0xb8));
+    ::operator delete[](P(self, 0xb8));
     AEGeometry *geometry = (AEGeometry *)P(self, 0xbc);
     P(self, 0xb8) = 0;
     if (geometry != 0) {
-        operator_delete(AEGeometry_dtor(geometry));
+        ::operator delete(AEGeometry_dtor(geometry));
     }
     P(self, 0xbc) = 0;
     return ObjectGun_dtor(self);
@@ -75,7 +71,7 @@ void MineGun::setPlayer(PlayerEgo *player)
 // ---- _MineGun_1566a6.cpp ----
 void _ZN7MineGunD0Ev(MineGun *self)
 {
-    return operator_delete(_ZN7MineGunD1Ev(self));
+    return ::operator delete(_ZN7MineGunD1Ev(self));
 }
 
 // ---- MineGun_156478.cpp ----
@@ -93,17 +89,17 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
     I(self, 0xc8) = zero;
     P(self, 0x0) = (char *)MineGun_vtable + 8;
 
-    Array<Explosion *> *explosions = (Array<Explosion *> *)operator_new(0xc);
+    Array<Explosion *> *explosions = (Array<Explosion *> *)::operator new(0xc);
     Array_Explosion_ctor(explosions);
     P(self, 0xb4) = explosions;
     uint32_t length = U(gun, 0x8);
     ArraySetLength_Explosion(length, explosions);
 
     explosions = (Array<Explosion *> *)P(self, 0xb4);
-    P(self, 0xb8) = operator_new_array(explosions->size());
+    P(self, 0xb8) = ::operator new[](explosions->size());
     uint32_t i = 0;
     for (; i < explosions->size(); ++i) {
-        Explosion *explosion = (Explosion *)operator_new(0x68);
+        Explosion *explosion = (Explosion *)::operator new(0x68);
         int kind = 0;
         if (I(gun, 0x60) == 0) {
             kind = 7;
@@ -115,7 +111,7 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
         explosions = (Array<Explosion *> *)P(self, 0xb4);
     }
 
-    AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);
+    AEGeometry *geometry = (AEGeometry *)::operator new(0xc0);
     void **holder = MineGun_canvas_holder;
     void *canvas = *holder;
     uint16_t mesh = (uint16_t)(param_2 + 1);

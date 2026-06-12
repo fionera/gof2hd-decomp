@@ -43,7 +43,6 @@ extern "C" int Wanted_getCurrentLocation(Wanted *w);
 extern "C" int Wanted_getRequiredBounties(Wanted *w);
 extern "C" int Station_getIndex(Station *s);
 extern "C" void *Ship_dtor(Ship *s);
-extern "C" void operator_delete(void *p);
 extern "C" void ArrayReleaseClasses_Agent(Array<Agent *> *a);
 extern "C" void *Array_Agent_dtor(Array<Agent *> *a);
 extern "C" void ArrayReleaseClasses_Station(void *a);
@@ -355,7 +354,7 @@ int Status::getLevel() { return level; }
 // Releases the ship, campaign mission, agent/station-stack/wanted arrays, and the name string.
 Status::~Status() {
     if (ship != 0) {
-        operator_delete(Ship_dtor(ship));
+        ::operator delete(Ship_dtor(ship));
     }
     ship = 0;
     if (mission != 0) {
@@ -365,21 +364,21 @@ Status::~Status() {
     if (agents != 0) {
         ArrayReleaseClasses_Agent(agents);
         if (agents != 0) {
-            operator_delete(Array_Agent_dtor(agents));
+            ::operator delete(Array_Agent_dtor(agents));
         }
     }
     agents = 0;
     if (stationStack != 0) {
         ArrayReleaseClasses_Station(stationStack);
         if (stationStack != 0) {
-            operator_delete(Array_Station_dtor(stationStack));
+            ::operator delete(Array_Station_dtor(stationStack));
         }
     }
     stationStack = 0;
     if (wanted != 0) {
         ArrayReleaseClasses_Wanted(wanted);
         if (wanted != 0) {
-            operator_delete(Array_Wanted_dtor(wanted));
+            ::operator delete(Array_Wanted_dtor(wanted));
         }
     }
     wanted = 0;
@@ -865,8 +864,6 @@ __attribute__((visibility("hidden"))) extern void (*g_rg_addCargo)(int, int, int
 
 extern "C" {
 void  *Status_opnew(unsigned int size);
-void   operator_delete(void *p);
-void   operator_delete_arr(void *p);
 void  *ArrayString_dtor(void *a);
 void   ArrayReleaseClasses_String(void *a);
 void  *Array_int_dtor(void *a);
@@ -950,7 +947,7 @@ void Status::resetGame()
 
     // recreate the per-game scratch station at 0x14c.
     if (P(self, 0x14c) != 0) {
-        (((Station *)((Station *)P(self, 0x14c)))->dtor(), operator_delete((void *)P(self, 0x14c)));
+        (((Station *)((Station *)P(self, 0x14c)))->dtor(), ::operator delete((void *)P(self, 0x14c)));
         I(self, 0x14c) = 0;
     }
     Station *scratch = (Station *)Status_opnew(0x34);
@@ -958,13 +955,13 @@ void Status::resetGame()
     P(self, 0x14c) = scratch;
 
     if (P(self, 0x28) != 0) {
-        operator_delete_arr(P(self, 0x28));
+        ::operator delete[](P(self, 0x28));
         I(self, 0x28) = 0;
     }
     if (P(self, 0x24) != 0) {
         ArrayReleaseClasses_String(P(self, 0x24));
         if (P(self, 0x24) != 0)
-            operator_delete(ArrayString_dtor(P(self, 0x24)));
+            ::operator delete(ArrayString_dtor(P(self, 0x24)));
     }
 
     // clear several bool arrays.
@@ -997,7 +994,7 @@ void Status::resetGame()
         for (unsigned k = 0; k < *stk; k = k + 1) {
             Station *st = ((Station **)stk[1])[k];
             if (st != 0) {
-                (((Station *)(st))->dtor(), operator_delete((void *)st));
+                (((Station *)(st))->dtor(), ::operator delete((void *)st));
                 ((int *)(*(int *)((char *)P(self, 0x1a0) + 4)))[k] = 0;
                 stk = (unsigned *)P(self, 0x1a0);
             }
@@ -1048,7 +1045,7 @@ void Status::resetGame()
     static const int off4[4] = {0x40, 0x3c, 0x48, 0x44};
     for (int q = 0; q < 4; q = q + 1) {
         if (P(self, off4[q]) != 0) {
-            operator_delete(Array_int_dtor(P(self, off4[q])));
+            ::operator delete(Array_int_dtor(P(self, off4[q])));
             I(self, off4[q]) = 0;
         }
     }
@@ -1070,7 +1067,7 @@ void Status::resetGame()
 
     // bool array at 0x4c (length 4).
     if (P(self, 0x4c) != 0) {
-        operator_delete(Array_bool_dtor(P(self, 0x4c)));
+        ::operator delete(Array_bool_dtor(P(self, 0x4c)));
         I(self, 0x4c) = 0;
     }
     {
@@ -1084,7 +1081,7 @@ void Status::resetGame()
 
     // bool array at 0x58 (length 5).
     if (P(self, 0x58) != 0) {
-        operator_delete(Array_bool_dtor(P(self, 0x58)));
+        ::operator delete(Array_bool_dtor(P(self, 0x58)));
         I(self, 0x58) = 0;
     }
     {
@@ -1116,7 +1113,7 @@ void Status::resetGame()
     if (P(self, 0x18) != 0) {
         ArrayReleaseClasses_BP(P(self, 0x18));
         if (P(self, 0x18) != 0)
-            operator_delete(ArrayBP_dtor(P(self, 0x18)));
+            ::operator delete(ArrayBP_dtor(P(self, 0x18)));
     }
     I(self, 0x18) = 0;
     if (bpCount != 0) {
@@ -1138,7 +1135,7 @@ void Status::resetGame()
     if (P(self, 0x1c) != 0) {
         ArrayReleaseClasses_PP(P(self, 0x1c));
         if (P(self, 0x1c) != 0)
-            operator_delete(ArrayPP_dtor(P(self, 0x1c)));
+            ::operator delete(ArrayPP_dtor(P(self, 0x1c)));
     }
     I(self, 0x1c) = 0;
 
@@ -1147,7 +1144,7 @@ void Status::resetGame()
 
     // recreate Standing at 0x14.
     if (P(self, 0x14) != 0) {
-        operator_delete(Standing_dtor((Standing *)P(self, 0x14)));
+        ::operator delete(Standing_dtor((Standing *)P(self, 0x14)));
         I(self, 0x14) = 0;
     }
     Standing *st = (Standing *)Status_opnew(8);
@@ -1268,7 +1265,7 @@ int Status::activateNewWanted() {
             FileRead *fr = (FileRead *)operator new(1);
             FileRead_ctor(fr);
             systems = (void *)fr->loadSystemsBinary();
-            operator_delete(FileRead_dtor(fr));
+            ::operator delete(FileRead_dtor(fr));
         }
         activated = activated + 1;
         int *path;
@@ -1288,7 +1285,7 @@ int Status::activateNewWanted() {
                     break;
                 }
                 if (a != 0) {
-                    (((Station *)(a))->dtor(), operator_delete((void *)a));
+                    (((Station *)(a))->dtor(), ::operator delete((void *)a));
                 }
                 a = Globals_getRandomStation();
                 asys = Station_getSystem(a);
@@ -1306,7 +1303,7 @@ int Status::activateNewWanted() {
                     break;
                 }
                 if (b != 0) {
-                    (((Station *)(b))->dtor(), operator_delete((void *)b));
+                    (((Station *)(b))->dtor(), ::operator delete((void *)b));
                 }
                 b = Globals_getRandomStation();
                 bsys = Station_getSystem(b);
@@ -1316,10 +1313,10 @@ int Status::activateNewWanted() {
             fromSys = Station_getSystem(a);
             toSys = Station_getSystem(b);
             if (a != 0) {
-                (((Station *)(a))->dtor(), operator_delete((void *)a));
+                (((Station *)(a))->dtor(), ::operator delete((void *)a));
             }
             if (b != 0) {
-                (((Station *)(b))->dtor(), operator_delete((void *)b));
+                (((Station *)(b))->dtor(), ::operator delete((void *)b));
             }
             path = ((SystemPathFinder *)(pf))->getSystemPath(systems, fromSys, toSys);
         } while (path == 0 || (unsigned)*path < lo || hi < (unsigned)*path);
@@ -1332,14 +1329,14 @@ int Status::activateNewWanted() {
             int st = ((int *)(*(int *)(SolarSystem_getStations_i(dst) + 4)))[idx];
             Wanted_setCurrentLocation(cur, st);
         }
-        operator_delete(Array_int_dtor(path));
+        ::operator delete(Array_int_dtor(path));
     }
     if (pf != 0) {
-        operator_delete(SystemPathFinder_dtor(pf));
+        ::operator delete(SystemPathFinder_dtor(pf));
     }
     if (systems != 0) {
         ArrayReleaseClasses_SolarSystem(systems);
-        operator_delete(Array_SolarSystem_dtor(systems));
+        ::operator delete(Array_SolarSystem_dtor(systems));
     }
     return activated;
 }
@@ -1477,7 +1474,7 @@ int Status::addStationToStack(Station *s) {
         base[j + 2] = s;
     } else {
         if (base[2] != 0) {
-            (((Station *)(base[2]))->dtor(), operator_delete((void *)base[2]));
+            (((Station *)(base[2]))->dtor(), ::operator delete((void *)base[2]));
         }
         base[2] = 0;
         for (int i = 0; i != -2; i = i - 1) {
@@ -1527,7 +1524,6 @@ __attribute__((visibility("hidden"))) extern Status **g_ncmStatus;
 __attribute__((visibility("hidden"))) extern int g_ncmAchTable[3];   // DAT_000b9d14 (3 mission ids)
 
 extern "C" {
-void *operator_new(unsigned int sz);
 // Mission::Mission(int,int,int)
 // Mission::Mission()
 void Status_setCampaignMission_ncm(Status *self, void *m);           // setCampaignMission
@@ -1638,7 +1634,7 @@ void Status::nextCampaignMission() {
     }
 
     // --- spawn + register the step's mission -------------------------------
-    void *m = operator_new(0x78);
+    void *m = ::operator new(0x78);
     if ((unsigned)step < sizeof(kSteps) / sizeof(kSteps[0])) {
         const Step &s = kSteps[step];
         if (s.type == 0 && s.station == 0 && s.param == 0) {
@@ -1679,11 +1675,11 @@ void Status::setStation(Station *s) {
     FileRead *fr = (FileRead *)operator new(1);
     FileRead_ctor(fr);
     Array<Station *> *list = (Array<Station *> *)((FileRead *)(fr))->loadStationsBinary();
-    operator_delete(FileRead_dtor(fr));
+    ::operator delete(FileRead_dtor(fr));
     if (planetNames != 0) {
         ArrayReleaseClasses_String((Array<String *> *)(void *)(uint32_t)planetNames);
         if (planetNames != 0) {
-            operator_delete(Array_String_dtor((Array<String *> *)(void *)(uint32_t)planetNames));
+            ::operator delete(Array_String_dtor((Array<String *> *)(void *)(uint32_t)planetNames));
         }
     }
     planetNames = 0;
@@ -1694,7 +1690,7 @@ void Status::setStation(Station *s) {
     if (planetTextures != 0) {
         ArrayRelease_int((void *)(uint32_t)planetTextures);
         if (planetTextures != 0) {
-            operator_delete(Array_int_dtor((void *)(uint32_t)planetTextures));
+            ::operator delete(Array_int_dtor((void *)(uint32_t)planetTextures));
         }
     }
     planetTextures = 0;
@@ -2275,7 +2271,6 @@ int Station_getIndex(Station *s);                                    // 0x71824
 void FileRead_ctor(FileRead *fr);                                    // 0x72124
 void *FileRead_loadSystemsBinary_mw(FileRead *fr);                   // 0x7378c
 void *FileRead_dtor_mw(FileRead *fr);                                // 0x7213c
-void operator_delete(void *p);                                       // 0x6eb48
 void SystemPathFinder_ctor(SystemPathFinder *p);                     // 0x73798
 void *SystemPathFinder_dtor(SystemPathFinder *p);                    // 0x73810
 void *FileRead_loadStation_mw(int sysAndIndex);                      // 0x737a4
@@ -2333,7 +2328,7 @@ void Status::moveWanted()
             FileRead fr;
             FileRead_ctor(&fr);
             systemsTable = FileRead_loadSystemsBinary_mw(&fr);
-            operator_delete(FileRead_dtor_mw(&fr));
+            ::operator delete(FileRead_dtor_mw(&fr));
             pf = (SystemPathFinder *)operator new(1);
             SystemPathFinder_ctor(pf);
             loaded = true;
@@ -2355,7 +2350,7 @@ void Status::moveWanted()
             else { int r = aeabi_idivmod_mw(i - 1, 6); lo = aeabi_idiv_mw(r, 3) + 2; hi = r / 2 + 4; }
             Wanted *pw = (*self->wanted)[i];
             Wanted_setLastSeen_mw(pw, Wanted_getCurrentLocation_mw(pw));
-            if (toSt != 0) operator_delete(Station_dtor_mw(toSt));
+            if (toSt != 0) ::operator delete(Station_dtor_mw(toSt));
             toSt = Globals_getRandomStation_mw();
             toSys = Station_getSystem_mw(toSt);
             for (;;) {
@@ -2373,7 +2368,7 @@ void Status::moveWanted()
                                            Station_getIndex((Station *)toSt));
                     break;
                 }
-                if (toSt != 0) operator_delete(Station_dtor_mw(toSt));
+                if (toSt != 0) ::operator delete(Station_dtor_mw(toSt));
                 toSt = Globals_getRandomStation_mw();
                 toSys = Station_getSystem_mw(toSt);
             }
@@ -2388,14 +2383,14 @@ void Status::moveWanted()
             Wanted_setCurrentLocation_mw((*self->wanted)[i], wg);
         }
 
-        if (toSt != 0) operator_delete(Station_dtor_mw(toSt));
-        if (fromSt != 0) operator_delete(Station_dtor_mw(fromSt));
-        if (path != 0) operator_delete(Array_int_dtor_mw(path));
+        if (toSt != 0) ::operator delete(Station_dtor_mw(toSt));
+        if (fromSt != 0) ::operator delete(Station_dtor_mw(fromSt));
+        if (path != 0) ::operator delete(Array_int_dtor_mw(path));
     }
 
     if (systemsTable != 0) {
         ArrayReleaseClasses_SolarSystem(systemsTable);
-        operator_delete(Array_SolarSystem_dtor(systemsTable));
+        ::operator delete(Array_SolarSystem_dtor(systemsTable));
     }
     if (pf != 0) {
         SystemPathFinder_dtor(pf);

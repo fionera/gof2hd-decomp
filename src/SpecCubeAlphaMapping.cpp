@@ -42,7 +42,7 @@ void SpecCubeAlphaMapping::Init(Engine *)
 // ---- _SpecCubeAlphaMapping_87d1c.cpp ----
 void _ZN11AbyssEngine20SpecCubeAlphaMappingD0Ev(AbyssEngine::SpecCubeAlphaMapping *self)
 {
-    operator_delete(ShaderBaseStruct_dtor(self));
+    ::operator delete(ShaderBaseStruct_dtor(self));
 }
 
 // ---- SpecCubeAlphaMapping_87984.cpp ----

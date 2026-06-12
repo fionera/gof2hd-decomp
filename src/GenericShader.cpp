@@ -156,5 +156,5 @@ GenericShader::GenericShader()
 // ---- _GenericShader_8eb90.cpp ----
 void _ZN11AbyssEngine13GenericShaderD0Ev(AbyssEngine::GenericShader *self)
 {
-    operator_delete(ShaderBaseStruct_dtor(self));
+    ::operator delete(ShaderBaseStruct_dtor(self));
 }

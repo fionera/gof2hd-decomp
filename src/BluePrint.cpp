@@ -8,9 +8,7 @@
 
 Array<int> *BluePrint_getIngredientList(BluePrint *self);
 extern "C" void String_copy_ctor(void *out, void *src, bool);
-extern "C" void operator_delete(void *p);
 Array<int> *BluePrint_getQuantityList(BluePrint *self);
-extern "C" void *operator_new(unsigned int sz);
 extern "C" void ArraySetLengthInt(uint32_t n, Array<int> *a);
 extern "C" int Station_getIndex(void *station);
 
@@ -72,7 +70,7 @@ void *_ZN9BluePrintD2Ev(BluePrint *self)
         ArrayReleaseInt(a);
         Array<int> *a2 = self->ingredientCounters;
         if (a2 != 0)
-            operator_delete(ArrayInt_dtor(a2));
+            ::operator delete(ArrayInt_dtor(a2));
     }
     self->ingredientCounters = 0;
     ((String *)(&self->stationName))->dtor();
@@ -257,7 +255,7 @@ void BluePrint::addItem(Item *item, int amount, int station) {
                             ((String *)(tmp))->dtor();
                             if (st != 0) {
                                 ((Station *)(st))->dtor();
-                                operator_delete(st);
+                                ::operator delete(st);
                             }
                         }
                     }

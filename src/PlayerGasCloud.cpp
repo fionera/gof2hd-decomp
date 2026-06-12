@@ -17,8 +17,6 @@
 // global Status singleton, reached via *gStatus (same pattern as Hud/Player).
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
-extern "C" void operator_delete(void *p);
-extern "C" void *operator_new(uint32_t);
 extern "C" char PlayerGasCloud_vtable;
 extern "C" void ArrayReleaseClasses_AEGeometry(void *arr);
 extern "C" void *Array_AEGeometry_dtor(void *p);
@@ -86,7 +84,7 @@ void *_ZN14PlayerGasCloudD1Ev(void *self); // complete object dtor
 
 void _ZN14PlayerGasCloudD0Ev(void *self)
 {
-    return operator_delete(_ZN14PlayerGasCloudD1Ev(self));
+    return ::operator delete(_ZN14PlayerGasCloudD1Ev(self));
 }
 
 // ---- hasExploded_1769ac.cpp ----
@@ -102,7 +100,7 @@ __attribute__((visibility("hidden"))) extern void **g_pgc_canvas;
 PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGeometry *param_3,
                                Vector const &param_4)
 {
-    void *this_00 = operator_new(0x114);
+    void *this_00 = ::operator new(0x114);
     ((Player *)(this_00))->ctor(0, 9999999, 0, 0, 0);
 
     *(void **)this = &PlayerGasCloud_vtable + 8;
@@ -143,7 +141,7 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
 
     *(Vector *)((char *)this + 0x128) = param_4;
 
-    void *geom = operator_new(0xc0);
+    void *geom = ::operator new(0xc0);
     new (geom) AEGeometry(this->cloudMeshId, (PaintCanvas *)*g_pgc_canvas, false);
     this->modelGeometry = geom;
     ((AEGeometry *)geom)->setPosition(param_4);
@@ -169,7 +167,7 @@ void *_ZN14PlayerGasCloudD1Ev(void *selfv)
         ArrayReleaseClasses_AEGeometry(a0);
         void *p = self->sparkGeometries;
         if (p != 0)
-            operator_delete(Array_AEGeometry_dtor(p));
+            ::operator delete(Array_AEGeometry_dtor(p));
         self->sparkGeometries = 0;
     }
 
@@ -178,34 +176,34 @@ void *_ZN14PlayerGasCloudD1Ev(void *selfv)
         ArrayReleaseClasses_Vector(a1);
         void *p = self->sparkVelocities;
         if (p != 0)
-            operator_delete(Array_Vector_dtor(p));
+            ::operator delete(Array_Vector_dtor(p));
         self->sparkVelocities = 0;
     }
 
     void *a2 = self->sparkLife;
     if (a2 != 0)
-        operator_delete(Array_float_dtor(a2));
+        ::operator delete(Array_float_dtor(a2));
     self->sparkLife = 0;
 
     void *a3 = self->sparkLifeMin;
     if (a3 != 0)
-        operator_delete(Array_float_dtor(a3));
+        ::operator delete(Array_float_dtor(a3));
     self->sparkLifeMin = 0;
 
     void *a4 = self->sparkScale;
     if (a4 != 0)
-        operator_delete(Array_float_dtor(a4));
+        ::operator delete(Array_float_dtor(a4));
     self->sparkScale = 0;
 
     void *a5 = self->sparkTimers;
     if (a5 != 0)
-        operator_delete(Array_int_dtor(a5));
+        ::operator delete(Array_int_dtor(a5));
     self->sparkTimers = 0;
 
     void *g = self->modelGeometry;
     if (g != 0) {
         ((AEGeometry *)g)->~AEGeometry();
-        operator_delete(g);
+        ::operator delete(g);
     }
     self->modelGeometry = 0;
 
@@ -220,7 +218,6 @@ struct PlayerGasCloud;
 // --- engine callees ---------------------------------------------------------
 extern "C" {
 
-void *operator_new(uint32_t size);
 
 
 // Array<T> default constructors (all share the 0xc-byte container layout).
@@ -265,19 +262,19 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
         self->state = 3;
         self->exploded = 1;
 
-        void *aGeom = operator_new(0xc);  ArrayGeom_ctor(aGeom);
+        void *aGeom = ::operator new(0xc);  ArrayGeom_ctor(aGeom);
         self->sparkGeometries = aGeom;
-        void *aVec = operator_new(0xc);   ArrayVec_ctor(aVec);
+        void *aVec = ::operator new(0xc);   ArrayVec_ctor(aVec);
         self->sparkVelocities = aVec;
-        void *aLife = operator_new(0xc);  ArrayFloat_ctor(aLife);
+        void *aLife = ::operator new(0xc);  ArrayFloat_ctor(aLife);
         self->sparkLife = aLife;
-        void *aLifeMin = operator_new(0xc); ArrayFloat_ctor(aLifeMin);
+        void *aLifeMin = ::operator new(0xc); ArrayFloat_ctor(aLifeMin);
         self->sparkLifeMin = aLifeMin;
-        void *aTimer = operator_new(0xc); ArrayInt_ctor(aTimer);
+        void *aTimer = ::operator new(0xc); ArrayInt_ctor(aTimer);
         self->sparkTimers = aTimer;
-        void *aActive = operator_new(0xc); ArrayBool_ctor(aActive);
+        void *aActive = ::operator new(0xc); ArrayBool_ctor(aActive);
         self->sparkInSight = aActive;
-        void *aScale = operator_new(0xc); ArrayFloat_ctor(aScale);
+        void *aScale = ::operator new(0xc); ArrayFloat_ctor(aScale);
         self->sparkScale = aScale;
 
         // Distance from the explosion source to the cloud centre (+0x128).
@@ -297,7 +294,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
 
         int count = (int)((countBase / 1.5f + 10.0f) * attrF);
         for (int i = 0; i < count; i++) {
-            void *shard = operator_new(0xc0);
+            void *shard = ::operator new(0xc0);
             new (shard) AEGeometry(self->sparkMeshId,
                             (PaintCanvas *)*(void **)g_pgc_canvasRoot, false);
             ((AEGeometry *)(shard))->setPosition(*(Vector *)((char *)self + 0x128));
@@ -324,7 +321,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             ArrayAdd_float(life, self->sparkLifeMin);
             ArrayAdd_int(timer + 8000, self->sparkTimers);
 
-            Vector *velCopy = (Vector *)operator_new(0xc);
+            Vector *velCopy = (Vector *)::operator new(0xc);
             *velCopy = dn;
             ArrayAdd_vec(velCopy, self->sparkVelocities);
             ArrayAdd_geom(shard, self->sparkGeometries);

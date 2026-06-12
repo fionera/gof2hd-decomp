@@ -59,7 +59,7 @@ void HangarList::release() {
                         goto clear_slot;
                     }
                 }
-                operator_delete(Array_ListItem_dtor(items));
+                ::operator delete(Array_ListItem_dtor(items));
                 tabs = this->tabs;
                 slot = (Array<ListItem *> **)((char *)tabs->data() + off);
             }
@@ -73,7 +73,7 @@ void HangarList::release() {
         ArrayReleaseClasses_ArrayListItem(tabs);
         tabs = this->tabs;
         if (tabs != 0) {
-            operator_delete(Array_ArrayListItem_dtor(tabs));
+            ::operator delete(Array_ArrayListItem_dtor(tabs));
         }
     }
     this->tabs = 0;
@@ -126,13 +126,13 @@ void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
                 goto clear_old;
             }
         }
-        operator_delete(Array_ListItem_dtor(old));
+        ::operator delete(Array_ListItem_dtor(old));
         slot = this->tabs->data() + 2;
     }
 clear_old:
     *slot = 0;
 
-    Array<ListItem *> *list = (Array<ListItem *> *)operator_new(0xc);
+    Array<ListItem *> *list = (Array<ListItem *> *)::operator new(0xc);
     Array_ListItem_ctor(list);
 
     uint32_t unlocked = 1;
@@ -160,7 +160,7 @@ clear_old:
 
     ArraySetLength_ListItem(length, list);
 
-    ListItem *li = (ListItem *)operator_new(0x48);
+    ListItem *li = (ListItem *)::operator new(0x48);
     GameText **texts = g_HangarList_gameText;
     ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(0x111));
     list->data()[0] = li;
@@ -168,7 +168,7 @@ clear_old:
     uint32_t out = 1;
     for (uint32_t i = 0; i < blueprints->size(); ++i) {
         if (BluePrint_isUnlocked(blueprints->data()[i]) != 0) {
-            li = (ListItem *)operator_new(0x48);
+            li = (ListItem *)::operator new(0x48);
             ((ListItem *)(li))->ctor_BluePrint(blueprints->data()[i]);
             list->data()[out] = li;
             ++out;
@@ -176,13 +176,13 @@ clear_old:
     }
 
     if (!noPending) {
-        li = (ListItem *)operator_new(0x48);
+        li = (ListItem *)::operator new(0x48);
         ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(0x112));
         uint32_t pendingOut = out + 1;
         list->data()[out] = li;
         for (uint32_t i = 0; i < pending->size(); ++i) {
             if (pending->data()[i] != 0) {
-                li = (ListItem *)operator_new(0x48);
+                li = (ListItem *)::operator new(0x48);
                 ((ListItem *)(li))->ctor_PendingProduct(pending->data()[i]);
                 list->data()[pendingOut] = li;
                 ++pendingOut;
@@ -202,11 +202,11 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
     Array<int32_t> *ingredients = BluePrint_getIngredientList(blueprint);
     uint32_t count = ingredients->size();
 
-    Array<ListItem *> *list = (Array<ListItem *> *)operator_new(0xc);
+    Array<ListItem *> *list = (Array<ListItem *> *)::operator new(0xc);
     Array_ListItem_ctor(list);
     ArraySetLength_ListItem(count + 1, list);
 
-    ListItem *li = (ListItem *)operator_new(0x48);
+    ListItem *li = (ListItem *)::operator new(0x48);
     GameText **texts = g_HangarList_gameText;
     ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(BluePrint_getIndex(blueprint) + 0x4fa));
     list->data()[0] = li;
@@ -217,7 +217,7 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
         if (cargo != 0) {
             for (uint32_t j = 0; j < cargo->size(); ++j) {
                 if (((Item *)(cargo->data()[j]))->getIndex() == ingredients->data()[i]) {
-                    li = (ListItem *)operator_new(0x48);
+                    li = (ListItem *)::operator new(0x48);
                     ((ListItem *)(li))->ctor_Item(cargo->data()[j]);
                     list->data()[out] = li;
                     shown = cargo->data()[j];
@@ -226,7 +226,7 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
             }
         }
         shown = allItems->data()[ingredients->data()[i]];
-        li = (ListItem *)operator_new(0x48);
+        li = (ListItem *)::operator new(0x48);
         ((ListItem *)(li))->ctor_Item(shown);
         list->data()[out] = li;
     got_item:
@@ -237,7 +237,7 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
     }
 
     this->tabs->data()[4] = list;
-    li = (ListItem *)operator_new(0x48);
+    li = (ListItem *)::operator new(0x48);
     ListItem_ctor_Slot(li, 0);
     li->field_0x24 = 0;
     ArrayAdd_ListItem(li, this->tabs->data()[4]);
@@ -258,7 +258,7 @@ void HangarList::fillBuyList(ListItem *item) {
                 goto clear_old;
             }
         }
-        operator_delete(Array_ListItem_dtor(old));
+        ::operator delete(Array_ListItem_dtor(old));
         slot = this->tabs->data() + 3;
     }
 clear_old:
@@ -289,7 +289,7 @@ clear_old:
     }
 
     uint32_t isSlot = ((ListItem *)(item))->isSlot();
-    Array<ListItem *> *list = (Array<ListItem *> *)operator_new(0xc);
+    Array<ListItem *> *list = (Array<ListItem *> *)::operator new(0xc);
     Array_ListItem_ctor(list);
     int base = 3;
     uint32_t special = isShip | isSlot;
@@ -303,25 +303,25 @@ clear_old:
     ArraySetLength_ListItem(length, list);
 
     GameText **texts = g_HangarList_gameText;
-    ListItem *li = (ListItem *)operator_new(0x48);
+    ListItem *li = (ListItem *)::operator new(0x48);
     ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(0x115));
     list->data()[0] = li;
 
-    li = (ListItem *)operator_new(0x48);
+    li = (ListItem *)::operator new(0x48);
     ListItem_ctor_ListItem(li, item);
     list->data()[1] = li;
 
     uint32_t out;
     if (special == 0) {
-        li = (ListItem *)operator_new(0x48);
+        li = (ListItem *)::operator new(0x48);
         ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(0x116));
         list->data()[2] = li;
 
-        li = (ListItem *)operator_new(0x48);
+        li = (ListItem *)::operator new(0x48);
         ListItem_ctor_TextButton(li, ((GameText *)(*texts))->getText(0x117), true, 0);
         list->data()[3] = li;
 
-        li = (ListItem *)operator_new(0x48);
+        li = (ListItem *)::operator new(0x48);
         ListItem_ctor_TextButton(li, ((GameText *)(*texts))->getText(0x11a), true, 1);
         list->data()[4] = li;
         out = 5;
@@ -329,13 +329,13 @@ clear_old:
         out = 2;
     }
 
-    li = (ListItem *)operator_new(0x48);
+    li = (ListItem *)::operator new(0x48);
     ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(isShip == 0 ? 0x11c : 0x11d));
     uint32_t next = out + 1;
     list->data()[out] = li;
 
     if (count < 1) {
-        li = (ListItem *)operator_new(0x48);
+        li = (ListItem *)::operator new(0x48);
         ListItem_ctor_Slot(li, next);
         list->data()[next] = li;
     } else if (isShip == 0) {
@@ -343,7 +343,7 @@ clear_old:
         Array<Item *> *cargo = Ship_getCargo(ship);
         for (uint32_t i = 0; i < cargo->size(); ++i) {
             if (((Item *)(cargo->data()[i]))->getType() == type) {
-                li = (ListItem *)operator_new(0x48);
+                li = (ListItem *)::operator new(0x48);
                 ((ListItem *)(li))->ctor_Item(cargo->data()[i]);
                 list->data()[next] = li;
                 ++next;
@@ -353,7 +353,7 @@ clear_old:
         Station *station = ((Status *)(g_HangarList_status))->getStation();
         Array<Ship *> *ships = Station_getShips(station);
         for (uint32_t i = 0; i < ships->size(); ++i) {
-            li = (ListItem *)operator_new(0x48);
+            li = (ListItem *)::operator new(0x48);
             ((ListItem *)(li))->ctor_Ship(ships->data()[i]);
             list->data()[out + 1 + i] = li;
         }
@@ -377,13 +377,13 @@ void HangarList::initShipTab(Ship *ship) {
                 goto clear_old;
             }
         }
-        operator_delete(Array_ListItem_dtor(old));
+        ::operator delete(Array_ListItem_dtor(old));
         slot = this->tabs->data();
     }
 clear_old:
     *slot = 0;
 
-    Array<ListItem *> *items = (Array<ListItem *> *)operator_new(0xc);
+    Array<ListItem *> *items = (Array<ListItem *> *)::operator new(0xc);
     Array_ListItem_ctor(items);
     Array<Item *> *equipment = Ship_getEquipment(ship);
     Array<Item *> *cargo = Ship_getCargo(ship);
@@ -395,7 +395,7 @@ clear_old:
         available = 0;
         cargoEmpty = true;
     } else {
-        available = (Array<Item *> *)operator_new(0xc);
+        available = (Array<Item *> *)::operator new(0xc);
         Array_Item_ctor(available);
         for (uint32_t i = 0; i < cargo->size(); ++i) {
             Item *item = cargo->data()[i];
@@ -415,12 +415,12 @@ clear_old:
     int slotTypes = Ship_getSlotTypes(ship);
     ArraySetLength_ListItem(slotTypes + baseLength + equipmentLength, items);
 
-    ListItem *li = (ListItem *)operator_new(0x48);
+    ListItem *li = (ListItem *)::operator new(0x48);
     GameText **texts = g_HangarList_gameText;
     ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(0xb7));
     items->data()[0] = li;
 
-    li = (ListItem *)operator_new(0x48);
+    li = (ListItem *)::operator new(0x48);
     ((ListItem *)(li))->ctor_Ship(ship);
     uint32_t out = 2;
     items->data()[1] = li;
@@ -431,14 +431,14 @@ clear_old:
             if (type < 3) {
                 textId = type + 0x109;
             }
-            li = (ListItem *)operator_new(0x48);
+            li = (ListItem *)::operator new(0x48);
             ((ListItem *)(li))->ctor_String_int(((GameText *)(*texts))->getText(textId), type);
             items->data()[out] = li;
             Array<Item *> *slotItems = Ship_getEquipmentByType(ship, type);
             for (uint32_t j = 0; j < slotItems->size(); ++j) {
                 ++out;
                 Item *item = slotItems->data()[j];
-                li = (ListItem *)operator_new(0x48);
+                li = (ListItem *)::operator new(0x48);
                 if (item == 0) {
                     ListItem_ctor_Slot(li, type);
                 } else {
@@ -455,11 +455,11 @@ clear_old:
                 }
                 (items->data()[out])->field_0x3c = j;
             }
-            operator_delete(Array_Item_dtor(slotItems));
+            ::operator delete(Array_Item_dtor(slotItems));
             if (!cargoEmpty) {
                 for (uint32_t j = 0; j < available->size(); ++j) {
                     if ((uint32_t)((Item *)(available->data()[j]))->getType() == type) {
-                        li = (ListItem *)operator_new(0x48);
+                        li = (ListItem *)::operator new(0x48);
                         ((ListItem *)(li))->ctor_Item(available->data()[j]);
                         items->data()[out] = li;
                         ++out;
@@ -499,7 +499,7 @@ void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
                 goto clear_old;
             }
         }
-        operator_delete(Array_ListItem_dtor(old));
+        ::operator delete(Array_ListItem_dtor(old));
         slot = this->tabs->data() + 1;
     }
 clear_old:
@@ -510,7 +510,7 @@ clear_old:
         return;
     }
 
-    Array<ListItem *> *list = (Array<ListItem *> *)operator_new(0xc);
+    Array<ListItem *> *list = (Array<ListItem *> *)::operator new(0xc);
     Array_ListItem_ctor(list);
     if (shopItems != 0) {
         for (uint32_t i = 0; i < shopItems->size(); ++i) {
@@ -534,12 +534,12 @@ clear_old:
     uint32_t out;
     GameText **texts = g_HangarList_gameText;
     if (ships != 0 && ships->size() != 0) {
-        ListItem *li = (ListItem *)operator_new(0x48);
+        ListItem *li = (ListItem *)::operator new(0x48);
         ((ListItem *)(li))->ctor_String_int(((GameText *)(*texts))->getText(0xad), -1);
         list->data()[0] = li;
         for (uint32_t i = 0; i < ships->size(); ++i) {
             Ship_adjustPrice(ships->data()[i]);
-            li = (ListItem *)operator_new(0x48);
+            li = (ListItem *)::operator new(0x48);
             ((ListItem *)(li))->ctor_Ship(ships->data()[i]);
             list->data()[i + 1] = li;
         }
@@ -550,14 +550,14 @@ clear_old:
 
     for (uint32_t type = 0; type < 5; ++type) {
         if (counts[type] > 0) {
-            ListItem *li = (ListItem *)operator_new(0x48);
+            ListItem *li = (ListItem *)::operator new(0x48);
             ((ListItem *)(li))->ctor_String_int(((GameText *)(*texts))->getText(shopTypeTextId(type)), type);
             list->data()[out] = li;
             ++out;
             if (shopItems != 0) {
                 for (uint32_t i = 0; i < shopItems->size(); ++i) {
                     if ((uint32_t)((Item *)(shopItems->data()[i]))->getType() == type) {
-                        li = (ListItem *)operator_new(0x48);
+                        li = (ListItem *)::operator new(0x48);
                         ((ListItem *)(li))->ctor_Item(shopItems->data()[i]);
                         list->data()[out] = li;
                         ++out;
@@ -576,7 +576,7 @@ extern "C" int HangarList_initBlueprintTab_tail(HangarList *self,
 int HangarList::init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
                      Array<BluePrint *> *blueprints) {
     release();
-    void *storage = operator_new(0xc);
+    void *storage = ::operator new(0xc);
     Array<BluePrint *> *bp = blueprints;
     Array<Array<ListItem *> *> *tabs = (Array<Array<ListItem *> *> *)storage;
     Array_ArrayListItem_ctor(tabs);

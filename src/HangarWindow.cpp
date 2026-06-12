@@ -51,8 +51,6 @@ extern "C" void *ListItemWindow_dtor(void *p);
 extern "C" void *ChoiceWindow_dtor(void *p);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *p);
-extern "C" void operator_delete(void *p);
-extern "C" void operator_delete_arr(void *p);
 extern "C" extern const char hw_ote_fmt1[], hw_ote_fmt2[], hw_ote_fmt3[], hw_ote_fmt4[];
 // Last arg is void* in some sections, float in others; variadic covers both.
 extern "C" extern const char hw_otb_fmt1[], hw_otb_fmt2[];
@@ -138,34 +136,34 @@ HangarWindow *_ZN12HangarWindowD2Ev(HangarWindow *self)
 {
     void *p;
     p = self->hangarList;
-    if (p != 0) operator_delete(HangarList_dtor(p));
+    if (p != 0) ::operator delete(HangarList_dtor(p));
     self->hangarList = 0;
     p = self->listItemWindow;
-    if (p != 0) operator_delete(ListItemWindow_dtor(p));
+    if (p != 0) ::operator delete(ListItemWindow_dtor(p));
     self->listItemWindow = 0;
     p = self->choiceWindow;
-    if (p != 0) operator_delete(ChoiceWindow_dtor(p));
+    if (p != 0) ::operator delete(ChoiceWindow_dtor(p));
     self->choiceWindow = 0;
     p = self->dialog;
-    if (p != 0) operator_delete(ChoiceWindow_dtor(p));
+    if (p != 0) ::operator delete(ChoiceWindow_dtor(p));
     self->dialog = 0;
     p = self->tabButtons;
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
         void *q = self->tabButtons;
-        if (q != 0) operator_delete(Array_TouchButton_dtor(q));
+        if (q != 0) ::operator delete(Array_TouchButton_dtor(q));
     }
     self->tabButtons = 0;
     p = self->buttons;
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
         void *q = self->buttons;
-        if (q != 0) operator_delete(Array_TouchButton_dtor(q));
+        if (q != 0) ::operator delete(Array_TouchButton_dtor(q));
     }
     p = self->tabIcons;
     self->active = 0;
     self->buttons = 0;
-    if (p != 0) operator_delete_arr(p);
+    if (p != 0) ::operator delete[](p);
     self->tabIcons = 0;
     return self;
 }
@@ -610,7 +608,6 @@ void ArrayReleaseClasses_ItemPtr(void *arr);
 void *Array_ItemPtr_dtor(void *arr);
 void ArrayRemove_ShipPtr(void *ship, void *arr);
 int __aeabi_idiv(int a, int b);
-void operator_delete(void *p);
 
 // Mission-offer subroutine (corrupted in decompile); kept as an extern helper.
 void HangarWindow_buildMissionOffer(HangarWindow *self, int touch, int coord);
@@ -1167,7 +1164,6 @@ void *Station_getItems(void *station);
 void ArrayAdd_ItemPtr(void *item, void *arr);
 void ArrayReleaseClasses_ItemPtr(void *arr);
 void *Array_ItemPtr_dtor(void *arr);
-void operator_delete(void *p);
 void HangarList_setCurrentTab(void *list, bool flag);
 void *HangarWindow_statusShip();
 }
@@ -1207,7 +1203,7 @@ void HangarWindow::demountItem(void *item, int slot) {
     if (self->itemList != 0) {
         ArrayReleaseClasses_ItemPtr(self->itemList);
         if (self->itemList != 0)
-            operator_delete(Array_ItemPtr_dtor(self->itemList));
+            ::operator delete(Array_ItemPtr_dtor(self->itemList));
     }
     self->itemList = 0;
 
@@ -1476,7 +1472,6 @@ void AEString_assign(String12 *self, String12 *src);
 void ArrayReleaseClasses_ItemPtr(void *arr);
 void *Array_ItemPtr_dtor(void *arr);
 void ArrayAdd_ItemPtr(void *item, void *arr);
-void operator_delete(void *p);
 void *HangarWindow_statusShip();
 }
 
@@ -1534,7 +1529,7 @@ void HangarWindow::setSellMode() {
         if (self->itemList != 0) {
             ArrayReleaseClasses_ItemPtr(self->itemList);
             if (self->itemList != 0)
-                operator_delete(Array_ItemPtr_dtor(self->itemList));
+                ::operator delete(Array_ItemPtr_dtor(self->itemList));
         }
         self->itemList = 0;
 
@@ -1675,7 +1670,6 @@ void AEString_add(String12 *out, String12 *a, String12 *b);
 void AEString_addAssign(String12 *self, String12 *other);
 void ArrayReleaseClasses_ItemPtr(void *arr);
 void *Array_ItemPtr_dtor(void *arr);
-void operator_delete(void *p);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
@@ -1762,7 +1756,7 @@ void HangarWindow::selectItem(void *item) {
                 if (self->itemList != 0) {
                     ArrayReleaseClasses_ItemPtr(self->itemList);
                     if (self->itemList != 0)
-                        operator_delete(Array_ItemPtr_dtor(self->itemList));
+                        ::operator delete(Array_ItemPtr_dtor(self->itemList));
                 }
                 self->itemList = 0;
 
@@ -2285,8 +2279,6 @@ int Station_getIndex(void *station);
 void *Station_getItems(void *station);
 int SolarSystem_getIndex(void *sys);
 int Ship_getCurrentLoad(void *ship);
-void *operator_new(unsigned int n);
-void *operator_new__(unsigned int n);
 int __aeabi_idiv(int a, int b);
 
 void HangarList_ctor(void *list);
@@ -2346,7 +2338,7 @@ void HangarWindow::initialize() {
     ((Status *)(status))->calcCargoPrices();
 
     // Build the hangar item list.
-    void *list = operator_new(0xc);
+    void *list = ::operator new(0xc);
     HangarList_ctor(list);
     self->hangarList = list;
     void *mixed = Item::mixItems((ItemArray *)(Ship_getCargo(((Status *)(*gStatus))->getShip())), (ItemArray *)(Station_getItems(((Status *)(*gStatus))->getStation())));
@@ -2354,7 +2346,7 @@ void HangarWindow::initialize() {
     ((HangarList *)(list))->init(((Status *)(*gStatus))->getShip(), 0, Station_getShips(((Status *)(*gStatus))->getStation()), (Array<BluePrint *> *)(long)((Status *)(*g_hw_globals))->getBluePrints());
 
     // Tab bar: 3 help/info buttons across the top.
-    void *tabs = operator_new(0xc);
+    void *tabs = ::operator new(0xc);
     Array_TouchButtonPtr_ctor(tabs);
     self->tabButtons = tabs;
     ArraySetLength_TouchButtonPtr(3, tabs);
@@ -2362,18 +2354,18 @@ void HangarWindow::initialize() {
     int scrW = *g_hw_screenWidth;
     Layout *layout = (Layout *)*g_hw_layout;
 
-    void *b0 = operator_new(200);
+    void *b0 = ::operator new(200);
     TouchButton_ctor_text(b0, ((GameText *)(*g_hw_helpTextId))->getText(), 3,
                           scrW - Layout_getHelpButtonOffset(), 0, 0x12);
     G<void *>(G<void *>(self->tabButtons, 4), 8) = b0;
 
-    void *b1 = operator_new(200);
+    void *b1 = ::operator new(200);
     int w0 = ((TouchButton *)(b0))->getWidth();
     TouchButton_ctor_text(b1, ((GameText *)(*g_hw_helpTextId))->getText(), 3,
                           (scrW - Layout_getHelpButtonOffset() - w0) + layout->field_0x38, 0, 0x12);
     G<void *>(G<void *>(self->tabButtons, 4), 4) = b1;
 
-    void *b2 = operator_new(200);
+    void *b2 = ::operator new(200);
     int w0b = ((TouchButton *)(b0))->getWidth();
     int w1b = ((TouchButton *)(b1))->getWidth();
     TouchButton_ctor_text(b2, ((GameText *)(*g_hw_helpTextId))->getText(), 3,
@@ -2383,7 +2375,7 @@ void HangarWindow::initialize() {
     self->listModeFlag = *g_hw_listModeFlag;
 
     // Six tab icons.
-    void *icons = operator_new__(0x18);
+    void *icons = ::operator new[](0x18);
     self->tabIcons = icons;
     for (int i = 0; i != 6; i++)
         PaintCanvas_Image2DCreate(*g_hw_canvas, i + 0x232a, (unsigned int *)((char *)icons + i * 4));
@@ -2406,7 +2398,7 @@ void HangarWindow::initialize() {
     PaintCanvas_Image2DCreate(*g_hw_canvas, 0x544, (unsigned int *)((char *)self + 0xec));
 
     // Action button bank (24 entries).
-    void *btns = operator_new(0xc);
+    void *btns = ::operator new(0xc);
     Array_TouchButtonPtr_ctor(btns);
     self->buttons = btns;
     ArraySetLength_TouchButtonPtr(0x18, btns);
@@ -2414,63 +2406,63 @@ void HangarWindow::initialize() {
     unsigned int img;
     img = 0xffffffff;
     PaintCanvas_Image2DCreate(*g_hw_canvas, 0x470, &img);
-    void *e0 = operator_new(200);
+    void *e0 = ::operator new(200);
     TouchButton_ctor_img((void *)e0, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x60, 0x11, 4);
     G<void *>(G<void *>(self->buttons, 4), 0) = e0;
 
     if (((Status *)(*gStatus))->getCurrentCampaignMission() == 0x4d)
         Station_getIndex(((Status *)(*gStatus))->getStation());
 
-    void *e1 = operator_new(200);
+    void *e1 = ::operator new(200);
     TouchButton_ctor_text(e1, ((GameText *)(*g_hw_helpTextId))->getText(), 7, 0, 0, 0x11);
     G<void *>(G<void *>(self->buttons, 4), 4) = e1;
-    void *e2 = operator_new(200);
+    void *e2 = ::operator new(200);
     TouchButton_ctor_text(e2, ((GameText *)(*g_hw_helpTextId))->getText(), 7, 0, 0, 0x11);
     G<void *>(G<void *>(self->buttons, 4), 8) = e2;
 
     img = 0xffffffff;
     PaintCanvas_Image2DCreate(*g_hw_canvas, 0x533, &img);
-    void *e3 = operator_new(200);
+    void *e3 = ::operator new(200);
     TouchButton_ctor_img((void *)e3, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x64, 0x11, 4);
     G<void *>(G<void *>(self->buttons, 4), 0xc) = e3;
 
     img = 0xffffffff;
     PaintCanvas_Image2DCreate(*g_hw_canvas, 0x532, &img);
-    void *e4 = operator_new(200);
+    void *e4 = ::operator new(200);
     TouchButton_ctor_img((void *)e4, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x64, 0x11, 4);
     G<void *>(G<void *>(self->buttons, 4), 0x10) = e4;
 
-    void *e5 = operator_new(200);
+    void *e5 = ::operator new(200);
     TouchButton_ctor_text2(e5, ((GameText *)(*g_hw_helpTextId))->getText(), 7, 0, 0, self->buttonHeight, 0x11);
     G<void *>(G<void *>(self->buttons, 4), 0x14) = e5;
-    void *e6 = operator_new(200);
+    void *e6 = ::operator new(200);
     TouchButton_ctor_text2(e6, ((GameText *)(*g_hw_helpTextId))->getText(), 7, 0, 0, self->buttonHeight, 0x11);
     G<void *>(G<void *>(self->buttons, 4), 0x18) = e6;
-    void *e7 = operator_new(200);
+    void *e7 = ::operator new(200);
     TouchButton_ctor_text(e7, ((GameText *)(*g_hw_helpTextId))->getText(), 7, 0, 0, 0x11);
     G<void *>(G<void *>(self->buttons, 4), 0x1c) = e7;
 
     {
         String12 lbl;
-        void *e8 = operator_new(200);
+        void *e8 = ::operator new(200);
         TouchButton_ctor_img((void *)e8, &lbl, 8, 0, 0, layout->field_0x50, 0x11, 4);
         G<void *>(G<void *>(self->buttons, 4), 0x20) = e8;
     }
     {
         String12 lbl;
-        void *e9 = operator_new(200);
+        void *e9 = ::operator new(200);
         TouchButton_ctor_img((void *)e9, &lbl, 9, 0, 0, layout->field_0x50, 0x11, 4);
         G<void *>(G<void *>(self->buttons, 4), 0x24) = e9;
     }
     {
-        void *e10 = operator_new(200);
+        void *e10 = ::operator new(200);
         TouchButton_ctor_img((void *)e10, ((GameText *)(*g_hw_helpTextId))->getText(), 7, 0, 0,
                              layout->field_0x50, 0x11, 4);
         G<void *>(G<void *>(self->buttons, 4), 0x28) = e10;
     }
     {
         String12 credits;
-        void *e11 = operator_new(200);
+        void *e11 = ::operator new(200);
         Layout_formatCredits(&credits, ((Status *)(*gStatus))->getCredits());
         TouchButton_ctor_img((void *)e11, &credits, 0xb, *g_hw_screenWidth, *g_hw_screenHeight,
                              Layout_getFooterTransitionWidth(), 0x22, 4);
@@ -2482,7 +2474,7 @@ void HangarWindow::initialize() {
     int row = 0;
     for (int slot = 0xc; (unsigned int)(slot - 0xc) < 5; slot++) {
         String12 lbl;
-        void *btn = operator_new(200);
+        void *btn = ::operator new(200);
         int visIdx;
         if (listMode == 0) {
             TouchButton_ctor_img(btn, &lbl, 0, 0, 0, layout->field_0x264, 0x11, 1);
@@ -2497,7 +2489,7 @@ void HangarWindow::initialize() {
     }
     {
         String12 lbl;
-        void *btn = operator_new(200);
+        void *btn = ::operator new(200);
         if (listMode == 0)
             TouchButton_ctor_img(btn, &lbl, 0, 0, 0, layout->field_0x264, 0x11, 1);
         else
@@ -2510,7 +2502,7 @@ void HangarWindow::initialize() {
     PaintCanvas_Image2DCreate(*g_hw_canvas, 0x233f, (unsigned int *)((char *)self + 0x38));
     {
         String12 lbl;
-        void *btn = operator_new(200);
+        void *btn = ::operator new(200);
         TouchButton_ctor_text(btn, &lbl, 7, 0, 0, 0x11);
         G<void *>(G<void *>(self->buttons, 4), 0x5c) = btn;
     }
@@ -2527,7 +2519,7 @@ void HangarWindow::initialize() {
             PaintCanvas_Image2DCreate(*g_hw_canvas, s * 2 + 0x2330, &imgA);
             PaintCanvas_Image2DCreate(*g_hw_canvas, s * 2 + 0x2331, &imgB);
         }
-        void *btn = operator_new(200);
+        void *btn = ::operator new(200);
         TouchButton_ctor_img2(btn, (void *)(uintptr_t)imgA, (void *)(uintptr_t)imgB, 0x13, 0, 0, 1);
         G<void *>(G<void *>(self->buttons, 4), i * 4) = btn;
         ((TouchButton *)(G<void *>(G<void *>(self->buttons, 4), i * 4)))->setVisible(false);
@@ -2579,14 +2571,14 @@ void HangarWindow::initialize() {
 
     Ship_adjustPrice((Ship *)(((Status *)(*gStatus))->getShip()));
 
-    void *liw = operator_new(0x13c);
+    void *liw = ::operator new(0x13c);
     ListItemWindow_ctor(liw);
     self->listItemWindow = liw;
-    void *cw1 = operator_new(0x5c);
+    void *cw1 = ::operator new(0x5c);
     ChoiceWindow_ctor(cw1);
     self->viewMode = 0;
     self->choiceWindow = cw1;
-    void *cw2 = operator_new(0x5c);
+    void *cw2 = ::operator new(0x5c);
     ChoiceWindow_ctor(cw2);
     self->dialogActive = 0;
     self->dialog = cw2;
@@ -2609,7 +2601,7 @@ void HangarWindow::initialize() {
     self->contentWidth = contentW;
     self->contentHeight = scrH - 10;
 
-    int *cols = (int *)operator_new__(0xc);
+    int *cols = (int *)::operator new[](0xc);
     self->columnWidths = cols;
     int third = __aeabi_idiv(contentW, 3) - 2;
     cols[0] = third;

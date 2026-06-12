@@ -18,7 +18,6 @@ extern "C" void AERandom_dtor(void *self);
 extern "C" void AERandom_ctor(void *self);
 extern "C" void Array_ParticleSet_ctor(void *self);
 extern "C" void ArraySet_ParticleSet(Array<int> const *src, void *dst);
-extern "C" void *operator_new(uint32_t size);
 extern "C" void Array_ParticleSet_dtor(void *self);
 
 // ---- setParticleSet_181b1e.cpp ----
@@ -489,8 +488,8 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
     if ((uint32_t)(bytes64 >> 32) != 0) {
         bytes = 0xffffffffu;
     }
-    P(this, 0x68) = operator_new(bytes);
-    P(this, 0x6c) = operator_new(maxParticles | ((int32_t)maxParticles >> 31));
+    P(this, 0x68) = ::operator new(bytes);
+    P(this, 0x6c) = ::operator new(maxParticles | ((int32_t)maxParticles >> 31));
 
     for (int i = 0; i < (int)maxParticles; ++i) {
         ((uint8_t *)P(this, 0x6c))[i] = 200;

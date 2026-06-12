@@ -56,7 +56,6 @@ extern "C" void ArrayReleaseClasses_GunArray(Array<Gun *> *array);
 extern "C" void ArrayReleaseClasses_GunArrayArray(Array<Array<Gun *> *> *array);
 extern "C" void *Array_GunArray_dtor(Array<Gun *> *array);
 extern "C" void *Array_GunArrayArray_dtor(Array<Array<Gun *> *> *array);
-extern "C" void Player_operator_delete(void *p);
 extern "C" void Player_setGammaHP_tail();
 extern "C" int gStopSoundIds[];
 extern "C" void *gFModSound;
@@ -947,7 +946,7 @@ __attribute__((minsize)) Player::~Player()
                 if (s2 == 0) {
                     this->guns->data()[i] = 0;
                 } else {
-                    Player_operator_delete(Array_GunArray_dtor(s2));
+                    ::operator delete(Array_GunArray_dtor(s2));
                     this->guns->data()[i] = 0;
                 }
                 guns = this->guns;
@@ -955,12 +954,12 @@ __attribute__((minsize)) Player::~Player()
         }
         ArrayReleaseClasses_GunArrayArray(guns);
         if (this->guns != 0) {
-            Player_operator_delete(Array_GunArrayArray_dtor(this->guns));
+            ::operator delete(Array_GunArrayArray_dtor(this->guns));
         }
         this->guns = 0;
     }
     if (this->enemies != 0) {
-        Player_operator_delete(Array_Player_dtor(this->enemies));
+        ::operator delete(Array_Player_dtor(this->enemies));
     }
     this->enemies = 0;
 }
@@ -1154,7 +1153,7 @@ __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Ve
 __attribute__((minsize)) extern "C" void Player_setEnemies(Player *self, Array<Player *> *enemies)
 {
     if (self->enemies != 0) {
-        Player_operator_delete(Array_Player_dtor(self->enemies));
+        ::operator delete(Array_Player_dtor(self->enemies));
     }
     self->enemies = 0;
     if (enemies != 0) {

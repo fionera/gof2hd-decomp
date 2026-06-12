@@ -18,7 +18,6 @@ extern "C" void ArrayReleaseClasses_ImagePart(void *arr);
 extern "C" void *Array_ImagePart_dtor(void *p);
 extern "C" void ArrayReleaseClasses_String(void *arr);
 extern "C" void *Array_String_dtor(void *p);
-extern "C" void operator_delete(void *p) noexcept;
 extern "C" int *Achievements_getMedals(void *ach);
 extern "C" __attribute__((visibility("hidden"))) void **g_SWm_layout;
 extern "C" __attribute__((visibility("hidden"))) int *g_SWm_height;
@@ -37,28 +36,28 @@ StatusWindow *_ZN12StatusWindowD2Ev(StatusWindow *self)
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
         void *q = self->tabButtons;
-        if (q != 0) operator_delete(Array_TouchButton_dtor(q));
+        if (q != 0) ::operator delete(Array_TouchButton_dtor(q));
     }
     self->tabButtons = 0;
     p = self->medalButtons;
     if (p != 0) {
         ArrayReleaseClasses_TouchButton(p);
         void *q = self->medalButtons;
-        if (q != 0) operator_delete(Array_TouchButton_dtor(q));
+        if (q != 0) ::operator delete(Array_TouchButton_dtor(q));
     }
     self->medalButtons = 0;
     p = self->field_0xc;
     if (p != 0) {
         ArrayReleaseClasses_ImagePart(p);
         void *q = self->field_0xc;
-        if (q != 0) operator_delete(Array_ImagePart_dtor(q));
+        if (q != 0) ::operator delete(Array_ImagePart_dtor(q));
     }
     self->field_0xc = 0;
     p = self->detailLines;
     if (p != 0) {
         ArrayReleaseClasses_String(p);
         void *q = self->detailLines;
-        if (q != 0) operator_delete(Array_String_dtor(q));
+        if (q != 0) ::operator delete(Array_String_dtor(q));
     }
     self->detailLines = 0;
     return self;
@@ -115,8 +114,6 @@ float StatusWindow::getRelativeScrollStartPos() {
 // ---- OnTouchEnd_15a1c4.cpp ----
 extern "C" {
 
-void *operator_new(uint32_t size);
-void operator_delete(void *p) noexcept;
 
 void String_fromC(void *s, const char *text, bool copy);
 void String_fromText(void *s, void *text, bool copy);
@@ -195,10 +192,10 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     if (pp(self, 0x10) != 0) {
                         ArrayStr_releaseClasses(pp(self, 0x10));
                         if (pp(self, 0x10) != 0)
-                            operator_delete(ArrayStr_dtor(pp(self, 0x10)));
+                            ::operator delete(ArrayStr_dtor(pp(self, 0x10)));
                     }
                     pp(self, 0x10) = 0;
-                    void *lineArr = operator_new(0xc);
+                    void *lineArr = ::operator new(0xc);
                     ArrayStr_ctor(lineArr);
                     pp(self, 0x10) = lineArr;
 
@@ -826,8 +823,6 @@ void StatusWindow::draw() {
 
 // ---- StatusWindow_157d80.cpp ----
 extern "C" {
-void *operator_new(uint32_t size);
-void *operator_new_array(uint32_t size);
 
 void ArrayTB_ctor(void *self);                       // Array<TouchButton*>::Array()
 void ArrayTB_setLength(int n, void *self);           // ArraySetLength<TouchButton*>
@@ -859,7 +854,7 @@ extern int   g_sw_screenH;       // *(DAT_168040): screen height source
 StatusWindow * StatusWindow::ctor() {
     StatusWindow *self = this;
     // --- two-tab button bar at +0x04 ---
-    void *tabs = operator_new(0xc);
+    void *tabs = ::operator new(0xc);
     ArrayTB_ctor(tabs);
     pp(self, 0x4) = tabs;
     ArrayTB_setLength(2, tabs);
@@ -868,13 +863,13 @@ StatusWindow * StatusWindow::ctor() {
     int layoutW = *(int *)*(void **)g_sw_layoutW;
     int textId = *(int *)*(void **)g_sw_gameTextDef;
 
-    void *b0 = operator_new(200);
+    void *b0 = ::operator new(200);
     void *t0 = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
     int helpOff = layout->getHelpButtonOffset();
     TouchButton_ctor_tab(b0, t0, 3, layoutW - helpOff, 0, 0x12);
     *(void **)(*(int *)(self->tabButtons + 4) + 4) = b0;
 
-    void *b1 = operator_new(200);
+    void *b1 = ::operator new(200);
     void *t1 = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
     int helpOff2 = layout->getHelpButtonOffset();
     int w1 = ((TouchButton *)(b1))->getWidth();
@@ -891,7 +886,7 @@ StatusWindow * StatusWindow::ctor() {
     i32(self, 0x34) = -1;
 
     // --- 45 medal buttons at +0x08 ---
-    void *medals = operator_new(0xc);
+    void *medals = ::operator new(0xc);
     ArrayTB_ctor(medals);
     i32(self, 0x0) = 0x2d;
     pp(self, 0x8) = medals;
@@ -899,7 +894,7 @@ StatusWindow * StatusWindow::ctor() {
 
     int *medalIds = Achievements_getMedals(*(void **)g_sw_achievements);
     for (int i = 0; i < i32(self, 0x0); i++) {
-        void *btn = operator_new(200);
+        void *btn = ::operator new(200);
         int medal = medalIds[i];
         void *txt = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
         TouchButton_ctor_medal(btn, i, medal, txt, 0, 0, 'D');
@@ -921,7 +916,7 @@ StatusWindow * StatusWindow::ctor() {
     i32(self, 0x74) = img3h;
 
     // Precompute per-tab scroll content heights.
-    int *heights = (int *)operator_new_array(0xc);
+    int *heights = (int *)::operator new[](0xc);
     pp(self, 0x68) = heights;
     int row = ((layout->field_0x1c * 3 + layout->field_0x2d8) +
                layout->field_0x2c * 8) + i32(self, 0x64) +

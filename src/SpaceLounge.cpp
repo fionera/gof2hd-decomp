@@ -108,9 +108,6 @@ extern "C" void *SpaceLounge_lounge_image_factory_slot;
 extern "C" void *SpaceLounge_lounge_text_slot;
 extern "C" void *SpaceLounge_lounge_font_slot;
 extern "C" void *Station_getAgents(void *station);
-extern "C" void *operator_new(unsigned int size);
-extern "C" void *operator_new_arr(unsigned int size);
-extern "C" void operator_delete(void *p);
 extern "C" void *ChoiceWindow_dtor(void *p);
 extern "C" void ChoiceWindow_ctor(void *choice);
 extern "C" void *ScrollTouchWindow_ctor(void *scroll, int x, int y, int w, int h, bool vertical);
@@ -145,7 +142,6 @@ extern "C" void ArrayRelease_ImagePartPtr(void *p);
 extern "C" void ArrayRelease_ArrayImagePartPtr(void *p);
 extern "C" void ArrayRelease_VectorPtr(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
-extern "C" void operator_delete_arr(void *p);
 extern "C" void SpaceLounge_draw_cutscene_tail();
 extern "C" void SpaceLounge_draw_map_tail(void *map);
 extern "C" void PaintCanvas_SetColor4(void *canvas, int a, int r, int g, int b);
@@ -996,10 +992,10 @@ int SpaceLounge::init() {
     P(self, 0x24) = Station_getAgents((*g_status)->getStation());
 
     if (P(self, 0x8) != 0) {
-        operator_delete(ChoiceWindow_dtor(P(self, 0x8)));
+        ::operator delete(ChoiceWindow_dtor(P(self, 0x8)));
         P(self, 0x8) = 0;
     }
-    void *choice = operator_new(0x5c);
+    void *choice = ::operator new(0x5c);
     ChoiceWindow_ctor(choice);
     P(self, 0x8) = choice;
     UC(self, 0x35) = 0;
@@ -1009,7 +1005,7 @@ int SpaceLounge::init() {
     }
 
     UC(self, 0x18) = 0;
-    P(self, 0x58) = operator_new_arr(0x15);
+    P(self, 0x58) = ::operator new[](0x15);
     for (int i = 0; i != 0x15; ++i) {
         ((char *)P(self, 0x58))[i] = 0;
     }
@@ -1021,7 +1017,7 @@ int SpaceLounge::init() {
     I(self, 0x74) = I(layout, 0x20) + I(layout, 0xc);
     I(self, 0x6c) = panelW - I(layout, 0x4c) * 3 - I(layout, 0x2d4);
 
-    void *scroll = operator_new(0x24);
+    void *scroll = ::operator new(0x24);
     ScrollTouchWindow_ctor(scroll, I(self, 0x70) + I(layout, 0x4c) * 2 + I(layout, 0x2d4),
                            I(self, 0x74), I(self, 0x6c), I(layout, 0x6c), false);
     P(self, 0x60) = scroll;
@@ -1033,10 +1029,10 @@ int SpaceLounge::init() {
     if (P(self, 0x5c) != 0) {
         ArrayRelease_TouchButtonPtr(P(self, 0x5c));
         if (P(self, 0x5c) != 0) {
-            operator_delete(Array_TouchButtonPtr_dtor(P(self, 0x5c)));
+            ::operator delete(Array_TouchButtonPtr_dtor(P(self, 0x5c)));
         }
     }
-    void *buttons = operator_new(0xc);
+    void *buttons = ::operator new(0xc);
     Array_TouchButton_ctor(buttons);
     P(self, 0x5c) = buttons;
     ArraySetLength_TouchButtonPtr(buttons, 5);
@@ -1049,7 +1045,7 @@ int SpaceLounge::init() {
     I(self, 0x80) = baseY;
 
     for (unsigned i = 0; i < 5; ++i) {
-        void *button = operator_new(200);
+        void *button = ::operator new(200);
         TouchButton_ctor(button, text, 0, I(self, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)),
                          I(self, 0x6c), 0x11, 4);
         ((void **)P(buttons, 0x4))[i] = button;
@@ -1133,7 +1129,7 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
 
     void *cutscene = P(self, 0x44);
     if (cutscene == 0) {
-        cutscene = operator_new(0xa0);
+        cutscene = ::operator new(0xa0);
         CutScene_ctor(cutscene, 4);
         P(self, 0x44) = cutscene;
     }
@@ -1147,7 +1143,7 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     MatrixSetRotation(from, 0.0f, 0.0f, 0.0f);
     MatrixSetTranslation(to, (float)race, 0.0f, 0.0f);
     MatrixSetRotation(to, 0.0f, 0.0f, 0.0f);
-    void *ease = operator_new(0xf4);
+    void *ease = ::operator new(0xf4);
     EaseInOutMatrix_ctor(ease, from, to, 3000);
     P(self, 0x48) = ease;
 
@@ -1226,17 +1222,17 @@ void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
 {
     void *p = P(self, 0x8);
     if (p != 0) {
-        operator_delete(ChoiceWindow_dtor(p));
+        ::operator delete(ChoiceWindow_dtor(p));
     }
     P(self, 0x8) = 0;
 
     p = P(self, 0x44);
     if (p != 0) {
-        operator_delete(CutScene_dtor(p));
+        ::operator delete(CutScene_dtor(p));
     }
     P(self, 0x44) = 0;
 
-    operator_delete_arr(P(self, 0x58));
+    ::operator delete[](P(self, 0x58));
     P(self, 0x58) = 0;
 
     p = P(self, 0x28);
@@ -1244,7 +1240,7 @@ void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
         ArrayRelease_StringPtr(p);
         p = P(self, 0x28);
         if (p != 0) {
-            operator_delete(Array_StringPtr_dtor(p));
+            ::operator delete(Array_StringPtr_dtor(p));
         }
     }
     P(self, 0x28) = 0;
@@ -1254,7 +1250,7 @@ void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
         ArrayRelease_TouchButtonPtr(p);
         p = P(self, 0x5c);
         if (p != 0) {
-            operator_delete(Array_TouchButtonPtr_dtor(p));
+            ::operator delete(Array_TouchButtonPtr_dtor(p));
         }
     }
     P(self, 0x5c) = 0;
@@ -1273,7 +1269,7 @@ void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
             ArrayRelease_ImagePartPtr(inner);
             inner = ((void **)P(P(self, 0x38), 0x4))[i];
             if (inner != 0) {
-                operator_delete(Array_ImagePartPtr_dtor(inner));
+                ::operator delete(Array_ImagePartPtr_dtor(inner));
                 ((void **)P(P(self, 0x38), 0x4))[i] = 0;
             } else {
                 data[i] = 0;
@@ -1283,7 +1279,7 @@ void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
         ArrayRelease_ArrayImagePartPtr(p);
         p = P(self, 0x38);
         if (p != 0) {
-            operator_delete(Array_ArrayImagePartPtr_dtor(p));
+            ::operator delete(Array_ArrayImagePartPtr_dtor(p));
         }
     }
     P(self, 0x38) = 0;
@@ -1293,20 +1289,20 @@ void *_ZN11SpaceLoungeD2Ev(SpaceLounge *self)
         ArrayRelease_VectorPtr(p);
         p = P(self, 0x40);
         if (p != 0) {
-            operator_delete(Array_VectorPtr_dtor(p));
+            ::operator delete(Array_VectorPtr_dtor(p));
         }
     }
     P(self, 0x40) = 0;
 
     p = P(self, 0x48);
     if (p != 0) {
-        operator_delete(EaseInOutMatrix_dtor(p));
+        ::operator delete(EaseInOutMatrix_dtor(p));
     }
     P(self, 0x48) = 0;
 
     p = P(self, 0xc0);
     if (p != 0) {
-        operator_delete(p);
+        ::operator delete(p);
     }
     P(self, 0xc0) = 0;
     ((String *)(B(self, 0xa4)))->dtor();
@@ -1421,7 +1417,7 @@ idle_camera:
             int amount = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_update_random_slot, 10);
             UC(self, 0xc4) = 0;
             if (P(self, 0xc0) == 0) {
-                void *ease = operator_new(0x10);
+                void *ease = ::operator new(0x10);
                 EaseInOut_ctor(ease, 0.0f, (float)amount);
                 P(self, 0xc0) = ease;
             } else {

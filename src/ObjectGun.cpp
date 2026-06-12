@@ -15,17 +15,13 @@ template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)
 ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self);
 extern "C" void ObjectGun_delete(ObjectGun *self);
 extern "C" void *AEGeometry_dtor(AEGeometry *self);
-extern "C" void operator_delete(void *self);
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion*> *self);
 extern "C" void *Array_Explosion_dtor(Array<Explosion*> *self);
-extern "C" void operator_delete_array(void *self);
 void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
 void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
 extern "C" void ObjectGun_setEnemies_impl(void *items);
 extern "C" void Matrix_ctor(Matrix *self);
 void TransformCreate(void *canvas, uint32_t *transform);
-extern "C" void *operator_new(uint32_t size);
-extern "C" void *operator_new_array(uint32_t size);
 extern "C" void Array_Explosion_ctor(Array<Explosion*> *self);
 extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion*> *self);
 extern "C" void Explosion_ctor(Explosion *self, int type);
@@ -83,7 +79,7 @@ ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
 
     AEGeometry *geometry = self->field_0x18;
     if (geometry != 0)
-        operator_delete(AEGeometry_dtor(geometry));
+        ::operator delete(AEGeometry_dtor(geometry));
 
     Array<Explosion*> *explosions = self->field_0x2c;
     self->field_0x18 = 0;
@@ -91,11 +87,11 @@ ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
         ArrayReleaseClasses_Explosion(explosions);
         explosions = self->field_0x2c;
         if (explosions != 0)
-            operator_delete(Array_Explosion_dtor(explosions));
+            ::operator delete(Array_Explosion_dtor(explosions));
         self->field_0x2c = 0;
     }
 
-    operator_delete_array(self->field_0x30);
+    ::operator delete[](self->field_0x30);
     self->field_0x30 = 0;
     return self;
 }
@@ -210,10 +206,10 @@ make_explosions:
         self->field_0x2c = explosions;
         ArraySetLength_Explosion(gun->count, explosions);
         explosions = self->field_0x2c;
-        self->field_0x30 = (uint8_t *)operator_new_array((uint32_t)explosions->size());
+        self->field_0x30 = (uint8_t *)::operator new[]((uint32_t)explosions->size());
 
         for (uint32_t i = 0; i < explosions->size(); ++i) {
-            Explosion *explosion = (Explosion *)operator_new(0x68);
+            Explosion *explosion = (Explosion *)::operator new(0x68);
             int explosionType = 10;
             int weapon = gun->itemIndex;
             if (weapon == 0xb1)
@@ -251,7 +247,7 @@ after_special_type:
         self->field_0x1c = 1;
     }
 
-    geometry = (AEGeometry *)operator_new(0xc0);
+    geometry = (AEGeometry *)::operator new(0xc0);
     AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[gun->itemIndex].id, *canvas, false);
 
 done:
@@ -299,7 +295,7 @@ void ObjectGun::update(int dt)
                 KIPlayer *ki = ((Player *)(owner))->getKIPlayer();
                 if (ki != 0 && F<uint8_t>(((Player *)(owner))->getKIPlayer(), 0x3f) != 0) {
                     this->field_0x1c = 1;
-                    AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);
+                    AEGeometry *geometry = (AEGeometry *)::operator new(0xc0);
                     AEGeometry_ctor(geometry, g_ObjectGunGeometryIds[this->field_0x8->itemIndex].id,
                                     *canvas, false);
                     this->field_0x18 = geometry;

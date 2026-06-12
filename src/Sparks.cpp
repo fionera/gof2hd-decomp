@@ -1,9 +1,7 @@
 #include "gof2/Sparks.h"
 
 
-extern "C" void *operator_new(uint32_t size);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
-extern "C" void operator_delete(void *ptr);
 extern "C" void PaintCanvas_SetTexture(void *canvas, uint32_t texture, uint32_t mode);
 extern "C" void PaintCanvas_SetBlendMode(void *canvas, int mode);
 extern "C" void PaintCanvas_SetWorldViewMatrix(void *canvas, Matrix const &m);
@@ -82,7 +80,7 @@ Sparks::~Sparks()
 {
     void *p = this->lifetimeThresholds;
     if (p != 0)
-        operator_delete(p);
+        ::operator delete(p);
     this->lifetimeThresholds = 0;
 }
 

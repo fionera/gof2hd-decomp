@@ -25,7 +25,6 @@ extern "C" void Player_reset(Player *self);
 extern "C" void KIPlayer_setLevel(PlayerTurret *self, Level *level);
 extern "C" int AEGeometry_getReferenceMatrix(AEGeometry *self);
 extern "C" PlayerTurret *PlayerTurret_completeDtor(PlayerTurret *self);
-extern "C" void PlayerTurret_operator_delete(void *ptr);
 extern "C" void *KIPlayer_dtor(void *self);
 extern "C" void Player_getPosition(Vector *out, Player *self);
 void MatrixGetDir(Vector *out, const void *matrix);
@@ -177,7 +176,7 @@ KIPlayer *PlayerTurret::getHost()
 // PlayerTurret deleting destructor (D0): run the complete dtor, then free.
 void _ZN12PlayerTurretD0Ev(PlayerTurret *self)
 {
-    PlayerTurret_operator_delete(PlayerTurret_completeDtor(self));
+    ::operator delete(PlayerTurret_completeDtor(self));
 }
 
 // ---- setScaling_1573f0.cpp ----
@@ -472,25 +471,25 @@ PlayerTurret::~PlayerTurret() noexcept(false)
 
     Explosion *explosion = TP<Explosion>(this, 0x13c);
     if (explosion != 0) {
-        PlayerTurret_operator_delete(Explosion_dtor(explosion));
+        ::operator delete(Explosion_dtor(explosion));
     }
     this->f_13c = 0;
 
     AEGeometry *base = TP<AEGeometry>(this, 0x140);
     if (base != 0) {
-        PlayerTurret_operator_delete(AEGeometry_dtor(base));
+        ::operator delete(AEGeometry_dtor(base));
     }
     this->f_140 = 0;
 
     AEGeometry *turret = TP<AEGeometry>(this, 0x144);
     if (turret != 0) {
-        PlayerTurret_operator_delete(AEGeometry_dtor(turret));
+        ::operator delete(AEGeometry_dtor(turret));
     }
     this->f_144 = 0;
 
     AEGeometry *helper = TP<AEGeometry>(this, 0x148);
     if (helper != 0) {
-        PlayerTurret_operator_delete(AEGeometry_dtor(helper));
+        ::operator delete(AEGeometry_dtor(helper));
     }
     this->f_148 = 0;
 
@@ -590,7 +589,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         }
         AEGeometry_ctorMesh(child, childMesh, (void *)*canvasHolder, false);
         ((AEGeometry *)(geometry))->addChild(U(child, 0xc));
-        PlayerTurret_operator_delete(AEGeometry_dtor(child));
+        ::operator delete(AEGeometry_dtor(child));
         ((AEGeometry *)(geometry))->setScaling(0.5f);
     }
 

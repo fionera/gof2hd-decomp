@@ -354,13 +354,13 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             }
             self->mission = 0;
 
-            void *mission = operator_new(0x78);
+            void *mission = ::operator new(0x78);
             Mission_ctor(mission, 0, 0, Wanted_getTravelsTo(wanted));
             self->mission = mission;
 
             void *map = self->starMap;
             if (map == 0) {
-                map = operator_new(0x1e8);
+                map = ::operator new(0x1e8);
                 StarMap_ctor(map, true, mission, false, -1);
                 ((ApplicationManager *)(*appHolder))->GetApplicationModule(5);
                 F<void *>(((ApplicationManager *)(*appHolder))->GetApplicationModule(5), 0x10) = map;
@@ -374,7 +374,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             lastSeen = Wanted_getLastSeen(wanted);
             ((StarMap *)(map))->setStart(system, lastSeen);
             if (station != 0) {
-                ((Station *)(station))->dtor(); operator_delete(station);
+                ((Station *)(station))->dtor(); ::operator delete(station);
             }
             self->showingMap = 1;
             ((Layout *)(*g_WantedWindow_end_layout_a))->resetWindowDimensions();
@@ -588,7 +588,7 @@ int WantedWindow::init() {
     self->scrollOffsetSnapshot = 0;
     self->dragDelta = 0;
 
-    void *wantedList = operator_new(0x0c);
+    void *wantedList = ::operator new(0x0c);
     Array_Wanted_ctor(wantedList);
     self->wantedList = wantedList;
 
@@ -683,13 +683,13 @@ int WantedWindow::init() {
     self->highlightedWanted = selected;
     ((WantedWindow *)(self))->selectWanted(selected);
 
-    void *buttons = operator_new(0x0c);
+    void *buttons = ::operator new(0x0c);
     Array_TouchButton_ctor(buttons);
     self->buttons = buttons;
     ArraySetLength_TouchButton(2, buttons);
 
     void **textHolder = g_WantedWindow_init_text;
-    void *button = operator_new(0xc8);
+    void *button = ::operator new(0xc8);
     String *text = (String *)((GameText *)(*textHolder))->getText(0xc93);
     int x = self->windowX;
     int bw = self->windowWidth;
@@ -698,7 +698,7 @@ int WantedWindow::init() {
     ((TouchButton *)(button))->ctor6(x + bw - help, self->windowY, text, 3, 0x12, 0);
     *(void **)((char *)F<void *>(buttons, 0x4) + 4) = button;
 
-    button = operator_new(0xc8);
+    button = ::operator new(0xc8);
     text = (String *)((GameText *)(*textHolder))->getText(0x81);
     x = self->windowX;
     bw = self->windowWidth;
@@ -719,13 +719,13 @@ int WantedWindow::init() {
         F<int>(layout, 0x2c);
 
     if (self->detailButton != 0) {
-        ((TouchButton *)(self->detailButton))->dtor(); operator_delete(self->detailButton);
+        ((TouchButton *)(self->detailButton))->dtor(); ::operator delete(self->detailButton);
     }
     self->starMap = 0;
     self->detailButton = 0;
     self->showingMap = 0;
 
-    button = operator_new(0xc8);
+    button = ::operator new(0xc8);
     text = (String *)((GameText *)(*textHolder))->getText(0x1a8);
     layout = *layoutHolder;
     TouchButton_ctor8(button, text, 0,
@@ -749,7 +749,7 @@ WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
         ArrayReleaseClasses_ImagePart(p);
         p = self->imageParts;
         if (p != 0) {
-            operator_delete(Array_ImagePart_dtor(p));
+            ::operator delete(Array_ImagePart_dtor(p));
         }
     }
     self->imageParts = 0;
@@ -759,20 +759,20 @@ WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
         ArrayReleaseClasses_TouchButton(p);
         p = self->buttons;
         if (p != 0) {
-            operator_delete(Array_TouchButton_dtor(p));
+            ::operator delete(Array_TouchButton_dtor(p));
         }
     }
     self->buttons = 0;
 
     p = self->detailButton;
     if (p != 0) {
-        ((TouchButton *)(p))->dtor(); operator_delete(p);
+        ((TouchButton *)(p))->dtor(); ::operator delete(p);
     }
     self->detailButton = 0;
 
     p = self->wantedList;
     if (p != 0) {
-        operator_delete(Array_Wanted_dtor(p));
+        ::operator delete(Array_Wanted_dtor(p));
     }
     self->wantedList = 0;
 
@@ -784,7 +784,7 @@ WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
 
     p = self->scrollWindow;
     if (p != 0) {
-        operator_delete(ScrollTouchWindow_dtor(p));
+        ::operator delete(ScrollTouchWindow_dtor(p));
     }
     self->scrollWindow = 0;
 
@@ -900,12 +900,12 @@ void WantedWindow::selectWanted(int idx) {
     String s94;
 
     if (self->imageParts != 0) {
-        operator_delete(Array_ImagePart_dtor(self->imageParts));
+        ::operator delete(Array_ImagePart_dtor(self->imageParts));
     }
     self->imageParts = 0;
 
     if (self->scrollWindow != 0) {
-        operator_delete(ScrollTouchWindow_dtor(self->scrollWindow));
+        ::operator delete(ScrollTouchWindow_dtor(self->scrollWindow));
     }
     self->scrollWindow = 0;
 
@@ -979,13 +979,13 @@ void WantedWindow::selectWanted(int idx) {
         ((String *)(&s40))->dtor();
 
         if (last != 0) {
-            ((Station *)(last))->dtor(); operator_delete(last);
+            ((Station *)(last))->dtor(); ::operator delete(last);
         }
         if (travel != 0) {
-            ((Station *)(travel))->dtor(); operator_delete(travel);
+            ((Station *)(travel))->dtor(); ::operator delete(travel);
         }
         if (current != 0) {
-            ((Station *)(current))->dtor(); operator_delete(current);
+            ((Station *)(current))->dtor(); ::operator delete(current);
         }
     } else if (((Wanted *)(wanted))->isTerminated() != 0) {
         String_cstr_ctor(&s34, g_WantedWindow_s_terminated_a, false);
@@ -1031,7 +1031,7 @@ void WantedWindow::selectWanted(int idx) {
         height = (height - F<int>(layout, 0x4c)) - F<int>(layout, 0x30);
     }
 
-    void *scroll = operator_new(0x24);
+    void *scroll = ::operator new(0x24);
     int pad = F<int>(layout, 0x2c);
     ScrollTouchWindow_ctor(scroll, self->windowX + (self->windowWidth >> 1) + pad,
                            F<int>(layout, 0x2d8) + pad + top,

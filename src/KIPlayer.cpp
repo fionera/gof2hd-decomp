@@ -14,7 +14,6 @@ extern "C" void FModSound_resumeEvent(void *a, int b);
 extern "C" void FModSound_pauseEvent(void *player);
 void MatrixGetPosition(Vector *out, float *matrix);
 extern "C" void Object_setVisible(void *obj);
-extern "C" void operator_delete(void *p);
 extern "C" void FModSound_stopEvent(void *player);
 extern "C" void Player_render(void *player);
 extern "C" void FModSound_playEvent(void *a, int b, int c);
@@ -30,7 +29,6 @@ extern "C" void Player_setDead(void *self, int arg);
 extern "C" void Player_addGun_b(void *player);
 extern "C" void Player_reset(void *player);
 extern "C" void Player_setEnemies(void *player);
-extern "C" void *operator_new(unsigned int sz);
 extern "C" void *gCanvas;
 extern "C" void AEGeometry_ctor2(void *self, void *canvas);
 extern "C" void AEGeometry_setPosition4(void *geom, int a, int b, int c);
@@ -171,7 +169,7 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self); // complete object dtor
 
 void _ZN8KIPlayerD0Ev(KIPlayer *self)
 {
-    return operator_delete(_ZN8KIPlayerD1Ev(self));
+    return ::operator delete(_ZN8KIPlayerD1Ev(self));
 }
 
 // ---- StopEngineSound_a61be.cpp ----
@@ -231,7 +229,7 @@ void KIPlayer::setRoute(Route *route) {
     KIPlayer *self = this;
     Route *old = self->route;
     if (old != 0) {
-        operator_delete(Route_dtor(old));
+        ::operator delete(Route_dtor(old));
     }
     self->route = 0;
     if (route != 0) {
@@ -255,38 +253,38 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
     *(void **)self = KIPlayer_vtable + 8;
 
     void *p = self->player;
-    if (p != 0) operator_delete(Player_dtor(p));
+    if (p != 0) ::operator delete(Player_dtor(p));
     self->player = 0;
 
     Route *r = self->route;
-    if (r != 0) operator_delete(Route_dtor(r));
+    if (r != 0) ::operator delete(Route_dtor(r));
     self->route = 0;
 
     void *g1 = self->crateGeometry;
-    if (g1 != 0) operator_delete(AEGeometry_dtor(g1));
+    if (g1 != 0) ::operator delete(AEGeometry_dtor(g1));
     self->crateGeometry = 0;
 
     void *au = self->field_0xc4;
-    if (au != 0) operator_delete(ArrayUint_dtor(au));
+    if (au != 0) ::operator delete(ArrayUint_dtor(au));
     self->field_0xc4 = 0;
 
     void *g2 = self->geometry;
-    if (g2 != 0) operator_delete(AEGeometry_dtor(g2));
+    if (g2 != 0) ::operator delete(AEGeometry_dtor(g2));
     self->geometry = 0;
 
     void *g3 = self->parentGeometry;
-    if (g3 != 0) operator_delete(AEGeometry_dtor(g3));
+    if (g3 != 0) ::operator delete(AEGeometry_dtor(g3));
     self->parentGeometry = 0;
 
     void *ai = self->cargo;
-    if (ai != 0) operator_delete(ArrayInt_dtor(ai));
+    if (ai != 0) ::operator delete(ArrayInt_dtor(ai));
     self->cargo = 0;
 
     void *sp = self->spacePoints;
     if (sp != 0) {
         ArrayReleaseClasses_SpacePoint(sp);
         void *sp2 = self->spacePoints;
-        if (sp2 != 0) operator_delete(ArraySpacePoint_dtor(sp2));
+        if (sp2 != 0) ::operator delete(ArraySpacePoint_dtor(sp2));
         self->spacePoints = 0;
     }
 
@@ -421,7 +419,7 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
     bool haveChild = (geom != 0) && (*(void **)((char *)geom + 0x18) != 0);
     if (geom != 0 && haveChild) {
         self->parentGeometry = geom;
-        void *child = operator_new(0xc0);
+        void *child = ::operator new(0xc0);
         AEGeometry_ctor2(child, *(void **)gCanvas);
         self->geometry = child;
         ((AEGeometry *)(child))->addChild(*(int *)((char *)self->parentGeometry + 0xc));
@@ -820,13 +818,13 @@ void KIPlayer::setShipGroup(int param2, int flag, int cond) {
     if (param2 == 0 || cond == 0) {
         self->geometry = (void *)(intptr_t)param2;
         void *g = self->parentGeometry;
-        if (g != 0) operator_delete(AEGeometry_dtor(g));
+        if (g != 0) ::operator delete(AEGeometry_dtor(g));
         self->parentGeometry = 0;
     } else {
         void *grp = self->geometry;
         self->parentGeometry = (void *)(intptr_t)param2;
         if (grp == 0) {
-            grp = operator_new(0xc0);
+            grp = ::operator new(0xc0);
             AEGeometry_ctor2(grp, gCanvas);
             self->geometry = grp;
         }
@@ -868,7 +866,7 @@ void KIPlayer::addGun_a() {
 // ---- createCrate_a622c.cpp ----
 void KIPlayer::createCrate(int type) {
     KIPlayer *self = this;
-    void *crate = operator_new(0xc0);
+    void *crate = ::operator new(0xc0);
     unsigned short id;
     if (type == 1) {
         id = 0x421e;

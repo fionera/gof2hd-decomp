@@ -7,7 +7,6 @@
 // Level* (offsets 0x20/0x24) use byte-offset casts, and everything else goes through the
 // extern "C" Level_* accessors declared in Objective.h.
 
-extern "C" void *operator_new(unsigned int size);
 extern "C" String *String_ctor_string(String *self, String *text, bool copy);
 
 // ---- Objective_97bfc.cpp ----
@@ -68,7 +67,7 @@ Objective *_ZN9ObjectiveD2Ev(Objective *self)
         ArrayReleaseClasses_Objective(children);
         children = self->field_0x10;
         if (children != 0)
-            operator_delete(Array_ObjectivePtr_dtor(children));
+            ::operator delete(Array_ObjectivePtr_dtor(children));
     }
     self->field_0x10 = 0;
 
@@ -86,7 +85,7 @@ Objective *_ZN9ObjectiveD2Ev(Objective *self)
 void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective *self,
                                                                         String *text)
 {
-    String *copy = (String *)operator_new(sizeof(String));
+    String *copy = (String *)::operator new(sizeof(String));
     String_ctor_string(copy, text, false);
     self->field_0x14 = copy;
 }

@@ -27,7 +27,6 @@
 template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
-extern "C" void operator_delete(void *p);
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int id);
 extern "C" void  AEGeometry_setMatrix(void *geom, void *m);
@@ -36,7 +35,6 @@ extern "C" void *Matrix_assign(void *dst, void *src);
 extern "C" void *Vector_assign(Vector *dst, Vector *src);
 extern "C" void *Explosion_ctor(void *e, int a);
 extern "C" void  Explosion_update(void *e, int dt, void *cam);
-extern "C" void *operator_new(uint32_t);
 extern "C" void  TargetFollowCamera_getPosition(Vector *out, void *cam);
 extern "C" void  TargetFollowCamera_setRumblePercentage(float pct, void *cam);
 extern "C" void  Vector_sub(Vector *a, Vector *b);
@@ -145,7 +143,7 @@ void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self); // complete object dt
 
 void _ZN17PlayerFixedObjectD0Ev(PlayerFixedObject *self)
 {
-    return operator_delete(_ZN17PlayerFixedObjectD1Ev(self));
+    return ::operator delete(_ZN17PlayerFixedObjectD1Ev(self));
 }
 
 // ---- setMoving_153ee4.cpp ----
@@ -362,7 +360,7 @@ afterMotion:
             ((ParticleSystemManager *)(*(void **)((char *)lod + 0x74)))->enableSystemEmit(emitHandle, true);
         }
 
-        expl = operator_new(0x68);
+        expl = ::operator new(0x68);
         Explosion_ctor(expl, 0);
         self->explosion = expl;
         ((Explosion *)(expl))->addFireStreaks();
@@ -646,7 +644,7 @@ int PlayerFixedObject::collide(float x, float y, float z) {
 // NEAR: clang assigns arr->r5, this->r6 (we get them swapped); allocator tie-break, not source-driven.
 void PlayerFixedObject::setBV(BoundingVolume *bv) {
     PlayerFixedObject *self = this;
-    void *arr = operator_new(0xc);
+    void *arr = ::operator new(0xc);
     Array_BV_ctor(arr);
     self->boundingVolumes = arr;
     return BoundingVolume_setArr(bv, arr);
@@ -717,7 +715,7 @@ __attribute__((visibility("hidden"))) extern void ***g_pfo_globals;
 void PlayerFixedObject::setWreckedMeshId(int meshId) {
     PlayerFixedObject *self = this;
     self->wreckMeshId = (uint16_t)meshId;
-    void *geom = operator_new(0xc0);
+    void *geom = ::operator new(0xc0);
     void **holder = g_pfo_canvas2;
     AEGeometry_ctor(geom, (uint16_t)meshId, *holder, true);
     self->wreckGeometry = geom;
@@ -778,25 +776,25 @@ void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
     void *wreck = self->wreckGeometry;
     *(void **)self = &PlayerFixedObject_vtable + 8;
     if (wreck != self->geometry) {
-        if (wreck != 0) operator_delete(AEGeometry_dtor(wreck));
+        if (wreck != 0) ::operator delete(AEGeometry_dtor(wreck));
         self->wreckGeometry = 0;
     }
     void *bvB = self->boundingVolumes;
     if (bvB != 0) {
         ArrayReleaseClasses_BV(bvB);
         void *b = self->boundingVolumes;
-        if (b != 0) operator_delete(Array_BV_dtor(b));
+        if (b != 0) ::operator delete(Array_BV_dtor(b));
     }
     self->boundingVolumes = 0;
     void *bvA = self->wreckCollision;
     if (bvA != 0) {
         ArrayReleaseClasses_BV(bvA);
         void *a = self->wreckCollision;
-        if (a != 0) operator_delete(Array_BV_dtor(a));
+        if (a != 0) ::operator delete(Array_BV_dtor(a));
     }
     self->wreckCollision = 0;
     void *expl = self->explosion;
-    if (expl != 0) operator_delete(Explosion_dtor(expl));
+    if (expl != 0) ::operator delete(Explosion_dtor(expl));
     self->explosion = 0;
     ((String *)((char *)self + 0x1ac))->dtor();
     return PlayerFixedObject_baseDtor(self);
@@ -916,11 +914,11 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
 
     if (special) {
         if (self->lootList != 0) {
-            operator_delete(Array_int_dtor((Array<int> *)self->lootList));
+            ::operator delete(Array_int_dtor((Array<int> *)self->lootList));
         }
         self->lootList = 0;
     } else {
-        void *gen = operator_new(1);
+        void *gen = ::operator new(1);
         Generator_ctor(gen);
         if (kind == 0x37a3) {
             self->field_0x41 = 1;
@@ -964,7 +962,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
                 }
             }
         }
-        operator_delete(Generator_dtor(gen));
+        ::operator delete(Generator_dtor(gen));
     }
 
     *(uint8_t *)((char *)self->player + 0x45) = 1;
@@ -1029,7 +1027,7 @@ void PlayerFixedObject::setDeadButSelectable() {
     ((Player *)(self->player))->setVulnerable(false);
     ((LODManager *)(*(void **)self->level))->removeObject((AEGeometry *)self->geometry);
     void *geom = self->geometry;
-    if (geom != 0) operator_delete(AEGeometry_dtor(geom));
+    if (geom != 0) ::operator delete(AEGeometry_dtor(geom));
     void **holder = g_pfo_canvas3;
     void *newGeom = self->wreckGeometry;
     self->geometry = newGeom;

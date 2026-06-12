@@ -346,7 +346,6 @@ namespace AbyssEngine { namespace AEMath { struct Vector; } }
 using AbyssEngine::AEMath::Vector;
 
 extern "C" {
-void *operator_new(uint32_t size);
 int FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, void **out);
 int FMOD_Event_setPitch(void *event, float pitch, int mode);
 int FMOD_Event_set3DAttributes(void *event, void *pos, void *vel);
@@ -361,7 +360,7 @@ static void *cacheVec(void *self, uint32_t off, Vector *src)
 {
     int *slot = (int *)pp(self, off);
     if (slot == 0) {
-        slot = (int *)operator_new(0xc);
+        slot = (int *)::operator new(0xc);
         slot[0] = 0;
         slot[1] = 0;
         slot[2] = 0;
@@ -645,7 +644,6 @@ namespace AbyssEngine { namespace AEMath { struct Vector; } }
 using AbyssEngine::AEMath::Vector;
 
 extern "C" {
-void *operator_new(uint32_t size);
 int FMOD_EventSystem_set3DListenerAttributes(int system, void *zero, void *pos, void *vel,
                                              void *forward);
 int FMOD_EventSystem_update(int system);
@@ -822,7 +820,6 @@ namespace AbyssEngine { namespace AEMath { struct Vector; } }
 using AbyssEngine::AEMath::Vector;
 
 extern "C" {
-void *operator_new(uint32_t size);
 int FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, void **out);
 int FMOD_Event_set3DAttributes(void *event, void *pos, void *vel);
 int FMOD_Event_start(void *event);

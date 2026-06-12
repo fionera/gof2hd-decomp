@@ -10,7 +10,6 @@ struct Systems;
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void String_cstr_ctor(void *out, const char *s, bool);
 extern "C" void *String_assign_ref(void *self, const String12 &rhs);
-extern "C" void *operator_new(uint32_t n);
 extern "C" void Mission_dtor_finish(Mission *self);
 extern "C" void String_default_ctor(void *s);
 extern "C" Systems *Galaxy_getSystems(Galaxy *g);
@@ -164,7 +163,7 @@ void Mission::setVisible(bool v) {
 Mission * Mission::clone() {
     Mission *self = this;
     unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
-    Mission *m = (Mission *)operator_new(0x78);
+    Mission *m = (Mission *)::operator new(0x78);
     int id = self->id;
     String_copy_ctor(name, (char *)self + 0x10, false);
     ((Mission *)(m))->ctor7(id, name, self->field_0x28, self->field_0x2c, self->field_0x30, self->targetStation, self->reward);

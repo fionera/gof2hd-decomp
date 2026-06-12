@@ -10,7 +10,6 @@ extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
 extern "C" unsigned int zip_fread(void *zf, void *buf, unsigned int n);
 extern "C" unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
 extern "C" void *FileInterfaceAndroid_completeDtor(FileInterfaceAndroid *self);
-extern "C" void operator_delete(void *p);
 extern "C" void JNI_CallVoidMethod(void *env, void *m, void *arg, ...);
 extern "C" void String_copy_ctor(void *out, const void *src, bool);
 extern "C" void String_append(void *self, const void *rhs);
@@ -19,7 +18,6 @@ extern "C" zip_file *zip_fopen(void *za, const char *name, int flags);
 extern "C" int zip_fclose(void *zf);
 extern "C" const unsigned short *String_GetAEWChar(const void *s);
 extern "C" void String_ctor_wide(void *out, const unsigned short *w, bool);
-extern "C" void *operator_new(unsigned int n);
 
 // ---- GetDirPreFix_6e80c.cpp ----
 // AbyssEngine::String::String(String* out, const char* cstr, bool) -> void (0x6ee18)
@@ -191,7 +189,7 @@ bool FileInterfaceAndroid::Seek(unsigned int n) {
 
 void _ZN20FileInterfaceAndroidD0Ev(FileInterfaceAndroid *self)
 {
-    operator_delete(FileInterfaceAndroid_completeDtor(self));
+    ::operator delete(FileInterfaceAndroid_completeDtor(self));
 }
 
 // ---- Write_6e4ac.cpp ----
@@ -423,16 +421,16 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String12 name, int p2, boo
 
     FileInterfaceAndroid *result = 0;
     if (z1 != 0) {
-        result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)operator_new(0x38)))->ctor_zip(z1, (bool)p4, p2, p5, p4);
+        result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)::operator new(0x38)))->ctor_zip(z1, (bool)p4, p2, p5, p4);
     } else if (z2 != 0) {
-        result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)operator_new(0x38)))->ctor_zip(z2, (bool)p4, p2, p5, p4);
+        result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)::operator new(0x38)))->ctor_zip(z2, (bool)p4, p2, p5, p4);
     } else if (self->appRootDir != 0) {
         char dir[12], full[12];
         String_ctor_cstr(dir, self->appRootDir, false);
         String_concat(full, dir, body == w ? (void *)a : (void *)a);
         FILE *f = fopen(((String *)(full))->GetAEChar(), gModeRbR);
         if (f != 0) {
-            FileInterfaceAndroid *p = (FileInterfaceAndroid *)operator_new(0x38);
+            FileInterfaceAndroid *p = (FileInterfaceAndroid *)::operator new(0x38);
             p->file = f;       // +0x8 stdio handle
             p->zipFile = 0;       // +0xc zip handle
             p->jniStream = 0;      // +0x10 jobject stream
@@ -478,7 +476,7 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenWrite(String12 name, int, bool,
     FILE *f = fopen(((String *)(full))->GetAEChar(), gModeWb);
     FileInterfaceAndroid *result = 0;
     if (f != 0) {
-        FileInterfaceAndroid *p = (FileInterfaceAndroid *)operator_new(0x38);
+        FileInterfaceAndroid *p = (FileInterfaceAndroid *)::operator new(0x38);
         p->file = f;       // +0x8 stdio handle
         p->zipFile = 0;       // +0xc zip handle
         p->jniStream = 0;      // +0x10 jobject stream

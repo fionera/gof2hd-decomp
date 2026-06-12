@@ -6,7 +6,6 @@ using AbyssEngine::String12;
 
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" Wanted *String_default_ctor(Wanted *self);
-extern "C" void operator_delete_array(void *p);
 extern "C" Wanted *Wanted_base_dtor(Wanted *self);
 
 // ---- isTerminated_12298a.cpp ----
@@ -87,7 +86,7 @@ Wanted * Wanted::dtor() {
     Wanted *self = this;
     void *p = self->imageParts;
     if (p != 0) {
-        operator_delete_array(p);
+        ::operator delete[](p);
     }
     self->imageParts = 0;
     return Wanted_base_dtor(self);

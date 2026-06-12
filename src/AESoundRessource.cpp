@@ -1,13 +1,11 @@
 #include "gof2/AESoundRessource.h"
 
 
-extern "C" void operator_delete(void *ptr);
 extern "C" void ArraySetLength_AESoundInterface(int size, void *array);
 extern "C" void AESoundRessource_play_impl(AbyssEngine::AESoundRessource *self, int sound, int volume);
 extern "C" void Array_AESoundInterface_ctor(void *array);
 extern "C" void AESoundRessource_getSoundInfo(AbyssEngine::AESoundRessource *self, int id, AbyssEngine::AESoundInfo *info, int *index);
 extern "C" int AESoundRessource_init(AbyssEngine::AESoundRessource *self, int id);
-extern "C" void *operator_new(unsigned int size);
 extern "C" char AESoundInterface_vtable[];
 extern "C" void AESoundRessource_freeAllRessources(AbyssEngine::AESoundRessource *self);
 extern "C" void ArrayRemoveAll_AESoundInterface(void *array);
@@ -19,7 +17,7 @@ void AESoundRessource_freeAllRessources_7fb0c(AbyssEngine::AESoundRessource *sel
     for (uint32_t i = 0; i < self->soundCount; ++i) {
         void *sound = *(void **)(self->sounds + i * 4);
         if (sound != 0) {
-            operator_delete(sound);
+            ::operator delete(sound);
             *(int *)(self->sounds + i * 4) = 0;
         }
     }
@@ -252,7 +250,7 @@ void AESoundRessource_init_7fc38(AbyssEngine::AESoundRessource *self, int id)
         char *sounds = self->sounds;
         void *sound = *(void **)(sounds + index * 4);
         if (sound == 0) {
-            sound = operator_new(4);
+            sound = ::operator new(4);
             *(void **)sound = AESoundInterface_vtable + 8;
             *(void **)(sounds + index * 4) = sound;
             sound = *(void **)(self->sounds + index * 4);
@@ -299,7 +297,7 @@ AbyssEngine::AESoundRessource::~AESoundRessource()
         if (sound == 0) {
             slot = (int *)(data + i * 4);
         } else {
-            operator_delete(sound);
+            ::operator delete(sound);
             slot = (int *)(self->sounds + byteOffset);
         }
         *slot = zero;
@@ -375,7 +373,7 @@ void AESoundRessource_initWithoutLoading_7fbd0(AbyssEngine::AESoundRessource *se
     if (index != -1) {
         char *sounds = self->sounds;
         if (*(void **)(sounds + index * 4) == 0) {
-            void *sound = operator_new(4);
+            void *sound = ::operator new(4);
             *(void **)sound = AESoundInterface_vtable + 8;
             *(void **)(sounds + index * 4) = sound;
         }

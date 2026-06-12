@@ -20,7 +20,6 @@ struct Player {
 
 
 extern "C" void *PlayerStaticFar_dtor(void *self);
-extern "C" void operator_delete(void *self);
 extern "C" void PlayerStaticFar_ctor(PlayerWormHole *self, int playerId, AEGeometry *geometry, float x, float y, float z);
 extern "C" void AEGeometry_positionChanged(void *geometry);
 namespace AbyssEngine { namespace PaintCanvas {
@@ -41,7 +40,7 @@ bool PlayerWormHole::isShrinking()
 // ---- _PlayerWormHole_a5302.cpp ----
 void _ZN14PlayerWormHoleD0Ev(void *self)
 {
-    return operator_delete(PlayerStaticFar_dtor(self));
+    return ::operator delete(PlayerStaticFar_dtor(self));
 }
 
 // ---- open_a5314.cpp ----

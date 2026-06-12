@@ -64,5 +64,5 @@ NoTexShader::NoTexShader()
 // AbyssEngine::NoTexShader::~NoTexShader() (deleting dtor)
 void _ZN11AbyssEngine11NoTexShaderD0Ev(AbyssEngine::NoTexShader *self)
 {
-    operator_delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
+    ::operator delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
 }

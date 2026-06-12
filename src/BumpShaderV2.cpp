@@ -9,7 +9,7 @@ extern "C" int BumpShaderV2_ShaderIndex;
 // ---- _BumpShaderV2_8dacc.cpp ----
 void _ZN11AbyssEngine12BumpShaderV2D0Ev(BumpShaderV2 *self)
 {
-    operator_delete(ShaderBaseStruct_dtor(self));
+    ::operator delete(ShaderBaseStruct_dtor(self));
 }
 
 // ---- SetInActive_8d888.cpp ----

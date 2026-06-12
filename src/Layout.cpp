@@ -10,8 +10,6 @@
 extern "C" float __aeabi_l2f(long long);
 extern "C" void *ChoiceWindow_dtor(void *p);
 extern "C" void operator_delete_li(void *p);
-extern "C" void *operator_new(unsigned sz);
-extern "C" void operator_delete(void *p);
 extern "C" void Layout_initConstBlock(Layout *self, int hd, int wide, int scale, int res);
 extern "C" void Layout_setBtnRect(void *btn, int x, int y, int anchor);
 extern "C" void Layout_loadImage(unsigned canvas, int id, void *field);
@@ -336,10 +334,10 @@ void Layout::initTip() {
     if (*tipArr != 0) {
         ArrayReleaseClasses_StringPtr(*tipArr);
         if (*tipArr != 0)
-            operator_delete(ArrayStringPtr_dtor(*tipArr));
+            ::operator delete(ArrayStringPtr_dtor(*tipArr));
         *tipArr = 0;
     }
-    void *arr = operator_new(0xc);
+    void *arr = ::operator new(0xc);
     ArrayStringPtr_ctor(arr);
 
     unsigned color = *g_tipColor;
@@ -1412,7 +1410,7 @@ void Layout::reload() {
     Layout_loadImage(canvas, 0x50d, (char *)self + 0x39c);
 
     // Back button (string-labelled).
-    TouchButton *bBack = (TouchButton *)operator_new(200);
+    TouchButton *bBack = (TouchButton *)::operator new(200);
     void *txt = gGameText->obj->getText(*g_rlBackText);
     int sh = *g_rlScreenH;
     TouchButton_ctorStr(bBack, txt, 2, self->field_0x28, sh - 3, '!');
@@ -1422,7 +1420,7 @@ void Layout::reload() {
     // Secondary button (image if available, else string fallback).
     unsigned img535 = 0xffffffff;
     PaintCanvas_Image2DCreate((PaintCanvas *)*g_rlCanvas, 0x535, &img535);
-    TouchButton *b2 = (TouchButton *)operator_new(200);
+    TouchButton *b2 = (TouchButton *)::operator new(200);
     if (img535 == 0xffffffff) {
         void *t = gGameText->obj->getText(*g_rlBackText);
         TouchButton_ctorStr(b2, t, 2, self->field_0x28,
@@ -1436,7 +1434,7 @@ void Layout::reload() {
     // Help button (image).
     unsigned img471 = 0xffffffff;
     PaintCanvas_Image2DCreate((PaintCanvas *)*g_rlCanvas, 0x471, &img471);
-    TouchButton *bHelp = (TouchButton *)operator_new(200);
+    TouchButton *bHelp = (TouchButton *)::operator new(200);
     TouchButton_ctorImg2(bHelp, img471, 1, *g_rlMenuY, 0, self->field_0x3c, 0x12, 0x04);
     self->helpButton = bHelp;
 

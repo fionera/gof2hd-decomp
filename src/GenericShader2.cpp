@@ -116,5 +116,5 @@ GenericShader2::GenericShader2()
 // AbyssEngine::GenericShader2::~GenericShader2() (deleting dtor)
 void _ZN11AbyssEngine14GenericShader2D0Ev(AbyssEngine::GenericShader2 *self)
 {
-    operator_delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
+    ::operator delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
 }

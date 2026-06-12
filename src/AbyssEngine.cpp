@@ -948,9 +948,6 @@ void ImageFontRelease(Engine *engine, ImageFont **slot)
 namespace AbyssEngine {
 
 extern "C" {
-void *AE_operator_new(size_t_ n);
-void *AE_operator_new_arr(size_t_ n);
-void  AE_operator_delete_arr(void *p);
 // __aeabi_uidiv is declared by gof2/Engine.h
 float AE_VectorSignedToFloat(int v, unsigned char mode);
 float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
@@ -991,7 +988,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
     if (u8(m, 0x0) & 0x10) { // (byte<<0x1b) negative
         if (AEFile::Read((uint32_t)(2), m + 0x28, handle) == 0)
             return -1;
-        void *idx = AE_operator_new_arr((unsigned int)u16(m, 0x28) << 1);
+        void *idx = ::operator new[]((unsigned int)u16(m, 0x28) << 1);
         pp((char *)*slot, 0x2c) = idx;
         if (AEFile::Read((uint32_t)((unsigned int)u16((char *)*slot, 0x28) << 1), pp((char *)*slot, 0x2c), handle) == 0)
             return -1;
@@ -1010,10 +1007,10 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
 
     if (compressedPos) {
         // 16-bit compressed positions: 3 shorts per vertex.
-        void *raw = AE_operator_new_arr(vcount * 6);
-        if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) { AE_operator_delete_arr(raw); return -1; }
+        void *raw = ::operator new[](vcount * 6);
+        if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) { ::operator delete[](raw); return -1; }
         m = (char *)*slot;
-        void *pos = AE_operator_new_arr(vcount * 0xc);
+        void *pos = ::operator new[](vcount * 0xc);
         pp(m, 0x4) = pos;
         m = (char *)*slot;
         int dst = 0;
@@ -1027,22 +1024,22 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             if (v < minv[axis]) minv[axis] = v;
             if (maxv[axis] < v) maxv[axis] = v;
         }
-        AE_operator_delete_arr(raw);
+        ::operator delete[](raw);
     } else if ((flags & 3) == 0) {
         // Raw float positions, read straight in (no per-element bbox here for the enhanced path).
         if ((flags & 0x18) != 0) {
             m = (char *)*slot;
-            void *pos = AE_operator_new_arr(vcount * 0xc);
+            void *pos = ::operator new[](vcount * 0xc);
             pp(m, 0x4) = pos;
             if (AEFile::Read((uint32_t)(u16((char *)*slot, 0x2) * 0xc), pp((char *)*slot, 0x4), handle) == 0)
                 return -1;
         }
     } else {
         // Float positions, element-by-element with bbox.
-        void *raw = AE_operator_new_arr(vcount * 0xc);
-        if (AEFile::Read((uint32_t)(vcount * 0xc), raw, handle) == 0) { AE_operator_delete_arr(raw); return -1; }
+        void *raw = ::operator new[](vcount * 0xc);
+        if (AEFile::Read((uint32_t)(vcount * 0xc), raw, handle) == 0) { ::operator delete[](raw); return -1; }
         m = (char *)*slot;
-        void *pos = AE_operator_new_arr(vcount * 0xc);
+        void *pos = ::operator new[](vcount * 0xc);
         pp(m, 0x4) = pos;
         m = (char *)*slot;
         int dst = 0;
@@ -1056,7 +1053,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             if (v < minv[axis]) minv[axis] = v;
             if (maxv[axis] < v) maxv[axis] = v;
         }
-        AE_operator_delete_arr(raw);
+        ::operator delete[](raw);
     }
 
     // BSphere center = box center, radius = half-diagonal length.
@@ -1073,10 +1070,10 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
     // UV coordinates.
     if (u8(m, 0x0) & 4) { // (byte<<0x1e) negative
         if (compressedPos) {
-            void *raw = AE_operator_new_arr(vcount << 2);
-            if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) { AE_operator_delete_arr(raw); return -1; }
+            void *raw = ::operator new[](vcount << 2);
+            if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) { ::operator delete[](raw); return -1; }
             m = (char *)*slot;
-            void *uv = AE_operator_new_arr(vcount << 3);
+            void *uv = ::operator new[](vcount << 3);
             pp(m, 0x8) = uv;
             m = (char *)*slot;
             char flip = *g_uvFlipFlag;
@@ -1091,9 +1088,9 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 double vv = (flip == 0) ? v : (1.0 - v);
                 p[1] = (float)vv;
             }
-            AE_operator_delete_arr(raw);
+            ::operator delete[](raw);
         } else if ((flags & 0x18) != 0) {
-            void *uv = AE_operator_new_arr(vcount << 3);
+            void *uv = ::operator new[](vcount << 3);
             pp(m, 0x8) = uv;
             if (AEFile::Read((uint32_t)(u16((char *)*slot, 0x2) << 3), pp((char *)*slot, 0x8), handle) == 0)
                 return -1;
@@ -1113,10 +1110,10 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
     // Normals (+ tangent/binormal generation).
     if (u8(m, 0x0) & 8) { // (byte<<0x1d) negative
         if (compressedPos) {
-            void *raw = AE_operator_new_arr(vcount * 6);
-            if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) { AE_operator_delete_arr(raw); return -1; }
+            void *raw = ::operator new[](vcount * 6);
+            if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) { ::operator delete[](raw); return -1; }
             m = (char *)*slot;
-            void *nrm = AE_operator_new_arr(vcount * 0xc);
+            void *nrm = ::operator new[](vcount * 0xc);
             pp(m, 0x10) = nrm;
             m = (char *)*slot;
             const double scale = 1.0 / 32767.0;
@@ -1146,9 +1143,9 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 off += 0xc;
                 m = (char *)*slot;
             }
-            AE_operator_delete_arr(raw);
+            ::operator delete[](raw);
         } else if ((flags & 0x18) != 0) {
-            void *nrm = AE_operator_new_arr(vcount * 0xc);
+            void *nrm = ::operator new[](vcount * 0xc);
             pp(m, 0x10) = nrm;
             if (AEFile::Read((uint32_t)(u16((char *)*slot, 0x2) * 0xc), pp((char *)*slot, 0x10), handle) == 0)
                 return -1;
@@ -1157,15 +1154,15 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
         // Per-triangle tangent/binormal generation.
         if (*g_tangentEnabled != 0) {
             m = (char *)*slot;
-            void *tan = AE_operator_new_arr(vcount * 0xc);
+            void *tan = ::operator new[](vcount * 0xc);
             pp(m, 0x14) = tan;
             m = (char *)*slot;
-            void *bin = AE_operator_new_arr(vcount * 0xc);
+            void *bin = ::operator new[](vcount * 0xc);
             pp(m, 0x18) = bin;
             m = (char *)*slot;
 
             unsigned int triCount = (unsigned int)__aeabi_uidiv((int)(unsigned short)u16(m, 0x28), 3);
-            void *accum = AE_operator_new_arr(vcount * 0xc);
+            void *accum = ::operator new[](vcount * 0xc);
             // Zero accumulator.
             for (unsigned int b = 0; b < vcount * 0xc; ++b) ((char *)accum)[b] = 0;
 
@@ -1232,7 +1229,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 *(float *)(bb + 8) = binOut[2];
                 off += 0xc;
             }
-            AE_operator_delete_arr(accum);
+            ::operator delete[](accum);
         }
     }
 
@@ -1240,10 +1237,10 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
     // Vertex colors. (byte<<0x1c) negative -> bit 0x10 set.
     if (u8(m, 0x0) & 0x10) {
         if (compressedPos) {
-            void *raw = AE_operator_new_arr(vcount << 2);
-            if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) { AE_operator_delete_arr(raw); return -1; }
+            void *raw = ::operator new[](vcount << 2);
+            if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) { ::operator delete[](raw); return -1; }
             m = (char *)*slot;
-            void *col = AE_operator_new_arr(vcount << 4);
+            void *col = ::operator new[](vcount << 4);
             pp(m, 0xc) = col;
             m = (char *)*slot;
             const float inv = 255.0f;
@@ -1253,9 +1250,9 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 *(float *)(*(int *)(m + 0xc) + dst) = c / inv;
                 dst += 4;
             }
-            AE_operator_delete_arr(raw);
+            ::operator delete[](raw);
         } else if ((flags & 0x18) != 0) {
-            void *col = AE_operator_new_arr(vcount << 4);
+            void *col = ::operator new[](vcount << 4);
             pp(m, 0xc) = col;
             if (AEFile::Read((uint32_t)(u16((char *)*slot, 0x2) << 4), pp((char *)*slot, 0xc), handle) == 0)
                 return -1;
@@ -1273,7 +1270,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
         if (xf != 0)
             AE_BSphere_Merge((char *)*slot + 0x3c, (char *)(xf + 0xd4));
         for (unsigned int c = 0; c < childCount; ++c) {
-            char *child = (char *)AE_operator_new(0x88);
+            char *child = (char *)::operator new(0x88);
             for (int b = 0; b < 0x88; ++b) child[b] = 0;
             u32(child, 0x4c) = 0x3f800000;
             u8(child, 0x84) = 1;
@@ -1486,9 +1483,6 @@ int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, Sp
 namespace AbyssEngine {
 
 extern "C" {
-void *AE_operator_new(size_t_ n);
-void *AE_operator_new_arr(size_t_ n);
-void AE_operator_delete(void *p);
 void AEFile_Close(unsigned int handle);
 }
 
@@ -1499,7 +1493,7 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
     if (engine == 0 || path == 0)
         return -4;
 
-    char *img = (char *)AE_operator_new(0x14);
+    char *img = (char *)::operator new(0x14);
     u8(img, 0x8) = 0;
     u32(img, 0x0) = 0;
     u32(img, 0x4) = 0;
@@ -1509,7 +1503,7 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
     unsigned int handle = 0;
     if (AEFile::OpenRead((const char *)(path), (uint32_t *)(&handle)) == 0) {
         if (*out != 0)
-            AE_operator_delete((void *)*out);
+            ::operator delete((void *)*out);
         *out = 0;
         return -1;
     }
@@ -1545,7 +1539,7 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
         case 3:
         case 0x81: {
             unsigned int sz = (unsigned int)u16(im, 0x0) * (unsigned int)u16(im, 0x2) * 4;
-            void *p = AE_operator_new_arr(sz);
+            void *p = ::operator new[](sz);
             pp(im, 0xc) = p;
             im = (char *)*out;
             if (AEFile::Read((uint32_t)(sz), pp(im, 0xc), handle) == 0) goto fail;
@@ -1562,7 +1556,7 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
         case 0xd:
         case 0xf:
             if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-            pp(im, 0xc) = AE_operator_new_arr(dataLen);
+            pp(im, 0xc) = ::operator new[](dataLen);
             if (AEFile::Read((uint32_t)(dataLen), pp(im, 0xc), handle) == 0) goto fail;
             u32(im, 0x4) = 4;
             u32(im, 0x10) = dataLen;
@@ -1570,7 +1564,7 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
         case 0x10:
         case 0x12:
             if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-            pp(im, 0xc) = AE_operator_new_arr(dataLen);
+            pp(im, 0xc) = ::operator new[](dataLen);
             if (AEFile::Read((uint32_t)(dataLen), pp(im, 0xc), handle) == 0) goto fail;
             u32(im, 0x4) = 5;
             u32(im, 0x10) = dataLen;
@@ -1579,7 +1573,7 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
         case 0x13:
             if (AEFile::Read((uint32_t)(4), im + 0x10, handle) == 0) goto fail;
             u32(im, 0x4) = 7;
-            pp(im, 0xc) = AE_operator_new_arr(u32(im, 0x10));
+            pp(im, 0xc) = ::operator new[](u32(im, 0x10));
             if (AEFile::Read((uint32_t)(u32(im, 0x10)), pp(im, 0xc), handle) == 0) goto fail;
             break;
         case 0x14:
@@ -1590,7 +1584,7 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
             if (fmt == 0x40)
                 u8(im, 0x8) = 0;
             if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-            pp(im, 0xc) = AE_operator_new_arr(dataLen);
+            pp(im, 0xc) = ::operator new[](dataLen);
             if (AEFile::Read((uint32_t)(dataLen), pp(im, 0xc), handle) == 0) goto fail;
             u32(im, 0x4) = 0xb;
             u32(im, 0x10) = dataLen;
@@ -1601,21 +1595,21 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
         case 0x22:
             if (AEFile::Read((uint32_t)(4), im + 0x10, handle) == 0) goto fail;
             u32(im, 0x4) = 8;
-            pp(im, 0xc) = AE_operator_new_arr(u32(im, 0x10));
+            pp(im, 0xc) = ::operator new[](u32(im, 0x10));
             if (AEFile::Read((uint32_t)(u32(im, 0x10)), pp(im, 0xc), handle) == 0) goto fail;
             break;
         case 0x21:
         case 0x23:
             if (AEFile::Read((uint32_t)(4), im + 0x10, handle) == 0) goto fail;
             u32(im, 0x4) = 9;
-            pp(im, 0xc) = AE_operator_new_arr(u32(im, 0x10));
+            pp(im, 0xc) = ::operator new[](u32(im, 0x10));
             if (AEFile::Read((uint32_t)(u32(im, 0x10)), pp(im, 0xc), handle) == 0) goto fail;
             break;
         case 0x24:
         case 0x26:
             if (AEFile::Read((uint32_t)(4), im + 0x10, handle) == 0) goto fail;
             u32(im, 0x4) = 10;
-            pp(im, 0xc) = AE_operator_new_arr(u32(im, 0x10));
+            pp(im, 0xc) = ::operator new[](u32(im, 0x10));
             if (AEFile::Read((uint32_t)(u32(im, 0x10)), pp(im, 0xc), handle) == 0) goto fail;
             break;
         default:
@@ -2082,8 +2076,6 @@ String operator+(const int &a, const String &b)
 namespace AbyssEngine {
 
 extern "C" {
-void *AE_operator_new(size_t_ n);
-void *AE_operator_new_arr(size_t_ n);
 void  AEFile_Close(unsigned int handle);
 float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
 float AE_VectorSignedToFloat(int v, unsigned char mode);
@@ -2169,7 +2161,7 @@ int ImageCreateFontFromFile(Engine *engine, char *path, unsigned short index, Im
     if (glyphCount <= index) goto fail;
 
     {
-        char *font = (char *)AE_operator_new(0x14);
+        char *font = (char *)::operator new(0x14);
         u16(font, 0x0) = 0;
         *(unsigned long long *)(font + 4) = 0;
         *(unsigned long long *)(font + 0xc) = 0;
@@ -2180,12 +2172,12 @@ int ImageCreateFontFromFile(Engine *engine, char *path, unsigned short index, Im
         if (g == index) {
             char *font = (char *)*out;
             if (AEFile::Read((uint32_t)(2), font + 0x0, handle) == 0) goto fail; // glyph count
-            void *codes = AE_operator_new_arr((unsigned int)u16(font, 0x0) << 1);
+            void *codes = ::operator new[]((unsigned int)u16(font, 0x0) << 1);
             pp(font, 0x4) = codes;
             if (AEFile::Read((uint32_t)((unsigned int)u16((char *)*out, 0x0) << 1), pp((char *)*out, 0x4), handle) == 0)
                 goto fail;
             font = (char *)*out;
-            void *meshes = AE_operator_new_arr((unsigned int)u16(font, 0x0) << 2);
+            void *meshes = ::operator new[]((unsigned int)u16(font, 0x0) << 2);
             pp(font, 0xc) = meshes;
 
             unsigned int n = u16((char *)*out, 0x0);
@@ -2576,7 +2568,6 @@ void glCompressedTexImage2D(unsigned int t, int lvl, int ifmt, int w, int h, int
 void glGenerateMipmap(unsigned int target);
 // __aeabi_uidiv is declared by gof2/Engine.h
 
-void *AE_operator_new(size_t_ n);
 void  AE_String_ctor(void *self, const char *s, bool b);
 void  AE_String_assign(void *dst, void *src);
 void  AE_String_Set(void *self, const char *s);
@@ -3031,8 +3022,6 @@ void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b)
 namespace AbyssEngine {
 
 extern "C" {
-void *AE_operator_new(size_t_ n);
-void  AE_operator_delete(void *p);
 void  AEFile_Close(unsigned int handle);
 void  AE_Transform_ctor(void *self);
 void  AE_Transform_CollectAnimationData(void *self);
@@ -3059,7 +3048,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
     if (engine == 0 || path == 0)
         return -4;
 
-    char *m = (char *)AE_operator_new(0x88);
+    char *m = (char *)::operator new(0x88);
     initMesh(m);
     *out = (Mesh *)m;
     pp(m, 0x30) = mat;
@@ -3067,7 +3056,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
     unsigned int handle = 0;
     if (AEFile::OpenRead((const char *)(path), (uint32_t *)((char *)m + 0x60)) == 0) {
         if (*out != 0)
-            AE_operator_delete((void *)*out);
+            ::operator delete((void *)*out);
         *out = 0;
         return -1;
     }
@@ -3129,11 +3118,11 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
             if (MeshReadData(engine, &handle, fmt, out, mat) != -1)
                 ok = true;
         } else {
-            char *xf = (char *)AE_operator_new(0x180);
+            char *xf = (char *)::operator new(0x180);
             AE_Transform_ctor(xf);
             pp((char *)*out + 0x34, 0) = xf;
             for (unsigned int s = 0; s < subCount; ++s) {
-                char *child = (char *)AE_operator_new(0x88);
+                char *child = (char *)::operator new(0x88);
                 initMesh(child);
                 u8(child, 0x84) = 1;
                 u8(child, 0x0) = u8((char *)*out, 0x0);

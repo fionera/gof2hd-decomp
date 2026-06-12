@@ -12,7 +12,6 @@ extern "C" int glGetUniformLocation(unsigned int program, const char *name);
 extern "C" void glUseProgram(unsigned int program);
 extern "C" void glUniform1i(int location, int value);
 void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self);
-extern "C" void operator_delete(void *self);
 extern "C" void glEnableVertexAttribArray(unsigned int index);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
 extern "C" void glDisable(unsigned int cap);
@@ -110,7 +109,7 @@ void BloomShader::Init(::Engine *)
 // ---- _BloomShader_8947c.cpp ----
 void _ZN11AbyssEngine11BloomShaderD0Ev(AbyssEngine::BloomShader *self)
 {
-    return operator_delete(_ZN11AbyssEngine11BloomShaderD1Ev(self));
+    return ::operator delete(_ZN11AbyssEngine11BloomShaderD1Ev(self));
 }
 
 // ---- UpdateMeshData_8a158.cpp ----

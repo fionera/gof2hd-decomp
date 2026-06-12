@@ -23,7 +23,7 @@ void BumpShader::SetInActive()
 // ---- _BumpShader_8bd0c.cpp ----
 void _ZN11AbyssEngine10BumpShaderD0Ev(BumpShader *self)
 {
-    operator_delete(ShaderBaseStruct_dtor(self));
+    ::operator delete(ShaderBaseStruct_dtor(self));
 }
 
 // ---- BumpShader_8b7f4.cpp ----

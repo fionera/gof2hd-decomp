@@ -5,7 +5,6 @@
 
 
 extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);
-extern "C" void operator_delete(void *p);
 extern "C" void PlayerStaticFar_render_tail(PlayerStaticFar *self);
 extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
 
@@ -16,7 +15,7 @@ extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
 
 void _ZN15PlayerStaticFarD0Ev(PlayerStaticFar *self)
 {
-    return operator_delete(PlayerStatic_base_dtor(self));
+    return ::operator delete(PlayerStatic_base_dtor(self));
 }
 
 // ---- getProjectionVector_11c510.cpp ----

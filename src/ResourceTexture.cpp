@@ -9,7 +9,7 @@
 ResourceTexture::ResourceTexture(const char *name, float value)
 {
     uint32_t len = String_GetStringLength(name);
-    char *buf = (char *)operator_new__(len + 1U);
+    char *buf = (char *)::operator new[](len + 1U);
     this->name = buf;
     __aeabi_memcpy(buf, name, len + 1U);
     this->value = value;
@@ -19,7 +19,7 @@ ResourceTexture::ResourceTexture(const char *name, float value)
 // AbyssEngine::ResourceTexture::~ResourceTexture()
 ResourceTexture::~ResourceTexture()
 {
-    operator_delete__(this->name);
+    ::operator delete[](this->name);
     this->name = 0;
 }
 
@@ -29,9 +29,9 @@ ResourceTexture::ResourceTexture(const String &name, float value)
 {
     char *utf8 = (char *)((String *)(&name))->GetAEChar();
     uint32_t len = String_GetStringLength(utf8);
-    char *buf = (char *)operator_new__(len + 1U);
+    char *buf = (char *)::operator new[](len + 1U);
     this->name = buf;
     __aeabi_memcpy(buf, utf8, len + 1U);
     this->value = value;
-    operator_delete__(utf8);
+    ::operator delete[](utf8);
 }

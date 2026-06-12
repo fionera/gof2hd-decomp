@@ -14,7 +14,6 @@
 extern "C" void PlayerFighter_setShipGroup_base(AEGeometry *self, int a, bool b);
 extern "C" void PlayerFighter_awake_tail(int geom, int on);
 extern "C" void PlayerFighter_cloak_off_helper();
-extern "C" void operator_delete(void *p);
 extern "C" void *Route_dtor(void *p);
 extern "C" void ArrayReleaseClasses_BV(void *arr);
 extern "C" void *ArrayBV_dtor(void *p);
@@ -33,7 +32,6 @@ extern "C" void AEMath_Matrix_ctor(void *m);
 extern "C" int AERandom_nextInt_nobound(int rng);
 static inline int PF_nextInt(int rng) { return AERandom_nextInt_nobound(rng); }
 extern "C" float VectorSignedToFloat(int v, int mode);
-extern "C" void *operator_new(unsigned int sz);
 extern "C" int *RH_op_new_arr(unsigned int n);
 extern "C" void RH_op_delete_arr(void *p);
 extern "C" void Route_ctor(void *self, int *points, unsigned n);
@@ -159,7 +157,7 @@ void PlayerFighter::removeTrail() {
     PlayerFighter *self = this;
     void *t = self->trail;
     if (t != 0) {
-        operator_delete(Trail_dtor(t));
+        ::operator delete(Trail_dtor(t));
     }
     self->trail = 0;
 }
@@ -174,27 +172,27 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
     *(void **)self = &PlayerFighter_vtable + 8;
 
     void *r = self->route;
-    if (r != 0) operator_delete(Route_dtor(r));
+    if (r != 0) ::operator delete(Route_dtor(r));
     self->route = 0;
 
     void *bv = self->boundingVolumes;
     if (bv != 0) {
         ArrayReleaseClasses_BV(bv);
         void *bv2 = self->boundingVolumes;
-        if (bv2 != 0) operator_delete(ArrayBV_dtor(bv2));
+        if (bv2 != 0) ::operator delete(ArrayBV_dtor(bv2));
     }
     self->boundingVolumes = 0;
 
     void *t = self->trail;
-    if (t != 0) operator_delete(Trail_dtor(t));
+    if (t != 0) ::operator delete(Trail_dtor(t));
     self->trail = 0;
 
     void *e = self->explosion;
-    if (e != 0) operator_delete(Explosion_dtor(e));
+    if (e != 0) ::operator delete(Explosion_dtor(e));
     self->explosion = 0;
 
     void *m = self->easeMatrix;
-    if (m != 0) operator_delete(EaseInOutMatrix_dtor(m));
+    if (m != 0) ::operator delete(EaseInOutMatrix_dtor(m));
     self->easeMatrix = 0;
 
     return PlayerFighter_base_dtor(self);
@@ -205,7 +203,7 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
 
 void _ZN13PlayerFighterD0Ev(PlayerFighter *self)
 {
-    return operator_delete(_ZN13PlayerFighterD1Ev(self));
+    return ::operator delete(_ZN13PlayerFighterD1Ev(self));
 }
 
 // ---- hasCrateCaptured_dcb88.cpp ----
@@ -344,7 +342,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
         pts[i + 1] = (int)wp[idx * 3 + 1];
         pts[i + 2] = (int)wp[idx * 3 + 2];
     }
-    void *route = operator_new(0x18);
+    void *route = ::operator new(0x18);
     Route_ctor(route, pts, (unsigned)count);
     self->route = route;
     RH_op_delete_arr(pts);
@@ -353,7 +351,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     if (*shared == 0) {
         int defPts[12];
         __aeabi_memcpy(defPts, &gPFC_defaultRoute, 0x30);
-        void *sr = operator_new(0x18);
+        void *sr = ::operator new(0x18);
         Route_ctor(sr, defPts, 0xc);
         *shared = (int)(intptr_t)sr;
     }
@@ -414,15 +412,15 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     if (wingmanCmd == 9) {
         self->lootList = 0;
     } else {
-        void *g = operator_new(1);
+        void *g = ::operator new(1);
         Generator_ctor(g);
         self->lootList = ((Generator *)(g))->getLootList(-1, -1);
-        operator_delete(Generator_dtor(g));
+        ::operator delete(Generator_dtor(g));
     }
 
     self->field_0x128 = (PF_status()->inAlienOrbit() != 0) ? 100000 : 50000;
 
-    void *exp = operator_new(0x68);
+    void *exp = ::operator new(0x68);
     Explosion_ctor(exp, 0);
     self->explosion = exp;
     ((Explosion *)(exp))->addFireStreaks();
@@ -660,7 +658,7 @@ void PlayerFighter::setMissionCrate(bool on) {
     self->isMissionCrate = on;
     if (on) {
         self->lootList = 0;
-        Array<int> *a = (Array<int> *)operator_new(0xc);
+        Array<int> *a = (Array<int> *)::operator new(0xc);
         ArrayInt_ctor(a);
         self->lootList = a;
         int mission = (int)(intptr_t)((Status *)(*(unsigned *)gMissionCrateApp))->getMission();
@@ -698,7 +696,7 @@ struct BoundingVolume;
 
 void PlayerFighter::setBV_b(BoundingVolume *bv) {
     PlayerFighter *self = this;
-    Array<BoundingVolume *> *a = (Array<BoundingVolume *> *)operator_new(0xc);
+    Array<BoundingVolume *> *a = (Array<BoundingVolume *> *)::operator new(0xc);
     ArrayBV_ctor(a);
     self->boundingVolumes = a;
     return PlayerFighter_setBV_add(bv, a);
@@ -1159,19 +1157,19 @@ __attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *sel
     if ((unsigned)(self->wingmanCommand - 9) < 2) {
         void *a = self->lootList;
         if (a != 0) {
-            operator_delete(ArrayInt_dtor(a));
+            ::operator delete(ArrayInt_dtor(a));
         }
         self->lootList = 0;
     } else {
-        void *g = operator_new(1);
+        void *g = ::operator new(1);
         Generator_ctor(g);
         void *a = self->lootList;
         if (a != 0) {
-            operator_delete(ArrayInt_dtor(a));
+            ::operator delete(ArrayInt_dtor(a));
             self->lootList = 0;
         }
         self->lootList = ((Generator *)(g))->getLootList(-1, -1);
-        operator_delete(Generator_dtor(g));
+        ::operator delete(Generator_dtor(g));
     }
 
     return;

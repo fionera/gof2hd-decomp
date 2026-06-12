@@ -43,7 +43,6 @@ extern "C" void ext_001ab610(void);
 extern "C" void ArrayCtor_modules(void *array);
 extern "C" void ArrayCtor_uint(void *array);
 extern "C" void ArrayCtor_long_long(void *array);
-extern "C" void *operator_new(unsigned int size);
 extern "C" void PaintCanvas_ctor(void *canvas, void *engine);
 extern "C" void AESoundRessource_ctor(void *sound);
 extern "C" void ConfigReader_ctor(void *reader, void *engine);
@@ -82,8 +81,6 @@ extern "C" void PaintCanvas_dtor(void *canvas);
 extern "C" void AESoundRessource_dtor(void *sound);
 extern "C" void CheatHandler_dtor(void *cheats);
 extern "C" void ConfigReader_dtor(void *reader);
-extern "C" void operator_delete(void *ptr);
-extern "C" void operator_delete_array(void *ptr);
 
 // ---- SetLoadingCallback_82506.cpp ----
 typedef void LoadingCallback_t(PaintCanvas *, int, void *);
@@ -638,16 +635,16 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
     self->keyState = 0;
     self->engine = engine;
 
-    void *canvas = operator_new(0x20c);
+    void *canvas = ::operator new(0x20c);
     PaintCanvas_ctor(canvas, engine);
     *(void **)self = canvas;
 
-    void *sound = operator_new(0x14);
+    void *sound = ::operator new(0x14);
     AESoundRessource_ctor(sound);
     self->cheatsEnabled = false;
     self->soundResource = sound;
 
-    void *reader = operator_new(0x14);
+    void *reader = ::operator new(0x14);
     ConfigReader_ctor(reader, engine);
     self->loadingCallback = 0;
     self->configReader = reader;
@@ -656,7 +653,7 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
     self->vibrateEnabled = true;
     self->orientationTrackingEnabled = false;
 
-    char *storage = (char *)operator_new(0x408);
+    char *storage = (char *)::operator new(0x408);
     *(uint32_t *)storage = 0x10;
     *(uint32_t *)(storage + 4) = 0x40;
     char *keys = storage + 8;
@@ -666,7 +663,7 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
     }
     self->keyMappingTable = keys;
 
-    void *cheats = operator_new(0x10);
+    void *cheats = ::operator new(0x10);
     CheatHandler_ctor(cheats, keys);
     self->cheatHandler = cheats;
     self->lastTouchX = -1;
@@ -1145,28 +1142,28 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
     void *canvas = *(void **)self;
     if (canvas != 0) {
         PaintCanvas_dtor(canvas);
-        operator_delete(canvas);
+        ::operator delete(canvas);
     }
     *(void **)self = 0;
 
     void *sound = self->soundResource;
     if (sound != 0) {
         AESoundRessource_dtor(sound);
-        operator_delete(sound);
+        ::operator delete(sound);
     }
     self->soundResource = 0;
 
     void *cheats = self->cheatHandler;
     if (cheats != 0) {
         CheatHandler_dtor(cheats);
-        operator_delete(cheats);
+        ::operator delete(cheats);
     }
     self->cheatHandler = 0;
 
     void *reader = self->configReader;
     if (reader != 0) {
         ConfigReader_dtor(reader);
-        operator_delete(reader);
+        ::operator delete(reader);
     }
     self->configReader = 0;
 
@@ -1176,7 +1173,7 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
         for (unsigned int i = count; i != 0; --i) {
             ((String *)(keys - 12 + i * 0x10))->~String();
         }
-        operator_delete_array(keys - 8);
+        ::operator delete[](keys - 8);
     }
     self->keyMappingTable = 0;
 

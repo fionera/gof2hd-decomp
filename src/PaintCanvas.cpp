@@ -170,7 +170,6 @@ extern "C" void paintcanvas_ext_transform_dirty(void *);
 extern "C" char *tcg_String_GetAEChar(AbyssEngine::String *name);
 extern "C" void tcg_glActiveTexture(unsigned unit);
 extern "C" void tcg_glBindTexture(unsigned target, unsigned tex);
-extern "C" void tcg_operator_delete_arr(void *p);
 extern "C" void grs_String_ctor_copy(String *self, const String *other, bool copy);
 extern "C" void grs_String_ctor_cstr(String *self, const char *text, bool copy);
 extern "C" void grs_String_substr(String *out, const String *self, unsigned begin, unsigned end);
@@ -2251,7 +2250,7 @@ void TextureCreateGlobal(AbyssEngine::PaintCanvas *self, AbyssEngine::String *na
         tcg_glBindTexture(0xde1, 0);
         tcg_glActiveTexture(0x84c0);
     }
-    tcg_operator_delete_arr(path);
+    ::operator delete[](path);
 
     
 }

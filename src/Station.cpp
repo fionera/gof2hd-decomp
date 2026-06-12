@@ -5,7 +5,6 @@
 #include "gof2/String.h"
 
 
-extern "C" void *Station_operator_new(uint32_t sz);
 extern "C" void Array_Item_ctor(void *arr);
 extern "C" void ArraySetLength_Item(uint32_t len, void *arr);
 extern "C" void Galaxy_setSystemVisited(Galaxy *g, int systemId);
@@ -20,7 +19,6 @@ extern "C" void ArrayReleaseClasses_Item(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Ship_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Item_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Agent_dtor(void *arr) __attribute__((nothrow));
-extern "C" void Station_operator_delete(void *p) __attribute__((nothrow));
 extern "C" Agent *Mission_getAgent(Mission *m) __attribute__((nothrow));
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 extern "C" void Station_baseDtor(void *self) __attribute__((nothrow));
@@ -38,7 +36,7 @@ void Station::removeShips() {
         ArrayReleaseClasses_Ship(arr);
         void *a2 = self->ships;
         if (a2 != 0)
-            Station_operator_delete(Array_Ship_dtor(a2));
+            ::operator delete(Array_Ship_dtor(a2));
     }
     self->ships = 0;
 }
@@ -95,12 +93,12 @@ void Station::setItems(uint32_t *items, bool deep) {
     Station *self = this;
     void *old = self->items;
     if (old != 0)
-        Station_operator_delete(Array_Item_dtor(old));
+        ::operator delete(Array_Item_dtor(old));
     self->items = 0;
     if (items == 0 || !deep) {
         self->items = items;
     } else {
-        void *na = Station_operator_new(0xc);
+        void *na = ::operator new(0xc);
         Array_Item_ctor(na);
         self->items = na;
         ArraySetLength_Item(items[0], na);
@@ -158,13 +156,13 @@ void Station::setShips(uint32_t *ships, bool deep) {
         ArrayReleaseClasses_Ship(old);
         void *o2 = self->ships;
         if (o2 != 0)
-            Station_operator_delete(Array_Ship_dtor(o2));
+            ::operator delete(Array_Ship_dtor(o2));
     }
     self->ships = 0;
     if (ships == 0 || !deep) {
         self->ships = ships;
     } else {
-        void *na = Station_operator_new(0xc);
+        void *na = ::operator new(0xc);
         Array_Ship_ctor(na);
         self->ships = na;
         ArraySetLength_Ship(ships[0], na);
@@ -257,7 +255,7 @@ void Station::addItem(Item *item) {
     Station *self = this;
     uint32_t *arr = (uint32_t *)self->items;
     if (arr == 0) {
-        arr = (uint32_t *)Station_operator_new(0xc);
+        arr = (uint32_t *)::operator new(0xc);
         Array_Item_ctor(arr);
         self->items = arr;
     } else {
@@ -284,7 +282,7 @@ void Station::addItem(Item *item) {
 // Station::clone() — this in r0, returns a new Station copy.
 Station * Station::clone() {
     Station *self = this;
-    Station *n = (Station *)Station_operator_new(0x34);
+    Station *n = (Station *)::operator new(0x34);
     char tmp[12];
     String_copy_ctor(tmp, self, false);
     ((Station *)(n))->ctor(tmp, self->index, self->systemIndex, self->techLevel, self->textureIndex);
@@ -308,13 +306,13 @@ void Station::dtor() {
     if (self->ships != 0) {
         ArrayReleaseClasses_Ship(self->ships);
         if (self->ships != 0)
-            Station_operator_delete(Array_Ship_dtor(self->ships));
+            ::operator delete(Array_Ship_dtor(self->ships));
         self->ships = 0;
     }
     if (self->items != 0) {
         ArrayReleaseClasses_Item(self->items);
         if (self->items != 0)
-            Station_operator_delete(Array_Item_dtor(self->items));
+            ::operator delete(Array_Item_dtor(self->items));
         self->items = 0;
     }
     StationArray *agents = (StationArray *)self->agents;
@@ -328,11 +326,11 @@ void Station::dtor() {
                                ? (Agent *)0
                                : Mission_getAgent(((Status *)(STATUS))->getFreelanceMission());
             if (a != 0 && a != campA && a != freeA && ((Agent *)(a))->isStoryAgent() == 0)
-                Station_operator_delete(Agent_dtor(a));
+                ::operator delete(Agent_dtor(a));
             agents = (StationArray *)self->agents;
         }
         if (agents != 0)
-            Station_operator_delete(Array_Agent_dtor(agents));
+            ::operator delete(Array_Agent_dtor(agents));
         self->agents = 0;
     }
     Station_baseDtor(self);
@@ -349,7 +347,7 @@ void Station::setAgents(void *agents) {
             ArrayReleaseClasses_Agent(cur);
             void *a2 = self->agents;
             if (a2 != 0)
-                Station_operator_delete(Array_Agent_dtor(a2));
+                ::operator delete(Array_Agent_dtor(a2));
         }
         self->agents = agents;
     }
@@ -430,7 +428,7 @@ void Station::addShip(Ship *ship) {
     Station *self = this;
     uint32_t *arr = (uint32_t *)self->ships;
     if (arr == 0) {
-        arr = (uint32_t *)Station_operator_new(0xc);
+        arr = (uint32_t *)::operator new(0xc);
         Array_Ship_ctor(arr);
         self->ships = arr;
     } else {

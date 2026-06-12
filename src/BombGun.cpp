@@ -37,7 +37,6 @@ struct PlayerEgo {
 
 extern "C" __attribute__((visibility("hidden"))) void *BombGun_vtable;
 extern "C" void *Explosion_dtor(Explosion *self);
-extern "C" void operator_delete(void *p);
 extern "C" void *BombGun_base_dtor(BombGun *self);
 void *_ZN7BombGunD1Ev(BombGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_update_canvas_a;
@@ -69,7 +68,6 @@ extern "C" void Explosion_update(Explosion *self, int elapsed, TargetFollowCamer
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_player_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_final_canvas;
-extern "C" void *operator_new(uint32_t size);
 extern "C" void Explosion_ctor(Explosion *self, int type);
 extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
@@ -83,7 +81,7 @@ void *_ZN7BombGunD1Ev(BombGun *self)
 
     Explosion *explosion = self->field_0xf0;
     if (explosion != 0)
-        operator_delete(Explosion_dtor(explosion));
+        ::operator delete(Explosion_dtor(explosion));
 
     self->field_0xf0 = 0;
     return BombGun_base_dtor(self);
@@ -92,7 +90,7 @@ void *_ZN7BombGunD1Ev(BombGun *self)
 // ---- _BombGun_147858.cpp ----
 void _ZN7BombGunD0Ev(BombGun *self)
 {
-    return operator_delete(_ZN7BombGunD1Ev(self));
+    return ::operator delete(_ZN7BombGunD1Ev(self));
 }
 
 // ---- setPlayer_147868.cpp ----
@@ -301,7 +299,7 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
     self->field_0x100 = 0;
     self->field_0x120 = 0;
 
-    Explosion *explosion = (Explosion *)operator_new(0x68);
+    Explosion *explosion = (Explosion *)::operator new(0x68);
     int explosionType;
     if (type == 6) {
         explosionType = 7;
@@ -336,7 +334,7 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
             AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder, *createdTransform);
         ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
 
-        geometry = (AEGeometry *)operator_new(0xc0);
+        geometry = (AEGeometry *)::operator new(0xc0);
         AEGeometry_ctor(geometry, 0x37d6, *canvasHolder, false);
         AbyssEngine::PaintCanvas::TransformAddChild(*canvasHolder, *createdTransform,
                                       geometry->transform);
@@ -352,7 +350,7 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         if (!normal || weapon == 0x22)
             goto after_geometry;
 
-        geometry = (AEGeometry *)operator_new(0xc0);
+        geometry = (AEGeometry *)::operator new(0xc0);
         uint16_t geomMesh = 0x395d;
         void **canvasHolder = BombGun_canvas;
         if (mesh == 0x395a)
@@ -375,7 +373,7 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         }
     }
 
-    operator_delete(AEGeometry_dtor(geometry));
+    ::operator delete(AEGeometry_dtor(geometry));
 
 after_geometry:
     *(volatile float *)(local + 0x4) = kOffsetY;
@@ -389,7 +387,7 @@ after_geometry:
     Vector_assign((char *)self + 0x11c, local);
 
     self->field_0xec = 0;
-    AEGeometry *finalGeometry = (AEGeometry *)operator_new(0xc0);
+    AEGeometry *finalGeometry = (AEGeometry *)::operator new(0xc0);
     void **finalCanvas = BombGun_final_canvas;
     AEGeometry_ctor_canvas(finalGeometry, *finalCanvas);
     self->field_0xe8 = finalGeometry;

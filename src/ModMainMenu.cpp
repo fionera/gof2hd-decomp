@@ -16,7 +16,6 @@
 
 
 extern "C" void *CutScene_dtor(void *self);
-extern "C" void operator_delete(void *ptr);
 extern "C" void PaintCanvas_ReleaseAllResources(void *canvas);
 int GameText_getLanguage();
 void Globals_loadFont(int obj, int language);
@@ -43,7 +42,6 @@ namespace AbyssEngine { namespace AERandom {
 void reset(void *random);
 int nextInt(void *random, int limit);
 } }
-extern "C" void *operator_new(unsigned int size);
 extern "C" void CutScene_ctor(void *self, int mode);
 extern "C" int SolarSystem_getTextureIndex(void *system);
 extern "C" void PaintCanvas_TextureCreate(int canvas, int texture, int *out, int flags);
@@ -79,12 +77,12 @@ void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
 {
     void *cutscene = P(self, 0x1c);
     if (cutscene != 0)
-        operator_delete(CutScene_dtor(cutscene));
+        ::operator delete(CutScene_dtor(cutscene));
 
     void *touchWindow = P(self, 0x18);
     P(self, 0x1c) = 0;
     if (touchWindow != 0)
-        operator_delete(((MenuTouchWindow *)(touchWindow))->dtor());
+        ::operator delete(((MenuTouchWindow *)(touchWindow))->dtor());
 
     P(self, 0x18) = 0;
     PaintCanvas_ReleaseAllResources(*g_ModMainMenu_releaseCanvas);
@@ -315,7 +313,7 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
         void *station = (void *)(intptr_t)((Galaxy *)(galaxy))->getStation(AbyssEngine::AERandom::nextInt(*randomHolder, 100));
         ((Status *)(status))->setStation((Station *)station);
 
-        void *cutscene = operator_new(0xa0);
+        void *cutscene = ::operator new(0xa0);
         CutScene_ctor(cutscene, 2);
         self->f_1c = cutscene;
         ((CutScene *)(cutscene))->initialize();
@@ -350,14 +348,14 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
         record = ((RecordHandler *)(*recordHolder))->recordStoreReadPreview(0);
         if (record != 0) {
             UC(self, 0x29) = 1;
-            operator_delete(GameRecord_dtor(record));
+            ::operator delete(GameRecord_dtor(record));
         }
         UC(options, 0x48) = 1;
         ((RecordHandler *)(*recordHolder))->saveOptions();
     }
 
     ((Status *)(*g_ModMainMenu_initPlayingTime))->setPlayingTime(0);
-    window = operator_new(0x240);
+    window = ::operator new(0x240);
     ((MenuTouchWindow *)(window))->ctor(0);
     self->f_18 = window;
     if (UC(self, 0x29) != 0) {

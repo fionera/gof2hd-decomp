@@ -53,7 +53,7 @@ void PulseShader::Init(::Engine *)
 // ---- _PulseShader_927d0.cpp ----
 void _ZN11AbyssEngine11PulseShaderD0Ev(PulseShader *self)
 {
-    operator_delete(ShaderBaseStruct_dtor(self));
+    ::operator delete(ShaderBaseStruct_dtor(self));
 }
 
 // ---- UpdateMeshData_92594.cpp ----

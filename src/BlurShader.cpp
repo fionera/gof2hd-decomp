@@ -30,7 +30,6 @@ extern "C" void glUniform1f(int location, float value);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
 extern "C" void *ShaderBaseStruct_dtor(AbyssEngine::ShaderBaseStruct *self);
-extern "C" void operator_delete(void *self);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
 
 // ---- SetInActive_8a748.cpp ----
@@ -218,7 +217,7 @@ namespace AbyssEngine {
 
 BlurShader::~BlurShader()
 {
-    operator_delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)this));
+    ::operator delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)this));
 }
 
 } // namespace AbyssEngine

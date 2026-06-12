@@ -44,13 +44,12 @@ int AutoPilotList::touch(int p1, int p2) {
 // Mangled name so the demangled symbol contains "~AutoPilotList".
 extern "C" void ArrayReleaseClasses_String(void *arr);   // blx 0x6facc
 extern "C" void *Array_String_dtor(void *arr);            // blx 0x6f64c
-extern "C" void operator_delete(void *p);                 // blx 0x6eb48
 
 AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
     ArrayReleaseClasses_String(self->entries);
     void *a = self->entries;
     if (a != 0)
-        operator_delete(Array_String_dtor(a));
+        ::operator delete(Array_String_dtor(a));
     self->entries = 0;
     return self;
 }

@@ -6,12 +6,10 @@
 
 extern "C" void ScrollTouchBox_setYPosition(void *self, int y);
 extern "C" void *ScrollTouchBox_dtor(void *self);
-extern "C" void operator_delete(void *self);
 extern "C" int PaintCanvas_GetColor(void *canvas);
 extern "C" void PaintCanvas_SetColor(void *canvas, int color);
 extern "C" void String_ctor_cstr(void *dst, const char *text, bool copy);
 extern "C" void String_ctor_default(void *self);
-extern "C" void *operator_new(unsigned int size);
 extern "C" void ScrollTouchBox_ctor(void *self, int x, int y, int w, int h);
 extern "C" void ScrollTouchBox_setTextColor(void *self, AbyssEngine::String *text, int color);
 
@@ -50,7 +48,7 @@ ScrollTouchWindow::~ScrollTouchWindow()
 {
     void *box = this->scrollBox;
     if (box != 0) {
-        operator_delete(ScrollTouchBox_dtor(box));
+        ::operator delete(ScrollTouchBox_dtor(box));
     }
     this->scrollBox = 0;
     ((String *)(&this->title))->dtor();
@@ -184,7 +182,7 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame)
     this->width = w;
     this->height = h;
 
-    void *box = operator_new(0x40);
+    void *box = ::operator new(0x40);
     void *layout = *g_STW_layout_174128;
     int border = LayoutI(layout, 0x4c);
     int extra;
@@ -228,7 +226,7 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h)
     this->width = w;
     this->height = h;
 
-    void *box = operator_new(0x40);
+    void *box = ::operator new(0x40);
     void *layout = *g_STW_layout_1741c0;
     int top = LayoutI(layout, 8);
     int border = LayoutI(layout, 0x4c);

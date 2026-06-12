@@ -3,7 +3,6 @@
 
 
 extern "C" void *Sprite_dtor(void *p);
-extern "C" void operator_delete(void *p);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 extern "C" int PaintCanvas_GetImage2DWidth(unsigned canvas, int id);
 extern "C" int PaintCanvas_GetImage2DHeight(unsigned canvas, int id);
@@ -48,7 +47,7 @@ int ImageFactory::getItemImageId(int param_1)
 ImageFactory *_ZN12ImageFactoryD2Ev(ImageFactory *self)
 {
     void *p = self->sprite;
-    if (p != 0) operator_delete(Sprite_dtor(p));
+    if (p != 0) ::operator delete(Sprite_dtor(p));
     self->sprite = 0;
     return self;
 }
@@ -99,7 +98,7 @@ void ImageFactory::reload() {
     getText(*holder, 0x4f9, ids + 4);
     getText(*holder, 0x4fc, ids + 5);
     void *old = self->sprite;
-    if (old != 0) operator_delete(Sprite_dtor(old));
+    if (old != 0) ::operator delete(Sprite_dtor(old));
     self->sprite = 0;
     void *spr = operator new(0x40);
     int w = PaintCanvas_GetImage2DWidth(*holder, (int)ids[0]);

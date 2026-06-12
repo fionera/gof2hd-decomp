@@ -24,7 +24,7 @@ GameRecord::GameRecord()
     // Two embedded AbyssEngine::String members.
 
     // Heap buffer at +0x00.
-    void *buf = operator_new__(0x87);
+    void *buf = ::operator new[](0x87);
     *(uint32_t *)(t + 0x11c) = 0;
     *(void **)t = buf;
 
@@ -79,8 +79,6 @@ static inline uint64_t CONCAT44(uint32_t hi, uint32_t lo)
 static inline uint8_t SUB41(uint32_t v, int) { return (uint8_t)v; }
 
 extern "C" {
-char *operator_new(uint32_t size);
-void operator_delete(void *ptr);
 void *AEString_assign(void *self, const void *other);
 void AEString_dtor(void *self);
 long Array_dtor(void *self);
@@ -204,7 +202,7 @@ LAB_00165b22:
     iVar2 = Mission_getTargetStation();
     if (iVar2 != 0x1d) {
       pSVar17 = (char *)*piVar22;
-      pMVar3 = operator_new(0x78);
+      pMVar3 = (decltype(pMVar3))::operator new(0x78);
       Mission_ctor(pMVar3,0xb,0,0x1d);
       ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
     }
@@ -215,7 +213,7 @@ LAB_00165b22:
     in_r0[0x12] = 0x12;
     ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
     pSVar17 = (char *)*piVar22;
-    pMVar3 = operator_new(0x78);
+    pMVar3 = (decltype(pMVar3))::operator new(0x78);
     Mission_ctor(pMVar3,4,0,0x5b);
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
     iVar2 = in_r0[0x10];
@@ -225,7 +223,7 @@ LAB_00165b22:
     in_r0[0x12] = 9;
     ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
     pSVar17 = (char *)*piVar22;
-    pMVar3 = operator_new(0x78);
+    pMVar3 = (decltype(pMVar3))::operator new(0x78);
     Mission_ctor(pMVar3,4,0,0x30);
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
     iVar2 = in_r0[0x10];
@@ -233,7 +231,7 @@ LAB_00165b22:
   if (iVar2 == 0x29) {
     ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
     pSVar17 = (char *)*piVar22;
-    pMVar3 = operator_new(0x78);
+    pMVar3 = (decltype(pMVar3))::operator new(0x78);
     Mission_ctor(pMVar3,0xb,0,0x1e);
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
@@ -241,7 +239,7 @@ LAB_00165b22:
      ((in_r0[0x10] == 0x56 && (iVar2 = Mission_getTargetStation(), iVar2 != 100)))) {
     pSVar17 = (char *)*piVar22;
     *(uint8_t *)(*(int *)(DAT_0016600c + 0x165c98) + 0x31) = 1;
-    pMVar3 = operator_new(0x78);
+    pMVar3 = (decltype(pMVar3))::operator new(0x78);
     Mission_ctor(pMVar3,0xb,0,100);
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
@@ -249,7 +247,7 @@ LAB_00165b22:
      ((in_r0[0x10] == 0x57 && (iVar2 = Mission_getTargetStation(), iVar2 != 10)))) {
     pSVar17 = (char *)*piVar22;
     *(uint8_t *)(*(int *)(DAT_00166010 + 0x165ce2) + 0x31) = 1;
-    pMVar3 = operator_new(0x78);
+    pMVar3 = (decltype(pMVar3))::operator new(0x78);
     Mission_ctor(pMVar3,4,0,10);
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
@@ -257,7 +255,7 @@ LAB_00165b22:
       (in_r0[0x10] == 0x58)) && (iVar2 = Mission_getTargetStation(), iVar2 != 10)) {
     pSVar17 = (char *)*piVar22;
     *(uint8_t *)(*(int *)(DAT_00166014 + 0x165d2c) + 0x31) = 1;
-    pMVar3 = operator_new(0x78);
+    pMVar3 = (decltype(pMVar3))::operator new(0x78);
     Mission_ctor(pMVar3,0xb,0,10);
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
@@ -267,7 +265,7 @@ LAB_00165b22:
     *(uint8_t *)(*(int *)(DAT_00166018 + 0x165d72) + 0x31) = 1;
     ((Status *)(iVar2))->setCurrentCampaignMission(in_r0[0x10]);
     pSVar17 = (char *)*piVar22;
-    pMVar3 = operator_new(0x78);
+    pMVar3 = (decltype(pMVar3))::operator new(0x78);
     Mission_ctor(pMVar3,0xb,0,100);
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
@@ -289,7 +287,7 @@ LAB_00165dc2:
     in_r0[0x10] = 0x56;
     ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
     pSVar17 = (char *)*piVar22;
-    pMVar3 = operator_new(0x78);
+    pMVar3 = (decltype(pMVar3))::operator new(0x78);
     Mission_ctor(pMVar3,0xb,0,100);
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
@@ -300,7 +298,7 @@ LAB_00165e0c:
   pEVar10 = ctx + 0x94;
   if (*(char **)pEVar10 != (char *)0x0) {
     pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
-    operator_delete(pvVar4);
+    ::operator delete(pvVar4);
     ctx = (char *)*piVar22;
     pEVar10 = ctx + 0x94;
   }
@@ -308,7 +306,7 @@ LAB_00165e0c:
   pEVar10 = ctx + 0x98;
   if (*(char **)pEVar10 != (char *)0x0) {
     pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
-    operator_delete(pvVar4);
+    ::operator delete(pvVar4);
     ctx = (char *)*piVar22;
     pEVar10 = ctx + 0x98;
   }
@@ -316,7 +314,7 @@ LAB_00165e0c:
   pEVar10 = ctx + 0x90;
   if (*(char **)pEVar10 != (char *)0x0) {
     pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
-    operator_delete(pvVar4);
+    ::operator delete(pvVar4);
     ctx = (char *)*piVar22;
     pEVar10 = ctx + 0x90;
   }
@@ -339,7 +337,7 @@ LAB_00165e0c:
   *(uint64_t *)(ctx + 0xa4) = uVar23;
   if (*(char **)pEVar10 != (char *)0x0) {
     pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
-    operator_delete(pvVar4);
+    ::operator delete(pvVar4);
     ctx = (char *)*piVar22;
     pEVar10 = ctx + 0xac;
   }
@@ -428,14 +426,14 @@ LAB_00165faa:
             *(uint32_t *)(*(int *)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4) + 0x10) = 10;
             ((Station *)(pSVar8))->dtor();
             pvVar4 = pSVar8;
-            operator_delete(pvVar4);
+            ::operator delete(pvVar4);
             pSVar8 = (char *)((Galaxy *)(*piVar16))->getStation((int)BluePrint_getStationIndex(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)));
             ((Station *)(pSVar8))->getName();
             if (pSVar8 == (char *)0x0) goto LAB_00166114;
           }
           ((Station *)(pSVar8))->dtor();
           pvVar4 = pSVar8;
-          operator_delete(pvVar4);
+          ::operator delete(pvVar4);
         }
       }
 LAB_00166114:

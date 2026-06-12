@@ -10,7 +10,6 @@ extern "C" int Radar_GetMissionState(void *mission);
 extern "C" int Radar_GetMissionType(void *mission);
 extern "C" void Radar_StringDefault(void *self);
 extern "C" void Radar_MatrixDefault(void *self);
-extern "C" void *Radar_operator_new(unsigned size);
 extern "C" void Radar_ArrayStringCtor(void *self);
 extern "C" void Radar_ArraySetLengthString(int length, void *self);
 extern "C" void Radar_Image2DCreate(void *canvas, int id, void *out);
@@ -195,7 +194,7 @@ Radar::Radar(Level *level)
     this->weightX = 1.0f / (float)(imageWidth * imageWidth);
     this->weightY = 1.0f / (float)(imageHeight * imageHeight);
 
-    void *strings = Radar_operator_new(12);
+    void *strings = ::operator new(12);
     Radar_ArrayStringCtor(strings);
     this->labelStrings = strings;
     Radar_ArraySetLengthString(4, strings);

@@ -17,14 +17,12 @@ extern "C" int  _mtw_onTouchEnd_scrollState(void *self, int y, int x, int which)
 extern "C" int  _mtw_onTouchEnd_missionsState(void *self, int y, int x);
 extern "C" int  _mtw_onTouchEnd_cinematicState(void *self, int y, int x);
 extern "C" int  _mtw_onTouchEnd_genericButtons(void *self, int y, int x, int fieldOff);
-extern "C" void operator_delete(void *p);
 extern "C" void *_mtw_Array_TB_dtor(void *arr);
 extern "C" void *_mtw_Array_TS_dtor(void *arr);
 extern "C" void *_mtw_Array_Str_dtor(void *arr);
 extern "C" void *_mtw_TouchButton_dtor(void *p);
 extern "C" void *_mtw_ChoiceWindow_dtor(void *p);
 extern "C" void *_mtw_ScrollTouchWindow_dtor(void *p);
-extern "C" void *operator_new(uint32_t);
 extern "C" void *_mtw_Array_Str_dtor(void *p);
 extern "C" void *_mtw_Array_StrArr_dtor(void *p);
 extern "C" void _mtw_Array_StrArr_ctor(void *p);
@@ -354,7 +352,6 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
 // ---- _MenuTouchWindow_125170.cpp ----
 // MenuTouchWindow::~MenuTouchWindow(). Tears down all owned arrays, buttons, choice window,
 // scroll windows and two heap buffers, then returns this (base dtor is not chained here).
-extern "C" void operator_delete_arr(void *p);                 // operator delete[]
 extern "C" void _mtw_ArrayReleaseClasses_TB(void *arr);       // Array<TouchButton*> release
 extern "C" void _mtw_ArrayReleaseClasses_TS(void *arr);       // Array<TouchSlider*> release
 extern "C" void _mtw_ArrayReleaseClasses_Str(void *arr);      // Array<String*> release
@@ -364,13 +361,13 @@ static inline void freeArrayTB(void *self, int off) {
     if (a != 0) {
         _mtw_ArrayReleaseClasses_TB(a);
         void *b = pp(self, off);
-        if (b != 0) operator_delete(_mtw_Array_TB_dtor(b));
+        if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
     }
     pp(self, off) = 0;
 }
 static inline void freeObj(void *self, int off, void *(*dtor)(void *)) {
     void *o = pp(self, off);
-    if (o != 0) operator_delete(dtor(o));
+    if (o != 0) ::operator delete(dtor(o));
     pp(self, off) = 0;
 }
 
@@ -391,7 +388,7 @@ MenuTouchWindow *MenuTouchWindow::dtor()
         if (a != 0) {
             _mtw_ArrayReleaseClasses_TS(a);
             void *b = pp(self, 0xec);
-            if (b != 0) operator_delete(_mtw_Array_TS_dtor(b));
+            if (b != 0) ::operator delete(_mtw_Array_TS_dtor(b));
         }
         pp(self, 0xec) = 0;
     }
@@ -407,7 +404,7 @@ MenuTouchWindow *MenuTouchWindow::dtor()
             if (a != 0) {
                 _mtw_ArrayReleaseClasses_Str(a);
                 void *b = pp(self, off);
-                if (b != 0) operator_delete(_mtw_Array_Str_dtor(b));
+                if (b != 0) ::operator delete(_mtw_Array_Str_dtor(b));
             }
             pp(self, off) = 0;
         }
@@ -429,9 +426,9 @@ MenuTouchWindow *MenuTouchWindow::dtor()
     freeObj(self, 0xf4, _mtw_ScrollTouchWindow_dtor);
 
     // two heap byte-buffers freed with operator delete[]
-    if (pp(self, 0x134) != 0) operator_delete_arr(pp(self, 0x134));
+    if (pp(self, 0x134) != 0) ::operator delete[](pp(self, 0x134));
     pp(self, 0x134) = 0;
-    if (pp(self, 0x138) != 0) operator_delete_arr(pp(self, 0x138));
+    if (pp(self, 0x138) != 0) ::operator delete[](pp(self, 0x138));
     pp(self, 0x138) = 0;
 
     return this;
@@ -472,17 +469,17 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
                 void *r2 = *(void **)(base + i * 4);
                 int *cell;
                 if (r2 == 0) cell = (int *)(base + i * 4);
-                else { operator_delete(_mtw_Array_Str_dtor(r2)); cell = (int *)(i32(pp(self, 0x100), 4) + i * 4); }
+                else { ::operator delete(_mtw_Array_Str_dtor(r2)); cell = (int *)(i32(pp(self, 0x100), 4) + i * 4); }
                 *cell = 0;
                 rows = pp(self, 0x100);
             }
         }
         _mtw_ArrayReleaseClasses_StrArr(rows);
-        if (pp(self, 0x100) != 0) operator_delete(_mtw_Array_StrArr_dtor(pp(self, 0x100)));
+        if (pp(self, 0x100) != 0) ::operator delete(_mtw_Array_StrArr_dtor(pp(self, 0x100)));
         pp(self, 0x100) = 0;
     }
 
-    void *outer = operator_new(0xc);
+    void *outer = ::operator new(0xc);
     _mtw_Array_StrArr_ctor(outer);
     pp(self, 0x100) = outer;
     int rowCount = *(int *)*(void **)gCrbRowCount;
@@ -492,7 +489,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
     void *gtHolder   = *(void **)gCrbGameText;
 
     for (int i = 0; i < rowCount; i++) {
-        void *row = operator_new(0xc);
+        void *row = ::operator new(0xc);
         _mtw_Array_Str_ctor(row);
         *(void **)(i32(pp(self, 0x100), 4) + i * 4) = row;
         _mtw_ArraySetLength_Str(6, *(void **)(i32(pp(self, 0x100), 4) + i * 4));
@@ -509,22 +506,22 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             void *e;
             int *rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4);
 
-            e = operator_new(0xc); _mtw_String_ctor_copy(e, s54, false); ((void **)rowData)[0] = e;
-            e = operator_new(0xc); _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
+            e = ::operator new(0xc); _mtw_String_ctor_copy(e, s54, false); ((void **)rowData)[0] = e;
+            e = ::operator new(0xc); _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[1] = e;
 
-            e = operator_new(0xc);
+            e = ::operator new(0xc);
             if (i == 0) _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
             else _mtw_String_ctor_cstr(e, gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
 
-            e = operator_new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
+            e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[3] = e;
 
-            e = operator_new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
+            e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[4] = e;
 
-            e = operator_new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
+            e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[5] = e;
         } else {
             _mtw_String_ctor_empty(s54);
@@ -533,24 +530,24 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             void *e;
             int *rowData;
 
-            e = operator_new(0xc); _mtw_String_ctor_copy(e, s54, false);
+            e = ::operator new(0xc); _mtw_String_ctor_copy(e, s54, false);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[0] = e;
 
-            e = operator_new(0xc);
+            e = ::operator new(0xc);
             _mtw_String_ctor_copy(e, (void *)(*(int *)(i32(pp(self, 0xbc), 4) + i * 4) + 0x194), false);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[1] = e;
 
-            e = operator_new(0xc);
+            e = ::operator new(0xc);
             if (i == 0) _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
             else _mtw_String_ctor_cstr(e, gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
 
-            void *credits = operator_new(0xc);
+            void *credits = ::operator new(0xc);
             _mtw_Layout_formatCredits(credits);
             rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[3] = credits;
 
             // build "Kills: " + value string
-            void *combined = operator_new(0xc);
+            void *combined = ::operator new(0xc);
             void *label = _mtw_GameText_getText(*(void **)gtHolder, 0x141);
             char s6c[12]; _mtw_String_ctor_cstr(s6c, gCrbDash, false);
             char s60[12]; _mtw_String_op_plus(s60, label);
@@ -561,7 +558,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             _mtw_String_dtor(s60);
             _mtw_String_dtor(s6c);
 
-            e = operator_new(0xc);
+            e = ::operator new(0xc);
             float rank = *(float *)(*(int *)(i32(pp(self, 0xbc), 4) + i * 4) + 0x11c);
             void *rankTxt;
             if (rank <= 0.0f) rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x207);
@@ -577,11 +574,11 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
     }
 
     // OK button (+0xc4)
-    if (pp(self, 0xc4) != 0) { operator_delete(_mtw_TouchButton_dtor(pp(self, 0xc4))); pp(self, 0xc4) = 0; }
+    if (pp(self, 0xc4) != 0) { ::operator delete(_mtw_TouchButton_dtor(pp(self, 0xc4))); pp(self, 0xc4) = 0; }
     int *layout = (int *)*(void **)gCrbLayout;
     char backForm = *(char *)*(void **)gCrbBackFlag;
     int extra = layout[0x42]; // [0x108]
-    void *okBtn = operator_new(0xc8);
+    void *okBtn = ::operator new(0xc8);
     int screenW = *(int *)*(void **)gCrbScreenW;
     int x = (screenW - i32(self, 0x198)) - layout[0xa]; // -[0x28]
     int y = layout[8] + layout[3] + extra;              // [0x20]+[0xc]
@@ -597,8 +594,8 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
         (layout[0x1c] + i32(self, 0x1b4)) * i32(self, 0x18c) + layout[3] + extra + layout[8] + i32(self, 0x194));
 
     // back button (+0xc8)
-    if (pp(self, 0xc8) != 0) { operator_delete(_mtw_TouchButton_dtor(pp(self, 0xc8))); pp(self, 0xc8) = 0; }
-    void *backBtn = operator_new(0xc8);
+    if (pp(self, 0xc8) != 0) { ::operator delete(_mtw_TouchButton_dtor(pp(self, 0xc8))); pp(self, 0xc8) = 0; }
+    void *backBtn = ::operator new(0xc8);
     void *backLabel = _mtw_GameText_getText(*(void **)gtHolder, 0x41);
     _mtw_TouchButton_ctor7(backBtn, backLabel, 7,
         (screenW - i32(self, 0x198)) - layout[0xa],
@@ -636,7 +633,7 @@ void MenuTouchWindow::startValkyrie()
         _mtw_Status_nextCampaignMission((bool)(unsigned char)(long)*statusHolder);
 
     void *status = *statusHolder;
-    void *mission = operator_new(0x78);
+    void *mission = ::operator new(0x78);
     _mtw_Mission_ctor(mission);
     _mtw_Status_setMission(status);
 
@@ -961,7 +958,7 @@ extern void *const gLoadResetCell __attribute__((visibility("hidden")));     // 
 // MenuTouchWindow::loadGame(int slot)
 int MenuTouchWindow::loadGame(int slot)
 {
-    void *rh = operator_new(0x2c);
+    void *rh = ::operator new(0x2c);
     _mtw_RecordHandler_ctor(rh);
     void *rec = _mtw_RecordHandler_readRecord(rh);
 
@@ -972,7 +969,7 @@ int MenuTouchWindow::loadGame(int slot)
         _mtw_ChoiceWindow_set(cw, s, false);
         u8(this, 0x17e) = 1;
         u8(this, 0x170) = 1;
-        operator_delete(_mtw_RecordHandler_dtor(rh));
+        ::operator delete(_mtw_RecordHandler_dtor(rh));
         return 0;
     }
 
@@ -984,8 +981,8 @@ int MenuTouchWindow::loadGame(int slot)
             // fully compatible -> load it
             _mtw_Status_resetGame();
             _mtw_GameRecord_load(rec);
-            operator_delete(_mtw_RecordHandler_dtor(rh));
-            operator_delete(_mtw_GameRecord_dtor(rec));
+            ::operator delete(_mtw_RecordHandler_dtor(rh));
+            ::operator delete(_mtw_GameRecord_dtor(rec));
             void *app = *(void **)gLoadAppHolder;
             void *ms = _mtw_AppMgr_GetApplicationModule(*(void **)app, 5);
             _mtw_ModStation_setGameLoaded(ms);
@@ -998,8 +995,8 @@ int MenuTouchWindow::loadGame(int slot)
         void *s = _mtw_GameText_getText(*(void **)gLoadGameText, 0x65);
         _mtw_ChoiceWindow_set(cw, s, false);
         u8(this, 0x170) = 1;
-        operator_delete(_mtw_GameRecord_dtor(rec));
-        operator_delete(_mtw_RecordHandler_dtor(rh));
+        ::operator delete(_mtw_GameRecord_dtor(rec));
+        ::operator delete(_mtw_RecordHandler_dtor(rh));
         return 0;
     }
 
@@ -1008,8 +1005,8 @@ int MenuTouchWindow::loadGame(int slot)
     void *s = _mtw_GameText_getText(*(void **)gLoadGameText, 0x66);
     _mtw_ChoiceWindow_set(cw, s, false);
     u8(this, 0x170) = 1;
-    operator_delete(_mtw_GameRecord_dtor(rec));
-    operator_delete(_mtw_RecordHandler_dtor(rh));
+    ::operator delete(_mtw_GameRecord_dtor(rec));
+    ::operator delete(_mtw_RecordHandler_dtor(rh));
     return 0;
 }
 
@@ -1028,7 +1025,7 @@ extern void *const gAddBtnCount   __attribute__((visibility("hidden")));  // *ho
 // MenuTouchWindow::addButton(int id, String label, int row, Array<TouchButton*>* arr, int yOff)
 void MenuTouchWindow::addButton(int id, void *label, int row, void *arr, int yOff)
 {
-    void *btn = operator_new(0xc8);
+    void *btn = ::operator new(0xc8);
 
     int btnW = i32(this, 0x1a8);
     int screenW = *(int *)*(void **)gAddBtnScreenW;
@@ -1102,10 +1099,10 @@ void MenuTouchWindow::loadPreviewRecords()
 
     void *rec = pp(this, 0xbc);
     if (rec != 0) {
-        operator_delete(_mtw_Array_GameRecord_dtor(rec));
+        ::operator delete(_mtw_Array_GameRecord_dtor(rec));
         i32(this, 0xbc) = 0;
     }
-    void *rh = operator_new(0x2c);
+    void *rh = ::operator new(0x2c);
     _mtw_RecordHandler_ctor(rh);
     pp(this, 0xbc) = _mtw_RecordHandler_readAllPreviewRecords(rh);
     _mtw_RecordHandler_dtor(rh);
@@ -1120,7 +1117,7 @@ extern void *const gSaveGameText __attribute__((visibility("hidden")));
 // MenuTouchWindow::saveGame(int slot)
 void MenuTouchWindow::saveGame(int slot)
 {
-    void *rh = operator_new(0x2c);
+    void *rh = ::operator new(0x2c);
     _mtw_RecordHandler_ctor(rh);
     _mtw_RecordHandler_recordStoreWrite(rh, slot);
     _mtw_RecordHandler_recordStoreWritePreview(rh, slot);
@@ -1131,14 +1128,14 @@ void MenuTouchWindow::saveGame(int slot)
     if (rec == 0) {
         cell = arr + slot;
     } else {
-        operator_delete(_mtw_GameRecord_dtor(rec));
+        ::operator delete(_mtw_GameRecord_dtor(rec));
         cell = (int *)(i32(pp(this, 0xbc), 4) + slot * 4);
     }
     *cell = 0;
 
     void *preview = _mtw_RecordHandler_recordStoreReadPreview(rh);
     *(void **)(i32(pp(this, 0xbc), 4) + slot * 4) = preview;
-    operator_delete(_mtw_RecordHandler_dtor(rh));
+    ::operator delete(_mtw_RecordHandler_dtor(rh));
 
     _mtw_createRecordButtons(this, true);
     void *cw = pp(this, 0x104);
@@ -1729,10 +1726,10 @@ void MenuTouchWindow::ctor(int menuType)
 
     i32(self, 0x168) = menuType;
 
-    void *arr1 = operator_new(0xc);
+    void *arr1 = ::operator new(0xc);
     _mtw_Array_TB_ctor(arr1);
     pp(self, 0x4) = arr1;
-    void *arr2 = operator_new(0xc);
+    void *arr2 = ::operator new(0xc);
     _mtw_Array_TB_ctor(arr2);
     pp(self, 0xc0) = arr2;
 

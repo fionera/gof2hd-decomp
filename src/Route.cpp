@@ -6,8 +6,6 @@ extern "C" void ArrayReleaseClasses_Waypoint(Array<Waypoint *> *a);
 extern "C" void *ArrayWaypoint_dtor(Array<Waypoint *> *a);
 extern "C" void *ArrayKIPlayer_dtor(Array<KIPlayer *> *a);
 extern "C" void *ArrayInt_dtor(Array<int> *a);
-extern "C" void operator_delete(void *p);
-extern "C" void *operator_new(unsigned int sz);
 extern "C" int __aeabi_idiv(int n, int d);
 extern "C" void ArraySetLengthKIPlayer(uint32_t n, void *a);
 extern "C" void ArraySetLengthInt(uint32_t n, void *a);
@@ -94,18 +92,18 @@ void *_ZN5RouteD2Ev(Route *self)
         ArrayReleaseClasses_Waypoint(wps);
         Array<Waypoint *> *wps2 = self->field_0xc;
         if (wps2 != 0)
-            operator_delete(ArrayWaypoint_dtor(wps2));
+            ::operator delete(ArrayWaypoint_dtor(wps2));
     }
     self->field_0xc = 0;
 
     Array<KIPlayer *> *tgt = self->field_0x10;
     if (tgt != 0)
-        operator_delete(ArrayKIPlayer_dtor(tgt));
+        ::operator delete(ArrayKIPlayer_dtor(tgt));
     self->field_0x10 = 0;
 
     Array<int> *times = self->field_0x14;
     if (times != 0)
-        operator_delete(ArrayInt_dtor(times));
+        ::operator delete(ArrayInt_dtor(times));
     self->field_0x14 = 0;
 
     return self;
@@ -135,20 +133,20 @@ Route *_ZN5RouteC2EPii(Route *self, int *coords, int count)
 {
     self->field_0x4 = 0;
     self->field_0x0 = 0;
-    void *wps = operator_new(0xc);
+    void *wps = ::operator new(0xc);
     ArrayWaypoint_ctor(wps);
     self->field_0xc = (Array<Waypoint *> *)wps;
-    void *tgts = operator_new(0xc);
+    void *tgts = ::operator new(0xc);
     ArrayKIPlayer_ctor(tgts);
     self->field_0x10 = (Array<KIPlayer *> *)tgts;
-    void *times = operator_new(0xc);
+    void *times = ::operator new(0xc);
     ArrayInt_ctor(times);
     self->field_0x14 = (Array<int> *)times;
     uint32_t n = __aeabi_idiv(count, 3);
     ArraySetLengthKIPlayer(n, self->field_0x10);
     ArraySetLengthInt(n, self->field_0x14);
     for (int i = 0; i < count; i += 3) {
-        void *wp = operator_new(0x138);
+        void *wp = ::operator new(0x138);
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
         ArrayAddWaypoint(wp, self->field_0xc);
     }
@@ -200,32 +198,30 @@ Route *_ZN5RouteC2EPiPvPii(Route *self, int *coords, void *targets, int *times, 
 {
     self->field_0x4 = 0;
     self->field_0x0 = 0;
-    void *wps = operator_new(0xc);
+    void *wps = ::operator new(0xc);
     ArrayWaypoint_ctor(wps);
     self->field_0xc = (Array<Waypoint *> *)wps;
-    void *timesArr = operator_new(0xc);
+    void *timesArr = ::operator new(0xc);
     ArrayInt_ctor(timesArr);
     self->field_0x10 = (Array<KIPlayer *> *)targets;
     self->field_0x14 = (Array<int> *)timesArr;
     for (int i = 0; i < count; i += 3)
         ArrayAddInt(*times++, self->field_0x14);
     for (int i = 0; i < count; i += 3) {
-        void *wp = operator_new(0x138);
+        void *wp = ::operator new(0x138);
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
         ArrayAddWaypoint(wp, self->field_0xc);
     }
     return self;
 }
 
-extern "C" void *operator_new__(unsigned int sz);   // operator new[]
-extern "C" void operator_delete__(void *p);          // operator delete[]
 
 // Route::clone() -> deep copy of the path; preserves docking targets/times when any are set.
 Route * Route::clone() {
     Route *self = this;
     Array<Waypoint *> *wps = self->field_0xc;
     int n = (int)wps->size();
-    int *coords = (int *)operator_new__(n * 3 * 4);
+    int *coords = (int *)::operator new[](n * 3 * 4);
     int *p = coords;
     for (int i = 0; i != n; i++) {
         Waypoint *wp = (*wps)[i];
@@ -242,23 +238,23 @@ Route * Route::clone() {
                 any = true;
         if (any) {
             Array<int> *times = self->field_0x14;
-            int *timesCopy = (int *)operator_new__(times->size() * 4);
+            int *timesCopy = (int *)::operator new[](times->size() * 4);
             for (uint32_t k = 0; k < times->size(); k++)
                 timesCopy[k] = (*times)[k];
-            void *targets = operator_new(0xc);
+            void *targets = ::operator new(0xc);
             ArrayKIPlayer_ctor(targets);
             ArraySetLengthKIPlayer(self->field_0x10->size(), targets);
             Array<KIPlayer *> *targetsArr = (Array<KIPlayer *> *)targets;
             for (uint32_t k = 0; k < self->field_0x10->size(); k++)
                 (*targetsArr)[k] = (*self->field_0x10)[k];
-            Route *r = (Route *)operator_new(0x18);
+            Route *r = (Route *)::operator new(0x18);
             Route_ctor2(r, coords, targets, timesCopy, (int)self->field_0xc->size() * 3);
             r->field_0x4 = self->field_0x4;
-            operator_delete__(timesCopy);
+            ::operator delete[](timesCopy);
             return r;
         }
     }
-    Route *r = (Route *)operator_new(0x18);
+    Route *r = (Route *)::operator new(0x18);
     Route_ctor1(r, coords, wps->size() * 3);
     r->field_0x4 = self->field_0x4;
     return r;

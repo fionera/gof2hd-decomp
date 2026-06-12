@@ -33,7 +33,6 @@ namespace AbyssEngine { namespace PaintCanvas {
 ::Transform *TransformGetTransform(void *canvas, uint32_t handle);
 void TransformRemoveChild(void *canvas, uint32_t parent, uint32_t child);
 } }
-extern "C" void *operator_new(uint32_t size);
 extern "C" void Array_BoundingVolumePtr_ctor(Array<BoundingVolume *> *self);
 extern "C" int SolarSystem_getRace(void *system);
 
@@ -137,7 +136,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
 
     if (visible) {
         Array<BoundingVolume *> *volumes =
-            (Array<BoundingVolume *> *)operator_new(0xc);
+            (Array<BoundingVolume *> *)::operator new(0xc);
         Array_BoundingVolumePtr_ctor(volumes);
         this->field_0x130 = volumes;
         ArraySetLength_BoundingVolumePtr(1, volumes);
@@ -156,7 +155,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
 
         ((Player *)(this->field_0x4))->setRadius(radius);
 
-        BoundingSphere *sphere = (BoundingSphere *)operator_new(0x48);
+        BoundingSphere *sphere = (BoundingSphere *)::operator new(0x48);
         new (sphere) BoundingSphere(x, y, z, 0.0f, 0.0f, 0.0f, (float)radius);
         (*this->field_0x130)[0] = (BoundingVolume *)sphere;
     }

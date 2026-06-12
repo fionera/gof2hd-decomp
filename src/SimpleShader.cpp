@@ -53,5 +53,5 @@ __attribute__((minsize)) SimpleShader::SimpleShader()
 // AbyssEngine::SimpleShader::~SimpleShader() (deleting dtor)
 void _ZN11AbyssEngine12SimpleShaderD0Ev(SimpleShader *self)
 {
-    operator_delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)self));
+    ::operator delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)self));
 }

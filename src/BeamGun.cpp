@@ -10,12 +10,10 @@
 // which is the only AEGeometry field this TU reads by name.
 
 extern "C" AEGeometry *AEGeometry_dtor(AEGeometry *self);
-extern "C" void operator_delete(void *ptr);
 extern "C" void BeamGun_setEnemies_tail(void *data);
 extern "C" void BeamGun_render_tail(AEGeometry *self);
 BeamGun *_ZN7BeamGunD1Ev(BeamGun *self);
 extern "C" void BeamGun_setEnemy_tail(void *data);
-extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, PaintCanvas *canvas, bool flag);
 namespace AbyssEngine { namespace PaintCanvas {
 ::Transform *TransformGetTransform(::PaintCanvas *canvas, int transformId);
@@ -37,12 +35,12 @@ BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
 
     AEGeometry *primary = self->field_0x18;
     if (primary != 0)
-        operator_delete(AEGeometry_dtor(primary));
+        ::operator delete(AEGeometry_dtor(primary));
     self->field_0x18 = 0;
 
     AEGeometry *secondary = self->field_0x1c;
     if (secondary != 0)
-        operator_delete(AEGeometry_dtor(secondary));
+        ::operator delete(AEGeometry_dtor(secondary));
     self->field_0x1c = 0;
 
     return self;
@@ -75,7 +73,7 @@ void BeamGun::render()
 // ---- _BeamGun_17786c.cpp ----
 void _ZN7BeamGunD0Ev(BeamGun *self)
 {
-    return operator_delete(_ZN7BeamGunD1Ev(self));
+    return ::operator delete(_ZN7BeamGunD1Ev(self));
 }
 
 // ---- setEnemy_177b26.cpp ----
@@ -109,7 +107,7 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
     this->field_0x10 = param_1;
     this->field_0x14 = param_3;
 
-    geometry = (AEGeometry *)operator_new(0xc0);
+    geometry = (AEGeometry *)::operator new(0xc0);
     void **canvasHolder = BeamGun_canvas;
     uint32_t primaryMesh = (uint32_t)(param_3 + 0x3795);
     if (type == 0xe4)
@@ -128,7 +126,7 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
         if (gunKind == 0xb) {
             geometry = 0;
         } else {
-            geometry = (AEGeometry *)operator_new(0xc0);
+            geometry = (AEGeometry *)::operator new(0xc0);
             AEGeometry_ctor(geometry, (uint16_t)mesh, (PaintCanvas *)*canvasHolder, false);
         }
     }

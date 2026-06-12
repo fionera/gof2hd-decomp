@@ -11,7 +11,6 @@
 extern "C" void _liw_stw_OnTouchBegin(void *stw, int x);
 extern "C" void _liw_stw_OnTouchMove(void *stw, int y);
 extern "C" void _liw_stw_OnTouchEnd(void *stw, int y);
-extern "C" void  operator_delete_(void *p);
 extern "C" void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void  liw_set_buildShipPreview(void *self, void *item, void *layout);
 extern "C" void  Str_dtor(Str *s);
@@ -228,14 +227,14 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
     if (pp(this, 0x0) != 0) {
         Array_releaseClasses(pp(this, 0x0));
         if (pp(this, 0x0) != 0)
-            operator_delete_(Array_dtor(pp(this, 0x0)));
+            ::operator delete(Array_dtor(pp(this, 0x0)));
     }
     pp(this, 0x0) = 0;
     // Tear down the value array (+0x4).
     if (pp(this, 0x4) != 0) {
         Array_releaseClasses(pp(this, 0x4));
         if (pp(this, 0x4) != 0)
-            operator_delete_(Array_dtor(pp(this, 0x4)));
+            ::operator delete(Array_dtor(pp(this, 0x4)));
     }
     pp(this, 0x4) = 0;
 

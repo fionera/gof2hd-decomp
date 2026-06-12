@@ -29,7 +29,6 @@
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
 
-extern "C" void operator_delete(void *p);
 extern "C" void Hud_drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y);
 extern "C" void Hud_drawRadar(Hud *self);
 extern "C" void Hud_drawBars(Hud *self, void *ego);
@@ -46,13 +45,11 @@ extern "C" int  SolarSystem_getIndex(void *sys);
 extern "C" void String_concat(void *out, void *lhs, void *rhs);
 extern "C" unsigned int Hud_touchMoveFallback(Hud *self, unsigned int a, void *b);
 extern "C" int __aeabi_idiv(int a, int b);
-extern "C" void *operator_new(uint32_t);
 extern "C" int  Mission_getType(void *m);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
 extern "C" int  PaintCanvas_GetTextWidth(void *font, void *str);
 extern "C" void Hud_secondaryWeaponChanged(Hud *self);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
-extern "C" void *operator_new_arr(uint32_t);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
 extern "C" int  SolarSystem_getRace(void *sys);
@@ -197,7 +194,7 @@ void Hud::closeHudMenu() {
         ArrayReleaseClasses_TouchButton(P(self, 0x18));
         if (P(self, 0x18) != 0) {
             void *p = Array_TouchButton_dtor(P(self, 0x18));
-            operator_delete(p);
+            ::operator delete(p);
         }
         P(self, 0x18) = 0;
     }
@@ -301,7 +298,7 @@ void Hud::updateQueue(int dt) {
         int *p = (int *)I(P(self, 0x264), 4);
         if ((void *)p[0] != 0) {
             ((ListItem *)p[0])->~ListItem();
-            operator_delete((void *)p[0]);
+            ::operator delete((void *)p[0]);
             p = (int *)I(P(self, 0x264), 4);
         }
         p[0] = 0;
@@ -582,8 +579,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(dst))->assign((String *)(out2));
         ((String *)(out2))->dtor(); ((String *)(a7c))->dtor(); ((String *)(a70))->dtor(); ((String *)(a64))->dtor();
 
-        void *item = operator_new(0x48);
-        void *str = operator_new(0xc);
+        void *item = ::operator new(0x48);
+        void *str = ::operator new(0xc);
         ((String *)(str))->ctor_copy((String *)(dst), false);
         ((ListItem *)item)->ctor_String_int(str, 0);
         ((ListItem *)item)->field_0x2c = cargoVal;
@@ -596,8 +593,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         void *gt = *g_Hud_ccGameText;
         void *txt = ((GameText *)(gt))->getText(0x18a);
         ((String *)(B(self, 0x1f4)))->assign((String *)(txt));
-        void *item = operator_new(0x48);
-        void *str = operator_new(0xc);
+        void *item = ::operator new(0x48);
+        void *str = ::operator new(0xc);
         ((String *)(str))->ctor_copy((String *)(B(self, 0x1f4)), false);
         ((ListItem *)item)->ctor_String_int(str, 1);
         Hud_catchCargoFinish(self);
@@ -650,8 +647,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     ((String *)(B(self, 0x1f4)))->assign((String *)(k34));
     ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
-    void *item = operator_new(0x48);
-    void *str = operator_new(0xc);
+    void *item = ::operator new(0x48);
+    void *str = ::operator new(0xc);
     ((String *)(str))->ctor_copy((String *)(B(self, 0x1f4)), false);
     ((ListItem *)item)->ctor_String_int(str, 0);
     ((ListItem *)item)->field_0x2c = cargoVal;
@@ -889,11 +886,11 @@ int Hud::init() {
     UC(self, 0x528) = 0;
 
     // key-state arrays: 0x19 slots each
-    void *keys = operator_new(0xc);
+    void *keys = ::operator new(0xc);
     Array_void_ctor(keys);
     P(self, 0x28c) = keys;
     ArraySetLength_void(0x19, keys);
-    void *bits = operator_new_arr(100);
+    void *bits = ::operator new[](100);
     P(self, 0x290) = bits;
     for (int i = 0; i != 0x19; i++) {
         *(int *)(I(P(self, 0x28c), 4) + i * 4) = 0;
@@ -1075,7 +1072,7 @@ void Hud::clearQueue() {
             dst = (int *)(data + i * 4);
         } else {
             ((ListItem *)item)->~ListItem();
-            operator_delete(item);
+            ::operator delete(item);
             dst = (int *)(I(P(self, 0x264), 4) + off);
         }
         *dst = 0;
@@ -1282,8 +1279,8 @@ void Hud::hudEventMedal(int medalId, int percent) {
     ((String *)(probe))->dtor();
     if (same != 0) return;
 
-    void *item = operator_new(0x48);
-    void *str = operator_new(0xc);
+    void *item = ::operator new(0x48);
+    void *str = ::operator new(0xc);
     ((String *)(str))->ctor_copy((String *)(dst), false);
     ((ListItem *)item)->ctor_String_int(str, 3);
     ((Hud *)(self))->addToEventQueue((ListItem *)item);
@@ -1317,16 +1314,16 @@ void Hud::initHudMenu(int menuType, void *lvl) {
     // tear down old menu buttons
     if (P(self, 0x18) != 0) {
         ArrayReleaseClasses_TouchButton(P(self, 0x18));
-        if (P(self, 0x18) != 0) operator_delete(Array_TouchButton_dtor(P(self, 0x18)));
+        if (P(self, 0x18) != 0) ::operator delete(Array_TouchButton_dtor(P(self, 0x18)));
         P(self, 0x18) = 0;
     }
-    void *arr = operator_new(0xc);
+    void *arr = ::operator new(0xc);
     Array_TouchButton_ctor(arr);
     P(self, 0x238) = lvl;
     P(self, 0x18) = arr;
 
     // refresh secondary-weapon equipment + label
-    if (P(self, 0x25c) != 0) operator_delete(Array_Item_dtor(P(self, 0x25c)));
+    if (P(self, 0x25c) != 0) ::operator delete(Array_Item_dtor(P(self, 0x25c)));
     P(self, 0x25c) = 0;
     void *ship = (void *)((Status *)(*gStatus))->getShip();
     P(self, 0x25c) = Ship_getEquipment(ship, 1);
@@ -1381,19 +1378,19 @@ extern "C" void Hud_subObjectDtor(void *p);   // DAT_0017134c shared sub-object 
 
 Hud * Hud::dtor() {
     Hud *self = this;
-    if (P(self, 0x25c) != 0) operator_delete(Array_Item_dtor(P(self, 0x25c)));
+    if (P(self, 0x25c) != 0) ::operator delete(Array_Item_dtor(P(self, 0x25c)));
     P(self, 0x25c) = 0;
 
-    if (P(self, 0x264) != 0) operator_delete(Array_ListItem_dtor(P(self, 0x264)));
+    if (P(self, 0x264) != 0) ::operator delete(Array_ListItem_dtor(P(self, 0x264)));
     P(self, 0x264) = 0;
 
     if (P(self, 0x18) != 0) {
         ArrayReleaseClasses_TouchButton(P(self, 0x18));
-        if (P(self, 0x18) != 0) operator_delete(Array_TouchButton_dtor(P(self, 0x18)));
+        if (P(self, 0x18) != 0) ::operator delete(Array_TouchButton_dtor(P(self, 0x18)));
     }
     P(self, 0x18) = 0;
 
-    if (P(self, 0x530) != 0) operator_delete(Array_uint_dtor(P(self, 0x530)));
+    if (P(self, 0x530) != 0) ::operator delete(Array_uint_dtor(P(self, 0x530)));
     P(self, 0x530) = 0;
 
     Hud_subObjectDtor(B(self, 0x51c));

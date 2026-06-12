@@ -26,8 +26,6 @@ extern "C" float Vector_addAssign(Vector *dst, const Vector *src);
 // ---- _Gun_152134.cpp ----
 // Gun::~Gun() — real C++ destructor so the demangled symbol contains "~Gun".
 
-extern "C" __attribute__((nothrow)) void Gun_operator_delete(void *p);      // operator delete(void*)
-extern "C" __attribute__((nothrow)) void Gun_operator_delete_arr(void *p);  // operator delete[](void*)
 
 struct VecArray;
 extern "C" void Gun_ArrayReleaseClasses(VecArray *a);     // ArrayReleaseClasses<Vector*>(Array*)
@@ -41,17 +39,17 @@ __attribute__((minsize)) Gun::~Gun() noexcept(false)
     char *self = (char *)this;
 
     if (*(void **)(self + 0x3c) != 0)
-        Gun_operator_delete_arr(*(void **)(self + 0x3c));
+        ::operator delete[](*(void **)(self + 0x3c));
     *(void **)(self + 0x3c) = 0;
 
-    Gun_operator_delete_arr(*(void **)(self + 0x40));
+    ::operator delete[](*(void **)(self + 0x40));
     *(void **)(self + 0x40) = 0;
 
     if (*(void **)(self + 0x10c) != 0)
-        Gun_operator_delete_arr(*(void **)(self + 0x10c));
+        ::operator delete[](*(void **)(self + 0x10c));
     *(void **)(self + 0x10c) = 0;
 
-    Gun_operator_delete_arr(*(void **)(self + 0x110));
+    ::operator delete[](*(void **)(self + 0x110));
     *(void **)(self + 0x110) = 0;
 
     VecArray *arr = *(VecArray **)(self + 0xac);
@@ -60,7 +58,7 @@ __attribute__((minsize)) Gun::~Gun() noexcept(false)
         VecArray *arr2 = *(VecArray **)(self + 0xac);
         if (arr2 != 0) {
             void *p = Gun_ArrayDtor(arr2);
-            Gun_operator_delete(p);
+            ::operator delete(p);
         }
     }
     *(void **)(self + 0xac) = 0;
@@ -144,9 +142,6 @@ namespace Transform { void SetAnimationState(unsigned tf, int a, int b); } // 0x
 }
 
 // 0x718e4
-extern "C" void *Gun_operator_new(unsigned size);             // operator new(uint)
-extern "C" void *Gun_operator_new_arr(unsigned size);         // operator new[](uint)
-extern "C" __attribute__((nothrow)) void Gun_operator_delete(void *p); // operator delete(void*)
 // AEGeometry::AEGeometry(AEGeometry*, unsigned short, PaintCanvas*, bool)
 extern "C" void *AEGeometry_dtor(AEGeometry *self);           // AEGeometry::~AEGeometry
 
@@ -169,12 +164,12 @@ void Gun::setIndex(int index) {
         unsigned alloc = (unsigned)bytes;
         if ((unsigned)(bytes >> 32) != 0)
             alloc = 0xffffffff;
-        self->geometries = Gun_operator_new_arr(alloc);
-        self->randomFlags = Gun_operator_new_arr(count);
+        self->geometries = ::operator new[](alloc);
+        self->randomFlags = ::operator new[](count);
         unsigned *canvasHolder = gSI_canvas;
         int *rngHolder = gSI_rng;
         for (unsigned i = 0; i < count; i = i + 1) {
-            AEGeometry *geom = (AEGeometry *)Gun_operator_new(0xc0);
+            AEGeometry *geom = (AEGeometry *)::operator new(0xc0);
             AEGeometry_ctor(geom, (unsigned short)g, (void *)*canvasHolder, false);
             ((int *)self->geometries)[i] = geom->transform;
             int r = AbyssEngine::AERandom::nextInt(*rngHolder);
@@ -182,7 +177,7 @@ void Gun::setIndex(int index) {
             unsigned tf = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder);
             AbyssEngine::Transform::SetAnimationState(tf, 0, 0);
             void *p = AEGeometry_dtor(geom);
-            Gun_operator_delete(p);
+            ::operator delete(p);
             count = self->count;
         }
     }
@@ -341,8 +336,6 @@ struct VecPtrArray;  // Array<Vector*>
 // Vector::operator=(Vector*, Vector const&)                 0x6eb3c
 // Vector::operator*=(Vector*, float)                        0x72628
 
-extern "C" void *Gun_operator_new(unsigned size);       // operator new(uint)   0x6eb24
-extern "C" void *Gun_operator_new_arr(unsigned size);   // operator new[](uint) 0x6ec08
 
 Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
     Gun *self = this;
@@ -397,9 +390,9 @@ Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float 
     unsigned alloc = (unsigned)bytes;
     if ((unsigned)(bytes >> 32) != 0)
         alloc = 0xffffffff;
-    self->lifetimes = Gun_operator_new_arr(alloc);
-    self->hitFlags = (uint8_t *)Gun_operator_new_arr(count | ((int)count >> 31));
-    void *arr = Gun_operator_new(0xc);
+    self->lifetimes = ::operator new[](alloc);
+    self->hitFlags = (uint8_t *)::operator new[](count | ((int)count >> 31));
+    void *arr = ::operator new(0xc);
     Gun_VecPtrArray_ctor(arr);
     self->field_0xac = (char *)arr;
     Gun_VecArray_setLength(count, s + 0x8);
