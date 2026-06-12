@@ -9,17 +9,23 @@
 
 // AbyssEngine::FBOContainer is defined fully in gof2/FBOContainer.h, but that header
 // forward-declares AbyssEngine::Engine which clashes with the `using ::Engine;` re-export
-// pulled in by gof2/AbyssEngine.h. We only need to call the (out-of-line) Create method
-// through a raw pointer here, so declare the minimal class surface locally instead.
+// pulled in by gof2/AbyssEngine.h. We only build/Create one here via a raw pointer, so
+// declare the minimal class surface locally instead (Engine is the re-exported ::Engine).
 namespace AbyssEngine {
 class FBOContainer {
 public:
+    FBOContainer(Engine *engine, String name);
     void Create(int width, int height, bool a, bool linear);
 };
 }
 
 
 // __aeabi_memcpy is declared by gof2/Engine.h
+
+// GameText engine entry points (defined in src/GameText.cpp; GameText is a top-level class,
+// so its no-receiver accessors are rendered as free functions, matching the rest of the tree).
+int GameText_getLanguage();
+int GameText_isNonArabicString(const unsigned short *text, unsigned int len);
 
 // ---- ImageFontSetYOffset_72278.cpp ----
 // AbyssEngine::ImageFontSetYOffset(AbyssEngine::ImageFont*, short)
@@ -236,7 +242,7 @@ void getAppVersion()
         void *fbo = operator new(0x38);
         String name;
         name.ctor_char("", false);
-        AE_FBOContainer_ctor(fbo);
+        new (fbo) AbyssEngine::FBOContainer((AbyssEngine::Engine *)self, name);
         pp(c, 0x418) = fbo;
         ((::String *)&name)->dtor();
         ((AbyssEngine::FBOContainer *)pp(c, 0x418))->Create(
@@ -1835,8 +1841,8 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
     bool shaderMode = (u8(en, 0xfc) != 0);
     if (shaderMode) {
         // Arabic special-case: force forward scan.
-        if (*g_GameText_arabicEnabledFlag != 0 && AE_GameText_getLanguage() == 9 &&
-            AE_GameText_isNonArabicString(text, len) != 0) {
+        if (*g_GameText_arabicEnabledFlag != 0 && GameText_getLanguage() == 9 &&
+            GameText_isNonArabicString(text, len) != 0) {
             idx = 0;
             step = 1;
         }
@@ -2201,16 +2207,20 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
         void *batch = pp(mesh, 0x30);
         AE_ArrayAddCached_MeshPtr(mesh, (char *)batch + 0x44);
 
+        // Record the view / unit / world transforms into the deferred batch command buffer.
+        // AE_SpriteSystem_pushMatrix copies a 4x4 matrix (15 explicit words; m33 implicit) into
+        // the destination slot. It is a runtime-resolved (GOT) indirect helper with no statically
+        // visible body, so it stays a documented extern (see externs.h).
         const unsigned int *v = (const unsigned int *)view;
         AE_SpriteSystem_pushMatrix(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9],
-                                   v[10], v[11], v[12], v[13], v[14], (int)(intptr_t)pp(mesh, 0x30) + 0x2c);
+                                   v[10], v[11], v[12], v[13], v[14], (int)(intptr_t)batch + 0x2c);
         unsigned int one = 0x3f800000;
         AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, g_SpriteSystem_oneHalf, 0, 0, 0, 0, one, 0,
-                                   one, one, one, (int)(intptr_t)pp(mesh, 0x30) + 0x38);
+                                   one, one, one, (int)(intptr_t)batch + 0x38);
         const unsigned int *w = (const unsigned int *)world;
         AE_SpriteSystem_pushMatrix(w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8], w[9],
-                                   w[10], w[11], w[12], w[13], w[14], (int)(intptr_t)pp(mesh, 0x30) + 0x5c);
-        AE_ArrayAddCached_uint(0xffffffff, (char *)pp(mesh, 0x30) + 0x50);
+                                   w[10], w[11], w[12], w[13], w[14], (int)(intptr_t)batch + 0x5c);
+        AE_ArrayAddCached_uint(0xffffffff, (char *)batch + 0x50);
     }
 }
 
