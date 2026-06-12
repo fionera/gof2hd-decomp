@@ -25,7 +25,6 @@ struct Achievements;
 
 class Achievements {
 public:
-    void onAllMedals();
     int* medals;                     // +0x0
     int* newMedals;                     // +0x4
     int kills;                      // +0x8

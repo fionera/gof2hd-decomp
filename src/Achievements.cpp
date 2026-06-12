@@ -241,6 +241,8 @@ void Achievements::applyNewMedals() {
     if (self->medalCount == 0x23) {
         self->newMedals[0x23] = 1;
         self->medals[0x23] = 1;
+        self->countMedals();   // recount so medalCount includes the "all medals" flag
+                               // (the decomp mislabeled this veneer'd tail-call as "onAllMedals")
     }
 }
 
