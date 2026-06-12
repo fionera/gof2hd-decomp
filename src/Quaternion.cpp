@@ -1,4 +1,5 @@
 #include "gof2/Quaternion.h"
+#include "gof2/externs.h"
 #include <arm_neon.h>
 
 extern "C" float (*gof2_sinf)(float);
@@ -30,7 +31,6 @@ float Quaternion::Length() const {
     length += y * y;
     length += z * z;
     length += w * w;
-    return sqrtf(length);
 }
 
 } // namespace AbyssEngine

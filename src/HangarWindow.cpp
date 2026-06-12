@@ -1,4 +1,5 @@
 #include "gof2/HangarWindow.h"
+#include "gof2/externs.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/FModSound.h"
 #include "gof2/HangarList.h"
@@ -2091,9 +2092,6 @@ void HangarWindow::mountItem(void *item) {
 }
 
 // ---- OnTouchMove_14be98.cpp ----
-extern "C" {
-}
-
 __attribute__((visibility("hidden"))) extern void **g_hw_layout;
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;
 

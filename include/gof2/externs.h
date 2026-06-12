@@ -144,4 +144,44 @@ long long __aeabi_uldivmod(unsigned int nlo, unsigned int nhi, unsigned int dlo,
 void glDeleteBuffers(int n, const void *buffers);
 }
 
+
+// ---- AbyssEngine engine glue (renderer/engine fns; external) ----
+extern "C" {
+void AEFile_Close(unsigned int handle);
+void AELabelObject(unsigned int type, unsigned int id, const char *name);
+void AE_ArrayAdd_MeshPtr(void *item, void *arr);
+void AE_ArrayAdd_TexPtr(void *item, void *arr);
+void AE_BSphere_Merge(void *dst, const void *src);
+int AE_Engine_GetDisplayHeight();
+int AE_Engine_GetDisplayWidth();
+int AE_GameText_getLanguage();
+int AE_GameText_isNonArabicString(const unsigned short *text, unsigned int len);
+void AE_MatrixGetDir(void *m);
+void AE_MatrixGetPosition(void *m);
+void AE_MatrixGetRight(void *m);
+void AE_MatrixGetUp(void *m);
+void AE_MatrixInverseTransformVector(void *out, const void *in);
+void AE_Matrix_mulAssign(void *self, const void *rhs);
+int AE_Mesh_ReadEnhancedDataFromFile(void *self, unsigned int handle, unsigned int flags);
+void AE_PaintCanvas_SetWorldViewMatrix(void *canvas);
+void AE_String_Set(void *self, const char *s);
+void AE_String_assign(void *dst, void *src);
+void AE_String_ctor(void *self, const char *s, bool b);
+void AE_Transform_CollectAnimationData(void *self);
+void AE_Transform_SetAnimationRangeInTime(void *self, long long t);
+void AE_Transform_ctor(void *self);
+void AE_VectorCross(void *a, const void *b);
+float AE_VectorDot(const void *a, const void *b);
+float AE_VectorLength(const void *v);
+void AE_VectorMul(void *out, float s);
+void AE_VectorNormalize(void *out, const void *in);
+float AE_VectorSignedToFloat(int v, unsigned char mode);
+void AE_VectorSub(void *self, const void *rhs);
+float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
+void AE_Vector_assign(void *self, const void *rhs);
+long long __aeabi_f2lz(float v);
+void *operator_new_helper(size_t);
+float sqrtf(float);
+}
+
 #endif // GOF2_EXTERNS_H

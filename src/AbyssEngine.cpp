@@ -43,21 +43,6 @@ void ImageFontSetYOffset(ImageFont *font, short yOffset)
 namespace AbyssEngine {
 
 
-extern "C" {
-// __aeabi_memcpy is declared by gof2/Engine.h
-// Engine math helpers (referenced by C-name; real symbols are AbyssEngine::AEMath::*).
-void AE_Matrix_mulAssign(void *self, const void *rhs);
-void AE_Vector_assign(void *self, const void *rhs);
-void AE_MatrixInverseTransformVector(void *out, const void *in);
-void AE_MatrixGetPosition(void *m);
-void AE_MatrixGetDir(void *m);
-void AE_MatrixGetUp(void *m);
-void AE_MatrixGetRight(void *m);
-void AE_VectorSub(void *self, const void *rhs);
-void AE_VectorNormalize(void *out, const void *in);
-float AE_VectorDot(const void *a, const void *b);
-}
-
 int CameraIsPointinViewFrustum(Vector *point, Matrix *extra, Camera *cam)
 {
     if (*g_Camera_frustumEnabledFlag == 0)
@@ -194,7 +179,6 @@ void glDisable(unsigned int);
 void glLineWidth(float);
 void glCullFace(unsigned int);
 void glGetIntegerv(unsigned int, void *);
-void *operator_new_helper(size_t_); // placeholder, see operator new below
 }
 
 
@@ -342,12 +326,6 @@ Quaternion operator-(const Quaternion &a, const Quaternion &b)
 // position buffer (mesh+0x04) and UV buffer (mesh+0x08) are filled, and a draw-state block at
 // mesh+0x2c is initialized. Returns 1 on success; negative codes on error.
 namespace AbyssEngine {
-
-extern "C" {
-void  AEFile_Close(unsigned int handle);
-float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
-float AE_VectorSignedToFloat(int v, unsigned char mode);
-}
 
 int  MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
                 unsigned int vertexFormat, void **out);
@@ -911,19 +889,6 @@ namespace AbyssEngine {
 
 extern "C" {
 // __aeabi_uidiv is declared by gof2/Engine.h
-float AE_VectorSignedToFloat(int v, unsigned char mode);
-float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
-float AE_VectorLength(const void *v);
-float AE_VectorDot(const void *a, const void *b);
-void  AE_VectorNormalize(void *out, const void *in);
-void  AE_VectorCross(void *a, const void *b);
-void  AE_Vector_assign(void *dst, const void *src);
-void  AE_VectorSub(void *self, const void *rhs);
-void  AE_VectorMul(void *out, float s);
-void  AE_BSphere_Merge(void *dst, const void *src);
-void  AE_ArrayAdd_MeshPtr(void *item, void *arr);
-int   AE_Mesh_ReadEnhancedDataFromFile(Mesh *self, unsigned int handle, unsigned int flags);
-float sqrtf(float);
 
 char *g_uvFlipFlag;        // **(DAT + 0x7c904) / 0x7c9d2
 char *g_tangentEnabled;    // **(DAT + 0x7cc36)
@@ -1443,10 +1408,6 @@ int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, Sp
 //               +0x0c data ptr, +0x10 data size(u32).
 namespace AbyssEngine {
 
-extern "C" {
-void AEFile_Close(unsigned int handle);
-}
-
 void ImageRelease(Image **slot);
 
 int ImageCreateFromFile(Engine *engine, char *path, Image **out)
@@ -1856,15 +1817,6 @@ void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int 
 namespace AbyssEngine {
 
 
-extern "C" {
-int  AE_Engine_GetDisplayWidth();
-int  AE_Engine_GetDisplayHeight();
-int  AE_GameText_getLanguage();
-int  AE_GameText_isNonArabicString(const unsigned short *text, unsigned int len);
-void AE_PaintCanvas_SetWorldViewMatrix(void *canvas);
-float AE_VectorSignedToFloat(int v, unsigned char mode);
-}
-
 int  ImageFontGetWidth(ImageFont *font, unsigned short *text, unsigned int len);
 int  ImageFontGetHeight(ImageFont *font);
 int  MeshDraw(Engine *engine, Mesh *mesh);
@@ -2033,12 +1985,6 @@ String operator+(const int &a, const String &b)
 // quad mesh generated per glyph (positions in mesh+0x04, UVs in mesh+0x08). Non-matching font
 // entries are skipped. Returns 1 on success, -1 on error, -4 on bad arguments.
 namespace AbyssEngine {
-
-extern "C" {
-void  AEFile_Close(unsigned int handle);
-float AE_VectorUnsignedToFloat(unsigned int v, unsigned char mode);
-float AE_VectorSignedToFloat(int v, unsigned char mode);
-}
 
 int  MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
                 unsigned int vertexFormat, void **out);
@@ -2514,11 +2460,6 @@ void glCompressedTexImage2D(unsigned int t, int lvl, int ifmt, int w, int h, int
 void glGenerateMipmap(unsigned int target);
 // __aeabi_uidiv is declared by gof2/Engine.h
 
-void  AE_String_ctor(void *self, const char *s, bool b);
-void  AE_String_assign(void *dst, void *src);
-void  AE_String_Set(void *self, const char *s);
-void  AELabelObject(unsigned int type, unsigned int id, const char *name);
-void  AE_ArrayAdd_TexPtr(void *item, void *arr);
 
 char *g_cubemapEnabledFlag;     // **(DAT + 0x7f860)
 char *g_texEnvFlag;             // **(DAT + 0x7f998)
@@ -2964,16 +2905,6 @@ void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b)
 // loading, animation data is collected. Returns 1 on success, -1 on error, -4 on bad args.
 namespace AbyssEngine {
 
-extern "C" {
-void  AEFile_Close(unsigned int handle);
-void  AE_Transform_ctor(void *self);
-void  AE_Transform_CollectAnimationData(void *self);
-void  AE_Transform_SetAnimationRangeInTime(void *self, long long t);
-void  AE_BSphere_Merge(void *dst, const void *src);
-void  AE_ArrayAdd_MeshPtr(void *item, void *arr);
-long long __aeabi_f2lz(float v);
-}
-
 int  MeshReadData(Engine *engine, unsigned int *handle, unsigned int flags, Mesh **slot,
                   Material *mat);
 void MeshRelease(Engine *engine, Mesh **slot);
@@ -3112,20 +3043,6 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 // +0x48 fwd-h slope, +0x50 fwd-v slope, +0x54 right radius scale, +0x58 up radius scale.
 namespace AbyssEngine {
 
-
-extern "C" {
-// __aeabi_memcpy is declared by gof2/Engine.h
-void AE_Matrix_mulAssign(void *self, const void *rhs);
-void AE_Vector_assign(void *self, const void *rhs);
-void AE_MatrixInverseTransformVector(void *out, const void *in);
-void AE_MatrixGetPosition(void *m);
-void AE_MatrixGetDir(void *m);
-void AE_MatrixGetUp(void *m);
-void AE_MatrixGetRight(void *m);
-void AE_VectorSub(void *self, const void *rhs);
-void AE_VectorNormalize(void *out, const void *in);
-float AE_VectorDot(const void *a, const void *b);
-}
 
 int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Camera *cam)
 {
