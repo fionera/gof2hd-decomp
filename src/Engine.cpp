@@ -49,7 +49,6 @@ extern "C" const char *glGetString(unsigned int name);
 extern "C" void glMaterialf(unsigned int face, unsigned int pname, float value);
 extern "C" void glActiveTexture(unsigned int texture);
 extern "C" void glBindTexture(unsigned int target, unsigned int texture);
-extern "C" void AEMath_VectorNormalize(Vector *result, const Vector *value);
 extern "C" uint8_t g_Engine_shaderDrew;
 extern "C" int g_Engine_defaultShader;
 extern "C" void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
@@ -110,8 +109,11 @@ extern "C" void ShaderCtor_1(void *);
 extern "C" void ShaderCtor_2(void *);
 extern "C" void ShaderCtor_3(void *);
 extern "C" void ShaderCtor_4(void *);
-extern "C" void AEMath_MatrixInverseRotateVector(Vector *out, const Matrix *matrix, const Vector *value);
-extern "C" void AEMath_MatrixInverseTransformVector(Vector *out, const Matrix *matrix, const Vector *value);
+namespace AbyssEngine { namespace AEMath {
+Vector VectorNormalize(const Vector &value);
+Vector MatrixInverseRotateVector(const Matrix &matrix, const Vector &vector);
+Vector MatrixInverseTransformVector(const Matrix &matrix, const Vector &vector);
+} }
 
 // ---- GetAccelValue_86510.cpp ----
 double * Engine::GetAccelValue() {
@@ -608,8 +610,7 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
         input.x = x;
         input.y = y;
         input.z = z;
-        Vector normalized;
-        AEMath_VectorNormalize(&normalized, &input);
+        Vector normalized = AbyssEngine::AEMath::VectorNormalize(input);
         *(Vector *)((char *)self + 0x468 + index * 0x0c) = normalized;
         *(uint32_t *)((char *)self + 0x378 + index * 4) = 0;
     }
@@ -1524,26 +1525,26 @@ void Engine::SetModelMatrix(const uint32_t *matrix) {
         __aeabi_memcpy((char *)self + 0x144, gl, 0x40);
         Vector tmp;
         if (self->field_0x378 == 0.0f) {
-            AEMath_MatrixInverseRotateVector(&tmp, (const Matrix *)matrix,
-                                             (const Vector *)((char *)self + 0x468));
-            AEMath_VectorNormalize(&tmp, &tmp);
+            tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
+                *(const Matrix *)matrix, *(const Vector *)((char *)self + 0x468));
+            tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
             self->field_0x330 = tmp;
         } else {
             self->field_0x330 = self->field_0x468;
         }
         if (self->field_0x32c > 1) {
             if (self->field_0x37c == 0.0f) {
-                AEMath_MatrixInverseRotateVector(&tmp, (const Matrix *)matrix,
-                                                 (const Vector *)((char *)self + 0x474));
-                AEMath_VectorNormalize(&tmp, &tmp);
+                tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
+                    *(const Matrix *)matrix, *(const Vector *)((char *)self + 0x474));
+                tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
                 self->field_0x33c = tmp;
             } else {
                 self->field_0x33c = self->field_0x474;
             }
         }
         ((Engine *)(self))->ShaderUpdate();
-        AEMath_MatrixInverseTransformVector(&tmp, (const Matrix *)matrix,
-                                            (const Vector *)((char *)self + 0x3fc));
+        tmp = AbyssEngine::AEMath::MatrixInverseTransformVector(
+            *(const Matrix *)matrix, *(const Vector *)((char *)self + 0x3fc));
         *(Vector *)&self->field_0x34c = tmp;
         self->field_0x34c /= *(float *)(matrix + 12);
         self->field_0x350 /= *(float *)(matrix + 13);

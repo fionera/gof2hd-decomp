@@ -1,6 +1,7 @@
 #include "gof2/MeshMerger.h"
 #include "gof2/Mesh.h"
 #include "gof2/Vector.h"
+#include "gof2/AEMath.h"
 
 // Mesh and PaintCanvas are AbyssEngine types. fwd.h also declares conflicting *global*
 // forward decls of the same bare names, so we cannot pull the engine types to global
@@ -386,8 +387,6 @@ extern "C" void *operator_new(uint32_t size);                       // 0x6eb24
 extern "C" void *operator_new_array(uint32_t size);                 // 0x6ec08
 extern "C" void AEMath_MatrixTransformVector(Vector *out, const Vector *v); // 0x6f688
 extern "C" void AEMath_MatrixRotateVector(Vector *out, const Vector *v);    // 0x6f694
-extern "C" void AEMath_VectorNormalize(void *out, const Vector *v);         // 0x6ec80
-extern "C" void AEMath_Vector_assign(Vector *dst, const Vector *src);       // 0x6eb3c
 extern "C" void AEMath_BSphere_assign(void *dst, const void *src);          // 0x6eb18
 
 void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
@@ -431,7 +430,7 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
         for (uint32_t k = 0; k < nv; k++) {
             Vector tmp;
             AEMath_MatrixTransformVector(&tmp, (const Vector *)&m);
-            AEMath_Vector_assign((Vector *)(*(char **)(out + 4) + off), &tmp);
+            *(Vector *)(*(char **)(out + 4) + off) = tmp;
             off += 0xc;
             nv = mesh->field_0x2;
         }
@@ -443,10 +442,9 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
         int off = 0;
         for (uint32_t k = 0; k < nv; k++) {
             Vector rot;
-            Vector nrm;
             AEMath_MatrixRotateVector(&rot, (const Vector *)&m);
-            AEMath_VectorNormalize(&nrm, &rot);
-            AEMath_Vector_assign((Vector *)(*(char **)(out + 0x10) + off), &nrm);
+            Vector nrm = AbyssEngine::AEMath::VectorNormalize(rot);
+            *(Vector *)(*(char **)(out + 0x10) + off) = nrm;
             off += 0xc;
             nv = mesh->field_0x2;
         }

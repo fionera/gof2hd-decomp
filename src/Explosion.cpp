@@ -11,11 +11,13 @@ extern "C" void operator_delete(void *ptr);
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(Array<AEGeometry *> *self);
 extern "C" void *Array_AEGeometryPtr_dtor(Array<AEGeometry *> *self);
 extern "C" void Explosion_tail_translate(void *geometry, const Vector *v);
-extern "C" int AERandom_nextInt(void *self, int bound);
+namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
-extern "C" int PaintCanvas_CameraGetCurrent(int canvas);
-extern "C" void *PaintCanvas_CameraGetLocal(int canvas, int current);
+namespace AbyssEngine { namespace PaintCanvas {
+int CameraGetCurrent(int canvas);
+void *CameraGetLocal(int canvas, int current);
+} }
 extern "C" void Vector_sub(Vector *out, const Vector *a, const Vector *b);
 float VectorLength(const Vector *self);
 extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self, float value, int duration);
@@ -146,7 +148,7 @@ void Explosion::setScaling(float scale) {
         speed = speed * 0.5f;
     }
     if ((uint32_t)(type - 8) < 3) {
-        speed = 0.7f + (float)AERandom_nextInt(Explosion_random, 0x3c) * 0.01f;
+        speed = 0.7f + (float)AbyssEngine::AERandom::nextInt(Explosion_random, 0x3c) * 0.01f;
     }
 
     int *canvas = &Explosion_paintCanvas;
@@ -201,10 +203,10 @@ void Explosion::start(const Vector *position, const Vector *direction) {
     int type = self->type;
     if ((uint32_t)(type - 8) < 3) {
         Matrix rotation;
-        float angle = (float)AERandom_nextInt(Explosion_random, 0xc45) / 1000.0f;
+        float angle = (float)AbyssEngine::AERandom::nextInt(Explosion_random, 0xc45) / 1000.0f;
         MatrixSetRotation(&rotation, &self->rotation, 0, 0, angle);
 
-        float scale = 0.6f + (float)AERandom_nextInt(Explosion_random, 0x28) * 0.01f;
+        float scale = 0.6f + (float)AbyssEngine::AERandom::nextInt(Explosion_random, 0x28) * 0.01f;
         ((Explosion *)(self))->setScaling(scale);
     } else if (type == 0xb) {
         Vector up;
@@ -274,8 +276,8 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
         ((AEGeometry *)(position))->getPosition();
 
         int canvasValue = *canvas;
-        int current = PaintCanvas_CameraGetCurrent(canvasValue);
-        MatrixGetPosition(cameraPosition, (const Matrix *)PaintCanvas_CameraGetLocal(canvasValue, current));
+        int current = AbyssEngine::PaintCanvas::CameraGetCurrent(canvasValue);
+        MatrixGetPosition(cameraPosition, (const Matrix *)AbyssEngine::PaintCanvas::CameraGetLocal(canvasValue, current));
         Vector_sub(diff, position, cameraPosition);
         float distance = VectorLength(diff);
 
@@ -492,7 +494,7 @@ void Explosion::playSound(Vector *pos) {
             return;
         }
         sound = Explosion_soundFallback;
-        int random = AERandom_nextInt(Explosion_random, 2);
+        int random = AbyssEngine::AERandom::nextInt(Explosion_random, 2);
         enabled = Explosion_soundSettings[0xf];
         cue = 0x13;
         if (random == 0) {
@@ -576,8 +578,8 @@ void Explosion::render() {
 
         int *canvas = &Explosion_paintCanvas;
         int canvasValue = *canvas;
-        int current = PaintCanvas_CameraGetCurrent(canvasValue);
-        __aeabi_memcpy(&cameraLocal, PaintCanvas_CameraGetLocal(canvasValue, current), 0x3c);
+        int current = AbyssEngine::PaintCanvas::CameraGetCurrent(canvasValue);
+        __aeabi_memcpy(&cameraLocal, AbyssEngine::PaintCanvas::CameraGetLocal(canvasValue, current), 0x3c);
 
         ((AEGeometry *)(&position))->getPosition();
 
@@ -601,8 +603,8 @@ void Explosion::render() {
         ((AEGeometry *)(self->primaryMesh))->setPosition(position);
 
         canvasValue = *canvas;
-        current = PaintCanvas_CameraGetCurrent(canvasValue);
-        Matrix_assign(&cameraLocal, (Matrix *)PaintCanvas_CameraGetLocal(canvasValue, current));
+        current = AbyssEngine::PaintCanvas::CameraGetCurrent(canvasValue);
+        Matrix_assign(&cameraLocal, (Matrix *)AbyssEngine::PaintCanvas::CameraGetLocal(canvasValue, current));
         Vector *direction = (Vector *)&work;
         MatrixGetDir(direction, &cameraLocal);
         MatrixGetUp(&cameraPosition, &cameraLocal);
@@ -675,11 +677,11 @@ void Explosion::addFireStreaks() {
     Array<AEGeometry *> *streaks = new Array<AEGeometry *>();
     self->fireStreaks = streaks;
 
-    int length = AERandom_nextInt(Explosion_random, 7) + 3;
+    int length = AbyssEngine::AERandom::nextInt(Explosion_random, 7) + 3;
     ArraySetLength_AEGeometryPtr(length, self->fireStreaks);
 
     int *canvas = &Explosion_paintCanvas;
-    int (*nextInt)(void *, int) = AERandom_nextInt;
+    int (*nextInt)(void *, int) = &AbyssEngine::AERandom::nextInt;
 
     for (uint32_t i = 0; i < self->fireStreaks->size(); i++) {
         AEGeometry *geometry = (AEGeometry *)operator_new(0xc0);

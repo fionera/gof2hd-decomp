@@ -27,7 +27,6 @@ extern "C" void KIPlayer_setLevel(PlayerFighter *self, Level *lvl);
 extern "C" void *__aeabi_memclr4(void *dst, unsigned n);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void AEMath_Matrix_ctor(void *m);
-extern "C" void AEMath_VectorAssign(void *dst, void *src);
 // No-bound AERandom::nextInt() variant: the decompiler dropped the bound arg and
 // Generator.h declares the (self,bound) overload, so this distinct shim avoids the
 // conflict. Real first arg is the AERandom* receiver (held here as an int).
@@ -45,7 +44,6 @@ extern "C" void Explosion_ctor(void *e, int flag);
 extern "C" void PF_update_dead(PlayerFighter *self);
 extern "C" void PF_update_body(PlayerFighter *self, int dt);
 extern "C" void AEGeometry_setPosition3(int geom, float x, float y, float z);
-extern "C" int AEGeometry_getMatrix2(int geom);
 extern "C" void AEMath_MatrixAssign(void *dst, void *src);
 extern "C" void AEMath_MatrixIdentity(void *out, void *m);
 extern "C" void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz);
@@ -57,7 +55,6 @@ extern "C" void ArrayBV_ctor(Array<BoundingVolume *> *a);
 extern "C" void PlayerFighter_setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *a);
 extern "C" int Route_getCurrent(int route);
 extern "C" float AEMath_VectorLength(void *v);
-extern "C" void AEMath_VectorNormalize(void *out, void *v);
 extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" unsigned PaintCanvas_TransformGetTransform(unsigned t);
 extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
@@ -385,16 +382,16 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
 
     int zero3[4] = {0, 0, 0, 0};
     self->field_0x1b8 = 0;
-    AEMath_VectorAssign((char *)self + 0x1bc, zero3);
+    *(Vector *)((char *)self + 0x1bc) = *(Vector *)zero3;
     self->field_0x148 = 0;
-    AEMath_VectorAssign((char *)self + 0x14c, zero3);
+    *(Vector *)((char *)self + 0x14c) = *(Vector *)zero3;
     self->deltaTime = 0;
-    AEMath_VectorAssign((char *)self + 0x1d4, zero3);
+    *(Vector *)((char *)self + 0x1d4) = *(Vector *)zero3;
     self->field_0x1e4 = 0;
-    AEMath_VectorAssign((char *)self + 0x1e8, zero3);
+    *(Vector *)((char *)self + 0x1e8) = *(Vector *)zero3;
 
     int posVec[4]; posVec[0] = flag; posVec[1] = 0; posVec[2] = 0;
-    AEMath_VectorAssign((char *)self + 0x158, posVec);
+    *(Vector *)((char *)self + 0x158) = *(Vector *)posVec;
     self->field_0x13d = 1;
     self->field_0x4c = 1;
     self->currentSpeed = self->speed;
@@ -506,7 +503,7 @@ void PlayerFighter::update(int dt) {
     // Sync world position from the geometry.
     float pos[3];
     ((AEGeometry *)(pos))->getPosition();
-    AEMath_VectorAssign((char *)self + 0x2c, pos);
+    *(Vector *)((char *)self + 0x2c) = *(Vector *)pos;
 
     // Recompute the "is enemy" flag unless the ship is in a non-combat mode.
     if (self->field_0x43 == 0) {
@@ -538,11 +535,11 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
 
     int stackVec[3];
     AEGeometry_setPosition3(self->geometry, 0, 0, 0);  // forwards x,y,z via regs
-    AEMath_VectorAssign((char *)self + 0x158, stackVec);
+    *(Vector *)((char *)self + 0x158) = *(Vector *)stackVec;
     if (self->trail != 0) {
         ((Trail *)(self->trail))->reset(*(Vector *)((char *)self + 0x158));
     }
-    int m = AEGeometry_getMatrix2(self->geometry);
+    int m = (int)(intptr_t)&((AEGeometry *)(intptr_t)self->geometry)->getMatrix();
     AEMath_MatrixAssign((char *)self->player + 4, (void *)m);
 
     return;
@@ -774,7 +771,6 @@ int PlayerFighter::outerCollide(float x, float y, float z) {
 
 // ---- initPush_dfc88.cpp ----
 extern "C" void AEMath_VectorSub(void *out, void *a, void *b);     // operator-(out, a) with b in r2
-extern "C" void AEMath_VectorAssign(void *dst, void *src);         // Vector::operator=
 extern "C" void AEMath_VectorScale(void *out, float s, void *v);   // operator*(s, v)
 
 extern void *const gIP_guard __attribute__((visibility("hidden")));    // DAT_000efdbc
@@ -811,8 +807,8 @@ void PlayerFighter::initPush(void *target, int radius) {
     float dir[3];
     AEMath_VectorSub(dir, pos, pos2);
     float norm[3];
-    AEMath_VectorNormalize(norm, dir);
-    AEMath_VectorAssign((char *)self + 0x10c, norm);
+    AbyssEngine::AEMath::VectorNormalize(norm, (Vector *)dir);
+    *(Vector *)((char *)self + 0x10c) = *(Vector *)norm;
 
     RngFn rng = (RngFn)gIP_rngFn;
     int *rngObj = *(int **)gIP_rng;
@@ -821,10 +817,10 @@ void PlayerFighter::initPush(void *target, int radius) {
     float rz = VectorSignedToFloat(rng(*rngObj, 200) - 100, 0);
     float rvec[3] = {rx, ry, rz};
     float rnorm[3];
-    AEMath_VectorNormalize(rnorm, rvec);
+    AbyssEngine::AEMath::VectorNormalize(rnorm, (Vector *)rvec);
     float scaled[3];
     AEMath_VectorScale(scaled, (float)strength, rnorm);
-    AEMath_VectorAssign((char *)self + 0x118, scaled);
+    *(Vector *)((char *)self + 0x118) = *(Vector *)scaled;
 
     return;
 }
@@ -977,8 +973,8 @@ __attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self
     v[0] = self->posX;
     v[1] = self->posY;
     v[2] = self->posZ;
-    AEMath_VectorAssign((char *)self + 0x158, v);
-    AEMath_VectorAssign((char *)self + 0x2c, v);
+    *(Vector *)((char *)self + 0x158) = *(Vector *)v;
+    *(Vector *)((char *)self + 0x2c) = *(Vector *)v;
 
     self->deltaTime = 0;
     self->deltaTimeHi = 0;

@@ -62,16 +62,13 @@ extern "C" void AERandom_setSeed(int *rng, long long seed);
 extern "C" void AERandom_reset(int *rng);
 extern "C" void *PaintCanvas_MeshGetPointer(void *canvas, uint32_t mesh_id);
 extern "C" void PlayerStatic_ctor(void *self, int mode, AEGeometry *geom, float x, float y, float z);
-extern "C" void AEGeometry_setScaling3(AEGeometry *geom, float x, float y, float z);
 extern "C" void Vector_scale(char *out, const char *in, float scale);
-extern "C" void AEGeometry_setScaling1(AEGeometry *geom, uint32_t scale_bits);
 void MatrixGetPosition(char *out, void *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned long n);
 extern "C" void Vector_add(char *out, const char *a, const char *b);
 void MatrixGetUp(char *out, const char *matrix);
 void MatrixGetLookAt(char *out, const char *from, const char *to, const char *up);
 extern "C" void Matrix_assign(char *dst, const char *src);
-extern "C" void AEGeometry_setRotation3(AEGeometry *geom, float x, float y, float z);
 extern "C" void MatrixSetScaling(char *matrix, float x, float y, float z);
 extern "C" void AEGeometry_setMatrix(AEGeometry *geom, const char *matrix);
 extern "C" void Vector_mul_assign(char *vec, float scale);
@@ -609,7 +606,7 @@ void StarSystem::scaleSunDuringSupernovaIntro(int amount) {
     char scaleBytes[12];
     ((AEGeometry *)(scaleBytes))->getScaling();
     float scale = *(float *)scaleBytes + (float)amount * -9.769497830779909e32f;
-    AEGeometry_setScaling3(*(AEGeometry **)P(P(self, 0x1c), 4), scale, scale, scale);
+    (*(AEGeometry **)P(P(self, 0x1c), 4))->setScaling(scale, scale, scale);
 }
 
 // ---- switchPlanetForIntro_134dcc.cpp ----
@@ -674,7 +671,10 @@ void StarSystem::switchSunForSupernovaIntro() {
 
     AEGeometry *sun = *(AEGeometry **)P(P(self, 0x1c), 4);
     ((AEGeometry *)(sun))->setMesh(0x2df1);
-    AEGeometry_setScaling1(*(AEGeometry **)P(P(self, 0x1c), 4), 0x3f2fc800);
+    {
+        uint32_t scaleBits = 0x3f2fc800;
+        (*(AEGeometry **)P(P(self, 0x1c), 4))->setScaling(*(float *)&scaleBits);
+    }
 
     GetTransformFn getTransform = g_StarSystem_intro_getTransform;
     int transformId = I(*(void **)P(P(self, 0x1c), 4), 0x0c);
@@ -732,7 +732,7 @@ void StarSystem::render() {
                 }
                 MatrixGetLookAt(lookAt, tempVec, cameraPos, up);
                 Matrix_assign(savedCamera, lookAt);
-                AEGeometry_setRotation3(geoms[0], 0.0f, 0.0f, 0.0f);
+                geoms[0]->setRotation(0.0f, 0.0f, 0.0f);
                 ((AEGeometry *)(tempVec))->getScaling();
 
                 float grow = (FL(P(self, 0x2c), 0) - 10.0f) * 0.001f;
@@ -783,9 +783,9 @@ void StarSystem::render() {
                     clamped = -1.0f;
                 }
                 FL(self, 0x5c) = clamped;
-                AEGeometry_setScaling3(geoms[i], FL(self, 0x58) + clamped,
-                                       FL(self, 0x58) + clamped,
-                                       FL(self, 0x58) + clamped);
+                geoms[i]->setScaling(FL(self, 0x58) + clamped,
+                                     FL(self, 0x58) + clamped,
+                                     FL(self, 0x58) + clamped);
             }
 
             Vector_add(tempMatrix,

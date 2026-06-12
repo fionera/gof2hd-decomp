@@ -17,7 +17,9 @@ BeamGun *_ZN7BeamGunD1Ev(BeamGun *self);
 extern "C" void BeamGun_setEnemy_tail(void *data);
 extern "C" void *operator_new(uint32_t size);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, PaintCanvas *canvas, bool flag);
-extern "C" Transform *PaintCanvas_TransformGetTransform(PaintCanvas *canvas, int transformId);
+namespace AbyssEngine { namespace PaintCanvas {
+::Transform *TransformGetTransform(::PaintCanvas *canvas, int transformId);
+} }
 extern "C" int Vector_ne(const Vector *lhs, const Vector *rhs);
 extern "C" void Matrix_mul(Matrix *out, const Matrix *lhs, const Matrix *rhs);
 extern "C" void Vector_add(Vector *out, const Vector *lhs, const Vector *rhs);
@@ -166,10 +168,10 @@ void BeamGun::update(int elapsed)
         void **canvasHolder = BeamGun_canvas_update_a;
         AEGeometry *geometry = this->field_0x18;
         Transform *transform =
-            PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
+            AbyssEngine::PaintCanvas::TransformGetTransform((PaintCanvas *)*canvasHolder,
                                               geometry->transform);
         ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
-        transform = PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
+        transform = AbyssEngine::PaintCanvas::TransformGetTransform((PaintCanvas *)*canvasHolder,
                                                       geometry->transform);
         ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
         this->field_0x8->field_0x4d = 0;
@@ -178,7 +180,7 @@ void BeamGun::update(int elapsed)
     void **canvasHolder = BeamGun_canvas_update_b;
     AEGeometry *primary = this->field_0x18;
     Transform *transform =
-        PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder, primary->transform);
+        AbyssEngine::PaintCanvas::TransformGetTransform((PaintCanvas *)*canvasHolder, primary->transform);
     ((AbyssEngine::Transform *)(transform))->Update((long long)elapsed, false);
 
     gun = this->field_0x8;
@@ -244,7 +246,7 @@ void BeamGun::update(int elapsed)
             ((AEGeometry *)(this->field_0x1c))->setPosition(*(Vector *)&playerMatrix);
 
             AEGeometry *secondary = this->field_0x1c;
-            transform = PaintCanvas_TransformGetTransform((PaintCanvas *)*canvasHolder,
+            transform = AbyssEngine::PaintCanvas::TransformGetTransform((PaintCanvas *)*canvasHolder,
                                                           secondary->transform);
             ((AbyssEngine::Transform *)(transform))->Update((long long)elapsed, false);
 

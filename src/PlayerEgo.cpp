@@ -118,7 +118,7 @@ extern "C" int   Ship_getEquipment(void *ship, int slot);
 extern "C" void *AEGeometry_new(void *canvas);
 extern "C" void  AEGeometry_setRotationOrder(void *geo, int order);
 extern "C" void *AEGeometry_dtor(void *geo);
-extern "C" void *PaintCanvas_TransformGetTransform(unsigned int handle);
+namespace AbyssEngine { namespace PaintCanvas { void *TransformGetTransform(unsigned int handle); } }
 extern "C" void  PaintCanvas_MeshCloneMaterial(void *canvas, int mesh, unsigned int *out);
 extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void*);
 extern "C" void stopShooting_extA(void*, int);
@@ -212,13 +212,13 @@ extern "C" void  Mat_getPosition(void *out, const void *m);
 extern "C" void  Mat_getUp(void *out, const void *m);
 extern "C" void  Mat_getDir(void *out, const void *m);
 extern "C" void  Mat_getLookAt(void *out, const void *eye, const void *dir, const void *up);
-extern "C" void  PaintCanvas_CameraSetLocal(unsigned int cam, const void *m);
-extern "C" unsigned int PaintCanvas_TransformGetLocal(unsigned int tf);
+namespace AbyssEngine { namespace PaintCanvas { void CameraSetLocal(unsigned int cam, const void *m); } }
+namespace AbyssEngine { namespace PaintCanvas { unsigned int TransformGetLocal(unsigned int tf); } }
 extern "C" void  PE_htv_applyShake(PlayerEgo *self, int dt, void *eye, void *dir);
 extern "C" void *MiningGame_new(int quality, int seed, void *hud);
 extern "C" int   PE_aa_approachStep(PlayerEgo *self, int hud2, void *radar);
 extern "C" void  Mat_mul(void *out, const void *a, const void *b);
-extern "C" void  PaintCanvas_TransformSetLocal(unsigned int tf, const void *m);
+namespace AbyssEngine { namespace PaintCanvas { void TransformSetLocal(unsigned int tf, const void *m); } }
 extern "C" void  PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHandle);
 extern "C" void* g_stopBoost_obj;
 extern "C" void (*g_stopBoost_fn)(void*, int);
@@ -1148,13 +1148,13 @@ void PlayerEgo::checkForTurret() {
         void *g = AEGeometry_newMesh((unsigned short)extra2, canvas, false);
         P(self, 0x3c) = g;
         ((AEGeometry *)(P(self, 0x34)))->addChild((uint32_t)(uintptr_t)g);
-        void *tf = PaintCanvas_TransformGetTransform(*(unsigned int *)canvasHolder);
+        void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)canvasHolder);
         ((AbyssEngine::Transform *)(tf))->SetVisible(C(self, 0x2c4) != 0);
     }
 
-    void *tf = PaintCanvas_TransformGetTransform(*(unsigned int *)canvasHolder);
+    void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)canvasHolder);
     F(tf, 0xe0) = g_PE_cft_transformVal;
-    tf = PaintCanvas_TransformGetTransform(*(unsigned int *)canvasHolder);
+    tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)canvasHolder);
     ((AbyssEngine::Transform *)(tf))->SetAnimationState((AbyssEngine::AnimationMode)2, (void *)0);
 
     ((AEGeometry *)(P(self, 0xf4)))->setPosition(*(Vector *)((char *)self + 0x23c));
@@ -2396,7 +2396,7 @@ void PlayerEgo::setTurretMode(int enable) {
     }
 
     if (P(self, 0x30) != 0) {
-        void *tf = PaintCanvas_TransformGetTransform(U(*g_PE_tm_transform, 0));
+        void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(U(*g_PE_tm_transform, 0));
         ((AbyssEngine::Transform *)(tf))->SetVisible(enable != 0);
         int v = (enable != 0);
         if (enable == 0)
@@ -3049,15 +3049,15 @@ void PlayerEgo::handleTurretView(int dt) {
     }
 
     unsigned int cam = (unsigned int)(unsigned long)*g_PE_htv_camera;
-    PaintCanvas_CameraSetLocal(cam, (char *)self + 0x174);
+    AbyssEngine::PaintCanvas::CameraSetLocal(cam, (char *)self + 0x174);
 
     I(self, 0x100) = 0;
     I(self, 0x104) = 0;
     ((PlayerEgo *)(self))->roll(I(self, 0x134));
 
     // HUD transform local = hullLocal * reticleLocal
-    unsigned int hull = PaintCanvas_TransformGetLocal(*(unsigned int *)((char *)P(self, 0x8) + 0xc));
-    unsigned int ret  = PaintCanvas_TransformGetLocal(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+    unsigned int hull = AbyssEngine::PaintCanvas::TransformGetLocal(*(unsigned int *)((char *)P(self, 0x8) + 0xc));
+    unsigned int ret  = AbyssEngine::PaintCanvas::TransformGetLocal(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
     unsigned char tmp[0x30];
     Mat_mul(tmp, (void *)(unsigned long)hull, (void *)(unsigned long)ret);
     Mat_assign((char *)P(self, 0x0) + 0x4, tmp);
@@ -3176,8 +3176,8 @@ void PlayerEgo::handleShip(int dt) {
     I(self, 0x268) = 0;
 
     // HUD transform local = hullLocal * reticleLocal
-    unsigned int hull = PaintCanvas_TransformGetLocal(*(unsigned int *)((char *)P(self, 0x8) + 0xc));
-    unsigned int ret  = PaintCanvas_TransformGetLocal(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+    unsigned int hull = AbyssEngine::PaintCanvas::TransformGetLocal(*(unsigned int *)((char *)P(self, 0x8) + 0xc));
+    unsigned int ret  = AbyssEngine::PaintCanvas::TransformGetLocal(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
     unsigned char tmp[0x30];
     Mat_mul(tmp, (void *)(unsigned long)hull, (void *)(unsigned long)ret);
     Mat_assign((char *)P(self, 0x0) + 0x4, tmp);
@@ -3266,15 +3266,15 @@ void PlayerEgo::setShip(int race, int group) {
         P(self, 0xac) = geo;
         Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x1b);
         I(self, 0x310) = ((Item *)((void *)Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x29)))->getAttribute(0);
-        void *tf = PaintCanvas_TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+        void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
         Vec_assign((char *)self + 0x314, (char *)tf + 0xd4);
-        tf = PaintCanvas_TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+        tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
         F(self, 0x320) = F(tf, 0xe0) / g_PE_ss_emDiv + g_PE_ss_emBias;
     }
 
     // supernova scaling
     if (PE_status()->inSupernovaSystem() != 0 || PE_status()->inSupernovaOrbit() != 0) {
-        void *tf = PaintCanvas_TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
+        void *tf = AbyssEngine::PaintCanvas::TransformGetTransform(*(unsigned int *)((char *)P(self, 0x4) + 0xc));
         F(self, 0x3c) = F(tf, 0xe0) * 1.75f;
     }
 

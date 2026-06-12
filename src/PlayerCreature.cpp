@@ -22,7 +22,7 @@ void *ParticleSystemManager_emitManual_v(
     void *self, int handle, const float *pos, void *ret, const float *vel, float p5);
 extern "C" void Matrix_setRotation(Matrix *out, Matrix *matrix, float x, float y, float z);
 extern "C" void Matrix_assign(Matrix *dst, const void *src);
-extern "C" int AERandom_nextInt(int max, int keep);
+namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
 extern "C" int *PlayerCreature_randomMax __attribute__((visibility("hidden")));
 extern "C" FModSound **PlayerCreature_sound __attribute__((visibility("hidden")));
 
@@ -190,9 +190,9 @@ void PlayerCreature::update(int elapsed)
             int half = elapsed >> 1;
             float negativeHalf = (float)half * -0.5f;
             int *randomMax = PlayerCreature_randomMax;
-            int first = AERandom_nextInt(*randomMax, half);
+            int first = AbyssEngine::AERandom::nextInt(*randomMax, half);
             float firstFloat = (float)first;
-            int second = AERandom_nextInt(*randomMax, half);
+            int second = AbyssEngine::AERandom::nextInt(*randomMax, half);
             float secondFloat = (float)second;
             float x = ((negativeHalf + firstFloat) * 0.000244140625f) * 2.0f * 3.1415927f;
             float z = ((negativeHalf + secondFloat) * 0.000244140625f) * 2.0f * 3.1415927f;

@@ -36,11 +36,13 @@ extern "C" void PaintCanvas_SetColor(int canvas, int color);
 extern "C" void PaintCanvas_SetColor4(int canvas, int r, int g, int b, int a);
 extern "C" int PaintCanvas_GetTextWidth(int canvas, void *str, int text);
 extern "C" int PaintCanvas_GetImage2DHeight(int canvas, int image);
-extern "C" float AEMath_Sinf(float value);
+namespace AbyssEngine { namespace AEMath { float Sinf(float value); } }
 extern "C" void ModMainMenu_r2dTail(int canvas);
 void Globals_startNewSoundResourceList(void *soundRes);
-extern "C" void AERandom_reset(void *random);
-extern "C" int AERandom_nextInt(void *random, int limit);
+namespace AbyssEngine { namespace AERandom {
+void reset(void *random);
+int nextInt(void *random, int limit);
+} }
 extern "C" void *operator_new(unsigned int size);
 extern "C" void CutScene_ctor(void *self, int mode);
 extern "C" int SolarSystem_getTextureIndex(void *system);
@@ -233,10 +235,10 @@ void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
             int canvas = *imageHolder;
             void **timeHolder = g_ModMainMenu_r2d_time;
             float pulseA =
-                AEMath_Sinf((float)((ApplicationManager *)(*timeHolder))->GetSystemTimeMillis() *
+                AbyssEngine::AEMath::Sinf((float)((ApplicationManager *)(*timeHolder))->GetSystemTimeMillis() *
                             0.003f);
             float pulseB =
-                AEMath_Sinf((float)((ApplicationManager *)(*timeHolder))->GetSystemTimeMillis() *
+                AbyssEngine::AEMath::Sinf((float)((ApplicationManager *)(*timeHolder))->GetSystemTimeMillis() *
                             0.003f);
             float signedPulse = pulseA > 0.0f ? pulseB : -pulseB;
             int alpha = (unsigned int)(signedPulse * 255.0f);
@@ -306,11 +308,11 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
         void **statusHolder = g_ModMainMenu_initStatus;
         ((Status *)(*statusHolder))->resetGame();
         void **randomHolder = g_ModMainMenu_initRandom;
-        AERandom_reset(*randomHolder);
+        AbyssEngine::AERandom::reset(*randomHolder);
 
         void *status = *statusHolder;
         void *galaxy = *g_ModMainMenu_initGalaxy;
-        void *station = (void *)(intptr_t)((Galaxy *)(galaxy))->getStation(AERandom_nextInt(*randomHolder, 100));
+        void *station = (void *)(intptr_t)((Galaxy *)(galaxy))->getStation(AbyssEngine::AERandom::nextInt(*randomHolder, 100));
         ((Status *)(status))->setStation((Station *)station);
 
         void *cutscene = operator_new(0xa0);

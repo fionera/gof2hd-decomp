@@ -30,7 +30,7 @@ extern "C" void ArrayReleaseClasses_BoundingVolumePtr(void *array) __attribute__
 extern "C" void *Array_BoundingVolumePtr_destructor(void *array) __attribute__((nothrow));
 extern "C" void *Status_holder __attribute__((visibility("hidden")));
 extern "C" void *PaintCanvas_holder __attribute__((visibility("hidden")));
-extern "C" long long PaintCanvas_TransformGetTransform(void *canvas, int mesh);
+namespace AbyssEngine { namespace PaintCanvas { void *TransformGetTransform(void *canvas, uint32_t handle); } }
 extern "C" TransformGetFn PlayerStation_transformGet __attribute__((visibility("hidden")));
 extern "C" TransformUpdateFn PlayerStation_transformUpdate __attribute__((visibility("hidden")));
 extern "C" int Station_getIndex(Station *station);
@@ -38,8 +38,7 @@ extern "C" void *FileRead_constructor(void *self);
 extern "C" void *FileRead_destructor(void *self) __attribute__((nothrow));
 extern "C" int SolarSystem_getRace(void *system);
 extern "C" void AEGeometry_constructor(void *self, uint16_t mesh, void *canvas, bool flag);
-extern "C" void PaintCanvas_TransformCreate(void *canvas, uint32_t *out);
-extern "C" void *PaintCanvas_TransformGetTransformPtr(void *canvas, uint32_t transform);
+namespace AbyssEngine { namespace PaintCanvas { void TransformCreate(void *canvas, uint32_t *out); } }
 extern "C" void Transform_UpdatePtr(void *transform, uint32_t lo, uint32_t hi, int zero);
 extern "C" void Transform_SetActive(void *transform);
 extern "C" void Transform_SetInactive(void *transform);
@@ -195,11 +194,11 @@ void PlayerStation::update(int delta)
     void *canvas = *canvasHolder;
     void *root = P(this, 0x140);
     long long delta64 = (long long)savedDelta;
-    ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(canvas, F<int32_t>(root, 0x14))))->Update(delta64, 0);
+    ((AbyssEngine::Transform *)(AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<int32_t>(root, 0x14))))->Update(delta64, 0);
 
     type = this->stationIndex;
     if (type == 100) {
-        ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransform(canvas, this->field_0x144)))->Update(delta64, 0);
+        ((AbyssEngine::Transform *)(AbyssEngine::PaintCanvas::TransformGetTransform(canvas, this->field_0x144)))->Update(delta64, 0);
     } else if (type == 0x6c) {
         TransformGetFn getTransform = PlayerStation_transformGet;
         long long transform = getTransform(canvas, this->field_0x164);
@@ -221,8 +220,8 @@ void PlayerStation::update(int delta)
 }
 
 // ---- PlayerStation_121818.cpp ----
-extern "C" void PaintCanvas_TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh,
-                                             bool flag);
+namespace AbyssEngine { namespace PaintCanvas { void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh,
+                                             bool flag); } }
 extern "C" void BoundingSphere_constructor(void *self, float x, float y, float z, float radius,
                                            float a, float b, float c);
 extern "C" void BoundingAAB_constructor(void *self, float x, float y, float z, float sx,
@@ -291,28 +290,28 @@ PlayerStation::PlayerStation(Station *station)
             AEGeometry_constructor(root, 0x4220, canvas, false);
             *rootSlot = root;
             local_64 = -1.0f;
-            PaintCanvas_TransformCreate(canvas, (uint32_t *)&local_64);
-            PaintCanvas_TransformAddMesh(canvas, (uint32_t)local_64, 0x4221, true);
+            AbyssEngine::PaintCanvas::TransformCreate(canvas, (uint32_t *)&local_64);
+            AbyssEngine::PaintCanvas::TransformAddMesh(canvas, (uint32_t)local_64, 0x4221, true);
             ((AEGeometry *)(*rootSlot))->addChild((uint32_t)local_64);
             local_58[1] = 0xffffffff;
-            PaintCanvas_TransformCreate(canvas, local_58 + 1);
-            PaintCanvas_TransformAddMesh(canvas, local_58[1], 0x4222, true);
+            AbyssEngine::PaintCanvas::TransformCreate(canvas, local_58 + 1);
+            AbyssEngine::PaintCanvas::TransformAddMesh(canvas, local_58[1], 0x4222, true);
             ((AEGeometry *)(*rootSlot))->addChild(local_58[1]);
             reader = operator_new(1);
             FileRead_constructor(reader);
             collision = ((FileRead *)(reader))->loadStationCollision(0x3eb);
             operator_delete(FileRead_destructor(reader));
-            void *transform = PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0xc));
+            void *transform = AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0xc));
             void *transformAgain =
-                PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0xc));
+                AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0xc));
             Transform_UpdatePtr(transform, F<uint32_t>(transformAgain, 0xf8),
                                 F<uint32_t>(transformAgain, 0xfc), 0);
-            transform = PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0x14));
-            transformAgain = PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0x14));
+            transform = AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0x14));
+            transformAgain = AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0x14));
             Transform_UpdatePtr(transform, F<uint32_t>(transformAgain, 0xf8),
                                 F<uint32_t>(transformAgain, 0xfc), 0);
-            transform = PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0x10));
-            transformAgain = PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0x10));
+            transform = AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0x10));
+            transformAgain = AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0x10));
             Transform_UpdatePtr(transform, F<uint32_t>(transformAgain, 0xf8),
                                 F<uint32_t>(transformAgain, 0xfc), 0);
         } else {
@@ -353,26 +352,26 @@ PlayerStation::PlayerStation(Station *station)
             AEGeometry_constructor(root, 0x4220, canvas, false);
             *rootSlot = root;
             local_64 = -1.0f;
-            PaintCanvas_TransformCreate(canvas, (uint32_t *)&local_64);
-            PaintCanvas_TransformAddMesh(canvas, (uint32_t)local_64, 0x4221, true);
+            AbyssEngine::PaintCanvas::TransformCreate(canvas, (uint32_t *)&local_64);
+            AbyssEngine::PaintCanvas::TransformAddMesh(canvas, (uint32_t)local_64, 0x4221, true);
             ((AEGeometry *)(*rootSlot))->addChild((uint32_t)local_64);
             local_58[1] = 0xffffffff;
-            PaintCanvas_TransformCreate(canvas, local_58 + 1);
-            PaintCanvas_TransformAddMesh(canvas, local_58[1], 0x4222, true);
+            AbyssEngine::PaintCanvas::TransformCreate(canvas, local_58 + 1);
+            AbyssEngine::PaintCanvas::TransformAddMesh(canvas, local_58[1], 0x4222, true);
             ((AEGeometry *)(*rootSlot))->addChild(local_58[1]);
             if (((Status *)(status))->getCurrentCampaignMission() == 0x9d &&
                 Station_getIndex(((Status *)(status))->getStation()) == 0x70) {
                 local_58[0] = 0xffffffff;
-                PaintCanvas_TransformCreate(canvas, local_58);
-                PaintCanvas_TransformAddMesh(canvas, local_58[0], 0x4950, true);
+                AbyssEngine::PaintCanvas::TransformCreate(canvas, local_58);
+                AbyssEngine::PaintCanvas::TransformAddMesh(canvas, local_58[0], 0x4950, true);
                 ((AEGeometry *)(*rootSlot))->addChild(local_58[0]);
                 local_48 = 0xffffffff;
-                PaintCanvas_TransformCreate(canvas, &local_48);
-                PaintCanvas_TransformAddMesh(canvas, local_48, 0x4952, true);
+                AbyssEngine::PaintCanvas::TransformCreate(canvas, &local_48);
+                AbyssEngine::PaintCanvas::TransformAddMesh(canvas, local_48, 0x4952, true);
                 ((AEGeometry *)(*rootSlot))->addChild(local_48);
                 local_4c = 0xffffffff;
-                PaintCanvas_TransformCreate(canvas, &local_4c);
-                PaintCanvas_TransformAddMesh(canvas, local_4c, 0x4951, true);
+                AbyssEngine::PaintCanvas::TransformCreate(canvas, &local_4c);
+                AbyssEngine::PaintCanvas::TransformAddMesh(canvas, local_4c, 0x4951, true);
                 ((AEGeometry *)(*rootSlot))->addChild(local_4c);
             }
         } else if ((uint32_t)(stationIndex - 0x6d) < 2 ||
@@ -411,22 +410,22 @@ PlayerStation::PlayerStation(Station *station)
             AEGeometry_constructor(root, rootMesh, canvas, false);
             *rootSlot = root;
             local_64 = 0xffffffffu;
-            PaintCanvas_TransformCreate(canvas, (uint32_t *)&local_64);
-            PaintCanvas_TransformAddMesh(canvas, (uint32_t)local_64, mesh1, false);
+            AbyssEngine::PaintCanvas::TransformCreate(canvas, (uint32_t *)&local_64);
+            AbyssEngine::PaintCanvas::TransformAddMesh(canvas, (uint32_t)local_64, mesh1, false);
             ((AEGeometry *)(*rootSlot))->addChild((uint32_t)local_64);
             this->field_0x144 = (uint32_t)local_64;
             local_58[1] = 0xffffffff;
-            PaintCanvas_TransformCreate(canvas, local_58 + 1);
-            PaintCanvas_TransformAddMesh(canvas, local_58[1], mesh2, false);
+            AbyssEngine::PaintCanvas::TransformCreate(canvas, local_58 + 1);
+            AbyssEngine::PaintCanvas::TransformAddMesh(canvas, local_58[1], mesh2, false);
             ((AEGeometry *)(*rootSlot))->addChild(local_58[1]);
             local_58[0] = 0xffffffff;
-            PaintCanvas_TransformCreate(canvas, local_58);
-            PaintCanvas_TransformAddMesh(canvas, local_58[0], mesh3, false);
+            AbyssEngine::PaintCanvas::TransformCreate(canvas, local_58);
+            AbyssEngine::PaintCanvas::TransformAddMesh(canvas, local_58[0], mesh3, false);
             ((AEGeometry *)(*rootSlot))->addChild(local_58[0]);
             if (mission == 0x50 || dlcWon != 0) {
-                ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransformPtr(canvas, F<uint32_t>(root, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
-                ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransformPtr(canvas, local_58[1])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
-                ((AbyssEngine::Transform *)(PaintCanvas_TransformGetTransformPtr(canvas, local_58[0])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
+                ((AbyssEngine::Transform *)(AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<uint32_t>(root, 0xc))))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
+                ((AbyssEngine::Transform *)(AbyssEngine::PaintCanvas::TransformGetTransform(canvas, local_58[1])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
+                ((AbyssEngine::Transform *)(AbyssEngine::PaintCanvas::TransformGetTransform(canvas, local_58[0])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
                 if (collision != 0) {
                     operator_delete((Array_int_destructor(collision), collision));
                 }
@@ -522,7 +521,7 @@ PlayerStation::PlayerStation(Station *station)
     this->field_0x71 = 1;
     ((AEGeometry *)(P(this, 0x140)))->setRotation(0.0f, 0.0f, 0.0f);
     void *transform =
-        PaintCanvas_TransformGetTransformPtr(*canvasHolder, F<uint32_t>(P(this, 0x140), 0xc));
+        AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder, F<uint32_t>(P(this, 0x140), 0xc));
     this->collisionRadius = (int)(F<float>(transform, 0xe0) + 10.0f);
 }
 

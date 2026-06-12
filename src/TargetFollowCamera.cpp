@@ -3,7 +3,7 @@
 
 
 extern "C" void *Vector_assign(void *dst, const void *src);
-extern "C" float AEMath_VectorLength(Vector *v);
+namespace AbyssEngine { namespace AEMath { float VectorLength(Vector *v); } }
 extern "C" void TFC_tail_int(TargetFollowCamera *self, int n);
 extern "C" void TFC_setShipHandling2(TargetFollowCamera *self, float v);
 void *MatrixGetUp(Vector *out, const void *m);
@@ -92,7 +92,7 @@ void *TFC_setFirstPersonMatrix(TargetFollowCamera *self, Matrix *m) {
 
 void TFC_setCamOffset(TargetFollowCamera *self, Vector *v) {
     Vector_assign((Vector *)((char *)self + 0x38), v);
-    self->zoom = AEMath_VectorLength(v);
+    self->zoom = AbyssEngine::AEMath::VectorLength(v);
 }
 
 // ---- setRoll_15b644.cpp ----

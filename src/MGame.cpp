@@ -2059,7 +2059,6 @@ afterYaw: {
 // 0x75118
 // 0x750d0
 // 0x750e8
-extern "C" void Layout_OnTouchMove2(int l, int p1, int p2);  // 0x74758
 // 0x7474c
 // Thrust-from-drag application (0x189af2..0x189b46): new = max(2, base + dY*scale),
 // then setThrust + throttleChanged. Helper keeps the corrupt float math compiling.
@@ -2143,7 +2142,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
         if (*(uint8_t *)sel == 0)
             ((StarMap *)(self->field_0x90))->OnTouchMove(p1, y);
         else
-            Layout_OnTouchMove2(**g_tmStarMap, p1, y);
+            ((Layout *)(**g_tmStarMap))->OnTouchMove(p1, y);
         return;
     }
     if (self->field_0x5e != 0) {
@@ -2440,7 +2439,6 @@ unsigned short GameText_getLanguage();  // 0x6f544
 void Globals_loadFont(int font, int lang);  // 0x71d04
 // 0x71d10
 // 0x71d1c
-extern "C" void Layout_initTip2(int layout);  // 0x71d28
 extern "C" void ArrayReleaseClasses_StringPtr(void *arr);  // 0x6facc
 extern "C" void *ArrayStringPtr_dtor(void *arr);  // 0x6f64c
 // Tail helper @0x1ac168 (re-enables low-pass / restores FMOD state).
@@ -2568,7 +2566,7 @@ void MGame::OnRelease() {
     if (*layout != 0) {
         ((Layout *)(*layout))->reload();
         ((ImageFactory *)(**g_relImgFactory))->reload();
-        Layout_initTip2(*layout);
+        ((Layout *)(*layout))->initTip();
     }
 
     ArrayReleaseClasses_StringPtr(self->field_0x1ec);

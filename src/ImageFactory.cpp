@@ -4,7 +4,7 @@
 
 extern "C" void *Sprite_dtor(void *p);
 extern "C" void operator_delete(void *p);
-extern "C" int AERandom_nextInt(int rng, int bound);
+namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 extern "C" int PaintCanvas_GetImage2DWidth(unsigned canvas, int id);
 extern "C" int PaintCanvas_GetImage2DHeight(unsigned canvas, int id);
 extern "C" void Sprite_ctor(void *self, void *ids, int n, int w, int h);
@@ -66,7 +66,7 @@ int *ImageFactory_createChar_bi(int param_1, int param_2, int sel)
 {
     (void)param_1;
     if (sel == 3) {
-        int t = AERandom_nextInt(*(int *)gCreateChar2Rng1, 4);
+        int t = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng1, 4);
         sel = (t != 0) ? 2 : 0;
     }
     int v = sel;
@@ -78,7 +78,7 @@ int *ImageFactory_createChar_bi(int param_1, int param_2, int sel)
     obj[0] = v;
     int *base = (int *)((char *)table + v * 16);
     for (int i = 0; i != 4; ++i)
-        obj[i + 1] = AERandom_nextInt(*(int *)gCreateChar2Rng2, base[i]);
+        obj[i + 1] = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng2, base[i]);
     return obj;
 }
 
@@ -253,7 +253,7 @@ extern void *const gCreateCharRng __attribute__((visibility("hidden")));
 void ImageFactory::createChar_i(int param_1) {
     ImageFactory *self = this;
     (void)self;
-    int r = AERandom_nextInt(*(int *)gCreateCharRng, 2);
+    int r = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);
     ImageFactory_createChar_bi((int)__builtin_clz(r), (unsigned)(r == 0), param_1);
 }
 

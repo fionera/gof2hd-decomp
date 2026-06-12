@@ -127,7 +127,7 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_sound;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_text;
 extern "C" void *ChoiceWindow_ctor(void *window);
 extern "C" int Station_getIndex(void *station);
-extern "C" void *PaintCanvas_CameraGetLocal(void *canvas);
+namespace AbyssEngine { namespace PaintCanvas { void *CameraGetLocal(void *canvas); } }
 void MatrixGetPosition(Vector *out, void *matrix);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_lights_engine;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_lights_canvas;
@@ -137,7 +137,7 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_update_status;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_update_sound;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_update_screenW;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_update_screenH;
-extern "C" int PaintCanvas_GetScreenPosition(void *canvas, Vector *world, Vector *screen);
+namespace AbyssEngine { namespace PaintCanvas { int GetScreenPosition(void *canvas, Vector *world, Vector *screen); } }
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
 extern "C" void Vector_sub_assign(Vector *dst, Vector *src);
 void VectorNormalize(Vector *out, Vector *value);
@@ -159,7 +159,7 @@ extern "C" void Array_AEGeometry_ctor(void *arr);
 extern "C" void Array_Vector_ctor(void *arr);
 extern "C" void ArraySetLength_AEGeometry(uint32_t n, void *arr);
 extern "C" void ArraySetLength_Vector(uint32_t n, void *arr);
-extern "C" void AERandom_reset(void *random);
+namespace AbyssEngine { namespace AERandom { void reset(void *random); } }
 extern "C" int SolarSystem_getTextureIndex(void *system);
 extern "C" int SolarSystem_getX(void *system);
 extern "C" int SolarSystem_getY(void *system);
@@ -192,10 +192,10 @@ extern "C" int Station_getTextureIndex(void *station);
 extern "C" void Array_bool_ctor(void *arr);
 extern "C" void ArraySetLength_Station(uint32_t n, void *arr);
 extern "C" void ArraySetLength_bool(uint32_t n, void *arr);
-extern "C" int AERandom_nextInt(void *random, int bound);
+namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int bound); } }
 extern "C" void AERandom_setSeed(void *random, long long seed);
 extern "C" void PaintCanvas_Image2DCreate(uint32_t canvas, uint16_t image, void *out);
-extern "C" void PaintCanvas_TextureCreate(uint32_t canvas, uint16_t image, void *out, bool flag);
+namespace AbyssEngine { namespace PaintCanvas { void TextureCreate(uint32_t canvas, uint16_t image, void *out, bool flag); } }
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_info_screenW;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_info_screenH;
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_info_canvas;
@@ -671,7 +671,7 @@ void StarMap::OnTouchEnd(int x, int y)
                 ((AEGeometry *)(&p))->getPosition();
                 Vector_assign((Vector *)((char *)this + 0x78), &p);
                 field<float>(this, 0x80) += 20.0f;
-                MatrixGetPosition(&p, PaintCanvas_CameraGetLocal(*g_StarMap_end_canvas));
+                MatrixGetPosition(&p, AbyssEngine::PaintCanvas::CameraGetLocal(*g_StarMap_end_canvas));
                 Vector_assign((Vector *)((char *)this + 0x84), &p);
                 ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x17c)))->SetRange(field<float>(this, 0x84), field<float>(this, 0x78));
                 ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x180)))->SetRange(field<float>(this, 0x88), field<float>(this, 0x7c));
@@ -727,7 +727,7 @@ void StarMap::update(int dt)
         Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
         for (uint32_t i = 0; i < positions->size(); i++) {
             ((AEGeometry *)(&tmp))->getPosition();
-            int visible = PaintCanvas_GetScreenPosition(*g_StarMap_update_canvas, &tmp, positions->data()[i]);
+            int visible = AbyssEngine::PaintCanvas::GetScreenPosition(*g_StarMap_update_canvas, &tmp, positions->data()[i]);
             positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
         }
     }
@@ -736,7 +736,7 @@ void StarMap::update(int dt)
         if (positions != 0) {
             for (uint32_t i = 0; i < positions->size(); i++) {
                 ((AEGeometry *)(&tmp))->getPosition();
-                int visible = PaintCanvas_GetScreenPosition(*g_StarMap_update_canvas, &tmp, positions->data()[i]);
+                int visible = AbyssEngine::PaintCanvas::GetScreenPosition(*g_StarMap_update_canvas, &tmp, positions->data()[i]);
                 positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
             }
         }
@@ -760,7 +760,7 @@ void StarMap::update(int dt)
         }
         void *canvas = *g_StarMap_update_canvas;
         PaintCanvas_CameraGetCurrent(canvas);
-        MatrixGetPosition(&tmp, PaintCanvas_CameraGetLocal(canvas));
+        MatrixGetPosition(&tmp, AbyssEngine::PaintCanvas::CameraGetLocal(canvas));
         Vector_assign((Vector *)((char *)this + 0x78), &tmp);
         ((AEGeometry *)(&tmp))->getPosition();
         Vector_sub_assign((Vector *)((char *)this + 0x78), &tmp);
@@ -782,7 +782,7 @@ void StarMap::update(int dt)
         tmp.z = EaseInOut_GetCurrentValue(ptr_field(this, 0x184));
         Vector_assign((Vector *)((char *)this + 0x78), &tmp);
         void *canvas = *g_StarMap_update_canvas;
-        __builtin_memcpy(&matrix, PaintCanvas_CameraGetLocal(canvas), 0x3c);
+        __builtin_memcpy(&matrix, AbyssEngine::PaintCanvas::CameraGetLocal(canvas), 0x3c);
         MatrixSetTranslation(&matrix, field<float>(this, 0x78), field<float>(this, 0x7c), field<float>(this, 0x80));
         PaintCanvas_CameraSetLocal(canvas, &matrix);
         if (absf_update(field<float>(this, 0x78) - ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x17c)))->GetMaxValue()) <= 1.0f &&
@@ -894,7 +894,7 @@ void StarMap::update(int dt)
             }
         }
         void *canvas = *g_StarMap_update_canvas;
-        __builtin_memcpy(&matrix, PaintCanvas_CameraGetLocal(canvas), 0x3c);
+        __builtin_memcpy(&matrix, AbyssEngine::PaintCanvas::CameraGetLocal(canvas), 0x3c);
         MatrixSetTranslation(&matrix,
                              (field<float>(this, 8) + (float)field<int32_t>(this, 0x13c)) * 20.0f,
                              0.0f,
@@ -999,7 +999,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
         positions->data()[i] = pos;
     }
 
-    AERandom_reset(*g_StarMap_ctor_random);
+    AbyssEngine::AERandom::reset(*g_StarMap_ctor_random);
     ptr_field(this, 0xf8) = 0;
     field<uint8_t>(this, 0xa9) = 0;
     if (((Status *)(*g_StarMap_ctor_status))->getCurrentCampaignMission() > 0x1f &&
@@ -1181,7 +1181,7 @@ void StarMap::OnTouchMove(int x, int y)
         }
         void *canvas = *g_StarMap_move_canvas;
         PaintCanvas_CameraGetCurrent(canvas);
-        __builtin_memcpy(&matrix, PaintCanvas_CameraGetLocal(canvas), 0x3c);
+        __builtin_memcpy(&matrix, AbyssEngine::PaintCanvas::CameraGetLocal(canvas), 0x3c);
         PaintCanvas_CameraSetLocal(canvas, &matrix);
         return;
     }
@@ -1308,10 +1308,10 @@ void StarMap::initStarSystem()
         AEGeometry_ctor_image(geom, (uint16_t)(tex + 0x4704), *g_StarMap_system_canvas, false);
         geomArr->data()[i] = geom;
         ((int *)ptr_field(this, 0x98))[stationIndex] =
-            AERandom_nextInt(*g_StarMap_system_random, ((Array<uint8_t> *)used)->size()) *
+            AbyssEngine::AERandom::nextInt(*g_StarMap_system_random, ((Array<uint8_t> *)used)->size()) *
             (0x10000 / (int)((Array<uint8_t> *)used)->size());
         int dist = (i == 1) ? 0x1900 : ((int *)ptr_field(this, 0x9c))[i - 2];
-        dist += AERandom_nextInt(*g_StarMap_system_random, 0x15e0) + 0x640;
+        dist += AbyssEngine::AERandom::nextInt(*g_StarMap_system_random, 0x15e0) + 0x640;
         ((int *)ptr_field(this, 0x9c))[stationIndex] = dist;
         Vector pos = {0.0f, 0.0f, (float)dist};
         ((AEGeometry *)(geom))->translate(pos);
@@ -1379,7 +1379,7 @@ void StarMap::initStarSystem()
     if (field<int32_t>(this, 0x60) == 0x1b) {
         texture = 0x2734;
     }
-    PaintCanvas_TextureCreate(*g_StarMap_system_canvas, texture, (char *)this + 0x178, false);
+    AbyssEngine::PaintCanvas::TextureCreate(*g_StarMap_system_canvas, texture, (char *)this + 0x178, false);
     void *planet = operator new(0xc0);
     AEGeometry_ctor_image(planet, 0x1a70, *g_StarMap_system_canvas, false);
     ptr_field(this, 0x1bc) = planet;

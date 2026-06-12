@@ -22,11 +22,12 @@ struct Player {
 extern "C" void *PlayerStaticFar_dtor(void *self);
 extern "C" void operator_delete(void *self);
 extern "C" void PlayerStaticFar_ctor(PlayerWormHole *self, int playerId, AEGeometry *geometry, float x, float y, float z);
-extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transform);
 extern "C" void AEGeometry_positionChanged(void *geometry);
-extern "C" void *PaintCanvas_TransformGetTransform(void *canvas, int transformId);
-extern "C" int PaintCanvas_CameraGetCurrent(void *canvas);
-extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, int current);
+namespace AbyssEngine { namespace PaintCanvas {
+void *TransformGetTransform(void *canvas, int transformId);
+int   CameraGetCurrent(void *canvas);
+void *CameraGetLocal(void *canvas, int current);
+} }
 void MatrixGetPosition(void *out, void *matrix);
 void VectorNormalize(void *out, Vector *value);
 
@@ -79,7 +80,7 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
     ((String *)((AbyssEngine::String *)((char *)this + 0x18)))->assign(text);
     ((KIPlayer *)(this))->setVisible(visible);
     ((Player *)(this->player))->setRadius(40000);
-    void *transform = PaintCanvas_TransformGetTransform(*g_playerWormHole_canvas, F<int>(this->geometry, 0xc));
+    void *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*g_playerWormHole_canvas, F<int>(this->geometry, 0xc));
     ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
     this->missionLock = 1;
     this->timer = 0;
@@ -158,7 +159,7 @@ void PlayerWormHole::update(int elapsed)
     void **canvasHolder = g_playerWormHole_update_canvas;
     void *canvas = *canvasHolder;
     void *transform =
-        PaintCanvas_TransformGetTransform(canvas, F<int>(this->geometry, 0xc));
+        AbyssEngine::PaintCanvas::TransformGetTransform(canvas, F<int>(this->geometry, 0xc));
     ((AbyssEngine::Transform *)(transform))->Update((long long)elapsed, false);
 
     if (this->visible == 0)
@@ -267,8 +268,8 @@ void PlayerWormHole::update(int elapsed)
 
     ((PlayerStaticFar *)(this))->update(elapsed);
     canvas = *canvasHolder;
-    int currentCamera = PaintCanvas_CameraGetCurrent(canvas);
-    MatrixGetPosition(tmpOut, PaintCanvas_CameraGetLocal(canvas, currentCamera));
+    int currentCamera = AbyssEngine::PaintCanvas::CameraGetCurrent(canvas);
+    MatrixGetPosition(tmpOut, AbyssEngine::PaintCanvas::CameraGetLocal(canvas, currentCamera));
 
     Vector *direction = (Vector *)((char *)this + 0x90);
     VectorAssignFn assign = g_playerWormHole_update_vectorAssign;

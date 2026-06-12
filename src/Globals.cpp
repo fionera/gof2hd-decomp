@@ -84,9 +84,7 @@ extern "C" void Mesh_setVertex(void *canvas, int mesh, int vert, float x, float 
 extern "C" void FileRead_ctor(void *self);
 extern "C" void *FileRead_dtor(void *self);
 // FileRead is used as an opaque handle here (gof2/FileRead.h not included; see top of file).
-// loadStation returns an int32 station id; loadWreckCollision returns an Array<int>* (as void*).
-extern "C" int32_t FileRead_loadStation(void *self, int32_t id);
-extern "C" void *FileRead_loadWreckCollision(void *self, int32_t id);
+// loadStation / loadWreckCollision are instance methods on the local FileRead view above.
 extern "C" void ArrayBV_ctor(void *a);
 extern "C" void ArraySetLength_BV(unsigned n, void *a);
 extern "C" void ArrayRelease_int(void *a);
@@ -115,8 +113,6 @@ extern "C" void Galaxy_ctor(void *g);
 extern "C" void Achievements_ctor(void *a);
 extern "C" void Status_ctor(void *s);
 extern "C" void FileRead_ctor(void *f);
-extern "C" int FileRead_loadItemsBinary();
-extern "C" int FileRead_loadShipsBinary();
 extern "C" void *FileRead_dtor(void *f);
 extern "C" void AERandom_ctor(void *r);
 extern "C" void Generator_ctor(void *g);
@@ -141,7 +137,6 @@ extern "C" void Status_resetGame();
 extern "C" int Mission_getTargetStation();
 extern "C" int Agent_getRace(void *agent);
 extern "C" int Globals_dialogueDispatch(int category, int code);
-extern "C" void *FileRead_loadNamesBinary(void *self, int a, int b, int which);
 extern "C" void ArrayReleaseClasses_Str(void *a);
 extern "C" void *ArrayStr_dtor(void *a);
 int GameText_getLanguage();
@@ -276,7 +271,16 @@ RetStr Globals_replaceKeyBindingTokens(void *unused, void *src)
 }
 
 // ---- getRandomStation_e4af0.cpp ----
-struct FileRead;
+// Local minimal FileRead view (gof2/FileRead.h conflicts with Station.h/Agent.h here,
+// see top of file). Declaring the instance methods we call lets us link straight to the
+// real FileRead:: symbols without the opaque extern "C" thunks.
+struct FileRead {
+    int32_t loadStation(int32_t id);
+    Array<int32_t> *loadWreckCollision(int32_t id);
+    Array<Item *> *loadItemsBinary();
+    Array<Ship *> *loadShipsBinary();
+    Array<String *> *loadNamesBinary(int32_t type, bool first, bool second);
+};
 extern void *const gStationRng __attribute__((visibility("hidden")));
 
 int Globals_getRandomStation()
@@ -284,7 +288,7 @@ int Globals_getRandomStation()
     FileRead *f = (FileRead *)operator_new(1);
     FileRead_ctor(f);
     int which = AERandom_nextInt(*(int *)gStationRng, 0x87);
-    int r = (int)(long)FileRead_loadStation(f, which);
+    int r = (int)(long)f->loadStation(which);
     operator_delete(FileRead_dtor(f));
     return r;
 }
@@ -1219,7 +1223,7 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
 
     void *fr = operator_new(1);
     FileRead_ctor(fr);
-    int *data = (int *)FileRead_loadWreckCollision(fr, kind);
+    int *data = (int *)((FileRead *)fr)->loadWreckCollision(kind);
     operator_delete(FileRead_dtor(fr));
 
     void *outArr = 0;
@@ -1964,8 +1968,8 @@ int Globals::init(void *app) {
 
     void *fr = operator_new(1);
     FileRead_ctor(fr);
-    **gI_items = (int *)(long)FileRead_loadItemsBinary();
-    **gI_ships = (int *)(long)FileRead_loadShipsBinary();
+    **gI_items = (int *)(long)((FileRead *)fr)->loadItemsBinary();
+    **gI_ships = (int *)(long)((FileRead *)fr)->loadShipsBinary();
     operator_delete(FileRead_dtor(fr));
 
     int *engineSlot = *gI_engineSlot;
@@ -2205,7 +2209,7 @@ String *Globals_getRandomPlanetName(String *ret)
     FileRead *f = (FileRead *)operator_new(1);
     FileRead_ctor(f);
     int which = AERandom_nextInt(*(int *)gPlanetRng, 0x64);
-    Station *st = (Station *)(long)FileRead_loadStation(f, which);
+    Station *st = (Station *)(long)f->loadStation(which);
     ((Station *)(ret))->getName();
     if (st != 0) {
         ((Station *)(st))->dtor();   // dtor() returns void
@@ -2237,8 +2241,8 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
 
     void *fr = operator_new(1);
     FileRead_ctor(fr);
-    Array<void *> *first = (Array<void *> *)FileRead_loadNamesBinary(fr, kind, both, 1);
-    Array<void *> *last = (Array<void *> *)FileRead_loadNamesBinary(fr, kind, both, 0);
+    Array<void *> *first = (Array<void *> *)((FileRead *)fr)->loadNamesBinary(kind, both, 1);
+    Array<void *> *last = (Array<void *> *)((FileRead *)fr)->loadNamesBinary(kind, both, 0);
 
     char firstStr[12], lastStr[12];
     if (first == 0) {

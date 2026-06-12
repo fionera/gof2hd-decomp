@@ -1,4 +1,5 @@
 #include "gof2/BoundingVolume.h"
+#include "gof2/AEMath.h"
 
 
 // ---- _BoundingVolume_11f718.cpp ----
@@ -80,8 +81,6 @@ BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey,
 }
 
 // ---- staticProjectCollisionOnSurface_11f8b0.cpp ----
-extern "C" void AEMath_Vector_assign(Vector *dst, const Vector *src);  // 0x6eb3c
-
 // child->vtable[0xc](x,y,z) -> bool collides; child->vtable[0x10](&out, child, this).
 typedef int (*HitFn)(void *self, float x, float y, float z);
 typedef void (*ProjFn)(Vector *out, void *self, void *bv);
@@ -105,7 +104,7 @@ void BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<Boun
                     ProjFn proj = *(ProjFn *)((char *)*(void **)bv2 + 0x10);
                     Vector out;
                     proj(&out, bv2, this);
-                    AEMath_Vector_assign((Vector *)&this->centerX, &out);
+                    *(Vector *)&this->centerX = out;
                 }
             }
         }
@@ -132,21 +131,14 @@ void BoundingVolume::update(float x, float y, float z)
     v.x = x;
     v.y = y;
     v.z = z;
-    AEMath_Vector_assign((Vector *)&this->centerX, &v);
+    *(Vector *)&this->centerX = v;
 }
 
 // ---- getProjectionVector_11f788.cpp ----
-// AbyssEngine::AEMath::operator-(Vector&out, Vector const&a, Vector const&b)
-extern "C" void AEMath_operator_sub(Vector *out, const Vector *a, const Vector *b); // 0x6ec38
-extern "C" void AEMath_VectorNormalize(void *out, const Vector *v);                 // 0x6ec80
-
 // getProjectionVector(v): returns normalize(v - this->center).
 Vector BoundingVolume::getProjectionVector(const Vector &v)
 {
-    Vector ret;
-    AEMath_operator_sub(&ret, &v, (const Vector *)&this->centerX);
-    Vector tmp;
-    AEMath_VectorNormalize(&tmp, &ret);
-    AEMath_Vector_assign(&ret, &tmp);
+    Vector ret = AbyssEngine::AEMath::operator-(v, *(const Vector *)&this->centerX);
+    ret = AbyssEngine::AEMath::VectorNormalize(ret);
     return ret;
 }

@@ -36,7 +36,7 @@ extern "C" int Mission_getType(Mission *self);
 extern "C" void *Mission_getClientImage(Mission *self);
 extern "C" int Mission_getClientRace(Mission *self);
 extern "C" int Mission_getStatusValue(Mission *self);
-extern "C" int AERandom_nextInt(void *self, int max);
+namespace AbyssEngine { namespace AERandom { int nextInt(void *self, int max); } }
 int GameText_getLanguage(void);
 extern "C" void String_ctor_literal(StringSlot *self, const char *text, bool copy);
 extern "C" void String_assign_slot(String *self, StringSlot *other);
@@ -336,7 +336,7 @@ void DialogueWindow::loadContent() {
             if (GameText_getLanguage() == 1 && agent != 0) {
                 textId = ((DialogueWindow *)(self))->pickGermanGenericTextBecauseWeSaved100EurosWithThat(kind, agent);
             } else {
-                textId = 0x188 + AERandom_nextInt(*g_dw_randomLoad, 5);
+                textId = 0x188 + AbyssEngine::AERandom::nextInt(*g_dw_randomLoad, 5);
             }
         } else {
             textId = 0x20f;
@@ -677,14 +677,14 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     int *texts;
     void **random = g_dw_random;
     if (kind == 2) {
-        index = AERandom_nextInt(*random, 2);
+        index = AbyssEngine::AERandom::nextInt(*random, 2);
         texts = g_dw_germanSuccessTexts;
     } else {
         if (kind != 0) {
-            index = AERandom_nextInt(*random, 2);
+            index = AbyssEngine::AERandom::nextInt(*random, 2);
             texts = g_dw_germanOtherTexts;
         } else {
-            index = AERandom_nextInt(*random, 2);
+            index = AbyssEngine::AERandom::nextInt(*random, 2);
             texts = g_dw_germanBriefingTexts;
         }
     }

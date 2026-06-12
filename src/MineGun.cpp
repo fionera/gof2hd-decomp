@@ -5,6 +5,11 @@
 #include "gof2/PlayerEgo.h"
 
 
+namespace AbyssEngine { namespace AEMath {
+Vector operator-(const Vector &lhs, const Vector &rhs);
+float VectorLength(const Vector &value);
+} }
+
 extern "C" __attribute__((visibility("hidden"))) void *MineGun_vtable;
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion *> *array);
 extern "C" void *Array_Explosion_dtor(Array<Explosion *> *array);
@@ -23,8 +28,6 @@ extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
 extern "C" void AEGeometry_ctor(AEGeometry *self, uint16_t mesh, void *canvas, bool flag);
 extern "C" void PaintCanvas_TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
 extern "C" uint32_t PaintCanvas_TransformGetTransform(void *canvas, uint32_t transform);
-extern "C" void AEMath_operator_sub(Vector *out, const Vector *a, const Vector *b);
-float VectorLength(const Vector *self);
 extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 
 // ---- render_1566bc.cpp ----
@@ -164,9 +167,9 @@ void MineGun::update(int delta)
                 char *positions = (char *)P(gun, 0x30);
                 ((PlayerEgo *)((Vector *)vectorBytes))->getPosition();
                 Vector *minePosition = (Vector *)(positions + positionOffset);
-                AEMath_operator_sub((Vector *)(vectorBytes + 12), minePosition,
-                                    (Vector *)vectorBytes);
-                float length = VectorLength((Vector *)(vectorBytes + 12));
+                *(Vector *)(vectorBytes + 12) =
+                    AbyssEngine::AEMath::operator-(*minePosition, *(Vector *)vectorBytes);
+                float length = AbyssEngine::AEMath::VectorLength(*(Vector *)(vectorBytes + 12));
                 float clamped = range;
                 if (length < range) {
                     clamped = length;

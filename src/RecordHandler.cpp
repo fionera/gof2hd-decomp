@@ -25,7 +25,6 @@ extern "C" void RecordHandler_readRecordTail(int param);
 extern "C" void *RH_op_new(unsigned int sz);
 extern "C" void Array_GR_ctor(void *a);
 extern "C" void ArraySetLength_GR(unsigned int n, void *a);
-extern "C" int AEFile_GetDeviceFreeSpace();
 extern "C" void Array_SC_ctor(void *a);
 extern "C" void ArraySetLength_SC(unsigned int n, void *a);
 extern "C" signed char *RH_op_new_arr(unsigned int n);
@@ -34,7 +33,6 @@ extern "C" void ArrayReleaseArrays_SC(void *a);
 extern "C" void AEString_int_ctor(void *dst, int v);
 extern "C" void AEString_concat(void *dst, void *a);
 extern "C" void AEString_dtor(void *s);
-extern "C" void AEFile_FileDelete(void *path);
 extern "C" void RH_op_delete(void *p);
 extern "C" void SHA256_Init(void *c);
 extern "C" void SHA256_Update(void *c, const void *data, int n);
@@ -42,8 +40,6 @@ extern "C" void SHA256_Final(unsigned char *md, void *c);
 extern "C" void *RH_memcpy(void *dst, const void *src, unsigned int n);
 extern "C" void String_int_ctor(void *dst, int v);
 extern "C" void *String_concat(void *dst, void *a, void *b);
-extern "C" int AEFile_FileExist(void *s);
-extern "C" void AEFile_Close(unsigned int fd);
 extern "C" void AEFile_ReadBool(void *out, unsigned int fd);
 extern "C" void AEFile_ReadInt(void *out, unsigned int fd);
 extern "C" void AEFile_ReadString(void *out, unsigned int fd, int flag);
@@ -63,7 +59,6 @@ extern "C" void AEFile_Read_f32(void *dst, unsigned int fd);
 extern "C" void String_default_ctor(void *s);
 extern "C" void String_cstr_ctor(void *s, const char *cs, bool b);
 extern "C" void *String_copy_ctor(void *dst, void *src, bool b);
-extern "C" void AEFile_FileDelete(void *s);
 extern "C" void AEFile_Write_i64(long long v, unsigned int fd);
 extern "C" void AEFile_Write_i32(int v, unsigned int fd);
 extern "C" void AEFile_Write_str(void *s, unsigned int fd, int b);
@@ -196,7 +191,7 @@ void * RecordHandler::readAllPreviewRecords() {
 // RecordHandler::notEnoughMemory() -> bool: free space < 900.
 uint8_t RecordHandler_notEnoughMemory()
 {
-    return AEFile_GetDeviceFreeSpace() < 900;
+    return AEFile::GetDeviceFreeSpace() < 900;
 }
 
 // ---- convertSDVersionSaves_cffa8.cpp ----
@@ -230,11 +225,11 @@ void RecordHandler::convertSDVersionSaves() {
         char num[12], path[12];
         AEString_int_ctor(num, i);
         AEString_concat(path, (char *)self + 0x14);
-        AEFile_FileDelete(path);
+        AEFile::FileDelete(*(String *)(path));
 
         AEString_int_ctor(num, i);
         AEString_concat(path, (char *)self + 0x20);
-        AEFile_FileDelete(path);
+        AEFile::FileDelete(*(String *)(path));
         n = *cnt;
     }
 
@@ -334,13 +329,13 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     String_concat(path, dir, num);
     ((String *)(num))->dtor();
 
-    if (AEFile_FileExist(path) != 0) {
+    if (AEFile::FileExist(*(String *)(path)) != 0) {
         AEFile::OpenRead(*(String *)path, &fd);
         sz = AEFile::GetFileSize(fd);
         signed char *b = RH_op_new_arr(sz | (sz >> 31));
         *out = b;
         AEFile::Read(sz, b, fd);
-        AEFile_Close(fd);
+        AEFile::Close(fd);
     } else {
         sz = -1;
     }
@@ -495,7 +490,7 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
 
     unsigned int &fd = *(unsigned int *)num;  // reuse the now-dead String temp slot
     void *gr = 0;
-    if (AEFile_FileExist(path) != 0) {
+    if (AEFile::FileExist(*(String *)(path)) != 0) {
         AEFile::OpenRead(*(String *)path, &fd);
         gr = GR_op_new(0x1c8);
         GameRecord_ctor(gr);
@@ -507,7 +502,7 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
         AEFile_Read_i32((char *)gr + 0x20, fd);
         AEFile_Read_f32((char *)gr + 0x11c, fd);
         AEFile_Read_i32((char *)gr + 0x1a0, fd);
-        AEFile_Close(fd);
+        AEFile::Close(fd);
     }
     ((String *)(path))->dtor();
     return gr;
@@ -555,11 +550,11 @@ void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     char tmp[12];
     unsigned int fd;
 
-    if (AEFile_FileExist(String_copy_ctor(tmp, (char *)self + 0x8, false)) != 0)
-        AEFile_FileDelete(tmp);
+    if (AEFile::FileExist(*(String *)String_copy_ctor(tmp, (char *)self + 0x8, false)) != 0)
+        AEFile::FileDelete(*(String *)(tmp));
     AEFile::OpenWrite(*(String *)tmp, &fd);
     ((AEFile *)(n))->Write(buf, fd);
-    AEFile_Close(fd);
+    AEFile::Close(fd);
     ((String *)(tmp))->dtor();
 }
 
@@ -587,8 +582,8 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
     String_concat(path, (char *)self + 0x20, num);
     ((String *)(num))->dtor();
 
-    if (AEFile_FileExist(path) != 0)
-        AEFile_FileDelete(path);
+    if (AEFile::FileExist(*(String *)(path)) != 0)
+        AEFile::FileDelete(*(String *)(path));
     AEFile::OpenWrite(*(String *)path, &fd);
 
     Status **sh = g_RH_wp_status;
@@ -607,7 +602,7 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
     AEFile_Write_i32(((Status *)(*sh))->getLevel(), fd);
     AEFile_Write_f32(I(*(void **)g_RH_wp_float, 0x2c), fd);
     AEFile_Write_i32(Ship_getIndex(((Status *)(*sh))->getShip()), fd);
-    AEFile_Close(fd);
+    AEFile::Close(fd);
     ((String *)(path))->dtor();
     return 1;
 }
@@ -767,11 +762,11 @@ void RecordHandler::loadOptions() {
     volatile int saved = *guardP;
 
     void *path = (char *)self + 8;
-    if (AEFile_FileExist(path) != 0) {
+    if (AEFile::FileExist(*(String *)(path)) != 0) {
         unsigned int fd;
         AEFile::OpenRead(*(String *)path, &fd);
         int valid = RecordHandler_checkHash(fd);
-        AEFile_Close(fd);
+        AEFile::Close(fd);
         if (valid != 0) {
             AEFile::OpenRead(*(String *)path, &fd);
             unsigned char *s = g_LO_settings;
@@ -845,7 +840,7 @@ void RecordHandler::loadOptions() {
             AEFile_ReadInt(s + 0x50, fd);
             AEFile_ReadBool(s + 0x60, fd);
             AEFile_ReadBool(s + 0x61, fd);
-            AEFile_Close(fd);
+            AEFile::Close(fd);
 
             int langVal = lang;
             if (-1 < langVal) {
@@ -887,7 +882,7 @@ void RecordHandler::loadResolutionValue() {
     volatile int saved = *guardP;
 
     void *path = (char *)self + 8;
-    if (AEFile_FileExist(path) != 0) {
+    if (AEFile::FileExist(*(String *)(path)) != 0) {
         unsigned int fd;
         AEFile::OpenRead(*(String *)path, &fd);
 
@@ -940,7 +935,7 @@ void RecordHandler::loadResolutionValue() {
         AEFile_ReadBool(r + 0x41, fd);
         AEFile_ReadFloat(r + 0x44, fd);
 
-        AEFile_Close(fd);
+        AEFile::Close(fd);
     }
 
     return;
@@ -959,11 +954,11 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
     String_concat(path, dir, num);
     ((String *)(num))->dtor();
 
-    if (AEFile_FileExist(path) != 0)
-        AEFile_FileDelete(path);
+    if (AEFile::FileExist(*(String *)(path)) != 0)
+        AEFile::FileDelete(*(String *)(path));
     AEFile::OpenWrite(*(String *)path, &fd);
     ((AEFile *)(n))->Write(buf, fd);
-    AEFile_Close(fd);
+    AEFile::Close(fd);
     ((String *)(path))->dtor();
     return n;
 }
@@ -1075,8 +1070,8 @@ void RecordHandler::saveOptions() {
     volatile int saved = *guardP;
 
     void *path = (char *)self + 8;
-    if (AEFile_FileExist(path) != 0) {
-        AEFile_FileDelete(path);
+    if (AEFile::FileExist(*(String *)(path)) != 0) {
+        AEFile::FileDelete(*(String *)(path));
     }
     unsigned int fd;
     AEFile::OpenWrite(*(String *)path, &fd);
@@ -1141,7 +1136,7 @@ void RecordHandler::saveOptions() {
     AEFile_WriteByte(s[0x60], fd);
     AEFile_WriteByte(s[0x61], fd);
     AEFile_WriteByte(s[0x62], fd);
-    AEFile_Close(fd);
+    AEFile::Close(fd);
     ((RecordHandler *)(self))->addHashToOptions();
 
     return;
@@ -1333,8 +1328,8 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     String_concat(path, (char *)self + 0x20, num);
     ((String *)(num))->dtor();
 
-    if (AEFile_FileExist(path) != 0)
-        AEFile_FileDelete(path);
+    if (AEFile::FileExist(*(String *)(path)) != 0)
+        AEFile::FileDelete(*(String *)(path));
     AEFile::OpenWrite(*(String *)path, &fd);
 
     AEFile_Write_i64(*(long long *)((char *)rec + 0x10), fd);
@@ -1349,7 +1344,7 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     AEFile_Write_i32(I(rec, 0x20), fd);
     AEFile_Write_f32(I(rec, 0x11c), fd);
     AEFile_Write_i32(Ship_getIndex(*(Ship **)((char *)rec + 0x130)), fd);
-    AEFile_Close(fd);
+    AEFile::Close(fd);
     ((String *)(path))->dtor();
     return 1;
 }
@@ -1373,8 +1368,8 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEString_int_ctor(num, slot);
     AEString_concat(path, (char *)self + 0x14);
 
-    if (AEFile_FileExist(path) != 0) {
-        AEFile_FileDelete(path);
+    if (AEFile::FileExist(*(String *)(path)) != 0) {
+        AEFile::FileDelete(*(String *)(path));
     }
     unsigned int fd;
     AEFile::OpenWrite(*(String *)path, &fd);
@@ -1409,7 +1404,7 @@ void RecordHandler::recordStoreWrite(int slot) {
     // Remaining object-graph serialization.
     RecordHandler_recordStoreWrite_body(self, fd);
 
-    AEFile_Close(fd);
+    AEFile::Close(fd);
     ((RecordHandler *)(self))->addHash(slot);
 
     return;
@@ -1424,13 +1419,13 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     int sz;
 
     String_copy_ctor(tmp, (char *)self + 0x8, false);
-    if (AEFile_FileExist(tmp) != 0) {
+    if (AEFile::FileExist(*(String *)(tmp)) != 0) {
         AEFile::OpenRead(*(String *)tmp, &fd);
         sz = AEFile::GetFileSize(fd);
         signed char *buf = RH_op_new_arr(sz | (sz >> 31));
         *out = buf;
         AEFile::Read(sz, buf, fd);
-        AEFile_Close(fd);
+        AEFile::Close(fd);
     } else {
         sz = -1;
     }
@@ -1456,11 +1451,11 @@ void * RecordHandler::recordStoreRead(int slot) {
     AEString_int_ctor(num, slot);
     AEString_concat(path, (char *)self + 0x14);
 
-    if (AEFile_FileExist(path) != 0) {
+    if (AEFile::FileExist(*(String *)(path)) != 0) {
         unsigned int fd;
         AEFile::OpenRead(*(String *)path, &fd);
         int valid = RecordHandler_checkHash(fd);
-        AEFile_Close(fd);
+        AEFile::Close(fd);
         if (valid != 0) {
             AEFile::OpenRead(*(String *)path, &fd);
             rec = (char *)RH_op_new(0x1c8);
@@ -1518,7 +1513,7 @@ void * RecordHandler::recordStoreRead(int slot) {
             // Remaining object-graph read.
             RecordHandler_recordStoreRead_body(self, rec, fd);
 
-            AEFile_Close(fd);
+            AEFile::Close(fd);
         }
     }
 

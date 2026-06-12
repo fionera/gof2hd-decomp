@@ -44,8 +44,12 @@ extern "C" void *Status_getSystem();
 extern "C" void *Status_getStation();
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
 void MatrixSetRotation(void *matrix, float x, float y, float z);
-extern "C" void *PaintCanvas_CameraGetCurrent(void *canvas);
-extern "C" void PaintCanvas_CameraSetLocal(void *canvas, void *matrix);
+namespace AbyssEngine { namespace PaintCanvas {
+void *CameraGetCurrent(void *canvas);
+void CameraSetLocal(void *canvas, void *matrix);
+void *CameraGetLocal(void *canvas);
+void GetScreenPosition(void *canvas, void *vec);
+} }
 extern "C" void *SpaceLounge_touch_layout_slot;
 extern "C" void *SpaceLounge_touch_help_text_slot;
 extern "C" void *SpaceLounge_touch_list_help_text_slot;
@@ -55,7 +59,7 @@ extern "C" int Agent_getRace(void *agent);
 extern "C" int Agent_getOffer(void *agent);
 extern "C" int Mission_getType(void *mission);
 void Globals_getAgentMissionText(void *out, int textId, void *agent);
-extern "C" int AERandom_nextInt(void *random, int limit);
+namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 extern "C" int String_Compare(void *lhs, void *rhs);
 int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate);
 extern "C" int *SpaceLounge_getSoundId_missionText;
@@ -75,8 +79,6 @@ extern "C" void *SpaceLounge_getSoundId_specialRandom;
 extern "C" void ChoiceWindow_left(void *choice);
 extern "C" void ChoiceWindow_right(void *choice);
 extern "C" void ScrollTouchWindow_scroll(void *scroll, int amount);
-extern "C" void *PaintCanvas_CameraGetLocal(void *canvas);
-extern "C" void PaintCanvas_GetScreenPosition(void *canvas, void *vec);
 void MatrixGetRight(void *out, void *matrix);
 void MatrixGetPosition(void *out, void *matrix);
 void MatrixGetUp(void *out, void *matrix);
@@ -493,8 +495,8 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
             void *cameraSlot = *(void **)&SpaceLounge_touch_camera_slot;
             void *camera = *(void **)cameraSlot;
-            void *current = PaintCanvas_CameraGetCurrent(camera);
-            PaintCanvas_CameraSetLocal(camera, current);
+            void *current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
+            AbyssEngine::PaintCanvas::CameraSetLocal(camera, current);
             if (P(self, 0x48) != 0) {
                 ((AbyssEngine::EaseInOutMatrix *)(P(self, 0x48)))->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
             }
@@ -551,7 +553,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
 // ---- getSoundId_1714f8.cpp ----
 static inline int random_from(void *slot, int limit)
 {
-    return AERandom_nextInt(*(void **)slot, limit);
+    return AbyssEngine::AERandom::nextInt(*(void **)slot, limit);
 }
 
 int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
@@ -587,11 +589,11 @@ int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
             soundId = random_from(&SpaceLounge_getSoundId_offer0_else, 4) + 0x2fa;
         } else {
             void *random = *(void **)&SpaceLounge_getSoundId_offer0_else;
-            int first = AERandom_nextInt(random, 2);
+            int first = AbyssEngine::AERandom::nextInt(random, 2);
             if (first == 0) {
-                soundId = AERandom_nextInt(random, 4) + 0x31f;
+                soundId = AbyssEngine::AERandom::nextInt(random, 4) + 0x31f;
             } else {
-                soundId = AERandom_nextInt(random, 4) + 0x309;
+                soundId = AbyssEngine::AERandom::nextInt(random, 4) + 0x309;
             }
         }
         break;
@@ -779,8 +781,8 @@ void SpaceLounge::updateScreenPositions() {
     void *canvas = *(void **)canvasSlot;
     void *project = *(void **)&SpaceLounge_screen_projector;
 
-    void *current = PaintCanvas_CameraGetCurrent(canvas);
-    void *local = PaintCanvas_CameraGetLocal(canvas);
+    void *current = AbyssEngine::PaintCanvas::CameraGetCurrent(canvas);
+    void *local = AbyssEngine::PaintCanvas::CameraGetLocal(canvas);
     MatrixGetRight(pos, local);
     Vector_mul(halfRight, pos, 0.5f);
 
@@ -793,14 +795,14 @@ void SpaceLounge::updateScreenPositions() {
         ((void (*)(void *, void *))project)(screen, target);
         Vector_sub(pos, target, halfRight);
         ((void (*)(void *, void *))project)(screen, pos);
-        PaintCanvas_GetScreenPosition(canvas, screen);
+        AbyssEngine::PaintCanvas::GetScreenPosition(canvas, screen);
 
         Vector_add(pos, target, halfRight);
         ((void (*)(void *, void *))project)(screen, pos);
-        PaintCanvas_GetScreenPosition(canvas, screen);
+        AbyssEngine::PaintCanvas::GetScreenPosition(canvas, screen);
 
-        current = PaintCanvas_CameraGetCurrent(canvas);
-        local = PaintCanvas_CameraGetLocal(canvas);
+        current = AbyssEngine::PaintCanvas::CameraGetCurrent(canvas);
+        local = AbyssEngine::PaintCanvas::CameraGetLocal(canvas);
         Matrix_assign(camera, local);
         MatrixGetPosition(pos, camera);
         MatrixGetUp(up, camera);
@@ -1059,8 +1061,8 @@ int SpaceLounge::init() {
     MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
     void *cameraSlot = *(void **)&SpaceLounge_init_camera_slot;
     void *camera = *(void **)cameraSlot;
-    void *current = PaintCanvas_CameraGetCurrent(camera);
-    PaintCanvas_CameraSetLocal(camera, current);
+    void *current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
+    AbyssEngine::PaintCanvas::CameraSetLocal(camera, current);
     if (P(self, 0x48) != 0) {
         ((AbyssEngine::EaseInOutMatrix *)(P(self, 0x48)))->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
     }
@@ -1151,8 +1153,8 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
 
     void *cameraSlot = *(void **)&SpaceLounge_ctor_camera_slot;
     void *camera = *(void **)cameraSlot;
-    void *current = PaintCanvas_CameraGetCurrent(camera);
-    PaintCanvas_CameraSetLocal(camera, current);
+    void *current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
+    AbyssEngine::PaintCanvas::CameraSetLocal(camera, current);
     UC(self, 0xb0) = 1;
     UC(self, 0xbd) = 0;
     return self;
@@ -1390,9 +1392,9 @@ void SpaceLounge::update(int dt) {
             UC(self, 0xbc) = 0;
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_c;
             camera = *(void **)cameraSlot;
-            current = PaintCanvas_CameraGetCurrent(camera);
+            current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
             ((AbyssEngine::EaseInOutMatrix *)(valueMatrix))->GetValue();
-            PaintCanvas_CameraSetLocal(camera, valueMatrix);
+            AbyssEngine::PaintCanvas::CameraSetLocal(camera, valueMatrix);
         } else {
             goto idle_camera;
         }
@@ -1413,10 +1415,10 @@ idle_camera:
         if (UC(self, 0xbc) == 0) {
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_a;
             camera = *(void **)cameraSlot;
-            current = PaintCanvas_CameraGetLocal(camera);
+            current = AbyssEngine::PaintCanvas::CameraGetLocal(camera);
             (void)current;
             UC(self, 0xbc) = 1;
-            int amount = AERandom_nextInt(*(void **)&SpaceLounge_update_random_slot, 10);
+            int amount = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_update_random_slot, 10);
             UC(self, 0xc4) = 0;
             if (P(self, 0xc0) == 0) {
                 void *ease = operator_new(0x10);
@@ -1436,11 +1438,11 @@ idle_camera:
             int amount = I(self, 0x108);
             if (distance < 0.25f) {
                 void *random = *(void **)&SpaceLounge_update_random_slot;
-                amount = AERandom_nextInt(random, 10);
+                amount = AbyssEngine::AERandom::nextInt(random, 10);
                 float next = (float)(5 - amount);
                 UC(self, 0xc4) = value > next;
                 ((AbyssEngine::EaseInOut *)(P(self, 0xc0)))->SetRange(value, next);
-                I(self, 0x108) = AERandom_nextInt(random, 4) + 1;
+                I(self, 0x108) = AbyssEngine::AERandom::nextInt(random, 4) + 1;
                 amount = I(self, 0x108);
             }
             if (UC(self, 0xc4) != 0) {
@@ -1455,8 +1457,8 @@ idle_camera:
         Matrix_mul_assign(valueMatrix, B(self, 0xc8));
         cameraSlot = *(void **)&SpaceLounge_update_camera_slot_b;
         camera = *(void **)cameraSlot;
-        current = PaintCanvas_CameraGetCurrent(camera);
-        PaintCanvas_CameraSetLocal(camera, valueMatrix);
+        current = AbyssEngine::PaintCanvas::CameraGetCurrent(camera);
+        AbyssEngine::PaintCanvas::CameraSetLocal(camera, valueMatrix);
     }
 
     ((SpaceLounge *)(self))->updateScreenPositions();

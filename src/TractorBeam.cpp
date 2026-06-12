@@ -102,6 +102,8 @@ using namespace AbyssEngine::AEMath;
 // 0x71a58
 extern "C" int   Ship_getIndex(void *ship);                          // 0x719c8
 
+// PaintCanvas::TransformGetTransform is an engine static helper; PaintCanvas is a
+// class type in this TU (not an openable namespace), so it stays an external symbol.
 extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas); // 0x72088
 // 0x6f7cc
 
@@ -114,11 +116,13 @@ extern "C" uint32_t PaintCanvas_TransformGetTransform(uint32_t canvas); // 0x720
 // 0x71548
 // 0x724a8
 
-// Vector aggregate ops resolved as helpers.
-extern "C" void  Vector_assign(Vector *dst, const Vector *src);      // 0x6eb3c
-extern "C" void  Vector_subAssign(Vector *dst, const Vector *src);   // 0x72694
-extern "C" void  Vector_mulAssign(Vector *dst, float s);             // 0x726ac family
-extern "C" void  Vector_scale(Vector *out, const Vector *v, float s);// 0x6ec74
+// Vector aggregate ops resolved as AEMath helpers.
+namespace AbyssEngine { namespace AEMath {
+void  Vector_assign(Vector *dst, const Vector *src);      // 0x6eb3c
+void  Vector_subAssign(Vector *dst, const Vector *src);   // 0x72694
+void  Vector_mulAssign(Vector *dst, float s);             // 0x726ac family
+void  Vector_scale(Vector *out, const Vector *v, float s);// 0x6ec74
+} }
 
 // Hidden PC-relative roots.
 extern void *const gCanvasRoot __attribute__((visibility("hidden")));

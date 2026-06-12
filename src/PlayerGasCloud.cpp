@@ -17,13 +17,9 @@
 // global Status singleton, reached via *gStatus (same pattern as Hud/Player).
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
-extern "C" void AEGeometry_translate_v(void *geom, Vector const &v);
-extern "C" void AEGeometry_setPosition_v(void *geom, Vector const &v);
-extern "C" Vector AEGeometry_getPosition_ret(void *geom);
 extern "C" void operator_delete(void *p);
 extern "C" void *operator_new(uint32_t);
 extern "C" char PlayerGasCloud_vtable;
-extern "C" void Vector_assign(void *dst, const void *src);   // Vector::operator=(Vector const&)
 extern "C" void ArrayReleaseClasses_AEGeometry(void *arr);
 extern "C" void *Array_AEGeometry_dtor(void *p);
 extern "C" void ArrayReleaseClasses_Vector(void *arr);
@@ -38,7 +34,7 @@ extern "C" void *PaintCanvas_CameraGetLocal(void *canvas, int current);
 // ---- translate_176658.cpp ----
 void PlayerGasCloud::translate(Vector const &param_1)
 {
-    return AEGeometry_translate_v(this->geometry, param_1);
+    return ((AEGeometry *)this->geometry)->translate(param_1);
 }
 
 // ---- isSparkAlive_176610.cpp ----
@@ -69,7 +65,7 @@ void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
 // ---- setPosition_176652.cpp ----
 void PlayerGasCloud::setPosition(Vector const &param_1)
 {
-    return AEGeometry_setPosition_v(this->geometry, param_1);
+    return ((AEGeometry *)this->geometry)->setPosition(param_1);
 }
 
 // ---- getSparks_176640.cpp ----
@@ -81,7 +77,7 @@ void *PlayerGasCloud::getSparks()
 // ---- getPosition_176646.cpp ----
 Vector PlayerGasCloud::getPosition()
 {
-    return AEGeometry_getPosition_ret(this->geometry);
+    return ((AEGeometry *)this->geometry)->getPosition();
 }
 
 // ---- _PlayerGasCloud_1765e8.cpp ----
@@ -145,12 +141,12 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     this->sparkInSight = 0;
     this->exploded = 0;
 
-    Vector_assign((char *)this + 0x128, &param_4);
+    *(Vector *)((char *)this + 0x128) = param_4;
 
     void *geom = operator_new(0xc0);
     new (geom) AEGeometry(this->cloudMeshId, (PaintCanvas *)*g_pgc_canvas, false);
     this->modelGeometry = geom;
-    AEGeometry_setPosition_v(geom, param_4);
+    ((AEGeometry *)geom)->setPosition(param_4);
 
     this->field_0x4c = 1;
     this->field_0x44 = 1;
@@ -498,14 +494,14 @@ void PlayerGasCloud_update(void *self, int dt)
                         Vector dir, dn;
                         Vector_sub(&dir, &turretPos, &shardPos);
                         VectorNormalize(&dn, &dir);
-                        Vector_assign(*(Vector **)(*(int *)(*(int *)(s + 0x13c) + 4) + i * 4), &dn);
+                        *(*(Vector **)(*(int *)(*(int *)(s + 0x13c) + 4) + i * 4)) = dn;
                         moveGeom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
 
                         void *ship2 = ((Status *)(*gStatus))->getShip();
                         int eq = Ship_getFirstEquipmentOfSort(ship2, 0x23);
                         int attr = ((Item *)((void *)(long)eq))->getAttribute(0);
                         float step = (float)(attr * dt);
-                        Vector vel; Vector_assign(&vel, &turretPos);
+                        Vector vel; vel = turretPos;
                         Vector_scale(step, &vel);
                         Vector_add(&vel, &shardPos);
                         moved = vel;
@@ -516,7 +512,7 @@ void PlayerGasCloud_update(void *self, int dt)
                 {
                     moveGeom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
                     Vector vel;
-                    Vector_assign(&vel, *(Vector **)(*(int *)(*(int *)(s + 0x13c) + 4) + i * 4));
+                    vel = *(*(Vector **)(*(int *)(*(int *)(s + 0x13c) + 4) + i * 4));
                     Vector_scale(*(float *)(*(int *)(*(int *)(s + 0x140) + 4) + i * 4) * dtf, &vel);
                     Vector_add(&vel, &shardPos);
                     moved = vel;

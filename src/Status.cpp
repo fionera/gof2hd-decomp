@@ -82,7 +82,7 @@ extern "C" int Station_getSystem(Station *s);
 extern "C" int SolarSystem_getRoutes(SolarSystem *s);
 extern "C" void Wanted_setLastSeen(Wanted *w, int v);
 extern "C" void Wanted_setTravelsTo(Wanted *w, int v);
-extern "C" int AERandom_nextInt(int rnd);
+namespace AbyssEngine { namespace AERandom { int nextInt(int rng); } }
 extern "C" int SolarSystem_getStations_i(SolarSystem *s);
 extern "C" void Wanted_setCurrentLocation(Wanted *w, int v);
 extern "C" void *Array_int_dtor(void *a);
@@ -1324,11 +1324,11 @@ int Status::activateNewWanted() {
             path = ((SystemPathFinder *)(pf))->getSystemPath(systems, fromSys, toSys);
         } while (path == 0 || (unsigned)*path < lo || hi < (unsigned)*path);
         int *rnd = g_anwRandom;
-        int pick = path[1] + AERandom_nextInt(*rnd) * 4;
+        int pick = path[1] + AbyssEngine::AERandom::nextInt(*rnd) * 4;
         pick = *(int *)pick;
         SolarSystem *dst = (SolarSystem *)((int *)((unsigned *)systems)[1])[pick];
         if (SolarSystem_getStations_i(dst) != 0) {
-            int idx = AERandom_nextInt(*rnd);
+            int idx = AbyssEngine::AERandom::nextInt(*rnd);
             int st = ((int *)(*(int *)(SolarSystem_getStations_i(dst) + 4)))[idx];
             Wanted_setCurrentLocation(cur, st);
         }
