@@ -67,9 +67,9 @@ namespace AbyssEngine {
 
 TexOnlyShader::TexOnlyShader()
 {
-    ShaderBaseStruct_ctor(this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     this->field_0x0 = (void *)((char *)g_TexOnlyShader_vtable + 8);
-    g_TexOnlyShader_shaderIndex = g_ShaderBaseStruct_shaderIndexIntern;
+    g_TexOnlyShader_shaderIndex = ShaderBaseStruct::shaderIndexIntern;
     String tmp;
     ((String *)(&tmp))->ctor_char("TexOnlyShader", false);
     ((String *)(&this->name))->assign(&tmp);
@@ -83,5 +83,7 @@ TexOnlyShader::TexOnlyShader()
 // ---- _TexOnlyShader_8b7e2.cpp ----
 void _ZN11AbyssEngine12TexOnlyShaderD0Ev(AbyssEngine::TexOnlyShader *self)
 {
-    operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }

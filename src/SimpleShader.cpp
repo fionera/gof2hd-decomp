@@ -40,10 +40,10 @@ void SimpleShader::Init(Engine *)
 // AbyssEngine::SimpleShader::SimpleShader()
 __attribute__((minsize)) SimpleShader::SimpleShader()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     field_0xc.s = u"SimpleShader";
     field_0x0 = (char *)SimpleShader_vtable + 8;
-    SimpleShader_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    SimpleShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     return;
 }
 
@@ -53,5 +53,7 @@ __attribute__((minsize)) SimpleShader::SimpleShader()
 // AbyssEngine::SimpleShader::~SimpleShader() (deleting dtor)
 void _ZN11AbyssEngine12SimpleShaderD0Ev(SimpleShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }

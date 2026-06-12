@@ -3,13 +3,14 @@
 #include "gof2/String.h"
 
 
-extern "C" int ShaderBaseStruct_shaderIndexIntern;
 extern "C" int BumpShaderV2_ShaderIndex;
 
 // ---- _BumpShaderV2_8dacc.cpp ----
-void _ZN11AbyssEngine12BumpShaderV2D0Ev(BumpShaderV2 *self)
+void _ZN11AbyssEngine12BumpShaderV2D0Ev(AbyssEngine::BumpShaderV2 *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 // ---- SetInActive_8d888.cpp ----
@@ -109,13 +110,13 @@ namespace AbyssEngine {
 BumpShaderV2::BumpShaderV2()
 {
 
-    ShaderBaseStruct_ctor(this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // Install our vtable (points one slot past the RTTI/offset header).
     this->vtable = BumpShaderV2_vtable + 8;
 
     // Remember the global shader index assigned by the base ctor.
-    BumpShaderV2_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    BumpShaderV2_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 
     // Name string lives at +0xc; build a temp and copy-assign it in.
     String tmp;

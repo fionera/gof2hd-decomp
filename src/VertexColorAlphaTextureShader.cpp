@@ -1,8 +1,6 @@
 #include "gof2/VertexColorAlphaTextureShader.h"
 #include "gof2/String.h"
 
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
-
 // Engine / Mesh are opaque here; their fields are accessed by raw offset since
 // their real layouts live in other (non-batch) classes.
 static inline int &eng_i32(void *self, uint32_t offset) { return *(int *)((char *)self + offset); }
@@ -145,14 +143,12 @@ void VertexColorAlphaTextureShader::SetInActive()
 } // namespace AbyssEngine
 
 // ---- _VertexColorAlphaTextureShader_91f28.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine29VertexColorAlphaTextureShaderD0Ev(
     AbyssEngine::VertexColorAlphaTextureShader *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- VertexColorAlphaTextureShader_91ae0.cpp ----
@@ -164,7 +160,7 @@ __attribute__((visibility("hidden"))) extern int g_shaderIndexDst;
 
 VertexColorAlphaTextureShader::VertexColorAlphaTextureShader()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // Install the derived vtable (base address + 8 -> first virtual slot).
     this->vtable = (void *)(_ZTVN11AbyssEngine29VertexColorAlphaTextureShaderE + 8);

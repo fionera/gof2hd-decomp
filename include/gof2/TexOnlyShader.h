@@ -6,12 +6,7 @@
 
 void operator delete(void *ptr) noexcept;
 
-extern "C" void *ShaderBaseStruct_ctor(void *self);
-extern "C" void *ShaderBaseStruct_dtor(void *self);
-extern "C" uint32_t ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertex, const char *fragment);
-
 extern "C" uint32_t g_TexOnlyShader_vtable[];
-extern "C" int32_t g_ShaderBaseStruct_shaderIndexIntern;
 extern "C" int32_t g_TexOnlyShader_shaderIndex;
 
 extern "C" int glGetAttribLocation(uint32_t program, const char *name);

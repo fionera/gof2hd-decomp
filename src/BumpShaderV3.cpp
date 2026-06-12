@@ -50,14 +50,12 @@ void BumpShaderV3::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- _BumpShaderV3_8c6b0.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine12BumpShaderV3D0Ev(
     AbyssEngine::BumpShaderV3 *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- SetInActive_8c38c.cpp ----
@@ -88,14 +86,10 @@ void BumpShaderV3::SetInActive()
 // ---- BumpShaderV3_8c11c.cpp ----
 // Engine symbols used by the constructor (resolved at link time).
 extern "C" {
-// AbyssEngine::ShaderBaseStruct::ShaderBaseStruct(this) -- 0x00070930.
-void *_ZN11AbyssEngine16ShaderBaseStructC2Ev(void *self);
-
 // BumpShaderV3 vtable; the ctor stores (&vtable + 8) into this[0].
 extern char _ZTVN11AbyssEngine12BumpShaderV3E[];
 // Two statics related by the engine: ShaderBaseStruct::shaderIndexIntern = BumpShaderV3::ShaderIndex.
 extern int _ZN11AbyssEngine12BumpShaderV311ShaderIndexE;
-extern int _ZN11AbyssEngine16ShaderBaseStruct16shaderIndexInternE;
 }
 
 namespace AbyssEngine {
@@ -103,11 +97,11 @@ namespace AbyssEngine {
 // AbyssEngine::BumpShaderV3::BumpShaderV3()
 BumpShaderV3::BumpShaderV3()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev(this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // install vtable (+8 past the RTTI/offset slots) and copy the shader-index static.
     *(void **)this = (void *)(_ZTVN11AbyssEngine12BumpShaderV3E + 8);
-    _ZN11AbyssEngine16ShaderBaseStruct16shaderIndexInternE =
+    ShaderBaseStruct::shaderIndexIntern =
         _ZN11AbyssEngine12BumpShaderV311ShaderIndexE;
 
     // name = String("BumpShaderV3"); this->name(0xc) = name; ~name.

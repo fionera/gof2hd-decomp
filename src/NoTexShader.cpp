@@ -52,9 +52,9 @@ void NoTexShader::Init(Engine *)
 // AbyssEngine::NoTexShader::NoTexShader()
 NoTexShader::NoTexShader()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     field_0x0 = (char *)NoTexShader_vtable + 8;
-    NoTexShader_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    NoTexShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     field_0xc.s = u"NoTexShader";
     return;
 }
@@ -64,5 +64,7 @@ NoTexShader::NoTexShader()
 // AbyssEngine::NoTexShader::~NoTexShader() (deleting dtor)
 void _ZN11AbyssEngine11NoTexShaderD0Ev(AbyssEngine::NoTexShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }

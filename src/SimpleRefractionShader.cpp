@@ -5,7 +5,6 @@ extern "C" void glUniform2f(int location, float x, float y);
 extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *engine);
 extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *engine);
 extern "C" void _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(AbyssEngine::Engine *engine);
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
 
 // ---- UpdateMeshData_8c8e0.cpp ----
 namespace AbyssEngine {
@@ -72,14 +71,12 @@ void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 } // namespace AbyssEngine
 
 // ---- _SimpleRefractionShader_8caf8.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine22SimpleRefractionShaderD0Ev(
     AbyssEngine::SimpleRefractionShader *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- SetInActive_8c8a0.cpp ----
@@ -152,7 +149,7 @@ void SimpleRefractionShader::Init(Engine *engine)
 extern "C" AbyssEngine::SimpleRefractionShader *
 _ZN11AbyssEngine22SimpleRefractionShaderC2Ev(AbyssEngine::SimpleRefractionShader *self)
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     *(void *volatile *)self = _ZTVN11AbyssEngine22SimpleRefractionShaderE + 8;
     AbyssEngine::SimpleRefractionShader::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;

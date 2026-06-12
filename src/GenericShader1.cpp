@@ -1,8 +1,7 @@
 #include "gof2/GenericShader1.h"
 // NOTE: do not include gof2/ShaderBaseStruct.h here — GenericShader1.h already declares
 // the minimal AbyssEngine::ShaderBaseStruct base layout this shader derives from, and the
-// full class in ShaderBaseStruct.h would redefine it. The base's loader is reached via the
-// ShaderBaseStruct_ES2LoadProgram free function declared in GenericShader1.h.
+// full class in ShaderBaseStruct.h would redefine it.
 
 // ---- UpdateMeshData_8ed8a.cpp ----
 namespace AbyssEngine {
@@ -87,7 +86,7 @@ namespace AbyssEngine {
 // AbyssEngine::GenericShader1::Init(AbyssEngine::Engine*)
 void GenericShader1::Init(Engine *)
 {
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram(this, "GenericShader1.vsh", "GenericShader1.fsh");
+    uint32_t program = ES2LoadProgram("GenericShader1.vsh", "GenericShader1.fsh");
     field_0x4 = (int)program;
 
     field_0x20 = glGetAttribLocation(program, "a_position");
@@ -116,7 +115,9 @@ void GenericShader1::Init(Engine *)
 // AbyssEngine::GenericShader1::~GenericShader1() (deleting dtor)
 void _ZN11AbyssEngine14GenericShader1D0Ev(AbyssEngine::GenericShader1 *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 // ---- GenericShader1_8eba0.cpp ----
@@ -127,9 +128,9 @@ namespace AbyssEngine {
 // index into the engine's global slot, and assigns the shader name to field_0xc.
 GenericShader1::GenericShader1()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     field_0x0 = (char *)GenericShader1_vtable + 8;
-    GenericShader1_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    GenericShader1_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     field_0xc.s = u"GenericShader1";
 }
 

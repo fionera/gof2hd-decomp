@@ -1,17 +1,13 @@
 #include "gof2/BumpMapping.h"
 
 
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(void *self);
-
 // ---- _BumpMapping_914d0.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine11BumpMappingD0Ev(
     AbyssEngine::BumpMapping *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- Init_912f4.cpp ----
@@ -81,7 +77,7 @@ int BumpMapping::ShaderIndex;
 
 BumpMapping::BumpMapping()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev(this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     this->field_0x0 = _ZTVN11AbyssEngine11BumpMappingE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->field_0xc.s = u"BumpMapping";

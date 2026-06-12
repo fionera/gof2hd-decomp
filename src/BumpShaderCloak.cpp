@@ -8,14 +8,12 @@ extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *s
 extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *self);
 
 // ---- _BumpShaderCloak_8b200.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine15BumpShaderCloakD0Ev(
     AbyssEngine::BumpShaderCloak *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- Init_8ac7c.cpp ----
@@ -94,9 +92,6 @@ void BumpShaderCloak::SetInActive()
 } // namespace AbyssEngine
 
 // ---- BumpShaderCloak_8abf0.cpp ----
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 namespace AbyssEngine {
 
 int BumpShaderCloak::ShaderIndex;
@@ -105,7 +100,7 @@ int BumpShaderCloak::ShaderIndex;
 BumpShaderCloak::BumpShaderCloak()
 {
 
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     *(void **)this = (void *)(_ZTVN11AbyssEngine15BumpShaderCloakE + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 

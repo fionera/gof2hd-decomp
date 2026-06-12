@@ -95,14 +95,12 @@ void BumpShaderV4::UpdateMeshData(Mesh *mesh, Engine *engine)
 } // namespace AbyssEngine
 
 // ---- _BumpShaderV4_8b624.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine12BumpShaderV4D0Ev(
     AbyssEngine::BumpShaderV4 *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- Init_8b29c.cpp ----
@@ -141,16 +139,13 @@ void BumpShaderV4::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- BumpShaderV4_8b210.cpp ----
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 namespace AbyssEngine {
 
 int BumpShaderV4::ShaderIndex;
 
 __attribute__((minsize)) BumpShaderV4::BumpShaderV4()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     *(void **)this = (void *)(_ZTVN11AbyssEngine12BumpShaderV4E + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 

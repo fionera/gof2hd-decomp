@@ -27,10 +27,6 @@ void glVertexAttribPointer(int index, int size, unsigned int type, uint8_t norma
                            int stride, const void *pointer);
 void glBindBuffer(unsigned int target, unsigned int buffer);
 
-void ShaderBaseStruct_ctor(void *self);
-void *ShaderBaseStruct_dtor(void *self) noexcept;
-int ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertexSource, const char *fragmentSource);
-
 void operator_delete(void *ptr) noexcept;
 }
 

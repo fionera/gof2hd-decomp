@@ -9,7 +9,6 @@
 
 extern "C" void glDisableVertexAttribArray(unsigned int index);
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
-extern "C" void ShaderBaseStruct_ctor(ShaderBaseStruct *self);
 extern "C" void String_ctor_text(void *self, const char *text, bool copy);
 extern "C" char BlurShader_vtable[];
 extern "C" void *BlurShader_typeinfo_source[];
@@ -29,7 +28,6 @@ extern "C" void glUniform2f(int location, float x, float y);
 extern "C" void glUniform1f(int location, float value);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" void *ShaderBaseStruct_dtor(AbyssEngine::ShaderBaseStruct *self);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
 
 // ---- SetInActive_8a748.cpp ----
@@ -48,7 +46,7 @@ AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
 {
     using AbyssEngine::BlurShader;
     String name;
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     void **source = BlurShader_typeinfo_source;
     void **dest = BlurShader_typeinfo_dest;
     *(void **)self = BlurShader_vtable + 8;
@@ -217,7 +215,9 @@ namespace AbyssEngine {
 
 BlurShader::~BlurShader()
 {
-    ::operator delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)this));
+    AbyssEngine::ShaderBaseStruct *base = (ShaderBaseStruct *)this;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 } // namespace AbyssEngine

@@ -53,7 +53,9 @@ void PulseShader::Init(::Engine *)
 // ---- _PulseShader_927d0.cpp ----
 void _ZN11AbyssEngine11PulseShaderD0Ev(PulseShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 // ---- UpdateMeshData_92594.cpp ----
@@ -136,7 +138,7 @@ namespace AbyssEngine {
 
 PulseShader::PulseShader()
 {
-    ShaderBaseStruct_ctor(this);
+    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
     this->field_0x0 = (char *)PulseShader_vtable + 8;
     PulseShader_typeInfoDest = PulseShader_typeInfoSource;
 

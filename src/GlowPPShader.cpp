@@ -1,4 +1,5 @@
 #include "gof2/GlowPPShader.h"
+#include "gof2/ShaderBaseStruct.h"
 #include "gof2/externs.h"
 #include "gof2/Engine.h"
 #include "gof2/String.h"
@@ -64,7 +65,9 @@ void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
 // ---- _GlowPPShader_8cdac.cpp ----
 void _ZN11AbyssEngine12GlowPPShaderD0Ev(GlowPPShader *self)
 {
-    operator delete(ShaderBaseStruct_dtor((ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- RenderEffect_8d120.cpp ----
@@ -361,7 +364,7 @@ GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
 {
     void *name[3];
     name[0] = self;
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     void **source = (void **)GlowPPShader_typeinfo_source;
     void **dest = (void **)GlowPPShader_typeinfo_dest;
     *(void **)self = (char *)GlowPPShader_vtable + 8;

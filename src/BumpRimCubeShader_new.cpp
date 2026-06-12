@@ -85,14 +85,12 @@ void BumpRimCubeShader_new::Init(Engine *)
 } // namespace AbyssEngine
 
 // ---- _BumpRimCubeShader_new_88f40.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine21BumpRimCubeShader_newD0Ev(
     AbyssEngine::BumpRimCubeShader_new *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- UpdateMeshData_88b58.cpp ----
@@ -219,16 +217,13 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
 } // namespace AbyssEngine
 
 // ---- BumpRimCubeShader_new_88820.cpp ----
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 namespace AbyssEngine {
 
 int BumpRimCubeShader_new::ShaderIndex;
 
 __attribute__((minsize)) BumpRimCubeShader_new::BumpRimCubeShader_new()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     this->field_0x0 = _ZTVN11AbyssEngine21BumpRimCubeShader_newE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 

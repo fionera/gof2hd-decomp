@@ -3,14 +3,12 @@
 
 
 // ---- _SandboxShader_91ad0.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine13SandboxShaderD0Ev(
     AbyssEngine::SandboxShader *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- UpdateMeshData_9194c.cpp ----
@@ -106,7 +104,6 @@ void SandboxShader::SetInActive()
 
 // ---- SandboxShader_9178c.cpp ----
 extern "C" {
-void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
 extern void *SandboxShader_registerSrc;
 extern void **SandboxShader_registerDst;
 }
@@ -117,7 +114,7 @@ namespace AbyssEngine {
 SandboxShader::SandboxShader()
 {
     // Base ShaderBaseStruct ctor.
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // Install the SandboxShader vtable (object pointer points 8 bytes into the
     // vtable, past the RTTI / offset-to-top slots).

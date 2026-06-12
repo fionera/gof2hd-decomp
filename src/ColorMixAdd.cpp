@@ -4,14 +4,12 @@
 
 
 // ---- _ColorMixAdd_92388.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine11ColorMixAddD0Ev(
     AbyssEngine::ColorMixAdd *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- UpdateMeshData_922a2.cpp ----
@@ -63,16 +61,13 @@ void ColorMixAdd::SetInActive()
 } // namespace AbyssEngine
 
 // ---- ColorMixAdd_9213c.cpp ----
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 namespace AbyssEngine {
 
 int ColorMixAdd::ShaderIndex;
 
 ColorMixAdd::ColorMixAdd()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     *(void **)this = (void *)(_ZTVN11AbyssEngine11ColorMixAddE + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     String tmp;

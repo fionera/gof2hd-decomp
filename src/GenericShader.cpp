@@ -135,7 +135,7 @@ void GenericShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 GenericShader::GenericShader()
 {
     // Base ShaderBaseStruct ctor.
-    ShaderBaseStruct_ctor(this);
+    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // Install the GenericShader vtable (object pointer points 8 bytes into the
     // vtable table, past the RTTI/offset-to-top slots).
@@ -156,5 +156,7 @@ GenericShader::GenericShader()
 // ---- _GenericShader_8eb90.cpp ----
 void _ZN11AbyssEngine13GenericShaderD0Ev(AbyssEngine::GenericShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }

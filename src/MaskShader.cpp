@@ -68,7 +68,7 @@ void MaskShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 // AbyssEngine::MaskShader::Init(AbyssEngine::Engine*)
 void MaskShader::Init(::Engine *)
 {
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "MaskShader.vsh", "MaskShader.fsh");
+    uint32_t program = ES2LoadProgram("MaskShader.vsh", "MaskShader.fsh");
     field_0x4 = (int)program;
 
     field_0x20 = glGetAttribLocation(program, "a_position");
@@ -91,9 +91,9 @@ void MaskShader::Init(::Engine *)
 // AbyssEngine::MaskShader::MaskShader()
 MaskShader::MaskShader()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     field_0x0 = (char *)MaskShader_vtable + 8;
-    ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     field_0xc.s = u"MaskShader";
     
 }
@@ -104,5 +104,7 @@ MaskShader::MaskShader()
 // AbyssEngine::MaskShader::~MaskShader() (deleting dtor)
 void _ZN11AbyssEngine10MaskShaderD0Ev(AbyssEngine::MaskShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }

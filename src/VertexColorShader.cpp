@@ -8,11 +8,9 @@ extern "C" void glUseProgram(unsigned int program);
 extern "C" void glUniform1i(int location, int value);
 extern "C" __attribute__((visibility("hidden"))) GetShaderLocation *glGetAttribLocation_ptr;
 extern "C" __attribute__((visibility("hidden"))) GetShaderLocation *glGetUniformLocation_ptr;
-extern "C" void ShaderBaseStruct_ctor(AbyssEngine::ShaderBaseStruct *self);
 extern "C" char g_VertexColorShader_vtable[];
 extern "C" __attribute__((visibility("hidden"))) int *g_VertexColorShader_typeinfo_src;
 extern "C" __attribute__((visibility("hidden"))) int *g_VertexColorShader_typeinfo_dst;
-extern "C" void ShaderBaseStruct_dtor(AbyssEngine::ShaderBaseStruct *self);
 extern "C" void glUniformMatrix4fv(int location, int count, bool transpose, const void *value);
 extern "C" void glUniformMatrix3fv(int location, int count, bool transpose, const void *value);
 extern "C" void glUniform3f(int location, uint32_t x, uint32_t y, uint32_t z);
@@ -77,7 +75,7 @@ namespace AbyssEngine {
 
 VertexColorShader::VertexColorShader()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     *(void * volatile *)this = g_VertexColorShader_vtable + 8;
     *g_VertexColorShader_typeinfo_dst = *g_VertexColorShader_typeinfo_src;
 
@@ -95,7 +93,7 @@ namespace AbyssEngine {
 
 VertexColorShader::~VertexColorShader()
 {
-    ShaderBaseStruct_dtor((ShaderBaseStruct *)this);
+    ((ShaderBaseStruct *)this)->~ShaderBaseStruct();
 }
 
 } // namespace AbyssEngine

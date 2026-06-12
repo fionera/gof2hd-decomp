@@ -3,17 +3,14 @@
 
 extern "C" float DNSShader_g0;
 extern "C" float DNSShader_g1;
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
 
 // ---- _DNSShader_8f750.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine9DNSShaderD0Ev(
     AbyssEngine::DNSShader *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- SetInActive_8f4c4.cpp ----
@@ -155,7 +152,7 @@ void DNSShader::Init(Engine *)
 extern "C" AbyssEngine::DNSShader *
 _ZN11AbyssEngine9DNSShaderC2Ev(AbyssEngine::DNSShader *self)
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     *(void *volatile *)self = _ZTVN11AbyssEngine9DNSShaderE + 8;
     AbyssEngine::DNSShader::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;

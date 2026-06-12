@@ -12,7 +12,7 @@ void NoTexVtxColorShader::SetInActive()
 // AbyssEngine::NoTexVtxColorShader::Init(AbyssEngine::Engine*)
 void NoTexVtxColorShader::Init(Engine *)
 {
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "NoTexVtxColorShader.vsh", "NoTexVtxColorShader.fsh");
+    uint32_t program = ((ShaderBaseStruct *)this)->ES2LoadProgram("NoTexVtxColorShader.vsh", "NoTexVtxColorShader.fsh");
     field_0x4 = (int)program;
 
     field_0x20 = glGetAttribLocation(program, "a_position");
@@ -27,9 +27,9 @@ void NoTexVtxColorShader::Init(Engine *)
 // AbyssEngine::NoTexVtxColorShader::NoTexVtxColorShader()
 NoTexVtxColorShader::NoTexVtxColorShader()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     field_0x0 = (char *)NoTexVtxColorShader_vtable + 8;
-    NoTexVtxColorShader_ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    NoTexVtxColorShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     field_0xc.s = u"NoTexVtxColorShader";
     return;
 }
@@ -69,5 +69,7 @@ void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 // AbyssEngine::NoTexVtxColorShader::~NoTexVtxColorShader() (deleting dtor)
 void _ZN11AbyssEngine19NoTexVtxColorShaderD0Ev(AbyssEngine::NoTexVtxColorShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }

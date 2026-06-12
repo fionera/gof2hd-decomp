@@ -19,6 +19,8 @@ struct ShaderBaseStruct {
 
     static int shaderIndexIntern;
 
+    ShaderBaseStruct();
+    ~ShaderBaseStruct();
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
 

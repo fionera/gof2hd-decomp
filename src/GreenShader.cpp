@@ -23,7 +23,9 @@ void GreenShader::SetInActive()
 // ---- _GreenShader_8847e.cpp ----
 void _ZN11AbyssEngine11GreenShaderD0Ev(AbyssEngine::GreenShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 // ---- Init_882a0.cpp ----
@@ -93,7 +95,7 @@ namespace AbyssEngine {
 GreenShader::GreenShader()
 {
 
-    ShaderBaseStruct_ctor(this);
+    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
     i32(this, 0x0) = (int)(__UINTPTR_TYPE__)GreenShader_vtable + 8;
     GreenShader_typeInfoDest = GreenShader_typeInfoSource;
 

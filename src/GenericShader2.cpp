@@ -1,9 +1,7 @@
 #include "gof2/GenericShader2.h"
 // gof2/ShaderBaseStruct.h is intentionally NOT included: it defines a second,
 // layout-incompatible AbyssEngine::ShaderBaseStruct that collides with the
-// minimal base declared in GenericShader2.h. The only symbol needed from it,
-// ES2LoadProgram, is reached via the ShaderBaseStruct_ES2LoadProgram free
-// function declared in GenericShader2.h.
+// minimal base declared in GenericShader2.h.
 
 namespace AbyssEngine {
 
@@ -27,7 +25,7 @@ void GenericShader2::SetInActive()
 // AbyssEngine::GenericShader2::Init(AbyssEngine::Engine*)
 void GenericShader2::Init(Engine *)
 {
-    uint32_t program = ShaderBaseStruct_ES2LoadProgram((ShaderBaseStruct *)this, "GenericShader2.vsh", "GenericShader2.fsh");
+    uint32_t program = ES2LoadProgram("GenericShader2.vsh", "GenericShader2.fsh");
     field_0x4 = (int)program;
 
     field_0x20 = glGetAttribLocation(program, "a_position");
@@ -103,9 +101,9 @@ void GenericShader2::UpdateMeshData(Mesh *mesh, Engine *engine)
 // AbyssEngine::GenericShader2::GenericShader2()
 GenericShader2::GenericShader2()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     field_0x0 = (char *)GenericShader2_vtable + 8;
-    ShaderIndex = ShaderBaseStruct_shaderIndexIntern;
+    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     field_0xc.s = u"GenericShader2";
     
 }
@@ -116,5 +114,7 @@ GenericShader2::GenericShader2()
 // AbyssEngine::GenericShader2::~GenericShader2() (deleting dtor)
 void _ZN11AbyssEngine14GenericShader2D0Ev(AbyssEngine::GenericShader2 *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor((AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }

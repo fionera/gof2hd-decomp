@@ -26,12 +26,10 @@ extern "C" void glClearColor(float red, float green, float blue, float alpha);
 extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
-extern "C" void ShaderBaseStruct_ctor(void *self);
 extern "C" char BloomShader_vtable;
 extern "C" void *BloomShader_typeinfo_source;
 extern "C" void *BloomShader_typeinfo_dest;
 extern "C" void FBOContainer_ctor(void *self, void *engine, String *name);
-extern "C" void *ShaderBaseStruct_dtor(void *self);
 
 // ---- Init_895ec.cpp ----
 
@@ -322,7 +320,7 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) BloomShader::BloomShader()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     this->field_0x0 = &BloomShader_vtable + 8;
     *(void **)BloomShader_typeinfo_dest = *(void **)BloomShader_typeinfo_source;
     this->field_0xc.s = u"BloomShader";
@@ -372,7 +370,8 @@ void BloomShader::InternalInit(::Engine *engine)
 void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self)
 {
     *(void **)self = &BloomShader_vtable + 8;
-    return ShaderBaseStruct_dtor((ShaderBaseStruct *)self);
+    ((AbyssEngine::ShaderBaseStruct *)self)->~ShaderBaseStruct();
+    return self;
 }
 
 // ---- RenderEffect_89cd8.cpp ----

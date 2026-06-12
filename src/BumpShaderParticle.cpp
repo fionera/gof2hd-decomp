@@ -110,27 +110,22 @@ void BumpShaderParticle::SetInActive()
 } // namespace AbyssEngine
 
 // ---- _BumpShaderParticle_88204.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine18BumpShaderParticleD0Ev(
     AbyssEngine::BumpShaderParticle *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- BumpShaderParticle_87d34.cpp ----
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 namespace AbyssEngine {
 
 int BumpShaderParticle::ShaderIndex;
 
 __attribute__((minsize)) BumpShaderParticle::BumpShaderParticle()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     *(void **)this = (void *)(_ZTVN11AbyssEngine18BumpShaderParticleE + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {

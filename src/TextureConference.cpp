@@ -3,7 +3,6 @@
 
 extern "C" long long _ZN11AbyssEngine18ApplicationManager20GetElapsedTimeMillisEv(void *self);
 extern "C" long long __divdi3_like(int a_lo, int a_hi, int b_lo, int b_hi);
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
 
 // ---- SetInActive_8cc34.cpp ----
 namespace AbyssEngine {
@@ -17,14 +16,12 @@ void TextureConference::SetInActive()
 } // namespace AbyssEngine
 
 // ---- _TextureConference_8cd0a.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine17TextureConferenceD0Ev(
     AbyssEngine::TextureConference *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- UpdateMeshData_8cc4a.cpp ----
@@ -80,7 +77,7 @@ void TextureConference::Init(Engine *)
 extern "C" AbyssEngine::TextureConference *
 _ZN11AbyssEngine17TextureConferenceC2Ev(AbyssEngine::TextureConference *self)
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     *(void *volatile *)self = _ZTVN11AbyssEngine17TextureConferenceE + 8;
     AbyssEngine::TextureConference::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;

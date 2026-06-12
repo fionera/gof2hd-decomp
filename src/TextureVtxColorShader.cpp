@@ -139,13 +139,10 @@ void TextureVtxColorShader::UpdateMeshData(AbyssEngine::Mesh *mesh, Engine *engi
 } // namespace AbyssEngine
 
 // ---- TextureVtxColorShader_8bd1c.cpp (constructor) ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructC2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 extern "C" AbyssEngine::TextureVtxColorShader *
 _ZN11AbyssEngine21TextureVtxColorShaderC2Ev(AbyssEngine::TextureVtxColorShader *self)
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     self->vtable = (void *)(_ZTVN11AbyssEngine21TextureVtxColorShaderE + 8);
     AbyssEngine::TextureVtxColorShader::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
@@ -156,12 +153,10 @@ _ZN11AbyssEngine21TextureVtxColorShaderC2Ev(AbyssEngine::TextureVtxColorShader *
 }
 
 // ---- _TextureVtxColorShader_8c10c.cpp (deleting destructor) ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine21TextureVtxColorShaderD0Ev(
     AbyssEngine::TextureVtxColorShader *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }

@@ -42,7 +42,9 @@ void SpecCubeAlphaMapping::Init(Engine *)
 // ---- _SpecCubeAlphaMapping_87d1c.cpp ----
 void _ZN11AbyssEngine20SpecCubeAlphaMappingD0Ev(AbyssEngine::SpecCubeAlphaMapping *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 // ---- SpecCubeAlphaMapping_87984.cpp ----
@@ -53,7 +55,7 @@ namespace AbyssEngine {
 
 SpecCubeAlphaMapping::SpecCubeAlphaMapping()
 {
-    ShaderBaseStruct_ctor(this);
+    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // install vtable (target adds +8 to the table base) and register self in the global slot
     this->field_0x0 = (void *)(SpecCubeAlphaMapping_vtable + 8);

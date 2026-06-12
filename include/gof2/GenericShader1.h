@@ -14,6 +14,13 @@ struct ShaderBaseStruct {
     void    *field_0x0;                 // +0x0 vtable
     int      field_0x4;                 // +0x4 GL program handle
     volatile uint16_t field_0x8;        // +0x8
+
+    static int shaderIndexIntern;
+
+    ShaderBaseStruct();
+    ~ShaderBaseStruct();
+
+    uint32_t ES2LoadProgram(const char *vertex, const char *fragment);
 };
 
 // AbyssEngine::GenericShader1
@@ -47,10 +54,6 @@ public:
 extern "C" char _ZTVN11AbyssEngine14GenericShader1E[];
 
 extern "C" {
-void ShaderBaseStruct_ctor(void *self);
-void *ShaderBaseStruct_dtor(void *self);
-uint32_t ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertex, const char *fragment);
-
 int glGetAttribLocation(uint32_t program, const char *name);
 int glGetUniformLocation(uint32_t program, const char *name);
 void glUseProgram(uint32_t program);
@@ -63,7 +66,6 @@ void glEnableVertexAttribArray(uint32_t index);
 void glDisableVertexAttribArray(uint32_t index);
 void glVertexAttribPointer(uint32_t index, int size, uint32_t type, uint8_t normalized, int stride, const void *pointer);
 
-extern int32_t ShaderBaseStruct_shaderIndexIntern;
 extern int32_t GenericShader1_ShaderIndex;
 extern void *GenericShader1_vtable[];
 

@@ -1,8 +1,6 @@
 #include "gof2/GlowShader.h"
 
 
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
-
 // ---- SetInActive_92050.cpp ----
 namespace AbyssEngine {
 
@@ -21,14 +19,12 @@ void GlowShader::SetInActive()
 } // namespace AbyssEngine
 
 // ---- _GlowShader_9212a.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine10GlowShaderD0Ev(
     AbyssEngine::GlowShader *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- UpdateMeshData_92070.cpp ----
@@ -66,7 +62,7 @@ void GlowShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 extern "C" AbyssEngine::GlowShader *
 _ZN11AbyssEngine10GlowShaderC2Ev(AbyssEngine::GlowShader *self)
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     *(void *volatile *)self = _ZTVN11AbyssEngine10GlowShaderE + 8;
     AbyssEngine::GlowShader::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;

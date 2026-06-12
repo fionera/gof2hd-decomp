@@ -1,8 +1,12 @@
 #include "gof2/ShaderBaseStruct.h"
 #include "gof2/String.h"
 
+namespace AbyssEngine {
 
+// Engine-wide counter of constructed shaders; each shader snapshots it as its index.
+int ShaderBaseStruct::shaderIndexIntern;
 
+} // namespace AbyssEngine
 
 // ---- GetShaderName_839d0.cpp ----
 namespace AbyssEngine {
@@ -21,7 +25,7 @@ namespace AbyssEngine {
 
 ShaderBaseStruct::~ShaderBaseStruct()
 {
-    shader_vtable(this) = (char *)ShaderBaseStruct_vtable + 8;
+    shader_vtable(this) = (char *)_ZTVN11AbyssEngine16ShaderBaseStructE + 8;
     shader_name(this)->~String();
 }
 
@@ -58,24 +62,23 @@ void ShaderBaseStruct::Update()
 } // namespace AbyssEngine
 
 // ---- ShaderBaseStruct_8e424.cpp ----
-AbyssEngine::ShaderBaseStruct *ShaderBaseStruct_8e424(AbyssEngine::ShaderBaseStruct *self)
+namespace AbyssEngine {
+
+ShaderBaseStruct::ShaderBaseStruct()
 {
-    using namespace AbyssEngine;
+    shader_vtable(this) = (char *)_ZTVN11AbyssEngine16ShaderBaseStructE + 8;
+    new (shader_name(this)) String();
+    program = -1;
+    flags = 0x100;
+    ++shaderIndexIntern;
+    shader_vertex_path(this) = 0;
+    shader_fragment_path(this) = 0;
 
-    shader_vtable(self) = (char *)ShaderBaseStruct_vtable + 8;
-    new (shader_name(self)) String();
-    self->program = 0xffffffff;
-    self->flags = 0x100;
-    ++ShaderBaseStruct_count;
-    shader_vertex_path(self) = 0;
-    shader_fragment_path(self) = 0;
-
-    // name initialized to the empty string
-    shader_name(self)->s.clear();
-
-    
-    return self;
+    // base name initialized to the empty string (concrete shaders overwrite it)
+    name = "";
 }
+
+} // namespace AbyssEngine
 
 // ---- ES2LoadProgram_8e584.cpp ----
 namespace AbyssEngine {

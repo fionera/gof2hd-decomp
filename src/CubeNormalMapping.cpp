@@ -60,14 +60,12 @@ void CubeNormalMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
 } // namespace AbyssEngine
 
 // ---- _CubeNormalMapping_90ed8.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine17CubeNormalMappingD0Ev(
     AbyssEngine::CubeNormalMapping *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- Init_90b4c.cpp ----
@@ -108,7 +106,6 @@ void CubeNormalMapping::Init(Engine *)
 
 // ---- CubeNormalMapping_90ac0.cpp ----
 extern "C" {
-void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
 extern void *_ZTIN11AbyssEngine17CubeNormalMappingE;
 extern void *CubeNormalMapping_typeInfoSlot;
 extern const char CubeNormalMapping_name[];
@@ -119,7 +116,7 @@ namespace AbyssEngine {
 
 CubeNormalMapping::CubeNormalMapping()
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     *(void **)this = (void *)(_ZTVN11AbyssEngine17CubeNormalMappingE + 8);
     CubeNormalMapping_typeInfoSlot = &_ZTIN11AbyssEngine17CubeNormalMappingE;
     String tmp;

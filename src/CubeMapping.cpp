@@ -37,7 +37,9 @@ void CubeMapping::Init(Engine *)
 // ---- _CubeMapping_90ab0.cpp ----
 void _ZN11AbyssEngine11CubeMappingD0Ev(AbyssEngine::CubeMapping *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 // ---- CubeMapping_9074c.cpp ----
@@ -45,7 +47,7 @@ namespace AbyssEngine {
 
 CubeMapping::CubeMapping()
 {
-    ShaderBaseStruct_ctor(this);
+    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // install vtable (target adds +8 to the table base)
     this->field_0x0 = (void *)(CubeMapping_vtable + 8);

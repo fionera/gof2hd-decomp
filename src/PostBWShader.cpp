@@ -123,7 +123,7 @@ void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 // AbyssEngine::PostBWShader::PostBWShader()
 PostBWShader::PostBWShader()
 {
-    ShaderBaseStruct_ctor((ShaderBaseStruct *)this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
 
     uint32_t copied = PostBWShader_ctor_copy_src;
     PostBWShader_ctor_copy_dst = copied;

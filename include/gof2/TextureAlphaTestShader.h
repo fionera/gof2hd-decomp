@@ -16,6 +16,7 @@ struct Mesh;
 struct ShaderBaseStruct {
     ShaderBaseStruct();
     ~ShaderBaseStruct();
+    int ES2LoadProgram(const char *vertexSource, const char *fragmentSource);
 };
 
 class TextureAlphaTestShader : public ShaderBaseStruct  {
@@ -60,9 +61,6 @@ void glVertexAttribPointer(int index, int size, unsigned int type, uint8_t norma
 void glBindBuffer(unsigned int target, unsigned int buffer);
 
 float *Vector_cast_to_float(Vector *self);
-int ShaderBaseStruct_ES2LoadProgram(ShaderBaseStruct *self, const char *vertexSource,
-                                    const char *fragmentSource);
-void *ShaderBaseStruct_dtor(ShaderBaseStruct *self) noexcept;
 void operator_delete(void *ptr) noexcept;
 }
 

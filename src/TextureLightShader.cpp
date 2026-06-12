@@ -7,9 +7,11 @@
 
 
 // ---- _TextureLightShader_8df1c.cpp ----
-void _ZN11AbyssEngine18TextureLightShaderD0Ev(TextureLightShader *self)
+void _ZN11AbyssEngine18TextureLightShaderD0Ev(AbyssEngine::TextureLightShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 // ---- Init_8db68.cpp ----
@@ -167,7 +169,7 @@ TextureLightShader::TextureLightShader()
     int *counter = g_tls_ctorCounter;
     int guard = *counter;
 
-    ShaderBaseStruct_ctor(this);
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // Install vtable (base + 8 to skip RTTI/offset slots).
     this->f_0 = g_tls_vtableBase + 8;

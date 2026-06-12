@@ -40,8 +40,6 @@ public:
     void Activate();
 };
 
-extern "C" __attribute__((visibility("hidden"))) void ShaderBaseStruct_ctor(ShaderBaseStruct *self);
-extern "C" __attribute__((visibility("hidden"))) void *ShaderBaseStruct_dtor(ShaderBaseStruct *self);
 // String_ctor_char / String_assign / String_dtor are declared in gof2/String.h
 // (included by the .cpp) with their real String*-returning signatures.
 
@@ -51,7 +49,6 @@ extern "C" __attribute__((visibility("hidden"))) void FBOContainer_BeginCapture(
 extern "C" __attribute__((visibility("hidden"))) void FBOContainer_EndCapture(FBOContainer *self);
 extern "C" __attribute__((visibility("hidden"))) void FBOContainer_Activate(FBOContainer *self);
 
-extern "C" uint32_t ShaderBaseStruct_ES2LoadProgram(ShaderBaseStruct *self, const char *vertex, const char *fragment);
 extern "C" uint32_t glGetAttribLocation(uint32_t program, const char *name);
 extern "C" uint32_t glGetUniformLocation(uint32_t program, const char *name);
 extern "C" void glUseProgram(uint32_t program);

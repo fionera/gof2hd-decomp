@@ -1,12 +1,22 @@
 #ifndef GOF2_SHADERBASESTRUCT_H
 #define GOF2_SHADERBASESTRUCT_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+#include "gof2/String.h"
+
+// AbyssEngine::ShaderBaseStruct — the GLSL shader base that every concrete shader
+// (BloomShader, BumpShader*, GenericShader*, TextureShader, ...) derives from. It owns the
+// GL program handle and drives ES2 shader compile/link plus uniform/attrib location binding.
+//
+// Each concrete shader is compiled in its own translation unit that declares its OWN local
+// copy of this base layout (using the field_0xNN convention). To stay link-compatible with
+// those TUs the layout here MUST remain byte-for-byte identical: vtable(+0x0), program(+0x4),
+// flags(+0x8), dirty(+0x9), name(+0xc), vertexPath(+0x18), fragmentPath(+0x1c).
 
 extern "C" void *malloc(__SIZE_TYPE__ size);
 extern "C" void free(void *ptr);
-extern "C" void *ShaderBaseStruct_vtable[];
-extern "C" uint32_t ShaderBaseStruct_count;
+
+// AbyssEngine::ShaderBaseStruct vtable (the real C++ vtable symbol).
+extern "C" void *_ZTVN11AbyssEngine16ShaderBaseStructE[];
 
 extern "C" uint32_t glCreateShader(uint32_t type);
 extern "C" void glShaderSource(uint32_t shader, uint32_t count, const char **strings, const int *lengths);
@@ -22,11 +32,6 @@ extern "C" void glLinkProgram(uint32_t program);
 extern "C" void glGetProgramiv(uint32_t program, uint32_t pname, int *params);
 extern "C" void glGetProgramInfoLog(uint32_t program, uint32_t maxLength, int *length, void *infoLog);
 extern "C" void AELabelObject(uint32_t type, uint32_t object, const char *name);
-extern "C" uint32_t ShaderBaseStruct_ES2LoadShader(uint32_t receiver, uint32_t type, const char *source);
-
-// AbyssEngine::String::GetAEChar() const returns a freshly allocated UTF-8 C-string.
-// The canonical declaration (char *String_GetAEChar(String*)) lives in gof2/String.h;
-// the call site uses the String::GetAEChar() method provided by gof2/common.h.
 
 namespace AbyssEngine {
 
@@ -39,16 +44,22 @@ struct AEFile {
 
 class ShaderBaseStruct {
 public:
-    void *vtable;                    // +0x0  vtable
-    int program;                      // +0x4  GL program handle (-1 when unset)
+    void *vtable;                   // +0x0  vtable
+    int program;                    // +0x4  GL program handle (-1 when unset)
     volatile uint16_t flags;        // +0x8  flags
     uint8_t dirty;                  // +0x9  dirty flag
-    String name;                   // +0xc  shader name
-    const char *vertexPath;             // +0x18 vertex path
-    const char *fragmentPath;             // +0x1c fragment path
+    String name;                    // +0xc  shader name
+    const char *vertexPath;         // +0x18 vertex shader path
+    const char *fragmentPath;       // +0x1c fragment shader path
+
+    // Running count of all shaders ever constructed; concrete shaders snapshot it in their
+    // ctor as their per-shader index. Module-static engine counter (`shaderIndexIntern`).
+    static int shaderIndexIntern;
+
+    ShaderBaseStruct();
+    virtual ~ShaderBaseStruct();
 
     String GetShaderName();
-    virtual ~ShaderBaseStruct();
     void UseShader();
     void DeleteShader();
     void Update();

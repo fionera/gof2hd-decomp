@@ -5,17 +5,14 @@ extern "C" void glUniform2f(int location, float x, float y);
 extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *engine);
 extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *engine);
 extern "C" void _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(AbyssEngine::Engine *engine);
-extern "C" void _ZN11AbyssEngine16ShaderBaseStructC2Ev(AbyssEngine::ShaderBaseStruct *self);
 
 // ---- _EnergyShield_8a5d0.cpp ----
-extern "C" void *_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-    AbyssEngine::ShaderBaseStruct *self);
-
 void _ZN11AbyssEngine12EnergyShieldD0Ev(
     AbyssEngine::EnergyShield *self)
 {
-    operator delete(_ZN11AbyssEngine16ShaderBaseStructD2Ev(
-        (AbyssEngine::ShaderBaseStruct *)self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- UpdateMeshData_8a40c.cpp ----
@@ -138,7 +135,7 @@ void EnergyShield::Init(Engine *engine)
 extern "C" AbyssEngine::EnergyShield *
 _ZN11AbyssEngine12EnergyShieldC2Ev(AbyssEngine::EnergyShield *self)
 {
-    _ZN11AbyssEngine16ShaderBaseStructC2Ev((AbyssEngine::ShaderBaseStruct *)self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     *(void *volatile *)self = _ZTVN11AbyssEngine12EnergyShieldE + 8;
     AbyssEngine::EnergyShield::ShaderIndex =
         AbyssEngine::ShaderBaseStruct::shaderIndexIntern;

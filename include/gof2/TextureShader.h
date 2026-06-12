@@ -10,10 +10,6 @@ extern "C" void *g_TextureShader_typeInfoSource;
 extern "C" void *g_TextureShader_vtable;
 extern "C" void *g_TextureShader_typeInfoTarget;
 
-extern "C" void *ShaderBaseStruct_ctor(void *self);
-extern "C" void *ShaderBaseStruct_dtor(void *self);
-extern "C" uint32_t ShaderBaseStruct_ES2LoadProgram(void *self, const char *vertex, const char *fragment);
-
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);
 extern "C" int glGetAttribLocation(uint32_t program, const char *name);
 extern "C" void glUseProgram(uint32_t program);

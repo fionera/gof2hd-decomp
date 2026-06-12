@@ -27,6 +27,8 @@ struct ShaderBaseStruct {
     int field_0x4;                      // +0x4
     volatile uint16_t field_0x8;        // +0x8
 
+    static int shaderIndexIntern;
+
     ShaderBaseStruct();
     virtual ~ShaderBaseStruct();
     virtual void Init(Engine *engine);
@@ -63,8 +65,6 @@ extern "C" {
 extern void *PostBWShader_vtable[];
 extern uint32_t PostBWShader_ctor_copy_src;
 extern uint32_t PostBWShader_ctor_copy_dst;
-
-void ShaderBaseStruct_ctor(void *self);
 
 void glActiveTexture(uint32_t texture);
 void glBindBuffer(uint32_t target, uint32_t buffer);

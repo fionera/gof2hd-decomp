@@ -26,7 +26,9 @@ void TextureShader::Init(Engine *)
 // ---- _TextureShader_91258.cpp ----
 void _ZN11AbyssEngine13TextureShaderD0Ev(AbyssEngine::TextureShader *self)
 {
-    operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    operator delete(base);
 }
 
 // ---- UseShader_90f74.cpp ----
@@ -68,7 +70,7 @@ AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::TextureShad
 
     frame.nameStorage[0] = self;
 
-    ShaderBaseStruct_ctor(self);
+    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
 
     void **source = (void **)g_TextureShader_typeInfoSource;
     void **target = (void **)g_TextureShader_typeInfoTarget;

@@ -23,7 +23,9 @@ void BumpShader::SetInActive()
 // ---- _BumpShader_8bd0c.cpp ----
 void _ZN11AbyssEngine10BumpShaderD0Ev(BumpShader *self)
 {
-    ::operator delete(ShaderBaseStruct_dtor(self));
+    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
+    base->~ShaderBaseStruct();
+    ::operator delete(base);
 }
 
 // ---- BumpShader_8b7f4.cpp ----
@@ -32,7 +34,7 @@ namespace AbyssEngine {
 // AbyssEngine::BumpShader::BumpShader()
 BumpShader::BumpShader()
 {
-    ShaderBaseStruct_ctor(this);
+    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
 
     // install vtable (+8 past RTTI/offset slots) and copy the type-info index static.
     *(void **)this = (void *)(BumpShader_vtable + 8);
