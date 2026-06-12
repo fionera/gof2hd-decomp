@@ -14,6 +14,25 @@ HangarList::~HangarList() {
     release();
 }
 
+// ---- setCurrentTab_11e782.cpp ----
+// Selects which tab is active. The hangar/shop UI flips between the normal item
+// list (tab 0/2) and the blueprint-ingredients sub-list using this boolean.
+void HangarList::setCurrentTab(bool blueprintIngredients) {
+    this->currentTab = blueprintIngredients ? 1u : 0u;
+}
+
+// ---- setCurrentItemIndex_11e7a2.cpp ----
+// The +0x8 slot stores the currently selected row index within the active tab;
+// getCurrentItem() later resolves it to a ListItem* via getCurrentItemAt().
+void HangarList::setCurrentItemIndex(int index) {
+    *reinterpret_cast<int *>(&this->currentItem) = index;
+}
+
+// ---- getCurrentItemIndex_11e79e.cpp ----
+uint32_t HangarList::getCurrentItemIndex() {
+    return *reinterpret_cast<uint32_t *>(&this->currentItem);
+}
+
 // ---- getCurrentLength_11e786.cpp ----
 uint32_t HangarList::getCurrentTab() {
     return this->currentTab;

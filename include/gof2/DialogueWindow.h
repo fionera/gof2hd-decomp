@@ -39,6 +39,7 @@ public:
     int OnTouchBegin(int x, int y);
     int OnTouchEnd(int x, int y);
     int OnTouchMove(int x, int y);
+    ~DialogueWindow();
     DialogueWindow * ctor_default();
     DialogueWindow * ctor_mission(Mission *mission, Level *level, int kind);
     DialogueWindow * ctor_text(String *text, String *agentName, int *parts);

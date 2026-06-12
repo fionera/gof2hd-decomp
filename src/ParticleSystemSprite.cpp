@@ -151,6 +151,30 @@ void *ParticleSystemSprite_ctor(
     return self;
 }
 
+// ParticleSystemSprite::ParticleSystemSprite(PaintCanvas*, Matrix const*,
+//     Array<ParticleSettings::ParticleSet> const&, bool, bool)
+// Chains to the IParticleSystem base ctor, installs the derived vtable, allocates the per-particle
+// sprite scratch array (particleCount * 12 bytes) at +0x64 and zero-fills it, then caches a
+// precomputed Pow value at +0x70.
+ParticleSystemSprite::ParticleSystemSprite(
+    void *canvas, const void *matrix, const void *particleSets, bool b4, bool b5)
+{
+    _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
+        this, canvas, matrix, particleSets, b4, b5);
+
+    unsigned int count = this->particleCount;
+
+    // Install the derived vtable (base + 8 -> first virtual slot).
+    *(void **)this = (void *)(_ZTV20ParticleSystemSprite + 8);
+
+    void *arr = operator new[](count * 0xc);
+    if (count != 0)
+        memset(arr, 0, (unsigned long)count * 0xc);
+    this->spriteData = arr;
+
+    this->cachedPow = AbyssEngine::AEMath::Pow(0.0f, 0.0f);
+}
+
 // ---- updateSingle_1830b4.cpp ----
 // ParticleSystemSprite::updateSingle(int index, float dt)
 // Advances one live particle. Skips the work when the system's active flag (+0x34 bit7) is

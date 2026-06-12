@@ -91,6 +91,29 @@ void _ZN9RocketGunD0Ev(RocketGun *self)
     return ::operator delete(_ZN9RocketGunD1Ev(self));
 }
 
+// RocketGun::~RocketGun() — real destructor. Resets the vtable to the RocketGun
+// base, releases the three lazily-allocated rocket-trail arrays (transform
+// matrices, particle systems, fade timers), then chains to the ObjectGun base
+// destructor.
+RocketGun::~RocketGun()
+{
+    *(void **)this = (char *)RocketGun_vtable + 8;
+
+    if (this->trailMatrices != 0)
+        ::operator delete(Array_Matrix_dtor(this->trailMatrices));
+    this->trailMatrices = 0;
+
+    if (this->trailSystems != 0)
+        ::operator delete(Array_int_dtor(this->trailSystems));
+    this->trailSystems = 0;
+
+    if (this->trailTimers != 0)
+        ::operator delete(Array_int_dtor(this->trailTimers));
+    this->trailTimers = 0;
+
+    RocketGun_base_dtor(this);
+}
+
 // ---- RocketGun_15e8f8.cpp ----
 extern "C" void ObjectGun_ctor(RocketGun *self, int param_1, Gun *param_2, int param_3,
                                 uint32_t param_5, Level *param_8);

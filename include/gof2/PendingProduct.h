@@ -39,5 +39,10 @@ public:
     PendingProduct * ctor_BluePrint(BluePrint *bp);
     PendingProduct * ctor_fields(int blueprintIndex, const String *stationName, int stationIndex, int quantity);
     void dtor();
+
+    // Append this pending product to the player's pending-product list. This is the
+    // monomorphised Array<PendingProduct*>::add helper: it grows the backing store by
+    // one and stores this element pointer at the new tail.
+    void add(Array<PendingProduct*> &list);
 };
 #endif

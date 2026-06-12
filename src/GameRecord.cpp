@@ -13,9 +13,13 @@
 
 
 // ---- _GameRecord_1559d4.cpp ----
-// GameRecord::~GameRecord()
+// GameRecord::~GameRecord() -- destroys the two embedded AbyssEngine::String
+// members (last constructed first): the slot at +0x194 then the slot at +0x188.
 GameRecord::~GameRecord()
 {
+    char *t = (char *)this;
+    AEString_dtor(t + 0x194);
+    AEString_dtor(t + 0x188);
 }
 
 // ---- GameRecord_155900.cpp ----

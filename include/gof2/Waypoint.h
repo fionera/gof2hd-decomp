@@ -26,6 +26,7 @@ public:
     Route* route;                 // +0x134
 
     Waypoint(int x, int y, int z, Route *route);
+    ~Waypoint();
     void setActive(bool active);
     void reached();
     Vector getPosition();

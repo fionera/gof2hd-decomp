@@ -37,6 +37,16 @@ void _ZN8WaypointD0Ev(Waypoint *self)
     return ::operator delete(KIPlayer_dtor((KIPlayer *)self));
 }
 
+// ---- ~Waypoint (base/complete-object destructor) at 0x167d28 ----
+// Waypoint extends KIPlayer (see the ctor, which constructs the KIPlayer subobject
+// in place). The destructor simply runs the KIPlayer base destructor; the held
+// Player object is owned/torn down by KIPlayer. Expressed through the KIPlayer_dtor
+// shim, matching the deleting destructor above and keeping this TU self-contained.
+Waypoint::~Waypoint()
+{
+    KIPlayer_dtor((KIPlayer *)this);
+}
+
 // ---- reset_157d6e.cpp ----
 void Waypoint::reset()
 {

@@ -36,8 +36,13 @@ public:
 
     // ---- methods (converted from free functions) ----
     void createChar_i(int param_1);
+    // The demangled symbol reads ImageFactory::createChar(bool, int); in practice the target
+    // passes three register args (r0=clz bool, r1=rand==0, r2=type), so the faithful body needs
+    // all three. createChar_i() forwards (clz, rand0, type) here.
+    int *createChar(bool clz, bool rand0, int type);
     ImageFactory * ctor();
     void drawChar(Arr *parts, int x, int y, int flag);
+    void drawItem(int itemId, int x, int y);
     void drawItem4(int itemId, int frame, int x, int y);
     void drawShip(int shipId, int x, int y);
     Arr * loadChar(int *param_1);

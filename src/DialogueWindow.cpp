@@ -153,6 +153,14 @@ DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
     return self;
 }
 
+// DialogueWindow::~DialogueWindow() — real destructor. Releases the face-part
+// image array, the campaign briefing/success offset tables, the scroll window
+// and the three touch buttons, then destroys the agent-name / body-text strings.
+DialogueWindow::~DialogueWindow()
+{
+    _ZN14DialogueWindowD2Ev(this);
+}
+
 // ---- OnTouchMove_168370.cpp ----
 typedef int (*TouchHandler)(void *, int, int);
 

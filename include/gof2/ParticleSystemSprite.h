@@ -35,6 +35,11 @@ public:
     void* setIndices;                   // +0x6c  per-particle set-index array
     float cachedPow;                   // +0x70
 
+    // Chains to the IParticleSystem base ctor, installs the derived vtable, allocates the
+    // per-particle sprite scratch array (particleCount * 12 bytes) at +0x64 and zero-fills it,
+    // then caches a precomputed Pow value at +0x70.
+    ParticleSystemSprite(void *canvas, const void *matrix,
+                         const void *particleSets, bool b4, bool b5);
     ~ParticleSystemSprite();
     void reset();
     int init(unsigned int param_1, unsigned short param_2);

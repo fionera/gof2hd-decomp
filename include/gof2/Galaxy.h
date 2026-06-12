@@ -1,6 +1,8 @@
 #ifndef GOF2_GALAXY_H
 #define GOF2_GALAXY_H
 #include "gof2/common.h"
+
+class SolarSystem;
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy — top-level class (NO namespace). Byte-exact decomp scaffold.
 // Field offsets taken from the work-items:
@@ -38,6 +40,10 @@ public:
     void *getPlasmaProbabilities(void *station);
     void *getAsteroidProbabilities(void *station);
     int getStation(int index);
+
+    // Euclidean distance between two systems' positions (Z compressed by 1/10),
+    // scaled by the global unit factor. Returns 0 when both refer to the same system.
+    float distance(SolarSystem *a, SolarSystem *b);
 
     char field_storage[0x8];
 };

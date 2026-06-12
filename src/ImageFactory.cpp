@@ -150,6 +150,20 @@ void ImageFactory_drawItem3(int param_1, int param_2, int param_3)
     ((PaintCanvas*)(long)*holder)->DrawImage2D(local, param_2, param_3);
 }
 
+// ImageFactory::drawItem(int itemId, int x, int y) — draws just the item icon (no composite
+// sprite) for itemId at (x,y): id base is 0x898 for ids < 0xb0, otherwise 0xef0.
+void ImageFactory::drawItem(int itemId, int x, int y)
+{
+    unsigned *holder = g_drawItem_canvas;
+    unsigned local = 0xffffffffu;
+    ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
+    int base = 0xef0;
+    if (itemId < 0xb0)
+        base = 0x898;
+    ((PaintCanvas*)(long)*holder)->Image2DCreate((unsigned short)(base + itemId), &local);
+    ((PaintCanvas*)(long)*holder)->DrawImage2D(local, x, y);
+}
+
 // ---- loadImage_11c834.cpp ----
 // ImageFactory::loadImage(int row, int col, int frameBase) — looks up the image id for the
 // [row][col] cell, creates the image2d in the global canvas, then builds an ImagePart whose
@@ -247,6 +261,29 @@ void ImageFactory::createChar_i(int param_1) {
     (void)self;
     int r = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);
     ImageFactory_createChar_bi((int)__builtin_clz(r), (unsigned)(r == 0), param_1);
+}
+
+// ImageFactory::createChar(bool, int) — builds a 5-int char descriptor: a type slot followed by
+// four random part indices. `type` selects a 4-entry row in the part-count table (rows are 16
+// bytes); type 3 rerolls to 0 or 2; type 0 maps to row 10 unless rand0 forced it; type 5 -> 0.
+int *ImageFactory::createChar(bool clz, bool rand0, int type)
+{
+    (void)clz;
+    if (type == 3) {
+        int t = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng1, 4);
+        type = (t != 0) ? 2 : 0;
+    }
+    int v = type;
+    int *table = &gCreateChar2Table;
+    if (type == 0) v = 10;
+    if (rand0) v = type;
+    if (v == 5) v = 0;
+    int *obj = (int *)operator new[](0x14);
+    obj[0] = v;
+    int *base = (int *)((char *)table + v * 16);
+    for (int i = 0; i != 4; ++i)
+        obj[i + 1] = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng2, base[i]);
+    return obj;
 }
 
 // ---- ImageFactory_11c54c.cpp ----

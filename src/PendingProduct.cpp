@@ -44,6 +44,14 @@ PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
     self->stationIndex = ((BluePrint *)(bp))->getStationIndex();
     self->quantity = ((BluePrint *)(bp))->getQuantity();
 
-    
+
     return self;
+}
+
+// ---- ArrayAdd<PendingProduct*>_0xb8fae.cpp ----
+// Append this pending product to the player's pending-product list. The shipped
+// binary monomorphised the engine's Array<T>::add for PendingProduct*; it bumps
+// the element count, reallocs the backing store and stores the pointer at the tail.
+void PendingProduct::add(Array<PendingProduct*> &list) {
+    list.push_back(this);
 }

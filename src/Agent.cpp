@@ -127,6 +127,19 @@ void Agent::nextEvent() {
     self->eventCount = self->eventCount + 1;
 }
 
+// Agent::setKnown(bool) — an agent counts as "known" once its dialogue/event
+// counter is non-zero (see isKnown()). The space-lounge marks a freshly-met,
+// non-story agent as known by advancing it onto its first event.
+void Agent::setKnown(bool known) {
+    Agent *self = this;
+    if (known) {
+        if (self->eventCount <= 0)
+            self->eventCount = 1;
+    } else {
+        self->eventCount = 0;
+    }
+}
+
 // ---- hasReward_1776fe.cpp ----
 uint8_t Agent::hasReward() {
     Agent *self = this;

@@ -19,6 +19,10 @@ public:
     float field_0x38;        // +0x38 radius
 
     BoundingSphere(float x, float y, float z, float ex, float ey, float ez, float radius);
+    // Convenience: a sphere centred at (cx,cy,cz) with zero extents and the
+    // given radius. Used when a collision volume is built directly from a
+    // centre + radius pair (see Globals geometry loading).
+    BoundingSphere(float cx, float cy, float cz, float radius);
     ~BoundingSphere();
     bool collide(float x, float y, float z);
     bool outerCollide(float x, float y, float z);

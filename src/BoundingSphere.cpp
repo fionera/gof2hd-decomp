@@ -27,6 +27,11 @@ BoundingSphere::BoundingSphere(
     vtable = vt;
 }
 
+BoundingSphere::BoundingSphere(float cx, float cy, float cz, float radius)
+    : BoundingSphere(cx, cy, cz, 0.0f, 0.0f, 0.0f, radius)
+{
+}
+
 // ---- projectCollisionOnSurface_151e74.cpp ----
 Vector BoundingSphere::projectCollisionOnSurface(const Vector &position)
 {

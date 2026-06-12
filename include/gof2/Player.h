@@ -157,6 +157,8 @@ public:
     float damageGamma(float amount);
     Array<Player *> *getEnemies();
     void getPosition(Vector *out);
+    void getHitVector(Vector *out);
+    int replaceGuns(int a, int b, int c, int d, int e, bool f);
     bool isAsteroid();
     bool isGasCloud();
     bool gunAvailable(unsigned int slot);

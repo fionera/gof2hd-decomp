@@ -87,6 +87,7 @@ public:
     void ctor(int kind, int param2, void *player, void *geom, float p5, float p6, float p7, float sx, float sy, float sz);
     int getDockingType();
     RetStr getName();
+    V3 getPosition();
     V3 getProjectionVector();
     int getTransportID();
     void hideShip();

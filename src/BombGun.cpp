@@ -1,4 +1,5 @@
 #include "gof2/BombGun.h"
+#include <new>
 #include "gof2/TargetFollowCamera.h"
 #include "gof2/FModSound.h"
 #include "gof2/LevelScript.h"
@@ -83,6 +84,129 @@ void *_ZN7BombGunD1Ev(BombGun *self)
 void _ZN7BombGunD0Ev(BombGun *self)
 {
     return ::operator delete(_ZN7BombGunD1Ev(self));
+}
+
+// ---- BombGun_1575cc.cpp ----
+// PaintCanvas singleton holder used by the ctor to register the bomb's geometry/
+// transform with the active scene (same engine-global the update/render paths use).
+extern "C" __attribute__((visibility("hidden"))) void **BombGun_ctor_canvas;
+
+// Explosion::setWeaponIndex actually returns the per-weapon visual scaling factor
+// (the engine prototype types it void). Reach the value without touching Explosion.h.
+typedef float (*ExplosionSetWeaponIndexFn)(Explosion *, int);
+
+// BombGun::BombGun(Gun*, unsigned int meshId, int rocketArg, int bombType, bool simpleMesh, Level*)
+//
+// A guided "bomb" projectile (nuke / EMP / mine). It chains to the RocketGun base,
+// spawns the matching Explosion effect, then builds its scene geometry: either a
+// pre-authored AEGeometry attached to the rocket transform (normal launch), or a
+// fresh mesh-backed transform tree (the simple-mesh path). Two fixed offset vectors
+// (the launch ejection vectors) and a trail geometry round out the setup.
+BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool simpleMesh,
+                 Level *level)
+{
+    new ((RocketGun *)this) RocketGun(rocketArg, gun, meshId, 0, 0, bombType, false, level);
+
+    // vtable + scalar state
+    *(void **)this = (char *)BombGun_vtable + 8;
+    this->field_0xf8 = 0;
+    this->field_0x100 = 0;
+    this->field_0x120 = 0;
+
+    // Pick the Explosion variant from the bomb type / weapon item.
+    int explosionType;
+    if (bombType == 6) {
+        explosionType = 7;          // EMP burst
+    } else if (bombType == 0x2a) {
+        explosionType = 0xb;        // large nuke
+    } else if (((Gun *)gun)->itemIndex == 0xe8) {
+        explosionType = 0xd;        // special weapon
+    } else {
+        explosionType = 0;          // default
+    }
+
+    Explosion *explosion = (Explosion *)operator new(0x68);
+    new (explosion) Explosion(explosionType);
+    this->field_0xf0 = explosion;
+
+    // setWeaponIndex assigns the sound id and returns the per-weapon visual scale; the
+    // shipped prototype types it void, so reinterpret its address to recover the value.
+    void (Explosion::*swiMember)(int) = &Explosion::setWeaponIndex;
+    ExplosionSetWeaponIndexFn swiFn;
+    __builtin_memcpy(&swiFn, &swiMember, sizeof(swiFn));
+    float weaponScale = swiFn(explosion, ((Gun *)gun)->itemIndex);
+
+    this->field_0x24 = simpleMesh ? 1 : 0;
+    this->field_0x104 = 1;
+    this->field_0x128 = bombType;
+    this->field_0xf4 = 0xffffffff;
+
+    if (bombType == 0x2a) {
+        ((Explosion *)explosion)->setScaling(weaponScale);
+    }
+
+    void *canvas = *BombGun_ctor_canvas;
+
+    if (!simpleMesh) {
+        // Normal launch: attach a pre-authored geometry, unless the weapon explicitly
+        // opts out (item 0xe8 with weaponType 0x22).
+        int item = ((Gun *)gun)->itemIndex;
+        bool customWeapon = item != 0xe8;
+        int sel = customWeapon ? ((Gun *)gun)->weaponType : item;
+        if (!(customWeapon == false || sel == 0x22)) {
+            // Mesh id depends on the projectile model.
+            uint16_t geomMesh = 0x395d;
+            if (meshId == 0x395a) geomMesh = 0x395b;
+            if (meshId == 0x3958) geomMesh = 0x3959;
+
+            AEGeometry *geo = (AEGeometry *)operator new(0xc0);
+            new (geo) AEGeometry(geomMesh, (PaintCanvas *)canvas, false);
+
+            this->field_0xf4 = geo->transform;
+            AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->field_0x10, geo->transform);
+
+            AbyssEngine::Transform *transform =
+                AbyssEngine::PaintCanvas::TransformGetTransform(canvas, geo->transform);
+            AbyssEngine::AnimationMode mode =
+                (meshId == 0x395c) ? (AbyssEngine::AnimationMode)2 : (AbyssEngine::AnimationMode)1;
+            ((AbyssEngine::Transform *)transform)->SetAnimationState(mode, 0);
+
+            ((AEGeometry *)geo)->~AEGeometry();
+            operator delete(geo);
+        }
+    } else {
+        // Simple-mesh path: build a transform tree from the bomb's own mesh plus a
+        // trail geometry, then re-parent it under the rocket transform.
+        AbyssEngine::PaintCanvas::TransformCreate(canvas, &this->field_0x14);
+        AbyssEngine::PaintCanvas::TransformAddMesh(canvas, this->field_0x14, this->field_0x28, 0);
+
+        AbyssEngine::Transform *transform =
+            AbyssEngine::PaintCanvas::TransformGetTransform(canvas, this->field_0x14);
+        ((AbyssEngine::Transform *)transform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+
+        AEGeometry *geo = (AEGeometry *)operator new(0xc0);
+        new (geo) AEGeometry((uint16_t)0x37d6, (PaintCanvas *)canvas, false);
+        AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->field_0x14, geo->transform);
+        AbyssEngine::PaintCanvas::TransformRemoveMesh(canvas, this->field_0x10,
+                                                      (uint16_t)this->field_0x14);
+        AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->field_0x10, this->field_0x14);
+
+        ((AEGeometry *)geo)->~AEGeometry();
+        operator delete(geo);
+    }
+
+    // Two fixed ejection vectors: (0, 450, -1400) and (0, 0, 1700).
+    Vector ejectA = { 0.0f, 450.0f, -1400.0f };
+    Vector ejectB = { 0.0f, 0.0f, 1700.0f };
+    *(Vector *)&this->field_0x110 = ejectA;
+    *(Vector *)((char *)this + 0x11c) = ejectB;
+
+    this->field_0xec = 0;
+
+    // Trail geometry attached to the active scene canvas.
+    AEGeometry *trail = (AEGeometry *)operator new(0xc0);
+    new (trail) AEGeometry((PaintCanvas *)canvas);
+    this->field_0xe8 = trail;
 }
 
 // ---- setPlayer_147868.cpp ----

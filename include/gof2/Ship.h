@@ -40,10 +40,96 @@ public:
     int           removeCargo(int index, int amount);
     void          removeCargo(int index);
     void          removeCargo(Item* item);
+    void          removeAllCargo();
     void          setEquipment(Item* item);
+    void          setEquipment(Item* item, int slot);
+    void          setEquipment(Array<Item*>* items);
+    void          replaceEquipment(Array<Item*>* equipment);
+    int           addEquipment(Item* item);
+    void          removeEquipment(Item* item);
+    Item*         getFirstEquipmentOfSort(int sort);
+    int           getEquipmentValue();
+    int           getUsedSlots(int type);
+    int           getFreeSlots(int type);
+    int           getSlots(int i);
+    int           getSlotTypes();
+    unsigned int  getSlotPos(Item* item);
+    void          freeSlot(Item* item);
+    void          freeSlot(Item* item, int slot);
+    void          freeAllSlots();
+    int           slotAvailable(int sort);
+    bool          hasEquipment(int index, int amount);
+    bool          hasSecondaryWeapons();
 
     Array<Item*>* getEquipment();
     Array<Item*>* getEquipment(int type);
+
+    void          setCargo(Array<Item*>* cargo);
+    void          replaceCargo(Array<Item*>* cargo);
+    Array<Item*>* getCargo();
+    Item*         getCargo(int index);
+    bool          hasCargo(int index, int amount);
+    bool          hasCargoType(int type);
+    bool          hasVolatileGoods();
+    int           getCargoValue();
+    bool          spaceAvailable(int n);
+    int           getFreeSpace();
+    void          changeLoad(int delta);
+
+    Ship*         clone();
+    bool          equals(Ship* other);
+    void          refreshValue();
+    void          adjustPrice();
+    void          priceDecline();
+
+    void          addMod(int mod);
+    void          setMods(Array<int>* mods);
+    Array<int>*   getMods();
+    bool          hasModInstalled(int mod);
+    int           getModdedLoad();
+
+    // Simple stat accessors.
+    int           getIndex();
+    int           getRace();
+    void          setRace(int race);
+    int           getSignatureRace();
+    int           getBaseHP();
+    int           getMaxHP();
+    int           getCombinedHP();
+    int           getMaxShieldHP();
+    int           getMaxArmorHP();
+    int           getShieldRegen();
+    int           getBaseLoad();
+    int           getMaxLoad();
+    int           getCurrentLoad();
+    int           getCargoPlus();
+    int           getCompression();
+    int           getValue();
+    int           getPrice();
+    void          setPrice(int price);
+    float         getHandling();
+    float         getHandlingForShop();
+    int           getUnmoddedHandling();
+    int           getFireRateFactor();
+    int           getDamageFactor();
+    int           getFirePower();
+    int           getAgility();
+    int           getRadarType();
+    int           getRepairType();
+    int           getMaxPassengers();
+    int           getBoostSpeed();
+    int           getBoostDelay();
+    int           getBoostTime();
+    bool          hasBooster();
+    int           getCurrentWeaponSlot();
+    void          setCurrentWeaponSlot(int slot);
+    int           getNumAddedDeviceSlots();
+    unsigned char hasEmergencySystem();
+    bool          hasCloak();
+    bool          hasCloakIntegrated();
+    unsigned int  hasJumpDrive();
+    unsigned int  hasJumpDriveIntegrated();
+    Ship*         makeShip(int price);
     int          index;            // 0x00  ship id / type
     int          baseHP;           // 0x04
     int          value;            // 0x08

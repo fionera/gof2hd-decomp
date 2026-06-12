@@ -918,3 +918,50 @@ void TouchButton_168cb0(TouchButton *self, unsigned int kind,
     ((TouchButton *)(self))->init((String *)tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
     ((String *)(tmp))->dtor();
 }
+
+// ---- TouchButton::TouchButton(String const& text, int type, int x, int y, int width, int icon, int style) ----
+// Full label/menu-button constructor used by DialogueWindow / SpaceLounge / StarMap.
+// Same prologue as the other label ctors (three embedded Strings, font colour at
+// +0x08, cached glyph spacing at +0xc4), then delegates to the shared init().
+// `icon` is the optional sub-image id (init's "achStage"/+0x24 slot); `style`
+// becomes flags0 (+0x74). flags1 defaults to 0x44 like the other label ctors.
+TouchButton * TouchButton::ctor(String *text, int type, int x, int y, int width, int icon, int style) {
+    TouchButton *self = this;
+    ((String *)((char *)self + 0xc))->ctor();
+    ((String *)((char *)self + 0x18))->ctor();
+    ((String *)((char *)self + 0x2c))->ctor();
+    I(self, 8) = *(int *)*g_TB_c1;
+    I(self, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(self,8)));
+    ((TouchButton *)(self))->init(text, (unsigned int)type, 0, icon, width, 0, x, y, (unsigned char)style, 0x44);
+    return self;
+}
+
+// ---- TouchButton::TouchButton(String const& text, int type, int x, int y, int width, int icon, int mode) ----
+// Identical construction to ctor() above (the WantedWindow call site reaches this
+// via its own veneer); `mode` is the flags0 byte.
+TouchButton * TouchButton::ctor8(String *text, int type, int x, int y, int width, int icon, int mode) {
+    TouchButton *self = this;
+    ((String *)((char *)self + 0xc))->ctor();
+    ((String *)((char *)self + 0x18))->ctor();
+    ((String *)((char *)self + 0x2c))->ctor();
+    I(self, 8) = *(int *)*g_TB_c1;
+    I(self, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(self,8)));
+    ((TouchButton *)(self))->init(text, (unsigned int)type, 0, icon, width, 0, x, y, (unsigned char)mode, 0x44);
+    return self;
+}
+
+// ---- TouchButton::setPosition3(int x, int y, int align) ----
+// Three-argument placement helper: positions the button using `align` as the
+// anchor-flags byte (the same flags consumed by setPosition()).
+void TouchButton::setPosition3(int x, int y, int align) {
+    TouchButton *self = this;
+    ((TouchButton *)(self))->setPosition(x, y, (unsigned char)align);
+}
+
+// ---- TouchButton::touch_end(int x, int y) ----
+// Touch-release handler entry point: forwards to OnTouchEnd, which clears the
+// pressed flag and reports whether the release counts as a click.
+unsigned int TouchButton::touch_end(int x, int y) {
+    TouchButton *self = this;
+    return ((TouchButton *)(self))->OnTouchEnd(x, y);
+}

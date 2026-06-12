@@ -188,6 +188,13 @@ void PlayerFixedObject_getPosition(PosOut *out, PlayerFixedObject *self)
     out->z = c;
 }
 
+// PlayerFixedObject::getPosition() — integer object position (+0x178/+0x17c/+0x180)
+// promoted to a float Vector. Mirrors the sret free function above.
+V3 PlayerFixedObject::getPosition() {
+    V3 pos = { (float)intPosX, (float)intPosY, (float)intPosZ };
+    return pos;
+}
+
 // ---- update_1541e0.cpp ----
 // PlayerFixedObject::update(int dt). Large state machine on this->0x88:
 //   normal -> dying(3) -> exploding(4) -> dead(5). Heavily optimized in the target

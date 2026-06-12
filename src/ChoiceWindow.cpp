@@ -529,3 +529,36 @@ void ChoiceWindow::left() {
 // caller queries hasChoice() / the button state for the actual decision.
 void ChoiceWindow::right() {
 }
+
+// ---- engine-name convenience setters / forwarders -----------------------------------
+// These mirror the way the shipped code drives a ChoiceWindow from the hangar / lounge
+// screens: each delegates to one of the recovered set() overloads (or, for the button
+// labels, retitles the existing TouchButtons) so the window keeps a single layout path.
+
+// setMsg(text, hasButtons): show a default-titled message; equivalent to set(text, flag).
+void ChoiceWindow::setMsg(String const &text, bool hasButtons)
+{
+    set(text, hasButtons);
+}
+
+// setText(title, body): show an explicit title + body with the standard two buttons.
+void ChoiceWindow::setText(String const &title, String const &body)
+{
+    set(title, body, true);
+}
+
+// setButtonText(left, right): override the labels on the two choice buttons in place,
+// without rebuilding the window (the buttons are created by set()).
+void ChoiceWindow::setButtonText(String const &left, String const &right)
+{
+    if (this->leftButton != 0)
+        ((TouchButton *)(this->leftButton))->setText((String *)&left);
+    if (this->rightButton != 0)
+        ((TouchButton *)(this->rightButton))->setText((String *)&right);
+}
+
+// touch_end(x, y): engine-name alias for the touch-release handler.
+int ChoiceWindow::touch_end(int x, int y)
+{
+    return this->OnTouchEnd(x, y);
+}

@@ -2175,3 +2175,21 @@ void Player::StopEngineSound() {
         this->engineEvent = 0;
     }
 }
+
+// ---- getHitVector_a2eb2 ----
+// Copies the cached 3-component hit vector (field at 0xc4..0xcc) into the caller's
+// output Vector. In the target this is the sret form of the standalone
+// Player_getHitVector shim above; exposed here as a real member.
+void Player::getHitVector(Vector *out) {
+    out->x = this->hitVector[0];
+    out->y = this->hitVector[1];
+    out->z = this->hitVector[2];
+}
+
+// ---- replaceGuns_a4360 ----
+// Stub in the shipped binary: the body simply returns its first argument and performs
+// no gun replacement (the real logic was compiled out / never wired up). Kept as a real
+// member for completeness and to match the call sites that go through Player_replaceGuns.
+int Player::replaceGuns(int a, int b, int c, int d, int e, bool f) {
+    return a;
+}

@@ -56,6 +56,7 @@ public:
     volatile uint64_t field_0x120;      // +0x120
     int field_0x128;                    // +0x128
 
+    BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool simpleMesh, Level *level);
     void setPlayer(PlayerEgo *player);
     void render();
     void update(int elapsed);

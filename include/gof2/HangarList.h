@@ -93,6 +93,9 @@ public:
     ~HangarList();
 
     void release();
+    void setCurrentTab(bool blueprintIngredients);
+    void setCurrentItemIndex(int index);
+    uint32_t getCurrentItemIndex();
     uint32_t getCurrentTab();
     Array<Array<ListItem *> *> *getItems();
     uint32_t getCurrentLength();

@@ -215,6 +215,15 @@ void _ZN13PlayerFighterD0Ev(PlayerFighter *self)
     return ::operator delete(_ZN13PlayerFighterD1Ev(self));
 }
 
+// PlayerFighter::~PlayerFighter() — real destructor. Resets the vtable to the
+// PlayerFighter base, releases the owned route, bounding-volume array, trail,
+// explosion and ease-in/out matrix, then chains to the Fighter/Player base
+// destructor.
+PlayerFighter::~PlayerFighter()
+{
+    _ZN13PlayerFighterD1Ev(this);
+}
+
 // ---- hasCrateCaptured_dcb88.cpp ----
 uint8_t PlayerFighter::hasCrateCaptured() {
     PlayerFighter *self = this;

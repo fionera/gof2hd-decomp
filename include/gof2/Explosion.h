@@ -44,6 +44,11 @@ public:
     void update(int dt, TargetFollowCamera *camera);
     void update_camera(int dt, TargetFollowCamera *camera);
     void update_vector(int dt, const Vector *position);
+
+    // Tail helpers extracted from translate()/update_vector(): translating the
+    // optional secondary mesh, and the terminal reset once the animation finishes.
+    void tail_translate(AEGeometry *geometry, const Vector *v);
+    void reset_tail();
 };
 
 // Byte-offset accessors for EXTERNAL opaque objects (AEGeometry, Transform,

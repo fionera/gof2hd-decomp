@@ -144,8 +144,31 @@ float Galaxy_distance(void *self, void *a, void *b)
         result = Galaxy_dist_sqrt(*g_Galaxy_dist_globals, sq) * g_Galaxy_dist_scale;
     }
 
-    
+
     return result;
+}
+
+// ---- distance (member) 175f80 ----
+// Galaxy::distance(SolarSystem* a, SolarSystem* b): Euclidean distance between the two systems'
+// galactic-map positions, with the Z coordinate compressed by 1/10 (the star map is much flatter
+// in depth than in plane), scaled by the global unit factor. Same-system pairs are distance 0.
+float Galaxy::distance(SolarSystem *a, SolarSystem *b)
+{
+    if (Galaxy_SS_getIndex(a) == Galaxy_SS_getIndex(b))
+        return 0.0f;
+
+    float pa[3];
+    float pb[3];
+    pa[0] = (float)Galaxy_SS_getX(a);
+    pa[1] = (float)Galaxy_SS_getY(a);
+    pa[2] = (float)Galaxy_idiv(Galaxy_SS_getZ(a), 10);
+    pb[0] = (float)Galaxy_SS_getX(b);
+    pb[1] = (float)Galaxy_SS_getY(b);
+    pb[2] = (float)Galaxy_idiv(Galaxy_SS_getZ(b), 10);
+
+    Galaxy_Vector_subassign(pa, pb);
+    float sq = pa[0] * pa[0] + pa[1] * pa[1] + pa[2] * pa[2];
+    return Galaxy_dist_sqrt(*g_Galaxy_dist_globals, sq) * g_Galaxy_dist_scale;
 }
 
 // ---- getPlasmaProbabilities_176248.cpp ----

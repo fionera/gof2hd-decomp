@@ -238,5 +238,20 @@ public:
     void switchCamera(int id);
     void updateJumpScene();
     void useCloak();
+
+    // ---- recovered factored helpers (wave 2) ----
+    // Build the per-session FMOD sound-resource list (part of OnInitialize).
+    void loadSoundResources();
+    // Restore the player's HP/shield/armor/gamma and per-ship max caps after a level
+    // is (re)initialised (part of OnInitialize).
+    void restorePlayerStats();
+    // Pick the active secondary weapon, start engine/music/particle/post-effect state
+    // and raise the mission-info overlay (tail of OnInitialize).
+    void setupWeaponsAndAudio();
+    // Build and raise the "dock at <station>?" choice dialogue (part of dockEvent).
+    void buildDockChoice(int textId, int prefixLit, int suffixLit);
+    // Convert a completed campaign mission into its follow-up delivery mission and
+    // raise its briefing (part of successCheck).
+    void buildMissionFollowup();
 };
 #endif

@@ -944,6 +944,37 @@ static void savePlayerStats(MGame *self, Status *status) {
     F<int>(status, 0x68) = ((Player *)(pl))->getGammaHP();
 }
 
+// MGame::buildDockChoice(): compose the "<dock at> <station name>?" prompt and raise it
+// in the ChoiceWindow (its slot at 0x94 has already been created by the caller).
+// textId is the GameText key for the surrounding question text; prefixLit/suffixLit are
+// the C-string literals placed immediately before and after the station name.
+void MGame::buildDockChoice(int textId, int prefixLit, int suffixLit) {
+    MGame *self = this;
+    ChoiceWindow *cw = self->field_0x94;
+
+    void *txt = ((GameText *)(*g_gameText))->getText(textId);
+    RetStr name = ((Station *)((*g_status)->getStation()))->getName();
+
+    String12 sPrefix, sSuffix, t1, t2, t3, result;
+    String_cstr_ctor(&sPrefix, (const char *)(intptr_t)prefixLit, false);
+    String_concat(&t1, (String12 *)txt, &sPrefix);                 // text + prefix
+    String_concat(&t2, &t1, (String12 *)&name);                    // + station name
+    String_cstr_ctor(&sSuffix, (const char *)(intptr_t)suffixLit, false);
+    String_concat(&t3, &t2, &sSuffix);                             // + suffix
+    String_concat(&result, &t3, (String12 *)txt);                  // + trailing text
+
+    ((ChoiceWindow *)(cw))->set(*(String *)&result, true);
+
+    ((String *)(&result))->dtor();
+    ((String *)(&t3))->dtor();
+    ((String *)(&sSuffix))->dtor();
+    ((String *)(&t2))->dtor();
+    ((String *)(&t1))->dtor();
+    ((String *)(&sPrefix))->dtor();
+
+    ((ChoiceWindow *)(cw))->left();
+}
+
 // MGame::dockEvent(): handle proximity to a jumpgate/station while flying.
 void MGame::dockEvent() {
     MGame *self = this;
@@ -1261,6 +1292,247 @@ extern "C" void MGame_setupWeaponsAndAudio(MGame *self);  // weapon + music init
 
 __attribute__((visibility("hidden"))) extern int *g_initGuard;   // @0x187c60 (stack guard [0])
 __attribute__((visibility("hidden"))) extern int *g_initStatus;  // @0x187e46 (*piVar17)
+__attribute__((visibility("hidden"))) extern int *g_initSoundList; // @0x187cc6 (the FMOD resource list)
+
+// Add a specific resource id to the running sound-resource list (2-arg variant; the
+// 1-arg Globals_addSoundResourceToList above appends the list's "next" default).
+extern "C" void Globals_addSoundResource_oi(int list, int id);
+
+// MGame::loadSoundResources(): build the per-session FMOD resource list. Always loads the
+// common cockpit/weapon/explosion set, then appends wingman, early-mission, warp-gate and
+// per-campaign-mission specific clips.
+void MGame::loadSoundResources() {
+    MGame *self = this;
+    int list = *g_initSoundList;
+
+    Globals_startNewSoundResourceList();
+    static const int kCommon[] = {
+        0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e, 0x05, 0x18, 0x15,
+        0x12, 0x13, 0x14, 0x1c, 0x1d, 0x1b, 0x25, 0x1a, 0x2e, 0x2f,
+    };
+    for (int id : kCommon)
+        Globals_addSoundResource_oi(list, id);
+
+    if ((*g_status)->getWingmen() != 0)
+        Globals_addSoundResourceToList(list);
+
+    Globals_addSoundResource_oi(list, 0x3e);
+    Globals_addSoundResource_oi(list, 0x3d);
+    Globals_addSoundResource_oi(list, 0x24);
+
+    if ((*g_status)->getCurrentCampaignMission() < 2) {
+        Globals_addSoundResourceToList(list);
+        Globals_addSoundResourceToList(list);
+    }
+
+    if ((*g_status)->inAlienOrbit() == 0) {
+        (*g_status)->getSystem();
+        if (((SolarSystem *)(0))->currentOrbitHasWarpGate())
+            Globals_addSoundResourceToList(list);
+    }
+
+    int cm = (*g_status)->getCurrentCampaignMission();
+    if (cm == 0) {
+        Globals_addSoundResource_oi(list, 0x8f);
+        Globals_addSoundResource_oi(list, 0x9d);
+        Globals_addSoundResource_oi(list, 0x9e);
+        Globals_addSoundResource_oi(list, 0xa1);
+        Globals_addSoundResource_oi(list, 0xa0);
+        Globals_addSoundResource_oi(list, 0x9f);
+    } else if (cm == 0xe || cm == 0x18 || cm == 0x1d) {
+        Globals_addSoundResourceToList(list);
+    } else if (cm == 0x29) {
+        Globals_addSoundResource_oi(list, 0x9b);
+        Globals_addSoundResource_oi(list, 0x99);
+        Globals_addSoundResource_oi(list, 0x9a);
+    }
+}
+
+// MGame::restorePlayerStats(): re-apply the player's persisted HP/shield/armor/gamma values
+// (each only when its saved slot is non-negative) and, except on mission 0x5f, re-cap them to
+// the current ship's maxima (resetting gamma to full when there is no orbital gamma damage).
+void MGame::restorePlayerStats() {
+    MGame *self = this;
+    int status = *g_initStatus;
+    Player *pl = (Player *)self->field_0x58->player;
+
+    if (*(int *)((char *)status + 0x64) >= 0) pl->setHitpoints(*(int *)((char *)status + 0x64));
+    if (*(int *)((char *)status + 0x5c) >= 0) pl->setShieldHP(*(int *)((char *)status + 0x5c));
+    if (*(int *)((char *)status + 0x60) >= 0) pl->setArmorHP(*(int *)((char *)status + 0x60));
+    if (*(int *)((char *)status + 0x68) >= 0) pl->setGammaHP(*(int *)((char *)status + 0x68));
+
+    self->field_0x58->resetLastHP();
+
+    if ((*g_status)->getCurrentCampaignMission() != 0x5f) {
+        Ship *ship = (*g_status)->getShip();
+        *(int *)((char *)status + 0x64) = ship->getMaxHP();
+        *(int *)((char *)status + 0x5c) = ship->getMaxShieldHP();
+        *(int *)((char *)status + 0x60) = ship->getMaxArmorHP();
+        *(int *)((char *)status + 0x68) = 100;
+
+        int stIdx = ((Station *)((*g_status)->getStation()))->getIndex();
+        int cm = (*g_status)->getCurrentCampaignMission();
+        if ((float)(*g_status)->getGammaRayDamagePerSecond(stIdx, cm) == 0.0f)
+            pl->setGammaHP(100);
+    }
+}
+
+// Opaque init globals for the audio/mission-info tail (DAT pointers the decompiler left
+// as raw addresses; named here in the established hidden-extern style).
+__attribute__((visibility("hidden"))) extern int   g_initParticleFlag; // @0x1881f4 (render-particles toggle struct)
+__attribute__((visibility("hidden"))) extern int  *g_initEngineSnd;    // @0x188250 (engine sound id)
+__attribute__((visibility("hidden"))) extern int  *g_initMusicArmed;   // @0x18831e (-1 when no music queued)
+__attribute__((visibility("hidden"))) extern int  *g_initMusicTrack;   // @0x18832a (music track id)
+__attribute__((visibility("hidden"))) extern int **g_initFmod;         // @0x18833e (FModSound singleton)
+__attribute__((visibility("hidden"))) extern unsigned g_initPostEffect; // @0x188444
+__attribute__((visibility("hidden"))) extern int   g_initStationMask;   // @0x188440 (visited-station bitmask)
+__attribute__((visibility("hidden"))) extern String **g_initInfoFont;   // @0x1883b8 (mission-info font)
+__attribute__((visibility("hidden"))) extern int    g_initInfoTextKey;  // @0x1883b0 (mission-info text key)
+__attribute__((visibility("hidden"))) extern int   *g_initInfoWidth;    // @0x1883d0 (wrap width base)
+
+extern "C" void  PlayerFighter_cloak(int fighter, bool on);            // 0x... PlayerFighter::cloak
+extern "C" int   Level_getPlayer(Level *level);                        // Level::getPlayer (int handle)
+extern "C" void  Globals_getLineArray(int font, String *text, int key,
+                                       Array<AbyssEngine::String *> *out); // Globals::getLineArray
+extern "C" void  Array_string_ptr_ctor2(void *array);                  // Array<String*>::Array()
+
+// MGame::setupWeaponsAndAudio(): choose the active secondary weapon, kick off engine sounds,
+// particle effects, music and the post-process effect, ensure the pause window and the
+// mission-information overlay text exist. Runs as the tail of OnInitialize.
+void MGame::setupWeaponsAndAudio() {
+    MGame *self = this;
+    int status = *g_initStatus;
+
+    // Mission 0x7d freighter visit: flag this station as serviced the first time and raise
+    // its radio briefing.
+    if ((*g_status)->inAlienOrbit() == 0 && (*g_status)->getCurrentCampaignMission() == 0x7d) {
+        int stIdx = ((Station *)((*g_status)->getStation()))->getIndex();
+        if ((*g_status)->isFreighterMissionStation(stIdx) != 0) {
+            Mission *m = (*g_status)->getMission();
+            int statusVal = ((Mission *)(m))->getStatusValue();
+            int bit = (*g_status)->getFreighterMissionStationBit(
+                ((Station *)((*g_status)->getStation()))->getIndex());
+            if ((statusVal & (1 << (bit & 0xff))) == 0) {
+                int bit2 = (*g_status)->getFreighterMissionStationBit(
+                    ((Station *)((*g_status)->getStation()))->getIndex());
+                ((Mission *)(m))->setStatusValue(statusVal | (1 << (bit2 & 0xff)));
+                if (self->field_0x58 != 0 && self->field_0x84 != 0)
+                    *(Radio **)((char *)self->field_0x58 + 0x18) = self->field_0x84;
+                ((Level *)(self->field_0x78))->createRadioMessage(0x13, 0);
+            }
+        }
+    }
+
+    // Secondary-weapon selection: prefer the persisted weapon id (status+0xf4) if the ship
+    // still carries it; otherwise fall back to the first secondary in slot type 1.
+    Array<Item *> *secondary = ((Status *)(*g_status))->getShip()->getEquipment(1);
+    if (secondary != 0) {
+        int savedId = *(int *)((char *)status + 0xf4);
+        if (((Status *)(*g_status))->getShip()->hasEquipment(savedId, 1) == 0) {
+            Item *first = secondary->empty() ? 0 : (*secondary)[0];
+            if (first != 0) {
+                self->field_0x58->setCurrentSecondaryWeaponIndex(((Item *)(first))->getIndex());
+                ((Hud *)(self->field_0x74))->setCurrentSecondaryWeapon(first);
+            }
+        } else {
+            for (unsigned i = 0; i < secondary->size(); i++) {
+                Item *it = (*secondary)[i];
+                if (it != 0 && ((Item *)(it))->getIndex() == savedId) {
+                    Level_getPlayer((Level *)self->field_0x78);
+                    self->field_0x58->setCurrentSecondaryWeaponIndex(((Item *)(it))->getIndex());
+                    ((Hud *)(self->field_0x74))->setCurrentSecondaryWeapon(it);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Engine sounds: if the render-particles flag is clear, play the ambient engine clip at
+    // the player's position; otherwise start the player's looping engine sound and every
+    // enemy's.
+    self->field_0xc8 = 0;
+    bool renderParticles = *(uint8_t *)((char *)(intptr_t)g_initParticleFlag + 0xf) != 0;
+    if (!renderParticles) {
+        if ((*g_status)->getCurrentCampaignMission() > 1) {
+            Vec3 p = self->field_0x58->getPosition();
+            (void)p;
+            ((FModSound *)(*g_fmod))->play(*g_initEngineSnd,
+                                           (Vector *)((char *)self->field_0x58 + 0x1c),
+                                           (Vector *)&p, 0.0f);
+        }
+    } else {
+        self->field_0x58->PlayEngineSound();
+        EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
+        if (enemies != 0)
+            for (unsigned i = 0; i < enemies->size; i++)
+                ((KIPlayer *)(enemies->data[i]))->PlayEngineSound();
+    }
+
+    self->field_0x50 = 0;
+
+    // Lighting + particle effects + per-ship fire-rate pitch.
+    ((Level *)(self->field_0x78))->getStarSystem();
+    ((StarSystem *)(0))->initLight();
+    ((Level *)(self->field_0x78))->enableParticleEffects(true, renderParticles);
+
+    ((Status *)(*g_status))->getShip();
+    float fireRate = (float)((Status *)(*g_status))->getShip()->getFireRateFactor();
+    if (1.0f - fireRate >= 0.0f)
+        self->field_0x58->pitchAllPrimaryGuns(1.0f - fireRate);
+
+    // Mark "newly visited" service stations.
+    if ((*g_status)->inAlienOrbit() == 0) {
+        int idx = ((Station *)((*g_status)->getStation()))->getIndex();
+        bool visit;
+        unsigned off = (unsigned)(idx - 0x6d);
+        if (off < 0x1a) {
+            if ((g_initStationMask & (1 << (off & 0xff))) == 0)
+                visit = (off != 2) || ((*g_status)->getCurrentCampaignMission() < 0x5e);
+            else
+                visit = true;
+        } else {
+            visit = ((unsigned)(idx - 0x66) <= 2);
+        }
+        if (visit)
+            ((Station *)((*g_status)->getStation()))->visit();
+    }
+
+    // Music: play the queued track (if any), then reset the queue and reset the sound pitch.
+    if (*g_initMusicArmed != -1)
+        Globals_playMusicAndFadeOutCurrent(*g_initMusicTrack);
+    *g_initMusicArmed = -1;
+    ((FModSound *)(*g_initFmod))->setDownPitch(false);
+
+    // Post-process effect for this flight session.
+    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
+    ((Engine *)(eng))->SetPostEffect(g_initPostEffect, false);
+
+    // Mission 0x9e: cloak the first enemy fighter.
+    if ((*g_status)->getCurrentCampaignMission() == 0x9e) {
+        int enemies = ((Level *)(self->field_0x78))->getEnemies();
+        if (enemies != 0) {
+            int first = *(int *)((char *)(intptr_t)((Level *)(self->field_0x78))->getEnemies() + 4);
+            PlayerFighter_cloak(first, true);
+        }
+    }
+
+    // Ensure the pause / cutscene window exists.
+    if (self->field_0x88 == 0) {
+        MenuTouchWindow *w = (MenuTouchWindow *)::operator new(0x240);
+        ((MenuTouchWindow *)(w))->ctor(1);
+        self->field_0x88 = w;
+    }
+
+    // Pre-build the wrapped mission-information overlay text.
+    void *arr = ::operator new(0xc);
+    Array_string_ptr_ctor2(arr);
+    *(void **)((char *)self + 0x43c) = arr;    // this[2].field_5C (extended layout)
+    String *font = *g_initInfoFont;
+    String *text = (String *)((GameText *)(*g_gameText))->getText(g_initInfoTextKey);
+    Globals_getLineArray((int)(intptr_t)font, text, *g_initInfoWidth,
+                         (Array<AbyssEngine::String *> *)arr);
+    self->field_0x54 = 1;
+}
 
 // MGame::OnInitialize(): bootstrap a flight session (level, player, sounds, state).
 void MGame::OnInitialize() {
@@ -1542,6 +1814,87 @@ static void bindDlg(MGame *self) {
         Level *lvl = self->field_0x78;
         if (lvl != 0) ((DialogueWindow *)(self->field_0x8c))->setLevel(lvl);
     }
+}
+
+// Follow-up-mission setup helpers: getCampaignMission() yields the active campaign Mission*
+// (header types it as int); Mission::setType is not declared in the shared header.
+extern "C" Mission *Status_getCampaignMissionPtr(Status *status);  // Status::getCampaignMission
+extern "C" void     Mission_setType(Mission *m, int type);          // Mission::setType
+extern "C" void    *Objective_dtor(Objective *o);                   // Objective::~Objective
+// Status::replaceHash(String haystack, String needle, String replacement) -> String (sret),
+// modelled as a free function on String12 like the other TUs (see HangarWindow.cpp/Status.cpp).
+extern "C" void     Status_replaceHash(String12 *out, Status *self, String12 *haystack,
+                                       String12 *needle, String12 *repl);
+__attribute__((visibility("hidden"))) extern int  g_scFollowTextKey; // @0x1900c2 (briefing text key)
+__attribute__((visibility("hidden"))) extern int  g_scFollowHashLit; // @0x1900f8 ("#station" token literal)
+
+// MGame::buildMissionFollowup(): turn a just-completed mission into its follow-up "deliver
+// to <station>" mission. Retargets the campaign mission at the originating agent's station,
+// raises its briefing, switches the player out of turret/free-look back to flight, rebuilds
+// the agent's mission string and clears the old objectives. The DialogueWindow has already
+// been bound to the level by the caller.
+void MGame::buildMissionFollowup() {
+    MGame *self = this;
+    Status *status = (Status *)(*g_status);
+
+    // Point the campaign mission at the agent's home station.
+    Mission *cm = Status_getCampaignMissionPtr(status);
+    Agent *agent = ((Mission *)(Status_getCampaignMissionPtr(status)))->getAgent();
+    ((Mission *)(cm))->setTargetStation(((Agent *)(agent))->getStation());
+
+    // Raise the briefing for the (now retargeted) mission and convert it to a delivery type.
+    ((DialogueWindow *)(self->field_0x8c))->set(Status_getCampaignMissionPtr(status), 1, -1);
+    Mission_setType(Status_getCampaignMissionPtr(status), 0xb);
+
+    // Leave turret / first-person and reset the flight camera.
+    self->field_0x58->setTurretMode(0);
+    ((LevelScript *)(self->field_0x7c))->resetCamera((Level *)self->field_0x78);
+    self->field_0x58->setFreeLookMode(false);
+    TFC_enableFirstPersonCam(self->field_0xf4, 0);
+    self->field_0x58->hideShipForFirstPersonCameraView(false);
+    *(uint8_t *)((char *)self + 0x239) = 1;   // this[1].field_48+1 (delivery-active flag)
+
+    ((Mission *)(Status_getCampaignMissionPtr(status)))->setStatusValue(0);
+    ((Mission *)(Status_getCampaignMissionPtr(status)))->setWon(false);
+
+    // Rebuild the agent's mission text: take the template and substitute the target station.
+    void *tmpl = ((GameText *)(*g_gameText))->getText(g_scFollowTextKey);
+    String12 sTmpl, sHash, sStation, sResult;
+    sTmpl = *(String12 *)tmpl;
+    String_cstr_ctor(&sHash, (const char *)(intptr_t)g_scFollowHashLit, false);
+    RetStr station = (status->getMission())->getTargetStationName();
+    sStation = *(String12 *)&station;
+    Status_replaceHash(&sResult, status, &sTmpl, &sStation, &sHash);
+    ((String *)(&sHash))->dtor();
+
+    Agent *missionAgent = ((Mission *)(status->getMission()))->getAgent();
+    ((Agent *)(missionAgent))->setMissionString(&sResult);
+    ((String *)(&sResult))->dtor();
+
+    status->setMission(Status_getCampaignMissionPtr(status));
+
+    // Hand the route back to the player and clear it / its waypoint autopilot.
+    self->field_0x58->setRoute(0);
+    if (self->field_0x58->goingToWaypoint() != 0)
+        self->field_0x58->setAutoPilot(0);
+    self->field_0x58->removeRoute();
+    ((Level *)(self->field_0x78))->setPlayerRoute(0);
+
+    // Release the two old objectives held on the Level (slots 10 and 11).
+    int *level = (int *)self->field_0x78;
+    if (level[10] != 0) {
+        ::operator delete(Objective_dtor((Objective *)(intptr_t)level[10]));
+        level = (int *)self->field_0x78;
+    }
+    level[10] = 0;
+    if (level[11] != 0) {
+        ::operator delete(Objective_dtor((Objective *)(intptr_t)level[11]));
+        level = (int *)self->field_0x78;
+    }
+    level[11] = 0;
+
+    *(uint16_t *)((char *)self + 0x5d) = 0x101;   // pause + cutscene flags
+    ((MGame *)(self))->pauseSounds();
 }
 
 // MGame::successCheck(): detect mission completion and run its outcome.

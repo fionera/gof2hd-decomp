@@ -73,6 +73,7 @@ public:
     uint8_t hasReward();
     bool isGenericAgent();
     bool isKnown();
+    void setKnown(bool known);
     uint8_t isMale();
     bool isStoryAgent();
     void nextEvent();

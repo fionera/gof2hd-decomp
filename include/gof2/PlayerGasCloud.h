@@ -49,6 +49,7 @@ public:
 
     PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGeometry *param_3,
                    Vector const &param_4);
+    ~PlayerGasCloud();
     void translate(Vector const &param_1);
     bool isSparkAlive(int param_1);
     void setSparkInSight(int param_1, bool param_2);

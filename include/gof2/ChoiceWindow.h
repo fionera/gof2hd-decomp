@@ -60,5 +60,13 @@ public:
     int OnTouchBegin(int x, int y);
     int OnTouchMove(int x, int y);
     int OnTouchEnd(int x, int y);
+
+    // Engine-name convenience setters/forwarders (delegate to the set() overloads
+    // and the underlying TouchButton labels).
+    void setMsg(String const &text, bool hasButtons);
+    void setText(String const &title, String const &body);
+    void setButtonText(String const &left, String const &right);
+    // Touch-release handler exposed under the engine's "touch_end" name; forwards to OnTouchEnd.
+    int touch_end(int x, int y);
 };
 #endif

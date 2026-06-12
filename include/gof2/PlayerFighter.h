@@ -165,6 +165,7 @@ public:
     int32_t field_0x2e8;                // +0x2e8
 
     // ---- methods (converted from free functions) ----
+    ~PlayerFighter();
     void awake();
     void reset();
     void revive();

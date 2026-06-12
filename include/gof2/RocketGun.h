@@ -32,6 +32,7 @@ public:
     void render();
     RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
               uint32_t param_5, int param_6, bool param_7, Level *param_8);
+    ~RocketGun();
     void setRadar(Radar *radar);
     void seekEnemy(int unused, int index);
     void update(int elapsed);

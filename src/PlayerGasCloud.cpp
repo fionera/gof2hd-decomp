@@ -215,6 +215,55 @@ void *_ZN14PlayerGasCloudD1Ev(void *selfv)
     return PlayerGasCloud_baseDtor(self);
 }
 
+// PlayerGasCloud::~PlayerGasCloud() -- real complete-object destructor.
+//   Resets the vtable slot, releases every spark Array<T> (releasing the
+//   contained class instances first where the elements are owning pointers),
+//   destroys the cloud model geometry, then chains to the base-class
+//   destructor (the gas cloud derives from a base game-object whose dtor is
+//   reached through PlayerGasCloud_baseDtor).
+PlayerGasCloud::~PlayerGasCloud()
+{
+    *(void **)this = &PlayerGasCloud_vtable + 8;
+
+    if (this->sparkGeometries != 0) {
+        ArrayReleaseClasses_AEGeometry(this->sparkGeometries);
+        if (this->sparkGeometries != 0)
+            ::operator delete(Array_AEGeometry_dtor(this->sparkGeometries));
+        this->sparkGeometries = 0;
+    }
+
+    if (this->sparkVelocities != 0) {
+        ArrayReleaseClasses_Vector(this->sparkVelocities);
+        if (this->sparkVelocities != 0)
+            ::operator delete(Array_Vector_dtor(this->sparkVelocities));
+        this->sparkVelocities = 0;
+    }
+
+    if (this->sparkLife != 0)
+        ::operator delete(Array_float_dtor(this->sparkLife));
+    this->sparkLife = 0;
+
+    if (this->sparkLifeMin != 0)
+        ::operator delete(Array_float_dtor(this->sparkLifeMin));
+    this->sparkLifeMin = 0;
+
+    if (this->sparkScale != 0)
+        ::operator delete(Array_float_dtor(this->sparkScale));
+    this->sparkScale = 0;
+
+    if (this->sparkTimers != 0)
+        ::operator delete(Array_int_dtor(this->sparkTimers));
+    this->sparkTimers = 0;
+
+    if (this->modelGeometry != 0) {
+        ((AEGeometry *)this->modelGeometry)->~AEGeometry();
+        ::operator delete(this->modelGeometry);
+    }
+    this->modelGeometry = 0;
+
+    PlayerGasCloud_baseDtor(this);
+}
+
 // ---- explode_176660.cpp ----
 using AbyssEngine::AEMath::Vector;
 

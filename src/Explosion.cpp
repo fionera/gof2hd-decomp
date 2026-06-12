@@ -716,3 +716,17 @@ void Explosion::addFireStreaks() {
         geometry->setScaling(scale, scale, scale);
     }
 }
+
+// ---- tail helpers (split out of translate / update_vector) --------------------------
+
+// tail_translate: translate the optional secondary mesh; the tail of translate() that
+// runs when an explosion type carries a second AEGeometry.
+void Explosion::tail_translate(AEGeometry *geometry, const Vector *v) {
+    geometry->translate(*v);
+}
+
+// reset_tail: the terminal branch of update_vector() once elapsed exceeds the total
+// duration -- rewinds and stops every mesh animation. Identical to reset().
+void Explosion::reset_tail() {
+    this->reset();
+}

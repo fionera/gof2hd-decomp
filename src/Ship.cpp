@@ -1106,7 +1106,7 @@ Ship::Ship(int index, int baseHP, int baseLoad, int value,
     this->mods                = 0;
     this->numAddedDeviceSlots = 0;
 
-    refreshValue(this);
+    ::refreshValue(this);
 }
 
 // ---- Ship::~Ship() dtor @ 0x1849a4 ----
@@ -1148,14 +1148,14 @@ Ship::~Ship() {
 // Invoked after any equipment-slot mutation to re-derive the ship's stats
 // (shield/armor/firepower/boost/etc.) and re-price it.
 void Ship::recomputeAfterSlots() {
-    refreshValue(this);
+    ::refreshValue(this);
 }
 
 // ---- Ship::addCargo(Array<Item*>*) core @ 0x184fe8 ----
 // Merges the supplied items into the current cargo hold (stacking matching
 // goods) and commits the combined list as the new cargo.
 void Ship::addCargo(Array<Item*> *items) {
-    setCargo(this, Item::combineItems(this->cargo, items));
+    ::setCargo(this, Item::combineItems(this->cargo, items));
 }
 
 // ---- Ship::removeCargo(int, int) @ 0x184e64 ----
@@ -1172,14 +1172,14 @@ int Ship::removeCargo(int index, int amount) {
             this->cargo->data()[i]->changeAmount(-amount);
             c = this->cargo;
             if (this->cargo->data()[i]->getAmount() < 1) {
-                setCargo(this, Item::extractItems(c, true));
+                ::setCargo(this, Item::extractItems(c, true));
                 return 1;
             }
             break;
         }
         c = this->cargo;
     }
-    setCargo(this, c);
+    ::setCargo(this, c);
     return 0;
 }
 
@@ -1222,4 +1222,499 @@ void setMods(Ship *self, Array<int> *mods) {
         }
     }
     return ((Ship *)(self))->recomputeAfterSlots();
+}
+
+// ===========================================================================
+// Recovered real Ship members (promoted from the recovered helper bodies).
+// These are the canonical class methods; the file-local free helpers above
+// still encode the shared implementation that the (not-yet-rewired) call
+// sites hit through the extern "C" shims.
+// ===========================================================================
+
+// ---- cargo ---------------------------------------------------------------
+
+void Ship::removeCargo(int index) {
+    removeCargo(index, 9999999);
+}
+
+void Ship::removeCargo(Item *item) {
+    removeCargo(item->getIndex(), item->getAmount());
+}
+
+void Ship::removeAllCargo() {
+    if (this->cargo != 0) {
+        operatorDelete(ArrayItemDtor(this->cargo));
+    }
+    this->cargo = 0;
+}
+
+void Ship::setCargo(Array<Item*> *cargo) {
+    ::setCargo(this, cargo);
+}
+
+void Ship::replaceCargo(Array<Item*> *cargo) {
+    ::replaceCargo(this, cargo);
+}
+
+Array<Item*>* Ship::getCargo() {
+    return this->cargo;
+}
+
+Item* Ship::getCargo(int index) {
+    Array<Item*> *c = this->cargo;
+    if (c == 0) {
+        return 0;
+    }
+    for (unsigned int i = 0; i < c->size(); i = i + 1) {
+        Item *it = c->data()[i];
+        if (it != 0 && it->getIndex() == index) {
+            return this->cargo->data()[i];
+        }
+    }
+    return 0;
+}
+
+bool Ship::hasCargo(int index, int amount) {
+    Array<Item*> *c = this->cargo;
+    if (c == 0) {
+        return false;
+    }
+    for (unsigned int i = 0; i < c->size(); i = i + 1) {
+        Item *it = c->data()[i];
+        if (it != 0 && it->getIndex() == index && it->getAmount() >= amount) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Ship::hasCargoType(int type) {
+    Array<Item*> *c = this->cargo;
+    if (c == 0) {
+        return false;
+    }
+    for (unsigned int i = 0; i < c->size(); i = i + 1) {
+        Item *it = c->data()[i];
+        if (it != 0 && it->getType() == type) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Ship::hasVolatileGoods() {
+    return hasCargo(0xd1, 1) || hasCargo(0xcc, 1);
+}
+
+int Ship::getCargoValue() {
+    int total = 0;
+    Array<Item*> *c = this->cargo;
+    if (c != 0) {
+        for (unsigned int i = 0; i < c->size(); i = i + 1) {
+            Item *it = c->data()[i];
+            if (it != 0) {
+                total += it->getTotalPrice();
+            }
+        }
+    }
+    return total;
+}
+
+bool Ship::spaceAvailable(int n) {
+    return n + this->currentLoad <= this->baseLoad + this->cargoPlus;
+}
+
+int Ship::getFreeSpace() {
+    return (this->cargoPlus + this->baseLoad) - this->currentLoad;
+}
+
+void Ship::changeLoad(int delta) {
+    ::changeLoad(this, delta);
+}
+
+// ---- equipment / slots ---------------------------------------------------
+
+void Ship::setEquipment(Item *item, int slot) {
+    unsigned int idx = (unsigned int)slot;
+    for (int i = 0; i < item->getType(); i = i + 1) {
+        idx += this->slots[i];
+    }
+    if (idx >= this->equipment->size()) {
+        return;
+    }
+    Item *old = this->equipment->data()[idx];
+    if (old != 0) {
+        operatorDelete(ItemDtor(old));
+    }
+    this->equipment->data()[idx] = item;
+    recomputeAfterSlots();
+}
+
+void Ship::setEquipment(Array<Item*> *items) {
+    for (unsigned int i = 0; i < items->size(); i = i + 1) {
+        Ship_setEquipment1(this, items->data()[i]);
+    }
+}
+
+void Ship::replaceEquipment(Array<Item*> *equipment) {
+    if (equipment != 0) {
+        int *slots = this->slots;
+        unsigned int total = slots[0] + slots[1] + slots[2] + slots[3];
+        if (total < equipment->size()) {
+            int extra = equipment->size() - total;
+            this->numAddedDeviceSlots = extra;
+            slots[3] += extra;
+        }
+    }
+    this->equipment = equipment;
+    recomputeAfterSlots();
+}
+
+int Ship::addEquipment(Item *item) {
+    int type = item->getType();
+    int cap = this->slots[type];
+    if (cap < 1) {
+        return 0;
+    }
+    int base = 0;
+    for (int k = 0; k < type; k = k + 1) {
+        base += this->slots[k];
+    }
+    for (int i = base; i < base + cap; i = i + 1) {
+        if (this->equipment->data()[i] == 0) {
+            this->equipment->data()[i] = item;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void Ship::removeEquipment(Item *item) {
+    Array<Item*> *eq = this->equipment;
+    if (eq == 0) {
+        return;
+    }
+    for (unsigned int i = 0; i < eq->size(); i = i + 1) {
+        Item *it = eq->data()[i];
+        if (it != 0 && it->equals(item)) {
+            this->equipment->data()[i] = 0;
+            return;
+        }
+    }
+}
+
+Item* Ship::getFirstEquipmentOfSort(int sort) {
+    return ::getFirstEquipmentOfSort(this, sort);
+}
+
+int Ship::getEquipmentValue() {
+    int total = 0;
+    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+        Item *it = this->equipment->data()[i];
+        if (it != 0) {
+            total += it->getTotalPrice();
+        }
+    }
+    return total;
+}
+
+int Ship::getUsedSlots(int type) {
+    int n = 0;
+    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+        Item *it = this->equipment->data()[i];
+        if (it != 0 && it->getType() == type) {
+            n = n + 1;
+        }
+    }
+    return n;
+}
+
+int Ship::getFreeSlots(int type) {
+    return this->slots[type] - getUsedSlots(type);
+}
+
+int Ship::getSlots(int i) {
+    return this->slots[i];
+}
+
+int Ship::getSlotTypes() {
+    int n = 0;
+    for (int i = 0; i < 4; i = i + 1) {
+        if (this->slots[i] > 0) {
+            n = n + 1;
+        }
+    }
+    return n;
+}
+
+unsigned int Ship::getSlotPos(Item *item) {
+    if (item == 0) {
+        return 0xffffffffu;
+    }
+    Array<Item*> *eq = this->equipment;
+    unsigned int pos = 0xffffffffu;
+    for (unsigned int i = 0; i < eq->size(); i = i + 1) {
+        if (eq->data()[i] == item) {
+            pos = i;
+            break;
+        }
+    }
+    for (int j = 0; j < item->getType(); j = j + 1) {
+        pos -= this->slots[j];
+    }
+    return pos;
+}
+
+void Ship::freeSlot(Item *item) {
+    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+        Item *it = this->equipment->data()[i];
+        if (it != 0 && it->equals(item)) {
+            this->equipment->data()[i] = 0;
+            break;
+        }
+    }
+    recomputeAfterSlots();
+}
+
+void Ship::freeSlot(Item *item, int slot) {
+    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+        Item *it = this->equipment->data()[i];
+        if (it != 0 && (unsigned int)slot == i && it->equals(item)) {
+            this->equipment->data()[slot] = 0;
+            break;
+        }
+    }
+    recomputeAfterSlots();
+}
+
+void Ship::freeAllSlots() {
+    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+        Item **data = this->equipment->data();
+        if (data[i] != 0) {
+            data[i] = 0;
+        }
+    }
+    recomputeAfterSlots();
+}
+
+int Ship::slotAvailable(int sort) {
+    if (sort != 0 && sort != 0xc) {
+        for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+            Item *it = this->equipment->data()[i];
+            if (it != 0 && it->getSort() == sort) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+bool Ship::hasEquipment(int index, int amount) {
+    Array<Item*> *e = this->equipment;
+    if (e == 0) {
+        return false;
+    }
+    for (unsigned int i = 0; i < e->size(); i = i + 1) {
+        Item *it = e->data()[i];
+        if (it != 0 && it->getIndex() == index && it->getAmount() >= amount) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Ship::hasSecondaryWeapons() {
+    if (this->slots[1] == 0 || this->equipment == 0) {
+        return false;
+    }
+    for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
+        Item *it = this->equipment->data()[i];
+        if (it != 0 && it->getType() == 1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// ---- valuation / pricing -------------------------------------------------
+
+Ship* Ship::clone() {
+    return ::clone(this);
+}
+
+bool Ship::equals(Ship *other) {
+    return this->index == other->index;
+}
+
+void Ship::refreshValue() {
+    ::refreshValue(this);
+}
+
+void Ship::adjustPrice() {
+    ::adjustPrice(this);
+}
+
+void Ship::priceDecline() {
+    ::priceDecline(this);
+}
+
+Ship* Ship::makeShip(int price) {
+    Ship *s = clone();
+    if (price >= 0) {
+        s->price = price;
+    }
+    return s;
+}
+
+// ---- mods ----------------------------------------------------------------
+
+void Ship::addMod(int mod) {
+    ::addMod(this, mod);
+}
+
+void Ship::setMods(Array<int> *mods) {
+    ::setMods(this, mods);
+}
+
+Array<int>* Ship::getMods() {
+    return this->mods;
+}
+
+bool Ship::hasModInstalled(int mod) {
+    Array<int> *m = this->mods;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == mod) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+int Ship::getModdedLoad() {
+    int load = this->baseLoad;
+    Array<int> *m = this->mods;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 1) {
+                load += 0x1e;
+            }
+        }
+    }
+    return load;
+}
+
+// ---- simple stat accessors ----------------------------------------------
+
+int Ship::getIndex()              { return this->index; }
+int Ship::getRace()               { return this->race; }
+void Ship::setRace(int race)      { this->race = race; }
+int Ship::getSignatureRace()      { return this->signatureRace; }
+int Ship::getBaseHP()             { return this->baseHP; }
+int Ship::getMaxShieldHP()        { return this->maxShieldHP; }
+int Ship::getMaxArmorHP()         { return this->maxArmorHP; }
+int Ship::getShieldRegen()        { return this->shieldRegen; }
+int Ship::getBaseLoad()           { return this->baseLoad; }
+int Ship::getMaxLoad()            { return this->cargoPlus + this->baseLoad; }
+int Ship::getCurrentLoad()        { return this->currentLoad; }
+int Ship::getCargoPlus()          { return this->cargoPlus; }
+int Ship::getCompression()        { return this->compression; }
+int Ship::getValue()              { return this->value; }
+int Ship::getPrice()              { return this->price; }
+void Ship::setPrice(int price)    { this->price = price; }
+int Ship::getUnmoddedHandling()   { return *(int *)&this->handling; }
+int Ship::getFireRateFactor()     { return *(int *)&this->fireRateFactor; }
+int Ship::getDamageFactor()       { return *(int *)&this->damageFactor; }
+int Ship::getFirePower()          { return this->firePower; }
+int Ship::getAgility()            { return this->agility; }
+int Ship::getRadarType()          { return this->radarType; }
+int Ship::getRepairType()         { return this->repairType; }
+int Ship::getMaxPassengers()      { return this->maxPassengers; }
+int Ship::getBoostSpeed()         { return this->boostSpeed; }
+int Ship::getBoostDelay()         { return this->boostDelay; }
+int Ship::getBoostTime()          { return this->boostTime; }
+bool Ship::hasBooster()           { return this->boostSpeed > 0; }
+int Ship::getCurrentWeaponSlot()  { return this->currentWeaponSlot; }
+void Ship::setCurrentWeaponSlot(int slot) { this->currentWeaponSlot = slot; }
+int Ship::getNumAddedDeviceSlots(){ return this->numAddedDeviceSlots; }
+unsigned char Ship::hasEmergencySystem() { return this->hasEmergency; }
+
+int Ship::getMaxHP() {
+    int bonus = 0;
+    Array<int> *m = this->mods;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 0) {
+                bonus += 0x28;
+            }
+        }
+    }
+    return this->baseHP + bonus;
+}
+
+int Ship::getCombinedHP() {
+    int bonus = 0;
+    Array<int> *m = this->mods;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 0) {
+                bonus += 0x28;
+            }
+        }
+    }
+    return bonus + this->baseHP + this->maxShieldHP + this->maxArmorHP;
+}
+
+float Ship::getHandling() {
+    float h = 1.3f;
+    Array<int> *m = this->mods;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 3) {
+                h += 0.1f;
+            }
+        }
+    }
+    return h + this->handling;
+}
+
+float Ship::getHandlingForShop() {
+    float h = 1.3f;
+    Array<int> *m = this->mods;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 3) {
+                h += 0.1f;
+            }
+        }
+    }
+    return h + this->handling;
+}
+
+bool Ship::hasCloak() {
+    return this->hasCloakFlag != 0 || this->index == 0x31 || this->index == 0x2c;
+}
+
+bool Ship::hasCloakIntegrated() {
+    return this->index == 0x2c || this->index == 0x31;
+}
+
+unsigned int Ship::hasJumpDrive() {
+    if (this->hasJumpDriveFlag != 0) {
+        return 1;
+    }
+    unsigned int v = (unsigned int)this->index - 0x25u;
+    if (v < 4) {
+        return 0xbu >> (v & 0xf) & 1;
+    }
+    return 0;
+}
+
+unsigned int Ship::hasJumpDriveIntegrated() {
+    unsigned int v = (unsigned int)this->index - 0x25u;
+    if (v < 4) {
+        return 0xbu >> (v & 0xf) & 1;
+    }
+    return 0;
 }
