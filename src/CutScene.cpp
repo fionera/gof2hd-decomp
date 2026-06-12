@@ -711,7 +711,6 @@ extern "C" {
 void FileRead_ctor(void *self);
 void *FileRead_dtor(void *self);
 void *FileRead_loadWeaponPositions(void *self, int shipIndex);
-int Ship_getIndex(void *ship);
 void ArrayReleaseClasses_VectorPtr(void *arr);
 void *Array_VectorPtr_dtor(void *arr);
 void ArrayReleaseClasses_ArrayVectorPtr(void *arr);
@@ -812,7 +811,7 @@ void CutScene::checkForTurret()
     void *fr = ::operator new(1);
     FileRead_ctor(fr);
     ((Status *)(*gStatus))->getShip();
-    int shipIdx = Ship_getIndex(((Status *)(*gStatus))->getShip());
+    int shipIdx = ((Ship *)(((Status *)(*gStatus))->getShip()))->getIndex();
     void *positions = FileRead_loadWeaponPositions(fr, shipIdx);
     ::operator delete(FileRead_dtor(fr));
 

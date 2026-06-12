@@ -12,7 +12,6 @@ namespace AbyssEngine { namespace AEMath {
 
 extern "C" void ArrayReleaseClasses_AEGeometryPtr(Array<AEGeometry *> *self);
 extern "C" void *Array_AEGeometryPtr_dtor(Array<AEGeometry *> *self);
-extern "C" void Explosion_tail_translate(void *geometry, const Vector *v);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
@@ -24,7 +23,6 @@ extern "C" void MatrixSetScaling(Matrix *out, Matrix *base, float x, float y, fl
 void MatrixGetUp(Vector *out, const Matrix *matrix);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
-extern "C" void Explosion_reset_tail(Explosion *self);
 extern "C" void Array_AEGeometryPtr_ctor(Array<AEGeometry *> *self);
 extern "C" void ArraySetLength_AEGeometryPtr(int length, Array<AEGeometry *> *self);
 
@@ -124,9 +122,9 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
 void Explosion::translate(const Vector *v) {
     Explosion *self = this;
     self->primaryMesh->translate(*v);
-    void *secondary = self->secondaryMesh;
+    AEGeometry *secondary = self->secondaryMesh;
     if (secondary != 0) {
-        return Explosion_tail_translate(secondary, v);
+        return self->tail_translate(secondary, v);
     }
 }
 
@@ -666,7 +664,7 @@ void Explosion::update_vector(int dt, const Vector *position) {
     long long elapsed = self->elapsed + delta;
     self->elapsed = elapsed;
     if (self->duration < elapsed) {
-        return Explosion_reset_tail(self);
+        return ((Explosion *)(self))->reset_tail();
     }
 }
 

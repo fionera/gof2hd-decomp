@@ -48,8 +48,6 @@ extern "C" void Hud_secondaryWeaponChanged(Hud *self);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
-extern "C" int  Ship_hasJumpDrive(void *ship);
-extern "C" unsigned char Ship_hasCloak(void *ship);
 extern "C" void Layout_drawMask();
 extern "C" int  String_length(void *s);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
@@ -957,7 +955,7 @@ Hud * Hud::checkIfQuickMenuIsEmpty() {
         empty = 0;
     } else {
         (void *)((Status *)(*gStatus))->getShip();
-        if (Ship_hasJumpDrive((void *)((Status *)(*gStatus))->getShip()) == 0 && ((Status *)(*gStatus))->getWingmen() == 0) {
+        if (((Ship *)((void *)((Status *)(*gStatus))->getShip()))->hasJumpDrive() == 0 && ((Status *)(*gStatus))->getWingmen() == 0) {
             (void *)((Status *)(*gStatus))->getShip();
             empty = (unsigned char)(Ship_hasCloakNeg((void *)((Status *)(*gStatus))->getShip()) ^ 1);
         } else {
@@ -1018,10 +1016,10 @@ void Hud::drawMenu() {
     if (I(self, 0x238) != 0) return;
 
     (void *)((Status *)(*gStatus))->getShip();
-    int cloak = Ship_hasCloak((void *)((Status *)(*gStatus))->getShip());
+    int cloak = ((Ship *)((void *)((Status *)(*gStatus))->getShip()))->hasCloak();
     if (cloak == 0) {
         (void *)((Status *)(*gStatus))->getShip();
-        if (Ship_hasJumpDrive((void *)((Status *)(*gStatus))->getShip()) == 0) return;
+        if (((Ship *)((void *)((Status *)(*gStatus))->getShip()))->hasJumpDrive() == 0) return;
     }
 
     char prefix[12], num[12], label[12];

@@ -20,7 +20,6 @@ struct PlayerRadiusFields { char _pad[0x40]; int field_0x40; };
 
 
 extern "C" void *PlayerAsteroid_complete_dtor(PlayerAsteroid *self);
-Vector Player_getHitVector(Player *player);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
 extern "C" void ArrayInt_ctor(ArrayInt *array);
 extern "C" void ArrayAdd_int(int value, ArrayInt *array);
@@ -250,7 +249,8 @@ void PlayerAsteroid::update(int delta)
 
     float bombForce = ((Player *)(player))->getBombForce();
     if (bombForce > 0.0f && this->state == 3) {
-        Vector hit = Player_getHitVector(player);
+        Vector hit;
+        ((Player *)(player))->getHitVector(&hit);
         Vector *hitSlot = (Vector *)((char *)this + 0x90);
         *(Vector*)(hitSlot) = *(const Vector*)(&hit);
         float scaling = this->scaling;

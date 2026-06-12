@@ -1,4 +1,6 @@
 #include "gof2/Generator.h"
+#include "gof2/ImageFactory.h"
+#include "gof2/Ship.h"
 #include "gof2/AERandom.h"
 #include "gof2/Galaxy.h"
 #include "gof2/Item.h"
@@ -224,7 +226,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                         int shipId = g_Generator_offerShipIds[j];
                         if (((Station *)((Station *)status->field_14c))->hasShip(shipId) == 0) {
                             Ship *ship = ((Status *)(status))->getShip();
-                            if (Ship_getIndex(ship) != shipId) {
+                            if (((Ship *)(ship))->getIndex() != shipId) {
                                 ArrayAdd_int(shipId, choices);
                             }
                         }
@@ -233,8 +235,8 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                         int pick =
                             ((AbyssEngine::AERandom *)(*randomPtr))->nextInt();
                         int shipId = choices->data()[pick];
-                        ((Agent *)(agent))->setSellItemData(shipId, 1, Ship_getPrice((*g_Generator_agentsShips)
-                                              ->data()[shipId]));
+                        ((Agent *)(agent))->setSellItemData(shipId, 1, ((Ship *)((*g_Generator_agentsShips)
+                                              ->data()[shipId]))->getPrice());
                         ((Agent *)(agent))->setOfferAccepted(false);
                     } else {
                         ((Agent *)(agent))->setOfferAccepted(true);
@@ -258,8 +260,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             AbyssEngine_String_dtor(&name);
             ((Agent *)(agent))->setOffer(2);
             ((Agent *)(agent))->setSellItemData(0x44, 1, 0);
-            ((Agent *)(agent))->setImageParts(ImageFactory_createChar(*g_Generator_storyImages,
-                                                        1, 0));
+            ((Agent *)(agent))->setImageParts(((ImageFactory *)(*g_Generator_storyImages))->createChar(1, 0));
             result->data()[out++] = agent;
         }
 
@@ -300,8 +301,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                             result->data()[i] = agent;
                             AbyssEngine_String_dtor(&name);
                             ((Agent *)(agent))->setOffer(7);
-                            ((Agent *)(agent))->setImageParts(ImageFactory_createChar(
-                                           *g_Generator_enemyImages, 1, race));
+                            ((Agent *)(agent))->setImageParts(((ImageFactory *)(*g_Generator_enemyImages))->createChar(1, race));
                             break;
                         }
                     }
@@ -517,7 +517,7 @@ Mission *Generator::createMission(Agent *agent,
     SolarSystem *from =
         systems->data()[Station_getSystem(((Status *)(status))->getStation())];
     SolarSystem *to = systems->data()[Station_getSystem((Station *)(long)((Galaxy *)(*g_Generator_missionGalaxy))->getStation(targetStation))];
-    int distance = Galaxy_distance(*g_Generator_missionGalaxy, to, from);
+    int distance = ((Galaxy *)(*g_Generator_missionGalaxy))->distance(to, from);
     float reward = ((float)distance / 1000.0f + 1.0f) *
                    (float)((int)(((float)difficulty / 10.0f) * 1400.0f) +
                            1500);
@@ -655,7 +655,7 @@ Agent *Generator::createAgent(Station *station) {
     AbyssEngine_String_dtor(&name);
     ((Agent *)(agent))->setOffer(offer);
     ImageFactory **factoryPtr = g_Generator_imageFactory;
-    ((Agent *)(agent))->setImageParts(ImageFactory_createChar(*factoryPtr, male, race));
+    ((Agent *)(agent))->setImageParts(((ImageFactory *)(*factoryPtr))->createChar(male, race));
 
     if (((Agent *)(agent))->getOffer() == 6) {
         uint32_t count = ((AbyssEngine::AERandom *)(*randomPtr))->nextInt();
@@ -725,11 +725,11 @@ extern "C" __attribute__((visibility("hidden"))) void **volatile
     g_Generator_wantedList;
 
 static void addShip(Array<Ship *> *list, Ship *base, int race) {
-    Ship *ship = Ship_makeShip(base, -1);
+    Ship *ship = ((Ship *)(base))->makeShip(-1);
     ArrayAdd_ship_ptr(ship, list);
     Ship *added = list->data()[list->size() - 1];
-    Ship_setRace(added, race);
-    Ship_adjustPrice(added);
+    ((Ship *)(added))->setRace(race);
+    ((Ship *)(added))->adjustPrice();
 }
 
 Array<Ship *> *Generator::getShipBuyList(Station *station) {
@@ -749,8 +749,8 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         Array_ship_ptr_ctor(result);
         for (int i = 0; i != 0x40; ++i) {
             Ship *base = allShips->data()[i];
-            if (Ship_hasJumpDriveIntegrated(base) &&
-                Ship_getIndex(base) != 0x25) {
+            if (((Ship *)(base))->hasJumpDriveIntegrated() &&
+                ((Ship *)(base))->getIndex() != 0x25) {
                 addShip(result, base, g_Generator_shipRaces[i]);
             }
         }
@@ -827,15 +827,15 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             unique = true;
             for (int j = 0; j < count; ++j) {
                 if (result->data()[j] != 0 &&
-                    Ship_getIndex(result->data()[j]) == shipIndex) {
+                    ((Ship *)(result->data()[j]))->getIndex() == shipIndex) {
                     unique = false;
                     break;
                 }
             }
         }
-        result->data()[i] = Ship_makeShip(allShips->data()[shipIndex], -1);
-        Ship_setRace(result->data()[i], g_Generator_shipRaces[shipIndex]);
-        Ship_adjustPrice(result->data()[i]);
+        result->data()[i] = ((Ship *)(allShips->data()[shipIndex]))->makeShip(-1);
+        ((Ship *)(result->data()[i]))->setRace(g_Generator_shipRaces[shipIndex]);
+        ((Ship *)(result->data()[i]))->adjustPrice();
     }
 
     bool terranBonus = false;
@@ -1235,9 +1235,9 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
 
     Status **statusPtr = g_Generator_status;
     Ship *ship = ((Status *)(*statusPtr))->getShip();
-    if (Ship_hasJumpDrive(ship) != 0) {
+    if (((Ship *)(ship))->hasJumpDrive() != 0) {
         ship = ((Status *)(*statusPtr))->getShip();
-        if (Ship_hasCargo(ship, 0x7a, 1) == 0 &&
+        if (((Ship *)(ship))->hasCargo(0x7a, 1) == 0 &&
             ((AbyssEngine::AERandom *)(*randomPtr))->nextInt() < 10) {
             result->data()[0] = 0x7a;
         }

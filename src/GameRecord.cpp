@@ -90,10 +90,6 @@ void *AEString_assign(void *self, const void *other);
 void AEString_dtor(void *self);
 long Array_dtor(void *self);
 long Mission_ctor(...);
-long Ship_addMod(...);
-long Ship_getCargo(...);
-long Ship_getFirstEquipmentOfSort(...);
-long Ship_getMods(...);
 long Station_getIndex(...);
 long Station_getShips(...);
 long Station_getSystem(...);
@@ -371,10 +367,10 @@ LAB_00165e0c:
   iVar11 = ((Status *)(*piVar22))->dlc1Won();
   if (iVar11 != 0) {
     iVar11 = (long)((Status *)(*piVar22))->getShip();
-    iVar11 = Ship_getFirstEquipmentOfSort(iVar11);
+    iVar11 = (int)(long)((Ship *)(iVar11))->getFirstEquipmentOfSort(0x12);  // sort recovered via Ghidra
     if (iVar11 == 0) {
       iVar11 = (long)((Status *)(*piVar22))->getShip();
-      iVar11 = Ship_getCargo(iVar11);
+      iVar11 = (int)(long)((Ship *)(iVar11))->getCargo(0x55);  // index recovered via Ghidra
       if (iVar11 == 0) goto LAB_00165faa;
     }
     ((Item *)(SUB41(iVar11,0)))->setUnsaleable(true);
@@ -382,8 +378,7 @@ LAB_00165e0c:
 LAB_00165faa:
   iVar11 = ((Status *)(*piVar22))->gameWon();
   if (iVar11 != 0) {
-    ((Status *)(*piVar22))->getShip();
-    puVar6 = (uint *)Ship_getCargo();
+    puVar6 = (uint *)((Ship *)(((Status *)(*piVar22))->getShip()))->getCargo();
     if (puVar6 != (uint *)0x0) {
       for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
         pIVar7 = *(char **)(puVar6[1] + uVar19 * 4);
@@ -394,8 +389,7 @@ LAB_00165faa:
     }
   }
   if (0x79 < (long)in_r0[0x10]) {
-    ((Status *)(*piVar22))->getShip();
-    puVar6 = (uint *)Ship_getCargo();
+    puVar6 = (uint *)((Ship *)(((Status *)(*piVar22))->getShip()))->getCargo();
     if (puVar6 != (uint *)0x0) {
       for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
         pIVar7 = *(char **)(puVar6[1] + uVar19 * 4);
@@ -554,10 +548,10 @@ LAB_00166114:
       puVar6 = (uint *)Station_getShips();
       if (puVar6 != (uint *)0x0) {
         for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-          puVar12 = (uint *)Ship_getMods(*(char **)(*(int *)(in_r0[0x61] + 4) + uVar19 * 4));
+          puVar12 = (uint *)((Ship *)(*(char **)(*(int *)(in_r0[0x61] + 4) + uVar19 * 4)))->getMods();
           if (puVar12 != (uint *)0x0) {
             for (uVar20 = 0; uVar20 < *puVar12; uVar20 = uVar20 + 1) {
-              Ship_addMod(*(char **)(puVar6[1] + uVar19 * 4),*(int *)(puVar12[1] + uVar20 * 4));
+              ((Ship *)(*(char **)(puVar6[1] + uVar19 * 4)))->addMod(*(int *)(puVar12[1] + uVar20 * 4));
             }
           }
         }

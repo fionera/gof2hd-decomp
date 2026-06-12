@@ -1,4 +1,5 @@
 #include "gof2/ListItemWindow.h"
+#include "gof2/Ship.h"
 #include "gof2/BluePrint.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/Item.h"
@@ -16,7 +17,6 @@ extern "C" void _liw_stw_OnTouchEnd(void *stw, int y);
 extern "C" void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void  liw_set_buildShipPreview(void *self, void *item, void *layout);
 extern "C" void  Str_dtor(Str *s);
-extern "C" int   Ship_getIndex(void *ship);
 extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" void _liw_String_ctor(void *s);
 extern "C" void _liw_Matrix_ctor(void *m);
@@ -387,13 +387,13 @@ void ListItemWindow::draw()
             int c0c = i32(L, 0xc), c20 = i32(L, 0x20), c28 = i32(L, 0x28), c2c = i32(L, 0x2c);
             int color = i32(L, 0x5c);
             int textId = *g_liw_d_headerId;
-            Ship_getIndex(0);
+            ((Ship *)(0))->getIndex();
             Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(textId), false);
             Layout_drawBox8(layout, 1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
             Str_dtor(&s);
 
             void *fac = *g_liw_d_imageFactory;
-            int shipIdx = Ship_getIndex(0);
+            int shipIdx = ((Ship *)(0))->getIndex();
             ((ImageFactory *)(fac))->drawShip(shipIdx, i32(this, 0x64) + i32(L, 0x28) + i32(L, 0x2c), ((i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2) + i32(L, 0x124));
         }
     } else {
@@ -520,7 +520,7 @@ void ListItemWindow::draw()
 // ---- update_133868.cpp ----
 // Callees (resolved blx targets).
 // 0x75b98
-extern "C" int   Ship_getIndex(void *ship);                            // 0x719c8
+// 0x719c8
 void  MatrixSetRotation(void *m, float x, float y, float z); // 0x72094
 extern "C" void  MatrixSetScaling(void *m, float x, float y, float z);  // 0x6f814
 // 0x73054
@@ -552,8 +552,8 @@ void ListItemWindow::update(int frameTime)
         }
     }
 
-    Ship_getIndex(pp(this, 0x14) ? *(void **)((char *)pp(this, 0x14) + 0xc) : 0);
-    int idx = Ship_getIndex(*(void **)((char *)pp(this, 0x14) + 0xc));
+    ((Ship *)(pp(this, 0x14) ? *(void **)((char *)pp(this, 0x14) + 0xc) : 0))->getIndex();
+    int idx = ((Ship *)(*(void **)((char *)pp(this, 0x14) + 0xc)))->getIndex();
 
     float baseAngle = f32(this, 0x114);
     float angle = (float)i32(this, 0x11c) / g_liw_u_angleScale;

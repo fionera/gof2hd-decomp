@@ -1,5 +1,4 @@
 #include "gof2/MissionsWindow.h"
-#include "gof2/Mission.h"
 #include "gof2/Ship.h"
 #include "gof2/PaintCanvasClass.h"
 #include "gof2/ChoiceWindow.h"
@@ -14,26 +13,12 @@
 #include "gof2/String.h"
 #include "gof2/Achievements.h"
 
-// NOTE on includes: Agent.h, Mission.h, TouchButton.h and WantedWindow.h cannot be
-// included here. Agent.h/Mission.h/TouchButton.h each define an unguarded helper
-// `struct RetStr`, so pulling in more than one collides ("redefinition of RetStr"),
-// and WantedWindow.h is malformed (method declarations leak out of a helper function
-// body, colliding with TouchButton's OnTouch* and redefining Blk16). MissionsWindow
-// only needs a handful of methods from each of these types, so minimal local
-// declarations are provided below. The full definitions live in their own headers;
-// this translation unit only needs the receiver layout and call signatures to compile.
-struct TouchButton {
-    void         dtor();
-    int          getWidth();
-    void         setAlwaysPressed(bool value);
-    void         setTextColor(int color);
-    void         draw();
-    unsigned int OnTouchEnd(int py);
-};
-struct WantedWindow {
-    int  init();
-    void OnTouchEnd(int y);
-};
+// RetStr is now centralized (gof2/common.h), so the full type headers below coexist
+// without the historical "redefinition of RetStr" collision.
+#include "gof2/TouchButton.h"
+#include "gof2/Mission.h"
+#include "gof2/Agent.h"
+#include "gof2/WantedWindow.h"
 
 // GameText singleton: getText(int key) is a member of the GameText table object. The
 // decompiler folded the table pointer and the key into a single (GameText*)key cast and
@@ -191,7 +176,6 @@ void  ArrayTB_setLength(int n, void *self);
 void  ArrayImg_releaseClasses(void *self);
 void *ArrayImg_dtor(void *self);
 
-void  TouchButton_ctor(void *self, void *text, int kind, int x, int y, char a, char b);
 void  TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char flags);
 
 void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool b);
@@ -215,7 +199,6 @@ void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 void  Globals_getAgentMissionText(void *out, void *agent);
 
 
-int   Ship_getIndex(void *ship);
 
 
 int   ApplicationManager_GetCurrentApplicationModule(void *appMgr);
@@ -359,7 +342,7 @@ extern "C" int MissionsWindow_init(void *self)
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
         ((String *)(text))->dtor();
     } else {
-        bool useGold = ((Achievements *)(*(void **)g_mw_ach))->gotAllGoldMedals() != 0 && Ship_getIndex(((Status *)(*(void **)g_mwi_status))->getShip()) != 8;
+        bool useGold = ((Achievements *)(*(void **)g_mw_ach))->gotAllGoldMedals() != 0 && ((Ship *)(((Status *)(*(void **)g_mwi_status))->getShip()))->getIndex() != 8;
         char a[0xc], b[0xc];
         String_fromC(a, "", false);
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
@@ -424,31 +407,23 @@ extern "C" int MissionsWindow_init(void *self)
         if (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) {
             void *bAccept = ::operator new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-            TouchButton_ctor(bAccept, t, 0, i32(layout, 0x28) + i32(self, 0x30),
-                             (((i32(self, 0x34) + i32(self, 0x3c)) - i32(layout, 0x10)) -
-                              i32(layout, 0x24)) - i32(layout, 0x2c),
-                             '!', 4);
+            ((TouchButton *)(bAccept))->ctor((String *)t, 0, i32(layout, 0x28) + i32(self, 0x30), (((i32(self, 0x34) + i32(self, 0x3c)) - i32(layout, 0x10)) -
+                              i32(layout, 0x24)) - i32(layout, 0x2c), btnY, '!', 4);  // width=btnY recovered via Ghidra
             pp(self, 0x24) = bAccept;
         }
         if (((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->isEmpty() == 0) {
             void *bReject = ::operator new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-            TouchButton_ctor(bReject, t, 0,
-                             i32(self, 0x30) + (i32(self, 0x38) >> 1) + i32(layout, 0x2c),
-                             (((i32(self, 0x34) - i32(layout, 0x2c)) + i32(self, 0x3c)) -
-                              i32(layout, 0x10)) - i32(layout, 0x24),
-                             '!', 4);
+            ((TouchButton *)(bReject))->ctor((String *)t, 0, i32(self, 0x30) + (i32(self, 0x38) >> 1) + i32(layout, 0x2c), (((i32(self, 0x34) - i32(layout, 0x2c)) + i32(self, 0x3c)) -
+                              i32(layout, 0x10)) - i32(layout, 0x24), btnY, '!', 4);  // width=btnY recovered via Ghidra
             pp(self, 0x28) = bReject;
 
             if (ApplicationManager_GetCurrentApplicationModule(*(void **)g_mwi_appMgr) == 5) {
                 void *bMap = ::operator new(200);
                 void *t2 = ((GameText *)g_mw_gameText)->getText(titleId);
-                TouchButton_ctor(bMap, t2, 0,
-                                 i32(self, 0x30) + btnY + (i32(self, 0x38) >> 1) +
-                                     i32(layout, 0x2c) * 2,
-                                 (((i32(self, 0x34) - i32(layout, 0x2c)) + i32(self, 0x3c)) -
-                                  i32(layout, 0x10)) - i32(layout, 0x24),
-                                 '!', 4);
+                ((TouchButton *)(bMap))->ctor((String *)t2, 0, i32(self, 0x30) + btnY + (i32(self, 0x38) >> 1) +
+                                     i32(layout, 0x2c) * 2, (((i32(self, 0x34) - i32(layout, 0x2c)) + i32(self, 0x3c)) -
+                                  i32(layout, 0x10)) - i32(layout, 0x24), btnY, '!', 4);  // width=btnY recovered via Ghidra
                 pp(self, 0x2c) = bMap;
                 ((TouchButton *)(bMap))->setTextColor(g_mwi_actionColor);
             }
@@ -666,7 +641,6 @@ int  StarMap_OnTouchEnd(StarMap *map, int x, int y);
 
 int  Status_wantedBoardAccessible();
 
-void *Ship_getCargo(void *ship);
 
 
 
@@ -697,7 +671,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
 
     // Wanted-board sub-window active.
     if (i32(self, 0x40) == 1) {
-        ((WantedWindow *)(pp(self, 0x10)))->OnTouchEnd(z);
+        ((WantedWindow *)(pp(self, 0x10)))->OnTouchEnd(y, z);
         if (*(int *)pp(self, 0x10) == 0) {
             i32(self, 0x40) = 0;
             *(int *)pp(self, 0x10) = 1;
@@ -720,7 +694,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             if (!clearCargo && ((Mission *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()))->getType() == 3) clearCargo = true;
             if (!clearCargo && ((Mission *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()))->getType() == 5) clearCargo = true;
             if (clearCargo) {
-                void *cargo = Ship_getCargo(((Status *)(*(void **)g_mwt_freelanceSrc))->getShip());
+                void *cargo = ((Ship *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getShip()))->getCargo();
                 if (cargo != 0) {
                     unsigned int *c = (unsigned int *)cargo;
                     for (unsigned int i = 0; i < *c; i++) {
@@ -755,14 +729,14 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
         if (Status_wantedBoardAccessible() != 0) {
             void **tabs = (void **)pp(self, 0x14);
             for (unsigned int i = 0; i < *(unsigned int *)tabs; i++) {
-                if (((TouchButton *)(((void **)tabs[1])[i]))->OnTouchEnd(z) != 0)
+                if (((TouchButton *)(((void **)tabs[1])[i]))->OnTouchEnd(y, z) != 0)
                     u32(self, 0x40) = i;
             }
         }
         ((ScrollTouchWindow *)(pp(self, 0x0)))->OnTouchEnd(y, z);
         ((ScrollTouchWindow *)(pp(self, 0x4)))->OnTouchEnd(y, z);
 
-        if (pp(self, 0x24) != 0 && ((TouchButton *)(pp(self, 0x24)))->OnTouchEnd(z) != 0) {
+        if (pp(self, 0x24) != 0 && ((TouchButton *)(pp(self, 0x24)))->OnTouchEnd(y, z) != 0) {
             // "Show on map" for the campaign mission.
             void *appMgr = *(void **)g_mwt_appMgr;
             void *mod = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
@@ -781,13 +755,13 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             u8(self, 0x22) = 1;
             ((Layout *)(*(void **)g_mwt_resetLayout))->resetWindowDimensions();
         } else {
-            if (pp(self, 0x2c) != 0 && ((TouchButton *)(pp(self, 0x2c)))->OnTouchEnd(z) != 0) {
+            if (pp(self, 0x2c) != 0 && ((TouchButton *)(pp(self, 0x2c)))->OnTouchEnd(y, z) != 0) {
                 void *cw = pp(self, 0xc);
                 void *t = ((GameText *)g_mw_gameText)->getText(0x1a2);
                 ((ChoiceWindow *)(cw))->set(*(String *)t, true);
                 u8(self, 0x20) = 1;
             }
-            if (pp(self, 0x28) != 0 && ((TouchButton *)(pp(self, 0x28)))->OnTouchEnd(z) != 0) {
+            if (pp(self, 0x28) != 0 && ((TouchButton *)(pp(self, 0x28)))->OnTouchEnd(y, z) != 0) {
                 // "Show on map" for the freelance mission.
                 void *appMgr = *(void **)g_mwt_appMgr;
                 void *mod = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);

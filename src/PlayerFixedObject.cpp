@@ -175,19 +175,6 @@ void PlayerFixedObject::outerCollide_vec(Vector v) {
 }
 
 // ---- getPosition_154056.cpp ----
-// sret in r0, this in r1. Reads three signed ints at +0x178/0x17c/0x180 and converts to float.
-struct PosOut { float x, y, z; };
-
-void PlayerFixedObject_getPosition(PosOut *out, PlayerFixedObject *self)
-{
-    float a = (float)self->intPosX;
-    float b = (float)self->intPosY;
-    float c = (float)self->intPosZ;
-    out->x = a;
-    out->y = b;
-    out->z = c;
-}
-
 // PlayerFixedObject::getPosition() — integer object position (+0x178/+0x17c/+0x180)
 // promoted to a float Vector. Mirrors the sret free function above.
 V3 PlayerFixedObject::getPosition() {

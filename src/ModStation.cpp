@@ -1,4 +1,5 @@
 #include "gof2/ModStation.h"
+#include "gof2/Ship.h"
 #include "gof2/FModSound.h"
 #include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
 #include <new>
@@ -60,8 +61,6 @@ struct StatusWindow {
 extern "C" void *ModStation_op_new(unsigned int sz);
 extern "C" void ModStation_op_delete(void *p);
 extern "C" void ModStation_autosaveTail();
-extern "C" Item *Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
-extern "C" int Ship_getIndex(Ship *ship);
 extern "C" void ModStation_suspendTail(void *obj, void **holder);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModStation_resumeTail(void *obj, int one, int arg);
@@ -154,9 +153,9 @@ void ModStation_enterStation()
     ((Achievements *)(g_ModStation_es_ach[0]))->applyNewMedals();
 
     Ship *(*getShip)(Status *) = g_ModStation_es_getShip;
-    Item *e10 = Ship_getFirstEquipmentOfSort(getShip(holder[0]), 10);
-    Item *e9 = Ship_getFirstEquipmentOfSort(getShip(holder[0]), 9);
-    int shipIdx = Ship_getIndex(getShip(holder[0]));
+    Item *e10 = ((Ship *)(getShip(holder[0])))->getFirstEquipmentOfSort(10);
+    Item *e9 = ((Ship *)(getShip(holder[0])))->getFirstEquipmentOfSort(9);
+    int shipIdx = ((Ship *)(getShip(holder[0])))->getIndex();
     Status *s = holder[0];
     I(s, 0x150) = shipIdx;
 

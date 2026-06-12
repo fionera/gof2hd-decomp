@@ -20,7 +20,10 @@ struct Station;
 // AbyssEngine::AEMath::Vector - 3 floats. (Vector is already provided by common.h.)
 
 // 16-byte block used for NEON vld1/vst1.32 field copies in the constructor.
+#ifndef GOF2_BLK16_DEFINED
+#define GOF2_BLK16_DEFINED
 struct Blk16 { int a, b, c, d; };
+#endif
 
 // String12 is provided by gof2/common.h.
 

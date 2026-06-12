@@ -1,4 +1,5 @@
 #include "gof2/Layout.h"
+#include "gof2/Ship.h"
 #include "gof2/AERandom.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/FModSound.h"
@@ -43,8 +44,6 @@ void    TouchButton_ctorImg2(...);
 void *ChoiceWindow_ctor(...);
 
 
-int  Ship_getCurrentLoad(...);
-int  Ship_getMaxLoad(...);
 
 void String_cstr_ctor(...);
 void String_copy_ctor(...);
@@ -1487,14 +1486,14 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
 
     // Cargo load text, in warning color if over capacity.
     ((Status *)(*gStatus))->getShip();
-    int load = Ship_getCurrentLoad(((Status *)(*gStatus))->getShip());
+    int load = ((Ship *)(((Status *)(*gStatus))->getShip()))->getCurrentLoad();
     ((Status *)(*gStatus))->getShip();
-    int maxLoad = Ship_getMaxLoad(((Status *)(*gStatus))->getShip());
+    int maxLoad = ((Ship *)(((Status *)(*gStatus))->getShip()))->getMaxLoad();
     if (maxLoad < load)
         ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_dfWarnColor);
 
     ((Status *)(*gStatus))->getShip();
-    int cur = Ship_getCurrentLoad(((Status *)(*gStatus))->getShip());
+    int cur = ((Ship *)(((Status *)(*gStatus))->getShip()))->getCurrentLoad();
     unsigned char sLoad[sizeof(String12)] __attribute__((aligned(4)));   // aSStack_58
     String_from_uint(sLoad, cur);
     unsigned char sSep[sizeof(String12)] __attribute__((aligned(4)));    // aSStack_64
@@ -1503,7 +1502,7 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     String_concat(s1, sLoad, sSep);
 
     ((Status *)(*gStatus))->getShip();
-    int mx = Ship_getMaxLoad(((Status *)(*gStatus))->getShip());
+    int mx = ((Ship *)(((Status *)(*gStatus))->getShip()))->getMaxLoad();
     unsigned char sMax[sizeof(String12)] __attribute__((aligned(4)));    // aSStack_70
     String_from_uint(sMax, mx);
     unsigned char s2[sizeof(String12)] __attribute__((aligned(4)));      // aSStack_40

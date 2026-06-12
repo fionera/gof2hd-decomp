@@ -62,11 +62,9 @@ extern "C" void SpaceLounge_OnRender3D_cutscene_tail(void *cutscene);
 extern "C" void SpaceLounge_OnRenderBG_tail();
 extern "C" void SpaceLounge_draw3DShip_tail(void *ship);
 extern "C" void *SpaceLounge_layout_begin;
-extern "C" int ChoiceWindow_touch_end(void *choice, int x, int y);
 extern "C" int StarMap_touch_end(void *map, int x, int y);
 extern "C" int Layout_touch_end(void *layout, int x, int y);
 extern "C" int ListItemWindow_touch_end(void *list, int x, int y);
-extern "C" int TouchButton_touch_end(void *button, int x, int y);
 // Dropped-self Status singleton accessors: the decompiler emitted these calls
 // with no receiver argument (the Status* singleton is loaded inside the thunk).
 // The singleton is `*g_status`; call the real methods through it.
@@ -106,7 +104,6 @@ extern "C" void *SpaceLounge_screen_canvas_slot;
 extern "C" void *SpaceLounge_screen_projector;
 extern "C" void *String_ctor_cstr(void *dst, const char *src, bool copy);
 extern "C" void String_add(void *dst, void *a, void *b);
-extern "C" void TouchButton_setPosition3(void *button, int x, int y, int align);
 extern "C" void *SpaceLounge_lounge_canvas_slot;
 extern "C" void *SpaceLounge_lounge_layout_slot;
 extern "C" void *SpaceLounge_lounge_image_factory_slot;
@@ -120,7 +117,6 @@ extern "C" void Array_TouchButton_ctor(void *array);
 extern "C" void ArraySetLength_TouchButtonPtr(void *array, unsigned count);
 extern "C" void ArrayRelease_TouchButtonPtr(void *array);
 extern "C" void *Array_TouchButtonPtr_dtor(void *array);
-extern "C" void *TouchButton_ctor(void *button, void *text, int icon, int x, int y, int w, int align, int flags);
 extern "C" void *SpaceLounge_init_layout_slot;
 extern "C" void *SpaceLounge_init_text_slot;
 extern "C" void *SpaceLounge_init_camera_slot;
@@ -129,9 +125,6 @@ extern "C" void CutScene_ctor(void *cutscene, int id);
 extern "C" void ArrayRemove_AgentPtr(void *agent, void *array);
 extern "C" void EaseInOutMatrix_ctor(void *ease, void *from, void *to, int duration);
 extern "C" void *SpaceLounge_ctor_camera_slot;
-extern "C" void Agent_setKnown(void *agent, bool known);
-extern "C" void ChoiceWindow_setText(void *choice, void *title, void *body);
-extern "C" void ChoiceWindow_setButtonText(void *choice, void *left, void *right);
 int SpaceLounge_getSoundId(SpaceLounge *self, void *agent);
 extern "C" void *SpaceLounge_start_text_slot;
 extern "C" void *CutScene_dtor(void *p);
@@ -431,7 +424,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     UC(self, 0xb2) = 0;
 
     if (UC(self, 0x1b) != 0 || UC(self, 0x19) != 0) {
-        int result = ChoiceWindow_touch_end(P(self, 0x8), x, y);
+        int result = ((ChoiceWindow *)(P(self, 0x8)))->touch_end(x, y);
         if (result == 1) {
             UC(self, 0x19) = 0;
         } else if (result == 0) {
@@ -518,7 +511,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         unsigned count = U(P(self, 0x5c), 0x0);
         for (unsigned i = 0; i < count; ++i) {
             void *button = ((void **)P(P(self, 0x5c), 0x4))[i];
-            if (TouchButton_touch_end(button, x, y) != 0) {
+            if (((TouchButton *)(button))->touch_end(x, y) != 0) {
                 void *agent = selected_agent(self);
                 if (i >= 5 && ((Agent *)(agent))->isGenericAgent() != 0) {
                     ((Agent *)(agent))->setEvent(1);
@@ -528,7 +521,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         break;
     }
     case 3:
-        if (TouchButton_touch_end(*(void **)P(P(self, 0x5c), 0x4), x, y) != 0) {
+        if (((TouchButton *)(*(void **)P(P(self, 0x5c), 0x4)))->touch_end(x, y) != 0) {
             ((SpaceLounge *)(self))->onKeyPress(0x10000);
         }
         break;
@@ -931,7 +924,7 @@ void SpaceLounge::drawLounge() {
     int offer = ((Agent *)(((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)]))->getOffer();
     if (I(self, 0x14) == 2) {
         ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x80));
-        TouchButton_setPosition3(button_at(self, 1), I(self, 0x6c) + I(self, 0x84), I(self, 0x80), 0x12);
+        ((TouchButton *)(button_at(self, 1)))->setPosition3(I(self, 0x6c) + I(self, 0x84), I(self, 0x80), 0x12);
         I(self, 0x68) = 0;
         if (offer < 11 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
             I(self, 0x68) = 3;
@@ -941,7 +934,7 @@ void SpaceLounge::drawLounge() {
         } else {
             I(self, 0x68) = 2;
             ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x7c));
-            TouchButton_setPosition3(button_at(self, 1), I(self, 0x6c) + I(self, 0x84), I(self, 0x7c), 0x12);
+            ((TouchButton *)(button_at(self, 1)))->setPosition3(I(self, 0x6c) + I(self, 0x84), I(self, 0x7c), 0x12);
         }
     } else {
         I(self, 0x68) = 1;
@@ -1044,8 +1037,7 @@ int SpaceLounge::init() {
 
     for (unsigned i = 0; i < 5; ++i) {
         void *button = ::operator new(200);
-        TouchButton_ctor(button, text, 0, I(self, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)),
-                         I(self, 0x6c), 0x11, 4);
+        ((TouchButton *)(button))->ctor((String *)text, 0, I(self, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)), I(self, 0x6c), 0x11, 4);
         ((void **)P(buttons, 0x4))[i] = button;
         ((TouchButton *)(button))->setTextColor(-1);
     }
@@ -1191,11 +1183,11 @@ void SpaceLounge::startChat() {
     ((String *)(left))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x10), false);
     ((String *)(right))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x11), false);
 
-    ChoiceWindow_setText(P(self, 0x8), title, body);
-    ChoiceWindow_setButtonText(P(self, 0x8), left, right);
+    ((ChoiceWindow *)(P(self, 0x8)))->setText(title, body);
+    ((ChoiceWindow *)(P(self, 0x8)))->setButtonText(left, right);
 
     if (((Agent *)(agent))->isKnown() == 0 && ((Agent *)(agent))->isStoryAgent() == 0) {
-        Agent_setKnown(agent, true);
+        ((Agent *)(agent))->setKnown(true);
     }
     SpaceLounge_getSoundId(self, agent);
 

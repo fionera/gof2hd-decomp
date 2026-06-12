@@ -1,4 +1,5 @@
 #include "gof2/Status.h"
+#include "gof2/PendingProduct.h"
 #include "gof2/AERandom.h"
 #include "gof2/externs.h"
 // FileRead.h is intentionally NOT included: it defines layout-stub structs
@@ -71,7 +72,6 @@ extern "C" void ArrayReleaseClasses_SolarSystem(void *a);
 extern "C" void *Array_SolarSystem_dtor(void *a);
 extern "C" void Array_PendingProduct_ctor(int *a);
 extern "C" void PendingProduct_ctor(int *pp, BluePrint *bp);
-extern "C" void PendingProduct_add(int *pp, int arr);
 extern "C" void FileRead_ctor(FileRead *);
 extern "C" void operator_delete_tail(void *);
 extern "C" void Status_setStationTail(Status *self, Station *s);
@@ -859,12 +859,7 @@ void   BluePrint_ctor(void *bp, unsigned int index);
 void   Standing_ctor(Standing *s);
 void  *Standing_dtor(Standing *s);
 void   Mission_ctor(void *m, int a, int b, int c);
-int    Ship_makeShip(int shipDesc);
-void   Ship_priceDecline(Ship *s);
-void   Ship_setCargo(Ship *s, void *cargo);
-int    Ship_getMaxHP(Ship *s);
 int    Ship_getMaxShieldHP();
-int    Ship_getMaxArmorHP(Ship *s);
 void   Status_rg_loadAgents(Status *self);
 void   Status_rg_loadWanted(Status *self);
 void   Status_rg_setCampaignMission(Status *self, void *m);
@@ -1138,11 +1133,11 @@ void Status::resetGame()
 
     int *slotB = *g_rg_statusSlotB;
     I(self, 0x194) = *(int *)(*(int *)((char *)P(self, 0x198) + 4));
-    int newShip = Ship_makeShip(*(int *)((*(int *)(*slotB + 4)) + 0x28));
+    int newShip = (int)(intptr_t)((Ship *)(*(int *)((*(int *)(*slotB + 4)) + 0x28)))->makeShip(-1);  // price=-1 recovered via Ghidra
     Status_rg_setShip(this, newShip);
-    Ship_priceDecline(*(Ship **)(self + 0x190));
+    ((Ship *)(*(Ship **)(self + 0x190)))->priceDecline();
     Status_rg_setStation(this, (void *)(intptr_t)((Galaxy *)(gal))->getStation(0));  // new-game home station (index 0)
-    Ship_setCargo(*(Ship **)(self + 0x190), 0);
+    ((Ship *)(*(Ship **)(self + 0x190)))->setCargo(0);
 
     int (*makeItemB)(int) = g_rg_makeItemB;
     void (*addCargo)(int, int, int) = g_rg_addCargo;
@@ -1161,9 +1156,9 @@ void Status::resetGame()
     if (C(srec, 0x35) != 0)
         ((char *)(*(int *)((char *)P(self, 0x38) + 4)))[0x19] = 1;
 
-    I(self, 0x64) = Ship_getMaxHP(*(Ship **)(self + 0x190));
+    I(self, 0x64) = ((Ship *)(*(Ship **)(self + 0x190)))->getMaxHP();
     I(self, 0x5c) = Ship_getMaxShieldHP();
-    I(self, 0x60) = Ship_getMaxArmorHP(*(Ship **)(self + 0x190));
+    I(self, 0x60) = ((Ship *)(*(Ship **)(self + 0x190)))->getMaxArmorHP();
     I(self, 0x68) = 100;
     I(self, 0x150) = -1;
     I(self, 0x154) = -1;
@@ -1343,7 +1338,7 @@ void Status::addPendingProduct(BluePrint *bp) {
     }
     int *pp = (int *)operator new(0x18);
     PendingProduct_ctor(pp, bp);
-    PendingProduct_add(pp, (int)(intptr_t)pendingProducts);
+    ((PendingProduct *)(pp))->add(*(Array<PendingProduct*> *)pendingProducts);
 }
 
 // ---- inEmptyOrbit_abc18.cpp ----
@@ -1988,13 +1983,9 @@ __attribute__((visibility("hidden"))) extern Status **g_mcStatusB;
 
 extern "C" {
 int Station_getIndex(Station *s);
-void *Ship_getCargo();
-int Ship_getCurrentLoad();
-int Ship_hasCargo(int ship, int item);
-int Ship_hasEquipment(int ship, int item);
 int Item_isInList2(int a, void *list);
 void *BluePrint_getIngredientList(void *bp);
-void BluePrint_getQuantityList(void *bp);
+void *BluePrint_getQuantityList(void *bp);
 int Status_inAlienOrbit3();
 }
 
@@ -2044,7 +2035,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
             break;
         }
         case 0x9a: {
-            if (((Mission *)(m))->getProductionGoodAmount() <= Ship_getCurrentLoad()) { ((Mission *)(m))->setWon(true); return m; }
+            if (((Mission *)(m))->getProductionGoodAmount() <= ((Ship *)(self->ship))->getCurrentLoad()) { ((Mission *)(m))->setWon(true); return m; }
             break;
         }
         case 0xa7:
@@ -2095,10 +2086,10 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 if (Station_getIndex(self->station) == ((Mission *)(m))->getTargetStation()) {
                     void *bp = *(void **)((char *)self->bluePrints + ((Mission *)(m))->getStatusValue() * 4);
                     unsigned *ing = (unsigned *)BluePrint_getIngredientList(bp);
-                    BluePrint_getQuantityList(bp);
+                    unsigned *qty = (unsigned *)BluePrint_getQuantityList(bp);  // amount list, parallel to ingredients (Ghidra)
                     bool all = true;
                     for (unsigned j = 0; j < *ing; j = j + 1) {
-                        if (Ship_hasCargo((int)(long)self->ship, *(int *)(ing[1] + j * 4)) == 0) { all = false; break; }
+                        if (((Ship *)((int)(long)self->ship))->hasCargo(*(int *)(ing[1] + j * 4), *(int *)(qty[1] + j * 4)) == 0) { all = false; break; }
                     }
                     if (all) return m;
                 }
@@ -2135,7 +2126,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 if (Station_getIndex(self->station) == ((Mission *)(m))->getTargetStation()) {
                     int idx = ((Mission *)(m))->getProductionGoodIndex();
                     int amt = ((Mission *)(m))->getProductionGoodAmount();
-                    if (Item::isInList(idx, amt, (ItemArray *)Ship_getCargo()) != 0) return m;
+                    if (Item::isInList(idx, amt, (ItemArray *)((Ship *)(self->ship))->getCargo()) != 0) return m;
                 }
             }
             break;
@@ -2144,9 +2135,8 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 if (Station_getIndex(self->station) == ((Mission *)(m))->getTargetStation()) {
                     int idx = ((Mission *)(m))->getProductionGoodIndex();
                     int amt = ((Mission *)(m))->getProductionGoodAmount();
-                    if (Item::isInList(idx, amt, (ItemArray *)Ship_getCargo()) != 0) return m;
-                    if (Ship_hasEquipment((int)(long)((*g_mcStatusA)->ship),
-                                          ((Mission *)(m))->getProductionGoodIndex()) == 0) return m;
+                    if (Item::isInList(idx, amt, (ItemArray *)((Ship *)(self->ship))->getCargo()) != 0) return m;
+                    if (((Ship *)((int)(long)((*g_mcStatusA)->ship)))->hasEquipment(((Mission *)(m))->getProductionGoodIndex(), 1) == 0) return m;  // amount=1 recovered via Ghidra
                 }
             }
             break;
@@ -2176,7 +2166,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 if (docked && Station_getIndex(self->station) == ((Mission *)(m))->getTargetStation()) {
                     int idx = ((Mission *)(m))->getProductionGoodIndex();
                     int amt = ((Mission *)(m))->getProductionGoodAmount();
-                    if (Item::isInList(idx, amt, (ItemArray *)Ship_getCargo()) != 0) return m;
+                    if (Item::isInList(idx, amt, (ItemArray *)((Ship *)(self->ship))->getCargo()) != 0) return m;
                 }
             } else if (type == 0xd) {
                 if (docked && self->field_0xf0 != 0) return m;
@@ -2184,7 +2174,7 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
                 if (docked) {
                     Agent *ag = (Agent *)((Mission *)(m))->getAgent();
                     if (Station_getIndex(self->station) == ((Agent *)(ag))->getStation()) {
-                        if (Item_isInList2(0x73, Ship_getCargo()) != 0) return m;
+                        if (Item::isInList(0x73, (ItemArray *)((Ship *)(self->ship))->getCargo()) != 0) return m;
                     }
                 }
             } else if (type == 0xb || type == 0) {

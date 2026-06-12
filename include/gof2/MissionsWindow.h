@@ -14,7 +14,10 @@ void operator delete(void *ptr) noexcept;
 // Field accessors via byte offset.
 
 // 16-byte aggregate cleared in the ctor (4 ints).
+#ifndef GOF2_BLK16_DEFINED
+#define GOF2_BLK16_DEFINED
 struct __attribute__((aligned(4))) Blk16 { int a, b, c, d; };
+#endif
 
 class MissionsWindow {
 public:

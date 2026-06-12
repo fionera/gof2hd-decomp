@@ -203,849 +203,151 @@
 ],
 "self_name": "self"
 },
-"KIPlayer_getRoute": {
-"class": "KIPlayer",
-"method": "getRoute",
+"Player_getHitVector": {
+"class": "Player",
+"method": "getHitVector",
+"ret": "void",
+"params_after_self": [
+"Vector *out"
+],
+"self_name": "self"
+},
+"Player_replaceGuns": {
+"class": "Player",
+"method": "replaceGuns",
+"ret": "void",
+"params_after_self": [
+"int a",
+"int b",
+"int c",
+"int d",
+"int e",
+"bool f"
+],
+"self_name": "self"
+},
+"Explosion_tail_translate": {
+"class": "Explosion",
+"method": "tail_translate",
+"ret": "void",
+"params_after_self": [
+"AEGeometry *geometry",
+"const Vector *v"
+],
+"self_name": "self"
+},
+"Explosion_reset_tail": {
+"class": "Explosion",
+"method": "reset_tail",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"KIPlayer_setLevel": {
-"class": "KIPlayer",
-"method": "setLevel",
+"Level_getPlayer": {
+"class": "Level",
+"method": "getPlayer",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"PlayerFighter_cloak": {
+"class": "PlayerFighter",
+"method": "cloak",
 "ret": "void",
 "params_after_self": [
-"Level *lvl"
+"int dur",
+"bool b"
 ],
 "self_name": "self"
 },
-"Explosion_setWeaponIndex": {
-"class": "Explosion",
-"method": "setWeaponIndex",
+"ImageFactory_drawItem": {
+"class": "ImageFactory",
+"method": "drawItem",
+"ret": "void",
+"params_after_self": [
+"int itemId",
+"int x",
+"int y"
+],
+"self_name": "self"
+},
+"ImageFactory_createChar": {
+"class": "ImageFactory",
+"method": "createChar",
+"ret": "void",
+"params_after_self": [
+"bool clz",
+"bool rand0",
+"int type"
+],
+"self_name": "self"
+},
+"HangarList_setCurrentTab": {
+"class": "HangarList",
+"method": "setCurrentTab",
+"ret": "void",
+"params_after_self": [
+"bool blueprintIngredients"
+],
+"self_name": "self"
+},
+"HangarList_setCurrentItemIndex": {
+"class": "HangarList",
+"method": "setCurrentItemIndex",
 "ret": "void",
 "params_after_self": [
 "int index"
 ],
 "self_name": "self"
 },
-"Explosion_setMatrix": {
-"class": "Explosion",
-"method": "setMatrix",
-"ret": "void",
-"params_after_self": [
-"const Matrix *matrix"
-],
-"self_name": "self"
-},
-"Explosion_update": {
-"class": "Explosion",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int dt",
-"TargetFollowCamera *camera"
-],
-"self_name": "self"
-},
-"Status_setShip": {
-"class": "Status",
-"method": "setShip",
-"ret": "void",
-"params_after_self": [
-"Ship *s"
-],
-"self_name": "self"
-},
-"Status_setMission": {
-"class": "Status",
-"method": "setMission",
-"ret": "void",
-"params_after_self": [
-"Mission *m"
-],
-"self_name": "self"
-},
-"Status_setStation": {
-"class": "Status",
-"method": "setStation",
-"ret": "void",
-"params_after_self": [
-"Station *s"
-],
-"self_name": "self"
-},
-"StarMap_renderBG": {
-"class": "StarMap",
-"method": "renderBG",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Sprite_getFrameWidth": {
-"class": "Sprite",
-"method": "getFrameWidth",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Sprite_getFrameHeight": {
-"class": "Sprite",
-"method": "getFrameHeight",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"BumpShader_setSampler": {
-"class": "BumpShader",
-"method": "setSampler",
-"ret": "void",
-"params_after_self": [
-"int location",
-"int unit"
-],
-"self_name": "self"
-},
-"PlayerFighter_reset": {
-"class": "PlayerFighter",
-"method": "reset",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerFighter_revive": {
-"class": "PlayerFighter",
-"method": "revive",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Route_ctor": {
-"class": "Route",
-"method": "ctor",
-"ret": "void",
-"params_after_self": [
-"int *coords",
-"int count"
-],
-"self_name": "self"
-},
-"Route_dtor": {
-"class": "Route",
-"method": "dtor",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Route_getCurrent": {
-"class": "Route",
-"method": "getCurrent",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Route_setLoop": {
-"class": "Route",
-"method": "setLoop",
-"ret": "void",
-"params_after_self": [
-"bool loop"
-],
-"self_name": "self"
-},
-"AERandom_setSeed": {
-"class": "AERandom",
-"method": "setSeed",
-"ret": "void",
-"params_after_self": [
-"long long seed"
-],
-"self_name": "self"
-},
-"AERandom_reset": {
-"class": "AERandom",
-"method": "reset",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"AERandom_next": {
-"class": "AERandom",
-"method": "next",
-"ret": "void",
-"params_after_self": [
-"int bits"
-],
-"self_name": "self"
-},
-"AERandom_nextInt": {
-"class": "AERandom",
-"method": "nextInt",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerStaticFar_dtor": {
-"class": "PlayerStaticFar",
-"method": "dtor",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Standing_setPlayerSignatureRace": {
-"class": "Standing",
-"method": "setPlayerSignatureRace",
-"ret": "void",
-"params_after_self": [
-"int race"
-],
-"self_name": "self"
-},
-"HangarList_getCurrentTab": {
+"HangarList_getCurrentItemIndex": {
 "class": "HangarList",
-"method": "getCurrentTab",
+"method": "getCurrentItemIndex",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"BoundingVolume_staticProjectCollisionOnSurface": {
-"class": "BoundingVolume",
-"method": "staticProjectCollisionOnSurface",
+"PendingProduct_add": {
+"class": "PendingProduct",
+"method": "add",
 "ret": "void",
 "params_after_self": [
-"const Vector &v",
-"Array<BoundingVolume *> *vols"
+"Array<PendingProduct*> &list"
 ],
 "self_name": "self"
 },
-"Wanted_getIndex": {
-"class": "Wanted",
-"method": "getIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getBoard": {
-"class": "Wanted",
-"method": "getBoard",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getRace": {
-"class": "Wanted",
-"method": "getRace",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_isMale": {
-"class": "Wanted",
-"method": "isMale",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getShip": {
-"class": "Wanted",
-"method": "getShip",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getWeapon": {
-"class": "Wanted",
-"method": "getWeapon",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getHitpoints": {
-"class": "Wanted",
-"method": "getHitpoints",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getLoot": {
-"class": "Wanted",
-"method": "getLoot",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getLootAmount": {
-"class": "Wanted",
-"method": "getLootAmount",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getReward": {
-"class": "Wanted",
-"method": "getReward",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getRequiredBounties": {
-"class": "Wanted",
-"method": "getRequiredBounties",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getRequiredMission": {
-"class": "Wanted",
-"method": "getRequiredMission",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getNumWingmen": {
-"class": "Wanted",
-"method": "getNumWingmen",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getCurrentLocation": {
-"class": "Wanted",
-"method": "getCurrentLocation",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getTravelsTo": {
-"class": "Wanted",
-"method": "getTravelsTo",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getLastSeen": {
-"class": "Wanted",
-"method": "getLastSeen",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_getImageParts": {
-"class": "Wanted",
-"method": "getImageParts",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Wanted_setImageParts": {
-"class": "Wanted",
-"method": "setImageParts",
-"ret": "void",
-"params_after_self": [
-"int *parts"
-],
-"self_name": "self"
-},
-"Wanted_setCurrentLocation": {
-"class": "Wanted",
-"method": "setCurrentLocation",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Wanted_setTravelsTo": {
-"class": "Wanted",
-"method": "setTravelsTo",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Wanted_setLastSeen": {
-"class": "Wanted",
-"method": "setLastSeen",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"StarSystem_getPlanetTargets": {
-"class": "StarSystem",
-"method": "getPlanetTargets",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"StarSystem_getPlanets": {
-"class": "StarSystem",
-"method": "getPlanets",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ScrollTouchBox_setYPosition": {
-"class": "ScrollTouchBox",
-"method": "setYPosition",
-"ret": "void",
-"params_after_self": [
-"int y"
-],
-"self_name": "self"
-},
-"AESoundRessource_freeAllRessources": {
-"class": "AESoundRessource",
-"method": "freeAllRessources",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"AESoundRessource_getSoundInfo": {
-"class": "AESoundRessource",
-"method": "getSoundInfo",
-"ret": "void",
-"params_after_self": [
-"int id",
-"AESoundInfo *info",
-"int *index"
-],
-"self_name": "self"
-},
-"AESoundRessource_init": {
-"class": "AESoundRessource",
-"method": "init",
-"ret": "void",
-"params_after_self": [
-"int id"
-],
-"self_name": "self"
-},
-"AESoundRessource_play_impl": {
-"class": "AESoundRessource",
-"method": "play_impl",
-"ret": "void",
-"params_after_self": [
-"int id",
-"int volume"
-],
-"self_name": "self"
-},
-"AESoundRessource_checkLooping": {
-"class": "AESoundRessource",
-"method": "checkLooping",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"LevelScript_getEvent": {
-"class": "LevelScript",
-"method": "getEvent",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"LevelScript_setEvent": {
-"class": "LevelScript",
-"method": "setEvent",
-"ret": "void",
-"params_after_self": [
-"int event"
-],
-"self_name": "self"
-},
-"ChoiceWindow_left": {
+"ChoiceWindow_setMsg": {
 "class": "ChoiceWindow",
-"method": "left",
+"method": "setMsg",
 "ret": "void",
-"params_after_self": [],
+"params_after_self": [
+"String const &text",
+"bool hasButtons"
+],
 "self_name": "self"
 },
-"ChoiceWindow_right": {
+"ChoiceWindow_setText": {
 "class": "ChoiceWindow",
-"method": "right",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getIndex": {
-"class": "SolarSystem",
-"method": "getIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getRace": {
-"class": "SolarSystem",
-"method": "getRace",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getSecurityLevel": {
-"class": "SolarSystem",
-"method": "getSecurityLevel",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getTextureIndex": {
-"class": "SolarSystem",
-"method": "getTextureIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getX": {
-"class": "SolarSystem",
-"method": "getX",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getY": {
-"class": "SolarSystem",
-"method": "getY",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getZ": {
-"class": "SolarSystem",
-"method": "getZ",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getWarpGateIndex": {
-"class": "SolarSystem",
-"method": "getWarpGateIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getStations": {
-"class": "SolarSystem",
-"method": "getStations",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"SolarSystem_getRoutes": {
-"class": "SolarSystem",
-"method": "getRoutes",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Achievements_getMedals": {
-"class": "Achievements",
-"method": "getMedals",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Achievements_getNewMedals": {
-"class": "Achievements",
-"method": "getNewMedals",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"TargetFollowCamera_getPosition": {
-"class": "TargetFollowCamera",
-"method": "getPosition",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"TargetFollowCamera_setTarget": {
-"class": "TargetFollowCamera",
-"method": "setTarget",
+"method": "setText",
 "ret": "void",
 "params_after_self": [
-"void *target"
+"String const &title",
+"String const &body"
 ],
 "self_name": "self"
 },
-"TargetFollowCamera_setCamOffset": {
-"class": "TargetFollowCamera",
-"method": "setCamOffset",
+"ChoiceWindow_setButtonText": {
+"class": "ChoiceWindow",
+"method": "setButtonText",
 "ret": "void",
 "params_after_self": [
-"Vector *offset"
+"String const &left",
+"String const &right"
 ],
 "self_name": "self"
 },
-"TargetFollowCamera_setTargetOffset": {
-"class": "TargetFollowCamera",
-"method": "setTargetOffset",
-"ret": "void",
-"params_after_self": [
-"Vector *offset"
-],
-"self_name": "self"
-},
-"TargetFollowCamera_setLookAtCam": {
-"class": "TargetFollowCamera",
-"method": "setLookAtCam",
-"ret": "void",
-"params_after_self": [
-"bool enabled"
-],
-"self_name": "self"
-},
-"TargetFollowCamera_setActive": {
-"class": "TargetFollowCamera",
-"method": "setActive",
-"ret": "void",
-"params_after_self": [
-"bool enabled"
-],
-"self_name": "self"
-},
-"TargetFollowCamera_useTargetsUpVector": {
-"class": "TargetFollowCamera",
-"method": "useTargetsUpVector",
-"ret": "void",
-"params_after_self": [
-"bool enabled"
-],
-"self_name": "self"
-},
-"TargetFollowCamera_setRumblePercentage": {
-"class": "TargetFollowCamera",
-"method": "setRumblePercentage",
-"ret": "void",
-"params_after_self": [
-"float pct",
-"int duration"
-],
-"self_name": "self"
-},
-"TargetFollowCamera_translateNoUpdate": {
-"class": "TargetFollowCamera",
-"method": "translateNoUpdate",
-"ret": "void",
-"params_after_self": [
-"float dx",
-"float dy",
-"float dz"
-],
-"self_name": "self"
-},
-"TargetFollowCamera_resetShipHandling": {
-"class": "TargetFollowCamera",
-"method": "resetShipHandling",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"TargetFollowCamera_update": {
-"class": "TargetFollowCamera",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int dt"
-],
-"self_name": "self"
-},
-"Mission_isEmpty": {
-"class": "Mission",
-"method": "isEmpty",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_getType": {
-"class": "Mission",
-"method": "getType",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_getReward": {
-"class": "Mission",
-"method": "getReward",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_setReward": {
-"class": "Mission",
-"method": "setReward",
-"ret": "void",
-"params_after_self": [
-"int reward"
-],
-"self_name": "self"
-},
-"Mission_getCosts": {
-"class": "Mission",
-"method": "getCosts",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_setCosts": {
-"class": "Mission",
-"method": "setCosts",
-"ret": "void",
-"params_after_self": [
-"int costs"
-],
-"self_name": "self"
-},
-"Mission_getBonus": {
-"class": "Mission",
-"method": "getBonus",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_setBonus": {
-"class": "Mission",
-"method": "setBonus",
-"ret": "void",
-"params_after_self": [
-"int bonus"
-],
-"self_name": "self"
-},
-"Mission_getDifficulty": {
-"class": "Mission",
-"method": "getDifficulty",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_getStatusValue": {
-"class": "Mission",
-"method": "getStatusValue",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_setStatusValue": {
-"class": "Mission",
-"method": "setStatusValue",
-"ret": "void",
-"params_after_self": [
-"int value"
-],
-"self_name": "self"
-},
-"Mission_getAgent": {
-"class": "Mission",
-"method": "getAgent",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_setAgent": {
-"class": "Mission",
-"method": "setAgent",
-"ret": "void",
-"params_after_self": [
-"Agent *agent"
-],
-"self_name": "self"
-},
-"Mission_getClientImage": {
-"class": "Mission",
-"method": "getClientImage",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_getClientRace": {
-"class": "Mission",
-"method": "getClientRace",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_getProductionGoodIndex": {
-"class": "Mission",
-"method": "getProductionGoodIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_getProductionGoodAmount": {
-"class": "Mission",
-"method": "getProductionGoodAmount",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_getTargetStation": {
-"class": "Mission",
-"method": "getTargetStation",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_hasFailed": {
-"class": "Mission",
-"method": "hasFailed",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_setFailed": {
-"class": "Mission",
-"method": "setFailed",
-"ret": "void",
-"params_after_self": [
-"bool failed"
-],
-"self_name": "self"
-},
-"Mission_hasWon": {
-"class": "Mission",
-"method": "hasWon",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Mission_setWon": {
-"class": "Mission",
-"method": "setWon",
-"ret": "void",
-"params_after_self": [
-"bool won"
-],
-"self_name": "self"
-},
-"Mission_setCampaignMission": {
-"class": "Mission",
-"method": "setCampaignMission",
-"ret": "void",
-"params_after_self": [
-"bool flag"
-],
-"self_name": "self"
-},
-"Mission_isOutsideMission": {
-"class": "Mission",
-"method": "isOutsideMission",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"DialogueWindow_setLevel": {
-"class": "DialogueWindow",
-"method": "setLevel",
-"ret": "void",
-"params_after_self": [
-"Level *level"
-],
-"self_name": "self"
-},
-"ScrollTouchWindow_touch_end": {
-"class": "ScrollTouchWindow",
+"ChoiceWindow_touch_end": {
+"class": "ChoiceWindow",
 "method": "touch_end",
 "ret": "void",
 "params_after_self": [
@@ -1054,36 +356,85 @@
 ],
 "self_name": "self"
 },
-"ScrollTouchWindow_setText4": {
-"class": "ScrollTouchWindow",
-"method": "setText4",
-"ret": "void",
-"params_after_self": [
-"AbyssEngine::String title",
-"AbyssEngine::String text",
-"int color"
-],
-"self_name": "self"
-},
-"Ship_recomputeAfterSlots": {
-"class": "Ship",
-"method": "recomputeAfterSlots",
+"PlayerFixedObject_getPosition": {
+"class": "PlayerFixedObject",
+"method": "getPosition",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Ship_addCargo": {
-"class": "Ship",
-"method": "addCargo",
+"TouchButton_ctor": {
+"class": "TouchButton",
+"method": "ctor",
 "ret": "void",
 "params_after_self": [
-"Array<Item*> *items"
+"String *text",
+"int type",
+"int x",
+"int y",
+"int width",
+"int icon",
+"int style"
 ],
 "self_name": "self"
 },
-"Ship_removeCargo": {
+"TouchButton_ctor8": {
+"class": "TouchButton",
+"method": "ctor8",
+"ret": "void",
+"params_after_self": [
+"String *text",
+"int type",
+"int x",
+"int y",
+"int width",
+"int icon",
+"int mode"
+],
+"self_name": "self"
+},
+"TouchButton_setPosition3": {
+"class": "TouchButton",
+"method": "setPosition3",
+"ret": "void",
+"params_after_self": [
+"int x",
+"int y",
+"int align"
+],
+"self_name": "self"
+},
+"TouchButton_touch_end": {
+"class": "TouchButton",
+"method": "touch_end",
+"ret": "void",
+"params_after_self": [
+"int x",
+"int y"
+],
+"self_name": "self"
+},
+"Ship_setCargo": {
 "class": "Ship",
-"method": "removeCargo",
+"method": "setCargo",
+"ret": "void",
+"params_after_self": [
+"Array<Item*> *cargo"
+],
+"self_name": "self"
+},
+"Ship_getCargo": {
+"class": "Ship",
+"method": "getCargo",
+"ret": "void",
+"params_after_self": [
+"int index"
+],
+"self_name": "self"
+},
+"Ship_hasCargo": {
+"class": "Ship",
+"method": "hasCargo",
 "ret": "void",
 "params_after_self": [
 "int index",
@@ -1091,180 +442,355 @@
 ],
 "self_name": "self"
 },
-"Ship_setEquipment": {
+"Ship_hasVolatileGoods": {
 "class": "Ship",
-"method": "setEquipment",
+"method": "hasVolatileGoods",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_spaceAvailable": {
+"class": "Ship",
+"method": "spaceAvailable",
+"ret": "void",
+"params_after_self": [
+"int n"
+],
+"self_name": "self"
+},
+"Ship_getFreeSpace": {
+"class": "Ship",
+"method": "getFreeSpace",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_changeLoad": {
+"class": "Ship",
+"method": "changeLoad",
+"ret": "void",
+"params_after_self": [
+"int delta"
+],
+"self_name": "self"
+},
+"Ship_addEquipment": {
+"class": "Ship",
+"method": "addEquipment",
 "ret": "void",
 "params_after_self": [
 "Item *item"
 ],
 "self_name": "self"
 },
-"Galaxy_getSystems": {
-"class": "Galaxy",
-"method": "getSystems",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Galaxy_getVisited": {
-"class": "Galaxy",
-"method": "getVisited",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"BluePrint_getIndex": {
-"class": "BluePrint",
-"method": "getIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"BluePrint_getStationIndex": {
-"class": "BluePrint",
-"method": "getStationIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"BluePrint_getQuantity": {
-"class": "BluePrint",
-"method": "getQuantity",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"BluePrint_isUnlocked": {
-"class": "BluePrint",
-"method": "isUnlocked",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Agent_getStation": {
-"class": "Agent",
-"method": "getStation",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Agent_getSystem": {
-"class": "Agent",
-"method": "getSystem",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Agent_getRace": {
-"class": "Agent",
-"method": "getRace",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Agent_getIndex": {
-"class": "Agent",
-"method": "getIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Agent_getCosts": {
-"class": "Agent",
-"method": "getCosts",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Agent_setCosts": {
-"class": "Agent",
-"method": "setCosts",
+"Ship_removeEquipment": {
+"class": "Ship",
+"method": "removeEquipment",
 "ret": "void",
 "params_after_self": [
-"int costs"
+"Item *item"
 ],
 "self_name": "self"
 },
-"Agent_getOffer": {
-"class": "Agent",
-"method": "getOffer",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Agent_setOffer": {
-"class": "Agent",
-"method": "setOffer",
+"Ship_getFirstEquipmentOfSort": {
+"class": "Ship",
+"method": "getFirstEquipmentOfSort",
 "ret": "void",
 "params_after_self": [
-"int offer"
+"int sort"
 ],
 "self_name": "self"
 },
-"Agent_getEvent": {
-"class": "Agent",
-"method": "getEvent",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Agent_setEvent": {
-"class": "Agent",
-"method": "setEvent",
+"Ship_getFreeSlots": {
+"class": "Ship",
+"method": "getFreeSlots",
 "ret": "void",
 "params_after_self": [
-"int event"
+"int type"
 ],
 "self_name": "self"
 },
-"Agent_getSellItemIndex": {
-"class": "Agent",
-"method": "getSellItemIndex",
+"Ship_getSlots": {
+"class": "Ship",
+"method": "getSlots",
+"ret": "void",
+"params_after_self": [
+"int i"
+],
+"self_name": "self"
+},
+"Ship_getSlotTypes": {
+"class": "Ship",
+"method": "getSlotTypes",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Agent_getSellItemQuantity": {
-"class": "Agent",
-"method": "getSellItemQuantity",
+"Ship_freeSlot": {
+"class": "Ship",
+"method": "freeSlot",
+"ret": "void",
+"params_after_self": [
+"Item *item"
+],
+"self_name": "self"
+},
+"Ship_hasEquipment": {
+"class": "Ship",
+"method": "hasEquipment",
+"ret": "void",
+"params_after_self": [
+"int index",
+"int amount"
+],
+"self_name": "self"
+},
+"Ship_clone": {
+"class": "Ship",
+"method": "clone",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Agent_getSellItemPrice": {
-"class": "Agent",
-"method": "getSellItemPrice",
+"Ship_equals": {
+"class": "Ship",
+"method": "equals",
+"ret": "void",
+"params_after_self": [
+"Ship *other"
+],
+"self_name": "self"
+},
+"Ship_refreshValue": {
+"class": "Ship",
+"method": "refreshValue",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Agent_setSellItemPrice": {
-"class": "Agent",
-"method": "setSellItemPrice",
+"Ship_adjustPrice": {
+"class": "Ship",
+"method": "adjustPrice",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_priceDecline": {
+"class": "Ship",
+"method": "priceDecline",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_makeShip": {
+"class": "Ship",
+"method": "makeShip",
 "ret": "void",
 "params_after_self": [
 "int price"
 ],
 "self_name": "self"
 },
-"Agent_getSellSystemIndex": {
-"class": "Agent",
-"method": "getSellSystemIndex",
+"Ship_addMod": {
+"class": "Ship",
+"method": "addMod",
+"ret": "void",
+"params_after_self": [
+"int mod"
+],
+"self_name": "self"
+},
+"Ship_getMods": {
+"class": "Ship",
+"method": "getMods",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Agent_getSellBlueprintIndex": {
-"class": "Agent",
-"method": "getSellBlueprintIndex",
+"Ship_hasModInstalled": {
+"class": "Ship",
+"method": "hasModInstalled",
+"ret": "void",
+"params_after_self": [
+"int mod"
+],
+"self_name": "self"
+},
+"Ship_getIndex": {
+"class": "Ship",
+"method": "getIndex",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Agent_getWingmanFriendsCount": {
+"Ship_getRace": {
+"class": "Ship",
+"method": "getRace",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_setRace": {
+"class": "Ship",
+"method": "setRace",
+"ret": "void",
+"params_after_self": [
+"int race"
+],
+"self_name": "self"
+},
+"Ship_getSignatureRace": {
+"class": "Ship",
+"method": "getSignatureRace",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getMaxArmorHP": {
+"class": "Ship",
+"method": "getMaxArmorHP",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getMaxLoad": {
+"class": "Ship",
+"method": "getMaxLoad",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getCurrentLoad": {
+"class": "Ship",
+"method": "getCurrentLoad",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getPrice": {
+"class": "Ship",
+"method": "getPrice",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getFirePower": {
+"class": "Ship",
+"method": "getFirePower",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getMaxPassengers": {
+"class": "Ship",
+"method": "getMaxPassengers",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_hasEmergencySystem": {
+"class": "Ship",
+"method": "hasEmergencySystem",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getMaxHP": {
+"class": "Ship",
+"method": "getMaxHP",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getCombinedHP": {
+"class": "Ship",
+"method": "getCombinedHP",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_getHandling": {
+"class": "Ship",
+"method": "getHandling",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_hasCloak": {
+"class": "Ship",
+"method": "hasCloak",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_hasJumpDrive": {
+"class": "Ship",
+"method": "hasJumpDrive",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Ship_hasJumpDriveIntegrated": {
+"class": "Ship",
+"method": "hasJumpDriveIntegrated",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Galaxy_distance": {
+"class": "Galaxy",
+"method": "distance",
+"ret": "void",
+"params_after_self": [
+"SolarSystem *a",
+"SolarSystem *b"
+],
+"self_name": "self"
+},
+"Agent_setKnown": {
 "class": "Agent",
-"method": "getWingmanFriendsCount",
+"method": "setKnown",
+"ret": "void",
+"params_after_self": [
+"bool known"
+],
+"self_name": "self"
+},
+"MGame_buildDockChoice": {
+"class": "MGame",
+"method": "buildDockChoice",
+"ret": "void",
+"params_after_self": [
+"int textId",
+"int prefixLit",
+"int suffixLit"
+],
+"self_name": "self"
+},
+"MGame_loadSoundResources": {
+"class": "MGame",
+"method": "loadSoundResources",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"MGame_restorePlayerStats": {
+"class": "MGame",
+"method": "restorePlayerStats",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"MGame_setupWeaponsAndAudio": {
+"class": "MGame",
+"method": "setupWeaponsAndAudio",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"MGame_buildMissionFollowup": {
+"class": "MGame",
+"method": "buildMissionFollowup",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"

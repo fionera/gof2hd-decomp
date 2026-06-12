@@ -29,26 +29,19 @@ struct ImageFactory;
 
 static inline int *IArrayData(void *arr) {
     return F<int *>(arr, 4);
-
-    // ---- methods (converted from free functions) ----
-    int OnTouchBegin(int x, int y);
-    void OnTouchEnd(int x, int y);
-    int OnTouchMove(int x, int y);
-    void draw();
-    float getRelativeScrollHeight();
-    float getRelativeScrollStartPos();
-    uint32_t getWantedAtPosition(int x, int y);
-    int init();
-    void render3D();
-    void selectWanted(int idx);
-    void update(int dt);
 }
 
 static inline void *ArrayItem(void *arr, int idx) {
     return *(void **)((char *)F<void *>(arr, 4) + idx * 4);
 }
 
+#ifndef GOF2_BLK16_DEFINED
+#define GOF2_BLK16_DEFINED
+#ifndef GOF2_BLK16_DEFINED
+#define GOF2_BLK16_DEFINED
 struct Blk16 { int a, b, c, d; };
+#endif
+#endif
 
 extern "C" void *operator_new(unsigned size);
 extern "C" void operator_delete(void *p);

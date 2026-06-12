@@ -590,14 +590,14 @@ extern "C" {
 void KIPlayer_setActive_732f4(KIPlayer *self, int v);         // 0x732f4
 // 0x71848
 // 0x71a58
-int Ship_getFreeSpace(void *ship);                           // 0x722ec
+// 0x722ec
 // 0x718c0
 // 0x73300
 // 0x71b84
 // 0x7330c
 // 0x718d8
 // 0x7183c
-int Ship_spaceAvailable(void *ship, int amount);             // 0x73318
+// 0x73318
 // 0x73324
 // 0x73330
 // 0x718fc
@@ -637,16 +637,16 @@ void KIPlayer::captureCrate(void *hud) {
 
         // clamp to the ship's free space.
         ((Status *)status)->getShip();
-        int free1 = Ship_getFreeSpace(((Status *)status)->getShip());
+        int free1 = ((Ship *)(((Status *)status)->getShip()))->getFreeSpace();
         int amt = amount;
         if (free1 <= amount)
-            amt = Ship_getFreeSpace(((Status *)status)->getShip());
+            amt = ((Ship *)(((Status *)status)->getShip()))->getFreeSpace();
         if (amt < 1) {
             amount = 1;
         } else {
-            int free2 = Ship_getFreeSpace(((Status *)status)->getShip());
+            int free2 = ((Ship *)(((Status *)status)->getShip()))->getFreeSpace();
             if (free2 <= amount)
-                amount = Ship_getFreeSpace(((Status *)status)->getShip());
+                amount = ((Ship *)(((Status *)status)->getShip()))->getFreeSpace();
         }
 
         // resolve the item info and decrement the crate's remaining count.
@@ -675,7 +675,7 @@ void KIPlayer::captureCrate(void *hud) {
         }
 
         void *ship = ((Status *)status)->getShip();
-        int avail = Ship_spaceAvailable(ship, ((Item *)(item))->getAmount());
+        int avail = ((Ship *)(ship))->spaceAvailable(((Item *)(item))->getAmount());
         int hudIndex;
         int hudAmount;
         int flagA = special ? 1 : 0;

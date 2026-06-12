@@ -34,7 +34,6 @@ extern "C" void String_assign_slot(String *self, StringSlot *other);
 int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void ChoiceWindow_ctor(void *self);
-extern "C" void TouchButton_ctor(void *self, String *text, int type, int x, int y, int width, int icon, int style);
 using AbyssEngine::PaintCanvas;
 extern "C" void Layout_drawMask(void *layout);
 struct Vec2;  // defined below (float x, y) -- only the pointer type is needed here
@@ -549,31 +548,21 @@ int DialogueWindow::init() {
     String *label = (String *)((GameText *)(*gameText))->getText(0xb3);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    TouchButton_ctor(button, label, 5,
-                     self->frameX + margin,
-                     self->frameY - margin + self->frameHeight,
-                     F<int>(layout, 0x50), 0x21, 4);
+    ((TouchButton *)(button))->ctor(label, 5, self->frameX + margin, self->frameY - margin + self->frameHeight, F<int>(layout, 0x50), 0x21, 4);
     self->prevButton = button;
 
     button = ::operator new(0xc8);
     label = (String *)((GameText *)(*gameText))->getText(0xb4);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    TouchButton_ctor(button, label, 6,
-                     self->frameX + self->frameWidth - margin,
-                     self->frameY - margin + self->frameHeight,
-                     F<int>(layout, 0x50), 0x22, 4);
+    ((TouchButton *)(button))->ctor(label, 6, self->frameX + self->frameWidth - margin, self->frameY - margin + self->frameHeight, F<int>(layout, 0x50), 0x22, 4);
     self->nextButton = button;
 
     button = ::operator new(0xc8);
     label = (String *)((GameText *)(*gameText))->getText(0x18b);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    TouchButton_ctor(button, label, 0,
-                     self->frameX + half_round_to_zero(self->frameWidth),
-                     self->frameY + self->frameHeight - margin,
-                     self->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2,
-                     0x24, 4);
+    ((TouchButton *)(button))->ctor(label, 0, self->frameX + half_round_to_zero(self->frameWidth), self->frameY + self->frameHeight - margin, self->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2, 0x24, 4);
     self->choiceActive = 0;
     self->moreButton = button;
     return 0;
@@ -619,7 +608,7 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     int x = self->frameX + self->frameWidth / 2;
     int y = self->frameY + self->frameHeight - margin;
     int width = self->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2;
-    TouchButton_ctor(button, buttonText, 0, x, y, width, 0x24, 4);
+    ((TouchButton *)(button))->ctor(buttonText, 0, x, y, width, 0x24, 4);
     self->nextButton = button;
 
     ((String *)((String *)((char *)self + 0x34)))->assign(agentName);

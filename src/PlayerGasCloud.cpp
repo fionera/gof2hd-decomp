@@ -396,8 +396,6 @@ int PlayerEgo_getCampaignProgress(void *ego);
 
 
 
-int Ship_getFreeSpace(void *ship);
-int Ship_getFirstEquipmentOfSort(void *ship, int sort);
 
 
 
@@ -475,7 +473,7 @@ void PlayerGasCloud_update(void *self, int dt)
                         *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4) = g_pgcu_resetTimer;
                         void *ship = ((Status *)(*gStatus))->getShip();
                         int itemId = *(int *)(s + 0x160);
-                        if (Ship_getFreeSpace(ship) < 1) {
+                        if (((Ship *)(ship))->getFreeSpace() < 1) {
                             if (((Level *)(*(void **)(s + 0x54)))->getPlayer() != 0) {
                                 ((FModSound *)(g_pgcu_pickupSound))->stop(0x8d0);
                                 ((FModSound *)(g_pgcu_pickupSound))->play(0x8d0, 0, 0, 0.0f);
@@ -537,7 +535,7 @@ void PlayerGasCloud_update(void *self, int dt)
                               *(int *)(s + 0x158) >= 2000;
                 if (homing) {
                     void *ship = ((Status *)(*gStatus))->getShip();
-                    if (Ship_getFirstEquipmentOfSort(ship, 0x23) != 0) {
+                    if (((Ship *)(ship))->getFirstEquipmentOfSort(0x23) != 0) {
                         // Steer toward the turret.
                         Vector dir, dn;
                         dir = turretPos - *(Vector *)(&shardPos);
@@ -546,8 +544,8 @@ void PlayerGasCloud_update(void *self, int dt)
                         moveGeom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
 
                         void *ship2 = ((Status *)(*gStatus))->getShip();
-                        int eq = Ship_getFirstEquipmentOfSort(ship2, 0x23);
-                        int attr = ((Item *)((void *)(long)eq))->getAttribute(0);
+                        Item *eq = ((Ship *)(ship2))->getFirstEquipmentOfSort(0x23);
+                        int attr = ((Item *)(eq))->getAttribute(0);
                         float step = (float)(attr * dt);
                         Vector vel; vel = turretPos;
                         Vector_scale(step, &vel);

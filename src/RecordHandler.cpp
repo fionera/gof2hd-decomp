@@ -1,4 +1,5 @@
 #include "gof2/RecordHandler.h"
+#include "gof2/Ship.h"
 #include "gof2/Galaxy.h"
 #include "gof2/AEFile.h"
 #include "gof2/FModSound.h"
@@ -60,7 +61,6 @@ extern "C" void AEFile_Write_i64(long long v, unsigned int fd);
 extern "C" void AEFile_Write_i32(int v, unsigned int fd);
 extern "C" void AEFile_Write_str(void *s, unsigned int fd, int b);
 extern "C" void AEFile_Write_f32(int v, unsigned int fd);
-extern "C" int Ship_getIndex(Ship *sh);
 extern "C" void AEFile_WriteInt(int v, unsigned int fd);
 extern "C" void AEFile_WriteBool(int v, unsigned int fd);
 extern "C" void AEFile_WriteString(void *s, unsigned int fd, int flag);
@@ -548,7 +548,7 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
     AEFile_Write_i32(((Status *)(*sh))->getCurrentCampaignMission(), fd);
     AEFile_Write_i32(((Status *)(*sh))->getLevel(), fd);
     AEFile_Write_f32(I(*(void **)g_RH_wp_float, 0x2c), fd);
-    AEFile_Write_i32(Ship_getIndex(((Status *)(*sh))->getShip()), fd);
+    AEFile_Write_i32(((Ship *)(((Status *)(*sh))->getShip()))->getIndex(), fd);
     AEFile::Close(fd);
     ((String *)(path))->dtor();
     return 1;
@@ -1290,7 +1290,7 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     AEFile_Write_i32(I(rec, 0x40), fd);
     AEFile_Write_i32(I(rec, 0x20), fd);
     AEFile_Write_f32(I(rec, 0x11c), fd);
-    AEFile_Write_i32(Ship_getIndex(*(Ship **)((char *)rec + 0x130)), fd);
+    AEFile_Write_i32(((Ship *)(*(Ship **)((char *)rec + 0x130)))->getIndex(), fd);
     AEFile::Close(fd);
     ((String *)(path))->dtor();
     return 1;

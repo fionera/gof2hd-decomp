@@ -1,4 +1,5 @@
 #include "gof2/StatusWindow.h"
+#include "gof2/Ship.h"
 #include "gof2/BluePrint.h"
 #include "gof2/PaintCanvas.h"
 #include "gof2/Status.h"
@@ -553,9 +554,6 @@ void Layout_formatCredits(void *out, int credits);
 
 
 
-int   Ship_getIndex(void *ship);
-int   Ship_getFirePower(void *ship);
-int   Ship_getCombinedHP(void *ship);
 
 
 void  Globals_longToTimeStringNoSeconds(void *globals, void *out, unsigned long long t);
@@ -677,16 +675,16 @@ void StatusWindow::draw() {
         String_fromC(lbl, "", false);
         ((Layout *)(layout))->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         ((String *)(lbl))->dtor();
-        ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawShip(Ship_getIndex(((Status *)(*(void **)g_swd_status))->getShip()), x0 + (boxW >> 1) + pad * 2, y);
-        void *shipNameTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(Ship_getIndex(((Status *)(*(void **)g_swd_status))->getShip()));
+        ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawShip(((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
+        void *shipNameTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getIndex());
         ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, shipNameTxt,
                                x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y, false);
 
         // Fire-power line.
         char fpStr[0xc], fpPre[0xc], fpFull[0xc];
-        int firePow = Ship_getFirePower(((Status *)(*(void **)g_swd_status))->getShip());
+        int firePow = ((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getFirePower();
         String_fromInt(fpStr, (int)((float)firePow * 1.0f));
-        int fp2 = Ship_getFirePower(((Status *)(*(void **)g_swd_status))->getShip());
+        int fp2 = ((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getFirePower();
         String_fromC(fpPre, "%", false);
         String_concatInt(fpFull, fpPre, &fp2);
         String_concatText(fpStr, fpFull);
@@ -697,7 +695,7 @@ void StatusWindow::draw() {
 
         // Combined-HP line.
         char hpStr[0xc];
-        String_fromInt(hpStr, Ship_getCombinedHP(((Status *)(*(void **)g_swd_status))->getShip()));
+        String_fromInt(hpStr, ((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getCombinedHP());
         tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, hpStr);
         ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, hpStr, ((y + x0) - pad) - tw, y, false);
         ((String *)(hpStr))->dtor();

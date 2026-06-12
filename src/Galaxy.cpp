@@ -115,40 +115,10 @@ int Galaxy::getSystem(int index)
     return ((int *)data)[index];
 }
 
-// ---- distance_175f80.cpp ----
-// Galaxy::distance(SolarSystem* a, SolarSystem* b) — Euclidean distance between two systems'
-// positions (Z scaled by 1/10), scaled by a global unit factor. Returns 0 when a==b (same index).
-
-__attribute__((visibility("hidden"))) extern int **g_Galaxy_dist_canary;
+// ---- distance (member) 175f80 ----
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_dist_globals;
 __attribute__((visibility("hidden"))) extern float g_Galaxy_dist_scale;
 
-float Galaxy_distance(void *self, void *a, void *b)
-{
-    int *canary = *g_Galaxy_dist_canary;
-    int saved = *canary;
-
-    float result = 0.0f;
-    if (Galaxy_SS_getIndex(a) != Galaxy_SS_getIndex(b)) {
-        float va[3];
-        float vb[3];
-        va[0] = (float)Galaxy_SS_getX(a);
-        va[1] = (float)Galaxy_SS_getY(a);
-        va[2] = (float)Galaxy_idiv(Galaxy_SS_getZ(a), 10);
-        vb[0] = (float)Galaxy_SS_getX(b);
-        vb[1] = (float)Galaxy_SS_getY(b);
-        vb[2] = (float)Galaxy_idiv(Galaxy_SS_getZ(b), 10);
-
-        Galaxy_Vector_subassign(va, vb);
-        float sq = va[1] * va[1] + va[0] * va[0] + va[2] * va[2];
-        result = Galaxy_dist_sqrt(*g_Galaxy_dist_globals, sq) * g_Galaxy_dist_scale;
-    }
-
-
-    return result;
-}
-
-// ---- distance (member) 175f80 ----
 // Galaxy::distance(SolarSystem* a, SolarSystem* b): Euclidean distance between the two systems'
 // galactic-map positions, with the Z coordinate compressed by 1/10 (the star map is much flatter
 // in depth than in plane), scaled by the global unit factor. Same-system pairs are distance 0.

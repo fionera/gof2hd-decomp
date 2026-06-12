@@ -1,4 +1,5 @@
 #include "gof2/Station.h"
+#include "gof2/Ship.h"
 #include "gof2/Galaxy.h"
 #include "gof2/Mission.h"
 #include "gof2/Item.h"
@@ -18,7 +19,6 @@ extern "C" void Galaxy_setSystemVisited(Galaxy *g, int systemId);
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void Array_Ship_ctor(void *arr);
 extern "C" void ArraySetLength_Ship(uint32_t len, void *arr);
-extern "C" void *Ship_clone(Ship *ship);
 extern "C" void Station_arrayRemoveShip(Ship *ship, void *ships);
 extern "C" void ArrayReleaseClasses_Ship(void *arr) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Item(void *arr) __attribute__((nothrow));
@@ -28,8 +28,6 @@ extern "C" void *Array_Agent_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 extern "C" void Station_baseDtor(void *self) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Agent(void *arr) __attribute__((nothrow));
-extern "C" int Ship_getIndex(Ship *ship);
-extern "C" int Ship_equals(Ship *a, Ship *b);
 
 // ---- removeShips_a6c74.cpp ----
 struct Ship;
@@ -172,7 +170,7 @@ void Station::setShips(uint32_t *ships, bool deep) {
         self->ships = na;
         ArraySetLength_Ship(ships[0], na);
         for (uint32_t i = 0; i < ships[0]; i++) {
-            void *cloned = Ship_clone(((Ship **)ships[1])[i]);
+            void *cloned = ((Ship *)(((Ship **)ships[1])[i]))->clone();
             ((void **)((uint32_t *)self->ships)[1])[i] = cloned;
         }
     }
@@ -395,7 +393,7 @@ uint32_t Station::hasShip(int index) {
         for (uint32_t i = 0; i < arr[0]; i++) {
             Ship *sh = ((Ship **)arr[1])[i];
             if (sh != 0) {
-                if (Ship_getIndex(sh) == index)
+                if (((Ship *)(sh))->getIndex() == index)
                     return 1;
                 arr = (uint32_t *)self->ships;
             }
@@ -440,7 +438,7 @@ void Station::addShip(Ship *ship) {
         uint32_t n = arr[0];
         if (n != 0) {
             for (uint32_t i = 0; i < n; i++) {
-                if (Ship_equals(((Ship **)arr[1])[i], ship) != 0) {
+                if (((Ship *)(((Ship **)arr[1])[i]))->equals(ship) != 0) {
                     if ((int)i >= 0)
                         return;
                     arr = (uint32_t *)self->ships;

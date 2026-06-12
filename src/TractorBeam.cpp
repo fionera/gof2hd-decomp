@@ -1,4 +1,5 @@
 #include "gof2/TractorBeam.h"
+#include "gof2/Ship.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/FModSound.h"
 #include "gof2/Level.h"
@@ -100,7 +101,7 @@ using namespace AbyssEngine::AEMath;
 // 0x71f50
 
 // 0x71a58
-extern "C" int   Ship_getIndex(void *ship);                          // 0x719c8
+// 0x719c8
 
 // 0x6f7cc
 
@@ -182,7 +183,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     float dist = VectorLength((Vector *)self);
 
     void *ship = gStatus->getShip();
-    int idx = Ship_getIndex(ship);
+    int idx = ((Ship *)(ship))->getIndex();
     Vector offset = {0.0f, 0.0f, 0.0f};
     if (idx == 0x2c) {
         Vector dir;
@@ -190,7 +191,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         *(Vector *)&offset = *(const Vector *)&dir * 0.5f;
     } else {
         ship = gStatus->getShip();
-        idx = Ship_getIndex(ship);
+        idx = ((Ship *)(ship))->getIndex();
         if (idx == 0x31) {
             Vector dir, up, tmp;
             ((PlayerEgo *)(&dir))->GetDirVector();

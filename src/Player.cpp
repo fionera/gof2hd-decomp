@@ -1,4 +1,5 @@
 #include "gof2/Player.h"
+#include "gof2/Ship.h"
 #include "gof2/Mission.h"
 #include "gof2/externs.h"
 #include "gof2/FModSound.h"
@@ -79,9 +80,6 @@ extern "C" void *gAppManagerB;
 extern "C" void *gAppManagerC;
 extern "C" void Player_playShootSound_play_tail(float vol, void *sound, int id, Vector *pos, int z);
 extern "C" void Player_playShootSound(Player *self, int type, Vector *channel, float volume);
-extern "C" int Ship_getSignatureRace(void *self);
-extern "C" void *Ship_getFirstEquipmentOfSort(int self);
-extern "C" void Ship_removeEquipment(void *self, void *item);
 extern "C" void Player_setEnemy_tail(Player *self, Player *enemy);
 void Player_damage_full(Player *self, int amount, int a, int b);
 extern "C" void Player_setMaxArmorHP_tail();
@@ -89,8 +87,8 @@ extern "C" void Player_StopEngineSound(Player *self);
 extern "C" void FloatVectorMax(void *out, float a, float b, int c, int d);
 
 // ---- pitchAllPrimaryGuns_a433a.cpp ----
-void Player_pitchAllPrimaryGuns(Player *self, float pitch)
-{
+void Player::pitchAllPrimaryGuns(float pitch) {
+    Player *self = this;
     if (self->guns != 0) {
         Array<Gun *> *prim = self->guns->data()[0];
         if (prim != 0) {
@@ -115,8 +113,8 @@ void Player::setKIPlayer(KIPlayer *value) {
 }
 
 // ---- damageHull_a2ec6.cpp ----
-void Player_damageHull(Player *self, int damage)
-{
+void Player::damageHull(int damage) {
+    Player *self = this;
     if (!self->vulnerable) {
         return;
     }
@@ -152,8 +150,8 @@ int Player::getShieldDamageRate() {
 }
 
 // ---- replaceGuns_a4360.cpp ----
-int Player_replaceGuns(int a, int b, int c, int d, int e, bool f)
-{
+int Player::replaceGuns(int a, int b, int c, int d, int e, bool f) {
+    Player *self = this;
     return a;
 }
 
@@ -238,8 +236,8 @@ int Player::getHitpoints() {
 }
 
 // ---- damageShield_a2f10.cpp ----
-void Player_damageShield(Player *self, int damage)
-{
+void Player::damageShield(int damage) {
+    Player *self = this;
     if (!self->vulnerable) {
         return;
     }
@@ -341,8 +339,8 @@ void Player::setActive(bool value) {
 }
 
 // ---- isAsteroid_a29cc.cpp ----
-bool Player_isAsteroid(Player *self)
-{
+bool Player::isAsteroid() {
+    Player *self = this;
     KIPlayer *ki = self->kiPlayer;
     bool result = false;
     if (ki != 0) {
@@ -480,8 +478,8 @@ float Player::getEmpForce() {
 // member of this name would collide with the 'turnedEnemy' data member (field 0xe0).
 
 // ---- gunAvailable_a36ac.cpp ----
-bool Player_gunAvailable(Player *self, unsigned int slot)
-{
+bool Player::gunAvailable(unsigned int slot) {
+    Player *self = this;
     if (slot < 4) {
         Array<Gun *> *slotArray = self->guns->data()[slot];
         if (slotArray != 0 && slotArray->size() != 0) {
@@ -498,8 +496,8 @@ int Player::getCombinedHP() {
 }
 
 // ---- isGasCloud_a29e2.cpp ----
-bool Player_isGasCloud(Player *self)
-{
+bool Player::isGasCloud() {
+    Player *self = this;
     KIPlayer *ki = self->kiPlayer;
     bool result = false;
     if (ki != 0) {
@@ -564,11 +562,11 @@ struct HitVec3 {
     float z;
 };
 
-void Player_getHitVector(HitVec3 *out, Player *self)
-{
+void Player::getHitVector(Vector *out) {
+    Player *self = this;
     double xy = *(double *)self->hitVector;
     out->z = self->hitVector[2];
-    out->xy = xy;
+    *(double *)&out->x = xy;
 }
 
 // ---- setPlayShootSound_a2a56.cpp ----
@@ -591,8 +589,8 @@ void Player::regenerateShield() {
 }
 
 // ---- heal_a42dc.cpp ----
-void Player_heal(Player *self, float amount)
-{
+void Player::heal(float amount) {
+    Player *self = this;
     float f = self->field_110 + amount;
     self->field_110 = f;
     if (f > 1.0f) {
@@ -605,8 +603,8 @@ void Player_heal(Player *self, float amount)
 }
 
 // ---- setShieldHP_a2cf6.cpp ----
-void Player_setShieldHP(Player *self, int value)
-{
+void Player::setShieldHP(int value) {
+    Player *self = this;
     float maxF = (float)self->maxShieldHP;
     self->shieldHP = (float)value;
     if ((float)value > maxF) {
@@ -616,8 +614,8 @@ void Player_setShieldHP(Player *self, int value)
 }
 
 // ---- refillGunDelay_a39dc.cpp ----
-void Player_refillGunDelay(Player *self, int slot)
-{
+void Player::refillGunDelay(int slot) {
+    Player *self = this;
     Array<Array<Gun *> *> *guns = self->guns;
     if (guns != 0 && slot >= 0 && (unsigned int)slot < guns->size()) {
         Array<Gun *> *arr = guns->data()[slot];
@@ -634,8 +632,8 @@ void Player_refillGunDelay(Player *self, int slot)
 // ---- addEnemies_a2be2.cpp ----
 
 
-void Player_addEnemies(Player *self, Array<Player *> *enemies)
-{
+void Player::addEnemies(Array<Player *> *enemies) {
+    Player *self = this;
     if (self->enemies == 0) {
         return Player_setEnemies_tail(self, enemies);
     }
@@ -748,14 +746,14 @@ Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondar
 }
 
 // ---- getPosition_a2858.cpp ----
-void Player_getPosition(void *out, Player *self)
-{
+void Player::getPosition(Vector *out) {
+    Player *self = this;
     MatrixGetPosition(out, self->transform);
 }
 
 // ---- damageGamma_a2f62.cpp ----
-float Player_damageGamma(Player *self, float amount)
-{
+float Player::damageGamma(float amount) {
+    Player *self = this;
     if (self->vulnerable) {
         if (self->active) {
             amount = self->gammaHP - amount;
@@ -887,15 +885,15 @@ lab_3164:
 // ---- addGun_a3910.cpp ----
 
 
-void Player_addGun(Player *self, Array<Gun *> *guns, int slot)
-{
+void Player::addGun(Array<Gun *> *gunsIn, int slot) {
+    Player *self = this;
     if (self->guns != 0) {
         if ((unsigned int)slot < 4) {
             Array<Gun *> *arr = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
             Array_Gun_ctor(arr);
             self->guns->data()[slot] = arr;
-            for (unsigned int i = 0; i < guns->size(); i++) {
-                ArrayAdd_Gun(guns->data()[i], self->guns->data()[slot]);
+            for (unsigned int i = 0; i < gunsIn->size(); i++) {
+                ArrayAdd_Gun(gunsIn->data()[i], self->guns->data()[slot]);
             }
         }
         if (self->playShootSound) {
@@ -905,8 +903,8 @@ void Player_addGun(Player *self, Array<Gun *> *guns, int slot)
 }
 
 // ---- setAlwaysEnemy_a2a04.cpp ----
-void Player_setAlwaysEnemy(Player *self, bool value)
-{
+void Player::setAlwaysEnemy(bool value) {
+    Player *self = this;
     self->alwaysEnemy = value;
     self->enemyFlags = 1;
     self->turnedEnemy = 1;
@@ -958,8 +956,8 @@ __attribute__((minsize)) Player::~Player()
 }
 
 // ---- setGammaHP_a2d30.cpp ----
-void Player_setGammaHP(Player *self, int value)
-{
+void Player::setGammaHP(int value) {
+    Player *self = this;
     float f = (float)value;
     float sel = f;
     if (value != 9999999) {
@@ -973,8 +971,8 @@ void Player_setGammaHP(Player *self, int value)
 }
 
 // ---- stopShootSound_a3a14.cpp ----
-void Player_stopShootSound(Player *self, int index, int channel)
-{
+void Player::stopShootSound(int index, int channel) {
+    Player *self = this;
     if ((unsigned int)channel > 8) {
         return;
     }
@@ -993,8 +991,8 @@ void Player_stopShootSound(Player *self, int index, int channel)
 }
 
 // ---- reset_a2a70.cpp ----
-void Player_reset(Player *self)
-{
+void Player::reset() {
+    Player *self = this;
     float shield = (float)self->maxShieldHP;
     int maxHp = self->maxHitpoints;
     int maxEmp = self->maxEmpPoints;
@@ -1021,8 +1019,8 @@ void Player_reset(Player *self)
 // ---- addGun_a36ec.cpp ----
 
 
-void Player_addGun(Player *self, Gun *gun, int slot)
-{
+void Player::addGun(Gun *gun, int slot) {
+    Player *self = this;
     if (self->guns != 0) {
         if ((unsigned int)slot < 4) {
             Array<Gun *> *arr = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
@@ -1139,8 +1137,8 @@ __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Ve
 // ---- setEnemies_a2acc.cpp ----
 
 
-void Player_setEnemies(Player *self, Array<Player *> *enemies)
-{
+void Player::setEnemies(Array<Player *> *enemies) {
+    Player *self = this;
     if (self->enemies != 0) {
         ::operator delete(Array_Player_dtor(self->enemies));
     }
@@ -1320,16 +1318,16 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
                 ((Level *)(*(int *)((char *)self->kiPlayer + 0x54)))->friendTurnedEnemy();
                 void *ship = (void *)((Status *)(*gStatus))->getShip();
                 void *standing = (void *)(long)((Status *)(*gStatus))->getStanding();
-                if (Ship_getSignatureRace(ship) >= 0) {
-                    bool match = ((unsigned int)Ship_getSignatureRace(ship) ==
+                if (((Ship *)(ship))->getSignatureRace() >= 0) {
+                    bool match = ((unsigned int)((Ship *)(ship))->getSignatureRace() ==
                                   *(unsigned int *)((char *)self->kiPlayer + 0x28));
                     unsigned int dis = 0;
                     if (match) dis = *(unsigned char *)((char *)self->kiPlayer + 0x42);
                     if (match && dis == 0) {
-                        void *item = Ship_getFirstEquipmentOfSort((int)(long)ship);
-                        Ship_removeEquipment(ship, item);
+                        Item *item = ((Ship *)(ship))->getFirstEquipmentOfSort(0x1d);
+                        ((Ship *)(ship))->removeEquipment(item);
                         void *st2 = (void *)(long)((Status *)(*gStatus))->getStanding();
-                        ((Standing *)(st2))->applyDelict(Ship_getSignatureRace(ship), 100);
+                        ((Standing *)(st2))->applyDelict(((Ship *)(ship))->getSignatureRace(), 100);
                         ((Standing *)(standing))->setPlayerSignatureRace(-1);
                         void *ego = (void *)(__INTPTR_TYPE__)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
                         int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
@@ -1344,13 +1342,13 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
             if (frac2 * f3 < dmgF3) {
                 void *ship = (void *)((Status *)(*gStatus))->getShip();
                 void *standing = (void *)(long)((Status *)(*gStatus))->getStanding();
-                if (Ship_getSignatureRace(ship) >= 0 &&
+                if (((Ship *)(ship))->getSignatureRace() >= 0 &&
                     *(int *)((char *)self->kiPlayer + 0x28) < 4 &&
                     *(char *)((char *)self->kiPlayer + 0x42) == 0) {
-                    void *item = Ship_getFirstEquipmentOfSort((int)(long)ship);
-                    Ship_removeEquipment(ship, item);
+                    Item *item = ((Ship *)(ship))->getFirstEquipmentOfSort(0x1d);
+                    ((Ship *)(ship))->removeEquipment(item);
                     void *st2 = (void *)(long)((Status *)(*gStatus))->getStanding();
-                    ((Standing *)(st2))->applyDelict(Ship_getSignatureRace(ship), 100);
+                    ((Standing *)(st2))->applyDelict(((Ship *)(ship))->getSignatureRace(), 100);
                     ((Standing *)(standing))->setPlayerSignatureRace(-1);
                     void *ego = (void *)(__INTPTR_TYPE__)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
                     int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
@@ -1476,8 +1474,8 @@ LAB_3488:
 // ---- setEnemy_a2b76.cpp ----
 
 
-void Player_setEnemy(Player *self, Player *enemy)
-{
+void Player::setEnemy(Player *enemy) {
+    Player *self = this;
     Array<Player *> *tmp = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
     Array_Player_ctor(tmp);
     ArrayAdd_Player(enemy, tmp);
@@ -1489,8 +1487,8 @@ void Player_setEnemy(Player *self, Player *enemy)
 // ---- addEnemy_a2c6a.cpp ----
 
 
-void Player_addEnemy(Player *self, Player *enemy)
-{
+void Player::addEnemy(Player *enemy) {
+    Player *self = this;
     if (self->enemies == 0) {
         return Player_setEnemy_tail(self, enemy);
     }
@@ -1521,8 +1519,8 @@ void Player::damage(int amount) {
 }
 
 // ---- stopShooting_a3d08.cpp ----
-void Player_stopShooting(Player *self, int slot, int channel)
-{
+void Player::stopShooting(int slot, int channel) {
+    Player *self = this;
     if ((unsigned int)(channel - 0x16) >= 9) {
         return;
     }
@@ -1548,8 +1546,8 @@ void Player_stopShooting(Player *self, int slot, int channel)
 }
 
 // ---- setAlwaysFriend_a2a14.cpp ----
-void Player_setAlwaysFriend(Player *self, bool value)
-{
+void Player::setAlwaysFriend(bool value) {
+    Player *self = this;
     self->alwaysFriend = value;
     self->enemyFlags = 0x100;
     self->turnedEnemy = 0;
@@ -1709,8 +1707,9 @@ void Player::shoot(int a, int b, long long pos, bool flag) {
 }
 
 // ---- stopShooting_a3cbc.cpp ----
-void Player_stopShooting(Player *self, int slot)
-{
+// Player::stopShooting(int) — single-arg overload (no channel filter).
+void Player::stopShooting(int slot) {
+    Player *self = this;
     Array<Array<Gun *> *> *guns = self->guns;
     if (guns == 0) {
         return;
@@ -1743,8 +1742,8 @@ float * Player::setHitVector(float x, float y, float z) {
 }
 
 // ---- resetGunDelay_a39aa.cpp ----
-void Player_resetGunDelay(Player *self, int slot)
-{
+void Player::resetGunDelay(int slot) {
+    Player *self = this;
     Array<Array<Gun *> *> *guns = self->guns;
     if (guns == 0) {
         return;
@@ -1766,372 +1765,12 @@ void Player_resetGunDelay(Player *self, int slot)
 
 // =====================================================================
 // Real Player:: member methods recovered from the corresponding free
-// functions above. These are 1:1 semantic equivalents that operate on
-// `this`; the standalone extern "C" Player_* shims are kept intact so the
-// later mechanical wiring pass can re-point call sites without conflicts.
+// functions above. The remaining ones below have no earlier definition.
 // =====================================================================
-
-// ---- pitchAllPrimaryGuns_a433a ----
-void Player::pitchAllPrimaryGuns(float pitch) {
-    if (this->guns != 0) {
-        Array<Gun *> *prim = this->guns->data()[0];
-        if (prim != 0) {
-            int n = prim->size();
-            for (int i = 0; i < n; i++) {
-                *(float *)((char *)prim->data()[i] + 0xb0) = pitch;
-            }
-        }
-    }
-}
-
-// ---- damageHull_a2ec6 ----
-void Player::damageHull(int damage) {
-    if (!this->vulnerable || !this->active) {
-        return;
-    }
-    int armor = this->armorHP;
-    if (armor <= 0) {
-        int h = this->hitpoints - damage;
-        h &= ~(h >> 31);
-        this->hitpoints = h;
-    } else {
-        armor -= damage;
-        this->armorHP = armor;
-    }
-    if (armor <= -1) {
-        this->armorHP = 0;
-    }
-    this->damaged = 1;
-    Player_damageHull_tail();
-}
-
-// ---- damageShield_a2f30 ----
-void Player::damageShield(int damage) {
-    if (!this->vulnerable || !this->active) {
-        return;
-    }
-    float s = this->shieldHP;
-    if (s <= 0.0f) {
-        int h = this->hitpoints - damage;
-        h &= ~(h >> 31);
-        this->hitpoints = h;
-    } else {
-        s = s - (float)damage;
-        this->shieldHP = s;
-    }
-    if (s < 0.0f) {
-        this->shieldHP = 0;
-    }
-    this->damaged = 1;
-    Player_damageShield_tail();
-}
-
-// ---- damageGamma_a2f62 ----
-float Player::damageGamma(float amount) {
-    if (this->vulnerable && this->active) {
-        amount = this->gammaHP - amount;
-        // 0x67 = high byte of field_64: the gamma-damage flag.
-        *((unsigned char *)this + 0x67) = 1;
-        this->gammaHP = amount;
-        if (!(amount > 0.0f)) {
-            this->gammaHP = 0;
-        }
-    }
-    return amount;
-}
 
 // ---- getEnemies_a2cd2 ----
 Array<Player *> *Player::getEnemies() {
     return this->enemies;
-}
-
-// ---- getPosition_a2eba ----
-void Player::getPosition(Vector *out) {
-    MatrixGetPosition(out, this->transform);
-}
-
-// ---- isAsteroid_a29cc ----
-bool Player::isAsteroid() {
-    KIPlayer *ki = this->kiPlayer;
-    if (ki != 0) {
-        return *((char *)ki + 0x3c) != 0;
-    }
-    return false;
-}
-
-// ---- isGasCloud_a29e2 ----
-bool Player::isGasCloud() {
-    KIPlayer *ki = this->kiPlayer;
-    if (ki != 0) {
-        return *((char *)ki + 0x44) != 0;
-    }
-    return false;
-}
-
-// ---- gunAvailable_a3982 ----
-bool Player::gunAvailable(unsigned int slot) {
-    if (slot < 4) {
-        Array<Gun *> *slotArray = this->guns->data()[slot];
-        if (slotArray != 0 && slotArray->size() != 0) {
-            return *(int *)slotArray->data() != 0;
-        }
-    }
-    return false;
-}
-
-// ---- heal_a42dc ----
-// field_110 is a fractional hull-regen accumulator stored in the int slot;
-// reinterpret its bits as float to match the original semantics.
-void Player::heal(float amount) {
-    float acc = *(float *)&this->field_110 + amount;
-    *(float *)&this->field_110 = acc;
-    if (acc > 1.0f) {
-        int count = (int)acc;
-        for (int i = 0; i < count; i++) {
-            this->regenerateHull();
-        }
-        *(float *)&this->field_110 = *(float *)&this->field_110 - (float)count;
-    }
-}
-
-// ---- setShieldHP_a2cf6 ----
-void Player::setShieldHP(int value) {
-    float maxF = (float)this->maxShieldHP;
-    this->shieldHP = (float)value;
-    if ((float)value > maxF) {
-        this->shieldHP = maxF;
-    }
-    Player_setShieldHP_tail();
-}
-
-// ---- setGammaHP_a2d30 ----
-void Player::setGammaHP(int value) {
-    float f = (float)value;
-    float sel = f;
-    if (value != 9999999) {
-        sel = 100.0f;
-    }
-    if (value > 100) {
-        f = sel;
-    }
-    this->gammaHP = f;
-    Player_setGammaHP_tail();
-}
-
-// ---- refillGunDelay_a39dc ----
-void Player::refillGunDelay(int slot) {
-    Array<Array<Gun *> *> *gunSlots = this->guns;
-    if (gunSlots != 0 && slot >= 0 && (unsigned int)slot < gunSlots->size()) {
-        Array<Gun *> *arr = gunSlots->data()[slot];
-        if (arr != 0) {
-            int n = arr->size();
-            for (int i = 0; i < n; i++) {
-                Gun *gun = arr->data()[i];
-                gun->timer = gun->fireDelay;
-            }
-        }
-    }
-}
-
-// ---- resetGunDelay_a39aa ----
-void Player::resetGunDelay(int slot) {
-    Array<Array<Gun *> *> *gunSlots = this->guns;
-    if (gunSlots == 0 || slot < 0 || (unsigned int)slot >= gunSlots->size()) {
-        return;
-    }
-    Array<Gun *> *arr = gunSlots->data()[slot];
-    if (arr != 0) {
-        int n = arr->size();
-        for (int i = 0; i < n; i++) {
-            arr->data()[i]->timer = 0;
-        }
-    }
-}
-
-// ---- setAlwaysEnemy_a2a04 ----
-void Player::setAlwaysEnemy(bool value) {
-    this->alwaysEnemy = value;
-    this->enemyFlags = 1;
-    this->turnedEnemy = 1;
-}
-
-// ---- setAlwaysFriend_a2a14 ----
-void Player::setAlwaysFriend(bool value) {
-    this->alwaysFriend = value;
-    this->enemyFlags = 0x100;
-    this->turnedEnemy = 0;
-}
-
-// ---- reset_a2a70 ----
-void Player::reset() {
-    float shield = (float)this->maxShieldHP;
-    int maxHp = this->maxHitpoints;
-    int maxEmp = this->maxEmpPoints;
-    this->gammaHP = 100.0f;
-    this->hitpoints = maxHp;
-    this->empPoints = maxEmp;
-    this->shieldHP = shield;
-    this->updateDamageRate();
-    this->vulnerable = 1;
-    this->active = 1;       // active = 1, damaged = 0 (packed pair)
-    this->field_54 = 0;
-    *((unsigned char *)this + 0x44) = 0;
-    this->damageDoneByPlayer = 0;
-    this->field_5e = 0;
-    this->field_b4 = 0;
-    *((unsigned char *)this + 0x68) = 0;
-    this->field_64 = 0;
-    this->bombForce = 0;
-    this->empForce = 0;
-    this->pad_dd[0] = 0;
-    ((uint8_t *)&this->empForce)[1] = 0;
-}
-
-// ---- setEnemies_a2acc ----
-void Player::setEnemies(Array<Player *> *enemies) {
-    if (this->enemies != 0) {
-        ::operator delete(Array_Player_dtor(this->enemies));
-    }
-    this->enemies = 0;
-    if (enemies != 0) {
-        Array<Player *> *copy = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
-        Array_Player_ctor(copy);
-        this->enemies = copy;
-        ArrayAdd_PlayerArray(enemies, copy);
-    }
-    Array<Array<Gun *> *> *gunSlots = this->guns;
-    if (gunSlots != 0) {
-        for (unsigned int i = 0; i < gunSlots->size(); i++) {
-            Array<Gun *> *slot = gunSlots->data()[i];
-            if (slot != 0) {
-                for (unsigned int j = 0; j < slot->size(); j++) {
-                    Gun *gun = slot->data()[j];
-                    if (gun != 0) {
-                        Gun_setEnemies(gun);
-                        gunSlots = this->guns;
-                        slot = gunSlots->data()[i];
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ---- addEnemies_a2be2 ----
-void Player::addEnemies(Array<Player *> *enemies) {
-    if (this->enemies == 0) {
-        Player_setEnemies_tail(this, enemies);
-        return;
-    }
-    Array<Player *> *tmp = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
-    Array_Player_ctor(tmp);
-    for (unsigned int i = 0; i < this->enemies->size(); i++) {
-        ArrayAdd_Player(this->enemies->data()[i], tmp);
-    }
-    for (unsigned int i = 0; i < enemies->size(); i++) {
-        ArrayAdd_Player(enemies->data()[i], tmp);
-    }
-    this->setEnemies(tmp);
-    Array_Player_dtor(tmp);
-    Player_operator_delete_tail(tmp);
-}
-
-// ---- setEnemy_a2c34 ----
-void Player::setEnemy(Player *enemy) {
-    Array<Player *> *tmp = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
-    Array_Player_ctor(tmp);
-    ArrayAdd_Player(enemy, tmp);
-    this->setEnemies(tmp);
-    Array_Player_dtor(tmp);
-    Player_operator_delete_tail(tmp);
-}
-
-// ---- addEnemy_a2c6a ----
-void Player::addEnemy(Player *enemy) {
-    if (this->enemies == 0) {
-        Player_setEnemy_tail(this, enemy);
-        return;
-    }
-    Array<Player *> *tmp = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
-    Array_Player_ctor(tmp);
-    if (this->enemies->size() != 0) {
-        ArrayAdd_PlayerArray(this->enemies, tmp);
-    }
-    ArrayAdd_Player(enemy, tmp);
-    this->setEnemies(tmp);
-    Array_Player_dtor(tmp);
-    Player_operator_delete_tail(tmp);
-}
-
-// ---- addGun_a3910 (slot from a gun array) ----
-void Player::addGun(Array<Gun *> *gunsIn, int slot) {
-    if (this->guns != 0) {
-        if ((unsigned int)slot < 4) {
-            Array<Gun *> *arr = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
-            Array_Gun_ctor(arr);
-            this->guns->data()[slot] = arr;
-            for (unsigned int i = 0; i < gunsIn->size(); i++) {
-                ArrayAdd_Gun(gunsIn->data()[i], this->guns->data()[slot]);
-            }
-        }
-        if (this->playShootSound) {
-            Player_shoot_tail(this, this->playShootSoundId);
-        }
-    }
-}
-
-// ---- addGun_a36ec (single gun) ----
-void Player::addGun(Gun *gun, int slot) {
-    if (this->guns != 0) {
-        if ((unsigned int)slot < 4) {
-            Array<Gun *> *arr = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
-            Array_Gun_ctor(arr);
-            this->guns->data()[slot] = arr;
-            ArrayAdd_Gun(gun, this->guns->data()[slot]);
-        }
-        if (this->playShootSound) {
-            Player_shoot_tail(this, this->playShootSoundId);
-        }
-    }
-}
-
-// ---- stopShooting_a3d08 ----
-void Player::stopShooting(int slot, int channel) {
-    if ((unsigned int)(channel - 0x16) >= 9) {
-        return;
-    }
-    Array<Array<Gun *> *> *gunSlots = this->guns;
-    if (gunSlots == 0 || slot < 0 || (unsigned int)slot >= gunSlots->size()) {
-        return;
-    }
-    Array<Gun *> *arr = gunSlots->data()[slot];
-    if (arr == 0) {
-        return;
-    }
-    for (unsigned int i = 0; i < arr->size(); i++) {
-        Gun *gun = arr->data()[i];
-        ((Player *)(this))->stopShootSound(gun->itemIndex, gun->weaponType);
-        arr = this->guns->data()[slot];
-    }
-}
-
-// ---- stopShootSound_a3a14 ----
-void Player::stopShootSound(int index, int channel) {
-    if ((unsigned int)channel > 8) {
-        return;
-    }
-    if (((1 << channel) & 0x10c) != 0) {
-        void *sound;
-        int id;
-        if (this->kiPlayer != 0 && *(int *)((char *)this->kiPlayer + 0x28) == 9) {
-            id = 0x3e;
-            sound = gFModSoundAlt;
-        } else {
-            id = gStopSoundIds[index];
-            sound = gFModSound;
-        }
-        Player_stopShootSound_play_tail(sound, id);
-    }
 }
 
 // NOTE: playShootSound is intentionally NOT added as a Player:: member — it collides with the
@@ -2176,20 +1815,3 @@ void Player::StopEngineSound() {
     }
 }
 
-// ---- getHitVector_a2eb2 ----
-// Copies the cached 3-component hit vector (field at 0xc4..0xcc) into the caller's
-// output Vector. In the target this is the sret form of the standalone
-// Player_getHitVector shim above; exposed here as a real member.
-void Player::getHitVector(Vector *out) {
-    out->x = this->hitVector[0];
-    out->y = this->hitVector[1];
-    out->z = this->hitVector[2];
-}
-
-// ---- replaceGuns_a4360 ----
-// Stub in the shipped binary: the body simply returns its first argument and performs
-// no gun replacement (the real logic was compiled out / never wired up). Kept as a real
-// member for completeness and to match the call sites that go through Player_replaceGuns.
-int Player::replaceGuns(int a, int b, int c, int d, int e, bool f) {
-    return a;
-}

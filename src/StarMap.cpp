@@ -1,4 +1,5 @@
 #include "gof2/StarMap.h"
+#include "gof2/Ship.h"
 #include "gof2/AERandom.h"
 #include "gof2/Galaxy.h"
 #include "gof2/AEGeometry.h"
@@ -74,7 +75,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_draw_font;
 extern "C" float EaseInOut_GetValue(void *ease);
 extern "C" float EaseInOut_GetMinValue(void *ease);
 extern "C" void String_add(String *out, String *a, String *b);
-extern "C" int Ship_hasJumpDriveIntegrated(void *ship);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_status;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_depart_store0_a;
 extern "C" __attribute__((visibility("hidden"))) uint8_t *g_StarMap_depart_flag_a;
@@ -89,7 +89,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_achieve
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_sound;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_depart_modstation_flag;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_canvas;
-extern "C" int Ship_hasVolatileGoods(void *ship);
 extern "C" int Station_getSystem(void *station);
 extern "C" void ArrayReleaseClasses_Station(void *arr);
 extern "C" void *Array_Station_dtor(void *arr);
@@ -162,7 +161,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_info_layout;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_info_text;
 extern "C" __attribute__((visibility("hidden"))) uint8_t *g_StarMap_info_isGerman;
 extern "C" int Station_getTecLevel(void *station);
-extern "C" int Ship_hasCargo(void *ship, int cargo);
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_init_canvas;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_init_imageCreate)(uint32_t, int, void *);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_init_layout;
@@ -173,9 +171,7 @@ extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_init_screenW;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_init_screenH;
 void MatrixSetRotation(void *matrix, float x, float y, float z, float w);
 extern "C" void *EaseInOut_ctor(void *ease);
-extern "C" void *TouchButton_ctor(void *button, String *text, int a, int x, int y, int size);
 extern "C" void *SystemPathFinder_ctor(void *finder);
-extern "C" int Ship_getCargo(void *ship);
 
 // ---- missionChanged_c9b48.cpp ----
 uint8_t StarMap::missionChanged()
@@ -469,10 +465,10 @@ void StarMap::depart(bool jump)
 
         if (jump) {
             void *ship = ((Status *)(status))->getShip();
-            if (Ship_hasVolatileGoods(ship) != 0) {
+            if (((Ship *)(ship))->hasVolatileGoods() != 0) {
                 goto no_jump;
             }
-            if (Ship_hasJumpDriveIntegrated(((Status *)(status))->getShip()) == 0 && field<uint8_t>(this, 0xab) == 0) {
+            if (((Ship *)(((Status *)(status))->getShip()))->hasJumpDriveIntegrated() == 0 && field<uint8_t>(this, 0xab) == 0) {
                 goto no_jump;
             }
             int toSystem = Station_getSystem(*g_StarMap_depart_status2);
@@ -1568,8 +1564,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     field<uint8_t>(this, 0) = 0;
     void *button = operator new(0xc8);
     String *back = (String *)((GameText *)(*g_StarMap_init_text))->getText(0x190);
-    TouchButton_ctor(button, back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c),
-                     *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
+    ((TouchButton *)(button))->ctor5(back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c), *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
     ptr_field(this, 0x4c) = button;
     ptr_field(this, 0xa0) = 0;
     ptr_field(this, 0x5c) = ChoiceWindow_ctor(operator new(0x5c));
@@ -1608,7 +1603,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     field<int32_t>(this, 0x110) =
         field<int32_t>(*g_StarMap_init_layout, 4) * 5 + field<int32_t>(*g_StarMap_init_layout, 0x2c) * 2;
     field<int32_t>(this, 0x11c) = 0;
-    void *cargo = (void *)Ship_getCargo(((Status *)(status))->getShip());
+    void *cargo = (void *)((Ship *)(((Status *)(status))->getShip()))->getCargo();
     field<int32_t>(this, 0x1d8) = cargo != 0 ? ((Item *)(cargo))->getAmount() : 0;
 
     ptr_field(this, 0x1b0) = (void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d2, (PaintCanvas*)(long)(canvas), false);

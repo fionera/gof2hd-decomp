@@ -1,4 +1,5 @@
 #include "gof2/Globals.h"
+#include "gof2/Ship.h"
 #include "gof2/PaintCanvasClass.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/FModSound.h"
@@ -53,8 +54,6 @@ extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
 extern "C" void AEString_default_ctor(void *s);
 extern "C" void AEString_cstr_ctor(void *s, const char *str, int copy);
 extern "C" void AEString_copy_ctor(void *dst, void *src, int copy);
-extern "C" int Ship_getPrice(int ship);
-extern "C" int Ship_hasModInstalled(int ship, int modIndex);
 // AERandom::nextInt — the real defs are free functions in AERandom.cpp:
 //   nextInt_71aa4(self)        -> unbounded 32-bit draw (1-arg call form)
 //   nextInt_71ad0(self, bound) -> bounded draw            (2-arg call form)
@@ -704,12 +703,12 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
 
                 if (offer == 8) {
                     int ship = (int)(long)(*g_status)->getShip();
-                    int price = Ship_getPrice(ship);
+                    int price = ((Ship *)(ship))->getPrice();
                     int pct = ((Agent *)(agent))->getModPricePercentage();
                     ((Agent *)(agent))->setSellItemPrice(idiv(price * pct, 100));
                     ship = (int)(long)(*g_status)->getShip();
                     int modIdx = ((Agent *)(agent))->getSellModIndex();
-                    if (Ship_hasModInstalled(ship, modIdx) != 0) {
+                    if (((Ship *)(ship))->hasModInstalled(modIdx) != 0) {
                         void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText(modIdx);
                         *(int *)(*busy + 0xd0) -= 1;
                         AEString_copy_ctor(out, acc, 0);

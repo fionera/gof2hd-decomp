@@ -1,5 +1,6 @@
 #include <new>
 #include "gof2/MGame.h"
+#include "gof2/PlayerFighter.h"
 #include "gof2/Ship.h"
 #include "gof2/SolarSystem.h"
 #include "gof2/TargetFollowCamera.h"
@@ -106,7 +107,6 @@ static inline float AEMath_VectorLength(Vector *v) {
     return AbyssEngine::AEMath::VectorLength(*v);
 }
 extern "C" void *MGame_opnew(unsigned sz);
-extern "C" int Ship_getFirstEquipmentOfSort(Ship *ship, int sort);
 extern "C" void String_cstr_ctor(String12 *out, const char *s, bool copy);
 extern "C" void String_concat(String12 *out, String12 *lhs, String12 *rhs);
 extern "C" void String_int_ctor(String12 *out, int v);
@@ -114,16 +114,12 @@ void Globals_playMusicAndFadeOutCurrent(int track);
 extern "C" void MGame_endRunModule(int field8, int code);
 extern "C" void MGame_handleHudTouchAction(MGame *self, int p1, int p2, void *p3, unsigned hudResult);
 extern "C" void MGame_tick(MGame *self, int frameDeltaMs);
-extern "C" void MGame_buildDockChoice(MGame *self, int textId, int prefixLit, int suffixLit);
 extern "C" void MGame_opdelete(void *p);
 void Globals_startNewSoundResourceList();
 void Globals_addSoundResourceToList(int list);
 extern "C" void MGame_freeCamPanDone(MGame *self, int p3);
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 int DialogueWindow_hasSuccessDialogue(int cm);
-extern "C" void MGame_buildMissionFollowup(MGame *self);
-extern "C" int Ship_hasCargo(Ship *ship, int id, int n);
-extern "C" void *Ship_getCargo(Ship *ship, int id);
 extern "C" void PlayerEgo_rollRight(PlayerEgo *p, int shipField, float amt);
 extern "C" void PlayerEgo_rollLeft(PlayerEgo *p, int shipField, float amt);
 extern "C" void applyThrust(MGame *self, int y);
@@ -594,7 +590,7 @@ void MGame::useCloak() {
         new (w) ChoiceWindow();
         self->field_0x94 = w;
     }
-    int eq = Ship_getFirstEquipmentOfSort(((Status *)(*g_status))->getShip(), 0x15);
+    Item *eq = ((Ship *)(((Status *)(*g_status))->getShip()))->getFirstEquipmentOfSort(0x15);
     int attr = eq == 0 ? 0 : ((Item *)(eq))->getAttribute(0x26);
     ChoiceWindow *cw = self->field_0x94;
     void *txt = ((GameText *)(*g_gameText))->getText(0x247);
@@ -1063,7 +1059,7 @@ void MGame::dockEvent() {
                     new (cw) ChoiceWindow();
                     self->field_0x94 = cw;
                 }
-                MGame_buildDockChoice(self, g_deTextB, g_deLitB0, g_deLitB1);
+                ((MGame *)(self))->buildDockChoice(g_deTextB, g_deLitB0, g_deLitB1);
             } else {
                 if (self->field_0xc5 != 0) {  return; }
                 self->field_0x15c = 0;
@@ -1074,7 +1070,7 @@ void MGame::dockEvent() {
                     new (cw) ChoiceWindow();
                     self->field_0x94 = cw;
                 }
-                MGame_buildDockChoice(self, g_deTextA, g_deLitA0, g_deLitA1);
+                ((MGame *)(self))->buildDockChoice(g_deTextA, g_deLitA0, g_deLitA1);
             }
             self->field_0x5d = 1;
             self->field_0xc5 = 1;
@@ -1286,9 +1282,9 @@ void MGame::UseKhadorDrive() {
 // 0x178470
 // 0x713d4
 // Heavily-corrupt sub-blocks are delegated to documented helpers:
-extern "C" void MGame_loadSoundResources(MGame *self);  // sound-resource list (62..145)
-extern "C" void MGame_restorePlayerStats(MGame *self);  // HP/shield/armor restore (157..198)
-extern "C" void MGame_setupWeaponsAndAudio(MGame *self);  // weapon + music init (315..end)
+// sound-resource list (62..145)
+// HP/shield/armor restore (157..198)
+// weapon + music init (315..end)
 
 __attribute__((visibility("hidden"))) extern int *g_initGuard;   // @0x187c60 (stack guard [0])
 __attribute__((visibility("hidden"))) extern int *g_initStatus;  // @0x187e46 (*piVar17)
@@ -1390,8 +1386,8 @@ __attribute__((visibility("hidden"))) extern String **g_initInfoFont;   // @0x18
 __attribute__((visibility("hidden"))) extern int    g_initInfoTextKey;  // @0x1883b0 (mission-info text key)
 __attribute__((visibility("hidden"))) extern int   *g_initInfoWidth;    // @0x1883d0 (wrap width base)
 
-extern "C" void  PlayerFighter_cloak(int fighter, bool on);            // 0x... PlayerFighter::cloak
-extern "C" int   Level_getPlayer(Level *level);                        // Level::getPlayer (int handle)
+// 0x... PlayerFighter::cloak
+// Level::getPlayer (int handle)
 extern "C" void  Globals_getLineArray(int font, String *text, int key,
                                        Array<AbyssEngine::String *> *out); // Globals::getLineArray
 extern "C" void  Array_string_ptr_ctor2(void *array);                  // Array<String*>::Array()
@@ -1438,7 +1434,7 @@ void MGame::setupWeaponsAndAudio() {
             for (unsigned i = 0; i < secondary->size(); i++) {
                 Item *it = (*secondary)[i];
                 if (it != 0 && ((Item *)(it))->getIndex() == savedId) {
-                    Level_getPlayer((Level *)self->field_0x78);
+                    ((Level *)((Level *)self->field_0x78))->getPlayer();
                     self->field_0x58->setCurrentSecondaryWeaponIndex(((Item *)(it))->getIndex());
                     ((Hud *)(self->field_0x74))->setCurrentSecondaryWeapon(it);
                     break;
@@ -1512,7 +1508,7 @@ void MGame::setupWeaponsAndAudio() {
         int enemies = ((Level *)(self->field_0x78))->getEnemies();
         if (enemies != 0) {
             int first = *(int *)((char *)(intptr_t)((Level *)(self->field_0x78))->getEnemies() + 4);
-            PlayerFighter_cloak(first, true);
+            ((PlayerFighter *)(first))->cloak(true, false);
         }
     }
 
@@ -1558,7 +1554,7 @@ void MGame::OnInitialize() {
         ((PaintCanvas*)g_PaintCanvas)->ChangeCubeTexture((unsigned)self->field_0x4);
 
         // Build the per-session sound-resource list (long sequential block).
-        MGame_loadSoundResources(self);
+        ((MGame *)(self))->loadSoundResources();
 
         (*g_status)->checkForLevelUp();
         level = (Level *)::operator new(0x2a0);
@@ -1575,7 +1571,7 @@ void MGame::OnInitialize() {
     ((MGame *)(self))->reset();
 
     int *status = g_initStatus;
-    MGame_restorePlayerStats(self);
+    ((MGame *)(self))->restorePlayerStats();
     ((PlayerEgo *)(self->field_0x58))->resetLastHP();
 
     // Per-mission HP cap and alien-orbit station bookkeeping.
@@ -1600,7 +1596,7 @@ void MGame::OnInitialize() {
     *(int *)((char *)*status + 0x13c) = 0;
     *(int *)((char *)*status + 0x144) = 0;
 
-    int eq = Ship_getFirstEquipmentOfSort(((Status *)((Status *)*g_initStatus))->getShip(), 0x15);
+    Item *eq = ((Ship *)(((Status *)((Status *)*g_initStatus))->getShip()))->getFirstEquipmentOfSort(0x15);
     if (eq != 0) {
         self->field_0x1b4 = ((Item *)(eq))->getAttribute(0x26);
         self->field_0x1b0 = ((Item *)(eq))->getAttribute(0x26);
@@ -1654,7 +1650,7 @@ void MGame::OnInitialize() {
     }
 
     // Weapon selection, particle effects, audio and music init.
-    MGame_setupWeaponsAndAudio(self);
+    ((MGame *)(self))->setupWeaponsAndAudio();
 
     
 }
@@ -2017,7 +2013,7 @@ void MGame::successCheck() {
 
 deliverFollowup:
     bindDlg(self);
-    MGame_buildMissionFollowup(self);
+    ((MGame *)(self))->buildMissionFollowup();
 
 done:
     
@@ -2068,7 +2064,7 @@ void MGame::startChargingJumpDrive() {
     if (self->field_0xdd == 0) return;
     Status **sp = g_status;
     int needed = 1;
-    if (Ship_hasCargo(((Status *)(*sp))->getShip(), 0x7a, 1) == 0) {
+    if (((Ship *)(((Status *)(*sp))->getShip()))->hasCargo(0x7a, 1) == 0) {
         ChoiceWindow *w = self->field_0x94;
         if (w == 0) {
             w = (ChoiceWindow *)MGame_opnew(0x5c);
@@ -2093,7 +2089,7 @@ void MGame::startChargingJumpDrive() {
         cost = **g_alienAmt;
         if ((*g_status)->inAlienOrbit() != 0) cost = needed;
     }
-    Ship_getCargo(((Status *)(*sp))->getShip(), 0x7a);
+    ((Ship *)(((Status *)(*sp))->getShip()))->getCargo(0x7a);
     if (((Item *)(0))->getAmount() < cost) {
         ChoiceWindow *w = self->field_0x94;
         if (w == 0) {
@@ -3086,8 +3082,8 @@ int MGame::nextCamId(int cur) {
     if (id == 2) id = cur + 2;
     if (id == 1) {
         Status **sp = g_status;
-        if (Ship_getFirstEquipmentOfSort(((Status *)(*sp))->getShip(), 8) != 0 ||
-            Ship_getFirstEquipmentOfSort(((Status *)(*sp))->getShip(), 0x23) != 0) {
+        if (((Ship *)(((Status *)(*sp))->getShip()))->getFirstEquipmentOfSort(8) != 0 ||
+            ((Ship *)(((Status *)(*sp))->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
             id = ((PlayerEgo *)(self->field_0x58))->hasAutoTurret() == 0 ? 1 : 2;
         } else {
             id = 2;
@@ -3097,8 +3093,8 @@ int MGame::nextCamId(int cur) {
     if (id >= 4) {
         if (((PlayerEgo *)(self->field_0x58))->isDockedToDockingPoint() == 0) return 0;
         Status **sp = g_status;
-        if (Ship_getFirstEquipmentOfSort(((Status *)(*sp))->getShip(), 8) == 0 &&
-            Ship_getFirstEquipmentOfSort(((Status *)(*sp))->getShip(), 0x23) == 0) {
+        if (((Ship *)(((Status *)(*sp))->getShip()))->getFirstEquipmentOfSort(8) == 0 &&
+            ((Ship *)(((Status *)(*sp))->getShip()))->getFirstEquipmentOfSort(0x23) == 0) {
             return 3;
         }
         id = ((PlayerEgo *)(self->field_0x58))->hasAutoTurret() != 0 ? 3 : 1;

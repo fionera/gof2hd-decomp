@@ -12,7 +12,6 @@ extern "C" void *String_assign_ref(void *self, const String12 &rhs);
 extern "C" void Mission_dtor_finish(Mission *self);
 extern "C" void String_default_ctor(void *s);
 extern "C" int Station_getSystem(Station *s);
-float Galaxy_distance(Galaxy *g, SolarSystem *a, SolarSystem *b);
 extern "C" void Station_dtor_finish(Station *s);
 
 // ---- isInstantActionMission_15bb78.cpp ----
@@ -297,7 +296,7 @@ void Mission::calcDistance() {
     SolarSystem *a = sys->data[i1];
     int i2 = Station_getSystem(st);
     SolarSystem *b = sys->data[i2];
-    self->distance = (int)Galaxy_distance(g, a, b);
+    self->distance = (int)((Galaxy *)(g))->distance(a, b);
     if (st != 0) {
         // Station::~Station() returns `this` in r0; the finisher consumes that pointer.
         ((Station *)(st))->dtor();

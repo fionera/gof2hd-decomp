@@ -226,7 +226,7 @@ clear_old:
 void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
     (void)flag;
     Ship *ship = ((Status *)(g_HangarList_status))->getShip();
-    Array<Item *> *cargo = Ship_getCargo(ship);
+    Array<Item *> *cargo = ((Ship *)(ship))->getCargo();
     Array<Item *> *allItems = g_HangarList_items;
     Array<int32_t> *ingredients = BluePrint_getIngredientList(blueprint);
     uint32_t count = ingredients->size();
@@ -301,7 +301,7 @@ clear_old:
             type = ((Item *)(item->field_0x10))->getType();
         }
         Ship *ship = ((Status *)(g_HangarList_status))->getShip();
-        Array<Item *> *cargo = Ship_getCargo(ship);
+        Array<Item *> *cargo = ((Ship *)(ship))->getCargo();
         if (cargo != 0) {
             for (uint32_t i = 0; i < cargo->size(); ++i) {
                 if (((Item *)(cargo->data()[i]))->getType() == type) {
@@ -369,7 +369,7 @@ clear_old:
         list->data()[next] = li;
     } else if (isShip == 0) {
         Ship *ship = ((Status *)(g_HangarList_status))->getShip();
-        Array<Item *> *cargo = Ship_getCargo(ship);
+        Array<Item *> *cargo = ((Ship *)(ship))->getCargo();
         for (uint32_t i = 0; i < cargo->size(); ++i) {
             if (((Item *)(cargo->data()[i]))->getType() == type) {
                 li = (ListItem *)::operator new(0x48);
@@ -415,7 +415,7 @@ clear_old:
     Array<ListItem *> *items = (Array<ListItem *> *)::operator new(0xc);
     Array_ListItem_ctor(items);
     Array<Item *> *equipment = ((Ship*)(ship))->getEquipment();
-    Array<Item *> *cargo = Ship_getCargo(ship);
+    Array<Item *> *cargo = ((Ship *)(ship))->getCargo();
     Array<Item *> *available;
     int baseLength;
     bool cargoEmpty;
@@ -431,7 +431,7 @@ clear_old:
             int type = ((Item *)(item))->getType();
             if (type != 4) {
                 type = ((Item *)(cargo->data()[i]))->getType();
-                if (Ship_getSlots(ship, type) > 0) {
+                if (((Ship *)(ship))->getSlots(type) > 0) {
                     ArrayAdd_Item(cargo->data()[i], available);
                 }
             }
@@ -441,7 +441,7 @@ clear_old:
     }
 
     uint32_t equipmentLength = equipment->size();
-    int slotTypes = Ship_getSlotTypes(ship);
+    int slotTypes = ((Ship *)(ship))->getSlotTypes();
     ArraySetLength_ListItem(slotTypes + baseLength + equipmentLength, items);
 
     ListItem *li = (ListItem *)::operator new(0x48);
@@ -455,7 +455,7 @@ clear_old:
     items->data()[1] = li;
 
     for (uint32_t type = 0; type < 4; ++type) {
-        if (Ship_getSlots(ship, type) > 0) {
+        if (((Ship *)(ship))->getSlots(type) > 0) {
             int textId = 0x10d;
             if (type < 3) {
                 textId = type + 0x109;
@@ -567,7 +567,7 @@ clear_old:
         ((ListItem *)(li))->ctor_String_int(((GameText *)(*texts))->getText(0xad), -1);
         list->data()[0] = li;
         for (uint32_t i = 0; i < ships->size(); ++i) {
-            Ship_adjustPrice(ships->data()[i]);
+            ((Ship *)(ships->data()[i]))->adjustPrice();
             li = (ListItem *)::operator new(0x48);
             ((ListItem *)(li))->ctor_Ship(ships->data()[i]);
             list->data()[i + 1] = li;

@@ -104,8 +104,6 @@ extern "C" void PlayerEgo_turnVertical_pos(PlayerEgo*);
 extern "C" int Station_getIndex(void*);
 extern "C" void PlayerEgo_addGun_ext(PlayerEgo*);
 extern "C" void PlayerEgo_endExplosion_ext(int);
-extern "C" int Ship_getFirstEquipmentOfSort(void*, int);
-extern "C" float Ship_removeEquipment(void*, int);
 extern "C" void PlayerEgo_hackingRotateRCW_ext(int, int);
 extern "C" void PlayerEgo_refillGunDelay_ext(void*, int);
 extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void*);
@@ -116,14 +114,8 @@ void* TransformGetLocal(void*, int);
 void MatrixSetRotation(void*, void*, float, float, float);
 extern "C" void PlayerEgo_StopEngineSound_ext(void*);
 extern "C" void PlayerEgo_startSmokeEmission_ext(void*, int, int);
-extern "C" int   Ship_getCurrentLoad(void *ship);
-extern "C" int   Ship_getMaxLoad(void *ship);
 extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" float PE_pitchRampDelta(PlayerEgo *self, float rate, int frameTime);
-extern "C" int   Ship_getIndex(void *ship);
-extern "C" int   Ship_hasCargo(void *ship, int idx);
-extern "C" void *Ship_getCargo(void *ship, int idx);
-extern "C" int   Ship_getMaxPassengers(void *ship);
 extern "C" void *HackingGame_dtor(void *hg);
 extern "C" int   PE_adp_approach(PlayerEgo *self, void *station);
 extern "C" int   PE_adp_glide(PlayerEgo *self);
@@ -155,12 +147,10 @@ extern "C" float PlayerEgo_resetGunDelay_f(PlayerEgo*);
 extern "C" int   Player_shootSecondary(void *player, int kind, int idx, int hi, int zero);
 extern "C" int   Player_shootPrimary(void *player, int kind, int weapon, int hi, int zero);
 extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self);
-extern "C" int   Ship_getFirstEquipmentOfSort(void *ship, int sort);
 extern "C" void  PlayEngineSound_(PlayerEgo *self);
 extern "C" void *EaseInOutMatrix_dtor(void *m);
 extern "C" void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint);
 extern "C" void KIPlayer_setAutoPilot(PlayerEgo *self);
-extern "C" float Ship_getHandling(void *ship);
 extern "C" void PE_upd_boost(PlayerEgo *self, int dt);
 extern "C" void PE_upd_docksFinishDelivery(PlayerEgo *self, void *radio);
 extern "C" void *Explosion_dtor(void *exp);
@@ -179,7 +169,6 @@ extern "C" void  Mat_mul(void *out, const void *a, const void *b);
 extern "C" void  PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHandle);
 extern "C" void (*g_stopBoost_fn)(void*, int);
 void *Globals_getShipGroup(void *g, int race, int group, bool b);
-extern "C" int   Ship_hasEmergencySystem(void *ship);
 extern "C" void *TractorBeam_new(void *geo, int kind);
 void  Globals_addSoundResourceToList(int snd);
 extern "C" void *RepairBeam_new(int idx, int sort);
@@ -189,7 +178,6 @@ extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, voi
 extern "C" void Player_addGun2(void*, void*, int);
 extern "C" void PlayerEgo_addGun2_ext(PlayerEgo*);
 void MatrixGetPosition(void*, void*);
-extern "C" void *Ship_getCargo(void *ship, int item);
 
 // ---- setVisible_a1c88.cpp ----
 void PlayerEgo::setVisible(bool v) {
@@ -901,9 +889,9 @@ int PlayerEgo::tryToStartEmergencySystem() {
   I(self, 0x30c) = I(self, 0x310);
   ((Player *)(P(self, 0)))->setVulnerable(0);
   void* s1 = ((Status *)(g_emerg_status))->getShip();
-  int eq = Ship_getFirstEquipmentOfSort(((Status *)(g_emerg_status))->getShip(), 0x1b);
-  float f = Ship_removeEquipment(s1, eq);
-  ((FModSound *)(*(void**)g_emerg_fmod))->play(0x45b, (Vector *)0, (Vector *)0, f);
+  Item* eq = ((Ship *)(((Status *)(g_emerg_status))->getShip()))->getFirstEquipmentOfSort(0x1b);
+  ((Ship *)(s1))->removeEquipment(eq);
+  ((FModSound *)(*(void**)g_emerg_fmod))->play(0x45b, (Vector *)0, (Vector *)0, 1.0f);
   return 1;
 }
 
@@ -1187,7 +1175,7 @@ extern void* g_engine_fmod;
 void PlayerEgo::StopEngineSound() {
     PlayerEgo *self = this;
   if (C(self, 0x356) == 0 || I(self, 0x1c4) != 1) {
-    if (Ship_getFirstEquipmentOfSort(((Status *)(g_engine_status))->getShip(), 0x26) != 0
+    if (((Ship *)(((Status *)(g_engine_status))->getShip()))->getFirstEquipmentOfSort(0x26) != 0
         && ((Status *)(g_engine_status))->inAlienOrbit() == 0) {
       void* obj = g_engine_status;
       int idx = Station_getIndex(((Status *)(obj))->getStation());
@@ -1271,8 +1259,8 @@ float PlayerEgo::down(int frameTime, float delta) {
     if (C(self, 0x235) == 0) {
         rate = F(self, 0x154);
     } else {
-        float cur = (float)Ship_getCurrentLoad(PE_status()->getShip());
-        float max = (float)Ship_getMaxLoad(PE_status()->getShip());
+        float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
+        float max = (float)((Ship *)(PE_status()->getShip()))->getMaxLoad();
         rate = F(self, 0x154) * (1.0f - cur / max) * g_PE_d_loadK + F(self, 0x154) * g_PE_d_loadB;
     }
 
@@ -1328,9 +1316,8 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
 
     if (((Mission *)(mission))->isEmpty() == 0 && ((Mission *)(mission))->getType() == 0xf
         && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
-        if (Ship_hasCargo(PE_status()->getShip(), ((Mission *)(mission))->getProductionGoodIndex()) != 0) {
-            int amount = ((Item *)(Ship_getCargo(PE_status()->getShip(),
-                                        ((Mission *)(mission))->getProductionGoodIndex())))->getAmount();
+        if (((Ship *)(PE_status()->getShip()))->hasCargo(((Mission *)(mission))->getProductionGoodIndex(), 1) != 0) {
+            int amount = ((Item *)(((Ship *)(PE_status()->getShip()))->getCargo(((Mission *)(mission))->getProductionGoodIndex())))->getAmount();
             I(self, 0x180) = amount;
             int need = ((Mission *)(mission))->getProductionGoodAmount()
                        - ((Level *)(P(self, 0xc)))->getNumDeliveredOre();
@@ -1346,7 +1333,7 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
         && ((PlayerFixedObject *)(fixed))->getDockingType() == 2) {
         // passenger drop-off
         int carried = I(fixed, 0x178);
-        int maxPax = Ship_getMaxPassengers(PE_status()->getShip());
+        int maxPax = ((Ship *)(PE_status()->getShip()))->getMaxPassengers();
         if (maxPax > 0 && carried < maxPax) {
             int avail = (((Mission *)(mission))->getType() == 0xa8)
                         ? ((Mission *)(mission))->getStatusValue() : maxPax;
@@ -1357,7 +1344,7 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
             I(self, 0x184) = 0;
             if (I(self, 0x180) > 0) return 0x23;
         }
-        if (((Mission *)(mission))->getType() != 0xa8 && Ship_getMaxPassengers(PE_status()->getShip()) == 0)
+        if (((Mission *)(mission))->getType() != 0xa8 && ((Ship *)(PE_status()->getShip()))->getMaxPassengers() == 0)
             return 0x2b;
         return 0;
     }
@@ -1376,9 +1363,8 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
     if (campaign != 0 && ((Mission *)(campaign))->isEmpty() == 0
         && (((Mission *)(campaign))->getType() == 0xa7 || ((Mission *)(campaign))->getType() == 0xae)
         && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
-        if (Ship_hasCargo(PE_status()->getShip(), ((Mission *)(campaign))->getProductionGoodIndex()) != 0) {
-            int amount = ((Item *)(Ship_getCargo(PE_status()->getShip(),
-                                        ((Mission *)(campaign))->getProductionGoodIndex())))->getAmount();
+        if (((Ship *)(PE_status()->getShip()))->hasCargo(((Mission *)(campaign))->getProductionGoodIndex(), 1) != 0) {
+            int amount = ((Item *)(((Ship *)(PE_status()->getShip()))->getCargo(((Mission *)(campaign))->getProductionGoodIndex())))->getAmount();
             I(self, 0x180) = amount;
             int need = ((Mission *)(campaign))->getProductionGoodAmount() - ((Mission *)(campaign))->getStatusValue();
             if (need < amount) I(self, 0x180) = need;
@@ -1423,7 +1409,7 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
         if (C(self, 0x2c4) != 0)
             ((PlayerEgo *)(self))->setTurretMode(0);
         int dist = PE_adp_glide(self);
-        int radius = g_PE_adp_dockRadius[Ship_getIndex(PE_status()->getShip())];
+        int radius = g_PE_adp_dockRadius[((Ship *)(PE_status()->getShip()))->getIndex()];
         if (dist < radius) {
             int ev = adp_arrivalEvent(self, P(self, 0x1e0));
             if (ev != 0)
@@ -1589,8 +1575,8 @@ float PlayerEgo::right(int frameTime, float delta) {
     if (C(self, 0x235) == 0) {
         rate = F(self, 0x154);
     } else {
-        float cur = (float)Ship_getCurrentLoad(PE_status()->getShip());
-        float max = (float)Ship_getMaxLoad(PE_status()->getShip());
+        float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
+        float max = (float)((Ship *)(PE_status()->getShip()))->getMaxLoad();
         rate = F(self, 0x154) * (1.0f - cur / max) * g_PE_r_loadK + F(self, 0x154) * g_PE_r_loadB;
     }
 
@@ -1662,8 +1648,8 @@ float PlayerEgo::left(int frameTime, float delta) {
     if (C(self, 0x235) == 0) {
         rate = F(self, 0x154);
     } else {
-        float cur = (float)Ship_getCurrentLoad(PE_status()->getShip());
-        float max = (float)Ship_getMaxLoad(PE_status()->getShip());
+        float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
+        float max = (float)((Ship *)(PE_status()->getShip()))->getMaxLoad();
         rate = F(self, 0x154) * (1.0f - cur / max) * g_PE_l_loadK + F(self, 0x154) * g_PE_l_loadB;
     }
 
@@ -1791,7 +1777,7 @@ extern void* g_engine_status;
 extern void* g_engine_fmod;
 void PlayerEgo::PlayEngineSound() {
     PlayerEgo *self = this;
-  if (Ship_getFirstEquipmentOfSort(((Status *)(g_engine_status))->getShip(), 0x26) != 0
+  if (((Ship *)(((Status *)(g_engine_status))->getShip()))->getFirstEquipmentOfSort(0x26) != 0
       && ((Status *)(g_engine_status))->inAlienOrbit() == 0) {
     void* obj = g_engine_status;
     int idx = Station_getIndex(((Status *)(obj))->getStation());
@@ -2203,8 +2189,8 @@ float PlayerEgo::up(int frameTime, float delta) {
     if (C(self, 0x235) == 0) {
         rate = F(self, 0x154);
     } else {
-        float cur = (float)Ship_getCurrentLoad(PE_status()->getShip());
-        float max = (float)Ship_getMaxLoad(PE_status()->getShip());
+        float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
+        float max = (float)((Ship *)(PE_status()->getShip()))->getMaxLoad();
         rate = F(self, 0x154) * (1.0f - cur / max) * g_PE_u_loadK + F(self, 0x154) * g_PE_u_loadB;
     }
 
@@ -2326,7 +2312,7 @@ void PlayerEgo::setTurretMode(int enable) {
             P(self, 0x17c) = leaf;
             ((AEGeometry *)(P(self, 0x178)))->addChild((uint32_t)(uintptr_t)*(void **)((char *)P(self, 0x178) + 0xc));
 
-            if (Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x23) != 0)
+            if (((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(0x23) != 0)
                 ((AEGeometry *)(P(self, 0x178)))->rotate(*(Vector *)((char *)self + 0x224));
         }
         ((AEGeometry *)(P(self, 0x17c)))->setPosition(*(Vector *)((char *)self + 0x148));
@@ -2381,8 +2367,8 @@ void PlayerEgo::strafe(int /*dir*/, bool positive) {
 
     float base;
     if (C(self, 0x235) != 0) {
-        float cur = (float)Ship_getCurrentLoad(PE_status()->getShip());
-        float max = (float)Ship_getMaxLoad(PE_status()->getShip());
+        float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
+        float max = (float)((Ship *)(PE_status()->getShip()))->getMaxLoad();
         float rate = F(self, 0x154);
         base = rate * (1.0f - cur / max) * g_PE_strafeLoadK + rate * g_PE_strafeLoadB;
     } else {
@@ -2560,7 +2546,7 @@ void PlayerEgo::draw(int allowHud) {
     ((PaintCanvas*)g_PaintCanvas)->SetColor((unsigned int)(0xffffffff));
 
     if (C(self, 0x1a0) != 0
-        && Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x23) != 0) {
+        && ((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
         // turret crosshair: plasma lock changes the marker + position.
         if (((Radar *)(P(self, 0x14)))->isPlasmaInRange() != 0) {
             float *p = g_PE_dr_posLock;
@@ -2700,9 +2686,9 @@ void PlayerEgo::update(int dt, void *radar, void *hud, void *radio, void *script
                 C(self, 0x330) = 1;
 
             float speed = 4.0f;
-            float h = Ship_getHandling(PE_status()->getShip());
+            float h = ((Ship *)(PE_status()->getShip()))->getHandling();
             if (h + g_PE_upd_handlingBias < 4.0f)
-                speed = Ship_getHandling(PE_status()->getShip()) + g_PE_upd_handlingBias;
+                speed = ((Ship *)(PE_status()->getShip()))->getHandling() + g_PE_upd_handlingBias;
             ((PlayerEgo *)(self))->moveToPosition(F(self, 0xec), F(self, 0xf0), F(self, 0xf4), 1, speed);
             if (C(self, 0x1a0) != 0)
                 ((PlayerEgo *)(self))->handleTurretView(dt);
@@ -3165,8 +3151,8 @@ void PlayerEgo::setShip(int race, int group) {
     ((AEGeometry *)(hull))->addChild((uint32_t)(uintptr_t)*(void **)((char *)P(self, 0x4) + 0xc));
 
     // tractor beam
-    if (Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0xd) != 0) {
-        void *it = (void *)Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0xd);
+    if (((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(0xd) != 0) {
+        void *it = (void *)((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(0xd);
         int idx = ((Item *)(it))->getIndex();
         int kind = (idx < 0x48) ? idx - 0x44 : 3;
         void *tb = TractorBeam_new(P(self, 0x8), kind);
@@ -3178,7 +3164,7 @@ void PlayerEgo::setShip(int race, int group) {
     // repair beams (sorts 0x25 and 0x29)
     for (unsigned i = 0; i < 2; i++) {
         int sort = (i == 0) ? 0x25 : 0x29;
-        void *it = (void *)Ship_getFirstEquipmentOfSort(PE_status()->getShip(), sort);
+        void *it = (void *)((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(sort);
         if (it != 0) {
             if (P(self, 0x1b8) == 0)
                 P(self, 0x1b8) = Array_RepairBeam_new();
@@ -3193,12 +3179,12 @@ void PlayerEgo::setShip(int race, int group) {
     }
 
     // emergency system effect geometry
-    if (Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x1b) != 0
-        && Ship_hasEmergencySystem(PE_status()->getShip()) != 0) {
+    if (((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(0x1b) != 0
+        && ((Ship *)(PE_status()->getShip()))->hasEmergencySystem() != 0) {
         void *geo = (void*)new AEGeometry((uint16_t)0x3826, (PaintCanvas*)(*canvasHolder), false);
         P(self, 0xac) = geo;
-        Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x1b);
-        I(self, 0x310) = ((Item *)((void *)Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x29)))->getAttribute(0);
+        ((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(0x1b);
+        I(self, 0x310) = ((Item *)((void *)((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(0x29)))->getAttribute(0);
         void *tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)((char *)P(self, 0x4) + 0xc)));
         Vec_assign((char *)self + 0x314, (char *)tf + 0xd4);
         tf = ((PaintCanvas*)g_PaintCanvas)->TransformGetTransform((unsigned int)(*(unsigned int *)((char *)P(self, 0x4) + 0xc)));
@@ -3323,7 +3309,7 @@ void PlayerEgo::toggleCloaking() {
         if (C(self, 0x1ac) != 0 || I(self, 0x20c) > 0)
             return;
         int need = ((Item *)(P(self, 0x1b0)))->getAttribute(0);
-        void *cargo = Ship_getCargo(PE_status()->getShip(), 0x7a);
+        void *cargo = ((Ship *)(PE_status()->getShip()))->getCargo(0x7a);
         int have = (cargo == 0) ? 0 : ((Item *)(cargo))->getAmount();
         if (need <= have) {
             ((Ship *)(PE_status()->getShip()))->removeCargo(0x7a);
@@ -3368,10 +3354,10 @@ void PlayerEgo::toggleCloaking() {
 
         if (C(self, 0x170) != 0) {
             unsigned short mat = 0x4e8e;
-            void *it = (void *)Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 8);
+            void *it = (void *)((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(8);
             if (it != 0 && ((Item *)(it))->getIndex() == 0xe0)
                 mat = 0x5e17;
-            it = (void *)Ship_getFirstEquipmentOfSort(PE_status()->getShip(), 0x23);
+            it = (void *)((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(0x23);
             if (it != 0) {
                 int idx = ((Item *)(it))->getIndex();
                 mat = 0x716d;

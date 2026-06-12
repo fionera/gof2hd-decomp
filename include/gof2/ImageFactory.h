@@ -40,6 +40,9 @@ public:
     // passes three register args (r0=clz bool, r1=rand==0, r2=type), so the faithful body needs
     // all three. createChar_i() forwards (clz, rand0, type) here.
     int *createChar(bool clz, bool rand0, int type);
+    // Public ImageFactory::createChar(bool, int) overload (2 register args at the call site);
+    // forwards to the faithful 3-arg builder with rand0=false.
+    int *createChar(bool clz, int type) { return createChar(clz, false, type); }
     ImageFactory * ctor();
     void drawChar(Arr *parts, int x, int y, int flag);
     void drawItem(int itemId, int x, int y);

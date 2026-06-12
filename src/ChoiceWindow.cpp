@@ -23,8 +23,6 @@ void ScrollTouchWindow_setPosition(void *self, int y);
 void Layout_drawMask(void *self);
 void Layout_formatCredits(String *out, void *layout, int value);
 void TouchButton_getPosition(float *out, void *self);
-void TouchButton_ctor(void *self, String const &text, int value, int x, int y,
-                      int width, int anchor, int mode);
 // Status::replaceHash(String pattern, String value) -> String
 void Status_replaceHash(String *out, void *status, String const &pattern, String const &value);
 }
@@ -349,24 +347,15 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
         int buttonWidth = (int)scaled;
 
         void *button = operator new(0xc8);
-        TouchButton_ctor(button, left, 0,
-                         this->x + this->width / 2 - F<int>(layout, 0x4c) / 2,
-                         this->y + this->height - this->padding,
-                         buttonWidth, 0x22, 4);
+        ((TouchButton *)(button))->ctor((String *)&left, 0, this->x + this->width / 2 - F<int>(layout, 0x4c) / 2, this->y + this->height - this->padding, buttonWidth, 0x22, 4);
         this->leftButton = button;
 
         button = operator new(0xc8);
-        TouchButton_ctor(button, right, 0,
-                         this->x + this->width / 2 + F<int>(layout, 0x4c) / 2,
-                         this->y + this->height - this->padding,
-                         buttonWidth, 0x21, 4);
+        ((TouchButton *)(button))->ctor((String *)&right, 0, this->x + this->width / 2 + F<int>(layout, 0x4c) / 2, this->y + this->height - this->padding, buttonWidth, 0x21, 4);
         this->rightButton = button;
     } else {
         void *button = operator new(0xc8);
-        TouchButton_ctor(button, single, 0,
-                         this->x + this->width / 2,
-                         this->y + this->height - this->padding,
-                         F<int>(layout, 0x40), 0x24, 4);
+        ((TouchButton *)(button))->ctor((String *)&single, 0, this->x + this->width / 2, this->y + this->height - this->padding, F<int>(layout, 0x40), 0x24, 4);
         this->rightButton = button;
     }
 
@@ -396,10 +385,7 @@ void ChoiceWindow::setMiscButton(String const &text)
     }
 
     void *button = operator new(0xc8);
-    TouchButton_ctor(button, text, 0,
-                     this->x + this->width / 2 - F<int>(layout, 0x4c) / 2,
-                     this->y + this->height - padding,
-                     buttonWidth, 0x22, 4);
+    ((TouchButton *)(button))->ctor((String *)&text, 0, this->x + this->width / 2 - F<int>(layout, 0x4c) / 2, this->y + this->height - padding, buttonWidth, 0x22, 4);
 
     this->miscButton = button;
 

@@ -47,7 +47,6 @@ extern "C" void Array_Wanted_ctor(void *arr);
 extern "C" void ArrayAdd_Wanted(void *wanted, void *arr);
 extern "C" void Array_TouchButton_ctor(void *arr);
 extern "C" void ArraySetLength_TouchButton(int length, void *arr);
-extern "C" void TouchButton_ctor8(void *button, String *text, int type, int x, int y, int width, int icon, int mode);
 extern "C" void ArrayReleaseClasses_ImagePart(void *arr);
 extern "C" void *Array_ImagePart_dtor(void *arr);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
@@ -712,11 +711,8 @@ int WantedWindow::init() {
     button = ::operator new(0xc8);
     text = (String *)((GameText *)(*textHolder))->getText(0x1a8);
     layout = *layoutHolder;
-    TouchButton_ctor8(button, text, 0,
-                      self->windowX + (self->windowWidth >> 1) + F<int>(layout, 0x2c),
-                      (((self->windowY - F<int>(layout, 0x2c)) + self->windowHeight) -
-                       F<int>(layout, 0x10)) - F<int>(layout, 0x24),
-                      activeWidth, 0x21, 4);
+    ((TouchButton *)(button))->ctor8(text, 0, self->windowX + (self->windowWidth >> 1) + F<int>(layout, 0x2c), (((self->windowY - F<int>(layout, 0x2c)) + self->windowHeight) -
+                       F<int>(layout, 0x10)) - F<int>(layout, 0x24), activeWidth, 0x21, 4);
     self->field_0x15 = 0;
     self->detailButton = button;
     self->field_0x0 = 1;

@@ -1,4 +1,5 @@
 #include "gof2/Level.h"
+#include "gof2/Ship.h"
 extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engine shim (setDirection up-vec unrecoverable)
 #include "gof2/externs.h"
 #include "gof2/PaintCanvasClass.h"
@@ -121,7 +122,6 @@ extern "C" void *_Znwj(unsigned int size);
 extern "C" void Level_setAlwaysEnemy(int obj, int flag);
 extern "C" void Level_alarmAllFriends_tail(Station *station, int one);
 extern "C" void Level_friendTurnedEnemy_action(Level *self, int a, int b);
-extern "C" int Ship_getFirstEquipmentOfSort(int ship, int sort);
 extern "C" int Level_opnew(unsigned int size);
 extern "C" void ArrayCtor(int arr);
 extern "C" void ArraySetLength(int len, int arr);
@@ -2295,7 +2295,7 @@ __attribute__((visibility("hidden"))) extern Status **g_sentryStatus;
 void Level::createSentryGuns() {
     Status **slot = g_sentryStatus;
     int ship = (*slot)->getShip();
-    if (Ship_getFirstEquipmentOfSort(ship, 0x27) != 0) {
+    if (((Ship *)(ship))->getFirstEquipmentOfSort(0x27) != 0) {
         int guns = Level_opnew(0xc);
         ArrayCtor(guns);
         field_b0 = guns;
