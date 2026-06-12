@@ -6,7 +6,6 @@
 
 using AbyssEngine::PaintCanvas;
 
-extern "C" void ScrollTouchBox_setYPosition(void *self, int y);
 extern "C" void *ScrollTouchBox_dtor(void *self);
 extern "C" void String_ctor_cstr(void *dst, const char *text, bool copy);
 extern "C" void String_ctor_default(void *self);
@@ -52,7 +51,7 @@ void ScrollTouchWindow::setTextCentered(bool centered)
 // ---- setYPosition_174328.cpp ----
 void ScrollTouchWindow::setYPosition(int y)
 {
-    return ScrollTouchBox_setYPosition(this->scrollBox, y);
+    return ((ScrollTouchBox *)(this->scrollBox))->setYPosition(y);
 }
 
 // ---- _ScrollTouchWindow_174244.cpp ----

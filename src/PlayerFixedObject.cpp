@@ -1,4 +1,6 @@
 #include "gof2/PlayerFixedObject.h"
+#include "gof2/AERandom.h"
+#include "gof2/TargetFollowCamera.h"
 #include "gof2/AEGeometry.h"
 
 namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &value); } }
@@ -31,11 +33,7 @@ template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)
 
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 extern "C" void *Explosion_ctor(void *e, int a);
-extern "C" void  Explosion_update(void *e, int dt, void *cam);
-extern "C" void  TargetFollowCamera_getPosition(Vector *out, void *cam);
-extern "C" void  TargetFollowCamera_setRumblePercentage(float pct, void *cam);
 extern "C" void *Player_getEnemies();
-extern "C" void  Player_getPosition(Vector *out);
 extern "C" void Transform_setExhaustVisible(void *transform, bool v);
 extern "C" void Array_BV_ctor(void *arr);
 extern "C" void BoundingVolume_setArr(BoundingVolume *bv, void *arr);
@@ -396,7 +394,7 @@ afterMotion:
     if (state == 3) {
         // dying: run explosion, drift, advance the wreck transform until done
         if (self->explosion != 0)
-            Explosion_update(self->explosion, dt, 0);
+            ((Explosion *)(self->explosion))->update(dt, 0);
         if (self->kind != 0x37a3) {
             if (self->moving != 0) {
                 self->intPosZ = self->intPosZ + dt;
@@ -448,7 +446,7 @@ afterMotion:
                     ego = (void *)(intptr_t)((Level *)self->level)->getPlayer();
                     void *cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                     char cp[12];
-                    TargetFollowCamera_getPosition((Vector *)cp, cam);
+                    ((TargetFollowCamera *)((Vector *)cp))->getPosition();
                     *(Vector *)cp -= *(const Vector *)((char *)self + 0x2c);
                     float len = AbyssEngine::AEMath::VectorLength(*(const Vector *)cp);
                     float maxd = 50.0f;
@@ -456,7 +454,7 @@ afterMotion:
                     self->rumblePercentage = 1.0f - use / maxd;
                     ego = (void *)(intptr_t)((Level *)self->level)->getPlayer();
                     cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
-                    TargetFollowCamera_setRumblePercentage(self->rumblePercentage, cam);
+                    ((TargetFollowCamera *)(cam))->setRumblePercentage(self->rumblePercentage, 0x32);
                 }
             }
         }
@@ -464,7 +462,7 @@ afterMotion:
         // exploding
         self->explosionElapsed = self->explosionElapsed + dt;
         if (self->explosion != 0)
-            Explosion_update(self->explosion, dt, 0);
+            ((Explosion *)(self->explosion))->update(dt, 0);
         self->explosionTimer = self->explosionTimer + dt;
 
         bool spin = self->hasCargo != 0 && ((Player *)(self->player))->isActive() != 0 &&
@@ -522,13 +520,12 @@ afterMotion:
                     self->rumbleTimer = v;
                     ego = (void *)(intptr_t)((Level *)self->level)->getPlayer();
                     cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
-                    TargetFollowCamera_setRumblePercentage(
-                        self->rumblePercentage * ((float)v / 50.0f + 1.0f), cam);
+                    ((TargetFollowCamera *)(cam))->setRumblePercentage(self->rumblePercentage * ((float)v / 50.0f + 1.0f), 0x32);
                     if (self->explosion != 0 &&
                         ((Explosion *)(self->explosion))->isPlaying() == 0) {
                         ego = (void *)(intptr_t)((Level *)self->level)->getPlayer();
                         cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
-                        TargetFollowCamera_setRumblePercentage(0.0f, cam);
+                        ((TargetFollowCamera *)(cam))->setRumblePercentage(0.0f, 0);
                         self->rumbleTimer = 0;
                     }
                 }
@@ -542,7 +539,7 @@ afterMotion:
             for (unsigned int i = 0; i < enemies[0]; i++) {
                 if (((Player *)(((Player *)(self->player))->getEnemy(i)))->isActive() != 0) {
                     char pb[12];
-                    Player_getPosition((Vector *)pb);
+                    ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition((Vector *)pb);
                     *(Vector *)((Vector *)((char *)self + 0x90)) = *(const Vector *)((Vector *)pb);
                     float dx = self->posX - self->targetX;
                     float dy = self->posY - self->targetY;
@@ -550,7 +547,7 @@ afterMotion:
                     const float lo = 0.0f, hi = 50.0f; // DAT thresholds
                     if (dx < hi && dx > lo && dy < hi && dy > lo && dz < hi && dz > lo) {
                         self->targetEnemy = (int32_t)(__INTPTR_TYPE__)((Player *)(self->player))->getEnemy(i);
-                        Player_getPosition((Vector *)pb);
+                        ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition((Vector *)pb);
                         *(Vector *)((Vector *)((char *)self + 0x90)) = *(const Vector *)((Vector *)pb);
                         self->field_0x144 = self->targetX;
                         self->field_0x148 = self->targetY;
@@ -976,15 +973,15 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
                         // is preserved. Exact bounds are unrecovered (Ghidra
                         // unavailable) — using the additive offsets as bounds.
                         if (kind == 0xe) {
-                            int r = AERandom_nextInt((AbyssEngine::AERandom *)rng, 5);
+                            int r = ((AbyssEngine::AERandom *)rng)->nextInt();
                             loot = (uint32_t *)self->lootList;
                             int *cell = (int *)(loot[1] + idx * 4);
                             *cell = *cell * (r + 5);
                         } else {
-                            int r = AERandom_nextInt((AbyssEngine::AERandom *)rng, 2);
+                            int r = ((AbyssEngine::AERandom *)rng)->nextInt();
                             int *base = (int *)(*(int *)((char *)self->lootList + 4) + idx * 4);
                             *base = *base * (r + 2);
-                            int r2 = AERandom_nextInt((AbyssEngine::AERandom *)rng, 8);
+                            int r2 = ((AbyssEngine::AERandom *)rng)->nextInt();
                             loot = (uint32_t *)self->lootList;
                             int *cell = (int *)(loot[1] + idx * 4);
                             int v = *cell;

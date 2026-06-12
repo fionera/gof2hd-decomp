@@ -28,16 +28,13 @@ void TransformCreate(void *canvas, uint32_t *transform);
 extern "C" void Array_Explosion_ctor(Array<Explosion*> *self);
 extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion*> *self);
 extern "C" void Explosion_ctor(Explosion *self, int type);
-extern "C" void Explosion_setWeaponIndex(Explosion *self, int weapon);
 uint32_t TransformGetTransform(void *canvas, uint32_t transform);
-extern "C" void Player_getPosition(Vector *out, Player *self);
 // __aeabi_memcpy is declared by gof2/AEGeometry.h (returns void*)
 void MatrixRotateVector(void *out, const void *matrix, const void *vec);
 void *CameraGetCurrent(void *canvas);
 void *CameraGetLocal(void *canvas, void *camera);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 void MatrixGetUp(Vector *out, const Matrix *matrix);
-extern "C" void Explosion_update(Explosion *self, int dt, TargetFollowCamera *camera);
 void MatrixSetRotation(Matrix *dst, float x, float y, float z);
 void MatrixSetTranslation(Matrix *dst, float x, float y, float z);
 void VectorNormalize(Vector *out, const Vector *in);
@@ -238,8 +235,7 @@ make_explosions:
                 explosionType = 8;
             Explosion_ctor(explosion, explosionType);
             self->field_0x2c->data()[i] = explosion;
-            Explosion_setWeaponIndex(self->field_0x2c->data()[i],
-                                     gun->itemIndex);
+            ((Explosion *)(self->field_0x2c->data()[i]))->setWeaponIndex(gun->itemIndex);
             self->field_0x30[i] = 1;
             explosions = self->field_0x2c;
         }
@@ -340,9 +336,9 @@ void ObjectGun::update(int dt)
     {
         Player *player = (Player *)(uint64_t)((Level *)(this->field_0xc))->getPlayer();
         if (((Gun *)(gun))->isPlayerGun() != 0) {
-            ((PlayerEgo *)(&position))->getPosition();
+            position = ((PlayerEgo *)(player))->getPosition();
         } else {
-            Player_getPosition(&position, gun->field_0x4);
+            ((Player *)(gun->field_0x4))->getPosition(&position);
         }
 
         gun = this->field_0x8;
@@ -430,7 +426,7 @@ after_geometry:
                     this->field_0x30[i] = 0;
                 }
                 Explosion *explosion = explosion_at(this, i);
-                Explosion_update(explosion, dt, 0);
+                ((Explosion *)(explosion))->update(dt, 0);
                 if (((Explosion *)(explosion))->isPlaying() == 0) {
                     gun = this->field_0x8;
                     gun->hitFlags[i] = 0;

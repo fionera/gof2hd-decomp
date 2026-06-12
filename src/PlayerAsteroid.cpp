@@ -20,12 +20,10 @@ struct PlayerRadiusFields { char _pad[0x40]; int field_0x40; };
 
 
 extern "C" void *PlayerAsteroid_complete_dtor(PlayerAsteroid *self);
-extern "C" void Explosion_update(Explosion *explosion, int delta, TargetFollowCamera *camera);
 Vector Player_getHitVector(Player *player);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
 extern "C" void ArrayInt_ctor(ArrayInt *array);
 extern "C" void ArrayAdd_int(int value, ArrayInt *array);
-extern "C" void Explosion_setMatrix(Explosion *explosion, Matrix *matrix);
 Vector VectorNormalize(const Vector *vector);
 namespace AbyssEngine { namespace PaintCanvas { ::Transform *TransformGetTransform(void *canvas, uint32_t handle); } }
 extern "C" void Explosion_ctor(Explosion *self, int type);
@@ -223,12 +221,12 @@ void PlayerAsteroid::update(int delta)
         }
 
         Matrix geometryMatrix = ((AEGeometry *)(this->geometry))->getMatrix();
-        Explosion_setMatrix(this->explosion, &geometryMatrix);
+        ((Explosion *)(this->explosion))->setMatrix(&geometryMatrix);
         return;
     }
 
     if (state == 3) {
-        Explosion_update(this->explosion, delta, 0);
+        ((Explosion *)(this->explosion))->update(delta, 0);
         if (((Explosion *)(this->explosion))->isPlaying() == 0) {
             this->state = 4;
             ((Player *)(player))->setBombForce(0.0f);

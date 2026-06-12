@@ -1,5 +1,6 @@
 #include <cstring>
 #include "gof2/SpaceLounge.h"
+#include "gof2/SolarSystem.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/externs.h"
 #include "gof2/ChoiceWindow.h"
@@ -64,11 +65,8 @@ extern "C" void *SpaceLounge_layout_begin;
 extern "C" int ChoiceWindow_touch_end(void *choice, int x, int y);
 extern "C" int StarMap_touch_end(void *map, int x, int y);
 extern "C" int Layout_touch_end(void *layout, int x, int y);
-extern "C" void Agent_setEvent(void *agent, int event);
 extern "C" int ListItemWindow_touch_end(void *list, int x, int y);
 extern "C" int TouchButton_touch_end(void *button, int x, int y);
-extern "C" void ScrollTouchWindow_touch_end(void *scroll, int x, int y);
-extern "C" int SolarSystem_getRace(void *system);
 // Dropped-self Status singleton accessors: the decompiler emitted these calls
 // with no receiver argument (the Status* singleton is loaded inside the thunk).
 // The singleton is `*g_status`; call the real methods through it.
@@ -80,9 +78,6 @@ extern "C" void *SpaceLounge_touch_help_text_slot;
 extern "C" void *SpaceLounge_touch_list_help_text_slot;
 extern "C" void *SpaceLounge_touch_camera_slot;
 extern "C" int SpaceLounge_touch_race_vectors[];
-extern "C" int Agent_getRace(void *agent);
-extern "C" int Agent_getOffer(void *agent);
-extern "C" int Mission_getType(void *mission);
 void Globals_getAgentMissionText(void *out, int textId, void *agent);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate);
@@ -100,8 +95,6 @@ extern "C" void *SpaceLounge_getSoundId_offer1;
 extern "C" void *SpaceLounge_getSoundId_accepted;
 extern "C" void *SpaceLounge_getSoundId_specialText;
 extern "C" void *SpaceLounge_getSoundId_specialRandom;
-extern "C" void ChoiceWindow_left(void *choice);
-extern "C" void ChoiceWindow_right(void *choice);
 extern "C" void ScrollTouchWindow_scroll(void *scroll, int amount);
 void MatrixGetRight(void *out, void *matrix);
 void MatrixGetPosition(void *out, void *matrix);
@@ -113,7 +106,6 @@ extern "C" void *SpaceLounge_screen_canvas_slot;
 extern "C" void *SpaceLounge_screen_projector;
 extern "C" void *String_ctor_cstr(void *dst, const char *src, bool copy);
 extern "C" void String_add(void *dst, void *a, void *b);
-extern "C" int Mission_isOutsideMission(void *mission);
 extern "C" void TouchButton_setPosition3(void *button, int x, int y, int align);
 extern "C" void *SpaceLounge_lounge_canvas_slot;
 extern "C" void *SpaceLounge_lounge_layout_slot;
@@ -466,7 +458,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             if (I(self, 0x20) >= 0) {
                 void *agent = selected_agent(self);
                 if (((Agent *)(agent))->isGenericAgent() != 0) {
-                    Agent_setEvent(agent, 1);
+                    ((Agent *)(agent))->setEvent(1);
                 }
             }
             I(self, 0x14) = 0;
@@ -491,7 +483,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     case 0:
         if (UC(self, 0xbd) == 0) {
             void *system = (void *)(*g_status)->getSystem();
-            int race = SolarSystem_getRace(system);
+            int race = ((SolarSystem *)(system))->getRace();
             int *v = &SpaceLounge_touch_race_vectors[race * 3];
             MatrixSetTranslation(matrix, (float)v[2], (float)v[0], (float)v[1]);
             MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
@@ -529,7 +521,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             if (TouchButton_touch_end(button, x, y) != 0) {
                 void *agent = selected_agent(self);
                 if (i >= 5 && ((Agent *)(agent))->isGenericAgent() != 0) {
-                    Agent_setEvent(agent, 1);
+                    ((Agent *)(agent))->setEvent(1);
                 }
             }
         }
@@ -542,7 +534,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         break;
     }
 
-    ScrollTouchWindow_touch_end(P(self, 0x60), x, y);
+    ((ScrollTouchWindow *)(P(self, 0x60)))->touch_end(x, y);
     if (((Layout *)(layout))->helpPressed() != 0) {
         void *texts = *(void **)&SpaceLounge_touch_help_text_slot;
         void *text = ((GameText *)(*(void **)texts))->getText(0x273);
@@ -562,9 +554,9 @@ int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
 {
     char missionText[12];
 
-    int race = Agent_getRace(agent);
+    int race = ((Agent *)(agent))->getRace();
     bool male = ((Agent *)(agent))->isMale();
-    int offer = Agent_getOffer(agent);
+    int offer = ((Agent *)(agent))->getOffer();
     void *mission = ((Agent *)(agent))->getMission();
     int missionType;
     if (mission == 0) {
@@ -575,7 +567,7 @@ int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
             missionType = -1;
         } else {
             mission = ((Agent *)(agent))->getMission();
-            missionType = Mission_getType(mission);
+            missionType = ((Mission *)(mission))->getType();
         }
     }
 
@@ -694,9 +686,9 @@ void SpaceLounge::onKeyPress(int key) {
 
     if (UC(self, 0x1b) != 0) {
         if (key == 0x1000) {
-            ChoiceWindow_left(P(self, 0x8));
+            ((ChoiceWindow *)(P(self, 0x8)))->left();
         } else if (key == 0x2000) {
-            ChoiceWindow_right(P(self, 0x8));
+            ((ChoiceWindow *)(P(self, 0x8)))->right();
         } else if (key == 0x10000) {
             UC(self, 0x1b) = 0;
         }
@@ -727,7 +719,7 @@ void SpaceLounge::onKeyPress(int key) {
         if (key == 0x10000 || key == 0x20000) {
             I(self, 0x30) = 0;
             void *agent = key_agent(self);
-            if (Agent_getOffer(agent) == 1) {
+            if (((Agent *)(agent))->getOffer() == 1) {
                 I(self, 0x14) = 2;
             } else {
                 I(self, 0x14) = mode == 1 ? 2 : 0;
@@ -751,7 +743,7 @@ void SpaceLounge::onKeyPress(int key) {
             I(self, 0x14) = 1;
         } else if (key == 0x10000 || key == 0x20000) {
             if (((Agent *)(agent))->getMission() == 0 && ((Agent *)(agent))->isGenericAgent() != 0) {
-                Agent_setEvent(agent, 1);
+                ((Agent *)(agent))->setEvent(1);
             }
             I(self, 0x14) = 0;
         } else if (key == 0x8000) {
@@ -822,7 +814,7 @@ void SpaceLounge::updateScreenPositions() {
 
         ((void (*)(void *, void *))(*(void ***)mapped)[0x44 / 4])(mapped, B(self, 0x4c));
 
-        if (SolarSystem_getRace((void *)(*g_status)->getSystem()) == 0) {
+        if (((SolarSystem *)((void *)(*g_status)->getSystem()))->getRace() == 0) {
             MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
             AbyssEngine::AEMath::MatrixMultiply(*(Matrix*)(camera),*(const Matrix*)(look));
         }
@@ -865,17 +857,17 @@ void SpaceLounge::drawLounge() {
                 ((Agent *)(agent))->getName();
             } else {
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
-                void *text = ((GameText *)(*(void **)texts))->getText(Agent_getRace(agent) + 0x196);
+                void *text = ((GameText *)(*(void **)texts))->getText(((Agent *)(agent))->getRace() + 0x196);
                 ((String *)(s0))->ctor_copy((String *)text, false);
             }
 
             void *mission = ((Agent *)(agent))->getMission();
             if (mission != 0) {
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
-                void *text = ((GameText *)(*(void **)texts))->getText(Mission_getType(mission) + 0x162);
+                void *text = ((GameText *)(*(void **)texts))->getText(((Mission *)(mission))->getType() + 0x162);
                 ((String *)(s1))->ctor_copy((String *)text, false);
             } else {
-                int offer = Agent_getOffer(agent);
+                int offer = ((Agent *)(agent))->getOffer();
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
                 int id = 0;
                 if (offer == 6) {
@@ -936,7 +928,7 @@ void SpaceLounge::drawLounge() {
     }
 
     ((TouchButton *)(button_at(self, 0)))->setTextColor(-1);
-    int offer = Agent_getOffer(((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)]);
+    int offer = ((Agent *)(((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)]))->getOffer();
     if (I(self, 0x14) == 2) {
         ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x80));
         TouchButton_setPosition3(button_at(self, 1), I(self, 0x6c) + I(self, 0x84), I(self, 0x80), 0x12);
@@ -1120,10 +1112,10 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     if (agents != 0) {
         for (unsigned i = 0; i < U(agents, 0x0); ++i) {
             void *agent = ((void **)P(agents, 0x4))[i];
-            int offer = Agent_getOffer(agent);
+            int offer = ((Agent *)(agent))->getOffer();
             if ((offer == 6 || offer == 0) && ((Agent *)(agent))->getMission() != 0) {
                 void *mission = ((Agent *)(agent))->getMission();
-                if (Mission_getType(mission) == 0xc && ((Agent *)(agent))->hasAcceptedOffer() != 0) {
+                if (((Mission *)(mission))->getType() == 0xc && ((Agent *)(agent))->hasAcceptedOffer() != 0) {
                     ArrayRemove_AgentPtr(agent, P(self, 0x24));
                     ((SpaceLounge *)(self))->init();
                     break;
@@ -1144,7 +1136,7 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
         cutscene = P(self, 0x44);
     }
 
-    int race = SolarSystem_getRace((void *)(*g_status)->getSystem());
+    int race = ((SolarSystem *)((void *)(*g_status)->getSystem()))->getRace();
     MatrixSetTranslation(from, (float)race, 0.0f, 0.0f);
     MatrixSetRotation(from, 0.0f, 0.0f, 0.0f);
     MatrixSetTranslation(to, (float)race, 0.0f, 0.0f);
@@ -1177,7 +1169,7 @@ void SpaceLounge::startChat() {
     }
 
     void *agent = ((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)];
-    int offer = Agent_getOffer(agent);
+    int offer = ((Agent *)(agent))->getOffer();
     void *mission = ((Agent *)(agent))->getMission();
     void *texts = *(void **)&SpaceLounge_start_text_slot;
 
@@ -1214,7 +1206,7 @@ void SpaceLounge::startChat() {
     if (offer == 1) {
         I(self, 0x14) = 3;
     } else if (((Agent *)(agent))->isGenericAgent() != 0) {
-        Agent_setEvent(agent, 1);
+        ((Agent *)(agent))->setEvent(1);
     }
 
     ((String *)(right))->dtor();

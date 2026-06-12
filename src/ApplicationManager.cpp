@@ -1,4 +1,5 @@
 #include "gof2/ApplicationManager.h"
+#include "gof2/AESoundRessource.h"
 #include "gof2/externs.h"
 #include "gof2/IApplicationModule.h"
 #include "gof2/String.h"
@@ -36,7 +37,6 @@ extern "C" void ext_001ab588(void *sound);
 extern "C" void ext_001ab5c8(void *cheats);
 extern "C" void ext_001ab538(void *sound);
 extern "C" void Engine_PreUpdate(void *engine);
-extern "C" void AESoundRessource_checkLooping(void *sound);
 extern "C" void ext_001ab610(void);
 extern "C" void ArrayCtor_modules(void *array);
 extern "C" void ArrayCtor_uint(void *array);
@@ -45,7 +45,6 @@ extern "C" void AESoundRessource_ctor(void *sound);
 extern "C" void ConfigReader_ctor(void *reader, void *engine);
 extern "C" void CheatHandler_ctor(void *cheats, void *keys);
 extern "C" void AESoundRessource_SetSound(void *sound, void *info, int count);
-extern "C" void AESoundRessource_init(void *sound, int index);
 extern "C" void ArrayAdd_IApplicationModule(void *module, void *array);
 extern "C" void ext_001ab5b8(unsigned int id, void *array);
 extern "C" void ext_001ab318(void *engine);
@@ -520,7 +519,7 @@ void ApplicationManager::OnUpdate(long long now) {
     }
     void *sound = self->soundResource;
     if (sound != 0 && self->soundFxEnabled) {
-        AESoundRessource_checkLooping(sound);
+        ((AbyssEngine::AESoundRessource *)(sound))->checkLooping();
     }
 
     switch (self->field_0x3c) {
@@ -742,7 +741,7 @@ __attribute__((minsize)) extern "C" void ApplicationManager_SoundSet(Application
         if (sound != 0) {
             AESoundRessource_SetSound(sound, info, count);
             for (int i = 0; i < count; ++i) {
-                AESoundRessource_init(self->soundResource, i);
+                ((AbyssEngine::AESoundRessource *)(self->soundResource))->init(i);
             }
         }
     }

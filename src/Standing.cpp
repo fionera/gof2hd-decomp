@@ -1,8 +1,8 @@
 #include "gof2/Standing.h"
 #include "gof2/Status.h"
+#include "gof2/SolarSystem.h"
 #include <arm_neon.h>
 
-extern "C" int SolarSystem_getRace();
 
 // ---- Standing_11d6a8.cpp ----
 // Standing::Standing(): allocate a 2-int standings array {0x1e, 0}; currentRace = -1.
@@ -225,8 +225,9 @@ void Standing::applyKill(int kind) {
     if (((Status *)(*holder))->inAlienOrbit() != 0) {
         sysRace = 9;
     } else {
-        ((Status *)(*holder))->getSystem();
-        sysRace = SolarSystem_getRace();
+        // In the original ABI Status::getSystem() leaves the current SolarSystem* in r0,
+        // which SolarSystem::getRace() then reads. Express that as a chained method call.
+        sysRace = ((SolarSystem *)(long)((Status *)(*holder))->getSystem())->getRace();
     }
     int delta;
     if (kind == 8) {

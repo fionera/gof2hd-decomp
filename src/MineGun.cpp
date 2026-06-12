@@ -1,4 +1,5 @@
 #include "gof2/MineGun.h"
+#include "gof2/TargetFollowCamera.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/ObjectGun.h"
 #include "gof2/Transform.h"
@@ -21,8 +22,6 @@ extern "C" __attribute__((visibility("hidden"))) void **MineGun_canvas_holder;
 extern "C" void Array_Explosion_ctor(Array<Explosion *> *self);
 extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion *> *self);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
-extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
-extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 
 // ---- render_1566bc.cpp ----
 void MineGun::render()
@@ -105,7 +104,7 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
         }
         Explosion_ctor(explosion, kind);
         ((Array<Explosion *> *)P(self, 0xb4))->data()[i] = explosion;
-        Explosion_setWeaponIndex(((Array<Explosion *> *)P(self, 0xb4))->data()[i], I(gun, 0x58));
+        ((Explosion *)(((Array<Explosion *> *)P(self, 0xb4))->data()[i]))->setWeaponIndex(I(gun, 0x58));
         F<uint8_t>(P(self, 0xb8), i) = 1;
         explosions = (Array<Explosion *> *)P(self, 0xb4);
     }
@@ -129,8 +128,6 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
 }
 
 // ---- update_1566ec.cpp ----
-extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self, float pct,
-                                                       int duration);
 
 static inline Explosion *explosion_at(MineGun *self, uint32_t index)
 {
@@ -172,7 +169,7 @@ void MineGun::update(int delta)
                 FL(this, 0xd0) = one - clamped / range;
                 TargetFollowCamera *camera =
                     (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
-                TargetFollowCamera_setRumblePercentage(camera, FL(this, 0xd0), 0x32);
+                ((TargetFollowCamera *)(camera))->setRumblePercentage(FL(this, 0xd0), 0x32);
 
                 ((int *)(vectorBytes + 12))[0] = zero;
                 ((int *)(vectorBytes + 12))[1] = zero;
@@ -182,7 +179,7 @@ void MineGun::update(int delta)
             }
 
             Explosion *explosion = explosion_at(this, i);
-            Explosion_update(explosion, delta, (TargetFollowCamera *)0);
+            ((Explosion *)(explosion))->update(delta, (TargetFollowCamera *)0);
             int timer = I(this, 0xcc) + delta;
             if (timer > 1999) {
                 timer = 2000;
@@ -191,12 +188,12 @@ void MineGun::update(int delta)
             TargetFollowCamera *camera =
                 (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
             float pct = FL(this, 0xd0) * ((float)I(this, 0xcc) / decay + one);
-            TargetFollowCamera_setRumblePercentage(camera, pct, 0x32);
+            ((TargetFollowCamera *)(camera))->setRumblePercentage(pct, 0x32);
 
             if (((Explosion *)(explosion))->isPlaying() == 0) {
                 TargetFollowCamera *camera =
                     (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
-                TargetFollowCamera_setRumblePercentage(camera, 0.0f, zero);
+                ((TargetFollowCamera *)(camera))->setRumblePercentage(0.0f, zero);
                 gun = P(this, 0x8);
                 I(this, 0xcc) = zero;
                 F<uint8_t>(P(gun, 0x40), i) = zero;

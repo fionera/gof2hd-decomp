@@ -20,7 +20,6 @@ struct Player {
 #include "gof2/String.h"
 
 
-extern "C" void *PlayerStaticFar_dtor(void *self);
 extern "C" void PlayerStaticFar_ctor(PlayerWormHole *self, int playerId, AEGeometry *geometry, float x, float y, float z);
 // UNRECOVERED: this AEGeometry callback is reached through a runtime ARM->Thumb
 // veneer (PlayerWormHole::setPosition at a5336 calls *(fp)(geometry)); the indirect
@@ -43,7 +42,8 @@ bool PlayerWormHole::isShrinking()
 // ---- _PlayerWormHole_a5302.cpp ----
 void _ZN14PlayerWormHoleD0Ev(void *self)
 {
-    return ::operator delete(PlayerStaticFar_dtor(self));
+    ((PlayerStaticFar *)(self))->dtor();
+    ::operator delete(self);
 }
 
 // ---- open_a5314.cpp ----

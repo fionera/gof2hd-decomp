@@ -1,18 +1,13 @@
 #include "gof2/Gun.h"
+#include "gof2/Player.h"
 #include "gof2/Item.h"
 #include "gof2/Sparks.h"
 #include "gof2/AEGeometry.h"
 
-// NOTE: gof2/Player.h is intentionally NOT included. That (out-of-batch) header has
-// a pre-existing name collision (a 'turnedEnemy()' method vs. its own 'turnedEnemy'
-// field) that breaks compilation. This translation unit only needs Player::isActive()
-// (and Player as an opaque pointer type), so a minimal local definition is used instead.
-struct Player {
-    unsigned char isActive();
-};
+// gof2/Player.h (included above) provides the full Player definition, including
+// isActive()/isAsteroid(). The former name collision has been resolved in that header.
 
 
-extern "C" int  Player_isAsteroid(Player *p);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void Gun_VecArray_ctor(void *a);
 extern "C" void Gun_VecPtrArray_ctor(void *a);
@@ -240,7 +235,7 @@ void Gun::ignite() {
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
         Player *target = *(Player **)(enemies[1] + ei * 4);
         self->target = target;
-        if ((self->weaponType == 6 && Player_isAsteroid(target) != 0))
+        if ((self->weaponType == 6 && ((Player *)(target))->isAsteroid() != 0))
             continue;
         if (((Player *)(target))->isActive() == 0)
             continue;

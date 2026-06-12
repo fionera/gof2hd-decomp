@@ -1,5 +1,8 @@
 #include <new>
 #include "gof2/MGame.h"
+#include "gof2/Ship.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/TargetFollowCamera.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/FModSound.h"
@@ -113,21 +116,14 @@ extern "C" void MGame_handleHudTouchAction(MGame *self, int p1, int p2, void *p3
 extern "C" void MGame_tick(MGame *self, int frameDeltaMs);
 extern "C" void MGame_buildDockChoice(MGame *self, int textId, int prefixLit, int suffixLit);
 extern "C" void MGame_opdelete(void *p);
-extern "C" int SolarSystem_getTextureIndex(void *ss);
 void Globals_startNewSoundResourceList();
 void Globals_addSoundResourceToList(int list);
-extern "C" void Player_setShieldHP(Player *p, int hp);
-extern "C" void Player_setGammaHP(Player *p, int hp);
 extern "C" void MGame_freeCamPanDone(MGame *self, int p3);
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 int DialogueWindow_hasSuccessDialogue(int cm);
-extern "C" void StarSystem_getPlanets(StarSystem *ss);
-extern "C" void Route_ctor(Route *r, int *pts, int n);
-extern "C" void *Route_dtor(Route *r);
 extern "C" void MGame_buildMissionFollowup(MGame *self);
 extern "C" int Ship_hasCargo(Ship *ship, int id, int n);
 extern "C" void *Ship_getCargo(Ship *ship, int id);
-extern "C" void Ship_removeCargo(Ship *ship, int id, int n);
 extern "C" void PlayerEgo_rollRight(PlayerEgo *p, int shipField, float amt);
 extern "C" void PlayerEgo_rollLeft(PlayerEgo *p, int shipField, float amt);
 extern "C" void applyThrust(MGame *self, int y);
@@ -136,9 +132,7 @@ void TFC_setLookAtCam(TargetFollowCamera *c, int v);
 extern "C" void Cam_setCinematic(TargetFollowCamera *c, int on);
 extern "C" void Hud_enterCinematic(...);
 extern "C" void FModSound_restoreState();
-extern "C" int LevelScript_getEvent(LevelScript *s);
 int DialogueWindow_hasBriefingDialogue(...);
-extern "C" int Mission_getType(Mission *m);
 extern "C" void DialogueWindow_ctor(...);
 void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
 
@@ -631,7 +625,7 @@ void MGame::useCloak() {
 // 0x78694
 // 0x76c84
 // 0x6f2b0
-extern "C" void DialogueWindow_setLevel(...);  // 0x78664
+// 0x78664
 // 0x75550 — DialogueWindow::set(Mission*, int, int)
 // 0x786ac
 // 0x786b8
@@ -656,10 +650,10 @@ static void bindDialogueLevel(MGame *self) {
         DialogueWindow_ctor(w);
         Level *lvl = self->field_0x78;
         self->field_0x8c = w;
-        if (lvl != 0) DialogueWindow_setLevel(w, lvl);
+        if (lvl != 0) ((DialogueWindow *)(w))->setLevel(lvl);
     } else if (((DialogueWindow *)(self->field_0x8c))->hasLevel() == 0) {
         Level *lvl = self->field_0x78;
-        if (lvl != 0) DialogueWindow_setLevel(self->field_0x8c, lvl);
+        if (lvl != 0) ((DialogueWindow *)(self->field_0x8c))->setLevel(lvl);
     }
     ((DialogueWindow *)(self->field_0x8c))->set((*g_status)->getMission(), 2, -1);
 }
@@ -965,11 +959,11 @@ void MGame::dockEvent() {
     Status *status = (Status *)g_deStatus;
     Mission *m = (*g_status)->getMission();
     bool special = ((Mission *)(m))->isEmpty() != 0 ||
-                   Mission_getType((*g_status)->getMission()) == 0xb ||
-                   Mission_getType((*g_status)->getMission()) == 0 ||
-                   Mission_getType((*g_status)->getMission()) == 0xbd ||
-                   Mission_getType((*g_status)->getMission()) == 0xab ||
-                   Mission_getType((*g_status)->getMission()) == 0xac;
+                   ((Mission *)((*g_status)->getMission()))->getType() == 0xb ||
+                   ((Mission *)((*g_status)->getMission()))->getType() == 0 ||
+                   ((Mission *)((*g_status)->getMission()))->getType() == 0xbd ||
+                   ((Mission *)((*g_status)->getMission()))->getType() == 0xab ||
+                   ((Mission *)((*g_status)->getMission()))->getType() == 0xac;
 
     if (!special) {
         if ((self->field_0xcc != 0 || self->field_0xcb != 0) &&
@@ -1148,7 +1142,7 @@ void MGame::deleting_dtor() {
 // ---- UseKhadorDrive_179d5c.cpp ----
 
 // 0x77a7c
-extern "C" int Mission_getTargetStation(Mission *m);  // 0x73738
+// 0x73738
 // 0x72034
 // 0x72ca0
 // 0x78280
@@ -1178,18 +1172,18 @@ void MGame::UseKhadorDrive() {
     bool special =
         ((Mission *)(m))->isEmpty() != 0 ||
         (*g_status)->getCurrentCampaignMission() == 0x4e ||
-        Mission_getType(m) == 0xb ||
-        Mission_getType(m) == 0 ||
-        Mission_getType(m) == 0xbd ||
-        Mission_getType(m) == 0xd ||
-        Mission_getType(m) == 0xab ||
-        Mission_getType(m) == 0xac;
+        ((Mission *)(m))->getType() == 0xb ||
+        ((Mission *)(m))->getType() == 0 ||
+        ((Mission *)(m))->getType() == 0xbd ||
+        ((Mission *)(m))->getType() == 0xd ||
+        ((Mission *)(m))->getType() == 0xab ||
+        ((Mission *)(m))->getType() == 0xac;
 
     if (!special) {
         if ((*g_status)->getCurrentCampaignMission() == 0x41 && (*g_status)->inAlienOrbit() == 0) {
             int idx = Station_getIndex((*g_status)->getStation());
             (*g_status)->getCampaignMission();
-            if (idx == Mission_getTargetStation((Mission *)(*g_status)->getCampaignMission()))
+            if (idx == ((Mission *)((Mission *)(*g_status)->getCampaignMission()))->getTargetStation())
                 special = true;
         }
     }
@@ -1283,7 +1277,7 @@ void MGame::OnInitialize() {
         unsigned texSel;
         if ((*g_status)->inAlienOrbit() == 0) {
             (*g_status)->getSystem();
-            int ti = SolarSystem_getTextureIndex(0);
+            int ti = ((SolarSystem *)(0))->getTextureIndex();
             texSel = (ti + 0x2efe) & 0xffff;
         } else {
             texSel = 0x2f08;
@@ -1543,10 +1537,10 @@ static void bindDlg(MGame *self) {
         DialogueWindow_ctor(w);
         Level *lvl = self->field_0x78;
         self->field_0x8c = w;
-        if (lvl != 0) DialogueWindow_setLevel(w, lvl);
+        if (lvl != 0) ((DialogueWindow *)(w))->setLevel(lvl);
     } else if (((DialogueWindow *)(self->field_0x8c))->hasLevel() == 0) {
         Level *lvl = self->field_0x78;
-        if (lvl != 0) DialogueWindow_setLevel(self->field_0x8c, lvl);
+        if (lvl != 0) ((DialogueWindow *)(self->field_0x8c))->setLevel(lvl);
     }
 }
 
@@ -1558,7 +1552,7 @@ void MGame::successCheck() {
 
     bool timed = !(self->field_0x4c < (int)(self->field_0x48 < 0x1389));
     if (timed || self->field_0xdc != 0) {
-        if (Mission_getType((Mission *)(*g_status)->getCampaignMission()) != 0xaa) goto done;
+        if (((Mission *)((Mission *)(*g_status)->getCampaignMission()))->getType() != 0xaa) goto done;
     }
 
     {
@@ -1568,8 +1562,8 @@ void MGame::successCheck() {
         if (mc == 0 && obj == 0) goto done;
     }
 
-    if (Mission_getType((*g_status)->getMission()) == 5) goto deliverFollowup;
-    if (Mission_getType((*g_status)->getMission()) == 3) goto deliverFollowup;
+    if (((Mission *)((*g_status)->getMission()))->getType() == 5) goto deliverFollowup;
+    if (((Mission *)((*g_status)->getMission()))->getType() == 3) goto deliverFollowup;
 
     {
         int *status = g_scStatus;
@@ -1616,10 +1610,10 @@ void MGame::successCheck() {
                 }
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x38) {
                 StarSystem *ss = (StarSystem *)(intptr_t)((Level *)(self->field_0x78))->getStarSystem();
-                StarSystem_getPlanets(ss);
+                ((StarSystem *)(ss))->getPlanets();
                 int pts[3] = {0, 0, 0};
                 Route *route = (Route *)::operator new(0x18);
-                Route_ctor(route, pts, 3);
+                ((Route *)(route))->ctor(pts, 3);
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
@@ -1629,7 +1623,7 @@ void MGame::successCheck() {
                         ((KIPlayer *)(k))->setRoute(rc);
                     }
                 }
-                ::operator delete(Route_dtor(route));
+                ::operator delete(((Route *)(route))->dtor());
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
@@ -1768,7 +1762,7 @@ void MGame::startChargingJumpDrive() {
         if ((*g_status)->inAlienOrbit() == 0) needed = **g_alienCost;
     }
     ((Hud *)(self->field_0x74))->hudEvent(0x1e, self->field_0x58, needed);
-    Ship_removeCargo(((Status *)(*sp))->getShip(), 0x7a, needed);
+    ((Ship *)(((Status *)(*sp))->getShip()))->removeCargo(0x7a, needed);
 }
 
 // ---- pauseSounds_178ddc.cpp ----
@@ -1799,7 +1793,7 @@ extern "C" void *TargetFollowCamera_dtor(void *c);  // 0x72064
 extern "C" void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
                                         int a, int b, int d, int e, int f, int g); // 0x78124
 // 0x78130
-extern "C" void TargetFollowCamera_resetShipHandling(TargetFollowCamera *c);  // 0x72a18
+// 0x72a18
 extern "C" void Radar_ctor(Radar *r, Level *l);  // 0x7813c
 // 0x7204c
 
@@ -1861,7 +1855,7 @@ void MGame::reset() {
     self->field_0xf4 = tfc;
     pc->CameraSetCurrent(self->field_0xf0);
     ((PlayerEgo *)(self->field_0x58))->setTargetFollowCamera(self->field_0xf4);
-    TargetFollowCamera_resetShipHandling(self->field_0xf4);
+    ((TargetFollowCamera *)(self->field_0xf4))->resetShipHandling();
 
     Radar *radar = (Radar *)::operator new(0x248);
     Radar_ctor(radar, self->field_0x78);
@@ -2180,7 +2174,7 @@ extern "C" void *TFC_getPosition(void *cam);  // 0x76b28
 // 0x76aec
 // 0x72af0
 // 0x785e0
-extern "C" void LevelScript_setEvent(LevelScript *s, int ev);  // 0x785ec
+// 0x785ec
 // 0x785f8
 // 0x745fc
 // 0x74608
@@ -2295,7 +2289,7 @@ afterCam:
     {
         int *status = g_ujStatus;
         if ((*g_status)->getCurrentCampaignMission() == 0x2a && (*g_status)->inAlienOrbit() != 0) {
-            LevelScript_setEvent(self->field_0x7c, 6);
+            ((LevelScript *)(self->field_0x7c))->setEvent(6);
             ((PlayerEgo *)(self->field_0x58))->setSpeed(0.0f);
             int lm = ((Level *)(self->field_0x78))->getLandmarks();
             int *node = *(int **)((char *)*(int *)((char *)lm + 4) + 0xc);
@@ -2630,8 +2624,8 @@ void MGame::OnRender2D() {
             if (**g_r2dPauseFlag == 0)
                 ((Hud *)(self->field_0x74))->drawPauseButton();
 
-            if (Mission_getType((Mission *)(*g_status)->getCampaignMission()) == 0xaa) {
-                if (LevelScript_getEvent(self->field_0x7c) == 0)
+            if (((Mission *)((Mission *)(*g_status)->getCampaignMission()))->getType() == 0xaa) {
+                if (((LevelScript *)(self->field_0x7c))->getEvent() == 0)
                     ((Hud *)(self->field_0x74))->drawOrbitInformation();
                 MGame_drawRadio(self);
                 if (self->field_0x5e != 0)
@@ -2642,7 +2636,7 @@ void MGame::OnRender2D() {
                 int cm = (*g_status)->getCurrentCampaignMission();
                 if (cm > 7 && self->field_0x80 == 0 && self->field_0x15d == 0 &&
                     ((PlayerEgo *)(self->field_0x58))->isDockingToPlanet() == 0 &&
-                    LevelScript_getEvent(self->field_0x7c) == 0)
+                    ((LevelScript *)(self->field_0x7c))->getEvent() == 0)
                     ((Hud *)(self->field_0x74))->drawOrbitInformation();
                 if (((LevelScript *)(self->field_0x7c))->startSequenceOver() != 0 ||
                     ((LevelScript *)(self->field_0x7c))->startSequence() == 0)
@@ -2701,13 +2695,13 @@ void MGame::dialogueEvent() {
         if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) return;
     }
     if (((Mission *)((*g_status)->getMission()))->isEmpty() != 0) return;
-    if (Mission_getType((*g_status)->getMission()) == 8) return;
-    if (Mission_getType((*g_status)->getMission()) == 0xa6) return;
-    if (Mission_getType((*g_status)->getMission()) == 0) return;
-    if (Mission_getType((*g_status)->getMission()) == 0xb7) return;
+    if (((Mission *)((*g_status)->getMission()))->getType() == 8) return;
+    if (((Mission *)((*g_status)->getMission()))->getType() == 0xa6) return;
+    if (((Mission *)((*g_status)->getMission()))->getType() == 0) return;
+    if (((Mission *)((*g_status)->getMission()))->getType() == 0xb7) return;
     if (((Mission *)((*g_status)->getMission()))->isVisible() == 0) return;
     if (((Mission *)((*g_status)->getMission()))->isCampaignMission() == 0) {
-        if (Mission_getType((*g_status)->getMission()) == 0xb) return;
+        if (((Mission *)((*g_status)->getMission()))->getType() == 0xb) return;
     }
     if (self->field_0x8c == 0) {
         DialogueWindow *w = (DialogueWindow *)MGame_opnew(0x74);

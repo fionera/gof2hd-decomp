@@ -1,4 +1,5 @@
 #include "gof2/NewsTicker.h"
+#include "gof2/SolarSystem.h"
 #include "gof2/NewsItem.h"
 #include "gof2/Status.h"
 #include "gof2/GameText.h"
@@ -39,7 +40,6 @@ extern "C" void *Array_NewsItem_dtor(NewsItemArray *self);
 extern "C" void ArrayReleaseClasses_NewsItem(NewsItemArray *self);
 extern "C" void ArrayAdd_NewsItem(void *item, NewsItemArray *array);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int bound); } }
-extern "C" int SolarSystem_getIndex(void *system);
 
 // ---- draw_15e174.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_NewsTicker_draw_canvas;
@@ -241,7 +241,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         }
         NewsItemView *item = (*allItems)[AbyssEngine::AERandom::nextInt(random, allItems->size())];
         void *system = (void *)((Status *)(*g_NewsTicker_ctor_status))->getSystem();
-        if (SolarSystem_getIndex(system) > 0x15 && item->field_0x0 == 0x0d) {
+        if (((SolarSystem *)(system))->getIndex() > 0x15 && item->field_0x0 == 0x0d) {
             continue;
         }
         if (item->field_0x14 < 0xa1 || item->field_0x10 > level) {

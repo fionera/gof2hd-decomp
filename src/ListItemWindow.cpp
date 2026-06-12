@@ -1,4 +1,5 @@
 #include "gof2/ListItemWindow.h"
+#include "gof2/BluePrint.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/Item.h"
 #include "gof2/ScrollTouchWindow.h"
@@ -15,7 +16,6 @@ extern "C" void _liw_stw_OnTouchEnd(void *stw, int y);
 extern "C" void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void  liw_set_buildShipPreview(void *self, void *item, void *layout);
 extern "C" void  Str_dtor(Str *s);
-extern "C" int   BluePrint_getIndex(void *bp);
 extern "C" int   Ship_getIndex(void *ship);
 extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" void _liw_String_ctor(void *s);
@@ -414,7 +414,7 @@ void ListItemWindow::draw()
             if (((ListItem *)(li))->isBluePrint() == 0)
                 idx = i32((void *)(i32(li, 0x18)), 0x14);
             else
-                idx = BluePrint_getIndex((void *)i32(li, 0x8));
+                idx = ((BluePrint *)((void *)i32(li, 0x8)))->getIndex();
             itemPtr = *(void **)(i32(db, 0x4) + idx * 4);
         } else {
             itemPtr = *(void **)((char *)li + 0x10);

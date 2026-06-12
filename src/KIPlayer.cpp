@@ -1,4 +1,5 @@
 #include "gof2/KIPlayer.h"
+#include "gof2/AERandom.h"
 #include "gof2/Item.h"
 #include "gof2/Level.h"
 #include "gof2/Status.h"
@@ -18,7 +19,6 @@ extern "C" void Object_setVisible(void *obj);
 extern "C" void FModSound_stopEvent(void *player);
 extern "C" void Player_render(void *player);
 extern "C" void FModSound_playEvent(void *a, int b, int c);
-extern "C" void *Route_dtor(Route *r);
 extern "C" void *Player_dtor(void *p);
 extern "C" void *ArrayUint_dtor(void *p);
 extern "C" void *ArrayInt_dtor(void *p);
@@ -27,8 +27,6 @@ extern "C" void *ArraySpacePoint_dtor(void *p);
 extern "C" void Player_awake(void *player, int b);
 extern "C" void Player_setDead(void *self, int arg);
 extern "C" void Player_addGun_b(void *player);
-extern "C" void Player_reset(void *player);
-extern "C" void Player_setEnemies(void *player);
 extern "C" void *gCanvas;
 extern "C" void Player_addGun_a(void *player);
 
@@ -228,7 +226,7 @@ void KIPlayer::setRoute(Route *route) {
     KIPlayer *self = this;
     Route *old = self->route;
     if (old != 0) {
-        ::operator delete(Route_dtor(old));
+        ::operator delete(((Route *)(old))->dtor());
     }
     self->route = 0;
     if (route != 0) {
@@ -256,7 +254,7 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
     self->player = 0;
 
     Route *r = self->route;
-    if (r != 0) ::operator delete(Route_dtor(r));
+    if (r != 0) ::operator delete(((Route *)(r))->dtor());
     self->route = 0;
 
     void *g1 = self->crateGeometry;
@@ -566,7 +564,7 @@ void KIPlayer::addGun_b() {
 void KIPlayer::reset() {
     KIPlayer *self = this;
     if (self->player != 0) {
-        Player_reset(self->player);
+        ((Player *)(self->player))->reset();
     }
     if (self->sleepFlag != 0 || self->initActiveFlag == 0) {
         ((KIPlayer *)(self))->setToSleep();
@@ -590,7 +588,7 @@ extern void *const gItemDb __attribute__((visibility("hidden")));     // DAT_000
 
 extern "C" {
 void KIPlayer_setActive_732f4(KIPlayer *self, int v);         // 0x732f4
-int AERandom_nextInt(void *rng, int bound);                  // 0x71848
+// 0x71848
 // 0x71a58
 int Ship_getFreeSpace(void *ship);                           // 0x722ec
 // 0x718c0
@@ -604,7 +602,7 @@ int Ship_spaceAvailable(void *ship, int amount);             // 0x73318
 // 0x73330
 // 0x718fc
 // 0x71854
-void Ship_addCargo(void *ship, void *item);                  // 0x72cdc
+// 0x72cdc
 // 0x72ce8 / 0x72cdc area
 }
 
@@ -633,7 +631,7 @@ void KIPlayer::captureCrate(void *hud) {
 
         // randomise the captured amount unless we are in a "guaranteed" state.
         if ((unsigned)(self->state - 3) >= 2)
-            amount = AERandom_nextInt(*(void **)gAERandom, amount);
+            amount = ((AbyssEngine::AERandom *)(*(void **)gAERandom))->nextInt();
 
         void *status = *(void **)gStatus;
 
@@ -713,7 +711,7 @@ void KIPlayer::captureCrate(void *hud) {
             }
         }
         if (!merged)
-            Ship_addCargo(((Status *)status)->getShip(), item);
+            ((Ship *)(((Status *)status)->getShip()))->addCargo((Item *)item);
 
         *(int *)((char *)self->level + 0x1c) =
             ((Item *)(item))->getAmount() + *(int *)((char *)self->level + 0x1c);
@@ -794,9 +792,9 @@ void * KIPlayer::getNearestNavigationPoint(Vector *dir, void *target) {
 }
 
 // ---- setEnemies_a6178.cpp ----
-void KIPlayer::setEnemies() {
+void KIPlayer::setEnemies(Array<Player *> *enemies) {
     KIPlayer *self = this;
-    return Player_setEnemies(self->player);
+    return ((Player *)(self->player))->setEnemies(enemies);
 }
 
 // ---- setShipGroup_a5d40.cpp ----

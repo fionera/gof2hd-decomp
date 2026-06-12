@@ -1,6 +1,9 @@
 #include "gof2/CutScene.h"
+#include "gof2/AERandom.h"
+#include "gof2/TargetFollowCamera.h"
 #include "gof2/PaintCanvasClass.h"
 #include "gof2/Status.h"
+#include "gof2/SolarSystem.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/Item.h"
 #include "gof2/LODManager.h"
@@ -127,13 +130,10 @@ void CutScene::render2D()
 
 // ---- process_98e8c.cpp ----
 extern "C" {
-void TargetFollowCamera_update(void *cam);
 float VectorSignedToFloat(int v, int mode);
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
 void MatrixSetRotation(void *m, float x, float y, float z);
 int Station_getIndex(void *station);
-int SolarSystem_getRace();
-int AERandom_nextInt(void *rng);
 void CutScene_processAux(void *self);
 }
 
@@ -166,7 +166,7 @@ void CutScene::process(int delta)
     u32(self, 0x4c) = 0;
 
     if (pp(self, 0x68) != 0)
-        TargetFollowCamera_update(pp(self, 0x68));
+        ((TargetFollowCamera *)(pp(self, 0x68)))->update(i32(self, 0x58));
 
     int mode = i32(self, 0x88);
 
@@ -214,12 +214,12 @@ void CutScene::process(int delta)
                 kind = 7;
             } else {
                 ((Status *)(*gStatus))->getSystem();
-                kind = (unsigned int)SolarSystem_getRace() | 2;
+                kind = (unsigned int)((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace() | 2;
             }
         }
         i32(self, 0x84) = i32(self, 0x58) + i32(self, 0x84);
         ((Status *)(*gStatus))->getSystem();
-        if (SolarSystem_getRace() == 1) {
+        if (((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace() == 1) {
             ((PaintCanvas*)(*g_canvas))->FogSetParameter(0x2601, 0, CutScene_fogColorMode17,
                                         1.0f, CutScene_fogDensityMode17);
         } else if (kind == 2 && pp(self, 0x38) != 0) {
@@ -236,7 +236,7 @@ void CutScene::process(int delta)
                 i32(self, 0x84) = 0;
                 void *rng = *g_random;
                 for (unsigned int i = 0; i < n; i++) {
-                    if (AERandom_nextInt(rng) < 0x14) {
+                    if (((AbyssEngine::AERandom *)(rng))->nextInt() < 0x14) {
                         void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         if (((AbyssEngine::Transform *)(t))->IsRunning() == 0) {
                             char *data = *(char **)((char *)pp(self, 0x38) + 4);
@@ -290,13 +290,13 @@ void CutScene::process(int delta)
         }
 
         ((Status *)(*gStatus))->getSystem();
-        int race = SolarSystem_getRace();
+        int race = ((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace();
         if (race == 0) {
             void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
             ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
         } else {
             ((Status *)(*gStatus))->getSystem();
-            int race1 = SolarSystem_getRace();
+            int race1 = ((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace();
             if (race1 == 1) {
                 ((PaintCanvas*)(canvas))->FogSetParameter(0x2601, 0, CutScene_fogColorMode4,
                                             1.0f, CutScene_fogDensityMode4);
@@ -312,7 +312,7 @@ void CutScene::process(int delta)
                     i32(self, 0x7c) = acc;
                     if (acc > 20000) {
                         i32(self, 0x7c) = 0;
-                        if (AERandom_nextInt(*g_random) < 100) {
+                        if (((AbyssEngine::AERandom *)(*g_random))->nextInt() < 100) {
                             void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
                             a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
@@ -327,7 +327,7 @@ void CutScene::process(int delta)
                     i32(self, 0x80) = acc;
                     if (acc > 22000) {
                         i32(self, 0x80) = 0;
-                        if (AERandom_nextInt(*g_random) < 100) {
+                        if (((AbyssEngine::AERandom *)(*g_random))->nextInt() < 100) {
                             void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
                             ((PaintCanvas*)(canvas))->TransformGetTransform(0);
@@ -340,7 +340,7 @@ void CutScene::process(int delta)
                 return;
             }
             ((Status *)(*gStatus))->getSystem();
-            int race3 = SolarSystem_getRace();
+            int race3 = ((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace();
             if (race3 == 3) {
                 ((Level *)(pp(self, 0x0)))->getEnemies();
                 ((Level *)(pp(self, 0x0)))->getEnemies();
@@ -358,7 +358,7 @@ void CutScene::process(int delta)
                 i32(self, 0x80) = acc80;
                 if (acc7c > 1000 && pp(self, 0x28) != 0) {
                     i32(self, 0x7c) = 0;
-                    if (AERandom_nextInt(*g_random) < 0x28) {
+                    if (((AbyssEngine::AERandom *)(*g_random))->nextInt() < 0x28) {
                         void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
                         a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
@@ -368,7 +368,7 @@ void CutScene::process(int delta)
                 }
                 if (acc80 > 2000) {
                     i32(self, 0x80) = 0;
-                    if (AERandom_nextInt(*g_random) < 0x1e) {
+                    if (((AbyssEngine::AERandom *)(*g_random))->nextInt() < 0x1e) {
                         void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
                         ((PaintCanvas*)(canvas))->TransformGetTransform(0);
@@ -380,7 +380,7 @@ void CutScene::process(int delta)
                 return;
             }
             ((Status *)(*gStatus))->getSystem();
-            if (SolarSystem_getRace() != 2)
+            if (((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace() != 2)
                 return;
             CutScene_processAux(self);
             CutScene_processAux(self);
@@ -489,11 +489,9 @@ void CutScene::replacePlayerShip(int a, int b)
 extern "C" {
 void Level_ctor(void *self, int mode);
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
-int AERandom_nextInt(void *rng);
 float VectorSignedToFloat(int v, int mode);
 void MatrixSetTranslation(void *m, float x, float y, float z);
 void MatrixSetRotation(void *m, float x, float y, float z);
-int SolarSystem_getRace();
 void *TargetFollowCamera_dtor(void *self);
 }
 
@@ -545,8 +543,8 @@ void CutScene::initialize()
         __aeabi_memcpy(tmp, ((PaintCanvas*)(canvas))->CameraGetLocal(0), 0x3c);
 
         void *rng = *g_random;
-        int rx = AERandom_nextInt(rng);
-        int ry = AERandom_nextInt(rng);
+        int rx = ((AbyssEngine::AERandom *)(rng))->nextInt();
+        int ry = ((AbyssEngine::AERandom *)(rng))->nextInt();
         float tx = VectorSignedToFloat(rx - 20000, 0);
         float ty = VectorSignedToFloat(ry + 40000, 0);
         MatrixSetTranslation(localMatrix, tx, ty, 0.0f);
@@ -605,7 +603,7 @@ void CutScene::initialize()
         ((PaintCanvas*)(canvas))->CameraSetCurrent(u32(this, 0x6c));
         resetCamera();
         ((Status *)(*gStatus))->getSystem();
-        int race = SolarSystem_getRace();
+        int race = ((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace();
         if (race == 3) {
             void *g = ::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)(0x36d6), (PaintCanvas*)canvas, false);
@@ -614,7 +612,7 @@ void CutScene::initialize()
             ((AbyssEngine::Transform *)(t))->SetAnimationState((AbyssEngine::AnimationMode)0, (void *)0);
         } else {
             ((Status *)(*gStatus))->getSystem();
-            if (SolarSystem_getRace() == 0) {
+            if (((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace() == 0) {
                 void *g = ::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(0x37c8), (PaintCanvas*)canvas, false);
                 pp(this, 0x30) = g;
@@ -627,7 +625,7 @@ void CutScene::initialize()
                 pp(this, 0x34) = 0;
             } else {
                 ((Status *)(*gStatus))->getSystem();
-                SolarSystem_getRace();
+                ((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace();
             }
         }
     }
@@ -653,7 +651,6 @@ void CutScene::initialize()
 
 // ---- resetCamera_98514.cpp ----
 extern "C" {
-int SolarSystem_getRace();
 }
 
 __attribute__((visibility("hidden"))) extern void **g_canvas;
@@ -676,7 +673,7 @@ void CutScene::resetCamera()
 
     if (mode == 0x17) {
         ((Status *)(*gStatus))->getSystem();
-        if (SolarSystem_getRace() == 1) {
+        if (((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace() == 1) {
             void *canvas = *g_canvas;
             ((PaintCanvas*)(canvas))->FogSetParameter(0x2601, 0, CutScene_fogColor,
                                         1.0f, CutScene_fogDensity_mode17);
@@ -697,7 +694,7 @@ void CutScene::resetCamera()
         return;
 
     ((Status *)(*gStatus))->getSystem();
-    if (SolarSystem_getRace() == 1) {
+    if (((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace() == 1) {
         void *canvas = *g_canvas;
         ((PaintCanvas*)(canvas))->FogSetParameter(0x2601, 0, CutScene_fogColor,
                                     1.0f, CutScene_fogDensity_mode4);

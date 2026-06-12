@@ -20,6 +20,7 @@
 #include "gof2/Station.h"
 #undef RetStr
 #include "gof2/RecordHandler.h"
+#include "gof2/SolarSystem.h"
 #include "gof2/String.h"
 
 // Status / AEGeometry / String full layouts are not needed here: Globals only takes
@@ -52,10 +53,6 @@ extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
 extern "C" void AEString_default_ctor(void *s);
 extern "C" void AEString_cstr_ctor(void *s, const char *str, int copy);
 extern "C" void AEString_copy_ctor(void *dst, void *src, int copy);
-extern "C" int Agent_getEvent(void *agent);
-extern "C" int Agent_getOffer(void *agent);
-extern "C" int Agent_getIndex(void *agent);
-extern "C" void Agent_setSellItemPrice(void *agent, int price);
 extern "C" int Ship_getPrice(int ship);
 extern "C" int Ship_hasModInstalled(int ship, int modIndex);
 // AERandom::nextInt — the real defs are free functions in AERandom.cpp:
@@ -110,15 +107,12 @@ extern "C" void FModSound_ctor(void *s);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 void ParticleSettingsRef_initialize();
 extern "C" void ArrayInt_ctor(void *a);
-extern "C" int SolarSystem_getRace();
 extern "C" int Station_getIndex(int station);
 // The dropped-self Status singleton. The original loaded the global Status* implicitly for
 // each of these 0-arg calls; the singleton lives at the hidden global g_status (same one
 // MGame/Mission/PlayerTurret reach). Recover the receiver as (*g_status)->method().
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 extern "C" void Status_resetGame();
-extern "C" int Mission_getTargetStation();
-extern "C" int Agent_getRace(void *agent);
 extern "C" int Globals_dialogueDispatch(int category, int code);
 extern "C" void ArrayReleaseClasses_Str(void *a);
 extern "C" void *ArrayStr_dtor(void *a);
@@ -702,17 +696,17 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
             char scratch[12];
             AEString_default_ctor(scratch);
 
-            int event = Agent_getEvent(agent);
+            int event = ((Agent *)(agent))->getEvent();
             if (event < 1 && ((Agent *)(agent))->hasAcceptedOffer() == 0) {
                 int *busy = *(int **)gGAMT_busyObj;
                 *(int *)(*busy + 0xd0) += 1;       // mark "assembling text" re-entrancy guard
-                int offer = Agent_getOffer(agent);
+                int offer = ((Agent *)(agent))->getOffer();
 
                 if (offer == 8) {
                     int ship = (int)(long)(*g_status)->getShip();
                     int price = Ship_getPrice(ship);
                     int pct = ((Agent *)(agent))->getModPricePercentage();
-                    Agent_setSellItemPrice(agent, idiv(price * pct, 100));
+                    ((Agent *)(agent))->setSellItemPrice(idiv(price * pct, 100));
                     ship = (int)(long)(*g_status)->getShip();
                     int modIdx = ((Agent *)(agent))->getSellModIndex();
                     if (Ship_hasModInstalled(ship, modIdx) != 0) {
@@ -2045,8 +2039,7 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
             ((FModSound *)(snd))->play(track, 0, 0, (float)vol);
             return 0;
         }
-        (*g_status)->getSystem();
-        SolarSystem_getRace();
+        ((SolarSystem *)(long)(*g_status)->getSystem())->getRace();
         int *sndP = *(int **)gPM_snd1;
         ((FModSound *)(*sndP))->stop(0);
         if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x6c) {
@@ -2063,8 +2056,7 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
                 return 0;
             }
             if ((*g_status)->getMission() != 0 && ((Mission *)(long)(*g_status)->getMission())->isEmpty() == 0) {
-                (*g_status)->getMission();
-                int tgt = Mission_getTargetStation();
+                int tgt = ((Mission *)(long)(*g_status)->getMission())->getTargetStation();
                 if (tgt == Station_getIndex((int)(long)(*g_status)->getStation())) {
                     int cm = (*g_status)->getCurrentCampaignMission();
                     track = cm < 0x6a ? 0x8c1 : 0x8c2;
@@ -2086,7 +2078,7 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
             return 0;
         }
         const int *table = &gPM_table1;
-        track = table[SolarSystem_getRace()];
+        track = table[((SolarSystem *)(long)(*g_status)->getSystem())->getRace()];
         ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
         return 0;
     }
@@ -2094,8 +2086,7 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
         return prev;
     }
 
-    (*g_status)->getSystem();
-    int race = SolarSystem_getRace();
+    int race = ((SolarSystem *)(long)(*g_status)->getSystem())->getRace();
     int *sndP = *(int **)gPM_snd0;
     ((FModSound *)(*sndP))->stop(0);
     if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x6c) {
@@ -2144,7 +2135,7 @@ int Globals_getDialogueSoundId(void *self, int code, void *agent)
         return -1;
     }
 
-    int race = Agent_getRace(agent);
+    int race = ((Agent *)(agent))->getRace();
     int male = ((Agent *)(agent))->isMale();
 
     int category;

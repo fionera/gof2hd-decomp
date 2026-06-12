@@ -1,4 +1,5 @@
 #include "gof2/Explosion.h"
+#include "gof2/TargetFollowCamera.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/FModSound.h"
 #include "gof2/Transform.h"
@@ -16,7 +17,6 @@ namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); 
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
 float VectorLength(const Vector *self);
-extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self, float value, int duration);
 void MatrixGetPosition(Vector *out, const Matrix *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 void MatrixSetTranslation(Matrix *out, Matrix *base, float x, float y, float z);
@@ -296,7 +296,7 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
                 capped = distance;
             }
             float value = (1.0f - capped / 30000.0f) * ((float)anim / -2000.0f + 1.0f);
-            TargetFollowCamera_setRumblePercentage(camera, value, 0x32);
+            ((TargetFollowCamera *)(camera))->setRumblePercentage(value, 0x32);
         }
     }
 
@@ -305,7 +305,7 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
     if (self->duration < elapsed) {
         ((Explosion *)(self))->reset();
         if (camera != 0) {
-            TargetFollowCamera_setRumblePercentage(camera, 0.0f, 0);
+            ((TargetFollowCamera *)(camera))->setRumblePercentage(0.0f, 0);
         }
     }
 }

@@ -12,9 +12,12 @@ struct TouchButton;    // opaque; we only ever take a TouchButton* and offset-ca
 // 12-byte return-by-value String aggregate (matches other gof2 getters).
 
 // ---- tiny offset-cast helpers -------------------------------------------------
+#ifndef GOF2_BIP_HELPERS
+#define GOF2_BIP_HELPERS
 static inline char*           B (void* p, int off) { return (char*)p + off; }
 static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
 static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
+#endif
 
 class TouchButton {
 public: void* _opaque; 

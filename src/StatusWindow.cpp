@@ -1,4 +1,5 @@
 #include "gof2/StatusWindow.h"
+#include "gof2/BluePrint.h"
 #include "gof2/PaintCanvas.h"
 #include "gof2/Status.h"
 #include "gof2/Achievements.h"
@@ -19,7 +20,6 @@ extern "C" void ArrayReleaseClasses_ImagePart(void *arr);
 extern "C" void *Array_ImagePart_dtor(void *p);
 extern "C" void ArrayReleaseClasses_String(void *arr);
 extern "C" void *Array_String_dtor(void *p);
-extern "C" int *Achievements_getMedals(void *ach);
 extern "C" __attribute__((visibility("hidden"))) void **g_SWm_layout;
 extern "C" __attribute__((visibility("hidden"))) int *g_SWm_height;
 extern "C" __attribute__((visibility("hidden"))) int *g_SWm_force;
@@ -93,7 +93,7 @@ int StatusWindow::OnTouchMove(int param_1, int param_2) {
     }
     if (i32(self, 0x30) == 1) {
         void **holder = g_SWm_ach;
-        int *medals = (int *)Achievements_getMedals(*holder);
+        int *medals = (int *)((Achievements *)(*holder))->getMedals();
         for (int i = 0; i < i32(self, 0x0); ++i) {
             if (medals[i] != 0 || ((Achievements *)(*holder))->isEliteMedal(i) != 0)
                 ((TouchButton *)(self->medalButtons->data[i]))->OnTouchMove(param_1, param_2);
@@ -122,7 +122,6 @@ void String_appendAssign(void *self, void *rhs);
 
 
 
-int  *Achievements_getMedals(void *ach);
 
 
 void ArrayStr_ctor(void *self);
@@ -181,7 +180,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
         for (int i = 0; i < i32(self, 0x0); i++) {
             if (((TouchButton *)(*(void **)(*(int *)((char *)pp(self, 0x8) + 4) + i * 4)))->OnTouchEnd(x, y) != 0) {
                 void *ach = *(void **)g_swe_achievements;
-                int *medals = Achievements_getMedals(ach);
+                int *medals = ((Achievements *)(ach))->getMedals();
                 int elite = ((Achievements *)(ach))->isEliteMedal(i);
                 if (elite != 0 || medals[i] != 0) {
                     if (i32(self, 0x34) >= 0) {
@@ -268,7 +267,7 @@ int StatusWindow::OnTouchBegin(int param_1, int param_2) {
     }
     if (i32(self, 0x30) == 1) {
         void **holder = g_StatusWindow_ach;
-        int *medals = (int *)Achievements_getMedals(*holder);
+        int *medals = (int *)((Achievements *)(*holder))->getMedals();
         for (int i = 0; i < i32(self, 0x0); ++i) {
             if (medals[i] != 0 || ((Achievements *)(*holder))->isEliteMedal(i) != 0)
                 ((TouchButton *)(self->medalButtons->data[i]))->OnTouchBegin(param_1, param_2);
@@ -351,9 +350,7 @@ void String_concat(void *out, void *lhs, void *rhs);       // out = lhs + rhs (o
 void String_appendAssign(void *self, void *rhs);           // self += rhs (operator+=)
 
 
-int *Achievements_getMedals(void *ach);
 
-int  BluePrint_getIndex(void *bp);
 
 extern void *g_swh_achievements; // *(DAT_169f68): achievements root
 extern void *g_swh_status;       // various *(DAT...): status/campaign singletons share this base
@@ -364,7 +361,7 @@ extern void *g_swh_gameText;     // GameText id source
 void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
 {
 
-    int *medals = Achievements_getMedals(*(void **)g_swh_achievements);
+    int *medals = ((Achievements *)(*(void **)g_swh_achievements))->getMedals();
     int state = medals[medalIndex];
 
     String_default(outStr);
@@ -449,7 +446,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                 void *bp = *(void **)(*(int *)(*(int *)((char *)root + 0x18) + 4) + i * 4);
                 if (*(char *)((char *)bp + 8) == 0) {
                     String_fromC(tmpA, "\n", false);
-                    int idx = BluePrint_getIndex(bp);
+                    int idx = ((BluePrint *)(bp))->getIndex();
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(idx + 0x4fa);
                     String_concat(tmpB, tmpA, t);
                     String_appendAssign(outStr, tmpB);
@@ -470,7 +467,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                 void *bp = *(void **)(*(int *)(*(int *)((char *)root + 0x18) + 4) + i * 4);
                 if (*(int *)((char *)bp + 0xc) == 0) {
                     String_fromC(tmpA, "\n", false);
-                    int idx = BluePrint_getIndex(bp);
+                    int idx = ((BluePrint *)(bp))->getIndex();
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(idx + 0x4fa);
                     String_concat(tmpB, tmpA, t);
                     String_appendAssign(outStr, tmpB);
@@ -821,7 +818,6 @@ void TouchButton_ctor_tab(void *self, void *text, int kind, int x, int y, char f
 void TouchButton_ctor_medal(void *self, int index, int medal, void *text, int x, int y, char flags);
 
 
-int  *Achievements_getMedals(void *ach);
 
 int  __aeabi_idiv(int a, int b);
 
@@ -877,7 +873,7 @@ StatusWindow * StatusWindow::ctor() {
     pp(self, 0x8) = medals;
     ArrayTB_setLength(0x2d, medals);
 
-    int *medalIds = Achievements_getMedals(*(void **)g_sw_achievements);
+    int *medalIds = ((Achievements *)(*(void **)g_sw_achievements))->getMedals();
     for (int i = 0; i < i32(self, 0x0); i++) {
         void *btn = ::operator new(200);
         int medal = medalIds[i];

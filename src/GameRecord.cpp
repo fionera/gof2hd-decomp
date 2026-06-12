@@ -5,6 +5,9 @@
 #include "gof2/Achievements.h"
 #include "gof2/BluePrint.h"
 #include "gof2/Station.h"
+#include "gof2/Mission.h"
+#include "gof2/SolarSystem.h"
+#include "gof2/Ship.h"
 
 
 
@@ -82,19 +85,11 @@ extern "C" {
 void *AEString_assign(void *self, const void *other);
 void AEString_dtor(void *self);
 long Array_dtor(void *self);
-long BluePrint_getIndex(...);
-long BluePrint_getStationIndex(...);
 long Mission_ctor(...);
-long Mission_getTargetStation(...);
-long Mission_isEmpty(...);
-void Status_setShip(...);
-void Status_setStation(...);
-void Status_setMission(...);
 long Ship_addMod(...);
 long Ship_getCargo(...);
 long Ship_getFirstEquipmentOfSort(...);
 long Ship_getMods(...);
-long SolarSystem_getRoutes(...);
 long Station_getIndex(...);
 long Station_getShips(...);
 long Station_getSystem(...);
@@ -110,6 +105,7 @@ extern uint32_t DAT_00166020;
 extern uint32_t DAT_00166024;
 extern uint32_t DAT_0016646c;
 extern uint32_t DAT_00166474;
+extern uint32_t DAT_00166470;
 }
 
 void GameRecord::load() {
@@ -188,7 +184,7 @@ LAB_00165b22:
     bVar1 = false;
   }
   if (((*(char *)((long)in_r0 + 0x115) != '\0' || bVar1) && (in_r0[0x10] == 0x2e)) &&
-     (iVar2 = Mission_isEmpty(), iVar2 != 0)) {
+     (iVar2 = ((Mission *)in_r0[0x16])->isEmpty(), iVar2 != 0)) {
     in_r0[0x10] = 0x2d;
   }
   ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
@@ -199,7 +195,7 @@ LAB_00165b22:
   ((Status *)((char *)*piVar22))->setStationStack((Array<Station *> *)in_r0[0x17]);
   iVar2 = in_r0[0x10];
   if (iVar2 == 0x23) {
-    iVar2 = Mission_getTargetStation();
+    iVar2 = ((Mission *)in_r0[0x16])->getTargetStation();
     if (iVar2 != 0x1d) {
       pSVar17 = (char *)*piVar22;
       pMVar3 = (decltype(pMVar3))::operator new(0x78);
@@ -236,7 +232,7 @@ LAB_00165b22:
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
   if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
-     ((in_r0[0x10] == 0x56 && (iVar2 = Mission_getTargetStation(), iVar2 != 100)))) {
+     ((in_r0[0x10] == 0x56 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 100)))) {
     pSVar17 = (char *)*piVar22;
     *(uint8_t *)(*(int *)(DAT_0016600c + 0x165c98) + 0x31) = 1;
     pMVar3 = (decltype(pMVar3))::operator new(0x78);
@@ -244,7 +240,7 @@ LAB_00165b22:
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
   if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
-     ((in_r0[0x10] == 0x57 && (iVar2 = Mission_getTargetStation(), iVar2 != 10)))) {
+     ((in_r0[0x10] == 0x57 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)))) {
     pSVar17 = (char *)*piVar22;
     *(uint8_t *)(*(int *)(DAT_00166010 + 0x165ce2) + 0x31) = 1;
     pMVar3 = (decltype(pMVar3))::operator new(0x78);
@@ -252,7 +248,7 @@ LAB_00165b22:
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
   if ((((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
-      (in_r0[0x10] == 0x58)) && (iVar2 = Mission_getTargetStation(), iVar2 != 10)) {
+      (in_r0[0x10] == 0x58)) && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)) {
     pSVar17 = (char *)*piVar22;
     *(uint8_t *)(*(int *)(DAT_00166014 + 0x165d2c) + 0x31) = 1;
     pMVar3 = (decltype(pMVar3))::operator new(0x78);
@@ -260,7 +256,7 @@ LAB_00165b22:
     ((Status *)(pSVar17))->setCampaignMission((Mission *)pMVar3);
   }
   if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
-     ((in_r0[0x10] == 0x59 && (iVar2 = Mission_getTargetStation(), iVar2 != 10)))) {
+     ((in_r0[0x10] == 0x59 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)))) {
     iVar2 = *piVar22;
     *(uint8_t *)(*(int *)(DAT_00166018 + 0x165d72) + 0x31) = 1;
     ((Status *)(iVar2))->setCurrentCampaignMission(in_r0[0x10]);
@@ -272,7 +268,7 @@ LAB_00165b22:
   if ((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) {
     iVar2 = in_r0[0x10];
     if (iVar2 == 0x5b) {
-      iVar2 = Mission_getTargetStation();
+      iVar2 = ((Mission *)in_r0[0x16])->getTargetStation();
       if (iVar2 == 0x6e) {
         iVar2 = in_r0[0x10];
         goto LAB_00165dc2;
@@ -367,7 +363,7 @@ LAB_00165e0c:
   if ((int *)in_r0[0x18] != (int *)0x0) {
     ((Achievements *)((char *)*puVar18))->setMedals((int *)in_r0[0x18], in_r0[0x19]);
   }
-  Status_setShip((char *)*piVar22);  // dropped-self call: Ship* argument unrecoverable from local scope (needs Ghidra)
+  ((Status *)((char *)*piVar22))->setShip((Ship *)in_r0[0x4c]);  // arg recovered via Ghidra: in_r0[0x4c]
   iVar11 = ((Status *)(*piVar22))->dlc1Won();
   if (iVar11 != 0) {
     iVar11 = (long)((Status *)(*piVar22))->getShip();
@@ -410,24 +406,24 @@ LAB_00165faa:
     for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
       pThis = *(char **)(puVar6[1] + uVar19 * 4);
       if ((pThis != (char *)0x0) &&
-         (((iVar11 = BluePrint_getIndex(pThis), iVar11 == 0xdf ||
-           (iVar11 = BluePrint_getIndex(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)),
+         (((iVar11 = ((BluePrint *)(pThis))->getIndex(), iVar11 == 0xdf ||
+           (iVar11 = ((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getIndex(),
            iVar11 == 0xd2)) &&
           (iVar11 = ((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->isEmpty(),
           iVar11 == 0)))) {
         iVar11 = *piVar16;
-        pSVar8 = (char *)((Galaxy *)(iVar11))->getStation((int)BluePrint_getStationIndex(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)));
+        pSVar8 = (char *)((Galaxy *)(iVar11))->getStation((int)((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getStationIndex());
         if (pSVar8 != (char *)0x0) {
           this_00 = (char *)*piVar16;
           iVar11 = Station_getSystem(pSVar8);
-          ((Galaxy *)(this_00))->getSystem(iVar11);
-          iVar11 = SolarSystem_getRoutes();
+          SolarSystem *grSys = (SolarSystem *)((Galaxy *)(this_00))->getSystem(iVar11);
+          iVar11 = (int)(intptr_t)grSys->getRoutes();
           if (iVar11 == 0) {
             *(uint32_t *)(*(int *)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4) + 0x10) = 10;
             ((Station *)(pSVar8))->dtor();
             pvVar4 = pSVar8;
             ::operator delete(pvVar4);
-            pSVar8 = (char *)((Galaxy *)(*piVar16))->getStation((int)BluePrint_getStationIndex(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)));
+            pSVar8 = (char *)((Galaxy *)(*piVar16))->getStation((int)((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getStationIndex());
             ((Station *)(pSVar8))->getName();
             if (pSVar8 == (char *)0x0) goto LAB_00166114;
           }
@@ -442,8 +438,8 @@ LAB_00166114:
   }
   pSVar8 = (char *)*piVar22;
   *(uint32_t *)(pSVar8 + 0x8c) = in_r0[0x4d];
-  Status_setStation(pSVar8);  // dropped-self call: Station* argument unrecoverable from local scope (needs Ghidra)
-  Status_setMission((char *)*piVar22);  // dropped-self call: Mission* argument unrecoverable from local scope (needs Ghidra)
+  ((Status *)(pSVar8))->setStation((Station *)in_r0[0x4e]);  // arg recovered via Ghidra: in_r0[0x4e]
+  ((Status *)((char *)*piVar22))->setMission(*(Mission **)(*(int *)(DAT_00166470 + 0x166138)));  // arg recovered via Ghidra: global Mission singleton
   *(uint32_t *)(*piVar22 + 0x14) = in_r0[0x4f];
   for (uVar19 = 0; uVar19 < *(uint *)in_r0[0x50]; uVar19 = uVar19 + 1) {
     *(uint32_t *)(*(int *)(*(int *)(*piVar22 + 0x18) + 4) + uVar19 * 4) =

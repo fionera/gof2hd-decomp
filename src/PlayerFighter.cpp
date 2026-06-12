@@ -1,4 +1,5 @@
 #include "gof2/PlayerFighter.h"
+#include "gof2/Mission.h"
 #include "gof2/externs.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/Generator.h"
@@ -32,7 +33,6 @@ public:
 extern "C" void PlayerFighter_setShipGroup_base(AEGeometry *self, int a, bool b);
 extern "C" void PlayerFighter_awake_tail(int geom, int on);
 extern "C" void PlayerFighter_cloak_off_helper();
-extern "C" void *Route_dtor(void *p);
 extern "C" void ArrayReleaseClasses_BV(void *arr);
 extern "C" void *ArrayBV_dtor(void *p);
 extern "C" void *Trail_dtor(void *p);
@@ -40,7 +40,6 @@ extern "C" void *Explosion_dtor(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *PlayerFighter_base_dtor(PlayerFighter *self);
 void *_ZN13PlayerFighterD1Ev(PlayerFighter *self);
-extern "C" void KIPlayer_setLevel(PlayerFighter *self, Level *lvl);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void AEMath_Matrix_ctor(void *m);
 // No-bound AERandom::nextInt() variant: the decompiler dropped the bound arg and
@@ -51,8 +50,6 @@ static inline int PF_nextInt(int rng) { return AERandom_nextInt_nobound(rng); }
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" int *RH_op_new_arr(unsigned int n);
 extern "C" void RH_op_delete_arr(void *p);
-extern "C" void Route_ctor(void *self, int *points, unsigned n);
-extern "C" void Route_setLoop(void *route, int loop);
 extern "C" void Generator_ctor(void *g);
 extern "C" void *Generator_dtor(void *g);
 extern "C" void Explosion_ctor(void *e, int flag);
@@ -62,12 +59,10 @@ extern "C" void AEMath_MatrixAssign(void *dst, void *src);
 extern "C" void AEMath_MatrixIdentity(void *out, void *m);
 extern "C" void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz);
 extern "C" void ArrayInt_ctor(Array<int> *a);
-extern "C" int Mission_getType(int mission);
 extern "C" void ArrayInt_add(int val, Array<int> *a);
 extern "C" void PlayerFighter_setMissionCrate_tail(int one, Array<int> *a);
 extern "C" void ArrayBV_ctor(Array<BoundingVolume *> *a);
 extern "C" void PlayerFighter_setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *a);
-extern "C" int Route_getCurrent(int route);
 namespace AbyssEngine { namespace AEMath {
 float VectorLength(const Vector &value);
 Vector operator-(const Vector &lhs, const Vector &rhs);
@@ -80,7 +75,6 @@ extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
 extern "C" void PlayerFighter_render_tail(int geom);
 extern "C" void PF_vscale(void *out, void *vec, float scalar);
-extern "C" void Player_reset(int player);
 extern "C" void AEString_ctor_default(void *s);
 extern "C" void AEString_assign(void *dst, void *src);
 extern "C" void AEString_dtor(void *s);
@@ -187,7 +181,7 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
     *(void **)self = &PlayerFighter_vtable + 8;
 
     void *r = self->route;
-    if (r != 0) ::operator delete(Route_dtor(r));
+    if (r != 0) ::operator delete(((Route *)(r))->dtor());
     self->route = 0;
 
     void *bv = self->boundingVolumes;
@@ -266,7 +260,7 @@ typedef void (*F3)(int base, int v, int z);
 
 void PlayerFighter::setLevel(Level *lvl) {
     PlayerFighter *self = this;
-    KIPlayer_setLevel(self, lvl);
+    ((KIPlayer *)(self))->setLevel(lvl);
     F1 f1 = (F1)gSL_f1;
     F2 f2 = (F2)gSL_f2;
     F3 f3 = (F3)gSL_f3;
@@ -358,7 +352,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
         pts[i + 2] = (int)wp[idx * 3 + 2];
     }
     void *route = ::operator new(0x18);
-    Route_ctor(route, pts, (unsigned)count);
+    ((Route *)(route))->ctor(pts, (unsigned)count);
     self->route = route;
     RH_op_delete_arr(pts);
 
@@ -367,7 +361,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
         int defPts[12];
         __aeabi_memcpy(defPts, &gPFC_defaultRoute, 0x30);
         void *sr = ::operator new(0x18);
-        Route_ctor(sr, defPts, 0xc);
+        ((Route *)(sr))->ctor(defPts, 0xc);
         *shared = (int)(intptr_t)sr;
     }
 
@@ -409,8 +403,8 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     self->field_0x4c = 1;
     self->currentSpeed = self->speed;
     self->currentRotate = self->rotate;
-    Route_setLoop(self->route, 0);
-    Route_setLoop((void *)(long)*shared, 0);
+    ((Route *)(self->route))->setLoop(0);
+    ((Route *)((void *)(long)*shared))->setLoop(0);
     self->routeClone = 0;
 
     if (PF_status()->getCurrentCampaignMission() != 0x29) {
@@ -677,7 +671,7 @@ void PlayerFighter::setMissionCrate(bool on) {
         ArrayInt_ctor(a);
         self->lootList = a;
         int mission = (int)(intptr_t)((Status *)(*(unsigned *)gMissionCrateApp))->getMission();
-        int type = Mission_getType(mission);
+        int type = ((Mission *)(mission))->getType();
         int item = (type == 5) ? 0x74 : 0x75;
         ArrayInt_add(item, (Array<int> *)self->lootList);
         PlayerFighter_setMissionCrate_tail(1, (Array<int> *)self->lootList);
@@ -733,7 +727,7 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
             if (((Level *)(self->level))->getPlayerRoute() != 0) {
                 int r = ((Level *)(self->level))->getPlayerRoute();
                 self->commandRoute = (int32_t)(intptr_t)((Route *)(r))->getExactClone();
-                self->field_0x1e4 = Route_getCurrent(self->commandRoute);
+                self->field_0x1e4 = ((Route *)(self->commandRoute))->getCurrent();
                 goto done;
             }
         } else if (target != 0) {
@@ -984,56 +978,6 @@ extern void *const gReset_vfn __attribute__((visibility("hidden")));
 
 typedef void (*VFn)(void *dst, void *zeroVec);
 
-__attribute__((minsize)) extern "C" void PlayerFighter_reset(PlayerFighter *self)
-{
-
-    ((KIPlayer *)(self))->reset();
-    self->field_0x4c = 1;
-
-    int v[3];
-    v[0] = self->posX;
-    v[1] = self->posY;
-    v[2] = self->posZ;
-    *(Vector *)((char *)self + 0x158) = *(Vector *)v;
-    *(Vector *)((char *)self + 0x2c) = *(Vector *)v;
-
-    self->deltaTime = 0;
-    self->deltaTimeHi = 0;
-    self->field_0x38 = 0;
-    self->field_0x12e = 0;
-    self->field_0x148 = 0;
-    self->field_0x12c = 0;
-    self->field_0x1b8 = 0;
-    self->field_0x1c0 = 0;
-    self->field_0x1c4 = 0;
-    self->field_0x1c8 = 0;
-    if (self->state != 5) {
-        self->state = 0;
-    }
-
-    VFn vfn = (VFn)gReset_vfn;
-    int z[3] = {0, 0, 0};
-    vfn((char *)self + 0x90, z);
-    vfn((char *)self + 0x164, z);
-    vfn((char *)self + 0x170, z);
-
-    self->isMissionCrate = 0;
-    self->missionCrateLost = 0;
-    self->crateLost = 0;
-    self->field_0x4c = 1;
-    self->field_0x140 = 0;
-    self->field_0x1fc = 0;
-    self->field_0x13c = 0;
-    self->cloakActive = 0;
-    self->cloakTimer = 0;
-    self->cloakDuration = 0;
-    self->cloakCooldown = 0;
-    self->cloakingPossible = 1;
-    self->aiDisabled = 0;
-
-    return;
-}
-
 // PlayerFighter::reset() -- re-initialise the fighter's transient state in place:
 // reset the KIPlayer base, snap the working/render position back to the spawn
 // position, clear timers, cloaking and crate flags, and re-arm cloaking.
@@ -1196,61 +1140,6 @@ void PlayerFighter::handleCloaking() {
     }
 }
 
-// ---- revive_dff5c.cpp ----
-__attribute__((minsize)) extern "C" void PlayerFighter_revive(PlayerFighter *self)
-{
-
-    int enemy = UC((void *)(intptr_t)(self->player), 0xe0);
-    Player_reset(self->player);
-    if (enemy != 0) {
-        ((Player *)(self->player))->turnEnemy();
-    }
-    {
-        String s;
-        AEString_ctor_default(&s);
-    }
-    self->field_0x78 = 0;
-    self->state = 1;
-    self->field_0x12e = 0;
-    self->field_0x38 = -1;
-    ((Route *)(self->routeClone))->reset();
-    self->hitpoints = ((Player *)(self->player))->getHitpoints();
-    self->field_0x1dc = 0;
-    self->field_0x1e0 = 0;
-    self->deathTimer = 0;
-    self->field_0xf0 = 0;
-    self->currentSpeed = self->speed;
-    ((Explosion *)(self->explosion))->reset();
-    self->pushTimer = 0;
-    self->field_0x24 = 0;
-    ((PlayerFighter *)(self))->setExhaustVisible(true);
-    int geom = self->subGeometry;
-    self->field_0xf5 = 1;
-    if (geom == 0) {
-        geom = self->geometry;
-    }
-    ((AEGeometry *)(geom))->setVisible(1);
-    if ((unsigned)(self->wingmanCommand - 9) < 2) {
-        void *a = self->lootList;
-        if (a != 0) {
-            ::operator delete(ArrayInt_dtor(a));
-        }
-        self->lootList = 0;
-    } else {
-        void *g = ::operator new(1);
-        Generator_ctor(g);
-        void *a = self->lootList;
-        if (a != 0) {
-            ::operator delete(ArrayInt_dtor(a));
-            self->lootList = 0;
-        }
-        self->lootList = ((Generator *)(g))->getLootList(-1, -1);
-        ::operator delete(Generator_dtor(g));
-    }
-
-    return;
-}
-
 // PlayerFighter::revive() -- bring a (re-)spawning fighter back to life: reset the
 // owning Player, restore enemy alignment, re-arm route/explosion/exhaust, refill
 // hitpoints and speed, make the ship geometry visible again, and rebuild its loot
@@ -1260,7 +1149,7 @@ void PlayerFighter::revive()
     PlayerFighter *self = this;
 
     int enemy = UC((void *)(intptr_t)(self->player), 0xe0);
-    Player_reset(self->player);
+    ((Player *)(self->player))->reset();
     if (enemy != 0) {
         ((Player *)(self->player))->turnEnemy();
     }

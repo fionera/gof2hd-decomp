@@ -24,27 +24,17 @@
 // the full Layout.h is not required here.
 
 
-extern "C" int Mission_getTargetStation(Mission *self);
 extern "C" void ArrayReleaseClasses_ImagePartPtr(void *self);
 extern "C" void *Array_ImagePartPtr_dtor(void *self);
 extern "C" void *ScrollTouchWindow_dtor(void *self);
-extern "C" Agent *Mission_getAgent(Mission *self);
-extern "C" void Mission_setWon(Mission *self, bool won);
-extern "C" void Mission_setFailed(Mission *self, bool failed);
-extern "C" int Mission_getType(Mission *self);
-extern "C" void *Mission_getClientImage(Mission *self);
-extern "C" int Mission_getClientRace(Mission *self);
-extern "C" int Mission_getStatusValue(Mission *self);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *self, int max); } }
 int GameText_getLanguage(void);
 extern "C" void String_ctor_literal(StringSlot *self, const char *text, bool copy);
 extern "C" void String_assign_slot(String *self, StringSlot *other);
-extern "C" void ScrollTouchWindow_setText4(void *self, StringSlot *style, StringSlot *text, int color);
 int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void ChoiceWindow_ctor(void *self);
 extern "C" void TouchButton_ctor(void *self, String *text, int type, int x, int y, int width, int icon, int style);
-extern "C" int Agent_getRace(Agent *self);
 using AbyssEngine::PaintCanvas;
 extern "C" void Layout_drawMask(void *layout);
 struct Vec2;  // defined below (float x, y) -- only the pointer type is needed here
@@ -94,7 +84,7 @@ int DialogueWindow::length() {
         return counts[self->campaignMission] / 2;
     }
     if (self->kind == 0 && self->mission != 0 &&
-        Mission_getTargetStation(self->mission) == 0x6c) {
+        ((Mission *)(self->mission))->getTargetStation() == 0x6c) {
         int result = 6;
         if (F<int>(*g_dw_status, 0x114) == 2) result = 0x12;
         return result;
@@ -238,18 +228,18 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     self->mission = mission;
     self->kind = kind;
     if (kind == 2) {
-        Agent *agent = Mission_getAgent(mission);
+        Agent *agent = ((Mission *)(mission))->getAgent();
         if (agent != 0 && ((Agent *)(agent))->isGenericAgent() == 0) {
             ((Agent *)(agent))->setOfferAccepted(false);
         }
-        Mission_setFailed(mission, true);
+        ((Mission *)(mission))->setFailed(true);
         goto finish;
     }
     goto finish;
 
 won:
-    Mission_getAgent(mission);
-    Mission_setWon(mission, true);
+    ((Mission *)(mission))->getAgent();
+    ((Mission *)(mission))->setWon(true);
 
 finish:
     self->page = 0;
@@ -321,7 +311,7 @@ void DialogueWindow::loadContent() {
             ((String *)((String *)((char *)self + 0x34)))->assign((String *)((GameText *)(*gameText))->getText(0x63d));
             self->field_0x70 = 1;
         } else {
-            self->clientImage = Mission_getClientImage(mission);
+            self->clientImage = (void *)(intptr_t)((Mission *)(mission))->getClientImage();
             ((Mission *)(&tmp))->getClientName();
             String_assign_slot((String *)((char *)self + 0x34), &tmp);
             ((String *)(&tmp))->dtor();
@@ -329,7 +319,7 @@ void DialogueWindow::loadContent() {
         }
 
         if (kind == 1 || kind == 0 || kind == 2) {
-            Agent *agent = Mission_getAgent(mission);
+            Agent *agent = ((Mission *)(mission))->getAgent();
             if (GameText_getLanguage() == 1 && agent != 0) {
                 textId = ((DialogueWindow *)(self))->pickGermanGenericTextBecauseWeSaved100EurosWithThat(kind, agent);
             } else {
@@ -342,13 +332,13 @@ void DialogueWindow::loadContent() {
 
         if (kind == 1) {
             void *standing = (void *)(intptr_t)((Status *)(*g_dw_statusLoad))->getStanding();
-            ((Standing *)(standing))->applyMissionCompleted(Mission_getClientRace(mission));
+            ((Standing *)(standing))->applyMissionCompleted(((Mission *)(mission))->getClientRace());
         }
-        if (Mission_getTargetStation(mission) == 0x6c && kind == 0) {
+        if (((Mission *)(mission))->getTargetStation() == 0x6c && kind == 0) {
             textId = 0x1ca;
             ((String *)((String *)((char *)self + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
         }
-        if (Mission_getType(mission) == 0x0c && kind == 0) {
+        if (((Mission *)(mission))->getType() == 0x0c && kind == 0) {
             textId = 0x174;
             ((String *)((String *)((char *)self + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
         }
@@ -361,7 +351,7 @@ void DialogueWindow::loadContent() {
 
     String_ctor_literal(&style, g_dw_emptyLoad, false);
     ((String *)(&tmp))->ctor_copy((String *)((char *)self + 0x28), false);
-    ScrollTouchWindow_setText4(self->scrollWindow, &style, &tmp, 0);
+    ((ScrollTouchWindow *)(self->scrollWindow))->setText4(*(String *)(&style), *(String *)(&tmp), 0);
     ((String *)(&tmp))->dtor();
     ((String *)(&style))->dtor();
 
@@ -373,7 +363,7 @@ void DialogueWindow::loadContent() {
         ((TouchButton *)(self->nextButton))->replaceTextKeepSize((String *)((GameText *)(*gameText))->getText(0xb5));
     }
 
-    Agent *agent = mission == 0 ? (Agent *)0 : Mission_getAgent(mission);
+    Agent *agent = mission == 0 ? (Agent *)0 : ((Mission *)(mission))->getAgent();
     int soundId = Globals_getDialogueSoundId(*g_dw_globalsLoad, textId, agent);
     self->voiceSound = soundId;
     if (soundId >= 0) {
@@ -651,10 +641,10 @@ __attribute__((visibility("hidden"))) extern int g_dw_germanOtherTexts[];
 int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent) {
     DialogueWindow *self = this;
     (void)self;
-    int race = Agent_getRace(agent);
+    int race = ((Agent *)(agent))->getRace();
     int male;
     if (race < 10) {
-        race = Agent_getRace(agent);
+        race = ((Agent *)(agent))->getRace();
         male = ((Agent *)(agent))->isMale();
         if (race == 3) {
             if (((Agent *)(agent))->getImageParts() == 0) {

@@ -127,7 +127,6 @@ extern "C" void ArrayCtor(int arr);
 extern "C" void ArraySetLength(int len, int arr);
 extern "C" unsigned int uidiv(unsigned int a, unsigned int b);
 extern "C" int Level_createStaticObject_call(Level *self, int wp, int type, int flag);
-extern "C" void Player_setAlwaysFriend(int player, int flag);
 extern "C" void ArrayAdd(int item, int arr);
 extern "C" void Level_createPlayer_impl(Level *self);
 extern "C" void Level_wingmanDied_all(Status *obj, int zero);
@@ -2312,7 +2311,7 @@ void Level::createSentryGuns() {
             ((int *)(*(int *)(field_b0 + 4)))[i] = obj;
             int k = ((int *)(*(int *)(field_b0 + 4)))[i];
             ((Player *)(*(int *)(k + 4)))->setRadius(800);
-            Player_setAlwaysFriend(*(int *)(k + 4), 1);
+            ((Player *)(*(int *)(k + 4)))->setAlwaysFriend(1);
             ((Player *)(*(int *)(k + 4)))->setMaxHitpoints(100);
             (*(void (**)(int, int, int, int))(*(int *)k + 0x48))(k, color, color, color);
             ArrayAdd(k, enemies);

@@ -3,6 +3,8 @@
 #include "gof2/LevelScript.h"   // defines P()
 #include "gof2/Explosion.h"     // defines I()
 #include "gof2/KIPlayer.h"
+#include "gof2/StarSystem.h"
+#include "gof2/TargetFollowCamera.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/Level.h"
 // RadioMessage.h is intentionally NOT included here: it defines stub structs
@@ -38,23 +40,20 @@ struct StackVector {
         ((float *)bytes)[1] = y;
         ((float *)bytes)[2] = z;
     }
+    // The camera helpers take a Vector* whose first 3 floats are the offset; the
+    // original ABI passed the address of this stack temporary. Expose that as an
+    // implicit Vector* conversion so the recovered call sites read naturally.
+    operator Vector *() { return (Vector *)bytes; }
 };
 
-extern "C" void TargetFollowCamera_setTarget(void *camera, void *target);
-extern "C" void TargetFollowCamera_setTargetOffset(void *camera, const StackVector &offset);
-extern "C" void TargetFollowCamera_setCamOffset(void *camera, const StackVector &offset);
 extern "C" void *gStatus;
 extern "C" void Player_setUnknown(void *player, bool enabled);
 extern "C" void *gProgrammedStation;
 extern "C" int Station_getIndex(void *station);
-extern "C" void *StarSystem_getPlanetTargets(void *starSystem);
 extern "C" void Player_setAutoPilotTarget(void *player, void *target);
 extern "C" void *Explosion_dtor(void *explosion);
-extern "C" void *KIPlayer_getRoute(void *player);
 extern "C" void *Level_getActiveMessages(Level *level);
-extern "C" void TargetFollowCamera_update(TargetFollowCamera *camera, float delta, int a, int b);
 extern "C" void Hud_drawTitleImage(Hud *hud, bool visible);
-extern "C" void TargetFollowCamera_setLookAtCam(TargetFollowCamera *camera, bool enabled);
 
 // ---- render3D_145d84.cpp ----
 typedef void (*RenderProc)(void *);
@@ -105,9 +104,9 @@ void LevelScript::resetCamera(Level *level)
     if (((Level *)(level))->getPlayer() != 0) {
         void *camera = P(this, 0x14);
         void *player = (void *)((Level *)(level))->getPlayer();
-        TargetFollowCamera_setTarget(camera, P(player, 0x8));
-        TargetFollowCamera_setTargetOffset(P(this, 0x14), StackVector(0.0f, 600.0f, -650.0f));
-        TargetFollowCamera_setCamOffset(P(this, 0x14), StackVector(0.0f, 600.0f, -1338.0f));
+        ((TargetFollowCamera *)(camera))->setTarget(P(player, 0x8));
+        ((TargetFollowCamera *)(P(this, 0x14)))->setTargetOffset(StackVector(0.0f, 600.0f, -650.0f));
+        ((TargetFollowCamera *)(P(this, 0x14)))->setCamOffset(StackVector(0.0f, 600.0f, -1338.0f));
     }
 }
 
@@ -142,7 +141,7 @@ void LevelScript::setAutoPilotToProgrammedStation()
         void *player;
         if (((SolarSystem *)(((Status *)(*status))->getSystem()))->stationIsInSystem((Station *)*programmedStation) != 0) {
             player = (void *)((Level *)((Level *)P(this, 0x18)))->getPlayer();
-            void *targets = StarSystem_getPlanetTargets((void *)((Level *)((Level *)P(this, 0x18)))->getStarSystem());
+            void *targets = ((StarSystem *)((void *)((Level *)((Level *)P(this, 0x18)))->getStarSystem()))->getPlanetTargets();
             void *system = (void *)((Status *)(*status))->getSystem();
             int stationIndex = Station_getIndex(*programmedStation);
             int targetIndex = ((SolarSystem *)(system))->getStationEnumIndex(stationIndex);
@@ -157,7 +156,7 @@ void LevelScript::setAutoPilotToProgrammedStation()
                 return;
             }
             player = (void *)((Level *)((Level *)P(this, 0x18)))->getPlayer();
-            void *targets = StarSystem_getPlanetTargets((void *)((Level *)((Level *)P(this, 0x18)))->getStarSystem());
+            void *targets = ((StarSystem *)((void *)((Level *)((Level *)P(this, 0x18)))->getStarSystem()))->getPlanetTargets();
             target = ((void **)P(targets, 4))[warpGateIndex];
         }
         return Player_setAutoPilotTarget(player, target);
@@ -311,7 +310,7 @@ void LevelScript::skipCutscene()
             void *fighter = firstListEntry(list);
 
             list = getList((Level *)P(this, 0x18));
-            void *route = KIPlayer_getRoute(firstListEntry(list));
+            void *route = ((KIPlayer *)(firstListEntry(list)))->getRoute();
             void *waypoint = ((Route *)(route))->getWaypoint();
             ReadWaypointProc readWaypoint = *(ReadWaypointProc *)((char *)P(waypoint, 0) + 0x28);
             readWaypoint(&position, waypoint);
@@ -369,15 +368,15 @@ void LevelScript::process(int delta)
 
     if (mission != 0) {
         float frameDelta = (float)delta * 0.001f;
-        TargetFollowCamera_update((TargetFollowCamera *)P(this, 0x14), frameDelta, 0, 0);
+        ((TargetFollowCamera *)((TargetFollowCamera *)P(this, 0x14)))->update(frameDelta);
     }
 }
 
 // ---- lookBehind_145d24.cpp ----
 void LevelScript::lookBehind()
 {
-    TargetFollowCamera_setTargetOffset(P(this, 0x14), StackVector(0.0f, 0.0f, -950.0f));
-    TargetFollowCamera_setCamOffset(P(this, 0x14), StackVector(0.0f, 600.0f, 2230.0f));
+    ((TargetFollowCamera *)(P(this, 0x14)))->setTargetOffset(StackVector(0.0f, 0.0f, -950.0f));
+    ((TargetFollowCamera *)(P(this, 0x14)))->setCamOffset(StackVector(0.0f, 600.0f, 2230.0f));
 }
 
 // ---- LevelScript_135adc.cpp ----
@@ -426,7 +425,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     P(this, 0xdc) = 0;
     US(this, 0x12) = 0;
 
-    TargetFollowCamera_setLookAtCam(camera, true);
+    ((TargetFollowCamera *)(camera))->setLookAtCam(true);
 
     void *player = (void *)((Level *)(level))->getPlayer();
     if (player == 0) {
@@ -442,7 +441,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
         I(this, 0x90) = 0;
         I(this, 0x94) = 0;
         UC(this, 0x21) = 1;
-        TargetFollowCamera_setLookAtCam(camera, true);
+        ((TargetFollowCamera *)(camera))->setLookAtCam(true);
     }
 }
 

@@ -49,7 +49,7 @@ namespace AbyssEngine { namespace AEMath {
     void reset();
     void setActive();
     void setDead();
-    void setEnemies();
+    void setEnemies(Array<Player *> *enemies);
     void setInitActive();
     void setJumpSphere(uint32_t sphere);
     void setJumper(bool b);
@@ -178,7 +178,7 @@ public:
     void reset();
     void setActive();
     void setDead();
-    void setEnemies();
+    void setEnemies(Array<Player *> *enemies);
     void setInitActive();
     void setJumpSphere(uint32_t sphere);
     void setJumper(bool b);

@@ -11,9 +11,12 @@
 
 
 // ---- tiny offset-cast helpers -------------------------------------------------
+#ifndef GOF2_BIP_HELPERS
+#define GOF2_BIP_HELPERS
 static inline char *B(void *p, int off) { return (char *)p + off; }
 static inline int &I(void *p, int off) { return *(int *)((char *)p + off); }
 static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
+#endif
 
 // Galaxy — owns the per-station visited-flag array (at +0x0) and the SolarSystem* Array (+0x4).
 // Field access is via the B/I/U/P offset-cast helpers above; storage covers offsets 0x0..0x8.

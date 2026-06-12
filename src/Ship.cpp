@@ -1,12 +1,13 @@
 #include "gof2/Ship.h"
+#include "gof2/Standing.h"
 #include "gof2/Item.h"
 #include "gof2/Status.h"
+#include "gof2/SolarSystem.h"
 
 
 extern "C" void Ship_removeCargo3(Ship *self, int idx, int amount);
 extern "C" void *ItemDtor(Item *it);
 extern "C" void operatorDelete(void *p);
-extern "C" void Ship_recomputeAfterSlots(Ship *self);
 Ship* clone(Ship *self);
 extern "C" void *ArrayItemDtor(Array<Item*> *a);
 extern "C" void Array_Item_ctor(Array<Item*> *a);
@@ -21,12 +22,10 @@ extern "C" void Ship_addCargo2(Ship *self, Array<Item*> *items);
 extern "C" Array<Item*>* operatorNewArr(unsigned int sz);
 extern "C" Ship *operatorNewShip(unsigned int sz);
 void addMod(Ship *self, int mod);
-extern "C" int SolarSystem_getRace(void);
 extern "C" Array<int>* operatorNewModsArr(unsigned int sz);
 extern "C" void Array_int_ctor(Array<int> *a);
 extern "C" Item* operatorNewItem(unsigned int sz);
 extern "C" void Item_ctor3(Item *it, void *a, void *b, void *c);
-extern "C" void Standing_setPlayerSignatureRace(void *st, int race);
 int getCargoValue(Ship *self);
 void setCargo(Ship *self, Array<Item*> *cargo);
 extern "C" Array<Item*>* operatorNewArray(unsigned int sz);
@@ -81,7 +80,7 @@ void setEquipment(Ship *self, Item *item, int slot) {
     }
     *dst = 0;
     self->equipment->data()[idx] = item;
-    return Ship_recomputeAfterSlots(self);
+    return ((Ship *)(self))->recomputeAfterSlots();
 }
 
 // ---- makeShip_175430.cpp ----
@@ -121,7 +120,7 @@ void freeSlot(Ship *self, Item *item) {
         }
         i = i + 1;
     }
-    return Ship_recomputeAfterSlots(self);
+    return ((Ship *)(self))->recomputeAfterSlots();
 }
 
 // ---- getMaxArmorHP_174afa.cpp ----
@@ -198,7 +197,7 @@ void replaceEquipment(Ship *self, Array<Item*> *eq) {
         }
     }
     self->equipment = eq;
-    return Ship_recomputeAfterSlots(self);
+    return ((Ship *)(self))->recomputeAfterSlots();
 }
 
 // ---- setEquipment_175072.cpp ----
@@ -368,7 +367,7 @@ void freeSlot(Ship *self, Item *item, int slot) {
         }
         i = i + 1;
     }
-    return Ship_recomputeAfterSlots(self);
+    return ((Ship *)(self))->recomputeAfterSlots();
 }
 
 // ---- addCargo_174fe8.cpp ----
@@ -465,7 +464,7 @@ void freeAllSlots(Ship *self) {
             data[i] = 0;
         }
     }
-    return Ship_recomputeAfterSlots(self);
+    return ((Ship *)(self))->recomputeAfterSlots();
 }
 
 // ---- getMaxHP_174afe.cpp ----
@@ -622,8 +621,8 @@ void adjustPrice(Ship *self) {
         int *table = *(int **)(*(int *)root + 4);
         int *entry = *(int **)((char *)table + self->index * 4);
         int cat = *entry;
-        ((Status *)(*(void **)status))->getSystem();
-        int race = SolarSystem_getRace();
+        SolarSystem *system = (SolarSystem *)(intptr_t)((Status *)(*(void **)status))->getSystem();
+        int race = system->getRace();
         int *table2 = *(int **)(*(int *)root + 4);
         int *entry2 = *(int **)((char *)table2 + self->index * 4);
         float base = (float)entry2[0x14 / 4];
@@ -712,7 +711,7 @@ void addMod(Ship *self, int mod) {
         }
         *slot = 0;
     }
-    return Ship_recomputeAfterSlots(self);
+    return ((Ship *)(self))->recomputeAfterSlots();
 }
 
 // ---- refreshValue_174608.cpp ----
@@ -740,7 +739,7 @@ void refreshValue(Ship *self) {
     self->boostDelay = 0;
     self->boostTime = 0;
     if (*status != 0 && ((Status *)(*(void **)status))->getStanding() != 0) {
-        Standing_setPlayerSignatureRace((void *)(intptr_t)((Status *)(*(void **)status))->getStanding(), -1);
+        ((Standing *)((void *)(intptr_t)((Status *)(*(void **)status))->getStanding()))->setPlayerSignatureRace(-1);
     }
     self->value = self->price;
 
@@ -814,7 +813,7 @@ void refreshValue(Ship *self) {
                 int idx = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getIndex();
                 self->signatureRace = idx - 0xbd;
                 if (*status != 0 && ((Status *)(*(void **)status))->getStanding() != 0) {
-                    Standing_setPlayerSignatureRace((void *)(intptr_t)((Status *)(*(void **)status))->getStanding(), self->signatureRace);
+                    ((Standing *)((void *)(intptr_t)((Status *)(*(void **)status))->getStanding()))->setPlayerSignatureRace(self->signatureRace);
                 }
                 break;
             }
@@ -948,11 +947,12 @@ int getSlotTypes(Ship *self) {
 }
 
 // ---- addCargo_174faa.cpp ----
-void addCargo(Ship *self, Item *item) {
+// Ship::addCargo(Item*) -> wrap the single item in a fresh array, then commit.
+void Ship::addCargo(Item *item) {
     Array<Item*> *a = operatorNewArray(0xc);
     ArrayCtorItem(a);
     ArrayAdd<Item*>(item, *a);
-    Ship_addCargo2(self, a);
+    Ship_addCargo2(this, a);
 }
 
 // ---- setEquipment_17509c.cpp ----
@@ -969,7 +969,7 @@ void setEquipment(Ship *self, Item *item) {
     } while (v != 0);
     data[i - 1] = item;
 done:
-    return Ship_recomputeAfterSlots(self);
+    ;
 }
 
 // ---- hasSecondaryWeapons_174b60.cpp ----
@@ -1221,5 +1221,5 @@ void setMods(Ship *self, Array<int> *mods) {
             }
         }
     }
-    return Ship_recomputeAfterSlots(self);
+    return ((Ship *)(self))->recomputeAfterSlots();
 }

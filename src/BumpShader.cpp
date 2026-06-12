@@ -3,7 +3,6 @@
 #include "gof2/String.h"
 
 
-extern "C" void BumpShader_setSampler(int location, int unit);
 
 // ---- setSampler ----
 namespace AbyssEngine {
@@ -102,7 +101,7 @@ void BumpShader::Init(Engine *)
 
     glUseProgram(i32(this, 0x04));
     glUniform1i(i32(this, 0x40), 0);
-    BumpShader_setSampler(i32(this, 0x44), 7);
+    BumpShader::setSampler(i32(this, 0x44), 7);
 }
 
 } // namespace AbyssEngine

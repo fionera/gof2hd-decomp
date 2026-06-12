@@ -1,4 +1,6 @@
 #include "gof2/Station.h"
+#include "gof2/Galaxy.h"
+#include "gof2/Mission.h"
 #include "gof2/Item.h"
 #include "gof2/Status.h"
 #include "gof2/Agent.h"
@@ -18,13 +20,11 @@ extern "C" void Array_Ship_ctor(void *arr);
 extern "C" void ArraySetLength_Ship(uint32_t len, void *arr);
 extern "C" void *Ship_clone(Ship *ship);
 extern "C" void Station_arrayRemoveShip(Ship *ship, void *ships);
-extern "C" char *Galaxy_getVisited(Galaxy *g);
 extern "C" void ArrayReleaseClasses_Ship(void *arr) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Item(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Ship_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Item_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Array_Agent_dtor(void *arr) __attribute__((nothrow));
-extern "C" Agent *Mission_getAgent(Mission *m) __attribute__((nothrow));
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 extern "C" void Station_baseDtor(void *self) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Agent(void *arr) __attribute__((nothrow));
@@ -221,7 +221,7 @@ extern Galaxy **const gGalaxySingleton __attribute__((visibility("hidden")));
 
 uint8_t Station::isDiscovered() {
     Station *self = this;
-    char *visited = Galaxy_getVisited(*gGalaxySingleton);
+    char *visited = (char *)((Galaxy *)(*gGalaxySingleton))->getVisited();
     return visited[self->index];
 }
 
@@ -326,10 +326,10 @@ void Station::dtor() {
             Agent *a = (Agent *)agents->data[i];
             Agent *campA = ((Status *)(STATUS))->getCampaignMission() == 0
                                ? (Agent *)0
-                               : Mission_getAgent((Mission *)(intptr_t)((Status *)(STATUS))->getCampaignMission());
+                               : ((Mission *)((Mission *)(intptr_t)((Status *)(STATUS))->getCampaignMission()))->getAgent();
             Agent *freeA = ((Status *)(STATUS))->getFreelanceMission() == 0
                                ? (Agent *)0
-                               : Mission_getAgent(((Status *)(STATUS))->getFreelanceMission());
+                               : ((Mission *)(((Status *)(STATUS))->getFreelanceMission()))->getAgent();
             if (a != 0 && a != campA && a != freeA && ((Agent *)(a))->isStoryAgent() == 0)
                 ::operator delete(Agent_dtor(a));
             agents = (StationArray *)self->agents;

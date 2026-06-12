@@ -36,7 +36,10 @@ public:
 
     void          recomputeAfterSlots();
     void          addCargo(Array<Item*>* items);
+    void          addCargo(Item* item);
     int           removeCargo(int index, int amount);
+    void          removeCargo(int index);
+    void          removeCargo(Item* item);
     void          setEquipment(Item* item);
 
     Array<Item*>* getEquipment();

@@ -1,4 +1,6 @@
 #include "gof2/MissionsWindow.h"
+#include "gof2/Mission.h"
+#include "gof2/Ship.h"
 #include "gof2/PaintCanvasClass.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/Item.h"
@@ -20,18 +22,6 @@
 // only needs a handful of methods from each of these types, so minimal local
 // declarations are provided below. The full definitions live in their own headers;
 // this translation unit only needs the receiver layout and call signatures to compile.
-struct Agent {
-    int *getImageParts();
-    void  getName();           // returns RetStr in full header; result discarded here
-    void  getStationName();    // returns RetStr in full header; result discarded here
-    struct Mission *getMission();
-    bool  isGenericAgent();
-    void  setOfferAccepted(bool v);
-};
-struct Mission {
-    void getTargetStationName();   // returns RetStr in full header; result discarded here
-    bool isEmpty();
-};
 struct TouchButton {
     void         dtor();
     int          getWidth();
@@ -221,12 +211,6 @@ void  String_fromInt(void *s, int value);
 int   Status_wantedBoardAccessible();
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
-int   Mission_getType(void *mission);
-int   Mission_getProductionGoodAmount(void *mission);
-int   Mission_getStatusValue(void *mission);
-void *Mission_getAgent(void *mission);
-int   Mission_getReward(void *mission);
-int   Mission_getBonus(void *mission);
 
 void  Globals_getAgentMissionText(void *out, void *agent);
 
@@ -348,14 +332,14 @@ extern "C" int MissionsWindow_init(void *self)
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
             ((String *)(text))->assign((String *)t);
         }
-        int type = Mission_getType((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission());
-        bool production = (type == 0xa7) || (Mission_getType((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()) == 0xae);
+        int type = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()))->getType();
+        bool production = (type == 0xa7) || (((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()))->getType() == 0xae);
         void *key = *(void **)g_mwi_status;
         char hdr[0xc], val[0xc], suffix[0xc], merged[0xc];
         if (production) {
             String_fromText(hdr, text, false);
-            int need = Mission_getProductionGoodAmount((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission());
-            int have = Mission_getStatusValue((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission());
+            int need = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()))->getProductionGoodAmount();
+            int have = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()))->getStatusValue();
             String_fromInt(val, need - have);
             String_fromC(suffix, "", false);
             Status_replaceHash(merged, key, hdr, val, suffix);
@@ -400,12 +384,12 @@ extern "C" int MissionsWindow_init(void *self)
         pp(self, 0x4) = sw1;
 
         char text[0xc], reward[0xc], suffix[0xc], merged[0xc];
-        Globals_getAgentMissionText(text, Mission_getAgent(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()));
+        Globals_getAgentMissionText(text, ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->getAgent());
         void *key = *(void **)g_mwi_status;
         char body[0xc];
         String_fromText(body, text, false);
-        int rew = Mission_getReward(((Status *)(*(void **)g_mwi_status))->getFreelanceMission());
-        int bonus = Mission_getBonus(((Status *)(*(void **)g_mwi_status))->getFreelanceMission());
+        int rew = ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->getReward();
+        int bonus = ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->getBonus();
         Layout_formatCredits(reward, rew + bonus);
         String_fromC(suffix, "", false);
         Status_replaceHash(merged, key, body, reward, suffix);
@@ -418,7 +402,7 @@ extern "C" int MissionsWindow_init(void *self)
         ((ScrollTouchWindow *)(pp(self, 0x4)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
 
-        void *parts = ((Agent *)(Mission_getAgent(((Status *)(*(void **)g_mwi_status))->getFreelanceMission())))->getImageParts();
+        void *parts = ((Agent *)(((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->getAgent()))->getImageParts();
         pp(self, 0x18) = ((ImageFactory *)(*(void **)g_mwi_imageFactory))->loadChar((int *)parts);
         ((String *)(text))->dtor();
     } else {
@@ -506,8 +490,6 @@ void  String_fromText(void *s, void *text, bool copy);
 int   Status_wantedBoardAccessible();
 // Draw uses the Status singleton via free-function helpers.
 
-void *Mission_getAgent(void *mission);
-int   Mission_getType(void *mission);
 
 
 
@@ -607,16 +589,16 @@ extern "C" void MissionsWindow_draw(void *self)
                       i32(layout, 0x2c) + i32(layout, 0x5c);
 
         char nameStr[0xc];
-        ((Agent *)(Mission_getAgent(fm)))->getName();
+        ((Agent *)(((Mission *)(fm))->getAgent()))->getName();
         ((PaintCanvas*)canvas)->DrawString((unsigned int)(uintptr_t)font, (void*)nameStr, detailX, detailY, false);
         ((String *)(nameStr))->dtor();
 
         char stationStr[0xc];
-        ((Agent *)(Mission_getAgent(fm)))->getStationName();
+        ((Agent *)(((Mission *)(fm))->getAgent()))->getStationName();
         ((PaintCanvas*)canvas)->DrawString((unsigned int)(uintptr_t)font, (void*)stationStr, detailX, detailY, false);
         ((String *)(stationStr))->dtor();
 
-        void *typeTxt = ((GameText *)g_mw_gameText)->getText(Mission_getType(((Agent *)(Mission_getAgent(fm)))->getMission()) + 0x162);
+        void *typeTxt = ((GameText *)g_mw_gameText)->getText(((Mission *)(((Agent *)(((Mission *)(fm))->getAgent()))->getMission()))->getType() + 0x162);
         ((PaintCanvas*)canvas)->DrawString((unsigned int)(uintptr_t)font, (void*)typeTxt, detailX, detailY, false);
     }
 
@@ -685,11 +667,8 @@ int  StarMap_OnTouchEnd(StarMap *map, int x, int y);
 int  Status_wantedBoardAccessible();
 
 void *Ship_getCargo(void *ship);
-void  Ship_removeCargo(void *ship, void *item);
 
 
-int  Mission_getType(void *mission);
-void *Mission_getAgent(void *mission);
 
 
 void String_fromText(void *s, void *text, bool copy);
@@ -736,10 +715,10 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
         if (r == 0) {
             // Confirmed: clear out the freelance-mission cargo/passengers and re-init.
             void *fsrc = *(void **)g_mwt_freelanceSrc;
-            int type = Mission_getType(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission());
+            int type = ((Mission *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()))->getType();
             bool clearCargo = (type == 0);
-            if (!clearCargo && Mission_getType(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()) == 3) clearCargo = true;
-            if (!clearCargo && Mission_getType(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()) == 5) clearCargo = true;
+            if (!clearCargo && ((Mission *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()))->getType() == 3) clearCargo = true;
+            if (!clearCargo && ((Mission *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()))->getType() == 5) clearCargo = true;
             if (clearCargo) {
                 void *cargo = Ship_getCargo(((Status *)(*(void **)g_mwt_freelanceSrc))->getShip());
                 if (cargo != 0) {
@@ -747,19 +726,19 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
                     for (unsigned int i = 0; i < *c; i++) {
                         void *item = *(void **)(c[1] + i * 4);
                         if (((Item *)(item))->isUnsaleable() != 0 && ((Item *)(item))->getIndex() == 0x74) {
-                            Ship_removeCargo(((Status *)(*(void **)g_mwt_freelanceSrc))->getShip(), item);
+                            ((Ship *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getShip()))->removeCargo((Item *)item);
                             u8(self, 0x23) = 1;
                             break;
                         }
                     }
                 }
-            } else if (Mission_getType(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()) == 0xb) {
+            } else if (((Mission *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()))->getType() == 0xb) {
                 ((Status *)(fsrc))->setPassengers(0);
             }
 
-            void *agent = Mission_getAgent(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission());
+            void *agent = ((Mission *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()))->getAgent();
             if (((Agent *)(agent))->isGenericAgent() == 0)
-                ((Agent *)(Mission_getAgent(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission())))->setOfferAccepted(false);
+                ((Agent *)(((Mission *)(((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission()))->getAgent()))->setOfferAccepted(false);
             // NOTE: decompiler dropped the Mission* argument; reset path clears the slot.
             ((Status *)(fsrc))->setFreelanceMission((Mission *)0);
 
@@ -881,9 +860,6 @@ void MissionsWindow_cancelAction(void *self);   // DAT_1ac284 thunk (flag @0x22)
 
 
 
-int   Mission_getType(void *mission);
-int   Mission_getProductionGoodAmount(void *mission);
-int   Mission_getStatusValue(void *mission);
 
 void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
@@ -919,10 +895,10 @@ extern "C" void MissionsWindow_update(void *self, int dt)
     ((ScrollTouchWindow *)(pp(self, 0x4)))->update(dt);
 
     void *status = *(void **)g_mw_status;
-    int type = Mission_getType((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission());
+    int type = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission()))->getType();
     bool relevant = (type == 0xa7);
     if (!relevant) {
-        if (Mission_getType((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission()) == 0xae)
+        if (((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission()))->getType() == 0xae)
             relevant = true;
     }
 
@@ -942,8 +918,8 @@ extern "C" void MissionsWindow_update(void *self, int dt)
                 void *key = *(void **)g_mw_hashSource;
                 char hdr[0xc], amount[0xc], suffix[0xc], merged[0xc];
                 String_fromText(hdr, text, false);
-                int need = Mission_getProductionGoodAmount((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission());
-                int have = Mission_getStatusValue((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission());
+                int need = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission()))->getProductionGoodAmount();
+                int have = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission()))->getStatusValue();
                 String_fromInt(amount, need - have);
                 String_fromC(suffix, "", false);
                 Status_replaceHash(merged, key, hdr, amount, suffix);

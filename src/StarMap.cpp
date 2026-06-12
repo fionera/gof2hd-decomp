@@ -1,4 +1,6 @@
 #include "gof2/StarMap.h"
+#include "gof2/AERandom.h"
+#include "gof2/Galaxy.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/EaseInOut.h"
@@ -73,10 +75,6 @@ extern "C" float EaseInOut_GetValue(void *ease);
 extern "C" float EaseInOut_GetMinValue(void *ease);
 extern "C" void String_add(String *out, String *a, String *b);
 extern "C" int Ship_hasJumpDriveIntegrated(void *ship);
-extern "C" int SolarSystem_getIndex(void *system);
-extern "C" void *SolarSystem_getRoutes(void *system);
-extern "C" int SolarSystem_getRace(void *system);
-extern "C" int SolarSystem_getSecurityLevel(void *system);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_status;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_depart_store0_a;
 extern "C" __attribute__((visibility("hidden"))) uint8_t *g_StarMap_depart_flag_a;
@@ -124,16 +122,10 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_ctor_status;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_ctor_galaxy;
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_ctor_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_ctor_random;
-extern "C" void *Galaxy_getSystems(void *galaxy);
 extern "C" void Array_AEGeometry_ctor(void *arr);
 extern "C" void Array_Vector_ctor(void *arr);
 extern "C" void ArraySetLength_AEGeometry(uint32_t n, void *arr);
 extern "C" void ArraySetLength_Vector(uint32_t n, void *arr);
-namespace AbyssEngine { namespace AERandom { void reset(void *random); } }
-extern "C" int SolarSystem_getTextureIndex(void *system);
-extern "C" int SolarSystem_getX(void *system);
-extern "C" int SolarSystem_getY(void *system);
-extern "C" int SolarSystem_getZ(void *system);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_touch_layout;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_touch_screenH;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_touch_sound;
@@ -157,13 +149,10 @@ extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_system_canv
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_system_random;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_system_status;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_system_engine;
-extern "C" void *SolarSystem_getStations(void *system);
 extern "C" int Station_getTextureIndex(void *station);
 extern "C" void Array_bool_ctor(void *arr);
 extern "C" void ArraySetLength_Station(uint32_t n, void *arr);
 extern "C" void ArraySetLength_bool(uint32_t n, void *arr);
-namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int bound); } }
-extern "C" void AERandom_setSeed(void *random, long long seed);
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_info_screenW;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_info_screenH;
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_info_canvas;
@@ -173,12 +162,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_info_layout;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_info_text;
 extern "C" __attribute__((visibility("hidden"))) uint8_t *g_StarMap_info_isGerman;
 extern "C" int Station_getTecLevel(void *station);
-extern "C" int SolarSystem_getWarpGateIndex(void *system);
-extern "C" int Mission_getType(void *mission);
-extern "C" int Mission_getTargetStation(void *mission);
-extern "C" int Mission_getStatusValue(void *mission);
-extern "C" void *Mission_getAgent(void *mission);
-extern "C" int Agent_getStation(void *agent);
 extern "C" int Ship_hasCargo(void *ship, int cargo);
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_init_canvas;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_init_imageCreate)(uint32_t, int, void *);
@@ -377,7 +360,7 @@ void StarMap::draw()
         Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
         for (uint32_t i = 0; i < positions->size(); i++) {
             *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(positions->data()[i]);
-            void *routes = SolarSystem_getRoutes(((Array<void *> *)ptr_field(this, 0x54))->data()[i]);
+            void *routes = ((SolarSystem *)(((Array<void *> *)ptr_field(this, 0x54))->data()[i]))->getRoutes();
             if (routes != 0) {
                 Array<int> *r = (Array<int> *)routes;
                 for (uint32_t j = 0; j < r->size(); j++) {
@@ -920,7 +903,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     field<int32_t>(this, 0x170) = 0;
 
     ptr_field(this, 0xfc) = operator new(0x14);
-    ptr_field(this, 0x54) = Galaxy_getSystems(*g_StarMap_ctor_galaxy);
+    ptr_field(this, 0x54) = ((Galaxy *)(*g_StarMap_ctor_galaxy))->getSystems();
     field<int32_t>(this, 0x10) = 500;
     field<int32_t>(this, 0x14) = 500;
 
@@ -942,7 +925,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
     for (uint32_t i = 0; i < geoms->size(); i++) {
         void *sys = systems->data()[i];
-        int tex = SolarSystem_getTextureIndex(sys);
+        int tex = ((SolarSystem *)(sys))->getTextureIndex();
         uint16_t image = (uint16_t)(tex + 0x4696);
         if (i == 0x1b && ((Status *)(*g_StarMap_ctor_status))->getCurrentCampaignMission() > 0x9d) {
             image = 0x469b;
@@ -951,9 +934,9 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
         new ((void*)geom) AEGeometry((uint16_t)image, (PaintCanvas*)(long)(*g_StarMap_ctor_canvas), false);
         geoms->data()[i] = geom;
         ((AEGeometry *)(geom))->setScaling(1.0f);
-        float px = (float)((int)(((100 - SolarSystem_getX(sys)) / 100.0f) * 20000.0f) - 10000);
-        float py = (float)((int)(((100 - SolarSystem_getY(sys)) / 100.0f) * 18000.0f) - 9000);
-        float pz = (float)((int)(((100 - SolarSystem_getZ(sys)) / 100.0f) * 9000.0f) + 1000);
+        float px = (float)((int)(((100 - ((SolarSystem *)(sys))->getX()) / 100.0f) * 20000.0f) - 10000);
+        float py = (float)((int)(((100 - ((SolarSystem *)(sys))->getY()) / 100.0f) * 18000.0f) - 9000);
+        float pz = (float)((int)(((100 - ((SolarSystem *)(sys))->getZ()) / 100.0f) * 9000.0f) + 1000);
         Vector posVec = {px, py, pz};
         ((AEGeometry *)(geom))->setPosition(posVec);
         ((AEGeometry *)(root))->addChild(field<uint32_t>(geom, 0xc));
@@ -962,7 +945,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
         positions->data()[i] = pos;
     }
 
-    AbyssEngine::AERandom::reset(*g_StarMap_ctor_random);
+    ((AbyssEngine::AERandom *)(*g_StarMap_ctor_random))->reset();
     ptr_field(this, 0xf8) = 0;
     field<uint8_t>(this, 0xa9) = 0;
     if (((Status *)(*g_StarMap_ctor_status))->getCurrentCampaignMission() > 0x1f &&
@@ -1063,7 +1046,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y)
                     field<int32_t>(this, 0x1d0) = dist;
                     if (dist == 0 && current != field<int32_t>(this, 0x60)) {
                         field<int32_t>(this, 0x1d0) = 4;
-                        if (SolarSystem_getRoutes(((Array<void *> *)ptr_field(this, 0x54))->data()[i]) == 0) {
+                        if (((SolarSystem *)(((Array<void *> *)ptr_field(this, 0x54))->data()[i]))->getRoutes() == 0) {
                             field<uint8_t>(this, 0x1d4) = 1;
                         }
                     }
@@ -1226,7 +1209,7 @@ void StarMap::drawKey()
 void StarMap::initStarSystem()
 {
     void *system = ((Array<void *> *)ptr_field(this, 0x54))->data()[field<int32_t>(this, 0x60)];
-    Array<void *> *stationIds = (Array<void *> *)SolarSystem_getStations(system);
+    Array<void *> *stationIds = (Array<void *> *)((SolarSystem *)(system))->getStations();
     uint32_t count = stationIds->size();
 
     void *stations = operator new(0xc);
@@ -1242,7 +1225,7 @@ void StarMap::initStarSystem()
     ptr_field(this, 0x98) = operator new(bytes);
     ptr_field(this, 0x9c) = operator new(bytes);
     field<int32_t>(this, 0x1c4) = -1;
-    AERandom_setSeed(*g_StarMap_system_random, (long long)SolarSystem_getIndex(system) * 1000);
+    ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->setSeed((long long)((SolarSystem *)(system))->getIndex() * 1000);
 
     void *stationGeoms = operator new(0xc);
     Array_AEGeometry_ctor(stationGeoms);
@@ -1270,10 +1253,10 @@ void StarMap::initStarSystem()
         new ((void*)geom) AEGeometry((uint16_t)(tex + 0x4704), (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
         geomArr->data()[i] = geom;
         ((int *)ptr_field(this, 0x98))[stationIndex] =
-            AbyssEngine::AERandom::nextInt(*g_StarMap_system_random, ((Array<uint8_t> *)used)->size()) *
+            ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->nextInt(((Array<uint8_t> *)used)->size()) *
             (0x10000 / (int)((Array<uint8_t> *)used)->size());
         int dist = (i == 1) ? 0x1900 : ((int *)ptr_field(this, 0x9c))[i - 2];
-        dist += AbyssEngine::AERandom::nextInt(*g_StarMap_system_random, 0x15e0) + 0x640;
+        dist += ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->nextInt(0x15e0) + 0x640;
         ((int *)ptr_field(this, 0x9c))[stationIndex] = dist;
         Vector pos = {0.0f, 0.0f, (float)dist};
         ((AEGeometry *)(geom))->translate(pos);
@@ -1309,7 +1292,7 @@ void StarMap::initStarSystem()
     field<int32_t>(this, 0x188) = 0x45800000;
     field<float>(this, 0x18c) = 0.0f;
     field<int32_t>(this, 0x64) = -1;
-    ((PaintCanvas*)(long)(*g_StarMap_system_canvas))->Image2DCreate((unsigned short)((uint16_t)(0x4500 + SolarSystem_getRace(system))), (unsigned int *)((char *)this + 0x34));
+    ((PaintCanvas*)(long)(*g_StarMap_system_canvas))->Image2DCreate((unsigned short)((uint16_t)(0x4500 + ((SolarSystem *)(system))->getRace())), (unsigned int *)((char *)this + 0x34));
 
     if (ptr_field(this, 0x198) != 0) {
         ArrayReleaseClasses_Vector(ptr_field(this, 0x198));
@@ -1336,7 +1319,7 @@ void StarMap::initStarSystem()
     }
     field<uint32_t>(this, 0x178) = 0xffffffffu;
     ptr_field(this, 0x1bc) = 0;
-    uint16_t texture = (uint16_t)(0x2700 + SolarSystem_getTextureIndex(system));
+    uint16_t texture = (uint16_t)(0x2700 + ((SolarSystem *)(system))->getTextureIndex());
     if (field<int32_t>(this, 0x60) == 0x1b) {
         texture = 0x2734;
     }
@@ -1418,14 +1401,14 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
         }
         void *mission = (void *)(long)((Status *)(*g_StarMap_info_status))->getCampaignMission();
         if (mission != 0 && ((Mission *)(mission))->isEmpty() == 0) {
-            int target = Mission_getTargetStation(mission);
+            int target = ((Mission *)(mission))->getTargetStation();
             if (((SolarSystem *)(system))->getStationEnumIndex(target) >= 0) {
                 icons[2] = field<int32_t>(this, 0x28);
             }
         }
         void *freelance = ((Status *)(*g_StarMap_info_status))->getFreelanceMission();
         if (freelance != 0 && ((Mission *)(freelance))->isEmpty() == 0) {
-            int target = Mission_getTargetStation(freelance);
+            int target = ((Mission *)(freelance))->getTargetStation();
             if (((SolarSystem *)(system))->getStationEnumIndex(target) >= 0) {
                 icons[2] = field<int32_t>(this, 0x28);
             }
@@ -1435,7 +1418,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
         int drawX = (int)(x - (float)(textW / 2));
         int drawY = (int)(y + (float)(field<int32_t>(this, 0x1a8) >> 1) - 3.0f);
         int currentSystem = ((Status *)(*g_StarMap_info_status))->getSystem();
-        if (currentSystem == SolarSystem_getIndex(system)) {
+        if (currentSystem == ((SolarSystem *)(system))->getIndex()) {
             ((Layout *)(*g_StarMap_info_layout))->getPulseValue((float)field<int32_t>(this, 0x1a4));
             ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
             ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x48)), (int)x, (int)y, (unsigned char)(0x11));
@@ -1450,7 +1433,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
         ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
         if (((SolarSystem *)(system))->hasNoOwner() == 0) {
             uint32_t image = field<uint32_t>(this, 0x130);
-            int race = SolarSystem_getRace(system);
+            int race = ((SolarSystem *)(system))->getRace();
             if (race == 2) {
                 image = field<uint32_t>(this, 0x12c);
             } else if (race == 1) {
@@ -1593,10 +1576,10 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     ptr_field(this, 0x50) = SystemPathFinder_ctor(operator new(1));
 
     if (jumpMapMode && field<int32_t>(this, 4) == 0 && mission != 0 && ((Mission *)(mission))->isEmpty() == 0 &&
-        (((Mission *)(mission))->isVisible() != 0 || Mission_getType(mission) == 0xe)) {
+        (((Mission *)(mission))->isVisible() != 0 || ((Mission *)(mission))->getType() == 0xe)) {
         field<int32_t>(this, 0x104) = -1;
         field<int32_t>(this, 0x60) = -1;
-        int target = Mission_getTargetStation(mission);
+        int target = ((Mission *)(mission))->getTargetStation();
         Array<void *> *systems = (Array<void *> *)ptr_field(this, 0x54);
         for (uint32_t i = 0; i < systems->size(); i++) {
             if (target >= 0) {

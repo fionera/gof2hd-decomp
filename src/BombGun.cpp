@@ -1,4 +1,5 @@
 #include "gof2/BombGun.h"
+#include "gof2/TargetFollowCamera.h"
 #include "gof2/FModSound.h"
 #include "gof2/LevelScript.h"
 #include "gof2/RocketGun.h"
@@ -59,17 +60,11 @@ void TransformAddChild(void *canvas, uint32_t parent, uint32_t child);
 void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
 void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
 } }
-extern "C" void TargetFollowCamera_setTarget(TargetFollowCamera *self, AEGeometry *target);
-extern "C" void TargetFollowCamera_setCamOffset(TargetFollowCamera *self, void *offset);
-extern "C" void TargetFollowCamera_setTargetOffset(TargetFollowCamera *self, void *offset);
-extern "C" void TargetFollowCamera_useTargetsUpVector(TargetFollowCamera *self, bool enabled);
 float VectorLength(void *self);
-extern "C" void Explosion_update(Explosion *self, int elapsed, TargetFollowCamera *camera);
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_player_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_final_canvas;
 extern "C" void Explosion_ctor(Explosion *self, int type);
-extern "C" void Explosion_setWeaponIndex(Explosion *self, int index);
 
 // ---- _BombGun_147824.cpp ----
 void *_ZN7BombGunD1Ev(BombGun *self)
@@ -108,8 +103,6 @@ void BombGun::render()
 extern "C" __attribute__((visibility("hidden"))) TargetFollowCamera *(*BombGun_getCamera)(
     PlayerEgo *player);
 
-extern "C" void TargetFollowCamera_setRumblePercentage(TargetFollowCamera *self, float pct,
-                                                        int duration);
 
 static const float kRocketOffsetScale = 350.0f;
 static const float kBombScale = 0.2f;
@@ -169,13 +162,13 @@ void BombGun::update(int elapsed)
             ((AEGeometry *)(geometry))->updateReferenceMatrix();
 
             TargetFollowCamera *camera = BombGun_getCamera(player);
-            TargetFollowCamera_setTarget(camera, geometry);
+            ((TargetFollowCamera *)(camera))->setTarget(geometry);
             camera = BombGun_getCamera(player);
-            TargetFollowCamera_setCamOffset(camera, (char *)this + 0x110);
+            ((TargetFollowCamera *)(camera))->setCamOffset((Vector *)((char *)this + 0x110));
             camera = BombGun_getCamera(player);
-            TargetFollowCamera_setTargetOffset(camera, (char *)this + 0x11c);
+            ((TargetFollowCamera *)(camera))->setTargetOffset((Vector *)((char *)this + 0x11c));
             camera = BombGun_getCamera(player);
-            TargetFollowCamera_useTargetsUpVector(camera, false);
+            ((TargetFollowCamera *)(camera))->useTargetsUpVector(false);
             ((PlayerEgo *)(player))->setRocketControl(gun, geometry);
 
             if (*(int *)gun->lifetimes < gun->initialLifetime - 500) {
@@ -239,8 +232,7 @@ after_transforms:
         if (distance < kRumbleDistance)
             capped = distance;
         this->field_0x10c = 1.0f - capped / kRumbleDistance;
-        TargetFollowCamera_setRumblePercentage(((PlayerEgo *)(player))->getTargetFollowCamera(),
-                                               this->field_0x10c, 0x32);
+        ((TargetFollowCamera *)(((PlayerEgo *)(player))->getTargetFollowCamera()))->setRumblePercentage(this->field_0x10c, 0x32);
 
         Explosion *explosion = this->field_0xf0;
         if (this->field_0x128 == 0x2a) {
@@ -254,7 +246,7 @@ after_transforms:
         this->field_0x104 = 0;
     }
 
-    Explosion_update(this->field_0xf0, elapsed, 0);
+    ((Explosion *)(this->field_0xf0))->update(elapsed, 0);
     int timer = this->field_0x108 + elapsed;
     if (timer > 2000)
         timer = 2000;
@@ -262,10 +254,10 @@ after_transforms:
 
     player = this->field_0xec;
     float rumble = this->field_0x10c * ((float)timer / kRumbleTime + 1.0f);
-    TargetFollowCamera_setRumblePercentage(((PlayerEgo *)(player))->getTargetFollowCamera(), rumble, 0x32);
+    ((TargetFollowCamera *)(((PlayerEgo *)(player))->getTargetFollowCamera()))->setRumblePercentage(rumble, 0x32);
 
     if (((Explosion *)(this->field_0xf0))->isPlaying() == 0) {
-        TargetFollowCamera_setRumblePercentage(((PlayerEgo *)(player))->getTargetFollowCamera(), 0.0f, 0);
+        ((TargetFollowCamera *)(((PlayerEgo *)(player))->getTargetFollowCamera()))->setRumblePercentage(0.0f, 0);
         this->field_0x108 = 0;
         this->field_0x8->field_0x88 = 0;
         this->field_0x104 = 1;
@@ -309,7 +301,7 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
     }
     Explosion_ctor(explosion, explosionType);
     self->field_0xf0 = explosion;
-    Explosion_setWeaponIndex(explosion, gun->itemIndex);
+    ((Explosion *)(explosion))->setWeaponIndex(gun->itemIndex);
 
     int playerFlag = *(volatile int *)&playerControlled;
     self->field_0x24 = playerFlag;

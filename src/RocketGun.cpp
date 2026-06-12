@@ -35,7 +35,6 @@ extern "C" void ArraySetLength_int(uint32_t length, void *array);
 extern "C" void ParticleSystemManager_attachSystem(int manager, int system, int zero);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func)(void *out, void *in);
 extern "C" int Player_getEnemies(void *player);
-extern "C" void Player_getPosition(void *out, void *player);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder3;
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func2)(void *out, void *in);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_scale_func)(void *out, void *in, float scale);
@@ -293,7 +292,7 @@ fallback:
 
 have_enemy:
     if (enemy != 0) {
-        Player_getPosition(enemyPos, enemy);
+        ((Player *)(enemy))->getPosition((Vector *)(enemyPos));
         *(Vector *)(tmp0) = *(const Vector *)(enemyPos) - *(const Vector *)((char *)F<void *>(this->gun, 0xc) + index * 0xc);
         void (*fn)(void *, void *) = RocketGun_vector_func;
         fn(tmp1, tmp0);

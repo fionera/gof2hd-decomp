@@ -31,6 +31,7 @@ struct Radio { unsigned char lastMessageShown(); };
 #undef P
 #include "gof2/Station.h"
 #include "gof2/Status.h"
+#include "gof2/SolarSystem.h"
 #define B      B_TouchButton
 #define I      I_TouchButton
 #define P      P_TouchButton
@@ -68,19 +69,16 @@ extern "C" void ModStation_dtor_finish(ModStation *self);
 extern "C" void ModStation_String_dtor(void *s);
 extern "C" void ModStation_leaveStation_impl(ModStation *self);
 void Globals_reportLeaderboards(void *obj);
-extern "C" int *Achievements_getNewMedals(Achievements *a);
 extern "C" void *cm_op_new(unsigned int sz);
 extern "C" void Array_int_ctor(void *a);
 extern "C" void ArraySetLength_int(unsigned int n, void *a);
 extern "C" void *cm_op_new_arr(unsigned int sz);
 extern "C" void ModStation_cm_tail(void *p, int a, int b);
-extern "C" void StarMap_renderBG(void *p);
 extern "C" void ModStation_r3d_endTail(void *c);
 extern "C" void *ric_op_new(unsigned int sz);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
 extern "C" void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int a4, int a5);
 extern "C" int Station_getIndex(Station *st);
-extern "C" int SolarSystem_getRace();
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 int GameText_getLanguage();
 void Globals_loadFont(int obj, int lang);
@@ -588,7 +586,7 @@ void ModStation::checkMedals() {
     if (((Status *)(*g_ModStation_cm_status))->getCurrentCampaignMission() == 1)
         ((ModStation *)((ModStation *)1))->addAchievement(0, 1);
     P(self, 0xbc) = 0;
-    int *medals = Achievements_getNewMedals(g_ModStation_cm_ach[0]);
+    int *medals = ((Achievements *)(g_ModStation_cm_ach[0]))->getNewMedals();
     int count = 0;
     I(self, 0xc4) = 0;
     for (int i = 0; i != 0x2d; i++) {
@@ -654,7 +652,7 @@ void ModStation::OnRender3D() {
         C(self, 0x68) != 0 || C(self, 0x67) != 0 || *p65 != 0 ||
         C(self, 0x62) != 0) {
         if (C(self, 0x67) != 0) {
-            StarMap_renderBG(P(self, 0x10));
+            ((StarMap *)(P(self, 0x10)))->renderBG();
         } else if (*p65 != 0) {
             ((SpaceLounge *)(P(self, 0x74)))->OnRenderBG();
         }
@@ -1182,8 +1180,7 @@ void ModStation::resetIdleCamForHangar() {
         if (Station_getIndex(st) == 100) {
             race = 7;
         } else {
-            ((Status *)(*g_ModStation_ric_status))->getSystem();
-            race = SolarSystem_getRace();
+            race = ((SolarSystem *)(long)((Status *)(*g_ModStation_ric_status))->getSystem())->getRace();
         }
     }
 

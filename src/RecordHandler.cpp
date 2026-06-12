@@ -1,4 +1,5 @@
 #include "gof2/RecordHandler.h"
+#include "gof2/Galaxy.h"
 #include "gof2/AEFile.h"
 #include "gof2/FModSound.h"
 #include "gof2/Status.h"
@@ -45,10 +46,6 @@ extern "C" void AEFile_ReadInt(void *out, unsigned int fd);
 extern "C" void AEFile_ReadString(void *out, unsigned int fd, int flag);
 extern "C" void AEString_default_ctor(void *s);
 extern "C" void AEString_copy_ctor(void *dst, void *src, int copy);
-extern "C" void Wanted_setImageParts(void *w, int *parts);
-extern "C" void Wanted_setCurrentLocation(void *w, int v);
-extern "C" void Wanted_setTravelsTo(void *w, int v);
-extern "C" void Wanted_setLastSeen(void *w, int v);
 extern "C" void RecordHandler_csd_tail(void *p, int one, int count, void *arr2);
 extern "C" void *GR_op_new(unsigned int sz);
 extern "C" void GameRecord_ctor(void *gr);
@@ -68,31 +65,6 @@ extern "C" void AEFile_WriteInt(int v, unsigned int fd);
 extern "C" void AEFile_WriteBool(int v, unsigned int fd);
 extern "C" void AEFile_WriteString(void *s, unsigned int fd, int flag);
 extern "C" void AEString_cstr_ctor(void *dst, const char *s, int copy);
-extern "C" int Agent_getCosts(void *a);
-extern "C" int Agent_getSellSystemIndex(void *a);
-extern "C" int Agent_getSellBlueprintIndex(void *a);
-extern "C" int Agent_getEvent(void *a);
-extern "C" int Agent_getIndex(void *a);
-extern "C" int Agent_getOffer(void *a);
-extern "C" int Agent_getRace(void *a);
-extern "C" int Agent_getSellItemIndex(void *a);
-extern "C" int Agent_getSellItemPrice(void *a);
-extern "C" int Agent_getSellItemQuantity(void *a);
-extern "C" int Agent_getStation(void *a);
-extern "C" int Agent_getSystem(void *a);
-extern "C" int Agent_getWingmanFriendsCount(void *a);
-extern "C" int Mission_getType(void *m);
-extern "C" int *Mission_getClientImage(void *m);
-extern "C" int Mission_getClientRace(void *m);
-extern "C" int Mission_getCosts(void *m);
-extern "C" int Mission_getBonus(void *m);
-extern "C" int Mission_getReward(void *m);
-extern "C" int Mission_getTargetStation(void *m);
-extern "C" int Mission_getDifficulty(void *m);
-extern "C" int Mission_getProductionGoodIndex(void *m);
-extern "C" int Mission_getProductionGoodAmount(void *m);
-extern "C" int Mission_getStatusValue(void *m);
-extern "C" void *Mission_getAgent(void *m);
 extern "C" void AEFile_ReadByte(void *out, unsigned int fd);
 extern "C" void AEFile_ReadFloat(void *out, unsigned int fd);
 extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
@@ -100,38 +72,13 @@ int RecordHandler_checkHash(unsigned int fd);
 extern "C" void GameText_setLanguage(short obj, int lang);
 void Globals_loadFont(int kind);
 extern "C" void Mission_ctorEmpty(void *self, int type, int reward, int targetStation);
-extern "C" void Mission_setCosts(void *m, int v);
-extern "C" void Mission_setBonus(void *m, int v);
-extern "C" void Mission_setStatusValue(void *m, int v);
-extern "C" void Mission_setAgent(void *m, void *agent);
 extern "C" void AEFile_WriteByte(int v, unsigned int fd);
 extern "C" void AEFile_WriteFloat(int v, unsigned int fd);
 extern "C" void AEFile_WriteShort(int v, unsigned int fd);
 int GameText_getLanguage();
-extern "C" void Agent_setCosts(void *a, int v);
-extern "C" void Agent_setEvent(void *a, int v);
-extern "C" void Agent_setOffer(void *a, int v);
 extern "C" void ArrayStr_ctor(void *a);
 extern "C" void ArraySetLength_Str(unsigned n, void *a);
-extern "C" int Wanted_getCurrentLocation(void *w);
-extern "C" int Wanted_getTravelsTo(void *w);
-extern "C" int Wanted_getLastSeen(void *w);
-extern "C" int Wanted_getIndex(void *w);
-extern "C" int Wanted_getBoard(void *w);
-extern "C" int Wanted_getRace(void *w);
-extern "C" int Wanted_isMale(void *w);
-extern "C" int Wanted_getShip(void *w);
-extern "C" int Wanted_getWeapon(void *w);
-extern "C" int Wanted_getHitpoints(void *w);
-extern "C" int Wanted_getLoot(void *w);
-extern "C" int Wanted_getLootAmount(void *w);
-extern "C" int Wanted_getReward(void *w);
-extern "C" int Wanted_getRequiredBounties(void *w);
-extern "C" int Wanted_getRequiredMission(void *w);
-extern "C" int Wanted_getNumWingmen(void *w);
-extern "C" int *Wanted_getImageParts(void *w);
 extern "C" void AEFile_WriteLong(long long v, unsigned int fd);
-extern "C" int Galaxy_getVisited(void *g);
 extern "C" void RecordHandler_recordStoreWrite_body(RecordHandler *self, unsigned int fd);
 extern "C" void AEFile_ReadLong(void *out, unsigned int fd);
 extern "C" void Array_bool_ctor(void *a);
@@ -399,12 +346,12 @@ void * RecordHandler::readWanted(unsigned int fd) {
         AEFile_ReadInt(p, fd);
         p++;
     }
-    Wanted_setImageParts(w, parts);
+    ((Wanted *)(w))->setImageParts(parts);
     ((Wanted *)(w))->setActive(active);
     ((Wanted *)(w))->setTerminated(terminated);
-    Wanted_setCurrentLocation(w, currentLocation);
-    Wanted_setTravelsTo(w, travelsTo);
-    Wanted_setLastSeen(w, lastSeen);
+    ((Wanted *)(w))->setCurrentLocation(currentLocation);
+    ((Wanted *)(w))->setTravelsTo(travelsTo);
+    ((Wanted *)(w))->setLastSeen(lastSeen);
 
     return w;
 }
@@ -619,19 +566,19 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
     volatile int saved = *guardP;
 
     Agent *agent = (Agent *)agentPtr;
-    AEFile_WriteInt(Agent_getCosts(agent), fd);
-    AEFile_WriteInt(Agent_getSellSystemIndex(agent), fd);
-    AEFile_WriteInt(Agent_getSellBlueprintIndex(agent), fd);
-    AEFile_WriteInt(Agent_getEvent(agent), fd);
-    AEFile_WriteInt(Agent_getIndex(agent), fd);
-    AEFile_WriteInt(Agent_getOffer(agent), fd);
-    AEFile_WriteInt(Agent_getRace(agent), fd);
-    AEFile_WriteInt(Agent_getSellItemIndex(agent), fd);
-    AEFile_WriteInt(Agent_getSellItemPrice(agent), fd);
-    AEFile_WriteInt(Agent_getSellItemQuantity(agent), fd);
-    AEFile_WriteInt(Agent_getStation(agent), fd);
-    AEFile_WriteInt(Agent_getSystem(agent), fd);
-    AEFile_WriteInt(Agent_getWingmanFriendsCount(agent), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getCosts(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getSellSystemIndex(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getSellBlueprintIndex(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getEvent(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getIndex(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getOffer(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getRace(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getSellItemIndex(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getSellItemPrice(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getSellItemQuantity(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getStation(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getSystem(), fd);
+    AEFile_WriteInt(((Agent *)(agent))->getWingmanFriendsCount(), fd);
     AEFile_WriteBool(((Agent *)(agent))->isMale(), fd);
     AEFile_WriteBool(((Agent *)(agent))->hasReward(), fd);
     AEFile_WriteBool(((Agent *)(agent))->hasAcceptedOffer(), fd);
@@ -647,7 +594,7 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
             AEFile_WriteInt(img[i], fd);
         }
     }
-    if (0x12 < Agent_getIndex(agent)) {
+    if (0x12 < ((Agent *)(agent))->getIndex()) {
         AEFile_WriteInt(((Agent *)(agent))->getSellModIndex(), fd);
     }
 
@@ -697,7 +644,7 @@ void RecordHandler::writeMission(void *m, unsigned int fd) {
     int *guardP = g_WM_guard;
     volatile int saved = *guardP;
 
-    AEFile_WriteInt(Mission_getType(m), fd);
+    AEFile_WriteInt(((Mission *)(m))->getType(), fd);
     if (((Mission *)(m))->isEmpty() == 0) {
         char s[12];
         ((Mission *)(s))->getClientName();
@@ -710,28 +657,28 @@ void RecordHandler::writeMission(void *m, unsigned int fd) {
         AEFile_WriteString(s, fd, 1);
 
         AEFile_WriteBool(((Mission *)(m))->isCampaignMission(), fd);
-        if (Mission_getClientImage(m) == 0) {
+        if (((Mission *)(m))->getClientImage() == 0) {
             AEFile_WriteInt(-1, fd);
         } else {
             AEFile_WriteInt(5, fd);
             for (int i = 0; i != 5; i++) {
-                int *img = Mission_getClientImage(m);
+                int *img = (int *)(long)((Mission *)(m))->getClientImage();
                 AEFile_WriteInt(img[i], fd);
             }
         }
-        AEFile_WriteInt(Mission_getClientRace(m), fd);
-        AEFile_WriteInt(Mission_getCosts(m), fd);
-        AEFile_WriteInt(Mission_getBonus(m), fd);
-        AEFile_WriteInt(Mission_getReward(m), fd);
-        AEFile_WriteInt(Mission_getTargetStation(m), fd);
-        AEFile_WriteInt(Mission_getDifficulty(m), fd);
-        AEFile_WriteInt(Mission_getProductionGoodIndex(m), fd);
-        AEFile_WriteInt(Mission_getProductionGoodAmount(m), fd);
-        AEFile_WriteInt(Mission_getStatusValue(m), fd);
+        AEFile_WriteInt(((Mission *)(m))->getClientRace(), fd);
+        AEFile_WriteInt(((Mission *)(m))->getCosts(), fd);
+        AEFile_WriteInt(((Mission *)(m))->getBonus(), fd);
+        AEFile_WriteInt(((Mission *)(m))->getReward(), fd);
+        AEFile_WriteInt(((Mission *)(m))->getTargetStation(), fd);
+        AEFile_WriteInt(((Mission *)(m))->getDifficulty(), fd);
+        AEFile_WriteInt(((Mission *)(m))->getProductionGoodIndex(), fd);
+        AEFile_WriteInt(((Mission *)(m))->getProductionGoodAmount(), fd);
+        AEFile_WriteInt(((Mission *)(m))->getStatusValue(), fd);
         AEFile_WriteBool(((Mission *)(m))->isVisible(), fd);
 
         *(void **)self = m;
-        void *agent = Mission_getAgent(m);
+        void *agent = ((Mission *)(m))->getAgent();
         if (agent == 0 || self->currentAgent == agent) {
             AEFile_WriteInt(-1, fd);
         } else {
@@ -1034,12 +981,12 @@ void * RecordHandler::readMission(unsigned int fd) {
             mission = RH_op_new(0x78);
             Mission_ctorEmpty(mission, type, reward, targetStationIdx);
         }
-        Mission_setCosts(mission, costs);
-        Mission_setBonus(mission, bonus);
+        ((Mission *)(mission))->setCosts(costs);
+        ((Mission *)(mission))->setBonus(bonus);
         ((Mission *)(mission))->setProductionGoods(prodIdx, prodAmt);
-        Mission_setStatusValue(mission, statusValue);
+        ((Mission *)(mission))->setStatusValue(statusValue);
         ((Mission *)(mission))->setVisible(visible);
-        Mission_setAgent(mission, agent);
+        ((Mission *)(mission))->setAgent((Agent *)agent);
 
         String12 tgtNameCopy;
         AEString_copy_ctor(&tgtNameCopy, targetName, 0);
@@ -1220,9 +1167,9 @@ void * RecordHandler::readAgent(unsigned int fd) {
     AEString_copy_ctor(nameCopy, name, 0);
     ((Agent *)(agent))->ctor(idx, nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
 
-    Agent_setCosts(agent, costs);
-    Agent_setEvent(agent, event);
-    Agent_setOffer(agent, offer);
+    ((Agent *)(agent))->setCosts(costs);
+    ((Agent *)(agent))->setEvent(event);
+    ((Agent *)(agent))->setOffer(offer);
     ((Agent *)(agent))->setSellItemData(sellItemPrice, sellItemQty, sellItemIdx);
 
     if (*((int *)strE + 2) != 0) {
@@ -1279,30 +1226,30 @@ void RecordHandler::writeWanted(void *w, unsigned int fd) {
 
     AEFile_WriteBool(((Wanted *)(w))->isActive(), fd);
     AEFile_WriteBool(((Wanted *)(w))->isTerminated(), fd);
-    AEFile_WriteInt(Wanted_getCurrentLocation(w), fd);
-    AEFile_WriteInt(Wanted_getTravelsTo(w), fd);
-    AEFile_WriteInt(Wanted_getLastSeen(w), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getCurrentLocation(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getTravelsTo(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getLastSeen(), fd);
 
     char name[12];
     ((Wanted *)(name))->getName();
     AEFile_WriteString(name, fd, 1);
 
-    AEFile_WriteInt(Wanted_getIndex(w), fd);
-    AEFile_WriteInt(Wanted_getBoard(w), fd);
-    AEFile_WriteInt(Wanted_getRace(w), fd);
-    AEFile_WriteBool(Wanted_isMale(w), fd);
-    AEFile_WriteInt(Wanted_getShip(w), fd);
-    AEFile_WriteInt(Wanted_getWeapon(w), fd);
-    AEFile_WriteInt(Wanted_getHitpoints(w), fd);
-    AEFile_WriteInt(Wanted_getLoot(w), fd);
-    AEFile_WriteInt(Wanted_getLootAmount(w), fd);
-    AEFile_WriteInt(Wanted_getReward(w), fd);
-    AEFile_WriteInt(Wanted_getRequiredBounties(w), fd);
-    AEFile_WriteInt(Wanted_getRequiredMission(w), fd);
-    AEFile_WriteInt(Wanted_getNumWingmen(w), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getIndex(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getBoard(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getRace(), fd);
+    AEFile_WriteBool(((Wanted *)(w))->isMale(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getShip(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getWeapon(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getHitpoints(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getLoot(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getLootAmount(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getReward(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getRequiredBounties(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getRequiredMission(), fd);
+    AEFile_WriteInt(((Wanted *)(w))->getNumWingmen(), fd);
 
     for (int i = 0; i != 5; i++) {
-        int *parts = Wanted_getImageParts(w);
+        int *parts = ((Wanted *)(w))->getImageParts();
         AEFile_WriteInt(parts[i], fd);
     }
 
@@ -1375,7 +1322,7 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile::OpenWrite(*(String *)path, &fd);
 
     // Visited-systems bitmap (0x87 entries).
-    int visited = Galaxy_getVisited(*g_RSW_galaxy);
+    long visited = (long)((Galaxy *)(*g_RSW_galaxy))->getVisited();
     AEFile_WriteInt(0x87, fd);
     for (unsigned i = 0; i < 0x87; i++) {
         AEFile_WriteBool(*(bool *)(visited + i), fd);

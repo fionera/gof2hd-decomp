@@ -1,4 +1,5 @@
 #include "gof2/Hud.h"
+#include "gof2/Mission.h"
 #include "gof2/Item.h"
 #include "gof2/Sprite.h"
 #include "gof2/GameText.h"
@@ -39,23 +40,17 @@ extern "C" void Hud_drawSecondaryWeaponPanel(Hud *self);
 extern "C" void Hud_drawMissionBanner(Hud *self);
 extern "C" void Hud_drawMessage(Hud *self);
 extern "C" int  Status_isChallengeMode();
-extern "C" int  SolarSystem_getSecurityLevel(void *sys);
-extern "C" int  SolarSystem_getIndex(void *sys);
 extern "C" void String_concat(void *out, void *lhs, void *rhs);
 extern "C" unsigned int Hud_touchMoveFallback(Hud *self, unsigned int a, void *b);
 extern "C" int __aeabi_idiv(int a, int b);
-extern "C" int  Mission_getType(void *m);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
 extern "C" void Hud_secondaryWeaponChanged(Hud *self);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
-extern "C" int  SolarSystem_getRace(void *sys);
 extern "C" int  Ship_hasJumpDrive(void *ship);
 extern "C" unsigned char Ship_hasCloak(void *ship);
 extern "C" void Layout_drawMask();
-extern "C" int  Sprite_getFrameWidth(void *sprite);
-extern "C" int  Sprite_getFrameHeight(void *sprite);
 extern "C" int  String_length(void *s);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *arr);
@@ -359,9 +354,9 @@ void Hud::drawOrbitInformation() {
     if (((Status *)(*gStatus))->getCurrentCampaignMission() <= 0xf) return;
 
     void *sys = ((void *)(long)((Status *)(*gStatus))->getSystem());
-    int sec = SolarSystem_getSecurityLevel(sys);
+    int sec = ((SolarSystem *)(sys))->getSecurityLevel();
     ((void *)(long)((Status *)(*gStatus))->getSystem());
-    int idx = SolarSystem_getIndex(((void *)(long)((Status *)(*gStatus))->getSystem()));
+    int idx = ((SolarSystem *)(((void *)(long)((Status *)(*gStatus))->getSystem())))->getIndex();
     int *status = (int *)*g_Hud_oiStatus;
     if (idx == 0x1a && status[0x45] /*+0x114*/ > 1) sec = 3;
 
@@ -557,7 +552,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         void *tmpl = *g_Hud_ccTemplate;
         char a40[12]; ((String *)(a40))->ctor_copy((String *)(dst), false);
         (void *)((Status *)(*gStatus))->getMission();
-        Mission_getType((void *)((Status *)(*gStatus))->getMission());
+        ((Mission *)((void *)((Status *)(*gStatus))->getMission()))->getType();
         void *typeTxt = ((GameText *)(gt))->getText(0);
         char a4c[12]; ((String *)(a4c))->ctor_copy((String *)(typeTxt), false);
         char a58[12]; ((String *)(a58))->ctor_char(g_Hud_ccHashX, false);
@@ -896,7 +891,7 @@ int Hud::init() {
     if (((Status *)(*gStatus))->inAlienOrbit() == 0) {
         void *canvas = *g_Hud_initCanvas;
         ((void *)(long)((Status *)(*gStatus))->getSystem());
-        int race = SolarSystem_getRace(((void *)(long)((Status *)(*gStatus))->getSystem()));
+        int race = ((SolarSystem *)(((void *)(long)((Status *)(*gStatus))->getSystem())))->getRace();
         Image2DCreate(canvas, g_Hud_raceBadge[race], B(self, 0x1c4));
     }
 
@@ -1175,9 +1170,9 @@ void Hud::drawChallengeModeScore() {
     void *sprite = P(self, 0x534);
 
     ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
-    int fw = Sprite_getFrameWidth(sprite);
+    int fw = ((Sprite *)(sprite))->getFrameWidth();
     int pad = layout[0xb]; // +0x2c
-    int fh = Sprite_getFrameHeight(sprite);
+    int fh = ((Sprite *)(sprite))->getFrameHeight();
     int y = layout[0xb];
 
     // score string at status+0x184, right-padded to 7 digits

@@ -1,4 +1,5 @@
 #include "gof2/SolarSystem.h"
+#include "gof2/Galaxy.h"
 #include "gof2/Status.h"
 #include "gof2/String.h"
 
@@ -8,7 +9,6 @@ extern "C" void *Array_int_dtor(void *a) __attribute__((nothrow));
 extern "C" void SolarSystem_baseStringDtor(void *strField) __attribute__((nothrow));
 extern "C" int Station_getIndex(Station *st);
 extern "C" int SolarSystem_warpGateLookup(SolarSystem *self, int idx);
-extern "C" char *Galaxy_getVisited(Galaxy *g);
 
 // ---- _SolarSystem_155694.cpp ----
 // SolarSystem::~SolarSystem() — real C++ destructor so the demangled symbol contains "~SolarSystem".
@@ -296,7 +296,7 @@ int SolarSystem::isFullyDiscovered() {
     while (true) {
         if (i >= arr[0])
             return 1;
-        char *visited = Galaxy_getVisited(*(Galaxy **)gal);
+        char *visited = (char *)((Galaxy *)(*(Galaxy **)gal))->getVisited();
         arr = self->stationIds;
         uint32_t flagIdx = ((int *)arr[1])[i];
         i++;

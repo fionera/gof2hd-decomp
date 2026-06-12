@@ -174,6 +174,7 @@ public:
     void addEnemy(Player *enemy);
     void addGun(Array<Gun *> *gunsIn, int slot);
     void addGun(Gun *gun, int slot);
+    void stopShooting(int slot);
     void stopShooting(int slot, int channel);
     void stopShootSound(int index, int channel);
     // NOTE: 'playShootSound' is a data member (flag at 0x70); C++ forbids a member function

@@ -1,4 +1,5 @@
 #include "gof2/HangarList.h"
+#include "gof2/BluePrint.h"
 #include "gof2/Item.h"
 #include "gof2/Status.h"
 #include "gof2/GameText.h"
@@ -146,7 +147,7 @@ clear_old:
 
     uint32_t unlocked = 1;
     for (uint32_t i = 0; i < blueprints->size(); ++i) {
-        unlocked += BluePrint_isUnlocked(blueprints->data()[i]);
+        unlocked += ((BluePrint *)(blueprints->data()[i]))->isUnlocked();
     }
 
     Array<PendingProduct *> *pending =
@@ -176,7 +177,7 @@ clear_old:
 
     uint32_t out = 1;
     for (uint32_t i = 0; i < blueprints->size(); ++i) {
-        if (BluePrint_isUnlocked(blueprints->data()[i]) != 0) {
+        if (((BluePrint *)(blueprints->data()[i]))->isUnlocked() != 0) {
             li = (ListItem *)::operator new(0x48);
             ((ListItem *)(li))->ctor_BluePrint(blueprints->data()[i]);
             list->data()[out] = li;
@@ -217,7 +218,7 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
 
     ListItem *li = (ListItem *)::operator new(0x48);
     GameText **texts = g_HangarList_gameText;
-    ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(BluePrint_getIndex(blueprint) + 0x4fa));
+    ((ListItem *)(li))->ctor_String(((GameText *)(*texts))->getText(((BluePrint *)(blueprint))->getIndex() + 0x4fa));
     list->data()[0] = li;
 
     uint32_t out = 1;

@@ -33,7 +33,7 @@ PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
     // Construct the embedded String (station name) at +0x00.
     new (&self->stationName) String();
 
-    self->blueprintIndex = BluePrint_getIndex(bp);
+    self->blueprintIndex = ((BluePrint *)(bp))->getIndex();
 
     {
         String name;
@@ -41,8 +41,8 @@ PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
         self->stationName = name;
     }
 
-    self->stationIndex = BluePrint_getStationIndex(bp);
-    self->quantity = BluePrint_getQuantity(bp);
+    self->stationIndex = ((BluePrint *)(bp))->getStationIndex();
+    self->quantity = ((BluePrint *)(bp))->getQuantity();
 
     
     return self;

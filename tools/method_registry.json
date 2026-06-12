@@ -1,688 +1,249 @@
 {
-"LODManager_removeObject": {
-"class": "LODManager",
-"method": "removeObject",
+"Player_pitchAllPrimaryGuns": {
+"class": "Player",
+"method": "pitchAllPrimaryGuns",
 "ret": "void",
 "params_after_self": [
-"AEGeometry *g"
+"float pitch"
 ],
 "self_name": "self"
 },
-"Generator_getLootList": {
-"class": "Generator",
-"method": "getLootList",
+"Player_damageHull": {
+"class": "Player",
+"method": "damageHull",
 "ret": "void",
 "params_after_self": [
-"int itemIndex",
-"int amount"
+"int damage"
 ],
 "self_name": "self"
 },
-"ShaderBaseStruct_GetShaderName": {
-"class": "ShaderBaseStruct",
-"method": "GetShaderName",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ShaderBaseStruct_Update": {
-"class": "ShaderBaseStruct",
-"method": "Update",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ShaderBaseStruct_ES2LoadProgram": {
-"class": "ShaderBaseStruct",
-"method": "ES2LoadProgram",
+"Player_damageShield": {
+"class": "Player",
+"method": "damageShield",
 "ret": "void",
 "params_after_self": [
-"const char *vertexSource",
-"const char *fragmentSource"
+"int damage"
 ],
 "self_name": "self"
 },
-"ShaderBaseStruct_LoadBindShader": {
-"class": "ShaderBaseStruct",
-"method": "LoadBindShader",
+"Player_damageGamma": {
+"class": "Player",
+"method": "damageGamma",
 "ret": "void",
 "params_after_self": [
-"const char *vertexPath",
-"const char *fragmentPath"
+"float amount"
 ],
 "self_name": "self"
 },
-"Objective_isSurvivalObjective": {
-"class": "Objective",
-"method": "isSurvivalObjective",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"CutScene_isInitialized": {
-"class": "CutScene",
-"method": "isInitialized",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"CutScene_update": {
-"class": "CutScene",
-"method": "update",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"CutScene_render3D": {
-"class": "CutScene",
-"method": "render3D",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"CutScene_render2D": {
-"class": "CutScene",
-"method": "render2D",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"CutScene_renderBG": {
-"class": "CutScene",
-"method": "renderBG",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"CutScene_initialize": {
-"class": "CutScene",
-"method": "initialize",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"CutScene_resetCamera": {
-"class": "CutScene",
-"method": "resetCamera",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerEgo_setTurretMode": {
-"class": "PlayerEgo",
-"method": "setTurretMode",
-"ret": "void",
-"params_after_self": [
-"int enable"
-],
-"self_name": "self"
-},
-"PlayerEgo_toggleCloaking": {
-"class": "PlayerEgo",
-"method": "toggleCloaking",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"EaseInOutMatrix_GetValue": {
-"class": "EaseInOutMatrix",
-"method": "GetValue",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"EaseInOutMatrix_GetMaxValue": {
-"class": "EaseInOutMatrix",
-"method": "GetMaxValue",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"EaseInOutMatrix_SetRange": {
-"class": "EaseInOutMatrix",
-"method": "SetRange",
-"ret": "void",
-"params_after_self": [
-"AEMath::Matrix mn",
-"AEMath::Matrix mx"
-],
-"self_name": "self"
-},
-"EaseInOutMatrix_Increase": {
-"class": "EaseInOutMatrix",
-"method": "Increase",
-"ret": "void",
-"params_after_self": [
-"float dt"
-],
-"self_name": "self"
-},
-"AEGeometry_getPosition": {
-"class": "AEGeometry",
+"Player_getPosition": {
+"class": "Player",
 "method": "getPosition",
 "ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"AEGeometry_setVisible": {
-"class": "AEGeometry",
-"method": "setVisible",
-"ret": "void",
 "params_after_self": [
-"bool v"
+"Vector *out"
 ],
 "self_name": "self"
 },
-"AEGeometry_addChild": {
-"class": "AEGeometry",
-"method": "addChild",
-"ret": "void",
-"params_after_self": [
-"uint32_t child"
-],
-"self_name": "self"
-},
-"AEGeometry_render": {
-"class": "AEGeometry",
-"method": "render",
+"Player_isAsteroid": {
+"class": "Player",
+"method": "isAsteroid",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"AEGeometry_translate": {
-"class": "AEGeometry",
-"method": "translate",
-"ret": "void",
-"params_after_self": [
-"const Vector &v"
-],
-"self_name": "self"
-},
-"AEGeometry_setScaling": {
-"class": "AEGeometry",
-"method": "setScaling",
-"ret": "void",
-"params_after_self": [
-"float s"
-],
-"self_name": "self"
-},
-"AEGeometry_setLodMeshesWithMeshIds": {
-"class": "AEGeometry",
-"method": "setLodMeshesWithMeshIds",
-"ret": "void",
-"params_after_self": [
-"uint16_t *meshes",
-"uint32_t *meshIds",
-"int *dists",
-"int count"
-],
-"self_name": "self"
-},
-"AEGeometry_setLodLastVisibleDistance": {
-"class": "AEGeometry",
-"method": "setLodLastVisibleDistance",
-"ret": "void",
-"params_after_self": [
-"uint64_t d"
-],
-"self_name": "self"
-},
-"AEGeometry_getRightVector": {
-"class": "AEGeometry",
-"method": "getRightVector",
+"Player_isGasCloud": {
+"class": "Player",
+"method": "isGasCloud",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"AEGeometry_getUpVector": {
-"class": "AEGeometry",
-"method": "getUpVector",
+"Player_gunAvailable": {
+"class": "Player",
+"method": "gunAvailable",
+"ret": "void",
+"params_after_self": [
+"unsigned int slot"
+],
+"self_name": "self"
+},
+"Player_heal": {
+"class": "Player",
+"method": "heal",
+"ret": "void",
+"params_after_self": [
+"float amount"
+],
+"self_name": "self"
+},
+"Player_setShieldHP": {
+"class": "Player",
+"method": "setShieldHP",
+"ret": "void",
+"params_after_self": [
+"int value"
+],
+"self_name": "self"
+},
+"Player_setGammaHP": {
+"class": "Player",
+"method": "setGammaHP",
+"ret": "void",
+"params_after_self": [
+"int value"
+],
+"self_name": "self"
+},
+"Player_refillGunDelay": {
+"class": "Player",
+"method": "refillGunDelay",
+"ret": "void",
+"params_after_self": [
+"int slot"
+],
+"self_name": "self"
+},
+"Player_resetGunDelay": {
+"class": "Player",
+"method": "resetGunDelay",
+"ret": "void",
+"params_after_self": [
+"int slot"
+],
+"self_name": "self"
+},
+"Player_setAlwaysEnemy": {
+"class": "Player",
+"method": "setAlwaysEnemy",
+"ret": "void",
+"params_after_self": [
+"bool value"
+],
+"self_name": "self"
+},
+"Player_setAlwaysFriend": {
+"class": "Player",
+"method": "setAlwaysFriend",
+"ret": "void",
+"params_after_self": [
+"bool value"
+],
+"self_name": "self"
+},
+"Player_reset": {
+"class": "Player",
+"method": "reset",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"AEGeometry_getMatrix": {
-"class": "AEGeometry",
-"method": "getMatrix",
+"Player_setEnemies": {
+"class": "Player",
+"method": "setEnemies",
+"ret": "void",
+"params_after_self": [
+"Array<Player *> *enemies"
+],
+"self_name": "self"
+},
+"Player_addEnemies": {
+"class": "Player",
+"method": "addEnemies",
+"ret": "void",
+"params_after_self": [
+"Array<Player *> *enemies"
+],
+"self_name": "self"
+},
+"Player_setEnemy": {
+"class": "Player",
+"method": "setEnemy",
+"ret": "void",
+"params_after_self": [
+"Player *enemy"
+],
+"self_name": "self"
+},
+"Player_addEnemy": {
+"class": "Player",
+"method": "addEnemy",
+"ret": "void",
+"params_after_self": [
+"Player *enemy"
+],
+"self_name": "self"
+},
+"Player_addGun": {
+"class": "Player",
+"method": "addGun",
+"ret": "void",
+"params_after_self": [
+"Array<Gun *> *gunsIn",
+"int slot"
+],
+"self_name": "self"
+},
+"Player_stopShooting": {
+"class": "Player",
+"method": "stopShooting",
+"ret": "void",
+"params_after_self": [
+"int slot",
+"int channel"
+],
+"self_name": "self"
+},
+"Player_stopShootSound": {
+"class": "Player",
+"method": "stopShootSound",
+"ret": "void",
+"params_after_self": [
+"int index",
+"int channel"
+],
+"self_name": "self"
+},
+"KIPlayer_getRoute": {
+"class": "KIPlayer",
+"method": "getRoute",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"AEGeometry_getScaling": {
-"class": "AEGeometry",
-"method": "getScaling",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"AEGeometry_updateReferenceMatrix": {
-"class": "AEGeometry",
-"method": "updateReferenceMatrix",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"AEGeometry_setLodMeshes": {
-"class": "AEGeometry",
-"method": "setLodMeshes",
+"KIPlayer_setLevel": {
+"class": "KIPlayer",
+"method": "setLevel",
 "ret": "void",
 "params_after_self": [
-"uint16_t *meshes",
-"int *dists",
-"int count"
+"Level *lvl"
 ],
 "self_name": "self"
 },
-"AEGeometry_getParentPosition": {
-"class": "AEGeometry",
-"method": "getParentPosition",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"AEGeometry_setRotation": {
-"class": "AEGeometry",
-"method": "setRotation",
-"ret": "void",
-"params_after_self": [
-"float x",
-"float y",
-"float z"
-],
-"self_name": "self"
-},
-"AEGeometry_setPosition": {
-"class": "AEGeometry",
-"method": "setPosition",
-"ret": "void",
-"params_after_self": [
-"const Vector &v"
-],
-"self_name": "self"
-},
-"AEGeometry_setLodChildMeshes": {
-"class": "AEGeometry",
-"method": "setLodChildMeshes",
-"ret": "void",
-"params_after_self": [
-"uint16_t *meshes"
-],
-"self_name": "self"
-},
-"AEGeometry_rotate": {
-"class": "AEGeometry",
-"method": "rotate",
-"ret": "void",
-"params_after_self": [
-"float x",
-"float y",
-"float z"
-],
-"self_name": "self"
-},
-"AEGeometry_setMesh": {
-"class": "AEGeometry",
-"method": "setMesh",
-"ret": "void",
-"params_after_self": [
-"uint16_t mesh"
-],
-"self_name": "self"
-},
-"AEGeometry_moveForward": {
-"class": "AEGeometry",
-"method": "moveForward",
-"ret": "void",
-"params_after_self": [
-"float dist"
-],
-"self_name": "self"
-},
-"AEGeometry_updateLod": {
-"class": "AEGeometry",
-"method": "updateLod",
-"ret": "void",
-"params_after_self": [
-"const Vector &camPos",
-"float screenScale"
-],
-"self_name": "self"
-},
-"AEGeometry_setDirection": {
-"class": "AEGeometry",
-"method": "setDirection",
-"ret": "void",
-"params_after_self": [
-"const Vector &dir",
-"const Vector &up"
-],
-"self_name": "self"
-},
-"PlayerJumpgate_timeToJump": {
-"class": "PlayerJumpgate",
-"method": "timeToJump",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerJumpgate_activate": {
-"class": "PlayerJumpgate",
-"method": "activate",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerJumpgate_animationEnded": {
-"class": "PlayerJumpgate",
-"method": "animationEnded",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerWormHole_isShrinking": {
-"class": "PlayerWormHole",
-"method": "isShrinking",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"AEFile_OpenRead": {
-"class": "AEFile",
-"method": "OpenRead",
-"ret": "void",
-"params_after_self": [
-"String &path",
-"uint32_t *handle"
-],
-"self_name": "self"
-},
-"AEFile_Read": {
-"class": "AEFile",
-"method": "Read",
-"ret": "void",
-"params_after_self": [
-"bool &value",
-"uint32_t handle"
-],
-"self_name": "self"
-},
-"AEFile_OpenWrite": {
-"class": "AEFile",
-"method": "OpenWrite",
-"ret": "void",
-"params_after_self": [
-"String &path",
-"uint32_t *handle"
-],
-"self_name": "self"
-},
-"AEFile_Write": {
-"class": "AEFile",
-"method": "Write",
-"ret": "void",
-"params_after_self": [
-"const String &value",
-"uint32_t handle",
-"bool wide"
-],
-"self_name": "self"
-},
-"AEFile_GetFileSize": {
-"class": "AEFile",
-"method": "GetFileSize",
-"ret": "void",
-"params_after_self": [
-"uint32_t handle"
-],
-"self_name": "self"
-},
-"AEFile_Skip": {
-"class": "AEFile",
-"method": "Skip",
-"ret": "void",
-"params_after_self": [
-"uint32_t bytes",
-"uint32_t handle"
-],
-"self_name": "self"
-},
-"Station_getName": {
-"class": "Station",
-"method": "getName",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"EaseInOut_GetMaxValue": {
-"class": "EaseInOut",
-"method": "GetMaxValue",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"EaseInOut_SetRange": {
-"class": "EaseInOut",
-"method": "SetRange",
-"ret": "void",
-"params_after_self": [
-"float minValue",
-"float maxValue"
-],
-"self_name": "self"
-},
-"EaseInOut_Increase": {
-"class": "EaseInOut",
-"method": "Increase",
-"ret": "void",
-"params_after_self": [
-"float dt"
-],
-"self_name": "self"
-},
-"Status_getJumpgateUsed": {
-"class": "Status",
-"method": "getJumpgateUsed",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_dlc1Won": {
-"class": "Status",
-"method": "dlc1Won",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setKills": {
-"class": "Status",
-"method": "setKills",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_incMissionCount": {
-"class": "Status",
-"method": "incMissionCount",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_orbitHasPlanetRing": {
-"class": "Status",
-"method": "orbitHasPlanetRing",
+"Explosion_setWeaponIndex": {
+"class": "Explosion",
+"method": "setWeaponIndex",
 "ret": "void",
 "params_after_self": [
 "int index"
 ],
 "self_name": "self"
 },
-"Status_getSystem": {
-"class": "Status",
-"method": "getSystem",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_inSupernovaSystem": {
-"class": "Status",
-"method": "inSupernovaSystem",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_visitStation": {
-"class": "Status",
-"method": "visitStation",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setPirateKills": {
-"class": "Status",
-"method": "setPirateKills",
+"Explosion_setMatrix": {
+"class": "Explosion",
+"method": "setMatrix",
 "ret": "void",
 "params_after_self": [
-"int v"
+"const Matrix *matrix"
 ],
 "self_name": "self"
 },
-"Status_setFreelanceMission": {
-"class": "Status",
-"method": "setFreelanceMission",
+"Explosion_update": {
+"class": "Explosion",
+"method": "update",
 "ret": "void",
 "params_after_self": [
-"Mission *m"
-],
-"self_name": "self"
-},
-"Status_getMission": {
-"class": "Status",
-"method": "getMission",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setPassengers": {
-"class": "Status",
-"method": "setPassengers",
-"ret": "void",
-"params_after_self": [
-"int p"
-],
-"self_name": "self"
-},
-"Status_getMissionCount": {
-"class": "Status",
-"method": "getMissionCount",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setCredits": {
-"class": "Status",
-"method": "setCredits",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_getLastXP": {
-"class": "Status",
-"method": "getLastXP",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setLastXP": {
-"class": "Status",
-"method": "setLastXP",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_setStationsVisited": {
-"class": "Status",
-"method": "setStationsVisited",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_setStationStack": {
-"class": "Status",
-"method": "setStationStack",
-"ret": "void",
-"params_after_self": [
-"Array<Station *> *stack"
-],
-"self_name": "self"
-},
-"Status_hardCoreMode": {
-"class": "Status",
-"method": "hardCoreMode",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_crateCaptured": {
-"class": "Status",
-"method": "crateCaptured",
-"ret": "void",
-"params_after_self": [
-"int delta"
-],
-"self_name": "self"
-},
-"Status_getStanding": {
-"class": "Status",
-"method": "getStanding",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getBoughtEquipment": {
-"class": "Status",
-"method": "getBoughtEquipment",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getCredits": {
-"class": "Status",
-"method": "getCredits",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setRating": {
-"class": "Status",
-"method": "setRating",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_getCurrentCampaignMission": {
-"class": "Status",
-"method": "getCurrentCampaignMission",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setMissionCount": {
-"class": "Status",
-"method": "setMissionCount",
-"ret": "void",
-"params_after_self": [
-"int v"
+"int dt",
+"TargetFollowCamera *camera"
 ],
 "self_name": "self"
 },
@@ -695,314 +256,12 @@
 ],
 "self_name": "self"
 },
-"Status_setPlayingTime": {
-"class": "Status",
-"method": "setPlayingTime",
-"ret": "void",
-"params_after_self": [
-"int64_t v"
-],
-"self_name": "self"
-},
-"Status_getPendingProducts": {
-"class": "Status",
-"method": "getPendingProducts",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getSystemVisibilities": {
-"class": "Status",
-"method": "getSystemVisibilities",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setCurrentCampaignMission": {
-"class": "Status",
-"method": "setCurrentCampaignMission",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_getPirateKills": {
-"class": "Status",
-"method": "getPirateKills",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getStation": {
-"class": "Status",
-"method": "getStation",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setCampaignMission": {
-"class": "Status",
-"method": "setCampaignMission",
-"ret": "void",
-"params_after_self": [
-"Mission *m"
-],
-"self_name": "self"
-},
-"Status_getLevel": {
-"class": "Status",
-"method": "getLevel",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getCapturedCrates": {
-"class": "Status",
-"method": "getCapturedCrates",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_incKills": {
-"class": "Status",
-"method": "incKills",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getStationsVisited": {
-"class": "Status",
-"method": "getStationsVisited",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getCampaignMission": {
-"class": "Status",
-"method": "getCampaignMission",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setJumpgateUsed": {
-"class": "Status",
-"method": "setJumpgateUsed",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_gameWon": {
-"class": "Status",
-"method": "gameWon",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setLevel": {
-"class": "Status",
-"method": "setLevel",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_setCapturedCrates": {
-"class": "Status",
-"method": "setCapturedCrates",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_inBlackMarketSystem": {
-"class": "Status",
-"method": "inBlackMarketSystem",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_incGoodsProduced": {
-"class": "Status",
-"method": "incGoodsProduced",
-"ret": "void",
-"params_after_self": [
-"int delta"
-],
-"self_name": "self"
-},
-"Status_getPlayingTime": {
-"class": "Status",
-"method": "getPlayingTime",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setGoodsProduced": {
-"class": "Status",
-"method": "setGoodsProduced",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
 "Status_setMission": {
 "class": "Status",
 "method": "setMission",
 "ret": "void",
 "params_after_self": [
 "Mission *m"
-],
-"self_name": "self"
-},
-"Status_getRating": {
-"class": "Status",
-"method": "getRating",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getFreelanceMission": {
-"class": "Status",
-"method": "getFreelanceMission",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_jumpgateUsed": {
-"class": "Status",
-"method": "jumpgateUsed",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getShip": {
-"class": "Status",
-"method": "getShip",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getBluePrints": {
-"class": "Status",
-"method": "getBluePrints",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getAgents": {
-"class": "Status",
-"method": "getAgents",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_inPlanetRingOrbit": {
-"class": "Status",
-"method": "inPlanetRingOrbit",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_setBoughtEquipment": {
-"class": "Status",
-"method": "setBoughtEquipment",
-"ret": "void",
-"params_after_self": [
-"int v"
-],
-"self_name": "self"
-},
-"Status_getGoodsProduced": {
-"class": "Status",
-"method": "getGoodsProduced",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getKills": {
-"class": "Status",
-"method": "getKills",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_isFreighterMissionStation": {
-"class": "Status",
-"method": "isFreighterMissionStation",
-"ret": "void",
-"params_after_self": [
-"int station"
-],
-"self_name": "self"
-},
-"Status_getFreighterMissionStationBit": {
-"class": "Status",
-"method": "getFreighterMissionStationBit",
-"ret": "void",
-"params_after_self": [
-"int station"
-],
-"self_name": "self"
-},
-"Status_calcCargoPrices": {
-"class": "Status",
-"method": "calcCargoPrices",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_isOnStack": {
-"class": "Status",
-"method": "isOnStack",
-"ret": "void",
-"params_after_self": [
-"Station *s"
-],
-"self_name": "self"
-},
-"Status_inAlienOrbit": {
-"class": "Status",
-"method": "inAlienOrbit",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_resetGame": {
-"class": "Status",
-"method": "resetGame",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_addPendingProduct": {
-"class": "Status",
-"method": "addPendingProduct",
-"ret": "void",
-"params_after_self": [
-"BluePrint *bp"
-],
-"self_name": "self"
-},
-"Status_inEmptyOrbit": {
-"class": "Status",
-"method": "inEmptyOrbit",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Status_getGammaRayDamagePerSecond": {
-"class": "Status",
-"method": "getGammaRayDamagePerSecond",
-"ret": "void",
-"params_after_self": [
-"int a",
-"int b"
 ],
 "self_name": "self"
 },
@@ -1015,830 +274,137 @@
 ],
 "self_name": "self"
 },
-"BlurShader_RenderEffect": {
-"class": "BlurShader",
-"method": "RenderEffect",
-"ret": "void",
-"params_after_self": [
-"::FBOContainer *fbo",
-"::FBOContainer **target",
-"::Engine *engine",
-"float amount",
-"Vector vector"
-],
-"self_name": "self"
-},
-"Level_getEnemiesLeft": {
-"class": "Level",
-"method": "getEnemiesLeft",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_render2D": {
-"class": "Level",
-"method": "render2D",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_checkGameOver": {
-"class": "Level",
-"method": "checkGameOver",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_junkDied": {
-"class": "Level",
-"method": "junkDied",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_setInitStreamOut": {
-"class": "Level",
-"method": "setInitStreamOut",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_asteroidDied": {
-"class": "Level",
-"method": "asteroidDied",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_checkObjective": {
-"class": "Level",
-"method": "checkObjective",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getNumDeliveredOre": {
-"class": "Level",
-"method": "getNumDeliveredOre",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_enableFog": {
-"class": "Level",
-"method": "enableFog",
-"ret": "void",
-"params_after_self": [
-"bool enable"
-],
-"self_name": "self"
-},
-"Level_getAsteroids": {
-"class": "Level",
-"method": "getAsteroids",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getFriendsLeft": {
-"class": "Level",
-"method": "getFriendsLeft",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getPlayer": {
-"class": "Level",
-"method": "getPlayer",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_killWanted": {
-"class": "Level",
-"method": "killWanted",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_stealFriendCargo": {
-"class": "Level",
-"method": "stealFriendCargo",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getEnemies": {
-"class": "Level",
-"method": "getEnemies",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getMessages": {
-"class": "Level",
-"method": "getMessages",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getPlayerRoute": {
-"class": "Level",
-"method": "getPlayerRoute",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getStarSystem": {
-"class": "Level",
-"method": "getStarSystem",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_pirateStationAction": {
-"class": "Level",
-"method": "pirateStationAction",
-"ret": "void",
-"params_after_self": [
-"bool param"
-],
-"self_name": "self"
-},
-"Level_removeObjectives": {
-"class": "Level",
-"method": "removeObjectives",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getTimeLimit": {
-"class": "Level",
-"method": "getTimeLimit",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_getLandmarks": {
-"class": "Level",
-"method": "getLandmarks",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_render": {
-"class": "Level",
-"method": "render",
-"ret": "void",
-"params_after_self": [
-"int ctx"
-],
-"self_name": "self"
-},
-"Level_collideStream": {
-"class": "Level",
-"method": "collideStream",
-"ret": "void",
-"params_after_self": [
-"Vector v"
-],
-"self_name": "self"
-},
-"Level_getNumDeliveredPassengers": {
-"class": "Level",
-"method": "getNumDeliveredPassengers",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_alarmAllFriends": {
-"class": "Level",
-"method": "alarmAllFriends",
-"ret": "void",
-"params_after_self": [
-"int race",
-"bool message"
-],
-"self_name": "self"
-},
-"Level_friendTurnedEnemy": {
-"class": "Level",
-"method": "friendTurnedEnemy",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_collideStation": {
-"class": "Level",
-"method": "collideStation",
-"ret": "void",
-"params_after_self": [
-"Vector v"
-],
-"self_name": "self"
-},
-"Level_almostKillWanted": {
-"class": "Level",
-"method": "almostKillWanted",
-"ret": "void",
-"params_after_self": [
-"int index"
-],
-"self_name": "self"
-},
-"Level_attackWanted": {
-"class": "Level",
-"method": "attackWanted",
-"ret": "void",
-"params_after_self": [
-"int index"
-],
-"self_name": "self"
-},
-"Level_initParticleSystems": {
-"class": "Level",
-"method": "initParticleSystems",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"StarMap_render": {
+"StarMap_renderBG": {
 "class": "StarMap",
-"method": "render",
+"method": "renderBG",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"StarMap_askForJumpIntoAlienWorld": {
-"class": "StarMap",
-"method": "askForJumpIntoAlienWorld",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"StarMap_setJumpMapMode": {
-"class": "StarMap",
-"method": "setJumpMapMode",
-"ret": "void",
-"params_after_self": [
-"bool enabled",
-"bool value"
-],
-"self_name": "self"
-},
-"StarMap_setStart": {
-"class": "StarMap",
-"method": "setStart",
-"ret": "void",
-"params_after_self": [
-"int start",
-"int target"
-],
-"self_name": "self"
-},
-"StarMap_draw": {
-"class": "StarMap",
-"method": "draw",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"StarMap_OnTouchEnd": {
-"class": "StarMap",
-"method": "OnTouchEnd",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"StarMap_initLights": {
-"class": "StarMap",
-"method": "initLights",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"StarMap_OnTouchBegin": {
-"class": "StarMap",
-"method": "OnTouchBegin",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"StarMap_OnTouchMove": {
-"class": "StarMap",
-"method": "OnTouchMove",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"StarMap_init": {
-"class": "StarMap",
-"method": "init",
-"ret": "void",
-"params_after_self": [
-"bool jumpMapMode",
-"Mission *mission",
-"bool param3",
-"int param4"
-],
-"self_name": "self"
-},
-"Sprite_setPosition": {
+"Sprite_getFrameWidth": {
 "class": "Sprite",
-"method": "setPosition",
+"method": "getFrameWidth",
 "ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
+"params_after_self": [],
 "self_name": "self"
 },
-"Sprite_draw": {
+"Sprite_getFrameHeight": {
 "class": "Sprite",
-"method": "draw",
+"method": "getFrameHeight",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"BumpShader_setSampler": {
+"class": "BumpShader",
+"method": "setSampler",
 "ret": "void",
 "params_after_self": [
-"float scaleX",
-"float scaleY"
+"int location",
+"int unit"
 ],
 "self_name": "self"
 },
-"Sprite_setFrame": {
-"class": "Sprite",
-"method": "setFrame",
+"PlayerFighter_reset": {
+"class": "PlayerFighter",
+"method": "reset",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"PlayerFighter_revive": {
+"class": "PlayerFighter",
+"method": "revive",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Route_ctor": {
+"class": "Route",
+"method": "ctor",
 "ret": "void",
 "params_after_self": [
-"int frame"
+"int *coords",
+"int count"
 ],
 "self_name": "self"
 },
-"Layout_drawBox": {
-"class": "Layout",
-"method": "drawBox",
+"Route_dtor": {
+"class": "Route",
+"method": "dtor",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Route_getCurrent": {
+"class": "Route",
+"method": "getCurrent",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Route_setLoop": {
+"class": "Route",
+"method": "setLoop",
 "ret": "void",
 "params_after_self": [
-"int style",
-"int x",
-"int y",
-"int w",
-"int h",
-"void *text",
-"unsigned flags"
+"bool loop"
 ],
 "self_name": "self"
 },
-"Item_getAttribute": {
-"class": "Item",
-"method": "getAttribute",
+"AERandom_setSeed": {
+"class": "AERandom",
+"method": "setSeed",
 "ret": "void",
 "params_after_self": [
-"int attribute"
+"long long seed"
 ],
 "self_name": "self"
 },
-"Item_getQuantities": {
-"class": "Item",
-"method": "getQuantities",
+"AERandom_reset": {
+"class": "AERandom",
+"method": "reset",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Item_getTecLevel": {
-"class": "Item",
-"method": "getTecLevel",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_setUnsaleable": {
-"class": "Item",
-"method": "setUnsaleable",
+"AERandom_next": {
+"class": "AERandom",
+"method": "next",
 "ret": "void",
 "params_after_self": [
-"bool value"
+"int bits"
 ],
 "self_name": "self"
 },
-"Item_getOccurence": {
-"class": "Item",
-"method": "getOccurence",
+"AERandom_nextInt": {
+"class": "AERandom",
+"method": "nextInt",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Item_makeItem": {
-"class": "Item",
-"method": "makeItem",
-"ret": "void",
-"params_after_self": [
-"int amount"
-],
-"self_name": "self"
-},
-"Item_setStationAmount": {
-"class": "Item",
-"method": "setStationAmount",
-"ret": "void",
-"params_after_self": [
-"int value"
-],
-"self_name": "self"
-},
-"Item_getIngredients": {
-"class": "Item",
-"method": "getIngredients",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getMaxPrice": {
-"class": "Item",
-"method": "getMaxPrice",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getType": {
-"class": "Item",
-"method": "getType",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_setAmount": {
-"class": "Item",
-"method": "setAmount",
-"ret": "void",
-"params_after_self": [
-"int value"
-],
-"self_name": "self"
-},
-"Item_isInList": {
-"class": "Item",
-"method": "isInList",
-"ret": "void",
-"params_after_self": [
-"Item *item",
-"ItemArray *items"
-],
-"self_name": "self"
-},
-"Item_getMinPriceSystem": {
-"class": "Item",
-"method": "getMinPriceSystem",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getStationAmount": {
-"class": "Item",
-"method": "getStationAmount",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getTotalPrice": {
-"class": "Item",
-"method": "getTotalPrice",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_changeAmount": {
-"class": "Item",
-"method": "changeAmount",
-"ret": "void",
-"params_after_self": [
-"int delta"
-],
-"self_name": "self"
-},
-"Item_transactionBlueprint": {
-"class": "Item",
-"method": "transactionBlueprint",
-"ret": "void",
-"params_after_self": [
-"bool fabricate"
-],
-"self_name": "self"
-},
-"Item_getSort": {
-"class": "Item",
-"method": "getSort",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getBlueprintAmount": {
-"class": "Item",
-"method": "getBlueprintAmount",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getSinglePrice": {
-"class": "Item",
-"method": "getSinglePrice",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getIndex": {
-"class": "Item",
-"method": "getIndex",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_clone": {
-"class": "Item",
-"method": "clone",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getMinPrice": {
-"class": "Item",
-"method": "getMinPrice",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_isUnsaleable": {
-"class": "Item",
-"method": "isUnsaleable",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getAmount": {
-"class": "Item",
-"method": "getAmount",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_getMaxPriceSystem": {
-"class": "Item",
-"method": "getMaxPriceSystem",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_setBlueprintAmount": {
-"class": "Item",
-"method": "setBlueprintAmount",
-"ret": "void",
-"params_after_self": [
-"int value"
-],
-"self_name": "self"
-},
-"Item_isWeapon": {
-"class": "Item",
-"method": "isWeapon",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Item_combineItems": {
-"class": "Item",
-"method": "combineItems",
-"ret": "void",
-"params_after_self": [
-"ItemArray *items",
-"ItemArray *stationItems"
-],
-"self_name": "self"
-},
-"Item_extractItems": {
-"class": "Item",
-"method": "extractItems",
-"ret": "void",
-"params_after_self": [
-"ItemArray *items",
-"bool station"
-],
-"self_name": "self"
-},
-"Item_mixItems": {
-"class": "Item",
-"method": "mixItems",
-"ret": "void",
-"params_after_self": [
-"ItemArray *items",
-"ItemArray *stationItems"
-],
-"self_name": "self"
-},
-"NewsItem_clone": {
-"class": "NewsItem",
-"method": "clone",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerAsteroid_setRotationEnabled": {
-"class": "PlayerAsteroid",
-"method": "setRotationEnabled",
-"ret": "void",
-"params_after_self": [
-"bool enabled"
-],
-"self_name": "self"
-},
-"PlayerAsteroid_getQuality": {
-"class": "PlayerAsteroid",
-"method": "getQuality",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerAsteroid_getScaling": {
-"class": "PlayerAsteroid",
-"method": "getScaling",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"IParticleSystem_interpolateColor": {
-"class": "IParticleSystem",
-"method": "interpolateColor",
-"ret": "void",
-"params_after_self": [
-"int index",
-"float *alpha",
-"float *red",
-"float *green",
-"float *blue"
-],
-"self_name": "self"
-},
-"IParticleSystem_rotateUVs": {
-"class": "IParticleSystem",
-"method": "rotateUVs",
-"ret": "void",
-"params_after_self": [
-"float *src",
-"int seed",
-"float *dst"
-],
-"self_name": "self"
-},
-"SystemPathFinder_getJumpDistance": {
-"class": "SystemPathFinder",
-"method": "getJumpDistance",
-"ret": "void",
-"params_after_self": [
-"Array<SolarSystem *> *systems",
-"int from",
-"int to"
-],
-"self_name": "self"
-},
-"SystemPathFinder_getSystemPath": {
-"class": "SystemPathFinder",
-"method": "getSystemPath",
-"ret": "void",
-"params_after_self": [
-"Array<SolarSystem *> *systems",
-"int from",
-"int to"
-],
-"self_name": "self"
-},
-"PlayerStaticFar_update": {
+"PlayerStaticFar_dtor": {
 "class": "PlayerStaticFar",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int /*delta*/"
-],
-"self_name": "self"
-},
-"LensFlare_render2D": {
-"class": "LensFlare",
-"method": "render2D",
-"ret": "void",
-"params_after_self": [
-"float srcX",
-"float srcY",
-"float alpha",
-"int colorIndex"
-],
-"self_name": "self"
-},
-"LensFlare_update": {
-"class": "LensFlare",
-"method": "update",
+"method": "dtor",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"HangarList_getCurrentLength": {
+"Standing_setPlayerSignatureRace": {
+"class": "Standing",
+"method": "setPlayerSignatureRace",
+"ret": "void",
+"params_after_self": [
+"int race"
+],
+"self_name": "self"
+},
+"HangarList_getCurrentTab": {
 "class": "HangarList",
-"method": "getCurrentLength",
+"method": "getCurrentTab",
 "ret": "void",
 "params_after_self": [],
-"self_name": "self"
-},
-"HangarList_getCurrentItem": {
-"class": "HangarList",
-"method": "getCurrentItem",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"HangarList_getCurrentItemAt": {
-"class": "HangarList",
-"method": "getCurrentItemAt",
-"ret": "void",
-"params_after_self": [
-"int index"
-],
-"self_name": "self"
-},
-"HangarList_initBlueprintTab": {
-"class": "HangarList",
-"method": "initBlueprintTab",
-"ret": "void",
-"params_after_self": [
-"Array<BluePrint *> *blueprints"
-],
-"self_name": "self"
-},
-"HangarList_fillIngredientsList": {
-"class": "HangarList",
-"method": "fillIngredientsList",
-"ret": "void",
-"params_after_self": [
-"BluePrint *blueprint",
-"bool flag"
-],
-"self_name": "self"
-},
-"HangarList_initShipTab": {
-"class": "HangarList",
-"method": "initShipTab",
-"ret": "void",
-"params_after_self": [
-"Ship *ship"
-],
-"self_name": "self"
-},
-"HangarList_initShopTab": {
-"class": "HangarList",
-"method": "initShopTab",
-"ret": "void",
-"params_after_self": [
-"Array<Item *> *shopItems",
-"Array<Ship *> *ships"
-],
-"self_name": "self"
-},
-"HangarList_init": {
-"class": "HangarList",
-"method": "init",
-"ret": "void",
-"params_after_self": [
-"Ship *ship",
-"Array<Item *> *items",
-"Array<Ship *> *ships",
-"Array<BluePrint *> *blueprints"
-],
-"self_name": "self"
-},
-"MiningGame_getOreAmount": {
-"class": "MiningGame",
-"method": "getOreAmount",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"MiningGame_gameLost": {
-"class": "MiningGame",
-"method": "gameLost",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"MiningGame_update": {
-"class": "MiningGame",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int delta"
-],
 "self_name": "self"
 },
 "BoundingVolume_staticProjectCollisionOnSurface": {
@@ -1851,877 +417,437 @@
 ],
 "self_name": "self"
 },
-"BoundingVolume_getProjectionVector": {
-"class": "BoundingVolume",
-"method": "getProjectionVector",
-"ret": "void",
-"params_after_self": [
-"const Vector &v"
-],
-"self_name": "self"
-},
-"FileRead_loadStation": {
-"class": "FileRead",
-"method": "loadStation",
-"ret": "void",
-"params_after_self": [
-"int32_t id"
-],
-"self_name": "self"
-},
-"FileRead_loadStationsBinary": {
-"class": "FileRead",
-"method": "loadStationsBinary",
+"Wanted_getIndex": {
+"class": "Wanted",
+"method": "getIndex",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"FileRead_loadWreckCollision": {
-"class": "FileRead",
-"method": "loadWreckCollision",
-"ret": "void",
-"params_after_self": [
-"int32_t id"
-],
-"self_name": "self"
-},
-"FileRead_loadStationCollision": {
-"class": "FileRead",
-"method": "loadStationCollision",
-"ret": "void",
-"params_after_self": [
-"int32_t id"
-],
-"self_name": "self"
-},
-"FileRead_loadStaticCollision": {
-"class": "FileRead",
-"method": "loadStaticCollision",
-"ret": "void",
-"params_after_self": [
-"int32_t id"
-],
-"self_name": "self"
-},
-"Transform_SetCurrentAnimationTime": {
-"class": "Transform",
-"method": "SetCurrentAnimationTime",
-"ret": "void",
-"params_after_self": [
-"longlong value"
-],
-"self_name": "self"
-},
-"Transform_SetVisible": {
-"class": "Transform",
-"method": "SetVisible",
-"ret": "void",
-"params_after_self": [
-"bool value"
-],
-"self_name": "self"
-},
-"Transform_SetAnimationSpeed": {
-"class": "Transform",
-"method": "SetAnimationSpeed",
-"ret": "void",
-"params_after_self": [
-"float value"
-],
-"self_name": "self"
-},
-"Transform_IsRunning": {
-"class": "Transform",
-"method": "IsRunning",
+"Wanted_getBoard": {
+"class": "Wanted",
+"method": "getBoard",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Transform_SetAnimationRangeInTime": {
-"class": "Transform",
-"method": "SetAnimationRangeInTime",
-"ret": "void",
-"params_after_self": [
-"longlong start",
-"longlong end"
-],
-"self_name": "self"
-},
-"Transform_Update": {
-"class": "Transform",
-"method": "Update",
-"ret": "void",
-"params_after_self": [
-"longlong time",
-"bool updateBounds"
-],
-"self_name": "self"
-},
-"Transform_SetAnimationState": {
-"class": "Transform",
-"method": "SetAnimationState",
-"ret": "void",
-"params_after_self": [
-"AnimationMode",
-"void *"
-],
-"self_name": "self"
-},
-"MenuTouchWindow_showSupernovaMessage": {
-"class": "MenuTouchWindow",
-"method": "showSupernovaMessage",
+"Wanted_getRace": {
+"class": "Wanted",
+"method": "getRace",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"MenuTouchWindow_isShowingMessage": {
-"class": "MenuTouchWindow",
-"method": "isShowingMessage",
+"Wanted_isMale": {
+"class": "Wanted",
+"method": "isMale",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"MenuTouchWindow_isMakingScreenshot": {
-"class": "MenuTouchWindow",
-"method": "isMakingScreenshot",
+"Wanted_getShip": {
+"class": "Wanted",
+"method": "getShip",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"MenuTouchWindow_render3D": {
-"class": "MenuTouchWindow",
-"method": "render3D",
+"Wanted_getWeapon": {
+"class": "Wanted",
+"method": "getWeapon",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"MenuTouchWindow_OnTouchEnd": {
-"class": "MenuTouchWindow",
-"method": "OnTouchEnd",
-"ret": "void",
-"params_after_self": [
-"int y",
-"int x"
-],
-"self_name": "self"
-},
-"MenuTouchWindow_dtor": {
-"class": "MenuTouchWindow",
-"method": "dtor",
+"Wanted_getHitpoints": {
+"class": "Wanted",
+"method": "getHitpoints",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"MenuTouchWindow_OnTouchBegin": {
-"class": "MenuTouchWindow",
-"method": "OnTouchBegin",
-"ret": "void",
-"params_after_self": [
-"int y",
-"int x",
-"int touchId"
-],
-"self_name": "self"
-},
-"MenuTouchWindow_setCutsceneMode": {
-"class": "MenuTouchWindow",
-"method": "setCutsceneMode",
-"ret": "void",
-"params_after_self": [
-"bool mode"
-],
-"self_name": "self"
-},
-"MenuTouchWindow_update": {
-"class": "MenuTouchWindow",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int dt"
-],
-"self_name": "self"
-},
-"MenuTouchWindow_draw": {
-"class": "MenuTouchWindow",
-"method": "draw",
+"Wanted_getLoot": {
+"class": "Wanted",
+"method": "getLoot",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"MenuTouchWindow_OnTouchMove": {
-"class": "MenuTouchWindow",
-"method": "OnTouchMove",
-"ret": "void",
-"params_after_self": [
-"int y",
-"int x"
-],
-"self_name": "self"
-},
-"MenuTouchWindow_ctor": {
-"class": "MenuTouchWindow",
-"method": "ctor",
-"ret": "void",
-"params_after_self": [
-"int menuType"
-],
-"self_name": "self"
-},
-"Radar_isPlasmaInRange": {
-"class": "Radar",
-"method": "isPlasmaInRange",
+"Wanted_getLootAmount": {
+"class": "Wanted",
+"method": "getLootAmount",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Radar_unlockAsteroid": {
-"class": "Radar",
-"method": "unlockAsteroid",
+"Wanted_getReward": {
+"class": "Wanted",
+"method": "getReward",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Radar_elipsoidIntersect": {
-"class": "Radar",
-"method": "elipsoidIntersect",
+"Wanted_getRequiredBounties": {
+"class": "Wanted",
+"method": "getRequiredBounties",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Wanted_getRequiredMission": {
+"class": "Wanted",
+"method": "getRequiredMission",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Wanted_getNumWingmen": {
+"class": "Wanted",
+"method": "getNumWingmen",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Wanted_getCurrentLocation": {
+"class": "Wanted",
+"method": "getCurrentLocation",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Wanted_getTravelsTo": {
+"class": "Wanted",
+"method": "getTravelsTo",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Wanted_getLastSeen": {
+"class": "Wanted",
+"method": "getLastSeen",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Wanted_getImageParts": {
+"class": "Wanted",
+"method": "getImageParts",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Wanted_setImageParts": {
+"class": "Wanted",
+"method": "setImageParts",
 "ret": "void",
 "params_after_self": [
-"int y",
-"int x",
-"AbyssEngine::AEMath::Vector value"
+"int *parts"
 ],
 "self_name": "self"
 },
-"Radar_drawCurrentLock": {
-"class": "Radar",
-"method": "drawCurrentLock",
+"Wanted_setCurrentLocation": {
+"class": "Wanted",
+"method": "setCurrentLocation",
 "ret": "void",
 "params_after_self": [
-"Hud *"
+"int v"
 ],
 "self_name": "self"
 },
-"ListItemWindow_OnTouchBegin": {
-"class": "ListItemWindow",
-"method": "OnTouchBegin",
+"Wanted_setTravelsTo": {
+"class": "Wanted",
+"method": "setTravelsTo",
 "ret": "void",
 "params_after_self": [
-"int x",
+"int v"
+],
+"self_name": "self"
+},
+"Wanted_setLastSeen": {
+"class": "Wanted",
+"method": "setLastSeen",
+"ret": "void",
+"params_after_self": [
+"int v"
+],
+"self_name": "self"
+},
+"StarSystem_getPlanetTargets": {
+"class": "StarSystem",
+"method": "getPlanetTargets",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"StarSystem_getPlanets": {
+"class": "StarSystem",
+"method": "getPlanets",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"ScrollTouchBox_setYPosition": {
+"class": "ScrollTouchBox",
+"method": "setYPosition",
+"ret": "void",
+"params_after_self": [
 "int y"
 ],
 "self_name": "self"
 },
-"ListItemWindow_shows3DShip": {
-"class": "ListItemWindow",
-"method": "shows3DShip",
+"AESoundRessource_freeAllRessources": {
+"class": "AESoundRessource",
+"method": "freeAllRessources",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"ListItemWindow_OnTouchMove": {
-"class": "ListItemWindow",
-"method": "OnTouchMove",
+"AESoundRessource_getSoundInfo": {
+"class": "AESoundRessource",
+"method": "getSoundInfo",
 "ret": "void",
 "params_after_self": [
-"int x",
-"int y"
+"int id",
+"AESoundInfo *info",
+"int *index"
 ],
 "self_name": "self"
 },
-"ListItemWindow_OnTouchEnd": {
-"class": "ListItemWindow",
-"method": "OnTouchEnd",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ListItemWindow_draw": {
-"class": "ListItemWindow",
-"method": "draw",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ListItemWindow_update": {
-"class": "ListItemWindow",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int /*frameTime*/"
-],
-"self_name": "self"
-},
-"FBOContainer_Activate": {
-"class": "FBOContainer",
-"method": "Activate",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"FBOContainer_BeginCapture": {
-"class": "FBOContainer",
-"method": "BeginCapture",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"FBOContainer_Create": {
-"class": "FBOContainer",
-"method": "Create",
-"ret": "void",
-"params_after_self": [
-"int width",
-"int height",
-"bool a",
-"bool linear"
-],
-"self_name": "self"
-},
-"FBOContainer_EndCapture": {
-"class": "FBOContainer",
-"method": "EndCapture",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ScrollTouchBox_setTextCentered": {
-"class": "ScrollTouchBox",
-"method": "setTextCentered",
-"ret": "void",
-"params_after_self": [
-"bool centered"
-],
-"self_name": "self"
-},
-"ScrollTouchBox_getRelativeScrollStartPos": {
-"class": "ScrollTouchBox",
-"method": "getRelativeScrollStartPos",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ScrollTouchBox_OnTouchEnd": {
-"class": "ScrollTouchBox",
-"method": "OnTouchEnd",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ScrollTouchBox_OnTouchMove": {
-"class": "ScrollTouchBox",
-"method": "OnTouchMove",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ScrollTouchBox_OnTouchBegin": {
-"class": "ScrollTouchBox",
-"method": "OnTouchBegin",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ScrollTouchBox_setText": {
-"class": "ScrollTouchBox",
-"method": "setText",
-"ret": "void",
-"params_after_self": [
-"AbyssEngine::String text"
-],
-"self_name": "self"
-},
-"ScrollTouchBox_update": {
-"class": "ScrollTouchBox",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int dt"
-],
-"self_name": "self"
-},
-"ScrollTouchBox_draw": {
-"class": "ScrollTouchBox",
-"method": "draw",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ScrollTouchBox_getRelativeScrollHeight": {
-"class": "ScrollTouchBox",
-"method": "getRelativeScrollHeight",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"LevelScript_render3D": {
-"class": "LevelScript",
-"method": "render3D",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"LevelScript_startSequenceOver": {
-"class": "LevelScript",
-"method": "startSequenceOver",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"LevelScript_resetCamera": {
-"class": "LevelScript",
-"method": "resetCamera",
-"ret": "void",
-"params_after_self": [
-"Level *level"
-],
-"self_name": "self"
-},
-"LevelScript_startSequence": {
-"class": "LevelScript",
-"method": "startSequence",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"LevelScript_lookBehind": {
-"class": "LevelScript",
-"method": "lookBehind",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ChoiceWindow_OnTouchMove": {
-"class": "ChoiceWindow",
-"method": "OnTouchMove",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ChoiceWindow_setWidth": {
-"class": "ChoiceWindow",
-"method": "setWidth",
-"ret": "void",
-"params_after_self": [
-"int width"
-],
-"self_name": "self"
-},
-"ChoiceWindow_set": {
-"class": "ChoiceWindow",
-"method": "set",
-"ret": "void",
-"params_after_self": [
-"String const &a",
-"String const &b"
-],
-"self_name": "self"
-},
-"ChoiceWindow_OnTouchEnd": {
-"class": "ChoiceWindow",
-"method": "OnTouchEnd",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ChoiceWindow_update": {
-"class": "ChoiceWindow",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int dt"
-],
-"self_name": "self"
-},
-"ChoiceWindow_OnTouchBegin": {
-"class": "ChoiceWindow",
-"method": "OnTouchBegin",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ChoiceWindow_setHeight": {
-"class": "ChoiceWindow",
-"method": "setHeight",
-"ret": "void",
-"params_after_self": [
-"int height"
-],
-"self_name": "self"
-},
-"ChoiceWindow_setMedal": {
-"class": "ChoiceWindow",
-"method": "setMedal",
-"ret": "void",
-"params_after_self": [
-"int medal",
-"int count"
-],
-"self_name": "self"
-},
-"ChoiceWindow_draw": {
-"class": "ChoiceWindow",
-"method": "draw",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"HackingGame_gameWon": {
-"class": "HackingGame",
-"method": "gameWon",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"HackingGame_isRotating": {
-"class": "HackingGame",
-"method": "isRotating",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"MissionsWindow_OnTouchMove": {
-"class": "MissionsWindow",
-"method": "OnTouchMove",
-"ret": "void",
-"params_after_self": [
-"int p1",
-"int p2"
-],
-"self_name": "self"
-},
-"MissionsWindow_OnTouchBegin": {
-"class": "MissionsWindow",
-"method": "OnTouchBegin",
-"ret": "void",
-"params_after_self": [
-"int p1",
-"int p2"
-],
-"self_name": "self"
-},
-"MissionsWindow_render3D": {
-"class": "MissionsWindow",
-"method": "render3D",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"RadioMessage_finish": {
-"class": "RadioMessage",
-"method": "finish",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"RadioMessage_trigger": {
-"class": "RadioMessage",
-"method": "trigger",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"FModSound_setAudioLanguage": {
-"class": "FModSound",
-"method": "setAudioLanguage",
-"ret": "void",
-"params_after_self": [
-"int p1"
-],
-"self_name": "self"
-},
-"FModSound_updateEvent3DAttributes": {
-"class": "FModSound",
-"method": "updateEvent3DAttributes",
-"ret": "void",
-"params_after_self": [
-"int idx",
-"Vector *a",
-"Vector *b",
-"bool c"
-],
-"self_name": "self"
-},
-"FModSound_resumeAll": {
-"class": "FModSound",
-"method": "resumeAll",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"FModSound_stop": {
-"class": "FModSound",
-"method": "stop",
-"ret": "void",
-"params_after_self": [
-"void *e"
-],
-"self_name": "self"
-},
-"FModSound_setVolume": {
-"class": "FModSound",
-"method": "setVolume",
-"ret": "void",
-"params_after_self": [
-"int p1",
-"float vol"
-],
-"self_name": "self"
-},
-"FModSound_setDownPitch": {
-"class": "FModSound",
-"method": "setDownPitch",
-"ret": "void",
-"params_after_self": [
-"bool down"
-],
-"self_name": "self"
-},
-"FModSound_pauseAllPlaying": {
-"class": "FModSound",
-"method": "pauseAllPlaying",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"FModSound_resume": {
-"class": "FModSound",
-"method": "resume",
-"ret": "void",
-"params_after_self": [
-"int p1"
-],
-"self_name": "self"
-},
-"FModSound_getEventPauseLength": {
-"class": "FModSound",
-"method": "getEventPauseLength",
-"ret": "void",
-"params_after_self": [
-"int idx"
-],
-"self_name": "self"
-},
-"FModSound_getPlayingProgress": {
-"class": "FModSound",
-"method": "getPlayingProgress",
-"ret": "void",
-"params_after_self": [
-"int idx"
-],
-"self_name": "self"
-},
-"FModSound_play": {
-"class": "FModSound",
-"method": "play",
-"ret": "void",
-"params_after_self": [
-"int idx",
-"Vector *pos",
-"Vector *vel",
-"float pitch"
-],
-"self_name": "self"
-},
-"FModSound_setParamValue": {
-"class": "FModSound",
-"method": "setParamValue",
-"ret": "void",
-"params_after_self": [
-"FMOD::Event *e",
-"int paramIdx",
-"float val"
-],
-"self_name": "self"
-},
-"FModSound_stopAllSoundFXEvents": {
-"class": "FModSound",
-"method": "stopAllSoundFXEvents",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"FModSound_pause": {
-"class": "FModSound",
-"method": "pause",
-"ret": "void",
-"params_after_self": [
-"int p1"
-],
-"self_name": "self"
-},
-"FModSound_disableReverb": {
-"class": "FModSound",
-"method": "disableReverb",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"FModSound_init": {
-"class": "FModSound",
+"AESoundRessource_init": {
+"class": "AESoundRessource",
 "method": "init",
 "ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"FModSound_updateAll": {
-"class": "FModSound",
-"method": "updateAll",
-"ret": "void",
 "params_after_self": [
-"Vector *pos",
-"Vector *vel",
-"Vector *forward",
-"Vector *up"
+"int id"
 ],
 "self_name": "self"
 },
-"FModSound_isPlaying": {
-"class": "FModSound",
-"method": "isPlaying",
+"AESoundRessource_play_impl": {
+"class": "AESoundRessource",
+"method": "play_impl",
 "ret": "void",
 "params_after_self": [
-"int p1"
+"int id",
+"int volume"
 ],
 "self_name": "self"
 },
-"FModSound_pauseAllPlayingSoundFXEvents": {
-"class": "FModSound",
-"method": "pauseAllPlayingSoundFXEvents",
+"AESoundRessource_checkLooping": {
+"class": "AESoundRessource",
+"method": "checkLooping",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"FModSound_enableCategory": {
-"class": "FModSound",
-"method": "enableCategory",
-"ret": "void",
-"params_after_self": [
-"int p1",
-"bool enable"
-],
-"self_name": "self"
-},
-"Radio_lastMessageShown": {
-"class": "Radio",
-"method": "lastMessageShown",
+"LevelScript_getEvent": {
+"class": "LevelScript",
+"method": "getEvent",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Radio_setMessages": {
-"class": "Radio",
-"method": "setMessages",
+"LevelScript_setEvent": {
+"class": "LevelScript",
+"method": "setEvent",
 "ret": "void",
 "params_after_self": [
-"Array<RadioMessage *> *messages"
+"int event"
 ],
 "self_name": "self"
 },
-"PlayerTurret_handleRotation": {
-"class": "PlayerTurret",
-"method": "handleRotation",
-"ret": "void",
-"params_after_self": [
-"int delta",
-"AEGeometry *mainGeometry",
-"AEGeometry *turretGeometry"
-],
-"self_name": "self"
-},
-"PlayerTurret_pickEnemy": {
-"class": "PlayerTurret",
-"method": "pickEnemy",
+"ChoiceWindow_left": {
+"class": "ChoiceWindow",
+"method": "left",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"ParticleSystemManager_render3d": {
-"class": "ParticleSystemManager",
-"method": "render3d",
+"ChoiceWindow_right": {
+"class": "ChoiceWindow",
+"method": "right",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"ParticleSystemManager_enableSystemRender": {
-"class": "ParticleSystemManager",
-"method": "enableSystemRender",
+"SolarSystem_getIndex": {
+"class": "SolarSystem",
+"method": "getIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getRace": {
+"class": "SolarSystem",
+"method": "getRace",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getSecurityLevel": {
+"class": "SolarSystem",
+"method": "getSecurityLevel",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getTextureIndex": {
+"class": "SolarSystem",
+"method": "getTextureIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getX": {
+"class": "SolarSystem",
+"method": "getX",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getY": {
+"class": "SolarSystem",
+"method": "getY",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getZ": {
+"class": "SolarSystem",
+"method": "getZ",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getWarpGateIndex": {
+"class": "SolarSystem",
+"method": "getWarpGateIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getStations": {
+"class": "SolarSystem",
+"method": "getStations",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"SolarSystem_getRoutes": {
+"class": "SolarSystem",
+"method": "getRoutes",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Achievements_getMedals": {
+"class": "Achievements",
+"method": "getMedals",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Achievements_getNewMedals": {
+"class": "Achievements",
+"method": "getNewMedals",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"TargetFollowCamera_getPosition": {
+"class": "TargetFollowCamera",
+"method": "getPosition",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"TargetFollowCamera_setTarget": {
+"class": "TargetFollowCamera",
+"method": "setTarget",
 "ret": "void",
 "params_after_self": [
-"int handle",
-"bool enable"
+"void *target"
 ],
 "self_name": "self"
 },
-"ParticleSystemManager_emitManual": {
-"class": "ParticleSystemManager",
-"method": "emitManual",
+"TargetFollowCamera_setCamOffset": {
+"class": "TargetFollowCamera",
+"method": "setCamOffset",
 "ret": "void",
 "params_after_self": [
-"int handle",
-"const float *pos",
-"int ret",
-"float p4"
+"Vector *offset"
 ],
 "self_name": "self"
 },
-"ParticleSystemManager_systemSetMatrix": {
-"class": "ParticleSystemManager",
-"method": "systemSetMatrix",
+"TargetFollowCamera_setTargetOffset": {
+"class": "TargetFollowCamera",
+"method": "setTargetOffset",
 "ret": "void",
 "params_after_self": [
-"int handle",
-"const void *matrix"
+"Vector *offset"
 ],
 "self_name": "self"
 },
-"ParticleSystemManager_enableSystemEmit": {
-"class": "ParticleSystemManager",
-"method": "enableSystemEmit",
+"TargetFollowCamera_setLookAtCam": {
+"class": "TargetFollowCamera",
+"method": "setLookAtCam",
 "ret": "void",
 "params_after_self": [
-"int handle",
-"bool enable"
+"bool enabled"
 ],
 "self_name": "self"
 },
-"ParticleSystemManager_addSystem": {
-"class": "ParticleSystemManager",
-"method": "addSystem",
+"TargetFollowCamera_setActive": {
+"class": "TargetFollowCamera",
+"method": "setActive",
 "ret": "void",
 "params_after_self": [
-"const void *matrix",
-"unsigned int set",
-"bool flag"
+"bool enabled"
 ],
 "self_name": "self"
 },
-"ParticleSystemManager_resetSystem": {
-"class": "ParticleSystemManager",
-"method": "resetSystem",
+"TargetFollowCamera_useTargetsUpVector": {
+"class": "TargetFollowCamera",
+"method": "useTargetsUpVector",
 "ret": "void",
 "params_after_self": [
-"int handle"
+"bool enabled"
+],
+"self_name": "self"
+},
+"TargetFollowCamera_setRumblePercentage": {
+"class": "TargetFollowCamera",
+"method": "setRumblePercentage",
+"ret": "void",
+"params_after_self": [
+"float pct",
+"int duration"
+],
+"self_name": "self"
+},
+"TargetFollowCamera_translateNoUpdate": {
+"class": "TargetFollowCamera",
+"method": "translateNoUpdate",
+"ret": "void",
+"params_after_self": [
+"float dx",
+"float dy",
+"float dz"
+],
+"self_name": "self"
+},
+"TargetFollowCamera_resetShipHandling": {
+"class": "TargetFollowCamera",
+"method": "resetShipHandling",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"TargetFollowCamera_update": {
+"class": "TargetFollowCamera",
+"method": "update",
+"ret": "void",
+"params_after_self": [
+"int dt"
 ],
 "self_name": "self"
 },
@@ -2732,35 +858,195 @@
 "params_after_self": [],
 "self_name": "self"
 },
-"Trail_render": {
-"class": "Trail",
-"method": "render",
+"Mission_getType": {
+"class": "Mission",
+"method": "getType",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Trail_reset": {
-"class": "Trail",
-"method": "reset",
+"Mission_getReward": {
+"class": "Mission",
+"method": "getReward",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_setReward": {
+"class": "Mission",
+"method": "setReward",
 "ret": "void",
 "params_after_self": [
-"Vector value"
+"int reward"
 ],
 "self_name": "self"
 },
-"NewsTicker_OnTouchMove": {
-"class": "NewsTicker",
-"method": "OnTouchMove",
+"Mission_getCosts": {
+"class": "Mission",
+"method": "getCosts",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_setCosts": {
+"class": "Mission",
+"method": "setCosts",
 "ret": "void",
 "params_after_self": [
-"int x",
-"int"
+"int costs"
 ],
 "self_name": "self"
 },
-"NewsTicker_OnTouchBegin": {
-"class": "NewsTicker",
-"method": "OnTouchBegin",
+"Mission_getBonus": {
+"class": "Mission",
+"method": "getBonus",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_setBonus": {
+"class": "Mission",
+"method": "setBonus",
+"ret": "void",
+"params_after_self": [
+"int bonus"
+],
+"self_name": "self"
+},
+"Mission_getDifficulty": {
+"class": "Mission",
+"method": "getDifficulty",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_getStatusValue": {
+"class": "Mission",
+"method": "getStatusValue",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_setStatusValue": {
+"class": "Mission",
+"method": "setStatusValue",
+"ret": "void",
+"params_after_self": [
+"int value"
+],
+"self_name": "self"
+},
+"Mission_getAgent": {
+"class": "Mission",
+"method": "getAgent",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_setAgent": {
+"class": "Mission",
+"method": "setAgent",
+"ret": "void",
+"params_after_self": [
+"Agent *agent"
+],
+"self_name": "self"
+},
+"Mission_getClientImage": {
+"class": "Mission",
+"method": "getClientImage",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_getClientRace": {
+"class": "Mission",
+"method": "getClientRace",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_getProductionGoodIndex": {
+"class": "Mission",
+"method": "getProductionGoodIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_getProductionGoodAmount": {
+"class": "Mission",
+"method": "getProductionGoodAmount",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_getTargetStation": {
+"class": "Mission",
+"method": "getTargetStation",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_hasFailed": {
+"class": "Mission",
+"method": "hasFailed",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_setFailed": {
+"class": "Mission",
+"method": "setFailed",
+"ret": "void",
+"params_after_self": [
+"bool failed"
+],
+"self_name": "self"
+},
+"Mission_hasWon": {
+"class": "Mission",
+"method": "hasWon",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Mission_setWon": {
+"class": "Mission",
+"method": "setWon",
+"ret": "void",
+"params_after_self": [
+"bool won"
+],
+"self_name": "self"
+},
+"Mission_setCampaignMission": {
+"class": "Mission",
+"method": "setCampaignMission",
+"ret": "void",
+"params_after_self": [
+"bool flag"
+],
+"self_name": "self"
+},
+"Mission_isOutsideMission": {
+"class": "Mission",
+"method": "isOutsideMission",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"DialogueWindow_setLevel": {
+"class": "DialogueWindow",
+"method": "setLevel",
+"ret": "void",
+"params_after_self": [
+"Level *level"
+],
+"self_name": "self"
+},
+"ScrollTouchWindow_touch_end": {
+"class": "ScrollTouchWindow",
+"method": "touch_end",
 "ret": "void",
 "params_after_self": [
 "int x",
@@ -2768,204 +1054,219 @@
 ],
 "self_name": "self"
 },
-"RocketGun_render": {
-"class": "RocketGun",
-"method": "render",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"RocketGun_update": {
-"class": "RocketGun",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int elapsed"
-],
-"self_name": "self"
-},
-"ObjectGun_update": {
-"class": "ObjectGun",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int dt"
-],
-"self_name": "self"
-},
-"ObjectGun_render": {
-"class": "ObjectGun",
-"method": "render",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Hud_ctor": {
-"class": "Hud",
-"method": "ctor",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"MeshMerger_transformMesh": {
-"class": "MeshMerger",
-"method": "transformMesh",
-"ret": "void",
-"params_after_self": [
-"Mesh *mesh",
-"const Matrix &m"
-],
-"self_name": "self"
-},
-"ScrollTouchWindow_OnTouchEnd": {
+"ScrollTouchWindow_setText4": {
 "class": "ScrollTouchWindow",
-"method": "OnTouchEnd",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ScrollTouchWindow_OnTouchMove": {
-"class": "ScrollTouchWindow",
-"method": "OnTouchMove",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ScrollTouchWindow_update": {
-"class": "ScrollTouchWindow",
-"method": "update",
-"ret": "void",
-"params_after_self": [
-"int dt"
-],
-"self_name": "self"
-},
-"ScrollTouchWindow_OnTouchBegin": {
-"class": "ScrollTouchWindow",
-"method": "OnTouchBegin",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"ScrollTouchWindow_draw": {
-"class": "ScrollTouchWindow",
-"method": "draw",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ScrollTouchWindow_drawTextBG": {
-"class": "ScrollTouchWindow",
-"method": "drawTextBG",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ScrollTouchWindow_setText": {
-"class": "ScrollTouchWindow",
-"method": "setText",
+"method": "setText4",
 "ret": "void",
 "params_after_self": [
 "AbyssEngine::String title",
-"AbyssEngine::String text"
+"AbyssEngine::String text",
+"int color"
 ],
 "self_name": "self"
 },
-"Galaxy_reset": {
-"class": "Galaxy",
-"method": "reset",
+"Ship_recomputeAfterSlots": {
+"class": "Ship",
+"method": "recomputeAfterSlots",
 "ret": "void",
 "params_after_self": [],
 "self_name": "self"
 },
-"Galaxy_distancePercent": {
-"class": "Galaxy",
-"method": "distancePercent",
+"Ship_addCargo": {
+"class": "Ship",
+"method": "addCargo",
 "ret": "void",
 "params_after_self": [
-"int x1",
-"int y1",
-"int x2",
-"int y2"
+"Array<Item*> *items"
 ],
 "self_name": "self"
 },
-"Galaxy_invDistancePercent": {
-"class": "Galaxy",
-"method": "invDistancePercent",
-"ret": "void",
-"params_after_self": [
-"int x1",
-"int y1",
-"int x2",
-"int y2"
-],
-"self_name": "self"
-},
-"Galaxy_setVisited": {
-"class": "Galaxy",
-"method": "setVisited",
-"ret": "void",
-"params_after_self": [
-"bool *src",
-"int count"
-],
-"self_name": "self"
-},
-"Galaxy_getSystem": {
-"class": "Galaxy",
-"method": "getSystem",
-"ret": "void",
-"params_after_self": [
-"int index"
-],
-"self_name": "self"
-},
-"Galaxy_getAsteroidProbabilities": {
-"class": "Galaxy",
-"method": "getAsteroidProbabilities",
-"ret": "void",
-"params_after_self": [
-"void *station"
-],
-"self_name": "self"
-},
-"Galaxy_getStation": {
-"class": "Galaxy",
-"method": "getStation",
-"ret": "void",
-"params_after_self": [
-"int index"
-],
-"self_name": "self"
-},
-"LodMeshMerger_setLod": {
-"class": "LodMeshMerger",
-"method": "setLod",
+"Ship_removeCargo": {
+"class": "Ship",
+"method": "removeCargo",
 "ret": "void",
 "params_after_self": [
 "int index",
-"signed char lod"
+"int amount"
 ],
 "self_name": "self"
 },
-"LodMeshMerger_transformMesh": {
-"class": "LodMeshMerger",
-"method": "transformMesh",
+"Ship_setEquipment": {
+"class": "Ship",
+"method": "setEquipment",
 "ret": "void",
 "params_after_self": [
-"AEMesh *src",
-"const Matrix &m"
+"Item *item"
 ],
+"self_name": "self"
+},
+"Galaxy_getSystems": {
+"class": "Galaxy",
+"method": "getSystems",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Galaxy_getVisited": {
+"class": "Galaxy",
+"method": "getVisited",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"BluePrint_getIndex": {
+"class": "BluePrint",
+"method": "getIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"BluePrint_getStationIndex": {
+"class": "BluePrint",
+"method": "getStationIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"BluePrint_getQuantity": {
+"class": "BluePrint",
+"method": "getQuantity",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"BluePrint_isUnlocked": {
+"class": "BluePrint",
+"method": "isUnlocked",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getStation": {
+"class": "Agent",
+"method": "getStation",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getSystem": {
+"class": "Agent",
+"method": "getSystem",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getRace": {
+"class": "Agent",
+"method": "getRace",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getIndex": {
+"class": "Agent",
+"method": "getIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getCosts": {
+"class": "Agent",
+"method": "getCosts",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_setCosts": {
+"class": "Agent",
+"method": "setCosts",
+"ret": "void",
+"params_after_self": [
+"int costs"
+],
+"self_name": "self"
+},
+"Agent_getOffer": {
+"class": "Agent",
+"method": "getOffer",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_setOffer": {
+"class": "Agent",
+"method": "setOffer",
+"ret": "void",
+"params_after_self": [
+"int offer"
+],
+"self_name": "self"
+},
+"Agent_getEvent": {
+"class": "Agent",
+"method": "getEvent",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_setEvent": {
+"class": "Agent",
+"method": "setEvent",
+"ret": "void",
+"params_after_self": [
+"int event"
+],
+"self_name": "self"
+},
+"Agent_getSellItemIndex": {
+"class": "Agent",
+"method": "getSellItemIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getSellItemQuantity": {
+"class": "Agent",
+"method": "getSellItemQuantity",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getSellItemPrice": {
+"class": "Agent",
+"method": "getSellItemPrice",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_setSellItemPrice": {
+"class": "Agent",
+"method": "setSellItemPrice",
+"ret": "void",
+"params_after_self": [
+"int price"
+],
+"self_name": "self"
+},
+"Agent_getSellSystemIndex": {
+"class": "Agent",
+"method": "getSellSystemIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getSellBlueprintIndex": {
+"class": "Agent",
+"method": "getSellBlueprintIndex",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self"
+},
+"Agent_getWingmanFriendsCount": {
+"class": "Agent",
+"method": "getWingmanFriendsCount",
+"ret": "void",
+"params_after_self": [],
 "self_name": "self"
 }
 }

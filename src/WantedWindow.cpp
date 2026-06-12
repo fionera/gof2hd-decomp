@@ -36,8 +36,6 @@ extern "C" void WantedWindow_update_tail(void *starMap, int dt);
 extern "C" void WantedWindow_render3D_tail(void *starMap);
 extern "C" int __aeabi_idiv(int numerator, int denominator);
 extern "C" void StarMap_OnTouchEnd_tail(void);
-extern "C" int Wanted_getLastSeen(void *wanted);
-extern "C" int Wanted_getTravelsTo(void *wanted);
 extern "C" void *Mission_ctor(void *mission, int a, int b, int dest);
 extern "C" void *StarMap_ctor(void *map, bool jumpMapMode, void *mission, bool flag, int idx);
 extern "C" int Station_getSystem(void *station);
@@ -47,8 +45,6 @@ extern "C" void String_cstr_ctor(String *s, const char *text, bool copy);
 extern "C" void String_plus(String *out, String *a, String *b);
 extern "C" void Array_Wanted_ctor(void *arr);
 extern "C" void ArrayAdd_Wanted(void *wanted, void *arr);
-extern "C" int SolarSystem_getRace(SolarSystem *system);
-extern "C" int Wanted_getBoard(void *wanted);
 extern "C" void Array_TouchButton_ctor(void *arr);
 extern "C" void ArraySetLength_TouchButton(int length, void *arr);
 extern "C" void TouchButton_ctor8(void *button, String *text, int type, int x, int y, int width, int icon, int mode);
@@ -58,10 +54,6 @@ extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *arr);
 extern "C" void *Array_Wanted_dtor(void *arr);
 extern "C" void *ScrollTouchWindow_dtor(void *window);
-extern "C" void *Wanted_getImageParts(void *wanted);
-extern "C" int Wanted_getCurrentLocation(void *wanted);
-extern "C" int Wanted_getReward(void *wanted);
-extern "C" int Wanted_getIndex(void *wanted);
 extern "C" void String_int_ctor(String *s, int value);
 extern "C" void String_plusAssign(String *dst, String *src);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
@@ -338,7 +330,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             void *module = ((ApplicationManager *)(*appHolder))->GetApplicationModule(5);
             self->starMap = F<void *>(module, 0x10);
             void *wanted = ArrayItem(self->wantedList, self->selectedWanted);
-            int lastSeen = Wanted_getLastSeen(wanted);
+            int lastSeen = ((Wanted *)(wanted))->getLastSeen();
             void *station = (void *)(long)((Galaxy *)(*g_WantedWindow_end_galaxy))->getStation(lastSeen);
             void *oldMission = self->mission;
             if (oldMission != 0) {
@@ -347,7 +339,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             self->mission = 0;
 
             void *mission = ::operator new(0x78);
-            Mission_ctor(mission, 0, 0, Wanted_getTravelsTo(wanted));
+            Mission_ctor(mission, 0, 0, ((Wanted *)(wanted))->getTravelsTo());
             self->mission = mission;
 
             void *map = self->starMap;
@@ -363,7 +355,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             }
 
             int system = Station_getSystem(station);
-            lastSeen = Wanted_getLastSeen(wanted);
+            lastSeen = ((Wanted *)(wanted))->getLastSeen();
             ((StarMap *)(map))->setStart(system, lastSeen);
             if (station != 0) {
                 ((Station *)(station))->dtor(); ::operator delete(station);
@@ -594,12 +586,12 @@ int WantedWindow::init() {
     int activeWidth = wLimit - wBase - wExtra;
 
     for (uint32_t i = 0; i < F<uint32_t>(allWanted, 0x0); ++i) {
-        int race = SolarSystem_getRace((SolarSystem *)(long)((Status *)(status))->getSystem());
+        int race = ((SolarSystem *)((SolarSystem *)(long)((Status *)(status))->getSystem()))->getRace();
         void *wanted = ArrayItem(allWanted, i);
-        if (race == Wanted_getBoard(wanted)) {
-            race = SolarSystem_getRace((SolarSystem *)(long)((Status *)(status))->getSystem());
+        if (race == ((Wanted *)(wanted))->getBoard()) {
+            race = ((SolarSystem *)((SolarSystem *)(long)((Status *)(status))->getSystem()))->getRace();
             if (race != 0 || ((Status *)(status))->getCurrentCampaignMission() < 0x80) {
-                race = SolarSystem_getRace((SolarSystem *)(long)((Status *)(status))->getSystem());
+                race = ((SolarSystem *)((SolarSystem *)(long)((Status *)(status))->getSystem()))->getRace();
                 if (race == 0 && ((Status *)(status))->getCurrentCampaignMission() >= 0xa2) {
                     ArrayAdd_Wanted(wanted, self->wantedList);
                 }
@@ -902,7 +894,7 @@ void WantedWindow::selectWanted(int idx) {
     self->scrollWindow = 0;
 
     void *wanted = wanted_at(self, idx);
-    self->imageParts = ((ImageFactory *)(*g_WantedWindow_select_factory))->loadChar((int *)Wanted_getImageParts(wanted));
+    self->imageParts = ((ImageFactory *)(*g_WantedWindow_select_factory))->loadChar((int *)((Wanted *)(wanted))->getImageParts());
 
     ((Wanted *)(&s34))->getName();
     ((String *)((String *)((char *)self + 0x54)))->assign(&s34);
@@ -910,9 +902,9 @@ void WantedWindow::selectWanted(int idx) {
 
     if (((Wanted *)(wanted))->isActive() != 0) {
         void *galaxy = *g_WantedWindow_select_galaxy;
-        void *last = (void *)(long)((Galaxy *)(galaxy))->getStation(Wanted_getLastSeen(wanted));
-        void *travel = (void *)(long)((Galaxy *)(galaxy))->getStation(Wanted_getTravelsTo(wanted));
-        void *current = (void *)(long)((Galaxy *)(galaxy))->getStation(Wanted_getCurrentLocation(wanted));
+        void *last = (void *)(long)((Galaxy *)(galaxy))->getStation(((Wanted *)(wanted))->getLastSeen());
+        void *travel = (void *)(long)((Galaxy *)(galaxy))->getStation(((Wanted *)(wanted))->getTravelsTo());
+        void *current = (void *)(long)((Galaxy *)(galaxy))->getStation(((Wanted *)(wanted))->getCurrentLocation());
 
         ((Station *)(&s58))->getName();
         String_cstr_ctor(&s64, g_WantedWindow_s_from, false);
@@ -962,7 +954,7 @@ void WantedWindow::selectWanted(int idx) {
         ((String *)(&s64))->dtor();
         ((String *)(&s58))->dtor();
 
-        String_int_ctor(&s40, Wanted_getReward(wanted));
+        String_int_ctor(&s40, ((Wanted *)(wanted))->getReward());
         String_cstr_ctor(&s4c, g_WantedWindow_s_reward, false);
         String_plus(&s34, &s40, &s4c);
         ((String *)((String *)((char *)self + 0x78)))->assign(&s34);
@@ -997,7 +989,7 @@ void WantedWindow::selectWanted(int idx) {
         ((String *)((String *)((char *)self + 0x3c)))->assign(text);
         text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
         ((String *)((String *)((char *)self + 0x48)))->assign(text);
-        String_int_ctor(&s40, Wanted_getReward(wanted));
+        String_int_ctor(&s40, ((Wanted *)(wanted))->getReward());
         String_cstr_ctor(&s4c, g_WantedWindow_s_reward, false);
         String_plus(&s34, &s40, &s4c);
         ((String *)((String *)((char *)self + 0x78)))->assign(&s34);
@@ -1039,7 +1031,7 @@ void WantedWindow::selectWanted(int idx) {
                  (String *)((char *)self + 0x48));
     append_label(&s34, g_WantedWindow_s_line_c,
                  (String *)((char *)self + 0x6c));
-    Wanted_getIndex(wanted);
+    ((Wanted *)(wanted))->getIndex();
     append_label(&s34, g_WantedWindow_s_line_d,
                  (String *)((char *)self + 0x78));
 

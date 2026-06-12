@@ -1,4 +1,5 @@
 #include "gof2/Layout.h"
+#include "gof2/AERandom.h"
 #include "gof2/ChoiceWindow.h"
 #include "gof2/FModSound.h"
 #include "gof2/Status.h"
@@ -56,7 +57,6 @@ int  AbyssString_Compare(...);
 unsigned short GameText_getLanguage(...);
 
 void Globals_drawLines(...);
-int  AERandom_nextInt(...);
 }
 
 // ---- isFading_d514c.cpp ----
@@ -329,7 +329,7 @@ void Layout::initTip() {
     unsigned color = *g_tipColor;
     int textId = **g_tipTextId;
     PaintCanvas *canvas = **g_tipCanvas;
-    AERandom_nextInt(**g_tipRandN);
+    ((AbyssEngine::AERandom *)(**g_tipRandN))->nextInt();
     void *str = gGameText->obj->getText(textId);
 
     *tipArr = arr;

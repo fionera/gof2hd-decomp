@@ -1,6 +1,7 @@
 // Galaxy.h defines the B/I/P offset-cast helpers unconditionally; include it first
 // and mark them as already provided so ModMainMenu.h does not redefine them.
 #include "gof2/Galaxy.h"
+#include "gof2/SolarSystem.h"
 #define GOF2_BIP_HELPERS
 #include "gof2/ModMainMenu.h"
 #include "gof2/CutScene.h"
@@ -36,7 +37,6 @@ void reset(void *random);
 int nextInt(void *random, int limit);
 } }
 extern "C" void CutScene_ctor(void *self, int mode);
-extern "C" int SolarSystem_getTextureIndex(void *system);
 extern "C" void *GameRecord_dtor(void *record);
 void Globals_playMusicAndFadeOutCurrent(int music);
 
@@ -310,7 +310,7 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
         if (((Status *)(*statusHolder))->inAlienOrbit() != 0) {
             texture = 0x2f08;
         } else {
-            texture = (SolarSystem_getTextureIndex((void *)(intptr_t)((Status *)(*statusHolder))->getSystem()) +
+            texture = (((SolarSystem *)((void *)(intptr_t)((Status *)(*statusHolder))->getSystem()))->getTextureIndex() +
                        0x2efe) &
                       0xffff;
         }

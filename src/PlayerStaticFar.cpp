@@ -56,16 +56,13 @@ void PlayerStaticFar::render()
 // (self) of BoundingVolume::staticProjectCollisionOnSurface and only forwarded the
 // (v, vols) pair; the receiver is unrecoverable in this scope, so model the original
 // sret ABI directly: out = staticProjectCollisionOnSurface(&out, value, volumes).
-extern "C" void BoundingVolume_staticProjectCollisionOnSurface(Vector *sret,
-                                                               const Vector &v,
-                                                               void *vols);
 
 Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value)
 {
     void *volumes = this->boundingVolumes;
     if (volumes != 0) {
         Vector out;
-        BoundingVolume_staticProjectCollisionOnSurface(&out, value, volumes);
+        ((BoundingVolume *)(&out))->staticProjectCollisionOnSurface(value, (Array<BoundingVolume *> *)volumes);
         return out;
     }
 

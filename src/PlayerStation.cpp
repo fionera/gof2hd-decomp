@@ -1,4 +1,5 @@
 #include "gof2/PlayerStation.h"
+#include "gof2/SolarSystem.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/BoundingVolume.h"
 #include "gof2/FileRead.h"
@@ -35,7 +36,6 @@ extern "C" TransformUpdateFn PlayerStation_transformUpdate __attribute__((visibi
 extern "C" int Station_getIndex(Station *station);
 extern "C" void *FileRead_constructor(void *self);
 extern "C" void *FileRead_destructor(void *self) __attribute__((nothrow));
-extern "C" int SolarSystem_getRace(void *system);
 extern "C" void Transform_UpdatePtr(void *transform, uint32_t lo, uint32_t hi, int zero);
 extern "C" void Transform_SetActive(void *transform);
 extern "C" void Transform_SetInactive(void *transform);
@@ -345,7 +345,7 @@ PlayerStation::PlayerStation(Station *station)
         }
 
         void *system = (void *)(long)((Status *)(status))->getSystem();
-        uint32_t race = system == 0 ? 9u : (uint32_t)SolarSystem_getRace(system);
+        uint32_t race = system == 0 ? 9u : (uint32_t)((SolarSystem *)(system))->getRace();
         stationIndex = this->stationIndex;
         if (stationIndex == 0x65) {
             void *root = ::operator new(0xc0);

@@ -21,11 +21,8 @@ public:
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 
 extern "C" void PlayerTurret_renderBase(PlayerTurret *self);
-extern "C" void Player_reset(Player *self);
-extern "C" void KIPlayer_setLevel(PlayerTurret *self, Level *level);
 extern "C" PlayerTurret *PlayerTurret_completeDtor(PlayerTurret *self);
 extern "C" void *KIPlayer_dtor(void *self);
-extern "C" void Player_getPosition(Vector *out, Player *self);
 void MatrixGetDir(Vector *out, const void *matrix);
 void VectorNormalize(Vector *out, const Vector *v);
 namespace AbyssEngine { namespace AEMath {
@@ -36,7 +33,6 @@ Vector operator-(const Vector &, const Vector &);
 Vector operator*(const Vector &, float);
 Matrix operator*(const Matrix &, const Matrix &);
 } }
-extern "C" void Explosion_update(Explosion *self, int delta, TargetFollowCamera *camera);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int max); } }
 extern "C" void Array_int_ctor(IntArray *array);
 extern "C" void ArrayAdd_int(int value, IntArray *array);
@@ -112,7 +108,7 @@ void PlayerTurret::revive()
 {
     int zero = 0;
     int one = 1;
-    Player_reset(TP<Player>(this, 0x4));
+    ((Player *)(TP<Player>(this, 0x4)))->reset();
     *(volatile int *)B(this, 0x78) = zero;
     *(volatile int *)B(this, 0x88) = one;
     *(volatile int *)B(this, 0xd8) = zero;
@@ -151,7 +147,7 @@ void PlayerTurret::reset()
 
 void PlayerTurret::setLevel(Level *level)
 {
-    KIPlayer_setLevel(this, level);
+    ((KIPlayer *)(this))->setLevel(level);
     int manager = I(P(this, 0x54), 0x74);
     int matrix = (int)(intptr_t)(void *)&((AEGeometry *)(TP<AEGeometry>(this, 0x8)))->getReferenceMatrix();
     int system = ((ParticleSystemManager *)(manager))->addSystem((const void *)(long)matrix, 9, 0);
@@ -199,7 +195,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     char tmpMatrixB[60];
 
     __aeabi_memcpy(matrixBytes, B(this->f_14c, 0x4), 0x3c);
-    Player_getPosition((Vector *)positionBytes, (Player *)this->f_14c);
+    ((Player *)this->f_14c)->getPosition((Vector *)positionBytes);
     MatrixGetDir((Vector *)dirBytes, matrixBytes);
     VectorNormalize((Vector *)normalBytes, (Vector *)dirBytes);
     *(Vector *)((Vector *)scaledBytes) = *(const Vector *)((Vector *)normalBytes) * (3000.0f);
@@ -360,7 +356,7 @@ void PlayerTurret::update(int delta)
     }
     if (state == 3) {
         I(this, 0x12c) = I(this, 0x12c) + delta;
-        Explosion_update(TP<Explosion>(this, 0x13c), delta, 0);
+        ((Explosion *)(TP<Explosion>(this, 0x13c)))->update(delta, 0);
         if (I(this, 0x12c) > 4500) {
             ((ParticleSystemManager *)(I(this->f_54, 0x74)))->enableSystemEmit(I(this, 0x138), 0);
             I(this, 0x12c) = 0;
@@ -436,7 +432,7 @@ void PlayerTurret::pickEnemy()
                     }
 
                     if (accepted) {
-                        Player_getPosition((Vector *)vectorFrame, enemy);
+                        ((Player *)enemy)->getPosition((Vector *)vectorFrame);
                         *(Vector *)((Vector *)(vectorFrame + 12)) = *(const Vector *)(position) - *(const Vector *)((Vector *)vectorFrame);
                         int distance = (int)VectorLength((Vector *)(vectorFrame + 12));
                         if (distance < bestRange) {

@@ -1,4 +1,6 @@
 #include "gof2/PlayerEgo.h"
+#include "gof2/AERandom.h"
+#include "gof2/TargetFollowCamera.h"
 #include "gof2/externs.h"
 #include "gof2/PaintCanvasClass.h"
 #include "gof2/AEGeometry.h"
@@ -72,9 +74,7 @@ static inline Status *PE_status() { return (Status *)g_mining_status; }
 // Unified here as variadic so every call site compiles (compile-only target).
 // Their first argument is sometimes an int handle, sometimes a void*, so these
 // are declared fully variadic to accept either.
-extern "C" void TargetFollowCamera_setLookAtCam(...);
 // (int|void* hud, int ev, PlayerEgo*, [int])
-extern "C" void  TargetFollowCamera_setActive(void* cam, int active);
 
 extern "C" void PlayerEgo_setVisible_ext();
 extern "C" int PlayerEgo_getHitpoints_ext(void*);
@@ -102,18 +102,15 @@ extern "C" int __aeabi_idiv(int, int);
 extern "C" void PlayerEgo_turnVertical_neg();
 extern "C" void PlayerEgo_turnVertical_pos(PlayerEgo*);
 extern "C" int Station_getIndex(void*);
-extern "C" void Player_addGun(void*, void*, int);
 extern "C" void PlayerEgo_addGun_ext(PlayerEgo*);
 extern "C" void PlayerEgo_endExplosion_ext(int);
 extern "C" int Ship_getFirstEquipmentOfSort(void*, int);
 extern "C" float Ship_removeEquipment(void*, int);
 extern "C" void PlayerEgo_hackingRotateRCW_ext(int, int);
 extern "C" void PlayerEgo_refillGunDelay_ext(void*, int);
-extern "C" int   Player_gunAvailable(void *player);
 extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void*);
 extern "C" void stopShooting_extA(void*, int);
 extern "C" void stopShooting_extB(void*, int, int);
-extern "C" int  AERandom_next(void *rng, int bound);
 extern "C" void Camera_shake(void *cam, float dx, float dy, float dz);
 void* TransformGetLocal(void*, int);
 void MatrixSetRotation(void*, void*, float, float, float);
@@ -127,12 +124,6 @@ extern "C" int   Ship_getIndex(void *ship);
 extern "C" int   Ship_hasCargo(void *ship, int idx);
 extern "C" void *Ship_getCargo(void *ship, int idx);
 extern "C" int   Ship_getMaxPassengers(void *ship);
-extern "C" int   Mission_getType(void *m);
-extern "C" int   Mission_getProductionGoodIndex(void *m);
-extern "C" int   Mission_getProductionGoodAmount(void *m);
-extern "C" int   Mission_getStatusValue(void *m);
-extern "C" void  TargetFollowCamera_useTargetsUpVector(void *cam, bool on);
-extern "C" void  Player_resetGunDelay(void *player, int idx);
 extern "C" void *HackingGame_dtor(void *hg);
 extern "C" int   PE_adp_approach(PlayerEgo *self, void *station);
 extern "C" int   PE_adp_glide(PlayerEgo *self);
@@ -140,7 +131,6 @@ extern "C" void  PE_adp_apply(PlayerEgo *self);
 extern "C" void PlayerEgo_setLevel_ext(void*, int, int);
 extern "C" float PE_yawRampDelta(float rate, int frameTime);
 extern "C" void *Player_dtor(void *);
-extern "C" void *Route_dtor(void *);
 extern "C" void *TractorBeam_dtor(void *);
 extern "C" void *MiningGame_dtor(void *);
 extern "C" void *Explosion_dtor(void *);
@@ -148,13 +138,11 @@ extern "C" void *EaseInOutMatrix_dtor(void *);
 extern "C" void PlayerEgo_PlayEngineSound_ext(void*, int, int);
 extern "C" void  Mat_assign(void *dst, const void *src);
 extern "C" void  Vec_assign(void *dst, const void *src);
-extern "C" void  TargetFollowCamera_translateNoUpdate(void *cam, float x, float y, float z);
 extern "C" void  PE_mtp_steer(PlayerEgo *self, const float *target, int steer, float speed);
 extern "C" void PlayerEgo_resetGunDelay_ext(void*, int);
 extern "C" int PlayerEgo_getShieldDamageRate_ext(void*);
 extern "C" void  Vec_sub(void *out, const void *a, const void *b);
 extern "C" float Vec_length(const void *v);
-extern "C" void  Player_stopShooting(void *player);
 extern "C" int   PE_hat_aimAndFire(PlayerEgo *self, int dt);
 extern "C" void *MiningGame_dtor(void *mg);
 extern "C" float PE_roll_bankFactor(PlayerEgo *self, float rx, float ry, float *outZ);
@@ -171,7 +159,6 @@ extern "C" int   Ship_getFirstEquipmentOfSort(void *ship, int sort);
 extern "C" void  PlayEngineSound_(PlayerEgo *self);
 extern "C" void *EaseInOutMatrix_dtor(void *m);
 extern "C" void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint);
-extern "C" void Player_stopShooting(void *player);
 extern "C" void KIPlayer_setAutoPilot(PlayerEgo *self);
 extern "C" float Ship_getHandling(void *ship);
 extern "C" void PE_upd_boost(PlayerEgo *self, int dt);
@@ -203,7 +190,6 @@ extern "C" void Player_addGun2(void*, void*, int);
 extern "C" void PlayerEgo_addGun2_ext(PlayerEgo*);
 void MatrixGetPosition(void*, void*);
 extern "C" void *Ship_getCargo(void *ship, int item);
-extern "C" void  Ship_removeCargo(void *ship, int item);
 
 // ---- setVisible_a1c88.cpp ----
 void PlayerEgo::setVisible(bool v) {
@@ -601,7 +587,7 @@ void PlayerEgo::explode() {
     PlayerEgo *self = this;
   ParticleSystemManager_enableSystemEmit3(P(P(self, 0xc), 0x74), I(self, 0x2fc), 1);
   if (I(self, 0x8c) != 0) return;
-  TargetFollowCamera_setActive(P(self, 0x88), 0);
+  ((TargetFollowCamera *)(P(self, 0x88)))->setActive(0);
   void* e = ::operator new(0x68);
   Explosion_ctor(e, 0);
   int pl = I(self, 0);
@@ -858,7 +844,7 @@ int PlayerEgo::getBoostSpeed() {
 // ---- addGun_9b778.cpp ----
 void PlayerEgo::addGun(void* gun, int x) {
     PlayerEgo *self = this;
-  Player_addGun(P(self, 0), gun, x);
+  ((Player *)(P(self, 0)))->addGun((Gun *)gun, x);
   return PlayerEgo_addGun_ext(self);
 }
 
@@ -932,7 +918,7 @@ unsigned char PlayerEgo::collidesWithStation() {
 // ---- stopPlanetDock_a16f4.cpp ----
 void PlayerEgo::stopPlanetDock() {
     PlayerEgo *self = this;
-  TargetFollowCamera_setLookAtCam(I(self, 0x88), 0);
+  ((TargetFollowCamera *)(I(self, 0x88)))->setLookAtCam(0);
   C(self, 0x144) = 1;
   C(self, 0x1ee) = 0;
   ((PlayerEgo *)(self))->stopBoost();
@@ -1046,7 +1032,7 @@ void PlayerEgo::checkForTurret() {
     PlayerEgo *self = this;
     if (C(self, 0x170) != 0)
         return;
-    int avail = Player_gunAvailable(P(self, 0x0));
+    int avail = ((Player *)(P(self, 0x0)))->gunAvailable(0);
     C(self, 0x170) = (unsigned char)avail;
     if (avail == 0)
         return;
@@ -1177,9 +1163,9 @@ void PlayerEgo::shake(int amount) {
     int span = range << 1;
 
     void *rng = *g_PE_rng;
-    float dx = (float)(AERandom_next(rng, span) - range);
-    float dy = (float)(AERandom_next(rng, span) - range);
-    float dz = (float)(AERandom_next(rng, span) - range);
+    float dx = (float)(((AbyssEngine::AERandom *)(rng))->next(span) - range);
+    float dy = (float)(((AbyssEngine::AERandom *)(rng))->next(span) - range);
+    float dz = (float)(((AbyssEngine::AERandom *)(rng))->next(span) - range);
     Camera_shake(cam, dx, dy, dz);
 }
 
@@ -1340,13 +1326,13 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
     void *campaign = (void *)PE_status()->getCampaignMission();
     void *fixed = *g_PE_adp_fixedObj;
 
-    if (((Mission *)(mission))->isEmpty() == 0 && Mission_getType(mission) == 0xf
+    if (((Mission *)(mission))->isEmpty() == 0 && ((Mission *)(mission))->getType() == 0xf
         && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
-        if (Ship_hasCargo(PE_status()->getShip(), Mission_getProductionGoodIndex(mission)) != 0) {
+        if (Ship_hasCargo(PE_status()->getShip(), ((Mission *)(mission))->getProductionGoodIndex()) != 0) {
             int amount = ((Item *)(Ship_getCargo(PE_status()->getShip(),
-                                        Mission_getProductionGoodIndex(mission))))->getAmount();
+                                        ((Mission *)(mission))->getProductionGoodIndex())))->getAmount();
             I(self, 0x180) = amount;
-            int need = Mission_getProductionGoodAmount(mission)
+            int need = ((Mission *)(mission))->getProductionGoodAmount()
                        - ((Level *)(P(self, 0xc)))->getNumDeliveredOre();
             if (need < amount) I(self, 0x180) = need;
             I(self, 0x184) = 0;
@@ -1356,27 +1342,27 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
     }
 
     if (((Mission *)(mission))->isEmpty() == 0
-        && (Mission_getType(mission) == 0xb8 || Mission_getType(mission) == 0xa8)
+        && (((Mission *)(mission))->getType() == 0xb8 || ((Mission *)(mission))->getType() == 0xa8)
         && ((PlayerFixedObject *)(fixed))->getDockingType() == 2) {
         // passenger drop-off
         int carried = I(fixed, 0x178);
         int maxPax = Ship_getMaxPassengers(PE_status()->getShip());
         if (maxPax > 0 && carried < maxPax) {
-            int avail = (Mission_getType(mission) == 0xa8)
-                        ? Mission_getStatusValue(mission) : maxPax;
+            int avail = (((Mission *)(mission))->getType() == 0xa8)
+                        ? ((Mission *)(mission))->getStatusValue() : maxPax;
             avail -= carried;
             I(self, 0x180) = avail;
-            int status = Mission_getStatusValue(mission) - carried;
+            int status = ((Mission *)(mission))->getStatusValue() - carried;
             if (status < avail) I(self, 0x180) = status;
             I(self, 0x184) = 0;
             if (I(self, 0x180) > 0) return 0x23;
         }
-        if (Mission_getType(mission) != 0xa8 && Ship_getMaxPassengers(PE_status()->getShip()) == 0)
+        if (((Mission *)(mission))->getType() != 0xa8 && Ship_getMaxPassengers(PE_status()->getShip()) == 0)
             return 0x2b;
         return 0;
     }
 
-    if (((Mission *)(mission))->isEmpty() == 0 && Mission_getType(mission) == 0xb8
+    if (((Mission *)(mission))->isEmpty() == 0 && ((Mission *)(mission))->getType() == 0xb8
         && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
         int n = I(fixed, 0x178);
         if (n > 0) {
@@ -1388,13 +1374,13 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
     }
 
     if (campaign != 0 && ((Mission *)(campaign))->isEmpty() == 0
-        && (Mission_getType(campaign) == 0xa7 || Mission_getType(campaign) == 0xae)
+        && (((Mission *)(campaign))->getType() == 0xa7 || ((Mission *)(campaign))->getType() == 0xae)
         && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
-        if (Ship_hasCargo(PE_status()->getShip(), Mission_getProductionGoodIndex(campaign)) != 0) {
+        if (Ship_hasCargo(PE_status()->getShip(), ((Mission *)(campaign))->getProductionGoodIndex()) != 0) {
             int amount = ((Item *)(Ship_getCargo(PE_status()->getShip(),
-                                        Mission_getProductionGoodIndex(campaign))))->getAmount();
+                                        ((Mission *)(campaign))->getProductionGoodIndex())))->getAmount();
             I(self, 0x180) = amount;
-            int need = Mission_getProductionGoodAmount(campaign) - Mission_getStatusValue(campaign);
+            int need = ((Mission *)(campaign))->getProductionGoodAmount() - ((Mission *)(campaign))->getStatusValue();
             if (need < amount) I(self, 0x180) = need;
             I(self, 0x184) = 0;
             if (I(self, 0x180) > 0) return 0x29;
@@ -1425,8 +1411,8 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
             int dist = PE_adp_approach(self, station);
             if (dist < I(self, 0x1cc)) {
                 I(self, 0x314) = 2;
-                TargetFollowCamera_setLookAtCam(P(self, 0x88), false);
-                TargetFollowCamera_useTargetsUpVector(P(self, 0x88), false);
+                ((TargetFollowCamera *)(P(self, 0x88)))->setLookAtCam(false);
+                ((TargetFollowCamera *)(P(self, 0x88)))->useTargetsUpVector(false);
             }
         }
         PE_adp_apply(self);
@@ -1456,11 +1442,11 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
             P(radar, 0x4) = 0;
             P(radar, 0x8) = 0;
             adp_clearDockVector(self);
-            TargetFollowCamera_setActive(P(self, 0x88), true);
-            TargetFollowCamera_setLookAtCam(P(self, 0x88), false);
-            TargetFollowCamera_useTargetsUpVector(P(self, 0x88), false);
+            ((TargetFollowCamera *)(P(self, 0x88)))->setActive(true);
+            ((TargetFollowCamera *)(P(self, 0x88)))->setLookAtCam(false);
+            ((TargetFollowCamera *)(P(self, 0x88)))->useTargetsUpVector(false);
             ((LevelScript *)(P(self, 0x10)))->resetCamera((Level *)P(P(self, 0x10), 0x18));
-            Player_resetGunDelay(P(self, 0x0), 0);
+            ((Player *)(P(self, 0x0)))->resetGunDelay(0);
             I(self, 0x314) = 0;
             if (P(self, 0x380) != 0) {
                 ((SpacePoint *)(P(self, 0x380)))->giveFree();
@@ -1719,7 +1705,7 @@ __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
     PP(self, 0xdc) = 0;
     if (PP(self, 0x28))  { ((AEGeometry *)PP(self, 0x28))->~AEGeometry(); ::operator delete(PP(self, 0x28)); }
     PP(self, 0x28) = 0;
-    if (PP(self, 0xfc))  ::operator delete(Route_dtor(PP(self, 0xfc)));
+    if (PP(self, 0xfc))  ::operator delete(((Route *)(PP(self, 0xfc)))->dtor());
     PP(self, 0xfc) = 0;
     if (PP(self, 0x178)) { ((AEGeometry *)PP(self, 0x178))->~AEGeometry(); ::operator delete(PP(self, 0x178)); }
     PP(self, 0x178) = 0;
@@ -1858,7 +1844,7 @@ void PlayerEgo::moveToPosition(float tx, float ty, float tz, int steer, float sp
         Mat_assign(m, ((AEGeometry *)(P(self, 0x8)))->getMatrix());
         // rotate the slide vector into world space and push it to the camera.
         float v = slide * dt;
-        TargetFollowCamera_translateNoUpdate(P(self, 0x88), v, 0.0f, 0.0f);
+        ((TargetFollowCamera *)(P(self, 0x88)))->translateNoUpdate(v, 0.0f, 0.0f);
         F(self, 0x37c) = F(self, 0x37c) * g_PE_mtp_strafeK;
         ((AEGeometry *)P(self, 0x8))->setMatrix(*(const AbyssEngine::AEMath::Matrix*)m);
     }
@@ -1932,7 +1918,7 @@ void PlayerEgo::handleAutoTurret(int dt) {
         }
     }
 
-    Player_stopShooting(P(self, 0x0));
+    ((Player *)(P(self, 0x0)))->stopShooting(0);
 }
 
 // ---- dockToAsteroid_9f4a0.cpp ----
@@ -1959,8 +1945,8 @@ void PlayerEgo::dockToAsteroid(void *radar) {
         int zero[3] = {0, 0, 0};
         Vec_assign((char *)self + 0x1c8, zero);
 
-        TargetFollowCamera_setActive(P(self, 0x88), true);
-        Player_resetGunDelay(P(self, 0x0), 0);
+        ((TargetFollowCamera *)(P(self, 0x88)))->setActive(true);
+        ((Player *)(P(self, 0x0)))->resetGunDelay(0);
         if (P(self, 0x1e4) != 0)
             ::operator delete(MiningGame_dtor(P(self, 0x1e4)));
         P(self, 0x1e4) = 0;
@@ -2141,7 +2127,7 @@ void PlayerEgo::calcCollision(void *candidates) {
 // ---- dockToPlanet_a1684.cpp ----
 void PlayerEgo::dockToPlanet() {
     PlayerEgo *self = this;
-  TargetFollowCamera_setLookAtCam(I(self, 0x88));
+  ((TargetFollowCamera *)(I(self, 0x88)))->setLookAtCam((bool)(unsigned char)I(self, 0x88));
   C(self, 0x13c) = 1;
   I(self, 0x138) = 0;
   I(self, 0xb8) = 0x41000000;
@@ -2347,7 +2333,7 @@ void PlayerEgo::setTurretMode(int enable) {
         void *leaf = P(self, 0x17c);
         ((AEGeometry *)leaf)->setMatrix(((AEGeometry *)(P(self, 0x8)))->getMatrix());
         ((PaintCanvas*)(long)(*g_PE_tm_canvasD))->CameraSetCurrent((unsigned int)(U(self, 0x174)));
-        Player_stopShooting(P(self, 0x0));
+        ((Player *)(P(self, 0x0)))->stopShooting(0);
     }
 
     if (P(self, 0x30) != 0) {
@@ -2463,8 +2449,8 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
             ((LevelScript *)(P(self, 0x10)))->resetCamera((Level *)P(P(self, 0x10), 0x18));
             PlayEngineSound_(self);
             I(self, 0x1c4) = 3;
-            TargetFollowCamera_setLookAtCam(P(self, 0x88), false);
-            TargetFollowCamera_useTargetsUpVector(P(self, 0x88), false);
+            ((TargetFollowCamera *)(P(self, 0x88)))->setLookAtCam(false);
+            ((TargetFollowCamera *)(P(self, 0x88)))->useTargetsUpVector(false);
 
             if (P(self, 0x358) != 0)
                 ::operator delete(EaseInOutMatrix_dtor(P(self, 0x358)));
@@ -2486,10 +2472,10 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
         P(self, 0x1bc) = 0;
         int zero[3] = {0, 0, 0};
         Vec_assign((char *)self + 0x1c8, zero);
-        TargetFollowCamera_setActive(P(self, 0x88), true);
-        TargetFollowCamera_setLookAtCam(P(self, 0x88), false);
-        TargetFollowCamera_useTargetsUpVector(P(self, 0x88), false);
-        Player_resetGunDelay(P(self, 0x0), 0);
+        ((TargetFollowCamera *)(P(self, 0x88)))->setActive(true);
+        ((TargetFollowCamera *)(P(self, 0x88)))->setLookAtCam(false);
+        ((TargetFollowCamera *)(P(self, 0x88)))->useTargetsUpVector(false);
+        ((Player *)(P(self, 0x0)))->resetGunDelay(0);
         I(self, 0x1c4) = 0;
         ((PlayerEgo *)(self))->setExhaustVisible(true);
         if (I(self, 0x36c) != 0) {
@@ -2734,7 +2720,7 @@ void PlayerEgo::update(int dt, void *radar, void *hud, void *radio, void *script
             ((PlayerEgo *)(self))->handleAutoTurret(dt);
         } else {
             C(self, 0x355) = 0;
-            Player_stopShooting(P(self, 0x0));
+            ((Player *)(P(self, 0x0)))->stopShooting(0);
         }
     }
 
@@ -2773,7 +2759,7 @@ void PlayerEgo::revive() {
         ::operator delete(Explosion_dtor(P(self, 0x8c)));
     P(self, 0x8c) = 0;
 
-    TargetFollowCamera_setActive(P(self, 0x88), true);
+    ((TargetFollowCamera *)(P(self, 0x88)))->setActive(true);
     ((Player *)(P(self, 0x0)))->setActive(true);
     int v = 0;
 
@@ -2925,13 +2911,13 @@ int PlayerEgo::updateManeuver() {
     ((PlayerEgo *)(self))->moveToPosition(target[0], target[1], target[2], 1, 0.0f);
 
     PE_um_strafeGlide(self);
-    TargetFollowCamera_setLookAtCam(P(self, 0x88), false);
-    TargetFollowCamera_useTargetsUpVector(P(self, 0x88), false);
+    ((TargetFollowCamera *)(P(self, 0x88)))->setLookAtCam(false);
+    ((TargetFollowCamera *)(P(self, 0x88)))->useTargetsUpVector(false);
 
     if (I(self, 0x350) > 2999) {
         I(self, 0x334) = 0;
-        TargetFollowCamera_setLookAtCam(P(self, 0x88), false);
-        TargetFollowCamera_useTargetsUpVector(P(self, 0x88), false);
+        ((TargetFollowCamera *)(P(self, 0x88)))->setLookAtCam(false);
+        ((TargetFollowCamera *)(P(self, 0x88)))->useTargetsUpVector(false);
     }
     return 1;
 }
@@ -3340,7 +3326,7 @@ void PlayerEgo::toggleCloaking() {
         void *cargo = Ship_getCargo(PE_status()->getShip(), 0x7a);
         int have = (cargo == 0) ? 0 : ((Item *)(cargo))->getAmount();
         if (need <= have) {
-            Ship_removeCargo(PE_status()->getShip(), 0x7a);
+            ((Ship *)(PE_status()->getShip()))->removeCargo(0x7a);
             C(self, 0x1ad) = 1;
             ((Hud *)(P(self, 0x220)))->hudEvent(0x1e, self, 0);
             ((Hud *)(P(self, 0x220)))->hudEvent(0x1c, self, 0);

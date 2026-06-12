@@ -1,5 +1,7 @@
 #include <new>
 #include "gof2/PlayerGasCloud.h"
+#include "gof2/AERandom.h"
+#include "gof2/Ship.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/FModSound.h"
 #include "gof2/Item.h"
@@ -237,7 +239,6 @@ void ArrayAdd_vec(void *value, void *arr);
 void ArrayAdd_bool(bool value, void *arr);
 
 
-int AERandom_next(void *rng, int bound);
 
 // Vector math helpers.
 float VectorLength(const Vector *v);
@@ -302,9 +303,9 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             ((AEGeometry *)(shard))->setPosition(*(Vector *)((char *)self + 0x128));
 
             void *rng = *(void **)g_pgc_rng;
-            float jx = (float)AERandom_next(rng, 10000);
-            float jy = (float)AERandom_next(rng, 10000);
-            float jz = (float)AERandom_next(rng, 10000);
+            float jx = (float)((AbyssEngine::AERandom *)(rng))->next(10000);
+            float jy = (float)((AbyssEngine::AERandom *)(rng))->next(10000);
+            float jz = (float)((AbyssEngine::AERandom *)(rng))->next(10000);
 
             Vector p;
             p.x = ((self->centerX + delta.x) - spread) + t * jx;
@@ -316,8 +317,8 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             d = p - *(Vector *)((Vector *)((char *)self + 0x128));
             VectorNormalize(&dn, &d);
 
-            float life = ((float)AERandom_next(rng, 200) / lifeDiv) * 3.0f + 3.0f;
-            int timer = AERandom_next(rng, 14000);
+            float life = ((float)((AbyssEngine::AERandom *)(rng))->next(200) / lifeDiv) * 3.0f + 3.0f;
+            int timer = ((AbyssEngine::AERandom *)(rng))->next(14000);
 
             ArrayAdd_float(life * 7.0f, self->sparkLife);
             ArrayAdd_float(life, self->sparkLifeMin);
@@ -348,7 +349,6 @@ int PlayerEgo_getCampaignProgress(void *ego);
 
 int Ship_getFreeSpace(void *ship);
 int Ship_getFirstEquipmentOfSort(void *ship, int sort);
-void Ship_addCargo(void *ship, void *item);
 
 
 
@@ -457,7 +457,7 @@ void PlayerGasCloud_update(void *self, int dt)
                             ((FModSound *)(g_pgcu_pickupSound))->stop(0x8d0);
                             ((FModSound *)(g_pgcu_pickupSound))->play(0x8d0, 0, 0, 0.0f);
                             void *ship2 = ((Status *)(*gStatus))->getShip();
-                            Ship_addCargo(ship2, def);
+                            ((Ship *)(ship2))->addCargo((Item *)def);
                         }
                         *(int *)(*(int *)(*(int *)(s + 0x148) + 4) + i * 4) = 0;
                         collected = true;

@@ -1,4 +1,6 @@
 #include "gof2/PlayerJumpgate.h"
+#include "gof2/PlayerStaticFar.h"
+#include "gof2/SolarSystem.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/Status.h"
 #include "gof2/Transform.h"
@@ -28,15 +30,13 @@ struct Transform {
     void SetAnimationState(int mode, void *param);
 };
 
-extern "C" void PlayerStaticFar_dtor(PlayerStaticFar *self);
 extern "C" void *PlayerJumpgate_delete_tail();
 extern "C" void Array_BoundingVolumePtr_ctor(Array<BoundingVolume *> *self);
-extern "C" int SolarSystem_getRace(void *system);
 
 // ---- _PlayerJumpgate_a5100.cpp ----
 void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
 {
-    PlayerStaticFar_dtor((PlayerStaticFar *)self);
+    ((PlayerStaticFar *)((PlayerStaticFar *)self))->dtor();
     return PlayerJumpgate_delete_tail();
 }
 
@@ -142,7 +142,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
         } else {
             void *system = (void *)(intptr_t)((Status *)(*statusOwner))->getSystem();
             radius = 0x1d4c;
-            if (SolarSystem_getRace(system) == 1) {
+            if (((SolarSystem *)(system))->getRace() == 1) {
                 radius = 0x2bf2;
             }
         }

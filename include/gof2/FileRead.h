@@ -10,9 +10,16 @@ namespace AbyssEngine {
 
 String operator+(const String &left, const String &right);
 
+// AERandom is fully modeled in gof2/AERandom.h. When that header is also included
+// we must not redefine it here; FileRead.cpp only relies on nextInt(int), which the
+// real class also provides.
+#ifndef GOF2_AERANDOM_H
 struct AERandom {
     int32_t nextInt(int32_t max);
 };
+#else
+class AERandom;
+#endif
 
 namespace AEMath {
 
@@ -37,6 +44,10 @@ struct Station {
     Station(String &name, int32_t a, int32_t b, int32_t c, int32_t d);
 };
 
+// SolarSystem is fully modeled in gof2/SolarSystem.h. When that header is also
+// included (e.g. by PlayerStation.cpp) we must not redefine it here; FileRead.cpp
+// only relies on the ctor + getStations() which the real class also provides.
+#ifndef GOF2_SOLARSYSTEM_H
 struct SolarSystem {
     uint8_t storage[0x48];
     SolarSystem(uint32_t index, String &name, int32_t faction, bool flag, int32_t a, int32_t b,
@@ -44,6 +55,9 @@ struct SolarSystem {
                 Array<int32_t> *stations, Array<int32_t> *wrecks, Array<int32_t> *statics);
     Array<int32_t> *getStations();
 };
+#else
+class SolarSystem;
+#endif
 
 struct Agent {
     uint8_t storage[0x98];

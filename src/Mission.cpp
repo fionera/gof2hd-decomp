@@ -11,7 +11,6 @@ extern "C" void String_cstr_ctor(void *out, const char *s, bool);
 extern "C" void *String_assign_ref(void *self, const String12 &rhs);
 extern "C" void Mission_dtor_finish(Mission *self);
 extern "C" void String_default_ctor(void *s);
-extern "C" Systems *Galaxy_getSystems(Galaxy *g);
 extern "C" int Station_getSystem(Station *s);
 float Galaxy_distance(Galaxy *g, SolarSystem *a, SolarSystem *b);
 extern "C" void Station_dtor_finish(Station *s);
@@ -292,7 +291,7 @@ void Mission::calcDistance() {
     Mission *self = this;
     Galaxy **gp = g_galaxy;
     Station *st = (Station *)((Galaxy *)(*gp))->getStation(self->targetStation);
-    Systems *sys = Galaxy_getSystems(*gp);
+    Systems *sys = (Systems *)((Galaxy *)(*gp))->getSystems();
     Galaxy *g = *gp;
     int i1 = Station_getSystem(((Status *)(*g_status))->getStation());
     SolarSystem *a = sys->data[i1];
