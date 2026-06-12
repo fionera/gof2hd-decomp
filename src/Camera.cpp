@@ -6,6 +6,10 @@
 // ---- Camera_7b724.cpp ----
 namespace AbyssEngine {
 
+// Engine free function that actually programs the projection matrix (recovered in AbyssEngine.cpp).
+// Camera::SetPerspective is a thin thunk onto it.
+float CameraSetPerspective(float fov, float aspectNum, float aspectDen, float near, Camera *cam);
+
 // AbyssEngine::Camera::Camera(float, float, float, float, float)
 // Default-constructs the projection Matrix at +0x0c, then sets up the perspective.
 Camera::Camera(float fov, float aspect, float nearPlane, float farPlane, float param5)
@@ -17,7 +21,7 @@ Camera::Camera(float fov, float aspect, float nearPlane, float farPlane, float p
 
 void Camera::SetPerspective(float fov, float aspect, float nearPlane, float farPlane)
 {
-    _ZN11AbyssEngine6Camera14SetPerspectiveEffff(this, fov, aspect, nearPlane, farPlane);
+    CameraSetPerspective(fov, aspect, nearPlane, farPlane, this);
 }
 
 } // namespace AbyssEngine

@@ -1,10 +1,7 @@
 #include "gof2/SimpleRefractionShader.h"
-
+#include "gof2/Engine.h"
 
 extern "C" void glUniform2f(int location, float x, float y);
-extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *engine);
-extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *engine);
-extern "C" void _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(AbyssEngine::Engine *engine);
 
 // ---- UpdateMeshData_8c8e0.cpp ----
 namespace AbyssEngine {
@@ -23,11 +20,11 @@ void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, Engine *engine)
             glUniform3f(field_i32(this, 0x48), field_f32(engine, 0x34c), field_f32(engine, 0x350),
                         field_f32(engine, 0x354));
         int loc = field_i32(this, 0x50);
-        float w = (float)_ZN11AbyssEngine6Engine15GetDisplayWidthEv(engine);
-        float h = (float)_ZN11AbyssEngine6Engine16GetDisplayHeightEv(engine);
+        float w = (float)((::Engine *)engine)->GetDisplayWidth();
+        float h = (float)((::Engine *)engine)->GetDisplayHeight();
         glUniform2f(loc, 1.0f / w, 1.0f / h);
         glActiveTexture(0x84c7);
-        _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(engine);
+        ((::Engine *)engine)->ActivateRefractFBO();
         glUniform1f(field_i32(this, 0x4c), field_f32(mesh, 0x20));
         field_u8(this, 0x9) = 0;
     }
@@ -129,7 +126,7 @@ void SimpleRefractionShader::Init(Engine *engine)
     field_i32(this, 0x50) = glGetUniformLocation(field_i32(this, 0x04), "u_m5");
 
     glActiveTexture(0x84c7);
-    _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(engine);
+    ((::Engine *)engine)->ActivateRefractFBO();
 
     field_i32(this, 0x4c) = glGetUniformLocation(field_i32(this, 0x04), "u_refract");
     field_i32(this, 0x54) = glGetUniformLocation(field_i32(this, 0x04), "u_m6");

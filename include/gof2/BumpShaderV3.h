@@ -54,6 +54,8 @@ public:
     void UpdateMeshData(Mesh *mesh, Engine *engine);
     BumpShaderV3();
 
+    static int ShaderIndex;
+
     // raw field storage (offsets referenced through the field_i32/field_u8 helpers)
     char field_storage[0x84];
 };

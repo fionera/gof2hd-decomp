@@ -1,7 +1,6 @@
 #include "gof2/TextureConference.h"
+#include "gof2/ApplicationManager.h"
 
-
-extern "C" long long _ZN11AbyssEngine18ApplicationManager20GetElapsedTimeMillisEv(void *self);
 extern "C" long long __divdi3_like(int a_lo, int a_hi, int b_lo, int b_hi);
 
 // ---- SetInActive_8cc34.cpp ----
@@ -35,7 +34,8 @@ void TextureConference::UpdateMeshData(Mesh *mesh, Engine *engine)
         field_u8(this, 0x9) = 0;
     }
 
-    long long elapsed = _ZN11AbyssEngine18ApplicationManager20GetElapsedTimeMillisEv(field_ptr(engine, 0x30));
+    long long elapsed =
+        ((ApplicationManager *)field_ptr(engine, 0x30))->GetElapsedTimeMillis();
     long long t = __divdi3_like((int)elapsed, (int)((unsigned long long)elapsed >> 32), 5, 0);
     t = t + this->animTime;
     long long clamped = (0xe10 > t) ? t : (t - 0xe10);

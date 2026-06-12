@@ -31,7 +31,6 @@ extern "C" void glAttachShader(uint32_t program, uint32_t shader);
 extern "C" void glLinkProgram(uint32_t program);
 extern "C" void glGetProgramiv(uint32_t program, uint32_t pname, int *params);
 extern "C" void glGetProgramInfoLog(uint32_t program, uint32_t maxLength, int *length, void *infoLog);
-extern "C" void AELabelObject(uint32_t type, uint32_t object, const char *name);
 
 namespace AbyssEngine {
 

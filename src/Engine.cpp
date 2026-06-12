@@ -1704,6 +1704,16 @@ void Engine::GlEnable(unsigned int cap, bool enable) {
     self->field_0x420 = flags;
 }
 
+// ---- LightEnable_8572c.cpp ----
+// Engine::LightEnable(bool) toggles fixed-function lighting on the engine. In the shipped
+// binary this is a single long-branch veneer (B.W) into the GL backend whose target lies
+// outside the analyzed range, so the body cannot be statically recovered; forward to the
+// engine's own symbol to preserve the exact runtime behaviour.
+extern "C" void _ZN11AbyssEngine6Engine11LightEnableEb(Engine *self, bool enabled);
+void Engine::LightEnable(bool enabled) {
+    _ZN11AbyssEngine6Engine11LightEnableEb(this, enabled);
+}
+
 // ---- LightSetMaterialColorAmbient_85ca0.cpp ----
 void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     Engine *self = this;

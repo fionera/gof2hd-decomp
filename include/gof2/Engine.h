@@ -219,6 +219,7 @@ public:
     int InitGL(bool shaders, int width, int height);
     void Initialize(InitializeCallback *callback);
     bool IsPostEffectActivated();
+    void LightEnable(bool enabled);
     void LightSetGlobalSceneColorAmbient(float red, float green, float blue);
     void LightSetLight(unsigned int light);
     void LightSetLightColorAmbient(float red, float green, float blue, unsigned int light);

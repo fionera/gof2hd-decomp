@@ -18,9 +18,4 @@ public:
 
 } // namespace AbyssEngine
 
-extern "C" {
-// Camera::SetPerspective (mangled).
-void _ZN11AbyssEngine6Camera14SetPerspectiveEffff(
-    AbyssEngine::Camera *self, float fov, float aspect, float nearPlane, float farPlane);
-}
 #endif

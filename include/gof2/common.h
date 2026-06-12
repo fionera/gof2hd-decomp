@@ -30,6 +30,11 @@ template <class T> inline void ArrayAdd(T item, std::vector<T>& a)            { 
 template <class T> inline void ArraySetLength(unsigned int n, std::vector<T>& a){ a.resize(n); }
 template <class T> inline void ArrayRemoveAll(std::vector<T>& a)              { a.clear(); }
 
+// AELabelObject(glIdentifier, name, label): in the shipped binary this is the GLES debug-object
+// labelling stub (KHR_debug). On the production build it is compiled out to a no-op that simply
+// returns its first argument, so callers stay byte-identical without any GL side effect.
+unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const char *label);
+
 // ---- String == game UTF-16 string (backed by std::u16string) -------------------------------
 // Kept as a class because the engine's String has 43 game-specific methods (transliteration, Split,
 // ReplaceString, ToLowerCase with CP-1252 tables, ...). Storage is std::u16string; method bodies

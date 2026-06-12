@@ -1,11 +1,8 @@
 #include "gof2/BumpShaderCloak.h"
+#include "gof2/Engine.h"
 
-
-extern "C" void _ZN11AbyssEngine6Engine18ActivateRefractFBOEv(AbyssEngine::Engine *self);
 extern "C" void glUniform2f(int location, float x, float y);
 extern "C" void glUniformMatrix3fv(int location, int count, uint8_t transpose, const void *value);
-extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *self);
-extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *self);
 
 // ---- _BumpShaderCloak_8b200.cpp ----
 void _ZN11AbyssEngine15BumpShaderCloakD0Ev(
@@ -50,7 +47,7 @@ void BumpShaderCloak::Init(Engine *engine)
     field_i32(this, 0x8c) = glGetUniformLocation(field_i32(this, 0x04), "u17");
 
     glActiveTexture(0x84c7);
-    _ZN11AbyssEngine6Engine18ActivateRefractFBOEv(engine);
+    ((::Engine *)engine)->ActivateRefractFBO();
 
     field_i32(this, 0x80) = glGetUniformLocation(field_i32(this, 0x04), "u18");
     field_i32(this, 0x84) = glGetUniformLocation(field_i32(this, 0x04), "u19");
@@ -146,17 +143,17 @@ void BumpShaderCloak::UpdateMeshData(Mesh *mesh, Engine *engine)
             // The render-target's mode (at [[engine+0x30]+0x30]) picks portrait vs landscape.
             float invW, invH;
             if (*(int *)(*(char **)(e + 0x30) + 0x30) == 2) {
-                invW = 1.0f / (float)_ZN11AbyssEngine6Engine15GetDisplayWidthEv(engine);
-                invH = 1.0f / (float)_ZN11AbyssEngine6Engine16GetDisplayHeightEv(engine);
+                invW = 1.0f / (float)((::Engine *)engine)->GetDisplayWidth();
+                invH = 1.0f / (float)((::Engine *)engine)->GetDisplayHeight();
             } else {
-                invW = 1.0f / (float)_ZN11AbyssEngine6Engine16GetDisplayHeightEv(engine);
-                invH = 1.0f / (float)_ZN11AbyssEngine6Engine15GetDisplayWidthEv(engine);
+                invW = 1.0f / (float)((::Engine *)engine)->GetDisplayHeight();
+                invH = 1.0f / (float)((::Engine *)engine)->GetDisplayWidth();
             }
             glUniform2f(viewportLoc, invW, invH);
         }
 
         glActiveTexture(0x84c7);
-        _ZN11AbyssEngine6Engine18ActivateRefractFBOEv(engine);
+        ((::Engine *)engine)->ActivateRefractFBO();
 
         if (field_i32(this, 0x80) >= 0)
             glUniform1f(field_i32(this, 0x80), field_f32(m, 0x1c));

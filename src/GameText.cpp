@@ -1,4 +1,5 @@
 #include "gof2/GameText.h"
+#include "gof2/AEFile.h"
 
 
 struct Arr { uint32_t size; int *data; uint32_t size2; };
@@ -11,8 +12,6 @@ extern "C" void  AEString_ctor_cstr(void *s, const char *text, bool copy);
 extern "C" void  AEString_assign(void *dst, void *src);
 extern "C" void  AEString_dtor(void *s);
 extern "C" char *AEString_GetAEChar(void *s);
-extern "C" int   _ZN11AbyssEngine6AEFile9FileExistERKNS_6StringE(void *path);
-extern "C" void  _ZN11AbyssEngine6AEFile8OpenReadERKNS_6StringEPj(void *path, unsigned int *fileOut);
 extern "C" void AEString_dtor(void *s);
 extern "C" GameText *GameText_dtor_tail(GameText *self);
 extern "C" void Array_int_ctor(void *a);
@@ -23,8 +22,6 @@ extern "C" __attribute__((visibility("hidden"))) unsigned short *g_GameText_lang
 extern "C" void  AEString_ctor_wide(void *s, const unsigned short *text, bool copy);
 extern "C" void  AEString_SubString(void *out, void *s, unsigned int a, unsigned int b);
 extern "C" void *memcpy(void *, const void *, unsigned long);
-extern "C" int   _ZN11AbyssEngine6AEFile4ReadEjPvj(int size, void *dst, unsigned int file);
-extern "C" void  _ZN11AbyssEngine6AEFile5CloseEj(unsigned int file);
 void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 
 // ---- release_8174e.cpp ----
@@ -150,7 +147,7 @@ void GameText::setLanguage_si(int stringCount, int langId) {
     *g_langCode = code;
 
     // Fall back to English when the selected file is absent.
-    if (_ZN11AbyssEngine6AEFile9FileExistERKNS_6StringE(&path) == 0) {
+    if (AEFile::FileExist(path) == 0) {
         operator delete[](AEString_GetAEChar(&path));
         String eng;
         AEString_ctor_cstr(&eng, gLangPathEnglish, false);
@@ -158,7 +155,7 @@ void GameText::setLanguage_si(int stringCount, int langId) {
     }
 
     unsigned int file = 0;
-    _ZN11AbyssEngine6AEFile8OpenReadERKNS_6StringEPj(&path, &file);
+    AEFile::OpenRead(path, &file);
     ((GameText *)(self))->ReadLangFile(0, stringCount);
 }
 
@@ -421,7 +418,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
     short lang = *g_langCode;
     for (int i = 0; i < count; ++i) {
         unsigned short len;
-        if (_ZN11AbyssEngine6AEFile4ReadEjPvj(2, &len, file) == 0) {
+        if (AEFile::Read(2, &len, file) == 0) {
             ((GameText *)(self))->release();
             break;
         }
@@ -429,7 +426,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         unsigned int byteLen = (unsigned int)((len >> 8) | (len << 8)) & 0xffff;
 
         char *utf8 = (char *)operator new[](byteLen + 1);
-        if (_ZN11AbyssEngine6AEFile4ReadEjPvj((int)byteLen, utf8, file) == 0) {
+        if (AEFile::Read(byteLen, utf8, file) == 0) {
             operator delete[](utf8);
             ((GameText *)(self))->release();
             break;
@@ -455,5 +452,5 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         operator delete[](utf8);
     }
 
-    _ZN11AbyssEngine6AEFile5CloseEj(file);
+    AEFile::Close(file);
 }

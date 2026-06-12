@@ -1,8 +1,5 @@
 #include "gof2/BumpShaderRefract.h"
-
-extern "C" void _ZN11AbyssEngine6Engine16ActivateRefractFBOEv(AbyssEngine::Engine *self);
-extern "C" int _ZN11AbyssEngine6Engine14GetDisplayWidthEv(AbyssEngine::Engine *self);
-extern "C" int _ZN11AbyssEngine6Engine15GetDisplayHeightEv(AbyssEngine::Engine *self);
+#include "gof2/Engine.h"
 namespace AbyssEngine {
 
 int BumpShaderRefract::ShaderIndex;
@@ -47,7 +44,7 @@ void BumpShaderRefract::Init(Engine *engine)
     field_0x48 = glGetUniformLocation(field_0x4, "u7");
 
     glActiveTexture(0x84c7);
-    _ZN11AbyssEngine6Engine16ActivateRefractFBOEv(engine);
+    ((::Engine *)engine)->ActivateRefractFBO();
     field_0x3c = glGetUniformLocation(field_0x4, "u8");
 
     glUseProgram(field_0x4);
@@ -78,12 +75,12 @@ void BumpShaderRefract::UpdateMeshData(Mesh *mesh, Engine *engine)
         glUniform4fv(field_0x48, 1, (float *)(e + 0xd0));
         int loc = field_0x38;
         if (loc >= 0) {
-            float w = (float)_ZN11AbyssEngine6Engine14GetDisplayWidthEv(engine);
-            float h = (float)_ZN11AbyssEngine6Engine15GetDisplayHeightEv(engine);
+            float w = (float)((::Engine *)engine)->GetDisplayWidth();
+            float h = (float)((::Engine *)engine)->GetDisplayHeight();
             glUniform2f(loc, 1.0f / w, 1.0f / h);
         }
         glActiveTexture(0x84c7);
-        _ZN11AbyssEngine6Engine16ActivateRefractFBOEv(engine);
+        ((::Engine *)engine)->ActivateRefractFBO();
         field_0x9 = 0;
     }
 

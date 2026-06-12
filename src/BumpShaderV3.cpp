@@ -88,11 +88,11 @@ void BumpShaderV3::SetInActive()
 extern "C" {
 // BumpShaderV3 vtable; the ctor stores (&vtable + 8) into this[0].
 extern char _ZTVN11AbyssEngine12BumpShaderV3E[];
-// Two statics related by the engine: ShaderBaseStruct::shaderIndexIntern = BumpShaderV3::ShaderIndex.
-extern int _ZN11AbyssEngine12BumpShaderV311ShaderIndexE;
 }
 
 namespace AbyssEngine {
+
+int BumpShaderV3::ShaderIndex;
 
 // AbyssEngine::BumpShaderV3::BumpShaderV3()
 BumpShaderV3::BumpShaderV3()
@@ -101,8 +101,7 @@ BumpShaderV3::BumpShaderV3()
 
     // install vtable (+8 past the RTTI/offset slots) and copy the shader-index static.
     *(void **)this = (void *)(_ZTVN11AbyssEngine12BumpShaderV3E + 8);
-    ShaderBaseStruct::shaderIndexIntern =
-        _ZN11AbyssEngine12BumpShaderV311ShaderIndexE;
+    ShaderBaseStruct::shaderIndexIntern = ShaderIndex;
 
     // name = String("BumpShaderV3"); this->name(0xc) = name; ~name.
     String name("BumpShaderV3");

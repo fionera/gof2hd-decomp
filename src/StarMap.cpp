@@ -108,10 +108,6 @@ extern "C" int Station_getIndex(void *station);
 void MatrixGetPosition(Vector *out, void *matrix);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_lights_engine;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_lights_canvas;
-// AbyssEngine::Engine::LightEnable(bool) — NOT a PaintCanvas method (no
-// PaintCanvas::LightEnable exists in the binary). The decompiled shim passed the
-// canvas + an unused light index; the real call enables lighting on the engine.
-void Engine_LightEnable(bool enabled) asm("_ZN10AbyssEngine6Engine11LightEnableEb");
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_update_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_update_status;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_update_sound;
@@ -673,7 +669,7 @@ void StarMap::initLights()
 {
     void *engine = ((ApplicationManager *)(*g_StarMap_lights_engine))->GetEngine();
     ((Engine *)(engine))->LightSetMaterialColorAmbient(0.5f, 0.5f, 0.5f);
-    return Engine_LightEnable(true);
+    ((Engine *)(engine))->LightEnable(true);
 }
 
 // ---- update_c9b90.cpp ----

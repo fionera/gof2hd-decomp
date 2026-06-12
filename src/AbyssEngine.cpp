@@ -7,6 +7,7 @@
 #include "gof2/Mesh.h"
 #include "gof2/Engine.h"
 #include "gof2/PaintCanvasClass.h"
+#include <cstdlib>   // realloc, for the engine raw-array helpers below
 
 // AbyssEngine::FBOContainer is defined fully in gof2/FBOContainer.h, but that header
 // forward-declares AbyssEngine::Engine which clashes with the `using ::Engine;` re-export
@@ -20,6 +21,51 @@ public:
 };
 }
 
+
+// ---- engine raw Array<T> container helpers --------------------------------------------------
+// The renderer stores some collections as the engine's plain three-word array header embedded at
+// fixed byte offsets inside larger structs (mesh child lists, the deferred sprite batch buffer):
+//   +0x0 uint32 count   +0x4 T* data   +0x8 uint32 capacity
+// These are the byte-faithful bodies of the binary's ArrayAdd<T>/ArrayAddCached<T> template
+// instantiations, working directly on that header rather than on the std::vector facade used
+// elsewhere in the tree.
+namespace {
+struct EngineArrayHeader { uint32_t count; void *data; uint32_t capacity; };
+
+// ArrayAdd<T>: grow the backing store by exactly one element, then append.
+template <class T>
+inline void ArrayAddRaw(T item, void *arrayHeader) {
+    EngineArrayHeader *a = (EngineArrayHeader *)arrayHeader;
+    a->capacity = a->count + 1;
+    a->data = realloc(a->data, (a->count + 1) * sizeof(T));
+    ((T *)a->data)[a->count] = item;
+    a->count = a->capacity;
+}
+
+// ArrayAddCached<T>: amortized doubling — only reallocate (to 2x, zero-filling the new half) when
+// the cached capacity is exhausted, then append.
+template <class T>
+inline void ArrayAddCachedRaw(T item, void *arrayHeader) {
+    EngineArrayHeader *a = (EngineArrayHeader *)arrayHeader;
+    if (a->count >= a->capacity) {
+        uint32_t oldCap = a->capacity;
+        a->data = realloc(a->data, (size_t)oldCap * 2 * sizeof(T));
+        __aeabi_memclr4((char *)a->data + oldCap * sizeof(T), oldCap * sizeof(T));
+        a->capacity = oldCap * 2;
+    }
+    ((T *)a->data)[a->count] = item;
+    a->count = a->count + 1;
+}
+} // namespace
+
+// GLES debug-object labelling stub: compiled out to a no-op in the production binary (it just
+// returns its first argument), so it has no runtime effect beyond preserving call sites.
+unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const char *label)
+{
+    (void)name;
+    (void)label;
+    return glIdentifier;
+}
 
 // __aeabi_memcpy is declared by gof2/Engine.h
 
@@ -373,18 +419,18 @@ int ImageCreateRegionFromFile(Engine *engine, char *path, unsigned short index, 
             int mesh = *(int *)r;
             float *pos = *(float **)(mesh + 4);
             // Half width/height of the quad in object units (region size).
-            float halfW = AE_VectorUnsignedToFloat((unsigned int)u16(r, 0x10), mode);
+            float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x10), mode);
             pos[0] = 0; pos[1] = 0; pos[2] = 0;
             pos[4] = 0; pos[5] = 0; pos[3] = halfW; pos[6] = halfW;
-            float halfH = AE_VectorUnsignedToFloat((unsigned int)u16(r, 0x12), mode);
+            float halfH = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x12), mode);
             pos[8] = 0; pos[9] = 0; pos[11] = 0; pos[7] = halfH; pos[10] = halfH;
 
-            double atlasH = (double)AE_VectorUnsignedToFloat((unsigned int)u16(r, 0x0a), mode);
-            double atlasW = (double)AE_VectorUnsignedToFloat((unsigned int)u16(r, 0x08), mode);
-            float offYs = AE_VectorSignedToFloat((int)(short)u16(r, 0x0e), mode);
-            float offXs = AE_VectorSignedToFloat((int)(short)u16(r, 0x0c), mode);
-            float offYu = AE_VectorUnsignedToFloat((unsigned int)u16(r, 0x0e), mode);
-            float offXu = AE_VectorUnsignedToFloat((unsigned int)u16(r, 0x0c), mode);
+            double atlasH = (double)AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x0a), mode);
+            double atlasW = (double)AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x08), mode);
+            float offYs = AbyssEngine::AEMath::VectorSignedToFloat((int)(short)u16(r, 0x0e), mode);
+            float offXs = AbyssEngine::AEMath::VectorSignedToFloat((int)(short)u16(r, 0x0c), mode);
+            float offYu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x0e), mode);
+            float offXu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x0c), mode);
 
             float *uv = *(float **)(mesh + 8);
             float u0 = offXu * (float)(1.0 / atlasW);
@@ -944,7 +990,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
         for (unsigned int i = 0; i < n3; ++i) {
             int axis = (int)__aeabi_uidiv((int)i, 3);
             axis = (int)i - axis * 3;
-            float v = AE_VectorSignedToFloat((int)*(short *)((char *)raw + i * 2), mode);
+            float v = AbyssEngine::AEMath::VectorSignedToFloat((int)*(short *)((char *)raw + i * 2), mode);
             *(float *)(*(int *)(m + 4) + dst) = v;
             dst += 4;
             if (v < minv[axis]) minv[axis] = v;
@@ -973,7 +1019,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
         for (unsigned int i = 0; i < n3; ++i) {
             int axis = (int)__aeabi_uidiv((int)i, 3);
             axis = (int)i - axis * 3;
-            float v = AE_VectorSignedToFloat(*(int *)((char *)raw + i * 4), mode);
+            float v = AbyssEngine::AEMath::VectorSignedToFloat(*(int *)((char *)raw + i * 4), mode);
             *(float *)(*(int *)(m + 4) + dst) = v;
             dst += 4;
             if (v < minv[axis]) minv[axis] = v;
@@ -1006,11 +1052,11 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             int dst = 0;
             const double scale = 1.0 / 32767.0;
             for (unsigned int i = 0; i < (vcount << 1); i += 2) {
-                double u = (double)AE_VectorSignedToFloat((int)*(short *)((char *)raw + i * 2), mode) * scale;
+                double u = (double)AbyssEngine::AEMath::VectorSignedToFloat((int)*(short *)((char *)raw + i * 2), mode) * scale;
                 float *p = (float *)(*(int *)(m + 8) + dst);
                 dst += 8;
                 p[0] = (float)u;
-                double v = (double)AE_VectorSignedToFloat((int)*(short *)((char *)raw + i * 2 + 2), mode) * scale;
+                double v = (double)AbyssEngine::AEMath::VectorSignedToFloat((int)*(short *)((char *)raw + i * 2 + 2), mode) * scale;
                 double vv = (flip == 0) ? v : (1.0 - v);
                 p[1] = (float)vv;
             }
@@ -1046,9 +1092,9 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             short *s = (short *)raw;
             int off = 4;
             for (unsigned int i = 0; i < vcount * 3; i += 3) {
-                float nx = (float)((double)AE_VectorSignedToFloat((int)s[0], mode) * scale);
-                float ny = (float)((double)AE_VectorSignedToFloat((int)s[1], mode) * scale);
-                float nz = (float)((double)AE_VectorSignedToFloat((int)s[2], mode) * scale);
+                float nx = (float)((double)AbyssEngine::AEMath::VectorSignedToFloat((int)s[0], mode) * scale);
+                float ny = (float)((double)AbyssEngine::AEMath::VectorSignedToFloat((int)s[1], mode) * scale);
+                float nz = (float)((double)AbyssEngine::AEMath::VectorSignedToFloat((int)s[2], mode) * scale);
                 float len2 = nx * nx + ny * ny + nz * nz;
                 float len = sqrtf(len2);
                 int base = *(int *)(m + 0x10);
@@ -1172,7 +1218,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             const float inv = 255.0f;
             int dst = 0;
             for (unsigned int i = 0; i < (vcount << 2); ++i) {
-                float c = AE_VectorUnsignedToFloat((unsigned int)*((unsigned char *)raw + i), mode);
+                float c = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)*((unsigned char *)raw + i), mode);
                 *(float *)(*(int *)(m + 0xc) + dst) = c / inv;
                 dst += 4;
             }
@@ -1194,7 +1240,8 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             return -1;
         int xf = *(int *)((char *)*slot + 0x34);
         if (xf != 0)
-            AE_BSphere_Merge((char *)*slot + 0x3c, (char *)(xf + 0xd4));
+            ((AEMath::BSphere *)((char *)*slot + 0x3c))
+                ->Merge(*(const Transform *)(xf + 0xd4));
         for (unsigned int c = 0; c < childCount; ++c) {
             char *child = (char *)::operator new(0x88);
             for (int b = 0; b < 0x88; ++b) child[b] = 0;
@@ -1205,8 +1252,8 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             Mesh *childPtr = (Mesh *)child;
             if (MeshReadData(engine, handlePtr, flags, &childPtr, mat) == -1)
                 return -1;
-            AE_BSphere_Merge((char *)*slot + 0x3c, (char *)childPtr + 0x3c);
-            AE_ArrayAdd_MeshPtr(childPtr, (char *)*(int *)((char *)*slot + 0x34) + 0x3c);
+            ((AEMath::BSphere *)((char *)*slot + 0x3c))->Merge(*(const AEMath::BSphere *)((char *)childPtr + 0x3c));
+            ArrayAddRaw<Mesh *>(childPtr, (char *)*(int *)((char *)*slot + 0x34) + 0x3c);
         }
     }
 
@@ -1849,7 +1896,7 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
         }
     }
 
-    float baseY = AE_VectorSignedToFloat(top - 2, mode);
+    float baseY = AbyssEngine::AEMath::VectorSignedToFloat(top - 2, mode);
 
     for (unsigned int i = 0; i < len; ++i) {
         // Find glyph slot for codepoint text[idx].
@@ -1878,7 +1925,7 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
                     // reaches the buffer capacity.
                     int spr = *(int *)(pc + 8);
                     int n = *(int *)(pc + 0xc);
-                    float fx = AE_VectorSignedToFloat(x, mode);
+                    float fx = AbyssEngine::AEMath::VectorSignedToFloat(x, mode);
                     float *vsrc = *(float **)(glyphMesh + 4);
                     float *vdst = (float *)(*(int *)(spr + 4) + n * 0x30);
                     vdst[0] = vsrc[0] + fx;     vdst[1] = vsrc[1] + baseY;
@@ -1971,18 +2018,18 @@ static void buildGlyphQuad(int mesh, unsigned int offX, unsigned int offY, unsig
                            unsigned char mode)
 {
     float *pos = *(float **)(mesh + 4);
-    float halfW = AE_VectorUnsignedToFloat(sizeX, mode);
+    float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat(sizeX, mode);
     pos[0] = 0; pos[1] = 0; pos[2] = 0;
     pos[4] = 0; pos[5] = 0; pos[3] = halfW; pos[6] = halfW;
-    float halfH = AE_VectorUnsignedToFloat(offY, mode); // mirrors decompile's field reuse
+    float halfH = AbyssEngine::AEMath::VectorUnsignedToFloat(offY, mode); // mirrors decompile's field reuse
     pos[8] = 0; pos[9] = 0; pos[11] = 0; pos[7] = halfH; pos[10] = halfH;
 
-    double aH = (double)AE_VectorUnsignedToFloat(atlasW, mode);
-    double aW = (double)AE_VectorUnsignedToFloat(atlasH, mode);
-    float offYs = AE_VectorSignedToFloat((int)(short)sizeY, mode);
-    float offXs = AE_VectorSignedToFloat((int)(short)sizeX, mode);
-    float u0 = AE_VectorUnsignedToFloat(offX, mode) * (float)(1.0 / aW);
-    float v0 = AE_VectorUnsignedToFloat(offX, mode) * (float)(1.0 / aH);
+    double aH = (double)AbyssEngine::AEMath::VectorUnsignedToFloat(atlasW, mode);
+    double aW = (double)AbyssEngine::AEMath::VectorUnsignedToFloat(atlasH, mode);
+    float offYs = AbyssEngine::AEMath::VectorSignedToFloat((int)(short)sizeY, mode);
+    float offXs = AbyssEngine::AEMath::VectorSignedToFloat((int)(short)sizeX, mode);
+    float u0 = AbyssEngine::AEMath::VectorUnsignedToFloat(offX, mode) * (float)(1.0 / aW);
+    float v0 = AbyssEngine::AEMath::VectorUnsignedToFloat(offX, mode) * (float)(1.0 / aH);
 
     float *uv = *(float **)(mesh + 8);
     float v1 = (halfH + offYs) * (float)(1.0 / aH);
@@ -2206,7 +2253,7 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
         MeshDraw(engine, mesh);
     } else {
         void *batch = pp(mesh, 0x30);
-        AE_ArrayAddCached_MeshPtr(mesh, (char *)batch + 0x44);
+        ArrayAddCachedRaw<Mesh *>(mesh, (char *)batch + 0x44);
 
         // Record the view / unit / world transforms into the deferred batch command buffer.
         // AE_SpriteSystem_pushMatrix copies a 4x4 matrix (15 explicit words; m33 implicit) into
@@ -2221,7 +2268,7 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
         const unsigned int *w = (const unsigned int *)world;
         AE_SpriteSystem_pushMatrix(w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8], w[9],
                                    w[10], w[11], w[12], w[13], w[14], (int)(intptr_t)batch + 0x5c);
-        AE_ArrayAddCached_uint(0xffffffff, (char *)batch + 0x50);
+        ArrayAddCachedRaw<unsigned int>(0xffffffff, (char *)batch + 0x50);
     }
 }
 
@@ -2961,8 +3008,8 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
                     AEFile::Close(handle);
                     return -1;
                 }
-                AE_BSphere_Merge((char *)*out + 0x3c, (char *)childPtr + 0x3c);
-                AE_ArrayAdd_MeshPtr(childPtr, (char *)*(int *)((char *)*out + 0x34) + 0x3c);
+                ((AEMath::BSphere *)((char *)*out + 0x3c))->Merge(*(const AEMath::BSphere *)((char *)childPtr + 0x3c));
+                ArrayAddRaw<Mesh *>(childPtr, (char *)*(int *)((char *)*out + 0x34) + 0x3c);
             }
             ok = true;
         }

@@ -1,10 +1,7 @@
 #include "gof2/EnergyShield.h"
-
+#include "gof2/Engine.h"
 
 extern "C" void glUniform2f(int location, float x, float y);
-extern "C" int _ZN11AbyssEngine6Engine15GetDisplayWidthEv(AbyssEngine::Engine *engine);
-extern "C" int _ZN11AbyssEngine6Engine16GetDisplayHeightEv(AbyssEngine::Engine *engine);
-extern "C" void _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(AbyssEngine::Engine *engine);
 
 // ---- _EnergyShield_8a5d0.cpp ----
 void _ZN11AbyssEngine12EnergyShieldD0Ev(
@@ -35,12 +32,12 @@ void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine)
             glUniform3fv(this->uM5, 1, (float *)((char *)engine + 0x320));
         int loc = this->uM6;
         if (loc >= 0) {
-            float w = (float)_ZN11AbyssEngine6Engine15GetDisplayWidthEv(engine);
-            float h = (float)_ZN11AbyssEngine6Engine16GetDisplayHeightEv(engine);
+            float w = (float)((::Engine *)engine)->GetDisplayWidth();
+            float h = (float)((::Engine *)engine)->GetDisplayHeight();
             glUniform2f(loc, 1.0f / w, 1.0f / h);
         }
         glActiveTexture(0x84c7);
-        _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(engine);
+        ((::Engine *)engine)->ActivateRefractFBO();
         glUniform1f(this->uM7, field_f32(mesh, 0x24));
         glUniform1f(this->uRefract, field_f32(mesh, 0x24) / 3.0f);
         this->needsUniformUpdate = 0;
@@ -114,7 +111,7 @@ void EnergyShield::Init(Engine *engine)
     this->uM6 = glGetUniformLocation(this->program, "u_m6");
 
     glActiveTexture(0x84c7);
-    _ZN11AbyssEngine6Engine17ActivateRefractFBOEv(engine);
+    ((::Engine *)engine)->ActivateRefractFBO();
 
     this->uRefract = glGetUniformLocation(this->program, "u_refract");
     this->uM7 = glGetUniformLocation(this->program, "u_m7");
