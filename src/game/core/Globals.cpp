@@ -1814,7 +1814,7 @@ int Globals::init(void *app) {
     Status_ctor(status);
     **gI_status = status;
     void *imgFac = ::operator new(0xc);
-    ((ImageFactory *)(imgFac))->ctor();
+    new (imgFac) ImageFactory();
     **gI_imgFac = imgFac;
 
     void *fr = ::operator new(1);

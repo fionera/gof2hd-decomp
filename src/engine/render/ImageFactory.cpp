@@ -278,7 +278,7 @@ int *ImageFactory::createChar(bool clz, bool rand0, int type)
 extern int g_ctor_src[] __attribute__((visibility("hidden")));
 
 // ImageFactory::ImageFactory() -> this. Copies a 13x4x2 int table when gated, then reload().
-ImageFactory * ImageFactory::ctor() {
+ImageFactory::ImageFactory() {
     this->sprite = 0;
     if ((*g_ctor_flagA | *g_ctor_flagB) != 0) {
         int *dst = g_ctor_dst;
@@ -296,8 +296,7 @@ ImageFactory * ImageFactory::ctor() {
             src += 8;
         }
     }
-    ((ImageFactory *)(this))->reload();
-    return this;
+    this->reload();
 }
 
 // Tail-call fragment at the end of reload(): create image id 0x511 into the

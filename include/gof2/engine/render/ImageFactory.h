@@ -43,7 +43,7 @@ public:
     // Public ImageFactory::createChar(bool, int) overload (2 register args at the call site);
     // forwards to the faithful 3-arg builder with rand0=false.
     int *createChar(bool clz, int type) { return createChar(clz, false, type); }
-    ImageFactory * ctor();
+    ImageFactory();
     void drawChar(Array<ImagePart *> *parts, int x, int y, int flag);
     void drawItem(int itemId, int x, int y);
     void drawItem4(int itemId, int frame, int x, int y);
