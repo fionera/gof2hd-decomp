@@ -68,9 +68,8 @@ extern "C" void Player_StopEngineSound(Player *self);
 extern "C" void FloatVectorMax(void *out, float a, float b, int c, int d);
 
 void Player::pitchAllPrimaryGuns(float pitch) {
-    Player *self = this;
-    if (self->guns != 0) {
-        Array<Gun *> *prim = self->guns->data()[0];
+    if (this->guns != 0) {
+        Array<Gun *> *prim = this->guns->data()[0];
         if (prim != 0) {
             int n = prim->size();
             for (int i = 0; n != i; i++) {
@@ -81,205 +80,176 @@ void Player::pitchAllPrimaryGuns(float pitch) {
 }
 
 unsigned char Player::isAlwaysEnemy() {
-    Player *self = this;
-    return self->alwaysEnemy;
+    return this->alwaysEnemy;
 }
 
 void Player::setKIPlayer(KIPlayer *value) {
-    Player *self = this;
-    self->kiPlayer = value;
+    this->kiPlayer = value;
 }
 
 void Player::damageHull(int damage) {
-    Player *self = this;
-    if (!self->vulnerable) {
+    if (!this->vulnerable) {
         return;
     }
-    if (!self->active) {
+    if (!this->active) {
         return;
     }
-    int armor = self->armorHP;
+    int armor = this->armorHP;
     if (armor <= 0) {
-        int h = self->hitpoints - damage;
+        int h = this->hitpoints - damage;
         h &= ~(h >> 31);
-        self->hitpoints = h;
+        this->hitpoints = h;
     } else {
         armor -= damage;
-        self->armorHP = armor;
+        this->armorHP = armor;
     }
     if (armor <= -1) {
-        self->armorHP = 0;
+        this->armorHP = 0;
     }
-    self->damaged = 1;
+    this->damaged = 1;
     return Player_damageHull_tail();
 }
 
 int Player::getShieldDamageRate() {
-    Player *self = this;
-    return self->shieldDamageRate;
+    return this->shieldDamageRate;
 }
 
 int Player::replaceGuns(int a, int b, int c, int d, int e, bool f) {
-    Player *self = this;
     return a;
 }
 
 int Player::getShieldHP() {
-    Player *self = this;
-    return (int)self->shieldHP;
+    return (int)this->shieldHP;
 }
 
 void Player::removeAllGuns() {
-    Player *self = this;
-    if (self->guns != 0) {
-        for (Array<Gun *> *slot : *self->guns) delete slot;
-        self->guns->clear();
-        delete self->guns;
+    if (this->guns != 0) {
+        for (Array<Gun *> *slot : *this->guns) delete slot;
+        this->guns->clear();
+        delete this->guns;
     }
-    self->guns = 0;
+    this->guns = 0;
 }
 
 int Player::getArmorDamageRate() {
-    Player *self = this;
-    return self->armorDamageRate;
+    return this->armorDamageRate;
 }
 
 int Player::getArmorHP() {
-    Player *self = this;
-    return self->armorHP;
+    return this->armorHP;
 }
 
 void Player::setRadius(int value) {
-    Player *self = this;
-    self->radius = value;
+    this->radius = value;
 }
 
 void Player::resetDamageDoneByPlayer() {
-    Player *self = this;
-    self->field_dc = 0;
-    self->damageDoneByPlayer = 0;
-    self->turnedEnemy = 0;
+    this->field_dc = 0;
+    this->damageDoneByPlayer = 0;
+    this->turnedEnemy = 0;
 }
 
 KIPlayer * Player::getKIPlayer() {
-    Player *self = this;
-    return self->kiPlayer;
+    return this->kiPlayer;
 }
 
 bool Player::isDead() {
-    Player *self = this;
-    return self->hitpoints < 1;
+    return this->hitpoints < 1;
 }
 
 int Player::getRadius() {
-    Player *self = this;
-    return self->radius;
+    return this->radius;
 }
 
 int Player::getEmpDamageRate() {
-    Player *self = this;
-    return self->empDamageRate;
+    return this->empDamageRate;
 }
 
 unsigned char Player::isAlwaysFriend() {
-    Player *self = this;
-    return self->alwaysFriend;
+    return this->alwaysFriend;
 }
 
 int Player::getHitpoints() {
-    Player *self = this;
-    return self->hitpoints;
+    return this->hitpoints;
 }
 
 void Player::damageShield(int damage) {
-    Player *self = this;
-    if (!self->vulnerable) {
+    if (!this->vulnerable) {
         return;
     }
-    if (!self->active) {
+    if (!this->active) {
         return;
     }
-    float s = self->shieldHP;
+    float s = this->shieldHP;
     if (s <= 0.0f) {
-        int h = self->hitpoints - damage;
+        int h = this->hitpoints - damage;
         h &= ~(h >> 31);
-        self->hitpoints = h;
+        this->hitpoints = h;
     } else {
         s = s - (float)damage;
-        self->shieldHP = s;
+        this->shieldHP = s;
     }
     if (s < 0.0f) {
-        self->shieldHP = 0;
+        this->shieldHP = 0;
     }
-    self->damaged = 1;
+    this->damaged = 1;
     return Player_damageShield_tail();
 }
 
 void Player::regenerateArmor() {
-    Player *self = this;
-    int v = self->armorHP + 2;
-    if (v > self->maxArmorHP) {
-        v = self->maxArmorHP;
+    int v = this->armorHP + 2;
+    if (v > this->maxArmorHP) {
+        v = this->maxArmorHP;
     }
-    self->armorHP = v;
+    this->armorHP = v;
     return Player_regenerateArmor_tail();
 }
 
 void Player::damageShip(int damage) {
-    Player *self = this;
-    int v = self->hitpoints - damage;
+    int v = this->hitpoints - damage;
     v &= ~(v >> 31);
-    self->hitpoints = v;
+    this->hitpoints = v;
 }
 
 int Player::getMaxHitpoints() {
-    Player *self = this;
-    return self->maxHitpoints;
+    return this->maxHitpoints;
 }
 
 int Player::getGammaHP() {
-    Player *self = this;
-    return (int)self->gammaHP;
+    return (int)this->gammaHP;
 }
 
 float Player::getBombForce() {
-    Player *self = this;
-    return self->bombForce;
+    return this->bombForce;
 }
 
 int Player::getMaxArmorHP() {
-    Player *self = this;
-    return self->maxArmorHP;
+    return this->maxArmorHP;
 }
 
 Player * Player::getEnemy(int index) {
-    Player *self = this;
-    return self->enemies->data()[index];
+    return this->enemies->data()[index];
 }
 
 void Player::turnEnemy() {
-    Player *self = this;
-    self->turnedEnemy = 1;
+    this->turnedEnemy = 1;
 }
 
 void Player::setEmpData(int points, int data) {
-    Player *self = this;
-    self->empPoints = points;
-    if (self->maxEmpPoints < points) {
-        self->maxEmpPoints = points;
+    this->empPoints = points;
+    if (this->maxEmpPoints < points) {
+        this->maxEmpPoints = points;
     }
-    ((Player *)(self))->updateDamageRate();
-    self->empData = data;
+    ((Player *)(this))->updateDamageRate();
+    this->empData = data;
 }
 
 void Player::setVulnerable(bool value) {
-    Player *self = this;
-    self->vulnerable = value;
+    this->vulnerable = value;
 }
 
 void Player::setActive(bool value) {
-    Player *self = this;
-    self->active = value;
+    this->active = value;
 }
 
 // ---- awake_725xx ----
@@ -299,8 +269,7 @@ void Player::setDead() {
 }
 
 bool Player::isAsteroid() {
-    Player *self = this;
-    KIPlayer *ki = self->kiPlayer;
+    KIPlayer *ki = this->kiPlayer;
     bool result = false;
     if (ki != 0) {
         result = *((char *)ki + 0x3c) != 0;
@@ -309,76 +278,66 @@ bool Player::isAsteroid() {
 }
 
 void Player::updateDamageRate() {
-    Player *self = this;
-    float maxHp = (float)self->maxHitpoints;
-    float hp = (float)self->hitpoints;
-    float maxArmor = (float)self->maxArmorHP;
-    float armor = (float)self->armorHP;
-    float maxEmp = (float)self->maxEmpPoints;
-    float maxShield = (float)self->maxShieldHP;
-    float emp = (float)self->empPoints;
+    float maxHp = (float)this->maxHitpoints;
+    float hp = (float)this->hitpoints;
+    float maxArmor = (float)this->maxArmorHP;
+    float armor = (float)this->armorHP;
+    float maxEmp = (float)this->maxEmpPoints;
+    float maxShield = (float)this->maxShieldHP;
+    float emp = (float)this->empPoints;
 
-    float shieldRate = (self->shieldHP / maxShield) * 100.0f;
+    float shieldRate = (this->shieldHP / maxShield) * 100.0f;
     float armorRate = (armor / maxArmor) * 100.0f;
     float empRate = (emp / maxEmp) * 100.0f;
 
-    self->damageRate = (int)((hp / maxHp) * 100.0f);
-    self->shieldDamageRate = (int)shieldRate;
-    self->armorDamageRate = (int)armorRate;
-    self->empDamageRate = (int)empRate;
+    this->damageRate = (int)((hp / maxHp) * 100.0f);
+    this->shieldDamageRate = (int)shieldRate;
+    this->armorDamageRate = (int)armorRate;
+    this->empDamageRate = (int)empRate;
 }
 
 void Player::setBombForce(float value) {
-    Player *self = this;
-    self->bombForce = value;
+    this->bombForce = value;
 }
 
 void Player::setMaxHitpoints(int value) {
-    Player *self = this;
-    self->maxHitpoints = value;
-    self->hitpoints = value;
+    this->maxHitpoints = value;
+    this->hitpoints = value;
     return Player_setMaxHitpoints_tail();
 }
 
 int Player::getGunRegenRate() {
-    Player *self = this;
     return 0;
 }
 
 int Player::getMaxEmpPoints() {
-    Player *self = this;
-    return self->maxEmpPoints;
+    return this->maxEmpPoints;
 }
 
 void Player::regenerateShield(float amount) {
-    Player *self = this;
-    float f = self->shieldHP + amount;
-    float maxF = (float)self->maxShieldHP;
+    float f = this->shieldHP + amount;
+    float maxF = (float)this->maxShieldHP;
     if (f < maxF) {
         maxF = f;
     }
-    self->shieldHP = maxF;
+    this->shieldHP = maxF;
     return Player_regenerateShield_tail();
 }
 
 unsigned char Player::doesNeverAttack() {
-    Player *self = this;
-    return self->neverAttack;
+    return this->neverAttack;
 }
 
 int Player::getMaxShieldHP() {
-    Player *self = this;
-    return self->maxShieldHP;
+    return this->maxShieldHP;
 }
 
 unsigned char Player::isDamaged() {
-    Player *self = this;
-    return self->damaged;
+    return this->damaged;
 }
 
 unsigned char Player::isActive() {
-    Player *self = this;
-    return self->active;
+    return this->active;
 }
 
 // Duplicate of Player::shoot(int,int,long long,bool); the canonical definition (using
@@ -386,42 +345,35 @@ unsigned char Player::isActive() {
 // redefinition; the leftover here also dropped 'b' and wrongly returned a value.
 
 int Player::getEmpPoints() {
-    Player *self = this;
-    return self->empPoints;
+    return this->empPoints;
 }
 
 int Player::GetEngineEvent() {
-    Player *self = this;
-    return (int)(__INTPTR_TYPE__)self->engineEvent;
+    return (int)(__INTPTR_TYPE__)this->engineEvent;
 }
 
 void Player::setEmpForce(float value) {
-    Player *self = this;
-    self->empForce = value;
+    this->empForce = value;
 }
 
 void Player::setShootingEnabled(bool value) {
-    Player *self = this;
-    self->shootingEnabled = value;
+    this->shootingEnabled = value;
 }
 
 int Player::getDamageRate() {
-    Player *self = this;
-    return self->damageRate;
+    return this->damageRate;
 }
 
 float Player::getEmpForce() {
-    Player *self = this;
-    return self->empForce;
+    return this->empForce;
 }
 
 // Accessor lives as the non-member inline Player_turnedEnemy() in Player.h, because a
 // member of this name would collide with the 'turnedEnemy' data member (field 0xe0).
 
 bool Player::gunAvailable(unsigned int slot) {
-    Player *self = this;
     if (slot < 4) {
-        Array<Gun *> *slotArray = self->guns->data()[slot];
+        Array<Gun *> *slotArray = this->guns->data()[slot];
         if (slotArray != 0 && slotArray->size() != 0) {
             return *(int *)slotArray->data() != 0;
         }
@@ -430,13 +382,11 @@ bool Player::gunAvailable(unsigned int slot) {
 }
 
 int Player::getCombinedHP() {
-    Player *self = this;
-    return (int)(self->shieldHP + (float)self->armorHP + (float)self->hitpoints);
+    return (int)(this->shieldHP + (float)this->armorHP + (float)this->hitpoints);
 }
 
 bool Player::isGasCloud() {
-    Player *self = this;
-    KIPlayer *ki = self->kiPlayer;
+    KIPlayer *ki = this->kiPlayer;
     bool result = false;
     if (ki != 0) {
         result = *((char *)ki + 0x44) != 0;
@@ -445,44 +395,38 @@ bool Player::isGasCloud() {
 }
 
 void Player::setArmorHP(int value) {
-    Player *self = this;
-    if (self->maxArmorHP < value) {
-        value = self->maxArmorHP;
+    if (this->maxArmorHP < value) {
+        value = this->maxArmorHP;
     }
-    self->armorHP = value;
+    this->armorHP = value;
     return Player_setArmorHP_tail();
 }
 
 void Player::setHitpoints(int value) {
-    Player *self = this;
-    self->hitpoints = value;
-    if (self->maxHitpoints < value) {
-        self->maxHitpoints = value;
+    this->hitpoints = value;
+    if (this->maxHitpoints < value) {
+        this->maxHitpoints = value;
     }
     return Player_setHitpoints_tail();
 }
 
 void Player::setNeverAttack(bool value) {
-    Player *self = this;
-    self->neverAttack = value;
+    this->neverAttack = value;
 }
 
 void Player::setMaxShieldHP(int value) {
-    Player *self = this;
-    self->maxShieldHP = value;
-    self->shieldHP = (float)value;
+    this->maxShieldHP = value;
+    this->shieldHP = (float)value;
     return Player_setMaxShieldHP_tail();
 }
 
 void Player::setMaxEmpPoints(int value) {
-    Player *self = this;
-    self->empPoints = value;
-    self->maxEmpPoints = value;
+    this->empPoints = value;
+    this->maxEmpPoints = value;
     return Player_setMaxEmpPoints_tail();
 }
 
 int Player::getGunSlots() {
-    Player *self = this;
     return 3;
 }
 
@@ -494,55 +438,49 @@ struct HitVec3 {
 };
 
 void Player::getHitVector(Vector *out) {
-    Player *self = this;
-    double xy = *(double *)self->hitVector;
-    out->z = self->hitVector[2];
+    double xy = *(double *)this->hitVector;
+    out->z = this->hitVector[2];
     *(double *)&out->x = xy;
 }
 
 void Player::setPlayShootSound(bool play, int id) {
-    Player *self = this;
-    self->playShootSound = play;
-    self->playShootSoundId = id;
+    this->playShootSound = play;
+    this->playShootSoundId = id;
 }
 
 void Player::regenerateShield() {
-    Player *self = this;
-    float f = self->shieldHP + 1.0f;
-    float maxF = (float)self->maxShieldHP;
+    float f = this->shieldHP + 1.0f;
+    float maxF = (float)this->maxShieldHP;
     if (f < maxF) {
         maxF = f;
     }
-    self->shieldHP = maxF;
+    this->shieldHP = maxF;
     return Player_regenerateShield_tail();
 }
 
 void Player::heal(float amount) {
-    Player *self = this;
-    float f = self->field_110 + amount;
-    self->field_110 = f;
+    float f = this->field_110 + amount;
+    this->field_110 = f;
     if (f > 1.0f) {
         int count = (int)f;
         for (int i = 0; i < count; i++) {
-            ((Player *)(self))->regenerateHull();
+            ((Player *)(this))->regenerateHull();
         }
-        self->field_110 = self->field_110 - (float)count;
+        this->field_110 = this->field_110 - (float)count;
     }
 }
 
 void Player::setShieldHP(int value) {
-    Player *self = this;
-    float maxF = (float)self->maxShieldHP;
-    self->shieldHP = (float)value;
+    float maxF = (float)this->maxShieldHP;
+    this->shieldHP = (float)value;
     if ((float)value > maxF) {
-        self->shieldHP = maxF;
+        this->shieldHP = maxF;
     }
     return Player_setShieldHP_tail();
 }
 
 void Player::refillGunDelay(int slot) {
-    Player *self = this;
-    Array<Array<Gun *> *> *guns = self->guns;
+    Array<Array<Gun *> *> *guns = this->guns;
     if (guns != 0 && slot >= 0 && (unsigned int)slot < guns->size()) {
         Array<Gun *> *arr = guns->data()[slot];
         if (arr != 0) {
@@ -556,18 +494,17 @@ void Player::refillGunDelay(int slot) {
 }
 
 void Player::addEnemies(Array<Player *> *enemies) {
-    Player *self = this;
-    if (self->enemies == 0) {
-        return Player_setEnemies_tail(self, enemies);
+    if (this->enemies == 0) {
+        return Player_setEnemies_tail(this, enemies);
     }
     Array<Player *> *tmp = new Array<Player *>();
-    for (unsigned int i = 0; i < self->enemies->size(); i++) {
-        tmp->push_back(self->enemies->data()[i]);
+    for (unsigned int i = 0; i < this->enemies->size(); i++) {
+        tmp->push_back(this->enemies->data()[i]);
     }
     for (unsigned int i = 0; i < enemies->size(); i++) {
         tmp->push_back(enemies->data()[i]);
     }
-    ((Player *)(self))->setEnemies(tmp);
+    ((Player *)(this))->setEnemies(tmp);
     delete tmp;
 }
 
@@ -658,19 +595,17 @@ Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondar
 }
 
 void Player::getPosition(Vector *out) {
-    Player *self = this;
-    MatrixGetPosition(out, self->transform);
+    MatrixGetPosition(out, this->transform);
 }
 
 float Player::damageGamma(float amount) {
-    Player *self = this;
-    if (self->vulnerable) {
-        if (self->active) {
-            amount = self->gammaHP - amount;
-            *((unsigned char *)self + 0x67) = 1;
-            self->gammaHP = amount;
+    if (this->vulnerable) {
+        if (this->active) {
+            amount = this->gammaHP - amount;
+            *((unsigned char *)this + 0x67) = 1;
+            this->gammaHP = amount;
             if (!(amount > 0.0f)) {
-                self->gammaHP = 0;
+                this->gammaHP = 0;
             }
         }
     }
@@ -792,35 +727,32 @@ lab_3164:
 }
 
 void Player::addGun(Array<Gun *> *gunsIn, int slot) {
-    Player *self = this;
-    if (self->guns != 0) {
+    if (this->guns != 0) {
         if ((unsigned int)slot < 4) {
             Array<Gun *> *arr = new Array<Gun *>();
-            self->guns->data()[slot] = arr;
+            this->guns->data()[slot] = arr;
             for (unsigned int i = 0; i < gunsIn->size(); i++) {
-                self->guns->data()[slot]->push_back(gunsIn->data()[i]);
+                this->guns->data()[slot]->push_back(gunsIn->data()[i]);
             }
         }
-        if (self->playShootSound) {
-            return Player_shoot_tail(self, self->playShootSoundId);
+        if (this->playShootSound) {
+            return Player_shoot_tail(this, this->playShootSoundId);
         }
     }
 }
 
 void Player::setAlwaysEnemy(bool value) {
-    Player *self = this;
-    self->alwaysEnemy = value;
-    self->enemyFlags = 1;
-    self->turnedEnemy = 1;
+    this->alwaysEnemy = value;
+    this->enemyFlags = 1;
+    this->turnedEnemy = 1;
 }
 
 void Player::regenerateHull() {
-    Player *self = this;
-    int v = self->maxHitpoints;
-    if (self->hitpoints + 1 < self->maxHitpoints) {
-        v = self->hitpoints + 1;
+    int v = this->maxHitpoints;
+    if (this->hitpoints + 1 < this->maxHitpoints) {
+        v = this->hitpoints + 1;
     }
-    self->hitpoints = v;
+    this->hitpoints = v;
     return Player_regenerateHull_tail();
 }
 
@@ -858,7 +790,6 @@ __attribute__((minsize)) Player::~Player()
 }
 
 void Player::setGammaHP(int value) {
-    Player *self = this;
     float f = (float)value;
     float sel = f;
     if (value != 9999999) {
@@ -867,19 +798,18 @@ void Player::setGammaHP(int value) {
     if (value > 100) {
         f = sel;
     }
-    self->gammaHP = f;
+    this->gammaHP = f;
     return Player_setGammaHP_tail();
 }
 
 void Player::stopShootSound(int index, int channel) {
-    Player *self = this;
     if ((unsigned int)channel > 8) {
         return;
     }
     if (((1 << channel) & 0x10c) != 0) {
         void *sound;
         int id;
-        if (self->kiPlayer != 0 && *(int *)((char *)self->kiPlayer + 0x28) == 9) {
+        if (this->kiPlayer != 0 && *(int *)((char *)this->kiPlayer + 0x28) == 9) {
             id = 0x3e;
             sound = gFModSoundAlt;
         } else {
@@ -916,22 +846,20 @@ void Player::reset() {
 }
 
 void Player::addGun(Gun *gun, int slot) {
-    Player *self = this;
-    if (self->guns != 0) {
+    if (this->guns != 0) {
         if ((unsigned int)slot < 4) {
             Array<Gun *> *arr = new Array<Gun *>();
-            self->guns->data()[slot] = arr;
-            self->guns->data()[slot]->push_back(gun);
+            this->guns->data()[slot] = arr;
+            this->guns->data()[slot]->push_back(gun);
         }
-        if (self->playShootSound) {
-            return Player_shoot_tail(self, self->playShootSoundId);
+        if (this->playShootSound) {
+            return Player_shoot_tail(this, this->playShootSoundId);
         }
     }
 }
 
 void Player::calcWeaponSounds(int count) {
-    Player *self = this;
-    Array<Array<Gun *> *> *guns = self->guns;
+    Array<Array<Gun *> *> *guns = this->guns;
     if (guns == 0) {
         return;
     }
@@ -939,7 +867,7 @@ void Player::calcWeaponSounds(int count) {
         unsigned int n = ((Array<Gun *> *)guns->data()[0])->size();
         int *order = new int[n];
         for (int i = 0; i < (int)n; i++) {
-            order[i] = *(int *)((char *)self->guns->data()[0]->data()[i] + 0x58);
+            order[i] = *(int *)((char *)this->guns->data()[0]->data()[i] + 0x58);
         }
 
         bool sorted = true;
@@ -977,7 +905,7 @@ void Player::calcWeaponSounds(int count) {
         do {
             if ((int)n <= idx) break;
             if (order[idx] >= 0) {
-                *(char *)((char *)self->guns->data()[0]->data()[idx] + 0x89) = 1;
+                *(char *)((char *)this->guns->data()[0]->data()[idx] + 0x89) = 1;
                 Globals_addSoundResourceToList(*sound);
                 count--;
             }
@@ -985,7 +913,7 @@ void Player::calcWeaponSounds(int count) {
         } while (count != 0);
 
         operator delete[](order);
-        guns = self->guns;
+        guns = this->guns;
     }
 
     if (guns->size() > 2) {
@@ -1024,19 +952,18 @@ __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Ve
 }
 
 void Player::setEnemies(Array<Player *> *enemies) {
-    Player *self = this;
-    if (self->enemies != 0) {
-        delete self->enemies;
+    if (this->enemies != 0) {
+        delete this->enemies;
     }
-    self->enemies = 0;
+    this->enemies = 0;
     if (enemies != 0) {
         Array<Player *> *copy = new Array<Player *>();
-        self->enemies = copy;
+        this->enemies = copy;
         for (unsigned int i = 0; i < enemies->size(); i++) {
             copy->push_back(enemies->data()[i]);
         }
     }
-    Array<Array<Gun *> *> *guns = self->guns;
+    Array<Array<Gun *> *> *guns = this->guns;
     if (guns != 0) {
         for (unsigned int i = 0; i < guns->size(); i++) {
             Array<Gun *> *slot = guns->data()[i];
@@ -1045,7 +972,7 @@ void Player::setEnemies(Array<Player *> *enemies) {
                     Gun *gun = slot->data()[j];
                     if (gun != 0) {
                         Gun_setEnemies(gun);
-                        guns = self->guns;
+                        guns = this->guns;
                         slot = guns->data()[i];
                     }
                 }
@@ -1354,26 +1281,24 @@ LAB_3488:
 }
 
 void Player::setEnemy(Player *enemy) {
-    Player *self = this;
     Array<Player *> *tmp = new Array<Player *>();
     tmp->push_back(enemy);
-    ((Player *)(self))->setEnemies(tmp);
+    ((Player *)(this))->setEnemies(tmp);
     delete tmp;
 }
 
 void Player::addEnemy(Player *enemy) {
-    Player *self = this;
-    if (self->enemies == 0) {
-        return Player_setEnemy_tail(self, enemy);
+    if (this->enemies == 0) {
+        return Player_setEnemy_tail(this, enemy);
     }
     Array<Player *> *tmp = new Array<Player *>();
-    if (self->enemies->size() != 0) {
-        for (unsigned int i = 0; i < self->enemies->size(); i++) {
-            tmp->push_back(self->enemies->data()[i]);
+    if (this->enemies->size() != 0) {
+        for (unsigned int i = 0; i < this->enemies->size(); i++) {
+            tmp->push_back(this->enemies->data()[i]);
         }
     }
     tmp->push_back(enemy);
-    ((Player *)(self))->setEnemies(tmp);
+    ((Player *)(this))->setEnemies(tmp);
     delete tmp;
 }
 
@@ -1386,16 +1311,14 @@ __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, 
 }
 
 void Player::damage(int amount) {
-    Player *self = this;
-    return Player_damage_full(self, amount, 0, -1);
+    return Player_damage_full(this, amount, 0, -1);
 }
 
 void Player::stopShooting(int slot, int channel) {
-    Player *self = this;
     if ((unsigned int)(channel - 0x16) >= 9) {
         return;
     }
-    Array<Array<Gun *> *> *guns = self->guns;
+    Array<Array<Gun *> *> *guns = this->guns;
     if (guns == 0) {
         return;
     }
@@ -1411,22 +1334,20 @@ void Player::stopShooting(int slot, int channel) {
     }
     for (unsigned int i = 0; i < arr->size(); i++) {
         Gun *gun = arr->data()[i];
-        ((Player *)(self))->stopShootSound(gun->itemIndex, gun->weaponType);
-        arr = self->guns->data()[slot];
+        ((Player *)(this))->stopShootSound(gun->itemIndex, gun->weaponType);
+        arr = this->guns->data()[slot];
     }
 }
 
 void Player::setAlwaysFriend(bool value) {
-    Player *self = this;
-    self->alwaysFriend = value;
-    self->enemyFlags = 0x100;
-    self->turnedEnemy = 0;
+    this->alwaysFriend = value;
+    this->enemyFlags = 0x100;
+    this->turnedEnemy = 0;
 }
 
 void Player::setMaxArmorHP(int value) {
-    Player *self = this;
-    self->armorHP = value;
-    self->maxArmorHP = value;
+    this->armorHP = value;
+    this->maxArmorHP = value;
     return Player_setMaxArmorHP_tail();
 }
 
@@ -1564,17 +1485,15 @@ extern "C" void Player_shoot_full2(
     int m8, int m9, int m10, int m11, int m12, int m13, int m14);
 
 void Player::shoot(int a, int b, long long pos, bool flag) {
-    Player *self = this;
-    int *m = (int *)self->transform;
-    Player_shoot_full2(self, a, b, (int)pos, (int)((unsigned long long)pos >> 32),
+    int *m = (int *)this->transform;
+    Player_shoot_full2(this, a, b, (int)pos, (int)((unsigned long long)pos >> 32),
                        m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7],
                        m[8], m[9], m[10], m[11], m[12], m[13], m[14]);
 }
 
 // Player::stopShooting(int) — single-arg overload (no channel filter).
 void Player::stopShooting(int slot) {
-    Player *self = this;
-    Array<Array<Gun *> *> *guns = self->guns;
+    Array<Array<Gun *> *> *guns = this->guns;
     if (guns == 0) {
         return;
     }
@@ -1590,14 +1509,13 @@ void Player::stopShooting(int slot) {
     }
     for (unsigned int i = 0; i < arr->size(); i++) {
         Gun *gun = arr->data()[i];
-        ((Player *)(self))->stopShootSound(gun->itemIndex, gun->weaponType);
-        arr = self->guns->data()[slot];
+        ((Player *)(this))->stopShootSound(gun->itemIndex, gun->weaponType);
+        arr = this->guns->data()[slot];
     }
 }
 
 float * Player::setHitVector(float x, float y, float z) {
-    Player *self = this;
-    float *p = self->hitVector;
+    float *p = this->hitVector;
     *p++ = x;
     *p++ = y;
     *p++ = z;
@@ -1605,8 +1523,7 @@ float * Player::setHitVector(float x, float y, float z) {
 }
 
 void Player::resetGunDelay(int slot) {
-    Player *self = this;
-    Array<Array<Gun *> *> *guns = self->guns;
+    Array<Array<Gun *> *> *guns = this->guns;
     if (guns == 0) {
         return;
     }

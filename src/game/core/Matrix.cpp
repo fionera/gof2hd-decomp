@@ -15,8 +15,7 @@ static const float kIdentTail[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
 // must not edit. To avoid an ODR redefinition we expose the identity-init logic as a
 // helper instead of redefining Matrix::Matrix(); callers that need identity init use this.
 void Matrix::initIdentity() {
-    Matrix *self = this;
-    float *m = self->m;
+    float *m = this->m;
     m[0] = 1.0f;   // 0x00
     m[5] = 1.0f;   // 0x14
     m[14] = 1.0f;  // 0x38

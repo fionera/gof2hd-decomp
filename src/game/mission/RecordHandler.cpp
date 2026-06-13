@@ -107,12 +107,11 @@ __attribute__((visibility("hidden"))) extern int *g_RH_recordCount;
 
 // RecordHandler::readAllRecords() -> Array<GameRecord*>*
 void * RecordHandler::readAllRecords() {
-    RecordHandler *self = this;
     Array<void*> *arr = new Array<void*>();
     int *cnt = g_RH_recordCount;
     arr->resize(*cnt);
     for (int i = 0; i < *cnt; i++) {
-        void *r = ((RecordHandler *)(self))->recordStoreRead(i);
+        void *r = ((RecordHandler *)(this))->recordStoreRead(i);
         (*arr)[i] = r;
     }
     return arr;
@@ -123,12 +122,11 @@ __attribute__((visibility("hidden"))) extern int *g_RH_recordCount;
 
 // RecordHandler::readAllPreviewRecords() -> Array<GameRecord*>*
 void * RecordHandler::readAllPreviewRecords() {
-    RecordHandler *self = this;
     Array<void*> *arr = new Array<void*>();
     int *cnt = g_RH_recordCount;
     arr->resize(*cnt);
     for (int i = 0; i < *cnt; i++) {
-        void *r = ((RecordHandler *)(self))->recordStoreReadPreview(i);
+        void *r = ((RecordHandler *)(this))->recordStoreReadPreview(i);
         (*arr)[i] = r;
     }
     return arr;
@@ -145,7 +143,6 @@ __attribute__((visibility("hidden"))) extern int *g_CSV_count;   // DAT_000e01bc
 
 // RecordHandler::convertSDVersionSaves()
 void RecordHandler::convertSDVersionSaves() {
-    RecordHandler *self = this;
     int *guardP = g_CSV_guard;
     volatile int saved = *guardP;
 
@@ -162,16 +159,16 @@ void RecordHandler::convertSDVersionSaves() {
     signed char *sizes1 = RH_op_new_arr(sz);
 
     for (int i = 0; i < (int)n; i++) {
-        ((int *)sizes0)[i] = ((RecordHandler *)(self))->readRecordAsByteArray(&(*a0)[i], i, false);
-        ((int *)sizes1)[i] = ((RecordHandler *)(self))->readRecordAsByteArray(&(*a1)[i], i, true);
+        ((int *)sizes0)[i] = ((RecordHandler *)(this))->readRecordAsByteArray(&(*a0)[i], i, false);
+        ((int *)sizes1)[i] = ((RecordHandler *)(this))->readRecordAsByteArray(&(*a1)[i], i, true);
 
         char num[12], path[12];
         AEString_int_ctor(num, i);
-        AEString_concat(path, (char *)self + 0x14);
+        AEString_concat(path, (char *)this + 0x14);
         AEFile::FileDelete(*(String *)(path));
 
         AEString_int_ctor(num, i);
-        AEString_concat(path, (char *)self + 0x20);
+        AEString_concat(path, (char *)this + 0x20);
         AEFile::FileDelete(*(String *)(path));
         n = *cnt;
     }
@@ -191,17 +188,17 @@ void RecordHandler::convertSDVersionSaves() {
             // process the final slot (index last) then finish
             signed char *lastRec = (*a0)[last];
             if (lastRec != 0) {
-                ((RecordHandler *)(self))->writeByteArrayAsRecord(lastRec, ((int *)sizes0)[last], 0, false);
-                ((RecordHandler *)(self))->addHash(0);
+                ((RecordHandler *)(this))->writeByteArrayAsRecord(lastRec, ((int *)sizes0)[last], 0, false);
+                ((RecordHandler *)(this))->addHash(0);
                 int idx = (int)(*cnt) - 1;
-                ((RecordHandler *)(self))->writeByteArrayAsRecord((*a1)[idx], ((int *)sizes1)[idx], 0, true);
+                ((RecordHandler *)(this))->writeByteArrayAsRecord((*a1)[idx], ((int *)sizes1)[idx], 0, true);
             }
             break;
         }
         int next = j + 1;
-        ((RecordHandler *)(self))->writeByteArrayAsRecord(rec, ((int *)sizes0)[j], next, false);
-        ((RecordHandler *)(self))->addHash(next);
-        ((RecordHandler *)(self))->writeByteArrayAsRecord((*a1)[j], ((int *)sizes1)[j], next, true);
+        ((RecordHandler *)(this))->writeByteArrayAsRecord(rec, ((int *)sizes0)[j], next, false);
+        ((RecordHandler *)(this))->addHash(next);
+        ((RecordHandler *)(this))->writeByteArrayAsRecord((*a1)[j], ((int *)sizes1)[j], next, true);
         i = next;
         n = *cnt;
     }
@@ -224,12 +221,11 @@ __attribute__((visibility("hidden"))) extern unsigned char **RH_ah_key;        /
 
 // RecordHandler::addHash(int slot)
 void RecordHandler::addHash(int slot) {
-    RecordHandler *self = this;
     int *guardP = g_AH_guard;
     volatile int saved = *guardP;
 
     signed char *data = 0;
-    int len = ((RecordHandler *)(self))->readRecordAsByteArray(&data, slot, false);
+    int len = ((RecordHandler *)(this))->readRecordAsByteArray(&data, slot, false);
     if (-1 < len) {
         unsigned char *md = (unsigned char *)RH_op_new_arr(0x20);
         void *c = RH_op_new(0x70);
@@ -248,7 +244,7 @@ void RecordHandler::addHash(int slot) {
         dst[1] = src[1];
         dst[2] = src[2];
         dst[3] = src[3];
-        ((RecordHandler *)(self))->writeByteArrayAsRecord(out, len + 0x20, slot, false);
+        ((RecordHandler *)(this))->writeByteArrayAsRecord(out, len + 0x20, slot, false);
 
         void (*del)(void *) = (void (*)(void *))RH_op_delete_arr;
         del(data);
@@ -263,14 +259,13 @@ void RecordHandler::addHash(int slot) {
 
 // RecordHandler::readRecordAsByteArray(signed char**, int, bool)
 int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromBackup) {
-    RecordHandler *self = this;
     char num[12];
     char path[12];
     unsigned int fd;
     int sz;
 
     String_int_ctor(num, slot);
-    char *dir = (char *)self + (fromBackup ? 0x20 : 0x14);
+    char *dir = (char *)this + (fromBackup ? 0x20 : 0x14);
     String_concat(path, dir, num);
     ((String *)(num))->dtor();
 
@@ -292,8 +287,7 @@ __attribute__((visibility("hidden"))) extern int *g_RW_guard;   // DAT_000de8a4 
 
 // RecordHandler::readWanted(unsigned int fd) -> Wanted* (in r0 on return).
 void * RecordHandler::readWanted(unsigned int fd) {
-    RecordHandler *self = this;
-    (void)self;
+    (void)this;
     int *guardP = g_RW_guard;
     volatile int saved = *guardP;
 
@@ -361,7 +355,6 @@ __attribute__((visibility("hidden"))) extern char **g_RH_csd_flag;
 
 // RecordHandler::changeSaveDirectoryToBackupDirectory()
 void RecordHandler::changeSaveDirectoryToBackupDirectory() {
-    RecordHandler *self = this;
     Array<signed char*> *a0 = new Array<signed char*>();
     int *cnt = g_RH_csd_count;
     a0->resize(*cnt);
@@ -375,8 +368,8 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
     signed char *sizes1 = RH_op_new_arr(sz);
 
     for (int i = 0; i < (int)n; i++) {
-        ((int *)sizes0)[i] = ((RecordHandler *)(self))->readRecordAsByteArray(&(*a0)[i], i, false);
-        ((int *)sizes1)[i] = ((RecordHandler *)(self))->readRecordAsByteArray(&(*a1)[i], i, true);
+        ((int *)sizes0)[i] = ((RecordHandler *)(this))->readRecordAsByteArray(&(*a0)[i], i, false);
+        ((int *)sizes1)[i] = ((RecordHandler *)(this))->readRecordAsByteArray(&(*a1)[i], i, true);
         n = *cnt;
     }
 
@@ -387,10 +380,10 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
         if (rec == 0) {
             i++;
         } else {
-            ((RecordHandler *)(self))->writeByteArrayAsRecord(rec, ((int *)sizes0)[i], i, false);
+            ((RecordHandler *)(this))->writeByteArrayAsRecord(rec, ((int *)sizes0)[i], i, false);
             int next = i + 1;
-            ((RecordHandler *)(self))->addHash(next);
-            ((RecordHandler *)(self))->writeByteArrayAsRecord((*a1)[i], ((int *)sizes1)[i], i, true);
+            ((RecordHandler *)(this))->addHash(next);
+            ((RecordHandler *)(this))->writeByteArrayAsRecord((*a1)[i], ((int *)sizes1)[i], i, true);
             n = *cnt;
             i = next;
         }
@@ -412,22 +405,20 @@ __attribute__((visibility("hidden"))) extern void (*g_RH_stringDtor)(void *s);
 // RecordHandler::~RecordHandler() — destroys the three String members at +0x20,
 // +0x14, +0x8 (high to low) and returns `this`.
 RecordHandler * RecordHandler::dtor() {
-    RecordHandler *self = this;
     void (*dtor)(void *) = g_RH_stringDtor;
-    dtor((char *)self + 0x20);
-    dtor((char *)self + 0x14);
-    dtor((char *)self + 0x8);
-    return self;
+    dtor((char *)this + 0x20);
+    dtor((char *)this + 0x14);
+    dtor((char *)this + 0x8);
+    return this;
 }
 
 // RecordHandler::recordStoreReadPreview(int)
 void * RecordHandler::recordStoreReadPreview(int slot) {
-    RecordHandler *self = this;
     char path[12];
     char num[12];
 
     String_int_ctor(num, slot);
-    String_concat(path, (char *)self + 0x20, num);
+    String_concat(path, (char *)this + 0x20, num);
     ((String *)(num))->dtor();
 
     unsigned int &fd = *(unsigned int *)num;  // reuse the now-dead String temp slot
@@ -458,11 +449,10 @@ __attribute__((visibility("hidden"))) extern const char RH_lit2[];
 // RecordHandler::RecordHandler() — default-constructs the three String members at
 // +0x8, +0x14, +0x20, then assigns each from a literal, and returns `this`.
 RecordHandler * RecordHandler::ctor() {
-    RecordHandler *self = this;
     char tmp[12];
-    char *m0 = (char *)self + 0x8;
-    char *m1 = (char *)self + 0x14;
-    char *m2 = (char *)self + 0x20;
+    char *m0 = (char *)this + 0x8;
+    char *m1 = (char *)this + 0x14;
+    char *m2 = (char *)this + 0x20;
 
     String_default_ctor(m0);
     String_default_ctor(m1);
@@ -480,16 +470,15 @@ RecordHandler * RecordHandler::ctor() {
     ((String *)(m2))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
 
-    return self;
+    return this;
 }
 
 // RecordHandler::writeByteArrayAsOptionsFile(signed char*, int)
 void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
-    RecordHandler *self = this;
     char tmp[12];
     unsigned int fd;
 
-    if (AEFile::FileExist(*(String *)String_copy_ctor(tmp, (char *)self + 0x8, false)) != 0)
+    if (AEFile::FileExist(*(String *)String_copy_ctor(tmp, (char *)this + 0x8, false)) != 0)
         AEFile::FileDelete(*(String *)(tmp));
     AEFile::OpenWrite(*(String *)tmp, &fd);
     ((AEFile *)(n))->Write(buf, fd);
@@ -509,13 +498,12 @@ __attribute__((visibility("hidden"))) extern int *g_RH_wp_float;
 
 // RecordHandler::recordStoreWritePreview(int)
 int RecordHandler::recordStoreWritePreview_int(int slot) {
-    RecordHandler *self = this;
     char path[12];
     char num[12];
     unsigned int fd;
 
     String_int_ctor(num, slot);
-    String_concat(path, (char *)self + 0x20, num);
+    String_concat(path, (char *)this + 0x20, num);
     ((String *)(num))->dtor();
 
     if (AEFile::FileExist(*(String *)(path)) != 0)
@@ -690,11 +678,10 @@ __attribute__((visibility("hidden"))) extern int *g_LO_fmodSlot;     // DAT_000d
 
 // RecordHandler::loadOptions()
 void RecordHandler::loadOptions() {
-    RecordHandler *self = this;
     int *guardP = g_LO_guard;
     volatile int saved = *guardP;
 
-    void *path = (char *)self + 8;
+    void *path = (char *)this + 8;
     if (AEFile::FileExist(*(String *)(path)) != 0) {
         unsigned int fd;
         AEFile::OpenRead(*(String *)path, &fd);
@@ -809,11 +796,10 @@ __attribute__((visibility("hidden"))) extern int *g_LRV_guard;   // DAT_000dd444
 // RecordHandler::loadResolutionValue() — reads the options file at self+8 into a settings
 // scratch struct. self is in r0; the path String lives at self+8.
 void RecordHandler::loadResolutionValue() {
-    RecordHandler *self = this;
     int *guardP = g_LRV_guard;
     volatile int saved = *guardP;
 
-    void *path = (char *)self + 8;
+    void *path = (char *)this + 8;
     if (AEFile::FileExist(*(String *)(path)) != 0) {
         unsigned int fd;
         AEFile::OpenRead(*(String *)path, &fd);
@@ -875,13 +861,12 @@ void RecordHandler::loadResolutionValue() {
 
 // RecordHandler::writeByteArrayAsRecord(signed char*, int, int, bool)
 int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup) {
-    RecordHandler *self = this;
     char num[12];
     char path[12];
     unsigned int fd;
 
     String_int_ctor(num, slot);
-    char *dir = (char *)self + (toBackup ? 0x20 : 0x14);
+    char *dir = (char *)this + (toBackup ? 0x20 : 0x14);
     String_concat(path, dir, num);
     ((String *)(num))->dtor();
 
@@ -898,7 +883,6 @@ __attribute__((visibility("hidden"))) extern int *g_RM_guard;   // DAT_000de244 
 
 // RecordHandler::readMission(unsigned int fd) -> Mission* (in r0).
 void * RecordHandler::readMission(unsigned int fd) {
-    RecordHandler *self = this;
     int *guardP = g_RM_guard;
     volatile int saved = *guardP;
     void *mission = 0;
@@ -949,7 +933,7 @@ void * RecordHandler::readMission(unsigned int fd) {
 
         int hasAgent = 0;
         AEFile_ReadInt(&hasAgent, fd);
-        void *agent = (hasAgent < 1) ? 0 : ((RecordHandler *)(self))->readAgent(fd);
+        void *agent = (hasAgent < 1) ? 0 : ((RecordHandler *)(this))->readAgent(fd);
 
         if (!isEmpty) {
             mission = RH_op_new(0x78);
@@ -990,11 +974,10 @@ __attribute__((visibility("hidden"))) extern unsigned char *g_SO_flag2; // DAT_0
 
 // RecordHandler::saveOptions()
 void RecordHandler::saveOptions() {
-    RecordHandler *self = this;
     int *guardP = g_SO_guard;
     volatile int saved = *guardP;
 
-    void *path = (char *)self + 8;
+    void *path = (char *)this + 8;
     if (AEFile::FileExist(*(String *)(path)) != 0) {
         AEFile::FileDelete(*(String *)(path));
     }
@@ -1062,7 +1045,7 @@ void RecordHandler::saveOptions() {
     AEFile_WriteByte(s[0x61], fd);
     AEFile_WriteByte(s[0x62], fd);
     AEFile::Close(fd);
-    ((RecordHandler *)(self))->addHashToOptions();
+    ((RecordHandler *)(this))->addHashToOptions();
 
     return;
 }
@@ -1071,7 +1054,6 @@ __attribute__((visibility("hidden"))) extern int *g_RA_guard;   // DAT_000de608 
 
 // RecordHandler::readAgent(unsigned int fd) -> Agent* (in r0).
 void * RecordHandler::readAgent(unsigned int fd) {
-    RecordHandler *self = this;
     int *guardP = g_RA_guard;
     volatile int saved = *guardP;
 
@@ -1136,7 +1118,7 @@ void * RecordHandler::readAgent(unsigned int fd) {
 
     int hasMission = 0;
     AEFile_ReadInt(&hasMission, fd);
-    void *mission = (hasMission < 1) ? 0 : ((RecordHandler *)(self))->readMission(fd);
+    void *mission = (hasMission < 1) ? 0 : ((RecordHandler *)(this))->readMission(fd);
 
     Agent *agent = (Agent *)RH_op_new(0x98);
     char nameCopy[12];
@@ -1192,8 +1174,7 @@ __attribute__((visibility("hidden"))) extern int *g_WW_guard;   // DAT_000dfd70 
 
 // RecordHandler::writeWanted(Wanted*, unsigned int fd)
 void RecordHandler::writeWanted(void *w, unsigned int fd) {
-    RecordHandler *self = this;
-    (void)self;
+    (void)this;
     int *guardP = g_WW_guard;
     volatile int saved = *guardP;
 
@@ -1234,7 +1215,6 @@ struct Ship;
 
 // RecordHandler::recordStoreWritePreview(GameRecord*, int)
 int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
-    RecordHandler *self = this;
     if (rec == 0)
         return 0;
 
@@ -1243,7 +1223,7 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     unsigned int fd;
 
     String_int_ctor(num, slot);
-    String_concat(path, (char *)self + 0x20, num);
+    String_concat(path, (char *)this + 0x20, num);
     ((String *)(num))->dtor();
 
     if (AEFile::FileExist(*(String *)(path)) != 0)
@@ -1277,13 +1257,12 @@ __attribute__((visibility("hidden"))) extern int *g_RSW_status;   // DAT_000dec6
 
 // RecordHandler::recordStoreWrite(int slot)
 void RecordHandler::recordStoreWrite(int slot) {
-    RecordHandler *self = this;
     int *guardP = g_RSW_guard;
     volatile int saved = *guardP;
 
     char num[12], path[12];
     AEString_int_ctor(num, slot);
-    AEString_concat(path, (char *)self + 0x14);
+    AEString_concat(path, (char *)this + 0x14);
 
     if (AEFile::FileExist(*(String *)(path)) != 0) {
         AEFile::FileDelete(*(String *)(path));
@@ -1310,8 +1289,8 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile_WriteInt(((Status *)(st))->getGoodsProduced(), fd);
     AEFile_WriteInt(((Status *)(st))->getStationsVisited(), fd);
     AEFile_WriteInt(((Status *)(st))->getCurrentCampaignMission(), fd);
-    ((RecordHandler *)(self))->writeMission(st->getFreelanceMission(), fd);
-    ((RecordHandler *)(self))->writeMission((void *)(intptr_t)st->getCampaignMission(), fd);
+    ((RecordHandler *)(this))->writeMission(st->getFreelanceMission(), fd);
+    ((RecordHandler *)(this))->writeMission((void *)(intptr_t)st->getCampaignMission(), fd);
     AEFile_WriteInt(((Status *)(st))->getJumpgateUsed(), fd);
     AEFile_WriteInt(((Status *)(st))->getCapturedCrates(), fd);
     AEFile_WriteInt(((Status *)(st))->getBoughtEquipment(), fd);
@@ -1319,10 +1298,10 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile_WriteInt(*(int *)(*status + 0x80), fd);
 
     // Remaining object-graph serialization.
-    ((RecordHandler *)(self))->recordStoreWrite_body(fd);
+    ((RecordHandler *)(this))->recordStoreWrite_body(fd);
 
     AEFile::Close(fd);
-    ((RecordHandler *)(self))->addHash(slot);
+    ((RecordHandler *)(this))->addHash(slot);
 
     return;
 }
@@ -1708,7 +1687,6 @@ static void *RSR_readItem(unsigned int fd, bool withPrice) {
 
 void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     char *rec = (char *)recv;
-    RecordHandler *self = this;
     void **shipDefs = *(void ***)g_RSR_shipDefs;
 
     AEFile_ReadInt(rec + 0x74, fd);
@@ -1792,7 +1770,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
             if (agN > 0) {
                 Array<Agent*> *agents = new Array<Agent*>(); agents->resize(agN);
                 for (int i = 0; i < agN; i++)
-                    (*agents)[i] = (Agent *)self->readAgent(fd);
+                    (*agents)[i] = (Agent *)this->readAgent(fd);
                 ((Station *)(st))->setAgents(agents);
             }
             bool atk = false; AEFile_Read_bool(&atk, fd, 0);
@@ -1896,7 +1874,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     int agN = 0; AEFile_ReadInt(&agN, fd);
     Array<Agent*> *agents = new Array<Agent*>(); *(void **)(rec + 0x148) = agents; agents->resize(agN);
     for (unsigned i = 0; i < agents->size(); i++)
-        (*agents)[i] = (Agent *)self->readAgent(fd);
+        (*agents)[i] = (Agent *)this->readAgent(fd);
 
     // Single-byte flag block rec+0xe4 .. 0x100.
     for (int off = 0xe4; off <= 0x100; off++) AEFile_ReadByte(rec + off, fd);
@@ -2013,7 +1991,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     if (wN > 0) {
         Array<Wanted*> *wArr = new Array<Wanted*>(); *(void **)(rec + 0x1b4) = wArr; wArr->resize(wN);
         for (int i = 0; i < wN; i++)
-            (*wArr)[i] = (Wanted *)self->readWanted(fd);
+            (*wArr)[i] = (Wanted *)this->readWanted(fd);
     }
 
     // Collected bounties + the remaining one-shot UI/progress flags.
@@ -2043,12 +2021,11 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
 
 // RecordHandler::readOptionsFileAsByteArray(signed char**)
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
-    RecordHandler *self = this;
     char tmp[12];
     unsigned int fd;
     int sz;
 
-    String_copy_ctor(tmp, (char *)self + 0x8, false);
+    String_copy_ctor(tmp, (char *)this + 0x8, false);
     if (AEFile::FileExist(*(String *)(tmp)) != 0) {
         AEFile::OpenRead(*(String *)tmp, &fd);
         sz = AEFile::GetFileSize(fd);
@@ -2071,14 +2048,13 @@ __attribute__((visibility("hidden"))) extern int *g_RSR_guard;   // DAT_000dc094
 
 // RecordHandler::recordStoreRead(int slot)
 void * RecordHandler::recordStoreRead(int slot) {
-    RecordHandler *self = this;
     int *guardP = g_RSR_guard;
     volatile int saved = *guardP;
 
     char *rec = 0;
     char num[12], path[12];
     AEString_int_ctor(num, slot);
-    AEString_concat(path, (char *)self + 0x14);
+    AEString_concat(path, (char *)this + 0x14);
 
     if (AEFile::FileExist(*(String *)(path)) != 0) {
         unsigned int fd;
@@ -2108,8 +2084,8 @@ void * RecordHandler::recordStoreRead(int slot) {
             AEFile_ReadInt(rec + 0x28, fd);
             AEFile_ReadInt(rec + 0x3c, fd);
             AEFile_ReadInt(rec + 0x40, fd);
-            *(void **)(rec + 0x54) = ((RecordHandler *)(self))->readMission(fd);
-            *(void **)(rec + 0x58) = ((RecordHandler *)(self))->readMission(fd);
+            *(void **)(rec + 0x54) = ((RecordHandler *)(this))->readMission(fd);
+            *(void **)(rec + 0x58) = ((RecordHandler *)(this))->readMission(fd);
             AEFile_ReadInt(rec + 0x30, fd);
             AEFile_ReadInt(rec + 0x34, fd);
             AEFile_ReadInt(rec + 0x38, fd);
@@ -2138,7 +2114,7 @@ void * RecordHandler::recordStoreRead(int slot) {
             }
 
             // Remaining object-graph read.
-            ((RecordHandler *)(self))->recordStoreRead_body(rec, fd);
+            ((RecordHandler *)(this))->recordStoreRead_body(rec, fd);
 
             AEFile::Close(fd);
         }
@@ -2201,9 +2177,8 @@ __attribute__((visibility("hidden"))) extern unsigned char **RH_aho_key;
 
 // RecordHandler::addHashToOptions()
 void RecordHandler::addHashToOptions() {
-    RecordHandler *self = this;
     signed char *data = 0;
-    int len = ((RecordHandler *)(self))->readOptionsFileAsByteArray(&data);
+    int len = ((RecordHandler *)(this))->readOptionsFileAsByteArray(&data);
     if (len < 0)
         return;
 
@@ -2224,7 +2199,7 @@ void RecordHandler::addHashToOptions() {
     dst[1] = src[1];
     dst[2] = src[2];
     dst[3] = src[3];
-    ((RecordHandler *)(self))->writeByteArrayAsOptionsFile(out, len + 0x20);
+    ((RecordHandler *)(this))->writeByteArrayAsOptionsFile(out, len + 0x20);
 
     void (*del)(void *) = (void (*)(void *))RH_op_delete_arr;
     del(data);

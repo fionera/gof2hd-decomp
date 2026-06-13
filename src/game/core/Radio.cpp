@@ -70,13 +70,12 @@ RadioMessage *Radio::getMessage(int index)
 
 void Radio::setMessages(Array<RadioMessage *> *messages)
 {
-    Radio *self = this;
     Array<RadioMessage *> *list = messages;
     bool hasMessages = list != 0;
     this->messages = messages;
     if (hasMessages) {
         for (uint32_t i = 0; i < list->size(); ++i) {
-            (*list)[i]->setRadio(self);
+            (*list)[i]->setRadio(this);
         }
     }
 }

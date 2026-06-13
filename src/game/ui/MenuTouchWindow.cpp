@@ -199,9 +199,8 @@ extern void *const gEndPendingFlag __attribute__((visibility("hidden"))); // *ho
 
 int MenuTouchWindow::OnTouchEnd(int y, int x)
 {
-    void *self = this;
-    u8(self, 1) = 0;
-    u8(self, 0x224) = 0;
+    u8(this, 1) = 0;
+    u8(this, 0x224) = 0;
 
     // Modal Layout (e.g. virtual keyboard) intercepts first.
     char *layoutGuard = (char *)*(void **)gEndLayoutGuard;
@@ -211,38 +210,38 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
         return 0;
     }
 
-    int state = i32(self, 0x16c);
+    int state = i32(this, 0x16c);
 
     // ---- case 0: a ChoiceWindow dialog is up; resolve its confirm/cancel ----
     if (state == 0) {
-        if (u8(self, 0x170) != 0) {
-            void *cw = pp(self, 0x104);
-            if (u8(self, 0x178) != 0) {
+        if (u8(this, 0x170) != 0) {
+            void *cw = pp(this, 0x104);
+            if (u8(this, 0x178) != 0) {
                 // quit-confirmation dialog
                 int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
                 if (r == 1) {
-                    u8(self, 0x178) = 0;
-                    u8(self, 0x170) = 0;
+                    u8(this, 0x178) = 0;
+                    u8(this, 0x170) = 0;
                 } else if (r == 0) {
                     _mtw_AppMgr_Quit(*(void **)gEndQuitApp);
                 }
                 return 0;
             }
-            if (u8(self, 0x191) != 0) {
+            if (u8(this, 0x191) != 0) {
                 int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
                 if (r != 1) {
                     if (r != 0) return 0;
                     *(int *)*(void **)gEndPendingFlag = 1;
                 }
-                u8(self, 0x170) = 0;
-                u8(self, 0x191) = 0;
+                u8(this, 0x170) = 0;
+                u8(this, 0x191) = 0;
                 return 0;
             }
-            if (u8(self, 0x177) != 0) {
+            if (u8(this, 0x177) != 0) {
                 // return-to-menu confirmation
                 int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
                 if (r == 1) {
-                    u8(self, 0x177) = 0; u8(self, 0x170) = 0; u8(self, 0x174) = 0;
+                    u8(this, 0x177) = 0; u8(this, 0x170) = 0; u8(this, 0x174) = 0;
                     return 0;
                 }
                 if (r != 0) return 0;
@@ -251,85 +250,85 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
                 *(int *)*(void **)gEndModuleId = 2;
                 _mtw_AppMgr_SetCurrentApplicationModule(*(void **)gEndAppHolder,
                     *(int *)*(void **)gEndModuleId);
-                u8(self, 0x177) = 0;
-                u8(self, 0x170) = 0;
+                u8(this, 0x177) = 0;
+                u8(this, 0x170) = 0;
                 return 0;
             }
-            if (u8(self, 0x179) != 0) {
+            if (u8(this, 0x179) != 0) {
                 unsigned int r = (unsigned int)_mtw_ChoiceWindow_OnTouchEnd(cw, y);
                 if (r < 2) _mtw_Globals_reportLeaderboards();
-                u8(self, 0x179) = 0;
-                u8(self, 0x170) = 0;
+                u8(this, 0x179) = 0;
+                u8(this, 0x170) = 0;
             }
-            if (u8(self, 0x17a) != 0) {
+            if (u8(this, 0x17a) != 0) {
                 _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                u8(self, 0x170) = 0;
+                u8(this, 0x170) = 0;
                 return 0;
             }
-            if (u8(self, 0x17d) != 0 || u8(self, 0x17c) != 0) {
+            if (u8(this, 0x17d) != 0 || u8(this, 0x17c) != 0) {
                 _mtw_ChoiceWindow_OnTouchEnd(cw, y);
-                u8(self, 0x170) = 0;
+                u8(this, 0x170) = 0;
                 return 0;
             }
-            if (u8(self, 0x17e) != 0) {
-                u8(self, 0x17e) = 0;
-            } else if (u8(self, 0x17f) != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
-                u8(self, 0x170) = 0; u8(self, 0x17f) = 0; return 0;
-            } else if (u8(self, 0x180) != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
-                u8(self, 0x180) = 0;
-            } else if (u8(self, 0x181) != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
-                u8(self, 0x181) = 0;
+            if (u8(this, 0x17e) != 0) {
+                u8(this, 0x17e) = 0;
+            } else if (u8(this, 0x17f) != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
+                u8(this, 0x170) = 0; u8(this, 0x17f) = 0; return 0;
+            } else if (u8(this, 0x180) != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
+                u8(this, 0x180) = 0;
+            } else if (u8(this, 0x181) != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
+                u8(this, 0x181) = 0;
             } else {
                 // generic dialog dismissal
                 _mtw_ChoiceWindow_OnTouchEnd(cw, y);
             }
-            u8(self, 0x170) = 0;
+            u8(this, 0x170) = 0;
             return 0;
         }
-        return _mtw_onTouchEnd_genericButtons(self, y, x, 0x4), 0;
+        return _mtw_onTouchEnd_genericButtons(this, y, x, 0x4), 0;
     }
 
     // ---- non-zero states: forward to the owning widget set ----
     switch (state) {
     case 1:
     case 2:
-        if (u8(self, 0x1db) != 0) return 0;
-        _mtw_onTouchEnd_listState(self, y, x, state);
+        if (u8(this, 0x1db) != 0) return 0;
+        _mtw_onTouchEnd_listState(this, y, x, state);
         break;
     case 3:
-        _mtw_onTouchEnd_genericButtons(self, y, x, 0xac);
+        _mtw_onTouchEnd_genericButtons(this, y, x, 0xac);
         break;
     case 4:
-        _mtw_onTouchEnd_scrollState(self, y, x, 0xf0);
+        _mtw_onTouchEnd_scrollState(this, y, x, 0xf0);
         break;
     case 7:
     case 8:
-        _mtw_onTouchEnd_optionsState(self, y, x);
+        _mtw_onTouchEnd_optionsState(this, y, x);
         break;
     case 9:
-        _mtw_onTouchEnd_missionsState(self, y, x);
+        _mtw_onTouchEnd_missionsState(this, y, x);
         break;
     case 0xb:
-        _mtw_onTouchEnd_cinematicState(self, y, x);
+        _mtw_onTouchEnd_cinematicState(this, y, x);
         break;
     case 0xc:
-        _mtw_onTouchEnd_genericButtons(self, y, x, 0xb4);
+        _mtw_onTouchEnd_genericButtons(this, y, x, 0xb4);
         break;
     case 0xd:
-        _mtw_onTouchEnd_genericButtons(self, y, x, 0x4);
+        _mtw_onTouchEnd_genericButtons(this, y, x, 0x4);
         break;
     case 0xe:
-        _mtw_onTouchEnd_genericButtons(self, y, x, 0xb0);
+        _mtw_onTouchEnd_genericButtons(this, y, x, 0xb0);
         break;
     case 0xf:
     case 0x10:
-        _mtw_onTouchEnd_scrollState(self, y, x, 0xf4);
+        _mtw_onTouchEnd_scrollState(this, y, x, 0xf4);
         break;
     case 0x11:
-        _mtw_onTouchEnd_genericButtons(self, y, x, 0xb8);
+        _mtw_onTouchEnd_genericButtons(this, y, x, 0xb8);
         break;
     default:
-        _mtw_onTouchEnd_genericButtons(self, y, x, 0x4);
+        _mtw_onTouchEnd_genericButtons(this, y, x, 0x4);
         break;
     }
     return 0;
@@ -358,63 +357,62 @@ static inline void freeObj(void *self, int off, void *(*dtor)(void *)) {
 
 MenuTouchWindow *MenuTouchWindow::dtor()
 {
-    void *self = this;
 
-    freeArrayTB(self, 0x4);
-    freeArrayTB(self, 0xac);
-    freeArrayTB(self, 0xc0);
-    freeArrayTB(self, 0xb4);
-    freeArrayTB(self, 0xb8);
-    freeArrayTB(self, 0xb0);
+    freeArrayTB(this, 0x4);
+    freeArrayTB(this, 0xac);
+    freeArrayTB(this, 0xc0);
+    freeArrayTB(this, 0xb4);
+    freeArrayTB(this, 0xb8);
+    freeArrayTB(this, 0xb0);
 
     // Array<TouchSlider*> at 0xec
     {
-        void *a = pp(self, 0xec);
+        void *a = pp(this, 0xec);
         if (a != 0) {
             _mtw_ArrayReleaseClasses_TS(a);
-            void *b = pp(self, 0xec);
+            void *b = pp(this, 0xec);
             if (b != 0) ::operator delete(_mtw_Array_TS_dtor(b));
         }
-        pp(self, 0xec) = 0;
+        pp(this, 0xec) = 0;
     }
 
-    freeArrayTB(self, 0xf8);
+    freeArrayTB(this, 0xf8);
 
     // Array<String*> at 0x9c and 0xa0
     {
         int offs[2] = {0x9c, 0xa0};
         for (int k = 0; k < 2; k++) {
             int off = offs[k];
-            void *a = pp(self, off);
+            void *a = pp(this, off);
             if (a != 0) {
                 _mtw_ArrayReleaseClasses_Str(a);
-                void *b = pp(self, off);
+                void *b = pp(this, off);
                 if (b != 0) ::operator delete(_mtw_Array_Str_dtor(b));
             }
-            pp(self, off) = 0;
+            pp(this, off) = 0;
         }
     }
 
     // single TouchButton members
-    freeObj(self, 0xcc, _mtw_TouchButton_dtor);
-    freeObj(self, 0xc4, _mtw_TouchButton_dtor);
-    freeObj(self, 0xd0, _mtw_TouchButton_dtor);
-    freeObj(self, 0xd4, _mtw_TouchButton_dtor);
-    freeObj(self, 0xd8, _mtw_TouchButton_dtor);
-    freeObj(self, 0xdc, _mtw_TouchButton_dtor);
+    freeObj(this, 0xcc, _mtw_TouchButton_dtor);
+    freeObj(this, 0xc4, _mtw_TouchButton_dtor);
+    freeObj(this, 0xd0, _mtw_TouchButton_dtor);
+    freeObj(this, 0xd4, _mtw_TouchButton_dtor);
+    freeObj(this, 0xd8, _mtw_TouchButton_dtor);
+    freeObj(this, 0xdc, _mtw_TouchButton_dtor);
 
-    freeObj(self, 0x104, _mtw_ChoiceWindow_dtor);
-    freeObj(self, 0xc8, _mtw_TouchButton_dtor);
-    freeObj(self, 0xe8, _mtw_TouchButton_dtor);
+    freeObj(this, 0x104, _mtw_ChoiceWindow_dtor);
+    freeObj(this, 0xc8, _mtw_TouchButton_dtor);
+    freeObj(this, 0xe8, _mtw_TouchButton_dtor);
 
-    freeObj(self, 0xf0, _mtw_ScrollTouchWindow_dtor);
-    freeObj(self, 0xf4, _mtw_ScrollTouchWindow_dtor);
+    freeObj(this, 0xf0, _mtw_ScrollTouchWindow_dtor);
+    freeObj(this, 0xf4, _mtw_ScrollTouchWindow_dtor);
 
     // two heap byte-buffers freed with operator delete[]
-    if (pp(self, 0x134) != 0) ::operator delete[](pp(self, 0x134));
-    pp(self, 0x134) = 0;
-    if (pp(self, 0x138) != 0) ::operator delete[](pp(self, 0x138));
-    pp(self, 0x138) = 0;
+    if (pp(this, 0x134) != 0) ::operator delete[](pp(this, 0x134));
+    pp(this, 0x134) = 0;
+    if (pp(this, 0x138) != 0) ::operator delete[](pp(this, 0x138));
+    pp(this, 0x138) = 0;
 
     return this;
 }
@@ -440,32 +438,31 @@ extern void *const gCrbBackFlag __attribute__((visibility("hidden")));   // *hol
 
 void MenuTouchWindow::createRecordButtons(bool inSaveMode)
 {
-    void *self = this;
 
     // Tear down any existing 2D row array.
-    void *rows = pp(self, 0x100);
+    void *rows = pp(this, 0x100);
     if (rows != 0) {
         for (uint32_t i = 0; i < *(uint32_t *)rows; i++) {
             void *row = ((void **)i32(rows, 4))[i];
             if (row != 0) {
                 _mtw_ArrayReleaseClasses_Str(row);
-                int base = i32(pp(self, 0x100), 4);
+                int base = i32(pp(this, 0x100), 4);
                 void *r2 = *(void **)(base + i * 4);
                 int *cell;
                 if (r2 == 0) cell = (int *)(base + i * 4);
-                else { ::operator delete(_mtw_Array_Str_dtor(r2)); cell = (int *)(i32(pp(self, 0x100), 4) + i * 4); }
+                else { ::operator delete(_mtw_Array_Str_dtor(r2)); cell = (int *)(i32(pp(this, 0x100), 4) + i * 4); }
                 *cell = 0;
-                rows = pp(self, 0x100);
+                rows = pp(this, 0x100);
             }
         }
         _mtw_ArrayReleaseClasses_StrArr(rows);
-        if (pp(self, 0x100) != 0) ::operator delete(_mtw_Array_StrArr_dtor(pp(self, 0x100)));
-        pp(self, 0x100) = 0;
+        if (pp(this, 0x100) != 0) ::operator delete(_mtw_Array_StrArr_dtor(pp(this, 0x100)));
+        pp(this, 0x100) = 0;
     }
 
     void *outer = ::operator new(0xc);
     _mtw_Array_StrArr_ctor(outer);
-    pp(self, 0x100) = outer;
+    pp(this, 0x100) = outer;
     int rowCount = *(int *)*(void **)gCrbRowCount;
     _mtw_ArraySetLength_StrArr(rowCount, outer);
 
@@ -475,38 +472,38 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
     for (int i = 0; i < rowCount; i++) {
         void *row = ::operator new(0xc);
         _mtw_Array_Str_ctor(row);
-        *(void **)(i32(pp(self, 0x100), 4) + i * 4) = row;
-        _mtw_ArraySetLength_Str(6, *(void **)(i32(pp(self, 0x100), 4) + i * 4));
+        *(void **)(i32(pp(this, 0x100), 4) + i * 4) = row;
+        _mtw_ArraySetLength_Str(6, *(void **)(i32(pp(this, 0x100), 4) + i * 4));
 
         char s48[12]; _mtw_String_ctor_empty(s48);
         char s54[12];
 
-        void *rec = pp(self, 0xbc);
+        void *rec = pp(this, 0xbc);
         bool empty = (rec == 0) || (*(int *)(i32(rec, 4) + i * 4) == 0);
 
         if (empty) {
             _mtw_String_ctor_empty(s54);
             _mtw_Globals_longToTimeStringNoSeconds((long long)(int)(long)timeHolder, 0);
             void *e;
-            int *rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4);
+            int *rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4);
 
             e = ::operator new(0xc); _mtw_String_ctor_copy(e, s54, false); ((void **)rowData)[0] = e;
             e = ::operator new(0xc); _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[1] = e;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[1] = e;
 
             e = ::operator new(0xc);
             if (i == 0) _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
             else _mtw_String_ctor_cstr(e, gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
 
             e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[3] = e;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[3] = e;
 
             e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[4] = e;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[4] = e;
 
             e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[5] = e;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[5] = e;
         } else {
             _mtw_String_ctor_empty(s54);
             int slot = *(int *)(i32(rec, 4) + i * 4);
@@ -515,42 +512,42 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             int *rowData;
 
             e = ::operator new(0xc); _mtw_String_ctor_copy(e, s54, false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[0] = e;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[0] = e;
 
             e = ::operator new(0xc);
-            _mtw_String_ctor_copy(e, (void *)(*(int *)(i32(pp(self, 0xbc), 4) + i * 4) + 0x194), false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[1] = e;
+            _mtw_String_ctor_copy(e, (void *)(*(int *)(i32(pp(this, 0xbc), 4) + i * 4) + 0x194), false);
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[1] = e;
 
             e = ::operator new(0xc);
             if (i == 0) _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
             else _mtw_String_ctor_cstr(e, gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
 
             void *credits = ::operator new(0xc);
             _mtw_Layout_formatCredits(credits);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[3] = credits;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[3] = credits;
 
             // build "Kills: " + value string
             void *combined = ::operator new(0xc);
             void *label = _mtw_GameText_getText(*(void **)gtHolder, 0x141);
             char s6c[12]; _mtw_String_ctor_cstr(s6c, gCrbDash, false);
             char s60[12]; _mtw_String_op_plus(s60, label);
-            char s78[12]; _mtw_String_ctor_from(s78, *(int *)(i32(pp(self, 0xbc), 4) + i * 4) + 0x20);
+            char s78[12]; _mtw_String_ctor_from(s78, *(int *)(i32(pp(this, 0xbc), 4) + i * 4) + 0x20);
             _mtw_String_op_plus(combined, s60);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[4] = combined;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[4] = combined;
             _mtw_String_dtor(s78);
             _mtw_String_dtor(s60);
             _mtw_String_dtor(s6c);
 
             e = ::operator new(0xc);
-            float rank = *(float *)(*(int *)(i32(pp(self, 0xbc), 4) + i * 4) + 0x11c);
+            float rank = *(float *)(*(int *)(i32(pp(this, 0xbc), 4) + i * 4) + 0x11c);
             void *rankTxt;
             if (rank <= 0.0f) rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x207);
             else if (rank <= 0.5f) rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x207);
             else if (rank <= 1.0f) rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x207);
             else rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x19);
             _mtw_String_ctor_copy(e, rankTxt, false);
-            rowData = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4); ((void **)rowData)[5] = e;
+            rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[5] = e;
         }
 
         _mtw_String_dtor(s54);
@@ -558,33 +555,33 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
     }
 
     // OK button (+0xc4)
-    if (pp(self, 0xc4) != 0) { ::operator delete(_mtw_TouchButton_dtor(pp(self, 0xc4))); pp(self, 0xc4) = 0; }
+    if (pp(this, 0xc4) != 0) { ::operator delete(_mtw_TouchButton_dtor(pp(this, 0xc4))); pp(this, 0xc4) = 0; }
     int *layout = (int *)*(void **)gCrbLayout;
     char backForm = *(char *)*(void **)gCrbBackFlag;
     int extra = layout[0x42]; // [0x108]
     void *okBtn = ::operator new(0xc8);
     int screenW = *(int *)*(void **)gCrbScreenW;
-    int x = (screenW - i32(self, 0x198)) - layout[0xa]; // -[0x28]
+    int x = (screenW - i32(this, 0x198)) - layout[0xa]; // -[0x28]
     int y = layout[8] + layout[3] + extra;              // [0x20]+[0xc]
     void *okLabel = _mtw_GameText_getText(*(void **)gtHolder, backForm ? 0x1fa : 0x1f9);
     if (backForm)
         _mtw_TouchButton_ctor7(okBtn, okLabel, 7, x, y, 0x12);
     else
         _mtw_TouchButton_ctorFull(okBtn, okLabel, 0, x, y, layout[0xa9] /*+0x2a4*/, 0x12, 0x04);
-    pp(self, 0xc4) = okBtn;
+    pp(this, 0xc4) = okBtn;
 
     _mtw_TouchButton_setPosition(okBtn,
-        (screenW - i32(self, 0x198)) - layout[0xa],
-        (layout[0x1c] + i32(self, 0x1b4)) * i32(self, 0x18c) + layout[3] + extra + layout[8] + i32(self, 0x194));
+        (screenW - i32(this, 0x198)) - layout[0xa],
+        (layout[0x1c] + i32(this, 0x1b4)) * i32(this, 0x18c) + layout[3] + extra + layout[8] + i32(this, 0x194));
 
     // back button (+0xc8)
-    if (pp(self, 0xc8) != 0) { ::operator delete(_mtw_TouchButton_dtor(pp(self, 0xc8))); pp(self, 0xc8) = 0; }
+    if (pp(this, 0xc8) != 0) { ::operator delete(_mtw_TouchButton_dtor(pp(this, 0xc8))); pp(this, 0xc8) = 0; }
     void *backBtn = ::operator new(0xc8);
     void *backLabel = _mtw_GameText_getText(*(void **)gtHolder, 0x41);
     _mtw_TouchButton_ctor7(backBtn, backLabel, 7,
-        (screenW - i32(self, 0x198)) - layout[0xa],
+        (screenW - i32(this, 0x198)) - layout[0xa],
         layout[3] + extra + layout[8], 0x12);
-    pp(self, 0xc8) = backBtn;
+    pp(this, 0xc8) = backBtn;
 }
 
 // MenuTouchWindow::startValkyrie() - sets up the "Valkyrie" pre-made savegame and jumps
@@ -692,81 +689,80 @@ extern void *const gBgScreenW2 __attribute__((visibility("hidden")));
 
 int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
 {
-    MenuTouchWindow *self = this;
-    if (u8(self, 0x170) != 0) { _mtw_ChoiceWindow_OnTouchBegin(pp(self, 0x104), y); return 0; }
+    if (u8(this, 0x170) != 0) { _mtw_ChoiceWindow_OnTouchBegin(pp(this, 0x104), y); return 0; }
 
     char *layout = (char *)*(void **)gBgLayout;
     if (*layout != 0) { _mtw_Layout_OnTouchBegin(layout, y); return 0; }
 
-    int state = i32(self, 0x16c);
+    int state = i32(this, 0x16c);
     switch (state) {
     case 1:
     case 2: {
-        pp(self, 0x220) = (void *)(long)x;
-        pp(self, 0x20c) = (void *)(long)x;
-        i32(self, 0x214) = 0;
-        u8(self, 0x224) = 1;
-        int oldRow = i32(self, 0x18c);
+        pp(this, 0x220) = (void *)(long)x;
+        pp(this, 0x20c) = (void *)(long)x;
+        i32(this, 0x214) = 0;
+        u8(this, 0x224) = 1;
+        int oldRow = i32(this, 0x18c);
         int leftMargin = *(int *)(layout + 0xc);
         if (leftMargin < x && x < *(int *)*(void **)gBgScreenW - *(int *)(layout + 0x10)) {
             int rowH = *(int *)(layout + 0x70);
-            int gap = i32(self, 0x1b4);
+            int gap = i32(this, 0x1b4);
             int top = *(int *)(layout + 0x20);
-            int off = i32(self, 0x194);
+            int off = i32(this, 0x194);
             int row = _mtw_idiv(x + ((-top - leftMargin) - off), 1);
             if (row < *(int *)*(void **)gBgScrollDiv) {
                 int *posX = (int *)*(void **)gBgListPosX;
-                i32(self, 0x18c) = row;
-                float v = _mtw_TouchButton_setPosition(pp(self, 0xc4),
-                    (*posX - i32(self, 0x198)) - *(int *)(layout + 0x28),
+                i32(this, 0x18c) = row;
+                float v = _mtw_TouchButton_setPosition(pp(this, 0xc4),
+                    (*posX - i32(this, 0x198)) - *(int *)(layout + 0x28),
                     row * (gap + rowH) + top + leftMargin + off + *(int *)(layout + 0x108));
                 _mtw_FModSound_play(*(void **)gBgFmod, 0x7c, 0, v);
             }
         }
-        if (oldRow == i32(self, 0x18c))
-            _mtw_TouchButton_OnTouchBegin(pp(self, 0xc4), y);
+        if (oldRow == i32(this, 0x18c))
+            _mtw_TouchButton_OnTouchBegin(pp(this, 0xc4), y);
     } break;
     case 3: {
         if (*(char *)*(void **)gBgFlagA == 0) {
-            void **arr = (void **)pp(self, 0xac);
+            void **arr = (void **)pp(this, 0xac);
             for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
                 _mtw_TouchButton_OnTouchBegin(((void **)arr[1])[i], y);
             break;
         }
-        _mtw_TouchButton_OnTouchBegin(pp(self, 0xe4), y);
-        self->upButtonPressed = 0;
+        _mtw_TouchButton_OnTouchBegin(pp(this, 0xe4), y);
+        this->upButtonPressed = 0;
         int b28 = *(int *)(layout + 0x28);
-        int top = b28 + i32(self, 0x19c);
-        if (top < y && y < i32(self, 0x158) + top &&
+        int top = b28 + i32(this, 0x19c);
+        if (top < y && y < i32(this, 0x158) + top &&
             *(int *)(layout + 0xc) + b28 < x &&
-            x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + i32(self, 0x154)) {
-            u8(self, 0x108) = 1;
+            x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + i32(this, 0x154)) {
+            u8(this, 0x108) = 1;
             _mtw_FModSound_play(*(void **)gBgFmod, 0x7c, 0, 0);
             b28 = *(int *)(layout + 0x28);
-            top = b28 + i32(self, 0x19c);
+            top = b28 + i32(this, 0x19c);
         }
-        int bottom = top + i32(self, 0x158);
-        if (bottom < y && y < (i32(self, 0x19c) - b28) + i32(self, 0x1a0) &&
+        int bottom = top + i32(this, 0x158);
+        if (bottom < y && y < (i32(this, 0x19c) - b28) + i32(this, 0x1a0) &&
             b28 + *(int *)(layout + 0xc) < x &&
-            x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + i32(self, 0x154)) {
-            u8(self, 0x109) = 1;
+            x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + i32(this, 0x154)) {
+            u8(this, 0x109) = 1;
             _mtw_FModSound_play(*(void **)gBgFmod, 0x7c, 0, 0);
         }
-        _mtw_TouchButton_OnTouchBeginXY(pp(self, 0xcc), y, x);
-        _mtw_TouchButton_OnTouchBeginXY(pp(self, 0xd0), y, x);
-        _mtw_TouchSlider_OnTouchBegin(*(void **)i32(pp(self, 0xec), 4), y);
-        _mtw_TouchButton_OnTouchBeginXY(pp(self, 0xd4), y, x);
-        _mtw_TouchButton_OnTouchBeginXY(pp(self, 0xd8), y, x);
-        _mtw_TouchButton_OnTouchBeginXY(pp(self, 0xdc), y, x);
-        void **arr = (void **)pp(self, 0xec);
+        _mtw_TouchButton_OnTouchBeginXY(pp(this, 0xcc), y, x);
+        _mtw_TouchButton_OnTouchBeginXY(pp(this, 0xd0), y, x);
+        _mtw_TouchSlider_OnTouchBegin(*(void **)i32(pp(this, 0xec), 4), y);
+        _mtw_TouchButton_OnTouchBeginXY(pp(this, 0xd4), y, x);
+        _mtw_TouchButton_OnTouchBeginXY(pp(this, 0xd8), y, x);
+        _mtw_TouchButton_OnTouchBeginXY(pp(this, 0xdc), y, x);
+        void **arr = (void **)pp(this, 0xec);
         for (unsigned int i = 1; i < *(unsigned int *)arr; i++)
             _mtw_TouchSlider_OnTouchBegin(((void **)arr[1])[i], y);
-        if (*(char *)*(void **)gBgFlagB != 0 && pp(self, 0xe8) != 0)
-            _mtw_TouchButton_OnTouchBegin(pp(self, 0xe8), y);
+        if (*(char *)*(void **)gBgFlagB != 0 && pp(this, 0xe8) != 0)
+            _mtw_TouchButton_OnTouchBegin(pp(this, 0xe8), y);
     } break;
     case 4: {
-        _mtw_ScrollTouchWindow_OnTouchBegin(pp(self, 0xf0), y);
-        void **arr = (void **)pp(self, 0xc0);
+        _mtw_ScrollTouchWindow_OnTouchBegin(pp(this, 0xf0), y);
+        void **arr = (void **)pp(this, 0xc0);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++) {
             unsigned int *e = (unsigned int *)((void **)arr[1])[i];
             unsigned int t = e[0];
@@ -779,10 +775,10 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
     case 0xd:
         break;
     case 7: {
-        _mtw_TouchButton_OnTouchBeginXY(pp(self, 0xd4), y, x);
-        _mtw_TouchButton_OnTouchBeginXY(pp(self, 0xd8), y, x);
-        _mtw_TouchButton_OnTouchBeginXY(pp(self, 0xdc), y, x);
-        void **arr = (void **)pp(self, 0xec);
+        _mtw_TouchButton_OnTouchBeginXY(pp(this, 0xd4), y, x);
+        _mtw_TouchButton_OnTouchBeginXY(pp(this, 0xd8), y, x);
+        _mtw_TouchButton_OnTouchBeginXY(pp(this, 0xdc), y, x);
+        void **arr = (void **)pp(this, 0xec);
         unsigned int n = *(unsigned int *)arr;
         for (unsigned int i = 1; i < n; i++) {
             if (i == 5 && (unsigned char)*(char *)(*(char **)gBgLayout + 0x284) == 0) continue;
@@ -790,69 +786,69 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
         }
     } break;
     case 8: {
-        self->upButtonPressed = 0;
+        this->upButtonPressed = 0;
         int b28 = *(int *)(layout + 0x28);
-        int top = b28 + i32(self, 0x19c);
-        if (top < y && y < i32(self, 0x158) + top &&
+        int top = b28 + i32(this, 0x19c);
+        if (top < y && y < i32(this, 0x158) + top &&
             *(int *)(layout + 0xc) + b28 < x &&
-            x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + i32(self, 0x154)) {
-            u8(self, 0x108) = 1;
+            x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + i32(this, 0x154)) {
+            u8(this, 0x108) = 1;
             _mtw_FModSound_play(*(void **)gBgFmod, 0x7c, 0, 0);
             layout = (char *)*(void **)gBgLayout;
             b28 = *(int *)(layout + 0x28);
-            top = b28 + i32(self, 0x19c);
+            top = b28 + i32(this, 0x19c);
         }
-        int bottom = top + i32(self, 0x158);
-        if (bottom < y && y < (i32(self, 0x19c) - b28) + i32(self, 0x1a0) &&
+        int bottom = top + i32(this, 0x158);
+        if (bottom < y && y < (i32(this, 0x19c) - b28) + i32(this, 0x1a0) &&
             b28 + *(int *)(layout + 0xc) < x &&
-            x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + i32(self, 0x154)) {
-            u8(self, 0x109) = 1;
+            x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + i32(this, 0x154)) {
+            u8(this, 0x109) = 1;
             _mtw_FModSound_play(*(void **)gBgFmod, 0x7c, 0, 0);
         }
-        _mtw_TouchButton_OnTouchBegin(pp(self, 0xcc), y);
-        _mtw_TouchButton_OnTouchBegin(pp(self, 0xd0), y);
-        _mtw_TouchSlider_OnTouchBegin(*(void **)i32(pp(self, 0xec), 4), y);
+        _mtw_TouchButton_OnTouchBegin(pp(this, 0xcc), y);
+        _mtw_TouchButton_OnTouchBegin(pp(this, 0xd0), y);
+        _mtw_TouchSlider_OnTouchBegin(*(void **)i32(pp(this, 0xec), 4), y);
     } break;
     case 9:
-        _mtw_MissionsWindow_OnTouchBegin(pp(self, 0xfc), y);
+        _mtw_MissionsWindow_OnTouchBegin(pp(this, 0xfc), y);
         break;
     case 0xb: {
         if (*(char *)*(void **)gBgFlagC != 0 && *(char *)*(void **)gBgFlagD == 0) {
-            _mtw_TouchButton_OnTouchBegin(pp(self, 0x14), y);
-            _mtw_TouchButton_OnTouchBegin(pp(self, 0x18), y);
+            _mtw_TouchButton_OnTouchBegin(pp(this, 0x14), y);
+            _mtw_TouchButton_OnTouchBegin(pp(this, 0x18), y);
             if (touchId != 0 &&
-                (i32(self, 8) != 0 || y > 0xd1 || i32(self, 0xc) == touchId ||
+                (i32(this, 8) != 0 || y > 0xd1 || i32(this, 0xc) == touchId ||
                  x <= *(int *)(*(char **)gBgObjA + 0x54) - 0x14 ||
                  *(int *)(*(char **)gBgObjA + 0x54) + 300 <= x)) {
-                if (i32(self, 0xc) == touchId || touchId == 0 ||
-                    i32(self, 0xc) != 0 || y <= *(int *)*(void **)gBgScreenH2 - 0xdc ||
+                if (i32(this, 0xc) == touchId || touchId == 0 ||
+                    i32(this, 0xc) != 0 || y <= *(int *)*(void **)gBgScreenH2 - 0xdc ||
                     x <= *(int *)(*(char **)gBgObjB + 0x58) - 0x14 ||
                     *(int *)(*(char **)gBgObjB + 0x58) + 0xe6 <= x) {
-                    self->field_0x98 = 0;
+                    this->field_0x98 = 0;
                 } else {
-                    i32(self, 0xc) = touchId;
-                    self->field_0x98 = 0x100;
-                    pp(self, 0x94) = (void *)(long)x;
+                    i32(this, 0xc) = touchId;
+                    this->field_0x98 = 0x100;
+                    pp(this, 0x94) = (void *)(long)x;
                 }
             } else {
-                i32(self, 8) = touchId;
-                self->field_0x98 = 1;
-                pp(self, 0x90) = (void *)(long)x;
+                i32(this, 8) = touchId;
+                this->field_0x98 = 1;
+                pp(this, 0x90) = (void *)(long)x;
             }
         }
     } break;
     case 0xc: {
-        void **arr = (void **)pp(self, 0xb4);
+        void **arr = (void **)pp(this, 0xb4);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
             _mtw_TouchButton_OnTouchBegin(((void **)arr[1])[i], y);
     } break;
     case 0xe: {
-        void **arr = (void **)pp(self, 0xb0);
+        void **arr = (void **)pp(this, 0xb0);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
             _mtw_TouchButton_OnTouchBegin(((void **)arr[1])[i], y);
     } break;
     case 0x10: {
-        void **arr = (void **)pp(self, 0xc0);
+        void **arr = (void **)pp(this, 0xc0);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++) {
             unsigned int *e = (unsigned int *)((void **)arr[1])[i];
             if ((unsigned int)(e[0] - 0x65) < 5 && e[1] == 0)
@@ -861,14 +857,14 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
     } // fallthrough into 0xf
     [[fallthrough]];
     case 0xf: {
-        _mtw_ScrollTouchWindow_OnTouchBegin(pp(self, 0xf4), y);
-        void **arr = (void **)pp(self, 0xc0);
+        _mtw_ScrollTouchWindow_OnTouchBegin(pp(this, 0xf4), y);
+        void **arr = (void **)pp(this, 0xc0);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++) {
             unsigned int *e = (unsigned int *)((void **)arr[1])[i];
             if ((e[0] | 8) == 0x3c && e[1] == 0)
                 _mtw_TouchButton_OnTouchBegin(e, y);
         }
-        void **slots = (void **)pp(self, 0xf8);
+        void **slots = (void **)pp(this, 0xf8);
         for (unsigned int i = 0; i < *(unsigned int *)slots; i++)
             _mtw_TouchButton_OnTouchBegin(((void **)slots[1])[i], y);
 
@@ -883,27 +879,27 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
             int ih = ((PaintCanvas *)g_PaintCanvas)->GetImage2DHeight((unsigned int)(long)img);
             hit = (x < ih + tp + lc) ? 1 : 0;
         } else hit = 0;
-        u8(self, 0x1d9) = hit;
+        u8(this, 0x1d9) = hit;
 
         b28 = *(int *)(*(char **)gBgLayout + 0x28);
         iw = ((PaintCanvas *)g_PaintCanvas)->GetImage2DWidth((unsigned int)(long)img);
         if (y < iw + b28) {
-            pp(self, 0x220) = (void *)(long)x;
-            pp(self, 0x20c) = (void *)(long)x;
-            i32(self, 0x214) = 0;
-            u8(self, 0x224) = 1;
+            pp(this, 0x220) = (void *)(long)x;
+            pp(this, 0x20c) = (void *)(long)x;
+            i32(this, 0x214) = 0;
+            u8(this, 0x224) = 1;
         }
     } break;
     case 0x11: {
-        void **arr = (void **)pp(self, 0xb8);
+        void **arr = (void **)pp(this, 0xb8);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
             _mtw_TouchButton_OnTouchBegin(((void **)arr[1])[i], y);
     } break;
     default: {
-        void **arr = (void **)pp(self, 0x4);
+        void **arr = (void **)pp(this, 0x4);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
             _mtw_TouchButton_OnTouchBegin(((void **)arr[1])[i], y);
-        void **arr2 = (void **)pp(self, 0xc0);
+        void **arr2 = (void **)pp(this, 0xc0);
         unsigned int n = *(unsigned int *)arr2;
         for (unsigned int i = 0; i < n; i++) {
             int *e = (int *)((void **)arr2[1])[i];
@@ -918,14 +914,14 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
                 unsigned int x2 = (t != 0x11 || id != 0) ? (t ^ 100) : 0;
                 go = (id == 0 && (t == 0x11 || x2 == 0)) || (id == 0 && t == 0x35);
             }
-            if (go) { _mtw_TouchButton_OnTouchBegin(e, y); arr2 = (void **)pp(self, 0xc0); n = *(unsigned int *)arr2; }
+            if (go) { _mtw_TouchButton_OnTouchBegin(e, y); arr2 = (void **)pp(this, 0xc0); n = *(unsigned int *)arr2; }
         }
     } break;
     }
 
     int r = _mtw_Layout_OnTouchBegin(*(void **)gBgLayout, y);
-    if (r != 0 && i32(self, 0x16c) == 0xd)
-        u8(self, 1) = 1;
+    if (r != 0 && i32(this, 0x16c) == 0xd)
+        u8(this, 1) = 1;
     return 0;
 }
 
@@ -1143,69 +1139,68 @@ extern const int g_mtw_upTextIds[16] __attribute__((visibility("hidden")));
 
 void MenuTouchWindow::update(int dt)
 {
-    MenuTouchWindow *self = this;
 
     // ---- scroll inertia for list states (0x16c in {1,2,15}) ----
-    unsigned int st = u32(self, 0x16c);
+    unsigned int st = u32(this, 0x16c);
     if (st < 0x10 && ((1u << (st & 0xff)) & 0x8006u) != 0) {
-        if (u8(self, 0x224) == 0) {
-            float v = f32(self, 0x218) * f32(self, 0x21c);
-            f32(self, 0x21c) = v;
+        if (u8(this, 0x224) == 0) {
+            float v = f32(this, 0x218) * f32(this, 0x21c);
+            f32(this, 0x21c) = v;
             if (v < 1.0f) {
-                f32(self, 0x194) = (float)(v + (float)i32(self, 0x194)); // accumulate offset
-                i32(self, 0x194) = (int)(v + (float)i32(self, 0x194));
+                f32(this, 0x194) = (float)(v + (float)i32(this, 0x194)); // accumulate offset
+                i32(this, 0x194) = (int)(v + (float)i32(this, 0x194));
             }
         }
-        int off = i32(self, 0x194);
+        int off = i32(this, 0x194);
         if (off > 0) {
-            u32(self, 0x218) = 0x3f800000;
-            f32(self, 0x21c) = (float)(-off) * 0.5f;
+            u32(this, 0x218) = 0x3f800000;
+            f32(this, 0x21c) = (float)(-off) * 0.5f;
         }
-        int overshoot = i32(self, 0x228) - i32(self, 0x22c);
+        int overshoot = i32(this, 0x228) - i32(this, 0x22c);
         if (overshoot < 0) {
             if (off < overshoot) {
-                u32(self, 0x218) = 0x3f800000;
-                f32(self, 0x21c) = (float)(overshoot - off) * 0.5f;
+                u32(this, 0x218) = 0x3f800000;
+                f32(this, 0x21c) = (float)(overshoot - off) * 0.5f;
             }
         } else {
-            f32(self, 0x21c) = 0;
-            i32(self, 0x194) = 0;
+            f32(this, 0x21c) = 0;
+            i32(this, 0x194) = 0;
         }
     }
 
     void *appData = _mtw_AppMgr_GetApplicationData();
-    unsigned char busy = u8(self, 0x17a);
+    unsigned char busy = u8(this, 0x17a);
 
-    if (busy != 0 || u8(self, 0x190) != 0) {
+    if (busy != 0 || u8(this, 0x190) != 0) {
         // a purchase flow is active: maybe rebuild list geometry
         if (*(char *)((char *)appData + 0x40) != 0) {
             int *layout = (int *)*(void **)gUpLayout;
             void *canvas = *(void **)gUpCanvas;
-            i32(self, 0x228) = (((*(int *)*(void **)gUpScreenW - layout[4]) - layout[3])
+            i32(this, 0x228) = (((*(int *)*(void **)gUpScreenW - layout[4]) - layout[3])
                                 - layout[8]) - layout[9];
-            int ih = ((PaintCanvas *)canvas)->GetImage2DHeight(u32(self, 0x11c));
-            i32(self, 0x1e4) = ih;
+            int ih = ((PaintCanvas *)canvas)->GetImage2DHeight(u32(this, 0x11c));
+            i32(this, 0x1e4) = ih;
             void *optObj = *(void **)gUpOptObj;
             int rowH = layout[0xb]; // +0x2c
-            u32(self, 0x16c) = 0xf;
-            u8(self, 0x170) = 0;
-            u8(self, 0x17a) = 0;
-            i32(self, 0x22c) = (ih + rowH) * 5;
+            u32(this, 0x16c) = 0xf;
+            u8(this, 0x170) = 0;
+            u8(this, 0x17a) = 0;
+            i32(this, 0x22c) = (ih + rowH) * 5;
             *(char *)((char *)appData + 0x40) = 0;
             *(char *)((char *)optObj + 0x3b) = 1;
             _mtw_RecordHandler_saveOptions(*(void **)gUpRecHandler);
-            busy = u8(self, 0x17a);
+            busy = u8(this, 0x17a);
         }
         if (busy != 0) {
             if (*(char *)((char *)appData + 0x42) != 0) {
-                void *cw = pp(self, 0x104);
+                void *cw = pp(this, 0x104);
                 void *s = _mtw_GameText_getText(*(void **)gUpGameText, g_mtw_upTextIds[0]);
                 _mtw_ChoiceWindow_set(cw, s);
-                u8(self, 0x17d) = 1;
-                u8(self, 0x170) = 1;
-                self->dlcMessageShowing = 0;
+                u8(this, 0x17d) = 1;
+                u8(this, 0x170) = 1;
+                this->dlcMessageShowing = 0;
                 *(char *)((char *)appData + 0x42) = 0;
-                u8(self, 0x190) = 0;
+                u8(this, 0x190) = 0;
             }
         }
     }
@@ -1214,7 +1209,7 @@ void MenuTouchWindow::update(int dt)
     unsigned int code = *(unsigned int *)((char *)appData + 0x48);
     bool handled = false;
     if (code <= 4 && *(char *)((char *)appData + 0x41) != 0) {
-        void *cw = pp(self, 0x104);
+        void *cw = pp(this, 0x104);
         switch (code) {
             case 0: {
                 void *status = *(void **)gUpStatusObj;
@@ -1246,21 +1241,21 @@ void MenuTouchWindow::update(int dt)
             } break;
         }
         _mtw_RecordHandler_saveOptions(*(void **)gUpRecHandler);
-        u8(self, 0x17c) = 1;
-        u8(self, 0x17a) = 0;
-        u8(self, 0x170) = 1;
+        u8(this, 0x17c) = 1;
+        u8(this, 0x17a) = 0;
+        u8(this, 0x170) = 1;
         *(char *)((char *)appData + 0x41) = 0;
         handled = true;
-    } else if (u8(self, 0x190) != 0 && *(char *)((char *)appData + 0x41) != 0) {
+    } else if (u8(this, 0x190) != 0 && *(char *)((char *)appData + 0x41) != 0) {
         _mtw_RecordHandler_saveOptions(*(void **)gUpRecHandler);
-        if (u8(self, 0x190) != 0) {
-            void *cw = pp(self, 0x104);
+        if (u8(this, 0x190) != 0) {
+            void *cw = pp(this, 0x104);
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **)gUpGameText, g_mtw_upTextIds[6]));
-            u8(self, 0x190) = 0;
+            u8(this, 0x190) = 0;
         }
-        u8(self, 0x17c) = 1;
-        u8(self, 0x17a) = 0;
-        u8(self, 0x170) = 1;
+        u8(this, 0x17c) = 1;
+        u8(this, 0x17a) = 0;
+        u8(this, 0x170) = 1;
         *(char *)((char *)appData + 0x41) = 0;
         handled = true;
     }
@@ -1269,11 +1264,11 @@ void MenuTouchWindow::update(int dt)
     // supernova nag dialog
     if (*(char *)*(void **)gUpStatusGuard != 0) {
         void *flags = *(void **)gUpDlcFlags;
-        if (u8(self, 0x170) == 0 && *(char *)((char *)flags + 0x35) == 0) {
-            void *cw = pp(self, 0x104);
+        if (u8(this, 0x170) == 0 && *(char *)((char *)flags + 0x35) == 0) {
+            void *cw = pp(this, 0x104);
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **)gUpGameText, g_mtw_upTextIds[7]));
-            u8(self, 0x181) = 1;
-            u8(self, 0x170) = 1;
+            u8(this, 0x181) = 1;
+            u8(this, 0x170) = 1;
             *(char *)((char *)flags + 0x35) = 1;
             _mtw_Status_setSystemVisibility(*(void **)gUpStatusObj, 0x19, true);
             _mtw_RecordHandler_saveOptions(*(void **)gUpRecHandler);
@@ -1281,56 +1276,56 @@ void MenuTouchWindow::update(int dt)
     }
 
     // ---- per-state button layout / sub-window update ----
-    int state = i32(self, 0x16c);
+    int state = i32(this, 0x16c);
     if (state == 0) {
-        if (i32(self, 0x168) == 1) {
-            int rowGap = i32(self, 0x1b0);
+        if (i32(this, 0x168) == 1) {
+            int rowGap = i32(this, 0x1b0);
             int *layout = (int *)*(void **)gUpListLayout;
-            void **arr = (void **)pp(self, 0x4);
+            void **arr = (void **)pp(this, 0x4);
             unsigned int n = *(unsigned int *)arr;
             int total = n * layout[0xc]; // +0x30
             int screenH = *(int *)*(void **)gUpScreenH;
             for (unsigned int i = 0; i < n; i++) {
                 _mtw_TouchButton_setYPosition(((void **)arr[1])[i],
-                    (layout[0xc] + i32(self, 0x1b0)) * i +
+                    (layout[0xc] + i32(this, 0x1b0)) * i +
                     (screenH / 2 - (int)((unsigned int)(rowGap * (n - 1) + total) >> 1)));
-                void *b = ((void **)i32(pp(self, 0x4), 4))[i];
+                void *b = ((void **)i32(pp(this, 0x4), 4))[i];
                 if (i32(b, 0) == 0x12 && i32(b, 4) == 0 && _mtw_TouchButton_isVisible(b) != 0 &&
-                    u8(self, 0x238) != 0) {
-                    b = ((void **)i32(pp(self, 0x4), 4))[i];
+                    u8(this, 0x238) != 0) {
+                    b = ((void **)i32(pp(this, 0x4), 4))[i];
                     char pos[12];
                     _mtw_TouchButton_getPosition(pos, b);
                     _mtw_TouchButton_setYPosition(b, (int)*(float *)(pos + 4));
                 }
-                arr = (void **)pp(self, 0x4);
+                arr = (void **)pp(this, 0x4);
                 n = *(unsigned int *)arr;
             }
         }
     } else if (state == 3) {
-        int rowGap = i32(self, 0x1b0);
+        int rowGap = i32(this, 0x1b0);
         int *layout = (int *)*(void **)gUpListLayout;
-        void **arr = (void **)pp(self, 0xac);
+        void **arr = (void **)pp(this, 0xac);
         unsigned int n = *(unsigned int *)arr;
-        int firstCount = *(int *)*(void **)pp(self, 0x4);
+        int firstCount = *(int *)*(void **)pp(this, 0x4);
         int total = n * layout[0xc];
         int screenH = *(int *)*(void **)gUpScreenH;
         for (unsigned int i = 0; i < n; i++) {
             _mtw_TouchButton_setYPosition(((void **)arr[1])[i],
-                (layout[0xc] + i32(self, 0x1b0)) * i +
+                (layout[0xc] + i32(this, 0x1b0)) * i +
                 (screenH / 2 - (int)((unsigned int)((firstCount - 1) * rowGap + total) >> 1)));
-            arr = (void **)pp(self, 0xac);
+            arr = (void **)pp(this, 0xac);
             n = *(unsigned int *)arr;
         }
     } else if (state == 4) {
-        _mtw_ScrollTouchWindow_update(pp(self, 0xf0));
+        _mtw_ScrollTouchWindow_update(pp(this, 0xf0));
     } else if (state == 9) {
-        if (pp(self, 0xfc) != 0) _mtw_MissionsWindow_update(pp(self, 0xfc));
+        if (pp(this, 0xfc) != 0) _mtw_MissionsWindow_update(pp(this, 0xfc));
     } else if (state == 0xf) {
-        _mtw_ScrollTouchWindow_update(pp(self, 0xf4));
+        _mtw_ScrollTouchWindow_update(pp(this, 0xf4));
     }
 
-    if (u8(self, 0x170) != 0)
-        _mtw_ChoiceWindow_update(pp(self, 0x104));
+    if (u8(this, 0x170) != 0)
+        _mtw_ChoiceWindow_update(pp(this, 0x104));
 
     // ---- async store-init result (state 0xd) ----
     if (state == 0xd) {
@@ -1339,11 +1334,11 @@ void MenuTouchWindow::update(int dt)
             void *eng = _mtw_AppMgr_GetEngine();
             int r = *(int *)((char *)eng + 0x100);
             if (r == 2 || r == 1) {
-                void *cw = pp(self, 0x104);
+                void *cw = pp(this, 0x104);
                 int id = (r == 2) ? g_mtw_upTextIds[8] : g_mtw_upTextIds[9];
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **)gUpGameText, id));
-                u8(self, 0x189) = 0;
-                u8(self, 0x170) = 1;
+                u8(this, 0x189) = 0;
+                u8(this, 0x170) = 1;
                 appData = _mtw_AppMgr_GetApplicationData();
                 *(char *)((char *)appData + 0xc) = 0;
             }
@@ -1356,11 +1351,11 @@ void MenuTouchWindow::update(int dt)
         appData = _mtw_AppMgr_GetApplicationData();
         int r = *(int *)((char *)appData + 8);
         if (r == 2 || r == 1) {
-            void *cw = pp(self, 0x104);
+            void *cw = pp(this, 0x104);
             int id = (r == 2) ? g_mtw_upTextIds[10] : g_mtw_upTextIds[11];
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **)gUpGameText, id));
-            i32(self, 0x184) = -1;
-            u8(self, 0x170) = 1;
+            i32(this, 0x184) = -1;
+            u8(this, 0x170) = 1;
             appData = _mtw_AppMgr_GetApplicationData();
             *(char *)((char *)appData + 5) = 0;
         }
@@ -1427,17 +1422,16 @@ extern void *const gDrawColorSrc    __attribute__((visibility("hidden"))); // *h
 
 void MenuTouchWindow::draw()
 {
-    void *self = this;
 
     *(int *)*(void **)gDrawDrawingFlag = 1;
-    int state = i32(self, 0x16c);
+    int state = i32(this, 0x16c);
     *(int *)*(void **)gDrawStatePub = state;
 
     // pick which button array supplies the cached positions for this state
     int fieldOff = 0x4;
     if (state == 0xc) fieldOff = 0xb4;
     if (state == 0xe) fieldOff = 0xb0;
-    void **arr = (void **)pp(self, fieldOff);
+    void **arr = (void **)pp(this, fieldOff);
 
     int *posX = (int *)*(void **)gDrawPosX;
     int *posY = (int *)*(void **)gDrawPosY;
@@ -1453,29 +1447,29 @@ void MenuTouchWindow::draw()
     *(unsigned int *)*(void **)gDrawCountObj = *(unsigned int *)arr;
 
     // optionally paint the background layout (skipped for the in-game states 9 and 0xb)
-    if (i32(self, 0x168) != 0) {
-        unsigned int s = u32(self, 0x16c);
+    if (i32(this, 0x168) != 0) {
+        unsigned int s = u32(this, 0x16c);
         if ((s | 4) != 0xd) {
             _mtw_Layout_drawBG();
         }
     }
 
-    switch (u32(self, 0x16c)) {
-    case 0:  _mtw_draw_mainMenu(self);     break;
+    switch (u32(this, 0x16c)) {
+    case 0:  _mtw_draw_mainMenu(this);     break;
     case 1:
-    case 2:  _mtw_draw_loadSaveList(self); break;
-    case 3:  _mtw_draw_optionsTabs(self);  break;
-    case 4:  _mtw_draw_scrollA(self);      break;
-    case 7:  _mtw_draw_audioOptions(self); break;
-    case 8:  _mtw_draw_keyConfig(self);    break;
-    case 9:  _mtw_draw_missions(self);     break;
-    case 0xb: _mtw_draw_cinematic(self);   break;
-    case 0xc: _mtw_draw_buttonsB4(self);   break;
-    case 0xd: _mtw_draw_store(self);       break;
-    case 0xe: _mtw_draw_buttonsB0(self);   break;
+    case 2:  _mtw_draw_loadSaveList(this); break;
+    case 3:  _mtw_draw_optionsTabs(this);  break;
+    case 4:  _mtw_draw_scrollA(this);      break;
+    case 7:  _mtw_draw_audioOptions(this); break;
+    case 8:  _mtw_draw_keyConfig(this);    break;
+    case 9:  _mtw_draw_missions(this);     break;
+    case 0xb: _mtw_draw_cinematic(this);   break;
+    case 0xc: _mtw_draw_buttonsB4(this);   break;
+    case 0xd: _mtw_draw_store(this);       break;
+    case 0xe: _mtw_draw_buttonsB0(this);   break;
     case 0xf:
-    case 0x10: _mtw_draw_scrollB(self);    break;
-    case 0x11: _mtw_draw_buttonsB8(self);  break;
+    case 0x10: _mtw_draw_scrollB(this);    break;
+    case 0x11: _mtw_draw_buttonsB8(this);  break;
     default: break;
     }
 }
@@ -1527,68 +1521,67 @@ static void doSliders(void *self, int y) {
 
 int MenuTouchWindow::OnTouchMove(int y, int x)
 {
-    MenuTouchWindow *self = this;
-    if (u8(self, 0x170) != 0) {
-        _mtw_ChoiceWindow_OnTouchMove(pp(self, 0x104), y);
+    if (u8(this, 0x170) != 0) {
+        _mtw_ChoiceWindow_OnTouchMove(pp(this, 0x104), y);
         return 0;
     }
     char *layout = (char *)*(void **)gMvLayout;
     if (*layout != 0) {
         // corrupted-state guard path -> in-flight 3D steer
-        _mtw_steerFromTouch(self, y, x);
+        _mtw_steerFromTouch(this, y, x);
         return 0;
     }
 
-    int state = i32(self, 0x16c);
+    int state = i32(this, 0x16c);
     switch (state - 1) {
     case 0: // state 1
     case 1: // state 2 list-drag (scroll)
         if (*(int *)(layout + 0xc) < x &&
             x < *(int *)*(void **)gMvScreenW - *(int *)(layout + 0x10)) {
-            int dy = x - i32(self, 0x20c);
-            pp(self, 0x20c) = (void *)(long)x;
-            i32(self, 0x214) = dy;
-            u32(self, 0x218) = 0x3f800000;
-            i32(self, 0x194) = i32(self, 0x194) + dy;
+            int dy = x - i32(this, 0x20c);
+            pp(this, 0x20c) = (void *)(long)x;
+            i32(this, 0x214) = dy;
+            u32(this, 0x218) = 0x3f800000;
+            i32(this, 0x194) = i32(this, 0x194) + dy;
         }
-        _mtw_TouchButton_OnTouchMove(pp(self, 0xc4), y);
+        _mtw_TouchButton_OnTouchMove(pp(this, 0xc4), y);
         break;
     case 2: { // state 3
         if (*(char *)*(void **)gMvFlagA == 0) {
-            void **arr = (void **)pp(self, 0xac);
+            void **arr = (void **)pp(this, 0xac);
             for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
                 _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
         } else {
-            _mtw_TouchButton_OnTouchMove(pp(self, 0xe4), y);
-            self->upButtonPressed = 0;
+            _mtw_TouchButton_OnTouchMove(pp(this, 0xe4), y);
+            this->upButtonPressed = 0;
             int base = *(int *)(layout + 0x28);
-            int top = base + i32(self, 0x19c);
-            int bottom = i32(self, 0x158) + top;
+            int top = base + i32(this, 0x19c);
+            int bottom = i32(this, 0x158) + top;
             if (top < y && y < bottom &&
                 *(int *)(layout + 0xc) + base < x &&
-                x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + i32(self, 0x154))
-                u8(self, 0x108) = 1;
-            if (bottom < y && y < (i32(self, 0x19c) - base) + i32(self, 0x1a0) &&
+                x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + i32(this, 0x154))
+                u8(this, 0x108) = 1;
+            if (bottom < y && y < (i32(this, 0x19c) - base) + i32(this, 0x1a0) &&
                 base + *(int *)(layout + 0xc) < x &&
-                x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + i32(self, 0x154))
-                u8(self, 0x109) = 1;
-            _mtw_TouchButton_OnTouchMoveXY(pp(self, 0xcc), y, x);
-            _mtw_TouchButton_OnTouchMoveXY(pp(self, 0xd0), y, x);
-            _mtw_TouchSlider_OnTouchMove(*(void **)i32(pp(self, 0xec), 4), y);
-            _mtw_TouchButton_OnTouchMoveXY(pp(self, 0xd4), y, x);
-            _mtw_TouchButton_OnTouchMoveXY(pp(self, 0xd8), y, x);
-            _mtw_TouchButton_OnTouchMoveXY(pp(self, 0xdc), y, x);
-            doSliders(self, y);
-            void **arr = (void **)pp(self, 0xec);
+                x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + i32(this, 0x154))
+                u8(this, 0x109) = 1;
+            _mtw_TouchButton_OnTouchMoveXY(pp(this, 0xcc), y, x);
+            _mtw_TouchButton_OnTouchMoveXY(pp(this, 0xd0), y, x);
+            _mtw_TouchSlider_OnTouchMove(*(void **)i32(pp(this, 0xec), 4), y);
+            _mtw_TouchButton_OnTouchMoveXY(pp(this, 0xd4), y, x);
+            _mtw_TouchButton_OnTouchMoveXY(pp(this, 0xd8), y, x);
+            _mtw_TouchButton_OnTouchMoveXY(pp(this, 0xdc), y, x);
+            doSliders(this, y);
+            void **arr = (void **)pp(this, 0xec);
             for (unsigned int i = 1; i < *(unsigned int *)arr; i++)
                 _mtw_TouchSlider_OnTouchMove(((void **)arr[1])[i], y);
-            if (*(char *)*(void **)gMvFlagB != 0 && pp(self, 0xe8) != 0)
-                _mtw_TouchButton_OnTouchMove(pp(self, 0xc4), y);
+            if (*(char *)*(void **)gMvFlagB != 0 && pp(this, 0xe8) != 0)
+                _mtw_TouchButton_OnTouchMove(pp(this, 0xc4), y);
         }
     } break;
     case 3: { // state 4
-        _mtw_ScrollTouchWindow_OnTouchMove(pp(self, 0xf0), y);
-        void **arr = (void **)pp(self, 0xc0);
+        _mtw_ScrollTouchWindow_OnTouchMove(pp(this, 0xf0), y);
+        void **arr = (void **)pp(this, 0xc0);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++) {
             unsigned int *e = (unsigned int *)((void **)arr[1])[i];
             unsigned int t = e[0];
@@ -1598,12 +1591,12 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
         }
     } break;
     case 5: // state 6
-        _mtw_TouchButton_OnTouchMoveXY(pp(self, 0xd4), y, x);
-        _mtw_TouchButton_OnTouchMoveXY(pp(self, 0xd8), y, x);
-        _mtw_TouchButton_OnTouchMoveXY(pp(self, 0xdc), y, x);
-        doSliders(self, y);
+        _mtw_TouchButton_OnTouchMoveXY(pp(this, 0xd4), y, x);
+        _mtw_TouchButton_OnTouchMoveXY(pp(this, 0xd8), y, x);
+        _mtw_TouchButton_OnTouchMoveXY(pp(this, 0xdc), y, x);
+        doSliders(this, y);
         {
-            void **arr = (void **)pp(self, 0xec);
+            void **arr = (void **)pp(this, 0xec);
             for (unsigned int i = 1; i < *(unsigned int *)arr; i++) {
                 if (i == 5 && (unsigned char)*(char *)(*(char **)gMvLayout + 0x284) == 0) continue;
                 _mtw_TouchSlider_OnTouchMove(((void **)arr[1])[i], y);
@@ -1611,33 +1604,33 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
         }
         break;
     case 6: { // state 7
-        self->upButtonPressed = 0;
+        this->upButtonPressed = 0;
         int base = *(int *)(layout + 0x28);
-        int top = base + i32(self, 0x19c);
-        int bottom = i32(self, 0x158) + top;
+        int top = base + i32(this, 0x19c);
+        int bottom = i32(this, 0x158) + top;
         if (top < y && y < bottom &&
             *(int *)(layout + 0xc) + base < x &&
-            x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + i32(self, 0x154))
-            u8(self, 0x108) = 1;
-        if (bottom < y && y < (i32(self, 0x19c) - base) + i32(self, 0x1a0) &&
+            x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + i32(this, 0x154))
+            u8(this, 0x108) = 1;
+        if (bottom < y && y < (i32(this, 0x19c) - base) + i32(this, 0x1a0) &&
             base + *(int *)(layout + 0xc) < x &&
-            x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + i32(self, 0x154))
-            u8(self, 0x109) = 1;
-        _mtw_TouchButton_OnTouchMove(pp(self, 0xcc), y);
-        _mtw_TouchButton_OnTouchMove(pp(self, 0xd0), y);
-        _mtw_TouchSlider_OnTouchMove(*(void **)i32(pp(self, 0xec), 4), y);
+            x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + i32(this, 0x154))
+            u8(this, 0x109) = 1;
+        _mtw_TouchButton_OnTouchMove(pp(this, 0xcc), y);
+        _mtw_TouchButton_OnTouchMove(pp(this, 0xd0), y);
+        _mtw_TouchSlider_OnTouchMove(*(void **)i32(pp(this, 0xec), 4), y);
     } break;
     case 7: // state 8
-        _mtw_MissionsWindow_OnTouchMove(pp(self, 0xfc), y);
+        _mtw_MissionsWindow_OnTouchMove(pp(this, 0xfc), y);
         break;
     case 4:   // state 5
     case 0xb: // state 12
         break;
     default: { // state 10 / 0xf and others -> top-level button + 0xc0 array
-        void **arr = (void **)pp(self, 0x4);
+        void **arr = (void **)pp(this, 0x4);
         for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
             _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
-        void **arr2 = (void **)pp(self, 0xc0);
+        void **arr2 = (void **)pp(this, 0xc0);
         unsigned int n = *(unsigned int *)arr2;
         for (unsigned int i = 0; i < n; i++) {
             int *e = (int *)((void **)arr2[1])[i];
@@ -1655,12 +1648,12 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
             }
             if (hit) {
                 _mtw_TouchButton_OnTouchMove(e, y);
-                arr2 = (void **)pp(self, 0xc0);
+                arr2 = (void **)pp(this, 0xc0);
                 n = *(unsigned int *)arr2;
             }
         }
         if (state == 10)
-            _mtw_steerFromTouch(self, y, x);
+            _mtw_steerFromTouch(this, y, x);
     } break;
     }
     return 0;
@@ -1679,52 +1672,51 @@ extern void *const gCtorLayout __attribute__((visibility("hidden"))); // *holder
 
 void MenuTouchWindow::ctor(int menuType)
 {
-    void *self = this;
 
     // copy the 8-word layout metric block (+0x294..+0x2b0 of the layout) into +0x1a8..
     int *layout = (int *)*(void **)gCtorLayout;
-    i32(self, 0x1a8) = layout[0xa5]; // +0x294
-    i32(self, 0x1ac) = layout[0xa6];
-    i32(self, 0x1b0) = layout[0xa7];
-    i32(self, 0x1b4) = layout[0xa8];
-    i32(self, 0x1b8) = layout[0xa9];
-    i32(self, 0x1bc) = layout[0xaa];
-    i32(self, 0x1c0) = layout[0xab];
+    i32(this, 0x1a8) = layout[0xa5]; // +0x294
+    i32(this, 0x1ac) = layout[0xa6];
+    i32(this, 0x1b0) = layout[0xa7];
+    i32(this, 0x1b4) = layout[0xa8];
+    i32(this, 0x1b8) = layout[0xa9];
+    i32(this, 0x1bc) = layout[0xaa];
+    i32(this, 0x1c0) = layout[0xab];
 
-    i32(self, 0x168) = menuType;
+    i32(this, 0x168) = menuType;
 
     void *arr1 = ::operator new(0xc);
     _mtw_Array_TB_ctor(arr1);
-    pp(self, 0x4) = arr1;
+    pp(this, 0x4) = arr1;
     void *arr2 = ::operator new(0xc);
     _mtw_Array_TB_ctor(arr2);
-    pp(self, 0xc0) = arr2;
+    pp(this, 0xc0) = arr2;
 
-    pp(self, 0xe4) = 0;
-    pp(self, 0xe8) = 0;
-    pp(self, 0xb8) = 0;
-    pp(self, 0xb0) = 0;
-    pp(self, 0xb4) = 0;
-    u8(self, 0) = 0;
-    i32(self, 0x120) = -1;
-    i32(self, 0x18c) = 0;
-    u8(self, 0x1c4) = 0;
-    pp(self, 0x134) = 0;
-    pp(self, 0x138) = 0;
-    i32(self, 0x1e0) = 0;
-    pp(self, 0xf0) = 0;
-    pp(self, 0xf4) = 0;
-    pp(self, 0xf8) = 0;
-    i32(self, 0x230) = 0;
-    i32(self, 0x234) = 0;
-    u8(self, 0x238) = 0;
-    pp(self, 0x9c) = 0;
-    pp(self, 0xa0) = 0;
-    pp(self, 0xbc) = 0;
+    pp(this, 0xe4) = 0;
+    pp(this, 0xe8) = 0;
+    pp(this, 0xb8) = 0;
+    pp(this, 0xb0) = 0;
+    pp(this, 0xb4) = 0;
+    u8(this, 0) = 0;
+    i32(this, 0x120) = -1;
+    i32(this, 0x18c) = 0;
+    u8(this, 0x1c4) = 0;
+    pp(this, 0x134) = 0;
+    pp(this, 0x138) = 0;
+    i32(this, 0x1e0) = 0;
+    pp(this, 0xf0) = 0;
+    pp(this, 0xf4) = 0;
+    pp(this, 0xf8) = 0;
+    i32(this, 0x230) = 0;
+    i32(this, 0x234) = 0;
+    u8(this, 0x238) = 0;
+    pp(this, 0x9c) = 0;
+    pp(this, 0xa0) = 0;
+    pp(this, 0xbc) = 0;
 
-    _mtw_loadPreviewRecords(self);
+    _mtw_loadPreviewRecords(this);
 
-    _mtw_buildMenu(self, menuType);
+    _mtw_buildMenu(this, menuType);
 }
 
 // MenuTouchWindow::setSkipButtonVisible(bool). r0=this, r1=visible.
@@ -1766,7 +1758,6 @@ extern void *const gDlsImgFact  __attribute__((visibility("hidden")));  // *hold
 void MenuTouchWindow::drawLoadSaveMenu(bool param1)
 {
     (void)param1;
-    void *self = this;
     int *layout = (int *)*(void **)gDlsLayout;
     void *canvas = *(void **)gDlsCanvas;
     unsigned int color = *(unsigned int *)*(void **)gDlsColor;
@@ -1774,7 +1765,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
     int rowBaseY = layout[0x43];        // +0x10c
     ((PaintCanvas *)canvas)->SetColor(color);
 
-    int scrollOff = i32(self, 0x198);
+    int scrollOff = i32(this, 0x198);
     int margin = layout[0xa];            // +0x28
     int strip58 = layout[0x44];          // +0x110
     int strip5c = layout[0x45];          // +0x114
@@ -1789,81 +1780,81 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
         } else {
             strip58 = 8; strip5c = 5;
         }
-        int iw = ((PaintCanvas *)canvas)->GetImage2DWidth(u32(self, 0x11c));
-        int ih = ((PaintCanvas *)canvas)->GetImage2DHeight(u32(self, 0x11c));
+        int iw = ((PaintCanvas *)canvas)->GetImage2DWidth(u32(this, 0x11c));
+        int ih = ((PaintCanvas *)canvas)->GetImage2DHeight(u32(this, 0x11c));
         int count = _mtw_idiv((int)(long)*(void **)gDlsTileCnt, 1);
         int yy = 0;
         for (int k = 0; k <= count; k++) {
-            ((PaintCanvas *)canvas)->DrawImage2D(u32(self, 0x11c),
-                (layout[0xa] - iw) + i32(self, 0x198), yy, (unsigned char)1);
-            ((PaintCanvas *)canvas)->DrawImage2D(u32(self, 0x11c),
-                layout[0xa] + inner + i32(self, 0x198), yy, (unsigned char)0);
+            ((PaintCanvas *)canvas)->DrawImage2D(u32(this, 0x11c),
+                (layout[0xa] - iw) + i32(this, 0x198), yy, (unsigned char)1);
+            ((PaintCanvas *)canvas)->DrawImage2D(u32(this, 0x11c),
+                layout[0xa] + inner + i32(this, 0x198), yy, (unsigned char)0);
             yy += ih;
         }
-        scrollOff = i32(self, 0x198);
+        scrollOff = i32(this, 0x198);
         margin = layout[0xa];
     }
 
-    _mtw_TouchButton_setPosition(pp(self, 0xc4),
+    _mtw_TouchButton_setPosition(pp(this, 0xc4),
         (screenBound - scrollOff) - margin,
-        (layout[0x1c] + i32(self, 0x1b4)) * i32(self, 0x18c) + i32(self, 0x194)
+        (layout[0x1c] + i32(this, 0x1b4)) * i32(this, 0x18c) + i32(this, 0x194)
             + layout[8] + layout[3] + layout[0x42]);
 
     int rowCount = *(int *)*(void **)gDlsRowCount;
     int rowMax = *(int *)*(void **)gDlsRowMax;
 
     for (int i = 0; i < rowCount; i++) {
-        int rowY = (layout[0x1c] + i32(self, 0x1b4)) * i + i32(self, 0x194) + layout[8] + layout[3];
+        int rowY = (layout[0x1c] + i32(this, 0x1b4)) * i + i32(this, 0x194) + layout[8] + layout[3];
         if (rowY < 0 || rowY > rowMax) continue;
 
         ((PaintCanvas *)canvas)->SetColor(color);
-        int boxX = layout[0xa] + i32(self, 0x198);
+        int boxX = layout[0xa] + i32(this, 0x198);
         char box[12]; _mtw_String_ctor_cstr(box, gDlsBoxStr, false);
-        int mode = (i == i32(self, 0x18c)) ? 4 : 3;
+        int mode = (i == i32(this, 0x18c)) ? 4 : 3;
         _mtw_Layout_drawBox(layout, mode, boxX, rowY, inner - 3, layout[0x1c], box);
         _mtw_String_dtor(box);
 
         void *font = *(void **)*(void **)gDlsFont;
         int yName = strip58 + rowY;
-        int *cols = (int *)i32(*(void **)(i32(pp(self, 0x100), 4) + i * 4), 4);
+        int *cols = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4);
 
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, (void *)(long)*(int *)(((void **)cols)[0]),
-            layout[0xa] + i32(self, 0x198) + layout[0xb] /*+0x2c*/, (char)yName, false);
+            layout[0xa] + i32(this, 0x198) + layout[0xb] /*+0x2c*/, (char)yName, false);
 
-        int slot = *(int *)(i32(pp(self, 0xbc), 4) + i * 4);
+        int slot = *(int *)(i32(pp(this, 0xbc), 4) + i * 4);
         if (slot != 0) {
             unsigned int shipId = *(unsigned int *)(slot + 0x1a0);
             if (shipId < 0x40) {
                 _mtw_ImageFactory_drawShip(*(void **)gDlsImgFact, shipId,
-                    layout[0xb] + layout[0xa] + i32(self, 0x198) + i32(self, 0x1bc),
+                    layout[0xb] + layout[0xa] + i32(this, 0x198) + i32(this, 0x1bc),
                     rowBaseY + rowY);
             }
         }
 
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[1],
-            layout[0xa] + i32(self, 0x198) + layout[0xb] * 2 + i32(self, 0x1bc) + layout[0xb1] /*+0x2c4*/,
+            layout[0xa] + i32(this, 0x198) + layout[0xb] * 2 + i32(this, 0x1bc) + layout[0xb1] /*+0x2c4*/,
             yName, (bool)0);
 
         ((PaintCanvas *)canvas)->SetColor(color);
         int rowY2 = rowY + strip5c;
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[2],
-            layout[0xa] + i32(self, 0x198) + layout[0xb],
+            layout[0xa] + i32(this, 0x198) + layout[0xb],
             rowY2 + layout[0x1c] / 2, (bool)0);
 
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[3],
-            layout[0xa] + i32(self, 0x198) + layout[0xb] * 2 + i32(self, 0x1bc) + layout[0xb1],
+            layout[0xa] + i32(this, 0x198) + layout[0xb] * 2 + i32(this, 0x1bc) + layout[0xb1],
             rowY2 + layout[0x1c] / 2, (bool)0);
 
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[4],
-            layout[0xa] + i32(self, 0x198) + layout[0xb1] + (layout[0xb] + i32(self, 0x1b8)) * 2,
+            layout[0xa] + i32(this, 0x198) + layout[0xb1] + (layout[0xb] + i32(this, 0x1b8)) * 2,
             yName, (bool)0);
 
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[5],
-            layout[0xa] + i32(self, 0x198) + layout[0xb1] + (layout[0xb] + i32(self, 0x1b8)) * 2,
+            layout[0xa] + i32(this, 0x198) + layout[0xb1] + (layout[0xb] + i32(this, 0x1b8)) * 2,
             rowY2 + layout[0x1c] / 2, (bool)0);
 
-        if (i == i32(self, 0x18c))
-            _mtw_TouchButton_draw(pp(self, 0xc4));
+        if (i == i32(this, 0x18c))
+            _mtw_TouchButton_draw(pp(this, 0xc4));
     }
 }
 

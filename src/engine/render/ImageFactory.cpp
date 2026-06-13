@@ -82,7 +82,6 @@ int *ImageFactory_createChar_bi(int param_1, int param_2, int sel)
 
 // ImageFactory::reload() -- rebuilds the character image-id table + composite sprite.
 void ImageFactory::reload() {
-    ImageFactory *self = this;
     unsigned *ids = (unsigned *)operator new[](0x18);
     unsigned *holder = g_reload_canvas;
     GetTextFn getText = *g_reload_getText;
@@ -92,43 +91,41 @@ void ImageFactory::reload() {
     getText(*holder, 0x4f8, ids + 3);
     getText(*holder, 0x4f9, ids + 4);
     getText(*holder, 0x4fc, ids + 5);
-    void *old = self->sprite;
+    void *old = this->sprite;
     if (old != 0) ::operator delete(Sprite_dtor(old));
-    self->sprite = 0;
+    this->sprite = 0;
     void *spr = operator new(0x40);
     int w = ((PaintCanvas*)(long)*holder)->GetImage2DWidth((int)ids[0]);
     int h = ((PaintCanvas*)(long)*holder)->GetImage2DHeight((int)ids[0]);
     Sprite_ctor(spr, ids, 6, w, h);
-    self->sprite = spr;
-    ((PaintCanvas*)(long)*holder)->Image2DCreate(0x485, (unsigned int *)((char *)self + 4));
-    return ImageFactory::reload_tail(*holder, 0x511, (char *)self + 8);
+    this->sprite = spr;
+    ((PaintCanvas*)(long)*holder)->Image2DCreate(0x485, (unsigned int *)((char *)this + 4));
+    return ImageFactory::reload_tail(*holder, 0x511, (char *)this + 8);
 }
 
 // Tail veneer (function-pointer global): draws the foreground glyph layer.
 
 // ImageFactory::drawChar(Array<ImagePart*>*, int, int, bool)
 void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, int flag) {
-    ImageFactory *self = this;
     unsigned *holder = g_drawChar_canvas;
     ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
-    ((PaintCanvas*)(long)*holder)->DrawImage2D(i32(self, 0x4), x, y);
+    ((PaintCanvas*)(long)*holder)->DrawImage2D(i32(this, 0x4), x, y);
     for (unsigned i = 0; i < parts->size(); ++i) {
         ImagePart *part = (*parts)[i];
         if (part != 0) part->draw(x, y, flag);
     }
-    return ImageFactory::drawChar_tail(*holder, i32(self, 0x8), x, y);
+    return ImageFactory::drawChar_tail(*holder, i32(this, 0x8), x, y);
 }
 
 // ImageFactory::drawShip(int shipId, int x, int y) — draws the composite ship sprite (frame 5)
 // at (x,y), then overlays the ship's class icon (image id 0x971+shipId).
 
 void ImageFactory::drawShip(int shipId, int x, int y) {
-    ImageFactory *self = this;
     unsigned *holder = g_IF_drawShip_canvas;
     unsigned local = 0xffffffffu;
     ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
-    IF_Sprite_setFrame(self->sprite, 5);
-    IF_Sprite_setPosition(self->sprite, x, y);
+    IF_Sprite_setFrame(this->sprite, 5);
+    IF_Sprite_setPosition(this->sprite, x, y);
     IF_Sprite_draw(1.0f, 1.0f);
     ((PaintCanvas*)(long)*holder)->Image2DCreate((unsigned short)(shipId + 0x971), &local);
     ((PaintCanvas*)(long)*holder)->DrawImage2D((int)local, x, y);
@@ -178,7 +175,6 @@ extern "C" __attribute__((visibility("hidden"))) char *g_IF_flagC;        // sel
 extern "C" __attribute__((visibility("hidden"))) int *g_IF_posTableD;     // alt default base ptr
 
 void * ImageFactory::loadImage(int row, int col, int frameBase) {
-    ImageFactory *self = this;
     int id = g_IF_idTable[row * 4 + col];   // 0x10-byte rows / 4-byte cells
     if (id < 0)
         return 0;
@@ -211,12 +207,11 @@ void * ImageFactory::loadImage(int row, int col, int frameBase) {
 // otherwise 0xef0, plus itemId).
 
 void ImageFactory::drawItem4(int itemId, int frame, int x, int y) {
-    ImageFactory *self = this;
     unsigned *holder = g_IF_drawItem4_canvas;
     unsigned local = 0xffffffffu;
     ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
-    IF_Sprite_setFrame(self->sprite, frame);
-    IF_Sprite_setPosition(self->sprite, x, y);
+    IF_Sprite_setFrame(this->sprite, frame);
+    IF_Sprite_setPosition(this->sprite, x, y);
     IF_Sprite_draw(1.0f, 1.0f);
     int base = 0xef0;
     if (itemId < 0xb0)
@@ -227,8 +222,7 @@ void ImageFactory::drawItem4(int itemId, int frame, int x, int y) {
 
 // ImageFactory::loadChar(int*) -> Array<ImagePart*>* of 4 entries (with [0]/[2] swapped).
 Array<ImagePart *> * ImageFactory::loadChar(int *param_1) {
-    ImageFactory *self = this;
-    (void)self;
+    (void)this;
     if (param_1 == 0) return 0;
     Array<ImagePart *> *a = new Array<ImagePart *>();
     a->resize(4);
@@ -251,8 +245,7 @@ extern void *const gCreateCharRng __attribute__((visibility("hidden")));
 
 // ImageFactory::createChar(int) — randomizes a char then forwards to createChar(bool,int).
 void ImageFactory::createChar_i(int param_1) {
-    ImageFactory *self = this;
-    (void)self;
+    (void)this;
     int r = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);
     ImageFactory_createChar_bi((int)__builtin_clz(r), (unsigned)(r == 0), param_1);
 }
@@ -286,8 +279,7 @@ extern int g_ctor_src[] __attribute__((visibility("hidden")));
 
 // ImageFactory::ImageFactory() -> this. Copies a 13x4x2 int table when gated, then reload().
 ImageFactory * ImageFactory::ctor() {
-    ImageFactory *self = this;
-    self->sprite = 0;
+    this->sprite = 0;
     if ((*g_ctor_flagA | *g_ctor_flagB) != 0) {
         int *dst = g_ctor_dst;
         int *src = g_ctor_src;
@@ -304,8 +296,8 @@ ImageFactory * ImageFactory::ctor() {
             src += 8;
         }
     }
-    ((ImageFactory *)(self))->reload();
-    return self;
+    ((ImageFactory *)(this))->reload();
+    return this;
 }
 
 // Tail-call fragment at the end of reload(): create image id 0x511 into the

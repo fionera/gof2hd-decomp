@@ -15,23 +15,22 @@ using AbyssEngine::String12;
 // +0x3c, +0x40, then the String at +0xc.
 
 void SolarSystem::dtor() {
-    SolarSystem *self = this;
-    if (self->stationIds != 0) {
-        self->stationIds->clear();
-        delete self->stationIds;
+    if (this->stationIds != 0) {
+        this->stationIds->clear();
+        delete this->stationIds;
     }
-    self->stationIds = 0;
-    if (self->field_0x3c != 0) {
-        self->field_0x3c->clear();
-        delete self->field_0x3c;
+    this->stationIds = 0;
+    if (this->field_0x3c != 0) {
+        this->field_0x3c->clear();
+        delete this->field_0x3c;
     }
-    self->field_0x3c = 0;
-    if (self->linkedSystemIds != 0) {
-        self->linkedSystemIds->clear();
-        delete self->linkedSystemIds;
+    this->field_0x3c = 0;
+    if (this->linkedSystemIds != 0) {
+        this->linkedSystemIds->clear();
+        delete this->linkedSystemIds;
     }
-    self->linkedSystemIds = 0;
-    SolarSystem::baseStringDtor((char *)self + 0xc);
+    this->linkedSystemIds = 0;
+    SolarSystem::baseStringDtor((char *)this + 0xc);
 }
 
 struct Status;
@@ -45,8 +44,7 @@ extern Status *gStatusOrbit __attribute__((visibility("hidden")));
 
 // SolarSystem::currentOrbitHasWarpGate() — orbit field at +0x30 vs current station index.
 bool SolarSystem::currentOrbitHasWarpGate() {
-    SolarSystem *self = this;
-    int orbit = self->jumpgateStationId;
+    int orbit = this->jumpgateStationId;
     Station *st = ((Status *)(*(Status **)gStatusOrbit))->getStation();
     return orbit == Station_getIndex(st);
 }
@@ -87,14 +85,12 @@ void SolarSystem::baseStringDtor(void *strField) {
 
 // SolarSystem::isVisible() — ldrb.w r0,[r0,#0x44]; bx lr
 uint8_t SolarSystem::isVisible() {
-    SolarSystem *self = this;
-    return u8(self, 0x44);
+    return u8(this, 0x44);
 }
 
 // SolarSystem::stationIsInSystem(int) — scan station-index array at +0x38.
 int SolarSystem::stationIsInSystem_int(int idx) {
-    SolarSystem *self = this;
-    Array<int> *arr = self->stationIds;
+    Array<int> *arr = this->stationIds;
     uint32_t n = arr->size();
     for (uint32_t i = 0; i < n; i++) {
         if ((*arr)[i] == idx)
@@ -106,9 +102,8 @@ int SolarSystem::stationIsInSystem_int(int idx) {
 // SolarSystem::systemIsInSystemRoutes(int) — self's own system (+0x18) counts; otherwise
 // scan the routes array at +0x40 (null -> not present).
 int SolarSystem::systemIsInSystemRoutes(int sys) {
-    SolarSystem *self = this;
-    if (self->systemId != sys) {
-        Array<int> *arr = self->linkedSystemIds;
+    if (this->systemId != sys) {
+        Array<int> *arr = this->linkedSystemIds;
         if (arr == 0)
             return 0;
         uint32_t n = arr->size();
@@ -123,14 +118,12 @@ int SolarSystem::systemIsInSystemRoutes(int sys) {
 
 // SolarSystem::setVisible(bool) — strb.w r1,[r0,#0x44]; bx lr
 void SolarSystem::setVisible(bool v) {
-    SolarSystem *self = this;
-    u8(self, 0x44) = v;
+    u8(this, 0x44) = v;
 }
 
 // SolarSystem::getStationEnumIndex(int) — index of matching station in array at +0x38, or -1.
 uint32_t SolarSystem::getStationEnumIndex(int idx) {
-    SolarSystem *self = this;
-    Array<int> *arr = self->stationIds;
+    Array<int> *arr = this->stationIds;
     for (uint32_t i = 0; i < arr->size(); i++) {
         if ((*arr)[i] == idx)
             return i;
@@ -146,9 +139,8 @@ uint32_t SolarSystem::getStationEnumIndex(int idx) {
 // RetStr is defined in gof2/SolarSystem.h.
 
 RetStr SolarSystem::getName() {
-    SolarSystem *self = this;
     RetStr r;
-    ((String *)(&r))->ctor_copy((String *)((char *)self + 0xc), false);
+    ((String *)(&r))->ctor_copy((String *)((char *)this + 0xc), false);
     return r;
 }
 
@@ -159,13 +151,12 @@ extern void *gPirateBaseRoot __attribute__((visibility("hidden")));
 
 // SolarSystem::hasPirateBase() — a pirate station in this system with its flag cleared.
 int SolarSystem::hasPirateBase() {
-    SolarSystem *self = this;
     char *base = *(char **)gPirateBaseRoot;
     uint32_t i = 0;
     while (true) {
         if (i > 3)
             return 0;
-        if (((SolarSystem *)(self))->stationIsInSystem_int(kPirateBaseStations[i]) != 0) {
+        if (((SolarSystem *)(this))->stationIsInSystem_int(kPirateBaseStations[i]) != 0) {
             char *flags = *(char **)(*(char **)(base + 0x4c) + 4);
             if (flags[i] == 0)
                 return 1;
@@ -179,8 +170,7 @@ int SolarSystem::hasPirateBase() {
 extern const int kAttackRaceTable[4] __attribute__((visibility("hidden")));
 
 int SolarSystem::getAttackRace() {
-    SolarSystem *self = this;
-    uint32_t r = self->faction;
+    uint32_t r = this->faction;
     if (r < 4)
         return kAttackRaceTable[r];
     return 8;
@@ -189,8 +179,7 @@ int SolarSystem::getAttackRace() {
 // SolarSystem::hasNoOwner() — owner race at +0x18; map a contiguous range to a bitmask.
 // (race-0x17) < 0xb ? (0x60b >> (x & 0xff)) & 1 : 0
 uint32_t SolarSystem::hasNoOwner() {
-    SolarSystem *self = this;
-    uint32_t x = self->systemId - 0x17;
+    uint32_t x = this->systemId - 0x17;
     if (x < 0xb)
         return (0x60bU >> (x & 0x7ff)) & 1;
     return 0;
@@ -203,13 +192,12 @@ extern void *gBlueprintRoot __attribute__((visibility("hidden")));
 
 // SolarSystem::hasHiddenBlueprint() — a blueprint station in this system with its flag cleared.
 int SolarSystem::hasHiddenBlueprint() {
-    SolarSystem *self = this;
     char *base = *(char **)gBlueprintRoot;
     uint32_t i = 0;
     while (true) {
         if (i > 4)
             return 0;
-        if (((SolarSystem *)(self))->stationIsInSystem_int(kBlueprintStations[i]) != 0) {
+        if (((SolarSystem *)(this))->stationIsInSystem_int(kBlueprintStations[i]) != 0) {
             char *flags = *(char **)(*(char **)(base + 0x58) + 4);
             if (flags[i] == 0)
                 return 1;
@@ -220,9 +208,8 @@ int SolarSystem::hasHiddenBlueprint() {
 
 // SolarSystem::setCoords(int, int) — strd r1,r2,[r0,#0x24]; bx lr
 void SolarSystem::setCoords(int x, int y) {
-    SolarSystem *self = this;
-    self->mapX = x;
-    self->mapY = y;
+    this->mapX = x;
+    this->mapY = y;
 }
 
 // AbyssEngine::String operations.
@@ -238,29 +225,28 @@ extern "C" void *String_default_ctor(void *self);                 // 0x6efbc -> 
 // the target keeps them as discrete ldr/str. This is dominated by register-allocation
 // and frame-layout choices not reachable from source form.
 SolarSystem * SolarSystem::ctor(int p1, const String12 &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14) {
-    SolarSystem *self = this;
-    String_default_ctor((char *)self + 0xc);
-    self->systemId = p1;
+    String_default_ctor((char *)this + 0xc);
+    this->systemId = p1;
     char tmp[12];
     ((String *)(tmp))->ctor_copy((String *)(&p2), false);
-    ((String *)((char *)self + 0xc))->assign((String *)tmp);
+    ((String *)((char *)this + 0xc))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
-    u8(self, 0x44) = p4;
-    self->securityLevel = p3;
-    self->faction = p5;
-    self->mapX = p6;
-    self->mapY = p7;
-    self->mapZ = p8;
-    self->jumpgateStationId = p9;
-    self->textureIndex = p10;
-    self->field_0x0 = p11[0];
-    self->field_0x4 = p11[1];
+    u8(this, 0x44) = p4;
+    this->securityLevel = p3;
+    this->faction = p5;
+    this->mapX = p6;
+    this->mapY = p7;
+    this->mapZ = p8;
+    this->jumpgateStationId = p9;
+    this->textureIndex = p10;
+    this->field_0x0 = p11[0];
+    this->field_0x4 = p11[1];
     int v2 = p11[2];
-    self->stationIds = (Array<int> *)p12;
-    self->field_0x8 = v2;
-    self->field_0x3c = (Array<int> *)p14;
-    self->linkedSystemIds = (Array<int> *)p13;
-    return self;
+    this->stationIds = (Array<int> *)p12;
+    this->field_0x8 = v2;
+    this->field_0x3c = (Array<int> *)p14;
+    this->linkedSystemIds = (Array<int> *)p13;
+    return this;
 }
 
 // SolarSystem::getWarpGateEnumIndex() — ldr r1,[r0,#0x30]; b.w <veneer>
@@ -270,8 +256,7 @@ SolarSystem * SolarSystem::ctor(int p1, const String12 &p2, int p3, bool p4, int
 // spurious 3rd instruction; checked with the true 6-byte window it is `>>> EXACT MATCH`.
 
 int SolarSystem::getWarpGateEnumIndex() {
-    SolarSystem *self = this;
-    return ((SolarSystem *)(self))->warpGateLookup(self->jumpgateStationId);
+    return ((SolarSystem *)(this))->warpGateLookup(this->jumpgateStationId);
 }
 
 struct Galaxy;
@@ -283,15 +268,14 @@ extern Galaxy *gGalaxyDiscover __attribute__((visibility("hidden")));
 
 // SolarSystem::isFullyDiscovered() — every station in array +0x38 must be visited.
 int SolarSystem::isFullyDiscovered() {
-    SolarSystem *self = this;
-    Array<int> *arr = self->stationIds;
+    Array<int> *arr = this->stationIds;
     uint32_t i = 0;
     Galaxy *gal = gGalaxyDiscover;
     while (true) {
         if (i >= arr->size())
             return 1;
         char *visited = (char *)((Galaxy *)(*(Galaxy **)gal))->getVisited();
-        arr = self->stationIds;
+        arr = this->stationIds;
         uint32_t flagIdx = (*arr)[i];
         i++;
         if (visited[flagIdx] == 0)
@@ -308,8 +292,7 @@ struct Station;
 // before the prologue (cbz; ...; bx lr), whereas the target saves `this` in r4
 // first and shares the pop epilogue. Resistant to source-level restructuring.
 int SolarSystem::stationIsInSystem(Station *st) {
-    SolarSystem *self = this;
     if (st != 0)
-        return ((SolarSystem *)(self))->stationIsInSystem_int(Station_getIndex(st));
+        return ((SolarSystem *)(this))->stationIsInSystem_int(Station_getIndex(st));
     return 0;
 }

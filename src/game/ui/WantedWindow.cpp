@@ -51,9 +51,8 @@ __attribute__((visibility("hidden"))) extern int *g_WantedWindow_move_force;
 __attribute__((visibility("hidden"))) extern int *g_WantedWindow_move_screen_w_b;
 
 int WantedWindow::OnTouchMove(int x, int y) {
-    WantedWindow *self = this;
-    if (self->showingMap != 0) {
-        ((StarMap *)(self->starMap))->OnTouchMove(x, y);
+    if (this->showingMap != 0) {
+        ((StarMap *)(this->starMap))->OnTouchMove(x, y);
         return 0;
     }
 
@@ -63,150 +62,145 @@ int WantedWindow::OnTouchMove(int x, int y) {
          (y < *g_WantedWindow_move_screen_h - F<int>(layout, 0x10)) &&
          (x < *g_WantedWindow_move_screen_w_a / 2)) ||
         (*g_WantedWindow_move_force != 0)) {
-        int delta = y - self->lastDragY;
-        self->dragDelta = delta;
-        self->scrollDamping = 1.0f;
-        self->scrollOffset += delta;
-        self->lastDragY = y;
+        int delta = y - this->lastDragY;
+        this->dragDelta = delta;
+        this->scrollDamping = 1.0f;
+        this->scrollOffset += delta;
+        this->lastDragY = y;
     }
 
     if (*g_WantedWindow_move_screen_w_b / 2 < x) {
-        ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchMove(x, y);
+        ((ScrollTouchWindow *)(this->scrollWindow))->OnTouchMove(x, y);
     }
 
     uint32_t i = 0;
-    while (i < self->buttons->size()) {
-        (*self->buttons)[i]->OnTouchMove(x, y);
+    while (i < this->buttons->size()) {
+        (*this->buttons)[i]->OnTouchMove(x, y);
         ++i;
     }
 
     ((Layout *)(*layoutHolder))->OnTouchMove(x, y);
-    if (self->detailButton != 0) {
-        Wanted *wanted = (*self->wantedList)[self->selectedWanted];
+    if (this->detailButton != 0) {
+        Wanted *wanted = (*this->wantedList)[this->selectedWanted];
         if (((Wanted *)(wanted))->isActive() != 0) {
-            ((TouchButton *)(self->detailButton))->OnTouchMove(x, y);
+            ((TouchButton *)(this->detailButton))->OnTouchMove(x, y);
         }
     }
 
-    uint32_t selected = ((WantedWindow *)(self))->getWantedAtPosition(x, y);
-    int moved = y - self->touchStartY;
+    uint32_t selected = ((WantedWindow *)(this))->getWantedAtPosition(x, y);
+    int moved = y - this->touchStartY;
     if (moved < 0) {
         moved = -moved;
     }
     if (moved > 5) {
         selected = 0xffffffffu;
     }
-    self->highlightedWanted = selected;
+    this->highlightedWanted = selected;
     return 0;
 }
 
 void WantedWindow::update(int dt) {
-    WantedWindow *self = this;
-    if (self->showingMap != 0) {
-        return this->update_tail(self->starMap, dt);
+    if (this->showingMap != 0) {
+        return this->update_tail(this->starMap, dt);
     }
 
-    (*self->buttons)[1]->setAlwaysPressed(true);
-    ((ScrollTouchWindow *)(self->scrollWindow))->update(dt);
+    (*this->buttons)[1]->setAlwaysPressed(true);
+    ((ScrollTouchWindow *)(this->scrollWindow))->update(dt);
 
-    if (self->dragging == 0) {
-        float speed = self->scrollDamping;
-        float old = self->scrollVelocity;
+    if (this->dragging == 0) {
+        float speed = this->scrollDamping;
+        float old = this->scrollVelocity;
         float delta = speed * old;
         float mag = -(speed * old);
         if (0.0f < delta) {
             mag = delta;
         }
-        self->scrollVelocity = delta;
+        this->scrollVelocity = delta;
         if (mag > 1.0f) {
-            self->scrollOffset = (int)(delta + (float)self->scrollOffset);
+            this->scrollOffset = (int)(delta + (float)this->scrollOffset);
         }
     }
 
-    int scroll = self->scrollOffset;
+    int scroll = this->scrollOffset;
     if (scroll > 0) {
-        self->scrollDamping = 1.0f;
-        self->scrollVelocity = (float)-scroll * 0.5f;
+        this->scrollDamping = 1.0f;
+        this->scrollVelocity = (float)-scroll * 0.5f;
     }
 
-    int limit = self->visibleHeight - self->contentHeight;
+    int limit = this->visibleHeight - this->contentHeight;
     if (limit <= -1) {
         if (scroll < limit) {
-            self->scrollDamping = 1.0f;
-            self->scrollVelocity = (float)(limit - scroll) * 0.5f;
+            this->scrollDamping = 1.0f;
+            this->scrollVelocity = (float)(limit - scroll) * 0.5f;
         }
     } else {
-        self->scrollOffset = 0;
-        self->scrollVelocity = 0;
+        this->scrollOffset = 0;
+        this->scrollVelocity = 0;
     }
 }
 
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_touch_layout;
 
 int WantedWindow::OnTouchBegin(int x, int y) {
-    WantedWindow *self = this;
-    if (self->showingMap != 0) {
-        ((StarMap *)(self->starMap))->OnTouchBegin(x, y);
+    if (this->showingMap != 0) {
+        ((StarMap *)(this->starMap))->OnTouchBegin(x, y);
         return 0;
     }
 
-    self->lastDragY = y;
-    self->touchStartY = y;
-    self->dragDelta = 0;
-    self->dragging = 1;
-    ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchBegin(x, y);
+    this->lastDragY = y;
+    this->touchStartY = y;
+    this->dragDelta = 0;
+    this->dragging = 1;
+    ((ScrollTouchWindow *)(this->scrollWindow))->OnTouchBegin(x, y);
 
     uint32_t i = 0;
-    while (i < self->buttons->size()) {
-        (*self->buttons)[i]->OnTouchBegin(x, y);
+    while (i < this->buttons->size()) {
+        (*this->buttons)[i]->OnTouchBegin(x, y);
         ++i;
     }
 
     ((Layout *)(*g_WantedWindow_touch_layout))->OnTouchBegin(x, y);
-    if (self->detailButton != 0) {
-        Wanted *wanted = (*self->wantedList)[self->selectedWanted];
+    if (this->detailButton != 0) {
+        Wanted *wanted = (*this->wantedList)[this->selectedWanted];
         if (((Wanted *)(wanted))->isActive() != 0) {
-            ((TouchButton *)(self->detailButton))->OnTouchBegin(x, y);
+            ((TouchButton *)(this->detailButton))->OnTouchBegin(x, y);
         }
     }
 
-    self->highlightedWanted = ((WantedWindow *)(self))->getWantedAtPosition(x, y);
+    this->highlightedWanted = ((WantedWindow *)(this))->getWantedAtPosition(x, y);
     return 0;
 }
 
 void WantedWindow::render3D() {
-    WantedWindow *self = this;
-    if (self->showingMap != 0) {
-        return this->render3D_tail(self->starMap);
+    if (this->showingMap != 0) {
+        return this->render3D_tail(this->starMap);
     }
 }
 
 float WantedWindow::getRelativeScrollStartPos() {
-    WantedWindow *self = this;
-    int pos = self->scrollOffset;
+    int pos = this->scrollOffset;
     if (pos > 0) {
         union { uint32_t u; float f; } c;
         c.u = 0x4650a903u;
         return c.f;
     }
-    return -(float)pos / (float)self->contentHeight;
+    return -(float)pos / (float)this->contentHeight;
 }
 
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_hit_layout;
 
 uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
-    WantedWindow *self = this;
-    if (x >= self->windowX + (self->windowWidth >> 1)) {
+    if (x >= this->windowX + (this->windowWidth >> 1)) {
         return 0xffffffffu;
     }
 
-    Array<Wanted*> *list = self->wantedList;
+    Array<Wanted*> *list = this->wantedList;
     void *layout = *g_WantedWindow_hit_layout;
-    int numerator = y - self->windowY;
+    int numerator = y - this->windowY;
     numerator -= F<int>(layout, 0xc);
     numerator -= F<int>(layout, 0x20);
     numerator -= F<int>(layout, 0x5c);
-    numerator -= self->scrollOffset;
+    numerator -= this->scrollOffset;
     int idx = __aeabi_idiv(numerator, F<int>(layout, 0x70) + F<int>(layout, 0x34));
     if ((uint32_t)idx > (uint32_t)((int)list->size() - 1)) {
         return 0xffffffffu;
@@ -228,19 +222,18 @@ __attribute__((visibility("hidden"))) extern void **g_WantedWindow_end_layout_b;
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_end_text;
 
 void WantedWindow::OnTouchEnd(int x, int y) {
-    WantedWindow *self = this;
     String help;
 
-    if (self->showingMap != 0) {
-        if ((((StarMap *)(self->starMap))->OnTouchEnd(x, y), true)) {
+    if (this->showingMap != 0) {
+        if ((((StarMap *)(this->starMap))->OnTouchEnd(x, y), true)) {
             uint32_t h;
             uint32_t w;
             uint32_t halfW = 0;
             if (*g_WantedWindow_end_fullscreen == 0) {
                 h = *g_WantedWindow_end_window_h;
                 w = *g_WantedWindow_end_window_w;
-                self->windowX = 0;
-                self->windowY = 0;
+                this->windowX = 0;
+                this->windowY = 0;
             } else {
                 if (*g_WantedWindow_end_tablet == 0) {
                     h = 1000;
@@ -255,16 +248,16 @@ void WantedWindow::OnTouchEnd(int x, int y) {
                     halfW = 0x1c9;
                     w = 0x392;
                 }
-                self->windowX = (*g_WantedWindow_end_screen_w >> 1) - halfW;
-                self->windowY = (*g_WantedWindow_end_screen_h >> 1) - (h >> 1);
+                this->windowX = (*g_WantedWindow_end_screen_w >> 1) - halfW;
+                this->windowY = (*g_WantedWindow_end_screen_h >> 1) - (h >> 1);
             }
-            self->windowWidth = w;
-            self->windowHeight = h;
-            self->showingMap = 0;
+            this->windowWidth = w;
+            this->windowHeight = h;
+            this->showingMap = 0;
         }
     } else {
-        int delta = self->dragDelta;
-        int pos = self->scrollOffset + delta;
+        int delta = this->dragDelta;
+        int pos = this->scrollOffset + delta;
         float velocity = 0.0f;
         int mag = delta;
         if (mag < 0) {
@@ -273,31 +266,31 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         if (mag > 3) {
             velocity = (float)delta;
         }
-        self->scrollDamping = 0.95f;
-        self->dragging = 0;
-        self->scrollOffset = pos;
-        self->scrollOffsetSnapshot = pos;
-        self->scrollVelocity = velocity;
+        this->scrollDamping = 0.95f;
+        this->dragging = 0;
+        this->scrollOffset = pos;
+        this->scrollOffsetSnapshot = pos;
+        this->scrollVelocity = velocity;
 
-        ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchEnd(x, y);
-        for (uint32_t i = 0; i < self->buttons->size(); ++i) {
-            if ((*self->buttons)[i]->OnTouchEnd(x, y) != 0) {
-                self->field_0x0 = i;
+        ((ScrollTouchWindow *)(this->scrollWindow))->OnTouchEnd(x, y);
+        for (uint32_t i = 0; i < this->buttons->size(); ++i) {
+            if ((*this->buttons)[i]->OnTouchEnd(x, y) != 0) {
+                this->field_0x0 = i;
             }
         }
 
-        if (self->highlightedWanted >= 0) {
-            int idx = ((WantedWindow *)(self))->getWantedAtPosition(x, y);
-            self->selectedWanted = idx;
-            self->highlightedWanted = idx;
-            ((WantedWindow *)(self))->selectWanted(idx);
+        if (this->highlightedWanted >= 0) {
+            int idx = ((WantedWindow *)(this))->getWantedAtPosition(x, y);
+            this->selectedWanted = idx;
+            this->highlightedWanted = idx;
+            ((WantedWindow *)(this))->selectWanted(idx);
         }
 
         bool openMap = false;
-        if (self->detailButton != 0) {
-            Wanted *wanted = (*self->wantedList)[self->selectedWanted];
+        if (this->detailButton != 0) {
+            Wanted *wanted = (*this->wantedList)[this->selectedWanted];
             if (((Wanted *)(wanted))->isActive() != 0 &&
-                ((TouchButton *)(self->detailButton))->OnTouchEnd(x, y) != 0) {
+                ((TouchButton *)(this->detailButton))->OnTouchEnd(x, y) != 0) {
                 openMap = true;
             }
         }
@@ -305,28 +298,28 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         if (openMap) {
             void **appHolder = g_WantedWindow_end_app;
             void *module = ((ApplicationManager *)(*appHolder))->GetApplicationModule(5);
-            self->starMap = F<void *>(module, 0x10);
-            Wanted *wanted = (*self->wantedList)[self->selectedWanted];
+            this->starMap = F<void *>(module, 0x10);
+            Wanted *wanted = (*this->wantedList)[this->selectedWanted];
             int lastSeen = ((Wanted *)(wanted))->getLastSeen();
             void *station = (void *)(long)((Galaxy *)(*g_WantedWindow_end_galaxy))->getStation(lastSeen);
-            void *oldMission = self->mission;
+            void *oldMission = this->mission;
             if (oldMission != 0) {
                 (*(void (**)(void *))(*(int *)oldMission + 4))(oldMission);
             }
-            self->mission = 0;
+            this->mission = 0;
 
             void *mission = ::operator new(0x78);
             Mission_ctor(mission, 0, 0, ((Wanted *)(wanted))->getTravelsTo());
-            self->mission = mission;
+            this->mission = mission;
 
-            void *map = self->starMap;
+            void *map = this->starMap;
             if (map == 0) {
                 map = ::operator new(0x1e8);
                 StarMap_ctor(map, true, mission, false, -1);
                 ((ApplicationManager *)(*appHolder))->GetApplicationModule(5);
                 F<void *>(((ApplicationManager *)(*appHolder))->GetApplicationModule(5), 0x10) = map;
                 map = F<void *>(((ApplicationManager *)(*appHolder))->GetApplicationModule(5), 0x10);
-                self->starMap = map;
+                this->starMap = map;
             } else {
                 ((StarMap *)(map))->init(true, (Mission *)mission, false, -1);
             }
@@ -337,7 +330,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             if (station != 0) {
                 ((Station *)(station))->dtor(); ::operator delete(station);
             }
-            self->showingMap = 1;
+            this->showingMap = 1;
             ((Layout *)(*g_WantedWindow_end_layout_a))->resetWindowDimensions();
         } else {
             void **layoutHolder = g_WantedWindow_end_layout_b;
@@ -373,7 +366,6 @@ static inline Wanted *draw_wanted_at(WantedWindow *self, int idx)
 }
 
 void WantedWindow::draw() {
-    WantedWindow *self = this;
     String s40;
     String s4c;
     String s58;
@@ -384,8 +376,8 @@ void WantedWindow::draw() {
     String s94;
     String sa0;
 
-    if (self->showingMap != 0) {
-        this->draw_tail(self->starMap);
+    if (this->showingMap != 0) {
+        this->draw_tail(this->starMap);
         return;
     }
 
@@ -393,43 +385,43 @@ void WantedWindow::draw() {
     void *canvas = *g_WantedWindow_draw_canvas;
     void *font = *g_WantedWindow_draw_font;
 
-    ((PaintCanvas *)canvas)->EnableClip(self->windowX,
-                           self->windowY + F<int>(layout, 0xc) +
+    ((PaintCanvas *)canvas)->EnableClip(this->windowX,
+                           this->windowY + F<int>(layout, 0xc) +
                                F<int>(layout, 0x20) + F<int>(layout, 0x5c),
-                           self->windowWidth,
-                           F<int>(layout, 0x2c) + self->visibleHeight);
+                           this->windowWidth,
+                           F<int>(layout, 0x2c) + this->visibleHeight);
 
-    float relStart = ((WantedWindow *)(self))->getRelativeScrollStartPos();
-    int visible = self->visibleHeight;
+    float relStart = ((WantedWindow *)(this))->getRelativeScrollStartPos();
+    int visible = this->visibleHeight;
     float visf = (float)visible;
-    float relHeight = ((WantedWindow *)(self))->getRelativeScrollHeight();
+    float relHeight = ((WantedWindow *)(this))->getRelativeScrollHeight();
     int barSize = (int)(relHeight * visf);
     int barStart = (int)(relStart * visf);
     if (barSize >= 1 || barStart >= 0) {
-        ((Layout *)(layout))->drawScrollBar(((self->windowX + (self->windowWidth >> 1)) -
-                              F<int>(layout, 0x2c)) - F<int>(layout, 0x48), self->windowY + F<int>(layout, 0x2c) +
+        ((Layout *)(layout))->drawScrollBar(((this->windowX + (this->windowWidth >> 1)) -
+                              F<int>(layout, 0x2c)) - F<int>(layout, 0x48), this->windowY + F<int>(layout, 0x2c) +
                                  F<int>(layout, 0xc) + F<int>(layout, 0x20) +
                                  F<int>(layout, 0x5c), visible, barStart, barSize);
     }
 
-    int y = self->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20) +
-            F<int>(layout, 0x5c) + F<int>(layout, 0x2c) + self->scrollOffset;
+    int y = this->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20) +
+            F<int>(layout, 0x5c) + F<int>(layout, 0x2c) + this->scrollOffset;
     int inset = barSize < 1 ? 0 : F<int>(layout, 0x2c) + F<int>(layout, 0x48);
 
-    for (uint32_t i = 0; i < self->wantedList->size(); ++i) {
-        int style = (i == self->selectedWanted || i == self->highlightedWanted) ? 4 : 3;
+    for (uint32_t i = 0; i < this->wantedList->size(); ++i) {
+        int style = (i == this->selectedWanted || i == this->highlightedWanted) ? 4 : 3;
         String_cstr_ctor(&s40, g_WantedWindow_draw_empty_a, false);
-        ((Layout *)(layout))->drawBox(style, F<int>(layout, 0x28) + self->windowX, y, (self->windowWidth >> 1) -
+        ((Layout *)(layout))->drawBox(style, F<int>(layout, 0x28) + this->windowX, y, (this->windowWidth >> 1) -
                            (inset + F<int>(layout, 0x28) + F<int>(layout, 0x2c)), F<int>(layout, 0x70), &s40, 0);
         ((String *)(&s40))->dtor();
 
-        Wanted *wanted = draw_wanted_at(self, i);
+        Wanted *wanted = draw_wanted_at(this, i);
         ((PaintCanvas *)canvas)->SetColor(((Wanted *)(wanted))->isActive() ? 0xffffffffu : 0xff808080u);
         ((Wanted *)(&s4c))->getName();
         int textY = y + F<int>(layout, 0x70) / 2 -
                     ((PaintCanvas *)canvas)->GetTextHeight((unsigned int)(unsigned long)font) / 2;
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&s4c,
-                               self->windowX + F<int>(layout, 0x28) +
+                               this->windowX + F<int>(layout, 0x28) +
                                    F<int>(layout, 0x44),
                                textY, false);
         ((String *)(&s4c))->dtor();
@@ -441,8 +433,8 @@ void WantedWindow::draw() {
             String_cstr_ctor(&s64, g_WantedWindow_draw_mark, false);
             String_plus(&s4c, &s58, &s64);
             int textW = ((PaintCanvas *)canvas)->GetTextWidth((unsigned int)(unsigned long)font, (void *)&s4c);
-            ((PaintCanvas *)canvas)->DrawImage2D(self->bgImage,
-                                    self->windowX + F<int>(layout, 0x28) +
+            ((PaintCanvas *)canvas)->DrawImage2D(this->bgImage,
+                                    this->windowX + F<int>(layout, 0x28) +
                                         F<int>(layout, 0x44) + textW,
                                     textY);
             ((String *)(&s4c))->dtor();
@@ -459,17 +451,17 @@ void WantedWindow::draw() {
     ((Layout *)layout)->drawHeader1(&s70);
     ((String *)(&s70))->dtor();
 
-    for (uint32_t i = 0; i < self->buttons->size(); ++i) {
-        (*self->buttons)[i]->draw();
+    for (uint32_t i = 0; i < this->buttons->size(); ++i) {
+        (*this->buttons)[i]->draw();
     }
 
     ((String *)(&s7c))->ctor_copy((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
-    ((Layout *)(layout))->drawBox(1, F<int>(layout, 0x28) + self->windowX, self->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20), (self->windowWidth >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)), F<int>(layout, 0x5c), &s7c, 0);
+    ((Layout *)(layout))->drawBox(1, F<int>(layout, 0x28) + this->windowX, this->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20), (this->windowWidth >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)), F<int>(layout, 0x5c), &s7c, 0);
     ((String *)(&s7c))->dtor();
 
     String_cstr_ctor(&s88, g_WantedWindow_draw_empty_b, false);
-    ((Layout *)(layout))->drawBox(5, F<int>(layout, 0x28) + self->windowX, self->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20) +
-                       F<int>(layout, 0x5c) + F<int>(layout, 0x2c), (self->windowWidth >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)), ((self->windowHeight -
+    ((Layout *)(layout))->drawBox(5, F<int>(layout, 0x28) + this->windowX, this->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20) +
+                       F<int>(layout, 0x5c) + F<int>(layout, 0x2c), (this->windowWidth >> 1) - (F<int>(layout, 0x2c) + F<int>(layout, 0x28)), ((this->windowHeight -
                      (F<int>(layout, 0x20) + F<int>(layout, 0xc) +
                       F<int>(layout, 0x5c) + F<int>(layout, 0x2c) * 2)) -
                     F<int>(layout, 0x10)) -
@@ -477,31 +469,31 @@ void WantedWindow::draw() {
     ((String *)(&s88))->dtor();
 
     ((String *)(&s94))->ctor_copy((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
-    ((Layout *)(layout))->drawBox(1, self->windowX + (self->windowWidth >> 1) +
-                                  F<int>(layout, 0x2c), self->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20), ((self->windowWidth >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28), F<int>(layout, 0x5c), &s94, 0);
+    ((Layout *)(layout))->drawBox(1, this->windowX + (this->windowWidth >> 1) +
+                                  F<int>(layout, 0x2c), this->windowY + F<int>(layout, 0xc) + F<int>(layout, 0x20), ((this->windowWidth >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28), F<int>(layout, 0x5c), &s94, 0);
     ((String *)(&s94))->dtor();
 
     String_cstr_ctor(&sa0, g_WantedWindow_draw_empty_c, false);
-    ((Layout *)(layout))->drawBox(5, self->windowX + (self->windowWidth >> 1) +
-                                  F<int>(layout, 0x2c), self->windowY + F<int>(layout, 0x2c) + F<int>(layout, 0xc) +
-                       F<int>(layout, 0x20) + F<int>(layout, 0x5c), ((self->windowWidth >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28), ((self->windowHeight -
+    ((Layout *)(layout))->drawBox(5, this->windowX + (this->windowWidth >> 1) +
+                                  F<int>(layout, 0x2c), this->windowY + F<int>(layout, 0x2c) + F<int>(layout, 0xc) +
+                       F<int>(layout, 0x20) + F<int>(layout, 0x5c), ((this->windowWidth >> 1) - F<int>(layout, 0x2c)) - F<int>(layout, 0x28), ((this->windowHeight -
                      (F<int>(layout, 0xc) + F<int>(layout, 0x2c) * 2 +
                       F<int>(layout, 0x20) + F<int>(layout, 0x5c))) -
                     F<int>(layout, 0x10)) -
                        F<int>(layout, 0x24), &sa0, 0);
     ((String *)(&sa0))->dtor();
 
-    if (self->imageParts != 0) {
-        int charX = self->windowX + (self->windowWidth >> 1) + F<int>(layout, 0x2c);
-        int charY = F<int>(layout, 0x5c) + self->windowY + F<int>(layout, 0x2c) +
+    if (this->imageParts != 0) {
+        int charX = this->windowX + (this->windowWidth >> 1) + F<int>(layout, 0x2c);
+        int charY = F<int>(layout, 0x5c) + this->windowY + F<int>(layout, 0x2c) +
                     F<int>(layout, 0xc) + F<int>(layout, 0x20);
-        ((ImageFactory *)(*g_WantedWindow_draw_factory))->drawChar((Array<ImagePart *> *)self->imageParts, charX, charY, false);
+        ((ImageFactory *)(*g_WantedWindow_draw_factory))->drawChar((Array<ImagePart *> *)this->imageParts, charX, charY, false);
         int textX = F<int>(layout, 0x2d4) + charX + F<int>(layout, 0x2c);
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)((char *)self + 0x54), textX, charY, false);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)((char *)this + 0x54), textX, charY, false);
 
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_a, false);
         String_plus(&s58, &s64, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93));
-        String_plus(&s4c, &s58, (String *)((char *)self + 0x3c));
+        String_plus(&s4c, &s58, (String *)((char *)this + 0x3c));
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&s4c, textX, charY + F<int>(layout, 0x4) * 2, false);
         ((String *)(&s4c))->dtor();
         ((String *)(&s58))->dtor();
@@ -509,18 +501,18 @@ void WantedWindow::draw() {
 
         String_cstr_ctor(&s64, g_WantedWindow_draw_label_b, false);
         String_plus(&s58, &s64, (String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93));
-        String_plus(&s4c, &s58, (String *)((char *)self + 0x48));
+        String_plus(&s4c, &s58, (String *)((char *)this + 0x48));
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&s4c, textX, charY + F<int>(layout, 0x4) * 3, false);
         ((String *)(&s4c))->dtor();
         ((String *)(&s58))->dtor();
         ((String *)(&s64))->dtor();
 
-        ((ScrollTouchWindow *)(self->scrollWindow))->draw();
+        ((ScrollTouchWindow *)(this->scrollWindow))->draw();
     }
 
-    if (self->detailButton != 0 &&
-        ((Wanted *)(draw_wanted_at(self, self->selectedWanted)))->isActive() != 0) {
-        ((TouchButton *)(self->detailButton))->draw();
+    if (this->detailButton != 0 &&
+        ((Wanted *)(draw_wanted_at(this, this->selectedWanted)))->isActive() != 0) {
+        ((TouchButton *)(this->detailButton))->draw();
     }
 
     ((Layout *)(layout))->drawFooter();
@@ -538,16 +530,15 @@ __attribute__((visibility("hidden"))) extern int *g_WantedWindow_init_window_h;
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_init_text;
 
 int WantedWindow::init() {
-    WantedWindow *self = this;
     v4si zero = {0, 0, 0, 0};
-    self->field_0x91 = zero;
+    this->field_0x91 = zero;
     // Original cleared a 16-byte vector starting at +0x84 (the scroll-state ints).
-    self->scrollOffset = 0;
-    self->lastDragY = 0;
-    self->scrollOffsetSnapshot = 0;
-    self->dragDelta = 0;
+    this->scrollOffset = 0;
+    this->lastDragY = 0;
+    this->scrollOffsetSnapshot = 0;
+    this->dragDelta = 0;
 
-    self->wantedList = new Array<Wanted*>();
+    this->wantedList = new Array<Wanted*>();
 
     void *status = *g_WantedWindow_init_status;
     Array<Wanted*> *allWanted = ((Status *)status)->getWanted();
@@ -566,10 +557,10 @@ int WantedWindow::init() {
             if (race != 0 || ((Status *)(status))->getCurrentCampaignMission() < 0x80) {
                 race = ((SolarSystem *)((SolarSystem *)(long)((Status *)(status))->getSystem()))->getRace();
                 if (race == 0 && ((Status *)(status))->getCurrentCampaignMission() >= 0xa2) {
-                    self->wantedList->push_back(wanted);
+                    this->wantedList->push_back(wanted);
                 }
             } else {
-                self->wantedList->push_back(wanted);
+                this->wantedList->push_back(wanted);
             }
         }
     }
@@ -580,8 +571,8 @@ int WantedWindow::init() {
     if (*g_WantedWindow_init_fullscreen == 0) {
         h = *g_WantedWindow_init_window_h;
         w = *g_WantedWindow_init_window_w;
-        self->windowX = 0;
-        self->windowY = 0;
+        this->windowX = 0;
+        this->windowY = 0;
     } else {
         if (*g_WantedWindow_init_tablet == 0) {
             h = 1000;
@@ -596,40 +587,40 @@ int WantedWindow::init() {
             halfW = 0x1c9;
             w = 0x392;
         }
-        self->windowX = (*g_WantedWindow_init_screen_w >> 1) - halfW;
-        self->windowY = (*g_WantedWindow_init_screen_h >> 1) - (h >> 1);
+        this->windowX = (*g_WantedWindow_init_screen_w >> 1) - halfW;
+        this->windowY = (*g_WantedWindow_init_screen_h >> 1) - (h >> 1);
     }
 
-    self->windowWidth = w;
-    self->windowHeight = h;
-    self->selectedWanted = 0;
+    this->windowWidth = w;
+    this->windowHeight = h;
+    this->selectedWanted = 0;
 
     uint32_t selected = 0;
     for (;;) {
-        Array<Wanted*> *arr = self->wantedList;
+        Array<Wanted*> *arr = this->wantedList;
         uint32_t count = arr->size();
         if (selected >= count) {
-            selected = self->selectedWanted;
+            selected = this->selectedWanted;
             if (selected == count - 1) {
                 if (((Wanted *)((*arr)[selected]))->isActive() == 0) {
                     selected = 0;
-                    self->selectedWanted = 0;
+                    this->selectedWanted = 0;
                 } else {
-                    selected = self->selectedWanted;
+                    selected = this->selectedWanted;
                 }
             }
             break;
         }
         if (((Wanted *)((*arr)[selected]))->isActive() != 0) {
-            self->selectedWanted = selected;
-            arr = self->wantedList;
+            this->selectedWanted = selected;
+            arr = this->wantedList;
             count = arr->size();
             if (selected == count - 1) {
                 if (((Wanted *)((*arr)[selected]))->isActive() == 0) {
                     selected = 0;
-                    self->selectedWanted = 0;
+                    this->selectedWanted = 0;
                 } else {
-                    selected = self->selectedWanted;
+                    selected = this->selectedWanted;
                 }
             }
             break;
@@ -637,58 +628,58 @@ int WantedWindow::init() {
         ++selected;
     }
 
-    self->highlightedWanted = selected;
-    ((WantedWindow *)(self))->selectWanted(selected);
+    this->highlightedWanted = selected;
+    ((WantedWindow *)(this))->selectWanted(selected);
 
     Array<TouchButton*> *buttons = new Array<TouchButton*>();
-    self->buttons = buttons;
+    this->buttons = buttons;
     buttons->resize(2);
 
     void **textHolder = g_WantedWindow_init_text;
     TouchButton *button = (TouchButton *)::operator new(0xc8);
     String *text = (String *)((GameText *)(*textHolder))->getText(0xc93);
-    int x = self->windowX;
-    int bw = self->windowWidth;
+    int x = this->windowX;
+    int bw = this->windowWidth;
     int help = ((Layout *)(layout))->getHelpButtonOffset();
     // ctor6 header order is (x, y, text, p4, p5, p6); decomp call passed (text, kind, x, y, flags).
-    ((TouchButton *)(button))->ctor6(x + bw - help, self->windowY, text, 3, 0x12, 0);
+    ((TouchButton *)(button))->ctor6(x + bw - help, this->windowY, text, 3, 0x12, 0);
     (*buttons)[1] = button;
 
     button = (TouchButton *)::operator new(0xc8);
     text = (String *)((GameText *)(*textHolder))->getText(0x81);
-    x = self->windowX;
-    bw = self->windowWidth;
+    x = this->windowX;
+    bw = this->windowWidth;
     help = ((Layout *)(layout))->getHelpButtonOffset();
     int width = ((TouchButton *)((*buttons)[1]))->getWidth();
-    ((TouchButton *)(button))->ctor6(x + bw - help - width + F<int>(layout, 0x38), self->windowY, text, 3, 0x12, 0);
+    ((TouchButton *)(button))->ctor6(x + bw - help - width + F<int>(layout, 0x38), this->windowY, text, 3, 0x12, 0);
     (*buttons)[0] = button;
 
     ((TouchButton *)((*buttons)[1]))->setAlwaysPressed(true);
-    ((Layout *)(layout))->setWindowDimensions(self->windowX, self->windowY, self->windowWidth, self->windowHeight);
+    ((Layout *)(layout))->setWindowDimensions(this->windowX, this->windowY, this->windowWidth, this->windowHeight);
 
     layout = *layoutHolder;
-    self->contentHeight = (F<int>(layout, 0x34) + F<int>(layout, 0x70)) *
-                         (int)self->wantedList->size();
-    self->visibleHeight =
-        (((((self->windowHeight - F<int>(layout, 0x10)) - F<int>(layout, 0xc)) -
+    this->contentHeight = (F<int>(layout, 0x34) + F<int>(layout, 0x70)) *
+                         (int)this->wantedList->size();
+    this->visibleHeight =
+        (((((this->windowHeight - F<int>(layout, 0x10)) - F<int>(layout, 0xc)) -
            F<int>(layout, 0x20)) - F<int>(layout, 0x24)) - F<int>(layout, 0x5c)) +
         F<int>(layout, 0x2c);
 
-    if (self->detailButton != 0) {
-        ((TouchButton *)(self->detailButton))->dtor(); ::operator delete(self->detailButton);
+    if (this->detailButton != 0) {
+        ((TouchButton *)(this->detailButton))->dtor(); ::operator delete(this->detailButton);
     }
-    self->starMap = 0;
-    self->detailButton = 0;
-    self->showingMap = 0;
+    this->starMap = 0;
+    this->detailButton = 0;
+    this->showingMap = 0;
 
     button = (TouchButton *)::operator new(0xc8);
     text = (String *)((GameText *)(*textHolder))->getText(0x1a8);
     layout = *layoutHolder;
-    ((TouchButton *)(button))->ctor8(text, 0, self->windowX + (self->windowWidth >> 1) + F<int>(layout, 0x2c), (((self->windowY - F<int>(layout, 0x2c)) + self->windowHeight) -
+    ((TouchButton *)(button))->ctor8(text, 0, this->windowX + (this->windowWidth >> 1) + F<int>(layout, 0x2c), (((this->windowY - F<int>(layout, 0x2c)) + this->windowHeight) -
                        F<int>(layout, 0x10)) - F<int>(layout, 0x24), activeWidth, 0x21, 4);
-    self->field_0x15 = 0;
-    self->detailButton = button;
-    self->field_0x0 = 1;
+    this->field_0x15 = 0;
+    this->detailButton = button;
+    this->field_0x0 = 1;
     return 1;
 }
 
@@ -782,8 +773,7 @@ WantedWindow::~WantedWindow() {
 }
 
 float WantedWindow::getRelativeScrollHeight() {
-    WantedWindow *self = this;
-    long long pair = self->contentHeight;
+    long long pair = this->contentHeight;
     int content = (int)pair;
     int visible = (int)((unsigned long long)pair >> 32);
     if (content < visible) {
@@ -791,7 +781,7 @@ float WantedWindow::getRelativeScrollHeight() {
         c.u = 0x4605e009u;
         return c.f;
     }
-    int scroll = self->scrollOffset;
+    int scroll = this->scrollOffset;
     int num;
     if (scroll >= 1) {
         num = visible - scroll;
@@ -840,7 +830,6 @@ static inline void append_label(String *dst, const char *prefix, String *value)
 }
 
 void WantedWindow::selectWanted(int idx) {
-    WantedWindow *self = this;
     String s34;
     String s40;
     String s4c;
@@ -851,21 +840,21 @@ void WantedWindow::selectWanted(int idx) {
     String s88;
     String s94;
 
-    if (self->imageParts != 0) {
-        delete self->imageParts;
+    if (this->imageParts != 0) {
+        delete this->imageParts;
     }
-    self->imageParts = 0;
+    this->imageParts = 0;
 
-    if (self->scrollWindow != 0) {
-        ::operator delete(ScrollTouchWindow_dtor(self->scrollWindow));
+    if (this->scrollWindow != 0) {
+        ::operator delete(ScrollTouchWindow_dtor(this->scrollWindow));
     }
-    self->scrollWindow = 0;
+    this->scrollWindow = 0;
 
-    Wanted *wanted = wanted_at(self, idx);
-    self->imageParts = ((ImageFactory *)(*g_WantedWindow_select_factory))->loadChar((int *)((Wanted *)(wanted))->getImageParts());
+    Wanted *wanted = wanted_at(this, idx);
+    this->imageParts = ((ImageFactory *)(*g_WantedWindow_select_factory))->loadChar((int *)((Wanted *)(wanted))->getImageParts());
 
     ((Wanted *)(&s34))->getName();
-    ((String *)((String *)((char *)self + 0x54)))->assign(&s34);
+    ((String *)((String *)((char *)this + 0x54)))->assign(&s34);
     ((String *)(&s34))->dtor();
 
     if (((Wanted *)(wanted))->isActive() != 0) {
@@ -881,7 +870,7 @@ void WantedWindow::selectWanted(int idx) {
         String_plus(&s40, &s4c, &s70);
         String_cstr_ctor(&s7c, g_WantedWindow_s_space, false);
         String_plus(&s34, &s40, &s7c);
-        ((String *)((String *)((char *)self + 0x3c)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x3c)))->assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s7c))->dtor();
         ((String *)(&s40))->dtor();
@@ -897,7 +886,7 @@ void WantedWindow::selectWanted(int idx) {
         String_plus(&s40, &s4c, &s70);
         String_cstr_ctor(&s7c, g_WantedWindow_s_space, false);
         String_plus(&s34, &s40, &s7c);
-        ((String *)((String *)((char *)self + 0x48)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x48)))->assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s7c))->dtor();
         ((String *)(&s40))->dtor();
@@ -913,7 +902,7 @@ void WantedWindow::selectWanted(int idx) {
         String_plus(&s40, &s4c, &s70);
         String_cstr_ctor(&s7c, g_WantedWindow_s_space, false);
         String_plus(&s34, &s40, &s7c);
-        ((String *)((String *)((char *)self + 0x6c)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x6c)))->assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s7c))->dtor();
         ((String *)(&s40))->dtor();
@@ -925,7 +914,7 @@ void WantedWindow::selectWanted(int idx) {
         String_int_ctor(&s40, ((Wanted *)(wanted))->getReward());
         String_cstr_ctor(&s4c, g_WantedWindow_s_reward, false);
         String_plus(&s34, &s40, &s4c);
-        ((String *)((String *)((char *)self + 0x78)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x78)))->assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s4c))->dtor();
         ((String *)(&s40))->dtor();
@@ -941,39 +930,39 @@ void WantedWindow::selectWanted(int idx) {
         }
     } else if (((Wanted *)(wanted))->isTerminated() != 0) {
         String_cstr_ctor(&s34, g_WantedWindow_s_terminated_a, false);
-        ((String *)((String *)((char *)self + 0x3c)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x3c)))->assign(&s34);
         ((String *)(&s34))->dtor();
         String_cstr_ctor(&s34, g_WantedWindow_s_terminated_b, false);
-        ((String *)((String *)((char *)self + 0x48)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x48)))->assign(&s34);
         ((String *)(&s34))->dtor();
         String_cstr_ctor(&s34, g_WantedWindow_s_terminated_c, false);
-        ((String *)((String *)((char *)self + 0x6c)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x6c)))->assign(&s34);
         ((String *)(&s34))->dtor();
         String_cstr_ctor(&s34, g_WantedWindow_s_terminated_d, false);
-        ((String *)((String *)((char *)self + 0x78)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x78)))->assign(&s34);
         ((String *)(&s34))->dtor();
     } else {
         String *text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
-        ((String *)((String *)((char *)self + 0x3c)))->assign(text);
+        ((String *)((String *)((char *)this + 0x3c)))->assign(text);
         text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
-        ((String *)((String *)((char *)self + 0x48)))->assign(text);
+        ((String *)((String *)((char *)this + 0x48)))->assign(text);
         String_int_ctor(&s40, ((Wanted *)(wanted))->getReward());
         String_cstr_ctor(&s4c, g_WantedWindow_s_reward, false);
         String_plus(&s34, &s40, &s4c);
-        ((String *)((String *)((char *)self + 0x78)))->assign(&s34);
+        ((String *)((String *)((char *)this + 0x78)))->assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s4c))->dtor();
         ((String *)(&s40))->dtor();
         text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
-        ((String *)((String *)((char *)self + 0x6c)))->assign(text);
+        ((String *)((String *)((char *)this + 0x6c)))->assign(text);
     }
 
     ((Wanted *)(wanted))->isTerminated();
-    ((String *)((String *)((char *)self + 0x60)))->assign((String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
+    ((String *)((String *)((char *)this + 0x60)))->assign((String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
 
     void *layout = *g_WantedWindow_select_layout;
-    int y = self->windowY;
-    int h = self->windowHeight;
+    int y = this->windowY;
+    int h = this->windowHeight;
     int top = y + F<int>(layout, 0xc) + F<int>(layout, 0x20) +
               F<int>(layout, 0x5c) + F<int>(layout, 0x2c);
     int height = (((((y - F<int>(layout, 0x2c)) + h) - top) -
@@ -985,27 +974,27 @@ void WantedWindow::selectWanted(int idx) {
 
     void *scroll = ::operator new(0x24);
     int pad = F<int>(layout, 0x2c);
-    ScrollTouchWindow_ctor(scroll, self->windowX + (self->windowWidth >> 1) + pad,
+    ScrollTouchWindow_ctor(scroll, this->windowX + (this->windowWidth >> 1) + pad,
                            F<int>(layout, 0x2d8) + pad + top,
-                           ((self->windowWidth >> 1) - pad) - F<int>(layout, 0x28),
+                           ((this->windowWidth >> 1) - pad) - F<int>(layout, 0x28),
                            height, false);
-    self->scrollWindow = scroll;
+    this->scrollWindow = scroll;
 
     String_cstr_ctor(&s34, g_WantedWindow_s_empty, false);
     ((String *)(&s34))->assign((String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
     append_label(&s34, g_WantedWindow_s_line_a,
-                 (String *)((char *)self + 0x3c));
+                 (String *)((char *)this + 0x3c));
     append_label(&s34, g_WantedWindow_s_line_b,
-                 (String *)((char *)self + 0x48));
+                 (String *)((char *)this + 0x48));
     append_label(&s34, g_WantedWindow_s_line_c,
-                 (String *)((char *)self + 0x6c));
+                 (String *)((char *)this + 0x6c));
     ((Wanted *)(wanted))->getIndex();
     append_label(&s34, g_WantedWindow_s_line_d,
-                 (String *)((char *)self + 0x78));
+                 (String *)((char *)this + 0x78));
 
     String_cstr_ctor(&s88, g_WantedWindow_s_empty, false);
     ((String *)(&s94))->ctor_copy((String *)(&s34), false);
-    ((ScrollTouchWindow *)(self->scrollWindow))->setText(s88, s94);
+    ((ScrollTouchWindow *)(this->scrollWindow))->setText(s88, s94);
     ((String *)(&s94))->dtor();
     ((String *)(&s88))->dtor();
     ((String *)(&s34))->dtor();

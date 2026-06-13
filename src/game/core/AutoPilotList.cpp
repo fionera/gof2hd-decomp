@@ -25,18 +25,17 @@ void _ZN13AutoPilotList4downEv(AutoPilotList *self);   // AutoPilotList::down()
 // the list window. On a hit, resets the selection to the top then steps down to the row
 // that was touched.
 int AutoPilotList::touch(int p1, int p2) {
-    AutoPilotList *self = this;
     int row;
-    if (p1 < self->x ||
-        self->x + self->width <= p1 ||
-        (row = (p2 - self->y - 0xe) / 0xf, p2 - self->y < -0xf) ||
-        (uint32_t)(row + 1) >= self->entries->size()) {
+    if (p1 < this->x ||
+        this->x + this->width <= p1 ||
+        (row = (p2 - this->y - 0xe) / 0xf, p2 - this->y < -0xf) ||
+        (uint32_t)(row + 1) >= this->entries->size()) {
         return -1;
     }
-    self->selected = 0;
+    this->selected = 0;
     for (int i = 0; i <= row; i++)
-        _ZN13AutoPilotList4downEv(self);
-    return self->selected;
+        _ZN13AutoPilotList4downEv(this);
+    return this->selected;
 }
 
 // AutoPilotList::~AutoPilotList() - release the owned String* array, free it, null it.
@@ -76,10 +75,9 @@ extern const char kEmpty[] __attribute__((visibility("hidden")));
 // Returns a copy of the selected entry's String if the index is in range, else the
 // fallback literal.
 RetStr AutoPilotList::getTargetString() {
-    AutoPilotList *self = this;
     RetStr r;
-    int idx = self->selected;
-    Array<String *> *entries = self->entries;
+    int idx = this->selected;
+    Array<String *> *entries = this->entries;
     if (idx >= 0 && (uint32_t)idx < entries->size())
         ((String *)(&r))->ctor_copy((*entries)[idx], false);
     else

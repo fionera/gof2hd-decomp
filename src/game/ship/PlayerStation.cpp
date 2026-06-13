@@ -550,8 +550,7 @@ bool PlayerStation::outerCollide(float x, float y, float z)
 // Deleting destructor variant (D0): runs the base destructor body then frees.
 // Emitted as a named function so it doesn't collide with the in-place ~PlayerStation() above.
 void PlayerStation::deleting_dtor() {
-    PlayerStation *self = this;
-    ::operator delete(((PlayerStation *)self)->destructor_body());
+    ::operator delete(((PlayerStation *)this)->destructor_body());
 }
 
 // Complete-object destructor body (engine 0x1325ec calls this, then frees the

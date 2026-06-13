@@ -34,18 +34,16 @@ RetStr FileInterfaceAndroid_GetDirPreFix()
 
 // FileInterfaceAndroid::GetFileSize() — seek end, tell, seek start; FILE* at +0x8.
 int FileInterfaceAndroid::GetFileSize() {
-    FileInterfaceAndroid *self = this;
-    fseek((FILE *)self->file, 0, 2);
-    int size = ftell((FILE *)self->file);
-    fseek((FILE *)self->file, 0, 0);
+    fseek((FILE *)this->file, 0, 2);
+    int size = ftell((FILE *)this->file);
+    fseek((FILE *)this->file, 0, 0);
     return size;
 }
 
 // FileInterfaceAndroid::SetZipDirectory(void*) — cbz r1; str r1,[r0,#0x34]; bx lr
 void FileInterfaceAndroid::SetZipDirectory(void *p) {
-    FileInterfaceAndroid *self = this;
     if (p != 0)
-        self->zipDirectory = p;
+        this->zipDirectory = p;
 }
 
 // Complete-object destructor (D2). Re-establishes the vptr, closes any open handle, then either
@@ -67,9 +65,8 @@ FileInterfaceAndroid::~FileInterfaceAndroid()
 
 // FileInterfaceAndroid::SetAppRootDir(void*) — cbz r1; str r1,[r0,#0x30]; bx lr
 void FileInterfaceAndroid::SetAppRootDir(void *p) {
-    FileInterfaceAndroid *self = this;
     if (p != 0)
-        self->appRootDir = (const char *)p;
+        this->appRootDir = (const char *)p;
 }
 
 struct zip_file;
@@ -82,20 +79,19 @@ extern int *gFIAInstCount_zip __attribute__((visibility("hidden")));
 // -Oz orders the early `strd` and the `add.w r1,r2,#8` vptr finalize slightly differently from
 // the target. Scheduling-only.
 FileInterfaceAndroid * FileInterfaceAndroid::ctor_zip(zip_file *zf, bool append, int start, int p4, int p5) {
-    FileInterfaceAndroid *self = this;
     int *cnt = gFIAInstCount_zip;
     char *vtbase = (char *)gFIAVtable_zip;   // *gVtable loaded; +8 applied at the store
-    self->file = 0;
-    self->zipFile = zf;
-    self->jniStream = 0;
-    self->modeFlag = 0;
-    self->field_0x0 = vtbase + 8;
+    this->file = 0;
+    this->zipFile = zf;
+    this->jniStream = 0;
+    this->modeFlag = 0;
+    this->field_0x0 = vtbase + 8;
     *cnt = *cnt + 1;
-    self->field_0x1c = 0;
-    self->field_0x28 = 0;
-    ((FileInterfaceAndroid *)(self))->Seek(start);
-    self->field_0x24 = append;
-    return self;
+    this->field_0x1c = 0;
+    this->field_0x28 = 0;
+    ((FileInterfaceAndroid *)(this))->Seek(start);
+    this->field_0x24 = append;
+    return this;
 }
 
 // FileInterfaceAndroid::Read(unsigned int, void*) — reads from the zip handle, the stdio handle,
@@ -115,19 +111,18 @@ typedef void (*fn_void)(void *env);
 typedef void (*fn_del)(void *env, void *arr);
 
 bool FileInterfaceAndroid::Read(unsigned int n, void *buf) {
-    FileInterfaceAndroid *self = this;
-    if (self->zipFile != 0)
-        return zip_fread(self->zipFile, buf, n) == n;
-    if (self->file != 0)
-        return fread(buf, 1, n, (FILE *)self->file) == n;
-    if (self->jniStream == 0)
+    if (this->zipFile != 0)
+        return zip_fread(this->zipFile, buf, n) == n;
+    if (this->file != 0)
+        return fread(buf, 1, n, (FILE *)this->file) == n;
+    if (this->jniStream == 0)
         return false;
 
     void *r9 = *gEnvR;
     void *env = *(void **)r9;
     void *table = *(void **)env;
     void *arr = (*(fn_i *)((char *)table + 0x2c0))(env, n);
-    unsigned int got = JNI_CallIntMethod(*(void **)r9, self->jniStream, *(void **)gReadMidArg, arr);
+    unsigned int got = JNI_CallIntMethod(*(void **)r9, this->jniStream, *(void **)gReadMidArg, arr);
 
     bool ok;
     table = *(void **)(*(void **)r9);
@@ -152,10 +147,9 @@ bool FileInterfaceAndroid::Read(unsigned int n, void *buf) {
 // NOTE: near-match (33/33 instruction multiset identical; ~2 instrs differ in scheduling slot —
 // where `n` and the malloc result are spilled to callee-saved regs relative to their cbz checks).
 bool FileInterfaceAndroid::Seek(unsigned int n) {
-    FileInterfaceAndroid *self = this;
     if (n == 0)
         return true;
-    void *zf = self->zipFile;
+    void *zf = this->zipFile;
     int delta;
     if (zf != 0) {
         void *tmp = malloc(n);
@@ -165,7 +159,7 @@ bool FileInterfaceAndroid::Seek(unsigned int n) {
         free(tmp);
         delta = got - n;
     } else {
-        void *f = self->file;
+        void *f = this->file;
         if (f == 0)
             return false;
         delta = fseek((FILE *)f, n, 1);
@@ -200,10 +194,9 @@ typedef void (*fn_del)(void *env, void *arr);
 // r10) and result register (r0 vs r5) are forced by the whole-function allocation that also
 // serves the JNI slow path; clang -Oz colors them differently from the target. Resistant.
 bool FileInterfaceAndroid::Write(unsigned int n, const void *buf) {
-    FileInterfaceAndroid *self = this;
-    if (self->file != 0)
-        return fwrite(buf, 1, n, (FILE *)self->file) == n;
-    if (self->jniStream == 0)
+    if (this->file != 0)
+        return fwrite(buf, 1, n, (FILE *)this->file) == n;
+    if (this->jniStream == 0)
         return true;
 
     void *r9 = *gEnvW;
@@ -213,7 +206,7 @@ bool FileInterfaceAndroid::Write(unsigned int n, const void *buf) {
     envObj = *(void **)r9;
     table = *(void **)envObj;
     (*(fn_setregion *)((char *)table + 0x340))(envObj, arr, 0, n, buf);
-    JNI_CallVoidMethod(envObj, self->jniStream, *(void **)gWriteMidArg, arr);
+    JNI_CallVoidMethod(envObj, this->jniStream, *(void **)gWriteMidArg, arr);
     table = *(void **)(*(void **)r9);
     bool ok = (*(fn_check *)((char *)table + 0x3c))(*(void **)r9) == 0;
     if (!ok)
@@ -252,7 +245,6 @@ extern const char *gZipPrefixB __attribute__((visibility("hidden")));
 extern const char *gModeRb __attribute__((visibility("hidden")));
 
 bool FileInterfaceAndroid::FileExist(String12 name) {
-    FileInterfaceAndroid *self = this;
     char a[12], b[12];
     String_ctor_cstr(a, gZipPrefixA, false);
     String_append(a, &name);
@@ -271,7 +263,7 @@ bool FileInterfaceAndroid::FileExist(String12 name) {
         exists = true;
     } else {
         char dir[12], full[12];
-        String_ctor_cstr(dir, self->appRootDir, false);
+        String_ctor_cstr(dir, this->appRootDir, false);
         String_concat(full, dir, &name);
         FILE *f = fopen(((String *)(full))->GetAEChar(), gModeRb);
         if (f != 0) {
@@ -297,13 +289,12 @@ extern int *gFIAInstCount __attribute__((visibility("hidden")));
 // instance-count pointer deref and colors its temp register (r0 vs r1) differently
 // than the target. Scheduling/coloring-only difference.
 void FileInterfaceAndroid::ctor_file(FILE *f, bool append) {
-    FileInterfaceAndroid *self = this;
     int *cnt = gFIAInstCount;
-    self->file = f;
-    self->zipFile = 0;
-    self->jniStream = 0;
-    self->field_0x0 = (char *)gFIAVtable_file + 8;
-    self->modeFlag = append;
+    this->file = f;
+    this->zipFile = 0;
+    this->jniStream = 0;
+    this->field_0x0 = (char *)gFIAVtable_file + 8;
+    this->modeFlag = append;
     *cnt = *cnt + 1;
 }
 
@@ -334,14 +325,13 @@ extern const char *gSgB __attribute__((visibility("hidden")));
 // table indirection levels and the three lazily-cached method-id cells do not reproduce the
 // target's exact global-deref chains and -Oz scheduling. Left as a faithful semantic model.
 FileInterfaceAndroid * FileInterfaceAndroid::ctor_obj(jobject *stream, bool reading) {
-    FileInterfaceAndroid *self = this;
     void *env = *gJniEnvObj;
     int *cnt = gFIAInstCount_obj;
-    self->file = 0;
-    self->zipFile = 0;
-    self->jniStream = stream;
-    self->modeFlag = reading;
-    self->field_0x0 = (char *)gFIAVtable_obj + 8;
+    this->file = 0;
+    this->zipFile = 0;
+    this->jniStream = stream;
+    this->modeFlag = reading;
+    this->field_0x0 = (char *)gFIAVtable_obj + 8;
     *cnt = *cnt + 1;
     void *cls = (*(jni_getclass *)((char *)*(void **)env + 0x7c))(env);
 
@@ -357,7 +347,7 @@ FileInterfaceAndroid * FileInterfaceAndroid::ctor_obj(jobject *stream, bool read
     }
     if (*selB == 0)
         *selB = (*(jni_getmethod *)((char *)*(void **)env + 0x84))(env, cls, gNmB, gSgB);
-    return self;
+    return this;
 }
 
 // FileInterfaceAndroid::OpenRead(AbyssEngine::String, int, bool, int, int, unsigned int) —
@@ -381,9 +371,8 @@ extern void *gFIAVtable_or __attribute__((visibility("hidden")));
 extern int *gFIAInstCount_or __attribute__((visibility("hidden")));
 
 FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String12 name, int p2, bool p3, int p4, int p5, unsigned int p6) {
-    FileInterfaceAndroid *self = this;
     const unsigned short *w = String_GetAEWChar(&name);
-    if (self->alive == 0)
+    if (this->alive == 0)
         return 0;
 
     const unsigned short *body = (*w == '/') ? w + 1 : w;
@@ -408,9 +397,9 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String12 name, int p2, boo
         result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)::operator new(0x38)))->ctor_zip(z1, (bool)p4, p2, p5, p4);
     } else if (z2 != 0) {
         result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)::operator new(0x38)))->ctor_zip(z2, (bool)p4, p2, p5, p4);
-    } else if (self->appRootDir != 0) {
+    } else if (this->appRootDir != 0) {
         char dir[12], full[12];
-        String_ctor_cstr(dir, self->appRootDir, false);
+        String_ctor_cstr(dir, this->appRootDir, false);
         String_concat(full, dir, body == w ? (void *)a : (void *)a);
         FILE *f = fopen(((String *)(full))->GetAEChar(), gModeRbR);
         if (f != 0) {
@@ -445,13 +434,12 @@ extern int *gFIAInstCount_ow __attribute__((visibility("hidden")));
 extern const char *gModeWb __attribute__((visibility("hidden")));
 
 FileInterfaceAndroid * FileInterfaceAndroid::OpenWrite(String12 name, int, bool, unsigned int) {
-    FileInterfaceAndroid *self = this;
     const unsigned short *w = String_GetAEWChar(&name);
     while (*w)
         ++w;
 
     char dir[12], wide[12], full[12];
-    String_ctor_cstr(dir, self->appRootDir, false);
+    String_ctor_cstr(dir, this->appRootDir, false);
     String_ctor_wide(wide, String_GetAEWChar(&name), false);
     String_concat(full, dir, wide);
     ((String *)(wide))->dtor();
@@ -482,14 +470,13 @@ extern void *gFIAVtable __attribute__((visibility("hidden")));
 // (deref + `adds #8`) in a slightly different slot relative to the zero-stores than
 // the target's interleaving. Scheduling-only difference.
 void FileInterfaceAndroid::ctor_default() {
-    FileInterfaceAndroid *self = this;
-    self->alive = 1;
+    this->alive = 1;
     char *vt = (char *)gFIAVtable + 8;
-    self->appRootDir = 0;
-    self->zipDirectory = 0;
-    self->field_0x24 = 0;
-    self->field_0x28 = 0;
-    self->field_0x0 = vt;
+    this->appRootDir = 0;
+    this->zipDirectory = 0;
+    this->field_0x24 = 0;
+    this->field_0x28 = 0;
+    this->field_0x0 = vt;
 }
 
 // _JNIEnv::CallVoidMethod(jobject env, jmethodID m, jobject arg) — variadic JNI stub.
@@ -505,25 +492,24 @@ extern void *gModeAppend __attribute__((visibility("hidden")));
 // jstring globals, while clang -Oz pre-loads both and uses a conditional move (it ne; movne),
 // which also shifts a callee-saved register (r5 vs r6). A -Oz branch-vs-cmov choice.
 void FileInterfaceAndroid::Close() {
-    FileInterfaceAndroid *self = this;
-    if (self->file != 0) {
-        fclose((FILE *)self->file);
-        self->file = 0;
+    if (this->file != 0) {
+        fclose((FILE *)this->file);
+        this->file = 0;
     }
-    if (self->zipFile != 0) {
-        zip_fclose(self->zipFile);
-        self->zipFile = 0;
+    if (this->zipFile != 0) {
+        zip_fclose(this->zipFile);
+        this->zipFile = 0;
     }
-    void *m = self->jniStream;
+    void *m = this->jniStream;
     if (m != 0) {
         void *env = *(void **)gJniEnv;
         void *modePtr;
-        if (self->modeFlag == 0)
+        if (this->modeFlag == 0)
             modePtr = gModeWrite;
         else
             modePtr = gModeAppend;
         JNI_CallVoidMethod(env, m, *(void **)modePtr);
-        self->jniStream = 0;
+        this->jniStream = 0;
     }
 }
 

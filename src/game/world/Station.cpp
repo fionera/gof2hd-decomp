@@ -16,15 +16,14 @@ extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 
 void Station::removeShips() {
-    Station *self = this;
-    Array<Ship*> *arr = self->ships;
+    Array<Ship*> *arr = this->ships;
     if (arr != 0) {
         for (Ship *s : *arr) delete s;
         arr->clear();
-        if (self->ships != 0)
-            delete self->ships;
+        if (this->ships != 0)
+            delete this->ships;
     }
-    self->ships = 0;
+    this->ships = 0;
 }
 
 static const int kHiddenBlueprints[5] = { 0, 0, 0, 0, 0 };
@@ -32,13 +31,12 @@ extern char **const gHiddenBlueprintSingleton __attribute__((visibility("hidden"
 
 // Station::stationHasHiddenBlueprint(bool) — this in r0, flag in r1.
 uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
-    Station *self = this;
     char *base = *gHiddenBlueprintSingleton;
     uint32_t i = 0;
     while (true) {
         if (i > 4)
             return 0;
-        if (kHiddenBlueprints[i] == self->index) {
+        if (kHiddenBlueprints[i] == this->index) {
             if (ignoreFound)
                 return 1;
             char *flags = *(char **)(*(char **)(base + 0x58) + 4);
@@ -54,13 +52,12 @@ extern char **const gPirateBaseSingleton __attribute__((visibility("hidden")));
 
 // Station::stationHasPirateBase() — this in r0.
 uint32_t Station::stationHasPirateBase() {
-    Station *self = this;
     char *base = *gPirateBaseSingleton;       // r12 = *(*(global))
     uint32_t i = 0;
     while (true) {
         if (i > 3)
             return 0;
-        if (kPirateStations[i] == self->index) {
+        if (kPirateStations[i] == this->index) {
             char *flags = *(char **)(*(char **)(base + 0x4c) + 4);
             if (flags[i] == 0)
                 return 1;
@@ -73,16 +70,15 @@ struct Item;
 
 // Station::setItems(Array<Item*>*, bool) — this in r0, items in r1, deep in r2.
 void Station::setItems(uint32_t *items, bool deep) {
-    Station *self = this;
-    if (self->items != 0)
-        delete self->items;
-    self->items = 0;
+    if (this->items != 0)
+        delete this->items;
+    this->items = 0;
     Array<Item*> *src = (Array<Item*> *)items;
     if (src == 0 || !deep) {
-        self->items = src;
+        this->items = src;
     } else {
         Array<Item*> *na = new Array<Item*>();
-        self->items = na;
+        this->items = na;
         na->resize(src->size());
         for (uint32_t i = 0; i < src->size(); i++) {
             (*na)[i] = (*src)[i]->clone();
@@ -91,9 +87,8 @@ void Station::setItems(uint32_t *items, bool deep) {
 }
 
 bool Station::equals(Station *other) {
-    Station *self = this;
     if (other != 0)
-        return self->index == other->index;
+        return this->index == other->index;
     return false;
 }
 
@@ -105,21 +100,19 @@ extern Status **const gStatusSingleton __attribute__((visibility("hidden")));
 extern Galaxy **const gGalaxyVisit __attribute__((visibility("hidden")));
 
 void Station::visit() {
-    Station *self = this;
-    if (((Station *)(self))->isDiscovered() != 0)
+    if (((Station *)(this))->isDiscovered() != 0)
         return;
-    self->visited = 1;
+    this->visited = 1;
     ((Status *)(*gStatusSingleton))->visitStation();
-    ((Galaxy *)(*gGalaxyVisit))->setSystemVisited(self->index);
+    ((Galaxy *)(*gGalaxyVisit))->setSystemVisited(this->index);
 }
 
 // RetStr is declared in gof2/Station.h (via gof2/Agent.h).
 
 // Station::getName() -> String by value (sret in r0, this in r1).
 RetStr Station::getName() {
-    Station *self = this;
     RetStr r;
-    String_copy_ctor(&r, self, false);
+    String_copy_ctor(&r, this, false);
     return r;
 }
 
@@ -127,20 +120,19 @@ struct Ship;
 
 // Station::setShips(Array<Ship*>*, bool) — this in r0, ships in r1, deep in r2.
 void Station::setShips(uint32_t *ships, bool deep) {
-    Station *self = this;
-    if (self->ships != 0) {
-        for (Ship *s : *self->ships) delete s;
-        self->ships->clear();
-        if (self->ships != 0)
-            delete self->ships;
+    if (this->ships != 0) {
+        for (Ship *s : *this->ships) delete s;
+        this->ships->clear();
+        if (this->ships != 0)
+            delete this->ships;
     }
-    self->ships = 0;
+    this->ships = 0;
     Array<Ship*> *src = (Array<Ship*> *)ships;
     if (src == 0 || !deep) {
-        self->ships = src;
+        this->ships = src;
     } else {
         Array<Ship*> *na = new Array<Ship*>();
-        self->ships = na;
+        this->ships = na;
         na->resize(src->size());
         for (uint32_t i = 0; i < src->size(); i++) {
             (*na)[i] = (*src)[i]->clone();
@@ -153,16 +145,15 @@ void Station::setShips(uint32_t *ships, bool deep) {
 // loading: drop any existing ships array and adopt the freshly-built one as-is
 // (the elements are already owned by us, so no per-element clone like setShips()).
 void Station::setShipsArr(void *ships) {
-    Station *self = this;
     Array<Ship*> *src = (Array<Ship*> *)ships;
-    if (self->ships != src) {
-        if (self->ships != 0) {
-            for (Ship *s : *self->ships) delete s;
-            self->ships->clear();
-            if (self->ships != 0)
-                delete self->ships;
+    if (this->ships != src) {
+        if (this->ships != 0) {
+            for (Ship *s : *this->ships) delete s;
+            this->ships->clear();
+            if (this->ships != 0)
+                delete this->ships;
         }
-        self->ships = src;
+        this->ships = src;
     }
 }
 
@@ -196,8 +187,7 @@ void Station::dtorFinish() {
 extern int **const gAlienAttackSingleton __attribute__((visibility("hidden")));
 
 bool Station::isAttackedByAliens() {
-    Station *self = this;
-    return self->index == *(int *)((char *)(*gAlienAttackSingleton) + 0x80);
+    return this->index == *(int *)((char *)(*gAlienAttackSingleton) + 0x80);
 }
 
 struct Ship;
@@ -205,20 +195,18 @@ struct Ship;
 
 // Station::removeShip(Ship*) — this in r0, ship in r1.
 void Station::removeShip(Ship *ship) {
-    Station *self = this;
-    void *ships = self->ships;
+    void *ships = this->ships;
     if (ships == 0)
         return;
     Station::arrayRemoveShip(ship, ships);
 }
 
 uint32_t Station::getHiddenBlueprintIndex() {
-    Station *self = this;
     uint32_t i = 0;
     while (true) {
         if (i > 4)
             return 0xffffffff;
-        if (kHiddenBlueprints[i] == self->index)
+        if (kHiddenBlueprints[i] == this->index)
             return i;
         i++;
     }
@@ -230,28 +218,24 @@ struct Galaxy;
 extern Galaxy **const gGalaxySingleton __attribute__((visibility("hidden")));
 
 uint8_t Station::isDiscovered() {
-    Station *self = this;
     char *visited = (char *)((Galaxy *)(*gGalaxySingleton))->getVisited();
-    return visited[self->index];
+    return visited[this->index];
 }
 
 void Station::setAttackedFriends(bool v) {
-    Station *self = this;
-    self->attackedFriends = v;
+    this->attackedFriends = v;
 }
 
 uint8_t Station::hasAttackedFriends() {
-    Station *self = this;
-    return self->attackedFriends;
+    return this->attackedFriends;
 }
 
 uint32_t Station::getPirateStationIndex() {
-    Station *self = this;
     uint32_t i = 0;
     while (true) {
         if (i > 3)
             return 0xffffffff;
-        if (kPirateStations[i] == self->index)
+        if (kPirateStations[i] == this->index)
             return i;
         i++;
     }
@@ -259,21 +243,20 @@ uint32_t Station::getPirateStationIndex() {
 
 // Station::addItem(Item*) — this in r0, item in r1.
 void Station::addItem(Item *item) {
-    Station *self = this;
-    Array<Item*> *arr = self->items;
+    Array<Item*> *arr = this->items;
     if (arr == 0) {
         arr = new Array<Item*>();
-        self->items = arr;
+        this->items = arr;
     } else {
         uint32_t n = arr->size();
         if (n != 0) {
             for (uint32_t i = 0; i < n; i++) {
                 if ((*arr)[i]->equals(item) != 0) {
-                    Item *found = (*self->items)[i];
+                    Item *found = (*this->items)[i];
                     found->addAmount(item->getAmount());
                     return;
                 }
-                arr = self->items;
+                arr = this->items;
                 n = arr->size();
             }
         }
@@ -283,11 +266,10 @@ void Station::addItem(Item *item) {
 
 // Station::clone() — this in r0, returns a new Station copy.
 Station * Station::clone() {
-    Station *self = this;
     Station *n = (Station *)::operator new(0x34);
     char tmp[12];
-    String_copy_ctor(tmp, self, false);
-    ((Station *)(n))->ctor(tmp, self->index, self->systemIndex, self->techLevel, self->textureIndex);
+    String_copy_ctor(tmp, this, false);
+    ((Station *)(n))->ctor(tmp, this->index, this->systemIndex, this->techLevel, this->textureIndex);
     ((String *)(tmp))->dtor();
     return n;
 }
@@ -300,22 +282,21 @@ extern Status **const gStatusForDtor __attribute__((visibility("hidden")));
 
 // Station::~Station()
 void Station::dtor() {
-    Station *self = this;
-    if (self->ships != 0) {
-        for (Ship *s : *self->ships) delete s;
-        self->ships->clear();
-        if (self->ships != 0)
-            delete self->ships;
-        self->ships = 0;
+    if (this->ships != 0) {
+        for (Ship *s : *this->ships) delete s;
+        this->ships->clear();
+        if (this->ships != 0)
+            delete this->ships;
+        this->ships = 0;
     }
-    if (self->items != 0) {
-        for (Item *it : *self->items) delete it;
-        self->items->clear();
-        if (self->items != 0)
-            delete self->items;
-        self->items = 0;
+    if (this->items != 0) {
+        for (Item *it : *this->items) delete it;
+        this->items->clear();
+        if (this->items != 0)
+            delete this->items;
+        this->items = 0;
     }
-    Array<Agent*> *agents = self->agents;
+    Array<Agent*> *agents = this->agents;
     if (agents != 0) {
         for (uint32_t i = 0; i < agents->size(); i++) {
             Agent *a = (*agents)[i];
@@ -327,28 +308,27 @@ void Station::dtor() {
                                : ((Mission *)(((Status *)(STATUS))->getFreelanceMission()))->getAgent();
             if (a != 0 && a != campA && a != freeA && ((Agent *)(a))->isStoryAgent() == 0)
                 ::operator delete(Agent_dtor(a));
-            agents = self->agents;
+            agents = this->agents;
         }
         if (agents != 0)
             delete agents;
-        self->agents = 0;
+        this->agents = 0;
     }
-    ((Station *)(self))->baseDtor();
+    ((Station *)(this))->baseDtor();
 }
 
 struct Agent;
 
 void Station::setAgents(void *agents) {
-    Station *self = this;
     Array<Agent*> *src = (Array<Agent*> *)agents;
-    if (self->agents != src) {
-        if (self->agents != 0) {
-            for (Agent *a : *self->agents) delete a;
-            self->agents->clear();
-            if (self->agents != 0)
-                delete self->agents;
+    if (this->agents != src) {
+        if (this->agents != 0) {
+            for (Agent *a : *this->agents) delete a;
+            this->agents->clear();
+            if (this->agents != 0)
+                delete this->agents;
         }
-        self->agents = src;
+        this->agents = src;
     }
 }
 
@@ -360,36 +340,34 @@ extern const char kStationDefaultName[] __attribute__((visibility("hidden")));
 
 // Station::Station() — default ctor.
 void Station::ctor_default() {
-    Station *self = this;
-    String_default_ctor(self);
+    String_default_ctor(this);
     char tmp[12];
     String_from_cstr(tmp, kStationDefaultName, false);
-    ((String *)(self))->assign((String *)tmp);
+    ((String *)(this))->assign((String *)tmp);
     ((String *)(tmp))->dtor();
-    self->index = -1;
-    self->systemIndex = -1;
-    self->techLevel = 0;
-    self->textureIndex = 0;
-    self->visited = 0;
-    self->attackedFriends = 0;
-    self->items = 0;
-    self->ships = 0;
-    self->agents = 0;
+    this->index = -1;
+    this->systemIndex = -1;
+    this->techLevel = 0;
+    this->textureIndex = 0;
+    this->visited = 0;
+    this->attackedFriends = 0;
+    this->items = 0;
+    this->ships = 0;
+    this->agents = 0;
 }
 
 struct Ship;
 
 // Station::hasShip(int) — this in r0, index in r1.
 uint32_t Station::hasShip(int index) {
-    Station *self = this;
-    Array<Ship*> *arr = self->ships;
+    Array<Ship*> *arr = this->ships;
     if (arr != 0) {
         for (uint32_t i = 0; i < arr->size(); i++) {
             Ship *sh = (*arr)[i];
             if (sh != 0) {
                 if (sh->getIndex() == index)
                     return 1;
-                arr = self->ships;
+                arr = this->ships;
             }
         }
     }
@@ -400,15 +378,14 @@ struct Item;
 
 // Station::hasItem(int) — this in r0, index in r1.
 uint32_t Station::hasItem(int index) {
-    Station *self = this;
-    Array<Item*> *arr = self->items;
+    Array<Item*> *arr = this->items;
     if (arr != 0) {
         for (uint32_t i = 0; i < arr->size(); i++) {
             Item *it = (*arr)[i];
             if (it != 0) {
                 if (it->getIndex() == index)
                     return 1;
-                arr = self->items;
+                arr = this->items;
             }
         }
     }
@@ -417,11 +394,10 @@ uint32_t Station::hasItem(int index) {
 
 // Station::addShip(Ship*) — this in r0, ship in r1.
 void Station::addShip(Ship *ship) {
-    Station *self = this;
-    Array<Ship*> *arr = self->ships;
+    Array<Ship*> *arr = this->ships;
     if (arr == 0) {
         arr = new Array<Ship*>();
-        self->ships = arr;
+        this->ships = arr;
     } else {
         uint32_t n = arr->size();
         if (n != 0) {
@@ -429,7 +405,7 @@ void Station::addShip(Ship *ship) {
                 if ((*arr)[i]->equals(ship) != 0) {
                     return;
                 }
-                arr = self->ships;
+                arr = this->ships;
                 n = arr->size();
             }
         }
@@ -443,17 +419,16 @@ extern "C" void *String_default_ctor(void *s);         // String::String() -> th
 // Station::Station(String, int, int, int, int)
 // r0=this, r1=String* param, r2=p3, r3=p4, [stack]=p5, p6.
 Station * Station::ctor(void *name, int p3, int p4, int p5, int p6) {
-    Station *self = this;
-    void *s = String_default_ctor(self);
+    void *s = String_default_ctor(this);
     ((String *)(s))->assign((String *)name);
-    self->index = p3;
-    self->systemIndex = p4;
-    self->techLevel = p5;
-    self->textureIndex = p6;
-    self->visited = 0;
-    self->attackedFriends = 0;
-    self->items = 0;
-    self->ships = 0;
-    self->agents = 0;
-    return self;
+    this->index = p3;
+    this->systemIndex = p4;
+    this->techLevel = p5;
+    this->textureIndex = p6;
+    this->visited = 0;
+    this->attackedFriends = 0;
+    this->items = 0;
+    this->ships = 0;
+    this->agents = 0;
+    return this;
 }

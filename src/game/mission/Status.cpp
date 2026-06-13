@@ -1387,10 +1387,9 @@ static const Step kSteps[] = {
 //   playing-time, runs the achievement check, then spawns and registers the next scripted
 //   Mission for that step (with a few steps performing extra cargo/equipment bookkeeping).
 void Status::nextCampaignMission() {
-    Status *self = this;
-    int *state = (int *)((char *)self + 0x1e8);
-    int prevTimeLo = (int)self->playingTime;
-    int prevTimeHi = (int)(self->playingTime >> 32);
+    int *state = (int *)((char *)this + 0x1e8);
+    int prevTimeLo = (int)this->playingTime;
+    int prevTimeHi = (int)(this->playingTime >> 32);
 
     int step = *state;
     int next = step + 1;
@@ -1398,25 +1397,25 @@ void Status::nextCampaignMission() {
     // achievement check: flag if the new step matches any of the three tracked mission ids.
     for (int k = 0; k < 3; k = k + 1) {
         if (next == g_ncmAchTable[k])
-            self->field_0x17c = 1;
+            this->field_0x17c = 1;
     }
 
     // advance counter + snapshot time (cases that finalise via campaign use 0x1e8, others 0x1e8
     // too -- both write the same counter in the engine).
     *state = next;
-    self->field_0x100 = prevTimeLo;
-    self->field_0x104 = prevTimeHi;
+    this->field_0x100 = prevTimeLo;
+    this->field_0x104 = prevTimeHi;
 
     if (step == 0)
         return;   // step 0 has no mission.
 
     // --- steps with extra side effects ------------------------------------
     if (step == 3) {
-        Ship_setCargo_ncm(self->ship, 0);
+        Ship_setCargo_ncm(this->ship, 0);
     } else if (step == 5) {
-        Ship_removeAllCargo_ncm(self->ship);
+        Ship_removeAllCargo_ncm(this->ship);
     } else if (step == 7) {
-        unsigned *eq = (unsigned *)Ship_getEquipment_ncm(self->ship);
+        unsigned *eq = (unsigned *)Ship_getEquipment_ncm(this->ship);
         if (eq != 0)
             for (unsigned i = 0; i < *eq; i = i + 1) {
                 void *it = *(void **)(eq[1] + i * 4);
@@ -1429,9 +1428,9 @@ void Status::nextCampaignMission() {
                 if (it != 0) { Item_setUnsaleable_ncm(it, 0); Item_setPrice_ncm(it, Item_getSinglePrice_ncm(it)); }
             }
     } else if (step == 9) {
-        void *old = Ship_getFirstEquipmentOfSort_ncm((int)(long)self->ship);
-        Ship_removeEquipment_ncm(self->ship, old);
-        Ship_addEquipment_ncm(self->ship, Item_makeItem_ncm(0x158));
+        void *old = Ship_getFirstEquipmentOfSort_ncm((int)(long)this->ship);
+        Ship_removeEquipment_ncm(this->ship, old);
+        Ship_addEquipment_ncm(this->ship, Item_makeItem_ncm(0x158));
     }
 
     // --- spawn + register the step's mission -------------------------------
@@ -1444,13 +1443,13 @@ void Status::nextCampaignMission() {
             ((Mission *)(m))->ctor3(s.type, s.param, s.station);
         }
         if (s.campaign)
-            Status_setCampaignMission_ncm(self, m);
+            Status_setCampaignMission_ncm(this, m);
         else
-            Status_addMissionTail(self, m);
+            Status_addMissionTail(this, m);
     } else {
         // beyond the scripted range: default freelance hop.
         ((Mission *)(m))->ctor3(0xb, 0, 100);
-        Status_addMissionTail(self, m);
+        Status_addMissionTail(this, m);
     }
 }
 
@@ -2063,28 +2062,27 @@ void Status_moveWantedTail();                                        // tail 0x1
 //   current location / travels-to / last-seen state.
 void Status::moveWanted()
 {
-    Status *self = this;
     bool loaded = false;
     Array<SolarSystem *> *systemsTable = 0;
     SystemPathFinder *pf = 0;
     Status **statusHolder = g_mwStatus;
     Station **prevHolder = g_mwPrevStation;
 
-    for (unsigned i = 0; i < self->wanted->size(); i = i + 1) {
-        Wanted *w = (*self->wanted)[i];
+    for (unsigned i = 0; i < this->wanted->size(); i = i + 1) {
+        Wanted *w = (*this->wanted)[i];
         if (Wanted_isActive_mw(w) == 0)
             continue;
-        if (Wanted_isTerminated_mw((*self->wanted)[i]) != 0)
+        if (Wanted_isTerminated_mw((*this->wanted)[i]) != 0)
             continue;
         if (Status_inAlienOrbit_mw() != 0)
             continue;
 
-        int loc = Wanted_getCurrentLocation_mw((*self->wanted)[i]);
+        int loc = Wanted_getCurrentLocation_mw((*this->wanted)[i]);
         if (loc == Station_getIndex((*statusHolder)->station))
             continue;
         if (*prevHolder != 0) {
             if (Station_getIndex(*prevHolder) ==
-                Wanted_getCurrentLocation_mw((*self->wanted)[i]))
+                Wanted_getCurrentLocation_mw((*this->wanted)[i]))
                 continue;
         }
 
@@ -2100,10 +2098,10 @@ void Status::moveWanted()
         }
 
         // resolve the from/to stations.
-        Wanted_getCurrentLocation_mw((*self->wanted)[i]);
+        Wanted_getCurrentLocation_mw((*this->wanted)[i]);
         void *fromSt = FileRead_loadStation_mw(0);
         int fromSys = Station_getSystem_mw(fromSt);
-        Wanted_getTravelsTo_mw((*self->wanted)[i]);
+        Wanted_getTravelsTo_mw((*this->wanted)[i]);
         void *toSt = FileRead_loadStation_mw(0);
         int toSys = Station_getSystem_mw(toSt);
 
@@ -2113,7 +2111,7 @@ void Status::moveWanted()
             unsigned lo, hi;
             if (i < 2) { hi = 4; lo = 2; }
             else { int r = aeabi_idivmod_mw(i - 1, 6); lo = aeabi_idiv_mw(r, 3) + 2; hi = r / 2 + 4; }
-            Wanted *pw = (*self->wanted)[i];
+            Wanted *pw = (*this->wanted)[i];
             Wanted_setLastSeen_mw(pw, Wanted_getCurrentLocation_mw(pw));
             if (toSt != 0) ::operator delete(Station_dtor_mw(toSt));
             toSt = Globals_getRandomStation_mw();
@@ -2129,7 +2127,7 @@ void Status::moveWanted()
                           dsys != 0x1b && dsys != 0x1c && dsys != 0x19 && dsys != 0x1a && dsys != 6 &&
                           dsys != Station_getSystem_mw(fromSt);
                 if (ok) {
-                    Wanted_setTravelsTo_mw((*self->wanted)[i],
+                    Wanted_setTravelsTo_mw((*this->wanted)[i],
                                            Station_getIndex((Station *)toSt));
                     break;
                 }
@@ -2138,13 +2136,13 @@ void Status::moveWanted()
                 toSys = Station_getSystem_mw(toSt);
             }
         } else if (fromSys == toSys) {
-            Wanted *pw = (*self->wanted)[i];
+            Wanted *pw = (*this->wanted)[i];
             Wanted_setCurrentLocation_mw(pw, Wanted_getTravelsTo_mw(pw));
             path = 0;
         } else {
             path = ((SystemPathFinder *)(pf))->getSystemPath(systemsTable, fromSys, toSys);
             int wg = SolarSystem_getWarpGateIndex_mw((*systemsTable)[(*path)[1]]);
-            Wanted_setCurrentLocation_mw((*self->wanted)[i], wg);
+            Wanted_setCurrentLocation_mw((*this->wanted)[i], wg);
         }
 
         if (toSt != 0) ::operator delete(Station_dtor_mw(toSt));

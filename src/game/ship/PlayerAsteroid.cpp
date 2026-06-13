@@ -365,13 +365,12 @@ __attribute__((visibility("hidden"))) extern GeometryPositionFn PlayerAsteroid_g
 
 bool PlayerAsteroid::collide(float x, float y, float z)
 {
-    PlayerAsteroid *self = this;
-    if (((Player *)(self->player))->getHitpoints() > 0) {
+    if (((Player *)(this->player))->getHitpoints() > 0) {
         GeometryPositionFn getPosition = PlayerAsteroid_geometryPosition;
-        float px = getPosition(self->geometry).x;
-        float py = getPosition(self->geometry).y;
-        float pz = getPosition(self->geometry).z;
-        int radiusInt = ((PlayerRadiusFields *)self->player)->field_0x40;
+        float px = getPosition(this->geometry).x;
+        float py = getPosition(this->geometry).y;
+        float pz = getPosition(this->geometry).z;
+        int radiusInt = ((PlayerRadiusFields *)this->player)->field_0x40;
         float radius = (float)radiusInt;
         float dx = x - px;
         if (dx < radius) {

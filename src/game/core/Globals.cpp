@@ -162,8 +162,7 @@ RetStr Globals_getKeyActionName(int action)
 // runtime sqrtf. The instance pointer (r0) is unused; the float arrives in r1.
 
 float Globals::sqrt(float x) {
-    Globals *self = this;
-    (void)self;
+    (void)this;
     return Globals::sqrt_impl(x);
 }
 
@@ -986,8 +985,7 @@ extern void *const gREF_rng2 __attribute__((visibility("hidden")));
 extern const int gREF_table __attribute__((visibility("hidden")));
 
 unsigned Globals::getRandomEnemyFighter(int kind) {
-    Globals *self = this;
-    (void)self;
+    (void)this;
     int t = kind;
     if ((unsigned)(kind - 9) > 1) {
         t = 8;
@@ -1339,7 +1337,6 @@ extern int **const gG_tail __attribute__((visibility("hidden")));
 
 // Globals::~Globals()
 void * Globals::dtor() {
-    Globals *self = this;
     void **rhSlot = gG_recordHandler;
     if (*rhSlot != 0) {
         ((RecordHandler *)(*rhSlot))->saveOptions();
@@ -1425,13 +1422,13 @@ void * Globals::dtor() {
     }
     *ifSlot = 0;
 
-    if (self->field_0x4 != 0) {
-        self->field_0x4->clear();
-        delete self->field_0x4;
+    if (this->field_0x4 != 0) {
+        this->field_0x4->clear();
+        delete this->field_0x4;
     }
-    self->field_0x4 = 0;
+    this->field_0x4 = 0;
     **gG_tail = 0;
-    return self;
+    return this;
 }
 
 extern void *const gDL_canvas __attribute__((visibility("hidden")));
@@ -1815,7 +1812,6 @@ typedef void (*VolFn)(void *snd, int channel, int value);
 // Globals::init(ApplicationManager* app, Engine* engine)
 // self in r0, app in r1.
 int Globals::init(void *app) {
-    Globals *self = this;
     int *missionSlot = *gI_mission;
     if (*missionSlot == 0) {
         void *m = ::operator new(0x78);
@@ -1871,7 +1867,7 @@ int Globals::init(void *app) {
 
     void *rng = ::operator new(8);
     AERandom_ctor(rng);
-    **gI_ctxSlot = self;
+    **gI_ctxSlot = this;
     **gI_random = (void *)rng;
 
     void *gen = ::operator new(1);
@@ -1926,7 +1922,7 @@ int Globals::init(void *app) {
     ParticleSettingsRef_initialize();
 
     Array<int> *arr = new Array<int>();
-    self->field_0x4 = arr;
+    this->field_0x4 = arr;
     return (int)(long)arr;
 }
 

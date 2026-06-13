@@ -10,23 +10,21 @@ extern "C" __attribute__((visibility("hidden"))) void **g_ImagePart_draw_canvas;
 // global PaintCanvas for the image's width/height into scale_x/scale_y.
 
 ImagePart * ImagePart::ctor(unsigned id, int field04, int posY) {
-    ImagePart *self = this;
-    self->id = id;
-    self->f_4 = field04;
-    self->pos_y = posY;
+    this->id = id;
+    this->f_4 = field04;
+    this->pos_y = posY;
     void **holder = g_ImagePart_canvas;
-    self->scale_x = ((PaintCanvas*)*holder)->GetImage2DWidth(id);
-    self->scale_y = ((PaintCanvas*)*holder)->GetImage2DHeight(id);
-    return self;
+    this->scale_x = ((PaintCanvas*)*holder)->GetImage2DWidth(id);
+    this->scale_y = ((PaintCanvas*)*holder)->GetImage2DHeight(id);
+    return this;
 }
 
 // ImagePart::draw(int x, int y, bool b) — draws the stored image2d at (x, pos_y+y)
 // with size (scale_x, scale_y), mode 0x11, flags = field_04|1, last = b.
 void ImagePart::draw(int x, int y, bool b) {
-    ImagePart *self = this;
     void **holder = g_ImagePart_draw_canvas;
-    ((PaintCanvas*)*holder)->DrawImage2D(self->id, x,
-                            self->pos_y + y,
-                            self->scale_x, self->scale_y,
-                            (unsigned char)0x11, (unsigned char)(self->f_4 | 1), (unsigned char)b);
+    ((PaintCanvas*)*holder)->DrawImage2D(this->id, x,
+                            this->pos_y + y,
+                            this->scale_x, this->scale_y,
+                            (unsigned char)0x11, (unsigned char)(this->f_4 | 1), (unsigned char)b);
 }

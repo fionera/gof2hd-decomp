@@ -23,10 +23,9 @@ extern "C" void ObjectGun_ctor(SentryGun *self, int owner, Gun *gun, int mesh,
                                unsigned int flags, Level *level);
 
 SentryGun * SentryGun::ctor(Gun *gun, int p2, int p3, int p4, Level *level) {
-    SentryGun *self = this;
-    ObjectGun_ctor(self, p3, gun, p2, 0, level);
-    self->cooldown = gun->itemIndex * 3 - 0x279;
-    return self;
+    ObjectGun_ctor(this, p3, gun, p2, 0, level);
+    this->cooldown = gun->itemIndex * 3 - 0x279;
+    return this;
 }
 
 // SentryGun::update(int) — virtual override of ObjectGun::update.
@@ -68,29 +67,28 @@ void SentryGun::fire_tail(void *obj, int flag) {
 }
 
 void SentryGun::update(int dt) {
-    SentryGun *self = this;
-    Gun *gun = self->gun;
+    Gun *gun = this->gun;
     ((Gun *)(gun))->update(dt);
 
-    gun = self->gun;
+    gun = this->gun;
     if (gun->field_0x4d == 0)
         return;
     gun->field_0x4d = 0;
 
-    SentryLevel *level = (SentryLevel *)self->level;
+    SentryLevel *level = (SentryLevel *)this->level;
 
-    int base = self->cooldown;
+    int base = this->cooldown;
     for (int i = base; i < base + 3; i++) {
         PoolObject *obj = level->pool[i];
         if (((KIPlayer *)((KIPlayer *)obj))->isDying() == 0 &&
             (((Player *)(obj->owner))->isActive() == 0 || ((Player *)(obj->owner))->isDead() != 0)) {
             level->spawnCount += 1;
             ((void (*)(PoolObject *))obj->vtable[0x18 / 4])(obj);
-            Gun *g = self->gun;
+            Gun *g = this->gun;
             ((void (*)(PoolObject *, int))obj->vtable[0x44 / 4])(
                 obj, (int)(intptr_t)((char *)g->positions + g->field_0xa0 * 12));
             return SentryGun::fire_tail(obj, 1);
         }
-        base = self->cooldown;
+        base = this->cooldown;
     }
 }

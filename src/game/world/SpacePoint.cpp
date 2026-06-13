@@ -3,8 +3,7 @@
 extern "C" void *memset(void *, int, unsigned long);
 
 void SpacePoint::giveFree() {
-    SpacePoint *self = this;
-    self->free = 1;
+    this->free = 1;
 }
 
 // SpacePoint::SpacePoint(int, const Vector&, const Vector&, int)
@@ -23,6 +22,5 @@ SpacePoint::SpacePoint(int param_1, const Vector &param_2, const Vector &param_3
 }
 
 void SpacePoint::take() {
-    SpacePoint *self = this;
-    self->free = 0;
+    this->free = 0;
 }

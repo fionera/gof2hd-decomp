@@ -62,30 +62,26 @@ static inline Array<unsigned int> *&uintArray(Hud *self) {      // +0x530
 }
 
 void Hud::enableFireForTutorial(bool value) {
-    Hud *self = this;
-    UC(self, 0x4a5) = value;
+    UC(this, 0x4a5) = value;
 }
 
 void Hud::setTimeExtender(bool p1, bool p2, bool p3, bool p4) {
-    Hud *self = this;
-    UC(self, 0) = p1;
-    UC(self, 0x280) = p3;
-    UC(self, 0x281) = p4;
+    UC(this, 0) = p1;
+    UC(this, 0x280) = p3;
+    UC(this, 0x281) = p4;
     if (p2 && p3) {
-        I(self, 0x4c0) = 0x7d0;
-        I(self, 0x4bc) = 0x50;
+        I(this, 0x4c0) = 0x7d0;
+        I(this, 0x4bc) = 0x50;
     }
 }
 
 void Hud::playerHit() {
-    Hud *self = this;
-    UC(self, 0x244) = 1;
-    I(self, 0x46c) = 0;
+    UC(this, 0x244) = 1;
+    I(this, 0x46c) = 0;
 }
 
 void Hud::addToEventQueue(ListItem *item) {
-    Hud *self = this;
-    Array<ListItem *> *q = eventQueue(self);
+    Array<ListItem *> *q = eventQueue(this);
     unsigned int idx = 0;
     do {
         unsigned int next = idx + 1;
@@ -94,49 +90,44 @@ void Hud::addToEventQueue(ListItem *item) {
         idx = next;
     } while ((*q)[idx] != 0);
     (*q)[idx] = item;
-    UC(self, 0x26c) = 1;
+    UC(this, 0x26c) = 1;
 }
 
 unsigned int Hud::firePressed() {
-    Hud *self = this;
-    return (UC(self, 0x284) >> 4) & 1;
+    return (UC(this, 0x284) >> 4) & 1;
 }
 
 void Hud::resetAnalogStick() {
-    Hud *self = this;
-    I(self, 0x41e) = I(self, 0x424);
+    I(this, 0x41e) = I(this, 0x424);
 }
 
 float Hud::getAnalogY() {
-    Hud *self = this;
-    float num = (float)((int)US(self, 0x420) - (int)US(self, 0x426));
-    float den = (float)I(self, 0x4e0);
+    float num = (float)((int)US(this, 0x420) - (int)US(this, 0x426));
+    float den = (float)I(this, 0x4e0);
     return num / den;
 }
 
 uint8_t Hud::cargoFull() {
-    Hud *self = this;
-    return UC(self, 0x235);
+    return UC(this, 0x235);
 }
 
 unsigned int Hud::touchEnd(unsigned int a, void *b, int key) {
-    Hud *self = this;
     int i = 0;
     unsigned int ret = 0;
     for (; i != 0x19; i = i + 1) {
-        if ((*keyArray(self))[i] == key) {
-            ret = U((void *)I(self, 0x290), i * 4);
-            U(self, 0x284) = U(self, 0x284) & ~ret;
-            (*keyArray(self))[i] = 0;
-            I((void *)I(self, 0x290), i * 4) = 0;
+        if ((*keyArray(this))[i] == key) {
+            ret = U((void *)I(this, 0x290), i * 4);
+            U(this, 0x284) = U(this, 0x284) & ~ret;
+            (*keyArray(this))[i] = 0;
+            I((void *)I(this, 0x290), i * 4) = 0;
         }
     }
-    if (UC(self, 0x282) != 0) {
-        Array<TouchButton *> *btns = menuButtons(self);
+    if (UC(this, 0x282) != 0) {
+        Array<TouchButton *> *btns = menuButtons(this);
         if (btns != 0) {
             for (unsigned int j = 0; j < btns->size(); j = j + 1) {
                 (*btns)[j]->OnTouchEnd((int)a, (int)(long)b);
-                btns = menuButtons(self);
+                btns = menuButtons(this);
             }
         }
     }
@@ -144,61 +135,53 @@ unsigned int Hud::touchEnd(unsigned int a, void *b, int key) {
 }
 
 void Hud::releaseAllKeys() {
-    Hud *self = this;
-    I(self, 0x284) = 0;
+    I(this, 0x284) = 0;
     for (int i = 0; i != 0x19; i++) {
-        Array<int> *p = keyArray(self);
+        Array<int> *p = keyArray(this);
         if (p != 0) {
             if ((*p)[i] != 0)
                 (*p)[i] = 0;
         }
-        int *q = *(int *volatile *)((char *)self + 0x290);
+        int *q = *(int *volatile *)((char *)this + 0x290);
         q[i] = 0;
     }
-    I(self, 0x288) = 0;
+    I(this, 0x288) = 0;
 }
 
 void Hud::closeHudMenu() {
-    Hud *self = this;
-    if (menuButtons(self) != 0) {
-        for (TouchButton *b : *menuButtons(self)) delete b;
-        menuButtons(self)->clear();
-        delete menuButtons(self);
-        menuButtons(self) = 0;
+    if (menuButtons(this) != 0) {
+        for (TouchButton *b : *menuButtons(this)) delete b;
+        menuButtons(this)->clear();
+        delete menuButtons(this);
+        menuButtons(this) = 0;
     }
-    UC(self, 0x282) = 0;
+    UC(this, 0x282) = 0;
 }
 
 float Hud::getAnalogX() {
-    Hud *self = this;
-    float num = (float)((int)US(self, 0x41e) - (int)US(self, 0x424));
-    float den = (float)I(self, 0x4e0);
+    float num = (float)((int)US(this, 0x41e) - (int)US(this, 0x424));
+    float den = (float)I(this, 0x4e0);
     return num / den;
 }
 
 void Hud::setAutofireEnabled(bool value) {
-    Hud *self = this;
-    UC(self, 0x4a0) = value;
+    UC(this, 0x4a0) = value;
 }
 
 uint8_t Hud::isHackingGameActive() {
-    Hud *self = this;
-    return UC(self, 0x528);
+    return UC(this, 0x528);
 }
 
 void Hud::setHackingGameActive(bool value) {
-    Hud *self = this;
-    UC(self, 0x528) = value;
+    UC(this, 0x528) = value;
 }
 
 void Hud::setJumpMapSelected(bool value) {
-    Hud *self = this;
-    UC(self, 0x274) = value;
+    UC(this, 0x274) = value;
 }
 
 uint8_t Hud::jumpMapSelected() {
-    Hud *self = this;
-    return UC(self, 0x274);
+    return UC(this, 0x274);
 }
 
 // Hud::draw(long long t0, long long t1, PlayerEgo* ego, bool letterbox, uint x, uint y) —
@@ -212,49 +195,47 @@ uint8_t Hud::jumpMapSelected() {
 // x/y arrive on the stack.
 
 void Hud::draw(long long t0, long long t1, void *ego, bool letterbox, unsigned int x, unsigned int y) {
-    Hud *self = this;
     (void)t0; (void)t1;
 
     // background/letterbox state recorded for the panel renderers
-    UC(self, 0x1ec) = (unsigned char)letterbox;
+    UC(this, 0x1ec) = (unsigned char)letterbox;
 
     // world-space HUD elements (reticle, target brackets, radar)
-    ((Hud *)(self))->drawReticleAndBrackets(ego, x, y);
-    ((Hud *)(self))->drawRadar();
+    ((Hud *)(this))->drawReticleAndBrackets(ego, x, y);
+    ((Hud *)(this))->drawRadar();
 
     // player status (shield / armor / energy bars + secondary weapon)
-    ((Hud *)(self))->drawBars(ego);
-    ((Hud *)(self))->drawSecondaryWeaponPanel();
+    ((Hud *)(this))->drawBars(ego);
+    ((Hud *)(this))->drawSecondaryWeaponPanel();
 
     // contextual banners
-    ((Hud *)(self))->drawOrbitInformation();
-    ((Hud *)(self))->drawMissionBanner();
+    ((Hud *)(this))->drawOrbitInformation();
+    ((Hud *)(this))->drawMissionBanner();
 
     // transient event lines
-    ((Hud *)(self))->drawEventQueue();
+    ((Hud *)(this))->drawEventQueue();
 
     // the radial quick-menu, when open
-    if (UC(self, 0x282) != 0)
-        ((Hud *)(self))->drawMenu();
+    if (UC(this, 0x282) != 0)
+        ((Hud *)(this))->drawMenu();
 
     // challenge-mode score/time readout
     if (Status::isChallengeMode() != 0)
-        ((Hud *)(self))->drawChallengeModeScore();
+        ((Hud *)(this))->drawChallengeModeScore();
 
     // pause button and any pending full-screen message
-    ((Hud *)(self))->drawPauseButton();
-    if (UC(self, 0x4c8) != 0)
-        ((Hud *)(self))->drawMessage();
+    ((Hud *)(this))->drawPauseButton();
+    if (UC(this, 0x4c8) != 0)
+        ((Hud *)(this))->drawMessage();
 }
 
 void Hud::updateQueue(int dt) {
-    Hud *self = this;
-    int t = I(self, 0x268) + dt;
-    I(self, 0x268) = t;
+    int t = I(this, 0x268) + dt;
+    I(this, 0x268) = t;
     int v;
     if (t >= 0xfa1) {
-        I(self, 0x268) = 0;
-        Array<ListItem *> *q = eventQueue(self);
+        I(this, 0x268) = 0;
+        Array<ListItem *> *q = eventQueue(this);
         if ((*q)[0] != 0) {
             (*q)[0]->~ListItem();
             ::operator delete((void *)(*q)[0]);
@@ -268,17 +249,17 @@ void Hud::updateQueue(int dt) {
             i = i + 1;
         }
         if ((*q)[1] == 0) {
-            UC(self, 0x26c) = 0;
+            UC(this, 0x26c) = 0;
         }
         v = 0;
     } else {
         if (t < 0x7d1)
             return;
-        if (I(self, 0x270) != 0)
+        if (I(this, 0x270) != 0)
             return;
         v = 1;
     }
-    I(self, 0x270) = v;
+    I(this, 0x270) = v;
 }
 
 // Hud::drawOrbitInformation() — when not in an alien orbit, draws the current station name and
@@ -294,7 +275,6 @@ extern const char g_Hud_oiSep[]    __attribute__((visibility("hidden")));
 extern const unsigned char g_Hud_secColors[] __attribute__((visibility("hidden"))); // 4 x 12-byte RGB rows
 
 void Hud::drawOrbitInformation() {
-    Hud *self = this;
     if (((Status *)(*gStatus))->inAlienOrbit() != 0) return;
 
     void *canvas = *g_Hud_oiCanvas;
@@ -304,7 +284,7 @@ void Hud::drawOrbitInformation() {
 
     ((void *)(long)((Status *)(*gStatus))->getSystem());
     if (((SolarSystem *)(((void *)(long)((Status *)(*gStatus))->getSystem())))->hasNoOwner() == 0)
-        ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x1c4), 3, 0);
+        ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x1c4), 3, 0);
 
     void *font = *g_Hud_oiFont;
     // station name
@@ -354,29 +334,28 @@ void Hud::drawOrbitInformation() {
 __attribute__((visibility("hidden"))) extern void **g_Hud_globals;
 
 unsigned int Hud::touchMove(unsigned int a, void *b, int key) {
-    Hud *self = this;
     unsigned int i = 0;
     for (; i <= 0x18; i = i + 1) {
-        if ((*keyArray(self))[i] == key && I((void *)I(self, 0x290), i * 4) == 0x20)
+        if ((*keyArray(this))[i] == key && I((void *)I(this, 0x290), i * 4) == 0x20)
             goto found;
     }
-    return ((Hud *)(self))->touchMoveFallback(a, b);
+    return ((Hud *)(this))->touchMoveFallback(a, b);
 found:
-    int dx = (int)a - (int)US(self, 0x424);
-    int dy = (int)(unsigned int)(uintptr_t)b - (int)US(self, 0x426);
+    int dx = (int)a - (int)US(this, 0x424);
+    int dy = (int)(unsigned int)(uintptr_t)b - (int)US(this, 0x426);
     float f = (float)(dy * dy + dx * dx);
     float r = ((Globals *)(*g_Hud_globals))->sqrt(f);
-    int denom = I(self, 0x4e0);
+    int denom = I(this, 0x4e0);
     int len = (int)r;
     if (denom < len) {
         short s = __aeabi_idiv(denom * dx, len);
-        short base = S(self, 0x426);
-        S(self, 0x41e) = s + S(self, 0x424);
+        short base = S(this, 0x426);
+        S(this, 0x41e) = s + S(this, 0x424);
         s = __aeabi_idiv(denom * dy, len);
-        S(self, 0x420) = s + base;
+        S(this, 0x420) = s + base;
     } else {
-        S(self, 0x41e) = (short)a;
-        S(self, 0x420) = (short)(unsigned int)(uintptr_t)b;
+        S(this, 0x41e) = (short)a;
+        S(this, 0x420) = (short)(unsigned int)(uintptr_t)b;
     }
     return 0x20;
 }
@@ -402,67 +381,66 @@ static inline bool cspan(Hud *self, int off, int w, unsigned int v) {
 }
 
 unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
-    Hud *self = this;
-    Array<TouchButton *> *menu = menuButtons(self);
-    if (UC(self, 0x282) != 0 && menu != 0) {
+    Array<TouchButton *> *menu = menuButtons(this);
+    if (UC(this, 0x282) != 0 && menu != 0) {
         // quick-menu open: delegate to its buttons
         for (unsigned int i = 0; i < menu->size(); i++) {
             if ((*menu)[i]->OnTouchBegin((int)x, (int)y) != 0)
-                return *(unsigned int *)(*menuButtons(self))[i];
-            menu = menuButtons(self);
+                return *(unsigned int *)(*menuButtons(this))[i];
+            menu = menuButtons(this);
         }
         return 0;
     }
 
-    int w = I(self, 0x4d8);
-    int w2 = I(self, 0x4dc);
+    int w = I(this, 0x4d8);
+    int w2 = I(this, 0x4dc);
 
     bool cinematic = *(char *)*g_Hud_teCinematic != 0;
 
     if (cinematic) {
-        if (span(self, 0x40a, w, x) && span(self, 0x40c, w, y)) return 1;
-        if (UC(self, 0x21e) != 0 && span(self, 0x410, w, x) && span(self, 0x412, w, y)) return 2;
-        if (span(self, 0x3f8, w, x) && span(self, 0x3fa, w, y)) return 0x40;
-        if (span(self, 0x404, w, x) && span(self, 0x406, w, y)) return 0x100;
-        if (cspan(self, 0x424, w, x) && cspan(self, 0x426, w2, y)) return 0x20;
-        if (span(self, 0x3f2, w, x) && span(self, 0x3f4, w, y)) { I(self, 0x470) = 1000; return 0x80; }
-        if (cspan(self, 0x3ec, w, x) && span(self, 0x3ee, w, y)) return 8;
-        if (cspan(self, 0x3e4, w2 >> 1, x) && cspan(self, 0x3e6, w2 >> 1, y)) return 0x10;
-        if (UC(self, 0x283) == 0 && span(self, 0x416, US(self, 0x41a), x) &&
-            span(self, 0x418, US(self, 0x41c), y)) return 4;
-        if (span(self, 0x3fe, w, x) && span(self, 0x400, w, y)) return 0x20000000;
-        if (UC(self, 0x528) != 0) {
-            if (span(self, 0x454, w, x) && span(self, 0x456, w, y)) return 0x200;
-            if (span(self, 0x458, w, x) && span(self, 0x45a, w, y)) return 0x400;
-            if (span(self, 0x45e, w, x) && span(self, 0x460, w, y)) return 0x800;
+        if (span(this, 0x40a, w, x) && span(this, 0x40c, w, y)) return 1;
+        if (UC(this, 0x21e) != 0 && span(this, 0x410, w, x) && span(this, 0x412, w, y)) return 2;
+        if (span(this, 0x3f8, w, x) && span(this, 0x3fa, w, y)) return 0x40;
+        if (span(this, 0x404, w, x) && span(this, 0x406, w, y)) return 0x100;
+        if (cspan(this, 0x424, w, x) && cspan(this, 0x426, w2, y)) return 0x20;
+        if (span(this, 0x3f2, w, x) && span(this, 0x3f4, w, y)) { I(this, 0x470) = 1000; return 0x80; }
+        if (cspan(this, 0x3ec, w, x) && span(this, 0x3ee, w, y)) return 8;
+        if (cspan(this, 0x3e4, w2 >> 1, x) && cspan(this, 0x3e6, w2 >> 1, y)) return 0x10;
+        if (UC(this, 0x283) == 0 && span(this, 0x416, US(this, 0x41a), x) &&
+            span(this, 0x418, US(this, 0x41c), y)) return 4;
+        if (span(this, 0x3fe, w, x) && span(this, 0x400, w, y)) return 0x20000000;
+        if (UC(this, 0x528) != 0) {
+            if (span(this, 0x454, w, x) && span(this, 0x456, w, y)) return 0x200;
+            if (span(this, 0x458, w, x) && span(this, 0x45a, w, y)) return 0x400;
+            if (span(this, 0x45e, w, x) && span(this, 0x460, w, y)) return 0x800;
         }
         return 0;
     }
 
     // normal layout: extra weapon-select buttons first
-    if (UC(self, 0x528) != 0) {
-        if (span(self, 0x454, w, x) && span(self, 0x456, w, y)) return 0x200;
-        if (span(self, 0x458, w, x) && span(self, 0x45a, w, y)) return 0x400;
-        if (span(self, 0x45e, w, x) && span(self, 0x460, w, y)) return 0x800;
+    if (UC(this, 0x528) != 0) {
+        if (span(this, 0x454, w, x) && span(this, 0x456, w, y)) return 0x200;
+        if (span(this, 0x458, w, x) && span(this, 0x45a, w, y)) return 0x400;
+        if (span(this, 0x45e, w, x) && span(this, 0x460, w, y)) return 0x800;
     }
 
     int screenW = *(int *)*g_Hud_teScreenW;
     int screenH = *(int *)*g_Hud_teScreenH;
 
     if (y < (unsigned int)(screenH >> 2)) {
-        if (span(self, 0x40a, w, x) && span(self, 0x40c, w, y)) return 1;
+        if (span(this, 0x40a, w, x) && span(this, 0x40c, w, y)) return 1;
     } else if (x < (unsigned int)(screenW >> 1)) {
-        if (UC(self, 0x21e) != 0 && cspan(self, 0x410, w, x) && span(self, 0x412, w, y)) return 2;
-        if (span(self, 0x3f8, w, x) && span(self, 0x3fa, w, y)) return 0x40;
-        if (span(self, 0x404, w, x) && span(self, 0x406, w, y)) return 0x100;
-        if (cspan(self, 0x424, w, x) && cspan(self, 0x426, w2, y)) return 0x20;
+        if (UC(this, 0x21e) != 0 && cspan(this, 0x410, w, x) && span(this, 0x412, w, y)) return 2;
+        if (span(this, 0x3f8, w, x) && span(this, 0x3fa, w, y)) return 0x40;
+        if (span(this, 0x404, w, x) && span(this, 0x406, w, y)) return 0x100;
+        if (cspan(this, 0x424, w, x) && cspan(this, 0x426, w2, y)) return 0x20;
     } else {
-        if (span(self, 0x3f2, w, x) && span(self, 0x3f4, w, y)) { I(self, 0x470) = 1000; return 0x80; }
-        if (cspan(self, 0x3ec, w, x) && span(self, 0x3ee, w, y)) return 8;
-        if (span(self, 0x3e4, w2, x) && span(self, 0x3e6, w2, y)) return 0x10;
-        if (UC(self, 0x283) == 0 && span(self, 0x416, US(self, 0x41a), x) &&
-            span(self, 0x418, US(self, 0x41c), y)) return 4;
-        if (span(self, 0x3fe, w, x) && span(self, 0x400, w, y)) return 0x20000000;
+        if (span(this, 0x3f2, w, x) && span(this, 0x3f4, w, y)) { I(this, 0x470) = 1000; return 0x80; }
+        if (cspan(this, 0x3ec, w, x) && span(this, 0x3ee, w, y)) return 8;
+        if (span(this, 0x3e4, w2, x) && span(this, 0x3e6, w2, y)) return 0x10;
+        if (UC(this, 0x283) == 0 && span(this, 0x416, US(this, 0x41a), x) &&
+            span(this, 0x418, US(this, 0x41c), y)) return 4;
+        if (span(this, 0x3fe, w, x) && span(this, 0x400, w, y)) return 0x20000000;
     }
     return 0;
 }
@@ -470,20 +448,19 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
 // AbyssEngine::String::String()
 
 Hud * Hud::ctor() {
-    Hud *self = this;
     int i = 0x1c;
     do {
-        ((String *)((char *)self + i))->ctor();
+        ((String *)((char *)this + i))->ctor();
         i = i + 0xc;
     } while (i != 0x10c);
-    ((String *)((char *)self + 0x1e0))->ctor();
-    ((String *)((char *)self + 500))->ctor();
-    ((String *)((char *)self + 0x200))->ctor();
-    ((String *)((char *)self + 0x228))->ctor();
-    ((String *)((char *)self + 0x3b4))->ctor();
-    ((String *)((char *)self + 0x51c))->ctor();
-    ((Hud *)(self))->init();
-    return self;
+    ((String *)((char *)this + 0x1e0))->ctor();
+    ((String *)((char *)this + 500))->ctor();
+    ((String *)((char *)this + 0x200))->ctor();
+    ((String *)((char *)this + 0x228))->ctor();
+    ((String *)((char *)this + 0x3b4))->ctor();
+    ((String *)((char *)this + 0x51c))->ctor();
+    ((Hud *)(this))->init();
+    return this;
 }
 
 // Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6,
@@ -499,15 +476,14 @@ extern const char g_Hud_ccUnit[]   __attribute__((visibility("hidden")));
 extern const char g_Hud_ccUnit2[]  __attribute__((visibility("hidden")));
 
 void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7, int aggregateKey) {
-    Hud *self = this;
-    I(self, 0x1d0) = 0;
-    UC(self, 0x235) = (unsigned char)docked;
+    I(this, 0x1d0) = 0;
+    UC(this, 0x235) = (unsigned char)docked;
 
     if (mission) {
         // mission cargo: two replaceHash passes producing the localized line
         void *gt = *g_Hud_ccGameText;
         void *base = ((GameText *)(gt))->getText(0x219);
-        void *dst = B(self, 0x1f4);
+        void *dst = B(this, 0x1f4);
         ((String *)(dst))->assign((String *)(base));
 
         void *tmpl = *g_Hud_ccTemplate;
@@ -534,7 +510,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(str))->ctor_copy((String *)(dst), false);
         ((ListItem *)item)->ctor_String_int(str, 0);
         ((ListItem *)item)->field_0x2c = cargoVal;
-        ((Hud *)(self))->addToEventQueue((ListItem *)item);
+        ((Hud *)(this))->addToEventQueue((ListItem *)item);
         return;
     }
 
@@ -542,12 +518,12 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         // docking confirmation line
         void *gt = *g_Hud_ccGameText;
         void *txt = ((GameText *)(gt))->getText(0x18a);
-        ((String *)(B(self, 0x1f4)))->assign((String *)(txt));
+        ((String *)(B(this, 0x1f4)))->assign((String *)(txt));
         void *item = ::operator new(0x48);
         void *str = ::operator new(0xc);
-        ((String *)(str))->ctor_copy((String *)(B(self, 0x1f4)), false);
+        ((String *)(str))->ctor_copy((String *)(B(this, 0x1f4)), false);
         ((ListItem *)item)->ctor_String_int(str, 1);
-        ((Hud *)(self))->catchCargoFinish((ListItem *)item);
+        ((Hud *)(this))->catchCargoFinish((ListItem *)item);
         return;
     }
 
@@ -556,8 +532,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     void *gt = *g_Hud_ccGameText;
 
     // aggregate with previous "+N <unit>" event if allowed
-    if (aggregateKey != 0 && P(self, 0x26c) != 0) {
-        char a0[12]; ((String *)(a0))->ctor_int(I(self, 0x52c));
+    if (aggregateKey != 0 && P(this, 0x26c) != 0) {
+        char a0[12]; ((String *)(a0))->ctor_int(I(this, 0x52c));
         char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
         char a94[12]; String_concat(a94, a0, ac);
         char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
@@ -566,19 +542,19 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
         char b8[12]; ((String *)(b8))->ctor_copy((String *)(k34), false);
-        int idx = ((Hud *)(self))->sameHudEventAsBeforeAggregate((String *)b8);
+        int idx = ((Hud *)(this))->sameHudEventAsBeforeAggregate((String *)b8);
         ((String *)(b8))->dtor();
         if (idx >= 0) {
-            I(self, 0x268) = 2000;
-            int newAmt = I(self, 0x52c) + (a ? 1 : 0);
-            I(self, 0x52c) = newAmt;
+            I(this, 0x268) = 2000;
+            int newAmt = I(this, 0x52c) + (a ? 1 : 0);
+            I(this, 0x52c) = newAmt;
             char nAc[12]; ((String *)(nAc))->ctor_int(newAmt);
             char nC4[12]; ((String *)(nC4))->ctor_char(g_Hud_ccUnit2, false);
             char nA0[12]; String_concat(nA0, nAc, nC4);
             char n94[12]; ((String *)(n94))->ctor_copy((String *)(nA0), false);
             void *u2 = ((GameText *)(gt))->getText(0);
             char n88[12]; String_concat(n88, n94, u2);
-            ((String *)(*(void **)((char *)(*eventQueue(self))[idx] + 0x1c)))->assign((String *)(n88));
+            ((String *)(*(void **)((char *)(*eventQueue(this))[idx] + 0x1c)))->assign((String *)(n88));
             ((String *)(n88))->dtor(); ((String *)(n94))->dtor(); ((String *)(nA0))->dtor(); ((String *)(nC4))->dtor(); ((String *)(nAc))->dtor();
             ((String *)(k34))->dtor();
             return;
@@ -587,24 +563,24 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     }
 
     // fresh "+N <unit>" event
-    I(self, 0x52c) = (a ? 1 : 0);
-    char a0[12]; ((String *)(a0))->ctor_int(I(self, 0x52c));
+    I(this, 0x52c) = (a ? 1 : 0);
+    char a0[12]; ((String *)(a0))->ctor_int(I(this, 0x52c));
     char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
     char a94[12]; String_concat(a94, a0, ac);
     char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
     void *unit = ((GameText *)(gt))->getText(0);
     char k34[12]; String_concat(k34, a88, unit);
-    ((String *)(B(self, 0x1f4)))->assign((String *)(k34));
+    ((String *)(B(this, 0x1f4)))->assign((String *)(k34));
     ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
     void *item = ::operator new(0x48);
     void *str = ::operator new(0xc);
-    ((String *)(str))->ctor_copy((String *)(B(self, 0x1f4)), false);
+    ((String *)(str))->ctor_copy((String *)(B(this, 0x1f4)), false);
     ((ListItem *)item)->ctor_String_int(str, 0);
     ((ListItem *)item)->field_0x2c = cargoVal;
     if (!p7 || p6) ((ListItem *)item)->field_0x30 = 2;
     if (p7) ((ListItem *)item)->field_0x24 = 1;
-    ((Hud *)(self))->addToEventQueue((ListItem *)item);
+    ((Hud *)(this))->addToEventQueue((ListItem *)item);
 }
 
 // Hud::drawEventString(String text, bool rightAlign) — draws a HUD event line, right- or
@@ -616,13 +592,12 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_canvas2;// *holder -> 
 __attribute__((visibility("hidden"))) extern void **g_Hud_screenW;// *holder -> [0] = screen width
 
 void Hud::drawEventString(void *text, int rightAlign) {
-    Hud *self = this;
     void *font = *g_Hud_font;
     void *canvas = *g_Hud_canvas2;
     int x;
-    if (UC(self, 0x1ec) == 0) {
-        int base = I(self, 0x4e8);
-        int yBase = I(self, 0x160);
+    if (UC(this, 0x1ec) == 0) {
+        int base = I(this, 0x4e8);
+        int yBase = I(this, 0x160);
         if (rightAlign == 0) {
             int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(canvas), (font));
             x = (base + 3) - w;
@@ -632,27 +607,25 @@ void Hud::drawEventString(void *text, int rightAlign) {
         x = x + yBase;
     } else {
         if (rightAlign == 0) {
-            int margin = I(self, 0x4f0);
+            int margin = I(this, 0x4f0);
             int screenW = *(int *)*g_Hud_screenW;
             int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(canvas), (font));
             x = ((screenW - 1) - margin) - w;
         } else {
-            x = I(self, 0x4f0) + 1;
+            x = I(this, 0x4f0) + 1;
         }
     }
-    char y = (char)(I(self, 0x164) - 1);
+    char y = (char)(I(this, 0x164) - 1);
     ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)(text), (x), (y), false);
 }
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
-    Hud *self = this;
-    P(self, 0x258) = item;
-    return ((Hud *)(self))->secondaryWeaponChanged();
+    P(this, 0x258) = item;
+    return ((Hud *)(this))->secondaryWeaponChanged();
 }
 
 int Hud::sameHudEventAsBeforeAggregate(String *str) {
-    Hud *self = this;
-    Array<ListItem *> *q = eventQueue(self);
+    Array<ListItem *> *q = eventQueue(this);
     int i = (int)q->size();
     ListItem *e;
     do {
@@ -676,8 +649,7 @@ extern const char g_Hud_swSep[]  __attribute__((visibility("hidden"))); // " x" 
 extern const char g_Hud_swEnd[]  __attribute__((visibility("hidden"))); // trailing string
 
 void Hud::updateSecondaryWeaponString() {
-    Hud *self = this;
-    void *item = P(self, 0x258);
+    void *item = P(this, 0x258);
     if (item == 0) return;
 
     void *gt = *g_Hud_gameText;
@@ -693,7 +665,7 @@ void Hud::updateSecondaryWeaponString() {
     ((String *)(end))->ctor_char(g_Hud_swEnd, false);
     String_concat(acc3, acc2, end);
 
-    ((String *)(B(self, 0x3b4)))->assign((String *)(acc3));
+    ((String *)(B(this, 0x3b4)))->assign((String *)(acc3));
     ((String *)(acc3))->dtor();
     ((String *)(end))->dtor();
     ((String *)(acc2))->dtor();
@@ -703,7 +675,7 @@ void Hud::updateSecondaryWeaponString() {
 
     int screenW = *(int *)*g_Hud_swScreenW;
     int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(*g_Hud_swCanvas), (*g_Hud_swFont));
-    I(self, 0x3c0) = (screenW >> 1) - (w >> 1);
+    I(this, 0x3c0) = (screenW >> 1) - (w >> 1);
 }
 
 // Hud::drawEventQueue() — draws the sliding event-banner background image and, if the queue
@@ -718,9 +690,8 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_eqScreenW;   // *holde
 __attribute__((visibility("hidden"))) extern void **g_Hud_eqFont;      // *holder -> font String
 
 void Hud::drawEventQueue() {
-    Hud *self = this;
     char letterbox = *(char *)*g_Hud_eqLetterbox;
-    char cinematicY = (letterbox == 0) ? 0 : (char)US(self, 0x3e2);
+    char cinematicY = (letterbox == 0) ? 0 : (char)US(this, 0x3e2);
 
     void *src = *g_Hud_eqSelf;
     void *canvas = *g_Hud_eqCanvas;
@@ -731,9 +702,9 @@ void Hud::drawEventQueue() {
     float mul = (letterbox == 0) ? -2.0f : -1.0f;
     int yOff = (int)(mul * dispScale);
 
-    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x354), US(self, 0x3e0), 0);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x354), US(this, 0x3e0), 0);
 
-    char *item = (char *)(*eventQueue(self))[1];
+    char *item = (char *)(*eventQueue(this))[1];
     if (item != 0) {
         int kind = *(int *)(item + 0x30);
         int b2, b3, b4;
@@ -750,50 +721,48 @@ void Hud::drawEventQueue() {
         char y = (char)((char)yOff + (char)dispBase + cinematicY);
         ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)((void *)(long)strVal), ((screenW >> 1) - w / 2), (y), false);
     }
-    self->eventQueueFinish(canvas, 0xffffffff);
+    this->eventQueueFinish(canvas, 0xffffffff);
 }
 
 unsigned int Hud::touchBegin(unsigned int a, void *b, int key) {
-    Hud *self = this;
-    unsigned int e = ((Hud *)(self))->touchedElement(a, (unsigned int)(uintptr_t)b);
+    unsigned int e = ((Hud *)(this))->touchedElement(a, (unsigned int)(uintptr_t)b);
     if (e == 0) {
         for (int i = 0; i != 0x19; i = i + 1) {
-            if ((*keyArray(self))[i] == key) {
-                U(self, 0x284) = U(self, 0x284) & ~U((void *)I(self, 0x290), i * 4);
-                I((void *)I(self, 0x290), i * 4) = 0;
-                (*keyArray(self))[i] = 0;
+            if ((*keyArray(this))[i] == key) {
+                U(this, 0x284) = U(this, 0x284) & ~U((void *)I(this, 0x290), i * 4);
+                I((void *)I(this, 0x290), i * 4) = 0;
+                (*keyArray(this))[i] = 0;
             }
         }
     } else {
         unsigned int j;
         for (j = 0; j < 0x19; j = j + 1) {
-            if ((*keyArray(self))[j] == (int)key) {
-                unsigned int v = U((void *)I(self, 0x290), j * 4);
+            if ((*keyArray(this))[j] == (int)key) {
+                unsigned int v = U((void *)I(this, 0x290), j * 4);
                 if (e == v)
-                    v = U(self, 0x284);
+                    v = U(this, 0x284);
                 else
-                    v = U(self, 0x284) & ~v;
-                U(self, 0x284) = v | e;
-                U((void *)I(self, 0x290), j * 4) = e;
+                    v = U(this, 0x284) & ~v;
+                U(this, 0x284) = v | e;
+                U((void *)I(this, 0x290), j * 4) = e;
                 goto done;
             }
         }
         for (j = 0; j < 0x19; j = j + 1) {
-            if ((*keyArray(self))[j] == 0) {
-                (*keyArray(self))[j] = key;
-                U((void *)I(self, 0x290), j * 4) = e;
-                U(self, 0x284) = e | U(self, 0x284);
+            if ((*keyArray(this))[j] == 0) {
+                (*keyArray(this))[j] = key;
+                U((void *)I(this, 0x290), j * 4) = e;
+                U(this, 0x284) = e | U(this, 0x284);
                 break;
             }
         }
     }
 done:
-    return U(self, 0x284);
+    return U(this, 0x284);
 }
 
 unsigned int Hud::sameHudEventAsBefore(String *str) {
-    Hud *self = this;
-    Array<ListItem *> *q = eventQueue(self);
+    Array<ListItem *> *q = eventQueue(this);
     int i = (int)q->size();
     while (--i >= 1) {
         ListItem *e = (*q)[i];
@@ -821,45 +790,44 @@ __attribute__((visibility("hidden"))) extern const unsigned short g_Hud_raceBadg
 extern const char g_Hud_initMsg[] __attribute__((visibility("hidden")));
 
 int Hud::init() {
-    Hud *self = this;
-    ((Hud *)(self))->loadImages();
+    ((Hud *)(this))->loadImages();
 
-    UC(self, 0x4c8) = 0;
-    UC(self, 0x528) = 0;
+    UC(this, 0x4c8) = 0;
+    UC(this, 0x528) = 0;
 
     // key-state arrays: 0x19 slots each
-    keyArray(self) = new Array<int>();
-    keyArray(self)->resize(0x19);
+    keyArray(this) = new Array<int>();
+    keyArray(this)->resize(0x19);
     void *bits = ::operator new[](100);
-    P(self, 0x290) = bits;
+    P(this, 0x290) = bits;
     for (int i = 0; i != 0x19; i++) {
-        (*keyArray(self))[i] = 0;
-        *(int *)(I(self, 0x290) + i * 4) = 0;
+        (*keyArray(this))[i] = 0;
+        *(int *)(I(this, 0x290) + i * 4) = 0;
     }
-    I(self, 0x284) = 0;
+    I(this, 0x284) = 0;
 
     // current system faction badge
     if (((Status *)(*gStatus))->inAlienOrbit() == 0) {
         void *canvas = *g_Hud_initCanvas;
         ((void *)(long)((Status *)(*gStatus))->getSystem());
         int race = ((SolarSystem *)(((void *)(long)((Status *)(*gStatus))->getSystem())))->getRace();
-        Image2DCreate(canvas, g_Hud_raceBadge[race], B(self, 0x1c4));
+        Image2DCreate(canvas, g_Hud_raceBadge[race], B(this, 0x1c4));
     }
 
     // seed the (empty) HUD message
-    I(self, 0x514) = -1;
-    I(self, 0x518) = 0;
+    I(this, 0x514) = -1;
+    I(this, 0x518) = 0;
     {
         char tmp[12];
         ((String *)(tmp))->ctor_char(g_Hud_initMsg, false);
-        ((String *)(B(self, 0x51c)))->assign((String *)(tmp));
+        ((String *)(B(this, 0x51c)))->assign((String *)(tmp));
         ((String *)(tmp))->dtor();
     }
 
-    ((Hud *)(self))->closeHudMenu();
-    ((Hud *)(self))->checkIfQuickMenuIsEmpty();
-    ((Hud *)(self))->releaseAllKeys();
-    uintArray(self) = 0;
+    ((Hud *)(this))->closeHudMenu();
+    ((Hud *)(this))->checkIfQuickMenuIsEmpty();
+    ((Hud *)(this))->releaseAllKeys();
+    uintArray(this) = 0;
 
     int *layout = (int *)*g_Hud_initLayout;
     int w = ((PaintCanvas*)(long)(*g_Hud_initCanvas))->GetImage2DWidth((unsigned)(0));
@@ -873,13 +841,12 @@ int Hud::init() {
 __attribute__((visibility("hidden"))) extern void **g_Hud_canvas;
 
 void Hud::drawPauseButton() {
-    Hud *self = this;
     void **holder = g_Hud_canvas;
     ((PaintCanvas*)(long)(*holder))->SetColor((unsigned)(-1));
-    unsigned char flag = UC(self, 0x284);
-    int y = US(self, 0x40c);
-    int x = US(self, 0x40a);
-    int img = (flag & 1) == 0 ? I(self, 0x2f8) : I(self, 0x2f4);
+    unsigned char flag = UC(this, 0x284);
+    int y = US(this, 0x40c);
+    int x = US(this, 0x40a);
+    int img = (flag & 1) == 0 ? I(this, 0x2f8) : I(this, 0x2f4);
     return ((PaintCanvas*)(long)(*holder))->DrawImage2D((unsigned)(img), (x), (y));
 }
 
@@ -890,10 +857,9 @@ void Hud::drawPauseButton() {
 // DAT_001ac644 tail thunk
 
 Hud * Hud::checkIfQuickMenuIsEmpty() {
-    Hud *self = this;
     void *ship = (void *)((Status *)(*gStatus))->getShip();
     Array<Item *> *equip = ((Ship*)(ship))->getEquipment(1);
-    equipmentArray(self) = equip;
+    equipmentArray(this) = equip;
 
     unsigned char empty;
     bool hasSecondary = false;
@@ -913,9 +879,9 @@ Hud * Hud::checkIfQuickMenuIsEmpty() {
             empty = 0;
         }
     }
-    UC(self, 0x283) = empty;
-    ((Hud *)(self))->refreshQuickMenu();
-    return self;
+    UC(this, 0x283) = empty;
+    ((Hud *)(this))->refreshQuickMenu();
+    return this;
 }
 
 // Hud::drawMenu(int) — draws the radial quick-menu: the rounded background (top cap, repeated
@@ -928,42 +894,41 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_dmFont;   // *holder -
 extern const char g_Hud_dmPrefix[] __attribute__((visibility("hidden")));
 
 void Hud::drawMenu() {
-    Hud *self = this;
     void *canvas = *g_Hud_dmCanvas;
     int *layout = (int *)*g_Hud_dmLayout;
     ((Layout *)(layout))->drawMask();
 
     // top cap
-    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x298), I(self, 0x3c4) + I(self, 0x4cc), 0);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x298), I(this, 0x3c4) + I(this, 0x4cc), 0);
     // header glyph (centered)
-    int hx = I(self, 0x4cc) + I(self, 0x3d4) + I(self, 0x3dc) / 2;
-    char hy = (char)((char)I(self, 0x4d0) + (char)I(self, 0x3c8) + (char)(I(self, 0x3cc) / 2)
+    int hx = I(this, 0x4cc) + I(this, 0x3d4) + I(this, 0x3dc) / 2;
+    char hy = (char)((char)I(this, 0x4d0) + (char)I(this, 0x3c8) + (char)(I(this, 0x3cc) / 2)
                      - (char)layout[0x8b] /*+0x22c*/);
-    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x35c), hx, hy, (unsigned char)0x11);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x35c), hx, hy, (unsigned char)0x11);
 
-    int y = I(self, 0x3c8) + I(self, 0x4d0) + I(self, 0x3cc);
+    int y = I(this, 0x3c8) + I(this, 0x4d0) + I(this, 0x3cc);
     // repeated middle slices (one per button beyond the first)
-    if (menuButtons(self) != 0 && menuButtons(self)->size() != 0) {
-        unsigned int count = (unsigned int)menuButtons(self)->size();
+    if (menuButtons(this) != 0 && menuButtons(this)->size() != 0) {
+        unsigned int count = (unsigned int)menuButtons(this)->size();
         for (unsigned int i = 0; i < count - 1; i++) {
-            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x2a0), I(self, 0x3c4) + I(self, 0x4cc), 0);
-            y += I(self, 0x3d0);
-            count = (unsigned int)menuButtons(self)->size();
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x2a0), I(this, 0x3c4) + I(this, 0x4cc), 0);
+            y += I(this, 0x3d0);
+            count = (unsigned int)menuButtons(this)->size();
         }
     }
     // bottom cap
-    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x29c), I(self, 0x3c4) + I(self, 0x4cc), 0);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x29c), I(this, 0x3c4) + I(this, 0x4cc), 0);
 
     // the actual buttons
-    if (menuButtons(self) != 0 && menuButtons(self)->size() != 0) {
-        unsigned int n = (unsigned int)menuButtons(self)->size();
+    if (menuButtons(this) != 0 && menuButtons(this)->size() != 0) {
+        unsigned int n = (unsigned int)menuButtons(this)->size();
         for (unsigned int i = 0; i < n; i++) {
-            (*menuButtons(self))[i]->draw();
-            n = (unsigned int)menuButtons(self)->size();
+            (*menuButtons(this))[i]->draw();
+            n = (unsigned int)menuButtons(this)->size();
         }
     }
 
-    if (I(self, 0x238) != 0) return;
+    if (I(this, 0x238) != 0) return;
 
     (void *)((Status *)(*gStatus))->getShip();
     int cloak = ((Ship *)((void *)((Status *)(*gStatus))->getShip()))->hasCloak();
@@ -974,16 +939,16 @@ void Hud::drawMenu() {
 
     char prefix[12], num[12], label[12];
     ((String *)(prefix))->ctor_char(g_Hud_dmPrefix, false);
-    ((String *)(num))->ctor_int(I(self, 0x27c));
+    ((String *)(num))->ctor_int(I(this, 0x27c));
     String_concat(label, prefix, num);
     ((String *)(num))->dtor();
     ((String *)(prefix))->dtor();
 
-    int gx = I(self, 0x4cc) + I(self, 0x3d4) + I(self, 0x3dc) / 2;
+    int gx = I(this, 0x4cc) + I(this, 0x3d4) + I(this, 0x3dc) / 2;
     unsigned char gy = (unsigned char)((char)y + (char)(layout[0xc] /*+0x30*/ / 2)
                         + (char)layout[0xa2] /*+0x288*/);
-    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x374), gx, gy, (unsigned char)0x11);
-    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x370), gx - layout[0x8c] /*+0x230*/, (char)layout[0xc] + (char)gy + (char)layout[0xa3] /*+0x28c*/, (unsigned char)0x11);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x374), gx, gy, (unsigned char)0x11);
+    ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x370), gx - layout[0x8c] /*+0x230*/, (char)layout[0xc] + (char)gy + (char)layout[0xa3] /*+0x28c*/, (unsigned char)0x11);
 
     int barW = layout[0x8c];
     void *font = *g_Hud_dmFont;
@@ -995,18 +960,17 @@ void Hud::drawMenu() {
 }
 
 void Hud::clearQueue() {
-    Hud *self = this;
     unsigned int i = 1;
-    while (i < eventQueue(self)->size()) {
-        ListItem *item = (*eventQueue(self))[i];
+    while (i < eventQueue(this)->size()) {
+        ListItem *item = (*eventQueue(this))[i];
         if (item != 0) {
             item->~ListItem();
             ::operator delete(item);
         }
-        (*eventQueue(self))[i] = 0;
+        (*eventQueue(this))[i] = 0;
         i = i + 1;
     }
-    I(self, 0x270) = 0;
+    I(this, 0x270) = 0;
 }
 
 // Hud::hudEvent(int eventId, PlayerEgo* ego, int arg) — central dispatcher for in-game HUD
@@ -1019,56 +983,55 @@ void Hud::clearQueue() {
 // builds + queues
 
 void Hud::hudEvent(int eventId, void *ego, int arg) {
-    Hud *self = this;
     switch (eventId) {
     case 1:
     case 2:
         // autofire on/off notice — only when the autofire UI is present
-        if (UC(self, 0x221) == 0) return;
-        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
+        if (UC(this, 0x221) == 0) return;
+        ((Hud *)(this))->hudEventBuild(eventId, ego, arg);
         return;
     case 3:
-        if (UC(self, 0x21e) == 0 || ((PlayerEgo *)((void *)(long)arg))->readyToBoost() == 0) return;
-        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
+        if (UC(this, 0x21e) == 0 || ((PlayerEgo *)((void *)(long)arg))->readyToBoost() == 0) return;
+        ((Hud *)(this))->hudEventBuild(eventId, ego, arg);
         return;
     case 4:
-        if (UC(self, 0x21e) == 0) return;
-        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
+        if (UC(this, 0x21e) == 0) return;
+        ((Hud *)(this))->hudEventBuild(eventId, ego, arg);
         return;
 
     // ---- pure status-flag events (no queue entry) ----
     case 0x23:
-        I(self, 0x468) = 0;
-        UC(self, 0x27a) = 1;
-        *(unsigned short *)B(self, 0x278) = 1;
+        I(this, 0x468) = 0;
+        UC(this, 0x27a) = 1;
+        *(unsigned short *)B(this, 0x278) = 1;
         return;
     case 0x25:
-        I(self, 0x468) = 0;
-        UC(self, 0x27a) = 1;
-        *(unsigned short *)B(self, 0x278) = 0x101;
+        I(this, 0x468) = 0;
+        UC(this, 0x27a) = 1;
+        *(unsigned short *)B(this, 0x278) = 0x101;
         return;
     case 0x27:
-        I(self, 0x468) = 0;
-        UC(self, 0x27a) = 0;
-        *(unsigned short *)B(self, 0x278) = 1;
+        I(this, 0x468) = 0;
+        UC(this, 0x27a) = 0;
+        *(unsigned short *)B(this, 0x278) = 1;
         return;
     case 0x29:
-        I(self, 0x468) = 0;
-        UC(self, 0x27a) = 0;
-        *(unsigned short *)B(self, 0x278) = 0x101;
+        I(this, 0x468) = 0;
+        UC(this, 0x27a) = 0;
+        *(unsigned short *)B(this, 0x278) = 0x101;
         return;
     case 0x24:
     case 0x26:
     case 0x28:
     case 0x2a:
         // these clear the "showing" flag and set a fixed localized line, no queue
-        I(self, 0x278) = 0;
-        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
+        I(this, 0x278) = 0;
+        ((Hud *)(this))->hudEventBuild(eventId, ego, arg);
         return;
 
     default:
         // all remaining events compose a localized line and enqueue it
-        ((Hud *)(self))->hudEventBuild(eventId, ego, arg);
+        ((Hud *)(this))->hudEventBuild(eventId, ego, arg);
         return;
     }
 }
@@ -1099,12 +1062,11 @@ static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw
 }
 
 void Hud::drawChallengeModeScore() {
-    Hud *self = this;
     void *canvas = *g_Hud_csCanvas;
     int *layout = (int *)*g_Hud_csLayout;
     int *status = (int *)*g_Hud_csStatus;
     int screenW = *(int *)*g_Hud_csScreenW;
-    void *sprite = P(self, 0x534);
+    void *sprite = P(this, 0x534);
 
     ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
     int fw = ((Sprite *)(sprite))->getFrameWidth();
@@ -1132,7 +1094,7 @@ void Hud::drawChallengeModeScore() {
     int half = screenW / 2;
     int span = (dw * 7) / 2;
     int startX = half - span;
-    drawDigits(self, sprite, score, startX, y, dw);
+    drawDigits(this, sprite, score, startX, y, dw);
 
     if (status[0x60] /*+0x180*/ > 0 && status[0x63] /*+0x18c*/ > 1) {
         ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
@@ -1147,16 +1109,16 @@ void Hud::drawChallengeModeScore() {
                 ((String *)(bonusStr))->ctor_int((int)((bonus * 0.0f + 1.0f) * base));
                 int bl = String_length(bonusStr);
                 int bx = (screenW / 2 - ((bl * dw) >> 1));
-                drawDigits(self, sprite, bonusStr, bx, fh + yRow + pad, dw);
+                drawDigits(this, sprite, bonusStr, bx, fh + yRow + pad, dw);
                 ((String *)(bonusStr))->dtor();
             }
         }
-        ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x538), pad + startX, 0);
+        ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(this, 0x538), pad + startX, 0);
 
         char timeStr[12];
         ((String *)(timeStr))->ctor_int(status[0x63]);
         int tx = (half + pad) - span + ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned)(0));
-        drawDigits(self, sprite, timeStr, tx, yRow, dw);
+        drawDigits(this, sprite, timeStr, tx, yRow, dw);
         ((String *)(timeStr))->dtor();
     }
     ((PaintCanvas*)(long)(canvas))->SetColor((unsigned)(-1));
@@ -1175,7 +1137,6 @@ extern const char g_Hud_meSep[] __attribute__((visibility("hidden")));
 extern const char g_Hud_meEnd[] __attribute__((visibility("hidden")));
 
 void Hud::hudEventMedal(int medalId, int percent) {
-    Hud *self = this;
     void *gt = *g_Hud_gameText;
     void *name = ((GameText *)(gt))->getText(medalId + 0x5e3);
 
@@ -1188,7 +1149,7 @@ void Hud::hudEventMedal(int medalId, int percent) {
     ((String *)(end))->ctor_char(g_Hud_meEnd, false);
     String_concat(acc3, acc2, end);
 
-    void *dst = B(self, 0x1e0);
+    void *dst = B(this, 0x1e0);
     ((String *)(dst))->assign((String *)(acc3));
     ((String *)(acc3))->dtor();
     ((String *)(end))->dtor();
@@ -1199,7 +1160,7 @@ void Hud::hudEventMedal(int medalId, int percent) {
 
     char probe[12];
     ((String *)(probe))->ctor_copy((String *)(dst), false);
-    int same = ((Hud *)(self))->sameHudEventAsBefore((String *)probe);
+    int same = ((Hud *)(this))->sameHudEventAsBefore((String *)probe);
     ((String *)(probe))->dtor();
     if (same != 0) return;
 
@@ -1207,13 +1168,13 @@ void Hud::hudEventMedal(int medalId, int percent) {
     void *str = ::operator new(0xc);
     ((String *)(str))->ctor_copy((String *)(dst), false);
     ((ListItem *)item)->ctor_String_int(str, 3);
-    ((Hud *)(self))->addToEventQueue((ListItem *)item);
+    ((Hud *)(this))->addToEventQueue((ListItem *)item);
 
     int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(*g_Hud_meCanvas), (*g_Hud_meFont));
     int screenW = *(int *)*g_Hud_meScreenW;
-    I(self, 0x1d8) = 0;
-    UC(self, 0x1de) = 1;
-    UC(self, 0x1ec) = ((screenW / 2 - I(self, 0x4e8)) + I(self, 0x4f0) * -2 < w) ? 1 : 0;
+    I(this, 0x1d8) = 0;
+    UC(this, 0x1de) = 1;
+    UC(this, 0x1ec) = ((screenW / 2 - I(this, 0x4e8)) + I(this, 0x4f0) * -2 < w) ? 1 : 0;
 }
 
 // Hud::initHudMenu(int menuType, Level* lvl) — rebuilds the radial quick-menu. Tears down and
@@ -1233,38 +1194,37 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagA;      // *hold
 __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagB;      // *holder -> [0] byte
 
 void Hud::initHudMenu(int menuType, void *lvl) {
-    Hud *self = this;
     // tear down old menu buttons
-    if (menuButtons(self) != 0) {
-        for (TouchButton *b : *menuButtons(self)) delete b;
-        menuButtons(self)->clear();
-        delete menuButtons(self);
-        menuButtons(self) = 0;
+    if (menuButtons(this) != 0) {
+        for (TouchButton *b : *menuButtons(this)) delete b;
+        menuButtons(this)->clear();
+        delete menuButtons(this);
+        menuButtons(this) = 0;
     }
-    P(self, 0x238) = lvl;
-    menuButtons(self) = new Array<TouchButton *>();
+    P(this, 0x238) = lvl;
+    menuButtons(this) = new Array<TouchButton *>();
 
     // refresh secondary-weapon equipment + label (equipment is owned by the Ship,
     // so the Array<Item*> wrapper itself is released but not its elements)
-    if (equipmentArray(self) != 0) delete equipmentArray(self);
-    equipmentArray(self) = 0;
+    if (equipmentArray(this) != 0) delete equipmentArray(this);
+    equipmentArray(this) = 0;
     void *ship = (void *)((Status *)(*gStatus))->getShip();
-    equipmentArray(self) = ((Ship*)(ship))->getEquipment(1);
-    ((Hud *)(self))->updateSecondaryWeaponString();
+    equipmentArray(this) = ((Ship*)(ship))->getEquipment(1);
+    ((Hud *)(this))->updateSecondaryWeaponString();
 
-    I(self, 0x4cc) = 0;
+    I(this, 0x4cc) = 0;
     int *layout = (int *)*g_Hud_imLayout;
     int rowH = *(int *)(layout[0] + 0x1dc); // first row height
     char letterbox = *(char *)*g_Hud_imLetterbox;
 
     int yOrigin;
     if (letterbox == 0) {
-        yOrigin = I(self, 0x3d8);
+        yOrigin = I(this, 0x3d8);
     } else {
         // cargo-bay percentage shifts the menu up in letterboxed mode
         void *cargoA = *g_Hud_imCargoA;
         float v;
-        if (I(self, 0x238) == 3)
+        if (I(this, 0x238) == 3)
             v = (float)*(int *)((char *)cargoA + 0x54);
         else {
             v = (float)*(int *)((char *)cargoA + 0x58);
@@ -1275,7 +1235,7 @@ void Hud::initHudMenu(int menuType, void *lvl) {
         }
         float yf = 0.0f;
         if (v >= 0.0f) {
-            if (I(self, 0x238) == 3)
+            if (I(this, 0x238) == 3)
                 yf = (float)*(int *)((char *)*g_Hud_imCargoA + 0x54);
             else {
                 float v2 = (float)*(int *)((char *)*g_Hud_imCargoB + 0x58);
@@ -1284,13 +1244,13 @@ void Hud::initHudMenu(int menuType, void *lvl) {
                 yf = v2 - adj;
             }
         }
-        I(self, 0x3c8) = (int)yf;
-        yOrigin = ((I(self, 0x3cc) + (int)yf) - rowH / 2) + 1;
-        I(self, 0x3d8) = yOrigin;
+        I(this, 0x3c8) = (int)yf;
+        yOrigin = ((I(this, 0x3cc) + (int)yf) - rowH / 2) + 1;
+        I(this, 0x3d8) = yOrigin;
     }
     (void)yOrigin;
 
-    ((Hud *)(self))->buildQuickMenu(menuType);
+    ((Hud *)(this))->buildQuickMenu(menuType);
 }
 
 // Hud::~Hud() — releases the equipment array, the event-queue array, the touch-button array,
@@ -1299,34 +1259,33 @@ void Hud::initHudMenu(int menuType, void *lvl) {
 // DAT_0017134c shared sub-object dtor thunk
 
 Hud * Hud::dtor() {
-    Hud *self = this;
-    if (equipmentArray(self) != 0) delete equipmentArray(self);
-    equipmentArray(self) = 0;
+    if (equipmentArray(this) != 0) delete equipmentArray(this);
+    equipmentArray(this) = 0;
 
-    if (eventQueue(self) != 0) delete eventQueue(self);
-    eventQueue(self) = 0;
+    if (eventQueue(this) != 0) delete eventQueue(this);
+    eventQueue(this) = 0;
 
-    if (menuButtons(self) != 0) {
-        for (TouchButton *b : *menuButtons(self)) delete b;
-        menuButtons(self)->clear();
-        delete menuButtons(self);
+    if (menuButtons(this) != 0) {
+        for (TouchButton *b : *menuButtons(this)) delete b;
+        menuButtons(this)->clear();
+        delete menuButtons(this);
     }
-    menuButtons(self) = 0;
+    menuButtons(this) = 0;
 
-    if (uintArray(self) != 0) delete uintArray(self);
-    uintArray(self) = 0;
+    if (uintArray(this) != 0) delete uintArray(this);
+    uintArray(this) = 0;
 
-    self->subObjectDtor(B(self, 0x51c));
-    self->subObjectDtor(B(self, 0x3b4));
-    self->subObjectDtor(B(self, 0x228));
-    self->subObjectDtor(B(self, 0x200));
-    self->subObjectDtor(B(self, 0x1f4));
-    self->subObjectDtor(B(self, 0x1e0));
+    this->subObjectDtor(B(this, 0x51c));
+    this->subObjectDtor(B(this, 0x3b4));
+    this->subObjectDtor(B(this, 0x228));
+    this->subObjectDtor(B(this, 0x200));
+    this->subObjectDtor(B(this, 0x1f4));
+    this->subObjectDtor(B(this, 0x1e0));
 
     for (int off = 0x100; off != 0x10; off -= 0xc)
-        ((String *)(B(self, off)))->dtor();
+        ((String *)(B(this, off)))->dtor();
 
-    return self;
+    return this;
 }
 
 // ============================================================================
@@ -1359,12 +1318,11 @@ void Hud::catchCargoFinish(ListItem *item) {
 // same exported helper (DAT_001ac644): it rebuilds the secondary-weapon label
 // and re-derives the radial quick-menu's "empty" state from the current ship.
 void Hud::refreshQuickMenu() {
-    Hud *self = this;
     updateSecondaryWeaponString();
 
     void *ship = (void *)((Status *)(*gStatus))->getShip();
     Array<Item *> *equip = ((Ship *)(ship))->getEquipment(1);
-    equipmentArray(self) = equip;
+    equipmentArray(this) = equip;
 
     bool hasSecondary = false;
     if (equip != 0) {
@@ -1384,7 +1342,7 @@ void Hud::refreshQuickMenu() {
             empty = 0;
         }
     }
-    UC(self, 0x283) = empty;
+    UC(this, 0x283) = empty;
 }
 
 void Hud::secondaryWeaponChanged() {
@@ -1427,9 +1385,8 @@ __attribute__((visibility("hidden"))) extern unsigned int g_Hud_heImportantMask;
 
 void Hud::hudEventBuild(int eventId, void *ego, int arg) {
     (void)ego; (void)arg;
-    Hud *self = this;
 
-    String *line = (String *)B(self, 0x1e0);
+    String *line = (String *)B(this, 0x1e0);
     char probe[12];
     ((String *)(probe))->ctor_copy(line, false);
     unsigned int dup = sameHudEventAsBefore((String *)probe);
@@ -1452,10 +1409,10 @@ void Hud::hudEventBuild(int eventId, void *ego, int arg) {
     void *font = *g_Hud_font;
     int w = ((PaintCanvas *)g_PaintCanvas)->GetTextWidth((unsigned)(long)(canvas), (font));
     int screenW = *(int *)*g_Hud_screenW;
-    I(self, 0x1d8) = 0;
-    UC(self, 0x1de) = 1;
-    UC(self, 0x1ec) =
-        (unsigned char)((screenW / 2 - I(self, 0x4e8)) + I(self, 0x4f0) * -2 < w);
+    I(this, 0x1d8) = 0;
+    UC(this, 0x1de) = 1;
+    UC(this, 0x1ec) =
+        (unsigned char)((screenW / 2 - I(this, 0x4e8)) + I(this, 0x4f0) * -2 < w);
 }
 
 // ---- Hud::buildQuickMenu() ----------------------------------------------------
@@ -1485,26 +1442,25 @@ void Hud::buildQuickMenu(int menuType) {
 // and the auto-target lock bracket. ego is the PlayerEgo being rendered.
 void Hud::drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y) {
     (void)x; (void)y;
-    Hud *self = this;
     PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
 
     // Reticle image, tinted normally unless an interaction (autopilot/docking/
     // turret) suppresses the highlight; the lock bracket follows at +0x424/+0x41e.
-    canvas->DrawImage2D((unsigned)I(self, 0x31c), US(self, 0x42c), 0);
+    canvas->DrawImage2D((unsigned)I(this, 0x31c), US(this, 0x42c), 0);
 
-    unsigned char flags = UC(self, 0x284);
+    unsigned char flags = UC(this, 0x284);
     unsigned short bx, by;
     int img;
     if ((flags & 0x40) != 0) {            // (flags<<0x19)<0  -> locked bracket frozen
-        bx = US(self, 0x424);
-        by = US(self, 0x426);
-        img = I(self, 0x308);
-        US(self, 0x41e) = bx;
-        US(self, 0x420) = by;
+        bx = US(this, 0x424);
+        by = US(this, 0x426);
+        img = I(this, 0x308);
+        US(this, 0x41e) = bx;
+        US(this, 0x420) = by;
     } else {
-        bx = US(self, 0x41e);
-        by = US(self, 0x420);
-        img = I(self, 0x304);
+        bx = US(this, 0x41e);
+        by = US(this, 0x420);
+        img = I(this, 0x304);
     }
     canvas->DrawImage2D((unsigned)img, bx, by, '\x11');
     (void)ego;
@@ -1520,7 +1476,6 @@ void Hud::drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y) {
 __attribute__((visibility("hidden"))) extern void **g_Hud_level; // *holder -> Level
 
 void Hud::drawRadar() {
-    Hud *self = this;
     PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
     Status *st = (Status *)(*gStatus);
 
@@ -1533,10 +1488,10 @@ void Hud::drawRadar() {
         if (lvl != 0 && lvl->getNumDockingTargets() > 0) show = true;
     }
     if (show && st->getCurrentCampaignMission() > 1) {
-        int img = ((UC(self, 0x284) & 0x80) != 0)   // (flags<<0x19)<0
-                      ? I(self, 0x30c)
-                      : I(self, 0x310);
-        canvas->DrawImage2D((unsigned)img, US(self, 0x3f8), 0);
+        int img = ((UC(this, 0x284) & 0x80) != 0)   // (flags<<0x19)<0
+                      ? I(this, 0x30c)
+                      : I(this, 0x310);
+        canvas->DrawImage2D((unsigned)img, US(this, 0x3f8), 0);
     }
 }
 
@@ -1546,47 +1501,46 @@ void Hud::drawRadar() {
 // drawn whose width tracks the corresponding damage/charge rate. ego supplies the
 // per-frame damage rates.
 void Hud::drawBars(void *ego) {
-    Hud *self = this;
     PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
     PlayerEgo *e = (PlayerEgo *)ego;
     Player *player = *(Player **)ego;            // the ego embeds a Player* at +0
-    float scale = (float)US(self, 0x446);
+    float scale = (float)US(this, 0x446);
     canvas->SetColor((unsigned)0xffffffffu);
 
     // -- shield bar (only when the shield element +0x21f is enabled) --
-    unsigned short barX = US(self, 0x442);
-    unsigned short barY = US(self, 0x44a);
-    if (UC(self, 0x21f) != 0) {
+    unsigned short barX = US(this, 0x442);
+    unsigned short barY = US(this, 0x44a);
+    if (UC(this, 0x21f) != 0) {
         int shp = player->getShieldHP();
-        int frame = (shp < 2 || UC(self, 0x244) == 0) ? I(self, 0x2a4) : I(self, 0x2a8);
-        canvas->DrawImage2D((unsigned)frame, US(self, 0x43c), US(self, 0x442));
-        canvas->DrawImage2D((unsigned)I(self, 0x2d4), US(self, 0x43e), US(self, 0x442));
-        canvas->DrawImage2D((unsigned)I(self, 0x2ac), US(self, 0x440), US(self, 0x44a));
+        int frame = (shp < 2 || UC(this, 0x244) == 0) ? I(this, 0x2a4) : I(this, 0x2a8);
+        canvas->DrawImage2D((unsigned)frame, US(this, 0x43c), US(this, 0x442));
+        canvas->DrawImage2D((unsigned)I(this, 0x2d4), US(this, 0x43e), US(this, 0x442));
+        canvas->DrawImage2D((unsigned)I(this, 0x2ac), US(this, 0x440), US(this, 0x44a));
         int rate = player->getShieldDamageRate();
         int w = (int)((float)rate * scale);
-        canvas->DrawRegion2D((unsigned)I(self, 0x2b0), 0, 0, w, US(self, 0x44c),
-                             (float)w, 0, 0, 0, US(self, 0x440));
-        barX = US(self, 0x444);
-        barY = US(self, 0x448);
+        canvas->DrawRegion2D((unsigned)I(this, 0x2b0), 0, 0, w, US(this, 0x44c),
+                             (float)w, 0, 0, 0, US(this, 0x440));
+        barX = US(this, 0x444);
+        barY = US(this, 0x448);
     }
 
     // -- hull/armor bar --
     int ahp = player->getArmorHP();
-    int aframe = (ahp < 1) ? I(self, 0x2b8) : I(self, 0x2b4);
-    canvas->DrawImage2D((unsigned)aframe, US(self, 0x43c), barX);
-    canvas->DrawImage2D((unsigned)I(self, 0x2d4), US(self, 0x43e), barX);
-    canvas->DrawImage2D((unsigned)I(self, 0x2bc), US(self, 0x440), barY);
+    int aframe = (ahp < 1) ? I(this, 0x2b8) : I(this, 0x2b4);
+    canvas->DrawImage2D((unsigned)aframe, US(this, 0x43c), barX);
+    canvas->DrawImage2D((unsigned)I(this, 0x2d4), US(this, 0x43e), barX);
+    canvas->DrawImage2D((unsigned)I(this, 0x2bc), US(this, 0x440), barY);
     int hrate = e->getHullDamageRate();
     int hw = (int)((float)hrate * scale);
-    canvas->DrawRegion2D((unsigned)I(self, 0x2c4), 0, 0, hw, US(self, 0x44c),
-                         (float)hw, 0, 0, 0, US(self, 0x440));
+    canvas->DrawRegion2D((unsigned)I(this, 0x2c4), 0, 0, hw, US(this, 0x44c),
+                         (float)hw, 0, 0, 0, US(this, 0x440));
 
     // -- armor regeneration overlay (element +0x220) --
-    if (UC(self, 0x220) != 0) {
+    if (UC(this, 0x220) != 0) {
         int arate = player->getArmorDamageRate();
         int aw = (int)((float)arate * scale);
-        canvas->DrawRegion2D((unsigned)I(self, 0x2c0), 0, 0, aw, US(self, 0x44c),
-                             (float)aw, 0, 0, 0, US(self, 0x440));
+        canvas->DrawRegion2D((unsigned)I(this, 0x2c0), 0, 0, aw, US(this, 0x44c),
+                             (float)aw, 0, 0, 0, US(this, 0x440));
     }
 }
 
@@ -1595,32 +1549,31 @@ void Hud::drawBars(void *ego) {
 // auto-turret state icon (when the ship has an auto-turret) or the animated
 // "weapon switched" notice that fades after a few seconds.
 void Hud::drawSecondaryWeaponPanel() {
-    Hud *self = this;
     PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
     Level *lvl = (Level *)*g_Hud_level;
     PlayerEgo *player = (PlayerEgo *)(lvl ? (void *)(long)lvl->getPlayer() : (void *)0);
 
     if (player != 0 && player->hasAutoTurret() != 0) {
-        bool on = player->autoTurretIsEnabled() != 0 || ((UC(self, 0x287) & 0x20) != 0);
-        int img = on ? I(self, 0x314) : I(self, 0x318);
-        canvas->DrawImage2D((unsigned)img, US(self, 0x3fe), 0);
+        bool on = player->autoTurretIsEnabled() != 0 || ((UC(this, 0x287) & 0x20) != 0);
+        int img = on ? I(this, 0x314) : I(this, 0x318);
+        canvas->DrawImage2D((unsigned)img, US(this, 0x3fe), 0);
     } else {
         // no auto-turret: replay the transient "weapon changed" label timer
-        if (I(self, 0x518) > 0) {
+        if (I(this, 0x518) > 0) {
             void *font = *g_Hud_font;
             int screenW = *(int *)*g_Hud_screenW;
-            unsigned short iconW = US(self, 0x3ec);
+            unsigned short iconW = US(this, 0x3ec);
             canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
-            canvas->DrawImage2D((unsigned)I(self, 0x354), US(self, 0x3ec), 0);
+            canvas->DrawImage2D((unsigned)I(this, 0x354), US(this, 0x3ec), 0);
             int textW = ((PaintCanvas *)g_PaintCanvas)->GetTextWidth(
                 (unsigned)(long)canvas, font);
-            int tx = US(self, 0x3ec) + ((screenW - iconW) - textW) / 2;
+            int tx = US(this, 0x3ec) + ((screenW - iconW) - textW) / 2;
             ((PaintCanvas *)g_PaintCanvas)->DrawString((unsigned)(long)canvas,
-                (void *)B(self, 0x51c), tx, 0, false);
+                (void *)B(this, 0x51c), tx, 0, false);
             canvas->SetColor((unsigned)0xffffffffu);
-            int t = I(self, 0x518);
+            int t = I(this, 0x518);
             if (t > 4000) t = 0;
-            I(self, 0x518) = t;
+            I(this, 0x518) = t;
         }
     }
 }
@@ -1633,12 +1586,11 @@ void Hud::drawSecondaryWeaponPanel() {
 // inlined draw() body, so this performs the banner background + load readout that
 // is common to every branch.
 void Hud::drawMissionBanner() {
-    Hud *self = this;
     PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
     canvas->SetColor((unsigned)0xffffffffu);
 
     // banner background frame
-    canvas->DrawImage2D((unsigned)I(self, 0x324), US(self, 0x438), 0);
+    canvas->DrawImage2D((unsigned)I(this, 0x324), US(this, 0x438), 0);
 }
 
 // ---- Hud::drawMessage() -------------------------------------------------------
@@ -1646,7 +1598,6 @@ void Hud::drawMissionBanner() {
 // the +0x4c8 message flag is set): a fading line whose timer advances toward 2s
 // and wraps. Drawn centred on the screen with the message font colour.
 void Hud::drawMessage() {
-    Hud *self = this;
     PaintCanvas *canvas = (PaintCanvas *)*g_Hud_canvas;
 
     canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
@@ -1654,7 +1605,7 @@ void Hud::drawMessage() {
     int screenW = *(int *)*g_Hud_screenW;
     int w = ((PaintCanvas *)g_PaintCanvas)->GetTextWidth((unsigned)(long)canvas, font);
     ((PaintCanvas *)g_PaintCanvas)->DrawString((unsigned)(long)canvas,
-        (void *)B(self, 0x51c), screenW / 2 - w / 2, US(self, 0x3e2), false);
+        (void *)B(this, 0x51c), screenW / 2 - w / 2, US(this, 0x3e2), false);
     canvas->SetColor((unsigned)0xffffffffu);
 }
 

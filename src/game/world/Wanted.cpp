@@ -31,23 +31,19 @@ void Wanted::setTravelsTo(int v)         { travelsTo = v; }
 void Wanted::setLastSeen(int v)          { lastSeen = v; }
 
 uint8_t Wanted::isTerminated() {
-    Wanted *self = this;
-    return self->terminated;
+    return this->terminated;
 }
 
 void Wanted::setTerminated(bool v) {
-    Wanted *self = this;
-    self->terminated = v;
+    this->terminated = v;
 }
 
 uint8_t Wanted::isActive() {
-    Wanted *self = this;
-    return self->active;
+    return this->active;
 }
 
 void Wanted::setActive(bool v) {
-    Wanted *self = this;
-    self->active = v;
+    this->active = v;
 }
 
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void
@@ -69,28 +65,27 @@ RetStr Wanted::getName() {
 // The String argument has a non-trivial copy ctor/dtor in the real engine, so the
 // C++ ABI passes it by invisible reference -> it arrives as a pointer in r2.
 Wanted * Wanted::ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14) {
-    Wanted *self = this;
-    Wanted *r = String_default_ctor(self);
+    Wanted *r = String_default_ctor(this);
     r->index = p1;
     ((String *)(r))->assign((String *)&p2);
-    self->board = p3;
-    self->race = p4;
-    self->male = p5;
-    self->terminated = 0;
-    self->active = 0;
-    self->currentLocation = -1;
-    self->travelsTo = -1;
-    self->lastSeen = -1;
-    self->shipId = p6;
-    self->weapon = p7;
-    self->hitpoints = p8;
-    self->lootItemId = p9;
-    self->lootAmount = p10;
-    self->reward = p11;
-    self->requiredBounties = p12;
-    self->requiredMission = p13;
-    self->numWingmen = p14;
-    return self;
+    this->board = p3;
+    this->race = p4;
+    this->male = p5;
+    this->terminated = 0;
+    this->active = 0;
+    this->currentLocation = -1;
+    this->travelsTo = -1;
+    this->lastSeen = -1;
+    this->shipId = p6;
+    this->weapon = p7;
+    this->hitpoints = p8;
+    this->lootItemId = p9;
+    this->lootAmount = p10;
+    this->reward = p11;
+    this->requiredBounties = p12;
+    this->requiredMission = p13;
+    this->numWingmen = p14;
+    return this;
 }
 
 // operator delete[](void*) -> 0x6ebfc
@@ -98,13 +93,12 @@ Wanted * Wanted::ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p
 
 // Frees the buffer at +0x40 (array delete), clears it, then tail-calls the base dtor.
 Wanted * Wanted::dtor() {
-    Wanted *self = this;
-    void *p = self->imageParts;
+    void *p = this->imageParts;
     if (p != 0) {
         ::operator delete[](p);
     }
-    self->imageParts = 0;
-    return ((Wanted *)(self))->base_dtor();
+    this->imageParts = 0;
+    return ((Wanted *)(this))->base_dtor();
 }
 
 // ---- ((Wanted *)(base subobject destructor))->base_dtor() ----

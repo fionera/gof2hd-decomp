@@ -9,49 +9,41 @@ using AbyssEngine::String12;
 struct VObj { void (*vt[8])(void *); };
 
 RetStr Agent::getStationName() {
-    Agent *self = this;
     RetStr r;
-    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x78), false);
+    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x78), false);
     return r;
 }
 
 uint8_t Agent::hasAcceptedOffer() {
-    Agent *self = this;
-    return self->offerAccepted;
+    return this->offerAccepted;
 }
 
 bool Agent::isStoryAgent() {
-    Agent *self = this;
-    return self->category == 0;
+    return this->category == 0;
 }
 
 void * Agent::getWingmanNames() {
-    Agent *self = this;
-    return self->wingmanNames;
+    return this->wingmanNames;
 }
 
 int * Agent::getImageParts() {
-    Agent *self = this;
-    return self->imageParts;
+    return this->imageParts;
 }
 
 struct Mission;
 
 Mission * Agent::getMission() {
-    Agent *self = this;
-    return self->mission;
+    return this->mission;
 }
 
 struct Mission;
 
 void Agent::setMission(Mission *mission) {
-    Agent *self = this;
-    self->mission = mission;
+    this->mission = mission;
 }
 
 int Agent::getSellModIndex() {
-    Agent *self = this;
-    return self->sellModIndex;
+    return this->sellModIndex;
 }
 
 // AbyssEngine::String::operator=(String* dst, String src-by-value)
@@ -59,20 +51,17 @@ int Agent::getSellModIndex() {
 // Agent::setStationName(String) — this in r0, String by value in r1..r3.
 // Tail-calls operator= on the field at +0x78.
 void Agent::setStationName(String12 src) {
-    Agent *self = this;
-    ((String *)((char *)self + 0x78))->assign((String *)&src);
+    ((String *)((char *)this + 0x78))->assign((String *)&src);
 }
 
 RetStr Agent::getMissionString() {
-    Agent *self = this;
     RetStr r;
-    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x6c), false);
+    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x6c), false);
     return r;
 }
 
 uint8_t Agent::isMale() {
-    Agent *self = this;
-    return self->male;
+    return this->male;
 }
 
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void
@@ -80,9 +69,8 @@ uint8_t Agent::isMale() {
 // Returns String by value. The copy-ctor returns void, so the compiler cannot
 // assume r0 survives the call and must keep a frame + restore the sret pointer.
 RetStr Agent::getName() {
-    Agent *self = this;
     RetStr r;
-    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x00), false);
+    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x00), false);
     return r;
 }
 
@@ -90,74 +78,63 @@ RetStr Agent::getName() {
 static const int kModPriceTable[4] = { 0, 0, 0, 0 };
 
 int Agent::getModPricePercentage() {
-    Agent *self = this;
-    uint32_t i = self->sellModIndex;
+    uint32_t i = this->sellModIndex;
     if (i < 4)
         return kModPriceTable[i];
     return 0x28;
 }
 
 void Agent::setOfferAccepted(bool v) {
-    Agent *self = this;
-    self->offerAccepted = v;
+    this->offerAccepted = v;
 }
 
 void Agent::nextEvent() {
-    Agent *self = this;
-    self->eventCount = self->eventCount + 1;
+    this->eventCount = this->eventCount + 1;
 }
 
 // Agent::setKnown(bool) — an agent counts as "known" once its dialogue/event
 // counter is non-zero (see isKnown()). The space-lounge marks a freshly-met,
 // non-story agent as known by advancing it onto its first event.
 void Agent::setKnown(bool known) {
-    Agent *self = this;
     if (known) {
-        if (self->eventCount <= 0)
-            self->eventCount = 1;
+        if (this->eventCount <= 0)
+            this->eventCount = 1;
     } else {
-        self->eventCount = 0;
+        this->eventCount = 0;
     }
 }
 
 uint8_t Agent::hasReward() {
-    Agent *self = this;
-    return self->rewardAtNextChat;
+    return this->rewardAtNextChat;
 }
 
 void Agent::setImageParts(int *parts) {
-    Agent *self = this;
-    self->imageParts = parts;
+    this->imageParts = parts;
 }
 
 bool Agent::isKnown() {
-    Agent *self = this;
-    return self->eventCount > 0;
+    return this->eventCount > 0;
 }
 
 bool Agent::isGenericAgent() {
-    Agent *self = this;
-    return self->category == 1;
+    return this->category == 1;
 }
 
 RetStr Agent::getSystemName() {
-    Agent *self = this;
     RetStr r;
-    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x18), false);
+    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x18), false);
     return r;
 }
 
 void Agent::giveRewardAtNextChat(bool v) {
-    Agent *self = this;
-    self->rewardAtNextChat = v;
+    this->rewardAtNextChat = v;
 }
 
 // Triple (item/price/percentage) is declared in Agent.h.
 
 // target: adds r0,#0x34; stmia r0!,{r1,r2,r3}; bx lr  (returns this+0x40)
 Triple * Agent::setSellItemData(int a, int b, int c) {
-    Agent *self = this;
-    Triple *p = (Triple *)((char *)self + 0x34);
+    Triple *p = (Triple *)((char *)this + 0x34);
     p->a = a;
     p->b = b;
     p->c = c;
@@ -166,45 +143,44 @@ Triple * Agent::setSellItemData(int a, int b, int c) {
 
 // Agent::setWingmanFriendNames(Array<String*>*) — this in r0, param in r1.
 void Agent::setWingmanFriendNames(Array<AbyssEngine::String*> *param) {
-    Agent *self = this;
-    VObj *f0c = (VObj *)self->wingman1;
+    VObj *f0c = (VObj *)this->wingman1;
     if (f0c != 0)
         (*(void (**)(void *))((char *)f0c->vt[0] + 4))(f0c);
-    self->wingman1 = 0;
-    VObj *f10 = (VObj *)self->wingman2;
+    this->wingman1 = 0;
+    VObj *f10 = (VObj *)this->wingman2;
     if (f10 != 0)
         (*(void (**)(void *))((char *)f10->vt[0] + 4))(f10);
-    self->wingman2 = 0;
-    if (self->wingmanNames != 0) {
-        delete self->wingmanNames;
-        self->wingmanNames = 0;
+    this->wingman2 = 0;
+    if (this->wingmanNames != 0) {
+        delete this->wingmanNames;
+        this->wingmanNames = 0;
     }
-    self->wingmanNames = new Array<AbyssEngine::String*>();
+    this->wingmanNames = new Array<AbyssEngine::String*>();
     String *ns = (String *)::operator new(sizeof(String));
-    ns->ctor_copy((String *)(self), false);
-    self->wingmanNames->push_back(ns);
-    self->wingmanCount = 0;
+    ns->ctor_copy((String *)(this), false);
+    this->wingmanNames->push_back(ns);
+    this->wingmanCount = 0;
     if (param == 0)
         return;
     uint32_t n = param->size();
     if (n != 0) {
         String *w0 = (*param)[0];
         if (w0 != 0) {
-            self->wingmanCount = 1;
-            self->wingman1 = w0;
-            self->wingmanNames->push_back(w0);
+            this->wingmanCount = 1;
+            this->wingman1 = w0;
+            this->wingmanNames->push_back(w0);
             n = param->size();
         }
         if (n >= 2) {
             String *w1 = (*param)[1];
             if (w1 != 0) {
-                self->wingman2 = w1;
-                self->wingmanCount = self->wingmanCount + 1;
-                self->wingmanNames->push_back(w1);
+                this->wingman2 = w1;
+                this->wingmanCount = this->wingmanCount + 1;
+                this->wingmanNames->push_back(w1);
             }
         }
     }
-    self->finishWingman(param);
+    this->finishWingman(param);
 }
 
 // Tail of setWingmanFriendNames (engine 0x18762a -> 0x1ab098): once the source
@@ -216,14 +192,13 @@ void Agent::finishWingman(Array<AbyssEngine::String*> *consumedArray) {
 }
 
 RetStr Agent::getWingmanName(int idx) {
-    Agent *self = this;
     void *src;
     if (idx == 1) {
-        src = self->wingman1;
+        src = this->wingman1;
     } else if (idx == 0) {
-        src = self;
+        src = this;
     } else {
-        src = self->wingman2;
+        src = this->wingman2;
     }
     RetStr r;
     ((String *)(&r))->ctor_copy((String *)(src), false);
@@ -231,8 +206,7 @@ RetStr Agent::getWingmanName(int idx) {
 }
 
 void Agent::setSystemName(String12 src) {
-    Agent *self = this;
-    ((String *)((char *)self + 0x18))->assign((String *)&src);
+    ((String *)((char *)this + 0x18))->assign((String *)&src);
 }
 
 // Agent::~Agent() — real C++ destructor so the demangled symbol contains "~Agent".
@@ -263,10 +237,9 @@ __attribute__((minsize)) Agent::~Agent() noexcept(false)
 
 // Agent::setMissionString(String) — this in r0, source String* in r1.
 void Agent::setMissionString(void *src) {
-    Agent *self = this;
     String12 tmp;
     ((String *)(&tmp))->ctor_copy((String *)(src), false);
-    ((String *)((char *)self + 0x6c))->assign((String *)&tmp);
+    ((String *)((char *)this + 0x6c))->assign((String *)&tmp);
     ((String *)(&tmp))->dtor();
 }
 
@@ -347,47 +320,46 @@ extern "C" void *String_default_ctor(void *s);         // String::String() -> th
 // Agent::Agent(int kind, String name, int p4, int p5, int p6, bool p7,
 //              int p8, int p9, int p10, int p11)
 Agent * Agent::ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11) {
-    Agent *self = this;
-    void *s0 = String_default_ctor(self);
+    void *s0 = String_default_ctor(this);
     String_default_ctor((char *)s0 + 0x18);
-    String_default_ctor((char *)self + 0x6c);
-    String_default_ctor((char *)self + 0x78);
-    self->type = kind;
-    ((String *)(self))->assign((String *)name);
-    self->field_0x44 = p4;
-    self->field_0x48 = p5;
-    self->field_0x4c = p6;
-    self->male = p7;
-    self->eventCount = 0;
-    self->field_0x30 = -1;
-    self->field_0x5c = -1;
-    self->field_0x64 = p8;
+    String_default_ctor((char *)this + 0x6c);
+    String_default_ctor((char *)this + 0x78);
+    this->type = kind;
+    ((String *)(this))->assign((String *)name);
+    this->field_0x44 = p4;
+    this->field_0x48 = p5;
+    this->field_0x4c = p6;
+    this->male = p7;
+    this->eventCount = 0;
+    this->field_0x30 = -1;
+    this->field_0x5c = -1;
+    this->field_0x64 = p8;
     if (p8 >= 0)
-        self->field_0x5c = 4;
-    self->field_0x68 = p9;
+        this->field_0x5c = 4;
+    this->field_0x68 = p9;
     if (p9 >= 0)
-        self->field_0x5c = 3;
-    self->offerAccepted = 0;
-    self->field_0x24 = 0;
-    self->wingman1 = 0;
-    self->wingman2 = 0;
-    self->wingmanCount = 0;
-    self->field_0x34 = 0;
-    self->field_0x38 = 0;
-    self->field_0x3c = p11;
-    self->field_0x60 = 0;
-    self->imageParts = 0;
-    self->mission = 0;
-    self->wingmanNames = 0;
-    self->field_0x28 = -1;
-    self->field_0x2c = -1;
-    self->category = kind >> 31;
+        this->field_0x5c = 3;
+    this->offerAccepted = 0;
+    this->field_0x24 = 0;
+    this->wingman1 = 0;
+    this->wingman2 = 0;
+    this->wingmanCount = 0;
+    this->field_0x34 = 0;
+    this->field_0x38 = 0;
+    this->field_0x3c = p11;
+    this->field_0x60 = 0;
+    this->imageParts = 0;
+    this->mission = 0;
+    this->wingmanNames = 0;
+    this->field_0x28 = -1;
+    this->field_0x2c = -1;
+    this->category = kind >> 31;
     if (p10 >= 0)
-        self->field_0x5c = 8;
+        this->field_0x5c = 8;
     if (kind == 0x19)
-        self->field_0x5c = 9;
+        this->field_0x5c = 9;
     else if (kind == 0x1a)
-        self->field_0x5c = 10;
-    self->sellModIndex = p10;
-    return self;
+        this->field_0x5c = 10;
+    this->sellModIndex = p10;
+    return this;
 }

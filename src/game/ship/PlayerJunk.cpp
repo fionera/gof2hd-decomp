@@ -53,39 +53,38 @@ __attribute__((visibility("hidden"))) extern void **g_PJ_random;      // -> AERa
 // PlayerJunk::update(int) - when destroyed, play the death sound, maybe drop a crate, detach
 // from the player target, and emit the wreck particle burst.
 void PlayerJunk::update(int elapsed) {
-    PlayerJunk *self = this;
     Vector zero;
 
-    self->lastUpdateTick = elapsed;
-    if (((Player *)(self->player))->getHitpoints() < 1) {
-        int state = self->state;
+    this->lastUpdateTick = elapsed;
+    if (((Player *)(this->player))->getHitpoints() < 1) {
+        int state = this->state;
         if ((uint32_t)(state - 3) >= 2) {
-            ((Level *)(self->level))->junkDied();
-            self->state = 3;
+            ((Level *)(this->level))->junkDied();
+            this->state = 3;
             ((FModSound *)(*g_PJ_sound))->play(0x16, 0, 0, 0.0f);
             void **randHolder = g_PJ_random;
             if (AbyssEngine::AERandom::nextInt(*randHolder, 100) < 10) {
-                self->droppedCrate = 1;
+                this->droppedCrate = 1;
                 Array<int> *arr = new Array<int>();
-                self->crateContents = arr;
+                this->crateContents = arr;
                 ArrayAdd(99, *arr);
-                ArrayAdd(AbyssEngine::AERandom::nextInt(*randHolder, 10) + 1, *self->crateContents);
-                ((KIPlayer *)(self))->createCrate(3);
-                self->droppedCrate = 1;
+                ArrayAdd(AbyssEngine::AERandom::nextInt(*randHolder, 10) + 1, *this->crateContents);
+                ((KIPlayer *)(this))->createCrate(3);
+                this->droppedCrate = 1;
             } else {
-                ((Player *)(self->player))->setActive(false);
+                ((Player *)(this->player))->setActive(false);
                 // Level's player object holds a target reference at [0x14]->[0x1c];
                 // clear it if it points at this junk (opaque Level-internal layout).
-                void *player = (void *)((Level *)(self->level))->getPlayer();
+                void *player = (void *)((Level *)(this->level))->getPlayer();
                 void **targetSlot = (void **)((char *)*(void **)((char *)player + 0x14) + 0x1c);
-                if (*targetSlot == self) {
-                    player = (void *)((Level *)(self->level))->getPlayer();
+                if (*targetSlot == this) {
+                    player = (void *)((Level *)(this->level))->getPlayer();
                     targetSlot = (void **)((char *)*(void **)((char *)player + 0x14) + 0x1c);
                     *targetSlot = 0;
                 }
             }
-            void *levelObject = self->level;
-            Vector position = self->emitPosition;
+            void *levelObject = this->level;
+            Vector position = this->emitPosition;
             zero.x = 0.0f;
             zero.y = 0.0f;
             zero.z = 0.0f;
@@ -97,8 +96,8 @@ void PlayerJunk::update(int elapsed) {
         }
     }
 
-    if (self->state == 3)
-        self->state = 4;
+    if (this->state == 3)
+        this->state = 4;
 }
 
 // blx 0x72238

@@ -4,8 +4,7 @@
 // PendingProduct::~PendingProduct() -> destroys the embedded String subobject.
 // (Tail-call to the String destructor; PendingProduct adds no other owned members.)
 void PendingProduct::dtor() {
-    PendingProduct *self = this;
-    self->stationName.~String();
+    this->stationName.~String();
 }
 
 // PendingProduct::PendingProduct(int blueprintIndex, String stationName, int stationIndex, int quantity)

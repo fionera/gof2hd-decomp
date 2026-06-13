@@ -19,19 +19,18 @@ void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 
 // GameText::release() -- destroys each owned text-table entry via its vtable[1], then nulls it.
 void GameText::release() {
-    GameText *self = this;
-    void **data = (void **)self->textTable;
+    void **data = (void **)this->textTable;
     if (data == 0) return;
     int i = 0;
-    for (int byteoff = 0; i < self->textCount; byteoff += 4) {
-        void *obj = *(void **)((char *)self->textTable + byteoff);
+    for (int byteoff = 0; i < this->textCount; byteoff += 4) {
+        void *obj = *(void **)((char *)this->textTable + byteoff);
         void **slot;
         if (obj == 0) {
-            slot = (void **)((char *)self->textTable + i * 4);
+            slot = (void **)((char *)this->textTable + i * 4);
         } else {
             void (**vt)(void *) = *(void (***)(void *))obj;
             vt[1](obj);
-            slot = (void **)((char *)self->textTable + byteoff);
+            slot = (void **)((char *)this->textTable + byteoff);
         }
         *slot = 0;
         ++i;
@@ -59,14 +58,13 @@ RetStr GameText_getRegionCode()
 
 // GameText::setSubstituteArray(int*, unsigned) -- replaces the substitute Array<int> at this+0.
 void GameText::setSubstituteArray(int *param_1, unsigned param_2) {
-    GameText *self = this;
     if (param_2 != 0) {
         if ((param_2 & 1) != 0) return;
-        self->substitutes.clear();
+        this->substitutes.clear();
     }
     for (; param_2 != 0; --param_2) {
         int v = *param_1++;
-        self->substitutes.push_back(v);
+        this->substitutes.push_back(v);
     }
 }
 
@@ -87,15 +85,14 @@ __attribute__((visibility("hidden"))) extern const char gLangPathDefault[];
 __attribute__((visibility("hidden"))) extern const char gLangPathEnglish[];
 
 void GameText::setLanguage_si(int stringCount, int langId) {
-    GameText *self = this;
     if ((unsigned int)*g_langCode == ((unsigned int)langId & 0xffff))
         return;
 
-    ((GameText *)(self))->release();
-    self->textCount = stringCount;
+    ((GameText *)(this))->release();
+    this->textCount = stringCount;
 
     String **table = (String **)operator new[]((uint32_t)((unsigned long long)stringCount * 4));
-    self->textTable = table;
+    this->textTable = table;
     for (int i = 0; i < stringCount; ++i)
         table[i] = 0;
 
@@ -140,7 +137,7 @@ void GameText::setLanguage_si(int stringCount, int langId) {
 
     unsigned int file = 0;
     AEFile::OpenRead(path, &file);
-    ((GameText *)(self))->ReadLangFile(0, stringCount);
+    ((GameText *)(this))->ReadLangFile(0, stringCount);
 }
 
 // Tail veneer to the base/Array<int> destructor; takes and returns this.
@@ -325,8 +322,7 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
 
 // GameText::setLanguage(int) -> forwards to setLanguage(0, param_1).
 void GameText::setLanguage_i(int param_1) {
-    GameText *self = this;
-    return ((GameText *)(self))->setLanguage_si(0, param_1);
+    return ((GameText *)(this))->setLanguage_si(0, param_1);
 }
 
 // GameText::getText(int key)
@@ -393,7 +389,6 @@ extern "C" void  AEString_ctor_cstr(void *s, const char *text, bool copy);     /
 __attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
 
 void GameText::ReadLangFile(unsigned int file, int count) {
-    GameText *self = this;
     if (file == 0)
         return;
 
@@ -401,7 +396,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
     for (int i = 0; i < count; ++i) {
         unsigned short len;
         if (AEFile::Read(2, &len, file) == 0) {
-            ((GameText *)(self))->release();
+            ((GameText *)(this))->release();
             break;
         }
         // Length field is stored big-endian; byte-swap to host order.
@@ -410,7 +405,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         char *utf8 = (char *)operator new[](byteLen + 1);
         if (AEFile::Read(byteLen, utf8, file) == 0) {
             operator delete[](utf8);
-            ((GameText *)(self))->release();
+            ((GameText *)(this))->release();
             break;
         }
         utf8[byteLen] = '\0';
@@ -418,7 +413,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         unsigned short *wide = String::getWCharFromUtf8(utf8, (int)byteLen);
 
         String *s = (String *)operator new(0xc);
-        String **table = (String **)self->textTable;
+        String **table = (String **)this->textTable;
         if (lang == 9) {
             String tmp;
             AEString_ctor_wide(&tmp, wide, false);

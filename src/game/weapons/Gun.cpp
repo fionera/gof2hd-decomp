@@ -59,55 +59,45 @@ __attribute__((minsize)) Gun::~Gun() noexcept(false)
 }
 
 void Gun::setFriendGun(bool v) {
-    Gun *self = this;
-    self->friendGun = v;
+    this->friendGun = v;
 }
 
 int Gun::getMagnitude() {
-    Gun *self = this;
-    return self->magnitude;
+    return this->magnitude;
 }
 
 void * Gun::getEnemies() {
-    Gun *self = this;
-    return self->enemies;
+    return this->enemies;
 }
 
 void Gun::setMagnitude(int v) {
-    Gun *self = this;
-    self->magnitude = v;
+    this->magnitude = v;
 }
 
 void Gun::setErrorMagnitudePercentage(int v) {
-    Gun *self = this;
-    self->errorMagnitudePercentage = (float)v;
+    this->errorMagnitudePercentage = (float)v;
 }
 
 struct Sparks;
 
 void Gun::setImpact(Sparks *impact) {
-    Gun *self = this;
-    self->impact = impact;
+    this->impact = impact;
 }
 
 void Gun::setPlayerGun(bool v) {
-    Gun *self = this;
-    self->playerGun = v;
+    this->playerGun = v;
 }
 
 uint8_t Gun::isPlayerGun() {
-    Gun *self = this;
-    return self->playerGun;
+    return this->playerGun;
 }
 
 void Gun::setLevelCollision(bool v) {
-    Gun *self = this;
-    self->levelCollision = v;
+    this->levelCollision = v;
 }
 
 void Gun::removeAllEnemies() {
-    Gun *self = this;
-    self->enemies = 0;
+    this->enemies = 0;
 }
 
 struct AEGeometry;
@@ -127,33 +117,32 @@ extern unsigned *const gSI_canvas __attribute__((visibility("hidden")));
 extern int  *const gSI_rng    __attribute__((visibility("hidden")));
 
 void Gun::setIndex(int index) {
-    Gun *self = this;
-    self->itemIndex = index;
+    this->itemIndex = index;
     int *items = gSI_items;
-    self->field_0x108 = (index == 0xe4) || ((unsigned)(index - 9) < 3);
-    self->field_0x64 = ((Item *)(*(int *)(*(int *)(*items + 4) + index * 4)))->getAttribute(0xa);
+    this->field_0x108 = (index == 0xe4) || ((unsigned)(index - 9) < 3);
+    this->field_0x64 = ((Item *)(*(int *)(*(int *)(*items + 4) + index * 4)))->getAttribute(0xa);
     int g = gSI_table[index];
     if (g >= 0) {
-        unsigned count = self->count;
+        unsigned count = this->count;
         unsigned long long bytes = (unsigned long long)count * 4;
         unsigned alloc = (unsigned)bytes;
         if ((unsigned)(bytes >> 32) != 0)
             alloc = 0xffffffff;
-        self->geometries = ::operator new[](alloc);
-        self->randomFlags = ::operator new[](count);
+        this->geometries = ::operator new[](alloc);
+        this->randomFlags = ::operator new[](count);
         unsigned *canvasHolder = gSI_canvas;
         int *rngHolder = gSI_rng;
         for (unsigned i = 0; i < count; i = i + 1) {
             AEGeometry *geom = (AEGeometry *)::operator new(0xc0);
             new ((void *)geom) AEGeometry((uint16_t)g, (PaintCanvas *)*canvasHolder, false);
-            ((int *)self->geometries)[i] = geom->transform;
+            ((int *)this->geometries)[i] = geom->transform;
             int r = AbyssEngine::AERandom::nextInt(*rngHolder);
-            ((uint8_t *)self->randomFlags)[i] = (r == 0);
+            ((uint8_t *)this->randomFlags)[i] = (r == 0);
             unsigned tf = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder);
             AbyssEngine::Transform::SetAnimationState(tf, 0, 0);
             geom->~AEGeometry();
             ::operator delete(geom);
-            count = self->count;
+            count = this->count;
         }
     }
 }
@@ -171,16 +160,15 @@ extern int *const gSO_holder __attribute__((visibility("hidden")));
 extern short *const gSO_table __attribute__((visibility("hidden")));
 
 void Gun::setOffset_ii(int a, int b) {
-    Gun *self = this;
     short *row = (short *)((char *)gSO_table + b * 0x3c + a * 6);
     Vector local;
     local.x = (float)(int)row[0];
     local.y = (float)(int)row[1];
     local.z = (float)(int)row[2];
-    local.x = self->offsetX + local.x;
-    local.y = self->offsetY + local.y;
-    local.z = self->offsetZ + local.z;
-    *(Vector *)((char *)self + 0x7c) = *(const Vector *)(&local);
+    local.x = this->offsetX + local.x;
+    local.y = this->offsetY + local.y;
+    local.z = this->offsetZ + local.z;
+    *(Vector *)((char *)this + 0x7c) = *(const Vector *)(&local);
 }
 
 // NEAR / RESISTANT: Gun::ignite() is a ~996-byte function with a stack canary,
@@ -198,41 +186,40 @@ float  VectorLength(const Vector *v);
 extern int *const gIG_status __attribute__((visibility("hidden")));   // holder
 
 void Gun::ignite() {
-    Gun *self = this;
-    if (self->weaponType == 6 || self->weaponType == 7) {
-        if (self->weaponType == 7)
+    if (this->weaponType == 6 || this->weaponType == 7) {
+        if (this->weaponType == 7)
             *(int *)(*gIG_status + 0xc8) += 1;
-        *(uint8_t *)(self->field_0x38 + 0x69) = 0;
+        *(uint8_t *)(this->field_0x38 + 0x69) = 0;
     }
 
-    unsigned *enemies = (unsigned *)self->enemies;
-    self->field_0x88 = 1;
+    unsigned *enemies = (unsigned *)this->enemies;
+    this->field_0x88 = 1;
     if (enemies == 0)
         return;
 
-    Vector *posOut = (Vector *)((char *)self + 0xd8);
-    Vector *base   = (Vector *)((char *)self + 0xc0);
-    self->field_0x0 = 0;
+    Vector *posOut = (Vector *)((char *)this + 0xd8);
+    Vector *base   = (Vector *)((char *)this + 0xc0);
+    this->field_0x0 = 0;
 
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
         Player *target = *(Player **)(enemies[1] + ei * 4);
-        self->target = target;
-        if ((self->weaponType == 6 && ((Player *)(target))->isAsteroid() != 0))
+        this->target = target;
+        if ((this->weaponType == 6 && ((Player *)(target))->isAsteroid() != 0))
             continue;
         if (((Player *)(target))->isActive() == 0)
             continue;
 
         int off = 0;
-        for (unsigned i = 0; i < self->count; i = i + 1) {
-            Vector v = *(Vector *)(self->positions + off);
+        for (unsigned i = 0; i < this->count; i = i + 1) {
+            Vector v = *(Vector *)(this->positions + off);
             *(Vector *)(base) = *(const Vector *)(&v);
             *(Vector *)(posOut) = *(const Vector *)(&v);
             *(Vector *)(posOut) -= *(const Vector *)(base);
             int dist = (int)AbyssEngine::AEMath::VectorLength(posOut);
-            if (dist < self->magnitude) {
-                ((uint8_t *)self->hitFlags)[i] = 1;
-                *(Vector *)(self->field_0x30 + off) = *(const Vector *)(base);
-                ((Item *)(*(int *)(*(int *)(*gIG_status + 4) + self->itemIndex * 4)))->getAttribute(0);
+            if (dist < this->magnitude) {
+                ((uint8_t *)this->hitFlags)[i] = 1;
+                *(Vector *)(this->field_0x30 + off) = *(const Vector *)(base);
+                ((Item *)(*(int *)(*(int *)(*gIG_status + 4) + this->itemIndex * 4)))->getAttribute(0);
             }
             off = off + 0xc;
         }
@@ -260,17 +247,16 @@ void DrawTransform(unsigned canvas, AEMath::Matrix *m);
 extern unsigned *const gGunRenderCanvas __attribute__((visibility("hidden")));
 
 void Gun::render() {
-    Gun *self = this;
     Matrix local;
     char camBuf[64];
 
-    Sparks *impact = self->impact;
+    Sparks *impact = this->impact;
     if (impact != 0)
         ((Sparks *)(impact))->render();
 
-    if (self->geometries != 0) {
+    if (this->geometries != 0) {
         unsigned canvas = *gGunRenderCanvas;
-        for (unsigned i = 0; i < self->count; i = i + 1) {
+        for (unsigned i = 0; i < this->count; i = i + 1) {
             int tf = AbyssEngine::PaintCanvas::TransformGetTransform(canvas);
             if (*(char *)(tf + 0xed) != 0) {
                 unsigned c = canvas;
@@ -279,9 +265,9 @@ void Gun::render() {
                 __aeabi_memcpy(camBuf, (const void *)camLocal, 0x3c);
                 unsigned tl = AbyssEngine::PaintCanvas::TransformGetLocal(canvas);
                 AbyssEngine::AEMath::MatrixGetPosition(&local, (const Matrix *)tl);
-                *(Vector *)((char *)self + 0xd8) = *(const Vector *)((Vector *)&local);
-                AbyssEngine::AEMath::MatrixSetTranslation(&local, self->field_0xe0, 0, 0);
-                Matrix *m = ((Matrix **)self->geometries)[i];
+                *(Vector *)((char *)this + 0xd8) = *(const Vector *)((Vector *)&local);
+                AbyssEngine::AEMath::MatrixSetTranslation(&local, this->field_0xe0, 0, 0);
+                Matrix *m = ((Matrix **)this->geometries)[i];
                 AbyssEngine::PaintCanvas::TransformSetLocal(canvas, m);
                 AbyssEngine::PaintCanvas::DrawTransform(canvas, m);
             }
@@ -302,94 +288,93 @@ struct VecPtrArray;  // Array<Vector*>
 // Vector::operator*=(Vector*, float)                        0x72628
 
 Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
-    Gun *self = this;
-    char *s = (char *)self;
+    char *s = (char *)this;
     Gun_VecArray_ctor(s + 0x8);
     Gun_VecArray_ctor(s + 0x14);
     Gun_VecArray_ctor(s + 0x20);
     Gun_VecArray_ctor(s + 0x2c);
-    self->offsetX = 0;
-    self->offsetY = 0;
-    self->offsetZ = 0;
-    self->field_0x90 = 0;
-    self->field_0x94 = 0;
-    self->field_0x98 = 0;
-    self->field_0x38 = 0;
-    self->lifetimes = 0;
-    self->enemies = 0;
-    self->impact = 0;
-    self->geometries = 0;
-    self->randomFlags = 0;
-    self->field_0xf4 = kind;
-    self->field_0x60 = p2;
-    self->field_0x50 = p7;
-    self->field_0xe0 = 0;
-    self->velocityX = 0;
-    self->velocityY = 0;
-    self->velocityZ = 0;
-    self->field_0xd0 = 0;
-    self->field_0xd4 = 0;
-    self->field_0xd8 = 0;
-    self->field_0xdc = 0;
-    self->field_0xc0 = 0;
-    self->field_0xc4 = 0;
-    self->field_0xc8 = 0;
-    self->field_0xcc = 0;
-    self->field_0x74 = 0;
-    self->field_0x78 = 0;
-    self->playerGun = 0;
-    self->field_0xa8 = 0;
+    this->offsetX = 0;
+    this->offsetY = 0;
+    this->offsetZ = 0;
+    this->field_0x90 = 0;
+    this->field_0x94 = 0;
+    this->field_0x98 = 0;
+    this->field_0x38 = 0;
+    this->lifetimes = 0;
+    this->enemies = 0;
+    this->impact = 0;
+    this->geometries = 0;
+    this->randomFlags = 0;
+    this->field_0xf4 = kind;
+    this->field_0x60 = p2;
+    this->field_0x50 = p7;
+    this->field_0xe0 = 0;
+    this->velocityX = 0;
+    this->velocityY = 0;
+    this->velocityZ = 0;
+    this->field_0xd0 = 0;
+    this->field_0xd4 = 0;
+    this->field_0xd8 = 0;
+    this->field_0xdc = 0;
+    this->field_0xc0 = 0;
+    this->field_0xc4 = 0;
+    this->field_0xc8 = 0;
+    this->field_0xcc = 0;
+    this->field_0x74 = 0;
+    this->field_0x78 = 0;
+    this->playerGun = 0;
+    this->field_0xa8 = 0;
     // Store the firing direction, then scale the velocity by the muzzle speed (p7)
     // before caching it. The decompiler had fused the assignment and the live p7
     // register into a bogus float-returning Vector_assign.
     *(Vector *)(s + 0x7c) = dir;
     vel *= p7;
     *(Vector *)(s + 0xe4) = vel;
-    self->initialLifetime = p5;
-    self->fireDelay = p6;
-    self->timer = p6;
-    self->field_0xa0 = 0;
-    self->field_0x88 = 0;
-    self->delayActive = 0;
-    self->field_0x74 = p4;
-    self->field_0x78 = p4 << 1;
+    this->initialLifetime = p5;
+    this->fireDelay = p6;
+    this->timer = p6;
+    this->field_0xa0 = 0;
+    this->field_0x88 = 0;
+    this->delayActive = 0;
+    this->field_0x74 = p4;
+    this->field_0x78 = p4 << 1;
     unsigned long long bytes = (unsigned long long)count * 4;
     unsigned alloc = (unsigned)bytes;
     if ((unsigned)(bytes >> 32) != 0)
         alloc = 0xffffffff;
-    self->lifetimes = ::operator new[](alloc);
-    self->hitFlags = (uint8_t *)::operator new[](count | ((int)count >> 31));
+    this->lifetimes = ::operator new[](alloc);
+    this->hitFlags = (uint8_t *)::operator new[](count | ((int)count >> 31));
     void *arr = ::operator new(0xc);
     Gun_VecPtrArray_ctor(arr);
-    self->field_0xac = (char *)arr;
+    this->field_0xac = (char *)arr;
     Gun_VecArray_setLength(count, s + 0x8);
     Gun_VecArray_setLength(count, s + 0x14);
     Gun_VecArray_setLength(count, s + 0x20);
     Gun_VecArray_setLength(count, s + 0x2c);
-    Gun_VecPtrArray_setLength(count, self->field_0xac);
+    Gun_VecPtrArray_setLength(count, this->field_0xac);
     int off = 0;
     for (int i = 0; i < (int)count; i = i + 1) {
-        *(int *)(self->positions + off) = 0;
+        *(int *)(this->positions + off) = 0;
         off = off + 0xc;
-        ((int *)self->lifetimes)[i] = 0;
-        ((uint8_t *)self->hitFlags)[i] = 0;
-        ((int *)*(int *)(self->field_0xac + 4))[i] = 0;
+        ((int *)this->lifetimes)[i] = 0;
+        ((uint8_t *)this->hitFlags)[i] = 0;
+        ((int *)*(int *)(this->field_0xac + 4))[i] = 0;
     }
-    self->impact = 0;
-    self->field_0x54 = 0;
-    self->field_0x4c = 0;
-    self->enemies = 0;
-    self->itemIndex = -1;
-    self->weaponType = -1;
-    self->field_0x68 = 0;
-    self->levelCollision = 1;
-    self->errorMagnitudePercentage = 0;
-    self->field_0x89 = 0;
-    self->field_0x4 = 0;
-    self->field_0xb0 = 0;
-    self->field_0x64 = 0;
-    self->field_0xa4 = 0;
-    return self;
+    this->impact = 0;
+    this->field_0x54 = 0;
+    this->field_0x4c = 0;
+    this->enemies = 0;
+    this->itemIndex = -1;
+    this->weaponType = -1;
+    this->field_0x68 = 0;
+    this->levelCollision = 1;
+    this->errorMagnitudePercentage = 0;
+    this->field_0x89 = 0;
+    this->field_0x4 = 0;
+    this->field_0xb0 = 0;
+    this->field_0x64 = 0;
+    this->field_0xa4 = 0;
+    return this;
 }
 
 struct Player;
@@ -400,8 +385,7 @@ struct Player;
 
 // Gun::shoot(Matrix, int, bool) — forwards to shootAt with a null Player.
 void Gun::shoot(Matrix m, int n, bool b) {
-    Gun *self = this;
-    ((Gun *)(self))->shootAt(m, n, 0, b);
+    ((Gun *)(this))->shootAt(m, n, 0, b);
 }
 
 struct Player;
@@ -413,8 +397,7 @@ struct Player;
 // instruction data". No 2-instruction C setter can match a 3-instruction prologue window;
 // the natural setter (store enemy at +0xb4, matching getEnemies/removeAllEnemies) is kept.
 void Gun::setEnemy(Player *enemy) {
-    Gun *self = this;
-    self->enemies = enemy;
+    this->enemies = enemy;
 }
 
 // Vector provided by gof2/math.h (via common.h).
@@ -425,13 +408,12 @@ void Gun::setEnemy(Player *enemy) {
 static const float kZOffset = 0.1f;
 
 void Gun::setOffset(const Vector *v) {
-    Gun *self = this;
     char buf[12];
     Vector *local = (Vector *)buf;
     local->x = v->x;
     local->y = v->y;
     local->z = v->z + kZOffset;
-    *(Vector *)((char *)self + 0x7c) = *(const Vector *)(local);
+    *(Vector *)((char *)this + 0x7c) = *(const Vector *)(local);
 }
 
 // NEAR: logic transcribed from the decompile. The target carries a stack canary
@@ -532,10 +514,9 @@ void Gun::update(int dt) {
 // AbyssEngine::AEMath::Vector::operator+=(Vector*, Vector const&)
 
 void Gun::translate(const Vector *v) {
-    Gun *self = this;
     int off = 0;
-    for (unsigned i = 0; i < self->count; i = i + 1) {
-        *(Vector *)(self->positions + off) += *(const Vector *)(v);
+    for (unsigned i = 0; i < this->count; i = i + 1) {
+        *(Vector *)(this->positions + off) += *(const Vector *)(v);
         off = off + 0xc;
     }
 }
@@ -551,13 +532,12 @@ struct Player;
 // Vector/Matrix provided by gof2/math.h (via common.h).
 
 void Gun::shootAt(Matrix m, int n, Player *p, bool b) {
-    Gun *self = this;
     // Records the firing transform / count and the (optional) target; the heavy body
     // (per-projectile spawn + vector setup) is data-driven from the Matrix argument.
     (void)m;
-    self->field_0x60 = n;
-    self->target = p;
-    self->field_0x88 = b;
+    this->field_0x60 = n;
+    this->target = p;
+    this->field_0x88 = b;
 }
 
 // NEAR / RESISTANT: Gun::calcCharacterCollision() is a ~1934-byte function with a stack
@@ -573,14 +553,13 @@ struct Player;
 extern int *const gCC_status __attribute__((visibility("hidden")));   // holder
 
 void Gun::calcCharacterCollision() {
-    Gun *self = this;
-    unsigned *enemies = (unsigned *)self->enemies;
+    unsigned *enemies = (unsigned *)this->enemies;
     if (enemies == 0)
         return;
 
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
         Player *target = *(Player **)(enemies[1] + ei * 4);
-        self->target = target;
+        this->target = target;
         // per-enemy / per-projectile collision sweep (vector math elided in this NEAR model)
     }
 }

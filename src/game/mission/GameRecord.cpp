@@ -107,8 +107,7 @@ extern uint32_t DAT_00166470;
 }
 
 void GameRecord::load() {
-    GameRecord *self = this;
-    uint32_t *in_r0 = (uint32_t *)self;
+    uint32_t *in_r0 = (uint32_t *)this;
     char gr_tmpstr[12];  // hidden String return slot (Station::getName)
     bool bVar1;
     int iVar2;

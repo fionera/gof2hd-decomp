@@ -17,20 +17,18 @@ extern void *const gItemDB __attribute__((visibility("hidden")));
 //   item 0xd2 (raw materials slot) -> ingredient value plus a fixed sentinel bonus;
 //   otherwise -> batch * item max price, scaled by 1.25.
 int BluePrint::getAutoCompletionPrice() {
-    BluePrint *self = this;
-    int idx = self->itemIndex;
+    int idx = this->itemIndex;
     if (idx == 0xd2)
-        return ((BluePrint *)(self))->getIngredientsValue() + 0x1e8480;
+        return ((BluePrint *)(this))->getIngredientsValue() + 0x1e8480;
     Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
     int maxPrice = ((Item *)(data[idx]))->getMaxPrice();
-    return (int)((float)(self->batchMultiplier * maxPrice) * 1.25f);
+    return (int)((float)(this->batchMultiplier * maxPrice) * 1.25f);
 }
 
 // BluePrint::getRemainingAmount(int) -> remaining counter for the ingredient with the given index.
 int BluePrint::getRemainingAmount(int item) {
-    BluePrint *self = this;
-    Array<int> *il = BluePrint_getIngredientList(self);
-    Array<int> *counters = self->ingredientCounters;
+    Array<int> *il = BluePrint_getIngredientList(this);
+    Array<int> *counters = this->ingredientCounters;
     for (uint32_t i = 0; i < counters->size(); i++) {
         if (il->data()[i] == item)
             return counters->data()[i];
@@ -39,8 +37,7 @@ int BluePrint::getRemainingAmount(int item) {
 }
 
 bool BluePrint::isEmpty() {
-    BluePrint *self = this;
-    return self->spentValue == 0;
+    return this->spentValue == 0;
 }
 
 // BluePrint::getStationName() -> String by value (sret in r0, this in r1).
@@ -64,24 +61,21 @@ void *_ZN9BluePrintD2Ev(BluePrint *self)
 
 // BluePrint::complete() -> zero every quantity counter in the ingredient array at +0x00.
 void BluePrint::complete() {
-    BluePrint *self = this;
-    Array<int> *a = self->ingredientCounters;
+    Array<int> *a = this->ingredientCounters;
     for (uint32_t i = 0; i < a->size(); i++)
         a->data()[i] = 0;
 }
 
 // BluePrint::getCurrentAmount(int) -> already-produced amount = total - remaining.
 int BluePrint::getCurrentAmount(int item) {
-    BluePrint *self = this;
-    int total = ((BluePrint *)(self))->getTotalAmount(item);
-    int remaining = ((BluePrint *)(self))->getRemainingAmount(item);
+    int total = ((BluePrint *)(this))->getTotalAmount(item);
+    int remaining = ((BluePrint *)(this))->getRemainingAmount(item);
     return total - remaining;
 }
 
 // BluePrint::isCompleted() -> true once every ingredient counter has dropped below 1.
 bool BluePrint::isCompleted() {
-    BluePrint *self = this;
-    Array<int> *a = self->ingredientCounters;
+    Array<int> *a = this->ingredientCounters;
     for (uint32_t i = 0; i < a->size(); i++)
         if (a->data()[i] >= 1)
             return false;
@@ -99,8 +93,7 @@ int BluePrint::getQuantity()     { return remainingBatch; }
 bool BluePrint::isUnlocked()     { return locked != 0; }
 
 void BluePrint::unlock() {
-    BluePrint *self = this;
-    self->locked = 1;
+    this->locked = 1;
 }
 
 // Hidden PC-relative pointer-to-the-global-Status pointer.
@@ -108,28 +101,25 @@ extern void *const gStatusPtr __attribute__((visibility("hidden")));
 
 // BluePrint::reset() -> bump production count, refill the ingredient counters, clear state.
 void BluePrint::reset() {
-    BluePrint *self = this;
-    self->productionCount += 1;
+    this->productionCount += 1;
     ((Status *)(*(void **)gStatusPtr))->incGoodsProduced(1);
-    Array<int> *ql = BluePrint_getQuantityList(self);
-    Array<int> *counters = self->ingredientCounters;
+    Array<int> *ql = BluePrint_getQuantityList(this);
+    Array<int> *counters = this->ingredientCounters;
     for (uint32_t i = 0; i < counters->size(); i++)
         counters->data()[i] = ql->data()[i];
-    self->stationIndex = -1;
-    self->remainingBatch = self->batchMultiplier;
-    self->spentValue = 0;
+    this->stationIndex = -1;
+    this->remainingBatch = this->batchMultiplier;
+    this->spentValue = 0;
 }
 
 void BluePrint::lock() {
-    BluePrint *self = this;
-    self->locked = 1;
+    this->locked = 1;
 }
 
 // BluePrint::getTotalAmount(int) -> required total quantity for the given ingredient index.
 int BluePrint::getTotalAmount(int item) {
-    BluePrint *self = this;
-    Array<int> *il = BluePrint_getIngredientList(self);
-    Array<int> *ql = BluePrint_getQuantityList(self);
+    Array<int> *il = BluePrint_getIngredientList(this);
+    Array<int> *ql = BluePrint_getQuantityList(this);
     for (uint32_t i = 0; i < ql->size(); i++) {
         if (il->data()[i] == item)
             return ql->data()[i];
@@ -153,14 +143,13 @@ extern void *const gItemDB __attribute__((visibility("hidden")));
 
 // BluePrint::getIngredientsValue() -> sum over ingredients of (remaining * single price).
 int BluePrint::getIngredientsValue() {
-    BluePrint *self = this;
-    Array<int> *il = BluePrint_getIngredientList(self);
+    Array<int> *il = BluePrint_getIngredientList(this);
     int total = 0;
     if (il != 0) {
         for (uint32_t i = 0; i < il->size(); i++) {
             Item **data = *(Item ***)((char *)*(void **)gItemDB + 0x4);
             int price = ((Item *)(data[il->data()[i]]))->getSinglePrice();
-            total += self->ingredientCounters->data()[i] * price;
+            total += this->ingredientCounters->data()[i] * price;
         }
     }
     return total;
@@ -262,9 +251,8 @@ void BluePrint::addItem(Item *item, int amount, int station) {
 // For each ingredient i: produced fraction = (target - remaining) / target,
 // then averaged across all ingredients (divide each term by the ingredient count).
 float BluePrint::getCompletionRate() {
-    BluePrint *self = this;
-    Array<int> *quantity = BluePrint_getQuantityList(self);
-    Array<int> *counters = self->ingredientCounters;
+    Array<int> *quantity = BluePrint_getQuantityList(this);
+    Array<int> *counters = this->ingredientCounters;
     float rate = 0.0f;
     for (uint32_t i = 0; i < quantity->size(); i++) {
         int target = quantity->data()[i];

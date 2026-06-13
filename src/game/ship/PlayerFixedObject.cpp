@@ -44,37 +44,31 @@ extern "C" void Generator_ctor(void *g);
 extern "C" void *Generator_dtor(void *g);
 
 int PlayerFixedObject::getDockingType() {
-    PlayerFixedObject *self = this;
-    return self->dockingType;
+    return this->dockingType;
 }
 
 void PlayerFixedObject::setBV_arr(Array<BoundingVolume *> *bv) {
-    PlayerFixedObject *self = this;
-    self->boundingVolumes = bv;
+    this->boundingVolumes = bv;
 }
 
 
 void PlayerFixedObject::hideShip() {
-    PlayerFixedObject *self = this;
-    self->shipHidden = 1;
+    this->shipHidden = 1;
 }
 
 int PlayerFixedObject::getTransportID() {
-    PlayerFixedObject *self = this;
-    return self->transportID;
+    return this->transportID;
 }
 
 void PlayerFixedObject::setDockingType(int v) {
-    PlayerFixedObject *self = this;
-    self->dockingType = v;
+    this->dockingType = v;
 }
 
 typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 
 void PlayerFixedObject::setPosition_vec(const Vector &v) {
-    PlayerFixedObject *self = this;
-    SetPosFn fn = *(SetPosFn *)(*(char **)self + 0x48);
-    return fn(self, v.x, v.y, v.z);
+    SetPosFn fn = *(SetPosFn *)(*(char **)this + 0x48);
+    return fn(this, v.x, v.y, v.z);
 }
 
 typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
@@ -82,12 +76,11 @@ typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 // Reads ship pos (signed ints at +0x178/0x17c/0x180 -> float), adds the delta Vector,
 // then forwards to vtable slot 0x48.
 void PlayerFixedObject::translate(const Vector &d) {
-    PlayerFixedObject *self = this;
-    float x = (float)self->intPosX;
-    float y = (float)self->intPosY;
-    float z = (float)self->intPosZ;
-    SetPosFn fn = *(SetPosFn *)(*(char **)self + 0x48);
-    return fn(self, d.x + x, d.y + y, d.z + z);
+    float x = (float)this->intPosX;
+    float y = (float)this->intPosY;
+    float z = (float)this->intPosZ;
+    SetPosFn fn = *(SetPosFn *)(*(char **)this + 0x48);
+    return fn(this, d.x + x, d.y + y, d.z + z);
 }
 
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void.
@@ -96,17 +89,15 @@ void PlayerFixedObject::translate(const Vector &d) {
 // `struct RetStr` is provided by gof2/Station.h via the class header.
 
 RetStr PlayerFixedObject::getName() {
-    PlayerFixedObject *self = this;
     RetStr r;
-    ((String *)(&r))->ctor_copy((String *)((char *)self + 0x1ac), false);
+    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x1ac), false);
     return r;
 }
 
 // Tail-call into AbyssEngine::String::operator= (or move-assign): dst = this+0x1ac, src = r1 (the String arg).
 
 void * PlayerFixedObject::setName(String *name) {
-    PlayerFixedObject *self = this;
-    return ((String *)((char *)self + 0x1ac))->assign(name);
+    return ((String *)((char *)this + 0x1ac))->assign(name);
 }
 
 // Deleting destructor (D0): run the complete dtor (D1), then tail-call operator delete.
@@ -119,8 +110,7 @@ void _ZN17PlayerFixedObjectD0Ev(PlayerFixedObject *self)
 }
 
 void PlayerFixedObject::setMoving(bool v) {
-    PlayerFixedObject *self = this;
-    self->moving = v;
+    this->moving = v;
 }
 
 // Returns a Vector by value (sret r0, this r1, collision vector r2). The callee returns
@@ -140,8 +130,7 @@ V3 PlayerFixedObject::projectCollisionOnSurface(void *vec) {
 }
 
 void PlayerFixedObject::setTransportID(int v) {
-    PlayerFixedObject *self = this;
-    self->transportID = v;
+    this->transportID = v;
 }
 
 // outerCollide(Vector) - Vector passed by value (r1,r2,r3). Pure tail-forward through
@@ -149,9 +138,8 @@ void PlayerFixedObject::setTransportID(int v) {
 typedef void (*OuterCollideVecFn)(PlayerFixedObject *, Vector);
 
 void PlayerFixedObject::outerCollide_vec(Vector v) {
-    PlayerFixedObject *self = this;
-    OuterCollideVecFn fn = *(OuterCollideVecFn *)(*(char **)self + 0x3c);
-    return fn(self, v);
+    OuterCollideVecFn fn = *(OuterCollideVecFn *)(*(char **)this + 0x3c);
+    return fn(this, v);
 }
 
 // PlayerFixedObject::getPosition() — integer object position (+0x178/+0x17c/+0x180)
@@ -543,8 +531,7 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_canvas;
 // NEAR: target keeps the frame up-front (no shrink-wrap, bool saved to r4 before the
 // field checks). clang shrink-wraps here (checks before push, bx lr early-exit).
 void PlayerFixedObject::setExhaustVisible(bool v) {
-    PlayerFixedObject *self = this;
-    void *geom = self->geometry;
+    void *geom = this->geometry;
     if (geom != 0 && *(int *)((char *)geom + 0x14) != -1) {
         void **holder = g_pfo_canvas;
         return ((AbyssEngine::Transform *)(((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc))))->setExhaustVisible(v);
@@ -587,9 +574,8 @@ int PlayerFixedObject::collide(float x, float y, float z) {
 // then forward (param_1, arr) to the bounding-volume registration thunk.
 // NEAR: clang assigns arr->r5, this->r6 (we get them swapped); allocator tie-break, not source-driven.
 void PlayerFixedObject::setBV(BoundingVolume *bv) {
-    PlayerFixedObject *self = this;
     Array<BoundingVolume *> *arr = new Array<BoundingVolume *>();
-    self->boundingVolumes = arr;
+    this->boundingVolumes = arr;
     return ((BoundingVolume *)(bv))->setArr(arr);
 }
 
@@ -603,48 +589,47 @@ typedef void (*VecAssignFn)(void *dst, void *src);
 __attribute__((visibility("hidden"))) extern VecAssignFn *g_pfo_vecAssignZero;
 
 void PlayerFixedObject::reset() {
-    PlayerFixedObject *self = this;
-    ((KIPlayer *)(self))->reset();
+    ((KIPlayer *)(this))->reset();
 
     // vtable slot 0x48 -> setPosition(this->0x58, 0x5c, 0x60)
-    SetPosFn setPos = *(SetPosFn *)(*(char **)self + 0x48);
-    setPos(self, self->spawnX, self->spawnY, self->spawnZ);
+    SetPosFn setPos = *(SetPosFn *)(*(char **)this + 0x48);
+    setPos(this, this->spawnX, this->spawnY, this->spawnZ);
 
-    self->targetEnemy = 0;
+    this->targetEnemy = 0;
 
     // Vector copy: 0x58 -> 0x138
     {
         char buf[12];
-        *(uint64_t *)buf = self->spawnX;
-        *(uint32_t *)(buf + 8) = self->spawnZ;
-        *(Vector *)((Vector *)((char *)self + 0x138)) = *(const Vector *)((Vector *)buf);
+        *(uint64_t *)buf = this->spawnX;
+        *(uint32_t *)(buf + 8) = this->spawnZ;
+        *(Vector *)((Vector *)((char *)this + 0x138)) = *(const Vector *)((Vector *)buf);
     }
     // Vector copy: 0x138 -> 0x2c
     {
         char buf[12];
-        *(uint64_t *)buf = self->field_0x138;
-        *(uint32_t *)(buf + 8) = self->field_0x140;
-        *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
+        *(uint64_t *)buf = this->field_0x138;
+        *(uint32_t *)(buf + 8) = this->field_0x140;
+        *(Vector *)((Vector *)((char *)this + 0x2c)) = *(const Vector *)((Vector *)buf);
     }
 
-    self->deltaTime = 0;
-    if (self->state != 5)
-        self->state = 0;
+    this->deltaTime = 0;
+    if (this->state != 5)
+        this->state = 0;
 
     VecAssignFn fn = *g_pfo_vecAssignZero;
     char zero[12];
     *(uint32_t *)(zero + 0) = 0;
     *(uint32_t *)(zero + 4) = 0;
     *(uint32_t *)(zero + 8) = 0;
-    fn((char *)self + 0x90, zero);
+    fn((char *)this + 0x90, zero);
     *(uint32_t *)(zero + 0) = 0;
     *(uint32_t *)(zero + 4) = 0;
     *(uint32_t *)(zero + 8) = 0;
-    fn((char *)self + 0x144, zero);
+    fn((char *)this + 0x144, zero);
     *(uint32_t *)(zero + 0) = 0;
     *(uint32_t *)(zero + 4) = 0;
     *(uint32_t *)(zero + 8) = 0;
-    fn((char *)self + 0x150, zero);
+    fn((char *)this + 0x150, zero);
 }
 
 // PaintCanvas singleton holder (pc-rel deref -> holder; canvas object is *holder).
@@ -653,34 +638,33 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_canvas2;
 __attribute__((visibility("hidden"))) extern void ***g_pfo_globals;
 
 void PlayerFixedObject::setWreckedMeshId(int meshId) {
-    PlayerFixedObject *self = this;
-    self->wreckMeshId = (uint16_t)meshId;
+    this->wreckMeshId = (uint16_t)meshId;
     void *geom = ::operator new(0xc0);
     void **holder = g_pfo_canvas2;
     new ((void *)geom) AEGeometry((uint16_t)meshId, (PaintCanvas *)*holder, true);
-    self->wreckGeometry = geom;
+    this->wreckGeometry = geom;
     void *t = ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc));
     *(int *)((char *)t + 0xe0) = 0x48f42400; // 500000.0f far-clip constant (raw bits)
 
-    int kind = self->kind;
+    int kind = this->kind;
     int sel;
     if (kind == 0xd) {
         sel = 4;
     } else if (kind == 0xe) {
         sel = 0;
     } else if (kind == 0xf) {
-        if (self->faction == 3) sel = 1;
-        else sel = (self->faction == 2) ? 2 : 3;
+        if (this->faction == 3) sel = 1;
+        else sel = (this->faction == 2) ? 2 : 3;
     } else if (kind == 0x37a3) {
         sel = 5;
     } else {
-        sel = self->wreckType;
+        sel = this->wreckType;
         if (sel < 0) return;
-        self->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
+        this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, this->wreckGeometry);
         return;
     }
-    self->wreckType = sel;
-    self->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
+    this->wreckType = sel;
+    this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, this->wreckGeometry);
 }
 
 // Returns a Vector by value (sret r0, this r1). Picks the active bounding-volume array,
@@ -956,35 +940,34 @@ typedef void (*BVSetPosFn)(void *bv, float, float, float);
 
 // PlayerFixedObject::setPosition(float, float, float)
 void PlayerFixedObject::setPosition3(float x, float y, float z) {
-    PlayerFixedObject *self = this;
-    self->spawnX = x;
-    self->spawnY = y;
-    self->spawnZ = z;
-    self->intPosX = (int32_t)x;
-    self->intPosY = (int32_t)y;
-    self->intPosZ = (int32_t)z;
+    this->spawnX = x;
+    this->spawnY = y;
+    this->spawnZ = z;
+    this->intPosX = (int32_t)x;
+    this->intPosY = (int32_t)y;
+    this->intPosZ = (int32_t)z;
 
     Vector posVec = {x, y, z};
-    ((AEGeometry *)(self->geometry))->setPosition(posVec);
-    void *m = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
-    *(Matrix *)((char *)self->player + 0x4) = *(const Matrix *)(m);
+    ((AEGeometry *)(this->geometry))->setPosition(posVec);
+    void *m = (void *)&((AEGeometry *)(this->geometry))->getMatrix();
+    *(Matrix *)((char *)this->player + 0x4) = *(const Matrix *)(m);
 
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();
-    *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
+    *(Vector *)((Vector *)((char *)this + 0x2c)) = *(const Vector *)((Vector *)buf);
 
-    Array<BoundingVolume *> *bv = self->boundingVolumes;
+    Array<BoundingVolume *> *bv = this->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
             void *o = (*bv)[i];
             BVSetPosFn fn = *(BVSetPosFn *)(*(char **)o + 0x4);
-            fn(o, self->posX, self->posY, self->posZ);
-            bv = self->boundingVolumes;
+            fn(o, this->posX, this->posY, this->posZ);
+            bv = this->boundingVolumes;
         }
     }
 
-    if (self->wreckGeometry != 0) {
-        ((AEGeometry *)(self->wreckGeometry))->setPosition(posVec);
+    if (this->wreckGeometry != 0) {
+        ((AEGeometry *)(this->wreckGeometry))->setPosition(posVec);
     }
 }
 
@@ -995,17 +978,16 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
 __attribute__((visibility("hidden"))) extern void **g_pfo_canvas3;
 
 void PlayerFixedObject::setDeadButSelectable() {
-    PlayerFixedObject *self = this;
-    void *player = self->player;
-    self->moving = 0;
+    void *player = this->player;
+    this->moving = 0;
     ((Player *)(player))->setHitpoints(1);
-    ((Player *)(self->player))->setVulnerable(false);
-    ((LODManager *)(*(void **)self->level))->removeObject((AEGeometry *)self->geometry);
-    void *geom = self->geometry;
+    ((Player *)(this->player))->setVulnerable(false);
+    ((LODManager *)(*(void **)this->level))->removeObject((AEGeometry *)this->geometry);
+    void *geom = this->geometry;
     if (geom != 0) { ((AEGeometry *)geom)->~AEGeometry(); ::operator delete(geom); }
     void **holder = g_pfo_canvas3;
-    void *newGeom = self->wreckGeometry;
-    self->geometry = newGeom;
+    void *newGeom = this->wreckGeometry;
+    this->geometry = newGeom;
     void *t = ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)newGeom + 0xc));
     // NOTE: the decompiler emitted a single 64-bit argument; SetAnimationRangeInTime
     // takes (start, end). Passing the recovered value as start and 0 as end.
@@ -1051,26 +1033,25 @@ int PlayerFixedObject::outerCollide(float x, float y, float z) {
 typedef void (*BVMoveFn)(void *bv, Vector);
 
 void PlayerFixedObject::moveForward(int amount) {
-    PlayerFixedObject *self = this;
     float d = (float)amount;
-    self->intPosZ = amount + self->intPosZ;
-    ((AEGeometry *)(self->geometry))->moveForward(d);
-    void *m = ((AEGeometry *)(self->geometry))->getMatrix();
-    *(Matrix *)((char *)self->player + 0x4) = *(const Matrix *)(m);
+    this->intPosZ = amount + this->intPosZ;
+    ((AEGeometry *)(this->geometry))->moveForward(d);
+    void *m = ((AEGeometry *)(this->geometry))->getMatrix();
+    *(Matrix *)((char *)this->player + 0x4) = *(const Matrix *)(m);
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();
-    *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
-    if (self->wreckGeometry != 0) {
-        ((AEGeometry *)(self->wreckGeometry))->moveForward(d);
+    *(Vector *)((Vector *)((char *)this + 0x2c)) = *(const Vector *)((Vector *)buf);
+    if (this->wreckGeometry != 0) {
+        ((AEGeometry *)(this->wreckGeometry))->moveForward(d);
     }
-    Array<BoundingVolume *> *bv = self->boundingVolumes;
+    Array<BoundingVolume *> *bv = this->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
             void *o = (*bv)[i];
             BVMoveFn fn = *(BVMoveFn *)(*(char **)o + 0x4);
-            Vector pos = { self->posX, self->posY, self->posZ };
+            Vector pos = { this->posX, this->posY, this->posZ };
             fn(o, pos);
-            bv = self->boundingVolumes;
+            bv = this->boundingVolumes;
         }
     }
 }

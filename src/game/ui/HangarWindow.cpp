@@ -73,21 +73,19 @@ extern "C" extern const char hw_freeCredits_no[];
 extern "C" extern const char hw_freeCredits_icon[];
 
 bool HangarWindow::isInSpecialMode() {
-    HangarWindow *self = this;
-    if (self->specialMode != 0) return true;
-    return self->dialogActive != 0;
+    if (this->specialMode != 0) return true;
+    return this->dialogActive != 0;
 }
 
 // Globals singleton (pc-rel deref -> holder; *holder is the object), field +0x70 is the row height.
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
 
 void HangarWindow::refreshCurrentContentHeight() {
-    HangarWindow *self = this;
-    Array<ListItem*> *items = ((HangarList *)self->hangarList)->getCurrentTabItems();
+    Array<ListItem*> *items = ((HangarList *)this->hangarList)->getCurrentTabItems();
     if (items != 0) {
         int n = (int)items->size();
         int rowH = G<int>(*g_hw_globals, 0x70);
-        self->currentContentHeight = self->rowSpacing * (n - 1) + n * rowH;
+        this->currentContentHeight = this->rowSpacing * (n - 1) + n * rowH;
     }
 }
 
@@ -119,9 +117,8 @@ bool HangarWindow::readyToClose() {
 // Tail-call thunk; arg is this->0x18 when this->0x58 == 1.
 
 void HangarWindow::render3D() {
-    HangarWindow *self = this;
-    if (self->viewMode == 1) {
-        return this->render3D_thunk(self->listItemWindow);
+    if (this->viewMode == 1) {
+        return this->render3D_thunk(this->listItemWindow);
     }
 }
 
@@ -133,10 +130,9 @@ void HangarWindow::render3D_thunk(void *listItemWindow) {
 }
 
 bool HangarWindow::currentItemIsHighlighted() {
-    HangarWindow *self = this;
-    ListItem *item = (ListItem *)((HangarList *)(self->hangarList))->getCurrentItem();
+    ListItem *item = (ListItem *)((HangarList *)(this->hangarList))->getCurrentItem();
     if (item == 0) return false;
-    return item == self->selectedItem;
+    return item == this->selectedItem;
 }
 
 // HangarWindow::~HangarWindow() -> returns this. Tears down owned windows/lists/arrays.
@@ -177,18 +173,16 @@ HangarWindow *_ZN12HangarWindowD2Ev(HangarWindow *self)
 // Returns float in r0. If scroll range (this+0xb4) >= 1 returns a constant; otherwise
 // returns -(float)range / (float)contentHeight(this+0xd4).
 float HangarWindow::getRelativeScrollStartPos() {
-    HangarWindow *self = this;
-    int range = self->scrollOffset;
+    int range = this->scrollOffset;
     if (range > 0) {
         union { unsigned u; float f; } c; c.u = 0x4650a903u;
         return c.f;
     }
-    return -(float)range / (float)self->currentContentHeight;
+    return -(float)range / (float)this->currentContentHeight;
 }
 
 void HangarWindow::hideMessage() {
-    HangarWindow *self = this;
-    self->dialogActive = 0;
+    this->dialogActive = 0;
 }
 
 extern "C" {
@@ -234,7 +228,6 @@ extern "C" extern const char hw_rnd_empty[], hw_rnd_a[], hw_rnd_b[], hw_rnd_c[],
     hw_rnd_d[], hw_rnd_e[], hw_rnd_x[];
 
 void HangarWindow::render() {
-    HangarWindow *self = this;
     Layout *layout = (Layout *)*g_hw_layout;
     void *canvas = *g_hw_canvas;
     ((PaintCanvas *)canvas)->SetColor(0u);
@@ -243,15 +236,15 @@ void HangarWindow::render() {
     bool dlcShown = dlc != 0 && G<uint8_t>(dlc, 0x18) != 0;
 
     if (dlc == 0 || !dlcShown) {
-        int tab2 = self->viewMode;
+        int tab2 = this->viewMode;
         if (tab2 == 0) {
             ((Layout *)(layout))->drawBG();
-            unsigned int tab = ((HangarList *)(self->hangarList))->getCurrentTab();
-            Array<ListItem*> *items = ((HangarList *)self->hangarList)->getCurrentTabItems();
+            unsigned int tab = ((HangarList *)(this->hangarList))->getCurrentTab();
+            Array<ListItem*> *items = ((HangarList *)this->hangarList)->getCurrentTabItems();
             if (items != 0) {
-                float startPos = ((HangarWindow *)(self))->getRelativeScrollStartPos();
-                float visH = (float)self->visibleHeight;
-                float scrollH = ((HangarWindow *)(self))->getRelativeScrollHeight();
+                float startPos = ((HangarWindow *)(this))->getRelativeScrollStartPos();
+                float visH = (float)this->visibleHeight;
+                float scrollH = ((HangarWindow *)(this))->getRelativeScrollHeight();
                 int scrollPx = (int)(scrollH * visH);
                 int startPx = (int)(startPos * visH);
 
@@ -267,7 +260,7 @@ void HangarWindow::render() {
                 else
                     rowGap = 0;
 
-                topY += (layout->field_0x28 + self->hintOffsetX) * -2;
+                topY += (layout->field_0x28 + this->hintOffsetX) * -2;
                 int baseY = layout->field_0x2cc;
                 int colW = layout->field_0x4c;
 
@@ -278,11 +271,11 @@ void HangarWindow::render() {
                     int rows = __aeabi_idiv(*g_hw_screenHeight, 1);
                     int y = 0;
                     for (int r = 0; r <= rows; r++) {
-                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)self->field_0xf0,
-                            (layout->field_0x28 - iw) + self->hintOffsetX, y, (unsigned char)1);
+                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->field_0xf0,
+                            (layout->field_0x28 - iw) + this->hintOffsetX, y, (unsigned char)1);
                         int off = (scrollPx < 1) ? 0 : (layout->field_0x48 + layout->field_0x2c);
-                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)self->field_0xf0,
-                            self->hintOffsetX + layout->field_0x28 + topY + off, y, (unsigned char)0);
+                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->field_0xf0,
+                            this->hintOffsetX + layout->field_0x28 + topY + off, y, (unsigned char)0);
                         y += ih;
                     }
                 }
@@ -290,10 +283,10 @@ void HangarWindow::render() {
                 int contentBase = colW + baseY + rowGap;
 
                 // Hide all action buttons before re-laying them out per row.
-                Array<TouchButton*> *btnArr = self->buttons;
+                Array<TouchButton*> *btnArr = this->buttons;
                 for (int i = 0; i != 0x18; i++) {
-                    if (self->dragging == 0) {
-                        void *btn = btnAt(self->buttons, i * 4);
+                    if (this->dragging == 0) {
+                        void *btn = btnAt(this->buttons, i * 4);
                         if (btn != 0)
                             ((TouchButton *)(btn))->setVisible(false);
                     }
@@ -302,8 +295,8 @@ void HangarWindow::render() {
                 int boxW = rowGap - 2;
 
                 for (unsigned int i = 0; i < items->size(); i++) {
-                    int y = (layout->field_0x70 + self->rowSpacing) * (int)i +
-                            self->scrollOffset + layout->field_0x20 + layout->field_0xc;
+                    int y = (layout->field_0x70 + this->rowSpacing) * (int)i +
+                            this->scrollOffset + layout->field_0x20 + layout->field_0xc;
                     if (y < 0 || y > *g_hw_screenHeight)
                         continue;
 
@@ -312,19 +305,19 @@ void HangarWindow::render() {
                         continue;
 
                     // Row background box (selected vs unselected, by tab).
-                    if (self->selectedItem == li && ((ListItem *)(li))->isTextButton() == 0) {
+                    if (this->selectedItem == li && ((ListItem *)(li))->isTextButton() == 0) {
                         String12 boxText;
                         if (tab == 0 && G<int>(li, 0x3c) >= 0) {
-                            ((Layout *)(layout))->drawBox(10, self->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
+                            ((Layout *)(layout))->drawBox(10, this->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
                         } else {
-                            ((Layout *)(layout))->drawBox(4, self->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
+                            ((Layout *)(layout))->drawBox(4, this->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
                         }
                     } else if (tab != 0 || G<int>(li, 0x3c) < 0) {
                         String12 boxText;
-                        ((Layout *)(layout))->drawBox(3, self->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
+                        ((Layout *)(layout))->drawBox(3, this->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
                     } else {
                         String12 boxText;
-                        ((Layout *)(layout))->drawBox(9, self->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
+                        ((Layout *)(layout))->drawBox(9, this->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
                     }
 
                     ((PaintCanvas *)canvas)->SetColor(0u);
@@ -338,37 +331,37 @@ void HangarWindow::render() {
                             String12 price;
                             Layout_formatCredits(&price, ((Ship *)(G<void *>(li, 0xc)))->getPrice());
                             ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&price,
-                                contentBase + layout->field_0x28 + self->hintOffsetX, 0, (bool)1);
-                            ((ImageFactory *)(*g_hw_globals))->drawShip(((Ship *)(G<void *>(li, 0xc)))->getIndex(), self->hintOffsetX + layout->field_0x28 + rowGap, self->iconOffsetY + y);
+                                contentBase + layout->field_0x28 + this->hintOffsetX, 0, (bool)1);
+                            ((ImageFactory *)(*g_hw_globals))->drawShip(((Ship *)(G<void *>(li, 0xc)))->getIndex(), this->hintOffsetX + layout->field_0x28 + rowGap, this->iconOffsetY + y);
                             ((PaintCanvas *)canvas)->SetColor(0u);
                         } else if (((ListItem *)(li))->isSlot() != 0) {
                             if (tab == 4 && i == items->size() - 1) {
-                                btnAt(self->buttons, 0x5c)->setPosition(self->hintOffsetX + layout->field_0x28 + topY / 2, layout->field_0x114 + y, 0x14);
-                                btnAt(self->buttons, 0x5c)->setVisible(true);
-                                btnAt(self->buttons, 0x5c)->draw();
+                                btnAt(this->buttons, 0x5c)->setPosition(this->hintOffsetX + layout->field_0x28 + topY / 2, layout->field_0x114 + y, 0x14);
+                                btnAt(this->buttons, 0x5c)->setVisible(true);
+                                btnAt(this->buttons, 0x5c)->draw();
                                 String12 tmp;
                             }
                         } else if (((ListItem *)(li))->isBluePrint() != 0) {
                             ((BluePrint *)((BluePrint *)(G<void *>(li, 0x8))))->getIndex();
                             float rate = ((BluePrint *)(G<void *>(li, 0x8)))->getCompletionRate();
                             if (rate > 0.0f) {
-                                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)self->field_0x78,
-                                    layout->field_0x28 + contentBase + 2 + self->hintOffsetX, 0, (unsigned char)0);
-                                float dcw = (float)self->progressBarWidth;
-                                ((PaintCanvas *)canvas)->DrawRegion2D((unsigned)self->field_0x7c, 0, 0,
-                                    (int)(rate * dcw), self->progressBarHeight, (float)(int)(rate * dcw),
+                                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->field_0x78,
+                                    layout->field_0x28 + contentBase + 2 + this->hintOffsetX, 0, (unsigned char)0);
+                                float dcw = (float)this->progressBarWidth;
+                                ((PaintCanvas *)canvas)->DrawRegion2D((unsigned)this->field_0x7c, 0, 0,
+                                    (int)(rate * dcw), this->progressBarHeight, (float)(int)(rate * dcw),
                                     0, 0, 0,
-                                    layout->field_0x28 + contentBase + 3 + self->hintOffsetX);
+                                    layout->field_0x28 + contentBase + 3 + this->hintOffsetX);
                                 String12 pct, sfx, sum;
                                 AEString_add(&sum, &pct, &sfx);
                                 ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&sum,
-                                    contentBase + 2 + layout->field_0x28 + self->hintOffsetX +
-                                        self->progressBarWidth + layout->field_0x2c, 0, (bool)0);
+                                    contentBase + 2 + layout->field_0x28 + this->hintOffsetX +
+                                        this->progressBarWidth + layout->field_0x2c, 0, (bool)0);
                                 ((PaintCanvas *)canvas)->SetColor(0u);
                             }
                             int bpIdx = ((BluePrint *)((BluePrint *)(G<void *>(li, 0x8))))->getIndex();
                             int type = ((Item *)(G<void *>(G<void *>(*g_hw_globals, 0x4), bpIdx)))->getType();
-                            ((ImageFactory *)(*g_hw_globals))->drawItem(bpIdx, type, layout->field_0x28 + rowGap + self->hintOffsetX);
+                            ((ImageFactory *)(*g_hw_globals))->drawItem(bpIdx, type, layout->field_0x28 + rowGap + this->hintOffsetX);
                         } else if (((ListItem *)(li))->isPendingProduct() != 0) {
                             int amt = G<int>(G<void *>(li, 0x18), 0x10);
                             String12 head;
@@ -381,68 +374,68 @@ void HangarWindow::render() {
                             AEString_add(&full, &head, (String12 *)((GameText *)(*g_hw_itemNameBase))->getText());
                             int pidx = G<int>(G<void *>(li, 0x18), 0x14);
                             int type = ((Item *)(G<void *>(G<void *>(*g_hw_globals, 0x4), pidx)))->getType();
-                            ((ImageFactory *)(*g_hw_globals))->drawItem(pidx, type, rowGap + layout->field_0x28 + self->hintOffsetX);
+                            ((ImageFactory *)(*g_hw_globals))->drawItem(pidx, type, rowGap + layout->field_0x28 + this->hintOffsetX);
                         } else if (((ListItem *)(li))->isMoveToCargoButton() != 0) {
-                            btnAt(self->buttons, 0x18)->setPosition(self->hintOffsetX + layout->field_0x28, y, 0x11);
-                            btnAt(self->buttons, 0x18)->setVisible(true);
-                            btnAt(self->buttons, 0x18)->draw();
+                            btnAt(this->buttons, 0x18)->setPosition(this->hintOffsetX + layout->field_0x28, y, 0x11);
+                            btnAt(this->buttons, 0x18)->setVisible(true);
+                            btnAt(this->buttons, 0x18)->draw();
                         } else if (((ListItem *)(li))->isSellButton() != 0) {
-                            btnAt(self->buttons, 0x14)->setPosition(self->hintOffsetX + layout->field_0x28, y, 0x11);
-                            btnAt(self->buttons, 0x14)->setVisible(true);
-                            btnAt(self->buttons, 0x14)->draw();
+                            btnAt(this->buttons, 0x14)->setPosition(this->hintOffsetX + layout->field_0x28, y, 0x11);
+                            btnAt(this->buttons, 0x14)->setVisible(true);
+                            btnAt(this->buttons, 0x14)->draw();
                         } else {
                             String12 txt;
                             AEString_ctor_str(&txt, G<String12 *>(li, 0x1c), false);
-                            ((Layout *)(layout))->drawBox(0, self->hintOffsetX + layout->field_0x28, (y + layout->field_0x70) - layout->field_0x1c, topY, layout->field_0x1c, &txt);
+                            ((Layout *)(layout))->drawBox(0, this->hintOffsetX + layout->field_0x28, (y + layout->field_0x70) - layout->field_0x1c, topY, layout->field_0x1c, &txt);
                         }
                     } else {
                         // Regular item row: name + amounts + price + icon.
                         ((Item *)(G<void *>(li, 0x10)))->getIndex();
                         ((PaintCanvas *)canvas)->SetColor(0u);
-                        if (self->upgradeMode == 0) {
+                        if (this->upgradeMode == 0) {
                             String12 price;
                             ((Item *)(G<void *>(li, 0x10)))->getSinglePrice();
                             Layout_formatCredits(&price, ((Item *)(G<void *>(li, 0x10)))->getSinglePrice());
                             ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&price,
-                                contentBase + layout->field_0x28 + self->hintOffsetX, 0, (bool)1);
+                                contentBase + layout->field_0x28 + this->hintOffsetX, 0, (bool)1);
                         }
                         int iidx = ((Item *)(G<void *>(li, 0x10)))->getIndex();
                         int itype = ((Item *)(G<void *>(li, 0x10)))->getType();
-                        ((ImageFactory *)(*g_hw_globals))->drawItem(iidx, itype, layout->field_0x28 + rowGap + self->hintOffsetX);
+                        ((ImageFactory *)(*g_hw_globals))->drawItem(iidx, itype, layout->field_0x28 + rowGap + this->hintOffsetX);
                     }
 
                     ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&label,
-                        self->hintOffsetX + layout->field_0x28 + contentBase, 0, (bool)0);
+                        this->hintOffsetX + layout->field_0x28 + contentBase, 0, (bool)0);
 
                 }
 
                 // Scroll bar when the content overflows.
                 if (scrollPx > 0 || startPx > 0) {
                     ((Layout *)(layout))->drawScrollBar(((*g_hw_screenHeight - layout->field_0x48) - layout->field_0x28) -
-                            self->hintOffsetX, layout->field_0x20 + layout->field_0xc, self->visibleHeight, startPx, scrollPx);
+                            this->hintOffsetX, layout->field_0x20 + layout->field_0xc, this->visibleHeight, startPx, scrollPx);
                 }
             }
 
             String12 header;
             Layout_drawHeader(layout, &header);
 
-            Array<TouchButton*> *tabs = self->tabButtons;
+            Array<TouchButton*> *tabs = this->tabButtons;
             for (unsigned int i = 0; i < tabs->size(); i++)
                 ((TouchButton *)(tabs->data()[i]))->draw();
         }
 
-        if (self->viewMode == 1) {
-            self->viewMode = 0;
-            ((HangarWindow *)(self))->render();
-            self->viewMode = 1;
-            ((ListItemWindow *)(self->listItemWindow))->draw();
+        if (this->viewMode == 1) {
+            this->viewMode = 0;
+            ((HangarWindow *)(this))->render();
+            this->viewMode = 1;
+            ((ListItemWindow *)(this->listItemWindow))->draw();
         }
     }
 
     // --- Footer + credits button (always drawn). ---
     layout = (Layout *)*g_hw_layout;
     ((Layout *)(layout))->drawFooter();
-    Array<TouchButton*> *btns = self->buttons;
+    Array<TouchButton*> *btns = this->buttons;
     btnAt(btns, 0x2c)->setVisible(true);
     btnAt(btns, 0x2c)->setAlwaysPressed(g_hw_optionFlags[0x4e] == 0);
     {
@@ -452,13 +445,13 @@ void HangarWindow::render() {
     }
     btnAt(btns, 0x2c)->draw();
 
-    if (self->dialogActive == 0)
+    if (this->dialogActive == 0)
         return;
 
-    ((ChoiceWindow *)(self->dialog))->draw();
+    ((ChoiceWindow *)(this->dialog))->draw();
 
-    if (self->buyCreditsActive == 0) {
-        if (self->freeCreditsActive != 0) {
+    if (this->buyCreditsActive == 0) {
+        if (this->freeCreditsActive != 0) {
             // Free-credits action button column.
             for (unsigned int i = 0; i < 5; i++) {
                 void *b = btnAt(btns, i * 4 + 0x48);
@@ -470,7 +463,7 @@ void HangarWindow::render() {
                 else
                     vis = (i != 4 || g_hw_optionFlags[0x4c] == 0);
                 ((TouchButton *)(b))->setVisible(vis);
-                ((TouchButton *)(b))->setPosition2(layout->field_0x28 + G<int>(self->dialog, 0), layout->field_0x8);
+                ((TouchButton *)(b))->setPosition2(layout->field_0x28 + G<int>(this->dialog, 0), layout->field_0x8);
                 ((TouchButton *)(b))->draw();
             }
         }
@@ -478,7 +471,7 @@ void HangarWindow::render() {
         // Buy-credits / IAP grid.
         void *appData = AppManager_GetApplicationData();
         (void)appData;
-        if (self->listModeFlag == 0) {
+        if (this->listModeFlag == 0) {
             // Five fixed-label buttons.
             for (int slot = 0x30; slot <= 0x40; slot += 4) {
                 void *b = btnAt(btns, slot);
@@ -502,27 +495,27 @@ void HangarWindow::render() {
                 default: AEString_ctor(&label, hw_rnd_e, false); AEString_ctor(&split, hw_rnd_x, false); break;
                 }
                 unsigned int rowOff = __aeabi_uidiv(i & 0xff, 3);
-                int x = (self->gridSpacingX + self->buttonWidth) *
+                int x = (this->gridSpacingX + this->buttonWidth) *
                             ((i + rowOff * -3) & 0xff) +
-                        ((*g_hw_screenHeight / 2 - self->buttonWidth) - self->gridSpacingX);
+                        ((*g_hw_screenHeight / 2 - this->buttonWidth) - this->gridSpacingX);
                 int yy = (int)((float)((layout->field_0x20 * -3) +
-                            (*g_hw_screenWidth / 2 - self->gridButtonHeight / 2)) +
-                            (float)self->gridSpacingY * -0.5f +
-                            (float)((int)rowOff * (self->gridSpacingY + self->gridButtonHeight)));
+                            (*g_hw_screenWidth / 2 - this->gridButtonHeight / 2)) +
+                            (float)this->gridSpacingY * -0.5f +
+                            (float)((int)rowOff * (this->gridSpacingY + this->gridButtonHeight)));
                 ((TouchButton *)(b))->setPosition(x, yy, 'D');
                 ((TouchButton *)(b))->replaceTextKeepSize(&label);
                 ((TouchButton *)(b))->setSplitText(&split);
                 ((TouchButton *)(b))->draw();
-                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)G<int>(self->tabIcons, i * 4), x,
+                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)G<int>(this->tabIcons, i * 4), x,
                                         yy - layout->field_0x2c, (unsigned char)0x11);
             }
         }
 
-        if (self->listModeFlag == 0) {
+        if (this->listModeFlag == 0) {
             int h17 = layout->field_0x30;
             int h34 = layout->field_0x34;
             int th = ((PaintCanvas *)canvas)->GetTextHeight(0);
-            ((ChoiceWindow *)(self->dialog))->setHeight((h34 + h17) * 6 + th * 2);
+            ((ChoiceWindow *)(this->dialog))->setHeight((h34 + h17) * 6 + th * 2);
         }
     }
 }
@@ -994,18 +987,17 @@ float VectorSignedToFloat(int v, int mode);
 }
 
 void HangarWindow::update(int delta) {
-    HangarWindow *self = this;
-    if (self->active == 0)
+    if (this->active == 0)
         return;
-    self->lastDelta = delta;
+    this->lastDelta = delta;
 
-    if (self->viewMode == 1) {
-        ((ListItemWindow *)(self->listItemWindow))->update(delta);
+    if (this->viewMode == 1) {
+        ((ListItemWindow *)(this->listItemWindow))->update(delta);
         return;
     }
 
-    unsigned int tab = ((HangarList *)(self->hangarList))->getCurrentTab();
-    Array<TouchButton*> *buttons = self->tabButtons;
+    unsigned int tab = ((HangarList *)(this->hangarList))->getCurrentTab();
+    Array<TouchButton*> *buttons = this->tabButtons;
     for (unsigned int i = 0; i < buttons->size(); i++) {
         bool pressed = true;
         if (i != tab && !(tab == 3 && i == 0))
@@ -1013,56 +1005,56 @@ void HangarWindow::update(int delta) {
         ((TouchButton *)(buttons->data()[i]))->setAlwaysPressed(pressed);
     }
 
-    if (self->dragging == 0) {
-        float v = self->damping * self->velocity;
-        self->velocity = v;
+    if (this->dragging == 0) {
+        float v = this->damping * this->velocity;
+        this->velocity = v;
         float mag = v > 0.0f ? v : -v;
         if (mag >= 1.0f) {
-            float pos = VectorSignedToFloat(self->scrollOffset, 0);
-            self->scrollOffset = (int)(v + pos);
+            float pos = VectorSignedToFloat(this->scrollOffset, 0);
+            this->scrollOffset = (int)(v + pos);
         }
     }
 
-    if (self->scrollOffset > 0) {
-        float f = VectorSignedToFloat(-self->scrollOffset, 0);
-        self->damping = 1.0f;
-        self->velocity = f * 0.5f;
+    if (this->scrollOffset > 0) {
+        float f = VectorSignedToFloat(-this->scrollOffset, 0);
+        this->damping = 1.0f;
+        this->velocity = f * 0.5f;
     }
 
-    if (((HangarList *)self->hangarList)->getCurrentTabItems() != 0) {
-        int diff = self->visibleHeight - self->currentContentHeight;
+    if (((HangarList *)this->hangarList)->getCurrentTabItems() != 0) {
+        int diff = this->visibleHeight - this->currentContentHeight;
         if (diff < 0) {
-            if (self->scrollOffset < diff) {
-                float f = VectorSignedToFloat(diff - self->scrollOffset, 0);
-                self->damping = 1.0f;
-                self->velocity = f * 0.5f;
+            if (this->scrollOffset < diff) {
+                float f = VectorSignedToFloat(diff - this->scrollOffset, 0);
+                this->damping = 1.0f;
+                this->velocity = f * 0.5f;
             }
         } else {
-            self->velocity = 0;
-            self->scrollOffset = 0;
+            this->velocity = 0;
+            this->scrollOffset = 0;
         }
     }
 
-    if (self->buyMode != 0) {
-        void *btnUp = btnAt(self->buttons, 0x20);
-        void *btnDown = btnAt(self->buttons, 0x24);
+    if (this->buyMode != 0) {
+        void *btnUp = btnAt(this->buttons, 0x20);
+        void *btnDown = btnAt(this->buttons, 0x24);
         if (((TouchButton *)(btnUp))->isTouched() != 0 || ((TouchButton *)(btnDown))->isTouched() != 0) {
-            int t6c = self->holdTime + delta;
-            int t70 = self->repeatTimer + delta;
-            self->holdTime = t6c;
-            self->repeatTimer = t70;
+            int t6c = this->holdTime + delta;
+            int t70 = this->repeatTimer + delta;
+            this->holdTime = t6c;
+            this->repeatTimer = t70;
             int threshold = (t6c > 0x5dc) ? 0x1e : 200;
-            if (t70 > threshold && (self->repeatTimer = 0,
-                                    self->buyMode != 0 || self->specialMode != 0)) {
+            if (t70 > threshold && (this->repeatTimer = 0,
+                                    this->buyMode != 0 || this->specialMode != 0)) {
                 if (((TouchButton *)(btnDown))->isTouched() != 0 && ((TouchButton *)(btnDown))->isVisible() != 0) {
-                    int n = (self->holdTime > 4000) ? 5 : 1;
+                    int n = (this->holdTime > 4000) ? 5 : 1;
                     for (; n != 0; n--)
-                        ((HangarWindow *)(self))->transaction(true);
+                        ((HangarWindow *)(this))->transaction(true);
                 } else if (((TouchButton *)(btnUp))->isTouched() != 0 &&
                            ((TouchButton *)(btnUp))->isVisible() != 0) {
-                    int n = (self->holdTime > 4000) ? 5 : 1;
+                    int n = (this->holdTime > 4000) ? 5 : 1;
                     for (; n != 0; n--)
-                        ((HangarWindow *)(self))->transaction(false);
+                        ((HangarWindow *)(this))->transaction(false);
                 }
             }
         }
@@ -1073,17 +1065,16 @@ void HangarWindow::update(int delta) {
 __attribute__((visibility("hidden"))) extern void **g_hw_sound;
 
 int HangarWindow::highlightItem(void *item) {
-    HangarWindow *self = this;
     if (item != 0 && ((ListItem *)(item))->isSelectable() != 0) {
         ((FModSound *)(*g_hw_sound))->play(0x7c, 0, 0, 0);
         unsigned flag = 0;
-        if (self->selectedItem != item) {
+        if (this->selectedItem != item) {
             flag = ((ListItem *)(item))->isTextButton() ^ 1;
         }
-        self->selectedItem = item;
-        self->field_0xd2 = flag;
+        this->selectedItem = item;
+        this->field_0xd2 = flag;
         if (((ListItem *)(item))->isShip() != 0) {
-            ((Ship *)((Ship *)(G<void *>(self->selectedItem, 0xc))))->adjustPrice();
+            ((Ship *)((Ship *)(G<void *>(this->selectedItem, 0xc))))->adjustPrice();
         }
     }
     return 0;
@@ -1159,7 +1150,6 @@ void *Station_getItems(void *station);
 __attribute__((visibility("hidden"))) extern void **g_hw_sound;
 
 void HangarWindow::demountItem(void *item, int slot) {
-    HangarWindow *self = this;
     int type = ((Item *)(item))->getType();
     if (type == 1)
         ((Item *)(item))->getAmount();
@@ -1174,7 +1164,7 @@ void HangarWindow::demountItem(void *item, int slot) {
         Ship_freeSlotAt(ship, item, slot);
 
     bool merged = false;
-    Array<Item*> *cargo = self->itemList;
+    Array<Item*> *cargo = this->itemList;
     for (unsigned int i = 0; i < cargo->size(); i++) {
         void *cur = cargo->data()[i];
         if (((Item *)(cur))->getIndex() == ((Item *)(made))->getIndex()) {
@@ -1184,32 +1174,32 @@ void HangarWindow::demountItem(void *item, int slot) {
         }
     }
     if (!merged)
-        self->itemList->push_back((Item*)made);
+        this->itemList->push_back((Item*)made);
 
-    ((Ship *)(((Status *)(*gStatus))->getShip()))->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
+    ((Ship *)(((Status *)(*gStatus))->getShip()))->setCargo(Item::extractItems((ItemArray *)(this->itemList), true));
 
-    if (self->itemList != 0) {
-        for (Item *it : *self->itemList) delete it;
-            self->itemList->clear();
-            delete self->itemList;
+    if (this->itemList != 0) {
+        for (Item *it : *this->itemList) delete it;
+            this->itemList->clear();
+            delete this->itemList;
     }
-    self->itemList = 0;
+    this->itemList = 0;
 
     this->statusShip();
     ItemArray *mixed = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(Station_getItems(((Status *)(*gStatus))->getStation())));
-    self->itemList = mixed;
-    ((HangarList *)(self->hangarList))->initShipTab((Ship *)this->statusShip());
+    this->itemList = mixed;
+    ((HangarList *)(this->hangarList))->initShipTab((Ship *)this->statusShip());
 
     this->statusShip();
     ItemArray *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(Station_getItems(((Status *)(*gStatus))->getStation())));
-    ((HangarList *)(self->hangarList))->initShopTab((Array<Item *> *)(items), Station_getShips(((Status *)(*gStatus))->getStation()));
-    ((HangarList *)(self->hangarList))->setCurrentTab(false);
+    ((HangarList *)(this->hangarList))->initShopTab((Array<Item *> *)(items), Station_getShips(((Status *)(*gStatus))->getStation()));
+    ((HangarList *)(this->hangarList))->setCurrentTab(false);
 
     // refreshCurrentContentHeight() returns void (stores into this+0xd4); the target
     // reuses a stale float register as the FModSound pitch argument.
-    ((HangarWindow *)(self))->refreshCurrentContentHeight();
+    ((HangarWindow *)(this))->refreshCurrentContentHeight();
     float h = 0.0f;
-    self->scrollOffset = self->savedScrollOffset;
+    this->scrollOffset = this->savedScrollOffset;
     ((FModSound *)(*g_hw_sound))->play(0x60, 0, 0, h);
 }
 
@@ -1354,16 +1344,15 @@ extern float hw_buy_heightScale;
 }
 
 void HangarWindow::showCreditsBuyWindow() {
-    HangarWindow *self = this;
     void *appData = ApplicationManager_GetApplicationData();
     *((uint8_t *)appData + 0x4c) = 0;
     appData = ApplicationManager_GetApplicationData();
     *((uint8_t *)appData + 0x3d) = 1;
 
-    void *win = self->dialog;
+    void *win = this->dialog;
     String12 a, b, yes, no;
 
-    if (self->listModeFlag == 0) {
+    if (this->listModeFlag == 0) {
         void *body = ((GameText *)(*g_hw_buyTextId))->getText();
         ((ChoiceWindow *)(win))->set(*(String const *)&a, *(String const *)&b);
     } else {
@@ -1373,34 +1362,32 @@ void HangarWindow::showCreditsBuyWindow() {
         int h;
         void *win2;
         if (*g_hw_buyFlag == 0) {
-            ((ChoiceWindow *)(self->dialog))->setWidth(*g_hw_buyWidth);
+            ((ChoiceWindow *)(this->dialog))->setWidth(*g_hw_buyWidth);
             h = *g_hw_buyHeight;
-            win2 = self->dialog;
+            win2 = this->dialog;
         } else {
-            ((ChoiceWindow *)(self->dialog))->setWidth(self->buttonWidth * 3);
-            float v = VectorSignedToFloat(self->gridButtonHeight, 0);
-            win2 = self->dialog;
+            ((ChoiceWindow *)(this->dialog))->setWidth(this->buttonWidth * 3);
+            float v = VectorSignedToFloat(this->gridButtonHeight, 0);
+            win2 = this->dialog;
             h = (int)(v * hw_buy_heightScale);
         }
         ((ChoiceWindow *)(win2))->setHeight(h);
     }
 
-    self->dialogActive = 1;
-    self->buyCreditsActive = 1;
-    self->notEnoughCredits = 0;
+    this->dialogActive = 1;
+    this->buyCreditsActive = 1;
+    this->notEnoughCredits = 0;
 }
 
 int HangarWindow::getCurrentTab() {
-    HangarWindow *self = this;
-    return ((HangarList *)(self->hangarList))->getCurrentTab();
+    return ((HangarList *)(this->hangarList))->getCurrentTab();
 }
 
 // Status singleton (pc-rel -> holder; *holder is the Status object).
 __attribute__((visibility("hidden"))) extern void **g_hw_status2;
 
 void HangarWindow::refreshCargoAvailabilityForBlueprints() {
-    HangarWindow *self = this;
-    Array<Array<ListItem*>*> *items = ((HangarList *)(self->hangarList))->getItems();
+    Array<Array<ListItem*>*> *items = ((HangarList *)(this->hangarList))->getItems();
     // Original navigated the old {count,data} layout: data buffer at +0x4, element [2]
     // at byte offset +0x8 (4-byte pointer stride). With a real Array<...> that is (*items)[2].
     Array<ListItem*> *arr = (*items)[2];
@@ -1854,14 +1841,13 @@ void HangarWindow::selectItem(void *item) {
 // NEAR: clang pairs a->r2,b->r1 in the ldrd (target uses r1=a,r2=b), mirroring every
 // subsequent op; register pairing is an allocator tie-break, not source-driven.
 float HangarWindow::getRelativeScrollHeight() {
-    HangarWindow *self = this;
-    int a = self->currentContentHeight;
-    int b = self->visibleHeight;
+    int a = this->currentContentHeight;
+    int b = this->visibleHeight;
     if (a < b) {
         union { unsigned u; float f; } c; c.u = 0x4605e009u;
         return c.f;
     }
-    int e = self->scrollOffset;
+    int e = this->scrollOffset;
     int num;
     if (e >= 1) {
         num = b - e;
@@ -1888,19 +1874,18 @@ __attribute__((visibility("hidden"))) extern int *g_hw_unsaleableTextId;
 __attribute__((visibility("hidden"))) extern int *g_hw_notEnoughTextId;
 
 void HangarWindow::transaction(bool buy) {
-    HangarWindow *self = this;
-    unsigned int tab = ((HangarList *)(self->hangarList))->getCurrentTab();
-    void *cur = G<void *>(self->selectedItem, 0x10);
+    unsigned int tab = ((HangarList *)(this->hangarList))->getCurrentTab();
+    void *cur = G<void *>(this->selectedItem, 0x10);
 
     if (tab < 2) {
         if (((Item *)(cur))->isUnsaleable() != 0) {
-            ((ChoiceWindow *)(self->dialog))->set(*(String *)((GameText *)(*g_hw_unsaleableTextId))->getText());
-            self->buyMode = 0;
-            self->dialogActive = 1;
+            ((ChoiceWindow *)(this->dialog))->set(*(String *)((GameText *)(*g_hw_unsaleableTextId))->getText());
+            this->buyMode = 0;
+            this->dialogActive = 1;
             return;
         }
 
-        unsigned int result = Item_transaction(cur, buy, self->currentLoad, self->upgradeMode);
+        unsigned int result = Item_transaction(cur, buy, this->currentLoad, this->upgradeMode);
         unsigned int idx = ((Item *)(cur))->getIndex();
         Globals *globals = (Globals *)*g_hw_globals;
         unsigned int *avail = globals->field_0x54;
@@ -1908,17 +1893,17 @@ void HangarWindow::transaction(bool buy) {
             *((uint8_t *)avail[1] + ((Item *)(cur))->getIndex()) = 1;
 
         if (result >= 0x80000000 && buy) {
-            self->currentLoad = self->currentLoad + 1;
+            this->currentLoad = this->currentLoad + 1;
             ((Ship *)(((Status *)(*gStatus))->getShip()))->changeLoad(1);
-            int li = ((ListItem *)(self->selectedItem))->getIndex();
-            if (li >= 0x84 && ((ListItem *)(self->selectedItem))->getIndex() < 0x9a) {
+            int li = ((ListItem *)(this->selectedItem))->getIndex();
+            if (li >= 0x84 && ((ListItem *)(this->selectedItem))->getIndex() < 0x9a) {
                 int base = globals->field_0xac;
                 *((uint8_t *)G<int>((void *)(uintptr_t)base, 4) +
-                  ((ListItem *)(self->selectedItem))->getIndex() - 0x84) = 1;
+                  ((ListItem *)(this->selectedItem))->getIndex() - 0x84) = 1;
             }
         } else if (result == 0 && buy) {
             if (((Status *)(*gStatus))->getCredits() < ((Item *)(cur))->getSinglePrice()) {
-                if (self->upgradeMode != 0)
+                if (this->upgradeMode != 0)
                     return;
                 String12 line, priceStr, fmt, msg, suffix, combined;
                 Layout_formatCredits(&priceStr, ((Item *)(cur))->getSinglePrice(), ((Status *)(*gStatus))->getCredits());
@@ -1927,30 +1912,30 @@ void HangarWindow::transaction(bool buy) {
                 ((GameText *)(*g_hw_notEnoughTextId))->getText();
                 AEString_add(&combined, &suffix, &suffix);
                 AEString_addAssign(&msg, &combined);
-                ((ChoiceWindow *)(self->dialog))->setMsg(*(String *)&msg, true);
-                self->dialogActive = 1;
-                self->notEnoughCredits = 1;
-                btnAt(self->buttons, 0x20)->resetTouch();
-                btnAt(self->buttons, 0x24)->resetTouch();
+                ((ChoiceWindow *)(this->dialog))->setMsg(*(String *)&msg, true);
+                this->dialogActive = 1;
+                this->notEnoughCredits = 1;
+                btnAt(this->buttons, 0x20)->resetTouch();
+                btnAt(this->buttons, 0x24)->resetTouch();
             }
         } else if ((int)result > 0 && !buy) {
-            self->currentLoad = self->currentLoad - 1;
+            this->currentLoad = this->currentLoad - 1;
             ((Ship *)(((Status *)(*gStatus))->getShip()))->changeLoad(-1);
         }
 
-        if (self->upgradeMode == 0)
+        if (this->upgradeMode == 0)
             Status_changeCredits(globals);
     } else if (tab == 4) {
         if (buy) {
             int bpAmt = ((Item *)(cur))->getBlueprintAmount();
-            void *bp = self->bluePrint;
+            void *bp = this->bluePrint;
             int remaining = ((BluePrint *)(bp))->getRemainingAmount(((Item *)(cur))->getIndex());
             if (bpAmt < remaining) {
                 int r = ((Item *)(cur))->transactionBlueprint(0);
                 if (r < 0) {
-                    self->currentLoad = self->currentLoad + 1;
+                    this->currentLoad = this->currentLoad + 1;
                 } else if (r != 0) {
-                    self->bluePrintBuyCount = self->bluePrintBuyCount + 1;
+                    this->bluePrintBuyCount = this->bluePrintBuyCount + 1;
                     ((Ship *)(((Status *)(*gStatus))->getShip()))->changeLoad(-1);
                 }
             }
@@ -1975,7 +1960,6 @@ void *Station_getItems(void *station);
 __attribute__((visibility("hidden"))) extern void **g_hw_sound;
 
 void HangarWindow::mountItem(void *item) {
-    HangarWindow *self = this;
     int type = ((Item *)(item))->getType();
     int amount = 1;
     if (type == 1)
@@ -1986,7 +1970,7 @@ void HangarWindow::mountItem(void *item) {
     ((Ship *)(ship))->addEquipment((Item *)made);
     ((Ship *)(((Status *)(*gStatus))->getShip()))->removeCargo(((Item *)(made))->getIndex(), (type == 1) ? amount : 1);
 
-    Array<Item*> *cargo = self->itemList;
+    Array<Item*> *cargo = this->itemList;
     if (cargo != 0) {
         for (unsigned int i = 0; i < cargo->size(); i++) {
             void *cur = cargo->data()[i];
@@ -1994,7 +1978,7 @@ void HangarWindow::mountItem(void *item) {
                 int change;
                 if (((Item *)(cur))->getStationAmount() == 0) {
                     if (type == 1 || ((Item *)(item))->getAmount() == 1) {
-                        self->itemList->erase(std::find(self->itemList->begin(), self->itemList->end(), (Item*)cur));
+                        this->itemList->erase(std::find(this->itemList->begin(), this->itemList->end(), (Item*)cur));
                         break;
                     }
                     change = -1;
@@ -2006,24 +1990,24 @@ void HangarWindow::mountItem(void *item) {
                 ((Item *)(cur))->changeAmount(change);
                 break;
             }
-            cargo = self->itemList;
+            cargo = this->itemList;
         }
     }
 
     void *ship2 = this->statusShip();
-    ((Ship *)(ship2))->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
-    ((HangarList *)(self->hangarList))->initShipTab((Ship *)this->statusShip());
+    ((Ship *)(ship2))->setCargo(Item::extractItems((ItemArray *)(this->itemList), true));
+    ((HangarList *)(this->hangarList))->initShipTab((Ship *)this->statusShip());
 
     this->statusShip();
     ItemArray *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(Station_getItems(((Status *)(*gStatus))->getStation())));
-    ((HangarList *)(self->hangarList))->initShopTab((Array<Item *> *)(items), Station_getShips(((Status *)(*gStatus))->getStation()));
-    ((HangarList *)(self->hangarList))->setCurrentTab(false);
+    ((HangarList *)(this->hangarList))->initShopTab((Array<Item *> *)(items), Station_getShips(((Status *)(*gStatus))->getStation()));
+    ((HangarList *)(this->hangarList))->setCurrentTab(false);
 
     // refreshCurrentContentHeight() returns void (stores into this+0xd4); the target
     // reuses a stale float register as the FModSound pitch argument.
-    ((HangarWindow *)(self))->refreshCurrentContentHeight();
+    ((HangarWindow *)(this))->refreshCurrentContentHeight();
     float h = 0.0f;
-    self->scrollOffset = self->savedScrollOffset;
+    this->scrollOffset = this->savedScrollOffset;
     ((FModSound *)(*g_hw_sound))->play(0x62, 0, 0, h);
 }
 
@@ -2031,62 +2015,61 @@ __attribute__((visibility("hidden"))) extern void **g_hw_layout;
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;
 
 unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
-    HangarWindow *self = this;
     Layout *layout = (Layout *)*g_hw_layout;
     ((Layout *)(layout))->OnTouchMove(touch);
 
-    if (self->dialogActive != 0) {
-        if (self->buyCreditsActive != 0) {
+    if (this->dialogActive != 0) {
+        if (this->buyCreditsActive != 0) {
             for (int i = 0xc; i != 0x11; i++)
-                btnAt(self->buttons, i * 4)->OnTouchMove(touch);
-            btnAt(self->buttons, 0x44)->OnTouchMove(touch);
-        } else if (self->freeCreditsActive != 0) {
+                btnAt(this->buttons, i * 4)->OnTouchMove(touch);
+            btnAt(this->buttons, 0x44)->OnTouchMove(touch);
+        } else if (this->freeCreditsActive != 0) {
             for (int i = 0x12; i != 0x17; i++)
-                btnAt(self->buttons, i * 4)->OnTouchMove(touch);
+                btnAt(this->buttons, i * 4)->OnTouchMove(touch);
         }
-        ((ChoiceWindow *)(self->dialog))->OnTouchMove(touch, coord);
+        ((ChoiceWindow *)(this->dialog))->OnTouchMove(touch, coord);
         return 0;
     }
 
-    if (self->viewMode == 1) {
-        ((ListItemWindow *)(self->listItemWindow))->OnTouchMove(touch, coord);
+    if (this->viewMode == 1) {
+        ((ListItemWindow *)(this->listItemWindow))->OnTouchMove(touch, coord);
         return 0;
     }
 
     if (layout->field_0xc < coord && coord < *g_hw_screenWidth - layout->field_0x10) {
-        int dy = coord - self->lastTouchY;
-        self->scrollDelta = dy;
-        self->damping = 1.0f;
-        self->scrollOffset = self->scrollOffset + dy;
-        self->lastTouchY = coord;
+        int dy = coord - this->lastTouchY;
+        this->scrollDelta = dy;
+        this->damping = 1.0f;
+        this->scrollOffset = this->scrollOffset + dy;
+        this->lastTouchY = coord;
 
-        void *btnUp = btnAt(self->buttons, 0x20);
-        void *btnDown = btnAt(self->buttons, 0x24);
+        void *btnUp = btnAt(this->buttons, 0x20);
+        void *btnDown = btnAt(this->buttons, 0x24);
         int touched = ((TouchButton *)(btnUp))->isTouched();
         if (touched != 0)
             touched = 1;
         else
             touched = ((TouchButton *)(btnDown))->isTouched();
 
-        int adist = coord - self->touchStartY;
+        int adist = coord - this->touchStartY;
         if (adist < 0)
             adist = -adist;
 
         if (touched == 0 && adist > 5) {
-            self->holdTime = 0;
-            self->repeatTimer = 0;
-            Array<void *> *buttons = F<Array<void *> *>(self, 0x24);
+            this->holdTime = 0;
+            this->repeatTimer = 0;
+            Array<void *> *buttons = F<Array<void *> *>(this, 0x24);
             for (unsigned int i = 0; i < buttons->size(); i++)
                 ((TouchButton *)(buttons->data()[i]))->OnTouchMove(touch);
-            ((HangarWindow *)(self))->setSellMode();
-            self->field_0xd2 = 0;
-            self->selectedItem = 0;
+            ((HangarWindow *)(this))->setSellMode();
+            this->field_0xd2 = 0;
+            this->selectedItem = 0;
             ((TouchButton *)(btnUp))->resetTouch();
             ((TouchButton *)(btnDown))->resetTouch();
         }
     }
 
-    Array<TouchButton*> *tabs = self->tabButtons;
+    Array<TouchButton*> *tabs = this->tabButtons;
     for (unsigned int i = 0; i < tabs->size(); i++)
         ((TouchButton *)(tabs->data()[i]))->OnTouchMove(touch);
     return 0;
@@ -2103,8 +2086,7 @@ __attribute__((visibility("hidden"))) extern int *g_hw_equipTextId;
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
 
 void HangarWindow::autoEquipSecondaryWeapons(int row) {
-    HangarWindow *self = this;
-    ListItem *item = (ListItem *)((HangarList *)(self->hangarList))->getCurrentItemAt(row);
+    ListItem *item = (ListItem *)((HangarList *)(this->hangarList))->getCurrentItemAt(row);
     if (item == 0)
         return;
     void *itm = item->field_0x10;
@@ -2130,26 +2112,26 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
 
         void *made = ((Item *)(itm))->makeItem();
 
-        Array<Item*> *cargo = self->itemList;
+        Array<Item*> *cargo = this->itemList;
         if (cargo != 0) {
             for (unsigned int j = 0; j < cargo->size(); j++) {
                 if (((Item *)(cargo->data()[j]))->getIndex() == ((Item *)(made))->getIndex())
                     ((Item *)(cargo->data()[j]))->setAmount(0);
-                cargo = self->itemList;
+                cargo = this->itemList;
             }
         }
 
         ((Ship *)(this->statusShip()))->setEquipment((Item *)made);
         ((Ship *)(this->statusShip()))->removeCargo(((Item *)(made))->getIndex(), ((Item *)(itm))->getAmount());
-        ((HangarList *)(self->hangarList))->initShipTab((Ship *)this->statusShip());
+        ((HangarList *)(this->hangarList))->initShipTab((Ship *)this->statusShip());
 
         String12 msg, msgCopy, name, fmt;
         String12 result;
         Status_replaceHash(&result, *g_hw_globals, &msgCopy, &name, &fmt);
 
-        ((ChoiceWindow *)(self->dialog))->set(*(String const *)&msg);
-        self->autoEquipped = 1;
-        self->dialogActive = 1;
+        ((ChoiceWindow *)(this->dialog))->set(*(String const *)&msg);
+        this->autoEquipped = 1;
+        this->dialogActive = 1;
         break;
     }
 }
@@ -2167,19 +2149,18 @@ __attribute__((visibility("hidden"))) extern void **g_hw_canvas;
 __attribute__((visibility("hidden"))) extern void **g_hw_layout;
 
 void HangarWindow::showFreeCreditsWindow() {
-    HangarWindow *self = this;
     void *appData = ApplicationManager_GetApplicationData();
     *((uint8_t *)appData + 0x4c) = 0;
     appData = ApplicationManager_GetApplicationData();
     *((uint8_t *)appData + 0x3d) = 1;
 
-    void *win = self->dialog;
+    void *win = this->dialog;
     String12 title, title2, yes, no;
     void *body = ((GameText *)(*g_hw_freeCreditsTextId))->getText();
     ((ChoiceWindow *)(win))->set(*(String const *)&title, *(String const *)&title2);
 
-    int rowH = btnAt(self->buttons, 0x48)->getHeight();
-    ((ChoiceWindow *)(self->dialog))->setHeight(rowH * 5);
+    int rowH = btnAt(this->buttons, 0x48)->getHeight();
+    ((ChoiceWindow *)(this->dialog))->setHeight(rowH * 5);
 
     int maxW = 0;
     for (int i = 5; i != 0; i--) {
@@ -2190,12 +2171,12 @@ void HangarWindow::showFreeCreditsWindow() {
     }
     int btnW = ((TouchButton *)(0))->getWidth();
     Layout *layout = (Layout *)*g_hw_layout;
-    ((ChoiceWindow *)(self->dialog))->setWidth(layout->field_0x2c + btnW + maxW + layout->field_0x28 * 4);
+    ((ChoiceWindow *)(this->dialog))->setWidth(layout->field_0x2c + btnW + maxW + layout->field_0x28 * 4);
 
-    self->freeCreditsActive = 1;
-    self->dialogActive = 1;
-    self->buyCreditsActive = 0;
-    self->notEnoughCredits = 0;
+    this->freeCreditsActive = 1;
+    this->dialogActive = 1;
+    this->buyCreditsActive = 0;
+    this->notEnoughCredits = 0;
 }
 
 extern "C" {
@@ -2575,33 +2556,32 @@ __attribute__((visibility("hidden"))) extern void **g_hw_layout;
 // (push). Structurally correct; instruction ordering differs.
 
 void HangarWindow::ctor() {
-    HangarWindow *self = this;
     int *cnt = g_hw_openCounter;
     void *lay = *g_hw_layout;
 
-    self->bluePrint = 0;
-    self->bluePrintItem = 0;
-    self->dialogActive = 0;
-    self->bluePrintPurchasePending = 0;
+    this->bluePrint = 0;
+    this->bluePrintItem = 0;
+    this->dialogActive = 0;
+    this->bluePrintPurchasePending = 0;
     // zero 4 words at 0x14..0x20 (a zeroed Vector slot) via a 16-byte NEON store
-    self->hangarList = 0;
-    self->listItemWindow = 0;
-    self->choiceWindow = 0;
-    self->dialog = 0;
-    self->localBluePrint = 0;
+    this->hangarList = 0;
+    this->listItemWindow = 0;
+    this->choiceWindow = 0;
+    this->dialog = 0;
+    this->localBluePrint = 0;
     *cnt = 1;
-    self->field_0x130 = 0;
-    self->dragging = 0;
-    self->tabButtons = 0;
-    self->buttons = 0;
-    self->shipSwapPending = 0;
-    self->buyCreditsActive = 0;
+    this->field_0x130 = 0;
+    this->dragging = 0;
+    this->tabButtons = 0;
+    this->buttons = 0;
+    this->shipSwapPending = 0;
+    this->buyCreditsActive = 0;
 
     // copy lay[0x238..0x244] (16 bytes) into this[0x100..0x10c]
-    self->field_0x100 = *(Blk16 *)((char *)lay + 0x238);
-    self->buttonHeight = G<int>(lay, 0x248);
-    self->field_0x114 = G<int>(lay, 0x24c);
-    self->iconOffsetY = G<int>(lay, 0x250);
+    this->field_0x100 = *(Blk16 *)((char *)lay + 0x238);
+    this->buttonHeight = G<int>(lay, 0x248);
+    this->field_0x114 = G<int>(lay, 0x24c);
+    this->iconOffsetY = G<int>(lay, 0x250);
 }
 
 // ---- statusShip ----

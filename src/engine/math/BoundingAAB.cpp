@@ -6,9 +6,8 @@ extern "C" Vector AEMath_operator_sub(const Vector &a, const Vector &b);
 
 int BoundingAAB::outerCollide(float x, float y, float z)
 {
-    BoundingAAB *self = this;
-    float centerX = self->centerX + self->extentsX;
-    float extentX = self->halfExtentX;
+    float centerX = this->centerX + this->extentsX;
+    float extentX = this->halfExtentX;
     if (!(centerX - extentX < x)) {
         return 0;
     }
@@ -16,8 +15,8 @@ int BoundingAAB::outerCollide(float x, float y, float z)
         return 0;
     }
 
-    float centerY = self->centerY + self->extentsY;
-    float extentY = self->halfExtentY;
+    float centerY = this->centerY + this->extentsY;
+    float extentY = this->halfExtentY;
     if (!(centerY - extentY < y)) {
         return 0;
     }
@@ -25,8 +24,8 @@ int BoundingAAB::outerCollide(float x, float y, float z)
         return 0;
     }
 
-    float centerZ = self->centerZ + self->extentsZ;
-    float extentZ = self->halfExtentZ;
+    float centerZ = this->centerZ + this->extentsZ;
+    float extentZ = this->halfExtentZ;
     if (!(centerZ - extentZ < z)) {
         return 0;
     }
@@ -90,7 +89,6 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
                          float width, float height, float depth)
     : BoundingVolume(x, y, z, ex, ey, ez)
 {
-    BoundingAAB *self = this;
 
     float halfWidth = width * 0.5f;
     float extentX = width * -0.5f;
@@ -110,10 +108,10 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
         extentZ = halfDepth;
     }
 
-    self->vtable = (char *)g_BoundingAAB_vtbl + 8;
-    self->halfExtentX = extentX;
-    self->halfExtentY = extentY;
-    self->halfExtentZ = extentZ;
+    this->vtable = (char *)g_BoundingAAB_vtbl + 8;
+    this->halfExtentX = extentX;
+    this->halfExtentY = extentY;
+    this->halfExtentZ = extentZ;
 }
 
 Vector BoundingAAB::getCollisionNormal(const Vector &)

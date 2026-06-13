@@ -52,20 +52,19 @@ extern void *const gCanvasRoot __attribute__((visibility("hidden")));
 //   Zeroes the embedded state then constructs the beam mesh geometry. The mesh
 //   id is the base id 0x3798 offset by the (truncated) integer argument.
 void TractorBeam::ctor(AEGeometry * /*unused*/, int param2) {
-    TractorBeam *self = this;
-    self->dirX = 0.0f;
-    self->dirY = 0.0f;
-    self->dirZ = 0.0f;
-    self->grabbedCrate = 0;
-    self->active = 0;
+    this->dirX = 0.0f;
+    this->dirY = 0.0f;
+    this->dirZ = 0.0f;
+    this->grabbedCrate = 0;
+    this->active = 0;
 
     AEGeometry *geo = (AEGeometry *)operator new(0xc0);
     uint16_t meshId = (uint16_t)((short)param2 + 0x3798);
     PaintCanvas *canvas = *(PaintCanvas **)(*(void **)gCanvasRoot);
     new ((void *)geo) AEGeometry((uint16_t)meshId, (PaintCanvas *)canvas, false);
 
-    self->beamGeometry = geo;
-    self->storedHitpoints = 0;
+    this->beamGeometry = geo;
+    this->storedHitpoints = 0;
 }
 
 // AEGeometry::render(AEGeometry*) -- resolved global render entry for the beam mesh.
@@ -73,10 +72,9 @@ void TractorBeam::ctor(AEGeometry * /*unused*/, int param2) {
 // TractorBeam::render()
 //   Only draws while the beam is active; forwards to the geometry's render.
 void TractorBeam::render() {
-    TractorBeam *self = this;
-    if (self->active == 0)
+    if (this->active == 0)
         return;
-    ((AEGeometry *)(self->beamGeometry))->render();
+    ((AEGeometry *)(this->beamGeometry))->render();
 }
 
 using namespace AbyssEngine::AEMath;

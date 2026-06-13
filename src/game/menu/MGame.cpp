@@ -164,29 +164,27 @@ __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
 // MGame::maneuverTouchMove(): if a maneuver gesture is active, cancel it once the
 // finger has moved far enough sideways relative to a screen-scaled threshold.
 void MGame::maneuverTouchMove(int a, int b) {
-    MGame *self = this;
     (void)a;
-    if (self->field_0x17c != 0) {
+    if (this->field_0x17c != 0) {
         float f2 = (float)(*g_maneuverScale);
-        int d = b - self->field_0x184;
+        int d = b - this->field_0x184;
         if (d < 0) d = -d;
         float f3 = (float)d;
         // The exact constant values are irrelevant to the byte match (the diff
         // normalizes pc-relative literal loads); only the vldr/vdiv/vmul shape matters.
         if ((f2 / 320.0f) * 0.15f < f3) {
-            self->field_0x17c = 0;
-            self->field_0x178 = 0;
+            this->field_0x17c = 0;
+            this->field_0x178 = 0;
         }
     }
 }
 
 // Begins a maneuver gesture: mark active, record start position, reset timer.
 void MGame::maneuverTouchBegin(int x, int y) {
-    MGame *self = this;
-    self->field_0x17c = 1;
-    self->field_0x180 = x;
-    self->field_0x184 = y;
-    self->field_0x178 = 0;
+    this->field_0x17c = 1;
+    this->field_0x180 = x;
+    this->field_0x184 = y;
+    this->field_0x178 = 0;
 }
 
 // PaintCanvas End3d tail helper @0x1ab918.
@@ -195,62 +193,61 @@ __attribute__((visibility("hidden"))) extern unsigned *g_r3dCanvas; // @0x190de4
 
 // MGame::OnRender3D(): render the active 3D view (game world, menu, or star map).
 void MGame::OnRender3D() {
-    MGame *self = this;
-    if (self->field_0x54 == 0) return;
+    if (this->field_0x54 == 0) return;
     unsigned canvas = *g_r3dCanvas;
     ((PaintCanvas*)(long)canvas)->ClearBuffer(0);
 
-    uint8_t inMenuLevel = self->field_0x5d;
-    uint8_t flag15e = self->field_0x15e;
+    uint8_t inMenuLevel = this->field_0x5d;
+    uint8_t flag15e = this->field_0x15e;
 
     if (inMenuLevel == 0) {
         // World render.
-        ((Level *)(self->field_0x78))->renderBG(0);
+        ((Level *)(this->field_0x78))->renderBG(0);
         ((PaintCanvas*)(long)canvas)->Begin3d();
-        int arg = (flag15e == 0) ? self->field_0x40 : 0;
-        ((Level *)(self->field_0x78))->render(arg);
-        int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
-        ((PlayerEgo *)(self->field_0x58))->render(egoFlag);
-        if (self->field_0x114 != 0)
-            ((AEGeometry *)(self->field_0x58))->render();
-        ((LevelScript *)(self->field_0x7c))->render3D();
+        int arg = (flag15e == 0) ? this->field_0x40 : 0;
+        ((Level *)(this->field_0x78))->render(arg);
+        int egoFlag = (this->field_0x5f != 0) ? 0 : (this->field_0xdc == 0);
+        ((PlayerEgo *)(this->field_0x58))->render(egoFlag);
+        if (this->field_0x114 != 0)
+            ((AEGeometry *)(this->field_0x58))->render();
+        ((LevelScript *)(this->field_0x7c))->render3D();
         return ((PaintCanvas*)(long)canvas)->End3d();
     }
 
     if (flag15e != 0) {
         // Free-cam / cinematic world render.
-        ((Level *)(self->field_0x78))->renderBG(0);
+        ((Level *)(this->field_0x78))->renderBG(0);
         ((PaintCanvas*)(long)canvas)->Begin3d();
-        ((Level *)(self->field_0x78))->render(self->field_0x40);
-        int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
-        ((PlayerEgo *)(self->field_0x58))->render(egoFlag);
-        if (self->field_0x114 != 0)
-            ((AEGeometry *)(self->field_0x58))->render();
-        ((LevelScript *)(self->field_0x7c))->render3D();
+        ((Level *)(this->field_0x78))->render(this->field_0x40);
+        int egoFlag = (this->field_0x5f != 0) ? 0 : (this->field_0xdc == 0);
+        ((PlayerEgo *)(this->field_0x58))->render(egoFlag);
+        if (this->field_0x114 != 0)
+            ((AEGeometry *)(this->field_0x58))->render();
+        ((LevelScript *)(this->field_0x7c))->render3D();
         return ((PaintCanvas*)(long)canvas)->End3d();
     }
 
-    if (self->field_0xc9 != 0) {
+    if (this->field_0xc9 != 0) {
         ((PaintCanvas*)(long)canvas)->Begin3d();
-        ((MenuTouchWindow *)(self->field_0x88))->render3D();
+        ((MenuTouchWindow *)(this->field_0x88))->render3D();
         return ((PaintCanvas*)(long)canvas)->End3d();
     }
 
-    if (self->field_0xc7 != 0) {
+    if (this->field_0xc7 != 0) {
         ((PaintCanvas*)(long)canvas)->Begin3d();
-        ((StarMap *)(self->field_0x90))->render();
+        ((StarMap *)(this->field_0x90))->render();
         return ((PaintCanvas*)(long)canvas)->End3d();
     }
 
     // Fallback world render.
-    ((Level *)(self->field_0x78))->renderBG(0);
+    ((Level *)(this->field_0x78))->renderBG(0);
     ((PaintCanvas*)(long)canvas)->Begin3d();
-    ((Level *)(self->field_0x78))->render(0);
-    int egoFlag = (self->field_0x5f != 0) ? 0 : (self->field_0xdc == 0);
-    ((PlayerEgo *)(self->field_0x58))->render(egoFlag);
-    if (self->field_0x114 != 0)
-        ((AEGeometry *)(self->field_0x58))->render();
-    ((LevelScript *)(self->field_0x7c))->render3D();
+    ((Level *)(this->field_0x78))->render(0);
+    int egoFlag = (this->field_0x5f != 0) ? 0 : (this->field_0xdc == 0);
+    ((PlayerEgo *)(this->field_0x58))->render(egoFlag);
+    if (this->field_0x114 != 0)
+        ((AEGeometry *)(this->field_0x58))->render();
+    ((LevelScript *)(this->field_0x7c))->render3D();
     return ((PaintCanvas*)(long)canvas)->End3d();
 }
 
@@ -274,113 +271,112 @@ __attribute__((visibility("hidden"))) extern int g_jsOffsetZ2;   // @0x18c438
 
 // MGame::startJumpScene(): set up the hyperspace cinematic (docked or free variant).
 void MGame::startJumpScene() {
-    MGame *self = this;
     int *guard = g_jsGuard;
     int g0 = *guard;
 
-    ((Player *)(*(void **)((char *)self->field_0x58)))->setVulnerable(0);
-    ((Level *)(self->field_0x78))->enableFog(0);
+    ((Player *)(*(void **)((char *)this->field_0x58)))->setVulnerable(0);
+    ((Level *)(this->field_0x78))->enableFog(0);
 
-    if (((PlayerEgo *)(self->field_0x58))->isDockedToDockingPoint() != 0) {
-        ((PlayerEgo *)(self->field_0x58))->dockToDockingPoint(0);
-        TFC_setActive(self->field_0xf4, 1);
-        TFC_setLookAtCam(self->field_0xf4, 0);
-        float sp = TFC_useTargetsUpVector(self->field_0xf4, 0);
-        ((PlayerEgo *)(self->field_0x58))->setSpeed(sp);
-        ((PlayerEgo *)(self->field_0x58))->setDockingState(0);
+    if (((PlayerEgo *)(this->field_0x58))->isDockedToDockingPoint() != 0) {
+        ((PlayerEgo *)(this->field_0x58))->dockToDockingPoint(0);
+        TFC_setActive(this->field_0xf4, 1);
+        TFC_setLookAtCam(this->field_0xf4, 0);
+        float sp = TFC_useTargetsUpVector(this->field_0xf4, 0);
+        ((PlayerEgo *)(this->field_0x58))->setSpeed(sp);
+        ((PlayerEgo *)(this->field_0x58))->setDockingState(0);
     }
-    if (((PlayerEgo *)(self->field_0x58))->isInTurretMode() != 0)
-        ((PlayerEgo *)(self->field_0x58))->setTurretMode(0);
+    if (((PlayerEgo *)(this->field_0x58))->isInTurretMode() != 0)
+        ((PlayerEgo *)(this->field_0x58))->setTurretMode(0);
 
     int *snd = g_jsSound;
     ((FModSound *)(*snd))->stop(0x23);
-    ((MGame *)(self))->switchCamera(0);
-    self->field_0x70 = g_jsHudFlag;
-    ((Hud *)(self->field_0x74))->releaseAllKeys();
-    self->field_0x110 = 0;
-    self->field_0x5c = 0;
+    ((MGame *)(this))->switchCamera(0);
+    this->field_0x70 = g_jsHudFlag;
+    ((Hud *)(this->field_0x74))->releaseAllKeys();
+    this->field_0x110 = 0;
+    this->field_0x5c = 0;
 
     PaintCanvas *pc = *g_jsCanvas;
-    unsigned cam = self->field_0xf0;
+    unsigned cam = this->field_0xf0;
     float fov = *(float *)&g_jsFovDefault;
     if ((*g_status)->inAlienOrbit() != 0) {
         int cm = (*g_status)->getCurrentCampaignMission();
         fov = (cm < 0x50) ? *(float *)&g_jsFovAlienB : *(float *)&g_jsFovAlienA;
     }
     pc->CameraSetPerspective(cam, fov, *(float *)&g_jsHudFlag, 0);
-    ((PlayerEgo *)(self->field_0x58))->setAutoPilot(0);
-    self->field_0x5d = 0;
-    self->field_0xd6 = 0;
-    self->field_0xdc = 1;
-    self->field_0x5f = 1;
-    ((PlayerEgo *)(self->field_0x58))->setCollide(0);
-    TFC_setLookAtCam(self->field_0xf4, 1);
-    ((PlayerEgo *)(self->field_0x58))->stopBoost();
-    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
+    ((PlayerEgo *)(this->field_0x58))->setAutoPilot(0);
+    this->field_0x5d = 0;
+    this->field_0xd6 = 0;
+    this->field_0xdc = 1;
+    this->field_0x5f = 1;
+    ((PlayerEgo *)(this->field_0x58))->setCollide(0);
+    TFC_setLookAtCam(this->field_0xf4, 1);
+    ((PlayerEgo *)(this->field_0x58))->stopBoost();
+    Engine *eng = (Engine *)((ApplicationManager *)(this->field_0x8))->GetEngine();
     ((Engine *)(eng))->SetPostEffect(g_jsPostEffect, 0);
 
     float camX, camY, camZ;
-    if (self->field_0xdd == 0) {
+    if (this->field_0xdd == 0) {
         // Free-space jump: position from a landmark.
-        int lm = ((Level *)(self->field_0x78))->getLandmarks();
+        int lm = ((Level *)(this->field_0x78))->getLandmarks();
         void *obj = *(void **)((char *)lm + 4);
         void *vt = *(void **)obj;
         float vtmp[4];
         (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, vtmp);
-        *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)vtmp);
-        float nz = (float)self->field_0xec + *(float *)&g_jsOffsetZ;
-        self->field_0xec = (int)nz;
-        ((PlayerEgo *)(self->field_0x58))->setPosition();
-        ((PlayerEgo *)(self->field_0x58))->setComputerControlled(1);
-        ((AEGeometry *)*(void **)((char *)self->field_0x58 + 8))->setRotation((float)0, (float)0, (float)0);
-        self->field_0xe4 = (int)((float)self->field_0xe4 + *(float *)&g_jsOffsetX);
-        self->field_0xe8 = (int)((float)self->field_0xe8 + *(float *)&g_jsOffsetY);
-        self->field_0xec = (int)((float)self->field_0xec + *(float *)&g_jsOffsetZ2);
-        camX = (float)self->field_0xe4;
-        camY = (float)self->field_0xe8;
-        camZ = (float)self->field_0xec;
+        *(Vector*)((Vector *)((char *)this + 0xe4)) = *(const Vector*)((Vector *)vtmp);
+        float nz = (float)this->field_0xec + *(float *)&g_jsOffsetZ;
+        this->field_0xec = (int)nz;
+        ((PlayerEgo *)(this->field_0x58))->setPosition();
+        ((PlayerEgo *)(this->field_0x58))->setComputerControlled(1);
+        ((AEGeometry *)*(void **)((char *)this->field_0x58 + 8))->setRotation((float)0, (float)0, (float)0);
+        this->field_0xe4 = (int)((float)this->field_0xe4 + *(float *)&g_jsOffsetX);
+        this->field_0xe8 = (int)((float)this->field_0xe8 + *(float *)&g_jsOffsetY);
+        this->field_0xec = (int)((float)this->field_0xec + *(float *)&g_jsOffsetZ2);
+        camX = (float)this->field_0xe4;
+        camY = (float)this->field_0xe8;
+        camZ = (float)this->field_0xec;
     } else {
         // Charged jump: spawn the warp-tunnel geometry.
-        ((PlayerEgo *)(self->field_0x58))->resetMovement();
-        ((PlayerEgo *)(self->field_0x58))->setComputerControlled(1);
+        ((PlayerEgo *)(this->field_0x58))->resetMovement();
+        ((PlayerEgo *)(this->field_0x58))->setComputerControlled(1);
         AEGeometry *geo = (AEGeometry *)::operator new(0xc0);
         new (geo) AEGeometry((uint16_t)0x3ab2, *g_jsCanvas, false);
-        self->field_0x114 = geo;
+        this->field_0x114 = geo;
         int tr = (int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetTransform(*(unsigned *)g_jsCanvas);
         ((TransformFull *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
 
         float pos[4];
         ((PlayerEgo *)(pos))->getPosition();
-        Vector *dst = (Vector *)((char *)self + 0xe4);
+        Vector *dst = (Vector *)((char *)this + 0xe4);
         *(Vector*)(dst) = *(const Vector*)((Vector *)pos);
 
         float dir[4];
         ((PlayerEgo *)(dir))->getPosition();
         *(Vector*)((Vector *)dir) *= (*(float *)&g_jsOffsetX);
         *(Vector*)(dst) += *(const Vector*)((Vector *)dir);
-        ((AEGeometry *)(self->field_0x114))->setPosition(*dst);
+        ((AEGeometry *)(this->field_0x114))->setPosition(*dst);
 
-        ((AEGeometry *)(self->field_0x114))->setScaling(0x40000000);
+        ((AEGeometry *)(this->field_0x114))->setScaling(0x40000000);
         float zero[4]; zero[0] = 0; *(int *)&zero[1] = 0x3f800000; zero[2] = 0;
-        ((AEGeometry *)(self->field_0x114))->setDirection(*(Vector *)zero, *(Vector *)zero /* up: arg lost in decomp */);
+        ((AEGeometry *)(this->field_0x114))->setDirection(*(Vector *)zero, *(Vector *)zero /* up: arg lost in decomp */);
 
         float off[4]; off[0] = (float)g_jsOffsetX; off[1] = (float)g_jsOffsetY; off[2] = (float)g_jsOffsetX;
         *(Vector*)((Vector *)off) = *(const Vector*)((Vector *)off);
-        *(Vector*)((Vector *)((char *)*(int *)((char *)self->field_0x58) + 4)) = AbyssEngine::AEMath::MatrixRotateVector(*(const Matrix*)(off), *(const Vector*)((Vector *)((char *)*(int *)((char *)self->field_0x58) + 4)));
+        *(Vector*)((Vector *)((char *)*(int *)((char *)this->field_0x58) + 4)) = AbyssEngine::AEMath::MatrixRotateVector(*(const Matrix*)(off), *(const Vector*)((Vector *)((char *)*(int *)((char *)this->field_0x58) + 4)));
         *(Vector*)((Vector *)off) = *(const Vector*)((Vector *)off);
         *(Vector*)(dst) += *(const Vector*)((Vector *)off);
 
-        FModSound_setProp(*snd, self->field_0x1c);
+        FModSound_setProp(*snd, this->field_0x1c);
         FModSound_setProp(*snd, 0x23);
         FModSound_setProp(*snd, 0x8d5);
         FModSound_setProp(*snd, 0x8d4);
         ((FModSound *)(*snd))->play(0x20, 0, 0 /* vel: arg lost in decomp */, 0.0f);
 
-        camX = (float)self->field_0xe4;
-        camZ = (float)self->field_0xe8;
-        camY = (float)self->field_0xec;
+        camX = (float)this->field_0xe4;
+        camZ = (float)this->field_0xe8;
+        camY = (float)this->field_0xec;
     }
-    TFC_setPosition(self->field_0xf4, camX, camY, camZ);
+    TFC_setPosition(this->field_0xf4, camX, camY, camZ);
 
     
 }
@@ -391,67 +387,66 @@ int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c);
 
 // MGame::switchCamera(int id)
 void MGame::switchCamera(int id) {
-    MGame *self = this;
     int dockState = 0;
     int turretArg;
 
 restart:
     if (id == 2) id = 3;
-    self->field_0x14 = id;
+    this->field_0x14 = id;
     if (id == 1) {
-        if (((PlayerEgo *)(self->field_0x58))->isDockingToAsteroid() != 0) {
-            self->field_0xd5 = 0;
+        if (((PlayerEgo *)(this->field_0x58))->isDockingToAsteroid() != 0) {
+            this->field_0xd5 = 0;
             // fallthrough to step++
         } else {
             // setTurretMode() returns void in the header; the decompiler modelled a
             // result that gates the following block. Preserve the call and treat the
             // turret as enabled (arg == 1) for the flag/condition.
-            ((PlayerEgo *)((PlayerEgo *)(self->field_0x58)))->setTurretMode(1);
+            ((PlayerEgo *)((PlayerEgo *)(this->field_0x58)))->setTurretMode(1);
             int t = 1;
-            self->field_0xd5 = (uint8_t)t;
+            this->field_0xd5 = (uint8_t)t;
             if (t != 0) {
-                id = self->field_0x14;
+                id = this->field_0x14;
                 turretArg = 1;
                 goto afterTurret;
             }
         }
-        id = self->field_0x14 + 1;
-        self->field_0x14 = id;
+        id = this->field_0x14 + 1;
+        this->field_0x14 = id;
         turretArg = 0;
     } else {
-        self->field_0xd5 = 0;
+        this->field_0xd5 = 0;
         turretArg = 0;
     }
 
 afterTurret:
     if (id == 2) {
-        self->field_0x14 = 3;
+        this->field_0x14 = 3;
     } else if (id >= 4) {
-        self->field_0x14 = 0;
+        this->field_0x14 = 0;
     }
-    self->field_0x18 = 0;
-    ((PlayerEgo *)(self->field_0x58))->setTurretMode(turretArg);
+    this->field_0x18 = 0;
+    ((PlayerEgo *)(this->field_0x58))->setTurretMode(turretArg);
 
-    int mode = self->field_0x14;
+    int mode = this->field_0x14;
     switch (mode) {
     case 0:
         break;
     case 1:
     case 3: {
-        if (((PlayerEgo *)(self->field_0x58))->isDockedToDockingPoint() != 0)
-            TFC_setLookAtCam(self->field_0xf4, 0);
-        ((LevelScript *)(self->field_0x7c))->lookBehind();
-        TFC_setRotationAroundTarget(self->field_0xf4, 1);
-        ((PlayerEgo *)(self->field_0x58))->setFreeLookMode(1);
+        if (((PlayerEgo *)(this->field_0x58))->isDockedToDockingPoint() != 0)
+            TFC_setLookAtCam(this->field_0xf4, 0);
+        ((LevelScript *)(this->field_0x7c))->lookBehind();
+        TFC_setRotationAroundTarget(this->field_0xf4, 1);
+        ((PlayerEgo *)(this->field_0x58))->setFreeLookMode(1);
         goto firstPerson;
     }
     case 2: {
-        dockState = ((PlayerEgo *)(self->field_0x58))->isDockedToDockingPoint();
+        dockState = ((PlayerEgo *)(this->field_0x58))->isDockedToDockingPoint();
         if (dockState == 0) {
-            ((LevelScript *)(self->field_0x7c))->lookBehind();
-            TFC_setRotationAroundTarget(self->field_0xf4, 0);
-            ((PlayerEgo *)(self->field_0x58))->setFreeLookMode(0);
-            Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
+            ((LevelScript *)(this->field_0x7c))->lookBehind();
+            TFC_setRotationAroundTarget(this->field_0xf4, 0);
+            ((PlayerEgo *)(this->field_0x58))->setFreeLookMode(0);
+            Engine *eng = (Engine *)((ApplicationManager *)(this->field_0x8))->GetEngine();
             // Engine layout lives in another translation unit (gof2/Engine.h is not
             // included here); write its +0x360 field via a typed byte offset.
             F<int>(eng, 0x360) = 0;
@@ -466,11 +461,11 @@ afterTurret:
     }
 
 firstPerson: {
-        TFC_enableFirstPersonCam(self->field_0xf4, self->field_0x14 == 2);
-        PlayerEgo *ego = self->field_0x58;
+        TFC_enableFirstPersonCam(this->field_0xf4, this->field_0x14 == 2);
+        PlayerEgo *ego = this->field_0x58;
         int v;
-        if (self->field_0x18 == 0)
-            v = TFC_hideShipForFirstPersonCam(self->field_0xf4);
+        if (this->field_0x18 == 0)
+            v = TFC_hideShipForFirstPersonCam(this->field_0xf4);
         else
             v = 1;
         ((PlayerEgo *)(ego))->syncFirstPerson(v);
@@ -482,37 +477,36 @@ __attribute__((visibility("hidden"))) extern int *g_fcb_guard; // DAT_188af4 (ca
 // MGame::freeCamTouchBegin(int, int, void*): start a free-camera drag. Records the start
 // touch and seeds the camera-offset Vector (built on the stack -> compiler canary).
 void MGame::freeCamTouchBegin(int x, int y, int id) {
-    MGame *self = this;
     char buf[12];
     float fy = (float)y;
     float fx = (float)x;
     int slot;
-    if (self->field_0x98 == 0) {
-        if (self->field_0x9c == 0) self->field_0xa0 = 0;
+    if (this->field_0x98 == 0) {
+        if (this->field_0x9c == 0) this->field_0xa0 = 0;
         *(volatile float *)(buf + 4) = fy;
         *(volatile float *)(buf + 0) = fx;
         *(volatile int *)(buf + 8) = 0;
-        self->field_0x98 = id;
+        this->field_0x98 = id;
         slot = 0xa4;
     } else {
-        if (self->field_0xa0 >= 1000) goto tail;
-        self->field_0xbc = 0;
-        float len = AEMath_VectorLength(TFC_getCamOffset(self->field_0xf4));
+        if (this->field_0xa0 >= 1000) goto tail;
+        this->field_0xbc = 0;
+        float len = AEMath_VectorLength(TFC_getCamOffset(this->field_0xf4));
         *(volatile float *)(buf + 4) = fy;
         *(volatile float *)(buf + 0) = fx;
-        self->field_0xbc = len;
+        this->field_0xbc = len;
         slot = 0xb0;
-        self->field_0x9c = id;
+        this->field_0x9c = id;
     }
-    *(Vector*)((Vector *)((char *)self + slot)) = *(const Vector*)(buf);
+    *(Vector*)((Vector *)((char *)this + slot)) = *(const Vector*)(buf);
 tail:
-    self->field_0x124 = x;
-    self->field_0x128 = y;
-    self->field_0x154 = x;
-    self->field_0x158 = y;
-    self->field_0x134 = 0;
-    self->field_0x138 = 0;
-    self->field_0x15c = 1;
+    this->field_0x124 = x;
+    this->field_0x128 = y;
+    this->field_0x154 = x;
+    this->field_0x158 = y;
+    this->field_0x134 = 0;
+    this->field_0x138 = 0;
+    this->field_0x15c = 1;
 }
 
 __attribute__((visibility("hidden"))) extern Status **g_status;
@@ -527,19 +521,18 @@ __attribute__((visibility("hidden"))) extern GameText **g_gameText;
 // read without touching the void definition (the call ABI is identical for a thiscall on
 // this target).
 void MGame::useCloak() {
-    MGame *self = this;
     void (::PlayerEgo::*pmf)() = &::PlayerEgo::toggleCloaking;
     int (*toggleCloaking)(::PlayerEgo *);
     __builtin_memcpy(&toggleCloaking, &pmf, sizeof(toggleCloaking));
-    if (toggleCloaking((::PlayerEgo *)(self->field_0x58)) != 0) return;
-    if (self->field_0x94 == 0) {
+    if (toggleCloaking((::PlayerEgo *)(this->field_0x58)) != 0) return;
+    if (this->field_0x94 == 0) {
         ChoiceWindow *w = (ChoiceWindow *)MGame_opnew(0x5c);
         new (w) ChoiceWindow();
-        self->field_0x94 = w;
+        this->field_0x94 = w;
     }
     Item *eq = ((Ship *)(((Status *)(*g_status))->getShip()))->getFirstEquipmentOfSort(0x15);
     int attr = eq == 0 ? 0 : ((Item *)(eq))->getAttribute(0x26);
-    ChoiceWindow *cw = self->field_0x94;
+    ChoiceWindow *cw = this->field_0x94;
     void *txt = ((GameText *)(*g_gameText))->getText(0x247);
     String12 s0, s1, s2, s3, s4, s5;
     String_cstr_ctor(&s2, "", false);
@@ -555,9 +548,9 @@ void MGame::useCloak() {
     ((String *)(&s1))->dtor();
     ((String *)(&s3))->dtor();
     ((String *)(&s2))->dtor();
-    self->field_0x5d = 1;
-    self->field_0xce = 1;
-    ((MGame *)(self))->pauseSounds();
+    this->field_0x5d = 1;
+    this->field_0xce = 1;
+    ((MGame *)(this))->pauseSounds();
 }
 
 // 0x75550 — DialogueWindow::set(Mission*, int, int)
@@ -589,31 +582,30 @@ static void bindDialogueLevel(MGame *self) {
 
 // MGame::gameOverCheck(): handle player death/explosion and end-of-level dialogue.
 void MGame::gameOverCheck() {
-    MGame *self = this;
-    if (((PlayerEgo *)(self->field_0x58))->getHitpoints() <= 0) {
-        if (((PlayerEgo *)(self->field_0x58))->tryToStartEmergencySystem() != 0)
+    if (((PlayerEgo *)(this->field_0x58))->getHitpoints() <= 0) {
+        if (((PlayerEgo *)(this->field_0x58))->tryToStartEmergencySystem() != 0)
             return;
-        if (((PlayerEgo *)(self->field_0x58))->isInWormhole() == 0) {
-            ((PlayerEgo *)(self->field_0x58))->setTurretMode(0);
-            ((LevelScript *)(self->field_0x7c))->resetCamera(self->field_0x78);
-            ((PlayerEgo *)(self->field_0x58))->setFreeLookMode(0);
-            TFC_enableFirstPersonCam(self->field_0xf4, 0);
-            ((PlayerEgo *)(self->field_0x58))->hideShipForFirstPersonCameraView(0);
-            self->field_0x111 = 1;
-            ((PlayerEgo *)(self->field_0x58))->explode();
-            if (((PlayerEgo *)(self->field_0x58))->explosionEnded() != 0) {
-                self->field_0x60 = 1;
+        if (((PlayerEgo *)(this->field_0x58))->isInWormhole() == 0) {
+            ((PlayerEgo *)(this->field_0x58))->setTurretMode(0);
+            ((LevelScript *)(this->field_0x7c))->resetCamera(this->field_0x78);
+            ((PlayerEgo *)(this->field_0x58))->setFreeLookMode(0);
+            TFC_enableFirstPersonCam(this->field_0xf4, 0);
+            ((PlayerEgo *)(this->field_0x58))->hideShipForFirstPersonCameraView(0);
+            this->field_0x111 = 1;
+            ((PlayerEgo *)(this->field_0x58))->explode();
+            if (((PlayerEgo *)(this->field_0x58))->explosionEnded() != 0) {
+                this->field_0x60 = 1;
                 String *t = (String *)((GameText *)(**g_goDeathText))->getText(0);
-                ((String *)((char *)self + 0x64))->assign(t);
+                ((String *)((char *)this + 0x64))->assign(t);
             }
         } else {
-            self->field_0x60 = 1;
+            this->field_0x60 = 1;
             String *t = (String *)((GameText *)(**g_goWormText))->getText(0);
-            ((String *)((char *)self + 0x64))->assign(t);
-            self->field_0x111 = 1;
+            ((String *)((char *)this + 0x64))->assign(t);
+            this->field_0x111 = 1;
         }
 
-        if (self->field_0x60 != 0) {
+        if (this->field_0x60 != 0) {
             if ((*g_status)->getMission() != 0 &&
                 ((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) {
                 int cm = (*g_status)->getCurrentCampaignMission();
@@ -629,25 +621,25 @@ void MGame::gameOverCheck() {
                 **g_goStatusD = v;
             }
             int rec = (int)(intptr_t)((RecordHandler *)((RecordHandler *)**g_goRecHandler))->recordStoreRead(**g_goRecId);
-            self->field_0x1e8 = rec;
+            this->field_0x1e8 = rec;
         }
     }
 
-    if (((Level *)(self->field_0x78))->checkGameOver() != 0) {
-        bindDialogueLevel(self);
-        self->field_0x5e = 1;
-        ((MGame *)(self))->pauseSounds();
-        self->field_0x5d = 1;
+    if (((Level *)(this->field_0x78))->checkGameOver() != 0) {
+        bindDialogueLevel(this);
+        this->field_0x5e = 1;
+        ((MGame *)(this))->pauseSounds();
+        this->field_0x5d = 1;
     }
 
     // Timed end-of-mission check (0x48/0x4c is a 64-bit counter vs 0x1389).
-    unsigned lo = self->field_0x48;
-    int hi = self->field_0x4c;
+    unsigned lo = this->field_0x48;
+    int hi = this->field_0x4c;
     bool ready = !(hi < (int)(lo < 0x1389));
     if (ready) {
-        self->field_0x48 = 0;
-        self->field_0x4c = 0;
-        int *sc = (int *)self->field_0x7c;
+        this->field_0x48 = 0;
+        this->field_0x4c = 0;
+        int *sc = (int *)this->field_0x7c;
         if (sc[0] >= 1) {
             // 64-bit compare against script counters [2]/[3].
             bool done = !((long long)(unsigned)sc[0] - ((long long)sc[3] << 32 | (unsigned)sc[2]) < 0);
@@ -655,22 +647,22 @@ void MGame::gameOverCheck() {
             if (!done) {
                 int cm = (*g_status)->getCurrentCampaignMission();
                 if (cm != 0x2a) {
-                    Objective *obj = *(Objective **)((char *)self->field_0x78 + 0x28);
+                    Objective *obj = *(Objective **)((char *)this->field_0x78 + 0x28);
                     survival = (obj == 0) || (((Objective *)(obj))->isSurvivalObjective() != 0);
                 }
                 if (!survival) {
-                    bindDialogueLevel(self);
-                    self->field_0x5d = 0x101;
-                    ((MGame *)(self))->pauseSounds();
+                    bindDialogueLevel(this);
+                    this->field_0x5d = 0x101;
+                    ((MGame *)(this))->pauseSounds();
                 }
             }
         }
     }
 
-    if (self->field_0x60 != 0) {
-        self->field_0x48 = 0;
-        self->field_0x4c = 0;
-        self->field_0x50 = 0;
+    if (this->field_0x60 != 0) {
+        this->field_0x48 = 0;
+        this->field_0x4c = 0;
+        this->field_0x50 = 0;
         ((FModSound *)(**g_goSnd))->play(0x25, 0, 0 /* vel: arg lost in decomp */, 0.0f);
     }
 }
@@ -764,28 +756,27 @@ __attribute__((visibility("hidden"))) extern int *g_upGuard;   // @0x18c8ee (sta
 
 // MGame::OnUpdate(): advance the whole game one frame.
 void MGame::OnUpdate() {
-    MGame *self = this;
     int *guard = g_upGuard;
     int g0 = *guard;
 
     // Clamp this frame's elapsed time to [0, 0x96] ms (cap large hitches).
     int delta;
-    int t = ((ApplicationManager *)(self->field_0x8))->GetElapsedTimeMillis();
+    int t = ((ApplicationManager *)(this->field_0x8))->GetElapsedTimeMillis();
     if (t < 0x97) {
-        delta = (((ApplicationManager *)(self->field_0x8))->GetElapsedTimeMillis() < 0) ? 0
-                : (((ApplicationManager *)(self->field_0x8))->GetElapsedTimeMillis() < 0x97
-                       ? ((ApplicationManager *)(self->field_0x8))->GetElapsedTimeMillis()
+        delta = (((ApplicationManager *)(this->field_0x8))->GetElapsedTimeMillis() < 0) ? 0
+                : (((ApplicationManager *)(this->field_0x8))->GetElapsedTimeMillis() < 0x97
+                       ? ((ApplicationManager *)(this->field_0x8))->GetElapsedTimeMillis()
                        : 0x96);
     } else {
         delta = 0x96;
     }
 
-    self->field_0x40 = delta;
+    this->field_0x40 = delta;
     // Accumulate into the 4-wide playtime counter at 0x30 (lane 0 gets +delta).
-    self->field_0x30 += delta;
+    this->field_0x30 += delta;
 
     // Run the full per-frame update.
-    ((MGame *)(self))->tick(delta);
+    ((MGame *)(this))->tick(delta);
 
     
 }
@@ -797,32 +788,31 @@ extern "C" void Level_onSuspend(...);  // tail call via this->[0x74]
 // MGame::OnSuspend(): persist options, pause all audio, raise the pause dialogue (cutscene
 // mode if the player is mid-cutscene/dead), then suspend the level.
 void MGame::OnSuspend() {
-    MGame *self = this;
     if (*g_record != 0) ((RecordHandler *)(*g_record))->saveOptions();
-    ((MGame *)(self))->pauseSounds();
-    if (self->field_0x5d == 0) {
-        if (self->field_0x88 == 0) {
+    ((MGame *)(this))->pauseSounds();
+    if (this->field_0x5d == 0) {
+        if (this->field_0x88 == 0) {
             MenuTouchWindow *w = (MenuTouchWindow *)MGame_opnew(0x240);
             ((MenuTouchWindow *)(w))->ctor(1);
-            self->field_0x88 = w;
+            this->field_0x88 = w;
         }
-        self->field_0x1a6 = 1;
-        self->field_0x5d = 1;
+        this->field_0x1a6 = 1;
+        this->field_0x5d = 1;
         ((FModSound *)(*g_fmod))->pauseAllPlaying();
-        ((PlayerEgo *)(self->field_0x58))->PauseEngineSound();
-        EnemyList *e = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
+        ((PlayerEgo *)(this->field_0x58))->PauseEngineSound();
+        EnemyList *e = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
         if (e != 0) {
             for (uint32_t i = 0; i < e->size; i++)
                 ((KIPlayer *)(e->data[i]))->PauseEngineSound();
         }
-        MenuTouchWindow *w = self->field_0x88;
+        MenuTouchWindow *w = this->field_0x88;
         int mode = 1;
-        if (self->field_0x5f == 0)
-            mode = ((PlayerEgo *)(self->field_0x58))->isDead();
+        if (this->field_0x5f == 0)
+            mode = ((PlayerEgo *)(this->field_0x58))->isDead();
         ((MenuTouchWindow *)(w))->setCutsceneMode(mode);
-        self->field_0xc9 = 1;
+        this->field_0xc9 = 1;
     }
-    return Level_onSuspend(self->field_0x74);
+    return Level_onSuspend(this->field_0x74);
 }
 
 // 0x... goingToStream
@@ -858,8 +848,7 @@ static void savePlayerStats(MGame *self, Status *status) {
 // textId is the GameText key for the surrounding question text; prefixLit/suffixLit are
 // the C-string literals placed immediately before and after the station name.
 void MGame::buildDockChoice(int textId, int prefixLit, int suffixLit) {
-    MGame *self = this;
-    ChoiceWindow *cw = self->field_0x94;
+    ChoiceWindow *cw = this->field_0x94;
 
     void *txt = ((GameText *)(*g_gameText))->getText(textId);
     RetStr name = ((Station *)((*g_status)->getStation()))->getName();
@@ -886,15 +875,14 @@ void MGame::buildDockChoice(int textId, int prefixLit, int suffixLit) {
 
 // MGame::dockEvent(): handle proximity to a jumpgate/station while flying.
 void MGame::dockEvent() {
-    MGame *self = this;
     int *guard = g_deGuard;
     int g0 = *guard;
 
     float pos[4];
     ((PlayerEgo *)(pos))->getPosition();
-    self->field_0xcb = ((Level *)(self->field_0x78))->collideStream(*(Vector *)pos);
+    this->field_0xcb = ((Level *)(this->field_0x78))->collideStream(*(Vector *)pos);
     ((PlayerEgo *)(pos))->getPosition();
-    self->field_0xcc = ((Level *)(self->field_0x78))->collideStation(*(Vector *)pos);
+    this->field_0xcc = ((Level *)(this->field_0x78))->collideStation(*(Vector *)pos);
 
     Status *status = (Status *)g_deStatus;
     Mission *m = (*g_status)->getMission();
@@ -906,99 +894,99 @@ void MGame::dockEvent() {
                    ((Mission *)((*g_status)->getMission()))->getType() == 0xac;
 
     if (!special) {
-        if ((self->field_0xcc != 0 || self->field_0xcb != 0) &&
-            ((PlayerEgo *)(self->field_0x58))->isAutoPilot() != 0) {
-            ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58, 0);
+        if ((this->field_0xcc != 0 || this->field_0xcb != 0) &&
+            ((PlayerEgo *)(this->field_0x58))->isAutoPilot() != 0) {
+            ((Hud *)(this->field_0x74))->hudEvent(0x15, this->field_0x58, 0);
         }
         
         return;
     }
 
     // special-mission docking path.
-    if (self->field_0xcb != 0) {
-        if (((PlayerEgo *)(self->field_0x58))->goingToStream() != 0 &&
-            ((PlayerEgo *)(self->field_0x58))->isDockingToStream() == 0 &&
-            ((PlayerEgo *)(self->field_0x58))->isDockedToStream() == 0) {
-            ((PlayerEgo *)(self->field_0x58))->dockToStream(0);
-            self->field_0x15c = 0;
-            self->field_0x111 = 1;
+    if (this->field_0xcb != 0) {
+        if (((PlayerEgo *)(this->field_0x58))->goingToStream() != 0 &&
+            ((PlayerEgo *)(this->field_0x58))->isDockingToStream() == 0 &&
+            ((PlayerEgo *)(this->field_0x58))->isDockedToStream() == 0) {
+            ((PlayerEgo *)(this->field_0x58))->dockToStream(0);
+            this->field_0x15c = 0;
+            this->field_0x111 = 1;
             
             return;
         }
-        if (self->field_0xcb != 0) {
-            savePlayerStats(self, status);
+        if (this->field_0xcb != 0) {
+            savePlayerStats(this, status);
             // Status +0xf4 is not modeled in gof2/Status.h (owned by another batch).
-            F<int>(status, 0xf4) = ((PlayerEgo *)(self->field_0x58))->getCurrentSecondaryWeaponIndex();
-            int autop = ((PlayerEgo *)(self->field_0x58))->isAutoPilot();
+            F<int>(status, 0xf4) = ((PlayerEgo *)(this->field_0x58))->getCurrentSecondaryWeaponIndex();
+            int autop = ((PlayerEgo *)(this->field_0x58))->isAutoPilot();
             int *autoFlag = g_deAutoFlag;
             if (*autoFlag == 0 || autop == 0) {
-                if (self->field_0xc7 != 0) {
-                    self->field_0x30 = 0;
-                    self->field_0x34 = 0;
+                if (this->field_0xc7 != 0) {
+                    this->field_0x30 = 0;
+                    this->field_0x34 = 0;
                     
                     return;
                 }
-                ((PlayerEgo *)(self->field_0x58))->isAutoPilot();
-                if (((PlayerEgo *)(self->field_0x58))->goingToStream() == 0) {
+                ((PlayerEgo *)(this->field_0x58))->isAutoPilot();
+                if (((PlayerEgo *)(this->field_0x58))->goingToStream() == 0) {
                     
                     return;
                 }
                 if (*autoFlag == 0) {
-                    self->field_0x15c = 0;
-                    self->field_0x111 = 1;
-                    if (self->field_0x90 == 0) {
+                    this->field_0x15c = 0;
+                    this->field_0x111 = 1;
+                    if (this->field_0x90 == 0) {
                         StarMap *sm = (StarMap *)::operator new(0x1e8);
                         new (sm) StarMap(false, nullptr, false, -1);
-                        self->field_0x90 = sm;
+                        this->field_0x90 = sm;
                     }
-                    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
+                    Engine *eng = (Engine *)((ApplicationManager *)(this->field_0x8))->GetEngine();
                     ((Engine *)(eng))->SetPostEffect(g_dePostEffect, 0);
-                    ((StarMap *)(self->field_0x90))->initLights();
-                    ((StarMap *)(self->field_0x90))->setJumpMapMode(1, 0);
-                    ((PlayerEgo *)(self->field_0x58))->setAutoPilot(0);
-                    self->field_0x5d = 1;
-                    self->field_0xc7 = 1;
-                    ((MGame *)(self))->pauseSounds();
-                    self->field_0x111 = 1;
+                    ((StarMap *)(this->field_0x90))->initLights();
+                    ((StarMap *)(this->field_0x90))->setJumpMapMode(1, 0);
+                    ((PlayerEgo *)(this->field_0x58))->setAutoPilot(0);
+                    this->field_0x5d = 1;
+                    this->field_0xc7 = 1;
+                    ((MGame *)(this))->pauseSounds();
+                    this->field_0x111 = 1;
                     
                     return;
                 }
-                if (self->field_0xc5 != 0) {  return; }
-                self->field_0x15c = 0;
-                ChoiceWindow *cw = self->field_0x94;
-                self->field_0x111 = 1;
+                if (this->field_0xc5 != 0) {  return; }
+                this->field_0x15c = 0;
+                ChoiceWindow *cw = this->field_0x94;
+                this->field_0x111 = 1;
                 if (cw == 0) {
                     cw = (ChoiceWindow *)::operator new(0x5c);
                     new (cw) ChoiceWindow();
-                    self->field_0x94 = cw;
+                    this->field_0x94 = cw;
                 }
-                ((MGame *)(self))->buildDockChoice(g_deTextB, g_deLitB0, g_deLitB1);
+                ((MGame *)(this))->buildDockChoice(g_deTextB, g_deLitB0, g_deLitB1);
             } else {
-                if (self->field_0xc5 != 0) {  return; }
-                self->field_0x15c = 0;
-                ChoiceWindow *cw = self->field_0x94;
-                self->field_0x111 = 1;
+                if (this->field_0xc5 != 0) {  return; }
+                this->field_0x15c = 0;
+                ChoiceWindow *cw = this->field_0x94;
+                this->field_0x111 = 1;
                 if (cw == 0) {
                     cw = (ChoiceWindow *)::operator new(0x5c);
                     new (cw) ChoiceWindow();
-                    self->field_0x94 = cw;
+                    this->field_0x94 = cw;
                 }
-                ((MGame *)(self))->buildDockChoice(g_deTextA, g_deLitA0, g_deLitA1);
+                ((MGame *)(this))->buildDockChoice(g_deTextA, g_deLitA0, g_deLitA1);
             }
-            self->field_0x5d = 1;
-            self->field_0xc5 = 1;
-            ((MGame *)(self))->pauseSounds();
-            ((PlayerEgo *)(self->field_0x58))->setAutoPilot(0);
+            this->field_0x5d = 1;
+            this->field_0xc5 = 1;
+            ((MGame *)(this))->pauseSounds();
+            ((PlayerEgo *)(this->field_0x58))->setAutoPilot(0);
             
             return;
         }
     }
 
-    if (self->field_0xcc == 0) {
-        int tgt = ((PlayerEgo *)(self->field_0x58))->getAutoPilotTarget();
-        int lm = ((Level *)(self->field_0x78))->getLandmarks();
+    if (this->field_0xcc == 0) {
+        int tgt = ((PlayerEgo *)(this->field_0x58))->getAutoPilotTarget();
+        int lm = ((Level *)(this->field_0x78))->getLandmarks();
         if (tgt != *(int *)((char *)lm + 4) ||
-            ((PlayerEgo *)(self->field_0x58))->collidesWithStation() == 0) {
+            ((PlayerEgo *)(this->field_0x58))->collidesWithStation() == 0) {
             
             return;
         }
@@ -1007,19 +995,19 @@ void MGame::dockEvent() {
     int cm = (*g_status)->getCurrentCampaignMission();
     if (cm > 0x30 && (*g_status)->getCurrentCampaignMission() < 0x37) {
         if (Station_getIndex((*g_status)->getStation()) != 0x4a) {
-            ((Hud *)(self->field_0x74))->hudEvent(0x15, self->field_0x58, 0);
+            ((Hud *)(this->field_0x74))->hudEvent(0x15, this->field_0x58, 0);
             
             return;
         }
     }
-    if (((PlayerEgo *)(self->field_0x58))->goingToStation() != 0 &&
+    if (((PlayerEgo *)(this->field_0x58))->goingToStation() != 0 &&
         (*g_status)->inAlienOrbit() == 0 &&
         ((Status *)(*(Station **)status))->inEmptyOrbit() == 0) {
-        ((Achievements *)(*g_deAchieve))->checkForNewMedal(self->field_0x58);
+        ((Achievements *)(*g_deAchieve))->checkForNewMedal(this->field_0x58);
         **g_deAlienFlag = 0;
-        savePlayerStats(self, status);
-        ((ApplicationManager *)(self->field_0x8))->SetCurrentApplicationModule(5);
-        self->field_0x54 = 0;
+        savePlayerStats(this, status);
+        ((ApplicationManager *)(this->field_0x8))->SetCurrentApplicationModule(5);
+        this->field_0x54 = 0;
     }
 
     
@@ -1030,23 +1018,22 @@ void MGame::dockEvent() {
 // axes that moved more than 3px) and converts them to integer angles, flagging the
 // camera dirty.
 void MGame::freeCamTouchEnd(int p1, int p2, int id) {
-    MGame *self = this;
     (void)p1;
     (void)p2;
-    if (self->field_0x98 == id) {
-        self->field_0x98 = 0;
-        self->field_0xa0 = 0;
-    } else if (self->field_0x9c == id) {
-        self->field_0x9c = 0;
-        self->field_0xa0 = 0;
+    if (this->field_0x98 == id) {
+        this->field_0x98 = 0;
+        this->field_0xa0 = 0;
+    } else if (this->field_0x9c == id) {
+        this->field_0x9c = 0;
+        this->field_0xa0 = 0;
     }
     {
-        int ix = self->field_0x134;
-        int iy = self->field_0x138;
+        int ix = this->field_0x134;
+        int iy = this->field_0x138;
         float fx = (float)ix;
         float fy = (float)iy;
-        float nx = self->field_0x118 + fx;
-        float ny = self->field_0x11c + fy;
+        float nx = this->field_0x118 + fx;
+        float ny = this->field_0x11c + fy;
         if (iy < 0) iy = -iy;
         if (ix < 0) ix = -ix;
         // Default coefficients come from float literals (exact values irrelevant to the
@@ -1056,16 +1043,16 @@ void MGame::freeCamTouchEnd(int p1, int p2, int id) {
         if (ix > 3) ox = fx;
         float oy = 0.001f;
         if (iy > 3) oy = fy;
-        self->field_0x111 = 1;
-        self->field_0x13c = 0.002f;
-        self->field_0x140 = 0.002f;
-        self->field_0x15c = 0;
-        self->field_0x148 = ox;
-        self->field_0x14c = oy;
-        self->field_0x118 = nx;
-        self->field_0x11c = ny;
-        self->field_0x12c = (int)nx;
-        self->field_0x130 = (int)ny;
+        this->field_0x111 = 1;
+        this->field_0x13c = 0.002f;
+        this->field_0x140 = 0.002f;
+        this->field_0x15c = 0;
+        this->field_0x148 = ox;
+        this->field_0x14c = oy;
+        this->field_0x118 = nx;
+        this->field_0x11c = ny;
+        this->field_0x12c = (int)nx;
+        this->field_0x130 = (int)ny;
     }
 }
 
@@ -1073,8 +1060,7 @@ void MGame::freeCamTouchEnd(int p1, int p2, int id) {
 // then tail-call operator delete with that pointer — so `this` is never saved.
 
 void MGame::deleting_dtor() {
-    MGame *self = this;
-    MGame_opdelete(((MGame *)(self))->dtor());
+    MGame_opdelete(((MGame *)(this))->dtor());
 }
 
 // Tail helpers.
@@ -1090,8 +1076,7 @@ __attribute__((visibility("hidden"))) extern int g_kdPostEffect;  // @0x189f98 (
 
 // MGame::UseKhadorDrive(): trigger a hyperspace jump or open the jump star map.
 void MGame::UseKhadorDrive() {
-    MGame *self = this;
-    if (((PlayerEgo *)(self->field_0x58))->isChargingDrive() != 0) return;
+    if (((PlayerEgo *)(this->field_0x58))->isChargingDrive() != 0) return;
 
     int *status = g_kdStatus;
     Mission *m = (*g_status)->getMission();
@@ -1115,52 +1100,52 @@ void MGame::UseKhadorDrive() {
     }
 
     if (special) {
-        PlayerEgo *player = (PlayerEgo *)(intptr_t)((Level *)(self))->getPlayer();
-        return ((Hud *)(self->field_0x74))->hudEvent(0x15, player, 0);
+        PlayerEgo *player = (PlayerEgo *)(intptr_t)((Level *)(this))->getPlayer();
+        return ((Hud *)(this->field_0x74))->hudEvent(0x15, player, 0);
     }
 
-    ((PlayerEgo *)(self->field_0x58))->resetGunDelay();
+    ((PlayerEgo *)(this->field_0x58))->resetGunDelay();
     if ((*g_status)->getCurrentCampaignMission() == 0x4e) {
         **g_kdJumpDst = *(int *)((char *)*status + 0x78);
-        self->field_0xdd = 1;
-        ((MGame *)(self))->startChargingJumpDrive();
-        self->field_0x5d = 0;
-        ((MGame *)(self))->resumeSounds();
-        self->field_0xd6 = 0;
-        ((Hud *)(self->field_0x74))->closeHudMenu();
+        this->field_0xdd = 1;
+        ((MGame *)(this))->startChargingJumpDrive();
+        this->field_0x5d = 0;
+        ((MGame *)(this))->resumeSounds();
+        this->field_0xd6 = 0;
+        ((Hud *)(this->field_0x74))->closeHudMenu();
         return ((MGame *)(status))->jumpFinish();
     }
 
     if ((*g_status)->inAlienOrbit() == 0) {
-        if (((PlayerEgo *)(self->field_0x58))->hasVolatileGoods() != 0) {
+        if (((PlayerEgo *)(this->field_0x58))->hasVolatileGoods() != 0) {
             void *txt = ((GameText *)(**g_kdVolText))->getText(0);
-            ((ChoiceWindow *)(self->field_0x94))->set(*(String *)txt);
-            self->field_0x5d = 1;
-            self->field_0xce = 1;
-            self->field_0x111 = 1;
-            self->field_0xd6 = 0;
-            ((Hud *)(self->field_0x74))->closeHudMenu();
-            ((MGame *)(self))->pauseSounds();
-            self->field_0x17c = 0;
+            ((ChoiceWindow *)(this->field_0x94))->set(*(String *)txt);
+            this->field_0x5d = 1;
+            this->field_0xce = 1;
+            this->field_0x111 = 1;
+            this->field_0xd6 = 0;
+            ((Hud *)(this->field_0x74))->closeHudMenu();
+            ((MGame *)(this))->pauseSounds();
+            this->field_0x17c = 0;
             return;
         }
-        if (self->field_0x90 == 0) {
+        if (this->field_0x90 == 0) {
             StarMap *sm = (StarMap *)::operator new(0x1e8);
             new (sm) StarMap(false, nullptr, false, -1);
-            self->field_0x90 = sm;
+            this->field_0x90 = sm;
         }
-        Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
+        Engine *eng = (Engine *)((ApplicationManager *)(this->field_0x8))->GetEngine();
         ((Engine *)(eng))->SetPostEffect(g_kdPostEffect, 0);
-        ((StarMap *)(self->field_0x90))->initLights();
-        self->field_0xdd = 1;
-        ((StarMap *)(self->field_0x90))->setJumpMapMode(1, 1);
+        ((StarMap *)(this->field_0x90))->initLights();
+        this->field_0xdd = 1;
+        ((StarMap *)(this->field_0x90))->setJumpMapMode(1, 1);
         if ((*g_status)->inAlienOrbit() == 0)
-            ((StarMap *)(self->field_0x90))->askForJumpIntoAlienWorld();
-        self->field_0x5d = 1;
-        self->field_0xc7 = 1;
-        ((MGame *)(self))->pauseSounds();
-        self->field_0xd6 = 0;
-        return ((MGame *)(self->field_0x74))->starMapShown();
+            ((StarMap *)(this->field_0x90))->askForJumpIntoAlienWorld();
+        this->field_0x5d = 1;
+        this->field_0xc7 = 1;
+        ((MGame *)(this))->pauseSounds();
+        this->field_0xd6 = 0;
+        return ((MGame *)(this->field_0x74))->starMapShown();
     }
 
     // In alien orbit.
@@ -1168,12 +1153,12 @@ void MGame::UseKhadorDrive() {
         *(int *)((char *)*status + 0x84) = 100;
     int station = ((Galaxy *)(**g_kdGalaxy))->getStation((*g_status)->getCurrentCampaignMission() /* index: arg lost in decomp */);
     **g_kdAlienDst = station;
-    self->field_0xdd = 1;
-    ((MGame *)(self))->startChargingJumpDrive();
-    self->field_0x5d = 0;
-    ((MGame *)(self))->resumeSounds();
-    self->field_0xd6 = 0;
-    return ((MGame *)(self->field_0x74))->starMapShown();
+    this->field_0xdd = 1;
+    ((MGame *)(this))->startChargingJumpDrive();
+    this->field_0x5d = 0;
+    ((MGame *)(this))->resumeSounds();
+    this->field_0xd6 = 0;
+    return ((MGame *)(this->field_0x74))->starMapShown();
 }
 
 // Heavily-corrupt sub-blocks are delegated to documented helpers:
@@ -1192,7 +1177,6 @@ __attribute__((visibility("hidden"))) extern int *g_initSoundList; // @0x187cc6 
 // common cockpit/weapon/explosion set, then appends wingman, early-mission, warp-gate and
 // per-campaign-mission specific clips.
 void MGame::loadSoundResources() {
-    MGame *self = this;
     int list = *g_initSoundList;
 
     Globals_startNewSoundResourceList();
@@ -1242,16 +1226,15 @@ void MGame::loadSoundResources() {
 // (each only when its saved slot is non-negative) and, except on mission 0x5f, re-cap them to
 // the current ship's maxima (resetting gamma to full when there is no orbital gamma damage).
 void MGame::restorePlayerStats() {
-    MGame *self = this;
     int status = *g_initStatus;
-    Player *pl = (Player *)self->field_0x58->player;
+    Player *pl = (Player *)this->field_0x58->player;
 
     if (*(int *)((char *)status + 0x64) >= 0) pl->setHitpoints(*(int *)((char *)status + 0x64));
     if (*(int *)((char *)status + 0x5c) >= 0) pl->setShieldHP(*(int *)((char *)status + 0x5c));
     if (*(int *)((char *)status + 0x60) >= 0) pl->setArmorHP(*(int *)((char *)status + 0x60));
     if (*(int *)((char *)status + 0x68) >= 0) pl->setGammaHP(*(int *)((char *)status + 0x68));
 
-    self->field_0x58->resetLastHP();
+    this->field_0x58->resetLastHP();
 
     if ((*g_status)->getCurrentCampaignMission() != 0x5f) {
         Ship *ship = (*g_status)->getShip();
@@ -1558,70 +1541,69 @@ __attribute__((visibility("hidden"))) extern float g_fcZoomMin;   // @0x188d28
 // The third gesture component arrives pointer-sized but is consumed as a signed
 // touch coordinate; route it through intptr_t so the host build does not truncate.
 void MGame::freeCamTouchMove(int x, int y, void *touchId) {
-    MGame *self = this;
     int ty = (int)(intptr_t)touchId;
     int *guard = g_fcGuard;
     int g0 = *guard;
 
-    if (((PlayerEgo *)(self->field_0x58))->isMining() != 0) {
-        self->field_0x111 = 1;
-        return ((MGame *)(self))->freeCamPanDone(ty);
+    if (((PlayerEgo *)(this->field_0x58))->isMining() != 0) {
+        this->field_0x111 = 1;
+        return ((MGame *)(this))->freeCamPanDone(ty);
         return;
     }
-    self->field_0x111 = 0;
+    this->field_0x111 = 0;
 
-    int t0 = self->field_0x98;
-    int t1 = self->field_0x9c;
+    int t0 = this->field_0x98;
+    int t1 = this->field_0x9c;
     if (t0 == 0 || t1 == 0) {
         // Single-finger pan: accumulate rotation deltas.
-        int dy = y - self->field_0x124;
-        int dx = ty - self->field_0x128;
-        self->field_0x124 = x;
-        self->field_0x128 = ty;
-        self->field_0x134 = dy;
-        self->field_0x138 = dx;
-        self->field_0x13c = 0x3f800000;
-        self->field_0x140 = 0x3f800000;
-        self->field_0x118 += (float)dy;
-        self->field_0x11c += (float)dx;
+        int dy = y - this->field_0x124;
+        int dx = ty - this->field_0x128;
+        this->field_0x124 = x;
+        this->field_0x128 = ty;
+        this->field_0x134 = dy;
+        this->field_0x138 = dx;
+        this->field_0x13c = 0x3f800000;
+        this->field_0x140 = 0x3f800000;
+        this->field_0x118 += (float)dy;
+        this->field_0x11c += (float)dx;
 
         if (t0 == 0) {
             float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
-            *(Vector*)((Vector *)((char *)self + 0xb0)) = *(const Vector*)((Vector *)v);
+            *(Vector*)((Vector *)((char *)this + 0xb0)) = *(const Vector*)((Vector *)v);
         } else if (t1 == 0) {
             float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
-            *(Vector*)((Vector *)((char *)self + 0xa4)) = *(const Vector*)((Vector *)v);
+            *(Vector*)((Vector *)((char *)this + 0xa4)) = *(const Vector*)((Vector *)v);
         }
         
         return;
     }
 
     // Two-finger pinch: zoom by the change in finger distance.
-    Vector *base = (Vector *)((char *)self + 0xa4);
+    Vector *base = (Vector *)((char *)this + 0xa4);
     float tmp[4];
-    *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)((char *)self + 0xb0));
+    *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)((char *)this + 0xb0));
     float oldLen = AbyssEngine::AEMath::VectorLength(*(const Vector*)((Vector *)tmp));
     float newLen = oldLen;
 
-    if (self->field_0x98 == ty) {
+    if (this->field_0x98 == ty) {
         float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
         *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)v);
         newLen = AbyssEngine::AEMath::VectorLength(*(const Vector*)((Vector *)tmp));
         *(Vector*)(base) = *(const Vector*)((Vector *)v);
-    } else if (self->field_0x9c == ty) {
+    } else if (this->field_0x9c == ty) {
         float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
         *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)v);
         newLen = AbyssEngine::AEMath::VectorLength(*(const Vector*)((Vector *)tmp));
-        *(Vector*)((Vector *)((char *)self + 0xb0)) = *(const Vector*)((Vector *)v);
+        *(Vector*)((Vector *)((char *)this + 0xb0)) = *(const Vector*)((Vector *)v);
     }
 
-    float zoom = self->field_0xbc + (newLen - oldLen) * g_fcRotScale;
-    self->field_0xbc = zoom;
+    float zoom = this->field_0xbc + (newLen - oldLen) * g_fcRotScale;
+    this->field_0xbc = zoom;
     if (zoom > g_fcZoomMax || zoom < g_fcZoomMin) {
         zoom = (zoom > g_fcZoomMax) ? g_fcZoomMax : g_fcZoomMin;
-        self->field_0xbc = zoom;
+        this->field_0xbc = zoom;
     }
-    TFC_zoomTarget(self->field_0xf4, zoom);
+    TFC_zoomTarget(this->field_0xf4, zoom);
 
     
 }
@@ -1637,36 +1619,35 @@ __attribute__((visibility("hidden"))) extern int *g_teGuard;   // @0x18a15c (sta
 
 // MGame::OnTouchEnd(int p1, int p2, void *touchId)
 void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
-    MGame *self = this;
     int *guard = g_teGuard;
     int g0 = *guard;
 
     // Release the tracked touch id if this is the one we were following.
-    if (self->field_0xc0 == touchId) {
-        self->field_0xc0 = 0;
-        self->field_0xc1 = 0;
-        self->field_0xc2 = 0;
-        self->field_0xc3 = 0;
+    if (this->field_0xc0 == touchId) {
+        this->field_0xc0 = 0;
+        this->field_0xc1 = 0;
+        this->field_0xc2 = 0;
+        this->field_0xc3 = 0;
     }
 
-    int wasAutoPilot = ((PlayerEgo *)(self->field_0x58))->isAutoPilot();
-    self->field_0x1a8 = 0x3f800000;                 // this[1].field_A0 (fast-forward weight)
-    TFC_setFastForwardMode(self->field_0xf4, 0);
+    int wasAutoPilot = ((PlayerEgo *)(this->field_0x58))->isAutoPilot();
+    this->field_0x1a8 = 0x3f800000;                 // this[1].field_A0 (fast-forward weight)
+    TFC_setFastForwardMode(this->field_0xf4, 0);
     // (*ppPVar1)[3].field_18 == ego + 0x... resume-flag.
-    *(uint8_t *)((char *)self->field_0x58 + 0x150) = 1;
+    *(uint8_t *)((char *)this->field_0x58 + 0x150) = 1;
 
     unsigned hr = 0;
-    if (self->field_0x5d == 0) {
-        hr = ((Hud *)(self->field_0x74))->touchEnd(p1, (void *)(intptr_t)p2, (int)(intptr_t)touchId);
-        self->field_0xf8 = hr;
+    if (this->field_0x5d == 0) {
+        hr = ((Hud *)(this->field_0x74))->touchEnd(p1, (void *)(intptr_t)p2, (int)(intptr_t)touchId);
+        this->field_0xf8 = hr;
         if (hr != 0) {
-            self->field_0x98 = 0;
-            self->field_0x9c = 0;
+            this->field_0x98 = 0;
+            this->field_0x9c = 0;
         }
     }
 
     // All button-press reactions live in the dispatch helper.
-    ((MGame *)(self))->dispatchTouchEndAction(p1, p2, touchId, hr, wasAutoPilot);
+    ((MGame *)(this))->dispatchTouchEndAction(p1, p2, touchId, hr, wasAutoPilot);
 
     
 }
@@ -1711,7 +1692,6 @@ __attribute__((visibility("hidden"))) extern int  g_scFollowHashLit; // @0x1900f
 // the agent's mission string and clears the old objectives. The DialogueWindow has already
 // been bound to the level by the caller.
 void MGame::buildMissionFollowup() {
-    MGame *self = this;
     Status *status = (Status *)(*g_status);
 
     // Point the campaign mission at the agent's home station.
@@ -1720,16 +1700,16 @@ void MGame::buildMissionFollowup() {
     ((Mission *)(cm))->setTargetStation(((Agent *)(agent))->getStation());
 
     // Raise the briefing for the (now retargeted) mission and convert it to a delivery type.
-    ((DialogueWindow *)(self->field_0x8c))->set(((Status *)(status))->getCampaignMissionPtr(), 1, -1);
+    ((DialogueWindow *)(this->field_0x8c))->set(((Status *)(status))->getCampaignMissionPtr(), 1, -1);
     ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setType(0xb);
 
     // Leave turret / first-person and reset the flight camera.
-    self->field_0x58->setTurretMode(0);
-    ((LevelScript *)(self->field_0x7c))->resetCamera((Level *)self->field_0x78);
-    self->field_0x58->setFreeLookMode(false);
-    TFC_enableFirstPersonCam(self->field_0xf4, 0);
-    self->field_0x58->hideShipForFirstPersonCameraView(false);
-    *(uint8_t *)((char *)self + 0x239) = 1;   // this[1].field_48+1 (delivery-active flag)
+    this->field_0x58->setTurretMode(0);
+    ((LevelScript *)(this->field_0x7c))->resetCamera((Level *)this->field_0x78);
+    this->field_0x58->setFreeLookMode(false);
+    TFC_enableFirstPersonCam(this->field_0xf4, 0);
+    this->field_0x58->hideShipForFirstPersonCameraView(false);
+    *(uint8_t *)((char *)this + 0x239) = 1;   // this[1].field_48+1 (delivery-active flag)
 
     ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setStatusValue(0);
     ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setWon(false);
@@ -1751,44 +1731,43 @@ void MGame::buildMissionFollowup() {
     status->setMission(((Status *)(status))->getCampaignMissionPtr());
 
     // Hand the route back to the player and clear it / its waypoint autopilot.
-    self->field_0x58->setRoute(0);
-    if (self->field_0x58->goingToWaypoint() != 0)
-        self->field_0x58->setAutoPilot(0);
-    self->field_0x58->removeRoute();
-    ((Level *)(self->field_0x78))->setPlayerRoute(0);
+    this->field_0x58->setRoute(0);
+    if (this->field_0x58->goingToWaypoint() != 0)
+        this->field_0x58->setAutoPilot(0);
+    this->field_0x58->removeRoute();
+    ((Level *)(this->field_0x78))->setPlayerRoute(0);
 
     // Release the two old objectives held on the Level (slots 10 and 11).
-    int *level = (int *)self->field_0x78;
+    int *level = (int *)this->field_0x78;
     if (level[10] != 0) {
         ::operator delete(Objective_dtor((Objective *)(intptr_t)level[10]));
-        level = (int *)self->field_0x78;
+        level = (int *)this->field_0x78;
     }
     level[10] = 0;
     if (level[11] != 0) {
         ::operator delete(Objective_dtor((Objective *)(intptr_t)level[11]));
-        level = (int *)self->field_0x78;
+        level = (int *)this->field_0x78;
     }
     level[11] = 0;
 
-    *(uint16_t *)((char *)self + 0x5d) = 0x101;   // pause + cutscene flags
-    ((MGame *)(self))->pauseSounds();
+    *(uint16_t *)((char *)this + 0x5d) = 0x101;   // pause + cutscene flags
+    ((MGame *)(this))->pauseSounds();
 }
 
 // MGame::successCheck(): detect mission completion and run its outcome.
 void MGame::successCheck() {
-    MGame *self = this;
     int *guard = g_scGuard;
     int g0 = *guard;
 
-    bool timed = !(self->field_0x4c < (int)(self->field_0x48 < 0x1389));
-    if (timed || self->field_0xdc != 0) {
+    bool timed = !(this->field_0x4c < (int)(this->field_0x48 < 0x1389));
+    if (timed || this->field_0xdc != 0) {
         if (((Mission *)((Mission *)(*g_status)->getCampaignMission()))->getType() != 0xaa) goto done;
     }
 
     {
         int *status = g_scStatus;
         Mission *mc = ((Status *)(*status))->missionCompleted(0, 0, 0);
-        int obj = ((Level *)(self->field_0x78))->checkObjective();
+        int obj = ((Level *)(this->field_0x78))->checkObjective();
         if (mc == 0 && obj == 0) goto done;
     }
 
@@ -1813,21 +1792,21 @@ void MGame::successCheck() {
                     int cm2 = (*g_status)->getCurrentCampaignMission();
                     if (DialogueWindow::hasSuccessDialogue(cm2) == 0) {
                         ((Status *)(*status))->nextCampaignMission();
-                        ((Level *)(self->field_0x78))->removeObjectives();
+                        ((Level *)(this->field_0x78))->removeObjectives();
                         ((Status *)(status))->setMission((Mission *)(*g_status)->getCampaignMission() /* mission: arg lost in decomp */);
                     }
                 }
                 goto done;
             }
             // fallthrough: has success dialogue -> show it.
-            bindDlg(self);
-            ((DialogueWindow *)(self->field_0x8c))->set((*g_status)->getMission(), 1, -1);
-            self->field_0x5d = 0x101;
-            ((MGame *)(self))->pauseSounds();
+            bindDlg(this);
+            ((DialogueWindow *)(this->field_0x8c))->set((*g_status)->getMission(), 1, -1);
+            this->field_0x5d = 0x101;
+            ((MGame *)(this))->pauseSounds();
 
             int cm = (*g_status)->getCurrentCampaignMission();
             if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x26) {
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
+                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     // Enemy entries are polymorphic; this branch touches the
@@ -1839,12 +1818,12 @@ void MGame::successCheck() {
                     }
                 }
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x38) {
-                StarSystem *ss = (StarSystem *)(intptr_t)((Level *)(self->field_0x78))->getStarSystem();
+                StarSystem *ss = (StarSystem *)(intptr_t)((Level *)(this->field_0x78))->getStarSystem();
                 ((StarSystem *)(ss))->getPlanets();
                 int pts[3] = {0, 0, 0};
                 Route *route = (Route *)::operator new(0x18);
                 ((Route *)(route))->ctor(pts, 3);
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
+                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     KIPlayer *k = *(KIPlayer **)(*(int *)((char *)enemies + 4) + i * 4);
@@ -1855,7 +1834,7 @@ void MGame::successCheck() {
                 }
                 ::operator delete(((Route *)(route))->dtor());
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
+                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     KIPlayer *e = enemies->data[i];
@@ -1863,7 +1842,7 @@ void MGame::successCheck() {
                         ((Player *)((Player *)e->player))->removeAllGuns();
                 }
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x49) {
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
+                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
                     PlayerFixedObject *o = *(PlayerFixedObject **)(*(int *)((char *)enemies + 4) + i * 4);
@@ -1880,21 +1859,21 @@ void MGame::successCheck() {
             goto done;
         }
         // Non-campaign success-dialogue path.
-        bindDlg(self);
+        bindDlg(this);
         // Slot holds either a Mission* (non-campaign) or a campaign mission id;
         // use a pointer-width carrier so neither is truncated on a 64-bit host.
         intptr_t m = (*g_status)->getCurrentCampaignMission() == 0
                          ? (intptr_t)(*g_status)->getMission()
                          : (intptr_t)(*g_status)->getCurrentCampaignMission();
-        ((DialogueWindow *)(self->field_0x8c))->set((Mission *)m, 1, -1);
-        self->field_0x5d = 0x101;
-        ((MGame *)(self))->pauseSounds();
+        ((DialogueWindow *)(this->field_0x8c))->set((Mission *)m, 1, -1);
+        this->field_0x5d = 0x101;
+        ((MGame *)(this))->pauseSounds();
         goto done;
     }
 
 deliverFollowup:
-    bindDlg(self);
-    ((MGame *)(self))->buildMissionFollowup();
+    bindDlg(this);
+    ((MGame *)(this))->buildMissionFollowup();
 
 done:
     
@@ -1918,10 +1897,9 @@ __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 
 // MGame::resumeSounds(): resume FMOD, the player's engine sound, and every enemy's.
 void MGame::resumeSounds() {
-    MGame *self = this;
     ((FModSound *)(*g_fmod))->resumeAll();
-    ((PlayerEgo *)(self->field_0x58))->ResumeEngineSound();
-    EnemyList *e = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
+    ((PlayerEgo *)(this->field_0x58))->ResumeEngineSound();
+    EnemyList *e = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
     if (e == 0) return;
     for (uint32_t i = 0; i < e->size; i++)
         ((KIPlayer *)(e->data[i]))->ResumeEngineSound();
@@ -1936,22 +1914,21 @@ __attribute__((visibility("hidden"))) extern int **g_alienCost;
 // MGame::startChargingJumpDrive(): if the jump drive is armed, validate fuel/cargo, then
 // either pop a "no fuel" choice dialogue or actually trigger the hyperspace jump.
 void MGame::startChargingJumpDrive() {
-    MGame *self = this;
-    if (self->field_0xdd == 0) return;
+    if (this->field_0xdd == 0) return;
     Status **sp = g_status;
     int needed = 1;
     if (((Ship *)(((Status *)(*sp))->getShip()))->hasCargo(0x7a, 1) == 0) {
-        ChoiceWindow *w = self->field_0x94;
+        ChoiceWindow *w = this->field_0x94;
         if (w == 0) {
             w = (ChoiceWindow *)MGame_opnew(0x5c);
             new (w) ChoiceWindow();
-            self->field_0x94 = w;
+            this->field_0x94 = w;
         }
         void *txt = ((GameText *)(**(int **)g_status))->getText(0x243);
         ((ChoiceWindow *)(w))->set(*(String *)txt);
-        self->field_0x5d = 1;
-        self->field_0xce = 1;
-        ((MGame *)(self))->pauseSounds();
+        this->field_0x5d = 1;
+        this->field_0xce = 1;
+        ((MGame *)(this))->pauseSounds();
         **g_jumpCost = 0;
         return;
     }
@@ -1967,26 +1944,26 @@ void MGame::startChargingJumpDrive() {
     }
     ((Ship *)(((Status *)(*sp))->getShip()))->getCargo(0x7a);
     if (((Item *)(0))->getAmount() < cost) {
-        ChoiceWindow *w = self->field_0x94;
+        ChoiceWindow *w = this->field_0x94;
         if (w == 0) {
             w = (ChoiceWindow *)MGame_opnew(0x5c);
             new (w) ChoiceWindow();
-            self->field_0x94 = w;
+            this->field_0x94 = w;
         }
         int hc2 = (*g_status)->hardCoreMode();
         void *txt = ((GameText *)(**(int **)g_status))->getText(hc2 != 0 ? 0x243 : 0x244);
         ((ChoiceWindow *)(w))->set(*(String *)txt);
-        self->field_0x5d = 1;
-        self->field_0xce = 1;
-        ((MGame *)(self))->pauseSounds();
+        this->field_0x5d = 1;
+        this->field_0xce = 1;
+        ((MGame *)(this))->pauseSounds();
         *jf = 0;
         return;
     }
-    ((PlayerEgo *)(self->field_0x58))->startJumpDrive();
+    ((PlayerEgo *)(this->field_0x58))->startJumpDrive();
     if (*jf != F<int>((MGame *)*sp, 0x78)) {
         if ((*g_status)->inAlienOrbit() == 0) needed = **g_alienCost;
     }
-    ((Hud *)(self->field_0x74))->hudEvent(0x1e, self->field_0x58, needed);
+    ((Hud *)(this->field_0x74))->hudEvent(0x1e, this->field_0x58, needed);
     ((Ship *)(((Status *)(*sp))->getShip()))->removeCargo(0x7a, needed);
 }
 
@@ -1995,11 +1972,10 @@ __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 // MGame::pauseSounds(): snapshot the pause flag, pause FMOD, the player's engine sound,
 // and every enemy's.
 void MGame::pauseSounds() {
-    MGame *self = this;
-    self->field_0x1a6 = self->field_0x5d;
+    this->field_0x1a6 = this->field_0x5d;
     ((FModSound *)(*g_fmod))->pauseAllPlayingSoundFXEvents();
-    ((PlayerEgo *)(self->field_0x58))->PauseEngineSound();
-    EnemyList *e = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
+    ((PlayerEgo *)(this->field_0x58))->PauseEngineSound();
+    EnemyList *e = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
     if (e != 0) {
         for (uint32_t i = 0; i < e->size; i++)
             ((KIPlayer *)(e->data[i]))->PauseEngineSound();
@@ -2022,33 +1998,32 @@ __attribute__((visibility("hidden"))) extern uint8_t **g_resPauseSrc; // @0x1886
 
 // MGame::reset(): rebuild all per-session subsystems and reset transient state.
 void MGame::reset() {
-    MGame *self = this;
-    self->field_0xbc = 0; self->field_0xc0 = 0;
-    self->field_0x98 = 0; self->field_0x9c = 0;
-    self->field_0xa0 = 0;
-    self->field_0x154 = 0; self->field_0x158 = 0;
-    self->field_0x138 = 0;
-    self->field_0x15c = 0;
-    self->field_0x118 = g_resAspectC;
-    self->field_0x11c = g_resAspectA;
-    self->field_0x120 = g_resAspectB;
-    self->field_0x124 = 0; self->field_0x128 = 0;
-    self->field_0x12c = 0;
-    self->field_0x130 = 0; self->field_0x134 = 0;
+    this->field_0xbc = 0; this->field_0xc0 = 0;
+    this->field_0x98 = 0; this->field_0x9c = 0;
+    this->field_0xa0 = 0;
+    this->field_0x154 = 0; this->field_0x158 = 0;
+    this->field_0x138 = 0;
+    this->field_0x15c = 0;
+    this->field_0x118 = g_resAspectC;
+    this->field_0x11c = g_resAspectA;
+    this->field_0x120 = g_resAspectB;
+    this->field_0x124 = 0; this->field_0x128 = 0;
+    this->field_0x12c = 0;
+    this->field_0x130 = 0; this->field_0x134 = 0;
 
-    self->field_0x58 = (PlayerEgo *)(intptr_t)((Level *)(self))->getPlayer();
+    this->field_0x58 = (PlayerEgo *)(intptr_t)((Level *)(this))->getPlayer();
 
     Hud *hud = (Hud *)::operator new(0x53c);
     ((Hud *)(hud))->ctor();
-    self->field_0x74 = hud;
+    this->field_0x74 = hud;
 
     Radio *radio = (Radio *)::operator new(0x48);
     Radio_ctor(radio);
-    self->field_0x84 = radio;
-    ((Radio *)(radio))->setMessages((Array<RadioMessage *> *)(intptr_t)((Level *)(self->field_0x78))->getMessages());
+    this->field_0x84 = radio;
+    ((Radio *)(radio))->setMessages((Array<RadioMessage *> *)(intptr_t)((Level *)(this->field_0x78))->getMessages());
 
     PaintCanvas *pc = *g_resCanvas;
-    pc->CameraCreate((unsigned *)((char *)self + 0xf0));
+    pc->CameraCreate((unsigned *)((char *)this + 0xf0));
     unsigned cam = *(unsigned *)g_resCanvas;
     int *status = g_resStatus;
 
@@ -2059,72 +2034,72 @@ void MGame::reset() {
     }
     pc->CameraSetPerspective(cam, fov, 0, 0);
 
-    if (self->field_0xf4 != 0) {
-        ::operator delete(TargetFollowCamera_dtor(self->field_0xf4));
-        self->field_0xf4 = 0;
+    if (this->field_0xf4 != 0) {
+        ::operator delete(TargetFollowCamera_dtor(this->field_0xf4));
+        this->field_0xf4 = 0;
     }
     TargetFollowCamera *tfc = (TargetFollowCamera *)::operator new(0x178);
-    TargetFollowCamera_ctor(tfc, self->field_0xf0,
-                            *(int *)((char *)self->field_0x58 + 8), 0, 0, 0, 0, 0, 0);
-    self->field_0xf4 = tfc;
-    pc->CameraSetCurrent(self->field_0xf0);
-    ((PlayerEgo *)(self->field_0x58))->setTargetFollowCamera(self->field_0xf4);
-    ((TargetFollowCamera *)(self->field_0xf4))->resetShipHandling();
+    TargetFollowCamera_ctor(tfc, this->field_0xf0,
+                            *(int *)((char *)this->field_0x58 + 8), 0, 0, 0, 0, 0, 0);
+    this->field_0xf4 = tfc;
+    pc->CameraSetCurrent(this->field_0xf0);
+    ((PlayerEgo *)(this->field_0x58))->setTargetFollowCamera(this->field_0xf4);
+    ((TargetFollowCamera *)(this->field_0xf4))->resetShipHandling();
 
     Radar *radar = (Radar *)::operator new(0x248);
-    Radar_ctor(radar, self->field_0x78);
-    self->field_0x80 = radar;
+    Radar_ctor(radar, this->field_0x78);
+    this->field_0x80 = radar;
 
     if ((*g_status)->getMission() != 0)
-        self->field_0x61 = (uint8_t)((Mission *)((*g_status)->getMission()))->isCampaignMission();
+        this->field_0x61 = (uint8_t)((Mission *)((*g_status)->getMission()))->isCampaignMission();
 
     LevelScript *script = (LevelScript *)::operator new(0xe8);
-    new (script) LevelScript(self->field_0x78, self->field_0x74,
-                             self->field_0x80, self->field_0xf4);
-    self->field_0x7c = script;
+    new (script) LevelScript(this->field_0x78, this->field_0x74,
+                             this->field_0x80, this->field_0xf4);
+    this->field_0x7c = script;
     ((LevelScript *)(script))->lookBehind();
-    ((Level *)(self->field_0x78))->initParticleSystems();
+    ((Level *)(this->field_0x78))->initParticleSystems();
 
     ChoiceWindow *cw = (ChoiceWindow *)::operator new(0x5c);
     new (cw) ChoiceWindow();
-    self->field_0x94 = cw;
+    this->field_0x94 = cw;
 
-    self->field_0x48 = 0; self->field_0x4c = 0;
-    self->field_0x14 = 0;
-    self->field_0x18 = 0;
-    self->field_0x5c = 0;
-    self->field_0x5f = 0;
-    self->field_0xc4 = 0;
-    self->field_0xc6 = 0;
-    self->field_0xc8 = 0;
-    self->field_0xe0 = 0;
-    self->field_0x15e = 0;
-    self->field_0x110 = 0;
-    self->field_0x168 = 0x3f800000;
-    self->field_0x1b0 = 0;
-    self->field_0x1b4 = g_resInitB;
-    self->field_0x100 = 0;
-    self->field_0x104 = 0; self->field_0x108 = 0; self->field_0x10c = 0;
-    self->field_0x1b8 = 0;
-    self->field_0x1cc = (*g_resShipTune)[0x2f4 / 4];
-    self->field_0x1d0 = 0;
-    self->field_0x1e8 = 0;
-    self->field_0x178 = 0;
-    self->field_0x17c = 0;
-    self->field_0x180 = 0; self->field_0x184 = 0;
+    this->field_0x48 = 0; this->field_0x4c = 0;
+    this->field_0x14 = 0;
+    this->field_0x18 = 0;
+    this->field_0x5c = 0;
+    this->field_0x5f = 0;
+    this->field_0xc4 = 0;
+    this->field_0xc6 = 0;
+    this->field_0xc8 = 0;
+    this->field_0xe0 = 0;
+    this->field_0x15e = 0;
+    this->field_0x110 = 0;
+    this->field_0x168 = 0x3f800000;
+    this->field_0x1b0 = 0;
+    this->field_0x1b4 = g_resInitB;
+    this->field_0x100 = 0;
+    this->field_0x104 = 0; this->field_0x108 = 0; this->field_0x10c = 0;
+    this->field_0x1b8 = 0;
+    this->field_0x1cc = (*g_resShipTune)[0x2f4 / 4];
+    this->field_0x1d0 = 0;
+    this->field_0x1e8 = 0;
+    this->field_0x178 = 0;
+    this->field_0x17c = 0;
+    this->field_0x180 = 0; this->field_0x184 = 0;
 
-    unsigned t = ((ApplicationManager *)(self->field_0x8))->GetCurrentTimeMillis();
-    self->field_0x111 = 0x101;
-    self->field_0xcf = 0;
-    self->field_0xd0 = 0;
-    self->field_0xd4 = 0;
-    self->field_0x1e4 = 0;
-    self->field_0x1e6 = 0;
-    self->field_0x20 = t & 0xffff;
-    self->field_0x24 = 0;
-    self->field_0x28 = t & 0xffff;
-    self->field_0x2c = 0;
-    self->field_0x1dd = **g_resPauseSrc;
+    unsigned t = ((ApplicationManager *)(this->field_0x8))->GetCurrentTimeMillis();
+    this->field_0x111 = 0x101;
+    this->field_0xcf = 0;
+    this->field_0xd0 = 0;
+    this->field_0xd4 = 0;
+    this->field_0x1e4 = 0;
+    this->field_0x1e6 = 0;
+    this->field_0x20 = t & 0xffff;
+    this->field_0x24 = 0;
+    this->field_0x28 = t & 0xffff;
+    this->field_0x2c = 0;
+    this->field_0x1dd = **g_resPauseSrc;
 
     // *status points at the Status object; fields +0x184/0x188/0x18c are not
     // modeled in gof2/Status.h (owned by another batch) — write via byte offset.
@@ -2143,8 +2118,7 @@ __attribute__((visibility("hidden"))) extern int g_accelTune;   // @0x1887d4 (*(
 
 // MGame::handleAccelerometer(): tilt-steer the ship from device accelerometer input.
 void MGame::handleAccelerometer() {
-    MGame *self = this;
-    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
+    Engine *eng = (Engine *)((ApplicationManager *)(this->field_0x8))->GetEngine();
     double *acc = ((Engine *)(eng))->GetAccelValue();
 
     // Yaw from raw tilt (axis at +8, scaled by 2.5).
@@ -2155,21 +2129,21 @@ void MGame::handleAccelerometer() {
         if (yaw < -1.0f) {
             // frameTime arg was dropped by the decompiler; the per-frame nominal
             // tick (0x32 ms) is used as the time multiplier.
-            ((PlayerEgo *)(self->field_0x58))->left(0x32, steer * steer);
+            ((PlayerEgo *)(this->field_0x58))->left(0x32, steer * steer);
             goto afterYaw;
         }
         steer = yaw;
         if (yaw < 0.0f) {
-            ((PlayerEgo *)(self->field_0x58))->left(0x32, steer * steer);
+            ((PlayerEgo *)(this->field_0x58))->left(0x32, steer * steer);
             goto afterYaw;
         }
         if (yaw == 0.0f)
             goto afterYaw;
     }
-    ((PlayerEgo *)(self->field_0x58))->right(0x32, steer * steer);
+    ((PlayerEgo *)(this->field_0x58))->right(0x32, steer * steer);
 
 afterYaw: {
-    int field8 = self->field_0x8;
+    int field8 = this->field_0x8;
 
     MGame_accelCtxBegin(field8);
     double *v1 = MGame_accelCtxValue();
@@ -2214,19 +2188,19 @@ afterYaw: {
     float roll = (aAbs < bAbs) ? b3 : a3;
 
     float rollMag = 1.0f;
-    int shipOff = (self->field_0x16c > 0) ? 0x44 : 0x40;
+    int shipOff = (this->field_0x16c > 0) ? 0x44 : 0x40;
     if (roll <= 1.0f) {
         rollMag = -1.0f;
         if (roll < -1.0f) {
-            return ((PlayerEgo *)(self->field_0x58))->rollRight(F<int>(self, shipOff), rollMag * rollMag);
+            return ((PlayerEgo *)(this->field_0x58))->rollRight(F<int>(this, shipOff), rollMag * rollMag);
         }
         rollMag = roll;
         if (roll < 0.0f) {
-            return ((PlayerEgo *)(self->field_0x58))->rollRight(F<int>(self, shipOff), rollMag * rollMag);
+            return ((PlayerEgo *)(this->field_0x58))->rollRight(F<int>(this, shipOff), rollMag * rollMag);
         }
         if (roll == 0.0f) return;
     }
-    return ((PlayerEgo *)(self->field_0x58))->rollLeft(F<int>(self, shipOff), rollMag * rollMag);
+    return ((PlayerEgo *)(this->field_0x58))->rollLeft(F<int>(this, shipOff), rollMag * rollMag);
 }
 }
 
@@ -2513,9 +2487,8 @@ __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (D
 
 // MGame::MGame() — install vtable, default-construct the title String, zero state.
 MGame * MGame::ctor() {
-    MGame *self = this;
-    self->field_0x0 = g_mgameVtable + 8;
-    String_default_ctor((char *)self + 0x64);
+    this->field_0x0 = g_mgameVtable + 8;
+    String_default_ctor((char *)this + 0x64);
 
     int z = 0;
     int initVal = g_mgameInitVal;
@@ -2524,54 +2497,54 @@ MGame * MGame::ctor() {
     static const unsigned grpA[] = {0xa4u, 0x13cu, 0x18cu};
     for (unsigned i = 0; i < 3; i++) {
         unsigned off = grpA[i];
-        F<int>(self, off + 0)  = 0;
-        F<int>(self, off + 4)  = 0;
-        F<int>(self, off + 8)  = 0;
-        F<int>(self, off + 12) = 0;
+        F<int>(this, off + 0)  = 0;
+        F<int>(this, off + 4)  = 0;
+        F<int>(this, off + 8)  = 0;
+        F<int>(this, off + 12) = 0;
     }
 
-    self->field_0x48 = z; self->field_0x4c = z;
-    self->field_0xe4 = z; self->field_0xe8 = z;
-    self->field_0xec = z;
-    self->field_0x1bc = z; self->field_0x1c0 = z;
-    self->field_0x1c4 = z;
-    self->field_0xb4 = z; self->field_0xb8 = z;
-    self->field_0x14c = z; self->field_0x150 = z;
-    self->field_0x19c = z; self->field_0x1a0 = z;
+    this->field_0x48 = z; this->field_0x4c = z;
+    this->field_0xe4 = z; this->field_0xe8 = z;
+    this->field_0xec = z;
+    this->field_0x1bc = z; this->field_0x1c0 = z;
+    this->field_0x1c4 = z;
+    this->field_0xb4 = z; this->field_0xb8 = z;
+    this->field_0x14c = z; this->field_0x150 = z;
+    this->field_0x19c = z; this->field_0x1a0 = z;
 
-    self->field_0xc = 0x64;       // field_0C = 100
-    self->field_0x10 = -1;        // field_10 = -1
-    self->field_0x14 = z;
+    this->field_0xc = 0x64;       // field_0C = 100
+    this->field_0x10 = -1;        // field_10 = -1
+    this->field_0x14 = z;
 
     // NEON-cleared 16-byte groups at 0x30, 0x20, 0x80, 0x70.
     static const unsigned grpB[] = {0x30u, 0x20u, 0x80u, 0x70u};
     for (unsigned i = 0; i < 4; i++) {
         unsigned off = grpB[i];
-        F<int>(self, off + 0)  = 0;
-        F<int>(self, off + 4)  = 0;
-        F<int>(self, off + 8)  = 0;
-        F<int>(self, off + 12) = 0;
+        F<int>(this, off + 0)  = 0;
+        F<int>(this, off + 4)  = 0;
+        F<int>(this, off + 8)  = 0;
+        F<int>(this, off + 12) = 0;
     }
 
-    self->field_0x1a6 = 0;
-    self->field_0x54 = 0;
-    self->field_0xd5 = 0;
-    self->field_0x114 = 0;
-    self->field_0xf4 = 0;
-    self->field_0x1e4 = 0;
-    self->field_0x1d4 = z;
-    self->field_0x40 = z;
-    self->field_0x58 = 0; self->field_0x5c = z;
-    self->field_0x60 = 0;
-    self->field_0x90 = 0; self->field_0x94 = 0;
-    self->field_0xc8 = 0;
-    self->field_0xc4 = z;
-    self->field_0xce = 0;
-    self->field_0xca = z;
-    self->field_0xd8 = z; self->field_0xdc = z;
-    self->field_0x1d8 = initVal;
-    self->field_0x1e0 = z;
-    return self;
+    this->field_0x1a6 = 0;
+    this->field_0x54 = 0;
+    this->field_0xd5 = 0;
+    this->field_0x114 = 0;
+    this->field_0xf4 = 0;
+    this->field_0x1e4 = 0;
+    this->field_0x1d4 = z;
+    this->field_0x40 = z;
+    this->field_0x58 = 0; this->field_0x5c = z;
+    this->field_0x60 = 0;
+    this->field_0x90 = 0; this->field_0x94 = 0;
+    this->field_0xc8 = 0;
+    this->field_0xc4 = z;
+    this->field_0xce = 0;
+    this->field_0xca = z;
+    this->field_0xd8 = z; this->field_0xdc = z;
+    this->field_0x1d8 = initVal;
+    this->field_0x1e0 = z;
+    return this;
 }
 
 extern "C" void *Radar_dtor(void *r);
@@ -2590,8 +2563,7 @@ __attribute__((visibility("hidden"))) extern int **g_relImgFactory; // @0x18c878
 
 // MGame::OnRelease(): tear down the whole game session and reload UI resources.
 void MGame::OnRelease() {
-    MGame *self = this;
-    Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
+    Engine *eng = (Engine *)((ApplicationManager *)(this->field_0x8))->GetEngine();
     ((Engine *)(eng))->SetPostEffect(g_relPostEffect, 0);
 
     int *soundFlag = g_relSoundFlag;
@@ -2601,46 +2573,46 @@ void MGame::OnRelease() {
         ((FModSound *)((Engine *)*soundFlag))->stopAllSoundFXEvents();
     }
 
-    if (self->field_0x78 != 0) {
-        self->field_0x78->~Level();
-        ::operator delete(self->field_0x78);
+    if (this->field_0x78 != 0) {
+        this->field_0x78->~Level();
+        ::operator delete(this->field_0x78);
     }
 
-    self->field_0x48 = 0; self->field_0x4c = 0;
-    self->field_0x14 = 0;
-    self->field_0x78 = 0;
-    self->field_0x54 = 0;
-    self->field_0x70 = 0;
-    self->field_0x40 = 0;
-    self->field_0x60 = 0;
-    self->field_0x58 = 0; self->field_0x5c = 0;
+    this->field_0x48 = 0; this->field_0x4c = 0;
+    this->field_0x14 = 0;
+    this->field_0x78 = 0;
+    this->field_0x54 = 0;
+    this->field_0x70 = 0;
+    this->field_0x40 = 0;
+    this->field_0x60 = 0;
+    this->field_0x58 = 0; this->field_0x5c = 0;
     // NEON-clear 0x30 and 0x20 groups.
-    for (unsigned i = 0; i < 4; i++) F<int>(self, 0x30 + i * 4) = 0;
-    for (unsigned i = 0; i < 4; i++) F<int>(self, 0x20 + i * 4) = 0;
+    for (unsigned i = 0; i < 4; i++) F<int>(this, 0x30 + i * 4) = 0;
+    for (unsigned i = 0; i < 4; i++) F<int>(this, 0x20 + i * 4) = 0;
 
-    if (self->field_0x114 != 0) {
-        self->field_0x114->~AEGeometry();
-        ::operator delete(self->field_0x114);
+    if (this->field_0x114 != 0) {
+        this->field_0x114->~AEGeometry();
+        ::operator delete(this->field_0x114);
     }
-    self->field_0x114 = 0;
+    this->field_0x114 = 0;
 
-    if (self->field_0x74 != 0)
-        ::operator delete(((Hud *)(self->field_0x74))->dtor());
-    self->field_0x74 = 0;
+    if (this->field_0x74 != 0)
+        ::operator delete(((Hud *)(this->field_0x74))->dtor());
+    this->field_0x74 = 0;
 
-    if (self->field_0x7c != 0) {
-        self->field_0x7c->~LevelScript();
-        ::operator delete(self->field_0x7c);
+    if (this->field_0x7c != 0) {
+        this->field_0x7c->~LevelScript();
+        ::operator delete(this->field_0x7c);
     }
-    self->field_0x7c = 0;
+    this->field_0x7c = 0;
 
-    if (self->field_0x80 != 0)
-        ::operator delete(Radar_dtor(self->field_0x80));
-    self->field_0x80 = 0;
+    if (this->field_0x80 != 0)
+        ::operator delete(Radar_dtor(this->field_0x80));
+    this->field_0x80 = 0;
 
-    if (self->field_0x84 != 0)
-        ::operator delete(Radio_dtor(self->field_0x84));
-    self->field_0x84 = 0;
+    if (this->field_0x84 != 0)
+        ::operator delete(Radio_dtor(this->field_0x84));
+    this->field_0x84 = 0;
 
     int *appMod = g_relAppMod;
     void *m1 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
@@ -2655,40 +2627,40 @@ void MGame::OnRelease() {
     void *m3 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
     *(int *)((char *)m3 + 0x10) = 0;
 
-    if (self->field_0x88 != 0)
-        ::operator delete(((MenuTouchWindow *)(self->field_0x88))->dtor());
-    self->field_0x88 = 0;
+    if (this->field_0x88 != 0)
+        ::operator delete(((MenuTouchWindow *)(this->field_0x88))->dtor());
+    this->field_0x88 = 0;
 
-    if (self->field_0x8c != 0)
-        ::operator delete(DialogueWindow_dtor(self->field_0x8c));
-    self->field_0x8c = 0;
+    if (this->field_0x8c != 0)
+        ::operator delete(DialogueWindow_dtor(this->field_0x8c));
+    this->field_0x8c = 0;
 
-    if (self->field_0x90 != 0) {
-        self->field_0x90->~StarMap();
-        ::operator delete(self->field_0x90);
+    if (this->field_0x90 != 0) {
+        this->field_0x90->~StarMap();
+        ::operator delete(this->field_0x90);
     }
-    self->field_0x90 = 0;
+    this->field_0x90 = 0;
 
-    if (self->field_0x94 != 0) {
-        self->field_0x94->~ChoiceWindow();
-        ::operator delete(self->field_0x94);
+    if (this->field_0x94 != 0) {
+        this->field_0x94->~ChoiceWindow();
+        ::operator delete(this->field_0x94);
     }
-    self->field_0x94 = 0;
+    this->field_0x94 = 0;
 
-    self->field_0xd8 = 0; self->field_0xdc = 0;
-    self->field_0xd5 = 0;
-    self->field_0xc5 = 0;
-    self->field_0xcb = 0;
+    this->field_0xd8 = 0; this->field_0xdc = 0;
+    this->field_0xd5 = 0;
+    this->field_0xc5 = 0;
+    this->field_0xcb = 0;
 
-    if (self->field_0xf4 != 0)
-        ::operator delete(TargetFollowCamera_dtor(self->field_0xf4));
-    self->field_0xf4 = 0;
+    if (this->field_0xf4 != 0)
+        ::operator delete(TargetFollowCamera_dtor(this->field_0xf4));
+    this->field_0xf4 = 0;
 
-    if (self->field_0x1e8 != 0) {
-        ((GameRecord *)(intptr_t)self->field_0x1e8)->~GameRecord();
-        ::operator delete((void *)(intptr_t)self->field_0x1e8);
+    if (this->field_0x1e8 != 0) {
+        ((GameRecord *)(intptr_t)this->field_0x1e8)->~GameRecord();
+        ::operator delete((void *)(intptr_t)this->field_0x1e8);
     }
-    self->field_0x1e8 = 0;
+    this->field_0x1e8 = 0;
 
     // GetApplicationData()->[0] : release-all-resources target.
     {
@@ -2707,13 +2679,13 @@ void MGame::OnRelease() {
         ((Layout *)(*layout))->initTip();
     }
 
-    if (self->field_0x1ec != 0) {
-        for (AbyssEngine::String *line : *self->field_0x1ec)
+    if (this->field_0x1ec != 0) {
+        for (AbyssEngine::String *line : *this->field_0x1ec)
             delete line;
-        self->field_0x1ec->clear();
-        delete self->field_0x1ec;
+        this->field_0x1ec->clear();
+        delete this->field_0x1ec;
     }
-    self->field_0x1ec = 0;
+    this->field_0x1ec = 0;
 
     if (*soundFlag != 0)
         FModSound_restoreState();
@@ -2848,8 +2820,7 @@ __attribute__((visibility("hidden"))) extern Status **g_status;
 // MGame::dialogueEvent(): when a level sequence completes, decide whether to raise a
 // briefing/mission dialogue, and if so set up the dialogue window + first-person view.
 void MGame::dialogueEvent() {
-    MGame *self = this;
-    if (((LevelScript *)(self->field_0x7c))->startSequenceOver() == 0) return;
+    if (((LevelScript *)(this->field_0x7c))->startSequenceOver() == 0) return;
     Status **sp = g_status;
     if (DialogueWindow::hasBriefingDialogue((*g_status)->getCurrentCampaignMission()) == 0) {
         if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) return;
@@ -2863,23 +2834,23 @@ void MGame::dialogueEvent() {
     if (((Mission *)((*g_status)->getMission()))->isCampaignMission() == 0) {
         if (((Mission *)((*g_status)->getMission()))->getType() == 0xb) return;
     }
-    if (self->field_0x8c == 0) {
+    if (this->field_0x8c == 0) {
         DialogueWindow *w = (DialogueWindow *)MGame_opnew(0x74);
-        DialogueWindow_ctor(w, (*g_status)->getMission(), self->field_0x78, 0);
-        self->field_0x8c = w;
+        DialogueWindow_ctor(w, (*g_status)->getMission(), this->field_0x78, 0);
+        this->field_0x8c = w;
     }
-    ((PlayerEgo *)(self->field_0x58))->setTurretMode(0);
-    ((LevelScript *)(self->field_0x7c))->resetCamera((Level *)(self->field_0x78) /* level: arg lost in decomp */);
-    ((PlayerEgo *)(self->field_0x58))->setFreeLookMode(0);
-    TFC_enableFirstPersonCam(self->field_0xf4, 0);
-    ((PlayerEgo *)(self->field_0x58))->hideShipForFirstPersonCameraView(0);
-    LevelScript *cam = self->field_0x7c;
-    self->field_0x111 = 1;
+    ((PlayerEgo *)(this->field_0x58))->setTurretMode(0);
+    ((LevelScript *)(this->field_0x7c))->resetCamera((Level *)(this->field_0x78) /* level: arg lost in decomp */);
+    ((PlayerEgo *)(this->field_0x58))->setFreeLookMode(0);
+    TFC_enableFirstPersonCam(this->field_0xf4, 0);
+    ((PlayerEgo *)(this->field_0x58))->hideShipForFirstPersonCameraView(0);
+    LevelScript *cam = this->field_0x7c;
+    this->field_0x111 = 1;
     F<int>(cam, 0x8) = 0;
     F<int>(cam, 0xc) = 0;
-    self->field_0x5d = 1;
-    ((MGame *)(self))->pauseSounds();
-    self->field_0x5e = 1;
+    this->field_0x5d = 1;
+    ((MGame *)(this))->pauseSounds();
+    this->field_0x5e = 1;
 }
 
 __attribute__((visibility("hidden"))) extern Status **g_status;
@@ -2887,27 +2858,26 @@ __attribute__((visibility("hidden"))) extern Status **g_status;
 // MGame::nextCamId(int): advances through the cycle of available camera modes, skipping
 // the turret cam unless the ship actually has a turret, and the docked cam unless docked.
 int MGame::nextCamId(int cur) {
-    MGame *self = this;
     int id = cur + 1;
     if (id == 2) id = cur + 2;
     if (id == 1) {
         Status **sp = g_status;
         if (((Ship *)(((Status *)(*sp))->getShip()))->getFirstEquipmentOfSort(8) != 0 ||
             ((Ship *)(((Status *)(*sp))->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
-            id = ((PlayerEgo *)(self->field_0x58))->hasAutoTurret() == 0 ? 1 : 2;
+            id = ((PlayerEgo *)(this->field_0x58))->hasAutoTurret() == 0 ? 1 : 2;
         } else {
             id = 2;
         }
     }
     if (id == 2) id = 3;
     if (id >= 4) {
-        if (((PlayerEgo *)(self->field_0x58))->isDockedToDockingPoint() == 0) return 0;
+        if (((PlayerEgo *)(this->field_0x58))->isDockedToDockingPoint() == 0) return 0;
         Status **sp = g_status;
         if (((Ship *)(((Status *)(*sp))->getShip()))->getFirstEquipmentOfSort(8) == 0 &&
             ((Ship *)(((Status *)(*sp))->getShip()))->getFirstEquipmentOfSort(0x23) == 0) {
             return 3;
         }
-        id = ((PlayerEgo *)(self->field_0x58))->hasAutoTurret() != 0 ? 3 : 1;
+        id = ((PlayerEgo *)(this->field_0x58))->hasAutoTurret() != 0 ? 3 : 1;
     }
     return id;
 }
@@ -2993,13 +2963,12 @@ void MGame::drawFadeMessage(int /*canvas*/) {
 // accumulated playtime; this runs the per-frame jump-scene and gameplay checks that
 // are determinable outside the corrupt-SIMD physics core.
 void MGame::tick(int frameDeltaMs) {
-    MGame *self = this;
     // Per-frame jump-scene advance (the only sub-state with a clean recovered body).
-    if (self->field_0xdc != 0)
-        self->updateJumpScene();
+    if (this->field_0xdc != 0)
+        this->updateJumpScene();
     // Win/lose evaluation runs every frame.
-    self->gameOverCheck();
-    self->successCheck();
+    this->gameOverCheck();
+    this->successCheck();
     (void)frameDeltaMs;
 }
 
@@ -3008,8 +2977,7 @@ void MGame::tick(int frameDeltaMs) {
 // reaction table is the inlined corrupt-SIMD switch; the determinable effect is the
 // free-cam pan begin recorded by the caller.
 void MGame::handleHudTouchAction(int p1, int p2, void *touchId, unsigned hudResult) {
-    MGame *self = this;
-    (void)self; (void)p1; (void)p2; (void)touchId; (void)hudResult;
+    (void)this; (void)p1; (void)p2; (void)touchId; (void)hudResult;
     // The hud-result reactions mutate flight state inline; no separable side effect
     // remains to perform here once OnTouchBegin has stored field_0xf8 = hudResult.
 }
@@ -3020,9 +2988,8 @@ void MGame::handleHudTouchAction(int p1, int p2, void *touchId, unsigned hudResu
 // the per-button reactions are the inlined corrupt-SIMD dispatch.
 void MGame::dispatchTouchEndAction(int p1, int p2, void *touchId, unsigned hudResult,
                                    int wasAutoPilot) {
-    MGame *self = this;
-    (void)self; (void)p1; (void)p2; (void)touchId; (void)hudResult; (void)wasAutoPilot;
-    // Button reactions are applied inline against `self`; no separable tail action.
+    (void)this; (void)p1; (void)p2; (void)touchId; (void)hudResult; (void)wasAutoPilot;
+    // Button reactions are applied inline against `this`; no separable tail action.
 }
 
 // ---- accelerometer roll-context helpers (handleAccelerometer fn-ptr calls) ----

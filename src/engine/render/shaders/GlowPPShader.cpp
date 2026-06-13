@@ -34,28 +34,26 @@ extern "C" void *GlowPPShader_typeinfo_source;
 extern "C" void *GlowPPShader_typeinfo_dest;
 
 void GlowPPShader::SetInActive() {
-    GlowPPShader *self = this;
-    glDisableVertexAttribArray(field_u32(self, 0x90));
-    return glDisableVertexAttribArray(field_u32(self, 0x98));
+    glDisableVertexAttribArray(field_u32(this, 0x90));
+    return glDisableVertexAttribArray(field_u32(this, 0x98));
 }
 
 void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-    GlowPPShader *self = this;
-    glUniformMatrix4fv(field_u32(self, 0x80), 1, 0, (char *)engine + 0x104);
-    if (field_u8(self, 0x9) != 0) {
-        field_u8(self, 0x9) = 0;
+    glUniformMatrix4fv(field_u32(this, 0x80), 1, 0, (char *)engine + 0x104);
+    if (field_u8(this, 0x9) != 0) {
+        field_u8(this, 0x9) = 0;
     }
 
-    glEnableVertexAttribArray(field_u32(self, 0x90));
-    glEnableVertexAttribArray(field_u32(self, 0x98));
+    glEnableVertexAttribArray(field_u32(this, 0x90));
+    glEnableVertexAttribArray(field_u32(this, 0x98));
     if (field_u8(mesh, 0x5c) == 0) {
-        glVertexAttribPointer(field_u32(self, 0x90), 3, 0x1406, 0, 0, (void *)field_u32(mesh, 4));
-        glVertexAttribPointer(field_u32(self, 0x98), 2, 0x1406, 0, 0, (void *)field_u32(mesh, 8));
+        glVertexAttribPointer(field_u32(this, 0x90), 3, 0x1406, 0, 0, (void *)field_u32(mesh, 4));
+        glVertexAttribPointer(field_u32(this, 0x98), 2, 0x1406, 0, 0, (void *)field_u32(mesh, 8));
     } else {
         glBindBuffer(0x8892, field_u32(mesh, 0x60));
-        glVertexAttribPointer(field_u32(self, 0x90), 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(field_u32(this, 0x90), 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_u32(mesh, 0x68));
-        glVertexAttribPointer(field_u32(self, 0x98), 2, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(field_u32(this, 0x98), 2, 0x1406, 0, 0, 0);
     }
 }
 
@@ -90,15 +88,14 @@ static inline void draw_fullscreen(GlowPPShader *self, Engine *engine, uint32_t 
 }
 
 void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine) {
-    GlowPPShader *self = this;
 
     if (*g_GlowPPShader_internalInitNeededPtr != 0) {
         *g_GlowPPShader_internalInitNeededPtr = 0;
-        ((GlowPPShader *)(self))->InternalInit(engine);
-        ((FBOContainer *)(fbo_field(self, 0xa0)))->BeginCapture();
+        ((GlowPPShader *)(this))->InternalInit(engine);
+        ((FBOContainer *)(fbo_field(this, 0xa0)))->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        ((FBOContainer *)(fbo_field(self, 0xa0)))->EndCapture();
+        ((FBOContainer *)(fbo_field(this, 0xa0)))->EndCapture();
     }
 
     field_u32(engine, 0x3b4) = 0;
@@ -147,64 +144,64 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     glDepthMask(0);
     glDisable(0xbe2);
 
-    glUseProgram(field_u32(self, 0x20));
+    glUseProgram(field_u32(this, 0x20));
     glActiveTexture(0x84c0);
     ((FBOContainer *)(source))->Activate();
-    ((FBOContainer *)(fbo_field(self, 0x3c)))->BeginCapture();
-    draw_fullscreen(self, engine, 0x24, 0x2c, 0x28);
+    ((FBOContainer *)(fbo_field(this, 0x3c)))->BeginCapture();
+    draw_fullscreen(this, engine, 0x24, 0x2c, 0x28);
 
     for (int32_t i = 3; i != 0; --i) {
-        glUseProgram(field_u32(self, 0x40));
+        glUseProgram(field_u32(this, 0x40));
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(fbo_field(self, 0x3c)))->Activate();
-        ((FBOContainer *)(fbo_field(self, 0x58)))->BeginCapture();
-        glEnableVertexAttribArray(field_u32(self, 0x44));
-        glEnableVertexAttribArray(field_u32(self, 0x4c));
-        glUniformMatrix4fv(field_u32(self, 0x48), 1, 0, (char *)engine + 0x104);
-        glVertexAttribPointer(field_u32(self, 0x44), 3, 0x1406, 0, 0,
+        ((FBOContainer *)(fbo_field(this, 0x3c)))->Activate();
+        ((FBOContainer *)(fbo_field(this, 0x58)))->BeginCapture();
+        glEnableVertexAttribArray(field_u32(this, 0x44));
+        glEnableVertexAttribArray(field_u32(this, 0x4c));
+        glUniformMatrix4fv(field_u32(this, 0x48), 1, 0, (char *)engine + 0x104);
+        glVertexAttribPointer(field_u32(this, 0x44), 3, 0x1406, 0, 0,
                               (void *)field_u32((void *)field_u32(engine, 0x380), 4));
-        glVertexAttribPointer(field_u32(self, 0x4c), 2, 0x1406, 0, 0,
+        glVertexAttribPointer(field_u32(this, 0x4c), 2, 0x1406, 0, 0,
                               (void *)field_u32((void *)field_u32(engine, 0x380), 8));
-        glUniform1f(field_u32(self, 0x54),
-                    1.0f / (float)field_i32((void *)field_u32(self, 0x58), 0x0c));
+        glUniform1f(field_u32(this, 0x54),
+                    1.0f / (float)field_i32((void *)field_u32(this, 0x58), 0x0c));
         glClear(0x4000);
         uint32_t width = ((Engine *)(engine))->GetDisplayWidth();
         uint32_t height = ((Engine *)(engine))->GetDisplayHeight();
         ((Engine *)(engine))->DrawQuad(0, 0, width, height);
-        glDisableVertexAttribArray(field_u32(self, 0x44));
-        glDisableVertexAttribArray(field_u32(self, 0x4c));
+        glDisableVertexAttribArray(field_u32(this, 0x44));
+        glDisableVertexAttribArray(field_u32(this, 0x4c));
 
-        glUseProgram(field_u32(self, 0x5c));
+        glUseProgram(field_u32(this, 0x5c));
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(fbo_field(self, 0x58)))->Activate();
-        ((FBOContainer *)(fbo_field(self, 0x74)))->BeginCapture();
-        glEnableVertexAttribArray(field_u32(self, 0x60));
-        glEnableVertexAttribArray(field_u32(self, 0x68));
-        glUniformMatrix4fv(field_u32(self, 0x64), 1, 0, (char *)engine + 0x104);
-        glVertexAttribPointer(field_u32(self, 0x60), 3, 0x1406, 0, 0,
+        ((FBOContainer *)(fbo_field(this, 0x58)))->Activate();
+        ((FBOContainer *)(fbo_field(this, 0x74)))->BeginCapture();
+        glEnableVertexAttribArray(field_u32(this, 0x60));
+        glEnableVertexAttribArray(field_u32(this, 0x68));
+        glUniformMatrix4fv(field_u32(this, 0x64), 1, 0, (char *)engine + 0x104);
+        glVertexAttribPointer(field_u32(this, 0x60), 3, 0x1406, 0, 0,
                               (void *)field_u32((void *)field_u32(engine, 0x380), 4));
-        glVertexAttribPointer(field_u32(self, 0x68), 2, 0x1406, 0, 0,
+        glVertexAttribPointer(field_u32(this, 0x68), 2, 0x1406, 0, 0,
                               (void *)field_u32((void *)field_u32(engine, 0x380), 8));
-        glUniform1f(field_u32(self, 0x70),
-                    1.0f / (float)field_i32((void *)field_u32(self, 0x74), 0x10));
+        glUniform1f(field_u32(this, 0x70),
+                    1.0f / (float)field_i32((void *)field_u32(this, 0x74), 0x10));
         glClear(0x4000);
         width = ((Engine *)(engine))->GetDisplayWidth();
         height = ((Engine *)(engine))->GetDisplayHeight();
         ((Engine *)(engine))->DrawQuad(0, 0, width, height);
-        glDisableVertexAttribArray(field_u32(self, 0x60));
-        glDisableVertexAttribArray(field_u32(self, 0x68));
+        glDisableVertexAttribArray(field_u32(this, 0x60));
+        glDisableVertexAttribArray(field_u32(this, 0x68));
     }
 
-    FBOContainer *firstTexture = fbo_field(self, 0x74);
-    FBOContainer *secondTexture = fbo_field(self, 0xa0);
+    FBOContainer *firstTexture = fbo_field(this, 0x74);
+    FBOContainer *secondTexture = fbo_field(this, 0xa0);
     uint32_t mode = *g_GlowPPShader_shaderModePtr;
     if (mode == 0) {
-        firstTexture = fbo_field(self, 0x3c);
+        firstTexture = fbo_field(this, 0x3c);
     } else if (mode == 1) {
         firstTexture = source;
     }
 
-    glUseProgram(field_u32(self, 0x78));
+    glUseProgram(field_u32(this, 0x78));
     glActiveTexture(0x84c0);
     ((FBOContainer *)(firstTexture))->Activate();
     glActiveTexture(0x84c1);
@@ -226,7 +223,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         ((FBOContainer *)(*target))->BeginCapture();
     }
 
-    draw_fullscreen(self, engine, 0x7c, 0x84, 0x80);
+    draw_fullscreen(this, engine, 0x7c, 0x84, 0x80);
     if (*target != 0) {
         ((FBOContainer *)(*target))->EndCapture();
     }
@@ -246,15 +243,13 @@ static inline uint32_t stack_guard_diff(uint32_t saved, uint32_t current)
 }
 
 void GlowPPShader::RenderEffect_simple(FBOContainer *source, Engine *engine) {
-    GlowPPShader *self = this;
     FBOContainer *target = 0;
-    void **vtable = *(void ***)self;
-    ((RenderEffectFn *)vtable[0x1c / 4])(self, source, &target, engine);
+    void **vtable = *(void ***)this;
+    ((RenderEffectFn *)vtable[0x1c / 4])(this, source, &target, engine);
     return;
 }
 
 void GlowPPShader::InternalInit(Engine *engine) {
-    GlowPPShader *self = this;
     String name0;
     String name1;
     String name2;
@@ -263,30 +258,30 @@ void GlowPPShader::InternalInit(Engine *engine) {
     FBOContainer *fbo = (FBOContainer *)operator_new_0(0x38);
     String_ctor_char_0(&name0, "GlowPPShader0", false);
     FBOContainer_ctor_0(fbo, engine, &name0);
-    self->copyTarget = fbo;
+    this->copyTarget = fbo;
     String_dtor_0(&name0);
-    FBOContainer_Create_0(self->copyTarget, 0x200, 0x200, true, false);
+    FBOContainer_Create_0(this->copyTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_1(0x38);
     String_ctor_char_1(&name1, "GlowPPShader1", false);
     FBOContainer_ctor_1(fbo, engine, &name1);
-    self->blurXTarget = fbo;
+    this->blurXTarget = fbo;
     String_dtor_1(&name1);
-    FBOContainer_Create_1(self->blurXTarget, 0x200, 0x200, true, false);
+    FBOContainer_Create_1(this->blurXTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_2(0x38);
     String_ctor_char_2(&name2, "GlowPPShader2", false);
     FBOContainer_ctor_2(fbo, engine, &name2);
-    self->blurYTarget = fbo;
+    this->blurYTarget = fbo;
     String_dtor_2(&name2);
-    FBOContainer_Create_2(self->blurYTarget, 0x200, 0x200, true, false);
+    FBOContainer_Create_2(this->blurYTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_3(0x38);
     String_ctor_char_3(&name3, "GlowPPShader3", false);
     FBOContainer_ctor_3(fbo, engine, &name3);
-    self->backgroundTarget = fbo;
+    this->backgroundTarget = fbo;
     String_dtor_3(&name3);
-    FBOContainer_Create_3(self->backgroundTarget, 0x200, 0x200, true, false);
+    FBOContainer_Create_3(this->backgroundTarget, 0x200, 0x200, true, false);
 
     return;
 }
@@ -297,57 +292,56 @@ typedef void UseProgramFn(uint32_t);
 typedef void Uniform1iFn(uint32_t, int32_t);
 
 void GlowPPShader::Init() {
-    GlowPPShader *self = this;
     const char *vertex = "GlowPPShader.vert";
     LoadProgramFn *loadProgram = g_GlowPPShader_LoadProgram;
-    field_u32(self, 0x20) = loadProgram((ShaderBaseStruct *)self, vertex, "GlowPPShader.copy.frag");
-    field_u32(self, 0x40) = loadProgram((ShaderBaseStruct *)self, vertex, "GlowPPShader.blurX.frag");
-    field_u32(self, 0x5c) = loadProgram((ShaderBaseStruct *)self, vertex, "GlowPPShader.blurY.frag");
-    field_u32(self, 0x78) = loadProgram((ShaderBaseStruct *)self, vertex, "GlowPPShader.combine.frag");
+    field_u32(this, 0x20) = loadProgram((ShaderBaseStruct *)this, vertex, "GlowPPShader.copy.frag");
+    field_u32(this, 0x40) = loadProgram((ShaderBaseStruct *)this, vertex, "GlowPPShader.blurX.frag");
+    field_u32(this, 0x5c) = loadProgram((ShaderBaseStruct *)this, vertex, "GlowPPShader.blurY.frag");
+    field_u32(this, 0x78) = loadProgram((ShaderBaseStruct *)this, vertex, "GlowPPShader.combine.frag");
 
     LocationFn *getAttribLocation = g_GlowPPShader_GetAttribLocation;
     const char *position = "position";
-    field_u32(self, 0x24) = getAttribLocation(field_u32(self, 0x20), position);
+    field_u32(this, 0x24) = getAttribLocation(field_u32(this, 0x20), position);
     const char *texcoord = "texcoord";
-    field_u32(self, 0x2c) = getAttribLocation(field_u32(self, 0x20), texcoord);
+    field_u32(this, 0x2c) = getAttribLocation(field_u32(this, 0x20), texcoord);
 
     LocationFn *getUniformLocation = g_GlowPPShader_GetUniformLocation;
     const char *worldView = "worldView";
-    field_u32(self, 0x28) = getUniformLocation(field_u32(self, 0x20), worldView);
+    field_u32(this, 0x28) = getUniformLocation(field_u32(this, 0x20), worldView);
     const char *texture = "texture";
-    field_u32(self, 0x30) = getUniformLocation(field_u32(self, 0x20), texture);
+    field_u32(this, 0x30) = getUniformLocation(field_u32(this, 0x20), texture);
 
     UseProgramFn *useProgram = g_GlowPPShader_UseProgram;
-    useProgram(field_u32(self, 0x20));
+    useProgram(field_u32(this, 0x20));
     Uniform1iFn *uniform1i = g_GlowPPShader_Uniform1i;
-    uniform1i(field_u32(self, 0x30), 0);
+    uniform1i(field_u32(this, 0x30), 0);
 
-    field_u32(self, 0x44) = getAttribLocation(field_u32(self, 0x40), position);
-    field_u32(self, 0x4c) = getAttribLocation(field_u32(self, 0x40), texcoord);
-    field_u32(self, 0x48) = getUniformLocation(field_u32(self, 0x40), worldView);
-    field_u32(self, 0x50) = getUniformLocation(field_u32(self, 0x40), texture);
+    field_u32(this, 0x44) = getAttribLocation(field_u32(this, 0x40), position);
+    field_u32(this, 0x4c) = getAttribLocation(field_u32(this, 0x40), texcoord);
+    field_u32(this, 0x48) = getUniformLocation(field_u32(this, 0x40), worldView);
+    field_u32(this, 0x50) = getUniformLocation(field_u32(this, 0x40), texture);
     const char *sampleSize = "sampleSize";
-    field_u32(self, 0x54) = getUniformLocation(field_u32(self, 0x40), sampleSize);
-    useProgram(field_u32(self, 0x40));
-    uniform1i(field_u32(self, 0x50), 0);
+    field_u32(this, 0x54) = getUniformLocation(field_u32(this, 0x40), sampleSize);
+    useProgram(field_u32(this, 0x40));
+    uniform1i(field_u32(this, 0x50), 0);
 
-    field_u32(self, 0x60) = getAttribLocation(field_u32(self, 0x5c), position);
-    field_u32(self, 0x68) = getAttribLocation(field_u32(self, 0x5c), texcoord);
-    field_u32(self, 0x64) = getUniformLocation(field_u32(self, 0x5c), worldView);
-    field_u32(self, 0x6c) = getUniformLocation(field_u32(self, 0x5c), texture);
-    field_u32(self, 0x70) = getUniformLocation(field_u32(self, 0x5c), sampleSize);
-    useProgram(field_u32(self, 0x5c));
-    uniform1i(field_u32(self, 0x6c), 0);
+    field_u32(this, 0x60) = getAttribLocation(field_u32(this, 0x5c), position);
+    field_u32(this, 0x68) = getAttribLocation(field_u32(this, 0x5c), texcoord);
+    field_u32(this, 0x64) = getUniformLocation(field_u32(this, 0x5c), worldView);
+    field_u32(this, 0x6c) = getUniformLocation(field_u32(this, 0x5c), texture);
+    field_u32(this, 0x70) = getUniformLocation(field_u32(this, 0x5c), sampleSize);
+    useProgram(field_u32(this, 0x5c));
+    uniform1i(field_u32(this, 0x6c), 0);
 
-    field_u32(self, 0x7c) = getAttribLocation(field_u32(self, 0x78), position);
-    field_u32(self, 0x84) = getAttribLocation(field_u32(self, 0x78), texcoord);
-    field_u32(self, 0x80) = getUniformLocation(field_u32(self, 0x78), worldView);
-    field_u32(self, 0x88) = getUniformLocation(field_u32(self, 0x78), texture);
+    field_u32(this, 0x7c) = getAttribLocation(field_u32(this, 0x78), position);
+    field_u32(this, 0x84) = getAttribLocation(field_u32(this, 0x78), texcoord);
+    field_u32(this, 0x80) = getUniformLocation(field_u32(this, 0x78), worldView);
+    field_u32(this, 0x88) = getUniformLocation(field_u32(this, 0x78), texture);
     const char *texture2 = "texture2";
-    field_u32(self, 0x8c) = getUniformLocation(field_u32(self, 0x78), texture2);
-    useProgram(field_u32(self, 0x78));
-    uniform1i(field_u32(self, 0x88), 0);
-    return uniform1i(field_u32(self, 0x8c), 1);
+    field_u32(this, 0x8c) = getUniformLocation(field_u32(this, 0x78), texture2);
+    useProgram(field_u32(this, 0x78));
+    uniform1i(field_u32(this, 0x88), 0);
+    return uniform1i(field_u32(this, 0x8c), 1);
 }
 
 GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)

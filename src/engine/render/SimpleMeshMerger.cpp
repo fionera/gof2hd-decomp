@@ -35,15 +35,14 @@ extern "C" void SMM_MeshSetTriangle(unsigned canvas, unsigned short meshId, unsi
 __attribute__((visibility("hidden"))) extern int **g_SMM_canary;
 
 SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transforms, void *canvas, float factor) {
-    SimpleMeshMerger *self = this;
     int *canary = *g_SMM_canary;
     int saved = *canary;
 
-    SMM_Array_Mesh_ctor((char *)self + 8);
-    self->f_4 = (short)factor;
-    self->f_14 = canvas;
-    self->f_0 = *(int *)transforms;
-    SMM_ArraySetLength_Mesh(meshIds[0], (char *)self + 8);
+    SMM_Array_Mesh_ctor((char *)this + 8);
+    this->f_4 = (short)factor;
+    this->f_14 = canvas;
+    this->f_0 = *(int *)transforms;
+    SMM_ArraySetLength_Mesh(meshIds[0], (char *)this + 8);
 
     // pass 1: load source meshes, accumulate vertex + triangle totals
     short vertTotal = 0;
@@ -52,8 +51,8 @@ SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transform
         unsigned newId;
         SMM_MeshCreate_fromId(canvas, *(unsigned short *)(meshIds[1] + i * 2), &newId, false);
         void *meshPtr = SMM_MeshGetPointer(canvas, newId);
-        ((void **)self->f_c)[i] = meshPtr;
-        char *m = (char *)((void **)self->f_c)[i];
+        ((void **)this->f_c)[i] = meshPtr;
+        char *m = (char *)((void **)this->f_c)[i];
         short vc = *(short *)(m + 2);
         short tc = (short)SMM_uidiv(*(unsigned short *)(m + 0x28), 3);
         triTotal = triTotal + vc;       // (matches target's accumulation order)
@@ -61,22 +60,22 @@ SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transform
     }
 
     // allocate the merged mesh
-    char *firstMesh = (char *)self->f_c;
+    char *firstMesh = (char *)this->f_c;
     unsigned mergedId;
     SMM_MeshCreate_empty(canvas, (unsigned short)vertTotal, (unsigned short)triTotal,
                          (int)*(signed char *)firstMesh, factor, &mergedId);
-    self->f_18 = mergedId;
+    this->f_18 = mergedId;
 
     // pass 2: copy transformed vertices and rebased triangles
     short vBase = 0;
     short tBase = 0;
     for (unsigned i = 0; i < meshIds[0]; i = i + 1) {
-        char *m = (char *)((void **)self->f_c)[i];
+        char *m = (char *)((void **)this->f_c)[i];
         int posOff = 0, uvOff = 0, colOff = 0;
         unsigned v = 0;
         unsigned char flags = 0;
         for (; v < *(unsigned short *)(m + 2); v = v + 1) {
-            m = (char *)((void **)self->f_c)[i];
+            m = (char *)((void **)this->f_c)[i];
             flags = *(unsigned char *)m;
             // transformed-vector scratch (matrix-transform writes a Vector into the head)
             float xform[4];
@@ -85,31 +84,31 @@ SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transform
                 Vector *src = (Vector *)(transforms[1] + i * 0x3c);
                 SMM_MatrixTransformVector(matOut, src);
                 SMM_MeshSetPoint((unsigned)(unsigned long)canvas,
-                                 (unsigned short)self->f_18,
+                                 (unsigned short)this->f_18,
                                  (unsigned short)(vBase + (short)v),
                                  xform[0], xform[1], xform[2]);
-                m = (char *)((void **)self->f_c)[i];
+                m = (char *)((void **)this->f_c)[i];
                 flags = *(unsigned char *)m;
             }
             Matrix mat;
             if ((unsigned)flags & 4) {   // (flags<<0x1d)<0 -> bit2
                 Vector *src = (Vector *)(transforms[1] + i * 0x3c);
                 SMM_MatrixRotateVector(&mat, src);
-                SMM_MeshSetNormal(canvas, self->f_18,
+                SMM_MeshSetNormal(canvas, this->f_18,
                                   (unsigned short)(vBase + (short)v), (Vector *)&mat);
-                m = (char *)((void **)self->f_c)[i];
+                m = (char *)((void **)this->f_c)[i];
                 flags = *(unsigned char *)m;
             }
             if ((unsigned)flags & 2) {   // (flags<<0x1e)<0 -> bit1
                 float *uv = (float *)(*(int *)(m + 8) + uvOff);
-                SMM_MeshSetUv(0 /*canvas-as-uint*/, (unsigned short)self->f_18,
+                SMM_MeshSetUv(0 /*canvas-as-uint*/, (unsigned short)this->f_18,
                               (unsigned short)(vBase + (short)v), uv[1], 0.0f);
-                m = (char *)((void **)self->f_c)[i];
+                m = (char *)((void **)this->f_c)[i];
                 flags = *(unsigned char *)m;
             }
             if ((unsigned)flags & 8) {   // (flags<<0x1c)<0 -> bit3
                 float *col = (float *)(*(int *)(m + 0xc) + colOff);
-                SMM_MeshSetColor(canvas, self->f_18,
+                SMM_MeshSetColor(canvas, this->f_18,
                                  (unsigned short)(vBase + (short)v),
                                  col[1], col[2], col[3], 0.0f);
             }
@@ -126,9 +125,9 @@ SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transform
                 unsigned short a = (unsigned short)(tri[0] + vBase);
                 unsigned short b = (unsigned short)(tri[1] + vBase);
                 unsigned short c = (unsigned short)(tri[2] + vBase);
-                SMM_MeshSetTriangle(0 /*canvas-as-uint*/, (unsigned short)self->f_18,
+                SMM_MeshSetTriangle(0 /*canvas-as-uint*/, (unsigned short)this->f_18,
                                     (unsigned short)(tBase + (short)t), a, b, c);
-                m = (char *)((void **)self->f_c)[i];
+                m = (char *)((void **)this->f_c)[i];
             }
             triOff = triOff + 6;
         }
@@ -137,10 +136,10 @@ SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transform
         vBase = vBase + *(short *)(m + 2);
     }
 
-    SMM_TransformCreate(canvas, (unsigned *)((char *)self + 0x1c));
-    SMM_TransformAddMeshId(canvas, self->f_1c, self->f_18);
-    self->valid = 1;
+    SMM_TransformCreate(canvas, (unsigned *)((char *)this + 0x1c));
+    SMM_TransformAddMeshId(canvas, this->f_1c, this->f_18);
+    this->valid = 1;
 
     
-    return self;
+    return this;
 }

@@ -110,11 +110,10 @@ extern "C" void RB_FModSound_updateEvent3DAttributes(void *snd, int ev, Vector *
 // RepairBeam::render() — render each beam geometry whose target id slot is active (!= -1).
 
 void RepairBeam::render() {
-    RepairBeam *self = this;
-    int **targetIds = (int **)self->field_0x14;
+    int **targetIds = (int **)this->field_0x14;
     for (unsigned i = 0; i < (unsigned)targetIds[0][0]; i = i + 1) {
         if (targetIds[1][i] != -1) {
-            void ***geoms = (void ***)self->field_0x10;
+            void ***geoms = (void ***)this->field_0x10;
             ((AEGeometry *)(geoms[1][i]))->render();
         }
     }
@@ -124,12 +123,11 @@ void RepairBeam::render() {
 // arrays sized to the player's equipment-of-sort attribute count.
 
 RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
-    RepairBeam *self = this;
-    self->field_0x1c = sort;
-    self->field_0x0 = shipIndex;
-    self->field_0x4 = 0;
-    self->field_0x8 = 0;
-    self->field_0xc = 0;
+    this->field_0x1c = sort;
+    this->field_0x0 = shipIndex;
+    this->field_0x4 = 0;
+    this->field_0x8 = 0;
+    this->field_0xc = 0;
 
     int ship = RepairBeam_Status_getShip();
     int equip = RepairBeam_Ship_getFirstEquipmentOfSort(ship);
@@ -138,7 +136,7 @@ RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
     // geometry array
     void *geoms = operator new(0xc);
     RepairBeam_Array_Geo_ctor(geoms);
-    self->field_0x10 = (void **)geoms;
+    this->field_0x10 = (void **)geoms;
     RepairBeam_ArraySetLength_Geo(count, geoms);
 
     unsigned short geoId = 0x4a95;
@@ -149,17 +147,17 @@ RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
     for (int i = 0; i < count; i = i + 1) {
         void *geo = operator new(0xc0);
         new ((void *)geo) AEGeometry((uint16_t)geoId, (PaintCanvas *)*canvas, false);
-        ((void **)self->field_0x10[1])[i] = geo;
+        ((void **)this->field_0x10[1])[i] = geo;
     }
 
     // target-id array
     void *ids = operator new(0xc);
     RepairBeam_Array_int_ctor(ids);
-    self->field_0x14 = (void **)ids;
+    this->field_0x14 = (void **)ids;
     RepairBeam_ArraySetLength_int(count, ids);
-    self->field_0x20 = 0x9c4;
+    this->field_0x20 = 0x9c4;
     {
-        unsigned *arr = (unsigned *)self->field_0x14;
+        unsigned *arr = (unsigned *)this->field_0x14;
         for (unsigned k = 0; k < arr[0]; k = k + 1) {
             ((int *)arr[1])[k] = -1;
         }
@@ -168,10 +166,10 @@ RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
     // charge array
     void *charges = operator new(0xc);
     RepairBeam_Array_float_ctor(charges);
-    self->field_0x18 = (void **)charges;
+    this->field_0x18 = (void **)charges;
     RepairBeam_ArraySetLength_float(count, charges);
     {
-        int *arr = (int *)self->field_0x18;
+        int *arr = (int *)this->field_0x18;
         int off = 0;
         for (int j = arr[0]; j != 0; j = j - 1) {
             *(int *)((char *)arr[1] + off) = 0;
@@ -179,34 +177,33 @@ RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
         }
     }
 
-    return self;
+    return this;
 }
 
 // RepairBeam::~RepairBeam() — releases the contained AEGeometry* array (also releasing the
 // pointed-to objects) and the int/float arrays, nulling each handle.
 
 RepairBeam * RepairBeam::dtor() {
-    RepairBeam *self = this;
-    void *geoms = self->field_0x10;
+    void *geoms = this->field_0x10;
     if (geoms != 0) {
         RepairBeam_ArrayReleaseClasses_Geo(geoms);
-        void *g = self->field_0x10;
+        void *g = this->field_0x10;
         if (g != 0) {
             ::operator delete(RepairBeam_Array_Geo_dtor(g));
         }
-        self->field_0x10 = 0;
+        this->field_0x10 = 0;
     }
-    void *ids = self->field_0x14;
+    void *ids = this->field_0x14;
     if (ids != 0) {
         ::operator delete(RepairBeam_Array_int_dtor(ids));
     }
-    self->field_0x14 = 0;
-    void *charges = self->field_0x18;
+    this->field_0x14 = 0;
+    void *charges = this->field_0x18;
     if (charges != 0) {
         ::operator delete(RepairBeam_Array_float_dtor(charges));
     }
-    self->field_0x18 = 0;
-    return self;
+    this->field_0x18 = 0;
+    return this;
 }
 
 // RepairBeam::update(int dt, Radar* radar, Level* level, Hud* hud)
@@ -234,12 +231,11 @@ static inline int *targetIds(RepairBeam *self) { return (int *)self->field_0x14;
 static inline int targetCount(RepairBeam *self) { return ((int **)((char *)self + 0x14))[0][0]; }
 
 void RepairBeam::update(int dt, void *level, void *hud) {
-    RepairBeam *self = this;
     int *canary = *g_RB_canary;
     int saved = *canary;
 
     int *enemies = (int *)RB_Level_getEnemies(level);
-    self->field_0x20 = self->field_0x20 - dt;
+    this->field_0x20 = this->field_0x20 - dt;
 
     if (enemies != 0) {
         void *ego = RB_Level_getPlayer(level);
@@ -249,24 +245,24 @@ void RepairBeam::update(int dt, void *level, void *hud) {
             int attr = RB_Item_getAttribute(equip);
             float attrF = (float)attr;
 
-            int *ids = targetIds(self);
-            Vector *beamPos = (Vector *)((char *)self + 4);
+            int *ids = targetIds(this);
+            Vector *beamPos = (Vector *)((char *)this + 4);
 
-            if (self->field_0x20 < 0) {
+            if (this->field_0x20 < 0) {
                 // re-arm: clear all target slots and charges
                 int off = 0;
                 for (unsigned i = 0; i < (unsigned)ids[0]; i = i + 1) {
                     ((int *)ids[1])[i] = -1;
-                    *(int *)((char *)((int *)self->field_0x18[1]) + off) = 0;
+                    *(int *)((char *)((int *)this->field_0x18[1]) + off) = 0;
                     off = off + 4;
                 }
-                self->field_0x20 = self->field_0x20 + 0x9c4;
+                this->field_0x20 = this->field_0x20 + 0x9c4;
 
                 int *enDataArr = (int *)enemies[1];
                 for (unsigned e = 0; e < (unsigned)enemies[0]; e = e + 1) {
                     void *kp = (void *)enDataArr[e];
                     if (RB_KIPlayer_isDead(kp) == 0 && RB_KIPlayer_isDying(kp) == 0) {
-                        int sort = self->field_0x1c;
+                        int sort = this->field_0x1c;
                         bool consider = false;
                         if (sort == 0x25) {
                             char *pl = *(char **)((char *)kp + 4);
@@ -298,7 +294,7 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                             *(Vector *)(beamPos) -= *(const Vector *)(&tmp);
                             float dist = AbyssEngine::AEMath::VectorLength(*(const Vector *)(beamPos));
                             if (dist <= attrF) {
-                                int *t = targetIds(self);
+                                int *t = targetIds(this);
                                 bool placed = false;
                                 for (unsigned s = 0; !placed && s < (unsigned)t[0]; s = s + 1) {
                                     int *data = (int *)t[1];
@@ -311,7 +307,7 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                                     unsigned best = 0xffffffff;
                                     int bestHp = *g_RB_dmgThresh;
                                     int *t2;
-                                    for (unsigned s = 0; (t2 = targetIds(self)), s < (unsigned)t2[0];
+                                    for (unsigned s = 0; (t2 = targetIds(this)), s < (unsigned)t2[0];
                                          s = s + 1) {
                                         if (((int *)t2[1])[s] != -1) {
                                             int hp = RB_Player_getHitpoints();
@@ -332,7 +328,7 @@ void RepairBeam::update(int dt, void *level, void *hud) {
 
             // animate beams
             float scaleDiv = g_RB_scaleDiv;
-            Vector *beamPos2 = (Vector *)((char *)self + 4);
+            Vector *beamPos2 = (Vector *)((char *)this + 4);
             int *enData = enemies + 1;
             bool allInactive = true;
             float dtF = (float)dt;
@@ -341,17 +337,17 @@ void RepairBeam::update(int dt, void *level, void *hud) {
             float shieldAmt = dtF * g_RB_shieldMul;
 
             int off = 0;
-            for (unsigned i = 0; i < (unsigned)targetCount(self); i = i + 1) {
-                if (((int *)targetIds(self)[1])[off / 4] != -1 &&
-                    *(int *)((char *)((int *)targetIds(self)[1]) + off) != -1) {
+            for (unsigned i = 0; i < (unsigned)targetCount(this); i = i + 1) {
+                if (((int *)targetIds(this)[1])[off / 4] != -1 &&
+                    *(int *)((char *)((int *)targetIds(this)[1]) + off) != -1) {
                     long long t = (long long)((PaintCanvas *)*canvas)->TransformGetTransform(
-                        ((AEGeometry *)((void **)self->field_0x10[1])[off / 4])->transform);
+                        ((AEGeometry *)((void **)this->field_0x10[1])[off / 4])->transform);
                     RB_Transform_Update(t, (bool)dt);
                     Vector tmp;
                     RB_Player_getPosition(&tmp);
                     *(Vector *)(beamPos2) = *(const Vector *)(&tmp);
 
-                    int idSlot = *(int *)((char *)((int *)targetIds(self)[1]) + off);
+                    int idSlot = *(int *)((char *)((int *)targetIds(this)[1]) + off);
                     int *enemyObj = (int *)(((int *)(*enData))[idSlot]);
                     int kind = *(int *)((char *)enemyObj + 0x7c);
 
@@ -403,30 +399,30 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                     }
 
                     float len = AbyssEngine::AEMath::VectorLength(*(const Vector *)(beamPos2));
-                    ((AEGeometry *)(((void **)self->field_0x10[1])[off / 4]))->setScaling(len, 0.5f, 0.5f);
+                    ((AEGeometry *)(((void **)this->field_0x10[1])[off / 4]))->setScaling(len, 0.5f, 0.5f);
 
-                    void *geo = ((void **)self->field_0x10[1])[off / 4];
+                    void *geo = ((void **)this->field_0x10[1])[off / 4];
                     Vector ndir;
                     *(Vector *)(&ndir) -= *(const Vector *)(beamPos2);   // (placeholder) - beamPos2 - geom-frame
                     *(Vector *)(&ndir) = AbyssEngine::AEMath::VectorNormalize(*(const Vector *)(&ndir));
                     { AbyssEngine::AEMath::Vector rbUp; rbUp.x = 0.0f; rbUp.y = 1.0f; rbUp.z = 0.0f; ((AEGeometry *)(geo))->setDirection(*(const AbyssEngine::AEMath::Vector *)(&ndir), rbUp); }
 
-                    void *geo2 = ((void **)self->field_0x10[1])[off / 4];
+                    void *geo2 = ((void **)this->field_0x10[1])[off / 4];
                     RB_Level_getPlayer(level);
                     RB_PlayerEgo_getPosition(&ndir);
                     ((AEGeometry *)(geo2))->setPosition(*(const AbyssEngine::AEMath::Vector *)&ndir);
 
                     long long t2 = (long long)((PaintCanvas *)*canvas)->TransformGetTransform(
-                        ((AEGeometry *)((void **)self->field_0x10[1])[off / 4])->transform);
+                        ((AEGeometry *)((void **)this->field_0x10[1])[off / 4])->transform);
                     RB_Transform_Update(t2, (bool)dt);
 
-                    if (self->field_0x1c == 0x29) {
+                    if (this->field_0x1c == 0x29) {
                         void **plp = (void **)RB_Level_getPlayer(level);
                         if (RB_Player_getShieldDamageRate((void *)*plp) < 100) {
                             int sh = RB_Status_getShip();
                             int eq = RB_Ship_getFirstEquipmentOfSort(sh);
                             float a = (float)RB_Item_getAttribute(eq);
-                            float *charge = (float *)((char *)((int *)self->field_0x18[1]) + off);
+                            float *charge = (float *)((char *)((int *)this->field_0x18[1]) + off);
                             float nv = *charge + (shieldAmt * a) / scaleDiv;
                             *charge = nv;
                             if (nv < 1.0f) {
@@ -439,7 +435,7 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                             float a2 = (float)RB_Item_getAttribute(eq2);
                             RB_Player_regenerateShield((void *)*plp2, (shieldAmt * a2) / scaleDiv);
                         }
-                    } else if (self->field_0x1c == 0x25) {
+                    } else if (this->field_0x1c == 0x25) {
                         int pl = ((int *)enemyObj)[1];
                         int sh = RB_Status_getShip();
                         int eq = RB_Ship_getFirstEquipmentOfSort(sh);
@@ -450,7 +446,7 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                     int snd = *g_RB_sndPlay;
                     int *evArr = g_RB_sndPlayEv;
                     if (RB_FModSound_isPlaying(snd) == 0) {
-                        RB_FModSound_play(snd, (void *)evArr[self->field_0x0], 0, 0.0f);
+                        RB_FModSound_play(snd, (void *)evArr[this->field_0x0], 0, 0.0f);
                     }
                     allInactive = false;
                 }
@@ -475,13 +471,13 @@ void RepairBeam::update(int dt, void *level, void *hud) {
         int *evArr = g_RB_sndUpdEv;
         int *snd = *g_RB_sndUpd;
         if (RB_FModSound_isPlaying(*snd) != 0) {
-            int shipIdx = self->field_0x0;
+            int shipIdx = this->field_0x0;
             RB_Level_getPlayer(level);
             Vector tmp;
             RB_PlayerEgo_getPosition(&tmp);
-            *(Vector *)((char *)self + 4) = *(const Vector *)(&tmp);
+            *(Vector *)((char *)this + 4) = *(const Vector *)(&tmp);
             RB_FModSound_updateEvent3DAttributes(snd, evArr[shipIdx],
-                                                 (Vector *)((char *)self + 4), 0, false);
+                                                 (Vector *)((char *)this + 4), 0, false);
         }
     }
 

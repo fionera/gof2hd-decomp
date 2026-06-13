@@ -217,8 +217,7 @@ extern uint32_t DAT_00195470;
 }
 
 int ParticleSettings::init() {
-    ParticleSettings *self = this;
-    char *t = (char *)self;
+    char *t = (char *)this;
     char buf[12];  // local AbyssEngine::String temporary (aSStack_58)
     uint32_t uVar1 = (uint32_t)DAT_00194078;
     uint64_t uVar19 = (uint64_t)DAT_00194070;
