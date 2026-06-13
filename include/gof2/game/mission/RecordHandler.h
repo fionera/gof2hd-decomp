@@ -30,8 +30,8 @@ public:
     void addHashToOptions();
     void changeSaveDirectoryToBackupDirectory();
     void convertSDVersionSaves();
-    RecordHandler * ctor();
-    RecordHandler * dtor();
+    RecordHandler();
+    ~RecordHandler();
     void loadOptions();
     void loadResolutionValue();
     void * readAgent(unsigned int fd);

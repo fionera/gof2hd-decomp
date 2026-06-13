@@ -380,12 +380,11 @@ __attribute__((visibility("hidden"))) extern void (*g_RH_stringDtor)(void *s);
 
 // RecordHandler::~RecordHandler() — destroys the three String members at +0x20,
 // +0x14, +0x8 (high to low) and returns `this`.
-RecordHandler * RecordHandler::dtor() {
+RecordHandler::~RecordHandler() {
     void (*dtor)(void *) = g_RH_stringDtor;
     dtor((char *)this + 0x20);
     dtor((char *)this + 0x14);
     dtor((char *)this + 0x8);
-    return this;
 }
 
 // RecordHandler::recordStoreReadPreview(int)
@@ -422,7 +421,7 @@ __attribute__((visibility("hidden"))) extern const char RH_lit2[];
 
 // RecordHandler::RecordHandler() — default-constructs the three String members at
 // +0x8, +0x14, +0x20, then assigns each from a literal, and returns `this`.
-RecordHandler * RecordHandler::ctor() {
+RecordHandler::RecordHandler() {
     String tmp;
     char *m0 = (char *)this + 0x8;
     char *m1 = (char *)this + 0x14;
@@ -440,8 +439,6 @@ RecordHandler * RecordHandler::ctor() {
 
     tmp.ctor_char(RH_lit2, false);
     ((String *)(m2))->assign(&tmp);
-
-    return this;
 }
 
 // RecordHandler::writeByteArrayAsOptionsFile(signed char*, int)
