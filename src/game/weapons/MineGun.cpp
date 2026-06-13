@@ -13,13 +13,9 @@ float VectorLength(const Vector &value);
 } }
 
 extern "C" __attribute__((visibility("hidden"))) void *MineGun_vtable;
-extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion *> *array);
-extern "C" void *Array_Explosion_dtor(Array<Explosion *> *array);
 extern "C" void *ObjectGun_dtor(MineGun *self);
 void *_ZN7MineGunD1Ev(MineGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **MineGun_canvas_holder;
-extern "C" void Array_Explosion_ctor(Array<Explosion *> *self);
-extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion *> *self);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
 
 void MineGun::render()
@@ -39,10 +35,11 @@ void *_ZN7MineGunD1Ev(MineGun *self)
 
     Array<Explosion *> *explosions = (Array<Explosion *> *)P(self, 0xb4);
     if (explosions != 0) {
-        ArrayReleaseClasses_Explosion(explosions);
-        if (P(self, 0xb4) != 0) {
-            ::operator delete(Array_Explosion_dtor((Array<Explosion *> *)P(self, 0xb4)));
+        for (Explosion *explosion : *explosions) {
+            delete explosion;
         }
+        explosions->clear();
+        delete explosions;
         P(self, 0xb4) = 0;
     }
 
@@ -81,11 +78,10 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
     I(self, 0xc8) = zero;
     P(self, 0x0) = (char *)MineGun_vtable + 8;
 
-    Array<Explosion *> *explosions = (Array<Explosion *> *)::operator new(0xc);
-    Array_Explosion_ctor(explosions);
+    Array<Explosion *> *explosions = new Array<Explosion *>();
     P(self, 0xb4) = explosions;
     uint32_t length = U(gun, 0x8);
-    ArraySetLength_Explosion(length, explosions);
+    explosions->resize(length);
 
     explosions = (Array<Explosion *> *)P(self, 0xb4);
     P(self, 0xb8) = ::operator new[](explosions->size());

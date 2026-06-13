@@ -18,14 +18,10 @@ Vector operator-(const Vector &);
 
 ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self);
 extern "C" void ObjectGun_delete(ObjectGun *self);
-extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion*> *self);
-extern "C" void *Array_Explosion_dtor(Array<Explosion*> *self);
 void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
 void TransformAddMesh(void *canvas, uint32_t transform, uint16_t mesh, int flags);
 extern "C" void ObjectGun_setEnemies_impl(void *items);
 void TransformCreate(void *canvas, uint32_t *transform);
-extern "C" void Array_Explosion_ctor(Array<Explosion*> *self);
-extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion*> *self);
 extern "C" void Explosion_ctor(Explosion *self, int type);
 uint32_t TransformGetTransform(void *canvas, uint32_t transform);
 // __aeabi_memcpy is declared by gof2/AEGeometry.h (returns void*)
@@ -69,10 +65,10 @@ ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
     Array<Explosion*> *explosions = self->field_0x2c;
     self->field_0x18 = 0;
     if (explosions != 0) {
-        ArrayReleaseClasses_Explosion(explosions);
-        explosions = self->field_0x2c;
-        if (explosions != 0)
-            ::operator delete(Array_Explosion_dtor(explosions));
+        for (Explosion *e : *explosions)
+            delete e;
+        explosions->clear();
+        delete self->field_0x2c;
         self->field_0x2c = 0;
     }
 
@@ -97,10 +93,10 @@ ObjectGun::~ObjectGun()
     Array<Explosion*> *explosions = this->field_0x2c;
     this->field_0x18 = 0;
     if (explosions != 0) {
-        ArrayReleaseClasses_Explosion(explosions);
-        explosions = this->field_0x2c;
-        if (explosions != 0)
-            ::operator delete(Array_Explosion_dtor(explosions));
+        for (Explosion *e : *explosions)
+            delete e;
+        explosions->clear();
+        delete this->field_0x2c;
         this->field_0x2c = 0;
     }
 
@@ -212,7 +208,7 @@ make_explosions:
     {
         Array<Explosion*> *explosions = new Array<Explosion*>();
         self->field_0x2c = explosions;
-        ArraySetLength_Explosion(gun->count, explosions);
+        explosions->resize(gun->count);
         explosions = self->field_0x2c;
         self->field_0x30 = (uint8_t *)::operator new[]((uint32_t)explosions->size());
 

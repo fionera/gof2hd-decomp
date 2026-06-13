@@ -19,10 +19,16 @@
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
 extern "C" void *Level_dtor(void *level);
-extern "C" void ArrayReleaseClasses_AEGeometryPtr(void *arr);
-extern "C" void *Array_AEGeometryPtr_dtor(void *arr);
 
 __attribute__((visibility("hidden"))) extern void **g_canvasFog; // FogEnable target
+
+// Typed accessor for the cutscene's AEGeometry array member (offset +0x38): the
+// decompiler flattened it into the raw field block; expose it as a real
+// Array<AEGeometry*>* so the container operations are compiler-generated.
+static inline Array<AEGeometry *> *&geomArray(void *self)
+{
+    return *(Array<AEGeometry *> **)((char *)self + 0x38);
+}
 
 CutScene::~CutScene()
 {
@@ -56,13 +62,16 @@ CutScene::~CutScene()
     if (g != 0) { ((AEGeometry*)g)->~AEGeometry(); ::operator delete(g); }
     pp(this, 0x34) = 0;
 
-    void *arr = pp(this, 0x38);
+    Array<AEGeometry *> *arr = geomArray(this);
     if (arr != 0) {
-        ArrayReleaseClasses_AEGeometryPtr(arr);
-        arr = pp(this, 0x38);
-        if (arr != 0) ::operator delete(Array_AEGeometryPtr_dtor(arr));
+        // ArrayReleaseClasses: destroy every owned AEGeometry, then drop the entries.
+        for (AEGeometry *e : *arr) {
+            if (e != 0) { e->~AEGeometry(); ::operator delete(e); }
+        }
+        arr->clear();
+        delete geomArray(this);
     }
-    pp(this, 0x38) = 0;
+    geomArray(this) = 0;
 }
 
 uint8_t CutScene::isInitialized()
@@ -101,12 +110,11 @@ void CutScene::render3D()
     if (pp(this, 0x30) != 0) ((AEGeometry *)(pp(this, 0x30)))->render();
     if (pp(this, 0x34) != 0) ((AEGeometry *)(pp(this, 0x34)))->render();
 
-    void *arr = pp(this, 0x38);
+    Array<AEGeometry *> *arr = geomArray(this);
     if (arr != 0) {
-        for (uint32_t i = 0; i < *(uint32_t *)arr; i++) {
-            void **data = (void **)pp(arr, 0x4);
-            ((AEGeometry *)(data[i]))->render();
-            arr = pp(this, 0x38);
+        for (uint32_t i = 0; i < arr->size(); i++) {
+            (*arr)[i]->render();
+            arr = geomArray(this);
         }
     }
 }
@@ -210,15 +218,15 @@ void CutScene::process(int delta)
         if (((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace() == 1) {
             ((PaintCanvas*)(*g_canvas))->FogSetParameter(0x2601, 0, CutScene_fogColorMode17,
                                         1.0f, CutScene_fogDensityMode17);
-        } else if (kind == 2 && pp(self, 0x38) != 0) {
+        } else if (kind == 2 && geomArray(self) != 0) {
             void *canvas = *g_canvas;
-            unsigned int *arr = (unsigned int *)pp(self, 0x38);
-            unsigned int n = arr[0];
+            Array<AEGeometry *> *arr = geomArray(self);
+            unsigned int n = arr->size();
             for (unsigned int i = 0; i < n; i++) {
                 void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                 ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
-                arr = (unsigned int *)pp(self, 0x38);
-                n = arr[0];
+                arr = geomArray(self);
+                n = arr->size();
             }
             if (i32(self, 0x84) > 3000) {
                 i32(self, 0x84) = 0;
@@ -227,8 +235,7 @@ void CutScene::process(int delta)
                     if (((AbyssEngine::AERandom *)(rng))->nextInt() < 0x14) {
                         void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         if (((AbyssEngine::Transform *)(t))->IsRunning() == 0) {
-                            char *data = *(char **)((char *)pp(self, 0x38) + 4);
-                            void *c0 = *(void **)(data + i * 4);
+                            void *c0 = (void *)(*geomArray(self))[i];
                             void *tr;
                             tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0xc)))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
@@ -240,7 +247,7 @@ void CutScene::process(int delta)
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)1, (void *)0);
                         }
                     }
-                    n = *(unsigned int *)pp(self, 0x38);
+                    n = geomArray(self)->size();
                 }
             }
         }
@@ -400,7 +407,7 @@ CutScene::CutScene(int param)
     i32(this, 0x6c) = -1;
     i32(this, 0x70) = -1;
     u8(this, 0x5c) = 0;
-    i32(this, 0x38) = 0;
+    geomArray(this) = 0;
     __builtin_memset((char *)this + 0x8, 0, 16);
     __builtin_memset((char *)this + 0x28, 0, 16);
     u32(this, 0x24) = 0x3851b717u;
@@ -718,10 +725,6 @@ public:
 extern "C" {
 void FileRead_ctor(void *self);
 void *FileRead_dtor(void *self);
-void ArrayReleaseClasses_VectorPtr(void *arr);
-void *Array_VectorPtr_dtor(void *arr);
-void ArrayReleaseClasses_ArrayVectorPtr(void *arr);
-void *Array_ArrayVectorPtr_dtor(void *arr);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_canvas;
@@ -818,12 +821,12 @@ void CutScene::checkForTurret()
     FileRead_ctor(fr);
     ((Status *)(*gStatus))->getShip();
     int shipIdx = ((Ship *)(((Status *)(*gStatus))->getShip()))->getIndex();
-    void *positions = ((FileRead *)(fr))->loadWeaponPositions(shipIdx);
+    Array<Array<Vector *> *> *positions = ((FileRead *)(fr))->loadWeaponPositions(shipIdx);
     ::operator delete(FileRead_dtor(fr));
 
-    void *posVec = *(void **)(*(char **)(*(char **)((char *)positions + 4) + 8) + 4);
-    ((AEGeometry *)(geom0))->setPosition(*(const Vector *)posVec);
-    ((AEGeometry *)(geom1))->setPosition(*(const Vector *)posVec);
+    Vector *posVec = (*(*positions)[0])[0];
+    ((AEGeometry *)(geom0))->setPosition(*posVec);
+    ((AEGeometry *)(geom1))->setPosition(*posVec);
     ((AEGeometry *)(geom0))->translate(CutScene_turret_tx, CutScene_turret_ty, CutScene_turret_tz);
 
     int idx2 = ((Item *)(item))->getIndex();
@@ -840,20 +843,24 @@ void CutScene::checkForTurret()
     if (positions == 0)
         return;
 
-    char *data = *(char **)((char *)positions + 4);
-    for (unsigned int i = 0; i < *(unsigned int *)positions; i++) {
-        void *slot = *(void **)(data + i * 4);
+    for (unsigned int i = 0; i < positions->size(); i++) {
+        Array<Vector *> *slot = (*positions)[i];
         if (slot != 0) {
-            ArrayReleaseClasses_VectorPtr(slot);
-            void *s2 = *(void **)(data + i * 4);
-            if (s2 != 0)
-                ::operator delete(Array_VectorPtr_dtor(s2));
-            *(void **)(data + i * 4) = 0;
+            // ArrayReleaseClasses_VectorPtr: delete each owned Vector, drop the entries.
+            for (Vector *v : *slot)
+                delete v;
+            slot->clear();
+            delete (*positions)[i];   // Array_VectorPtr_dtor: free the inner array object
+            (*positions)[i] = 0;
         }
     }
-    ArrayReleaseClasses_ArrayVectorPtr(positions);
-    Array_ArrayVectorPtr_dtor(positions);
-    this->turretFinalize(positions);
+    // ArrayReleaseClasses_ArrayVectorPtr: delete any remaining inner Array<Vector*>
+    // objects (all already nulled above), then drop the outer entries.
+    for (Array<Vector *> *e : *positions)
+        delete e;
+    positions->clear();
+    positions->~Array<Array<Vector *> *>();   // Array_ArrayVectorPtr_dtor
+    this->turretFinalize(positions);          // operator delete of the outer array object
 }
 
 // ---- update_tail / render2D_tail / renderBG_tail -----------------------------

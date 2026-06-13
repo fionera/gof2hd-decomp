@@ -30,7 +30,7 @@ int AutoPilotList::touch(int p1, int p2) {
     if (p1 < self->x ||
         self->x + self->width <= p1 ||
         (row = (p2 - self->y - 0xe) / 0xf, p2 - self->y < -0xf) ||
-        (uint32_t)(row + 1) >= ((Array<void *> *)self->entries)->size()) {
+        (uint32_t)(row + 1) >= self->entries->size()) {
         return -1;
     }
     self->selected = 0;
@@ -41,21 +41,20 @@ int AutoPilotList::touch(int p1, int p2) {
 
 // AutoPilotList::~AutoPilotList() - release the owned String* array, free it, null it.
 // Mangled name so the demangled symbol contains "~AutoPilotList".
-extern "C" void ArrayReleaseClasses_String(void *arr);   // blx 0x6facc
-extern "C" void *Array_String_dtor(void *arr);            // blx 0x6f64c
-
 AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
-    ArrayReleaseClasses_String(self->entries);
-    void *a = self->entries;
-    if (a != 0)
-        ::operator delete(Array_String_dtor(a));
-    self->entries = 0;
+    if (self->entries != nullptr) {
+        for (String *s : *self->entries)
+            delete s;
+        self->entries->clear();
+    }
+    delete self->entries;
+    self->entries = nullptr;
     return self;
 }
 
 // AutoPilotList::down() - advance selection to the next non-empty entry, wrapping at 4.
 void _ZN13AutoPilotList4downEv(AutoPilotList *self) {
-    void **data = ((Array<void *> *)self->entries)->data();
+    String **data = self->entries->data();
     int i = self->selected;
     int n;
     do {
@@ -80,9 +79,9 @@ RetStr AutoPilotList::getTargetString() {
     AutoPilotList *self = this;
     RetStr r;
     int idx = self->selected;
-    Array<void *> *entries = ((Array<void *> *)self->entries);
+    Array<String *> *entries = self->entries;
     if (idx >= 0 && (uint32_t)idx < entries->size())
-        ((String *)(&r))->ctor_copy((String *)entries->data()[idx], false);
+        ((String *)(&r))->ctor_copy((*entries)[idx], false);
     else
         String_ctor_cstr(&r, kEmpty, false);
     return r;
@@ -90,7 +89,7 @@ RetStr AutoPilotList::getTargetString() {
 
 // AutoPilotList::up() - move selection to the previous non-empty entry, wrapping at 0.
 void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
-    void **data = ((Array<void *> *)self->entries)->data();
+    String **data = self->entries->data();
     int i = self->selected;
     int n;
     do {
@@ -105,8 +104,6 @@ void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
 namespace AbyssEngine { struct String; }
 using AbyssEngine::String;
 
-extern "C" void Array_String_ctor(void *arr);
-extern "C" void ArraySetLength_String(int n, void *arr);
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
 extern "C" void String_plus(void *out, const void *a, const void *b);    // 0x6ef98 operator+
 void _ZN13AutoPilotList4downEv(AutoPilotList *self);          // down()
@@ -124,18 +121,16 @@ __attribute__((visibility("hidden"))) extern int **g_APL_screenH;        // scre
 extern const char kApLit1[] __attribute__((visibility("hidden")));
 extern const char kApLit2[] __attribute__((visibility("hidden")));
 
-static inline void **entryData(AutoPilotList *self) {
-    return *(void ***)((char *)self->entries + 0x4);
+static inline String **entryData(AutoPilotList *self) {
+    return self->entries->data();
 }
 
 // AutoPilotList::AutoPilotList(Level*) - build the list of autopilot destinations (current
 // station, warp gate, mission target, "cancel", route waypoint), measure the widest entry
 // to size the window, center it, then select the first non-empty row.
 void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
-    void *arr = operator new(0xc);
-    Array_String_ctor(arr);
-    self->entries = arr;
-    ArraySetLength_String(5, arr);
+    self->entries = new Array<String*>();
+    self->entries->resize(5);
     self->count = 0;
 
     if (**g_APL_apFlag != 0) {
@@ -197,9 +192,9 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     void *font = *g_APL_font;
     void *canvas = *g_APL_canvas;
     int width = 0;
-    Array<void *> *entries = ((Array<void *> *)self->entries);
+    Array<String *> *entries = self->entries;
     for (uint32_t i = 0; i < entries->size(); i++) {
-        if (entries->data()[i] != 0) {
+        if ((*entries)[i] != 0) {
             void *fontStr = (void *)*(void **)font;
             int w = ((PaintCanvas*)*(void **)canvas)->GetTextWidth((unsigned int)(uintptr_t)fontStr, fontStr) + 0x13;
             width = self->width;
@@ -208,15 +203,15 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
                 width = w;
             }
         }
-        entries = ((Array<void *> *)self->entries);
+        entries = self->entries;
     }
 
     int screenH = **g_APL_screenH;
     self->x = (**g_APL_screenW - width) / 2;
     self->y = (screenH + self->count * -0xf - 0xc) / 2;
-    while (entries->data()[self->selected] == 0) {
+    while ((*entries)[self->selected] == 0) {
         _ZN13AutoPilotList4downEv(self);
-        entries = ((Array<void *> *)self->entries);
+        entries = self->entries;
     }
 }
 
@@ -241,8 +236,8 @@ void AutoPilotList::draw() {
     int drawn = 0;
     void **canvasHolder = g_APL_canvas_draw;
     void **fontHolder = g_APL_font_draw;
-    for (uint32_t i = 0; i < ((Array<void *> *)this->entries)->size(); i++) {
-        void *text = ((Array<void *> *)this->entries)->data()[i];
+    for (uint32_t i = 0; i < this->entries->size(); i++) {
+        String *text = (*this->entries)[i];
         if (text != 0) {
             ((PaintCanvas*)*canvasHolder)->DrawString((unsigned int)(uintptr_t)(String *)*fontHolder, text,
                                    this->x,

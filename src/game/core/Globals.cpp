@@ -29,8 +29,6 @@
 // Status* as an opaque handle and reaches the engine via extern "C" free functions.
 struct Status;
 
-extern "C" void ArrayInt_release(Array<int> *a);
-extern "C" void ArrayInt_add(int val, Array<int> *a);
 extern "C" void AEString_ctor_copy(void *dst, void *src, bool flag);
 extern "C" void AEString_ctor_default(void *out);
 extern "C" void AEString_default_ctor(void *dst);
@@ -40,7 +38,6 @@ extern "C" void AEString_substr(void *dst, void *s, unsigned from, unsigned to);
 extern "C" void AEString_assign(void *dst, void *src);
 extern "C" void AEString_dtor(void *s);
 extern "C" short *AEString_index(void *s, int i);
-extern "C" void ArraySetLength_Str(unsigned n, void *a);
 extern "C" void AEString_int_ctor(void *dst, int v);
 extern "C" void AEString_concat(void *dst, void *a);
 void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth, void *lineArr);
@@ -64,10 +61,6 @@ extern "C" void FileRead_ctor(void *self);
 extern "C" void *FileRead_dtor(void *self);
 // FileRead is used as an opaque handle here (gof2/FileRead.h not included; see top of file).
 // loadStation / loadWreckCollision are instance methods on the local FileRead view above.
-extern "C" void ArrayBV_ctor(void *a);
-extern "C" void ArraySetLength_BV(unsigned n, void *a);
-extern "C" void ArrayRelease_int(void *a);
-extern "C" void *ArrayInt_dtor(void *a);
 extern "C" float VectorScale(void *vec, float scalar);
 extern "C" void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r);
 extern "C" void *Galaxy_dtor(void *g);
@@ -78,10 +71,6 @@ extern "C" void *Generator_dtor(void *g);
 extern "C" void *FModSound_dtor(void *s);
 extern "C" void *Achievements_dtor(void *a);
 extern "C" void *ImageFactory_dtor(void *f);
-extern "C" void ArrayReleaseClasses_Item(void *a);
-extern "C" void *ArrayItem_dtor(void *a);
-extern "C" void ArrayReleaseClasses_Ship(void *a);
-extern "C" void *ArrayShip_dtor(void *a);
 extern "C" void Mission_ctor(void *m);
 extern "C" void Galaxy_ctor(void *g);
 extern "C" void Achievements_ctor(void *a);
@@ -93,14 +82,11 @@ extern "C" void Generator_ctor(void *g);
 extern "C" void FModSound_ctor(void *s);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 void ParticleSettingsRef_initialize();
-extern "C" void ArrayInt_ctor(void *a);
 extern "C" int Station_getIndex(int station);
 // The dropped-self Status singleton. The original loaded the global Status* implicitly for
 // each of these 0-arg calls; the singleton lives at the hidden global g_status (same one
 // MGame/Mission/PlayerTurret reach). Recover the receiver as (*g_status)->method().
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
-extern "C" void ArrayReleaseClasses_Str(void *a);
-extern "C" void *ArrayStr_dtor(void *a);
 int GameText_getLanguage();
 extern "C" void AEString_cstr_ctor(void *dst, const char *str, int c);
 
@@ -136,15 +122,13 @@ void Globals_resetHints()
 void Globals_startNewSoundResourceList(void *self)
 {
     if (((Globals*)self)->field_0x4 != 0) {
-        ArrayInt_release(((Globals*)self)->field_0x4);
-        if (((Globals*)self)->field_0x4 != 0) {
-            ::operator delete(ArrayInt_dtor(((Globals*)self)->field_0x4));
-        }
+        ((Globals*)self)->field_0x4->clear();
+        delete ((Globals*)self)->field_0x4;
     }
     ((Globals*)self)->field_0x4 = 0;
     Array<int> *a = new Array<int>();
     ((Globals*)self)->field_0x4 = a;
-    ArrayInt_add(0x7c, a);
+    a->push_back(0x7c);
     return ((Globals*)self)->startNewSoundResourceList_tail(0x7b, ((Globals*)self)->field_0x4);
 }
 
@@ -301,7 +285,7 @@ void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
         vt[1](line);
     }
 
-    ArraySetLength_Str(count, out);
+    out->resize(count);
     for (unsigned i = 0; i < count; i++) {
         void *s = ::operator new(0xc);
         AEString_default_ctor(s);
@@ -1146,23 +1130,22 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
 
     void *fr = ::operator new(1);
     FileRead_ctor(fr);
-    int *data = (int *)((FileRead *)fr)->loadWreckCollision(kind);
+    Array<int> *data = ((FileRead *)fr)->loadWreckCollision(kind);
     ::operator delete(FileRead_dtor(fr));
 
-    void *outArr = 0;
+    Array<void *> *outArr = 0;
     if (data != 0) {
-        int count = **(int **)((char *)data + 4);
+        int count = (*data)[0];
 
         float v[3] = {0, 0, 0};       // local_40..local_38 vector
         float c[3] = {0, 0, 0};       // local_34/2c/30 scalar parts
 
-        outArr = ::operator new(0xc);
-        ArrayBV_ctor(outArr);
-        ArraySetLength_BV((unsigned)count, outArr);
+        outArr = new Array<void *>();
+        outArr->resize((unsigned)count);
 
         int pos = 1;
         for (int i = 0; i < count; i++) {
-            int *base = *(int **)((char *)data + 4);
+            int *base = data->data();
             int kindWord = base[pos];
             void *bound = 0;
             if (kindWord == 1) {
@@ -1203,11 +1186,11 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
                 pos += 1;
                 continue;
             }
-            *(void **)(*(char **)((char *)outArr + 4) + i * 4) = bound;
+            (*outArr)[i] = bound;
         }
 
-        ArrayRelease_int(data);
-        ::operator delete(ArrayInt_dtor(data));
+        data->clear();
+        delete data;
     }
 
     return;
@@ -1409,18 +1392,18 @@ void * Globals::dtor() {
     *fmodSlot = 0;
     void **itemSlot = gG_items;
     if (*itemSlot != 0) {
-        ArrayReleaseClasses_Item(*itemSlot);
-        if (*itemSlot != 0) {
-            ::operator delete(ArrayItem_dtor(*itemSlot));
-        }
+        Array<Item *> *items = (Array<Item *> *)*itemSlot;
+        for (Item *e : *items) delete e;
+        items->clear();
+        delete items;
     }
     *itemSlot = 0;
     void **shipSlot = gG_ships;
     if (*shipSlot != 0) {
-        ArrayReleaseClasses_Ship(*shipSlot);
-        if (*shipSlot != 0) {
-            ::operator delete(ArrayShip_dtor(*shipSlot));
-        }
+        Array<Ship *> *ships = (Array<Ship *> *)*shipSlot;
+        for (Ship *e : *ships) delete e;
+        ships->clear();
+        delete ships;
     }
     *shipSlot = 0;
     if (*galSlot != 0) {
@@ -1442,12 +1425,9 @@ void * Globals::dtor() {
     }
     *ifSlot = 0;
 
-    void *selfArr = self->field_0x4;
-    if (selfArr != 0) {
-        ArrayRelease_int(selfArr);
-        if (self->field_0x4 != 0) {
-            ::operator delete(ArrayInt_dtor(self->field_0x4));
-        }
+    if (self->field_0x4 != 0) {
+        self->field_0x4->clear();
+        delete self->field_0x4;
     }
     self->field_0x4 = 0;
     **gG_tail = 0;
@@ -2144,8 +2124,8 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
 
     void *fr = ::operator new(1);
     FileRead_ctor(fr);
-    Array<void *> *first = (Array<void *> *)((FileRead *)fr)->loadNamesBinary(kind, both, 1);
-    Array<void *> *last = (Array<void *> *)((FileRead *)fr)->loadNamesBinary(kind, both, 0);
+    Array<String *> *first = ((FileRead *)fr)->loadNamesBinary(kind, both, 1);
+    Array<String *> *last = ((FileRead *)fr)->loadNamesBinary(kind, both, 0);
 
     char firstStr[12], lastStr[12];
     if (first == 0) {
@@ -2162,12 +2142,14 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
     }
 
     if (first != 0) {
-        ArrayReleaseClasses_Str(first);
-        ::operator delete(ArrayStr_dtor(first));
+        for (String *e : *first) delete e;
+        first->clear();
+        delete first;
     }
     if (last != 0) {
-        ArrayReleaseClasses_Str(last);
-        ::operator delete(ArrayStr_dtor(last));
+        for (String *e : *last) delete e;
+        last->clear();
+        delete last;
     }
     ::operator delete(FileRead_dtor(fr));
 

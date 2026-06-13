@@ -98,21 +98,16 @@ struct Agent {
     ~Agent() noexcept;
 };
 
-extern "C" void ArrayReleaseClasses_ImagePart(void *array);
-extern "C" void *Array_ImagePart_dtor(void *array);
-extern "C" void ArrayReleaseClasses_String(void *array);
-extern "C" void Array_String_ctor(void *array);
-extern "C" void *Array_String_dtor(void *array);
 extern "C" void Layout_drawBox(Layout *layout, int style, int x, int y, int width,
                                 int height, String *title);
 
 class Radio {
 public:
-    void* messages;                    // +0x0
+    Array<RadioMessage *>* messages;         // +0x0  (typed message list)
     RadioMessage* currentMessage;            // +0x4
-    void* textLines;                    // +0x8
-    void* imageParts;                    // +0xc
-    void* imagePartBuffer;                   // +0x10
+    Array<String *>* textLines;              // +0x8  (wrapped text lines)
+    Array<ImagePart *>* imageParts;          // +0xc  (loaded glyph tiles)
+    int* imagePartBuffer;                    // +0x10 (raw 5-int part buffer)
     int64_t startTime;                 // +0x18
     int displayDuration;                     // +0x28
     uint8_t lastMessageShownFlag;                 // +0x2c

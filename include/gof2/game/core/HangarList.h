@@ -18,21 +18,6 @@ void operator delete(void *ptr) noexcept;
 extern "C" void *operator_new(unsigned size);
 extern "C" void operator_delete(void *ptr);
 
-extern "C" void Array_ListItem_ctor(Array<ListItem *> *array);
-extern "C" void *Array_ListItem_dtor(Array<ListItem *> *array);
-extern "C" void Array_ArrayListItem_ctor(Array<Array<ListItem *> *> *array);
-extern "C" void *Array_ArrayListItem_dtor(Array<Array<ListItem *> *> *array);
-extern "C" void Array_Item_ctor(Array<Item *> *array);
-extern "C" void *Array_Item_dtor(Array<Item *> *array);
-
-extern "C" void ArrayReleaseClasses_ListItem(Array<ListItem *> *array);
-extern "C" void ArrayReleaseClasses_ArrayListItem(Array<Array<ListItem *> *> *array);
-extern "C" void ArraySetLength_ListItem(uint32_t length, Array<ListItem *> *array);
-extern "C" void ArraySetLength_ArrayListItem(uint32_t length,
-                                              Array<Array<ListItem *> *> *array);
-extern "C" void ArrayAdd_Item(Item *item, Array<Item *> *array);
-extern "C" void ArrayAdd_ListItem(ListItem *item, Array<ListItem *> *array);
-
 extern "C" String *GameText_getText(GameText *texts, int id);
 
 extern "C" ListItem *ListItem_ctor_String(ListItem *self, String *text);

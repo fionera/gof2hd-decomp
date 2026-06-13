@@ -43,7 +43,7 @@ public:
     int x;                      // +0x4  x
     int y;                      // +0x8  y
     int width;                      // +0xc  width
-    void* entries;                   // +0x10 Array<String*>* entries
+    Array<String*>* entries;         // +0x10 owned String* array (released in dtor)
     int count;                     // +0x14 count
 
     void draw();

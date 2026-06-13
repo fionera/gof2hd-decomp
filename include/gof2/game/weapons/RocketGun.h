@@ -56,9 +56,9 @@ public:
     int particleSystem;                     // +0xcc
     int rocketKind;                     // +0xd0
     int fadeTimer;                     // +0xd4
-    void* trailMatrices;                   // +0xd8
-    void* trailSystems;                   // +0xdc
-    void* trailTimers;                   // +0xe0
+    Array<Matrix>* trailMatrices;          // +0xd8  (per-shot trail transform matrices)
+    Array<int>* trailSystems;              // +0xdc  (per-shot particle-system handles)
+    Array<int>* trailTimers;               // +0xe0  (per-shot trail fade timers)
     int particleManager;                     // +0xe4
 };
 #endif

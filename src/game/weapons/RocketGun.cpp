@@ -20,15 +20,9 @@ public:
 };
 
 extern "C" __attribute__((visibility("hidden"))) void *RocketGun_vtable;
-extern "C" void *Array_Matrix_dtor(void *p);
-extern "C" void *Array_int_dtor(void *p);
 void *_ZN9RocketGunD1Ev(RocketGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder;
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder2;
-extern "C" void Array_Matrix_ctor(void *self);
-extern "C" void Array_int_ctor(void *self);
-extern "C" void ArraySetLength_Matrix(uint32_t length, void *array);
-extern "C" void ArraySetLength_int(uint32_t length, void *array);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func)(void *out, void *in);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder3;
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func2)(void *out, void *in);
@@ -81,21 +75,15 @@ void *_ZN9RocketGunD1Ev(RocketGun *self)
 {
     *(void **)self = (char *)RocketGun_vtable + 8;
 
-    void *a0 = self->trailMatrices;
-    if (a0 != 0)
-        ::operator delete(Array_Matrix_dtor(a0));
-
-    void *a1 = self->trailSystems;
+    delete self->trailMatrices;
     self->trailMatrices = 0;
-    if (a1 != 0)
-        ::operator delete(Array_int_dtor(a1));
 
-    void *a2 = self->trailTimers;
+    delete self->trailSystems;
     self->trailSystems = 0;
-    if (a2 != 0)
-        ::operator delete(Array_int_dtor(a2));
 
+    delete self->trailTimers;
     self->trailTimers = 0;
+
     return self->base_dtor();
 }
 
@@ -112,16 +100,13 @@ RocketGun::~RocketGun()
 {
     *(void **)this = (char *)RocketGun_vtable + 8;
 
-    if (this->trailMatrices != 0)
-        ::operator delete(Array_Matrix_dtor(this->trailMatrices));
+    delete this->trailMatrices;
     this->trailMatrices = 0;
 
-    if (this->trailSystems != 0)
-        ::operator delete(Array_int_dtor(this->trailSystems));
+    delete this->trailSystems;
     this->trailSystems = 0;
 
-    if (this->trailTimers != 0)
-        ::operator delete(Array_int_dtor(this->trailTimers));
+    delete this->trailTimers;
     this->trailTimers = 0;
 
     this->base_dtor();
@@ -192,26 +177,18 @@ void RocketGun::setRadar(Radar *radar)
     }
 
     {
-        void *matrices = ::operator new(0xc);
-        Array_Matrix_ctor(matrices);
-        this->trailMatrices = matrices;
-        void *systems = ::operator new(0xc);
-        Array_int_ctor(systems);
-        this->trailSystems = systems;
-        void *timers = ::operator new(0xc);
-        Array_int_ctor(timers);
-        this->trailTimers = timers;
+        this->trailMatrices = new Array<Matrix>();
+        this->trailSystems = new Array<int>();
+        this->trailTimers = new Array<int>();
 
         uint32_t count = F<uint32_t>(this->gun, 0x8);
-        ArraySetLength_Matrix(count, this->trailMatrices);
-        ArraySetLength_int(F<uint32_t>(this->gun, 0x8), this->trailSystems);
-        ArraySetLength_int(F<uint32_t>(this->gun, 0x8), this->trailTimers);
+        this->trailMatrices->resize(count);
+        this->trailSystems->resize(F<uint32_t>(this->gun, 0x8));
+        this->trailTimers->resize(F<uint32_t>(this->gun, 0x8));
 
         int defaultType = 0x1c;
         if (mode == 2)
             defaultType = 0x1b;
-        uint32_t zero = 0;
-        int matrixOff = 0;
         for (uint32_t i = 0; i < F<uint32_t>(this->gun, 0x8); i++) {
             int manager;
             if (F<int>(this->gun, 0x58) == 0xc1) {
@@ -230,11 +207,10 @@ void RocketGun::setRadar(Radar *radar)
                     effect = 0x1a;
             }
 
-            int system = ((ParticleSystemManager *)(manager))->addSystem((void *)(F<int>(this->trailMatrices, 0x4) + matrixOff), effect, false);
-            *(int *)(F<char *>(this->trailSystems, 0x4) + i * 4) = system;
+            int system = ((ParticleSystemManager *)(manager))->addSystem((void *)&(*this->trailMatrices)[i], effect, false);
+            (*this->trailSystems)[i] = system;
             ((ParticleSystemManager *)(this->particleManager))->enableSystemEmit(system, false);
-            matrixOff += 0x3c;
-            *(uint32_t *)(F<char *>(this->trailTimers, 0x4) + i * 4) = zero;
+            (*this->trailTimers)[i] = 0;
         }
         return;
     }
@@ -242,28 +218,19 @@ void RocketGun::setRadar(Radar *radar)
 non_special:
     int rocketKind = this->rocketKind;
     if ((uint32_t)(rocketKind - 4) < 2 || rocketKind == 0x28) {
-        void *matrices = ::operator new(0xc);
-        Array_Matrix_ctor(matrices);
-        this->trailMatrices = matrices;
-        void *systems = ::operator new(0xc);
-        Array_int_ctor(systems);
-        this->trailSystems = systems;
-        void *timers = ::operator new(0xc);
-        Array_int_ctor(timers);
-        this->trailTimers = timers;
+        this->trailMatrices = new Array<Matrix>();
+        this->trailSystems = new Array<int>();
+        this->trailTimers = new Array<int>();
 
-        ArraySetLength_Matrix(F<uint32_t>(this->gun, 0x8), this->trailMatrices);
-        ArraySetLength_int(F<uint32_t>(this->gun, 0x8), this->trailSystems);
-        ArraySetLength_int(F<uint32_t>(this->gun, 0x8), this->trailTimers);
+        this->trailMatrices->resize(F<uint32_t>(this->gun, 0x8));
+        this->trailSystems->resize(F<uint32_t>(this->gun, 0x8));
+        this->trailTimers->resize(F<uint32_t>(this->gun, 0x8));
 
-        uint32_t zero = 0;
-        int matrixOff = 0;
         for (uint32_t i = 0; i < F<uint32_t>(this->gun, 0x8); i++) {
-            int system = ((ParticleSystemManager *)(F<int>(radar->level, 0x80)))->addSystem((void *)(F<int>(this->trailMatrices, 0x4) + matrixOff), 0x27, false);
-            *(int *)(F<char *>(this->trailSystems, 0x4) + i * 4) = system;
+            int system = ((ParticleSystemManager *)(F<int>(radar->level, 0x80)))->addSystem((void *)&(*this->trailMatrices)[i], 0x27, false);
+            (*this->trailSystems)[i] = system;
             ((ParticleSystemManager *)(F<int>(radar->level, 0x80)))->enableSystemEmit(system, false);
-            matrixOff += 0x3c;
-            *(uint32_t *)(F<char *>(this->trailTimers, 0x4) + i * 4) = zero;
+            (*this->trailTimers)[i] = 0;
         }
         return;
     }
@@ -443,18 +410,17 @@ void RocketGun::update(int elapsed)
         } else {
             int shotIndex = F<int>(this->gun, 0xa0);
             char *shotPos = (char *)F<void *>(this->gun, 0xc) + shotIndex * 0xc;
-            int system = *(int *)(F<char *>(this->trailSystems, 0x4) + shotIndex * 4);
+            int system = (*this->trailSystems)[shotIndex];
             if (*(float *)(shotPos + 8) != kZeroCompare) {
-                *(Matrix *)(F<char *>(this->trailMatrices, 0x4) + shotIndex * 0x3c) = *(const Matrix *)(matrix);
+                (*this->trailMatrices)[shotIndex] = *(const Matrix *)(matrix);
                 ((ParticleSystemManager *)(this->particleManager))->resetSystem(system);
                 ((ParticleSystemManager *)(this->particleManager))->enableSystemEmit(system, true);
                 ((ParticleSystemManager *)(this->particleManager))->enableSystemRender(system, true);
-                *(int *)(F<char *>(this->trailTimers, 0x4) + shotIndex * 4) = 0;
+                (*this->trailTimers)[shotIndex] = 0;
             } else {
                 ((ParticleSystemManager *)(this->particleManager))->enableSystemEmit(system, false);
                 ((ParticleSystemManager *)(this->particleManager))->resetSystem(system);
-                *(int *)(F<char *>(this->trailTimers, 0x4) +
-                         F<int>(this->gun, 0xa0) * 4) = 0;
+                (*this->trailTimers)[F<int>(this->gun, 0xa0)] = 0;
             }
         }
 
@@ -497,8 +463,8 @@ void RocketGun::update(int elapsed)
     }
 
     float dt = (float)elapsed;
-    for (uint32_t i = 0, vecOff = 0, matOff = 0; i < F<uint32_t>(this->gun, 0x8);
-         i++, vecOff += 0xc, matOff += 0x3c) {
+    for (uint32_t i = 0, vecOff = 0; i < F<uint32_t>(this->gun, 0x8);
+         i++, vecOff += 0xc) {
         gun = this->gun;
         *(Vector *)(axis) = *(const Vector *)((char *)gun->velocities + vecOff) * (dt);
         *(Vector *)(gunVec) = *(const Vector *)(axis) * (0.5f);
@@ -536,9 +502,9 @@ void RocketGun::update(int elapsed)
                 }
             } else {
                 if (this->trailMatrices != 0) {
-                    int system = *(int *)(F<char *>(this->trailSystems, 0x4) + i * 4);
+                    int system = (*this->trailSystems)[i];
                     ((ParticleSystemManager *)(this->particleManager))->enableSystemEmit(system, false);
-                    int *timer = (int *)(F<char *>(this->trailTimers, 0x4) + i * 4);
+                    int *timer = &(*this->trailTimers)[i];
                     if (*timer == 0)
                         *timer = 2000;
                 }
@@ -552,7 +518,7 @@ void RocketGun::update(int elapsed)
                 *(Vector *)(&zero) = *(const Vector *)(matrix);
                 MatrixSetTranslation(matrix, zero.x, zero.y, zero.z);
                 VectorNormalize(gunVec, (char *)F<void *>(this->gun, 0x18) + vecOff);
-                char *m = F<char *>(this->trailMatrices, 0x4) + matOff;
+                char *m = (char *)&(*this->trailMatrices)[i];
                 MatrixSetTranslation(matrix, zero.x, zero.y, zero.z);
                 *(uint32_t *)(m + 0x8) = *(uint32_t *)gunVec;
                 *(uint32_t *)(m + 0x18) = *(uint32_t *)(gunVec + 4);
@@ -561,13 +527,13 @@ void RocketGun::update(int elapsed)
         }
 
         if (this->trailTimers != 0 && zero.z == kZeroCompare) {
-            int *timer = (int *)(F<char *>(this->trailTimers, 0x4) + i * 4);
+            int *timer = &(*this->trailTimers)[i];
             if (*timer > 0) {
                 int left = *timer - elapsed;
                 *timer = left;
                 if (left < 1) {
                     *timer = 0;
-                    ((ParticleSystemManager *)(this->particleManager))->enableSystemRender(*(int *)(F<char *>(this->trailSystems, 0x4) + i * 4), false);
+                    ((ParticleSystemManager *)(this->particleManager))->enableSystemRender((*this->trailSystems)[i], false);
                 }
             }
         }

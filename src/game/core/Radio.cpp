@@ -43,38 +43,29 @@ uint8_t Radio::lastMessageShown()
 
 Radio::~Radio()
 {
-    void *array = this->imageParts;
-    if (array != 0) {
-        ArrayReleaseClasses_ImagePart(array);
-        array = this->imageParts;
-        if (array != 0) {
-            ::operator delete(Array_ImagePart_dtor(array));
-        }
+    if (this->imageParts != 0) {
+        for (ImagePart *e : *this->imageParts) delete e;
+        this->imageParts->clear();
+        delete this->imageParts;
     }
     this->imageParts = 0;
 
-    void *parts = this->imagePartBuffer;
-    if (parts != 0) {
-        ::operator delete[](parts);
+    if (this->imagePartBuffer != 0) {
+        ::operator delete[](this->imagePartBuffer);
     }
     this->imagePartBuffer = 0;
 
-    array = this->textLines;
-    if (array != 0) {
-        ArrayReleaseClasses_String(array);
-        array = this->textLines;
-        if (array != 0) {
-            ::operator delete(Array_String_dtor(array));
-        }
+    if (this->textLines != 0) {
+        for (String *e : *this->textLines) delete e;
+        this->textLines->clear();
+        delete this->textLines;
     }
     this->textLines = 0;
 }
 
 RadioMessage *Radio::getMessage(int index)
 {
-    void *messages = this->messages;
-    void **data = F<void **>(messages, 0x04);
-    return (RadioMessage *)data[index];
+    return (*this->messages)[index];
 }
 
 void Radio::setMessages(Array<RadioMessage *> *messages)
@@ -82,10 +73,10 @@ void Radio::setMessages(Array<RadioMessage *> *messages)
     Radio *self = this;
     Array<RadioMessage *> *list = messages;
     bool hasMessages = list != 0;
-    F<Array<RadioMessage *> *>(this, 0x00) = messages;
+    this->messages = messages;
     if (hasMessages) {
         for (uint32_t i = 0; i < list->size(); ++i) {
-            list->data()[i]->setRadio(self);
+            (*list)[i]->setRadio(self);
         }
     }
 }
@@ -103,10 +94,9 @@ extern "C" RadioMessage *RadioMessage_ctor(RadioMessage *self, int textId,
 void Radio::addMessage(int textId)
 {
     // Lazily create the backing message Array<RadioMessage *> on first use.
-    Array<RadioMessage *> *list = (Array<RadioMessage *> *)this->messages;
+    Array<RadioMessage *> *list = this->messages;
     if (list == 0) {
-        list = (Array<RadioMessage *> *)::operator new(sizeof(Array<RadioMessage *>));
-        new (list) Array<RadioMessage *>();
+        list = new Array<RadioMessage *>();
         this->messages = list;
     }
 
@@ -124,29 +114,23 @@ void Radio::addMessage(int textId)
 
 static ALWAYS_INLINE RadioMessage *radio_message_at(Radio *self, uint32_t index)
 {
-    void *messages = self->messages;
-    void **data = F<void **>(messages, 0x04);
-    return (RadioMessage *)data[index];
+    return (*self->messages)[index];
 }
 
 static ALWAYS_INLINE void release_string_lines(Radio *self)
 {
-    void *lines = self->textLines;
-    if (lines != 0) {
-        ArrayReleaseClasses_String(lines);
-        lines = self->textLines;
-        if (lines != 0) {
-            ::operator delete(Array_String_dtor(lines));
-        }
+    if (self->textLines != 0) {
+        for (String *e : *self->textLines) delete e;
+        self->textLines->clear();
+        delete self->textLines;
     }
     self->textLines = 0;
 }
 
 static ALWAYS_INLINE void release_parts(Radio *self)
 {
-    void *parts = self->imagePartBuffer;
-    if (parts != 0) {
-        ::operator delete[](parts);
+    if (self->imagePartBuffer != 0) {
+        ::operator delete[](self->imagePartBuffer);
     }
     self->imagePartBuffer = 0;
 }
@@ -161,10 +145,10 @@ static ALWAYS_INLINE Wanted *wanted_for_image(int imageId)
 
 void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
 {
-    Array<RadioMessage *> *messages = F<Array<RadioMessage *> *>(this, 0x00);
+    Array<RadioMessage *> *messages = this->messages;
     if (messages != 0) {
         for (uint32_t i = 0; i < messages->size(); ++i) {
-            if (messages->data()[i]->triggered((int64_t)time, ego, script) != 0) {
+            if ((*messages)[i]->triggered((int64_t)time, ego, script) != 0) {
                 int imageId = radio_message_at(this, i)->getImageID();
                 int *parts;
                 int agentIndex;
@@ -217,12 +201,10 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                     }
                 }
 
-                F<Array<ImagePart *> *>(this, 0x0c) = (*g_Radio_imageFactoryLoad)->loadChar(parts);
+                this->imageParts = (*g_Radio_imageFactoryLoad)->loadChar(parts);
                 release_string_lines(this);
 
-                void *lines = operator new(0x0c);
-                Array_String_ctor(lines);
-                this->textLines = lines;
+                this->textLines = new Array<String *>();
 
                 GameText *gameText = *g_Radio_gameText;
                 int textId = radio_message_at(this, i)->getTextID();
@@ -242,11 +224,11 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                 Globals *globals = *g_Radio_globals;
                 globals->getLineArray(font, &text,
                                       (this->boxWidth - 10) - layout->field_0x2d4,
-                                      F<Array<String *> *>(this, 0x08));
+                                      this->textLines);
 
                 this->startTime = (int64_t)time;
                 this->soundPending = 1;
-                this->displayDuration = F<int>(this->textLines, 0x00) * 2000 + 1500;
+                this->displayDuration = (int)this->textLines->size() * 2000 + 1500;
 
                 Agent *agent = (Agent *)operator new(0x98);
                 {
@@ -260,7 +242,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
                 ::operator delete(agent);
                 break;
             }
-            messages = F<Array<RadioMessage *> *>(this, 0x00);
+            messages = this->messages;
         }
     }
 }
@@ -327,7 +309,7 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script)
         int width = this->boxWidth;
         int x = this->boxX;
         int y = this->boxY;
-        uint32_t imageHeight = layout->field_0x4 * F<uint32_t>(this->textLines, 0x00);
+        uint32_t imageHeight = layout->field_0x4 * (uint32_t)this->textLines->size();
         uint32_t minHeight = layout->field_0x2d8;
         if (minHeight > imageHeight) {
             imageHeight = minHeight;
@@ -343,12 +325,12 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script)
         }
 
         ((Layout *)(layout))->setDrawColor(-1);
-        (*g_Radio_drawImageFactory)->drawChar(F<Array<ImagePart *> *>(this, 0x0c),
+        (*g_Radio_drawImageFactory)->drawChar(this->imageParts,
                                               this->boxX + 5,
                                               layout->field_0x8 + this->boxY + 5,
                                               false);
         (*g_Radio_drawGlobals)->drawLines(this->font,
-                                          F<Array<String *> *>(this, 0x08),
+                                          this->textLines,
                                           layout->field_0x2d4 + this->boxX + 7,
                                           layout->field_0x8 + this->boxY + 7);
 
@@ -356,11 +338,11 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script)
             this->soundPending = 0;
         }
 
-        Array<RadioMessage *> *messages = F<Array<RadioMessage *> *>(this, 0x00);
+        Array<RadioMessage *> *messages = this->messages;
         if (messages != 0 && messages->size() != 0) {
             int duration = this->displayDuration;
             if (this->startTime + (int64_t)duration + 2000 < time) {
-                if (this->currentMessage == messages->data()[messages->size() - 1]) {
+                if (this->currentMessage == (*messages)[messages->size() - 1]) {
                     this->lastMessageShownFlag = 1;
                 }
                 this->startTime = 0;
