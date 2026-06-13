@@ -259,11 +259,11 @@ int MissionsWindow::init() {
     pp(this, 0x4) = 0;
     if (pp(this, 0xc) != 0) ::operator delete(ChoiceWindow_dtor(pp(this, 0xc)));
     pp(this, 0xc) = 0;
-    if (pp(this, 0x24) != 0) { void *b = pp(this, 0x24); ((TouchButton *)b)->dtor(); ::operator delete(b); }
+    if (pp(this, 0x24) != 0) { void *b = pp(this, 0x24); ((TouchButton *)b)->~TouchButton(); ::operator delete(b); }
     pp(this, 0x24) = 0;
-    if (pp(this, 0x28) != 0) { void *b = pp(this, 0x28); ((TouchButton *)b)->dtor(); ::operator delete(b); }
+    if (pp(this, 0x28) != 0) { void *b = pp(this, 0x28); ((TouchButton *)b)->~TouchButton(); ::operator delete(b); }
     pp(this, 0x28) = 0;
-    if (pp(this, 0x2c) != 0) { void *b = pp(this, 0x2c); ((TouchButton *)b)->dtor(); ::operator delete(b); }
+    if (pp(this, 0x2c) != 0) { void *b = pp(this, 0x2c); ((TouchButton *)b)->~TouchButton(); ::operator delete(b); }
     pp(this, 0x8) = 0;
     pp(this, 0x2c) = 0;
     i32(this, 0x20) = 0;
@@ -383,21 +383,21 @@ int MissionsWindow::init() {
         if (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) {
             void *bAccept = ::operator new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-            ((TouchButton *)(bAccept))->ctor((String *)t, 0, i32(layout, 0x28) + i32(this, 0x30), (((i32(this, 0x34) + i32(this, 0x3c)) - i32(layout, 0x10)) -
+            new ((bAccept)) TouchButton((String *)t, 0, i32(layout, 0x28) + i32(this, 0x30), (((i32(this, 0x34) + i32(this, 0x3c)) - i32(layout, 0x10)) -
                               i32(layout, 0x24)) - i32(layout, 0x2c), btnY, '!', 4);  // width=btnY recovered via Ghidra
             pp(this, 0x24) = bAccept;
         }
         if (((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->isEmpty() == 0) {
             void *bReject = ::operator new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-            ((TouchButton *)(bReject))->ctor((String *)t, 0, i32(this, 0x30) + (i32(this, 0x38) >> 1) + i32(layout, 0x2c), (((i32(this, 0x34) - i32(layout, 0x2c)) + i32(this, 0x3c)) -
+            new ((bReject)) TouchButton((String *)t, 0, i32(this, 0x30) + (i32(this, 0x38) >> 1) + i32(layout, 0x2c), (((i32(this, 0x34) - i32(layout, 0x2c)) + i32(this, 0x3c)) -
                               i32(layout, 0x10)) - i32(layout, 0x24), btnY, '!', 4);  // width=btnY recovered via Ghidra
             pp(this, 0x28) = bReject;
 
             if (ApplicationManager_GetCurrentApplicationModule(*(void **)g_mwi_appMgr) == 5) {
                 void *bMap = ::operator new(200);
                 void *t2 = ((GameText *)g_mw_gameText)->getText(titleId);
-                ((TouchButton *)(bMap))->ctor((String *)t2, 0, i32(this, 0x30) + btnY + (i32(this, 0x38) >> 1) +
+                new ((bMap)) TouchButton((String *)t2, 0, i32(this, 0x30) + btnY + (i32(this, 0x38) >> 1) +
                                      i32(layout, 0x2c) * 2, (((i32(this, 0x34) - i32(layout, 0x2c)) + i32(this, 0x3c)) -
                                   i32(layout, 0x10)) - i32(layout, 0x24), btnY, '!', 4);  // width=btnY recovered via Ghidra
                 pp(this, 0x2c) = bMap;

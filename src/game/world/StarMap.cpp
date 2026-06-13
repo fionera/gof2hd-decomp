@@ -1539,7 +1539,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     field<uint8_t>(this, 0) = 0;
     void *button = operator new(0xc8);
     String *back = (String *)((GameText *)(*g_StarMap_init_text))->getText(0x190);
-    ((TouchButton *)(button))->ctor5(back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c), *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
+    new ((button)) TouchButton(back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c), *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
     ptr_field(this, 0x4c) = button;
     ptr_field(this, 0xa0) = 0;
     ptr_field(this, 0x5c) = ChoiceWindow_ctor(operator new(0x5c));

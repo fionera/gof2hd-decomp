@@ -156,13 +156,13 @@ void Layout::enableFillScreen(bool v) {
 
 Layout::~Layout() {
     void *p = this->backButton;
-    if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
+    if (p) { ((TouchButton *)(p))->~TouchButton(); operator_delete_li(p); }
     this->backButton = 0;
     p = this->secondaryButton;
-    if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
+    if (p) { ((TouchButton *)(p))->~TouchButton(); operator_delete_li(p); }
     this->secondaryButton = 0;
     p = this->helpButton;
-    if (p) { ((TouchButton *)(p))->dtor(); operator_delete_li(p); }
+    if (p) { ((TouchButton *)(p))->~TouchButton(); operator_delete_li(p); }
     this->helpButton = 0;
     p = this->choiceWindow;
     if (p) operator_delete_li(ChoiceWindow_dtor(p));

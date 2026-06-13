@@ -632,7 +632,7 @@ int WantedWindow::init() {
     int bw = this->windowWidth;
     int help = ((Layout *)(layout))->getHelpButtonOffset();
     // ctor6 header order is (x, y, text, p4, p5, p6); decomp call passed (text, kind, x, y, flags).
-    ((TouchButton *)(button))->ctor6(x + bw - help, this->windowY, text, 3, 0x12, 0);
+    new ((button)) TouchButton(x + bw - help, this->windowY, text, 3, 0x12, 0);
     (*buttons)[1] = button;
 
     button = (TouchButton *)::operator new(0xc8);
@@ -641,7 +641,7 @@ int WantedWindow::init() {
     bw = this->windowWidth;
     help = ((Layout *)(layout))->getHelpButtonOffset();
     int width = ((TouchButton *)((*buttons)[1]))->getWidth();
-    ((TouchButton *)(button))->ctor6(x + bw - help - width + F<int>(layout, 0x38), this->windowY, text, 3, 0x12, 0);
+    new ((button)) TouchButton(x + bw - help - width + F<int>(layout, 0x38), this->windowY, text, 3, 0x12, 0);
     (*buttons)[0] = button;
 
     ((TouchButton *)((*buttons)[1]))->setAlwaysPressed(true);
@@ -656,7 +656,7 @@ int WantedWindow::init() {
         F<int>(layout, 0x2c);
 
     if (this->detailButton != 0) {
-        ((TouchButton *)(this->detailButton))->dtor(); ::operator delete(this->detailButton);
+        ((TouchButton *)(this->detailButton))->~TouchButton(); ::operator delete(this->detailButton);
     }
     this->starMap = 0;
     this->detailButton = 0;
@@ -665,7 +665,7 @@ int WantedWindow::init() {
     button = (TouchButton *)::operator new(0xc8);
     text = (String *)((GameText *)(*textHolder))->getText(0x1a8);
     layout = *layoutHolder;
-    ((TouchButton *)(button))->ctor8(text, 0, this->windowX + (this->windowWidth >> 1) + F<int>(layout, 0x2c), (((this->windowY - F<int>(layout, 0x2c)) + this->windowHeight) -
+    new ((button)) TouchButton(text, 0, this->windowX + (this->windowWidth >> 1) + F<int>(layout, 0x2c), (((this->windowY - F<int>(layout, 0x2c)) + this->windowHeight) -
                        F<int>(layout, 0x10)) - F<int>(layout, 0x24), activeWidth, 0x21, 4);
     this->field_0x15 = 0;
     this->detailButton = button;
@@ -691,7 +691,7 @@ WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
 
     void *p = self->detailButton;
     if (p != 0) {
-        ((TouchButton *)(p))->dtor(); ::operator delete(p);
+        ((TouchButton *)(p))->~TouchButton(); ::operator delete(p);
     }
     self->detailButton = 0;
 

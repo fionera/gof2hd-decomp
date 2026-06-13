@@ -113,15 +113,15 @@ DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
     self->scrollWindow = 0;
 
     p = self->prevButton;
-    if (p != 0) { ((TouchButton *)(p))->dtor(); ::operator delete(p); }
+    if (p != 0) { ((TouchButton *)(p))->~TouchButton(); ::operator delete(p); }
     self->prevButton = 0;
 
     p = self->nextButton;
-    if (p != 0) { ((TouchButton *)(p))->dtor(); ::operator delete(p); }
+    if (p != 0) { ((TouchButton *)(p))->~TouchButton(); ::operator delete(p); }
     self->nextButton = 0;
 
     p = self->moreButton;
-    if (p != 0) { ((TouchButton *)(p))->dtor(); ::operator delete(p); }
+    if (p != 0) { ((TouchButton *)(p))->~TouchButton(); ::operator delete(p); }
     self->moreButton = 0;
 
     ((String *)((String *)((char *)self + 0x34)))->dtor();
@@ -502,21 +502,21 @@ int DialogueWindow::init() {
     String *label = (String *)((GameText *)(*gameText))->getText(0xb3);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    ((TouchButton *)(button))->ctor(label, 5, this->frameX + margin, this->frameY - margin + this->frameHeight, F<int>(layout, 0x50), 0x21, 4);
+    new ((button)) TouchButton(label, 5, this->frameX + margin, this->frameY - margin + this->frameHeight, F<int>(layout, 0x50), 0x21, 4);
     this->prevButton = button;
 
     button = ::operator new(0xc8);
     label = (String *)((GameText *)(*gameText))->getText(0xb4);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    ((TouchButton *)(button))->ctor(label, 6, this->frameX + this->frameWidth - margin, this->frameY - margin + this->frameHeight, F<int>(layout, 0x50), 0x22, 4);
+    new ((button)) TouchButton(label, 6, this->frameX + this->frameWidth - margin, this->frameY - margin + this->frameHeight, F<int>(layout, 0x50), 0x22, 4);
     this->nextButton = button;
 
     button = ::operator new(0xc8);
     label = (String *)((GameText *)(*gameText))->getText(0x18b);
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    ((TouchButton *)(button))->ctor(label, 0, this->frameX + half_round_to_zero(this->frameWidth), this->frameY + this->frameHeight - margin, this->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2, 0x24, 4);
+    new ((button)) TouchButton(label, 0, this->frameX + half_round_to_zero(this->frameWidth), this->frameY + this->frameHeight - margin, this->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2, 0x24, 4);
     this->choiceActive = 0;
     this->moreButton = button;
     return 0;
@@ -548,7 +548,7 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     this->faceParts = ((ImageFactory *)(*g_dw_imageFactoryCtor))->loadChar(parts);
     void *old = this->nextButton;
     if (old != 0) {
-        ((TouchButton *)(old))->dtor();
+        ((TouchButton *)(old))->~TouchButton();
         ::operator delete(old);
     }
     this->nextButton = 0;
@@ -560,7 +560,7 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     int x = this->frameX + this->frameWidth / 2;
     int y = this->frameY + this->frameHeight - margin;
     int width = this->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2;
-    ((TouchButton *)(button))->ctor(buttonText, 0, x, y, width, 0x24, 4);
+    new ((button)) TouchButton(buttonText, 0, x, y, width, 0x24, 4);
     this->nextButton = button;
 
     ((String *)((String *)((char *)this + 0x34)))->assign(agentName);

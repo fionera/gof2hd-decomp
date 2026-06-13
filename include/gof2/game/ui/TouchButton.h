@@ -24,15 +24,18 @@ public: void* _opaque;
     bool OnTouchBegin(int px, int py);
     unsigned int OnTouchEnd(int px, int py);
     unsigned int OnTouchMove(int px, int py);
-    TouchButton * ctor(String *text, int type, int x, int y, int width, int icon, int style);
-    TouchButton * ctor8(String *text, int type, int x, int y, int width, int icon, int mode);
-    TouchButton * ctor5(String *text, int x, int y, int p4, unsigned char p5);
-    TouchButton * ctor6(int x, int y, String *text, int p4, int p5, unsigned char p6);
-    TouchButton * ctor7(String *text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7);
+    // ---- constructors / destructor (demangle to TouchButton::TouchButton / ~TouchButton) ----
+    // ctor8 had the same (String*,int,int,int,int,int,int) signature and body as ctor, so it
+    // collapses into the first overload. The three embedded label String members (+0xc/+0x18/
+    // +0x2c) are byte-offset views, placement-constructed here and destroyed in ~TouchButton().
+    TouchButton(String *text, int type, int x, int y, int width, int icon, int style);
+    TouchButton(String *text, int x, int y, int p4, unsigned char p5);
+    TouchButton(int x, int y, String *text, int p4, int p5, unsigned char p6);
+    TouchButton(String *text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7);
+    ~TouchButton();
     void setPosition3(int x, int y, int align);
     unsigned int touch_end(int x, int y);
     void draw();
-    void dtor();
     int getHeight();
     String getText();
     int getWidth();

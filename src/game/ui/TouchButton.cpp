@@ -51,7 +51,7 @@ typedef unsigned int uint32_t;
 typedef void (*dtor_fn)(void *) __attribute__((nothrow));
 extern dtor_fn const gStringDtor __attribute__((visibility("hidden")));
 
-void TouchButton::dtor() {
+TouchButton::~TouchButton() {
     dtor_fn d = gStringDtor;
     d((char *)this + 0x2c);
     d((char *)this + 0x18);
@@ -618,14 +618,13 @@ void TouchButton::draw() {
 __attribute__((visibility("hidden"))) extern int *g_TB_c1;
 __attribute__((visibility("hidden"))) extern void **g_TB_c2;
 
-TouchButton * TouchButton::ctor7(String *text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
+TouchButton::TouchButton(String *text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
     ((String *)((char *)this + 0xc))->ctor();
     ((String *)((char *)this + 0x18))->ctor();
     ((String *)((char *)this + 0x2c))->ctor();
     I(this, 8) = *(int *)*g_TB_c1;
     I(this, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(this,8)));
     ((TouchButton *)(this))->init(text, (unsigned int)type, x, y, p5, 0, 0, 0, p6, p7);
-    return this;
 }
 
 // String::operator=
@@ -756,14 +755,13 @@ void TouchButton_168d9c(TouchButton *self, unsigned int kind, unsigned int image
 __attribute__((visibility("hidden"))) extern int *g_TB_c1;
 __attribute__((visibility("hidden"))) extern void **g_TB_c2;
 
-TouchButton * TouchButton::ctor5(String *text, int x, int y, int p4, unsigned char p5) {
+TouchButton::TouchButton(String *text, int x, int y, int p4, unsigned char p5) {
     ((String *)((char *)this + 0xc))->ctor();
     ((String *)((char *)this + 0x18))->ctor();
     ((String *)((char *)this + 0x2c))->ctor();
     I(this, 8) = *(int *)*g_TB_c1;
     I(this, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(this,8)));
     ((TouchButton *)(this))->init(text, 0xffffffff, 4, x, y, p4, 0, 0, p5, 0x44);
-    return this;
 }
 
 // TouchButton::TouchButton(String const&, int, int, int, int,
@@ -803,14 +801,13 @@ TouchButton *TouchButton_168f30(TouchButton *self, String *text,
 __attribute__((visibility("hidden"))) extern int *g_TB_c1;
 __attribute__((visibility("hidden"))) extern void **g_TB_c2;
 
-TouchButton * TouchButton::ctor6(int x, int y, String *text, int p4, int p5, unsigned char p6) {
+TouchButton::TouchButton(int x, int y, String *text, int p4, int p5, unsigned char p6) {
     ((String *)((char *)this + 0xc))->ctor();
     ((String *)((char *)this + 0x18))->ctor();
     ((String *)((char *)this + 0x2c))->ctor();
     I(this, 8) = *(int *)*g_TB_c1;
     I(this, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(this,8)));
     ((TouchButton *)(this))->init(text, 0xffffffff, 4, x, y, p4, p5, 0, p6, 0x44);
-    return this;
 }
 
 // TouchButton::TouchButton(unsigned int, int, int, int, unsigned char)
@@ -846,28 +843,20 @@ void TouchButton_168cb0(TouchButton *self, unsigned int kind,
 // +0x08, cached glyph spacing at +0xc4), then delegates to the shared init().
 // `icon` is the optional sub-image id (init's "achStage"/+0x24 slot); `style`
 // becomes flags0 (+0x74). flags1 defaults to 0x44 like the other label ctors.
-TouchButton * TouchButton::ctor(String *text, int type, int x, int y, int width, int icon, int style) {
+TouchButton::TouchButton(String *text, int type, int x, int y, int width, int icon, int style) {
     ((String *)((char *)this + 0xc))->ctor();
     ((String *)((char *)this + 0x18))->ctor();
     ((String *)((char *)this + 0x2c))->ctor();
     I(this, 8) = *(int *)*g_TB_c1;
     I(this, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(this,8)));
     ((TouchButton *)(this))->init(text, (unsigned int)type, 0, icon, width, 0, x, y, (unsigned char)style, 0x44);
-    return this;
 }
 
 // ---- TouchButton::TouchButton(String const& text, int type, int x, int y, int width, int icon, int mode) ----
 // Identical construction to ctor() above (the WantedWindow call site reaches this
 // via its own veneer); `mode` is the flags0 byte.
-TouchButton * TouchButton::ctor8(String *text, int type, int x, int y, int width, int icon, int mode) {
-    ((String *)((char *)this + 0xc))->ctor();
-    ((String *)((char *)this + 0x18))->ctor();
-    ((String *)((char *)this + 0x2c))->ctor();
-    I(this, 8) = *(int *)*g_TB_c1;
-    I(this, 0xc4) = ((PaintCanvas*)(*g_TB_c2))->FontGetSpacing((unsigned int)(U(this,8)));
-    ((TouchButton *)(this))->init(text, (unsigned int)type, 0, icon, width, 0, x, y, (unsigned char)mode, 0x44);
-    return this;
-}
+// TouchButton::ctor8 collapsed into the (String*,int,int,int,int,int,int) constructor
+// above (identical signature and body); its WantedWindow call site constructs it directly.
 
 // ---- TouchButton::setPosition3(int x, int y, int align) ----
 // Three-argument placement helper: positions the button using `align` as the

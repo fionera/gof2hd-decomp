@@ -121,13 +121,13 @@ int ChoiceWindow::OnTouchBegin(int x, int y)
 
 ChoiceWindow::~ChoiceWindow()
 {
-    if (this->leftButton != 0) { ((TouchButton *)(this->leftButton))->dtor(); operator delete(this->leftButton); }
+    if (this->leftButton != 0) { ((TouchButton *)(this->leftButton))->~TouchButton(); operator delete(this->leftButton); }
     this->leftButton = 0;
 
-    if (this->rightButton != 0) { ((TouchButton *)(this->rightButton))->dtor(); operator delete(this->rightButton); }
+    if (this->rightButton != 0) { ((TouchButton *)(this->rightButton))->~TouchButton(); operator delete(this->rightButton); }
     this->rightButton = 0;
 
-    if (this->miscButton != 0) { ((TouchButton *)(this->miscButton))->dtor(); operator delete(this->miscButton); }
+    if (this->miscButton != 0) { ((TouchButton *)(this->miscButton))->~TouchButton(); operator delete(this->miscButton); }
     this->miscButton = 0;
 
     if (this->scrollWindow != 0) operator delete(ScrollTouchWindow_dtor(this->scrollWindow));
@@ -313,10 +313,10 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     lines->clear();
     delete lines;
 
-    if (this->leftButton != 0) { ((TouchButton *)(this->leftButton))->dtor(); operator delete(this->leftButton); }
+    if (this->leftButton != 0) { ((TouchButton *)(this->leftButton))->~TouchButton(); operator delete(this->leftButton); }
     this->leftButton = 0;
 
-    if (this->rightButton != 0) { ((TouchButton *)(this->rightButton))->dtor(); operator delete(this->rightButton); }
+    if (this->rightButton != 0) { ((TouchButton *)(this->rightButton))->~TouchButton(); operator delete(this->rightButton); }
     this->rightButton = 0;
 
     if (hasButtons) {
@@ -326,15 +326,15 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
         int buttonWidth = (int)scaled;
 
         void *button = operator new(0xc8);
-        ((TouchButton *)(button))->ctor((String *)&left, 0, this->x + this->width / 2 - F<int>(layout, 0x4c) / 2, this->y + this->height - this->padding, buttonWidth, 0x22, 4);
+        new ((button)) TouchButton((String *)&left, 0, this->x + this->width / 2 - F<int>(layout, 0x4c) / 2, this->y + this->height - this->padding, buttonWidth, 0x22, 4);
         this->leftButton = button;
 
         button = operator new(0xc8);
-        ((TouchButton *)(button))->ctor((String *)&right, 0, this->x + this->width / 2 + F<int>(layout, 0x4c) / 2, this->y + this->height - this->padding, buttonWidth, 0x21, 4);
+        new ((button)) TouchButton((String *)&right, 0, this->x + this->width / 2 + F<int>(layout, 0x4c) / 2, this->y + this->height - this->padding, buttonWidth, 0x21, 4);
         this->rightButton = button;
     } else {
         void *button = operator new(0xc8);
-        ((TouchButton *)(button))->ctor((String *)&single, 0, this->x + this->width / 2, this->y + this->height - this->padding, F<int>(layout, 0x40), 0x24, 4);
+        new ((button)) TouchButton((String *)&single, 0, this->x + this->width / 2, this->y + this->height - this->padding, F<int>(layout, 0x40), 0x24, 4);
         this->rightButton = button;
     }
 
@@ -363,7 +363,7 @@ void ChoiceWindow::setMiscButton(String const &text)
     }
 
     void *button = operator new(0xc8);
-    ((TouchButton *)(button))->ctor((String *)&text, 0, this->x + this->width / 2 - F<int>(layout, 0x4c) / 2, this->y + this->height - padding, buttonWidth, 0x22, 4);
+    new ((button)) TouchButton((String *)&text, 0, this->x + this->width / 2 - F<int>(layout, 0x4c) / 2, this->y + this->height - padding, buttonWidth, 0x22, 4);
 
     this->miscButton = button;
 
