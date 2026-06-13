@@ -8,49 +8,45 @@
 
 struct Agent;
 
-// AbyssEngine::String passed by value is a 12-byte trivially-copied aggregate
-// (text*, size, ...). Model it opaquely so it is passed on the stack/regs the
-// same way as the target ABI (struct >8 bytes by value).
-// (String is provided globally by gof2/common.h)
-
-// String is provided by gof2/common.h.
-
-// Sell-item data triple returned by setSellItemData (item/price/percentage),
-// reached via byte-offset casts at the call sites; modelled as three ints.
+// Sell-item data triple returned by setSellItemData (index/quantity/price).
 struct Triple { int a, b, c; };
 
-// Field accessors via byte offsets.
-
+// Full named layout (recovered from the binary). Trailing comments are the original
+// 32-bit field offsets, kept for cross-reference; the live layout is natural 64-bit.
 class Agent {
 public:
-    void* wingman1;                    // +0xc
-    void* wingman2;                   // +0x10
-    int wingmanCount;                     // +0x14
-    unsigned char field_0x24;           // +0x24
-    unsigned char field_0x25;           // +0x25
-    int field_0x28;                     // +0x28
-    int field_0x2c;                     // +0x2c
-    int field_0x30;                     // +0x30
-    int field_0x34;                     // +0x34
-    int field_0x38;                     // +0x38
-    int field_0x3c;                     // +0x3c
-    unsigned type;                // +0x40
-    int field_0x44;                     // +0x44
-    int field_0x48;                     // +0x48
-    int field_0x4c;                     // +0x4c
-    uint8_t male;                 // +0x50
-    int eventCount;                     // +0x54
-    int category;                     // +0x58
-    int field_0x5c;                     // +0x5c
-    int field_0x60;                     // +0x60
-    int field_0x64;                     // +0x64
-    int field_0x68;                     // +0x68
-    uint8_t offerAccepted;                 // +0x84
-    uint8_t rewardAtNextChat;                 // +0x85
-    int* imageParts;                    // +0x88
-    Mission* mission;                // +0x8c
+    String name;                                 // +0x00
+    void* wingman1;                              // +0x0c  friend-name String* (1st wingman)
+    void* wingman2;                              // +0x10  friend-name String* (2nd wingman)
+    int wingmanCount;                            // +0x14
+    String systemName;                           // +0x18
+    unsigned char field_0x24;                    // +0x24
+    unsigned char field_0x25;                    // +0x25
+    int field_0x28;                              // +0x28
+    int field_0x2c;                              // +0x2c
+    int field_0x30;                              // +0x30
+    int sellItemIndex;                           // +0x34
+    int sellItemQuantity;                        // +0x38
+    int sellItemPrice;                           // +0x3c
+    unsigned type;                               // +0x40  (== index)
+    int station;                                 // +0x44
+    int system;                                  // +0x48
+    int race;                                    // +0x4c
+    uint8_t male;                                // +0x50
+    int eventCount;                              // +0x54
+    int category;                                // +0x58
+    int offer;                                   // +0x5c
+    int costs;                                   // +0x60
+    int sellSystemIndex;                         // +0x64
+    int sellBlueprintIndex;                      // +0x68
+    String missionString;                        // +0x6c
+    String stationName;                          // +0x78
+    uint8_t offerAccepted;                       // +0x84
+    uint8_t rewardAtNextChat;                    // +0x85
+    int* imageParts;                             // +0x88
+    Mission* mission;                            // +0x8c
     Array<AbyssEngine::String*>* wingmanNames;   // +0x90
-    int sellModIndex;                     // +0x94
+    int sellModIndex;                            // +0x94
 
     // Real C++ constructor/destructor so the demangled symbols read Agent::Agent / ~Agent.
     Agent(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11);

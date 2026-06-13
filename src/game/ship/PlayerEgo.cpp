@@ -1518,8 +1518,10 @@ __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
     PP(this, 0x358) = 0;
     if (Array<RepairBeam *> *beams = PE_repairBeams(this)) {
         for (RepairBeam *beam : *beams)
-            if (beam)
-                ::operator delete(beam->dtor());
+            if (beam) {
+                beam->~RepairBeam();
+                ::operator delete(beam);
+            }
         delete beams;
     }
     PE_repairBeams(this) = 0;

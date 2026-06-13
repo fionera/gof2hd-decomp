@@ -20,12 +20,6 @@ namespace AbyssEngine {
 namespace AEMath {
 
 }
-
-    // ---- methods (converted from free functions) ----
-    RepairBeam * ctor(int shipIndex, int sort);
-    RepairBeam * dtor();
-    void render();
-    void update(int dt, void *level, void *hud);
 }
 using Vector = AbyssEngine::AEMath::Vector;
 
@@ -41,9 +35,9 @@ public:
     int field_0x1c;                     // +0x1c
     int field_0x20;                     // +0x20
 
-    // ---- methods (converted from free functions) ----
-    RepairBeam * ctor(int shipIndex, int sort);
-    RepairBeam * dtor();
+    // ---- constructor / destructor (demangle to RepairBeam::RepairBeam / ~RepairBeam) ----
+    RepairBeam(int shipIndex, int sort);
+    ~RepairBeam();
     void render();
     void update(int dt, void *level, void *hud);
 

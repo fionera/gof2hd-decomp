@@ -122,7 +122,7 @@ void RepairBeam::render() {
 // RepairBeam::RepairBeam(int shipIndex, int sort) — builds the per-target geometry/id/charge
 // arrays sized to the player's equipment-of-sort attribute count.
 
-RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
+RepairBeam::RepairBeam(int shipIndex, int sort) {
     this->field_0x1c = sort;
     this->field_0x0 = shipIndex;
     this->field_0x4 = 0;
@@ -177,13 +177,12 @@ RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
         }
     }
 
-    return this;
 }
 
 // RepairBeam::~RepairBeam() — releases the contained AEGeometry* array (also releasing the
 // pointed-to objects) and the int/float arrays, nulling each handle.
 
-RepairBeam * RepairBeam::dtor() {
+RepairBeam::~RepairBeam() {
     void *geoms = this->field_0x10;
     if (geoms != 0) {
         RepairBeam_ArrayReleaseClasses_Geo(geoms);
@@ -203,7 +202,6 @@ RepairBeam * RepairBeam::dtor() {
         ::operator delete(RepairBeam_Array_float_dtor(charges));
     }
     this->field_0x18 = 0;
-    return this;
 }
 
 // RepairBeam::update(int dt, Radar* radar, Level* level, Hud* hud)
@@ -493,7 +491,8 @@ void RepairBeam::update(int dt, void *level, void *hud) {
 // PlayerEgo equips this when a repair-beam module is present.
 RepairBeam *RepairBeam::create(int shipIndex, int sort) {
     RepairBeam *self = (RepairBeam *)operator new(0x24);
-    return self->ctor(shipIndex, sort);
+    new (self) RepairBeam(shipIndex, sort);
+    return self;
 }
 
 // --- Array<AEGeometry*> / Array<int> / Array<float> ctor -------------------
