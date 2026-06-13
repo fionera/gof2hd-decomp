@@ -271,10 +271,6 @@ void KIPlayer::setDead() {
 extern "C" {
 extern char KIPlayer_vtable[];                                   // KIPlayer vtable
 
-void String_ctor_default(void *s);                              // 0x6efbc  String::String()
-// 0x6ee18  String(char*,bool)
-// 0x6f2b0  operator=
-
 // Two engine constants captured from PC-relative slots (init colour/flags).
 extern unsigned KIPlayer_initA;
 extern unsigned KIPlayer_initB;
@@ -284,7 +280,7 @@ extern unsigned KIPlayer_initB;
 //                    float x, float y, float z, bool active)
 void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, float y, float z, bool active) {
     *(int *)this = (int)(intptr_t)(KIPlayer_vtable + 8);
-    String_ctor_default((char *)this + 0x18);
+    ((String *)((char *)this + 0x18))->ctor();
 
     // zero a wide block of fields (the engine writes zero-vectors via NEON stores).
     this->field_0x90 = 0;  this->field_0x94 = 0;

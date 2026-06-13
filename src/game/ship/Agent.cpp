@@ -9,9 +9,7 @@ using AbyssEngine::String;
 struct VObj { void (*vt[8])(void *); };
 
 String Agent::getStationName() {
-    String r;
-    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x78), false);
-    return r;
+    return *(String *)((char *)this + 0x78);
 }
 
 uint8_t Agent::hasAcceptedOffer() {
@@ -55,9 +53,7 @@ void Agent::setStationName(String src) {
 }
 
 String Agent::getMissionString() {
-    String r;
-    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x6c), false);
-    return r;
+    return *(String *)((char *)this + 0x6c);
 }
 
 uint8_t Agent::isMale() {
@@ -69,9 +65,7 @@ uint8_t Agent::isMale() {
 // Returns String by value. The copy-ctor returns void, so the compiler cannot
 // assume r0 survives the call and must keep a frame + restore the sret pointer.
 String Agent::getName() {
-    String r;
-    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x00), false);
-    return r;
+    return *(String *)((char *)this + 0x00);
 }
 
 // 4-entry price table loaded PC-relative (table contents in local rodata).
@@ -121,9 +115,7 @@ bool Agent::isGenericAgent() {
 }
 
 String Agent::getSystemName() {
-    String r;
-    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x18), false);
-    return r;
+    return *(String *)((char *)this + 0x18);
 }
 
 void Agent::giveRewardAtNextChat(bool v) {
@@ -200,9 +192,7 @@ String Agent::getWingmanName(int idx) {
     } else {
         src = this->wingman2;
     }
-    String r;
-    ((String *)(&r))->ctor_copy((String *)(src), false);
-    return r;
+    return *(String *)(src);
 }
 
 void Agent::setSystemName(String src) {
@@ -315,15 +305,13 @@ int Agent::getWingmanFriendsCount() {
     return this->wingmanCount;
 }
 
-extern "C" void *String_default_ctor(void *s);         // String::String() -> this
-
 // Agent::Agent(int kind, String name, int p4, int p5, int p6, bool p7,
 //              int p8, int p9, int p10, int p11)
 Agent * Agent::ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11) {
-    void *s0 = String_default_ctor(this);
-    String_default_ctor((char *)s0 + 0x18);
-    String_default_ctor((char *)this + 0x6c);
-    String_default_ctor((char *)this + 0x78);
+    ((String *)((char *)this + 0x00))->ctor();
+    ((String *)((char *)this + 0x18))->ctor();
+    ((String *)((char *)this + 0x6c))->ctor();
+    ((String *)((char *)this + 0x78))->ctor();
     this->type = kind;
     ((String *)(this))->assign((String *)name);
     this->field_0x44 = p4;

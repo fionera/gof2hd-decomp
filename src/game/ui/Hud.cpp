@@ -9,11 +9,9 @@
 // Station.h and TouchButton.h re-define the same per-class helper symbols
 // (String/B/I/P) without include guards. Rename them per-header so the TU has
 // one canonical String/B/I/P (from the headers above) and no redefinitions.
-#define String String
 #include "gof2/game/world/Station.h"
 #undef String
 #include "gof2/game/core/String.h"
-#define String String
 #define B B_TouchButton
 #define I I_TouchButton
 #define P P_TouchButton
@@ -35,11 +33,9 @@
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
-extern "C" void String_concat(void *out, void *lhs, void *rhs);
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
-extern "C" int  String_length(void *s);
 
 // ---- typed Array<T> accessors over the offset-addressed Hud fields ----------
 // The Hud object is offset-addressed (opaque struct), so these helpers reinterpret
@@ -313,9 +309,9 @@ void Hud::drawOrbitInformation() {
         ((SolarSystem *)(sysName))->getName();
         ((String *)(copy))->ctor_copy((String *)(sysName), false);
         ((String *)(sep))->ctor_char(g_Hud_oiSep, false);
-        String_concat(acc, copy, sep);
+        *(String *)acc = *(String *)copy + *(String *)sep;
         void *txt = ((GameText *)(*g_Hud_oiGameText))->getText(0); // id resolved by table
-        String_concat(full, acc, txt);
+        *(String *)full = *(String *)acc + *(String *)txt;
         ((PaintCanvas*)g_PaintCanvas)->DrawString((unsigned)(long)(font), (void *)(full), (x), (char)layout[0x89] /*+0x224*/, false);
         ((String *)(full))->dtor();
         ((String *)(acc))->dtor();
@@ -535,10 +531,10 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     if (aggregateKey != 0 && P(this, 0x26c) != 0) {
         char a0[12]; ((String *)(a0))->ctor_int(I(this, 0x52c));
         char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
-        char a94[12]; String_concat(a94, a0, ac);
+        char a94[12]; *(String *)a94 = *(String *)a0 + *(String *)ac;
         char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
         void *unit = ((GameText *)(gt))->getText(0);
-        char k34[12]; String_concat(k34, a88, unit);
+        char k34[12]; *(String *)k34 = *(String *)a88 + *(String *)unit;
         ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
         char b8[12]; ((String *)(b8))->ctor_copy((String *)(k34), false);
@@ -550,10 +546,10 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
             I(this, 0x52c) = newAmt;
             char nAc[12]; ((String *)(nAc))->ctor_int(newAmt);
             char nC4[12]; ((String *)(nC4))->ctor_char(g_Hud_ccUnit2, false);
-            char nA0[12]; String_concat(nA0, nAc, nC4);
+            char nA0[12]; *(String *)nA0 = *(String *)nAc + *(String *)nC4;
             char n94[12]; ((String *)(n94))->ctor_copy((String *)(nA0), false);
             void *u2 = ((GameText *)(gt))->getText(0);
-            char n88[12]; String_concat(n88, n94, u2);
+            char n88[12]; *(String *)n88 = *(String *)n94 + *(String *)u2;
             ((String *)(*(void **)((char *)(*eventQueue(this))[idx] + 0x1c)))->assign((String *)(n88));
             ((String *)(n88))->dtor(); ((String *)(n94))->dtor(); ((String *)(nA0))->dtor(); ((String *)(nC4))->dtor(); ((String *)(nAc))->dtor();
             ((String *)(k34))->dtor();
@@ -566,10 +562,10 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     I(this, 0x52c) = (a ? 1 : 0);
     char a0[12]; ((String *)(a0))->ctor_int(I(this, 0x52c));
     char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
-    char a94[12]; String_concat(a94, a0, ac);
+    char a94[12]; *(String *)a94 = *(String *)a0 + *(String *)ac;
     char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
     void *unit = ((GameText *)(gt))->getText(0);
-    char k34[12]; String_concat(k34, a88, unit);
+    char k34[12]; *(String *)k34 = *(String *)a88 + *(String *)unit;
     ((String *)(B(this, 0x1f4)))->assign((String *)(k34));
     ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
@@ -639,7 +635,6 @@ int Hud::sameHudEventAsBeforeAggregate(String *str) {
 
 // Hud::updateSecondaryWeaponString() — rebuilds the "<weapon name> xNN" label shown next to
 // the secondary-fire button (field +0x3b4) and recomputes its centered X position (+0x3c0).
-extern "C" void String_concat(void *out, void *lhs, void *rhs);     // operator+
 
 __attribute__((visibility("hidden"))) extern void **g_Hud_gameText;
 __attribute__((visibility("hidden"))) extern void **g_Hud_swCanvas;  // font holder
@@ -658,12 +653,12 @@ void Hud::updateSecondaryWeaponString() {
 
     char sep[12], acc1[12], amount[12], acc2[12], end[12], acc3[12];
     ((String *)(sep))->ctor_char(g_Hud_swSep, false);
-    String_concat(acc1, name, sep);
+    *(String *)acc1 = *(String *)name + *(String *)sep;
     int amt = ((Item *)(item))->getAmount();
     ((String *)(amount))->ctor_int(amt);
-    String_concat(acc2, acc1, amount);
+    *(String *)acc2 = *(String *)acc1 + *(String *)amount;
     ((String *)(end))->ctor_char(g_Hud_swEnd, false);
-    String_concat(acc3, acc2, end);
+    *(String *)acc3 = *(String *)acc2 + *(String *)end;
 
     ((String *)(B(this, 0x3b4)))->assign((String *)(acc3));
     ((String *)(acc3))->dtor();
@@ -940,7 +935,7 @@ void Hud::drawMenu() {
     char prefix[12], num[12], label[12];
     ((String *)(prefix))->ctor_char(g_Hud_dmPrefix, false);
     ((String *)(num))->ctor_int(I(this, 0x27c));
-    String_concat(label, prefix, num);
+    *(String *)label = *(String *)prefix + *(String *)num;
     ((String *)(num))->dtor();
     ((String *)(prefix))->dtor();
 
@@ -1047,7 +1042,7 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_csScreenW;// *holder -
 extern const char g_Hud_csZero[] __attribute__((visibility("hidden"))); // "0" pad
 
 static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw) {
-    int len = String_length(str);
+    int len = (int)((String *)str)->size();
     int x = x0;
     for (int i = 1; (unsigned int)(i - 1) < (unsigned int)len; i++) {
         char ch[12];
@@ -1077,12 +1072,12 @@ void Hud::drawChallengeModeScore() {
     // score string at status+0x184, right-padded to 7 digits
     char score[12];
     ((String *)(score))->ctor_int(status[0x61] /*+0x184*/);
-    int slen = String_length(score);
+    int slen = (int)((String *)score)->size();
     if (slen < 7) {
         for (int k = 0; k < 7 - slen; k++) {
             char z[12], acc[12];
             ((String *)(z))->ctor_char(g_Hud_csZero, false);
-            String_concat(acc, z, score);
+            *(String *)acc = *(String *)z + *(String *)score;
             ((String *)(score))->assign((String *)(acc));
             ((String *)(acc))->dtor();
             ((String *)(z))->dtor();
@@ -1107,7 +1102,7 @@ void Hud::drawChallengeModeScore() {
                 float base = (float)(mult * 1000);
                 char bonusStr[12];
                 ((String *)(bonusStr))->ctor_int((int)((bonus * 0.0f + 1.0f) * base));
-                int bl = String_length(bonusStr);
+                int bl = (int)((String *)bonusStr)->size();
                 int bx = (screenW / 2 - ((bl * dw) >> 1));
                 drawDigits(this, sprite, bonusStr, bx, fh + yRow + pad, dw);
                 ((String *)(bonusStr))->dtor();
@@ -1142,12 +1137,12 @@ void Hud::hudEventMedal(int medalId, int percent) {
 
     char sep[12], acc1[12], num[12], acc2[12], end[12], acc3[12];
     ((String *)(sep))->ctor_char(g_Hud_meSep, false);
-    String_concat(acc1, name, sep);
+    *(String *)acc1 = *(String *)name + *(String *)sep;
     if (percent >= 100) percent = 100;
     ((String *)(num))->ctor_int(percent);
-    String_concat(acc2, acc1, num);
+    *(String *)acc2 = *(String *)acc1 + *(String *)num;
     ((String *)(end))->ctor_char(g_Hud_meEnd, false);
-    String_concat(acc3, acc2, end);
+    *(String *)acc3 = *(String *)acc2 + *(String *)end;
 
     void *dst = B(this, 0x1e0);
     ((String *)(dst))->assign((String *)(acc3));

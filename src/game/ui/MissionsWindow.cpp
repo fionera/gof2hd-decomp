@@ -174,10 +174,6 @@ void *WantedWindow_ctor(void *self);
 
 void  Layout_formatCredits(void *out, int credits);
 
-void  String_fromC(void *s, const char *text, bool copy);
-void  String_fromText(void *s, void *text, bool copy);
-void  String_fromInt(void *s, int value);
-
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
 void  Globals_getAgentMissionText(void *out, void *agent);
@@ -290,7 +286,7 @@ int MissionsWindow::init() {
                      *(char *)(*(char **)g_mwi_campaign + 0x35) != 0);
     if (campShow) {
         char text[0xc];
-        String_fromC(text, "", false);
+        ((String *)(text))->ctor_char("", false);
         if (((Status *)(*(void **)g_mwi_status))->getCurrentCampaignMission() < 0xa4) {
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
             ((String *)(text))->assign((String *)t);
@@ -300,33 +296,33 @@ int MissionsWindow::init() {
         void *key = *(void **)g_mwi_status;
         char hdr[0xc], val[0xc], suffix[0xc], merged[0xc];
         if (production) {
-            String_fromText(hdr, text, false);
+            ((String *)(hdr))->ctor_copy((String *)(text), false);
             int need = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()))->getProductionGoodAmount();
             int have = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()))->getStatusValue();
-            String_fromInt(val, need - have);
-            String_fromC(suffix, "", false);
+            ((String *)(val))->ctor_int(need - have);
+            ((String *)(suffix))->ctor_char("", false);
             Status_replaceHash(merged, key, hdr, val, suffix);
         } else {
-            String_fromText(hdr, text, false);
+            ((String *)(hdr))->ctor_copy((String *)(text), false);
             ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission()))->getTargetStationName();
-            String_fromC(suffix, "", false);
+            ((String *)(suffix))->ctor_char("", false);
             Status_replaceHash(merged, key, hdr, val, suffix);
         }
         ((String *)(text))->assign((String *)merged);
         ((String *)(merged))->dtor(); ((String *)(suffix))->dtor(); ((String *)(val))->dtor(); ((String *)(hdr))->dtor();
 
         char a[0xc], b[0xc];
-        String_fromC(a, "", false);
-        String_fromText(b, text, false);
+        ((String *)(a))->ctor_char("", false);
+        ((String *)(b))->ctor_copy((String *)(text), false);
         ((ScrollTouchWindow *)(pp(this, 0x0)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
         ((String *)(text))->dtor();
     } else {
         bool useGold = ((Achievements *)(*(void **)g_mw_ach))->gotAllGoldMedals() != 0 && ((Ship *)(((Status *)(*(void **)g_mwi_status))->getShip()))->getIndex() != 8;
         char a[0xc], b[0xc];
-        String_fromC(a, "", false);
+        ((String *)(a))->ctor_char("", false);
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-        String_fromText(b, t, false);
+        ((String *)(b))->ctor_copy((String *)(t), false);
         ((ScrollTouchWindow *)(pp(this, 0x0)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
         (void)useGold;
@@ -350,18 +346,18 @@ int MissionsWindow::init() {
         Globals_getAgentMissionText(text, ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->getAgent());
         void *key = *(void **)g_mwi_status;
         char body[0xc];
-        String_fromText(body, text, false);
+        ((String *)(body))->ctor_copy((String *)(text), false);
         int rew = ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->getReward();
         int bonus = ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->getBonus();
         Layout_formatCredits(reward, rew + bonus);
-        String_fromC(suffix, "", false);
+        ((String *)(suffix))->ctor_char("", false);
         Status_replaceHash(merged, key, body, reward, suffix);
         ((String *)(text))->assign((String *)merged);
         ((String *)(merged))->dtor(); ((String *)(suffix))->dtor(); ((String *)(reward))->dtor(); ((String *)(body))->dtor();
 
         char a[0xc], b[0xc];
-        String_fromC(a, "", false);
-        String_fromText(b, text, false);
+        ((String *)(a))->ctor_char("", false);
+        ((String *)(b))->ctor_copy((String *)(text), false);
         ((ScrollTouchWindow *)(pp(this, 0x4)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
 
@@ -374,9 +370,9 @@ int MissionsWindow::init() {
              i32(layout, 0x10)) - i32(layout, 0x24), false);
         pp(this, 0x4) = sw1;
         char a[0xc], b[0xc];
-        String_fromC(a, "", false);
+        ((String *)(a))->ctor_char("", false);
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-        String_fromText(b, t, false);
+        ((String *)(b))->ctor_copy((String *)(t), false);
         ((ScrollTouchWindow *)(pp(this, 0x4)))->setText(*(String *)a, *(String *)b);
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
     }
@@ -437,9 +433,6 @@ void MissionsWindow_drawWanted(void *self);   // DAT_1ac504 thunk
 
 void  Layout_drawHeader(void *layout, void *title);
 
-void  String_fromC(void *s, const char *text, bool copy);
-void  String_fromText(void *s, void *text, bool copy);
-
 // Draw uses the Status singleton via free-function helpers.
 
 extern void *g_mwd_canvas;    // *(DAT_16059c): paint canvas
@@ -467,7 +460,7 @@ void MissionsWindow::draw() {
 
     char header[0xc];
     void *ht = ((GameText *)g_mw_gameText)->getText(titleId);
-    String_fromText(header, ht, false);
+    ((String *)(header))->ctor_copy((String *)(ht), false);
     Layout_drawHeader(layout, header);
     ((String *)(header))->dtor();
 
@@ -484,7 +477,7 @@ void MissionsWindow::draw() {
     {
         char box[0xc];
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-        String_fromText(box, t, false);
+        ((String *)(box))->ctor_copy((String *)(t), false);
         int c = i32(layout, 0xc), p20 = i32(layout, 0x20);
         int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
         ((Layout *)(layout))->drawBox(1, p28 + ox, oy + c + p20, (ow >> 1) - (p2c + p28), i32(layout, 0x5c), box, (unsigned)(uintptr_t)canvas);
@@ -492,7 +485,7 @@ void MissionsWindow::draw() {
     }
     {
         char box[0xc];
-        String_fromC(box, "", false);
+        ((String *)(box))->ctor_char("", false);
         int c = i32(layout, 0xc), p10 = i32(layout, 0x10);
         int p20 = i32(layout, 0x20), p24 = i32(layout, 0x24);
         int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
@@ -508,7 +501,7 @@ void MissionsWindow::draw() {
     {
         char box[0xc];
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-        String_fromText(box, t, false);
+        ((String *)(box))->ctor_copy((String *)(t), false);
         int c = i32(layout, 0xc), p20 = i32(layout, 0x20);
         int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
         ((Layout *)(layout))->drawBox(1, ox + (ow >> 1) + p2c, oy + c + p20, ((ow >> 1) - p2c) - p28, i32(layout, 0x5c), box, (unsigned)(uintptr_t)canvas);
@@ -516,7 +509,7 @@ void MissionsWindow::draw() {
     }
     {
         char box[0xc];
-        String_fromC(box, "", false);
+        ((String *)(box))->ctor_char("", false);
         int c = i32(layout, 0xc), p10 = i32(layout, 0x10);
         int p20 = i32(layout, 0x20), p24 = i32(layout, 0x24);
         int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
@@ -605,8 +598,6 @@ void StarMap_ctor(void *map, bool a, void *mission, bool b, int c);
 // StarMap::OnTouchEnd returns void in the (offset-derived) header, but the original
 // returns a hit flag here; declare the real ABI signature so the test compiles.
 int  StarMap_OnTouchEnd(StarMap *map, int x, int y);
-
-void String_fromText(void *s, void *text, bool copy);
 
 extern void *g_mwt_freelanceSrc;  // *(DAT_161174): freelance mission source
 extern void *g_mwt_appMgr;        // *(DAT_16119c / 1611a8): application manager
@@ -745,7 +736,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             if (((Layout *)(layout))->helpPressed() != 0) {
                 char title[0xc];
                 void *t = ((GameText *)g_mw_gameText)->getText(0x27b);
-                String_fromText(title, t, false);
+                ((String *)(title))->ctor_copy((String *)(t), false);
                 ((Layout *)(layout))->initHelpWindow(title);
                 ((String *)(title))->dtor();
             }
@@ -783,10 +774,6 @@ done:
 }
 
 extern "C" {
-
-void  String_fromC(void *s, const char *text, bool copy);
-void  String_fromText(void *s, void *text, bool copy);
-void  String_fromInt(void *s, int value);
 
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
@@ -828,7 +815,7 @@ void MissionsWindow::update(int dt) {
                     (*(char *)((char *)camp + 0x37) != 0 || *(char *)((char *)camp + 0x35) != 0);
         if (show) {
             char text[0xc];
-            String_fromC(text, "", false);
+            ((String *)(text))->ctor_char("", false);
             if (((Status *)(*(void **)g_mw_status))->getCurrentCampaignMission() < 0xa4) {
                 int base = *g_mw_textBase;
                 void *titleTxt = ((GameText *)g_mw_gameText)->getText(g_mw_titleTable[((Status *)(*(void **)g_mw_status))->getCurrentCampaignMission()]);
@@ -837,19 +824,19 @@ void MissionsWindow::update(int dt) {
 
                 void *key = *(void **)g_mw_hashSource;
                 char hdr[0xc], amount[0xc], suffix[0xc], merged[0xc];
-                String_fromText(hdr, text, false);
+                ((String *)(hdr))->ctor_copy((String *)(text), false);
                 int need = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission()))->getProductionGoodAmount();
                 int have = ((Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission()))->getStatusValue();
-                String_fromInt(amount, need - have);
-                String_fromC(suffix, "", false);
+                ((String *)(amount))->ctor_int(need - have);
+                ((String *)(suffix))->ctor_char("", false);
                 Status_replaceHash(merged, key, hdr, amount, suffix);
                 ((String *)(text))->assign((String *)merged);
                 ((String *)(merged))->dtor(); ((String *)(suffix))->dtor(); ((String *)(amount))->dtor(); ((String *)(hdr))->dtor();
 
                 void *win = pp(this, 0x0);
                 char a[0xc], b[0xc];
-                String_fromC(a, "", false);
-                String_fromText(b, text, false);
+                ((String *)(a))->ctor_char("", false);
+                ((String *)(b))->ctor_copy((String *)(text), false);
                 ((ScrollTouchWindow *)(win))->setText(*(String *)a, *(String *)b);
                 ((String *)(b))->dtor();
                 ((String *)(a))->dtor();

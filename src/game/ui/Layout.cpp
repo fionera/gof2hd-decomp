@@ -38,14 +38,6 @@ void    TouchButton_ctorImg2(...);
 
 void *ChoiceWindow_ctor(...);
 
-void String_cstr_ctor(...);
-void String_copy_ctor(...);
-void String_concat(...);
-void String_from_uint(...);
-void String_default_ctor(...);
-void String_subString(...);
-void String_copy_global(...);
-int  AbyssString_Compare(...);
 unsigned short GameText_getLanguage(...);
 
 void Globals_drawLines(...);
@@ -501,8 +493,8 @@ void Layout_formatCredits(void *out, int n) {
     unsigned char num[sizeof(String)] __attribute__((aligned(4)));
     unsigned char suffix[sizeof(String)] __attribute__((aligned(4)));
     Layout_formatNumber(num, n);
-    String_cstr_ctor(suffix, "$", false);
-    String_concat(out, num, suffix);
+    ((String *)suffix)->ctor_char("$", false);
+    *(String *)out = *(String *)num + *(String *)suffix;
     ((String *)(suffix))->dtor();
     ((String *)(num))->dtor();
 }
@@ -573,17 +565,17 @@ void Layout_formatNumber(void *out, int value) {
     unsigned mag = (value < 0) ? (unsigned)(-value) : (unsigned)value;
 
     unsigned char digits[sizeof(String)] __attribute__((aligned(4)));  // aSStack_34
-    String_from_uint(digits, mag);
+    ((String *)digits)->ctor_int((int)mag);
     int len = *(int *)((char *)digits + 8);
 
-    String_cstr_ctor(out, g_fnEmpty, false);
+    ((String *)out)->ctor_char(g_fnEmpty, false);
 
     unsigned char sep[sizeof(String)] __attribute__((aligned(4)));      // aSStack_40
     unsigned short lang = GameText_getLanguage();
     if (lang < 0xc && ((1u << (lang & 0xff)) & 0xc01u) != 0)
-        String_cstr_ctor(sep, g_fnSepA, false);
+        ((String *)sep)->ctor_char(g_fnSepA, false);
     else
-        String_cstr_ctor(sep, g_fnSepB, false);
+        ((String *)sep)->ctor_char(g_fnSepB, false);
 
     if (len < 4) {
         ((String *)(out))->assign((String *)digits);
@@ -592,18 +584,18 @@ void Layout_formatNumber(void *out, int value) {
         while (i > 2) {
             i -= 3;
             unsigned char grp[sizeof(String)] __attribute__((aligned(4)));  // aSStack_64
-            String_subString(grp, digits, i, len);
+            ((String *)grp)->SubString((String *)digits, i, len);
 
             unsigned char prefix[sizeof(String)] __attribute__((aligned(4))); // aSStack_70
             if (*(unsigned *)((char *)out + 8) < 2)
-                String_default_ctor(prefix);
+                ((String *)prefix)->ctor();
             else
-                String_copy_ctor(prefix, sep, false);
+                ((String *)prefix)->ctor_copy((String *)sep, false);
 
             unsigned char t1[sizeof(String)] __attribute__((aligned(4)));  // aSStack_58
-            String_concat(t1, prefix, grp);
+            *(String *)t1 = *(String *)prefix + *(String *)grp;
             unsigned char t2[sizeof(String)] __attribute__((aligned(4)));  // aSStack_4c
-            String_concat(t2, t1, out);
+            *(String *)t2 = *(String *)t1 + *(String *)out;
             ((String *)(out))->assign((String *)t2);
 
             ((String *)(t2))->dtor();
@@ -612,12 +604,12 @@ void Layout_formatNumber(void *out, int value) {
             ((String *)(grp))->dtor();
         }
         unsigned char head[sizeof(String)] __attribute__((aligned(4)));   // aSStack_4c
-        String_subString(head, digits, 0, i);
+        ((String *)head)->SubString((String *)digits, 0, i);
         if (*(int *)((char *)head + 8) != 0) {
             unsigned char j1[sizeof(String)] __attribute__((aligned(4))); // aSStack_64
-            String_concat(j1, head, sep);
+            *(String *)j1 = *(String *)head + *(String *)sep;
             unsigned char j2[sizeof(String)] __attribute__((aligned(4))); // aSStack_58
-            String_concat(j2, j1, out);
+            *(String *)j2 = *(String *)j1 + *(String *)out;
             ((String *)(out))->assign((String *)j2);
             ((String *)(j2))->dtor();
             ((String *)(j1))->dtor();
@@ -627,9 +619,9 @@ void Layout_formatNumber(void *out, int value) {
 
     if ((unsigned)value > 0x7fffffff) {
         unsigned char ov[sizeof(String)] __attribute__((aligned(4)));     // aSStack_58
-        String_cstr_ctor(ov, g_fnOverflow, false);
+        ((String *)ov)->ctor_char(g_fnOverflow, false);
         unsigned char r[sizeof(String)] __attribute__((aligned(4)));      // aSStack_4c
-        String_concat(r, ov, out);
+        *(String *)r = *(String *)ov + *(String *)out;
         ((String *)(out))->assign((String *)r);
         ((String *)(r))->dtor();
         ((String *)(ov))->dtor();
@@ -649,7 +641,7 @@ __attribute__((visibility("hidden"))) extern int *gW3;  // ldr [0xe377c]
 //   -> drawWindow(this, copy, 0, 0, *gW2, *gW3 - (*gW1)[2], flag)
 void Layout::drawWindow2(const void *param, int flag) {
     unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    String_copy_ctor(tmp, param, false);
+    ((String *)tmp)->ctor_copy((String *)param, false);
     int p4 = *gW2;
     int p5 = *gW3 - ((int *)gW1)[2];
     ((Layout *)(this))->drawWindowImpl5(tmp, 0, 0, p4, p5, flag);
@@ -699,7 +691,7 @@ void Layout::showMissionRewardMessage(int show, bool flag) {
 //   -> drawWindow(this, copy, p3, p4, p5, p6, 1)
 void Layout::drawWindow5(const void *param, int p3, int p4, int p5, int p6) {
     unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    String_copy_ctor(tmp, param, false);
+    ((String *)tmp)->ctor_copy((String *)param, false);
     ((Layout *)(this))->drawWindowImpl5(tmp, p3, p4, p5, p6, 1);
     ((String *)(tmp))->dtor();
 }
@@ -1012,7 +1004,7 @@ void Layout::drawWindow7(void *title, int x, int y, int w, int h, int drawBG) {
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
     ((PaintCanvas*)(*g_dwCanvas))->DrawImage2D(this->field_0x32c, x, 0);
     if (*(int *)((char *)title + 8) != 0 &&
-        AbyssString_Compare(title, g_dwCmpLit) == 0) {
+        ((String *)title)->Compare_char(g_dwCmpLit) == 0) {
         int *mm = *g_dwMetric;
         int half = mm[8 / 4];
         half += half >> 31;
@@ -1025,7 +1017,7 @@ void Layout::drawWindow7(void *title, int x, int y, int w, int h, int drawBG) {
 // Layout::drawBox(int, int, int, int, int, String) -> drawBox(..., copy, 1)
 void Layout::drawBox6(int p2, int p3, int p4, int p5, int p6, const void *str) {
     unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    String_copy_ctor(tmp, str, false);
+    ((String *)tmp)->ctor_copy((String *)str, false);
     ((Layout *)(this))->drawBoxImpl(p2, p3, p4, p5, p6, tmp, 1);
     ((String *)(tmp))->dtor();
 }
@@ -1052,7 +1044,7 @@ void Layout::drawTip() {
         int boxW = mA[0x78 / 4];
 
         unsigned char box[sizeof(String)] __attribute__((aligned(4)));
-        String_cstr_ctor(box, g_dtBoxLit, false);
+        ((String *)box)->ctor_char(g_dtBoxLit, false);
         ((Layout *)((PaintCanvas *)mA))->drawBoxStr(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box);
         ((String *)(box))->dtor();
 
@@ -1070,7 +1062,7 @@ void Layout::drawTip() {
 // Layout::drawHeader(String) -> drawHeader(this, copy, 1)
 void Layout::drawHeader1(const void *param) {
     unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    String_copy_ctor(tmp, param, false);
+    ((String *)tmp)->ctor_copy((String *)param, false);
     ((Layout *)(this))->drawHeaderImpl(tmp, 1);
     ((String *)(tmp))->dtor();
 }
@@ -1161,14 +1153,14 @@ void Layout_tagString(void *out, const void *in) {
     unsigned char s_full[sizeof(String)] __attribute__((aligned(4)));   // aSStack_28
     unsigned char s_lit2[sizeof(String)] __attribute__((aligned(4)));   // aSStack_70
 
-    String_cstr_ctor(s_lit0, g_tagLit0, false);
-    String_copy_global(s_base, g_tagBaseString);
-    String_concat(s_ab, s_lit0, s_base);
-    String_cstr_ctor(s_lit1, g_tagLit1, false);
-    String_concat(s_abc, s_ab, s_lit1);
-    String_concat(s_full, s_abc, (void *)in);
-    String_cstr_ctor(s_lit2, g_tagLit2, false);
-    String_concat(out, s_full, (void *)s_lit2);
+    ((String *)s_lit0)->ctor_char(g_tagLit0, false);
+    ((String *)s_base)->ctor_copy((String *)(void *)g_tagBaseString, false);
+    *(String *)s_ab = *(String *)s_lit0 + *(String *)s_base;
+    ((String *)s_lit1)->ctor_char(g_tagLit1, false);
+    *(String *)s_abc = *(String *)s_ab + *(String *)s_lit1;
+    *(String *)s_full = *(String *)s_abc + *(String *)in;
+    ((String *)s_lit2)->ctor_char(g_tagLit2, false);
+    *(String *)out = *(String *)s_full + *(String *)s_lit2;
 
     ((String *)(s_lit2))->dtor();
     ((String *)(s_full))->dtor();
@@ -1357,22 +1349,22 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     ((Status *)(*gStatus))->getShip();
     int cur = ((Ship *)(((Status *)(*gStatus))->getShip()))->getCurrentLoad();
     unsigned char sLoad[sizeof(String)] __attribute__((aligned(4)));   // aSStack_58
-    String_from_uint(sLoad, cur);
+    ((String *)sLoad)->ctor_int((int)cur);
     unsigned char sSep[sizeof(String)] __attribute__((aligned(4)));    // aSStack_64
-    String_cstr_ctor(sSep, g_dfSep, false);
+    ((String *)sSep)->ctor_char(g_dfSep, false);
     unsigned char s1[sizeof(String)] __attribute__((aligned(4)));      // aSStack_4c
-    String_concat(s1, sLoad, sSep);
+    *(String *)s1 = *(String *)sLoad + *(String *)sSep;
 
     ((Status *)(*gStatus))->getShip();
     int mx = ((Ship *)(((Status *)(*gStatus))->getShip()))->getMaxLoad();
     unsigned char sMax[sizeof(String)] __attribute__((aligned(4)));    // aSStack_70
-    String_from_uint(sMax, mx);
+    ((String *)sMax)->ctor_int((int)mx);
     unsigned char s2[sizeof(String)] __attribute__((aligned(4)));      // aSStack_40
-    String_concat(s2, s1, sMax);
+    *(String *)s2 = *(String *)s1 + *(String *)sMax;
     unsigned char sTail[sizeof(String)] __attribute__((aligned(4)));   // aSStack_7c
-    String_cstr_ctor(sTail, g_dfTail, false);
+    ((String *)sTail)->ctor_char(g_dfTail, false);
     unsigned char loadStr[sizeof(String)] __attribute__((aligned(4))); // aSStack_34
-    String_concat(loadStr, s2, sTail);
+    *(String *)loadStr = *(String *)s2 + *(String *)sTail;
 
     ((String *)(sTail))->dtor();
     ((String *)(s2))->dtor();
@@ -1421,7 +1413,7 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
 // Layout::drawHeader() -> drawHeader(this, String(""), 0)
 void Layout::drawHeader0() {
     unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    String_cstr_ctor(tmp, "", false);
+    ((String *)tmp)->ctor_char("", false);
     ((Layout *)(this))->drawHeaderImpl(tmp, 0);
     ((String *)(tmp))->dtor();
 }
@@ -1470,7 +1462,7 @@ void Layout::drawHeader7(void *title, int transition) {
 // temp makes the compiler emit the -fstack-protector canary automatically.
 void Layout::drawWindow1(const void *param) {
     unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    String_copy_ctor(tmp, param, false);
+    ((String *)tmp)->ctor_copy((String *)param, false);
     ((Layout *)(this))->drawWindowImpl(tmp, 0);
     ((String *)(tmp))->dtor();
 }
@@ -1521,13 +1513,13 @@ void Layout::drawMissionRewardMessage(int transition) {
         if (transition != 0) {
             int sw = *g_mrDimA;
             unsigned char s0[sizeof(String)] __attribute__((aligned(4)));
-            String_cstr_ctor(s0, g_mrLit0, false);
+            ((String *)s0)->ctor_char(g_mrLit0, false);
             ((Layout *)(pc))->drawBoxStr(2, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s0);
             ((String *)(s0))->dtor();
 
             sw = *g_mrDimA;
             unsigned char s1[sizeof(String)] __attribute__((aligned(4)));
-            String_cstr_ctor(s1, g_mrLit1, false);
+            ((String *)s1)->ctor_char(g_mrLit1, false);
             ((Layout *)(pc))->drawBoxStr(8, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s1);
             ((String *)(s1))->dtor();
         }
@@ -1538,7 +1530,7 @@ void Layout::drawMissionRewardMessage(int transition) {
 
         void *txt = gGameText->obj->getText(*g_mrTextId);
         unsigned char line[sizeof(String)] __attribute__((aligned(4)));
-        String_copy_ctor(line, txt, false);
+        ((String *)line)->ctor_copy((String *)txt, false);
 
         sh = *g_mrDimB;
         void *font = *g_mrFont;
@@ -1547,11 +1539,11 @@ void Layout::drawMissionRewardMessage(int transition) {
         ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
 
         unsigned char suffix[sizeof(String)] __attribute__((aligned(4)));
-        String_cstr_ctor(suffix, g_mrLit2, false);
+        ((String *)suffix)->ctor_char(g_mrLit2, false);
         unsigned char credits[sizeof(String)] __attribute__((aligned(4)));
         Layout_formatCredits(credits, this->rewardCredits);
         unsigned char joined[sizeof(String)] __attribute__((aligned(4)));
-        String_concat(joined, suffix, credits);
+        *(String *)joined = *(String *)suffix + *(String *)credits;
         ((String *)(line))->assign((String *)joined);
         ((String *)(joined))->dtor();
         ((String *)(credits))->dtor();
@@ -1663,7 +1655,7 @@ void Layout::drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, 
 // render the full window frame (with background) via the 7-arg core renderer.
 void Layout::drawWindow(void *title, int x, int y, int w, int h) {
     unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    String_copy_ctor(tmp, title, false);
+    ((String *)tmp)->ctor_copy((String *)title, false);
     this->drawWindow7(tmp, x, y, w, h, 1);
     ((String *)(tmp))->dtor();
 }

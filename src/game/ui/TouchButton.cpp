@@ -8,9 +8,7 @@
 extern void *g_PaintCanvas;
 
 extern "C" void TB_assignString(void *dst, String *src);
-extern "C" void  String_ctor_cstr(void *s, const char *text, bool copy);
 unsigned int GameText_getLanguage();
-extern "C" void  String_ctor_default(void *s);
 
 void TouchButton::setVisible(bool value) {
     UC(this, 0xb2) = value;
@@ -92,9 +90,7 @@ uint8_t TouchButton::isTouched() {
 // `struct String` is provided by gof2/TouchButton.h (single shared definition).
 
 String TouchButton::getText() {
-    String r;
-    ((String *)(&r))->ctor_copy((String *)((char *)this + 0xc), false);
-    return r;
+    return *(String *)((char *)this + 0xc);
 }
 
 // String::operator=
@@ -201,9 +197,6 @@ int TouchButton::getHeight() {
 // The image-id lookup tables are fixed read-only data in the binary; they are
 // reached through hidden helpers that take the row index.
 
-// String::operator=
-extern "C" void  String_assign_cstr_tmp(void *dst, const char *lit);    // assign from literal via temp
-
 // Read-only id/frame tables, indexed by row. Hidden -> single pc-rel load.
 extern "C" unsigned int   TB_iconTexId(int eliteVariant, int stage);     // -> 0xb4 texture id
 extern "C" unsigned short TB_iconImgId(int eliteVariant, int stage);     // image for icon create
@@ -261,8 +254,8 @@ int TouchButton::init(String *text, unsigned int kind, int achId, int achStage, 
     I(this, 0x80)  = x;
     I(this, 0x84)  = y;
 
-    String_assign_cstr_tmp((char *)this + 0x2c, g_TB_emptyStr);
-    String_assign_cstr_tmp((char *)this + 0x18, g_TB_emptyStr);
+    *(String *)((char *)this + 0x2c) = g_TB_emptyStr;
+    *(String *)((char *)this + 0x18) = g_TB_emptyStr;
     I(this, 0x38) = -1;
 
     switch (kind) {
@@ -417,8 +410,6 @@ done:
 // string literal rather than a caller-supplied String. The font spacing is the
 // engine default and the kerning is sampled from the current font.
 
-extern "C" void  String_ctor_default(void *s);                 // String::String()
-
 __attribute__((visibility("hidden"))) extern void **g_TB_canvas_ctor;   // PaintCanvas singleton
 __attribute__((visibility("hidden"))) extern unsigned int *g_TB_defSpacing; // default glyph spacing
 __attribute__((visibility("hidden"))) extern const char  g_TB_emptyStr[];   // ""
@@ -427,16 +418,16 @@ void TouchButton_168ffc(TouchButton *self, unsigned int kind,
                                    int a, int b, int c, int d,
                                    unsigned char flags0, unsigned char flags1)
 {
-    String_ctor_default((char *)self + 0xc);
-    String_ctor_default((char *)self + 0x18);
-    String_ctor_default((char *)self + 0x2c);
+    ((String *)((char *)self + 0xc))->ctor();
+    ((String *)((char *)self + 0x18))->ctor();
+    ((String *)((char *)self + 0x2c))->ctor();
 
     void *canvas = *g_TB_canvas_ctor;
     U(self, 0x8)  = *g_TB_defSpacing;
     I(self, 0xc4) = ((PaintCanvas*)(canvas))->FontGetSpacing((unsigned int)(U(self,8)));
 
     unsigned char tmp[12];       // String is a 12-byte value type (ctor/dtor are engine calls)
-    String_ctor_cstr(tmp, g_TB_emptyStr, false);
+    ((String *)tmp)->ctor_char(g_TB_emptyStr, false);
     ((TouchButton *)(self))->init((String *)tmp, kind, a, b, c, d, -1, -1, flags0, flags1);
     ((String *)(tmp))->dtor();
 }
@@ -743,9 +734,9 @@ __attribute__((visibility("hidden"))) extern const char  g_TB_emptyStr[];
 void TouchButton_168d9c(TouchButton *self, unsigned int kind, unsigned int image,
                                    int a, int b, int c, unsigned char flag)
 {
-    String_ctor_default((char *)self + 0xc);
-    String_ctor_default((char *)self + 0x18);
-    String_ctor_default((char *)self + 0x2c);
+    ((String *)((char *)self + 0xc))->ctor();
+    ((String *)((char *)self + 0x18))->ctor();
+    ((String *)((char *)self + 0x2c))->ctor();
 
     void *canvas = *g_TB_canvas_ctor;
     U(self, 0x28) = image;
@@ -753,7 +744,7 @@ void TouchButton_168d9c(TouchButton *self, unsigned int kind, unsigned int image
     I(self, 0xc4) = ((PaintCanvas*)(canvas))->FontGetSpacing((unsigned int)(U(self,8)));
 
     unsigned char tmp[12];       // String is a 12-byte value type
-    String_ctor_cstr(tmp, g_TB_emptyStr, false);
+    ((String *)tmp)->ctor_char(g_TB_emptyStr, false);
     ((TouchButton *)(self))->init((String *)tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
     ((String *)(tmp))->dtor();
 }
@@ -782,8 +773,6 @@ TouchButton * TouchButton::ctor5(String *text, int x, int y, int p4, unsigned ch
 // shared font glyph spacing with this button's (spacing, kerning) pair, runs
 // the common init(), then restores the previous spacing.
 
-extern "C" void  String_ctor_default(void *s);                 // String::String()
-
 // PaintCanvas singleton (deref twice). Hidden -> single pc-rel load.
 __attribute__((visibility("hidden"))) extern void **g_TB_canvas_ctor;
 
@@ -792,9 +781,9 @@ TouchButton *TouchButton_168f30(TouchButton *self, String *text,
                                            unsigned char flags0, unsigned char flags1,
                                            unsigned int spacing, int kerning)
 {
-    String_ctor_default((char *)self + 0xc);
-    String_ctor_default((char *)self + 0x18);
-    String_ctor_default((char *)self + 0x2c);
+    ((String *)((char *)self + 0xc))->ctor();
+    ((String *)((char *)self + 0x18))->ctor();
+    ((String *)((char *)self + 0x2c))->ctor();
 
     I(self, 0xc4) = kerning;
     U(self, 0x8)  = spacing;
@@ -837,16 +826,16 @@ __attribute__((visibility("hidden"))) extern const char  g_TB_emptyStr[];
 void TouchButton_168cb0(TouchButton *self, unsigned int kind,
                                    int a, int b, int c, unsigned char flag)
 {
-    String_ctor_default((char *)self + 0xc);
-    String_ctor_default((char *)self + 0x18);
-    String_ctor_default((char *)self + 0x2c);
+    ((String *)((char *)self + 0xc))->ctor();
+    ((String *)((char *)self + 0x18))->ctor();
+    ((String *)((char *)self + 0x2c))->ctor();
 
     void *canvas = *g_TB_canvas_ctor;
     U(self, 0x8)  = *g_TB_defSpacing;
     I(self, 0xc4) = ((PaintCanvas*)(canvas))->FontGetSpacing((unsigned int)(U(self,8)));
 
     unsigned char tmp[12];       // String is a 12-byte value type
-    String_ctor_cstr(tmp, g_TB_emptyStr, false);
+    ((String *)tmp)->ctor_char(g_TB_emptyStr, false);
     ((TouchButton *)(self))->init((String *)tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
     ((String *)(tmp))->dtor();
 }

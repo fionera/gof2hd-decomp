@@ -9,26 +9,16 @@
 #include "gof2/engine/render/ImagePart.h"
 #include "gof2/game/ui/Layout.h"
 #include "gof2/engine/render/PaintCanvas.h"
-// Mission.h (-> Station.h) and TouchButton.h each re-declare an identical, unguarded
-// `struct String`, which collides with Agent.h's. None of the String-returning accessors
-// are used in this TU, so the duplicate definitions are renamed away here to avoid the
-// redefinition error without touching those (other-batch) headers.
-#define String String
 #include "gof2/game/mission/Mission.h"
-#undef String
 #include "gof2/game/world/Standing.h"
 #include "gof2/game/core/String.h"
-#define String String
 #include "gof2/game/ui/TouchButton.h"
-#undef String
 // Layout's drawMask/drawBox are used via the local extern "C" prototypes below;
 // the full Layout.h is not required here.
 
 extern "C" void *ScrollTouchWindow_dtor(void *self);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *self, int max); } }
 int GameText_getLanguage(void);
-extern "C" void String_ctor_literal(StringSlot *self, const char *text, bool copy);
-extern "C" void String_assign_slot(String *self, StringSlot *other);
 int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void ChoiceWindow_ctor(void *self);
@@ -291,7 +281,7 @@ void DialogueWindow::loadContent() {
         } else {
             this->clientImage = (void *)(intptr_t)((Mission *)(mission))->getClientImage();
             ((Mission *)(&tmp))->getClientName();
-            String_assign_slot((String *)((char *)this + 0x34), &tmp);
+            *(String *)((char *)this + 0x34) = *(String *)(&tmp);
             ((String *)(&tmp))->dtor();
             this->field_0x70 = 0;
         }
@@ -327,7 +317,7 @@ void DialogueWindow::loadContent() {
         ((String *)((String *)((char *)this + 0x34)))->assign((String *)((GameText *)(*gameText))->getText(0x63d));
     }
 
-    String_ctor_literal(&style, g_dw_emptyLoad, false);
+    ((String *)(&style))->ctor_char(g_dw_emptyLoad, false);
     ((String *)(&tmp))->ctor_copy((String *)((char *)this + 0x28), false);
     ((ScrollTouchWindow *)(this->scrollWindow))->setText4(*(String *)(&style), *(String *)(&tmp), 0);
     ((String *)(&tmp))->dtor();
@@ -470,8 +460,8 @@ int DialogueWindow::init() {
         briefingSum += successCount;
     }
 
-    String_ctor_literal(&name, g_dw_defaultAgentName, false);
-    String_assign_slot((String *)((char *)this + 0x34), &name);
+    ((String *)(&name))->ctor_char(g_dw_defaultAgentName, false);
+    *(String *)((char *)this + 0x34) = *(String *)(&name);
     ((String *)(&name))->dtor();
 
     this->mission = 0;
@@ -546,7 +536,7 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     ((DialogueWindow *)(this))->init();
 
     void *scroll = this->scrollWindow;
-    String_ctor_literal(&blank, g_dw_emptyString, false);
+    ((String *)(&blank))->ctor_char(g_dw_emptyString, false);
     ((String *)(&copy))->ctor_copy(text, false);
     ((ScrollTouchWindow *)(scroll))->setText(*(String *)(&blank), *(String *)(&copy));
     ((String *)(&copy))->dtor();
