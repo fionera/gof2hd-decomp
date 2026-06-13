@@ -43,20 +43,10 @@ public:
 #include "gof2/game/ui/Layout.h"
 #include "gof2/game/mission/Mission.h"   // pulls in Station.h -> Agent.h, the canonical String
 #include "gof2/game/world/Station.h"
-// Agent.h (via Station.h above), SolarSystem.h and TouchButton.h each define an
-// identical, layout-compatible `struct String` at global scope. Including more than
-// one in a single TU is a C++ redefinition. Let Agent.h own the canonical String and
-// rename the duplicates from the other two headers. Their renamed String is
-// ABI-identical and the only String-returning calls used here (Station::getName(),
-// SolarSystem::getName()) discard their results, so the ABI is unaffected.
-#define String String
 #include "gof2/game/world/SolarSystem.h"
-#undef String
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/core/String.h"
-#define String String
 #include "gof2/game/ui/TouchButton.h"
-#undef String
 
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_render_canvas;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_render_geometry)(void *);
@@ -69,7 +59,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_draw_text;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_draw_font;
 extern "C" float EaseInOut_GetValue(void *ease);
 extern "C" float EaseInOut_GetMinValue(void *ease);
-extern "C" void String_add(String *out, String *a, String *b);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_status;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_depart_store0_a;
 extern "C" __attribute__((visibility("hidden"))) uint8_t *g_StarMap_depart_flag_a;
@@ -366,7 +355,6 @@ void StarMap::draw()
             ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_draw_font), (void *)(&tmp), ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned int)(field<uint32_t>(this, 0x34))) +
                                        field<int32_t>(*g_StarMap_draw_layout, 0x2c) * 2, field<int32_t>(*g_StarMap_draw_layout, 0xc) +
                                        field<int32_t>(*g_StarMap_draw_layout, 0x2c) + 2, false);
-            ((String *)(&tmp))->dtor();
         }
         Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
         for (uint32_t i = 0; i < stations->size(); i++) {
@@ -382,9 +370,8 @@ void StarMap::draw()
     if (field<uint8_t>(this, 0x108) != 0) {
         drawKey();
     }
-    ((String *)(&tmp))->ctor_copy((String *)((GameText *)(*g_StarMap_draw_text))->getText(0x190), false);
+    tmp.copy((String *)((GameText *)(*g_StarMap_draw_text))->getText(0x190), false);
     ((Layout *)(*g_StarMap_draw_layout))->drawHeader1(&tmp);
-    ((String *)(&tmp))->dtor();
     ((Layout *)(*g_StarMap_draw_layout))->drawEmptyFooter(1);
     ((TouchButton *)(ptr_field(this, 0x4c)))->draw();
     if (field<uint8_t>(this, 0xa9) != 0) {
@@ -633,9 +620,8 @@ void StarMap::OnTouchEnd_tail()
 {
     String help;
     void *layout = *g_StarMap_end_layout;
-    ((String *)(&help))->ctor_copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
+    help.copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
     ((Layout *)(layout))->initHelpWindow(&help);
-    ((String *)(&help))->dtor();
 }
 
 // StarMap::touch_end(x, y): touch-release handler used while the star map is embedded inside
@@ -1175,13 +1161,11 @@ void StarMap::drawKey()
     int lineH = field<int32_t>(layout, 0x2c);
 
     String empty;
-    ((String *)(&empty))->ctor_char("", false);
     int x = screenH - boxW;
     ((Layout *)(layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, &empty, 0);
     int drawX = x + lineH;
     int textX = imageWidth + lineH + drawX;
     int y = ((screenW - lineH) - rightPad) - marginY;
-    ((String *)(&empty))->dtor();
 
     void (*drawImage)(uint32_t, uint32_t, int, int) = g_StarMap_drawKey_drawImage;
     drawImage(*canvasHolder, field<uint32_t>(this, 0x20), drawX, y);
@@ -1370,13 +1354,10 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
             ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
             if (Station_getTecLevel(station) > 0) {
-                ((String *)(&line))->ctor_copy((String *)((GameText *)(*g_StarMap_info_text))->getText(0x200), false);
-                ((String *)(&value))->ctor_int(Station_getTecLevel(station));
-                String_add(&name, &line, &value);
+                line.copy((String *)((GameText *)(*g_StarMap_info_text))->getText(0x200), false);
+                value.ctor_int(Station_getTecLevel(station));
+                name = line + value;
                 ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY + field<int32_t>(*g_StarMap_info_layout, 4), false);
-                ((String *)(&name))->dtor();
-                ((String *)(&value))->dtor();
-                ((String *)(&line))->dtor();
             }
             ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x40)), (int)x, (int)y, (unsigned char)(0x11));
         } else {
@@ -1384,7 +1365,6 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x44)), (int)x, (int)y, (unsigned char)(0x11));
             ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
         }
-        ((String *)(&name))->dtor();
     } else {
         void *system = ((Array<void *> *)ptr_field(this, 0x54))->data()[index];
         if (((SolarSystem *)(system))->isFullyDiscovered() != 0) {
@@ -1424,7 +1404,6 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
         }
         ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
-        ((String *)(&name))->dtor();
         ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
         if (((SolarSystem *)(system))->hasNoOwner() == 0) {
             uint32_t image = field<uint32_t>(this, 0x130);

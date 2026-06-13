@@ -42,10 +42,7 @@ bool BluePrint::isEmpty() {
 
 // BluePrint::getStationName() -> String by value (sret in r0, this in r1).
 AbyssEngine::String BluePrint::getStationName() {
-    BluePrint *self = this;
-    AbyssEngine::String r;
-    ((String *)(&r))->ctor_copy((String *)(&self->stationName), false);
-    return r;
+    return *(String *)(&this->stationName);
 }
 
 // AbyssEngine::String::~String
@@ -224,16 +221,14 @@ void BluePrint::addItem(Item *item, int amount, int station) {
                     if (station >= 0 && self->stationIndex < 0) {
                         self->stationIndex = station;
                         if (Station_getIndex(((Status *)(*(void **)gStatusPtr))->getStation()) == station) {
-                            char tmp[12];
-                            *(String *)tmp = ((Station *)(((Status *)(*(void **)gStatusPtr))->getStation()))->getName();
-                            ((String *)(&self->stationName))->assign((String *)tmp);
-                            ((String *)(tmp))->dtor();
+                            String tmp;
+                            tmp = ((Station *)(((Status *)(*(void **)gStatusPtr))->getStation()))->getName();
+                            ((String *)(&self->stationName))->assign(&tmp);
                         } else {
                             void *st = (void *)(intptr_t)((Galaxy *)(*(void **)gGalaxyPtr))->getStation(station);
-                            char tmp[12];
-                            *(String *)tmp = ((Station *)(st))->getName();
-                            ((String *)(&self->stationName))->assign((String *)tmp);
-                            ((String *)(tmp))->dtor();
+                            String tmp;
+                            tmp = ((Station *)(st))->getName();
+                            ((String *)(&self->stationName))->assign(&tmp);
                             if (st != 0) {
                                 ((Station *)(st))->dtor();
                                 ::operator delete(st);

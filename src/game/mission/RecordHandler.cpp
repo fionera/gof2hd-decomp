@@ -10,51 +10,30 @@
 #include "gof2/engine/file/AEFile.h"
 #include "gof2/engine/audio/FModSound.h"
 #include "gof2/game/mission/Status.h"
-// Station.h is the canonical home of `struct String`; pull it in first so the
-// shared definition wins. SolarSystem.h / Wanted.h / Agent.h each redefine an
-// identical `struct String` unguarded, which would be a redefinition error here.
-// Rename their local copies during inclusion so only Station.h's definition is
-// used (the value is layout-identical and always discarded at the call sites).
 #include "gof2/game/world/Station.h"
 #include "gof2/game/mission/Mission.h"
-#define String String
 #include "gof2/game/world/SolarSystem.h"
-#undef String
-#define String String
 #include "gof2/game/world/Wanted.h"
-#undef String
-#define String String
 #include "gof2/game/ship/Agent.h"
-#undef String
 #include "gof2/game/core/String.h"
 
 extern "C" void *RH_op_new(unsigned int sz);
 extern "C" signed char *RH_op_new_arr(unsigned int n);
 extern "C" void RH_op_delete_arr(void *p);
-extern "C" void AEString_int_ctor(void *dst, int v);
-extern "C" void AEString_concat(void *dst, void *a);
-extern "C" void AEString_dtor(void *s);
 extern "C" void RH_op_delete(void *p);
 extern "C" void SHA256_Init(void *c);
 extern "C" void SHA256_Update(void *c, const void *data, int n);
 extern "C" void SHA256_Final(unsigned char *md, void *c);
 extern "C" void *RH_memcpy(void *dst, const void *src, unsigned int n);
-extern "C" void String_int_ctor(void *dst, int v);
-extern "C" void *String_concat(void *dst, void *a, void *b);
 extern "C" void AEFile_ReadBool(void *out, unsigned int fd);
 extern "C" void AEFile_ReadInt(void *out, unsigned int fd);
 extern "C" void AEFile_ReadString(void *out, unsigned int fd, int flag);
-extern "C" void AEString_default_ctor(void *s);
-extern "C" void AEString_copy_ctor(void *dst, void *src, int copy);
 extern "C" void *GR_op_new(unsigned int sz);
 extern "C" void GameRecord_ctor(void *gr);
 extern "C" void AEFile_Read_i64(void *dst, unsigned int fd);
 extern "C" void AEFile_Read_i32(void *dst, unsigned int fd);
 extern "C" void AEFile_Read_bool(void *dst, unsigned int fd, int b);
 extern "C" void AEFile_Read_f32(void *dst, unsigned int fd);
-extern "C" void String_default_ctor(void *s);
-extern "C" void String_cstr_ctor(void *s, const char *cs, bool b);
-extern "C" void *String_copy_ctor(void *dst, void *src, bool b);
 extern "C" void AEFile_Write_i64(long long v, unsigned int fd);
 extern "C" void AEFile_Write_i32(int v, unsigned int fd);
 extern "C" void AEFile_Write_str(void *s, unsigned int fd, int b);
@@ -62,7 +41,6 @@ extern "C" void AEFile_Write_f32(int v, unsigned int fd);
 extern "C" void AEFile_WriteInt(int v, unsigned int fd);
 extern "C" void AEFile_WriteBool(int v, unsigned int fd);
 extern "C" void AEFile_WriteString(void *s, unsigned int fd, int flag);
-extern "C" void AEString_cstr_ctor(void *dst, const char *s, int copy);
 extern "C" void AEFile_ReadByte(void *out, unsigned int fd);
 extern "C" void AEFile_ReadFloat(void *out, unsigned int fd);
 extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
@@ -162,14 +140,14 @@ void RecordHandler::convertSDVersionSaves() {
         ((int *)sizes0)[i] = ((RecordHandler *)(this))->readRecordAsByteArray(&(*a0)[i], i, false);
         ((int *)sizes1)[i] = ((RecordHandler *)(this))->readRecordAsByteArray(&(*a1)[i], i, true);
 
-        char num[12], path[12];
-        AEString_int_ctor(num, i);
-        AEString_concat(path, (char *)this + 0x14);
-        AEFile::FileDelete(*(String *)(path));
+        String num, path;
+        num.ctor_int(i);
+        path = *(String *)((char *)this + 0x14) + num;
+        AEFile::FileDelete(path);
 
-        AEString_int_ctor(num, i);
-        AEString_concat(path, (char *)this + 0x20);
-        AEFile::FileDelete(*(String *)(path));
+        num.ctor_int(i);
+        path = *(String *)((char *)this + 0x20) + num;
+        AEFile::FileDelete(path);
         n = *cnt;
     }
 
@@ -259,18 +237,17 @@ void RecordHandler::addHash(int slot) {
 
 // RecordHandler::readRecordAsByteArray(signed char**, int, bool)
 int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromBackup) {
-    char num[12];
-    char path[12];
+    String num;
+    String path;
     unsigned int fd;
     int sz;
 
-    String_int_ctor(num, slot);
+    num.ctor_int(slot);
     char *dir = (char *)this + (fromBackup ? 0x20 : 0x14);
-    String_concat(path, dir, num);
-    ((String *)(num))->dtor();
+    path = *(String *)dir + num;
 
-    if (AEFile::FileExist(*(String *)(path)) != 0) {
-        AEFile::OpenRead(*(String *)path, &fd);
+    if (AEFile::FileExist(path) != 0) {
+        AEFile::OpenRead(path, &fd);
         sz = AEFile::GetFileSize(fd);
         signed char *b = RH_op_new_arr(sz | (sz >> 31));
         *out = b;
@@ -279,7 +256,6 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     } else {
         sz = -1;
     }
-    ((String *)(path))->dtor();
     return sz;
 }
 
@@ -302,15 +278,15 @@ void * RecordHandler::readWanted(unsigned int fd) {
     AEFile_ReadInt(&travelsTo, fd);
     AEFile_ReadInt(&lastSeen, fd);
 
-    char name[12];
-    AEString_default_ctor(name);
+    String name;
+    name.ctor();
 
     int idx = 0, board = 0, race = 0;
     bool male = true;
     int ship = 0, weapon = 0, hp = 0, loot = 0, lootAmt = 0;
     int reward = 0, reqBounties = 0, reqMission = 0, numWingmen = 0;
 
-    AEFile_ReadString(name, fd, 1);
+    AEFile_ReadString(&name, fd, 1);
     AEFile_ReadInt(&idx, fd);
     AEFile_ReadInt(&board, fd);
     AEFile_ReadInt(&race, fd);
@@ -327,7 +303,7 @@ void * RecordHandler::readWanted(unsigned int fd) {
 
     void *w = RH_op_new(0x54);
     String nameCopy;
-    AEString_copy_ctor(&nameCopy, name, 0);
+    nameCopy.ctor_copy(&name, false);
     ((Wanted *)(w))->ctor(idx, nameCopy, board, race, male, ship, weapon, hp, loot, lootAmt, reward, reqBounties, reqMission, numWingmen);
 
     int *parts = (int *)RH_op_new_arr(0x14);
@@ -414,17 +390,16 @@ RecordHandler * RecordHandler::dtor() {
 
 // RecordHandler::recordStoreReadPreview(int)
 void * RecordHandler::recordStoreReadPreview(int slot) {
-    char path[12];
-    char num[12];
+    String path;
+    String num;
 
-    String_int_ctor(num, slot);
-    String_concat(path, (char *)this + 0x20, num);
-    ((String *)(num))->dtor();
+    num.ctor_int(slot);
+    path = *(String *)((char *)this + 0x20) + num;
 
-    unsigned int &fd = *(unsigned int *)num;  // reuse the now-dead String temp slot
+    unsigned int fd;
     void *gr = 0;
-    if (AEFile::FileExist(*(String *)(path)) != 0) {
-        AEFile::OpenRead(*(String *)path, &fd);
+    if (AEFile::FileExist(path) != 0) {
+        AEFile::OpenRead(path, &fd);
         gr = GR_op_new(0x1c8);
         GameRecord_ctor(gr);
         AEFile_Read_i64((char *)gr + 0x10, fd);
@@ -437,7 +412,6 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
         AEFile_Read_i32((char *)gr + 0x1a0, fd);
         AEFile::Close(fd);
     }
-    ((String *)(path))->dtor();
     return gr;
 }
 
@@ -449,41 +423,38 @@ __attribute__((visibility("hidden"))) extern const char RH_lit2[];
 // RecordHandler::RecordHandler() — default-constructs the three String members at
 // +0x8, +0x14, +0x20, then assigns each from a literal, and returns `this`.
 RecordHandler * RecordHandler::ctor() {
-    char tmp[12];
+    String tmp;
     char *m0 = (char *)this + 0x8;
     char *m1 = (char *)this + 0x14;
     char *m2 = (char *)this + 0x20;
 
-    String_default_ctor(m0);
-    String_default_ctor(m1);
-    String_default_ctor(m2);
+    ((String *)m0)->ctor();
+    ((String *)m1)->ctor();
+    ((String *)m2)->ctor();
 
-    String_cstr_ctor(tmp, RH_lit0, false);
-    ((String *)(m0))->assign((String *)tmp);
-    ((String *)(tmp))->dtor();
+    tmp.ctor_char(RH_lit0, false);
+    ((String *)(m0))->assign(&tmp);
 
-    String_cstr_ctor(tmp, RH_lit1, false);
-    ((String *)(m1))->assign((String *)tmp);
-    ((String *)(tmp))->dtor();
+    tmp.ctor_char(RH_lit1, false);
+    ((String *)(m1))->assign(&tmp);
 
-    String_cstr_ctor(tmp, RH_lit2, false);
-    ((String *)(m2))->assign((String *)tmp);
-    ((String *)(tmp))->dtor();
+    tmp.ctor_char(RH_lit2, false);
+    ((String *)(m2))->assign(&tmp);
 
     return this;
 }
 
 // RecordHandler::writeByteArrayAsOptionsFile(signed char*, int)
 void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
-    char tmp[12];
+    String tmp;
     unsigned int fd;
 
-    if (AEFile::FileExist(*(String *)String_copy_ctor(tmp, (char *)this + 0x8, false)) != 0)
-        AEFile::FileDelete(*(String *)(tmp));
-    AEFile::OpenWrite(*(String *)tmp, &fd);
+    tmp.ctor_copy((String *)((char *)this + 0x8), false);
+    if (AEFile::FileExist(tmp) != 0)
+        AEFile::FileDelete(tmp);
+    AEFile::OpenWrite(tmp, &fd);
     ((AEFile *)(n))->Write(buf, fd);
     AEFile::Close(fd);
-    ((String *)(tmp))->dtor();
 }
 
 struct Status;
@@ -498,36 +469,32 @@ __attribute__((visibility("hidden"))) extern int *g_RH_wp_float;
 
 // RecordHandler::recordStoreWritePreview(int)
 int RecordHandler::recordStoreWritePreview_int(int slot) {
-    char path[12];
-    char num[12];
+    String path;
+    String num;
     unsigned int fd;
 
-    String_int_ctor(num, slot);
-    String_concat(path, (char *)this + 0x20, num);
-    ((String *)(num))->dtor();
+    num.ctor_int(slot);
+    path = *(String *)((char *)this + 0x20) + num;
 
-    if (AEFile::FileExist(*(String *)(path)) != 0)
-        AEFile::FileDelete(*(String *)(path));
-    AEFile::OpenWrite(*(String *)path, &fd);
+    if (AEFile::FileExist(path) != 0)
+        AEFile::FileDelete(path);
+    AEFile::OpenWrite(path, &fd);
 
     Status **sh = g_RH_wp_status;
     AEFile_Write_i64(((Status *)(*sh))->getPlayingTime(), fd);
     AEFile_Write_i32(((Status *)(*sh))->getCredits(), fd);
 
-    ((Station *)(num))->getName();
-    AEFile_Write_str(num, fd, true);
-    ((String *)(num))->dtor();
+    num = ((Station *)(&num))->getName();
+    AEFile_Write_str(&num, fd, true);
 
-    ((SolarSystem *)(num))->getName();
-    AEFile_Write_str(num, fd, true);
-    ((String *)(num))->dtor();
+    num = ((SolarSystem *)(&num))->getName();
+    AEFile_Write_str(&num, fd, true);
 
     AEFile_Write_i32(((Status *)(*sh))->getCurrentCampaignMission(), fd);
     AEFile_Write_i32(((Status *)(*sh))->getLevel(), fd);
     AEFile_Write_f32(I(*(void **)g_RH_wp_float, 0x2c), fd);
     AEFile_Write_i32(((Ship *)(((Status *)(*sh))->getShip()))->getIndex(), fd);
     AEFile::Close(fd);
-    ((String *)(path))->dtor();
     return 1;
 }
 
@@ -574,27 +541,27 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
         AEFile_WriteInt(((Agent *)(agent))->getSellModIndex(), fd);
     }
 
-    char s[12];
-    ((Agent *)(s))->getMissionString();
-    AEFile_WriteString(s, fd, 1);
-    ((Agent *)(s))->getName();
-    AEFile_WriteString(s, fd, 1);
-    ((Agent *)(s))->getStationName();
-    AEFile_WriteString(s, fd, 1);
-    ((Agent *)(s))->getSystemName();
-    AEFile_WriteString(s, fd, 1);
+    String s;
+    s = ((Agent *)(&s))->getMissionString();
+    AEFile_WriteString(&s, fd, 1);
+    s = ((Agent *)(&s))->getName();
+    AEFile_WriteString(&s, fd, 1);
+    s = ((Agent *)(&s))->getStationName();
+    AEFile_WriteString(&s, fd, 1);
+    s = ((Agent *)(&s))->getSystemName();
+    AEFile_WriteString(&s, fd, 1);
 
     void *f0c = agent->wingman1;
     if (f0c == 0) {
-        AEString_cstr_ctor(s, g_WA_empty1, 0);
-        AEFile_WriteString(s, fd, 1);
+        s = String(g_WA_empty1);
+        AEFile_WriteString(&s, fd, 1);
     } else {
         AEFile_WriteString(f0c, fd, 1);
     }
     void *f10 = agent->wingman2;
     if (f10 == 0) {
-        AEString_cstr_ctor(s, g_WA_empty2, 0);
-        AEFile_WriteString(s, fd, 1);
+        s = String(g_WA_empty2);
+        AEFile_WriteString(&s, fd, 1);
     } else {
         AEFile_WriteString(f10, fd, 1);
     }
@@ -621,15 +588,15 @@ void RecordHandler::writeMission(void *m, unsigned int fd) {
 
     AEFile_WriteInt(((Mission *)(m))->getType(), fd);
     if (((Mission *)(m))->isEmpty() == 0) {
-        char s[12];
-        ((Mission *)(s))->getClientName();
-        AEFile_WriteString(s, fd, 1);
-        ((Mission *)(s))->getTargetName();
-        AEFile_WriteString(s, fd, 1);
-        ((Mission *)(s))->getTargetStationName();
-        AEFile_WriteString(s, fd, 1);
-        ((Mission *)(s))->getTargetSystemName();
-        AEFile_WriteString(s, fd, 1);
+        String s;
+        s = ((Mission *)(&s))->getClientName();
+        AEFile_WriteString(&s, fd, 1);
+        s = ((Mission *)(&s))->getTargetName();
+        AEFile_WriteString(&s, fd, 1);
+        s = ((Mission *)(&s))->getTargetStationName();
+        AEFile_WriteString(&s, fd, 1);
+        s = ((Mission *)(&s))->getTargetSystemName();
+        AEFile_WriteString(&s, fd, 1);
 
         AEFile_WriteBool(((Mission *)(m))->isCampaignMission(), fd);
         if (((Mission *)(m))->getClientImage() == 0) {
@@ -711,16 +678,15 @@ void RecordHandler::loadOptions() {
                 *nameSlot = 0;
             }
 
-            char name[12];
-            AEString_default_ctor(name);
+            String name;
+            name.ctor();
             int hasName = 0;
             // local_24 reuse — read marker int decides whether a name string follows
-            AEFile_ReadString(name, fd, 0);
+            AEFile_ReadString(&name, fd, 0);
             (void)hasName;
             // (target reads a length field; if non-zero, allocate a String)
             void *ns = RH_op_new(0xc);
-            char nameCopy[12];
-            AEString_copy_ctor(nameCopy, name, 0);
+            ((String *)ns)->ctor_copy(&name, false);
             *nameSlot = (int)(long)ns;
 
             AEFile_ReadInt(g_LO_extraInt, fd);
@@ -820,9 +786,9 @@ void RecordHandler::loadResolutionValue() {
         AEFile_ReadInt(r + 0x24, fd);
         AEFile_ReadInt(r + 0x28, fd);
 
-        char name[12];
-        AEString_default_ctor(name);
-        AEFile_ReadString(name, fd, 0);
+        String name;
+        name.ctor();
+        AEFile_ReadString(&name, fd, 0);
 
         int iv9c;
         bool b9d;
@@ -861,21 +827,19 @@ void RecordHandler::loadResolutionValue() {
 
 // RecordHandler::writeByteArrayAsRecord(signed char*, int, int, bool)
 int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup) {
-    char num[12];
-    char path[12];
+    String num;
+    String path;
     unsigned int fd;
 
-    String_int_ctor(num, slot);
+    num.ctor_int(slot);
     char *dir = (char *)this + (toBackup ? 0x20 : 0x14);
-    String_concat(path, dir, num);
-    ((String *)(num))->dtor();
+    path = *(String *)dir + num;
 
-    if (AEFile::FileExist(*(String *)(path)) != 0)
-        AEFile::FileDelete(*(String *)(path));
-    AEFile::OpenWrite(*(String *)path, &fd);
+    if (AEFile::FileExist(path) != 0)
+        AEFile::FileDelete(path);
+    AEFile::OpenWrite(path, &fd);
     ((AEFile *)(n))->Write(buf, fd);
     AEFile::Close(fd);
-    ((String *)(path))->dtor();
     return n;
 }
 
@@ -890,15 +854,15 @@ void * RecordHandler::readMission(unsigned int fd) {
     int type = 0;
     AEFile_ReadInt(&type, fd);
     if (type != -1) {
-        char clientName[12], targetName[12], targetStation[12], targetSystem[12];
-        AEString_default_ctor(clientName);
-        AEFile_ReadString(clientName, fd, 1);
-        AEString_default_ctor(targetName);
-        AEFile_ReadString(targetName, fd, 1);
-        AEString_default_ctor(targetStation);
-        AEFile_ReadString(targetStation, fd, 1);
-        AEString_default_ctor(targetSystem);
-        AEFile_ReadString(targetSystem, fd, 1);
+        String clientName, targetName, targetStation, targetSystem;
+        clientName.ctor();
+        AEFile_ReadString(&clientName, fd, 1);
+        targetName.ctor();
+        AEFile_ReadString(&targetName, fd, 1);
+        targetStation.ctor();
+        AEFile_ReadString(&targetStation, fd, 1);
+        targetSystem.ctor();
+        AEFile_ReadString(&targetSystem, fd, 1);
 
         bool isEmpty = false;
         AEFile_ReadBool(&isEmpty, fd);
@@ -937,9 +901,9 @@ void * RecordHandler::readMission(unsigned int fd) {
 
         if (!isEmpty) {
             mission = RH_op_new(0x78);
-            char nameCopy[12];
-            AEString_copy_ctor(nameCopy, clientName, 0);
-            ((Mission *)(mission))->ctorFull(type, nameCopy, img, clientRace, reward, targetStationIdx, difficulty);
+            String nameCopy;
+            nameCopy.ctor_copy(&clientName, false);
+            ((Mission *)(mission))->ctorFull(type, &nameCopy, img, clientRace, reward, targetStationIdx, difficulty);
         } else {
             mission = RH_op_new(0x78);
             ((Mission *)(mission))->ctorEmpty(type, reward, targetStationIdx);
@@ -952,7 +916,7 @@ void * RecordHandler::readMission(unsigned int fd) {
         ((Mission *)(mission))->setAgent((Agent *)agent);
 
         String tgtNameCopy;
-        AEString_copy_ctor(&tgtNameCopy, targetName, 0);
+        tgtNameCopy.ctor_copy(&targetName, false);
         ((Mission *)(mission))->setTargetName(tgtNameCopy);
 
         if (agent != 0) {
@@ -1000,9 +964,8 @@ void RecordHandler::saveOptions() {
 
     void *name = *g_SO_playerName;
     if (name == 0) {
-        char def[12];
-        AEString_cstr_ctor(def, g_SO_defName, 0);
-        AEFile_WriteString(def, fd, 0);
+        String def(g_SO_defName);
+        AEFile_WriteString(&def, fd, 0);
     } else {
         AEFile_WriteString(name, fd, 0);
     }
@@ -1102,42 +1065,42 @@ void * RecordHandler::readAgent(unsigned int fd) {
         AEFile_ReadInt(&sellMod, fd);
     }
 
-    char missionStr[12], name[12], stationName[12], systemName[12], strE[12], strF[12];
-    AEString_default_ctor(missionStr);
-    AEString_default_ctor(name);
-    AEString_default_ctor(stationName);
-    AEString_default_ctor(systemName);
-    AEString_default_ctor(strE);
-    AEString_default_ctor(strF);
-    AEFile_ReadString(missionStr, fd, 1);
-    AEFile_ReadString(name, fd, 1);
-    AEFile_ReadString(stationName, fd, 1);
-    AEFile_ReadString(systemName, fd, 1);
-    AEFile_ReadString(strE, fd, 1);
-    AEFile_ReadString(strF, fd, 1);
+    String missionStr, name, stationName, systemName, strE, strF;
+    missionStr.ctor();
+    name.ctor();
+    stationName.ctor();
+    systemName.ctor();
+    strE.ctor();
+    strF.ctor();
+    AEFile_ReadString(&missionStr, fd, 1);
+    AEFile_ReadString(&name, fd, 1);
+    AEFile_ReadString(&stationName, fd, 1);
+    AEFile_ReadString(&systemName, fd, 1);
+    AEFile_ReadString(&strE, fd, 1);
+    AEFile_ReadString(&strF, fd, 1);
 
     int hasMission = 0;
     AEFile_ReadInt(&hasMission, fd);
     void *mission = (hasMission < 1) ? 0 : ((RecordHandler *)(this))->readMission(fd);
 
     Agent *agent = (Agent *)RH_op_new(0x98);
-    char nameCopy[12];
-    AEString_copy_ctor(nameCopy, name, 0);
-    ((Agent *)(agent))->ctor(idx, nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
+    String nameCopy;
+    nameCopy.ctor_copy(&name, false);
+    ((Agent *)(agent))->ctor(idx, &nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
 
     ((Agent *)(agent))->setCosts(costs);
     ((Agent *)(agent))->setEvent(event);
     ((Agent *)(agent))->setOffer(offer);
     ((Agent *)(agent))->setSellItemData(sellItemPrice, sellItemQty, sellItemIdx);
 
-    if (*((int *)strE + 2) != 0) {
+    if (strE.size() != 0) {
         void *s = RH_op_new(0xc);
-        AEString_copy_ctor(s, strE, 0);
+        ((String *)s)->ctor_copy(&strE, false);
         agent->wingman1 = s;
     }
-    if (*((int *)strF + 2) != 0) {
+    if (strF.size() != 0) {
         void *s = RH_op_new(0xc);
-        AEString_copy_ctor(s, strF, 0);
+        ((String *)s)->ctor_copy(&strF, false);
         agent->wingman2 = s;
     }
     agent->wingmanCount = wingmen;
@@ -1146,8 +1109,8 @@ void * RecordHandler::readAgent(unsigned int fd) {
     arr->resize(wingmen);
     for (int i = 0; i < (int)wingmen; i++) {
         void *s = RH_op_new(0xc);
-        void *src = (i == 0) ? (void *)strE : (void *)strF;
-        AEString_copy_ctor(s, src, 0);
+        String *src = (i == 0) ? &strE : &strF;
+        ((String *)s)->ctor_copy(src, false);
         (*arr)[i] = (String *)s;
     }
     ((Agent *)(agent))->setWingmanFriendNames(arr);
@@ -1156,11 +1119,11 @@ void * RecordHandler::readAgent(unsigned int fd) {
     ((Agent *)(agent))->setImageParts(img);
 
     String tmp;
-    AEString_copy_ctor(&tmp, missionStr, 0);
+    tmp.ctor_copy(&missionStr, false);
     ((Agent *)(agent))->setMissionString(&tmp);
-    AEString_copy_ctor(&tmp, stationName, 0);
+    tmp.ctor_copy(&stationName, false);
     ((Agent *)(agent))->setStationName(tmp);
-    AEString_copy_ctor(&tmp, systemName, 0);
+    tmp.ctor_copy(&systemName, false);
     ((Agent *)(agent))->setSystemName(tmp);
     ((Agent *)(agent))->setMission((Mission *)mission);
 
@@ -1184,9 +1147,9 @@ void RecordHandler::writeWanted(void *w, unsigned int fd) {
     AEFile_WriteInt(((Wanted *)(w))->getTravelsTo(), fd);
     AEFile_WriteInt(((Wanted *)(w))->getLastSeen(), fd);
 
-    char name[12];
-    ((Wanted *)(name))->getName();
-    AEFile_WriteString(name, fd, 1);
+    String name;
+    name = ((Wanted *)(&name))->getName();
+    AEFile_WriteString(&name, fd, 1);
 
     AEFile_WriteInt(((Wanted *)(w))->getIndex(), fd);
     AEFile_WriteInt(((Wanted *)(w))->getBoard(), fd);
@@ -1218,24 +1181,22 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     if (rec == 0)
         return 0;
 
-    char path[12];
-    char num[12];
+    String path;
+    String num;
     unsigned int fd;
 
-    String_int_ctor(num, slot);
-    String_concat(path, (char *)this + 0x20, num);
-    ((String *)(num))->dtor();
+    num.ctor_int(slot);
+    path = *(String *)((char *)this + 0x20) + num;
 
-    if (AEFile::FileExist(*(String *)(path)) != 0)
-        AEFile::FileDelete(*(String *)(path));
-    AEFile::OpenWrite(*(String *)path, &fd);
+    if (AEFile::FileExist(path) != 0)
+        AEFile::FileDelete(path);
+    AEFile::OpenWrite(path, &fd);
 
     AEFile_Write_i64(*(long long *)((char *)rec + 0x10), fd);
     AEFile_Write_i32(I(rec, 0x8), fd);
 
-    ((Station *)(num))->getName();
-    AEFile_Write_str(num, fd, true);
-    ((String *)(num))->dtor();
+    num = ((Station *)(&num))->getName();
+    AEFile_Write_str(&num, fd, true);
 
     AEFile_Write_str((char *)rec + 0x188, fd, true);
     AEFile_Write_i32(I(rec, 0x40), fd);
@@ -1243,7 +1204,6 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     AEFile_Write_f32(I(rec, 0x11c), fd);
     AEFile_Write_i32(((Ship *)(*(Ship **)((char *)rec + 0x130)))->getIndex(), fd);
     AEFile::Close(fd);
-    ((String *)(path))->dtor();
     return 1;
 }
 
@@ -1260,15 +1220,15 @@ void RecordHandler::recordStoreWrite(int slot) {
     int *guardP = g_RSW_guard;
     volatile int saved = *guardP;
 
-    char num[12], path[12];
-    AEString_int_ctor(num, slot);
-    AEString_concat(path, (char *)this + 0x14);
+    String num, path;
+    num.ctor_int(slot);
+    path = *(String *)((char *)this + 0x14) + num;
 
-    if (AEFile::FileExist(*(String *)(path)) != 0) {
-        AEFile::FileDelete(*(String *)(path));
+    if (AEFile::FileExist(path) != 0) {
+        AEFile::FileDelete(path);
     }
     unsigned int fd;
-    AEFile::OpenWrite(*(String *)path, &fd);
+    AEFile::OpenWrite(path, &fd);
 
     // Visited-systems bitmap (0x87 entries).
     long visited = (long)((Galaxy *)(*g_RSW_galaxy))->getVisited();
@@ -1666,7 +1626,6 @@ __attribute__((visibility("hidden"))) extern void **g_RSR_itemDefs;
 __attribute__((visibility("hidden"))) extern void **g_RSR_shipDefs;
 __attribute__((visibility("hidden"))) extern void **g_RSR_status_p;
 __attribute__((visibility("hidden"))) extern int    g_RSR_modVersion;
-extern "C" void AEString_assign(void *dst, void *src);
 
 // Read a saved item (index/amount[/price]/unsaleable) into the table slot, or null when -1.
 static void *RSR_readItem(unsigned int fd, bool withPrice) {
@@ -1805,8 +1764,8 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
         AEFile_ReadByte((bool *)(bp + 2), fd);
         AEFile_ReadInt(bp + 3, fd);
         AEFile_ReadInt(bp + 4, fd);
-        char tmp[12]; AEString_default_ctor(tmp); AEFile_ReadString(tmp, fd, 1);
-        AEString_assign((void *)(bp + 5), (void *)tmp); AEString_dtor(tmp);
+        String tmp; tmp.ctor(); AEFile_ReadString(&tmp, fd, 1);
+        *(String *)(bp + 5) = tmp;
     }
     *(void **)(rec + 0x140) = bpArr;
 
@@ -1817,11 +1776,10 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
         Array<PendingProduct*> *ppArr = new Array<PendingProduct*>(); ppArr->resize(ppN);
         for (unsigned i = 0; i < ppArr->size(); i++) {
             int a = 0, c = 0, d = 0; AEFile_ReadInt(&a, fd); AEFile_ReadInt(&c, fd); AEFile_ReadInt(&d, fd);
-            char nm[12]; AEString_default_ctor(nm); AEFile_ReadString(nm, fd, 1);
-            void *nameCopy = RH_str_make(nm);
+            String nm; nm.ctor(); AEFile_ReadString(&nm, fd, 1);
+            void *nameCopy = RH_str_make(&nm);
             void *pp = PendingProduct::make(a, (const String *)nameCopy, d, c);
             (*ppArr)[i] = (PendingProduct *)pp;
-            AEString_dtor(nm);
         }
         *(void **)(rec + 0x144) = ppArr;
     }
@@ -1832,9 +1790,8 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     else {
         Array<String*> *strArr = new Array<String*>(); strArr->resize(wmN);
         for (int i = 0; i < wmN; i++) {
-            char nm[12]; AEString_default_ctor(nm); AEFile_ReadString(nm, fd, 1);
-            (*strArr)[i] = (String *)RH_str_make(nm);
-            AEString_dtor(nm);
+            String nm; nm.ctor(); AEFile_ReadString(&nm, fd, 1);
+            (*strArr)[i] = (String *)RH_str_make(&nm);
         }
         *(void **)(rec + 0x14c) = strArr;
         AEFile_ReadInt(rec + 0x150, fd);
@@ -2021,13 +1978,13 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
 
 // RecordHandler::readOptionsFileAsByteArray(signed char**)
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
-    char tmp[12];
+    String tmp;
     unsigned int fd;
     int sz;
 
-    String_copy_ctor(tmp, (char *)this + 0x8, false);
-    if (AEFile::FileExist(*(String *)(tmp)) != 0) {
-        AEFile::OpenRead(*(String *)tmp, &fd);
+    tmp.ctor_copy((String *)((char *)this + 0x8), false);
+    if (AEFile::FileExist(tmp) != 0) {
+        AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
         signed char *buf = RH_op_new_arr(sz | (sz >> 31));
         *out = buf;
@@ -2036,7 +1993,6 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     } else {
         sz = -1;
     }
-    ((String *)(tmp))->dtor();
     return sz;
 }
 
@@ -2052,17 +2008,17 @@ void * RecordHandler::recordStoreRead(int slot) {
     volatile int saved = *guardP;
 
     char *rec = 0;
-    char num[12], path[12];
-    AEString_int_ctor(num, slot);
-    AEString_concat(path, (char *)this + 0x14);
+    String num, path;
+    num.ctor_int(slot);
+    path = *(String *)((char *)this + 0x14) + num;
 
-    if (AEFile::FileExist(*(String *)(path)) != 0) {
+    if (AEFile::FileExist(path) != 0) {
         unsigned int fd;
-        AEFile::OpenRead(*(String *)path, &fd);
+        AEFile::OpenRead(path, &fd);
         int valid = RecordHandler_checkHash(fd);
         AEFile::Close(fd);
         if (valid != 0) {
-            AEFile::OpenRead(*(String *)path, &fd);
+            AEFile::OpenRead(path, &fd);
             rec = (char *)RH_op_new(0x1c8);
             GameRecord_ctor(rec);
 

@@ -43,7 +43,6 @@ extern "C" void Agent_setSellItemData(Agent *self, int index, int amount,
 extern "C" void Agent_setWingmanFriendNames(Agent *self,
                                              Array<AbyssEngine::String *> *names);
 
-extern "C" void AbyssEngine_String_dtor(AbyssEngine::String *self);
 
 void Globals_getRandomName(AbyssEngine::String *out, int names,
                                        int race, int male);

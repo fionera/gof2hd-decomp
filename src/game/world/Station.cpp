@@ -7,12 +7,6 @@
 #include "gof2/game/ship/Agent.h"
 #include "gof2/game/core/String.h"
 
-// NOTE: Station's name is an AbyssEngine::String passed/returned BY VALUE through the engine's
-// 12-byte String/String aggregate ABI (getName() returns String, callers do `*(String*)tmp = ...`).
-// That trivially-copied 12-byte aggregate does not match our 24-byte std::u16string-backed String,
-// so these by-value-String copy/format entry points are kept as documented engine externs rather
-// than rewritten to std::u16string methods (doing so would require rewriting the whole String ABI).
-extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 
 void Station::removeShips() {
@@ -111,9 +105,7 @@ void Station::visit() {
 
 // Station::getName() -> String by value (sret in r0, this in r1).
 String Station::getName() {
-    String r;
-    String_copy_ctor(&r, this, false);
-    return r;
+    return *(String *)this;
 }
 
 struct Ship;
@@ -267,10 +259,8 @@ void Station::addItem(Item *item) {
 // Station::clone() — this in r0, returns a new Station copy.
 Station * Station::clone() {
     Station *n = (Station *)::operator new(0x34);
-    char tmp[12];
-    String_copy_ctor(tmp, this, false);
-    ((Station *)(n))->ctor(tmp, this->index, this->systemIndex, this->techLevel, this->textureIndex);
-    ((String *)(tmp))->dtor();
+    String tmp(*(String *)this);
+    ((Station *)(n))->ctor(&tmp, this->index, this->systemIndex, this->techLevel, this->textureIndex);
     return n;
 }
 
@@ -332,19 +322,13 @@ void Station::setAgents(void *agents) {
     }
 }
 
-extern "C" void *String_default_ctor(void *s);                 // String::String() -> this
-extern "C" void String_from_cstr(void *out, const char *s, bool); // String::String(const char*, bool)
-// operator=(String*, String*)
-
 extern const char kStationDefaultName[] __attribute__((visibility("hidden")));
 
 // Station::Station() — default ctor.
 void Station::ctor_default() {
-    String_default_ctor(this);
-    char tmp[12];
-    String_from_cstr(tmp, kStationDefaultName, false);
-    ((String *)(this))->assign((String *)tmp);
-    ((String *)(tmp))->dtor();
+    ((String *)(this))->ctor();
+    String tmp(kStationDefaultName);
+    ((String *)(this))->assign(&tmp);
     this->index = -1;
     this->systemIndex = -1;
     this->techLevel = 0;
@@ -413,14 +397,11 @@ void Station::addShip(Ship *ship) {
     arr->push_back(ship);
 }
 
-extern "C" void *String_default_ctor(void *s);         // String::String() -> this
-// operator=(String*, String*)
-
 // Station::Station(String, int, int, int, int)
 // r0=this, r1=String* param, r2=p3, r3=p4, [stack]=p5, p6.
 Station * Station::ctor(void *name, int p3, int p4, int p5, int p6) {
-    void *s = String_default_ctor(this);
-    ((String *)(s))->assign((String *)name);
+    ((String *)(this))->ctor();
+    ((String *)(this))->assign((String *)name);
     this->index = p3;
     this->systemIndex = p4;
     this->techLevel = p5;

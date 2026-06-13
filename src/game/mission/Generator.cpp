@@ -5,25 +5,13 @@
 #include "gof2/game/world/Galaxy.h"
 #include "gof2/game/mission/Item.h"
 #include "gof2/game/mission/Achievements.h"
-// Several headers (Agent/SolarSystem/Station/Wanted) each define an identical
-// global `struct String` (the 12-byte by-value String aggregate) unconditionally.
-// Station.h provides the canonical one (Mission.h delegates to it); rename the
-// `String` tag to a unique name for the other headers so their definitions don't
-// collide. Generator never names String directly and discards these getters'
-// return values, so the distinct tags are harmless.
-#define String String
 #include "gof2/game/ship/Agent.h"
-#undef String
 #include "gof2/game/core/Globals.h"
 #include "gof2/game/world/Station.h"
 #include "gof2/game/mission/Mission.h"
-#define String String
 #include "gof2/game/world/SolarSystem.h"
-#undef String
 #include "gof2/game/world/Standing.h"
-#define String String
 #include "gof2/game/world/Wanted.h"
-#undef String
 #include "gof2/game/mission/Status.h"
 
 // ---- ctor/dtor ----
@@ -289,7 +277,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             int stationIndex = Station_getIndex(station);
             int systemIndex = ((Status *)(status))->getSystem();
             ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, 0, 1, -1, -1, -1, -1);
-            AbyssEngine_String_dtor(&name);
+            ((String *)&name)->dtor();
             ((Agent *)(agent))->setOffer(2);
             ((Agent *)(agent))->setSellItemData(0x44, 1, 0);
             ((Agent *)(agent))->setImageParts(((ImageFactory *)(*g_Generator_storyImages))->createChar(1, 0));
@@ -331,7 +319,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                                 ((Status *)(status))->getSystem();
                             ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, race, 1, -1, -1, -1, -1);
                             result->data()[i] = agent;
-                            AbyssEngine_String_dtor(&name);
+                            ((String *)&name)->dtor();
                             ((Agent *)(agent))->setOffer(7);
                             ((Agent *)(agent))->setImageParts(((ImageFactory *)(*g_Generator_enemyImages))->createChar(1, race));
                             break;
@@ -598,7 +586,7 @@ Mission *Generator::createMission(Agent *agent,
         Globals_getRandomName(&targetName, *g_Generator_targetNames, 0, 1);
         // String passed by value via its 12-byte aggregate ABI representation.
         ((Mission *)(mission))->setTargetName(*(const AbyssEngine::String *)&targetName);
-        AbyssEngine_String_dtor(&targetName);
+        ((String *)&targetName)->dtor();
     }
     int costRem = costs % 50;
     int roundedCosts = costs + costRem;
@@ -614,13 +602,13 @@ Mission *Generator::createMission(Agent *agent,
             AbyssEngine::String systemName;
             ((SolarSystem *)(&systemName))->getName();
             ((Mission *)(mission))->setTargetSystemName(*(const AbyssEngine::String *)&systemName);
-            AbyssEngine_String_dtor(&systemName);
+            ((String *)&systemName)->dtor();
             break;
         }
     }
 
-    AbyssEngine_String_dtor(&missionName);
-    AbyssEngine_String_dtor(&agentName);
+    ((String *)&missionName)->dtor();
+    ((String *)&agentName)->dtor();
     return mission;
 }
 
@@ -682,7 +670,7 @@ Agent *Generator::createAgent(Station *station) {
     int stationIndex = Station_getIndex(station);
     int systemIndex = ((Status *)(status))->getSystem();
     ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, race, male, -1, -1, -1, -1);
-    AbyssEngine_String_dtor(&name);
+    ((String *)&name)->dtor();
     ((Agent *)(agent))->setOffer(offer);
     ImageFactory **factoryPtr = g_Generator_imageFactory;
     ((Agent *)(agent))->setImageParts(((ImageFactory *)(*factoryPtr))->createChar(male, race));
@@ -693,8 +681,7 @@ Agent *Generator::createAgent(Station *station) {
             new Array<AbyssEngine::String *>();
         friendNames->resize(count);
         for (int i = 0; i < (int)count; ++i) {
-            AbyssEngine::String *friendName =
-                (AbyssEngine::String *)operator new(0xc);
+            AbyssEngine::String *friendName = new AbyssEngine::String();
             Globals_getRandomName(friendName, *names, ((Agent *)(agent))->getRace(), 1);
             friendNames->data()[i] = friendName;
         }

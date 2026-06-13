@@ -19,14 +19,10 @@
 struct Mission;
 struct Agent;
 
-// AbyssEngine::String passed by value is a 12-byte aggregate. In the engine it has
-// a non-trivial copy ctor/dtor, so by-value params are passed by invisible
-// reference (a pointer). Model it opaquely.
+// AbyssEngine::String has a non-trivial copy ctor/dtor, so by-value params are
+// passed by invisible reference (a pointer). The canonical std::u16string-backed
+// String is defined once in gof2/common.h.
 using AbyssEngine::String;
-
-// String returned by value (12-byte aggregate, matches AbyssEngine::String layout).
-// Returned through a hidden sret pointer in the decompiled getters below.
-// `struct String` is provided by gof2/Station.h (single shared definition).
 
 // Full Mission layout recovered from the per-method disassembly. The four embedded
 // String members (0x10/0x1c/0x40/0x4c) are reached via byte-offset casts, so they are

@@ -3,8 +3,6 @@
 
 using AbyssEngine::String;
 
-extern "C" Wanted *String_default_ctor(Wanted *self);
-
 // ---- trivial field accessors (inlined in the binary; recovered from the
 //      ctor's field layout). These back the Wanted_getX/setX extern shims. ----
 int  Wanted::getIndex()            { return index; }
@@ -54,9 +52,7 @@ void Wanted::setActive(bool v) {
 
 String Wanted::getName() {
     Wanted *self = this;
-    String r;
-    ((String *)(&r))->ctor_copy((String *)(&self->name), false);
-    return r;
+    return *(String *)(&self->name);
 }
 
 // String::String(String* this) default ctor -> 0x6efbc (returns this in r0)
@@ -65,9 +61,9 @@ String Wanted::getName() {
 // The String argument has a non-trivial copy ctor/dtor in the real engine, so the
 // C++ ABI passes it by invisible reference -> it arrives as a pointer in r2.
 Wanted * Wanted::ctor(int p1, const String &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14) {
-    Wanted *r = String_default_ctor(this);
-    r->index = p1;
-    ((String *)(r))->assign((String *)&p2);
+    this->name.ctor();
+    this->index = p1;
+    this->name.assign((String *)&p2);
     this->board = p3;
     this->race = p4;
     this->male = p5;

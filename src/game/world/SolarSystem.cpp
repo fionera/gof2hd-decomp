@@ -139,9 +139,7 @@ uint32_t SolarSystem::getStationEnumIndex(int idx) {
 // String is defined in gof2/SolarSystem.h.
 
 String SolarSystem::getName() {
-    String r;
-    ((String *)(&r))->ctor_copy((String *)((char *)this + 0xc), false);
-    return r;
+    return *(String *)((char *)this + 0xc);
 }
 
 // Pirate-base station-index table (PC-relative global).
@@ -213,7 +211,6 @@ void SolarSystem::setCoords(int x, int y) {
 }
 
 // AbyssEngine::String operations.
-extern "C" void *String_default_ctor(void *self);                 // 0x6efbc -> this
 // SolarSystem::SolarSystem(int, String, int, bool, int*6, int*, Array*, Array*, Array*)
 // The String arg has a non-trivial copy ctor/dtor, so the ABI passes it by invisible
 // reference (a pointer in r2). The on-stack `name` build uses a stack-protector canary.
@@ -225,12 +222,11 @@ extern "C" void *String_default_ctor(void *self);                 // 0x6efbc -> 
 // the target keeps them as discrete ldr/str. This is dominated by register-allocation
 // and frame-layout choices not reachable from source form.
 SolarSystem * SolarSystem::ctor(int p1, const String &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14) {
-    String_default_ctor((char *)this + 0xc);
+    ((String *)((char *)this + 0xc))->ctor();
     this->systemId = p1;
-    char tmp[12];
-    ((String *)(tmp))->ctor_copy((String *)(&p2), false);
-    ((String *)((char *)this + 0xc))->assign((String *)tmp);
-    ((String *)(tmp))->dtor();
+    String tmp;
+    tmp.ctor_copy((String *)(&p2), false);
+    ((String *)((char *)this + 0xc))->assign(&tmp);
     u8(this, 0x44) = p4;
     this->securityLevel = p3;
     this->faction = p5;

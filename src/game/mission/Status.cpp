@@ -23,19 +23,12 @@ struct FileRead;
 // Station::getName(), discards its result, so the ABI is unaffected.
 #include "gof2/game/ship/Agent.h"
 #include "gof2/game/mission/BluePrint.h"
-#define String String
 #include "gof2/game/mission/Mission.h"   // pulls in Station.h
 #include "gof2/game/world/Station.h"
-#undef String
-#define String String
 #include "gof2/game/world/SolarSystem.h"
-#undef String
-#define String String
 #include "gof2/game/world/Wanted.h"
 #include "gof2/game/ship/Ship.h"
-#undef String
 
-extern "C" int AEString_IndexOf(String *haystack, String *needle);
 extern "C" void *Ship_dtor(Ship *);
 extern "C" void op_delete(void *);
 extern "C" int Station_getIndex(Station *s);
@@ -54,7 +47,6 @@ extern "C" int Station_getSystem(Station *s);
 extern "C" void PendingProduct_ctor(int *pp, BluePrint *bp);
 extern "C" void FileRead_ctor(FileRead *);
 extern "C" void operator_delete_tail(void *);
-extern "C" void String_ctor_empty(String *s);
 extern "C" int Station_getTextureIndex(Station *s);
 
 // Local engine helper types used across several member functions in this translation unit.
@@ -145,7 +137,7 @@ int Status::getMissionCount() { return missionCount; }
 void Status::setCredits(int v) { credits = v; }
 
 bool Status::stringHasToken(String haystack, String needle) {
-    return AEString_IndexOf(&haystack, &needle) > -1;
+    return (int)haystack.IndexOf(&needle) > -1;
 }
 
 int Status::getLastXP() { return lastXP; }
@@ -1519,7 +1511,7 @@ void Status::setStation(Station *s) {
             int ccm = currentCampaignMission;
             String *nm = (String *)operator new(0xc);
             if (ccm == 0) {
-                String_ctor_empty(nm);
+                ((String *)nm)->ctor();
             } else {
                 ((Station *)(nm))->getName();
             }
@@ -1533,82 +1525,52 @@ void Status::setStation(Station *s) {
     delete list;
 }
 
-// 12-byte AbyssEngine::String, built/destroyed via engine wrappers. Modeled locally as
-// Str12 (text*, size, ...) — distinct from AbyssEngine::String (char16_t buf[6]) which
-// the included headers pull into scope; the recovered code accesses .a/.b/.c by offset.
-struct Str12 { uint32_t a, b, c; };
-
-extern "C" {
-int  String12_IndexOf(Str12 *self, Str12 *needle);
-void String12_SubString(Str12 *out, Str12 *self, int start, int len);
-void String12_ctor_copy(Str12 *self, const Str12 *src, bool copy);
-void String12_concat(Str12 *out, Str12 *left, Str12 *right);     // 0x6ef98 operator+
-void String12_dtor(Str12 *self);                                       // 0x6ee30 ~String
-void String12_dtor_v(Str12 *self);                                     // dtor via DAT (blx r4)
-}
-
 // Status::replaceHash(String haystack, String needle, String replacement) -> String (sret)
 //   Replaces the first occurrence of `needle` in `haystack` with `replacement`. If `needle`
 //   is absent, returns a copy of `haystack`. `out` is the hidden return slot.
-void Status_replaceHash3(void *self, Str12 *out, Str12 *haystack,
-                                    Str12 *needle, Str12 *replacement)
+void Status_replaceHash3(void *self, String *out, String *haystack,
+                                    String *needle, String *replacement)
 {
     (void)self;
-    int idx = String12_IndexOf(haystack, needle);
+    int idx = (int)haystack->IndexOf(needle);
     if (idx < 0) {
         // no match -> copy haystack into the result.
-        String12_ctor_copy(out, haystack, false);
+        *out = *haystack;
         return;
     }
 
     // prefix = haystack[0 .. idx)
-    Str12 prefix;
-    String12_SubString(&prefix, haystack, 0, idx);
+    String prefix;
+    prefix.SubString(haystack, 0, idx);
 
-    if (prefix.b == 0) {
+    if (prefix.size() == 0) {
         // needle at position 0: result = replacement + haystack[idx+len ..)
-        Str12 repl;
-        String12_ctor_copy(&repl, replacement, false);
-        Str12 suffix;
-        String12_SubString(&suffix, haystack, needle->c + idx, haystack->c);
-        String12_concat(out, &repl, &suffix);
-        String12_dtor_v(&suffix);
-        String12_dtor_v(&repl);
+        String repl;
+        repl.ctor_copy(replacement, false);
+        String suffix;
+        suffix.SubString(haystack, needle->size() + idx, haystack->size());
+        *out = repl + suffix;
     } else {
         // result = prefix + replacement + haystack[idx+len ..)
-        Str12 repl;
-        String12_ctor_copy(&repl, replacement, false);
-        Str12 mid;
-        String12_concat(&mid, &prefix, &repl);
-        Str12 suffix;
-        String12_SubString(&suffix, haystack, needle->c + idx, haystack->c);
-        String12_concat(out, &mid, &suffix);
-        String12_dtor_v(&suffix);
-        String12_dtor_v(&mid);
-        String12_dtor_v(&repl);
+        String repl;
+        repl.ctor_copy(replacement, false);
+        String mid = prefix + repl;
+        String suffix;
+        suffix.SubString(haystack, needle->size() + idx, haystack->size());
+        *out = mid + suffix;
     }
-    String12_dtor(&prefix);
-}
-
-// 12-byte AbyssEngine::String, built/destroyed via engine wrappers (Str12 defined above).
-
-extern "C" {
-void String12_ctor_char(Str12 *self, const char *text, bool copy);
 }
 
 // Status::replaceHash(AbyssEngine::String haystack, AbyssEngine::String needle) -> String (sret)
 //   Forwards to the three-argument overload, substituting the hash placeholder with "".
-//   `out` is the hidden return slot; haystack/needle are passed by value (as Str12*).
-void Status_replaceHash2(void *self, Str12 *out, Str12 *haystack, Str12 *needle)
+//   `out` is the hidden return slot; haystack/needle are passed by value (as String*).
+void Status_replaceHash2(void *self, String *out, String *haystack, String *needle)
 {
-    Str12 h, n, empty;
-    String12_ctor_copy(&h, haystack, false);
-    String12_ctor_copy(&n, needle, false);
-    String12_ctor_char(&empty, "", false);
+    String h, n, empty;
+    h.ctor_copy(haystack, false);
+    n.ctor_copy(needle, false);
+    empty.ctor_char("", false);
     Status_replaceHash3(self, out, &h, &n, &empty);
-    String12_dtor(&empty);
-    String12_dtor(&n);
-    String12_dtor(&h);
 }
 
 // Adjusts the player rating by `delta`, clamping the result to [-10, 10].
