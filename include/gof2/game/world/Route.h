@@ -27,10 +27,10 @@ public:
     Array<KIPlayer *>   *field_0x10;    // +0x10 docking targets
     Array<int>          *field_0x14;    // +0x14 docking times
 
-    // ---- methods (converted from free functions) ----
-    Route * ctor(int *coords, int count);
-    Route * ctorWithTargets(int *coords, Array<KIPlayer *> *targets, int *times, int count);
-    Route * dtor();
+    // ---- constructors / destructor (demangle to Route::Route / ~Route) ----
+    Route(int *coords, int count);
+    Route(int *coords, Array<KIPlayer *> *targets, int *times, int count);
+    ~Route();
     int getCurrent();
     void setLoop(bool loop);
     Route * clone();

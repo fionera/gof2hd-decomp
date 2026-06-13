@@ -1804,7 +1804,7 @@ void MGame::successCheck() {
                 ((StarSystem *)(ss))->getPlanets();
                 int pts[3] = {0, 0, 0};
                 Route *route = (Route *)::operator new(0x18);
-                ((Route *)(route))->ctor(pts, 3);
+                new (route) Route(pts, 3);
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
                 unsigned n = enemies->size;
                 for (unsigned i = 0; i < n; i++) {
@@ -1814,7 +1814,7 @@ void MGame::successCheck() {
                         ((KIPlayer *)(k))->setRoute(rc);
                     }
                 }
-                ::operator delete(((Route *)(route))->dtor());
+                do { Route *_rt = (Route *)(route); _rt->~Route(); ::operator delete(_rt); } while (0);
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
                 EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
                 unsigned n = enemies->size;

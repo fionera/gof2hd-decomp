@@ -1492,7 +1492,7 @@ __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
     PP(this, 0xdc) = 0;
     if (PP(this, 0x28))  { ((AEGeometry *)PP(this, 0x28))->~AEGeometry(); ::operator delete(PP(this, 0x28)); }
     PP(this, 0x28) = 0;
-    if (PP(this, 0xfc))  ::operator delete(((Route *)(PP(this, 0xfc)))->dtor());
+    if (PP(this, 0xfc))  do { Route *_rt = (Route *)(PP(this, 0xfc)); _rt->~Route(); ::operator delete(_rt); } while (0);
     PP(this, 0xfc) = 0;
     if (PP(this, 0x178)) { ((AEGeometry *)PP(this, 0x178))->~AEGeometry(); ::operator delete(PP(this, 0x178)); }
     PP(this, 0x178) = 0;

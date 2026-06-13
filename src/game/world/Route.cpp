@@ -291,7 +291,7 @@ int Route::getDockingTime() {
 
 // ---- Route(int*, int) — build a route from a flat [x,y,z, x,y,z, ...] coord array.
 // ctor1: coords + count(=3*numWaypoints). Allocates empty docking-target/time arrays.
-Route * Route::ctor(int *coords, int count) {
+Route::Route(int *coords, int count) {
     this->field_0x4 = 0;
     this->field_0x0 = 0;
     this->field_0xc = new Array<Waypoint *>();
@@ -305,12 +305,11 @@ Route * Route::ctor(int *coords, int count) {
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], this);
         this->field_0xc->push_back((Waypoint *)wp);
     }
-    return this;
 }
 
 // ---- Route(int*, Array<KIPlayer*>*, int*, int) — coords + pre-built docking targets + times.
 // ctor2: the docking-target array is adopted as-is; docking times are copied in.
-Route * Route::ctorWithTargets(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
+Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
     this->field_0x4 = 0;
     this->field_0x0 = 0;
     this->field_0xc = new Array<Waypoint *>();
@@ -323,11 +322,10 @@ Route * Route::ctorWithTargets(int *coords, Array<KIPlayer *> *targets, int *tim
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], this);
         this->field_0xc->push_back((Waypoint *)wp);
     }
-    return this;
 }
 
 // ---- ~Route() — release the waypoint array (deep) and the docking target/time arrays.
-Route * Route::dtor() {
+Route::~Route() {
     if (this->field_0xc != 0) {
         for (Waypoint *wp : *this->field_0xc)
             delete wp;
@@ -339,7 +337,6 @@ Route * Route::dtor() {
     this->field_0x10 = 0;
     delete this->field_0x14;
     this->field_0x14 = 0;
-    return this;
 }
 
 // ---- getCurrent() — index of the active waypoint.
@@ -361,11 +358,13 @@ void Route::setLoop(bool loop) {
 // Route_ctor1 — coords + count(=3*numWaypoints), empty docking-target/time arrays.
 extern "C" Route *Route_ctor1(Route *self, int *coords, int count)
 {
-    return self->ctor(coords, count);
+    new (self) Route(coords, count);
+    return self;
 }
 
 // Route_ctor2 — coords + adopted docking-target array + copied docking times.
 extern "C" Route *Route_ctor2(Route *self, int *coords, void *targets, int *times, int count)
 {
-    return self->ctorWithTargets(coords, (Array<KIPlayer *> *)targets, times, count);
+    new (self) Route(coords, (Array<KIPlayer *> *)targets, times, count);
+    return self;
 }

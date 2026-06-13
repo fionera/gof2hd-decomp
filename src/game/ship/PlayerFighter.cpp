@@ -156,7 +156,7 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
     *(void **)self = &PlayerFighter_vtable + 8;
 
     void *r = self->route;
-    if (r != 0) ::operator delete(((Route *)(r))->dtor());
+    if (r != 0) do { Route *_rt = (Route *)(r); _rt->~Route(); ::operator delete(_rt); } while (0);
     self->route = 0;
 
     if (self->boundingVolumes != 0) {
@@ -322,7 +322,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
         pts[i + 2] = (int)wp[idx * 3 + 2];
     }
     void *route = ::operator new(0x18);
-    ((Route *)(route))->ctor(pts, (unsigned)count);
+    new (route) Route(pts, (unsigned)count);
     self->route = route;
     RH_op_delete_arr(pts);
 
@@ -331,7 +331,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
         int defPts[12];
         __aeabi_memcpy(defPts, &gPFC_defaultRoute, 0x30);
         void *sr = ::operator new(0x18);
-        ((Route *)(sr))->ctor(defPts, 0xc);
+        new (sr) Route(defPts, 0xc);
         *shared = (int)(intptr_t)sr;
     }
 

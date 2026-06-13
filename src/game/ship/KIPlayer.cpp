@@ -152,7 +152,7 @@ void KIPlayer::PlayEngineSound() {
 void KIPlayer::setRoute(Route *route) {
     Route *old = this->route;
     if (old != 0) {
-        ::operator delete(((Route *)(old))->dtor());
+        do { Route *_rt = (Route *)(old); _rt->~Route(); ::operator delete(_rt); } while (0);
     }
     this->route = 0;
     if (route != 0) {
@@ -177,7 +177,7 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
     self->player = 0;
 
     Route *r = self->route;
-    if (r != 0) ::operator delete(((Route *)(r))->dtor());
+    if (r != 0) do { Route *_rt = (Route *)(r); _rt->~Route(); ::operator delete(_rt); } while (0);
     self->route = 0;
 
     void *g1 = self->crateGeometry;
@@ -394,7 +394,7 @@ KIPlayer::~KIPlayer() {
     this->player = 0;
 
     if (this->route != 0)
-        ::operator delete(((Route *)(this->route))->dtor());
+        do { Route *_rt = (Route *)(this->route); _rt->~Route(); ::operator delete(_rt); } while (0);
     this->route = 0;
 
     if (this->crateGeometry != 0) {
