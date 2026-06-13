@@ -56,16 +56,11 @@ extern "C" void glGetIntegerv(unsigned int name, void *out);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
 extern "C" void ShaderUpdateMaterialColor();
 extern "C" void glColor4f(float red, float green, float blue, float alpha);
-extern "C" void ArrayReleaseClasses_ShaderBaseStruct_ptr(void *array);
 void MeshRelease(Engine *self, void *meshSlot);
-extern "C" void Array_ShaderBaseStruct_ptr_dtor(void *array);
-extern "C" void Array_int_dtor(void *array);
 void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
 extern "C" String *g_Engine_vendorString;
 extern "C" String *g_Engine_rendererString;
 // String_GetAEChar declared in ShaderBaseStruct.h (returns void*)
-extern "C" void ArrayAdd_ShaderBaseStruct_ptr(ShaderBaseStruct *item, void *array);
-extern "C" void ArrayAdd_int(int item, void *array);
 extern "C" void glTexEnvf(unsigned int target, unsigned int pname, float value);
 extern "C" void glEnableClientState(unsigned int array);
 extern "C" void glDisableClientState(unsigned int array);
@@ -76,8 +71,6 @@ void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
 extern "C" void glLineWidth(float width);
 extern "C" void glCullFace(unsigned int mode);
 extern "C" void glLightfv(unsigned int light, unsigned int pname, const void *params);
-extern "C" void Array_int_ctor(void *array);
-extern "C" void Array_ShaderBaseStruct_ptr_ctor(void *array);
 extern "C" void glGetError();
 extern "C" void ShaderCtor_0(void *);
 extern "C" void ShaderCtor_1(void *);
@@ -317,9 +310,8 @@ void Engine::SetGravValue(double x, double y, double z) {
 void Engine::SwapBuffer() {
     Engine *self = this;
     uint32_t index = 0;
-    uint32_t zero = 0;
-    while (index < self->field_0x3d8) {
-        *(uint32_t *)(self->field_0x3dc + index * 4) = zero;
+    while (index < self->triangleCounts->size()) {
+        (*self->triangleCounts)[index] = 0;
         index += 1;
     }
 }
@@ -330,13 +322,12 @@ typedef void ShaderInitReloadFn(ShaderBaseStruct *, Engine *);
 void Engine::ReloadShaders() {
     Engine *self = this;
     uint32_t index = 0;
-    while (index < self->field_0x510) {
-        ShaderBaseStruct *shader =
-            *(ShaderBaseStruct **)(self->field_0x514 + index * 4);
+    while (index < self->shaders->size()) {
+        ShaderBaseStruct *shader = (*self->shaders)[index];
         void **vtable = *(void ***)shader;
         ((ShaderUnload *)vtable[0x24 / 4])(shader);
 
-        shader = *(ShaderBaseStruct **)(self->field_0x514 + index * 4);
+        shader = (*self->shaders)[index];
         vtable = *(void ***)shader;
         ((ShaderInitReloadFn *)vtable[0x08 / 4])(shader, self);
         index += 1;
@@ -407,8 +398,8 @@ void Engine::SetAddData(void *data, int size) {
 void Engine::ShaderUpdate() {
     Engine *self = this;
     uint32_t index = 0;
-    while (index < self->field_0x510) {
-        ((ShaderBaseStructFull *)(*(ShaderBaseStructFull **)(self->field_0x514 + index * 4)))->Update();
+    while (index < self->shaders->size()) {
+        ((ShaderBaseStructFull *)(*self->shaders)[index])->Update();
         index += 1;
     }
 }
@@ -697,8 +688,10 @@ Engine::~Engine()
     this->field_0x24 = 0;
 
     AEFile::Release();
-    void *shaders = (char *)this + 0x510;
-    ArrayReleaseClasses_ShaderBaseStruct_ptr(shaders);
+    for (uint32_t i = 0; i < this->shaders->size(); ++i) {
+        delete (ShaderBaseStructFull *)(*this->shaders)[i];
+    }
+    this->shaders->clear();
 
     FBOContainer *fbo = this->field_0x414;
     if (fbo != 0) {
@@ -716,8 +709,8 @@ Engine::~Engine()
 
     MeshRelease(this, (char *)this + 0x380);
     this->ReleaseGL();
-    Array_ShaderBaseStruct_ptr_dtor(shaders);
-    Array_int_dtor((char *)this + 0x3d8);
+    delete this->shaders;
+    delete this->triangleCounts;
     ((String *)((String *)((char *)this + 0x4c)))->dtor();
     ((String *)((String *)((char *)this + 0x3c)))->dtor();
     ((String *)((String *)((char *)this + 0x14)))->dtor();
@@ -757,8 +750,7 @@ void Engine::DrawCloakFBO(FBOContainer *fbo) {
     Engine *self = this;
     (void)fbo;   // unused in the shader path
     if (g_Engine_useShaders != 0) {
-        ShaderBaseStruct *shader =
-            *(ShaderBaseStruct **)(self->field_0x514 + g_Engine_cloakShader * 4);
+        ShaderBaseStruct *shader = (*self->shaders)[g_Engine_cloakShader];
         void **vtable = *(void ***)shader;
         return ((ShaderDrawCloak *)vtable[0x14 / 4])(shader);
     }
@@ -777,8 +769,8 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
 
         void **vtable = *(void ***)shader;
         ((ShaderInitFn *)vtable[0x08 / 4])(shader, self);
-        ArrayAdd_ShaderBaseStruct_ptr(shader, (char *)self + 0x510);
-        ArrayAdd_int(0, (char *)self + 0x3d8);
+        self->shaders->push_back(shader);
+        self->triangleCounts->push_back(0);
         ::operator delete(text);
     }
     return;
@@ -875,8 +867,7 @@ void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     }
 
     bool hasExtra = mesh != 0 && mesh->field_0x85 != 0;
-    ShaderBaseStruct *shader =
-        *(ShaderBaseStruct **)(self->field_0x514 + shaderIndex * 4);
+    ShaderBaseStruct *shader = (*self->shaders)[shaderIndex];
     if (shader == 0) {
         return;
     }
@@ -885,19 +876,18 @@ void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     void **vtable = *(void ***)shader;
     if (((ShaderBaseStructFull *)shader)->program != self->field_0x3e4) {
         ((ShaderEnable *)vtable[0x28 / 4])(shader, hasExtra);
-        shader = *(ShaderBaseStruct **)(self->field_0x514 + shaderIndex * 4);
+        shader = (*self->shaders)[shaderIndex];
         self->field_0x3e4 = ((ShaderBaseStructFull *)shader)->program;
         g_Engine_currentShader = shaderIndex;
         vtable = *(void ***)shader;
     }
     ((ShaderEnable *)vtable[0x28 / 4])(shader, hasExtra);
-    shader = *(ShaderBaseStruct **)(self->field_0x514 + shaderIndex * 4);
+    shader = (*self->shaders)[shaderIndex];
     vtable = *(void ***)shader;
     ((ShaderApply *)vtable[0x0c / 4])(shader, mesh, self);
     if (mesh != 0) {
         uint32_t triangles = __aeabi_uidiv(mesh->field_0x28, 3);
-        uint32_t *slot = (uint32_t *)(self->field_0x3dc + shaderIndex * 4);
-        *slot += triangles;
+        (*self->triangleCounts)[shaderIndex] += triangles;
     }
 }
 
@@ -912,8 +902,7 @@ void Engine::DoPostEffect() {
     if (g_Engine_useShaders != 0) {
         void *slot = other;
         if ((flags & 2) != 0) {
-            ShaderBaseStruct *shader =
-                *(ShaderBaseStruct **)(self->field_0x514 + g_Engine_shaderPostA * 4);
+            ShaderBaseStruct *shader = (*self->shaders)[g_Engine_shaderPostA];
             void **vtable = *(void ***)shader;
             if ((flags & ~2u) == 0) {
                 ((ShaderPostDraw *)vtable[0x14 / 4])(shader, current);
@@ -925,8 +914,7 @@ void Engine::DoPostEffect() {
             }
         }
         if ((self->field_0x410 & 1) != 0) {
-            ShaderBaseStruct *shader =
-                *(ShaderBaseStruct **)(self->field_0x514 + g_Engine_shaderPostB * 4);
+            ShaderBaseStruct *shader = (*self->shaders)[g_Engine_shaderPostB];
             void **vtable = *(void ***)shader;
             if ((flags & ~1u) == 0) {
                 ((ShaderPostDraw *)vtable[0x14 / 4])(shader, slot);
@@ -937,8 +925,7 @@ void Engine::DoPostEffect() {
             }
         }
         if ((self->field_0x410 & 4) != 0) {
-            ShaderBaseStruct *shader =
-                *(ShaderBaseStruct **)(self->field_0x514 + g_Engine_shaderPostC * 4);
+            ShaderBaseStruct *shader = (*self->shaders)[g_Engine_shaderPostC];
             void **vtable = *(void ***)shader;
             if ((flags & ~4u) == 0) {
                 ((ShaderPostDraw *)vtable[0x18 / 4])(shader, slot);
@@ -1235,8 +1222,7 @@ typedef void ShaderInactive(ShaderBaseStruct *);
 
 void Engine::ShaderSetInActive() {
     Engine *self = this;
-    ShaderBaseStruct *shader =
-        *(ShaderBaseStruct **)(self->field_0x514 + g_Engine_activeShader * 4);
+    ShaderBaseStruct *shader = (*self->shaders)[g_Engine_activeShader];
     void **vtable = *(void ***)shader;
     return ((ShaderInactive *)vtable[0x10 / 4])(shader);
 }
@@ -1285,12 +1271,12 @@ Engine::Engine() {
     up.y = 0.0f;
     up.z = 0.0f;
     self->field_0x330 = up;
-    Array_int_ctor((char *)self + 0x3d8);
+    self->triangleCounts = new Array<int>();
     self->field_0x478 = 0;
     self->field_0x400 = 0;
     self->field_0x468 = up;
     self->field_0x3f0 = up;
-    Array_ShaderBaseStruct_ptr_ctor((char *)self + 0x510);
+    self->shaders = new Array<ShaderBaseStruct*>();
     self->field_0x380 = 0;
     self->field_0x40c = 0;
     self->field_0x410 = 0;

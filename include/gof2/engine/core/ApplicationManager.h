@@ -38,9 +38,8 @@ public:
     void        *configReader;            // +0x38 ConfigReader*
     int          field_0x3c;            // +0x3c state machine state
     int          savedState;            // +0x40 saved state
-    char        *modulesData;            // +0x48 modules data ptr
-    unsigned int moduleIdCount;            // +0x50 module-id count
-    char        *moduleIdData;            // +0x54 module-id data ptr
+    Array<void*>        *modules;            // +0x44 loaded application modules (IApplicationModule*)
+    Array<unsigned int> *moduleIds;            // +0x50 module-id table (parallel to `modules`)
     unsigned int currentModuleId;            // +0x5c current module id
     void        *pendingModule;            // +0x60 pending application module
     uint64_t     currentTimeMs;            // +0x68 current time (ms)
@@ -48,8 +47,7 @@ public:
     uint64_t     previousFrameTimeMs;            // +0x78 previous frame time (ms)
     uint32_t     keyState;            // +0x80 key state (low word)
     uint32_t     keyStateHigh;            // +0x84 key state (high word)
-    unsigned int actionTableCount;            // +0x88 action table count
-    char        *actionTableData;            // +0x8c action table data ptr
+    Array<long long>    *actionTable;            // +0x88 action table (pairs of long long: value, key)
     uint32_t     actionMask;            // +0x98 action mask (low word)
     uint32_t     actionMaskHigh;            // +0x9c action mask (high word)
     uint32_t     actionState;            // +0xa0 action state (low word)

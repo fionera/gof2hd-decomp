@@ -37,25 +37,11 @@ extern "C" void ext_001ab5c8(void *cheats);
 extern "C" void ext_001ab538(void *sound);
 extern "C" void Engine_PreUpdate(void *engine);
 extern "C" void ext_001ab610(void);
-extern "C" void ArrayCtor_modules(void *array);
-extern "C" void ArrayCtor_uint(void *array);
-extern "C" void ArrayCtor_long_long(void *array);
 extern "C" void AESoundRessource_ctor(void *sound);
 extern "C" void ConfigReader_ctor(void *reader, void *engine);
 extern "C" void CheatHandler_ctor(void *cheats, void *keys);
 extern "C" void AESoundRessource_SetSound(void *sound, void *info, int count);
-extern "C" void ArrayAdd_IApplicationModule(void *module, void *array);
-extern "C" void ext_001ab5b8(unsigned int id, void *array);
 extern "C" void ext_001ab318(void *engine);
-extern "C" void ArrayAdd_long_long(long long value, void *array);
-extern "C" void ext_001ab5f8(long long key, void *array);
-extern "C" void Array_StringPtr_ctor(void *array);
-extern "C" void ArrayAdd_StringPtr(String *string, void *array);
-extern "C" void ArrayRelease_modules(void *array);
-extern "C" void ArrayRelease_uint(void *array);
-extern "C" void ArrayDtor_long_long(void *array);
-extern "C" void ArrayDtor_uint(void *array);
-extern "C" void ArrayDtor_modules(void *array);
 extern "C" void AESoundRessource_dtor(void *sound);
 extern "C" void CheatHandler_dtor(void *cheats);
 extern "C" void ConfigReader_dtor(void *reader);
@@ -548,9 +534,9 @@ void ApplicationManager::OnUpdate(long long now) {
 ApplicationManager * ApplicationManager::ctor(void *engine) {
     ApplicationManager *self = this;
 
-    ArrayCtor_modules((char *)self + 0x44);
-    ArrayCtor_uint((char *)self + 0x50);
-    ArrayCtor_long_long((char *)self + 0x88);
+    self->modules = new Array<void *>();
+    self->moduleIds = new Array<unsigned int>();
+    self->actionTable = new Array<long long>();
 
     self->frameTimeMs = 0;
     self->previousFrameTimeMs = 0;
@@ -652,9 +638,10 @@ void ApplicationManager::OnKeyPress(int key) {
             self->keyState =
                 self->keyState | (((uint64_t)keyHigh << 32) | keyLow);
 
+            char *table = (char *)self->actionTable->data();
             unsigned int offset = 0;
-            for (unsigned int i = 0; i < self->actionTableCount; i += 2) {
-                char *entry = self->actionTableData + offset;
+            for (unsigned int i = 0; i < self->actionTable->size(); i += 2) {
+                char *entry = table + offset;
                 if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
                     actionLow |= *(uint32_t *)entry;
                     actionHigh |= *(uint32_t *)(entry + 4);
@@ -695,8 +682,8 @@ __attribute__((minsize)) extern "C" void ApplicationManager_RegisterApplicationM
 {
     if (module != 0) {
         ((IApplicationModule *)(module))->SetApplicationManager(self);
-        ArrayAdd_IApplicationModule(module, (char *)self + 0x44);
-        ext_001ab5b8(id, (char *)self + 0x50);
+        self->modules->push_back(module);
+        self->moduleIds->push_back(id);
     }
 }
 
@@ -714,11 +701,11 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
         }
     }
 
-    unsigned int count = self->moduleIdCount;
+    unsigned int count = self->moduleIds->size();
     unsigned int index = 0;
     while (index < count) {
-        if (*(unsigned int *)(self->moduleIdData + index * 4) == id) {
-            void *module = *(void **)(self->modulesData + index * 4);
+        if ((*self->moduleIds)[index] == id) {
+            void *module = (*self->modules)[index];
             void *current = self->currentModule;
             self->field_0x3c = current != 0;
             self->currentModuleId = id;
@@ -820,14 +807,13 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
 
 void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
     ApplicationManager *self = this;
-    void *array = (char *)self + 0x88;
-    ArrayAdd_long_long(value, array);
-    ext_001ab5f8(key, array);
+    self->actionTable->push_back(value);
+    self->actionTable->push_back(key);
 }
 
 void * ApplicationManager::GetApplicationModule(unsigned int id) {
     ApplicationManager *self = this;
-    unsigned int count = self->moduleIdCount;
+    unsigned int count = self->moduleIds->size();
     unsigned int index = 0;
     goto check;
 
@@ -837,10 +823,10 @@ check:
     if (index >= count) {
         return 0;
     }
-    if (*(int *)(self->moduleIdData + index * 4) != (int)id) {
+    if ((int)(*self->moduleIds)[index] != (int)id) {
         goto advance;
     }
-    return *(void **)(self->modulesData + index * 4);
+    return (*self->modules)[index];
 }
 
 void * ApplicationManager::ConfigGetKeysForAction(long long action) {
@@ -848,33 +834,32 @@ void * ApplicationManager::ConfigGetKeysForAction(long long action) {
     int low = (int)action;
     int high = (int)(action >> 32);
     unsigned int byteOffset = 0;
-    void *result = 0;
+    Array<String *> *result = 0;
     unsigned int index = 0;
     goto check;
 
 loop:
     {
-        char *actions = self->actionTableData;
+        char *actions = (char *)self->actionTable->data();
         int actionLow = *(int *)(actions + byteOffset);
         int actionHigh = *(int *)(actions + byteOffset + 4);
         int mismatch = (actionLow ^ low) | (actionHigh ^ high);
         if (mismatch == 0) {
             if (result == 0) {
-                result = operator new(0xc);
-                Array_StringPtr_ctor(result);
+                result = new Array<String *>();
             }
             String *string = (String *)operator new(0xc);
-            actions = self->actionTableData;
+            actions = (char *)self->actionTable->data();
             char *keys = self->keyMappingTable;
             unsigned int keyIndex = *(unsigned int *)(actions + byteOffset + 8);
             new (string) String(*(String *)(keys + keyIndex * 0x10 + 4));
-            ArrayAdd_StringPtr(string, result);
+            result->push_back(string);
         }
         byteOffset += 0x10;
         index += 2;
     }
 check:
-    if (index < self->actionTableCount) {
+    if (index < self->actionTable->size()) {
         goto loop;
     }
     return result;
@@ -907,9 +892,10 @@ void ApplicationManager::OnKeyRelease(int key) {
             self->keyState &= ~keyLow;
             self->keyStateHigh &= ~keyHigh;
 
+            char *table = (char *)self->actionTable->data();
             unsigned int offset = 0;
-            for (unsigned int i = 0; i < self->actionTableCount; i += 2) {
-                char *entry = self->actionTableData + offset;
+            for (unsigned int i = 0; i < self->actionTable->size(); i += 2) {
+                char *entry = table + offset;
                 if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
                     actionLow |= *(uint32_t *)entry;
                     actionHigh |= *(uint32_t *)(entry + 4);
@@ -1033,21 +1019,16 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
         vtable[0x0c / 4](module);
     }
 
-    void *modules = (char *)self + 0x44;
-    unsigned int offset = 0;
-    for (unsigned int i = 0; i < *(unsigned int *)modules; ++i) {
-        void **slot = (void **)(self->modulesData + offset);
-        void *entry = *slot;
+    for (unsigned int i = 0; i < self->modules->size(); ++i) {
+        void *entry = (*self->modules)[i];
         if (entry != 0) {
             ModuleCallback **vtable = *(ModuleCallback ***)entry;
             vtable[1](entry);
-            slot = (void **)(self->modulesData + offset);
         }
-        *slot = 0;
-        offset += 4;
+        (*self->modules)[i] = 0;
     }
-    ArrayRelease_modules(modules);
-    ArrayRelease_uint((char *)self + 0x50);
+    self->modules->clear();
+    self->moduleIds->clear();
 
     void *canvas = *(void **)self;
     if (canvas != 0) {
@@ -1087,9 +1068,9 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
     }
     self->keyMappingTable = 0;
 
-    ArrayDtor_long_long((char *)self + 0x88);
-    ArrayDtor_uint((char *)self + 0x50);
-    ArrayDtor_modules(modules);
+    delete self->actionTable;
+    delete self->moduleIds;
+    delete self->modules;
 }
 
 typedef void ConfigTokenReadFunction(ConfigReader *, void *);

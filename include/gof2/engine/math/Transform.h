@@ -7,10 +7,6 @@ using uint = uint32_t;
 using longlong = int64_t;
 using ulonglong = uint64_t;
 
-template <class T> void ArrayAdd(T value, Array<T> &array);
-template <class T> void ArraySet(Array<T> *src, Array<T> *dst);
-template <class T> void ArrayReleaseClasses(Array<T> *array);
-
 namespace AbyssEngine {
 
 struct Camera;
@@ -75,10 +71,8 @@ public:
     uint32_t field_0x2c;                // +0x2c
     uint32_t field_0x30;                // +0x30
     Transform* field_0x34;              // +0x34
-    uint meshCount;                    // +0x3c
-    char** meshes;                  // +0x40
-    uint childCount;                    // +0x4c
-    Transform** children;             // +0x50
+    Array<Mesh*>* meshes;              // +0x3c (size() is the former meshCount)
+    Array<Transform*>* children;       // +0x4c (size() is the former childCount)
     uint8_t field_0x5c;                 // +0x5c
     uint32_t field_0x60;                // +0x60
     uint32_t field_0x64;                // +0x64
@@ -101,8 +95,7 @@ public:
     longlong rangeStart;               // +0x100
     longlong rangeEnd;               // +0x108
     longlong currentTime;               // +0x110
-    int keyFrameCount;                    // +0x11c (keyframe array length)
-    KeyFrame** keyFrames;             // +0x120 (keyframe array data)
+    Array<KeyFrame*>* keyFrames;       // +0x11c (size() is the former keyFrameCount)
     bool vfcEnabled;                   // +0x17c
 
     Transform();

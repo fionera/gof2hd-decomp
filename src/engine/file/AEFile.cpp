@@ -98,7 +98,10 @@ extern Array<AEPakFileEntry *> *g_AEFile_pakFiles;
 __attribute__((minsize)) void AEFile::Release()
 {
     if (g_AEFile_openFiles != 0) {
-        ArrayReleaseClasses(*g_AEFile_openFiles);
+        for (AELowLevelFile *file : *g_AEFile_openFiles) {
+            delete file;
+        }
+        g_AEFile_openFiles->clear();
         if (g_AEFile_openFiles != 0) {
             delete g_AEFile_openFiles;
         }

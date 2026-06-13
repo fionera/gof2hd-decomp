@@ -90,12 +90,6 @@ void operator delete(void *ptr) noexcept;
 void *operator new[](__SIZE_TYPE__ size);
 void operator delete[](void *ptr) noexcept;
 
-template <class T>
-void ArrayAdd(T item, Array<T> &array);
-
-template <class T>
-void ArrayReleaseClasses(Array<T> &array);
-
 enum FileOpenType : uint32_t {
     OPEN_READ   = 0,
     OPEN_WRITE  = 1,

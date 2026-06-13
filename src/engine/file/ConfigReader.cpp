@@ -4,20 +4,13 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) ConfigReader::~ConfigReader()
 {
-    uint32_t i = 0;
-    int32_t byteOffset = 0;
-    for (; i < config_count(this); byteOffset += 4, i++) {
-        TokenStruct *token = *(TokenStruct **)((char *)config_tokens(this) + byteOffset);
-        TokenStruct **slot;
-        if (token == 0) {
-            slot = (TokenStruct **)((char *)config_tokens(this) + i * 4);
-        } else {
+    for (uint32_t i = 0; i < tokens.size(); i++) {
+        TokenStruct *token = tokens[i];
+        if (token != 0) {
             delete token;
-            slot = (TokenStruct **)((char *)config_tokens(this) + byteOffset);
         }
-        *slot = 0;
+        tokens[i] = 0;
     }
-    ((Array<TokenStruct *> *)this)->~vector();
 }
 
 } // namespace AbyssEngine
@@ -31,8 +24,7 @@ namespace AbyssEngine {
 __attribute__((minsize)) ConfigReader::ConfigReader(Engine *engine)
 {
 
-    new ((Array<TokenStruct *> *)this) Array<TokenStruct *>();
-    config_engine(this) = engine;
+    this->engine = engine;
 
     RegisterTokenReadFunction(
         StringFromAscii("ConfigReadFile"),
@@ -58,7 +50,7 @@ __attribute__((minsize)) void ConfigReader::RegisterTokenReadFunction(
     token->name = name;
     token->read = read;
     token->context = context;
-    ArrayAdd(token, *(Array<TokenStruct *> *)this);
+    tokens.push_back(token);
 }
 
 } // namespace AbyssEngine
@@ -73,7 +65,7 @@ __attribute__((minsize)) String ConfigReader::GetNewLine()
     while (line.size() == 0) {
         uint32_t read;
         while (true) {
-            read = AEFile::Read(c, config_file_handle(this));
+            read = AEFile::Read(c, this->file_handle);
             uint32_t newline = __builtin_clz((uint32_t)c - 10) >> 5;
             uint32_t done = (read ^ 1) | newline;
             if (done != 0) {
@@ -113,15 +105,15 @@ namespace AbyssEngine {
 
 __attribute__((minsize)) void ConfigReader::ParseFile(String name)
 {
-    if (AEFile::OpenRead(name, &config_file_handle(this)) != 0) {
+    if (AEFile::OpenRead(name, &this->file_handle) != 0) {
         String line = GetNewLine();
         while (StringCompareAscii(line, "EOF") != 0) {
             uint16_t *first = StringCharAt(line, 0);
             if (*first == '[') {
                 uint16_t *last = StringCharAt(line, line.size() - 1);
                 if (*last == ']') {
-                    for (uint32_t i = 0; i < config_count(this); i++) {
-                        TokenStruct *token = *(TokenStruct **)((char *)config_tokens(this) + i * 4);
+                    for (uint32_t i = 0; i < tokens.size(); i++) {
+                        TokenStruct *token = tokens[i];
                         int32_t cmp;
                         {
                             String section =
@@ -140,7 +132,7 @@ __attribute__((minsize)) void ConfigReader::ParseFile(String name)
                 line = next;
             }
         }
-        AEFile::Close(config_file_handle(this));
+        AEFile::Close(this->file_handle);
     }
     
 }

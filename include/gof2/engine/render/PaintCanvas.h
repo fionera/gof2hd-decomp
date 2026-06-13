@@ -319,15 +319,6 @@ using ::Image2D;
 
 // Array<T> alias inside the namespace (the global one lives in common.h).
 template <class T> using Array = ::Array<T>;
-
-// Engine container free-functions used by PaintCanvas (definitions external).
-void ArrayAddMesh(Mesh *item, void *array);
-void ArrayAddUint(unsigned int item, void *array);
-void ArrayAddTransform(Transform *item, void *array);
-void ArrayAddMaterial(Material *item, void *array);
-void ArrayAddImageFont(ImageFont *item, void *array);
-void ArrayAddImage2D(Image2D *item, void *array);
-void ArrayAddSpriteSystem(SpriteSystem *item, void *array);
 } // namespace AbyssEngine
 
 #endif

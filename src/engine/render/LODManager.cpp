@@ -42,14 +42,14 @@ LODManager::~LODManager()
     this->objects = 0;
 }
 
-extern "C" void LODManager_ArrayRemove(AEGeometry *g, Array<AEGeometry*> *arr);  // ArrayRemove<AEGeometry*>(AEGeometry*, Array*)
-
+// ArrayRemove<AEGeometry*>(g, objects): erase the matching geometry from the
+// managed object list (real std::vector::erase over the typed member).
 void LODManager::removeObject(AEGeometry *g)
 {
     for (uint32_t i = 0; i < this->objects->size(); i++) {
         Array<AEGeometry*> *arr = this->objects;
         if ((*arr)[i] == g)
-            LODManager_ArrayRemove(g, arr);
+            arr->erase(arr->begin() + i);
     }
 }
 

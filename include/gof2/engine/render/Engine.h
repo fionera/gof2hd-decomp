@@ -146,8 +146,7 @@ public:
     uint32_t field_0x3c8;               // +0x3c8
     uint64_t field_0x3cc;               // +0x3cc
     uint32_t field_0x3d4;               // +0x3d4
-    uint32_t field_0x3d8;               // +0x3d8
-    char* field_0x3dc;                  // +0x3dc
+    Array<int>* triangleCounts;         // +0x3d8  per-shader triangle counters
     int field_0x3e4;                    // +0x3e4
     uint32_t field_0x3e8;               // +0x3e8
     uint32_t field_0x3ec;               // +0x3ec
@@ -182,8 +181,7 @@ public:
     volatile double field_0x4f8;        // +0x4f8
     volatile double field_0x500;        // +0x500
     double field_0x508;                 // +0x508
-    uint32_t field_0x510;               // +0x510
-    char* field_0x514;                  // +0x514
+    Array<ShaderBaseStruct*>* shaders;  // +0x510  registered shaders
 
     Engine();
     ~Engine();
