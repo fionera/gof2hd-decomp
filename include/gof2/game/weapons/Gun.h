@@ -17,6 +17,7 @@
 //   +0xfc  float errorMagnitudePercentage
 //   +0x100 int   magnitude
 //   +0x7c  Vector offset
+//   +0xc0  Vector basePos     +0xd8 Vector targetDir     +0xe4 Vector velocity
 
 struct Gun;
 
@@ -30,10 +31,12 @@ public:
     Player* field_0x4;                  // +0x4
     unsigned count;                 // +0x8
     char* positions;                    // +0xc vertex buffer (byte-addressed)
-    int field_0x14;                     // +0x14
+    int field_0x14;                     // +0x14 len of 2nd embedded Array<Vector>
     char* velocities;                   // +0x18 velocity buffer (byte-addressed)
-    char* field_0x24;                   // +0x24
-    int field_0x30;                     // +0x30
+    int field_0x20;                     // +0x20 len of 3rd embedded Array<Vector>
+    char* field_0x24;                   // +0x24 data ptr of 3rd embedded Array<Vector>
+    int field_0x2c;                     // +0x2c len of 4th embedded Array<Vector>
+    char* hitPositions;                 // +0x30 data ptr of 4th embedded Array<Vector> (impact points)
     int field_0x38;                     // +0x38
     void* lifetimes;                   // +0x3c (heap array)
     uint8_t* hitFlags;                // +0x40
@@ -52,9 +55,7 @@ public:
     int delayTimer;                     // +0x70
     int field_0x74;                     // +0x74
     int field_0x78;                     // +0x78
-    float offsetX;                   // +0x7c
-    float offsetY;                   // +0x80
-    float offsetZ;                   // +0x84
+    Vector offset;                      // +0x7c muzzle offset (x,y,z)
     uint8_t field_0x88;                 // +0x88
     char field_0x89;                    // +0x89
     int32_t field_0x8c;                 // +0x8c
@@ -73,18 +74,12 @@ public:
     Player* enemies;                 // +0xb4 enemies
     Sparks* impact;                 // +0xb8 impact
     Player* target;                 // +0xbc
-    int field_0xc0;                     // +0xc0
-    int field_0xc4;                     // +0xc4
-    int field_0xc8;                     // +0xc8
+    Vector basePos;                     // +0xc0 enemy/base position (x,y,z)
     int field_0xcc;                     // +0xcc
     int field_0xd0;                     // +0xd0
     int field_0xd4;                     // +0xd4
-    int field_0xd8;                     // +0xd8
-    int field_0xdc;                     // +0xdc
-    float field_0xe0;                   // +0xe0
-    int velocityX;                     // +0xe4
-    int velocityY;                     // +0xe8
-    int velocityZ;                     // +0xec
+    Vector targetDir;                   // +0xd8 direction toward target (x,y,z); .z reused as render translation
+    Vector velocity;                    // +0xe4 cached muzzle velocity (dir * speed)
     uint8_t playerGun;                 // +0xf0
     int field_0xf4;                     // +0xf4
     uint8_t levelCollision;                 // +0xf8

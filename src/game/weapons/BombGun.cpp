@@ -70,11 +70,11 @@ void *_ZN7BombGunD1Ev(BombGun *self)
 {
     *(void **)self = (char *)BombGun_vtable + 8;
 
-    Explosion *explosion = self->field_0xf0;
+    Explosion *explosion = self->explosion;
     if (explosion != 0)
         ::operator delete(Explosion_dtor(explosion));
 
-    self->field_0xf0 = 0;
+    self->explosion = 0;
     return BombGun_base_dtor(self);
 }
 
@@ -115,9 +115,8 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
 
     // vtable + scalar state
     *(void **)this = (char *)BombGun_vtable + 8;
-    this->field_0xf8 = 0;
-    this->field_0x100 = 0;
-    this->field_0x120 = 0;
+    this->detonationPosition = (Vector){0.0f, 0.0f, 0.0f};
+    this->cameraTargetOffset = (Vector){0.0f, 0.0f, 0.0f};
 
     // Pick the Explosion variant from the bomb type / weapon item.
     int explosionType;
@@ -133,7 +132,7 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
 
     Explosion *explosion = (Explosion *)operator new(0x68);
     new (explosion) Explosion(explosionType);
-    this->field_0xf0 = explosion;
+    this->explosion = explosion;
 
     // setWeaponIndex assigns the sound id and returns the per-weapon visual scale; the
     // shipped prototype types it void, so reinterpret its address to recover the value.
@@ -142,10 +141,10 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
     __builtin_memcpy(&swiFn, &swiMember, sizeof(swiFn));
     float weaponScale = swiFn(explosion, ((Gun *)gun)->itemIndex);
 
-    this->field_0x24 = simpleMesh ? 1 : 0;
-    this->field_0x104 = 1;
-    this->field_0x128 = bombType;
-    this->field_0xf4 = 0xffffffff;
+    this->playerControlled = simpleMesh ? 1 : 0;
+    this->detonationPending = 1;
+    this->bombType = bombType;
+    this->geometryTransformId = 0xffffffff;
 
     if (bombType == 0x2a) {
         ((Explosion *)explosion)->setScaling(weaponScale);
@@ -168,8 +167,8 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
             AEGeometry *geo = (AEGeometry *)operator new(0xc0);
             new (geo) AEGeometry(geomMesh, (PaintCanvas *)canvas, false);
 
-            this->field_0xf4 = geo->transform;
-            AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->field_0x10, geo->transform);
+            this->geometryTransformId = geo->transform;
+            AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->transformId, geo->transform);
 
             AbyssEngine::Transform *transform =
                 AbyssEngine::PaintCanvas::TransformGetTransform(canvas, geo->transform);
@@ -183,48 +182,46 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
     } else {
         // Simple-mesh path: build a transform tree from the bomb's own mesh plus a
         // trail geometry, then re-parent it under the rocket transform.
-        AbyssEngine::PaintCanvas::TransformCreate(canvas, &this->field_0x14);
-        AbyssEngine::PaintCanvas::TransformAddMesh(canvas, this->field_0x14, this->field_0x28, 0);
+        AbyssEngine::PaintCanvas::TransformCreate(canvas, &this->meshTransformId);
+        AbyssEngine::PaintCanvas::TransformAddMesh(canvas, this->meshTransformId, this->meshId, 0);
 
         AbyssEngine::Transform *transform =
-            AbyssEngine::PaintCanvas::TransformGetTransform(canvas, this->field_0x14);
+            AbyssEngine::PaintCanvas::TransformGetTransform(canvas, this->meshTransformId);
         ((AbyssEngine::Transform *)transform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
 
         AEGeometry *geo = (AEGeometry *)operator new(0xc0);
         new (geo) AEGeometry((uint16_t)0x37d6, (PaintCanvas *)canvas, false);
-        AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->field_0x14, geo->transform);
-        AbyssEngine::PaintCanvas::TransformRemoveMesh(canvas, this->field_0x10,
-                                                      (uint16_t)this->field_0x14);
-        AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->field_0x10, this->field_0x14);
+        AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->meshTransformId, geo->transform);
+        AbyssEngine::PaintCanvas::TransformRemoveMesh(canvas, this->transformId,
+                                                      (uint16_t)this->meshTransformId);
+        AbyssEngine::PaintCanvas::TransformAddChild(canvas, this->transformId, this->meshTransformId);
 
         ((AEGeometry *)geo)->~AEGeometry();
         operator delete(geo);
     }
 
-    // Two fixed ejection vectors: (0, 450, -1400) and (0, 0, 1700).
-    Vector ejectA = { 0.0f, 450.0f, -1400.0f };
-    Vector ejectB = { 0.0f, 0.0f, 1700.0f };
-    *(Vector *)&this->field_0x110 = ejectA;
-    *(Vector *)((char *)this + 0x11c) = ejectB;
+    // Two fixed rocket-cam offsets: camera (0, 450, -1400) and target (0, 0, 1700).
+    this->cameraOffset = (Vector){0.0f, 450.0f, -1400.0f};
+    this->cameraTargetOffset = (Vector){0.0f, 0.0f, 1700.0f};
 
-    this->field_0xec = 0;
+    this->player = 0;
 
     // Trail geometry attached to the active scene canvas.
     AEGeometry *trail = (AEGeometry *)operator new(0xc0);
     new (trail) AEGeometry((PaintCanvas *)canvas);
-    this->field_0xe8 = trail;
+    this->trailGeometry = trail;
 }
 
 void BombGun::setPlayer(PlayerEgo *player)
 {
-    this->field_0xec = player;
+    this->player = player;
 }
 
 void BombGun::render()
 {
     ((RocketGun *)(this))->render();
-    if (this->field_0x8->field_0x88 != 0)
-        return ((Explosion *)(this->field_0xf0))->render();
+    if (this->gun->field_0x88 != 0)
+        return ((Explosion *)(this->explosion))->render();
 }
 
 extern "C" __attribute__((visibility("hidden"))) TargetFollowCamera *(*BombGun_getCamera)(
@@ -252,24 +249,24 @@ void BombGun::update(int elapsed)
     char position[12];
     char work[12];
 
-    PlayerEgo *player = this->field_0xec;
+    PlayerEgo *player = this->player;
     if (player == 0)
         return;
 
-    Gun *gun = this->field_0x8;
+    Gun *gun = this->gun;
     if (gun->field_0x88 == 0) {
-        if (this->field_0x128 == 0x2a) {
+        if (this->bombType == 0x2a) {
             ((PlayerEgo *)(position))->getPosition();
         } else {
             void *gunPos = gun->positions;
             *(uint64_t *)position = *(uint64_t *)gunPos;
             *(uint32_t *)(position + 8) = *(uint32_t *)((char *)gunPos + 0x8);
         }
-        *(Vector *)((char *)this + 0xf8) = *(const Vector *)(position);
+        this->detonationPosition = *(const Vector *)(position);
     }
 
-    gun = this->field_0x8;
-    bool playerControlled = this->field_0x24 != 0;
+    gun = this->gun;
+    bool playerControlled = this->playerControlled != 0;
     if (!playerControlled) {
         if (gun->field_0x4c != 0)
             goto update_transforms;
@@ -278,7 +275,7 @@ void BombGun::update(int elapsed)
             goto update_transforms;
         {
             void **canvas = BombGun_update_canvas_b;
-            uint32_t *activeTransform = &this->field_0x10;
+            uint32_t *activeTransform = &this->transformId;
             if (gun->field_0x4d != 0) {
                 gun->field_0x4d = 0;
                 AbyssEngine::Transform *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvas, *activeTransform);
@@ -289,7 +286,7 @@ void BombGun::update(int elapsed)
                 ((FModSound *)(*BombGun_sound_play))->play(0x45c, 0, 0, 0.0f);
             }
 
-            AEGeometry *geometry = this->field_0xe8;
+            AEGeometry *geometry = this->trailGeometry;
             void *local = AbyssEngine::PaintCanvas::TransformGetLocal(*canvas, *activeTransform);
             ((AEGeometry *)geometry)->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(local));
             *(Vector *)(scaled) = (kRocketOffsetScale) * *(const Vector *)(gun->velocities);
@@ -300,9 +297,9 @@ void BombGun::update(int elapsed)
             TargetFollowCamera *camera = BombGun_getCamera(player);
             ((TargetFollowCamera *)(camera))->setTarget(geometry);
             camera = BombGun_getCamera(player);
-            ((TargetFollowCamera *)(camera))->setCamOffset((Vector *)((char *)this + 0x110));
+            ((TargetFollowCamera *)(camera))->setCamOffset(&this->cameraOffset);
             camera = BombGun_getCamera(player);
-            ((TargetFollowCamera *)(camera))->setTargetOffset((Vector *)((char *)this + 0x11c));
+            ((TargetFollowCamera *)(camera))->setTargetOffset(&this->cameraTargetOffset);
             camera = BombGun_getCamera(player);
             ((TargetFollowCamera *)(camera))->useTargetsUpVector(false);
             ((PlayerEgo *)(player))->setRocketControl(gun, geometry);
@@ -313,7 +310,7 @@ void BombGun::update(int elapsed)
             }
 
             float bank = ((PlayerEgo *)(player))->getRocketBanking() * kBombScale;
-            this->field_0x20 = bank;
+            this->bankingAngle = bank;
             ((FModSound *)(*BombGun_sound_param))->setParamValue(0, 0x45c, bank * 0.5f);
         }
     }
@@ -322,10 +319,10 @@ void BombGun::update(int elapsed)
 update_transforms:
     {
         void **canvas = BombGun_update_canvas_a;
-        AbyssEngine::Transform *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvas, this->field_0x10);
+        AbyssEngine::Transform *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvas, this->transformId);
         ((AbyssEngine::Transform *)(transform))->Update((int64_t)elapsed, 0);
-        if (this->field_0xf4 != -1) {
-            transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvas, this->field_0xf4);
+        if (this->geometryTransformId != -1) {
+            transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvas, this->geometryTransformId);
             ((AbyssEngine::Transform *)(transform))->Update((int64_t)elapsed, 0);
         }
     }
@@ -333,33 +330,33 @@ update_transforms:
 after_transforms:
 
     ((RocketGun *)(this))->update(elapsed);
-    gun = this->field_0x8;
+    gun = this->gun;
     if (gun->field_0x88 == 0)
         return;
 
-    if (this->field_0x104 != 0) {
-        if (this->field_0x24 != 0) {
-            player = this->field_0xec;
+    if (this->detonationPending != 0) {
+        if (this->playerControlled != 0) {
+            player = this->player;
             ((LevelScript *)(player->field_0x10))->resetCamera(player->field_0xc);
-            ((PlayerEgo *)(player))->setRocketControl(0, this->field_0xe8);
+            ((PlayerEgo *)(player))->setRocketControl(0, this->trailGeometry);
             ((FModSound *)(*BombGun_sound_stop))->stop(0x45c);
         }
 
-        this->field_0x108 = 0;
-        player = this->field_0xec;
+        this->rumbleTimer = 0;
+        player = this->player;
         ((PlayerEgo *)(work))->getPosition();
-        *(Vector *)(position) = *(const Vector *)((char *)this + 0xf8) - *(const Vector *)(work);
+        *(Vector *)(position) = this->detonationPosition - *(const Vector *)(work);
         float distance = VectorLength(position);
-        float magnitude = (float)((Gun *)(this->field_0x8))->getMagnitude();
+        float magnitude = (float)((Gun *)(this->gun))->getMagnitude();
         float force = (((magnitude * 0.5f) - distance) / (magnitude * 0.5f)) * 0.5f;
         if (force > 1.0f)
             force = 1.0f;
         if (force < kZero)
             force = kZero;
-        if (this->field_0x128 == 0x2a)
+        if (this->bombType == 0x2a)
             force *= kBombScale;
         if (((Status *)(*BombGun_status))->hardCoreMode() != 0) {
-            Gun *damageGun = this->field_0x8;
+            Gun *damageGun = this->gun;
             ((Player *)((Player *)player->field_0x0))->damage((int)(force * (float)damageGun->field_0x60));
         }
         ((PlayerEgo *)(player))->addNukeVolatileForce(force);
@@ -367,37 +364,37 @@ after_transforms:
         float capped = kRumbleDistance;
         if (distance < kRumbleDistance)
             capped = distance;
-        this->field_0x10c = 1.0f - capped / kRumbleDistance;
-        ((TargetFollowCamera *)(((PlayerEgo *)(player))->getTargetFollowCamera()))->setRumblePercentage(this->field_0x10c, 0x32);
+        this->rumbleStrength = 1.0f - capped / kRumbleDistance;
+        ((TargetFollowCamera *)(((PlayerEgo *)(player))->getTargetFollowCamera()))->setRumblePercentage(this->rumbleStrength, 0x32);
 
-        Explosion *explosion = this->field_0xf0;
-        if (this->field_0x128 == 0x2a) {
+        Explosion *explosion = this->explosion;
+        if (this->bombType == 0x2a) {
             ((PlayerEgo *)(position))->GetDirVector();
         } else {
             *(uint64_t *)position = 0;
             *(uint32_t *)(position + 8) = 0;
         }
-        ((Explosion *)(explosion))->start((const Vector *)((char *)this + 0xf8),
+        ((Explosion *)(explosion))->start(&this->detonationPosition,
                                           (const Vector *)position);
-        this->field_0x104 = 0;
+        this->detonationPending = 0;
     }
 
-    ((Explosion *)(this->field_0xf0))->update(elapsed, 0);
-    int timer = this->field_0x108 + elapsed;
+    ((Explosion *)(this->explosion))->update(elapsed, 0);
+    int timer = this->rumbleTimer + elapsed;
     if (timer > 2000)
         timer = 2000;
-    this->field_0x108 = timer;
+    this->rumbleTimer = timer;
 
-    player = this->field_0xec;
-    float rumble = this->field_0x10c * ((float)timer / kRumbleTime + 1.0f);
+    player = this->player;
+    float rumble = this->rumbleStrength * ((float)timer / kRumbleTime + 1.0f);
     ((TargetFollowCamera *)(((PlayerEgo *)(player))->getTargetFollowCamera()))->setRumblePercentage(rumble, 0x32);
 
-    if (((Explosion *)(this->field_0xf0))->isPlaying() == 0) {
+    if (((Explosion *)(this->explosion))->isPlaying() == 0) {
         ((TargetFollowCamera *)(((PlayerEgo *)(player))->getTargetFollowCamera()))->setRumblePercentage(0.0f, 0);
-        this->field_0x108 = 0;
-        this->field_0x8->field_0x88 = 0;
-        this->field_0x104 = 1;
-        ((Explosion *)(this->field_0xf0))->reset();
+        this->rumbleTimer = 0;
+        this->gun->field_0x88 = 0;
+        this->detonationPending = 1;
+        ((Explosion *)(this->explosion))->reset();
     }
 }
 
@@ -417,11 +414,10 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
 
     RocketGun_ctor(self, param3, gun, mesh, 0, 0, type, false, level);
 
-    self->field_0x110 = (v4i){0, 0, 0, 0};
+    self->cameraOffset = (Vector){0.0f, 0.0f, 0.0f};
+    self->cameraTargetOffset = (Vector){0.0f, 0.0f, 0.0f};
     *(void * volatile *)self = (char *)BombGun_vtable + 8;
-    self->field_0xf8 = 0;
-    self->field_0x100 = 0;
-    self->field_0x120 = 0;
+    self->detonationPosition = (Vector){0.0f, 0.0f, 0.0f};
 
     Explosion *explosion = (Explosion *)::operator new(0x68);
     int explosionType;
@@ -435,25 +431,25 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
             explosionType = 0xd;
     }
     Explosion_ctor(explosion, explosionType);
-    self->field_0xf0 = explosion;
+    self->explosion = explosion;
     ((Explosion *)(explosion))->setWeaponIndex(gun->itemIndex);
 
     int playerFlag = *(volatile int *)&playerControlled;
-    self->field_0x24 = playerFlag;
+    self->playerControlled = playerFlag;
     bool scaledBomb = type == 0x2a;
-    self->field_0x104 = 1;
-    self->field_0x128 = type;
-    self->field_0xf4 = -1;
+    self->detonationPending = 1;
+    self->bombType = type;
+    self->geometryTransformId = -1;
     if (scaledBomb)
-        ((Explosion *)(self->field_0xf0))->setScaling(kCtorBombScale);
+        ((Explosion *)(self->explosion))->setScaling(kCtorBombScale);
 
     AEGeometry *geometry;
     if (playerFlag) {
         void **canvasHolder = BombGun_player_canvas;
-        uint32_t *createdTransform = &self->field_0x14;
+        uint32_t *createdTransform = &self->meshTransformId;
         AbyssEngine::PaintCanvas::TransformCreate(*canvasHolder, createdTransform);
         AbyssEngine::PaintCanvas::TransformAddMesh(*canvasHolder, *createdTransform,
-                                     self->field_0x28, 0);
+                                     self->meshId, 0);
         AbyssEngine::Transform *transform =
             AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder, *createdTransform);
         ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
@@ -462,10 +458,10 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
         new ((void *)geometry) AEGeometry((uint16_t)0x37d6, (PaintCanvas *)*canvasHolder, false);
         AbyssEngine::PaintCanvas::TransformAddChild(*canvasHolder, *createdTransform,
                                       geometry->transform);
-        AbyssEngine::PaintCanvas::TransformRemoveMesh(*canvasHolder, self->field_0x10,
-                                        self->field_0x28);
-        AbyssEngine::PaintCanvas::TransformAddChild(*canvasHolder, self->field_0x10,
-                                      self->field_0x14);
+        AbyssEngine::PaintCanvas::TransformRemoveMesh(*canvasHolder, self->transformId,
+                                        self->meshId);
+        AbyssEngine::PaintCanvas::TransformAddChild(*canvasHolder, self->transformId,
+                                      self->meshTransformId);
     } else {
         int weapon = gun->itemIndex;
         bool normal = weapon != 0xe8;
@@ -483,16 +479,16 @@ BombGun *_ZN7BombGunC1EP3GunjiibP5Level(
             geomMesh = 0x3959;
 
         new ((void *)geometry) AEGeometry((uint16_t)geomMesh, (PaintCanvas *)*canvasHolder, false);
-        self->field_0xf4 = geometry->transform;
-        AbyssEngine::PaintCanvas::TransformAddChild(*canvasHolder, self->field_0x10,
+        self->geometryTransformId = geometry->transform;
+        AbyssEngine::PaintCanvas::TransformAddChild(*canvasHolder, self->transformId,
                                       geometry->transform);
 
         AbyssEngine::Transform *transform;
         if (mesh == 0x395c) {
-            transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder, self->field_0xf4);
+            transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder, self->geometryTransformId);
             ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
         } else {
-            transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder, self->field_0x10);
+            transform = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder, self->transformId);
             ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
         }
     }
@@ -503,17 +499,17 @@ after_geometry:
     *(volatile float *)(local + 0x4) = kOffsetY;
     *(volatile float *)(local + 0x0) = 0.0f;
     *(volatile float *)(local + 0x8) = kOffsetZ;
-    *(Vector *)((char *)self + 0x110) = *(const Vector *)(local);
+    self->cameraOffset = *(const Vector *)(local);
 
     *(volatile float *)(local + 0x0) = 0.0f;
     *(volatile float *)(local + 0x4) = 0.0f;
     *(volatile float *)(local + 0x8) = kRocketOffsetZ;
-    *(Vector *)((char *)self + 0x11c) = *(const Vector *)(local);
+    self->cameraTargetOffset = *(const Vector *)(local);
 
-    self->field_0xec = 0;
+    self->player = 0;
     AEGeometry *finalGeometry = (AEGeometry *)::operator new(0xc0);
     void **finalCanvas = BombGun_final_canvas;
     new ((void *)finalGeometry) AEGeometry((PaintCanvas *)*finalCanvas);
-    self->field_0xe8 = finalGeometry;
+    self->trailGeometry = finalGeometry;
     return self;
 }

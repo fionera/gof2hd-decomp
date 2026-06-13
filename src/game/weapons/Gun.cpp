@@ -24,38 +24,38 @@ extern dtor_fn const gGunStringDtor __attribute__((visibility("hidden")));
 
 __attribute__((minsize)) Gun::~Gun() noexcept(false)
 {
-    char *self = (char *)this;
+    if (this->lifetimes != 0)
+        ::operator delete[](this->lifetimes);
+    this->lifetimes = 0;
 
-    if (*(void **)(self + 0x3c) != 0)
-        ::operator delete[](*(void **)(self + 0x3c));
-    *(void **)(self + 0x3c) = 0;
+    ::operator delete[](this->hitFlags);
+    this->hitFlags = 0;
 
-    ::operator delete[](*(void **)(self + 0x40));
-    *(void **)(self + 0x40) = 0;
+    if (this->geometries != 0)
+        ::operator delete[](this->geometries);
+    this->geometries = 0;
 
-    if (*(void **)(self + 0x10c) != 0)
-        ::operator delete[](*(void **)(self + 0x10c));
-    *(void **)(self + 0x10c) = 0;
+    ::operator delete[](this->randomFlags);
+    this->randomFlags = 0;
 
-    ::operator delete[](*(void **)(self + 0x110));
-    *(void **)(self + 0x110) = 0;
-
-    VecArray *arr = *(VecArray **)(self + 0xac);
+    VecArray *arr = (VecArray *)this->field_0xac;
     if (arr != 0) {
         Gun_ArrayReleaseClasses(arr);
-        VecArray *arr2 = *(VecArray **)(self + 0xac);
+        VecArray *arr2 = (VecArray *)this->field_0xac;
         if (arr2 != 0) {
             void *p = Gun_ArrayDtor(arr2);
             ::operator delete(p);
         }
     }
-    *(void **)(self + 0xac) = 0;
+    this->field_0xac = 0;
 
+    // Release the four embedded Array<Vector> sub-objects (positions / velocities /
+    // 3rd / hit-positions). gGunStringDtor is the per-Array element-release helper.
     dtor_fn d = gGunStringDtor;
-    d(self + 0x2c);
-    d(self + 0x20);
-    d(self + 0x14);
-    d(self + 0x8);
+    d((char *)&this->field_0x2c);
+    d((char *)&this->field_0x20);
+    d((char *)&this->field_0x14);
+    d((char *)&this->count);
 }
 
 void Gun::setFriendGun(bool v) {
@@ -165,10 +165,10 @@ void Gun::setOffset_ii(int a, int b) {
     local.x = (float)(int)row[0];
     local.y = (float)(int)row[1];
     local.z = (float)(int)row[2];
-    local.x = this->offsetX + local.x;
-    local.y = this->offsetY + local.y;
-    local.z = this->offsetZ + local.z;
-    *(Vector *)((char *)this + 0x7c) = *(const Vector *)(&local);
+    local.x = this->offset.x + local.x;
+    local.y = this->offset.y + local.y;
+    local.z = this->offset.z + local.z;
+    this->offset = local;
 }
 
 // NEAR / RESISTANT: Gun::ignite() is a ~996-byte function with a stack canary,
@@ -197,8 +197,8 @@ void Gun::ignite() {
     if (enemies == 0)
         return;
 
-    Vector *posOut = (Vector *)((char *)this + 0xd8);
-    Vector *base   = (Vector *)((char *)this + 0xc0);
+    Vector *posOut = &this->targetDir;
+    Vector *base   = &this->basePos;
     this->field_0x0 = 0;
 
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
@@ -218,7 +218,7 @@ void Gun::ignite() {
             int dist = (int)AbyssEngine::AEMath::VectorLength(posOut);
             if (dist < this->magnitude) {
                 ((uint8_t *)this->hitFlags)[i] = 1;
-                *(Vector *)(this->field_0x30 + off) = *(const Vector *)(base);
+                *(Vector *)(this->hitPositions + off) = *(const Vector *)(base);
                 ((Item *)(*(int *)(*(int *)(*gIG_status + 4) + this->itemIndex * 4)))->getAttribute(0);
             }
             off = off + 0xc;
@@ -265,8 +265,8 @@ void Gun::render() {
                 __aeabi_memcpy(camBuf, (const void *)camLocal, 0x3c);
                 unsigned tl = AbyssEngine::PaintCanvas::TransformGetLocal(canvas);
                 AbyssEngine::AEMath::MatrixGetPosition(&local, (const Matrix *)tl);
-                *(Vector *)((char *)this + 0xd8) = *(const Vector *)((Vector *)&local);
-                AbyssEngine::AEMath::MatrixSetTranslation(&local, this->field_0xe0, 0, 0);
+                this->targetDir = *(const Vector *)((Vector *)&local);
+                AbyssEngine::AEMath::MatrixSetTranslation(&local, this->targetDir.z, 0, 0);
                 Matrix *m = ((Matrix **)this->geometries)[i];
                 AbyssEngine::PaintCanvas::TransformSetLocal(canvas, m);
                 AbyssEngine::PaintCanvas::DrawTransform(canvas, m);
@@ -288,14 +288,15 @@ struct VecPtrArray;  // Array<Vector*>
 // Vector::operator*=(Vector*, float)                        0x72628
 
 Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
-    char *s = (char *)this;
-    Gun_VecArray_ctor(s + 0x8);
-    Gun_VecArray_ctor(s + 0x14);
-    Gun_VecArray_ctor(s + 0x20);
-    Gun_VecArray_ctor(s + 0x2c);
-    this->offsetX = 0;
-    this->offsetY = 0;
-    this->offsetZ = 0;
+    // Construct the four embedded Array<Vector> sub-objects (positions / velocities /
+    // 3rd / hit-positions); the helper takes the Array object's base address.
+    Gun_VecArray_ctor((char *)&this->count);
+    Gun_VecArray_ctor((char *)&this->field_0x14);
+    Gun_VecArray_ctor((char *)&this->field_0x20);
+    Gun_VecArray_ctor((char *)&this->field_0x2c);
+    this->offset.x = 0;
+    this->offset.y = 0;
+    this->offset.z = 0;
     this->field_0x90 = 0;
     this->field_0x94 = 0;
     this->field_0x98 = 0;
@@ -308,17 +309,17 @@ Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float 
     this->field_0xf4 = kind;
     this->field_0x60 = p2;
     this->field_0x50 = p7;
-    this->field_0xe0 = 0;
-    this->velocityX = 0;
-    this->velocityY = 0;
-    this->velocityZ = 0;
+    this->targetDir.z = 0;
+    this->velocity.x = 0;
+    this->velocity.y = 0;
+    this->velocity.z = 0;
     this->field_0xd0 = 0;
     this->field_0xd4 = 0;
-    this->field_0xd8 = 0;
-    this->field_0xdc = 0;
-    this->field_0xc0 = 0;
-    this->field_0xc4 = 0;
-    this->field_0xc8 = 0;
+    this->targetDir.x = 0;
+    this->targetDir.y = 0;
+    this->basePos.x = 0;
+    this->basePos.y = 0;
+    this->basePos.z = 0;
     this->field_0xcc = 0;
     this->field_0x74 = 0;
     this->field_0x78 = 0;
@@ -327,9 +328,9 @@ Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float 
     // Store the firing direction, then scale the velocity by the muzzle speed (p7)
     // before caching it. The decompiler had fused the assignment and the live p7
     // register into a bogus float-returning Vector_assign.
-    *(Vector *)(s + 0x7c) = dir;
+    this->offset = dir;
     vel *= p7;
-    *(Vector *)(s + 0xe4) = vel;
+    this->velocity = vel;
     this->initialLifetime = p5;
     this->fireDelay = p6;
     this->timer = p6;
@@ -347,10 +348,10 @@ Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float 
     void *arr = ::operator new(0xc);
     Gun_VecPtrArray_ctor(arr);
     this->field_0xac = (char *)arr;
-    Gun_VecArray_setLength(count, s + 0x8);
-    Gun_VecArray_setLength(count, s + 0x14);
-    Gun_VecArray_setLength(count, s + 0x20);
-    Gun_VecArray_setLength(count, s + 0x2c);
+    Gun_VecArray_setLength(count, (char *)&this->count);
+    Gun_VecArray_setLength(count, (char *)&this->field_0x14);
+    Gun_VecArray_setLength(count, (char *)&this->field_0x20);
+    Gun_VecArray_setLength(count, (char *)&this->field_0x2c);
     Gun_VecPtrArray_setLength(count, this->field_0xac);
     int off = 0;
     for (int i = 0; i < (int)count; i = i + 1) {
@@ -413,7 +414,7 @@ void Gun::setOffset(const Vector *v) {
     local->x = v->x;
     local->y = v->y;
     local->z = v->z + kZOffset;
-    *(Vector *)((char *)this + 0x7c) = *(const Vector *)(local);
+    this->offset = *(const Vector *)(local);
 }
 
 // NEAR: logic transcribed from the decompile. The target carries a stack canary

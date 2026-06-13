@@ -123,9 +123,11 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
     ObjectGun_ctor(this, param_1, param_2, param_3, param_5, param_8);
 
     void *vtable = RocketGun_vtable;
-    char *zeroBase = (char *)this + 0xd4;
     uint32_t c8 = kRocketC8;
-    *(v4i *)zeroBase = (v4i){0, 0, 0, 0};
+    this->fadeTimer = 0;
+    this->trailMatrices = 0;
+    this->trailSystems = 0;
+    this->trailTimers = 0;
     this->steerX = 0;
     this->steerY = 0;
     this->steerZ = 0;
@@ -296,7 +298,7 @@ have_enemy:
         *(Vector *)(tmp0) = *(const Vector *)(enemyPos) - *(const Vector *)((char *)F<void *>(this->gun, 0xc) + index * 0xc);
         void (*fn)(void *, void *) = RocketGun_vector_func;
         fn(tmp1, tmp0);
-        void *steer = (char *)this + 0xb4;
+        void *steer = &this->steerX;
         *(Vector *)(steer) = *(const Vector *)(tmp1);
         fn(tmp1, (char *)F<void *>(this->gun, 0x18) + index * 0xc);
         *(Vector *)(steer) -= *(const Vector *)(tmp1);

@@ -97,13 +97,14 @@ public:
     int field_0x17c;                    // +0x17c
     int field_0x180;                    // +0x180
     void* labelStrings;                  // +0x188
-    void* lockLabel;                  // +0x18c
+    AbyssEngine::String lockLabel;    // +0x18c  embedded label String (ctor/dtor in-place)
     uint8_t field_0x1a8;                // +0x1a8
     uint8_t scannerAvailable;                // +0x1ab
     int field_0x1b4;                    // +0x1b4
     int field_0x1b8;                    // +0x1b8
     int field_0x1bc;                    // +0x1bc
     int radarImage;                    // +0x1c4
+    AbyssEngine::AEMath::Matrix transform; // +0x1d0  radar orientation matrix
     int field_0x20c;                    // +0x20c
     uint8_t drawMode;                // +0x218
     int screenWidth;                    // +0x21c

@@ -39,7 +39,7 @@ Radar::~Radar()
         operator delete(players);
     }
     this->players = 0;
-    ((AbyssEngine::String *)((char *)this + 0x18c))->~String();
+    this->lockLabel.~String();
 }
 
 uint8_t Radar::hasScanner()
@@ -132,8 +132,8 @@ Radar::Radar(Level *level)
     this->radarPosZ = 0;
     this->field_0x160 = 0;
 
-    Radar_StringDefault((char *)this + 0x18c);
-    Radar_MatrixDefault((char *)this + 0x1d0);
+    Radar_StringDefault(&this->lockLabel);
+    Radar_MatrixDefault(&this->transform);
 
     this->field_0x4 = 0;
     this->field_0x8 = 0;
@@ -171,7 +171,7 @@ Radar::Radar(Level *level)
     }
 
     void *canvas = *(void **)gRadarCanvasSlot;
-    Radar_Image2DCreate(canvas, 0x4c7, (char *)this + 0x1c4);
+    Radar_Image2DCreate(canvas, 0x4c7, &this->radarImage);
     int image = this->radarImage;
     int imageWidth = Radar_GetImage2DWidth(canvas, image);
     int imageHeight = Radar_GetImage2DHeight(canvas, image);
@@ -258,7 +258,7 @@ void Radar::drawCurrentLock(Hud *)
         }
         Radar_StringDtor(text40);
     } else {
-        Radar_StringText(text34, this->lockLabel, false);
+        Radar_StringText(text34, &this->lockLabel, false);
     }
 
     Radar_StringDtor(text34);
@@ -343,8 +343,8 @@ void Radar::update(Vector value)
     __builtin_memcpy(positionStorage, &value, 12);
 
     transformedValue = AEMath::MatrixTransformVector(
-        *(const Matrix *)((char *)this + 0x1d0), *(const Vector *)positionStorage);
-    Vector *current = (Vector *)((char *)this + 0x154);
+        this->transform, *(const Vector *)positionStorage);
+    Vector *current = (Vector *)&this->radarPosX;
     *current = transformedValue;
 
     this->radarPosY = -this->radarPosY;

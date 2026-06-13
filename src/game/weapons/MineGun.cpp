@@ -21,9 +21,9 @@ extern "C" void Explosion_ctor(Explosion *self, int kind);
 void MineGun::render()
 {
     ((ObjectGun *)(this))->render();
-    for (uint32_t i = 0; i < U(P(this, 0x8), 0x8); ++i) {
-        if (F<uint8_t>(P(P(this, 0x8), 0x40), i) != 0) {
-            Array<Explosion *> *explosions = (Array<Explosion *> *)P(this, 0xb4);
+    for (uint32_t i = 0; i < U(this->gun, 0x8); ++i) {
+        if (F<uint8_t>(F<void*>(this->gun, 0x40), i) != 0) {
+            Array<Explosion *> *explosions = this->explosions;
             ((Explosion *)(explosions->data()[i]))->render();
         }
     }
@@ -31,32 +31,32 @@ void MineGun::render()
 
 void *_ZN7MineGunD1Ev(MineGun *self)
 {
-    P(self, 0x0) = (char *)MineGun_vtable + 8;
+    self->vtable = (char *)MineGun_vtable + 8;
 
-    Array<Explosion *> *explosions = (Array<Explosion *> *)P(self, 0xb4);
+    Array<Explosion *> *explosions = self->explosions;
     if (explosions != 0) {
         for (Explosion *explosion : *explosions) {
             delete explosion;
         }
         explosions->clear();
         delete explosions;
-        P(self, 0xb4) = 0;
+        self->explosions = 0;
     }
 
-    ::operator delete[](P(self, 0xb8));
-    AEGeometry *geometry = (AEGeometry *)P(self, 0xbc);
-    P(self, 0xb8) = 0;
+    ::operator delete[](self->readyFlags);
+    AEGeometry *geometry = self->geometry;
+    self->readyFlags = 0;
     if (geometry != 0) {
         ((AEGeometry *)geometry)->~AEGeometry();
         ::operator delete(geometry);
     }
-    P(self, 0xbc) = 0;
+    self->geometry = 0;
     return ObjectGun_dtor(self);
 }
 
 void MineGun::setPlayer(PlayerEgo *player)
 {
-    P(this, 0xb0) = player;
+    this->player = player;
 }
 
 void _ZN7MineGunD0Ev(MineGun *self)
@@ -73,30 +73,30 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
     int zero = 0;
     ObjectGun_ctor(self, param_3, gun, param_2, zero, level);
 
-    I(self, 0xc0) = zero;
-    I(self, 0xc4) = zero;
-    I(self, 0xc8) = zero;
-    P(self, 0x0) = (char *)MineGun_vtable + 8;
+    self->field_0xc0 = zero;
+    self->field_0xc4 = zero;
+    self->field_0xc8 = zero;
+    self->vtable = (char *)MineGun_vtable + 8;
 
     Array<Explosion *> *explosions = new Array<Explosion *>();
-    P(self, 0xb4) = explosions;
+    self->explosions = explosions;
     uint32_t length = U(gun, 0x8);
     explosions->resize(length);
 
-    explosions = (Array<Explosion *> *)P(self, 0xb4);
-    P(self, 0xb8) = ::operator new[](explosions->size());
+    explosions = self->explosions;
+    self->readyFlags = ::operator new[](explosions->size());
     uint32_t i = 0;
     for (; i < explosions->size(); ++i) {
         Explosion *explosion = (Explosion *)::operator new(0x68);
         int kind = 0;
-        if (I(gun, 0x60) == 0) {
+        if (F<int>(gun, 0x60) == 0) {
             kind = 7;
         }
         Explosion_ctor(explosion, kind);
-        ((Array<Explosion *> *)P(self, 0xb4))->data()[i] = explosion;
-        ((Explosion *)(((Array<Explosion *> *)P(self, 0xb4))->data()[i]))->setWeaponIndex(I(gun, 0x58));
-        F<uint8_t>(P(self, 0xb8), i) = 1;
-        explosions = (Array<Explosion *> *)P(self, 0xb4);
+        self->explosions->data()[i] = explosion;
+        ((Explosion *)(self->explosions->data()[i]))->setWeaponIndex(F<int>(gun, 0x58));
+        F<uint8_t>(self->readyFlags, i) = 1;
+        explosions = self->explosions;
     }
 
     AEGeometry *geometry = (AEGeometry *)::operator new(0xc0);
@@ -104,12 +104,12 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
     void *canvas = *holder;
     uint16_t mesh = (uint16_t)(param_2 + 1);
     new ((void *)geometry) AEGeometry((uint16_t)mesh, (PaintCanvas *)canvas, false);
-    uint32_t parent = U(self, 0x10);
-    P(self, 0xbc) = geometry;
+    uint32_t parent = self->transformId;
+    self->geometry = geometry;
     void *addCanvas = *holder;
     uint32_t child = U(geometry, 0xc);
     ((PaintCanvas*)addCanvas)->TransformAddChild(parent, child);
-    AEGeometry *stored = (AEGeometry *)P(self, 0xbc);
+    AEGeometry *stored = self->geometry;
     uint32_t transformId = U(stored, 0xc);
     void *getCanvas = *holder;
     uint32_t transform = (uint32_t)(uintptr_t)((PaintCanvas*)getCanvas)->TransformGetTransform(transformId);
@@ -119,7 +119,7 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
 
 static inline Explosion *explosion_at(MineGun *self, uint32_t index)
 {
-    return ((Array<Explosion *> *)P(self, 0xb4))->data()[index];
+    return self->explosions->data()[index];
 }
 
 void MineGun::update(int delta)
@@ -127,9 +127,9 @@ void MineGun::update(int delta)
     char vectorBytes[24];
 
     ((ObjectGun *)(this))->update(delta);
-    if (UC(P(this, 0x8), 0x4c) != 0) {
+    if (UC(this->gun, 0x4c) != 0) {
         void **holder = MineGun_canvas_holder;
-        uint32_t transform = (uint32_t)(uintptr_t)((PaintCanvas*)*holder)->TransformGetTransform(U(P(this, 0xbc), 0xc));
+        uint32_t transform = (uint32_t)(uintptr_t)((PaintCanvas*)*holder)->TransformGetTransform(U(this->geometry, 0xc));
         ((AbyssEngine::Transform *)(transform))->Update((long long)delta, 0);
     }
 
@@ -139,12 +139,12 @@ void MineGun::update(int delta)
     int positionOffset = 0;
     uint32_t i = 0;
     int zero = 0;
-    for (; i < U(P(this, 0x8), 0x8); ++i) {
-        void *gun = P(this, 0x8);
-        if (F<uint8_t>(P(gun, 0x40), i) != 0) {
-            if (F<uint8_t>(P(this, 0xb8), i) != 0) {
-                I(this, 0xcc) = zero;
-                char *positions = (char *)P(gun, 0x30);
+    for (; i < U(this->gun, 0x8); ++i) {
+        void *gun = this->gun;
+        if (F<uint8_t>(F<void*>(gun, 0x40), i) != 0) {
+            if (F<uint8_t>(this->readyFlags, i) != 0) {
+                this->rumbleTimer = zero;
+                char *positions = (char *)F<void*>(gun, 0x30);
                 ((PlayerEgo *)((Vector *)vectorBytes))->getPosition();
                 Vector *minePosition = (Vector *)(positions + positionOffset);
                 *(Vector *)(vectorBytes + 12) =
@@ -154,39 +154,39 @@ void MineGun::update(int delta)
                 if (length < range) {
                     clamped = length;
                 }
-                FL(this, 0xd0) = one - clamped / range;
+                this->rumblePercentage = one - clamped / range;
                 TargetFollowCamera *camera =
-                    (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
-                ((TargetFollowCamera *)(camera))->setRumblePercentage(FL(this, 0xd0), 0x32);
+                    (TargetFollowCamera *)((PlayerEgo *)(this->player))->getTargetFollowCamera();
+                ((TargetFollowCamera *)(camera))->setRumblePercentage(this->rumblePercentage, 0x32);
 
                 ((int *)(vectorBytes + 12))[0] = zero;
                 ((int *)(vectorBytes + 12))[1] = zero;
                 ((int *)(vectorBytes + 12))[2] = zero;
-                ((Explosion *)(explosion_at(this, i)))->start((Vector *)((char *)P(P(this, 0x8), 0x30) + positionOffset), (Vector *)(vectorBytes + 12));
-                F<uint8_t>(P(this, 0xb8), i) = 0;
+                ((Explosion *)(explosion_at(this, i)))->start((Vector *)((char *)F<void*>(this->gun, 0x30) + positionOffset), (Vector *)(vectorBytes + 12));
+                F<uint8_t>(this->readyFlags, i) = 0;
             }
 
             Explosion *explosion = explosion_at(this, i);
             ((Explosion *)(explosion))->update(delta, (TargetFollowCamera *)0);
-            int timer = I(this, 0xcc) + delta;
+            int timer = this->rumbleTimer + delta;
             if (timer > 1999) {
                 timer = 2000;
             }
-            I(this, 0xcc) = timer;
+            this->rumbleTimer = timer;
             TargetFollowCamera *camera =
-                (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
-            float pct = FL(this, 0xd0) * ((float)I(this, 0xcc) / decay + one);
+                (TargetFollowCamera *)((PlayerEgo *)(this->player))->getTargetFollowCamera();
+            float pct = this->rumblePercentage * ((float)this->rumbleTimer / decay + one);
             ((TargetFollowCamera *)(camera))->setRumblePercentage(pct, 0x32);
 
             if (((Explosion *)(explosion))->isPlaying() == 0) {
                 TargetFollowCamera *camera =
-                    (TargetFollowCamera *)((PlayerEgo *)((PlayerEgo *)P(this, 0xb0)))->getTargetFollowCamera();
+                    (TargetFollowCamera *)((PlayerEgo *)(this->player))->getTargetFollowCamera();
                 ((TargetFollowCamera *)(camera))->setRumblePercentage(0.0f, zero);
-                gun = P(this, 0x8);
-                I(this, 0xcc) = zero;
-                F<uint8_t>(P(gun, 0x40), i) = zero;
+                gun = this->gun;
+                this->rumbleTimer = zero;
+                F<uint8_t>(F<void*>(gun, 0x40), i) = zero;
                 UC(gun, 0x88) = zero;
-                F<uint8_t>(P(this, 0xb8), i) = 1;
+                F<uint8_t>(this->readyFlags, i) = 1;
                 ((Explosion *)(explosion_at(this, i)))->reset();
             }
         }

@@ -867,7 +867,7 @@ void Player::calcWeaponSounds(int count) {
         unsigned int n = ((Array<Gun *> *)guns->data()[0])->size();
         int *order = new int[n];
         for (int i = 0; i < (int)n; i++) {
-            order[i] = *(int *)((char *)this->guns->data()[0]->data()[i] + 0x58);
+            order[i] = this->guns->data()[0]->data()[i]->itemIndex;
         }
 
         bool sorted = true;
@@ -905,7 +905,7 @@ void Player::calcWeaponSounds(int count) {
         do {
             if ((int)n <= idx) break;
             if (order[idx] >= 0) {
-                *(char *)((char *)this->guns->data()[0]->data()[idx] + 0x89) = 1;
+                this->guns->data()[0]->data()[idx]->field_0x89 = 1;
                 Globals_addSoundResourceToList(*sound);
                 count--;
             }

@@ -952,7 +952,7 @@ int SpaceLounge::init() {
 
     for (unsigned i = 0; i < 5; ++i) {
         TouchButton *button = (TouchButton *)::operator new(200);
-        button->ctor((String *)text, 0, I(this, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)), I(this, 0x6c), 0x11, 4);
+        new (button) TouchButton((String *)text, 0, I(this, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)), I(this, 0x6c), 0x11, 4);
         (*buttons)[i] = button;
         button->setTextColor(-1);
     }

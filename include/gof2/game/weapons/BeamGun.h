@@ -16,16 +16,16 @@ struct Transform;
 
 class BeamGun {
 public:
-    void* field_0x0;                    // +0x0  vtable
-    int32_t field_0x4;                  // +0x4
-    Gun* field_0x8;                     // +0x8  gun
-    Level* field_0xc;                   // +0xc  level
-    int32_t field_0x10;                 // +0x10
-    int32_t field_0x14;                 // +0x14
-    AEGeometry* field_0x18;             // +0x18 primary geometry
-    AEGeometry* field_0x1c;             // +0x1c secondary geometry
-    uint8_t field_0x20;                 // +0x20 hasSecondary
-    uint8_t field_0x21;                 // +0x21 secondaryVisible
+    void* vtable;                       // +0x0  vtable
+    int32_t field_0x4;                  // +0x4  (zero-initialised; semantics not recovered)
+    Gun* gun;                           // +0x8  owning gun
+    Level* level;                       // +0xc  level
+    int32_t owner;                      // +0x10 owner id (ctor param_1)
+    int32_t meshKind;                   // +0x14 mesh-kind index (param_3-derived)
+    AEGeometry* primaryGeometry;        // +0x18 primary beam geometry
+    AEGeometry* secondaryGeometry;      // +0x1c secondary beam geometry
+    uint8_t hasSecondary;               // +0x20 secondary geometry present
+    uint8_t secondaryVisible;           // +0x21 secondary visible (tracks gun->delayActive)
 
     BeamGun(int param_1, Gun *gun, int param_3, Level *level);
     void render();

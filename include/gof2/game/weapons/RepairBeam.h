@@ -25,15 +25,13 @@ using Vector = AbyssEngine::AEMath::Vector;
 
 class RepairBeam {
 public:
-    int field_0x0;                      // +0x0
-    int field_0x4;                      // +0x4
-    int field_0x8;                      // +0x8
-    int field_0xc;                      // +0xc
-    void** field_0x10;                  // +0x10  Array<AEGeometry*>* (legacy [0]=size,[1]=data)
-    void** field_0x14;                  // +0x14  Array<int>*
-    void** field_0x18;                  // +0x18  Array<float>*
-    int field_0x1c;                     // +0x1c
-    int field_0x20;                     // +0x20
+    int shipIndex;                      // +0x0   ship index (sound-event array index)
+    Vector beamPosition;                // +0x4   beam endpoint (x@+0x4, y@+0x8, z@+0xc)
+    void** geometries;                  // +0x10  Array<AEGeometry*>* (legacy [0]=size,[1]=data)
+    void** targetIds;                   // +0x14  Array<int>*   (target enemy slot, -1 = empty)
+    void** charges;                     // +0x18  Array<float>* (per-target charge accumulator)
+    int sort;                           // +0x1c  equipment sort (0x25 heal / 0x29 shield)
+    int timer;                          // +0x20  re-arm countdown timer
 
     // ---- constructor / destructor (demangle to RepairBeam::RepairBeam / ~RepairBeam) ----
     RepairBeam(int shipIndex, int sort);
