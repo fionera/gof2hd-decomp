@@ -86,13 +86,13 @@ void PlayerFixedObject::translate(const Vector &d) {
 // `struct String` is provided by gof2/Station.h via the class header.
 
 String PlayerFixedObject::getName() {
-    return *(String *)((char *)this + 0x1ac);
+    return this->name;
 }
 
 // Tail-call into AbyssEngine::String::operator= (or move-assign): dst = this+0x1ac, src = r1 (the String arg).
 
 void * PlayerFixedObject::setName(String *name) {
-    return ((String *)((char *)this + 0x1ac))->assign(name);
+    return this->name.assign(name);
 }
 
 // Deleting destructor (D0): run the complete dtor (D1), then tail-call operator delete.
@@ -283,7 +283,7 @@ afterMotion:
         int sndHandle = sys;
         Vector *pos = 0;
         if (*(char *)((char *)*g_pfo_audioFlag + 0xf) != 0)
-            pos = (Vector *)((char *)self + 0x2c);
+            pos = &self->position;
         ((FModSound *)(*g_pfo_fmod))->play(0x14, pos, (Vector *)0, (float)sndHandle);
         lod = self->level;
         {
@@ -350,14 +350,14 @@ afterMotion:
             Matrix &m = ((AEGeometry *)(self->wreckGeometry))->getMatrix();
             *(Matrix *)((char *)self->player + 0x4) = m;
             Vector pos = ((AEGeometry *)(self->wreckGeometry))->getPosition();
-            *(Vector *)((char *)self + 0x2c) = pos;
+            *&self->position = pos;
             Array<BoundingVolume *> *bv = self->boundingVolumes;
             if (bv != 0) {
                 for (unsigned int i = 0; i < bv->size(); i++) {
                     void *o = (*bv)[i];
                     typedef void (*BVFn)(void *, float, float, float);
                     BVFn fn = *(BVFn *)(*(char **)o + 0x4);
-                    fn(o, self->posX, self->posY, self->posZ);
+                    fn(o, self->position.x, self->position.y, self->position.z);
                     bv = self->boundingVolumes;
                 }
             }
@@ -380,7 +380,7 @@ afterMotion:
             if (self->kind == 0x37e7) scale = 8.0f;
             if (self->kind == 0x37a3) scale = 8.0f;
             ((Explosion *)(self->explosion))->setScaling(scale);
-            ((Explosion *)(self->explosion))->start((Vector *)((char *)self + 0x2c), (const Vector *)0);
+            ((Explosion *)(self->explosion))->start(&self->position, (const Vector *)0);
             self->rumbleTimer = 1;
             self->explosionElapsed = 0;
             if (((Level *)self->level)->getPlayer() != 0) {
@@ -390,7 +390,7 @@ afterMotion:
                     void *cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                     char cp[12];
                     ((TargetFollowCamera *)((Vector *)cp))->getPosition();
-                    *(Vector *)cp -= *(const Vector *)((char *)self + 0x2c);
+                    *(Vector *)cp -= self->position;
                     float len = AbyssEngine::AEMath::VectorLength(*(const Vector *)cp);
                     float maxd = 50.0f;
                     float use = (len < maxd) ? len : maxd;
@@ -429,13 +429,13 @@ afterMotion:
                 (unsigned int)self->wreckMaterial <= 0x7fffffff) {
                 char posBuf[12];
                 ((AEGeometry *)((Vector *)posBuf))->getPosition();
-                *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)posBuf);
+                *(Vector *)(&self->position) = *(const Vector *)((Vector *)posBuf);
                 Array<BoundingVolume *> *bv = self->wreckCollision;
                 for (unsigned int i = 0; i < bv->size(); i++) {
                     void *o = (*bv)[i];
                     typedef void (*BVFn)(void *, float, float, float);
                     BVFn fn = *(BVFn *)(*(char **)o + 0x4);
-                    fn(o, self->posX, self->posY, self->posZ);
+                    fn(o, self->position.x, self->position.y, self->position.z);
                 }
                 unsigned short mat;
                 switch ((unsigned int)self->wreckType) {
@@ -483,29 +483,29 @@ afterMotion:
                 if (((Player *)(((Player *)(self->player))->getEnemy(i)))->isActive() != 0) {
                     char pb[12];
                     ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition((Vector *)pb);
-                    *(Vector *)((Vector *)((char *)self + 0x90)) = *(const Vector *)((Vector *)pb);
-                    float dx = self->posX - self->targetX;
-                    float dy = self->posY - self->targetY;
-                    float dz = self->posZ - self->targetZ;
+                    self->targetPos = *(const Vector *)((Vector *)pb);
+                    float dx = self->position.x - self->targetPos.x;
+                    float dy = self->position.y - self->targetPos.y;
+                    float dz = self->position.z - self->targetPos.z;
                     const float lo = 0.0f, hi = 50.0f; // DAT thresholds
                     if (dx < hi && dx > lo && dy < hi && dy > lo && dz < hi && dz > lo) {
                         self->targetEnemy = (int32_t)(__INTPTR_TYPE__)((Player *)(self->player))->getEnemy(i);
                         ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition((Vector *)pb);
-                        *(Vector *)((Vector *)((char *)self + 0x90)) = *(const Vector *)((Vector *)pb);
-                        self->field_0x144 = self->targetX;
-                        self->field_0x148 = self->targetY;
-                        self->field_0x14c = self->targetZ;
+                        self->targetPos = *(const Vector *)((Vector *)pb);
+                        self->homingTarget.x = self->targetPos.x;
+                        self->homingTarget.y = self->targetPos.y;
+                        self->homingTarget.z = self->targetPos.z;
                         break;
                     }
                 }
             }
         }
-        float vx = self->field_0x144 - self->posX;
-        float vy = self->field_0x148 - self->posY;
-        float vz = self->field_0x14c - self->posZ;
-        self->field_0x150 = vx;
-        self->field_0x154 = vy;
-        self->field_0x158 = vz;
+        float vx = self->homingTarget.x - self->position.x;
+        float vy = self->homingTarget.y - self->position.y;
+        float vz = self->homingTarget.z - self->position.z;
+        self->homingDir.x = vx;
+        self->homingDir.y = vy;
+        self->homingDir.z = vz;
         const float lo = 0.0f, hi = 50.0f;
         if (vx < hi && vx > lo && vz > lo && vy < hi && vy > lo && vz < hi) {
             self->state = 1;
@@ -592,20 +592,13 @@ void PlayerFixedObject::reset() {
 
     this->targetEnemy = 0;
 
-    // Vector copy: 0x58 -> 0x138
+    // Vector copy: spawn (0x58) -> respawnPos (0x138)
     {
-        char buf[12];
-        *(uint64_t *)buf = this->spawnX;
-        *(uint32_t *)(buf + 8) = this->spawnZ;
-        *(Vector *)((Vector *)((char *)this + 0x138)) = *(const Vector *)((Vector *)buf);
+        Vector spawn = { this->spawnX, this->spawnY, this->spawnZ };
+        this->respawnPos = spawn;
     }
-    // Vector copy: 0x138 -> 0x2c
-    {
-        char buf[12];
-        *(uint64_t *)buf = this->field_0x138;
-        *(uint32_t *)(buf + 8) = this->field_0x140;
-        *(Vector *)((Vector *)((char *)this + 0x2c)) = *(const Vector *)((Vector *)buf);
-    }
+    // Vector copy: respawnPos (0x138) -> position (0x2c)
+    this->position = this->respawnPos;
 
     this->deltaTime = 0;
     if (this->state != 5)
@@ -616,15 +609,15 @@ void PlayerFixedObject::reset() {
     *(uint32_t *)(zero + 0) = 0;
     *(uint32_t *)(zero + 4) = 0;
     *(uint32_t *)(zero + 8) = 0;
-    fn((char *)this + 0x90, zero);
+    fn(&this->targetPos, zero);
     *(uint32_t *)(zero + 0) = 0;
     *(uint32_t *)(zero + 4) = 0;
     *(uint32_t *)(zero + 8) = 0;
-    fn((char *)this + 0x144, zero);
+    fn(&this->homingTarget, zero);
     *(uint32_t *)(zero + 0) = 0;
     *(uint32_t *)(zero + 4) = 0;
     *(uint32_t *)(zero + 8) = 0;
-    fn((char *)this + 0x150, zero);
+    fn(&this->homingDir, zero);
 }
 
 // PaintCanvas singleton holder (pc-rel deref -> holder; canvas object is *holder).
@@ -711,7 +704,7 @@ void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
     void *expl = self->explosion;
     if (expl != 0) ::operator delete(Explosion_dtor(expl));
     self->explosion = 0;
-    ((String *)((char *)self + 0x1ac))->dtor();
+    self->name.dtor();
     return ((PlayerFixedObject *)(self))->baseDtor();
 }
 
@@ -744,7 +737,7 @@ PlayerFixedObject::~PlayerFixedObject() {
     void *expl = self->explosion;
     if (expl != 0) ::operator delete(Explosion_dtor(expl));
     self->explosion = 0;
-    ((String *)((char *)self + 0x1ac))->dtor();
+    self->name.dtor();
     ((PlayerFixedObject *)(self))->baseDtor();
 }
 
@@ -815,14 +808,17 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_random;
 void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, float p5, float p6, float p7, float sx, float sy, float sz) {
     PlayerFixedObject *self = this;
 
-    // Three zeroed Vector4 (16-byte) blocks.
-    self->field_0x158 = 0; self->field_0x160 = 0;
-    self->field_0x148 = 0; self->field_0x150 = 0;
-    self->field_0x138 = 0; self->field_0x140 = 0;
+    // Zero the contiguous respawnPos/homingTarget/homingDir vector region (0x138-0x167).
+    Vector zeroVec = { 0.0f, 0.0f, 0.0f };
+    self->respawnPos = zeroVec;
+    self->homingTarget = zeroVec;
+    self->homingDir = zeroVec;
+    self->field_0x15c = 0;
+    self->field_0x160 = 0;
 
     *(void **)self = &PlayerFixedObject_vtable + 8;
 
-    ((String *)((char *)self + 0x1ac))->ctor();
+    self->name.ctor();
     self->explosion = 0;
     self->wreckMeshId = 0;
     self->faction = param2;
@@ -838,11 +834,10 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     self->field_0x174 = 0;
     self->intPosX = 0; self->intPosY = 0; self->intPosZ = 0;
 
-    // Vector::operator=(this+0x2c, {sx,sy,sz})
+    // Vector::operator=(position, {sx,sy,sz})
     {
-        char buf[12];
-        *(float *)(buf + 0) = sx; *(float *)(buf + 4) = sy; *(float *)(buf + 8) = sz;
-        *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
+        Vector p = { sx, sy, sz };
+        self->position = p;
     }
 
     self->moving = 0;
@@ -856,7 +851,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     // Name string from a fixed literal.
     {
         String tmp("", false);
-        *(String *)((char *)self + 0x1ac) = tmp;
+        self->name = tmp;
     }
 
     void *mission = ((Status *)(*g_pfo_status))->getMission();
@@ -947,14 +942,14 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
 
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();
-    *(Vector *)((Vector *)((char *)this + 0x2c)) = *(const Vector *)((Vector *)buf);
+    this->position = *(const Vector *)((Vector *)buf);
 
     Array<BoundingVolume *> *bv = this->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
             void *o = (*bv)[i];
             BVSetPosFn fn = *(BVSetPosFn *)(*(char **)o + 0x4);
-            fn(o, this->posX, this->posY, this->posZ);
+            fn(o, this->position.x, this->position.y, this->position.z);
             bv = this->boundingVolumes;
         }
     }
@@ -1033,7 +1028,7 @@ void PlayerFixedObject::moveForward(int amount) {
     *(Matrix *)((char *)this->player + 0x4) = *(const Matrix *)(m);
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();
-    *(Vector *)((Vector *)((char *)this + 0x2c)) = *(const Vector *)((Vector *)buf);
+    this->position = *(const Vector *)((Vector *)buf);
     if (this->wreckGeometry != 0) {
         ((AEGeometry *)(this->wreckGeometry))->moveForward(d);
     }
@@ -1042,7 +1037,7 @@ void PlayerFixedObject::moveForward(int amount) {
         for (uint32_t i = 0; i < bv->size(); i++) {
             void *o = (*bv)[i];
             BVMoveFn fn = *(BVMoveFn *)(*(char **)o + 0x4);
-            Vector pos = { this->posX, this->posY, this->posZ };
+            Vector pos = { this->position.x, this->position.y, this->position.z };
             fn(o, pos);
             bv = this->boundingVolumes;
         }

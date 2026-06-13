@@ -242,10 +242,10 @@ unsigned int Objective::achieved(int value)
         return Objective_tail_message(messages->data()[messages2->size() - 1]);
     }
     case 23:
-        result = *(uint8_t *)((char *)((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4] + 0x24) != 0;
+        result = (uint8_t)((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]->field_0x24 != 0;
         break;
     case 25:
-        result = *(float *)((char *)((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4] + 0x64) == 0.0f;
+        result = *(float *)&((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]->field_0x64 == 0.0f;
         break;
     case 26: {
         int i = this->field_0x4;

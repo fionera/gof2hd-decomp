@@ -36,7 +36,9 @@ public:
     int field_10;            // 0x10
     int field_14;            // 0x14
     int field_18;            // 0x18
-    Vector field_1c;         // 0x1c (0x1c..0x28)
+    int field_1c;            // 0x1c (scalar counters, not a vector)
+    int killCountA;          // 0x20 (friendly-fire kill tally)
+    int killCountB;          // 0x24 (player kill tally)
     int objectivesA;         // 0x28
     int objectivesB;         // 0x2c
     int field_30;            // 0x30
@@ -117,8 +119,12 @@ public:
     uint8_t flashActive;
     uint8_t pad_159[3];
     int flashType;
-    Vector field_160;        // 0x160 (0x160..0x16c)
-    Vector field_16c;        // 0x16c (0x16c..0x178)
+    int friendCount;         // 0x160 (active friendly slot count)
+    int field_164;           // 0x164
+    int field_168;           // 0x168
+    int hostileCount;        // 0x16c (trailing hostile slot count)
+    int alienAttackTimer;    // 0x170 (updateAlienAttackers accumulator)
+    int orbitWaveTimer;      // 0x174 (updateOrbit/updateMissionOrbit wave timer)
     int field_178;
     int field_17c;
     int field_180;

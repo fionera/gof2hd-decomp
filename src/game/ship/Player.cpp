@@ -602,7 +602,7 @@ float Player::damageGamma(float amount) {
     if (this->vulnerable) {
         if (this->active) {
             amount = this->gammaHP - amount;
-            *((unsigned char *)this + 0x67) = 1;
+            ((uint8_t *)&this->field_64)[3] = 1;
             this->gammaHP = amount;
             if (!(amount > 0.0f)) {
                 this->gammaHP = 0;
@@ -833,11 +833,11 @@ void Player::reset() {
     self->vulnerable = 1;
     self->active = 1;  // active = 1, damaged = 0
     self->field_54 = 0;
-    *((unsigned char *)self + 0x44) = 0;
+    ((uint8_t *)&self->field_44)[0] = 0;
     self->damageDoneByPlayer = 0;
     self->field_5e = 0;
     self->field_b4 = 0;
-    *((unsigned char *)self + 0x68) = 0;
+    ((uint8_t *)&self->field_68)[0] = 0;
     self->field_64 = 0;
     self->bombForce = 0;
     self->empForce = 0;

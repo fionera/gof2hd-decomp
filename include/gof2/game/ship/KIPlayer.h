@@ -74,6 +74,7 @@ public:
     void* parentGeometry;                    // +0xc
     int field_0x10;                     // +0x10
     int field_0x14;                     // +0x14
+    String name;                        // +0x18  embedded name String (12-byte aggregate)
     int field_0x24;                     // +0x24
     uint8_t field_0x25;                 // +0x25
     int shipGroup;                     // +0x28

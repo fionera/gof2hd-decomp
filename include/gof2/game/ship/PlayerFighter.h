@@ -63,6 +63,7 @@ public:
     uint8_t field_0x24;                 // +0x24
     signed char field_0x25;             // +0x25
     int32_t wingmanCommand;                 // +0x28
+    Vector renderPosition;              // +0x2c  world position synced from geometry each frame
     int32_t field_0x38;                 // +0x38
     signed char field_0x43;             // +0x43
     uint8_t field_0x4c;                 // +0x4c
@@ -80,6 +81,7 @@ public:
     int32_t field_0x80;                 // +0x80
     int32_t field_0x84;                 // +0x84
     int32_t state;                 // +0x88
+    Vector resetVecA;                  // +0x90  zeroed on reset() (transient steering vector)
     uint8_t isMissionCrate;                 // +0xd0
     int32_t deathTimer;                 // +0xd8
     signed char field_0xdc;             // +0xdc
@@ -90,8 +92,8 @@ public:
     signed char rollActive;            // +0x100
     int32_t pushTimer;                // +0x104
     int32_t pushDuration;                // +0x108
-    float field_0x11c;                  // +0x11c
-    float field_0x120;                  // +0x120
+    Vector pushNormal;                 // +0x10c  unit push direction (pos - prevPos)
+    Vector pushImpulse;                // +0x118  scaled push offset (.y +0x11c, .z +0x120)
     void* explosion;                  // +0x124
     int32_t field_0x128;                // +0x128
     uint8_t field_0x12c;                // +0x12c
@@ -110,9 +112,9 @@ public:
     int32_t commandRoute;                // +0x14c
     Array<BoundingVolume*>* boundingVolumes; // +0x150  active bounding volumes (owned)
     void* trail;                  // +0x154 Trail*
-    int32_t field_0x158;                // +0x158
-    int32_t field_0x15c;                // +0x15c
-    int32_t field_0x160;                // +0x160
+    Vector workingPosition;            // +0x158  current logical position (spawn-relative)
+    Vector resetVecB;                  // +0x164  zeroed on reset() (transient steering vector)
+    Vector resetVecC;                  // +0x170  zeroed on reset() (transient steering vector)
     int32_t field_0x1a0;                // +0x1a0
     float rotate;                  // +0x1a4
     float shootError;                  // +0x1a8
@@ -130,6 +132,7 @@ public:
     signed char field_0x1e0;            // +0x1e0
     int32_t field_0x1e4;                // +0x1e4
     float currentSpeed;                  // +0x1e8
+    int32_t field_0x1ec;                // +0x1ec
     float currentRotate;                  // +0x1f0
     short field_0x1f4;                  // +0x1f4
     int32_t field_0x1f8;                // +0x1f8
@@ -140,10 +143,17 @@ public:
     int32_t field_0x20c;                // +0x20c
     int32_t field_0x210;                // +0x210
     int32_t field_0x214;                // +0x214
+    Matrix easeBaseMatrix;             // +0x218  matrix constructed in ctor (ease/transform base)
+    Matrix rollMatrix;                 // +0x258  barrel-roll bank matrix (built in roll())
     signed char field_0x254;            // +0x254
     signed char field_0x255;            // +0x255
     int32_t field_0x294;                // +0x294
     int32_t field_0x298;                // +0x298
+    int32_t field_0x29c;                // +0x29c
+    int32_t field_0x2a0;                // +0x2a0
+    int32_t field_0x2a4;                // +0x2a4
+    int32_t field_0x2a8;                // +0x2a8
+    int32_t field_0x2ac;                // +0x2ac
     int32_t field_0x2b0;                // +0x2b0
     signed char field_0x2b4;            // +0x2b4
     void* easeMatrix;                  // +0x2b8

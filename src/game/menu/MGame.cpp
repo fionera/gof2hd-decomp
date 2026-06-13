@@ -2433,7 +2433,7 @@ afterCam:
             *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)mtx);
             ((PlayerEgo *)(self->field_0x58))->setPosition();
             PlayerEgo *p = self->field_0x58;
-            p->field_0x25 = 1;
+            p->inWormhole = 1;
             self->field_0xdc = 0;
             ((PlayerEgo *)(p))->resetChargingDrive();
         } else {

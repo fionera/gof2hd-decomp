@@ -45,7 +45,7 @@ public:
     int endurance;                    // +0x138
     int lastHitpoints;                    // +0x13c
     int itemIndex;                    // +0x140
-    char  _pad_0x144[0x3c];             // +0x144 local Matrix (constructed in place)
+    Matrix rageMatrix;                 // +0x144 rage-shake rotation matrix (0x3c bytes)
 
     PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                    float x, float y, float z);

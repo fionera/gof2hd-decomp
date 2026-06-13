@@ -125,7 +125,7 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeomet
                                float x, float y, float z)
 {
     this->vtable = &PlayerCreature_vtable + 8;
-    ((Matrix *)((char *)this + 0x144))->initIdentity();
+    this->rageMatrix.initIdentity();
 
     Player *playerObject = this->player;
     int oneBits = 0x3f800000;
@@ -178,7 +178,7 @@ void PlayerCreature::update(int elapsed)
         if (rageTime < 4000) {
             AEGeometry *geometry = this->geometry;
             Matrix *matrix = &((AEGeometry *)(geometry))->getMatrix();
-            *(Matrix *)(workBytes) = *(const Matrix *)(matrix) * *(const Matrix *)((char *)this + 0x144);
+            *(Matrix *)(workBytes) = *(const Matrix *)(matrix) * this->rageMatrix;
             ((AEGeometry *)geometry)->setMatrix(*(const AbyssEngine::AEMath::Matrix *)((Matrix *)workBytes));
         } else {
             int half = elapsed >> 1;
@@ -190,7 +190,7 @@ void PlayerCreature::update(int elapsed)
             float secondFloat = (float)second;
             float x = ((negativeHalf + firstFloat) * 0.000244140625f) * 2.0f * 3.1415927f;
             float z = ((negativeHalf + secondFloat) * 0.000244140625f) * 2.0f * 3.1415927f;
-            *(Matrix *)(workBytes) = AbyssEngine::AEMath::MatrixSetRotation(*(Matrix *)((char *)this + 0x144), (float)(x), (float)(z), (float)0.0f);
+            *(Matrix *)(workBytes) = AbyssEngine::AEMath::MatrixSetRotation(this->rageMatrix, (float)(x), (float)(z), (float)0.0f);
             this->rageTimer = 0;
         }
 
@@ -268,5 +268,5 @@ void PlayerCreature::reset()
     matrix[12] = 1.0f;
     matrix[13] = 1.0f;
     matrix[14] = 1.0f;
-    *(Matrix *)((char *)this + 0x144) = *(const Matrix *)(matrix);
+    this->rageMatrix = *(const Matrix *)(matrix);
 }

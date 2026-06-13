@@ -68,7 +68,11 @@ public:
     int rotX;                     // +0x50
     int rotY;                     // +0x54
     int rotZ;                     // +0x58
+    char  _pad_0x5c[0x60 - 0x5c];
+    double dampCoeffA[5];               // +0x60 damping-curve coefficient set A (pos axis)
+    double dampCoeffB[5];               // +0x88 damping-curve coefficient set B
     float zoom;                   // +0xb0
+    Matrix firstPersonMatrix;           // +0xb4 first-person camera matrix (0x3c bytes)
     char firstPerson;                    // +0xf0
     int fpOffsetX;                     // +0xf4
     int fpOffsetY;                     // +0xf8

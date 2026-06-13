@@ -28,6 +28,7 @@ public:
     char* vtable;                    // +0x0   vtable
     void* player;                    // +0x4   Player*
     void* geometry;                    // +0x8   AEGeometry*
+    String name;                     // +0x18  display name (GameText 0x221)
     void* level;                   // +0x54  Level*
     float positionX;                   // +0x58  position x
     float positionY;                   // +0x5c  position y
@@ -39,8 +40,11 @@ public:
     int intPositionX;                    // +0x124 int position x
     int intPositionY;                    // +0x128 int position y
     int intPositionZ;                    // +0x12c int position z
+    float geometryPositionX;             // +0x134 geometry world position x
+    float geometryPositionY;             // +0x138 geometry world position y
+    float geometryPositionZ;             // +0x13c geometry world position z
     int timer;                    // +0x150 timer
-    int field_0x154;                    // +0x154 scale (12.4 fixed)
+    int scale;                          // +0x154 scale (12.4 fixed)
     uint8_t missionLock;                // +0x15c mission-lock flag
 
     bool isShrinking();

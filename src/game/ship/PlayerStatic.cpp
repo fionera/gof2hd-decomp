@@ -21,7 +21,7 @@ PlayerStatic::~PlayerStatic()
 
 void PlayerStatic::render()
 {
-    return PlayerStatic::render_geometry(field_0x8);
+    return PlayerStatic::render_geometry(this->geometry);
 }
 
 // ---- render_geometry fragment ----
@@ -69,23 +69,23 @@ void PlayerStatic::ctor(int playerId, AEGeometry *geometry, float x, float y, fl
     ((Player *)(player))->ctor(2000, 0, 0, 0, 0);
 
     void *vtable = g_PlayerStatic_vtable;
-    this->field_0x0 = (char *)vtable + 8;
-    this->field_0x124 = (int)x;
-    this->field_0x128 = (int)y;
-    this->field_0x12c = (int)z;
+    this->vtable = (char *)vtable + 8;
+    this->posX = (int)x;
+    this->posY = (int)y;
+    this->posZ = (int)z;
 }
 
 Vector PlayerStatic::getPosition()
 {
-    AEGeometry *geometry = field_0x8;
+    AEGeometry *geometry = this->geometry;
     if (geometry != 0) {
         return ((AEGeometry *)(geometry))->getPosition();
     }
 
     Vector result;
-    result.x = (float)field_0x124;
-    result.y = (float)field_0x128;
-    result.z = (float)field_0x12c;
+    result.x = (float)this->posX;
+    result.y = (float)this->posY;
+    result.z = (float)this->posZ;
     return result;
 }
 
@@ -99,10 +99,10 @@ PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry, float x, float y,
     ((Player *)(player))->ctor(2000, 0, 0, 0, 0);
 
     void *vtable = g_PlayerStatic_vtable;
-    this->field_0x0 = (char *)vtable + 8;
-    this->field_0x124 = (int)x;
-    this->field_0x128 = (int)y;
-    this->field_0x12c = (int)z;
+    this->vtable = (char *)vtable + 8;
+    this->posX = (int)x;
+    this->posY = (int)y;
+    this->posZ = (int)z;
 }
 
 // ---- PlayerStatic(playerId, geometry) ----

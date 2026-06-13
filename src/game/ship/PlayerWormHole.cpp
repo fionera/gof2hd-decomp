@@ -45,7 +45,7 @@ void _ZN14PlayerWormHoleD0Ev(void *self)
 int PlayerWormHole::open(char *, int, ...)
 {
     this->timer = -3000;
-    this->field_0x154 = 0;
+    this->scale = 0;
     return (int)(long)this;
 }
 
@@ -68,14 +68,14 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
     void **textSource = g_playerWormHole_text;
     this->vtable = g_playerWormHole_vtable + 8;
     AbyssEngine::String *text = (AbyssEngine::String *)((GameText *)(*textSource))->getText(0x221);
-    ((String *)((AbyssEngine::String *)((char *)this + 0x18)))->assign(text);
+    this->name.assign(text);
     ((KIPlayer *)(this))->setVisible(visible);
     ((Player *)(this->player))->setRadius(40000);
     void *transform = AbyssEngine::PaintCanvas::TransformGetTransform(*g_playerWormHole_canvas, F<int>(this->geometry, 0xc));
     ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
     this->missionLock = 1;
     this->timer = 0;
-    this->field_0x154 = 0x1000;
+    this->scale = 0x1000;
 }
 
 void PlayerWormHole::freeMissionLock()
@@ -96,7 +96,7 @@ void PlayerWormHole::reset(bool shrinking)
     if (shrinking)
         value = 59000;
     this->timer = value;
-    this->field_0x154 = 0x1000;
+    this->scale = 0x1000;
 }
 
 void PlayerWormHole::setPosition(float x, float y, float z)
@@ -146,7 +146,7 @@ void PlayerWormHole::update(int elapsed)
     int time = this->timer + elapsed;
     this->timer = time;
     if (time < 0) {
-        this->field_0x154 =
+        this->scale =
             0x1000 - (int)(((float)-time / 3000.0f) * 4096.0f);
     } else if (time > 60000) {
         void **statusHolder = g_playerWormHole_update_status;
@@ -168,7 +168,7 @@ void PlayerWormHole::update(int elapsed)
             }
         }
 
-        this->field_0x154 =
+        this->scale =
             0x1000 - (int)(((float)(current - 60000) / 3000.0f) * 4096.0f);
 
         if (current > 63000) {
@@ -206,7 +206,7 @@ void PlayerWormHole::update(int elapsed)
                         z = -60000 - next(random, 40000);
                     }
 
-                    Vector *position = (Vector *)((char *)this + 0x90);
+                    Vector *position = (Vector *)&this->directionX;
                     void *level = this->level;
                     if (mission == 0x1d || mission == 0x29) {
                         void *player = (void *)(intptr_t)((Level *)(level))->getPlayer();
@@ -249,15 +249,15 @@ void PlayerWormHole::update(int elapsed)
     int currentCamera = AbyssEngine::PaintCanvas::CameraGetCurrent(canvas);
     MatrixGetPosition(tmpOut, AbyssEngine::PaintCanvas::CameraGetLocal(canvas, currentCamera));
 
-    Vector *direction = (Vector *)((char *)this + 0x90);
+    Vector *direction = (Vector *)&this->directionX;
     VectorAssignFn assign = g_playerWormHole_update_vectorAssign;
     assign(direction, tmpOut);
 
-    float scale = (float)(this->field_0x154 << 4) * 0.0000152587890625f;
+    float scale = (float)(this->scale << 4) * 0.0000152587890625f;
     ((AEGeometry *)(this->geometry))->setScaling(scale);
 
     ((AEGeometry *)(tmpOut))->getPosition();
-    Vector *geometryPosition = (Vector *)((char *)this + 0x134);
+    Vector *geometryPosition = (Vector *)&this->geometryPositionX;
     assign(geometryPosition, tmpOut);
     *direction -= *geometryPosition;
     VectorNormalize(tmpOut, direction);

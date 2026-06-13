@@ -26,9 +26,7 @@ public:
     void* geometry;                    // +0x8
     unsigned char empActive;           // +0x24
     int faction;                     // +0x28
-    float posX;                   // +0x2c
-    float posY;                   // +0x30
-    float posZ;                   // +0x34
+    Vector position;                 // +0x2c  current world position (x/y/z)
     uint8_t field_0x40;                 // +0x40
     uint8_t field_0x41;                 // +0x41
     unsigned char hasCargo;           // +0x4c
@@ -40,9 +38,7 @@ public:
     void* secondaryGeometry;                   // +0x78
     int state;                     // +0x88
     uint8_t field_0x8c;                 // +0x8c
-    float targetX;                   // +0x90
-    float targetY;                   // +0x94
-    float targetZ;                   // +0x98
+    Vector targetPos;                // +0x90  homing-target world position (x/y/z)
     int kind;                     // +0xac
     int explosionTimer;                     // +0xd8
     int32_t field_0xf8;                 // +0xf8
@@ -52,14 +48,10 @@ public:
     Array<BoundingVolume*>* wreckCollision;   // +0x12c  wreck collision volumes
     int32_t deltaTime;                // +0x130
     unsigned char moving;          // +0x134
-    uint64_t field_0x138;               // +0x138
-    uint64_t field_0x140;               // +0x140
-    unsigned int field_0x144;           // +0x144
-    uint64_t field_0x148;               // +0x148
-    unsigned int field_0x14c;           // +0x14c
-    uint64_t field_0x150;               // +0x150
-    float field_0x154;                  // +0x154
-    uint64_t field_0x158;               // +0x158
+    Vector respawnPos;               // +0x138  spawn position copy used by reset()
+    Vector homingTarget;             // +0x144  re-homed enemy position snapshot
+    Vector homingDir;                // +0x150  homingTarget - position (drift direction)
+    uint32_t field_0x15c;               // +0x15c  zeroed-region tail
     uint64_t field_0x160;               // +0x160
     int32_t targetEnemy;                // +0x168
     int collisionIndex;                    // +0x16c
@@ -77,6 +69,7 @@ public:
     int wreckMaterial;                    // +0x1a0
     int dockingType;                    // +0x1a4
     int transportID;                    // +0x1a8
+    String name;                        // +0x1ac  display name (real String member)
     uint8_t shipHidden;                // +0x1b8
 
     // ---- methods (converted from free functions) ----

@@ -276,9 +276,14 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     self->field_0x200 = 0;
     self->field_0x204 = 0;
     self->field_0x208 = 0;
-    __aeabi_memclr4((char *)self + 0x158, 0x48);
-    AEMath_Matrix_ctor((char *)self + 0x218);
-    AEMath_Matrix_ctor((char *)self + 0x258);
+    // Original cleared 0x48 bytes from 0x158; the modeled members in that span are
+    // the working position and the two transient reset vectors (trailing bytes hold
+    // no named members in the packed layout).
+    self->workingPosition = (Vector){0, 0, 0};
+    self->resetVecB = (Vector){0, 0, 0};
+    self->resetVecC = (Vector){0, 0, 0};
+    AEMath_Matrix_ctor(&self->easeBaseMatrix);
+    AEMath_Matrix_ctor(&self->rollMatrix);
 
     int rng = *(int *)gPFC_rng;
     // 9 candidate waypoints (3 floats each) drawn from the RNG.
@@ -357,18 +362,28 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     self->field_0x1f4 = 0;
     self->wingmanCommand = wingmanCmd;
 
-    int zero3[4] = {0, 0, 0, 0};
+    // Four 16-byte zero blocks (an int followed by a 3-field vector each).
     self->field_0x1b8 = 0;
-    *(Vector *)((char *)self + 0x1bc) = *(Vector *)zero3;
+    self->field_0x1c0 = 0;
+    self->field_0x1c4 = 0;
+    self->field_0x1c8 = 0;
     self->field_0x148 = 0;
-    *(Vector *)((char *)self + 0x14c) = *(Vector *)zero3;
+    self->commandRoute = 0;
+    self->boundingVolumes = 0;
+    self->trail = 0;
     self->deltaTime = 0;
-    *(Vector *)((char *)self + 0x1d4) = *(Vector *)zero3;
+    self->deltaTimeHi = 0;
+    self->hitpoints = 0;
+    self->field_0x1dc = 0;
     self->field_0x1e4 = 0;
-    *(Vector *)((char *)self + 0x1e8) = *(Vector *)zero3;
+    self->currentSpeed = 0;
+    self->field_0x1ec = 0;
+    self->currentRotate = 0;
 
-    int posVec[4]; posVec[0] = flag; posVec[1] = 0; posVec[2] = 0;
-    *(Vector *)((char *)self + 0x158) = *(Vector *)posVec;
+    // Original stored the raw `flag` bit-pattern as workingPosition.x.
+    self->workingPosition.x = *(float *)&flag;
+    self->workingPosition.y = 0;
+    self->workingPosition.z = 0;
     self->field_0x13d = 1;
     self->field_0x4c = 1;
     self->currentSpeed = self->speed;
@@ -424,9 +439,11 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     self->field_0x214 = 0;
     self->field_0x294 = 0;
     self->field_0x298 = 0;
-    for (int off = 0x29c; off != 0x2b0; off += 4) {
-        *(int *)((char *)self + off) = 0;
-    }
+    self->field_0x29c = 0;
+    self->field_0x2a0 = 0;
+    self->field_0x2a4 = 0;
+    self->field_0x2a8 = 0;
+    self->field_0x2ac = 0;
     self->field_0x2b4 = 0;
     self->field_0x2b0 = 0;
     self->rollActive = 0;
@@ -478,7 +495,7 @@ void PlayerFighter::update(int dt) {
     // Sync world position from the geometry.
     float pos[3];
     ((AEGeometry *)(pos))->getPosition();
-    *(Vector *)((char *)this + 0x2c) = *(Vector *)pos;
+    this->renderPosition = *(Vector *)pos;
 
     // Recompute the "is enemy" flag unless the ship is in a non-combat mode.
     if (this->field_0x43 == 0) {
@@ -508,9 +525,9 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
 
     int stackVec[3];
     ((AEGeometry *)(intptr_t)this->geometry)->setPosition(0.0f, 0.0f, 0.0f);  // forwards x,y,z via regs
-    *(Vector *)((char *)this + 0x158) = *(Vector *)stackVec;
+    this->workingPosition = *(Vector *)stackVec;
     if (this->trail != 0) {
-        ((Trail *)(this->trail))->reset(*(Vector *)((char *)this + 0x158));
+        ((Trail *)(this->trail))->reset(this->workingPosition);
     }
     int m = (int)(intptr_t)&((AEGeometry *)(intptr_t)this->geometry)->getMatrix();
     AEMath_MatrixAssign((char *)this->player + 4, (void *)m);
@@ -554,8 +571,8 @@ void PlayerFighter::roll(int angle) {
         // Snap-back to identity when banked back near level.
         if (fwdY >= 0.0f && absX < gRoll_threshold) {
             unsigned char tmp[60];
-            AEMath_MatrixIdentity(tmp, (char *)self + 0x258);
-            AEMath_MatrixAssign((char *)self + 0x258, tmp);
+            AEMath_MatrixIdentity(tmp, &self->rollMatrix);
+            AEMath_MatrixAssign(&self->rollMatrix, tmp);
             self->rollActive = 0;
             self->field_0x254 = 0;
             goto done;
@@ -600,7 +617,7 @@ void PlayerFighter::roll(int angle) {
         self->rollActive = 1;
         unsigned char tmp[60];
         AEMath_MatrixSetRotation(tmp, bank * fa, 0.0f, roll);
-        AEMath_MatrixAssign((char *)self + 0x258, tmp);
+        AEMath_MatrixAssign(&self->rollMatrix, tmp);
     }
 
 done:
@@ -766,7 +783,7 @@ void PlayerFighter::initPush(void *target, int radius) {
     AEMath_VectorSub(dir, pos, pos2);
     float norm[3];
     AbyssEngine::AEMath::VectorNormalize(norm, (Vector *)dir);
-    *(Vector *)((char *)this + 0x10c) = *(Vector *)norm;
+    this->pushNormal = *(Vector *)norm;
 
     RngFn rng = (RngFn)gIP_rngFn;
     int *rngObj = *(int **)gIP_rng;
@@ -778,7 +795,7 @@ void PlayerFighter::initPush(void *target, int radius) {
     AbyssEngine::AEMath::VectorNormalize(rnorm, (Vector *)rvec);
     float scaled[3];
     AEMath_VectorScale(scaled, (float)strength, rnorm);
-    *(Vector *)((char *)this + 0x118) = *(Vector *)scaled;
+    this->pushImpulse = *(Vector *)scaled;
 
     return;
 }
@@ -882,8 +899,8 @@ void PlayerFighter::push(int dt) {
         float frac = fr / ftotal;
 
         unsigned char rot[60];
-        AEMath_MatrixSetRotation(rot, frac * this->field_0x120, 0.0f,
-                                 frac * this->field_0x11c);
+        AEMath_MatrixSetRotation(rot, frac * this->pushImpulse.z, 0.0f,
+                                 frac * this->pushImpulse.y);
 
         int lo = this->deltaTime;
         int hi = this->deltaTimeHi;
@@ -902,7 +919,7 @@ void PlayerFighter::push(int dt) {
         float ftotal2 = VectorSignedToFloat(this->pushDuration, 0);
 
         unsigned char a[12], b[12], c[60];
-        PF_vscale(a, (char *)this + 0x10c, speed);
+        PF_vscale(a, &this->pushNormal, speed);
         PF_vscale(b, a, this->currentSpeed);
         PF_vscale(c, b, (2.0f - frac) * 3.0f * (ftotal2 / gPush_div));
         ((AEGeometry *)(geom))->translate(*(Vector *)c);
@@ -925,13 +942,13 @@ void PlayerFighter::reset()
     ((KIPlayer *)(this))->reset();
     this->field_0x4c = 1;
 
-    // Snap the working (+0x158) and render (+0x2c) positions back to the spawn point.
+    // Snap the working and render positions back to the spawn point.
     int spawn[3];
     spawn[0] = this->posX;
     spawn[1] = this->posY;
     spawn[2] = this->posZ;
-    *(Vector *)((char *)this + 0x158) = *(Vector *)spawn;
-    *(Vector *)((char *)this + 0x2c)  = *(Vector *)spawn;
+    this->workingPosition = *(Vector *)spawn;
+    this->renderPosition  = *(Vector *)spawn;
 
     this->deltaTime = 0;
     this->deltaTimeHi = 0;
@@ -949,9 +966,9 @@ void PlayerFighter::reset()
 
     VFn vfn = (VFn)gReset_vfn;
     int z[3] = {0, 0, 0};
-    vfn((char *)this + 0x90, z);
-    vfn((char *)this + 0x164, z);
-    vfn((char *)this + 0x170, z);
+    vfn(&this->resetVecA, z);
+    vfn(&this->resetVecB, z);
+    vfn(&this->resetVecC, z);
 
     this->isMissionCrate = 0;
     this->missionCrateLost = 0;
@@ -999,7 +1016,7 @@ void PlayerFighter::handleCloaking() {
             if (matId == 0xffffffff) {
                 void **cv = *(void ***)gHC_canvasClone;
                 ((PaintCanvas *)*cv)->MeshCloneMaterial(*(unsigned *)(this->subGeometry + 0x1c),
-                                              (unsigned *)((char *)this + 0x2dc));
+                                              &this->cloakMaterial);
                 int mp = (int)(long)((PaintCanvas *)*cv)->MeshGetPointer(
                                                     *(unsigned *)(this->subGeometry + 0x1c));
                 matId = this->cloakMaterial;

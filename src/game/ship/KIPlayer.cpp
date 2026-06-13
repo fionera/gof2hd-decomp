@@ -205,7 +205,7 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
         self->spacePoints = 0;
     }
 
-    ((String *)((char *)self + 0x18))->dtor();
+    self->name.dtor();
     return self;
 }
 
@@ -280,7 +280,7 @@ extern unsigned KIPlayer_initB;
 //                    float x, float y, float z, bool active)
 void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, float y, float z, bool active) {
     *(int *)this = (int)(intptr_t)(KIPlayer_vtable + 8);
-    ((String *)((char *)this + 0x18))->ctor();
+    this->name.ctor();
 
     // zero a wide block of fields (the engine writes zero-vectors via NEON stores).
     this->field_0x90 = 0;  this->field_0x94 = 0;
@@ -334,7 +334,7 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
     {
         String tmp;
         ((String *)(&tmp))->ctor_char("", false);
-        ((String *)((char *)this + 0x18))->assign((String *)&tmp);
+        this->name.assign((String *)&tmp);
         ((String *)(&tmp))->dtor();
     }
 
@@ -428,7 +428,7 @@ KIPlayer::~KIPlayer() {
         this->spacePoints = 0;
     }
 
-    ((String *)((char *)this + 0x18))->dtor();
+    this->name.dtor();
 }
 
 namespace AbyssEngine { namespace AEMath {
