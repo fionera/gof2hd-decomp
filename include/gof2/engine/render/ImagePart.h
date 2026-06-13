@@ -21,8 +21,10 @@ public:
     int scale_x; // 0xc
     int scale_y; // 0x10
 
+    // Real C++ constructor (demangles to ImagePart::ImagePart(unsigned, int, int)).
+    ImagePart(unsigned id, int field04, int posY);
+
     // ---- methods (converted from free functions) ----
-    ImagePart * ctor(unsigned id, int field04, int posY);
     void draw(int x, int y, bool b);
 };
 #endif

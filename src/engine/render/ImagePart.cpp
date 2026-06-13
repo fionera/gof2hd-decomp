@@ -9,14 +9,13 @@ extern "C" __attribute__((visibility("hidden"))) void **g_ImagePart_draw_canvas;
 // ImagePart::ImagePart(unsigned, int, int) — stores id/field_04/pos_y, then queries the
 // global PaintCanvas for the image's width/height into scale_x/scale_y.
 
-ImagePart * ImagePart::ctor(unsigned id, int field04, int posY) {
+ImagePart::ImagePart(unsigned id, int field04, int posY) {
     this->id = id;
     this->f_4 = field04;
     this->pos_y = posY;
     void **holder = g_ImagePart_canvas;
     this->scale_x = ((PaintCanvas*)*holder)->GetImage2DWidth(id);
     this->scale_y = ((PaintCanvas*)*holder)->GetImage2DHeight(id);
-    return this;
 }
 
 // ImagePart::draw(int x, int y, bool b) — draws the stored image2d at (x, pos_y+y)
