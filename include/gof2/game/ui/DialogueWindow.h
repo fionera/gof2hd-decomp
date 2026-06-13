@@ -21,6 +21,8 @@ public:
     int frameWidth;                     // +0x1c
     int frameHeight;                     // +0x20
     void* clientImage;                   // +0x24
+    String bodyText;                     // +0x28  dialogue body text
+    String agentName;                    // +0x34  agent / client name (title text)
     void* scrollWindow;                   // +0x40
     int kind;                     // +0x44
     int page;                     // +0x48

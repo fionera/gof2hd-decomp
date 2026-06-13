@@ -72,17 +72,17 @@ int StatusWindow::OnTouchMove(int param_1, int param_2) {
     void **lh = g_SWm_layout;
     Layout *layout = (Layout *)*lh;
     if ((i32(layout, 0xc) < param_2 && param_2 < *g_SWm_height - i32(layout, 0x10)) || *g_SWm_force != 0) {
-        int d = param_2 - i32(this, 0x3c);
-        i32(this, 0x44) = d;
-        u32(this, 0x48) = 0x3f800000u;
-        i32(this, 0x38) += d;
-        i32(this, 0x3c) = param_2;
-        if (i32(this, 0x34) >= 0) {
-            int e = i32(this, 0x50) - param_2;
+        int d = param_2 - this->lastTouchY;
+        this->scrollVelocity = d;
+        *(unsigned *)&this->scrollDamping = 0x3f800000u;
+        this->scrollOffset += d;
+        this->lastTouchY = param_2;
+        if (this->selectedMedal >= 0) {
+            int e = this->touchStartY - param_2;
             if (e < 0) e = -e;
             if (e > 3) {
-                (*this->medalButtons)[i32(this, 0x34)]->setAlwaysPressed(0);
-                i32(this, 0x34) = -1;
+                (*this->medalButtons)[this->selectedMedal]->setAlwaysPressed(0);
+                this->selectedMedal = -1;
                 layout = (Layout *)*lh;
             }
         }
@@ -92,10 +92,10 @@ int StatusWindow::OnTouchMove(int param_1, int param_2) {
         for (unsigned i = 0; i < this->tabButtons->size(); ++i)
             (*this->tabButtons)[i]->OnTouchMove(param_1, param_2);
     }
-    if (i32(this, 0x30) == 1) {
+    if (this->activeTab == 1) {
         void **holder = g_SWm_ach;
         int *medals = (int *)((Achievements *)(*holder))->getMedals();
-        for (int i = 0; i < i32(this, 0x0); ++i) {
+        for (int i = 0; i < this->medalCount; ++i) {
             if (medals[i] != 0 || ((Achievements *)(*holder))->isEliteMedal(i) != 0)
                 (*this->medalButtons)[i]->OnTouchMove(param_1, param_2);
         }
@@ -106,9 +106,9 @@ int StatusWindow::OnTouchMove(int param_1, int param_2) {
 // StatusWindow::getRelativeScrollStartPos() -> 0 if scroll range (this+0x38) > 0,
 // else -(float)range / (float)(this+0x58).
 float StatusWindow::getRelativeScrollStartPos() {
-    int range = i32(this, 0x38);
+    int range = this->scrollOffset;
     if (range > 0) return 0.0f;
-    return -(float)range / (float)i32(this, 0x58);
+    return -(float)range / (float)this->contentHeight;
 }
 
 extern "C" {
@@ -132,17 +132,17 @@ extern void *g_swe_font;          // *(DAT_16a4b8): font
 void StatusWindow::OnTouchEnd(int x, int y) {
 
     // Release scroll inertia: snap velocity, clamp scroll position.
-    int vy = i32(this, 0x44);
-    int newOff = i32(this, 0x38) + vy;
+    int vy = this->scrollVelocity;
+    int newOff = this->scrollOffset + vy;
     float vf = (float)vy;
     int absvy = vy < 0 ? -vy : vy;
     Layout *layout = (Layout *)*(void **)g_swe_layout;
 
-    f32(this, 0x48) = 1.0f;                       // DAT_16a494 == 1.0
+    this->scrollDamping = 1.0f;                   // DAT_16a494 == 1.0
     this->isDragging = 0;
-    i32(this, 0x38) = newOff;
-    i32(this, 0x40) = newOff;
-    f32(this, 0x4c) = (absvy > 3) ? vf : 0.0f;    // DAT_16a490 == 0.0
+    this->scrollOffset = newOff;
+    this->scrollTarget = newOff;
+    this->scrollVelocityF = (absvy > 3) ? vf : 0.0f;    // DAT_16a490 == 0.0
 
     if (((Layout *)(layout))->OnTouchEnd(x, y) != 0)
         goto done;
@@ -151,25 +151,25 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     if (*g_swe_dialogBlock == 0) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++) {
             if ((*this->tabButtons)[i]->OnTouchEnd(x, y) != 0) {
-                u32(this, 0x30) = i;
-                i32(this, 0x58) = *(int *)((char *)pp(this, 0x68) + i * 4);
-                i32(this, 0x38) = 0;
+                this->activeTab = i;
+                this->contentHeight = this->tabHeights[i];
+                this->scrollOffset = 0;
             }
         }
     }
 
     // Medal grid (only on the achievements tab, index 1).
-    if (i32(this, 0x30) == 1) {
-        for (int i = 0; i < i32(this, 0x0); i++) {
+    if (this->activeTab == 1) {
+        for (int i = 0; i < this->medalCount; i++) {
             if ((*this->medalButtons)[i]->OnTouchEnd(x, y) != 0) {
                 void *ach = *(void **)g_swe_achievements;
                 int *medals = ((Achievements *)(ach))->getMedals();
                 int elite = ((Achievements *)(ach))->isEliteMedal(i);
                 if (elite != 0 || medals[i] != 0) {
-                    if (i32(this, 0x34) >= 0) {
-                        (*this->medalButtons)[i32(this, 0x34)]->setAlwaysPressed(false);
+                    if (this->selectedMedal >= 0) {
+                        (*this->medalButtons)[this->selectedMedal]->setAlwaysPressed(false);
                     }
-                    i32(this, 0x34) = i;
+                    this->selectedMedal = i;
 
                     // Rebuild the detail-text line array at +0x10.
                     if (this->detailLines != 0) {
@@ -179,22 +179,22 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     }
                     this->detailLines = new Array<String*>();
 
-                    int count = (elite == 0) ? medals[i32(this, 0x34)] : 1;
+                    int count = (elite == 0) ? medals[this->selectedMedal] : 1;
 
                     String hdr, valStr, valTmp, full, hint;
                     void *key = *(void **)g_swe_status;
-                    void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(i32(this, 0x34) + 0x610);
+                    void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(this->selectedMedal + 0x610);
                     hdr.ctor_copy((String *)t, false);
-                    void *val = (void *)(__INTPTR_TYPE__)((Achievements *)(ach))->getValue(i32(this, 0x34), count);
+                    void *val = (void *)(__INTPTR_TYPE__)((Achievements *)(ach))->getValue(this->selectedMedal, count);
                     valStr.ctor_copy((String *)val, false);
                     valTmp.ctor_copy(&valStr, false);
                     Status_replaceHash(&full, key, &hdr, &valTmp);
 
-                    StatusWindow_getMedalHintText(&hint, i32(this, 0x34));
+                    StatusWindow_getMedalHintText(&hint, this->selectedMedal);
                     full.addAssign_str(&hint);
 
                     Globals_getLineArray(*(void **)g_swe_globals, *(void **)g_swe_font, &full,
-                                         (void *)(i32(this, 0x6c) - layout->field_0x4c * 2));
+                                         (void *)(this->boxWidth - layout->field_0x4c * 2));
                     (*this->medalButtons)[i]->setAlwaysPressed(true);
                 }
                 break;
@@ -204,12 +204,12 @@ void StatusWindow::OnTouchEnd(int x, int y) {
 
     // Help button -> contextual help window for the current tab.
     if (((Layout *)(layout))->helpPressed() != 0) {
-        if (i32(this, 0x30) == 1) {
+        if (this->activeTab == 1) {
             String title;
             void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(0x287);
             title.ctor_copy((String *)t, false);
             ((Layout *)(layout))->initHelpWindow(&title);
-        } else if (i32(this, 0x30) == 0) {
+        } else if (this->activeTab == 0) {
             String title;
             void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(0x280);
             title.ctor_copy((String *)t, false);
@@ -226,19 +226,19 @@ done:
 // StatusWindow::OnTouchBegin(int, int)
 int StatusWindow::OnTouchBegin(int param_1, int param_2) {
     void **lh = g_StatusWindow_layout;
-    i32(this, 0x50) = param_2;
-    i32(this, 0x3c) = param_2;
-    i32(this, 0x44) = 0;
+    this->touchStartY = param_2;
+    this->lastTouchY = param_2;
+    this->scrollVelocity = 0;
     this->isDragging = 1;
     ((Layout *)(*lh))->OnTouchBegin(param_1, param_2);
     if (*g_StatusWindow_btnFlag == 0) {
         for (unsigned i = 0; i < this->tabButtons->size(); ++i)
             (*this->tabButtons)[i]->OnTouchBegin(param_1, param_2);
     }
-    if (i32(this, 0x30) == 1) {
+    if (this->activeTab == 1) {
         void **holder = g_StatusWindow_ach;
         int *medals = (int *)((Achievements *)(*holder))->getMedals();
-        for (int i = 0; i < i32(this, 0x0); ++i) {
+        for (int i = 0; i < this->medalCount; ++i) {
             if (medals[i] != 0 || ((Achievements *)(*holder))->isEliteMedal(i) != 0)
                 (*this->medalButtons)[i]->OnTouchBegin(param_1, param_2);
         }
@@ -248,10 +248,10 @@ int StatusWindow::OnTouchBegin(int param_1, int param_2) {
 
 // StatusWindow::getRelativeScrollHeight() -> ratio of visible content to total, clamped by range.
 float StatusWindow::getRelativeScrollHeight() {
-    int a = i32(this, 0x58);
-    int b = i32(this, 0x5c);
+    int a = this->contentHeight;
+    int b = this->viewportHeight;
     if (b > a) return 0.0f;
-    int range = i32(this, 0x38);
+    int range = this->scrollOffset;
     int num;
     if (range >= 1) {
         num = b - range;
@@ -267,39 +267,39 @@ float StatusWindow::getRelativeScrollHeight() {
 void StatusWindow::update() {
     // Velocity integration while not being dragged (+0x54 == drag flag).
     if (this->isDragging == 0) {
-        float v = f32(this, 0x48) * f32(this, 0x4c);
-        f32(this, 0x4c) = v;
+        float v = this->scrollDamping * this->scrollVelocityF;
+        this->scrollVelocityF = v;
         // If |v| >= 1.0 keep scrolling: advance the integer scroll offset (+0x38).
         float mag = v > 0.0f ? v : -v;
         if (mag >= 1.0f) {
-            f32(this, 0x38) = (float)(int)(v + (float)i32(this, 0x38));
-            i32(this, 0x38) = (int)(v + (float)i32(this, 0x38));
+            *(float *)&this->scrollOffset = (float)(int)(v + (float)this->scrollOffset);
+            this->scrollOffset = (int)(v + (float)this->scrollOffset);
         }
     }
 
-    int off = i32(this, 0x38);
+    int off = this->scrollOffset;
     if (off > 0) {
         // Overscrolled past the top: spring back.
-        f32(this, 0x48) = 1.0f;
-        f32(this, 0x4c) = (float)(-off) * 0.5f;
+        this->scrollDamping = 1.0f;
+        this->scrollVelocityF = (float)(-off) * 0.5f;
     }
 
-    int bottom = i32(this, 0x5c) - i32(this, 0x58);
+    int bottom = this->viewportHeight - this->contentHeight;
     if (bottom < 0) {
         if (off < bottom) {
             // Overscrolled past the bottom: spring back.
-            f32(this, 0x48) = 1.0f;
-            f32(this, 0x4c) = (float)(bottom - off) * 0.5f;
+            this->scrollDamping = 1.0f;
+            this->scrollVelocityF = (float)(bottom - off) * 0.5f;
         }
     } else {
         // Content fits: clamp to top.
-        f32(this, 0x4c) = 0.0f;
-        i32(this, 0x38) = 0;
+        this->scrollVelocityF = 0.0f;
+        this->scrollOffset = 0;
     }
 
     // Highlight the button matching the active tab index (+0x30).
     for (unsigned int idx = 0; idx < this->tabButtons->size(); idx++) {
-        (*this->tabButtons)[idx]->setAlwaysPressed(idx == u32(this, 0x30));
+        (*this->tabButtons)[idx]->setAlwaysPressed(idx == this->activeTab);
     }
 }
 
@@ -440,25 +440,25 @@ void StatusWindow::reInit() {
     int id = 0x493;
     if (a1) id = 0x494;
     if (a0) id = 0x495;
-    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)((char *)this + 0x14));
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, &this->rankImage0);
 
     id = 0x492;
     if (a0) id = 0x496;
     if (a1) id = 0x497;
-    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)((char *)this + 0x18));
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, &this->rankImage1);
 
     id = 0x490;
     if (a3) id = 0x498;
     if (a2) id = 0x499;
-    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)((char *)this + 0x1c));
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, &this->rankImage2);
 
     id = 0x491;
     if (a2) id = 0x49a;
     if (a3) id = 0x49b;
-    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)((char *)this + 0x20));
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)id, &this->rankImage3);
 
-    i32(this, 0x60) = ((PaintCanvas *)canvas)->GetImage2DWidth(0);
-    i32(this, 0x64) = ((PaintCanvas *)canvas)->GetImage2DHeight(0);
+    this->charImageWidth = ((PaintCanvas *)canvas)->GetImage2DWidth(0);
+    this->charImageHeight = ((PaintCanvas *)canvas)->GetImage2DHeight(0);
 }
 
 // StatusWindow::draw() -- renders either the player-stats tab or the achievements/medal tab.
@@ -509,25 +509,25 @@ void StatusWindow::draw() {
     ((Layout *)(layout))->drawBG();
 
     float relStart = ((StatusWindow *)(this))->getRelativeScrollStartPos();
-    int contentH = i32(this, 0x5c);
+    int contentH = this->viewportHeight;
     float ch = (float)contentH;
     float relH = ((StatusWindow *)(this))->getRelativeScrollHeight();
     int barH = (int)(relH * ch);
     if (barH > 0 || (int)(relStart * ch) > 0) {
-        ((Layout *)(layout))->drawScrollBar((screenW - layout->field_0x48) - layout->field_0x28, layout->field_0x20 + layout->field_0xc, contentH, (int)(relStart * ch), barH);
+        ((Layout *)(layout))->drawScrollBar((screenW - layout->field_0x48) - layout->buttonInsetX, layout->field_0x20 + layout->field_0xc, contentH, (int)(relStart * ch), barH);
     }
 
     int top = layout->field_0x20 + layout->field_0xc;
     int colW;
     if (*land == 0) {
         colW = screenW;
-        top += i32(this, 0x38);
+        top += this->scrollOffset;
     } else {
         colW = screenW >> 1;
     }
     if (barH > 0)
         colW = (colW - layout->field_0x48) - layout->field_0x2c;
-    i32(this, 0x6c) = colW + layout->field_0x28 * -2;
+    this->boxWidth = colW + layout->buttonInsetX * -2;
 
     String creditStr;
     creditStr.ctor();
@@ -537,13 +537,13 @@ void StatusWindow::draw() {
     else
         sep.ctor_char(":", false);
 
-    int tab = i32(this, 0x30);
+    int tab = this->activeTab;
     char drewStats = 0;
 
     // ===== player-stats tab (index 0 / landscape) =====
     if (tab == 0 || *land != 0) {
-        int boxW = i32(this, 0x6c);
-        int x0 = layout->field_0x28;
+        int boxW = this->boxWidth;
+        int x0 = layout->buttonInsetX;
         int pad = layout->field_0x2c;
         String lbl;
 
@@ -611,11 +611,11 @@ void StatusWindow::draw() {
         // Standing emblem panel + bars.
         void *standing = (void *)(intptr_t)((Status *)(*(void **)g_swd_status))->getStanding();
         float rate = ((Standing *)(standing))->getStandingRate(0);
-        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)i32(this, 0x24), x0 + (boxW >> 2), y, (unsigned char)'\x11');
-        ((PaintCanvas *)canvas)->DrawRegion2D((unsigned)i32(this, 0x28), i32(this, 0x70), 0,
-                                 (int)-(rate * (float)i32(this, 0x70)), i32(this, 0x74),
-                                 -(rate * (float)i32(this, 0x70)), 0, 0, 0, x0 + (boxW >> 2));
-        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)i32(this, 0x2c), x0, y, (unsigned char)'\x11');
+        ((PaintCanvas *)canvas)->DrawImage2D(this->standingEmblemImage, x0 + (boxW >> 2), y, (unsigned char)'\x11');
+        ((PaintCanvas *)canvas)->DrawRegion2D(this->standingBarImage, this->standingBarWidth, 0,
+                                 (int)-(rate * (float)this->standingBarWidth), this->standingBarHeight,
+                                 -(rate * (float)this->standingBarWidth), 0, 0, 0, x0 + (boxW >> 2));
+        ((PaintCanvas *)canvas)->DrawImage2D(this->standingFrameImage, x0, y, (unsigned char)'\x11');
 
         // Career-stat rows from the Status singleton.
         Status *st = (Status *)(*(void **)g_swd_status);
@@ -639,15 +639,15 @@ void StatusWindow::draw() {
         }
 
         drewStats = *land;
-        tab = i32(this, 0x30);
+        tab = this->activeTab;
     }
 
     // ===== achievements / medal tab (index 1) =====
     if (drewStats != 0 || tab == 1) {
-        int boxW = i32(this, 0x6c);
+        int boxW = this->boxWidth;
         int third = __aeabi_idiv(boxW, 3);
-        int x0 = layout->field_0x28;
-        int rowH = i32(this, 0x78);
+        int x0 = layout->buttonInsetX;
+        int rowH = this->medalRowHeight;
         int gridX0 = drewStats ? (boxW + (third >> 1) + x0) : (x0 + (third >> 1));
         int gridY0 = layout->field_0xc + (rowH >> 1) + layout->field_0x2c;
 
@@ -659,32 +659,32 @@ void StatusWindow::draw() {
             gridY0 += layout->field_0x1c + layout->field_0x2c;
         }
 
-        for (int i = 0; i < i32(this, 0x0); i++) {
+        for (int i = 0; i < this->medalCount; i++) {
             int col = (int)__aeabi_uidiv((unsigned)i, 3);
-            int by = col * rowH + gridY0 + i32(this, 0x38);
+            int by = col * rowH + gridY0 + this->scrollOffset;
             (*this->medalButtons)[i]->setPosition((i - col * 3) * third + gridX0, by, 0x44);
             if (by >= 0 && by <= screenH)
                 (*this->medalButtons)[i]->draw();
         }
 
         // Selected-medal detail panel.
-        if (i32(this, 0x34) >= 0) {
+        if (this->selectedMedal >= 0) {
             ((PaintCanvas *)canvas)->SetColor(0u);
             int lines = (int)this->detailLines->size();
             int lineH = layout->field_0x4;
             String lbl;
             lbl.ctor_char("", false);
-            ((Layout *)(layout))->drawBox(2, layout->field_0x28, (((screenH - layout->field_0x10) -
+            ((Layout *)(layout))->drawBox(2, layout->buttonInsetX, (((screenH - layout->field_0x10) -
                              layout->field_0x24) - lineH * lines) +
-                               layout->field_0x4c * -2, i32(this, 0x6c), layout->field_0x4c * 2 + lineH * lines, &lbl, 0);
+                               layout->field_0x4c * -2, this->boxWidth, layout->field_0x4c * 2 + lineH * lines, &lbl, 0);
 
             lbl.ctor_char("", false);
-            ((Layout *)(layout))->drawBox(5, layout->field_0x28, (((screenH - layout->field_0x10) -
+            ((Layout *)(layout))->drawBox(5, layout->buttonInsetX, (((screenH - layout->field_0x10) -
                              layout->field_0x24) - lineH * lines) +
-                               layout->field_0x4c * -2, i32(this, 0x6c), layout->field_0x4c * 2 + lineH * lines, &lbl, 0);
+                               layout->field_0x4c * -2, this->boxWidth, layout->field_0x4c * 2 + lineH * lines, &lbl, 0);
 
             Globals_drawLines(*(void **)g_swd_globals, font, this->detailLines,
-                              layout->field_0x4c + layout->field_0x28,
+                              layout->field_0x4c + layout->buttonInsetX,
                               (char)screenH);
         }
     }
@@ -743,20 +743,20 @@ StatusWindow * StatusWindow::ctor() {
     (*this->tabButtons)[0] = b1;
 
     unsigned int defTab = *g_sw_tabIndex;
-    u32(this, 0x30) = defTab;
+    this->activeTab = defTab;
     (*this->tabButtons)[defTab]->setAlwaysPressed(true);
 
     this->detailLines = 0;
-    i32(this, 0x78) = layout->field_0x84;
-    i32(this, 0x34) = -1;
+    this->medalRowHeight = layout->field_0x84;
+    this->selectedMedal = -1;
 
     // --- 45 medal buttons at +0x08 ---
     this->medalButtons = new Array<TouchButton*>();
-    i32(this, 0x0) = 0x2d;
+    this->medalCount = 0x2d;
     this->medalButtons->resize(0x2d);
 
     int *medalIds = ((Achievements *)(*(void **)g_sw_achievements))->getMedals();
-    for (int i = 0; i < i32(this, 0x0); i++) {
+    for (int i = 0; i < this->medalCount; i++) {
         TouchButton *btn = (TouchButton *)::operator new(200);
         int medal = medalIds[i];
         void *txt = ((GameText *)(*(void **)g_sw_gameTextDef))->getText(textId);
@@ -767,36 +767,36 @@ StatusWindow * StatusWindow::ctor() {
     ((StatusWindow *)(this))->reInit();
 
     void *canvas = *(void **)g_sw_canvas;
-    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48e, (unsigned int *)((char *)this + 0x24));
-    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48f, (unsigned int *)((char *)this + 0x28));
-    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48d, (unsigned int *)((char *)this + 0x2c));
-    i32(this, 0x70) = ((PaintCanvas *)canvas)->GetImage2DWidth(0) / 2;
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48e, &this->standingEmblemImage);
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48f, &this->standingBarImage);
+    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)0x48d, &this->standingFrameImage);
+    this->standingBarWidth = ((PaintCanvas *)canvas)->GetImage2DWidth(0) / 2;
     int img3h = ((PaintCanvas *)canvas)->GetImage2DHeight(0);
 
     // Zero the inertia/colour state blocks (+0x45..+0x54, +0x38..+0x44).
     for (int o = 0x45; o < 0x55; o++) *((unsigned char *)this + o) = 0;
     for (int o = 0x38; o < 0x48; o += 4) i32(this, o) = 0;
-    i32(this, 0x74) = img3h;
+    this->standingBarHeight = img3h;
 
     // Precompute per-tab scroll content heights.
     int *heights = (int *)::operator new[](0xc);
-    pp(this, 0x68) = heights;
+    this->tabHeights = heights;
     int row = ((layout->field_0x1c * 3 + layout->field_0x2d8) +
-               layout->field_0x2c * 8) + i32(this, 0x64) +
+               layout->field_0x2c * 8) + this->charImageHeight +
                layout->field_0x4 * 7;
     heights[0] = row;
 
     int lineH;
     if (*g_sw_tabIndex == 0) {
-        lineH = i32(this, 0x78) * __aeabi_idiv(i32(this, 0x0), 3);
+        lineH = this->medalRowHeight * __aeabi_idiv(this->medalCount, 3);
     } else {
-        lineH = __aeabi_idiv(i32(this, 0x0), 3) * i32(this, 0x78) +
+        lineH = __aeabi_idiv(this->medalCount, 3) * this->medalRowHeight +
                 layout->field_0x1c + layout->field_0x2c;
     }
     heights[1] = lineH + 10;
 
-    i32(this, 0x58) = heights[u32(this, 0x30)];
-    i32(this, 0x5c) =
+    this->contentHeight = heights[this->activeTab];
+    this->viewportHeight =
         (((g_sw_screenH - layout->field_0x10) - layout->field_0xc) -
          layout->field_0x20) - layout->field_0x24;
     return this;

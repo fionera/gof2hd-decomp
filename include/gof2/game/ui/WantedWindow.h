@@ -60,6 +60,12 @@ public:
     uint32_t selectedWanted;                // +0x30
     uint32_t highlightedWanted;                // +0x34
     Array<Wanted*>* wantedList;          // +0x38
+    String fromText;                     // +0x3c  detail: "from" line (origin station + system)
+    String toText;                       // +0x48  detail: "to" line (destination station + system)
+    String nameText;                     // +0x54  selected wanted's name
+    String field_0x60;                   // +0x60  detail line (assigned getText(0xc9d))
+    String atText;                       // +0x6c  detail: "at" line (current station + system)
+    String rewardText;                   // +0x78  detail: reward line
     int scrollOffset;                     // +0x84
     int lastDragY;                     // +0x88
     int scrollOffsetSnapshot;                     // +0x8c

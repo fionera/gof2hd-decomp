@@ -124,8 +124,8 @@ DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
     if (p != 0) { ((TouchButton *)(p))->~TouchButton(); ::operator delete(p); }
     self->moreButton = 0;
 
-    ((String *)((String *)((char *)self + 0x34)))->dtor();
-    ((String *)((String *)((char *)self + 0x28)))->dtor();
+    self->agentName.dtor();
+    self->bodyText.dtor();
     return self;
 }
 
@@ -271,17 +271,17 @@ void DialogueWindow::loadContent() {
             textId = 0x10 + 0x63d;
         }
         this->clientImage = g_dw_defaultClientImage;
-        ((String *)((String *)((char *)this + 0x34)))->assign((String *)((GameText *)(*gameText))->getText(0x63d + (textId & 0xff)));
-        ((String *)((String *)((char *)this + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
+        this->agentName.assign((String *)((GameText *)(*gameText))->getText(0x63d + (textId & 0xff)));
+        this->bodyText.assign((String *)((GameText *)(*gameText))->getText(textId));
     } else if (mission != 0) {
         if ((page & 1) != 0) {
             this->clientImage = g_dw_defaultClientImage;
-            ((String *)((String *)((char *)this + 0x34)))->assign((String *)((GameText *)(*gameText))->getText(0x63d));
+            this->agentName.assign((String *)((GameText *)(*gameText))->getText(0x63d));
             this->field_0x70 = 1;
         } else {
             this->clientImage = (void *)(intptr_t)((Mission *)(mission))->getClientImage();
             ((Mission *)(&tmp))->getClientName();
-            *(String *)((char *)this + 0x34) = *(String *)(&tmp);
+            this->agentName = *(String *)(&tmp);
             ((String *)(&tmp))->dtor();
             this->field_0x70 = 0;
         }
@@ -296,7 +296,7 @@ void DialogueWindow::loadContent() {
         } else {
             textId = 0x20f;
         }
-        ((String *)((String *)((char *)this + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
+        this->bodyText.assign((String *)((GameText *)(*gameText))->getText(textId));
 
         if (kind == 1) {
             void *standing = (void *)(intptr_t)((Status *)(*g_dw_statusLoad))->getStanding();
@@ -304,21 +304,21 @@ void DialogueWindow::loadContent() {
         }
         if (((Mission *)(mission))->getTargetStation() == 0x6c && kind == 0) {
             textId = 0x1ca;
-            ((String *)((String *)((char *)this + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
+            this->bodyText.assign((String *)((GameText *)(*gameText))->getText(textId));
         }
         if (((Mission *)(mission))->getType() == 0x0c && kind == 0) {
             textId = 0x174;
-            ((String *)((String *)((char *)this + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
+            this->bodyText.assign((String *)((GameText *)(*gameText))->getText(textId));
         }
     } else {
         this->clientImage = g_dw_defaultClientImage;
         textId = 0x10;
-        ((String *)((String *)((char *)this + 0x28)))->assign((String *)((GameText *)(*gameText))->getText(textId));
-        ((String *)((String *)((char *)this + 0x34)))->assign((String *)((GameText *)(*gameText))->getText(0x63d));
+        this->bodyText.assign((String *)((GameText *)(*gameText))->getText(textId));
+        this->agentName.assign((String *)((GameText *)(*gameText))->getText(0x63d));
     }
 
     ((String *)(&style))->ctor_char(g_dw_emptyLoad, false);
-    ((String *)(&tmp))->ctor_copy((String *)((char *)this + 0x28), false);
+    ((String *)(&tmp))->ctor_copy(&this->bodyText, false);
     ((ScrollTouchWindow *)(this->scrollWindow))->setText4(*(String *)(&style), *(String *)(&tmp), 0);
     ((String *)(&tmp))->dtor();
     ((String *)(&style))->dtor();
@@ -341,8 +341,8 @@ void DialogueWindow::loadContent() {
 }
 
 DialogueWindow * DialogueWindow::ctor_default() {
-    ((String *)((String *)((char *)this + 0x28)))->ctor();
-    ((String *)((String *)((char *)this + 0x34)))->ctor();
+    this->bodyText.ctor();
+    this->agentName.ctor();
     ((DialogueWindow *)(this))->init();
     return this;
 }
@@ -461,7 +461,7 @@ int DialogueWindow::init() {
     }
 
     ((String *)(&name))->ctor_char(g_dw_defaultAgentName, false);
-    *(String *)((char *)this + 0x34) = *(String *)(&name);
+    this->agentName = *(String *)(&name);
     ((String *)(&name))->dtor();
 
     this->mission = 0;
@@ -531,8 +531,8 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     StringSlot blank;
     StringSlot copy;
 
-    ((String *)((String *)((char *)this + 0x28)))->ctor();
-    ((String *)((String *)((char *)this + 0x34)))->ctor();
+    this->bodyText.ctor();
+    this->agentName.ctor();
     ((DialogueWindow *)(this))->init();
 
     void *scroll = this->scrollWindow;
@@ -563,7 +563,7 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     new ((button)) TouchButton(buttonText, 0, x, y, width, 0x24, 4);
     this->nextButton = button;
 
-    ((String *)((String *)((char *)this + 0x34)))->assign(agentName);
+    this->agentName.assign(agentName);
     this->voiceSound = -1;
     this->page = 0;
     this->pauseLength = 0;
@@ -571,8 +571,8 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
 }
 
 DialogueWindow * DialogueWindow::ctor_mission(Mission *mission, Level *level, int kind) {
-    ((String *)((String *)((char *)this + 0x28)))->ctor();
-    ((String *)((String *)((char *)this + 0x34)))->ctor();
+    this->bodyText.ctor();
+    this->agentName.ctor();
     ((DialogueWindow *)(this))->init();
     this->level = level;
     ((DialogueWindow *)(this))->set(mission, kind, -1);
@@ -654,7 +654,7 @@ void DialogueWindow::draw() {
     ((PaintCanvas*)*g_dw_paintCanvas)->SetColor((unsigned int)-1);
     void *layout = *g_dw_layoutDraw;
     ((Layout *)(layout))->drawMask();
-    ((String *)(&title))->ctor_copy((String *)((char *)this + 0x34), false);
+    ((String *)(&title))->ctor_copy(&this->agentName, false);
     ((Layout *)(layout))->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, &title, 1);
     ((String *)(&title))->dtor();
 

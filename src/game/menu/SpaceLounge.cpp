@@ -20,6 +20,15 @@
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/ui/TouchButton.h"
 
+// Short byte-offset accessors (this TU still uses the offset idiom for not-yet-modeled
+// fields). Guarded so it coexists with any header that defines the same block.
+#ifndef GOF2_BIP_HELPERS
+#define GOF2_BIP_HELPERS
+static inline char*  B(void *p, int off) { return (char *)p + off; }
+static inline int&   I(void *p, int off) { return *(int *)((char *)p + off); }
+static inline void*& P(void *p, int off) { return *(void **)((char *)p + off); }
+#endif
+
 // This translation unit pulls in externs.h/fwd.h (which forward-declares the global
 // `PaintCanvas` type) and additionally used `AbyssEngine::PaintCanvas` as a *namespace*
 // of free thunks. Both clash with including the real PaintCanvas class header, so we

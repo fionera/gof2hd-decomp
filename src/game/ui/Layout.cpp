@@ -350,20 +350,20 @@ Layout::Layout() {
         this->field_0x238 = 0x46;
         this->field_0x27c = 0x1c;
         this->field_0x280 = 0;
-        this->field_0x3e0 = 1;
-        this->field_0x3e4 = 0;
-        this->field_0x3e8 = 0x8c;
-        this->field_0x3f4 = 0x4d;
-        this->field_0x3f8 = 0x84;
+        this->scrollBarInset = 1;
+        this->scrollBarHandle = 0;
+        this->rewardBoxWidth = 0x8c;
+        this->rewardBoxY = 0x4d;
+        this->rewardBoxY2 = 0x84;
     }
 
     // 0x3ec / 0x3f0 reward-box dimensions.
     if (hd) {
-        this->field_0x3ec = (res == 0) ? 0xc4 : 0x188;
-        this->field_0x3f0 = (res == 0) ? 0x32 : 100;
+        this->rewardBoxHeight = (res == 0) ? 0xc4 : 0x188;
+        this->rewardBoxX = (res == 0) ? 0x32 : 100;
     } else {
-        this->field_0x3ec = 0x160;
-        this->field_0x3f0 = 0x4b;
+        this->rewardBoxHeight = 0x160;
+        this->rewardBoxX = 0x4b;
     }
 
     // Footer/back-button geometry group (0x1f0, 0x1f8, 0x200, 0x2bc, 0x3fc, 0x1f4).
@@ -390,7 +390,7 @@ Layout::Layout() {
         v2bc = 2; v288 = 0x14; v28c = 0xffffffed;
     }
     this->field_0x2bc = v2bc;
-    this->field_0x3fc = v3fc_;
+    this->footerButtonOffset = v3fc_;
     this->field_0x200 = v200;
     this->field_0x1f0 = v1f0;
     this->field_0x1f4 = v1f4;
@@ -666,9 +666,9 @@ void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
     setPos(this->helpButton, p3 + p1, p2, 0x12);
     int *tb = *gTB;
     setPos(this->backButton, tb[0x28 / 4] + this->windowX,
-           (this->windowY + this->windowHeight) - this->field_0x3fc, 0x21);
+           (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
     setPos(this->secondaryButton, tb[0x28 / 4] + this->windowX,
-           (this->windowY + this->windowHeight) - this->field_0x3fc, 0x21);
+           (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
 }
 
 __attribute__((visibility("hidden"))) extern int **gFmod;  // ldr [0xe4d70]
@@ -772,7 +772,7 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_sbColor0);
     ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_sbColor1);
 
-    int inset = this->field_0x3e0;
+    int inset = this->scrollBarInset;
     ((PaintCanvas*)(pc))->DrawRectangle(x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
 
@@ -782,12 +782,12 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     if (trackH <= thumb + off)
         off = (trackH - thumb) - inset;
 
-    int handle = this->field_0x3e4;
+    int handle = this->scrollBarHandle;
     thumb = thumb + handle * -4;
     off = off + handle * 2;
     if (ih * 2 < thumb) {
         ((Layout *)(this))->drawBGPattern(this->field_0x378, x + 1 + handle, ih + y + off, iw, thumb + ih * -2);
-        handle = this->field_0x3e4;
+        handle = this->scrollBarHandle;
     } else {
         int lim = trackH + ih * -2;
         if (lim <= off) off = lim;
@@ -795,7 +795,7 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
 
     ((PaintCanvas*)(pc))->DrawImage2D(this->scrollBarImage, handle + x + 1, 0);
     ((PaintCanvas*)(pc))->DrawImage2D(this->scrollBarImage,
-                             this->field_0x3e4 + x + 1, (thumb - ih) + y + off, (unsigned char)(0x02));
+                             this->scrollBarHandle + x + 1, (thumb - ih) + y + off, (unsigned char)(0x02));
 }
 
 // Hidden globals from drawFade disasm.
@@ -876,7 +876,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned
             int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0r), (void *)0);
             tx = (w - tx) - tw;
         }
-        int ty = (y + (mt[0x1c / 4] >> 1) + 1) - this->field_0x3ac;
+        int ty = (y + (mt[0x1c / 4] >> 1) + 1) - this->textBaselineAdjust;
         ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont0), text, tx + x, ty, false);
         break;
     }
@@ -897,7 +897,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned
             int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1r), (void *)0);
             tx = (w - tx) - tw;
         }
-        int ty = (y + (mt[0x5c / 4] >> 1) + 1) - this->field_0x3ac;
+        int ty = (y + (mt[0x5c / 4] >> 1) + 1) - this->textBaselineAdjust;
         ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont1), text, tx + x, ty, false);
         break;
     }
@@ -938,7 +938,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned
             int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6r), (void *)0);
             tx = (w - tx) - tw;
         }
-        int ty = (y + (h >> 1) + 1) - this->field_0x3ac;
+        int ty = (y + (h >> 1) + 1) - this->textBaselineAdjust;
         ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont6), text, tx + x, ty, false);
         break;
     }
@@ -950,8 +950,8 @@ void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned
         ((Layout *)(this))->drawBGBorder8(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
         if (*(int *)((char *)text + 8) == 0) break;
         ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x32c, x, y);
-        int ty = (y + (mt[8 / 4] / 2) + 1) - this->field_0x3ac;
+        ((PaintCanvas*)(pc))->DrawImage2D(this->headerIconImage, x, y);
+        int ty = (y + (mt[8 / 4] / 2) + 1) - this->textBaselineAdjust;
         ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont7), text,
                                mt[0x28 / 4] + x, ty, false);
         break;
@@ -1002,13 +1002,13 @@ void Layout::drawWindow7(void *title, int x, int y, int w, int h, int drawBG) {
     int top = m[8 / 4];
     ((PaintCanvas*)(*g_dwCanvas))->DrawRectangle(x, top + y, w, h - top);
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
-    ((PaintCanvas*)(*g_dwCanvas))->DrawImage2D(this->field_0x32c, x, 0);
+    ((PaintCanvas*)(*g_dwCanvas))->DrawImage2D(this->headerIconImage, x, 0);
     if (*(int *)((char *)title + 8) != 0 &&
         ((String *)title)->Compare_char(g_dwCmpLit) == 0) {
         int *mm = *g_dwMetric;
         int half = mm[8 / 4];
         half += half >> 31;
-        int ty = (y + (half >> 1) + 1) - this->field_0x3ac;
+        int ty = (y + (half >> 1) + 1) - this->textBaselineAdjust;
         ((PaintCanvas*)(*g_dwCanvas))->DrawString((unsigned)(unsigned long)(**g_dwFont), title, mm[0x28 / 4] + x, ty, false);
     }
     ((PaintCanvas*)(*g_dwCanvas))->SetColor(saved);
@@ -1121,8 +1121,8 @@ void Layout::resetWindowDimensions() {
 
     int *m = *g_rwMetric;
     int inset = m[0x28 / 4];
-    this->setBtnRect(this->backButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->field_0x3fc, 0x21);
-    this->setBtnRect(this->secondaryButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->field_0x3fc, 0x21);
+    this->setBtnRect(this->backButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
+    this->setBtnRect(this->secondaryButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
 
     if (this->backButton != 0) {
         float pos[2] __attribute__((aligned(4)));
@@ -1189,62 +1189,62 @@ void Layout::reload() {
     int g0 = *guard;
 
     this->bgPatternImage = -1;
-    this->field_0x328 = -1;
-    this->field_0x32c = -1;
+    this->headerPatternImage = -1;
+    this->headerIconImage = -1;
     this->field_0x3a8 = -1;
     __aeabi_memset4((char *)this + 0x334, 0x70, 0xff);
 
     unsigned canvas = *g_rlCanvas;
-    this->loadImage(canvas, 0x503, (char *)this + 0x398);
-    this->loadImage(canvas, 0x47e, (char *)this + 0x324);
-    this->loadImage(canvas, 0x4ff, (char *)this + 0x328);
-    this->loadImage(canvas, 0x500, (char *)this + 0x330);
-    this->loadImage(canvas, 0x474, (char *)this + 0x32c);
-    this->loadImage(canvas, 0x502, (char *)this + 0x334);
-    this->loadImage(canvas, 0x506, (char *)this + 0x340);
-    this->loadImage(canvas, 0x501, (char *)this + 0x338);
-    this->loadImage(canvas, 0x507, (char *)this + 0x344);
-    this->loadImage(canvas, 0x4fe, (char *)this + 0x33c);
-    this->loadImage(canvas, 0x482, (char *)this + 0x348);
-    this->loadImage(canvas, 0x481, (char *)this + 0x34c);
-    this->loadImage(canvas, 0x486, (char *)this + 0x378);
-    this->loadImage(canvas, 0x487, (char *)this + 0x374);
-    this->loadImage(canvas, 0x48b, (char *)this + 0x37c);
-    this->loadImage(canvas, 0x52d, (char *)this + 0x3a4);
+    this->loadImage(canvas, 0x503, &this->tipBoxImage);
+    this->loadImage(canvas, 0x47e, &this->bgPatternImage);
+    this->loadImage(canvas, 0x4ff, &this->headerPatternImage);
+    this->loadImage(canvas, 0x500, &this->headerCapImage);
+    this->loadImage(canvas, 0x474, &this->headerIconImage);
+    this->loadImage(canvas, 0x502, &this->footerImageLeft);
+    this->loadImage(canvas, 0x506, &this->field_0x340);
+    this->loadImage(canvas, 0x501, &this->field_0x338);
+    this->loadImage(canvas, 0x507, &this->footerPatternImage);
+    this->loadImage(canvas, 0x4fe, &this->footerImageRight);
+    this->loadImage(canvas, 0x482, &this->field_0x348);
+    this->loadImage(canvas, 0x481, &this->field_0x34c);
+    this->loadImage(canvas, 0x486, &this->field_0x378);
+    this->loadImage(canvas, 0x487, &this->scrollBarImage);
+    this->loadImage(canvas, 0x48b, &this->field_0x37c);
+    this->loadImage(canvas, 0x52d, &this->field_0x3a4);
 
     if (*g_rlHdFlag == 0) {
-        this->loadImage(canvas, 0x480, (char *)this + 0x350);
-        this->loadImage(canvas, 0x47f, (char *)this + 0x354);
-        this->loadImage(canvas, 0x479, (char *)this + 0x358);
-        this->loadImage(canvas, 0x478, (char *)this + 0x35c);
-        this->loadImage(canvas, 0x489, (char *)this + 0x36c);
-        this->loadImage(*g_rlCanvas, 0x488, (char *)this + 0x370);
+        this->loadImage(canvas, 0x480, &this->field_0x350);
+        this->loadImage(canvas, 0x47f, &this->field_0x354);
+        this->loadImage(canvas, 0x479, &this->field_0x358);
+        this->loadImage(canvas, 0x478, &this->field_0x35c);
+        this->loadImage(canvas, 0x489, &this->field_0x36c);
+        this->loadImage(*g_rlCanvas, 0x488, &this->field_0x370);
     } else {
-        this->loadImage(canvas, 0x6bb, (char *)this + 0x350);
-        this->loadImage(canvas, 0x6ba, (char *)this + 0x354);
-        this->loadImage(canvas, 0x6b9, (char *)this + 0x358);
-        this->loadImage(canvas, 0x6b8, (char *)this + 0x35c);
-        this->loadImage(canvas, 0x6b7, (char *)this + 0x36c);
-        this->loadImage(*g_rlCanvas, 0x6bc, (char *)this + 0x370);
+        this->loadImage(canvas, 0x6bb, &this->field_0x350);
+        this->loadImage(canvas, 0x6ba, &this->field_0x354);
+        this->loadImage(canvas, 0x6b9, &this->field_0x358);
+        this->loadImage(canvas, 0x6b8, &this->field_0x35c);
+        this->loadImage(canvas, 0x6b7, &this->field_0x36c);
+        this->loadImage(*g_rlCanvas, 0x6bc, &this->field_0x370);
     }
 
-    this->loadImage(canvas, 0x530, (char *)this + 0x360);
-    this->loadImage(canvas, 0x531, (char *)this + 0x364);
-    this->loadImage(canvas, 0x52f, (char *)this + 0x368);
-    this->loadImage(canvas, 0x47c, (char *)this + 900);
-    this->loadImage(canvas, 0x47d, (char *)this + 0x380);
-    this->loadImage(canvas, 0x47b, (char *)this + 0x388);
-    this->loadImage(canvas, 0x47a, (char *)this + 0x38c);
-    this->loadImage(canvas, 0x484, (char *)this + 0x390);
-    this->loadImage(canvas, 0x483, (char *)this + 0x394);
-    this->loadImage(canvas, 0x50c, (char *)this + 0x3a0);
-    this->loadImage(canvas, 0x50d, (char *)this + 0x39c);
+    this->loadImage(canvas, 0x530, &this->field_0x360);
+    this->loadImage(canvas, 0x531, &this->field_0x364);
+    this->loadImage(canvas, 0x52f, &this->field_0x368);
+    this->loadImage(canvas, 0x47c, &this->field_0x384);
+    this->loadImage(canvas, 0x47d, &this->field_0x380);
+    this->loadImage(canvas, 0x47b, &this->field_0x388);
+    this->loadImage(canvas, 0x47a, &this->field_0x38c);
+    this->loadImage(canvas, 0x484, &this->field_0x390);
+    this->loadImage(canvas, 0x483, &this->field_0x394);
+    this->loadImage(canvas, 0x50c, &this->field_0x3a0);
+    this->loadImage(canvas, 0x50d, &this->field_0x39c);
 
     // Back button (string-labelled).
     TouchButton *bBack = (TouchButton *)::operator new(200);
     void *txt = gGameText->obj->getText(*g_rlBackText);
     int sh = *g_rlScreenH;
-    TouchButton_ctorStr(bBack, txt, 2, this->field_0x28, sh - 3, '!');
+    TouchButton_ctorStr(bBack, txt, 2, this->buttonInsetX, sh - 3, '!');
     this->backButton = bBack;
     this->backButtonWidth = ((TouchButton *)(bBack))->getWidth();
 
@@ -1254,11 +1254,11 @@ void Layout::reload() {
     TouchButton *b2 = (TouchButton *)::operator new(200);
     if (img535 == 0xffffffff) {
         void *t = gGameText->obj->getText(*g_rlBackText);
-        TouchButton_ctorStr(b2, t, 2, this->field_0x28,
-                            *g_rlScreenH - this->field_0x3fc, '!');
+        TouchButton_ctorStr(b2, t, 2, this->buttonInsetX,
+                            *g_rlScreenH - this->footerButtonOffset, '!');
     } else {
-        TouchButton_ctorImg(b2, img535, 2, this->field_0x28,
-                            *g_rlScreenH - this->field_0x3fc, '!');
+        TouchButton_ctorImg(b2, img535, 2, this->buttonInsetX,
+                            *g_rlScreenH - this->footerButtonOffset, '!');
     }
     this->secondaryButton = b2;
 
@@ -1273,7 +1273,7 @@ void Layout::reload() {
     this->choiceWindowOpen = 0;
     this->choiceWindow = 0;
     this->tipLines = 0;
-    this->field_0x3ac = th / 2 - 1;
+    this->textBaselineAdjust = th / 2 - 1;
     this->drawColor = -1;
     ((Layout *)(this))->resetWindowDimensions();
     this->rewardMessageTimer = 0;
@@ -1380,7 +1380,7 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
         unsigned cv = *(unsigned *)g_dfCanvas;
         int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
         ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), loadStr, (x + w / 2) - tw / 2,
-                               (this->windowHeight + this->windowY) - this->field_0x14, false);
+                               (this->windowHeight + this->windowY) - this->footerTextInset, false);
     }
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
 
@@ -1397,11 +1397,11 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
             int rightInset = m[0x74 / 4];
             int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
             ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), credStr, ((w + x) - rightInset) - tw / 2,
-                                   (this->windowHeight + this->windowY) - this->field_0x14, false);
+                                   (this->windowHeight + this->windowY) - this->footerTextInset, false);
         } else {
             int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
             ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), credStr, (w + x - 10) - tw,
-                                   (this->windowHeight + this->windowY) - this->field_0x14, false);
+                                   (this->windowHeight + this->windowY) - this->footerTextInset, false);
         }
     }
 
@@ -1437,19 +1437,19 @@ void Layout::drawHeader7(void *title, int transition) {
     ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
     int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(img);
     int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(img);
-    ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->field_0x330,
+    ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->headerCapImage,
                              self->windowX, self->windowY);
-    ((Layout *)(self))->drawBGPattern(self->field_0x328, self->windowX + iw, self->windowY, self->windowWidth + iw * -2, ih);
-    ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->field_0x330,
+    ((Layout *)(self))->drawBGPattern(self->headerPatternImage, self->windowX + iw, self->windowY, self->windowWidth + iw * -2, ih);
+    ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->headerCapImage,
                              self->windowWidth + self->windowX,
                              self->windowY, iw, ih, (unsigned char)(0x11), (unsigned char)(0x12), (unsigned char)(0x01));
     if (*(int *)((char *)title + 8) != 0) {
-        ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->field_0x32c,
+        ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->headerIconImage,
                                  self->windowX, self->windowY);
         int *m = *g_dhMetric;
         ((PaintCanvas*)((PaintCanvas *)img))->DrawString((unsigned)(unsigned long)(**g_dhFont), title,
                                m[0x28 / 4] + m[0x44 / 4] + self->windowX,
-                               self->field_0x18 + self->windowY, false);
+                               self->headerTitleY + self->windowY, false);
     }
     self->helpButtonEnabled = (uint8_t)transition;
     if (transition != 0 && self->choiceWindowOpen == 0) {
@@ -1504,10 +1504,10 @@ void Layout::drawMissionRewardMessage(int transition) {
         ((PaintCanvas*)g_PaintCanvas)->SetColor(col);
 
         unsigned newColor = ((PaintCanvas*)(pc))->GetColor();
-        int boxW = this->field_0x3e8;
-        int boxH = this->field_0x3ec;
-        int boxX = this->field_0x3f0;
-        int boxY = this->field_0x3f4;
+        int boxW = this->rewardBoxWidth;
+        int boxH = this->rewardBoxHeight;
+        int boxX = this->rewardBoxX;
+        int boxY = this->rewardBoxY;
         this->drawColor = newColor;
 
         if (transition != 0) {
@@ -1553,7 +1553,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         cv = *(unsigned *)g_mrCanvas;
         tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
         ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1),
-                               this->field_0x3f8 + boxX, false);
+                               this->rewardBoxY2 + boxX, false);
         ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
         this->drawColor = origColor;
         ((String *)(line))->dtor();

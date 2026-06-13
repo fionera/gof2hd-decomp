@@ -45,12 +45,12 @@ public:
     int field_0x8;                      // +0x8
     int field_0xc;                      // +0xc
     int field_0x10;                     // +0x10
-    int field_0x14;                     // +0x14
-    int field_0x18;                     // +0x18
+    int footerTextInset;                // +0x14 (footer text bottom inset)
+    int headerTitleY;                   // +0x18 (header title baseline Y)
     int field_0x1c;                     // +0x1c
     int field_0x20;                     // +0x20
     int field_0x24;                     // +0x24
-    int field_0x28;                     // +0x28
+    int buttonInsetX;                   // +0x28 (back/secondary button left inset)
     int field_0x2c;                     // +0x2c
     int field_0x30;                     // +0x30
     int field_0x34;                     // +0x34
@@ -115,12 +115,13 @@ public:
     int field_0x31c;                    // +0x31c
     int field_0x320;                    // +0x320
     unsigned bgPatternImage;               // +0x324
-    int field_0x328;                    // +0x328
-    int field_0x32c;                    // +0x32c
-    int field_0x330;                    // +0x330
+    unsigned headerPatternImage;        // +0x328 (header bar fill pattern)
+    unsigned headerIconImage;           // +0x32c (header/title icon image)
+    unsigned headerCapImage;            // +0x330 (header end-cap image)
     unsigned footerImageLeft;               // +0x334
     unsigned field_0x338;               // +0x338
     int footerImageRight;                    // +0x33c
+    unsigned field_0x340;               // +0x340 (footer image; loaded in reload)
     unsigned footerPatternImage;               // +0x344
     unsigned field_0x348;               // +0x348
     unsigned field_0x34c;               // +0x34c
@@ -135,6 +136,7 @@ public:
     unsigned field_0x370;               // +0x370
     int scrollBarImage;                    // +0x374
     unsigned field_0x378;               // +0x378
+    unsigned field_0x37c;               // +0x37c (image; loaded in reload)
     unsigned field_0x380;               // +0x380
     int field_0x384;                    // +0x384
     unsigned field_0x388;               // +0x388
@@ -146,7 +148,7 @@ public:
     int field_0x3a0;                    // +0x3a0
     int field_0x3a4;                    // +0x3a4
     int field_0x3a8;                    // +0x3a8
-    int field_0x3ac;                    // +0x3ac
+    int textBaselineAdjust;             // +0x3ac (text vertical centring adjust = th/2-1)
     unsigned drawColor;               // +0x3b0
     void* backButton;                  // +0x3b4
     void* secondaryButton;                  // +0x3b8
@@ -159,14 +161,14 @@ public:
     int rewardCredits;                    // +0x3d4
     int field_0x3d8;                    // +0x3d8
     uint8_t field_0x3dc;                // +0x3dc
-    int field_0x3e0;                    // +0x3e0
-    int field_0x3e4;                    // +0x3e4
-    int field_0x3e8;                    // +0x3e8
-    int field_0x3ec;                    // +0x3ec
-    int field_0x3f0;                    // +0x3f0
-    int field_0x3f4;                    // +0x3f4
-    int field_0x3f8;                    // +0x3f8
-    int field_0x3fc;                    // +0x3fc
+    int scrollBarInset;                 // +0x3e0 (scrollbar track inset)
+    int scrollBarHandle;                // +0x3e4 (scrollbar thumb handle offset)
+    int rewardBoxWidth;                 // +0x3e8 (mission-reward box width)
+    int rewardBoxHeight;                // +0x3ec (mission-reward box height)
+    int rewardBoxX;                     // +0x3f0 (mission-reward box X)
+    int rewardBoxY;                     // +0x3f4 (mission-reward box Y)
+    int rewardBoxY2;                    // +0x3f8 (mission-reward second line Y)
+    int footerButtonOffset;             // +0x3fc (footer back-button bottom offset)
     uint8_t fading;                // +0x400
     uint8_t fadeOut;                // +0x401
     uint32_t fadeColor;               // +0x404

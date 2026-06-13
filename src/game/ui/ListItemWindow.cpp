@@ -25,15 +25,15 @@ __attribute__((visibility("hidden"))) extern int **g_liw_screen;
 // ListItemWindow::OnTouchBegin(int, int)
 void ListItemWindow::OnTouchBegin(int x, int y)
 {
-    _liw_stw_OnTouchBegin(pp(this, 0x18), x);
-    if (u8(this, 0x54) &&
-        i32(this, 0x64) + (i32(this, 0x6c) >> 1) < x) {
+    _liw_stw_OnTouchBegin(this->scrollWindow, x);
+    if (this->shows3DShipFlag &&
+        this->x + (this->width >> 1) < x) {
         int *obj = *g_liw_screen;
-        if (y < i32(this, 0x68) + obj[0xc / 4] + obj[0x20 / 4] + i32(this, 0x20)) {
-            i32(this, 0x120) = x;
-            i32(this, 0x134) = x;
-            u32(this, 0x128) = 0;
-            u8(this, 0x138) = 1;
+        if (y < this->y + obj[0xc / 4] + obj[0x20 / 4] + this->previewHeight) {
+            this->dragLastX = x;
+            this->dragStartX = x;
+            this->dragDelta = 0;
+            this->dragging = 1;
         }
     }
 }
@@ -41,7 +41,7 @@ void ListItemWindow::OnTouchBegin(int x, int y)
 // ListItemWindow::shows3DShip() -- raw uint8 getter at +0x54.
 uint8_t ListItemWindow::shows3DShip()
 {
-    return u8(this, 0x54);
+    return this->shows3DShipFlag;
 }
 
 // Base sub-window at +0x18 (a ScrollTouchWindow*); forward the touch first.
@@ -49,13 +49,13 @@ uint8_t ListItemWindow::shows3DShip()
 // ListItemWindow::OnTouchMove(int, int)
 void ListItemWindow::OnTouchMove(int x, int y)
 {
-    _liw_stw_OnTouchMove(pp(this, 0x18), x);
-    if (u8(this, 0x54) && u8(this, 0x138)) {
-        int d = x - i32(this, 0x120);
-        i32(this, 0x128) = d;
-        u32(this, 0x12c) = 0x3f800000;
-        i32(this, 0x11c) = i32(this, 0x11c) + d;
-        i32(this, 0x120) = x;
+    _liw_stw_OnTouchMove(this->scrollWindow, x);
+    if (this->shows3DShipFlag && this->dragging) {
+        int d = x - this->dragLastX;
+        this->dragDelta = d;
+        this->spinDamping = 1.0f;   // 0x3f800000
+        this->dragAccum = this->dragAccum + d;
+        this->dragLastX = x;
     }
 }
 
@@ -64,19 +64,19 @@ void ListItemWindow::OnTouchMove(int x, int y)
 // ListItemWindow::OnTouchEnd(int, int)
 void ListItemWindow::OnTouchEnd(int x, int y)
 {
-    _liw_stw_OnTouchEnd(pp(this, 0x18), x);
-    if (u8(this, 0x54) && u8(this, 0x138)) {
-        int dv = i32(this, 0x128);
-        int sum = i32(this, 0x11c) + dv;
+    _liw_stw_OnTouchEnd(this->scrollWindow, x);
+    if (this->shows3DShipFlag && this->dragging) {
+        int dv = this->dragDelta;
+        int sum = this->dragAccum + dv;
         float vel = (float)dv;
         int a = dv < 0 ? -dv : dv;
         float v = 0.0f;
         if (a > 3) v = vel;
-        f32(this, 0x12c) = 0.9f;
-        u8(this, 0x138) = 0;
-        i32(this, 0x11c) = sum;
-        i32(this, 0x124) = sum;
-        f32(this, 0x130) = v;
+        this->spinDamping = 0.9f;
+        this->dragging = 0;
+        this->dragAccum = sum;
+        this->dragSettled = sum;
+        this->spinVelocity = v;
     }
 }
 
@@ -89,7 +89,7 @@ __attribute__((visibility("hidden"))) extern void **g_liw_r_obj;
 // ListItemWindow::render()
 void ListItemWindow::render()
 {
-    if (!u8(this, 0x54))
+    if (!this->shows3DShipFlag)
         return;
 
     PaintCanvas *canvas = (PaintCanvas *)*g_liw_r_canvas;
@@ -97,16 +97,16 @@ void ListItemWindow::render()
 
     int *obj = (int *)*g_liw_r_obj;
     int s = obj[0x128 / 4];
-    int h = i32(this, 0x20) - s * 2;
+    int h = this->previewHeight - s * 2;
     canvas->EnableClip(
-        i32(this, 0x64) + s + (i32(this, 0x6c) >> 1) + obj[0x2c / 4],
-        i32(this, 0x68) + s + obj[0xc / 4] + obj[0x20 / 4],
-        ((i32(this, 0x6c) >> 1) - (obj[0x2c / 4] + s * 2)) - obj[0x28 / 4],
+        this->x + s + (this->width >> 1) + obj[0x2c / 4],
+        this->y + s + obj[0xc / 4] + obj[0x20 / 4],
+        ((this->width >> 1) - (obj[0x2c / 4] + s * 2)) - obj[0x28 / 4],
         h);
     canvas->SetColor((unsigned int)(long)canvas);
     void *m = canvas->CameraGetLocal((unsigned int)(long)canvas);
-    _liw_Matrix_assign((char *)this + 0x98, m);
-    ((AEGeometry *)pp(this, 0x10))->render();
+    _liw_Matrix_assign(&this->previewTransform, m);
+    this->previewGeometry->render();
     canvas->End3d();
     int dummy;
     return _liw_render_tail((void *)canvas, 0, h, &dummy);
@@ -157,23 +157,23 @@ extern const unsigned int g_liw_s_baseAngle;   // 0x1419fc default preview angle
 void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
                          unsigned p4, unsigned p5, bool p6)
 {
-    pp(this, 0x14) = item;
-    u32(this, 0x34) = p2;
-    u32(this, 0x38) = p3;
-    u32(this, 0x3c) = p4;
-    u32(this, 0x40) = p5;
+    this->item = item;
+    this->param2 = p2;
+    this->param3 = p3;
+    this->param4 = p4;
+    this->param5 = p5;
 
     void *layout = *g_liw_s_layoutHolder;
 
     int w, h, x, y;
     if (*g_liw_s_fullscreen == 0) {
         // borderless: window spans the whole screen origin.
-        i32(this, 0x64) = 0;
-        i32(this, 0x68) = 0;
+        this->x = 0;
+        this->y = 0;
         w = *g_liw_s_screenW;   // wired from the two screen-dim globals below
         h = *g_liw_s_screenH;
-        i32(this, 0x6c) = w;
-        i32(this, 0x70) = h;
+        this->width = w;
+        this->height = h;
         x = 0;
         y = 0;
     } else {
@@ -188,14 +188,14 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
             h = alt ? 0x28a : 0x514;
         }
         w = (int)wf;
-        i32(this, 0x70) = w;
-        i32(this, 0x6c) = h;
+        this->height = w;
+        this->width = h;
         x = (*g_liw_s_screenW >> 1) - (h >> 1);
         y = (*g_liw_s_screenH >> 1) - (w >> 1);
-        i32(this, 0x64) = x;
-        i32(this, 0x68) = y;
+        this->x = x;
+        this->y = y;
     }
-    u32(this, 0x114) = g_liw_s_baseAngle;
+    *(uint32_t *)&this->baseAngle = g_liw_s_baseAngle;   // raw default preview angle bits
     ((Layout *)(layout))->setWindowDimensions(x, y, h, w);
 
     // Tear down the label array (+0x0).
@@ -218,16 +218,16 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
 
     int isShip = ((ListItem *)(item))->isShip();
     if (isShip == 0) {
-        i32(this, 0x20) = 0;
-        u8(this, 0x54) = 0;
+        this->previewHeight = 0;
+        this->shows3DShipFlag = 0;
     } else {
         // progress bar height + 3D ship preview (transform/camera/light setup).
         char *L = (char *)layout;
-        i32(this, 0x20) =
-            ((((i32(this, 0x70) - i32(L, 0xc)) - i32(L, 0x10)) - i32(L, 0x20)) - i32(L, 0x24)) / 2
+        this->previewHeight =
+            ((((this->height - i32(L, 0xc)) - i32(L, 0x10)) - i32(L, 0x20)) - i32(L, 0x24)) / 2
             - i32(L, 0x2c);
-        u32(this, 0x118) = g_liw_s_baseAngle;
-        u8(this, 0x54) = 1;
+        *(uint32_t *)&this->previewAngle = g_liw_s_baseAngle;   // raw default preview angle bits
+        this->shows3DShipFlag = 1;
         liw_set_buildShipPreview(this, item, layout);
 
         // ship stat rows need the two int arrays too.
@@ -238,33 +238,33 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
     // Inner scroll window, positioned below the preview / header.
     {
         char *L = (char *)layout;
-        int progH = i32(this, 0x20);
+        int progH = this->previewHeight;
         int sel = (progH > 0) ? 0x1c : 0x5c;
         int rowH = i32(L, 0x2c);
         void *stw = operator new(0x24);
-        int sx = i32(this, 0x64) + rowH + (i32(this, 0x6c) >> 1);
-        int sy = i32(L, 0x20) + i32(this, 0x68) + rowH + i32(L, 0xc) + progH + i32(L, sel);
-        int sw = (i32(this, 0x6c) >> 1) - i32(L, 0x28);
-        int sh = ((i32(this, 0x70) -
+        int sx = this->x + rowH + (this->width >> 1);
+        int sy = i32(L, 0x20) + this->y + rowH + i32(L, 0xc) + progH + i32(L, sel);
+        int sw = (this->width >> 1) - i32(L, 0x28);
+        int sh = ((this->height -
                   (i32(L, 0xc) + rowH * 2 + i32(L, 0x20) + progH + i32(L, sel)))
                   - i32(L, 0x10)) - i32(L, 0x24);
         ScrollTouchWindow_ctor(stw, sx, sy, sw, sh, false);
-        pp(this, 0x18) = stw;
+        this->scrollWindow = stw;
     }
 
     // Populate the rows (ship stats / item attribute table / blueprint price).
     liw_set_fillRows(this, item, layout, isShip, p6);
 
     // Reset the rotating-preview spin state.
-    u8(this, 0x138)  = 0;
-    u32(this, 0x118) = 0;
-    u32(this, 0x11c) = 0x104;
-    u32(this, 0x120) = 0;
-    u32(this, 0x124) = 0;
-    u32(this, 0x128) = 0;
-    u32(this, 0x12c) = 0;
-    u32(this, 0x130) = 0;
-    u32(this, 0x134) = 0;
+    this->dragging       = 0;
+    this->previewAngle   = 0.0f;
+    this->dragAccum      = 0x104;
+    this->dragLastX      = 0;
+    this->dragSettled    = 0;
+    this->dragDelta      = 0;
+    this->spinDamping    = 0.0f;
+    this->spinVelocity   = 0.0f;
+    this->dragStartX     = 0;
 }
 
 extern "C" void *_liw_STW_dtor(void *w);
@@ -294,10 +294,10 @@ ListItemWindow::~ListItemWindow()
         delete this->statsPrev;
         this->statsPrev = 0;
     }
-    if (pp(this, 0x18)) operator delete(_liw_STW_dtor(pp(this, 0x18)));
-    pp(this, 0x18) = 0;
-    ((String *)((char *)this + 0x80))->dtor();
-    ((String *)((char *)this + 0x74))->dtor();
+    if (this->scrollWindow) operator delete(_liw_STW_dtor(this->scrollWindow));
+    this->scrollWindow = 0;
+    this->str80.dtor();
+    this->str74.dtor();
 }
 
 // Layout / drawing callees (resolved blx targets).
@@ -329,15 +329,15 @@ void ListItemWindow::draw()
         ((Layout *)(layout))->drawMask();
 
     ((PaintCanvas *)(long)canvas)->SetColor(canvas);
-    ((PaintCanvas *)(long)canvas)->FillRectangle((int)canvas, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c));
+    ((PaintCanvas *)(long)canvas)->FillRectangle((int)canvas, this->x, this->y, this->width);
 
     {
         String s; s.ctor_char("", false);
-        ((Layout *)(layout))->drawBox(2, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c), i32(this, 0x70), &s, 0);
+        ((Layout *)(layout))->drawBox(2, this->x, this->y, this->width, this->height, &s, 0);
     }
     if (masked) {
         String s; s.ctor_char("", false);
-        ((Layout *)(layout))->drawBox(7, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c), i32(this, 0x70), &s, 0);
+        ((Layout *)(layout))->drawBox(7, this->x, this->y, this->width, this->height, &s, 0);
     }
 
     {
@@ -345,7 +345,7 @@ void ListItemWindow::draw()
         ((Layout *)(layout))->drawHeader1(&s);
     }
 
-    void *li = pp(this, 0x14);
+    void *li = this->item;
     int isShip = ((ListItem *)(li))->isShip();
     ((PaintCanvas *)(long)canvas)->SetColor(canvas);
 
@@ -353,7 +353,7 @@ void ListItemWindow::draw()
     if (isItemish == 0 && ((ListItem *)(li))->isBluePrint() == 0 && ((ListItem *)(li))->isPendingProduct() == 0) {
         if (isShip != 0) {
             char *L = (char *)layout;
-            int x = i32(this, 0x64), y = i32(this, 0x68), w = i32(this, 0x6c);
+            int x = this->x, y = this->y, w = this->width;
             int c0c = i32(L, 0xc), c20 = i32(L, 0x20), c28 = i32(L, 0x28), c2c = i32(L, 0x2c);
             int color = i32(L, 0x5c);
             int textId = *g_liw_d_headerId;
@@ -363,11 +363,11 @@ void ListItemWindow::draw()
 
             void *fac = *g_liw_d_imageFactory;
             int shipIdx = ((Ship *)(0))->getIndex();
-            ((ImageFactory *)(fac))->drawShip(shipIdx, i32(this, 0x64) + i32(L, 0x28) + i32(L, 0x2c), ((i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2) + i32(L, 0x124));
+            ((ImageFactory *)(fac))->drawShip(shipIdx, this->x + i32(L, 0x28) + i32(L, 0x2c), ((this->y + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2) + i32(L, 0x124));
         }
     } else {
         char *L = (char *)layout;
-        int x = i32(this, 0x64), y = i32(this, 0x68), w = i32(this, 0x6c);
+        int x = this->x, y = this->y, w = this->width;
         int c0c = i32(L, 0xc), c20 = i32(L, 0x20), c28 = i32(L, 0x28), c2c = i32(L, 0x2c);
         int color = i32(L, 0x5c);
         int textId = *g_liw_d_headerId;
@@ -392,8 +392,8 @@ void ListItemWindow::draw()
         int idx = ((Item *)(itemPtr))->getIndex();
         int type = ((Item *)(itemPtr))->getType();
         ((ImageFactory *)(fac))->drawItem4(idx, type,
-            i32(L, 0x28) + i32(this, 0x64) + i32(L, 0x2c),
-            i32(L, 0x124) + ((i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2));
+            i32(L, 0x28) + this->x + i32(L, 0x2c),
+            i32(L, 0x124) + ((this->y + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2));
     }
 
     // Visible value rows.
@@ -402,7 +402,7 @@ void ListItemWindow::draw()
     if (rows != 0) {
         uint32_t n = rows->size();
         int rowH = i32(L, 0x2c);
-        int yTop = i32(L, 0x5c) + i32(L, 0xc) + i32(this, 0x68) + i32(L, 0x20) + rowH;
+        int yTop = i32(L, 0x5c) + i32(L, 0xc) + this->y + i32(L, 0x20) + rowH;
         if ((uint32_t)(*g_liw_d_scrollLimit - i32(L, 0x10)) < (uint32_t)((i32(L, 0x1c) + rowH) * n + yTop))
             rowH = 2;
         int ycur = yTop;
@@ -411,7 +411,7 @@ void ListItemWindow::draw()
             int color = i32(L, 0x1c);
             String s;
             s.ctor_copy((*rows)[i], false);
-            ((Layout *)(layout))->drawBox(6, i32(L, 0x28) + i32(this, 0x64), ycur, (i32(this, 0x6c) >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s, 0);
+            ((Layout *)(layout))->drawBox(6, i32(L, 0x28) + this->x, ycur, (this->width >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s, 0);
             ((PaintCanvas *)(long)canvas)->SetColor(canvas);
 
             int textX, textY;
@@ -424,18 +424,18 @@ void ListItemWindow::draw()
                     if (i < cur - 1) {
                         int a = (*this->statsCur)[i];
                         int b = (*this->statsPrev)[i];
-                        int img = 0x50;        // equal
-                        if (a < b) img = 0x4c; // down
-                        if (b < a) img = 0x48; // up
-                        ((PaintCanvas *)(long)canvas)->DrawImage2D(i32(this, img),
-                            ((i32(this, 0x64) + (i32(this, 0x6c) >> 1)) - i32(L, 0x2c)) - i32(this, 0x60), 0);
+                        int trendImage = this->arrowEqualImage;        // equal
+                        if (a < b) trendImage = this->arrowDownImage;  // down
+                        if (b < a) trendImage = this->arrowUpImage;    // up
+                        ((PaintCanvas *)(long)canvas)->DrawImage2D(trendImage,
+                            ((this->x + (this->width >> 1)) - i32(L, 0x2c)) - this->arrowSeparator, 0);
                     }
-                    int sep = i32(this, 0x60);
+                    int sep = this->arrowSeparator;
                     valStr = (*this->values)[i];
                     void *arrowStr = *g_liw_d_arrowR;
                     int tw = ((PaintCanvas *)(long)canvas)->GetTextWidth(canvas, arrowStr);
-                    centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)i32(this, 0x1c));
-                    textX = (((i32(this, 0x64) + (i32(this, 0x6c) >> 1) + 10) - i32(L, 0x2c)) - sep) - tw;
+                    centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)this->textHalfHeight);
+                    textX = (((this->x + (this->width >> 1) + 10) - i32(L, 0x2c)) - sep) - tw;
                     textY = i32(L, 0x1c);
                     drewArrow = true;
                 }
@@ -444,8 +444,8 @@ void ListItemWindow::draw()
                 valStr = (*this->values)[i];
                 void *arrowStr = *g_liw_d_arrowL;
                 int tw = ((PaintCanvas *)(long)canvas)->GetTextWidth(canvas, arrowStr);
-                centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)i32(this, 0x1c));
-                textX = (i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c) * -2) - tw;
+                centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)this->textHalfHeight);
+                textX = (this->x + (this->width >> 1) + i32(L, 0x2c) * -2) - tw;
                 textY = i32(L, 0x1c);
             }
             ((PaintCanvas *)(long)canvas)->DrawString(canvas, valStr, textX, textY, centered);
@@ -454,31 +454,31 @@ void ListItemWindow::draw()
     }
 
     // Footer / progress.
-    if (i32(this, 0x20) < 1) {
+    if (this->previewHeight < 1) {
         String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
-        ((Layout *)(layout))->drawBox(1, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x5c), &s, 0);
+        ((Layout *)(layout))->drawBox(1, this->x + (this->width >> 1) + i32(L, 0x2c), this->y + i32(L, 0xc) + i32(L, 0x20), ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x5c), &s, 0);
     } else {
         ((PaintCanvas *)(long)canvas)->SetColor(canvas);
         {
             String s; s.ctor_char("", false);
-            ((Layout *)(layout))->drawBox(8, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(this, 0x20), &s, 0);
+            ((Layout *)(layout))->drawBox(8, this->x + (this->width >> 1) + i32(L, 0x2c), this->y + i32(L, 0xc) + i32(L, 0x20), ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), this->previewHeight, &s, 0);
         }
-        int prog = i32(this, 0x20);
-        int yBox = i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20);
+        int prog = this->previewHeight;
+        int yBox = this->y + i32(L, 0xc) + i32(L, 0x20);
         if (prog > 0) yBox = yBox + prog + i32(L, 0x2c);
         {
             String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
-            ((Layout *)(layout))->drawBox(0, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), yBox, ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s, 0);
+            ((Layout *)(layout))->drawBox(0, this->x + (this->width >> 1) + i32(L, 0x2c), yBox, ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s, 0);
         }
         ((PaintCanvas *)(long)canvas)->SetColor(canvas);
-        aeabi_idiv_(i32(this, 0x30), 3);
-        ((PaintCanvas *)(long)canvas)->DrawImage2D(i32(this, 0x44), i32(this, 0x24) - i32(this, 0x2c), 0);
-        int half = aeabi_idiv_(i32(this, 0x30), 3);
-        ((PaintCanvas *)(long)canvas)->DrawImage2D(i32(this, 0x44), i32(this, 0x24), i32(this, 0x28) - half, (unsigned char)1);
+        aeabi_idiv_(this->field_0x30, 3);
+        ((PaintCanvas *)(long)canvas)->DrawImage2D(this->scrollThumbImage, this->field_0x24 - this->field_0x2c, 0);
+        int half = aeabi_idiv_(this->field_0x30, 3);
+        ((PaintCanvas *)(long)canvas)->DrawImage2D(this->scrollThumbImage, this->field_0x24, this->field_0x28 - half, (unsigned char)1);
     }
 
-    ((ScrollTouchWindow *)(pp(this, 0x18)))->drawTextBG();
-    ((ScrollTouchWindow *)(pp(this, 0x18)))->draw();
+    ((ScrollTouchWindow *)(this->scrollWindow))->drawTextBG();
+    ((ScrollTouchWindow *)(this->scrollWindow))->draw();
 }
 
 // Callees (resolved blx targets).
@@ -496,27 +496,27 @@ extern const float g_liw_u_angleScale;
 //   3D ship preview, and pushes the resulting rotation onto its geometry.
 void ListItemWindow::update(int frameTime)
 {
-    ((ScrollTouchWindow *)(pp(this, 0x18)))->update(frameTime);
+    ((ScrollTouchWindow *)(this->scrollWindow))->update(frameTime);
 
-    if (u8(this, 0x54) == 0)
+    if (this->shows3DShipFlag == 0)
         return;
 
-    if (u8(this, 0x138) == 0) {
-        float spin = f32(this, 0x12c) * f32(this, 0x130);
+    if (this->dragging == 0) {
+        float spin = this->spinDamping * this->spinVelocity;
         float mag = spin > 0.0f ? spin : -spin;
-        f32(this, 0x130) = spin;
+        this->spinVelocity = spin;
         if (mag > 1.0f) {
-            float angle = (float)i32(this, 0x11c);
-            i32(this, 0x11c) = (int)(spin + angle);
+            float angle = (float)this->dragAccum;
+            this->dragAccum = (int)(spin + angle);
         }
     }
 
-    ((Ship *)(pp(this, 0x14) ? *(void **)((char *)pp(this, 0x14) + 0xc) : 0))->getIndex();
-    int idx = ((Ship *)(*(void **)((char *)pp(this, 0x14) + 0xc)))->getIndex();
+    ((Ship *)(this->item ? *(void **)((char *)this->item + 0xc) : 0))->getIndex();
+    int idx = ((Ship *)(*(void **)((char *)this->item + 0xc)))->getIndex();
 
-    float baseAngle = f32(this, 0x114);
-    float angle = (float)i32(this, 0x11c) / g_liw_u_angleScale;
-    f32(this, 0x118) = angle;
+    float baseAngle = this->baseAngle;
+    float angle = (float)this->dragAccum / g_liw_u_angleScale;
+    this->previewAngle = angle;
 
     uint32_t tf = *g_liw_u_tf;
     uint32_t loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
@@ -525,14 +525,14 @@ void ListItemWindow::update(int frameTime)
     float tableAngle = g_liw_u_angleTable[idx] + baseAngle;
     MatrixSetScaling((void *)loc, tableAngle, tableAngle, tableAngle);
 
-    if (i32(this, 0x90) != -1) {
+    if (this->previewSentinel != -1) {
         loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
         MatrixSetRotation((void *)loc, angle, 0.0f, 0.0f);
         loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
         MatrixSetScaling((void *)loc, tableAngle, tableAngle, tableAngle);
     }
 
-    ((AEGeometry *)(pp(this, 0x10)))->setRotation(tableAngle, tableAngle, tableAngle);
+    this->previewGeometry->setRotation(tableAngle, tableAngle, tableAngle);
 }
 
 // ---- C-ABI fragments ----
@@ -559,24 +559,25 @@ int ListItemWindow::touch_end(int x, int y)
 __attribute__((visibility("hidden"))) extern void ***g_liw_a;
 __attribute__((visibility("hidden"))) extern void ***g_liw_b;
 
-struct Vec4 { int a, b, c, d; };
-
 // ListItemWindow::ListItemWindow()
 ListItemWindow::ListItemWindow()
 {
-    ((String *)((char *)this + 0x74))->ctor();
-    ((String *)((char *)this + 0x80))->ctor();
-    _liw_Matrix_ctor((char *)this + 0x98);
-    _liw_Matrix_ctor((char *)this + 0xd4);
+    this->str74.ctor();
+    this->str80.ctor();
+    _liw_Matrix_ctor(&this->previewTransform);
+    _liw_Matrix_ctor(&this->previewTransform2);
 
     void **a = *g_liw_a;
     void **b = *g_liw_b;
-    *(Vec4 *)this = (Vec4){0, 0, 0, 0};
+    this->labels = 0;
+    this->values = 0;
+    this->statsCur = 0;
+    this->statsPrev = 0;
     void *av = *a;
     void *canvas = *b;
-    pp(this, 0x18) = 0;
+    this->scrollWindow = 0;
     (void)av;
     int h = ((PaintCanvas *)canvas)->GetTextHeight((unsigned int)(long)canvas);
-    i32(this, 0x1c) = h / 2 - 1;
-    i32(this, 0x20) = 0;
+    this->textHalfHeight = h / 2 - 1;
+    this->previewHeight = 0;
 }

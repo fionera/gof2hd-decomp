@@ -1,33 +1,68 @@
 #ifndef GOF2_TOUCHBUTTON_H
 #define GOF2_TOUCHBUTTON_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// TouchButton — top-level class (NO namespace). Byte-exact decomp scaffold.
-// We do NOT model the full layout; fields are accessed by byte offset taken
-// from each work-item's target disasm.
-
-struct TouchButton;    // opaque; we only ever take a TouchButton* and offset-cast.
-
-// 12-byte return-by-value String aggregate (matches other gof2 getters).
-
-// ---- tiny offset-cast helpers -------------------------------------------------
-#ifndef GOF2_BIP_HELPERS
-#define GOF2_BIP_HELPERS
-static inline char*           B (void* p, int off) { return (char*)p + off; }
-static inline int&            I (void* p, int off) { return *(int*)((char*)p + off); }
-static inline void*&          P (void* p, int off) { return *(void**)((char*)p + off); }
-#endif
+// TouchButton — top-level on-screen button (NO namespace).
+// Members are named/typed from accessor bodies, ctor init, draw() usage and the
+// reference binary (android_2.0.16_libgof2hdaa.so). Declared in offset order.
 
 class TouchButton {
-public: void* _opaque; 
+public:
+    int          field_0x0;        // +0x00  cleared in init()
+    int          field_0x4;        // +0x04  cleared in init()
+    uint32_t     fontId;           // +0x08  active-font handle / id
+    String       text;             // +0x0c  primary label String
+    String       splitText;        // +0x18  secondary / value label String (size() peeked at +0x20)
+    int          subId;            // +0x24  sub-image / "achStage" id (-1 == none)
+    uint32_t     image;            // +0x28  pre-supplied image handle (init case 0x13)
+    String       numberText;       // +0x2c  shortcut / corner label String (size() peeked at +0x34)
+    int          adornImage;       // +0x38  small adornment image id (-1 == none)
+    int          imgFrameTL;       // +0x3c  9-patch frame / pressed image
+    int          imgFrameT;        // +0x40  9-patch frame (top / pressed-mid)
+    int          imgFrameTR;       // +0x44  9-patch frame (top-right / pressed-right)
+    int          imgFrameL;        // +0x48  normal base image / left frame
+    int          imgFrameM;        // +0x4c  normal mid frame
+    int          imgFrameR;        // +0x50  normal right frame
+    int          imgFrameBL;       // +0x54  disabled base image / disabled-left frame
+    int          imgFrameB;        // +0x58  disabled mid frame
+    int          imgFrameBR;       // +0x5c  disabled right frame
+    uint32_t     iconImage;        // +0x60  medal/icon image (kind 4)
+    int          iconOverlay;      // +0x64  elite/overlay image (-1 == none)
+    int          iconSmall;        // +0x68  small medal overlay image (-1 == none)
+    int          requestedWidth;   // +0x6c  caller-requested width (<1 == auto)
+    int          kind;             // +0x70  button kind / style selector
+    unsigned char flags0;          // +0x74  placement anchor flags
+    unsigned char flags1;          // +0x75  text-alignment flags
+    int          x;                // +0x78  current x
+    int          y;                // +0x7c  current y
+    int          initX;            // +0x80  base x passed to init/setPosition
+    int          initY;            // +0x84  base y passed to init/setPosition
+    int          height;           // +0x88  image height
+    int          layoutHeight;     // +0x8c  layout/hit height
+    int          width;            // +0x90  total width
+    int          leftWidth;        // +0x94  left frame width
+    int          midWidth;         // +0x98  mid frame width
+    int          rightWidth;       // +0x9c  right frame width
+    int          midStretch;       // +0xa0  middle stretch width
+    int          textOffsetX;      // +0xa4  label x offset
+    int          textOffsetY;      // +0xa8  label y offset
+    int          textColor;        // +0xac  label colour (ARGB, -1 == default)
+    unsigned char touched;         // +0xb0  currently pressed
+    unsigned char alwaysPressed;   // +0xb1  forced-pressed flag
+    unsigned char visible;         // +0xb2  visible flag
+    unsigned char halfTransparent; // +0xb3  disabled/half-transparent flag
+    uint32_t     iconTexId;        // +0xb4  icon texture id (kind 4)
+    unsigned char progressHighlight; // +0xb8  press-progress highlight flag
+    float        pressProgress;    // +0xbc  press-progress fill (0..1)
+    int          touchMargin;      // +0xc0  hit-test margin (from layout metrics)
+    int          fontSpacing;      // +0xc4  cached font kerning/spacing
+
     // ---- methods (converted from free functions) ----
     bool OnTouchBegin(int px, int py);
     unsigned int OnTouchEnd(int px, int py);
     unsigned int OnTouchMove(int px, int py);
     // ---- constructors / destructor (demangle to TouchButton::TouchButton / ~TouchButton) ----
-    // ctor8 had the same (String*,int,int,int,int,int,int) signature and body as ctor, so it
-    // collapses into the first overload. The three embedded label String members (+0xc/+0x18/
-    // +0x2c) are byte-offset views, placement-constructed here and destroyed in ~TouchButton().
+    // The three embedded label Strings (text/splitText/numberText) are real members:
+    // they auto-construct/destruct, so no placement ctor/dtor is needed.
     TouchButton(String *text, int type, int x, int y, int width, int icon, int style);
     TouchButton(String *text, int x, int y, int p4, unsigned char p5);
     TouchButton(int x, int y, String *text, int p4, int p5, unsigned char p6);
@@ -58,5 +93,5 @@ public: void* _opaque;
     void setYPosition(int y);
     bool touchedInside(int px, int py);
     void translate(int dx, int dy);
-};  // no offset accesses observed
+};
 #endif

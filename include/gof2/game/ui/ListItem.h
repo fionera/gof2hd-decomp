@@ -32,24 +32,26 @@ struct EngString {
 
 class ListItem {
 public:
-    void*    field_0x0;                 // +0x0  Array<String*>* (text lines)
-    void*    field_0x4;                 // +0x4  Agent*
-    BluePrint* field_0x8;               // +0x8
-    Ship*    field_0xc;                 // +0xc
-    Item*    field_0x10;                // +0x10
-    void*    field_0x14;                // +0x14 Mission*
-    void*    field_0x18;                // +0x18 PendingProduct*
-    void*    field_0x1c;                // +0x1c owned String*
-    void*    field_0x20;                // +0x20 owned String*
-    uint8_t  field_0x24;                // +0x24 selectable flag
-    int      field_0x28;                // +0x28
-    int      field_0x2c;                // +0x2c
-    int      field_0x30;                // +0x30
-    int      field_0x34;                // +0x34 (-1 sentinel / image index)
-    uint8_t  field_0x38;                // +0x38 textButton flag
-    int      field_0x3c;                // +0x3c
-    int      field_0x40;                // +0x40
-    uint8_t  field_0x44;                // +0x44 text flag
+    Array<AbyssEngine::String *> *lines; // +0x0  text lines
+    Agent*     agent;                   // +0x4
+    BluePrint* bluePrint;               // +0x8
+    Ship*      ship;                    // +0xc
+    // item / selectable / slot / buttonKind are also read by Hud.cpp and HangarList.cpp via
+    // their legacy field_0xNN names; an anonymous union keeps both spellings at one offset.
+    union { Item* item; Item* field_0x10; }; // +0x10
+    Mission*   mission;                 // +0x14
+    PendingProduct* pendingProduct;     // +0x18
+    EngString* name;                    // +0x1c owned String
+    EngString* name2;                   // +0x20 owned String
+    union { uint8_t selectable; uint8_t field_0x24; }; // +0x24 selectable flag
+    union { int slot; int field_0x28; };// +0x28 slot index (-1 sentinel)
+    int        field_0x2c;              // +0x2c (-1 sentinel)
+    union { int buttonKind; int field_0x30; }; // +0x30 0=sell, 1=move-to-cargo
+    int        imageIndex;              // +0x34 (-1 sentinel / image index)
+    uint8_t    textButton;              // +0x38 textButton flag
+    int        field_0x3c;              // +0x3c (-1 sentinel)
+    int        field_0x40;              // +0x40 (-1 sentinel)
+    uint8_t    text;                    // +0x44 text flag
 
     // ---- constructors (each demangles to ListItem::ListItem(...)) ----
     // Exactly one payload pointer is set per overload. The String overloads take the

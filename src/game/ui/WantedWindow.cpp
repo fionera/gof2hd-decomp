@@ -482,11 +482,11 @@ void WantedWindow::draw() {
                     F<int>(layout, 0xc) + F<int>(layout, 0x20);
         ((ImageFactory *)(*g_WantedWindow_draw_factory))->drawChar((Array<ImagePart *> *)this->imageParts, charX, charY, false);
         int textX = F<int>(layout, 0x2d4) + charX + F<int>(layout, 0x2c);
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)((char *)this + 0x54), textX, charY, false);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&this->nameText, textX, charY, false);
 
         ((String *)&s64)->ctor_char(g_WantedWindow_draw_label_a, false);
         (*(String *)&s58 = *(String *)&s64, ((String *)&s58)->addAssign_str((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93)));
-        (*(String *)&s4c = *(String *)&s58, ((String *)&s4c)->addAssign_str((String *)((char *)this + 0x3c)));
+        (*(String *)&s4c = *(String *)&s58, ((String *)&s4c)->addAssign_str(&this->fromText));
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&s4c, textX, charY + F<int>(layout, 0x4) * 2, false);
         ((String *)(&s4c))->dtor();
         ((String *)(&s58))->dtor();
@@ -494,7 +494,7 @@ void WantedWindow::draw() {
 
         ((String *)&s64)->ctor_char(g_WantedWindow_draw_label_b, false);
         (*(String *)&s58 = *(String *)&s64, ((String *)&s58)->addAssign_str((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc93)));
-        (*(String *)&s4c = *(String *)&s58, ((String *)&s4c)->addAssign_str((String *)((char *)this + 0x48)));
+        (*(String *)&s4c = *(String *)&s58, ((String *)&s4c)->addAssign_str(&this->toText));
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)&s4c, textX, charY + F<int>(layout, 0x4) * 3, false);
         ((String *)(&s4c))->dtor();
         ((String *)(&s58))->dtor();
@@ -713,12 +713,12 @@ WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
     }
     self->scrollWindow = 0;
 
-    ((String *)((char *)self + 0x78))->dtor();
-    ((String *)((char *)self + 0x6c))->dtor();
-    ((String *)((char *)self + 0x60))->dtor();
-    ((String *)((char *)self + 0x54))->dtor();
-    ((String *)((char *)self + 0x48))->dtor();
-    ((String *)((char *)self + 0x3c))->dtor();
+    self->rewardText.dtor();
+    self->atText.dtor();
+    self->field_0x60.dtor();
+    self->nameText.dtor();
+    self->toText.dtor();
+    self->fromText.dtor();
     return self;
 }
 
@@ -727,12 +727,12 @@ __attribute__((visibility("hidden"))) extern unsigned int **g_WantedWindow_ctor_
 
 WantedWindow *_ZN12WantedWindowC2Ev(WantedWindow *self)
 {
-    ((String *)((char *)self + 0x3c))->ctor();
-    ((String *)((char *)self + 0x48))->ctor();
-    ((String *)((char *)self + 0x54))->ctor();
-    ((String *)((char *)self + 0x60))->ctor();
-    ((String *)((char *)self + 0x6c))->ctor();
-    ((String *)((char *)self + 0x78))->ctor();
+    self->fromText.ctor();
+    self->toText.ctor();
+    self->nameText.ctor();
+    self->field_0x60.ctor();
+    self->atText.ctor();
+    self->rewardText.ctor();
 
     void **canvasHolder = g_WantedWindow_ctor_canvas;
     self->detailButton = 0;
@@ -745,7 +745,7 @@ WantedWindow *_ZN12WantedWindowC2Ev(WantedWindow *self)
     self->scrollWindow = 0;
     self->buttons = 0;
     self->halfTextHeight = h / 2 - 1;
-    ((PaintCanvas *)*canvasHolder)->Image2DCreate(0x454, (unsigned int *)((char *)self + 0xac));
+    ((PaintCanvas *)*canvasHolder)->Image2DCreate(0x454, (unsigned int *)&self->bgImage);
     ((WantedWindow *)(self))->init();
     return self;
 }
@@ -844,7 +844,7 @@ void WantedWindow::selectWanted(int idx) {
     this->imageParts = ((ImageFactory *)(*g_WantedWindow_select_factory))->loadChar((int *)((Wanted *)(wanted))->getImageParts());
 
     ((Wanted *)(&s34))->getName();
-    ((String *)((String *)((char *)this + 0x54)))->assign(&s34);
+    this->nameText.assign(&s34);
     ((String *)(&s34))->dtor();
 
     if (((Wanted *)(wanted))->isActive() != 0) {
@@ -860,7 +860,7 @@ void WantedWindow::selectWanted(int idx) {
         (*(String *)&s40 = *(String *)&s4c, ((String *)&s40)->addAssign_str((String *)&s70));
         ((String *)&s7c)->ctor_char(g_WantedWindow_s_space, false);
         (*(String *)&s34 = *(String *)&s40, ((String *)&s34)->addAssign_str((String *)&s7c));
-        ((String *)((String *)((char *)this + 0x3c)))->assign(&s34);
+        this->fromText.assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s7c))->dtor();
         ((String *)(&s40))->dtor();
@@ -876,7 +876,7 @@ void WantedWindow::selectWanted(int idx) {
         (*(String *)&s40 = *(String *)&s4c, ((String *)&s40)->addAssign_str((String *)&s70));
         ((String *)&s7c)->ctor_char(g_WantedWindow_s_space, false);
         (*(String *)&s34 = *(String *)&s40, ((String *)&s34)->addAssign_str((String *)&s7c));
-        ((String *)((String *)((char *)this + 0x48)))->assign(&s34);
+        this->toText.assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s7c))->dtor();
         ((String *)(&s40))->dtor();
@@ -892,7 +892,7 @@ void WantedWindow::selectWanted(int idx) {
         (*(String *)&s40 = *(String *)&s4c, ((String *)&s40)->addAssign_str((String *)&s70));
         ((String *)&s7c)->ctor_char(g_WantedWindow_s_space, false);
         (*(String *)&s34 = *(String *)&s40, ((String *)&s34)->addAssign_str((String *)&s7c));
-        ((String *)((String *)((char *)this + 0x6c)))->assign(&s34);
+        this->atText.assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s7c))->dtor();
         ((String *)(&s40))->dtor();
@@ -904,7 +904,7 @@ void WantedWindow::selectWanted(int idx) {
         ((String *)&s40)->ctor_int(((Wanted *)(wanted))->getReward());
         ((String *)&s4c)->ctor_char(g_WantedWindow_s_reward, false);
         (*(String *)&s34 = *(String *)&s40, ((String *)&s34)->addAssign_str((String *)&s4c));
-        ((String *)((String *)((char *)this + 0x78)))->assign(&s34);
+        this->rewardText.assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s4c))->dtor();
         ((String *)(&s40))->dtor();
@@ -920,35 +920,35 @@ void WantedWindow::selectWanted(int idx) {
         }
     } else if (((Wanted *)(wanted))->isTerminated() != 0) {
         ((String *)&s34)->ctor_char(g_WantedWindow_s_terminated_a, false);
-        ((String *)((String *)((char *)this + 0x3c)))->assign(&s34);
+        this->fromText.assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)&s34)->ctor_char(g_WantedWindow_s_terminated_b, false);
-        ((String *)((String *)((char *)this + 0x48)))->assign(&s34);
+        this->toText.assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)&s34)->ctor_char(g_WantedWindow_s_terminated_c, false);
-        ((String *)((String *)((char *)this + 0x6c)))->assign(&s34);
+        this->atText.assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)&s34)->ctor_char(g_WantedWindow_s_terminated_d, false);
-        ((String *)((String *)((char *)this + 0x78)))->assign(&s34);
+        this->rewardText.assign(&s34);
         ((String *)(&s34))->dtor();
     } else {
         String *text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
-        ((String *)((String *)((char *)this + 0x3c)))->assign(text);
+        this->fromText.assign(text);
         text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
-        ((String *)((String *)((char *)this + 0x48)))->assign(text);
+        this->toText.assign(text);
         ((String *)&s40)->ctor_int(((Wanted *)(wanted))->getReward());
         ((String *)&s4c)->ctor_char(g_WantedWindow_s_reward, false);
         (*(String *)&s34 = *(String *)&s40, ((String *)&s34)->addAssign_str((String *)&s4c));
-        ((String *)((String *)((char *)this + 0x78)))->assign(&s34);
+        this->rewardText.assign(&s34);
         ((String *)(&s34))->dtor();
         ((String *)(&s4c))->dtor();
         ((String *)(&s40))->dtor();
         text = (String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d);
-        ((String *)((String *)((char *)this + 0x6c)))->assign(text);
+        this->atText.assign(text);
     }
 
     ((Wanted *)(wanted))->isTerminated();
-    ((String *)((String *)((char *)this + 0x60)))->assign((String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
+    this->field_0x60.assign((String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
 
     void *layout = *g_WantedWindow_select_layout;
     int y = this->windowY;
@@ -972,15 +972,11 @@ void WantedWindow::selectWanted(int idx) {
 
     ((String *)&s34)->ctor_char(g_WantedWindow_s_empty, false);
     ((String *)(&s34))->assign((String *)((GameText *)(*g_WantedWindow_select_text_a))->getText(0xc9d));
-    append_label(&s34, g_WantedWindow_s_line_a,
-                 (String *)((char *)this + 0x3c));
-    append_label(&s34, g_WantedWindow_s_line_b,
-                 (String *)((char *)this + 0x48));
-    append_label(&s34, g_WantedWindow_s_line_c,
-                 (String *)((char *)this + 0x6c));
+    append_label(&s34, g_WantedWindow_s_line_a, &this->fromText);
+    append_label(&s34, g_WantedWindow_s_line_b, &this->toText);
+    append_label(&s34, g_WantedWindow_s_line_c, &this->atText);
     ((Wanted *)(wanted))->getIndex();
-    append_label(&s34, g_WantedWindow_s_line_d,
-                 (String *)((char *)this + 0x78));
+    append_label(&s34, g_WantedWindow_s_line_d, &this->rewardText);
 
     ((String *)&s88)->ctor_char(g_WantedWindow_s_empty, false);
     ((String *)(&s94))->ctor_copy((String *)(&s34), false);
