@@ -10,8 +10,6 @@ namespace AbyssEngine { namespace AEMath {
     void MatrixMultiply(Matrix &, const Matrix &);
 } }
 
-extern "C" void ArrayReleaseClasses_AEGeometryPtr(Array<AEGeometry *> *self);
-extern "C" void *Array_AEGeometryPtr_dtor(Array<AEGeometry *> *self);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 extern "C" void Transform_Update32(uint32_t transform, uint32_t high, long long elapsed, uint32_t zero);
@@ -23,8 +21,6 @@ extern "C" void MatrixSetScaling(Matrix *out, Matrix *base, float x, float y, fl
 void MatrixGetUp(Vector *out, const Matrix *matrix);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
-extern "C" void Array_AEGeometryPtr_ctor(Array<AEGeometry *> *self);
-extern "C" void ArraySetLength_AEGeometryPtr(int length, Array<AEGeometry *> *self);
 
 extern int Explosion_paintCanvas;
 
@@ -84,11 +80,11 @@ Explosion::~Explosion()
 
     Array<AEGeometry *> *streaks = self->fireStreaks;
     if (streaks != 0) {
-        ArrayReleaseClasses_AEGeometryPtr(streaks);
-        streaks = self->fireStreaks;
-        if (streaks != 0) {
-            ::operator delete(Array_AEGeometryPtr_dtor(streaks));
+        for (AEGeometry *e : *streaks) {
+            if (e != 0) { e->~AEGeometry(); ::operator delete(e); }
         }
+        streaks->clear();
+        delete streaks;
     }
     self->fireStreaks = 0;
 }
@@ -660,7 +656,7 @@ void Explosion::addFireStreaks() {
     self->fireStreaks = streaks;
 
     int length = AbyssEngine::AERandom::nextInt(Explosion_random, 7) + 3;
-    ArraySetLength_AEGeometryPtr(length, self->fireStreaks);
+    self->fireStreaks->resize(length);
 
     int *canvas = &Explosion_paintCanvas;
     int (*nextInt)(void *, int) = &AbyssEngine::AERandom::nextInt;

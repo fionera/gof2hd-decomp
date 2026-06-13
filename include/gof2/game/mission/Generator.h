@@ -22,19 +22,6 @@ static inline void *B(void *p, unsigned off) { return (char *)p + off; }
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
-extern "C" void Array_int_ctor(Array<int> *array);
-extern "C" void Array_string_ptr_ctor(Array<AbyssEngine::String *> *array);
-extern "C" void Array_item_ptr_ctor(Array<Item *> *array);
-extern "C" void Array_ship_ptr_ctor(Array<Ship *> *array);
-extern "C" void ArrayAdd_int(int value, Array<int> *array);
-extern "C" void ArrayAdd_item_ptr(Item *value, Array<Item *> *array);
-extern "C" void ArrayAdd_ship_ptr(Ship *value, Array<Ship *> *array);
-extern "C" void ArraySetLength_int(uint32_t length, Array<int> *array);
-extern "C" void ArraySetLength_item_ptr(uint32_t length, Array<Item *> *array);
-extern "C" void ArraySetLength_ship_ptr(uint32_t length, Array<Ship *> *array);
-extern "C" void ArraySetLength_string_ptr(uint32_t length,
-                                           Array<AbyssEngine::String *> *array);
-
 extern "C" int AERandom_nextInt(AbyssEngine::AERandom *self, int bound);
 
 extern "C" int Agent_getCosts(Agent *self);
@@ -136,10 +123,6 @@ extern "C" int Status_hardCoreMode(Status *self);
 extern "C" int Status_inBlackMarketSystem(Status *self);
 extern "C" int Status_inSupernovaSystem(Status *self);
 
-extern "C" void Array_agent_ptr_ctor(Array<Agent *> *array);
-extern "C" void ArraySetLength_agent_ptr(uint32_t length,
-                                          Array<Agent *> *array);
-extern "C" void *Array_int_dtor(Array<int> *array);
 extern "C" Array<SolarSystem *> *Galaxy_getSystems(void *galaxy);
 extern "C" int Galaxy_invDistancePercent(void *galaxy, int x1, int y1, int x2,
                                           int y2);

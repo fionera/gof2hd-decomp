@@ -16,11 +16,6 @@ using String = AbyssEngine::String;
 
 extern "C" void operator_delete(void *ptr);
 
-extern "C" void ArrayReleaseClasses_Objective(Array<Objective *> *array);
-extern "C" void *Array_ObjectivePtr_dtor(Array<Objective *> *array);
-extern "C" void Array_ObjectivePtr_ctor(Array<Objective *> *array);
-extern "C" void ArrayAdd_Objective(Objective *objective, Array<Objective *> *array);
-
 extern "C" Array<KIPlayer *> *Level_getEnemies(Level *level);
 extern "C" int Level_getEnemiesLeft(Level *level);
 extern "C" Route *Level_getPlayerRoute(Level *level);

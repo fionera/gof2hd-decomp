@@ -90,7 +90,6 @@ void AEString_dtor(void *self);
 long Array_dtor(void *self);
 long Mission_ctor(...);
 long Station_getIndex(...);
-long Station_getShips(...);
 long Station_getSystem(...);
 extern uint32_t DAT_00165b08;
 extern uint32_t DAT_00165b0c;
@@ -377,23 +376,23 @@ LAB_00165e0c:
 LAB_00165faa:
   iVar11 = ((Status *)(*piVar22))->gameWon();
   if (iVar11 != 0) {
-    puVar6 = (uint *)((Ship *)(((Status *)(*piVar22))->getShip()))->getCargo();
-    if (puVar6 != (uint *)0x0) {
-      for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-        pIVar7 = *(char **)(puVar6[1] + uVar19 * 4);
-        if ((pIVar7 != (char *)0x0) && (iVar11 = ((Item *)(pIVar7))->getIndex(), iVar11 == 0x83)) {
-          ((Item *)(SUB41(*(uint32_t *)(puVar6[1] + uVar19 * 4),0)))->setUnsaleable(true);
+    Array<Item *> *cargo = ((Ship *)(((Status *)(*piVar22))->getShip()))->getCargo();
+    if (cargo != (Array<Item *> *)0x0) {
+      for (uVar19 = 0; uVar19 < cargo->size(); uVar19 = uVar19 + 1) {
+        Item *item = (*cargo)[uVar19];
+        if ((item != (Item *)0x0) && (iVar11 = item->getIndex(), iVar11 == 0x83)) {
+          item->setUnsaleable(true);
         }
       }
     }
   }
   if (0x79 < (long)in_r0[0x10]) {
-    puVar6 = (uint *)((Ship *)(((Status *)(*piVar22))->getShip()))->getCargo();
-    if (puVar6 != (uint *)0x0) {
-      for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-        pIVar7 = *(char **)(puVar6[1] + uVar19 * 4);
-        if ((pIVar7 != (char *)0x0) && (iVar11 = ((Item *)(pIVar7))->getIndex(), iVar11 == 0xd1)) {
-          ((Item *)(SUB41(*(uint32_t *)(puVar6[1] + uVar19 * 4),0)))->setUnsaleable(true);
+    Array<Item *> *cargo = ((Ship *)(((Status *)(*piVar22))->getShip()))->getCargo();
+    if (cargo != (Array<Item *> *)0x0) {
+      for (uVar19 = 0; uVar19 < cargo->size(); uVar19 = uVar19 + 1) {
+        Item *item = (*cargo)[uVar19];
+        if ((item != (Item *)0x0) && (iVar11 = item->getIndex(), iVar11 == 0xd1)) {
+          item->setUnsaleable(true);
         }
       }
     }
@@ -543,14 +542,15 @@ LAB_00166114:
     pSVar8 = (char *)((Status *)(*piVar22))->getStation();
     iVar2 = Station_getIndex(pSVar8);
     if (iVar2 == 0x6c) {
-      ((Status *)(*piVar22))->getStation();
-      puVar6 = (uint *)Station_getShips();
-      if (puVar6 != (uint *)0x0) {
-        for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-          puVar12 = (uint *)((Ship *)(*(char **)(*(int *)(in_r0[0x61] + 4) + uVar19 * 4)))->getMods();
-          if (puVar12 != (uint *)0x0) {
-            for (uVar20 = 0; uVar20 < *puVar12; uVar20 = uVar20 + 1) {
-              ((Ship *)(*(char **)(puVar6[1] + uVar19 * 4)))->addMod(*(int *)(puVar12[1] + uVar20 * 4));
+      Station *stStation = ((Status *)(*piVar22))->getStation();
+      Array<Ship *> *stationShips = (Array<Ship *> *)stStation->getShips();
+      if (stationShips != (Array<Ship *> *)0x0) {
+        for (uVar19 = 0; uVar19 < stationShips->size(); uVar19 = uVar19 + 1) {
+          Array<int> *mods =
+              ((Ship *)(*(char **)(*(int *)(in_r0[0x61] + 4) + uVar19 * 4)))->getMods();
+          if (mods != (Array<int> *)0x0) {
+            for (uVar20 = 0; uVar20 < mods->size(); uVar20 = uVar20 + 1) {
+              (*stationShips)[uVar19]->addMod((*mods)[uVar20]);
             }
           }
         }

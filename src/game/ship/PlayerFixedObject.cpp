@@ -901,7 +901,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
 
     if (special) {
         if (self->lootList != 0) {
-            ::operator delete(Array_int_dtor((Array<int> *)self->lootList));
+            delete (Array<int> *)self->lootList;
         }
         self->lootList = 0;
     } else {

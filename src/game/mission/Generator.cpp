@@ -230,9 +230,8 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             }
         }
 
-        result = (Array<Agent *> *)operator new(0xc);
-        Array_agent_ptr_ctor(result);
-        ArraySetLength_agent_ptr(count, result);
+        result = new Array<Agent *>();
+        result->resize(count);
 
         uint32_t out = 0;
         for (uint32_t i = 0; i < existing->size(); ++i) {
@@ -254,14 +253,13 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                     ((Agent *)(agent))->setSellItemData(itemId, amount, ((Item *)(item))->getSinglePrice() * amount);
                     ((Agent *)(agent))->setOfferAccepted(false);
                 } else if (offer == 10) {
-                    Array<int> *choices = (Array<int> *)operator new(0xc);
-                    Array_int_ctor(choices);
+                    Array<int> *choices = new Array<int>();
                     for (int j = 0; j != 6; ++j) {
                         int shipId = g_Generator_offerShipIds[j];
                         if (((Station *)((Station *)status->field_14c))->hasShip(shipId) == 0) {
                             Ship *ship = ((Status *)(status))->getShip();
                             if (((Ship *)(ship))->getIndex() != shipId) {
-                                ArrayAdd_int(shipId, choices);
+                                choices->push_back(shipId);
                             }
                         }
                     }
@@ -275,7 +273,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                     } else {
                         ((Agent *)(agent))->setOfferAccepted(true);
                     }
-                    operator delete(Array_int_dtor(choices));
+                    delete choices;
                 }
             }
         }
@@ -692,9 +690,8 @@ Agent *Generator::createAgent(Station *station) {
     if (((Agent *)(agent))->getOffer() == 6) {
         uint32_t count = ((AbyssEngine::AERandom *)(*randomPtr))->nextInt();
         Array<AbyssEngine::String *> *friendNames =
-            (Array<AbyssEngine::String *> *)operator new(0xc);
-        Array_string_ptr_ctor(friendNames);
-        ArraySetLength_string_ptr(count, friendNames);
+            new Array<AbyssEngine::String *>();
+        friendNames->resize(count);
         for (int i = 0; i < (int)count; ++i) {
             AbyssEngine::String *friendName =
                 (AbyssEngine::String *)operator new(0xc);
@@ -757,7 +754,7 @@ extern "C" __attribute__((visibility("hidden"))) void **volatile
 
 static void addShip(Array<Ship *> *list, Ship *base, int race) {
     Ship *ship = ((Ship *)(base))->makeShip(-1);
-    ArrayAdd_ship_ptr(ship, list);
+    list->push_back(ship);
     Ship *added = list->data()[list->size() - 1];
     ((Ship *)(added))->setRace(race);
     ((Ship *)(added))->adjustPrice();
@@ -776,8 +773,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     Array<Ship *> *allShips = *g_Generator_allShips;
 
     if (Station_getIndex(station) == 100 && ((Status *)(status))->dlc1Won() != 0) {
-        Array<Ship *> *result = (Array<Ship *> *)operator new(0xc);
-        Array_ship_ptr_ctor(result);
+        Array<Ship *> *result = new Array<Ship *>();
         for (int i = 0; i != 0x40; ++i) {
             Ship *base = allShips->data()[i];
             if (((Ship *)(base))->hasJumpDriveIntegrated() &&
@@ -789,8 +785,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     }
 
     if (Station_getIndex(station) == 0x6b) {
-        Array<Ship *> *result = (Array<Ship *> *)operator new(0xc);
-        Array_ship_ptr_ctor(result);
+        Array<Ship *> *result = new Array<Ship *>();
         for (int i = 0; i != 0x32; ++i) {
             if (g_Generator_shipRaces[i] == 8) {
                 addShip(result, allShips->data()[i], 8);
@@ -829,9 +824,8 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         }
     }
 
-    Array<Ship *> *result = (Array<Ship *> *)operator new(0xc);
-    Array_ship_ptr_ctor(result);
-    ArraySetLength_ship_ptr(count, result);
+    Array<Ship *> *result = new Array<Ship *>();
+    result->resize(count);
 
     int forcedShip = gold ? 8 : 10;
     for (int i = 0; i < count; ++i) {
@@ -961,9 +955,8 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
     if (stationIndex == 0x4e &&
         ((Status *)(status))->getCurrentCampaignMission() < 7) {
-        Array<Item *> *items = (Array<Item *> *)operator new(0xc);
-        Array_item_ptr_ctor(items);
-        ArraySetLength_item_ptr(3, items);
+        Array<Item *> *items = new Array<Item *>();
+        items->resize(3);
         Array<Item *> *all = *g_Generator_allItems;
         ItemFactory makeIntro = g_Generator_introFactory;
         items->data()[0] = makeIntro(all->data()[0], 1, 0);
@@ -978,8 +971,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
     }
 
     uint32_t stationId = Station_getIndex(station);
-    Array<Item *> *result = (Array<Item *> *)operator new(0xc);
-    Array_item_ptr_ctor(result);
+    Array<Item *> *result = new Array<Item *>();
 
     Array<Item *> *allItems = *g_Generator_allItems;
     void *galaxy = *g_Generator_itemGalaxy;
@@ -995,7 +987,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
     if (((Status *)(status))->getCurrentCampaignMission() == 0x8b &&
         Station_getSystem(station) == 0x19) {
-        ArrayAdd_item_ptr(((Item *)(allItems->data()[0xbe]))->makeItem(), result);
+        result->push_back(((Item *)(allItems->data()[0xbe]))->makeItem());
     }
 
     if (stationId == 0x7e) {
@@ -1005,7 +997,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
             amount = ((AbyssEngine::AERandom *)(*g_Generator_itemRandom))->nextInt() + 1;
         }
         ((Item *)(item))->setAmount(amount);
-        ArrayAdd_item_ptr(item, result);
+        result->push_back(item);
     }
 
     AbyssEngine::AERandom *random = *g_Generator_itemRandom;
@@ -1176,7 +1168,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
         Item *newItem = ((Item *)(item))->makeItem();
         ((Item *)(newItem))->setAmount(amount);
-        ArrayAdd_item_ptr(newItem, result);
+        result->push_back(newItem);
     }
 
     return result;
@@ -1193,10 +1185,9 @@ extern "C" __attribute__((visibility("hidden"))) Status **volatile
 
 Array<int> *Generator::getLootList(int itemIndex, int amount) {
     if (itemIndex >= 0) {
-        Array<int> *result = (Array<int> *)operator new(0xc);
-        Array_int_ctor(result);
-        ArrayAdd_int(itemIndex, result);
-        ArrayAdd_int(amount, result);
+        Array<int> *result = new Array<int>();
+        result->push_back(itemIndex);
+        result->push_back(amount);
         return result;
     }
 
@@ -1211,13 +1202,12 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
         return 0;
     }
 
-    Array<int> *result = (Array<int> *)operator new(0xc);
-    Array_int_ctor(result);
+    Array<int> *result = new Array<int>();
     uint32_t length = (uint32_t)(pairCount << 1);
     if (pairCount == 0) {
         length = 2;
     }
-    ArraySetLength_int(length, result);
+    result->resize(length);
 
     for (uint32_t out = 0; out < result->size(); out += 2) {
         bool found = false;

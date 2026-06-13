@@ -8,7 +8,6 @@
 Array<int> *BluePrint_getIngredientList(BluePrint *self);
 Array<int> *BluePrint_getQuantityList(BluePrint *self);
 BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item);   // BluePrint::BluePrint(int)
-extern "C" void ArraySetLengthInt(uint32_t n, Array<int> *a);
 extern "C" int Station_getIndex(void *station);
 
 // Hidden PC-relative pointer-to-the-item-database root.
@@ -52,20 +51,12 @@ AbyssEngine::String12 BluePrint::getStationName() {
     return r;
 }
 
-extern "C" void ArrayReleaseInt(Array<int> *a);   // ArrayRelease<int>
-extern "C" void *ArrayInt_dtor(Array<int> *a);    // Array<int>::~Array
 // AbyssEngine::String::~String
 
 // BluePrint::~BluePrint() (D2). Returns this.
 void *_ZN9BluePrintD2Ev(BluePrint *self)
 {
-    Array<int> *a = self->ingredientCounters;
-    if (a != 0) {
-        ArrayReleaseInt(a);
-        Array<int> *a2 = self->ingredientCounters;
-        if (a2 != 0)
-            ::operator delete(ArrayInt_dtor(a2));
-    }
+    delete self->ingredientCounters;
     self->ingredientCounters = 0;
     ((String *)(&self->stationName))->dtor();
     return self;
@@ -187,7 +178,6 @@ Array<int> *BluePrint_getQuantityList(BluePrint *self)
 }
 
 // AbyssEngine::String::String()
-extern "C" void ArrayInt_ctor(void *a);                // Array<int>::Array()
 // Hidden PC-relative pointer-to-the-item-database root.
 extern void *const gItemDB __attribute__((visibility("hidden")));
 
@@ -205,7 +195,7 @@ BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item)
     self->ingredientCounters = 0;
     if (((Item *)(it))->getIngredients() != 0) {
         self->ingredientCounters = new Array<int>();
-        ArraySetLengthInt(((Item *)(it))->getIngredients()->size(), self->ingredientCounters);
+        self->ingredientCounters->resize(((Item *)(it))->getIngredients()->size());
         Array<int> *arr = self->ingredientCounters;
         for (uint32_t i = 0; i < arr->size(); i++)
             arr->data()[i] = quantities->data()[i];

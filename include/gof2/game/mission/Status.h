@@ -26,6 +26,7 @@ struct Wanted;
 struct Agent;
 struct BluePrint;
 struct Item;
+struct PendingProduct;
 
 // =====================================================================================
 // Status — the persistent player/game state.  Field offsets recovered from the target.
@@ -36,7 +37,7 @@ public:
     int32_t collectedBounties[4];          // 0x004 .. 0x010  (getCollectedBounties: this+idx*4+4)
     int32_t standing;
     Array<BluePrint *> *bluePrints;        // 0x018  (Array<BluePrint*>*)
-    void   *pendingProducts;               // 0x01c  (Array<PendingProduct*>*)
+    Array<PendingProduct *> *pendingProducts; // 0x01c
     Array<Agent *> *agents;
     int32_t wingmen;
     int32_t field_0x28;
@@ -44,10 +45,10 @@ public:
     int32_t field_0x30;
     int32_t passengers;
     Array<bool> *systemVisibilities;
-    int32_t field_0x3c;
-    int8_t  field_0x40;
-    int32_t field_0x44;
-    int32_t field_0x48;
+    Array<int> *field_0x3c;                 // 0x03c  (Array<int>*)
+    Array<int> *field_0x40;                 // 0x040  (Array<int>*)
+    Array<int> *field_0x44;                 // 0x044  (Array<int>*)
+    Array<int> *field_0x48;                 // 0x048  (Array<int>*)
     Array<bool> *field_4c;
     Array<bool> *field_50;
     Array<bool> *field_54;
@@ -56,7 +57,7 @@ public:
     Station *playerStation;
     uint8_t pad_07c[0x10];                 // 0x07c .. 0x08b
     int32_t field_8c;
-    void   *field_90;                      // 0x090  (Array<int>*)
+    Array<int> *field_90;                  // 0x090
     Array<bool> *field_94;
     Array<bool> *field_98;
     int32_t field_9c;

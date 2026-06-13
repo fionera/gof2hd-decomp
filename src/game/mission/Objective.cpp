@@ -28,11 +28,10 @@ Objective *Objective::addObjective(Objective *objective)
 {
     Array<Objective *> *children = this->field_0x10;
     if (children == 0) {
-        children = (Array<Objective *> *)operator new(sizeof(Array<Objective *>));
-        Array_ObjectivePtr_ctor(children);
+        children = new Array<Objective *>();
         this->field_0x10 = children;
     }
-    ArrayAdd_Objective(objective, children);
+    children->push_back(objective);
     return this;
 }
 
@@ -62,10 +61,10 @@ Objective *_ZN9ObjectiveD2Ev(Objective *self)
 {
     Array<Objective *> *children = self->field_0x10;
     if (children != 0) {
-        ArrayReleaseClasses_Objective(children);
-        children = self->field_0x10;
-        if (children != 0)
-            ::operator delete(Array_ObjectivePtr_dtor(children));
+        for (Objective *child : *children)
+            delete child;
+        children->clear();
+        delete children;
     }
     self->field_0x10 = 0;
 
@@ -86,10 +85,10 @@ Objective::~Objective()
 {
     Array<Objective *> *children = this->field_0x10;
     if (children != 0) {
-        ArrayReleaseClasses_Objective(children);
-        children = this->field_0x10;
-        if (children != 0)
-            ::operator delete(Array_ObjectivePtr_dtor(children));
+        for (Objective *child : *children)
+            delete child;
+        children->clear();
+        delete children;
     }
     this->field_0x10 = 0;
 

@@ -1,13 +1,5 @@
 #include "gof2/game/mission/Item.h"
 
-extern "C" void Array_Item_ctor(ItemArray *array);
-extern "C" void ArraySetLength_Item(uint32_t length, ItemArray *array);
-extern "C" void ArrayAdd_Item(Item *item, ItemArray *array);
-extern "C" void ArrayAdd_Array(ItemArray *items, ItemArray *array);
-extern "C" void ArrayRemove_Item(Item *item, ItemArray *items);
-extern "C" void *Array_Item_dtor(ItemArray *array);
-extern "C" void ArraySetLength_Item(uint32_t size, ItemArray *array);
-
 // Player status singleton (defined elsewhere); only the accessors used here.
 struct Ship {
     int getCurrentLoad();
@@ -470,9 +462,8 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems)
     if (items != 0) {
         result = items;
         if (stationItems != 0) {
-            ItemArray *stationCopy = static_cast<ItemArray *>(operator new(sizeof(ItemArray)));
-            Array_Item_ctor(stationCopy);
-            ArraySetLength_Item(stationItems->size(), stationCopy);
+            ItemArray *stationCopy = new ItemArray();
+            stationCopy->resize(stationItems->size());
 
             uint32_t stationCount = stationItems->size();
             for (uint32_t i = 0; stationCount != i; i++) {
@@ -499,9 +490,8 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems)
             }
 
             if (static_cast<int>(remaining) > 0) {
-                ItemArray *unmatched = static_cast<ItemArray *>(operator new(sizeof(ItemArray)));
-                Array_Item_ctor(unmatched);
-                ArraySetLength_Item(remaining, unmatched);
+                ItemArray *unmatched = new ItemArray();
+                unmatched->resize(remaining);
 
                 uint32_t totalCopied = stationCopy->size();
                 uint32_t unmatchedIndex = 0;
@@ -513,9 +503,8 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems)
                     }
                 }
 
-                result = static_cast<ItemArray *>(operator new(sizeof(ItemArray)));
-                Array_Item_ctor(result);
-                ArraySetLength_Item(items->size() + unmatched->size(), result);
+                result = new ItemArray();
+                result->resize(items->size() + unmatched->size());
 
                 uint32_t itemCountForCopy = items->size();
                 for (uint32_t i = 0; itemCountForCopy != i; i++) {
@@ -563,10 +552,11 @@ check:
         goto loop;
     }
 
-    ItemArray *made = static_cast<ItemArray *>(operator new(sizeof(ItemArray)));
-    Array_Item_ctor(made);
-    ArrayAdd_Item(item->makeItem(amount), made);
-    return ArrayAdd_Array(items, made);
+    ItemArray *made = new ItemArray();
+    made->push_back(item->makeItem(amount));
+    for (Item *element : *items) {
+        made->push_back(element);
+    }
 }
 
 ItemArray *Item::extractItems(ItemArray *items, bool station)
@@ -575,8 +565,7 @@ ItemArray *Item::extractItems(ItemArray *items, bool station)
         return 0;
     }
 
-    ItemArray *extracted = static_cast<ItemArray *>(operator new(sizeof(ItemArray)));
-    Array_Item_ctor(extracted);
+    ItemArray *extracted = new ItemArray();
 
     ItemArray *v = items;
     for (uint32_t i = 0; i < v->size(); i++) {
@@ -588,7 +577,7 @@ ItemArray *Item::extractItems(ItemArray *items, bool station)
             amount = item->stationAmount;
         }
         if (amount > 0) {
-            ArrayAdd_Item(item->makeItem(), extracted);
+            extracted->push_back(item->makeItem());
         }
     }
 
@@ -619,7 +608,12 @@ void Item::combineDuplicates(ItemArray *items)
         for (uint32_t i = 0; i < size; i++) {
             Item *item = static_cast<Item **>(v->data())[i];
             if (item->amount == 0 && item->stationAmount == 0) {
-                ArrayRemove_Item(item, items);
+                for (uint32_t k = 0; k < items->size(); k++) {
+                    if ((*items)[k] == item) {
+                        items->erase(items->begin() + k);
+                        break;
+                    }
+                }
                 size = v->size();
             }
         }
@@ -631,9 +625,8 @@ ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems)
     uint32_t itemCount = items ? items->size() : 0;
     int stationCount = stationItems ? static_cast<int>(stationItems->size()) : 0;
 
-    ItemArray *mixed = static_cast<ItemArray *>(operator new(sizeof(ItemArray)));
-    Array_Item_ctor(mixed);
-    ArraySetLength_Item(stationCount + itemCount, mixed);
+    ItemArray *mixed = new ItemArray();
+    mixed->resize(stationCount + itemCount);
 
     if (static_cast<int>(itemCount) >= 1 && stationCount == 0) {
         uint32_t i = 0;
@@ -685,9 +678,8 @@ ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems)
             stationIndex++;
         }
 
-        ItemArray *trimmed = static_cast<ItemArray *>(operator new(sizeof(ItemArray)));
-        Array_Item_ctor(trimmed);
-        ArraySetLength_Item(itemCount, trimmed);
+        ItemArray *trimmed = new ItemArray();
+        trimmed->resize(itemCount);
 
         int copyIndex = 0;
         while (copyIndex < static_cast<int>(itemCount)) {
@@ -695,7 +687,7 @@ ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems)
             copyIndex++;
         }
 
-        operator delete(Array_Item_dtor(mixed));
+        delete mixed;
 
         uint32_t size = trimmed->size();
         bool done = true;
