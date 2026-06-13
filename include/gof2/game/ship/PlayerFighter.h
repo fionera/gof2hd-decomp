@@ -202,27 +202,21 @@ public:
     void setPosition_ref(const Vector &v);
     void setRotate(int v);
     void setShootError(int v);
+    void setShipGroup(AEGeometry *geom, int group, bool flag);
     void setSpeed(float v);
     void setWingmanCommand(int cmd, KIPlayer *target);
     void update(int dt);
 
-    // ---- tail-call / veneer fragments ----
-    // Each is the terminal b.w of a PlayerFighter method into a relocated GOT slot
-    // that lands in the inherited engine/base implementation: AEGeometry's group
-    // setter, the awake/exhaust/render dispatch, the bounding-volume array adder,
-    // the loot setter and the KIPlayer base destructor. They have no static body of
-    // their own (pure GOT veneer), so the work lives behind the extern shim the
-    // linker resolves. Modeling them as members keeps the original control flow.
-    // The first pointer argument of each veneer is a real parameter (the target
-    // geometry / slot / volume / transform), not a `this` receiver, so these are
-    // static: they forward straight to the relocated GOT landing pad.
-    static void setShipGroup_base(AEGeometry *geom, int group, bool flag);
-    static void awake_tail(int geom, int on);
-    void cloak_off_helper();
-    void *base_dtor();
-    static void setMissionCrate_tail(int slot, Array<int> *loot);
-    static void setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *volumes);
-    static void setExhaustVisible_apply(unsigned int transform, bool visible);
-    static void render_tail(int geom);
+    // The terminal tail-calls these methods originally made (setShipGroup, awake,
+    // setExhaustVisible, render, setBV, setMissionCrate, ~PlayerFighter,
+    // setCloakingPossible) resolve to inherited / engine base implementations and
+    // are modeled directly at the call sites in the .cpp:
+    //   setShipGroup -> KIPlayer::setShipGroup(AEGeometry*, int, bool)  @0x73114
+    //   awake        -> AEGeometry::setVisible(bool)                    @0x72d24
+    //   setExhaustV. -> AbyssEngine::Transform::SetVisible(bool)        @0x7249c
+    //   render       -> AEGeometry::render()                           @0x72238
+    //   setBV / setMissionCrate -> ArrayAdd<T>(item, Array<T>&)        @0x75964 / @0x7021c
+    //   ~PlayerFighter -> KIPlayer::~KIPlayer()                        @0x732b8
+    //   setCloakingPossible helper -> PlayerFighter::handleCloaking()  @0x757e4
 };
 #endif

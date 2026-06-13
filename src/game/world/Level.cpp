@@ -807,9 +807,6 @@ extern "C" {
 void *Level_opnew_cg(unsigned size);
 void Gun_ctor_cg(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i,
                  int j, int k, int l, int m);
-void Gun_setIndex_cg(Gun *g, int idx);
-void Gun_setPlayerGun_cg(Gun *g, int flag);
-void Gun_setErrorMagnitudePercentage_cg(Gun *g, int v);
 void Gun_setLevel_cg(Gun *g, Level *self);
 void BeamGun_ctor_cg(ObjectGun *o, int a, Gun *g, int idx, Level *self);
 void RocketGun_ctor_cg(ObjectGun *o, int a, Gun *g, int res, int b, int c, int d, int e,
@@ -838,9 +835,9 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         if (res < 0) {
             gun = (Gun *)Level_opnew_cg(0x114);
             Gun_ctor_cg(gun, owner, dmg, 1, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
-            Gun_setIndex_cg(gun, idx);
+            gun->setIndex(idx);
             gun->weaponType = kind;
-            Gun_setPlayerGun_cg(gun, 1);
+            gun->setPlayerGun(1);
             obj = (ObjectGun *)Level_opnew_cg(0x24);
             BeamGun_ctor_cg(obj, owner, gun, idx, thisptr);
         } else {
@@ -849,17 +846,17 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
             if (kind == 3) {
                 Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, g_cg_rocketFx,
                             0, 0, 0);
-                Gun_setIndex_cg(gun, idx);
+                gun->setIndex(idx);
                 gun->weaponType = 3;
-                Gun_setPlayerGun_cg(gun, 1);
-                Gun_setErrorMagnitudePercentage_cg(gun, 0x14);
+                gun->setPlayerGun(1);
+                gun->setErrorMagnitudePercentage(0x14);
                 obj = (ObjectGun *)Level_opnew_cg(0xe8);
                 RocketGun_ctor_cg(obj, owner, gun, res, 0, 0, 0, 1, thisptr);
             } else {
                 Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
-                Gun_setIndex_cg(gun, idx);
+                gun->setIndex(idx);
                 gun->weaponType = kind;
-                Gun_setPlayerGun_cg(gun, 1);
+                gun->setPlayerGun(1);
                 obj = (ObjectGun *)Level_opnew_cg(0xb0);
                 ObjectGun_ctor_cg(obj, owner, gun, res, 1000, thisptr);
             }
@@ -870,12 +867,12 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 0x19:
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 0x19, hp, cool, rate, color, 0, 0, g_cg_objFx, 0, 0, 0);
-        Gun_setIndex_cg(gun, idx);
+        gun->setIndex(idx);
         gun->weaponType = kind;
-        Gun_setPlayerGun_cg(gun, 1);
+        gun->setPlayerGun(1);
         obj = (ObjectGun *)Level_opnew_cg(0xb0);
         ObjectGun_ctor_cg(obj, owner, gun, ((int *)g_cg_objTable)[idx], 1000, thisptr);
-        Gun_setErrorMagnitudePercentage_cg(gun, 2);
+        gun->setErrorMagnitudePercentage(2);
         break;
     case 4:
     case 5:
@@ -883,9 +880,9 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun = (Gun *)Level_opnew_cg(0x114);
         int barrels = (kind == 0x28) ? (idx - 0xd3) : 5;
         Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
-        Gun_setIndex_cg(gun, idx);
+        gun->setIndex(idx);
         gun->weaponType = kind;
-        Gun_setPlayerGun_cg(gun, 1);
+        gun->setPlayerGun(1);
         obj = (ObjectGun *)Level_opnew_cg(0xe8);
         RocketGun_ctor_cg(obj, owner, gun, ((int *)g_cg_rocketTable)[idx], 0, 0, kind,
                           (kind == 0x28 || kind == 5) ? 1 : 0, thisptr);
@@ -897,9 +894,9 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 0x22: {
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 1, hp, cool, rate, color, 0, 0, g_cg_objFx, 0, 0, 0);
-        Gun_setIndex_cg(gun, idx);
+        gun->setIndex(idx);
         gun->weaponType = kind;
-        Gun_setPlayerGun_cg(gun, 1);
+        gun->setPlayerGun(1);
         int attr = Item_getAttribute_cg(*(int *)(*(int *)(*g_cg_itemTableA + 4) + idx * 4));
         obj = (ObjectGun *)Level_opnew_cg(300);
         BombGun_ctor_cg(obj, gun, ((unsigned *)g_cg_bombTable)[idx], 1, kind, attr == 1 ? 1 : 0,
@@ -914,9 +911,9 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         if (kind == 0x23) { fx = (idx == 0xb5 || idx != 0x30) ? g_cg_mineFx : g_cg_rocketFx; }
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 0xf, hp, cool, rate, color, extra, 0, fx, 0, 0, 0);
-        Gun_setIndex_cg(gun, idx);
+        gun->setIndex(idx);
         gun->weaponType = kind;
-        Gun_setPlayerGun_cg(gun, 1);
+        gun->setPlayerGun(1);
         if ((idx == 0x30 || idx == 0xe0 || idx == 0xb5)) {
             gun->field_0xa4 = 1;
             if (idx == 0xe0) gun->field_0xa5 = 1;
@@ -929,9 +926,9 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 0xb: {
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 10, hp, cool, rate, 0x40000000, 0, 0, 0, 0, 0, 0);
-        Gun_setIndex_cg(gun, idx);
+        gun->setIndex(idx);
         gun->weaponType = 0xb;
-        Gun_setPlayerGun_cg(gun, 1);
+        gun->setPlayerGun(1);
         obj = (ObjectGun *)Level_opnew_cg(0xd4);
         MineGun_ctor_cg(obj, gun, ((int *)g_cg_mineTable)[idx], 1, 0xb, thisptr);
         Globals_addSoundResourceToList_cg(*g_cg_mineSnd);
@@ -940,9 +937,9 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 0x27: {
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, 0, 3, hp, cool, rate, 0x40000000, 0, 0, 0, 0, 0, 0);
-        Gun_setIndex_cg(gun, idx);
+        gun->setIndex(idx);
         gun->weaponType = 0x27;
-        Gun_setPlayerGun_cg(gun, 1);
+        gun->setPlayerGun(1);
         obj = (ObjectGun *)Level_opnew_cg(0xb4);
         SentryGun_ctor_cg(obj, gun, ((int *)g_cg_sentryTable)[idx], 1, 0x27, thisptr);
         Globals_addSoundResourceToList_cg(*g_cg_mineSnd);
@@ -951,9 +948,9 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 0x2a: {
         gun = (Gun *)Level_opnew_cg(0x114);
         Gun_ctor_cg(gun, owner, dmg, 1, hp, 1, rate, color, 0, 0, 0, 0, 0, 0);
-        Gun_setIndex_cg(gun, idx);
+        gun->setIndex(idx);
         gun->weaponType = 0x2a;
-        Gun_setPlayerGun_cg(gun, 1);
+        gun->setPlayerGun(1);
         obj = (ObjectGun *)Level_opnew_cg(300);
         BombGun_ctor_cg(obj, gun, ((unsigned *)g_cg_bombTable2a)[idx], 1, 0x2a, 0, thisptr);
         Globals_addSoundResourceToList_cg(*g_cg_bombSnd);
@@ -1523,10 +1520,7 @@ struct PlayerTurret;
 __attribute__((visibility("hidden"))) extern int *g_cft_stack; // [DAT_000cc3e8]
 
 extern "C" {
-void Player_setVulnerable_cft(Player *player, int flag);
 int  Player_getMaxHitpoints_cft();
-void Player_setMaxHitpoints_cft(Player *p, int hp);
-void PlayerTurret_setHost_cft(PlayerTurret *t, KIPlayer *host, void *offset);
 }
 
 // Level::createFighterTurrets() — attaches a defensive turret to capital-class enemies.
@@ -1543,12 +1537,12 @@ void Level::createFighterTurrets()
             int kind = *(int *)(ki + 0x7c);
             if (kind == 0x2d || kind == 0x33) {
                 PlayerTurret *t = (PlayerTurret *)this->createStaticObject_cft(0, 0x1a74, 1);
-                Player_setVulnerable_cft(t->player, 0);
+                t->player->setVulnerable(0);
                 Player *pp = t->player;
                 int hp = Player_getMaxHitpoints_cft();
-                Player_setMaxHitpoints_cft(pp, hp);
+                pp->setMaxHitpoints(hp);
                 char offset[12] = {0};
-                PlayerTurret_setHost_cft(t, (KIPlayer *)ki, offset);
+                t->setHost((KIPlayer *)ki, *(Vector *)offset);
                 *(PlayerTurret **)(ki + 0x10) = t;
                 t->standing = (kind == 0x2d) ? 8 : 0;
                 t->field_0x74 = 1;
@@ -1639,7 +1633,6 @@ int  AERandom_nextInt_cm(int rng);
 int  cm_randPos(int rng, int slot); // randomized position component
 void *Level_opnew_cm(unsigned size);
 int  Globals_getRandomEnemyFighter_cm(Globals *g, int race);
-void Player_setAlwaysEnemy_cm(Player *p);
 // The full per-mission-type scene construction (escorts, freighters, derelicts, generators, radio
 // triggers, ...) — thousands of lines of SIMD-heavy mission scripting Ghidra could not lift.
 void Level_cm_buildMissionScene(Level *self, Mission *mission);
@@ -1685,7 +1678,7 @@ void Level::createMission()
             float y = (float)(cm_randPos(rng, 1) - 40000);
             float z = (float)(cm_randPos(rng, 2) - 60000);
             (*(void (**)(int *, float, float, float))(*kp + 0x48))(kp, x, y, z);
-            Player_setAlwaysEnemy_cm(*(Player **)((char *)kp + 4));
+            (*(Player **)((char *)kp + 4))->setAlwaysEnemy(true);
         }
     }
 
@@ -1971,7 +1964,6 @@ extern "C" {
 int  Status_getCurrentCampaignMission_ccm();
 void *Level_opnew_ccm(unsigned size);
 void KIPlayer_setToSleep_ccm(KIPlayer *k);
-void Player_setAlwaysEnemy_ccm(Player *p);
 void Player_setHitpoints_ccm(int p);
 void PlayerFighter_setExhaustVisible_ccm(int pf);
 // The story-battle builder for one campaign mission index: each case scripts a bespoke scene
@@ -1998,8 +1990,7 @@ void Level::createCampaignMission()
             int ship = (int)(intptr_t)this->createShip_ccm(8, 0, type, 0, 1, 0);
             *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) = ship;
             KIPlayer_setToSleep_ccm(*(KIPlayer **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4));
-            Player_setAlwaysEnemy_ccm(
-                *(Player **)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 4));
+            (*(Player **)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 4))->setAlwaysEnemy(true);
             int *kp = *(int **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
             (*(void (**)(int *, float, float, float))(*kp + 0x48))(kp, c, c, c);
             int base = *(int *)(*(int *)(self + 0xf8) + 4);
@@ -2428,9 +2419,6 @@ extern "C" {
 int  ApplicationManager_GetCurrentApplicationModule_cp(ApplicationManager *m);
 void *Level_opnew_cp(unsigned size);
 void operator_delete_cp(void *p);
-void Player_setEnemies_cp(Player *p, void *arr);
-void Player_addEnemies_cp(Player *p, void *arr);
-void Player_setEnemy_cp(Player *p, Player *e);
 int  Player_isAlwaysFriend_cp();
 int  Status_getCurrentCampaignMission_cp();
 int  Status_inAlienOrbit_cp();
@@ -2440,7 +2428,6 @@ int  Station_stationHasHiddenBlueprint_cp(Station *s, int flag);
 int  Status_getMission_cp();
 int  Mission_getType_cp();
 int  Mission_isEmpty_cp();
-int  Mission_isCampaignMission_cp(Mission *m);
 int  KIPlayer_isWingMan_cp();
 int  PlayerFixedObject_getDockingType_cp();
 }
@@ -2463,7 +2450,7 @@ void Level::connectPlayers()
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
                 *(int *)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + j * 4) + 4);
-        Player_setEnemies_cp((Player *)**(int **)(self + 0xf0), arr);
+        ((Player *)**(int **)(self + 0xf0))->setEnemies((Array<Player *> *)arr);
         operator_delete_cp(ArrayPlayer_dtor_cp(arr));
     }
     // add asteroids/landmarks arrays as additional enemies.
@@ -2475,7 +2462,7 @@ void Level::connectPlayers()
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
                 *(int *)(*(int *)(*(int *)(*(int *)(self + 0xfc) + 4) + j * 4) + 4);
-        Player_addEnemies_cp((Player *)**(int **)(self + 0xf0), arr);
+        ((Player *)**(int **)(self + 0xf0))->addEnemies((Array<Player *> *)arr);
         operator_delete_cp(ArrayPlayer_dtor_cp(arr));
     }
     if (*(int *)(self + 0xf4) != 0 && *(int *)(self + 0xf0) != 0) {
@@ -2486,7 +2473,7 @@ void Level::connectPlayers()
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
                 *(int *)(*(int *)(*(int *)(*(int *)(self + 0xf4) + 4) + j * 4) + 4);
-        Player_addEnemies_cp((Player *)**(int **)(self + 0xf0), arr);
+        ((Player *)**(int **)(self + 0xf0))->addEnemies((Array<Player *> *)arr);
         operator_delete_cp(ArrayPlayer_dtor_cp(arr));
     }
 
@@ -2547,21 +2534,21 @@ void Level::connectPlayers()
         if (branchA) {
             // mission-type-specific carve-outs that fall into the "always friend" path.
             int tmp;
-            if (Mission_isCampaignMission_cp(m) != 0) {
+            if (m->isCampaignMission() != 0) {
                 tmp = Status_getCurrentCampaignMission_cp();
                 if (tmp == 0x10 && *(int *)(e + 0x28) == 9) jumpAlwaysFriend = true;
             }
-            if (!jumpAlwaysFriend && Mission_isCampaignMission_cp(m) != 0) {
+            if (!jumpAlwaysFriend && m->isCampaignMission() != 0) {
                 tmp = Status_getCurrentCampaignMission_cp();
                 if (tmp == 0x18 && *(int *)(e + 0x28) == 9) jumpAlwaysFriend = true;
             }
-            if (!jumpAlwaysFriend && Mission_isCampaignMission_cp(m) != 0) {
+            if (!jumpAlwaysFriend && m->isCampaignMission() != 0) {
                 tmp = Status_getCurrentCampaignMission_cp();
                 if (tmp == 0x1c && *(int *)(e + 0x28) == 9) jumpAlwaysFriend = true;
             }
             if (!jumpAlwaysFriend) {
-                if (Mission_isCampaignMission_cp(m) != 0) Status_getCurrentCampaignMission_cp();
-                if (Mission_isCampaignMission_cp(m) != 0) Status_getCurrentCampaignMission_cp();
+                if (m->isCampaignMission() != 0) Status_getCurrentCampaignMission_cp();
+                if (m->isCampaignMission() != 0) Status_getCurrentCampaignMission_cp();
 
                 int *dst = (int *)((char *)arr + 4);
                 int slot = 0;
@@ -2636,12 +2623,12 @@ void Level::connectPlayers()
             *(int *)(*(int *)((char *)arr + 4) + *(int *)arr * 4 - 4) = **(int **)(self + 0xf0);
         }
 
-        Player_addEnemies_cp(*(Player **)(e + 4), arr);
+        (*(Player **)(e + 4))->addEnemies((Array<Player *> *)arr);
         operator_delete_cp(ArrayPlayer_dtor_cp(arr));
 
         Status_getMission_cp();
         if (eFaction == 10 && Mission_isEmpty_cp() != 0)
-            Player_setEnemy_cp(*(Player **)(e + 4), (Player *)**(int **)(self + 0xf0));
+            (*(Player **)(e + 4))->setEnemy((Player *)**(int **)(self + 0xf0));
     }
 }
 
@@ -3099,7 +3086,6 @@ void StarSystem_getLightDirection_cso(void *dst);
 int  GameText_getText_cso(int id);
 void PlayerFixedObject_setName_cso(PlayerFixedObject *o, String *n);
 void PlayerFixedObject_setDockingType_cso(PlayerFixedObject *o, int t);
-void Player_setAlwaysFriend_cso(Player *p, int flag);
 void *Level_opnew_cso(unsigned size);
 void operator_delete_cso(void *p);
 }
@@ -3134,7 +3120,7 @@ void Level::createStaticObjects()
                 AEGeometry_setDirection_cso(geo, (Vector *)dir);
                 String *txt = (String *)GameText_getText_cso(**g_cso_textA);
                 *(String *)(o + 0x18) = *txt;
-                Player_setAlwaysFriend_cso(*(Player **)(o + 4), 1);
+                (*(Player **)(o + 4))->setAlwaysFriend(1);
                 void *arr = *(void **)(self + 0xf8);
                 if (arr == 0) {
                     arr = Level_opnew_cso(0xc);
@@ -3167,7 +3153,7 @@ void Level::createStaticObjects()
             if (*(void **)(o + 0x50) != 0)
                 operator_delete_cso(Array_int_dtor_cso(*(void **)(o + 0x50)));
             *(int *)(o + 0x50) = 0;
-            Player_setAlwaysFriend_cso(*(Player **)(o + 4), 1);
+            (*(Player **)(o + 4))->setAlwaysFriend(1);
             void *arr = *(void **)(self + 0xf8);
             if (arr == 0) {
                 arr = Level_opnew_cso(0xc);
@@ -3481,24 +3467,18 @@ int   Status_getMission_ag();
 int   Status_gameWon_ag();
 int   Status_getWantedInCurrentOrbit_ag(Status *s);
 int   Mission_getType_ag();
-int   Mission_isCampaignMission_ag(Mission *m);
 int   KIPlayer_isWingMan_ag();
 int   KIPlayer_isEnemy_ag(KIPlayer *k);
 int   KIPlayer_getType_ag(KIPlayer *k);
 void  KIPlayer_addGun_ag(Gun *target, int gun);
 int   Player_isAlwaysFriend_ag();
 int   Player_isAlwaysEnemy_ag();
-void  Player_setPlayShootSound_ag(Player *p, int flag, int v);
 int   Player_getMaxHitpoints_ag();
-void  Player_setMaxHitpoints_ag(Player *p, int hp);
-int   PlayerTurret_getHost_ag(PlayerTurret *t);
 int   Wanted_getWeapon_ag(Wanted *w);
 int   Item_getAttribute_ag(int item);
 void  Gun_ctor_ag(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i,
                   int j, int k, int l, int m);
-void  Gun_setFriendGun_ag(Gun *g, int flag);
 void  Gun_setLevel_ag(Gun *g, Level *self);
-void  Gun_setIndex_ag(Gun *g, int idx);
 void  RocketGun_ctor_ag(RocketGun *r, int a, Gun *g, int res, int b, int c, int d, int e,
                         Level *self);
 void  ObjectGun_ctor_ag(ObjectGun *o, int a, Gun *g, int res, int d, Level *self);
@@ -3563,7 +3543,7 @@ void Level::assignGuns()
 
         {
             if (*(int *)(self + 0xc0) == 2)
-                Player_setPlayShootSound_ag(*(Player **)(e + 4), 0, 2);
+                (*(Player **)(e + 4))->setPlayShootSound(0, 2);
 
             int color = 0x41800000;
             int dmg;
@@ -3604,49 +3584,49 @@ void Level::assignGuns()
             int won = Status_gameWon_ag();
             int rampMis = (won != 0) ? 0x2d : Status_getCurrentCampaignMission_ag();
             Gun_ctor_ag(gun, 0, dmg, 4, -1, 3000, rampMis * -2 + 600, color, 0, 0, 0, 0, 0, 0);
-            Gun_setFriendGun_ag(gun, 1);
+            gun->setFriendGun(1);
             Gun_setLevel_ag(gun, this);
-            Gun_setIndex_ag(gun, 0);
+            gun->setIndex(0);
             gun->weaponType = 0;
 
             int res;
             switch (*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x28
                         ? *(int *)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x28)
                         : 0) {
-            case 0:  gun->weaponType = 0; Gun_setIndex_ag(gun, 0);    res = 0x1a62; break;
-            case 1:  Gun_setIndex_ag(gun, 3);    res = 0x1a68; break;
-            case 2:  gun->weaponType = 0; Gun_setIndex_ag(gun, 7);    res = 0x1a6c; break;
-            case 3:  Gun_setIndex_ag(gun, 0x19); res = 0x1a92; break;
-            case 9:  Gun_setIndex_ag(gun, 5);    res = 0x1a6a; break;
-            case 10: Gun_setIndex_ag(gun, 0xe5); res = 0x4a93;
+            case 0:  gun->weaponType = 0; gun->setIndex(0);    res = 0x1a62; break;
+            case 1:  gun->setIndex(3);    res = 0x1a68; break;
+            case 2:  gun->weaponType = 0; gun->setIndex(7);    res = 0x1a6c; break;
+            case 3:  gun->setIndex(0x19); res = 0x1a92; break;
+            case 9:  gun->setIndex(5);    res = 0x1a6a; break;
+            case 10: gun->setIndex(0xe5); res = 0x4a93;
                      gun->field_0x60 = (int)((float)gun->field_0x60 * 1.0f);
                      break;
-            default: gun->weaponType = 1; Gun_setIndex_ag(gun, 0x13); res = 0x1a8b; break;
+            default: gun->weaponType = 1; gun->setIndex(0x13); res = 0x1a8b; break;
             }
 
             int camp2 = Status_getCurrentCampaignMission_ag();
             PlayerTurret *turret = *(PlayerTurret **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
             if (turret->field_0x3e != 0) {
-                int host = PlayerTurret_getHost_ag(turret);
+                int host = (int)(intptr_t)turret->getHost();
                 if (host != 0 && (*(int *)(host + 0x7c) == 0x2d || *(int *)(host + 0x7c) == 0x33)) {
-                    gun->weaponType = 2; Gun_setIndex_ag(gun, 0x16); res = 0x1a8e;
+                    gun->weaponType = 2; gun->setIndex(0x16); res = 0x1a8e;
                 } else {
                     KIPlayer *k = *(KIPlayer **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
                     if (*(unsigned char *)((char *)k + 0x3f) == 0) {
                         gun->weaponType = 1;
-                        if (*(unsigned char *)((char *)k + 0x28) == 1) { Gun_setIndex_ag(gun, 0xf);  res = 0x1a87; }
-                        else                                 { Gun_setIndex_ag(gun, 0x14); res = 0x1a8c; }
+                        if (*(unsigned char *)((char *)k + 0x28) == 1) { gun->setIndex(0xf);  res = 0x1a87; }
+                        else                                 { gun->setIndex(0x14); res = 0x1a8c; }
                     } else {
                         int kt = KIPlayer_getType_ag(k);
-                        if (kt == 0x49c1)      { gun->weaponType = 1; Gun_setIndex_ag(gun, 0x14); res = 0x1a8d; }
-                        else if (kt == 0x49c0) { gun->weaponType = 0; Gun_setIndex_ag(gun, 2);    res = 0x1a64; }
-                        else                   { gun->weaponType = 1; Gun_setIndex_ag(gun, 0xe);  res = 0x1a86; }
+                        if (kt == 0x49c1)      { gun->weaponType = 1; gun->setIndex(0x14); res = 0x1a8d; }
+                        else if (kt == 0x49c0) { gun->weaponType = 0; gun->setIndex(2);    res = 0x1a64; }
+                        else                   { gun->weaponType = 1; gun->setIndex(0xe);  res = 0x1a86; }
                         gun->field_0xa8 = 1;
                         // base stats from the ship-stat table (corrupted SIMD in original).
                         if (camp2 == 0x9e && kt == 0x49c2 && Player_isAlwaysEnemy_ag() != 0) {
                             Player *pp = *(Player **)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 4);
                             int mhp = Player_getMaxHitpoints_ag();
-                            Player_setMaxHitpoints_ag(pp, (int)((float)mhp * 5.0f));
+                            pp->setMaxHitpoints((int)((float)mhp * 5.0f));
                         }
                     }
                 }
@@ -3657,7 +3637,7 @@ void Level::assignGuns()
             int host2 = *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
             if (Status_getMission_ag() != 0) {
                 Mission *mm = (Mission *)Status_getMission_ag();
-                if (Mission_isCampaignMission_ag(mm) != 0) {
+                if (mm->isCampaignMission() != 0) {
                     if (**g_ag_statusB == Status_getCurrentCampaignMission_ag() &&
                         2 < **g_ag_alienCnt &&
                         KIPlayer_isEnemy_ag(*(KIPlayer **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4)) != 0)
@@ -3666,7 +3646,7 @@ void Level::assignGuns()
             }
             if (wanted != 0 && *(char *)(host2 + 0x42) != 0) {
                 int w = Wanted_getWeapon_ag(wanted);
-                Gun_setIndex_ag(gun, w);
+                gun->setIndex(w);
                 int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblA + 4) + w * 4));
                 res = ((int *)g_ag_weaponDmg)[w];
                 gun->weaponType = attr;
@@ -3700,14 +3680,14 @@ wingmanExtra:
             *(char *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x25 != 0) {
             Gun *gun = (Gun *)Level_opnew_ag(0x114);
             Gun_ctor_ag(gun, 0x12, 0, 4, -1, 3000, 400, 0x41800000, 0, 0, 0, 0, 0, 0);
-            Gun_setFriendGun_ag(gun, 1);
+            gun->setFriendGun(1);
             Gun_setLevel_ag(gun, this);
             gun->itemIndex = 0x12;
             gun->weaponType = 1;
             ObjectGun *o = (ObjectGun *)Level_opnew_ag(0xb0);
             ObjectGun_ctor_ag(o, 0x12, gun, 0x1a8a, 0x2711, this);
             *(ObjectGun **)(*(int *)(*(int *)(self + 0xe8) + 4) + outIdx * 4) = o;
-            Gun_setIndex_ag(gun, 0x12);
+            gun->setIndex(0x12);
             int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48));
             gun->field_0x64 = attr;
             KIPlayer_addGun_ag(*(Gun **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4), (int)(intptr_t)gun);
@@ -4066,7 +4046,6 @@ void AERandom_setSeed_cwm(int seed);
 void AERandom_reset_cwm();
 int  Globals_getRandomEnemyFighter_cwm(Globals *g, int race);
 void KIPlayer_setWingman_cwm(KIPlayer *k, int flag, unsigned slot);
-void Player_setAlwaysFriend_cwm(Player *p, int flag);
 void Player_setHitpoints_cwm(int p);
 int  Status_getMission_cwm();
 int  Mission_getType_cwm();
@@ -4105,7 +4084,7 @@ void Level::createWingmen()
         Level_cwm_placeWingman(this, slot, i);
 
         KIPlayer_setWingman_cwm(*(KIPlayer **)(*(int *)((char *)arr + 4) + i * 4), 1, i);
-        Player_setAlwaysFriend_cwm(*(Player **)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 4), 1);
+        (*(Player **)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 4))->setAlwaysFriend(1);
         Player_setHitpoints_cwm(*(int *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 4));
 
         int wmList = Status_getWingmen_cwm();
@@ -4161,7 +4140,6 @@ int   Station_getAgents_csc(Station *s);
 int   Station_getShips_csc();
 int   Status_getShip_csc();
 int   Ship_getIndex_csc();
-int   Ship_getRace_csc(Ship *s);
 int   Agent_getRace_csc(Agent *a);
 int   Agent_getImageParts_csc(Agent *a);
 int   Agent_isMale_csc(Agent *a);
@@ -4171,7 +4149,6 @@ void  PlayerStatic_ctor_csc(PlayerStatic *p, int a, AEGeometry *geo);
 void  PlayerFighter_removeTrail_csc(int pf);
 void  PlayerFighter_setExhaustVisible_csc(int pf);
 void  KIPlayer_setToSleep_csc(KIPlayer *k);
-void  Player_setAlwaysFriend_csc(Player *p, int flag);
 // Position/rotate a freshly created static actor — corrupted SIMD in the original.
 }
 
@@ -4295,7 +4272,7 @@ void Level::createScene()
         Status_getShip_csc();
         int shipIdx = Ship_getIndex_csc();
         Ship *ship = (Ship *)Status_getShip_csc();
-        int shipRace = Ship_getRace_csc(ship);
+        int shipRace = ship->getRace();
         int actor = (int)(intptr_t)this->createShip_csc(shipRace, 0, shipIdx, 0,
                                          *(int *)(self + 0xc0) != 0x17, 0);
         **(int **)(*(int *)(self + 0xf8) + 4) = actor;
@@ -4303,7 +4280,7 @@ void Level::createScene()
         PlayerFighter_removeTrail_csc(actor);
         PlayerFighter_setExhaustVisible_csc(actor);
         KIPlayer_setToSleep_csc((KIPlayer *)actor);
-        Player_setAlwaysFriend_csc(*(Player **)(actor + 4), 1);
+        (*(Player **)(actor + 4))->setAlwaysFriend(1);
 
         void *canvas = *g_csc_canvas;
         for (unsigned u = 0; u < 4; u = u + 1) {
@@ -4362,7 +4339,7 @@ void Level::createScene()
             }
             seats[seat & 0x3f] = 1;
             this->csc_placeActor((int)(intptr_t)k, seat, 2);
-            Player_setAlwaysFriend_csc(*(Player **)((char *)k + 0x4), 1);
+            (*(Player **)((char *)k + 0x4))->setAlwaysFriend(1);
             KIPlayer_setToSleep_csc(k);
             PlayerFighter_setExhaustVisible_csc((int)(intptr_t)k);
             ArrayAdd_KIPlayer_csc(k, *(void **)(self + 0xf8));

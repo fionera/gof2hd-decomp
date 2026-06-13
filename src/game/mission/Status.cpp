@@ -160,7 +160,7 @@ bool Status::hardCoreMode() {
 
 void Status::crateCaptured(int delta) { capturedCrates = delta + capturedCrates; }
 
-int Status::getStanding() { return standing; }
+int Status::getStanding() { return (int)(intptr_t)standing; }
 
 int Status::getBoughtEquipment() { return boughtEquipment; }
 
@@ -419,7 +419,7 @@ int Status::missionFailed(bool param_1, int64_t time) {
             return 0;
         }
         if (cur != 0 && ((Mission *)(cur))->getType() == 0xd && param_1 &&
-            *((uint8_t *)this + 0xf1) != 0) {
+            this->field_0x111 != 0) {
             return (int)(intptr_t)cur;
         }
     }
@@ -549,9 +549,11 @@ Status::Status() {
     this->field_0x40 = 0;
     this->field_0x44 = 0;
     this->field_0x48 = 0;
-    for (int i = 1; i != 5; i = i + 1) {
-        *(int32_t *)((char *)this + i * 4) = 0;
-    }
+    // original zeroed this+i*4 for i in 1..4 (collectedBounties[0..3]).
+    collectedBounties[0] = 0;
+    collectedBounties[1] = 0;
+    collectedBounties[2] = 0;
+    collectedBounties[3] = 0;
     this->field_0x17c = 0;
     field_178 = 0;
 }
@@ -697,11 +699,6 @@ bool Status::inAlienOrbit() {
     return Status::inAlienOrbit_impl(station, playerStation);
 }
 
-// Local offset-cast helpers (the Status header models fields by name, but resetGame
-// touches many raw offsets so byte-offset access is clearer here).
-// I(void*,int), P(void*,int) and C(void*,int) are provided by gof2/Galaxy.h /
-// common.h; no local redefinition needed here.
-
 struct Standing;
 struct Galaxy;
 struct PendingProduct;
@@ -741,60 +738,59 @@ void   Status_rg_setStation(Status *self, void *st);
 //   starting mission, ship and station.
 void Status::resetGame()
 {
-    char *self = (char *)this;
     int *settings = g_rg_settings;
 
-    I(self, 0x8c)  = 0;
+    this->field_8c  = 0;
     char *srec = (char *)*settings;
-    I(self, 0x1e4) = 0;
-    I(self, 0x100) = 0;
-    I(self, 0x104) = 0;
-    I(self, 0x1b0) = 0;
-    I(self, 0x1b4) = 0;
-    I(self, 0x1b8) = 0;
-    I(self, 0x1bc) = 0;
-    I(self, 0x1c0) = 0;
-    I(self, 0x1c4) = 0;
-    I(self, 0x1c8) = 1;
-    I(self, 0x1cc) = 0;
-    I(self, 0x1d0) = 0;
-    I(self, 0x10c) = 0;
-    C(self, 0x110) = 0;
-    I(self, 0x118) = 0;
-    I(self, 0x11c) = 0;
-    I(self, 0x124) = 0;
-    I(self, 0x12c) = 0;
+    this->boughtEquipment = 0;
+    this->field_0x100 = 0;
+    this->field_0x104 = 0;
+    this->credits = 0;
+    this->rating = 0;
+    this->playingTime = 0;
+    this->kills = 0;
+    this->missionCount = 0;
+    this->level = 1;
+    this->lastXP = 0;
+    this->stationsVisited = 0;
+    this->field_10c = 0;
+    this->field_110 = 0;
+    this->field_118 = 0;
+    this->field_11c = 0;
+    this->field_124 = 0;
+    this->field_12c = 0;
     // 0x1d4..0x1e0 set from a zero vector
-    I(self, 0x1d4) = 0;
-    I(self, 0x1d8) = 0;
-    I(self, 0x1dc) = 0;
-    I(self, 0x1e0) = 0;
-    I(self, 0x13c) = 0;
-    I(self, 0x134) = 0;
-    I(self, 0x144) = 0;
-    C(self, 0x120) = 0;
-    C(self, 0x128) = 0;
-    C(self, 0x130) = 0;
-    C(self, 0x138) = 0;
-    C(self, 0x140) = 0;
-    C(self, 0x148) = 0;
+    this->goodsProduced = 0;
+    this->pirateKills = 0;
+    this->jumpgatesUsed = 0;
+    this->capturedCrates = 0;
+    this->field_13c = 0;
+    this->field_134 = 0;
+    this->field_144 = 0;
+    this->field_120 = 0;
+    this->field_128 = 0;
+    this->field_130 = 0;
+    this->field_138 = 0;
+    this->field_140 = 0;
+    this->field_148 = 0;
 
-    char hardcore = C(srec, 0x36);
-    C(self, 0x111) = 0;
-    I(self, 0x114) = hardcore != 0 ? 3 : 0;
+    char hardcore = *(char *)(srec + 0x36);
+    this->field_0x111 = 0;
+    this->field_114 = hardcore != 0 ? 3 : 0;
 
-    // recreate the per-game scratch station at 0x14c.
-    if (P(self, 0x14c) != 0) {
-        (((Station *)((Station *)P(self, 0x14c)))->dtor(), ::operator delete((void *)P(self, 0x14c)));
-        I(self, 0x14c) = 0;
+    // recreate the per-game scratch station at field_14c.
+    if (this->field_14c != 0) {
+        (((Station *)(intptr_t)this->field_14c)->dtor(),
+         ::operator delete((void *)(intptr_t)this->field_14c));
+        this->field_14c = 0;
     }
     Station *scratch = (Station *)Status_opnew(0x34);
     ((Station *)(scratch))->ctor_default();
-    P(self, 0x14c) = scratch;
+    this->field_14c = (int32_t)(intptr_t)scratch;
 
-    if (P(self, 0x28) != 0) {
-        ::operator delete[](P(self, 0x28));
-        I(self, 0x28) = 0;
+    if (this->field_0x28 != 0) {
+        ::operator delete[]((void *)(intptr_t)this->field_0x28);
+        this->field_0x28 = 0;
     }
     if (this->wingmen != 0) {
         Array<String *> *wm = (Array<String *> *)(intptr_t)this->wingmen;
@@ -803,7 +799,7 @@ void Status::resetGame()
     }
 
     // clear several bool arrays.
-    I(self, 0x30) = 0;
+    this->field_0x30 = 0;
     this->wingmen = 0;
     for (unsigned j = 0; j < this->field_94->size(); j = j + 1)
         (*this->field_94)[j] = 0;
@@ -811,26 +807,26 @@ void Status::resetGame()
     for (unsigned j = 0; j < this->field_98->size(); j = j + 1)
         (*this->field_98)[j] = 0;
 
-    I(self, 0x9c) = 0;
-    I(self, 0xa0) = 0;
-    I(self, 0xa4) = 0;
-    I(self, 0xa8) = 0;
+    this->field_9c = 0;
+    this->field_a0 = 0;
+    this->field_a4 = 0;
+    this->field_a8 = 0;
     for (unsigned j = 0; j < this->field_ac->size(); j = j + 1)
         (*this->field_ac)[j] = 0;
 
-    I(self, 0xb0) = 0;
+    this->field_b0 = 0;
     for (unsigned j = 0; j < this->field_b4->size(); j = j + 1)
         (*this->field_b4)[j] = 0;
 
-    // free any stations on the stack at 0x1a0.
-    unsigned *stk = (unsigned *)P(self, 0x1a0);
+    // free any stations on the stack.
+    unsigned *stk = (unsigned *)this->stationStack;
     if (stk != 0) {
         for (unsigned k = 0; k < *stk; k = k + 1) {
             Station *st = ((Station **)stk[1])[k];
             if (st != 0) {
                 (((Station *)(st))->dtor(), ::operator delete((void *)st));
-                ((int *)(*(int *)((char *)P(self, 0x1a0) + 4)))[k] = 0;
-                stk = (unsigned *)P(self, 0x1a0);
+                ((int *)(*(int *)((char *)this->stationStack + 4)))[k] = 0;
+                stk = (unsigned *)this->stationStack;
             }
         }
     }
@@ -852,25 +848,25 @@ void Status::resetGame()
     arr54[0x3e] = 0;
     arr54[0x3c] = 0;
     arr54[0x3d] = 0;
-    I(self, 0x34) = 0;
-    I(self, 0xb8) = 0;
+    this->passengers = 0;
+    this->field_b8 = 0;
     // zero the two 16-byte ship-equipment-slot vectors.
-    I(self, 0xe0) = 0; I(self, 0xe4) = 0; I(self, 0xe8) = 0; I(self, 0xec) = 0;
-    I(self, 0xc0) = 0; I(self, 0xc4) = 0; I(self, 0xc8) = 0; I(self, 0xcc) = 0;
-    I(self, 0xd0) = 0; I(self, 0xd4) = 0; I(self, 0xd8) = 0; I(self, 0xdc) = 0;
+    this->field_e0 = 0; this->field_e4 = 0; this->field_e8 = 0; this->field_ec = 0;
+    this->field_c0 = 0; this->field_c4 = 0; this->field_c8 = 0; this->field_cc = 0;
+    this->field_d0 = 0; this->field_d4 = 0; this->field_d8 = 0; this->field_dc = 0;
 
     // a few PC-relative scalar globals get zeroed.
     *(*g_rg_zeroSlotA) = 0;
     **g_rg_zeroSlotB   = 0;
     *(*g_rg_zeroSlotC) = 0;
 
-    I(self, 0x160) = 0;
-    I(self, 0x164) = 0;
-    C(self, 0x108) = 0;
-    I(self, 0x174) = 0;
-    *(short *)(self + 0xf0) = 0;
-    I(self, 0xf4) = -1;
-    *(short *)(self + 0xf8) = 1;
+    this->field_160 = 0;
+    this->field_164 = 0;
+    this->field_0x108 = 0;
+    this->field_174 = 0;
+    this->field_0xf0 = 0;
+    this->field_f4 = -1;
+    this->field_f8 = 1;
 
     ((Achievements *)(*g_rg_ach))->init();
 
@@ -952,20 +948,20 @@ void Status::resetGame()
     Status_rg_loadAgents(this);
     Status_rg_loadWanted(this);
 
-    // recreate Standing at 0x14.
-    if (P(self, 0x14) != 0) {
-        ::operator delete(Standing_dtor((Standing *)P(self, 0x14)));
-        I(self, 0x14) = 0;
+    // recreate Standing.
+    if (this->standing != 0) {
+        ::operator delete(Standing_dtor((Standing *)this->standing));
+        this->standing = 0;
     }
     Standing *st = (Standing *)Status_opnew(8);
     Standing_ctor(st);
-    P(self, 0x14) = st;
-    I(self, 0x7c) = -1;
-    I(self, 0x80) = -1;
-    I(self, 0x84) = 0;
+    this->standing = st;
+    this->field_7c = -1;
+    this->field_80 = -1;
+    this->field_84 = 0;
     // missions[0] gets a base value from a status slot.
     *(int *)((char *)(*this->missions)[0] + 4) = **g_rg_statusSlotC;
-    I(self, 0x1e8) = 0;
+    this->currentCampaignMission = 0;
 
     void *mission = Status_opnew(0x78);
     Mission_ctor(mission, 4, 0, 0x4e);
@@ -975,13 +971,13 @@ void Status::resetGame()
     this->mission = (*this->missions)[0];
     int newShip = (int)(intptr_t)((Ship *)(*(int *)((*(int *)(*slotB + 4)) + 0x28)))->makeShip(-1);  // price=-1 recovered via Ghidra
     Status_rg_setShip(this, newShip);
-    ((Ship *)(*(Ship **)(self + 0x190)))->priceDecline();
+    this->ship->priceDecline();
     Status_rg_setStation(this, (void *)(intptr_t)((Galaxy *)(gal))->getStation(0));  // new-game home station (index 0)
-    ((Ship *)(*(Ship **)(self + 0x190)))->setCargo(0);
+    this->ship->setCargo(0);
 
     int (*makeItemB)(int) = g_rg_makeItemB;
     void (*addCargo)(int, int, int) = g_rg_addCargo;
-    int shipObj = *(int *)(self + 0x190);
+    int shipObj = (int)(intptr_t)this->ship;
     int srcShip = *(int *)(*itHolder + 4);
 
     addCargo(shipObj, makeItemB(*(int *)(srcShip + 8)), 0);
@@ -993,16 +989,16 @@ void Status::resetGame()
     addCargo(*(int *)((intptr_t)(*(int **)(*g_rg_statusSlotA)) + 0x190),
              (int)(intptr_t)((Item *)(*(int *)(srcShip + 0x90)))->makeItem(), 0);
 
-    if (C(srec, 0x35) != 0)
+    if (*(char *)(srec + 0x35) != 0)
         (*this->systemVisibilities)[0x19] = 1;
 
-    I(self, 0x64) = ((Ship *)(*(Ship **)(self + 0x190)))->getMaxHP();
-    I(self, 0x5c) = ((Ship *)(*(Ship **)(self + 0x190)))->getMaxShieldHP();
-    I(self, 0x60) = ((Ship *)(*(Ship **)(self + 0x190)))->getMaxArmorHP();
-    I(self, 0x68) = 100;
-    I(self, 0x150) = -1;
-    I(self, 0x154) = -1;
-    I(self, 0x158) = -1;
+    this->field_64 = this->ship->getMaxHP();
+    this->field_5c = this->ship->getMaxShieldHP();
+    this->field_60 = this->ship->getMaxArmorHP();
+    this->field_68 = 100;
+    this->field_150 = -1;
+    this->field_154 = -1;
+    this->field_158 = -1;
 }
 
 struct SystemPathFinder {
@@ -1319,7 +1315,6 @@ __attribute__((visibility("hidden"))) extern int g_ncmAchTable[3];   // DAT_000b
 extern "C" {
 // Mission::Mission(int,int,int)
 // Mission::Mission()
-void Status_setCampaignMission_ncm(Status *self, void *m);           // setCampaignMission
 void Status_addMissionTail(Status *self, void *m);                   // indirect tail 0x1abf38
 void Ship_setCargo_ncm(Ship *ship, void *arr);                       // Ship::setCargo
 void Ship_removeAllCargo_ncm(Ship *ship);                            // Ship::removeAllCargo
@@ -1379,11 +1374,10 @@ static const Step kSteps[] = {
 //   playing-time, runs the achievement check, then spawns and registers the next scripted
 //   Mission for that step (with a few steps performing extra cargo/equipment bookkeeping).
 void Status::nextCampaignMission() {
-    int *state = (int *)((char *)this + 0x1e8);
     int prevTimeLo = (int)this->playingTime;
     int prevTimeHi = (int)(this->playingTime >> 32);
 
-    int step = *state;
+    int step = this->currentCampaignMission;
     int next = step + 1;
 
     // achievement check: flag if the new step matches any of the three tracked mission ids.
@@ -1392,9 +1386,8 @@ void Status::nextCampaignMission() {
             this->field_0x17c = 1;
     }
 
-    // advance counter + snapshot time (cases that finalise via campaign use 0x1e8, others 0x1e8
-    // too -- both write the same counter in the engine).
-    *state = next;
+    // advance counter + snapshot time.
+    this->currentCampaignMission = next;
     this->field_0x100 = prevTimeLo;
     this->field_0x104 = prevTimeHi;
 
@@ -1435,7 +1428,7 @@ void Status::nextCampaignMission() {
             new (m) Mission(s.type, s.param, s.station);
         }
         if (s.campaign)
-            Status_setCampaignMission_ncm(this, m);
+            ((Status *)this)->setCampaignMission((Mission *)m);
         else
             Status_addMissionTail(this, m);
     } else {
@@ -1619,9 +1612,6 @@ void Item_setStationAmount_ds(void *item, int v);
 void Status_departTail(int ship);                                    // tail 0x1abf08
 }
 
-// Byte-offset helpers for fields that live in padding regions of the recovered Status struct.
-static inline int &SF(Status *s, unsigned off) { return *(int *)((char *)s + off); }
-
 // Status::departStation(Station* dest)   [self in r0, dest in r1]
 //   Leaving the current station to travel to `dest`: refreshes inventories, stacks the prior
 //   station, regenerates the destination's wares/ships/agents, then re-targets the active
@@ -1632,10 +1622,10 @@ void Status::departStation(Station *dest) {
     // refresh the just-departed station inventory if it is the campaign hub in state 3.
     if (Status_inAlienOrbit_ds() == 0) {
         bool hub = Station_getIndex(self->station) == 0x6c;
-        if (hub && SF(self, 0x114) == 3) {
-            Station *st = (Station *)(void *)(long)SF(self, 0x14c);
+        if (hub && self->field_114 == 3) {
+            Station *st = (Station *)(intptr_t)self->field_14c;
             ((Station *)(st))->setItems((uint32_t *)Station_getItems_ds(), true);
-            ((Station *)((void *)(long)SF(self, 0x14c)))->setShips((uint32_t *)(long)Station_getShips_ds(), true);
+            ((Station *)((intptr_t)self->field_14c))->setShips((uint32_t *)(long)Station_getShips_ds(), true);
         }
     }
 
@@ -1648,7 +1638,7 @@ void Status::departStation(Station *dest) {
         Station *prev = (Station *)(void *)(long)isOnStack_ds(self, dest);
         addStationToStack_ds(self, dest);
         bool hub = Station_getIndex(dest) == 0x6c;
-        if (hub && SF(self, 0x114) == 3) {
+        if (hub && self->field_114 == 3) {
             ((Station *)(dest))->setItems((uint32_t *)Station_getItems_ds(), true);
             ((Station *)((void *)dest))->setShips((uint32_t *)(long)Station_getShips_ds(), true);
             if (prev != 0 && prev != dest) {
@@ -1667,8 +1657,8 @@ void Status::departStation(Station *dest) {
             ((Station *)((void *)dest))->setShips((uint32_t *)(long)((Generator *)(&g))->getShipBuyList(dest), false);
             ((Station *)(dest))->setAgents(((Generator *)(&g))->createAgents(dest));
         }
-        SF(self, 0x70) = (int)self->playingTime;
-        SF(self, 0x74) = (int)(self->playingTime >> 32);
+        self->field_70 = (int)self->playingTime;
+        self->field_74 = (int)(self->playingTime >> 32);
     }
 
     // pick the active mission target for the new station.
@@ -1690,7 +1680,7 @@ void Status::departStation(Station *dest) {
             }
         }
         if (st->currentCampaignMission < 0x2d && type == 0xa1 && camp != 0 &&
-            Station_getIndex(dest) == SF(self, 0x80) && Status_inAlienOrbit_ds() == 0) {
+            Station_getIndex(dest) == self->field_80 && Status_inAlienOrbit_ds() == 0) {
             self->mission = mi;
             break;
         }
@@ -1714,29 +1704,29 @@ void Status::departStation(Station *dest) {
     if (self->currentCampaignMission < 0x2d) {
         if (self->currentCampaignMission >= 0x20) {
             bool same = Station_getIndex(dest) == Mission_getTargetStation_ds() ||
-                        Station_getIndex(dest) == SF(self, 0x80);
+                        Station_getIndex(dest) == self->field_80;
             if (!same) {
-                if (SF(self, 0x8c) + 1 >= 10) {
-                    SF(self, 0x8c) = 0;
+                if (self->field_8c + 1 >= 10) {
+                    self->field_8c = 0;
                     int sys;
                     do {
                         do {
                             sys = AERandom_nextInt_ds(*g_dsRandom, 0x16);
-                            SF(self, 0x7c) = sys;
+                            self->field_7c = sys;
                         } while ((*self->systemVisibilities)[sys] == 0);
                     } while (sys == 10 || sys == 0xf);
-                    void *ss = Galaxy_getSystem_ds(*g_dsGalaxy, SF(self, 0x7c));
+                    void *ss = Galaxy_getSystem_ds(*g_dsGalaxy, self->field_7c);
                     int stations = SolarSystem_getStations_ds(ss);
                     int n = AERandom_nextInt_ds(*g_dsRandom, SolarSystem_getStations_ds(ss));
-                    SF(self, 0x80) = *(int *)(*(int *)(stations + 4) + n * 4);
+                    self->field_80 = *(int *)(*(int *)(stations + 4) + n * 4);
                 } else {
-                    SF(self, 0x8c) = SF(self, 0x8c) + 1;
+                    self->field_8c = self->field_8c + 1;
                 }
             }
         }
     } else {
-        SF(self, 0x7c) = -10;
-        SF(self, 0x80) = -10;
+        self->field_7c = -10;
+        self->field_80 = -10;
     }
 
     if (wantedMove)

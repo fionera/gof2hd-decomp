@@ -26,7 +26,10 @@
 #include "gof2/engine/render/PaintCanvas.h"
 
 extern "C" int __aeabi_idiv(int numerator, int denominator);
-extern "C" void StarMap_OnTouchEnd_tail(void);
+// (Removed dead `extern "C" void StarMap_OnTouchEnd_tail(void);` — it was the
+// terminal "open help overlay" tail of StarMap::OnTouchEnd(int,int) @0x000cae90,
+// a StarMap-internal concern that this translation unit never calls. WantedWindow's
+// own OnTouchEnd already dispatches via ((StarMap*)this->starMap)->OnTouchEnd(x,y).)
 extern "C" void *Mission_ctor(void *mission, int a, int b, int dest);
 extern "C" void *StarMap_ctor(void *map, bool jumpMapMode, void *mission, bool flag, int idx);
 extern "C" int Station_getSystem(void *station);

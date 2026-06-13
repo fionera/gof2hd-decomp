@@ -72,19 +72,15 @@ void HangarList::release() {
     this->tabs = 0;
 }
 
-extern "C" ListItem *HangarList_getCurrentItem_tail(HangarList *self,
-                                                    ListItem *item);
-
+// getCurrentItem() loads the +0x8 field (used as an int selection index, not a
+// live pointer) and tail-calls HangarList::getCurrentItemAt with it. In the
+// binary (HangarList::getCurrentItem @0x0012e744) this is:
+//     ldr r1,[r0,#0x8]      ; r1 = this->currentItem (int index)
+//     b.w  0x001ac3f8       ; long-branch veneer -> PLT 0x0007624c
+//                           ; -> HangarList::getCurrentItemAt @0x0012e74a
+// i.e. a same-class sibling tail-call, not inheritance. Call it directly.
 ListItem *HangarList::getCurrentItem() {
-    return HangarList_getCurrentItem_tail(this, this->currentItem);
-}
-
-// getCurrentItem() tail-calls here with the current-selection index (the +0x8
-// field is used as an int index, not a live pointer). It is just the indexed
-// lookup, so forward to getCurrentItemAt().
-extern "C" ListItem *HangarList_getCurrentItem_tail(HangarList *self,
-                                                    ListItem *item) {
-    return self->getCurrentItemAt((int)(intptr_t)item);
+    return getCurrentItemAt((int)(intptr_t)this->currentItem);
 }
 
 ListItem *HangarList::getCurrentItemAt(int index) {
@@ -514,9 +510,9 @@ void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
     (*this->tabs)[1] = list;
 }
 
-extern "C" int HangarList_initBlueprintTab_tail(HangarList *self,
-                                                Array<BluePrint *> *blueprints);
-
+// init() builds the ship and shop tabs, then tail-calls HangarList::initBlueprintTab
+// (full body @0x0012e088) to populate the blueprint tab. That is a same-class
+// sibling tail-call, not inheritance, so call it directly.
 int HangarList::init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
                      Array<BluePrint *> *blueprints) {
     release();
@@ -526,14 +522,7 @@ int HangarList::init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
     tabs->resize(5);
     initShipTab(ship);
     initShopTab(items, ships);
-    return HangarList_initBlueprintTab_tail(this, bp);
-}
-
-// init() builds the ship and shop tabs, then tail-calls here to populate the
-// blueprint tab from the supplied blueprint array.
-extern "C" int HangarList_initBlueprintTab_tail(HangarList *self,
-                                                Array<BluePrint *> *blueprints) {
-    self->initBlueprintTab(blueprints);
+    initBlueprintTab(bp);
     return 0;
 }
 

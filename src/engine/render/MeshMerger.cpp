@@ -36,15 +36,22 @@ typedef AbyssEngine::PaintCanvas AEPaintCanvas;
 #define Mesh        AEMesh
 #define PaintCanvas AEPaintCanvas
 
-extern "C" void MeshMerger_setMatrix_tail(void *dst, const Matrix &m);
-extern "C" void MeshMerger_render_tail(void *a, void *b, int z);
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 
 // ---- engine-veneer forwarders ----
 // In the binary, init()/render()/setMatrix() each end in a tail-call through a
-// PC-relative GOT/veneer slot into the AbyssEngine PaintCanvas/Matrix entry points.
+// PC-relative veneer that performs an indirect call `(*(code*)(DAT+off))(...)` into
+// the AbyssEngine PaintCanvas/Matrix entry points. The resolved targets are dynamically
+// relocated engine primitives (no static symbol in this .so), NOT inherited base-class
+// methods -- proven by MeshMerger::init and LodMeshMerger::init dispatching through
+// DISTINCT veneer slots (DAT_001ac6d4 vs DAT_001ac884), which a shared base would not.
 // We reproduce that dispatch through the same hidden function-pointer slots so the
 // real methods can forward to the engine without an inline indirect-call expression.
+//
+// Resolved tail targets (android_2.0.16_libgof2hdaa.so):
+//   MeshMerger::render   @0x18406c -> (*(DAT_001abda4+0x1abda8))(canvas, transformId, 0)   [g_mmRenderFn]
+//   MeshMerger::setMatrix@0x183c74 -> (*(DAT_001abdb4+0x1abdb8))(slot, m)                   [g_mmMatrixAssignFn]
+//   MeshMerger::init     @0x183ca6 -> (*(DAT_001ac6d4+0x1ac6d8))(this, r1, flags, &meshId)  [g_mmInitFn]
 __attribute__((visibility("hidden"))) extern int  (**g_mmInitFn)(MeshMerger *, int, uint16_t, uint32_t *);
 __attribute__((visibility("hidden"))) extern void (**g_mmRenderFn)(void *, void *, int);
 __attribute__((visibility("hidden"))) extern void (**g_mmMatrixAssignFn)(void *, const Matrix &);
@@ -70,7 +77,7 @@ void MeshMerger::setMatrixTail(void *matrixSlot, const Matrix &m)
 void MeshMerger::setMatrix(int index, const Matrix &m)
 {
     char *base = (char *)pp(this, 0x1c);
-    return MeshMerger_setMatrix_tail(base + index * 0x3c, m);
+    return setMatrixTail(base + index * 0x3c, m);
 }
 
 void MeshMerger::setLod(int index, signed char lod)
@@ -89,7 +96,7 @@ void MeshMerger::setLod(int index, signed char lod)
 
 void MeshMerger::render()
 {
-    return MeshMerger_render_tail(pp(this, 0xc), pp(this, 0x14), 0);
+    return renderTail(pp(this, 0xc), pp(this, 0x14), 0);
 }
 
 void MeshMerger::setEnabled(int index, bool enabled)
@@ -284,7 +291,6 @@ void MeshMerger::update()
 }
 
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                // 0x6ec2c (__aeabi_uidiv)
-extern "C" int MeshMerger_init_tail(MeshMerger *self, int r1, uint16_t flags, uint32_t *meshId);
 
 int MeshMerger::init()
 {
@@ -327,7 +333,7 @@ int MeshMerger::init()
     ((PCReal *)canvas)->TransformCreate((uint32_t *)((char *)this + 0x14));
     ((PCReal *)canvas)->TransformAddMeshId(u32(this, 0x14), u32(this, 0x10));
     u8(this, 0x34) = 1;
-    return MeshMerger_init_tail(this, 0, flags, (uint32_t *)((char *)this + 0x10));
+    return initTail(0, flags, (uint32_t *)((char *)this + 0x10));
 }
 
 extern "C" void *aeabi_memclr4(void *p, uint32_t n);

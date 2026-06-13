@@ -27,30 +27,12 @@ namespace AbyssEngine { namespace AEMath {
 // the decompiler are method calls on this global instance.
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
-extern "C" void Player_damageHull_tail();
-extern "C" void Player_damageShield_tail();
-extern "C" void Player_regenerateArmor_tail();
-extern "C" void Player_setMaxHitpoints_tail();
-extern "C" void Player_regenerateShield_tail();
-extern "C" void Player_setArmorHP_tail();
-extern "C" void Player_setHitpoints_tail();
-extern "C" void Player_setMaxShieldHP_tail();
-extern "C" void Player_setMaxEmpPoints_tail();
-extern "C" void Player_setShieldHP_tail();
-extern "C" void Player_operator_delete_tail(void *p);
-extern "C" void Player_setEnemies_tail(Player *self, Array<Player *> *enemies);
 void MatrixGetPosition(void *out, float *matrix);
 extern "C" int __aeabi_idiv(int a, int b);
-extern "C" void Player_damageEmp_tail(Player *self);
-extern "C" void Player_shoot_tail(Player *self, int soundId);
-extern "C" void Player_regenerateHull_tail();
-extern "C" void Player_setGammaHP_tail();
 extern "C" int gStopSoundIds[];
 extern "C" void *gFModSound;
 extern "C" void *gFModSoundAlt;
-extern "C" void Player_stopShootSound_play_tail(void *sound, int id);
 void Globals_addSoundResourceToList(int id);
-extern "C" void Player_calcWeaponSounds_tail(int a, int b);
 extern "C" void *gAppManager;
 extern "C" void **gFModSoundPtr;
 extern "C" void Gun_setEnemies(void *gun);
@@ -59,11 +41,8 @@ extern "C" int gShootSoundsByIndex[];
 extern "C" void *gAppManagerA;
 extern "C" void *gAppManagerB;
 extern "C" void *gAppManagerC;
-extern "C" void Player_playShootSound_play_tail(float vol, void *sound, int id, Vector *pos, int z);
 extern "C" void Player_playShootSound(Player *self, int type, Vector *channel, float volume);
-extern "C" void Player_setEnemy_tail(Player *self, Player *enemy);
 void Player_damage_full(Player *self, int amount, int a, int b);
-extern "C" void Player_setMaxArmorHP_tail();
 extern "C" void Player_StopEngineSound(Player *self);
 extern "C" void FloatVectorMax(void *out, float a, float b, int c, int d);
 
@@ -107,7 +86,7 @@ void Player::damageHull(int damage) {
         this->armorHP = 0;
     }
     this->damaged = 1;
-    return Player_damageHull_tail();
+    this->updateDamageRate();
 }
 
 int Player::getShieldDamageRate() {
@@ -193,7 +172,7 @@ void Player::damageShield(int damage) {
         this->shieldHP = 0;
     }
     this->damaged = 1;
-    return Player_damageShield_tail();
+    this->updateDamageRate();
 }
 
 void Player::regenerateArmor() {
@@ -202,7 +181,7 @@ void Player::regenerateArmor() {
         v = this->maxArmorHP;
     }
     this->armorHP = v;
-    return Player_regenerateArmor_tail();
+    this->updateDamageRate();
 }
 
 void Player::damageShip(int damage) {
@@ -303,7 +282,7 @@ void Player::setBombForce(float value) {
 void Player::setMaxHitpoints(int value) {
     this->maxHitpoints = value;
     this->hitpoints = value;
-    return Player_setMaxHitpoints_tail();
+    this->updateDamageRate();
 }
 
 int Player::getGunRegenRate() {
@@ -321,7 +300,7 @@ void Player::regenerateShield(float amount) {
         maxF = f;
     }
     this->shieldHP = maxF;
-    return Player_regenerateShield_tail();
+    this->updateDamageRate();
 }
 
 unsigned char Player::doesNeverAttack() {
@@ -399,7 +378,7 @@ void Player::setArmorHP(int value) {
         value = this->maxArmorHP;
     }
     this->armorHP = value;
-    return Player_setArmorHP_tail();
+    this->updateDamageRate();
 }
 
 void Player::setHitpoints(int value) {
@@ -407,7 +386,7 @@ void Player::setHitpoints(int value) {
     if (this->maxHitpoints < value) {
         this->maxHitpoints = value;
     }
-    return Player_setHitpoints_tail();
+    this->updateDamageRate();
 }
 
 void Player::setNeverAttack(bool value) {
@@ -417,13 +396,13 @@ void Player::setNeverAttack(bool value) {
 void Player::setMaxShieldHP(int value) {
     this->maxShieldHP = value;
     this->shieldHP = (float)value;
-    return Player_setMaxShieldHP_tail();
+    this->updateDamageRate();
 }
 
 void Player::setMaxEmpPoints(int value) {
     this->empPoints = value;
     this->maxEmpPoints = value;
-    return Player_setMaxEmpPoints_tail();
+    this->updateDamageRate();
 }
 
 int Player::getGunSlots() {
@@ -455,7 +434,7 @@ void Player::regenerateShield() {
         maxF = f;
     }
     this->shieldHP = maxF;
-    return Player_regenerateShield_tail();
+    this->updateDamageRate();
 }
 
 void Player::heal(float amount) {
@@ -476,7 +455,7 @@ void Player::setShieldHP(int value) {
     if ((float)value > maxF) {
         this->shieldHP = maxF;
     }
-    return Player_setShieldHP_tail();
+    this->updateDamageRate();
 }
 
 void Player::refillGunDelay(int slot) {
@@ -495,7 +474,8 @@ void Player::refillGunDelay(int slot) {
 
 void Player::addEnemies(Array<Player *> *enemies) {
     if (this->enemies == 0) {
-        return Player_setEnemies_tail(this, enemies);
+        this->setEnemies(enemies);
+        return;
     }
     Array<Player *> *tmp = new Array<Player *>();
     for (unsigned int i = 0; i < this->enemies->size(); i++) {
@@ -661,7 +641,8 @@ void Player::damageEmp(int amount, bool flag) {
         int ep = self->empPoints - amount;
         self->empPoints = ep;
         if (ep > 0) {
-            return Player_damageEmp_tail(self);
+            self->updateDamageRate();
+            return;
         }
     }
     if (!flag && self->kiPlayer != 0) {
@@ -723,7 +704,8 @@ lab_3164:
     self->empPoints = 0;
     (self->pad_e8[0]) = 0;
     self->empForce = f;
-    return Player_damageEmp_tail(self);
+    self->updateDamageRate();
+        return;
 }
 
 void Player::addGun(Array<Gun *> *gunsIn, int slot) {
@@ -736,7 +718,8 @@ void Player::addGun(Array<Gun *> *gunsIn, int slot) {
             }
         }
         if (this->playShootSound) {
-            return Player_shoot_tail(this, this->playShootSoundId);
+            this->calcWeaponSounds(this->playShootSoundId);
+            return;
         }
     }
 }
@@ -753,7 +736,7 @@ void Player::regenerateHull() {
         v = this->hitpoints + 1;
     }
     this->hitpoints = v;
-    return Player_regenerateHull_tail();
+    this->updateDamageRate();
 }
 
 // Player::~Player() — real C++ destructor so the demangled symbol contains "~Player".
@@ -799,7 +782,7 @@ void Player::setGammaHP(int value) {
         f = sel;
     }
     this->gammaHP = f;
-    return Player_setGammaHP_tail();
+    this->updateDamageRate();
 }
 
 void Player::stopShootSound(int index, int channel) {
@@ -816,7 +799,7 @@ void Player::stopShootSound(int index, int channel) {
             id = gStopSoundIds[index];
             sound = gFModSound;
         }
-        return Player_stopShootSound_play_tail(sound, id);
+        ((FModSound *)sound)->stop(id);
     }
 }
 
@@ -853,7 +836,8 @@ void Player::addGun(Gun *gun, int slot) {
             this->guns->data()[slot]->push_back(gun);
         }
         if (this->playShootSound) {
-            return Player_shoot_tail(this, this->playShootSoundId);
+            this->calcWeaponSounds(this->playShootSoundId);
+            return;
         }
     }
 }
@@ -923,7 +907,9 @@ void Player::calcWeaponSounds(int count) {
             if (g != 0) {
                 int sid = g_cws_sound3[g->itemIndex];
                 g->field_0x89 = 1;
-                return Player_calcWeaponSounds_tail(*g_cws_sound2, sid);
+                (void)sid;
+                Globals_addSoundResourceToList(*g_cws_sound2);
+                return;
             }
         }
     }
@@ -1021,7 +1007,7 @@ __attribute__((minsize)) extern "C" void Player_playShootSound(Player *self, int
     } else if (*((char *)gAppManagerC + 0xf) == 0) {
         pos = 0;
     }
-    return Player_playShootSound_play_tail(volume, sound, soundId, pos, 0);
+    ((FModSound *)sound)->play(soundId, pos, 0, volume);
 }
 
 extern "C" const float k_shootAt_inc;
@@ -1289,7 +1275,8 @@ void Player::setEnemy(Player *enemy) {
 
 void Player::addEnemy(Player *enemy) {
     if (this->enemies == 0) {
-        return Player_setEnemy_tail(this, enemy);
+        this->setEnemy(enemy);
+        return;
     }
     Array<Player *> *tmp = new Array<Player *>();
     if (this->enemies->size() != 0) {
@@ -1348,7 +1335,7 @@ void Player::setAlwaysFriend(bool value) {
 void Player::setMaxArmorHP(int value) {
     this->armorHP = value;
     this->maxArmorHP = value;
-    return Player_setMaxArmorHP_tail();
+    this->updateDamageRate();
 }
 
 extern "C" const float k_shoot_inc;
@@ -1595,72 +1582,21 @@ void Player::StopEngineSound() {
 }
 
 // =====================================================================
-// Recovered tail-merge fragments.
+// Resolved tail-branch targets (wiring pass complete).
 //
 // The decompiler split several Player methods at their final tail-branch
 // (a `b.w` through an ARM/Thumb interworking veneer) into a separate
-// `Player_<method>_tail` symbol that the caller forwards to. Each veneer
-// was resolved to its real target; the fragments below carry the work
-// that target performs. They are kept as the same `extern "C"` symbols the
-// call sites already reference (the later wiring pass folds them back into
-// their callers), so only definitions are added here.
+// `Player_<method>_tail` symbol. Each veneer was followed to its real
+// target and the call sites were rewritten to call that target directly,
+// so the standalone `_tail` shims no longer exist:
+//   - all HP/armor/shield/emp setters + regen/damage helpers + damageEmp
+//     -> Player::updateDamageRate()                  (veneer @ 0x72df0)
+//   - addGun(Gun*/Array<Gun*>*)                      -> this->calcWeaponSounds()  (0x72fac)
+//   - calcWeaponSounds secondary-slot tail           -> Globals_addSoundResourceToList()  (0x72298)
+//   - stopShootSound tail                            -> FModSound::stop(int)  (0x724a8)
+//   - playShootSound tail                            -> FModSound::play(int,Vector*,Vector*,float)  (0x71548)
+//   - addEnemies/addEnemy empty-list short-circuit   -> this->setEnemies()/setEnemy()  (0x72eb0 / 0x72ebc)
 // =====================================================================
-
-// All HP/armor/shield/emp setters and the regen/damage helpers end by
-// recomputing the cached damage rate. The veneer at these tails resolves
-// to Player::updateDamageRate (0x72df0), with `this` still live in r0.
-// The standalone C shims have no receiver, so they're documented forwarders;
-// the wiring pass turns each `return Player_xxx_tail();` into
-// `this->updateDamageRate();` inside the owning method.
-
-// setEnemies(Array*) inner-loop tail: when the player has no enemy list yet,
-// addEnemies short-circuits straight into setEnemies (veneer -> Player::setEnemies).
-extern "C" void Player_setEnemies_tail(Player *self, Array<Player *> *enemies) {
-    self->setEnemies(enemies);
-}
-
-// setEnemy(Player*) tail: wrap a single enemy in a fresh list and install it.
-extern "C" void Player_setEnemy_tail(Player *self, Player *enemy) {
-    self->setEnemy(enemy);
-}
-
-// operator delete tail: the terminal `b.w` of the addEnemies/addEnemy/setEnemy
-// helpers releases the temporary list (veneer -> operator delete).
-extern "C" void Player_operator_delete_tail(void *p) {
-    ::operator delete(p);
-}
-
-// addGun/shoot tail: after mutating the gun slots, recompute the weapon-sound
-// table for the player (veneer -> Player::calcWeaponSounds).
-extern "C" void Player_shoot_tail(Player *self, int soundId) {
-    self->calcWeaponSounds(soundId);
-}
-
-// calcWeaponSounds tail: register the secondary-slot weapon's fire sound with
-// the global resource list (veneer -> Globals::addSoundResourceToList).
-extern "C" void Player_calcWeaponSounds_tail(int soundId, int /*sid*/) {
-    Globals_addSoundResourceToList(soundId);
-}
-
-// damageEmp tail: like the HP setters, recompute the damage rate once the EMP
-// hit has been applied (veneer -> Player::updateDamageRate, `this` in r0).
-// Provided with the explicit receiver the call sites already pass.
-extern "C" void Player_damageEmp_tail(Player *self) {
-    self->updateDamageRate();
-}
-
-// stopShootSound tail: stop the looping weapon-fire FMOD event for this gun
-// (veneer -> FModSound::stop(int)).
-extern "C" void Player_stopShootSound_play_tail(void *sound, int id) {
-    ((FModSound *)sound)->stop(id);
-}
-
-// playShootSound tail: actually start the weapon-fire FMOD event at the muzzle
-// position (veneer -> FModSound::play(int, Vector*, Vector*, float)).
-extern "C" void Player_playShootSound_play_tail(float vol, void *sound, int id,
-                                                Vector *pos, int /*z*/) {
-    ((FModSound *)sound)->play(id, pos, 0, vol);
-}
 
 // =====================================================================
 // Cross-class forwarders.
@@ -1734,31 +1670,6 @@ void Player_ctor_cs(Player *p, int hp, int dmg, int a, int b, int c) {
 void Player_damageGamma_up(Player *p, float dmg) {
     p->damageGamma(dmg);
 }
-
-// =====================================================================
-// Shared "damage-rate recompute" epilogue (`_tail`) fragments.
-//
-// Every HP/armor/shield/EMP mutator and the regen/damage helpers end with a
-// tail-branch through one interworking veneer that resolves to the same target:
-// Player::updateDamageRate() (0x72df0), with the receiver still live in r0.
-// The decompiler split that shared tail off into a per-method `Player_<m>_tail`
-// symbol with no receiver, so each is a documented no-op forwarder here — the
-// owning method still has `this`, and the wiring pass folds every
-// `return Player_<m>_tail();` back into `this->updateDamageRate();`.
-// =====================================================================
-extern "C" void Player_damageHull_tail()        { /* -> this->updateDamageRate() */ }
-extern "C" void Player_damageShield_tail()       { /* -> this->updateDamageRate() */ }
-extern "C" void Player_regenerateArmor_tail()    { /* -> this->updateDamageRate() */ }
-extern "C" void Player_regenerateHull_tail()     { /* -> this->updateDamageRate() */ }
-extern "C" void Player_regenerateShield_tail()   { /* -> this->updateDamageRate() */ }
-extern "C" void Player_setArmorHP_tail()         { /* -> this->updateDamageRate() */ }
-extern "C" void Player_setGammaHP_tail()         { /* -> this->updateDamageRate() */ }
-extern "C" void Player_setHitpoints_tail()       { /* -> this->updateDamageRate() */ }
-extern "C" void Player_setMaxArmorHP_tail()      { /* -> this->updateDamageRate() */ }
-extern "C" void Player_setMaxEmpPoints_tail()    { /* -> this->updateDamageRate() */ }
-extern "C" void Player_setMaxHitpoints_tail()    { /* -> this->updateDamageRate() */ }
-extern "C" void Player_setMaxShieldHP_tail()     { /* -> this->updateDamageRate() */ }
-extern "C" void Player_setShieldHP_tail()        { /* -> this->updateDamageRate() */ }
 
 // Player_dtor: the demangled destructor body reused as an `operator delete`
 // helper — run ~Player() on the object and hand the storage back to the caller,

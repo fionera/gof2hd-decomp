@@ -50,9 +50,6 @@ namespace AbyssEngine { namespace AEMath {
 } }
 
 extern "C" void *SpaceLounge_layout_move;
-extern "C" void SpaceLounge_OnRender3D_map_tail(void *map);
-extern "C" void SpaceLounge_OnRender3D_cutscene_tail(void *cutscene);
-extern "C" void SpaceLounge_OnRenderBG_tail();
 extern "C" void *SpaceLounge_layout_begin;
 // Dropped-self Status singleton accessors: the decompiler emitted these calls
 // with no receiver argument (the Status* singleton is loaded inside the thunk).
@@ -179,7 +176,7 @@ int SpaceLounge::OnTouchMove(int x, int y) {
 
 void SpaceLounge::OnRender3D() {
     if (UC(this, 0x34) != 0) {
-        return SpaceLounge_OnRender3D_map_tail(P(this, 0x4));
+        return this->OnRender3D_map_tail(P(this, 0x4));
     }
 
     void *cutscene = P(this, 0x44);
@@ -194,12 +191,12 @@ void SpaceLounge::OnRender3D() {
         cutscene = P(this, 0x44);
     }
 
-    return SpaceLounge_OnRender3D_cutscene_tail(cutscene);
+    return this->OnRender3D_cutscene_tail(cutscene);
 }
 
 void SpaceLounge::OnRenderBG() {
     if (I(this, 0x44) != 0) {
-        return SpaceLounge_OnRenderBG_tail();
+        return this->OnRenderBG_tail(P(this, 0x44));
     }
 }
 
@@ -1381,19 +1378,23 @@ idle_camera:
 }
 
 // ---------------------------------------------------------------------------
-// Tail-call veneers
+// Tail-call fragments (resolved inherited / sub-screen methods)
 //
 // The decompiler split SpaceLounge::OnRender3D / OnRenderBG / draw3DShip / draw /
-// update at their mode branches: each branch ends in a tail-call through a PLT
-// veneer into the appropriate sub-screen object's method. The veneers resolve to
-// these engine entry points:
-//   *_map_tail        -> StarMap::render / StarMap::draw / StarMap::update
-//   *_cutscene_tail   -> CutScene::render3D
-//   *_ship_tail / draw3DShip_tail / update_ship_tail -> ListItemWindow::render /
-//                        ListItemWindow::draw-helpers / ListItemWindow::update
-//   draw_cutscene_tail-> Layout::drawFooter (current draw-layout slot)
-// They keep the extern "C" signatures the call sites already use; the receiver is
-// passed in (or, for draw_cutscene_tail, taken from the draw-layout global slot).
+// update at their mode branches: each branch ended in a tail-call through a long-
+// branch veneer into the appropriate sub-screen object's method. Following the
+// veneers to their final entry points resolves them as:
+//   OnRender3D_map_tail      -> StarMap::render()        (_ZN7StarMap6renderEv,   veneer 0x19c258 -> 0x6567c)
+//   OnRender3D_cutscene_tail -> CutScene::render3D()     (_ZN8CutScene8render3DEv, veneer 0x19c6a8 -> 0x65694)
+//   OnRenderBG_tail          -> CutScene::renderBG()     (_ZN8CutScene8renderBGEv, veneer 0x19c6b8 -> 0x656a0)
+//   draw3DShip_tail          -> ListItemWindow::render() (_ZN14ListItemWindow6renderEv, veneer 0x19c4b8 -> 0x66fd8)
+//   draw_map_tail            -> StarMap::draw()          (_ZN7StarMap4drawEv,     veneer 0x19c268 -> 0x655bc)
+//   draw_cutscene_tail       -> Layout::drawFooter()     (_ZN6Layout10drawFooterEv, veneer 0x19c698 -> 0x65b8c, draw-layout slot)
+//   update_map_tail          -> StarMap::update(dt)      (_ZN7StarMap6updateEi,   veneer 0x19c278 -> 0x654c0)
+//   update_ship_tail         -> ListItemWindow::update(dt) (_ZN14ListItemWindow6updateEi, veneer 0x19c4a8 -> 0x66f54)
+// These are now real SpaceLounge member methods that forward to the live sub-screen;
+// the receiver is supplied by the caller (or, for draw_cutscene_tail, taken from the
+// draw-layout global slot). No extern "C" veneers remain.
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -1453,16 +1454,6 @@ void *SpaceLounge::dtor()
 {
     this->~SpaceLounge();
     return this;
-}
-
-extern "C" void SpaceLounge_OnRender3D_map_tail(void *map)
-{
-    ((StarMap *)map)->render();
-}
-
-extern "C" void SpaceLounge_OnRender3D_cutscene_tail(void *cutscene)
-{
-    ((CutScene *)cutscene)->render3D();
 }
 
 // SpaceLounge::refresh -- called from ModStation after a mission reward is credited

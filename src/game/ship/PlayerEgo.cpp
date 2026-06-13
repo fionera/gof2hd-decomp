@@ -2242,9 +2242,11 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
 //   appropriate reticle image depending on turret mode / plasma lock / blink
 //   state, and finally the throttle gauge.
 
-extern "C" void  PlayerEgo_draw_tailA(void);   // 0x1abc48 veneer
-extern "C" void  PlayerEgo_draw_tailB(void);   // 0x1abc58 veneer
-extern "C" void  PlayerEgo_draw_tailC(void);   // 0x1abc68 veneer
+// PlayerEgo::draw has three terminal tail-branches, all resolved from the binary:
+//   0x1abc48 -> MiningGame::render2D()  (_ZN10MiningGame8render2DEv  @ 0x12f12c)
+//   0x1abc58 -> PlayerEgo::drawThrottle() (_ZN9PlayerEgo12drawThrottleEv @ 0xb1f04)
+//   0x1abc68 -> HackingGame::render2D() (_ZN11HackingGame8render2DEv @ 0x15f1e4)
+// They are dispatched directly below as real method calls (no veneer shims).
 
 __attribute__((visibility("hidden"))) extern void **g_PE_dr_canvas;    // 0xb1dd8 PaintCanvas
 __attribute__((visibility("hidden"))) extern void **g_PE_dr_status;    // 0xb1de8 Status singleton
@@ -2257,11 +2259,13 @@ void PlayerEgo::draw(int allowHud) {
     if (((void*&)this->rocketControlGun) != 0)               // mid scripted maneuver: nothing to draw
         return;
 
-    if (((void*&)this->hackingGame) != 0 && this->turretActive == 0)
+    if (((void*&)this->hackingGame) != 0 && this->turretActive == 0) {
+        ((HackingGame *)(void*)(intptr_t)this->hackingGame)->render2D();
         return;
+    }
 
     if (((void*&)this->miningGame) != 0) {             // mining game owns the screen
-        PlayerEgo_draw_tailA();
+        ((MiningGame *)(void*)(intptr_t)this->miningGame)->render2D();
         return;
     }
 
@@ -2275,14 +2279,14 @@ void PlayerEgo::draw(int allowHud) {
 
     if (!full) {
         if (this->autoPilot != 0) {
-            PlayerEgo_draw_tailB();
+            this->drawThrottle();
             return;
         }
         if (this->dockedFlag == 0)
             return;
         if ((unsigned)(this->dockingPointIndex - 1) < 3)
             return;
-        PlayerEgo_draw_tailB();
+        this->drawThrottle();
         return;
     }
 
@@ -2943,10 +2947,12 @@ void PlayerEgo::addGun2(void* arr, int x) {
 //   with a flag derived from the docking state. When dead it only renders the
 //   fading explosion debris.
 
-extern "C" void PlayerEgo_render_tail(void *level, int flag);   // 0x1abc38 veneer
+// The render tail-branch (0x1abc38 -> Level::enableMovingStars(bool),
+// _ZN5Level17enableMovingStarsEb @ 0xd6528) toggles the level's moving-stars
+// particle backdrop after the ship and its effects have been drawn.
 
 void PlayerEgo::render(int allowHud) {
-    void *level = this->level;
+    Level *level = this->level;
 
     if (((PlayerEgo *)(this))->isDead() == 0) {
         if (this->field_0x309 == 0)
@@ -2989,7 +2995,7 @@ void PlayerEgo::render(int allowHud) {
             flag = (this->dockingPointIndex - 1) != 0 ? 1 : 0;
         else
             flag = 1;
-        PlayerEgo_render_tail(level, flag);
+        level->enableMovingStars(flag != 0);
     } else {
         if (this->explosion != 0) {
             ((Explosion *)(this->explosion))->render();
@@ -2998,7 +3004,7 @@ void PlayerEgo::render(int allowHud) {
         }
         if (((void*&)this->field_0xac) != 0)
             ((Explosion *)(this->explosion))->render();
-        PlayerEgo_render_tail(level, 1);
+        level->enableMovingStars(true);
     }
 }
 
@@ -3287,19 +3293,17 @@ extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self) {
     }
 }
 
-// ---- render / draw tail veneers: forward to the level scene draw -----
-// These are pure render-tail branches: after PlayerEgo has drawn its own
-// overlays they hand off to the level's draw routine. The level draw is part of
-// the rendering subsystem (not modeled as PlayerEgo state), so the faithful body
-// is the hand-off itself with no PlayerEgo side effects.
-extern "C" void PlayerEgo_render_tail(void * /*level*/, int /*flag*/) {
-}
-extern "C" void PlayerEgo_draw_tailA(void) {
-}
-extern "C" void PlayerEgo_draw_tailB(void) {
-}
-extern "C" void PlayerEgo_draw_tailC(void) {
-}
+// ---- render / draw tail-branches: resolved to real method calls --------
+// The decompiler had left these as empty "_tail" veneer shims. Each was a
+// terminal b.w into a long-branch veneer whose final target is a real local
+// method (resolved from the binary's PLT/GOT relocations):
+//   render: 0x1abc38 -> Level::enableMovingStars(bool)   @ 0xd6528
+//   draw:   0x1abc48 -> MiningGame::render2D()           @ 0x12f12c
+//           0x1abc58 -> PlayerEgo::drawThrottle()        @ 0xb1f04
+//           0x1abc68 -> HackingGame::render2D()          @ 0x15f1e4
+// They are now dispatched inline in PlayerEgo::render / PlayerEgo::draw, so the
+// empty shims are gone. (The hacking-game branch in draw had been mis-recovered
+// as a bare `return`; it actually tail-calls HackingGame::render2D().)
 
 // ---- constructor field-initialisation block (the bulk of the ctor) --
 // Zeroes/seeds the ~90 scalar+vector fields, derives boost timing/speed from the

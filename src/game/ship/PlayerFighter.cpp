@@ -11,6 +11,12 @@
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/world/Route.h"
 #include "gof2/game/world/Standing.h"
+#include "gof2/engine/math/Transform.h"
+
+// KIPlayer::setShipGroup(AEGeometry*, int, bool) — the real inherited base method
+// (resolved @0x73114). KIPlayer.h currently declares a stale setShipGroup(int,int,int)
+// overload, so we bind to the correct mangled symbol directly here.
+extern "C" void _ZN8KIPlayer12setShipGroupEP10AEGeometryib(void *self, AEGeometry *geom, int group, bool flag) asm("_ZN8KIPlayer12setShipGroupEP10AEGeometryib");
 
 // Local minimal view of the real global-scope ::PaintCanvas (the full headers
 // gof2/PaintCanvas.h / PaintCanvasClass.h cannot be included here: Trail.h
@@ -29,18 +35,22 @@ public:
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
 };
 
-extern "C" void PlayerFighter_cloak_off_helper();
-// GOT-veneer landing pads: terminal tail-calls that the linker resolves to the
-// relocated inherited base implementation. Their first pointer parameter is a
-// real argument (geometry / slot / volume / transform), not a `this` receiver,
-// so they stay as extern shims rather than being modeled as PlayerFighter methods.
-extern "C" void PlayerFighter_setShipGroup_base(void *geom, int group, bool flag);
-extern "C" void PlayerFighter_awake_tail(int geom, int on);
-extern "C" void *PlayerFighter_base_dtor(void *self);
-extern "C" void PlayerFighter_setMissionCrate_tail(int slot, void *loot);
-extern "C" void PlayerFighter_setBV_add(void *bv, void *volumes);
-extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned int transform, bool visible);
-extern "C" void PlayerFighter_render_tail(int geom);
+// The terminal tail-calls in this TU's methods were long-branch GOT veneers into
+// inherited / engine base implementations. They are resolved to the real targets
+// (verified in android_2.0.16_libgof2hdaa.so, Ghidra image base 0x10000):
+//
+//   PlayerFighter::setShipGroup        -> KIPlayer::setShipGroup(AEGeometry*,int,bool) @0x73114
+//   PlayerFighter::awake               -> AEGeometry::setVisible(bool)                 @0x72d24
+//   PlayerFighter::setExhaustVisible   -> AbyssEngine::Transform::SetVisible(bool)     @0x7249c
+//   PlayerFighter::render              -> AEGeometry::render()                         @0x72238
+//   PlayerFighter::setBV               -> ArrayAdd<BoundingVolume*>(item, Array<>&)    @0x75964
+//   PlayerFighter::setMissionCrate     -> ArrayAdd<int>(item, Array<int>&)             @0x7021c
+//   PlayerFighter::~PlayerFighter      -> KIPlayer::~KIPlayer()                        @0x732b8
+//   PlayerFighter::setCloakingPossible -> PlayerFighter::handleCloaking()              @0x757e4
+//
+// KIPlayer::setShipGroup is declared in KIPlayer.h with a stale (int,int,int)
+// signature; the real symbol is setShipGroup(AEGeometry*,int,bool). We call the
+// real mangled entry directly here (declared below) until KIPlayer.h is corrected.
 extern "C" void *Trail_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
@@ -98,12 +108,12 @@ void PlayerFighter::setAIDisabled(bool v) {
 
 struct AEGeometry;
 
-// PlayerFighter::setShipGroup is a thunk that tail-jumps to the base implementation
-// (target is a single b.w to a relocated veneer). Model as a tail call with the same args.
-
-void PlayerFighter_setShipGroup(AEGeometry *self, int a, bool b)
+// PlayerFighter::setShipGroup is a pure thunk that tail-jumps to the inherited
+// KIPlayer::setShipGroup(AEGeometry*, int, bool) (@0x73114). Modeled as a forward
+// to the real base method.
+void PlayerFighter::setShipGroup(AEGeometry *geom, int group, bool flag)
 {
-    return PlayerFighter::setShipGroup_base(self, a, b);
+    _ZN8KIPlayer12setShipGroupEP10AEGeometryib(this, geom, group, flag);
 }
 
 void PlayerFighter::awake() {
@@ -115,7 +125,8 @@ void PlayerFighter::awake() {
     if (geom == 0) {
         geom = this->geometry;
     }
-    return PlayerFighter::awake_tail(geom, 1);
+    // awake() tail: make the (sub)geometry visible. Inherited AEGeometry::setVisible.
+    return ((AEGeometry *)(intptr_t)geom)->setVisible(true);
 }
 
 struct BoundingVolume;
@@ -133,7 +144,9 @@ void PlayerFighter::setCloakingPossible(bool v) {
     self->cloakingPossible = v;
     if (!v && self->field_0x13c != 0) {
         self->cloakTimer = self->cloakDuration + 1;
-        return ((PlayerFighter *)(self))->cloak_off_helper();
+        // Forcing cloakTimer past the duration and re-entering handleCloaking()
+        // runs the cloak-deactivation path (restores the material, hides exhaust).
+        return self->handleCloaking();
     }
 }
 
@@ -178,7 +191,10 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
     if (m != 0) ::operator delete(EaseInOutMatrix_dtor(m));
     self->easeMatrix = 0;
 
-    return ((PlayerFighter *)(self))->base_dtor();
+    // Chain to the inherited base destructor (KIPlayer::~KIPlayer, @0x732b8), then
+    // return this (the original veneer tail-returned the receiver).
+    ((KIPlayer *)self)->~KIPlayer();
+    return self;
 }
 
 // PlayerFighter deleting destructor (D0): run the complete-object dtor, then tail-call delete.
@@ -649,7 +665,8 @@ void PlayerFighter::setMissionCrate(bool on) {
         int type = ((Mission *)(mission))->getType();
         int item = (type == 5) ? 0x74 : 0x75;
         this->lootList->push_back(item);
-        PlayerFighter::setMissionCrate_tail(1, this->lootList);
+        // setMissionCrate() tail: append the slot marker (1) to the loot list.
+        ArrayAdd<int>(1, *this->lootList);
     }
 }
 
@@ -678,7 +695,8 @@ struct BoundingVolume;
 void PlayerFighter::setBV_b(BoundingVolume *bv) {
     Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
     this->boundingVolumes = a;
-    return PlayerFighter::setBV_add(bv, a);
+    // setBV() tail: append the bounding volume to the newly created array.
+    ArrayAdd<BoundingVolume *>(bv, *a);
 }
 
 struct KIPlayer;
@@ -810,7 +828,8 @@ void PlayerFighter::setExhaustVisible(bool vis) {
         int id = (sub != 0) ? *(int *)(sub + 0x14) : *(int *)(geom + 0x14);
         if (id != -1) {
             unsigned t = (unsigned)(unsigned long)((PaintCanvas *)g_PaintCanvas)->TransformGetTransform(*(unsigned *)gExhaustCanvas);
-            return PlayerFighter::setExhaustVisible_apply(t, vis);
+            // setExhaustVisible() tail: toggle the exhaust transform's visibility.
+            return ((AbyssEngine::Transform *)(unsigned long)t)->SetVisible(vis);
         }
     }
 }
@@ -841,7 +860,8 @@ void PlayerFighter::render() {
                 goto done;
             }
             if (this->subGeometry == 0) {
-                return PlayerFighter::render_tail(this->geometry);
+                // render() tail: render the bare geometry (no sub-geometry override).
+                return ((AEGeometry *)(intptr_t)this->geometry)->render();
             }
             idp = *(unsigned **)gR_g3;
         }
@@ -1144,52 +1164,6 @@ void PlayerFighter::revive()
     }
 }
 
-// ---- base-class / tail-call veneer fragments ----
-// In the original Thumb image each of these is the terminal b.w of a
-// PlayerFighter method into a relocated slot that lands in the inherited
-// AEGeometry / Fighter / Player implementation. They carry no static body of
-// their own (pure GOT veneer): the real work lives behind the extern "C" shim
-// declared at the top of this TU that the linker resolves to the relocated
-// target (mirroring PlayerFighter_cloak_off_helper). They are modeled here as
-// real members that forward to that landing pad, keeping the original method
-// control flow (see setShipGroup/awake/render above) intact.
-
-// setShipGroup() tail: dispatch to the inherited AEGeometry group setter.
-void PlayerFighter::setShipGroup_base(AEGeometry *geom, int group, bool flag) {
-    PlayerFighter_setShipGroup_base(geom, group, flag);
-}
-
-// awake() tail: make the (sub)geometry visible via the engine landing pad.
-void PlayerFighter::awake_tail(int geom, int on) {
-    PlayerFighter_awake_tail(geom, on);
-}
-
-// setCloakingPossible() helper: tear down the active cloak material/transform.
-void PlayerFighter::cloak_off_helper() {
-    PlayerFighter_cloak_off_helper();
-}
-
-// ~PlayerFighter() tail: chain to the KIPlayer/Fighter base destructor.
-void *PlayerFighter::base_dtor() {
-    return PlayerFighter_base_dtor(this);
-}
-
-// setMissionCrate() tail: hand the freshly built loot list to the crate setter.
-void PlayerFighter::setMissionCrate_tail(int slot, Array<int> *loot) {
-    PlayerFighter_setMissionCrate_tail(slot, loot);
-}
-
-// setBV() tail: append the bounding volume to the newly created array.
-void PlayerFighter::setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *volumes) {
-    PlayerFighter_setBV_add(bv, volumes);
-}
-
-// setExhaustVisible() tail: toggle the exhaust transform's visibility.
-void PlayerFighter::setExhaustVisible_apply(unsigned int transform, bool visible) {
-    PlayerFighter_setExhaustVisible_apply(transform, visible);
-}
-
-// render() tail: render the bare geometry when no sub-geometry override applies.
-void PlayerFighter::render_tail(int geom) {
-    PlayerFighter_render_tail(geom);
-}
+// All terminal tail-call veneers in this TU have been resolved to their real
+// inherited / engine base targets and modeled directly at the call sites above
+// (see the table at the top of the file). No forwarding shims remain.

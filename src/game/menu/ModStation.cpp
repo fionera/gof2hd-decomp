@@ -69,7 +69,6 @@ extern "C" void ModStation_leaveStation_impl(ModStation *self);
 void Globals_reportLeaderboards(void *obj);
 extern "C" void *cm_op_new(unsigned int sz);
 extern "C" void *cm_op_new_arr(unsigned int sz);
-extern "C" void ModStation_cm_tail(void *p, int a, int b);
 extern "C" void ModStation_r3d_endTail(void *c);
 extern "C" void *ric_op_new(unsigned int sz);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
@@ -545,7 +544,7 @@ void ModStation::checkMedals() {
         if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
             ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
         int *p = (*medalArr)[I(this, 0xc0)];
-        ModStation_cm_tail(p, p[0], p[1]);
+        this->addAchievement(p[0], p[1]);
         return;
     }
 
@@ -590,7 +589,7 @@ void ModStation::checkMedals() {
     if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
         ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
     int *p = (*arr)[0];
-    ModStation_cm_tail(p, p[0], p[1]);
+    this->addAchievement(p[0], p[1]);
 }
 
 struct SpaceLounge;
@@ -696,12 +695,6 @@ __attribute__((visibility("hidden"))) extern int **g_ou_module;    // next app m
 extern "C" {
 void *ModStation_opnew_ou(unsigned size);
 void  ModStation_opdelete_ou(void *p);
-
-// --- self methods reached as direct calls ---
-void  ModStation_autosave_ou(ModStation *self);
-void  ModStation_checkPendingProducts_ou(ModStation *self);
-void  ModStation_checkMedals_ou(ModStation *self);
-void  ModStation_checkHints_ou(ModStation *self);
 
 // --- engine / world ---
 int   ApplicationManager_GetElapsedTimeMillis_ou();
@@ -860,7 +853,7 @@ void ModStation::OnUpdate() {
             int idx = Globals_getInAppPurchaseArrayIndex_ou(0, *(void **)(appData + 0x48));
             if (-1 < *(int *)(*(int *)(*(int *)(appData + 0x60) + 4) + idx * 4)) {
                 Status_changeCredits_ou(*status);
-                ModStation_autosave_ou(this);
+                this->autosave();
                 ChoiceWindow_setNotice_ou(I(s, 0x70), GameText_getText_ou(**g_ou_textRoot));
                 C(s, 0x6f) = 1;
                 *(char *)(appData + 0x41) = 0;
@@ -942,11 +935,11 @@ void ModStation::OnUpdate() {
     // mission completion / failure + campaign dialogue flow (runs once per docked tick).
     if (C(s, 0x6f) == 0 && C(s, 0x69) == 0 && C(s, 0x6c) == 0) {
         if (C(s, 0x96) == 0) {              // this[1].field_48+2
-            ModStation_checkPendingProducts_ou(this);
+            this->checkPendingProducts();
             C(s, 0x96) = 1;
         }
         if (C(s, 0x95) == 0) {              // this[1].field_48+1
-            ModStation_checkMedals_ou(this);
+            this->checkMedals();
             C(s, 0x95) = 1;
         }
         // "remember to save" hint.
@@ -1055,7 +1048,7 @@ void ModStation::OnUpdate() {
                     Status_removeMission_ou(*status);
                     if (Mission_getType_ou() == 0xd) {
                         *(short *)(*status + 0xf0) = 0;
-                        ModStation_autosave_ou(this);
+                        this->autosave();
                     }
                 }
             } else {
@@ -1066,14 +1059,14 @@ void ModStation::OnUpdate() {
                 P(s, 0x84) = dw;
                 if (Mission_getType_ou() == 0xd) {
                     *(short *)(*status + 0xf0) = 0;
-                    ModStation_autosave_ou(this);
+                    this->autosave();
                 }
                 if (P(s, 0x74) != 0)
                     SpaceLounge_setHangarUpdate_ou(P(s, 0x74));
             }
         }
     afterDialogue:
-        ModStation_checkHints_ou(this);
+        this->checkHints();
     }
 
     // idle hangar light + ship animation.
@@ -1167,7 +1160,6 @@ int  Achievements_gotAllSupernovaMedals_ch(Achievements *a);
 int  Status_isBlueprintUnlocked_ch(void *status, int bp);
 void Status_unlockBluePrint_ch(void *status, int bp);
 int  Status_hardCoreMode_ch();
-void ModStation_autosave_ch();
 // Pops the CBS choice-window hint for the given wanted index (builds the "criminal terminated"
 // message with name/ship substitution — a long String-temporary chain the decompiler mangled).
 void ModStation_ch_showWantedHint(ModStation *self, int wantedFieldOff);
@@ -1235,7 +1227,7 @@ void ModStation::checkHints() {
                 Achievements_gotAllSupernovaMedals_ch(*g_ch_ach) != 0) {
                 ModStation_ch_showTextHint(this, 0x3b);
                 Status_unlockBluePrint_ch(statPtr, 0xe8);
-                ModStation_autosave_ch();
+                this->autosave();
                 C(s, 0x63) = 1;
             }
         }
@@ -1249,7 +1241,7 @@ void ModStation::checkHints() {
             if (ok) {
                 *(char *)(hintRec + 0x3a) = 1;
                 ModStation_ch_showTextHint(this, 0x3c);
-                ModStation_autosave_ch();
+                this->autosave();
                 C(s, 0x63) = 1;
             }
         }
@@ -1495,11 +1487,8 @@ void *ModStation_opnew_ote(unsigned size);
 void  ModStation_opdelete_ote(void *p);
 
 // --- self methods reached directly ---
-void  ModStation_autosave_ote(ModStation *self);
 void  ModStation_enterStation_ote(ModStation *self);
 void  ModStation_resetLight_ote(ModStation *self);
-void  ModStation_resetIdleCamForHangar_ote(ModStation *self);
-void  ModStation_checkHints_ote(ModStation *self);
 
 // --- engine / world ---
 void  ApplicationManager_SetCurrentApplicationModule_ote(int module);
@@ -1749,7 +1738,7 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
             if (*(int *)(s + 0x50 + 0x40) < sold)   // this[1].field_40
                 *(int *)(*st + 0xa8) += sold - *(int *)(s + 0x50 + 0x40);
             HangarWindow_setSellMode_ote(I(s, 0x78));
-            ModStation_resetIdleCamForHangar_ote(this);
+            this->resetIdleCamForHangar();
             char *hw = *(char **)(s + 0x78);
             C(s, 0x66) = 0;
             if (*hw != 0) {
@@ -1774,7 +1763,7 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
     if (C(s, 0x64) != 0) {                          // SpaceLounge
         if (SpaceLounge_OnTouchEnd_ote(I(s, 0x74), param_1, param_2) != 0) {
             C(s, 0x65) = 0;
-            ModStation_resetIdleCamForHangar_ote(this);
+            this->resetIdleCamForHangar();
             ModStation_resetLight_ote(this);
             int snd = **(int **)g_ote_sound;
             FModSound_setParamValue_ote(snd, 0, snd, 0.0f);
@@ -1871,7 +1860,7 @@ void handleChoiceDecline(ModStation *self, int param_1, int param_2)
             Station_setAttackedFriends_ote(st, 0);
             C(s, 0x71) = 1;                          // this[1].field_70+1
             ModStation_enterStation_ote(self);
-            ModStation_autosave_ote(self);
+            self->autosave();
             handleChoiceDeclineTail(self);
             return;
         }
@@ -2238,7 +2227,7 @@ void finishMissionReward(ModStation *self)
     if (I(s, 0x74) != 0)
         SpaceLounge_refresh_ote();
     C(s, 0x69) = 0;
-    ModStation_checkHints_ote(self);
+    self->checkHints();
 }
 
 struct SpaceLounge;
@@ -2450,7 +2439,6 @@ void *ModStation_opnew_oi(unsigned size);
 void  ModStation_opdelete_oi(void *p);
 
 // --- self methods reached as direct calls in the original ---
-void  ModStation_autosave_oi(ModStation *self);
 void  ModStation_resetLight_oi(ModStation *self);
 void  ModStation_enterStation_oi(ModStation *self);
 
@@ -2591,7 +2579,7 @@ void ModStation::OnInitialize() {
                     skip = true;
             }
             if (!skip)
-                ModStation_autosave_oi(this);
+                this->autosave();
         }
 
         int *shipTbl = *(int **)g_oi_shipTable;
@@ -3186,14 +3174,8 @@ extern "C" void ModStation_or_tail() {
     ((FModSound *)(*g_ModStation_or_sound))->freeAllEvents();
 }
 
-// checkMedals(): once the medal-reward window has been (re)pointed at the
-// current entry, register that medal as an achievement so its unlock/credit
-// bookkeeping runs (veneer 0x1ac158 -> ModStation::addAchievement). The entry
-// is {medalId, value}; addAchievement keys entirely off the global achievement
-// holders, so the throwaway entry pointer is unused as a receiver.
-extern "C" void ModStation_cm_tail(void * /*entry*/, int medalId, int value) {
-    ((ModStation *)nullptr)->addAchievement(medalId, value);
-}
+// (checkMedals()'s terminal `b.w` into ModStation::addAchievement is now a
+// direct `this->addAchievement(...)` member call at its two call sites.)
 
 // leaveStation(): a 16-byte veneer that tail-calls the real leave-station
 // handler (which tears the station module down and returns to flight).
@@ -3233,27 +3215,18 @@ extern "C" void  ModStation_opdelete_oi (void *p) { ::operator delete(p); }
 extern "C" void  ModStation_opdelete_ou (void *p) { ::operator delete(p); }
 extern "C" void  ModStation_opdelete_ote(void *p) { ::operator delete(p); }
 
-// ---- sibling-method forwarders --------------------------------------------
-// The decompiler lifted a `bl ModStation::<method>` out of each parent; the
-// fragment simply re-enters that already-recovered member on the same object.
-extern "C" void ModStation_autosave_oi (ModStation *self) { self->autosave(); }
-extern "C" void ModStation_autosave_ote(ModStation *self) { self->autosave(); }
-extern "C" void ModStation_autosave_ou (ModStation *self) { self->autosave(); }
-// checkHints reaches autosave() on its own `this`, but this split-out lost the
-// receiver (no-arg signature); the wiring pass re-threads `self`, so the body is
-// intentionally empty rather than dereferencing a null receiver.
-extern "C" void ModStation_autosave_ch ()                 { /* receiver not threaded; see autosaveTail */ }
-extern "C" void ModStation_checkHints_ote(ModStation *self) { self->checkHints(); }
-extern "C" void ModStation_checkHints_ou (ModStation *self) { self->checkHints(); }
-extern "C" void ModStation_checkMedals_ou(ModStation *self) { self->checkMedals(); }
-extern "C" void ModStation_checkPendingProducts_ou(ModStation *self) { self->checkPendingProducts(); }
+// ---- free-function forwarders ---------------------------------------------
+// enterStation()/resetLight() are file-local free functions (they operate on
+// station/engine globals, not on `this`); these split-outs just re-enter them.
+// (The ModStation member split-outs — autosave/checkHints/checkMedals/
+// checkPendingProducts/resetIdleCamForHangar — were removed: their call sites
+// now invoke the real member directly on `this`.)
 void ModStation_enterStation();   // free function (uses station globals)
 void ModStation_resetLight();     // free function (uses engine globals)
 extern "C" void ModStation_enterStation_oi (ModStation * /*self*/) { ModStation_enterStation(); }
 extern "C" void ModStation_enterStation_ote(ModStation * /*self*/) { ModStation_enterStation(); }
 extern "C" void ModStation_resetLight_oi (ModStation * /*self*/) { ModStation_resetLight(); }
 extern "C" void ModStation_resetLight_ote(ModStation * /*self*/) { ModStation_resetLight(); }
-extern "C" void ModStation_resetIdleCamForHangar_ote(ModStation *self) { self->resetIdleCamForHangar(); }
 
 // leaveStation reached from the SELECT key path: same 16-byte veneer that
 // tail-calls the global leave-station handler (see ModStation_leaveStation_impl).
