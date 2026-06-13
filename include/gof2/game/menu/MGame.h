@@ -213,11 +213,10 @@ public:
     void OnTouchMove(int p1, int y, void *touch);
     void OnUpdate();
     void UseKhadorDrive();
-    MGame * ctor();
-    void deleting_dtor();
+    MGame();
+    ~MGame();
     void dialogueEvent();
     void dockEvent();
-    MGame * dtor();
     void freeCamTouchBegin(int x, int y, int id);
     void freeCamTouchEnd(int p1, int p2, int id);
     void freeCamTouchMove(int x, int y, void *touchId);

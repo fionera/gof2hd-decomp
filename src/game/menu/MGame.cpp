@@ -1043,9 +1043,7 @@ void MGame::freeCamTouchEnd(int p1, int p2, int id) {
 // MGame::~MGame() deleting destructor: run the complete dtor (which returns `this`)
 // then tail-call operator delete with that pointer — so `this` is never saved.
 
-void MGame::deleting_dtor() {
-    MGame_opdelete(((MGame *)(this))->dtor());
-}
+// (deleting_dtor removed: the compiler generates MGame's deleting destructor from ~MGame.)
 
 // Tail helpers.
 // @0x1ac808
@@ -1867,12 +1865,11 @@ __attribute__((visibility("hidden"))) extern void *MGame_vtable;
 
 // MGame::~MGame() complete destructor: install the MGame vtable, release game state,
 // destroy the embedded String at 0x64, and return this.
-MGame * MGame::dtor() {
+MGame::~MGame() {
     MGame *self = this;
     *(void **)self = (char *)MGame_vtable + 8;
     ((MGame *)(self))->OnRelease();
     ((String *)((char *)self + 0x64))->dtor();
-    return self;
 }
 
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
@@ -2467,7 +2464,7 @@ __attribute__((visibility("hidden"))) extern int g_mgameVtable; // @0x187b3c ([0
 __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (DAT_00187c00)
 
 // MGame::MGame() — install vtable, default-construct the title String, zero state.
-MGame * MGame::ctor() {
+MGame::MGame() {
     this->field_0x0 = g_mgameVtable + 8;
     ((String *)((char *)this + 0x64))->ctor();
 
@@ -2525,7 +2522,6 @@ MGame * MGame::ctor() {
     this->field_0xd8 = z; this->field_0xdc = z;
     this->field_0x1d8 = initVal;
     this->field_0x1e0 = z;
-    return this;
 }
 
 extern "C" void *Radar_dtor(void *r);
