@@ -118,7 +118,7 @@ public:
     void Vibrate(unsigned short duration);
     void VibrateEnable(bool enable);
     void VibrateSupported();
-    ApplicationManager * ctor(void *engine);
+    ApplicationManager(void *engine);
 };
 
 #endif

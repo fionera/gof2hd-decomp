@@ -1261,7 +1261,7 @@ Engine::Engine() {
     self->field_0x28 = 0x14;
     self->field_0x20 = 1;
     void *manager = operator new(0xc0);
-    ((ApplicationManager *)((ApplicationManager *)manager))->ctor(self);
+    new (manager) ApplicationManager(self);
     self->field_0x30 = (char **)manager;
     self->field_0x3e8 = 0;
     self->field_0x3ec = 0;

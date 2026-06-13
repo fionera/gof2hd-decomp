@@ -27,9 +27,9 @@ public:
     int field_0x114;                    // +0x114
     int field_0x14c;                    // +0x14c
 
-    // ---- methods (converted from free functions) ----
-    Globals * ctor();
-    void * dtor();
+    // ---- constructor / destructor (demangle to Globals::Globals / ~Globals) ----
+    Globals();
+    ~Globals();
     unsigned getRandomEnemyFighter(int kind);
     int init(void *app);
     float sqrt(float x);

@@ -1191,7 +1191,7 @@ extern int **const gGC_p_f3390 __attribute__((visibility("hidden")));
 extern void **const gGC_p_f339e __attribute__((visibility("hidden")));  // DAT_000f3440 (puVar8 secondary)
 
 // Globals::Globals()
-Globals * Globals::ctor() {
+Globals::Globals() {
     Globals *self = this;
     void *settings = *gGC_p_f320e;     // puVar8 — the main settings/state sub-object
     int *secondary = (int *)*gGC_p_f32bc;
@@ -1279,7 +1279,6 @@ Globals * Globals::ctor() {
     *(int *)p7b = 0;
     *(int *)p8b = 0;
     self->field_0x4 = 0;
-    return self;
 }
 
 // Each singleton lives behind a hidden PC-relative pointer-to-pointer global.
@@ -1299,7 +1298,7 @@ extern void **const gG_imageFactory __attribute__((visibility("hidden")));
 extern int **const gG_tail __attribute__((visibility("hidden")));
 
 // Globals::~Globals()
-void * Globals::dtor() {
+Globals::~Globals() {
     void **rhSlot = gG_recordHandler;
     if (*rhSlot != 0) {
         ((RecordHandler *)(*rhSlot))->saveOptions();
@@ -1393,7 +1392,6 @@ void * Globals::dtor() {
     }
     this->field_0x4 = 0;
     **gG_tail = 0;
-    return this;
 }
 
 extern void *const gDL_canvas __attribute__((visibility("hidden")));

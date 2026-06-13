@@ -496,7 +496,7 @@ void ApplicationManager::OnUpdate(long long now) {
     ext_001ab610();
 }
 
-ApplicationManager * ApplicationManager::ctor(void *engine) {
+ApplicationManager::ApplicationManager(void *engine) {
     ApplicationManager *self = this;
 
     self->modules = new Array<void *>();
@@ -546,8 +546,6 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
     self->cheatHandler = cheats;
     self->lastTouchX = -1;
     self->lastTouchY = -1;
-
-    return self;
 }
 
 typedef void TouchMoveCallback(void *, int, int, void *);
