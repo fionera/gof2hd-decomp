@@ -655,10 +655,35 @@ void StarMap::OnTouchEnd(int x, int y)
         }
     }
     if (((Layout *)(layout))->helpPressed() != 0) {
-        ((String *)(&help))->ctor_copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
-        ((Layout *)(layout))->initHelpWindow(&help);
-        ((String *)(&help))->dtor();
+        OnTouchEnd_tail();
     }
+}
+
+// OnTouchEnd() tail: the help-window branch reached when the shared map layout reports its
+// help button was pressed. Opens the localized help overlay (text id 0x1a5) and releases the
+// temporary String. Split out as its own fragment in the binary (tail of OnTouchEnd).
+void StarMap::OnTouchEnd_tail()
+{
+    String help;
+    void *layout = *g_StarMap_end_layout;
+    ((String *)(&help))->ctor_copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
+    ((Layout *)(layout))->initHelpWindow(&help);
+    ((String *)(&help))->dtor();
+}
+
+// StarMap::touch_end(x, y): touch-release handler used while the star map is embedded inside
+// another screen (e.g. the space lounge map overlay). Unlike OnTouchEnd() — which drives the
+// full standalone map screen — this thin variant just feeds the release to the shared map
+// layout and reports whether its back/OK button was pressed, so the host screen knows to leave
+// map mode and restore its own camera. Returns nonzero when the map was dismissed.
+int StarMap::touch_end(int x, int y)
+{
+    void *layout = *g_StarMap_end_layout;
+    if (((Layout *)(layout))->OnTouchEnd(x, y) != 0) {
+        return 1;
+    }
+    OnTouchEnd(x, y);
+    return 0;
 }
 
 // ---- initLights_c7d9c.cpp ----

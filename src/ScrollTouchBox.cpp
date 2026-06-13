@@ -309,6 +309,23 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     this->touchStartY = 0;
 }
 
+// ---- setText2_135600.cpp ----
+// Lay out 'text' in the given font slot. This is the engine's disambiguated name
+// for the two-argument setText overload (whose body lives at 0x145600).
+void ScrollTouchBox::setText2(AbyssEngine::String *text, int font)
+{
+    setText(*text, font);
+}
+
+// ---- setTextColor_135600.cpp ----
+// Lay out 'text' using the supplied colour/font slot. ScrollTouchWindow::setText
+// routes its coloured-text request through here; it resolves to the same
+// two-argument setText layout path (the colour rides in the font/style slot).
+void ScrollTouchBox::setTextColor(AbyssEngine::String *text, int color)
+{
+    setText(*text, color);
+}
+
 // ---- getRelativeScrollHeight_135948.cpp ----
 float ScrollTouchBox::getRelativeScrollHeight()
 {

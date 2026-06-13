@@ -1,3 +1,4 @@
+#include <new>
 #include "gof2/ScrollTouchWindow.h"
 #include "gof2/ScrollTouchBox.h"
 #include "gof2/Layout.h"
@@ -75,6 +76,33 @@ void ScrollTouchWindow::update(int dt)
 void ScrollTouchWindow::OnTouchBegin(int x, int y)
 {
     return ((ScrollTouchBox *)(this->scrollBox))->OnTouchBegin(x, y);
+}
+
+// ---- scroll ----
+// Keyboard / D-pad driven scroll. The pointer-drag path feeds the box a velocity
+// that update() integrates into scrollOffset and clamps to the content extent; a
+// discrete key-press scroll does the same by stepping scrollOffset directly (one
+// box-height worth per step) and re-running the box's settle logic.
+void ScrollTouchWindow::scroll(int amount)
+{
+    ScrollTouchBox *box = (ScrollTouchBox *)this->scrollBox;
+    if (box == 0)
+        return;
+
+    int range = box->contentHeight - box->height;
+    if (range <= 0)
+        return;
+
+    // Step by one visible page per key press, then let update() clamp / settle.
+    box->scrollOffset -= amount * box->height;
+    box->update(0);
+}
+
+// Free-function entry used by callers that hold the window opaquely (e.g.
+// SpaceLounge::onKeyPress). Forwards to the real method.
+extern "C" void ScrollTouchWindow_scroll(void *window, int amount)
+{
+    ((ScrollTouchWindow *)window)->scroll(amount);
 }
 
 // ---- draw_174330.cpp ----
@@ -246,4 +274,18 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h)
     this->scrollBox = box;
     this->touchActive = 0;     // low byte of the 0x100 short store
     this->hasFrame = 1;     // high byte of the 0x100 short store
+}
+
+// Free-function ctor/dtor entries used by callers that allocate the window opaquely
+// (placement-construct into `self`, run the in-place destructor and hand back the
+// pointer for the caller to free).
+extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool hasFrame)
+{
+    new (self) ScrollTouchWindow(x, y, w, h, hasFrame);
+}
+
+extern "C" void *ScrollTouchWindow_dtor(void *window)
+{
+    ((ScrollTouchWindow *)window)->~ScrollTouchWindow();
+    return window;
 }

@@ -1789,6 +1789,38 @@ void Layout::drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, 
     this->drawBGBorder(corner, edge, x, y, w, h, inset, pad);
 }
 
+// ===========================================================================
+// Canonical-named public draw entries (batch 18)
+//
+// These are the exact-named engine bodies (0xe38d4 / 0xe3140 / 0xe395c) behind
+// the Layout_drawWindow / Layout_drawMask / Layout_drawBGBorderImpl PLT veneers.
+// They reproduce the same work the suffixed variants above do, under the names
+// the external call sites use, so the call sites can be wired to member calls.
+// ===========================================================================
+
+// Layout::drawWindow(String, x, y, w, h): take an owning copy of the title and
+// render the full window frame (with background) via the 7-arg core renderer.
+void Layout::drawWindow(void *title, int x, int y, int w, int h) {
+    unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
+    String_copy_ctor(tmp, title, false);
+    this->drawWindow7(tmp, x, y, w, h, 1);
+    ((String *)(tmp))->dtor();
+}
+
+// Layout::drawMask(): dim the entire screen behind a modal using the cached
+// screen-size globals (full-screen translucent fill in the mask colour).
+void Layout::drawMask() {
+    int w = *gW;
+    int h = *gH;
+    this->drawMaskImpl(0, 0, w, h);
+}
+
+// Layout::drawBGBorder (8-arg engine entry 0xe395c) under its impl name: render a
+// tiled rounded-rect border. Forwards to the full 8-parameter renderer.
+void Layout::drawBGBorderImpl(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
+    this->drawBGBorder(corner, edge, x, y, w, h, inset, pad);
+}
+
 // Position a child TouchButton (back/secondary/help) at (x, y) with an anchor.
 void Layout::setBtnRect(void *btn, int x, int y, int anchor) {
     ((TouchButton *)btn)->setPosition(x, y, (unsigned char)anchor);

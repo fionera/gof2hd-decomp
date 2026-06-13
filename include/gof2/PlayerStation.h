@@ -76,5 +76,15 @@ public:
 
     // ---- methods (converted from free functions) ----
     void deleting_dtor();
+
+    // Complete-object destructor body (D2): runs the teardown and yields `this`
+    // so the deleting destructor can chain operator delete onto it.
+    void *destructor_body();
+
+    // Animation-transform plumbing used by update() for multi-mesh stations
+    // (stationIndex 0x6c). transformGet fetches a packed Transform handle for a
+    // sub-mesh from the canvas; transformUpdate advances it by `delta`.
+    long long transformGet(void *canvas, int meshId);
+    void transformUpdate(uint32_t lo, uint32_t hi, int delta, int deltaHigh, int flag);
 };
 #endif

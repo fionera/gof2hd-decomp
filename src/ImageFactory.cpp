@@ -314,3 +314,16 @@ ImageFactory * ImageFactory::ctor() {
     ((ImageFactory *)(self))->reload();
     return self;
 }
+
+// Tail-call fragment at the end of reload(): create image id 0x511 into the
+// destination pointer (self+8). The decompiler routed this through a GOT code
+// pointer; it is PaintCanvas::Image2DCreate(canvas, id, out).
+void ImageFactory::reload_tail(unsigned canvas, int id, void *out) {
+    ((PaintCanvas *)(long)canvas)->Image2DCreate((unsigned short)id, (unsigned int *)out);
+}
+
+// Tail-call fragment at the end of drawChar(): draw the foreground glyph layer
+// (image2d handle stored at self+8) at (x,y). It is PaintCanvas::DrawImage2D.
+void ImageFactory::drawChar_tail(unsigned canvas, int handle, int x, int y) {
+    ((PaintCanvas *)(long)canvas)->DrawImage2D((unsigned int)handle, x, y);
+}

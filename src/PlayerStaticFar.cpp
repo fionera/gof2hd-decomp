@@ -50,6 +50,13 @@ void PlayerStaticFar::render()
     return PlayerStaticFar_render_tail(this);
 }
 
+// render() chains PlayerStatic::render(), which renders the owned geometry:
+// PlayerStaticFar::render -> PlayerStatic::render -> AEGeometry::render(geometry @ +0x08).
+void PlayerStaticFar::render_tail()
+{
+    ((AEGeometry *)this->geometry)->render();
+}
+
 // ---- projectCollisionOnSurface_11c52e.cpp ----
 
 // Static helper returning a Vector via sret. The decompiler dropped the receiver

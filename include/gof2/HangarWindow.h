@@ -235,6 +235,11 @@ public:
     void transaction(bool buy);
     void update(int delta);
 
+    // Tail of OnTouchEnd(): the equipment swap-confirmation / buy-mode dialog flow,
+    // peeled out by the decompiler. Resolves the active ChoiceWindow's touch result
+    // and commits (or cancels) the pending mount/demount.
+    void buildMissionOffer(int touch, int coord);
+
     // The ship the hangar acts on: always the player's current ship held by the global
     // Status. A static helper because it depends on no per-window state.
     static void *statusShip();

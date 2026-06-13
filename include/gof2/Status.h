@@ -160,6 +160,7 @@ public:
     uint orbitHasPlanetRing(int index);
     bool inStormOrbit();
     int inSupernovaSystem();
+    static int isChallengeMode();
     int getSystem();
     bool inFogSkyboxOrbit();
     bool inSupernovaOrbit();

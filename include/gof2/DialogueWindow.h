@@ -56,5 +56,10 @@ public:
     void set(Mission *mission, int kind, int campaign);
     void setLevel(Level *level);
     void update(int dt);
+
+    // Static campaign-dialogue lookups: do the offset tables list a briefing /
+    // success dialogue for this campaign-mission id?  (id capped at 0xa1.)
+    static bool hasBriefingDialogue(int id);
+    static bool hasSuccessDialogue(int id);
 };
 #endif

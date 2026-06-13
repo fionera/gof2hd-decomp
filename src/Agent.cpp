@@ -239,6 +239,14 @@ void Agent::setWingmanFriendNames(uint32_t *param) {
     Agent_finishWingman();
 }
 
+// Tail of setWingmanFriendNames (engine 0x18762a -> 0x1ab098): after the source
+// Array<String*> has been destructed, release its heap backing.  This is the
+// trailing `operator delete(consumedArray)` the compiler tail-called out of
+// setWingmanFriendNames once the array contents were moved into wingmanNames.
+void Agent::finishWingman(void *consumedArray) {
+    ::operator delete(consumedArray);
+}
+
 // ---- getWingmanName_177658.cpp ----
 RetStr Agent::getWingmanName(int idx) {
     Agent *self = this;

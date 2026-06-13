@@ -31,6 +31,7 @@ public: void* _opaque;
     bool listMode();
     unsigned char mapMode();
     void onKeyPress(int key);
+    void refresh();
     void setHangarUpdate(bool value);
     void startChat();
     void update(int dt);

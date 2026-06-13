@@ -123,6 +123,14 @@ public:
     void removeAllGuns();
     void resetDamageDoneByPlayer();
     void setActive(bool value);
+    // awake(active): KIPlayer wakes its underlying ship by (de)activating it. The shim
+    // Player_awake(player, 1) resolves through the PLT straight into Player::setActive,
+    // so awake() simply forwards the activation flag.
+    void awake(bool active);
+    // setDead(): the ship has been destroyed — drop it out of the active simulation.
+    // The KIPlayer death path (KIPlayer::setDead -> KIPlayer::setActive(false)) resolves
+    // into Player::setActive(false); setDead() is the Player-side entry point for that.
+    void setDead();
     void setArmorHP(int value);
     void setBombForce(float value);
     void setEmpData(int points, int data);

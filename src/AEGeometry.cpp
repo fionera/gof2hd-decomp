@@ -590,3 +590,24 @@ void AEGeometry::setLodChildTransform(uint32_t param)
         }
     }
 }
+
+// ---- setDirection_a467c.cpp ----
+// Single-argument convenience overload: orient the forward axis along 'dir'
+// while keeping the geometry's current up axis as the reference up vector.
+// (The two-vector form does the actual basis re-orthonormalisation.)
+void AEGeometry::setDirection(const Vector &dir)
+{
+    Vector up = this->getUpVector();
+    setDirection(dir, up);
+}
+
+// ---- positionChanged_a5336.cpp ----
+// Re-commit the geometry's current world position. The owning object (e.g. a
+// PlayerWormHole) updates its own position fields and then notifies the
+// geometry so its transform stays in sync; we read the position back out of the
+// local transform and re-apply it through the normal setPosition path.
+void AEGeometry::positionChanged()
+{
+    Vector pos = this->getPosition();
+    setPosition(pos.x, pos.y, pos.z);
+}

@@ -252,6 +252,23 @@ public:
     void incNumDeliveredOre(int delta);
     int getNumDeliveredPassengers();
     void incNumDeliveredPassengers(int delta);
+
+    // Recovered decompiler fragments: each forwards through a PI veneer to the
+    // resolved sibling-class method (see src/Level.cpp for the resolution notes).
+    void render2D_call(int starSystem);
+    void render_tail(int starSystem);
+    int checkGameOver_call(int objective);
+    int checkObjective_call(int objective);
+    void enableMovingStars_call(int mgr, int index, bool enable);
+    void enableFog_call(int mgr, int sys, bool enable);
+    void wanted_action(int code, int arg);
+    void pirateStationAction_tail(int code, int arg);
+    void friendTurnedEnemy_action(int code, int arg);
+    void alarmAllFriends_tail(Station *station, int flag);
+    void almostKillWanted_tail(int wanted, int active);
+    void wingmanDied_all(Status *status, int zero);
+    void wingmanDied_one(String *name, unsigned int *list);
+    int createStaticObject_call(int wp, int type, int jitter);
 };
 
 static_assert(sizeof(Level) == 0x2a0, "Level size");

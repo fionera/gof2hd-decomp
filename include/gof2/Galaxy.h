@@ -34,6 +34,7 @@ public:
     void reset();
     int distancePercent(int x1, int y1, int x2, int y2);
     void visitStation(int index);
+    void setSystemVisited(int systemId);
     int invDistancePercent(int x1, int y1, int x2, int y2);
     void setVisited(bool *src, int count);
     int getSystem(int index);

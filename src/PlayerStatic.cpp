@@ -14,6 +14,15 @@ void *_ZN12PlayerStaticD1Ev(PlayerStatic *self)
     return PlayerStatic_dtor_tail();
 }
 
+// ---- ~PlayerStatic (D2 base-object destructor) ----
+// PlayerStatic owns no members beyond the KIPlayer base; the non-deleting
+// destructor simply chains into the KIPlayer base destructor. (The deleting
+// variant _ZN12PlayerStaticD1Ev above additionally tail-calls operator delete.)
+PlayerStatic::~PlayerStatic()
+{
+    KIPlayer_dtor(this);
+}
+
 // ---- render_e09b8.cpp ----
 void PlayerStatic::render()
 {

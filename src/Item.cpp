@@ -253,6 +253,12 @@ void Item::changeAmount(int delta)
     amount += delta;
 }
 
+// ---- addAmount (Station::addItem veneer): accumulate amount onto an existing item ----
+void Item::addAmount(int delta)
+{
+    amount += delta;
+}
+
 // ---- makeItem_e07c6.cpp ----
 Item *Item::makeItem(int amount, int price)
 {

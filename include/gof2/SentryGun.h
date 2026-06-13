@@ -27,5 +27,12 @@ public:
     // ---- methods (converted from free functions) ----
     SentryGun * ctor(Gun *gun, int p2, int p3, int p4, Level *level);
     void update(int dt);
+
+    // Tail-dispatch reached at the end of update()/setDead()/reset(): the spawned
+    // pool object is handed off (with flag 1) to a dynamically-imported activation
+    // routine. That target is a load-time-resolved PLT veneer with no static body,
+    // so this member reproduces the only statically knowable behaviour: forwarding
+    // the (object, flag) tail-call to that resolved import.
+    static void fire_tail(void *obj, int flag);
 };
 #endif

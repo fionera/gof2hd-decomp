@@ -1214,5 +1214,46 @@ void PlayerFighter::revive()
 // AEGeometry / Fighter / Player implementation. They carry no static body of
 // their own (pure GOT veneer): the real work lives behind the extern "C" shim
 // declared at the top of this TU that the linker resolves to the relocated
-// target (mirroring PlayerFighter_cloak_off_helper). There is no local C++
-// body to define here.
+// target (mirroring PlayerFighter_cloak_off_helper). They are modeled here as
+// real members that forward to that landing pad, keeping the original method
+// control flow (see setShipGroup/awake/render above) intact.
+
+// setShipGroup() tail: dispatch to the inherited AEGeometry group setter.
+void PlayerFighter::setShipGroup_base(AEGeometry *geom, int group, bool flag) {
+    PlayerFighter_setShipGroup_base(geom, group, flag);
+}
+
+// awake() tail: make the (sub)geometry visible via the engine landing pad.
+void PlayerFighter::awake_tail(int geom, int on) {
+    PlayerFighter_awake_tail(geom, on);
+}
+
+// setCloakingPossible() helper: tear down the active cloak material/transform.
+void PlayerFighter::cloak_off_helper() {
+    PlayerFighter_cloak_off_helper();
+}
+
+// ~PlayerFighter() tail: chain to the KIPlayer/Fighter base destructor.
+void *PlayerFighter::base_dtor() {
+    return PlayerFighter_base_dtor(this);
+}
+
+// setMissionCrate() tail: hand the freshly built loot list to the crate setter.
+void PlayerFighter::setMissionCrate_tail(int slot, Array<int> *loot) {
+    PlayerFighter_setMissionCrate_tail(slot, loot);
+}
+
+// setBV() tail: append the bounding volume to the newly created array.
+void PlayerFighter::setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *volumes) {
+    PlayerFighter_setBV_add(bv, volumes);
+}
+
+// setExhaustVisible() tail: toggle the exhaust transform's visibility.
+void PlayerFighter::setExhaustVisible_apply(unsigned int transform, bool visible) {
+    PlayerFighter_setExhaustVisible_apply(transform, visible);
+}
+
+// render() tail: render the bare geometry when no sub-geometry override applies.
+void PlayerFighter::render_tail(int geom) {
+    PlayerFighter_render_tail(geom);
+}

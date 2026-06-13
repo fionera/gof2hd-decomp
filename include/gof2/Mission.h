@@ -67,6 +67,17 @@ public:
     Mission * ctor_int(int id);
     void dtor();
     Mission * dtor_inner();
+    // Deleting-destructor finisher: free the storage after the inner dtor ran.
+    void dtor_finish();
+    // Constructor aliases used by the freelance/record/wanted code paths. Each
+    // builds the same Mission as the matching numbered ctor; they exist as
+    // distinct call-site spellings in the original binary.
+    Mission * ctor_akw(int type, int goods, int station);
+    Mission * ctorEmpty(int type, int reward, int targetStation);
+    Mission * ctorFull(int type, const void *clientName, int *img, int clientRace,
+                       int reward, int targetStation, int difficulty);
+    void setCampaign_akw(int flag);
+    void setWon_akw(int flag);
     RetStr getClientName();
     RetStr getDescription();
     RetStr getName();

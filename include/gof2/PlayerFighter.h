@@ -198,5 +198,21 @@ public:
     void setSpeed(float v);
     void setWingmanCommand(int cmd, KIPlayer *target);
     void update(int dt);
+
+    // ---- tail-call / veneer fragments ----
+    // Each is the terminal b.w of a PlayerFighter method into a relocated GOT slot
+    // that lands in the inherited engine/base implementation: AEGeometry's group
+    // setter, the awake/exhaust/render dispatch, the bounding-volume array adder,
+    // the loot setter and the KIPlayer base destructor. They have no static body of
+    // their own (pure GOT veneer), so the work lives behind the extern shim the
+    // linker resolves. Modeling them as members keeps the original control flow.
+    void setShipGroup_base(AEGeometry *geom, int group, bool flag);
+    void awake_tail(int geom, int on);
+    void cloak_off_helper();
+    void *base_dtor();
+    void setMissionCrate_tail(int slot, Array<int> *loot);
+    void setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *volumes);
+    void setExhaustVisible_apply(unsigned int transform, bool visible);
+    void render_tail(int geom);
 };
 #endif

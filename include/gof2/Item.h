@@ -56,6 +56,7 @@ public:
     int getOccurence();
     int getAmount();
     void changeAmount(int delta);
+    void addAmount(int delta);
     int getMissingIngredients();
     void setMissingIngredients(int value);
     void setStationAmount(int value);

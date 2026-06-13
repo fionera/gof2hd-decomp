@@ -104,5 +104,8 @@ public:
     int getSellSystemIndex();
     int getSellBlueprintIndex();
     int getWingmanFriendsCount();
+
+    // Tail of setWingmanFriendNames: free the consumed source array's backing.
+    void finishWingman(void *consumedArray);
 };
 #endif

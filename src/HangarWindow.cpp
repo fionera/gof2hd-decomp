@@ -1126,6 +1126,68 @@ int HangarWindow::highlightItem(void *item) {
     return 0;
 }
 
+// ---- buildMissionOffer (tail of OnTouchEnd_14c740) ---------------------------
+// The decompiler peeled the trailing equipment swap-confirmation / buy-mode dialog
+// flow out of OnTouchEnd() into this helper. With the equipment-swap ChoiceWindow
+// (this->dialog) showing, route the touch result:
+//   * OK on the swap dialog       -> keep the new equipment, restore the scroll.
+//   * Cancel on the swap dialog   -> undo: re-mount the demounted item / drop the
+//                                    pending mount, and snapshot the scroll offset.
+//   * buy-mode confirmation       -> commit or roll back the buy, resetting the
+//                                    HangarList selection.
+void HangarWindow::buildMissionOffer(int touch, int coord)
+{
+    HangarWindow *self = this;
+    ChoiceWindow *dialog = (ChoiceWindow *)self->dialog;
+
+    // Equipment swap confirmation.
+    int swapResult = dialog->OnTouchEnd(touch, coord);
+    if (swapResult == 1) {
+        // Confirmed: keep the swapped-in equipment, restore the saved scroll position.
+        self->dialogActive = 0;
+        self->replaceEquipPending = 0;
+        self->scrollOffset = self->savedScrollOffset;
+    } else if (swapResult == 0 && self->pendingMountItem != 0 && self->pendingDemountItem != 0) {
+        // Cancelled: undo the swap. Put the demounted item back and re-apply the mount.
+        self->demountItem(self->pendingDemountItem, -1);
+        self->savedScrollOffset = self->scrollOffset;
+        self->mountItem(self->pendingMountItem);
+        self->dialogActive = 0;
+        self->replaceEquipPending = 0;
+    }
+
+    // Buy-mode confirmation (shares the same ChoiceWindow).
+    uint8_t buyMode = self->buyMode;
+    int buyResult = dialog->OnTouchEnd(touch, coord);
+    if (buyMode != 0) {
+        HangarList *list = (HangarList *)self->hangarList;
+        if (buyResult == 1) {
+            self->buyMode = 0;
+            self->dialogActive = 0;
+        } else {
+            if (buyResult != 0)
+                return;
+            if (self->field_0x130 == 0) {
+                self->dialogActive = 0;
+                if (self->autoEquipped == 0) {
+                    self->buyMode = 1;
+                } else {
+                    // Auto-equipped: clear any in-flight tab-button touches.
+                    Array<void *> *tabs = (Array<void *> *)self->tabButtons;
+                    for (unsigned int i = 0; i < tabs->size(); i++)
+                        ((TouchButton *)(tabs->data()[i]))->resetTouch();
+                }
+                return;
+            }
+            self->dialogActive = 0;
+            self->field_0x130 = 0;
+            self->buyMode = 0;
+        }
+        self->selectedItem = 0;
+        list->setCurrentItemIndex(-1);
+    }
+}
+
 // ---- demountItem_14de04.cpp ----
 extern "C" {
 void Ship_freeSlotAt(void *ship, void *item, int slot);

@@ -26,6 +26,7 @@ public:
     int field_0x12c;                    // +0x12c z
 
     PlayerStatic(int playerId, AEGeometry *geometry, float x, float y, float z);
+    ~PlayerStatic();
     void render();
     Vector getPosition();
 };

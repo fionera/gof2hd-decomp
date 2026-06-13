@@ -728,3 +728,20 @@ void Explosion::tail_translate(AEGeometry *geometry, const Vector *v) {
 void Explosion::reset_tail() {
     this->reset();
 }
+
+// ---- ABI shims -------------------------------------------------------------
+// Explosions are pooled by raw pointer (operator new) in BombGun / ObjectGun /
+// LevelScript and the Array<Explosion*> helpers, so construction and teardown go
+// through these C entry points wrapping the real special members.  The dtor
+// returns the object pointer so the caller can pass it straight to operator
+// delete, matching the binary's call sequence.
+extern "C" void Explosion_ctor(Explosion *self, int type)
+{
+    new (self) Explosion(type);
+}
+
+extern "C" void *Explosion_dtor(Explosion *self)
+{
+    self->~Explosion();
+    return self;
+}

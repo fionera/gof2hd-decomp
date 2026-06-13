@@ -213,11 +213,21 @@ bool DialogueWindow_hasBriefingDialogue(int id)
     return g_dw_briefingDialogueIds[id] > 0;
 }
 
+bool DialogueWindow::hasBriefingDialogue(int id) {
+    if (id > 0xa1) return false;
+    return g_dw_briefingDialogueIds[id] > 0;
+}
+
 // ---- hasSuccessDialogue_1671d4.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_successDialogueIds[];
 
 bool DialogueWindow_hasSuccessDialogue(int id)
 {
+    if (id > 0xa1) return false;
+    return g_dw_successDialogueIds[id] > 0;
+}
+
+bool DialogueWindow::hasSuccessDialogue(int id) {
     if (id > 0xa1) return false;
     return g_dw_successDialogueIds[id] > 0;
 }
@@ -750,4 +760,53 @@ void DialogueWindow::draw() {
 // hasLevel() reports whether a level was bound this way.
 void DialogueWindow::setLevel(Level *level) {
     this->level = level;
+}
+
+// ---- ABI shims -------------------------------------------------------------
+// ModStation builds and drives its embedded DialogueWindow through a handful of
+// other-unit-inlined entry points ("_ou" / "_ote" / "_r2d").  Each is the exact
+// same work as the corresponding real member, just reached from the inlined
+// station-update / station-render / station-touch paths, so they forward to the
+// recovered members.
+
+// Default + mission + message constructors (in-place; the raw object pointer is
+// allocated by ModStation via operator new(0x74)).
+extern "C" void DialogueWindow_ctor_ou(DialogueWindow *dw) {
+    dw->ctor_default();
+}
+
+extern "C" void DialogueWindow_ctor_mission_ou(DialogueWindow *dw, void *mission,
+                                               int level, int kind) {
+    dw->ctor_mission((Mission *)mission, (Level *)level, kind);
+}
+
+extern "C" void DialogueWindow_ctor_msg_ou(DialogueWindow *dw, int titleStr,
+                                           int bodyStr, int *parts) {
+    dw->ctor_text((String *)(intptr_t)titleStr, (String *)(intptr_t)bodyStr, parts);
+}
+
+// set()/update() reached from the inlined station logic.  setMission passes the
+// "won" kind (1) and lets the window resolve the current campaign mission (-1).
+extern "C" void DialogueWindow_setMission_ou(void *dw, void *mission, int kind) {
+    ((DialogueWindow *)dw)->set((Mission *)mission, kind, -1);
+}
+
+extern "C" void DialogueWindow_update_ou(int dw) {
+    ((DialogueWindow *)(intptr_t)dw)->update(0);
+}
+
+// OnTouchEnd / destructor reached from the inlined station touch handler.
+extern "C" int DialogueWindow_OnTouchEnd_ote(int dw, int xy) {
+    return ((DialogueWindow *)(intptr_t)dw)->OnTouchEnd(xy, xy);
+}
+
+extern "C" void DialogueWindow_dtor_ote(DialogueWindow *dw) {
+    dw->~DialogueWindow();
+}
+
+// Render: ModStation passes itself; the live DialogueWindow pointer lives at
+// ModStation + 0x84 (m_pDialogueWindow).  Draw it through the real member.
+extern "C" void DialogueWindow_draw_r2d(void *modStation) {
+    DialogueWindow *dw = *(DialogueWindow **)((char *)modStation + 0x84);
+    if (dw != 0) dw->draw();
 }

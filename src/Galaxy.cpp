@@ -82,6 +82,16 @@ void Galaxy::visitStation(int index)
     stations[index] = 1;
 }
 
+// ---- setSystemVisited (visit-veneer target) ----
+// Tail-call target of Station::visit(): marks the given system index as visited.
+// Identical work to visitStation(int) — writes the per-system visited flag in the
+// stations[] array held at +0x0 (station index == system index on the star map).
+void Galaxy::setSystemVisited(int systemId)
+{
+    uint8_t *stations = (uint8_t *)P(this, 0x0);
+    stations[systemId] = 1;
+}
+
 // ---- invDistancePercent_175f2e.cpp ----
 int Galaxy::invDistancePercent(int x1, int y1, int x2, int y2)
 {

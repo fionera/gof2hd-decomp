@@ -458,3 +458,26 @@ ListItem * ListItem::ctor_copy(ListItem *src) {
     self->field_0x18 = src->field_0x18;
     return self;
 }
+
+// ---- ctor_Slot (b6688) ----
+// ListItem::ListItem(int slot) used for cargo/equipment slots. A slot stores its
+// non-negative key in field_0x28 (isSlot() reads it back) and is always selectable;
+// this is the same body as ctor_int, named here for the slot call site.
+ListItem * ListItem::ctor_Slot(int slot) {
+    return this->ctor_int(slot);
+}
+
+// ---- ctor_TextButton (b6572) ----
+// ListItem::ListItem(String*, bool, int) — a footer/action button entry: owns a copy
+// of the label String, raises the textButton flag and stores the action id. Identical
+// to ctor_String_bool_int; exposed under the call-site's name.
+ListItem * ListItem::ctor_TextButton(const void *text, bool enabled, int action) {
+    return this->ctor_String_bool_int(text, enabled, action);
+}
+
+// ---- ctor_ListItem (b645a) ----
+// ListItem::ListItem(const ListItem&) — copy-wraps the payload pointers and owned name
+// Strings of another entry. Same body as ctor_copy.
+ListItem * ListItem::ctor_ListItem(ListItem *src) {
+    return this->ctor_copy(src);
+}

@@ -246,5 +246,10 @@ public:
     int  dispatchTouchEnd(void *btn, int x, int y);
     int  touch_end(int x, int y);
     void drawHeader_call(void *title);
+
+    // ---- canonical-named public draw entries (batch 18) ----
+    void drawWindow(void *title, int x, int y, int w, int h);
+    void drawMask();
+    void drawBGBorderImpl(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
 };
 #endif

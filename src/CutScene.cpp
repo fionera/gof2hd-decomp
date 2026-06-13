@@ -887,3 +887,25 @@ void CutScene::renderBG_tail(Level *level, uint32_t t)
         level->renderBG(ft);
     }
 }
+
+// ---- processAux -------------------------------------------------------------
+// Peeled out of process()'s "race == 2" branch: a GOT-indirect call that pokes
+// the cutscene's Level to refresh its enemy list (the cinematic ships) before
+// each Transform::Update. Same as the inline ((Level*)field_0x0)->getEnemies()
+// the sibling race branches use.
+void CutScene::processAux()
+{
+    Level *level = (Level *)pp(this, 0x0);
+    if (level != 0)
+        level->getEnemies();
+}
+
+// ---- turretFinalize ---------------------------------------------------------
+// The trailing tail-call of checkForTurret(): after the weapon-position table's
+// ~Array() has run (leaving the array pointer in r0), this frees the now-empty
+// Array<Array<Vector*>*> object. It is the operator delete half of the standard
+// delete idiom that the decompiler split off from the destructor.
+void CutScene::turretFinalize(void *positions)
+{
+    ::operator delete(positions);
+}

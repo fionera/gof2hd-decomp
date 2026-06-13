@@ -115,3 +115,13 @@ Wanted * Wanted::dtor() {
     self->imageParts = 0;
     return Wanted_base_dtor(self);
 }
+
+// ---- Wanted_base_dtor (base subobject destructor) ----
+// Wanted's only base subobject is its leading AbyssEngine::String `name` (offset 0x0).
+// The compiler-generated base-object destructor therefore just runs String::~String on
+// `name` and returns the (Wanted*) object pointer for the destructor chain. Wanted::dtor()
+// above frees the imageParts buffer first, then tail-calls this.
+Wanted * Wanted::base_dtor() {
+    name.dtor();
+    return this;
+}

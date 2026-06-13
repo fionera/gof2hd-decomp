@@ -41,6 +41,16 @@ ParticleSystemSprite::~ParticleSystemSprite()
     ParticleSystemSprite_baseDtor(this);
 }
 
+// Base-subobject destructor. ParticleSystemSprite derives from IParticleSystem; after
+// the derived dtor has re-installed the derived vtable and run release(), it chains into
+// the IParticleSystem destructor to tear down the base (emitter/particle-set state).
+// Returns the object pointer for the caller's deleting-dtor convention.
+extern "C" void *ParticleSystemSprite_baseDtor(void *self)
+{
+    ((IParticleSystem *)self)->~IParticleSystem();
+    return self;
+}
+
 // ---- reset_18335c.cpp ----
 void ParticleSystemSprite::reset()
 {

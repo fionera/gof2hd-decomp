@@ -31,6 +31,8 @@ public:
     void initialize();
     void resetCamera();
     void checkForTurret();
+    void processAux();
+    void turretFinalize(void *positions);
 };
 
 #endif

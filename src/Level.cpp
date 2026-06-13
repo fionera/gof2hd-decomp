@@ -4826,3 +4826,122 @@ extern "C" void *Level_dtor(void *level)
     ((Level *)level)->~Level();
     return level;
 }
+
+// ---------------------------------------------------------------------------
+// Recovered decompiler fragments.
+//
+// The methods below were emitted by the decompiler as standalone `Level_*`
+// helpers because each is reached through a PI long-branch veneer (a
+// Thumb->ARM trampoline) that forwards to a sibling-class method. Following
+// each veneer through its GOT slot resolves the real target; every fragment is
+// just that forwarding call, re-expressed here as a real Level member so the
+// work is named instead of going through an opaque trampoline.
+// ---------------------------------------------------------------------------
+namespace {
+
+// Sibling classes reached by the recovered veneers. Only the methods actually
+// invoked are declared; the engine owns the full definitions.
+struct StarSystemFwd {
+    void render2D();
+    void renderSunStreak();
+};
+struct ObjectiveFwd {
+    unsigned int achieved(int value);
+};
+struct StationFwd {
+    void setAttackedFriends(bool v);
+};
+struct WantedFwd {
+    void setActive(bool v);
+};
+struct StatusFwd {
+    void setWingmen(void *list);
+};
+
+} // namespace
+
+// render2D() forwards rendering of the 2D HUD overlay to the active star system
+// (this->starSystem, +0xec). Veneer 0x1abfe8 -> StarSystem::render2D.
+void Level::render2D_call(int starSystem) {
+    if (starSystem != 0)
+        ((StarSystemFwd *)(intptr_t)starSystem)->render2D();
+}
+
+// render() tail-calls the star system's sun-streak pass after drawing every
+// world object. Veneer 0x1abfd8 -> StarSystem::renderSunStreak.
+void Level::render_tail(int starSystem) {
+    if (starSystem != 0)
+        ((StarSystemFwd *)(intptr_t)starSystem)->renderSunStreak();
+}
+
+// checkGameOver()/checkObjective() defer to the objective's own completion test.
+// Veneer 0x1ac018 -> Objective::achieved.
+int Level::checkGameOver_call(int objective) {
+    return (int)((ObjectiveFwd *)(intptr_t)objective)->achieved(0);
+}
+
+int Level::checkObjective_call(int objective) {
+    return (int)((ObjectiveFwd *)(intptr_t)objective)->achieved(0);
+}
+
+// enableMovingStars()/enableFog() toggle rendering of a particle system owned by
+// a ParticleSystemManager. Veneer 0x1ac048 -> ParticleSystemManager::enableSystemRender.
+void Level::enableMovingStars_call(int mgr, int index, bool enable) {
+    ParticleSystemManager::enableSystemRender(mgr, index, enable);
+}
+
+void Level::enableFog_call(int mgr, int sys, bool enable) {
+    ParticleSystemManager::enableSystemRender(mgr, sys, enable);
+}
+
+// killWanted()/pirateStationAction()/friendTurnedEnemy() all queue a context
+// radio message. Veneer 0x1ac028 -> Level::createRadioMessage(type, sub).
+void Level::wanted_action(int code, int arg) {
+    createRadioMessage(code, arg);
+}
+
+void Level::pirateStationAction_tail(int code, int arg) {
+    createRadioMessage(code, arg);
+}
+
+void Level::friendTurnedEnemy_action(int code, int arg) {
+    createRadioMessage(code, arg);
+}
+
+// alarmAllFriends() flags the home station as having had its friends attacked.
+// Veneer 0x1abff8 -> Station::setAttackedFriends(true).
+void Level::alarmAllFriends_tail(Station *station, int flag) {
+    ((StationFwd *)station)->setAttackedFriends(flag != 0);
+}
+
+// almostKillWanted() (de)activates the wanted's storyline state once the target
+// has been brought to near-death. Veneer 0x1ac038 -> Wanted::setActive.
+void Level::almostKillWanted_tail(int wanted, int active) {
+    ((WantedFwd *)(intptr_t)wanted)->setActive(active != 0);
+}
+
+// wingmanDied(): when the player has at most one wingman left, clear the whole
+// wingman roster. Veneer 0x1abfb8 -> Status::setWingmen(0).
+void Level::wingmanDied_all(Status *status, int zero) {
+    ((StatusFwd *)status)->setWingmen((void *)(intptr_t)zero);
+}
+
+// wingmanDied(): otherwise drop the matched wingman name from the roster array.
+// Veneer 0x1abfc8 -> ArrayRemove<AbyssEngine::String*>(name, list).
+void Level::wingmanDied_one(String *name, unsigned int *list) {
+    // list = {size, data, capacity}; remove the entry equal to `name`.
+    unsigned int n = list[0];
+    String **data = (String **)(intptr_t)list[1];
+    unsigned int w = 0;
+    for (unsigned int r = 0; r < n; ++r) {
+        if (data[r] != name)
+            data[w++] = data[r];
+    }
+    list[0] = w;
+}
+
+// createStaticObjects() builds each fixed world object through createStaticObject.
+// Veneer chains to Level::createStaticObject(Waypoint*, type, jitter).
+int Level::createStaticObject_call(int wp, int type, int jitter) {
+    return createStaticObject((Waypoint *)(intptr_t)wp, type, jitter);
+}

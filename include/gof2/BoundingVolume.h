@@ -26,6 +26,10 @@ public:
     int collide(float x, float y, float z);
     void getCollisionNormal(const Vector &out);
     void setVolume(BoundingVolume *src);
+    // Registration tail used by setVolume()/PlayerFixedObject::setBV(): append this
+    // volume to the destination array. Both spellings forward to Array::add.
+    void setVolume_tail(Array<BoundingVolume *> *arr);
+    void setArr(Array<BoundingVolume *> *arr);
     void staticProjectCollisionOnSurface(const Vector &v, Array<BoundingVolume *> *vols);
     void update(float x, float y, float z);
     Vector getProjectionVector(const Vector &v);

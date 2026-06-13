@@ -1718,3 +1718,86 @@ unsigned int Ship::hasJumpDriveIntegrated() {
     }
     return 0;
 }
+
+// ===========================================================================
+// Recovered decompiler-fragment members (canonical bodies, distinct names).
+// These mirror the real members above and exist so the extern "C" shims
+// (Ship_ctor_full / Ship_addCargo2 / Ship_setEquipment1 / Ship_removeCargo3 /
+//  Ship_getEquipmentByType / Ship_hasCloakNeg) have a member to bind to.
+// ===========================================================================
+
+// ---- Ship::ctor_full @ 0x18457c (Ship::Ship full constructor) ------------
+// In-place initializer used by clone(): the disassembly treats the ctor as a
+// free function that takes an already-allocated `self` and returns it.
+Ship *Ship::ctor_full(int index, int baseHP, int baseLoad, int value,
+                      int slot0, int slot1, int slot2, int slot3, float handling) {
+    this->index       = index;
+    this->baseHP      = baseHP;
+    this->value       = value;
+    this->baseLoad    = baseLoad;
+    this->currentLoad = 0;
+    this->price       = value;
+
+    int *slotCounts = operatorNewArrayInt(4);
+    this->slots = slotCounts;
+    slotCounts[0] = slot0;
+    slotCounts[1] = slot1;
+    slotCounts[2] = slot2;
+    slotCounts[3] = slot3;
+
+    this->handling = handling / 100.0f;
+
+    Array<Item*> *eq = operatorNewArr(0xc);
+    Array_Item_ctor(eq);
+    this->equipment = eq;
+    ArraySetLength<Item*>(slot0 + slot1 + slot2 + slot3, *eq);
+
+    this->race                = 0;
+    this->cargo               = 0;
+    this->mods                = 0;
+    this->numAddedDeviceSlots = 0;
+
+    ::refreshValue(this);
+    return this;
+}
+
+// ---- Ship::addCargo2 @ 0x184f00 (commit-cargo / setCargo tail) -----------
+// Takes the merged item list and installs it as the new cargo hold, recomputes
+// the current load and updates the world's peak-cargo high-water mark.
+void Ship::addCargo2(Array<Item*> *items) {
+    ::setCargo(this, items);
+}
+
+// ---- Ship::setEquipment1 @ 0x18509c --------------------------------------
+// Places `item` into the first empty equipment slot, then recomputes stats.
+void Ship::setEquipment1(Item *item) {
+    Array<Item*> *eq = this->equipment;
+    for (unsigned int i = 0; i < eq->size(); i = i + 1) {
+        if (eq->data()[i] == 0) {
+            eq->data()[i] = item;
+            break;
+        }
+    }
+    recomputeAfterSlots();
+}
+
+// ---- Ship::removeCargo3 @ 0x184e64 ---------------------------------------
+// Removes up to `amount` units of the good with index `index` from the cargo
+// hold; returns 1 if the good was fully depleted (and the hold compacted).
+int Ship::removeCargo3(int index, int amount) {
+    return removeCargo(index, amount);
+}
+
+// ---- Ship::getEquipmentByType @ 0x1750cc (getEquipment(int)) -------------
+// Returns a freshly built array of the items installed in the slot-type's
+// contiguous slot range, or null if the ship has no slots of that type.
+Array<Item*>* Ship::getEquipmentByType(unsigned int type) {
+    return getEquipment((int)type);
+}
+
+// ---- Ship::hasCloakNeg @ 0x184be8 (cloak accessor) -----------------------
+// The HUD reads this and XORs the result with 1 to derive its "no-cloak"
+// flag, so it returns the plain cloak-present truth value.
+unsigned char Ship::hasCloakNeg() {
+    return (unsigned char)(hasCloak() ? 1 : 0);
+}

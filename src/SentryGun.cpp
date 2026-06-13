@@ -61,6 +61,14 @@ struct SentryLevel {
     PoolObject **pool;  // +0xb0
 };
 
+// ---- SentryGun::fire_tail @ b.w 0x1abe08 (dynamic import veneer) ----------
+// Final hand-off of the freshly spawned pool object to the load-time-resolved
+// activation import. No static body exists for the import (pure PLT veneer),
+// so this forwards the (object, flag) tail-call exactly as the disassembly does.
+void SentryGun::fire_tail(void *obj, int flag) {
+    ::SentryGun_fire_tail(obj, flag);
+}
+
 void SentryGun::update(int dt) {
     SentryGun *self = this;
     Gun *gun = self->gun;

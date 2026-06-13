@@ -1,7 +1,13 @@
+#include <new>
+#include <cstdint>
 #include "gof2/Objective.h"
 #include "gof2/Level.h"
 #include "gof2/Route.h"
 #include "gof2/KIPlayer.h"
+#include "gof2/Player.h"
+// RadioMessage.h re-declares incompatible mini Level/Player/Objective structs,
+// so it cannot be pulled in here; forward-declare just the predicate we call.
+struct RadioMessage { uint8_t isOver(); };
 // NOTE: gof2/Level.h is intentionally NOT included: its 32-bit-target static_asserts
 // do not hold on a 64-bit host. Level is opaque here; the few direct field reads on a
 // Level* (offsets 0x20/0x24) use byte-offset casts, and everything else goes through the
@@ -278,4 +284,50 @@ unsigned int Objective::achieved(int value)
         break;
     }
     return result;
+}
+
+// ---- achieved() tail-call helpers ----
+// Recovered from the indirect tail-calls in Objective::achieved: each loads a
+// single target object and forwards to one virtual predicate on it. The returned
+// boolean predicate becomes achieved()'s result for that objective type.
+
+unsigned int Objective::tailEnemyIsDead(KIPlayer *enemy)
+{
+    return enemy->isDead();
+}
+
+unsigned int Objective::tailEnemyPayloadActive(void *player)
+{
+    return ((Player *)player)->isActive();
+}
+
+unsigned int Objective::tailFriendCargoStolen(Level *level)
+{
+    return ((Level *)level)->friendCargoWasStolen();
+}
+
+unsigned int Objective::tailMessageOver(void *message)
+{
+    return ((RadioMessage *)message)->isOver();
+}
+
+unsigned int Objective::tailEnemyIsDying(KIPlayer *enemy)
+{
+    return enemy->isDying();
+}
+
+// Free-function entries: callers that hold the Objective storage opaquely
+// placement-construct via the (type, value, calcValue, level) ctor, and free it
+// through the in-place destructor (which returns the pointer for ::operator delete).
+//   o    : storage to construct the Objective into
+//   type : objective type, value/calcValue : its parameters, level : owning Level
+extern "C" void Objective_ctor_akw(int o, int type, int value, int calcValue, Level *level)
+{
+    new ((void *)(intptr_t)o) Objective(type, value, calcValue, level);
+}
+
+extern "C" void *Objective_dtor(Objective *o)
+{
+    o->~Objective();
+    return o;
 }

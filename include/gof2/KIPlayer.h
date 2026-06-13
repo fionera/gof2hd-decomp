@@ -197,6 +197,10 @@ public:
     Route *getRoute();
     Array<SpacePoint *> *getSpacePoints();
     void setLevel(Level *lvl);
+    // Adds a specific gun to the underlying Player's weapon set (forwarded to Player::addGun).
+    void addGun(Gun *gun);
+    // Engages / disengages the auto-pilot lock onto the given target (engaged when target != null).
+    void setAutoPilot(KIPlayer *target);
 
     // Collision-query virtuals inherited from the bounding-volume interface. A KIPlayer
     // does not expose a surface to project onto, so all three return a zeroed vector.

@@ -1,3 +1,4 @@
+#include <new>
 #include "gof2/CheatHandler.h"
 
 
@@ -123,3 +124,16 @@ void CheatHandler::Update(uint16_t key)
 }
 
 } // namespace AbyssEngine
+
+// Free-function entries used by callers that hold the handler storage opaquely
+// (placement-construct into `cheats` with the digit->keycode table; the dtor runs
+// the in-place teardown that releases the cheat-code array).
+extern "C" void CheatHandler_ctor(void *cheats, void *keys)
+{
+    new (cheats) AbyssEngine::CheatHandler((AbyssEngine::KeyCode *)keys);
+}
+
+extern "C" void CheatHandler_dtor(void *cheats)
+{
+    ((AbyssEngine::CheatHandler *)cheats)->~CheatHandler();
+}

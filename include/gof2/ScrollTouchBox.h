@@ -36,6 +36,10 @@ public:
     ~ScrollTouchBox();
     void setText(AbyssEngine::String text);
     void setText(AbyssEngine::String text, int font);
+    // Engine-named entry points that lay out text in a specific font/colour slot;
+    // both feed straight into the two-argument setText layout path.
+    void setText2(AbyssEngine::String *text, int font);
+    void setTextColor(AbyssEngine::String *text, int color);
     void setTextCentered(bool centered);
     void setPosition(int x, int y);
     void setYPosition(int y);

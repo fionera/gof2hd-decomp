@@ -338,6 +338,22 @@ void Player::setActive(bool value) {
     self->active = value;
 }
 
+// ---- awake_725xx ----
+// KIPlayer::awake() flips its own state and then calls Player_awake(player, 1); that shim
+// is a PLT interworking stub that branches directly into Player::setActive, so awakening
+// the ship is exactly "make it active again".
+void Player::awake(bool active) {
+    setActive(active);
+}
+
+// ---- setDead ----
+// The death path KIPlayer::setDead() -> KIPlayer::setActive(false) -> Player::setActive(false)
+// pulls the destroyed ship out of the active simulation. setDead() is the Player-side hook the
+// KIPlayer/PlayerEgo teardown calls reach.
+void Player::setDead() {
+    setActive(false);
+}
+
 // ---- isAsteroid_a29cc.cpp ----
 bool Player::isAsteroid() {
     Player *self = this;

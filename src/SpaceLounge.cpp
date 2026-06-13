@@ -1488,3 +1488,74 @@ idle_camera:
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// Tail-call veneers
+//
+// The decompiler split SpaceLounge::OnRender3D / OnRenderBG / draw3DShip / draw /
+// update at their mode branches: each branch ends in a tail-call through a PLT
+// veneer into the appropriate sub-screen object's method. The veneers resolve to
+// these engine entry points:
+//   *_map_tail        -> StarMap::render / StarMap::draw / StarMap::update
+//   *_cutscene_tail   -> CutScene::render3D
+//   *_ship_tail / draw3DShip_tail / update_ship_tail -> ListItemWindow::render /
+//                        ListItemWindow::draw-helpers / ListItemWindow::update
+//   draw_cutscene_tail-> Layout::drawFooter (current draw-layout slot)
+// They keep the extern "C" signatures the call sites already use; the receiver is
+// passed in (or, for draw_cutscene_tail, taken from the draw-layout global slot).
+// ---------------------------------------------------------------------------
+
+extern "C" void SpaceLounge_OnRender3D_map_tail(void *map)
+{
+    ((StarMap *)map)->render();
+}
+
+extern "C" void SpaceLounge_OnRender3D_cutscene_tail(void *cutscene)
+{
+    ((CutScene *)cutscene)->render3D();
+}
+
+extern "C" void SpaceLounge_draw3DShip_tail(void *ship)
+{
+    ((ListItemWindow *)ship)->render();
+}
+
+extern "C" void SpaceLounge_draw_map_tail(void *map)
+{
+    ((StarMap *)map)->draw();
+}
+
+extern "C" void SpaceLounge_draw_cutscene_tail()
+{
+    // Tail of SpaceLounge::draw() in 3D-ship mode: after the ListItemWindow has
+    // been drawn, render the footer for the current draw layout.
+    void *layout = *(void **)(*(void **)&SpaceLounge_draw_layout_slot);
+    ((Layout *)layout)->drawFooter();
+}
+
+extern "C" void SpaceLounge_update_map_tail(void *map, int dt)
+{
+    ((StarMap *)map)->update(dt);
+}
+
+extern "C" void SpaceLounge_update_ship_tail(void *list, int dt)
+{
+    ((ListItemWindow *)list)->update(dt);
+}
+
+// SpaceLounge::refresh -- called from ModStation after a mission reward is credited
+// and the mission removed, to refresh the lounge's offer list. In this build the body
+// is empty: the agent/offer list is rebuilt on the next init()/re-entry of the lounge,
+// so refresh() has no work to do here (the binary's SpaceLounge::refresh is a no-op stub).
+void SpaceLounge::refresh()
+{
+}
+
+// SpaceLounge_dtor: the in-place destructor entry the decompiler emitted as a
+// free function (the deleting-dtor thunk dereferenced from ModStation). Runs the
+// real destructor and returns the object pointer so the caller can free it.
+extern "C" void *SpaceLounge_dtor(void *p)
+{
+    ((SpaceLounge *)p)->~SpaceLounge();
+    return p;
+}

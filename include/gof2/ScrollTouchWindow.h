@@ -28,6 +28,9 @@ public:
     void setTextCentered(bool centered);
     void setYPosition(int y);
     void update(int dt);
+    // Keyboard / D-pad scroll: nudge the hosted ScrollTouchBox by `amount` steps
+    // (positive scrolls the content down, negative up); the box settles via update().
+    void scroll(int amount);
     void draw();
     void drawTextBG();
     void setText(AbyssEngine::String title, AbyssEngine::String text);

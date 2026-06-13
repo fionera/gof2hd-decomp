@@ -52,6 +52,13 @@ public:
     void * loadImage(int row, int col, int frameBase);
     void reload();
 
+    // Tail-call fragments emitted at the end of reload()/drawChar(): both simply
+    // forward to a PaintCanvas method on the supplied canvas handle.
+    //   reload_tail  -> PaintCanvas::Image2DCreate(canvas, id, out)
+    //   drawChar_tail-> PaintCanvas::DrawImage2D(canvas, handle, x, y)
+    static void reload_tail(unsigned canvas, int id, void *out);
+    static void drawChar_tail(unsigned canvas, int handle, int x, int y);
+
     int getItemImageId(int param_1);
 };
 #endif

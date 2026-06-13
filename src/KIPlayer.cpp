@@ -902,3 +902,53 @@ Vector KIPlayer::projectCollisionOnSurface(const Vector &position) {
     out.x = 0.0f; out.y = 0.0f; out.z = 0.0f;
     return out;
 }
+
+// ---- addGun_b61d2.cpp ----
+// KIPlayer::addGun(Gun*) — delegate the new weapon to the wrapped Player object.
+// The target body simply re-dispatches to Player::addGun on this->player; the index
+// argument is supplied by the engine-side overload, so we forward through the existing
+// Player_addGun_a entry point (the no-extra-argument default slot).
+extern "C" void Player_addGun(void *player, Gun *gun);
+// AbyssEngine::ApplicationManager::GetEngine() — singleton engine accessor.
+extern "C" void *AppManager_GetEngine();
+
+void KIPlayer::addGun(Gun *gun) {
+    KIPlayer *self = this;
+    Player_addGun(self->player, gun);
+}
+
+// ---- setAutoPilot_ab808.cpp ----
+// KIPlayer::setAutoPilot(KIPlayer *target) — engage/disengage the auto-pilot lock.
+// This override lives on the PlayerEgo subclass, so the touched fields sit past the
+// KIPlayer base layout; they are addressed by byte offset on the player-ego tail:
+//   +0x158 autoPilotActive flag   +0x15c autoPilotTarget   +0x160 followingHostile
+//   +0x14  controller (its +0x2c slot is the steering command)
+//   +0x2a4/+0x2a8 lock-on highlight pair   +0xbc thrust scale (1.0 when engaged)
+void KIPlayer::setAutoPilot(KIPlayer *target) {
+    char *ego = reinterpret_cast<char *>(this);
+
+    *(uint8_t *)(ego + 0x160) = 0;
+    *(KIPlayer **)(ego + 0x15c) = target;
+
+    bool wasActive = *(uint8_t *)(ego + 0x158) != 0;
+    *(uint8_t *)(ego + 0x158) = (target != 0);
+
+    if (target == 0) {
+        // Disengage: clear the steering command and the lock-on highlight.
+        *(void **)(*(char **)(ego + 0x14) + 0x2c) = 0;
+        if (wasActive) {
+            *(uint8_t *)(ego + 0x2a8) = 0;
+            *(void **)(ego + 0x2a4) = 0;
+        }
+        return;
+    }
+
+    // Engage: mark "following hostile" when the target itself is hostile (+0x72),
+    // reset the engine's frame accumulator and apply full forward thrust.
+    if (*(char *)(reinterpret_cast<char *>(target) + 0x72) != 0) {
+        *(uint8_t *)(ego + 0x160) = 1;
+    }
+    void *engine = AppManager_GetEngine();
+    *(uint32_t *)((char *)engine + 0x360) = 0;
+    *(uint32_t *)(ego + 0xbc) = 0x3f800000;   // 1.0f
+}

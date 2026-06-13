@@ -50,6 +50,9 @@ public:
     void dtor();
     Vector getProjectionVector(const Vector &value);
     void render();
+    // Tail of render(): PlayerStatic::render forwards to AEGeometry::render on the
+    // owned geometry (field +0x08).
+    void render_tail();
     Vector projectCollisionOnSurface(const Vector &value);
     bool outerCollide(float x, float y, float z);
     void outerCollide(Vector value);

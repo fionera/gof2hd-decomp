@@ -130,6 +130,19 @@ public:
     unsigned int  hasJumpDrive();
     unsigned int  hasJumpDriveIntegrated();
     Ship*         makeShip(int price);
+
+    // Recovered decompiler-fragment members. Each is an alternate entry the
+    // (not-yet-rewired) extern "C" shims dispatch to; their bodies match the
+    // canonical members above but are kept as distinct named methods so the
+    // mechanical wiring pass can attach the corresponding `Ship_*` call.
+    Ship*         ctor_full(int index, int baseHP, int baseLoad, int value,
+                            int slot0, int slot1, int slot2, int slot3, float handling);
+    void          addCargo2(Array<Item*>* items);
+    void          setEquipment1(Item* item);
+    int           removeCargo3(int index, int amount);
+    Array<Item*>* getEquipmentByType(unsigned int type);
+    unsigned char hasCloakNeg();
+
     int          index;            // 0x00  ship id / type
     int          baseHP;           // 0x04
     int          value;            // 0x08

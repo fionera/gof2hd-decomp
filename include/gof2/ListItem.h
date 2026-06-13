@@ -73,6 +73,12 @@ public:
     ListItem * ctor_int(int v);
     ListItem * ctor_int_int(int a, int b);
     ListItem * ctor_int_int_String(int a, int b, const void *src);
+    // A "slot" entry carries a non-negative integer key in field_0x28 (see isSlot()).
+    ListItem * ctor_Slot(int slot);
+    // A footer/action text button: owns a name String and stores its action id.
+    ListItem * ctor_TextButton(const void *text, bool enabled, int action);
+    // Copy-wrap another ListItem's payload into this entry.
+    ListItem * ctor_ListItem(ListItem *src);
     int getIndex();
     int getNumLines();
     int getPrice();

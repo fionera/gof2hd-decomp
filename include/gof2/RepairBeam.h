@@ -47,5 +47,32 @@ public:
     RepairBeam * dtor();
     void render();
     void update(int dt, void *level, void *hud);
+
+    // Heap factory: allocate + construct a RepairBeam for the given ship index and
+    // equipment sort (0x25 heal / 0x29 shield). Used by PlayerEgo when a repair-
+    // beam module is equipped.
+    static RepairBeam *create(int shipIndex, int sort);
+
+    // ---- legacy 0xc-byte Array<T> helpers (size@+0, data@+4, capacity@+8) -------
+    // These mirror the engine's templated Array<T> instantiations that the ctor/
+    // dtor build by hand for the per-target geometry / id / charge arrays. They are
+    // kept as static members so each typed slot reads clearly at the call site.
+    static void arrayGeoCtor(void *arr);
+    static void arrayIntCtor(void *arr);
+    static void arrayFloatCtor(void *arr);
+    static void arraySetLengthGeo(int n, void *arr);
+    static void arraySetLengthInt(int n, void *arr);
+    static void arraySetLengthFloat(int n, void *arr);
+    static void arrayReleaseClassesGeo(void *arr);
+    static void *arrayGeoDtor(void *arr);
+    static void *arrayIntDtor(void *arr);
+    static void *arrayFloatDtor(void *arr);
+
+    // ---- cross-class forwarders the ctor/update use ---------------------------
+    // The active player ship, its first equipment of the configured sort, and that
+    // item's primary attribute (the beam range / target count).
+    static int playerShip();
+    static int shipFirstEquipmentOfSort(int ship);
+    static int itemAttribute(int item);
 };
 #endif

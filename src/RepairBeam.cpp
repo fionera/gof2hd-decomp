@@ -1,6 +1,64 @@
 #include "gof2/RepairBeam.h"
 #include "gof2/AEGeometry.h"
 #include "gof2/PaintCanvasClass.h"
+#include "gof2/Ship.h"
+#include "gof2/Item.h"
+#include "gof2/Status.h"
+
+#include <cstdlib>
+#include <cstring>
+
+// The active Status singleton (same holder TractorBeam/MGame use).
+extern Status *gStatus;
+
+// Legacy 0xc-byte Array<T> header the RepairBeam builds by hand: a count, a heap
+// data buffer, and a separately-tracked capacity. Element type is always pointer-
+// sized (AEGeometry*, int, float), so a single layout serves all three.
+namespace {
+struct LegacyArray {
+    uint32_t size;       // +0x0  number of live elements
+    void    *data;       // +0x4  heap buffer (capacity*4 bytes)
+    uint32_t capacity;   // +0x8  allocated element count
+};
+
+// ArraySetLength<T>: grow/zero the buffer to hold `n` elements. When the capacity
+// already matches, the existing buffer is reused (and still zeroed); otherwise it
+// is realloc'd to max(n,1) elements. Size is then set to the requested count.
+inline void legacySetLength(int n, void *arr) {
+    LegacyArray *a = (LegacyArray *)arr;
+    void *buf;
+    uint32_t cap;
+    if (a->capacity == (uint32_t)n) {
+        buf = a->data;
+        cap = (uint32_t)n;
+    } else {
+        cap = (n == 0) ? 1u : (uint32_t)n;
+        a->capacity = cap;
+        buf = realloc(a->data, cap * 4);
+        cap = a->capacity;
+        a->data = buf;
+    }
+    memset(buf, 0, cap * 4);
+    a->size = (uint32_t)n;
+}
+
+// Array<T>::Array(): zero-initialise the header (empty, no buffer).
+inline void legacyCtor(void *arr) {
+    LegacyArray *a = (LegacyArray *)arr;
+    a->size = 0;
+    a->data = 0;
+    a->capacity = 0;
+}
+
+// Array<T>::~Array(): free the data buffer; returns the storage so the caller can
+// hand it to operator delete.
+inline void *legacyDtor(void *arr) {
+    LegacyArray *a = (LegacyArray *)arr;
+    free(a->data);
+    a->data = 0;
+    return arr;
+}
+} // namespace
 
 // Minimal forward decls for the AEMath free-functions used in this file.
 namespace AbyssEngine {
@@ -433,5 +491,70 @@ void RepairBeam::update(int dt, void *level, void *hud) {
         }
     }
 
-    
+
+}
+
+// ===========================================================================
+// Heap factory + the per-target Array<T> helpers and cross-class forwarders the
+// ctor/update build the geometry / id / charge arrays from. All are static: they
+// either allocate the object or operate on a passed-in legacy array header.
+// ===========================================================================
+
+// RepairBeam::create(shipIndex, sort) — allocate (operator new) then construct.
+// PlayerEgo equips this when a repair-beam module is present.
+RepairBeam *RepairBeam::create(int shipIndex, int sort) {
+    RepairBeam *self = (RepairBeam *)operator new(0x24);
+    return self->ctor(shipIndex, sort);
+}
+
+// --- Array<AEGeometry*> / Array<int> / Array<float> ctor -------------------
+void RepairBeam::arrayGeoCtor(void *arr)   { legacyCtor(arr); }
+void RepairBeam::arrayIntCtor(void *arr)   { legacyCtor(arr); }
+void RepairBeam::arrayFloatCtor(void *arr) { legacyCtor(arr); }
+
+// --- ArraySetLength<T> ------------------------------------------------------
+void RepairBeam::arraySetLengthGeo(int n, void *arr)   { legacySetLength(n, arr); }
+void RepairBeam::arraySetLengthInt(int n, void *arr)   { legacySetLength(n, arr); }
+void RepairBeam::arraySetLengthFloat(int n, void *arr) { legacySetLength(n, arr); }
+
+// --- Array<AEGeometry*> dtor / int dtor / float dtor ------------------------
+void *RepairBeam::arrayGeoDtor(void *arr)   { return legacyDtor(arr); }
+void *RepairBeam::arrayIntDtor(void *arr)   { return legacyDtor(arr); }
+void *RepairBeam::arrayFloatDtor(void *arr) { return legacyDtor(arr); }
+
+// ArrayReleaseClasses<AEGeometry*>: destroy + free every owned geometry, null its
+// slot, then release the data buffer. Iterates over the allocated capacity (the
+// buffer is fully zero-padded) rather than the live size.
+void RepairBeam::arrayReleaseClassesGeo(void *arr) {
+    LegacyArray *a = (LegacyArray *)arr;
+    AEGeometry **slot = (AEGeometry **)a->data;
+    for (uint32_t i = 0; i < a->capacity; ++i) {
+        if (slot[i] != 0) {
+            slot[i]->~AEGeometry();
+            ::operator delete(slot[i]);
+        }
+        slot[i] = 0;
+    }
+    if (a->data != 0)
+        ::operator delete[](a->data);
+    a->data = 0;
+}
+
+// --- cross-class forwarders -------------------------------------------------
+// The active player ship.
+int RepairBeam::playerShip() {
+    return (int)(intptr_t)gStatus->getShip();
+}
+
+// The ship's first equipped item of the repair-beam sort. (Register-passthrough
+// veneer in the binary: the sort travels in r1 from the caller; the active beam's
+// sort is what the ctor/update have just selected.)
+int RepairBeam::shipFirstEquipmentOfSort(int ship) {
+    return (int)(intptr_t)((Ship *)(intptr_t)ship)->getFirstEquipmentOfSort(/*sort*/ 0);
+}
+
+// The equipment item's repair-beam count attribute (number of simultaneous
+// targets), used to size the per-target arrays.
+int RepairBeam::itemAttribute(int item) {
+    return ((Item *)(intptr_t)item)->getAttribute(/*RepairBeamCount*/ 0x37);
 }

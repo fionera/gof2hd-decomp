@@ -518,3 +518,41 @@ bool Mission::isOutsideMission() {
 void Mission::setType(int type) {
     this->id = type;
 }
+
+// ---- constructor / destructor aliases (0x16ba98 deleting dtor + ctor spellings) ----
+
+// Deleting-destructor finisher (tail of 0x16ba98): the inner ~Mission already ran
+// and returned `this`; all that remains is to release the storage.
+void Mission::dtor_finish() {
+    operator delete(this);
+}
+
+// Freelance "almost-killed wanted" path (Level::almostKillWanted): a campaign-style
+// mission built from (type, goods, station) — identical to the (int,int,int) ctor.
+Mission * Mission::ctor_akw(int type, int goods, int station) {
+    return this->ctor3(type, goods, station);
+}
+
+// Record load, empty-mission branch (RecordHandler::readMission): (type, reward, station).
+Mission * Mission::ctorEmpty(int type, int reward, int targetStation) {
+    return this->ctor3(type, reward, targetStation);
+}
+
+// Record load, full-mission branch (RecordHandler::readMission): forwards to the
+// seven-argument freelance constructor.
+Mission * Mission::ctorFull(int type, const void *clientName, int *img, int clientRace,
+                            int reward, int targetStation, int difficulty) {
+    // ctor7(id, client, a=clientImage, b=clientRace, c=reward, station, reward-slot=difficulty)
+    return this->ctor7(type, clientName, (int)(intptr_t)img, clientRace, reward,
+                       targetStation, difficulty);
+}
+
+// Campaign-flag setter spelling used by Level::almostKillWanted.
+void Mission::setCampaign_akw(int flag) {
+    this->setCampaignMission(flag != 0);
+}
+
+// Won-flag setter spelling used by Level::almostKillWanted.
+void Mission::setWon_akw(int flag) {
+    this->setWon(flag != 0);
+}

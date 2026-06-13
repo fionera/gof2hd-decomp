@@ -381,3 +381,19 @@ void Radar::update(Vector value)
         this->screenY = (int)current->y;
     }
 }
+
+// ---- ABI shims -------------------------------------------------------------
+// MGame owns its Radar by raw pointer (allocated with operator new), so it
+// constructs and destroys it through these C entry points that wrap the real
+// special members.  The destructor returns the object pointer so the caller can
+// hand it straight to operator delete (mirroring the binary's call sequence).
+extern "C" void Radar_ctor(Radar *r, Level *level)
+{
+    new (r) Radar(level);
+}
+
+extern "C" void *Radar_dtor(Radar *r)
+{
+    r->~Radar();
+    return r;
+}

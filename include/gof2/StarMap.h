@@ -50,6 +50,8 @@ public:
     uint32_t OnTouchBegin(int x, int y);
     void OnTouchMove(int x, int y);
     void OnTouchEnd(int x, int y);
+    void OnTouchEnd_tail();          // OnTouchEnd tail: open the help overlay
+    int  touch_end(int x, int y);    // embedded (lounge) touch-release; nonzero => map dismissed
 
     void depart(bool jump);
     void depart_tail(void *app, int moduleId); // depart tail: hand the application to module `moduleId`

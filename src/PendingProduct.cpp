@@ -55,3 +55,12 @@ PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
 void PendingProduct::add(Array<PendingProduct*> &list) {
     list.push_back(this);
 }
+
+// ---- PendingProduct_make ----
+// Allocating factory used by RecordHandler when reconstructing the pending-product
+// list from a save file: allocate storage then run the field constructor.
+PendingProduct *PendingProduct::make(int blueprintIndex, const String *stationName,
+                                     int stationIndex, int quantity) {
+    PendingProduct *self = (PendingProduct *)::operator new(sizeof(PendingProduct));
+    return self->ctor_fields(blueprintIndex, stationName, stationIndex, quantity);
+}

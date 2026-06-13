@@ -64,6 +64,19 @@ void BoundingVolume::setVolume(BoundingVolume *src)
     return BoundingVolume_setVolume_tail(src, arr);
 }
 
+// Tail target of setVolume() (veneer 0x1ac218 -> Array<BoundingVolume*>::add at
+// 0xefbc4): append `this` to the destination array.
+void BoundingVolume::setVolume_tail(Array<BoundingVolume *> *arr)
+{
+    arr->push_back(this);
+}
+
+// Identical registration used by PlayerFixedObject::setBV (same Array::add target).
+void BoundingVolume::setArr(Array<BoundingVolume *> *arr)
+{
+    arr->push_back(this);
+}
+
 // ---- BoundingVolume_11f6dc.cpp ----
 BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez)
 {

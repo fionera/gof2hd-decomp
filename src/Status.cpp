@@ -140,6 +140,21 @@ int Status::inSupernovaSystem() {
     return result;
 }
 
+// ---- Status::isChallengeMode() ----
+// Static HUD predicate (Status_isChallengeMode, called from Hud::draw with no receiver):
+// the game's only "challenge mode" is the supernova challenge, so this resolves the live
+// status from the global board and reports whether the player is currently stranded in the
+// supernova system (the same condition that gates Hud::drawChallengeModeScore). The board
+// slot is the same singleton the other no-receiver Status queries (e.g. wantedBoardAccessible)
+// read from; if it is not yet wired up there is no challenge in progress.
+__attribute__((visibility("hidden"))) extern Status **g_statusBoard;
+
+int Status::isChallengeMode() {
+    Status **slot = g_statusBoard;
+    if (slot == 0 || *slot == 0) return 0;
+    return (*slot)->inSupernovaSystem();
+}
+
 // ---- visitStation_ac5b4.cpp ----
 void Status::visitStation() { stationsVisited = stationsVisited + 1; }
 

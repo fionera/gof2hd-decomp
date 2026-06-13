@@ -379,6 +379,32 @@ void Transform::Update(longlong time, bool updateBounds) {
     InternUpdate(time, updateBounds);
 }
 
+// 32-bit-ABI faces of Update(). The decompiled call sites pass the 64-bit
+// animation time as two 32-bit halves: Update32 receives it already as the
+// `elapsed` longlong (Explosion advances a secondary mesh by the frame delta),
+// while UpdatePtr reassembles it from the (lo, hi) words a sibling transform
+// stores at +0xf8/+0xfc (its animationLength). Both then run the real Update.
+void Transform::Update32(uint32_t /*high*/, longlong elapsed, uint32_t updateBounds) {
+    Update(elapsed, updateBounds != 0);
+}
+
+void Transform::UpdatePtr(uint32_t lo, uint32_t hi, int updateBounds) {
+    longlong time = (longlong)(((uint64_t)hi << 32) | (uint64_t)lo);
+    Update(time, updateBounds != 0);
+}
+
+// Show / hide this transform. The active flag travels with the exhaust meshes, so
+// activation is the same operation as toggling visibility.
+void Transform::SetActive()   { setExhaustVisible(true); }
+void Transform::SetInactive() { setExhaustVisible(false); }
+
+// Toggle the visibility of the transform's exhaust meshes. PlayerFixedObject /
+// PlayerEgo call this through the canvas-resolved transform to switch the engine
+// glow on or off.
+void Transform::setExhaustVisible(bool visible) {
+    SetVisible(visible);
+}
+
 } // namespace AbyssEngine
 
 // ---- Transform_74918.cpp ----

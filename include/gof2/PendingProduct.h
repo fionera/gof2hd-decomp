@@ -44,5 +44,11 @@ public:
     // monomorphised Array<PendingProduct*>::add helper: it grows the backing store by
     // one and stores this element pointer at the new tail.
     void add(Array<PendingProduct*> &list);
+
+    // Heap-allocating factory: operator new(sizeof(PendingProduct)) followed by the
+    // (blueprintIndex, stationName, stationIndex, quantity) field constructor. Used by
+    // the save-game reader when materialising the pending-product list off disk.
+    static PendingProduct *make(int blueprintIndex, const String *stationName,
+                                int stationIndex, int quantity);
 };
 #endif

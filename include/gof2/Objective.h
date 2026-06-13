@@ -64,5 +64,14 @@ public:
     bool isSurvivalObjective();
     bool getCalcValue();
     unsigned int achieved(int value);
+
+    // Tail-call helpers used by achieved(): each forwards to a single virtual
+    // predicate on the target object (recovered from the indirect tail-calls in
+    // Objective::achieved). Kept as named methods so the switch reads cleanly.
+    unsigned int tailEnemyIsDead(KIPlayer *enemy);       // case 1
+    unsigned int tailEnemyPayloadActive(void *player);   // case 0xf
+    unsigned int tailFriendCargoStolen(Level *level);    // case 0x13
+    unsigned int tailMessageOver(void *message);         // cases 4, 0x16, 22
+    unsigned int tailEnemyIsDying(KIPlayer *enemy);      // case 0x1e
 };
 #endif
