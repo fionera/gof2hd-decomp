@@ -533,7 +533,7 @@ void MissionsWindow::draw() {
     // Active freelance mission details.
     void *fm = ((Status *)(*(void **)g_mwi_status))->getFreelanceMission();
     if (fm != 0 && ((Mission *)(fm))->isEmpty() == 0 && pp(self, 0x18) != 0) {
-        ((ImageFactory *)(*(void **)g_mwd_imageFactory))->drawChar((Arr *)pp(self, 0x18), ox + (ow >> 1) + i32(layout, 0x2c), i32(layout, 0x2c) + oy + i32(layout, 0xc) +
+        ((ImageFactory *)(*(void **)g_mwd_imageFactory))->drawChar((Array<ImagePart *> *)pp(self, 0x18), ox + (ow >> 1) + i32(layout, 0x2c), i32(layout, 0x2c) + oy + i32(layout, 0xc) +
                                   i32(layout, 0x20) + i32(layout, 0x5c), false);
 
         int detailX = ox + (ow >> 1) + i32(layout, 0x2d4) +

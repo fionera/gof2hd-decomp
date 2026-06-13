@@ -504,7 +504,7 @@ void WantedWindow::draw() {
         int charX = self->windowX + (self->windowWidth >> 1) + F<int>(layout, 0x2c);
         int charY = F<int>(layout, 0x5c) + self->windowY + F<int>(layout, 0x2c) +
                     F<int>(layout, 0xc) + F<int>(layout, 0x20);
-        ((ImageFactory *)(*g_WantedWindow_draw_factory))->drawChar((Arr *)self->imageParts, charX, charY, false);
+        ((ImageFactory *)(*g_WantedWindow_draw_factory))->drawChar((Array<ImagePart *> *)self->imageParts, charX, charY, false);
         int textX = F<int>(layout, 0x2d4) + charX + F<int>(layout, 0x2c);
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)((char *)self + 0x54), textX, charY, false);
 

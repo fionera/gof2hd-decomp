@@ -1,18 +1,13 @@
 #include "gof2/engine/core/GameText.h"
 #include "gof2/engine/file/AEFile.h"
 
-struct Arr { uint32_t size; int *data; uint32_t size2; };
-
 extern "C" __attribute__((visibility("hidden"))) short *g_GameText_language;
 extern "C" void AEString_ctor_cstr(void *self, const char *text, bool copy);
-extern "C" void ArrayRemoveAll_int(Arr *a);
-extern "C" void ArrayAdd_int(int v, Arr *a);
 extern "C" void  AEString_ctor_cstr(void *s, const char *text, bool copy);
 extern "C" void  AEString_assign(void *dst, void *src);
 extern "C" void  AEString_dtor(void *s);
 extern "C" char *AEString_GetAEChar(void *s);
 extern "C" void AEString_dtor(void *s);
-extern "C" void Array_int_ctor(void *a);
 extern "C" void AEString_ctor_default(void *s);
 extern "C" void AEString_ctor_cstr(void *s, const char *text, bool copy);
 extern "C" void AEString_assign(void *dst, void *src);
@@ -28,7 +23,7 @@ void GameText::release() {
     void **data = (void **)self->textTable;
     if (data == 0) return;
     int i = 0;
-    for (int byteoff = 0; i < i32(self, 0x1c); byteoff += 4) {
+    for (int byteoff = 0; i < self->textCount; byteoff += 4) {
         void *obj = *(void **)((char *)self->textTable + byteoff);
         void **slot;
         if (obj == 0) {
@@ -65,14 +60,13 @@ RetStr GameText_getRegionCode()
 // GameText::setSubstituteArray(int*, unsigned) -- replaces the substitute Array<int> at this+0.
 void GameText::setSubstituteArray(int *param_1, unsigned param_2) {
     GameText *self = this;
-    Arr *a = (Arr *)self;
     if (param_2 != 0) {
         if ((param_2 & 1) != 0) return;
-        ArrayRemoveAll_int(a);
+        self->substitutes.clear();
     }
     for (; param_2 != 0; --param_2) {
         int v = *param_1++;
-        ArrayAdd_int(v, a);
+        self->substitutes.push_back(v);
     }
 }
 
@@ -98,7 +92,7 @@ void GameText::setLanguage_si(int stringCount, int langId) {
         return;
 
     ((GameText *)(self))->release();
-    i32(self, 0x1c) = stringCount;
+    self->textCount = stringCount;
 
     String **table = (String **)operator new[]((uint32_t)((unsigned long long)stringCount * 4));
     self->textTable = table;
@@ -165,12 +159,7 @@ GameText *_ZN8GameTextD2Ev(GameText *self)
 // backing buffer, then hand `this` back to the caller (the D2 forwarder).
 GameText *GameText::dtor_tail()
 {
-    if (substituteData != 0) {
-        ::operator delete[](substituteData);
-        substituteData = 0;
-    }
-    substituteCount = 0;
-    substituteCapacity = 0;
+    substitutes.~vector();
     return this;
 }
 
@@ -202,11 +191,11 @@ extern const char gInitLangStr[] __attribute__((visibility("hidden")));
 // GameText::GameText() -- inits substitute Array<int>, region String, default language string.
 void GameText::ctor() {
     GameText *self = this;
-    Array_int_ctor(self);
-    AEString_ctor_default((char *)self + 0x10);
+    new (&self->substitutes) Array<int>();
+    AEString_ctor_default((char *)self->fallbackText);
     *g_GameText_langReset = 0xffff;
     self->textTable = 0;
-    i32(self, 0x1c) = 0;
+    self->textCount = 0;
     String tmp;
     AEString_ctor_cstr(&tmp, gInitLangStr, false);
 }
@@ -373,8 +362,8 @@ void * GameText::getText(int key) {
     }
 
     // Remap via the substitute pair-table: entries are (from,to) int pairs.
-    uint32_t pairCount = u32(self, 0x00);
-    int *pairs = (int *)self->substituteData;
+    uint32_t pairCount = (uint32_t)self->substitutes.size();
+    int *pairs = self->substitutes.data();
     for (uint32_t i = 0; i < pairCount; i += 2) {
         if (pairs[i] == key) {
             key = pairs[i + 1];
@@ -382,13 +371,13 @@ void * GameText::getText(int key) {
         }
     }
 
-    if (key >= 0 && key < i32(self, 0x1c) && self->textTable != 0) {
+    if (key >= 0 && key < self->textCount && self->textTable != 0) {
         String **table = (String **)self->textTable;
         String *s = table[key];
         if (s != 0)
             return s;
     }
-    return (String *)((char *)self + 0x10);
+    return (String *)self->fallbackText;
 }
 
 // GameText::ReadLangFile(unsigned int file, int count)

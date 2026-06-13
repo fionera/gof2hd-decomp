@@ -5,11 +5,11 @@ namespace AbyssEngine {
 // AbyssEngine::Material::~Material()
 Material::~Material()
 {
-    Array_Matrix_dtor((char *)this + 0x5c);
-    Array_uint_dtor((char *)this + 0x50);
-    Array_MeshPtr_dtor((char *)this + 0x44);
-    Array_Matrix_dtor((char *)this + 0x38);
-    Array_Matrix_dtor((char *)this + 0x2c);
+    delete this->arr_5c;
+    delete this->arr_50;
+    delete this->meshes;
+    delete this->arr_38;
+    delete this->arr_2c;
 }
 
 } // namespace AbyssEngine
@@ -19,11 +19,11 @@ namespace AbyssEngine {
 // AbyssEngine::Material::Material(AbyssEngine::Material*) - copy/clone constructor.
 Material::Material(Material *other)
 {
-    Array_Matrix_ctor((char *)this + 0x2c);
-    Array_Matrix_ctor((char *)this + 0x38);
-    Array_MeshPtr_ctor((char *)this + 0x44);
-    Array_uint_ctor((char *)this + 0x50);
-    Array_Matrix_ctor((char *)this + 0x5c);
+    this->arr_2c = new Array<Matrix>();
+    this->arr_38 = new Array<Matrix>();
+    this->meshes = new Array<Mesh *>();
+    this->arr_50 = new Array<uint32_t>();
+    this->arr_5c = new Array<Matrix>();
 
     Vector *vec = (Vector *)((char *)this + 0x68);
     this->f_68 = 0;
@@ -60,11 +60,11 @@ namespace AbyssEngine {
 Material::Material()
 {
     this->f_20 = 0;
-    Array_Matrix_ctor((char *)this + 0x2c);
-    Array_Matrix_ctor((char *)this + 0x38);
-    Array_MeshPtr_ctor((char *)this + 0x44);
-    Array_uint_ctor((char *)this + 0x50);
-    Array_Matrix_ctor((char *)this + 0x5c);
+    this->arr_2c = new Array<Matrix>();
+    this->arr_38 = new Array<Matrix>();
+    this->meshes = new Array<Mesh *>();
+    this->arr_50 = new Array<uint32_t>();
+    this->arr_5c = new Array<Matrix>();
 
     this->f_68 = Material_defaultVectorX;
     this->f_6c = 0;

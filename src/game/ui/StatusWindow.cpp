@@ -629,7 +629,7 @@ void StatusWindow::draw() {
         String_fromC(lbl, "", false);
         ((Layout *)(layout))->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         ((String *)(lbl))->dtor();
-        ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawChar((Arr *)pp(self, 0xc), layout->field_0x4c + x0, y, false);
+        ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawChar((Array<ImagePart *> *)pp(self, 0xc), layout->field_0x4c + x0, y, false);
         char credTmp[0xc];
         Layout_formatCredits(credTmp, ((Status *)(*(void **)g_swd_status))->getCredits());
         ((String *)(creditStr))->assign((String *)credTmp);

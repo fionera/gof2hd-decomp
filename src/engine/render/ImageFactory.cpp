@@ -16,8 +16,6 @@ extern "C" __attribute__((visibility("hidden"))) unsigned *g_drawItem_canvas;
 extern "C" void IF_ImagePart_ctor(void *self, unsigned id, int x, int y);
 extern "C" __attribute__((visibility("hidden"))) int *g_IF_idTable;
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_IF_drawItem4_canvas;
-extern "C" void Array_ImagePart_ctor(Arr *a);
-extern "C" void ArraySetLength_ImagePart(uint32_t n, Arr *a);
 int *ImageFactory_createChar_bi(int param_1, int param_2, int sel);
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagA;
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagB;
@@ -109,14 +107,14 @@ void ImageFactory::reload() {
 // Tail veneer (function-pointer global): draws the foreground glyph layer.
 
 // ImageFactory::drawChar(Array<ImagePart*>*, int, int, bool)
-void ImageFactory::drawChar(Arr *parts, int x, int y, int flag) {
+void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, int flag) {
     ImageFactory *self = this;
     unsigned *holder = g_drawChar_canvas;
     ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
     ((PaintCanvas*)(long)*holder)->DrawImage2D(i32(self, 0x4), x, y);
-    for (unsigned i = 0; i < parts->size; ++i) {
-        void *part = parts->data[i];
-        if (part != 0) ((ImagePart *)(part))->draw(x, y, flag);
+    for (unsigned i = 0; i < parts->size(); ++i) {
+        ImagePart *part = (*parts)[i];
+        if (part != 0) part->draw(x, y, flag);
     }
     return ImageFactory::drawChar_tail(*holder, i32(self, 0x8), x, y);
 }
@@ -228,23 +226,22 @@ void ImageFactory::drawItem4(int itemId, int frame, int x, int y) {
 }
 
 // ImageFactory::loadChar(int*) -> Array<ImagePart*>* of 4 entries (with [0]/[2] swapped).
-Arr * ImageFactory::loadChar(int *param_1) {
+Array<ImagePart *> * ImageFactory::loadChar(int *param_1) {
     ImageFactory *self = this;
     (void)self;
     if (param_1 == 0) return 0;
-    Arr *a = (Arr *)operator new(0xc);
-    Array_ImagePart_ctor(a);
-    ArraySetLength_ImagePart(4, a);
+    Array<ImagePart *> *a = new Array<ImagePart *>();
+    a->resize(4);
     int first = *param_1++;
     for (int i = 0; i != 4; ++i) {
         int raw = param_1[i];
         void *part = (void *)(raw + 1);
         if (part != 0)
-            a->data[i] = ((ImageFactory *)((ImageFactory *)part))->loadImage(first, i, raw);
+            (*a)[i] = (ImagePart *)((ImageFactory *)part)->loadImage(first, i, raw);
     }
-    void *tmp = a->data[0];
-    a->data[0] = a->data[2];
-    a->data[2] = tmp;
+    ImagePart *tmp = (*a)[0];
+    (*a)[0] = (*a)[2];
+    (*a)[2] = tmp;
     return a;
 }
 

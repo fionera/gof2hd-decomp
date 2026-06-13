@@ -17,6 +17,7 @@ void *operator new[](__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
 struct ImageFactory;
+class ImagePart;
 
 // Field accessor via byte offset.
 
@@ -43,11 +44,11 @@ public:
     // forwards to the faithful 3-arg builder with rand0=false.
     int *createChar(bool clz, int type) { return createChar(clz, false, type); }
     ImageFactory * ctor();
-    void drawChar(Arr *parts, int x, int y, int flag);
+    void drawChar(Array<ImagePart *> *parts, int x, int y, int flag);
     void drawItem(int itemId, int x, int y);
     void drawItem4(int itemId, int frame, int x, int y);
     void drawShip(int shipId, int x, int y);
-    Arr * loadChar(int *param_1);
+    Array<ImagePart *> * loadChar(int *param_1);
     void * loadImage(int row, int col, int frameBase);
     void reload();
 

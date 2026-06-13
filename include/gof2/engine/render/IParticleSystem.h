@@ -46,7 +46,7 @@ public:
     volatile uint8_t emitterVelocityDirty;         // +0x5
     PaintCanvas* canvas;             // +0x8
     Matrix const* matrix;           // +0x18
-    void* particleSets;                   // +0x3c
+    Array<int>* particleSets;        // configured particle-set indices
 
     IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
                     bool mirror, bool alphaFade);

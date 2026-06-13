@@ -691,7 +691,7 @@ void DialogueWindow::draw() {
 
     layout = *g_dw_layoutDraw;
     int margin = F<int>(layout, 0x4c);
-    ((ImageFactory *)(*g_dw_imageFactoryDraw))->drawChar((Arr *)self->faceParts, self->frameX + margin, self->frameY + margin + F<int>(layout, 0x8), self->field_0x70);
+    ((ImageFactory *)(*g_dw_imageFactoryDraw))->drawChar((Array<ImagePart *> *)self->faceParts, self->frameX + margin, self->frameY + margin + F<int>(layout, 0x8), self->field_0x70);
 
     ButtonDraw drawButton = g_dw_touchButtonDraw;
     drawButton(self->prevButton);

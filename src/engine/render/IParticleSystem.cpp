@@ -17,13 +17,10 @@ namespace AbyssEngine { namespace AEMath {
 extern "C" void *AERandom_seed_ctor(void *self, long long seed);
 extern "C" void AERandom_dtor(void *self);
 extern "C" void AERandom_ctor(void *self);
-extern "C" void Array_ParticleSet_ctor(void *self);
-extern "C" void ArraySet_ParticleSet(Array<int> const *src, void *dst);
-extern "C" void Array_ParticleSet_dtor(void *self);
 
 void IParticleSystem::setParticleSet(int set)
 {
-    if (I(this, 0x38) != 0 && *(int *)this->particleSets == set) {
+    if (!this->particleSets->empty() && (*this->particleSets)[0] == set) {
         U8(this, 0x44) = 0;
     }
 }
@@ -111,7 +108,7 @@ void IParticleSystem::emit(int delta)
         return;
     }
 
-    int set = ((int *)P(this, 0x3c))[U8(this, 0x44)];
+    int set = (*this->particleSets)[U8(this, 0x44)];
     if (set == -1) {
         return;
     }
@@ -434,10 +431,10 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
     I(this, 0x2c) = 0;
     I(this, 0x30) = 0;
 
-    Array_ParticleSet_ctor((char *)this + 0x38);
+    this->particleSets = new Array<int>();
     U8(this, 0x4c) = mirror;
     U8(this, 0x45) = alphaFade;
-    ArraySet_ParticleSet(&sets, (char *)this + 0x38);
+    *this->particleSets = sets;
 
     I(this, 0x50) = 0;
     I(this, 0x54) = -1;
@@ -507,7 +504,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
 {
     if (particleSet != -1) {
         int current = I(this, 0x50);
-        int set = ((int *)P(this, 0x3c))[particleSet];
+        int set = (*this->particleSets)[particleSet];
         ((uint8_t *)P(this, 0x6c))[current] = (uint8_t)set;
         char *def = ParticleSet_definitions + (set + set * 4) * 32;
         ((int *)P(this, 0x68))[current] = 0;
@@ -637,6 +634,6 @@ IParticleSystem::~IParticleSystem()
     volatile char *random = (char *)this;
     *(void * volatile *)random = (char *)IParticleSystem_vtable + 8;
     random += 0x10;
-    Array_ParticleSet_dtor((char *)(random + 0x28));
+    delete this->particleSets;
     AERandom_dtor((void *)random);
 }

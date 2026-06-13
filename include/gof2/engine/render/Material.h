@@ -32,7 +32,11 @@ public:
     int f_20; // 0x20
     int f_24; // 0x24
     int f_28; // 0x28
-    unsigned char _pad_2c[60];
+    Array<Matrix> *arr_2c;   // 0x2c  Array<Matrix>
+    Array<Matrix> *arr_38;   // 0x38  Array<Matrix>
+    Array<Mesh *> *meshes;   // 0x44  Array<Mesh*>
+    Array<uint32_t> *arr_50; // 0x50  Array<uint32_t>
+    Array<Matrix> *arr_5c;   // 0x5c  Array<Matrix>
     int f_68; // 0x68
     int f_6c; // 0x6c
     int f_70; // 0x70
@@ -52,19 +56,6 @@ static inline void *&pptr(void *self, uint32_t offset)
     return *(void **)((char *)self + offset);
 }
 
-extern "C" {
-
-// Array<T> constructors/destructors (zero-init the 12-byte header).
-void Array_Matrix_ctor(void *self);
-void Array_Matrix_dtor(void *self);
-void Array_MeshPtr_ctor(void *self);
-void Array_MeshPtr_dtor(void *self);
-void Array_uint_ctor(void *self);
-void Array_uint_dtor(void *self);
-
-void *operator_new_array(uint32_t size);
-
 // Default zero Vector value loaded by the default constructor.
-extern float Material_defaultVectorX;
-}
+extern "C" float Material_defaultVectorX;
 #endif

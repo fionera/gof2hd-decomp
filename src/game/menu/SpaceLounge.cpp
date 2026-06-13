@@ -887,7 +887,7 @@ void SpaceLounge::drawLounge() {
     ((Layout *)(layout))->drawBox6(2, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c), s0);
     ((String *)(s0))->dtor();
     ((PaintCanvas *)canvas)->DrawRectangle(I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c));
-    ((ImageFactory *)(factory))->drawChar((Arr *)((void **)P(P(self, 0x38), 0x4))[I(self, 0x20)], I(layout, 0x4c) + I(self, 0x70), I(layout, 0x4c) + I(self, 0x74), false);
+    ((ImageFactory *)(factory))->drawChar((Array<ImagePart *> *)((void **)P(P(self, 0x38), 0x4))[I(self, 0x20)], I(layout, 0x4c) + I(self, 0x70), I(layout, 0x4c) + I(self, 0x74), false);
     ((ScrollTouchWindow *)(P(self, 0x60)))->draw();
 
     if ((I(self, 0x14) & 0xfffffffe) != 2) {
@@ -932,7 +932,7 @@ void SpaceLounge::drawLounge() {
     ((Layout *)(layout))->drawBox6(2, I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight, s0);
     ((String *)(s0))->dtor();
     ((PaintCanvas *)canvas)->DrawRectangle(I(self, 0x70), I(self, 0x78), I(layout, 0x68), panelHeight);
-    ((ImageFactory *)(factory))->drawChar((Arr *)P(self, 0x3c), I(layout, 0x4c) + I(self, 0x70), I(self, 0x78) + I(layout, 0x4c), true);
+    ((ImageFactory *)(factory))->drawChar((Array<ImagePart *> *)P(self, 0x3c), I(layout, 0x4c) + I(self, 0x70), I(self, 0x78) + I(layout, 0x4c), true);
 
     ((TouchButton *)(button_at(self, 0)))->setVisible(true);
     if (!(offer == 1 || UC(self, 0x36) != 0 || I(self, 0x14) == 3)) {

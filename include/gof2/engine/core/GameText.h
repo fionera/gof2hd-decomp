@@ -40,9 +40,7 @@ typedef AbyssEngine::String String;
 
 class GameText {
 public:
-    uint32_t substituteCount;                 // +0x0  substitute Array<int> size
-    void* substituteData;                    // +0x4  substitute Array<int> data
-    uint32_t substituteCapacity;                 // +0x8  substitute Array<int> cap
+    Array<int> substitutes;               // +0x0  substitute (from,to) pair table, Array<int>
     void* textTable;                    // +0xc  String** text table
     unsigned char fallbackText[12];       // +0x10 fallback / region String (12 bytes)
     int textCount;                     // +0x1c text table count
