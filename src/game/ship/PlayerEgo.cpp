@@ -1497,7 +1497,11 @@ __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
     this->gunYawGeo = 0;
     if (this->dockCameraMid) { ((AEGeometry *)this->dockCameraMid)->~AEGeometry(); ::operator delete(this->dockCameraMid); }
     this->dockCameraMid = 0;
-    if (this->tractorBeam) ::operator delete(((TractorBeam *)(this->tractorBeam))->dtor());
+    if (this->tractorBeam) {
+        TractorBeam *_tb = (TractorBeam *)(this->tractorBeam);
+        _tb->~TractorBeam();
+        ::operator delete(_tb);
+    }
     this->tractorBeam = 0;
     if (this->miningGame) ::operator delete(MiningGame_dtor((void *)(intptr_t)this->miningGame));
     this->miningGame = 0;

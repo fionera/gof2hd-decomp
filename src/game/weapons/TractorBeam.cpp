@@ -48,24 +48,8 @@ static inline uint8_t &kiByte(void *p, int off) { return *((uint8_t *)p + off); 
 // Hidden PC-relative pointer to the active PaintCanvas root.
 extern void *const gCanvasRoot __attribute__((visibility("hidden")));
 
-// TractorBeam::TractorBeam(AEGeometry*, int)
-//   Zeroes the embedded state then constructs the beam mesh geometry. The mesh
-//   id is the base id 0x3798 offset by the (truncated) integer argument.
-void TractorBeam::ctor(AEGeometry * /*unused*/, int param2) {
-    this->dirX = 0.0f;
-    this->dirY = 0.0f;
-    this->dirZ = 0.0f;
-    this->grabbedCrate = 0;
-    this->active = 0;
-
-    AEGeometry *geo = (AEGeometry *)operator new(0xc0);
-    uint16_t meshId = (uint16_t)((short)param2 + 0x3798);
-    PaintCanvas *canvas = *(PaintCanvas **)(*(void **)gCanvasRoot);
-    new ((void *)geo) AEGeometry((uint16_t)meshId, (PaintCanvas *)canvas, false);
-
-    this->beamGeometry = geo;
-    this->storedHitpoints = 0;
-}
+// (The duplicate ctor() method was removed; the real TractorBeam(AEGeometry*, int)
+// constructor below carries the identical body.)
 
 // AEGeometry::render(AEGeometry*) -- resolved global render entry for the beam mesh.
 
@@ -274,13 +258,7 @@ TractorBeam *TractorBeam::create(AEGeometry *geo, int kind) {
     return new TractorBeam(geo, kind);
 }
 
-// TractorBeam::dtor() -- non-deleting (D2) destructor.
-//   Runs ~TractorBeam() in place and returns the storage so the caller can hand
-//   it to operator delete (matches the C-ABI dtor shim contract).
-TractorBeam *TractorBeam::dtor() {
-    this->~TractorBeam();
-    return this;
-}
+// (The dtor() D2 shim was removed; callers use ~TractorBeam() + operator delete.)
 
 // ---- C-ABI shim (recovered) ----
 // TractorBeam_new — flat heap factory. PlayerEgo::equip reaches the beam through

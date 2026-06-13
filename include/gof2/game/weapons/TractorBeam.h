@@ -37,10 +37,6 @@ Vector operator-(const Vector &a, const Vector &b);
 
 } // namespace AEMath
 
-    // ---- methods (converted from free functions) ----
-    void ctor(AEGeometry * /*unused*/, int param2);
-    void render();
-    void update(int frameTime, Radar *radar, Level *level, Hud *hud);
 } // namespace AbyssEngine
 
 using AbyssEngine::AEMath::Vector;
@@ -57,18 +53,14 @@ public:
     AEGeometry* beamGeometry;             // +0x14  beam mesh geometry
     int storedHitpoints;                     // +0x18  stored hitpoints snapshot
 
-    // ---- methods (converted from free functions) ----
+    // ---- constructor / destructor (demangle to TractorBeam::TractorBeam / ~TractorBeam) ----
     TractorBeam(AEGeometry *unused, int kind);
     ~TractorBeam();
-    void ctor(AEGeometry * /*unused*/, int param2);
     void render();
     void update(int frameTime, Radar *radar, Level *level, Hud *hud);
 
     // Heap factory: allocate + construct a beam mesh of the given kind. Used by
     // PlayerEgo when a tractor-beam module is equipped.
     static TractorBeam *create(AEGeometry *geo, int kind);
-    // Non-deleting destructor: runs ~TractorBeam() and returns the storage so the
-    // caller can hand it to operator delete (matches the C-ABI dtor shim).
-    TractorBeam *dtor();
 };
 #endif
