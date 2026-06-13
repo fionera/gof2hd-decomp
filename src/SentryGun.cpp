@@ -45,7 +45,7 @@ struct Player;
 // KIPlayer::isDying()
 // Player::isActive()
 // Player::isDead()
-extern "C" void SentryGun_fire_tail(void *obj, int flag);          // tail thunk
+// tail thunk
 
 // Object pulled from the pool: polymorphic, called through its vtable.
 struct PoolObject {
@@ -65,8 +65,12 @@ struct SentryLevel {
 // Final hand-off of the freshly spawned pool object to the load-time-resolved
 // activation import. No static body exists for the import (pure PLT veneer),
 // so this forwards the (object, flag) tail-call exactly as the disassembly does.
+// 0x1abe08 is PlayerJunk::reset; the flag is consumed there (hardcoded show==1).
+class PlayerJunk;
+extern void _ZN10PlayerJunk5resetEv(PlayerJunk *self);
 void SentryGun::fire_tail(void *obj, int flag) {
-    ::SentryGun_fire_tail(obj, flag);
+    (void)flag;
+    _ZN10PlayerJunk5resetEv((PlayerJunk *)obj);
 }
 
 void SentryGun::update(int dt) {
@@ -91,7 +95,7 @@ void SentryGun::update(int dt) {
             Gun *g = self->gun;
             ((void (*)(PoolObject *, int))obj->vtable[0x44 / 4])(
                 obj, (int)(intptr_t)((char *)g->positions + g->field_0xa0 * 12));
-            return SentryGun_fire_tail(obj, 1);
+            return SentryGun::fire_tail(obj, 1);
         }
         base = self->cooldown;
     }

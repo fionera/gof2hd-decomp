@@ -62,7 +62,6 @@ extern "C" void SpaceLounge_OnRender3D_cutscene_tail(void *cutscene);
 extern "C" void SpaceLounge_OnRenderBG_tail();
 extern "C" void SpaceLounge_draw3DShip_tail(void *ship);
 extern "C" void *SpaceLounge_layout_begin;
-extern "C" int StarMap_touch_end(void *map, int x, int y);
 // Dropped-self Status singleton accessors: the decompiler emitted these calls
 // with no receiver argument (the Status* singleton is loaded inside the thunk).
 // The singleton is `*g_status`; call the real methods through it.
@@ -91,7 +90,6 @@ extern "C" void *SpaceLounge_getSoundId_offer1;
 extern "C" void *SpaceLounge_getSoundId_accepted;
 extern "C" void *SpaceLounge_getSoundId_specialText;
 extern "C" void *SpaceLounge_getSoundId_specialRandom;
-extern "C" void ScrollTouchWindow_scroll(void *scroll, int amount);
 void MatrixGetRight(void *out, void *matrix);
 void MatrixGetPosition(void *out, void *matrix);
 void MatrixGetUp(void *out, void *matrix);
@@ -431,7 +429,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     }
 
     if (UC(self, 0x34) != 0) {
-        if (StarMap_touch_end(P(self, 0x4), x, y) != 0) {
+        if (((StarMap *)(P(self, 0x4)))->touch_end(x, y) != 0) {
             ((CutScene *)(P(self, 0x44)))->resetCamera();
             UC(self, 0x34) = 0;
         }
@@ -737,9 +735,9 @@ void SpaceLounge::onKeyPress(int key) {
             }
             I(self, 0x14) = 0;
         } else if (key == 0x8000) {
-            ScrollTouchWindow_scroll(P(self, 0x60), 1);
+            ((ScrollTouchWindow *)(P(self, 0x60)))->scroll(1);
         } else if (key == 0x4000) {
-            ScrollTouchWindow_scroll(P(self, 0x60), -1);
+            ((ScrollTouchWindow *)(P(self, 0x60)))->scroll(-1);
         }
     }
 }

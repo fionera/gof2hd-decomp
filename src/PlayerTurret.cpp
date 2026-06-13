@@ -20,7 +20,6 @@ public:
 };
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 
-extern "C" void PlayerTurret_renderBase(PlayerTurret *self);
 extern "C" void *KIPlayer_dtor(void *self);
 void MatrixGetDir(Vector *out, const void *matrix);
 void VectorNormalize(Vector *out, const Vector *v);
@@ -85,7 +84,7 @@ void PlayerTurret::render()
         state = I(this, 0x88);
     }
     if ((uint32_t)(state - 3) >= 2) {
-        PlayerTurret_renderBase(this);
+        ((PlayerTurret *)(this))->renderBase();
     }
 }
 

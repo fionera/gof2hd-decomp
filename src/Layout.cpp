@@ -249,8 +249,7 @@ int Layout::OnTouchMove(int x, int y) {
 
 // ---- drawBGBorder_d393c.cpp ----
 // 9-arg impl. Forwarded: (p5 as self, p2, p3, p4, p5, p6, instack, 0, 0).
-extern "C" void Layout_drawBGBorderImpl(int self, unsigned p2, int p3, int p4,
-                                        int p5, int p6, int s8, int z1, int z2); // 0x74e30
+// 0x74e30
 
 // Layout::drawBGBorder(uint p1, uint p2, int p3, int p4, int p5, int p6) + stack arg s8.
 // This 7-arg forwarding wrapper (engine 0x74e30) is distinct from the 6-arg
@@ -258,7 +257,7 @@ extern "C" void Layout_drawBGBorderImpl(int self, unsigned p2, int p3, int p4,
 // extern "C" name clash.
 void Layout_drawBGBorder7(unsigned p1, unsigned p2, int p3, int p4,
                                      int p5, int p6, int s8) {
-    Layout_drawBGBorderImpl(p5, p2, p3, p4, p5, p6, s8, 0, 0);
+    ((Layout *)(p5))->drawBGBorderImpl(p2, p3, p4, p5, p6, s8, 0, 0);
 }
 
 // ---- OnTouchEnd_d5264.cpp ----

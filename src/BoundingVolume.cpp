@@ -55,13 +55,13 @@ void BoundingVolume::getCollisionNormal(const Vector &out)
 // ---- setVolume_11f750.cpp ----
 extern "C" void ArrayBV_ctor(void *a);                             // 0x730c0  Array<BoundingVolume*>::Array()
 // Tail-call: copy the source volume's children into the new array.
-extern "C" void BoundingVolume_setVolume_tail(BoundingVolume *src, void *arr);  // 0x1ac218
+// 0x1ac218
 
 void BoundingVolume::setVolume(BoundingVolume *src)
 {
     Array<BoundingVolume*> *arr = new Array<BoundingVolume*>();
     this->children = arr;
-    return BoundingVolume_setVolume_tail(src, arr);
+    return ((BoundingVolume *)(src))->setVolume_tail(arr);
 }
 
 // Tail target of setVolume() (veneer 0x1ac218 -> Array<BoundingVolume*>::add at

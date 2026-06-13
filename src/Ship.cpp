@@ -5,7 +5,6 @@
 #include "gof2/SolarSystem.h"
 
 
-extern "C" void Ship_removeCargo3(Ship *self, int idx, int amount);
 extern "C" void *ItemDtor(Item *it);
 extern "C" void operatorDelete(void *p);
 Ship* clone(Ship *self);
@@ -13,12 +12,10 @@ extern "C" void *ArrayItemDtor(Array<Item*> *a);
 extern "C" void Array_Item_ctor(Array<Item*> *a);
 extern "C" int *operatorNewArrayInt(unsigned int n);
 void refreshValue(Ship *self);
-extern "C" void Ship_setEquipment1(Ship *self, Item *item);
 extern "C" void ArrayReleaseClassesItem(Array<Item*> *a);
 extern "C" void *ArrayIntDtor(Array<int> *a);
 int getUsedSlots(Ship *self, int type);
 int hasCargo(Ship *self, int type, int amount);
-extern "C" void Ship_addCargo2(Ship *self, Array<Item*> *items);
 extern "C" Array<Item*>* operatorNewArr(unsigned int sz);
 extern "C" Ship *operatorNewShip(unsigned int sz);
 void addMod(Ship *self, int mod);
@@ -34,7 +31,7 @@ extern "C" void ArrayCtorItem(Array<Item*> *a);
 // ---- removeCargo_174ef4.cpp ----
 // Ship::removeCargo(int) -> tail-calls Ship::removeCargo(int,int) with amount = 9999999
 void removeCargo(Ship *self, int idx) {
-    return Ship_removeCargo3(self, idx, 9999999);
+    ((Ship *)(self))->removeCargo3(idx, 9999999);
 }
 
 // ---- getRace_174a06.cpp ----
@@ -94,7 +91,7 @@ void makeShip(Ship *self, int v) {
 void removeCargo(Ship *self, Item *item) {
     int idx = ((Item *)(item))->getIndex();
     int amt = ((Item *)(item))->getAmount();
-    Ship_removeCargo3(self, idx, amt);
+    ((Ship *)(self))->removeCargo3(idx, amt);
 }
 
 // ---- removeAllCargo_174eda.cpp ----
@@ -203,7 +200,7 @@ void replaceEquipment(Ship *self, Array<Item*> *eq) {
 // ---- setEquipment_175072.cpp ----
 void setEquipment(Ship *self, Array<Item*> *items) {
     for (unsigned int i = 0; i < items->size(); i = i + 1) {
-        Ship_setEquipment1(self, items->data()[i]);
+        ((Ship *)(self))->setEquipment1(items->data()[i]);
     }
 }
 
@@ -373,7 +370,7 @@ void freeSlot(Ship *self, Item *item, int slot) {
 // ---- addCargo_174fe8.cpp ----
 // Ship::addCargo(Array<Item*>*) -> combine then tail-call addCargo(self, combined)
 void addCargo(Ship *self, Array<Item*> *items) {
-    return Ship_addCargo2(self, Item::combineItems(self->cargo, items));
+    return ((Ship *)(self))->addCargo2(Item::combineItems(self->cargo, items));
 }
 
 // ---- getCargo_174c8c.cpp ----
@@ -568,14 +565,10 @@ Array<Item*>* Ship::getEquipment(int type) { Ship *self = this;
 }
 
 // ---- clone_175444.cpp ----
-extern "C" Ship *Ship_ctor_full(Ship *self, int index, int baseHP, int baseLoad, int value,
-                                int s0, int s1, int s2, int s3, float handling);
 Ship *clone(Ship *self) {
     Ship *s = operatorNewShip(0x80);
     int *slots = self->slots;
-    Ship_ctor_full(s, self->index, self->baseHP, self->baseLoad, self->price,
-                   slots[0], slots[1], slots[2], slots[3] - self->numAddedDeviceSlots,
-                   self->handling * 1.6f);
+    ((Ship *)(s))->ctor_full(self->index, self->baseHP, self->baseLoad, self->price, slots[0], slots[1], slots[2], slots[3] - self->numAddedDeviceSlots, self->handling * 1.6f);
     Array<int> *m = self->mods;
     if (m != 0) {
         for (unsigned int i = 0; i < m->size(); i = i + 1) {
@@ -952,7 +945,7 @@ void Ship::addCargo(Item *item) {
     Array<Item*> *a = operatorNewArray(0xc);
     ArrayCtorItem(a);
     ArrayAdd<Item*>(item, *a);
-    Ship_addCargo2(this, a);
+    ((Ship *)(this))->addCargo2(a);
 }
 
 // ---- setEquipment_17509c.cpp ----
@@ -1352,7 +1345,7 @@ void Ship::setEquipment(Item *item, int slot) {
 
 void Ship::setEquipment(Array<Item*> *items) {
     for (unsigned int i = 0; i < items->size(); i = i + 1) {
-        Ship_setEquipment1(this, items->data()[i]);
+        ((Ship *)(this))->setEquipment1(items->data()[i]);
     }
 }
 

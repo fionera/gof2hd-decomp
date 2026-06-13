@@ -22,7 +22,6 @@ Vector operator+(const Vector &lhs, const Vector &rhs);
 Vector operator*(const Vector &lhs, float rhs);
 } }
 
-extern "C" void StarSystem_renderSunStreak_tail(void *geom);
 extern "C" void *Array_AEGeometry_dtor(void *array);
 extern "C" void ArrayRelease_KIPlayer(void *array);
 extern "C" void *Array_KIPlayer_dtor(void *array);
@@ -80,7 +79,7 @@ void StarSystem::renderSunStreak() {
     void *slot = (B(self, 0x0c) != 0) ? (void *)((char *)self + 0x10) : P(P(self, 0x14), 4);
     ((PaintCanvas *)canvas)->SetTexture(*(uint32_t *)slot, (unsigned)-1);
     ((PaintCanvas *)*holder)->SetBlendMode(2);
-    return StarSystem_renderSunStreak_tail(P(self, 0x40));
+    return self->renderSunStreak_tail(P(self, 0x40));
 }
 
 // ---- renderSunStreak_tail ----------------------------------------------------

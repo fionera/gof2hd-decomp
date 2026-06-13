@@ -28,6 +28,7 @@
 #include "gof2/Level.h"
 #include "gof2/Player.h"
 #include "gof2/PaintCanvas.h"
+#include "gof2/Layout.h"
 
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls are
 // method calls on this global instance.
@@ -42,7 +43,6 @@ extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
 extern "C" void Array_void_ctor(void *arr);
 extern "C" void ArraySetLength_void(int n, void *arr);
-extern "C" void Layout_drawMask();
 extern "C" int  String_length(void *s);
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *arr);
@@ -929,7 +929,7 @@ void Hud::drawPauseButton() {
 // Hud::checkIfQuickMenuIsEmpty() — decides whether the radial quick-menu has any usable
 // entry (a secondary weapon, jump drive, wingmen, or cloak) and stores the "empty" flag at
 // +0x283, then tail-calls the menu-refresh hook.
-extern "C" unsigned char Ship_hasCloakNeg(void *ship); // the final inverted-cloak accessor
+// the final inverted-cloak accessor
 // DAT_001ac644 tail thunk
 
 Hud * Hud::checkIfQuickMenuIsEmpty() {
@@ -951,7 +951,7 @@ Hud * Hud::checkIfQuickMenuIsEmpty() {
         (void *)((Status *)(*gStatus))->getShip();
         if (((Ship *)((void *)((Status *)(*gStatus))->getShip()))->hasJumpDrive() == 0 && ((Status *)(*gStatus))->getWingmen() == 0) {
             (void *)((Status *)(*gStatus))->getShip();
-            empty = (unsigned char)(Ship_hasCloakNeg((void *)((Status *)(*gStatus))->getShip()) ^ 1);
+            empty = (unsigned char)(((Ship *)((void *)((Status *)(*gStatus))->getShip()))->hasCloakNeg() ^ 1);
         } else {
             empty = 0;
         }
@@ -973,9 +973,9 @@ extern const char g_Hud_dmPrefix[] __attribute__((visibility("hidden")));
 
 void Hud::drawMenu() {
     Hud *self = this;
-    Layout_drawMask();
     void *canvas = *g_Hud_dmCanvas;
     int *layout = (int *)*g_Hud_dmLayout;
+    ((Layout *)(layout))->drawMask();
 
     // top cap
     ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x298), I(self, 0x3c4) + I(self, 0x4cc), 0);

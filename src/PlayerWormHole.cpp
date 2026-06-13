@@ -1,5 +1,5 @@
 #include "gof2/PlayerWormHole.h"
-extern "C" void AEGeometry_positionChanged(void *geometry);  // engine shim (unmapped)
+// engine shim (unmapped)
 #include "gof2/AEGeometry.h"
 #include "gof2/Level.h"
 #include "gof2/PlayerStaticFar.h"
@@ -128,7 +128,7 @@ void PlayerWormHole::setPosition(float x, float y, float z)
     this->intPositionY = (int)y;
     this->intPositionX = (int)x;
     this->intPositionZ = (int)z;
-    return AEGeometry_positionChanged(this->geometry);
+    return ((AEGeometry *)(this->geometry))->positionChanged();
 }
 
 // ---- update_a5380.cpp ----

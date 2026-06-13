@@ -1,7 +1,6 @@
 #include "gof2/LODManager.h"
 #include "gof2/AEGeometry.h"
 
-extern "C" void LODManager_addObject_tail(AEGeometry *g, void *objects);
 uint32_t CameraGetCurrent(void *canvas);
 Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
@@ -12,7 +11,7 @@ void LODManager::addObject(AEGeometry *g)
 {
     if (LODManager_hasLod(g) == 0)
         return;
-    return LODManager_addObject_tail(g, this->objects);
+    return this->addObject_tail(g, this->objects);
 }
 
 // ---- addObject_tail ----------------------------------------------------------

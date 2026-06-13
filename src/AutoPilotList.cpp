@@ -1,5 +1,6 @@
 #include "gof2/AutoPilotList.h"   // also pulls in gof2/SolarSystem.h (RetStr + SolarSystem)
 #include "gof2/GameText.h"
+#include "gof2/Layout.h"
 #include "gof2/Level.h"
 #include "gof2/Status.h"
 #include "gof2/PlayerEgo.h"
@@ -241,8 +242,7 @@ using AbyssEngine::String;
 
 // 0x72f70
 // 0x6ee30
-extern "C" void Layout_drawWindow(void *layout, const String *title, int x, int y,
-                                  int w, int h);                          // 0x768d0
+// 0x768d0
 // PC-relative GOT holders. **holder yields the live object.
 __attribute__((visibility("hidden"))) extern void **g_APL_layout_draw;     // -> Layout
 __attribute__((visibility("hidden"))) extern void **g_APL_gametext_draw;   // -> GameText
@@ -255,8 +255,7 @@ void AutoPilotList::draw() {
     String *title = (String *)((GameText *)(*g_APL_gametext_draw))->getText(0x23c);
     char tmp[12];
     ((String *)(tmp))->ctor_copy(title, false);
-    Layout_drawWindow(layout, (String *)tmp, this->x, this->y,
-                      this->width, this->count * 0xf + 0x16);
+    ((Layout *)(layout))->drawWindow((String *)tmp, this->x, this->y, this->width, this->count * 0xf + 0x16);
     ((String *)(tmp))->dtor();
 
     int drawn = 0;

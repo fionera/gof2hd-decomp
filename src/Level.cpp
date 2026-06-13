@@ -1,4 +1,5 @@
 #include "gof2/Level.h"
+#include "gof2/Mission.h"
 #include "gof2/Ship.h"
 extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engine shim (setDirection up-vec unrecoverable)
 #include "gof2/externs.h"
@@ -51,11 +52,6 @@ struct SolarSystem {
 
 static unsigned int g_level_texOutScratch;
 
-struct Station {
-    int getPirateStationIndex();
-    int getIndex();
-};
-
 struct KIPlayer {
     void reset();
     static void setDead(KIPlayer *self);
@@ -92,14 +88,6 @@ struct RawArray {
 };
 
 
-extern "C" void Level_render2D_call(int starSystem);
-extern "C" int Level_checkGameOver_call(int objective);
-extern "C" void Level_enableMovingStars_call(int skybox, int index, bool enable);
-extern "C" int Level_checkObjective_call(int objective);
-extern "C" void Level_enableFog_call(int mgr, int sys, bool enable);
-extern "C" void Level_wanted_action(Level *self, int a, int b);
-extern "C" void Level_pirateStationAction_tail(Level *self, int code, int arg);
-extern "C" void Level_render_tail(int sys);
 extern "C" void *dtor_Objective(void *p);
 extern "C" void *dtor_BoundingVolume(void *p);
 extern "C" void *dtor_StarSystem(void *p);
@@ -120,24 +108,15 @@ extern "C" void Level_releaseRadioMessage(void *p);
 extern "C" void *dtor_ArrayRadioMessage(void *p);
 extern "C" void *_Znwj(unsigned int size);
 extern "C" void Level_setAlwaysEnemy(int obj, int flag);
-extern "C" void Level_alarmAllFriends_tail(Station *station, int one);
-extern "C" void Level_friendTurnedEnemy_action(Level *self, int a, int b);
 extern "C" int Level_opnew(unsigned int size);
 extern "C" void ArrayCtor(int arr);
 extern "C" void ArraySetLength(int len, int arr);
 extern "C" unsigned int uidiv(unsigned int a, unsigned int b);
-extern "C" int Level_createStaticObject_call(Level *self, int wp, int type, int flag);
 extern "C" void ArrayAdd(int item, int arr);
 extern "C" void Level_createPlayer_impl(Level *self);
-extern "C" void Level_wingmanDied_all(Status *obj, int zero);
-extern "C" void Level_wingmanDied_one(String *ship, unsigned int *list);
 extern "C" void *Level_opnew_akw(unsigned int size);
-extern "C" void Mission_ctor_akw(int m, int a, int b, int idx);
-extern "C" void Mission_setCampaign_akw(int m, int flag);
-extern "C" void Mission_setWon_akw(int m, int flag);
 extern "C" void *dtor_Objective_akw(void *p);
 extern "C" void Objective_ctor_akw(int o, int a, int b, int c, Level *self);
-extern "C" void Level_almostKillWanted_tail(int target, int zero);
 extern "C" void Level_turnEnemy(int obj);
 extern "C" int Level_getNumWingmen(int wanted);
 
@@ -158,7 +137,7 @@ int Level::getEnemiesLeft() {
 
 // ---- render2D_c4ca0.cpp ----
 void Level::render2D() {
-    return Level_render2D_call(starSystem);
+    return this->render2D_call(starSystem);
 }
 
 // ---- checkGameOver_c627e.cpp ----
@@ -167,7 +146,7 @@ int Level::checkGameOver() {
     if (objective == 0) {
         return 0;
     }
-    return Level_checkGameOver_call(objective);
+    return this->checkGameOver_call(objective);
 }
 
 // ---- updateAsteroidCluster_c5f54.cpp ----
@@ -203,7 +182,7 @@ void Level::enableMovingStars(bool enable) {
     if (index < 0) {
         return;
     }
-    Level_enableMovingStars_call(skybox2Mesh, index, enable);
+    this->enableMovingStars_call(skybox2Mesh, index, enable);
 }
 
 // ---- setInitStreamOut_adf84.cpp ----
@@ -236,7 +215,7 @@ void Level::asteroidDied() {
 int Level::checkObjective() {
     int objective = objectivesA;
     if (objective != 0) {
-        return Level_checkObjective_call(objective);
+        return this->checkObjective_call(objective);
     }
     return 0;
 }
@@ -260,7 +239,7 @@ void Level::setPlayerRoute(Route *route) {
 
 // ---- enableFog_c651c.cpp ----
 void Level::enableFog(bool enable) {
-    return Level_enableFog_call(particleSystemMgr, field_284, enable);
+    return this->enableFog_call(particleSystemMgr, field_284, enable);
 }
 
 // ---- isInAsteroidCenterRange_c456e.cpp ----
@@ -347,7 +326,7 @@ int Level::getPlayer() {
 void Level::killWanted() {
     if (field_29d == 0) {
         field_29d = 1;
-        return Level_wanted_action(this, 0x11, 0);
+        return ((Level *)(this))->wanted_action(0x11, 0);
     }
 }
 
@@ -490,7 +469,7 @@ void Level::pirateStationAction(bool param) {
         *(unsigned char *)(*(int *)(tbl + 4) + idx) = 1;
         *(unsigned char *)((char *)*slot + 0xf9) = 1;
     }
-    Level_pirateStationAction_tail(this, param ? 3 : 4, 8);
+    ((Level *)(this))->pirateStationAction_tail(param ? 3 : 4, 8);
 }
 
 // ---- getNumDockingTargets_c66f8.cpp ----
@@ -631,7 +610,7 @@ void Level::render(int ctx) {
     if (field_9c != 0) {
         ((ParticleSystemManager *)(field_9c))->render3d();
     }
-    return Level_render_tail(starSystem);
+    return this->render_tail(starSystem);
 }
 
 // ---- collideStream_c457c.cpp ----
@@ -783,7 +762,7 @@ void Level::alarmAllFriends(int race, bool message) {
         }
         createRadioMessage(type, race);
         if ((*slot)->getSystem()->getRace() == race) {
-            return Level_alarmAllFriends_tail((*slot)->getStation(), 1);
+            return this->alarmAllFriends_tail((Station *)(*slot)->getStation(), 1);
         }
     }
 }
@@ -2222,7 +2201,7 @@ void Level::updateOrbit(int dt) {
 void Level::friendTurnedEnemy() {
     if ((unsigned char)field_188 == 0) {
         *(unsigned char *)&field_188 = 1;
-        return Level_friendTurnedEnemy_action(this, 0, 0);
+        return ((Level *)(this))->friendTurnedEnemy_action(0, 0);
     }
 }
 
@@ -2313,7 +2292,7 @@ void Level::createSentryGuns() {
         }
         int color = 0x9923e035;
         for (unsigned int i = 0; i < *(unsigned int *)field_b0; i = i + 1) {
-            int obj = Level_createStaticObject_call(this, 0, uidiv(i, 3) + 0x49c0, 1);
+            int obj = ((Level *)(this))->createStaticObject_call(0, uidiv(i, 3) + 0x49c0, 1);
             ((int *)(*(int *)(field_b0 + 4)))[i] = obj;
             int k = ((int *)(*(int *)(field_b0 + 4)))[i];
             ((Player *)(*(int *)(k + 4)))->setRadius(800);
@@ -3092,12 +3071,12 @@ void Level::wingmanDied(int name) {
         return;
     }
     if (__builtin_expect(*list < 2, 0)) {
-        return Level_wingmanDied_all(*slot, 0);
+        return this->wingmanDied_all((Status *)(*slot), 0);
     }
     for (unsigned int i = 0; i < *list; i = i + 1) {
         String *w = ((String **)list[1])[i];
         if (w->Compare_str((String *)name) == 0) {
-            return Level_wingmanDied_one(((String **)list[1])[i], list);
+            return this->wingmanDied_one(((String **)list[1])[i], list);
         }
     }
 }
@@ -3553,9 +3532,9 @@ void Level::almostKillWanted(int index) {
         return;
     }
     int m = (int)(intptr_t)Level_opnew_akw(0x78);
-    Mission_ctor_akw(m, 4, 0, (*slot)->getStation()->getIndex());
-    Mission_setCampaign_akw(m, 1);
-    Mission_setWon_akw(m, 1);
+    ((Mission *)(m))->ctor_akw(4, 0, (*slot)->getStation()->getIndex());
+    ((Mission *)(m))->setCampaign_akw(1);
+    ((Mission *)(m))->setWon_akw(1);
     (*slot)->setMission(m);
     (*slot)->setCampaignMission(m);
     if (objectivesA != 0) {
@@ -3572,7 +3551,7 @@ void Level::almostKillWanted(int index) {
     *(unsigned char *)(*(int *)(e0 + 4) + 0x5c) = 0;
     *(unsigned char *)(e0 + 0x43) = 1;
     int w = (*slot)->getWanted();
-    return Level_almostKillWanted_tail(((int *)(*(int *)(w + 4)))[index], 0);
+    return this->almostKillWanted_tail(((int *)(*(int *)(w + 4)))[index], 0);
 }
 
 // ---- assignGuns_bc680.cpp ----

@@ -6,7 +6,6 @@
 extern "C" void ArrayReleaseClasses_StringPtr(void *self);
 extern "C" void *Array_StringPtr_dtor(void *self);
 extern "C" void String_ctor_string(void *self, String *src, bool copy);
-extern "C" void ScrollTouchBox_setText2(ScrollTouchBox *self, String *text, int font);
 int GameText_getLanguage();
 extern "C" void Array_StringPtr_ctor(void *self);
 void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);
@@ -125,7 +124,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text)
     String tmp;
 
     String_ctor_string(&tmp, &text, false);
-    ScrollTouchBox_setText2(this, &tmp, **g_ScrollTouchBox_defaultWidth_13570c);
+    ((ScrollTouchBox *)(this))->setText2(&tmp, **g_ScrollTouchBox_defaultWidth_13570c);
     ((String *)(&tmp))->dtor();
 }
 

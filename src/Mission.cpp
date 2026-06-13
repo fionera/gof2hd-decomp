@@ -9,7 +9,6 @@ struct Systems;
 
 extern "C" void String_cstr_ctor(void *out, const char *s, bool);
 extern "C" void *String_assign_ref(void *self, const String12 &rhs);
-extern "C" void Mission_dtor_finish(Mission *self);
 extern "C" void String_default_ctor(void *s);
 extern "C" int Station_getSystem(Station *s);
 extern "C" void Station_dtor_finish(Station *s);
@@ -198,7 +197,7 @@ void Mission::setTargetStation(int idx) {
 // tail-calls the finisher with that pointer — so `this` need not be saved.
 void Mission::dtor() {
     Mission *self = this;
-    Mission_dtor_finish(((Mission *)(self))->dtor_inner());
+    ((Mission *)(((Mission *)(self))->dtor_inner()))->dtor_finish();
 }
 
 // ---- Mission_15b64c.cpp ----

@@ -15,9 +15,6 @@
 #include "gof2/Ship.h"
 
 
-extern "C" void CutScene_update_tail(CutScene *self);
-extern "C" void CutScene_render2D_tail(void *level);
-extern "C" void CutScene_renderBG_tail(void *level, uint32_t bg);
 
 // Status singleton holder (pc-rel global): the decompiler dropped the Status `self`
 // argument on getSystem/getStation/getShip/getPlayingTime; recover it via *gStatus.
@@ -82,7 +79,7 @@ uint8_t CutScene::isInitialized()
 
 void CutScene::update()
 {
-    return CutScene_update_tail(this);
+    return ((CutScene *)(this))->update_tail();
 }
 
 // ---- render3D_9985c.cpp ----
@@ -125,7 +122,7 @@ void CutScene::render3D()
 
 void CutScene::render2D()
 {
-    return CutScene_render2D_tail(pp(this, 0x0));
+    return this->render2D_tail((Level *)pp(this, 0x0));
 }
 
 // ---- process_98e8c.cpp ----
@@ -134,7 +131,6 @@ float VectorSignedToFloat(int v, int mode);
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
 void MatrixSetRotation(void *m, float x, float y, float z);
 int Station_getIndex(void *station);
-void CutScene_processAux(void *self);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_canvas;
@@ -331,12 +327,12 @@ void CutScene::process(int delta)
                             void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
                             ((PaintCanvas*)(canvas))->TransformGetTransform(0);
-                            CutScene_processAux(self);
+                            ((CutScene *)(self))->processAux();
                             return;
                         }
                     }
                 }
-                CutScene_processAux(self);
+                ((CutScene *)(self))->processAux();
                 return;
             }
             ((Status *)(*gStatus))->getSystem();
@@ -372,22 +368,22 @@ void CutScene::process(int delta)
                         void *a = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         ((AbyssEngine::Transform *)(a))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
                         ((PaintCanvas*)(canvas))->TransformGetTransform(0);
-                        CutScene_processAux(self);
+                        ((CutScene *)(self))->processAux();
                         return;
                     }
                 }
-                CutScene_processAux(self);
+                ((CutScene *)(self))->processAux();
                 return;
             }
             ((Status *)(*gStatus))->getSystem();
             if (((SolarSystem *)(long)((Status *)(*gStatus))->getSystem())->getRace() != 2)
                 return;
-            CutScene_processAux(self);
-            CutScene_processAux(self);
+            ((CutScene *)(self))->processAux();
+            ((CutScene *)(self))->processAux();
             void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
             ((AbyssEngine::Transform *)(t))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
-            CutScene_processAux(self);
-            CutScene_processAux(self);
+            ((CutScene *)(self))->processAux();
+            ((CutScene *)(self))->processAux();
             void *t2 = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
             ((AbyssEngine::Transform *)(t2))->Update((longlong)(unsigned)i32(self, 0x58), (bool)(unsigned char)i32(self, 0x58));
         }
@@ -399,7 +395,7 @@ void CutScene::process(int delta)
 
 void CutScene::renderBG()
 {
-    return CutScene_renderBG_tail(pp(this, 0x0), u32(this, 0x58));
+    return this->renderBG_tail((Level *)pp(this, 0x0), u32(this, 0x58));
 }
 
 // ---- CutScene_983e4.cpp ----

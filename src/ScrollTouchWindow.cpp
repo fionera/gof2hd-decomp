@@ -11,7 +11,6 @@ extern "C" void *ScrollTouchBox_dtor(void *self);
 extern "C" void String_ctor_cstr(void *dst, const char *text, bool copy);
 extern "C" void String_ctor_default(void *self);
 extern "C" void ScrollTouchBox_ctor(void *self, int x, int y, int w, int h);
-extern "C" void ScrollTouchBox_setTextColor(void *self, AbyssEngine::String *text, int color);
 
 // Layout fields (a global UI metrics object) are still accessed by byte offset since the
 // Layout class is not modeled here; helper kept local to this translation unit.
@@ -96,13 +95,6 @@ void ScrollTouchWindow::scroll(int amount)
     // Step by one visible page per key press, then let update() clamp / settle.
     box->scrollOffset -= amount * box->height;
     box->update(0);
-}
-
-// Free-function entry used by callers that hold the window opaquely (e.g.
-// SpaceLounge::onKeyPress). Forwards to the real method.
-extern "C" void ScrollTouchWindow_scroll(void *window, int amount)
-{
-    ((ScrollTouchWindow *)window)->scroll(amount);
 }
 
 // ---- draw_174330.cpp ----
@@ -248,7 +240,7 @@ void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String t
         void *box = this->scrollBox;
         char tmp[sizeof(AbyssEngine::String)];
         ((String *)(tmp))->ctor_copy(&text, false);
-        ScrollTouchBox_setTextColor(box, (AbyssEngine::String *)tmp, color);
+        ((ScrollTouchBox *)(box))->setTextColor((AbyssEngine::String *)tmp, color);
         ((String *)(tmp))->dtor();
     }
     this->title = title;

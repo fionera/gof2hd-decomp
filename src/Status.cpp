@@ -66,7 +66,6 @@ extern "C" void FileRead_ctor(FileRead *fr);
 extern "C" void *FileRead_dtor(FileRead *fr);
 Station *Globals_getRandomStation();
 extern "C" int Station_getSystem(Station *s);
-extern "C" int SolarSystem_getStations_i(SolarSystem *s);
 extern "C" void *Array_int_dtor(void *a);
 extern "C" void ArrayReleaseClasses_SolarSystem(void *a);
 extern "C" void *Array_SolarSystem_dtor(void *a);
@@ -1315,9 +1314,9 @@ int Status::activateNewWanted() {
         int pick = path[1] + ((AbyssEngine::AERandom *)(*rnd))->nextInt() * 4;
         pick = *(int *)pick;
         SolarSystem *dst = (SolarSystem *)((int *)((unsigned *)systems)[1])[pick];
-        if (SolarSystem_getStations_i(dst) != 0) {
+        if (((SolarSystem *)(dst))->getStations_i() != 0) {
             int idx = ((AbyssEngine::AERandom *)(*rnd))->nextInt();
-            int st = ((int *)(*(int *)(SolarSystem_getStations_i(dst) + 4)))[idx];
+            int st = ((int *)(*(int *)(((SolarSystem *)(dst))->getStations_i() + 4)))[idx];
             ((Wanted *)(cur))->setCurrentLocation(st);
         }
         ::operator delete(Array_int_dtor(path));

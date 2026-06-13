@@ -30,13 +30,17 @@ public:
 };
 
 
-extern "C" void PlayerFighter_setShipGroup_base(AEGeometry *self, int a, bool b);
-extern "C" void PlayerFighter_awake_tail(int geom, int on);
 extern "C" void PlayerFighter_cloak_off_helper();
-extern "C" void *PlayerFighter_base_dtor(PlayerFighter *self);
-extern "C" void PlayerFighter_setMissionCrate_tail(int one, Array<int> *a);
-extern "C" void PlayerFighter_setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *a);
-extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned transform, bool vis);
+// GOT-veneer landing pads: terminal tail-calls that the linker resolves to the
+// relocated inherited base implementation. Their first pointer parameter is a
+// real argument (geometry / slot / volume / transform), not a `this` receiver,
+// so they stay as extern shims rather than being modeled as PlayerFighter methods.
+extern "C" void PlayerFighter_setShipGroup_base(void *geom, int group, bool flag);
+extern "C" void PlayerFighter_awake_tail(int geom, int on);
+extern "C" void *PlayerFighter_base_dtor(void *self);
+extern "C" void PlayerFighter_setMissionCrate_tail(int slot, void *loot);
+extern "C" void PlayerFighter_setBV_add(void *bv, void *volumes);
+extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned int transform, bool visible);
 extern "C" void PlayerFighter_render_tail(int geom);
 extern "C" void ArrayReleaseClasses_BV(void *arr);
 extern "C" void *ArrayBV_dtor(void *p);
@@ -118,7 +122,7 @@ struct AEGeometry;
 
 void PlayerFighter_setShipGroup(AEGeometry *self, int a, bool b)
 {
-    return PlayerFighter_setShipGroup_base(self, a, b);
+    return PlayerFighter::setShipGroup_base(self, a, b);
 }
 
 // ---- awake_dff2c.cpp ----
@@ -132,7 +136,7 @@ void PlayerFighter::awake() {
     if (geom == 0) {
         geom = self->geometry;
     }
-    return PlayerFighter_awake_tail(geom, 1);
+    return PlayerFighter::awake_tail(geom, 1);
 }
 
 // ---- setBV_dfb84.cpp ----
@@ -204,7 +208,7 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
     if (m != 0) ::operator delete(EaseInOutMatrix_dtor(m));
     self->easeMatrix = 0;
 
-    return PlayerFighter_base_dtor(self);
+    return ((PlayerFighter *)(self))->base_dtor();
 }
 
 // ---- _PlayerFighter_dc922.cpp ----
@@ -683,7 +687,7 @@ void PlayerFighter::setMissionCrate(bool on) {
         int type = ((Mission *)(mission))->getType();
         int item = (type == 5) ? 0x74 : 0x75;
         ArrayInt_add(item, (Array<int> *)self->lootList);
-        PlayerFighter_setMissionCrate_tail(1, (Array<int> *)self->lootList);
+        PlayerFighter::setMissionCrate_tail(1, (Array<int> *)self->lootList);
     }
 }
 
@@ -717,7 +721,7 @@ void PlayerFighter::setBV_b(BoundingVolume *bv) {
     Array<BoundingVolume *> *a = (Array<BoundingVolume *> *)::operator new(0xc);
     ArrayBV_ctor(a);
     self->boundingVolumes = a;
-    return PlayerFighter_setBV_add(bv, a);
+    return PlayerFighter::setBV_add(bv, a);
 }
 
 // ---- setWingmanCommand_dcc2c.cpp ----
@@ -859,7 +863,7 @@ void PlayerFighter::setExhaustVisible(bool vis) {
         int id = (sub != 0) ? *(int *)(sub + 0x14) : *(int *)(geom + 0x14);
         if (id != -1) {
             unsigned t = (unsigned)(unsigned long)((PaintCanvas *)g_PaintCanvas)->TransformGetTransform(*(unsigned *)gExhaustCanvas);
-            return PlayerFighter_setExhaustVisible_apply(t, vis);
+            return PlayerFighter::setExhaustVisible_apply(t, vis);
         }
     }
 }
@@ -892,7 +896,7 @@ void PlayerFighter::render() {
                 goto done;
             }
             if (self->subGeometry == 0) {
-                return PlayerFighter_render_tail(self->geometry);
+                return PlayerFighter::render_tail(self->geometry);
             }
             idp = *(unsigned **)gR_g3;
         }

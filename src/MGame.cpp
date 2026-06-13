@@ -117,13 +117,11 @@ extern "C" void MGame_opdelete(void *p);
 void Globals_startNewSoundResourceList();
 void Globals_addSoundResourceToList(int list);
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
-int DialogueWindow_hasSuccessDialogue(int cm);
 extern "C" void applyThrust(MGame *self, int y);
 uint8_t TFC_isInLookAtMode(TargetFollowCamera *c);
 void TFC_setLookAtCam(TargetFollowCamera *c, int v);
 extern "C" void Cam_setCinematic(TargetFollowCamera *c, int on);
 extern "C" void FModSound_restoreState();
-int DialogueWindow_hasBriefingDialogue(...);
 extern "C" void DialogueWindow_ctor(...);
 void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
 
@@ -1806,7 +1804,7 @@ static void bindDlg(MGame *self) {
 
 // Follow-up-mission setup helpers: getCampaignMission() yields the active campaign Mission*
 // (header types it as int); Mission::setType is not declared in the shared header.
-extern "C" Mission *Status_getCampaignMissionPtr(Status *status);  // Status::getCampaignMission
+// Status::getCampaignMission
 // Mission::setType
 extern "C" void    *Objective_dtor(Objective *o);                   // Objective::~Objective
 // Status::replaceHash(String haystack, String needle, String replacement) -> String (sret),
@@ -1826,13 +1824,13 @@ void MGame::buildMissionFollowup() {
     Status *status = (Status *)(*g_status);
 
     // Point the campaign mission at the agent's home station.
-    Mission *cm = Status_getCampaignMissionPtr(status);
-    Agent *agent = ((Mission *)(Status_getCampaignMissionPtr(status)))->getAgent();
+    Mission *cm = ((Status *)(status))->getCampaignMissionPtr();
+    Agent *agent = ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->getAgent();
     ((Mission *)(cm))->setTargetStation(((Agent *)(agent))->getStation());
 
     // Raise the briefing for the (now retargeted) mission and convert it to a delivery type.
-    ((DialogueWindow *)(self->field_0x8c))->set(Status_getCampaignMissionPtr(status), 1, -1);
-    ((Mission *)(Status_getCampaignMissionPtr(status)))->setType(0xb);
+    ((DialogueWindow *)(self->field_0x8c))->set(((Status *)(status))->getCampaignMissionPtr(), 1, -1);
+    ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setType(0xb);
 
     // Leave turret / first-person and reset the flight camera.
     self->field_0x58->setTurretMode(0);
@@ -1842,8 +1840,8 @@ void MGame::buildMissionFollowup() {
     self->field_0x58->hideShipForFirstPersonCameraView(false);
     *(uint8_t *)((char *)self + 0x239) = 1;   // this[1].field_48+1 (delivery-active flag)
 
-    ((Mission *)(Status_getCampaignMissionPtr(status)))->setStatusValue(0);
-    ((Mission *)(Status_getCampaignMissionPtr(status)))->setWon(false);
+    ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setStatusValue(0);
+    ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setWon(false);
 
     // Rebuild the agent's mission text: take the template and substitute the target station.
     void *tmpl = ((GameText *)(*g_gameText))->getText(g_scFollowTextKey);
@@ -1859,7 +1857,7 @@ void MGame::buildMissionFollowup() {
     ((Agent *)(missionAgent))->setMissionString(&sResult);
     ((String *)(&sResult))->dtor();
 
-    status->setMission(Status_getCampaignMissionPtr(status));
+    status->setMission(((Status *)(status))->getCampaignMissionPtr());
 
     // Hand the route back to the player and clear it / its waypoint autopilot.
     self->field_0x58->setRoute(0);
@@ -1915,14 +1913,14 @@ void MGame::successCheck() {
             bool hasSuccess = false;
             if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) {
                 int cm = (*g_status)->getCurrentCampaignMission();
-                if (DialogueWindow_hasSuccessDialogue(cm) != 0)
+                if (DialogueWindow::hasSuccessDialogue(cm) != 0)
                     hasSuccess = true;
             }
             if (!hasSuccess) {
                 int cm = (*g_status)->getCurrentCampaignMission();
                 if (cm > 0x2d && ((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) {
                     int cm2 = (*g_status)->getCurrentCampaignMission();
-                    if (DialogueWindow_hasSuccessDialogue(cm2) == 0) {
+                    if (DialogueWindow::hasSuccessDialogue(cm2) == 0) {
                         ((Status *)(*status))->nextCampaignMission();
                         ((Level *)(self->field_0x78))->removeObjectives();
                         ((Status *)(status))->setMission((Mission *)(*g_status)->getCampaignMission() /* mission: arg lost in decomp */);
@@ -3029,7 +3027,7 @@ void MGame::dialogueEvent() {
     MGame *self = this;
     if (((LevelScript *)(self->field_0x7c))->startSequenceOver() == 0) return;
     Status **sp = g_status;
-    if (DialogueWindow_hasBriefingDialogue((*g_status)->getCurrentCampaignMission()) == 0) {
+    if (DialogueWindow::hasBriefingDialogue((*g_status)->getCurrentCampaignMission()) == 0) {
         if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0) return;
     }
     if (((Mission *)((*g_status)->getMission()))->isEmpty() != 0) return;

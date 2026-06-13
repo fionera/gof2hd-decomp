@@ -6,9 +6,7 @@
 
 extern "C" void ArrayRelease_int(void *a) __attribute__((nothrow));
 extern "C" void *Array_int_dtor(void *a) __attribute__((nothrow));
-extern "C" void SolarSystem_baseStringDtor(void *strField) __attribute__((nothrow));
 extern "C" int Station_getIndex(Station *st);
-extern "C" int SolarSystem_warpGateLookup(SolarSystem *self, int idx);
 
 // ---- _SolarSystem_155694.cpp ----
 // SolarSystem::~SolarSystem() — real C++ destructor so the demangled symbol contains "~SolarSystem".
@@ -40,23 +38,7 @@ void SolarSystem::dtor() {
             ::operator delete(Array_int_dtor(self->linkedSystemIds));
     }
     self->linkedSystemIds = 0;
-    SolarSystem_baseStringDtor((char *)self + 0xc);
-}
-
-// AbyssEngine::String::~String() run on the in-place `name` member at +0xc. This
-// is the base (non-deleting) destructor: it releases the string's backing buffer
-// but does not free the SolarSystem itself.
-extern "C" void SolarSystem_baseStringDtor(void *strField)
-{
-    ((String *)((String *)strField))->dtor();
-}
-
-// SolarSystem::getWarpGateEnumIndex() forwards here with the orbit's jump-gate
-// station id; resolving the warp-gate enum index is the same table lookup used
-// for ordinary stations, so reuse getStationEnumIndex().
-extern "C" int SolarSystem_warpGateLookup(SolarSystem *self, int idx)
-{
-    return (int)self->getStationEnumIndex(idx);
+    SolarSystem::baseStringDtor((char *)self + 0xc);
 }
 
 // ---- currentOrbitHasWarpGate_155818.cpp ----
@@ -313,7 +295,7 @@ SolarSystem * SolarSystem::ctor(int p1, const String12 &p2, int p3, bool p4, int
 
 int SolarSystem::getWarpGateEnumIndex() {
     SolarSystem *self = this;
-    return SolarSystem_warpGateLookup(self, self->jumpgateStationId);
+    return ((SolarSystem *)(self))->warpGateLookup(self->jumpgateStationId);
 }
 
 // ---- isFullyDiscovered_15585c.cpp ----

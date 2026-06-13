@@ -576,6 +576,31 @@ void PlayerStation::deleting_dtor() {
     ::operator delete(PlayerStation_destructor_body(self));
 }
 
+// Complete-object destructor body (engine 0x1325ec calls this, then frees the
+// returned pointer). Run the in-place destructor teardown and hand `this` back
+// so the deleting variant can chain operator delete onto it.
+void *PlayerStation::destructor_body() {
+    this->~PlayerStation();
+    return this;
+}
+
+// transformGet (GOT -> AbyssEngine::PaintCanvas::TransformGetTransform): fetch the
+// Transform handle for sub-mesh `meshId` from the canvas. Returned as a 64-bit
+// value so update() can carry it through the split 32-bit calling ABI.
+long long PlayerStation::transformGet(void *canvas, int meshId) {
+    return (long long)(uintptr_t)((PaintCanvas *)canvas)->TransformGetTransform((unsigned)meshId);
+}
+
+// transformUpdate (GOT -> AbyssEngine::Transform::Update): advance the Transform
+// whose handle arrived split across (lo, hi) by `delta` ticks. deltaHigh is the
+// sign-extension of delta; flag selects bounds recomputation.
+void PlayerStation::transformUpdate(uint32_t lo, uint32_t hi, int delta, int deltaHigh, int flag) {
+    (void)deltaHigh;
+    AbyssEngine::Transform *transform =
+        (AbyssEngine::Transform *)(uintptr_t)((uint64_t)lo | ((uint64_t)hi << 32));
+    transform->Update((long long)delta, flag != 0);
+}
+
 // ---- translate_122766.cpp ----
 void PlayerStation::translate(float x, float y, float z)
 {

@@ -20,7 +20,6 @@ void ScrollTouchWindow_ctor(void *self, int x, int y, int width, int height, boo
 void ArrayReleaseClasses_StringPtr(void *self);
 void *Array_StringPtr_dtor(void *self);
 void ScrollTouchWindow_setPosition(void *self, int y);
-void Layout_drawMask(void *self);
 void Layout_formatCredits(String *out, void *layout, int value);
 void TouchButton_getPosition(float *out, void *self);
 // Status::replaceHash(String pattern, String value) -> String
@@ -425,7 +424,7 @@ void ChoiceWindow::draw()
     float pos[2];
 
     void *layout = *g_ChoiceWindow_layout_1471bc;
-    Layout_drawMask(layout);
+    ((Layout *)(layout))->drawMask();
 
     ((Layout *)(layout))->drawBox6(7, this->x, this->y, this->width, this->height, &this->title);
 

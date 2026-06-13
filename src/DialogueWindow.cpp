@@ -35,7 +35,6 @@ int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void ChoiceWindow_ctor(void *self);
 using AbyssEngine::PaintCanvas;
-extern "C" void Layout_drawMask(void *layout);
 struct Vec2;  // defined below (float x, y) -- only the pointer type is needed here
 void TouchButton_getPosition(Vec2 *out, void *self);
 
@@ -207,12 +206,6 @@ bool DialogueWindow::isLastPage() {
 // ---- hasBriefingDialogue_1671b4.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_briefingDialogueIds[];
 
-bool DialogueWindow_hasBriefingDialogue(int id)
-{
-    if (id > 0xa1) return false;
-    return g_dw_briefingDialogueIds[id] > 0;
-}
-
 bool DialogueWindow::hasBriefingDialogue(int id) {
     if (id > 0xa1) return false;
     return g_dw_briefingDialogueIds[id] > 0;
@@ -220,12 +213,6 @@ bool DialogueWindow::hasBriefingDialogue(int id) {
 
 // ---- hasSuccessDialogue_1671d4.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_successDialogueIds[];
-
-bool DialogueWindow_hasSuccessDialogue(int id)
-{
-    if (id > 0xa1) return false;
-    return g_dw_successDialogueIds[id] > 0;
-}
 
 bool DialogueWindow::hasSuccessDialogue(int id) {
     if (id > 0xa1) return false;
@@ -718,7 +705,7 @@ void DialogueWindow::draw() {
 
     ((PaintCanvas*)*g_dw_paintCanvas)->SetColor((unsigned int)-1);
     void *layout = *g_dw_layoutDraw;
-    Layout_drawMask(layout);
+    ((Layout *)(layout))->drawMask();
     ((String *)(&title))->ctor_copy((String *)((char *)self + 0x34), false);
     ((Layout *)(layout))->drawBox(7, self->frameX, self->frameY, self->frameWidth, self->frameHeight, &title, 1);
     ((String *)(&title))->dtor();

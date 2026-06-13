@@ -10,7 +10,6 @@
 
 extern "C" void Array_Item_ctor(void *arr);
 extern "C" void ArraySetLength_Item(uint32_t len, void *arr);
-extern "C" void Galaxy_setSystemVisited(Galaxy *g, int systemId);
 // NOTE: Station's name is an AbyssEngine::String passed/returned BY VALUE through the engine's
 // 12-byte RetStr/String12 aggregate ABI (getName() returns RetStr, callers do `*(RetStr*)tmp = ...`).
 // That trivially-copied 12-byte aggregate does not match our 24-byte std::u16string-backed String,
@@ -132,7 +131,7 @@ void Station::visit() {
         return;
     self->visited = 1;
     ((Status *)(*gStatusSingleton))->visitStation();
-    Galaxy_setSystemVisited(*gGalaxyVisit, self->index);
+    ((Galaxy *)(*gGalaxyVisit))->setSystemVisited(self->index);
 }
 
 // ---- getName_a6bce.cpp ----
@@ -297,7 +296,7 @@ uint32_t Station::getPirateStationIndex() {
 
 // ---- addItem_a6eb6.cpp ----
 struct Item;
-extern "C" void Item_addAmount(Item *found, int amount);  // tail-called veneer
+// tail-called veneer
 extern "C" void ArrayAdd_Item(Item *item, void *arr);     // tail-called veneer
 
 // Station::addItem(Item*) — this in r0, item in r1.
@@ -317,7 +316,7 @@ void Station::addItem(Item *item) {
                         break;
                     uint32_t *cur = (uint32_t *)self->items;
                     Item *found = ((Item **)cur[1])[i];
-                    Item_addAmount(found, ((Item *)(item))->getAmount());
+                    ((Item *)(found))->addAmount(((Item *)(item))->getAmount());
                     return;
                 }
                 arr = (uint32_t *)self->items;

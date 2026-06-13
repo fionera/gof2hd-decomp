@@ -325,7 +325,7 @@ extern "C" void  Str_ctor_cstr(Str *s, const char *text, bool copy); // 0x6ee18 
 extern "C" void  Str_ctor_copy(Str *s, const void *src, bool copy);  // String(String&)
 
 // Layout / drawing callees (resolved blx targets).
-extern "C" void  Layout_drawMask(void *layout);                              // 0x7696c
+// 0x7696c
 // 0x74de8
 // 8-arg form
 
@@ -353,7 +353,7 @@ void ListItemWindow::draw()
     bool masked = *g_liw_d_maskFlag != 0;
 
     if (masked)
-        Layout_drawMask(layout);
+        ((Layout *)(layout))->drawMask();
 
     ((PaintCanvas *)(long)canvas)->SetColor(canvas);
     ((PaintCanvas *)(long)canvas)->FillRectangle((int)canvas, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c));

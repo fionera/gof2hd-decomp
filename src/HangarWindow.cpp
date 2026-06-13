@@ -582,7 +582,6 @@ void ArrayRemove_ShipPtr(void *ship, void *arr);
 int __aeabi_idiv(int a, int b);
 
 // Mission-offer subroutine (corrupted in decompile); kept as an extern helper.
-void HangarWindow_buildMissionOffer(HangarWindow *self, int touch, int coord);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
@@ -941,7 +940,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             }
         }
         // The rest of the ship-swap and mission-offer flow lives in the helper.
-        HangarWindow_buildMissionOffer(self, touch, coord);
+        ((HangarWindow *)(self))->buildMissionOffer(touch, coord);
         return;
     } else {
         // self+0xae set: free-credits intro window.

@@ -5,7 +5,6 @@
 using AbyssEngine::String12;
 
 extern "C" Wanted *String_default_ctor(Wanted *self);
-extern "C" Wanted *Wanted_base_dtor(Wanted *self);
 
 // ---- trivial field accessors (inlined in the binary; recovered from the
 //      ctor's field layout). These back the Wanted_getX/setX extern shims. ----
@@ -113,10 +112,10 @@ Wanted * Wanted::dtor() {
         ::operator delete[](p);
     }
     self->imageParts = 0;
-    return Wanted_base_dtor(self);
+    return ((Wanted *)(self))->base_dtor();
 }
 
-// ---- Wanted_base_dtor (base subobject destructor) ----
+// ---- ((Wanted *)(base subobject destructor))->base_dtor() ----
 // Wanted's only base subobject is its leading AbyssEngine::String `name` (offset 0x0).
 // The compiler-generated base-object destructor therefore just runs String::~String on
 // `name` and returns the (Wanted*) object pointer for the destructor chain. Wanted::dtor()

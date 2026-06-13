@@ -339,7 +339,7 @@ void Player::setActive(bool value) {
 }
 
 // ---- awake_725xx ----
-// KIPlayer::awake() flips its own state and then calls Player_awake(player, 1); that shim
+// KIPlayer::awake() flips its own state and then calls ((Player *)(player))->awake(1); that shim
 // is a PLT interworking stub that branches directly into Player::setActive, so awakening
 // the ship is exactly "make it active again".
 void Player::awake(bool active) {

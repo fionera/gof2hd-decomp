@@ -6,7 +6,6 @@
 
 
 extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);
-extern "C" void PlayerStaticFar_render_tail(PlayerStaticFar *self);
 extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
 
 // ---- _PlayerStaticFar_11c2c8.cpp ----
@@ -47,7 +46,7 @@ Vector PlayerStaticFar::getProjectionVector(const Vector &value)
 
 void PlayerStaticFar::render()
 {
-    return PlayerStaticFar_render_tail(this);
+    return ((PlayerStaticFar *)(this))->render_tail();
 }
 
 // render() chains PlayerStatic::render(), which renders the owned geometry:

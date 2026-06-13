@@ -24,8 +24,6 @@ extern "C" void *ArrayUint_dtor(void *p);
 extern "C" void *ArrayInt_dtor(void *p);
 extern "C" void ArrayReleaseClasses_SpacePoint(void *arr);
 extern "C" void *ArraySpacePoint_dtor(void *p);
-extern "C" void Player_awake(void *player, int b);
-extern "C" void Player_setDead(void *self, int arg);
 extern "C" void Player_addGun_b(void *player);
 extern "C" void *gCanvas;
 extern "C" void Player_addGun_a(void *player);
@@ -278,7 +276,7 @@ void KIPlayer::awake() {
     KIPlayer *self = this;
     void *player = self->player;
     self->state = 1;
-    return Player_awake(player, 1);
+    return ((Player *)(player))->awake(1);
 }
 
 // ---- setInitActive_a5e4c.cpp ----
@@ -344,7 +342,7 @@ int KIPlayer::cargoAvailable() {
 void KIPlayer::setDead() {
     KIPlayer *self = this;
     self->state = 4;
-    return Player_setDead(self, 0);
+    return ((Player *)(self))->setDead();
 }
 
 // ---- KIPlayer_a57c8.cpp ----
@@ -908,13 +906,12 @@ Vector KIPlayer::projectCollisionOnSurface(const Vector &position) {
 // The target body simply re-dispatches to Player::addGun on this->player; the index
 // argument is supplied by the engine-side overload, so we forward through the existing
 // Player_addGun_a entry point (the no-extra-argument default slot).
-extern "C" void Player_addGun(void *player, Gun *gun);
 // AbyssEngine::ApplicationManager::GetEngine() — singleton engine accessor.
 extern "C" void *AppManager_GetEngine();
 
 void KIPlayer::addGun(Gun *gun) {
     KIPlayer *self = this;
-    Player_addGun(self->player, gun);
+    Player_addGun_a(self->player);
 }
 
 // ---- setAutoPilot_ab808.cpp ----

@@ -1,4 +1,5 @@
 #include "gof2/RecordHandler.h"
+#include "gof2/PendingProduct.h"
 #include "gof2/Achievements.h"
 #include "gof2/BluePrint.h"
 #include "gof2/GameText.h"
@@ -73,7 +74,6 @@ extern "C" void AEFile_ReadFloat(void *out, unsigned int fd);
 extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
 int RecordHandler_checkHash(unsigned int fd);
 void Globals_loadFont(int kind);
-extern "C" void Mission_ctorEmpty(void *self, int type, int reward, int targetStation);
 extern "C" void AEFile_WriteByte(int v, unsigned int fd);
 extern "C" void AEFile_WriteFloat(int v, unsigned int fd);
 extern "C" void AEFile_WriteShort(int v, unsigned int fd);
@@ -930,8 +930,6 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
 }
 
 // ---- readMission_cdfb4.cpp ----
-extern "C" void Mission_ctorFull(void *self, int type, void *clientName, int *img, int clientRace,
-                                 int reward, int targetStation, int difficulty);
 
 __attribute__((visibility("hidden"))) extern int *g_RM_guard;   // DAT_000de244 -> guard holder
 
@@ -994,11 +992,10 @@ void * RecordHandler::readMission(unsigned int fd) {
             mission = RH_op_new(0x78);
             char nameCopy[12];
             AEString_copy_ctor(nameCopy, clientName, 0);
-            Mission_ctorFull(mission, type, nameCopy, img, clientRace, reward, targetStationIdx,
-                             difficulty);
+            ((Mission *)(mission))->ctorFull(type, nameCopy, img, clientRace, reward, targetStationIdx, difficulty);
         } else {
             mission = RH_op_new(0x78);
-            Mission_ctorEmpty(mission, type, reward, targetStationIdx);
+            ((Mission *)(mission))->ctorEmpty(type, reward, targetStationIdx);
         }
         ((Mission *)(mission))->setCosts(costs);
         ((Mission *)(mission))->setBonus(bonus);
@@ -1730,7 +1727,6 @@ extern "C" void *Galaxy_getStationByIndex(int idx);
 extern "C" void *Standing_new();                         // operator new + Standing::Standing
 extern "C" void  Standing_setStandingsArr(void *st, int *standings);
 // operator new + BluePrint(index)
-extern "C" void *PendingProduct_make(int a, void *name, int c, int d);
 extern "C" void *Array_Item_new();                       // operator new + Array<Item*>::Array
 extern "C" void *Array_Ship_new();
 extern "C" void *Array_Agent_new();
@@ -1906,7 +1902,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
             int a = 0, c = 0, d = 0; AEFile_ReadInt(&a, fd); AEFile_ReadInt(&c, fd); AEFile_ReadInt(&d, fd);
             char nm[12]; AEString_default_ctor(nm); AEFile_ReadString(nm, fd, 1);
             void *nameCopy = RH_str_make(nm);
-            void *pp = PendingProduct_make(a, nameCopy, d, c);
+            void *pp = PendingProduct::make(a, (const String *)nameCopy, d, c);
             *(void **)(*(int *)((char *)ppArr + 4) + i * 4) = pp;
             AEString_dtor(nm);
         }

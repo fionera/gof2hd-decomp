@@ -6,10 +6,8 @@
 extern "C" void *Sprite_dtor(void *p);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 extern "C" void Sprite_ctor(void *self, void *ids, int n, int w, int h);
-extern "C" void ImageFactory_reload_tail(unsigned canvas, int id, void *out);
 extern "C" __attribute__((visibility("hidden"))) GetTextFn *g_reload_getText;
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_reload_canvas;
-extern "C" void ImageFactory_drawChar_tail(unsigned canvas, int handle, int x, int y);
 extern "C" __attribute__((visibility("hidden"))) unsigned *g_drawChar_canvas;
 extern "C" void IF_Sprite_setFrame(void *spr, int frame);
 extern "C" long long IF_Sprite_setPosition(void *spr, int x, int y);
@@ -99,7 +97,7 @@ void ImageFactory::reload() {
     Sprite_ctor(spr, ids, 6, w, h);
     self->sprite = spr;
     ((PaintCanvas*)(long)*holder)->Image2DCreate(0x485, (unsigned int *)((char *)self + 4));
-    return ImageFactory_reload_tail(*holder, 0x511, (char *)self + 8);
+    return ImageFactory::reload_tail(*holder, 0x511, (char *)self + 8);
 }
 
 // ---- drawChar_11c940.cpp ----
@@ -115,7 +113,7 @@ void ImageFactory::drawChar(Arr *parts, int x, int y, int flag) {
         void *part = parts->data[i];
         if (part != 0) ((ImagePart *)(part))->draw(x, y, flag);
     }
-    return ImageFactory_drawChar_tail(*holder, i32(self, 0x8), x, y);
+    return ImageFactory::drawChar_tail(*holder, i32(self, 0x8), x, y);
 }
 
 // ---- drawShip_11cad0.cpp ----

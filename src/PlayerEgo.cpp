@@ -1,4 +1,5 @@
 #include "gof2/PlayerEgo.h"
+#include "gof2/Camera.h"
 #include "gof2/AERandom.h"
 #include "gof2/TargetFollowCamera.h"
 #include "gof2/externs.h"
@@ -107,7 +108,6 @@ extern "C" void PlayerEgo_refillGunDelay_ext(void*, int);
 extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void*);
 extern "C" void stopShooting_extA(void*, int);
 extern "C" void stopShooting_extB(void*, int, int);
-extern "C" void Camera_shake(void *cam, float dx, float dy, float dz);
 void* TransformGetLocal(void*, int);
 void MatrixSetRotation(void*, void*, float, float, float);
 extern "C" void PlayerEgo_StopEngineSound_ext(void*);
@@ -121,7 +121,6 @@ extern "C" void  PE_adp_apply(PlayerEgo *self);
 extern "C" void PlayerEgo_setLevel_ext(void*, int, int);
 extern "C" float PE_yawRampDelta(float rate, int frameTime);
 extern "C" void *Player_dtor(void *);
-extern "C" void *TractorBeam_dtor(void *);
 extern "C" void *MiningGame_dtor(void *);
 extern "C" void *Explosion_dtor(void *);
 extern "C" void *EaseInOutMatrix_dtor(void *);
@@ -148,7 +147,6 @@ extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self);
 extern "C" void  PlayEngineSound_(PlayerEgo *self);
 extern "C" void *EaseInOutMatrix_dtor(void *m);
 extern "C" void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint);
-extern "C" void KIPlayer_setAutoPilot(PlayerEgo *self);
 extern "C" void PE_upd_boost(PlayerEgo *self, int dt);
 extern "C" void PE_upd_docksFinishDelivery(PlayerEgo *self, void *radio);
 extern "C" void *Explosion_dtor(void *exp);
@@ -1153,7 +1151,7 @@ void PlayerEgo::shake(int amount) {
     float dx = (float)(((AbyssEngine::AERandom *)(rng))->next(span) - range);
     float dy = (float)(((AbyssEngine::AERandom *)(rng))->next(span) - range);
     float dz = (float)(((AbyssEngine::AERandom *)(rng))->next(span) - range);
-    Camera_shake(cam, dx, dy, dz);
+    ((AbyssEngine::Camera *)(cam))->shake(dx, dy, dz);
 }
 
 // ---- setRotation_a137c.cpp ----
@@ -1704,7 +1702,7 @@ __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
     PP(self, 0x34) = 0;
     if (PP(self, 0x19c)) { ((AEGeometry *)PP(self, 0x19c))->~AEGeometry(); ::operator delete(PP(self, 0x19c)); }
     PP(self, 0x19c) = 0;
-    if (PP(self, 0x1b4)) ::operator delete(TractorBeam_dtor(PP(self, 0x1b4)));
+    if (PP(self, 0x1b4)) ::operator delete(((TractorBeam *)(PP(self, 0x1b4)))->dtor());
     PP(self, 0x1b4) = 0;
     if (PP(self, 0x1e4)) ::operator delete(MiningGame_dtor(PP(self, 0x1e4)));
     PP(self, 0x1e4) = 0;
@@ -2668,7 +2666,7 @@ void PlayerEgo::update(int dt, void *radar, void *hud, void *radio, void *script
             P(self, 0x15c) = wp;
         }
         if (wp == 0 || C(self, 0x1ed) != 0) {
-            KIPlayer_setAutoPilot(self);
+            ((KIPlayer *)(self))->setAutoPilot(0);
         } else {
             // steer toward the current waypoint.
             float wpPos[3];

@@ -206,13 +206,16 @@ public:
     // the loot setter and the KIPlayer base destructor. They have no static body of
     // their own (pure GOT veneer), so the work lives behind the extern shim the
     // linker resolves. Modeling them as members keeps the original control flow.
-    void setShipGroup_base(AEGeometry *geom, int group, bool flag);
-    void awake_tail(int geom, int on);
+    // The first pointer argument of each veneer is a real parameter (the target
+    // geometry / slot / volume / transform), not a `this` receiver, so these are
+    // static: they forward straight to the relocated GOT landing pad.
+    static void setShipGroup_base(AEGeometry *geom, int group, bool flag);
+    static void awake_tail(int geom, int on);
     void cloak_off_helper();
     void *base_dtor();
-    void setMissionCrate_tail(int slot, Array<int> *loot);
-    void setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *volumes);
-    void setExhaustVisible_apply(unsigned int transform, bool visible);
-    void render_tail(int geom);
+    static void setMissionCrate_tail(int slot, Array<int> *loot);
+    static void setBV_add(BoundingVolume *bv, Array<BoundingVolume *> *volumes);
+    static void setExhaustVisible_apply(unsigned int transform, bool visible);
+    static void render_tail(int geom);
 };
 #endif

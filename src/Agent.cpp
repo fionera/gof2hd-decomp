@@ -11,7 +11,6 @@ struct VObj { void (*vt[8])(void *); };
 extern "C" void *Array_StringPtr_dtor(void *arr);
 extern "C" void Array_StringPtr_ctor(void *arr);
 extern "C" void ArrayAdd_StringPtr(void *str, void *arr);
-extern "C" void Agent_finishWingman(void);
 
 // ---- getStationName_17770a.cpp ----
 RetStr Agent::getStationName() {
@@ -236,7 +235,7 @@ void Agent::setWingmanFriendNames(uint32_t *param) {
         }
     }
     Array_StringPtr_dtor(param);
-    Agent_finishWingman();
+    self->finishWingman(param);
 }
 
 // Tail of setWingmanFriendNames (engine 0x18762a -> 0x1ab098): after the source

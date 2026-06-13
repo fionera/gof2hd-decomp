@@ -34,9 +34,7 @@ template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 extern "C" void *Explosion_ctor(void *e, int a);
 extern "C" void *Player_getEnemies();
-extern "C" void Transform_setExhaustVisible(void *transform, bool v);
 extern "C" void Array_BV_ctor(void *arr);
-extern "C" void BoundingVolume_setArr(BoundingVolume *bv, void *arr);
 void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 extern "C" V3 BV_getProjectionVector(void *bv);
 extern "C" char PlayerFixedObject_vtable;
@@ -581,8 +579,7 @@ void PlayerFixedObject::setExhaustVisible(bool v) {
     void *geom = self->geometry;
     if (geom != 0 && *(int *)((char *)geom + 0x14) != -1) {
         void **holder = g_pfo_canvas;
-        return Transform_setExhaustVisible(
-            ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc)), v);
+        return ((AbyssEngine::Transform *)(((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc))))->setExhaustVisible(v);
     }
 }
 
@@ -628,7 +625,7 @@ void PlayerFixedObject::setBV(BoundingVolume *bv) {
     void *arr = ::operator new(0xc);
     Array_BV_ctor(arr);
     self->boundingVolumes = arr;
-    return BoundingVolume_setArr(bv, arr);
+    return ((BoundingVolume *)(bv))->setArr((Array<BoundingVolume *> *)arr);
 }
 
 // ---- reset_153e24.cpp ----
