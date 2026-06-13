@@ -1284,7 +1284,6 @@ __attribute__((visibility("hidden"))) extern int   *g_initInfoWidth;    // @0x18
 // Level::getPlayer (int handle)
 extern "C" void  Globals_getLineArray(int font, String *text, int key,
                                        Array<AbyssEngine::String *> *out); // Globals::getLineArray
-extern "C" void  Array_string_ptr_ctor2(void *array);                  // Array<String*>::Array()
 
 // MGame::setupWeaponsAndAudio(): choose the active secondary weapon, kick off engine sounds,
 // particle effects, music and the post-process effect, ensure the pause window and the
@@ -1414,13 +1413,11 @@ void MGame::setupWeaponsAndAudio() {
     }
 
     // Pre-build the wrapped mission-information overlay text.
-    void *arr = ::operator new(0xc);
-    Array_string_ptr_ctor2(arr);
-    *(void **)((char *)self + 0x43c) = arr;    // this[2].field_5C (extended layout)
+    self->field_0x1ec = new Array<AbyssEngine::String *>();
     String *font = *g_initInfoFont;
     String *text = (String *)((GameText *)(*g_gameText))->getText(g_initInfoTextKey);
     Globals_getLineArray((int)(intptr_t)font, text, *g_initInfoWidth,
-                         (Array<AbyssEngine::String *> *)arr);
+                         self->field_0x1ec);
     self->field_0x54 = 1;
 }
 
@@ -2582,8 +2579,6 @@ extern "C" void *Radio_dtor(...);
 extern "C" void *DialogueWindow_dtor(...);
 unsigned short GameText_getLanguage();
 void Globals_loadFont(int font, int lang);
-extern "C" void ArrayReleaseClasses_StringPtr(void *arr);
-extern "C" void *ArrayStringPtr_dtor(void *arr);
 // Tail helper @0x1ac168 (re-enables low-pass / restores FMOD state).
 
 __attribute__((visibility("hidden"))) extern int g_relPostEffect;   // @0x18c8b8 (DAT)
@@ -2712,9 +2707,12 @@ void MGame::OnRelease() {
         ((Layout *)(*layout))->initTip();
     }
 
-    ArrayReleaseClasses_StringPtr(self->field_0x1ec);
-    if (self->field_0x1ec != 0)
-        ::operator delete(ArrayStringPtr_dtor(self->field_0x1ec));
+    if (self->field_0x1ec != 0) {
+        for (AbyssEngine::String *line : *self->field_0x1ec)
+            delete line;
+        self->field_0x1ec->clear();
+        delete self->field_0x1ec;
+    }
     self->field_0x1ec = 0;
 
     if (*soundFlag != 0)

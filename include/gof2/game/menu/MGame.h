@@ -200,7 +200,7 @@ public:
     uint16_t field_0x1e4;               // +0x1e4
     uint8_t field_0x1e6;                // +0x1e6
     int field_0x1e8;                    // +0x1e8
-    void* field_0x1ec;                  // +0x1ec
+    Array<AbyssEngine::String*>* field_0x1ec;  // +0x1ec  (wrapped mission-info overlay lines)
 
     // ---- methods (converted from free functions) ----
     void OnInitialize();

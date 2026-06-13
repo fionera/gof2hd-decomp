@@ -108,10 +108,6 @@ extern "C" void *Station_getAgents(void *station);
 extern "C" void *ChoiceWindow_dtor(void *p);
 extern "C" void ChoiceWindow_ctor(void *choice);
 extern "C" void *ScrollTouchWindow_ctor(void *scroll, int x, int y, int w, int h, bool vertical);
-extern "C" void Array_TouchButton_ctor(void *array);
-extern "C" void ArraySetLength_TouchButtonPtr(void *array, unsigned count);
-extern "C" void ArrayRelease_TouchButtonPtr(void *array);
-extern "C" void *Array_TouchButtonPtr_dtor(void *array);
 extern "C" void *SpaceLounge_init_layout_slot;
 extern "C" void *SpaceLounge_init_text_slot;
 extern "C" void *SpaceLounge_init_camera_slot;
@@ -123,16 +119,6 @@ extern "C" void *SpaceLounge_ctor_camera_slot;
 int SpaceLounge_getSoundId(SpaceLounge *self, void *agent);
 extern "C" void *SpaceLounge_start_text_slot;
 extern "C" void *CutScene_dtor(void *p);
-extern "C" void *Array_StringPtr_dtor(void *p);
-extern "C" void *Array_TouchButtonPtr_dtor(void *p);
-extern "C" void *Array_ImagePartPtr_dtor(void *p);
-extern "C" void *Array_ArrayImagePartPtr_dtor(void *p);
-extern "C" void *Array_VectorPtr_dtor(void *p);
-extern "C" void ArrayRelease_StringPtr(void *p);
-extern "C" void ArrayRelease_TouchButtonPtr(void *p);
-extern "C" void ArrayRelease_ImagePartPtr(void *p);
-extern "C" void ArrayRelease_ArrayImagePartPtr(void *p);
-extern "C" void ArrayRelease_VectorPtr(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *SpaceLounge_draw_layout_slot;
 extern "C" void *SpaceLounge_draw_canvas_slot;
@@ -165,19 +151,18 @@ int SpaceLounge::OnTouchMove(int x, int y) {
 
     int mode = I(self, 0x14);
     if (mode == 0) {
-        void *items = P(self, 0x24);
-        if (items != 0) {
+        Array<Agent *> *agents = (Array<Agent *> *)P(self, 0x24);
+        if (agents != 0) {
+            Array<Vector *> *rects = (Array<Vector *> *)P(self, 0x40);
             float fy = (float)y;
             float fx = (float)x;
             I(self, 0x88) = -1;
             I(self, 0x20) = -1;
-            int i = 0;
-            int count = I(items, 0x0);
-            for (; count != i; ++i) {
-                char *data = (char *)P(P(self, 0x40), 0x4);
-                float *a = *(float **)(data + i * 8);
+            int count = (int)agents->size();
+            for (int i = 0; count != i; ++i) {
+                float *a = (float *)(*rects)[i * 2];
                 if (a[0] < fx) {
-                    float *b = *(float **)(data + i * 8 + 4);
+                    float *b = (float *)(*rects)[i * 2 + 1];
                     if (fx < b[0] && fy < a[1] && b[1] < fy) {
                         I(self, 0x88) = i;
                     }
@@ -185,13 +170,12 @@ int SpaceLounge::OnTouchMove(int x, int y) {
             }
         }
     } else if (mode == 3) {
-        void *buttons = P(self, 0x5c);
-        ((TouchButton *)(*(void **)P(buttons, 0x4)))->OnTouchMove(x, y);
+        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(self, 0x5c);
+        (*buttons)[0]->OnTouchMove(x, y);
     } else if (mode == 2) {
-        unsigned i = 0;
-        for (; i < U(P(self, 0x5c), 0x0); ++i) {
-            void **data = (void **)P(P(self, 0x5c), 0x4);
-            ((TouchButton *)(data[i]))->OnTouchMove(x, y);
+        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(self, 0x5c);
+        for (unsigned i = 0; i < buttons->size(); ++i) {
+            (*buttons)[i]->OnTouchMove(x, y);
         }
     }
 
@@ -293,17 +277,16 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
         if (UC(self, 0xbd) == 0) {
             return 0;
         }
-        void *items = P(self, 0x24);
-        if (items != 0) {
-            int i = 0;
+        Array<Agent *> *agents = (Array<Agent *> *)P(self, 0x24);
+        if (agents != 0) {
+            Array<Vector *> *rects = (Array<Vector *> *)P(self, 0x40);
             float fy = (float)y;
             float fx = (float)x;
-            int count = I(items, 0x0);
-            for (; count != i; ++i) {
-                char *data = (char *)P(P(self, 0x40), 0x4);
-                float *a = *(float **)(data + i * 8);
+            int count = (int)agents->size();
+            for (int i = 0; count != i; ++i) {
+                float *a = (float *)(*rects)[i * 2];
                 if (a[0] < fx) {
-                    float *b = *(float **)(data + i * 8 + 4);
+                    float *b = (float *)(*rects)[i * 2 + 1];
                     if (fx < b[0] && fy < a[1] && b[1] < fy) {
                         I(self, 0x88) = i;
                     }
@@ -311,13 +294,12 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
             }
         }
     } else if (mode == 3) {
-        void *buttons = P(self, 0x5c);
-        ((TouchButton *)(*(void **)P(buttons, 0x4)))->OnTouchBegin(x, y);
+        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(self, 0x5c);
+        (*buttons)[0]->OnTouchBegin(x, y);
     } else if (mode == 2) {
-        unsigned i = 0;
-        for (; i < U(P(self, 0x5c), 0x0); ++i) {
-            void **data = (void **)P(P(self, 0x5c), 0x4);
-            ((TouchButton *)(data[i]))->OnTouchBegin(x, y);
+        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(self, 0x5c);
+        for (unsigned i = 0; i < buttons->size(); ++i) {
+            (*buttons)[i]->OnTouchBegin(x, y);
         }
     }
 
@@ -378,18 +360,18 @@ done:
 
 static inline void *selected_agent(SpaceLounge *self)
 {
-    void *agents = P(self, 0x24);
-    return ((void **)P(agents, 0x4))[I(self, 0x20)];
+    Array<Agent *> *agents = (Array<Agent *> *)P(self, 0x24);
+    return (*agents)[I(self, 0x20)];
 }
 
 static inline bool hit_agent(SpaceLounge *self, int x, int y, int i)
 {
-    char *data = (char *)P(P(self, 0x40), 0x4);
-    float *a = *(float **)(data + i * 8);
+    Array<Vector *> *rects = (Array<Vector *> *)P(self, 0x40);
+    float *a = (float *)(*rects)[i * 2];
     if (!(a[0] < (float)x)) {
         return false;
     }
-    float *b = *(float **)(data + i * 8 + 4);
+    float *b = (float *)(*rects)[i * 2 + 1];
     return (float)x < b[0] && (float)y < a[1] && b[1] < (float)y;
 }
 
@@ -472,7 +454,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         if (P(self, 0x24) != 0) {
             I(self, 0x88) = -1;
             I(self, 0x20) = -1;
-            unsigned count = U(P(self, 0x24), 0x0);
+            unsigned count = (unsigned)((Array<Agent *> *)P(self, 0x24))->size();
             for (unsigned i = 0; i < count; ++i) {
                 if (hit_agent(self, x, y, i)) {
                     I(self, 0x20) = i;
@@ -486,10 +468,10 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         ((SpaceLounge *)(self))->onKeyPress(0x10000);
         break;
     case 2: {
-        unsigned count = U(P(self, 0x5c), 0x0);
-        for (unsigned i = 0; i < count; ++i) {
-            void *button = ((void **)P(P(self, 0x5c), 0x4))[i];
-            if (((TouchButton *)(button))->touch_end(x, y) != 0) {
+        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(self, 0x5c);
+        for (unsigned i = 0; i < buttons->size(); ++i) {
+            TouchButton *button = (*buttons)[i];
+            if (button->touch_end(x, y) != 0) {
                 void *agent = selected_agent(self);
                 if (i >= 5 && ((Agent *)(agent))->isGenericAgent() != 0) {
                     ((Agent *)(agent))->setEvent(1);
@@ -499,7 +481,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         break;
     }
     case 3:
-        if (((TouchButton *)(*(void **)P(P(self, 0x5c), 0x4)))->touch_end(x, y) != 0) {
+        if ((*((Array<TouchButton *> *)P(self, 0x5c)))[0]->touch_end(x, y) != 0) {
             ((SpaceLounge *)(self))->onKeyPress(0x10000);
         }
         break;
@@ -645,7 +627,7 @@ special_done:
 
 static inline void *key_agent(SpaceLounge *self)
 {
-    return ((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)];
+    return (*((Array<Agent *> *)P(self, 0x24)))[I(self, 0x20)];
 }
 
 void SpaceLounge::onKeyPress(int key) {
@@ -668,14 +650,14 @@ void SpaceLounge::onKeyPress(int key) {
     if (mode == 0) {
         if (key == 0x1000 || key == 0x8000) {
             unsigned next = I(self, 0x20) + 1;
-            if (P(self, 0x24) != 0 && next >= U(P(self, 0x24), 0x0)) {
+            if (P(self, 0x24) != 0 && next >= ((Array<Agent *> *)P(self, 0x24))->size()) {
                 next = 0;
             }
             I(self, 0x20) = next;
         } else if (key == 0x2000 || key == 0x4000) {
             int current = I(self, 0x20);
             if (current < 1 && P(self, 0x24) != 0) {
-                current = U(P(self, 0x24), 0x0);
+                current = (int)((Array<Agent *> *)P(self, 0x24))->size();
             }
             I(self, 0x20) = current - 1;
         } else if (key == 0x10000 || key == 0x20000) {
@@ -748,7 +730,7 @@ void SpaceLounge::updateScreenPositions() {
     MatrixGetRight(pos, local);
     *(Vector*)(halfRight) = *(const Vector*)(pos) * (0.5f);
 
-    unsigned count = U(P(self, 0x24), 0x0);
+    unsigned count = (unsigned)((Array<Agent *> *)P(self, 0x24))->size();
     for (unsigned i = 0; i < count; ++i) {
         void *enemy = ((void **)P(enemies, 0x4))[i];
         void (**vt)(void) = *(void (***)(void))enemy;
@@ -771,7 +753,7 @@ void SpaceLounge::updateScreenPositions() {
         MatrixGetLookAt(look, pos, target, up);
         *(Matrix*)(camera) = *(const Matrix*)(look);
 
-        void *mapped = ((void **)P(enemies, 0x4))[U(P(self, 0x24), 0x0) + i];
+        void *mapped = ((void **)P(enemies, 0x4))[count + i];
         ((AEGeometry *)P(mapped, 0x8))->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(camera));
 
         ((void (*)(void *, void *))project)(B(self, 0x4c), target);
@@ -794,7 +776,7 @@ void SpaceLounge::updateScreenPositions() {
 
 static inline void *button_at(SpaceLounge *self, unsigned i)
 {
-    return ((void **)P(P(self, 0x5c), 0x4))[i];
+    return (*((Array<TouchButton *> *)P(self, 0x5c)))[i];
 }
 
 void SpaceLounge::drawLounge() {
@@ -811,10 +793,10 @@ void SpaceLounge::drawLounge() {
     if (I(self, 0x14) == 0) {
         int hover = I(self, 0x88);
         if (hover >= 0) {
-            void *agent = ((void **)P(P(self, 0x24), 0x4))[hover];
-            char *rects = (char *)P(P(self, 0x40), 0x4);
-            float *left = *(float **)(rects + hover * 8);
-            float *right = *(float **)(rects + hover * 8 + 4);
+            void *agent = (*((Array<Agent *> *)P(self, 0x24)))[hover];
+            Array<Vector *> *rects = (Array<Vector *> *)P(self, 0x40);
+            float *left = (float *)(*rects)[hover * 2];
+            float *right = (float *)(*rects)[hover * 2 + 1];
             int pad = I(layout, 0x94);
             int cx = (int)(left[0] + (right[0] - left[0]) * 0.5f);
             int y = (int)(right[1] - (float)(pad * 2));
@@ -887,7 +869,7 @@ void SpaceLounge::drawLounge() {
     ((Layout *)(layout))->drawBox6(2, I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c), s0);
     ((String *)(s0))->dtor();
     ((PaintCanvas *)canvas)->DrawRectangle(I(self, 0x70), I(self, 0x74), I(layout, 0x68), I(layout, 0x6c));
-    ((ImageFactory *)(factory))->drawChar((Array<ImagePart *> *)((void **)P(P(self, 0x38), 0x4))[I(self, 0x20)], I(layout, 0x4c) + I(self, 0x70), I(layout, 0x4c) + I(self, 0x74), false);
+    ((ImageFactory *)(factory))->drawChar((*((Array<Array<ImagePart *> *> *)P(self, 0x38)))[I(self, 0x20)], I(layout, 0x4c) + I(self, 0x70), I(layout, 0x4c) + I(self, 0x74), false);
     ((ScrollTouchWindow *)(P(self, 0x60)))->draw();
 
     if ((I(self, 0x14) & 0xfffffffe) != 2) {
@@ -895,7 +877,7 @@ void SpaceLounge::drawLounge() {
     }
 
     ((TouchButton *)(button_at(self, 0)))->setTextColor(-1);
-    int offer = ((Agent *)(((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)]))->getOffer();
+    int offer = ((Agent *)((*((Array<Agent *> *)P(self, 0x24)))[I(self, 0x20)]))->getOffer();
     if (I(self, 0x14) == 2) {
         ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x80));
         ((TouchButton *)(button_at(self, 1)))->setPosition3(I(self, 0x6c) + I(self, 0x84), I(self, 0x80), 0x12);
@@ -916,7 +898,7 @@ void SpaceLounge::drawLounge() {
         ((TouchButton *)(button_at(self, 0)))->setPosition2(I(self, 0x84), I(self, 0x7c));
     }
 
-    for (unsigned i = 0; i < U(P(self, 0x5c), 0x0); ++i) {
+    for (unsigned i = 0; i < ((Array<TouchButton *> *)P(self, 0x5c))->size(); ++i) {
         ((TouchButton *)(button_at(self, i)))->setVisible(false);
     }
 
@@ -991,15 +973,13 @@ int SpaceLounge::init() {
     I(self, 0x64) = (I(layout, 0x34) + I(layout, 0x30)) * 5;
 
     if (P(self, 0x5c) != 0) {
-        ArrayRelease_TouchButtonPtr(P(self, 0x5c));
-        if (P(self, 0x5c) != 0) {
-            ::operator delete(Array_TouchButtonPtr_dtor(P(self, 0x5c)));
-        }
+        Array<TouchButton *> *oldButtons = (Array<TouchButton *> *)P(self, 0x5c);
+        oldButtons->clear();
+        delete oldButtons;
     }
-    void *buttons = ::operator new(0xc);
-    Array_TouchButton_ctor(buttons);
+    Array<TouchButton *> *buttons = new Array<TouchButton *>();
     P(self, 0x5c) = buttons;
-    ArraySetLength_TouchButtonPtr(buttons, 5);
+    buttons->resize(5);
 
     void *textsSlot = *(void **)&SpaceLounge_init_text_slot;
     void *text = ((GameText *)(*(void **)textsSlot))->getText(0);
@@ -1009,10 +989,10 @@ int SpaceLounge::init() {
     I(self, 0x80) = baseY;
 
     for (unsigned i = 0; i < 5; ++i) {
-        void *button = ::operator new(200);
-        ((TouchButton *)(button))->ctor((String *)text, 0, I(self, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)), I(self, 0x6c), 0x11, 4);
-        ((void **)P(buttons, 0x4))[i] = button;
-        ((TouchButton *)(button))->setTextColor(-1);
+        TouchButton *button = (TouchButton *)::operator new(200);
+        button->ctor((String *)text, 0, I(self, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)), I(self, 0x6c), 0x11, 4);
+        (*buttons)[i] = button;
+        button->setTextColor(-1);
     }
 
     I(self, 0x88) = -1;
@@ -1072,10 +1052,10 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
 
     ((SpaceLounge *)(self))->init();
 
-    void *agents = P(self, 0x24);
+    Array<Agent *> *agents = (Array<Agent *> *)P(self, 0x24);
     if (agents != 0) {
-        for (unsigned i = 0; i < U(agents, 0x0); ++i) {
-            void *agent = ((void **)P(agents, 0x4))[i];
+        for (unsigned i = 0; i < agents->size(); ++i) {
+            void *agent = (*agents)[i];
             int offer = ((Agent *)(agent))->getOffer();
             if ((offer == 6 || offer == 0) && ((Agent *)(agent))->getMission() != 0) {
                 void *mission = ((Agent *)(agent))->getMission();
@@ -1085,7 +1065,7 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
                     break;
                 }
             }
-            agents = P(self, 0x24);
+            agents = (Array<Agent *> *)P(self, 0x24);
         }
     }
 
@@ -1131,7 +1111,7 @@ void SpaceLounge::startChat() {
         return;
     }
 
-    void *agent = ((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)];
+    void *agent = (*((Array<Agent *> *)P(self, 0x24)))[I(self, 0x20)];
     int offer = ((Agent *)(agent))->getOffer();
     void *mission = ((Agent *)(agent))->getMission();
     void *texts = *(void **)&SpaceLounge_start_text_slot;
@@ -1199,22 +1179,20 @@ SpaceLounge::~SpaceLounge()
     ::operator delete[](P(self, 0x58));
     P(self, 0x58) = 0;
 
-    p = P(self, 0x28);
-    if (p != 0) {
-        ArrayRelease_StringPtr(p);
-        p = P(self, 0x28);
-        if (p != 0) {
-            ::operator delete(Array_StringPtr_dtor(p));
+    {
+        Array<String *> *strings = (Array<String *> *)P(self, 0x28);
+        if (strings != 0) {
+            strings->clear();
+            delete strings;
         }
     }
     P(self, 0x28) = 0;
 
-    p = P(self, 0x5c);
-    if (p != 0) {
-        ArrayRelease_TouchButtonPtr(p);
-        p = P(self, 0x5c);
-        if (p != 0) {
-            ::operator delete(Array_TouchButtonPtr_dtor(p));
+    {
+        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(self, 0x5c);
+        if (buttons != 0) {
+            buttons->clear();
+            delete buttons;
         }
     }
     P(self, 0x5c) = 0;
@@ -1224,36 +1202,28 @@ SpaceLounge::~SpaceLounge()
     }
     I(self, 0x3c) = 0;
 
-    p = P(self, 0x38);
-    if (p != 0) {
-        unsigned i = 0;
-        for (; i < U(p, 0x0); ++i) {
-            void **data = (void **)P(p, 0x4);
-            void *inner = data[i];
-            ArrayRelease_ImagePartPtr(inner);
-            inner = ((void **)P(P(self, 0x38), 0x4))[i];
-            if (inner != 0) {
-                ::operator delete(Array_ImagePartPtr_dtor(inner));
-                ((void **)P(P(self, 0x38), 0x4))[i] = 0;
-            } else {
-                data[i] = 0;
+    {
+        Array<Array<ImagePart *> *> *grid = (Array<Array<ImagePart *> *> *)P(self, 0x38);
+        if (grid != 0) {
+            for (unsigned i = 0; i < grid->size(); ++i) {
+                Array<ImagePart *> *inner = (*grid)[i];
+                if (inner != 0) {
+                    inner->clear();
+                    delete inner;
+                }
+                (*grid)[i] = 0;
             }
-            p = P(self, 0x38);
-        }
-        ArrayRelease_ArrayImagePartPtr(p);
-        p = P(self, 0x38);
-        if (p != 0) {
-            ::operator delete(Array_ArrayImagePartPtr_dtor(p));
+            grid->clear();
+            delete grid;
         }
     }
     P(self, 0x38) = 0;
 
-    p = P(self, 0x40);
-    if (p != 0) {
-        ArrayRelease_VectorPtr(p);
-        p = P(self, 0x40);
-        if (p != 0) {
-            ::operator delete(Array_VectorPtr_dtor(p));
+    {
+        Array<Vector *> *rects = (Array<Vector *> *)P(self, 0x40);
+        if (rects != 0) {
+            rects->clear();
+            delete rects;
         }
     }
     P(self, 0x40) = 0;

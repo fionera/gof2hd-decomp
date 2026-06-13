@@ -71,8 +71,6 @@ extern "C" void ModStation_String_dtor(void *s);
 extern "C" void ModStation_leaveStation_impl(ModStation *self);
 void Globals_reportLeaderboards(void *obj);
 extern "C" void *cm_op_new(unsigned int sz);
-extern "C" void Array_int_ctor(void *a);
-extern "C" void ArraySetLength_int(unsigned int n, void *a);
 extern "C" void *cm_op_new_arr(unsigned int sz);
 extern "C" void ModStation_cm_tail(void *p, int a, int b);
 extern "C" void ModStation_r3d_endTail(void *c);
@@ -555,12 +553,13 @@ void ModStation::checkMedals() {
             UC(self, 0x6a) = 0;
             return;
         }
-        int *medal = *(int **)(I(P(self, 0xbc), 4) + idx * 4);
+        Array<int *> *medalArr = (Array<int *> *)P(self, 0xbc);
+        int *medal = (*medalArr)[idx];
         ((ChoiceWindow *)(P(self, 0x88)))->setMedal(medal[0], medal[1]);
         int delta = *g_ModStation_cm_credit2;
         if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
             ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
-        int *p = *(int **)(I(P(self, 0xbc), 4) + I(self, 0xc0) * 4);
+        int *p = (*medalArr)[I(self, 0xc0)];
         ModStation_cm_tail(p, p[0], p[1]);
         return;
     }
@@ -581,19 +580,17 @@ void ModStation::checkMedals() {
     if (count < 1)
         return;
 
-    void *arr = cm_op_new(0xc);
-    Array_int_ctor(arr);
+    Array<int *> *arr = new Array<int *>();
     P(self, 0xbc) = arr;
-    ArraySetLength_int(U(self, 0xc4), arr);
+    arr->resize(U(self, 0xc4));
     int j = 0;
     I(self, 0xc4) = 0;
     for (int i = 0; i != 0x2d; i++) {
         if (medals[i] >= 1) {
-            void *cell = cm_op_new_arr(8);
-            *(void **)(I(P(self, 0xbc), 4) + j * 4) = cell;
-            int data = I(P(self, 0xbc), 4);
-            *(int *)*(int **)(data + j * 4) = i;
-            *(int *)(*(int *)(data + I(self, 0xc4) * 4) + 4) = medals[i];
+            int *cell = (int *)cm_op_new_arr(8);
+            (*arr)[j] = cell;
+            cell[0] = i;
+            (*arr)[I(self, 0xc4)][1] = medals[i];
             j = I(self, 0xc4) + 1;
             I(self, 0xc4) = j;
         }
@@ -603,11 +600,11 @@ void ModStation::checkMedals() {
     void *cw = cm_op_new(0x5c);
     new (cw) ChoiceWindow();
     P(self, 0x88) = cw;
-    int *medal = (int *)*(int **)(I(P(self, 0xbc), 4));
+    int *medal = (*arr)[0];
     ((ChoiceWindow *)(cw))->setMedal(medal[0], medal[1]);
     if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
         ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
-    int *p = (int *)*(int **)(I(P(self, 0xbc), 4));
+    int *p = (*arr)[0];
     ModStation_cm_tail(p, p[0], p[1]);
 }
 
