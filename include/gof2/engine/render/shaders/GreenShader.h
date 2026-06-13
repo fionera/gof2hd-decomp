@@ -2,29 +2,61 @@
 #define GOF2_GREENSHADER_H
 #include "gof2/common.h"
 #include <new>
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+// struct derived from offset-access field map (named typed members)
+
 namespace AbyssEngine {
 
 struct Engine;
 struct Mesh;
 
-// AbyssEngine::ShaderBaseStruct base layout used by GreenShader.
-struct ShaderBaseStruct;
+// AbyssEngine::ShaderBaseStruct base layout used by GreenShader (truncated local copy;
+// the canonical class lives in ShaderBaseStruct.h). Only the leading trivial fields are
+// modelled here so the placement-new in the ctor constructs just those; the non-trivial
+// String name and the per-shader location members below are real derived members.
+struct ShaderBaseStruct {
+    void *field_0x0;                    // +0x0 vtable
+    int field_0x4;                      // +0x4 GL program handle (-1 when unset)
+    volatile uint16_t field_0x8;        // +0x8 flags
+
+    static int shaderIndexIntern;
+
+    ShaderBaseStruct();
+    ~ShaderBaseStruct();
+    uint32_t ES2LoadProgram(const char *vertexSource, const char *fragmentSource);
+};
+
+// AbyssEngine::GreenShader — GLES2 green shader (derives from ShaderBaseStruct).
+// Caches five vertex-attribute locations (a0..a4) and nine uniform locations (u0..u8)
+// after Init resolves them from the linked program.
+class GreenShader : public ShaderBaseStruct {
+public:
+    String name;            // +0xc  shader name
+
+    int a0Loc;              // +0x20 attribute a0
+    int a1Loc;              // +0x24 attribute a1
+    int a2Loc;              // +0x28 attribute a2
+    int a3Loc;              // +0x2c attribute a3
+    int a4Loc;              // +0x30 attribute a4
+    int u0Loc;              // +0x34 uniform u0
+    int u1Loc;              // +0x38 uniform u1
+    int u2Loc;              // +0x3c uniform u2
+    int u3Loc;              // +0x40 uniform u3
+    int u4Loc;              // +0x44 uniform u4
+    int u5Loc;              // +0x48 uniform u5
+    int u6Loc;              // +0x4c uniform u6
+    int u7Loc;              // +0x50 uniform u7
+    int u8Loc;              // +0x54 uniform u8
+
+    GreenShader();
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+};
 
 } // namespace AbyssEngine
 
-// NOTE: the original recovered header asserted sizeof(String)==0xc for the byte-matching
-// 32-bit layout. This build uses the natural 64-bit std::u16string-backed String (sizeof 24),
-// so that assertion is intentionally dropped.
-
-// Per-class backing storage accessors. GreenShader's fields live at fixed byte offsets:
-// GL program handle at 0x4, name String at 0xc, attribute locations 0x20..0x30 and
-// uniform locations 0x34..0x54. They are read/written through these helpers.
-
 extern "C" {
 extern char GreenShader_vtable[];
-extern int GreenShader_typeInfoSource;
-extern int GreenShader_typeInfoDest;
 extern const char GreenShader_name[];
 
 int glGetAttribLocation(int program, const char *name);
@@ -44,24 +76,5 @@ void glBindBuffer(unsigned int target, unsigned int buffer);
 
 void operator_delete(void *ptr) noexcept;
 }
-
-namespace AbyssEngine {
-
-// AbyssEngine::GreenShader — GLES2 green shader (derives from ShaderBaseStruct).
-class GreenShader {
-public:
-    GreenShader();
-    void Init(Engine *engine);
-    void SetInActive();
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
-
-    // raw field storage (offsets referenced through the i32/u8 helpers).
-    // +0x0 vtable, +0x4 program handle, +0xc name String, +0x20..0x54 attrib/uniform locations.
-    char field_storage_pre[0xc];        // +0x0
-    String field_0xc;                   // +0xc shader name
-    char field_storage_post[0x58 - 0x18]; // +0x18 .. 0x58
-};
-
-} // namespace AbyssEngine
 
 #endif

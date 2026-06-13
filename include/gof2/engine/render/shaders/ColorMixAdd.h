@@ -1,61 +1,74 @@
 #ifndef GOF2_COLORMIXADD_H
 #define GOF2_COLORMIXADD_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+// struct derived from offset-access field map (named typed members)
 #include <new>
-
-extern "C" void glUseProgram(uint32_t program);
-extern "C" int glGetUniformLocation(uint32_t program, const char *name);
-extern "C" int glGetAttribLocation(uint32_t program, const char *name);
-extern "C" void glUniform1f(int location, float value);
-extern "C" void glUniform1i(int location, int value);
-extern "C" void glUniform3f(int location, float x, float y, float z);
-extern "C" void glUniform3fv(int location, int count, const float *value);
-extern "C" void glUniform4fv(int location, int count, const float *value);
-extern "C" void glUniformMatrix4fv(int location, int count, uint8_t transpose, const void *value);
-extern "C" void glEnableVertexAttribArray(uint32_t index);
-extern "C" void glDisableVertexAttribArray(uint32_t index);
-extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);
-extern "C" void glVertexAttribPointer(
-    uint32_t index, int size, uint32_t type, uint8_t normalized, int stride, const void *pointer);
 
 namespace AbyssEngine {
 
 struct Engine;
 struct Mesh;
 
+// AbyssEngine::ShaderBaseStruct base layout used by ColorMixAdd (truncated local copy;
+// the canonical class lives in ShaderBaseStruct.h). Only the leading trivial fields are
+// modelled here so the placement-new in the ctor constructs just those; the non-trivial
+// String name and the per-shader location members below are real derived members.
 struct ShaderBaseStruct {
+    void *field_0x0;                    // +0x0 vtable
+    int field_0x4;                      // +0x4 GL program handle (-1 when unset)
+    volatile uint16_t field_0x8;        // +0x8 flags
+
     static int shaderIndexIntern;
 
     ShaderBaseStruct();
     ~ShaderBaseStruct();
-
-    int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
+    uint32_t ES2LoadProgram(const char *vertexSource, const char *fragmentSource);
 };
 
-extern "C" char _ZTVN11AbyssEngine11ColorMixAddE[];
-
-class ColorMixAdd : public ShaderBaseStruct  {
+// AbyssEngine::ColorMixAdd — GLES2 color-mix/add shader (derives from ShaderBaseStruct).
+// Caches two vertex-attribute locations (a0,a1) and six uniform locations (u0..u5)
+// after Init resolves them from the linked program.
+class ColorMixAdd : public ShaderBaseStruct {
 public:
     static int ShaderIndex;
 
-    int      program;                 // +0x4   GL program handle
-    uint8_t  dirty;                 // +0x9   dirty flag
-    String   name;                 // +0xc   shader name
-    int      attribA0;                // +0x20  attrib a0
-    int      attribA1;                // +0x24  attrib a1
-    int      uniformU1;                // +0x28  uniform u1
-    int      uniformU2;                // +0x2c  uniform u2
-    int      uniformU0;                // +0x30  uniform u0
-    int      uniformU4;                // +0x34  uniform u4
-    int      uniformU3;                // +0x38  uniform u3
-    int      uniformU5;                // +0x3c  uniform u5
+    uint8_t dirty;          // +0x9  per-frame uniform-upload gate
+    String name;            // +0xc  shader name
+
+    int a0Loc;              // +0x20 attribute a0
+    int a1Loc;              // +0x24 attribute a1
+    int u1Loc;              // +0x28 uniform u1
+    int u2Loc;              // +0x2c uniform u2
+    int u0Loc;              // +0x30 uniform u0
+    int u4Loc;              // +0x34 uniform u4
+    int u3Loc;              // +0x38 uniform u3
+    int u5Loc;              // +0x3c uniform u5
 
     ColorMixAdd();
-    void Init(Engine *);
+    void Init(Engine *engine);
     void UpdateMeshData(Mesh *mesh, Engine *engine);
     void SetInActive();
 };
 
 } // namespace AbyssEngine
+
+extern "C" char _ZTVN11AbyssEngine11ColorMixAddE[];
+
+extern "C" {
+void glUseProgram(uint32_t program);
+int glGetUniformLocation(uint32_t program, const char *name);
+int glGetAttribLocation(uint32_t program, const char *name);
+void glUniform1f(int location, float value);
+void glUniform1i(int location, int value);
+void glUniform3f(int location, float x, float y, float z);
+void glUniform3fv(int location, int count, const float *value);
+void glUniform4fv(int location, int count, const float *value);
+void glUniformMatrix4fv(int location, int count, uint8_t transpose, const void *value);
+void glEnableVertexAttribArray(uint32_t index);
+void glDisableVertexAttribArray(uint32_t index);
+void glBindBuffer(uint32_t target, uint32_t buffer);
+void glVertexAttribPointer(
+    uint32_t index, int size, uint32_t type, uint8_t normalized, int stride, const void *pointer);
+}
+
 #endif

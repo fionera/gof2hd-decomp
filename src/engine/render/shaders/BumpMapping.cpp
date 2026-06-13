@@ -15,20 +15,20 @@ void BumpMapping::Init(Engine *)
     int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("BumpMapping.vsh", "BumpMapping.fsh");
     this->field_0x4 = program;
 
-    this->field_0x20 = glGetAttribLocation(program, "a_position");
-    this->field_0x24 = glGetAttribLocation(this->field_0x4, "a_normal");
-    this->field_0x28 = glGetAttribLocation(this->field_0x4, "a_tangent");
-    this->field_0x2c = glGetAttribLocation(this->field_0x4, "a_binormal");
-    this->field_0x30 = glGetAttribLocation(this->field_0x4, "a_texCoord");
+    this->a0Loc = glGetAttribLocation(program, "a_position");
+    this->a1Loc = glGetAttribLocation(this->field_0x4, "a_normal");
+    this->a2Loc = glGetAttribLocation(this->field_0x4, "a_tangent");
+    this->a3Loc = glGetAttribLocation(this->field_0x4, "a_binormal");
+    this->a4Loc = glGetAttribLocation(this->field_0x4, "a_texCoord");
 
-    this->field_0x34 = glGetUniformLocation(this->field_0x4, "u_mvpMatrix");
-    this->field_0x38 = glGetUniformLocation(this->field_0x4, "u_lightDir");
-    this->field_0x3c = glGetUniformLocation(this->field_0x4, "u_texture");
-    this->field_0x40 = glGetUniformLocation(this->field_0x4, "u_normalMap");
+    this->u0Loc = glGetUniformLocation(this->field_0x4, "u_mvpMatrix");
+    this->u1Loc = glGetUniformLocation(this->field_0x4, "u_lightDir");
+    this->u2Loc = glGetUniformLocation(this->field_0x4, "u_texture");
+    this->u3Loc = glGetUniformLocation(this->field_0x4, "u_normalMap");
 
     glUseProgram(this->field_0x4);
-    glUniform1i(this->field_0x3c, 0);
-    return glUniform1i(this->field_0x40, 1);
+    glUniform1i(this->u2Loc, 0);
+    return glUniform1i(this->u3Loc, 1);
 }
 
 } // namespace AbyssEngine
@@ -37,30 +37,30 @@ namespace AbyssEngine {
 
 void BumpMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    if (this->field_0x9 != 0)
-        this->field_0x9 = 0;
+    if (this->dirty != 0)
+        this->dirty = 0;
 
-    glUniformMatrix4fv(this->field_0x34, 1, 0, (char *)engine + 0x104);
-    glUniform3f(this->field_0x38, field_f32(engine, 0x330), field_f32(engine, 0x334),
+    glUniformMatrix4fv(this->u0Loc, 1, 0, (char *)engine + 0x104);
+    glUniform3f(this->u1Loc, field_f32(engine, 0x330), field_f32(engine, 0x334),
                 field_f32(engine, 0x338));
 
     void (*enableVertexAttribArray)(uint32_t) = glEnableVertexAttribArray;
-    enableVertexAttribArray(this->field_0x20);
-    enableVertexAttribArray(this->field_0x24);
-    enableVertexAttribArray(this->field_0x28);
-    enableVertexAttribArray(this->field_0x2c);
-    enableVertexAttribArray(this->field_0x30);
+    enableVertexAttribArray(this->a0Loc);
+    enableVertexAttribArray(this->a1Loc);
+    enableVertexAttribArray(this->a2Loc);
+    enableVertexAttribArray(this->a3Loc);
+    enableVertexAttribArray(this->a4Loc);
 
-    glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+    glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
     if ((field_u8(mesh, 0x0) & 2) != 0) {
-        glVertexAttribPointer(this->field_0x30, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+        glVertexAttribPointer(this->a4Loc, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
     }
     if ((field_u8(mesh, 0x0) & 4) != 0) {
         void (*vertexAttribPointer)(uint32_t, int, uint32_t, uint8_t, int, const void *) =
             glVertexAttribPointer;
-        vertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
-        vertexAttribPointer(this->field_0x28, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
-        vertexAttribPointer(this->field_0x2c, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+        vertexAttribPointer(this->a1Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
+        vertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
+        vertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
     }
 }
 
@@ -75,7 +75,7 @@ BumpMapping::BumpMapping()
     new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     this->field_0x0 = _ZTVN11AbyssEngine11BumpMappingE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->field_0xc.s = u"BumpMapping";
+    this->name.s = u"BumpMapping";
 }
 
 } // namespace AbyssEngine
@@ -86,11 +86,11 @@ void BumpMapping::SetInActive()
 {
     void (*disableVertexAttribArray)(uint32_t) = glDisableVertexAttribArray;
 
-    disableVertexAttribArray(this->field_0x20);
-    disableVertexAttribArray(this->field_0x24);
-    disableVertexAttribArray(this->field_0x28);
-    disableVertexAttribArray(this->field_0x2c);
-    disableVertexAttribArray(this->field_0x30);
+    disableVertexAttribArray(this->a0Loc);
+    disableVertexAttribArray(this->a1Loc);
+    disableVertexAttribArray(this->a2Loc);
+    disableVertexAttribArray(this->a3Loc);
+    disableVertexAttribArray(this->a4Loc);
 }
 
 } // namespace AbyssEngine

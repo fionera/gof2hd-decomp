@@ -12,30 +12,30 @@ namespace AbyssEngine {
 
 void ColorMixAdd::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(field_i32(this, 0x28), 1, 0, (char *)engine + 0x104);
-    if (field_i32(this, 0x34) >= 0)
-        glUniformMatrix4fv(field_i32(this, 0x34), 1, 0, (char *)engine + 0x1c4);
-    if (field_i32(this, 0x3c) >= 0)
-        glUniform1i(field_i32(this, 0x3c), field_u8(mesh, 0x85));
+    glUniformMatrix4fv(this->u1Loc, 1, 0, (char *)engine + 0x104);
+    if (this->u4Loc >= 0)
+        glUniformMatrix4fv(this->u4Loc, 1, 0, (char *)engine + 0x1c4);
+    if (this->u5Loc >= 0)
+        glUniform1i(this->u5Loc, field_u8(mesh, 0x85));
 
-    if (field_u8(this, 0x9) != 0) {
-        glUniform4fv(field_i32(this, 0x2c), 1, (float *)((char *)engine + 0xd0));
-        if (field_i32(this, 0x38) >= 0)
-            glUniform1f(field_i32(this, 0x38), 1.0f - field_f32(mesh, 0x1c));
-        field_u8(this, 0x9) = 0;
+    if (this->dirty != 0) {
+        glUniform4fv(this->u2Loc, 1, (float *)((char *)engine + 0xd0));
+        if (this->u3Loc >= 0)
+            glUniform1f(this->u3Loc, 1.0f - field_f32(mesh, 0x1c));
+        this->dirty = 0;
     }
 
     if ((field_u8(mesh, 0x0) & 2) != 0) {
-        glEnableVertexAttribArray(field_i32(this, 0x20));
-        glEnableVertexAttribArray(field_i32(this, 0x24));
+        glEnableVertexAttribArray(this->a0Loc);
+        glEnableVertexAttribArray(this->a1Loc);
         if (field_u8(mesh, 0x5c) == 0) {
-            glVertexAttribPointer(field_i32(this, 0x20), 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
-            glVertexAttribPointer(field_i32(this, 0x24), 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
         } else {
             glBindBuffer(0x8892, field_i32(mesh, 0x60));
-            glVertexAttribPointer(field_i32(this, 0x20), 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, field_i32(mesh, 0x68));
-            glVertexAttribPointer(field_i32(this, 0x24), 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
         }
     }
 }
@@ -47,8 +47,8 @@ namespace AbyssEngine {
 void ColorMixAdd::SetInActive()
 {
     for (int i = 2; i != 0; i = i - 1) {
-        glDisableVertexAttribArray(field_i32(this, 0x20));
-        glDisableVertexAttribArray(field_i32(this, 0x24));
+        glDisableVertexAttribArray(this->a0Loc);
+        glDisableVertexAttribArray(this->a1Loc);
     }
 }
 
@@ -61,7 +61,7 @@ int ColorMixAdd::ShaderIndex;
 ColorMixAdd::ColorMixAdd()
 {
     new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    *(void **)this = (void *)(_ZTVN11AbyssEngine11ColorMixAddE + 8);
+    this->field_0x0 = (void *)(_ZTVN11AbyssEngine11ColorMixAddE + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     String tmp;
     tmp.s = u"ColorMixAdd";
@@ -75,19 +75,19 @@ namespace AbyssEngine {
 void ColorMixAdd::Init(Engine *)
 {
     int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("ColorMixAdd.vsh", "ColorMixAdd.fsh");
-    field_i32(this, 0x04) = program;
+    this->field_0x4 = program;
 
-    field_i32(this, 0x30) = glGetUniformLocation(program, "u0");
-    field_i32(this, 0x20) = glGetAttribLocation(field_i32(this, 0x04), "a0");
-    field_i32(this, 0x24) = glGetAttribLocation(field_i32(this, 0x04), "a1");
-    field_i32(this, 0x28) = glGetUniformLocation(field_i32(this, 0x04), "u1");
-    field_i32(this, 0x2c) = glGetUniformLocation(field_i32(this, 0x04), "u2");
-    field_i32(this, 0x38) = glGetUniformLocation(field_i32(this, 0x04), "u3");
-    field_i32(this, 0x34) = glGetUniformLocation(field_i32(this, 0x04), "u4");
-    field_i32(this, 0x3c) = glGetUniformLocation(field_i32(this, 0x04), "u5");
+    this->u0Loc = glGetUniformLocation(program, "u0");
+    this->a0Loc = glGetAttribLocation(this->field_0x4, "a0");
+    this->a1Loc = glGetAttribLocation(this->field_0x4, "a1");
+    this->u1Loc = glGetUniformLocation(this->field_0x4, "u1");
+    this->u2Loc = glGetUniformLocation(this->field_0x4, "u2");
+    this->u3Loc = glGetUniformLocation(this->field_0x4, "u3");
+    this->u4Loc = glGetUniformLocation(this->field_0x4, "u4");
+    this->u5Loc = glGetUniformLocation(this->field_0x4, "u5");
 
-    glUseProgram(field_i32(this, 0x04));
-    glUniform1i(field_i32(this, 0x30), 0);
+    glUseProgram(this->field_0x4);
+    glUniform1i(this->u0Loc, 0);
 }
 
 } // namespace AbyssEngine

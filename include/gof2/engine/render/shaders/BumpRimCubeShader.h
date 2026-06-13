@@ -1,7 +1,7 @@
 #ifndef GOF2_BUMPRIMCUBESHADER_H
 #define GOF2_BUMPRIMCUBESHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+// struct derived from offset-access field map (named typed members)
 #include <new>
 
 extern "C" char _ZTVN11AbyssEngine17BumpRimCubeShaderE[];
@@ -27,12 +27,16 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
+// AbyssEngine::ShaderBaseStruct base layout used by BumpRimCubeShader (truncated local copy;
+// only the leading trivial fields are modelled here so the placement-new in the ctor constructs
+// just those; the non-trivial String name and the per-shader location members below are real
+// derived members).
 struct ShaderBaseStruct {
-    static int shaderIndexIntern;
-
     void *field_0x0;                    // +0x0 vtable
     int field_0x4;                      // +0x4 GL program handle
     volatile uint16_t field_0x8;        // +0x8 flags
+
+    static int shaderIndexIntern;
 
     ShaderBaseStruct();
     ~ShaderBaseStruct();
@@ -41,40 +45,44 @@ struct ShaderBaseStruct {
     int LoadBindShader(const char *vertexPath, const char *fragmentPath);
 };
 
+// AbyssEngine::BumpRimCubeShader — GLES2 bump + rim + cubemap shader (derives from
+// ShaderBaseStruct). Caches five vertex-attribute locations (a0..a4) and 26 uniform
+// locations (u0..u25) after Init resolves them from the linked program.
 class BumpRimCubeShader : public ShaderBaseStruct  {
 public:
-    uint8_t field_0x9;                  // +0x9 light-dirty flag
-    String field_0xc;                   // +0xc shader name
-    int field_0x20;                     // +0x20 attrib a0
-    int field_0x24;                     // +0x24 attrib a1
-    int field_0x28;                     // +0x28 attrib a2
-    int field_0x2c;                     // +0x2c attrib a3
-    int field_0x30;                     // +0x30 uniform u0
-    int field_0x34;                     // +0x34 uniform u1
-    int field_0x38;                     // +0x38 uniform u2
-    int field_0x3c;                     // +0x3c uniform u3
-    int field_0x40;                     // +0x40 uniform u4
-    int field_0x44;                     // +0x44 uniform u5
-    int field_0x48;                     // +0x48 uniform u6
-    int field_0x4c;                     // +0x4c uniform u7
-    int field_0x50;                     // +0x50 uniform u8
-    int field_0x54;                     // +0x54 uniform u9
-    int field_0x58;                     // +0x58 uniform u10
-    int field_0x5c;                     // +0x5c uniform u11
-    int field_0x60;                     // +0x60 uniform u14
-    int field_0x64;                     // +0x64 uniform u12
-    int field_0x68;                     // +0x68 uniform u15
-    int field_0x6c;                     // +0x6c uniform u13
-    int field_0x70;                     // +0x70 uniform u16
-    int field_0x74;                     // +0x74 uniform u17
-    int field_0x78;                     // +0x78 uniform u18
-    int field_0x7c;                     // +0x7c uniform u19
-    int field_0x80;                     // +0x80 uniform u20
-    int field_0x84;                     // +0x84 uniform u21
-    int field_0x88;                     // +0x88 uniform u22
-    int field_0x8c;                     // +0x8c uniform u23
-    int field_0x90;                     // +0x90 uniform u24
-    int field_0x94;                     // +0x94 uniform u25
+    uint8_t dirty;          // +0x9  per-frame uniform-upload gate (light-dirty flag)
+    String name;            // +0xc  shader name
+
+    int a0Loc;              // +0x20 attribute a0
+    int a1Loc;              // +0x24 attribute a1
+    int a2Loc;              // +0x28 attribute a2
+    int a3Loc;              // +0x2c attribute a3
+    int u0Loc;              // +0x30 uniform u0
+    int u1Loc;              // +0x34 uniform u1
+    int u2Loc;              // +0x38 uniform u2
+    int u3Loc;              // +0x3c uniform u3
+    int u4Loc;              // +0x40 uniform u4
+    int u5Loc;              // +0x44 uniform u5
+    int u6Loc;              // +0x48 uniform u6
+    int u7Loc;              // +0x4c uniform u7
+    int u8Loc;              // +0x50 uniform u8
+    int u9Loc;              // +0x54 uniform u9
+    int u10Loc;             // +0x58 uniform u10
+    int u11Loc;             // +0x5c uniform u11
+    int u14Loc;             // +0x60 uniform u14
+    int u12Loc;             // +0x64 uniform u12
+    int u15Loc;             // +0x68 uniform u15
+    int u13Loc;             // +0x6c uniform u13
+    int u16Loc;             // +0x70 uniform u16
+    int u17Loc;             // +0x74 uniform u17
+    int u18Loc;             // +0x78 uniform u18
+    int u19Loc;             // +0x7c uniform u19
+    int u20Loc;             // +0x80 uniform u20
+    int u21Loc;             // +0x84 uniform u21
+    int u22Loc;             // +0x88 uniform u22
+    int u23Loc;             // +0x8c uniform u23
+    int u24Loc;             // +0x90 uniform u24
+    int u25Loc;             // +0x94 uniform u25
 
     static int ShaderIndex;
 
@@ -83,8 +91,6 @@ public:
     void SetInActive();
     void UpdateMeshData(Mesh *mesh, Engine *engine);
 };
-
-// cross-class field accessors (Engine/Mesh are not in this batch; opaque here)
 
 } // namespace AbyssEngine
 

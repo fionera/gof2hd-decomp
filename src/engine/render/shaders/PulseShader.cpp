@@ -1,5 +1,4 @@
 #include "gof2/engine/render/shaders/PulseShader.h"
-#include "gof2/engine/render/ShaderBaseStruct.h"
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/engine/core/ApplicationManager.h"
@@ -13,37 +12,37 @@ namespace AbyssEngine {
 
 void PulseShader::SetInActive()
 {
-    if (this->attrA0 >= 0) glDisableVertexAttribArray(this->attrA0);
-    if (this->attrA1 >= 0) glDisableVertexAttribArray(this->attrA1);
-    if (this->attrA2 >= 0) glDisableVertexAttribArray(this->attrA2);
-    if (this->attrA3 >= 0) glDisableVertexAttribArray(this->attrA3);
-    if (this->attrA4 >= 0) glDisableVertexAttribArray(this->attrA4);
+    if (this->a0Loc >= 0) glDisableVertexAttribArray(this->a0Loc);
+    if (this->a1Loc >= 0) glDisableVertexAttribArray(this->a1Loc);
+    if (this->a2Loc >= 0) glDisableVertexAttribArray(this->a2Loc);
+    if (this->a3Loc >= 0) glDisableVertexAttribArray(this->a3Loc);
+    if (this->a4Loc >= 0) glDisableVertexAttribArray(this->a4Loc);
 }
 
 void PulseShader::Init(::Engine *)
 {
     int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("PulseShader.vsh", "PulseShader.fsh");
-    this->program = program;
+    this->field_0x4 = program;
 
-    this->attrA0 = glGetAttribLocation(program, "a0");
-    this->attrA1 = glGetAttribLocation(this->program, "a1");
-    this->attrA2 = glGetAttribLocation(this->program, "a2");
-    this->attrA3 = glGetAttribLocation(this->program, "a3");
-    this->attrA4 = glGetAttribLocation(this->program, "a4");
+    this->a0Loc = glGetAttribLocation(program, "a0");
+    this->a1Loc = glGetAttribLocation(this->field_0x4, "a1");
+    this->a2Loc = glGetAttribLocation(this->field_0x4, "a2");
+    this->a3Loc = glGetAttribLocation(this->field_0x4, "a3");
+    this->a4Loc = glGetAttribLocation(this->field_0x4, "a4");
 
-    this->uniU0 = glGetUniformLocation(this->program, "u0");
-    this->uniU1 = glGetUniformLocation(this->program, "u1");
-    this->uniU2 = glGetUniformLocation(this->program, "u2");
-    this->uniU3 = glGetUniformLocation(this->program, "u3");
-    this->uniU4 = glGetUniformLocation(this->program, "u4");
-    this->uniU5 = glGetUniformLocation(this->program, "u5");
-    this->uniU6 = glGetUniformLocation(this->program, "u6");
-    this->uniU7 = glGetUniformLocation(this->program, "u7");
-    this->uniU8 = glGetUniformLocation(this->program, "u8");
-    this->uniU9 = glGetUniformLocation(this->program, "u9");
+    this->u0Loc = glGetUniformLocation(this->field_0x4, "u0");
+    this->u1Loc = glGetUniformLocation(this->field_0x4, "u1");
+    this->u2Loc = glGetUniformLocation(this->field_0x4, "u2");
+    this->u3Loc = glGetUniformLocation(this->field_0x4, "u3");
+    this->u4Loc = glGetUniformLocation(this->field_0x4, "u4");
+    this->u5Loc = glGetUniformLocation(this->field_0x4, "u5");
+    this->u6Loc = glGetUniformLocation(this->field_0x4, "u6");
+    this->u7Loc = glGetUniformLocation(this->field_0x4, "u7");
+    this->u8Loc = glGetUniformLocation(this->field_0x4, "u8");
+    this->u9Loc = glGetUniformLocation(this->field_0x4, "u9");
 
-    glUseProgram(this->program);
-    glUniform1i(this->uniU5, 0);
+    glUseProgram(this->field_0x4);
+    glUniform1i(this->u5Loc, 0);
 }
 
 } // namespace AbyssEngine
@@ -65,65 +64,65 @@ namespace AbyssEngine {
 
 void PulseShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 {
-    if (this->uniU0 >= 0)
-        glUniformMatrix4fv(this->uniU0, 1, 0, (float *)((char *)engine + 0x104));
-    if (this->uniU1 >= 0)
-        glUniformMatrix3fv(this->uniU1, 1, 0, (float *)((char *)engine + 0x204));
+    if (this->u0Loc >= 0)
+        glUniformMatrix4fv(this->u0Loc, 1, 0, (float *)((char *)engine + 0x104));
+    if (this->u1Loc >= 0)
+        glUniformMatrix3fv(this->u1Loc, 1, 0, (float *)((char *)engine + 0x204));
 
-    if (this->uniformsDirty != 0) {
-        if (this->uniU2 >= 0)
-            glUniform3f(this->uniU2, f32(engine, 0x330), f32(engine, 0x334),
+    if (this->dirty != 0) {
+        if (this->u2Loc >= 0)
+            glUniform3f(this->u2Loc, f32(engine, 0x330), f32(engine, 0x334),
                         f32(engine, 0x338));
-        if (this->uniU3 >= 0)
-            glUniform3f(this->uniU3, f32(engine, 0x34c), f32(engine, 0x350),
+        if (this->u3Loc >= 0)
+            glUniform3f(this->u3Loc, f32(engine, 0x34c), f32(engine, 0x350),
                         f32(engine, 0x354));
-        if (this->uniU6 >= 0)
-            glUniform4fv(this->uniU6, 1, (float *)((char *)engine + 0xd0));
-        if (this->uniU7 >= 0)
-            glUniform4fv(this->uniU7, 1, (float *)((char *)engine + 0x2a8));
-        if (this->uniU8 >= 0)
-            glUniform4fv(this->uniU8, 1, (float *)((char *)engine + 0x298));
-        if (this->uniU9 >= 0)
-            glUniform4fv(this->uniU9, 1, (float *)((char *)engine + 0x2b8));
+        if (this->u6Loc >= 0)
+            glUniform4fv(this->u6Loc, 1, (float *)((char *)engine + 0xd0));
+        if (this->u7Loc >= 0)
+            glUniform4fv(this->u7Loc, 1, (float *)((char *)engine + 0x2a8));
+        if (this->u8Loc >= 0)
+            glUniform4fv(this->u8Loc, 1, (float *)((char *)engine + 0x298));
+        if (this->u9Loc >= 0)
+            glUniform4fv(this->u9Loc, 1, (float *)((char *)engine + 0x2b8));
 
         long long t = g_ApplicationManager->GetCurrentTimeMillis();
         float v = sinf(__aeabi_l2f(t) / PulseShader_timeScale);
-        glUniform1f(this->uniU4, v + 2.0f);
-        this->uniformsDirty = 0;
+        glUniform1f(this->u4Loc, v + 2.0f);
+        this->dirty = 0;
     }
 
     void (*enableVertexAttribArray)(int) = glEnableVertexAttribArray;
-    if (this->attrA0 >= 0) enableVertexAttribArray(this->attrA0);
-    if (this->attrA1 >= 0) enableVertexAttribArray(this->attrA1);
-    if (this->attrA2 >= 0) enableVertexAttribArray(this->attrA2);
-    if (this->attrA3 >= 0) enableVertexAttribArray(this->attrA3);
-    if (this->attrA4 >= 0) enableVertexAttribArray(this->attrA4);
+    if (this->a0Loc >= 0) enableVertexAttribArray(this->a0Loc);
+    if (this->a1Loc >= 0) enableVertexAttribArray(this->a1Loc);
+    if (this->a2Loc >= 0) enableVertexAttribArray(this->a2Loc);
+    if (this->a3Loc >= 0) enableVertexAttribArray(this->a3Loc);
+    if (this->a4Loc >= 0) enableVertexAttribArray(this->a4Loc);
 
     if (mesh->field_0x5c == 0) {
-        if (this->attrA0 >= 0)
-            glVertexAttribPointer(this->attrA0, 3, 0x1406, 0, 0, mesh->field_0x4);
-        if (this->attrA1 >= 0)
-            glVertexAttribPointer(this->attrA1, 2, 0x1406, 0, 0, mesh->field_0x8);
-        if (this->attrA2 >= 0)
-            glVertexAttribPointer(this->attrA2, 3, 0x1406, 0, 0, mesh->field_0x10);
-        if (this->attrA3 >= 0)
-            glVertexAttribPointer(this->attrA3, 3, 0x1406, 0, 0, (const void *)(uintptr_t)mesh->field_0x14);
-        if (this->attrA4 >= 0)
-            glVertexAttribPointer(this->attrA4, 3, 0x1406, 0, 0, (const void *)(uintptr_t)mesh->field_0x18);
+        if (this->a0Loc >= 0)
+            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->field_0x4);
+        if (this->a1Loc >= 0)
+            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, mesh->field_0x8);
+        if (this->a2Loc >= 0)
+            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, mesh->field_0x10);
+        if (this->a3Loc >= 0)
+            glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, (const void *)(uintptr_t)mesh->field_0x14);
+        if (this->a4Loc >= 0)
+            glVertexAttribPointer(this->a4Loc, 3, 0x1406, 0, 0, (const void *)(uintptr_t)mesh->field_0x18);
     } else {
         void (*bindBuffer)(unsigned int, unsigned int) = glBindBuffer;
         void (*vertexAttribPointer)(int, int, unsigned int, uint8_t, int, const void *) =
             glVertexAttribPointer;
         bindBuffer(0x8892, mesh->field_0x60);
-        vertexAttribPointer(this->attrA0, 3, 0x1406, 0, 0, 0);
+        vertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
         bindBuffer(0x8892, mesh->field_0x68);
-        vertexAttribPointer(this->attrA1, 2, 0x1406, 0, 0, 0);
+        vertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
         bindBuffer(0x8892, mesh->field_0x6c);
-        vertexAttribPointer(this->attrA2, 3, 0x1406, 0, 0, 0);
+        vertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, 0);
         bindBuffer(0x8892, mesh->field_0x70);
-        vertexAttribPointer(this->attrA3, 3, 0x1406, 0, 0, 0);
+        vertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, 0);
         bindBuffer(0x8892, mesh->field_0x74);
-        vertexAttribPointer(this->attrA4, 3, 0x1406, 0, 0, 0);
+        vertexAttribPointer(this->a4Loc, 3, 0x1406, 0, 0, 0);
     }
 }
 
@@ -133,15 +132,9 @@ namespace AbyssEngine {
 
 PulseShader::PulseShader()
 {
-    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->field_0x0 = (char *)PulseShader_vtable + 8;
-    PulseShader_typeInfoDest = PulseShader_typeInfoSource;
-
-    // name = String("PulseShader", false); this->field_0xc = name; ~name.
-    String name;
-    ((String *)(&name))->ctor_char(PulseShader_name, false);
-    ((String *)(&this->field_0xc))->assign(&name);
-    ((String *)(&name))->dtor();
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
+    this->field_0x0 = (void *)(PulseShader_vtable + 8);
+    this->name = PulseShader_name;
 }
 
 } // namespace AbyssEngine

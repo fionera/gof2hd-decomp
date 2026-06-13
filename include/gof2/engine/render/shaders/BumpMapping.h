@@ -2,7 +2,7 @@
 #define GOF2_BUMPMAPPING_H
 #include "gof2/common.h"
 #include <new>
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+// struct derived from offset-access field map (named typed members)
 
 extern "C" char _ZTVN11AbyssEngine11BumpMappingE[];
 
@@ -26,32 +26,39 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
+// AbyssEngine::ShaderBaseStruct base layout used by BumpMapping (truncated local copy;
+// the canonical class lives in ShaderBaseStruct.h). Only the leading trivial fields are
+// modelled here so the placement-new in the ctor constructs just those; the non-trivial
+// String name and the per-shader location members below are real derived members.
 struct ShaderBaseStruct {
-    static int shaderIndexIntern;
-
     void *field_0x0;                    // +0x0 vtable
     int field_0x4;                      // +0x4 GL program handle
     volatile uint16_t field_0x8;        // +0x8 flags
 
+    static int shaderIndexIntern;
+
     ShaderBaseStruct();
     ~ShaderBaseStruct();
-
-    int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
+    uint32_t ES2LoadProgram(const char *vertexSource, const char *fragmentSource);
 };
 
-class BumpMapping : public ShaderBaseStruct  {
+// AbyssEngine::BumpMapping — GLES2 bump-mapping shader (derives from ShaderBaseStruct).
+// Caches five vertex-attribute locations (a0..a4) and four uniform locations (u0..u3)
+// after Init resolves them from the linked program.
+class BumpMapping : public ShaderBaseStruct {
 public:
-    uint8_t field_0x9;                  // +0x9 dirty flag
-    String field_0xc;                   // +0xc shader name
-    int field_0x20;                     // +0x20 attrib a_position
-    int field_0x24;                     // +0x24 attrib a_normal
-    int field_0x28;                     // +0x28 attrib a_tangent
-    int field_0x2c;                     // +0x2c attrib a_binormal
-    int field_0x30;                     // +0x30 attrib a_texCoord
-    int field_0x34;                     // +0x34 uniform u_mvpMatrix
-    int field_0x38;                     // +0x38 uniform u_lightDir
-    int field_0x3c;                     // +0x3c uniform u_texture
-    int field_0x40;                     // +0x40 uniform u_normalMap
+    uint8_t dirty;          // +0x9  per-frame uniform-upload gate
+    String name;            // +0xc  shader name
+
+    int a0Loc;              // +0x20 attribute a0 (a_position)
+    int a1Loc;              // +0x24 attribute a1 (a_normal)
+    int a2Loc;              // +0x28 attribute a2 (a_tangent)
+    int a3Loc;              // +0x2c attribute a3 (a_binormal)
+    int a4Loc;              // +0x30 attribute a4 (a_texCoord)
+    int u0Loc;              // +0x34 uniform u0 (u_mvpMatrix)
+    int u1Loc;              // +0x38 uniform u1 (u_lightDir)
+    int u2Loc;              // +0x3c uniform u2 (u_texture)
+    int u3Loc;              // +0x40 uniform u3 (u_normalMap)
 
     static int ShaderIndex;
 

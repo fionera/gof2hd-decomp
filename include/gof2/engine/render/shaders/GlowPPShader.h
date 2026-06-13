@@ -3,44 +3,46 @@
 #include "gof2/common.h"
 #include <new>
 // Galaxy on Fire 2 -- AbyssEngine::GlowPPShader (Android libgof2hdaa.so, armv7 Thumb).
-// GLES2 post-process glow/bloom shader. Holds four FBOContainer render targets (at 0x3c, 0x58,
-// 0x74, 0xa0) plus attribute/uniform locations for four sub-programs (copy/blurX/blurY/combine).
-// Offset-addressed scalar fields go through the field_* accessor helpers (shared shader-storage idiom).
-// The engine entry points are reached through C-linkage thunks declared below.
+// GLES2 post-process glow/bloom shader. Derives from ShaderBaseStruct and owns four
+// FBOContainer render targets plus attribute/uniform locations for four sub-programs
+// (copy/blurX/blurY/combine). The engine entry points are reached through C-linkage
+// thunks declared below.
 
-// ShaderBaseStruct, Engine, Mesh, FBOContainer, GlowPPShader are forward-declared (global)
-// in gof2/fwd.h.
+namespace AbyssEngine {
+
+// AbyssEngine::ShaderBaseStruct base layout used by GlowPPShader (truncated local copy;
+// the canonical class lives in ShaderBaseStruct.h). Only the leading trivial fields are
+// modelled here so the placement-new in the ctor constructs just those; the non-trivial
+// String name and the per-shader location members below are real derived members.
+struct ShaderBaseStruct {
+    void *field_0x0;                    // +0x0 vtable
+    int field_0x4;                      // +0x4 GL program handle (copy)
+    volatile uint16_t field_0x8;        // +0x8 flags
+
+    static int shaderIndexIntern;
+
+    ShaderBaseStruct();
+    ~ShaderBaseStruct();
+    uint32_t ES2LoadProgram(const char *vertexSource, const char *fragmentSource);
+};
+
+} // namespace AbyssEngine
 
 // GLES2-call function-pointer types (the shader caches resolved entry points in globals).
-typedef uint32_t LoadProgramFn(ShaderBaseStruct *, const char *, const char *);
+typedef uint32_t LoadProgramFn(AbyssEngine::ShaderBaseStruct *, const char *, const char *);
 typedef uint32_t LocationFn(uint32_t, const char *);
 typedef void     UseProgramFn(uint32_t);
 typedef void     Uniform1iFn(uint32_t, int32_t);
 
-// field_u8 / field_i32 / field_ptr are provided by common.h. Only the helpers
-// that common.h does NOT supply are defined here (field_u32, field_float).
-inline uint32_t &field_u32(void *self, uint32_t off)
-{
-    return *(uint32_t *)((char *)self + off);
-}
-
-inline float &field_float(void *self, uint32_t off)
-{
-    return *(float *)((char *)self + off);
-}
-
 // Minimal view of FBOContainer (full definition lives in gof2/FBOContainer.h, owned by
-// another batch, where it sits in namespace AbyssEngine). Here we only need the three
-// render-to-texture capture methods invoked from GlowPPShader's post-process passes.
+// another batch). Here we only need the three render-to-texture capture methods invoked
+// from GlowPPShader's post-process passes.
 class FBOContainer {
 public:
     void BeginCapture();
     void EndCapture();
     void Activate();
 };
-
-// String_ctor_char / String_assign / String_dtor are declared in gof2/String.h
-// (included by the .cpp) with their real String*-returning signatures.
 
 extern "C" __attribute__((visibility("hidden"))) void FBOContainer_ctor(FBOContainer *self, Engine *engine, String *name);
 extern "C" __attribute__((visibility("hidden"))) void FBOContainer_Create(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);
@@ -76,20 +78,55 @@ extern "C" void Engine_SetWorldViewMatrix(Engine *self);
 extern "C" uint8_t g_GlowPPShader_internalInitNeeded;
 extern "C" uint32_t g_GlowPPShader_shaderMode;
 extern "C" uint32_t g_GlowPPShader_vtable;
-extern "C" uint32_t g_GlowPPShader_typeInfoSrc;
-extern "C" uint32_t g_GlowPPShader_typeInfoDst;
 
-class GlowPPShader {
+// AbyssEngine::GlowPPShader.
+// Field 0x0/0x4 live in the ShaderBaseStruct base (vtable + copy program handle).
+class GlowPPShader : public AbyssEngine::ShaderBaseStruct {
 public:
-    FBOContainer* copyTarget;           // +0x3c  copy target
-    FBOContainer* blurXTarget;           // +0x58  blurX target
-    FBOContainer* blurYTarget;           // +0x74  blurY target
-    FBOContainer* backgroundTarget;           // +0xa0  combine/background target
+    uint8_t dirty;                  // +0x9  per-frame uniform-upload gate
+    String name;                    // +0xc  shader name
 
-    // raw field storage for the offset-addressed scalar locations (accessed via field_* helpers)
-    char field_storage[0xa8];
+    unsigned int copyProgram;       // +0x20 GL program handle (copy)
+    int copyAttribPosition;         // +0x24 position
+    int copyUniformWorldView;       // +0x28 worldView
+    int copyAttribTexCoord;         // +0x2c texcoord
+    int copyUniformTexture;         // +0x30 texture
 
-    // ---- methods (converted from free functions) ----
+    FBOContainer *copyTarget;       // +0x3c copy render target
+
+    unsigned int blurXProgram;      // +0x40 GL program handle (blurX)
+    int blurXAttribPosition;        // +0x44 position
+    int blurXUniformWorldView;      // +0x48 worldView
+    int blurXAttribTexCoord;        // +0x4c texcoord
+    int blurXUniformTexture;        // +0x50 texture
+    int blurXUniformSampleSize;     // +0x54 sampleSize
+
+    FBOContainer *blurXTarget;      // +0x58 blurX render target
+
+    unsigned int blurYProgram;      // +0x5c GL program handle (blurY)
+    int blurYAttribPosition;        // +0x60 position
+    int blurYUniformWorldView;      // +0x64 worldView
+    int blurYAttribTexCoord;        // +0x68 texcoord
+    int blurYUniformTexture;        // +0x6c texture
+    int blurYUniformSampleSize;     // +0x70 sampleSize
+
+    FBOContainer *blurYTarget;      // +0x74 blurY render target
+
+    unsigned int combineProgram;    // +0x78 GL program handle (combine)
+    int combineAttribPosition;      // +0x7c position
+    int combineUniformWorldView;    // +0x80 worldView
+    int combineAttribTexCoord;      // +0x84 texcoord
+    int combineUniformTexture;      // +0x88 texture
+    int combineUniformTexture2;     // +0x8c texture2
+
+    int meshAttribPosition;         // +0x90 attribute used in UpdateMeshData/SetInActive
+    int pad_0x94;                   // +0x94
+    int meshAttribTexCoord;         // +0x98 attribute used in UpdateMeshData/SetInActive
+    int pad_0x9c;                   // +0x9c
+
+    FBOContainer *backgroundTarget; // +0xa0 combine/background render target
+
+    GlowPPShader();
     void Init();
     void InternalInit(Engine *engine);
     void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine);

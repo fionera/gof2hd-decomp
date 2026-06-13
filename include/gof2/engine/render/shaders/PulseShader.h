@@ -1,13 +1,8 @@
 #ifndef GOF2_PULSESHADER_H
 #define GOF2_PULSESHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// AbyssEngine::PulseShader -- GLES2 pulse shader (derives from ShaderBaseStruct).
-// Layout (confirmed from Ghidra Init/ctor):
-//   +0x00 vtable   +0x04 GL program   +0x09 byte "dirty" flag
-//   +0x0c String name (12 bytes)
-//   +0x20..0x30 attribute locations a0..a4
-//   +0x34..0x58 uniform locations u0..u9 (note 0x58 carries u4)
+// struct derived from offset-access field map (named typed members)
+#include <new>
 
 #include "gof2/engine/render/Mesh.h"   // full Mesh layout (top-level ::Mesh)
 
@@ -15,31 +10,45 @@ struct Engine;            // top-level, matches fwd.h (layout not modelled in th
 
 namespace AbyssEngine {
 
-// AbyssEngine::PulseShader.
-class PulseShader {
+// AbyssEngine::ShaderBaseStruct base layout used by PulseShader (truncated local copy;
+// the canonical class lives in ShaderBaseStruct.h). Only the leading trivial fields are
+// modelled here so the placement-new in the ctor constructs just those; the non-trivial
+// String name and the per-shader location members below are real derived members.
+struct ShaderBaseStruct {
+    void *field_0x0;                    // +0x0 vtable
+    int field_0x4;                      // +0x4 GL program handle (-1 when unset)
+    volatile uint16_t field_0x8;        // +0x8 flags
+
+    static int shaderIndexIntern;
+
+    ShaderBaseStruct();
+    ~ShaderBaseStruct();
+    uint32_t ES2LoadProgram(const char *vertexSource, const char *fragmentSource);
+};
+
+// AbyssEngine::PulseShader — GLES2 pulse shader (derives from ShaderBaseStruct).
+// Caches five vertex-attribute locations (a0..a4) and ten uniform locations (u0..u9)
+// after Init resolves them from the linked program.
+class PulseShader : public ShaderBaseStruct {
 public:
-    void *field_0x0;                    // +0x0  vtable
-    int program;                      // +0x4  GL program handle
-    uint8_t pad_0x8;                    // +0x8  (padding/unused)
-    uint8_t uniformsDirty;                  // +0x9  "needs uniform update" flag
-    uint8_t pad_0xa[2];                 // +0xa
-    String field_0xc;                   // +0xc  shader name (12 bytes -> ends 0x18)
-    uint8_t pad_0x18[8];                // +0x18
-    int attrA0;                     // +0x20 attrib a0
-    int attrA1;                     // +0x24 attrib a1
-    int attrA2;                     // +0x28 attrib a2
-    int attrA3;                     // +0x2c attrib a3
-    int attrA4;                     // +0x30 attrib a4
-    int uniU0;                     // +0x34 uniform u0
-    int uniU1;                     // +0x38 uniform u1
-    int uniU2;                     // +0x3c uniform u2
-    int uniU3;                     // +0x40 uniform u3
-    int uniU5;                     // +0x44 uniform u5
-    int uniU6;                     // +0x48 uniform u6
-    int uniU7;                     // +0x4c uniform u7
-    int uniU8;                     // +0x50 uniform u8
-    int uniU9;                     // +0x54 uniform u9
-    int uniU4;                     // +0x58 uniform u4
+    uint8_t dirty;          // +0x9  per-frame uniform-upload gate
+    String name;            // +0xc  shader name
+
+    int a0Loc;              // +0x20 attribute a0
+    int a1Loc;              // +0x24 attribute a1
+    int a2Loc;              // +0x28 attribute a2
+    int a3Loc;              // +0x2c attribute a3
+    int a4Loc;              // +0x30 attribute a4
+    int u0Loc;              // +0x34 uniform u0
+    int u1Loc;              // +0x38 uniform u1
+    int u2Loc;              // +0x3c uniform u2
+    int u3Loc;              // +0x40 uniform u3
+    int u5Loc;              // +0x44 uniform u5
+    int u6Loc;              // +0x48 uniform u6
+    int u7Loc;              // +0x4c uniform u7
+    int u8Loc;              // +0x50 uniform u8
+    int u9Loc;              // +0x54 uniform u9
+    int u4Loc;              // +0x58 uniform u4
 
     PulseShader();
     void Init(::Engine *engine);
@@ -54,8 +63,6 @@ public:
 
 extern "C" {
 extern char PulseShader_vtable[];
-extern int PulseShader_typeInfoSource;
-extern int PulseShader_typeInfoDest;
 extern const char PulseShader_name[];
 
 int glGetAttribLocation(int program, const char *name);
@@ -74,8 +81,6 @@ void glDisableVertexAttribArray(int index);
 void glVertexAttribPointer(int index, int size, unsigned int type, uint8_t normalized,
                            int stride, const void *pointer);
 void glBindBuffer(unsigned int target, unsigned int buffer);
-
-// String_ctor_char / String_assign / String_dtor are declared in gof2/String.h.
 
 void operator_delete(void *ptr) noexcept;
 }

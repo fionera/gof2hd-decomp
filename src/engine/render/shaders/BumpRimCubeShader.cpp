@@ -7,47 +7,47 @@ namespace AbyssEngine {
 
 void BumpRimCubeShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    if (this->field_0x34 >= 0)
-        glUniformMatrix4fv(this->field_0x34, 1, 0, (char *)engine + 0x104);
-    if (this->field_0x38 >= 0)
-        glUniformMatrix3fv(this->field_0x38, 1, 0, (char *)engine + 0x204);
-    if (this->field_0x3c >= 0)
-        glUniformMatrix4fv(this->field_0x3c, 1, 0, (char *)engine + 0x144);
-    if (this->field_0x7c >= 0)
-        glUniform1f(this->field_0x7c, g_rimGlobalA);
-    if (this->field_0x80 >= 0)
-        glUniform1f(this->field_0x80, g_rimGlobalB);
+    if (this->u1Loc >= 0)
+        glUniformMatrix4fv(this->u1Loc, 1, 0, (char *)engine + 0x104);
+    if (this->u2Loc >= 0)
+        glUniformMatrix3fv(this->u2Loc, 1, 0, (char *)engine + 0x204);
+    if (this->u3Loc >= 0)
+        glUniformMatrix4fv(this->u3Loc, 1, 0, (char *)engine + 0x144);
+    if (this->u19Loc >= 0)
+        glUniform1f(this->u19Loc, g_rimGlobalA);
+    if (this->u20Loc >= 0)
+        glUniform1f(this->u20Loc, g_rimGlobalB);
 
-    if (this->field_0x9 != 0) {
-        glUniform3f(this->field_0x40, field_f32(engine, 0x330),
+    if (this->dirty != 0) {
+        glUniform3f(this->u4Loc, field_f32(engine, 0x330),
                     field_f32(engine, 0x334), field_f32(engine, 0x338));
-        if (this->field_0x48 >= 0)
-            glUniform3f(this->field_0x48, field_f32(engine, 0x34c),
+        if (this->u6Loc >= 0)
+            glUniform3f(this->u6Loc, field_f32(engine, 0x34c),
                         field_f32(engine, 0x350), field_f32(engine, 0x354));
-        if (this->field_0x58 >= 0)
-            glUniform4fv(this->field_0x58, 1, (float *)((char *)engine + 0xd0));
-        if (this->field_0x5c >= 0)
-            glUniform3fv(this->field_0x5c, 1, (float *)((char *)engine + 0x2cc));
-        if (this->field_0x64 >= 0)
-            glUniform3fv(this->field_0x64, 1, (float *)((char *)engine + 0x2fc));
-        if (this->field_0x6c >= 0)
-            glUniform3fv(this->field_0x6c, 1, (float *)((char *)engine + 0x2e4));
-        if (this->field_0x74 >= 0)
-            glUniform1f(this->field_0x74, field_f32(engine, 0x2c8));
-        if (this->field_0x78 >= 0)
-            glUniform3fv(this->field_0x78, 1, (float *)((char *)engine + 800));
-        int loc88 = this->field_0x88;
+        if (this->u10Loc >= 0)
+            glUniform4fv(this->u10Loc, 1, (float *)((char *)engine + 0xd0));
+        if (this->u11Loc >= 0)
+            glUniform3fv(this->u11Loc, 1, (float *)((char *)engine + 0x2cc));
+        if (this->u12Loc >= 0)
+            glUniform3fv(this->u12Loc, 1, (float *)((char *)engine + 0x2fc));
+        if (this->u13Loc >= 0)
+            glUniform3fv(this->u13Loc, 1, (float *)((char *)engine + 0x2e4));
+        if (this->u17Loc >= 0)
+            glUniform1f(this->u17Loc, field_f32(engine, 0x2c8));
+        if (this->u18Loc >= 0)
+            glUniform3fv(this->u18Loc, 1, (float *)((char *)engine + 800));
+        int loc88 = this->u22Loc;
         if (loc88 >= 0) {
             float *v = *(AEMath::Vector *)((char *)engine + 0x3f0);
             glUniform3fv(loc88, 1, v);
         }
-        if (this->field_0x90 >= 0)
-            glUniform1f(this->field_0x90, field_f32(engine, 1000));
-        if (this->field_0x8c >= 0)
-            glUniform1f(this->field_0x8c, field_f32(engine, 0x3ec));
-        if (this->field_0x94 >= 0)
-            glUniform1i(this->field_0x94, g_rimByteGlobal);
-        if (this->field_0x84 >= 0) {
+        if (this->u24Loc >= 0)
+            glUniform1f(this->u24Loc, field_f32(engine, 1000));
+        if (this->u23Loc >= 0)
+            glUniform1f(this->u23Loc, field_f32(engine, 0x3ec));
+        if (this->u25Loc >= 0)
+            glUniform1i(this->u25Loc, g_rimByteGlobal);
+        if (this->u21Loc >= 0) {
             float v = 0.0f;
             int *m30 = (int *)field_ptr(mesh, 0x30);
             if (m30 != 0) {
@@ -55,57 +55,57 @@ void BumpRimCubeShader::UpdateMeshData(Mesh *mesh, Engine *engine)
                 if (m30[9] == 0)
                     v = 0.0f;
             }
-            glUniform1f(this->field_0x84, v);
+            glUniform1f(this->u21Loc, v);
         }
         if (field_i32(engine, 0x32c) >= 2) {
-            glUniform3fv(this->field_0x60, 1, (float *)((char *)engine + 0x2d8));
-            glUniform3fv(this->field_0x68, 1, (float *)((char *)engine + 0x308));
-            glUniform3fv(this->field_0x70, 1, (float *)((char *)engine + 0x2f0));
-            glUniform3f(this->field_0x44, field_f32(engine, 0x33c),
+            glUniform3fv(this->u14Loc, 1, (float *)((char *)engine + 0x2d8));
+            glUniform3fv(this->u15Loc, 1, (float *)((char *)engine + 0x308));
+            glUniform3fv(this->u16Loc, 1, (float *)((char *)engine + 0x2f0));
+            glUniform3f(this->u5Loc, field_f32(engine, 0x33c),
                         field_f32(engine, 0x340), field_f32(engine, 0x344));
         } else {
-            glUniform3f(this->field_0x60, 0, 0, 0);
-            glUniform3f(this->field_0x68, 0, 0, 0);
-            glUniform3f(this->field_0x70, 0, 0, 0);
-            glUniform3f(this->field_0x44, field_f32(engine, 0x33c),
+            glUniform3f(this->u14Loc, 0, 0, 0);
+            glUniform3f(this->u15Loc, 0, 0, 0);
+            glUniform3f(this->u16Loc, 0, 0, 0);
+            glUniform3f(this->u5Loc, field_f32(engine, 0x33c),
                         field_f32(engine, 0x340), field_f32(engine, 0x344));
         }
-        this->field_0x9 = 0;
+        this->dirty = 0;
     }
 
-    if (this->field_0x20 >= 0)
-        glEnableVertexAttribArray(this->field_0x20);
-    if (this->field_0x24 >= 0)
-        glEnableVertexAttribArray(this->field_0x24);
-    if (this->field_0x28 >= 0)
-        glEnableVertexAttribArray(this->field_0x28);
-    if (this->field_0x2c >= 0)
-        glEnableVertexAttribArray(this->field_0x2c);
-    if (this->field_0x30 >= 0)
-        glEnableVertexAttribArray(this->field_0x30);
+    if (this->a0Loc >= 0)
+        glEnableVertexAttribArray(this->a0Loc);
+    if (this->a1Loc >= 0)
+        glEnableVertexAttribArray(this->a1Loc);
+    if (this->a2Loc >= 0)
+        glEnableVertexAttribArray(this->a2Loc);
+    if (this->a3Loc >= 0)
+        glEnableVertexAttribArray(this->a3Loc);
+    if (this->u0Loc >= 0)
+        glEnableVertexAttribArray(this->u0Loc);
 
     if (field_u8(mesh, 0x5c) == 0) {
-        if (this->field_0x20 >= 0)
-            glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
-        if (this->field_0x24 >= 0)
-            glVertexAttribPointer(this->field_0x24, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
-        if (this->field_0x28 >= 0)
-            glVertexAttribPointer(this->field_0x28, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
-        if (this->field_0x2c >= 0)
-            glVertexAttribPointer(this->field_0x2c, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
-        if (this->field_0x30 >= 0)
-            glVertexAttribPointer(this->field_0x30, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+        if (this->a0Loc >= 0)
+            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+        if (this->a1Loc >= 0)
+            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+        if (this->a2Loc >= 0)
+            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
+        if (this->a3Loc >= 0)
+            glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
+        if (this->u0Loc >= 0)
+            glVertexAttribPointer(this->u0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
     } else {
         glBindBuffer(0x8892, field_i32(mesh, 0x60));
-        glVertexAttribPointer(this->field_0x20, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x68));
-        glVertexAttribPointer(this->field_0x24, 2, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x6c));
-        glVertexAttribPointer(this->field_0x28, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x70));
-        glVertexAttribPointer(this->field_0x2c, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x74));
-        glVertexAttribPointer(this->field_0x30, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->u0Loc, 3, 0x1406, 0, 0, 0);
     }
 }
 
@@ -124,19 +124,19 @@ namespace AbyssEngine {
 void BumpRimCubeShader::SetInActive()
 {
     int loc;
-    loc = this->field_0x20;
+    loc = this->a0Loc;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = this->field_0x24;
+    loc = this->a1Loc;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = this->field_0x28;
+    loc = this->a2Loc;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = this->field_0x2c;
+    loc = this->a3Loc;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = this->field_0x30;
+    loc = this->u0Loc;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
 }
@@ -152,7 +152,7 @@ __attribute__((minsize)) BumpRimCubeShader::BumpRimCubeShader()
     new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     this->field_0x0 = _ZTVN11AbyssEngine17BumpRimCubeShaderE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->field_0xc.s = u"BumpRimCubeShader";
+    this->name.s = u"BumpRimCubeShader";
     
 }
 
@@ -169,45 +169,45 @@ void BumpRimCubeShader::Init(Engine *)
         this->field_0x4 = program;
     }
 
-    this->field_0x20 = glGetAttribLocation(program, "a0");
-    this->field_0x24 = glGetAttribLocation(this->field_0x4, "a1");
-    this->field_0x28 = glGetAttribLocation(this->field_0x4, "a2");
-    this->field_0x2c = glGetAttribLocation(this->field_0x4, "a3");
+    this->a0Loc = glGetAttribLocation(program, "a0");
+    this->a1Loc = glGetAttribLocation(this->field_0x4, "a1");
+    this->a2Loc = glGetAttribLocation(this->field_0x4, "a2");
+    this->a3Loc = glGetAttribLocation(this->field_0x4, "a3");
 
-    this->field_0x30 = glGetUniformLocation(this->field_0x4, "u0");
-    this->field_0x34 = glGetUniformLocation(this->field_0x4, "u1");
-    this->field_0x38 = glGetUniformLocation(this->field_0x4, "u2");
-    this->field_0x3c = glGetUniformLocation(this->field_0x4, "u3");
-    this->field_0x40 = glGetUniformLocation(this->field_0x4, "u4");
-    this->field_0x44 = glGetUniformLocation(this->field_0x4, "u5");
-    this->field_0x48 = glGetUniformLocation(this->field_0x4, "u6");
-    this->field_0x4c = glGetUniformLocation(this->field_0x4, "u7");
-    this->field_0x50 = glGetUniformLocation(this->field_0x4, "u8");
-    this->field_0x54 = glGetUniformLocation(this->field_0x4, "u9");
-    this->field_0x58 = glGetUniformLocation(this->field_0x4, "u10");
-    this->field_0x5c = glGetUniformLocation(this->field_0x4, "u11");
-    this->field_0x64 = glGetUniformLocation(this->field_0x4, "u12");
-    this->field_0x6c = glGetUniformLocation(this->field_0x4, "u13");
-    this->field_0x60 = glGetUniformLocation(this->field_0x4, "u14");
-    this->field_0x68 = glGetUniformLocation(this->field_0x4, "u15");
-    this->field_0x70 = glGetUniformLocation(this->field_0x4, "u16");
-    this->field_0x74 = glGetUniformLocation(this->field_0x4, "u17");
-    this->field_0x78 = glGetUniformLocation(this->field_0x4, "u18");
-    this->field_0x7c = glGetUniformLocation(this->field_0x4, "u19");
-    this->field_0x80 = glGetUniformLocation(this->field_0x4, "u20");
-    this->field_0x84 = glGetUniformLocation(this->field_0x4, "u21");
-    this->field_0x88 = glGetUniformLocation(this->field_0x4, "u22");
-    this->field_0x8c = glGetUniformLocation(this->field_0x4, "u23");
-    this->field_0x90 = glGetUniformLocation(this->field_0x4, "u24");
-    this->field_0x94 = glGetUniformLocation(this->field_0x4, "u25");
+    this->u0Loc = glGetUniformLocation(this->field_0x4, "u0");
+    this->u1Loc = glGetUniformLocation(this->field_0x4, "u1");
+    this->u2Loc = glGetUniformLocation(this->field_0x4, "u2");
+    this->u3Loc = glGetUniformLocation(this->field_0x4, "u3");
+    this->u4Loc = glGetUniformLocation(this->field_0x4, "u4");
+    this->u5Loc = glGetUniformLocation(this->field_0x4, "u5");
+    this->u6Loc = glGetUniformLocation(this->field_0x4, "u6");
+    this->u7Loc = glGetUniformLocation(this->field_0x4, "u7");
+    this->u8Loc = glGetUniformLocation(this->field_0x4, "u8");
+    this->u9Loc = glGetUniformLocation(this->field_0x4, "u9");
+    this->u10Loc = glGetUniformLocation(this->field_0x4, "u10");
+    this->u11Loc = glGetUniformLocation(this->field_0x4, "u11");
+    this->u12Loc = glGetUniformLocation(this->field_0x4, "u12");
+    this->u13Loc = glGetUniformLocation(this->field_0x4, "u13");
+    this->u14Loc = glGetUniformLocation(this->field_0x4, "u14");
+    this->u15Loc = glGetUniformLocation(this->field_0x4, "u15");
+    this->u16Loc = glGetUniformLocation(this->field_0x4, "u16");
+    this->u17Loc = glGetUniformLocation(this->field_0x4, "u17");
+    this->u18Loc = glGetUniformLocation(this->field_0x4, "u18");
+    this->u19Loc = glGetUniformLocation(this->field_0x4, "u19");
+    this->u20Loc = glGetUniformLocation(this->field_0x4, "u20");
+    this->u21Loc = glGetUniformLocation(this->field_0x4, "u21");
+    this->u22Loc = glGetUniformLocation(this->field_0x4, "u22");
+    this->u23Loc = glGetUniformLocation(this->field_0x4, "u23");
+    this->u24Loc = glGetUniformLocation(this->field_0x4, "u24");
+    this->u25Loc = glGetUniformLocation(this->field_0x4, "u25");
 
     glUseProgram(this->field_0x4);
     for (int i = 0; i != 2; i++) {
-        int loc = (&this->field_0x4c)[i];   // field_0x4c, field_0x50
+        int loc = (&this->u7Loc)[i];   // u7Loc, u8Loc (adjacent samplers)
         if (loc >= 0)
             glUniform1i(loc, i);
     }
-    glUniform1i(this->field_0x54, 7);
+    glUniform1i(this->u9Loc, 7);
 }
 
 } // namespace AbyssEngine
