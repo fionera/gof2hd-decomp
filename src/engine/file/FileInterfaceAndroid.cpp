@@ -77,7 +77,7 @@ extern int *gFIAInstCount_zip __attribute__((visibility("hidden")));
 // NOTE: near-match (29/29 instr multiset identical; 2 instrs one scheduling slot off). clang
 // -Oz orders the early `strd` and the `add.w r1,r2,#8` vptr finalize slightly differently from
 // the target. Scheduling-only.
-FileInterfaceAndroid * FileInterfaceAndroid::ctor_zip(zip_file *zf, bool append, int start, int p4, int p5) {
+FileInterfaceAndroid::FileInterfaceAndroid(zip_file *zf, bool append, int start, int p4, int p5) {
     int *cnt = gFIAInstCount_zip;
     char *vtbase = (char *)gFIAVtable_zip;   // *gVtable loaded; +8 applied at the store
     this->file = 0;
@@ -90,7 +90,6 @@ FileInterfaceAndroid * FileInterfaceAndroid::ctor_zip(zip_file *zf, bool append,
     this->field_0x28 = 0;
     ((FileInterfaceAndroid *)(this))->Seek(start);
     this->field_0x24 = append;
-    return this;
 }
 
 // FileInterfaceAndroid::Read(unsigned int, void*) — reads from the zip handle, the stdio handle,
@@ -280,7 +279,7 @@ extern int *gFIAInstCount __attribute__((visibility("hidden")));
 // NOTE: near-match. Identical instruction multiset; clang -Oz schedules the
 // instance-count pointer deref and colors its temp register (r0 vs r1) differently
 // than the target. Scheduling/coloring-only difference.
-void FileInterfaceAndroid::ctor_file(FILE *f, bool append) {
+FileInterfaceAndroid::FileInterfaceAndroid(FILE *f, bool append) {
     int *cnt = gFIAInstCount;
     this->file = f;
     this->zipFile = 0;
@@ -316,7 +315,7 @@ extern const char *gSgB __attribute__((visibility("hidden")));
 // NOTE: near-match only. The field init + instance-count bump match, but the JNI env / function-
 // table indirection levels and the three lazily-cached method-id cells do not reproduce the
 // target's exact global-deref chains and -Oz scheduling. Left as a faithful semantic model.
-FileInterfaceAndroid * FileInterfaceAndroid::ctor_obj(jobject *stream, bool reading) {
+FileInterfaceAndroid::FileInterfaceAndroid(jobject *stream, bool reading) {
     void *env = *gJniEnvObj;
     int *cnt = gFIAInstCount_obj;
     this->file = 0;
@@ -339,7 +338,6 @@ FileInterfaceAndroid * FileInterfaceAndroid::ctor_obj(jobject *stream, bool read
     }
     if (*selB == 0)
         *selB = (*(jni_getmethod *)((char *)*(void **)env + 0x84))(env, cls, gNmB, gSgB);
-    return this;
 }
 
 // FileInterfaceAndroid::OpenRead(AbyssEngine::String, int, bool, int, int, unsigned int) —
@@ -385,9 +383,9 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String name, int p2, bool 
 
     FileInterfaceAndroid *result = 0;
     if (z1 != 0) {
-        result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)::operator new(0x38)))->ctor_zip(z1, (bool)p4, p2, p5, p4);
+        result = new ((FileInterfaceAndroid *)::operator new(0x38)) FileInterfaceAndroid(z1, (bool)p4, p2, p5, p4);
     } else if (z2 != 0) {
-        result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)::operator new(0x38)))->ctor_zip(z2, (bool)p4, p2, p5, p4);
+        result = new ((FileInterfaceAndroid *)::operator new(0x38)) FileInterfaceAndroid(z2, (bool)p4, p2, p5, p4);
     } else if (this->appRootDir != 0) {
         String dir(this->appRootDir);
         String full = dir + a;

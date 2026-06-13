@@ -63,10 +63,13 @@ public:
     void SetAppRootDir(void *p);
     void SetZipDirectory(void *p);
     bool Write(unsigned int n, const void *buf);
+    // The default constructor above delegates to ctor_default(), which doubles as an
+    // in-place re-init helper (see AbyssEngine boot). The other three constructors are
+    // real overloads (demangle to FileInterfaceAndroid::FileInterfaceAndroid(...)).
     void ctor_default();
-    void ctor_file(FILE *f, bool append);
-    FileInterfaceAndroid * ctor_obj(jobject *stream, bool reading);
-    FileInterfaceAndroid * ctor_zip(zip_file *zf, bool append, int start, int p4, int p5);
+    FileInterfaceAndroid(FILE *f, bool append);
+    FileInterfaceAndroid(jobject *stream, bool reading);
+    FileInterfaceAndroid(zip_file *zf, bool append, int start, int p4, int p5);
 };
 
 #endif
