@@ -14,26 +14,25 @@ namespace AbyssEngine {
 
 void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *self = (char *)this;
     char *meshBytes = (char *)mesh;
-    glUniformMatrix4fv(*(int32_t *)(self + 0x4c), 1, 0, (char *)engine + 0x104);
-    if (*(uint8_t *)(self + 0x9) != 0) {
-        *(uint8_t *)(self + 0x9) = 0;
+    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, (char *)engine + 0x104);
+    if (this->dirty != 0) {
+        this->dirty = 0;
     }
 
-    glEnableVertexAttribArray(*(uint32_t *)(self + 0x48));
-    glEnableVertexAttribArray(*(uint32_t *)(self + 0x50));
+    glEnableVertexAttribArray(this->positionLoc);
+    glEnableVertexAttribArray(this->texCoordLoc);
 
     if (*(uint8_t *)(meshBytes + 0x5c) == 0) {
-        glVertexAttribPointer(*(uint32_t *)(self + 0x48), 3, 0x1406, 0, 0,
+        glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0,
                               *(void **)(meshBytes + 0x4));
-        return glVertexAttribPointer(*(uint32_t *)(self + 0x50), 2, 0x1406, 0, 0,
+        return glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0,
                                      *(void **)(meshBytes + 0x8));
     } else {
         glBindBuffer(0x8892, *(uint32_t *)(meshBytes + 0x60));
-        glVertexAttribPointer(*(uint32_t *)(self + 0x48), 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, *(uint32_t *)(meshBytes + 0x68));
-        return glVertexAttribPointer(*(uint32_t *)(self + 0x50), 2, 0x1406, 0, 0, 0);
+        return glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, 0);
     }
 }
 
@@ -45,7 +44,6 @@ typedef uint64_t unaligned_u64 __attribute__((aligned(1)));
 
 void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 {
-    char *self = (char *)this;
     char *engineBytes = (char *)engine;
 
     uint32x4_t zero = vdupq_n_u32(0);
@@ -80,7 +78,7 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
-    glUseProgram(*(uint32_t *)(self + 0x4));
+    glUseProgram(this->field_0x4);
     glActiveTexture(0x84c0);
     fbo->Activate();
 
@@ -100,15 +98,15 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
         engine->ActivateRender2FracFBO();
     }
 
-    glEnableVertexAttribArray(*(uint32_t *)(self + 0x48));
-    glEnableVertexAttribArray(*(uint32_t *)(self + 0x50));
-    glUniformMatrix4fv(*(int32_t *)(self + 0x4c), 1, 0, engineBytes + 0x104);
+    glEnableVertexAttribArray(this->positionLoc);
+    glEnableVertexAttribArray(this->texCoordLoc);
+    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, engineBytes + 0x104);
 
     char *mesh = *(char **)(engineBytes + 0x380);
-    glVertexAttribPointer(*(uint32_t *)(self + 0x48), 3, 0x1406, 0, 0,
+    glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0,
                           *(void **)(mesh + 0x4));
     mesh = *(char **)(engineBytes + 0x380);
-    glVertexAttribPointer(*(uint32_t *)(self + 0x50), 2, 0x1406, 0, 0,
+    glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0,
                           *(void **)(mesh + 0x8));
 
     void (*clear)(uint32_t) = glClear;
@@ -119,8 +117,8 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     int drawHeight = engine->GetDisplayHeight();
     engine->DrawQuad(0, 0, drawWidth, drawHeight);
 
-    glDisableVertexAttribArray(*(uint32_t *)(self + 0x48));
-    glDisableVertexAttribArray(*(uint32_t *)(self + 0x50));
+    glDisableVertexAttribArray(this->positionLoc);
+    glDisableVertexAttribArray(this->texCoordLoc);
     glEnable(0xb71);
     clear(0x100);
 
@@ -138,9 +136,8 @@ namespace AbyssEngine {
 
 void DrawFBOShader::SetInActive()
 {
-    char *self = (char *)this;
-    glDisableVertexAttribArray(*(uint32_t *)(self + 0x48));
-    return glDisableVertexAttribArray(*(uint32_t *)(self + 0x50));
+    glDisableVertexAttribArray(this->positionLoc);
+    return glDisableVertexAttribArray(this->texCoordLoc);
 }
 
 } // namespace AbyssEngine
@@ -149,17 +146,16 @@ namespace AbyssEngine {
 
 void DrawFBOShader::Init(Engine *)
 {
-    char *self = (char *)this;
     uint32_t program = ES2LoadProgram("DrawFBOShader.vsh", "DrawFBOShader.fsh");
-    *(uint32_t *)(self + 0x4) = program;
+    this->field_0x4 = program;
 
-    *(int32_t *)(self + 0x48) = glGetAttribLocation(program, "position");
-    *(int32_t *)(self + 0x50) = glGetAttribLocation(*(uint32_t *)(self + 0x4), "texCoord");
-    *(int32_t *)(self + 0x4c) = glGetUniformLocation(*(uint32_t *)(self + 0x4), "worldViewMatrix");
-    *(int32_t *)(self + 0x54) = glGetUniformLocation(*(uint32_t *)(self + 0x4), "texture");
+    this->positionLoc = glGetAttribLocation(program, "position");
+    this->texCoordLoc = glGetAttribLocation(this->field_0x4, "texCoord");
+    this->worldViewMatrixLoc = glGetUniformLocation(this->field_0x4, "worldViewMatrix");
+    this->textureLoc = glGetUniformLocation(this->field_0x4, "texture");
 
-    glUseProgram(*(uint32_t *)(self + 0x4));
-    return glUniform1i(*(int32_t *)(self + 0x54), 0);
+    glUseProgram(this->field_0x4);
+    return glUniform1i(this->textureLoc, 0);
 }
 
 } // namespace AbyssEngine

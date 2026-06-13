@@ -27,8 +27,12 @@ struct FBOContainer {
 struct Mesh;
 
 struct ShaderBaseStruct {
+    void *field_0x0;                    // +0x0 vtable
+    int field_0x4;                      // +0x4 GL program handle
+    volatile uint16_t field_0x8;        // +0x8 flags
+
     ShaderBaseStruct();
-    virtual ~ShaderBaseStruct();
+    ~ShaderBaseStruct();
 
     uint32_t ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 
@@ -36,11 +40,15 @@ struct ShaderBaseStruct {
 };
 
 // AbyssEngine::DrawFBOShader — GLES2 full-screen FBO blit shader (derives from ShaderBaseStruct).
-// Fields (program handle at 0x4, dirty byte at 0x9, attribute/uniform locations 0x48..0x54)
-// are accessed through raw byte casts; storage covers offsets 0x00..0x54.
 class DrawFBOShader : public ShaderBaseStruct  {
 public:
     static int32_t ShaderIndex;
+
+    uint8_t dirty;              // +0x9  per-frame uniform-upload gate
+    int positionLoc;           // +0x48 attribute "position"
+    int worldViewMatrixLoc;    // +0x4c uniform "worldViewMatrix"
+    int texCoordLoc;           // +0x50 attribute "texCoord"
+    int textureLoc;            // +0x54 uniform "texture"
 
     DrawFBOShader();
     ~DrawFBOShader();
@@ -49,8 +57,6 @@ public:
     void SetInActive();
     void UpdateMeshData(Mesh *mesh, Engine *engine);
     void RenderEffect(FBOContainer *fbo, Engine *engine);
-
-    char field_storage[0x58];
 };
 
 } // namespace AbyssEngine
