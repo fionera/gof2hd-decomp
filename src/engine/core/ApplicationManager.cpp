@@ -12,8 +12,6 @@
 // (defined alongside PaintCanvas.cpp). The ctor/dtor remain free functions.
 extern "C" int pc_GetWidth(PaintCanvas *self);
 extern "C" int pc_GetHeight(PaintCanvas *self);
-extern AbyssEngine::PaintCanvas *PaintCanvasCtor(AbyssEngine::PaintCanvas *, AbyssEngine::Engine *);
-extern AbyssEngine::PaintCanvas *PaintCanvasDtor(AbyssEngine::PaintCanvas *);
 
 extern "C" void ext_001ab578(void *sound, int volume);
 extern "C" void ext_001ab528(void *sound);
@@ -514,7 +512,7 @@ ApplicationManager::ApplicationManager(void *engine) {
     self->engine = engine;
 
     void *canvas = ::operator new(0x20c);
-    PaintCanvasCtor((AbyssEngine::PaintCanvas *)canvas, (AbyssEngine::Engine *)engine);
+    new ((PaintCanvas *)canvas) PaintCanvas((Engine *)engine);
     *(void **)self = canvas;
 
     void *sound = ::operator new(0x14);
@@ -987,7 +985,7 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
 
     void *canvas = *(void **)self;
     if (canvas != 0) {
-        PaintCanvasDtor((AbyssEngine::PaintCanvas *)canvas);
+        ((AbyssEngine::PaintCanvas *)canvas)->~PaintCanvas();
         ::operator delete(canvas);
     }
     *(void **)self = 0;

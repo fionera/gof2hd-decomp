@@ -99,12 +99,12 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
 
-    engine->field_0x384 = 2.0f / (float)(engine)->GetDisplayWidth();
-    engine->field_0x398 = -(2.0f / (float)(engine)->GetDisplayHeight());
-    engine->field_0x3ac = 0xbf800000;
-    engine->field_0x3b4 = 0xbf800000;
-    engine->field_0x3b8 = 0x3f800000;
-    engine->field_0x3c0 = 0x3f800000;
+    engine->projMatrix[0]  = 2.0f / (float)(engine)->GetDisplayWidth();
+    engine->projMatrix[5]  = -(2.0f / (float)(engine)->GetDisplayHeight());
+    engine->projMatrix[10] = -1.0f;   // 0xbf800000
+    engine->projMatrix[12] = -1.0f;   // 0xbf800000
+    engine->projMatrix[13] = 1.0f;    // 0x3f800000
+    engine->projMatrix[15] = 1.0f;    // 0x3f800000
     (engine)->SetWorldViewMatrix((const uint32_t *)matrix);
 
     glDisable(0xb71);

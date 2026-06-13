@@ -1,6 +1,7 @@
 #ifndef GOF2_IPARTICLESYSTEM_H
 #define GOF2_IPARTICLESYSTEM_H
 #include "gof2/common.h"
+#include "gof2/math.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 struct PaintCanvas;
 struct ParticleSet;
@@ -14,39 +15,35 @@ namespace AEMath {
 using Vector = AbyssEngine::AEMath::Vector;
 using Matrix = AbyssEngine::AEMath::Matrix;
 
-static inline void *&P(void *self, uint32_t off)
-{
-    return *(void **)((char *)self + off);
-}
-
-static inline int32_t &I(void *self, uint32_t off)
-{
-    return *(int32_t *)((char *)self + off);
-}
-
-static inline uint16_t &U16(void *self, uint32_t off)
-{
-    return *(uint16_t *)((char *)self + off);
-}
-
-static inline uint8_t &U8(void *self, uint32_t off)
-{
-    return *(uint8_t *)((char *)self + off);
-}
-
-static inline Vector *vec_at(void *base, int index)
-{
-    return (Vector *)((char *)base + index * 12);
-}
-
 class IParticleSystem {
 public:
-    void* vtable;                    // +0x0
-    volatile uint16_t field_0x4;        // +0x4
-    volatile uint8_t emitterVelocityDirty;         // +0x5
-    PaintCanvas* canvas;             // +0x8
-    Matrix const* matrix;           // +0x18
-    Array<int>* particleSets;        // configured particle-set indices
+    void* vtable;                          // +0x0
+    volatile uint16_t field_0x4;           // +0x4
+    volatile uint8_t emitterVelocityDirty; // +0x5
+    PaintCanvas* canvas;                   // +0x8
+    uint8_t emitEnabled;                   // +0xc
+    uint8_t renderEnabled;                 // +0xd
+    uint8_t updateEnabled;                 // +0xe
+    uint8_t random[8];                     // +0x10  embedded AERandom PRNG state
+    Matrix const* matrix;                  // +0x18
+    Vector emitterVelocity;                // +0x1c
+    Vector lastEmitterPosition;            // +0x28
+    int32_t field_0x2c;                    // +0x2c
+    int32_t field_0x30;                    // +0x30
+    uint32_t flags;                        // +0x34  (byte +0x37 read separately)
+    uint8_t particleSetIndex;              // +0x44
+    uint8_t alphaFade;                     // +0x45
+    int32_t maxParticles;                  // +0x48
+    uint8_t mirror;                        // +0x4c
+    int32_t currentParticle;               // +0x50
+    int32_t field_0x54;                    // +0x54
+    int32_t field_0x58;                    // +0x58
+    uint8_t field_0x5c;                    // +0x5c
+    float emitTimer;                       // +0x60  (int-zeroed / float accumulator)
+    void* particleVelocities;              // +0x64
+    void* particleAges;                    // +0x68
+    void* particleSetIds;                  // +0x6c
+    Array<int>* particleSets;              // configured particle-set indices
 
     IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
                     bool mirror, bool alphaFade);

@@ -49,54 +49,54 @@ void BloomShader::Init(::Engine *)
 
     this->field_0x4 =
         ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderLuma.fsh");
-    this->field_0x20 =
+    this->downSampleProgram =
         ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderDownSample.fsh");
-    this->field_0x38 =
+    this->blurHProgram =
         ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderBlurH.fsh");
-    this->field_0x54 =
+    this->blurVProgram =
         ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderBlurV.fsh");
-    this->field_0x74 =
+    this->finalProgram =
         ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderFinal.fsh");
 
-    this->field_0x8c = attrib(this->field_0x4, positionName);
-    this->field_0x94 = attrib(this->field_0x4, texCoordName);
-    this->field_0x90 = uniform(this->field_0x4, matrixName);
-    this->field_0x98 = uniform(this->field_0x4, samplerName);
+    this->lumaAttribPosition = attrib(this->field_0x4, positionName);
+    this->lumaAttribTexCoord = attrib(this->field_0x4, texCoordName);
+    this->lumaUniformWorldMatrix = uniform(this->field_0x4, matrixName);
+    this->lumaUniformTexture = uniform(this->field_0x4, samplerName);
     useProgram(this->field_0x4);
-    uniform1i(this->field_0x98, 0);
+    uniform1i(this->lumaUniformTexture, 0);
 
-    this->field_0x24 = attrib(this->field_0x20, positionName);
-    this->field_0x2c = attrib(this->field_0x20, texCoordName);
-    this->field_0x28 = uniform(this->field_0x20, matrixName);
-    this->field_0x30 = uniform(this->field_0x20, samplerName);
-    useProgram(this->field_0x20);
-    uniform1i(this->field_0x30, 0);
+    this->downSampleAttribPosition = attrib(this->downSampleProgram, positionName);
+    this->downSampleAttribTexCoord = attrib(this->downSampleProgram, texCoordName);
+    this->downSampleUniformWorldMatrix = uniform(this->downSampleProgram, matrixName);
+    this->downSampleUniformTexture = uniform(this->downSampleProgram, samplerName);
+    useProgram(this->downSampleProgram);
+    uniform1i(this->downSampleUniformTexture, 0);
 
-    this->field_0x3c = attrib(this->field_0x38, positionName);
-    this->field_0x44 = attrib(this->field_0x38, texCoordName);
-    this->field_0x40 = uniform(this->field_0x38, matrixName);
-    this->field_0x48 = uniform(this->field_0x38, samplerName);
-    this->field_0x4c = uniform(this->field_0x38, texSizeName);
-    useProgram(this->field_0x38);
-    uniform1i(this->field_0x48, 0);
+    this->blurHAttribPosition = attrib(this->blurHProgram, positionName);
+    this->blurHAttribTexCoord = attrib(this->blurHProgram, texCoordName);
+    this->blurHUniformWorldMatrix = uniform(this->blurHProgram, matrixName);
+    this->blurHUniformTexture = uniform(this->blurHProgram, samplerName);
+    this->blurHUniformTexSize = uniform(this->blurHProgram, texSizeName);
+    useProgram(this->blurHProgram);
+    uniform1i(this->blurHUniformTexture, 0);
 
-    this->field_0x58 = attrib(this->field_0x54, positionName);
-    this->field_0x60 = attrib(this->field_0x54, texCoordName);
-    this->field_0x5c = uniform(this->field_0x54, matrixName);
-    this->field_0x64 = uniform(this->field_0x54, samplerName);
-    this->field_0x68 = uniform(this->field_0x54, texSizeName);
-    useProgram(this->field_0x54);
-    uniform1i(this->field_0x64, 0);
+    this->blurVAttribPosition = attrib(this->blurVProgram, positionName);
+    this->blurVAttribTexCoord = attrib(this->blurVProgram, texCoordName);
+    this->blurVUniformWorldMatrix = uniform(this->blurVProgram, matrixName);
+    this->blurVUniformTexture = uniform(this->blurVProgram, samplerName);
+    this->blurVUniformTexSize = uniform(this->blurVProgram, texSizeName);
+    useProgram(this->blurVProgram);
+    uniform1i(this->blurVUniformTexture, 0);
 
-    this->field_0x78 = attrib(this->field_0x74, positionName);
-    this->field_0x80 = attrib(this->field_0x74, texCoordName);
-    this->field_0x7c = uniform(this->field_0x74, matrixName);
-    this->field_0x84 = uniform(this->field_0x74, samplerName);
-    this->field_0x88 =
-        uniform(this->field_0x74, "s_texture_bloom");
-    useProgram(this->field_0x74);
-    uniform1i(this->field_0x84, 0);
-    return uniform1i(this->field_0x88, 1);
+    this->finalAttribPosition = attrib(this->finalProgram, positionName);
+    this->finalAttribTexCoord = attrib(this->finalProgram, texCoordName);
+    this->finalUniformWorldMatrix = uniform(this->finalProgram, matrixName);
+    this->finalUniformTexture = uniform(this->finalProgram, samplerName);
+    this->finalUniformTextureBloom =
+        uniform(this->finalProgram, "s_texture_bloom");
+    useProgram(this->finalProgram);
+    uniform1i(this->finalUniformTexture, 0);
+    return uniform1i(this->finalUniformTextureBloom, 1);
 }
 
 } // namespace AbyssEngine
@@ -115,26 +115,26 @@ namespace AbyssEngine {
 
 void BloomShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 {
-    glUniformMatrix4fv(this->field_0x90, 1, 0, (char *)engine + 0x104);
-    if (this->field_0x9 != 0) {
-        this->field_0x9 = 0;
+    glUniformMatrix4fv(this->lumaUniformWorldMatrix, 1, 0, (char *)engine + 0x104);
+    if (this->lightingDirty != 0) {
+        this->lightingDirty = 0;
     }
 
-    glEnableVertexAttribArray(this->field_0x8c);
-    glEnableVertexAttribArray(this->field_0x94);
+    glEnableVertexAttribArray(this->lumaAttribPosition);
+    glEnableVertexAttribArray(this->lumaAttribTexCoord);
 
     unsigned int zero = 0;
     if (ae_field<uint8_t>(mesh, 0x5c) != 0) {
         glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
-        glVertexAttribPointer(this->field_0x8c, 3, 0x1406, 0, 0,
+        glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0,
                               (void *)zero);
         glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
-        return glVertexAttribPointer(this->field_0x94, 2, 0x1406, 0, 0,
+        return glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0,
                                      (void *)zero);
     } else {
-        glVertexAttribPointer(this->field_0x8c, 3, 0x1406, 0, 0,
+        glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0,
                               ae_field<void *>(mesh, 0x4));
-        return glVertexAttribPointer(this->field_0x94, 2, 0x1406, 0, 0,
+        return glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0,
                                      ae_field<void *>(mesh, 0x8));
     }
 }
@@ -155,10 +155,10 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
         InternalInit(engine);
-        ((FBOContainer *)(this->field_0x70))->BeginCapture();
+        ((FBOContainer *)(this->fboBlack))->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        ((FBOContainer *)(this->field_0x70))->EndCapture();
+        ((FBOContainer *)(this->fboBlack))->EndCapture();
     }
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
@@ -184,82 +184,82 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     glDepthMask(0);
     glDisable(0xbe2);
 
-    glUseProgram(this->field_0x20);
+    glUseProgram(this->downSampleProgram);
     glActiveTexture(0x84c0);
     ((FBOContainer *)(source))->Activate();
-    ((FBOContainer *)(this->field_0x34))->BeginCapture();
-    glEnableVertexAttribArray(this->field_0x24);
-    glEnableVertexAttribArray(this->field_0x2c);
+    ((FBOContainer *)(this->fboLuma))->BeginCapture();
+    glEnableVertexAttribArray(this->downSampleAttribPosition);
+    glEnableVertexAttribArray(this->downSampleAttribTexCoord);
     const void *mvp = (char *)engine + 0x104;
-    glUniformMatrix4fv(this->field_0x28, 1, 0, mvp);
-    glVertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0,
+    glUniformMatrix4fv(this->downSampleUniformWorldMatrix, 1, 0, mvp);
+    glVertexAttribPointer(this->downSampleAttribPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 4));
-    glVertexAttribPointer(this->field_0x2c, 2, 0x1406, 0, 0,
+    glVertexAttribPointer(this->downSampleAttribTexCoord, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
     ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
-    glDisableVertexAttribArray(this->field_0x24);
-    glDisableVertexAttribArray(this->field_0x2c);
+    glDisableVertexAttribArray(this->downSampleAttribPosition);
+    glDisableVertexAttribArray(this->downSampleAttribTexCoord);
 
-    FBOContainer *blurSource = this->field_0x34;
+    FBOContainer *blurSource = this->fboLuma;
     for (int i = 6; i != 0; i -= 1) {
-        glUseProgram(this->field_0x38);
+        glUseProgram(this->blurHProgram);
         glActiveTexture(0x84c0);
         ((FBOContainer *)(blurSource))->Activate();
-        ((FBOContainer *)(this->field_0x50))->BeginCapture();
-        glEnableVertexAttribArray(this->field_0x3c);
-        glEnableVertexAttribArray(this->field_0x44);
-        glUniformMatrix4fv(this->field_0x40, 1, 0, mvp);
-        glVertexAttribPointer(this->field_0x3c, 3, 0x1406, 0, 0,
+        ((FBOContainer *)(this->fboBlurH))->BeginCapture();
+        glEnableVertexAttribArray(this->blurHAttribPosition);
+        glEnableVertexAttribArray(this->blurHAttribTexCoord);
+        glUniformMatrix4fv(this->blurHUniformWorldMatrix, 1, 0, mvp);
+        glVertexAttribPointer(this->blurHAttribPosition, 3, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
-        glVertexAttribPointer(this->field_0x44, 2, 0x1406, 0, 0,
+        glVertexAttribPointer(this->blurHAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->field_0x4c,
-                    (float)*(int *)((char *)this->field_0x50 + 0xc));
+        glUniform1f(this->blurHUniformTexSize,
+                    (float)*(int *)((char *)this->fboBlurH + 0xc));
         glClear(0x4000);
         ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
-        glDisableVertexAttribArray(this->field_0x3c);
-        glDisableVertexAttribArray(this->field_0x44);
+        glDisableVertexAttribArray(this->blurHAttribPosition);
+        glDisableVertexAttribArray(this->blurHAttribTexCoord);
 
-        glUseProgram(this->field_0x54);
+        glUseProgram(this->blurVProgram);
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(this->field_0x50))->Activate();
-        ((FBOContainer *)(this->field_0x6c))->BeginCapture();
-        glEnableVertexAttribArray(this->field_0x58);
-        glEnableVertexAttribArray(this->field_0x60);
-        glUniformMatrix4fv(this->field_0x5c, 1, 0, mvp);
-        glVertexAttribPointer(this->field_0x58, 3, 0x1406, 0, 0,
+        ((FBOContainer *)(this->fboBlurH))->Activate();
+        ((FBOContainer *)(this->fboBlurV))->BeginCapture();
+        glEnableVertexAttribArray(this->blurVAttribPosition);
+        glEnableVertexAttribArray(this->blurVAttribTexCoord);
+        glUniformMatrix4fv(this->blurVUniformWorldMatrix, 1, 0, mvp);
+        glVertexAttribPointer(this->blurVAttribPosition, 3, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
-        glVertexAttribPointer(this->field_0x60, 2, 0x1406, 0, 0,
+        glVertexAttribPointer(this->blurVAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->field_0x68,
-                    (float)*(int *)((char *)this->field_0x6c + 0x10));
+        glUniform1f(this->blurVUniformTexSize,
+                    (float)*(int *)((char *)this->fboBlurV + 0x10));
         glClear(0x4000);
         ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
-        glDisableVertexAttribArray(this->field_0x58);
-        glDisableVertexAttribArray(this->field_0x60);
-        blurSource = this->field_0x6c;
+        glDisableVertexAttribArray(this->blurVAttribPosition);
+        glDisableVertexAttribArray(this->blurVAttribTexCoord);
+        blurSource = this->fboBlurV;
     }
 
     FBOContainer *base = source;
-    FBOContainer *bloom = this->field_0x70;
+    FBOContainer *bloom = this->fboBlack;
     if (g_BloomShader_shaderMode < 4) {
         switch (g_BloomShader_shaderMode) {
         case 1:
-            base = this->field_0x34;
+            base = this->fboLuma;
             break;
         case 2:
-            base = this->field_0x6c;
+            base = this->fboBlurV;
             break;
         case 3:
-            bloom = this->field_0x70;
+            bloom = this->fboBlack;
             break;
         default:
             break;
         }
     }
 
-    glUseProgram(this->field_0x74);
+    glUseProgram(this->finalProgram);
     glActiveTexture(0x84c0);
     ((FBOContainer *)(base))->Activate();
     glActiveTexture(0x84c1);
@@ -276,17 +276,17 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     }
     glViewport(0, 0, width, height);
 
-    glEnableVertexAttribArray(this->field_0x78);
-    glEnableVertexAttribArray(this->field_0x80);
-    glUniformMatrix4fv(this->field_0x7c, 1, 0, mvp);
-    glVertexAttribPointer(this->field_0x78, 3, 0x1406, 0, 0,
+    glEnableVertexAttribArray(this->finalAttribPosition);
+    glEnableVertexAttribArray(this->finalAttribTexCoord);
+    glUniformMatrix4fv(this->finalUniformWorldMatrix, 1, 0, mvp);
+    glVertexAttribPointer(this->finalAttribPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 4));
-    glVertexAttribPointer(this->field_0x80, 2, 0x1406, 0, 0,
+    glVertexAttribPointer(this->finalAttribTexCoord, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
     ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
-    glDisableVertexAttribArray(this->field_0x78);
-    glDisableVertexAttribArray(this->field_0x80);
+    glDisableVertexAttribArray(this->finalAttribPosition);
+    glDisableVertexAttribArray(this->finalAttribTexCoord);
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
@@ -300,10 +300,10 @@ namespace AbyssEngine {
 
 void BloomShader::SetInActive()
 {
-    glDisableVertexAttribArray(this->field_0x8c);
-    glDisableVertexAttribArray(this->field_0x94);
-    glDisableVertexAttribArray(this->field_0x2c);
-    return glDisableVertexAttribArray(this->field_0x24);
+    glDisableVertexAttribArray(this->lumaAttribPosition);
+    glDisableVertexAttribArray(this->lumaAttribTexCoord);
+    glDisableVertexAttribArray(this->downSampleAttribTexCoord);
+    return glDisableVertexAttribArray(this->downSampleAttribPosition);
 }
 
 } // namespace AbyssEngine
@@ -315,7 +315,7 @@ __attribute__((minsize)) BloomShader::BloomShader()
     new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     this->field_0x0 = &BloomShader_vtable + 8;
     *(void **)BloomShader_typeinfo_dest = *(void **)BloomShader_typeinfo_source;
-    this->field_0xc.s = u"BloomShader";
+    this->name.s = u"BloomShader";
     return;
 }
 
@@ -329,26 +329,26 @@ void BloomShader::InternalInit(::Engine *engine)
     FBOContainer *fbo = (FBOContainer *)operator new(0x38);
     String luma; luma.s = u"BloomShader fboLuma";
     FBOContainer_ctor(fbo, engine, &luma);
-    this->field_0x34 = fbo;
-    ((FBOContainer *)(this->field_0x34))->Create(0x100, 0x100, true, false);
+    this->fboLuma = fbo;
+    ((FBOContainer *)(this->fboLuma))->Create(0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String blurH; blurH.s = u"BloomShader fboBlurH";
     FBOContainer_ctor(fbo, engine, &blurH);
-    this->field_0x50 = fbo;
-    ((FBOContainer *)(this->field_0x50))->Create(0x100, 0x100, true, false);
+    this->fboBlurH = fbo;
+    ((FBOContainer *)(this->fboBlurH))->Create(0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String blurV; blurV.s = u"BloomShader fboBlurV";
     FBOContainer_ctor(fbo, engine, &blurV);
-    this->field_0x6c = fbo;
-    ((FBOContainer *)(this->field_0x6c))->Create(0x100, 0x100, true, false);
+    this->fboBlurV = fbo;
+    ((FBOContainer *)(this->fboBlurV))->Create(0x100, 0x100, true, false);
 
     fbo = (FBOContainer *)operator new(0x38);
     String black; black.s = u"BloomShader fboBlack";
     FBOContainer_ctor(fbo, engine, &black);
-    this->field_0x70 = fbo;
-    ((FBOContainer *)(this->field_0x70))->Create(0x100, 0x100, true, false);
+    this->fboBlack = fbo;
+    ((FBOContainer *)(this->fboBlack))->Create(0x100, 0x100, true, false);
 
     return;
 }
@@ -375,10 +375,10 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
         InternalInit(engine);
-        ((FBOContainer *)(this->field_0x70))->BeginCapture();
+        ((FBOContainer *)(this->fboBlack))->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        ((FBOContainer *)(this->field_0x70))->EndCapture();
+        ((FBOContainer *)(this->fboBlack))->EndCapture();
     }
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
@@ -404,82 +404,82 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
     glDepthMask(0);
     glDisable(0xbe2);
 
-    glUseProgram(this->field_0x20);
+    glUseProgram(this->downSampleProgram);
     glActiveTexture(0x84c0);
     ((FBOContainer *)(source))->Activate();
-    ((FBOContainer *)(this->field_0x34))->BeginCapture();
-    glEnableVertexAttribArray(this->field_0x24);
-    glEnableVertexAttribArray(this->field_0x2c);
+    ((FBOContainer *)(this->fboLuma))->BeginCapture();
+    glEnableVertexAttribArray(this->downSampleAttribPosition);
+    glEnableVertexAttribArray(this->downSampleAttribTexCoord);
     const void *mvp = (char *)engine + 0x104;
-    glUniformMatrix4fv(this->field_0x28, 1, 0, mvp);
-    glVertexAttribPointer(this->field_0x24, 3, 0x1406, 0, 0,
+    glUniformMatrix4fv(this->downSampleUniformWorldMatrix, 1, 0, mvp);
+    glVertexAttribPointer(this->downSampleAttribPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 4));
-    glVertexAttribPointer(this->field_0x2c, 2, 0x1406, 0, 0,
+    glVertexAttribPointer(this->downSampleAttribTexCoord, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
     ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
-    glDisableVertexAttribArray(this->field_0x24);
-    glDisableVertexAttribArray(this->field_0x2c);
+    glDisableVertexAttribArray(this->downSampleAttribPosition);
+    glDisableVertexAttribArray(this->downSampleAttribTexCoord);
 
-    FBOContainer *blurSource = this->field_0x34;
+    FBOContainer *blurSource = this->fboLuma;
     for (int i = 6; i != 0; i -= 1) {
-        glUseProgram(this->field_0x38);
+        glUseProgram(this->blurHProgram);
         glActiveTexture(0x84c0);
         ((FBOContainer *)(blurSource))->Activate();
-        ((FBOContainer *)(this->field_0x50))->BeginCapture();
-        glEnableVertexAttribArray(this->field_0x3c);
-        glEnableVertexAttribArray(this->field_0x44);
-        glUniformMatrix4fv(this->field_0x40, 1, 0, mvp);
-        glVertexAttribPointer(this->field_0x3c, 3, 0x1406, 0, 0,
+        ((FBOContainer *)(this->fboBlurH))->BeginCapture();
+        glEnableVertexAttribArray(this->blurHAttribPosition);
+        glEnableVertexAttribArray(this->blurHAttribTexCoord);
+        glUniformMatrix4fv(this->blurHUniformWorldMatrix, 1, 0, mvp);
+        glVertexAttribPointer(this->blurHAttribPosition, 3, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
-        glVertexAttribPointer(this->field_0x44, 2, 0x1406, 0, 0,
+        glVertexAttribPointer(this->blurHAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->field_0x4c,
-                    (float)*(int *)((char *)this->field_0x50 + 0xc));
+        glUniform1f(this->blurHUniformTexSize,
+                    (float)*(int *)((char *)this->fboBlurH + 0xc));
         glClear(0x4000);
         ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
-        glDisableVertexAttribArray(this->field_0x3c);
-        glDisableVertexAttribArray(this->field_0x44);
+        glDisableVertexAttribArray(this->blurHAttribPosition);
+        glDisableVertexAttribArray(this->blurHAttribTexCoord);
 
-        glUseProgram(this->field_0x54);
+        glUseProgram(this->blurVProgram);
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(this->field_0x50))->Activate();
-        ((FBOContainer *)(this->field_0x6c))->BeginCapture();
-        glEnableVertexAttribArray(this->field_0x58);
-        glEnableVertexAttribArray(this->field_0x60);
-        glUniformMatrix4fv(this->field_0x5c, 1, 0, mvp);
-        glVertexAttribPointer(this->field_0x58, 3, 0x1406, 0, 0,
+        ((FBOContainer *)(this->fboBlurH))->Activate();
+        ((FBOContainer *)(this->fboBlurV))->BeginCapture();
+        glEnableVertexAttribArray(this->blurVAttribPosition);
+        glEnableVertexAttribArray(this->blurVAttribTexCoord);
+        glUniformMatrix4fv(this->blurVUniformWorldMatrix, 1, 0, mvp);
+        glVertexAttribPointer(this->blurVAttribPosition, 3, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
-        glVertexAttribPointer(this->field_0x60, 2, 0x1406, 0, 0,
+        glVertexAttribPointer(this->blurVAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->field_0x68,
-                    (float)*(int *)((char *)this->field_0x6c + 0x10));
+        glUniform1f(this->blurVUniformTexSize,
+                    (float)*(int *)((char *)this->fboBlurV + 0x10));
         glClear(0x4000);
         ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
-        glDisableVertexAttribArray(this->field_0x58);
-        glDisableVertexAttribArray(this->field_0x60);
-        blurSource = this->field_0x6c;
+        glDisableVertexAttribArray(this->blurVAttribPosition);
+        glDisableVertexAttribArray(this->blurVAttribTexCoord);
+        blurSource = this->fboBlurV;
     }
 
     FBOContainer *base = source;
-    FBOContainer *bloom = this->field_0x70;
+    FBOContainer *bloom = this->fboBlack;
     if (g_BloomShader_shaderMode < 4) {
         switch (g_BloomShader_shaderMode) {
         case 1:
-            base = this->field_0x34;
+            base = this->fboLuma;
             break;
         case 2:
-            base = this->field_0x6c;
+            base = this->fboBlurV;
             break;
         case 3:
-            bloom = this->field_0x70;
+            bloom = this->fboBlack;
             break;
         default:
             break;
         }
     }
 
-    glUseProgram(this->field_0x74);
+    glUseProgram(this->finalProgram);
     glActiveTexture(0x84c0);
     ((FBOContainer *)(base))->Activate();
     glActiveTexture(0x84c1);
@@ -488,17 +488,17 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
         ((FBOContainer *)(*target))->BeginCapture();
     }
 
-    glEnableVertexAttribArray(this->field_0x78);
-    glEnableVertexAttribArray(this->field_0x80);
-    glUniformMatrix4fv(this->field_0x7c, 1, 0, mvp);
-    glVertexAttribPointer(this->field_0x78, 3, 0x1406, 0, 0,
+    glEnableVertexAttribArray(this->finalAttribPosition);
+    glEnableVertexAttribArray(this->finalAttribTexCoord);
+    glUniformMatrix4fv(this->finalUniformWorldMatrix, 1, 0, mvp);
+    glVertexAttribPointer(this->finalAttribPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 4));
-    glVertexAttribPointer(this->field_0x80, 2, 0x1406, 0, 0,
+    glVertexAttribPointer(this->finalAttribTexCoord, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
     ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
-    glDisableVertexAttribArray(this->field_0x78);
-    glDisableVertexAttribArray(this->field_0x80);
+    glDisableVertexAttribArray(this->finalAttribPosition);
+    glDisableVertexAttribArray(this->finalAttribTexCoord);
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);

@@ -76,38 +76,38 @@ void MeshMerger::setMatrixTail(void *matrixSlot, const Matrix &m)
 
 void MeshMerger::setMatrix(int index, const Matrix &m)
 {
-    char *base = (char *)pp(this, 0x1c);
+    char *base = (char *)this->matrices;
     return setMatrixTail(base + index * 0x3c, m);
 }
 
 void MeshMerger::setLod(int index, signed char lod)
 {
-    int8_t *lods = (int8_t *)pp(this, 0x24);
+    int8_t *lods = (int8_t *)this->lods;
     if (lods[index] != lod) {
         lods[index] = lod;
-        if (*((int8_t *)pp(this, 0x28) + index) == 0) {
+        if (*((int8_t *)this->enabledFlags + index) == 0) {
             return;
         }
-        u8(this, 0x34) = 1;
+        this->dirty = 1;
     }
 }
 
-// render(): tail-call the engine render routine with (field_0xc, field_0x14, 0).
+// render(): tail-call the engine render routine with (canvas, transformId, 0).
 
 void MeshMerger::render()
 {
-    return renderTail(pp(this, 0xc), pp(this, 0x14), 0);
+    return renderTail(this->canvas, (void *)(uintptr_t)this->transformId, 0);
 }
 
 void MeshMerger::setEnabled(int index, bool enabled)
 {
-    uint8_t *flags = (uint8_t *)pp(this, 0x28);
+    uint8_t *flags = (uint8_t *)this->enabledFlags;
     if (flags[index] != enabled) {
         flags[index] = enabled;
-        if (*((int8_t *)pp(this, 0x2c) + index) == 0) {
+        if (*((int8_t *)this->visibleFlags + index) == 0) {
             return;
         }
-        u8(this, 0x34) = 1;
+        this->dirty = 1;
     }
 }
 
@@ -121,15 +121,15 @@ void MatrixRotateVector(Matrix *out, Vector *v);      // 0x.. rotate normal
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                        PaintCanvas *canvas, uint16_t flags)
 {
-    pp(this, 0x1c) = 0;
-    pp(this, 0xc) = canvas;
-    i32(this, 0x30) = 1;
-    u16(this, 0x4) = flags;
-    i32(this, 0x00) = (int)transforms.size();
+    this->matrices = 0;
+    this->canvas = canvas;
+    this->cols = 1;
+    this->flags = flags;
+    this->rows = (int)transforms.size();
 
     uint32_t count = meshIds.size();
     uint32_t **table = (uint32_t **)::operator new[](count * 4);
-    pp(this, 0x8) = table;
+    this->sourceMeshes = table;
 
     // Per-source meshes: create them and tally vertex/index totals.
     int16_t totalV = 0;
@@ -138,47 +138,47 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
         uint32_t localId;
         ((PCReal *)canvas)->MeshCreate(meshIds.data()[i], &localId, false);
         void *ptr = ((PCReal *)canvas)->MeshGetPointer(localId);
-        ((uint32_t **)pp(this, 0x8))[i] = (uint32_t *)ptr;
-        char *m = (char *)((uint32_t **)pp(this, 0x8))[i];
+        ((uint32_t **)this->sourceMeshes)[i] = (uint32_t *)ptr;
+        char *m = (char *)((uint32_t **)this->sourceMeshes)[i];
         totalV = (int16_t)(totalV + *(uint16_t *)(m + 2));
         totalI = (int16_t)(totalI + aeabi_uidiv16(*(uint16_t *)(m + 0x28), 3));
     }
 
     // Create the combined target mesh.
-    char *m0 = (char *)((uint32_t **)pp(this, 0x8))[0];
+    char *m0 = (char *)((uint32_t **)this->sourceMeshes)[0];
     ((PCReal *)canvas)->MeshCreate((uint16_t)totalV, (uint16_t)totalI, (signed char)*(int8_t *)m0, flags,
-                       (uint32_t *)((char *)this + 0x10));
+                       &this->mergedMeshId);
 
     int16_t triBase = 0;
     int16_t vtxBase = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {
-        char *m = (char *)((uint32_t **)pp(this, 0x8))[i];
+        char *m = (char *)((uint32_t **)this->sourceMeshes)[i];
         Matrix *xf = &transforms.data()[i];
         int colOff = 0;
         int uvOff = 0;
         uint16_t nv = *(uint16_t *)(m + 2);
         for (uint16_t v = 0; v < nv; v++) {
-            m = (char *)((uint32_t **)pp(this, 0x8))[i];
+            m = (char *)((uint32_t **)this->sourceMeshes)[i];
             uint8_t fl = *(uint8_t *)m;
             Vector tmp;
             if (fl & 1) {
                 MatrixTransformVector((Matrix *)&tmp, (Vector *)xf);
-                ((PCReal *)canvas)->MeshSetPoint((unsigned int)(long)canvas, (uint16_t)u32(this, 0x10), tmp.x, tmp.y, tmp.z);
+                ((PCReal *)canvas)->MeshSetPoint((unsigned int)(long)canvas, (uint16_t)this->mergedMeshId, tmp.x, tmp.y, tmp.z);
                 fl = *(uint8_t *)m;
             }
             if (((uint32_t)fl << 0x1d) & 0x80000000u) {
                 MatrixRotateVector((Matrix *)&tmp, (Vector *)xf);
-                ((PCReal *)canvas)->MeshSetNormal(u32(this, 0x10), (int16_t)(vtxBase + v), tmp);
+                ((PCReal *)canvas)->MeshSetNormal(this->mergedMeshId, (int16_t)(vtxBase + v), tmp);
                 fl = *(uint8_t *)m;
             }
             if (((uint32_t)fl << 0x1e) & 0x80000000u) {
                 float *uv = (float *)(*(int *)(m + 8) + uvOff);
-                ((PCReal *)canvas)->MeshSetUv((unsigned int)(long)canvas, (uint16_t)u32(this, 0x10), uv[1], uv[0]);
+                ((PCReal *)canvas)->MeshSetUv((unsigned int)(long)canvas, (uint16_t)this->mergedMeshId, uv[1], uv[0]);
                 fl = *(uint8_t *)m;
             }
             if (((uint32_t)fl << 0x1c) & 0x80000000u) {
                 float *col = (float *)(*(int *)(m + 0xc) + colOff);
-                ((PCReal *)canvas)->MeshSetColor(u32(this, 0x10), (int16_t)(vtxBase + v),
+                ((PCReal *)canvas)->MeshSetColor(this->mergedMeshId, (int16_t)(vtxBase + v),
                                      col[1], col[0], col[2], col[3]);
             }
             uvOff += 8;
@@ -190,10 +190,10 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
         for (uint16_t t = 0; t < tris; t++) {
             if (((uint32_t)(*(uint8_t *)m) << 0x1b) & 0x80000000u) {
                 int16_t *ix = (int16_t *)(*(int *)(m + 0x2c) + triOff);
-                ((PCReal *)canvas)->MeshSetTriangle((unsigned int)(long)canvas, (uint16_t)u32(this, 0x10),
+                ((PCReal *)canvas)->MeshSetTriangle((unsigned int)(long)canvas, (uint16_t)this->mergedMeshId,
                                         (int16_t)(triBase + t),
                                         (int16_t)(ix[0] + vtxBase), (int16_t)(ix[1] + vtxBase));
-                m = (char *)((uint32_t **)pp(this, 0x8))[i];
+                m = (char *)((uint32_t **)this->sourceMeshes)[i];
             }
             triOff += 6;
         }
@@ -201,72 +201,72 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
         vtxBase = (int16_t)(vtxBase + *(uint16_t *)(m + 2));
     }
 
-    ((PCReal *)canvas)->TransformCreate((uint32_t *)((char *)this + 0x14));
-    ((PCReal *)canvas)->TransformAddMeshId(u32(this, 0x14), u32(this, 0x10));
-    pp(this, 0x18) = 0;
-    u8(this, 0x6) = 1;
-    i32(this, 0x20) = 0;
-    i32(this, 0x24) = 0;
-    u8(this, 0x34) = 0;
+    ((PCReal *)canvas)->TransformCreate(&this->transformId);
+    ((PCReal *)canvas)->TransformAddMeshId(this->transformId, this->mergedMeshId);
+    this->transformedMeshes = 0;
+    this->initialized = 1;
+    this->mergedMesh = 0;
+    this->lods = 0;
+    this->dirty = 0;
 }
 
 extern "C" void aeabi_memcpy4(void *dst, const void *src, uint32_t n);  // __aeabi_memcpy4
 
 void MeshMerger::update()
 {
-    int rows = i32(this, 0x0);
+    int rows = this->rows;
     for (int i = 0; i < rows; i++) {
-        void *sph = ((void **)pp(this, 0x18))[i];
-        uint8_t vis = (uint8_t)((PCReal *)pp(this, 0xc))->CameraIsSphereinViewFrustum(
+        void *sph = ((void **)this->transformedMeshes)[i];
+        uint8_t vis = (uint8_t)((PCReal *)this->canvas)->CameraIsSphereinViewFrustum(
             (void *)((char *)sph + 0x3c),
             *(float *)((char *)sph + 0x48));
-        int8_t *visArr = (int8_t *)pp(this, 0x2c);
+        int8_t *visArr = (int8_t *)this->visibleFlags;
         if (vis != (uint8_t)visArr[i]) {
             visArr[i] = (int8_t)vis;
-            if (*((int8_t *)pp(this, 0x28) + i) != 0) {
-                u8(this, 0x34) = 1;
+            if (*((int8_t *)this->enabledFlags + i) != 0) {
+                this->dirty = 1;
             }
         }
-        rows = i32(this, 0x0);
+        rows = this->rows;
     }
 
-    if (u8(this, 0x34) != 0) {
+    if (this->dirty != 0) {
         int idxOff = 0;   // iVar9 (index accumulator)
         int vtxOff = 0;   // iVar7 (vertex accumulator)
         for (int j = 0; j < rows; j++) {
-            if (*((int8_t *)pp(this, 0x28) + j) != 0 &&
-                *((int8_t *)pp(this, 0x2c) + j) != 0) {
-                uint8_t *out = (uint8_t *)pp(this, 0x20);
+            if (*((int8_t *)this->enabledFlags + j) != 0 &&
+                *((int8_t *)this->visibleFlags + j) != 0) {
+                uint8_t *out = (uint8_t *)this->mergedMesh;
                 uint8_t mask = out[0];
-                signed char lod = *((int8_t *)pp(this, 0x24) + j);
-                Mesh *src = (Mesh *)((void **)pp(this, 0x18))[rows * lod + j];
+                signed char lod = *((int8_t *)this->lods + j);
+                Mesh *src = (Mesh *)((void **)this->transformedMeshes)[rows * lod + j];
 
                 if (mask & 1) {
                     aeabi_memcpy4(*(char **)(out + 4) + vtxOff * 0xc,
                                   src->field_0x4,
                                   (uint32_t)src->field_0x2 * 0xc);
-                    out = (uint8_t *)pp(this, 0x20);
+                    out = (uint8_t *)this->mergedMesh;
                     mask = out[0];
                 }
                 if (mask & 4) {
                     aeabi_memcpy4(*(char **)(out + 0x10) + vtxOff * 0xc,
                                   src->field_0x10,
                                   (uint32_t)src->field_0x2 * 0xc);
-                    out = (uint8_t *)pp(this, 0x20);
+                    out = (uint8_t *)this->mergedMesh;
                     mask = out[0];
                 }
                 if (mask & 8) {
                     aeabi_memcpy4(*(char **)(out + 0xc) + vtxOff * 0x10,
                                   (const void *)(uintptr_t)src->field_0xc,
                                   (uint32_t)src->field_0x2 << 4);
-                    out = (uint8_t *)pp(this, 0x20);
+                    out = (uint8_t *)this->mergedMesh;
                     mask = out[0];
                 }
                 if (mask & 2) {
                     aeabi_memcpy4(*(char **)(out + 8) + vtxOff * 8,
                                   src->field_0x8,
                                   (uint32_t)src->field_0x2 << 3);
-                    out = (uint8_t *)pp(this, 0x20);
+                    out = (uint8_t *)this->mergedMesh;
                     mask = out[0];
                 }
                 if (mask & 0x10) {
@@ -278,15 +278,15 @@ void MeshMerger::update()
                         di++;
                     }
                 }
-                rows = i32(this, 0x0);
+                rows = this->rows;
                 idxOff += (uint16_t)src->field_0x28;
                 vtxOff += (uint16_t)src->field_0x2;
             }
         }
-        uint8_t *out = (uint8_t *)pp(this, 0x20);
+        uint8_t *out = (uint8_t *)this->mergedMesh;
         *(int16_t *)(out + 0x28) = (int16_t)idxOff;
         *(int16_t *)(out + 2) = (int16_t)vtxOff;
-        u8(this, 0x34) = 0;
+        this->dirty = 0;
     }
 }
 
@@ -294,22 +294,22 @@ extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                // 0x6
 
 int MeshMerger::init()
 {
-    if (u8(this, 0x6) != 0) {
-        return u8(this, 0x6);
+    if (this->initialized != 0) {
+        return this->initialized;
     }
 
     int rows;
-    for (int i = 0; i < (rows = i32(this, 0x0)); i++) {
-        int8_t *lods = (int8_t *)pp(this, 0x24);
+    for (int i = 0; i < (rows = this->rows); i++) {
+        int8_t *lods = (int8_t *)this->lods;
         int lod = lods[i];
-        if (lod >= -1 && i32(this, 0x30) <= lod) {
+        if (lod >= -1 && this->cols <= lod) {
             lods[i] = 0;
         }
-        for (int c = 0; c < i32(this, 0x30); c++) {
-            void *mesh = ((void **)pp(this, 0x8))[i32(this, 0x0) * c + i];
+        for (int c = 0; c < this->cols; c++) {
+            void *mesh = ((void **)this->sourceMeshes)[this->rows * c + i];
             if (mesh != 0) {
-                void *t = this->transformMesh((Mesh *)mesh, *(const Matrix *)((char *)pp(this, 0x1c) + i * 0x3c));
-                ((void **)pp(this, 0x18))[i32(this, 0x0) * c + i] = t;
+                void *t = this->transformMesh((Mesh *)mesh, *(const Matrix *)((char *)this->matrices + i * 0x3c));
+                ((void **)this->transformedMeshes)[this->rows * c + i] = t;
             }
         }
     }
@@ -317,23 +317,23 @@ int MeshMerger::init()
     uint16_t nv = 0;
     uint16_t ni = 0;
     for (int i = 0; i < rows; i++) {
-        void *m0 = ((void **)pp(this, 0x8))[i];
+        void *m0 = ((void **)this->sourceMeshes)[i];
         uint16_t v = *(uint16_t *)((char *)m0 + 2);
         uint16_t idiv = aeabi_uidiv16(*(uint16_t *)((char *)m0 + 0x28), 3);
         ni = ni + idiv;
         nv = nv + v;
     }
 
-    uint16_t flags = u16(this, 0x4);
-    PaintCanvas *canvas = (PaintCanvas *)pp(this, 0xc);
-    ((PCReal *)canvas)->MeshCreate(nv, ni, (signed char)*(int8_t *)*(void **)pp(this, 0x8),
-                       (uint32_t *)((char *)this + 0x10));
-    void *ptr = ((PCReal *)canvas)->MeshGetPointer(u32(this, 0x10));
-    pp(this, 0x20) = ptr;   // field_0x20: merged-mesh pointer (full-width store)
-    ((PCReal *)canvas)->TransformCreate((uint32_t *)((char *)this + 0x14));
-    ((PCReal *)canvas)->TransformAddMeshId(u32(this, 0x14), u32(this, 0x10));
-    u8(this, 0x34) = 1;
-    return initTail(0, flags, (uint32_t *)((char *)this + 0x10));
+    uint16_t flags = this->flags;
+    PaintCanvas *canvas = (PaintCanvas *)this->canvas;
+    ((PCReal *)canvas)->MeshCreate(nv, ni, (signed char)*(int8_t *)*(void **)&this->sourceMeshes,
+                       &this->mergedMeshId);
+    void *ptr = ((PCReal *)canvas)->MeshGetPointer(this->mergedMeshId);
+    this->mergedMesh = ptr;   // merged-mesh pointer (full-width store)
+    ((PCReal *)canvas)->TransformCreate(&this->transformId);
+    ((PCReal *)canvas)->TransformAddMeshId(this->transformId, this->mergedMeshId);
+    this->dirty = 1;
+    return initTail(0, flags, &this->mergedMeshId);
 }
 
 extern "C" void *aeabi_memclr4(void *p, uint32_t n);
@@ -348,61 +348,64 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 {
     void *(*alloc)(int) = *g_allocFn;
 
-    f32(this, 0x18) = 0.0f;
-    f32(this, 0x1c) = 0.0f;
-    f32(this, 0x20) = 0.0f;
-    f32(this, 0x24) = 0.0f;
-    pp(this, 0xc) = canvas;
-    i32(this, 0x00) = rows;
-    i32(this, 0x30) = cols;
+    // The binary zero-initializes the 0x18..0x24 region as four 0.0f stores
+    // (a transient scratch blob whose bit pattern is plain zero); the slots are
+    // overwritten with real allocations below.
+    this->transformedMeshes = 0;
+    this->matrices = 0;
+    this->mergedMesh = 0;
+    this->lods = 0;
+    this->canvas = canvas;
+    this->rows = rows;
+    this->cols = cols;
 
     int bytes = cols * rows * 4;
     long long need = (long long)(unsigned)(cols * rows) * 4;
     int req = (int)((need >> 32) != 0 ? 0xffffffff : (unsigned)need);
 
-    pp(this, 0x8) = alloc(req);
-    aeabi_memclr4(pp(this, 0x8), bytes);
-    pp(this, 0x18) = alloc(req);
-    aeabi_memclr4(pp(this, 0x18), bytes);
+    this->sourceMeshes = alloc(req);
+    aeabi_memclr4(this->sourceMeshes, bytes);
+    this->transformedMeshes = alloc(req);
+    aeabi_memclr4(this->transformedMeshes, bytes);
 
-    pp(this, 0x24) = alloc(rows | (rows >> 31));
-    aeabi_memclr(pp(this, 0x24), rows);
+    this->lods = alloc(rows | (rows >> 31));
+    aeabi_memclr(this->lods, rows);
 
     long long mneed = (long long)(unsigned)rows * 0x3c;
     int mreq = (int)((mneed >> 32) != 0 ? 0xffffffff : (unsigned)mneed);
     char *matrices = (char *)alloc(mreq);
     for (int off = 0; rows != 0 && off != rows * 0x3c; off += 0x3c)
         new ((void *)(matrices + off)) Matrix();
-    pp(this, 0x1c) = matrices;
+    this->matrices = matrices;
 
     Matrix ident;   // engine identity matrix
-    int n = i32(this, 0x00);
-    char *mp = (char *)pp(this, 0x1c);
+    int n = this->rows;
+    char *mp = (char *)this->matrices;
     for (int i = 0, off = 0; i < n; i++, off += 0x3c)
         *(Matrix *)(mp + off) = ident;
 
-    n = i32(this, 0x00);
+    n = this->rows;
     uint8_t *en = (uint8_t *)::operator new[](n | (n >> 31));
-    pp(this, 0x28) = en;
+    this->enabledFlags = en;
     for (int i = 0; i < n; i++) en[i] = 1;
 
     uint8_t *vis = (uint8_t *)::operator new[](n | (n >> 31));
-    pp(this, 0x2c) = vis;
+    this->visibleFlags = vis;
     for (int i = 0; i < n; i++) vis[i] = 1;
 
-    u8(this, 0x34) = 0;
-    u16(this, 0x4) = flags;
-    u8(this, 0x6) = 0;
+    this->dirty = 0;
+    this->flags = flags;
+    this->initialized = 0;
 }
 
 void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
-    PaintCanvas *canvas = (PaintCanvas *)pp(this, 0xc);
+    PaintCanvas *canvas = (PaintCanvas *)this->canvas;
     ((PCReal *)canvas)->MeshCreate(meshId, &id, false);
     void *ptr = ((PCReal *)canvas)->MeshGetPointer(id);
-    void **meshes = (void **)pp(this, 0x8);
-    meshes[i32(this, 0x0) * lod + index] = ptr;
+    void **meshes = (void **)this->sourceMeshes;
+    meshes[this->rows * lod + index] = ptr;
 }
 
 extern "C" void AEMath_MatrixTransformVector(Vector *out, const Vector *v);
@@ -489,34 +492,34 @@ __attribute__((visibility("hidden"))) extern void (**g_freeFn)(void *);
 
 MeshMerger::~MeshMerger()
 {
-    if (pp(this, 0x8) != 0) ::operator delete[](pp(this, 0x8));
-    pp(this, 0x8) = 0;
+    if (this->sourceMeshes != 0) ::operator delete[](this->sourceMeshes);
+    this->sourceMeshes = 0;
 
     int i = 0;         // element index (iVar4)
     int idx = 0;       // byte offset (iVar5)
     void *slots;
     for (;;) {
-        slots = pp(this, 0x18);
-        if (i >= i32(this, 0x0) * i32(this, 0x30)) break;
+        slots = this->transformedMeshes;
+        if (i >= this->rows * this->cols) break;
 
         void **cell = (void **)((char *)slots + idx);  // slots[i]
         void **m4 = (void **)((char *)*cell + 4);
         if (*m4 != 0) {
             ::operator delete[](*m4);
-            cell = (void **)((char *)pp(this, 0x18) + idx);
+            cell = (void **)((char *)this->transformedMeshes + idx);
             m4 = (void **)((char *)*cell + 4);
         }
         *m4 = 0;
         void **m10 = (void **)((char *)*cell + 0x10);
         if (*m10 != 0) {
             ::operator delete[](*m10);
-            cell = (void **)((char *)pp(this, 0x18) + idx);
+            cell = (void **)((char *)this->transformedMeshes + idx);
             m10 = (void **)((char *)*cell + 0x10);
         }
         *m10 = 0;
         if (*cell != 0) {
             ::operator delete(*cell);
-            cell = (void **)((char *)pp(this, 0x18) + idx);
+            cell = (void **)((char *)this->transformedMeshes + idx);
         }
         *cell = 0;
 
@@ -524,16 +527,16 @@ MeshMerger::~MeshMerger()
         i += 1;
     }
     if (slots != 0) ::operator delete[](slots);
-    pp(this, 0x18) = 0;
+    this->transformedMeshes = 0;
 
     void (*freeFn)(void *) = *g_freeFn;
-    freeFn(pp(this, 0x24));
-    pp(this, 0x24) = 0;
-    freeFn(pp(this, 0x28));
-    pp(this, 0x28) = 0;
-    freeFn(pp(this, 0x2c));
-    pp(this, 0x2c) = 0;
+    freeFn(this->lods);
+    this->lods = 0;
+    freeFn(this->enabledFlags);
+    this->enabledFlags = 0;
+    freeFn(this->visibleFlags);
+    this->visibleFlags = 0;
 
-    if (pp(this, 0x1c) != 0) ::operator delete[](pp(this, 0x1c));
-    pp(this, 0x1c) = 0;
+    if (this->matrices != 0) ::operator delete[](this->matrices);
+    this->matrices = 0;
 }

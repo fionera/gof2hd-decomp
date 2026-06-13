@@ -51,7 +51,8 @@ public:
     uint32_t field_0x70;                // +0x70
     bool field_0x74;                    // +0x74
     int field_0x78;                     // +0x78
-    int field_0x80;                     // +0x80
+    int boundTextures[20];              // +0x7c  per-slot bound GL texture id (slot 0..19;
+                                        //        [1] == 2nd texture unit binding)
     float field_0xd0;                   // +0xd0
     float field_0xd4;                   // +0xd4
     float field_0xd8;                   // +0xd8
@@ -60,23 +61,11 @@ public:
     unsigned char field_0xfc;           // +0xfc
     uint16_t field_0xfd;                // +0xfd
     uint32_t field_0x100;               // +0x100
-    uint32_t field_0x1c4;               // +0x1c4
-    uint32_t field_0x1c8;               // +0x1c8
-    uint32_t field_0x1cc;               // +0x1cc
-    uint32_t field_0x1d0;               // +0x1d0
-    uint32_t field_0x1d4;               // +0x1d4
-    uint32_t field_0x1d8;               // +0x1d8
-    uint32_t field_0x1dc;               // +0x1dc
-    uint32_t field_0x1e0;               // +0x1e0
-    uint32_t field_0x1e4;               // +0x1e4
-    uint32_t field_0x1e8;               // +0x1e8
-    uint32_t field_0x1ec;               // +0x1ec
-    uint32_t field_0x1f0;               // +0x1f0
-    uint32_t field_0x1f4;               // +0x1f4
-    uint32_t field_0x1f8;               // +0x1f8
-    uint32_t field_0x1fc;               // +0x1fc
-    uint32_t field_0x200;               // +0x200
-    uint32_t field_0x204;               // +0x204
+    float worldViewProjMatrix[16];      // +0x104  world*view*proj (esMatrixMultiply target)
+    float modelMatrixGL[16];            // +0x144  GL column-major model matrix
+    float worldViewMatrixGL[16];        // +0x184  GL column-major world-view matrix
+    float uvMatrix[16];                 // +0x1c4  texture/UV matrix (shader path)
+    uint32_t field_0x204;               // +0x204  modelMatrix3x4 row0.x
     uint32_t field_0x208;               // +0x208
     uint32_t field_0x20c;               // +0x20c
     uint32_t field_0x210;               // +0x210
@@ -105,6 +94,7 @@ public:
     float field_0x2c0;                  // +0x2c0
     uint32_t field_0x2c4;               // +0x2c4
     float field_0x2c8;                  // +0x2c8
+    Vector particleAmbient;             // +0x314  particle ambient color (rgb)
     float field_0x320;                  // +0x320
     float field_0x324;                  // +0x324
     float field_0x328;                  // +0x328
@@ -125,23 +115,8 @@ public:
     int field_0x374;                    // +0x374
     uint32_t field_0x378;               // +0x378
     uint32_t field_0x37c;               // +0x37c
-    char* field_0x380;                  // +0x380
-    float field_0x384;                  // +0x384
-    uint32_t field_0x388;               // +0x388
-    uint32_t field_0x38c;               // +0x38c
-    uint32_t field_0x390;               // +0x390
-    uint32_t field_0x394;                  // +0x394
-    float field_0x398;                  // +0x398
-    uint32_t field_0x39c;               // +0x39c
-    uint32_t field_0x3a0;               // +0x3a0
-    uint32_t field_0x3a4;                  // +0x3a4
-    uint32_t field_0x3a8;               // +0x3a8
-    unsigned int field_0x3ac;           // +0x3ac
-    uint32_t field_0x3b0;               // +0x3b0
-    uint32_t field_0x3b4;                  // +0x3b4
-    unsigned int field_0x3b8;           // +0x3b8
-    uint32_t field_0x3bc;               // +0x3bc
-    unsigned int field_0x3c0;           // +0x3c0
+    char* field_0x380;                  // +0x380  quad mesh (DrawQuad)
+    float projMatrix[16];               // +0x384  projection / ortho matrix (shader path)
     uint8_t field_0x3c4;                // +0x3c4
     uint32_t field_0x3c8;               // +0x3c8
     uint64_t field_0x3cc;               // +0x3cc
@@ -159,14 +134,15 @@ public:
     uint8_t field_0x41c;                // +0x41c
     uint32_t field_0x420;               // +0x420
     uint8_t field_0x424;                // +0x424
-    Vector field_0x468;                 // +0x468
-    Vector field_0x474;                 // +0x474
+    float uvMatrixGL[16];               // +0x428  fixed-function UV matrix (glLoadMatrixf)
+    Vector field_0x468;                 // +0x468  light[0] direction (light array base; higher
+                                        //          indices reached via +index*0xc pointer math)
+    Vector field_0x474;                 // +0x474  light[1] direction
     uint64_t field_0x478;               // +0x478
     bool field_0x480;                   // +0x480
     DestroyCallback* field_0x484;       // +0x484
     uint32_t field_0x488;               // +0x488
-    int field_0x48c;                    // +0x48c
-    int field_0x490;                    // +0x490
+    int frameBufferTextures[2];         // +0x48c  FBO color-texture id per slot (SetFrameBufferTexture)
     uint32_t field_0x4a4;               // +0x4a4
     uint32_t field_0x4a8;               // +0x4a8
     double field_0x4b0;                 // +0x4b0

@@ -21,27 +21,27 @@ extern "C" void AERandom_ctor(void *self);
 void IParticleSystem::setParticleSet(int set)
 {
     if (!this->particleSets->empty() && (*this->particleSets)[0] == set) {
-        U8(this, 0x44) = 0;
+        this->particleSetIndex = 0;
     }
 }
 
 void IParticleSystem::enableEmit(bool enabled)
 {
-    if (enabled && U8(this, 0xc) == 0) {
-        I(this, 0x60) = 0;
+    if (enabled && this->emitEnabled == 0) {
+        this->emitTimer = 0;
     }
-    U8(this, 0xc) = enabled;
+    this->emitEnabled = enabled;
 }
 
 typedef void (*UpdateParticleFn)(IParticleSystem *, int, float);
 
 void IParticleSystem::update(int delta)
 {
-    if (U8(this, 0xe) != 0) {
+    if (this->updateEnabled != 0) {
         float fdelta = (float)delta;
-        for (int i = 0; i < I(this, 0x48); ++i) {
-            if (((int *)P(this, 0x68))[i] != -1) {
-                UpdateParticleFn fn = *(UpdateParticleFn *)((char *)P(this, 0x0) + 0x14);
+        for (int i = 0; i < this->maxParticles; ++i) {
+            if (((int *)this->particleAges)[i] != -1) {
+                UpdateParticleFn fn = *(UpdateParticleFn *)((char *)this->vtable + 0x14);
                 fn(this, i, fdelta);
             }
         }
@@ -50,12 +50,12 @@ void IParticleSystem::update(int delta)
 
 void IParticleSystem::setParticleSetIndex(uint8_t index)
 {
-    U8(this, 0x44) = index;
+    this->particleSetIndex = index;
 }
 
 void IParticleSystem::setMatrix(Matrix const *matrix)
 {
-    *(Matrix const * volatile *)((char *)this + 0x18) = matrix;
+    *(Matrix const * volatile *)&this->matrix = matrix;
     this->field_0x4 = 0x100;
 }
 
@@ -63,11 +63,11 @@ typedef void (*RenderOffFn)(IParticleSystem *);
 
 void IParticleSystem::enableRender(bool enabled)
 {
-    if (!enabled && U8(this, 0xd) != 0) {
+    if (!enabled && this->renderEnabled != 0) {
         RenderOffFn fn = *(RenderOffFn *)((char *)this->vtable + 8);
         fn(this);
     }
-    U8(this, 0xd) = enabled;
+    this->renderEnabled = enabled;
 }
 
 __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
@@ -104,21 +104,21 @@ static inline void zero_vec(char *v)
 
 void IParticleSystem::emit(int delta)
 {
-    if (U8(this, 0xc) == 0 || U8(this, 0xd) == 0) {
+    if (this->emitEnabled == 0 || this->renderEnabled == 0) {
         return;
     }
 
-    int set = (*this->particleSets)[U8(this, 0x44)];
+    int set = (*this->particleSets)[this->particleSetIndex];
     if (set == -1) {
         return;
     }
 
-    uint32_t flags = U(this, 0x34);
+    uint32_t flags = this->flags;
     if ((flags & 0x80) == 0) {
         if ((flags & 0x100) != 0) {
             return;
         }
-    } else if ((flags & 0x100) != 0 || ((int *)P(this, 0x68))[0] != -1) {
+    } else if ((flags & 0x100) != 0 || ((int *)this->particleAges)[0] != -1) {
         return;
     }
 
@@ -139,7 +139,7 @@ void IParticleSystem::emit(int delta)
 
     MatrixGetPosition(matrixPos, this->matrix);
     MatrixGetRight(right, this->matrix);
-    if (U8(this, 0x4c) != 0) {
+    if (this->mirror != 0) {
         *(Vector *)tmp = -*(const Vector *)right;
         *(Vector *)(right) = *(Vector *)(tmp);
     }
@@ -147,14 +147,14 @@ void IParticleSystem::emit(int delta)
     MatrixGetDir(dir, this->matrix);
 
     char *def = ParticleSet_definitions + (set + set * 4) * 32;
-    float speed2 = AbyssEngine::AEMath::VectorDot(*(const Vector *)((char *)this + 0x1c), *(const Vector *)((char *)this + 0x1c));
+    float speed2 = AbyssEngine::AEMath::VectorDot(this->emitterVelocity, this->emitterVelocity);
     if (speed2 < (float)*(int *)(def + 0x98)) {
         return;
     }
 
     float fdelta = (float)delta;
-    float elapsed = FL(this, 0x60) + fdelta;
-    *(Vector *)travel = *(const Vector *)((char *)this + 0x1c) * elapsed;
+    float elapsed = this->emitTimer + fdelta;
+    *(Vector *)travel = this->emitterVelocity * elapsed;
     *(Vector *)travelDiv = *(const Vector *)travel; *(Vector *)travelDiv /= 1000.0f;
     float travelLen2 = AbyssEngine::AEMath::VectorDot(*(const Vector *)travelDiv, *(const Vector *)travelDiv);
     float invGuess = bits_float(0x5f3759df - (float_bits(travelLen2) >> 1));
@@ -165,15 +165,15 @@ void IParticleSystem::emit(int delta)
     if ((flags & 0x10) != 0) {
         float countf = distance / *(float *)(def + 0x2c);
         emitCount = (int)countf;
-        FL(this, 0x60) = (elapsed * (countf - (float)emitCount)) / countf;
+        this->emitTimer = (elapsed * (countf - (float)emitCount)) / countf;
     } else if ((flags & 0x20) != 0) {
         int cycles = (int)(*(float *)(def + 0x2c) * elapsed * 0.001f);
-        FL(this, 0x60) = elapsed + ((float)cycles * -1000.0f) / *(float *)(def + 0x2c);
+        this->emitTimer = elapsed + ((float)cycles * -1000.0f) / *(float *)(def + 0x2c);
         emitCount = cycles;
     } else {
         emitCount = *(int *)(def + 0x10);
         if ((flags & 0x40) != 0) {
-            U8(this, 0xc) = 0;
+            this->emitEnabled = 0;
         }
     }
 
@@ -184,7 +184,7 @@ void IParticleSystem::emit(int delta)
     *(Vector *)baseDelta = *(const Vector *)matrixPos - *(const Vector *)travelDiv;
     float spreadScale = 0.0f;
     float pathScale = 0.0f;
-    if ((U8(this, 0x34) & 0xc0) == 0) {
+    if ((this->flags & 0xc0) == 0) {
         float y = bits_float(0x5f3759df - (float_bits(speed2) >> 1));
         pathScale = (speed2 * -0.5f * y * y + 1.5f) * y;
     }
@@ -196,10 +196,10 @@ void IParticleSystem::emit(int delta)
 
     uint32_t *uvp = (uint32_t *)uv;
     for (int i = 0; i < emitCount; ++i) {
-        int current = I(this, 0x50);
-        ((uint8_t *)P(this, 0x6c))[current] = (uint8_t)set;
-        ((int *)P(this, 0x68))[current] = 0;
-        if ((U8(this, 0x37) & 0x80) != 0) {
+        int current = this->currentParticle;
+        ((uint8_t *)this->particleSetIds)[current] = (uint8_t)set;
+        ((int *)this->particleAges)[current] = 0;
+        if (((this->flags >> 24) & 0x80) != 0) {
             uvp = (uint32_t *)rotateUVs((float *)uv, current, (float *)rotated);
         }
 
@@ -209,19 +209,19 @@ void IParticleSystem::emit(int delta)
         } else {
             int range = velSpread << 1;
             ((float *)velocity)[0] = *(float *)(def + 0x58) +
-                                     (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - velSpread);
+                                     (float)(AbyssEngine::AERandom::nextInt(this->random, range) - velSpread);
             ((float *)velocity)[1] = *(float *)(def + 0x5c) +
-                                     (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - velSpread);
+                                     (float)(AbyssEngine::AERandom::nextInt(this->random, range) - velSpread);
             ((float *)velocity)[2] = *(float *)(def + 0x60) +
-                                     (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - velSpread);
+                                     (float)(AbyssEngine::AERandom::nextInt(this->random, range) - velSpread);
         }
 
-        void *slot = vec_at(P(this, 0x64), current);
+        void *slot = (char *)this->particleVelocities + current * 12;
         *(Vector *)(slot) = *(Vector *)(velocity);
 
         float drag = *(float *)(def + 0x64);
         if (drag != 0.0f) {
-            *(Vector *)velocity = *(const Vector *)((char *)this + 0x1c) * drag;
+            *(Vector *)velocity = this->emitterVelocity * drag;
             *(Vector *)(slot) -= *(Vector *)(velocity);
         }
         if (*(float *)(def + 0x68) != 0.0f) {
@@ -241,13 +241,13 @@ void IParticleSystem::emit(int delta)
         if (*(int *)(def + 0x30) == 1) {
             phase = (float)(i + 1);
         } else {
-            phase = (float)i + (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, 10000) * 0.0001f;
+            phase = (float)i + (float)AbyssEngine::AERandom::nextInt(this->random, 10000) * 0.0001f;
         }
 
         zero_vec(particlePos);
-        if ((U(this, 0x34) & 0xc0) == 0) {
+        if ((this->flags & 0xc0) == 0) {
             if (distance >= 1.0f) {
-                float step = ((U(this, 0x34) & 0x10) != 0) ? *(float *)(def + 0x2c)
+                float step = ((this->flags & 0x10) != 0) ? *(float *)(def + 0x2c)
                                                            : distance / (float)emitCount;
                 *(Vector *)tmp = *(const Vector *)travelDiv * (phase * step);
                 *(Vector *)tmp2 = *(const Vector *)tmp * pathScale;
@@ -264,12 +264,12 @@ void IParticleSystem::emit(int delta)
             phase = 0.0f;
         }
 
-        if ((U8(this, 0x34) & 0x80) != 0) {
+        if ((this->flags & 0x80) != 0) {
             int posRange = (int)*(float *)(def + 0x78);
             int range = posRange << 1;
-            ((float *)tmp)[0] = (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - posRange);
-            ((float *)tmp)[1] = (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - posRange);
-            ((float *)tmp)[2] = (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - posRange);
+            ((float *)tmp)[0] = (float)(AbyssEngine::AERandom::nextInt(this->random, range) - posRange);
+            ((float *)tmp)[1] = (float)(AbyssEngine::AERandom::nextInt(this->random, range) - posRange);
+            ((float *)tmp)[2] = (float)(AbyssEngine::AERandom::nextInt(this->random, range) - posRange);
             *(Vector *)(particlePos) += *(Vector *)(tmp);
         } else {
             if (*(float *)(def + 0x78) != 0.0f) {
@@ -285,20 +285,20 @@ void IParticleSystem::emit(int delta)
                 *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             if (*(float *)(def + 0x84) != 0.0f) {
-                *(Vector *)tmp = *(const Vector *)dir * (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, (int)*(float *)(def + 0x84));
+                *(Vector *)tmp = *(const Vector *)dir * (float)AbyssEngine::AERandom::nextInt(this->random, (int)*(float *)(def + 0x84));
                 *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             int posSpread = *(int *)(def + 0x48);
             if (posSpread != 0) {
-                ((float *)tmp)[0] = (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
+                ((float *)tmp)[0] = (float)(AbyssEngine::AERandom::nextInt(this->random, posSpread << 1) - posSpread);
                 ((float *)tmp)[1] = 0.0f;
-                ((float *)tmp)[2] = (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
+                ((float *)tmp)[2] = (float)(AbyssEngine::AERandom::nextInt(this->random, posSpread << 1) - posSpread);
                 *(Vector *)(particlePos) += *(Vector *)(tmp);
             }
             int ySpread = *(int *)(def + 0x4c);
             if (ySpread != 0) {
                 ((float *)particlePos)[1] +=
-                    (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, ySpread << 1) - ySpread);
+                    (float)(AbyssEngine::AERandom::nextInt(this->random, ySpread << 1) - ySpread);
             }
         }
 
@@ -307,9 +307,9 @@ void IParticleSystem::emit(int delta)
         float size1 = *(float *)(def + 0x20);
         int randomLife = *(int *)(def + 0x18);
         if (randomLife != 0) {
-            life += (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, randomLife);
-            size0 += (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, randomLife);
-            size1 += (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, randomLife);
+            life += (float)AbyssEngine::AERandom::nextInt(this->random, randomLife);
+            size0 += (float)AbyssEngine::AERandom::nextInt(this->random, randomLife);
+            size1 += (float)AbyssEngine::AERandom::nextInt(this->random, randomLife);
         }
 
         if (*(float *)(def + 0x24) == 0.0f) {
@@ -325,12 +325,12 @@ void IParticleSystem::emit(int delta)
             colorFlag = (*(float *)(def + 0x40) > 0.0f) ? 1 : 0;
         }
 
-        EmitParticleFn emitFn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+        EmitParticleFn emitFn = *(EmitParticleFn *)((char *)this->vtable + 0x18);
         emitFn(this, particlePos, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                colorFlag, size0, size1, emitVelocity);
 
         if (*(float *)(def + 0x64) != 0.0f) {
-            *(Vector *)tmp = *(const Vector *)((char *)this + 0x1c) * *(float *)(def + 0x64);
+            *(Vector *)tmp = this->emitterVelocity * *(float *)(def + 0x64);
             *(Vector *)tmp2 = *(const Vector *)tmp * 2.0f;
             *(Vector *)(slot) += *(Vector *)(tmp2);
         }
@@ -339,14 +339,14 @@ void IParticleSystem::emit(int delta)
         if (remaining > fdelta) {
             remaining = fdelta;
         }
-        UpdateParticleFn updateFn = *(UpdateParticleFn *)((char *)P(this, 0x0) + 0x14);
+        UpdateParticleFn updateFn = *(UpdateParticleFn *)((char *)this->vtable + 0x14);
         updateFn(this, current, remaining);
 
-        current = I(this, 0x50) + 1;
-        if (I(this, 0x48) <= current) {
+        current = this->currentParticle + 1;
+        if (this->maxParticles <= current) {
             current = 0;
         }
-        I(this, 0x50) = current;
+        this->currentParticle = current;
     }
 }
 
@@ -354,8 +354,8 @@ __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
 
 void IParticleSystem::interpolateColor(int index, float *alpha, float *red, float *green, float *blue)
 {
-    int age = ((int *)P(this, 0x68))[index];
-    int setIndex = ((int8_t *)P(this, 0x6c))[index];
+    int age = ((int *)this->particleAges)[index];
+    int setIndex = ((int8_t *)this->particleSetIds)[index];
     char *def = ParticleSet_definitions + (setIndex + setIndex * 4) * 32;
 
     float t = (float)age / (float)*(int *)(def + 0x28);
@@ -384,7 +384,7 @@ void IParticleSystem::interpolateColor(int index, float *alpha, float *red, floa
     int fadeFrames = *(int *)(def + 0x3c);
     if (age < fadeFrames) {
         float fade = (float)age / (float)fadeFrames;
-        if (U8(this, 0x45) != 0) {
+        if (this->alphaFade != 0) {
             *alpha *= fade;
             *red *= fade;
             *green *= fade;
@@ -419,30 +419,30 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
                                  bool mirror, bool alphaFade)
 {
     this->canvas = canvas;
-    P(this, 0x0) = (char *)IParticleSystem_vtable + 8;
-    AERandom_ctor((char *)this + 0x10);
+    this->vtable = (char *)IParticleSystem_vtable + 8;
+    AERandom_ctor(this->random);
 
-    uint32_t *zero = (uint32_t *)((char *)this + 0x1c);
-    zero[0] = 0;
-    zero[1] = 0;
-    zero[2] = 0;
-    zero[3] = 0;
+    this->emitterVelocity.x = 0.0f;
+    this->emitterVelocity.y = 0.0f;
+    this->emitterVelocity.z = 0.0f;
+    this->lastEmitterPosition.x = 0.0f;
     this->matrix = matrix;
-    I(this, 0x2c) = 0;
-    I(this, 0x30) = 0;
+    this->field_0x2c = 0;
+    this->field_0x30 = 0;
 
     this->particleSets = new Array<int>();
-    U8(this, 0x4c) = mirror;
-    U8(this, 0x45) = alphaFade;
+    this->mirror = mirror;
+    this->alphaFade = alphaFade;
     *this->particleSets = sets;
 
-    I(this, 0x50) = 0;
-    I(this, 0x54) = -1;
-    I(this, 0x58) = -1;
-    U16(this, 0xc) = 0x101;
-    U8(this, 0xe) = 1;
-    I(this, 0x48) = 0;
-    I(this, 0x34) = 0;
+    this->currentParticle = 0;
+    this->field_0x54 = -1;
+    this->field_0x58 = -1;
+    this->emitEnabled = 1;
+    this->renderEnabled = 1;
+    this->updateEnabled = 1;
+    this->maxParticles = 0;
+    this->flags = 0;
 
     int count = sets.size();
     const int *src = sets.data();
@@ -456,10 +456,10 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
             if ((int)maxParticles <= (int)particles) {
                 maxParticles = particles;
             }
-            U(this, 0x48) = maxParticles;
+            this->maxParticles = maxParticles;
             if (firstFlags == 0) {
                 firstFlags = *(int *)(def + 0xc);
-                I(this, 0x34) = firstFlags;
+                this->flags = firstFlags;
             }
         }
         ++src;
@@ -468,21 +468,21 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
 
     unsigned long long bytes64 = (unsigned long long)maxParticles * 4u;
     uint32_t bytes = (uint32_t)bytes64;
-    I(this, 0x60) = 0;
-    U8(this, 0x44) = 0;
+    this->emitTimer = 0;
+    this->particleSetIndex = 0;
     if ((uint32_t)(bytes64 >> 32) != 0) {
         bytes = 0xffffffffu;
     }
-    P(this, 0x68) = ::operator new(bytes);
-    P(this, 0x6c) = ::operator new(maxParticles | ((int32_t)maxParticles >> 31));
+    this->particleAges = ::operator new(bytes);
+    this->particleSetIds = ::operator new(maxParticles | ((int32_t)maxParticles >> 31));
 
     for (int i = 0; i < (int)maxParticles; ++i) {
-        ((uint8_t *)P(this, 0x6c))[i] = 200;
-        maxParticles = U(this, 0x48);
+        ((uint8_t *)this->particleSetIds)[i] = 200;
+        maxParticles = this->maxParticles;
     }
 
-    U8(this, 0x5c) = 0;
-    U16(this, 0x4) = 0x101;
+    this->field_0x5c = 0;
+    this->field_0x4 = 0x101;
 }
 
 void IParticleSystem::calcEmitterVelocity(int delta)
@@ -491,11 +491,11 @@ void IParticleSystem::calcEmitterVelocity(int delta)
     char scaled[12];
     char diff[12];
     MatrixGetPosition(position, this->matrix);
-    *(Vector *)diff = *(const Vector *)position - *(const Vector *)((char *)this + 0x28);
+    *(Vector *)diff = *(const Vector *)position - this->lastEmitterPosition;
     *(Vector *)scaled = *(const Vector *)diff * (1000.0f / (float)delta);
-    *(Vector *)((char *)this + 0x1c) = *(Vector *)(scaled);
-    U8(this, 0x5) = 0;
-    *(Vector *)((char *)this + 0x28) = *(Vector *)(position);
+    this->emitterVelocity = *(Vector *)(scaled);
+    this->emitterVelocityDirty = 0;
+    this->lastEmitterPosition = *(Vector *)(position);
 }
 
 __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
@@ -503,11 +503,11 @@ __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
 void IParticleSystem::emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime)
 {
     if (particleSet != -1) {
-        int current = I(this, 0x50);
+        int current = this->currentParticle;
         int set = (*this->particleSets)[particleSet];
-        ((uint8_t *)P(this, 0x6c))[current] = (uint8_t)set;
+        ((uint8_t *)this->particleSetIds)[current] = (uint8_t)set;
         char *def = ParticleSet_definitions + (set + set * 4) * 32;
-        ((int *)P(this, 0x68))[current] = 0;
+        ((int *)this->particleAges)[current] = 0;
 
         uint32_t uv[4];
         uint32_t rotated[4];
@@ -516,7 +516,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         uv[2] = *(uint32_t *)(def + 0x8c);
         uv[3] = *(uint32_t *)(def + 0x94);
         uint32_t *uvp = uv;
-        if ((U8(this, 0x37) & 0x80) != 0) {
+        if (((this->flags >> 24) & 0x80) != 0) {
             uvp = (uint32_t *)rotateUVs((float *)uv, current, (float *)rotated);
         }
 
@@ -528,13 +528,13 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
             *(uint32_t *)(randomVelocity + 8) = 0;
         } else {
             int range = spread << 1;
-            ((float *)randomVelocity)[0] = (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - spread);
+            ((float *)randomVelocity)[0] = (float)(AbyssEngine::AERandom::nextInt(this->random, range) - spread);
             ((float *)randomVelocity)[1] = *(float *)(def + 0x5c) +
-                                           (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - spread);
-            ((float *)randomVelocity)[2] = (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, range) - spread);
+                                           (float)(AbyssEngine::AERandom::nextInt(this->random, range) - spread);
+            ((float *)randomVelocity)[2] = (float)(AbyssEngine::AERandom::nextInt(this->random, range) - spread);
         }
 
-        void *slot = vec_at(P(this, 0x64), current);
+        void *slot = (char *)this->particleVelocities + current * 12;
         *(Vector *)(slot) = *(Vector *)(randomVelocity);
 
         if (velocity != 0) {
@@ -550,16 +550,16 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         if (posSpread != 0) {
             char randomPosition[12];
             ((float *)randomPosition)[0] =
-                (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
+                (float)(AbyssEngine::AERandom::nextInt(this->random, posSpread << 1) - posSpread);
             ((float *)randomPosition)[1] = 0.0f;
             ((float *)randomPosition)[2] =
-                (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, posSpread << 1) - posSpread);
+                (float)(AbyssEngine::AERandom::nextInt(this->random, posSpread << 1) - posSpread);
             *(Vector *)(&position) += *(Vector *)(randomPosition);
         }
 
         int ySpread = *(int *)(def + 0x4c);
         if (ySpread != 0) {
-            position.y += (float)(AbyssEngine::AERandom::nextInt((char *)this + 0x10, ySpread << 1) - ySpread);
+            position.y += (float)(AbyssEngine::AERandom::nextInt(this->random, ySpread << 1) - ySpread);
         }
 
         if (lifetime < 0.0f) {
@@ -578,13 +578,13 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 *(Vector *)emitVelocity = velocityScale * *(const Vector *)slot;
             }
 
-            EmitParticleFn fn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+            EmitParticleFn fn = *(EmitParticleFn *)((char *)this->vtable + 0x18);
             fn(this, &position, lifetime, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                *(int *)(def + 0x3c) > 0, *(float *)(def + 0x1c), *(float *)(def + 0x20), emitVelocity);
         } else {
-            float life = lifetime + (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, randomLife);
-            float size0 = *(float *)(def + 0x1c) + (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, randomLife);
-            float size1 = *(float *)(def + 0x20) + (float)AbyssEngine::AERandom::nextInt((char *)this + 0x10, randomLife);
+            float life = lifetime + (float)AbyssEngine::AERandom::nextInt(this->random, randomLife);
+            float size0 = *(float *)(def + 0x1c) + (float)AbyssEngine::AERandom::nextInt(this->random, randomLife);
+            float size1 = *(float *)(def + 0x20) + (float)AbyssEngine::AERandom::nextInt(this->random, randomLife);
             float velocityScale = *(float *)(def + 0x24);
             if (velocityScale == 0.0f) {
                 *(uint32_t *)(emitVelocity + 0) = 0;
@@ -594,7 +594,7 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 *(Vector *)emitVelocity = velocityScale * *(const Vector *)slot;
             }
 
-            EmitParticleFn fn = *(EmitParticleFn *)((char *)P(this, 0x0) + 0x18);
+            EmitParticleFn fn = *(EmitParticleFn *)((char *)this->vtable + 0x18);
             fn(this, &position, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                *(int *)(def + 0x3c) > 0, size0, size1, emitVelocity);
         }
@@ -603,27 +603,27 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
         if (drag != 0.0f) {
             char tmp[12];
             char tmp2[12];
-            *(Vector *)tmp = *(const Vector *)((char *)this + 0x1c) * drag;
+            *(Vector *)tmp = this->emitterVelocity * drag;
             *(Vector *)tmp2 = *(const Vector *)tmp * 2.0f;
             *(Vector *)(slot) += *(Vector *)(tmp2);
         }
 
-        current = I(this, 0x50) + 1;
-        if (I(this, 0x48) <= current) {
+        current = this->currentParticle + 1;
+        if (this->maxParticles <= current) {
             current = 0;
         }
-        I(this, 0x50) = current;
+        this->currentParticle = current;
     }
 }
 
 void IParticleSystem::resetEmitterVelocity()
 {
     char value[12] = {};
-    *(Vector *)((char *)this + 0x1c) = *(Vector *)(value);
+    this->emitterVelocity = *(Vector *)(value);
     this->emitterVelocityDirty = 1;
     char *matrixValue = value;
     MatrixGetPosition(matrixValue, this->matrix);
-    *(Vector *)((char *)this + 0x28) = *(Vector *)(matrixValue);
+    this->lastEmitterPosition = *(Vector *)(matrixValue);
     this->field_0x4 = 0;
 }
 
@@ -631,9 +631,7 @@ __attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
 
 IParticleSystem::~IParticleSystem()
 {
-    volatile char *random = (char *)this;
-    *(void * volatile *)random = (char *)IParticleSystem_vtable + 8;
-    random += 0x10;
+    *(void * volatile *)&this->vtable = (char *)IParticleSystem_vtable + 8;
     delete this->particleSets;
-    AERandom_dtor((void *)random);
+    AERandom_dtor((void *)this->random);
 }

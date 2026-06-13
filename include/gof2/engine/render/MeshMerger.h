@@ -26,22 +26,22 @@ struct Mesh;   // global Mesh view (full definition in gof2/Mesh.h)
 
 class MeshMerger {
 public:
-    int      field_0x0;    // +0x0   rows (mesh count)
-    uint16_t flags;    // +0x4   flags
-    uint8_t  initialized;    // +0x6   initialized flag
-    uint8_t  pad7;
-    void    *sourceMeshes;    // +0x8   source mesh pointer table
-    void    *canvas;    // +0xc   PaintCanvas*
-    uint32_t mergedMeshId;   // +0x10  merged mesh id
-    uint32_t transformId;   // +0x14  transform id
-    void    *transformedMeshes;   // +0x18  transformed mesh slots
-    void    *matrices;   // +0x1c  per-row matrices
-    int      mergedMesh;   // +0x20  merged mesh pointer
-    void    *lods;   // +0x24  per-row LOD bytes
-    void    *enabledFlags;   // +0x28  per-row enabled bytes
-    void    *visibleFlags;   // +0x2c  per-row visible bytes
-    int      field_0x30;   // +0x30  cols (LOD count)
-    uint8_t  dirty;   // +0x34  dirty flag
+    int      rows;                 // +0x0   row count (mesh count)
+    uint16_t flags;                // +0x4   flags
+    uint8_t  initialized;          // +0x6   initialized flag
+    uint8_t  pad7;                 // +0x7
+    void    *sourceMeshes;         // +0x8   source mesh pointer table
+    void    *canvas;               // +0xc   PaintCanvas*
+    uint32_t mergedMeshId;         // +0x10  merged mesh id
+    uint32_t transformId;          // +0x14  transform id
+    void    *transformedMeshes;    // +0x18  transformed mesh slots
+    void    *matrices;             // +0x1c  per-row matrices (each 0x3c bytes)
+    void    *mergedMesh;           // +0x20  merged mesh pointer
+    void    *lods;                 // +0x24  per-row LOD bytes
+    void    *enabledFlags;         // +0x28  per-row enabled bytes
+    void    *visibleFlags;         // +0x2c  per-row visible bytes
+    int      cols;                 // +0x30  col count (LOD count)
+    uint8_t  dirty;                // +0x34  dirty flag
 
     MeshMerger(const Array<uint16_t> &meshIds, Array<AbyssEngine::AEMath::Matrix> transforms,
                AbyssEngine::PaintCanvas *canvas, uint16_t flags);

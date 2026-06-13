@@ -11,10 +11,15 @@
 
 struct Mesh;
 struct Transform;
+struct Engine;
 namespace AbyssEngine { namespace AEMath { struct Matrix; struct Vector; } }
 
 class PaintCanvas {
 public:
+    // ---- construction / destruction (real definitions live in PaintCanvas.cpp) -
+    explicit PaintCanvas(Engine *engine);
+    ~PaintCanvas();
+
     int field_0x4;                      // +0x4
     char* field_0x8;                    // +0x8
     int field_0xc;                      // +0xc

@@ -91,39 +91,77 @@ struct Engine {
 
 class PaintCanvas {
 public:
+    // NOTE on layout: the byte labels in `field_0xNN` names are the offsets from
+    // the original 32-bit ARM binary; the native (64-bit) build lays the members
+    // out by natural alignment, so the labels are conventional, not physical. The
+    // {count,data,cap} array headers (mesh/transform/camera/material/sprite/
+    // resource/font/image lists + the glow scratch buffers + loaded-texture-name
+    // list) are still the engine's three-word in-place headers shared verbatim
+    // with PaintCanvasClass.h; only the genuine scalar / pointer / matrix members
+    // are converted to named typed members here. The matrix + line-vertex + glow
+    // members below are NEW relative to PaintCanvasClass.h -- that header must be
+    // mirrored to keep the two declarations layout-identical (see report).
+    unsigned char field_0x0;            // +0x0   init flag
     int field_0x4;                      // +0x4
-    char* field_0x8;                    // +0x8
+    char* field_0x8;                    // +0x8   2D-quad mesh handle
     int field_0xc;                      // +0xc
-    unsigned int field_0x10;            // +0x10
-    char** field_0x14;                  // +0x14
+    unsigned char field_0x1c;           // +0x1c  init flag
+    unsigned int field_0x10;            // +0x10  loaded-texture-name list: count
+    char** field_0x14;                  // +0x14  loaded-texture-name list: data
     char* field_0x20;                   // +0x20  current 2D-mask Image2D pointer
-    unsigned int field_0x24;            // +0x24
-    char** field_0x28;                  // +0x28
-    int field_0x30;                     // +0x30
-    void* field_0x34;                   // +0x34
-    unsigned int field_0x134;           // +0x134
-    char** field_0x138;                 // +0x138
-    unsigned int field_0x140;           // +0x140
-    void** field_0x144;                 // +0x144
-    unsigned int field_0x14c;           // +0x14c
-    char** field_0x150;                 // +0x150
-    unsigned int field_0x158;           // +0x158
-    char** field_0x15c;                 // +0x15c
-    unsigned int field_0x164;           // +0x164
-    void** field_0x168;                 // +0x168
-    unsigned int field_0x170;           // +0x170
-    unsigned int field_0x174;           // +0x174
-    void** field_0x178;                 // +0x178
-    unsigned int field_0x180;           // +0x180
-    char** field_0x184;                 // +0x184
-    char* field_0x1c8;                  // +0x1c8
+    unsigned int field_0x24;            // +0x24  meshes: count
+    char** field_0x28;                  // +0x28  meshes: data
+    int field_0x30;                     // +0x30  game orientation
+    void* field_0x34;                   // +0x34  engine back-reference
+    AbyssEngine::AEMath::Matrix projMatrix3d;    // +0x38  perspective projection matrix
+    AbyssEngine::AEMath::Matrix projOrthoMatrix; // +0x78  orthographic projection matrix
+    AbyssEngine::AEMath::Matrix worldViewMatrix; // +0xb8  world-view matrix
+    AbyssEngine::AEMath::Matrix identityMatrix;  // +0xf8  identity fallback (Camera/TransformGetLocal)
+    unsigned int field_0x134;           // +0x134 resources: count
+    char** field_0x138;                 // +0x138 resources: data
+    unsigned int field_0x140;           // +0x140 fonts: count
+    void** field_0x144;                 // +0x144 fonts: data
+    unsigned int field_0x14c;           // +0x14c images: count
+    char** field_0x150;                 // +0x150 images: data
+    unsigned int field_0x158;           // +0x158 transforms: count
+    char** field_0x15c;                 // +0x15c transforms: data
+    unsigned int field_0x164;           // +0x164 cameras: count
+    void** field_0x168;                 // +0x168 cameras: data
+    unsigned int field_0x170;           // +0x170 current camera index
+    unsigned int field_0x174;           // +0x174 materials: count
+    void** field_0x178;                 // +0x178 materials: data
+    unsigned int field_0x180;           // +0x180 sprite systems: count
+    char** field_0x184;                 // +0x184 sprite systems: data
+    unsigned int glowMeshes_count;      // +0x18c glow meshes: count
+    void* glowMeshes_data;              // +0x190 glow meshes: data
+    unsigned int glowMeshes_cap;        // +0x194 glow meshes: capacity
+    unsigned int glowMatA_count;        // +0x198 glow matrix list A: count
+    void* glowMatA_data;                // +0x19c glow matrix list A: data
+    unsigned int glowMatA_cap;          // +0x1a0 glow matrix list A: capacity
+    unsigned int glowMatB_count;        // +0x1a4 glow matrix list B: count
+    void* glowMatB_data;                // +0x1a8 glow matrix list B: data
+    unsigned int glowMatB_cap;          // +0x1ac glow matrix list B: capacity
+    unsigned int glowUints_count;       // +0x1b0 glow uint list: count
+    void* glowUints_data;               // +0x1b4 glow uint list: data
+    unsigned int glowUints_cap;         // +0x1b8 glow uint list: capacity
+    unsigned int glowMatC_count;        // +0x1bc glow matrix list C: count
+    void* glowMatC_data;                // +0x1c0 glow matrix list C: data
+    unsigned int glowMatC_cap;          // +0x1c4 glow matrix list C: capacity
+    char* field_0x1c8;                  // +0x1c8 glow line-draw mesh handle
+    unsigned int field_0x1cc;           // +0x1cc
+    float lineVerts[8];                 // +0x1d0 2D line/rect vertex scratch buffer
     unsigned char field_0x1f0;          // +0x1f0
     char field_0x1f1;                   // +0x1f1
     int field_0x1f4;                    // +0x1f4
-    float field_0x1fc;                  // +0x1fc
-    float field_0x200;                  // +0x200
-    float field_0x204;                  // +0x204
-    float field_0x208;                  // +0x208
+    unsigned char field_0x1f8;          // +0x1f8 init flag
+    float field_0x1fc;                  // +0x1fc color r / fog r
+    float field_0x200;                  // +0x200 color g / fog g
+    float field_0x204;                  // +0x204 color b / fog b
+    float field_0x208;                  // +0x208 color a / fog a
+
+    // ---- construction / destruction -------------------------------------------
+    explicit PaintCanvas(Engine *engine);
+    ~PaintCanvas();
 
     // ---- methods (recovered from the binary) ----------------------------------
     // Frame / render-state
