@@ -38,6 +38,7 @@ public:
     unsigned char isDragging;           // +0x54
 
     // ---- methods (converted from free functions) ----
+    ~StatusWindow();
     int OnTouchBegin(int param_1, int param_2);
     void OnTouchEnd(int x, int y);
     int OnTouchMove(int param_1, int param_2);

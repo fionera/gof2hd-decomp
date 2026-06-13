@@ -1050,3 +1050,18 @@ void WantedWindow::selectWanted(int idx) {
     ((String *)(&s88))->dtor();
     ((String *)(&s34))->dtor();
 }
+
+// ---- star-map tail forwarders ----
+// When showingMap is set, update()/render3D()/draw() tail-call straight into the
+// embedded StarMap object instead of doing the bounty-board work.
+void WantedWindow::update_tail(void *starMap, int dt) {
+    ((StarMap *)starMap)->update(dt);
+}
+
+void WantedWindow::render3D_tail(void *starMap) {
+    ((StarMap *)starMap)->render();
+}
+
+void WantedWindow::draw_tail(void *starMap) {
+    ((StarMap *)starMap)->draw();
+}

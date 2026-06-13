@@ -1503,6 +1503,65 @@ idle_camera:
 // passed in (or, for draw_cutscene_tail, taken from the draw-layout global slot).
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Recovered tail-call fragments as real SpaceLounge members. Each mirrors the
+// corresponding extern "C" veneer below; the lounge forwards rendering/updating
+// to whichever sub-screen (StarMap / CutScene / ListItemWindow / Layout) is live
+// for the current mode. The receiver is supplied by the caller, except
+// draw_cutscene_tail which reads the active draw-layout from the global slot.
+// ---------------------------------------------------------------------------
+
+void SpaceLounge::OnRender3D_map_tail(void *map)
+{
+    ((StarMap *)map)->render();
+}
+
+void SpaceLounge::OnRender3D_cutscene_tail(void *cutscene)
+{
+    ((CutScene *)cutscene)->render3D();
+}
+
+void SpaceLounge::OnRenderBG_tail(void *cutscene)
+{
+    // OnRenderBG: when a cutscene is active (field 0x44 != 0) the lounge draws the
+    // cutscene's background layer. Sibling of OnRender3D_cutscene_tail.
+    ((CutScene *)cutscene)->renderBG();
+}
+
+void SpaceLounge::draw3DShip_tail(void *ship)
+{
+    ((ListItemWindow *)ship)->render();
+}
+
+void SpaceLounge::draw_map_tail(void *map)
+{
+    ((StarMap *)map)->draw();
+}
+
+void SpaceLounge::draw_cutscene_tail()
+{
+    // Tail of draw() in 3D-ship mode: after the ListItemWindow has been drawn,
+    // render the footer of the currently active draw layout.
+    void *layout = *(void **)(*(void **)&SpaceLounge_draw_layout_slot);
+    ((Layout *)layout)->drawFooter();
+}
+
+void SpaceLounge::update_map_tail(void *map, int dt)
+{
+    ((StarMap *)map)->update(dt);
+}
+
+void SpaceLounge::update_ship_tail(void *list, int dt)
+{
+    ((ListItemWindow *)list)->update(dt);
+}
+
+void *SpaceLounge::dtor()
+{
+    this->~SpaceLounge();
+    return this;
+}
+
 extern "C" void SpaceLounge_OnRender3D_map_tail(void *map)
 {
     ((StarMap *)map)->render();

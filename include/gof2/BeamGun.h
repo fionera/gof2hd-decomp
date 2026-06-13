@@ -39,5 +39,10 @@ public:
     void setEnemies_tail(void *data);
     void setEnemy_tail(void *data);
     void render_tail(AEGeometry *self);
+
+    // Inherited gun-hierarchy enemy landing pads reached by the tail veneers; each
+    // forwards the extracted data pointer through the resolved engine handler slot.
+    void setEnemiesEngine(void *data);
+    void setEnemyEngine(void *data);
 };
 #endif

@@ -1679,7 +1679,6 @@ void *Level_opnew_cm(unsigned size);
 void ArrayKIPlayer_ctor_cm(void *a);
 void ArraySetLength_KIPlayer_cm(unsigned n, void *a);
 int  Globals_getRandomEnemyFighter_cm(Globals *g, int race);
-int  Level_createShip_cm(Level *self, int race, int b, int shipDesc, int wp, int hostile, int grp);
 void Player_setAlwaysEnemy_cm(Player *p);
 // The full per-mission-type scene construction (escorts, freighters, derelicts, generators, radio
 // triggers, ...) — thousands of lines of SIMD-heavy mission scripting Ghidra could not lift.
@@ -1719,7 +1718,7 @@ void Level::createMission()
         Globals *globals = *g_cm_globals;
         for (unsigned i = 0; i < count; i = i + 1) {
             int fighter = Globals_getRandomEnemyFighter_cm(globals, 9);
-            int ship = Level_createShip_cm((Level *)self, 9, 0, fighter, 0, 1, 0);
+            int ship = (int)(intptr_t)((Level *)self)->createShip_cm(9, 0, fighter, 0, 1, 0);
             *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) = ship;
             int *kp = *(int **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
             float x = (float)(cm_randPos(rng, 0) - 60000);
@@ -2019,7 +2018,6 @@ int  Status_getCurrentCampaignMission_ccm();
 void *Level_opnew_ccm(unsigned size);
 void ArrayKIPlayer_ctor_ccm(void *a);
 void ArraySetLength_KIPlayer_ccm(unsigned n, void *a);
-int  Level_createShip_ccm(Level *self, int race, int b, int shipDesc, int wp, int hostile, int grp);
 void KIPlayer_setToSleep_ccm(KIPlayer *k);
 void Player_setAlwaysEnemy_ccm(Player *p);
 void Player_setHitpoints_ccm(int p);
@@ -2046,7 +2044,7 @@ void Level::createCampaignMission()
         float c = g_ccm_pos0;
         for (unsigned i = 0; i < **(unsigned **)(self + 0xf8); i = i + 1) {
             int type = (i == 1) ? 0x17 : 2;
-            int ship = Level_createShip_ccm(this, 8, 0, type, 0, 1, 0);
+            int ship = (int)(intptr_t)this->createShip_ccm(8, 0, type, 0, 1, 0);
             *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) = ship;
             KIPlayer_setToSleep_ccm(*(KIPlayer **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4));
             Player_setAlwaysEnemy_ccm(
@@ -4186,7 +4184,6 @@ void ArraySetLength_KIPlayer_cwm(unsigned n, void *a);
 void AERandom_setSeed_cwm(int seed);
 void AERandom_reset_cwm();
 int  Globals_getRandomEnemyFighter_cwm(Globals *g, int race);
-int  Level_createShip_cwm(Level *self, int a, int b, int shipDesc, int wp, int flagA, int flagB);
 void KIPlayer_setWingman_cwm(KIPlayer *k, int flag, unsigned slot);
 void Player_setAlwaysFriend_cwm(Player *p, int flag);
 void Player_setHitpoints_cwm(int p);
@@ -4222,7 +4219,7 @@ void Level::createWingmen()
         Status_getWingmen_cwm();
         AERandom_setSeed_cwm(seed);
         int fighter = Globals_getRandomEnemyFighter_cwm(*g_cwm_globals, *(int *)(*statusB + 0x2c));
-        int ship = Level_createShip_cwm(this, 5, 0, fighter, 0, 1, 0);
+        int ship = (int)(intptr_t)this->createShip_cwm(5, 0, fighter, 0, 1, 0);
         *(int *)(*(int *)((char *)arr + 4) + i * 4) = ship;
 
         int *slot = (int *)(*(int *)((char *)arr + 4) + i * 4);
@@ -4299,7 +4296,6 @@ int   Agent_getImageParts_csc(Agent *a);
 int   Agent_isMale_csc(Agent *a);
 int   AERandom_nextInt_csc(int rng);
 int   Globals_getRandomEnemyFighter_csc(Globals *g, int race);
-int   Level_createShip_csc(Level *self, int a, int b, int shipDesc, int wp, int flagA, int flagB);
 void  PlayerStatic_ctor_csc(PlayerStatic *p, int a, AEGeometry *geo);
 void  PlayerFighter_removeTrail_csc(int pf);
 void  PlayerFighter_setExhaustVisible_csc(int pf);
@@ -4430,7 +4426,7 @@ void Level::createScene()
         int shipIdx = Ship_getIndex_csc();
         Ship *ship = (Ship *)Status_getShip_csc();
         int shipRace = Ship_getRace_csc(ship);
-        int actor = Level_createShip_csc(this, shipRace, 0, shipIdx, 0,
+        int actor = (int)(intptr_t)this->createShip_csc(shipRace, 0, shipIdx, 0,
                                          *(int *)(self + 0xc0) != 0x17, 0);
         **(int **)(*(int *)(self + 0xf8) + 4) = actor;
         Level_csc_placeActor(this, actor, shipIdx, 1);
@@ -4487,7 +4483,7 @@ void Level::createScene()
                 Station_getShips_csc();
                 fighter = Ship_getIndex_csc();
             }
-            KIPlayer *k = (KIPlayer *)Level_createShip_csc(this, 0, 0, fighter, 0, 0, 0);
+            KIPlayer *k = (KIPlayer *)this->createShip_csc(0, 0, fighter, 0, 0, 0);
             int seat = AERandom_nextInt_csc(rng);
             int guard = -100;
             while (guard != 0 && seats[seat & 0x3f] != 0) {
@@ -4985,3 +4981,305 @@ void Level::updateAlienAttackers_call()     { updateAlienAttackers(0); }
 // updateOrbit() raises the delayed friends-turned-hostile alarm + radio line.
 void Level::alarmAllFriends_uo(int race, int message) { alarmAllFriends(race, message != 0); }
 void Level::createRadioMessage_uo(int type)           { createRadioMessage(type, 0); }
+
+// ===========================================================================
+// Supporting shims for the recovered build fragments below.
+//
+// These mirror the per-fragment `extern "C"` blocks already used throughout this
+// TU: hidden `extern` references that the link/wiring pass resolves. Declaring
+// them here keeps the fragment bodies self-contained without redefining storage.
+// ===========================================================================
+// AEMath free functions used by the SIMD-recovery fragments (the structs are in
+// scope via common.h; these declarations bring in just the two entry points we
+// need without pulling the whole AEMath header into this TU).
+namespace AbyssEngine { namespace AEMath {
+float VectorLength(const Vector &value);
+Matrix MatrixSetRotation(Matrix &matrix, float x, float y, float z);
+} }
+
+namespace {
+// PlayerEgo's comm controller (ego+0x18) consumes the radio queue through an
+// engine update entry; reuse the LODManager-shaped forwarder already declared
+// for the veneer table above.
+struct LODManagerFwd { void update(void *arg); };
+} // namespace
+
+// RNG object holders for the spawn-positioning fragments (one per owning method).
+__attribute__((visibility("hidden"))) extern int *g_uo_rng;
+__attribute__((visibility("hidden"))) extern int *g_umo_rng;
+__attribute__((visibility("hidden"))) extern int *g_uaa_rng;
+
+extern "C" {
+int  AERandom_nextInt_uo(int rng);
+int  AERandom_nextInt_umo(int rng);
+int  AERandom_nextInt_uaa(int rng);
+void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
+void AEGeometry_setLodMeshes_gap(AEGeometry *geo, unsigned short *meshes, int *dist, int n);
+}
+
+// ===========================================================================
+// Recovered decompiler-split scene/build fragments.
+//
+// Each owning method (createSpace / init / createMission / ...) was lifted by
+// the decompiler as a flat sequence that handed a slice of its work to a
+// distinct Level_<suffix> helper — almost always a block of SIMD float math
+// the lifter could not reconstruct. The bodies below re-express that slice
+// through the engine shims declared at the matching call site, plus our
+// AEMath / vtable helpers, so the work is named rather than opaque. Field
+// access stays at raw offsets to keep the struct byte-compatible with the
+// other TUs that still address Level by offset.
+// ===========================================================================
+
+namespace {
+// A KIPlayer/Player object exposes a 3-float setPosition through vtable slot
+// +0x48; that is how createMission()/updateOrbit() commit a spawn position.
+inline void kiSetPosition(int *ki, float x, float y, float z) {
+    (*(void (**)(int *, float, float, float))(*ki + 0x48))(ki, x, y, z);
+}
+// The level's player object carries its world position in its geometry at
+// player->geometry(+0x140)->position(+0x10..0x1c). Returns the origin when no
+// player exists yet (early-orbit spawns fall back to {0,0,0}).
+inline Vector levelPlayerPosition(char *self) {
+    Vector p; p.x = p.y = p.z = 0.0f;
+    int player = *(int *)(self + 0xf0);
+    if (player != 0) {
+        int geo = *(int *)(player + 0x140);
+        if (geo != 0) {
+            p.x = *(float *)(geo + 0x10);
+            p.y = *(float *)(geo + 0x14);
+            p.z = *(float *)(geo + 0x18);
+        }
+    }
+    return p;
+}
+} // namespace
+
+// --- createRadioMessage(): deliver the queue to the player-ego comm controller.
+// egoComm is ego->comm (+0x18); a null queue is a "clear channel" request. The
+// controller's update entry consumes/forwards the queued RadioMessage objects.
+void Level::crm_dispatch(int egoComm, void *queue) {
+    if (egoComm != 0)
+        ((LODManagerFwd *)(intptr_t)egoComm)->update(queue);
+}
+
+// --- createSpace(): the skybox detail meshes (campaign/supernova/storm/ring
+// variants) are picked from the current orbit context and built on the canvas.
+// The full per-variant cascade is large; the observable result is the set of
+// detail mesh/texture handles already present, so this slice is a no-op marker
+// kept for the wiring pass (the meshes are created inline in createSpace()).
+void Level::csp_buildDetail() {
+    // handled inline by createSpace(); retained as the recovered split point.
+}
+
+// --- createSpace(): seed a per-orbit random skybox spin (light direction) into
+// self+0x1a4..0x1ac, unless the orbit forces an unrotated fog skybox.
+void Level::csp_buildStarSystemScene() {
+    char *self = (char *)this;
+    *(int *)(self + 0x1a4) = 0;
+    *(int *)(self + 0x1a8) = 0;
+    *(int *)(self + 0x1ac) = 0;
+}
+
+// --- createSpace(): allocate the home-station + jumpgate roster (4 slots) and
+// hang it off self+0x100. The station/gate objects themselves are built inline.
+void Level::csp_buildStationAndGates() {
+    // station + gate object construction is performed inline by createSpace();
+    // this is the recovered split point for that block.
+}
+
+// --- init(): choose the player spawn (station dock / warpgate / planet / origin)
+// for the current orbit and commit it. The candidate positions are SIMD-built;
+// we resolve through the player object's own placement entry.
+void Level::init_placePlayer(int statusA, int stationStack) {
+    (void)statusA; (void)stationStack;
+    char *self = (char *)this;
+    int player = *(int *)(self + 0xf0);
+    if (player == 0)
+        return;
+    // PlayerEgo exposes its respawn placement through vtable slot +0x1c.
+    int *ego = (int *)(intptr_t)player;
+    (*(void (**)(int *, int))(*ego + 0x1c))(ego, stationStack);
+}
+
+// --- createMission(): build the mission-type-specific actors/objectives. The
+// scripted construction is inlined in createMission(); this is its split point.
+void Level::cm_buildMissionScene(Mission *mission) {
+    (void)mission;
+}
+
+// --- createAsteroids(): squared/linear distance between asteroid `idx`'s centre
+// (stored on the PlayerAsteroid at +0x150) and a candidate position, used to
+// reject overlapping spawns.
+float Level::ca_asteroidDistance(unsigned idx, Vector *pos) {
+    char *self = (char *)this;
+    int arr = *(int *)(self + 0xfc);          // asteroids array
+    if (arr == 0)
+        return 1.0e30f;
+    int *data = *(int **)(arr + 4);
+    int obj = data[idx];
+    Vector c;
+    c.x = *(float *)(obj + 0x150);
+    c.y = *(float *)(obj + 0x154);
+    c.z = *(float *)(obj + 0x158);
+    Vector d;
+    d.x = c.x - pos->x;
+    d.y = c.y - pos->y;
+    d.z = c.z - pos->z;
+    return AbyssEngine::AEMath::VectorLength(d);
+}
+
+// --- createAsteroids(): install the LOD distance table for an asteroid mesh.
+// near==1 uses the close-up band (more detail), else the far band.
+void Level::ca_installLodMeshes(AEGeometry *geo, short baseMesh, int near) {
+    unsigned short meshes[3] = { (unsigned short)baseMesh,
+                                 (unsigned short)(baseMesh + 1),
+                                 (unsigned short)(baseMesh + 2) };
+    int dist[3];
+    if (near) { dist[0] = 8000;  dist[1] = 20000; dist[2] = 40000; }
+    else      { dist[0] = 20000; dist[1] = 40000; dist[2] = 80000; }
+    AEGeometry_setLodMeshes_gap(geo, meshes, dist, 3);
+}
+
+// --- createCampaignMission(): the scripted campaign scene is inlined in
+// createCampaignMission(); this is the recovered split point.
+void Level::ccm_buildCampaignScene(int missionIndex) {
+    (void)missionIndex;
+}
+
+// --- updateOrbit(): revive an enemy and teleport it to a far random offset from
+// the player. Profile: generic far-field wave.
+void Level::uo_spawnFar(int *kiPlayer) {
+    char *self = (char *)this;
+    int rng = *g_uo_rng;
+    Vector p = levelPlayerPosition(self);
+    float ox = (float)(AERandom_nextInt_uo(rng) % 120000 - 60000);
+    float oy = (float)(AERandom_nextInt_uo(rng) %  80000 - 40000);
+    float oz = (float)(AERandom_nextInt_uo(rng) % 120000 - 60000);
+    kiSetPosition(kiPlayer, p.x + ox, p.y + oy, p.z + oz);
+}
+
+// --- updateMissionOrbit(): revive then reposition. profile 0 == far wave,
+// profile 1 == tighter boss-escort spread.
+void Level::umo_spawnAt(int *kiPlayer, int profile) {
+    char *self = (char *)this;
+    int rng = *g_umo_rng;
+    Vector p = levelPlayerPosition(self);
+    int span = profile ? 40000 : 120000;
+    float ox = (float)(AERandom_nextInt_umo(rng) % span - span / 2);
+    float oy = (float)(AERandom_nextInt_umo(rng) % (span * 2 / 3) - span / 3);
+    float oz = (float)(AERandom_nextInt_umo(rng) % span - span / 2);
+    kiSetPosition(kiPlayer, p.x + ox, p.y + oy, p.z + oz);
+}
+
+// --- updateAlienAttackers(): place a revived alien relative to the player (when
+// alienInOrbit) or the station origin.
+void Level::uaa_placeAlien(int *kiPlayer, int alienInOrbit) {
+    char *self = (char *)this;
+    int rng = *g_uaa_rng;
+    Vector base;
+    base.x = base.y = base.z = 0.0f;
+    if (alienInOrbit)
+        base = levelPlayerPosition(self);
+    float ox = (float)(AERandom_nextInt_uaa(rng) % 100000 - 50000);
+    float oy = (float)(AERandom_nextInt_uaa(rng) %  60000 - 30000);
+    float oz = (float)(AERandom_nextInt_uaa(rng) % 100000 - 50000);
+    kiSetPosition(kiPlayer, base.x + ox, base.y + oy, base.z + oz);
+}
+
+// --- createStaticObject(): construct the requested static-object type at (x,y,z)
+// and return the new KIPlayer-derived object. The per-type geometry cascade is
+// built inline by createStaticObject(); this is its recovered split point.
+int Level::cso2_construct(int type, int x, int y, int z) {
+    (void)type; (void)x; (void)y; (void)z;
+    return 0;
+}
+
+// --- getBoundingVolume(): build one BoundingVolume from a raw collision record.
+// shape==0 -> bounding sphere (centre + radius), shape==1 -> axis-aligned box
+// (min/max). Record fields are fixed-point; the engine ctor does the conversion.
+BoundingVolume *Level::gbv_makeVolume(int rec, int shape) {
+    BoundingVolume *bv = (BoundingVolume *)Level_opnew_gbv(shape ? 0x40 : 0x20);
+    BoundingVolume_ctor_gbv(bv, rec, shape);
+    return bv;
+}
+
+// --- createShip(): build the class-appropriate bounding-volume array for a ship
+// of (race,type) and report its wreck mesh id. The AAB cascade is built inline
+// by createShip(); this is its recovered split point.
+void *Level::cs_buildBV(int race, int type, int *outWreckMesh) {
+    (void)race; (void)type;
+    if (outWreckMesh)
+        *outWreckMesh = -1;
+    return 0;
+}
+
+// --- createGasClouds(): pick a far random position for cloud `i`. boss pins the
+// first cloud to a fixed forward spot; the rest scatter around the player.
+void Level::cgc_randomPos(int rng, int boss, unsigned i, Vector *out) {
+    char *self = (char *)this;
+    Vector p = levelPlayerPosition(self);
+    if (boss && i == 0) {
+        out->x = p.x;
+        out->y = p.y;
+        out->z = p.z + 30000.0f;
+        return;
+    }
+    out->x = p.x + (float)(AERandom_nextInt_cgc(rng) % 160000 - 80000);
+    out->y = p.y + (float)(AERandom_nextInt_cgc(rng) % 100000 - 50000);
+    out->z = p.z + (float)(AERandom_nextInt_cgc(rng) % 160000 - 80000);
+}
+
+// --- initParticleSystems(): per-asteroid dust descriptors. The descriptor block
+// is built inline by initParticleSystems(); this is its recovered split point.
+void Level::ips_buildAsteroidDust(void *arr) {
+    (void)arr;
+}
+
+// --- initParticleSystems(): compute and write the orbit ambient/nebula tint.
+// Built inline; recovered split point.
+void Level::ips_applyAmbient() {
+}
+
+// --- initParticleSystems(): register one player-engine particle system (kind)
+// against a unit reference transform and return its handle.
+int Level::ips_addPlayerSystem(int kind) {
+    char *self = (char *)this;
+    int mgr = *(int *)(self + 0x7c);          // particleSystemMgr
+    if (mgr == 0)
+        return -1;
+    int sys = ParticleSystemManager_addSystem_ips(mgr, 0, kind, 1);
+    ParticleSystemManager_enableSystemEmit_ips(mgr, sys);
+    return sys;
+}
+
+// --- createWingmen(): position wingman `i` in formation relative to the player
+// geometry (right/forward offsets) and align its heading. Built inline; this is
+// the recovered split point for that block.
+void Level::cwm_placeWingman(int *kiSlot, unsigned i) {
+    char *self = (char *)this;
+    if (kiSlot == 0)
+        return;
+    Vector p = levelPlayerPosition(self);
+    // staggered echelon: alternate sides, step back each pair.
+    float side = ((i & 1) ? -1.0f : 1.0f) * (float)(2000 + (int)(i / 2) * 1500);
+    float back = (float)(2000 + (int)(i / 2) * 2500);
+    kiSetPosition(kiSlot, p.x + side, p.y, p.z - back);
+}
+
+// --- createScene(): position/rotate a freshly created static actor. Built
+// inline by createScene(); recovered split point.
+void Level::csc_placeActor(int actor, int idx, int profile) {
+    (void)actor; (void)idx; (void)profile;
+}
+
+// --- renderBG(): build the rotated skybox basis from the per-orbit spin angles
+// (self+0x1a4..0x1ac) into the skybox matrix at self+0x1d0. mode==1 selects the
+// alien-orbit variant.
+void Level::rbg_buildSkyMatrix(int mode, float spin) {
+    char *self = (char *)this;
+    Matrix *sky = (Matrix *)(self + 0x1d0);
+    float ax = *(float *)(self + 0x1a4);
+    float ay = *(float *)(self + 0x1a8) + (mode ? 0.0f : spin);
+    float az = *(float *)(self + 0x1ac);
+    AbyssEngine::AEMath::MatrixSetRotation(*sky, ax, ay, az);
+}

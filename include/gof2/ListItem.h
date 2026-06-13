@@ -57,6 +57,10 @@ public:
     bool checkCredits();
     int checkSlot();
     int checkSort();
+    // Tail helper of checkSort(): forwards the requested item sort to the player ship,
+    // which answers whether a matching equipment slot is available. Static because the
+    // original fragment took the ship (not the ListItem) as its first argument.
+    static int sortCmp(Ship *ship, int sort);
     ListItem * ctor_Agent(Agent *a);
     ListItem * ctor_Array(Array<AbyssEngine::String12 *> *arr);
     ListItem * ctor_BluePrint(BluePrint *bp);

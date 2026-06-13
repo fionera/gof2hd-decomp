@@ -36,5 +36,24 @@ public: void* _opaque;
     void startChat();
     void update(int dt);
     void updateScreenPositions();
+
+    // ---- recovered tail-call fragments --------------------------------------
+    // The decompiler split OnRender3D/OnRenderBG/draw3DShip/draw/update at their
+    // mode-dependent tail calls into separate fragments. Each forwards the work to
+    // the sibling sub-screen (StarMap / CutScene / ListItemWindow / Layout) that the
+    // lounge is currently showing. Receivers are passed in by the call site (or, for
+    // draw_cutscene_tail, read from the active draw-layout slot).
+    void OnRender3D_map_tail(void *map);            // StarMap::render()
+    void OnRender3D_cutscene_tail(void *cutscene);  // CutScene::render3D()
+    void OnRenderBG_tail(void *cutscene);           // CutScene::renderBG()
+    void draw3DShip_tail(void *ship);               // ListItemWindow::render()
+    void draw_map_tail(void *map);                  // StarMap::draw()
+    void draw_cutscene_tail();                      // Layout::drawFooter()
+    void update_map_tail(void *map, int dt);        // StarMap::update(dt)
+    void update_ship_tail(void *list, int dt);      // ListItemWindow::update(dt)
+
+    // Out-of-line destructor body the deleting-dtor thunk reached (ModStation frees
+    // the lounge through it). Runs ~SpaceLounge() and returns the storage.
+    void *dtor();
 };  // no offset accesses observed
 #endif

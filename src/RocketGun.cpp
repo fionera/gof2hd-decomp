@@ -61,6 +61,17 @@ void RocketGun::render()
     return RocketGun_render_tail();
 }
 
+// RocketGun::base_dtor() — the chained ObjectGun base destructor. After
+// ~RocketGun() has released the three rocket-trail arrays it forwards here, which
+// runs ObjectGun::~ObjectGun (muzzle geometry, explosion list, bullet pool) and
+// returns the (now base-destructed) object pointer to the caller.
+extern "C" void *_ZN9ObjectGunD1Ev(void *self);   // ObjectGun::~ObjectGun()
+
+void *RocketGun::base_dtor()
+{
+    return _ZN9ObjectGunD1Ev(this);
+}
+
 // render() tail-call fragment. RocketGun::render() is a thin shim that branches
 // straight into the ObjectGun base renderer (which draws the gun's muzzle
 // geometry); the branch target was resolved from the PLT veneer in the binary.

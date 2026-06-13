@@ -43,6 +43,17 @@ ImageFactory *_ZN12ImageFactoryD2Ev(ImageFactory *self)
     return self;
 }
 
+// ImageFactory::~ImageFactory() — destroys the owned Sprite stored at +0x00 and
+// clears the slot, matching the binary destructor (Sprite::~Sprite + operator delete).
+ImageFactory::~ImageFactory()
+{
+    void *p = this->sprite;
+    if (p != 0) {
+        ::operator delete(Sprite_dtor(p));
+    }
+    this->sprite = 0;
+}
+
 // ---- createChar_11c6f4.cpp ----
 // *gCreateChar2Rng1 -> rng (used for the type-3 reroll); gCreateChar2Table -> int[] table base
 // (PC-relative address, not dereferenced); *gCreateChar2Rng2 -> rng for the per-part loop.

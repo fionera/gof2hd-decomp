@@ -94,6 +94,7 @@ public:
     int getShieldDamageRate();
     int getSpeed();
     int getTargetFollowCamera();
+    Vec3 getTurretPosition();
     int getThrust();
     float getVolatileForce();
     bool goingToPlanet();

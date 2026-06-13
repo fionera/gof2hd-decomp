@@ -36,6 +36,10 @@ public:
     RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
               uint32_t param_5, int param_6, bool param_7, Level *param_8);
     ~RocketGun();
+    // ~RocketGun() chains here after releasing the rocket-trail arrays: it runs the
+    // ObjectGun base destructor (releasing the muzzle geometry, explosion list and
+    // bullet pool) and returns the object pointer, matching the C1->base dtor chain.
+    void *base_dtor();
     void setRadar(Radar *radar);
     void seekEnemy(int unused, int index);
     void update(int elapsed);

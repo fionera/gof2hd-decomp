@@ -47,6 +47,15 @@ int ListItem::checkSort() {
     return ListItem_sortCmp(ship, sort);
 }
 
+// ListItem::sortCmp(Ship*, int) — the tail-called helper of checkSort(). The original
+// fragment at 0x1abe28 is an ARM/Thumb interworking veneer that jumps straight into
+// Ship::slotAvailable(int), so the entry pair simply asks the ship whether a slot
+// matching this item's sort is free.
+extern "C" int _ZN4Ship13slotAvailableEi(Ship *ship, int sort); // Ship::slotAvailable(int)
+int ListItem::sortCmp(Ship *ship, int sort) {
+    return _ZN4Ship13slotAvailableEi(ship, sort);
+}
+
 // ---- ListItem_a66f4.cpp ----
 // ListItem::ListItem(int, int) -> 0x28 = second arg, 0x2c = first arg, selectable=1
 

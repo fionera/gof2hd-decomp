@@ -946,6 +946,18 @@ int PlayerEgo::isBoostRefreshed() {
 Vec3 PlayerEgo::getPosition() {
     PlayerEgo *self = this; return ((AEGeometry *)(P(self, 8)))->getPosition(); }
 
+// ---- getTurretPosition_9b2ec.cpp ----
+// World-space position of the turret muzzle: compose the turret geometry's local
+// matrix (at +0x28) with the ship hull geometry's matrix (at +0x8) and take the
+// translation component of the product.
+Vec3 PlayerEgo::getTurretPosition() {
+    PlayerEgo *self = this;
+    Matrix &turret = ((AEGeometry *)(P(self, 0x28)))->getMatrix();
+    Matrix &ship   = ((AEGeometry *)(P(self, 0x8)))->getMatrix();
+    Matrix world   = turret * ship;
+    return MatrixGetPosition(world);
+}
+
 // ---- initManeuver_a1abc.cpp ----
 // PlayerEgo::initManeuver(int type)
 //   Starts an evasive maneuver of the given type when none is active. For dodge

@@ -74,6 +74,15 @@ void Waypoint::reset()
     return ((Player *)(player))->setActive(false);
 }
 
+// ---- Waypoint_ctor (C-ABI in-place constructor) ----
+// Route's path builders allocate the Waypoint storage with operator new and then
+// hand the raw pointer here to run the constructor in place. Forwards to the real
+// Waypoint(int,int,int,Route*) constructor on the already-allocated object.
+extern "C" void Waypoint_ctor(void *wp, int x, int y, int z, Route *route)
+{
+    new (wp) Waypoint(x, y, z, route);
+}
+
 // ---- Waypoint_157c54.cpp ----
 Waypoint::Waypoint(int x, int y, int z, Route *route)
 {

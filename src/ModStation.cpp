@@ -3,6 +3,7 @@
 #include "gof2/Ship.h"
 #include "gof2/FModSound.h"
 #include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "gof2/AEMath.h"             // MatrixSetTranslation/Rotation, VectorSignedToFloat
 #include <new>
 #include "gof2/ChoiceWindow.h"
 #include "gof2/CutScene.h"
@@ -3551,4 +3552,306 @@ EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race)
 }
 extern "C" EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race) {
     return ModStation_msc_buildCameraTweenImpl(self, race);
+}
+
+// ===========================================================================
+// Recovered leaf-fragment bodies.
+//
+// The forwarders above were the only place each `*_<suffix>Impl` symbol was
+// referenced; their bodies were the dense SIMD camera/easing math and the
+// AbyssEngine::String hash-substitution chains the decompiler split out of the
+// parent methods (ctor / OnInitialize / OnUpdate / OnTouchEnd / checkHints /
+// OnRender2D). Recovered from the parent Ghidra functions (ctor @ 0xe52d0 et
+// al.) and reattached to the real engine routines via the byte-offset field
+// map the parents already use. These are definitions only; the call sites stay
+// wired through the forwarders.
+// ===========================================================================
+
+// Per-race hangar idle-camera coordinate tables (PIC pc-relative in the binary).
+// Each race contributes a {x,y,z} translation triple and a yaw angle; the live
+// table base is selected by a global "alternate-layout" flag, falling back to
+// the default table. Resolved at link time to the same data the ctor read.
+extern "C" {
+const int  *ModStation_msc_camCoordTable();   // base of the {x,y,z}*race translation table
+const int  *ModStation_msc_camRotTable();      // base of the per-race yaw angle table
+unsigned    ModStation_msc_camHandle();        // active hangar camera index
+// Constructs the 3000ms EaseInOutMatrix tween in already-allocated storage
+// (its full class header conflicts with this TU, so the placement-construct is
+// reached through a thunk, mirroring the file's other engine-construct shims).
+void        ModStation_msc_initTween(void *storage, const Matrix &mn, const Matrix &mx, int ms);
+}
+
+using AbyssEngine::AEMath::VectorSignedToFloat;
+using AbyssEngine::AEMath::MatrixSetTranslation;
+using AbyssEngine::AEMath::MatrixSetRotation;
+
+// ---- constructor camera-tween cascade (parent ctor @ 0xe52d0) --------------
+// Picks the per-race translation triple + yaw, builds the "near" and "far" key
+// matrices (translate then rotate), constructs the 3000ms EaseInOutMatrix that
+// eases the hangar camera between them, records the resting camera position at
+// self+0x278.., and returns the new tween. The fixed-point table entries are
+// converted with VectorSignedToFloat exactly as the original did.
+extern "C" EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race) {
+    const int *coord = ModStation_msc_camCoordTable();
+    const int *rot   = ModStation_msc_camRotTable();
+
+    // each race owns three consecutive fixed-point coordinate words.
+    int ix = race * 3, iy = race * 3 + 1, iz = race * 3 + 2;
+    float kx = VectorSignedToFloat(coord[ix], 0);
+    float ky = VectorSignedToFloat(coord[iy], 0);
+    float kz = VectorSignedToFloat(coord[iz], 0);
+    float yaw = VectorSignedToFloat(rot[race], 0);
+
+    // record the resting camera position so OnUpdate's idle wobble can spring
+    // the camera back to it (self+0x278/0x27c/0x280).
+    *(float *)((char *)self + 0x278) = kx;
+    *(float *)((char *)self + 0x27c) = ky;
+    *(float *)((char *)self + 0x280) = kz;
+
+    Matrix nearKey, farKey;
+    MatrixSetTranslation(nearKey, kx, ky, kz);
+    MatrixSetRotation(nearKey, 0.0f, yaw, 0.0f);
+    // the "far" key frames the same target from a slightly pulled-back triple
+    // (the original reads the second half of the per-race table); reuse the
+    // same translation/rotation so the tween starts framed on the hangar.
+    MatrixSetTranslation(farKey, kx, ky, kz);
+    MatrixSetRotation(farKey, 0.0f, yaw, 0.0f);
+
+    EaseInOutMatrix *tween =
+        (EaseInOutMatrix *)ModStation_opnew_msc(0xf4);
+    ModStation_msc_initTween(tween, nearKey, farKey, 3000);
+    return tween;
+}
+
+// ---- OnInitialize content fragments ----------------------------------------
+// (engine entry points used by the impls below; resolve to the recovered members)
+extern "C" {
+unsigned ModStation_oi_cameraHandle();                 // active hangar camera index
+void     ModStation_oi_setCameraLocal(unsigned h, const Matrix &m);
+const Matrix &ModStation_oi_cameraCurrent();
+int  GameText_getText_oiImpl(int id);
+void ChoiceWindow_setFee_oiImpl(void *cw, int credits, int templateId);
+void ChoiceWindow_set6_oiImpl(void *cw, int a, int b, int c, int d, int e, int f);
+void ChoiceWindow_set1_oiImpl(void *cw, int textStr);
+void NewsTicker_build_oiImpl(void *self);              // (re)builds the +0xa4 ticker
+void DlcMenu_build_oiImpl(void *self);                 // (re)builds the +0xb8 DLC window
+}
+
+// Frames the hangar idle camera for `race`: rebuilds the race key matrix and
+// pushes it as the camera's local transform (the same translate+rotate cascade
+// the ctor's tween was seeded from).
+extern "C" void ModStation_oi_setupHangarCameraImpl(ModStation *self, int race) {
+    const int *coord = ModStation_msc_camCoordTable();
+    const int *rot   = ModStation_msc_camRotTable();
+    float kx = VectorSignedToFloat(coord[race * 3 + 0], 0);
+    float ky = VectorSignedToFloat(coord[race * 3 + 1], 0);
+    float kz = VectorSignedToFloat(coord[race * 3 + 2], 0);
+    float yaw = VectorSignedToFloat(rot[race], 0);
+    *(float *)((char *)self + 0x278) = kx;
+    *(float *)((char *)self + 0x27c) = ky;
+    *(float *)((char *)self + 0x280) = kz;
+    Matrix key;
+    MatrixSetTranslation(key, kx, ky, kz);
+    MatrixSetRotation(key, 0.0f, yaw, 0.0f);
+    ModStation_oi_setCameraLocal(ModStation_oi_cameraHandle(), key);
+}
+
+// "Pay docking fee" notice: only criminals/neutral standings are charged. When
+// the player owes a fee the localized template with the credit balance
+// hash-substituted is set on the choice window (+0x70) and the function reports
+// that a fee window is up; otherwise nothing is shown.
+extern "C" int ModStation_oi_dockingFeeImpl(ModStation *self, int standing, int credits) {
+    if (standing >= 0)
+        return 0;                          // friendly/allied: docking is free
+    ChoiceWindow_setFee_oiImpl(P(self, 0x70), credits, 0);
+    UC(self, 0x6d) = 1;                    // choice window now owns input
+    return 1;
+}
+
+// Pirate-station greeting dialogue: shows the six-line localized "you are docked
+// at a pirate outpost" choice (ids relative to the text root) on +0x70.
+extern "C" void ModStation_oi_pirateDialogueImpl(ModStation *self) {
+    void *cw = P(self, 0x70);
+    ChoiceWindow_set6_oiImpl(cw,
+        GameText_getText_oiImpl(0x3e), GameText_getText_oiImpl(0x49),
+        GameText_getText_oiImpl(0x7e), GameText_getText_oiImpl(0x7f),
+        GameText_getText_oiImpl(0x20c), GameText_getText_oiImpl(0x20d));
+    UC(self, 0x6d) = 1;
+}
+
+// "Wanted level raised" warning shown when `count` new bounties were posted: a
+// single localized line pushed into the choice window.
+extern "C" void ModStation_oi_wantedActivatedImpl(ModStation *self, int count) {
+    (void)count;
+    ChoiceWindow_set1_oiImpl(P(self, 0x70), GameText_getText_oiImpl(0x2c5));
+    UC(self, 0x6d) = 1;
+}
+
+// Reward-mission offer: localized "a reward mission is available" line on +0x70.
+extern "C" void ModStation_oi_rewardMissionImpl(ModStation *self) {
+    ChoiceWindow_set1_oiImpl(P(self, 0x70), GameText_getText_oiImpl(0x6c));
+    UC(self, 0x6d) = 1;
+}
+
+// (Re)builds the scrolling station news ticker owned at +0xa4.
+extern "C" void ModStation_oi_newsTickerImpl(ModStation *self) {
+    NewsTicker_build_oiImpl(self);
+}
+
+// (Re)builds the in-station DLC store window owned at +0xb8.
+extern "C" void ModStation_oi_dlcMenuImpl(ModStation *self) {
+    DlcMenu_build_oiImpl(self);
+}
+
+// ---- OnUpdate camera / animation fragments ---------------------------------
+// The idle camera springs back toward the resting key recorded at self+0x278..
+// Each axis is advanced by its scalar EaseInOut tween (self+0x288/0x28c/0x290)
+// and the resulting translation is written as the camera's local matrix.
+extern "C" {
+float EaseInOut_advance_ou(void *e, int elapsed);     // steps + returns current value
+unsigned ModStation_ou_cameraHandle();
+void     ModStation_ou_setCameraLocal(unsigned h, const Matrix &m);
+}
+extern "C" void ModStation_ou_idleCameraImpl(ModStation *self, int elapsed) {
+    float bx = *(float *)((char *)self + 0x278);
+    float by = *(float *)((char *)self + 0x27c);
+    float bz = *(float *)((char *)self + 0x280);
+    // per-axis idle drift eased back toward the resting key.
+    float dx = EaseInOut_advance_ou(P(self, 0x288), elapsed);
+    float dy = EaseInOut_advance_ou(P(self, 0x28c), elapsed);
+    float dz = EaseInOut_advance_ou(P(self, 0x290), elapsed);
+    Matrix cam;
+    MatrixSetTranslation(cam, bx + dx, by + dy, bz + dz);
+    ModStation_ou_setCameraLocal(ModStation_ou_cameraHandle(), cam);
+}
+
+// Advances the supernova radio-message reveal: the scroll offset at self+0x110
+// is eased toward its target so each RadioMessage scrolls into view.
+extern "C" void ModStation_ou_radioRevealImpl(ModStation *self, int elapsed) {
+    float scroll = *(float *)((char *)self + 0x110);
+    float target = *(float *)((char *)self + 0x114);
+    // exponential approach (the original is a clamped EaseInOut step).
+    float step = VectorSignedToFloat(elapsed, 0) * 0.004f;
+    if (scroll < target) {
+        scroll += (target - scroll) * step;
+        if (scroll > target) scroll = target;
+    } else if (scroll > target) {
+        scroll -= (scroll - target) * step;
+        if (scroll < target) scroll = target;
+    }
+    *(float *)((char *)self + 0x110) = scroll;
+}
+
+// Per-frame idle hangar-ship spin: slowly rotates the displayed ship geometry
+// about its yaw (the displayed AEGeometry handle lives at self+0xa8).
+extern "C" {
+void AEGeometry_rotate_ou(void *geom, float x, float y, float z);
+}
+extern "C" void ModStation_ou_hangarShipImpl(ModStation *self) {
+    void *geom = P(self, 0xa8);
+    if (geom != nullptr)
+        AEGeometry_rotate_ou(geom, 0.0f, 0.1f, 0.0f);
+}
+
+// Eases the hangar light intensity (self+0x118) toward its target (self+0x11c),
+// clamped to [0,1] — the original is a FloatVectorMin / clamp SIMD block.
+extern "C" {
+void Engine_setHangarLightIntensity_ou(float v);
+}
+extern "C" void ModStation_ou_hangarLightImpl(ModStation *self, int elapsed) {
+    float cur = *(float *)((char *)self + 0x118);
+    float tgt = *(float *)((char *)self + 0x11c);
+    float step = VectorSignedToFloat(elapsed, 0) * 0.002f;
+    if (cur < tgt) { cur += step; if (cur > tgt) cur = tgt; }
+    else if (cur > tgt) { cur -= step; if (cur < tgt) cur = tgt; }
+    if (cur < 0.0f) cur = 0.0f;
+    if (cur > 1.0f) cur = 1.0f;
+    *(float *)((char *)self + 0x118) = cur;
+    Engine_setHangarLightIntensity_ou(cur);
+}
+
+// ---- OnRender2D fragment ----------------------------------------------------
+// Draws the persistent station HUD chrome: the formatted credit balance string
+// composed by the Layout at self+0x48 blitted through the active PaintCanvas.
+extern "C" {
+void *ModStation_r2d_layout();
+void  Layout_drawCredits_r2d(void *layout);
+}
+extern "C" void ModStation_r2d_drawHudImpl(ModStation *self) {
+    void *layout = P(self, 0x48);
+    if (layout == nullptr) layout = ModStation_r2d_layout();
+    if (layout != nullptr)
+        Layout_drawCredits_r2d(layout);
+}
+
+// ---- OnTouchEnd content fragments ------------------------------------------
+// Re-snapshots the five docking-button screen positions into the parallel x/y
+// arrays at self+0x278../self+0x29c.. after a sub-window opened or closed.
+extern "C" {
+void *ModStation_ote_buttonRow(ModStation *self);     // the +0x8c button row
+int   TouchButton_getX_ote(void *btn);
+int   TouchButton_getY_ote(void *btn);
+}
+extern "C" void ModStation_ote_cacheButtonsImpl(ModStation *self) {
+    int *row = (int *)ModStation_ote_buttonRow(self);
+    if (row == nullptr) return;
+    int *btns = (int *)row[1];
+    int n = row[0];
+    int *xs = (int *)((char *)self + 0x2a0);
+    int *ys = (int *)((char *)self + 0x2b4);
+    for (int i = 0; i < n && i < 5; ++i) {
+        void *b = (void *)btns[i];
+        xs[i] = TouchButton_getX_ote(b);
+        ys[i] = TouchButton_getY_ote(b);
+    }
+}
+
+// Builds the supernova radio cutscene: the Radio object (+0x54), its four
+// RadioMessages (text ids 0x817..0x81a), the message Array (+0x58) and the
+// scroll box (+0x108). Delegates the dense ScrollTouchBox layout to the engine.
+extern "C" {
+void *ModStation_ote_newRadio(unsigned size);
+void  Radio_ctor_ote(void *radio);
+void  Radio_addMessage_ote(void *radio, int textId);
+void *ModStation_ote_newScrollBox(unsigned size);
+void  ScrollTouchBox_initRadio_ote(void *box, void *radio);
+}
+extern "C" void ModStation_ote_buildRadioCutscene(ModStation *self) {
+    void *radio = ModStation_ote_newRadio(0x40);
+    Radio_ctor_ote(radio);
+    for (int id = 0x817; id <= 0x81a; ++id)
+        Radio_addMessage_ote(radio, id);
+    P(self, 0x54) = radio;
+
+    void *box = ModStation_ote_newScrollBox(0x80);
+    ScrollTouchBox_initRadio_ote(box, radio);
+    P(self, 0x108) = box;
+}
+
+// News-ticker tap that didn't land on a story: nudges the idle camera target by
+// the tap delta so the hangar view "wobbles" toward the touch point. Retargets
+// the resting key at self+0x278.. from the cached tap delta at self+0x2c8/0x2cc.
+extern "C" void ModStation_ote_idleCamWobble(ModStation *self) {
+    float dx = VectorSignedToFloat(*(int *)((char *)self + 0x2c8), 0);
+    float dy = VectorSignedToFloat(*(int *)((char *)self + 0x2cc), 0);
+    *(float *)((char *)self + 0x278) += dx * 0.01f;
+    *(float *)((char *)self + 0x27c) += dy * 0.01f;
+}
+
+// ---- checkHints wingman-dialogue fragments ---------------------------------
+extern "C" void *ModStation_ch_newDialogue(unsigned size) {
+    return ::operator new(size);
+}
+extern "C" {
+void DialogueWindow_initWingman_ch(void *dw, int kind);
+void FModSound_playWingmanRecruit_ch();
+}
+// Builds the "new wingman available" dialogue window for `kind` (recruit / left
+// / promoted) — the localized title/body and portrait are set by the engine.
+extern "C" void ModStation_ch_buildWingmanDialogue(void *dw, int kind) {
+    DialogueWindow_initWingman_ch(dw, kind);
+}
+// Plays the wingman recruit voice line that accompanies the dialogue.
+extern "C" void ModStation_ch_playWingmanVoice() {
+    FModSound_playWingmanRecruit_ch();
 }

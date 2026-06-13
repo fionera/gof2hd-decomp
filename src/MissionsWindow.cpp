@@ -919,6 +919,38 @@ void MissionsWindow::update(int dt) {
 
 }
 
+// ---- mode-specific sub-window dispatchers ----
+// draw() and update() short-circuit into one of these whenever an overlay is
+// active.  Each is a thin forward to the matching sub-window member -- the
+// original target was a PLT/tail thunk through the GOT, exactly as render3D()
+// forwards into WantedWindow::render3D.  The wanted board lives at +0x10 and is
+// active while m_mode (+0x40) == 1; the star-map overlay lives at +0x8 and is
+// active while the star-map flag (+0x22) is set.
+
+// MissionsWindow::drawWanted() -- paint the wanted-board sub-window.
+void MissionsWindow::drawWanted()
+{
+    ((WantedWindow *)pp(this, 0x10))->draw();
+}
+
+// MissionsWindow::drawStarMap() -- paint the star-map overlay.
+void MissionsWindow::drawStarMap()
+{
+    ((StarMap *)pp(this, 0x8))->draw();
+}
+
+// MissionsWindow::acceptAction() -- advance the wanted-board sub-window one frame.
+void MissionsWindow::acceptAction()
+{
+    ((WantedWindow *)pp(this, 0x10))->update(0);
+}
+
+// MissionsWindow::cancelAction() -- advance the star-map overlay one frame.
+void MissionsWindow::cancelAction()
+{
+    ((StarMap *)pp(this, 0x8))->update(0);
+}
+
 // ---- public member faces over the recovered window logic ----
 // These thin members expose the already-recovered window behaviour (rebuild
 // layout, paint, dispatch a touch-release, advance one frame) through the real

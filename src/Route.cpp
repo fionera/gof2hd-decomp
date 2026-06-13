@@ -414,3 +414,27 @@ int Route::getCurrent() {
 void Route::setLoop(bool loop) {
     this->field_0x4 = loop;
 }
+
+// ---- C-ABI ctor/dtor shims ----
+// Route's clone helpers allocate the Route storage and then call one of these in
+// place. They forward to the real constructors/destructor on the given object and
+// return it so the caller can chain (and, for the dtor, hand the storage to
+// operator delete).
+
+// Route_ctor1 — coords + count(=3*numWaypoints), empty docking-target/time arrays.
+extern "C" Route *Route_ctor1(Route *self, int *coords, int count)
+{
+    return self->ctor(coords, count);
+}
+
+// Route_ctor2 — coords + adopted docking-target array + copied docking times.
+extern "C" Route *Route_ctor2(Route *self, int *coords, void *targets, int *times, int count)
+{
+    return self->ctorWithTargets(coords, (Array<KIPlayer *> *)targets, times, count);
+}
+
+// Route_dtor — ~Route(); releases the waypoint array (deep) and target/time arrays.
+extern "C" void *Route_dtor(Route *self)
+{
+    return self->dtor();
+}

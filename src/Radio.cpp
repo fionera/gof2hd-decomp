@@ -95,6 +95,36 @@ void Radio::setMessages(Array<RadioMessage *> *messages)
     }
 }
 
+// ---- addMessage (ModStation supernova cutscene helper, OnTouchEnd @0xe79e4) ----
+// The engine's supernova cutscene builds its RadioMessages inline inside
+// ModStation::OnTouchEnd: for each story text id it heap-allocates a 0x28-byte
+// RadioMessage(textId, 1, kind, sound) and stores it into the radio's message
+// Array (raw layout: +0x0 = size, +0x4 = data). This recovers that step as a
+// proper Radio method that lazily creates the array, appends a fresh message,
+// and links it back to this radio.
+extern "C" RadioMessage *RadioMessage_ctor(RadioMessage *self, int textId,
+                                           int param2, int param3, int sound);
+
+void Radio::addMessage(int textId)
+{
+    // Lazily create the backing message Array<RadioMessage *> on first use.
+    Array<RadioMessage *> *list = (Array<RadioMessage *> *)this->messages;
+    if (list == 0) {
+        list = (Array<RadioMessage *> *)::operator new(sizeof(Array<RadioMessage *>));
+        new (list) Array<RadioMessage *>();
+        this->messages = list;
+    }
+
+    // Heap-allocate and construct the RadioMessage from the story text id. The
+    // unrolled cutscene uses (textId, 1, 5, 0) for the lead-in line; subsequent
+    // lines vary only in the kind/sound fields, which default to the lead-in's.
+    RadioMessage *message = (RadioMessage *)::operator new(0x28);
+    RadioMessage_ctor(message, textId, 1, 5, 0);
+
+    list->push_back(message);
+    message->setRadio(this);
+}
+
 // ---- update_155060.cpp ----
 #define ALWAYS_INLINE __attribute__((always_inline)) inline
 

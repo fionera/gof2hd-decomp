@@ -307,6 +307,19 @@ extern "C" void BeamGun_setEnemyEngine(void *data) {
     BeamGun_enemyHandler_slot(data);
 }
 
+// BeamGun::setEnemiesEngine / setEnemyEngine — the inherited gun-hierarchy enemy
+// landing pads behind the setEnemies()/setEnemy() tail veneers. The terminal b.w
+// of each method dispatches through a relocated GOT slot that the dynamic linker
+// fills with the shared base-class handler; we read the resolved handler out of
+// the engine's relocation slot and forward the data pointer the tail extracted.
+void BeamGun::setEnemiesEngine(void *data) {
+    BeamGun_enemiesHandler_slot(data);
+}
+
+void BeamGun::setEnemyEngine(void *data) {
+    BeamGun_enemyHandler_slot(data);
+}
+
 // render() tail: render the secondary beam geometry via AEGeometry::render.
 void BeamGun::render_tail(AEGeometry *self) {
     AEGeometryRender(self);

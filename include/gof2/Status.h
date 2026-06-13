@@ -161,6 +161,11 @@ public:
     bool inStormOrbit();
     int inSupernovaSystem();
     static int isChallengeMode();
+    // Alien-orbit predicate used by inAlienOrbit(): you are in an "alien" (foreign)
+    // orbit whenever the station you are currently orbiting is not your own
+    // player/home station. Modeled as a static helper so the heavily-shared call
+    // sites (Hud, Galaxy, Level, departStation) all reach the same body.
+    static bool inAlienOrbit_impl(Station *station, Station *playerStation);
     int getSystem();
     bool inFogSkyboxOrbit();
     bool inSupernovaOrbit();

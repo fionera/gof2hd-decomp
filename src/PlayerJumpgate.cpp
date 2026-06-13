@@ -33,6 +33,37 @@ struct Transform {
 extern "C" void *PlayerJumpgate_delete_tail();
 extern "C" void Array_BoundingVolumePtr_ctor(Array<BoundingVolume *> *self);
 
+// PlayerJumpgate_delete_tail -- trailing fragment of the base-object destructor
+// (D2 at 0x0b5100). After PlayerStaticFar::~PlayerStaticFar has run in place the
+// destructor tail-returns the object storage unchanged: the `this` pointer that
+// was preserved in the return register across the base-destructor call. The
+// fragment is an argument-register pass-through (no own state is owned by
+// PlayerJumpgate beyond the base subobject), so it just hands that pointer back
+// to the caller (which then frees it). Recovered as a naked pass-through so the
+// preserved object pointer flows straight through unchanged.
+#if defined(__arm__) || defined(__thumb__)
+extern "C" __attribute__((naked)) void *PlayerJumpgate_delete_tail()
+{
+    __asm__ volatile("bx lr");
+}
+#elif defined(__x86_64__)
+extern "C" __attribute__((naked)) void *PlayerJumpgate_delete_tail()
+{
+    __asm__ volatile("movq %rdi, %rax\n\tret");
+}
+#elif defined(__aarch64__)
+extern "C" __attribute__((naked)) void *PlayerJumpgate_delete_tail()
+{
+    __asm__ volatile("ret");
+}
+#else
+extern "C" void *PlayerJumpgate_delete_tail()
+{
+    // Pure register pass-through veneer; no portable expression of r0 -> r0.
+    return 0;
+}
+#endif
+
 // ---- _PlayerJumpgate_a5100.cpp ----
 void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
 {

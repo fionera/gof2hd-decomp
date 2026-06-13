@@ -34,6 +34,8 @@ class ImageFactory {
 public:
     void* sprite;                    // +0x0
 
+    ~ImageFactory();
+
     // ---- methods (converted from free functions) ----
     void createChar_i(int param_1);
     // The demangled symbol reads ImageFactory::createChar(bool, int); in practice the target

@@ -829,6 +829,12 @@ bool Status::isOnStack(Station *s) {
 }
 
 // ---- inAlienOrbit_a963c.cpp ----
+// True iff the orbited station differs from the player's home station. departStation()
+// uses the same `playerStation != dest` test, which fixes the polarity here.
+bool Status::inAlienOrbit_impl(Station *station, Station *playerStation) {
+    return station != playerStation;
+}
+
 bool Status::inAlienOrbit() {
     return Status_inAlienOrbit_impl(station, playerStation);
 }

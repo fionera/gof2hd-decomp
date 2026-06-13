@@ -31,37 +31,46 @@ extern "C" __attribute__((visibility("hidden"))) unsigned char *g_StatusWindow_b
 extern "C" __attribute__((visibility("hidden"))) void **g_StatusWindow_ach;
 
 // ---- _StatusWindow_158164.cpp ----
-// StatusWindow::~StatusWindow() -> returns this. Tears down the 4 owned Arrays.
-StatusWindow *_ZN12StatusWindowD2Ev(StatusWindow *self)
+// StatusWindow::~StatusWindow() -- tears down the four owned engine Arrays.
+//   Each owned array is first emptied of its (class) elements via the matching
+//   ArrayReleaseClasses<T>, then the array header itself is destroyed and freed.
+StatusWindow::~StatusWindow()
 {
-    void *p = self->tabButtons;
-    if (p != 0) {
-        ArrayReleaseClasses_TouchButton(p);
-        void *q = self->tabButtons;
-        if (q != 0) ::operator delete(Array_TouchButton_dtor(q));
+    if (this->tabButtons != 0) {
+        ArrayReleaseClasses_TouchButton(this->tabButtons);
+        if (this->tabButtons != 0)
+            ::operator delete(Array_TouchButton_dtor(this->tabButtons));
     }
-    self->tabButtons = 0;
-    p = self->medalButtons;
-    if (p != 0) {
-        ArrayReleaseClasses_TouchButton(p);
-        void *q = self->medalButtons;
-        if (q != 0) ::operator delete(Array_TouchButton_dtor(q));
+    this->tabButtons = 0;
+
+    if (this->medalButtons != 0) {
+        ArrayReleaseClasses_TouchButton(this->medalButtons);
+        if (this->medalButtons != 0)
+            ::operator delete(Array_TouchButton_dtor(this->medalButtons));
     }
-    self->medalButtons = 0;
-    p = self->field_0xc;
-    if (p != 0) {
-        ArrayReleaseClasses_ImagePart(p);
-        void *q = self->field_0xc;
-        if (q != 0) ::operator delete(Array_ImagePart_dtor(q));
+    this->medalButtons = 0;
+
+    if (this->field_0xc != 0) {
+        ArrayReleaseClasses_ImagePart(this->field_0xc);
+        if (this->field_0xc != 0)
+            ::operator delete(Array_ImagePart_dtor(this->field_0xc));
     }
-    self->field_0xc = 0;
-    p = self->detailLines;
-    if (p != 0) {
-        ArrayReleaseClasses_String(p);
-        void *q = self->detailLines;
-        if (q != 0) ::operator delete(Array_String_dtor(q));
+    this->field_0xc = 0;
+
+    if (this->detailLines != 0) {
+        ArrayReleaseClasses_String(this->detailLines);
+        if (this->detailLines != 0)
+            ::operator delete(Array_String_dtor(this->detailLines));
     }
-    self->detailLines = 0;
+    this->detailLines = 0;
+}
+
+// C-ABI shim: ModStation tears the window down through this entry point. It runs
+// the in-place destructor and hands the storage back so the caller frees it.
+extern "C" void *StatusWindow_dtor(void *p)
+{
+    StatusWindow *self = (StatusWindow *)p;
+    self->~StatusWindow();
     return self;
 }
 

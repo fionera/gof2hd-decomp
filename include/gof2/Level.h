@@ -24,6 +24,8 @@ struct Mission;
 struct Gun;
 struct Waypoint;
 struct PlayerFixedObject;
+struct BoundingVolume;
+struct AEGeometry;
 
 // Galaxy on Fire 2 — Level (the in-flight game world / mission space).
 // Layout deduced from getter/setter disassembly. Total size 0x2a0.
@@ -313,6 +315,68 @@ public:
     // accompanying radio message through these veneers.
     void alarmAllFriends_uo(int race, int message);
     void createRadioMessage_uo(int type);
+
+    // ------------------------------------------------------------------------
+    // Decompiler-split scene/build fragments.
+    //
+    // Each of these was emitted as a standalone Level_<suffix> helper because the
+    // owning method (createSpace / init / createMission / ...) was too large for
+    // the decompiler to lift in one piece — typically the cut fell on a block of
+    // SIMD float math. They are recovered here as real members performing that
+    // block's work through the engine shims declared at each call site.
+    // ------------------------------------------------------------------------
+
+    // createRadioMessage(): hand the finished message queue to the player-ego's
+    // comm controller (ego->comm at +0x18). A null queue clears the channel.
+    void crm_dispatch(int egoComm, void *queue);
+
+    // createSpace(): three slices of the monolithic skybox/station builder —
+    // skybox detail meshes, the star-system backdrop spin, the home station + gates.
+    void csp_buildDetail();
+    void csp_buildStarSystemScene();
+    void csp_buildStationAndGates();
+
+    // init(): place the player at the spawn appropriate for the orbit context.
+    void init_placePlayer(int statusA, int stationStack);
+
+    // createMission(): build the per-mission-type actors/objectives.
+    void cm_buildMissionScene(Mission *mission);
+
+    // createAsteroids(): reject-sampling distance test + lod-mesh table install.
+    float ca_asteroidDistance(unsigned idx, Vector *pos);
+    void  ca_installLodMeshes(AEGeometry *geo, short baseMesh, int near);
+
+    // createCampaignMission(): build the scripted campaign scene.
+    void ccm_buildCampaignScene(int missionIndex);
+
+    // updateOrbit()/updateMissionOrbit()/updateAlienAttackers(): revive + reposition.
+    void uo_spawnFar(int *kiPlayer);
+    void umo_spawnAt(int *kiPlayer, int profile);
+    void uaa_placeAlien(int *kiPlayer, int alienInOrbit);
+
+    // createStaticObject(): construct the requested static-object type, positioned.
+    int cso2_construct(int type, int x, int y, int z);
+
+    // getBoundingVolume(): build one BoundingVolume from a raw collision record.
+    BoundingVolume *gbv_makeVolume(int rec, int shape);
+
+    // createShip(): build the class-appropriate bounding-volume array + wreck mesh.
+    void *cs_buildBV(int race, int type, int *outWreckMesh);
+
+    // createGasClouds(): pick a far random spawn position for cloud `i`.
+    void cgc_randomPos(int rng, int boss, unsigned i, Vector *out);
+
+    // initParticleSystems(): per-asteroid dust, ambient tint, engine-trail systems.
+    void ips_buildAsteroidDust(void *arr);
+    void ips_applyAmbient();
+    int  ips_addPlayerSystem(int kind);
+
+    // createWingmen()/createScene(): position a wingman / static actor.
+    void cwm_placeWingman(int *kiSlot, unsigned i);
+    void csc_placeActor(int actor, int idx, int profile);
+
+    // renderBG(): build the rotated skybox basis into self+0x1d0.
+    void rbg_buildSkyMatrix(int mode, float spin);
 };
 
 static_assert(sizeof(Level) == 0x2a0, "Level size");

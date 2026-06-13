@@ -92,5 +92,11 @@ public:
     void render3D();
     void selectWanted(int idx);
     void update(int dt);
+
+    // Tail-call forwarders used when the bounty board is showing the star map:
+    // each defers to the corresponding StarMap method on the embedded map object.
+    static void update_tail(void *starMap, int dt);
+    static void render3D_tail(void *starMap);
+    static void draw_tail(void *starMap);
 };
 #endif
