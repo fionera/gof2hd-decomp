@@ -1316,7 +1316,9 @@ void * Globals::dtor() {
     *statSlot = 0;
     void **gtSlot = gG_gameText;
     if (*gtSlot != 0) {
-        ::operator delete(((GameText *)(*gtSlot))->dtor());
+        GameText *_gt = (GameText *)(*gtSlot);
+        _gt->~GameText();
+        ::operator delete(_gt);
     }
     *gtSlot = 0;
     void **rngSlot = gG_random;

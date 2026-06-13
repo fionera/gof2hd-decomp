@@ -123,22 +123,14 @@ void GameText::setLanguage_si(int stringCount, int langId) {
 
 // Tail veneer to the base/Array<int> destructor; takes and returns this.
 
-// GameText::~GameText() -> releases owned text table + string, tail-calls base dtor.
-GameText *_ZN8GameTextD2Ev(GameText *self)
+// GameText::~GameText() -> release() + free the owned text table; the embedded
+// Array<int> substitute table is destroyed by the implicit member teardown.
+GameText::~GameText()
 {
-    ((GameText *)(self))->release();
-    void *p = self->textTable;
+    this->release();
+    void *p = this->textTable;
     if (p != 0) ::operator delete[](p);
-    self->textTable = 0;
-    return ((GameText *)(self))->dtor_tail();
-}
-
-// Destructor tail: tear down the embedded base Array<int> substitute table by freeing its
-// backing buffer, then hand `this` back to the caller (the D2 forwarder).
-GameText *GameText::dtor_tail()
-{
-    substitutes.~vector();
-    return this;
+    this->textTable = 0;
 }
 
 // Arabic codepoint table: 0x29 rows x 5 u32 columns (PC-relative base address).
@@ -167,9 +159,9 @@ int GameText_isNonArabicString(const unsigned short *param_1, unsigned param_2)
 extern const char gInitLangStr[] __attribute__((visibility("hidden")));
 
 // GameText::GameText() -- inits substitute Array<int>, region String, default language string.
-void GameText::ctor() {
+GameText::GameText() {
     GameText *self = this;
-    new (&self->substitutes) Array<int>();
+    // `substitutes` (Array<int>) is default-constructed by the C++ member init.
     ((String *)self->fallbackText)->ctor();
     *g_GameText_langReset = 0xffff;
     self->textTable = 0;
@@ -417,9 +409,3 @@ void GameText::setLanguage(short stringCount, int langId) {
     this->setLanguage_si((int)stringCount, langId);
 }
 
-// GameText::dtor(): C-ABI form of the complete-object destructor. Runs the
-// recovered destructor body (release + owned-table free + base Array<int>
-// teardown) and returns `this` so the caller can free the storage.
-void *GameText::dtor() {
-    return _ZN8GameTextD2Ev(this);
-}

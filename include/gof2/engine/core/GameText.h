@@ -45,24 +45,23 @@ public:
     unsigned char fallbackText[12];       // +0x10 fallback / region String (12 bytes)
     int textCount;                     // +0x1c text table count
 
+    // ---- constructor / destructor (demangle to GameText::GameText / ~GameText) ----
+    // The embedded Array<int> substitute table is constructed/destroyed by the normal
+    // C++ member init/teardown, so the recovered dtor_tail (which ran its ~vector) folds
+    // into the implicit member destruction.
+    GameText();
+    ~GameText();
+
     // ---- methods (converted from free functions) ----
     void ReadLangFile(unsigned int file, int count);
-    void ctor();
     void * getText(int key);
     void release();
     void setLanguage_i(int param_1);
     void setLanguage_si(int stringCount, int langId);
     void setSubstituteArray(int *param_1, unsigned param_2);
 
-    // Destructor tail: after release() and the owned String/text-table are freed, the
-    // embedded base Array<int> subobject is destroyed here. Returns `this`.
-    GameText *dtor_tail();
-
     // Public language switch (the short/int two-argument entry the savegame loader
     // calls). Identical behaviour to setLanguage_si.
     void setLanguage(short stringCount, int langId);
-    // C-ABI destructor helper: runs ~GameText and returns `this` so the caller can
-    // free the storage (matches the ARM deleting-dtor thunk).
-    void *dtor();
 };
 #endif
