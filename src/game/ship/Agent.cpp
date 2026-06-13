@@ -307,7 +307,7 @@ int Agent::getWingmanFriendsCount() {
 
 // Agent::Agent(int kind, String name, int p4, int p5, int p6, bool p7,
 //              int p8, int p9, int p10, int p11)
-Agent * Agent::ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11) {
+Agent::Agent(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11) {
     ((String *)((char *)this + 0x00))->ctor();
     ((String *)((char *)this + 0x18))->ctor();
     ((String *)((char *)this + 0x6c))->ctor();
@@ -349,5 +349,4 @@ Agent * Agent::ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, 
     else if (kind == 0x1a)
         this->field_0x5c = 10;
     this->sellModIndex = p10;
-    return this;
 }

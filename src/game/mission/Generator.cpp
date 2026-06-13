@@ -276,7 +276,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                                   0, 1);
             int stationIndex = Station_getIndex(station);
             int systemIndex = ((Status *)(status))->getSystem();
-            ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, 0, 1, -1, -1, -1, -1);
+            new (agent) Agent(-1, &name, stationIndex, systemIndex, 0, 1, -1, -1, -1, -1);
             ((String *)&name)->dtor();
             ((Agent *)(agent))->setOffer(2);
             ((Agent *)(agent))->setSellItemData(0x44, 1, 0);
@@ -317,7 +317,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                             int stationIndex = Station_getIndex(station);
                             int systemIndex =
                                 ((Status *)(status))->getSystem();
-                            ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, race, 1, -1, -1, -1, -1);
+                            new (agent) Agent(-1, &name, stationIndex, systemIndex, race, 1, -1, -1, -1, -1);
                             result->data()[i] = agent;
                             ((String *)&name)->dtor();
                             ((Agent *)(agent))->setOffer(7);
@@ -669,7 +669,7 @@ Agent *Generator::createAgent(Station *station) {
     Globals_getRandomName(&name, *names, race, male);
     int stationIndex = Station_getIndex(station);
     int systemIndex = ((Status *)(status))->getSystem();
-    ((Agent *)(agent))->ctor(-1, &name, stationIndex, systemIndex, race, male, -1, -1, -1, -1);
+    new (agent) Agent(-1, &name, stationIndex, systemIndex, race, male, -1, -1, -1, -1);
     ((String *)&name)->dtor();
     ((Agent *)(agent))->setOffer(offer);
     ImageFactory **factoryPtr = g_Generator_imageFactory;

@@ -52,11 +52,11 @@ public:
     Array<AbyssEngine::String*>* wingmanNames;   // +0x90
     int sellModIndex;                     // +0x94
 
-    // Real C++ destructor so the demangled symbol contains "~Agent".
+    // Real C++ constructor/destructor so the demangled symbols read Agent::Agent / ~Agent.
+    Agent(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11);
     ~Agent() noexcept(false);
 
     // ---- methods (converted from free functions) ----
-    Agent * ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11);
     int * getImageParts();
     Mission * getMission();
     String getMissionString();

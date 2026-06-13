@@ -1086,7 +1086,7 @@ void * RecordHandler::readAgent(unsigned int fd) {
     Agent *agent = (Agent *)RH_op_new(0x98);
     String nameCopy;
     nameCopy.ctor_copy(&name, false);
-    ((Agent *)(agent))->ctor(idx, &nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
+    new (agent) Agent(idx, &nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
 
     ((Agent *)(agent))->setCosts(costs);
     ((Agent *)(agent))->setEvent(event);
