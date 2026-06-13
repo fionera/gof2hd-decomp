@@ -66,7 +66,7 @@ public:
     int32_t field_0x38;                 // +0x38
     signed char field_0x43;             // +0x43
     uint8_t field_0x4c;                 // +0x4c
-    void* lootList;                   // +0x50
+    Array<int>* lootList;             // +0x50  loot item-id list (or mission-crate item)
     int32_t level;                 // +0x54
     int32_t posX;                 // +0x58
     int32_t posY;                 // +0x5c
@@ -108,7 +108,7 @@ public:
     void* route;                  // +0x144
     int32_t field_0x148;                // +0x148
     int32_t commandRoute;                // +0x14c
-    void* boundingVolumes;                  // +0x150
+    Array<BoundingVolume*>* boundingVolumes; // +0x150  active bounding volumes (owned)
     void* trail;                  // +0x154 Trail*
     int32_t field_0x158;                // +0x158
     int32_t field_0x15c;                // +0x15c

@@ -7,6 +7,8 @@
 #include "gof2/engine/math/Transform.h"
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/engine/math/BoundingAAB.h"
+#include "gof2/engine/math/BoundingSphere.h"
 
 // Transform / AEGeometry are only used as opaque pointers and via byte-offset reads
 // on ambiguous locals (helper F below); avoid pulling in the conflicting Transform.h.
@@ -27,8 +29,6 @@ extern "C" void PlayerStaticFar_ctor(void *self, int playerId, AEGeometry *geome
                                      float x, float y, float z);
 
 extern "C" void *PlayerStation_vtable __attribute__((visibility("hidden")));
-extern "C" void ArrayReleaseClasses_BoundingVolumePtr(void *array) __attribute__((nothrow));
-extern "C" void *Array_BoundingVolumePtr_destructor(void *array) __attribute__((nothrow));
 extern "C" void *Status_holder __attribute__((visibility("hidden")));
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 extern "C" TransformGetFn PlayerStation_transformGet __attribute__((visibility("hidden")));
@@ -39,10 +39,6 @@ extern "C" void *FileRead_destructor(void *self) __attribute__((nothrow));
 extern "C" void Transform_UpdatePtr(void *transform, uint32_t lo, uint32_t hi, int zero);
 extern "C" void Transform_SetActive(void *transform);
 extern "C" void Transform_SetInactive(void *transform);
-extern "C" void Array_int_destructor(void *array) __attribute__((nothrow));
-extern "C" void ArrayRelease_int(void *array) __attribute__((nothrow));
-extern "C" void Array_BoundingVolumePtr_constructor(void *array);
-extern "C" void ArraySetLength_BoundingVolumePtr(uint32_t length, void *array);
 
 void PlayerStation::setVisible(bool visible)
 {
@@ -67,13 +63,12 @@ PlayerStation::~PlayerStation() noexcept(false)
     }
     P(this, 0x14c) = 0;
 
-    void *volumes = P(this, 0x130);
+    Array<BoundingVolume *> *volumes = (Array<BoundingVolume *> *)P(this, 0x130);
     if (volumes != 0) {
-        ArrayReleaseClasses_BoundingVolumePtr(volumes);
-        volumes = P(this, 0x130);
-        if (volumes != 0) {
-            ::operator delete(Array_BoundingVolumePtr_destructor(volumes));
-        }
+        for (auto *e : *volumes)
+            delete e;
+        volumes->clear();
+        delete volumes;
     }
     P(this, 0x130) = 0;
 
@@ -88,14 +83,14 @@ void PlayerStation::setPosition(const Vector &position)
     this->posZ = position.z;
     ((AEGeometry *)(P(this, 0x140)))->setPosition(position);
 
-    void *volumes = P(this, 0x130);
+    Array<BoundingVolume *> *volumes = (Array<BoundingVolume *> *)P(this, 0x130);
     if (volumes != 0) {
-        for (uint32_t i = 0; i < F<uint32_t>(volumes, 0x0); ++i) {
-            void *volume = *(void **)((char *)P(volumes, 0x4) + i * 4);
+        for (uint32_t i = 0; i < volumes->size(); ++i) {
+            void *volume = (*volumes)[i];
             BoundingVolumeSetPositionFn fn =
                 *(BoundingVolumeSetPositionFn *)((char *)P(volume, 0x0) + 0x4);
             fn(volume, position.x, position.y, position.z);
-            volumes = P(this, 0x130);
+            volumes = (Array<BoundingVolume *> *)P(this, 0x130);
         }
     }
 }
@@ -118,12 +113,11 @@ void *PlayerStation::getRoot()
 
 Vector PlayerStation::getProjectionVector(const Vector &position)
 {
-    void *volumes = P(this, 0x130);
+    Array<BoundingVolume *> *volumes = (Array<BoundingVolume *> *)P(this, 0x130);
     if (volumes != 0) {
-        void *items = P(volumes, 0x4);
         uint32_t index = this->collisionIndex;
-        void *volume = *(void **)((char *)items + index * 4);
-        return ((BoundingVolume *)(volume))->getProjectionVector(position);
+        BoundingVolume *volume = (*volumes)[index];
+        return volume->getProjectionVector(position);
     }
 
     Vector result = {0.0f, 0.0f, 0.0f};
@@ -375,7 +369,7 @@ PlayerStation::PlayerStation(Station *station)
             new ((void*)child3) AEGeometry((uint16_t)(0x4956), (PaintCanvas*)canvas, false);
             ((AEGeometry *)(*rootSlot))->addChild(F<uint32_t>(child3, 0xc));
             if (collision != 0) {
-                ::operator delete((Array_int_destructor(collision), collision));
+                delete (Array<int> *)collision;
             }
             reader = ::operator new(1);
             FileRead_constructor(reader);
@@ -413,7 +407,7 @@ PlayerStation::PlayerStation(Station *station)
                 ((AbyssEngine::Transform *)(((PaintCanvas*)canvas)->TransformGetTransform(local_58[1])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
                 ((AbyssEngine::Transform *)(((PaintCanvas*)canvas)->TransformGetTransform(local_58[0])))->SetAnimationState((AbyssEngine::AnimationMode)0, 0);
                 if (collision != 0) {
-                    ::operator delete((Array_int_destructor(collision), collision));
+                    delete (Array<int> *)collision;
                 }
                 reader = ::operator new(1);
                 FileRead_constructor(reader);
@@ -459,17 +453,17 @@ PlayerStation::PlayerStation(Station *station)
     }
 
     if (collision != 0) {
-        uint32_t count = **(uint32_t **)((char *)collision + 4);
+        int *data = ((Array<int> *)collision)->data();
+        uint32_t count = (uint32_t)data[0];
         local_64 = 0.0f;
         local_60 = 0.0f;
         local_5c = 0.0f;
-        void *volumes = ::operator new(0xc);
-        Array_BoundingVolumePtr_constructor(volumes);
+        Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         P(this, 0x130) = volumes;
-        ArraySetLength_BoundingVolumePtr(count, volumes);
+        volumes->resize(count);
         int cursor = 1;
         for (uint32_t i = 0; i < count; ++i) {
-            int *data = *(int **)((char *)collision + 4);
+            data = ((Array<int> *)collision)->data();
             int next = cursor + 1;
             int type = data[cursor];
             if (type == 1) {
@@ -484,7 +478,7 @@ PlayerStation::PlayerStation(Station *station)
                                         local_5c + local_5c, (float)-data[next], 0.0f, 0.0f,
                                         0.0f);
                 next = cursor + 7;
-                *(void **)((char *)P(P(this, 0x130), 4) + i * 4) = volume;
+                (*(Array<BoundingVolume *> *)P(this, 0x130))[i] = (BoundingVolume *)volume;
             } else if (type == 0) {
                 int *entry = data + cursor;
                 float radius = (float)-data[next];
@@ -497,12 +491,12 @@ PlayerStation::PlayerStation(Station *station)
                 BoundingSphere_constructor(volume, local_64, (float)entry[3], (float)entry[2],
                                            radius, 0.0f, 0.0f, 0.0f);
                 next = cursor + 5;
-                *(void **)((char *)P(P(this, 0x130), 4) + i * 4) = volume;
+                (*(Array<BoundingVolume *> *)P(this, 0x130))[i] = (BoundingVolume *)volume;
             }
             cursor = next;
         }
-        ArrayRelease_int(collision);
-        ::operator delete((Array_int_destructor(collision), collision));
+        ((Array<int> *)collision)->clear();
+        delete (Array<int> *)collision;
     }
 
     this->field_0x71 = 1;
@@ -527,12 +521,12 @@ bool PlayerStation::outerCollide(float x, float y, float z)
                 if (this->posY - radius < y) {
                     if (z < this->posZ + radius) {
                         if (this->posZ - radius < z) {
-                            void *volumes = P(this, 0x130);
+                            Array<BoundingVolume *> *volumes =
+                                (Array<BoundingVolume *> *)P(this, 0x130);
                             if (volumes != 0) {
-                                for (uint32_t i = 0; i < F<uint32_t>(volumes, 0x0);
+                                for (uint32_t i = 0; i < volumes->size();
                                      ++i) {
-                                    void *volume =
-                                        *(void **)((char *)P(volumes, 0x4) + i * 4);
+                                    void *volume = (*volumes)[i];
                                     BoundingVolumeCollideFn fn =
                                         *(BoundingVolumeCollideFn *)((char *)P(volume, 0x0) +
                                                                     0xc);
@@ -540,7 +534,7 @@ bool PlayerStation::outerCollide(float x, float y, float z)
                                         this->collisionIndex = i;
                                         return true;
                                     }
-                                    volumes = P(this, 0x130);
+                                    volumes = (Array<BoundingVolume *> *)P(this, 0x130);
                                 }
                             }
                         }

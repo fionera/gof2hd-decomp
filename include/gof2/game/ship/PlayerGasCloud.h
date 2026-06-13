@@ -31,14 +31,14 @@ public:
     float centerY;                  // +0x12c
     float centerZ;                  // +0x130
     void* modelGeometry;                  // +0x134
-    void* sparkGeometries;                  // +0x138
-    void* sparkVelocities;                  // +0x13c
-    void* sparkLife;                  // +0x140
-    void* sparkLifeMin;                  // +0x144
+    Array<AEGeometry*>* sparkGeometries;    // +0x138  per-spark render geometry
+    Array<Vector*>* sparkVelocities;        // +0x13c  per-spark velocity (owned Vector*)
+    Array<float>* sparkLife;                // +0x140
+    Array<float>* sparkLifeMin;             // +0x144
     uint8_t field_0x145;                // +0x145 (zeroed as part of a 16-byte vector store)
-    void* sparkScale;                  // +0x148
-    void* sparkTimers;                  // +0x14c
-    void* sparkInSight;                  // +0x150
+    Array<float>* sparkScale;               // +0x148
+    Array<int>* sparkTimers;                // +0x14c
+    Array<bool>* sparkInSight;              // +0x150
     uint8_t exploded;                // +0x154
     int elapsedSinceExplosion;                    // +0x158
     uint8_t settled;                // +0x15c

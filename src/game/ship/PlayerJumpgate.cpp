@@ -31,7 +31,6 @@ struct Transform {
 };
 
 extern "C" void *PlayerJumpgate_delete_tail();
-extern "C" void Array_BoundingVolumePtr_ctor(Array<BoundingVolume *> *self);
 
 // PlayerJumpgate_delete_tail -- trailing fragment of the base-object destructor
 // (D2 at 0x0b5100). After PlayerStaticFar::~PlayerStaticFar has run in place the
@@ -154,8 +153,6 @@ void PlayerJumpgate::setPosition(float x, float y, float z)
 
 extern "C" void PlayerStaticFar_ctor(PlayerStaticFar *self, int playerId, AEGeometry *geometry,
                                       float x, float y, float z);
-extern "C" void ArraySetLength_BoundingVolumePtr(uint32_t length,
-                                                  Array<BoundingVolume *> *self);
 
 __attribute__((visibility("hidden"))) extern void *volatile g_PlayerJumpgate_vtable;
 __attribute__((visibility("hidden"))) extern void *volatile g_Status;
@@ -170,11 +167,9 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
     ((KIPlayer *)(this))->setVisible(visible);
 
     if (visible) {
-        Array<BoundingVolume *> *volumes =
-            (Array<BoundingVolume *> *)::operator new(0xc);
-        Array_BoundingVolumePtr_ctor(volumes);
+        Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
         this->field_0x130 = volumes;
-        ArraySetLength_BoundingVolumePtr(1, volumes);
+        volumes->resize(1);
 
         void **statusOwner = (void **)g_Status;
         int32_t radius;

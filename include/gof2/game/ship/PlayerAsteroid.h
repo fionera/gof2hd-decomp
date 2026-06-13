@@ -18,7 +18,6 @@ struct AEGeometry;
 struct Player;
 struct Explosion;
 struct TargetFollowCamera;
-struct ArrayInt;
 
 extern "C" void *operator_new(uint32_t size);
 extern "C" void operator_delete(void *ptr);
@@ -30,7 +29,7 @@ public:
     AEGeometry* geometry;              // +0x8
     uint8_t field_0x3c;                 // +0x3c
     uint8_t dropsLoot;                 // +0x4c
-    ArrayInt* loot;               // +0x50
+    Array<int>* loot;               // +0x50  dropped-loot {itemId, count} list
     AEGeometry* secondaryGeometry;             // +0x78
     int state;                     // +0x88
     uint8_t visible;                 // +0xf5

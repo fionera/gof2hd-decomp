@@ -20,8 +20,6 @@ struct PlayerRadiusFields { char _pad[0x40]; int field_0x40; };
 
 extern "C" void *PlayerAsteroid_complete_dtor(PlayerAsteroid *self);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
-extern "C" void ArrayInt_ctor(ArrayInt *array);
-extern "C" void ArrayAdd_int(int value, ArrayInt *array);
 Vector VectorNormalize(const Vector *vector);
 namespace AbyssEngine { namespace PaintCanvas { ::Transform *TransformGetTransform(void *canvas, uint32_t handle); } }
 extern "C" void Explosion_ctor(Explosion *self, int type);
@@ -175,8 +173,7 @@ void PlayerAsteroid::update(int delta)
             }
 
             if (spawn) {
-                ArrayInt *items = (ArrayInt *)::operator new(0xc);
-                ArrayInt_ctor(items);
+                Array<int> *items = new Array<int>();
                 this->loot = items;
                 int item = this->asteroidIndex;
                 if (item == 0xd9) {
@@ -186,12 +183,12 @@ void PlayerAsteroid::update(int delta)
                 } else if (quality == 7) {
                     item += 0xb;
                 }
-                ArrayAdd_int(item, items);
+                items->push_back(item);
                 int count = 1;
                 if (quality != 7) {
                     count = AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 3) + 1;
                 }
-                ArrayAdd_int(count, this->loot);
+                this->loot->push_back(count);
                 ((KIPlayer *)(this))->createCrate(this->asteroidIndex == 0xa4 ? 2 : 1);
             } else {
                 this->dropsLoot = 0;

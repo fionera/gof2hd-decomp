@@ -25,12 +25,6 @@ Vector operator-(const Vector &a, const Vector &b);
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
 extern "C" char PlayerGasCloud_vtable;
-extern "C" void ArrayReleaseClasses_AEGeometry(void *arr);
-extern "C" void *Array_AEGeometry_dtor(void *p);
-extern "C" void ArrayReleaseClasses_Vector(void *arr);
-extern "C" void *Array_Vector_dtor(void *p);
-extern "C" void *Array_float_dtor(void *p);
-extern "C" void *Array_int_dtor(void *p);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
 void PlayerGasCloud::translate(Vector const &param_1)
@@ -40,24 +34,21 @@ void PlayerGasCloud::translate(Vector const &param_1)
 
 bool PlayerGasCloud::isSparkAlive(int param_1)
 {
-    void *arr = this->sparkGeometries;
+    Array<AEGeometry*> *arr = this->sparkGeometries;
     if (arr == 0)
         return false;
-    if (F<unsigned int>(arr, 0x0) <= (unsigned int)param_1)
+    if (arr->size() <= (unsigned int)param_1)
         return false;
-    int *base = F<int *>(this->sparkTimers, 0x4);
-    return -1500 < base[param_1];
+    return -1500 < (*this->sparkTimers)[param_1];
 }
 
 void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
 {
-    void *arr = this->sparkGeometries;
+    Array<AEGeometry*> *arr = this->sparkGeometries;
     if (arr == 0)
         return;
-    unsigned int len = F<unsigned int>(arr, 0x0);
-    if ((unsigned int)param_1 < len) {
-        char *base = F<char *>(this->sparkInSight, 0x4);
-        base[param_1] = (char)param_2;
+    if ((unsigned int)param_1 < arr->size()) {
+        (*this->sparkInSight)[param_1] = param_2;
     }
 }
 
@@ -155,42 +146,32 @@ void *_ZN14PlayerGasCloudD1Ev(void *selfv)
     PlayerGasCloud *self = (PlayerGasCloud *)selfv;
     *(void **)self = &PlayerGasCloud_vtable + 8;
 
-    void *a0 = self->sparkGeometries;
-    if (a0 != 0) {
-        ArrayReleaseClasses_AEGeometry(a0);
-        void *p = self->sparkGeometries;
-        if (p != 0)
-            ::operator delete(Array_AEGeometry_dtor(p));
+    if (self->sparkGeometries != 0) {
+        for (AEGeometry *g : *self->sparkGeometries)
+            delete g;
+        self->sparkGeometries->clear();
+        delete self->sparkGeometries;
         self->sparkGeometries = 0;
     }
 
-    void *a1 = self->sparkVelocities;
-    if (a1 != 0) {
-        ArrayReleaseClasses_Vector(a1);
-        void *p = self->sparkVelocities;
-        if (p != 0)
-            ::operator delete(Array_Vector_dtor(p));
+    if (self->sparkVelocities != 0) {
+        for (Vector *v : *self->sparkVelocities)
+            delete v;
+        self->sparkVelocities->clear();
+        delete self->sparkVelocities;
         self->sparkVelocities = 0;
     }
 
-    void *a2 = self->sparkLife;
-    if (a2 != 0)
-        ::operator delete(Array_float_dtor(a2));
+    delete self->sparkLife;
     self->sparkLife = 0;
 
-    void *a3 = self->sparkLifeMin;
-    if (a3 != 0)
-        ::operator delete(Array_float_dtor(a3));
+    delete self->sparkLifeMin;
     self->sparkLifeMin = 0;
 
-    void *a4 = self->sparkScale;
-    if (a4 != 0)
-        ::operator delete(Array_float_dtor(a4));
+    delete self->sparkScale;
     self->sparkScale = 0;
 
-    void *a5 = self->sparkTimers;
-    if (a5 != 0)
-        ::operator delete(Array_int_dtor(a5));
+    delete self->sparkTimers;
     self->sparkTimers = 0;
 
     void *g = self->modelGeometry;
@@ -214,33 +195,31 @@ PlayerGasCloud::~PlayerGasCloud()
     *(void **)this = &PlayerGasCloud_vtable + 8;
 
     if (this->sparkGeometries != 0) {
-        ArrayReleaseClasses_AEGeometry(this->sparkGeometries);
-        if (this->sparkGeometries != 0)
-            ::operator delete(Array_AEGeometry_dtor(this->sparkGeometries));
+        for (AEGeometry *g : *this->sparkGeometries)
+            delete g;
+        this->sparkGeometries->clear();
+        delete this->sparkGeometries;
         this->sparkGeometries = 0;
     }
 
     if (this->sparkVelocities != 0) {
-        ArrayReleaseClasses_Vector(this->sparkVelocities);
-        if (this->sparkVelocities != 0)
-            ::operator delete(Array_Vector_dtor(this->sparkVelocities));
+        for (Vector *v : *this->sparkVelocities)
+            delete v;
+        this->sparkVelocities->clear();
+        delete this->sparkVelocities;
         this->sparkVelocities = 0;
     }
 
-    if (this->sparkLife != 0)
-        ::operator delete(Array_float_dtor(this->sparkLife));
+    delete this->sparkLife;
     this->sparkLife = 0;
 
-    if (this->sparkLifeMin != 0)
-        ::operator delete(Array_float_dtor(this->sparkLifeMin));
+    delete this->sparkLifeMin;
     this->sparkLifeMin = 0;
 
-    if (this->sparkScale != 0)
-        ::operator delete(Array_float_dtor(this->sparkScale));
+    delete this->sparkScale;
     this->sparkScale = 0;
 
-    if (this->sparkTimers != 0)
-        ::operator delete(Array_int_dtor(this->sparkTimers));
+    delete this->sparkTimers;
     this->sparkTimers = 0;
 
     if (this->modelGeometry != 0) {
@@ -270,19 +249,6 @@ struct PlayerGasCloud;
 // --- engine callees ---------------------------------------------------------
 extern "C" {
 
-// Array<T> default constructors (all share the 0xc-byte container layout).
-void ArrayGeom_ctor(void *self);    // Array<AEGeometry*>
-void ArrayVec_ctor(void *self);     // Array<Vector*>
-void ArrayFloat_ctor(void *self);   // Array<float>
-void ArrayInt_ctor(void *self);     // Array<int>
-void ArrayBool_ctor(void *self);    // Array<bool>
-
-void ArrayAdd_int(int value, void *arr);
-void ArrayAdd_float(float value, void *arr);
-void ArrayAdd_geom(void *value, void *arr);
-void ArrayAdd_vec(void *value, void *arr);
-void ArrayAdd_bool(bool value, void *arr);
-
 // Vector math helpers.
 float VectorLength(const Vector *v);
 void VectorNormalize(Vector *out, const Vector *v);
@@ -308,20 +274,13 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
         self->state = 3;
         self->exploded = 1;
 
-        void *aGeom = ::operator new(0xc);  ArrayGeom_ctor(aGeom);
-        self->sparkGeometries = aGeom;
-        void *aVec = ::operator new(0xc);   ArrayVec_ctor(aVec);
-        self->sparkVelocities = aVec;
-        void *aLife = ::operator new(0xc);  ArrayFloat_ctor(aLife);
-        self->sparkLife = aLife;
-        void *aLifeMin = ::operator new(0xc); ArrayFloat_ctor(aLifeMin);
-        self->sparkLifeMin = aLifeMin;
-        void *aTimer = ::operator new(0xc); ArrayInt_ctor(aTimer);
-        self->sparkTimers = aTimer;
-        void *aActive = ::operator new(0xc); ArrayBool_ctor(aActive);
-        self->sparkInSight = aActive;
-        void *aScale = ::operator new(0xc); ArrayFloat_ctor(aScale);
-        self->sparkScale = aScale;
+        self->sparkGeometries = new Array<AEGeometry*>();
+        self->sparkVelocities = new Array<Vector*>();
+        self->sparkLife = new Array<float>();
+        self->sparkLifeMin = new Array<float>();
+        self->sparkTimers = new Array<int>();
+        self->sparkInSight = new Array<bool>();
+        self->sparkScale = new Array<float>();
 
         // Distance from the explosion source to the cloud centre (+0x128).
         Vector delta;
@@ -363,16 +322,16 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             float life = ((float)((AbyssEngine::AERandom *)(rng))->next(200) / lifeDiv) * 3.0f + 3.0f;
             int timer = ((AbyssEngine::AERandom *)(rng))->next(14000);
 
-            ArrayAdd_float(life * 7.0f, self->sparkLife);
-            ArrayAdd_float(life, self->sparkLifeMin);
-            ArrayAdd_int(timer + 8000, self->sparkTimers);
+            self->sparkLife->push_back(life * 7.0f);
+            self->sparkLifeMin->push_back(life);
+            self->sparkTimers->push_back(timer + 8000);
 
             Vector *velCopy = (Vector *)::operator new(0xc);
             *velCopy = dn;
-            ArrayAdd_vec(velCopy, self->sparkVelocities);
-            ArrayAdd_geom(shard, self->sparkGeometries);
-            ArrayAdd_bool(false, self->sparkInSight);
-            ArrayAdd_float(1.0f, self->sparkScale);
+            self->sparkVelocities->push_back(velCopy);
+            self->sparkGeometries->push_back((AEGeometry *)shard);
+            self->sparkInSight->push_back(false);
+            self->sparkScale->push_back(1.0f);
         }
     }
 
@@ -412,12 +371,13 @@ extern float g_pgcu_growDiv;
 }
 
 // PlayerGasCloud::update(int dt)
-void PlayerGasCloud_update(void *self, int dt)
+void PlayerGasCloud_update(void *selfv, int dt)
 {
-    char *s = (char *)self;
+    PlayerGasCloud *self = (PlayerGasCloud *)selfv;
+    char *s = (char *)selfv;
 
     if (dt != 0) {
-        void *arr = *(void **)(s + 0x138);
+        Array<AEGeometry*> *arr = self->sparkGeometries;
         if (*(char *)(s + 0x154) == 0 || *(char *)(s + 0x15c) != 0 || arr == 0) {
             // Idle / pre-explosion: just advance the bound transform.
             void *t = ((PaintCanvas *)*(void **)g_pgcu_canvasRoot)->TransformGetTransform(
@@ -430,14 +390,14 @@ void PlayerGasCloud_update(void *self, int dt)
             float velStep = dtf * g_pgcu_velScale;
 
             unsigned int i = 0;
-            while (i < *(unsigned int *)arr) {
-                int *timer = (int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4);
+            while (i < arr->size()) {
+                int *timer = &(*self->sparkTimers)[i];
                 *timer -= dt;
 
-                float *life = (float *)(*(int *)(*(int *)(s + 0x140) + 4) + i * 4);
+                float *life = &(*self->sparkLife)[i];
                 float newLife = *life - velStep;
                 *life = newLife;
-                float lifeMin = *(float *)(*(int *)(*(int *)(s + 0x144) + 4) + i * 4);
+                float lifeMin = (*self->sparkLifeMin)[i];
                 if (newLife < lifeMin)
                     *life = lifeMin;
 
@@ -445,7 +405,7 @@ void PlayerGasCloud_update(void *self, int dt)
                 void *player = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
                 Vector turretPos, shardPos, delta;
                 PlayerEgo_getTurretPosition(player, &turretPos);
-                void *geom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
+                void *geom = (*self->sparkGeometries)[i];
                 ((AEGeometry *)(geom))->getPosition();
                 delta = turretPos - *(Vector *)(&shardPos);
                 float dist = VectorLength(&delta);
@@ -454,8 +414,8 @@ void PlayerGasCloud_update(void *self, int dt)
                 if (dist < g_pgcu_catchDist && *(int *)(s + 0x158) >= 2000) {
                     void *p2 = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
                     if (((PlayerEgo *)(p2))->isInTurretMode() != 0 &&
-                        *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4) >= g_pgcu_minTimer) {
-                        *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4) = g_pgcu_resetTimer;
+                        (*self->sparkTimers)[i] >= g_pgcu_minTimer) {
+                        (*self->sparkTimers)[i] = g_pgcu_resetTimer;
                         void *ship = ((Status *)(*gStatus))->getShip();
                         int itemId = *(int *)(s + 0x160);
                         if (((Ship *)(ship))->getFreeSpace() < 1) {
@@ -491,15 +451,15 @@ void PlayerGasCloud_update(void *self, int dt)
                             void *ship2 = ((Status *)(*gStatus))->getShip();
                             ((Ship *)(ship2))->addCargo((Item *)def);
                         }
-                        *(int *)(*(int *)(*(int *)(s + 0x148) + 4) + i * 4) = 0;
+                        (*self->sparkScale)[i] = 0.0f;
                         collected = true;
                     }
                 }
 
                 if (!collected) {
                     // Fade / grow the shard's scale based on its remaining timer.
-                    int tval = *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4);
-                    float *scale = (float *)(*(int *)(*(int *)(s + 0x148) + 4) + i * 4);
+                    int tval = (*self->sparkTimers)[i];
+                    float *scale = &(*self->sparkScale)[i];
                     if (tval <= 0) {
                         float sc = (float)tval / g_pgcu_growDiv + 1.0f;
                         *scale = sc;
@@ -516,7 +476,7 @@ void PlayerGasCloud_update(void *self, int dt)
                 // Advance the shard's position.
                 void *moveGeom;
                 Vector moved;
-                bool homing = *(char *)(*(int *)(*(int *)(s + 0x150) + 4) + i) != 0 &&
+                bool homing = (*self->sparkInSight)[i] != 0 &&
                               *(int *)(s + 0x158) >= 2000;
                 if (homing) {
                     void *ship = ((Status *)(*gStatus))->getShip();
@@ -525,8 +485,8 @@ void PlayerGasCloud_update(void *self, int dt)
                         Vector dir, dn;
                         dir = turretPos - *(Vector *)(&shardPos);
                         VectorNormalize(&dn, &dir);
-                        *(*(Vector **)(*(int *)(*(int *)(s + 0x13c) + 4) + i * 4)) = dn;
-                        moveGeom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
+                        *(*self->sparkVelocities)[i] = dn;
+                        moveGeom = (*self->sparkGeometries)[i];
 
                         void *ship2 = ((Status *)(*gStatus))->getShip();
                         Item *eq = ((Ship *)(ship2))->getFirstEquipmentOfSort(0x23);
@@ -541,20 +501,20 @@ void PlayerGasCloud_update(void *self, int dt)
                     }
                 }
                 {
-                    moveGeom = *(void **)(*(int *)(*(int *)(s + 0x138) + 4) + i * 4);
+                    moveGeom = (*self->sparkGeometries)[i];
                     Vector vel;
-                    vel = *(*(Vector **)(*(int *)(*(int *)(s + 0x13c) + 4) + i * 4));
-                    Vector_scale(*(float *)(*(int *)(*(int *)(s + 0x140) + 4) + i * 4) * dtf, &vel);
+                    vel = *(*self->sparkVelocities)[i];
+                    Vector_scale((*self->sparkLife)[i] * dtf, &vel);
                     Vector_add(&vel, &shardPos);
                     moved = vel;
                     ((AEGeometry *)(moveGeom))->setPosition(moved);
                 }
 
             advance:
-                if (g_pgcu_minTimer <= *(int *)(*(int *)(*(int *)(s + 0x14c) + 4) + i * 4))
+                if (g_pgcu_minTimer <= (*self->sparkTimers)[i])
                     *(unsigned char *)(s + 0x15c) = 0;
                 i++;
-                arr = *(void **)(s + 0x138);
+                arr = self->sparkGeometries;
             }
 
             if (*(char *)(s + 0x15c) != 0)
@@ -592,16 +552,16 @@ void PlayerGasCloud::render()
     AbyssEngine::AEMath::MatrixGetDir((Vector *)&local_80, (Matrix *)cameraLocal);
     float scale = AbyssEngine::AEMath::operator-(dir, *(Vector *)&local_80);
 
-    void *arr;
+    Array<AEGeometry*> *arr;
     if (this->exploded == 0 || (arr = this->sparkGeometries) == 0) {
         void *geom = this->modelGeometry;
         AbyssEngine::AEMath::MatrixGetUp((Vector *)&local_80, (Matrix *)cameraLocal);
         ((AEGeometry *)(geom))->setDirection(dir, *(Vector *)&local_80);
         ((AEGeometry *)(geom))->render();
     } else {
-        for (unsigned int i = 0, off = 0; i < F<unsigned int>(arr, 0x0); i++, off += 4) {
-            void *g = *(void **)((char *)F<void *>(this->sparkGeometries, 0x4) + off);
-            float si = *(float *)((char *)F<void *>(this->sparkScale, 0x4) + off);
+        for (unsigned int i = 0; i < arr->size(); i++) {
+            AEGeometry *g = (*this->sparkGeometries)[i];
+            float si = (*this->sparkScale)[i];
             ((AEGeometry *)(g))->setScaling(si);
             AbyssEngine::AEMath::MatrixGetUp((Vector *)&local_80, (Matrix *)cameraLocal);
             ((AEGeometry *)(g))->setDirection(dir, *(Vector *)&local_80);

@@ -41,8 +41,6 @@ extern "C" void PlayerFighter_setMissionCrate_tail(int slot, void *loot);
 extern "C" void PlayerFighter_setBV_add(void *bv, void *volumes);
 extern "C" void PlayerFighter_setExhaustVisible_apply(unsigned int transform, bool visible);
 extern "C" void PlayerFighter_render_tail(int geom);
-extern "C" void ArrayReleaseClasses_BV(void *arr);
-extern "C" void *ArrayBV_dtor(void *p);
 extern "C" void *Trail_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
@@ -65,9 +63,6 @@ extern "C" void PF_update_body(PlayerFighter *self, int dt);
 extern "C" void AEMath_MatrixAssign(void *dst, void *src);
 extern "C" void AEMath_MatrixIdentity(void *out, void *m);
 extern "C" void AEMath_MatrixSetRotation(void *m, float rx, float ry, float rz);
-extern "C" void ArrayInt_ctor(Array<int> *a);
-extern "C" void ArrayInt_add(int val, Array<int> *a);
-extern "C" void ArrayBV_ctor(Array<BoundingVolume *> *a);
 namespace AbyssEngine { namespace AEMath {
 float VectorLength(const Vector &value);
 Vector operator-(const Vector &lhs, const Vector &rhs);
@@ -81,7 +76,6 @@ extern "C" void PF_vscale(void *out, void *vec, float scalar);
 extern "C" void AEString_ctor_default(void *s);
 extern "C" void AEString_assign(void *dst, void *src);
 extern "C" void AEString_dtor(void *s);
-extern "C" void *ArrayInt_dtor(void *p);
 
 // Status singleton holder. The original code loads the Status* receiver from a PC-relative
 // global before each of these calls; the decompiler dropped that first (self) arg. We recover
@@ -176,11 +170,10 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
     if (r != 0) ::operator delete(((Route *)(r))->dtor());
     self->route = 0;
 
-    void *bv = self->boundingVolumes;
-    if (bv != 0) {
-        ArrayReleaseClasses_BV(bv);
-        void *bv2 = self->boundingVolumes;
-        if (bv2 != 0) ::operator delete(ArrayBV_dtor(bv2));
+    if (self->boundingVolumes != 0) {
+        for (auto *e : *self->boundingVolumes) delete e;
+        self->boundingVolumes->clear();
+        delete self->boundingVolumes;
     }
     self->boundingVolumes = 0;
 
@@ -654,15 +647,12 @@ void PlayerFighter::setMissionCrate(bool on) {
     PlayerFighter *self = this;
     self->isMissionCrate = on;
     if (on) {
-        self->lootList = 0;
-        Array<int> *a = (Array<int> *)::operator new(0xc);
-        ArrayInt_ctor(a);
-        self->lootList = a;
+        self->lootList = new Array<int>();
         int mission = (int)(intptr_t)((Status *)(*(unsigned *)gMissionCrateApp))->getMission();
         int type = ((Mission *)(mission))->getType();
         int item = (type == 5) ? 0x74 : 0x75;
-        ArrayInt_add(item, (Array<int> *)self->lootList);
-        PlayerFighter::setMissionCrate_tail(1, (Array<int> *)self->lootList);
+        self->lootList->push_back(item);
+        PlayerFighter::setMissionCrate_tail(1, self->lootList);
     }
 }
 
@@ -691,8 +681,7 @@ struct BoundingVolume;
 
 void PlayerFighter::setBV_b(BoundingVolume *bv) {
     PlayerFighter *self = this;
-    Array<BoundingVolume *> *a = (Array<BoundingVolume *> *)::operator new(0xc);
-    ArrayBV_ctor(a);
+    Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
     self->boundingVolumes = a;
     return PlayerFighter::setBV_add(bv, a);
 }
@@ -1158,19 +1147,13 @@ void PlayerFighter::revive()
     ((AEGeometry *)(geom))->setVisible(1);
 
     if ((unsigned)(self->wingmanCommand - 9) < 2) {
-        void *a = self->lootList;
-        if (a != 0) {
-            ::operator delete(ArrayInt_dtor(a));
-        }
+        delete self->lootList;
         self->lootList = 0;
     } else {
         void *g = ::operator new(1);
         Generator_ctor(g);
-        void *a = self->lootList;
-        if (a != 0) {
-            ::operator delete(ArrayInt_dtor(a));
-            self->lootList = 0;
-        }
+        delete self->lootList;
+        self->lootList = 0;
         self->lootList = ((Generator *)(g))->getLootList(-1, -1);
         ::operator delete(Generator_dtor(g));
     }
