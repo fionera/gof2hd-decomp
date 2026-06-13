@@ -3428,7 +3428,7 @@ void Level::almostKillWanted(int index) {
         return;
     }
     int m = (int)(intptr_t)Level_opnew_akw(0x78);
-    ((Mission *)(m))->ctor_akw(4, 0, (*slot)->getStation()->getIndex());
+    new ((void *)(intptr_t)m) Mission(4, 0, (*slot)->getStation()->getIndex());
     ((Mission *)(m))->setCampaign_akw(1);
     ((Mission *)(m))->setWon_akw(1);
     (*slot)->setMission(m);

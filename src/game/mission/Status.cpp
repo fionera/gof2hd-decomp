@@ -1430,9 +1430,9 @@ void Status::nextCampaignMission() {
     if ((unsigned)step < sizeof(kSteps) / sizeof(kSteps[0])) {
         const Step &s = kSteps[step];
         if (s.type == 0 && s.station == 0 && s.param == 0) {
-            ((Mission *)(m))->ctor_default();
+            new (m) Mission();
         } else {
-            ((Mission *)(m))->ctor3(s.type, s.param, s.station);
+            new (m) Mission(s.type, s.param, s.station);
         }
         if (s.campaign)
             Status_setCampaignMission_ncm(this, m);
@@ -1440,7 +1440,7 @@ void Status::nextCampaignMission() {
             Status_addMissionTail(this, m);
     } else {
         // beyond the scripted range: default freelance hop.
-        ((Mission *)(m))->ctor3(0xb, 0, 100);
+        new (m) Mission(0xb, 0, 100);
         Status_addMissionTail(this, m);
     }
 }

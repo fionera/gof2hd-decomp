@@ -113,7 +113,7 @@ Mission * Mission::clone() {
     Mission *m = (Mission *)::operator new(0x78);
     int id = this->id;
     name.ctor_copy((String *)((char *)this + 0x10), false);
-    ((Mission *)(m))->ctor7(id, &name, this->field_0x28, this->field_0x2c, this->field_0x30, this->targetStation, this->reward);
+    new (m) Mission(id, &name, this->field_0x28, this->field_0x2c, this->field_0x30, this->targetStation, this->reward);
     m->instantAction = this->instantAction;
     return m;
 }
@@ -140,9 +140,8 @@ void Mission::setTargetStation(int idx) {
 
 // Deleting/complete destructor: runs the inner dtor (which returns `this`), then
 // tail-calls the finisher with that pointer — so `this` need not be saved.
-void Mission::dtor() {
-    ((Mission *)(((Mission *)(this))->dtor_inner()))->dtor_finish();
-}
+// Mission::dtor()/dtor_inner()/dtor_finish() collapsed into the real ~Mission() below
+// plus the compiler-generated deleting destructor; callers use delete / ~Mission().
 
 struct Galaxy;
 struct Station;
@@ -152,7 +151,7 @@ __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 
 // Mission::Mission(int id, String client, int* targets, int a, int b, int station, int reward)
 // — the freelance-mission constructor.
-Mission * Mission::ctor7(int id, const void *client, int a, int b, int c, int station, int reward) {
+Mission::Mission(int id, const void *client, int a, int b, int c, int station, int reward) {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
     ((String *)((char *)self + 0x10))->ctor();
@@ -177,14 +176,13 @@ Mission * Mission::ctor7(int id, const void *client, int a, int b, int c, int st
     self->field_0x4 = 0;
     self->field_0x8 = 0;
     self->field_0x38 = 0;
-    return self;
 }
 
 // PIC global (hidden -> single pc-relative deref): the Mission vtable base.
 __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 
 // Mission::Mission(int) — like the default ctor but stores the given id at +0xc.
-Mission * Mission::ctor_int(int id) {
+Mission::Mission(int id) {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
     ((String *)((char *)self + 0x10))->ctor();
@@ -206,7 +204,6 @@ Mission * Mission::ctor_int(int id) {
     self->field_0x4 = 0;
     self->field_0x38 = 0;
     self->targetStation = 0;
-    return self;
 }
 
 struct Galaxy;
@@ -245,7 +242,7 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 
 // Mission::Mission(int id, int goods, int station) — the campaign-mission constructor.
-Mission * Mission::ctor3(int id, int goods, int station) {
+Mission::Mission(int id, int goods, int station) {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
     ((String *)((char *)self + 0x10))->ctor();
@@ -273,7 +270,6 @@ Mission * Mission::ctor3(int id, int goods, int station) {
     self->instantAction = 0;
     self->field_0x70 = 0;
     self->field_0x38 = 0;
-    return self;
 }
 
 // PIC globals: the Mission vtable base and the String::~String function pointer.
@@ -283,14 +279,13 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 
 // Inner destructor: installs the vtable, then destroys the four String members
 // (at 0x4c, 0x40, 0x1c, 0x10 — high to low), and returns `this`.
-Mission * Mission::dtor_inner() {
+Mission::~Mission() {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
     ((String *)((char *)self + 0x4c))->dtor();
     ((String *)((char *)self + 0x40))->dtor();
     ((String *)((char *)self + 0x1c))->dtor();
     ((String *)((char *)self + 0x10))->dtor();
-    return self;
 }
 
 // PIC globals (hidden -> single pc-relative deref): the Mission vtable base.
@@ -303,7 +298,7 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 // Mission::Mission() — default constructor. Installs the vtable, default-constructs
 // the four String members, sets the name from a literal, and zero-inits the rest.
 // The on-stack String temp triggers the -Oz stack-protector canary.
-Mission * Mission::ctor_default() {
+Mission::Mission() {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
     ((String *)((char *)self + 0x10))->ctor();
@@ -325,7 +320,6 @@ Mission * Mission::ctor_default() {
     self->field_0x4 = 0;
     self->field_0x38 = 0;
     self->targetStation = 0;
-    return self;
 }
 
 // ---- recovered accessors / mutators (0x16baXX..0x16bcXX cluster) ----
@@ -448,29 +442,18 @@ void Mission::setType(int type) {
 
 // Deleting-destructor finisher (tail of 0x16ba98): the inner ~Mission already ran
 // and returned `this`; all that remains is to release the storage.
-void Mission::dtor_finish() {
-    operator delete(this);
-}
+// (dtor_finish removed: operator delete is handled by the deleting destructor)
 
 // Freelance "almost-killed wanted" path (Level::almostKillWanted): a campaign-style
 // mission built from (type, goods, station) — identical to the (int,int,int) ctor.
-Mission * Mission::ctor_akw(int type, int goods, int station) {
-    return this->ctor3(type, goods, station);
-}
+// ctor_akw collapsed into Mission(int,int,int); its call sites construct it directly.
 
 // Record load, empty-mission branch (RecordHandler::readMission): (type, reward, station).
-Mission * Mission::ctorEmpty(int type, int reward, int targetStation) {
-    return this->ctor3(type, reward, targetStation);
-}
+// ctorEmpty collapsed into Mission(int,int,int); its call site constructs it directly.
 
 // Record load, full-mission branch (RecordHandler::readMission): forwards to the
 // seven-argument freelance constructor.
-Mission * Mission::ctorFull(int type, const void *clientName, int *img, int clientRace,
-                            int reward, int targetStation, int difficulty) {
-    // ctor7(id, client, a=clientImage, b=clientRace, c=reward, station, reward-slot=difficulty)
-    return this->ctor7(type, clientName, (int)(intptr_t)img, clientRace, reward,
-                       targetStation, difficulty);
-}
+// ctorFull collapsed into the 7-arg ctor; its call site applies the int*->int cast.
 
 // Campaign-flag setter spelling used by Level::almostKillWanted.
 void Mission::setCampaign_akw(int flag) {

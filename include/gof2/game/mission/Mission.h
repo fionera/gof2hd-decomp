@@ -53,24 +53,20 @@ public:
     int field_0x70;                     // +0x70 status value
     uint8_t visible;                 // +0x74 visible
 
+    // ---- constructors / destructor (demangle to Mission::Mission / ~Mission) ----
+    // The four String members are byte-offset views (0x10/0x1c/0x40/0x4c), placement-
+    // constructed in the ctors and destroyed in ~Mission(). The former (int,int,int)
+    // aliases ctor_akw/ctorEmpty collapse into Mission(int,int,int); ctorFull collapses
+    // into the 7-arg ctor (its call site applies the int*->int cast).
+    Mission();
+    Mission(int id);
+    Mission(int id, int goods, int station);
+    Mission(int id, const void *client, int a, int b, int c, int station, int reward);
+    ~Mission();
+
     // ---- methods (converted from free functions) ----
     void calcDistance();
     Mission * clone();
-    Mission * ctor3(int id, int goods, int station);
-    Mission * ctor7(int id, const void *client, int a, int b, int c, int station, int reward);
-    Mission * ctor_default();
-    Mission * ctor_int(int id);
-    void dtor();
-    Mission * dtor_inner();
-    // Deleting-destructor finisher: free the storage after the inner dtor ran.
-    void dtor_finish();
-    // Constructor aliases used by the freelance/record/wanted code paths. Each
-    // builds the same Mission as the matching numbered ctor; they exist as
-    // distinct call-site spellings in the original binary.
-    Mission * ctor_akw(int type, int goods, int station);
-    Mission * ctorEmpty(int type, int reward, int targetStation);
-    Mission * ctorFull(int type, const void *clientName, int *img, int clientRace,
-                       int reward, int targetStation, int difficulty);
     void setCampaign_akw(int flag);
     void setWon_akw(int flag);
     String getClientName();

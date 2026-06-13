@@ -900,10 +900,10 @@ void * RecordHandler::readMission(unsigned int fd) {
             mission = RH_op_new(0x78);
             String nameCopy;
             nameCopy.ctor_copy(&clientName, false);
-            ((Mission *)(mission))->ctorFull(type, &nameCopy, img, clientRace, reward, targetStationIdx, difficulty);
+            new (mission) Mission(type, &nameCopy, (int)(intptr_t)img, clientRace, reward, targetStationIdx, difficulty);
         } else {
             mission = RH_op_new(0x78);
-            ((Mission *)(mission))->ctorEmpty(type, reward, targetStationIdx);
+            new (mission) Mission(type, reward, targetStationIdx);
         }
         ((Mission *)(mission))->setCosts(costs);
         ((Mission *)(mission))->setBonus(bonus);
