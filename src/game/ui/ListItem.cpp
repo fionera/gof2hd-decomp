@@ -19,10 +19,11 @@ bool ListItem::isItem() {
 
 // ListItem::ListItem(BluePrint*)
 
-ListItem::ListItem(BluePrint *bp) {
-    this->init();
+ListItem * ListItem::ctor_BluePrint(BluePrint *bp) {
+    ((ListItem *)(this))->init();
     this->field_0x24 = 1;
     this->field_0x8 = bp;
+    return this;
 }
 
 extern "C" int Item_getSort_li(Item *it);              // blx 0x71908
@@ -47,11 +48,12 @@ int ListItem::sortCmp(Ship *ship, int sort) {
 
 // ListItem::ListItem(int, int) -> 0x28 = second arg, 0x2c = first arg, selectable=1
 
-ListItem::ListItem(int a, int b) {
-    this->init();
+ListItem * ListItem::ctor_int_int(int a, int b) {
+    ((ListItem *)(this))->init();
     this->field_0x28 = b;
     this->field_0x2c = a;
     this->field_0x24 = 1;
+    return this;
 }
 
 // ListItem::~ListItem() — for each of the two owned String* (at 0x1c, 0x20):
@@ -93,10 +95,11 @@ uint8_t ListItem::isSelectable() {
 
 // ListItem::ListItem(Ship*)
 
-ListItem::ListItem(Ship *s) {
-    this->init();
+ListItem * ListItem::ctor_Ship(Ship *s) {
+    ((ListItem *)(this))->init();
     this->field_0x24 = 1;
     this->field_0xc = s;
+    return this;
 }
 
 extern "C" int Item_getType_li(Item *it);                  // blx 0x718fc

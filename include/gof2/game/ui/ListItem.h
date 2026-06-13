@@ -51,29 +51,6 @@ public:
     int      field_0x40;                // +0x40
     uint8_t  field_0x44;                // +0x44 text flag
 
-    // ---- constructors (each demangles to ListItem::ListItem(...)) ----
-    // Exactly one payload pointer is set per overload. The String overloads take the
-    // engine String by opaque pointer (modeled as EngString internally). Three former
-    // decompiler aliases collapsed into the overload they delegated to: ctor_Slot ->
-    // ListItem(int), ctor_TextButton -> ListItem(String*,bool,int), ctor_ListItem ->
-    // the copy constructor.
-    ListItem(Agent *a);
-    ListItem(Array<AbyssEngine::String *> *arr);
-    ListItem(BluePrint *bp);
-    ListItem(Item *it);
-    ListItem(Mission *m);
-    ListItem(PendingProduct *pp);
-    ListItem(Ship *s);
-    ListItem(const void *src);                      // ListItem(String*)
-    ListItem(const void *p1, const void *p2);       // ListItem(String*, String*)
-    ListItem(const void *src, bool b);              // ListItem(String*, bool)
-    ListItem(const void *src, bool b, int v);       // ListItem(String*, bool, int)
-    ListItem(const void *src, int v);               // ListItem(String*, int)
-    ListItem(const ListItem &src);                  // copy constructor
-    ListItem(int v);                                // also the "slot" entry
-    ListItem(int a, int b);
-    ListItem(int a, int b, const void *src);
-
     ~ListItem();
 
     // ---- methods (converted from free functions) ----
@@ -84,6 +61,28 @@ public:
     // which answers whether a matching equipment slot is available. Static because the
     // original fragment took the ship (not the ListItem) as its first argument.
     static int sortCmp(Ship *ship, int sort);
+    ListItem * ctor_Agent(Agent *a);
+    ListItem * ctor_Array(Array<AbyssEngine::String *> *arr);
+    ListItem * ctor_BluePrint(BluePrint *bp);
+    ListItem * ctor_Item(Item *it);
+    ListItem * ctor_Mission(Mission *m);
+    ListItem * ctor_PendingProduct(PendingProduct *pp);
+    ListItem * ctor_Ship(Ship *s);
+    ListItem * ctor_String(const void *src);
+    ListItem * ctor_String_String(const void *p1, const void *p2);
+    ListItem * ctor_String_bool(const void *src, bool b);
+    ListItem * ctor_String_bool_int(const void *src, bool b, int v);
+    ListItem * ctor_String_int(const void *src, int v);
+    ListItem * ctor_copy(ListItem *src);
+    ListItem * ctor_int(int v);
+    ListItem * ctor_int_int(int a, int b);
+    ListItem * ctor_int_int_String(int a, int b, const void *src);
+    // A "slot" entry carries a non-negative integer key in field_0x28 (see isSlot()).
+    ListItem * ctor_Slot(int slot);
+    // A footer/action text button: owns a name String and stores its action id.
+    ListItem * ctor_TextButton(const void *text, bool enabled, int action);
+    // Copy-wrap another ListItem's payload into this entry.
+    ListItem * ctor_ListItem(ListItem *src);
     int getIndex();
     int getNumLines();
     int getPrice();
