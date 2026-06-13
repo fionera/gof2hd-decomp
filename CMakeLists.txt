@@ -22,7 +22,7 @@ endif()
 # WORK IN PROGRESS: the byte-offset -> real-struct cleanup is ongoing, so a subset of TUs still
 # fails to compile. They remain in the target so CLion indexes the whole codebase; `cmake --build`
 # will report the not-yet-clean files. -fpermissive/-w relax the WIP code during cleanup.
-file(GLOB GOF2_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE GOF2_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_library(gof2 STATIC ${GOF2_SOURCES})
 target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_compile_options(gof2 PRIVATE -fpermissive -w)
