@@ -14,7 +14,6 @@
 //   0x14  int    field_14    (param_6)
 //   0x18  bool   field_18    (= 0)
 
-
 // POD-ish ticker entry; 0x1c bytes.
 class NewsItem {
 public:

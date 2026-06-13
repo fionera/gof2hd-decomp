@@ -2,7 +2,6 @@
 #include "gof2/engine/render/ImagePart.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-
 extern "C" void *Sprite_dtor(void *p);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 extern "C" void Sprite_ctor(void *self, void *ids, int n, int w, int h);
@@ -24,7 +23,6 @@ extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagA;
 extern "C" __attribute__((visibility("hidden"))) char *g_ctor_flagB;
 extern "C" __attribute__((visibility("hidden"))) int *g_ctor_dst;
 
-// ---- getItemImageId_11ca50.cpp ----
 // ImageFactory::getItemImageId(int) -> base id (0x898 below 0xb0, else 0xef0) + param.
 int ImageFactory::getItemImageId(int param_1)
 {
@@ -33,7 +31,6 @@ int ImageFactory::getItemImageId(int param_1)
     return base + param_1;
 }
 
-// ---- _ImageFactory_11c6b0.cpp ----
 // ImageFactory::~ImageFactory() -> returns this. Frees the owned Sprite at +0x00.
 ImageFactory *_ZN12ImageFactoryD2Ev(ImageFactory *self)
 {
@@ -54,7 +51,6 @@ ImageFactory::~ImageFactory()
     this->sprite = 0;
 }
 
-// ---- createChar_11c6f4.cpp ----
 // *gCreateChar2Rng1 -> rng (used for the type-3 reroll); gCreateChar2Table -> int[] table base
 // (PC-relative address, not dereferenced); *gCreateChar2Rng2 -> rng for the per-part loop.
 extern void *const gCreateChar2Rng1 __attribute__((visibility("hidden")));
@@ -83,7 +79,6 @@ int *ImageFactory_createChar_bi(int param_1, int param_2, int sel)
     return obj;
 }
 
-// ---- reload_11c5d0.cpp ----
 // Tail veneer: another Image2DCreate-like through a function-pointer global.
 // *g_reload_getText -> getText-style fn ptr; *g_reload_canvas -> canvas holder.
 
@@ -111,7 +106,6 @@ void ImageFactory::reload() {
     return ImageFactory::reload_tail(*holder, 0x511, (char *)self + 8);
 }
 
-// ---- drawChar_11c940.cpp ----
 // Tail veneer (function-pointer global): draws the foreground glyph layer.
 
 // ImageFactory::drawChar(Array<ImagePart*>*, int, int, bool)
@@ -127,7 +121,6 @@ void ImageFactory::drawChar(Arr *parts, int x, int y, int flag) {
     return ImageFactory::drawChar_tail(*holder, i32(self, 0x8), x, y);
 }
 
-// ---- drawShip_11cad0.cpp ----
 // ImageFactory::drawShip(int shipId, int x, int y) — draws the composite ship sprite (frame 5)
 // at (x,y), then overlays the ship's class icon (image id 0x971+shipId).
 
@@ -143,7 +136,6 @@ void ImageFactory::drawShip(int shipId, int x, int y) {
     ((PaintCanvas*)(long)*holder)->DrawImage2D((int)local, x, y);
 }
 
-// ---- drawItem_11ca60.cpp ----
 // canvas holder: *g_holder yields the canvas handle (matches the target's double-load).
 
 // ImageFactory::drawItem(int, int, int) — draws the item icon for id param_1 at (param_2,param_3).
@@ -173,7 +165,6 @@ void ImageFactory::drawItem(int itemId, int x, int y)
     ((PaintCanvas*)(long)*holder)->DrawImage2D(local, x, y);
 }
 
-// ---- loadImage_11c834.cpp ----
 // ImageFactory::loadImage(int row, int col, int frameBase) — looks up the image id for the
 // [row][col] cell, creates the image2d in the global canvas, then builds an ImagePart whose
 // position is taken from one of several layout tables selected by two orientation flags.
@@ -217,7 +208,6 @@ void * ImageFactory::loadImage(int row, int col, int frameBase) {
     return part;
 }
 
-// ---- drawItem_11c9b4.cpp ----
 // ImageFactory::drawItem(int itemId, int frame, int x, int y) — draws the item's composite
 // sprite at the given frame/position, then overlays the item icon (0x898 for ids < 0xb0,
 // otherwise 0xef0, plus itemId).
@@ -237,7 +227,6 @@ void ImageFactory::drawItem4(int itemId, int frame, int x, int y) {
     ((PaintCanvas*)(long)*holder)->DrawImage2D((int)local, x, y);
 }
 
-// ---- loadChar_11c774.cpp ----
 // ImageFactory::loadChar(int*) -> Array<ImagePart*>* of 4 entries (with [0]/[2] swapped).
 Arr * ImageFactory::loadChar(int *param_1) {
     ImageFactory *self = this;
@@ -259,7 +248,6 @@ Arr * ImageFactory::loadChar(int *param_1) {
     return a;
 }
 
-// ---- createChar_11c6cc.cpp ----
 // createChar(bool,int) — 3 register args in practice (r0=clz bool, r1=rand==0, r2=type).
 // PC-relative pointer-to-pointer global: *g -> rng object.
 extern void *const gCreateCharRng __attribute__((visibility("hidden")));
@@ -295,7 +283,6 @@ int *ImageFactory::createChar(bool clz, bool rand0, int type)
     return obj;
 }
 
-// ---- ImageFactory_11c54c.cpp ----
 // *g_ctor_flagA / *g_ctor_flagB -> gate bytes (both evaluated). *g_ctor_dst -> int* dest table;
 // g_ctor_src -> source int table (PC-relative base, not dereferenced).
 extern int g_ctor_src[] __attribute__((visibility("hidden")));

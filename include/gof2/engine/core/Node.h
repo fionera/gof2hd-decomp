@@ -13,11 +13,9 @@
 //   0x04  int           field_04 (cleared to 0 in ctor)
 //   0x08  int           field_08 (= param_1 in ctor)
 
-
 struct Node;
 
 // Engine container Array<T> { uint32_t length; T* data; uint32_t cap; } -- 0xc bytes.
-
 
 void *operator new(__SIZE_TYPE__ size);
 

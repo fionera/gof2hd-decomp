@@ -22,12 +22,6 @@ struct PlayerStaticFar {
     ~PlayerStaticFar() noexcept(false);
 };
 
-
-
-
-
-
-
 static inline void *&P(void *self, uint32_t off)
 {
     return *(void **)((char *)self + off);

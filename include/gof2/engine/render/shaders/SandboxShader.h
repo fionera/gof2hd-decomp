@@ -26,8 +26,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -36,8 +34,6 @@ struct ShaderBaseStruct {
 
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
-
-
 
 class SandboxShader : public ShaderBaseStruct  {
 public:

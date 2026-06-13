@@ -14,15 +14,12 @@
 //   0x404 uint  fadeColor          0x408 int  fadeProgress   0x40c int fadeDuration
 //   0x410 uint8 fillScreen flag
 
-
 // Layout owns three TouchButton* (0x3b4/0x3b8/0x3bc) and a ChoiceWindow* (0x3c4),
 // each deleted in the destructor. Declared so it demangles to Layout::~Layout();
 // all other methods are authored as extern "C" wrappers.
 
-
 // AbyssEngine::String — 12-byte object passed by value as a trivially-copied
 // aggregate; heap members modeled opaquely.
-
 
 namespace AbyssEngine {
 // AbyssEngine::String — 12-byte object. Modeled with the ctors/dtor we need so the
@@ -37,8 +34,6 @@ using AbyssEngine::String12;
 // placement new is provided by <new> (pulled in via common.h's standard headers).
 
 // Stack-protector guard (the engine resolves this to a PC-relative game global).
-
-
 
 // Field accessor via byte offset.
 

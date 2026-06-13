@@ -9,7 +9,6 @@
 // those raw accesses compile against char*/void* casts.
 #include <new>   // placement operator new
 
-
 struct ConfigReader;
 struct PaintCanvas;
 using String = AbyssEngine::String;

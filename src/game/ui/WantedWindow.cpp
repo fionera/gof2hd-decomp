@@ -31,7 +31,6 @@
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-
 extern "C" void WantedWindow_update_tail(void *starMap, int dt);
 extern "C" void WantedWindow_render3D_tail(void *starMap);
 extern "C" int __aeabi_idiv(int numerator, int denominator);
@@ -57,13 +56,11 @@ extern "C" void String_int_ctor(String *s, int value);
 extern "C" void String_plusAssign(String *dst, String *src);
 extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 
-// ---- OnTouchMove_e21a0.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_move_layout;
 __attribute__((visibility("hidden"))) extern int *g_WantedWindow_move_screen_h;
 __attribute__((visibility("hidden"))) extern int *g_WantedWindow_move_screen_w_a;
 __attribute__((visibility("hidden"))) extern int *g_WantedWindow_move_force;
 __attribute__((visibility("hidden"))) extern int *g_WantedWindow_move_screen_w_b;
-
 
 int WantedWindow::OnTouchMove(int x, int y) {
     WantedWindow *self = this;
@@ -115,7 +112,6 @@ int WantedWindow::OnTouchMove(int x, int y) {
     return 0;
 }
 
-// ---- update_e2028.cpp ----
 void WantedWindow::update(int dt) {
     WantedWindow *self = this;
     if (self->showingMap != 0) {
@@ -157,9 +153,7 @@ void WantedWindow::update(int dt) {
     }
 }
 
-// ---- OnTouchBegin_e2104.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_touch_layout;
-
 
 int WantedWindow::OnTouchBegin(int x, int y) {
     WantedWindow *self = this;
@@ -192,7 +186,6 @@ int WantedWindow::OnTouchBegin(int x, int y) {
     return 0;
 }
 
-// ---- render3D_e182c.cpp ----
 void WantedWindow::render3D() {
     WantedWindow *self = this;
     if (self->showingMap != 0) {
@@ -200,7 +193,6 @@ void WantedWindow::render3D() {
     }
 }
 
-// ---- getRelativeScrollStartPos_e17a8.cpp ----
 float WantedWindow::getRelativeScrollStartPos() {
     WantedWindow *self = this;
     int pos = self->scrollOffset;
@@ -212,7 +204,6 @@ float WantedWindow::getRelativeScrollStartPos() {
     return -(float)pos / (float)self->contentHeight;
 }
 
-// ---- getWantedAtPosition_e1fc0.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_hit_layout;
 
 uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
@@ -235,7 +226,6 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     return (uint32_t)idx;
 }
 
-// ---- OnTouchEnd_e22ac.cpp ----
 __attribute__((visibility("hidden"))) extern uint8_t *g_WantedWindow_end_fullscreen;
 __attribute__((visibility("hidden"))) extern uint8_t *g_WantedWindow_end_tablet;
 __attribute__((visibility("hidden"))) extern uint8_t *g_WantedWindow_end_small;
@@ -376,7 +366,6 @@ void WantedWindow::OnTouchEnd(int x, int y) {
 
 }
 
-// ---- draw_e1838.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_draw_layout;
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_draw_canvas;
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_draw_font;
@@ -549,7 +538,6 @@ void WantedWindow::draw() {
     ((Layout *)(layout))->drawFooter();
 }
 
-// ---- init_e0b38.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_init_status;
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_init_layout;
 __attribute__((visibility("hidden"))) extern uint8_t *g_WantedWindow_init_fullscreen;
@@ -719,7 +707,6 @@ int WantedWindow::init() {
     return 1;
 }
 
-// ---- _WantedWindow_e0ec4.cpp ----
 __attribute__((visibility("hidden"))) extern void (*g_WantedWindow_string_dtor)(void *);
 
 WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
@@ -778,7 +765,6 @@ WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
     return self;
 }
 
-// ---- WantedWindow_e0a44.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_ctor_canvas;
 __attribute__((visibility("hidden"))) extern unsigned int **g_WantedWindow_ctor_font;
 
@@ -819,7 +805,6 @@ WantedWindow::~WantedWindow() {
     _ZN12WantedWindowD2Ev(this);
 }
 
-// ---- getRelativeScrollHeight_e17d8.cpp ----
 float WantedWindow::getRelativeScrollHeight() {
     WantedWindow *self = this;
     long long pair = self->contentHeight;
@@ -842,7 +827,6 @@ float WantedWindow::getRelativeScrollHeight() {
     return (float)num / (float)content;
 }
 
-// ---- selectWanted_e1034.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_WantedWindow_select_stack;
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_select_factory;
 __attribute__((visibility("hidden"))) extern void **g_WantedWindow_select_galaxy;

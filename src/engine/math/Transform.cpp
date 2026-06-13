@@ -1,9 +1,5 @@
 #include "gof2/engine/math/Transform.h"
 
-
-
-
-// ---- SetCurrentAnimationTime_77424.cpp ----
 namespace AbyssEngine {
 
 void Transform::SetCurrentAnimationTime(longlong value) {
@@ -12,7 +8,6 @@ void Transform::SetCurrentAnimationTime(longlong value) {
 
 } // namespace AbyssEngine
 
-// ---- SetAnimationRangeInKeyFrames_74fb4.cpp ----
 namespace AbyssEngine {
 
 void Transform::SetAnimationRangeInKeyFrames(int first, int last) {
@@ -36,7 +31,6 @@ void Transform::SetAnimationRangeInKeyFrames(int first, int last) {
 
 } // namespace AbyssEngine
 
-// ---- SetVisible_77630.cpp ----
 namespace AbyssEngine {
 
 void Transform::SetVisible(bool value) {
@@ -45,7 +39,6 @@ void Transform::SetVisible(bool value) {
 
 } // namespace AbyssEngine
 
-// ---- SetVFCFlag_7742a.cpp ----
 namespace AbyssEngine {
 
 void Transform::SetVFCFlag(bool value) {
@@ -71,7 +64,6 @@ void Transform::SetVFCFlag(bool value) {
 
 } // namespace AbyssEngine
 
-// ---- PauseAnimationWithKeyFrame_7500e.cpp ----
 namespace AbyssEngine {
 
 void Transform::PauseAnimationWithKeyFrame(int index) {
@@ -86,7 +78,6 @@ void Transform::PauseAnimationWithKeyFrame(int index) {
 
 } // namespace AbyssEngine
 
-// ---- PauseAnimationWithTimeStamp_75888.cpp ----
 namespace AbyssEngine {
 
 void Transform::PauseAnimationWithTimeStamp(longlong time) {
@@ -97,7 +88,6 @@ void Transform::PauseAnimationWithTimeStamp(longlong time) {
 
 } // namespace AbyssEngine
 
-// ---- SetAnimationSpeed_74c5c.cpp ----
 namespace AbyssEngine {
 
 void Transform::SetAnimationSpeed(float value) {
@@ -106,7 +96,6 @@ void Transform::SetAnimationSpeed(float value) {
 
 } // namespace AbyssEngine
 
-// ---- CollectAnimationData_74b9a.cpp ----
 namespace AbyssEngine {
 
 void Transform::CollectAnimationData() {
@@ -150,7 +139,6 @@ void Transform::CollectAnimationData() {
 
 } // namespace AbyssEngine
 
-// ---- _Transform_775a8.cpp ----
 namespace AbyssEngine {
 
 Transform::~Transform() {
@@ -168,7 +156,6 @@ Transform::~Transform() {
 
 } // namespace AbyssEngine
 
-// ---- InitAnimationRangeInTime_74c62.cpp ----
 namespace AbyssEngine {
 
 void Transform::InitAnimationRangeInTime() {
@@ -201,7 +188,6 @@ void Transform::InitAnimationRangeInTime() {
 
 } // namespace AbyssEngine
 
-// ---- IsRunning_773fa.cpp ----
 namespace AbyssEngine {
 
 int Transform::IsRunning() {
@@ -217,7 +203,6 @@ int Transform::IsRunning() {
 
 } // namespace AbyssEngine
 
-// ---- UpdateKeyFrames_75a08.cpp ----
 namespace AbyssEngine {
 
 static float lerp_float(float from, float to, float t) {
@@ -294,7 +279,6 @@ void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
 
 } // namespace AbyssEngine
 
-// ---- SetAnimationLength_75004.cpp ----
 namespace AbyssEngine {
 
 void Transform::SetAnimationLength(longlong value) {
@@ -304,7 +288,6 @@ void Transform::SetAnimationLength(longlong value) {
 
 } // namespace AbyssEngine
 
-// ---- SetAnimationRangeInTime_74e90.cpp ----
 namespace AbyssEngine {
 
 void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
@@ -352,7 +335,6 @@ void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
 
 } // namespace AbyssEngine
 
-// ---- InsertKeyFrame_759c4.cpp ----
 namespace AbyssEngine {
 
 void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
@@ -372,7 +354,6 @@ void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
 
 } // namespace AbyssEngine
 
-// ---- Update_74cc8.cpp ----
 namespace AbyssEngine {
 
 void Transform::Update(longlong time, bool updateBounds) {
@@ -407,7 +388,6 @@ void Transform::setExhaustVisible(bool visible) {
 
 } // namespace AbyssEngine
 
-// ---- Transform_74918.cpp ----
 namespace AbyssEngine {
 
 Transform::Transform(Transform *other) {
@@ -476,7 +456,6 @@ Transform::Transform(Transform *other) {
 
 } // namespace AbyssEngine
 
-// ---- SetAnimationState_74c3c.cpp ----
 namespace AbyssEngine {
 
 void Transform::SetAnimationState(AnimationMode, void *) {
@@ -484,7 +463,6 @@ void Transform::SetAnimationState(AnimationMode, void *) {
 
 } // namespace AbyssEngine
 
-// ---- Transform_746a0.cpp ----
 namespace AbyssEngine {
 
 static void make_identity(AEMath::Matrix &m) {
@@ -557,7 +535,6 @@ Transform::Transform() {
 
 } // namespace AbyssEngine
 
-// ---- InternUpdate_75048.cpp ----
 namespace AbyssEngine {
 
 static void identity_matrix(AEMath::Matrix &m) {
@@ -699,7 +676,6 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
 
 } // namespace AbyssEngine
 
-// ---- AddKeyFrame_758a0.cpp ----
 namespace AbyssEngine {
 
 void Transform::AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
@@ -724,7 +700,6 @@ void Transform::AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
 
 } // namespace AbyssEngine
 
-// ---- InsertKeyFrame_75f10.cpp ----
 namespace AbyssEngine {
 
 static float kAngleDivisor = 57.295780f;
@@ -865,7 +840,6 @@ void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
 
 } // namespace AbyssEngine
 
-// ---- InsertKeyFrame_old_7640c.cpp ----
 namespace AbyssEngine {
 
 static float old_angle_divisor = 57.295780f;
@@ -988,7 +962,6 @@ void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time
 
 } // namespace AbyssEngine
 
-// ---- InCameraVF_77478.cpp ----
 namespace AbyssEngine {
 
 int Transform::InCameraVF(AEMath::Matrix *matrix, Camera *camera) {

@@ -87,7 +87,6 @@ struct RawArray {
     unsigned int capacity;
 };
 
-
 extern "C" void *dtor_Objective(void *p);
 extern "C" void *dtor_BoundingVolume(void *p);
 extern "C" void *dtor_StarSystem(void *p);
@@ -120,27 +119,22 @@ extern "C" void Objective_ctor_akw(int o, int a, int b, int c, Level *self);
 extern "C" void Level_turnEnemy(int obj);
 extern "C" int Level_getNumWingmen(int wanted);
 
-// ---- hasMiningPlant_c675c.cpp ----
 bool Level::hasMiningPlant() {
     return miningPlant > 0;
 }
 
-// ---- getFriendRoute_c40da.cpp ----
 int Level::getFriendRoute() {
     return friendRoute;
 }
 
-// ---- getEnemiesLeft_c4542.cpp ----
 int Level::getEnemiesLeft() {
     return enemiesLeft;
 }
 
-// ---- render2D_c4ca0.cpp ----
 void Level::render2D() {
     return this->render2D_call(starSystem);
 }
 
-// ---- checkGameOver_c627e.cpp ----
 int Level::checkGameOver() {
     int objective = objectivesB;
     if (objective == 0) {
@@ -149,21 +143,17 @@ int Level::checkGameOver() {
     return this->checkGameOver_call(objective);
 }
 
-// ---- updateAsteroidCluster_c5f54.cpp ----
 void Level::updateAsteroidCluster() {
 }
 
-// ---- getAsteroidWaypoint_c40c8.cpp ----
 int Level::getAsteroidWaypoint() {
     return asteroidWaypoint;
 }
 
-// ---- getAsteroidsLeft_c453c.cpp ----
 int Level::getAsteroidsLeft() {
     return asteroidsLeft;
 }
 
-// ---- junkDied_c4428.cpp ----
 struct JunkObj {
     char pad[0xb0];
     int counter;
@@ -176,7 +166,6 @@ void Level::junkDied() {
     enemiesLeft -= 1;
 }
 
-// ---- enableMovingStars_c6528.cpp ----
 void Level::enableMovingStars(bool enable) {
     int index = movingStarsIndex;
     if (index < 0) {
@@ -185,14 +174,12 @@ void Level::enableMovingStars(bool enable) {
     this->enableMovingStars_call(skybox2Mesh, index, enable);
 }
 
-// ---- setInitStreamOut_adf84.cpp ----
 __attribute__((visibility("hidden"))) extern unsigned char *g_initStreamOut;
 
 void Level::setInitStreamOut() {
     *g_initStreamOut = 1;
 }
 
-// ---- getMiningPlant_c676a.cpp ----
 int Level::getMiningPlant() {
     int index = miningPlantIndex;
     if (index < 0) {
@@ -201,17 +188,14 @@ int Level::getMiningPlant() {
     return ((int *)((RawArray *)(intptr_t)enemies)->data)[index];
 }
 
-// ---- getGasClouds_bde9e.cpp ----
 int Level::getGasClouds() {
     return gasClouds;
 }
 
-// ---- asteroidDied_c4530.cpp ----
 void Level::asteroidDied() {
     asteroidsLeft -= 1;
 }
 
-// ---- checkObjective_c6250.cpp ----
 int Level::checkObjective() {
     int objective = objectivesA;
     if (objective != 0) {
@@ -220,13 +204,9 @@ int Level::checkObjective() {
     return 0;
 }
 
-// ---- getNumDeliveredOre_c6780.cpp ----
 int Level::getNumDeliveredOre() {
     return numDeliveredOre;
 }
-
-// ---- setPlayerRoute_c0dc8.cpp ----
-
 
 void Level::setPlayerRoute(Route *route) {
     Route *old = (Route *)playerRoute;
@@ -237,23 +217,19 @@ void Level::setPlayerRoute(Route *route) {
     playerRoute = (int)(intptr_t)route;
 }
 
-// ---- enableFog_c651c.cpp ----
 void Level::enableFog(bool enable) {
     return this->enableFog_call(particleSystemMgr, field_284, enable);
 }
 
-// ---- isInAsteroidCenterRange_c456e.cpp ----
 void Level::isInAsteroidCenterRange(Vector v) {
     int *vol = (int *)(intptr_t)collisionVolume;
     return (*(void (**)(int *, Vector))(*vol + 8))(vol, v);
 }
 
-// ---- getAsteroids_c40c2.cpp ----
 int Level::getAsteroids() {
     return asteroids;
 }
 
-// ---- collide_c455a.cpp ----
 int Level::collide(Vector v) {
     int *vol = (int *)(intptr_t)collisionVolume;
     if (vol != 0) {
@@ -262,17 +238,13 @@ int Level::collide(Vector v) {
     return 0;
 }
 
-// ---- getFriendsLeft_c4548.cpp ----
 int Level::getFriendsLeft() {
     return friendsLeft;
 }
 
-// ---- incNumDeliveredOre_c6786.cpp ----
 void Level::incNumDeliveredOre(int delta) {
     numDeliveredOre += delta;
 }
-
-// ---- enableParticleEffects_bd68c.cpp ----
 
 void Level::enableParticleEffects(bool emit, bool render) {
     ParticleSystemManager::enableSystemEmit(particleSystemMgr, field_284);
@@ -280,9 +252,6 @@ void Level::enableParticleEffects(bool emit, bool render) {
     *(unsigned char *)particleRenderBoolPtr = render;
     *(unsigned char *)particleEmitBoolPtr = render;
 }
-
-// ---- switchSkyboxForIntro_c663c.cpp ----
-
 
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_paintCanvas_intro;
 
@@ -299,9 +268,6 @@ void Level::switchSkyboxForIntro() {
     }
 }
 
-// ---- switchSkyboxForSupernovaReversal_c668c.cpp ----
-
-
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_paintCanvas_snr;
 __attribute__((visibility("hidden"))) extern Status **g_status_snr;
 
@@ -317,12 +283,10 @@ void Level::switchSkyboxForSupernovaReversal() {
     skyboxTexture = -1;
 }
 
-// ---- getPlayer_c40b0.cpp ----
 int Level::getPlayer() {
     return player;
 }
 
-// ---- killWanted_c64f0.cpp ----
 void Level::killWanted() {
     if (field_29d == 0) {
         field_29d = 1;
@@ -330,22 +294,18 @@ void Level::killWanted() {
     }
 }
 
-// ---- getEnemyGuns_c6278.cpp ----
 int Level::getEnemyGuns() {
     return enemyGuns;
 }
 
-// ---- stealFriendCargo_c625c.cpp ----
 void Level::stealFriendCargo() {
     friendCargoStolen = 1;
 }
 
-// ---- getEnemies_c40b6.cpp ----
 int Level::getEnemies() {
     return enemies;
 }
 
-// ---- applyKills_c444c.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_status_applyKills;
 
 void Level::applyKills() {
@@ -356,12 +316,10 @@ void Level::applyKills() {
     }
 }
 
-// ---- friendCargoWasStolen_c6264.cpp ----
 uint8_t Level::friendCargoWasStolen() {
     return friendCargoStolen;
 }
 
-// ---- getMessages_c454e.cpp ----
 int Level::getMessages() {
     return messages;
 }
@@ -373,17 +331,14 @@ void *Level::getActiveMessages() {
     return (void *)(intptr_t)messages;
 }
 
-// ---- getEnemyRoute_c40d4.cpp ----
 int Level::getEnemyRoute() {
     return enemyRoute;
 }
 
-// ---- getPlayerGuns_c6272.cpp ----
 int Level::getPlayerGuns() {
     return playerGuns;
 }
 
-// ---- renderPause_c4ca8.cpp ----
 void Level::renderPause() {
     unsigned int *a;
     a = (unsigned int *)(intptr_t)playerGuns;
@@ -438,17 +393,14 @@ void Level::renderPause() {
     }
 }
 
-// ---- getPlayerRoute_c40ce.cpp ----
 int Level::getPlayerRoute() {
     return playerRoute;
 }
 
-// ---- getStarSystem_bde48.cpp ----
 int Level::getStarSystem() {
     return starSystem;
 }
 
-// ---- pirateStationAction_c62b0.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_status_pirate;
 
 void Level::pirateStationAction(bool param) {
@@ -472,7 +424,6 @@ void Level::pirateStationAction(bool param) {
     ((Level *)(this))->pirateStationAction_tail(param ? 3 : 4, 8);
 }
 
-// ---- getNumDockingTargets_c66f8.cpp ----
 int Level::getNumDockingTargets() {
     RawArray *list = (RawArray *)(intptr_t)enemies;
     if (list != 0) {
@@ -485,13 +436,11 @@ int Level::getNumDockingTargets() {
     return 0;
 }
 
-// ---- removeObjectives_c626a.cpp ----
 void Level::removeObjectives() {
     objectivesA = 0;
     objectivesB = 0;
 }
 
-// ---- getDockingTarget_c6726.cpp ----
 int Level::getDockingTarget(int index) {
     RawArray *list = (RawArray *)(intptr_t)enemies;
     if (list != 0) {
@@ -509,17 +458,14 @@ int Level::getDockingTarget(int index) {
     return 0;
 }
 
-// ---- getTimeLimit_c4554.cpp ----
 int Level::getTimeLimit() {
     return timeLimit;
 }
 
-// ---- getLandmarks_c40bc.cpp ----
 int Level::getLandmarks() {
     return landmarks;
 }
 
-// ---- render_c4b10.cpp ----
 void Level::render(int ctx) {
     unsigned int *a;
     a = (unsigned int *)(intptr_t)playerGuns;
@@ -613,7 +559,6 @@ void Level::render(int ctx) {
     return this->render_tail(starSystem);
 }
 
-// ---- collideStream_c457c.cpp ----
 int Level::collideStream(Vector v) {
     int *obj = *(int **)(*(int *)(landmarks + 4) + 4);
     if (obj != 0) {
@@ -622,12 +567,9 @@ int Level::collideStream(Vector v) {
     return 0;
 }
 
-// ---- getNumDeliveredPassengers_c6792.cpp ----
 int Level::getNumDeliveredPassengers() {
     return numDeliveredPassengers;
 }
-
-// ---- _Level_adbd0.cpp ----
 
 // ARM ABI destructors return `this`; model them as functions returning the pointer
 // so the result feeds operator delete without a reload.
@@ -691,17 +633,13 @@ Level::~Level() {
     field_b0 = 0;
 }
 
-// ---- incNumDeliveredPassengers_c6798.cpp ----
 void Level::incNumDeliveredPassengers(int delta) {
     numDeliveredPassengers += delta;
 }
 
-// ---- friendDied_c4478.cpp ----
 void Level::friendDied() {
     friendsLeft -= 1;
 }
-
-// ---- createRoute_c0ce0.cpp ----
 
 namespace AbyssEngine {
     namespace AERandom {
@@ -737,7 +675,6 @@ Route *Level::createRoute(int count) {
     return r;
 }
 
-// ---- alarmAllFriends_c55d0.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_alarmAllFriends;
 
 void Level::alarmAllFriends(int race, bool message) {
@@ -767,7 +704,6 @@ void Level::alarmAllFriends(int race, bool message) {
     }
 }
 
-// ---- setPlayerEngineColor_bd6b8.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_engineColorBase;
 
 void Level::setPlayerEngineColor(short color) {
@@ -781,21 +717,20 @@ void Level::setPlayerEngineColor(short color) {
     }
 }
 
-// ---- createGun_bdea4.cpp ----
 struct Gun;
 struct ObjectGun;
 
 // Index->resource lookup tables (each DAT_ is a base into a const id array).
 __attribute__((visibility("hidden"))) extern int *g_cg_beamTable;   // [DAT_000ce2b4]
-__attribute__((visibility("hidden"))) extern int  g_cg_rocketFx;    // DAT_000ce2b8
-__attribute__((visibility("hidden"))) extern int  g_cg_objFx;       // DAT_000ce2bc
+__attribute__((visibility("hidden"))) extern int  g_cg_rocketFx;
+__attribute__((visibility("hidden"))) extern int  g_cg_objFx;
 __attribute__((visibility("hidden"))) extern int *g_cg_objTable;    // [DAT_000ce2d4]
 __attribute__((visibility("hidden"))) extern int *g_cg_rocketTable; // [DAT_000ce2c8]
 __attribute__((visibility("hidden"))) extern int **g_cg_rocketSnd;  // [DAT_000ce2cc]
 __attribute__((visibility("hidden"))) extern int **g_cg_itemTableA; // [DAT_000ce2c0]
 __attribute__((visibility("hidden"))) extern int *g_cg_bombTable;   // [DAT_000ce2c4]
 __attribute__((visibility("hidden"))) extern int *g_cg_bombSnd;     // [DAT_000ce64c]
-__attribute__((visibility("hidden"))) extern int  g_cg_mineFx;      // DAT_000ce644
+__attribute__((visibility("hidden"))) extern int  g_cg_mineFx;
 __attribute__((visibility("hidden"))) extern int *g_cg_objTable8;   // [DAT_000ce648]
 __attribute__((visibility("hidden"))) extern int *g_cg_mineTable;   // [DAT_000ce2d8]
 __attribute__((visibility("hidden"))) extern int *g_cg_mineSnd;     // [DAT_000ce654]
@@ -994,7 +929,6 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     return gun;
 }
 
-// ---- createSpace_ae5b8.cpp ----
 struct Station;
 struct StarSystem;
 struct SolarSystem;
@@ -1103,7 +1037,6 @@ void Level::createSpace()
     Level_csp_buildStationAndGates(this);
 }
 
-// ---- createRadioMessage_c566c.cpp ----
 struct RadioMessage;
 struct Station;
 
@@ -1300,7 +1233,6 @@ void Level::createRadioMessage(int type, int sub) {
     Level_crm_dispatch(*(int *)(ego + 0x18), *(void **)(self + 0x114));
 }
 
-// ---- init_adf94.cpp ----
 struct Route;
 struct Objective;
 struct LODManager;
@@ -1548,7 +1480,6 @@ int Level::init() {
     return 1;
 }
 
-// ---- createFighterTurrets_bc2dc.cpp ----
 struct KIPlayer;
 struct Player;
 struct PlayerTurret;
@@ -1594,7 +1525,6 @@ void Level::createFighterTurrets()
     }
 }
 
-// ---- updateAlienAttackers_c5ca4.cpp ----
 struct Mission;
 struct Station;
 
@@ -1658,7 +1588,6 @@ void Level::updateAlienAttackers(int dt) {
     }
 }
 
-// ---- createMission_affd8.cpp ----
 struct Mission;
 struct Player;
 struct KIPlayer;
@@ -1733,7 +1662,6 @@ void Level::createMission()
     Level_cm_buildMissionScene((Level *)self, mission);
 }
 
-// ---- createAsteroids_af6f8.cpp ----
 struct Station;
 struct Galaxy;
 struct SolarSystem;
@@ -1846,14 +1774,14 @@ void Level::createAsteroids()
             Station *s = (Station *)Status_getStation_ca();
             if (Station_getIndex_ca(s) == 0x53) {
                 oz = 30000;
-                ox = 30000;   // DAT_000bf998
+                ox = 30000;
                 oy = 0;
                 placed = true; // jumps to LAB_000bf874 (oy = 0)
             }
         }
         if (!placed && camp == 0x59 && Status_inSupernovaOrbit_ca() != 0) {
-            ox = 0;           // DAT_000bf99c
-            oz = 0;           // DAT_000bf9a0
+            ox = 0;
+            oz = 0;
             oy = 0;
             placed = true;
         }
@@ -1870,7 +1798,7 @@ void Level::createAsteroids()
             Station *s = (Station *)Status_getStation_ca();
             if (Station_getIndex_ca(s) == 0x70) {
                 oz = 50000;
-                ox = 50000;   // DAT_000bf9a4
+                ox = 50000;
                 oy = 0;
                 placed = true;
             }
@@ -1934,7 +1862,7 @@ void Level::createAsteroids()
         }
 
         // spread radius: tighter (60000) for the dense core, wider otherwise.
-        unsigned spread = (int)i < density ? 60000u : (unsigned)0xea60; // DAT_000bfd10
+        unsigned spread = (int)i < density ? 60000u : (unsigned)0xea60;
         float half = (float)(spread >> 1);
 
         // collision variant: 1 in alien orbit, 3 for the special "0xd9" kind, else colBase.
@@ -2006,7 +1934,6 @@ void Level::createAsteroids()
         operator_deletearr_ca(prob);
 }
 
-// ---- createCampaignMission_b4bb8.cpp ----
 struct Player;
 struct KIPlayer;
 
@@ -2068,7 +1995,6 @@ void Level::createCampaignMission()
     Level_ccm_buildCampaignScene(this, idx);
 }
 
-// ---- updateOrbit_c5208.cpp ----
 struct SolarSystem;
 struct KIPlayer;
 
@@ -2195,18 +2121,12 @@ void Level::updateOrbit(int dt) {
     }
 }
 
-// ---- friendTurnedEnemy_c6506.cpp ----
 void Level::friendTurnedEnemy() {
     if ((unsigned char)field_188 == 0) {
         *(unsigned char *)&field_188 = 1;
         return ((Level *)(this))->friendTurnedEnemy_action(0, 0);
     }
 }
-
-// ---- reset_c653a.cpp ----
-
-
-
 
 void Level::reset() {
     if (playerRoute != 0) {
@@ -2272,7 +2192,6 @@ done:
     kills = 0;
 }
 
-// ---- createSentryGuns_bc1f4.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_sentryStatus;
 
 void Level::createSentryGuns() {
@@ -2302,7 +2221,6 @@ void Level::createSentryGuns() {
     }
 }
 
-// ---- collideStation_c4594.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_status_collideStation;
 
 int Level::collideStation(Vector v) {
@@ -2315,9 +2233,6 @@ int Level::collideStation(Vector v) {
     }
     return 0;
 }
-
-// ---- uncoverWanted_c6320.cpp ----
-
 
 __attribute__((visibility("hidden"))) extern int **g_uncoverWanted;
 
@@ -2334,7 +2249,6 @@ void Level::uncoverWanted(int index) {
     }
 }
 
-// ---- update_c5f58.cpp ----
 struct Station;
 struct Ship;
 struct Item;
@@ -2346,7 +2260,7 @@ struct ParticleSystemManager;
 // PC-relative singleton / data holders.
 __attribute__((visibility("hidden"))) extern int   *g_up_stack;     // [DAT_000d6238] stack-guard cookie addr
 __attribute__((visibility("hidden"))) extern int  **g_up_statusA;   // [DAT_000d624c]
-__attribute__((visibility("hidden"))) extern float  g_up_eqMax;     // DAT_000d6230
+__attribute__((visibility("hidden"))) extern float  g_up_eqMax;
 __attribute__((visibility("hidden"))) extern float *g_up_clampLo;   // [DAT_000d6244]
 __attribute__((visibility("hidden"))) extern float *g_up_clampHi;   // [DAT_000d6248]
 __attribute__((visibility("hidden"))) extern float *g_up_clampZ;    // [DAT_000d623c]
@@ -2484,7 +2398,6 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         LODManager_update_up(*(LODManager **)self, dt);
 }
 
-// ---- connectPlayers_bd204.cpp ----
 struct Mission;
 struct Station;
 struct Player;
@@ -2716,7 +2629,6 @@ void Level::connectPlayers()
     }
 }
 
-// ---- enemyDied_c4230.cpp ----
 struct Hud;
 struct Achievements;
 struct Radar { static int hasScanner(); };
@@ -2798,7 +2710,6 @@ void Level::enemyDied(int r1, bool r2arg) {
     }
 }
 
-// ---- createRadioMessages_c0de4.cpp ----
 struct RadioMessage;
 
 extern "C" {
@@ -2996,8 +2907,6 @@ void Level::createRadioMessages(int set) {
     }
 }
 
-// ---- flashScreen_c40e0.cpp ----
-
 __attribute__((visibility("hidden"))) extern float *g_flash2_a;
 __attribute__((visibility("hidden"))) extern float *g_flash2_b;
 __attribute__((visibility("hidden"))) extern float *g_flash2_c;
@@ -3050,7 +2959,6 @@ void Level::flashScreen(int type) {
     *(float *)&flashField = 255.0f;
 }
 
-// ---- createPlayer_af1bc.cpp ----
 // NOTE: the work-item lists n=36 with a garbled "body 12" decompile, but the real
 // target function has a large frame (saves r4-r11, vpush {d8,d9}, sub sp,#80) and a
 // body that is not recoverable from the provided Ghidra output. Left as a stub.
@@ -3059,7 +2967,6 @@ void Level::createPlayer() {
     return Level_createPlayer_impl(this);
 }
 
-// ---- wingmanDied_c4484.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_wingmanDied;
 
 void Level::wingmanDied(int name) {
@@ -3079,7 +2986,6 @@ void Level::wingmanDied(int name) {
     }
 }
 
-// ---- Level_adac8.cpp ----
 __attribute__((visibility("hidden"))) extern void (**g_levelSubCtor)(void *);
 
 static inline void zero16(void *p) {
@@ -3157,7 +3063,6 @@ Level::Level(int mission) {
     field_1c0 = -1;
 }
 
-// ---- createStaticObjects_bbfa4.cpp ----
 struct Station;
 struct PlayerFixedObject;
 struct Player;
@@ -3165,8 +3070,8 @@ struct Player;
 __attribute__((visibility("hidden"))) extern int  *g_cso_stack;     // [DAT_000cc1e4]
 __attribute__((visibility("hidden"))) extern int **g_cso_textA;     // [DAT_000cc1ec]
 __attribute__((visibility("hidden"))) extern int **g_cso_textB;     // [DAT_000cc1f0] area
-__attribute__((visibility("hidden"))) extern float g_cso_posX;      // DAT_000cc1dc
-__attribute__((visibility("hidden"))) extern float g_cso_posZ;      // DAT_000cc1e0
+__attribute__((visibility("hidden"))) extern float g_cso_posX;
+__attribute__((visibility("hidden"))) extern float g_cso_posZ;
 
 extern "C" {
 int  Status_inAlienOrbit_cso();
@@ -3268,7 +3173,6 @@ void Level::createStaticObjects()
     }
 }
 
-// ---- createStaticObject_be6c0.cpp ----
 struct Waypoint;
 struct AEGeometry;
 struct Player;
@@ -3315,7 +3219,6 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
     return Level_cso2_construct(thisptr, type, x, y, z);
 }
 
-// ---- getBoundingVolume_c3e48.cpp ----
 struct FileRead;
 struct BoundingVolume;
 
@@ -3385,7 +3288,6 @@ void *Level_getBoundingVolume(int idx, int kind)
     return result;
 }
 
-// ---- createShip_c0214.cpp ----
 struct Waypoint;
 struct Player;
 struct AEGeometry;
@@ -3516,8 +3418,6 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
     return obj;
 }
 
-// ---- almostKillWanted_c63f4.cpp ----
-
 __attribute__((visibility("hidden"))) extern Status **g_almostKillWanted;
 
 void Level::almostKillWanted(int index) {
@@ -3552,7 +3452,6 @@ void Level::almostKillWanted(int index) {
     return this->almostKillWanted_tail(((int *)(*(int *)(w + 4)))[index], 0);
 }
 
-// ---- assignGuns_bc680.cpp ----
 struct Wanted;
 struct Mission;
 struct Gun;
@@ -3573,7 +3472,7 @@ __attribute__((visibility("hidden"))) extern int   **g_ag_alienCnt;  // [DAT_000
 __attribute__((visibility("hidden"))) extern int   **g_ag_snd;       // [DAT_000cd1f8]
 __attribute__((visibility("hidden"))) extern int   **g_ag_itemTblB;  // [DAT_000cd1fc]
 __attribute__((visibility("hidden"))) extern int   **g_ag_snd2;      // [DAT_000cd200]
-__attribute__((visibility("hidden"))) extern float   g_ag_perLevel;  // DAT_000cca3c
+__attribute__((visibility("hidden"))) extern float   g_ag_perLevel;
 
 extern "C" {
 void  ArrayReleaseClasses_AGun_ag(void *a);
@@ -3825,7 +3724,6 @@ wingmanExtra:
     }
 }
 
-// ---- createGasClouds_afd2c.cpp ----
 struct Station;
 struct Galaxy;
 struct SolarSystem;
@@ -3916,7 +3814,6 @@ void Level::createGasClouds()
     }
 }
 
-// ---- updateMissionOrbit_c4d80.cpp ----
 struct Mission;
 
 // PC-relative cookie slot.
@@ -4013,7 +3910,6 @@ void Level::updateMissionOrbit(int dt) {
     }
 }
 
-// ---- attackWanted_c6388.cpp ----
 __attribute__((visibility("hidden"))) extern int **g_attackWanted;
 
 void Level::attackWanted(int index) {
@@ -4030,7 +3926,6 @@ void Level::attackWanted(int index) {
     }
 }
 
-// ---- initParticleSystems_bd6f8.cpp ----
 struct SolarSystem;
 struct KIPlayer;
 struct ParticleSystemManager;
@@ -4164,7 +4059,6 @@ void Level::initParticleSystems()
         ParticleSystemManager_init_ips(*(ParticleSystemManager **)(self + 0x94), 0);
 }
 
-// ---- createWingmen_bc3ec.cpp ----
 struct Mission;
 struct Player;
 struct Globals;
@@ -4251,7 +4145,6 @@ void Level::createWingmen()
     AERandom_reset_cwm();
 }
 
-// ---- createScene_b42ec.cpp ----
 struct Mission;
 struct Station;
 struct Ship;
@@ -4500,7 +4393,6 @@ void Level::createScene()
     }
 }
 
-// ---- renderBG_c45e8.cpp ----
 struct StarSystem;
 struct Engine;
 

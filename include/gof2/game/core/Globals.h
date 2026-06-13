@@ -6,14 +6,11 @@
 // Top-level class (no AbyssEngine namespace). Most members are static-style helpers.
 // Field offsets recovered per-method from target disasm; access via byte-offset casts.
 
-
 struct Globals;
 
 // AbyssEngine::String - 12-byte value type (text*, size, ...). Pass-by-value uses the
 // >8-byte struct ABI (sret / on stack), matching the target.
 typedef AbyssEngine::String String;
-
-
 
 // Field accessor via byte offset (used by the few stateful methods).
 

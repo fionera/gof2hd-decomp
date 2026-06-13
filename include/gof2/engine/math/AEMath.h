@@ -25,10 +25,6 @@ enum RotationOrder {
     ROTATION_ORDER_ZYX = 5,
 };
 
-
-
-
-
 struct BSphere {
     Vector center;
     float radius;

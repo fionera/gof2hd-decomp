@@ -36,7 +36,6 @@ typedef AbyssEngine::PaintCanvas AEPaintCanvas;
 #define Mesh        AEMesh
 #define PaintCanvas AEPaintCanvas
 
-
 extern "C" void MeshMerger_setMatrix_tail(void *dst, const Matrix &m);
 extern "C" void MeshMerger_render_tail(void *a, void *b, int z);
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
@@ -65,7 +64,6 @@ void MeshMerger::setMatrixTail(void *matrixSlot, const Matrix &m)
     (*g_mmMatrixAssignFn)(matrixSlot, m);
 }
 
-// ---- setMatrix_173c74.cpp ----
 // setMatrix(index, m): tail-call the engine matrix-assign with the per-index
 // slot (matrices[index], each 0x3c bytes) and the source matrix.
 
@@ -75,7 +73,6 @@ void MeshMerger::setMatrix(int index, const Matrix &m)
     return MeshMerger_setMatrix_tail(base + index * 0x3c, m);
 }
 
-// ---- setLod_173c4c.cpp ----
 void MeshMerger::setLod(int index, signed char lod)
 {
     int8_t *lods = (int8_t *)pp(this, 0x24);
@@ -88,7 +85,6 @@ void MeshMerger::setLod(int index, signed char lod)
     }
 }
 
-// ---- render_17406c.cpp ----
 // render(): tail-call the engine render routine with (field_0xc, field_0x14, 0).
 
 void MeshMerger::render()
@@ -96,7 +92,6 @@ void MeshMerger::render()
     return MeshMerger_render_tail(pp(this, 0xc), pp(this, 0x14), 0);
 }
 
-// ---- setEnabled_173c84.cpp ----
 void MeshMerger::setEnabled(int index, bool enabled)
 {
     uint8_t *flags = (uint8_t *)pp(this, 0x28);
@@ -109,7 +104,6 @@ void MeshMerger::setEnabled(int index, bool enabled)
     }
 }
 
-// ---- MeshMerger_1737a0.cpp ----
 void MatrixTransformVector(Matrix *out, Vector *v);   // 0x.. transform point
 void MatrixRotateVector(Matrix *out, Vector *v);      // 0x.. rotate normal
 
@@ -209,7 +203,6 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     u8(this, 0x34) = 0;
 }
 
-// ---- update_173f2c.cpp ----
 extern "C" void aeabi_memcpy4(void *dst, const void *src, uint32_t n);  // __aeabi_memcpy4
 
 void MeshMerger::update()
@@ -290,10 +283,8 @@ void MeshMerger::update()
     }
 }
 
-// ---- init_173ca6.cpp ----
-// 0x77e00
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                // 0x6ec2c (__aeabi_uidiv)
-extern "C" int MeshMerger_init_tail(MeshMerger *self, int r1, uint16_t flags, uint32_t *meshId); // 0x1ac6c8
+extern "C" int MeshMerger_init_tail(MeshMerger *self, int r1, uint16_t flags, uint32_t *meshId);
 
 int MeshMerger::init()
 {
@@ -339,9 +330,8 @@ int MeshMerger::init()
     return MeshMerger_init_tail(this, 0, flags, (uint32_t *)((char *)this + 0x10));
 }
 
-// ---- MeshMerger_173a60.cpp ----
-extern "C" void *aeabi_memclr4(void *p, uint32_t n);              // 0x6ec14
-extern "C" void *aeabi_memclr(void *p, uint32_t n);              // 0x6ec20
+extern "C" void *aeabi_memclr4(void *p, uint32_t n);
+extern "C" void *aeabi_memclr(void *p, uint32_t n);
 // Raw allocator thunk fetched from a hidden global (DAT_00183bf4).
 __attribute__((visibility("hidden"))) extern void *(**g_allocFn)(int);
 
@@ -399,7 +389,6 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
     u8(this, 0x6) = 0;
 }
 
-// ---- setMesh_173bf8.cpp ----
 void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
@@ -410,10 +399,9 @@ void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
     meshes[i32(this, 0x0) * lod + index] = ptr;
 }
 
-// ---- transformMesh_173d90.cpp ----
-extern "C" void AEMath_MatrixTransformVector(Vector *out, const Vector *v); // 0x6f688
-extern "C" void AEMath_MatrixRotateVector(Vector *out, const Vector *v);    // 0x6f694
-extern "C" void AEMath_BSphere_assign(void *dst, const void *src);          // 0x6eb18
+extern "C" void AEMath_MatrixTransformVector(Vector *out, const Vector *v);
+extern "C" void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
+extern "C" void AEMath_BSphere_assign(void *dst, const void *src);
 
 void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
 {
@@ -488,8 +476,6 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
     AEMath_BSphere_assign(out + 0x3c, bs);
     return out;
 }
-
-// ---- _MeshMerger_174078.cpp ----
 
 // Per-array-slot release thunk fetched from a hidden global (called for the
 // lod/enabled/visible byte arrays at 0x24/0x28/0x2c).

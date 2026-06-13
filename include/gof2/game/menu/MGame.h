@@ -20,7 +20,6 @@
 //   0x178 maneuver timer(int)  0x17c maneuver-active(bool)  0x180 maneuver startX
 //   0x184 maneuver startPtr/Y
 
-
 struct MGame;
 
 // MGame-local opaque helper types (used only as pointers in this class).

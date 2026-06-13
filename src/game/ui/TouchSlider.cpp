@@ -1,7 +1,6 @@
 #include "gof2/game/ui/TouchSlider.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-// ---- setPosition_a232c.cpp ----
 void TouchSlider::setPosition(int param_1, int param_2)
 {
     float fVar1 = (float)(this->trackWidth - this->knobWidth);
@@ -12,7 +11,6 @@ void TouchSlider::setPosition(int param_1, int param_2)
     this->knobX = (int)(fVar2 + this->value * fVar1);
 }
 
-// ---- TouchSlider_a228c.cpp ----
 // PaintCanvas singleton holder (pc-rel deref -> holder; object is *holder).
 __attribute__((visibility("hidden"))) extern void **g_TouchSlider_canvas;
 // App/engine singleton: pc-rel -> &g; *g -> object pointer; object[0x7c].
@@ -43,7 +41,6 @@ TouchSlider::TouchSlider(int param_1, int param_2, int param_3, float param_4)
     this->touchPadding = *(int *)((char *)*g_TouchSlider_app + 0x7c);
 }
 
-// ---- OnTouchBegin_a242c.cpp ----
 int TouchSlider::OnTouchBegin(int param_1, int param_2)
 {
     if (this->isDisabled != 0)
@@ -53,7 +50,6 @@ int TouchSlider::OnTouchBegin(int param_1, int param_2)
     return r;
 }
 
-// ---- OnTouchEnd_a24dc.cpp ----
 int TouchSlider::OnTouchEnd(int param_1, int param_2)
 {
     if (this->isDisabled != 0)
@@ -88,7 +84,6 @@ int TouchSlider::OnTouchEnd(int param_1, int param_2)
     return uVar1;
 }
 
-// ---- draw_a2378.cpp ----
 // PaintCanvas singleton holder (single pc-rel deref -> holder; object is *holder).
 __attribute__((visibility("hidden"))) extern void **g_TouchSlider_canvas;
 
@@ -101,7 +96,6 @@ void TouchSlider::draw()
     ((PaintCanvas*)*holder)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char)0x11, (unsigned char)0x44);
 }
 
-// ---- OnTouchMove_a2494.cpp ----
 bool TouchSlider::OnTouchMove(int param_1, int param_2)
 {
     if (this->isDisabled != 0)
@@ -119,7 +113,6 @@ bool TouchSlider::OnTouchMove(int param_1, int param_2)
     return this->isDragging != 0;
 }
 
-// ---- getValue_a23c0.cpp ----
 float TouchSlider::getValue()
 {
     float fVar1 = (float)(this->trackWidth - this->knobWidth);
@@ -127,13 +120,11 @@ float TouchSlider::getValue()
     return fVar2 / fVar1;
 }
 
-// ---- setHalfTransparent_a2426.cpp ----
 void TouchSlider::setHalfTransparent(bool param_1)
 {
     this->isDisabled = param_1;
 }
 
-// ---- touchedInside_a2448.cpp ----
 int TouchSlider::touchedInside(int param_1, int param_2)
 {
     int half = this->knobWidth >> 1;
@@ -150,7 +141,6 @@ int TouchSlider::touchedInside(int param_1, int param_2)
     return param_2 <= half2 + cy + pad;
 }
 
-// ---- setValue_a23ee.cpp ----
 void TouchSlider::setValue(float param_1)
 {
     float fVar1 = (float)(this->trackWidth - this->knobWidth);

@@ -2,12 +2,10 @@
 #include "gof2/engine/render/AEGeometry.h"
 #include "gof2/game/ship/Player.h"
 
-
 extern "C" void *KIPlayer_dtor(PlayerStatic *self);
 extern "C" void *PlayerStatic_dtor_tail();
 extern "C" void PlayerStatic_render_geometry(void *geometry);
 
-// ---- _PlayerStatic_e0970.cpp ----
 void *_ZN12PlayerStaticD1Ev(PlayerStatic *self)
 {
     KIPlayer_dtor(self);
@@ -23,7 +21,6 @@ PlayerStatic::~PlayerStatic()
     KIPlayer_dtor(this);
 }
 
-// ---- render_e09b8.cpp ----
 void PlayerStatic::render()
 {
     return PlayerStatic_render_geometry(field_0x8);
@@ -80,7 +77,6 @@ void PlayerStatic::ctor(int playerId, AEGeometry *geometry, float x, float y, fl
     this->field_0x12c = (int)z;
 }
 
-// ---- getPosition_e0982.cpp ----
 Vector PlayerStatic::getPosition()
 {
     AEGeometry *geometry = field_0x8;
@@ -95,9 +91,7 @@ Vector PlayerStatic::getPosition()
     return result;
 }
 
-// ---- PlayerStatic_e08cc.cpp ----
 struct Player;
-
 
 __attribute__((visibility("hidden"))) extern void *volatile g_PlayerStatic_vtable;
 

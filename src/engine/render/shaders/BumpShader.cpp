@@ -2,8 +2,6 @@
 #include "gof2/engine/render/ShaderBaseStruct.h"
 #include "gof2/game/core/String.h"
 
-
-
 // ---- setSampler ----
 namespace AbyssEngine {
 
@@ -15,7 +13,6 @@ void BumpShader::setSampler(int location, int unit)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_8ba5c.cpp ----
 namespace AbyssEngine {
 
 void BumpShader::SetInActive()
@@ -30,7 +27,6 @@ void BumpShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- _BumpShader_8bd0c.cpp ----
 void _ZN11AbyssEngine10BumpShaderD0Ev(BumpShader *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -38,7 +34,6 @@ void _ZN11AbyssEngine10BumpShaderD0Ev(BumpShader *self)
     ::operator delete(base);
 }
 
-// ---- BumpShader_8b7f4.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::BumpShader::BumpShader()
@@ -59,7 +54,6 @@ BumpShader::BumpShader()
 
 } // namespace AbyssEngine
 
-// ---- Init_8b880.cpp ----
 // Final indirect call in Init: an engine glUniform1i-style helper (DAT_001ab778).
 
 namespace AbyssEngine {
@@ -106,12 +100,11 @@ void BumpShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_8ba88.cpp ----
 // PC-relative pointer-to-pointer globals holding single floats / a byte (engine timers and
 // a feature flag) read by UpdateMeshData.
-extern float *const gBumpFloatA __attribute__((visibility("hidden")));   // DAT_0009bcf0
-extern float *const gBumpFloatB __attribute__((visibility("hidden")));   // DAT_0009bcf4
-extern uint8_t *const gBumpFlag __attribute__((visibility("hidden")));   // DAT_0009bcf8
+extern float *const gBumpFloatA __attribute__((visibility("hidden")));
+extern float *const gBumpFloatB __attribute__((visibility("hidden")));
+extern uint8_t *const gBumpFlag __attribute__((visibility("hidden")));
 
 namespace AbyssEngine {
 

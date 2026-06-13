@@ -18,7 +18,6 @@ struct TransformFields { char _pad[0xe0]; float field_0xe0; };
 // Player::field_0x40 (int collision radius) — minimal accessor view.
 struct PlayerRadiusFields { char _pad[0x40]; int field_0x40; };
 
-
 extern "C" void *PlayerAsteroid_complete_dtor(PlayerAsteroid *self);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
 extern "C" void ArrayInt_ctor(ArrayInt *array);
@@ -39,19 +38,16 @@ Vector operator-(const Vector &lhs, const Vector &rhs);
 Matrix operator*(const Matrix &lhs, const Matrix &rhs);
 } }
 
-// ---- setAsteroidIndex_e29c4.cpp ----
 void PlayerAsteroid::setAsteroidIndex(int asteroidIndex)
 {
     this->asteroidIndex = asteroidIndex;
 }
 
-// ---- translate_e29dc.cpp ----
 void PlayerAsteroid::translate(const Vector &delta)
 {
     return ((AEGeometry *)(this->geometry))->translate(delta);
 }
 
-// ---- render_e3038.cpp ----
 void PlayerAsteroid::render()
 {
     if (this->visible != 0) {
@@ -69,13 +65,11 @@ void PlayerAsteroid::render()
     }
 }
 
-// ---- setPosition_e29d6.cpp ----
 void PlayerAsteroid::setPosition(const Vector &position)
 {
     return ((AEGeometry *)(this->geometry))->setPosition(position);
 }
 
-// ---- outerCollide_e3078.cpp ----
 typedef void (*OuterCollideVectorFn)(PlayerAsteroid *, Vector);
 
 void PlayerAsteroid::outerCollide(Vector value)
@@ -83,31 +77,26 @@ void PlayerAsteroid::outerCollide(Vector value)
     return (*(OuterCollideVectorFn *)((char *)*(void **)this + 0x38))(this, value);
 }
 
-// ---- getPosition_e29ca.cpp ----
 Vector PlayerAsteroid::getPosition()
 {
     return ((AEGeometry *)(this->geometry))->getPosition();
 }
 
-// ---- setRotationEnabled_e2a90.cpp ----
 void PlayerAsteroid::setRotationEnabled(bool enabled)
 {
     this->rotationEnabled = enabled;
 }
 
-// ---- getQualityFrameIndex_e29f4.cpp ----
 int PlayerAsteroid::getQualityFrameIndex()
 {
     return 7 - this->quality;
 }
 
-// ---- _PlayerAsteroid_e29b4.cpp ----
 void _ZN14PlayerAsteroidD0Ev(PlayerAsteroid *self)
 {
     return ::operator delete(PlayerAsteroid_complete_dtor(self));
 }
 
-// ---- outerCollide_e306e.cpp ----
 typedef void (*OuterCollideFn)(PlayerAsteroid *, float, float, float);
 
 void PlayerAsteroid::outerCollide(float x, float y, float z)
@@ -115,25 +104,21 @@ void PlayerAsteroid::outerCollide(float x, float y, float z)
     return (*(OuterCollideFn *)((char *)*(void **)this + 0x38))(this, x, y, z);
 }
 
-// ---- getQuality_e29e8.cpp ----
 int PlayerAsteroid::getQuality()
 {
     return this->quality;
 }
 
-// ---- getScaling_e29ee.cpp ----
 float PlayerAsteroid::getScaling()
 {
     return this->scaling;
 }
 
-// ---- isMinable_e29e2.cpp ----
 uint8_t PlayerAsteroid::isMinable()
 {
     return this->minable;
 }
 
-// ---- getQualityString_e2a00.cpp ----
 __attribute__((visibility("hidden"))) extern const char *PlayerAsteroid_qualityNames[];
 __attribute__((visibility("hidden"))) extern const char PlayerAsteroid_qualityDefault[];
 __attribute__((visibility("hidden"))) extern const char PlayerAsteroid_qualityFour[];
@@ -157,10 +142,8 @@ String PlayerAsteroid::getQualityString()
     return result;
 }
 
-// ---- update_e2d20.cpp ----
 __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_level;
 __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_random;
-
 
 void PlayerAsteroid::update(int delta)
 {
@@ -277,12 +260,10 @@ void PlayerAsteroid::update(int delta)
     }
 }
 
-// ---- getProjectionVector_e3084.cpp ----
 typedef void (*VectorAssignFn)(Vector *self, const Vector *other);
 
 __attribute__((visibility("hidden"))) extern Vector *PlayerAsteroid_projectionScratch;
 __attribute__((visibility("hidden"))) extern VectorAssignFn PlayerAsteroid_vectorAssign;
-
 
 Vector PlayerAsteroid::getProjectionVector(const Vector &value)
 {
@@ -298,13 +279,11 @@ Vector PlayerAsteroid::getProjectionVector(const Vector &value)
     return result;
 }
 
-// ---- PlayerAsteroid_e2648.cpp ----
 __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_vtable;
 __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_canvas;
 __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_random;
 __attribute__((visibility("hidden"))) extern Vector *PlayerAsteroid_rotationVector;
 __attribute__((visibility("hidden"))) extern int *PlayerAsteroid_someCounter;
-
 
 PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType, int asteroidIndex,
                                const Vector &position, float scaling, int quality)
@@ -371,10 +350,8 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->hitFlashTimer = 0.0f;
 }
 
-// ---- setAsteroidCenter_e2a3c.cpp ----
 __attribute__((visibility("hidden"))) extern Vector *PlayerAsteroid_center;
 __attribute__((visibility("hidden"))) extern int *PlayerAsteroid_centerLength;
-
 
 void PlayerAsteroid::setAsteroidCenter(Vector center)
 {
@@ -385,11 +362,9 @@ void PlayerAsteroid::setAsteroidCenter(Vector center)
     *PlayerAsteroid_centerLength = (int)VectorLength(local);
 }
 
-// ---- collide_e3104.cpp ----
 typedef Vector (*GeometryPositionFn)(AEGeometry *geometry);
 
 __attribute__((visibility("hidden"))) extern GeometryPositionFn PlayerAsteroid_geometryPosition;
-
 
 bool PlayerAsteroid::collide(float x, float y, float z)
 {
@@ -420,7 +395,6 @@ bool PlayerAsteroid::collide(float x, float y, float z)
     return false;
 }
 
-// ---- push_e2bd8.cpp ----
 void PlayerAsteroid::push(int delta)
 {
     int remaining = this->pushTimer;
@@ -459,7 +433,6 @@ void PlayerAsteroid::push(int delta)
     }
 }
 
-// ---- _PlayerAsteroid_e2980.cpp ----
 __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_vtable;
 
 void *_ZN14PlayerAsteroidD1Ev(PlayerAsteroid *self)
@@ -473,11 +446,9 @@ void *_ZN14PlayerAsteroidD1Ev(PlayerAsteroid *self)
     return KIPlayer_dtor(self);
 }
 
-// ---- initPush_e2a98.cpp ----
 typedef Vector (*VirtualVectorFn)(PlayerAsteroid *self);
 
 __attribute__((visibility("hidden"))) extern void *PlayerAsteroid_random;
-
 
 void PlayerAsteroid::initPush(const Vector &target, int duration)
 {

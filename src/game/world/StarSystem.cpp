@@ -56,7 +56,6 @@ void MatrixGetUp(char *out, const char *matrix);
 void MatrixGetLookAt(char *out, const char *from, const char *to, const char *up);
 extern "C" void MatrixSetScaling(char *matrix, float x, float y, float z);
 
-// ---- switchSunForSupernovaExpansion_134fc4.cpp ----
 void StarSystem::switchSunForSupernovaExpansion() {
     StarSystem *self = this;
     char scaleBytes[12];
@@ -68,9 +67,7 @@ void StarSystem::switchSunForSupernovaExpansion() {
     ((AEGeometry *)(geom))->setScaling(*(const Vector *)scaleBytes);
 }
 
-// ---- renderSunStreak_1350c8.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_sunstreak_canvas;
-
 
 void StarSystem::renderSunStreak() {
     StarSystem *self = this;
@@ -101,13 +98,11 @@ void *StarSystem::getPlanets() {
     return P(this, 0x1c);
 }
 
-// ---- getLightDirection_134dbe.cpp ----
 Vector StarSystem::getLightDirection() {
     StarSystem *self = this;
     return self->lightDirection;
 }
 
-// ---- _StarSystem_134d10.cpp ----
 StarSystem::~StarSystem()
 {
     StarSystem *self = this;
@@ -164,7 +159,6 @@ StarSystem::~StarSystem()
     P(self, 0x20) = 0;
 }
 
-// ---- initLight_13474c.cpp ----
 typedef Engine *(*EngineGetter)(void *app);
 
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_init_app;
@@ -317,9 +311,7 @@ void StarSystem::initLight() {
     }
 }
 
-// ---- render2D_1354e8.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_render2d_canvas;
-
 
 void StarSystem::render2D() {
     StarSystem *self = this;
@@ -341,7 +333,6 @@ void StarSystem::render2D() {
     }
 }
 
-// ---- StarSystem_133b68.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_ctor_status;
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_ctor_canvas;
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_ctor_status_obj;
@@ -349,7 +340,6 @@ __attribute__((visibility("hidden"))) extern int *g_StarSystem_ctor_rng;
 __attribute__((visibility("hidden"))) extern uint16_t g_StarSystem_ctor_planetTextures[];
 __attribute__((visibility("hidden"))) extern uint16_t g_StarSystem_ctor_stationTextures[];
 __attribute__((visibility("hidden"))) extern uint32_t g_StarSystem_ctor_systemColors[];
-
 
 static inline void set_vec(char *dst, float x, float y, float z)
 {
@@ -570,10 +560,8 @@ StarSystem::StarSystem(int mode) {
     return;
 }
 
-// ---- updateSupernova_135064.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_update_canvas_a;
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_update_canvas_b;
-
 
 void StarSystem::updateSupernova(int dt) {
     StarSystem *self = this;
@@ -591,7 +579,6 @@ void StarSystem::updateSupernova(int dt) {
     }
 }
 
-// ---- scaleSunDuringSupernovaIntro_134ffc.cpp ----
 void StarSystem::scaleSunDuringSupernovaIntro(int amount) {
     StarSystem *self = this;
     char scaleBytes[12];
@@ -600,10 +587,8 @@ void StarSystem::scaleSunDuringSupernovaIntro(int amount) {
     (*(AEGeometry **)P(P(self, 0x1c), 4))->setScaling(scale, scale, scale);
 }
 
-// ---- switchPlanetForIntro_134dcc.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_StarSystem_planet_guard;
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_planet_canvas;
-
 
 void StarSystem::switchPlanetForIntro() {
     StarSystem *self = this;
@@ -616,9 +601,7 @@ void StarSystem::switchPlanetForIntro() {
     ((AEGeometry *)(((AEGeometry **)P(P(self, 0x1c), 4))[U(self, 0x50)]))->setScaling(*(const Vector *)scaled);
 }
 
-// ---- switchSunForSupernovaReversal_134e4c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_reversal_canvas;
-
 
 void StarSystem::switchSunForSupernovaReversal() {
     StarSystem *self = this;
@@ -633,7 +616,6 @@ void StarSystem::switchSunForSupernovaReversal() {
     ((AEGeometry *)(geom))->setScaling(*(const Vector *)scaleBytes);
 }
 
-// ---- switchSunForSupernovaIntro_134ea0.cpp ----
 typedef void *(*GetTransformFn)(void *canvas, int transform_id);
 typedef void (*SetTransformModeFn)(void *transform, int mode, int value);
 
@@ -642,7 +624,6 @@ __attribute__((visibility("hidden"))) extern GetTransformFn g_StarSystem_intro_g
 __attribute__((visibility("hidden"))) extern SetTransformModeFn g_StarSystem_intro_setTransformMode;
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_intro_status;
 __attribute__((visibility("hidden"))) extern uint32_t g_StarSystem_intro_colors[];
-
 
 void StarSystem::switchSunForSupernovaIntro() {
     StarSystem *self = this;
@@ -656,7 +637,7 @@ void StarSystem::switchSunForSupernovaIntro() {
     ((AEGeometry *)((AEGeometry *)P(self, 0x40)))->setMesh(0x2df2);
     AEGeometry *streak = (AEGeometry *)P(self, 0x40);
     ((AEGeometry *)(current))->getScaling();
-    *(Vector *)(scaled) = *(const Vector *)(current) * (5.0f);   // 0x40a00000
+    *(Vector *)(scaled) = *(const Vector *)(current) * (5.0f);
     ((AEGeometry *)(streak))->setScaling(*(const Vector *)scaled);
 
     AEGeometry *sun = *(AEGeometry **)P(P(self, 0x1c), 4);
@@ -680,11 +661,9 @@ void StarSystem::switchSunForSupernovaIntro() {
     U(self, 0x3c) = g_StarSystem_intro_colors[((SolarSystem *)(system))->getIndex()];
 }
 
-// ---- render_135104.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_render_canvas;
 __attribute__((visibility("hidden"))) extern uint32_t *g_StarSystem_render_station_index;
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_render_status;
-
 
 void StarSystem::render() {
     StarSystem *self = this;

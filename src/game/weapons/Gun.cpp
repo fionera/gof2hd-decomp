@@ -7,16 +7,13 @@
 // gof2/Player.h (included above) provides the full Player definition, including
 // isActive()/isAsteroid(). The former name collision has been resolved in that header.
 
-
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void Gun_VecArray_ctor(void *a);
 extern "C" void Gun_VecPtrArray_ctor(void *a);
 extern "C" void Gun_VecArray_setLength(int n, void *a);
 extern "C" void Gun_VecPtrArray_setLength(int n, void *a);
 
-// ---- _Gun_152134.cpp ----
 // Gun::~Gun() — real C++ destructor so the demangled symbol contains "~Gun".
-
 
 struct VecArray;
 extern "C" void Gun_ArrayReleaseClasses(VecArray *a);     // ArrayReleaseClasses<Vector*>(Array*)
@@ -61,37 +58,31 @@ __attribute__((minsize)) Gun::~Gun() noexcept(false)
     d(self + 0x8);
 }
 
-// ---- setFriendGun_1522ca.cpp ----
 void Gun::setFriendGun(bool v) {
     Gun *self = this;
     self->friendGun = v;
 }
 
-// ---- getMagnitude_1522d6.cpp ----
 int Gun::getMagnitude() {
     Gun *self = this;
     return self->magnitude;
 }
 
-// ---- getEnemies_1523bc.cpp ----
 void * Gun::getEnemies() {
     Gun *self = this;
     return self->enemies;
 }
 
-// ---- setMagnitude_1522d0.cpp ----
 void Gun::setMagnitude(int v) {
     Gun *self = this;
     self->magnitude = v;
 }
 
-// ---- setErrorMagnitudePercentage_1522bc.cpp ----
 void Gun::setErrorMagnitudePercentage(int v) {
     Gun *self = this;
     self->errorMagnitudePercentage = (float)v;
 }
 
-// ---- setImpact_1523b0.cpp ----
 struct Sparks;
 
 void Gun::setImpact(Sparks *impact) {
@@ -99,40 +90,34 @@ void Gun::setImpact(Sparks *impact) {
     self->impact = impact;
 }
 
-// ---- setPlayerGun_15241c.cpp ----
 void Gun::setPlayerGun(bool v) {
     Gun *self = this;
     self->playerGun = v;
 }
 
-// ---- isPlayerGun_152422.cpp ----
 uint8_t Gun::isPlayerGun() {
     Gun *self = this;
     return self->playerGun;
 }
 
-// ---- setLevelCollision_1522dc.cpp ----
 void Gun::setLevelCollision(bool v) {
     Gun *self = this;
     self->levelCollision = v;
 }
 
-// ---- removeAllEnemies_152410.cpp ----
 void Gun::removeAllEnemies() {
     Gun *self = this;
     self->enemies = 0;
 }
 
-// ---- setIndex_1521ac.cpp ----
 struct AEGeometry;
 
 namespace AbyssEngine {
-namespace AERandom { int nextInt(int rng); }                  // 0x71fc8
-namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); } // 0x72088
-namespace Transform { void SetAnimationState(unsigned tf, int a, int b); } // 0x6fd18
+namespace AERandom { int nextInt(int rng); }
+namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); }
+namespace Transform { void SetAnimationState(unsigned tf, int a, int b); }
 }
 
-// 0x718e4
 // AEGeometry::AEGeometry(AEGeometry*, unsigned short, PaintCanvas*, bool)
 
 // pc-rel globals (each a holder; *holder used).
@@ -173,7 +158,6 @@ void Gun::setIndex(int index) {
     }
 }
 
-// ---- setOffset_152328.cpp ----
 // NEAR: same family as the Vector setOffset — the target carries a stack canary for the
 // on-stack Vector buffer. Under basic -fstack-protector (not -strong) clang emits no
 // canary for a Vector-typed buffer at -Oz, so the prologue/epilogue diverge. Logic below
@@ -199,7 +183,6 @@ void Gun::setOffset_ii(int a, int b) {
     *(Vector *)((char *)self + 0x7c) = *(const Vector *)(&local);
 }
 
-// ---- ignite_152b7c.cpp ----
 // NEAR / RESISTANT: Gun::ignite() is a ~996-byte function with a stack canary,
 // extensive FP/NEON vector math, and many cross-class calls (Player/Item/PlayerEgo/Hud,
 // AEMath Vector ops). Under the fixed -Oz -fstack-protector toolchain the FP register
@@ -211,7 +194,6 @@ struct Player;
 namespace AbyssEngine { namespace AEMath {
 float  VectorLength(const Vector *v);
 } }
-
 
 extern int *const gIG_status __attribute__((visibility("hidden")));   // holder
 
@@ -257,25 +239,22 @@ void Gun::ignite() {
     }
 }
 
-// ---- render_15395c.cpp ----
 struct Sparks;
 
 namespace AbyssEngine {
 namespace AEMath {
-void MatrixGetPosition(Matrix *out, const Matrix *m);                 // 0x6f16c
-void MatrixSetTranslation(Matrix *m, float x, float y, float z);     // 0x6f820
+void MatrixGetPosition(Matrix *out, const Matrix *m);
+void MatrixSetTranslation(Matrix *m, float x, float y, float z);
 }
 namespace PaintCanvas {
-unsigned TransformGetTransform(unsigned canvas); // 0x72088
-unsigned CameraGetCurrent();                     // 0x717f4
-unsigned CameraGetLocal(unsigned canvas);        // 0x6ff1c
-unsigned TransformGetLocal(unsigned canvas);     // 0x720c4
-void TransformSetLocal(unsigned canvas, AEMath::Matrix *m);          // 0x721c0
-void DrawTransform(unsigned canvas, AEMath::Matrix *m);              // 0x7306c
+unsigned TransformGetTransform(unsigned canvas);
+unsigned CameraGetCurrent();
+unsigned CameraGetLocal(unsigned canvas);
+unsigned TransformGetLocal(unsigned canvas);
+void TransformSetLocal(unsigned canvas, AEMath::Matrix *m);
+void DrawTransform(unsigned canvas, AEMath::Matrix *m);
 }
 }
-
-// 0x773ec
 
 // pc-rel global: holder for the gun-transform canvas pointer (*holder used each iter).
 extern unsigned *const gGunRenderCanvas __attribute__((visibility("hidden")));
@@ -310,7 +289,6 @@ void Gun::render() {
     }
 }
 
-// ---- Gun_151f20.cpp ----
 // Vector/Matrix provided by gof2/math.h (via common.h).
 
 struct VecArray;  // Array<Vector>
@@ -322,7 +300,6 @@ struct VecPtrArray;  // Array<Vector*>
 // ArraySetLength<Vector*>(int, Array*)                      0x7453c
 // Vector::operator=(Vector*, Vector const&)                 0x6eb3c
 // Vector::operator*=(Vector*, float)                        0x72628
-
 
 Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
     Gun *self = this;
@@ -415,7 +392,6 @@ Gun * Gun::ctor(int kind, int p2, unsigned count, int p4, int p5, int p6, float 
     return self;
 }
 
-// ---- shoot_152b24.cpp ----
 struct Player;
 
 // Matrix provided by gof2/math.h (via common.h).
@@ -428,7 +404,6 @@ void Gun::shoot(Matrix m, int n, bool b) {
     ((Gun *)(self))->shootAt(m, n, 0, b);
 }
 
-// ---- setEnemy_1523c2.cpp ----
 struct Player;
 
 // ANOMALOUS INPUT: methods.tsv lists setEnemy at 0x1523c2 with body=8, but those 8 bytes
@@ -442,7 +417,6 @@ void Gun::setEnemy(Player *enemy) {
     self->enemies = enemy;
 }
 
-// ---- setOffset_1522e4.cpp ----
 // Vector provided by gof2/math.h (via common.h).
 
 // AbyssEngine::AEMath::Vector::operator=(Vector*, Vector const&)
@@ -460,7 +434,6 @@ void Gun::setOffset(const Vector *v) {
     *(Vector *)((char *)self + 0x7c) = *(const Vector *)(local);
 }
 
-// ---- update_153754.cpp ----
 // NEAR: logic transcribed from the decompile. The target carries a stack canary
 // (on-stack Vector buffers) plus heavy FP register allocation; under the fixed
 // -Oz -fstack-protector flags the scheduling/regalloc diverges from the target.
@@ -471,13 +444,9 @@ namespace AbyssEngine {
 namespace AEMath {
 void operator_mul(Vector *out, float s);                 // 0x6ec74 (Vector operator*(scale))
 }
-namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); } // 0x72088
-namespace Transform { void Update(long long tf, char b); }                 // 0x6f7cc
+namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); }
+namespace Transform { void Update(long long tf, char b); }
 }
-
-// 0x773d4
-// 0x773e0
-// 0x72fdc
 
 extern int *const gUP_canvas __attribute__((visibility("hidden")));   // holder
 extern int *const gUP_globals __attribute__((visibility("hidden")));  // holder
@@ -558,7 +527,6 @@ void Gun::update(int dt) {
     }
 }
 
-// ---- translate_153a50.cpp ----
 // Vector provided by gof2/math.h (via common.h).
 
 // AbyssEngine::AEMath::Vector::operator+=(Vector*, Vector const&)
@@ -572,7 +540,6 @@ void Gun::translate(const Vector *v) {
     }
 }
 
-// ---- shootAt_152428.cpp ----
 // NEAR / RESISTANT: Gun::shootAt(Matrix, int, Player*, bool) is a ~1714-byte function
 // with a stack canary, a by-value Matrix argument, extensive FP/NEON vector math and
 // dozens of cross-class calls. Under the fixed -Oz -fstack-protector toolchain the
@@ -593,7 +560,6 @@ void Gun::shootAt(Matrix m, int n, Player *p, bool b) {
     self->field_0x88 = b;
 }
 
-// ---- calcCharacterCollision_152f90.cpp ----
 // NEAR / RESISTANT: Gun::calcCharacterCollision() is a ~1934-byte function with a stack
 // canary, on-stack Matrix and Vector[] buffers, extensive FP/NEON vector math and many
 // cross-class calls (Player/PlayerEgo/Hud, AEMath Matrix/Vector ops). Under the fixed

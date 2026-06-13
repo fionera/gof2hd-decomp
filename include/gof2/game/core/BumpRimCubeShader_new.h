@@ -27,8 +27,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -38,12 +36,6 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
     int LoadBindShader(const char *vertexPath, const char *fragmentPath);
 };
-
-
-
-
-
-
 
 // BumpRimCubeShader_new — derives from ShaderBaseStruct (vtable at +0x0).
 // Int fields are GL uniform/attribute locations (contiguous block 0x20..0x94).

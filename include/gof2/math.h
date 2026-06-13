@@ -37,7 +37,6 @@ struct Matrix {
     void initIdentity();
 };
 
-
 // Engine math free-functions (defined in libgof2hd; calls re-mangle to AbyssEngine::AEMath::*)
 float Sinf(float);
 float Cosf(float);

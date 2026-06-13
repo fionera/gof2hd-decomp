@@ -1,10 +1,6 @@
 #include "gof2/engine/render/ResourceTexture.h"
 #include "gof2/game/core/String.h"
 
-
-
-
-// ---- ResourceTexture_112c88.cpp ----
 // AbyssEngine::ResourceTexture::ResourceTexture(char const*, float)
 ResourceTexture::ResourceTexture(const char *name, float value)
 {
@@ -15,7 +11,6 @@ ResourceTexture::ResourceTexture(const char *name, float value)
     this->value = value;
 }
 
-// ---- _ResourceTexture_77ebc.cpp ----
 // AbyssEngine::ResourceTexture::~ResourceTexture()
 ResourceTexture::~ResourceTexture()
 {
@@ -23,7 +18,6 @@ ResourceTexture::~ResourceTexture()
     this->name = 0;
 }
 
-// ---- ResourceTexture_11b6d2.cpp ----
 // AbyssEngine::ResourceTexture::ResourceTexture(AbyssEngine::String const&, float)
 ResourceTexture::ResourceTexture(const String &name, float value)
 {

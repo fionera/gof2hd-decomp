@@ -7,7 +7,6 @@
 // AbyssEngine::String at +0x0c. Field offsets recovered per-method from the
 // target disassembly; methods access fields via byte-offset casts from `this`.
 
-
 struct SolarSystem;
 
 // Forward declaration: Station is only used through a pointer below.
@@ -19,9 +18,7 @@ using AbyssEngine::String12;
 // AbyssEngine::String passed/returned by value is a 12-byte trivially-copied
 // aggregate (text*, size, ...). Model it opaquely so the ABI matches the target.
 
-
 // Field accessors via byte offset from `this`.
-
 
 class SolarSystem {
 public:

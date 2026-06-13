@@ -19,13 +19,11 @@
 //   +0x58  int   content height-ish (a)
 //   +0x5c  int   content height-ish (b)
 
-
 struct StatusWindow;
 
 typedef AbyssEngine::String String;
 
 // Field accessors via byte offset.
-
 
 // Engine Array<T> header layout { length, data, cap } — `struct Arr` comes from ImageFactory.h.
 

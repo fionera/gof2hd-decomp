@@ -11,10 +11,6 @@ struct PaintCanvas;
 struct Player;
 struct TargetFollowCamera;
 
-
-
-
-
 struct Vec4 {
     float x;
     float y;

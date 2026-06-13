@@ -1,9 +1,6 @@
 #include "gof2/engine/math/BSphere.h"
 #include "gof2/externs.h"
 
-
-
-// ---- Merge_74000.cpp ----
 // AbyssEngine::AEMath::BSphere::Merge(BSphere const&)
 // Grows *this to also enclose `other`. Handles the empty-source / empty-dest cases,
 // full-containment in either direction, and otherwise expands the sphere to the minimal
@@ -75,7 +72,6 @@ void BSphere::Merge(const BSphere &other)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__74144.cpp ----
 // AbyssEngine::AEMath::BSphere::operator=(BSphere const&)
 // Plain 20-byte copy (center + both radii).
 
@@ -95,7 +91,6 @@ BSphere &BSphere::operator=(const BSphere &other)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Merge_73f30.cpp ----
 // AbyssEngine::AEMath::BSphere::Merge(Transform const&)
 // Transforms the given Transform's local bounding sphere into world space and merges it
 // into *this. The world center comes from MatrixTransformVector; the world radius is the

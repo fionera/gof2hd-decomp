@@ -13,13 +13,11 @@ extern "C" void String_default_ctor(void *s);
 extern "C" int Station_getSystem(Station *s);
 extern "C" void Station_dtor_finish(Station *s);
 
-// ---- isInstantActionMission_15bb78.cpp ----
 uint8_t Mission::isInstantActionMission() {
     Mission *self = this;
     return self->instantAction;
 }
 
-// ---- getTargetStationName_15bb90.cpp ----
 // `struct RetStr` provided by gof2/Station.h (via Mission.h).
 
 RetStr Mission::getTargetStationName() {
@@ -29,13 +27,11 @@ RetStr Mission::getTargetStationName() {
     return r;
 }
 
-// ---- isCampaignMission_15bb7e.cpp ----
 bool Mission::isCampaignMission() {
     Mission *self = this;
     return self->campaign != 0;
 }
 
-// ---- getDescription_15bb2c.cpp ----
 // AbyssEngine::String::String(String* out, const char* cstr, bool) -> 0x6ee18
 
 // Returns a fixed description String built from a string literal.
@@ -46,8 +42,6 @@ RetStr Mission::getDescription() {
     return r;
 }
 
-// ---- getTargetSystemName_15bb9e.cpp ----
-
 RetStr Mission::getTargetSystemName() {
     Mission *self = this;
     RetStr r;
@@ -55,7 +49,6 @@ RetStr Mission::getTargetSystemName() {
     return r;
 }
 
-// ---- getName_15baec.cpp ----
 struct GameText;
 
 // String::String(String* out, const char* cstr, bool) -> 0x6ee18.
@@ -63,7 +56,6 @@ struct GameText;
 // GameText::getText(GameText* table, int id) -> 0x72f70 returns a String*.
 // Text table singleton (hidden -> single pc-relative deref).
 __attribute__((visibility("hidden"))) extern GameText **g_gameText;
-
 
 // Mission::getName(): campaign missions use a fixed literal name; freelance ones
 // look up "<id+0x162>" in the global text table.
@@ -79,14 +71,12 @@ RetStr Mission::getName() {
     return r;
 }
 
-// ---- setProductionGoods_15bad0.cpp ----
 void Mission::setProductionGoods(int a, int b) {
     Mission *self = this;
     self->productionGoodsA = a;
     self->productionGoodsB = b;
 }
 
-// ---- setTargetName_15bcc2.cpp ----
 // AbyssEngine::String::operator=(String* this, const String& rhs) -> 0x1ac548
 
 // Mission::setTargetName(String by value): the String has a non-trivial copy
@@ -96,7 +86,6 @@ void * Mission::setTargetName(const String12 &rhs) {
     return String_assign_ref((char *)self + 0x1c, rhs);
 }
 
-// ---- getClientName_15bb44.cpp ----
 // AbyssEngine::String::String(String* out, const String* src, bool) -> 0x6f028
 
 // Returns the client name String (offset 0x10) by value. The void copy-ctor forces
@@ -108,19 +97,15 @@ RetStr Mission::getClientName() {
     return r;
 }
 
-// ---- isVisible_15baba.cpp ----
 uint8_t Mission::isVisible() {
     Mission *self = this;
     return self->visible;
 }
 
-// ---- isEmpty_15baa8.cpp ----
 bool Mission::isEmpty() {
     Mission *self = this;
     return self->id == -1;
 }
-
-// ---- getTargetName_15bcb4.cpp ----
 
 RetStr Mission::getTargetName() {
     Mission *self = this;
@@ -129,13 +114,11 @@ RetStr Mission::getTargetName() {
     return r;
 }
 
-// ---- setInstantActionMission_15bb72.cpp ----
 void Mission::setInstantActionMission(bool v) {
     Mission *self = this;
     self->instantAction = v;
 }
 
-// ---- setTargetSystemName_15bbac.cpp ----
 // AbyssEngine::String::operator=(String* this, const String& rhs) -> 0x1ac548
 
 void * Mission::setTargetSystemName(const String12 &rhs) {
@@ -143,13 +126,11 @@ void * Mission::setTargetSystemName(const String12 &rhs) {
     return String_assign_ref((char *)self + 0x4c, rhs);
 }
 
-// ---- setVisible_15bab4.cpp ----
 void Mission::setVisible(bool v) {
     Mission *self = this;
     self->visible = v;
 }
 
-// ---- clone_15bccc.cpp ----
 // Mission::Mission(int, String, int*, int, int, int, int) -> 0x15b64c. The by-value
 // String is passed by invisible reference -> model it as a pointer parameter.
 
@@ -168,7 +149,6 @@ Mission * Mission::clone() {
     return m;
 }
 
-// ---- setTargetStation_15bbb4.cpp ----
 struct Galaxy;
 struct Station;
 
@@ -189,7 +169,6 @@ void Mission::setTargetStation(int idx) {
     ((String *)(name))->dtor();
 }
 
-// ---- _Mission_15ba98.cpp ----
 // Mission::~Mission() (the inner/base dtor at 0x15ba54) returns `this` in r0.
 // Deallocation/base helper tail-called at the end (0x1ab098).
 
@@ -200,7 +179,6 @@ void Mission::dtor() {
     ((Mission *)(((Mission *)(self))->dtor_inner()))->dtor_finish();
 }
 
-// ---- Mission_15b64c.cpp ----
 struct Galaxy;
 struct Station;
 
@@ -240,7 +218,6 @@ Mission * Mission::ctor7(int id, const void *client, int a, int b, int c, int st
     return self;
 }
 
-// ---- Mission_15b978.cpp ----
 // PIC global (hidden -> single pc-relative deref): the Mission vtable base.
 __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 
@@ -272,7 +249,6 @@ Mission * Mission::ctor_int(int id) {
     return self;
 }
 
-// ---- calcDistance_15bc28.cpp ----
 struct Galaxy;
 struct Station;
 struct Status;
@@ -303,7 +279,6 @@ void Mission::calcDistance() {
     }
 }
 
-// ---- Mission_15b770.cpp ----
 struct Galaxy;
 struct Station;
 
@@ -344,7 +319,6 @@ Mission * Mission::ctor3(int id, int goods, int station) {
     return self;
 }
 
-// ---- _Mission_15ba54.cpp ----
 // PIC globals: the Mission vtable base and the String::~String function pointer.
 // Hidden visibility -> direct pc-relative single-deref (no GOT indirection),
 // matching the target's `ldr; add pc; ldr` access.
@@ -364,7 +338,6 @@ Mission * Mission::dtor_inner() {
     return self;
 }
 
-// ---- Mission_15b89c.cpp ----
 // PIC globals (hidden -> single pc-relative deref): the Mission vtable base.
 __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 // String::String(String* this) default ctor -> 0x6efbc.

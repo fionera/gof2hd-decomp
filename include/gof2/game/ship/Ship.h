@@ -16,7 +16,6 @@
 //   layout = { u32 size; T* data; u32 size2(capacity); }  (== AEArray)
 // All pointer instantiations compile identically.
 
-
 // Engine container primitives (defined in src/engine/array.cpp; matched).
 template <class T> void  ArrayAdd(T item, Array<T>& a);
 template <class T> void  ArraySetLength(unsigned int n, Array<T>& a);

@@ -1,9 +1,5 @@
 #include "gof2/engine/render/ResourceTransform.h"
 
-
-
-
-// ---- _ResourceTransform_77ee4.cpp ----
 // AbyssEngine::ResourceTransform::~ResourceTransform()
 // Releases the two owned heap arrays (at +0x40 and +0x48) and nulls the slots.
 // Returns `this` (the ABI quirk for the base/complete destructor variant).

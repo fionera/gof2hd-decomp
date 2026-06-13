@@ -11,10 +11,6 @@ struct FModSound;
 namespace AbyssEngine {
 namespace AEMath {
 
-
-
-
-
 void MatrixMultiply(Matrix &lhs, const Matrix &rhs);
 Matrix MatrixSetRotation(Matrix &matrix, float x, float y, float z);
 

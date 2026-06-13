@@ -12,7 +12,6 @@
 //   +0x04  Array<ImagePart*>*  (item image2d handle, used by drawChar via this+4)
 //   +0x08  int      ship image2d handle
 
-
 void *operator new(__SIZE_TYPE__ size);
 void *operator new[](__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
@@ -20,8 +19,6 @@ void operator delete(void *ptr) noexcept;
 struct ImageFactory;
 
 // Field accessor via byte offset.
-
-
 
 // reload() pulls glyph image ids through a function-pointer global (a getText-style fetch).
 typedef void (*GetTextFn)(unsigned canvas, int id, void *out);

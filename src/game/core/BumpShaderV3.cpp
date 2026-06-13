@@ -2,9 +2,6 @@
 #include "gof2/externs.h"
 #include "gof2/engine/render/Mesh.h"
 
-
-
-// ---- Init_8c1a8.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderV3::Init(Engine *)
@@ -49,7 +46,6 @@ void BumpShaderV3::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _BumpShaderV3_8c6b0.cpp ----
 void _ZN11AbyssEngine12BumpShaderV3D0Ev(
     AbyssEngine::BumpShaderV3 *self)
 {
@@ -58,7 +54,6 @@ void _ZN11AbyssEngine12BumpShaderV3D0Ev(
     operator delete(base);
 }
 
-// ---- SetInActive_8c38c.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderV3::SetInActive()
@@ -83,7 +78,6 @@ void BumpShaderV3::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- BumpShaderV3_8c11c.cpp ----
 // Engine symbols used by the constructor (resolved at link time).
 extern "C" {
 // BumpShaderV3 vtable; the ctor stores (&vtable + 8) into this[0].
@@ -110,7 +104,6 @@ BumpShaderV3::BumpShaderV3()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_8c3cc.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderV3::UpdateMeshData(Mesh *mesh, Engine *engine)

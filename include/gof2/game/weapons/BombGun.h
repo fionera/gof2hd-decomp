@@ -19,19 +19,11 @@ struct FModSound;
 namespace AbyssEngine {
 namespace AEMath {
 
-
-
-
-
 } // namespace AEMath
 } // namespace AbyssEngine
 
 typedef AbyssEngine::AEMath::Vector Vector;
 typedef AbyssEngine::AEMath::Matrix Matrix;
-
-
-
-
 
 typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 

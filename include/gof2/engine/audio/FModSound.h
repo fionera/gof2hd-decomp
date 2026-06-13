@@ -6,7 +6,6 @@
 // FMOD wrapper. FMOD_* funcs are modeled as extern "C". Soft-float ABI: float args in core regs.
 #include <new>
 
-
 // FMOD designer-API handle types (opaque wrappers, manipulated through the FMOD_* shims).
 namespace FMOD {
 struct Event;
@@ -42,9 +41,9 @@ public:
     uint8_t f_10;                // 0x10 low-memory flag
     char    _pad_0x11[0x2400 - 0x11];
     void*   f_2400;              // 0x2400 music Event*
-    int     f_2404;              // 0x2404
-    int     f_2408;              // 0x2408
-    int     f_240c;              // 0x240c
+    int     f_2404;
+    int     f_2408;
+    int     f_240c;
     char    _pad_0x2410[0x2424 - 0x2410];
     void*   f_2424;              // 0x2424 cached position vector
     void*   f_2428;              // 0x2428 cached velocity vector

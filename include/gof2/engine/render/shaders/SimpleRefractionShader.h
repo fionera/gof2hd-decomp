@@ -4,7 +4,6 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 #include <new>
 
-
 extern "C" void glUseProgram(uint32_t program);
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);
 extern "C" int glGetAttribLocation(uint32_t program, const char *name);
@@ -37,10 +36,6 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
     int LoadBindShader(const char *vertexPath, const char *fragmentPath);
 };
-
-
-
-
 
 // AbyssEngine::SimpleRefractionShader — GLES2 refraction shader (derives from ShaderBaseStruct).
 // Fields accessed through the field_i32/field_u8 helpers; storage covers offsets 0x00..0x54.

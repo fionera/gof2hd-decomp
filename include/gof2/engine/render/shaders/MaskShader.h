@@ -47,7 +47,6 @@ public:
 
 } // namespace AbyssEngine
 
-
 extern "C" {
 void Engine_SetTextureSlot(void *self, uint32_t a, uint32_t b);
 

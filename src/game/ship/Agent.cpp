@@ -12,7 +12,6 @@ extern "C" void *Array_StringPtr_dtor(void *arr);
 extern "C" void Array_StringPtr_ctor(void *arr);
 extern "C" void ArrayAdd_StringPtr(void *str, void *arr);
 
-// ---- getStationName_17770a.cpp ----
 RetStr Agent::getStationName() {
     Agent *self = this;
     RetStr r;
@@ -20,31 +19,26 @@ RetStr Agent::getStationName() {
     return r;
 }
 
-// ---- hasAcceptedOffer_1776f2.cpp ----
 uint8_t Agent::hasAcceptedOffer() {
     Agent *self = this;
     return self->offerAccepted;
 }
 
-// ---- isStoryAgent_17753a.cpp ----
 bool Agent::isStoryAgent() {
     Agent *self = this;
     return self->category == 0;
 }
 
-// ---- getWingmanNames_177670.cpp ----
 void * Agent::getWingmanNames() {
     Agent *self = this;
     return self->wingmanNames;
 }
 
-// ---- getImageParts_177556.cpp ----
 int * Agent::getImageParts() {
     Agent *self = this;
     return self->imageParts;
 }
 
-// ---- getMission_177566.cpp ----
 struct Mission;
 
 Mission * Agent::getMission() {
@@ -52,7 +46,6 @@ Mission * Agent::getMission() {
     return self->mission;
 }
 
-// ---- setMission_177560.cpp ----
 struct Mission;
 
 void Agent::setMission(Mission *mission) {
@@ -60,13 +53,11 @@ void Agent::setMission(Mission *mission) {
     self->mission = mission;
 }
 
-// ---- getSellModIndex_177732.cpp ----
 int Agent::getSellModIndex() {
     Agent *self = this;
     return self->sellModIndex;
 }
 
-// ---- setStationName_177718.cpp ----
 // AbyssEngine::String::operator=(String* dst, String src-by-value)
 
 // Agent::setStationName(String) — this in r0, String by value in r1..r3.
@@ -76,7 +67,6 @@ void Agent::setStationName(String12 src) {
     ((String *)((char *)self + 0x78))->assign((String *)&src);
 }
 
-// ---- getMissionString_177676.cpp ----
 RetStr Agent::getMissionString() {
     Agent *self = this;
     RetStr r;
@@ -84,13 +74,11 @@ RetStr Agent::getMissionString() {
     return r;
 }
 
-// ---- isMale_177524.cpp ----
 uint8_t Agent::isMale() {
     Agent *self = this;
     return self->male;
 }
 
-// ---- getName_177504.cpp ----
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void
 
 // Returns String by value. The copy-ctor returns void, so the compiler cannot
@@ -102,7 +90,6 @@ RetStr Agent::getName() {
     return r;
 }
 
-// ---- getModPricePercentage_177738.cpp ----
 // 4-entry price table loaded PC-relative (table contents in local rodata).
 static const int kModPriceTable[4] = { 0, 0, 0, 0 };
 
@@ -114,13 +101,11 @@ int Agent::getModPricePercentage() {
     return 0x28;
 }
 
-// ---- setOfferAccepted_1776f8.cpp ----
 void Agent::setOfferAccepted(bool v) {
     Agent *self = this;
     self->offerAccepted = v;
 }
 
-// ---- nextEvent_177532.cpp ----
 void Agent::nextEvent() {
     Agent *self = this;
     self->eventCount = self->eventCount + 1;
@@ -139,31 +124,26 @@ void Agent::setKnown(bool known) {
     }
 }
 
-// ---- hasReward_1776fe.cpp ----
 uint8_t Agent::hasReward() {
     Agent *self = this;
     return self->rewardAtNextChat;
 }
 
-// ---- setImageParts_177550.cpp ----
 void Agent::setImageParts(int *parts) {
     Agent *self = this;
     self->imageParts = parts;
 }
 
-// ---- isKnown_17756c.cpp ----
 bool Agent::isKnown() {
     Agent *self = this;
     return self->eventCount > 0;
 }
 
-// ---- isGenericAgent_177544.cpp ----
 bool Agent::isGenericAgent() {
     Agent *self = this;
     return self->category == 1;
 }
 
-// ---- getSystemName_17771e.cpp ----
 RetStr Agent::getSystemName() {
     Agent *self = this;
     RetStr r;
@@ -171,13 +151,11 @@ RetStr Agent::getSystemName() {
     return r;
 }
 
-// ---- giveRewardAtNextChat_177704.cpp ----
 void Agent::giveRewardAtNextChat(bool v) {
     Agent *self = this;
     self->rewardAtNextChat = v;
 }
 
-// ---- setSellItemData_1776ec.cpp ----
 // Triple (item/price/percentage) is declared in Agent.h.
 
 // target: adds r0,#0x34; stmia r0!,{r1,r2,r3}; bx lr  (returns this+0x40)
@@ -246,7 +224,6 @@ void Agent::finishWingman(void *consumedArray) {
     ::operator delete(consumedArray);
 }
 
-// ---- getWingmanName_177658.cpp ----
 RetStr Agent::getWingmanName(int idx) {
     Agent *self = this;
     void *src;
@@ -262,13 +239,11 @@ RetStr Agent::getWingmanName(int idx) {
     return r;
 }
 
-// ---- setSystemName_17772c.cpp ----
 void Agent::setSystemName(String12 src) {
     Agent *self = this;
     ((String *)((char *)self + 0x18))->assign((String *)&src);
 }
 
-// ---- _Agent_1774b8.cpp ----
 // Agent::~Agent() — real C++ destructor so the demangled symbol contains "~Agent".
 
 typedef void (*dtor_fn)(void *) __attribute__((nothrow));
@@ -293,7 +268,6 @@ __attribute__((minsize)) Agent::~Agent() noexcept(false)
     d(this);
 }
 
-// ---- setMissionString_177684.cpp ----
 // String temp lifecycle helpers (compiler emits the canary via -fstack-protector).
 
 // Agent::setMissionString(String) — this in r0, source String* in r1.
@@ -377,7 +351,6 @@ int Agent::getWingmanFriendsCount() {
     return this->wingmanCount;
 }
 
-// ---- Agent_1773c4.cpp ----
 extern "C" void *String_default_ctor(void *s);         // String::String() -> this
 
 // Agent::Agent(int kind, String name, int p4, int p5, int p6, bool p7,

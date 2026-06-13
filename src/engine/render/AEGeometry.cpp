@@ -31,7 +31,6 @@ extern "C" void _ae_MeshCreate(PaintCanvas *c, uint16_t mesh, uint32_t *out, boo
 extern "C" void _ae_getDirection(void *self, Vector *out);
 extern "C" void _ae_getPosition(void *self, Vector *out);
 
-// ---- getPosition_a4592.cpp ----
 // AEGeometry::getPosition() -> TransformGetLocal(canvas,tf); return MatrixGetPosition(loc)
 Vector AEGeometry::getPosition()
 {
@@ -39,7 +38,6 @@ Vector AEGeometry::getPosition()
     return MatrixGetPosition(loc);
 }
 
-// ---- _AEGeometry_a44f8.cpp ----
 // AEGeometry::~AEGeometry() -> delete[] five LOD arrays in order 0x54,0x5c,0x58,0x60,0x64
 AEGeometry::~AEGeometry()
 {
@@ -55,27 +53,22 @@ AEGeometry::~AEGeometry()
     this->lodDist() = 0;
 }
 
-// ---- hasLod_a4f94.cpp ----
 bool AEGeometry::hasLod() { return this->lodTf() != 0; }
 
-// ---- isVisible_a4a4a.cpp ----
 uint8_t AEGeometry::isVisible() { return (uint8_t)this->visibility; }
 
-// ---- setVisible_a4a40.cpp ----
 void AEGeometry::setVisible(bool v)
 {
     // low byte (0x48) and next byte (0x49) both set; field_0x48 is the u16 pair.
     this->visibility = v ? 0x0101 : 0;
 }
 
-// ---- DEBUG_setMeshMergerIndex_a4f9e.cpp ----
 void AEGeometry::DEBUG_setMeshMergerIndex(int a, void *b)
 {
     this->mergerIndex = (uint32_t)a;
     this->merger = b;
 }
 
-// ---- addChild_a453a.cpp ----
 void AEGeometry::addChild(uint32_t child)
 {
     AEGeomCanvas::TransformAddChild((PaintCanvas *)this->canvas, this->transform, child);
@@ -85,7 +78,6 @@ void AEGeometry::addChild(uint32_t child)
     this->childTransform = child;
 }
 
-// ---- render_a4a50.cpp ----
 void AEGeometry::render()
 {
     if ((uint8_t)this->visibility == 0)
@@ -93,19 +85,16 @@ void AEGeometry::render()
     return _ae_geom_render((uint32_t)(uintptr_t)this->canvas, this->transform, 0);
 }
 
-// ---- translate_a4920.cpp ----
 void AEGeometry::translate(const Vector &v)
 {
     return translate(v.x, v.y, v.z);
 }
 
-// ---- setScaling_a47f8.cpp ----
 void AEGeometry::setScaling(float s)
 {
     return setScaling(s, s, s);
 }
 
-// ---- getRotation_a45fa.cpp ----
 Vector AEGeometry::getRotation()
 {
     Vector v;
@@ -115,13 +104,11 @@ Vector AEGeometry::getRotation()
     return v;
 }
 
-// ---- setScaling_a4874.cpp ----
 void AEGeometry::setScaling(const Vector &v)
 {
     return setScaling(v.x, v.y, v.z);
 }
 
-// ---- setLodMeshesWithMeshIds_a4b88.cpp ----
 void AEGeometry::setLodMeshesWithMeshIds(uint16_t *meshes, uint32_t *meshIds, int *dists, int count)
 {
     this->lodMesh() = new uint16_t[count];
@@ -143,33 +130,28 @@ void AEGeometry::setLodMeshesWithMeshIds(uint16_t *meshes, uint32_t *meshIds, in
     }
 }
 
-// ---- setLodLastVisibleDistance_a4a86.cpp ----
 void AEGeometry::setLodLastVisibleDistance(uint64_t d)
 {
     this->lastVisibleDistSq = d * d;
 }
 
-// ---- getRightVector_a45e0.cpp ----
 Vector AEGeometry::getRightVector()
 {
     Matrix &loc = *(Matrix *)AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
     return MatrixGetRight(loc);
 }
 
-// ---- getUpVector_a45c6.cpp ----
 Vector AEGeometry::getUpVector()
 {
     Matrix &loc = *(Matrix *)AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
     return MatrixGetUp(loc);
 }
 
-// ---- getMatrix_a4616.cpp ----
 Matrix &AEGeometry::getMatrix()
 {
     return *(Matrix *)AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
 }
 
-// ---- getDirection_a45ac.cpp ----
 // AEGeometry::getDirection() -> forward axis of the local transform matrix
 Vector AEGeometry::getDirection()
 {
@@ -177,35 +159,30 @@ Vector AEGeometry::getDirection()
     return MatrixGetDir(loc);
 }
 
-// ---- getReferenceMatrix_a462e.cpp ----
 // AEGeometry::getReferenceMatrix() -> &field_0x84 (cached reference matrix)
 Matrix &AEGeometry::getReferenceMatrix()
 {
     return this->referenceMatrix;
 }
 
-// ---- setMatrix_a4624.cpp ----
 // AEGeometry::setMatrix(const Matrix&) -> install m as the local transform
 void AEGeometry::setMatrix(const Matrix &m)
 {
     AEGeomCanvas::TransformSetLocal((PaintCanvas *)this->canvas, this->transform, (Matrix *)&m);
 }
 
-// ---- setRotationOrder_a4a66.cpp ----
 // AEGeometry::setRotationOrder(RotationOrder) -> store field_0x4c
 void AEGeometry::setRotationOrder(int order)
 {
     this->rotationOrder = order;
 }
 
-// ---- setPosition_a4640.cpp ----
 // AEGeometry::setPosition(float,float,float)
 void AEGeometry::setPosition(float x, float y, float z)
 {
     return _ae_setPosition3(this, x, y, z);
 }
 
-// ---- getScaling_a4608.cpp ----
 Vector AEGeometry::getScaling()
 {
     Vector v;
@@ -215,14 +192,12 @@ Vector AEGeometry::getScaling()
     return v;
 }
 
-// ---- updateReferenceMatrix_a4a6a.cpp ----
 void AEGeometry::updateReferenceMatrix()
 {
     Matrix *loc = (Matrix *)AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
     this->referenceMatrix = *loc;
 }
 
-// ---- setLodMeshes_a4c84.cpp ----
 void AEGeometry::setLodMeshes(uint16_t *meshes, int *dists, int count)
 {
     this->lodMesh() = new uint16_t[count];
@@ -245,7 +220,6 @@ void AEGeometry::setLodMeshes(uint16_t *meshes, int *dists, int count)
     }
 }
 
-// ---- getParentPosition_a4572.cpp ----
 Vector AEGeometry::getParentPosition()
 {
     uint32_t canvas = (uint32_t)(uintptr_t)this->canvas;
@@ -256,7 +230,6 @@ Vector AEGeometry::getParentPosition()
     return MatrixGetPosition(loc);
 }
 
-// ---- setRotation_a4784.cpp ----
 void AEGeometry::setRotation(float x, float y, float z)
 {
     char buf[60];
@@ -269,19 +242,16 @@ void AEGeometry::setRotation(float x, float y, float z)
     this->rotation.c = z;
 }
 
-// ---- setRotation_a4778.cpp ----
 void AEGeometry::setRotation(const Vector &v)
 {
     return setRotation(v.x, v.y, v.z);
 }
 
-// ---- setPosition_a4632.cpp ----
 void AEGeometry::setPosition(const Vector &v)
 {
     return setPosition(v.x, v.y, v.z);
 }
 
-// ---- setLodChildMeshes_a4a98.cpp ----
 void AEGeometry::setLodChildMeshes(uint16_t *meshes)
 {
     int count = this->lodCount;
@@ -306,7 +276,6 @@ void AEGeometry::setLodChildMeshes(uint16_t *meshes)
     }
 }
 
-// ---- rotate_a4880.cpp ----
 void AEGeometry::rotate(float x, float y, float z)
 {
     char buf[60];
@@ -320,7 +289,6 @@ void AEGeometry::rotate(float x, float y, float z)
     _ae_MatrixSetScaling(buf, loc, this->rotation.d, this->scalingY, this->scalingZ);
 }
 
-// ---- AEGeometry_a4468.cpp ----
 // AEGeometry::AEGeometry(PaintCanvas*)
 __attribute__((visibility("hidden"))) static const V4 kDir = {0.0f, 0.0f, 0.0f, 1.0f};
 
@@ -350,7 +318,6 @@ AEGeometry::AEGeometry(PaintCanvas *canvas)
     this->childTransform = 0xffffffff;
 }
 
-// ---- setMesh_a4558.cpp ----
 void AEGeometry::setMesh(uint16_t mesh)
 {
     uint32_t canvas = (uint32_t)(uintptr_t)this->canvas;
@@ -359,7 +326,6 @@ void AEGeometry::setMesh(uint16_t mesh)
     return _ae_setmesh_b(canvas, mesh, &this->transform);
 }
 
-// ---- translate_a492c.cpp ----
 void AEGeometry::translate(float x, float y, float z)
 {
     char buf[60];
@@ -372,7 +338,6 @@ void AEGeometry::translate(float x, float y, float z)
     (void)x;
 }
 
-// ---- AEGeometry_a4398.cpp ----
 // AEGeometry::AEGeometry(unsigned short mesh, PaintCanvas* canvas, bool flag)
 __attribute__((visibility("hidden"))) static const V4 kDir2 = {0.0f, 0.0f, 0.0f, 1.0f};
 
@@ -406,7 +371,6 @@ AEGeometry::AEGeometry(uint16_t mesh, PaintCanvas *canvas, bool flag)
     this->merger = 0;
 }
 
-// ---- setScaling_a4800.cpp ----
 void AEGeometry::setScaling(float x, float y, float z)
 {
     char buf[60];
@@ -420,7 +384,6 @@ void AEGeometry::setScaling(float x, float y, float z)
     this->scalingZ = z;
 }
 
-// ---- moveForward_a49b8.cpp ----
 void AEGeometry::moveForward(float dist)
 {
     Vector pos;
@@ -434,12 +397,11 @@ void AEGeometry::moveForward(float dist)
     this->setPosition(pos);
 }
 
-// ---- updateLod_a4d80.cpp ----
 // AEGeometry::updateLod(const Vector& camPos, float screenScale)
-extern "C" void *__aeabi_memcpy_b(void *dst, const void *src, uint32_t n);     // 0x6f1e4
-extern "C" unsigned long long __aeabi_f2ulz_(float f);                          // 0x73078
-extern "C" float __aeabi_ul2f_(unsigned long long v);                          // 0x73084
-extern "C" uint32_t Transform_GetTransform(uint32_t tf);                       // 0x72088
+extern "C" void *__aeabi_memcpy_b(void *dst, const void *src, uint32_t n);
+extern "C" unsigned long long __aeabi_f2ulz_(float f);
+extern "C" float __aeabi_ul2f_(unsigned long long v);
+extern "C" uint32_t Transform_GetTransform(uint32_t tf);
 
 namespace AbyssEngine { namespace AEMath {
 Vector MatrixGetPosition(const Matrix &matrix);
@@ -535,7 +497,6 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale)
         ((LodMeshMerger *)(lmm))->setLod(this->mergerIndex, 0);
 }
 
-// ---- setDirection_a4688.cpp ----
 // AEGeometry::setDirection(const Vector& dir, const Vector& up)
 void VectorCross(Vector *out, const Vector *b);                 // 0x6ec8c (out = out x b)
 
@@ -571,13 +532,11 @@ void AEGeometry::setDirection(const Vector &dir, const Vector &up)
     _ae_MatrixSetScaling((void *)local, loc, this->rotation.d, this->scalingY, this->scalingZ);
 }
 
-// ---- rotate_a4914.cpp ----
 void AEGeometry::rotate(const Vector &v)
 {
     return rotate(v.x, v.y, v.z);
 }
 
-// ---- setLodChildTransform_a4b3c.cpp ----
 void AEGeometry::setLodChildTransform(uint32_t param)
 {
     int count = this->lodCount;
@@ -591,7 +550,6 @@ void AEGeometry::setLodChildTransform(uint32_t param)
     }
 }
 
-// ---- setDirection_a467c.cpp ----
 // Single-argument convenience overload: orient the forward axis along 'dir'
 // while keeping the geometry's current up axis as the reference up vector.
 // (The two-vector form does the actual basis re-orthonormalisation.)
@@ -601,7 +559,6 @@ void AEGeometry::setDirection(const Vector &dir)
     setDirection(dir, up);
 }
 
-// ---- positionChanged_a5336.cpp ----
 // Re-commit the geometry's current world position. The owning object (e.g. a
 // PlayerWormHole) updates its own position fields and then notifies the
 // geometry so its transform stays in sync; we read the position back out of the

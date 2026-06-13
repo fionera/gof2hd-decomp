@@ -1,12 +1,9 @@
 #include "gof2/engine/file/AEPakFile.h"
 
-
 extern "C" uint32_t _ZN9AEPakFile7ReleaseEv(AEPakFile *self);
 AEPakFile *_ZN9AEPakFileD2Ev(AEPakFile *self);
 
-// ---- _AEPakFile_70034.cpp ----
 __attribute__((visibility("hidden"))) extern void *g_AEPakFile_vtable;
-
 
 AEPakFile *_ZN9AEPakFileD2Ev(AEPakFile *self)
 {
@@ -23,7 +20,6 @@ void AEPakFile::deleteTail()
     ::operator delete(this);
 }
 
-// ---- Release_700d4.cpp ----
 uint32_t AEPakFile::Release()
 {
     FI *h = pak_fi(this);
@@ -38,13 +34,11 @@ uint32_t AEPakFile::Release()
     return 1;
 }
 
-// ---- _AEPakFile_70058.cpp ----
 void _ZN9AEPakFileD0Ev(AEPakFile *self)
 {
     ((AEPakFile *)(_ZN9AEPakFileD2Ev(self)))->deleteTail();
 }
 
-// ---- Read_70068.cpp ----
 uint32_t AEPakFile::Read(uint32_t bytes, void *buffer)
 {
     FI *h;
@@ -62,7 +56,6 @@ uint32_t AEPakFile::Read(uint32_t bytes, void *buffer)
     return 0;
 }
 
-// ---- AEPakFile_70010.cpp ----
 AEPakFile::AEPakFile(FileInterface *file, int param_2, int param_3)
 {
     void *vtable = g_AEPakFile_vtable;
@@ -73,7 +66,6 @@ AEPakFile::AEPakFile(FileInterface *file, int param_2, int param_3)
     I(this, 0x10) = 0;
 }
 
-// ---- Skip_700a2.cpp ----
 uint32_t AEPakFile::Skip(uint32_t bytes)
 {
     void *buffer = operator new[](bytes);

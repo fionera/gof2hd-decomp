@@ -125,7 +125,6 @@ extern "C" void FModSound_restoreState();
 extern "C" void DialogueWindow_ctor(...);
 void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
 
-// ---- maneuverTouchEnd_1789b4.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
 
 // MGame::maneuverTouchEnd(): if a maneuver gesture was active, recent, and the finger
@@ -147,7 +146,6 @@ void MGame::maneuverTouchEnd(int a, void *p) {
     self->field_0x17c = 0;
 }
 
-// ---- OnResume_1807cc.cpp ----
 // Singletons held as pointer-to-pointer in hidden globals (single PC-relative deref).
 __attribute__((visibility("hidden"))) extern Music **g_music;
 __attribute__((visibility("hidden"))) extern Cfg **g_cfg;
@@ -160,7 +158,6 @@ void MGame_OnResume() {
     return Music_resume(*mp, 1, **(int **)g_cfg);
 }
 
-// ---- maneuverTouchMove_17895c.cpp ----
 // Globals dereferenced PC-relative.
 __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
 
@@ -183,7 +180,6 @@ void MGame::maneuverTouchMove(int a, int b) {
     }
 }
 
-// ---- maneuverTouchBegin_178948.cpp ----
 // Begins a maneuver gesture: mark active, record start position, reset timer.
 void MGame::maneuverTouchBegin(int x, int y) {
     MGame *self = this;
@@ -193,15 +189,6 @@ void MGame::maneuverTouchBegin(int x, int y) {
     self->field_0x178 = 0;
 }
 
-// ---- OnRender3D_180dcc.cpp ----
-
-// 0x72214
-// 0x7222c
-// 0x78730
-// 0x72238
-// 0x7873c
-// 0x78748
-// 0x7567c
 // PaintCanvas End3d tail helper @0x1ab918.
 
 __attribute__((visibility("hidden"))) extern unsigned *g_r3dCanvas; // @0x190de4 ([0]=canvas)
@@ -267,35 +254,10 @@ void MGame::OnRender3D() {
     return ((PaintCanvas*)(long)canvas)->End3d();
 }
 
-// ---- startJumpScene_17c0d4.cpp ----
-
-// 0x7294c
-// 0x7843c
-// 0x72838
-void TFC_setActive(TargetFollowCamera *c, int v);  // 0x72acc
-float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);  // 0x7267c
-// 0x76b40
-// 0x76ca8
-// 0x7678c
-// 0x724a8
-// 0x77a1c
-// 0x728d4
-// 0x76a80
-// 0x72cac
-// 0x7258c
-// 0x707f8
-// 0x725b0
-// 0x72cb8
-// 0x76aa4
-// 0x78448
-// 0x6fd18
-// 0x72574
-// 0x72148
-// 0x727b4
-// 0x726ac
+void TFC_setActive(TargetFollowCamera *c, int v);
+float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);
 extern "C" void FModSound_setProp(int snd, int id);  // fn @0x18c30e (pcVar8)
-// 0x71548
-extern "C" void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);  // 0x76abc
+extern "C" void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);
 
 __attribute__((visibility("hidden"))) extern int *g_jsGuard;     // @0x18c0ea (stack guard / canvas[0])
 __attribute__((visibility("hidden"))) extern int *g_jsSound;     // @0x18c15a (*piVar9)
@@ -423,12 +385,8 @@ void MGame::startJumpScene() {
     
 }
 
-// ---- switchCamera_17c4e8.cpp ----
-
-// 0x76804
-// 0x7246c
-void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v);  // 0x76c0c
-int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c);  // 0x78460
+void TFC_setRotationAroundTarget(TargetFollowCamera *c, int v);
+int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c);
 // PlayerEgo turret/first-person sync tail helper @0x1ac868.
 
 // MGame::switchCamera(int id)
@@ -519,9 +477,7 @@ firstPerson: {
     }
 }
 
-// ---- freeCamTouchBegin_178a28.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_fcb_guard; // DAT_188af4 (canary anchor read)
-
 
 // MGame::freeCamTouchBegin(int, int, void*): start a free-camera drag. Records the start
 // touch and seeds the camera-offset Vector (built on the stack -> compiler canary).
@@ -559,10 +515,8 @@ tail:
     self->field_0x15c = 1;
 }
 
-// ---- useCloak_179bfc.cpp ----
-__attribute__((visibility("hidden"))) extern Status **g_status;     // DAT_189d44
-__attribute__((visibility("hidden"))) extern GameText **g_gameText; // DAT_189d4c
-
+__attribute__((visibility("hidden"))) extern Status **g_status;
+__attribute__((visibility("hidden"))) extern GameText **g_gameText;
 
 // MGame::useCloak(): toggle the cloaking device. If it engaged, build a choice dialogue
 // "<text><cloak-attr><text>" describing the cloak and pause the game. Stack-protected
@@ -606,21 +560,7 @@ void MGame::useCloak() {
     ((MGame *)(self))->pauseSounds();
 }
 
-// ---- gameOverCheck_180514.cpp ----
-
-// 0x724e4
-// 0x78688
-// 0x78658
-// 0x78694
-// 0x76c84
-// 0x6f2b0
-// 0x78664
 // 0x75550 — DialogueWindow::set(Mission*, int, int)
-// 0x786ac
-// 0x786b8
-// 0x786a0
-// 0x7483c
-
 __attribute__((visibility("hidden"))) extern int **g_goWormText;   // @0x190572
 __attribute__((visibility("hidden"))) extern int **g_goDeathText;  // @0x19069c
 __attribute__((visibility("hidden"))) extern DialogueWindow **g_goDlgA; // @0x1907c0 (used for getText store)
@@ -735,13 +675,8 @@ void MGame::gameOverCheck() {
     }
 }
 
-// ---- OnTouchBegin_178e64.cpp ----
-
-// 0x71d64
 // 0x... (Layout::OnTouchBegin)
-extern "C" int ApplicationManager_GetApplicationData();  // 0x71704
-// 0x781e4
-// 0x781f0
+extern "C" int ApplicationManager_GetApplicationData();
 // Module-switch tail helper @0x1ab908 (replay/menu transition).
 // The large post-Hud-touch reaction body (time-extender, dock dialogue, free-cam
 // init, etc.) is one logical unit; kept as a helper to remain faithful + compiling.
@@ -816,7 +751,6 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
     ((MGame *)(self))->handleHudTouchAction(p1, p2, touchId, hr);
 }
 
-// ---- OnUpdate_17c8d8.cpp ----
 // GetElapsedTimeMillis
 // The entire per-frame game tick — free-cam keyboard input, AI/physics step,
 // mining/hacking/docking state machines, dialogue + sound pumps, jump-scene update,
@@ -856,8 +790,6 @@ void MGame::OnUpdate() {
     
 }
 
-// ---- OnSuspend_180800.cpp ----
-
 __attribute__((visibility("hidden"))) extern RecordHandler **g_record;
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 extern "C" void Level_onSuspend(...);  // tail call via this->[0x74]
@@ -893,20 +825,8 @@ void MGame::OnSuspend() {
     return Level_onSuspend(self->field_0x74);
 }
 
-// ---- dockEvent_17f920.cpp ----
-
-// 0x78604
-// 0x78610
 // 0x... goingToStream
-// 0x724f0
-// 0x726c4
-// 0x72928
-// 0x72814
-// 0x76d20
-// 0x78298
-// 0x75430
-// 0x71c14
-extern "C" int Station_getIndex(Station *s);  // 0x71824
+extern "C" int Station_getIndex(Station *s);
 // Builds and sets the "dock at <station>?" choice text, then ChoiceWindow::left().
 
 __attribute__((visibility("hidden"))) extern int *g_deGuard;     // @0x18f932 (stack guard [0])
@@ -1105,7 +1025,6 @@ void MGame::dockEvent() {
     
 }
 
-// ---- freeCamTouchEnd_178d30.cpp ----
 // MGame::freeCamTouchEnd(int, int, void*): releases a free-camera drag. Clears the
 // matching active-touch slot, then commits the accumulated rotation deltas (only the
 // axes that moved more than 3px) and converts them to integer angles, flagging the
@@ -1150,7 +1069,6 @@ void MGame::freeCamTouchEnd(int p1, int p2, int id) {
     }
 }
 
-// ---- _MGame_177c40.cpp ----
 // MGame::~MGame() deleting destructor: run the complete dtor (which returns `this`)
 // then tail-call operator delete with that pointer — so `this` is never saved.
 
@@ -1159,18 +1077,6 @@ void MGame::deleting_dtor() {
     MGame_opdelete(((MGame *)(self))->dtor());
 }
 
-// ---- UseKhadorDrive_179d5c.cpp ----
-
-// 0x77a7c
-// 0x73738
-// 0x72034
-// 0x72ca0
-// 0x78280
-// 0x7828c
-// 0x77a04
-// 0x77b24
-// 0x782a4
-// 0x71c44
 // Tail helpers.
 // @0x1ac808
 // @0x1ac818
@@ -1270,10 +1176,6 @@ void MGame::UseKhadorDrive() {
     return ((MGame *)(self->field_0x74))->starMapShown();
 }
 
-// ---- OnInitialize_177c50.cpp ----
-
-// 0x178470
-// 0x713d4
 // Heavily-corrupt sub-blocks are delegated to documented helpers:
 // sound-resource list (62..145)
 // HP/shield/armor restore (157..198)
@@ -1647,10 +1549,7 @@ void MGame::OnInitialize() {
     
 }
 
-// ---- freeCamTouchMove_178af8.cpp ----
-
-// 0x77adc
-void TFC_zoomTarget(void *cam, float z);  // 0x78178
+void TFC_zoomTarget(void *cam, float z);
 // Pan-finish tail helper @0x1ac798 (no-op stack-guard-ok path).
 
 __attribute__((visibility("hidden"))) extern int *g_fcGuard;   // @0x188b10 (stack guard [0])
@@ -1730,8 +1629,6 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
     
 }
 
-// ---- OnTouchEnd_17a144.cpp ----
-
 // The full button-action dispatch body (cutscene/pause menu, boost/shoot, dock,
 // jump, menu navigation, dialogue choice handling, station services, etc.) is an
 // enormous switch over the Hud touch-result bits.  Translated as one documented
@@ -1777,11 +1674,8 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     
 }
 
-// ---- successCheck_17ff58.cpp ----
-
 // 0x... missionCompleted
 // 0x... checkObjective
-// 0x727c0
 // Corrupt follow-up-mission setup block (227..291) kept as one helper.
 
 __attribute__((visibility("hidden"))) extern int *g_scGuard;     // @0x18ff6e (stack guard [0])
@@ -2009,7 +1903,6 @@ done:
     
 }
 
-// ---- _MGame_177c08.cpp ----
 // PIC globals: the MGame vtable base (hidden -> direct pc-relative single-deref of the
 // value) and the String destructor.
 __attribute__((visibility("hidden"))) extern void *MGame_vtable;
@@ -2024,8 +1917,6 @@ MGame * MGame::dtor() {
     return self;
 }
 
-// ---- resumeSounds_178e24.cpp ----
-
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 
 // MGame::resumeSounds(): resume FMOD, the player's engine sound, and every enemy's.
@@ -2039,13 +1930,11 @@ void MGame::resumeSounds() {
         ((KIPlayer *)(e->data[i]))->ResumeEngineSound();
 }
 
-// ---- startChargingJumpDrive_179fb0.cpp ----
-__attribute__((visibility("hidden"))) extern Status **g_status;   // DAT_18a128
+__attribute__((visibility("hidden"))) extern Status **g_status;
 __attribute__((visibility("hidden"))) extern int *g_jumpFlag;     // DAT_18a134 (*piVar6)
-__attribute__((visibility("hidden"))) extern int **g_alienAmt;    // DAT_18a138
-__attribute__((visibility("hidden"))) extern int **g_jumpCost;    // DAT_18a130
-__attribute__((visibility("hidden"))) extern int **g_alienCost;   // DAT_18a140
-
+__attribute__((visibility("hidden"))) extern int **g_alienAmt;
+__attribute__((visibility("hidden"))) extern int **g_jumpCost;
+__attribute__((visibility("hidden"))) extern int **g_alienCost;
 
 // MGame::startChargingJumpDrive(): if the jump drive is armed, validate fuel/cargo, then
 // either pop a "no fuel" choice dialogue or actually trigger the hyperspace jump.
@@ -2104,8 +1993,6 @@ void MGame::startChargingJumpDrive() {
     ((Ship *)(((Status *)(*sp))->getShip()))->removeCargo(0x7a, needed);
 }
 
-// ---- pauseSounds_178ddc.cpp ----
-
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 
 // MGame::pauseSounds(): snapshot the pause flag, pause FMOD, the player's engine sound,
@@ -2122,20 +2009,11 @@ void MGame::pauseSounds() {
     }
 }
 
-// ---- reset_178470.cpp ----
-
-// 0x78118
-extern "C" void Radio_ctor(Radio *r);  // 0x75160
-// 0x71ef0
-// 0x74488
-extern "C" void *TargetFollowCamera_dtor(void *c);  // 0x72064
+extern "C" void Radio_ctor(Radio *r);
+extern "C" void *TargetFollowCamera_dtor(void *c);
 extern "C" void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
-                                        int a, int b, int d, int e, int f, int g); // 0x78124
-// 0x78130
-// 0x72a18
-extern "C" void Radar_ctor(Radar *r, Level *l);  // 0x7813c
-// 0x7204c
-
+                                        int a, int b, int d, int e, int f, int g);
+extern "C" void Radar_ctor(Radar *r, Level *l);
 __attribute__((visibility("hidden"))) extern int g_resAspectA;    // @0x1886dc (DAT)
 __attribute__((visibility("hidden"))) extern int g_resAspectB;    // @0x1886e0
 __attribute__((visibility("hidden"))) extern int g_resAspectC;    // @0x1886e4
@@ -2158,7 +2036,7 @@ void MGame::reset() {
     self->field_0x11c = g_resAspectA;
     self->field_0x120 = g_resAspectB;
     self->field_0x124 = 0; self->field_0x128 = 0;
-    self->field_0x12c = 0;   // 0x12c
+    self->field_0x12c = 0;
     self->field_0x130 = 0; self->field_0x134 = 0;
 
     self->field_0x58 = (PlayerEgo *)(intptr_t)((Level *)(self))->getPlayer();
@@ -2259,11 +2137,6 @@ void MGame::reset() {
     F<int>(s, 0x18c) = 1;
 }
 
-// ---- handleAccelerometer_178714.cpp ----
-
-// 0x6ff88
-// 0x729d0
-// 0x729dc
 // Roll-control callbacks invoked by fn-ptr: (ego, shipField, amt).
 extern "C" void *MGame_accelCtxBegin(int field8);  // fn @0x1887b4 (pcVar5)
 extern "C" double *MGame_accelCtxValue();  // fn @0x1887bc (pcVar4)
@@ -2360,18 +2233,6 @@ afterYaw: {
 }
 }
 
-// ---- OnTouchMove_1799dc.cpp ----
-
-// 0x78238
-// 0x78244
-// 0x78250
-// 0x7825c
-// 0x78268
-// 0x78274
-// 0x75118
-// 0x750d0
-// 0x750e8
-// 0x7474c
 // Thrust-from-drag application (0x189af2..0x189b46): new = max(2, base + dY*scale),
 // then setThrust + throttleChanged. Helper keeps the corrupt float math compiling.
 
@@ -2468,7 +2329,6 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
     }
 }
 
-// ---- setCinematicMode_17c454.cpp ----
 // Hidden PC-relative globals: a "cinematic active" byte flag and an input/UI byte flag.
 __attribute__((visibility("hidden"))) extern uint8_t *g_cinFlagA;
 __attribute__((visibility("hidden"))) extern uint8_t **g_cinFlagB;
@@ -2499,25 +2359,8 @@ void MGame::setCinematicMode(bool on) {
     }
 }
 
-// ---- updateJumpScene_17f588.cpp ----
-
-// 0x785c8
-void TFC_translate(void *cam, int x, int y, int z);  // 0x72688
-// 0x720b8
-// 0x6f7cc
-extern "C" void *TFC_getPosition(void *cam);  // 0x76b28
-// 0x785d4
-// 0x76aec
-// 0x72af0
-// 0x785e0
-// 0x785ec
-// 0x785f8
-// 0x745fc
-// 0x74608
-// 0x74614
-// 0x73678
-// 0x7366c
-
+void TFC_translate(void *cam, int x, int y, int z);
+extern "C" void *TFC_getPosition(void *cam);
 __attribute__((visibility("hidden"))) extern int *g_ujGuard;     // @0x18f598 (stack guard [0])
 __attribute__((visibility("hidden"))) extern unsigned **g_ujCanvasA; // @0x18f5b2
 __attribute__((visibility("hidden"))) extern unsigned **g_ujCanvasB; // @0x18f6a4
@@ -2667,8 +2510,7 @@ done:
     
 }
 
-// ---- MGame_177b30.cpp ----
-extern "C" void String_default_ctor(void *s);  // 0x6efbc
+extern "C" void String_default_ctor(void *s);
 __attribute__((visibility("hidden"))) extern int g_mgameVtable; // @0x187b3c ([0]=vtable base)
 __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (DAT_00187c00)
 
@@ -2735,23 +2577,13 @@ MGame * MGame::ctor() {
     return self;
 }
 
-// ---- OnRelease_17c6bc.cpp ----
-
-// 0x74f74
-// 0x75310
-// 0x7531c
-// 0x7846c
-extern "C" void *Radar_dtor(void *r);  // 0x78484
-extern "C" void *Radio_dtor(...);  // 0x75388
-// 0x75bd4
-// 0x7537c
-extern "C" void *DialogueWindow_dtor(...);  // 0x75010
-unsigned short GameText_getLanguage();  // 0x6f544
-void Globals_loadFont(int font, int lang);  // 0x71d04
-// 0x71d10
-// 0x71d1c
-extern "C" void ArrayReleaseClasses_StringPtr(void *arr);  // 0x6facc
-extern "C" void *ArrayStringPtr_dtor(void *arr);  // 0x6f64c
+extern "C" void *Radar_dtor(void *r);
+extern "C" void *Radio_dtor(...);
+extern "C" void *DialogueWindow_dtor(...);
+unsigned short GameText_getLanguage();
+void Globals_loadFont(int font, int lang);
+extern "C" void ArrayReleaseClasses_StringPtr(void *arr);
+extern "C" void *ArrayStringPtr_dtor(void *arr);
 // Tail helper @0x1ac168 (re-enables low-pass / restores FMOD state).
 
 __attribute__((visibility("hidden"))) extern int g_relPostEffect;   // @0x18c8b8 (DAT)
@@ -2889,15 +2721,11 @@ void MGame::OnRelease() {
         FModSound_restoreState();
 }
 
-// ---- OnRender2D_1808c0.cpp ----
-
-// 0x74458
 // Radio::draw wrapper
 // Radar::draw wrapper
 // 0x18c624 nextCamId
 // Hud::draw wrapper
 // 0x... drawFade
-// 0x755d4
 // splash/fade text helper
 
 __attribute__((visibility("hidden"))) extern int *g_r2dGuard;    // @0x1908d4 (stack guard [0])
@@ -3017,9 +2845,7 @@ void MGame::OnRender2D() {
     
 }
 
-// ---- dialogueEvent_17fe34.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_status;
-
 
 // MGame::dialogueEvent(): when a level sequence completes, decide whether to raise a
 // briefing/mission dialogue, and if so set up the dialogue window + first-person view.
@@ -3058,7 +2884,6 @@ void MGame::dialogueEvent() {
     self->field_0x5e = 1;
 }
 
-// ---- nextCamId_17c624.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_status;
 
 // MGame::nextCamId(int): advances through the cycle of available camera modes, skipping

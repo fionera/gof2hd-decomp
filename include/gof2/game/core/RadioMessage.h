@@ -12,18 +12,12 @@ struct Route;
 struct Radar;
 struct Radio;
 
-
-
-
-
 // NOTE: the byte-offset accessor template `field<T>(self, off)` is provided by
 // common.h; the duplicate definition that the conversion left here was removed to
 // avoid a redefinition (and the resulting ambiguous-overload failures at call sites).
 
 extern "C" void *operator_new__(uint32_t size);
 extern "C" void operator_delete__(void *ptr);
-
-
 
 struct PlayerEgo {
     Route *getRoute();

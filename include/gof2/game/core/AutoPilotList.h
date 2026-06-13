@@ -21,14 +21,10 @@
 //   0x10 Array<String*>*  entries (owned; released in dtor)
 //   0x14 int    count
 
-
 struct Level;
 
 // Methods authored as real C++ members demangle to AutoPilotList::name(); the rest are
 // extern "C" wrappers with hand-mangled names.
-
-
-
 
 // AbyssEngine::String - 12-byte object. Heap-allocated, constructed via engine helpers.
 struct EngString {

@@ -14,16 +14,13 @@
 #include "gof2/game/ship/PlayerFighter.h"
 #include "gof2/game/ship/Ship.h"
 
-
-
 // Status singleton holder (pc-rel global): the decompiler dropped the Status `self`
 // argument on getSystem/getStation/getShip/getPlayingTime; recover it via *gStatus.
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
-// ---- _CutScene_98420.cpp ----
-extern "C" void *Level_dtor(void *level);                  // 0x71fd4
-extern "C" void ArrayReleaseClasses_AEGeometryPtr(void *arr);      // 0x71fec
-extern "C" void *Array_AEGeometryPtr_dtor(void *arr);             // 0x717c4
+extern "C" void *Level_dtor(void *level);
+extern "C" void ArrayReleaseClasses_AEGeometryPtr(void *arr);
+extern "C" void *Array_AEGeometryPtr_dtor(void *arr);
 
 __attribute__((visibility("hidden"))) extern void **g_canvasFog; // FogEnable target
 
@@ -68,13 +65,11 @@ CutScene::~CutScene()
     pp(this, 0x38) = 0;
 }
 
-// ---- isInitialized_98e80.cpp ----
 uint8_t CutScene::isInitialized()
 {
     return u8(this, 0x5c);
 }
 
-// ---- update_99664.cpp ----
 // update(): single unconditional tail-call thunk (b.w trampoline).
 
 void CutScene::update()
@@ -82,7 +77,6 @@ void CutScene::update()
     return ((CutScene *)(this))->update_tail();
 }
 
-// ---- render3D_9985c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_appManager;
 
 void CutScene::render3D()
@@ -117,7 +111,6 @@ void CutScene::render3D()
     }
 }
 
-// ---- render2D_9984c.cpp ----
 // render2D(): tail-call ext(*this) (the Level pointer at offset 0).
 
 void CutScene::render2D()
@@ -125,7 +118,6 @@ void CutScene::render2D()
     return this->render2D_tail((Level *)pp(this, 0x0));
 }
 
-// ---- process_98e8c.cpp ----
 extern "C" {
 float VectorSignedToFloat(int v, int mode);
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
@@ -390,7 +382,6 @@ void CutScene::process(int delta)
     }
 }
 
-// ---- renderBG_99852.cpp ----
 // renderBG(): tail-call ext(field_0, field_0x58).
 
 void CutScene::renderBG()
@@ -398,7 +389,6 @@ void CutScene::renderBG()
     return this->renderBG_tail((Level *)pp(this, 0x0), u32(this, 0x58));
 }
 
-// ---- CutScene_983e4.cpp ----
 CutScene::CutScene(int param)
 {
     i32(this, 0x18) = 0;
@@ -433,7 +423,6 @@ extern "C" void *CutScene_dtor(void *p)
     return p;
 }
 
-// ---- replacePlayerShip_99668.cpp ----
 extern "C" {
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
 void *Globals_getShipGroup(void *globals, int type, int slot, bool flag);
@@ -498,7 +487,6 @@ void CutScene::replacePlayerShip(int a, int b)
     checkForTurret();
 }
 
-// ---- initialize_98628.cpp ----
 extern "C" {
 void Level_ctor(void *self, int mode);
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);
@@ -662,7 +650,6 @@ void CutScene::initialize()
     u32(this, 0x4c) = 0;
 }
 
-// ---- resetCamera_98514.cpp ----
 extern "C" {
 }
 
@@ -719,7 +706,6 @@ void CutScene::resetCamera()
                                      CutScene_persp_znear, CutScene_persp_zfar);
 }
 
-// ---- checkForTurret_98a68.cpp ----
 extern "C" {
 void FileRead_ctor(void *self);
 void *FileRead_dtor(void *self);

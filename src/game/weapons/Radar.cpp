@@ -26,13 +26,11 @@ extern "C" int __aeabi_idivmod(int numerator, int denominator);
 extern "C" unsigned __aeabi_uidiv(unsigned numerator, unsigned denominator);
 extern "C" int Radar_GetScreenPosition(AbyssEngine::PaintCanvas *canvas, void const *value, void *screen);
 
-// ---- getTurretScopeWidth_13104e.cpp ----
 int Radar::getTurretScopeWidth()
 {
     return this->turretScopeHalfWidth << 1;
 }
 
-// ---- _Radar_12de3c.cpp ----
 Radar::~Radar()
 {
     Array<KIPlayer *> *players = this->players;
@@ -44,19 +42,16 @@ Radar::~Radar()
     ((AbyssEngine::String *)((char *)this + 0x18c))->~String();
 }
 
-// ---- hasScanner_13105c.cpp ----
 uint8_t Radar::hasScanner()
 {
     return this->scannerAvailable;
 }
 
-// ---- isPlasmaInRange_131056.cpp ----
 uint8_t Radar::isPlasmaInRange()
 {
     return this->plasmaInRange;
 }
 
-// ---- stationLocked_13103a.cpp ----
 bool Radar::stationLocked()
 {
     void *station = this->lockedStation;
@@ -66,7 +61,6 @@ bool Radar::stationLocked()
     return false;
 }
 
-// ---- update_12e01c.cpp ----
 void Radar::update(KIPlayer *player)
 {
     char position[sizeof(AbyssEngine::AEMath::Vector)];
@@ -76,13 +70,11 @@ void Radar::update(KIPlayer *player)
     update(*(AbyssEngine::AEMath::Vector *)position);
 }
 
-// ---- unlockAsteroid_131030.cpp ----
 void Radar::unlockAsteroid()
 {
     this->lockedAsteroid = 0;
 }
 
-// ---- getPlanetDockIndex_130974.cpp ----
 int Radar::getPlanetDockIndex()
 {
     SolarSystem *system = gStatus->getSystem();
@@ -90,7 +82,6 @@ int Radar::getPlanetDockIndex()
     return (int)(intptr_t)stations->data()[this->planetDockIndex];
 }
 
-// ---- draw_12e050.cpp ----
 extern void *gRadarCanvasForDraw;
 extern void *gRadarMissionSlot;
 
@@ -118,7 +109,6 @@ long long Radar::draw(Player *, Hud *, int mode)
     return 0;
 }
 
-// ---- Radar_12d484.cpp ----
 extern void *gRadarCanvasSlot;
 extern void *gRadarLayoutSlot;
 
@@ -203,7 +193,6 @@ Radar::Radar(Level *level)
     (void)local48;
 }
 
-// ---- elipsoidIntersect_12df48.cpp ----
 AbyssEngine::AEMath::Vector Radar::elipsoidIntersect(
     int y, int x, AbyssEngine::AEMath::Vector value)
 {
@@ -228,7 +217,6 @@ AbyssEngine::AEMath::Vector Radar::elipsoidIntersect(
     return value;
 }
 
-// ---- drawCurrentLock_130998.cpp ----
 extern uint8_t *gRadarDrawCurrentLockFlag;
 
 void Radar::drawCurrentLock(Hud *)
@@ -282,7 +270,6 @@ void Radar::drawCurrentLock(Hud *)
     (void)text88;
 }
 
-// ---- calcDistance_130704.cpp ----
 static const float kDistanceScale = 0.001f;
 static const char kMetersSuffix[] = "";
 static const char kLeadingZero[] = "";
@@ -346,10 +333,8 @@ void Radar::calcDistance(float, float a, float b, float c, float d, float e)
     }
 }
 
-// ---- update_12de60.cpp ----
 using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
-
 
 void Radar::update(Vector value)
 {

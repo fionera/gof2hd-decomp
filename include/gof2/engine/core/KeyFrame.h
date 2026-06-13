@@ -16,13 +16,10 @@
 //   +0x58  int     0
 //   +0x5c  int     0
 
-
 extern "C" void *__aeabi_memclr4(void *dst, uint32_t n);
 
 namespace AbyssEngine {
 namespace AEMath {
-
-
 
 } // namespace AEMath
 

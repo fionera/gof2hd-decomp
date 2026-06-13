@@ -8,15 +8,12 @@
 // (+0x8 size limit, +0xc base offset, +0x10 current position). Fields are accessed
 // by byte offset taken from each work-item's target disasm.
 
-
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 void *operator new[](__SIZE_TYPE__ size);
 void operator delete[](void *ptr) noexcept;
 
 struct FileInterface;
-
-
 
 // ---- held FileInterface object ------------------------------------------------
 struct FI;

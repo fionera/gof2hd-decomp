@@ -1,6 +1,5 @@
 #include "gof2/engine/render/IParticleSystem.h"
 
-
 namespace AbyssEngine { namespace AERandom { int nextInt(void *self, int max); } }
 char *MatrixGetPosition(char *out, Matrix const *matrix);
 char *MatrixGetRight(char *out, Matrix const *matrix);
@@ -22,7 +21,6 @@ extern "C" void Array_ParticleSet_ctor(void *self);
 extern "C" void ArraySet_ParticleSet(Array<int> const *src, void *dst);
 extern "C" void Array_ParticleSet_dtor(void *self);
 
-// ---- setParticleSet_181b1e.cpp ----
 void IParticleSystem::setParticleSet(int set)
 {
     if (I(this, 0x38) != 0 && *(int *)this->particleSets == set) {
@@ -30,7 +28,6 @@ void IParticleSystem::setParticleSet(int set)
     }
 }
 
-// ---- enableEmit_181d96.cpp ----
 void IParticleSystem::enableEmit(bool enabled)
 {
     if (enabled && U8(this, 0xc) == 0) {
@@ -39,7 +36,6 @@ void IParticleSystem::enableEmit(bool enabled)
     U8(this, 0xc) = enabled;
 }
 
-// ---- update_181d54.cpp ----
 typedef void (*UpdateParticleFn)(IParticleSystem *, int, float);
 
 void IParticleSystem::update(int delta)
@@ -55,20 +51,17 @@ void IParticleSystem::update(int delta)
     }
 }
 
-// ---- setParticleSetIndex_181b18.cpp ----
 void IParticleSystem::setParticleSetIndex(uint8_t index)
 {
     U8(this, 0x44) = index;
 }
 
-// ---- setMatrix_182b40.cpp ----
 void IParticleSystem::setMatrix(Matrix const *matrix)
 {
     *(Matrix const * volatile *)((char *)this + 0x18) = matrix;
     this->field_0x4 = 0x100;
 }
 
-// ---- enableRender_181da4.cpp ----
 typedef void (*RenderOffFn)(IParticleSystem *);
 
 void IParticleSystem::enableRender(bool enabled)
@@ -80,9 +73,7 @@ void IParticleSystem::enableRender(bool enabled)
     U8(this, 0xd) = enabled;
 }
 
-// ---- emit_181dc4.cpp ----
 __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
-
 
 typedef void (*EmitParticleFn)(IParticleSystem *, void *, float, uint32_t, uint32_t, uint32_t, uint32_t,
                               uint32_t, int, float, float, void *);
@@ -362,7 +353,6 @@ void IParticleSystem::emit(int delta)
     }
 }
 
-// ---- interpolateColor_181c1c.cpp ----
 __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
 
 void IParticleSystem::interpolateColor(int index, float *alpha, float *red, float *green, float *blue)
@@ -407,11 +397,9 @@ void IParticleSystem::interpolateColor(int index, float *alpha, float *red, floa
     }
 }
 
-// ---- rotateUVs_182704.cpp ----
 struct LocalRandom {
     char data[12];
 };
-
 
 float *IParticleSystem::rotateUVs(float *src, int seed, float *dst)
 {
@@ -427,10 +415,8 @@ float *IParticleSystem::rotateUVs(float *src, int seed, float *dst)
     return dst;
 }
 
-// ---- IParticleSystem_1819c0.cpp ----
 __attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
 __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
-
 
 IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
                                  bool mirror, bool alphaFade)
@@ -502,7 +488,6 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
     U16(this, 0x4) = 0x101;
 }
 
-// ---- calcEmitterVelocity_181b90.cpp ----
 void IParticleSystem::calcEmitterVelocity(int delta)
 {
     char position[12];
@@ -516,9 +501,7 @@ void IParticleSystem::calcEmitterVelocity(int delta)
     *(Vector *)((char *)this + 0x28) = *(Vector *)(position);
 }
 
-// ---- emitManual_182790.cpp ----
 __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
-
 
 void IParticleSystem::emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime)
 {
@@ -636,7 +619,6 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
     }
 }
 
-// ---- resetEmitterVelocity_181b34.cpp ----
 void IParticleSystem::resetEmitterVelocity()
 {
     char value[12] = {};
@@ -648,9 +630,7 @@ void IParticleSystem::resetEmitterVelocity()
     this->field_0x4 = 0;
 }
 
-// ---- _IParticleSystem_182c1c.cpp ----
 __attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
-
 
 IParticleSystem::~IParticleSystem()
 {

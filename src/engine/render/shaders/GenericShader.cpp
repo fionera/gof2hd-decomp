@@ -8,7 +8,6 @@ extern "C" void **GenericShader_registerDst;
 
 namespace AbyssEngine {
 
-// ---- Init_8e7dc.cpp ----
 void GenericShader::Init(Engine *)
 {
     int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("GenericShader.vsh", "GenericShader.fsh");
@@ -42,7 +41,6 @@ void GenericShader::Init(Engine *)
     }
 }
 
-// ---- SetInActive_8e940.cpp ----
 void GenericShader::SetInActive()
 {
     if (field_0x20 >= 0)
@@ -57,7 +55,6 @@ void GenericShader::SetInActive()
         glDisableVertexAttribArray(field_0x30);
 }
 
-// ---- UpdateMeshData_8e980.cpp ----
 // AbyssEngine::GenericShader::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
 // The Engine/Mesh objects carry the per-frame matrices, light data and GL vertex
 // buffers at fixed offsets; those are foreign objects (other batches), read as raw
@@ -130,7 +127,6 @@ void GenericShader::UpdateMeshData(Mesh *mesh, Engine *engine)
         glVertexAttribPointer(field_0x30, 3, 0x1406, 0, 0, *(void **)(m + 0x18));
 }
 
-// ---- GenericShader_8e750.cpp ----
 // AbyssEngine::GenericShader::GenericShader()
 GenericShader::GenericShader()
 {
@@ -153,7 +149,6 @@ GenericShader::GenericShader()
 
 } // namespace AbyssEngine
 
-// ---- _GenericShader_8eb90.cpp ----
 void _ZN11AbyssEngine13GenericShaderD0Ev(AbyssEngine::GenericShader *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;

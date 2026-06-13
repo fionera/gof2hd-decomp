@@ -27,8 +27,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -38,14 +36,9 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
 
-
-
 // Per-class backing storage accessor helpers. The fields live at fixed byte offsets
 // (program handle at 0x4, dirty flag byte at 0x9, name String at 0xc, attribute/uniform
 // locations 0x20..0x58) and are read/written through these helpers.
-
-
-
 
 // AbyssEngine::BumpShaderV4 — GLES2 bump-mapping shader variant (derives from ShaderBaseStruct).
 class BumpShaderV4 {

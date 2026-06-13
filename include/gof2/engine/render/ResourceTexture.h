@@ -8,7 +8,6 @@
 //   +0x04 float  value  (param_2)
 // Access fields via byte-offset casts from `this`.
 
-
 // Defined at top level to match fwd.h's `struct ResourceTexture;` forward decl.
 // (game-qualified name is AbyssEngine::ResourceTexture)
 class ResourceTexture {

@@ -29,21 +29,21 @@ struct V4 { float a, b, c, d; };
 namespace AbyssEngine {
 namespace AEMath {
 // AEMath free functions (resolved blx targets in the target).
-void VectorNormalize(void *out, const Vector *v);        // 0x0006ec80
-Vector operator-(const Vector &a, const Vector &b);      // 0x0006ec38
-Vector MatrixGetUp(const Matrix &m);                     // 0x0006f4d8
-Vector MatrixGetRight(const Matrix &m);                  // 0x0006f4e4
-Vector MatrixGetPosition(const Matrix &m);               // 0x0006f16c
-Vector MatrixGetDir(const Matrix &m);                    // 0x00080720
+void VectorNormalize(void *out, const Vector *v);
+Vector operator-(const Vector &a, const Vector &b);
+Vector MatrixGetUp(const Matrix &m);
+Vector MatrixGetRight(const Matrix &m);
+Vector MatrixGetPosition(const Matrix &m);
+Vector MatrixGetDir(const Matrix &m);
 } // namespace AEMath
 } // namespace AbyssEngine
 
 // PaintCanvas transform/mesh static helpers (first arg is the canvas handle/pointer).
 struct AEGeomCanvas {
-    static uint32_t TransformGetLocal(uint32_t canvas, uint32_t tf);     // 0x000720c4
-    static void TransformCreate(PaintCanvas *canvas, uint32_t *out);     // 0x000720ac
-    static void TransformSetLocal(PaintCanvas *canvas, uint32_t tf, Matrix *m); // 0x000721c0
-    static void TransformAddChild(PaintCanvas *canvas, uint32_t tf, uint32_t child);    // 0x000720d0
+    static uint32_t TransformGetLocal(uint32_t canvas, uint32_t tf);
+    static void TransformCreate(PaintCanvas *canvas, uint32_t *out);
+    static void TransformSetLocal(PaintCanvas *canvas, uint32_t tf, Matrix *m);
+    static void TransformAddChild(PaintCanvas *canvas, uint32_t tf, uint32_t child);
 };
 
 class AEGeometry {

@@ -13,7 +13,6 @@ struct Matrix;
 
 // AbyssEngine::Array<T> - 12-byte container header (length, data, capacity).
 
-
 // Material layout (0x74 bytes):
 //   +0x00  uint32_t textures[8]   (filled with 0xffffffff by default ctor)
 //   +0x20  int      field_20

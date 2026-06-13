@@ -1,9 +1,5 @@
 #include "gof2/engine/file/ConfigReader.h"
 
-
-
-
-// ---- _ConfigReader_87672.cpp ----
 namespace AbyssEngine {
 
 __attribute__((minsize)) ConfigReader::~ConfigReader()
@@ -26,7 +22,6 @@ __attribute__((minsize)) ConfigReader::~ConfigReader()
 
 } // namespace AbyssEngine
 
-// ---- ConfigReader_87258.cpp ----
 static void config_reader_read_file_callback(void *, void *) {}
 static void config_reader_keys_for_action_callback(void *, void *) {}
 static void config_reader_register_token_callback(void *, void *) {}
@@ -54,7 +49,6 @@ __attribute__((minsize)) ConfigReader::ConfigReader(Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- RegisterTokenReadFunction_8734c.cpp ----
 namespace AbyssEngine {
 
 __attribute__((minsize)) void ConfigReader::RegisterTokenReadFunction(
@@ -69,7 +63,6 @@ __attribute__((minsize)) void ConfigReader::RegisterTokenReadFunction(
 
 } // namespace AbyssEngine
 
-// ---- GetNewLine_877d4.cpp ----
 namespace AbyssEngine {
 
 __attribute__((minsize)) String ConfigReader::GetNewLine()
@@ -116,7 +109,6 @@ __attribute__((minsize)) String ConfigReader::GetNewLine()
 
 } // namespace AbyssEngine
 
-// ---- ParseFile_876bc.cpp ----
 namespace AbyssEngine {
 
 __attribute__((minsize)) void ConfigReader::ParseFile(String name)

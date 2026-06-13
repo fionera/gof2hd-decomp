@@ -6,11 +6,7 @@
 // Embeds two AbyssEngine::String members at +0x188 and +0x194, plus a heap buffer
 // at +0x00 and many scalar fields. Fields reached via byte-offset casts from `this`.
 
-
-
-
 // Field accessor via byte offset.
-
 
 extern "C" {
 void *operator_new__(uint32_t size);

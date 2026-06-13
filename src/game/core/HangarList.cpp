@@ -6,34 +6,26 @@
 #include "gof2/game/ui/ListItem.h"
 #include "gof2/game/ship/Ship.h"
 
-
-
-
-// ---- _HangarList_11d9fe.cpp ----
 HangarList::~HangarList() {
     release();
 }
 
-// ---- setCurrentTab_11e782.cpp ----
 // Selects which tab is active. The hangar/shop UI flips between the normal item
 // list (tab 0/2) and the blueprint-ingredients sub-list using this boolean.
 void HangarList::setCurrentTab(bool blueprintIngredients) {
     this->currentTab = blueprintIngredients ? 1u : 0u;
 }
 
-// ---- setCurrentItemIndex_11e7a2.cpp ----
 // The +0x8 slot stores the currently selected row index within the active tab;
 // getCurrentItem() later resolves it to a ListItem* via getCurrentItemAt().
 void HangarList::setCurrentItemIndex(int index) {
     *reinterpret_cast<int *>(&this->currentItem) = index;
 }
 
-// ---- getCurrentItemIndex_11e79e.cpp ----
 uint32_t HangarList::getCurrentItemIndex() {
     return *reinterpret_cast<uint32_t *>(&this->currentItem);
 }
 
-// ---- getCurrentLength_11e786.cpp ----
 uint32_t HangarList::getCurrentTab() {
     return this->currentTab;
 }
@@ -49,21 +41,18 @@ uint32_t HangarList::getCurrentLength() {
     return items != 0 ? items->size() : 0;
 }
 
-// ---- getCurrentTabItems_11e772.cpp ----
 Array<ListItem *> *HangarList::getCurrentTabItems() {
     Array<Array<ListItem *> *> *tabs = this->tabs;
     uint32_t current = this->currentTab;
     return tabs->data()[current];
 }
 
-// ---- HangarList_11d9f4.cpp ----
 HangarList::HangarList() {
     this->tabs = 0;
     this->currentTab = 0;
     this->currentItem = 0;
 }
 
-// ---- release_11da10.cpp ----
 void HangarList::release() {
     Array<Array<ListItem *> *> *tabs =
         this->tabs;
@@ -108,7 +97,6 @@ void HangarList::release() {
     this->tabs = 0;
 }
 
-// ---- getCurrentItem_11e744.cpp ----
 extern "C" ListItem *HangarList_getCurrentItem_tail(HangarList *self,
                                                     ListItem *item);
 
@@ -124,7 +112,6 @@ extern "C" ListItem *HangarList_getCurrentItem_tail(HangarList *self,
     return self->getCurrentItemAt((int)(intptr_t)item);
 }
 
-// ---- getCurrentItemAt_11e74a.cpp ----
 ListItem *HangarList::getCurrentItemAt(int index) {
     Array<Array<ListItem *> *> *tabs = this->tabs;
     if (tabs != 0) {
@@ -148,7 +135,6 @@ ListItem *HangarList::getCurrentItemAt(int index) {
     return 0;
 }
 
-// ---- initBlueprintTab_11e088.cpp ----
 void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
     Array<Array<ListItem *> *> *tabs =
         this->tabs;
@@ -230,7 +216,6 @@ clear_old:
     this->tabs->data()[2] = list;
 }
 
-// ---- fillIngredientsList_11e5a8.cpp ----
 void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
     (void)flag;
     Ship *ship = ((Status *)(g_HangarList_status))->getShip();
@@ -280,7 +265,6 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
     ArrayAdd_ListItem(li, this->tabs->data()[4]);
 }
 
-// ---- fillBuyList_11e2e0.cpp ----
 void HangarList::fillBuyList(ListItem *item) {
     Array<Array<ListItem *> *> *tabs =
         this->tabs;
@@ -399,7 +383,6 @@ clear_old:
     this->tabs->data()[3] = list;
 }
 
-// ---- initShipTab_11db48.cpp ----
 void HangarList::initShipTab(Ship *ship) {
     Array<Array<ListItem *> *> *tabs =
         this->tabs;
@@ -508,7 +491,6 @@ clear_old:
     this->tabs->data()[0] = items;
 }
 
-// ---- initShopTab_11de38.cpp ----
 static int shopTypeTextId(uint32_t type) {
     int textId = 0x10e;
     if (type == 3) {
@@ -606,7 +588,6 @@ clear_old:
     this->tabs->data()[1] = list;
 }
 
-// ---- init_11e234.cpp ----
 extern "C" int HangarList_initBlueprintTab_tail(HangarList *self,
                                                 Array<BluePrint *> *blueprints);
 

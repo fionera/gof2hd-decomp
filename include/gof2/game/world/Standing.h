@@ -11,9 +11,6 @@
 // in r0 exactly like the first explicit arg of an extern "C" fn). The ctor/dtor are
 // written as real member functions so their demangled symbols carry the method name.
 
-
-
-
 // Field accessor via byte offset.
 
 class Standing {

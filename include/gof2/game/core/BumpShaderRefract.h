@@ -51,7 +51,6 @@ public:
 
 } // namespace AbyssEngine
 
-
 extern "C" {
 void glActiveTexture(uint32_t texture);
 void glUseProgram(uint32_t program);

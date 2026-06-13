@@ -33,7 +33,6 @@ static const String g_HangarWindow_emptyDialogText;
 // structs unconditionally, which collide. Minimal local Layout/TouchButton/GameText
 // declarations (matching these call sites) live in gof2/HangarWindow.h instead.
 
-
 extern "C" int Station_getIndex(void *station);
 // Status singleton accessors: some merged sections call these with the singleton
 // threaded explicitly, others rely on the implicit singleton. Declared variadic so
@@ -61,14 +60,12 @@ extern "C" extern const char hw_freeCredits_yes[];
 extern "C" extern const char hw_freeCredits_no[];
 extern "C" extern const char hw_freeCredits_icon[];
 
-// ---- isInSpecialMode_148a64.cpp ----
 bool HangarWindow::isInSpecialMode() {
     HangarWindow *self = this;
     if (self->specialMode != 0) return true;
     return self->dialogActive != 0;
 }
 
-// ---- refreshCurrentContentHeight_148a10.cpp ----
 // Globals singleton (pc-rel deref -> holder; *holder is the object), field +0x70 is the row height.
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
 
@@ -82,7 +79,6 @@ void HangarWindow::refreshCurrentContentHeight() {
     }
 }
 
-// ---- listMode_148a4a.cpp ----
 bool HangarWindow::listMode() {
     HangarWindow *self = this;
     if (self->viewMode == 0 && self->specialMode == 0) {
@@ -91,7 +87,6 @@ bool HangarWindow::listMode() {
     return false;
 }
 
-// ---- readyToClose_14e4f0.cpp ----
 // Status singleton (pc-rel deref -> holder; *holder is the Status object).
 __attribute__((visibility("hidden"))) extern void **g_hw_status;
 
@@ -109,7 +104,6 @@ bool HangarWindow::readyToClose() {
     return self->dialogActive == 0;
 }
 
-// ---- render3D_1490c8.cpp ----
 // Tail-call thunk; arg is this->0x18 when this->0x58 == 1.
 
 void HangarWindow::render3D() {
@@ -126,7 +120,6 @@ void HangarWindow::render3D_thunk(void *listItemWindow) {
     ((ListItemWindow *)listItemWindow)->render();
 }
 
-// ---- currentItemIsHighlighted_14e550.cpp ----
 bool HangarWindow::currentItemIsHighlighted() {
     HangarWindow *self = this;
     ListItem *item = (ListItem *)((HangarList *)(self->hangarList))->getCurrentItem();
@@ -134,7 +127,6 @@ bool HangarWindow::currentItemIsHighlighted() {
     return item == self->selectedItem;
 }
 
-// ---- _HangarWindow_147d9c.cpp ----
 // HangarWindow::~HangarWindow() -> returns this. Tears down owned windows/lists/arrays.
 HangarWindow *_ZN12HangarWindowD2Ev(HangarWindow *self)
 {
@@ -172,7 +164,6 @@ HangarWindow *_ZN12HangarWindowD2Ev(HangarWindow *self)
     return self;
 }
 
-// ---- getRelativeScrollStartPos_14b6bc.cpp ----
 // Returns float in r0. If scroll range (this+0xb4) >= 1 returns a constant; otherwise
 // returns -(float)range / (float)contentHeight(this+0xd4).
 float HangarWindow::getRelativeScrollStartPos() {
@@ -185,31 +176,18 @@ float HangarWindow::getRelativeScrollStartPos() {
     return -(float)range / (float)self->currentContentHeight;
 }
 
-// ---- hideMessage_14ecc0.cpp ----
 void HangarWindow::hideMessage() {
     HangarWindow *self = this;
     self->dialogActive = 0;
 }
 
-// ---- render_1490d8.cpp ----
-
-
 extern "C" {
-
-
 
 void Layout_drawHeader(void *layout, String12 *text);
 
-
 int Item_canBeInstalledMultipleTimes(void *item);
 
-
 void *Station_getItems(void *station);
-
-
-
-
-
 
 void *AppManager_GetApplicationData();
 void *AppManager_GetApplicationModule(unsigned int id);
@@ -539,13 +517,8 @@ void HangarWindow::render() {
     }
 }
 
-// ---- OnTouchEnd_14c740.cpp ----
-
-
 extern "C" {
 void ChoiceWindow_setChoices(void *win, String12 *msg, void *a, bool flag, void *b, void *c, void *d, int e, int f);
-
-
 
 void Status_changeCredits(void *globals);
 
@@ -554,14 +527,11 @@ void *Station_getItems(void *station);
 
 void *Ship_dtor(void *ship);
 
-
-
 void AEString_ctor(String12 *self, const char *text, bool copy);
 void AEString_dtor(String12 *self);
 void AEString_assign(String12 *self, String12 *src);
 void AEString_add(String12 *out, String12 *a, String12 *b);
 void AEString_addAssign(String12 *self, String12 *other);
-
 
 void NFC_free_credits_likeGOF2OnFacebook();
 void NFC_free_credits_likeFishlabsOnFacebook();
@@ -1023,7 +993,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         G<uint8_t>(mod, 0x18) = 0;
 }
 
-// ---- update_148a7e.cpp ----
 extern "C" {
 float VectorSignedToFloat(int v, int mode);
 }
@@ -1104,7 +1073,6 @@ void HangarWindow::update(int delta) {
     }
 }
 
-// ---- highlightItem_14bbec.cpp ----
 // FModSound singleton (pc-rel -> holder; *holder is the FModSound object).
 __attribute__((visibility("hidden"))) extern void **g_hw_sound;
 
@@ -1187,7 +1155,6 @@ void HangarWindow::buildMissionOffer(int touch, int coord)
     }
 }
 
-// ---- demountItem_14de04.cpp ----
 extern "C" {
 void Ship_freeSlotAt(void *ship, void *item, int slot);
 void *Station_getItems(void *station);
@@ -1253,9 +1220,6 @@ void HangarWindow::demountItem(void *item, int slot) {
     self->scrollOffset = self->savedScrollOffset;
     ((FModSound *)(*g_hw_sound))->play(0x60, 0, 0, h);
 }
-
-// ---- OnTouchBegin_14b740.cpp ----
-
 
 extern "C" {
 int __aeabi_idiv(int a, int b);
@@ -1379,8 +1343,6 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
     }
 }
 
-// ---- showCreditsBuyWindow_14e118.cpp ----
-
 extern "C" {
 void *ApplicationManager_GetApplicationData();
 void AEString_ctor(String12 *self, const char *text, bool copy);
@@ -1436,13 +1398,11 @@ void HangarWindow::showCreditsBuyWindow() {
     self->notEnoughCredits = 0;
 }
 
-// ---- getCurrentTab_148a44.cpp ----
 int HangarWindow::getCurrentTab() {
     HangarWindow *self = this;
     return ((HangarList *)(self->hangarList))->getCurrentTab();
 }
 
-// ---- refreshCargoAvailabilityForBlueprints_14900c.cpp ----
 // Status singleton (pc-rel -> holder; *holder is the Status object).
 __attribute__((visibility("hidden"))) extern void **g_hw_status2;
 
@@ -1475,9 +1435,6 @@ void HangarWindow::refreshCargoAvailabilityForBlueprints() {
         }
     }
 }
-
-// ---- setSellMode_14bff0.cpp ----
-
 
 extern "C" {
 void *Station_getItems(void *station);
@@ -1665,9 +1622,6 @@ void HangarWindow::setSellMode() {
     self->savedLoad = self->currentLoad;
     self->bluePrintItem = self->selectedItem;
 }
-
-// ---- selectItem_14e570.cpp ----
-
 
 extern "C" {
 int Item_canBeInstalledMultipleTimes(void *item);
@@ -1908,7 +1862,6 @@ void HangarWindow::selectItem(void *item) {
     ((HangarWindow *)(self))->mountItem(li->field_0x10);
 }
 
-// ---- getRelativeScrollHeight_14b6ec.cpp ----
 // Returns float in r0. a=this+0xd4 (denominator), b=this+0xd8.
 // NEAR: clang pairs a->r2,b->r1 in the ldrd (target uses r1=a,r2=b), mirroring every
 // subsequent op; register pairing is an allocator tie-break, not source-driven.
@@ -1931,9 +1884,6 @@ float HangarWindow::getRelativeScrollHeight() {
     }
     return (float)num / (float)a;
 }
-
-// ---- transaction_148c68.cpp ----
-
 
 extern "C" {
 unsigned int Item_transaction(void *item, bool buy, int amount, bool flag);
@@ -2030,7 +1980,6 @@ void HangarWindow::transaction(bool buy) {
     }
 }
 
-// ---- mountItem_14df98.cpp ----
 extern "C" {
 void *Station_getItems(void *station);
 void ArrayRemove_ItemPtr(void *item, void *arr);
@@ -2092,7 +2041,6 @@ void HangarWindow::mountItem(void *item) {
     ((FModSound *)(*g_hw_sound))->play(0x62, 0, 0, h);
 }
 
-// ---- OnTouchMove_14be98.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_hw_layout;
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;
 
@@ -2158,8 +2106,6 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
     return 0;
 }
 
-// ---- autoEquipSecondaryWeapons_14bc50.cpp ----
-
 extern "C" {
 void AEString_ctor(String12 *self, const char *text, bool copy);
 void AEString_ctor_copy(String12 *self, String12 *src, bool copy);
@@ -2223,8 +2169,6 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
     }
 }
 
-// ---- showFreeCreditsWindow_14e32c.cpp ----
-
 // AbyssEngine::String - 12-byte value type.
 
 extern "C" {
@@ -2269,9 +2213,6 @@ void HangarWindow::showFreeCreditsWindow() {
     self->notEnoughCredits = 0;
 }
 
-// ---- initialize_147e24.cpp ----
-
-
 extern "C" {
 int Station_getIndex(void *station);
 void *Station_getItems(void *station);
@@ -2281,7 +2222,6 @@ void HangarList_ctor(void *list);
 
 void Array_TouchButtonPtr_ctor(void *arr);
 void ArraySetLength_TouchButtonPtr(int len, void *arr);
-
 
 // TouchButton constructor overloads (distinct argument arities in the target).
 void TouchButton_ctor_text(void *btn, void *text, int a, int b, int c, char k);
@@ -2295,7 +2235,6 @@ void ChoiceWindow_ctor(void *win);
 
 void AEString_ctor(String12 *self, const char *text, bool copy);
 void AEString_dtor(String12 *self);
-
 
 }
 
@@ -2647,7 +2586,6 @@ void HangarWindow::initialize() {
     }
 }
 
-// ---- HangarWindow_147d20.cpp ----
 // Two PC-rel globals: a window-open counter (set to 1) and a layout/config singleton
 // whose fields 0x238..0x250 are copied into this 0x100..0x118.
 __attribute__((visibility("hidden"))) extern int *g_hw_openCounter;

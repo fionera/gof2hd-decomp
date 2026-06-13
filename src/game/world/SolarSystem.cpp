@@ -3,12 +3,10 @@
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/core/String.h"
 
-
 extern "C" void ArrayRelease_int(void *a) __attribute__((nothrow));
 extern "C" void *Array_int_dtor(void *a) __attribute__((nothrow));
 extern "C" int Station_getIndex(Station *st);
 
-// ---- _SolarSystem_155694.cpp ----
 // SolarSystem::~SolarSystem() — real C++ destructor so the demangled symbol contains "~SolarSystem".
 // Releases the three Array<int> members at +0x38, +0x3c, +0x40, then the String at +0xc.
 
@@ -41,7 +39,6 @@ void SolarSystem::dtor() {
     SolarSystem::baseStringDtor((char *)self + 0xc);
 }
 
-// ---- currentOrbitHasWarpGate_155818.cpp ----
 struct Status;
 struct Station;
 // Status::getStation() and Station::getIndex(Station*) — resolved blx targets.
@@ -93,14 +90,12 @@ void SolarSystem::baseStringDtor(void *strField) {
     ((String *)strField)->dtor();
 }
 
-// ---- isVisible_1558d6.cpp ----
 // SolarSystem::isVisible() — ldrb.w r0,[r0,#0x44]; bx lr
 uint8_t SolarSystem::isVisible() {
     SolarSystem *self = this;
     return u8(self, 0x44);
 }
 
-// ---- stationIsInSystem_15576c.cpp ----
 // SolarSystem::stationIsInSystem(int) — scan station-index array at +0x38.
 int SolarSystem::stationIsInSystem_int(int idx) {
     SolarSystem *self = this;
@@ -113,7 +108,6 @@ int SolarSystem::stationIsInSystem_int(int idx) {
     return 0;
 }
 
-// ---- systemIsInSystemRoutes_1558ae.cpp ----
 // SolarSystem::systemIsInSystemRoutes(int) — self's own system (+0x18) counts; otherwise
 // scan the routes array at +0x40 (null -> not present).
 int SolarSystem::systemIsInSystemRoutes(int sys) {
@@ -132,14 +126,12 @@ int SolarSystem::systemIsInSystemRoutes(int sys) {
     return 1;
 }
 
-// ---- setVisible_1558dc.cpp ----
 // SolarSystem::setVisible(bool) — strb.w r1,[r0,#0x44]; bx lr
 void SolarSystem::setVisible(bool v) {
     SolarSystem *self = this;
     u8(self, 0x44) = v;
 }
 
-// ---- getStationEnumIndex_1557f6.cpp ----
 // SolarSystem::getStationEnumIndex(int) — index of matching station in array at +0x38, or -1.
 uint32_t SolarSystem::getStationEnumIndex(int idx) {
     SolarSystem *self = this;
@@ -151,7 +143,6 @@ uint32_t SolarSystem::getStationEnumIndex(int idx) {
     return 0xffffffff;
 }
 
-// ---- getName_1556f0.cpp ----
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void (0x6f028)
 
 // SolarSystem::getName() -> String by value (sret in r0, this in r1).
@@ -166,7 +157,6 @@ RetStr SolarSystem::getName() {
     return r;
 }
 
-// ---- hasPirateBase_155720.cpp ----
 // Pirate-base station-index table (PC-relative global).
 extern const int kPirateBaseStations[4] __attribute__((visibility("hidden")));
 // Singleton: global holds P; **P is the status/base struct pointer kept in r8.
@@ -189,7 +179,6 @@ int SolarSystem::hasPirateBase() {
     }
 }
 
-// ---- getAttackRace_155708.cpp ----
 // SolarSystem::getAttackRace() — field at 0x20 indexes a 4-entry table; >=4 -> 8.
 // The table is a PC-relative global (visibility hidden -> add r1,pc form).
 extern const int kAttackRaceTable[4] __attribute__((visibility("hidden")));
@@ -202,7 +191,6 @@ int SolarSystem::getAttackRace() {
     return 8;
 }
 
-// ---- hasNoOwner_1558e2.cpp ----
 // SolarSystem::hasNoOwner() — owner race at +0x18; map a contiguous range to a bitmask.
 // (race-0x17) < 0xb ? (0x60b >> (x & 0xff)) & 1 : 0
 uint32_t SolarSystem::hasNoOwner() {
@@ -213,7 +201,6 @@ uint32_t SolarSystem::hasNoOwner() {
     return 0;
 }
 
-// ---- hasHiddenBlueprint_155790.cpp ----
 // Hidden-blueprint station-index table (PC-relative global).
 extern const int kBlueprintStations[5] __attribute__((visibility("hidden")));
 // Singleton: global holds P; **P is the status/base struct pointer kept in r8.
@@ -236,7 +223,6 @@ int SolarSystem::hasHiddenBlueprint() {
     }
 }
 
-// ---- setCoords_15589c.cpp ----
 // SolarSystem::setCoords(int, int) — strd r1,r2,[r0,#0x24]; bx lr
 void SolarSystem::setCoords(int x, int y) {
     SolarSystem *self = this;
@@ -244,12 +230,8 @@ void SolarSystem::setCoords(int x, int y) {
     self->mapY = y;
 }
 
-// ---- SolarSystem_1555dc.cpp ----
 // AbyssEngine::String operations.
 extern "C" void *String_default_ctor(void *self);                 // 0x6efbc -> this
-// 0x6f2b0
-// 0x6ee30
-
 // SolarSystem::SolarSystem(int, String, int, bool, int*6, int*, Array*, Array*, Array*)
 // The String arg has a non-trivial copy ctor/dtor, so the ABI passes it by invisible
 // reference (a pointer in r2). The on-stack `name` build uses a stack-protector canary.
@@ -286,7 +268,6 @@ SolarSystem * SolarSystem::ctor(int p1, const String12 &p2, int p3, bool p4, int
     return self;
 }
 
-// ---- getWarpGateEnumIndex_1557f0.cpp ----
 // SolarSystem::getWarpGateEnumIndex() — ldr r1,[r0,#0x30]; b.w <veneer>
 // Tail-calls a helper with (this, *(this+0x30)).
 // Byte-exact: the function body is exactly these 2 instructions (6 bytes). methods.tsv lists
@@ -298,7 +279,6 @@ int SolarSystem::getWarpGateEnumIndex() {
     return ((SolarSystem *)(self))->warpGateLookup(self->jumpgateStationId);
 }
 
-// ---- isFullyDiscovered_15585c.cpp ----
 struct Galaxy;
 // Galaxy::getVisited() -> char* visited-flags table.
 
@@ -324,7 +304,6 @@ int SolarSystem::isFullyDiscovered() {
     }
 }
 
-// ---- stationIsInSystem_15583c.cpp ----
 struct Station;
 // SolarSystem::stationIsInSystem(int) overload, tail-called.
 

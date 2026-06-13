@@ -7,7 +7,6 @@
 // only its argument types are, e.g. AbyssEngine::...).
 // Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
 
-
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 

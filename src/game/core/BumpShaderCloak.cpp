@@ -4,7 +4,6 @@
 extern "C" void glUniform2f(int location, float x, float y);
 extern "C" void glUniformMatrix3fv(int location, int count, uint8_t transpose, const void *value);
 
-// ---- _BumpShaderCloak_8b200.cpp ----
 void _ZN11AbyssEngine15BumpShaderCloakD0Ev(
     AbyssEngine::BumpShaderCloak *self)
 {
@@ -13,7 +12,6 @@ void _ZN11AbyssEngine15BumpShaderCloakD0Ev(
     operator delete(base);
 }
 
-// ---- Init_8ac7c.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderCloak::Init(Engine *engine)
@@ -63,7 +61,6 @@ void BumpShaderCloak::Init(Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_8ae98.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderCloak::SetInActive()
@@ -88,7 +85,6 @@ void BumpShaderCloak::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- BumpShaderCloak_8abf0.cpp ----
 namespace AbyssEngine {
 
 int BumpShaderCloak::ShaderIndex;
@@ -107,7 +103,6 @@ BumpShaderCloak::BumpShaderCloak()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_8aed8.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::BumpShaderCloak::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)

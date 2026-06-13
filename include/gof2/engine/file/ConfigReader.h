@@ -6,12 +6,10 @@
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
-
 namespace AbyssEngine {
 
 struct Engine;
 struct ConfigReader;
-
 
 template <class T>
 void ArrayAdd(T item, Array<T> &array);
@@ -70,7 +68,6 @@ public:
     String GetNewLine();
     void ParseFile(String name);
 };
-
 
 static inline uint32_t &config_count(ConfigReader *self)
 {

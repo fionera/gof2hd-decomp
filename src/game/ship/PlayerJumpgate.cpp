@@ -64,7 +64,6 @@ extern "C" void *PlayerJumpgate_delete_tail()
 }
 #endif
 
-// ---- _PlayerJumpgate_a5100.cpp ----
 void *_ZN14PlayerJumpgateD2Ev(PlayerJumpgate *self)
 {
     ((PlayerStaticFar *)((PlayerStaticFar *)self))->dtor();
@@ -89,7 +88,6 @@ PlayerJumpgate::~PlayerJumpgate()
     ((PlayerStaticFar *)this)->dtor();
 }
 
-// ---- timeToJump_a5164.cpp ----
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
 bool PlayerJumpgate::timeToJump()
@@ -98,7 +96,6 @@ bool PlayerJumpgate::timeToJump()
     return transform->field_0x110 > 1000LL;
 }
 
-// ---- activate_a5118.cpp ----
 void PlayerJumpgate::activate()
 {
     if (this->field_0x140 != 0) {
@@ -120,13 +117,11 @@ void PlayerJumpgate::activate()
     this->field_0x140 = 1;
 }
 
-// ---- addJumpAnimationHandle_a5110.cpp ----
 void PlayerJumpgate::addJumpAnimationHandle(uint32_t handle)
 {
     this->field_0x144 = handle;
 }
 
-// ---- animationEnded_a5190.cpp ----
 bool PlayerJumpgate::animationEnded()
 {
     if (this->field_0x140 == 0) {
@@ -137,7 +132,6 @@ bool PlayerJumpgate::animationEnded()
     return transform->field_0xed == 0;
 }
 
-// ---- update_a51f0.cpp ----
 void PlayerJumpgate::update(int delta)
 {
     if (this->field_0xf5 != 0) {
@@ -149,7 +143,6 @@ void PlayerJumpgate::update(int delta)
     }
 }
 
-// ---- setPosition_a51c0.cpp ----
 void PlayerJumpgate::setPosition(float x, float y, float z)
 {
     this->field_0x124 = (int32_t)x;
@@ -159,7 +152,6 @@ void PlayerJumpgate::setPosition(float x, float y, float z)
     this->field_0x8->setPosition(pos);
 }
 
-// ---- PlayerJumpgate_a4fa4.cpp ----
 extern "C" void PlayerStaticFar_ctor(PlayerStaticFar *self, int playerId, AEGeometry *geometry,
                                       float x, float y, float z);
 extern "C" void ArraySetLength_BoundingVolumePtr(uint32_t length,

@@ -9,10 +9,6 @@
 #include "gof2/game/world/SolarSystem.h"
 #include "gof2/game/ship/Ship.h"
 
-
-
-
-// ---- _GameRecord_1559d4.cpp ----
 // GameRecord::~GameRecord() -- destroys the two embedded AbyssEngine::String
 // members (last constructed first): the slot at +0x194 then the slot at +0x188.
 GameRecord::~GameRecord()
@@ -25,7 +21,6 @@ GameRecord::~GameRecord()
     AEString_dtor(t + 0x188);
 }
 
-// ---- GameRecord_155900.cpp ----
 // GameRecord::GameRecord()
 GameRecord::GameRecord()
 {
@@ -77,7 +72,6 @@ GameRecord::GameRecord()
     *(uint32_t *)(t + 0x1b4) = 0;
 }
 
-// ---- load_1559f0.cpp ----
 // GameRecord::load() — restore game state from the in-memory save buffer.
 // COVERAGE MODE: faithful structural translation of the decompiled control flow.
 // Cross-class member calls are modelled as extern "C" free functions; opaque

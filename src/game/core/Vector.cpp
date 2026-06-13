@@ -1,9 +1,5 @@
 #include "gof2/game/core/Vector.h"
 
-
-
-
-// ---- operator___73a08.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -19,10 +15,8 @@ Vector &Vector::operator*=(const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73960.cpp ----
 // AbyssEngine::AEMath::Vector::operator[](int) is defined inline in gof2/math.h.
 
-// ---- operator___739ac.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -38,7 +32,6 @@ Vector &Vector::operator-=(const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73a64.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -54,7 +47,6 @@ Vector &Vector::operator/=(const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__7396c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 

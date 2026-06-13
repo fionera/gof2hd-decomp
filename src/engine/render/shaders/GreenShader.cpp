@@ -1,7 +1,6 @@
 #include "gof2/engine/render/shaders/GreenShader.h"
 #include "gof2/engine/render/ShaderBaseStruct.h"
 
-// ---- SetInActive_883c0.cpp ----
 namespace AbyssEngine {
 
 void GreenShader::SetInActive()
@@ -20,7 +19,6 @@ void GreenShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- _GreenShader_8847e.cpp ----
 void _ZN11AbyssEngine11GreenShaderD0Ev(AbyssEngine::GreenShader *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -28,7 +26,6 @@ void _ZN11AbyssEngine11GreenShaderD0Ev(AbyssEngine::GreenShader *self)
     ::operator delete(base);
 }
 
-// ---- Init_882a0.cpp ----
 namespace AbyssEngine {
 
 void GreenShader::Init(Engine *)
@@ -58,7 +55,6 @@ void GreenShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_883fe.cpp ----
 namespace AbyssEngine {
 
 void GreenShader::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -89,7 +85,6 @@ void GreenShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- GreenShader_88214.cpp ----
 namespace AbyssEngine {
 
 GreenShader::GreenShader()

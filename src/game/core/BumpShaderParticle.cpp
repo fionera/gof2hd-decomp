@@ -1,10 +1,8 @@
 #include "gof2/game/core/BumpShaderParticle.h"
 #include "gof2/externs.h"
 
-
 extern "C" void glUniform3fv(int location, int count, const float *value);
 
-// ---- UpdateMeshData_87f8c.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderParticle::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -81,7 +79,6 @@ void BumpShaderParticle::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_87f44.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderParticle::SetInActive()
@@ -109,7 +106,6 @@ void BumpShaderParticle::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- _BumpShaderParticle_88204.cpp ----
 void _ZN11AbyssEngine18BumpShaderParticleD0Ev(
     AbyssEngine::BumpShaderParticle *self)
 {
@@ -118,7 +114,6 @@ void _ZN11AbyssEngine18BumpShaderParticleD0Ev(
     operator delete(base);
 }
 
-// ---- BumpShaderParticle_87d34.cpp ----
 namespace AbyssEngine {
 
 int BumpShaderParticle::ShaderIndex;
@@ -138,7 +133,6 @@ __attribute__((minsize)) BumpShaderParticle::BumpShaderParticle()
 
 } // namespace AbyssEngine
 
-// ---- Init_87dc0.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderParticle::Init(Engine *)

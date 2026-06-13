@@ -55,7 +55,6 @@ public:
 
 } // namespace AbyssEngine
 
-
 extern "C" int glGetAttribLocation(uint32_t program, const char *name);
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);
 extern "C" void glUseProgram(uint32_t program);

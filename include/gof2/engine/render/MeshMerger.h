@@ -7,7 +7,6 @@
 // Field offsets recovered per-method from the target disassembly; accessed via
 // byte-offset casts from `this`.
 
-
 namespace AbyssEngine {
 
 struct Mesh;        // full definition in gof2/Mesh.h (AbyssEngine::Mesh)

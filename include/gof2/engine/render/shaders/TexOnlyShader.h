@@ -3,7 +3,6 @@
 #include "gof2/common.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 
-
 void operator delete(void *ptr) noexcept;
 
 extern "C" uint32_t g_TexOnlyShader_vtable[];

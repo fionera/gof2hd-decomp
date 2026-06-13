@@ -1,7 +1,6 @@
 #include "gof2/engine/core/GameText.h"
 #include "gof2/engine/file/AEFile.h"
 
-
 struct Arr { uint32_t size; int *data; uint32_t size2; };
 
 extern "C" __attribute__((visibility("hidden"))) short *g_GameText_language;
@@ -23,7 +22,6 @@ extern "C" void  AEString_SubString(void *out, void *s, unsigned int a, unsigned
 extern "C" void *memcpy(void *, const void *, unsigned long);
 void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 
-// ---- release_8174e.cpp ----
 // GameText::release() -- destroys each owned text-table entry via its vtable[1], then nulls it.
 void GameText::release() {
     GameText *self = this;
@@ -45,7 +43,6 @@ void GameText::release() {
     }
 }
 
-// ---- getLanguage_81790.cpp ----
 // *g_GameText_language -> current language id (signed short).
 
 // GameText::getLanguage() -> (int)current language id.
@@ -54,10 +51,8 @@ int GameText_getLanguage()
     return *g_GameText_language;
 }
 
-// ---- getRegionCode_7efcc.cpp ----
 // PC-relative region-code C string.
 extern const char gRegionCodeStr[] __attribute__((visibility("hidden")));
-
 
 // GameText::getRegionCode() -> returns an AbyssEngine::String by value (sret).
 RetStr GameText_getRegionCode()
@@ -67,7 +62,6 @@ RetStr GameText_getRegionCode()
     return r;
 }
 
-// ---- setSubstituteArray_817a0.cpp ----
 // GameText::setSubstituteArray(int*, unsigned) -- replaces the substitute Array<int> at this+0.
 void GameText::setSubstituteArray(int *param_1, unsigned param_2) {
     GameText *self = this;
@@ -82,7 +76,6 @@ void GameText::setSubstituteArray(int *param_1, unsigned param_2) {
     }
 }
 
-// ---- setLanguage_7f2c0.cpp ----
 // GameText::setLanguage(short stringCount, int langId)
 // Selects the active UI language. If the language is unchanged it does nothing; otherwise it
 // releases the previous text table, allocates a fresh String*[stringCount] (nulled), resolves
@@ -91,8 +84,6 @@ void GameText::setSubstituteArray(int *param_1, unsigned param_2) {
 // one is missing, then opens it and streams the records in through ReadLangFile.
 //
 // Exported as GameText_setLanguage_si to match the forwarder in setLanguage_7f2b8.cpp.
-
-
 
 // Active language code slot (compared against the requested id to detect a no-op).
 __attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
@@ -158,7 +149,6 @@ void GameText::setLanguage_si(int stringCount, int langId) {
     ((GameText *)(self))->ReadLangFile(0, stringCount);
 }
 
-// ---- _GameText_81726.cpp ----
 // Tail veneer to the base/Array<int> destructor; takes and returns this.
 
 // GameText::~GameText() -> releases owned text table + string, tail-calls base dtor.
@@ -184,7 +174,6 @@ GameText *GameText::dtor_tail()
     return this;
 }
 
-// ---- isNonArabicString_7f798.cpp ----
 // Arabic codepoint table: 0x29 rows x 5 u32 columns (PC-relative base address).
 extern unsigned gArabicTable[] __attribute__((visibility("hidden")));
 
@@ -207,7 +196,6 @@ int GameText_isNonArabicString(const unsigned short *param_1, unsigned param_2)
     return 0;
 }
 
-// ---- GameText_8165c.cpp ----
 // PC-relative: initial language string; and a short* whose target is reset to 0xffff.
 extern const char gInitLangStr[] __attribute__((visibility("hidden")));
 
@@ -223,7 +211,6 @@ void GameText::ctor() {
     AEString_ctor_cstr(&tmp, gInitLangStr, false);
 }
 
-// ---- convertStringFromArabic_7efe0.cpp ----
 // GameText::convertStringFromArabic(String in) -> String (sret)
 // Reshapes a logical-order Arabic string into the presentation forms the bitmap font expects.
 // Walks the code points from the end toward the start; for each Arabic letter it picks the
@@ -239,7 +226,6 @@ void GameText::ctor() {
 extern "C" unsigned short *AEString_data(void *s);                 // operator cast to ushort*
 extern "C" unsigned short *AEString_index(void *s, unsigned int i);// operator[](i)
 extern "C" void  AEString_append(void *dst, void *src);           // operator+=
-
 
 // Substitution tables (see header comment for row layout).
 __attribute__((visibility("hidden"))) extern const unsigned int gArabForms[];  // 41 rows * 5
@@ -346,7 +332,6 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
     }
 }
 
-// ---- setLanguage_7f2b8.cpp ----
 // Tail veneer to GameText::setLanguage(short, int).
 
 // GameText::setLanguage(int) -> forwards to setLanguage(0, param_1).
@@ -355,7 +340,6 @@ void GameText::setLanguage_i(int param_1) {
     return ((GameText *)(self))->setLanguage_si(0, param_1);
 }
 
-// ---- getText_81818.cpp ----
 // GameText::getText(int key)
 // Resolves a text key to a String*. Two reserved keys return guarded function-local statics
 // built from the active language/region code (5000 = language name, 5001 = region name).
@@ -364,7 +348,6 @@ void GameText::setLanguage_i(int param_1) {
 // to the embedded fallback String at +0x10.
 //
 // NB: signature is getText(int) on `this` in r0; we model it as (self, key).
-
 
 // Active language code (1 => use the primary string, otherwise the fallback variant).
 __attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
@@ -408,7 +391,6 @@ void * GameText::getText(int key) {
     return (String *)((char *)self + 0x10);
 }
 
-// ---- ReadLangFile_7f64c.cpp ----
 // GameText::ReadLangFile(unsigned int file, int count)
 // Reads `count` records from an opened .lang file. Each record is a big-endian u16 byte
 // length followed by that many UTF-8 bytes; the bytes are decoded to wide chars, wrapped in
@@ -417,7 +399,6 @@ void * GameText::getText(int key) {
 // is closed. file == 0 is a no-op early exit.
 
 extern "C" void  AEString_ctor_cstr(void *s, const char *text, bool copy);     // wchar ctor (text*, copy)
-
 
 // Active language code; 9 == Arabic.
 __attribute__((visibility("hidden"))) extern unsigned short *g_langCode;

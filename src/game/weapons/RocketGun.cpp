@@ -19,7 +19,6 @@ public:
     void TransformSetLocal(unsigned int index, const Matrix &matrix);
 };
 
-
 extern "C" void RocketGun_render_tail();
 extern "C" __attribute__((visibility("hidden"))) void *RocketGun_vtable;
 extern "C" void *Array_Matrix_dtor(void *p);
@@ -55,7 +54,6 @@ Vector operator*(const Vector &v, float scale);
 }
 }
 
-// ---- render_15ecd4.cpp ----
 void RocketGun::render()
 {
     return RocketGun_render_tail();
@@ -82,7 +80,6 @@ void RocketGun::render_tail()
     _ZN9ObjectGun6renderEv(this);
 }
 
-// ---- _RocketGun_15e9d0.cpp ----
 void *_ZN9RocketGunD1Ev(RocketGun *self)
 {
     *(void **)self = (char *)RocketGun_vtable + 8;
@@ -105,7 +102,6 @@ void *_ZN9RocketGunD1Ev(RocketGun *self)
     return RocketGun_base_dtor(self);
 }
 
-// ---- _RocketGun_15ea28.cpp ----
 void _ZN9RocketGunD0Ev(RocketGun *self)
 {
     return ::operator delete(_ZN9RocketGunD1Ev(self));
@@ -134,7 +130,6 @@ RocketGun::~RocketGun()
     RocketGun_base_dtor(this);
 }
 
-// ---- RocketGun_15e8f8.cpp ----
 extern "C" void ObjectGun_ctor(RocketGun *self, int param_1, Gun *param_2, int param_3,
                                 uint32_t param_5, Level *param_8);
 
@@ -177,7 +172,6 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
     }
 }
 
-// ---- setRadar_15ea38.cpp ----
 void RocketGun::setRadar(Radar *radar)
 {
     this->radar = radar;
@@ -294,7 +288,6 @@ non_special:
     }
 }
 
-// ---- seekEnemy_15f44c.cpp ----
 void RocketGun::seekEnemy(int unused, int index)
 {
     char tmp1[12];
@@ -351,7 +344,6 @@ have_enemy:
     }
 }
 
-// ---- update_15ecd8.cpp ----
 static const float kMuzzleZAdd = 0.0001f;
 static const float kScaleDiv = 1000.0f;
 static const float kScaleMul = 100.0f;

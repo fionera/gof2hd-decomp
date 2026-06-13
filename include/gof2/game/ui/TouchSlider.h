@@ -6,7 +6,6 @@
 // Qualified target names are top-level: "TouchSlider::..." (NOT in a namespace).
 // Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
 
-
 struct TouchSlider;
 
 // Templated byte-offset field accessor: F<int>(this, 0x14) etc.

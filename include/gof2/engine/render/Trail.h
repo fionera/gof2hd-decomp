@@ -8,10 +8,6 @@ void operator delete(void *ptr) noexcept;
 namespace AbyssEngine {
 namespace AEMath {
 
-
-
-
-
 Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
 Matrix MatrixSetTranslation(Matrix &matrix, float x, float y, float z);
 
@@ -28,8 +24,6 @@ struct PaintCanvas {
 };
 
 } // namespace AbyssEngine
-
-
 
 extern "C" void Trail_renderTransform(AbyssEngine::PaintCanvas *canvas, uint32_t transform, int mode);
 extern "C" void Trail_transformSetColor(AbyssEngine::PaintCanvas *canvas, uint32_t transform, uint32_t color);

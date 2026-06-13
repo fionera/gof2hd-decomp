@@ -10,7 +10,6 @@
 //   +0x0c  int    scale_x       (image width)
 //   +0x10  int    scale_y       (image height)
 
-
 void *operator new(__SIZE_TYPE__ size);
 
 class ImagePart {

@@ -10,13 +10,7 @@ namespace AbyssEngine {
 
 namespace AEMath {
 
-
-
-
-
 } // namespace AEMath
-
-
 
 static_assert(sizeof(AEMath::Vector) == 0xc, "AEMath::Vector layout");
 static_assert(sizeof(AEMath::Matrix) == 0x40, "AEMath::Matrix layout");

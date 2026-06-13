@@ -2,7 +2,6 @@
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-
 extern "C" void ArrayReleaseClasses_StringPtr(void *self);
 extern "C" void *Array_StringPtr_dtor(void *self);
 extern "C" void String_ctor_string(void *self, String *src, bool copy);
@@ -19,13 +18,11 @@ struct FontMetrics {
     int field_0x4;   // line height
 };
 
-// ---- setTextCentered_135910.cpp ----
 void ScrollTouchBox::setTextCentered(bool centered)
 {
     this->centered = centered;
 }
 
-// ---- getRelativeScrollStartPos_135918.cpp ----
 float ScrollTouchBox::getRelativeScrollStartPos()
 {
     int pos = this->scrollOffset;
@@ -33,8 +30,6 @@ float ScrollTouchBox::getRelativeScrollStartPos()
         return 0.0f;
     return -(float)pos / (float)this->contentHeight;
 }
-
-// ---- _ScrollTouchBox_1355d8.cpp ----
 
 ScrollTouchBox::~ScrollTouchBox()
 {
@@ -48,14 +43,12 @@ ScrollTouchBox::~ScrollTouchBox()
     }
 }
 
-// ---- setPosition_13576c.cpp ----
 void ScrollTouchBox::setPosition(int x, int y)
 {
     this->x = x;
     this->y = y;
 }
 
-// ---- OnTouchEnd_135a98.cpp ----
 void ScrollTouchBox::OnTouchEnd(int x, int y)
 {
     if (this->dragging != 0) {
@@ -70,7 +63,6 @@ void ScrollTouchBox::OnTouchEnd(int x, int y)
     }
 }
 
-// ---- OnTouchMove_135a72.cpp ----
 void ScrollTouchBox::OnTouchMove(int x, int y)
 {
     if (this->dragging != 0 && this->contentHeight > this->height) {
@@ -82,7 +74,6 @@ void ScrollTouchBox::OnTouchMove(int x, int y)
     }
 }
 
-// ---- OnTouchBegin_135a54.cpp ----
 void ScrollTouchBox::OnTouchBegin(int x, int y)
 {
     if (touchIsInside(x, y)) {
@@ -93,7 +84,6 @@ void ScrollTouchBox::OnTouchBegin(int x, int y)
     }
 }
 
-// ---- ScrollTouchBox_135598.cpp ----
 __attribute__((visibility("hidden"))) extern String **g_ScrollTouchBox_defaultFont_135598;
 
 ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height)
@@ -116,7 +106,6 @@ ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height)
     this->font = *g_ScrollTouchBox_defaultFont_135598;
 }
 
-// ---- setText_13570c.cpp ----
 __attribute__((visibility("hidden"))) extern int **g_ScrollTouchBox_defaultWidth_13570c;
 
 void ScrollTouchBox::setText(AbyssEngine::String text)
@@ -128,7 +117,6 @@ void ScrollTouchBox::setText(AbyssEngine::String text)
     ((String *)(&tmp))->dtor();
 }
 
-// ---- update_135998.cpp ----
 void ScrollTouchBox::update(int dt)
 {
     int height = this->height;
@@ -169,7 +157,6 @@ apply:
     this->velocity = (float)pull * 0.5f;
 }
 
-// ---- draw_135778.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ScrollTouchBox_canvas_135778;
 __attribute__((visibility("hidden"))) extern char *g_ScrollTouchBox_flag_135778;
 __attribute__((visibility("hidden"))) extern FontMetrics **g_ScrollTouchBox_font_135778;
@@ -240,9 +227,6 @@ void ScrollTouchBox::draw()
     *g_ScrollTouchBox_dirty_135778 = 1;
 }
 
-// ---- setText_135600.cpp ----
-
-
 __attribute__((visibility("hidden"))) extern void **g_ScrollTouchBox_globals_135600;
 __attribute__((visibility("hidden"))) extern FontMetrics **g_ScrollTouchBox_font_135600;
 __attribute__((visibility("hidden"))) extern char g_ScrollTouchBox_empty_135600[];
@@ -308,7 +292,6 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     this->touchStartY = 0;
 }
 
-// ---- setText2_135600.cpp ----
 // Lay out 'text' in the given font slot. This is the engine's disambiguated name
 // for the two-argument setText overload (whose body lives at 0x145600).
 void ScrollTouchBox::setText2(AbyssEngine::String *text, int font)
@@ -316,7 +299,6 @@ void ScrollTouchBox::setText2(AbyssEngine::String *text, int font)
     setText(*text, font);
 }
 
-// ---- setTextColor_135600.cpp ----
 // Lay out 'text' using the supplied colour/font slot. ScrollTouchWindow::setText
 // routes its coloured-text request through here; it resolves to the same
 // two-argument setText layout path (the colour rides in the font/style slot).
@@ -325,7 +307,6 @@ void ScrollTouchBox::setTextColor(AbyssEngine::String *text, int color)
     setText(*text, color);
 }
 
-// ---- getRelativeScrollHeight_135948.cpp ----
 float ScrollTouchBox::getRelativeScrollHeight()
 {
     int height = this->height;
@@ -345,7 +326,6 @@ float ScrollTouchBox::getRelativeScrollHeight()
     return (float)pos / (float)contentHeight;
 }
 
-// ---- touchIsInside_135a22.cpp ----
 bool ScrollTouchBox::touchIsInside(int x, int y)
 {
     int left = this->x;
@@ -361,7 +341,6 @@ bool ScrollTouchBox::touchIsInside(int x, int y)
     return inside;
 }
 
-// ---- setYPosition_145772.cpp ----
 // Move the box vertically without re-laying out its text (the line array and
 // content height are unaffected; only the top edge changes).
 void ScrollTouchBox::setYPosition(int y) {

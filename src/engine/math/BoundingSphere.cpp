@@ -5,18 +5,15 @@
 static inline Vector *centerOf(BoundingVolume *v) { return (Vector *)&v->centerX; }
 static inline Vector *extentsOf(BoundingVolume *v) { return (Vector *)&v->extentsX; }
 
-// ---- _BoundingSphere_151d64.cpp ----
 BoundingSphere::~BoundingSphere()
 {
 }
 
-// ---- update_151e70.cpp ----
 void BoundingSphere::update(float x, float y, float z)
 {
     return BoundingVolume::update(x, y, z);
 }
 
-// ---- BoundingSphere_151d28.cpp ----
 __attribute__((visibility("hidden"))) extern void *const g_BoundingSphere_vtbl;
 
 BoundingSphere::BoundingSphere(
@@ -33,7 +30,6 @@ BoundingSphere::BoundingSphere(float cx, float cy, float cz, float radius)
 {
 }
 
-// ---- projectCollisionOnSurface_151e74.cpp ----
 Vector BoundingSphere::projectCollisionOnSurface(const Vector &position)
 {
     Vector result;
@@ -59,7 +55,6 @@ Vector BoundingSphere::projectCollisionOnSurface(const Vector &position)
     return result;
 }
 
-// ---- outerCollide_151da0.cpp ----
 bool BoundingSphere::outerCollide(float x, float y, float z)
 {
     Vector delta;
@@ -77,7 +72,6 @@ bool BoundingSphere::outerCollide(float x, float y, float z)
     return distance < radius * radius;
 }
 
-// ---- getCollisionNormal_151e10.cpp ----
 Vector BoundingSphere::getCollisionNormal(const Vector &position)
 {
     Vector result;
@@ -91,7 +85,6 @@ Vector BoundingSphere::getCollisionNormal(const Vector &position)
     return result;
 }
 
-// ---- collide_151d68.cpp ----
 typedef bool (*CollisionTestFn)(BoundingSphere *self);
 
 bool BoundingSphere::collide(float x, float y, float z)

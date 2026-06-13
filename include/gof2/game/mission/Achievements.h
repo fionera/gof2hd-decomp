@@ -18,7 +18,6 @@
 //   +0x20  u16   (gotAllMedals/gotAllGoldMedals bytes 0x20/0x21)
 //   +0x22  bool  gotAllSupernovaMedals
 
-
 struct Achievements;
 
 // Field accessor via byte offset.

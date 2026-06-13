@@ -2,7 +2,6 @@
 #include "gof2/externs.h"
 #include <arm_neon.h>
 
-// ---- Quaternion_8102a.cpp ----
 namespace AbyssEngine {
 
 Quaternion::Quaternion(Quaternion *other) {
@@ -11,7 +10,6 @@ Quaternion::Quaternion(Quaternion *other) {
 
 } // namespace AbyssEngine
 
-// ---- Dot_81372.cpp ----
 namespace AbyssEngine {
 
 float Quaternion::Dot(const Quaternion &a, const Quaternion &b) {
@@ -20,7 +18,6 @@ float Quaternion::Dot(const Quaternion &a, const Quaternion &b) {
 
 } // namespace AbyssEngine
 
-// ---- Length_814e4.cpp ----
 namespace AbyssEngine {
 
 float Quaternion::Length() const {
@@ -29,7 +26,6 @@ float Quaternion::Length() const {
 
 } // namespace AbyssEngine
 
-// ---- Quaternion_81018.cpp ----
 namespace AbyssEngine {
 
 Quaternion::Quaternion(AEMath::Vector angles)
@@ -39,7 +35,6 @@ Quaternion::Quaternion(AEMath::Vector angles)
 
 } // namespace AbyssEngine
 
-// ---- Set_81026.cpp ----
 namespace AbyssEngine {
 
 void Quaternion::Set(AEMath::Vector angles) {
@@ -57,7 +52,6 @@ __attribute__((used)) void Set_81026_trailer() {}
 // ---- operator[]_814de.cpp ----
 // const operator[] is defined inline in math.h; no out-of-line definition needed.
 
-// ---- Quaternion_8102c.cpp ----
 namespace AbyssEngine {
 
 Quaternion::Quaternion(const AEMath::Matrix &matrix) {
@@ -66,7 +60,6 @@ Quaternion::Quaternion(const AEMath::Matrix &matrix) {
 
 } // namespace AbyssEngine
 
-// ---- Normalized_81410.cpp ----
 namespace AbyssEngine {
 
 Quaternion Quaternion::Normalized() {
@@ -83,13 +76,11 @@ Quaternion Quaternion::Normalized() {
 // ---- operator.cast.to.float*_814d6.cpp ----
 // operator const float* is defined inline in math.h.
 
-// ---- Quaternion_81008.cpp ----
 // default ctor is defined inline in math.h.
 
 // ---- operator.cast.to.float*_814d4.cpp ----
 // operator float* is defined inline in math.h.
 
-// ---- Set_8103c.cpp ----
 namespace AbyssEngine {
 
 void Quaternion::Set(const AEMath::Matrix &matrix) {
@@ -139,7 +130,6 @@ void Quaternion::Set(const AEMath::Matrix &matrix) {
 
 } // namespace AbyssEngine
 
-// ---- Inverse_81328.cpp ----
 namespace AbyssEngine {
 
 Quaternion Quaternion::Inverse() const {
@@ -154,7 +144,6 @@ Quaternion Quaternion::Inverse() const {
 
 } // namespace AbyssEngine
 
-// ---- Set_81254.cpp ----
 namespace AbyssEngine {
 
 void Quaternion::Set(float x_angle, float y_angle, float z_angle) {
@@ -172,7 +161,6 @@ void Quaternion::Set(float x_angle, float y_angle, float z_angle) {
 
 } // namespace AbyssEngine
 
-// ---- Lerp_813a8.cpp ----
 namespace AbyssEngine {
 
 // Straight (non-shortest-path) lerp: result = a + t * (b - a), then normalize.
@@ -194,7 +182,6 @@ void Quaternion::Lerp(const Quaternion &a, const Quaternion &b, float t) {
 // ---- ~Quaternion_81250.cpp ----
 // destructor is defined inline in math.h.
 
-// ---- Convert_81520.cpp ----
 namespace AbyssEngine {
 
 void Quaternion::Convert(AEMath::Matrix &matrix) {
@@ -226,10 +213,8 @@ void Quaternion::Convert(AEMath::Matrix &matrix) {
 
 } // namespace AbyssEngine
 
-// ---- Quaternion_8100a.cpp ----
 // 4-float ctor is defined inline in math.h.
 
-// ---- Lerp_8145c.cpp ----
 namespace AbyssEngine {
 
 // Shortest-path lerp over raw float[4] quaternions: if the two point in opposite

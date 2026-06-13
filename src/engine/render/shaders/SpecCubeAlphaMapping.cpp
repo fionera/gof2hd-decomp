@@ -2,8 +2,6 @@
 #include "gof2/engine/render/ShaderBaseStruct.h"
 #include "gof2/game/core/String.h"
 
-
-// ---- Init_87a10.cpp ----
 namespace AbyssEngine {
 
 void SpecCubeAlphaMapping::Init(Engine *)
@@ -39,7 +37,6 @@ void SpecCubeAlphaMapping::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _SpecCubeAlphaMapping_87d1c.cpp ----
 void _ZN11AbyssEngine20SpecCubeAlphaMappingD0Ev(AbyssEngine::SpecCubeAlphaMapping *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -47,7 +44,6 @@ void _ZN11AbyssEngine20SpecCubeAlphaMappingD0Ev(AbyssEngine::SpecCubeAlphaMappin
     ::operator delete(base);
 }
 
-// ---- SpecCubeAlphaMapping_87984.cpp ----
 // AbyssEngine::SpecCubeAlphaMapping::SpecCubeAlphaMapping()
 // Chains the ShaderBaseStruct ctor, installs the vtable, registers the instance in a global,
 // and stores the shader's resource-name String at +0xc.
@@ -69,7 +65,6 @@ SpecCubeAlphaMapping::SpecCubeAlphaMapping()
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_87b64.cpp ----
 namespace AbyssEngine {
 
 void SpecCubeAlphaMapping::SetInActive()
@@ -81,7 +76,6 @@ void SpecCubeAlphaMapping::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_87b88.cpp ----
 // AbyssEngine::SpecCubeAlphaMapping::UpdateMeshData(Mesh*, Engine*)
 // Pushes the per-frame uniforms (env factor, light/material vectors, MVP/normal matrices,
 // fog/spec params) into the bound program, then binds the mesh's vertex/uv/normal streams

@@ -8,7 +8,6 @@ int ShaderBaseStruct::shaderIndexIntern;
 
 } // namespace AbyssEngine
 
-// ---- GetShaderName_839d0.cpp ----
 namespace AbyssEngine {
 
 String ShaderBaseStruct::GetShaderName()
@@ -20,7 +19,6 @@ String ShaderBaseStruct::GetShaderName()
 
 } // namespace AbyssEngine
 
-// ---- _ShaderBaseStruct_8e4c4.cpp ----
 namespace AbyssEngine {
 
 ShaderBaseStruct::~ShaderBaseStruct()
@@ -31,7 +29,6 @@ ShaderBaseStruct::~ShaderBaseStruct()
 
 } // namespace AbyssEngine
 
-// ---- UseShader_8e744.cpp ----
 namespace AbyssEngine {
 
 void ShaderBaseStruct::UseShader()
@@ -41,7 +38,6 @@ void ShaderBaseStruct::UseShader()
 
 } // namespace AbyssEngine
 
-// ---- DeleteShader_8e4ea.cpp ----
 namespace AbyssEngine {
 
 void ShaderBaseStruct::DeleteShader()
@@ -51,7 +47,6 @@ void ShaderBaseStruct::DeleteShader()
 
 } // namespace AbyssEngine
 
-// ---- Update_8e74a.cpp ----
 namespace AbyssEngine {
 
 void ShaderBaseStruct::Update()
@@ -61,7 +56,6 @@ void ShaderBaseStruct::Update()
 
 } // namespace AbyssEngine
 
-// ---- ShaderBaseStruct_8e424.cpp ----
 namespace AbyssEngine {
 
 ShaderBaseStruct::ShaderBaseStruct()
@@ -80,7 +74,6 @@ ShaderBaseStruct::ShaderBaseStruct()
 
 } // namespace AbyssEngine
 
-// ---- ES2LoadProgram_8e584.cpp ----
 namespace AbyssEngine {
 
 uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *fragmentSource)
@@ -128,7 +121,6 @@ uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *
 
 } // namespace AbyssEngine
 
-// ---- ES2LoadShader_8e4f0.cpp ----
 namespace AbyssEngine {
 
 uint32_t ShaderBaseStruct::ES2LoadShader(uint32_t type, const char *source)
@@ -165,7 +157,6 @@ done:
 
 } // namespace AbyssEngine
 
-// ---- LoadBindShader_8e674.cpp ----
 namespace AbyssEngine {
 
 uint32_t ShaderBaseStruct::LoadBindShader(const char *vertexPath, const char *fragmentPath)

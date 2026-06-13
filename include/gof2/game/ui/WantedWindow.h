@@ -22,11 +22,6 @@ struct Layout;
 struct PaintCanvas;
 struct ImageFactory;
 
-
-
-
-
-
 static inline int *IArrayData(void *arr) {
     return F<int *>(arr, 4);
 }

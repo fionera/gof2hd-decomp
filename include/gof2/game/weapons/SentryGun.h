@@ -11,7 +11,6 @@
 //   +0x0c  Level* level
 //   +0xb0  int   cooldown  (init from gun->0x58 * 3 - 0x279)
 
-
 struct SentryGun;
 struct Gun;
 struct Level;

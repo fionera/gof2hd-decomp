@@ -10,7 +10,6 @@
 //   +0x0c float radius      +0x10 float maxRadius (a second, looser radius bound)
 // Field offsets recovered from the target disassembly; accessed via byte-offset casts.
 
-
 namespace AbyssEngine {
 
 struct Transform;   // opaque; only ever taken by pointer

@@ -10,7 +10,6 @@
 #include "gof2/game/ui/ListItem.h"
 #include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
 
-
 extern "C" void _liw_stw_OnTouchBegin(void *stw, int x);
 extern "C" void _liw_stw_OnTouchMove(void *stw, int y);
 extern "C" void _liw_stw_OnTouchEnd(void *stw, int y);
@@ -21,7 +20,6 @@ extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" void _liw_String_ctor(void *s);
 extern "C" void _liw_Matrix_ctor(void *m);
 
-// ---- OnTouchBegin_133a74.cpp ----
 // Base sub-window at +0x18.
 // PC-relative singleton: a pointer to a pointer to the layout/screen object.
 __attribute__((visibility("hidden"))) extern int **g_liw_screen;
@@ -42,14 +40,12 @@ void ListItemWindow::OnTouchBegin(int x, int y)
     }
 }
 
-// ---- shows3DShip_1330fc.cpp ----
 // ListItemWindow::shows3DShip() -- raw uint8 getter at +0x54.
 uint8_t ListItemWindow::shows3DShip()
 {
     return u8(this, 0x54);
 }
 
-// ---- OnTouchMove_133ad4.cpp ----
 // Base sub-window at +0x18 (a ScrollTouchWindow*); forward the touch first.
 
 // ListItemWindow::OnTouchMove(int, int)
@@ -65,7 +61,6 @@ void ListItemWindow::OnTouchMove(int x, int y)
     }
 }
 
-// ---- OnTouchEnd_133b04.cpp ----
 // Base sub-window at +0x18; forward the release first.
 
 // ListItemWindow::OnTouchEnd(int, int)
@@ -87,12 +82,11 @@ void ListItemWindow::OnTouchEnd(int x, int y)
     }
 }
 
-// ---- render_1339c8.cpp ----
-extern "C" void  _liw_Matrix_assign(void *dst, void *src);             // 0x6f148
+extern "C" void  _liw_Matrix_assign(void *dst, void *src);
 extern "C" void  _liw_render_tail(void *c, int a, int h, void *sp);    // 0x1ac428 tail
 
-__attribute__((visibility("hidden"))) extern void **g_liw_r_canvas;   // 0x1439e0
-__attribute__((visibility("hidden"))) extern void **g_liw_r_obj;      // 0x1439ec
+__attribute__((visibility("hidden"))) extern void **g_liw_r_canvas;
+__attribute__((visibility("hidden"))) extern void **g_liw_r_obj;
 
 // ListItemWindow::render()
 void ListItemWindow::render()
@@ -120,7 +114,6 @@ void ListItemWindow::render()
     return _liw_render_tail((void *)canvas, 0, h, &dummy);
 }
 
-// ---- set_131658.cpp ----
 // ListItemWindow::set(ListItem*, unsigned, unsigned, unsigned, unsigned, bool)
 //
 //   Re-targets the window onto a new ListItem. The method:
@@ -167,7 +160,6 @@ extern const float g_liw_s_wFull;      // fullscreen-off width source
 extern const float g_liw_s_wAlt;
 extern const float g_liw_s_wMode;      // mode-flag width
 extern const unsigned int g_liw_s_baseAngle;   // 0x1419fc default preview angle
-
 
 void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
                          unsigned p4, unsigned p5, bool p6)
@@ -282,13 +274,12 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
     u32(this, 0x134) = 0;
 }
 
-// ---- _ListItemWindow_1315b4.cpp ----
-extern "C" void  _liw_ArrayReleaseClasses(void *a);   // 0x6facc
-extern "C" void  _liw_ArrayRelease(void *a);          // 0x7369c
-extern "C" void *_liw_StringArray_dtor(void *a);      // 0x6f64c
-extern "C" void *_liw_IntArray_dtor(void *a);         // 0x70204
-extern "C" void *_liw_STW_dtor(void *w);              // 0x75afc
-extern "C" void  _liw_String_dtor(void *s);           // 0x6ee30
+extern "C" void  _liw_ArrayReleaseClasses(void *a);
+extern "C" void  _liw_ArrayRelease(void *a);
+extern "C" void *_liw_StringArray_dtor(void *a);
+extern "C" void *_liw_IntArray_dtor(void *a);
+extern "C" void *_liw_STW_dtor(void *w);
+extern "C" void  _liw_String_dtor(void *s);
 
 // ListItemWindow::~ListItemWindow()
 ListItemWindow::~ListItemWindow()
@@ -319,28 +310,24 @@ ListItemWindow::~ListItemWindow()
     _liw_String_dtor((char *)this + 0x74);
 }
 
-// ---- draw_133104.cpp ----
 // String is a 12-byte trivially-copyable value (ctor/dtor are engine calls).
 extern "C" void  Str_ctor_cstr(Str *s, const char *text, bool copy); // 0x6ee18 family
 extern "C" void  Str_ctor_copy(Str *s, const void *src, bool copy);  // String(String&)
 
 // Layout / drawing callees (resolved blx targets).
-// 0x7696c
-// 0x74de8
 // 8-arg form
 
 // Hidden PC-relative roots.
-__attribute__((visibility("hidden"))) extern char *g_liw_d_maskFlag;     // 0x143118
+__attribute__((visibility("hidden"))) extern char *g_liw_d_maskFlag;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_canvas;      // 0x143140 -> canvas
 __attribute__((visibility("hidden"))) extern void **g_liw_d_layout;      // 0x143162 -> Layout
 __attribute__((visibility("hidden"))) extern int   *g_liw_d_headerId;    // 0x1431dc text key
 __attribute__((visibility("hidden"))) extern void **g_liw_d_gameText;    // GameText singleton
 __attribute__((visibility("hidden"))) extern void **g_liw_d_imageFactory;// 0x1437c8 / 0x1432e4
-__attribute__((visibility("hidden"))) extern void **g_liw_d_itemDB;      // 0x1432c2
-__attribute__((visibility("hidden"))) extern void **g_liw_d_arrowL;      // 0x14350c
-__attribute__((visibility("hidden"))) extern void **g_liw_d_arrowR;      // 0x143466
-__attribute__((visibility("hidden"))) extern int   *g_liw_d_scrollLimit; // 0x14335c
-
+__attribute__((visibility("hidden"))) extern void **g_liw_d_itemDB;
+__attribute__((visibility("hidden"))) extern void **g_liw_d_arrowL;
+__attribute__((visibility("hidden"))) extern void **g_liw_d_arrowR;
+__attribute__((visibility("hidden"))) extern int   *g_liw_d_scrollLimit;
 
 // ListItemWindow::draw()
 //   Renders the list window chrome: background box, header, the ship/item preview
@@ -517,20 +504,15 @@ void ListItemWindow::draw()
     ((ScrollTouchWindow *)(pp(this, 0x18)))->draw();
 }
 
-// ---- update_133868.cpp ----
 // Callees (resolved blx targets).
-// 0x75b98
-// 0x719c8
-void  MatrixSetRotation(void *m, float x, float y, float z); // 0x72094
-extern "C" void  MatrixSetScaling(void *m, float x, float y, float z);  // 0x6f814
-// 0x73054
+void  MatrixSetRotation(void *m, float x, float y, float z);
+extern "C" void  MatrixSetScaling(void *m, float x, float y, float z);
 extern "C" int   VectorSignedToFloat_i(int v);                          // s32->f32 helper
 
 // Hidden PC-relative roots.
 __attribute__((visibility("hidden"))) extern uint32_t *g_liw_u_tf;     // 0x143904 (preview transform handle)
 __attribute__((visibility("hidden"))) extern const float *g_liw_u_angleTable; // 0x143... per-ship base angle
-extern const float g_liw_u_angleScale;                                 // 0x1439b8
-
+extern const float g_liw_u_angleScale;
 
 // ListItemWindow::update(int frameTime)
 //   Advances the scroll window, applies inertial spin damping to the rotating
@@ -596,7 +578,6 @@ int ListItemWindow::touch_end(int x, int y)
     return 0;
 }
 
-// ---- ListItemWindow_131528.cpp ----
 // Two PC-relative singletons (each holds the address of a pointer).
 __attribute__((visibility("hidden"))) extern void ***g_liw_a;
 __attribute__((visibility("hidden"))) extern void ***g_liw_b;

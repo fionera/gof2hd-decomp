@@ -1,10 +1,8 @@
 #include "gof2/engine/render/Sparks.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-
 namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
 
-// ---- Sparks_15e38c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_ctor;
 __attribute__((visibility("hidden"))) extern void **g_Sparks_random_ctor;
 
@@ -49,7 +47,6 @@ Sparks::Sparks(int kind)
     this->elapsed = 0;
 }
 
-// ---- translate_15e6d4.cpp ----
 using AbyssEngine::AEMath::Vector;
 
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_translate;
@@ -62,7 +59,6 @@ void Sparks::translate(Vector const &v)
                                             v.x, v.y, v.z);
 }
 
-// ---- _Sparks_15e474.cpp ----
 Sparks::~Sparks()
 {
     void *p = this->lifetimeThresholds;
@@ -71,19 +67,16 @@ Sparks::~Sparks()
     this->lifetimeThresholds = 0;
 }
 
-// ---- explode_15e594.cpp ----
 void Sparks::explode(Vector const &v)
 {
     return this->explode((int)v.x, (int)v.y, (int)v.z);
 }
 
-// ---- isRocket_15e468.cpp ----
 bool Sparks::isRocket()
 {
     return this->kind == 1;
 }
 
-// ---- update_15e660.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_update;
 
 void Sparks::update(int step)
@@ -123,7 +116,6 @@ void Sparks::update(int step)
     this->elapsed = 0;
 }
 
-// ---- explode_15e48c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_explode_rocket;
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_explode_single;
 __attribute__((visibility("hidden"))) extern void **g_Sparks_random_explode;
@@ -161,7 +153,6 @@ void Sparks::explode(int x, int y, int z)
     this->active = 1;
 }
 
-// ---- render_15e5c0.cpp ----
 using AbyssEngine::AEMath::Matrix;
 
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_render;

@@ -28,7 +28,6 @@
 #undef RetStr
 #include "gof2/game/core/String.h"
 
-
 extern "C" void *RH_op_new(unsigned int sz);
 extern "C" void Array_GR_ctor(void *a);
 extern "C" void ArraySetLength_GR(unsigned int n, void *a);
@@ -87,7 +86,6 @@ extern "C" void ArraySetLength_bool(unsigned n, void *a);
 extern "C" void Array_UC_ctor(void *a);
 extern "C" void ArrayAdd_UC(unsigned char *src, unsigned int n, void *a);
 
-// ---- readRecord_cd25c.cpp ----
 // Tail-called veneer at 0x1ac058 (recordStoreRead dispatch).
 
 // RecordHandler::readRecord(int)
@@ -115,10 +113,8 @@ void RecordHandler::csd_tail(int one, int count, void *backupRecords)
     RH_op_delete_arr(this);
 }
 
-// ---- readAllRecords_cbcdc.cpp ----
 // Global holder: g -> P, *P -> the record count.
 __attribute__((visibility("hidden"))) extern int *g_RH_recordCount;
-
 
 // RecordHandler::readAllRecords() -> Array<GameRecord*>*
 void * RecordHandler::readAllRecords() {
@@ -134,10 +130,8 @@ void * RecordHandler::readAllRecords() {
     return arr;
 }
 
-// ---- readAllPreviewRecords_cbb48.cpp ----
 // Global holder: g -> P, *P -> the record count.
 __attribute__((visibility("hidden"))) extern int *g_RH_recordCount;
-
 
 // RecordHandler::readAllPreviewRecords() -> Array<GameRecord*>*
 void * RecordHandler::readAllPreviewRecords() {
@@ -153,14 +147,12 @@ void * RecordHandler::readAllPreviewRecords() {
     return arr;
 }
 
-// ---- notEnoughMemory_cbb30.cpp ----
 // RecordHandler::notEnoughMemory() -> bool: free space < 900.
 uint8_t RecordHandler_notEnoughMemory()
 {
     return AEFile::GetDeviceFreeSpace() < 900;
 }
 
-// ---- convertSDVersionSaves_cffa8.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_CSV_guard;   // DAT_000e01b8 -> guard holder
 __attribute__((visibility("hidden"))) extern int *g_CSV_count;   // DAT_000e01bc -> P, *P = record count
 
@@ -237,7 +229,6 @@ void RecordHandler::convertSDVersionSaves() {
     return;
 }
 
-// ---- addHash_cdea0.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_AH_guard;                  // DAT_000ddfa0 -> guard holder
 __attribute__((visibility("hidden"))) extern const unsigned char RH_ah_salt[]; // DAT_000ddfa8 (25 bytes)
 __attribute__((visibility("hidden"))) extern unsigned char **RH_ah_key;        // DAT_000ddfac (16-byte key)
@@ -281,7 +272,6 @@ void RecordHandler::addHash(int slot) {
     return;
 }
 
-// ---- readRecordAsByteArray_cdbfc.cpp ----
 // RecordHandler::readRecordAsByteArray(signed char**, int, bool)
 int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromBackup) {
     RecordHandler *self = this;
@@ -308,8 +298,6 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     ((String *)(path))->dtor();
     return sz;
 }
-
-// ---- readWanted_ce6c8.cpp ----
 
 __attribute__((visibility("hidden"))) extern int *g_RW_guard;   // DAT_000de8a4 -> guard holder
 
@@ -375,7 +363,6 @@ void * RecordHandler::readWanted(unsigned int fd) {
     return w;
 }
 
-// ---- changeSaveDirectoryToBackupDirectory_d0258.cpp ----
 // Global holder: g -> P, *P -> the record count.
 __attribute__((visibility("hidden"))) extern int *g_RH_csd_count;
 // Flag holder: g -> P, *P -> the flag object (byte set to 1).
@@ -428,7 +415,6 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
     ((RecordHandler *)(sizes1))->csd_tail(1, n, a1);
 }
 
-// ---- _RecordHandler_cbb08.cpp ----
 // String::~String function pointer (single pc-rel deref to the fn-ptr global).
 __attribute__((visibility("hidden"))) extern void (*g_RH_stringDtor)(void *s);
 
@@ -443,7 +429,6 @@ RecordHandler * RecordHandler::dtor() {
     return self;
 }
 
-// ---- recordStoreReadPreview_cbbf0.cpp ----
 // RecordHandler::recordStoreReadPreview(int)
 void * RecordHandler::recordStoreReadPreview(int slot) {
     RecordHandler *self = this;
@@ -474,12 +459,10 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
     return gr;
 }
 
-// ---- RecordHandler_cba2c.cpp ----
 // String literal pointers (each via a hidden pc-rel reloc).
 __attribute__((visibility("hidden"))) extern const char RH_lit0[];
 __attribute__((visibility("hidden"))) extern const char RH_lit1[];
 __attribute__((visibility("hidden"))) extern const char RH_lit2[];
-
 
 // RecordHandler::RecordHandler() — default-constructs the three String members at
 // +0x8, +0x14, +0x20, then assigns each from a literal, and returns `this`.
@@ -509,7 +492,6 @@ RecordHandler * RecordHandler::ctor() {
     return self;
 }
 
-// ---- writeByteArrayAsOptionsFile_cddd8.cpp ----
 // RecordHandler::writeByteArrayAsOptionsFile(signed char*, int)
 void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     RecordHandler *self = this;
@@ -524,7 +506,6 @@ void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     ((String *)(tmp))->dtor();
 }
 
-// ---- recordStoreWritePreview_cfd78.cpp ----
 struct Status;
 struct Station;
 struct SolarSystem;
@@ -534,8 +515,6 @@ struct Ship;
 __attribute__((visibility("hidden"))) extern Status **g_RH_wp_status;
 // Global for the float written near the end (single pc-rel -> P; *P -> obj; obj->_2c).
 __attribute__((visibility("hidden"))) extern int *g_RH_wp_float;
-
-
 
 // RecordHandler::recordStoreWritePreview(int)
 int RecordHandler::recordStoreWritePreview_int(int slot) {
@@ -573,10 +552,9 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
     return 1;
 }
 
-// ---- writeAgent_cf9f0.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_WA_guard;       // DAT_000dfc2c -> guard holder
-__attribute__((visibility("hidden"))) extern const char g_WA_empty1[]; // DAT_000dfc38
-__attribute__((visibility("hidden"))) extern const char g_WA_empty2[]; // DAT_000dfc3c
+__attribute__((visibility("hidden"))) extern const char g_WA_empty1[];
+__attribute__((visibility("hidden"))) extern const char g_WA_empty2[];
 
 // RecordHandler::writeAgent(Agent*, unsigned int fd)
 void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
@@ -654,7 +632,6 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
     return;
 }
 
-// ---- writeMission_cf840.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_WM_guard;   // DAT_000df9e8 -> guard holder
 
 // RecordHandler::writeMission(Mission*, unsigned int fd)
@@ -709,7 +686,6 @@ void RecordHandler::writeMission(void *m, unsigned int fd) {
     return;
 }
 
-// ---- loadOptions_cd450.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_LO_guard;        // DAT_000dd780 -> guard holder
 __attribute__((visibility("hidden"))) extern unsigned char *g_LO_settings; // DAT_000dd784 -> settings struct base
 __attribute__((visibility("hidden"))) extern int **g_LO_statusObj;   // DAT_000dd78c -> *->obj (field 0xfa)
@@ -837,7 +813,6 @@ void RecordHandler::loadOptions() {
     return;
 }
 
-// ---- loadResolutionValue_cd260.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_LRV_guard;   // DAT_000dd444 -> guard holder
 
 // RecordHandler::loadResolutionValue() — reads the options file at self+8 into a settings
@@ -907,7 +882,6 @@ void RecordHandler::loadResolutionValue() {
     return;
 }
 
-// ---- writeByteArrayAsRecord_cdcb0.cpp ----
 // RecordHandler::writeByteArrayAsRecord(signed char*, int, int, bool)
 int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup) {
     RecordHandler *self = this;
@@ -928,8 +902,6 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
     ((String *)(path))->dtor();
     return n;
 }
-
-// ---- readMission_cdfb4.cpp ----
 
 __attribute__((visibility("hidden"))) extern int *g_RM_guard;   // DAT_000de244 -> guard holder
 
@@ -1017,11 +989,10 @@ void * RecordHandler::readMission(unsigned int fd) {
     return mission;
 }
 
-// ---- saveOptions_cd8c8.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_SO_guard;        // DAT_000ddad4 -> guard holder
 __attribute__((visibility("hidden"))) extern unsigned char *g_SO_settings; // DAT_000ddad8 -> settings struct
 __attribute__((visibility("hidden"))) extern void **g_SO_playerName; // DAT_000ddae4 -> *->String*
-__attribute__((visibility("hidden"))) extern const char g_SO_defName[]; // DAT_000ddae8
+__attribute__((visibility("hidden"))) extern const char g_SO_defName[];
 __attribute__((visibility("hidden"))) extern int *g_SO_extraInt;     // DAT_000ddaec -> *->int
 __attribute__((visibility("hidden"))) extern unsigned char *g_SO_flag1; // DAT_000ddaf4 -> byte
 __attribute__((visibility("hidden"))) extern unsigned char *g_SO_flag2; // DAT_000ddaf8 -> byte
@@ -1104,8 +1075,6 @@ void RecordHandler::saveOptions() {
 
     return;
 }
-
-// ---- readAgent_ce250.cpp ----
 
 __attribute__((visibility("hidden"))) extern int *g_RA_guard;   // DAT_000de608 -> guard holder
 
@@ -1226,11 +1195,9 @@ void * RecordHandler::readAgent(unsigned int fd) {
     agent->field_0x24 = raw24;
     agent->field_0x25 = raw25;
 
-
     return agent;
 }
 
-// ---- writeWanted_cfc40.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_WW_guard;   // DAT_000dfd70 -> guard holder
 
 // RecordHandler::writeWanted(Wanted*, unsigned int fd)
@@ -1272,10 +1239,8 @@ void RecordHandler::writeWanted(void *w, unsigned int fd) {
     return;
 }
 
-// ---- recordStoreWritePreview_cfea4.cpp ----
 struct Station;
 struct Ship;
-
 
 // RecordHandler::recordStoreWritePreview(GameRecord*, int)
 int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
@@ -1312,7 +1277,6 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     return 1;
 }
 
-// ---- recordStoreWrite_ce8ac.cpp ----
 // The remaining game-state serialization (ship, station, standings, items, missions, agents).
 // A long straight-line writer over the live object graph; delegated to a helper to keep this
 // translation tractable while preserving the open/write-prefix/close/hash control flow.
@@ -2105,7 +2069,6 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     for (int off = 0x10d; off <= 0x114; off++) AEFile_ReadByte(rec + off, fd);
 }
 
-// ---- readOptionsFileAsByteArray_cdd4c.cpp ----
 // RecordHandler::readOptionsFileAsByteArray(signed char**)
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     RecordHandler *self = this;
@@ -2128,7 +2091,6 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     return sz;
 }
 
-// ---- recordStoreRead_cbd34.cpp ----
 // Deep GameRecord field read (ship, stations, standings, blueprints, pending products, agents,
 // ships, wanteds, flags). A very long straight-line reader delegated to a helper so this
 // translation preserves the path/hash/open/prefix/close flow while staying tractable.
@@ -2216,7 +2178,6 @@ void * RecordHandler::recordStoreRead(int slot) {
     return rec;
 }
 
-// ---- checkHash_cd7b0.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_CH_guard;          // DAT_000dd8b8 -> guard holder
 __attribute__((visibility("hidden"))) extern const unsigned char RH_ch_salt[]; // DAT_000dd8c0 (25 bytes)
 __attribute__((visibility("hidden"))) extern unsigned char **RH_ch_key;        // DAT_000dd8c4 (16-byte key)
@@ -2265,11 +2226,9 @@ int RecordHandler_checkHash(unsigned int fd)
     return result;
 }
 
-// ---- addHashToOptions_cdafc.cpp ----
 // SHA salt blob (25 bytes) and the second 16-byte key, both via hidden pc-rel relocs.
 __attribute__((visibility("hidden"))) extern const unsigned char RH_aho_salt[];
 __attribute__((visibility("hidden"))) extern unsigned char **RH_aho_key;
-
 
 // RecordHandler::addHashToOptions()
 void RecordHandler::addHashToOptions() {

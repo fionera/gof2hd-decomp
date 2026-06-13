@@ -4,7 +4,6 @@
 uint32_t CameraGetCurrent(void *canvas);
 Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
-// ---- addObject_9520c.cpp ----
 extern "C" int LODManager_hasLod(AEGeometry *g);              // AEGeometry::hasLod()
 
 void LODManager::addObject(AEGeometry *g)
@@ -23,7 +22,6 @@ void LODManager::addObject_tail(AEGeometry *g, Array<AEGeometry*> *objects)
     ArrayAdd(g, *objects);
 }
 
-// ---- LODManager_9518c.cpp ----
 // LODManager::LODManager() — real C++ constructor; symbol demangles to contain "LODManager".
 
 LODManager::LODManager()
@@ -35,7 +33,6 @@ LODManager::LODManager()
     this->objects = new Array<AEGeometry*>();
 }
 
-// ---- _LODManager_951dc.cpp ----
 // LODManager::~LODManager() — real C++ destructor so the demangled symbol contains "~LODManager".
 
 LODManager::~LODManager()
@@ -45,7 +42,6 @@ LODManager::~LODManager()
     this->objects = 0;
 }
 
-// ---- removeObject_9524e.cpp ----
 extern "C" void LODManager_ArrayRemove(AEGeometry *g, Array<AEGeometry*> *arr);  // ArrayRemove<AEGeometry*>(AEGeometry*, Array*)
 
 void LODManager::removeObject(AEGeometry *g)
@@ -57,7 +53,6 @@ void LODManager::removeObject(AEGeometry *g)
     }
 }
 
-// ---- forceUpdate_952c4.cpp ----
 // LODManager::forceUpdate(int, bool) — recompute the camera position and update the
 // LOD level of every registered geometry. Uses the engine camera/matrix helpers and
 // a stack-resident Vector (address-taken -> stack canary).
@@ -90,7 +85,6 @@ void LODManager::forceUpdate(int dt, bool useParent)
     }
 }
 
-// ---- update_95384.cpp ----
 void LODManager::update(int dt)
 {
     int sum = this->timer + dt;

@@ -153,7 +153,6 @@ extern "C" int *SpaceLounge_update_width_slot;
 extern "C" int *SpaceLounge_update_height_slot;
 extern "C" int *SpaceLounge_update_top_slot;
 
-// ---- OnTouchMove_171928.cpp ----
 int SpaceLounge::OnTouchMove(int x, int y) {
     SpaceLounge *self = this;
     I(self, 0xb4) = x;
@@ -210,7 +209,6 @@ int SpaceLounge::OnTouchMove(int x, int y) {
     return 0;
 }
 
-// ---- OnRender3D_173760.cpp ----
 void SpaceLounge::OnRender3D() {
     SpaceLounge *self = this;
     if (UC(self, 0x34) != 0) {
@@ -232,7 +230,6 @@ void SpaceLounge::OnRender3D() {
     return SpaceLounge_OnRender3D_cutscene_tail(cutscene);
 }
 
-// ---- OnRenderBG_173792.cpp ----
 void SpaceLounge::OnRenderBG() {
     SpaceLounge *self = this;
     if (I(self, 0x44) != 0) {
@@ -240,31 +237,26 @@ void SpaceLounge::OnRenderBG() {
     }
 }
 
-// ---- introFinished_16a894.cpp ----
 unsigned char SpaceLounge::introFinished() {
     SpaceLounge *self = this;
     return UC(self, 0xbd);
 }
 
-// ---- listMode_1714ea.cpp ----
 bool SpaceLounge::listMode() {
     SpaceLounge *self = this;
     return UC(self, 0x34) == 0;
 }
 
-// ---- mapMode_1714e4.cpp ----
 unsigned char SpaceLounge::mapMode() {
     SpaceLounge *self = this;
     return UC(self, 0x34);
 }
 
-// ---- hangarNeedsUpdate_1717f0.cpp ----
 unsigned char SpaceLounge::hangarNeedsUpdate() {
     SpaceLounge *self = this;
     return UC(self, 0x35);
 }
 
-// ---- draw3DShip_1714d4.cpp ----
 void SpaceLounge::draw3DShip() {
     SpaceLounge *self = this;
     if (UC(self, 0x1c) != 0) {
@@ -272,13 +264,11 @@ void SpaceLounge::draw3DShip() {
     }
 }
 
-// ---- setHangarUpdate_16aa74.cpp ----
 void SpaceLounge::setHangarUpdate(bool value) {
     SpaceLounge *self = this;
     BL(self, 0x35) = value;
 }
 
-// ---- OnTouchBegin_1717f8.cpp ----
 int SpaceLounge::OnTouchBegin(int x, int y) {
     SpaceLounge *self = this;
     UC(self, 0xb2) = 1;
@@ -341,7 +331,6 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
     return 0;
 }
 
-// ---- getSpecificSoundForRace_17177c.cpp ----
 int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate)
 {
     unsigned delta;
@@ -392,7 +381,6 @@ done:
     return soundId;
 }
 
-// ---- OnTouchEnd_171a48.cpp ----
 static inline void *selected_agent(SpaceLounge *self)
 {
     void *agents = P(self, 0x24);
@@ -532,7 +520,6 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     }
 }
 
-// ---- getSoundId_1714f8.cpp ----
 static inline int random_from(void *slot, int limit)
 {
     return AbyssEngine::AERandom::nextInt(*(void **)slot, limit);
@@ -661,7 +648,6 @@ special_done:
     return result;
 }
 
-// ---- onKeyPress_16e2f0.cpp ----
 static inline void *key_agent(SpaceLounge *self)
 {
     return ((void **)P(P(self, 0x24), 0x4))[I(self, 0x20)];
@@ -742,7 +728,6 @@ void SpaceLounge::onKeyPress(int key) {
     }
 }
 
-// ---- updateScreenPositions_170478.cpp ----
 void SpaceLounge::updateScreenPositions() {
     SpaceLounge *self = this;
     char camera[60];
@@ -812,7 +797,6 @@ void SpaceLounge::updateScreenPositions() {
     }
 }
 
-// ---- drawLounge_170d38.cpp ----
 static inline void *button_at(SpaceLounge *self, unsigned i)
 {
     return ((void **)P(P(self, 0x5c), 0x4))[i];
@@ -967,7 +951,6 @@ void SpaceLounge::drawLounge() {
     ((TouchButton *)(button_at(self, 0)))->draw();
 }
 
-// ---- init_169f80.cpp ----
 int SpaceLounge::init() {
     SpaceLounge *self = this;
     char matrix[60];
@@ -1053,7 +1036,6 @@ int SpaceLounge::init() {
     return 0;
 }
 
-// ---- SpaceLounge_169ad0.cpp ----
 SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
 {
     char from[60];
@@ -1141,7 +1123,6 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     return self;
 }
 
-// ---- startChat_16aa7c.cpp ----
 void SpaceLounge::startChat() {
     SpaceLounge *self = this;
     char title[12];
@@ -1202,7 +1183,6 @@ void SpaceLounge::startChat() {
     ((String *)(title))->dtor();
 }
 
-// ---- _SpaceLounge_16a89a.cpp ----
 // SpaceLounge::~SpaceLounge() — tears down the owned ChoiceWindow / CutScene, the
 // agent-text and button arrays, the per-system ImagePart grid and silhouette-vector
 // array, the camera-ease matrix, and the cached canvas buffer + title String.
@@ -1297,7 +1277,6 @@ SpaceLounge::~SpaceLounge()
     ((String *)(B(self, 0xa4)))->dtor();
 }
 
-// ---- draw_170bec.cpp ----
 void SpaceLounge::draw() {
     SpaceLounge *self = this;
     char title[12];
@@ -1343,7 +1322,6 @@ void SpaceLounge::draw() {
     }
 }
 
-// ---- update_170738.cpp ----
 void SpaceLounge::update(int dt) {
     SpaceLounge *self = this;
     char maxMatrix[60];

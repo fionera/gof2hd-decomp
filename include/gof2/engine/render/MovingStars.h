@@ -7,7 +7,6 @@
 // Vector/Matrix params are AbyssEngine::AEMath::Vector / ::Matrix.
 // Field offsets recovered per-method from the target disasm; accessed via byte-offset casts.
 
-
 #include <new>
 
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
@@ -17,16 +16,10 @@ struct MovingStars;
 namespace AbyssEngine {
 namespace AEMath {
 
-
-
-
-
 } // namespace AEMath
 } // namespace AbyssEngine
 
 // Field accessors --------------------------------------------------------------
-
-
 
 // MovingStars — animated starfield rendered through PaintCanvas billboards/transforms.
 // Top-level class (not in AbyssEngine namespace). Field offsets are recovered from disasm;

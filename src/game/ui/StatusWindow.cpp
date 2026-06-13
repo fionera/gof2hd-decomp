@@ -14,7 +14,6 @@
 // StatusWindow drives it through its real methods (OnTouchMove/OnTouchEnd/draw*/helpPressed/...)
 // and byte-offset field reads.
 
-
 extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
 extern "C" void *Array_TouchButton_dtor(void *p);
 extern "C" void ArrayReleaseClasses_ImagePart(void *arr);
@@ -30,7 +29,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StatusWindow_layout;
 extern "C" __attribute__((visibility("hidden"))) unsigned char *g_StatusWindow_btnFlag;
 extern "C" __attribute__((visibility("hidden"))) void **g_StatusWindow_ach;
 
-// ---- _StatusWindow_158164.cpp ----
 // StatusWindow::~StatusWindow() -- tears down the four owned engine Arrays.
 //   Each owned array is first emptied of its (class) elements via the matching
 //   ArrayReleaseClasses<T>, then the array header itself is destroyed and freed.
@@ -74,7 +72,6 @@ extern "C" void *StatusWindow_dtor(void *p)
     return self;
 }
 
-// ---- OnTouchMove_15a0bc.cpp ----
 // StatusWindow::OnTouchMove(int, int)
 int StatusWindow::OnTouchMove(int param_1, int param_2) {
     StatusWindow *self = this;
@@ -112,7 +109,6 @@ int StatusWindow::OnTouchMove(int param_1, int param_2) {
     return 0;
 }
 
-// ---- getRelativeScrollStartPos_1581d0.cpp ----
 // StatusWindow::getRelativeScrollStartPos() -> 0 if scroll range (this+0x38) > 0,
 // else -(float)range / (float)(this+0x58).
 float StatusWindow::getRelativeScrollStartPos() {
@@ -122,17 +118,11 @@ float StatusWindow::getRelativeScrollStartPos() {
     return -(float)range / (float)i32(self, 0x58);
 }
 
-// ---- OnTouchEnd_15a1c4.cpp ----
 extern "C" {
-
 
 void String_fromC(void *s, const char *text, bool copy);
 void String_fromText(void *s, void *text, bool copy);
 void String_appendAssign(void *self, void *rhs);
-
-
-
-
 
 void ArrayStr_ctor(void *self);
 void ArrayStr_releaseClasses(void *self);
@@ -259,7 +249,6 @@ done:
     
 }
 
-// ---- OnTouchBegin_15a010.cpp ----
 // *g_layout -> Layout pointer (double load). *g_btnFlag -> byte flag. g_ach -> Achievements**.
 
 // StatusWindow::OnTouchBegin(int, int)
@@ -286,7 +275,6 @@ int StatusWindow::OnTouchBegin(int param_1, int param_2) {
     return 0;
 }
 
-// ---- getRelativeScrollHeight_158200.cpp ----
 // StatusWindow::getRelativeScrollHeight() -> ratio of visible content to total, clamped by range.
 float StatusWindow::getRelativeScrollHeight() {
     StatusWindow *self = this;
@@ -305,7 +293,6 @@ float StatusWindow::getRelativeScrollHeight() {
     return (float)num / (float)a;
 }
 
-// ---- update_158250.cpp ----
 // StatusWindow::update(int) -- scroll inertia + selected-tab button highlight.
 void StatusWindow::update() {
     StatusWindow *self = this;
@@ -349,7 +336,6 @@ void StatusWindow::update() {
     }
 }
 
-// ---- getMedalHintText_159ba4.cpp ----
 // Stack String slots are 0xc bytes; we drive them via the engine's String entry points.
 extern "C" {
 
@@ -358,9 +344,6 @@ void String_fromC(void *s, const char *text, bool copy);   // String::String(cha
 // String::~String()
 void String_concat(void *out, void *lhs, void *rhs);       // out = lhs + rhs (operator+)
 void String_appendAssign(void *self, void *rhs);           // self += rhs (operator+=)
-
-
-
 
 extern void *g_swh_achievements; // *(DAT_169f68): achievements root
 extern void *g_swh_status;       // various *(DAT...): status/campaign singletons share this base
@@ -491,7 +474,6 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
     
 }
 
-// ---- reInit_158044.cpp ----
 extern "C" {
 void *Achievements_get();            // *(DAT_168150): achievements singleton (via getter at DAT_168154)
 int Achievements_isUnlocked(void *ach, int index);
@@ -540,7 +522,6 @@ void StatusWindow::reInit() {
     i32(self, 0x64) = ((PaintCanvas *)canvas)->GetImage2DHeight(0);
 }
 
-// ---- draw_15831c.cpp ----
 // StatusWindow::draw() -- renders either the player-stats tab or the achievements/medal tab.
 // This is a very large UI routine; the control flow, field offsets and the substantive engine
 // calls are reproduced faithfully. Repetitive DrawString blocks share the local helpers below.
@@ -561,13 +542,8 @@ int   GameText_getLanguage();
 void Layout_drawHeader(void *layout, void *title);
 void Layout_formatCredits(void *out, int credits);
 
-
-
-
-
 void  Globals_longToTimeStringNoSeconds(void *globals, void *out, unsigned long long t);
 void  Globals_drawLines(void *globals, void *font, void *arr, int y, char clip);
-
 
 int   __aeabi_idiv(int a, int b);
 int   __aeabi_uidiv(unsigned a, unsigned b);
@@ -585,7 +561,6 @@ extern char *g_swd_landscape;  // *(DAT_168478): landscape-layout flag
 extern int  *g_swd_textId;     // *(DAT_1684ac): rolling GameText id cursor
 extern void *g_swd_gameText;   // *(DAT_1684ac): GameText singleton (receiver for getText)
 }
-
 
 // StatusWindow::draw()
 void StatusWindow::draw() {
@@ -814,17 +789,13 @@ void StatusWindow::draw() {
     
 }
 
-// ---- StatusWindow_157d80.cpp ----
 extern "C" {
 
 void ArrayTB_ctor(void *self);                       // Array<TouchButton*>::Array()
 void ArrayTB_setLength(int n, void *self);           // ArraySetLength<TouchButton*>
 
-
 void TouchButton_ctor_tab(void *self, void *text, int kind, int x, int y, char flags);
 void TouchButton_ctor_medal(void *self, int index, int medal, void *text, int x, int y, char flags);
-
-
 
 int  __aeabi_idiv(int a, int b);
 
@@ -836,7 +807,6 @@ extern void *g_sw_achievements;  // *(DAT_168034): achievements root
 extern void *g_sw_canvas;        // *(DAT_168038): paint canvas
 extern int   g_sw_screenH;       // *(DAT_168040): screen height source
 }
-
 
 // StatusWindow::StatusWindow() -- build the tab bar and the medal grid, then lay out scrolling.
 StatusWindow * StatusWindow::ctor() {

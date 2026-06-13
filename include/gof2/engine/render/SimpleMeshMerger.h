@@ -13,7 +13,6 @@
 //   +0x18  uint   mergedMeshId
 //   +0x1c  uint   transformId
 
-
 void *operator new(__SIZE_TYPE__ size);
 
 class SimpleMeshMerger {
@@ -36,7 +35,6 @@ public:
 
 namespace AbyssEngine {
 namespace AEMath {
-
 
 }
 }

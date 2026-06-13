@@ -6,15 +6,12 @@
 // Top-level class (no AbyssEngine namespace). Field offsets recovered per-method from the
 // target disassembly; we do NOT model a full layout - access fields via byte-offset casts.
 
-
 // Opaque referenced types.
 struct KIPlayer;
 struct Route;
 struct Gun;
 struct SpacePoint;
 struct Level;
-
-
 
 // AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.
 namespace AbyssEngine { namespace AEMath {

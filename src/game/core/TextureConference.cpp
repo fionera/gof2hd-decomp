@@ -3,7 +3,6 @@
 
 extern "C" long long __divdi3_like(int a_lo, int a_hi, int b_lo, int b_hi);
 
-// ---- SetInActive_8cc34.cpp ----
 namespace AbyssEngine {
 
 void TextureConference::SetInActive()
@@ -14,7 +13,6 @@ void TextureConference::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- _TextureConference_8cd0a.cpp ----
 void _ZN11AbyssEngine17TextureConferenceD0Ev(
     AbyssEngine::TextureConference *self)
 {
@@ -23,7 +21,6 @@ void _ZN11AbyssEngine17TextureConferenceD0Ev(
     operator delete(base);
 }
 
-// ---- UpdateMeshData_8cc4a.cpp ----
 namespace AbyssEngine {
 
 void TextureConference::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -51,7 +48,6 @@ void TextureConference::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- Init_8cb98.cpp ----
 namespace AbyssEngine {
 
 void TextureConference::Init(Engine *)
@@ -73,7 +69,6 @@ void TextureConference::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- TextureConference_8cb08.cpp ----
 extern "C" AbyssEngine::TextureConference *
 _ZN11AbyssEngine17TextureConferenceC2Ev(AbyssEngine::TextureConference *self)
 {

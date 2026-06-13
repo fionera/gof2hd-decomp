@@ -1,9 +1,5 @@
 #include "gof2/engine/render/ResourceMaterial.h"
 
-
-
-
-// ---- ResourceMaterial_112cbc.cpp ----
 // AbyssEngine::ResourceMaterial::ResourceMaterial(unsigned short, unsigned short, BlendMode)
 namespace AbyssEngine {
 
@@ -24,7 +20,6 @@ ResourceMaterial::ResourceMaterial(unsigned short texId, unsigned short texId2, 
 
 } // namespace AbyssEngine
 
-// ---- ResourceMaterial_112d20.cpp ----
 // AbyssEngine::ResourceMaterial::ResourceMaterial(unsigned short, BlendMode)
 namespace AbyssEngine {
 

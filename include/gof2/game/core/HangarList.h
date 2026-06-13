@@ -12,14 +12,6 @@ struct GameText;
 struct Status;
 struct Station;
 
-
-
-
-
-
-
-
-
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 

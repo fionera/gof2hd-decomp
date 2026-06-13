@@ -17,12 +17,6 @@ namespace AEMath {
 
 typedef AbyssEngine::AEMath::Vector Vector;
 
-
-
-
-
-
-
 static inline void *&P(void *self, unsigned off) { return *(void **)((char *)self + off); }
 static inline int32_t &I(void *self, unsigned off) { return *(int32_t *)((char *)self + off); }
 // F (indexed element accessor) is provided by gof2/common.h.

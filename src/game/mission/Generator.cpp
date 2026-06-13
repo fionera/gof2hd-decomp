@@ -26,9 +26,6 @@
 #undef RetStr
 #include "gof2/game/mission/Status.h"
 
-
-
-
 // ---- ctor/dtor ----
 // Generator is a stateless helper: nothing to initialise or release.
 Generator::Generator() {}
@@ -74,7 +71,6 @@ extern "C" int Generator_getShipBuyList_oi(Generator *g, Station *station)
     return (int)(intptr_t)g->getShipBuyList(station);
 }
 
-// ---- computerTradeGoods_953a0.cpp ----
 static AbyssEngine::AERandom **volatile g_Generator_tradeRandom;
 
 void Generator::computerTradeGoods(Station *station) {
@@ -94,7 +90,6 @@ void Generator::computerTradeGoods(Station *station) {
     }
 }
 
-// ---- generateStationIndex_9672c.cpp ----
 extern "C" __attribute__((visibility("hidden"))) AbyssEngine::AERandom **volatile
     g_Generator_stationRandom;
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
@@ -178,7 +173,6 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
     } while (true);
 }
 
-// ---- createAgents_96884.cpp ----
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
     g_Generator_agentsStatus;
 extern "C" __attribute__((visibility("hidden"))) AbyssEngine::AERandom **volatile
@@ -373,7 +367,6 @@ Array<Agent *> *Generator::createAgents(Station *station) {
     return result;
 }
 
-// ---- createMission_971b8.cpp ----
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
     g_Generator_missionStatus;
 extern "C" __attribute__((visibility("hidden"))) AbyssEngine::AERandom **volatile
@@ -633,7 +626,6 @@ Mission *Generator::createMission(Agent *agent,
     return mission;
 }
 
-// ---- createAgent_96e8c.cpp ----
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
     g_Generator_agentStatus;
 extern "C" __attribute__((visibility("hidden"))) AbyssEngine::AERandom **volatile
@@ -746,7 +738,6 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 
-// ---- getShipBuyList_95bcc.cpp ----
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
     g_Generator_shipStatus;
 extern "C" __attribute__((visibility("hidden"))) Array<Ship *> **volatile
@@ -941,7 +932,6 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     return result;
 }
 
-// ---- getItemBuyList_95428.cpp ----
 typedef Item *(*ItemFactory)(Item *, int, int);
 
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
@@ -1192,7 +1182,6 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
     return result;
 }
 
-// ---- getLootList_96504.cpp ----
 extern "C" __attribute__((visibility("hidden"))) Array<Item *> **volatile
     g_Generator_lootItems;
 extern "C" __attribute__((visibility("hidden"))) AbyssEngine::AERandom **volatile
@@ -1285,7 +1274,6 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
     return result;
 }
 
-// ---- isKaamoSpecialItem_95404.cpp ----
 extern "C" __attribute__((visibility("hidden"))) const volatile int
     kaamoSpecialItems[9];
 

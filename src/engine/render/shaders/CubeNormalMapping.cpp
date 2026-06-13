@@ -1,9 +1,6 @@
 #include "gof2/engine/render/shaders/CubeNormalMapping.h"
 #include "gof2/engine/render/Mesh.h"
 
-
-
-// ---- UpdateMeshData_90cf0.cpp ----
 namespace AbyssEngine {
 
 void CubeNormalMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
@@ -59,7 +56,6 @@ void CubeNormalMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- _CubeNormalMapping_90ed8.cpp ----
 void _ZN11AbyssEngine17CubeNormalMappingD0Ev(
     AbyssEngine::CubeNormalMapping *self)
 {
@@ -68,7 +64,6 @@ void _ZN11AbyssEngine17CubeNormalMappingD0Ev(
     operator delete(base);
 }
 
-// ---- Init_90b4c.cpp ----
 namespace AbyssEngine {
 
 void CubeNormalMapping::Init(Engine *)
@@ -104,7 +99,6 @@ void CubeNormalMapping::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- CubeNormalMapping_90ac0.cpp ----
 extern "C" {
 extern void *_ZTIN11AbyssEngine17CubeNormalMappingE;
 extern void *CubeNormalMapping_typeInfoSlot;
@@ -126,7 +120,6 @@ CubeNormalMapping::CubeNormalMapping()
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_90cc4.cpp ----
 namespace AbyssEngine {
 
 void CubeNormalMapping::SetInActive()

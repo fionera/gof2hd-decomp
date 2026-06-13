@@ -12,12 +12,6 @@ struct Engine;
 struct PlayerStatic;
 struct FileRead;
 
-
-
-
-
-
-
 static inline void *&P(void *p, unsigned off) {
     return *(void **)((char *)p + off);
 }
@@ -25,8 +19,6 @@ static inline void *&P(void *p, unsigned off) {
 static inline int &I(void *p, unsigned off) {
     return *(int *)((char *)p + off);
 }
-
-
 
 static inline uint8_t &B(void *p, unsigned off) {
     return *(uint8_t *)((char *)p + off);

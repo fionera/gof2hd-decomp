@@ -5,18 +5,15 @@
 #include "gof2/game/ui/Layout.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-
 int GameText_getLanguage();
 void Globals_loadFont(void *obj, int lang);
 extern "C" void _ZN6MTitle9OnReleaseEv(MTitle *self);
 MTitle *_ZN6MTitleD2Ev(MTitle *self);
 
-// ---- OnRelease_97a2c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MTitle_or_canvas;
 __attribute__((visibility("hidden"))) extern void **g_MTitle_or_font;
 __attribute__((visibility("hidden"))) extern void **g_MTitle_or_reload;
 __attribute__((visibility("hidden"))) extern void **g_MTitle_or_imgfac;
-
 
 void MTitle::OnRelease()
 {
@@ -33,11 +30,9 @@ void MTitle::OnRelease()
     }
 }
 
-// ---- OnRender2D_97a8c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MTitle_r2d_canvas;
 __attribute__((visibility("hidden"))) extern void **g_MTitle_r2d_layout;
 __attribute__((visibility("hidden"))) extern void **g_MTitle_r2d_screen;
-
 
 void MTitle::OnRender2D()
 {
@@ -94,7 +89,6 @@ common:
     ((MTitle *)(this->canvas))->r2dTail();
 }
 
-// ---- MTitle_97984.cpp ----
 __attribute__((visibility("hidden"))) extern void *volatile g_MTitle_vtable;
 
 MTitle::MTitle()
@@ -104,7 +98,6 @@ MTitle::MTitle()
     this->field_0x0 = (char *)vtable + 8;
 }
 
-// ---- _MTitle_97998.cpp ----
 MTitle *_ZN6MTitleD2Ev(MTitle *self)
 {
     self->field_0x0 = (char *)g_MTitle_vtable + 8;
@@ -112,21 +105,17 @@ MTitle *_ZN6MTitleD2Ev(MTitle *self)
     return self;
 }
 
-// ---- OnTouchEnd_97a24.cpp ----
 void MTitle::OnTouchEnd(int x, int y)
 {
     this->timer = 5000;
 }
 
-// ---- _MTitle_979bc.cpp ----
 void _ZN6MTitleD0Ev(MTitle *self)
 {
     ((MTitle *)(_ZN6MTitleD2Ev(self)))->deleteTail();
 }
 
-// ---- OnRender3D_97bc4.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MTitle_r3d_canvas;
-
 
 void MTitle::OnRender3D()
 {
@@ -178,10 +167,8 @@ void MTitle::deleteTail()
     ::operator delete(this);
 }
 
-// ---- OnInitialize_979cc.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MTitle_canvas;
 __attribute__((visibility("hidden"))) extern void **g_MTitle_sound;
-
 
 int MTitle::OnInitialize()
 {

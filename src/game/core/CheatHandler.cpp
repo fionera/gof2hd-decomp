@@ -1,10 +1,6 @@
 #include <new>
 #include "gof2/game/core/CheatHandler.h"
 
-
-
-
-// ---- SetCheatFunc_74656.cpp ----
 namespace AbyssEngine {
 
 void CheatHandler::SetCheatFunc(CheatFunc f, void *ctx)
@@ -15,7 +11,6 @@ void CheatHandler::SetCheatFunc(CheatFunc f, void *ctx)
 
 } // namespace AbyssEngine
 
-// ---- CheatHandler_74448.cpp ----
 namespace AbyssEngine {
 
 CheatHandler::CheatHandler(KeyCode *k)
@@ -28,7 +23,6 @@ CheatHandler::CheatHandler(KeyCode *k)
 
 } // namespace AbyssEngine
 
-// ---- _CheatHandler_7449c.cpp ----
 namespace AbyssEngine {
 
 CheatHandler::~CheatHandler()
@@ -59,7 +53,6 @@ CheatHandler::~CheatHandler()
 
 } // namespace AbyssEngine
 
-// ---- AddCheatCode_74538.cpp ----
 namespace AbyssEngine {
 
 void CheatHandler::AddCheatCode(const String &code, int value)
@@ -109,7 +102,6 @@ void CheatHandler::AddCheatCode(const String &code, int value)
 
 } // namespace AbyssEngine
 
-// ---- Update_7465c.cpp ----
 namespace AbyssEngine {
 
 void CheatHandler::Update(uint16_t key)

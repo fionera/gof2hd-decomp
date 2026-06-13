@@ -7,19 +7,14 @@ struct Gun;
 struct Level;
 struct Radar;
 
-
-
 namespace AbyssEngine {
 namespace AEMath {
-
 
 }
 }
 
 typedef AbyssEngine::AEMath::Vector Vector;
 typedef AbyssEngine::AEMath::Matrix Matrix;
-
-
 
 typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 

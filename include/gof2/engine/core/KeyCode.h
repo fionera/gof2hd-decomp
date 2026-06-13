@@ -6,7 +6,6 @@
 // Tiny value type: an int code at +0x00 followed by an embedded String at +0x04.
 // Field offsets recovered from the target disassembly; accessed via byte-offset casts.
 
-
 namespace AbyssEngine {
 
 // String -- 12-byte value type (text*, field_04, size). >8 bytes => passed by ref/sret.

@@ -6,7 +6,6 @@
 // We do NOT model the full layout; fields are accessed by byte offset taken
 // from each work-item's target disasm.
 
-
 struct TouchButton;    // opaque; we only ever take a TouchButton* and offset-cast.
 
 // 12-byte return-by-value String aggregate (matches other gof2 getters).

@@ -22,9 +22,7 @@ namespace AbyssEngine { namespace PaintCanvas {
 void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector);
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 
-// ---- _BeamGun_177834.cpp ----
 __attribute__((visibility("hidden"))) extern void *BeamGun_vtable;
-
 
 BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
 {
@@ -47,7 +45,6 @@ BeamGun *_ZN7BeamGunD1Ev(BeamGun *self)
     return self;
 }
 
-// ---- setEnemies_177b20.cpp ----
 // BeamGun::setEnemies(Array<Player*>*): forwards the enemy list's data to the
 // engine handler.
 void BeamGun::setEnemies(Array<Player *> *enemies)
@@ -55,7 +52,6 @@ void BeamGun::setEnemies(Array<Player *> *enemies)
     return this->setEnemies_tail(enemies->data());
 }
 
-// ---- render_17787c.cpp ----
 void BeamGun::render()
 {
     Gun *gun = this->field_0x8;
@@ -71,13 +67,11 @@ void BeamGun::render()
     }
 }
 
-// ---- _BeamGun_17786c.cpp ----
 void _ZN7BeamGunD0Ev(BeamGun *self)
 {
     return ::operator delete(_ZN7BeamGunD1Ev(self));
 }
 
-// ---- setEnemy_177b26.cpp ----
 // BeamGun::setEnemy(Player*): forwards the player's secondary geometry pointer
 // (object field at +0x8) to the engine handler.
 void BeamGun::setEnemy(Player *enemy)
@@ -85,10 +79,8 @@ void BeamGun::setEnemy(Player *enemy)
     return this->setEnemy_tail(((void **)enemy)[2]);
 }
 
-// ---- BeamGun_177754.cpp ----
 __attribute__((visibility("hidden"))) extern void **BeamGun_canvas;
 __attribute__((visibility("hidden"))) extern int32_t BeamGun_secondaryMeshes[];
-
 
 BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
 {
@@ -136,7 +128,6 @@ BeamGun::BeamGun(int param_1, Gun *gun, int param_3, Level *level)
     this->field_0x1c = geometry;
 }
 
-// ---- update_1778a4.cpp ----
 __attribute__((visibility("hidden"))) extern void **BeamGun_canvas_update_a;
 __attribute__((visibility("hidden"))) extern void **BeamGun_canvas_update_b;
 
@@ -144,7 +135,6 @@ typedef Transform *(*BeamGunGetTransformFn)(PaintCanvas *canvas, int transformId
 typedef void (*BeamGunSetAnimationFn)(Transform *transform, int state, void *arg);
 __attribute__((visibility("hidden"))) extern BeamGunGetTransformFn BeamGun_getTransform_indirect;
 __attribute__((visibility("hidden"))) extern BeamGunSetAnimationFn BeamGun_setAnimation_indirect;
-
 
 void BeamGun::update(int elapsed)
 {

@@ -18,7 +18,6 @@
 //   +0x100 int   magnitude
 //   +0x7c  Vector offset
 
-
 struct Gun;
 
 // AEGeometry is provided in full by gof2/AEGeometry.h (included by Gun.cpp). Only the +0xc

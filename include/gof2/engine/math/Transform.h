@@ -7,8 +7,6 @@ using uint = uint32_t;
 using longlong = int64_t;
 using ulonglong = uint64_t;
 
-
-
 template <class T> void ArrayAdd(T value, Array<T> &array);
 template <class T> void ArraySet(Array<T> *src, Array<T> *dst);
 template <class T> void ArrayReleaseClasses(Array<T> *array);
@@ -21,10 +19,6 @@ struct Mesh;
 struct Transform;
 
 namespace AEMath {
-
-
-
-
 
 struct BSphere {
     Vector center;
@@ -44,8 +38,6 @@ Matrix operator*(const Matrix &lhs, const Matrix &rhs);
 
 } // namespace AEMath
 
-
-
 struct KeyFrame {
     KeyFrame();
 };
@@ -57,8 +49,6 @@ struct Mesh {
 enum AnimationMode {
     AnimationMode_0 = 0
 };
-
-
 
 int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, Camera *camera);
 

@@ -2,9 +2,6 @@
 #include "gof2/game/core/String.h"
 #include <arm_neon.h>
 
-
-
-// ---- _ParticleSettings_185474.cpp ----
 // AbyssEngine::String::~String
 
 // ParticleSettings::~ParticleSettings(): destruct the embedded String of each
@@ -17,7 +14,6 @@ ParticleSettings::~ParticleSettings() {
     } while (i != -0xa0);
 }
 
-// ---- ParticleSettings_183fe8.cpp ----
 // AbyssEngine::String::String() -> this
 
 // ParticleSettings::ParticleSettings(): default-construct the embedded String at the
@@ -30,7 +26,6 @@ ParticleSettings::ParticleSettings() {
     } while (i != 0x1e00);
 }
 
-// ---- init_184020.cpp ----
 // ParticleSettings::init() — large data-table initialiser. COVERAGE MODE:
 // faithful transcription of the decompiled control flow + field stores.
 // The opaque .rodata float/int constants (Ghidra DAT_*) are modelled as
@@ -877,7 +872,6 @@ int ParticleSettings::init() {
     return 0;
 }
 
-// ---- multiplyAll_183e68.cpp ----
 // Base of the global ParticleSet array, reached through PC-relative pointers. The
 // target loads it twice (one literal for the "flags" view, one for the value view).
 __attribute__((visibility("hidden"))) extern char *g_psm_base;
@@ -922,7 +916,6 @@ void ParticleSettings_multiplyAll(float scale) {
     }
 }
 
-// ---- Interpolate_183f4c.cpp ----
 // Base of the global ParticleSet array, reached through a PC-relative pointer. The
 // target materializes the base twice (separate literals) — once for the two source
 // entries and once for the destination — so we model it as two aliasing globals.

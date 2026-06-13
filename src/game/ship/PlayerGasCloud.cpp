@@ -33,13 +33,11 @@ extern "C" void *Array_float_dtor(void *p);
 extern "C" void *Array_int_dtor(void *p);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
-// ---- translate_176658.cpp ----
 void PlayerGasCloud::translate(Vector const &param_1)
 {
     return ((AEGeometry *)this->geometry)->translate(param_1);
 }
 
-// ---- isSparkAlive_176610.cpp ----
 bool PlayerGasCloud::isSparkAlive(int param_1)
 {
     void *arr = this->sparkGeometries;
@@ -51,7 +49,6 @@ bool PlayerGasCloud::isSparkAlive(int param_1)
     return -1500 < base[param_1];
 }
 
-// ---- setSparkInSight_1765f8.cpp ----
 void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
 {
     void *arr = this->sparkGeometries;
@@ -64,25 +61,21 @@ void PlayerGasCloud::setSparkInSight(int param_1, bool param_2)
     }
 }
 
-// ---- setPosition_176652.cpp ----
 void PlayerGasCloud::setPosition(Vector const &param_1)
 {
     return ((AEGeometry *)this->geometry)->setPosition(param_1);
 }
 
-// ---- getSparks_176640.cpp ----
 void *PlayerGasCloud::getSparks()
 {
     return this->sparkGeometries;
 }
 
-// ---- getPosition_176646.cpp ----
 Vector PlayerGasCloud::getPosition()
 {
     return ((AEGeometry *)this->geometry)->getPosition();
 }
 
-// ---- _PlayerGasCloud_1765e8.cpp ----
 // Deleting destructor (D0): run the complete dtor (D1), then tail-call operator delete.
 void *_ZN14PlayerGasCloudD1Ev(void *self); // complete object dtor
 
@@ -91,13 +84,10 @@ void _ZN14PlayerGasCloudD0Ev(void *self)
     return ::operator delete(_ZN14PlayerGasCloudD1Ev(self));
 }
 
-// ---- hasExploded_1769ac.cpp ----
 uint8_t PlayerGasCloud::hasExploded()
 {
     return this->exploded;
 }
-
-// ---- PlayerGasCloud_1763cc.cpp ----
 
 __attribute__((visibility("hidden"))) extern void **g_pgc_canvas;
 
@@ -157,7 +147,6 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     this->settled = 0;
 }
 
-// ---- _PlayerGasCloud_176520.cpp ----
 // Complete object destructor (D1). Sets the vtable, tears down the spark arrays and the
 // base geometry, then tail-calls the base destructor.
 
@@ -274,15 +263,12 @@ void *PlayerGasCloud::baseDtor()
     return this;
 }
 
-// ---- explode_176660.cpp ----
 using AbyssEngine::AEMath::Vector;
 
 struct PlayerGasCloud;
 
 // --- engine callees ---------------------------------------------------------
 extern "C" {
-
-
 
 // Array<T> default constructors (all share the 0xc-byte container layout).
 void ArrayGeom_ctor(void *self);    // Array<AEGeometry*>
@@ -297,8 +283,6 @@ void ArrayAdd_geom(void *value, void *arr);
 void ArrayAdd_vec(void *value, void *arr);
 void ArrayAdd_bool(bool value, void *arr);
 
-
-
 // Vector math helpers.
 float VectorLength(const Vector *v);
 void VectorNormalize(Vector *out, const Vector *v);
@@ -309,10 +293,10 @@ extern void *g_pgc_canvasRoot;   // *(DAT_186958): paint canvas
 extern void *g_pgc_rng;          // *(DAT_18695c): random generator
 
 // Tuning constants (DAT_ floats).
-extern float g_pgc_countScale;   // DAT_186940
-extern float g_pgc_attrDiv;      // DAT_186944
-extern float g_pgc_spread;       // DAT_186948
-extern float g_pgc_lifeDiv;      // DAT_18694c
+extern float g_pgc_countScale;
+extern float g_pgc_attrDiv;
+extern float g_pgc_spread;
+extern float g_pgc_lifeDiv;
 }
 
 // PlayerGasCloud::explode(int itemIndex, Vector src, float radius)
@@ -395,7 +379,6 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
     
 }
 
-// ---- update_1769b4.cpp ----
 using AbyssEngine::AEMath::Vector;
 
 // --- engine callees ---------------------------------------------------------
@@ -403,14 +386,6 @@ extern "C" {
 
 void *PlayerEgo_getTurretPosition(void *ego, Vector *out);
 int PlayerEgo_getCampaignProgress(void *ego);
-
-
-
-
-
-
-
-
 
 // Vector math.
 void Vector_sub(Vector *out, const Vector *a, const Vector *b);
@@ -426,14 +401,14 @@ extern void *g_pgcu_pickupSound;  // *(DAT_186e0c): pickup FModSound
 extern void *g_pgcu_campaign;     // *(DAT_186e10): campaign state
 
 // Tuning constants.
-extern float g_pgcu_velScale;     // DAT_186de4
-extern float g_pgcu_catchDist;    // DAT_186de8
-extern int   g_pgcu_minTimer;     // DAT_186dec
-extern int   g_pgcu_resetTimer;   // DAT_186e00
-extern float g_pgcu_fadeLo;       // DAT_186df0
-extern float g_pgcu_fadeAdd;      // DAT_186df4
-extern float g_pgcu_fadeDiv;      // DAT_186df8
-extern float g_pgcu_growDiv;      // DAT_186dfc
+extern float g_pgcu_velScale;
+extern float g_pgcu_catchDist;
+extern int   g_pgcu_minTimer;
+extern int   g_pgcu_resetTimer;
+extern float g_pgcu_fadeLo;
+extern float g_pgcu_fadeAdd;
+extern float g_pgcu_fadeDiv;
+extern float g_pgcu_growDiv;
 }
 
 // PlayerGasCloud::update(int dt)
@@ -590,7 +565,6 @@ void PlayerGasCloud_update(void *self, int dt)
     
 }
 
-// ---- render_176e18.cpp ----
 namespace AbyssEngine { namespace AEMath {
 void MatrixGetDir(Vector *out, Matrix const *m);
 void MatrixGetUp(Vector *out, Matrix const *m);

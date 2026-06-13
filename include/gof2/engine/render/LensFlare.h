@@ -21,16 +21,16 @@ int LensFlare_GetWidth(void *canvas);
 int LensFlare_GetHeight(void *canvas);
 
 // math + draw helpers used by render2D (resolved from PC-relative blx targets).
-float LensFlare_sqrtf(float v);                 // 0x000760e4
-int   LensFlare_imgWidth(void *canvas, void *img);  // 0x00072d84
+float LensFlare_sqrtf(float v);
+int   LensFlare_imgWidth(void *canvas, void *img);
 int   LensFlare_imgHandle(void *img);           // GetWidth-ish handle accessor (blx r6)
-void  LensFlare_setColor(void *canvas, uint32_t color);          // 0x0006ff28
-void  LensFlare_setPos(void *canvas, int x, int y);              // 0x00071d70
-void  LensFlare_drawScaled(void *canvas, void *img, int x, int y);   // 0x00073564
+void  LensFlare_setColor(void *canvas, uint32_t color);
+void  LensFlare_setPos(void *canvas, int x, int y);
+void  LensFlare_drawScaled(void *canvas, void *img, int x, int y);
 void  LensFlare_drawSprite(void *canvas, void *img, int x, int y);   // 0x000709c0-area (blx r5/r6)
-void  LensFlare_pushState(void *canvas);        // 0x0006fa90
-void  LensFlare_setBlend(void *canvas, uint32_t mode);           // 0x0006fac0
-void  LensFlare_drawFinal(void *canvas, void *img, int a, int b); // 0x00074de8
+void  LensFlare_pushState(void *canvas);
+void  LensFlare_setBlend(void *canvas, uint32_t mode);
+void  LensFlare_drawFinal(void *canvas, void *img, int a, int b);
 void  LensFlare_restoreState(void *canvas, int saved);           // tail 0x001ac088
 }
 

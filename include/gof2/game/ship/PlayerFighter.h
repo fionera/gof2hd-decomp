@@ -7,10 +7,7 @@
 // the target disassembly; we do NOT model a full layout - access fields via byte-offset
 // casts from `self`.
 
-
 struct PlayerFighter;
-
-
 
 // AbyssEngine::AEMath::Vector - 3 floats. Passed by const ref / value.
 namespace AbyssEngine { namespace AEMath {

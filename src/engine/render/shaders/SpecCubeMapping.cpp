@@ -1,8 +1,6 @@
 #include "gof2/engine/render/shaders/SpecCubeMapping.h"
 #include "gof2/engine/render/Mesh.h"
 
-
-// ---- _SpecCubeMapping_92b60.cpp ----
 void _ZN11AbyssEngine15SpecCubeMappingD0Ev(
     AbyssEngine::SpecCubeMapping *self)
 {
@@ -11,7 +9,6 @@ void _ZN11AbyssEngine15SpecCubeMappingD0Ev(
     operator delete(base);
 }
 
-// ---- Init_9286c.cpp ----
 namespace AbyssEngine {
 
 void SpecCubeMapping::Init(Engine *)
@@ -47,7 +44,6 @@ void SpecCubeMapping::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- SpecCubeMapping_927e0.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::SpecCubeMapping::SpecCubeMapping()
@@ -70,7 +66,6 @@ SpecCubeMapping::SpecCubeMapping()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_929e4.cpp ----
 // AbyssEngine::SpecCubeMapping::UpdateMeshData(Mesh*, Engine*)
 //   Streams the per-frame uniforms (lighting cube data only once, then the
 //   matrices/material) and binds the mesh's vertex attribute arrays, handling
@@ -128,7 +123,6 @@ void SpecCubeMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_929c0.cpp ----
 namespace AbyssEngine {
 
 void SpecCubeMapping::SetInActive()

@@ -68,7 +68,6 @@ Vector VectorNormalize(const Vector &v);
 } // namespace AEMath
 } // namespace AbyssEngine
 
-
 extern "C" int RepairBeam_Status_getShip();
 extern "C" int RepairBeam_Ship_getFirstEquipmentOfSort(int ship);
 extern "C" int RepairBeam_Item_getAttribute(int item);
@@ -108,7 +107,6 @@ extern "C" void RB_FModSound_play(int snd, void *ev, void *p, float f);
 extern "C" void RB_FModSound_stop(int snd);
 extern "C" void RB_FModSound_updateEvent3DAttributes(void *snd, int ev, Vector *pos, void *p, bool b);
 
-// ---- render_a7a48.cpp ----
 // RepairBeam::render() — render each beam geometry whose target id slot is active (!= -1).
 
 void RepairBeam::render() {
@@ -122,7 +120,6 @@ void RepairBeam::render() {
     }
 }
 
-// ---- RepairBeam_a7100.cpp ----
 // RepairBeam::RepairBeam(int shipIndex, int sort) — builds the per-target geometry/id/charge
 // arrays sized to the player's equipment-of-sort attribute count.
 
@@ -185,7 +182,6 @@ RepairBeam * RepairBeam::ctor(int shipIndex, int sort) {
     return self;
 }
 
-// ---- _RepairBeam_a72a0.cpp ----
 // RepairBeam::~RepairBeam() — releases the contained AEGeometry* array (also releasing the
 // pointed-to objects) and the int/float arrays, nulling each handle.
 
@@ -213,7 +209,6 @@ RepairBeam * RepairBeam::dtor() {
     return self;
 }
 
-// ---- update_a72f8.cpp ----
 // RepairBeam::update(int dt, Radar* radar, Level* level, Hud* hud)
 // Per the target, param_2 ("radar") is reused as the integer delta in the math; we keep the
 // original ABI (Radar* radar) but treat it as an int where the disasm does.
@@ -221,13 +216,12 @@ RepairBeam * RepairBeam::dtor() {
 // Drives the repair/heal/shield beams: assigns targets, animates beam geometry toward them,
 // applies heal/shield/damage effects, and manages the looping beam sound.
 
-
 extern "C" __attribute__((visibility("hidden"))) int **g_RB_canary;     // stack-guard global
 extern "C" __attribute__((visibility("hidden"))) void **g_RB_canvas;    // PaintCanvas holder
-extern "C" __attribute__((visibility("hidden"))) int *g_RB_dmgThresh;   // DAT_000b767c
-extern "C" __attribute__((visibility("hidden"))) float g_RB_scaleDiv;   // DAT_000b7688
-extern "C" __attribute__((visibility("hidden"))) float g_RB_healMul;    // DAT_000b7680
-extern "C" __attribute__((visibility("hidden"))) float g_RB_shieldMul;  // DAT_000b7684
+extern "C" __attribute__((visibility("hidden"))) int *g_RB_dmgThresh;
+extern "C" __attribute__((visibility("hidden"))) float g_RB_scaleDiv;
+extern "C" __attribute__((visibility("hidden"))) float g_RB_healMul;
+extern "C" __attribute__((visibility("hidden"))) float g_RB_shieldMul;
 extern "C" __attribute__((visibility("hidden"))) int *g_RB_sndPlay;     // play sound holder
 extern "C" __attribute__((visibility("hidden"))) int *g_RB_sndPlayEv;   // event-array base
 extern "C" __attribute__((visibility("hidden"))) int **g_RB_sndStop;    // stop sound holder
@@ -490,7 +484,6 @@ void RepairBeam::update(int dt, void *level, void *hud) {
                                                  (Vector *)((char *)self + 4), 0, false);
         }
     }
-
 
 }
 

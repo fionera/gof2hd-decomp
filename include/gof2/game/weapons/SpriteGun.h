@@ -16,7 +16,6 @@
 // the demangled name, so each method is authored as an extern "C" function whose
 // name contains the target method name. This sidesteps C++ mangling.
 
-
 struct SpriteGun;
 struct Player;
 struct Gun;

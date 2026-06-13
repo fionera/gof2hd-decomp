@@ -8,7 +8,6 @@
 // fields via byte-offset casts from `this` (which arrives in r0 just like the
 // first explicit arg of an extern "C" function).
 
-
 struct Wanted;
 
 // AbyssEngine::String passed by value is a 12-byte trivially-copied aggregate

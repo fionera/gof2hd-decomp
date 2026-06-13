@@ -25,7 +25,6 @@ extern "C" void glVertexAttribPointer(uint32_t index, int size, uint32_t type, u
                                       const void *pointer);
 extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);
 
-
 void operator delete(void *ptr) noexcept;
 
 namespace AbyssEngine {

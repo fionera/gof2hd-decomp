@@ -5,14 +5,12 @@
 #include "gof2/game/world/Station.h"
 #include "gof2/game/core/String.h"
 
-
 Array<int> *BluePrint_getIngredientList(BluePrint *self);
 Array<int> *BluePrint_getQuantityList(BluePrint *self);
 BluePrint *_ZN9BluePrintC2Ei(BluePrint *self, int item);   // BluePrint::BluePrint(int)
 extern "C" void ArraySetLengthInt(uint32_t n, Array<int> *a);
 extern "C" int Station_getIndex(void *station);
 
-// ---- getAutoCompletionPrice_1772f0.cpp ----
 // Hidden PC-relative pointer-to-the-item-database root.
 extern void *const gItemDB __attribute__((visibility("hidden")));
 
@@ -29,7 +27,6 @@ int BluePrint::getAutoCompletionPrice() {
     return (int)((float)(self->batchMultiplier * maxPrice) * 1.25f);
 }
 
-// ---- getRemainingAmount_177208.cpp ----
 // BluePrint::getRemainingAmount(int) -> remaining counter for the ingredient with the given index.
 int BluePrint::getRemainingAmount(int item) {
     BluePrint *self = this;
@@ -42,13 +39,11 @@ int BluePrint::getRemainingAmount(int item) {
     return 0;
 }
 
-// ---- isEmpty_17736a.cpp ----
 bool BluePrint::isEmpty() {
     BluePrint *self = this;
     return self->spentValue == 0;
 }
 
-// ---- getStationName_177348.cpp ----
 // BluePrint::getStationName() -> String by value (sret in r0, this in r1).
 AbyssEngine::String12 BluePrint::getStationName() {
     BluePrint *self = this;
@@ -57,7 +52,6 @@ AbyssEngine::String12 BluePrint::getStationName() {
     return r;
 }
 
-// ---- _BluePrint_176fdc.cpp ----
 extern "C" void ArrayReleaseInt(Array<int> *a);   // ArrayRelease<int>
 extern "C" void *ArrayInt_dtor(Array<int> *a);    // Array<int>::~Array
 // AbyssEngine::String::~String
@@ -77,7 +71,6 @@ void *_ZN9BluePrintD2Ev(BluePrint *self)
     return self;
 }
 
-// ---- complete_17714c.cpp ----
 // BluePrint::complete() -> zero every quantity counter in the ingredient array at +0x00.
 void BluePrint::complete() {
     BluePrint *self = this;
@@ -86,7 +79,6 @@ void BluePrint::complete() {
         a->data()[i] = 0;
 }
 
-// ---- getCurrentAmount_1771e6.cpp ----
 // BluePrint::getCurrentAmount(int) -> already-produced amount = total - remaining.
 int BluePrint::getCurrentAmount(int item) {
     BluePrint *self = this;
@@ -95,7 +87,6 @@ int BluePrint::getCurrentAmount(int item) {
     return total - remaining;
 }
 
-// ---- isCompleted_177164.cpp ----
 // BluePrint::isCompleted() -> true once every ingredient counter has dropped below 1.
 bool BluePrint::isCompleted() {
     BluePrint *self = this;
@@ -116,13 +107,11 @@ int BluePrint::getQuantity()     { return remainingBatch; }
 // BluePrint::isUnlocked() -> the unlock flag at +0x8 (set to 1 by unlock()).
 bool BluePrint::isUnlocked()     { return locked != 0; }
 
-// ---- unlock_17735e.cpp ----
 void BluePrint::unlock() {
     BluePrint *self = this;
     self->locked = 1;
 }
 
-// ---- reset_177374.cpp ----
 // Hidden PC-relative pointer-to-the-global-Status pointer.
 extern void *const gStatusPtr __attribute__((visibility("hidden")));
 
@@ -140,13 +129,11 @@ void BluePrint::reset() {
     self->spentValue = 0;
 }
 
-// ---- lock_177364.cpp ----
 void BluePrint::lock() {
     BluePrint *self = this;
     self->locked = 1;
 }
 
-// ---- getTotalAmount_1771a8.cpp ----
 // BluePrint::getTotalAmount(int) -> required total quantity for the given ingredient index.
 int BluePrint::getTotalAmount(int item) {
     BluePrint *self = this;
@@ -159,7 +146,6 @@ int BluePrint::getTotalAmount(int item) {
     return 0;
 }
 
-// ---- getIngredientList_177134.cpp ----
 // Hidden PC-relative pointer-to-the-item-database root.
 extern void *const gItemDB __attribute__((visibility("hidden")));
 
@@ -171,7 +157,6 @@ Array<int> *BluePrint_getIngredientList(BluePrint *self)
     return (Array<int> *)((Item *)(data[idx]))->getIngredients();
 }
 
-// ---- getIngredientsValue_177298.cpp ----
 // Hidden PC-relative pointer-to-the-item-database root.
 extern void *const gItemDB __attribute__((visibility("hidden")));
 
@@ -190,7 +175,6 @@ int BluePrint::getIngredientsValue() {
     return total;
 }
 
-// ---- getQuantityList_177190.cpp ----
 // Hidden PC-relative pointer-to-the-item-database root.
 extern void *const gItemDB __attribute__((visibility("hidden")));
 
@@ -202,7 +186,6 @@ Array<int> *BluePrint_getQuantityList(BluePrint *self)
     return (Array<int> *)((Item *)(data[idx]))->getQuantities();
 }
 
-// ---- BluePrint_176f20.cpp ----
 // AbyssEngine::String::String()
 extern "C" void ArrayInt_ctor(void *a);                // Array<int>::Array()
 // Hidden PC-relative pointer-to-the-item-database root.
@@ -244,7 +227,6 @@ BluePrint *BluePrint::make(int index) {
     return _ZN9BluePrintC2Ei((BluePrint *)::operator new(sizeof(BluePrint)), index);
 }
 
-// ---- addItem_177008.cpp ----
 // AbyssEngine::String::operator=
 // Hidden PC-relative pointer-to-the-global-Galaxy pointer.
 extern void *const gGalaxyPtr __attribute__((visibility("hidden")));
@@ -286,7 +268,6 @@ void BluePrint::addItem(Item *item, int amount, int station) {
     }
 }
 
-// ---- getCompletionRate_177238.cpp ----
 // BluePrint::getCompletionRate() -> averaged per-ingredient completion fraction.
 // For each ingredient i: produced fraction = (target - remaining) / target,
 // then averaged across all ingredients (divide each term by the ingredient count).

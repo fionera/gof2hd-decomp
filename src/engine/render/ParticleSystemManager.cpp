@@ -2,7 +2,6 @@
 #include "gof2/engine/render/IParticleSystem.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-
 extern "C" void _psm_ArrayReleaseSprites(void *arr);
 extern "C" void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
 extern "C" void _psm_renderMeshes(void *self);
@@ -26,7 +25,6 @@ extern "C" void _ips_reset(void *sys);
 extern "C" void _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned c);
 extern "C" void _psm_meshRender2(void *canvas, unsigned a);
 
-// ---- update_183866.cpp ----
 // ParticleSystemManager::update(long long)
 void ParticleSystemManager::update(long long dt)
 {
@@ -71,7 +69,6 @@ void ParticleSystemManager::update(long long dt)
         this->field_0x10 = 0;
 }
 
-// ---- reset_183ce8.cpp ----
 // ParticleSystemManager::reset()
 void ParticleSystemManager::reset()
 {
@@ -87,7 +84,6 @@ void ParticleSystemManager::reset()
     }
 }
 
-// ---- releaseSprites_183c48.cpp ----
 // ParticleSystemManager::releaseSprites()
 void ParticleSystemManager::releaseSprites()
 {
@@ -98,7 +94,6 @@ void ParticleSystemManager::releaseSprites()
     }
 }
 
-// ---- construct_183618.cpp ----
 // ParticleSystemManager::construct()
 void ParticleSystemManager::construct()
 {
@@ -113,7 +108,6 @@ void ParticleSystemManager::construct()
     this->field_0x0 = 0x101;
 }
 
-// ---- render3d_183c68.cpp ----
 // ParticleSystemManager::render3d()
 void ParticleSystemManager::render3d()
 {
@@ -126,11 +120,9 @@ void ParticleSystemManager::render3d()
     return _psm_renderSpritesExt(this);
 }
 
-// ---- setParticleSetByIndex_183b24.cpp ----
 // ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setIndex)
 // Same bit-17 sprite/mesh dispatch as the other per-system setters; forwards the set index to
 // the selected IParticleSystem.
-
 
 void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setIndex)
 {
@@ -148,11 +140,9 @@ void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setI
     ((IParticleSystem*)(arr[idx]))->setParticleSetIndex(setIndex);
 }
 
-// ---- enableSystemRender_183b90.cpp ----
 // ParticleSystemManager::enableSystemRender(int handle, bool enable)
 // Bad-data ARM veneer that mirrors the other per-system setters' bit-17 sprite/mesh dispatch,
 // forwarding to the IParticleSystem render-enable method.
-
 
 void ParticleSystemManager::enableSystemRender(int handle, bool enable)
 {
@@ -170,7 +160,6 @@ void ParticleSystemManager::enableSystemRender(int handle, bool enable)
     ((IParticleSystem*)(arr[idx]))->enableRender(enable);
 }
 
-// ---- ParticleSystemManager_18357c.cpp ----
 // ParticleSystemManager::ParticleSystemManager(PaintCanvas*, CameraSet, unsigned short spriteTex,
 //     bool spriteFlag, unsigned short meshTex, bool meshFlag)
 // Stores the canvas and camera set, default-constructs the sprite (+0x18) and mesh (+0x3c)
@@ -203,7 +192,6 @@ void *ParticleSystemManager_ctor6(
     return self;
 }
 
-// ---- release_183c0e.cpp ----
 // Array<ParticleSystemMesh*>::release-ish, via PLT veneer; takes &mesh-array (this+0x3c).
 
 // ParticleSystemManager::release()
@@ -214,7 +202,6 @@ void ParticleSystemManager::release()
     return _psm_releaseMeshArray(&this->field_0x3c);
 }
 
-// ---- cameraToggle_183c28.cpp ----
 // re-init after camera change (PLT veneer); takes this.
 
 // ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet)
@@ -227,13 +214,11 @@ void ParticleSystemManager::cameraToggle(int cam)
     return _psm_constructAfterCamera(this);
 }
 
-// ---- addMeshSystem_183a56.cpp ----
 // ParticleSystemManager::addMeshSystem(AEMath::Matrix const*, Array<ParticleSet> const&, bool)
 // Allocates a ParticleSystemMesh (0xa0 bytes), constructs it against the manager's canvas
 // (+0x04) and the mesh flag (+0x60), appends it to the mesh array (+0x3c), accumulates its
 // particle count (virtual call, vtable+0x10) into +0x5c, and returns the new system's handle:
 // the mesh-array index with bit 0x4000 set to mark it as a mesh-array handle.
-
 
 extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
                               bool b4, bool b5);                    // ParticleSystemMesh ctor
@@ -253,12 +238,10 @@ unsigned int ParticleSystemManager::addMeshSystem(const void *matrix, const void
     return (unsigned int)(this->field_0x3c - 1) | 0x4000;
 }
 
-// ---- emitManual_183e00.cpp ----
 // ParticleSystemManager::emitManual(int handle, Vector const& pos, int ret, float)
 // 4-argument overload: bit-17 sprite/mesh dispatch, emits one burst at `pos`. Returns the
 // pass-through `ret` selector packed into the low word (the high word is -1 on the no-system
 // path, matching the original's CONCAT44).
-
 
 unsigned long long ParticleSystemManager::emitManual(int handle, const float *pos, int ret, float p4)
 {
@@ -279,7 +262,6 @@ unsigned long long ParticleSystemManager::emitManual(int handle, const float *po
     return (unsigned int)ret;
 }
 
-// ---- renderSprites_183cba.cpp ----
 // 4-arg sprite renderer (DAT_001ac994 veneer): canvas, a, b, c
 // 2-arg sprite renderer (DAT_001ac9a4 veneer): canvas, a
 
@@ -292,14 +274,12 @@ void ParticleSystemManager::renderSprites()
         return _psm_spriteRender4(this->field_0x4, this->field_0x30, this->field_0x2c, this->field_0x28);
 }
 
-// ---- ParticleSystemManager_183662.cpp ----
 // ParticleSystemManager::ParticleSystemManager(PaintCanvas*, CameraSet, unsigned short spriteTex,
 //     BlendMode spriteBlend, bool spriteFlag, unsigned short meshTex, BlendMode meshBlend,
 //     bool meshFlag)
 // 8-argument overload that also takes explicit blend modes. Same field layout as the 6-arg ctor
 // but the texture slots (+0x24/+0x48) are forced to 0xffff and the supplied texture goes to the
 // "blend" half (+0x26/+0x4a), with the blend modes stored at +0x28/+0x4c.
-
 
 void *ParticleSystemManager_ctor8(
     void *self, void *canvas, int cameraSet, unsigned short spriteTex, int spriteBlend,
@@ -324,10 +304,8 @@ void *ParticleSystemManager_ctor8(
     return self;
 }
 
-// ---- systemSetMatrix_183e44.cpp ----
 // ParticleSystemManager::systemSetMatrix(int handle, AEMath::Matrix const* matrix)
 // Bit-17 sprite/mesh dispatch; forwards the world matrix to the selected IParticleSystem.
-
 
 void ParticleSystemManager::systemSetMatrix(int handle, const void *matrix)
 {
@@ -345,11 +323,9 @@ void ParticleSystemManager::systemSetMatrix(int handle, const void *matrix)
     ((IParticleSystem*)(arr[idx]))->setMatrix((Matrix const*)(matrix));
 }
 
-// ---- setParticleSetBySet_183b48.cpp ----
 // ParticleSystemManager::setParticleSetBySet(int handle, ParticleSettings::ParticleSet set)
 // Bit-17 sprite/mesh dispatch; forwards a particle-set descriptor (passed by value as a single
 // word in this build) to the selected IParticleSystem.
-
 
 void ParticleSystemManager::setParticleSetBySet(unsigned int handle, unsigned int set)
 {
@@ -367,12 +343,10 @@ void ParticleSystemManager::setParticleSetBySet(unsigned int handle, unsigned in
     ((IParticleSystem*)(arr[idx]))->setParticleSet(set);
 }
 
-// ---- enableSystemUpdate_183ab8.cpp ----
 // ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
 // Handles pack the array selector in bit 17: when set, the system lives in the mesh array
 // (+0x40) and the low bits index it; otherwise it lives in the sprite array (+0x1c). -1 means
 // "no system". The selected IParticleSystem's update-enable setter is then invoked.
-
 
 void ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
 {
@@ -390,7 +364,6 @@ void ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
     _ips_enableUpdate(arr[idx], enable);
 }
 
-// ---- initSprites_1836e8.cpp ----
 // ParticleSystemManager::initSprites()
 // When the sprite array (+0x18) is non-empty and a camera set (+0xc) is active, this creates the
 // shared sprite system on the canvas (+0x04) -- either from an existing texture id (+0x24) or by
@@ -441,12 +414,10 @@ void ParticleSystemManager::initSprites()
     }
 }
 
-// ---- addSpriteSystem_1839fc.cpp ----
 // ParticleSystemManager::addSpriteSystem(AEMath::Matrix const*, Array<ParticleSet> const&, bool)
 // Allocates a ParticleSystemSprite (0x78 bytes), constructs it against the manager's canvas
 // (+0x04) and the sprite flag (+0x38), appends it to the sprite array (+0x18), accumulates its
 // particle count into +0x34, and returns the new system's sprite-array handle (index, no flag).
-
 
 extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
                            bool b4, bool b5);                       // ParticleSystemSprite ctor
@@ -462,7 +433,6 @@ int ParticleSystemManager::addSpriteSystem(const void *matrix, const void *sets,
     return this->field_0x18 - 1;
 }
 
-// ---- initMesh_1837a8.cpp ----
 // ParticleSystemManager::initMesh()
 // Mesh analogue of initSprites. When the mesh array (+0x3c) is non-empty it creates the shared
 // particle mesh on the canvas (+0x04) from the packed vertex/index counts in +0x5c (low 14 bits
@@ -512,14 +482,12 @@ void ParticleSystemManager::initMesh()
     }
 }
 
-// ---- emitManual_183dc4.cpp ----
 // ParticleSystemManager::emitManual(int handle, Vector const& pos, int ret, Vector const& vel, float)
 // Bit-17 sprite/mesh dispatch; emits one burst at the given position into the selected system.
 // The decompiled return is the pass-through `ret` selector word when a system was hit, else
 // `this`. Modeled as the dispatch + emit; we return the selector for fidelity.
 //
 // NB: the first explicit param is `this` (in r0); the engine passes the manager pointer there.
-
 
 void *ParticleSystemManager_emitManual_v(
     void *self, int handle, const float *pos, void *ret, const float *vel, float p5)
@@ -542,11 +510,9 @@ void *ParticleSystemManager_emitManual_v(
     return result;
 }
 
-// ---- enableSystemEmit_183b6c.cpp ----
 // ParticleSystemManager::enableSystemEmit(int handle, bool enable)
 // The target lifts as bad ARM data (a tail-call veneer), but it is the same bit-17 sprite/mesh
 // handle dispatch as the sibling setters, forwarding to the IParticleSystem emit-enable method.
-
 
 void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
 {
@@ -564,23 +530,19 @@ void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
     ((IParticleSystem*)(arr[idx]))->enableEmit(enable);
 }
 
-// ---- addSystem_183924.cpp ----
 // ParticleSystemManager::addSystem(AEMath::Matrix const*, ParticleSettings::ParticleSet, bool)
 // The 16-byte target lifts as bad ARM data (a tail-call veneer). It is a thin forwarder that
 // constructs a particle system for the given set and registers it; we model it as a tail-call to
 // the sprite-system add path (the default add route), returning its handle.
-
 
 int ParticleSystemManager::addSystem(const void *matrix, unsigned int set, bool flag)
 {
     return _psm_addSpriteSystem(this, matrix, set, flag);
 }
 
-// ---- init_1836c6.cpp ----
 // ParticleSystemManager::init()
 // Builds the sprite and mesh sub-systems, marks the manager active (+0x14), and runs the first
 // update tick (via the virtual update at vtable+? -> here the resolved emitter-update entry).
-
 
 int ParticleSystemManager::init()
 {
@@ -590,11 +552,9 @@ int ParticleSystemManager::init()
     return _psm_firstUpdate(this, 0, 0, 0);
 }
 
-// ---- resetSystem_183bb4.cpp ----
 // ParticleSystemManager::resetSystem(int handle)
 // Bad-data ARM veneer; same bit-17 sprite/mesh handle dispatch, tail-calling the selected
 // IParticleSystem's reset method.
-
 
 void ParticleSystemManager::resetSystem(int handle)
 {
@@ -612,7 +572,6 @@ void ParticleSystemManager::resetSystem(int handle)
     _ips_reset(arr[idx]);
 }
 
-// ---- renderMeshes_183c8c.cpp ----
 // 4-arg renderer (DAT_001ac974 veneer): canvas, a, b, c
 // 2-arg renderer (DAT_001ac984 veneer): canvas, a
 

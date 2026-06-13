@@ -6,7 +6,6 @@
 // by raw offset since their real layouts live in other (non-batch) classes.
 static inline char *bytes(void *self) { return (char *)self; }
 
-// ---- Init_91084.cpp ----
 namespace AbyssEngine {
 
 void TextureShader::Init(Engine *)
@@ -23,7 +22,6 @@ void TextureShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _TextureShader_91258.cpp ----
 void _ZN11AbyssEngine13TextureShaderD0Ev(AbyssEngine::TextureShader *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -31,7 +29,6 @@ void _ZN11AbyssEngine13TextureShaderD0Ev(AbyssEngine::TextureShader *self)
     operator delete(base);
 }
 
-// ---- UseShader_90f74.cpp ----
 namespace AbyssEngine {
 
 void TextureShader::UseShader(bool)
@@ -47,7 +44,6 @@ void TextureShader::UseShader(bool)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_910cc.cpp ----
 namespace AbyssEngine {
 
 void TextureShader::SetInActive()
@@ -60,7 +56,6 @@ void TextureShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- TextureShader_90ee8.cpp ----
 AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::TextureShader *self)
 {
     struct Frame {
@@ -84,7 +79,6 @@ AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::TextureShad
     return self;
 }
 
-// ---- UpdateMeshData_910f8.cpp ----
 namespace AbyssEngine {
 
 void TextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -160,7 +154,6 @@ void TextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- ConnectShaderComponents_90f94.cpp ----
 namespace AbyssEngine {
 
 void TextureShader::ConnectShaderComponents(uint32_t program, int slot)

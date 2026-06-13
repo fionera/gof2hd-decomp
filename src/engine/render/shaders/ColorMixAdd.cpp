@@ -1,9 +1,5 @@
 #include "gof2/engine/render/shaders/ColorMixAdd.h"
 
-
-
-
-// ---- _ColorMixAdd_92388.cpp ----
 void _ZN11AbyssEngine11ColorMixAddD0Ev(
     AbyssEngine::ColorMixAdd *self)
 {
@@ -12,7 +8,6 @@ void _ZN11AbyssEngine11ColorMixAddD0Ev(
     operator delete(base);
 }
 
-// ---- UpdateMeshData_922a2.cpp ----
 namespace AbyssEngine {
 
 void ColorMixAdd::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -47,7 +42,6 @@ void ColorMixAdd::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_92284.cpp ----
 namespace AbyssEngine {
 
 void ColorMixAdd::SetInActive()
@@ -60,7 +54,6 @@ void ColorMixAdd::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- ColorMixAdd_9213c.cpp ----
 namespace AbyssEngine {
 
 int ColorMixAdd::ShaderIndex;
@@ -77,7 +70,6 @@ ColorMixAdd::ColorMixAdd()
 
 } // namespace AbyssEngine
 
-// ---- Init_921c8.cpp ----
 namespace AbyssEngine {
 
 void ColorMixAdd::Init(Engine *)

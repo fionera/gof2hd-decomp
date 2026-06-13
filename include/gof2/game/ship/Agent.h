@@ -6,7 +6,6 @@
 // Field offsets recovered from per-method target disassembly. We do NOT model a
 // full layout: methods access fields via byte-offset casts from `this`.
 
-
 struct Agent;
 
 // AbyssEngine::String passed by value is a 12-byte trivially-copied aggregate

@@ -7,7 +7,6 @@
 // namespace; only argument types like AbyssEngine::AEMath::Vector are).
 // Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
 
-
 struct PlayerGasCloud;
 struct ParticleSystemManager;
 struct AEGeometry;

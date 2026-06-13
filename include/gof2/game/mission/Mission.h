@@ -16,7 +16,6 @@
 //   0x5c bool instantAction 0x60 float distance     0x64 int campaign
 //   0x68/0x6c production goods (int,int)            0x74 bool visible
 
-
 struct Mission;
 struct Agent;
 

@@ -6,7 +6,6 @@
 // We do NOT model the full layout; fields are accessed by byte offset taken
 // from each work-item's target disasm.
 
-
 struct Hud;            // opaque; we only ever take a Hud* and offset-cast.
 
 // Other game types referenced by pointer only — keep opaque.

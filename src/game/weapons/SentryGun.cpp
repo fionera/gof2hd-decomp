@@ -3,10 +3,6 @@
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/weapons/Gun.h"
 
-
-
-
-// ---- _SentryGun_15c3c0.cpp ----
 // SentryGun::~SentryGun() — deleting destructor. SentryGun adds no members needing
 // cleanup, so the body is just the base ObjectGun destructor followed by a tail-call
 // (operator delete). Symbol demangles to contain "~SentryGun".
@@ -18,7 +14,6 @@ void _ZN9SentryGunD0Ev(SentryGun *self)
     return ::operator delete(ObjectGun_dtor(self));
 }
 
-// ---- SentryGun_15c380.cpp ----
 // SentryGun::SentryGun(Gun*, int, int, int, Level*) — constructor.
 // SentryGun is a polymorphic subclass of ObjectGun: the base initializer runs the
 // ObjectGun constructor (with reordered args), clang installs the SentryGun vtable
@@ -34,7 +29,6 @@ SentryGun * SentryGun::ctor(Gun *gun, int p2, int p3, int p4, Level *level) {
     return self;
 }
 
-// ---- update_15c3d2.cpp ----
 // SentryGun::update(int) — virtual override of ObjectGun::update.
 // Advances the owned Gun, and on a fire-pulse spawns from a pool of objects.
 

@@ -35,7 +35,6 @@ struct FileRead;
 #include "gof2/game/ship/Ship.h"
 #undef RetStr
 
-
 extern "C" int AEString_IndexOf(String *haystack, String *needle);
 extern "C" void *Ship_dtor(Ship *);
 extern "C" void op_delete(void *);
@@ -96,28 +95,20 @@ struct FileRead {
 };
 struct Generator { Generator(); };
 
-// ---- getPlanetNames_ac5d4.cpp ----
 int Status::getPlanetNames() { return planetNames; }
 
-// ---- getJumpgateUsed_ac4e2.cpp ----
 int Status::getJumpgateUsed() { return jumpgatesUsed; }
 
-// ---- dlc1Won_abc0a.cpp ----
 bool Status::dlc1Won() { return 0x53 < currentCampaignMission; }
 
-// ---- incEquipmentBought_ac500.cpp ----
 void Status::incEquipmentBought() { boughtEquipment = boughtEquipment + 1; }
 
-// ---- setKills_ac5f2.cpp ----
 void Status::setKills(int v) { kills = v; }
 
-// ---- incMissionCount_a9a7a.cpp ----
 void Status::incMissionCount() { missionCount = missionCount + 1; }
 
-// ---- incPlayingTime_ac7aa.cpp ----
 void Status::incPlayingTime(int64_t delta) { playingTime = playingTime + delta; }
 
-// ---- orbitHasPlanetRing_abcd0.cpp ----
 uint Status::orbitHasPlanetRing(int index) {
     unsigned t = index - 0x78U;
     if (((t >> 1) | (t << 0x1f)) < 7) {
@@ -126,10 +117,8 @@ uint Status::orbitHasPlanetRing(int index) {
     return 0;
 }
 
-// ---- getSystem_abd60.cpp ----
 int Status::getSystem() { return system; }
 
-// ---- inSupernovaSystem_abd34.cpp ----
 // Returns 1 only when stranded in the supernova solar system before the late campaign.
 int Status::inSupernovaSystem() {
     if (__builtin_expect((long)inAlienOrbit(), 1)) return 0;
@@ -154,91 +143,66 @@ int Status::isChallengeMode() {
     return (*slot)->inSupernovaSystem();
 }
 
-// ---- visitStation_ac5b4.cpp ----
 void Status::visitStation() { stationsVisited = stationsVisited + 1; }
 
-// ---- getMaxMissions_a9a76.cpp ----
 int Status::getMaxMissions() { return 2; }
 
-// ---- setPirateKills_ac6e0.cpp ----
 void Status::setPirateKills(int v) { pirateKills = v; }
 
-// ---- setFreelanceMission_a99f8.cpp ----
 void Status::setFreelanceMission(Mission *m) {
     (*missions)[1] = m;
 }
 
-// ---- getStationStack_a8fe2.cpp ----
 Array<Station *> *Status::getStationStack() {
     return stationStack;
 }
 
-// ---- getMission_a967c.cpp ----
 Mission *Status::getMission() { return mission; }
 
-// ---- setPassengers_a99e4.cpp ----
 void Status::setPassengers(int p) { passengers = p; }
 
-// ---- getMissionCount_ac714.cpp ----
 int Status::getMissionCount() { return missionCount; }
 
-// ---- setCredits_ac622.cpp ----
 void Status::setCredits(int v) { credits = v; }
 
-// ---- stringHasToken_ac9f4.cpp ----
 bool Status::stringHasToken(String haystack, String needle) {
     return AEString_IndexOf(&haystack, &needle) > -1;
 }
 
-// ---- getLastXP_ac692.cpp ----
 int Status::getLastXP() { return lastXP; }
 
-// ---- loadAgents_acd0a.cpp ----
 Array<int> *Status_loadAgents_passthrough(Array<int> *a) {
     return a;
 }
 
-// ---- setLastXP_ac604.cpp ----
 void Status::setLastXP(int v) { lastXP = v; }
 
-// ---- setStationsVisited_abbfe.cpp ----
 void Status::setStationsVisited(int v) { stationsVisited = v; }
 
-// ---- setStationStack_a8fe8.cpp ----
 void Status::setStationStack(Array<Station *> *stack) { stationStack = stack; }
 
-// ---- hardCoreMode_abe40.cpp ----
 struct HardCoreHolder { char pad[0x2c]; float difficulty; };
 __attribute__((visibility("hidden"))) extern HardCoreHolder *g_hardCoreHolder;
 bool Status::hardCoreMode() {
     return g_hardCoreHolder->difficulty == 1.5f;
 }
 
-// ---- crateCaptured_ac4e8.cpp ----
 void Status::crateCaptured(int delta) { capturedCrates = delta + capturedCrates; }
 
-// ---- getStanding_ac720.cpp ----
 int Status::getStanding() { return standing; }
 
-// ---- getBoughtEquipment_ac512.cpp ----
 int Status::getBoughtEquipment() { return boughtEquipment; }
 
-// ---- getCredits_ac5e0.cpp ----
 int Status::getCredits() { return credits; }
 
-// ---- setRating_ac5e6.cpp ----
 void Status::setRating(int v) { rating = v; }
 
-// ---- getWanted_ace4e.cpp ----
 Array<Wanted *> *Status::getWanted() { return wanted; }
 
-// ---- getCurrentCampaignMission_a966c.cpp ----
 int Status::getCurrentCampaignMission() { return currentCampaignMission; }
 
-// ---- setMissionCount_ac5f8.cpp ----
 void Status::setMissionCount(int v) { missionCount = v; }
 
-// ---- setShip_abbdc.cpp ----
 void Status::setShip(Ship *s) {
     if (ship != 0) {
         op_delete(Ship_dtor(ship));
@@ -247,57 +211,44 @@ void Status::setShip(Ship *s) {
     ship = s;
 }
 
-// ---- getMissions_a99e8.cpp ----
 Array<Mission *> *Status::getMissions() { return missions; }
 
-// ---- inFogSkyboxOrbit_abd66.cpp ----
 bool Status::inFogSkyboxOrbit() {
     if (inAlienOrbit()) return false;
     if (((SolarSystem *)(system))->getTextureIndex() == 0x11) return true;
     return ((SolarSystem *)(system))->getTextureIndex() == 0x12;
 }
 
-// ---- inPirateLootOrbit_abe0e.cpp ----
 bool Status::inPirateLootOrbit() {
     if (inAlienOrbit()) return false;
     if (((SolarSystem *)(system))->getIndex() == 0x20) return true;
     return ((SolarSystem *)(system))->getIndex() == 0x21;
 }
 
-// ---- setPlayingTime_ac5ec.cpp ----
 void Status::setPlayingTime(int64_t v) { playingTime = v; }
 
-// ---- getPendingProducts_a8fd2.cpp ----
 int Status::getPendingProducts() { return (int)(intptr_t)pendingProducts; }
 
-// ---- getSystemVisibilities_a8fd6.cpp ----
 Array<bool> *Status::getSystemVisibilities() { return systemVisibilities; }
 
-// ---- setSystemVisibility_a8fda.cpp ----
 void Status::setSystemVisibility(int index, bool value) {
     (*systemVisibilities)[index] = value;
 }
 
-// ---- incCollectedBounties_acd1a.cpp ----
 void Status::incCollectedBounties(int index) {
     if (index < 4) {
         collectedBounties[index] = collectedBounties[index] + 1;
     }
 }
 
-// ---- setCurrentCampaignMission_a9a86.cpp ----
 void Status::setCurrentCampaignMission(int v) { currentCampaignMission = v; }
 
-// ---- addKills_ac708.cpp ----
 void Status::addKills(int delta) { kills = delta + kills; }
 
-// ---- getPirateKills_ac6e6.cpp ----
 int Status::getPirateKills() { return pirateKills; }
 
-// ---- getStation_a9646.cpp ----
 Station *Status::getStation() { return station; }
 
-// ---- setCampaignMission_a9a04.cpp ----
 void Status::setCampaignMission(Mission *m) {
     ((Mission *)(m))->setCampaignMission(true);
     Mission **slot = missions->data();
@@ -309,7 +260,6 @@ void Status::setCampaignMission(Mission *m) {
     slot[0] = m;
 }
 
-// ---- getWantedInCurrentOrbit_abe64.cpp ----
 // Returns the active, non-terminated wanted target located in the current orbit with the
 // lowest required-bounty count.
 Wanted *Status::getWantedInCurrentOrbit() {
@@ -336,10 +286,8 @@ Wanted *Status::getWantedInCurrentOrbit() {
     return best;
 }
 
-// ---- getLevel_ac71a.cpp ----
 int Status::getLevel() { return level; }
 
-// ---- _Status_a8d96.cpp ----
 // Releases the ship, campaign mission, agent/station-stack/wanted arrays, and the name string.
 Status::~Status() {
     if (ship != 0) {
@@ -373,7 +321,6 @@ Status::~Status() {
     wanted = 0;
 }
 
-// ---- inStormOrbit_abcf2.cpp ----
 bool Status::inStormOrbit() {
     if (__builtin_expect((long)inAlienOrbit(), 0)) return false;
     if (__builtin_expect(currentCampaignMission < 0x5a, 0)) return false;
@@ -382,19 +329,15 @@ bool Status::inStormOrbit() {
     return ((SolarSystem *)(system))->getTextureIndex() == 0x12;
 }
 
-// ---- getCapturedCrates_ac4fa.cpp ----
 int Status::getCapturedCrates() { return capturedCrates; }
 
-// ---- incKills_ac6c4.cpp ----
 void Status::incKills() {
     kills = kills + 1;
     return incKills_notify(g_incKillsHook);
 }
 
-// ---- getStationsVisited_abc04.cpp ----
 int Status::getStationsVisited() { return stationsVisited; }
 
-// ---- getCampaignMission_a9672.cpp ----
 int Status::getCampaignMission() {
     return (int)(intptr_t)(*missions)[0];
 }
@@ -406,31 +349,23 @@ Mission *Status::getCampaignMissionPtr() {
     return (*missions)[0];
 }
 
-// ---- setJumpgateUsed_ac4d0.cpp ----
 void Status::setJumpgateUsed(int v) { jumpgatesUsed = v; }
 
-// ---- gameWon_a965e.cpp ----
 bool Status::gameWon() { return 0x2c < currentCampaignMission; }
 
-// ---- setLevel_ac5fe.cpp ----
 void Status::setLevel(int v) { level = v; }
 
-// ---- setCapturedCrates_ac4f4.cpp ----
 void Status::setCapturedCrates(int v) { capturedCrates = v; }
 
-// ---- inBlackMarketSystem_abdec.cpp ----
 bool Status::inBlackMarketSystem() {
     if (inAlienOrbit()) return false;
     return ((SolarSystem *)(system))->getIndex() == 0x19;
 }
 
-// ---- incGoodsProduced_ac616.cpp ----
 void Status::incGoodsProduced(int delta) { goodsProduced = delta + goodsProduced; }
 
-// ---- getPlayingTime_a964c.cpp ----
 int64_t Status::getPlayingTime() { return playingTime; }
 
-// ---- getNumberOfMissions_a9a48.cpp ----
 // Counts the non-empty slots in the mission array.
 int Status::getNumberOfMissions() {
     Array<Mission *> *m = missions;
@@ -449,20 +384,17 @@ int Status::getNumberOfMissions() {
     return count;
 }
 
-// ---- inSupernovaOrbit_abd98.cpp ----
 bool Status::inSupernovaOrbit() {
     if (inAlienOrbit()) return false;
     return Station_getIndex(station) == 0x6d;
 }
 
-// ---- inDeepScienceOrbit_abdba.cpp ----
 bool Status::inDeepScienceOrbit() {
     if (inAlienOrbit()) return false;
     if (Station_getIndex(station) == 10) return true;
     return Station_getIndex(station) == 100;
 }
 
-// ---- wantedBoardAccessible_ace5c.cpp ----
 __attribute__((visibility("hidden"))) extern Status **g_statusBoard;
 
 // True if any wanted entry can post on the current system's bounty board right now.
@@ -484,48 +416,36 @@ int Status::wantedBoardAccessible() {
     return 0;
 }
 
-// ---- incPirateKills_ac6ec.cpp ----
 void Status::incPirateKills() {
     pirateKills = pirateKills + 1;
     return incPirateKills_notify(g_incPirateKillsHook);
 }
 
-// ---- setGoodsProduced_ac60a.cpp ----
 void Status::setGoodsProduced(int v) { goodsProduced = v; }
 
-// ---- setMission_a9652.cpp ----
 void Status::setMission(Mission *m) { mission = m; }
 
-// ---- getCollectedBounties_acd0c.cpp ----
 int Status::getCollectedBounties(int index) {
     if (index < 4) return collectedBounties[index];
     return 0;
 }
 
-// ---- getRating_ac68c.cpp ----
 int Status::getRating() { return rating; }
 
-// ---- getFreelanceMission_a99ee.cpp ----
 Mission *Status::getFreelanceMission() {
     return (*missions)[1];
 }
 
-// ---- jumpgateUsed_ac4d6.cpp ----
 void Status::jumpgateUsed() { jumpgatesUsed = jumpgatesUsed + 1; }
 
-// ---- getShip_a9658.cpp ----
 Ship *Status::getShip() { return ship; }
 
-// ---- getPlanetTextures_ac5da.cpp ----
 int Status::getPlanetTextures() { return planetTextures; }
 
-// ---- getPassengers_a99e0.cpp ----
 int Status::getPassengers() { return passengers; }
 
-// ---- isStorylineWanted_ace52.cpp ----
 bool Status::isStorylineWanted(int index) { return (unsigned)index < 2; }
 
-// ---- missionFailed_abee6.cpp ----
 // Returns the first failed mission, or a type-0xd mission flagged failable (byte at 0xf1).
 int Status::missionFailed(bool param_1, int64_t time) {
     for (unsigned i = 0; i < missions->size(); i = i + 1) {
@@ -541,13 +461,10 @@ int Status::missionFailed(bool param_1, int64_t time) {
     return 0;
 }
 
-// ---- getBluePrints_ac724.cpp ----
 int Status::getBluePrints() { return (int)(intptr_t)bluePrints; }
 
-// ---- getAgents_ac7a6.cpp ----
 int Status::getAgents() { return (int)(intptr_t)agents; }
 
-// ---- inPlanetRingOrbit_abc9c.cpp ----
 uint Status::inPlanetRingOrbit() {
     if (inAlienOrbit() == 0) {
         int idx = Station_getIndex(station);
@@ -559,19 +476,14 @@ uint Status::inPlanetRingOrbit() {
     return 0;
 }
 
-// ---- setBoughtEquipment_ac50c.cpp ----
 void Status::setBoughtEquipment(int v) { boughtEquipment = v; }
 
-// ---- getWingmen_ac7ba.cpp ----
 int Status::getWingmen() { return wingmen; }
 
-// ---- getGoodsProduced_ac610.cpp ----
 int Status::getGoodsProduced() { return goodsProduced; }
 
-// ---- getKills_ac6bc.cpp ----
 int Status::getKills() { return kills; }
 
-// ---- changeCredits_abbb8.cpp ----
 // Credit deltas whose magnitude exceeds 1e9 are ignored; the balance is clamped at >= 0.
 __attribute__((minsize)) void Status::changeCredits(int delta) {
     int magnitude = delta;
@@ -584,7 +496,6 @@ __attribute__((minsize)) void Status::changeCredits(int delta) {
     }
 }
 
-// ---- isFreighterMissionStation_acd2c.cpp ----
 // True when `station` hosts a freighter mission (two bit-masks plus the special id 0xf).
 __attribute__((visibility("hidden"))) extern int DAT_freighterA;
 __attribute__((visibility("hidden"))) extern int DAT_freighterB;
@@ -598,7 +509,6 @@ int Status::isFreighterMissionStation(int station) {
     return 0;
 }
 
-// ---- isBlueprintUnlocked_ac762.cpp ----
 // Returns whether the blueprint with item index `index` has been unlocked.
 int Status::isBlueprintUnlocked(int index) {
     Array<BluePrint *> *bps = bluePrints;
@@ -615,7 +525,6 @@ int Status::isBlueprintUnlocked(int index) {
     return ((BluePrint *)((*bluePrints)[i]))->isUnlocked();
 }
 
-// ---- Status_a8ac0.cpp ----
 // Allocates the mission/station/visibility containers, sizes them, and zero-initializes the
 // persistent player state to its new-game defaults.
 Status::Status() {
@@ -687,7 +596,6 @@ Status::Status() {
     field_178 = 0;
 }
 
-// ---- getFreighterMissionStationBit_acd74.cpp ----
 // Maps a station id to its bit position in the freighter-mission visited mask (0 if none).
 int Status::getFreighterMissionStationBit(int station) {
     if (station == 0xf) return 4;
@@ -702,31 +610,23 @@ int Status::getFreighterMissionStationBit(int station) {
     return 0;
 }
 
-// ---- calcCargoPrices_aca10.cpp ----
 struct Galaxy;
-__attribute__((visibility("hidden"))) extern Galaxy **g_ccpGalaxy;   // DAT_000bccb8
-__attribute__((visibility("hidden"))) extern int *g_ccpRandom;       // DAT_000bccbc
+__attribute__((visibility("hidden"))) extern Galaxy **g_ccpGalaxy;
+__attribute__((visibility("hidden"))) extern int *g_ccpRandom;
 __attribute__((visibility("hidden"))) extern int *g_ccpPrice;        // DAT_000bccc0 / extra
-__attribute__((visibility("hidden"))) extern int **g_ccpPriceMod;    // DAT_000bccd0
+__attribute__((visibility("hidden"))) extern int **g_ccpPriceMod;
 
 extern "C" {
-// 0x71884
-int Ship_getEquipment2(Ship *ship);                                  // 0x7333c
-int Ship_getCargo2(void);                                            // 0x73750
-int Station_getItems2(void);                                         // 0x71830
-int Station_getIndex2(Station *s);                                   // 0x71824
-// 0x739c0
-int Status_inAlienOrbit2(void);                                      // 0x723d0
-int SolarSystem_getIndex2(int sys);                                  // 0x71a7c
+int Ship_getEquipment2(Ship *ship);
+int Ship_getCargo2(void);
+int Station_getItems2(void);
+int Station_getIndex2(Station *s);
+int Status_inAlienOrbit2(void);
+int SolarSystem_getIndex2(int sys);
 // 0x73864-area accessor 1
-// 0x739cc
-// 0x739d8
-// 0x739e4
-// 0x71cbc
-// 0x71944
-int AERandom_nextInt2(int rng, int bound);                           // 0x71848
-void Item_setPrice2(void *item, int price);                          // 0x73864
-void AERandom_reset2(int rng);                                       // 0x718cc
+int AERandom_nextInt2(int rng, int bound);
+void Item_setPrice2(void *item, int price);
+void AERandom_reset2(int rng);
 int Item_coordA(int sysCoord);                                       // 0x73a... (blx r9)  coord accessor
 int Item_coordB(int sysCoord);                                       // (blx r10) coord accessor
 int Item_getIndex2(void *item);                                      // (blx r11)
@@ -741,8 +641,8 @@ void Status::calcCargoPrices()
     Galaxy *gal = *g_ccpGalaxy;
     int systems = (int)(intptr_t)((Galaxy *)(gal))->getSystems();
     int *rng = g_ccpRandom;
-    const float kPriceScale = 1.0f;    // DAT_000bccac
-    const float kJitter = 1.0f;        // DAT_000bccb0
+    const float kPriceScale = 1.0f;
+    const float kJitter = 1.0f;
 
     for (unsigned src = 0; src != 3; src = src + 1) {
         unsigned which = src & 0x7fffffff;
@@ -810,7 +710,6 @@ void Status::calcCargoPrices()
     }
 }
 
-// ---- isOnStack_a9070.cpp ----
 // Returns the matching stack slot's station (truthy) if `s` is already on the 3-deep
 // station stack, else 0.  The original keeps this as a rolled loop over slots 0..2.
 bool Status::isOnStack(Station *s) {
@@ -828,7 +727,6 @@ bool Status::isOnStack(Station *s) {
     return (*stationStack)[i] != 0;
 }
 
-// ---- inAlienOrbit_a963c.cpp ----
 // True iff the orbited station differs from the player's home station. departStation()
 // uses the same `playerStation != dest` test, which fixes the polarity here.
 bool Status::inAlienOrbit_impl(Station *station, Station *playerStation) {
@@ -839,7 +737,6 @@ bool Status::inAlienOrbit() {
     return Status_inAlienOrbit_impl(station, playerStation);
 }
 
-// ---- resetGame_ad304.cpp ----
 // Local offset-cast helpers (the Status header models fields by name, but resetGame
 // touches many raw offsets so byte-offset access is clearer here).
 // I(void*,int), P(void*,int) and C(void*,int) are provided by gof2/Galaxy.h /
@@ -1191,7 +1088,6 @@ void Status::resetGame()
     I(self, 0x158) = -1;
 }
 
-// ---- activateNewWanted_acedc.cpp ----
 struct SystemPathFinder {
     void *_opaque;
     int *getSystemPath(void *systems, int from, int to);
@@ -1201,7 +1097,6 @@ __attribute__((visibility("hidden"))) extern Status **g_anwStatus;     // bceec
 __attribute__((visibility("hidden"))) extern int g_anwSysMask;          // bd290
 __attribute__((visibility("hidden"))) extern int **g_anwRandStation;    // bd294
 __attribute__((visibility("hidden"))) extern int *g_anwRandom;          // bd1dc
-
 
 // Walks the wanted roster and activates any newly-eligible bounty, routing it onto a random
 // reachable station pair. Returns the number of bounties activated.
@@ -1337,7 +1232,6 @@ int Status::activateNewWanted() {
     return activated;
 }
 
-// ---- addPendingProduct_a8ef4.cpp ----
 struct PendingProduct;
 
 // Merges `bp` into the pending-products list, bumping an existing matching entry's quantity
@@ -1367,7 +1261,6 @@ void Status::addPendingProduct(BluePrint *bp) {
     ((PendingProduct *)(pp))->add(*(Array<PendingProduct*> *)pendingProducts);
 }
 
-// ---- inEmptyOrbit_abc18.cpp ----
 __attribute__((visibility("hidden"))) extern int g_emptyOrbitMask;
 
 // True when the current orbit has no station/special content for the player to interact with.
@@ -1400,8 +1293,6 @@ bool Status::inEmptyOrbit() {
     return true;
 }
 
-// ---- loadWanted_ace18.cpp ----
-
 // Reads the wanted/bounty list from disk via a transient FileRead helper.
 void Status::loadWanted() {
     FileRead *fr = (FileRead *)operator new(1);
@@ -1411,7 +1302,6 @@ void Status::loadWanted() {
     operator_delete_tail(fr);
 }
 
-// ---- unlockBluePrint_ac728.cpp ----
 // Unlocks every blueprint whose item index matches `index`.
 void Status::unlockBluePrint(int index) {
     Array<BluePrint *> *bps = bluePrints;
@@ -1423,7 +1313,6 @@ void Status::unlockBluePrint(int index) {
     }
 }
 
-// ---- getGammaRayDamagePerSecond_acdc0.cpp ----
 // Per-second gamma-ray damage near supernova/storm orbits, keyed by station/system ids.
 // Returns the float result as raw bits (the engine treats the value as float at the call site).
 __attribute__((visibility("hidden"))) extern const float g_gammaTableA[5];
@@ -1447,7 +1336,6 @@ int Status::getGammaRayDamagePerSecond(int a, int b) {
     return as_int(result);
 }
 
-// ---- addStationToStack_a8fee.cpp ----
 // Pushes `s` onto the 3-deep station stack (shifting older entries down), unless it is
 // already present. Returns 1 if the stack was modified, 0 otherwise.
 int Status::addStationToStack(Station *s) {
@@ -1482,7 +1370,6 @@ int Status::addStationToStack(Station *s) {
     return 1;
 }
 
-// ---- removeMission_ac518.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_missionSentinel;
 
 // Removes `mission` from the active list: clears the campaign slot, detaches its agent, and
@@ -1514,7 +1401,6 @@ void Status::removeMission(Mission *mission) {
     }
 }
 
-// ---- nextCampaignMission_a9a8c.cpp ----
 struct MissionObj;
 __attribute__((visibility("hidden"))) extern Status **g_ncmStatus;
 __attribute__((visibility("hidden"))) extern int g_ncmAchTable[3];   // DAT_000b9d14 (3 mission ids)
@@ -1649,7 +1535,6 @@ void Status::nextCampaignMission() {
     }
 }
 
-// ---- setStation_a90b0.cpp ----
 struct Galaxy;
 struct SolarSystem;
 
@@ -1738,16 +1623,15 @@ void Status::setStation(Station *s) {
     Array_Station_dtor_tail(list);
 }
 
-// ---- replaceHash_ac8d4.cpp ----
 // 12-byte AbyssEngine::String, built/destroyed via engine wrappers. Modeled locally as
 // Str12 (text*, size, ...) — distinct from AbyssEngine::String12 (char16_t buf[6]) which
 // the included headers pull into scope; the recovered code accesses .a/.b/.c by offset.
 struct Str12 { uint32_t a, b, c; };
 
 extern "C" {
-int  String12_IndexOf(Str12 *self, Str12 *needle);                  // 0x6f3a0
-void String12_SubString(Str12 *out, Str12 *self, int start, int len); // 0x6f604
-void String12_ctor_copy(Str12 *self, const Str12 *src, bool copy);  // 0x6f028
+int  String12_IndexOf(Str12 *self, Str12 *needle);
+void String12_SubString(Str12 *out, Str12 *self, int start, int len);
+void String12_ctor_copy(Str12 *self, const Str12 *src, bool copy);
 void String12_concat(Str12 *out, Str12 *left, Str12 *right);     // 0x6ef98 operator+
 void String12_dtor(Str12 *self);                                       // 0x6ee30 ~String
 void String12_dtor_v(Str12 *self);                                     // dtor via DAT (blx r4)
@@ -1796,11 +1680,10 @@ void Status_replaceHash3(void *self, Str12 *out, Str12 *haystack,
     String12_dtor(&prefix);
 }
 
-// ---- replaceHash_ac83c.cpp ----
 // 12-byte AbyssEngine::String, built/destroyed via engine wrappers (Str12 defined above).
 
 extern "C" {
-void String12_ctor_char(Str12 *self, const char *text, bool copy);      // 0x6ee18
+void String12_ctor_char(Str12 *self, const char *text, bool copy);
 }
 
 // Status::replaceHash(AbyssEngine::String haystack, AbyssEngine::String needle) -> String (sret)
@@ -1818,7 +1701,6 @@ void Status_replaceHash2(void *self, Str12 *out, Str12 *haystack, Str12 *needle)
     String12_dtor(&h);
 }
 
-// ---- changeRating_ac698.cpp ----
 // Adjusts the player rating by `delta`, clamping the result to [-10, 10].
 void Status::changeRating(int delta) {
     int updated = delta + rating;
@@ -1835,40 +1717,36 @@ void Status::changeRating(int delta) {
     rating = clamped;
 }
 
-// ---- departStation_a924c.cpp ----
 struct SolarSystem;
 struct Galaxy;
 
 __attribute__((visibility("hidden"))) extern Status **g_dsStatus;     // DAT_000b962c/9630
-__attribute__((visibility("hidden"))) extern int g_dsTypeMask;        // DAT_000b9628
-__attribute__((visibility("hidden"))) extern int *g_dsRandom;         // DAT_000b9634
-__attribute__((visibility("hidden"))) extern Galaxy **g_dsGalaxy;     // DAT_000b9638
+__attribute__((visibility("hidden"))) extern int g_dsTypeMask;
+__attribute__((visibility("hidden"))) extern int *g_dsRandom;
+__attribute__((visibility("hidden"))) extern Galaxy **g_dsGalaxy;
 
 extern "C" {
-int Status_inAlienOrbit_ds();                                        // 0x723d0
-int Station_getIndex(Station *s);                                    // 0x71824
-void *Station_getItems_ds();                                         // 0x71830
-// 0x736e4
-int Station_getShips_ds();                                           // 0x73708
-// 0x736fc
-// 0x73720
-int isOnStack_ds(Status *self, Station *s);                          // 0x73660
-void addStationToStack_ds(Status *self, Station *s);                 // 0x736c0
-void Generator_ctor(Generator *g);                                   // 0x736cc
-void *Generator_getItemBuyList(Generator *g, Station *s);            // 0x736d8
-int Generator_getShipBuyList(Station *g);                            // 0x736f0
-void *Generator_createAgents(Generator *g, Station *s);              // 0x73714
-int Mission_getType_ds();                                            // 0x72874
-int Mission_isCampaignMission_ds(Mission *m);                        // 0x7372c
-int Mission_getProductionGoodIndex_ds(Mission *m);                   // 0x728a4
-int Mission_isEmpty_ds();                                            // 0x72868
-int Mission_getTargetStation_ds();                                   // 0x73738
-int Ship_hasCargo_ds(int ship, int good);                            // 0x71a70
-int AERandom_nextInt_ds(int rng, int bound);                         // 0x71848
-void *Galaxy_getSystem_ds(Galaxy *g, int sysIdx);                    // 0x73684
-int SolarSystem_getStations_ds(void *sys);                           // 0x71a88
-void *Ship_getCargo_ds();                                            // 0x73750
-void Item_setStationAmount_ds(void *item, int v);                    // 0x7375c
+int Status_inAlienOrbit_ds();
+int Station_getIndex(Station *s);
+void *Station_getItems_ds();
+int Station_getShips_ds();
+int isOnStack_ds(Status *self, Station *s);
+void addStationToStack_ds(Status *self, Station *s);
+void Generator_ctor(Generator *g);
+void *Generator_getItemBuyList(Generator *g, Station *s);
+int Generator_getShipBuyList(Station *g);
+void *Generator_createAgents(Generator *g, Station *s);
+int Mission_getType_ds();
+int Mission_isCampaignMission_ds(Mission *m);
+int Mission_getProductionGoodIndex_ds(Mission *m);
+int Mission_isEmpty_ds();
+int Mission_getTargetStation_ds();
+int Ship_hasCargo_ds(int ship, int good);
+int AERandom_nextInt_ds(int rng, int bound);
+void *Galaxy_getSystem_ds(Galaxy *g, int sysIdx);
+int SolarSystem_getStations_ds(void *sys);
+void *Ship_getCargo_ds();
+void Item_setStationAmount_ds(void *item, int v);
 void Status_departTail(int ship);                                    // tail 0x1abf08
 }
 
@@ -2008,7 +1886,6 @@ void Status::departStation(Station *dest) {
     Status_departTail((int)(long)self->ship);
 }
 
-// ---- missionCompleted_abf38.cpp ----
 // Singleton Status holders referenced via PC-relative slots.
 __attribute__((visibility("hidden"))) extern Status **g_mcStatusA;   // DAT_000bc4c4 etc.
 __attribute__((visibility("hidden"))) extern Status **g_mcStatusB;
@@ -2218,7 +2095,6 @@ Mission * Status::missionCompleted(bool atStation, bool docked, long long extra)
     return (Mission *)0;
 }
 
-// ---- loadAgents_accd4.cpp ----
 // Reads the agent roster from disk via a transient FileRead helper.
 void Status::loadAgents() {
     FileRead *fr = (FileRead *)operator new(1);
@@ -2228,7 +2104,6 @@ void Status::loadAgents() {
     operator_delete_tail(fr);
 }
 
-// ---- checkForLevelUp_ac628.cpp ----
 __attribute__((visibility("hidden"))) extern int g_levelXPTable[];
 
 // Recomputes the player level from the weighted experience sum against the XP threshold table.
@@ -2243,39 +2118,37 @@ void Status::checkForLevelUp() {
     }
 }
 
-// ---- moveWanted_a9684.cpp ----
 struct SystemPathFinder;
 
-__attribute__((visibility("hidden"))) extern Status **g_mwStatus;     // DAT_000b99d4
-__attribute__((visibility("hidden"))) extern Station **g_mwPrevStation; // DAT_000b99d8
+__attribute__((visibility("hidden"))) extern Status **g_mwStatus;
+__attribute__((visibility("hidden"))) extern Station **g_mwPrevStation;
 
 extern "C" {
-int Wanted_isActive_mw(Wanted *w);                                   // 0x73774
-int Wanted_isTerminated_mw(Wanted *w);                               // 0x71a04
-int Status_inAlienOrbit_mw();                                        // 0x723d0
-int Wanted_getCurrentLocation_mw(Wanted *w);                         // 0x73780
-int Station_getIndex(Station *s);                                    // 0x71824
-void FileRead_ctor(FileRead *fr);                                    // 0x72124
-void *FileRead_loadSystemsBinary_mw(FileRead *fr);                   // 0x7378c
-void *FileRead_dtor_mw(FileRead *fr);                                // 0x7213c
-void SystemPathFinder_ctor(SystemPathFinder *p);                     // 0x73798
-void *SystemPathFinder_dtor(SystemPathFinder *p);                    // 0x73810
-void *FileRead_loadStation_mw(int sysAndIndex);                      // 0x737a4
-int Station_getSystem_mw(void *s);                                   // 0x7189c
-int Wanted_getTravelsTo_mw(Wanted *w);                               // 0x737b0
-void Wanted_setLastSeen_mw(Wanted *w, int loc);                      // 0x737c8
-void Wanted_setCurrentLocation_mw(Wanted *w, int loc);               // 0x737bc
-void Wanted_setTravelsTo_mw(Wanted *w, int loc);                     // 0x737ec
-void *Station_dtor_mw(void *s);                                      // 0x7360c
-void *Globals_getRandomStation_mw();                                 // 0x737d4
-// 0x737e0
-int SolarSystem_getRoutes_mw();                                      // 0x71aac
-int SolarSystem_getWarpGateIndex_mw(void *ss);                       // 0x737f8
-void ArrayReleaseClasses_SolarSystem(void *a);                       // 0x73804
+int Wanted_isActive_mw(Wanted *w);
+int Wanted_isTerminated_mw(Wanted *w);
+int Status_inAlienOrbit_mw();
+int Wanted_getCurrentLocation_mw(Wanted *w);
+int Station_getIndex(Station *s);
+void FileRead_ctor(FileRead *fr);
+void *FileRead_loadSystemsBinary_mw(FileRead *fr);
+void *FileRead_dtor_mw(FileRead *fr);
+void SystemPathFinder_ctor(SystemPathFinder *p);
+void *SystemPathFinder_dtor(SystemPathFinder *p);
+void *FileRead_loadStation_mw(int sysAndIndex);
+int Station_getSystem_mw(void *s);
+int Wanted_getTravelsTo_mw(Wanted *w);
+void Wanted_setLastSeen_mw(Wanted *w, int loc);
+void Wanted_setCurrentLocation_mw(Wanted *w, int loc);
+void Wanted_setTravelsTo_mw(Wanted *w, int loc);
+void *Station_dtor_mw(void *s);
+void *Globals_getRandomStation_mw();
+int SolarSystem_getRoutes_mw();
+int SolarSystem_getWarpGateIndex_mw(void *ss);
+void ArrayReleaseClasses_SolarSystem(void *a);
 void *Array_SolarSystem_dtor(void *a);                               // ... part of dtor chain
-void *Array_int_dtor_mw(void *a);                                    // 0x70204
-int aeabi_idiv_mw(int a, int b);                                     // 0x7198c
-int aeabi_idivmod_mw(int a, int b);                                  // 0x6f514
+void *Array_int_dtor_mw(void *a);
+int aeabi_idiv_mw(int a, int b);
+int aeabi_idivmod_mw(int a, int b);
 void Status_moveWantedTail();                                        // tail 0x1ab098
 }
 
@@ -2385,7 +2258,6 @@ void Status::moveWanted()
     }
 }
 
-// ---- setWingmen_ac7be.cpp ----
 // Replaces the wingmen roster with deep copies of the strings in `list` (or clears it).
 void Status::setWingmen(Array<String *> *list) {
     Array<String *> *cur = (Array<String *> *)(void *)wingmen;

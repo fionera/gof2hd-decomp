@@ -12,7 +12,6 @@
 //   0x50 Array<int>*   0x54 ParticleSystem owner    0x58/5c/60 Vector (emit pos)
 //   0x78 int (geometry present)   0x88 int state     0x124 int (last update tick)
 
-
 struct Player;
 struct AEGeometry;
 

@@ -1,8 +1,6 @@
 #include "gof2/engine/render/shaders/SandboxShader.h"
 #include "gof2/engine/render/Mesh.h"
 
-
-// ---- _SandboxShader_91ad0.cpp ----
 void _ZN11AbyssEngine13SandboxShaderD0Ev(
     AbyssEngine::SandboxShader *self)
 {
@@ -11,7 +9,6 @@ void _ZN11AbyssEngine13SandboxShaderD0Ev(
     operator delete(base);
 }
 
-// ---- UpdateMeshData_9194c.cpp ----
 namespace AbyssEngine {
 
 void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine)
@@ -59,7 +56,6 @@ void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- Init_91818.cpp ----
 namespace AbyssEngine {
 
 void SandboxShader::Init(Engine *)
@@ -88,7 +84,6 @@ void SandboxShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_91920.cpp ----
 namespace AbyssEngine {
 
 void SandboxShader::SetInActive()
@@ -102,7 +97,6 @@ void SandboxShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- SandboxShader_9178c.cpp ----
 extern "C" {
 extern void *SandboxShader_registerSrc;
 extern void **SandboxShader_registerDst;

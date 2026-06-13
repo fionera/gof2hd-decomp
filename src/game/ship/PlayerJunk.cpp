@@ -13,10 +13,6 @@ struct Player {
     void setActive(bool value);
 };
 
-
-
-
-// ---- reset_15e77c.cpp ----
 // blx 0x74518
 // b.w 0x1abe08 (veneer)
 
@@ -27,7 +23,6 @@ void _ZN10PlayerJunk5resetEv(PlayerJunk *self) {
     return ((PlayerJunk *)(self))->resetTail(1);
 }
 
-// ---- _PlayerJunk_15e76c.cpp ----
 extern "C" void *KIPlayer_dtor(void *self);                 // blx 0x732b8 (returns this)
 // b.w 0x1ab098 (veneer -> delete)
 
@@ -37,10 +32,7 @@ void _ZN10PlayerJunkD0Ev(void *self) {
     return ((PlayerJunk *)(KIPlayer_dtor(self)))->dtorTail();
 }
 
-// ---- PlayerJunk_15e720.cpp ----
 // KIPlayer::KIPlayer(this, type, -1, Player*, AEGeometry*, float, float, float, 0) -> this
-// 0x75790
-
 // Vtable base, accessed PC-relative; the live vtable pointer is (vtbl base) + 8.
 __attribute__((visibility("hidden"))) extern int g_PlayerJunk_vtbl;
 
@@ -52,18 +44,9 @@ void _ZN10PlayerJunkC1EiP6PlayerP10AEGeometryfff(
     self->vtable = (void *)(g_PlayerJunk_vtbl + 8);
 }
 
-// ---- update_15e798.cpp ----
-// 0x724f0
-// 0x77908
-// 0x71548
 // AERandom::nextInt(rng, max) — bounded PRNG draw at 0x71848. Matches the codebase-wide
 // AbyssEngine::AERandom::nextInt(rng, bound) call convention (AERandom used as a namespace).
 namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
-// 0x75904
-// 0x72580
-// 0x72034
-// 0x72a30
-
 __attribute__((visibility("hidden"))) extern void **g_PJ_sound;       // -> FModSound
 __attribute__((visibility("hidden"))) extern void **g_PJ_random;      // -> AERandom
 
@@ -118,7 +101,6 @@ void PlayerJunk::update(int elapsed) {
         self->state = 4;
 }
 
-// ---- render_15e8cc.cpp ----
 // blx 0x72238
 // b.w 0x1ac3a8 (veneer)
 

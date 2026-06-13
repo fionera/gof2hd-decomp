@@ -17,10 +17,8 @@ struct Station {
     RetStr getName();
 };
 
-
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
 
-// ---- touch_1314d0.cpp ----
 void _ZN13AutoPilotList4downEv(AutoPilotList *self);   // AutoPilotList::down()
 
 // AutoPilotList::touch(int p1, int p2) -> selected index, or -1 if the touch is outside
@@ -41,7 +39,6 @@ int AutoPilotList::touch(int p1, int p2) {
     return self->selected;
 }
 
-// ---- _AutoPilotList_131378.cpp ----
 // AutoPilotList::~AutoPilotList() - release the owned String* array, free it, null it.
 // Mangled name so the demangled symbol contains "~AutoPilotList".
 extern "C" void ArrayReleaseClasses_String(void *arr);   // blx 0x6facc
@@ -56,7 +53,6 @@ AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
     return self;
 }
 
-// ---- down_13135c.cpp ----
 // AutoPilotList::down() - advance selection to the next non-empty entry, wrapping at 4.
 void _ZN13AutoPilotList4downEv(AutoPilotList *self) {
     void **data = ((Array<void *> *)self->entries)->data();
@@ -71,7 +67,6 @@ void _ZN13AutoPilotList4downEv(AutoPilotList *self) {
     self->selected = i;
 }
 
-// ---- getTargetString_13139c.cpp ----
 // AbyssEngine::String::String(out, String* src, bool) -> void   (0x6f028)
 // AbyssEngine::String::String(out, const char* cstr, bool) -> void   (0x6ee18)
 
@@ -93,7 +88,6 @@ RetStr AutoPilotList::getTargetString() {
     return r;
 }
 
-// ---- up_1313cc.cpp ----
 // AutoPilotList::up() - move selection to the previous non-empty entry, wrapping at 0.
 void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
     void **data = ((Array<void *> *)self->entries)->data();
@@ -108,23 +102,13 @@ void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
     self->selected = i;
 }
 
-// ---- AutoPilotList_131064.cpp ----
 namespace AbyssEngine { struct String; }
 using AbyssEngine::String;
 
-// 0x72f70
-extern "C" void Array_String_ctor(void *arr);                            // 0x6f628
-extern "C" void ArraySetLength_String(int n, void *arr);                 // 0x6fe08
-extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);     // 0x6ee18
+extern "C" void Array_String_ctor(void *arr);
+extern "C" void ArraySetLength_String(int n, void *arr);
+extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
 extern "C" void String_plus(void *out, const void *a, const void *b);    // 0x6ef98 operator+
-// 0x736a8
-// 0x71a10
-// 0x73c18
-// 0x73d20
-// 0x71c14
-// 0x72034
-// 0x768b8
-// 0x71ee4
 void _ZN13AutoPilotList4downEv(AutoPilotList *self);          // down()
 
 typedef void (*StringDtorFn)(void *self);
@@ -236,13 +220,9 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     }
 }
 
-// ---- draw_1313e8.cpp ----
 namespace AbyssEngine { struct String; }
 using AbyssEngine::String;
 
-// 0x72f70
-// 0x6ee30
-// 0x768d0
 // PC-relative GOT holders. **holder yields the live object.
 __attribute__((visibility("hidden"))) extern void **g_APL_layout_draw;     // -> Layout
 __attribute__((visibility("hidden"))) extern void **g_APL_gametext_draw;   // -> GameText

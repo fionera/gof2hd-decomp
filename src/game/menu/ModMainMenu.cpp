@@ -16,7 +16,6 @@
 #include "gof2/game/mission/RecordHandler.h"
 #include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
 
-
 extern "C" void *CutScene_dtor(void *self);
 int GameText_getLanguage();
 void Globals_loadFont(int obj, int language);
@@ -96,7 +95,6 @@ void ModMainMenu::renderOverlayEnd(int canvas)
     ((PaintCanvas *)(intptr_t)canvas)->End2d();
 }
 
-// ---- ModMainMenu_1757a0.cpp ----
 __attribute__((visibility("hidden"))) extern void *volatile g_ModMainMenu_vtable;
 
 void _ZN11ModMainMenuC2Ev(ModMainMenu *self)
@@ -111,13 +109,11 @@ void _ZN11ModMainMenuC2Ev(ModMainMenu *self)
     P(self, 0) = (char *)vtable + 8;
 }
 
-// ---- OnRelease_175aec.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_releaseCanvas;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_releaseFontObj;
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_releaseReload;
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_releaseImageFactory;
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_releaseSound;
-
 
 void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
 {
@@ -148,10 +144,8 @@ void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
         ModMainMenu::releaseTail(sound);
 }
 
-// ---- OnResume_1757f8.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_resumeObj;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_resumeArg;
-
 
 void _ZN11ModMainMenu8OnResumeEv(ModMainMenu *self)
 {
@@ -165,9 +159,7 @@ void _ZN11ModMainMenu8OnResumeEv(ModMainMenu *self)
     ModMainMenu::resumeTail(*holder, 1, arg);
 }
 
-// ---- OnRender3D_175dc4.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_r3d_canvas;
-
 
 void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
 {
@@ -179,13 +171,11 @@ void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
     ModMainMenu_r3dTail(*canvas);
 }
 
-// ---- _ModMainMenu_1757e8.cpp ----
 void _ZN11ModMainMenuD0Ev(ModMainMenu *self)
 {
     ModMainMenu::deleteTail(_ZN11ModMainMenuD2Ev(self));
 }
 
-// ---- OnTouchMove_175a98.cpp ----
 extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu11OnTouchMoveEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
 {
@@ -194,9 +184,7 @@ extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu11OnTouchMov
     ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchMove(x, y);
 }
 
-// ---- OnSuspend_17582c.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_suspendObj;
-
 
 void _ZN11ModMainMenu9OnSuspendEv(ModMainMenu *self)
 {
@@ -205,9 +193,7 @@ void _ZN11ModMainMenu9OnSuspendEv(ModMainMenu *self)
         ModMainMenu::suspendTail(obj);
 }
 
-// ---- OnTouchEnd_175ab4.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_touchEndFlag;
-
 
 void _ZN11ModMainMenu10OnTouchEndEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
@@ -222,7 +208,6 @@ void _ZN11ModMainMenu10OnTouchEndEiiPv(
     *g_ModMainMenu_touchEndFlag = 0;
 }
 
-// ---- OnTouchBegin_175a7c.cpp ----
 extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu12OnTouchBeginEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
 {
@@ -231,9 +216,6 @@ extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu12OnTouchBeg
     ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchBegin(x, y, (int)(intptr_t)touch);
 }
 
-// ---- _ModMainMenu_1757c4.cpp ----
-
-
 ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self)
 {
     P(self, 0) = (char *)g_ModMainMenu_vtable + 8;
@@ -241,14 +223,12 @@ ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self)
     return self;
 }
 
-// ---- OnRender2D_175c00.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_r2d_image;
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_r2d_time;
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_r2d_string;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_r2d_textId;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_r2d_screenW;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_r2d_screenH;
-
 
 void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
 {
@@ -312,7 +292,6 @@ void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
     ModMainMenu_r2dTail(I(self, 0x04));
 }
 
-// ---- OnInitialize_175844.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_initSoundRes;
 __attribute__((visibility("hidden"))) extern void (*g_ModMainMenu_initAddSound)(void *, int);
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_initStatus;
@@ -325,7 +304,6 @@ __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_initImageFacto
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_initTouchFlag;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_initMusicSlot;
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_initMusic;
-
 
 void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
 {
@@ -434,10 +412,8 @@ state80:
     I(self, 0x0c) = 0x3c;
 }
 
-// ---- OnUpdate_175b78.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_updateLayout;
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_updateListener;
-
 
 void _ZN11ModMainMenu8OnUpdateEv(ModMainMenu *self)
 {

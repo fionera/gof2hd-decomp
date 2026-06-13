@@ -11,7 +11,6 @@ extern ApplicationManager *g_ApplicationManager;
 
 namespace AbyssEngine {
 
-// ---- SetInActive_92554.cpp ----
 void PulseShader::SetInActive()
 {
     if (this->attrA0 >= 0) glDisableVertexAttribArray(this->attrA0);
@@ -21,7 +20,6 @@ void PulseShader::SetInActive()
     if (this->attrA4 >= 0) glDisableVertexAttribArray(this->attrA4);
 }
 
-// ---- Init_92424.cpp ----
 void PulseShader::Init(::Engine *)
 {
     int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("PulseShader.vsh", "PulseShader.fsh");
@@ -50,7 +48,6 @@ void PulseShader::Init(::Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _PulseShader_927d0.cpp ----
 void _ZN11AbyssEngine11PulseShaderD0Ev(PulseShader *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -58,7 +55,6 @@ void _ZN11AbyssEngine11PulseShaderD0Ev(PulseShader *self)
     ::operator delete(base);
 }
 
-// ---- UpdateMeshData_92594.cpp ----
 extern "C" {
 float __aeabi_l2f(long long v);
 float sinf(float x);
@@ -133,7 +129,6 @@ void PulseShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- PulseShader_92398.cpp ----
 namespace AbyssEngine {
 
 PulseShader::PulseShader()

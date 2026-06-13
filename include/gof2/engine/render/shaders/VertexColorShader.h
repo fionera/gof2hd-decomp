@@ -20,7 +20,6 @@ public:
     ~VertexColorShader();
 };
 
-
 } // namespace AbyssEngine
 
 inline int &ae_i32(void *self, uint32_t offset)
@@ -42,7 +41,6 @@ inline void *&ae_ptr(void *self, uint32_t offset)
 {
     return *(void **)((char *)self + offset);
 }
-
 
 // GLES2 entry-point function-pointer types (the engine dispatches some GL calls through
 // loaded function pointers, e.g. glGetAttribLocation_ptr / glBindBuffer_ptr).

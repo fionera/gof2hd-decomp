@@ -68,7 +68,7 @@ public:
     void *f_150;                        // 0x150 previous enemy
     void *f_154;                        // 0x154 host KIPlayer
     void *f_158;                        // 0x158 host offset Vector
-    void *f_15c;                        // 0x15c
+    void *f_15c;
     unsigned char _pad_160[0x168 - 0x160];
 
     PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z);

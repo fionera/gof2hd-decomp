@@ -15,7 +15,6 @@
 //   0x14  uint32_t     field_14 (drawn arg 0)
 //   0x1c  uint32_t     field_1c (drawn arg 1)
 
-
 extern "C" {
 // AbyssEngine::Array<AbyssEngine::Mesh*>::~Array(this) -- 0x0006f760.
 void AMeshMerger_ArrayMesh_dtor(void *self);

@@ -1,8 +1,5 @@
 #include "gof2/game/core/Matrix.h"
 
-
-
-// ---- Matrix_6e8d8.cpp ----
 // AbyssEngine::AEMath::Matrix::Matrix()
 // Initializes to the identity affine transform. The diagonal entries (0x00, 0x14, 0x38)
 // are 1.0; the remaining rotation/translation entries are zeroed, and the trailing
@@ -43,7 +40,6 @@ void Matrix::initIdentity() {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___8016a.cpp ----
 // AbyssEngine::AEMath::Matrix::operator*=(Matrix const&)
 // In-place affine 3x4 matrix multiply: this = this * rhs. Rows of 4 floats; the 4th
 // column (offsets 0xc/0x1c/0x2c) is translation and accumulates onto its existing value.
@@ -87,7 +83,6 @@ Matrix &Matrix::operator*=(const Matrix &p)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__80130.cpp ----
 // AbyssEngine::AEMath::Matrix::operator=(Matrix const&)
 // Copies the 48-byte (12-float) affine part, then delegates the embedded Vector at +0x30.
 

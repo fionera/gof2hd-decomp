@@ -11,9 +11,7 @@
 //   +0x04  Vector              cameraPos (3 floats: 0x04,0x08,0x0c)
 //   +0x10  int                 timer     (init 0x3e9)
 
-
 struct AEGeometry;
-
 
 class LODManager {
 public:

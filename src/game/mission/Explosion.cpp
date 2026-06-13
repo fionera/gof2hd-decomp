@@ -26,9 +26,7 @@ void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, 
 extern "C" void Array_AEGeometryPtr_ctor(Array<AEGeometry *> *self);
 extern "C" void ArraySetLength_AEGeometryPtr(int length, Array<AEGeometry *> *self);
 
-// ---- reset_a7fb0.cpp ----
 extern int Explosion_paintCanvas;
-
 
 void Explosion::reset() {
     Explosion *self = this;
@@ -95,7 +93,6 @@ Explosion::~Explosion()
     self->fireStreaks = 0;
 }
 
-// ---- isPlaying_a8916.cpp ----
 uint8_t Explosion::isPlaying() {
     Explosion *self = this;
     return self->playing;
@@ -118,7 +115,6 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
     this->update_camera(dt, camera);
 }
 
-// ---- translate_a8aa0.cpp ----
 void Explosion::translate(const Vector *v) {
     Explosion *self = this;
     self->primaryMesh->translate(*v);
@@ -128,10 +124,8 @@ void Explosion::translate(const Vector *v) {
     }
 }
 
-// ---- setScaling_a7e90.cpp ----
 extern int Explosion_paintCanvas;
 extern void *Explosion_random;
-
 
 void Explosion::setScaling(float scale) {
     Explosion *self = this;
@@ -176,16 +170,13 @@ void Explosion::setScaling(float scale) {
     self->duration = (long long)((float)self->duration / speed);
 }
 
-// ---- peakReached_a8900.cpp ----
 bool Explosion::peakReached() {
     Explosion *self = this;
     return self->elapsed > 0x8fcLL;
 }
 
-// ---- start_a83b0.cpp ----
 extern int Explosion_paintCanvas;
 extern void *Explosion_random;
-
 
 void Explosion::start(const Vector *position, const Vector *direction) {
     Explosion *self = this;
@@ -240,9 +231,7 @@ void Explosion::start(const Vector *position, const Vector *direction) {
     ((Explosion *)(self))->playSound(&soundPosition);
 }
 
-// ---- update_a8668.cpp ----
 extern int Explosion_paintCanvas;
-
 
 void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
     Explosion *self = this;
@@ -308,9 +297,7 @@ void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
     }
 }
 
-// ---- Explosion_a7af4.cpp ----
 extern int Explosion_paintCanvas;
-
 
 static inline __attribute__((always_inline)) AEGeometry *make_geometry(uint16_t mesh, int canvas)
 {
@@ -408,13 +395,11 @@ Explosion::Explosion(int type)
     ((Explosion *)(self))->reset();
 }
 
-// ---- playSound_a82a8.cpp ----
 extern int Explosion_soundDefault;
 extern int Explosion_soundFallback;
 extern int Explosion_soundSpecial;
 extern char Explosion_soundSettings[];
 extern void *Explosion_random;
-
 
 void Explosion::playSound(Vector *pos) {
     Explosion *self = this;
@@ -513,9 +498,7 @@ void Explosion::playSound(Vector *pos) {
     ((FModSound *)(sound))->play(cue, soundPos, 0, 0);
 }
 
-// ---- start_a853c.cpp ----
 extern int Explosion_paintCanvas;
-
 
 void Explosion::start_matrix(const Matrix *matrix) {
     Explosion *self = this;
@@ -563,9 +546,7 @@ void Explosion::start_matrix(const Matrix *matrix) {
     ((Explosion *)(self))->playSound(position);
 }
 
-// ---- render_a891c.cpp ----
 extern int Explosion_paintCanvas;
-
 
 void Explosion::render() {
     Explosion *self = this;
@@ -627,9 +608,7 @@ void Explosion::render() {
     }
 }
 
-// ---- update_a8820.cpp ----
 extern int Explosion_paintCanvas;
-
 
 void Explosion::update_vector(int dt, const Vector *position) {
     Explosion *self = this;
@@ -668,10 +647,8 @@ void Explosion::update_vector(int dt, const Vector *position) {
     }
 }
 
-// ---- addFireStreaks_a811c.cpp ----
 extern int Explosion_paintCanvas;
 extern void *Explosion_random;
-
 
 void Explosion::addFireStreaks() {
     Explosion *self = this;

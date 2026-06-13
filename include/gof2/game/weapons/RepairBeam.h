@@ -12,7 +12,6 @@
 //   +0x1c  int    sort           (0x25 heal / 0x29 shield)
 //   +0x20  int    timer
 
-
 void *operator new(__SIZE_TYPE__ size);
 
 struct RepairBeam;

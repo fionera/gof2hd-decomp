@@ -1,9 +1,5 @@
 #include "gof2/engine/math/EaseInOut.h"
 
-
-
-
-// ---- UpdateCurrentValue_717a8.cpp ----
 namespace AbyssEngine {
 
 void EaseInOut::UpdateCurrentValue() {
@@ -17,7 +13,6 @@ void EaseInOut::UpdateCurrentValue() {
 
 } // namespace AbyssEngine
 
-// ---- GetMaxValue_719cc.cpp ----
 namespace AbyssEngine {
 
 float EaseInOut::GetMaxValue() {
@@ -26,7 +21,6 @@ float EaseInOut::GetMaxValue() {
 
 } // namespace AbyssEngine
 
-// ---- EaseInOut_71810.cpp ----
 namespace AbyssEngine {
 
 EaseInOut::EaseInOut(float minValue, float maxValue) {
@@ -35,7 +29,6 @@ EaseInOut::EaseInOut(float minValue, float maxValue) {
 
 } // namespace AbyssEngine
 
-// ---- EaseInOut_71780.cpp ----
 namespace AbyssEngine {
 
 EaseInOut::EaseInOut() {
@@ -47,7 +40,6 @@ EaseInOut::EaseInOut() {
 
 } // namespace AbyssEngine
 
-// ---- SetToMaxValue_719b0.cpp ----
 namespace AbyssEngine {
 
 void EaseInOut::SetToMaxValue() {
@@ -57,7 +49,6 @@ void EaseInOut::SetToMaxValue() {
 
 } // namespace AbyssEngine
 
-// ---- SetRange_71820.cpp ----
 namespace AbyssEngine {
 
 void EaseInOut::SetRange(float minValue, float maxValue) {
@@ -69,7 +60,6 @@ void EaseInOut::SetRange(float minValue, float maxValue) {
 
 } // namespace AbyssEngine
 
-// ---- RunOut_71910.cpp ----
 namespace AbyssEngine {
 
 void EaseInOut::RunOut(float dt) {
@@ -93,7 +83,6 @@ void EaseInOut::RunOut(float dt) {
 
 } // namespace AbyssEngine
 
-// ---- SetToMinValue_719bc.cpp ----
 namespace AbyssEngine {
 
 void EaseInOut::SetToMinValue() {
@@ -103,7 +92,6 @@ void EaseInOut::SetToMinValue() {
 
 } // namespace AbyssEngine
 
-// ---- Decrease_718a8.cpp ----
 namespace AbyssEngine {
 
 void EaseInOut::Decrease(float dt) {
@@ -116,7 +104,6 @@ void EaseInOut::Decrease(float dt) {
 
 } // namespace AbyssEngine
 
-// ---- Increase_71840.cpp ----
 namespace AbyssEngine {
 
 void EaseInOut::Increase(float dt) {

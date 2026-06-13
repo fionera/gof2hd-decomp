@@ -18,15 +18,11 @@
 //   +0x24  int         batch multiplier
 //   +0x28  int         remaining batch
 
-
 struct BluePrint;
 struct Item;
 struct Station;
 
-
-
 // AbyssEngine::String - 12-byte trivially-copied value aggregate.
-
 
 // Field accessor via byte offset.
 

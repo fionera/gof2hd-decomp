@@ -3,8 +3,6 @@
 #include "gof2/game/world/SolarSystem.h"
 #include <arm_neon.h>
 
-
-// ---- Standing_11d6a8.cpp ----
 // Standing::Standing(): allocate a 2-int standings array {0x1e, 0}; currentRace = -1.
 Standing::Standing() {
     int *p = new int[2];
@@ -14,7 +12,6 @@ Standing::Standing() {
     this->currentRace = -1;
 }
 
-// ---- applyPoints_11d8a8.cpp ----
 // Standing::applyPoints(int race, int delta): add delta to standings[race] and
 // clamp the result into [-100, 100]. The clamping store only runs when the value
 // leaves the band; otherwise it returns early.
@@ -33,14 +30,12 @@ void Standing::applyPoints(int race, int delta) {
     p[race] = c;
 }
 
-// ---- getStandingRate_11d728.cpp ----
 // Standing::getStandingRate(int race): getStanding(race) normalized to [-1, 1].
 float Standing::getStandingRate(int race) {
     Standing *self = this;
     return (float)((Standing *)(self))->getStanding(race) / 100.0f;
 }
 
-// ---- isEnemyWithAnyone_11d780.cpp ----
 // Standing::isEnemyWithAnyone(): true if either home-race standing is outside the
 // non-hostile band, i.e. (standing + 0x46) does not fit in [0, 0x8c] as unsigned.
 // Both comparisons are always evaluated (bitwise |) to mirror the branchless target.
@@ -52,7 +47,6 @@ bool Standing::isEnemyWithAnyone() {
     return (bool)(((unsigned)(b + 0x46) > 0x8c) | ((unsigned)(a + 0x46) > 0x8c));
 }
 
-// ---- getEnemyRace_11d890.cpp ----
 // Lookup table of "enemy race" per faction index (4 entries), in .data.rel.ro.
 __attribute__((visibility("hidden"))) extern const uint32_t Standing_enemyRaceTable[4];
 
@@ -65,7 +59,6 @@ uint32_t Standing::getEnemyRace(unsigned idx) {
     return 8;
 }
 
-// ---- isNeutral_11d86e.cpp ----
 // Standing::isNeutral(int race): neither enemy nor friend.
 unsigned Standing::isNeutral(int race) {
     Standing *self = this;
@@ -73,7 +66,6 @@ unsigned Standing::isNeutral(int race) {
     return ((Standing *)(self))->isFriend(race) ^ 1;
 }
 
-// ---- _Standing_11d6c8.cpp ----
 // Standing::~Standing(): delete[] the standings array, null the pointer.
 Standing::~Standing() {
     int *p = this->standings;
@@ -81,7 +73,6 @@ Standing::~Standing() {
     this->standings = 0;
 }
 
-// ---- getStanding_11d6ee.cpp ----
 // Standing::getStanding(int race) [static-style: this in r0, race in r1].
 // In "derived" mode (currentRace >= 0) factions 0/1 map to fixed standings based
 // on currentRace; otherwise the raw standings[race] value is returned.
@@ -105,21 +96,18 @@ int Standing::getStanding(int race) {
     return self->standings[race];
 }
 
-// ---- applyMissionCompleted_11d992.cpp ----
 // Standing::applyMissionCompleted(int race): +5 reputation (delta -5 fed to applyPoints).
 void Standing::applyMissionCompleted(int race) {
     Standing *self = this;
     ((Standing *)(self))->applyPoints(race, -5);
 }
 
-// ---- setStanding_11d6de.cpp ----
 // Standing::setStanding(int race, int value): standings[race] = value.
 void Standing::setStanding(int race, int value) {
     Standing *self = this;
     self->standings[race] = value;
 }
 
-// ---- setPlayerSignatureRace_12d74c.cpp ----
 // Standing::setPlayerSignatureRace(int race): records the player's signature race in
 // currentRace, switching the table into "derived" mode. With a non-negative race set,
 // getStanding() returns fixed standings for factions 0/1 keyed off this value instead
@@ -128,14 +116,12 @@ void Standing::setPlayerSignatureRace(int race) {
     this->currentRace = race;
 }
 
-// ---- applyStealCargo_11d98c.cpp ----
 // Standing::applyStealCargo(int race): -2 reputation toward that race.
 void Standing::applyStealCargo(int race) {
     Standing *self = this;
     ((Standing *)(self))->applyPoints(race, 2);
 }
 
-// ---- isEnemy_11d7a2.cpp ----
 // Standing::isEnemy(int race) [static-style: this in r0, race in r1].
 // NOTE: best-effort. Logic matches the target exactly, but under -Oz clang keeps
 // `this` in r0 / currentRace in r2, whereas the original swaps them (this->r2,
@@ -174,7 +160,6 @@ bool Standing::isEnemy(int race) {
     return 0x46 < iVar1;
 }
 
-// ---- applyDelict_11d93c.cpp ----
 struct Status;
 // Singleton holder: **g_adl_status -> the live Status object.
 __attribute__((visibility("hidden"))) extern Status **g_adl_status;
@@ -206,14 +191,12 @@ void Standing::applyDelict(unsigned kind, int severity) {
     (void)sign;
 }
 
-// ---- applyKill_11d8d0.cpp ----
 struct Status;
 struct SolarSystem;
 // Status singleton holder (PC-rel double-indirect): *g_apk_status -> Status*.
 __attribute__((visibility("hidden"))) extern Status **g_apk_status;
 // "Enemy race" lookup keyed by the current system's race (4 entries).
 __attribute__((visibility("hidden"))) extern const int g_apk_raceTable[4];
-
 
 // Standing::applyKill(int kind): a kill committed against another ship. For police
 // kills (kind 8) the offence is mapped to the local system's owning race (once),
@@ -244,7 +227,6 @@ void Standing::applyKill(int kind) {
     ((Standing *)(self))->applyPoints(kind, delta);
 }
 
-// ---- isFriend_11d808.cpp ----
 // Standing::isFriend(int race).
 bool Standing::isFriend(int race) {
     Standing *self = this;
@@ -278,7 +260,6 @@ bool Standing::isFriend(int race) {
     return iVar1 < -0x46;
 }
 
-// ---- getMissionBonus_11d9a0.cpp ----
 // Standing::getMissionBonus(int race): standing toward the faction, normalized to
 // [0, 1] (negative standings clamp to 0). Out-of-range race returns 0.
 // NOTE: best-effort. The target loads positive factions' counts straight from memory
@@ -309,14 +290,12 @@ float Standing::getMissionBonus(unsigned race) {
     return vget_lane_f32(vmax_f32(vdup_n_f32(r), vdup_n_f32(0.0f)), 0);
 }
 
-// ---- applyDisable_11d99a.cpp ----
 // Standing::applyDisable(int race).
 void Standing::applyDisable(int race) {
     Standing *self = this;
     ((Standing *)(self))->applyPoints(race, 2);
 }
 
-// ---- rehabilitate_11d750.cpp ----
 // Standing::rehabilitate(int race): reset the standing toward a faction's home
 // race to a fixed value (-35 for the "even" slot, +35 for the "odd" slot).
 void Standing::rehabilitate(int race) {
@@ -332,20 +311,17 @@ void Standing::rehabilitate(int race) {
     }
 }
 
-// ---- getStandings_11d6ea.cpp ----
 // Standing::getStandings(): return the raw per-race standings array.
 int *Standing::getStandings() {
     return this->standings;
 }
 
-// ---- setStandings_11d6e6.cpp ----
 // Standing::setStandings(int*): replace the standings array pointer (used when
 // restoring a Standing from a saved record).
 void Standing::setStandings(int *arr) {
     this->standings = arr;
 }
 
-// ---- Standing_new_11d6a8.cpp ----
 // Standing::create(): heap factory (operator new + Standing::Standing). Used by
 // RecordHandler when reconstructing a Standing from a save slot.
 Standing *Standing::create() {

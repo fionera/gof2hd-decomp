@@ -4,7 +4,6 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 #include <new>
 
-
 extern "C" void glUseProgram(uint32_t program);
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);
 extern "C" int glGetAttribLocation(uint32_t program, const char *name);
@@ -25,8 +24,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -35,12 +32,6 @@ struct ShaderBaseStruct {
 
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
-
-
-
-
-
-
 
 // AbyssEngine::TextureConference — GLES2 scrolling-texture shader (derives from ShaderBaseStruct).
 // Most members are accessed through the field_i32/field_u8/field_ptr helpers above; only the

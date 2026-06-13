@@ -33,8 +33,6 @@ namespace AbyssEngine {
 // --- Small value types -----------------------------------------------------
 namespace AEMath {
 
-
-
 } // namespace AEMath
 
 using AEMath::Vector;
@@ -42,8 +40,6 @@ using AEMath::Matrix;
 // Quaternion lives directly in namespace AbyssEngine (see gof2/math.h); already visible here.
 
 struct ESMatrix { float m[4][4]; };
-
-
 
 // --- Re-export the global engine/runtime types into this namespace --------
 // NOTE: Mesh and Transform are intentionally NOT re-exported here. gof2/Mesh.h declares

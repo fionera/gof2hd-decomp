@@ -1,7 +1,6 @@
 #include "gof2/game/world/Route.h"
 #include "gof2/game/world/Waypoint.h"
 
-
 extern "C" void ArrayReleaseClasses_Waypoint(Array<Waypoint *> *a);
 extern "C" void *ArrayWaypoint_dtor(Array<Waypoint *> *a);
 extern "C" void *ArrayKIPlayer_dtor(Array<KIPlayer *> *a);
@@ -214,7 +213,6 @@ Route *_ZN5RouteC2EPiPvPii(Route *self, int *coords, void *targets, int *times, 
     }
     return self;
 }
-
 
 // Route::clone() -> deep copy of the path; preserves docking targets/times when any are set.
 Route * Route::clone() {

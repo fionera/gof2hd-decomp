@@ -2,10 +2,8 @@
 #include "gof2/engine/render/ShaderBaseStruct.h"
 #include "gof2/game/core/String.h"
 
-
 extern "C" int BumpShaderV2_ShaderIndex;
 
-// ---- _BumpShaderV2_8dacc.cpp ----
 void _ZN11AbyssEngine12BumpShaderV2D0Ev(AbyssEngine::BumpShaderV2 *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -13,7 +11,6 @@ void _ZN11AbyssEngine12BumpShaderV2D0Ev(AbyssEngine::BumpShaderV2 *self)
     ::operator delete(base);
 }
 
-// ---- SetInActive_8d888.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderV2::SetInActive()
@@ -32,7 +29,6 @@ void BumpShaderV2::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_8d8c8.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::BumpShaderV2::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
@@ -103,7 +99,6 @@ void BumpShaderV2::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- BumpShaderV2_8d6b8.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::BumpShaderV2::BumpShaderV2()
@@ -129,7 +124,6 @@ BumpShaderV2::BumpShaderV2()
 
 } // namespace AbyssEngine
 
-// ---- Init_8d744.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::BumpShaderV2::Init(AbyssEngine::Engine*)

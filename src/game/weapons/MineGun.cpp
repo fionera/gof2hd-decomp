@@ -7,7 +7,6 @@
 #include "gof2/game/ship/PlayerEgo.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 
-
 namespace AbyssEngine { namespace AEMath {
 Vector operator-(const Vector &lhs, const Vector &rhs);
 float VectorLength(const Vector &value);
@@ -23,7 +22,6 @@ extern "C" void Array_Explosion_ctor(Array<Explosion *> *self);
 extern "C" void ArraySetLength_Explosion(uint32_t length, Array<Explosion *> *self);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
 
-// ---- render_1566bc.cpp ----
 void MineGun::render()
 {
     ((ObjectGun *)(this))->render();
@@ -35,7 +33,6 @@ void MineGun::render()
     }
 }
 
-// ---- _MineGun_1565e4.cpp ----
 void *_ZN7MineGunD1Ev(MineGun *self)
 {
     P(self, 0x0) = (char *)MineGun_vtable + 8;
@@ -60,19 +57,16 @@ void *_ZN7MineGunD1Ev(MineGun *self)
     return ObjectGun_dtor(self);
 }
 
-// ---- setPlayer_1566b6.cpp ----
 void MineGun::setPlayer(PlayerEgo *player)
 {
     P(this, 0xb0) = player;
 }
 
-// ---- _MineGun_1566a6.cpp ----
 void _ZN7MineGunD0Ev(MineGun *self)
 {
     return ::operator delete(_ZN7MineGunD1Ev(self));
 }
 
-// ---- MineGun_156478.cpp ----
 extern "C" void ObjectGun_ctor(MineGun *self, int param_3, Gun *gun, int param_2,
                                 int zero, Level *level);
 
@@ -126,8 +120,6 @@ MineGun *_ZN7MineGunC1EP3GuniiiP5Level(MineGun *self, Gun *gun, int param_2,
     ((AbyssEngine::Transform *)(transform))->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
     return self;
 }
-
-// ---- update_1566ec.cpp ----
 
 static inline Explosion *explosion_at(MineGun *self, uint32_t index)
 {

@@ -68,5 +68,4 @@ public:
 
 } // namespace AbyssEngine
 
-
 #endif

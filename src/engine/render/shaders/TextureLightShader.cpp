@@ -3,10 +3,6 @@
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/Mesh.h"
 
-
-
-
-// ---- _TextureLightShader_8df1c.cpp ----
 void _ZN11AbyssEngine18TextureLightShaderD0Ev(AbyssEngine::TextureLightShader *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -14,7 +10,6 @@ void _ZN11AbyssEngine18TextureLightShaderD0Ev(AbyssEngine::TextureLightShader *s
     ::operator delete(base);
 }
 
-// ---- Init_8db68.cpp ----
 namespace AbyssEngine {
 
 void TextureLightShader::Init(Engine *)
@@ -53,7 +48,6 @@ void TextureLightShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_8dd14.cpp ----
 namespace AbyssEngine {
 
 // Helpers to view the Engine/Mesh objects at raw byte offsets.
@@ -136,7 +130,6 @@ void TextureLightShader::UpdateMeshData(Mesh *meshIn, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_8dcf0.cpp ----
 namespace AbyssEngine {
 
 void TextureLightShader::SetInActive()
@@ -148,7 +141,6 @@ void TextureLightShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- TextureLightShader_8dadc.cpp ----
 // Hidden PC-relative globals recovered from the constructor disasm:
 //   g_ctorCounter : *(int**) at 0x9dae8 — read its [0] into local_14 for stack guard.
 //   g_shaderSrc   : *(int**) at 0x9dafa — value copied into *g_shaderDst.

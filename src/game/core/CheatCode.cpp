@@ -1,9 +1,5 @@
 #include "gof2/game/core/CheatCode.h"
 
-
-
-
-// ---- CheatCode_74378.cpp ----
 namespace AbyssEngine {
 
 CheatCode::CheatCode()
@@ -15,7 +11,6 @@ CheatCode::CheatCode()
 
 } // namespace AbyssEngine
 
-// ---- Update_743f0.cpp ----
 namespace AbyssEngine {
 
 bool CheatCode::Update(uint16_t key)
@@ -45,7 +40,6 @@ bool CheatCode::Update(uint16_t key)
 
 } // namespace AbyssEngine
 
-// ---- _CheatCode_743c0.cpp ----
 namespace AbyssEngine {
 
 CheatCode::~CheatCode()

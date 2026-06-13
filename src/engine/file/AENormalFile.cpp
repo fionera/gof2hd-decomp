@@ -1,10 +1,8 @@
 #include "gof2/engine/file/AENormalFile.h"
 
-
 AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self);
 extern "C" uint32_t _ZN12AENormalFile7ReleaseEv(AENormalFile *self);
 
-// ---- Read_70162.cpp ----
 uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
 {
     FI *h = fi_held(this);
@@ -14,7 +12,6 @@ uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
     return 0;
 }
 
-// ---- _AENormalFile_70130.cpp ----
 void _ZN12AENormalFileD0Ev(AENormalFile *self)
 {
     ((AENormalFile *)(_ZN12AENormalFileD2Ev(self)))->deleteTail();
@@ -26,7 +23,6 @@ void AENormalFile::deleteTail()
     ::operator delete(this);
 }
 
-// ---- AENormalFile_700f8.cpp ----
 AENormalFile::AENormalFile(FileInterface *file)
 {
     void *vtable = g_AENormalFile_vtable;
@@ -34,7 +30,6 @@ AENormalFile::AENormalFile(FileInterface *file)
     fi_held(this) = (FI *)file;
 }
 
-// ---- Release_70140.cpp ----
 uint32_t AENormalFile::Release()
 {
     FI *h = fi_held(this);
@@ -49,7 +44,6 @@ uint32_t AENormalFile::Release()
     return 1;
 }
 
-// ---- Skip_7017e.cpp ----
 uint32_t AENormalFile::Skip(uint32_t bytes)
 {
     FI *h = fi_held(this);
@@ -59,7 +53,6 @@ uint32_t AENormalFile::Skip(uint32_t bytes)
     return 0;
 }
 
-// ---- GetFileSize_7018c.cpp ----
 uint32_t AENormalFile::GetFileSize()
 {
     FI *h = fi_held(this);
@@ -69,7 +62,6 @@ uint32_t AENormalFile::GetFileSize()
     return 0;
 }
 
-// ---- Write_70170.cpp ----
 uint32_t AENormalFile::Write(uint32_t bytes, const void *buffer)
 {
     FI *h = fi_held(this);
@@ -79,9 +71,7 @@ uint32_t AENormalFile::Write(uint32_t bytes, const void *buffer)
     return 0;
 }
 
-// ---- _AENormalFile_7010c.cpp ----
 __attribute__((visibility("hidden"))) extern void *g_AENormalFile_vtable;
-
 
 AENormalFile *_ZN12AENormalFileD2Ev(AENormalFile *self)
 {

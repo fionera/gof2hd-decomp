@@ -8,19 +8,11 @@ struct KIPlayer;
 struct Route;
 struct Waypoint;
 
-
-
 namespace AbyssEngine {
 
 }
 
 using String = AbyssEngine::String;
-
-
-
-
-
-
 
 extern "C" void operator_delete(void *ptr);
 

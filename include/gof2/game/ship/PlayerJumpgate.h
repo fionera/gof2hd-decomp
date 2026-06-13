@@ -8,12 +8,6 @@ struct BoundingSphere;
 struct PlayerJumpgate;
 struct PlayerStaticFar;
 
-
-
-
-
-
-
 class PlayerJumpgate {
 public:
     void* field_0x0;                    // +0x0

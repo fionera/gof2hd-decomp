@@ -15,7 +15,6 @@ extern "C" int pc_GetHeight(PaintCanvas *self);
 extern AbyssEngine::PaintCanvas *PaintCanvasCtor(AbyssEngine::PaintCanvas *, AbyssEngine::Engine *);
 extern AbyssEngine::PaintCanvas *PaintCanvasDtor(AbyssEngine::PaintCanvas *);
 
-
 extern "C" void ext_001ab578(void *sound, int volume);
 extern "C" void ext_001ab528(void *sound);
 extern "C" int ext_001ab5a8(void *sound);
@@ -61,7 +60,6 @@ extern "C" void AESoundRessource_dtor(void *sound);
 extern "C" void CheatHandler_dtor(void *cheats);
 extern "C" void ConfigReader_dtor(void *reader);
 
-// ---- SetLoadingCallback_82506.cpp ----
 typedef void LoadingCallback_t(PaintCanvas *, int, void *);
 
 void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) {
@@ -70,7 +68,6 @@ void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *d
     self->loadingCallbackData = data;
 }
 
-// ---- SoundSetVolume_82270.cpp ----
 void ApplicationManager::SoundSetVolume(int volume) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -79,7 +76,6 @@ void ApplicationManager::SoundSetVolume(int volume) {
     }
 }
 
-// ---- SoundStopSounds_821fc.cpp ----
 void ApplicationManager::SoundStopSounds() {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -88,7 +84,6 @@ void ApplicationManager::SoundStopSounds() {
     }
 }
 
-// ---- SoundIsPlaying_8229a.cpp ----
 int ApplicationManager::SoundIsPlaying() {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -98,13 +93,11 @@ int ApplicationManager::SoundIsPlaying() {
     return ext_001ab5a8(sound);
 }
 
-// ---- GetSystemTimeMillis_83e9e.cpp ----
 uint64_t ApplicationManager::GetSystemTimeMillis() {
     ApplicationManager *self = this;
     return self->currentTimeMs;
 }
 
-// ---- LoadingCallbackShow_8250c.cpp ----
 typedef void LoadingShowCallback(PaintCanvas *, int, void *);
 
 void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
@@ -115,7 +108,6 @@ void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
     }
 }
 
-// ---- SoundPlay_821b2.cpp ----
 void ApplicationManager::SoundPlay(int soundId) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -124,7 +116,6 @@ void ApplicationManager::SoundPlay(int soundId) {
     }
 }
 
-// ---- SoundPlay_821c6.cpp ----
 void ApplicationManager::SoundPlay_vol(int soundId, float volume) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -137,7 +128,6 @@ void ApplicationManager::SoundPlay_vol(int soundId, float volume) {
     ext_001ab488(sound, soundId, volume);
 }
 
-// ---- CheatUpdate_8253a.cpp ----
 void ApplicationManager::CheatUpdate(unsigned short key) {
     ApplicationManager *self = this;
     if (self->cheatsEnabled) {
@@ -148,7 +138,6 @@ void ApplicationManager::CheatUpdate(unsigned short key) {
     }
 }
 
-// ---- CheatAddCode_82528.cpp ----
 void ApplicationManager::CheatAddCode(void *code, int value) {
     ApplicationManager *self = this;
     void *cheats = self->cheatHandler;
@@ -157,7 +146,6 @@ void ApplicationManager::CheatAddCode(void *code, int value) {
     }
 }
 
-// ---- SoundPause_82218.cpp ----
 void ApplicationManager::SoundPause() {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -166,15 +154,12 @@ void ApplicationManager::SoundPause() {
     }
 }
 
-// ---- GetActionState_83e8a.cpp ----
 uint64_t ApplicationManager::GetActionState() {
     ApplicationManager *self = this;
     return self->actionState;
 }
 
-// ---- Resume_824d0.cpp ----
 typedef void ModuleCallback(void *);
-
 
 void ApplicationManager::Resume() {
     ApplicationManager *self = this;
@@ -198,7 +183,6 @@ void ApplicationManager::Resume() {
     }
 }
 
-// ---- SoundStop_821ee.cpp ----
 void ApplicationManager::SoundStop() {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -207,7 +191,6 @@ void ApplicationManager::SoundStop() {
     }
 }
 
-// ---- SoundPlayLoop_821da.cpp ----
 void ApplicationManager::SoundPlayLoop(int soundId) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -216,7 +199,6 @@ void ApplicationManager::SoundPlayLoop(int soundId) {
     }
 }
 
-// ---- SoundPlayMusicLoop_8219e.cpp ----
 void ApplicationManager::SoundPlayMusicLoop(int soundId) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -225,37 +207,31 @@ void ApplicationManager::SoundPlayMusicLoop(int soundId) {
     }
 }
 
-// ---- ResetKeyState_83e90.cpp ----
 void ApplicationManager::ResetKeyState() {
     ApplicationManager *self = this;
     self->keyState = 0;
 }
 
-// ---- GetElapsedTimeMillis_827dc.cpp ----
 uint64_t ApplicationManager::GetElapsedTimeMillis() {
     ApplicationManager *self = this;
     return self->frameTimeMs - self->previousFrameTimeMs;
 }
 
-// ---- SoundMusicEnable_8226a.cpp ----
 void ApplicationManager::SoundMusicEnable(bool enable) {
     ApplicationManager *self = this;
     self->musicEnabled = enable;
 }
 
-// ---- CheatEnable_82534.cpp ----
 void ApplicationManager::CheatEnable(bool enable) {
     ApplicationManager *self = this;
     self->cheatsEnabled = enable;
 }
 
-// ---- GetCurrentTimeMillis_83e98.cpp ----
 uint64_t ApplicationManager::GetCurrentTimeMillis() {
     ApplicationManager *self = this;
     return self->currentTimeMs;
 }
 
-// ---- SoundPlayMusic_8218a.cpp ----
 void ApplicationManager::SoundPlayMusic(int soundId) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -264,7 +240,6 @@ void ApplicationManager::SoundPlayMusic(int soundId) {
     }
 }
 
-// ---- OnTouchEnd_83c90.cpp ----
 void ApplicationManager::OnTouchEndSimple() {
     ApplicationManager *self = this;
     self->currentKey = 0;
@@ -278,14 +253,12 @@ void ApplicationManager::OnTouchEndSimple() {
     self->actionStateHigh = 0;
 }
 
-// ---- SoundEnable_8225a.cpp ----
 void ApplicationManager::SoundEnable(bool enable) {
     ApplicationManager *self = this;
     self->soundFxEnabled = enable;
     self->musicEnabled = enable;
 }
 
-// ---- SoundSetMusicVolume_8228c.cpp ----
 void ApplicationManager::SoundSetMusicVolume(int volume) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -294,7 +267,6 @@ void ApplicationManager::SoundSetMusicVolume(int volume) {
     }
 }
 
-// ---- SetResumeCallback_82516.cpp ----
 typedef bool ResumeCallback_t(PaintCanvas *, void *);
 
 void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) {
@@ -303,20 +275,17 @@ void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *dat
     self->resumeCallbackData = data;
 }
 
-// ---- GetApplicationVersionString_82480.cpp ----
 extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_GetApplicationVersionString(String *out)
 {
     new (out) String();
     out->s = u"2.0.16";
 }
 
-// ---- VibrateEnable_822b6.cpp ----
 void ApplicationManager::VibrateEnable(bool enable) {
     ApplicationManager *self = this;
     self->vibrateEnabled = enable;
 }
 
-// ---- SoundResume_82226.cpp ----
 void ApplicationManager::SoundResume(int soundId) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -325,7 +294,6 @@ void ApplicationManager::SoundResume(int soundId) {
     }
 }
 
-// ---- SoundRelease_8217c.cpp ----
 void ApplicationManager::SoundRelease() {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -334,7 +302,6 @@ void ApplicationManager::SoundRelease() {
     }
 }
 
-// ---- Quit_82476.cpp ----
 typedef void QuitCallback_t();
 
 void ApplicationManager::Quit() {
@@ -345,15 +312,12 @@ void ApplicationManager::Quit() {
     }
 }
 
-// ---- GetEngine_8249c.cpp ----
 void * ApplicationManager::GetEngine() {
     ApplicationManager *self = this;
     return self->engine;
 }
 
-// ---- Suspend_824a2.cpp ----
 typedef void ModuleCallback(void *);
-
 
 void ApplicationManager::Suspend() {
     ApplicationManager *self = this;
@@ -376,13 +340,11 @@ void ApplicationManager::Suspend() {
     }
 }
 
-// ---- SoundFxEnable_82264.cpp ----
 void ApplicationManager::SoundFxEnable(bool enable) {
     ApplicationManager *self = this;
     self->soundFxEnabled = enable;
 }
 
-// ---- SoundResume_822a8.cpp ----
 void ApplicationManager::SoundResumeSelf() {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -391,7 +353,6 @@ void ApplicationManager::SoundResumeSelf() {
     }
 }
 
-// ---- Vibrate_822c4.cpp ----
 void ApplicationManager::Vibrate(unsigned short duration) {
     ApplicationManager *self = this;
     if (self->vibrateEnabled) {
@@ -399,7 +360,6 @@ void ApplicationManager::Vibrate(unsigned short duration) {
     }
 }
 
-// ---- SoundSetFXVolume_8227e.cpp ----
 void ApplicationManager::SoundSetFXVolume(int volume) {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -408,7 +368,6 @@ void ApplicationManager::SoundSetFXVolume(int volume) {
     }
 }
 
-// ---- CheatSetCallback_8251c.cpp ----
 void ApplicationManager::CheatSetCallback(void *callback, void *data) {
     ApplicationManager *self = this;
     void *cheats = self->cheatHandler;
@@ -417,7 +376,6 @@ void ApplicationManager::CheatSetCallback(void *callback, void *data) {
     }
 }
 
-// ---- SoundResumeSounds_82240.cpp ----
 void ApplicationManager::SoundResumeSounds() {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -426,7 +384,6 @@ void ApplicationManager::SoundResumeSounds() {
     }
 }
 
-// ---- SoundPauseSounds_8220a.cpp ----
 void ApplicationManager::SoundPauseSounds() {
     ApplicationManager *self = this;
     void *sound = self->soundResource;
@@ -435,13 +392,11 @@ void ApplicationManager::SoundPauseSounds() {
     }
 }
 
-// ---- GetKeyState_83e84.cpp ----
 uint64_t ApplicationManager::GetKeyState() {
     ApplicationManager *self = this;
     return self->keyState;
 }
 
-// ---- SetApplicationModule_82440.cpp ----
 void ApplicationManager::SetApplicationModule(void *module) {
     ApplicationManager *self = this;
     void *current = self->currentModule;
@@ -449,7 +404,6 @@ void ApplicationManager::SetApplicationModule(void *module) {
     self->field_0x3c = current != 0;
 }
 
-// ---- ConfigReadFile_8254c.cpp ----
 extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigReadFile(ApplicationManager *self, String *name)
 {
     unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
@@ -463,10 +417,8 @@ extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRea
     return;
 }
 
-// ---- OnTouchEnd_83c18.cpp ----
 typedef void TouchEndCallback(void *, int, int, void *);
 typedef void TouchReleaseCallback(void *, int, int);
-
 
 void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
     ApplicationManager *self = this;
@@ -490,7 +442,6 @@ void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
     return;
 }
 
-// ---- EnablePerformanceTest_82334.cpp ----
 void ApplicationManager_EnablePerformanceTest(int count)
 {
     g_perfElapsed = 0;
@@ -502,12 +453,10 @@ void ApplicationManager_EnablePerformanceTest(int count)
     g_perfPendingFlag = 0;
 }
 
-// ---- OnUpdate_827f0.cpp ----
 typedef int ModuleIntCallback(void *);
 typedef void ModuleVoidCallback(void *);
 typedef bool LoadingCallbackU(PaintCanvas *, int, void *);
 typedef bool ResumeCallbackU(PaintCanvas *, void *);
-
 
 void ApplicationManager::OnUpdate(long long now) {
     ApplicationManager *self = this;
@@ -596,7 +545,6 @@ void ApplicationManager::OnUpdate(long long now) {
     ext_001ab610();
 }
 
-// ---- ApplicationManager_8193c.cpp ----
 ApplicationManager * ApplicationManager::ctor(void *engine) {
     ApplicationManager *self = this;
 
@@ -651,10 +599,8 @@ ApplicationManager * ApplicationManager::ctor(void *engine) {
     return self;
 }
 
-// ---- OnTouchMove_83bb0.cpp ----
 typedef void TouchMoveCallback(void *, int, int, void *);
 typedef void TouchDragCallback(void *, int, int);
-
 
 void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
     ApplicationManager *self = this;
@@ -677,7 +623,6 @@ void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
     return;
 }
 
-// ---- OnKeyPress_83ca6.cpp ----
 typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int);
 
 void ApplicationManager::OnKeyPress(int key) {
@@ -733,7 +678,6 @@ void ApplicationManager::OnKeyPress(int key) {
     }
 }
 
-// ---- SoundSet_82148.cpp ----
 __attribute__((minsize)) extern "C" void ApplicationManager_SoundSet(ApplicationManager *self, void *info, int count)
 {
     if (info != 0) {
@@ -747,7 +691,6 @@ __attribute__((minsize)) extern "C" void ApplicationManager_SoundSet(Application
     }
 }
 
-// ---- RegisterApplicationModule_822d4.cpp ----
 __attribute__((minsize)) extern "C" void ApplicationManager_RegisterApplicationModule(ApplicationManager *self, unsigned int id, void *module)
 {
     if (module != 0) {
@@ -757,7 +700,6 @@ __attribute__((minsize)) extern "C" void ApplicationManager_RegisterApplicationM
     }
 }
 
-// ---- SetCurrentApplicationModule_823b0.cpp ----
 void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
     ApplicationManager *self = this;
     char *pending = &g_perfPending;
@@ -787,7 +729,6 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
     }
 }
 
-// ---- ConvertTouchCoords_839de.cpp ----
 void ApplicationManager::ConvertTouchCoords(int *x, int *y) {
     ApplicationManager *self = this;
     ApplicationManager *manager = self;
@@ -818,16 +759,13 @@ storeY:
     *yPtr = newY;
 }
 
-// ---- VibrateSupported_822bc.cpp ----
 void ApplicationManager::VibrateSupported() {
     ApplicationManager *self = this;
     ext_001ab318(self->engine);
 }
 
-// ---- OnTouchBegin_83a38.cpp ----
 typedef void TouchBeginCallback(void *, int, int, void *);
 typedef void TouchPressCallback(void *, int, int);
-
 
 void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
     ApplicationManager *self = this;
@@ -880,7 +818,6 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
     return;
 }
 
-// ---- ConfigRegisterAction_82600.cpp ----
 void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
     ApplicationManager *self = this;
     void *array = (char *)self + 0x88;
@@ -888,7 +825,6 @@ void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
     ext_001ab5f8(key, array);
 }
 
-// ---- GetApplicationModule_82452.cpp ----
 void * ApplicationManager::GetApplicationModule(unsigned int id) {
     ApplicationManager *self = this;
     unsigned int count = self->moduleIdCount;
@@ -907,7 +843,6 @@ check:
     return *(void **)(self->modulesData + index * 4);
 }
 
-// ---- ConfigGetKeysForAction_82654.cpp ----
 void * ApplicationManager::ConfigGetKeysForAction(long long action) {
     ApplicationManager *self = this;
     int low = (int)action;
@@ -945,7 +880,6 @@ check:
     return result;
 }
 
-// ---- OnKeyRelease_83d98.cpp ----
 typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int);
 
 void ApplicationManager::OnKeyRelease(int key) {
@@ -999,7 +933,6 @@ void ApplicationManager::OnKeyRelease(int key) {
     }
 }
 
-// ---- KeyCodeSetMapping_83ea4.cpp ----
 void ApplicationManager::KeyCodeSetMapping(void *array) {
     ApplicationManager *self = this;
     unsigned int count = *(unsigned int *)array;
@@ -1018,7 +951,6 @@ void ApplicationManager::KeyCodeSetMapping(void *array) {
     }
 }
 
-// ---- CheckForOrientationChange_826e8.cpp ----
 static bool update_orientation_timer(ApplicationManager *self, int *timer)
 {
     int elapsed = self->frameTimeMs - self->previousFrameTimeMs;
@@ -1090,7 +1022,6 @@ setOrientation:
     *timer = 0;
 }
 
-// ---- _ApplicationManager_82038.cpp ----
 typedef void ModuleCallback(void *);
 
 __attribute__((minsize)) ApplicationManager::~ApplicationManager()
@@ -1161,7 +1092,6 @@ __attribute__((minsize)) ApplicationManager::~ApplicationManager()
     ArrayDtor_modules(modules);
 }
 
-// ---- ConfigRegisterTokenReadFunction_825a4.cpp ----
 typedef void ConfigTokenReadFunction(ConfigReader *, void *);
 
 extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRegisterTokenReadFunction(

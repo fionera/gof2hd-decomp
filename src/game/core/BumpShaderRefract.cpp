@@ -123,7 +123,6 @@ void BumpShaderRefract::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- _BumpShaderRefract_8fac2.cpp ----
 // AbyssEngine::BumpShaderRefract::~BumpShaderRefract() (deleting dtor)
 void _ZN11AbyssEngine17BumpShaderRefractD0Ev(AbyssEngine::BumpShaderRefract *self)
 {

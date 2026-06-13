@@ -6,7 +6,6 @@
 // their real layouts live in other (non-batch) classes.
 static inline char *bytes(void *self) { return (char *)self; }
 
-// ---- UpdateMeshData_8b74a.cpp ----
 namespace AbyssEngine {
 
 void TexOnlyShader::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -32,7 +31,6 @@ void TexOnlyShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_8b734.cpp ----
 namespace AbyssEngine {
 
 void TexOnlyShader::SetInActive()
@@ -43,7 +41,6 @@ void TexOnlyShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- Init_8b6c0.cpp ----
 namespace AbyssEngine {
 
 void TexOnlyShader::Init(Engine *)
@@ -62,7 +59,6 @@ void TexOnlyShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- TexOnlyShader_8b634.cpp ----
 namespace AbyssEngine {
 
 TexOnlyShader::TexOnlyShader()
@@ -80,7 +76,6 @@ TexOnlyShader::TexOnlyShader()
 
 } // namespace AbyssEngine
 
-// ---- _TexOnlyShader_8b7e2.cpp ----
 void _ZN11AbyssEngine12TexOnlyShaderD0Ev(AbyssEngine::TexOnlyShader *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;

@@ -60,7 +60,6 @@ public:
 
 } // namespace AbyssEngine
 
-
 extern "C" {
 extern void *PostBWShader_vtable[];
 extern uint32_t PostBWShader_ctor_copy_src;

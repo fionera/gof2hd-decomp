@@ -7,10 +7,7 @@ struct String;
 }
 typedef AbyssEngine::String String;
 
-
-
 namespace AbyssEngine {
-
 
 String operator+(const String &left, const String &right);
 }

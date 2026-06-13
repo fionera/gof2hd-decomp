@@ -16,7 +16,6 @@ extern "C" void ScrollTouchBox_ctor(void *self, int x, int y, int w, int h);
 // Layout class is not modeled here; helper kept local to this translation unit.
 static inline int   &LayoutI(void *p, int off) { return *(int *)((char *)p + off); }
 
-// ---- OnTouchEnd_17456a.cpp ----
 void ScrollTouchWindow::OnTouchEnd(int x, int y)
 {
     ((ScrollTouchBox *)(this->scrollBox))->OnTouchEnd(x, y);
@@ -35,20 +34,17 @@ void ScrollTouchWindow::setText4(AbyssEngine::String title, AbyssEngine::String 
     this->setText(title, text, color);
 }
 
-// ---- OnTouchMove_174558.cpp ----
 void ScrollTouchWindow::OnTouchMove(int x, int y)
 {
     ((ScrollTouchBox *)(this->scrollBox))->OnTouchMove(x, y);
     this->touchActive = 1;
 }
 
-// ---- setTextCentered_174484.cpp ----
 void ScrollTouchWindow::setTextCentered(bool centered)
 {
     return ((ScrollTouchBox *)(this->scrollBox))->setTextCentered(centered);
 }
 
-// ---- setYPosition_174328.cpp ----
 void ScrollTouchWindow::setYPosition(int y)
 {
     return ((ScrollTouchBox *)(this->scrollBox))->setYPosition(y);
@@ -63,7 +59,6 @@ void ScrollTouchWindow::setPosition(int y)
     return ((ScrollTouchBox *)(this->scrollBox))->setYPosition(y);
 }
 
-// ---- _ScrollTouchWindow_174244.cpp ----
 ScrollTouchWindow::~ScrollTouchWindow()
 {
     void *box = this->scrollBox;
@@ -74,13 +69,11 @@ ScrollTouchWindow::~ScrollTouchWindow()
     ((String *)(&this->title))->dtor();
 }
 
-// ---- update_17454c.cpp ----
 void ScrollTouchWindow::update(int dt)
 {
     return ((ScrollTouchBox *)(this->scrollBox))->update(dt);
 }
 
-// ---- OnTouchBegin_174552.cpp ----
 void ScrollTouchWindow::OnTouchBegin(int x, int y)
 {
     return ((ScrollTouchBox *)(this->scrollBox))->OnTouchBegin(x, y);
@@ -106,7 +99,6 @@ void ScrollTouchWindow::scroll(int amount)
     box->update(0);
 }
 
-// ---- draw_174330.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_STW_canvas_draw;
 __attribute__((visibility("hidden"))) extern void **g_STW_layout_draw_plain;
 __attribute__((visibility("hidden"))) extern void **g_STW_layout_draw_window;
@@ -165,8 +157,6 @@ void ScrollTouchWindow::draw()
     ((PaintCanvas*)*canvasHolder)->SetColor((unsigned int)color);
 }
 
-// ---- drawTextBG_17448c.cpp ----
-
 __attribute__((visibility("hidden"))) extern void **g_STW_layout_drawTextBG;
 __attribute__((visibility("hidden"))) extern const char g_STW_empty_drawTextBG[];
 
@@ -198,7 +188,6 @@ void ScrollTouchWindow::drawTextBG()
     ((String *)(text))->dtor();
 }
 
-// ---- setText_174264.cpp ----
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text)
 {
     {
@@ -211,7 +200,6 @@ void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String t
     this->title = title;
 }
 
-// ---- ScrollTouchWindow_174128.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_STW_layout_174128;
 
 ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame)
@@ -242,7 +230,6 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame)
     this->hasFrame = hasFrame;
 }
 
-// ---- setText_1742c4.cpp ----
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text, int color)
 {
     {
@@ -255,7 +242,6 @@ void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String t
     this->title = title;
 }
 
-// ---- ScrollTouchWindow_1741c0.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_STW_layout_1741c0;
 
 ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h)

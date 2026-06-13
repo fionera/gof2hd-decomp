@@ -1,6 +1,5 @@
 #include "gof2/game/world/Galaxy.h"
 
-
 extern "C" void *Galaxy_ctor_op_new_array(unsigned int size);
 extern "C" void *Galaxy_ctor_op_new(unsigned int size);
 extern "C" void Galaxy_ctor_FileRead_ctor(void *self);
@@ -40,7 +39,6 @@ extern "C" int Galaxy_FileRead_loadStation(void *self, int index);
 extern "C" void *Galaxy_FileRead_dtor(void *self);
 extern "C" void Galaxy_gs_op_delete(void *p);
 
-// ---- Galaxy_175e08.cpp ----
 Galaxy::Galaxy()
 {
     uint8_t *stations = (uint8_t *)Galaxy_ctor_op_new_array(0x87);
@@ -54,7 +52,6 @@ Galaxy::Galaxy()
     Galaxy_ctor_op_delete(Galaxy_ctor_FileRead_dtor(fr));
 }
 
-// ---- reset_175e82.cpp ----
 void Galaxy::reset()
 {
     uint8_t *stations = (uint8_t *)P(this, 0x0);
@@ -63,9 +60,7 @@ void Galaxy::reset()
     }
 }
 
-// ---- distancePercent_175f44.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_globals;
-
 
 int Galaxy::distancePercent(int x1, int y1, int x2, int y2)
 {
@@ -75,7 +70,6 @@ int Galaxy::distancePercent(int x1, int y1, int x2, int y2)
     return (int)Galaxy_Globals_sqrt(*g_Galaxy_globals, sum);
 }
 
-// ---- visitStation_175f26.cpp ----
 void Galaxy::visitStation(int index)
 {
     uint8_t *stations = (uint8_t *)P(this, 0x0);
@@ -92,13 +86,11 @@ void Galaxy::setSystemVisited(int systemId)
     stations[systemId] = 1;
 }
 
-// ---- invDistancePercent_175f2e.cpp ----
 int Galaxy::invDistancePercent(int x1, int y1, int x2, int y2)
 {
     return 100 - Galaxy_distancePercent5(y2, x1, y1, x2, y2);
 }
 
-// ---- setVisited_175ef4.cpp ----
 void Galaxy::setVisited(bool *src, int count)
 {
     int i;
@@ -115,7 +107,6 @@ void Galaxy::setVisited(bool *src, int count)
     }
 }
 
-// ---- getSystem_175e98.cpp ----
 int Galaxy::getSystem(int index)
 {
     if (index < 0)
@@ -151,10 +142,8 @@ float Galaxy::distance(SolarSystem *a, SolarSystem *b)
     return Galaxy_dist_sqrt(*g_Galaxy_dist_globals, sq) * g_Galaxy_dist_scale;
 }
 
-// ---- getPlasmaProbabilities_176248.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_pp_status;
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_pp_items;
-
 
 void *Galaxy::getPlasmaProbabilities(void *station)
 {
@@ -234,7 +223,6 @@ void *Galaxy::getPlasmaProbabilities(void *station)
     return out;
 }
 
-// ---- _Galaxy_175e54.cpp ----
 // Destructor: free the visited-flag array, release/destroy the SolarSystem* Array.
 Galaxy::~Galaxy()
 {
@@ -248,24 +236,20 @@ Galaxy::~Galaxy()
     P(this, 0x4) = 0;
 }
 
-// ---- getSystems_175e94.cpp ----
 // Returns the owned Array<SolarSystem*> (stored at +0x4).
 void *Galaxy::getSystems()
 {
     return P(this, 0x4);
 }
 
-// ---- getVisited_175f22.cpp ----
 // Returns the per-station visited-flag array (0x87 bytes, stored at +0x0).
 void *Galaxy::getVisited()
 {
     return P(this, 0x0);
 }
 
-// ---- getAsteroidProbabilities_176098.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_ap_status;
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_ap_items;
-
 
 void *Galaxy::getAsteroidProbabilities(void *station)
 {
@@ -352,9 +336,7 @@ void *Galaxy::getAsteroidProbabilities(void *station)
     return out;
 }
 
-// ---- getStation_175ea8.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_gs_globals;
-
 
 int Galaxy::getStation(int index)
 {

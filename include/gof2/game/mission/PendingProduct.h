@@ -10,7 +10,6 @@
 //   +0x10  int     quantity
 //   +0x14  int     blueprintIndex
 
-
 struct PendingProduct;
 struct BluePrint;
 

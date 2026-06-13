@@ -1,7 +1,5 @@
 #include "gof2/engine/render/LensFlare.h"
 
-
-// ---- _LensFlare_11d06c.cpp ----
 // LensFlare::~LensFlare()
 //   if (this->images) operator delete(this->images); this->images = 0;
 LensFlare::~LensFlare()
@@ -13,7 +11,6 @@ LensFlare::~LensFlare()
     this->images = 0;
 }
 
-// ---- LensFlare_11d00c.cpp ----
 // PC-relative pointer-to-pointer global: the engine PaintCanvas singleton used to create
 // the flare's three Image2D sprites (DAT_0012d02c).
 extern void *const gLensFlareCanvas __attribute__((visibility("hidden")));
@@ -34,7 +31,6 @@ LensFlare::LensFlare(PaintCanvas *param_1)
     this->canvas = param_1;
 }
 
-// ---- render2D_11d088.cpp ----
 // PC-relative palette tables (R/G/B per flare-color index, DAT_0012d0bc/c0/c4) and the
 // engine PaintCanvas singleton holder (DAT_0012d1c4 etc.).
 extern const uint32_t gFlareR[] __attribute__((visibility("hidden")));
@@ -165,7 +161,6 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
     }
 }
 
-// ---- update_11d082.cpp ----
 // LensFlare::update()
 //   this->intensity(0x00) = 0;
 void LensFlare::update()

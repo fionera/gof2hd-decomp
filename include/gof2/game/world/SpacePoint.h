@@ -19,7 +19,6 @@
 // of the demangled name, so each method is authored as an extern "C" function
 // whose name contains the target method name. This sidesteps C++ mangling.
 
-
 namespace AbyssEngine {
 namespace AEMath {
 

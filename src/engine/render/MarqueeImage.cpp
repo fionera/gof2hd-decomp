@@ -3,14 +3,12 @@
 
 using AbyssEngine::PaintCanvas;
 
-// ---- setPosition_15f5f2.cpp ----
 void MarqueeImage::setPosition(int x, int y)
 {
     this->x = x;
     this->y = y;
 }
 
-// ---- MarqueeImage_15f59c.cpp ----
 MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
 {
     void **holder = g_MarqueeImage_canvas;
@@ -27,13 +25,11 @@ MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
     this->scrollPosition = 0;
 }
 
-// ---- draw_15f6f4.cpp ----
 void MarqueeImage::draw()
 {
     return draw(this->x, this->y);
 }
 
-// ---- update_15f5fc.cpp ----
 void MarqueeImage::update(int dt)
 {
     float position = this->scrollPosition;
@@ -49,7 +45,6 @@ void MarqueeImage::update(int dt)
     this->scrollOffset = (int)(width - position);
 }
 
-// ---- draw_15f654.cpp ----
 void MarqueeImage::draw(int x, int y)
 {
     int32_t offset = this->scrollOffset;

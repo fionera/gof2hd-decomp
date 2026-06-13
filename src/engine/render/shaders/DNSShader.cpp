@@ -1,10 +1,8 @@
 #include "gof2/engine/render/shaders/DNSShader.h"
 
-
 extern "C" float DNSShader_g0;
 extern "C" float DNSShader_g1;
 
-// ---- _DNSShader_8f750.cpp ----
 void _ZN11AbyssEngine9DNSShaderD0Ev(
     AbyssEngine::DNSShader *self)
 {
@@ -13,7 +11,6 @@ void _ZN11AbyssEngine9DNSShaderD0Ev(
     operator delete(base);
 }
 
-// ---- SetInActive_8f4c4.cpp ----
 namespace AbyssEngine {
 
 void DNSShader::SetInActive()
@@ -39,7 +36,6 @@ void DNSShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_8f504.cpp ----
 namespace AbyssEngine {
 
 void DNSShader::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -112,7 +108,6 @@ void DNSShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- Init_8f360.cpp ----
 namespace AbyssEngine {
 
 void DNSShader::Init(Engine *)
@@ -148,7 +143,6 @@ void DNSShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- DNSShader_8f2d4.cpp ----
 extern "C" AbyssEngine::DNSShader *
 _ZN11AbyssEngine9DNSShaderC2Ev(AbyssEngine::DNSShader *self)
 {

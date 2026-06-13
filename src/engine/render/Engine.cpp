@@ -92,7 +92,6 @@ Vector MatrixInverseRotateVector(const Matrix &matrix, const Vector &vector);
 Vector MatrixInverseTransformVector(const Matrix &matrix, const Vector &vector);
 } }
 
-// ---- GetAccelValue_86510.cpp ----
 double * Engine::GetAccelValue() {
     Engine *self = this;
     double x = self->field_0x4b0;
@@ -109,7 +108,6 @@ double * Engine::GetAccelValue() {
     return (double *)((char *)self + 0x4c8);
 }
 
-// ---- ActivateRender2FracFBO_6dcf6.cpp ----
 void Engine::ActivateRender2FracFBO() {
     Engine *self = this;
     FBOContainer *fbo = self->field_0x418;
@@ -118,7 +116,6 @@ void Engine::ActivateRender2FracFBO() {
     }
 }
 
-// ---- Resume_845ee.cpp ----
 uint32_t Engine::Resume() {
     Engine *self = this;
     ((PaintCanvas*)*self->field_0x30)->Resume();
@@ -128,20 +125,17 @@ uint32_t Engine::Resume() {
     return 1;
 }
 
-// ---- Suspend_845de.cpp ----
 uint32_t Engine::Suspend() {
     Engine *self = this;
     ((PaintCanvas*)*self->field_0x30)->Suspend();
     return 1;
 }
 
-// ---- GetDisplayWidth_84530.cpp ----
 uint32_t Engine::GetDisplayWidth() {
     Engine *self = this;
     return self->field_0x368;
 }
 
-// ---- GetGravValue_864c0.cpp ----
 double * Engine::GetGravValue() {
     Engine *self = this;
     double x = self->field_0x4e0;
@@ -158,13 +152,11 @@ double * Engine::GetGravValue() {
     return (double *)((char *)self + 0x4f8);
 }
 
-// ---- GetDisplayHeight_84536.cpp ----
 uint32_t Engine::GetDisplayHeight() {
     Engine *self = this;
     return self->field_0x36c;
 }
 
-// ---- LightSetRimColor_85dd0.cpp ----
 void Engine::LightSetRimColor(float red, float green, float blue) {
     Engine *self = this;
     if (g_Engine_useShaders == 0) {
@@ -176,13 +168,11 @@ void Engine::LightSetRimColor(float red, float green, float blue) {
     return ShaderUpdateRimColor();
 }
 
-// ---- IsPostEffectActivated_868dc.cpp ----
 bool Engine::IsPostEffectActivated() {
     Engine *self = this;
     return self->field_0x410 != 0;
 }
 
-// ---- SetUVMatrix_850f0.cpp ----
 void Engine::SetUVMatrix(const uint32_t *matrix) {
     Engine *self = this;
     if (g_Engine_useShaders == 0) {
@@ -223,7 +213,6 @@ void Engine::SetUVMatrix(const uint32_t *matrix) {
     self->field_0x200 = 0x3f800000;
 }
 
-// ---- ActivateRender2TextureFBO_6dccc.cpp ----
 void Engine::ActivateRender2TextureFBO() {
     Engine *self = this;
     FBOContainer *fbo = self->field_0x414;
@@ -232,7 +221,6 @@ void Engine::ActivateRender2TextureFBO() {
     }
 }
 
-// ---- LightSetMaterialColorAlpha_856b4.cpp ----
 typedef void Materialfv(unsigned int face, unsigned int pname, const void *params);
 static Materialfv * volatile g_Engine_glMaterialfv;
 
@@ -252,7 +240,6 @@ void Engine::LightSetMaterialColorAlpha(float alpha) {
     return materialfv(0x408, 0x1201, (char *)self + 0x298);
 }
 
-// ---- SetAccelValue_86582.cpp ----
 void Engine::SetAccelValue(double x, double y, double z) {
     Engine *self = this;
     self->field_0x4b0 = x;
@@ -260,7 +247,6 @@ void Engine::SetAccelValue(double x, double y, double z) {
     self->field_0x4c0 = z;
 }
 
-// ---- ResetUVMatrix_85184.cpp ----
 void Engine::ResetUVMatrix() {
     Engine *self = this;
     if (g_Engine_useShaders != 0) {
@@ -282,7 +268,6 @@ void Engine::ResetUVMatrix() {
     return glMatrixMode(0x1700);
 }
 
-// ---- ActivateTextureFBO_6dcbe.cpp ----
 void Engine::ActivateTextureFBO() {
     Engine *self = this;
     FBOContainer *fbo = self->field_0x414;
@@ -291,7 +276,6 @@ void Engine::ActivateTextureFBO() {
     }
 }
 
-// ---- GlowEndGlow_869f4.cpp ----
 void Engine::GlowEndGlow() {
     Engine *self = this;
     if (g_Engine_useShaders == 0) {
@@ -302,14 +286,12 @@ void Engine::GlowEndGlow() {
     return glDepthFunc(0x201);
 }
 
-// ---- ActivateViewBuffer_6dd14.cpp ----
 void Engine::ActivateViewBuffer() {
     Engine *self = this;
     glBindFramebuffer(0x8d40, self->field_0x40c);
     return glViewport(0, 0, self->field_0x370, self->field_0x374);
 }
 
-// ---- GlowEnableGlow_869c8.cpp ----
 void Engine::GlowEnableGlow() {
     Engine *self = this;
     if (self->field_0x41c != 0) {
@@ -320,7 +302,6 @@ void Engine::GlowEnableGlow() {
     self->field_0x41c = 1;
 }
 
-// ---- SetOnDestroyApp_845d8.cpp ----
 typedef void DestroyCallback(Engine *);
 
 void Engine::SetOnDestroyApp(DestroyCallback *callback) {
@@ -328,7 +309,6 @@ void Engine::SetOnDestroyApp(DestroyCallback *callback) {
     self->field_0x484 = callback;
 }
 
-// ---- SetGravValue_86560.cpp ----
 void Engine::SetGravValue(double x, double y, double z) {
     Engine *self = this;
     self->field_0x4e0 = x;
@@ -336,7 +316,6 @@ void Engine::SetGravValue(double x, double y, double z) {
     self->field_0x4f0 = z;
 }
 
-// ---- SwapBuffer_6ddb4.cpp ----
 void Engine::SwapBuffer() {
     Engine *self = this;
     uint32_t index = 0;
@@ -347,7 +326,6 @@ void Engine::SwapBuffer() {
     }
 }
 
-// ---- ReloadShaders_865c8.cpp ----
 typedef void ShaderUnload(ShaderBaseStruct *);
 typedef void ShaderInitReloadFn(ShaderBaseStruct *, Engine *);
 
@@ -367,7 +345,6 @@ void Engine::ReloadShaders() {
     }
 }
 
-// ---- DeactivateRender2TextureFBO_6dcda.cpp ----
 void Engine::DeactivateRender2TextureFBO() {
     Engine *self = this;
     FBOContainer *fbo = self->field_0x414;
@@ -376,7 +353,6 @@ void Engine::DeactivateRender2TextureFBO() {
     }
 }
 
-// ---- GetDeviceInfo_6ddd6.cpp ----
 void Engine::GetDeviceInfo() {
     Engine *self = this;
     self->field_0x8 = NFC_isPad();
@@ -384,7 +360,6 @@ void Engine::GetDeviceInfo() {
     self->field_0x4 = NFC_getHeight();
 }
 
-// ---- CopyFBO_6dd38.cpp ----
 void Engine::CopyFBO() {
     Engine *self = this;
     if (g_Engine_useShaders == 0) {
@@ -408,7 +383,6 @@ void Engine::CopyFBO() {
     return glClear(0x100);
 }
 
-// ---- HasVibration_8453c.cpp ----
 bool Engine::HasVibration() {
     Engine *self = this;
     if (self->field_0x480) {
@@ -417,7 +391,6 @@ bool Engine::HasVibration() {
     return false;
 }
 
-// ---- LightSetLightCount_8571c.cpp ----
 void Engine::LightSetLightCount(int count) {
     Engine *self = this;
     if (count >= 8) {
@@ -427,14 +400,12 @@ void Engine::LightSetLightCount(int count) {
     self->field_0x32c = count;
 }
 
-// ---- SetAddData_84b04.cpp ----
 void Engine::SetAddData(void *data, int size) {
     Engine *self = this;
     self->field_0x358 = data;
     self->field_0x35c = size;
 }
 
-// ---- ShaderUpdate_8538c.cpp ----
 void Engine::ShaderUpdate() {
     Engine *self = this;
     uint32_t index = 0;
@@ -444,7 +415,6 @@ void Engine::ShaderUpdate() {
     }
 }
 
-// ---- IsExtensionSupported_86452.cpp ----
 bool Engine::IsExtensionSupported(const char *extension)
 {
     const char *extensions = glGetString(0x1f03);
@@ -477,7 +447,6 @@ bool Engine::IsExtensionSupported(const char *extension)
     return false;
 }
 
-// ---- LightSetMaterialColorShininess_85e04.cpp ----
 void Engine::LightSetMaterialColorShininess(float shininess) {
     Engine *self = this;
     self->field_0x2c8 = shininess;
@@ -486,7 +455,6 @@ void Engine::LightSetMaterialColorShininess(float shininess) {
     }
 }
 
-// ---- Initialize_84528.cpp ----
 typedef void InitializeCallback(Engine *);
 
 void Engine::Initialize(InitializeCallback *callback) {
@@ -496,7 +464,6 @@ void Engine::Initialize(InitializeCallback *callback) {
     }
 }
 
-// ---- ActivateRefractFBO_6dce8.cpp ----
 void Engine::ActivateRefractFBO() {
     Engine *self = this;
     FBOContainer *fbo = self->field_0x418;
@@ -505,7 +472,6 @@ void Engine::ActivateRefractFBO() {
     }
 }
 
-// ---- LightSetParticleAmbient_85828.cpp ----
 void Engine::LightSetParticleAmbient(float red, float green, float blue) {
     Engine *self = this;
     float *ambient = (float *)((char *)self + 0x314);
@@ -514,7 +480,6 @@ void Engine::LightSetParticleAmbient(float red, float green, float blue) {
     *ambient++ = blue;
 }
 
-// ---- DeactivateRender2FracFBO_6dd04.cpp ----
 void Engine::DeactivateRender2FracFBO() {
     Engine *self = this;
     FBOContainer *fbo = self->field_0x418;
@@ -523,7 +488,6 @@ void Engine::DeactivateRender2FracFBO() {
     }
 }
 
-// ---- SetPerspMatrix_85478.cpp ----
 void Engine::SetPerspMatrix(const uint32_t *matrix) {
     Engine *self = this;
     if (g_Engine_useShaders == 0) {
@@ -547,7 +511,6 @@ void Engine::SetPerspMatrix(const uint32_t *matrix) {
     self->field_0x3c0 = matrix[15];
 }
 
-// ---- SetFrameBufferTexture_84aa0.cpp ----
 void Engine::SetFrameBufferTexture(int slot0, int slot1) {
     Engine *self = this;
     char *firstBase = (char *)self + slot0 * 4;
@@ -571,7 +534,6 @@ void Engine::SetFrameBufferTexture(int slot0, int slot1) {
     return glBindTexture(0xde1, *second);
 }
 
-// ---- LightSetLightDirection_858d0.cpp ----
 void Engine::LightSetLightDirection(float x, float y, float z, unsigned int light) {
     Engine *self = this;
     unsigned int index = light - 0x4000;
@@ -594,7 +556,6 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
     return;
 }
 
-// ---- RenderMesh_85f24.cpp ----
 void Engine::RenderMesh(MeshFull *mesh) {
     Engine *self = this;
     if (mesh == 0 || mesh->field_0x28 == 0) {
@@ -657,7 +618,6 @@ done:
     return;
 }
 
-// ---- DrawQuad_868f0.cpp ----
 void Engine::DrawQuad(int x, int y, int width, int height) {
     Engine *self = this;
     float fx = (float)x;
@@ -692,7 +652,6 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
                           mesh->field_0x2c);
 }
 
-// ---- SetColor_855c8.cpp ----
 void Engine::SetColor(float red, float green, float blue, float alpha) {
     Engine *self = this;
     if (self->field_0xd0 == red &&
@@ -715,10 +674,8 @@ void Engine::SetColor(float red, float green, float blue, float alpha) {
     return glColor4f(red, green, blue, alpha);
 }
 
-// ---- _Engine_8415c.cpp ----
 typedef void DestroyCallback(Engine *);
 typedef void FileInterfaceRelease(void *);
-
 
 Engine::~Engine()
 {
@@ -769,13 +726,11 @@ Engine::~Engine()
     ((String *)((String *)this))->dtor();
 }
 
-// ---- ReleaseGL_7dcba.cpp ----
 // Releases GL-side resources owned by the engine. Empty in this build (GL teardown is
 // handled by the driver / deferred), but kept as a real method invoked from ~Engine().
 void Engine::ReleaseGL() {
 }
 
-// ---- AfterGLInit_8428c.cpp ----
 void Engine::AfterGLInit() {
     Engine *self = this;
     ((Engine *)(self))->ResetLightParam();
@@ -798,7 +753,6 @@ void Engine::AfterGLInit() {
     return;
 }
 
-// ---- DrawCloakFBO_868b0.cpp ----
 typedef void ShaderDrawCloak(ShaderBaseStruct *);
 
 void Engine::DrawCloakFBO(FBOContainer *fbo) {
@@ -812,7 +766,6 @@ void Engine::DrawCloakFBO(FBOContainer *fbo) {
     }
 }
 
-// ---- ShaderRegister_84a20.cpp ----
 typedef void ShaderInitFn(ShaderBaseStruct *, Engine *);
 
 void Engine::ShaderRegister(ShaderBaseStruct *shader) {
@@ -833,7 +786,6 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
     return;
 }
 
-// ---- SetTextureSlot_84ffc.cpp ----
 void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
     Engine *self = this;
     char *manager = *self->field_0x30;   // external texture-manager (no named struct)
@@ -862,7 +814,6 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
     *bound = texture;
 }
 
-// ---- AEClientState_86350.cpp ----
 void Engine::AEClientState(unsigned int state, bool enable) {
     Engine *self = this;
     uint32_t bits = self->field_0x4a4;
@@ -890,7 +841,6 @@ void Engine::AEClientState(unsigned int state, bool enable) {
     self->field_0x4a4 = bits;
 }
 
-// ---- GlowBeginGlow_86988.cpp ----
 void Engine::GlowBeginGlow(unsigned int depthFunc) {
     Engine *self = this;
     if (self->field_0x41c != 0) {
@@ -906,7 +856,6 @@ void Engine::GlowBeginGlow(unsigned int depthFunc) {
     }
 }
 
-// ---- DrawLine2D_85e2c.cpp ----
 void Engine::DrawLine2D(int vertexCount, int count, bool strip) {
     Engine *self = this;
     self->field_0x348 = vertexCount;
@@ -915,7 +864,6 @@ void Engine::DrawLine2D(int vertexCount, int count, bool strip) {
     return glDrawArrays(mode, 0, count);
 }
 
-// ---- ShaderSetActive_85e60.cpp ----
 typedef void ShaderEnable(ShaderBaseStruct *, bool);
 typedef void ShaderApply(ShaderBaseStruct *, MeshFull *, Engine *);
 
@@ -955,7 +903,6 @@ void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     }
 }
 
-// ---- DoPostEffect_8675c.cpp ----
 typedef void ShaderPostDraw(ShaderBaseStruct *, void *);
 typedef void ShaderPostDrawSwap(ShaderBaseStruct *, void *, void **, Engine *);
 
@@ -1008,7 +955,6 @@ void Engine::DoPostEffect() {
     return;
 }
 
-// ---- LightSetMaterialColorSpecular_85d44.cpp ----
 void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
     Engine *self = this;
     self->field_0x2b8 = red;
@@ -1035,7 +981,6 @@ void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
     return ShaderUpdateMaterialColor();
 }
 
-// ---- LightSetGlobalSceneColorAmbient_85830.cpp ----
 void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue) {
     Engine *self = this;
     self->field_0x288 = red;
@@ -1065,7 +1010,6 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
     return ShaderUpdateMaterialColor();
 }
 
-// ---- SetPostEffect_865fc.cpp ----
 void Engine::SetPostEffect(uint32_t effect, bool enable) {
     Engine *self = this;
     if (self->field_0x414 == 0 && enable) {
@@ -1113,7 +1057,6 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
     return;
 }
 
-// ---- LightSetMaterialColorDiffuse_85c14.cpp ----
 void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
     Engine *self = this;
     self->field_0x298 = red;
@@ -1140,7 +1083,6 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
     return ShaderUpdateMaterialColor();
 }
 
-// ---- initFileInterface_6daf4.cpp ----
 void Engine::initFileInterface() {
     Engine *self = this;
     void *fileInterface = operator new(0x38);
@@ -1149,7 +1091,6 @@ void Engine::initFileInterface() {
     return AEFile::SetInterface((FileInterface *)fileInterface);
 }
 
-// ---- SetOrthoMatrix_854e8.cpp ----
 void Engine::SetOrthoMatrix(const uint32_t *projection, const uint32_t *view, bool multiply) {
     Engine *self = this;
     if (g_Engine_useShaders != 0) {
@@ -1165,7 +1106,6 @@ void Engine::SetOrthoMatrix(const uint32_t *projection, const uint32_t *view, bo
     return;
 }
 
-// ---- InitGL_6db20.cpp ----
 int Engine::InitGL(bool shaders, int width, int height) {
     Engine *self = this;
     self->field_0x418 = 0;
@@ -1228,7 +1168,6 @@ int Engine::InitGL(bool shaders, int width, int height) {
     return 1;
 }
 
-// ---- ClearBuffer_84558.cpp ----
 void Engine::ClearBuffer(uint32_t color)
 {
     const double scale = 255.0;
@@ -1240,7 +1179,6 @@ void Engine::ClearBuffer(uint32_t color)
     return glClear(0x4100);
 }
 
-// ---- LightSetLightPosition_8595c.cpp ----
 void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light) {
     Engine *self = this;
     unsigned int index = light - 0x4000;
@@ -1262,7 +1200,6 @@ void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light
     return;
 }
 
-// ---- LightSetLightColorAmbient_85a94.cpp ----
 void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsigned int light) {
     Engine *self = this;
     unsigned int index = light - 0x4000;
@@ -1296,7 +1233,6 @@ void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsig
     return ShaderUpdateMaterialColor();
 }
 
-// ---- ShaderSetInActive_86334.cpp ----
 typedef void ShaderInactive(ShaderBaseStruct *);
 
 void Engine::ShaderSetInActive() {
@@ -1307,7 +1243,6 @@ void Engine::ShaderSetInActive() {
     return ((ShaderInactive *)vtable[0x10 / 4])(shader);
 }
 
-// ---- LightSetLightColorDiffuse_859e0.cpp ----
 void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsigned int light) {
     Engine *self = this;
     unsigned int index = light - 0x4000;
@@ -1336,7 +1271,6 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
     return ShaderUpdateMaterialColor();
 }
 
-// ---- Engine_83eec.cpp ----
 Engine::Engine() {
     Engine *self = this;
     ((String *)((String *)self))->ctor();
@@ -1418,7 +1352,6 @@ Engine::Engine() {
     return;
 }
 
-// ---- SetTextures_84c44.cpp ----
 void Engine::SetTextures(uint32_t first, uint32_t second) {
     Engine *self = this;
     char *manager = *self->field_0x30;   // external texture-manager (no named struct)
@@ -1451,9 +1384,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
     }
 }
 
-// ---- ShaderInit_846ac.cpp ----
 typedef void ShaderCtor(void *);
-
 
 uint32_t Engine::ShaderInit() {
     Engine *self = this;
@@ -1473,7 +1404,6 @@ uint32_t Engine::ShaderInit() {
     return 1;
 }
 
-// ---- SetEyePosition_850c0.cpp ----
 uint64_t Engine::SetEyePosition(uint32_t x, uint32_t y, uint32_t z) {
     Engine *self = this;
     uint32_t buf[3];
@@ -1484,7 +1414,6 @@ uint64_t Engine::SetEyePosition(uint32_t x, uint32_t y, uint32_t z) {
     return (uint64_t)buf[0] | ((uint64_t)buf[1] << 32);
 }
 
-// ---- SetModelMatrix_851f4.cpp ----
 void Engine::SetModelMatrix(const uint32_t *matrix) {
     Engine *self = this;
     if (g_Engine_useShaders != 0) {
@@ -1534,7 +1463,6 @@ void Engine::SetModelMatrix(const uint32_t *matrix) {
     return;
 }
 
-// ---- LightSetLight_85788.cpp ----
 void Engine::LightSetLight(unsigned int light) {
     Engine *self = this;
     uint32_t values[4] = {0, 0, 0, 0};
@@ -1559,7 +1487,6 @@ void Engine::LightSetLight(unsigned int light) {
     return;
 }
 
-// ---- SetTexturesExt_84b0c.cpp ----
 void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...) {
     Engine *self = this;
     char *manager = *self->field_0x30;   // external texture-manager (no named struct)
@@ -1580,7 +1507,6 @@ void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...
     return;
 }
 
-// ---- SetWorldViewMatrix_853b0.cpp ----
 void Engine::SetWorldViewMatrix(const uint32_t *matrix) {
     Engine *self = this;
     if (g_Engine_useShaders != 0) {
@@ -1599,7 +1525,6 @@ void Engine::SetWorldViewMatrix(const uint32_t *matrix) {
     return;
 }
 
-// ---- ResetLightParam_84348.cpp ----
 void Engine::ResetLightParam() {
     Engine *self = this;
     self->field_0x488 = 0x3f800000;
@@ -1640,7 +1565,6 @@ void Engine::ResetLightParam() {
     return;
 }
 
-// ---- LightSetLightColorSpecular_85b60.cpp ----
 void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsigned int light) {
     Engine *self = this;
     unsigned int index = light - 0x4000;
@@ -1669,7 +1593,6 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
     return ShaderUpdateMaterialColor();
 }
 
-// ---- GlEnable_84d7c.cpp ----
 void Engine::GlEnable(unsigned int cap, bool enable) {
     Engine *self = this;
     if (g_Engine_useShaders == 0) {
@@ -1702,7 +1625,6 @@ void Engine::GlEnable(unsigned int cap, bool enable) {
     self->field_0x420 = flags;
 }
 
-// ---- LightEnable_8572c.cpp ----
 // Engine::LightEnable(bool) toggles fixed-function lighting on the engine. In the shipped
 // binary this is a single long-branch veneer (B.W) into the GL backend whose target lies
 // outside the analyzed range, so the body cannot be statically recovered; forward to the
@@ -1712,7 +1634,6 @@ void Engine::LightEnable(bool enabled) {
     _ZN11AbyssEngine6Engine11LightEnableEb(this, enabled);
 }
 
-// ---- LightSetMaterialColorAmbient_85ca0.cpp ----
 void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     Engine *self = this;
     self->field_0x2a8 = red;

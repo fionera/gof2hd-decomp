@@ -3,7 +3,6 @@
 
 extern "C" void glUniform2f(int location, float x, float y);
 
-// ---- UpdateMeshData_8c8e0.cpp ----
 namespace AbyssEngine {
 
 void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -67,7 +66,6 @@ void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- _SimpleRefractionShader_8caf8.cpp ----
 void _ZN11AbyssEngine22SimpleRefractionShaderD0Ev(
     AbyssEngine::SimpleRefractionShader *self)
 {
@@ -76,7 +74,6 @@ void _ZN11AbyssEngine22SimpleRefractionShaderD0Ev(
     operator delete(base);
 }
 
-// ---- SetInActive_8c8a0.cpp ----
 namespace AbyssEngine {
 
 void SimpleRefractionShader::SetInActive()
@@ -102,7 +99,6 @@ void SimpleRefractionShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- Init_8c74c.cpp ----
 namespace AbyssEngine {
 
 void SimpleRefractionShader::Init(Engine *engine)
@@ -142,7 +138,6 @@ void SimpleRefractionShader::Init(Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SimpleRefractionShader_8c6c0.cpp ----
 extern "C" AbyssEngine::SimpleRefractionShader *
 _ZN11AbyssEngine22SimpleRefractionShaderC2Ev(AbyssEngine::SimpleRefractionShader *self)
 {

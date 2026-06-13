@@ -3,7 +3,6 @@
 
 extern "C" void glUniform2f(int location, float x, float y);
 
-// ---- _EnergyShield_8a5d0.cpp ----
 void _ZN11AbyssEngine12EnergyShieldD0Ev(
     AbyssEngine::EnergyShield *self)
 {
@@ -12,7 +11,6 @@ void _ZN11AbyssEngine12EnergyShieldD0Ev(
     operator delete(base);
 }
 
-// ---- UpdateMeshData_8a40c.cpp ----
 namespace AbyssEngine {
 
 void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -69,7 +67,6 @@ void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_8a3e0.cpp ----
 namespace AbyssEngine {
 
 void EnergyShield::SetInActive()
@@ -89,7 +86,6 @@ void EnergyShield::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- Init_8a28c.cpp ----
 namespace AbyssEngine {
 
 void EnergyShield::Init(Engine *engine)
@@ -128,7 +124,6 @@ void EnergyShield::Init(Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- EnergyShield_8a200.cpp ----
 extern "C" AbyssEngine::EnergyShield *
 _ZN11AbyssEngine12EnergyShieldC2Ev(AbyssEngine::EnergyShield *self)
 {

@@ -115,7 +115,6 @@ void ** g_update_sound;
 float ** g_update_speed;
 }
 
-
 // ---- engine & runtime functions (defined in libgof2hd / host runtime; not in this tree) ----
 extern "C" {
 // Matrix multiply (AEMath::MatrixMultiply, sret form): out = lhs * rhs. The renderer reaches it
@@ -141,7 +140,6 @@ long long __aeabi_uldivmod(unsigned int nlo, unsigned int nhi, unsigned int dlo,
                                       unsigned int dhi);
 void glDeleteBuffers(int n, const void *buffers);
 }
-
 
 // ---- AbyssEngine engine glue (renderer/engine fns; external) ----
 extern "C" {

@@ -53,5 +53,4 @@ public:
 
 } // namespace AbyssEngine
 
-
 #endif

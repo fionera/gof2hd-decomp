@@ -29,7 +29,6 @@ public:
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
 };
 
-
 extern "C" void PlayerFighter_cloak_off_helper();
 // GOT-veneer landing pads: terminal tail-calls that the linker resolves to the
 // relocated inherited base implementation. Their first pointer parameter is a
@@ -90,31 +89,26 @@ extern "C" void *ArrayInt_dtor(void *p);
 extern void *const gMissionCrateApp __attribute__((visibility("hidden")));
 static inline Status *PF_status() { return *(Status **)gMissionCrateApp; }
 
-// ---- hasMissionCrateLost_dcb7e.cpp ----
 uint8_t PlayerFighter::hasMissionCrateLost() {
     PlayerFighter *self = this;
     return self->missionCrateLost;
 }
 
-// ---- hasMissionCrateCaptured_dcb78.cpp ----
 uint8_t PlayerFighter::hasMissionCrateCaptured() {
     PlayerFighter *self = this;
     return self->missionCrateCaptured;
 }
 
-// ---- setShootError_dccf4.cpp ----
 void PlayerFighter::setShootError(int v) {
     PlayerFighter *self = this;
     self->shootError = (float)v;
 }
 
-// ---- setAIDisabled_dcfcc.cpp ----
 void PlayerFighter::setAIDisabled(bool v) {
     PlayerFighter *self = this;
     self->aiDisabled = v;
 }
 
-// ---- setShipGroup_dcb84.cpp ----
 struct AEGeometry;
 
 // PlayerFighter::setShipGroup is a thunk that tail-jumps to the base implementation
@@ -125,7 +119,6 @@ void PlayerFighter_setShipGroup(AEGeometry *self, int a, bool b)
     return PlayerFighter::setShipGroup_base(self, a, b);
 }
 
-// ---- awake_dff2c.cpp ----
 void PlayerFighter::awake() {
     PlayerFighter *self = this;
     self->state = 1;
@@ -139,7 +132,6 @@ void PlayerFighter::awake() {
     return PlayerFighter::awake_tail(geom, 1);
 }
 
-// ---- setBV_dfb84.cpp ----
 struct BoundingVolume;
 
 void PlayerFighter::setBV_a(Array<BoundingVolume *> *v) {
@@ -147,13 +139,11 @@ void PlayerFighter::setBV_a(Array<BoundingVolume *> *v) {
     self->boundingVolumes = v;
 }
 
-// ---- setBoostProb_dcd02.cpp ----
 void PlayerFighter::setBoostProb(int v) {
     PlayerFighter *self = this;
     self->boostProb = v;
 }
 
-// ---- setCloakingPossible_dcd9c.cpp ----
 void PlayerFighter::setCloakingPossible(bool v) {
     PlayerFighter *self = this;
     self->cloakingPossible = v;
@@ -163,7 +153,6 @@ void PlayerFighter::setCloakingPossible(bool v) {
     }
 }
 
-// ---- removeTrail_dcd08.cpp ----
 struct Trail;
 
 void PlayerFighter::removeTrail() {
@@ -175,7 +164,6 @@ void PlayerFighter::removeTrail() {
     self->trail = 0;
 }
 
-// ---- _PlayerFighter_dc824.cpp ----
 // PlayerFighter complete-object destructor (D1). Returns this. Sets the vtable, destroys the
 // owned members, then tail-calls the base (Fighter/Player) destructor.
 extern "C" char PlayerFighter_vtable;   // vtable symbol base
@@ -211,7 +199,6 @@ void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
     return ((PlayerFighter *)(self))->base_dtor();
 }
 
-// ---- _PlayerFighter_dc922.cpp ----
 // PlayerFighter deleting destructor (D0): run the complete-object dtor, then tail-call delete.
 
 void _ZN13PlayerFighterD0Ev(PlayerFighter *self)
@@ -228,13 +215,11 @@ PlayerFighter::~PlayerFighter()
     _ZN13PlayerFighterD1Ev(this);
 }
 
-// ---- hasCrateCaptured_dcb88.cpp ----
 uint8_t PlayerFighter::hasCrateCaptured() {
     PlayerFighter *self = this;
     return self->field_0x4c == 0;
 }
 
-// ---- setPosition_dcb9a.cpp ----
 // setPosition(Vector const&) — virtual dispatch through vtable slot 0x48 with the
 // three unpacked vector components.
 typedef void (*SetPosFn)(PlayerFighter *, float, float, float);
@@ -245,7 +230,6 @@ void PlayerFighter::setPosition_ref(const Vector &v) {
     return fn(self, v.x, v.y, v.z);
 }
 
-// ---- setRotate_dccdc.cpp ----
 void PlayerFighter::setRotate(int v) {
     PlayerFighter *self = this;
     float f = (float)v;
@@ -254,13 +238,11 @@ void PlayerFighter::setRotate(int v) {
     self->currentRotate = f;
 }
 
-// ---- hasCrateLost_dcb94.cpp ----
 uint8_t PlayerFighter::hasCrateLost() {
     PlayerFighter *self = this;
     return self->crateLost;
 }
 
-// ---- setLevel_dca30.cpp ----
 struct Level;
 // Three function pointers fetched once from hidden PC-relative globals (each a ptr-to-fnptr).
 extern void *const gSL_f1 __attribute__((visibility("hidden")));
@@ -301,12 +283,10 @@ void PlayerFighter::setLevel(Level *lvl) {
     return f3(*(int *)(self->level + 0x8c), v, 0);
 }
 
-// ---- PlayerFighter_dc2f8.cpp ----
-
-extern void *const gPFC_guard __attribute__((visibility("hidden")));     // DAT_000ec6a4
+extern void *const gPFC_guard __attribute__((visibility("hidden")));
 extern const int gPFC_vtable __attribute__((visibility("hidden")));      // DAT_000ec6a8 (vptr base)
-extern void *const gPFC_rng __attribute__((visibility("hidden")));        // DAT_000ec6ac
-extern int *const gPFC_sharedRoute __attribute__((visibility("hidden"))); // DAT_000ec818
+extern void *const gPFC_rng __attribute__((visibility("hidden")));
+extern int *const gPFC_sharedRoute __attribute__((visibility("hidden")));
 extern const int gPFC_defaultRoute __attribute__((visibility("hidden"))); // DAT_000ec81c (0x30 bytes)
 
 // PlayerFighter::PlayerFighter(int p1, int wingmanCmd, Player*, AEGeometry*, float, float, float, bool)
@@ -489,13 +469,12 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     return;
 }
 
-// ---- update_dcfd8.cpp ----
 // Tail veneer taken on the dead+exploded early-out path (-> 0x1abe18).
 // The remaining per-frame update: AI steering, weapons, cloaking, trail, camera, route
 // following. A ~10KB state machine; delegated to a helper so this translation keeps the
 // recoverable entry flow (early-out, timers, position, enemy flag) while staying tractable.
 
-extern void *const gUpd_guard __attribute__((visibility("hidden")));   // DAT_000ed348
+extern void *const gUpd_guard __attribute__((visibility("hidden")));
 
 // PlayerFighter::update(int dt) — self in r0, dt in r1.
 void PlayerFighter::update(int dt) {
@@ -544,7 +523,6 @@ void PlayerFighter::update(int dt) {
     return;
 }
 
-// ---- setPosition_dcbb8.cpp ----
 // PlayerFighter::setPosition(float, float, float). r0=self, r1..r3 = x,y,z (raw bits).
 void PlayerFighter::setPosition3(int x, int y, int z) {
     PlayerFighter *self = this;
@@ -565,9 +543,8 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
     return;
 }
 
-// ---- roll_df860.cpp ----
-extern void *const gRoll_guard __attribute__((visibility("hidden")));   // DAT_000efa4c
-extern const float gRoll_threshold __attribute__((visibility("hidden"))); // DAT_000efa14
+extern void *const gRoll_guard __attribute__((visibility("hidden")));
+extern const float gRoll_threshold __attribute__((visibility("hidden")));
 extern const float gRoll_f18 __attribute__((visibility("hidden")));
 extern const float gRoll_f1c __attribute__((visibility("hidden")));
 extern const float gRoll_f20 __attribute__((visibility("hidden")));
@@ -655,7 +632,6 @@ done:
     return;
 }
 
-// ---- cloak_dcd58.cpp ----
 extern "C" void *gCloakRand;  // hidden PC-relative global (deref'd twice)
 
 void PlayerFighter::cloak(int dur, bool b) {
@@ -671,7 +647,6 @@ void PlayerFighter::cloak(int dur, bool b) {
     self->field_0x2d9 = b;
 }
 
-// ---- setMissionCrate_dcb18.cpp ----
 // hidden PC-relative global: the App singleton pointer, deref'd twice.
 extern void *const gMissionCrateApp __attribute__((visibility("hidden")));
 
@@ -691,7 +666,6 @@ void PlayerFighter::setMissionCrate(bool on) {
     }
 }
 
-// ---- collide_dfbe8.cpp ----
 struct BV;
 typedef int (*CollFn)(BV *, float, float, float);
 
@@ -713,7 +687,6 @@ int PlayerFighter::collide(float x, float y, float z) {
     return 0;
 }
 
-// ---- setBV_dfb8a.cpp ----
 struct BoundingVolume;
 
 void PlayerFighter::setBV_b(BoundingVolume *bv) {
@@ -724,7 +697,6 @@ void PlayerFighter::setBV_b(BoundingVolume *bv) {
     return PlayerFighter::setBV_add(bv, a);
 }
 
-// ---- setWingmanCommand_dcc2c.cpp ----
 struct KIPlayer;
 
 void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
@@ -759,7 +731,6 @@ done:
     self->currentRotate = self->rotate;
 }
 
-// ---- setSpeed_dcccc.cpp ----
 void PlayerFighter::setSpeed(float v) {
     PlayerFighter *self = this;
     self->speed = v;
@@ -767,7 +738,6 @@ void PlayerFighter::setSpeed(float v) {
     self->currentSpeed = v;
 }
 
-// ---- outerCollide_dfc38.cpp ----
 struct BV;
 typedef int (*CollFn)(BV *, float, float, float);
 
@@ -789,7 +759,6 @@ int PlayerFighter::outerCollide(float x, float y, float z) {
     return 0;
 }
 
-// ---- initPush_dfc88.cpp ----
 static inline void AEMath_VectorSub(void *out, void *a, void *b) {  // out = a - b
     *(AbyssEngine::AEMath::Vector *)out =
         *(const AbyssEngine::AEMath::Vector *)a - *(const AbyssEngine::AEMath::Vector *)b;
@@ -799,8 +768,8 @@ static inline void AEMath_VectorScale(void *out, float s, void *v) {  // out = s
         s * *(const AbyssEngine::AEMath::Vector *)v;
 }
 
-extern void *const gIP_guard __attribute__((visibility("hidden")));    // DAT_000efdbc
-extern const float gIP_strength __attribute__((visibility("hidden"))); // DAT_000efdb4
+extern void *const gIP_guard __attribute__((visibility("hidden")));
+extern const float gIP_strength __attribute__((visibility("hidden")));
 extern void *const gIP_rngFn __attribute__((visibility("hidden")));     // DAT_000efdc0 (fn ptr)
 extern void *const gIP_rng __attribute__((visibility("hidden")));       // DAT_000efdc4 (rng holder)
 
@@ -851,7 +820,6 @@ void PlayerFighter::initPush(void *target, int radius) {
     return;
 }
 
-// ---- setExhaustVisible_dcd24.cpp ----
 // hidden PC-relative pointer-to-pointer global (deref'd twice).
 extern void *const gExhaustCanvas __attribute__((visibility("hidden")));
 
@@ -868,7 +836,6 @@ void PlayerFighter::setExhaustVisible(bool vis) {
     }
 }
 
-// ---- render_dfa50.cpp ----
 extern void *const gR_g3 __attribute__((visibility("hidden")));   // case 3 transform-id global
 extern void *const gR_g4 __attribute__((visibility("hidden")));   // case 4 transform-id global
 extern void *const gR_g5 __attribute__((visibility("hidden")));   // default-case transform-id global
@@ -934,13 +901,12 @@ done:
     ;
 }
 
-// ---- push_dfdc8.cpp ----
 extern "C" void AEMath_MatrixMul(void *out, void *m);          // operator*(out, m)
 extern "C" float l2f(long long v);                              // __aeabi_l2f
 // Vector scale helper used 3x: out = vec * scalar.
 
-extern void *const gPush_guard __attribute__((visibility("hidden")));     // DAT_000eff24
-extern const float gPush_div __attribute__((visibility("hidden")));       // DAT_000eff20
+extern void *const gPush_guard __attribute__((visibility("hidden")));
+extern const float gPush_div __attribute__((visibility("hidden")));
 
 // PlayerFighter::push(int dt) — self in r0, dt in r1.
 void PlayerFighter::push(int dt) {
@@ -985,7 +951,6 @@ void PlayerFighter::push(int dt) {
     return;
 }
 
-// ---- reset_dc934.cpp ----
 // hidden PC-relative function-pointer global (Vector zero-set helper), used 3x.
 extern void *const gReset_vfn __attribute__((visibility("hidden")));
 
@@ -1044,21 +1009,20 @@ void PlayerFighter::reset()
     self->aiDisabled = 0;
 }
 
-// ---- handleCloaking_dcdbc.cpp ----
 // Tail-call veneers (cloak start / stop / material-fade-apply).
 extern "C" void PF_cloakStart(PlayerFighter *self);                       // -> 0x1ac1e8
 extern "C" void PF_cloakStop(PlayerFighter *self, int on);               // -> 0x1ac1f8
 extern "C" void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag); // -> 0x1ac208
 
-extern void *const gHC_rng1 __attribute__((visibility("hidden")));        // DAT_000ecfb0
-extern void *const gHC_canvasClone __attribute__((visibility("hidden"))); // DAT_000ecfb8
-extern void *const gHC_canvasMat __attribute__((visibility("hidden")));   // DAT_000ecfbc
-extern void *const gHC_rng2 __attribute__((visibility("hidden")));        // DAT_000ecfb4
-extern void *const gHC_canvasA __attribute__((visibility("hidden")));     // DAT_000ecfc0
-extern void *const gHC_canvasB __attribute__((visibility("hidden")));     // DAT_000ecfc4
-extern void *const gHC_canvasC __attribute__((visibility("hidden")));     // DAT_000ecfc8
-extern const float gHC_divIn __attribute__((visibility("hidden")));       // DAT_000ecfac
-extern const float gHC_divOut __attribute__((visibility("hidden")));      // DAT_000ecfa8
+extern void *const gHC_rng1 __attribute__((visibility("hidden")));
+extern void *const gHC_canvasClone __attribute__((visibility("hidden")));
+extern void *const gHC_canvasMat __attribute__((visibility("hidden")));
+extern void *const gHC_rng2 __attribute__((visibility("hidden")));
+extern void *const gHC_canvasA __attribute__((visibility("hidden")));
+extern void *const gHC_canvasB __attribute__((visibility("hidden")));
+extern void *const gHC_canvasC __attribute__((visibility("hidden")));
+extern const float gHC_divIn __attribute__((visibility("hidden")));
+extern const float gHC_divOut __attribute__((visibility("hidden")));
 
 // PlayerFighter::handleCloaking() — self in r0.
 void PlayerFighter::handleCloaking() {

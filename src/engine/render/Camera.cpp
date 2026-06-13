@@ -1,9 +1,5 @@
 #include "gof2/engine/render/Camera.h"
 
-
-
-
-// ---- Camera_7b724.cpp ----
 namespace AbyssEngine {
 
 // Engine free function that actually programs the projection matrix (recovered in AbyssEngine.cpp).

@@ -1,6 +1,5 @@
 #include "gof2/engine/render/SimpleMeshMerger.h"
 
-
 extern "C" void SMM_Array_Mesh_ctor(void *arr);
 extern "C" void SMM_ArraySetLength_Mesh(unsigned n, void *arr);
 extern "C" void SMM_MeshCreate_fromId(void *canvas, unsigned short id, unsigned *out, bool b);
@@ -12,7 +11,6 @@ extern "C" void SMM_MeshSetNormal(void *canvas, unsigned meshId, unsigned short 
 extern "C" void SMM_TransformCreate(void *canvas, unsigned *out);
 extern "C" void SMM_TransformAddMeshId(void *canvas, unsigned transformId, unsigned meshId);
 
-// ---- SimpleMeshMerger_180ecc.cpp ----
 // SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short>& meshIds,
 //                                    Array<Matrix> transforms, PaintCanvas* canvas, ushort factor)
 // Loads each source mesh, allocates one merged mesh sized to the combined vertex/triangle

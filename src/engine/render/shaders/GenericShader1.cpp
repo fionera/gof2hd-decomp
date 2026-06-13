@@ -3,7 +3,6 @@
 // the minimal AbyssEngine::ShaderBaseStruct base layout this shader derives from, and the
 // full class in ShaderBaseStruct.h would redefine it.
 
-// ---- UpdateMeshData_8ed8a.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::GenericShader1::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
@@ -60,7 +59,6 @@ void GenericShader1::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_8ed4c.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::GenericShader1::SetInActive()
@@ -80,7 +78,6 @@ void GenericShader1::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- Init_8ec2c.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::GenericShader1::Init(AbyssEngine::Engine*)
@@ -111,7 +108,6 @@ void GenericShader1::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _GenericShader1_8eee2.cpp ----
 // AbyssEngine::GenericShader1::~GenericShader1() (deleting dtor)
 void _ZN11AbyssEngine14GenericShader1D0Ev(AbyssEngine::GenericShader1 *self)
 {
@@ -120,7 +116,6 @@ void _ZN11AbyssEngine14GenericShader1D0Ev(AbyssEngine::GenericShader1 *self)
     ::operator delete(base);
 }
 
-// ---- GenericShader1_8eba0.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::GenericShader1::GenericShader1()

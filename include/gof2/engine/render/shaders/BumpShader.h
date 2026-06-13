@@ -13,8 +13,6 @@ struct Mesh;
 // offsets (program handle at 0x4, dirty flag byte at 0x9, name String at 0xc, attribute/
 // uniform locations 0x20..0x80) and are read/written through these helpers.
 
-
-
 // AbyssEngine::BumpShader — GLES2 bump-mapping shader (derives from ShaderBaseStruct).
 class BumpShader {
 public:

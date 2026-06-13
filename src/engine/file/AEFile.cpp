@@ -33,19 +33,14 @@ inline uint32_t  AEStr_indexOf(const String &self, const String &needle) { retur
 
 } // namespace
 
-
-
-// ---- OpenRead_70530.cpp ----
 uint32_t AEFile::OpenRead(String &path, uint32_t *handle) {
     return Open(path, OPEN_READ, handle);
 }
 
-// ---- OpenAppend_70b8c.cpp ----
 uint32_t AEFile::OpenAppend(String &path, uint32_t *handle) {
     return Open(path, OPEN_APPEND, handle);
 }
 
-// ---- Close_70610.cpp ----
 extern FileInterface *g_fileInterface;
 extern Array<AELowLevelFile *> *g_openFiles;
 
@@ -67,43 +62,36 @@ done:
     return;
 }
 
-// ---- Read_70c30.cpp ----
 uint32_t AEFile::Read(bool &value, uint32_t handle)
 {
     return Read(1, &value, handle);
 }
 
-// ---- OpenWrite_70b38.cpp ----
 uint32_t AEFile::OpenWrite(String &path, uint32_t *handle) {
     return Open(path, OPEN_WRITE, handle);
 }
 
-// ---- Read_70c26.cpp ----
 uint32_t AEFile::Read(int64_t &value, uint32_t handle)
 {
     return AEFile::Read(8, &value, handle);
 }
 
-// ---- RegisterPakFile_70658.cpp ----
 void AEFile::RegisterPakFile(String &path)
 {
     collectFilesInPakFiles(path);
     return sortPakFileEntryList();
 }
 
-// ---- Read_70c3a.cpp ----
 uint32_t AEFile::Read(float &value, uint32_t handle)
 {
     return Read(4, &value, handle);
 }
 
-// ---- Read_70c08.cpp ----
 uint32_t AEFile::Read(int16_t &value, uint32_t handle)
 {
     return Read(2, &value, handle);
 }
 
-// ---- Release_70254.cpp ----
 extern Array<AELowLevelFile *> *g_AEFile_openFiles;
 extern Array<AEPakFileEntry *> *g_AEFile_pakFiles;
 
@@ -143,7 +131,6 @@ __attribute__((minsize)) void AEFile::Release()
     }
 }
 
-// ---- OpenAppend_70b94.cpp ----
 __attribute__((minsize)) uint32_t AEFile::OpenAppend(const char *path, uint32_t *handle)
 {
     uint32_t result;
@@ -156,7 +143,6 @@ __attribute__((minsize)) uint32_t AEFile::OpenAppend(const char *path, uint32_t 
     return result;
 }
 
-// ---- ReadSwitched_70d06.cpp ----
 __attribute__((minsize)) uint32_t AEFile::ReadSwitched(uint16_t &value, uint32_t handle) {
     uint32_t result = Read(2, &value, handle);
     if (result != 0) {
@@ -166,7 +152,6 @@ __attribute__((minsize)) uint32_t AEFile::ReadSwitched(uint16_t &value, uint32_t
     return result;
 }
 
-// ---- Read_70538.cpp ----
 extern FileInterface *g_AEFile_fileInterface;
 extern Array<AELowLevelFile *> *g_AEFile_openFiles;
 
@@ -185,13 +170,11 @@ namespace {
 __attribute__((used)) void ae_file_70538_trailer() {}
 }
 
-// ---- Read_70bea.cpp ----
 uint32_t AEFile::Read(uint32_t &value, uint32_t handle)
 {
     return Read(4, &value, handle);
 }
 
-// ---- Read_70c44.cpp ----
 __attribute__((minsize)) uint32_t AEFile::Read(String &value, uint32_t handle, bool wide)
 {
     uint32_t locals[2];
@@ -232,7 +215,6 @@ __attribute__((minsize)) uint32_t AEFile::Read(String &value, uint32_t handle, b
     return result;
 }
 
-// ---- GetDeviceFreeSpace_71228.cpp ----
 extern FileInterface *fileInterface;
 
 __attribute__((minsize))
@@ -244,12 +226,10 @@ uint32_t AEFile::GetDeviceFreeSpace() {
     return 0;
 }
 
-// ---- Read_70be0.cpp ----
 uint32_t AEFile::Read(char &value, uint32_t handle) {
     return Read(1, &value, handle);
 }
 
-// ---- SetAppRootDir_71258.cpp ----
 extern FileInterface *g_AEFile_fileInterface;
 
 __attribute__((minsize)) void AEFile::SetAppRootDir(const char *path) {
@@ -260,7 +240,6 @@ __attribute__((minsize)) void AEFile::SetAppRootDir(const char *path) {
     }
 }
 
-// ---- OpenRead_70aec.cpp ----
 __attribute__((minsize)) uint32_t AEFile::OpenRead(const char *path, uint32_t *handle)
 {
     uint32_t result;
@@ -273,13 +252,11 @@ __attribute__((minsize)) uint32_t AEFile::OpenRead(const char *path, uint32_t *h
     return result;
 }
 
-// ---- Read_70bfe.cpp ----
 uint32_t AEFile::Read(uint16_t &value, uint32_t handle)
 {
     return Read(2, &value, handle);
 }
 
-// ---- Write_70fe4.cpp ----
 uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide)
 {
     uint32_t result;
@@ -306,7 +283,6 @@ uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide)
     return result;
 }
 
-// ---- ResetSaveDirectory_712f0.cpp ----
 extern FileInterface *gAEFileInterface;
 
 __attribute__((minsize))
@@ -322,7 +298,6 @@ void AEFile::ResetSaveDirectory()
     }
 }
 
-// ---- OpenWrite_70b40.cpp ----
 __attribute__((minsize)) uint32_t AEFile::OpenWrite(const char *path, uint32_t *handle)
 {
     uint32_t result;
@@ -335,7 +310,6 @@ __attribute__((minsize)) uint32_t AEFile::OpenWrite(const char *path, uint32_t *
     return result;
 }
 
-// ---- ReadSwitched_70d22.cpp ----
 __attribute__((minsize)) uint32_t AEFile::ReadSwitched(int16_t &value, uint32_t handle)
 {
     uint32_t result = Read(2, &value, handle);
@@ -346,12 +320,10 @@ __attribute__((minsize)) uint32_t AEFile::ReadSwitched(int16_t &value, uint32_t 
     return result;
 }
 
-// ---- Read_70bf4.cpp ----
 uint32_t AEFile::Read(int32_t &value, uint32_t handle) {
     return Read(4, &value, handle);
 }
 
-// ---- GetAppRootDir_71240.cpp ----
 extern FileInterface *fileInterface;
 
 __attribute__((minsize))
@@ -364,13 +336,11 @@ const char *AEFile::GetAppRootDir()
     return 0;
 }
 
-// ---- Read_70c12.cpp ----
 uint32_t AEFile::Read(uint8_t &value, uint32_t handle)
 {
     return Read(1, &value, handle);
 }
 
-// ---- GetFileSize_71074.cpp ----
 extern FileInterface *g_fileInterface;
 extern Array<AELowLevelFile *> *g_openFiles;
 
@@ -387,7 +357,6 @@ uint32_t AEFile::GetFileSize(uint32_t handle) {
     return 0;
 }
 
-// ---- Skip_705d8.cpp ----
 extern FileInterface *g_fileInterface;
 extern Array<AELowLevelFile *> *g_openFiles;
 
@@ -405,7 +374,6 @@ uint32_t AEFile::Skip(uint32_t bytes, uint32_t handle)
     return 0;
 }
 
-// ---- SetZipDirectory_71270.cpp ----
 extern FileInterface *g_AEFile_fileInterface;
 
 __attribute__((minsize))
@@ -418,7 +386,6 @@ void AEFile::SetZipDirectory(const char *path)
     }
 }
 
-// ---- Write_70db4.cpp ----
 extern FileInterface *gAEFileInterface;
 extern Array<AELowLevelFile *> *gAEFileOpenFiles;
 
@@ -433,13 +400,11 @@ uint32_t AEFile::Write(uint32_t bytes, const void *buffer, uint32_t handle) {
     return 0;
 }
 
-// ---- Read_70c1c.cpp ----
 uint32_t AEFile::Read(int8_t &value, uint32_t handle)
 {
     return Read(1, &value, handle);
 }
 
-// ---- ReadSwitched_70d40.cpp ----
 __attribute__((minsize)) uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
 {
     uint16_t length;
@@ -459,7 +424,6 @@ __attribute__((minsize)) uint32_t AEFile::ReadSwitched(String &value, uint32_t h
     return result;
 }
 
-// ---- ReadSwitched_70cec.cpp ----
 uint32_t __attribute__((cold)) AEFile::ReadSwitched(int32_t &value, uint32_t handle)
 {
     uint32_t result = Read(4, &value, handle);
@@ -469,7 +433,6 @@ uint32_t __attribute__((cold)) AEFile::ReadSwitched(int32_t &value, uint32_t han
     return result;
 }
 
-// ---- Open_708c4.cpp ----
 extern FileInterface *g_AEFile_fileInterface;
 extern Array<AELowLevelFile *> *g_AEFile_openFiles;
 extern char g_AELowLevelNativeFile_vtable[];
@@ -565,7 +528,6 @@ done:
     return result;
 }
 
-// ---- Write_70ee8.cpp ----
 __attribute__((minsize)) void AEFile::Write(uint8_t value, uint32_t handle)
 {
     uint8_t local = value;
@@ -574,7 +536,6 @@ __attribute__((minsize)) void AEFile::Write(uint8_t value, uint32_t handle)
     return;
 }
 
-// ---- FileDelete_711b8.cpp ----
 extern FileInterface *gAEFileFileInterface;
 
 __attribute__((minsize)) uint32_t AEFile::FileDelete(const String &path)
@@ -590,7 +551,6 @@ __attribute__((minsize)) uint32_t AEFile::FileDelete(const String &path)
     return result;
 }
 
-// ---- collectPakFiles_70668.cpp ----
 extern FileInterface *g_fileInterface;
 
 __attribute__((minsize)) void AEFile::collectPakFiles(const String &path)
@@ -615,7 +575,6 @@ __attribute__((minsize)) void AEFile::collectPakFiles(const String &path)
     sortPakFileEntryList();
 }
 
-// ---- FileExist_710a8.cpp ----
 extern FileInterface *gAEFileFileInterface;
 
 __attribute__((minsize)) uint32_t AEFile::FileExist(const String &path)
@@ -642,7 +601,6 @@ __attribute__((minsize)) uint32_t AEFile::FileExist(const String &path)
     return pakFile != 0;
 }
 
-// ---- SetSaveDirectory_71288.cpp ----
 extern FileInterface *gAEFileInterface;
 
 __attribute__((minsize)) void AEFile::SetSaveDirectory(String path) {
@@ -656,7 +614,6 @@ __attribute__((minsize)) void AEFile::SetSaveDirectory(String path) {
     return;
 }
 
-// ---- findPakFile_7075c.cpp ----
 extern Array<AEPakFileEntry *> *g_pakFileEntries;
 extern FileInterface *g_fileInterface;
 extern char g_AELowLevelPakFile_vtable[];
@@ -740,7 +697,6 @@ done:
     return result;
 }
 
-// ---- Write_70f1c.cpp ----
 __attribute__((minsize)) void AEFile::Write(int8_t value, uint32_t handle)
 {
     int8_t local = value;
@@ -749,7 +705,6 @@ __attribute__((minsize)) void AEFile::Write(int8_t value, uint32_t handle)
     return;
 }
 
-// ---- sortPakFileEntryList_7035c.cpp ----
 extern Array<AEPakFileEntry *> *g_AEFile_pakFiles;
 
 __attribute__((minsize)) void AEFile::sortPakFileEntryList()
@@ -773,7 +728,6 @@ __attribute__((minsize)) void AEFile::sortPakFileEntryList()
     }
 }
 
-// ---- Write_70dec.cpp ----
 __attribute__((minsize)) void AEFile::Write(char value, uint32_t handle)
 {
     char local = value;
@@ -782,7 +736,6 @@ __attribute__((minsize)) void AEFile::Write(char value, uint32_t handle)
     return;
 }
 
-// ---- Write_70e50.cpp ----
 __attribute__((minsize)) void AEFile::Write(int32_t value, uint32_t handle)
 {
     int32_t local = value;
@@ -791,7 +744,6 @@ __attribute__((minsize)) void AEFile::Write(int32_t value, uint32_t handle)
     return;
 }
 
-// ---- SetInterface_7019c.cpp ----
 extern Array<AEPakFileEntry *> *g_AEFile_pakFiles;
 extern Array<AELowLevelFile *> *g_AEFile_openFiles;
 extern FileInterface *g_AEFile_fileInterface;
@@ -819,7 +771,6 @@ __attribute__((minsize)) void AEFile::SetInterface(FileInterface *fileInterface)
     g_AEFile_fileInterface = fileInterface;
 }
 
-// ---- Write_70eb4.cpp ----
 __attribute__((minsize)) void AEFile::Write(int16_t value, uint32_t handle)
 {
     int16_t local = value;
@@ -828,7 +779,6 @@ __attribute__((minsize)) void AEFile::Write(int16_t value, uint32_t handle)
     return;
 }
 
-// ---- Write_70e80.cpp ----
 __attribute__((minsize)) void AEFile::Write(uint16_t value, uint32_t handle)
 {
     uint16_t local = value;
@@ -837,7 +787,6 @@ __attribute__((minsize)) void AEFile::Write(uint16_t value, uint32_t handle)
     return;
 }
 
-// ---- collectFilesInPakFiles_703bc.cpp ----
 extern FileInterface *g_fileInterface;
 extern Array<AEPakFileEntry *> *g_pakFileEntries;
 
@@ -898,7 +847,6 @@ __attribute__((minsize)) void AEFile::collectFilesInPakFiles(String &path)
     return;
 }
 
-// ---- crc32_ccitt_70570.cpp ----
 namespace {
 
 static const uint32_t crc32Table[256] = {
@@ -982,7 +930,6 @@ __attribute__((minsize)) uint32_t AEFile::crc32_ccitt(const String &text)
     return crc;
 }
 
-// ---- Write_70f50.cpp ----
 __attribute__((minsize)) void AEFile::Write(int64_t value, uint32_t handle)
 {
     int64_t local = value;
@@ -991,7 +938,6 @@ __attribute__((minsize)) void AEFile::Write(int64_t value, uint32_t handle)
     return;
 }
 
-// ---- Write_70f80.cpp ----
 __attribute__((minsize)) void AEFile::Write(bool value, uint32_t handle)
 {
     bool local = value;
@@ -1000,7 +946,6 @@ __attribute__((minsize)) void AEFile::Write(bool value, uint32_t handle)
     return;
 }
 
-// ---- Write_70fb4.cpp ----
 __attribute__((minsize)) void AEFile::Write(float value, uint32_t handle)
 {
     float local = value;
@@ -1009,7 +954,6 @@ __attribute__((minsize)) void AEFile::Write(float value, uint32_t handle)
     return;
 }
 
-// ---- Write_70e20.cpp ----
 __attribute__((minsize)) void AEFile::Write(uint32_t value, uint32_t handle)
 {
     uint32_t local = value;

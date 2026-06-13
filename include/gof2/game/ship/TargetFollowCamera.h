@@ -13,7 +13,6 @@
 // contains the target method name (e.g. TFC_setActive). This sidesteps C++ mangling
 // while still producing the exact target code.
 
-
 struct TargetFollowCamera;
 
 // Known field offsets (from per-method disasm):
@@ -29,10 +28,8 @@ struct TargetFollowCamera;
 
 // Field accessor via byte offset.
 
-
 namespace AbyssEngine {
 namespace AEMath {
-
 
 }
 }

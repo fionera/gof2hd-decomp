@@ -15,7 +15,6 @@
 //   +0x14  AEGeometry* beam mesh geometry
 //   +0x18  int         stored hitpoints snapshot
 
-
 struct TractorBeam;
 struct AEGeometry;
 struct KIPlayer;
@@ -28,16 +27,13 @@ struct PaintCanvas;
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 
-
 namespace AbyssEngine {
 namespace AEMath {
 
-
-
 // AEMath free functions (resolved blx targets).
-void VectorNormalize(void *out, const Vector *v);   // 0x0006ec80
-float VectorLength(const Vector *v);                // 0x0006ec44
-Vector operator-(const Vector &a, const Vector &b); // 0x0006ec38
+void VectorNormalize(void *out, const Vector *v);
+float VectorLength(const Vector *v);
+Vector operator-(const Vector &a, const Vector &b);
 
 } // namespace AEMath
 

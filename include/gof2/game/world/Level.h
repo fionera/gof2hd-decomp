@@ -4,9 +4,6 @@
 // real struct kept from byte-match recovery (+ supporting decls)
 // Engine array container (size, data, capacity).
 
-
-
-
 // Forward declarations for related game classes referenced by Level.
 struct Route;
 struct RadioMessage;
@@ -96,69 +93,69 @@ public:
     int gasClouds;           // 0xf4
     int enemies;             // 0xf8
     int asteroids;           // 0xfc
-    int landmarks;           // 0x100
-    int field_104;           // 0x104
-    int playerRoute;         // 0x108
-    int friendRoute;         // 0x10c
-    int enemyRoute;          // 0x110
-    int messages;            // 0x114
-    int enemiesLeft;         // 0x118
-    int friendsLeft;         // 0x11c
-    int field_120;           // 0x120
-    int field_124;           // 0x124
-    int asteroidsLeft;       // 0x128
-    int kills;               // 0x12c
-    int timeLimit;           // 0x130
-    int field_134;           // 0x134
-    int field_138;           // 0x138
-    uint8_t friendCargoStolen; // 0x13c
-    uint8_t pad_13d[3];      // 0x13d
+    int landmarks;
+    int field_104;
+    int playerRoute;
+    int friendRoute;
+    int enemyRoute;
+    int messages;
+    int enemiesLeft;
+    int friendsLeft;
+    int field_120;
+    int field_124;
+    int asteroidsLeft;
+    int kills;
+    int timeLimit;
+    int field_134;
+    int field_138;
+    uint8_t friendCargoStolen;
+    uint8_t pad_13d[3];
     Vector flashColor;       // 0x140 (0x140..0x14c)
-    int flashField;          // 0x14c
-    int flashDurationA;      // 0x150
-    int flashDurationB;      // 0x154
-    uint8_t flashActive;     // 0x158
-    uint8_t pad_159[3];      // 0x159
-    int flashType;           // 0x15c
+    int flashField;
+    int flashDurationA;
+    int flashDurationB;
+    uint8_t flashActive;
+    uint8_t pad_159[3];
+    int flashType;
     Vector field_160;        // 0x160 (0x160..0x16c)
     Vector field_16c;        // 0x16c (0x16c..0x178)
-    int field_178;           // 0x178
-    int field_17c;           // 0x17c
-    int field_180;           // 0x180
-    int field_184;           // 0x184
+    int field_178;
+    int field_17c;
+    int field_180;
+    int field_184;
     uint16_t field_188;      // 0x188 (0x188 friendTurnedEnemy flag, 0x189 alarm flag)
-    uint8_t field_18a;       // 0x18a
-    uint8_t pad_18b;         // 0x18b
-    int field_18c;           // 0x18c
-    int field_190;           // 0x190
-    int field_194;           // 0x194
+    uint8_t field_18a;
+    uint8_t pad_18b;
+    int field_18c;
+    int field_190;
+    int field_194;
     int field_198;           // 0x198 (skybox2 mesh region; this+0x198)
-    int field_19c;           // 0x19c
-    int field_1a0;           // 0x1a0
-    int field_1a4;           // 0x1a4
-    int field_1a8;           // 0x1a8
-    int field_1ac;           // 0x1ac
-    uint8_t field_1b0;       // 0x1b0
-    uint8_t pad_1b1[3];      // 0x1b1
-    int field_1b4;           // 0x1b4
-    int field_1b8;           // 0x1b8
-    int field_1bc;           // 0x1bc
-    int field_1c0;           // 0x1c0
-    uint8_t pad_1c4[12];     // 0x1c4
+    int field_19c;
+    int field_1a0;
+    int field_1a4;
+    int field_1a8;
+    int field_1ac;
+    uint8_t field_1b0;
+    uint8_t pad_1b1[3];
+    int field_1b4;
+    int field_1b8;
+    int field_1bc;
+    int field_1c0;
+    uint8_t pad_1c4[12];
     uint8_t sub_1d0[0x3c];   // 0x1d0 (constructed sub-object)
     uint8_t sub_20c[0x3c];   // 0x20c (constructed sub-object)
     uint8_t sub_248[0x3c];   // 0x248 (constructed sub-object)
-    int field_284;           // 0x284
-    uint16_t field_288;      // 0x288
-    uint8_t pad_28a[2];      // 0x28a
-    int miningPlant;         // 0x28c
-    int numDeliveredOre;     // 0x290
-    int numDeliveredPassengers; // 0x294
-    int field_298;           // 0x298
+    int field_284;
+    uint16_t field_288;
+    uint8_t pad_28a[2];
+    int miningPlant;
+    int numDeliveredOre;
+    int numDeliveredPassengers;
+    int field_298;
     uint8_t field_29c;       // 0x29c (attackWanted flag)
     uint8_t field_29d;       // 0x29d (killWanted flag)
-    uint8_t field_29e;       // 0x29e
-    uint8_t pad_29f;         // 0x29f
+    uint8_t field_29e;
+    uint8_t pad_29f;
 
     // --- methods ---
     Level(int mission);

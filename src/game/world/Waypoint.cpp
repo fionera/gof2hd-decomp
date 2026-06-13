@@ -1,18 +1,15 @@
 #include "gof2/game/world/Waypoint.h"
 #include "gof2/game/ship/Player.h"
 
-
 extern "C" void *KIPlayer_dtor(KIPlayer *self);
 
 __attribute__((visibility("hidden"))) extern void *Waypoint_vtable;
 
-// ---- setActive_157d5e.cpp ----
 void Waypoint::setActive(bool active)
 {
     return ((Player *)(this->player))->setActive(active);
 }
 
-// ---- reached_157d64.cpp ----
 void Waypoint::reached()
 {
     this->state = 0x101;
@@ -37,7 +34,6 @@ float Waypoint::advance(bool active)
     return 0.0f;
 }
 
-// ---- getPosition_157d38.cpp ----
 Vector Waypoint::getPosition()
 {
     float x = (float)this->x;
@@ -50,7 +46,6 @@ Vector Waypoint::getPosition()
     return result;
 }
 
-// ---- _Waypoint_157d28.cpp ----
 void _ZN8WaypointD0Ev(Waypoint *self)
 {
     return ::operator delete(KIPlayer_dtor((KIPlayer *)self));
@@ -66,7 +61,6 @@ Waypoint::~Waypoint()
     KIPlayer_dtor((KIPlayer *)this);
 }
 
-// ---- reset_157d6e.cpp ----
 void Waypoint::reset()
 {
     Player *player = this->player;
@@ -83,7 +77,6 @@ extern "C" void Waypoint_ctor(void *wp, int x, int y, int z, Route *route)
     new (wp) Waypoint(x, y, z, route);
 }
 
-// ---- Waypoint_157c54.cpp ----
 Waypoint::Waypoint(int x, int y, int z, Route *route)
 {
     Player *player = (Player *)operator new(0x114);

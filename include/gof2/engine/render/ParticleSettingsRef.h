@@ -5,7 +5,6 @@
 // ParticleSettingsRef — top-level class (no namespace per Sig).
 // initialize() is a static-like routine touching globals only; no `this` fields used.
 
-
 struct ParticleSettingsRef;
 
 class ParticleSettingsRef {

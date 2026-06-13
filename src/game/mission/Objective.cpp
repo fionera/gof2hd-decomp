@@ -13,8 +13,6 @@ struct RadioMessage { uint8_t isOver(); };
 // Level* (offsets 0x20/0x24) use byte-offset casts, and everything else goes through the
 // extern "C" Level_* accessors declared in Objective.h.
 
-
-// ---- Objective_97bfc.cpp ----
 Objective::Objective(int type, int value, Level *level)
 {
     this->field_0x0 = type;
@@ -26,7 +24,6 @@ Objective::Objective(int type, int value, Level *level)
     this->field_0x18 = 0;
 }
 
-// ---- addObjective_97cc2.cpp ----
 Objective *Objective::addObjective(Objective *objective)
 {
     Array<Objective *> *children = this->field_0x10;
@@ -39,7 +36,6 @@ Objective *Objective::addObjective(Objective *objective)
     return this;
 }
 
-// ---- Objective_97c0e.cpp ----
 Objective::Objective(int type, int value, int calcValue, Level *level)
 {
     this->field_0x0 = type;
@@ -52,19 +48,16 @@ Objective::Objective(int type, int value, int calcValue, Level *level)
         this->field_0x18 = calcValue;
 }
 
-// ---- isSurvivalObjective_980c0.cpp ----
 bool Objective::isSurvivalObjective()
 {
     return this->field_0x0 == 3;
 }
 
-// ---- getCalcValue_980b4.cpp ----
 bool Objective::getCalcValue()
 {
     return this->field_0x0 == 3;
 }
 
-// ---- _Objective_97c2a.cpp ----
 Objective *_ZN9ObjectiveD2Ev(Objective *self)
 {
     Array<Objective *> *children = self->field_0x10;
@@ -109,7 +102,6 @@ Objective::~Objective()
     this->field_0x14 = 0;
 }
 
-// ---- setAchievedText_980cc.cpp ----
 void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective *self,
                                                                         String *text)
 {
@@ -118,7 +110,6 @@ void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective *self,
     self->field_0x14 = copy;
 }
 
-// ---- achieved_97d40.cpp ----
 unsigned int Objective::achieved(int value)
 {
     Array<KIPlayer *> *enemies = ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies());

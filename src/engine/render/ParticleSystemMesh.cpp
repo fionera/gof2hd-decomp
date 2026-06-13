@@ -1,7 +1,6 @@
 #include "gof2/engine/render/ParticleSystemMesh.h"
 #include "gof2/externs.h"
 
-
 extern "C" void _psm_emitTrail(ParticleSystemMesh *self, int id);
 extern "C" void _psm_emitUsual(ParticleSystemMesh *self, int id);
 extern "C" void _psm_meshSetPoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
@@ -41,7 +40,6 @@ extern "C" void _psm_finishCurrentTrailParticle(ParticleSystemMesh *self, Partic
 extern "C" void _psm_base_ctor(ParticleSystemMesh *self, PaintCanvas *canvas, const Matrix *matrix, const void *sets,
                                bool a, bool b);
 
-// ---- getPrevId_1855f6.cpp ----
 int ParticleSystemMesh::getPrevId(int id)
 {
     if (id == 0)
@@ -49,14 +47,12 @@ int ParticleSystemMesh::getPrevId(int id)
     return id - 1;
 }
 
-// ---- setParticle_186820.cpp ----
 void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t color, float a, float b, float c,
                                      float d, bool trail, float e, float f, const Vector &dir)
 {
     return setParticle(pos, scale, color, a, b, c, d, trail, e, f, dir, false);
 }
 
-// ---- emit_18618c.cpp ----
 void _ZN18ParticleSystemMesh4emitEi(ParticleSystemMesh *self, int id)
 {
     if (self->field_0xc == 0 || self->field_0xd == 0) {
@@ -72,7 +68,6 @@ void _ZN18ParticleSystemMesh4emitEi(ParticleSystemMesh *self, int id)
     return _psm_emitUsual(self, id);
 }
 
-// ---- finishCurrentTrailParticle_1855fe.cpp ----
 void ParticleSystemMesh::finishCurrentTrailParticle(ParticleSet set, int id, const Vector &first, const Vector &second)
 {
     *(uint8_t *)((char *)this->setIds + id) = (uint8_t)set;
@@ -91,7 +86,6 @@ void ParticleSystemMesh::finishCurrentTrailParticle(ParticleSet set, int id, con
         *dst = second;
 }
 
-// ---- incId_1855e6.cpp ----
 void ParticleSystemMesh::incId()
 {
     int id = this->currentId + 1;
@@ -100,7 +94,6 @@ void ParticleSystemMesh::incId()
     this->currentId = id;
 }
 
-// ---- reset_18620a.cpp ----
 void ParticleSystemMesh::reset()
 {
     for (int i = 0; i < (int)this->pointCount; i++) {
@@ -118,39 +111,33 @@ void ParticleSystemMesh::reset()
     this->field_0x4 = 1;
 }
 
-// ---- _ParticleSystemMesh_1855c4.cpp ----
 void _ZN18ParticleSystemMeshD1Ev(ParticleSystemMesh *self)
 {
     self->field_0x0 = g_ParticleSystemMesh_vtable + 2;
     return _psm_mesh_base_dtor(self);
 }
 
-// ---- render_1861b2.cpp ----
 void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t texture)
 {
     if (texture != 0xffffffff)
         return _psm_render2(canvas, texture, 0);
 }
 
-// ---- startNewSection_1855d8.cpp ----
 void ParticleSystemMesh::startNewSection()
 {
     this->newSectionStarted = 1;
 }
 
-// ---- wasNewSectionStarted_1855e0.cpp ----
 uint8_t ParticleSystemMesh::wasNewSectionStarted()
 {
     return this->newSectionStarted;
 }
 
-// ---- getQuadCount_1869ec.cpp ----
 int ParticleSystemMesh::getQuadCount()
 {
     return (int)this->pointCount >> 2;
 }
 
-// ---- setQuadEdge_18608c.cpp ----
 void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector &delta)
 {
     Vector pos;
@@ -176,7 +163,6 @@ void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector
     }
 }
 
-// ---- ParticleSystemMesh_185490.cpp ----
 ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const void *sets, bool a, bool b)
 {
     _psm_base_ctor(this, canvas, matrix, sets, a, b);
@@ -243,7 +229,6 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     this->field_0x7c = 0;
 }
 
-// ---- setParticle_185d00.cpp ----
 void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t color, float u0, float u1, float v0,
                                      float v1, bool useMaskedColor, float upScale, float dirScale,
                                      const Vector &delta, bool finish)
@@ -328,7 +313,6 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
     }
 }
 
-// ---- init_186268.cpp ----
 int ParticleSystemMesh::init(uint32_t mesh, uint32_t firstPoint)
 {
     this->mesh = mesh;
@@ -363,7 +347,6 @@ int ParticleSystemMesh::init(uint32_t mesh, uint32_t firstPoint)
     return (*(int (**)(ParticleSystemMesh *))(*(uint32_t *)this + 8))(this);
 }
 
-// ---- updateUsualEdges_1865dc.cpp ----
 void ParticleSystemMesh::updateUsualEdges(int id, int delta)
 {
     Vector move;
@@ -387,7 +370,6 @@ void ParticleSystemMesh::updateUsualEdges(int id, int delta)
                                 move.y, move.z);
 }
 
-// ---- updateSingleColor_1863a0.cpp ----
 void ParticleSystemMesh::updateSingleColor(int id)
 {
     float b;
@@ -442,7 +424,6 @@ void ParticleSystemMesh::updateSingleColor(int id)
     }
 }
 
-// ---- render_1861be.cpp ----
 void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t mesh, uint32_t texture, BlendMode blend)
 {
     if (mesh == 0xffffffff)
@@ -454,12 +435,10 @@ void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t mesh, uint32_t tex
     return _psm_render2(canvas, mesh, local);
 }
 
-// ---- emitTrail_18564c.cpp ----
 void ParticleSystemMesh::emitTrail(int)
 {
 }
 
-// ---- updateSingle_186870.cpp ----
 void ParticleSystemMesh::updateSingle(int id, float delta)
 {
     int intDelta = (int)delta;
@@ -498,7 +477,6 @@ void ParticleSystemMesh::updateSingle(int id, float delta)
     }
 }
 
-// ---- updateTrailEdges_1866b4.cpp ----
 void ParticleSystemMesh::updateTrailEdges(int id, int delta)
 {
     int edgeCount = (int)this->edgeCount;

@@ -4,7 +4,6 @@
 #include "gof2/engine/render/Engine.h"
 #include "gof2/game/core/String.h"
 
-
 extern "C" void *operator_new_0(uint32_t size);
 extern "C" void *operator_new_1(uint32_t size);
 extern "C" void *operator_new_2(uint32_t size);
@@ -34,14 +33,12 @@ extern "C" void *GlowPPShader_vtable;
 extern "C" void *GlowPPShader_typeinfo_source;
 extern "C" void *GlowPPShader_typeinfo_dest;
 
-// ---- SetInActive_8d0d0.cpp ----
 void GlowPPShader::SetInActive() {
     GlowPPShader *self = this;
     glDisableVertexAttribArray(field_u32(self, 0x90));
     return glDisableVertexAttribArray(field_u32(self, 0x98));
 }
 
-// ---- UpdateMeshData_8d610.cpp ----
 void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
     GlowPPShader *self = this;
     glUniformMatrix4fv(field_u32(self, 0x80), 1, 0, (char *)engine + 0x104);
@@ -62,7 +59,6 @@ void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
     }
 }
 
-// ---- _GlowPPShader_8cdac.cpp ----
 void _ZN11AbyssEngine12GlowPPShaderD0Ev(GlowPPShader *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -70,7 +66,6 @@ void _ZN11AbyssEngine12GlowPPShaderD0Ev(GlowPPShader *self)
     operator delete(base);
 }
 
-// ---- RenderEffect_8d120.cpp ----
 static inline FBOContainer *fbo_field(GlowPPShader *self, uint32_t off)
 {
     return *(FBOContainer **)((char *)self + off);
@@ -243,7 +238,6 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     return;
 }
 
-// ---- RenderEffect_8d0ec.cpp ----
 typedef void RenderEffectFn(GlowPPShader *, FBOContainer *, FBOContainer **, Engine *);
 
 static inline uint32_t stack_guard_diff(uint32_t saved, uint32_t current)
@@ -259,7 +253,6 @@ void GlowPPShader::RenderEffect_simple(FBOContainer *source, Engine *engine) {
     return;
 }
 
-// ---- InternalInit_8cdbc.cpp ----
 void GlowPPShader::InternalInit(Engine *engine) {
     GlowPPShader *self = this;
     String name0;
@@ -298,12 +291,10 @@ void GlowPPShader::InternalInit(Engine *engine) {
     return;
 }
 
-// ---- Init_8cf20.cpp ----
 typedef uint32_t LoadProgramFn(ShaderBaseStruct *, const char *, const char *);
 typedef uint32_t LocationFn(uint32_t, const char *);
 typedef void UseProgramFn(uint32_t);
 typedef void Uniform1iFn(uint32_t, int32_t);
-
 
 void GlowPPShader::Init() {
     GlowPPShader *self = this;
@@ -359,7 +350,6 @@ void GlowPPShader::Init() {
     return uniform1i(field_u32(self, 0x8c), 1);
 }
 
-// ---- GlowPPShader_8cd1c.cpp ----
 GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
 {
     void *name[3];

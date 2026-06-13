@@ -1,9 +1,5 @@
 #include "gof2/engine/render/ResourceMesh.h"
 
-
-
-
-// ---- _ResourceMesh_77ed0.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::ResourceMesh::~ResourceMesh()
@@ -15,7 +11,6 @@ ResourceMesh::~ResourceMesh()
 
 } // namespace AbyssEngine
 
-// ---- ResourceMesh_112cf0.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::ResourceMesh::ResourceMesh(char const*, unsigned short, bool)

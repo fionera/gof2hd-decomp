@@ -4,7 +4,6 @@
 
 extern "C" void __aeabi_memcpy(void *, const void *, unsigned long);
 
-// ---- operator_cast_to_float__7395c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -13,7 +12,6 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixDebugOut_81004.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -23,7 +21,6 @@ void MatrixDebugOut(const Matrix &matrix) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Absf_86a54.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -38,7 +35,6 @@ float Absf(float value)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__74144.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -55,7 +51,6 @@ BSphere &BSphere::operator=(const BSphere &other) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator_cast_to_float__7395e.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -64,7 +59,6 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixGetDir_80720.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -80,7 +74,6 @@ Vector MatrixGetDir(const Matrix &matrix)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- ACosf_86a4c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -91,7 +84,6 @@ float ACosf(float value) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73bb4.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -107,7 +99,6 @@ Vector operator/(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixGetUp_80712.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -122,7 +113,6 @@ Vector MatrixGetUp(const Matrix &matrix) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___80448.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -161,7 +151,6 @@ tail:
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Matrix_6e8d8.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -170,7 +159,6 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixGetGL_80fc4.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -200,7 +188,6 @@ void MatrixGetGL(const Matrix &matrix, float *out)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixGetPosition_8072e.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -216,7 +203,6 @@ Vector MatrixGetPosition(const Matrix &matrix)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Sqrtf_86a28.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -228,7 +214,6 @@ float Sqrtf(float value)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73a96.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -245,7 +230,6 @@ Vector operator+(const Vector &value)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixGetRight_80704.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -261,7 +245,6 @@ Vector MatrixGetRight(const Matrix &matrix)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73a08.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -276,7 +259,6 @@ Vector &Vector::operator*=(const Vector &other)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Sinf_86a44.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -287,7 +269,6 @@ float Sinf(float value) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73960.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -296,7 +277,6 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Pow_86aa8.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -308,7 +288,6 @@ float Pow(float lhs, float rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- VectorDot_73dd2.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -320,7 +299,6 @@ float VectorDot(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- InvSqrt_86aac.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -341,7 +319,6 @@ float InvSqrt(float value)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73aa4.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -357,7 +334,6 @@ Vector operator-(const Vector &value)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator_cast_to_float__8012e.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -366,7 +342,6 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- VectorLerp_73eec.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -387,7 +362,6 @@ Vector VectorLerp(const Vector &from, const Vector &to, float t)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- VectorLength_73eb8.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -399,7 +373,6 @@ float VectorLength(const Vector &value)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73966.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -408,7 +381,6 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__80130.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -430,7 +402,6 @@ Matrix &Matrix::operator=(const Matrix &other) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___739ac.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -445,7 +416,6 @@ Vector &Vector::operator-=(const Vector &other)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Cosf_86a48.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -456,7 +426,6 @@ float Cosf(float value) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- VectorIsEqual_73dce.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -467,7 +436,6 @@ bool VectorIsEqual(const Vector &lhs, const Vector &rhs) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator_cast_to_float__8012c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -476,7 +444,6 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- ATanf_86a50.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -487,7 +454,6 @@ float ATanf(float value) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixMultiply_80688.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -499,7 +465,6 @@ Matrix MatrixMultiply(const Matrix &lhs, const Matrix &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixSetTranslation_80e48.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -516,10 +481,8 @@ void MatrixSetTranslation(Matrix *result, Matrix &matrix, float x, float y, floa
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixSetTranslation_80e60.cpp ----
 using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
-
 
 __attribute__((disable_tail_calls)) void MatrixSetTranslation(
     Matrix *result,
@@ -532,7 +495,6 @@ __attribute__((disable_tail_calls)) void MatrixSetTranslation(
     __aeabi_memcpy(result, matrix, sizeof(*result));
 }
 
-// ---- operator___73c7e.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -549,7 +511,6 @@ bool operator!=(const Vector &lhs, const Vector &rhs) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___8052c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -584,7 +545,6 @@ tail:
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Max_86a70.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -599,7 +559,6 @@ float Max(float lhs, float rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixGetInverse_80e78.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -633,7 +592,6 @@ Matrix MatrixGetInverse(const Matrix &matrix)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73a64.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -648,7 +606,6 @@ Vector &Vector::operator/=(const Vector &other)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73c10.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -668,7 +625,6 @@ Vector operator/(float lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixIsEqual_80700.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -680,10 +636,8 @@ bool MatrixIsEqual(const Matrix &lhs, const Matrix &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixSetRotation_80d40.cpp ----
 using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
-
 
 __attribute__((disable_tail_calls)) void MatrixSetRotation(
     Matrix *result,
@@ -704,7 +658,6 @@ __attribute__((disable_tail_calls)) void MatrixSetRotation(
     __aeabi_memcpy(result, matrix, sizeof(*matrix));
 }
 
-// ---- operator__7396c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -719,7 +672,6 @@ Vector &Vector::operator=(const Vector &other)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73b60.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -740,7 +692,6 @@ Vector operator*(const Vector &lhs, float rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73afc.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -756,7 +707,6 @@ Vector operator-(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Min_86a8c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -768,7 +718,6 @@ float Min(float lhs, float rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixIdentity_80694.cpp ----
 using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
 
@@ -797,7 +746,6 @@ extern "C" __attribute__((disable_tail_calls)) void MatrixIdentity(Matrix *resul
     return;
 }
 
-// ---- MatrixGetLookAt_80f18.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -829,7 +777,6 @@ void MatrixGetLookAt(Matrix &result, const Vector &position, const Vector &targe
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Merge_74000.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -887,7 +834,6 @@ void BSphere::Merge(const BSphere &other)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73b8a.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -906,7 +852,6 @@ Vector operator*(float lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixRotateVector_807b6.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -928,7 +873,6 @@ Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___739de.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -942,7 +886,6 @@ Vector &Vector::operator*=(float scale) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__8060e.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -995,7 +938,6 @@ Vector operator*(const Matrix &matrix, const Vector &vector)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixInverseRotateVector_808b6.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1032,7 +974,6 @@ Vector MatrixInverseRotateVector(const Matrix &matrix, const Vector &vector)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73be6.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1051,7 +992,6 @@ Vector operator/(const Vector &lhs, float rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixSetRotation_809f0.cpp ----
 extern "C" float (*MatrixSetRotation_809f0_sinf)(float) = ::sinf;
 extern "C" float (*MatrixSetRotation_809f0_cosf)(float) = ::cosf;
 
@@ -1149,7 +1089,6 @@ Matrix MatrixSetRotation(Matrix &matrix, float x, float y, float z, RotationOrde
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73cbe.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1167,7 +1106,6 @@ bool operator<(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73aca.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1185,10 +1123,8 @@ Vector operator+(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__802c8.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
-
 
 // Matrix::Matrix() defined inline in gof2/math.h
 
@@ -1286,10 +1222,8 @@ Matrix operator*(const Matrix &lhs, const Matrix &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixSetScaling_80d84.cpp ----
 using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
-
 
 extern "C" __attribute__((stack_protect_req, disable_tail_calls)) void MatrixSetScaling(
     Matrix *result,
@@ -1317,7 +1251,6 @@ extern "C" __attribute__((stack_protect_req, disable_tail_calls)) void MatrixSet
     __aeabi_memcpy(result, matrix, sizeof(*matrix));
 }
 
-// ---- VectorCross_73dfc.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1338,7 +1271,6 @@ Vector VectorCross(const Vector &lhs, const Vector &rhs) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73c3a.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1350,7 +1282,6 @@ bool operator==(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73b2e.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1366,7 +1297,6 @@ Vector operator*(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73d8a.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1388,7 +1318,6 @@ bool operator>=(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73d46.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1400,7 +1329,6 @@ bool operator<=(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___8016a.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1503,7 +1431,6 @@ Matrix &Matrix::operator*=(const Matrix &other) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___73a3a.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1518,7 +1445,6 @@ Vector &Vector::operator/=(float scale)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator__73d02.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1536,7 +1462,6 @@ bool operator>(const Vector &lhs, const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixSetRotation_80918.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1566,7 +1491,6 @@ Matrix MatrixSetRotation(Matrix &matrix, float x, float y, float z)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- operator___7397a.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1581,7 +1505,6 @@ Vector &Vector::operator+=(const Vector &other)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixInverseTransformVector_80818.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1607,7 +1530,6 @@ Vector MatrixInverseTransformVector(const Matrix &matrix, const Vector &vector)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- Merge_73f30.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1657,7 +1579,6 @@ void BSphere::Merge(const ::AbyssEngine::Transform &transform) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixSetRotation_80cc4.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1687,7 +1608,6 @@ void MatrixSetRotation(Matrix *result, Matrix &matrix, const Vector &dir)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- VectorNormalize_73e3c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 
@@ -1709,7 +1629,6 @@ Vector VectorNormalize(const Vector &value) {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---- MatrixTransformVector_8073c.cpp ----
 namespace AbyssEngine {
 namespace AEMath {
 

@@ -86,9 +86,6 @@ public:
 
 // cross-class field accessors (Engine/Mesh are not in this batch; opaque here)
 
-
-
-
 } // namespace AbyssEngine
 
 #endif

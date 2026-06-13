@@ -6,7 +6,6 @@
 // Target names are top-level PlayerWormHole::... (no AbyssEngine namespace).
 // Field offsets come from the per-method work-items and are accessed by byte casts.
 
-
 struct PlayerWormHole;
 struct AEGeometry;
 
@@ -14,8 +13,6 @@ namespace AbyssEngine {
 struct String;
 
 namespace AEMath {
-
-
 
 }
 }

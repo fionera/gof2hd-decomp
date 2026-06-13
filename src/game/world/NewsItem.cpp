@@ -1,7 +1,5 @@
 #include "gof2/game/world/NewsItem.h"
 
-
-// ---- clone_e09fa.cpp ----
 // NewsItem::clone()
 //   Deep-copies the byte buffer (length = this->field_0x0c, sign-corrected) and allocates a new
 //   0x1c-byte NewsItem with the copied fields.
@@ -27,7 +25,6 @@ void *NewsItem::clone()
     return out;
 }
 
-// ---- NewsItem_e09c8.cpp ----
 // NewsItem::NewsItem(int, bool, bool*, int, int, int)
 NewsItem::NewsItem(int p1, bool p2, void *p3, int p4, int p5, int p6)
 {
@@ -40,7 +37,6 @@ NewsItem::NewsItem(int p1, bool p2, void *p3, int p4, int p5, int p6)
     this->field_0x18 = 0;
 }
 
-// ---- _NewsItem_e09e6.cpp ----
 // NewsItem::~NewsItem()
 //   delete[] this->data; this->data = 0;
 NewsItem::~NewsItem()

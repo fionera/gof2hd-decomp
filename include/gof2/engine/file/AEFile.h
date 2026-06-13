@@ -5,8 +5,6 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 namespace AbyssEngine {
 
-
-
 String operator+(const String &left, const String &right);
 
 } // namespace AbyssEngine
@@ -16,8 +14,6 @@ using uchar = uint8_t;
 using ushort = uint16_t;
 using longlong = int64_t;
 using String = AbyssEngine::String;
-
-
 
 struct AEPakFileEntry {
     uint32_t crc;
@@ -84,8 +80,6 @@ struct FileInterface {
     FileInterfaceVTable *vtable;
     uint8_t enabled;
 };
-
-
 
 // NOTE: AEPakFileEntry::name holds the std::u16string-backed String (common.h), so the original
 // 0x1c byte layout no longer holds. The low-level file structs derive from AELowLevelFile (a

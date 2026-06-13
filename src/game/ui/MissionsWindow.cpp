@@ -30,17 +30,13 @@ __attribute__((visibility("hidden"))) extern void *g_mw_gameText;
 // (*(Achievements **)g_mw_ach)->gotAllGoldMedals().
 __attribute__((visibility("hidden"))) extern void *g_mw_ach;
 
-
-
-
-// ---- OnTouchMove_150ca8.cpp ----
 extern "C" int  _mw_m_tail(void *obj, int p1, int p2);          // 0x1ac528 tail
-extern "C" void _mw_m_Choice(void *w, int p1, int p2);          // 0x7474c
-extern "C" void _mw_m_StarMap(void *w, int p1, int p2);         // 0x750e8
-extern "C" int  _mw_m_wantedBoardAccessible(void *st);          // 0x77290
-extern "C" void _mw_m_Button(void *btn, int p1, int p2);        // 0x74764
-extern "C" void _mw_m_Layout(void *l, int p1, int p2);          // 0x74758
-extern "C" void _mw_m_STW(void *w, int p1, int p2);             // 0x75bbc
+extern "C" void _mw_m_Choice(void *w, int p1, int p2);
+extern "C" void _mw_m_StarMap(void *w, int p1, int p2);
+extern "C" int  _mw_m_wantedBoardAccessible(void *st);
+extern "C" void _mw_m_Button(void *btn, int p1, int p2);
+extern "C" void _mw_m_Layout(void *l, int p1, int p2);
+extern "C" void _mw_m_STW(void *w, int p1, int p2);
 
 __attribute__((visibility("hidden"))) extern void **g_mw_m_status;
 __attribute__((visibility("hidden"))) extern void **g_mw_m_layout;
@@ -74,22 +70,20 @@ int MissionsWindow::OnTouchMove(int p1, int p2)
     return 0;
 }
 
-// ---- setHangarUpdate_1504b2.cpp ----
 // MissionsWindow::setHangarUpdate(bool) -- store the flag byte at +0x23.
 void MissionsWindow::setHangarUpdate(bool v)
 {
     u8(this, 0x23) = v;
 }
 
-// ---- _MissionsWindow_15040c.cpp ----
-extern "C" void  _mw_ArrayReleaseImagePart(void *a);   // 0x75ae4
-extern "C" void *_mw_ImagePartArray_dtor(void *a);     // 0x75af0
-extern "C" void  _mw_ArrayReleaseTouchButton(void *a); // 0x75328
-extern "C" void *_mw_TouchButtonArray_dtor(void *a);   // 0x75334
-extern "C" void *_mw_STW_dtor(void *w);                // 0x75afc
-extern "C" void *_mw_ChoiceWindow_dtor(void *w);       // 0x74d88
-extern "C" void *_mw_TouchButton_dtor(void *b);        // 0x74d7c
-extern "C" void *_mw_WantedWindow_dtor(void *w);       // 0x772a8
+extern "C" void  _mw_ArrayReleaseImagePart(void *a);
+extern "C" void *_mw_ImagePartArray_dtor(void *a);
+extern "C" void  _mw_ArrayReleaseTouchButton(void *a);
+extern "C" void *_mw_TouchButtonArray_dtor(void *a);
+extern "C" void *_mw_STW_dtor(void *w);
+extern "C" void *_mw_ChoiceWindow_dtor(void *w);
+extern "C" void *_mw_TouchButton_dtor(void *b);
+extern "C" void *_mw_WantedWindow_dtor(void *w);
 
 // MissionsWindow::~MissionsWindow()
 MissionsWindow::~MissionsWindow()
@@ -120,25 +114,22 @@ MissionsWindow::~MissionsWindow()
     pp(this, 0x10) = 0;
 }
 
-// ---- hangarNeedsUpdate_1509a8.cpp ----
 // MissionsWindow::hangarNeedsUpdate() -- raw uint8 getter at +0x23.
 uint8_t MissionsWindow::hangarNeedsUpdate()
 {
     return u8(this, 0x23);
 }
 
-// ---- OnTouchBegin_150bdc.cpp ----
 extern "C" int  _mw_b_tail(void *obj, int p1, int p2);          // 0x1ac518 tail
-extern "C" void _mw_b_Choice(void *w, int p1, int p2);          // 0x7471c
-extern "C" void _mw_b_StarMap(void *w, int p1, int p2);         // 0x74704
-extern "C" int  _mw_b_wantedBoardAccessible(void *st);          // 0x77290
-extern "C" void _mw_b_Button(void *btn, int p1, int p2);        // 0x74734
-extern "C" void _mw_b_Layout(void *l, int p1, int p2);          // 0x74728
-extern "C" void _mw_b_STW(void *w, int p1, int p2);             // 0x75ba4
+extern "C" void _mw_b_Choice(void *w, int p1, int p2);
+extern "C" void _mw_b_StarMap(void *w, int p1, int p2);
+extern "C" int  _mw_b_wantedBoardAccessible(void *st);
+extern "C" void _mw_b_Button(void *btn, int p1, int p2);
+extern "C" void _mw_b_Layout(void *l, int p1, int p2);
+extern "C" void _mw_b_STW(void *w, int p1, int p2);
 
 __attribute__((visibility("hidden"))) extern void **g_mw_b_status;
 __attribute__((visibility("hidden"))) extern void **g_mw_b_layout;
-
 
 // MissionsWindow::OnTouchBegin(int, int)
 int MissionsWindow::OnTouchBegin(int p1, int p2)
@@ -167,9 +158,7 @@ int MissionsWindow::OnTouchBegin(int p1, int p2)
     return 0;
 }
 
-// ---- init_14fa68.cpp ----
 extern "C" {
-
 
 void  ArrayTB_ctor(void *self);
 void  ArrayTB_setLength(int n, void *self);
@@ -195,11 +184,7 @@ void  String_fromInt(void *s, int value);
 int   Status_wantedBoardAccessible();
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
-
 void  Globals_getAgentMissionText(void *out, void *agent);
-
-
-
 
 int   ApplicationManager_GetCurrentApplicationModule(void *appMgr);
 
@@ -450,7 +435,6 @@ int MissionsWindow::init() {
     return 0;
 }
 
-// ---- draw_1504dc.cpp ----
 extern "C" {
 
 // Two mode-specific draw tail calls (mode==1 / flag@0x22).
@@ -464,9 +448,6 @@ void  String_fromText(void *s, void *text, bool copy);
 
 int   Status_wantedBoardAccessible();
 // Draw uses the Status singleton via free-function helpers.
-
-
-
 
 extern void *g_mwd_canvas;    // *(DAT_16059c): paint canvas
 extern void *g_mwd_layout;    // *(DAT_1605a0): Layout singleton
@@ -588,16 +569,14 @@ void MissionsWindow::draw() {
     
 }
 
-// ---- MissionsWindow_14fa10.cpp ----
-extern "C" int   _mw_GetTextHeight(void *canvas);   // 0x6fe20
-extern "C" void *_mw_init(void *self);              // 0x753d0
+extern "C" int   _mw_GetTextHeight(void *canvas);
+extern "C" void *_mw_init(void *self);
 
 // Two PC-relative singletons; each holds a pointer (read via one extra deref).
 // The second is loaded and dereferenced but its value is unused in the target,
 // so we read it through a volatile lvalue to keep the load from being elided.
 __attribute__((visibility("hidden"))) extern void **g_mw_a;
 __attribute__((visibility("hidden"))) extern void **g_mw_b;
-
 
 // MissionsWindow::MissionsWindow()
 MissionsWindow::MissionsWindow()
@@ -616,8 +595,7 @@ MissionsWindow::MissionsWindow()
     _mw_init(this);
 }
 
-// ---- render3D_1504b8.cpp ----
-extern "C" void _mw_WantedWindow_render3D(void *ww);   // 0x772b4
+extern "C" void _mw_WantedWindow_render3D(void *ww);
 extern "C" void _mw_render3D_tail(void *obj);          // 0x1ac258 tail
 
 // MissionsWindow::render3D()
@@ -629,26 +607,16 @@ void MissionsWindow::render3D()
         return _mw_render3D_tail(pp(this, 0x8));
 }
 
-// ---- OnTouchEnd_150d74.cpp ----
 extern "C" {
-
 
 void StarMap_ctor(void *map, bool a, void *mission, bool b, int c);
 // StarMap::OnTouchEnd returns void in the (offset-derived) header, but the original
 // returns a hit flag here; declare the real ABI signature so the test compiles.
 int  StarMap_OnTouchEnd(StarMap *map, int x, int y);
 
-
 int  Status_wantedBoardAccessible();
 
-
-
-
-
 void String_fromText(void *s, void *text, bool copy);
-
-
-
 
 extern void *g_mwt_freelanceSrc;  // *(DAT_161174): freelance mission source
 extern void *g_mwt_appMgr;        // *(DAT_16119c / 1611a8): application manager
@@ -824,23 +792,17 @@ done:
     
 }
 
-// ---- update_1509b0.cpp ----
 extern "C" {
 
 // Two mode-specific tail calls reached via GOT thunks.
 void MissionsWindow_acceptAction(void *self);   // DAT_1ac514 thunk (mode == 1)
 void MissionsWindow_cancelAction(void *self);   // DAT_1ac284 thunk (flag @0x22)
 
-
-
-
 void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
 void  String_fromInt(void *s, int value);
 
-
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
-
 
 extern void *g_mw_status;        // *(DAT_160bbc): Status singleton
 extern void *g_mw_campaign;      // *(DAT_160bc0): campaign-state record
@@ -915,7 +877,6 @@ void MissionsWindow::update(int dt) {
     void **tabs = (void **)pp(self, 0x14);
     for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
         ((TouchButton *)(((void **)tabs[1])[i]))->setAlwaysPressed(i == u32(self, 0x40));
-
 
 }
 

@@ -8,10 +8,6 @@ void operator delete(void *ptr) noexcept;
 
 namespace AbyssEngine {
 
-
-
-
-
 template <class T>
 void ArrayAdd(T item, Array<T> &array);
 

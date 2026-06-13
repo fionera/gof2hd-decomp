@@ -100,7 +100,6 @@ MaskShader::MaskShader()
 
 } // namespace AbyssEngine
 
-// ---- _MaskShader_9177c.cpp ----
 // AbyssEngine::MaskShader::~MaskShader() (deleting dtor)
 void _ZN11AbyssEngine10MaskShaderD0Ev(AbyssEngine::MaskShader *self)
 {

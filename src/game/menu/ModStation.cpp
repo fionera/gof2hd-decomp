@@ -101,7 +101,6 @@ extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *ScrollTouchBox_dtor(void *p);
 extern "C" void ModStation_or_tail();
 
-// ---- autosave_d7054.cpp ----
 struct Status;
 // Status singleton holder-of-holder: g -> P (one load), *P -> Status object.
 __attribute__((visibility("hidden"))) extern Status **g_ModStation_statusHolder;
@@ -123,7 +122,6 @@ void ModStation::autosave() {
         ModStation_autosaveTail();
 }
 
-// ---- enterStation_d7200.cpp ----
 struct Status;
 struct Station;
 struct Ship;
@@ -136,7 +134,6 @@ __attribute__((visibility("hidden"))) extern Status **g_ModStation_es_status;
 __attribute__((visibility("hidden"))) extern Achievements **g_ModStation_es_ach;
 // getShip veneer accessed via a function-pointer global.
 __attribute__((visibility("hidden"))) extern Ship *(*g_ModStation_es_getShip)(Status *);
-
 
 // ModStation::enterStation()
 void ModStation_enterStation()
@@ -181,7 +178,6 @@ void ModStation_enterStation()
     I(s, 0x11c) = 0;
 }
 
-// ---- addAchievement_dbff8.cpp ----
 struct Achievements;
 // Achievements singleton holder-of-holder: g -> P, P[0] -> Achievements object.
 __attribute__((visibility("hidden"))) extern Achievements **g_ModStation_achievements;
@@ -190,7 +186,6 @@ __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_a;
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_b;
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_c;
 // (single-deref pc-rel: g resolves to the int* directly; store at its offsets.)
-
 
 // ModStation::addAchievement(int, int)
 void ModStation::addAchievement(int param_1, int param_2) {
@@ -207,7 +202,6 @@ void ModStation::addAchievement(int param_1, int param_2) {
     *(int *)((char *)g_ModStation_ach_c + 8) = (param_1 * 3 + 3) - param_2;
 }
 
-// ---- showMapWindow_dc0c8.cpp ----
 // ModStation::showMapWindow()
 void ModStation::showMapWindow() {
     ModStation *self = this;
@@ -215,7 +209,6 @@ void ModStation::showMapWindow() {
     UC(self, 0x67) = 1;
 }
 
-// ---- setGameLoaded_dbfec.cpp ----
 // ModStation::setGameLoaded()
 void ModStation::setGameLoaded() {
     ModStation *self = this;
@@ -223,7 +216,6 @@ void ModStation::setGameLoaded() {
     UC(self, 0xb3) = 1;
 }
 
-// ---- OnSuspend_dc2d0.cpp ----
 // Singleton holder: &g taken pc-rel, g is a pointer, *g is the flagged object pointer.
 __attribute__((visibility("hidden"))) extern void **g_ModStation_suspendObj;
 // Tail-called suspend veneer (0x1ac188): receives the object pointer (r0) and holder (r1).
@@ -238,7 +230,6 @@ void ModStation::OnSuspend() {
         ModStation_suspendTail(obj, holder);
 }
 
-// ---- OnResume_dc29c.cpp ----
 // Two singleton holders (single pc-rel deref each).
 __attribute__((visibility("hidden"))) extern void **g_ModStation_resumeObj;
 __attribute__((visibility("hidden"))) extern void **g_ModStation_resumeArg;
@@ -257,7 +248,6 @@ void ModStation_OnResume()
     ModStation_resumeTail(*holder, 1, arg);
 }
 
-// ---- checkPendingProducts_daabc.cpp ----
 struct Station;
 struct Item;
 struct PendingProduct;
@@ -333,7 +323,6 @@ void ModStation::checkPendingProducts() {
 done:;
 }
 
-// ---- OnKeyPress_d92a4.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_okp_stack; // [DAT_000e9614]
 
 extern "C" {
@@ -430,7 +419,6 @@ void ModStation::OnKeyPress(long long key) {
         ModStation_okp_showLocked(self);
 }
 
-// ---- _ModStation_d56f8.cpp ----
 // Base destructor (returns `this`), reached through its veneer at 0x74ee4.
 // operator delete veneer tail-called at the end (0x1ab098).
 
@@ -441,7 +429,6 @@ void ModStation::dtor() {
     ModStation_dtor_finish(((ModStation *)(self))->dtor_inner());
 }
 
-// ---- ModStation_d52d0.cpp ----
 struct Station;
 struct SolarSystem;
 struct EaseInOut;
@@ -522,11 +509,9 @@ ModStation::ModStation() {
     e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); P(self, 0x290) = e;
 }
 
-// ---- _ModStation_d56c0.cpp ----
 // ModStation::~ModStation() base/inner destructor at 0xd56c0.
 // PIC global: the ModStation vtable base (hidden -> direct pc-relative single deref).
 __attribute__((visibility("hidden"))) extern void *ModStation_vtable;
-
 
 // Installs the vtable (+8), runs OnRelease(this), destroys the String member at
 // +0x38, and returns `this` in r0 (consumed by the deleting dtor's tail-call).
@@ -538,7 +523,6 @@ ModStation * ModStation::dtor_inner() {
     return self;
 }
 
-// ---- leaveStation_d8e58.cpp ----
 // ModStation::leaveStation() — a 16-byte veneer the decompiler could only recover as "bad
 // instruction data"; it tail-calls the real leave-station handler (which tears the station
 // module down and transitions back to flight). Expressed faithfully as that forwarding call.
@@ -548,7 +532,6 @@ void ModStation::leaveStation() {
     ModStation_leaveStation_impl(self);
 }
 
-// ---- checkMedals_d8b1c.cpp ----
 struct Achievements;
 struct ChoiceWindow;
 
@@ -629,7 +612,6 @@ void ModStation::checkMedals() {
     ModStation_cm_tail(p, p[0], p[1]);
 }
 
-// ---- OnRender3D_dbf28.cpp ----
 struct SpaceLounge;
 struct StarMap;
 struct CutScene;
@@ -672,12 +654,11 @@ void ModStation::OnRender3D() {
     ModStation_r3d_endTail(*holder);
 }
 
-// ---- resetLight_d70bc.cpp ----
 struct Engine;
 struct SolarSystem;
 
 __attribute__((visibility("hidden"))) extern int **g_rl_engineHolder; // [DAT_000e71f4]
-__attribute__((visibility("hidden"))) extern int   g_rl_lightFlag;    // DAT_000e71f0
+__attribute__((visibility("hidden"))) extern int   g_rl_lightFlag;
 
 extern "C" {
 int  ApplicationManager_GetEngine_rl();
@@ -716,7 +697,6 @@ void ModStation_resetLight()
     Engine_LightEnable_rl(engine, g_rl_lightFlag);
 }
 
-// ---- OnUpdate_d9c78.cpp ----
 struct Station;
 struct Mission;
 struct DialogueWindow;
@@ -1126,7 +1106,6 @@ void ModStation::OnUpdate() {
 epilogue:;
 }
 
-// ---- resetIdleCamForHangar_d8cf0.cpp ----
 struct Station;
 
 __attribute__((visibility("hidden"))) extern void **g_ModStation_ric_chk;    // *g -> canary src
@@ -1134,7 +1113,6 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_ric_canvas; // 
 __attribute__((visibility("hidden"))) extern void **g_ModStation_ric_status; // *g -> Status obj
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ric_rotX;     // table base (pc-rel)
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ric_rotY;     // table base (pc-rel)
-
 
 // ModStation::resetIdleCamForHangar()
 void ModStation::resetIdleCamForHangar() {
@@ -1192,7 +1170,6 @@ void ModStation::resetIdleCamForHangar() {
     (void)loc;
 }
 
-// ---- checkHints_dad54.cpp ----
 struct Wanted;
 struct Agent;
 struct DialogueWindow;
@@ -1306,7 +1283,6 @@ void ModStation::checkHints() {
         ModStation_ch_showWingmanDialogue(self, 0);
 }
 
-// ---- OnTouchMove_d7480.cpp ----
 struct HangarWindow;
 struct StarMap;
 struct SpaceLounge;
@@ -1319,7 +1295,6 @@ struct NewsTicker;
 
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tm_layout;  // g -> P, *P -> layout obj
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tm_screenH; // **g -> screen height
-
 
 // ModStation::OnTouchMove(int, int, void*)
 void ModStation::OnTouchMove(int x, int y, void *touch) {
@@ -1396,16 +1371,12 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     I(self, 0xe4) = x;
 }
 
-// ---- OnRelease_d9050.cpp ----
 // Two singleton holders (single pc-rel deref each).
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_sound;   // *g -> flag
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_canvas;  // *g -> canvas
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_lang;    // *g -> obj (font lang)
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_reload;  // *g -> reload flag obj
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_imgfac;  // *g -> image factory
-
-
-
 
 // Tail veneer at 0x1ac168.
 
@@ -1518,7 +1489,6 @@ void ModStation::OnRelease() {
         ModStation_or_tail();
 }
 
-// ---- OnTouchEnd_d7600.cpp ----
 struct Station;
 struct Ship;
 struct Item;
@@ -2297,7 +2267,6 @@ void finishMissionReward(ModStation *self)
     ModStation_checkHints_ote(self);
 }
 
-// ---- OnTouchBegin_d72ac.cpp ----
 struct SpaceLounge;
 struct StarMap;
 struct HangarWindow;
@@ -2314,8 +2283,6 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_screenH; // 
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_campaign;// *g -> obj for nextCampaignMission
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_appmod;  // *g -> app module value
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_clear;   // *g -> slot zeroed
-
-
 
 // ModStation::OnTouchBegin(int, int, void*)
 void ModStation::OnTouchBegin(int x, int y, void *touch) {
@@ -2403,7 +2370,6 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     UC(self, 0x100) = 1;
 }
 
-// ---- OnRender2D_db810.cpp ----
 struct Layout;
 
 __attribute__((visibility("hidden"))) extern int  *g_r2d_stack;       // [DAT_000eba2c]
@@ -2483,7 +2449,6 @@ void ModStation::OnRender2D() {
     ((PaintCanvas *)g_PaintCanvas)->SwapBuffer();
 }
 
-// ---- OnInitialize_d5708.cpp ----
 struct Station;
 struct Ship;
 struct Item;
@@ -3113,7 +3078,6 @@ void ModStation::OnInitialize() {
     I(s, 0xc) = next;
 }
 
-// ---- showDlcMenu_dc1bc.cpp ----
 struct MenuTouchWindow;
 
 __attribute__((visibility("hidden"))) extern int  *g_dlc_stack;     // [DAT_000ec28c]
@@ -3157,7 +3121,6 @@ void ModStation::showDlcMenu() {
     MenuTouchWindow_callDlcMenu_dlc(win);
 }
 
-// ---- showCBSMessage_dc0d8.cpp ----
 // PC-relative cookie + the localized-string lookup tables this message uses.
 __attribute__((visibility("hidden"))) extern int *g_cbs_stack;    // [DAT_000ec1a4]
 __attribute__((visibility("hidden"))) extern int **g_cbs_textId;  // [DAT_000ec1b0]

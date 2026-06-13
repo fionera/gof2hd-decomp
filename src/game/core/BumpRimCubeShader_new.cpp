@@ -1,10 +1,8 @@
 #include "gof2/game/core/BumpRimCubeShader_new.h"
 #include "gof2/externs.h"
 
-
 extern "C" void glUniform3fv(int location, int count, const float *value);
 
-// ---- SetInActive_88b18.cpp ----
 namespace AbyssEngine {
 
 void BumpRimCubeShader_new::SetInActive()
@@ -29,7 +27,6 @@ void BumpRimCubeShader_new::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- Init_888ac.cpp ----
 namespace AbyssEngine {
 
 void BumpRimCubeShader_new::Init(Engine *)
@@ -84,7 +81,6 @@ void BumpRimCubeShader_new::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _BumpRimCubeShader_new_88f40.cpp ----
 void _ZN11AbyssEngine21BumpRimCubeShader_newD0Ev(
     AbyssEngine::BumpRimCubeShader_new *self)
 {
@@ -93,7 +89,6 @@ void _ZN11AbyssEngine21BumpRimCubeShader_newD0Ev(
     operator delete(base);
 }
 
-// ---- UpdateMeshData_88b58.cpp ----
 namespace AbyssEngine {
 
 void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -216,7 +211,6 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- BumpRimCubeShader_new_88820.cpp ----
 namespace AbyssEngine {
 
 int BumpRimCubeShader_new::ShaderIndex;

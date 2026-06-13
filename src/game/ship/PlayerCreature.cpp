@@ -7,7 +7,6 @@
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/ship/PlayerJunk.h"
 
-
 extern "C" PlayerCreature *KIPlayer_dtor(KIPlayer *self);
 extern "C" int PlayerCreature_weightTable[] __attribute__((visibility("hidden")));
 extern "C" int PlayerCreature_rageTable[] __attribute__((visibility("hidden")));
@@ -24,14 +23,10 @@ namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } 
 extern "C" int *PlayerCreature_randomMax __attribute__((visibility("hidden")));
 extern "C" FModSound **PlayerCreature_sound __attribute__((visibility("hidden")));
 
-// ---- isHooked_11cd38.cpp ----
-
 uint8_t PlayerCreature::isHooked()
 {
     return this->hooked;
 }
-
-// ---- calmDown_11cc28.cpp ----
 
 void PlayerCreature::calmDown()
 {
@@ -41,8 +36,6 @@ void PlayerCreature::calmDown()
     this->endurance = maxEndurance;
 }
 
-// ---- unhook_11cd4e.cpp ----
-
 void PlayerCreature::unhook()
 {
     int maxEndurance = this->maxEndurance;
@@ -51,8 +44,6 @@ void PlayerCreature::unhook()
     this->raging = 0;
     this->endurance = maxEndurance;
 }
-
-// ---- render_11cfb8.cpp ----
 
 void PlayerCreature::render()
 {
@@ -91,34 +82,25 @@ void PlayerCreature::dtor_tail()
     ::operator delete(this);
 }
 
-// ---- getEndurance_11d004.cpp ----
-
 int PlayerCreature::getEndurance()
 {
     return this->endurance;
 }
 
-// ---- _PlayerCreature_11ccd8.cpp ----
 void _ZN14PlayerCreatureD1Ev(PlayerCreature *self)
 {
     ((PlayerCreature *)(KIPlayer_dtor((KIPlayer *)self)))->dtor_tail();
 }
-
-// ---- getWeight_11cfe4.cpp ----
 
 int PlayerCreature::getWeight()
 {
     return PlayerCreature_weightTable[this->creatureType];
 }
 
-// ---- isCaught_11cd3e.cpp ----
-
 uint8_t PlayerCreature::isCaught()
 {
     return this->caught;
 }
-
-// ---- rage_11cce8.cpp ----
 
 void PlayerCreature::rage(int amount)
 {
@@ -129,22 +111,15 @@ void PlayerCreature::rage(int amount)
     this->rageScale = (amountScale + 1.0f) * (typeScale + 1.0f);
 }
 
-// ---- getMaxEndurance_11cffe.cpp ----
-
 int PlayerCreature::getMaxEndurance()
 {
     return this->maxEndurance;
 }
 
-// ---- getItemIndex_11cff8.cpp ----
-
 int PlayerCreature::getItemIndex()
 {
     return this->itemIndex;
 }
-
-// ---- PlayerCreature_11cb5c.cpp ----
-
 
 PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                                float x, float y, float z)
@@ -170,16 +145,11 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player *player, AEGeomet
     reset();
 }
 
-// ---- hook_11cd44.cpp ----
-
 void PlayerCreature::hook(int value)
 {
     this->hooked = 1;
     return ((PlayerCreature *)(this))->hook_tail(value);
 }
-
-// ---- update_11cd68.cpp ----
-
 
 void PlayerCreature::update(int elapsed)
 {
@@ -273,8 +243,6 @@ void PlayerCreature::update(int elapsed)
     Matrix *matrix = &((AEGeometry *)(this->geometry))->getMatrix();
     *(Matrix *)((char *)this->player + 4) = *(const Matrix *)(matrix);
 }
-
-// ---- reset_11cc40.cpp ----
 
 void PlayerCreature::reset()
 {

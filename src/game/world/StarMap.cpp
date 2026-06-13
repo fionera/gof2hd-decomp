@@ -58,7 +58,6 @@ public:
 #include "gof2/game/ui/TouchButton.h"
 #undef RetStr
 
-
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_render_canvas;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_render_geometry)(void *);
 extern "C" void StarMap_render_tail();
@@ -172,13 +171,11 @@ void MatrixSetRotation(void *matrix, float x, float y, float z, float w);
 extern "C" void *EaseInOut_ctor(void *ease);
 extern "C" void *SystemPathFinder_ctor(void *finder);
 
-// ---- missionChanged_c9b48.cpp ----
 uint8_t StarMap::missionChanged()
 {
     return field<uint8_t>(this, 0xdc);
 }
 
-// ---- render_c8058.cpp ----
 void StarMap::render()
 {
     uint32_t *canvasHolder = g_StarMap_render_canvas;
@@ -209,7 +206,6 @@ void StarMap::render_tail()
     ((AEGeometry *)(ptr_field(this, 0xf8)))->render();
 }
 
-// ---- renderBG_d8056.cpp ----
 // Background-render hook. The star map paints its whole scene (3D systems plus the
 // 2D overlay) from render()/draw(); the dedicated "render background" entry point that
 // the station shell dispatches per-frame is intentionally a no-op for this screen.
@@ -217,13 +213,11 @@ void StarMap::renderBG()
 {
 }
 
-// ---- isInPlanetMode_c8040.cpp ----
 bool StarMap::isInPlanetMode()
 {
     return field<int32_t>(this, 4) == 3;
 }
 
-// ---- askForJumpIntoAlienWorld_c9b50.cpp ----
 void StarMap::askForJumpIntoAlienWorld()
 {
     void *window = *(void *volatile *)((char *)this + 0x5c);
@@ -233,7 +227,6 @@ void StarMap::askForJumpIntoAlienWorld()
     field<uint8_t>(this, 0xa9) = 1;
 }
 
-// ---- setJumpMapMode_c804c.cpp ----
 void StarMap::setJumpMapMode(bool enabled, bool value)
 {
     volatile uint8_t *bytes = (volatile uint8_t *)this;
@@ -241,9 +234,7 @@ void StarMap::setJumpMapMode(bool enabled, bool value)
     bytes[0xaa] = (uint8_t)enabled;
 }
 
-// ---- setStart_c7dd8.cpp ----
 struct SystemPathFinder;
-
 
 void StarMap::setStart(int start, int target)
 {
@@ -258,7 +249,6 @@ void StarMap::setStart(int start, int target)
         ((SystemPathFinder *)((SystemPathFinder *)ptr_field(this, 0x50)))->getSystemPath((Array<SolarSystem *> *)ptr_field(this, 0x54), start, field<int32_t>(this, 0x104));
 }
 
-// ---- _StarMap_c749c.cpp ----
 StarMap::~StarMap()
 {
     void *p;
@@ -338,7 +328,6 @@ StarMap::~StarMap()
     ptr_field(this, 0x50) = 0;
 }
 
-// ---- draw_c90f4.cpp ----
 void StarMap::draw()
 {
     String tmp;
@@ -423,7 +412,6 @@ void StarMap::draw()
     }
 }
 
-// ---- depart_c7e0c.cpp ----
 void StarMap::depart(bool jump)
 {
     int selected = field<int32_t>(this, 0x64);
@@ -522,7 +510,6 @@ void StarMap::depart_tail(void *app, int moduleId)
     ((ApplicationManager *)app)->SetCurrentApplicationModule((unsigned)moduleId);
 }
 
-// ---- OnTouchEnd_cae90.cpp ----
 static inline float absf_end(float v)
 {
     return v < 0.0f ? -v : v;
@@ -686,7 +673,6 @@ int StarMap::touch_end(int x, int y)
     return 0;
 }
 
-// ---- initLights_c7d9c.cpp ----
 void StarMap::initLights()
 {
     void *engine = ((ApplicationManager *)(*g_StarMap_lights_engine))->GetEngine();
@@ -694,7 +680,6 @@ void StarMap::initLights()
     ((Engine *)(engine))->LightEnable(true);
 }
 
-// ---- update_c9b90.cpp ----
 static inline float absf_update(float v)
 {
     return v < 0.0f ? -v : v;
@@ -903,7 +888,6 @@ void StarMap::update(int dt)
     }
 }
 
-// ---- StarMap_c67a4.cpp ----
 StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
 {
     void (*vecCtor)(void *) = g_StarMap_ctor_vecCtor;
@@ -999,7 +983,6 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     init(jumpMapMode, mission, param3, param4);
 }
 
-// ---- OnTouchBegin_ca7e0.cpp ----
 static inline float absf_local(float v)
 {
     return v < 0.0f ? -v : v;
@@ -1109,7 +1092,6 @@ uint32_t StarMap::OnTouchBegin(int x, int y)
     return 0;
 }
 
-// ---- OnTouchMove_cab0c.cpp ----
 void StarMap::OnTouchMove(int x, int y)
 {
     Matrix matrix;
@@ -1194,7 +1176,6 @@ void StarMap::OnTouchMove(int x, int y)
     ((AEGeometry *)(ptr_field(this, 0xa4)))->setRotation(field<float>(this, 0x170), yaw, field<float>(this, 0x16c));
 }
 
-// ---- drawKey_c80e8.cpp ----
 void StarMap::drawKey()
 {
     uint32_t *canvasHolder = g_StarMap_drawKey_canvas;
@@ -1241,7 +1222,6 @@ void StarMap::drawKey()
     drawString(*canvasHolder, *fontHolder, getText(*textHolder, 0x22b), textX, y, false);
 }
 
-// ---- initStarSystem_c7580.cpp ----
 void StarMap::initStarSystem()
 {
     void *system = ((Array<void *> *)ptr_field(this, 0x54))->data()[field<int32_t>(this, 0x60)];
@@ -1369,7 +1349,6 @@ void StarMap::initStarSystem()
     ((AEGeometry *)(((Array<void *> *)ptr_field(this, 0x68))->data()[field<int32_t>(this, 0x60)]))->setVisible(false);
 }
 
-// ---- drawOnScreenInfo_c8354.cpp ----
 void StarMap::drawOnScreenInfo(int index, bool stationMode)
 {
     String name;
@@ -1497,7 +1476,6 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
     }
 }
 
-// ---- init_c6bf0.cpp ----
 int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
 {
     Matrix matrix;

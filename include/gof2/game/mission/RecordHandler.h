@@ -5,7 +5,6 @@
 // RecordHandler — top-level class (NO namespace). Byte-exact decomp scaffold.
 // Save/record I/O. Fields accessed by byte offset from each work-item's target disasm.
 
-
 struct RecordHandler;     // opaque; only ever a RecordHandler* + offset-cast.
 
 // Game types referenced by pointer only — keep opaque.

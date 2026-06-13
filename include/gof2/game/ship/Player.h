@@ -5,13 +5,10 @@
 // Galaxy on Fire 2 — Player class layout (Android libgof2hdaa.so, armv7 Thumb).
 // Field offsets recovered from the per-method target disassembly.
 
-
 struct Gun;
 struct KIPlayer;
 // Vector and Matrix are AEMath 3D types brought in via common.h (using AEMath::Vector/Matrix).
 // Do NOT forward-declare them here as plain structs — that conflicts with the using-declarations.
-
-
 
 class Player {
 public:
@@ -75,10 +72,10 @@ public:
     uint8_t field_f8;                // 0xf8
     uint8_t pad_f9[3];               // 0xf9
     float position[3];               // 0xfc .. 0x104
-    uint8_t field_108;               // 0x108
-    uint8_t pad_109[3];              // 0x109
-    int32_t playShootSoundId;        // 0x10c
-    int32_t field_110;               // 0x110
+    uint8_t field_108;
+    uint8_t pad_109[3];
+    int32_t playShootSoundId;
+    int32_t field_110;
 
     ~Player();                       // defined out-of-line in Player.cpp
 

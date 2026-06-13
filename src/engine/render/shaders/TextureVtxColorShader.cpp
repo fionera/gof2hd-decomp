@@ -3,7 +3,6 @@
 
 namespace AbyssEngine {
 
-// ---- Init_8bed0.cpp ----
 void TextureVtxColorShader::Init(Engine *)
 {
     const char *vertexShader =
@@ -22,7 +21,6 @@ void TextureVtxColorShader::Init(Engine *)
     ConnectShaderComponents(this->fogProgram, 1);
 }
 
-// ---- ConnectShaderComponents_8bdc8.cpp ----
 void TextureVtxColorShader::ConnectShaderComponents(uint32_t program, int index)
 {
     loc_s_texture[index]      = glGetUniformLocation(program, "s_texture");
@@ -44,7 +42,6 @@ void TextureVtxColorShader::ConnectShaderComponents(uint32_t program, int index)
     glUniform1i(loc_s_texture[index], 0);
 }
 
-// ---- UseShader_8bda8.cpp ----
 __attribute__((minsize)) void TextureVtxColorShader::UseShader(bool)
 {
     if (Engine::fogEnabled && this->fogProgram != 0) {
@@ -54,7 +51,6 @@ __attribute__((minsize)) void TextureVtxColorShader::UseShader(bool)
     glUseProgram(this->program);
 }
 
-// ---- SetInActive_8bf18.cpp ----
 void TextureVtxColorShader::SetInActive()
 {
     for (int i = 0; i != 2; i++) {
@@ -64,7 +60,6 @@ void TextureVtxColorShader::SetInActive()
     }
 }
 
-// ---- UpdateMeshData_8bf4c.cpp ----
 void TextureVtxColorShader::UpdateMeshData(AbyssEngine::Mesh *mesh, Engine *engine)
 {
     int index = Engine::fogEnabled ? 1 : 0;

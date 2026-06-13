@@ -29,7 +29,6 @@ inline float &field_float(void *self, uint32_t off)
     return *(float *)((char *)self + off);
 }
 
-
 // Minimal view of FBOContainer (full definition lives in gof2/FBOContainer.h, owned by
 // another batch, where it sits in namespace AbyssEngine). Here we only need the three
 // render-to-texture capture methods invoked from GlowPPShader's post-process passes.

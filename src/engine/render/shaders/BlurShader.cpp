@@ -6,7 +6,6 @@
 // gof2/Mesh.h is pulled in by gof2/BlurShader.h. gof2/Engine.h is intentionally NOT included
 // (it does not compile standalone); BlurShader.h provides a minimal Engine view instead.
 
-
 extern "C" void glDisableVertexAttribArray(unsigned int index);
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
 extern "C" void String_ctor_text(void *self, const char *text, bool copy);
@@ -30,7 +29,6 @@ extern "C" void glClear(unsigned int mask);
 extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
 extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
 
-// ---- SetInActive_8a748.cpp ----
 namespace AbyssEngine {
 
 void BlurShader::SetInActive()
@@ -41,7 +39,6 @@ void BlurShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- BlurShader_8a5e0.cpp ----
 AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
 {
     using AbyssEngine::BlurShader;
@@ -58,8 +55,6 @@ AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
     self->blurScale = 0x40000000;
     return self;
 }
-
-// ---- Init_8a68c.cpp ----
 
 namespace AbyssEngine {
 
@@ -90,7 +85,6 @@ void BlurShader::Init(::Engine *)
 
 } // namespace AbyssEngine
 
-// ---- RenderEffect_8a7a8.cpp ----
 extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
@@ -210,7 +204,6 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
 
 } // namespace AbyssEngine
 
-// ---- _BlurShader_8a67c.cpp ----
 namespace AbyssEngine {
 
 BlurShader::~BlurShader()
@@ -222,7 +215,6 @@ BlurShader::~BlurShader()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_8aab8.cpp ----
 extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,

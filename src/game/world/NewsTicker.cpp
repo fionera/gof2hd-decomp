@@ -41,7 +41,6 @@ extern "C" void ArrayReleaseClasses_NewsItem(NewsItemArray *self);
 extern "C" void ArrayAdd_NewsItem(void *item, NewsItemArray *array);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int bound); } }
 
-// ---- draw_15e174.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_NewsTicker_draw_canvas;
 __attribute__((visibility("hidden"))) extern int **g_NewsTicker_draw_fontHeight;
 __attribute__((visibility("hidden"))) extern int *g_NewsTicker_draw_screenHeight;
@@ -99,7 +98,6 @@ void NewsTicker::draw()
     return DisableClip();
 }
 
-// ---- OnTouchEnd_15e374.cpp ----
 uint32_t NewsTicker::OnTouchEnd(int, int)
 {
     if (this->touched == 0) {
@@ -109,13 +107,11 @@ uint32_t NewsTicker::OnTouchEnd(int, int)
     return 1;
 }
 
-// ---- _NewsTicker_15e0d2.cpp ----
 NewsTicker::~NewsTicker()
 {
     this->tickerText.~String();
 }
 
-// ---- update_15e0e4.cpp ----
 void NewsTicker::update(int dt)
 {
     if (this->touched != 0) {
@@ -140,7 +136,6 @@ void NewsTicker::update(int dt)
     }
 }
 
-// ---- OnTouchMove_15e328.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_NewsTicker_touchMove_screenWidth;
 
 bool NewsTicker::OnTouchMove(int x, int)
@@ -161,7 +156,6 @@ bool NewsTicker::OnTouchMove(int x, int)
     return touched != 0;
 }
 
-// ---- getHeight_15e2b4.cpp ----
 __attribute__((visibility("hidden"))) extern int **g_NewsTicker_getHeight_font;
 __attribute__((visibility("hidden"))) extern int *g_NewsTicker_getHeight_screen;
 
@@ -175,7 +169,6 @@ int NewsTicker::getHeight()
     return bottom - this->y;
 }
 
-// ---- replaceTokens_15c858.cpp ----
 String NewsTicker::replaceTokens(String text)
 {
     String out;
@@ -183,9 +176,7 @@ String NewsTicker::replaceTokens(String text)
     return out;
 }
 
-// ---- NewsTicker_15c468.cpp ----
 #include <new>
-
 
 __attribute__((visibility("hidden"))) extern int *g_NewsTicker_ctor_canary;
 __attribute__((visibility("hidden"))) extern const char g_NewsTicker_ctor_empty[];
@@ -318,7 +309,6 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     ((String *)(&separator))->dtor();
 }
 
-// ---- OnTouchBegin_15e2d8.cpp ----
 __attribute__((visibility("hidden"))) extern int **g_NewsTicker_touchBegin_font;
 __attribute__((visibility("hidden"))) extern int *g_NewsTicker_touchBegin_screen;
 

@@ -7,7 +7,6 @@
 #include "gof2/game/ship/Agent.h"
 #include "gof2/game/core/String.h"
 
-
 extern "C" void Array_Item_ctor(void *arr);
 extern "C" void ArraySetLength_Item(uint32_t len, void *arr);
 // NOTE: Station's name is an AbyssEngine::String passed/returned BY VALUE through the engine's
@@ -26,7 +25,6 @@ extern "C" void *Array_Agent_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 extern "C" void ArrayReleaseClasses_Agent(void *arr) __attribute__((nothrow));
 
-// ---- removeShips_a6c74.cpp ----
 struct Ship;
 
 void Station::removeShips() {
@@ -41,7 +39,6 @@ void Station::removeShips() {
     self->ships = 0;
 }
 
-// ---- stationHasHiddenBlueprint_a700c.cpp ----
 static const int kHiddenBlueprints[5] = { 0, 0, 0, 0, 0 };
 extern char **const gHiddenBlueprintSingleton __attribute__((visibility("hidden")));
 
@@ -64,7 +61,6 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
     }
 }
 
-// ---- stationHasPirateBase_a6fa4.cpp ----
 static const int kPirateStations[4] = { 0, 0, 0, 0 };
 extern char **const gPirateBaseSingleton __attribute__((visibility("hidden")));
 
@@ -85,7 +81,6 @@ uint32_t Station::stationHasPirateBase() {
     }
 }
 
-// ---- setItems_a6d5e.cpp ----
 struct Item;
 
 // Station::setItems(Array<Item*>*, bool) — this in r0, items in r1, deep in r2.
@@ -109,7 +104,6 @@ void Station::setItems(uint32_t *items, bool deep) {
     }
 }
 
-// ---- equals_a70ec.cpp ----
 bool Station::equals(Station *other) {
     Station *self = this;
     if (other != 0)
@@ -117,7 +111,6 @@ bool Station::equals(Station *other) {
     return false;
 }
 
-// ---- visit_a6c2c.cpp ----
 struct Status;
 struct Galaxy;
 // tail-called veneer: marks the system visited, given (Galaxy*, systemId)
@@ -134,7 +127,6 @@ void Station::visit() {
     ((Galaxy *)(*gGalaxyVisit))->setSystemVisited(self->index);
 }
 
-// ---- getName_a6bce.cpp ----
 // RetStr is declared in gof2/Station.h (via gof2/Agent.h).
 
 // Station::getName() -> String by value (sret in r0, this in r1).
@@ -145,7 +137,6 @@ RetStr Station::getName() {
     return r;
 }
 
-// ---- setShips_a6ce6.cpp ----
 struct Ship;
 
 // Station::setShips(Array<Ship*>*, bool) — this in r0, ships in r1, deep in r2.
@@ -222,7 +213,6 @@ void Station::dtorFinish() {
     ::operator delete(this);
 }
 
-// ---- isAttackedByAliens_a6bec.cpp ----
 // Global slot holding a pointer P; *P -> Q; *(Q+0x80) is the compared value.
 extern int **const gAlienAttackSingleton __attribute__((visibility("hidden")));
 
@@ -231,7 +221,6 @@ bool Station::isAttackedByAliens() {
     return self->index == *(int *)((char *)(*gAlienAttackSingleton) + 0x80);
 }
 
-// ---- removeShip_a6c94.cpp ----
 struct Ship;
 // ArrayRemove<Ship*>(Ship* ship, Array* ships) — tail-called veneer.
 
@@ -244,7 +233,6 @@ void Station::removeShip(Ship *ship) {
     Station::arrayRemoveShip(ship, ships);
 }
 
-// ---- getHiddenBlueprintIndex_a7050.cpp ----
 uint32_t Station::getHiddenBlueprintIndex() {
     Station *self = this;
     uint32_t i = 0;
@@ -257,7 +245,6 @@ uint32_t Station::getHiddenBlueprintIndex() {
     }
 }
 
-// ---- isDiscovered_a6c10.cpp ----
 struct Galaxy;
 
 // Global slot -> P; *P -> the Galaxy* singleton.
@@ -269,19 +256,16 @@ uint8_t Station::isDiscovered() {
     return visited[self->index];
 }
 
-// ---- setAttackedFriends_a6bde.cpp ----
 void Station::setAttackedFriends(bool v) {
     Station *self = this;
     self->attackedFriends = v;
 }
 
-// ---- hasAttackedFriends_a6be4.cpp ----
 uint8_t Station::hasAttackedFriends() {
     Station *self = this;
     return self->attackedFriends;
 }
 
-// ---- getPirateStationIndex_a6fe4.cpp ----
 uint32_t Station::getPirateStationIndex() {
     Station *self = this;
     uint32_t i = 0;
@@ -294,7 +278,6 @@ uint32_t Station::getPirateStationIndex() {
     }
 }
 
-// ---- addItem_a6eb6.cpp ----
 struct Item;
 // tail-called veneer
 extern "C" void ArrayAdd_Item(Item *item, void *arr);     // tail-called veneer
@@ -327,7 +310,6 @@ void Station::addItem(Item *item) {
     ArrayAdd_Item(item, arr);
 }
 
-// ---- clone_a7078.cpp ----
 // Station::clone() — this in r0, returns a new Station copy.
 Station * Station::clone() {
     Station *self = this;
@@ -339,7 +321,6 @@ Station * Station::clone() {
     return n;
 }
 
-// ---- _Station_a69f4.cpp ----
 // Station::~Station() — real C++ destructor so the demangled symbol contains "~Station".
 
 // Engine container layout: { uint32_t length; T* data; uint32_t cap; }
@@ -385,7 +366,6 @@ void Station::dtor() {
     ((Station *)(self))->baseDtor();
 }
 
-// ---- setAgents_a6dce.cpp ----
 struct Agent;
 
 void Station::setAgents(void *agents) {
@@ -402,7 +382,6 @@ void Station::setAgents(void *agents) {
     }
 }
 
-// ---- Station_a6978.cpp ----
 extern "C" void *String_default_ctor(void *s);                 // String::String() -> this
 extern "C" void String_from_cstr(void *out, const char *s, bool); // String::String(const char*, bool)
 // operator=(String*, String*)
@@ -428,7 +407,6 @@ void Station::ctor_default() {
     self->agents = 0;
 }
 
-// ---- hasShip_a6e7c.cpp ----
 struct Ship;
 
 // Station::hasShip(int) — this in r0, index in r1.
@@ -448,7 +426,6 @@ uint32_t Station::hasShip(int index) {
     return 0;
 }
 
-// ---- hasItem_a6e42.cpp ----
 struct Item;
 
 // Station::hasItem(int) — this in r0, index in r1.
@@ -468,7 +445,6 @@ uint32_t Station::hasItem(int index) {
     return 0;
 }
 
-// ---- addShip_a6f36.cpp ----
 struct Ship;
 extern "C" void ArrayAdd_Ship(Ship *ship, void *arr);   // tail-called veneer
 
@@ -498,7 +474,6 @@ void Station::addShip(Ship *ship) {
     ArrayAdd_Ship(ship, arr);
 }
 
-// ---- Station_a692c.cpp ----
 extern "C" void *String_default_ctor(void *s);         // String::String() -> this
 // operator=(String*, String*)
 

@@ -9,11 +9,8 @@ struct Station;
 
 namespace AbyssEngine {
 
-
 namespace AEMath {
 struct Matrix;
-
-
 
 Vector MatrixTransformVector(Matrix const &, Vector const &);
 }
@@ -22,8 +19,6 @@ struct PaintCanvas {
     int GetScreenPosition(AEMath::Vector const &, AEMath::Vector &);
 };
 }
-
-
 
 struct KIPlayer {
     virtual void v0();

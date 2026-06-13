@@ -1,9 +1,5 @@
 #include "gof2/engine/render/Material.h"
 
-
-
-
-// ---- _Material_7c8b8.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::Material::~Material()
@@ -18,7 +14,6 @@ Material::~Material()
 
 } // namespace AbyssEngine
 
-// ---- Material_7a3d8.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::Material::Material(AbyssEngine::Material*) - copy/clone constructor.
@@ -59,7 +54,6 @@ Material::Material(Material *other)
 
 } // namespace AbyssEngine
 
-// ---- Material_7c188.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::Material::Material() - default constructor.

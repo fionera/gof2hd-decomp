@@ -1,14 +1,11 @@
 #include "gof2/game/world/SystemPathFinder.h"
 
-
 // ---- SystemPathFinder_12b77c / ~SystemPathFinder_12b77e ----
 // Stateless A* helper: the open/closed sets used by search() are created and
 // released within each call, so construction and destruction do nothing.
 SystemPathFinder::SystemPathFinder() {}
 SystemPathFinder::~SystemPathFinder() {}
 
-
-// ---- contains_11bb54.cpp ----
 int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
     uint32_t i = 0;
     do {
@@ -23,7 +20,6 @@ int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
     } while (true);
 }
 
-// ---- search_11b968.cpp ----
 Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
     Array<Node *> *closed = new Array<Node *>;
     Array<Node *> *open = new Array<Node *>;
@@ -69,7 +65,6 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
     return 0;
 }
 
-// ---- getJumpDistance_11b780.cpp ----
 int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
                                       int to) {
     Array<int> *path = getSystemPath(systems, from, to);
@@ -83,7 +78,6 @@ int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
     return 0;
 }
 
-// ---- constructPath_11ba96.cpp ----
 Array<Node *> *SystemPathFinder::constructPath(Node *node) {
     Array<Node *> *backwards = new Array<Node *>;
     for (; node->field_0x4 != 0; node = node->field_0x4) {
@@ -105,7 +99,6 @@ Array<Node *> *SystemPathFinder::constructPath(Node *node) {
     return path;
 }
 
-// ---- getSystemPath_11b7a8.cpp ----
 Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
                                             int from, int to) {
     int start = from;

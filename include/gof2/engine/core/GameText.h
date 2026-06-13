@@ -15,7 +15,6 @@
 //   +0x10  String     fallback / region string (12 bytes)
 //   +0x1c  int        text table count
 
-
 void *operator new(__SIZE_TYPE__ size);
 void *operator new[](__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
@@ -25,7 +24,6 @@ struct GameText;
 // AbyssEngine::String -- 12-byte value type (text*, size, ...). Pass-by-value uses the
 // >8-byte struct ABI (sret / on stack), matching the target.
 namespace AbyssEngine {
-
 
     // ---- methods (converted from free functions) ----
     void ReadLangFile(unsigned int file, int count);
@@ -39,7 +37,6 @@ namespace AbyssEngine {
 typedef AbyssEngine::String String;
 
 // Field accessors via byte offset.
-
 
 class GameText {
 public:

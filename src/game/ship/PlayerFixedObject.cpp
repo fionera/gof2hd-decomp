@@ -47,37 +47,31 @@ extern "C" void *String_op_assign(void *dst, void *src);
 extern "C" void Generator_ctor(void *g);
 extern "C" void *Generator_dtor(void *g);
 
-// ---- getDockingType_154ef0.cpp ----
 int PlayerFixedObject::getDockingType() {
     PlayerFixedObject *self = this;
     return self->dockingType;
 }
 
-// ---- setBV_154016.cpp ----
 void PlayerFixedObject::setBV_arr(Array<BoundingVolume *> *bv) {
     PlayerFixedObject *self = this;
     self->boundingVolumes = bv;
 }
 
-// ---- hideShip_154f1a.cpp ----
 void PlayerFixedObject::hideShip() {
     PlayerFixedObject *self = this;
     self->shipHidden = 1;
 }
 
-// ---- getTransportID_154efc.cpp ----
 int PlayerFixedObject::getTransportID() {
     PlayerFixedObject *self = this;
     return self->transportID;
 }
 
-// ---- setDockingType_154eea.cpp ----
 void PlayerFixedObject::setDockingType(int v) {
     PlayerFixedObject *self = this;
     self->dockingType = v;
 }
 
-// ---- setPosition_153fb4.cpp ----
 typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 
 void PlayerFixedObject::setPosition_vec(const Vector &v) {
@@ -86,7 +80,6 @@ void PlayerFixedObject::setPosition_vec(const Vector &v) {
     return fn(self, v.x, v.y, v.z);
 }
 
-// ---- translate_153fd0.cpp ----
 typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 
 // Reads ship pos (signed ints at +0x178/0x17c/0x180 -> float), adds the delta Vector,
@@ -100,7 +93,6 @@ void PlayerFixedObject::translate(const Vector &d) {
     return fn(self, d.x + x, d.y + y, d.z + z);
 }
 
-// ---- getName_154f02.cpp ----
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void.
 // Returns String by value (sret r0, this r1). Copy-ctor returns void, so the
 // compiler keeps a frame + restores the sret pointer.
@@ -113,7 +105,6 @@ RetStr PlayerFixedObject::getName() {
     return r;
 }
 
-// ---- setName_154f12.cpp ----
 // Tail-call into AbyssEngine::String::operator= (or move-assign): dst = this+0x1ac, src = r1 (the String arg).
 
 void * PlayerFixedObject::setName(String *name) {
@@ -121,7 +112,6 @@ void * PlayerFixedObject::setName(String *name) {
     return ((String *)((char *)self + 0x1ac))->assign(name);
 }
 
-// ---- _PlayerFixedObject_153e14.cpp ----
 // Deleting destructor (D0): run the complete dtor (D1), then tail-call operator delete.
 // Mangled names so the demangled symbol contains "~PlayerFixedObject".
 void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self); // complete object dtor
@@ -131,13 +121,11 @@ void _ZN17PlayerFixedObjectD0Ev(PlayerFixedObject *self)
     return ::operator delete(_ZN17PlayerFixedObjectD1Ev(self));
 }
 
-// ---- setMoving_153ee4.cpp ----
 void PlayerFixedObject::setMoving(bool v) {
     PlayerFixedObject *self = this;
     self->moving = v;
 }
 
-// ---- projectCollisionOnSurface_154e16.cpp ----
 // Returns a Vector by value (sret r0, this r1, collision vector r2). The callee returns
 // the projected Vector into the same sret, so the compiler keeps a frame + call (not tail).
 V3 PlayerFixedObject::projectCollisionOnSurface(void *vec) {
@@ -154,13 +142,11 @@ V3 PlayerFixedObject::projectCollisionOnSurface(void *vec) {
     return z;
 }
 
-// ---- setTransportID_154ef6.cpp ----
 void PlayerFixedObject::setTransportID(int v) {
     PlayerFixedObject *self = this;
     self->transportID = v;
 }
 
-// ---- outerCollide_154e50.cpp ----
 // outerCollide(Vector) - Vector passed by value (r1,r2,r3). Pure tail-forward through
 // vtable slot 0x3c: ldr r12,[r0]; ldr r12,[r12,#0x3c]; bx r12.
 typedef void (*OuterCollideVecFn)(PlayerFixedObject *, Vector);
@@ -171,7 +157,6 @@ void PlayerFixedObject::outerCollide_vec(Vector v) {
     return fn(self, v);
 }
 
-// ---- getPosition_154056.cpp ----
 // PlayerFixedObject::getPosition() — integer object position (+0x178/+0x17c/+0x180)
 // promoted to a float Vector. Mirrors the sret free function above.
 V3 PlayerFixedObject::getPosition() {
@@ -179,23 +164,10 @@ V3 PlayerFixedObject::getPosition() {
     return pos;
 }
 
-// ---- update_1541e0.cpp ----
 // PlayerFixedObject::update(int dt). Large state machine on this->0x88:
 //   normal -> dying(3) -> exploding(4) -> dead(5). Heavily optimized in the target
 //   (the FPSCR shuffles in the Ghidra output are just float comparisons). This is a
 //   faithful structural translation; engine subsystems are reached via extern helpers.
-
-
-
-
-
-
-
-
-
-
-
-
 
 // PC-relative singleton holders.
 __attribute__((visibility("hidden"))) extern void **g_pfo_canvasU;   // PaintCanvas for Transform updates
@@ -204,7 +176,7 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_audioFlag; // *holder+
 __attribute__((visibility("hidden"))) extern void **g_pfo_egoA;      // PlayerEgo holder (achievements path)
 __attribute__((visibility("hidden"))) extern void **g_pfo_achievements;
 __attribute__((visibility("hidden"))) extern void **g_pfo_pcMaterial;
-__attribute__((visibility("hidden"))) extern const int g_pfo_dmgVal; // DAT_00164c90
+__attribute__((visibility("hidden"))) extern const int g_pfo_dmgVal;
 __attribute__((visibility("hidden"))) extern void **g_pfo_status;     // Status singleton holder
 
 static inline bool typeIsPirateOrE(PlayerFixedObject *self) {
@@ -568,7 +540,6 @@ afterMotion:
     *(int *)((char *)p + 0x50) = self->intPosZ;
 }
 
-// ---- setExhaustVisible_154cb0.cpp ----
 // PaintCanvas singleton holder (single pc-rel deref -> holder; object is *holder).
 __attribute__((visibility("hidden"))) extern void **g_pfo_canvas;
 
@@ -583,7 +554,6 @@ void PlayerFixedObject::setExhaustVisible(bool v) {
     }
 }
 
-// ---- collide_154d4a.cpp ----
 // collide(float,float,float): iterate the active bounding-volume array, calling each
 // volume's vtable slot +8 with (bv, x, y, z); return 1 on first hit, else 0.
 // NEAR: clang rotates the first loop as break-test (cbnz) while the target uses
@@ -616,7 +586,6 @@ int PlayerFixedObject::collide(float x, float y, float z) {
     return 0;
 }
 
-// ---- setBV_15401c.cpp ----
 // Allocate a 12-byte Array<BoundingVolume*>, default-construct, store at +0x128,
 // then forward (param_1, arr) to the bounding-volume registration thunk.
 // NEAR: clang assigns arr->r5, this->r6 (we get them swapped); allocator tie-break, not source-driven.
@@ -628,9 +597,7 @@ void PlayerFixedObject::setBV(BoundingVolume *bv) {
     return ((BoundingVolume *)(bv))->setArr((Array<BoundingVolume *> *)arr);
 }
 
-// ---- reset_153e24.cpp ----
 typedef unsigned long long uint64_t;
-
 
 typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 
@@ -684,7 +651,6 @@ void PlayerFixedObject::reset() {
     fn((char *)self + 0x150, zero);
 }
 
-// ---- setWreckedMeshId_15407c.cpp ----
 // PaintCanvas singleton holder (pc-rel deref -> holder; canvas object is *holder).
 __attribute__((visibility("hidden"))) extern void **g_pfo_canvas2;
 // Globals singleton: pc-rel deref -> holder, **holder is the Globals object.
@@ -721,7 +687,6 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     self->wreckCollision = Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
 }
 
-// ---- getProjectionVector_154dd6.cpp ----
 // Returns a Vector by value (sret r0, this r1). Picks the active bounding-volume array,
 // indexes it by the stored collision index (this+0x16c) and forwards the chosen BV.
 // NEAR: target shares one index+call across both branches (explicit join) and keeps the
@@ -744,7 +709,6 @@ V3 PlayerFixedObject::getProjectionVector() {
     return z;
 }
 
-// ---- _PlayerFixedObject_153d70.cpp ----
 // Complete object destructor (D1). Returns this. Tears down the wrecked-mesh geometry,
 // the two bounding-volume arrays, the explosion, and the name String, then tail-calls
 // the base destructor.
@@ -829,7 +793,6 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, void *player, void *g
     this->ctor(kind, param2, player, geom, p5, p6, p7, sx, sy, sz);
 }
 
-// ---- render_154cdc.cpp ----
 // Tail-call thunks selected by object state.
 extern "C" void render_thunk_state5(void *geom);   // DAT_001abdd4 thunk, arg = this->0x8
 extern "C" void render_thunk_other(void *expl);     // DAT_001ac2b4 thunk, arg = this->0x18c (Explosion*)
@@ -864,14 +827,10 @@ LAB_538:
     return render_thunk_other(expl);
 }
 
-// ---- PlayerFixedObject_153a7c.cpp ----
 typedef unsigned long long uint64_t;
 
 // PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player*, AEGeometry*, float, float, float, ...)
 // (two extra stack floats in_stack_00000004/8/c make up the spawn position passed by value).
-
-
-
 
 // PC-relative literal table holding the station-index match list (4 ints) and the
 // loot-list parameter table (4 x 8-byte pairs).
@@ -1004,7 +963,6 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     }
 }
 
-// ---- setPosition_153eec.cpp ----
 typedef void (*BVSetPosFn)(void *bv, float, float, float);
 
 // PlayerFixedObject::setPosition(float, float, float)
@@ -1041,7 +999,6 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
     }
 }
 
-// ---- setDeadButSelectable_154f24.cpp ----
 // NEAR (80.6%): structure matches, but the final Transform::SetAnimationRangeInTime call is
 // emitted as a tail-branch here while the target keeps a frame and passes the 64-bit arg on the
 // stack (push {r2,r3,...}; strd; call; pop). Calling-convention detail not reproducible from src.
@@ -1066,7 +1023,6 @@ void PlayerFixedObject::setDeadButSelectable() {
     ((AbyssEngine::Transform *)(t))->SetAnimationRangeInTime(*(long long *)((char *)t + 0xf8), 0);
 }
 
-// ---- outerCollide_154e5a.cpp ----
 // outerCollide(float,float,float): iterate the active bounding-volume array, calling each
 // volume's vtable slot +0xc with (bv, x, y, z). On the first hit, store the hit index at
 // this+0x16c and return 1; otherwise return 0.
@@ -1098,7 +1054,6 @@ int PlayerFixedObject::outerCollide(float x, float y, float z) {
     return 0;
 }
 
-// ---- moveForward_154134.cpp ----
 // NEAR (~82%): logic matches but the target carries a stack canary (it was built with the
 // guard for the on-stack Vector). Under the fixed -fstack-protector (basic, not -strong) flag,
 // clang only guards char arrays accessed as bytes; this Vector buffer (read via Vector*) is not

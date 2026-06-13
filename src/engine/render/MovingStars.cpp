@@ -5,7 +5,6 @@ using AbyssEngine::PaintCanvas;
 
 extern "C" int MovingStars_kSpawnI_value;
 
-// ---- _MovingStars_146190.cpp ----
 // MovingStars::~MovingStars() -> delete[] four arrays in order 0x0,0x4,0xc,0x10; returns this.
 MovingStars::~MovingStars()
 {
@@ -19,7 +18,6 @@ MovingStars::~MovingStars()
     pp(this, 0x10) = 0;
 }
 
-// ---- MovingStars_146050.cpp ----
 using AbyssEngine::AEMath::Matrix;
 
 // MovingStars::MovingStars()
@@ -27,13 +25,13 @@ typedef void *(*AllocFn)(int);
 
 extern "C" int MovingStars_nextIntBounded(uint32_t rng, int bound);        // AERandom::nextInt(seed,bound)
 extern "C" uint32_t MovingStars_createBillBoard(int globals, int p2, float a, float b,
-                                                float c, float d, int p7); // 0x76d74
-extern "C" void MovingStars_TransformCreate(void *canvas, uint32_t *out);  // 0x720ac
-extern "C" void MovingStars_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh); // 0x73030
-extern "C" uint32_t MovingStars_TransformGetLocal(void *canvas, uint32_t tf);             // 0x720c4
+                                                float c, float d, int p7);
+extern "C" void MovingStars_TransformCreate(void *canvas, uint32_t *out);
+extern "C" void MovingStars_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh);
+extern "C" uint32_t MovingStars_TransformGetLocal(void *canvas, uint32_t tf);
 extern "C" void MovingStars_MatrixSetTranslationFrom(void *out, const void *base,
-                                                     float x, float y, float z);           // 0x6f820
-extern "C" void MovingStars_TextureCreate(void *canvas, int id, void *flag, int b);        // 0x6fbb0
+                                                     float x, float y, float z);
+extern "C" void MovingStars_TextureCreate(void *canvas, int id, void *flag, int b);
 
 __attribute__((visibility("hidden"))) extern AllocFn g_MovingStars_alloc;
 __attribute__((visibility("hidden"))) extern int *g_MovingStars_rng_ctor;
@@ -82,7 +80,6 @@ MovingStars::MovingStars()
     u16(this, 0x14) = 0;
 }
 
-// ---- update_1461c8.cpp ----
 using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::Matrix;
 
@@ -212,18 +209,17 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
     }
 }
 
-// ---- translate_14675c.cpp ----
 using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::Matrix;
 
 // MovingStars::translate(Vector const&)
 //   for each of 50 transforms: pos = MatrixGetPosition(local); pos += v;
 //   MatrixSetTranslation(out, local, pos.x, pos.y, pos.z)
-extern "C" uint32_t MovingStars_TransformGetLocal(void *canvas, uint32_t tf);     // 0x720c4
-extern "C" void MovingStars_MatrixGetPosition(void *out, const void *m);          // 0x6f16c
-extern "C" void MovingStars_VectorAddAssign(void *self, const Vector &other);     // 0x73534
+extern "C" uint32_t MovingStars_TransformGetLocal(void *canvas, uint32_t tf);
+extern "C" void MovingStars_MatrixGetPosition(void *out, const void *m);
+extern "C" void MovingStars_VectorAddAssign(void *self, const Vector &other);
 extern "C" void MovingStars_MatrixSetTranslationFrom(void *out, const void *base,
-                                                     float x, float y, float z);  // 0x6f820
+                                                     float x, float y, float z);
 
 __attribute__((visibility("hidden"))) extern void **g_MovingStars_canvas_translate;
 
@@ -245,7 +241,6 @@ void MovingStars::translate(const Vector &v)
     }
 }
 
-// ---- render_146714.cpp ----
 using AbyssEngine::AEMath::Matrix;
 
 __attribute__((visibility("hidden"))) extern void **g_MovingStars_canvas_render;

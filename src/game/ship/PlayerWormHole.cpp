@@ -19,7 +19,6 @@ struct Player {
 #include "gof2/game/world/Station.h"
 #include "gof2/game/core/String.h"
 
-
 extern "C" void PlayerStaticFar_ctor(PlayerWormHole *self, int playerId, AEGeometry *geometry, float x, float y, float z);
 // UNRECOVERED: this AEGeometry callback is reached through a runtime ARM->Thumb
 // veneer (PlayerWormHole::setPosition at a5336 calls *(fp)(geometry)); the indirect
@@ -32,21 +31,16 @@ void *CameraGetLocal(void *canvas, int current);
 void MatrixGetPosition(void *out, void *matrix);
 void VectorNormalize(void *out, Vector *value);
 
-// ---- isShrinking_a5324.cpp ----
-
 bool PlayerWormHole::isShrinking()
 {
     return this->timer > 60000;
 }
 
-// ---- _PlayerWormHole_a5302.cpp ----
 void _ZN14PlayerWormHoleD0Ev(void *self)
 {
     ((PlayerStaticFar *)(self))->dtor();
     ::operator delete(self);
 }
-
-// ---- open_a5314.cpp ----
 
 int PlayerWormHole::open(char *, int, ...)
 {
@@ -54,8 +48,6 @@ int PlayerWormHole::open(char *, int, ...)
     this->field_0x154 = 0;
     return (int)(long)this;
 }
-
-// ---- getPosition_a57a0.cpp ----
 
 Vector PlayerWormHole::getPosition()
 {
@@ -65,9 +57,6 @@ Vector PlayerWormHole::getPosition()
     Vector result = {x, y, z};
     return result;
 }
-
-// ---- PlayerWormHole_a5254.cpp ----
-
 
 __attribute__((visibility("hidden"))) extern void **g_playerWormHole_text;
 __attribute__((visibility("hidden"))) extern char *g_playerWormHole_vtable;
@@ -89,15 +78,10 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
     this->field_0x154 = 0x1000;
 }
 
-// ---- freeMissionLock_a5378.cpp ----
-
 void PlayerWormHole::freeMissionLock()
 {
     this->missionLock = 0;
 }
-
-// ---- render_a536a.cpp ----
-
 
 void PlayerWormHole::render()
 {
@@ -105,8 +89,6 @@ void PlayerWormHole::render()
         return;
     return ((AEGeometry *)(this->geometry))->render();
 }
-
-// ---- reset_a52ec.cpp ----
 
 void PlayerWormHole::reset(bool shrinking)
 {
@@ -116,9 +98,6 @@ void PlayerWormHole::reset(bool shrinking)
     this->timer = value;
     this->field_0x154 = 0x1000;
 }
-
-// ---- setPosition_a5336.cpp ----
-
 
 void PlayerWormHole::setPosition(float x, float y, float z)
 {
@@ -131,13 +110,10 @@ void PlayerWormHole::setPosition(float x, float y, float z)
     return ((AEGeometry *)(this->geometry))->positionChanged();
 }
 
-// ---- update_a5380.cpp ----
-
 typedef int (*RandomNextIntFn)(void *random, int limit);
 typedef void (*VectorAssignFn)(Vector *dst, void *src);
 typedef void *(*GetPlayerFn)(void *level);
 typedef void (*SetPositionFn)(PlayerWormHole *self, float x, float y, float z);
-
 
 __attribute__((visibility("hidden"))) extern void **g_playerWormHole_update_canvas;
 __attribute__((visibility("hidden"))) extern void **g_playerWormHole_update_status;

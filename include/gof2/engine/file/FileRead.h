@@ -6,8 +6,6 @@ struct FileRead;
 
 namespace AbyssEngine {
 
-
-
 String operator+(const String &left, const String &right);
 
 // AERandom is fully modeled in gof2/AERandom.h. When that header is also included
@@ -23,10 +21,6 @@ class AERandom;
 
 namespace AEMath {
 
-
-
-
-
 void MatrixSetRotation(Matrix *out, Matrix *matrix, float x, float y, float z, int32_t order);
 void MatrixGetDir(Vector *out, Matrix *matrix);
 
@@ -36,8 +30,6 @@ void MatrixGetDir(Vector *out, Matrix *matrix);
 using String = AbyssEngine::String;
 using Vector = AbyssEngine::AEMath::Vector;
 using Matrix = AbyssEngine::AEMath::Matrix;
-
-
 
 struct Station {
     uint8_t storage[0x34];

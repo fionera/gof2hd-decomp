@@ -1,10 +1,6 @@
 #include "gof2/game/mission/PendingProduct.h"
 #include "gof2/game/mission/BluePrint.h"
 
-
-
-
-// ---- _PendingProduct_12d480.cpp ----
 // PendingProduct::~PendingProduct() -> destroys the embedded String subobject.
 // (Tail-call to the String destructor; PendingProduct adds no other owned members.)
 void PendingProduct::dtor() {
@@ -12,7 +8,6 @@ void PendingProduct::dtor() {
     self->stationName.~String();
 }
 
-// ---- PendingProduct_12d448.cpp ----
 // PendingProduct::PendingProduct(int blueprintIndex, String stationName, int stationIndex, int quantity)
 PendingProduct * PendingProduct::ctor_fields(int blueprintIndex, const String *stationName, int stationIndex, int quantity) {
     PendingProduct *self = this;
@@ -25,7 +20,6 @@ PendingProduct * PendingProduct::ctor_fields(int blueprintIndex, const String *s
     return self;
 }
 
-// ---- PendingProduct_12d3c8.cpp ----
 // PendingProduct::PendingProduct(BluePrint*)
 PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
     PendingProduct *self = this;
@@ -43,7 +37,6 @@ PendingProduct * PendingProduct::ctor_BluePrint(BluePrint *bp) {
 
     self->stationIndex = ((BluePrint *)(bp))->getStationIndex();
     self->quantity = ((BluePrint *)(bp))->getQuantity();
-
 
     return self;
 }

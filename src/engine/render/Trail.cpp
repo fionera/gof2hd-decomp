@@ -1,10 +1,8 @@
 #include "gof2/engine/render/Trail.h"
 
-
 extern "C" void Trail_MatrixSetTranslation(void *out, Matrix *matrix, float x, float y, float z);
 extern "C" void Trail_MatrixTransformVector(Vector *out, const Matrix *matrix, const Vector *vector);
 
-// ---- update_15c1fc.cpp ----
 using AbyssEngine::AEMath::Vector;
 
 void Trail::update(const Vector &a, const Vector &b)
@@ -12,13 +10,11 @@ void Trail::update(const Vector &a, const Vector &b)
     return update(a.x, a.y, a.z, b.x, b.y, b.z);
 }
 
-// ---- render_15c36c.cpp ----
 void Trail::render()
 {
     return Trail_renderTransform(*gTrailCanvasRender, u32(this, 0x14), 0);
 }
 
-// ---- translate_15c308.cpp ----
 using AbyssEngine::AEMath::Vector;
 
 void Trail::translate(const Vector &delta)
@@ -38,7 +34,6 @@ void Trail::translate(const Vector &delta)
     }
 }
 
-// ---- _Trail_15bf8c.cpp ----
 Trail::~Trail()
 {
     void *first = ptr(this, 0x18);
@@ -54,9 +49,7 @@ Trail::~Trail()
     ptr(this, 0x1c) = 0;
 }
 
-// ---- update_15bfac.cpp ----
 using AbyssEngine::AEMath::Matrix;
-
 
 void Trail::update(float ax, float ay, float az, float bx, float by, float bz)
 {
@@ -121,7 +114,6 @@ void Trail::update(float ax, float ay, float az, float bx, float by, float bz)
     Trail_MatrixSetTranslation(matrixStorage, local, ax, ay, az);
 }
 
-// ---- Trail_15bd58.cpp ----
 Trail::Trail(int type, int segments)
 {
     u32(this, 0x00) = 0;
@@ -178,10 +170,8 @@ Trail::Trail(int type, int segments)
     changeType(type);
 }
 
-// ---- update_15c228.cpp ----
 using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
-
 
 void Trail::update(const Matrix &a, const Matrix &b, const Vector &v)
 {
@@ -196,7 +186,6 @@ void Trail::update(const Matrix &a, const Matrix &b, const Vector &v)
            ((Vector *)(void *)storage)->z);
 }
 
-// ---- setWidth_15c184.cpp ----
 void Trail::setWidth(int width)
 {
     int oldWidth = i32(this, 0x0c);
@@ -219,7 +208,6 @@ void Trail::setWidth(int width)
     i32(this, 0x0c) = width;
 }
 
-// ---- changeType_15bef4.cpp ----
 void Trail::changeType(int type)
 {
     switch (type) {
@@ -243,7 +231,6 @@ void Trail::changeType(int type)
     }
 }
 
-// ---- reset_15c290.cpp ----
 using AbyssEngine::AEMath::Vector;
 
 void Trail::reset(Vector value)

@@ -1,9 +1,5 @@
 #include "gof2/engine/core/KeyFrame.h"
 
-
-
-
-// ---- KeyFrame_75934.cpp ----
 namespace AbyssEngine {
 
 // AbyssEngine::KeyFrame::KeyFrame()

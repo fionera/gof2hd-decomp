@@ -2,7 +2,6 @@
 #include "gof2/engine/render/ShaderBaseStruct.h"
 #include "gof2/game/core/String.h"
 
-
 extern "C" void glDisableVertexAttribArray(unsigned int index);
 extern "C" void glUseProgram(unsigned int program);
 extern "C" void glUniform1i(int location, int value);
@@ -19,7 +18,6 @@ extern "C" void glEnableVertexAttribArray(unsigned int index);
 extern "C" __attribute__((visibility("hidden"))) BindBuffer *glBindBuffer_ptr;
 extern "C" __attribute__((visibility("hidden"))) VertexAttribPointer *glVertexAttribPointer_ptr;
 
-// ---- SetInActive_9032c.cpp ----
 void VertexColorShader_SetInActive(AbyssEngine::VertexColorShader *self)
 {
     if (ae_i32(self, 0x20) >= 0) {
@@ -42,7 +40,6 @@ void VertexColorShader_SetInActive(AbyssEngine::VertexColorShader *self)
     }
 }
 
-// ---- Init_901fc.cpp ----
 void VertexColorShader_Init(AbyssEngine::VertexColorShader *self)
 {
     unsigned int program = ((AbyssEngine::ShaderBaseStruct *)(self))->ES2LoadProgram("vtx_color_vs", "vtx_color_fs");
@@ -70,7 +67,6 @@ void VertexColorShader_Init(AbyssEngine::VertexColorShader *self)
     return glUniform1i(ae_i32(self, 0x48), 0);
 }
 
-// ---- VertexColorShader_90170.cpp ----
 namespace AbyssEngine {
 
 VertexColorShader::VertexColorShader()
@@ -88,7 +84,6 @@ VertexColorShader::VertexColorShader()
 
 } // namespace AbyssEngine
 
-// ---- _VertexColorShader_905b8.cpp ----
 namespace AbyssEngine {
 
 VertexColorShader::~VertexColorShader()
@@ -98,10 +93,8 @@ VertexColorShader::~VertexColorShader()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_90374.cpp ----
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type, bool normalized,
                                       int stride, const void *pointer);
-
 
 void VertexColorShader_UpdateMeshData(AbyssEngine::VertexColorShader *self,
                                                   AbyssEngine::Mesh *mesh,

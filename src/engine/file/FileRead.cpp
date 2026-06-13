@@ -1,14 +1,11 @@
 #include "gof2/engine/file/FileRead.h"
 
-
 // ---- FileRead_11f944 / ~FileRead_11f946 ----
 // FileRead carries no state of its own (every loadXxx() opens, reads and closes
 // its file locally), so both the constructor and destructor have empty bodies.
 FileRead::FileRead() {}
 FileRead::~FileRead() {}
 
-
-// ---- loadStation_11f948.cpp ----
 __attribute__((minsize))
 int32_t FileRead::loadStation(int32_t id)
 {
@@ -20,7 +17,6 @@ int32_t FileRead::loadStation(int32_t id)
     return result;
 }
 
-// ---- loadStationsBinary_1206b0.cpp ----
 __attribute__((minsize))
 int32_t FileRead::loadStationsBinary()
 {
@@ -56,7 +52,6 @@ int32_t FileRead::loadStationsBinary()
     return 0;
 }
 
-// ---- loadWeaponPositions_1212e4.cpp ----
 __attribute__((minsize))
 Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id)
 {
@@ -126,7 +121,6 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id)
     return positions;
 }
 
-// ---- loadSpacePoints_121550.cpp ----
 __attribute__((minsize))
 Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group)
 {
@@ -225,7 +219,6 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group)
     return points;
 }
 
-// ---- loadSystemsBinary_1207e0.cpp ----
 __attribute__((minsize))
 Array<SolarSystem *> *FileRead::loadSystemsBinary()
 {
@@ -318,7 +311,6 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary()
     return systems;
 }
 
-// ---- loadWanted_120490.cpp ----
 __attribute__((minsize))
 Array<Wanted *> *FileRead::loadWanted()
 {
@@ -390,7 +382,6 @@ Array<Wanted *> *FileRead::loadWanted()
     return wanted;
 }
 
-// ---- loadTicker_121144.cpp ----
 __attribute__((minsize))
 Array<NewsItem *> *FileRead::loadTicker()
 {
@@ -435,7 +426,6 @@ Array<NewsItem *> *FileRead::loadTicker()
     return items;
 }
 
-// ---- loadStationsBinary_11f970.cpp ----
 __attribute__((minsize))
 Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count)
 {
@@ -479,7 +469,6 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count)
     return stations;
 }
 
-// ---- loadNamesBinary_120dd0.cpp ----
 extern AbyssEngine::AERandom *gNameRandomA;
 extern AbyssEngine::AERandom *gNameRandomB;
 
@@ -626,7 +615,6 @@ done:
     return names;
 }
 
-// ---- loadStationsBinary_12014c.cpp ----
 __attribute__((minsize))
 Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system)
 {
@@ -675,7 +663,6 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system)
     return stations;
 }
 
-// ---- loadAgents_1202b8.cpp ----
 __attribute__((minsize))
 Array<Agent *> *FileRead::loadAgents()
 {
@@ -740,7 +727,6 @@ Array<Agent *> *FileRead::loadAgents()
     return agents;
 }
 
-// ---- loadWreckCollision_11fd78.cpp ----
 __attribute__((minsize))
 Array<int32_t> *FileRead::loadWreckCollision(int32_t id)
 {
@@ -781,7 +767,6 @@ Array<int32_t> *FileRead::loadWreckCollision(int32_t id)
     return result;
 }
 
-// ---- loadStationCollision_11fc5c.cpp ----
 __attribute__((minsize))
 Array<int32_t> *FileRead::loadStationCollision(int32_t id)
 {
@@ -822,7 +807,6 @@ Array<int32_t> *FileRead::loadStationCollision(int32_t id)
     return result;
 }
 
-// ---- loadStaticCollision_11fe94.cpp ----
 __attribute__((minsize))
 Array<int32_t> *FileRead::loadStaticCollision(int32_t id)
 {
@@ -863,7 +847,6 @@ Array<int32_t> *FileRead::loadStaticCollision(int32_t id)
     return result;
 }
 
-// ---- loadStationParts_11ffb0.cpp ----
 __attribute__((minsize))
 Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special)
 {
@@ -930,7 +913,6 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special)
     return parts;
 }
 
-// ---- loadShipParts_11fad0.cpp ----
 __attribute__((minsize))
 Array<int32_t> *FileRead::loadShipParts(int32_t id)
 {
@@ -990,7 +972,6 @@ Array<int32_t> *FileRead::loadShipParts(int32_t id)
     return parts;
 }
 
-// ---- loadItemsBinary_120afc.cpp ----
 __attribute__((minsize))
 Array<Item *> *FileRead::loadItemsBinary()
 {
@@ -1057,7 +1038,6 @@ Array<Item *> *FileRead::loadItemsBinary()
     return items;
 }
 
-// ---- loadShipsBinary_120ca8.cpp ----
 __attribute__((minsize))
 Array<Ship *> *FileRead::loadShipsBinary()
 {

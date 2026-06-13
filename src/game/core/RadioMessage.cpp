@@ -1,21 +1,15 @@
 #include "gof2/game/core/RadioMessage.h"
 
-
-
-
-// ---- finish_151682.cpp ----
 void RadioMessage::finish()
 {
     field<uint8_t>(this, 0x21) = 1;
 }
 
-// ---- isOver_15167c.cpp ----
 uint8_t RadioMessage::isOver()
 {
     return field<uint8_t>(this, 0x21);
 }
 
-// ---- reset_1515bc.cpp ----
 void RadioMessage::reset()
 {
     volatile int *timer = &field<int>(this, 0x24);
@@ -24,7 +18,6 @@ void RadioMessage::reset()
     *flags = 0;
 }
 
-// ---- RadioMessage_1515c4.cpp ----
 RadioMessage::RadioMessage(int param_1, int param_2, int param_3, int param_4, int param_5)
 {
     field<int>(this, 0x1c) = 0;
@@ -49,13 +42,11 @@ RadioMessage::RadioMessage(int param_1, int param_2, int param_3, int param_4, i
     *timer = 0;
 }
 
-// ---- trigger_15168a.cpp ----
 void RadioMessage::trigger()
 {
     field<uint8_t>(this, 0x20) = 1;
 }
 
-// ---- RadioMessage_15162a.cpp ----
 RadioMessage::RadioMessage(int param_1, int param_2, Objective *param_3)
 {
     field<int>(this, 0x1c) = 0;
@@ -68,13 +59,11 @@ RadioMessage::RadioMessage(int param_1, int param_2, Objective *param_3)
     field<int>(this, 0x24) = 0;
 }
 
-// ---- isTriggered_151676.cpp ----
 uint8_t RadioMessage::isTriggered()
 {
     return field<uint8_t>(this, 0x20);
 }
 
-// ---- _RadioMessage_151650.cpp ----
 RadioMessage::~RadioMessage()
 {
     void *values = field<void *>(this, 0x1c);
@@ -84,7 +73,6 @@ RadioMessage::~RadioMessage()
     field<void *>(this, 0x1c) = 0;
 }
 
-// ---- triggered_151694.cpp ----
 #define ALWAYS_INLINE __attribute__((always_inline)) inline
 
 static ALWAYS_INLINE Radio *radio(RadioMessage *self)
@@ -445,7 +433,6 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
     return clear_result(this);
 }
 
-// ---- RadioMessage_15158c.cpp ----
 RadioMessage::RadioMessage(int param_1, int param_2, int param_3, int param_4)
 {
     field<int>(this, 0x1c) = 0;

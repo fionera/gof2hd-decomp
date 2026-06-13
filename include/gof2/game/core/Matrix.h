@@ -9,13 +9,8 @@
 // embedded AEMath::Vector at +0x30. The 4th column (0x0c, 0x1c, 0x2c) is translation.
 // Field offsets recovered from the target disassembly; accessed via byte-offset casts.
 
-
 namespace AbyssEngine {
 namespace AEMath {
-
-
-
-
 
 } // namespace AEMath
 } // namespace AbyssEngine

@@ -8,7 +8,6 @@ static inline uint8_t &eng_u8(void *self, uint32_t offset) { return *(uint8_t *)
 static inline float &eng_f32(void *self, uint32_t offset) { return *(float *)((char *)self + offset); }
 static inline void *eng_ptr(void *self, uint32_t offset) { return *(void **)((char *)self + offset); }
 
-// ---- Init_91b6c.cpp ----
 namespace AbyssEngine {
 
 void VertexColorAlphaTextureShader::Init(Engine *)
@@ -39,7 +38,6 @@ void VertexColorAlphaTextureShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_91ce4.cpp ----
 namespace AbyssEngine {
 
 void VertexColorAlphaTextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -114,7 +112,6 @@ void VertexColorAlphaTextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_91c9c.cpp ----
 namespace AbyssEngine {
 
 void VertexColorAlphaTextureShader::SetInActive()
@@ -142,7 +139,6 @@ void VertexColorAlphaTextureShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- _VertexColorAlphaTextureShader_91f28.cpp ----
 void _ZN11AbyssEngine29VertexColorAlphaTextureShaderD0Ev(
     AbyssEngine::VertexColorAlphaTextureShader *self)
 {
@@ -151,7 +147,6 @@ void _ZN11AbyssEngine29VertexColorAlphaTextureShaderD0Ev(
     operator delete(base);
 }
 
-// ---- VertexColorAlphaTextureShader_91ae0.cpp ----
 namespace AbyssEngine {
 
 // Global shader-index counter copied into a destination slot during construction.

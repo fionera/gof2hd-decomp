@@ -3,9 +3,6 @@
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/ship/Ship.h"
 
-
-
-// ---- hasMedal_157008.cpp ----
 uint8_t Achievements::hasMedal(int index, int value) {
     Achievements *self = this;
     return self->medals[index] == value;
@@ -21,8 +18,6 @@ int *Achievements::getNewMedals() {
     return this->newMedals;
 }
 
-// ---- _Achievements_1568f2.cpp ----
-
 // Achievements::~Achievements() — delete[] the two arrays (with null checks),
 // zeroing each pointer.
 Achievements::~Achievements()
@@ -35,38 +30,32 @@ Achievements::~Achievements()
     this->newMedals = 0;
 }
 
-// ---- gotAllSupernovaMedals_156ed2.cpp ----
 uint8_t Achievements::gotAllSupernovaMedals() {
     Achievements *self = this;
     return self->field_0x22;
 }
 
-// ---- gotAllMedals_156ec6.cpp ----
 uint8_t Achievements::gotAllMedals() {
     Achievements *self = this;
     return self->field_0x20;
 }
 
-// ---- updateCredits_156f0a.cpp ----
 void Achievements::updateCredits(int value) {
     Achievements *self = this;
     if (self->credits < value)
         self->credits = value;
 }
 
-// ---- setMedal_156f4c.cpp ----
 void Achievements::setMedal(int index, int value) {
     Achievements *self = this;
     self->medals[index] = value;
 }
 
-// ---- incPirateKills_156eec.cpp ----
 void Achievements::incPirateKills() {
     Achievements *self = this;
     self->pirateKills += 1;
 }
 
-// ---- init_156f54.cpp ----
 int Achievements::init() {
     Achievements *self = this;
     int *medals = self->medals;
@@ -87,13 +76,10 @@ int Achievements::init() {
     return (int)(intptr_t)((char *)self + 0x8);
 }
 
-// ---- isEliteMedal_157034.cpp ----
 uint8_t Achievements::isEliteMedal(int index) {
     Achievements *self = this;
     return index > 0x23;
 }
-
-// ---- Achievements_1568d0.cpp ----
 
 // Achievements::Achievements() — allocates two 45-int (0xb4) arrays.
 Achievements::Achievements()
@@ -104,7 +90,6 @@ Achievements::Achievements()
     this->field_0x20 = 0;
 }
 
-// ---- resetNewMedals_156f8e.cpp ----
 void Achievements::resetNewMedals() {
     Achievements *self = this;
     int *newMedals = self->newMedals;
@@ -118,19 +103,16 @@ void Achievements::resetNewMedals() {
     self->field_0x14 = 0;
 }
 
-// ---- incCatches_156efe.cpp ----
 void Achievements::incCatches() {
     Achievements *self = this;
     self->catches += 1;
 }
 
-// ---- incKills_156ee0.cpp ----
 void Achievements::incKills() {
     Achievements *self = this;
     self->kills += 1;
 }
 
-// ---- getValue_157018.cpp ----
 // Static medal-threshold table embedded in the binary, addressed PC-relative.
 // getValue returns table[index*3 + sub - 1].
 extern const int gAchievementValues[] __attribute__((visibility("hidden")));
@@ -142,19 +124,16 @@ int Achievements::getValue(int index, int sub) {
     return row[sub - 1];
 }
 
-// ---- resetPirateKills_156ef8.cpp ----
 void Achievements::resetPirateKills() {
     Achievements *self = this;
     self->pirateKills = 0;
 }
 
-// ---- gotAllGoldMedals_156ecc.cpp ----
 uint8_t Achievements::gotAllGoldMedals() {
     Achievements *self = this;
     return self->field_0x21;
 }
 
-// ---- countMedals_156e48.cpp ----
 void Achievements::countMedals() {
     Achievements *self = this;
     int *medals = self->medals;
@@ -186,7 +165,6 @@ void Achievements::countMedals() {
     self->field_0x20 = (total == 0x24);
 }
 
-// ---- checkForNewMedal_156914.cpp ----
 // NEAR / RESISTANT: Achievements::checkForNewMedal(PlayerEgo*) is a ~922-byte function
 // driven by a 44-entry `tbh` jump table (one case per medal kind), with 64-bit SBORROW
 // arithmetic, many PC-relative global derefs and cross-class calls (Status/PlayerEgo/
@@ -196,7 +174,6 @@ void Achievements::countMedals() {
 // newMedals array) is modelled below.
 
 struct PlayerEgo;
-
 
 // pc-rel base for the per-medal requirement table (index*0xc + sub*4).
 extern const int gCFN_req[] __attribute__((visibility("hidden")));
@@ -227,7 +204,6 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
     }
 }
 
-// ---- applyNewMedals_156fb0.cpp ----
 // Trailing tail-call through a global callback (resolved PC-relative in the target).
 
 void Achievements::applyNewMedals() {
@@ -256,11 +232,9 @@ void Achievements::applyNewMedals() {
     }
 }
 
-// ---- initCheckEquipmentAndWeapons_156da4.cpp ----
 struct Status;
 struct Ship;
 struct Item;
-
 
 // Status singleton holder: pc-rel -> holder; *holder is the Status object.
 extern void *const gAchStatusHolder __attribute__((visibility("hidden")));
@@ -294,7 +268,6 @@ void Achievements::initCheckEquipmentAndWeapons() {
     self->hasTurretAndWeapon = result;
 }
 
-// ---- setMedals_156f14.cpp ----
 void Achievements::setMedals(int *src, int count) {
     Achievements *self = this;
     int i = 0;

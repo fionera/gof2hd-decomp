@@ -27,7 +27,6 @@ namespace AbyssEngine { namespace AEMath {
 // the decompiler are method calls on this global instance.
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
-
 extern "C" void Player_damageHull_tail();
 extern "C" void Player_removeAllGuns_releaseClasses(void *array);
 extern "C" void *Player_removeAllGuns_dtor(void *array);
@@ -86,7 +85,6 @@ extern "C" void Player_setMaxArmorHP_tail();
 extern "C" void Player_StopEngineSound(Player *self);
 extern "C" void FloatVectorMax(void *out, float a, float b, int c, int d);
 
-// ---- pitchAllPrimaryGuns_a433a.cpp ----
 void Player::pitchAllPrimaryGuns(float pitch) {
     Player *self = this;
     if (self->guns != 0) {
@@ -100,19 +98,16 @@ void Player::pitchAllPrimaryGuns(float pitch) {
     }
 }
 
-// ---- isAlwaysEnemy_a2a2e.cpp ----
 unsigned char Player::isAlwaysEnemy() {
     Player *self = this;
     return self->alwaysEnemy;
 }
 
-// ---- setKIPlayer_a2a64.cpp ----
 void Player::setKIPlayer(KIPlayer *value) {
     Player *self = this;
     self->kiPlayer = value;
 }
 
-// ---- damageHull_a2ec6.cpp ----
 void Player::damageHull(int damage) {
     Player *self = this;
     if (!self->vulnerable) {
@@ -137,31 +132,26 @@ void Player::damageHull(int damage) {
     return Player_damageHull_tail();
 }
 
-// ---- getEnemies_a2cd2.cpp ----
 extern "C" Array<Player *> *Player_getEnemies(Player *self)
 {
     return self->enemies;
 }
 
-// ---- getShieldDamageRate_a2e82.cpp ----
 int Player::getShieldDamageRate() {
     Player *self = this;
     return self->shieldDamageRate;
 }
 
-// ---- replaceGuns_a4360.cpp ----
 int Player::replaceGuns(int a, int b, int c, int d, int e, bool f) {
     Player *self = this;
     return a;
 }
 
-// ---- getShieldHP_a2da2.cpp ----
 int Player::getShieldHP() {
     Player *self = this;
     return (int)self->shieldHP;
 }
 
-// ---- removeAllGuns_a3986.cpp ----
 void Player::removeAllGuns() {
     Player *self = this;
     if (self->guns != 0) {
@@ -173,25 +163,21 @@ void Player::removeAllGuns() {
     self->guns = 0;
 }
 
-// ---- getArmorDamageRate_a2e88.cpp ----
 int Player::getArmorDamageRate() {
     Player *self = this;
     return self->armorDamageRate;
 }
 
-// ---- getArmorHP_a2dd6.cpp ----
 int Player::getArmorHP() {
     Player *self = this;
     return self->armorHP;
 }
 
-// ---- setRadius_a2a60.cpp ----
 void Player::setRadius(int value) {
     Player *self = this;
     self->radius = value;
 }
 
-// ---- resetDamageDoneByPlayer_a2f96.cpp ----
 void Player::resetDamageDoneByPlayer() {
     Player *self = this;
     self->field_dc = 0;
@@ -199,43 +185,36 @@ void Player::resetDamageDoneByPlayer() {
     self->turnedEnemy = 0;
 }
 
-// ---- getKIPlayer_a2a6a.cpp ----
 KIPlayer * Player::getKIPlayer() {
     Player *self = this;
     return self->kiPlayer;
 }
 
-// ---- isDead_a36ce.cpp ----
 bool Player::isDead() {
     Player *self = this;
     return self->hitpoints < 1;
 }
 
-// ---- getRadius_a2ce0.cpp ----
 int Player::getRadius() {
     Player *self = this;
     return self->radius;
 }
 
-// ---- getEmpDamageRate_a2e7c.cpp ----
 int Player::getEmpDamageRate() {
     Player *self = this;
     return self->empDamageRate;
 }
 
-// ---- isAlwaysFriend_a2a28.cpp ----
 unsigned char Player::isAlwaysFriend() {
     Player *self = this;
     return self->alwaysFriend;
 }
 
-// ---- getHitpoints_a2e6c.cpp ----
 int Player::getHitpoints() {
     Player *self = this;
     return self->hitpoints;
 }
 
-// ---- damageShield_a2f10.cpp ----
 void Player::damageShield(int damage) {
     Player *self = this;
     if (!self->vulnerable) {
@@ -260,7 +239,6 @@ void Player::damageShield(int damage) {
     return Player_damageShield_tail();
 }
 
-// ---- regenerateArmor_a2e44.cpp ----
 void Player::regenerateArmor() {
     Player *self = this;
     int v = self->armorHP + 2;
@@ -271,7 +249,6 @@ void Player::regenerateArmor() {
     return Player_regenerateArmor_tail();
 }
 
-// ---- damageShip_a2f04.cpp ----
 void Player::damageShip(int damage) {
     Player *self = this;
     int v = self->hitpoints - damage;
@@ -279,43 +256,36 @@ void Player::damageShip(int damage) {
     self->hitpoints = v;
 }
 
-// ---- getMaxHitpoints_a2e70.cpp ----
 int Player::getMaxHitpoints() {
     Player *self = this;
     return self->maxHitpoints;
 }
 
-// ---- getGammaHP_a2de2.cpp ----
 int Player::getGammaHP() {
     Player *self = this;
     return (int)self->gammaHP;
 }
 
-// ---- getBombForce_a2ea6.cpp ----
 float Player::getBombForce() {
     Player *self = this;
     return self->bombForce;
 }
 
-// ---- getMaxArmorHP_a2ddc.cpp ----
 int Player::getMaxArmorHP() {
     Player *self = this;
     return self->maxArmorHP;
 }
 
-// ---- getEnemy_a2cd6.cpp ----
 Player * Player::getEnemy(int index) {
     Player *self = this;
     return self->enemies->data()[index];
 }
 
-// ---- turnEnemy_a36a4.cpp ----
 void Player::turnEnemy() {
     Player *self = this;
     self->turnedEnemy = 1;
 }
 
-// ---- setEmpData_a2a34.cpp ----
 void Player::setEmpData(int points, int data) {
     Player *self = this;
     self->empPoints = points;
@@ -326,13 +296,11 @@ void Player::setEmpData(int points, int data) {
     self->empData = data;
 }
 
-// ---- setVulnerable_a2e8e.cpp ----
 void Player::setVulnerable(bool value) {
     Player *self = this;
     self->vulnerable = value;
 }
 
-// ---- setActive_a36e0.cpp ----
 void Player::setActive(bool value) {
     Player *self = this;
     self->active = value;
@@ -354,7 +322,6 @@ void Player::setDead() {
     setActive(false);
 }
 
-// ---- isAsteroid_a29cc.cpp ----
 bool Player::isAsteroid() {
     Player *self = this;
     KIPlayer *ki = self->kiPlayer;
@@ -365,7 +332,6 @@ bool Player::isAsteroid() {
     return result;
 }
 
-// ---- updateDamageRate_a2730.cpp ----
 void Player::updateDamageRate() {
     Player *self = this;
     float maxHp = (float)self->maxHitpoints;
@@ -386,13 +352,11 @@ void Player::updateDamageRate() {
     self->empDamageRate = (int)empRate;
 }
 
-// ---- setBombForce_a2e9a.cpp ----
 void Player::setBombForce(float value) {
     Player *self = this;
     self->bombForce = value;
 }
 
-// ---- setMaxHitpoints_a2d6c.cpp ----
 void Player::setMaxHitpoints(int value) {
     Player *self = this;
     self->maxHitpoints = value;
@@ -400,19 +364,16 @@ void Player::setMaxHitpoints(int value) {
     return Player_setMaxHitpoints_tail();
 }
 
-// ---- getGunRegenRate_a2ec2.cpp ----
 int Player::getGunRegenRate() {
     Player *self = this;
     return 0;
 }
 
-// ---- getMaxEmpPoints_a2d96.cpp ----
 int Player::getMaxEmpPoints() {
     Player *self = this;
     return self->maxEmpPoints;
 }
 
-// ---- regenerateShield_a2df0.cpp ----
 void Player::regenerateShield(float amount) {
     Player *self = this;
     float f = self->shieldHP + amount;
@@ -424,76 +385,63 @@ void Player::regenerateShield(float amount) {
     return Player_regenerateShield_tail();
 }
 
-// ---- doesNeverAttack_a29fe.cpp ----
 unsigned char Player::doesNeverAttack() {
     Player *self = this;
     return self->neverAttack;
 }
 
-// ---- getMaxShieldHP_a2d9c.cpp ----
 int Player::getMaxShieldHP() {
     Player *self = this;
     return self->maxShieldHP;
 }
 
-// ---- isDamaged_a36da.cpp ----
 unsigned char Player::isDamaged() {
     Player *self = this;
     return self->damaged;
 }
 
-// ---- isActive_a36e6.cpp ----
 unsigned char Player::isActive() {
     Player *self = this;
     return self->active;
 }
 
-// ---- shoot_a3f30.cpp ----
 // Duplicate of Player::shoot(int,int,long long,bool); the canonical definition (using
 // Player_shoot_full2 and the 'b' argument) lives further below. Removed to avoid a
 // redefinition; the leftover here also dropped 'b' and wrongly returned a value.
 
-// ---- getEmpPoints_a2d92.cpp ----
 int Player::getEmpPoints() {
     Player *self = this;
     return self->empPoints;
 }
 
-// ---- GetEngineEvent_a4108.cpp ----
 int Player::GetEngineEvent() {
     Player *self = this;
     return (int)(__INTPTR_TYPE__)self->engineEvent;
 }
 
-// ---- setEmpForce_a2ea0.cpp ----
 void Player::setEmpForce(float value) {
     Player *self = this;
     self->empForce = value;
 }
 
-// ---- setShootingEnabled_a29c6.cpp ----
 void Player::setShootingEnabled(bool value) {
     Player *self = this;
     self->shootingEnabled = value;
 }
 
-// ---- getDamageRate_a2e76.cpp ----
 int Player::getDamageRate() {
     Player *self = this;
     return self->damageRate;
 }
 
-// ---- getEmpForce_a2eac.cpp ----
 float Player::getEmpForce() {
     Player *self = this;
     return self->empForce;
 }
 
-// ---- turnedEnemy_a369e.cpp ----
 // Accessor lives as the non-member inline Player_turnedEnemy() in Player.h, because a
 // member of this name would collide with the 'turnedEnemy' data member (field 0xe0).
 
-// ---- gunAvailable_a36ac.cpp ----
 bool Player::gunAvailable(unsigned int slot) {
     Player *self = this;
     if (slot < 4) {
@@ -505,13 +453,11 @@ bool Player::gunAvailable(unsigned int slot) {
     return false;
 }
 
-// ---- getCombinedHP_a2db0.cpp ----
 int Player::getCombinedHP() {
     Player *self = this;
     return (int)(self->shieldHP + (float)self->armorHP + (float)self->hitpoints);
 }
 
-// ---- isGasCloud_a29e2.cpp ----
 bool Player::isGasCloud() {
     Player *self = this;
     KIPlayer *ki = self->kiPlayer;
@@ -522,7 +468,6 @@ bool Player::isGasCloud() {
     return result;
 }
 
-// ---- setArmorHP_a2d1c.cpp ----
 void Player::setArmorHP(int value) {
     Player *self = this;
     if (self->maxArmorHP < value) {
@@ -532,7 +477,6 @@ void Player::setArmorHP(int value) {
     return Player_setArmorHP_tail();
 }
 
-// ---- setHitpoints_a2ce4.cpp ----
 void Player::setHitpoints(int value) {
     Player *self = this;
     self->hitpoints = value;
@@ -542,13 +486,11 @@ void Player::setHitpoints(int value) {
     return Player_setHitpoints_tail();
 }
 
-// ---- setNeverAttack_a29f8.cpp ----
 void Player::setNeverAttack(bool value) {
     Player *self = this;
     self->neverAttack = value;
 }
 
-// ---- setMaxShieldHP_a2d76.cpp ----
 void Player::setMaxShieldHP(int value) {
     Player *self = this;
     self->maxShieldHP = value;
@@ -556,7 +498,6 @@ void Player::setMaxShieldHP(int value) {
     return Player_setMaxShieldHP_tail();
 }
 
-// ---- setMaxEmpPoints_a2d64.cpp ----
 void Player::setMaxEmpPoints(int value) {
     Player *self = this;
     self->empPoints = value;
@@ -564,13 +505,11 @@ void Player::setMaxEmpPoints(int value) {
     return Player_setMaxEmpPoints_tail();
 }
 
-// ---- getGunSlots_a39a6.cpp ----
 int Player::getGunSlots() {
     Player *self = this;
     return 3;
 }
 
-// ---- getHitVector_a2eb2.cpp ----
 // Local POD for the returned 3-float hit vector (packed as a double xy + float z).
 // Named HitVec3 to avoid colliding with PlayerEgo.h's `typedef Vector Vec3`.
 struct HitVec3 {
@@ -585,14 +524,12 @@ void Player::getHitVector(Vector *out) {
     *(double *)&out->x = xy;
 }
 
-// ---- setPlayShootSound_a2a56.cpp ----
 void Player::setPlayShootSound(bool play, int id) {
     Player *self = this;
     self->playShootSound = play;
     self->playShootSoundId = id;
 }
 
-// ---- regenerateShield_a2e1a.cpp ----
 void Player::regenerateShield() {
     Player *self = this;
     float f = self->shieldHP + 1.0f;
@@ -604,7 +541,6 @@ void Player::regenerateShield() {
     return Player_regenerateShield_tail();
 }
 
-// ---- heal_a42dc.cpp ----
 void Player::heal(float amount) {
     Player *self = this;
     float f = self->field_110 + amount;
@@ -618,7 +554,6 @@ void Player::heal(float amount) {
     }
 }
 
-// ---- setShieldHP_a2cf6.cpp ----
 void Player::setShieldHP(int value) {
     Player *self = this;
     float maxF = (float)self->maxShieldHP;
@@ -629,7 +564,6 @@ void Player::setShieldHP(int value) {
     return Player_setShieldHP_tail();
 }
 
-// ---- refillGunDelay_a39dc.cpp ----
 void Player::refillGunDelay(int slot) {
     Player *self = this;
     Array<Array<Gun *> *> *guns = self->guns;
@@ -644,9 +578,6 @@ void Player::refillGunDelay(int slot) {
         }
     }
 }
-
-// ---- addEnemies_a2be2.cpp ----
-
 
 void Player::addEnemies(Array<Player *> *enemies) {
     Player *self = this;
@@ -665,10 +596,6 @@ void Player::addEnemies(Array<Player *> *enemies) {
     Array_Player_dtor(tmp);
     return Player_operator_delete_tail(tmp);
 }
-
-// ---- Player_a2570.cpp ----
-
-
 
 Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player *self = this;
@@ -761,13 +688,11 @@ Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondar
     return self;
 }
 
-// ---- getPosition_a2858.cpp ----
 void Player::getPosition(Vector *out) {
     Player *self = this;
     MatrixGetPosition(out, self->transform);
 }
 
-// ---- damageGamma_a2f62.cpp ----
 float Player::damageGamma(float amount) {
     Player *self = this;
     if (self->vulnerable) {
@@ -783,7 +708,6 @@ float Player::damageGamma(float amount) {
     return amount;
 }
 
-// ---- damageEmp_a2fa4.cpp ----
 void Player::damageEmp(int amount, bool flag) {
     Player *self = this;
     if (self->vulnerable == 0 || self->active == 0) {
@@ -898,9 +822,6 @@ lab_3164:
     return Player_damageEmp_tail(self);
 }
 
-// ---- addGun_a3910.cpp ----
-
-
 void Player::addGun(Array<Gun *> *gunsIn, int slot) {
     Player *self = this;
     if (self->guns != 0) {
@@ -918,7 +839,6 @@ void Player::addGun(Array<Gun *> *gunsIn, int slot) {
     }
 }
 
-// ---- setAlwaysEnemy_a2a04.cpp ----
 void Player::setAlwaysEnemy(bool value) {
     Player *self = this;
     self->alwaysEnemy = value;
@@ -926,7 +846,6 @@ void Player::setAlwaysEnemy(bool value) {
     self->turnedEnemy = 1;
 }
 
-// ---- regenerateHull_a2e58.cpp ----
 void Player::regenerateHull() {
     Player *self = this;
     int v = self->maxHitpoints;
@@ -937,7 +856,6 @@ void Player::regenerateHull() {
     return Player_regenerateHull_tail();
 }
 
-// ---- _Player_a2864.cpp ----
 // Player::~Player() — real C++ destructor so the demangled symbol contains "~Player".
 // Uses the real Player/Array (std::vector) types from the headers; releases the per-slot gun
 // arrays, then the outer gun-array-array, then the enemies array.
@@ -971,7 +889,6 @@ __attribute__((minsize)) Player::~Player()
     this->enemies = 0;
 }
 
-// ---- setGammaHP_a2d30.cpp ----
 void Player::setGammaHP(int value) {
     Player *self = this;
     float f = (float)value;
@@ -986,7 +903,6 @@ void Player::setGammaHP(int value) {
     return Player_setGammaHP_tail();
 }
 
-// ---- stopShootSound_a3a14.cpp ----
 void Player::stopShootSound(int index, int channel) {
     Player *self = this;
     if ((unsigned int)channel > 8) {
@@ -1006,7 +922,6 @@ void Player::stopShootSound(int index, int channel) {
     }
 }
 
-// ---- reset_a2a70.cpp ----
 void Player::reset() {
     Player *self = this;
     float shield = (float)self->maxShieldHP;
@@ -1032,9 +947,6 @@ void Player::reset() {
     (((uint8_t*)&self->empForce)[1]) = 0;
 }
 
-// ---- addGun_a36ec.cpp ----
-
-
 void Player::addGun(Gun *gun, int slot) {
     Player *self = this;
     if (self->guns != 0) {
@@ -1049,10 +961,6 @@ void Player::addGun(Gun *gun, int slot) {
         }
     }
 }
-
-// ---- calcWeaponSounds_a3774.cpp ----
-
-
 
 void Player::calcWeaponSounds(int count) {
     Player *self = this;
@@ -1126,7 +1034,6 @@ void Player::calcWeaponSounds(int count) {
     }
 }
 
-// ---- PauseEngineSound_a4088.cpp ----
 __attribute__((minsize)) extern "C" void Player_PauseEngineSound(Player *self)
 {
     void *event = self->engineEvent;
@@ -1135,7 +1042,6 @@ __attribute__((minsize)) extern "C" void Player_PauseEngineSound(Player *self)
     }
 }
 
-// ---- PlayEngineSound_a4014.cpp ----
 struct Mat { float m[12]; };
 
 __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Vector *vec)
@@ -1149,9 +1055,6 @@ __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Ve
         self->field_108 = 1;
     }
 }
-
-// ---- setEnemies_a2acc.cpp ----
-
 
 void Player::setEnemies(Array<Player *> *enemies) {
     Player *self = this;
@@ -1183,7 +1086,6 @@ void Player::setEnemies(Array<Player *> *enemies) {
     }
 }
 
-// ---- StopEngineSound_a40e0.cpp ----
 __attribute__((minsize)) extern "C" void Player_StopEngineSound(Player *self)
 {
     void *event = self->engineEvent;
@@ -1194,7 +1096,6 @@ __attribute__((minsize)) extern "C" void Player_StopEngineSound(Player *self)
     }
 }
 
-// ---- playShootSound_a3a64.cpp ----
 __attribute__((minsize)) extern "C" void Player_playShootSound(Player *self, int type, Vector *channel, float volume)
 {
     int soundId;
@@ -1228,9 +1129,7 @@ __attribute__((minsize)) extern "C" void Player_playShootSound(Player *self, int
     return Player_playShootSound_play_tail(volume, sound, soundId, pos, 0);
 }
 
-// ---- shoot_a3b20.cpp ----
-
-extern "C" const float k_shootAt_inc;   // DAT_b3cb4
+extern "C" const float k_shootAt_inc;
 
 void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8, int m9, int m10, int m11, int m12, int m13, int m14) {
     Player *self = this;
@@ -1276,12 +1175,11 @@ void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int
     
 }
 
-// ---- damage_a31c0.cpp ----
-extern "C" const float k_damage_full;   // DAT_b3518
-extern "C" const float k_damage_hc;     // DAT_b351c
-extern "C" const float k_damage_full2;  // DAT_b367c
-extern "C" const float k_damage_hc2;    // DAT_b3680
-extern "C" const float k_damage_regen;  // DAT_b3684
+extern "C" const float k_damage_full;
+extern "C" const float k_damage_hc;
+extern "C" const float k_damage_full2;
+extern "C" const float k_damage_hc2;
+extern "C" const float k_damage_regen;
 
 // Full damage implementation. Player::damage(int) below forwards here with flag=0,
 // missionId=-1. Matches the Player_damage_full(self, amount, a, b) prototype at top.
@@ -1487,9 +1385,6 @@ LAB_3488:
     }
 }
 
-// ---- setEnemy_a2b76.cpp ----
-
-
 void Player::setEnemy(Player *enemy) {
     Player *self = this;
     Array<Player *> *tmp = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
@@ -1499,9 +1394,6 @@ void Player::setEnemy(Player *enemy) {
     Array_Player_dtor(tmp);
     return Player_operator_delete_tail(tmp);
 }
-
-// ---- addEnemy_a2c6a.cpp ----
-
 
 void Player::addEnemy(Player *enemy) {
     Player *self = this;
@@ -1519,7 +1411,6 @@ void Player::addEnemy(Player *enemy) {
     return Player_operator_delete_tail(tmp);
 }
 
-// ---- ResumeEngineSound_a40ac.cpp ----
 __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, bool force)
 {
     void *event = self->engineEvent;
@@ -1528,13 +1419,11 @@ __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, 
     }
 }
 
-// ---- damage_a3694.cpp ----
 void Player::damage(int amount) {
     Player *self = this;
     return Player_damage_full(self, amount, 0, -1);
 }
 
-// ---- stopShooting_a3d08.cpp ----
 void Player::stopShooting(int slot, int channel) {
     Player *self = this;
     if ((unsigned int)(channel - 0x16) >= 9) {
@@ -1561,7 +1450,6 @@ void Player::stopShooting(int slot, int channel) {
     }
 }
 
-// ---- setAlwaysFriend_a2a14.cpp ----
 void Player::setAlwaysFriend(bool value) {
     Player *self = this;
     self->alwaysFriend = value;
@@ -1569,7 +1457,6 @@ void Player::setAlwaysFriend(bool value) {
     self->turnedEnemy = 0;
 }
 
-// ---- setMaxArmorHP_a2d8a.cpp ----
 void Player::setMaxArmorHP(int value) {
     Player *self = this;
     self->armorHP = value;
@@ -1577,9 +1464,7 @@ void Player::setMaxArmorHP(int value) {
     return Player_setMaxArmorHP_tail();
 }
 
-// ---- shoot_a3d5c.cpp ----
-
-extern "C" const float k_shoot_inc;      // DAT_b3f28
+extern "C" const float k_shoot_inc;
 
 int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22) {
     Player *self = this;
@@ -1635,11 +1520,10 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
     return retval;
 }
 
-// ---- update_a4110.cpp ----
 extern "C" void (**g_update_transform)(void *, void *, int);  // DAT_b41e2 fn ptr table
-extern "C" const float k_update_a;     // DAT_b42b8
-extern "C" const float k_update_b;     // DAT_b42bc
-extern "C" const float k_update_c;     // DAT_b42c0
+extern "C" const float k_update_a;
+extern "C" const float k_update_b;
+extern "C" const float k_update_c;
 
 Vector * Player::update(int dt, int doSound) {
     Player *self = this;
@@ -1706,7 +1590,6 @@ Vector * Player::update(int dt, int doSound) {
     return result;
 }
 
-// ---- shoot_a3f9e.cpp ----
 // Forwards to the full Player::shoot overload, expanding the transform matrix
 // (fields 0x04..0x3c) into the trailing arguments.
 extern "C" void Player_shoot_full2(
@@ -1722,7 +1605,6 @@ void Player::shoot(int a, int b, long long pos, bool flag) {
                        m[8], m[9], m[10], m[11], m[12], m[13], m[14]);
 }
 
-// ---- stopShooting_a3cbc.cpp ----
 // Player::stopShooting(int) — single-arg overload (no channel filter).
 void Player::stopShooting(int slot) {
     Player *self = this;
@@ -1747,7 +1629,6 @@ void Player::stopShooting(int slot) {
     }
 }
 
-// ---- setHitVector_a2e94.cpp ----
 float * Player::setHitVector(float x, float y, float z) {
     Player *self = this;
     float *p = self->hitVector;
@@ -1757,7 +1638,6 @@ float * Player::setHitVector(float x, float y, float z) {
     return p;
 }
 
-// ---- resetGunDelay_a39aa.cpp ----
 void Player::resetGunDelay(int slot) {
     Player *self = this;
     Array<Array<Gun *> *> *guns = self->guns;

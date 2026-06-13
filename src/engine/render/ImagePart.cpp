@@ -6,7 +6,6 @@ using AbyssEngine::PaintCanvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_ImagePart_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_ImagePart_draw_canvas;
 
-// ---- ImagePart_a7a74.cpp ----
 // ImagePart::ImagePart(unsigned, int, int) — stores id/field_04/pos_y, then queries the
 // global PaintCanvas for the image's width/height into scale_x/scale_y.
 
@@ -21,7 +20,6 @@ ImagePart * ImagePart::ctor(unsigned id, int field04, int posY) {
     return self;
 }
 
-// ---- draw_a7aac.cpp ----
 // ImagePart::draw(int x, int y, bool b) — draws the stored image2d at (x, pos_y+y)
 // with size (scale_x, scale_y), mode 0x11, flags = field_04|1, last = b.
 void ImagePart::draw(int x, int y, bool b) {

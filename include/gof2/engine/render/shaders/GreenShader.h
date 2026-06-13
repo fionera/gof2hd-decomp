@@ -21,7 +21,6 @@ struct ShaderBaseStruct;
 // GL program handle at 0x4, name String at 0xc, attribute locations 0x20..0x30 and
 // uniform locations 0x34..0x54. They are read/written through these helpers.
 
-
 extern "C" {
 extern char GreenShader_vtable[];
 extern int GreenShader_typeInfoSource;

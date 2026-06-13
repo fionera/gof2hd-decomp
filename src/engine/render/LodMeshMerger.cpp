@@ -2,9 +2,6 @@
 #include "gof2/game/core/Vector.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 
-
-
-// ---- setEnabled_181438.cpp ----
 void LodMeshMerger::setEnabled(int index, bool enabled)
 {
     uint8_t *flags = field_0x30;
@@ -17,7 +14,6 @@ void LodMeshMerger::setEnabled(int index, bool enabled)
     }
 }
 
-// ---- setLod_181400.cpp ----
 void LodMeshMerger::setLod(int index, signed char lod)
 {
     int8_t *lods = field_0x2c;
@@ -30,7 +26,6 @@ void LodMeshMerger::setLod(int index, signed char lod)
     }
 }
 
-// ---- setMatrix_181428.cpp ----
 // setMatrix(index, m): tail-call the engine matrix-assign with the per-index
 // slot (matrices[index], each 0x3c bytes) and the source matrix.
 
@@ -48,7 +43,6 @@ void LodMeshMerger::setMatrix_tail(const Matrix &m)
     *(Matrix *)this = m;
 }
 
-// ---- setMesh_1813ac.cpp ----
 void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
@@ -58,7 +52,6 @@ void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
     meshes[field_0x0 * lod + index] = (AEMesh *)ptr;
 }
 
-// ---- update_18174c.cpp ----
 extern "C" void aeabi_memcpy4(void *dst, const void *src, uint32_t n);  // __aeabi_memcpy4
 
 void LodMeshMerger::update()
@@ -164,9 +157,8 @@ void LodMeshMerger::update()
     }
 }
 
-// ---- LodMeshMerger_181200.cpp ----
-extern "C" void aeabi_memclr4(void *p, uint32_t n);              // 0x6ec14
-extern "C" void aeabi_memclr(void *p, uint32_t n);              // 0x6ec20
+extern "C" void aeabi_memclr4(void *p, uint32_t n);
+extern "C" void aeabi_memclr(void *p, uint32_t n);
 
 // LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
@@ -224,11 +216,7 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
     field_0x6 = 0;
 }
 
-// ---- init_18145a.cpp ----
-// 0x7882c
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                            // 0x6ec2c (__aeabi_uidiv)
-// 0x1ac878
-
 int LodMeshMerger::init()
 {
     if (field_0x6 != 0) {
@@ -287,7 +275,6 @@ int LodMeshMerger::init_tail(int /*r1*/, uint16_t /*flags*/, uint32_t * /*meshId
     return field_0x6;
 }
 
-// ---- transformMesh_181550.cpp ----
 // Typed wrappers over the real AbyssEngine::AEMath ops.
 namespace AbyssEngine { namespace AEMath {
 Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
@@ -307,7 +294,7 @@ static inline void AEMath_VectorAssign(Vector *dst, const Vector *src) { *dst = 
 
 extern "C" {
 void *operator_new_mesh(uint32_t size);                           // 0x6eb24 (operator new)
-void AEMath_BSphereAssign(void *dst, const void *src);                              // 0x6eb18
+void AEMath_BSphereAssign(void *dst, const void *src);
 }
 
 // LodMeshMerger::transformMesh(AbyssEngine::Mesh* src, AbyssEngine::AEMath::Matrix const& m)
@@ -398,15 +385,11 @@ void *LodMeshMerger::transformMesh(AEMesh *src, const Matrix &m)
     return out;
 }
 
-// ---- _LodMeshMerger_181914.cpp ----
-
 // Per-array-slot release thunk read from a hidden PC-relative global (used to
 // free the lod/enabled/visible byte arrays at 0x2c/0x30/0x34).
 __attribute__((visibility("hidden"))) extern void (*const g_freeFn)(void *);
 
 // Tail-call into the engine base destructor.
-// 0x1ac888
-
 LodMeshMerger::~LodMeshMerger()
 {
     int i = 0;     // element index (r5)

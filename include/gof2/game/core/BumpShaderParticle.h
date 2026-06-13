@@ -39,10 +39,6 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
 };
 
-
-
-
-
 // AbyssEngine::BumpShaderParticle — derives from ShaderBaseStruct (shared shader storage layout).
 class BumpShaderParticle {
 public:

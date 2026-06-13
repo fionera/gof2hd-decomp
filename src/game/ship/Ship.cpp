@@ -4,7 +4,6 @@
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/world/SolarSystem.h"
 
-
 extern "C" void *ItemDtor(Item *it);
 extern "C" void operatorDelete(void *p);
 Ship* clone(Ship *self);
@@ -28,37 +27,27 @@ void setCargo(Ship *self, Array<Item*> *cargo);
 extern "C" Array<Item*>* operatorNewArray(unsigned int sz);
 extern "C" void ArrayCtorItem(Array<Item*> *a);
 
-// ---- removeCargo_174ef4.cpp ----
 // Ship::removeCargo(int) -> tail-calls Ship::removeCargo(int,int) with amount = 9999999
 void removeCargo(Ship *self, int idx) {
     ((Ship *)(self))->removeCargo3(idx, 9999999);
 }
 
-// ---- getRace_174a06.cpp ----
 int getRace(Ship *self) { return self->race; }
 
-// ---- hasBooster_174b9a.cpp ----
 bool hasBooster(Ship *self) { return 0 < self->boostSpeed; }
 
-// ---- getCompression_174c3c.cpp ----
 int getCompression(Ship *self) { return self->compression; }
 
-// ---- getBaseLoad_174c34.cpp ----
 int getBaseLoad(Ship *self) { return self->baseLoad; }
 
-// ---- setCurrentWeaponSlot_174a12.cpp ----
 void setCurrentWeaponSlot(Ship *self, int v) { self->currentWeaponSlot = v; }
 
-// ---- getNumAddedDeviceSlots_175694.cpp ----
 int getNumAddedDeviceSlots(Ship *self) { return self->numAddedDeviceSlots; }
 
-// ---- getMaxPassengers_1752d4.cpp ----
 int getMaxPassengers(Ship *self) { return self->maxPassengers; }
 
-// ---- getBoostTime_174b4c.cpp ----
 int getBoostTime(Ship *self) { return self->boostTime; }
 
-// ---- setEquipment_175204.cpp ----
 void setEquipment(Ship *self, Item *item, int slot) {
     unsigned int idx = slot;
     for (int i = 0; i < ((Item *)(item))->getType(); i = i + 1) {
@@ -80,13 +69,11 @@ void setEquipment(Ship *self, Item *item, int slot) {
     return ((Ship *)(self))->recomputeAfterSlots();
 }
 
-// ---- makeShip_175430.cpp ----
 void makeShip(Ship *self, int v) {
     Ship *s = clone(self);
     if (-1 < v) s->price = v;
 }
 
-// ---- removeCargo_174e38.cpp ----
 // Ship::removeCargo(Item*) -> tail-call removeCargo(self, item->getIndex(), item->getAmount())
 void removeCargo(Ship *self, Item *item) {
     int idx = ((Item *)(item))->getIndex();
@@ -94,7 +81,6 @@ void removeCargo(Ship *self, Item *item) {
     ((Ship *)(self))->removeCargo3(idx, amt);
 }
 
-// ---- removeAllCargo_174eda.cpp ----
 void removeAllCargo(Ship *self) {
     if (self->cargo != 0) {
         void *p = ArrayItemDtor(self->cargo);
@@ -103,10 +89,8 @@ void removeAllCargo(Ship *self) {
     self->cargo = 0;
 }
 
-// ---- getMaxLoad_174c40.cpp ----
 int getMaxLoad(Ship *self) { return self->cargoPlus + self->baseLoad; }
 
-// ---- freeSlot_175344.cpp ----
 void freeSlot(Ship *self, Item *item) {
     unsigned int i = 0;
     while (i < self->equipment->size()) {
@@ -120,16 +104,12 @@ void freeSlot(Ship *self, Item *item) {
     return ((Ship *)(self))->recomputeAfterSlots();
 }
 
-// ---- getMaxArmorHP_174afa.cpp ----
 int getMaxArmorHP(Ship *self) { return self->maxArmorHP; }
 
-// ---- getCurrentWeaponSlot_174a16.cpp ----
 int getCurrentWeaponSlot(Ship *self) { return self->currentWeaponSlot; }
 
-// ---- setRace_174a02.cpp ----
 void setRace(Ship *self, int v) { self->race = v; }
 
-// ---- Ship_17457c.cpp ----
 Ship *_ZN4ShipC2Eiiiiiiiif(Ship *self, int index, int baseHP, int baseLoad,
                                        int value, int s0, int s1, int s2, int s3, float handling) {
     self->index = index;
@@ -157,7 +137,6 @@ Ship *_ZN4ShipC2Eiiiiiiiif(Ship *self, int index, int baseHP, int baseLoad,
     return self;
 }
 
-// ---- getHandling_174a68.cpp ----
 float getHandling(Ship *self) {
     int *m = (int *)self->mods;
     float h = 1.3f;
@@ -172,17 +151,14 @@ float getHandling(Ship *self) {
     return h + self->handling;
 }
 
-// ---- getBaseHP_174ab4.cpp ----
 int getBaseHP(Ship *self) { return self->baseHP; }
 
-// ---- hasJumpDriveIntegrated_174bcc.cpp ----
 unsigned int hasJumpDriveIntegrated(Ship *self) {
     unsigned int v = (unsigned int)self->index - 0x25u;
     if (v < 4) return 0xbu >> (v & 0xf) & 1;
     return 0;
 }
 
-// ---- replaceEquipment_175000.cpp ----
 void replaceEquipment(Ship *self, Array<Item*> *eq) {
     if (eq != 0) {
         int *slots = self->slots;
@@ -197,14 +173,12 @@ void replaceEquipment(Ship *self, Array<Item*> *eq) {
     return ((Ship *)(self))->recomputeAfterSlots();
 }
 
-// ---- setEquipment_175072.cpp ----
 void setEquipment(Ship *self, Array<Item*> *items) {
     for (unsigned int i = 0; i < items->size(); i = i + 1) {
         ((Ship *)(self))->setEquipment1(items->data()[i]);
     }
 }
 
-// ---- getEquipmentValue_1752a4.cpp ----
 int getEquipmentValue(Ship *self) {
     unsigned int i = 0;
     int total = 0;
@@ -217,16 +191,12 @@ int getEquipmentValue(Ship *self) {
     return total;
 }
 
-// ---- getIndex_174a0a.cpp ----
 int getIndex(Ship *self) { return self->index; }
 
-// ---- getFireRateFactor_174b58.cpp ----
 int getFireRateFactor(Ship *self) { return *(int *)&self->fireRateFactor; }
 
-// ---- getCurrentLoad_174c48.cpp ----
 int getCurrentLoad(Ship *self) { return self->currentLoad; }
 
-// ---- _Ship_1749a4.cpp ----
 Ship *_ZN4ShipD2Ev(Ship *self) {
     Array<Item*> *a = self->equipment;
     if (a != 0) {
@@ -261,22 +231,16 @@ skip2:
     return self;
 }
 
-// ---- hasEmergencySystem_174c22.cpp ----
 unsigned char hasEmergencySystem(Ship *self) { return self->hasEmergency; }
 
-// ---- getRadarType_174b44.cpp ----
 int getRadarType(Ship *self) { return self->radarType; }
 
-// ---- getBoostDelay_174b50.cpp ----
 int getBoostDelay(Ship *self) { return self->boostDelay; }
 
-// ---- getPrice_174a0e.cpp ----
 int getPrice(Ship *self) { return self->price; }
 
-// ---- getSlots_175388.cpp ----
 extern "C" int getSlots(Ship *self, int i) { return self->slots[i]; }
 
-// ---- priceDecline_1754c8.cpp ----
 extern int **gShipDataRoot __attribute__((visibility("hidden")));
 void priceDecline(Ship *self) {
     int *q = *gShipDataRoot;
@@ -285,7 +249,6 @@ void priceDecline(Ship *self) {
     self->price = (int)((float)entry[0x14 / 4] / 1.25f);
 }
 
-// ---- getUsedSlots_1753aa.cpp ----
 int getUsedSlots(Ship *self, int type) {
     unsigned int i = 0;
     int n = 0;
@@ -298,16 +261,12 @@ int getUsedSlots(Ship *self, int type) {
     return n;
 }
 
-// ---- getSignatureRace_174c2c.cpp ----
 int getSignatureRace(Ship *self) { return self->signatureRace; }
 
-// ---- getMaxShieldHP_174b38.cpp ----
 int getMaxShieldHP(Ship *self) { return self->maxShieldHP; }
 
-// ---- setPrice_1755b8.cpp ----
 void setPrice(Ship *self, int v) { self->price = v; }
 
-// ---- getCombinedHP_174ab8.cpp ----
 int getCombinedHP(Ship *self) {
     int *m = (int *)self->mods;
     int bonus;
@@ -325,32 +284,25 @@ int getCombinedHP(Ship *self) {
     return bonus + self->baseHP + self->maxShieldHP + self->maxArmorHP;
 }
 
-// ---- getCargoPlus_174c38.cpp ----
 int getCargoPlus(Ship *self) { return self->cargoPlus; }
 
-// ---- getFreeSlots_17541e.cpp ----
 int getFreeSlots(Ship *self, int type) {
     int total = self->slots[type];
     int used = getUsedSlots(self, type);
     return total - used;
 }
 
-// ---- getValue_174b40.cpp ----
 int getValue(Ship *self) { return self->value; }
 
-// ---- hasVolatileGoods_174d90.cpp ----
 int hasVolatileGoods(Ship *self) {
     if (hasCargo(self, 0xd1, 1) != 0) return 1;
     return hasCargo(self, 0xcc, 1);
 }
 
-// ---- getDamageFactor_174b5c.cpp ----
 int getDamageFactor(Ship *self) { return *(int *)&self->damageFactor; }
 
-// ---- getFirePower_174c30.cpp ----
 int getFirePower(Ship *self) { return self->firePower; }
 
-// ---- freeSlot_1752fa.cpp ----
 void freeSlot(Ship *self, Item *item, int slot) {
     unsigned int i = 0;
     while (i < self->equipment->size()) {
@@ -367,28 +319,21 @@ void freeSlot(Ship *self, Item *item, int slot) {
     return ((Ship *)(self))->recomputeAfterSlots();
 }
 
-// ---- addCargo_174fe8.cpp ----
 // Ship::addCargo(Array<Item*>*) -> combine then tail-call addCargo(self, combined)
 void addCargo(Ship *self, Array<Item*> *items) {
     return ((Ship *)(self))->addCargo2(Item::combineItems(self->cargo, items));
 }
 
-// ---- getCargo_174c8c.cpp ----
 Array<Item*>* getCargo(Ship *self) { return self->cargo; }
 
-// ---- hasCloakIntegrated_174c0a.cpp ----
 bool hasCloakIntegrated(Ship *self) { return self->index == 0x2c || self->index == 0x31; }
 
-// ---- spaceAvailable_174f96.cpp ----
 bool spaceAvailable(Ship *self, int n) { return n + self->currentLoad <= self->baseLoad + self->cargoPlus; }
 
-// ---- getMods_1756ca.cpp ----
 Array<int>* getMods(Ship *self) { return self->mods; }
 
-// ---- getEquipment_174c88.cpp ----
 Array<Item*>* Ship::getEquipment() { Ship *self = this; return self->equipment; }
 
-// ---- getHandlingForShop_174a1c.cpp ----
 float getHandlingForShop(Ship *self) {
     int *m = (int *)self->mods;
     float h = 1.3f;
@@ -403,7 +348,6 @@ float getHandlingForShop(Ship *self) {
     return h + self->handling;
 }
 
-// ---- addEquipment_1751ae.cpp ----
 int addEquipment(Ship *self, Item *item) {
     int type = ((Item *)(item))->getType();
     int cap = self->slots[type];
@@ -426,10 +370,8 @@ int addEquipment(Ship *self, Item *item) {
     return 0;
 }
 
-// ---- getUnmoddedHandling_175698.cpp ----
 int getUnmoddedHandling(Ship *self) { return *(int *)&self->handling; }
 
-// ---- hasCloak_174be8.cpp ----
 bool hasCloak(Ship *self) {
     if (__builtin_expect(self->hasCloakFlag != 0, 1)) goto yes;
     if (self->index == 0x31 || self->index == 0x2c) goto yes;
@@ -438,22 +380,16 @@ yes:
     return true;
 }
 
-// ---- getBoostSpeed_174b48.cpp ----
 int getBoostSpeed(Ship *self) { return self->boostSpeed; }
 
-// ---- getFreeSpace_174c7c.cpp ----
 int getFreeSpace(Ship *self) { return (self->cargoPlus + self->baseLoad) - self->currentLoad; }
 
-// ---- getShieldRegen_174b3c.cpp ----
 int getShieldRegen(Ship *self) { return self->shieldRegen; }
 
-// ---- getRepairType_174c28.cpp ----
 int getRepairType(Ship *self) { return self->repairType; }
 
-// ---- equals_175686.cpp ----
 bool equals(Ship *self, Ship *other) { return self->index == other->index; }
 
-// ---- freeAllSlots_1752d8.cpp ----
 void freeAllSlots(Ship *self) {
     for (unsigned int i = 0; i < self->equipment->size(); i = i + 1) {
         Item **data = self->equipment->data();
@@ -464,7 +400,6 @@ void freeAllSlots(Ship *self) {
     return ((Ship *)(self))->recomputeAfterSlots();
 }
 
-// ---- getMaxHP_174afe.cpp ----
 int getMaxHP(Ship *self) {
     int *m = (int *)self->mods;
     int bonus;
@@ -482,7 +417,6 @@ int getMaxHP(Ship *self) {
     return self->baseHP + bonus;
 }
 
-// ---- hasJumpDrive_174ba6.cpp ----
 unsigned int hasJumpDrive(Ship *self) {
     if (self->hasJumpDriveFlag != 0) return 1;
     unsigned int v = (unsigned int)self->index - 0x25u;
@@ -490,10 +424,8 @@ unsigned int hasJumpDrive(Ship *self) {
     return 0;
 }
 
-// ---- getAgility_174b54.cpp ----
 int getAgility(Ship *self) { return self->agility; }
 
-// ---- getSlotPos_17515a.cpp ----
 unsigned int getSlotPos(Ship *self, Item *item) {
     if (item == 0) {
         return 0xffffffff;
@@ -510,7 +442,6 @@ unsigned int getSlotPos(Ship *self, Item *item) {
     return pos;
 }
 
-// ---- hasCargo_174db2.cpp ----
 int hasCargo(Ship *self, int index, int amount) {
     Array<Item*> *c = self->cargo;
     if (c != 0) {
@@ -526,7 +457,6 @@ int hasCargo(Ship *self, int index, int amount) {
     return 0;
 }
 
-// ---- hasCargoType_174dfe.cpp ----
 int hasCargoType(Ship *self, int type) {
     unsigned int *p = (unsigned int *)self->cargo;
     if (p != 0) {
@@ -542,7 +472,6 @@ int hasCargoType(Ship *self, int type) {
     return 0;
 }
 
-// ---- getEquipment_1750cc.cpp ----
 Array<Item*>* Ship::getEquipment(int type) { Ship *self = this;
     if (type >= 4 || self->slots[type] == 0) {
         return 0;
@@ -564,7 +493,6 @@ Array<Item*>* Ship::getEquipment(int type) { Ship *self = this;
     return result;
 }
 
-// ---- clone_175444.cpp ----
 Ship *clone(Ship *self) {
     Ship *s = operatorNewShip(0x80);
     int *slots = self->slots;
@@ -579,7 +507,6 @@ Ship *clone(Ship *self) {
     return s;
 }
 
-// ---- getFirstEquipmentOfSort_174ce4.cpp ----
 extern int *gShopRoot;
 Item* getFirstEquipmentOfSort(Ship *self, int sort) {
     Array<Item*> *e = self->equipment;
@@ -602,7 +529,6 @@ Item* getFirstEquipmentOfSort(Ship *self, int sort) {
     return 0;
 }
 
-// ---- adjustPrice_1754f8.cpp ----
 extern int *gStatusRoot __attribute__((visibility("hidden")));
 extern int **gShipDataRoot __attribute__((visibility("hidden")));
 extern int *gRaceTable __attribute__((visibility("hidden")));
@@ -633,7 +559,6 @@ void adjustPrice(Ship *self) {
     }
 }
 
-// ---- removeEquipment_175034.cpp ----
 void removeEquipment(Ship *self, Item *item) {
     Array<Item*> *eq = self->equipment;
     if (eq != 0) {
@@ -651,7 +576,6 @@ void removeEquipment(Ship *self, Item *item) {
     }
 }
 
-// ---- getCargo_174f58.cpp ----
 Item* getCargo(Ship *self, int index) {
     Array<Item*> *c = self->cargo;
     if (c == 0) return 0;
@@ -668,7 +592,6 @@ Item* getCargo(Ship *self, int index) {
     return 0;
 }
 
-// ---- addMod_1755bc.cpp ----
 void addMod(Ship *self, int mod) {
     Array<int> *m = self->mods;
     if (m == 0) {
@@ -707,7 +630,6 @@ void addMod(Ship *self, int mod) {
     return ((Ship *)(self))->recomputeAfterSlots();
 }
 
-// ---- refreshValue_174608.cpp ----
 extern int *gStatusRoot2 __attribute__((visibility("hidden")));
 
 void refreshValue(Ship *self) {
@@ -853,7 +775,6 @@ void refreshValue(Ship *self) {
     self->value = getCargoValue(self) + self->value;
 }
 
-// ---- removeCargo_174e64.cpp ----
 int removeCargo(Ship *self, int index, int amount) {
     Array<Item*> *c = self->cargo;
     if (c != 0) {
@@ -879,7 +800,6 @@ int removeCargo(Ship *self, int index, int amount) {
     return 0;
 }
 
-// ---- setCargo_174f00.cpp ----
 extern int **gWorldSingleton __attribute__((visibility("hidden")));
 void setCargo(Ship *self, Array<Item*> *cargo) {
     self->currentLoad = 0;
@@ -899,7 +819,6 @@ void setCargo(Ship *self, Array<Item*> *cargo) {
     }
 }
 
-// ---- replaceCargo_174c90.cpp ----
 extern int **gWorldSingleton __attribute__((visibility("hidden")));
 void replaceCargo(Ship *self, Array<Item*> *cargo) {
     self->currentLoad = 0;
@@ -917,7 +836,6 @@ void replaceCargo(Ship *self, Array<Item*> *cargo) {
     }
 }
 
-// ---- getModdedLoad_17569c.cpp ----
 int getModdedLoad(Ship *self) {
     int load = self->baseLoad;
     int *m = (int *)self->mods;
@@ -927,7 +845,6 @@ int getModdedLoad(Ship *self) {
     return load;
 }
 
-// ---- getSlotTypes_175390.cpp ----
 int getSlotTypes(Ship *self) {
     int n = 0;
     int i = 0;
@@ -939,7 +856,6 @@ int getSlotTypes(Ship *self) {
     return n;
 }
 
-// ---- addCargo_174faa.cpp ----
 // Ship::addCargo(Item*) -> wrap the single item in a fresh array, then commit.
 void Ship::addCargo(Item *item) {
     Array<Item*> *a = operatorNewArray(0xc);
@@ -948,7 +864,6 @@ void Ship::addCargo(Item *item) {
     ((Ship *)(this))->addCargo2(a);
 }
 
-// ---- setEquipment_17509c.cpp ----
 void setEquipment(Ship *self, Item *item) {
     Array<Item*> *eq = self->equipment;
     unsigned int i = 0;
@@ -965,7 +880,6 @@ done:
     ;
 }
 
-// ---- hasSecondaryWeapons_174b60.cpp ----
 int hasSecondaryWeapons(Ship *self) {
     if (self->slots[1] != 0) {
         unsigned int *p = (unsigned int *)self->equipment;
@@ -987,7 +901,6 @@ int hasSecondaryWeapons(Ship *self) {
     return 0;
 }
 
-// ---- hasEquipment_174d44.cpp ----
 int hasEquipment(Ship *self, int index, int amount) {
     Array<Item*> *e = self->equipment;
     if (e != 0) {
@@ -1003,7 +916,6 @@ int hasEquipment(Ship *self, int index, int amount) {
     return 0;
 }
 
-// ---- changeLoad_174c4c.cpp ----
 extern int **gWorldSingleton __attribute__((visibility("hidden")));
 void changeLoad(Ship *self, int delta) {
     int **p = gWorldSingleton;
@@ -1017,7 +929,6 @@ void changeLoad(Ship *self, int delta) {
     }
 }
 
-// ---- slotAvailable_1753e0.cpp ----
 int slotAvailable(Ship *self, int sort) {
     if (sort != 0 && sort != 0xc) {
         for (unsigned int i = 0; i < self->equipment->size(); i = i + 1) {
@@ -1030,7 +941,6 @@ int slotAvailable(Ship *self, int sort) {
     return 1;
 }
 
-// ---- hasModInstalled_17577c.cpp ----
 unsigned int hasModInstalled(Ship *self, int mod) {
     unsigned int *m = (unsigned int *)self->mods;
     if (m != 0) {
@@ -1046,7 +956,6 @@ unsigned int hasModInstalled(Ship *self, int mod) {
     return 0;
 }
 
-// ---- getCargoValue_175270.cpp ----
 int getCargoValue(Ship *self) {
     int total = 0;
     Array<Item*> *c = self->cargo;
@@ -1189,7 +1098,6 @@ void Ship::setEquipment(Item *item) {
     recomputeAfterSlots();
 }
 
-// ---- setMods_1756ce.cpp ----
 void setMods(Ship *self, Array<int> *mods) {
     self->mods = mods;
     if (mods != 0) {

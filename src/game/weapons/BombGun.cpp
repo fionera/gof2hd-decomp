@@ -42,7 +42,6 @@ struct PlayerEgo {
     TargetFollowCamera* getTargetFollowCamera();
 };
 
-
 extern "C" __attribute__((visibility("hidden"))) void *BombGun_vtable;
 extern "C" void *Explosion_dtor(Explosion *self);
 extern "C" void *BombGun_base_dtor(BombGun *self);
@@ -67,7 +66,6 @@ extern "C" __attribute__((visibility("hidden"))) void **BombGun_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_final_canvas;
 extern "C" void Explosion_ctor(Explosion *self, int type);
 
-// ---- _BombGun_147824.cpp ----
 void *_ZN7BombGunD1Ev(BombGun *self)
 {
     *(void **)self = (char *)BombGun_vtable + 8;
@@ -80,7 +78,6 @@ void *_ZN7BombGunD1Ev(BombGun *self)
     return BombGun_base_dtor(self);
 }
 
-// ---- _BombGun_147858.cpp ----
 void _ZN7BombGunD0Ev(BombGun *self)
 {
     return ::operator delete(_ZN7BombGunD1Ev(self));
@@ -96,7 +93,6 @@ extern "C" void *BombGun_base_dtor(BombGun *self)
     return _ZN9RocketGunD1Ev((RocketGun *)self);
 }
 
-// ---- BombGun_1575cc.cpp ----
 // PaintCanvas singleton holder used by the ctor to register the bomb's geometry/
 // transform with the active scene (same engine-global the update/render paths use).
 extern "C" __attribute__((visibility("hidden"))) void **BombGun_ctor_canvas;
@@ -219,13 +215,11 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
     this->field_0xe8 = trail;
 }
 
-// ---- setPlayer_147868.cpp ----
 void BombGun::setPlayer(PlayerEgo *player)
 {
     this->field_0xec = player;
 }
 
-// ---- render_147cf0.cpp ----
 void BombGun::render()
 {
     ((RocketGun *)(this))->render();
@@ -233,7 +227,6 @@ void BombGun::render()
         return ((Explosion *)(this->field_0xf0))->render();
 }
 
-// ---- update_147870.cpp ----
 extern "C" __attribute__((visibility("hidden"))) TargetFollowCamera *(*BombGun_getCamera)(
     PlayerEgo *player);
 
@@ -246,7 +239,6 @@ static TargetFollowCamera *BombGun_getCamera_impl(PlayerEgo *player)
 }
 extern "C" __attribute__((visibility("hidden")))
     TargetFollowCamera *(*BombGun_getCamera)(PlayerEgo *) = &BombGun_getCamera_impl;
-
 
 static const float kRocketOffsetScale = 350.0f;
 static const float kBombScale = 0.2f;
@@ -409,7 +401,6 @@ after_transforms:
     }
 }
 
-// ---- BombGun_1475cc.cpp ----
 extern "C" void RocketGun_ctor(BombGun *self, int param3, Gun *gun, uint32_t mesh,
                                 int zero0, int zero1, int type, bool flag, Level *level);
 

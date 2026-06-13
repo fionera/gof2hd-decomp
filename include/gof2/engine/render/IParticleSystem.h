@@ -5,24 +5,14 @@
 struct PaintCanvas;
 struct ParticleSet;
 
-
-
 namespace AbyssEngine {
 namespace AEMath {
-
-
 
 } // namespace AEMath
 } // namespace AbyssEngine
 
 using Vector = AbyssEngine::AEMath::Vector;
 using Matrix = AbyssEngine::AEMath::Matrix;
-
-
-
-
-
-
 
 static inline void *&P(void *self, uint32_t off)
 {
@@ -34,7 +24,6 @@ static inline int32_t &I(void *self, uint32_t off)
     return *(int32_t *)((char *)self + off);
 }
 
-
 static inline uint16_t &U16(void *self, uint32_t off)
 {
     return *(uint16_t *)((char *)self + off);
@@ -44,7 +33,6 @@ static inline uint8_t &U8(void *self, uint32_t off)
 {
     return *(uint8_t *)((char *)self + off);
 }
-
 
 static inline Vector *vec_at(void *base, int index)
 {

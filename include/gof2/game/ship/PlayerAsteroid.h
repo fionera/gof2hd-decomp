@@ -4,11 +4,7 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 namespace AbyssEngine {
 
-
-
 namespace AEMath {
-
-
 
 } // namespace AEMath
 
@@ -23,12 +19,6 @@ struct Player;
 struct Explosion;
 struct TargetFollowCamera;
 struct ArrayInt;
-
-
-
-
-
-
 
 extern "C" void *operator_new(uint32_t size);
 extern "C" void operator_delete(void *ptr);

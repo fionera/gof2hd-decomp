@@ -6,7 +6,6 @@
 // A Transform-derived resource that owns two heap arrays at +0x40 and +0x48.
 // Field offsets recovered from the target disassembly; accessed via byte-offset casts.
 
-
 void operator delete[](void *ptr) noexcept;
 
 namespace AbyssEngine {

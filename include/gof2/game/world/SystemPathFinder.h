@@ -13,10 +13,6 @@ struct Node {
     Node(int index);
 };
 
-
-
-
-
 template <class T> void ArrayAdd(T item, Array<T> &array);
 template <class T> void ArrayRemove(T item, Array<T> &array);
 template <class T> void ArrayRelease(Array<T> &array);

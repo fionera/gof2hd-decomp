@@ -17,8 +17,6 @@ struct SolarSystem;
 struct StarSystem;
 struct Station;
 
-
-
 // Only P() is owned here: B() and I() are provided (identically) by sibling
 // headers PlayerEgo.h / Explosion.h, so redefining them here would collide
 // within the same translation unit.

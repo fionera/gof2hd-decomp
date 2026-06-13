@@ -1,7 +1,6 @@
 #include "gof2/engine/core/AERandom.h"
 #include <ctime>
 
-// ---- AERandom_719e0.cpp ----
 AbyssEngine::AERandom *AERandom_719e0(AbyssEngine::AERandom *self)
 {
     int seed = time(0);
@@ -10,7 +9,6 @@ AbyssEngine::AERandom *AERandom_719e0(AbyssEngine::AERandom *self)
     return self;
 }
 
-// ---- nextInt_71aa4.cpp ----
 uint32_t nextInt_71aa4(AbyssEngine::AERandom *self)
 {
     uint32_t lo = self->seedLow;
@@ -25,21 +23,18 @@ uint32_t nextInt_71aa4(AbyssEngine::AERandom *self)
     return (newLo >> 16) | (newHi << 16);
 }
 
-// ---- AERandom_71a18.cpp ----
 void AERandom_71a18(AbyssEngine::AERandom *self, long long seed)
 {
     self->seedLow = 0xdeece66dU ^ static_cast<uint32_t>(seed);
     self->seedHigh = (static_cast<uint32_t>(seed >> 32) & 0xffffU) ^ 5U;
 }
 
-// ---- setSeed_71a04.cpp ----
 void setSeed_71a04(AbyssEngine::AERandom *self, long long seed)
 {
     self->seedLow = 0xdeece66dU ^ static_cast<uint32_t>(seed);
     self->seedHigh = (static_cast<uint32_t>(seed >> 32) & 0xffffU) ^ 5U;
 }
 
-// ---- reset_71a30.cpp ----
 void reset_71a30(AbyssEngine::AERandom *self)
 {
     int seed = time(0);
@@ -47,7 +42,6 @@ void reset_71a30(AbyssEngine::AERandom *self)
     self->seedHigh = (static_cast<uint32_t>(seed >> 31) & 0xffffU) ^ 5U;
 }
 
-// ---- next_71a54.cpp ----
 uint32_t next_71a54(AbyssEngine::AERandom *self, int bits)
 {
     uint32_t lo = self->seedLow;
@@ -70,7 +64,6 @@ uint32_t next_71a54(AbyssEngine::AERandom *self, int bits)
     return result;
 }
 
-// ---- nextInt_71ad0.cpp ----
 static inline __attribute__((always_inline)) uint32_t ae_next31(AbyssEngine::AERandom *self)
 {
     uint32_t lo = self->seedLow;

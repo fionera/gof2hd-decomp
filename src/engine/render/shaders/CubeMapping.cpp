@@ -2,7 +2,6 @@
 #include "gof2/engine/render/ShaderBaseStruct.h"
 #include "gof2/game/core/String.h"
 
-// ---- Init_907d8.cpp ----
 namespace AbyssEngine {
 
 void CubeMapping::Init(Engine *)
@@ -34,7 +33,6 @@ void CubeMapping::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _CubeMapping_90ab0.cpp ----
 void _ZN11AbyssEngine11CubeMappingD0Ev(AbyssEngine::CubeMapping *self)
 {
     AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
@@ -42,7 +40,6 @@ void _ZN11AbyssEngine11CubeMappingD0Ev(AbyssEngine::CubeMapping *self)
     ::operator delete(base);
 }
 
-// ---- CubeMapping_9074c.cpp ----
 namespace AbyssEngine {
 
 CubeMapping::CubeMapping()
@@ -61,7 +58,6 @@ CubeMapping::CubeMapping()
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_90910.cpp ----
 namespace AbyssEngine {
 
 void CubeMapping::SetInActive()
@@ -73,7 +69,6 @@ void CubeMapping::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_90934.cpp ----
 namespace AbyssEngine {
 
 void CubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine)

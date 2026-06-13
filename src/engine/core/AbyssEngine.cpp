@@ -21,7 +21,6 @@ public:
 };
 }
 
-
 // ---- engine raw Array<T> container helpers --------------------------------------------------
 // The renderer stores some collections as the engine's plain three-word array header embedded at
 // fixed byte offsets inside larger structs (mesh child lists, the deferred sprite batch buffer):
@@ -74,7 +73,6 @@ unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const c
 int GameText_getLanguage();
 int GameText_isNonArabicString(const unsigned short *text, unsigned int len);
 
-// ---- ImageFontSetYOffset_72278.cpp ----
 // AbyssEngine::ImageFontSetYOffset(AbyssEngine::ImageFont*, short)
 namespace AbyssEngine {
 
@@ -86,7 +84,6 @@ void ImageFontSetYOffset(ImageFont *font, short yOffset)
 
 } // namespace AbyssEngine
 
-// ---- CameraIsPointinViewFrustum_7144c.cpp ----
 // AbyssEngine::CameraIsPointinViewFrustum(Vector const&, Matrix*, Camera*)
 // Test whether a world-space point lies inside the camera's view frustum. The point is
 // transformed into camera/local space (optionally pre-multiplied by an extra matrix), then
@@ -96,7 +93,6 @@ void ImageFontSetYOffset(ImageFont *font, short yOffset)
 // Camera frustum fields (byte offsets): +0x04 near, +0x08 far, +0x0c local matrix (0x3c),
 // +0x48 horizontal slope, +0x50 vertical slope.
 namespace AbyssEngine {
-
 
 int CameraIsPointinViewFrustum(Vector *point, Matrix *extra, Camera *cam)
 {
@@ -151,11 +147,9 @@ int CameraIsPointinViewFrustum(Vector *point, Matrix *extra, Camera *cam)
 
 } // namespace AbyssEngine
 
-// ---- operator__6ee56.cpp ----
 // AbyssEngine::operator*(AbyssEngine::Quaternion const&, float)
 // Quaternion scaled by a scalar (only .y/.w lanes materialized, see operator-).
 namespace AbyssEngine {
-
 
 Quaternion operator*(const Quaternion &a, float s)
 {
@@ -166,7 +160,6 @@ Quaternion operator*(const Quaternion &a, float s)
 
 } // namespace AbyssEngine
 
-// ---- operator__72e7c.cpp ----
 // AbyssEngine::operator+(AbyssEngine::String const&, AbyssEngine::String const&)
 // Concatenate two strings: copy lhs into a temp, append rhs, return the temp.
 namespace AbyssEngine {
@@ -182,7 +175,6 @@ String operator+(const String &a, const String &b)
 
 } // namespace AbyssEngine
 
-// ---- SpriteSystemSetAllUv_86c6c.cpp ----
 // AbyssEngine::SpriteSystemSetAllUv(float u0, float v0, float u1, float v1, SpriteSystem*)
 // Fill the UV quad (4 corners, interleaved u/v) for every sprite. The shipped code flips V
 // (1.0 - v) for the bottom edge, matching a top-left texture origin.
@@ -211,7 +203,6 @@ void SpriteSystemSetAllUv(float u0, float v0, float u1, float v1, SpriteSystem *
 
 } // namespace AbyssEngine
 
-// ---- getAppVersion_6db20.cpp ----
 // AbyssEngine::getAppVersion()
 //
 // NOTE: Ghidra attributes this address to BOTH Engine::InitGL(bool,int,int) and
@@ -229,11 +220,9 @@ void glCullFace(unsigned int);
 void glGetIntegerv(unsigned int, void *);
 }
 
-
 namespace AbyssEngine {
 
 // Sibling/member callees (resolved by the linker via their real mangled names).
-
 
 void getAppVersion()
 {
@@ -299,13 +288,11 @@ void getAppVersion()
 
 } // namespace AbyssEngine
 
-// ---- SpriteSystemSetUv_86cd4.cpp ----
 // AbyssEngine::SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d,
 //                                AbyssEngine::SpriteSystem*)
 // Set the interleaved UV quad (8 floats) of one sprite. A global flag selects whether the
 // "v" lanes are flipped (1.0 - v). Slot layout mirrors the shipped routine.
 namespace AbyssEngine {
-
 
 void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys)
 {
@@ -335,7 +322,6 @@ void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, S
 
 } // namespace AbyssEngine
 
-// ---- ImageFontGetYOffset_721da.cpp ----
 // AbyssEngine::ImageFontGetYOffset(AbyssEngine::ImageFont*)
 namespace AbyssEngine {
 
@@ -347,13 +333,11 @@ int ImageFontGetYOffset(ImageFont *font)
 
 } // namespace AbyssEngine
 
-// ---- operator__6ebd0.cpp ----
 // AbyssEngine::operator-(AbyssEngine::Quaternion const&, AbyssEngine::Quaternion const&)
 // Component-wise quaternion subtraction. The shipped code only materializes the .y (+4)
 // and .w (+0xc) lanes (the .x/.z incoming float regs are passed through untouched), so we
 // reproduce that by constructing the result through the 4-float Quaternion ctor.
 namespace AbyssEngine {
-
 
 Quaternion operator-(const Quaternion &a, const Quaternion &b)
 {
@@ -364,7 +348,6 @@ Quaternion operator-(const Quaternion &a, const Quaternion &b)
 
 } // namespace AbyssEngine
 
-// ---- ImageCreateRegionFromFile_6eeb8.cpp ----
 // AbyssEngine::ImageCreateRegionFromFile(Engine*, char const*, unsigned short index, Image2D*)
 // Open a region atlas file, skip to the requested region index, and build a 2-triangle quad
 // mesh whose vertex positions and UVs are derived from the region's offset/size fields. The
@@ -463,7 +446,6 @@ fail:
 
 } // namespace AbyssEngine
 
-// ---- ImageFontGetWidth_7213e.cpp ----
 // AbyssEngine::ImageFontGetWidth(AbyssEngine::ImageFont*, unsigned short const*, unsigned int)
 // Sum the advance width of the first `count` glyphs. For each character look it up in the
 // font's codepoint table (count@0, table@4); the per-glyph width comes from the glyph's
@@ -508,7 +490,6 @@ int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int c
 
 } // namespace AbyssEngine
 
-// ---- MeshIntersect_6d818.cpp ----
 // AbyssEngine::MeshIntersect(float qx, float qz, AbyssEngine::Mesh* mesh)
 // 2D pick test: walk the mesh's triangles (index buffer @0x2c, positions @0x4, uvs @0x8) and,
 // for the triangle whose XZ bounding box contains the query point and which the point is
@@ -518,7 +499,6 @@ int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int c
 namespace AbyssEngine {
 
 struct Vec2 { float u, v; };
-
 
 Vec2 MeshIntersect(float qx, float qz, Mesh *mesh)
 {
@@ -587,7 +567,6 @@ Vec2 MeshIntersect(float qx, float qz, Mesh *mesh)
 
 } // namespace AbyssEngine
 
-// ---- MeshDraw_6d3ac.cpp ----
 extern "C" {
 void glBindBuffer(unsigned int target, unsigned int buffer);
 void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
@@ -604,8 +583,6 @@ void glDrawElements(unsigned int mode, int count, unsigned int type, const void 
 // accumulates triangle/draw-call statistics into the engine. Falls back to Engine::RenderMesh
 // for the shader path. Returns 1 on draw, -4 when the mesh is empty/disabled.
 namespace AbyssEngine {
-
-
 
 int MeshDraw(Engine *engine, Mesh *mesh)
 {
@@ -666,7 +643,6 @@ int MeshDraw(Engine *engine, Mesh *mesh)
 
 } // namespace AbyssEngine
 
-// ---- SpriteSystemSetRGBA_86d44.cpp ----
 // AbyssEngine::SpriteSystemSetRGBA(unsigned short idx, float r, float g, float b, float a,
 //                                  AbyssEngine::SpriteSystem*)
 // Write the same RGBA color to all four vertices (16 floats) of one sprite.
@@ -691,7 +667,6 @@ void SpriteSystemSetRGBA(unsigned short idx, float r, float g, float b, float a,
 
 } // namespace AbyssEngine
 
-// ---- CameraSetPerspective_713c0.cpp ----
 // AbyssEngine::CameraSetPerspective(float fov, float aspectNum, float aspectDen, float near,
 //                                   AbyssEngine::Camera*)
 // Store the field-of-view/aspect into the Camera and precompute the projection scale terms
@@ -726,7 +701,6 @@ float CameraSetPerspective(float fov, float aspectNum, float aspectDen, float ne
 
 } // namespace AbyssEngine
 
-// ---- ImageFontGetWidth_721e6.cpp ----
 // AbyssEngine::ImageFontGetWidth(AbyssEngine::ImageFont*, unsigned short const*, unsigned int
 //                                start, unsigned int len)
 // Same as the 3-arg form, but measures the substring [start, start+len).
@@ -776,8 +750,6 @@ int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int s
 
 } // namespace AbyssEngine
 
-// ---- CurveRelease_74322.cpp ----
-
 // AbyssEngine::CurveRelease(AbyssEngine::Curve**)
 // Free each keyframe object (tag byte 1/2/3 -> single delete), then the entry array and the
 // Curve itself.
@@ -812,7 +784,6 @@ void CurveRelease(Curve **slot)
 
 } // namespace AbyssEngine
 
-// ---- MaterialDraw_870b8.cpp ----
 // AbyssEngine::MaterialDraw(PaintCanvas*, Engine*, Material*, bool setTextures)
 // Draw all submeshes of a material: optionally bind its textures, push the add-data, set the
 // ambient light, then for each submesh multiply in its model matrix, set the UV matrix, unpack
@@ -820,7 +791,6 @@ void CurveRelease(Curve **slot)
 // reset to zero. Mirrors the recovered control flow; the heavy float register aliasing in the
 // Ghidra output is normalized here.
 namespace AbyssEngine {
-
 
 int MeshDraw(Engine *engine, Mesh *mesh);
 
@@ -874,8 +844,6 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
 
 } // namespace AbyssEngine
 
-// ---- ImageFontRelease_7227e.cpp ----
-
 // AbyssEngine::ImageFontRelease(AbyssEngine::Engine*, AbyssEngine::ImageFont**)
 // Free the codepoint table (@4), release each glyph mesh (count@0, array@0xc), free the glyph
 // array, then the font.
@@ -917,7 +885,6 @@ void ImageFontRelease(Engine *engine, ImageFont **slot)
 
 } // namespace AbyssEngine
 
-// ---- MeshReadData_6c608.cpp ----
 // AbyssEngine::MeshReadData(Engine*, unsigned int const& handle, unsigned int flags,
 //                           Mesh** slot, Material*)
 // Read the binary vertex payload of a mesh from an open file. Driven by the per-mesh vertex
@@ -1262,11 +1229,9 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
 
 } // namespace AbyssEngine
 
-// ---- operator__73660.cpp ----
 // AbyssEngine::operator+(AbyssEngine::String const&, long long const&)
 // Append the decimal rendering of a 64-bit integer to a string.
 namespace AbyssEngine {
-
 
 String operator+(const String &a, const long long &b)
 {
@@ -1279,7 +1244,6 @@ String operator+(const String &a, const long long &b)
 
 } // namespace AbyssEngine
 
-// ---- MeshRelease_6c362.cpp ----
 // AbyssEngine::MeshRelease(AbyssEngine::Engine*, AbyssEngine::Mesh**)
 namespace AbyssEngine {
 
@@ -1301,11 +1265,9 @@ void MeshRelease(Engine *engine, Mesh **slot)
 
 } // namespace AbyssEngine
 
-// ---- operator__738b0.cpp ----
 // AbyssEngine::operator+(float const&, AbyssEngine::String const&)
 // Render a float to a string, then append the rhs string.
 namespace AbyssEngine {
-
 
 String operator+(const float &a, const String &b)
 {
@@ -1317,15 +1279,12 @@ String operator+(const float &a, const String &b)
 
 } // namespace AbyssEngine
 
-// ---- SpriteSystemCreate_86adc.cpp ----
-
 // AbyssEngine::SpriteSystemCreate(Engine*, unsigned short count, bool sharedSize,
 //                                 SpriteSystem** out)
 // Allocate a SpriteSystem of `count` quads: build a backing Mesh (4 verts + 2 tris per
 // sprite), fill the shared index buffer, default vertex colors to white and normals/tangents
 // to the identity basis. Returns 1, -1 on mesh failure, -4 on count == 0.
 namespace AbyssEngine {
-
 
 int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
                unsigned int fmt, void **out);
@@ -1432,7 +1391,6 @@ int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, Sp
 
 } // namespace AbyssEngine
 
-// ---- ImageCreateFromFile_6f4d4.cpp ----
 // AbyssEngine::ImageCreateFromFile(Engine*, char const*, Image**)
 // Allocate an Image (0x14 bytes), open the .aei file, validate the 8-byte magic, read the
 // header (type byte, width, height, palette count) and then the pixel payload. The pixel
@@ -1585,8 +1543,6 @@ fail:
 
 } // namespace AbyssEngine
 
-// ---- ImageRelease_6ee94.cpp ----
-
 // AbyssEngine::ImageRelease(AbyssEngine::Image**)
 namespace AbyssEngine {
 
@@ -1602,8 +1558,6 @@ void ImageRelease(Image **slot)
 }
 
 } // namespace AbyssEngine
-
-// ---- Image2DRelease_71b64.cpp ----
 
 // AbyssEngine::Image2DRelease(AbyssEngine::Engine*, AbyssEngine::Image2D**)
 namespace AbyssEngine {
@@ -1622,14 +1576,11 @@ void Image2DRelease(Engine *engine, Image2D **slot)
 
 } // namespace AbyssEngine
 
-// ---- MeshCreate_6c4d4.cpp ----
-
 // AbyssEngine::MeshCreate(Engine*, unsigned short vertexCount, unsigned short triCount,
 //                         signed char vertexFormat, Mesh** out)
 // Allocate and zero-initialize a Mesh (0x88 bytes), then allocate the per-attribute CPU
 // arrays selected by the vertex-format flag bits. Returns 1, or -4 on invalid arguments.
 namespace AbyssEngine {
-
 
 int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short triCount,
                unsigned int vertexFormat, void **out)
@@ -1690,7 +1641,6 @@ int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short t
 
 } // namespace AbyssEngine
 
-// ---- CameraSetPerspective_7130c.cpp ----
 // AbyssEngine::CameraSetPerspective(float, float aspectNum, float fov, float aspectDen,
 //                                   float near, AbyssEngine::Camera*)
 // Six-argument overload: additionally precomputes slot [0x16]. Cosf is reached through a
@@ -1729,7 +1679,6 @@ float CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen
 
 } // namespace AbyssEngine
 
-// ---- ImageFontSetSpacing_72266.cpp ----
 // AbyssEngine::ImageFontSetSpacing(AbyssEngine::ImageFont*, short)
 namespace AbyssEngine {
 
@@ -1741,7 +1690,6 @@ void ImageFontSetSpacing(ImageFont *font, short spacing)
 
 } // namespace AbyssEngine
 
-// ---- ImageFontGetHeight_721ba.cpp ----
 // AbyssEngine::ImageFontGetHeight(AbyssEngine::ImageFont*)
 namespace AbyssEngine {
 
@@ -1762,11 +1710,9 @@ int ImageFontGetHeight(ImageFont *font)
 
 } // namespace AbyssEngine
 
-// ---- operator__7373c.cpp ----
 // AbyssEngine::operator+(AbyssEngine::String const&, int const&)
 // Append the decimal rendering of a 32-bit integer to a string.
 namespace AbyssEngine {
-
 
 String operator+(const String &a, const int &b)
 {
@@ -1779,7 +1725,6 @@ String operator+(const String &a, const int &b)
 
 } // namespace AbyssEngine
 
-// ---- ImageFontGetSpacing_7226c.cpp ----
 // AbyssEngine::ImageFontGetSpacing(AbyssEngine::ImageFont*)
 namespace AbyssEngine {
 
@@ -1791,11 +1736,9 @@ int ImageFontGetSpacing(ImageFont *font)
 
 } // namespace AbyssEngine
 
-// ---- operator__73654.cpp ----
 // AbyssEngine::operator+(AbyssEngine::String const&)
 // Unary form: construct a (non-owning) copy of the operand string.
 namespace AbyssEngine {
-
 
 String operator+(const String &a)
 {
@@ -1804,7 +1747,6 @@ String operator+(const String &a)
 
 } // namespace AbyssEngine
 
-// ---- ImageFontDrawString_71b80.cpp ----
 // AbyssEngine::ImageFontDrawString(ImageFont*, unsigned short const*, int x, int y,
 //                                  PaintCanvas*, Engine*, bool)
 // Convenience overload: compute the NUL-terminated length and forward to the explicit-length
@@ -1830,7 +1772,6 @@ void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int 
 
 } // namespace AbyssEngine
 
-// ---- ImageFontDrawString_71bc0.cpp ----
 // AbyssEngine::ImageFontDrawString(ImageFont*, unsigned short const* text, unsigned int len,
 //                                  int x, int y, PaintCanvas*, Engine*, bool rtl)
 // Draw a UTF-16 string with a bitmap font. Two rendering paths are selected by the engine
@@ -1841,7 +1782,6 @@ void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int 
 // Characters are looked up in the font codepoint table (font+0x04); advance widths come from
 // each glyph mesh. RTL ordering (or the canvas batch flag) reverses the scan direction.
 namespace AbyssEngine {
-
 
 int  ImageFontGetWidth(ImageFont *font, unsigned short *text, unsigned int len);
 int  ImageFontGetHeight(ImageFont *font);
@@ -1983,11 +1923,9 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
 
 } // namespace AbyssEngine
 
-// ---- operator__737dc.cpp ----
 // AbyssEngine::operator+(int const&, AbyssEngine::String const&)
 // Render a 32-bit integer to a string, then append the rhs string.
 namespace AbyssEngine {
-
 
 String operator+(const int &a, const String &b)
 {
@@ -1999,7 +1937,6 @@ String operator+(const int &a, const String &b)
 
 } // namespace AbyssEngine
 
-// ---- ImageCreateFontFromFile_6f13c.cpp ----
 // AbyssEngine::ImageCreateFontFromFile(Engine*, char const*, unsigned short index, ImageFont**)
 // Parse a bitmap-font atlas file and build an ImageFont (0x14 bytes): a glyph-codepoint array
 // (+0x04) and a parallel array of per-glyph quad meshes (+0x0c). The file is scanned for the
@@ -2137,11 +2074,9 @@ fail:
 
 } // namespace AbyssEngine
 
-// ---- operator__6ee0c.cpp ----
 // AbyssEngine::operator+(AbyssEngine::Quaternion const&, AbyssEngine::Quaternion const&)
 // Component-wise quaternion addition (only .y/.w lanes materialized, see operator-).
 namespace AbyssEngine {
-
 
 Quaternion operator+(const Quaternion &a, const Quaternion &b)
 {
@@ -2152,7 +2087,6 @@ Quaternion operator+(const Quaternion &a, const Quaternion &b)
 
 } // namespace AbyssEngine
 
-// ---- SpriteSystemSetAllSize_86db8.cpp ----
 // AbyssEngine::SpriteSystemSetAllSize(short, AbyssEngine::SpriteSystem*)
 // Write a single size value to every sprite (or just the first when the "shared size"
 // flag at +0xc is set).
@@ -2175,7 +2109,6 @@ void SpriteSystemSetAllSize(short size, SpriteSystem *sys)
 
 } // namespace AbyssEngine
 
-// ---- MODF_72adc.cpp ----
 // AbyssEngine::MODF(float, float*)
 // Split value into integer (truncated toward zero) and fractional parts. The integer
 // part is written through param_2; the fractional remainder is returned.
@@ -2190,7 +2123,6 @@ float MODF(float value, float *intPart)
 
 } // namespace AbyssEngine
 
-// ---- SpriteSystemDraw_86ddc.cpp ----
 // AbyssEngine::SpriteSystemDraw(Engine*, AEMath::Matrix const& view, AEMath::Matrix const& world,
 //                               SpriteSystem*)
 // Rebuild every sprite's billboard quad in view space (4 corners offset by the sprite's size
@@ -2199,12 +2131,9 @@ float MODF(float value, float *intPart)
 // into the batch arrays.
 namespace AbyssEngine {
 
-
 int MeshDraw(Engine *engine, Mesh *mesh);
 
 // Array<T>::AddCached helpers (templated in the binary).
-
-
 
 void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem *sys)
 {
@@ -2274,7 +2203,6 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
 
 } // namespace AbyssEngine
 
-// ---- MeshConvertToVBOIntern_6d510.cpp ----
 extern "C" {
 void glGenBuffers(int n, void *buffers);
 void glBindBuffer(unsigned int target, unsigned int buffer);
@@ -2289,7 +2217,6 @@ unsigned int glGetError();
 // frees the CPU copies and marks the mesh uploaded (byte@0x5c); on GL error, tears the buffers
 // back down. Returns 1 / -1 / -4.
 namespace AbyssEngine {
-
 
 static inline void freeArray(void *&arr)
 {
@@ -2399,7 +2326,6 @@ int MeshConvertToVBOIntern(Mesh *m)
 
 } // namespace AbyssEngine
 
-// ---- TransformConvertToVBO_6d7e0.cpp ----
 // AbyssEngine::TransformConvertToVBO(AbyssEngine::Transform*)
 // Convert owned meshes to VBOs (count@0x3c, array@0x40), then recurse into child transforms
 // (count@0x4c, array@0x50).
@@ -2420,7 +2346,6 @@ int TransformConvertToVBO(Transform *t)
 
 } // namespace AbyssEngine
 
-// ---- ImageFontCheckString_72130.cpp ----
 // AbyssEngine::ImageFontCheckString(AbyssEngine::ImageFont*, unsigned short const*, unsigned int)
 // The shipped body just spins a counter to param_3 (a stubbed/optimized-out validator).
 namespace AbyssEngine {
@@ -2437,7 +2362,6 @@ void ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, 
 
 } // namespace AbyssEngine
 
-// ---- TextureCreateFromFile_6f7cc.cpp ----
 // AbyssEngine::TextureCreateFromFile(Engine*, char const*, void(*)(Image*, void*), void*,
 //                                    unsigned int*, bool, float)
 // Thin wrapper that forwards to the *Intern variant and always reports success (1).
@@ -2459,7 +2383,6 @@ int TextureCreateFromFile(Engine *engine, const char *path, ImageCallback cb, vo
 
 } // namespace AbyssEngine
 
-// ---- TextureCreateFromFileIntern_6f7f4.cpp ----
 // AbyssEngine::TextureCreateFromFileIntern(Engine*, char const* path,
 //     void(*cb)(Image*,void*), void* user, unsigned int* outIds, float aniso,
 //     AELoadedTexture* outTex, bool ...)
@@ -2483,7 +2406,6 @@ void glTexImage2D(unsigned int t, int lvl, int ifmt, int w, int h, int b, int fm
 void glCompressedTexImage2D(unsigned int t, int lvl, int ifmt, int w, int h, int b, int sz, const void *px);
 void glGenerateMipmap(unsigned int target);
 // __aeabi_uidiv is declared by gof2/Engine.h
-
 
 char *g_cubemapEnabledFlag;     // **(DAT + 0x7f860)
 char *g_texEnvFlag;             // **(DAT + 0x7f998)
@@ -2678,11 +2600,9 @@ int TextureCreateFromFileIntern(Engine *engine, char *path, void (*cb)(Image *, 
 
 } // namespace AbyssEngine
 
-// ---- operator__736dc.cpp ----
 // AbyssEngine::operator+(long long const&, AbyssEngine::String const&)
 // Render a 64-bit integer to a string, then append the rhs string.
 namespace AbyssEngine {
-
 
 String operator+(const long long &a, const String &b)
 {
@@ -2693,8 +2613,6 @@ String operator+(const long long &a, const String &b)
 }
 
 } // namespace AbyssEngine
-
-// ---- SpriteSystemRelease_87064.cpp ----
 
 // AbyssEngine::SpriteSystemRelease(AbyssEngine::Engine*, AbyssEngine::SpriteSystem**)
 namespace AbyssEngine {
@@ -2725,8 +2643,6 @@ void SpriteSystemRelease(Engine *engine, SpriteSystem **slot)
 
 } // namespace AbyssEngine
 
-// ---- CurveCreate_7415c.cpp ----
-
 // AbyssEngine::CurveCreate(void**, unsigned short, AbyssEngine::Curve**)
 // Allocate a Curve {count@0, void** data@4}, copy `count` 4-byte entries from the source.
 namespace AbyssEngine {
@@ -2746,11 +2662,9 @@ int CurveCreate(void **src, unsigned short count, Curve **out)
 
 } // namespace AbyssEngine
 
-// ---- operator___7390c.cpp ----
 // AbyssEngine::operator==(AbyssEngine::String const&, AbyssEngine::String const&)
 // Copy lhs into a temp, compare against rhs, return the comparison result.
 namespace AbyssEngine {
-
 
 bool operator==(const String &a, const String &b)
 {
@@ -2761,15 +2675,11 @@ bool operator==(const String &a, const String &b)
 
 } // namespace AbyssEngine
 
-// ---- MeshReleaseIntern_6c380.cpp ----
-
 // AbyssEngine::MeshReleaseIntern(AbyssEngine::Engine*, AbyssEngine::Mesh**)
 // Tear down a mesh: delete its GL buffer objects (gated on the flag byte at offset 0 and the
 // "uploaded" flag at 0x5c), free all CPU-side arrays, destroy the owned Transform, and free
 // the mesh. Skips GL/array teardown entirely when it is a shared/aliased mesh (byte@0x38).
 namespace AbyssEngine {
-
-
 
 static inline void releaseArray(void *&arr)
 {
@@ -2830,11 +2740,9 @@ void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot)
 
 } // namespace AbyssEngine
 
-// ---- operator__73838.cpp ----
 // AbyssEngine::operator+(AbyssEngine::String const&, float const&)
 // Append the rendering of a float to a string.
 namespace AbyssEngine {
-
 
 String operator+(const String &a, const float &b)
 {
@@ -2847,12 +2755,10 @@ String operator+(const String &a, const float &b)
 
 } // namespace AbyssEngine
 
-// ---- MeshConvertToVBO_6bbac.cpp ----
 // AbyssEngine::MeshConvertToVBO(AbyssEngine::Mesh*)
 // Convert a single mesh to a VBO when VBOs are globally enabled and the mesh is eligible
 // (flag@0x5c clear and pointer@0x84 set). Returns 1 on success, -4 (0xfffffffc) otherwise.
 namespace AbyssEngine {
-
 
 int MeshConvertToVBOIntern(Mesh *mesh);
 int TransformConvertToVBO(Transform *t);
@@ -2872,7 +2778,6 @@ int MeshConvertToVBO(Mesh *mesh)
 
 } // namespace AbyssEngine
 
-// ---- esMatrixMultiply_84618.cpp ----
 // AbyssEngine::esMatrixMultiply(ESMatrix* out, ESMatrix* a, ESMatrix* b)
 // Standard row-major 4x4 multiply: out = a * b. The shipped code uses NEON
 // multiply/multiply-accumulate over the columns of b weighted by each row of a, then
@@ -2897,7 +2802,6 @@ void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b)
 
 } // namespace AbyssEngine
 
-// ---- MeshCreateFromFile_6d074.cpp ----
 // AbyssEngine::MeshCreateFromFile(Engine*, char const*, Mesh**, Material*)
 // Allocate and identity-initialize a Mesh (0x88 bytes), open the model file, classify its
 // 7-byte magic into one of five format flags, read the submesh count, and dispatch to
@@ -3033,7 +2937,6 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 
 } // namespace AbyssEngine
 
-// ---- CameraIsSphereinViewFrustum_715cc.cpp ----
 // AbyssEngine::CameraIsSphereinViewFrustum(Vector const&, float radius, Matrix*, Camera*)
 // Test whether a world-space sphere (center, radius) overlaps the camera view frustum. The
 // center is transformed into camera space (optionally pre-multiplied by an extra matrix) and
@@ -3043,7 +2946,6 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 // Camera fields (byte offsets): +0x04 near, +0x08 far, +0x0c local matrix (0x3c),
 // +0x48 fwd-h slope, +0x50 fwd-v slope, +0x54 right radius scale, +0x58 up radius scale.
 namespace AbyssEngine {
-
 
 int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Camera *cam)
 {
@@ -3111,8 +3013,6 @@ int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Cam
 }
 
 } // namespace AbyssEngine
-
-// ---- CurveGetValue_74194.cpp ----
 
 // AbyssEngine::CurveGetValue(unsigned long long time, AbyssEngine::Curve* curve)
 //
@@ -3221,8 +3121,6 @@ long long CurveGetValue(unsigned long long time, Curve *curve)
 }
 
 } // namespace AbyssEngine
-
-// ---- computeFloatString_72af8.cpp ----
 
 // AbyssEngine::computeFloatString(float value, int intValue, int* precision, int* exponentOut,
 //                                 int extra)
@@ -3333,7 +3231,6 @@ void computeFloatString(float value, int intValue, int *precision, int *exponent
 
 } // namespace AbyssEngine
 
-// ---- TransformRelease_6c314.cpp ----
 // AbyssEngine::TransformRelease(AbyssEngine::Engine*, AbyssEngine::Transform**)
 // Recursively release child transforms (count@0x4c, array@0x50) and owned meshes
 // (count@0x3c, array@0x40).

@@ -12,13 +12,11 @@ extern "C" void  String_ctor_cstr(void *s, const char *text, bool copy);
 unsigned int GameText_getLanguage();
 extern "C" void  String_ctor_default(void *s);
 
-// ---- setVisible_1693a4.cpp ----
 void TouchButton::setVisible(bool value) {
     TouchButton *self = this;
     UC(self, 0xb2) = value;
 }
 
-// ---- setPosition_1692a8.cpp ----
 void TouchButton::setPosition(int x, int y, unsigned char flags) {
     TouchButton *self = this;
     unsigned int f = (unsigned int)flags;
@@ -41,20 +39,17 @@ void TouchButton::setPosition(int x, int y, unsigned char flags) {
     }
 }
 
-// ---- translate_1693b0.cpp ----
 void TouchButton::translate(int dx, int dy) {
     TouchButton *self = this;
     I(self, 0x78) = dx + I(self, 0x78);
     I(self, 0x7c) = dy + I(self, 0x7c);
 }
 
-// ---- setNumberText_1692f8.cpp ----
 void TouchButton::setNumberText(String *value) {
     TouchButton *self = this;
     return TB_assignString((char *)self + 0x2c, value);
 }
 
-// ---- _TouchButton_169188.cpp ----
 // TouchButton::~TouchButton() — real C++ destructor so the demangled symbol contains "~TouchButton".
 
 typedef unsigned int uint32_t;
@@ -70,7 +65,6 @@ void TouchButton::dtor() {
     d((char *)self + 0xc);
 }
 
-// ---- OnTouchMove_169a28.cpp ----
 unsigned int TouchButton::OnTouchMove(int px, int py) {
     TouchButton *self = this;
     if (UC(self, 0xb2) != 0 && UC(self, 0xb3) == 0) {
@@ -85,25 +79,21 @@ unsigned int TouchButton::OnTouchMove(int px, int py) {
     return 0;
 }
 
-// ---- isVisible_1693aa.cpp ----
 uint8_t TouchButton::isVisible() {
     TouchButton *self = this;
     return UC(self, 0xb2);
 }
 
-// ---- setPressProgress_1693ca.cpp ----
 void TouchButton::setPressProgress(float value) {
     TouchButton *self = this;
     F<float>(self, 0xbc) = value;
 }
 
-// ---- isTouched_1699d0.cpp ----
 uint8_t TouchButton::isTouched() {
     TouchButton *self = this;
     return UC(self, 0xb0);
 }
 
-// ---- getText_169352.cpp ----
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void
 
 // Returns the text String (stored at offset 0xc) by value. The copy-ctor returns
@@ -117,7 +107,6 @@ RetStr TouchButton::getText() {
     return r;
 }
 
-// ---- replaceTextKeepSize_169304.cpp ----
 // String::operator=
 // PaintCanvas singleton (deref twice). Hidden -> single pc-rel load.
 __attribute__((visibility("hidden"))) extern void **g_TB_canvas2;
@@ -132,13 +121,11 @@ void TouchButton::replaceTextKeepSize(String *text) {
     }
 }
 
-// ---- setSplitText_16934c.cpp ----
 void TouchButton::setSplitText(String *value) {
     TouchButton *self = this;
     return TB_assignString((char *)self + 0x18, value);
 }
 
-// ---- getPosition_169380.cpp ----
 struct Vec3 { float x, y, z; };
 
 void TouchButton_getPosition(Vec3 *out, TouchButton *self)
@@ -150,25 +137,21 @@ void TouchButton_getPosition(Vec3 *out, TouchButton *self)
     out->x = x;
 }
 
-// ---- setTextColor_1693c4.cpp ----
 void TouchButton::setTextColor(int color) {
     TouchButton *self = this;
     I(self, 0xac) = color;
 }
 
-// ---- setAlwaysPressed_1693be.cpp ----
 void TouchButton::setAlwaysPressed(bool value) {
     TouchButton *self = this;
     UC(self, 0xb1) = value;
 }
 
-// ---- resetTouch_1699c8.cpp ----
 void TouchButton::resetTouch() {
     TouchButton *self = this;
     UC(self, 0xb0) = 0;
 }
 
-// ---- OnTouchBegin_1699d8.cpp ----
 // FModSound singleton (deref twice). Hidden -> single pc-rel load.
 __attribute__((visibility("hidden"))) extern void **g_TB_sound;
 
@@ -184,7 +167,6 @@ bool TouchButton::OnTouchBegin(int px, int py) {
     return UC(self, 0xb0) != 0;
 }
 
-// ---- OnTouchEnd_169a54.cpp ----
 // FModSound singleton (deref twice). Hidden -> single pc-rel load.
 __attribute__((visibility("hidden"))) extern void **g_TB_sound;
 
@@ -204,37 +186,31 @@ unsigned int TouchButton::OnTouchEnd(int px, int py) {
     return res;
 }
 
-// ---- getWidth_169360.cpp ----
 int TouchButton::getWidth() {
     TouchButton *self = this;
     return I(self, 0x90);
 }
 
-// ---- setPosition_16936c.cpp ----
 void TouchButton::setPosition2(int x, int y) {
     TouchButton *self = this;
     return ((TouchButton *)(self))->setPosition(x, y, UC(self, 0x74));
 }
 
-// ---- setHalfTransparent_16939e.cpp ----
 void TouchButton::setHalfTransparent(bool value) {
     TouchButton *self = this;
     UC(self, 0xb3) = value;
 }
 
-// ---- setPressProgressHighlight_1693d0.cpp ----
 void TouchButton::setPressProgressHighlight(bool value) {
     TouchButton *self = this;
     UC(self, 0xb8) = value;
 }
 
-// ---- getHeight_169366.cpp ----
 int TouchButton::getHeight() {
     TouchButton *self = this;
     return I(self, 0x88);
 }
 
-// ---- init_168598.cpp ----
 // TouchButton::init(String const& text, unsigned int kind, int achId, int achStage,
 //                   int x, int y, int width, unsigned char flags0, unsigned char flags1)
 //
@@ -249,7 +225,6 @@ int TouchButton::getHeight() {
 
 // String::operator=
 extern "C" void  String_assign_cstr_tmp(void *dst, const char *lit);    // assign from literal via temp
-
 
 // Read-only id/frame tables, indexed by row. Hidden -> single pc-rel load.
 extern "C" unsigned int   TB_iconTexId(int eliteVariant, int stage);     // -> 0xb4 texture id
@@ -459,7 +434,6 @@ done:
     return 0;
 }
 
-// ---- TouchButton_168ffc.cpp ----
 // TouchButton::TouchButton(unsigned int, int, int, int, int, unsigned char, unsigned char)
 //
 // Same shape as the other constructors but the label text comes from an empty
@@ -490,7 +464,6 @@ void TouchButton_168ffc(TouchButton *self, unsigned int kind,
     ((String *)(tmp))->dtor();
 }
 
-// ---- draw_1693d8.cpp ----
 // TouchButton::draw()
 //   Renders the button for its current state. Saves the canvas colour and font
 //   spacing, draws the appropriate skin (single icon, 9-patch frame + label, a
@@ -670,7 +643,6 @@ void TouchButton::draw() {
     ((PaintCanvas*)g_PaintCanvas)->SetColor(savedColor);
 }
 
-// ---- TouchButton_168e88.cpp ----
 // TouchButton::TouchButton(String const& text, int type, int x, int y, int p5, uchar p6, uchar p7)
 // Default-constructs the three embedded label Strings (+0xc/+0x18/+0x2c), seeds the font color
 // (+0x08) from the active-font global, caches the current font spacing (+0xc4), then delegates
@@ -690,7 +662,6 @@ TouchButton * TouchButton::ctor7(String *text, int type, int x, int y, int p5, u
     return self;
 }
 
-// ---- setText_1691b0.cpp ----
 // String::operator=
 // PaintCanvas singleton holder (single pc-rel deref -> holder; object is *holder).
 __attribute__((visibility("hidden"))) extern void **g_TB_canvas3;
@@ -747,13 +718,11 @@ height:
     return ((TouchButton *)(self))->setPosition(I(self, 0x80), I(self, 0x84), UC(self, 0x74));
 }
 
-// ---- setYPosition_169374.cpp ----
 void TouchButton::setYPosition(int y) {
     TouchButton *self = this;
     return ((TouchButton *)(self))->setPosition(I(self, 0x78), y, UC(self, 0x74));
 }
 
-// ---- touchedInside_169938.cpp ----
 // Singleton pointer dereferenced twice (PaintCanvas-like). Hidden -> single pc-rel load.
 
 bool TouchButton::touchedInside(int px, int py) {
@@ -789,13 +758,11 @@ bool TouchButton::touchedInside(int px, int py) {
     return h + top + 1 >= py;
 }
 
-// ---- TouchButton_168d9c.cpp ----
 // TouchButton::TouchButton(unsigned int, unsigned int, int, int, int, unsigned char)
 //
 // Variant that also stashes the second unsigned argument at offset 0x28 (used
 // later as a pre-supplied image handle, see init() case 0x13). Otherwise the
 // usual three-String construction + spacing save + init().
-
 
 __attribute__((visibility("hidden"))) extern void **g_TB_canvas_ctor;
 __attribute__((visibility("hidden"))) extern unsigned int *g_TB_defSpacing;
@@ -819,7 +786,6 @@ void TouchButton_168d9c(TouchButton *self, unsigned int kind, unsigned int image
     ((String *)(tmp))->dtor();
 }
 
-// ---- TouchButton_1684f0.cpp ----
 // TouchButton::TouchButton(String const& text, int x, int y, int p4, uchar p5)
 // 5-arg overload: same setup as the other label ctors -- three embedded Strings, font color
 // (+0x08), cached spacing (+0xc4) -- then init().
@@ -838,7 +804,6 @@ TouchButton * TouchButton::ctor5(String *text, int x, int y, int p4, unsigned ch
     return self;
 }
 
-// ---- TouchButton_168f30.cpp ----
 // TouchButton::TouchButton(String const&, int, int, int, int,
 //                          unsigned char, unsigned char, unsigned int, int)
 //
@@ -873,7 +838,6 @@ TouchButton *TouchButton_168f30(TouchButton *self, String *text,
     return self;
 }
 
-// ---- TouchButton_1690e4.cpp ----
 // AbyssEngine::String::String()
 // Two singletons (cell value = holder; one deref yields value/object).
 __attribute__((visibility("hidden"))) extern int *g_TB_c1;
@@ -890,13 +854,11 @@ TouchButton * TouchButton::ctor6(int x, int y, String *text, int p4, int p5, uns
     return self;
 }
 
-// ---- TouchButton_168cb0.cpp ----
 // TouchButton::TouchButton(unsigned int, int, int, int, unsigned char)
 //
 // Five-argument convenience constructor: kind + position + a single flag byte.
 // Builds the three embedded Strings, samples the default spacing/kerning, then
 // runs init() with an empty label and a fixed extra parameter (0x44).
-
 
 __attribute__((visibility("hidden"))) extern void **g_TB_canvas_ctor;
 __attribute__((visibility("hidden"))) extern unsigned int *g_TB_defSpacing;

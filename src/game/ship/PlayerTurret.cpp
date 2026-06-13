@@ -39,14 +39,10 @@ float VectorLength(const Vector *v);
 extern "C" void *Explosion_dtor(Explosion *self);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
 
-// ---- setTurretRange_157418.cpp ----
-
 void PlayerTurret::setTurretRange(int range)
 {
     I(this, 0x164) = range;
 }
-
-// ---- handleSentryGun_15774c.cpp ----
 
 void PlayerTurret::handleSentryGun(int delta)
 {
@@ -59,18 +55,13 @@ void PlayerTurret::handleSentryGun(int delta)
     }
 }
 
-// ---- setHost_15741e.cpp ----
 using AbyssEngine::AEMath::Vector;
-
-
 
 void PlayerTurret::setHost(KIPlayer *host, const Vector &offset)
 {
     P(this, 0x154) = host;
     *(Vector *)((Vector *)B(this, 0x158)) = *(const Vector *)(&offset);
 }
-
-// ---- render_157bcc.cpp ----
 
 void PlayerTurret::render()
 {
@@ -96,8 +87,6 @@ void PlayerTurret::renderBase()
     ((KIPlayer *)this)->render();
 }
 
-// ---- handleTurret_157782.cpp ----
-
 void PlayerTurret::handleTurret(int delta)
 {
     I(this, 0x130) = I(this, 0x130) + delta;
@@ -107,8 +96,6 @@ void PlayerTurret::handleTurret(int delta)
         ((PlayerTurret *)(this))->handleRotation(delta, TP<AEGeometry>(this, 0x148), TP<AEGeometry>(this, 0x144));
     }
 }
-
-// ---- revive_157c08.cpp ----
 
 void PlayerTurret::revive()
 {
@@ -128,10 +115,7 @@ void PlayerTurret::revive()
     ((AEGeometry *)(geometry))->setVisible(true);
 }
 
-// ---- setPosition_1573fc.cpp ----
 using AbyssEngine::AEMath::Vector;
-
-
 
 void PlayerTurret::setPosition(const Vector &position)
 {
@@ -141,15 +125,11 @@ void PlayerTurret::setPosition(const Vector &position)
     I(this, 0x60) = *(const int *)B(&position, 0x8);
 }
 
-// ---- reset_157432.cpp ----
-
 void PlayerTurret::reset()
 {
     ((KIPlayer *)(this))->reset();
     I(this, 0x88) = 0;
 }
-
-// ---- setLevel_1573bc.cpp ----
 
 void PlayerTurret::setLevel(Level *level)
 {
@@ -161,33 +141,25 @@ void PlayerTurret::setLevel(Level *level)
     ((ParticleSystemManager *)(I(P(this, 0x54), 0x74)))->enableSystemEmit(system, 0);
 }
 
-// ---- getHost_15742c.cpp ----
-
 KIPlayer *PlayerTurret::getHost()
 {
     return TP<KIPlayer>(this, 0x154);
 }
 
-// ---- _PlayerTurret_1573ac.cpp ----
 // PlayerTurret deleting destructor (D0): run the complete dtor, then free.
 void _ZN12PlayerTurretD0Ev(PlayerTurret *self)
 {
     ::operator delete(((PlayerTurret *)(self))->completeDtor());
 }
 
-// ---- setScaling_1573f0.cpp ----
-
 void PlayerTurret::setScaling(float scale)
 {
     ((AEGeometry *)(TP<AEGeometry>(this, 0x148)))->setScaling(scale);
 }
 
-// ---- handleRotation_157908.cpp ----
 using AbyssEngine::AEMath::Vector;
 
-
 extern uint32_t *gPlayerTurretCanvas_rotation __attribute__((visibility("hidden")));
-
 
 void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometry *turretGeometry)
 {
@@ -272,15 +244,12 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     }
 }
 
-// ---- update_157450.cpp ----
 using AbyssEngine::AEMath::Matrix;
 using AbyssEngine::AEMath::Vector;
-
 
 extern int *gPlayerTurretSound __attribute__((visibility("hidden")));
 extern int *gPlayerTurretRandom __attribute__((visibility("hidden")));
 extern int *gPlayerTurretStanding __attribute__((visibility("hidden")));
-
 
 void PlayerTurret::update(int delta)
 {
@@ -402,10 +371,7 @@ void PlayerTurret::update(int delta)
     }
 }
 
-// ---- pickEnemy_1577b8.cpp ----
 using AbyssEngine::AEMath::Vector;
-
-
 
 void PlayerTurret::pickEnemy()
 {
@@ -460,10 +426,7 @@ void PlayerTurret::pickEnemy()
     }
 }
 
-// ---- _PlayerTurret_157340.cpp ----
 extern void *gPlayerTurretVtable __attribute__((visibility("hidden")));
-
-
 
 PlayerTurret::~PlayerTurret() noexcept(false)
 {
@@ -504,13 +467,10 @@ PlayerTurret *PlayerTurret::completeDtor()
     return this;
 }
 
-// ---- PlayerTurret_157040.cpp ----
 using AbyssEngine::AEMath::Vector;
 
 extern void *gPlayerTurretVtable_ctor __attribute__((visibility("hidden")));
 extern uint32_t *gPlayerTurretCanvas __attribute__((visibility("hidden")));
-
-
 
 typedef void (*SetPositionFn)(PlayerTurret *self, const Vector *position);
 

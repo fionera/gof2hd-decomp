@@ -1,23 +1,18 @@
 #include "gof2/engine/render/Sprite.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-
-
-// ---- setPosition_d0e52.cpp ----
 void Sprite::setPosition(int x, int y)
 {
     this->posX = x;
     this->posY = y;
 }
 
-// ---- setRefPixelPosition_d0e4c.cpp ----
 void Sprite::setRefPixelPosition(int x, int y)
 {
     this->posX = x;
     this->posY = y;
 }
 
-// ---- _Sprite_d0e30.cpp ----
 Sprite::~Sprite()
 {
     void *frames = this->frames;
@@ -27,20 +22,17 @@ Sprite::~Sprite()
     this->frames = 0;
 }
 
-// ---- defineReferencePixel_d0e46.cpp ----
 void Sprite::defineReferencePixel(int x, int y)
 {
     this->refPixelX = x;
     this->refPixelY = y;
 }
 
-// ---- nextFrame_d1018.cpp ----
 void Sprite::nextFrame()
 {
     return setFrame(this->currentFrame + 1);
 }
 
-// ---- draw_d0e68.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_Sprite_draw_image_canvas;
 __attribute__((visibility("hidden"))) extern void **g_Sprite_draw_region_canvas;
 
@@ -88,7 +80,6 @@ void Sprite::draw(float scaleX, float scaleY)
     ((PaintCanvas*)canvas)->DrawImage2D(image, drawX, drawY, scaledWidth, scaledHeight, (unsigned char)0x11, (unsigned char)0x11, (unsigned char)0);
 }
 
-// ---- Sprite_d0d18.cpp ----
 Sprite::Sprite(uint32_t image, int frameWidth, int frameHeight)
 {
     void **holder = g_Sprite_canvas;
@@ -117,13 +108,11 @@ Sprite::Sprite(uint32_t image, int frameWidth, int frameHeight)
     setFrame(0);
 }
 
-// ---- prevFrame_d1020.cpp ----
 void Sprite::prevFrame()
 {
     return setFrame(this->currentFrame - 1);
 }
 
-// ---- drawRegion_d0f8c.cpp ----
 void Sprite::drawRegion(int srcX, int srcY, int w, int h)
 {
     uint32_t *frames = this->frames;
@@ -154,7 +143,6 @@ void Sprite::drawRegion(int srcX, int srcY, int w, int h)
     ((PaintCanvas*)canvas)->DrawRegion2D(image, srcX, srcY, w, h, 0.0f, 0, 0, x, y);
 }
 
-// ---- Sprite_d0dd0.cpp ----
 Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight)
 {
     void **holder = g_Sprite_canvas;
@@ -180,19 +168,16 @@ Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight
     setFrame(0);
 }
 
-// ---- getFrameWidth_d0e60.cpp ----
 int Sprite::getFrameWidth()
 {
     return this->frameWidth;
 }
 
-// ---- getFrameHeight_d0e64.cpp ----
 int Sprite::getFrameHeight()
 {
     return this->frameHeight;
 }
 
-// ---- setFrame_d0d88.cpp ----
 void Sprite::setFrame(int frame)
 {
     if (frame < 0) {

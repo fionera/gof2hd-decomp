@@ -16,14 +16,10 @@ struct Radio;
 struct RadioMessage;
 struct Wanted;
 
-
-
 namespace AbyssEngine {
 
 }
 using AbyssEngine::String;
-
-
 
 #include <new>
 void *operator new(__SIZE_TYPE__ size);
@@ -41,8 +37,6 @@ static inline String RadioStringFromCstr(const char *c) {
 }
 extern "C" void operator_delete(void *ptr);
 extern "C" void operator_delete__(void *ptr);
-
-
 
 // Minimal Layout view with the byte offsets Radio reads (full Layout lives in Layout.h,
 // which is not part of this batch and is not layout-compatible with common.h's placement-new).

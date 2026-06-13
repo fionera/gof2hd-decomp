@@ -1,11 +1,9 @@
 #include "gof2/engine/math/BoundingAAB.h"
 #include "gof2/engine/math/BoundingVolume.h"
 
-
 extern "C" float external_fabsf(float value);
 extern "C" Vector AEMath_operator_sub(const Vector &a, const Vector &b);
 
-// ---- outerCollide_981d2.cpp ----
 int BoundingAAB::outerCollide(float x, float y, float z)
 {
     BoundingAAB *self = this;
@@ -38,7 +36,6 @@ int BoundingAAB::outerCollide(float x, float y, float z)
     return 0;
 }
 
-// ---- projectCollisionOnSurface_98280.cpp ----
 Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
 {
     float distances[6];
@@ -87,7 +84,6 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     return AEMath_operator_sub(point, offsets[closestIndex]);
 }
 
-// ---- BoundingAAB_98104.cpp ----
 __attribute__((visibility("hidden"))) extern void *const g_BoundingAAB_vtbl;
 
 BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
@@ -120,7 +116,6 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
     self->halfExtentZ = extentZ;
 }
 
-// ---- getCollisionNormal_98270.cpp ----
 Vector BoundingAAB::getCollisionNormal(const Vector &)
 {
     Vector out;
@@ -130,9 +125,7 @@ Vector BoundingAAB::getCollisionNormal(const Vector &)
     return out;
 }
 
-// ---- collide_9819c.cpp ----
 typedef int (*CollideFn)(BoundingAAB *self, float x, float y, float z);
-
 
 int BoundingAAB::collide(float x, float y, float z)
 {
@@ -143,7 +136,6 @@ int BoundingAAB::collide(float x, float y, float z)
     return ((BoundingVolume *)(this))->collide(x, y, z);
 }
 
-// ---- update_9827a.cpp ----
 void BoundingAAB::update(float x, float y, float z)
 {
     return ((BoundingVolume *)(this))->update(x, y, z);

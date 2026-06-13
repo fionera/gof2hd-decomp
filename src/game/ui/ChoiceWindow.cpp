@@ -26,8 +26,6 @@ void TouchButton_getPosition(float *out, void *self);
 void Status_replaceHash(String *out, void *status, String const &pattern, String const &value);
 }
 
-
-// ---- OnTouchMove_147518.cpp ----
 int ChoiceWindow::OnTouchMove(int x, int y)
 {
     if (this->buttonsVisible != 0) {
@@ -39,13 +37,11 @@ int ChoiceWindow::OnTouchMove(int x, int y)
     return 0;
 }
 
-// ---- hasChoice_146d9c.cpp ----
 uint8_t ChoiceWindow::hasChoice()
 {
     return this->hasButtons;
 }
 
-// ---- setWidth_146da4.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_ChoiceWindow_screenWidth;
 
 void ChoiceWindow::setWidth(int width)
@@ -54,7 +50,6 @@ void ChoiceWindow::setWidth(int width)
     this->x = *g_ChoiceWindow_screenWidth / 2 - width / 2;
 }
 
-// ---- set_146954.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_146954;
 
 void ChoiceWindow::set(String const &a, String const &b)
@@ -66,7 +61,6 @@ void ChoiceWindow::set(String const &a, String const &b)
     set(*title, a, false, *left, *center, b, -1, -1);
 }
 
-// ---- set_146d5c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_146d5c;
 
 void ChoiceWindow::set(String const &text, bool flag)
@@ -75,7 +69,6 @@ void ChoiceWindow::set(String const &text, bool flag)
     set(*title, text, flag);
 }
 
-// ---- set_1468f4.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_1468f4;
 
 void ChoiceWindow::set(String const &title, String const &message, bool flag)
@@ -87,7 +80,6 @@ void ChoiceWindow::set(String const &title, String const &message, bool flag)
     set(title, message, flag, *left, *center, *right, -1, -1);
 }
 
-// ---- OnTouchEnd_147564.cpp ----
 int ChoiceWindow::OnTouchEnd(int x, int y)
 {
     if (this->buttonsVisible != 0) {
@@ -102,7 +94,6 @@ int ChoiceWindow::OnTouchEnd(int x, int y)
     return -1;
 }
 
-// ---- set_1468c8.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_1468c8;
 
 void ChoiceWindow::set(String const &text)
@@ -111,19 +102,16 @@ void ChoiceWindow::set(String const &text)
     set(*title, text, false);
 }
 
-// ---- update_1471b4.cpp ----
 void ChoiceWindow::update(int dt)
 {
     ((ScrollTouchWindow *)(this->scrollWindow))->update(dt);
 }
 
-// ---- removeButtons_146d94.cpp ----
 void ChoiceWindow::removeButtons()
 {
     this->buttonsVisible = 0;
 }
 
-// ---- OnTouchBegin_1474cc.cpp ----
 int ChoiceWindow::OnTouchBegin(int x, int y)
 {
     if (this->buttonsVisible != 0) {
@@ -135,7 +123,6 @@ int ChoiceWindow::OnTouchBegin(int x, int y)
     return 0;
 }
 
-// ---- _ChoiceWindow_146870.cpp ----
 ChoiceWindow::~ChoiceWindow()
 {
     if (this->leftButton != 0) { ((TouchButton *)(this->leftButton))->dtor(); operator delete(this->leftButton); }
@@ -154,7 +141,6 @@ ChoiceWindow::~ChoiceWindow()
     this->title.~String();
 }
 
-// ---- setHeight_146dc4.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_layout_146dc4;
 __attribute__((visibility("hidden"))) extern int *g_ChoiceWindow_screenHeight_146dc4;
 
@@ -185,7 +171,6 @@ void ChoiceWindow::setHeight(int height)
     ((TouchButton *)(button))->setPosition(this->x + this->width / 2 + F<int>(layout, 0x4c) / 2, this->y + this->height - this->padding, 0x21);
 }
 
-// ---- setMedal_146e8c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_146e8c;
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_replaceHash_146e8c;
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_achievements_146e8c;
@@ -239,7 +224,6 @@ void ChoiceWindow::setMedal(int medal, int count)
     this->buttonsVisible = 1;
 }
 
-// ---- ChoiceWindow_1467ec.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_config_1467ec;
 __attribute__((visibility("hidden"))) extern int *g_ChoiceWindow_screenWidth_1467ec;
 
@@ -267,7 +251,6 @@ ChoiceWindow::ChoiceWindow()
     this->x = screenWidth / 2 - width / 2;
 }
 
-// ---- set_1469b0.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_gameText_1469b0;
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_defaultConfig_1469b0;
 __attribute__((visibility("hidden"))) extern int *g_ChoiceWindow_screenWidth_1469b0;
@@ -361,7 +344,6 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     this->buttonsVisible = 1;
 }
 
-// ---- setMiscButton_147068.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_layout_147068_a;
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_layout_147068_b;
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_layout_147068_c;
@@ -403,7 +385,6 @@ void ChoiceWindow::setMiscButton(String const &text)
                                       this->height / 2 + F<int>(layout, 0x8));
 }
 
-// ---- draw_1471bc.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_layout_1471bc;
 __attribute__((visibility("hidden"))) extern void **g_ChoiceWindow_canvas_1471bc;
 __attribute__((visibility("hidden"))) extern char g_ChoiceWindow_medalColorsLow_1471bc[];
@@ -502,14 +483,12 @@ void ChoiceWindow::draw()
     }
 }
 
-// ---- left_1575c4.cpp ----
 // Invoked when the left choice button is pressed. The decision result is read
 // back through hasChoice(); this callback itself performs no work in the
 // shipped build (the dialog merely records the press via the button state).
 void ChoiceWindow::left() {
 }
 
-// ---- right_1575c6.cpp ----
 // Invoked when the right choice button is pressed; an intentional no-op, the
 // caller queries hasChoice() / the button state for the actual decision.
 void ChoiceWindow::right() {

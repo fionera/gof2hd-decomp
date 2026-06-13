@@ -1,6 +1,5 @@
 #include "gof2/game/mission/Item.h"
 
-
 extern "C" void Array_Item_ctor(ItemArray *array);
 extern "C" void ArraySetLength_Item(uint32_t length, ItemArray *array);
 extern "C" void ArrayAdd_Item(Item *item, ItemArray *array);
@@ -20,7 +19,6 @@ struct Status {
 };
 extern Status *status;
 
-// ---- getAttribute_e01b4.cpp ----
 __attribute__((minsize))
 int Item::getAttribute(int attribute)
 {
@@ -36,7 +34,6 @@ int Item::getAttribute(int attribute)
     return result;
 }
 
-// ---- getQuantities_e01ac.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -44,7 +41,6 @@ ItemArray *Item::getQuantities() {
     return quantities;
 }
 
-// ---- getMissingIngredients_e0180.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -52,7 +48,6 @@ int Item::getMissingIngredients() {
     return missingIngredients;
 }
 
-// ---- adjustPrice_e0848.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -67,7 +62,6 @@ void Item::adjustPrice(Station *station)
                                          static_cast<float>(maxPrice - minPrice));
 }
 
-// ---- getTecLevel_e0118.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -75,7 +69,6 @@ int Item::getTecLevel() {
     return tecLevel;
 }
 
-// ---- setUnsaleable_e00fa.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -84,7 +77,6 @@ void Item::setUnsaleable(bool value)
     unsaleable = value;
 }
 
-// ---- setMaxPrice_e0144.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -92,14 +84,12 @@ void Item::setMaxPrice(int value) {
     maxPrice = value;
 }
 
-// ---- checkCredits_e0824.cpp ----
 __attribute__((minsize)) bool Item::checkCredits()
 {
     int credits = status->getCredits();
     return credits >= price;
 }
 
-// ---- getOccurence_e0170.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -107,7 +97,6 @@ int Item::getOccurence() {
     return occurence;
 }
 
-// ---- setMissingIngredients_e0184.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -115,7 +104,6 @@ void Item::setMissingIngredients(int value) {
     missingIngredients = value;
 }
 
-// ---- makeItem_e0338.cpp ----
 #define wchar_t gof2_wchar_t
 
 Item *Item::makeItem(int amount)
@@ -127,7 +115,6 @@ Item *Item::makeItem(int amount)
     return item;
 }
 
-// ---- canBeInstalledMultipleTimes_e0100.cpp ----
 static const bool canBeInstalledMultipleTimesBySort[] = {
     true,  true,  true,  true,  true,  true,  true,  true,
     false, false, false, true,  true,  false, false, false,
@@ -142,7 +129,6 @@ __attribute__((minsize)) bool Item::canBeInstalledMultipleTimes()
     return canBeInstalledMultipleTimesBySort[sort];
 }
 
-// ---- transaction_e01e8.cpp ----
 __attribute__((minsize)) int Item::transaction(bool buy, int, bool useCredits)
 {
     if (buy) {
@@ -171,12 +157,10 @@ __attribute__((minsize)) int Item::transaction(bool buy, int, bool useCredits)
     return 0;
 }
 
-// ---- setStationAmount_e0188.cpp ----
 void Item::setStationAmount(int value) {
     stationAmount = value;
 }
 
-// ---- getIngredients_e01a8.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -184,12 +168,10 @@ ItemArray *Item::getIngredients() {
     return ingredients;
 }
 
-// ---- getMaxPrice_e012c.cpp ----
 int Item::getMaxPrice() {
     return maxPrice;
 }
 
-// ---- getType_e0114.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -197,12 +179,10 @@ int Item::getType() {
     return type;
 }
 
-// ---- setAmount_e016c.cpp ----
 void Item::setAmount(int value) {
     amount = value;
 }
 
-// ---- isInList_e02a8.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -211,7 +191,6 @@ bool Item::isInList(Item *item, ItemArray *items)
     return isInList(item->index, items);
 }
 
-// ---- changeBlueprintAmount_e01a0.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -219,7 +198,6 @@ void Item::changeBlueprintAmount(int delta) {
     blueprintAmount += delta;
 }
 
-// ---- setMinPrice_e0140.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -227,7 +205,6 @@ void Item::setMinPrice(int value) {
     minPrice = value;
 }
 
-// ---- getMinPriceSystem_e0138.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -236,18 +213,15 @@ int Item::getMinPriceSystem()
     return minPriceSystem;
 }
 
-// ---- getStationAmount_e018c.cpp ----
 int Item::getStationAmount()
 {
     return stationAmount;
 }
 
-// ---- getTotalPrice_e0124.cpp ----
 int Item::getTotalPrice() {
     return price * amount;
 }
 
-// ---- changeAmount_e0178.cpp ----
 void Item::changeAmount(int delta)
 {
     amount += delta;
@@ -259,7 +233,6 @@ void Item::addAmount(int delta)
     amount += delta;
 }
 
-// ---- makeItem_e07c6.cpp ----
 Item *Item::makeItem(int amount, int price)
 {
     Item *item = clone();
@@ -268,13 +241,11 @@ Item *Item::makeItem(int amount, int price)
     return item;
 }
 
-// ---- _Item_e00f8.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
 Item::~Item() {}
 
-// ---- transactionBlueprint_e023c.cpp ----
 __attribute__((minsize))
 int Item::transactionBlueprint(bool fabricate)
 {
@@ -301,7 +272,6 @@ int Item::transactionBlueprint(bool fabricate)
     return 0;
 }
 
-// ---- setPrice_e013c.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -309,7 +279,6 @@ void Item::setPrice(int value) {
     price = value;
 }
 
-// ---- getSort_e011c.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -317,7 +286,6 @@ int Item::getSort() {
     return sort;
 }
 
-// ---- getBlueprintAmount_e019c.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -326,7 +294,6 @@ int Item::getBlueprintAmount()
     return blueprintAmount;
 }
 
-// ---- makeItem_e0810.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -338,12 +305,10 @@ Item *Item::makeItem() {
     return item;
 }
 
-// ---- getSinglePrice_e0120.cpp ----
 int Item::getSinglePrice() {
     return price;
 }
 
-// ---- getIndex_e0110.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -351,7 +316,6 @@ int Item::getIndex() {
     return index;
 }
 
-// ---- getPriceRate_e0148.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -360,7 +324,6 @@ float Item::getPriceRate() {
            static_cast<float>(maxPrice - minPrice);
 }
 
-// ---- isInList_e026e.cpp ----
 __attribute__((minsize))
 bool Item::isInList(int index, int amount, ItemArray *items)
 {
@@ -377,12 +340,10 @@ bool Item::isInList(int index, int amount, ItemArray *items)
     return false;
 }
 
-// ---- isInList_e02a0.cpp ----
 bool Item::isInList(int index, ItemArray *items) {
     return isInList(index, 1, items);
 }
 
-// ---- equals_e07a6.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -394,10 +355,8 @@ __attribute__((minsize)) bool Item::equals(Item *other)
     return false;
 }
 
-// ---- clone_e07d8.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
-
 
 Item *Item::clone()
 {
@@ -413,12 +372,10 @@ Item *Item::clone()
     return copy;
 }
 
-// ---- getAttributes_e01b0.cpp ----
 ItemArray *Item::getAttributes() {
     return attributes;
 }
 
-// ---- getMinPrice_e0130.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -426,7 +383,6 @@ int Item::getMinPrice() {
     return minPrice;
 }
 
-// ---- init_e00a6.cpp ----
 __attribute__((minsize)) void Item::init()
 {
     if (attributes == 0) {
@@ -454,7 +410,6 @@ __attribute__((minsize)) void Item::init()
 
 }
 
-// ---- isUnsaleable_e08c4.cpp ----
 #define wchar_t gof2_wchar_t
 
 bool Item::isUnsaleable()
@@ -462,14 +417,12 @@ bool Item::isUnsaleable()
     return unsaleable;
 }
 
-// ---- Item_e0090.cpp ----
 __attribute__((minsize)) Item::Item(ItemArray *ingredients_, ItemArray *quantities_, ItemArray *attributes_)
     : ingredients(ingredients_), quantities(quantities_), attributes(attributes_)
 {
     init();
 }
 
-// ---- changeStationAmount_e0190.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -477,12 +430,10 @@ void Item::changeStationAmount(int delta) {
     stationAmount += delta;
 }
 
-// ---- getAmount_e0174.cpp ----
 int Item::getAmount() {
     return amount;
 }
 
-// ---- getMaxPriceSystem_e0134.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -490,7 +441,6 @@ int Item::getMaxPriceSystem() {
     return maxPriceSystem;
 }
 
-// ---- setBlueprintAmount_e0198.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -498,7 +448,6 @@ void Item::setBlueprintAmount(int value) {
     blueprintAmount = value;
 }
 
-// ---- checkCargoSpace_e088c.cpp ----
 __attribute__((minsize)) bool Item::checkCargoSpace()
 {
     int currentLoad = status->getShip()->getCurrentLoad();
@@ -507,7 +456,6 @@ __attribute__((minsize)) bool Item::checkCargoSpace()
     return requiredLoad <= maxLoad;
 }
 
-// ---- isWeapon_e07ba.cpp ----
 #define wchar_t gof2_wchar_t
 #undef wchar_t
 
@@ -516,7 +464,6 @@ bool Item::isWeapon()
     return static_cast<uint32_t>(type) < 3;
 }
 
-// ---- combineItems_e034a.cpp ----
 ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems)
 {
     ItemArray *result = stationItems;
@@ -587,9 +534,6 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems)
     return result;
 }
 
-// ---- fabricate_e02ae.cpp ----
-
-
 __attribute__((minsize)) void Item::fabricate(Item *item, ItemArray *items, int amount)
 {
     volatile uint32_t *ingredients = reinterpret_cast<volatile uint32_t *>(item->ingredients);
@@ -625,8 +569,6 @@ check:
     return ArrayAdd_Array(items, made);
 }
 
-// ---- extractItems_e049c.cpp ----
-
 ItemArray *Item::extractItems(ItemArray *items, bool station)
 {
     if (items == 0) {
@@ -656,7 +598,6 @@ ItemArray *Item::extractItems(ItemArray *items, bool station)
     return extracted;
 }
 
-// ---- combineDuplicates_e0504.cpp ----
 __attribute__((minsize))
 void Item::combineDuplicates(ItemArray *items)
 {
@@ -684,9 +625,6 @@ void Item::combineDuplicates(ItemArray *items)
         }
     }
 }
-
-// ---- mixItems_e05ca.cpp ----
-
 
 ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems)
 {

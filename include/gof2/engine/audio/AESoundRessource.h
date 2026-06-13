@@ -74,8 +74,6 @@ public:
 
 } // namespace AbyssEngine
 
-
-
 struct AESoundStackFrame {
     char info[12];
     int index;

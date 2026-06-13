@@ -31,8 +31,6 @@ extern "C" void *BloomShader_typeinfo_source;
 extern "C" void *BloomShader_typeinfo_dest;
 extern "C" void FBOContainer_ctor(void *self, void *engine, String *name);
 
-// ---- Init_895ec.cpp ----
-
 namespace AbyssEngine {
 
 void BloomShader::Init(::Engine *)
@@ -103,13 +101,11 @@ void BloomShader::Init(::Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _BloomShader_8947c.cpp ----
 void _ZN11AbyssEngine11BloomShaderD0Ev(AbyssEngine::BloomShader *self)
 {
     return ::operator delete(_ZN11AbyssEngine11BloomShaderD1Ev(self));
 }
 
-// ---- UpdateMeshData_8a158.cpp ----
 extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
@@ -145,12 +141,10 @@ void BloomShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- RenderEffect_89820.cpp ----
 extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
                                       unsigned char normalized, int stride, const void *pointer);
-
 
 namespace AbyssEngine {
 
@@ -302,7 +296,6 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_897f4.cpp ----
 namespace AbyssEngine {
 
 void BloomShader::SetInActive()
@@ -315,7 +308,6 @@ void BloomShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- BloomShader_893dc.cpp ----
 namespace AbyssEngine {
 
 __attribute__((minsize)) BloomShader::BloomShader()
@@ -328,9 +320,6 @@ __attribute__((minsize)) BloomShader::BloomShader()
 }
 
 } // namespace AbyssEngine
-
-// ---- InternalInit_8948c.cpp ----
-
 
 namespace AbyssEngine {
 
@@ -366,7 +355,6 @@ void BloomShader::InternalInit(::Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- _BloomShader_89468.cpp ----
 void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self)
 {
     *(void **)self = &BloomShader_vtable + 8;
@@ -374,12 +362,10 @@ void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self)
     return self;
 }
 
-// ---- RenderEffect_89cd8.cpp ----
 extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
                                    const void *value);
 extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
                                       unsigned char normalized, int stride, const void *pointer);
-
 
 namespace AbyssEngine {
 

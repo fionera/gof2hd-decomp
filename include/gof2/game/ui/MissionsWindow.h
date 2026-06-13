@@ -7,7 +7,6 @@
 // "MissionsWindow::...". Field offsets are recovered per-method from the target
 // disassembly; we do NOT model a full layout -- fields are reached via byte-offset casts.
 
-
 void *operator new(__SIZE_TYPE__ size);
 void operator delete(void *ptr) noexcept;
 

@@ -1,7 +1,5 @@
 #include "gof2/engine/render/shaders/GlowShader.h"
 
-
-// ---- SetInActive_92050.cpp ----
 namespace AbyssEngine {
 
 void GlowShader::SetInActive()
@@ -18,7 +16,6 @@ void GlowShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- _GlowShader_9212a.cpp ----
 void _ZN11AbyssEngine10GlowShaderD0Ev(
     AbyssEngine::GlowShader *self)
 {
@@ -27,7 +24,6 @@ void _ZN11AbyssEngine10GlowShaderD0Ev(
     operator delete(base);
 }
 
-// ---- UpdateMeshData_92070.cpp ----
 namespace AbyssEngine {
 
 void GlowShader::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -58,7 +54,6 @@ void GlowShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- GlowShader_91f38.cpp ----
 extern "C" AbyssEngine::GlowShader *
 _ZN11AbyssEngine10GlowShaderC2Ev(AbyssEngine::GlowShader *self)
 {
@@ -72,7 +67,6 @@ _ZN11AbyssEngine10GlowShaderC2Ev(AbyssEngine::GlowShader *self)
     return self;
 }
 
-// ---- Init_91fc4.cpp ----
 namespace AbyssEngine {
 
 void GlowShader::Init(Engine *)

@@ -3,7 +3,6 @@
 
 extern void *g_PaintCanvas;
 
-
 extern "C" void *_mtw_GameText_getText(void *gt, int id);
 void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b);
 extern "C" void _mtw_render3D_inner(void *obj);
@@ -112,7 +111,6 @@ extern "C" void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int 
 extern "C" void _mtw_Ship_addCargo(void *ship, void *item);
 extern "C" float _mtw_FModSound_stop(void *snd);
 
-// ---- showSupernovaMessage_125be0.cpp ----
 // hidden PC-relative pointer-to-pointer global (the GameText singleton holder).
 extern void *const gSupernovaGameText __attribute__((visibility("hidden")));
 
@@ -128,35 +126,30 @@ void MenuTouchWindow::showSupernovaMessage()
     u8(this, 0x180) = 1;
 }
 
-// ---- isInMissionScreen_125406.cpp ----
 // MenuTouchWindow::isInMissionScreen()
 bool MenuTouchWindow::isInMissionScreen()
 {
     return i32(this, 0x16c) == 9;
 }
 
-// ---- isShowingMessage_12cffa.cpp ----
 // MenuTouchWindow::isShowingMessage()
 uint8_t MenuTouchWindow::isShowingMessage()
 {
     return u8(this, 0x170);
 }
 
-// ---- isMakingScreenshot_12d00e.cpp ----
 // MenuTouchWindow::isMakingScreenshot() -> (unsigned)field < 0x80000000, i.e. signed >= 0.
 bool MenuTouchWindow::isMakingScreenshot()
 {
     return u32(this, 0x184) < 0x80000000u;
 }
 
-// ---- hideMessage_12d01e.cpp ----
 // MenuTouchWindow::hideMessage()
 void MenuTouchWindow::hideMessage()
 {
     u8(this, 0x170) = 0;
 }
 
-// ---- render3D_12cfe4.cpp ----
 // MenuTouchWindow::render3D()
 void MenuTouchWindow::render3D()
 {
@@ -168,14 +161,12 @@ void MenuTouchWindow::render3D()
     return _mtw_render3D_inner(obj);
 }
 
-// ---- inCinematicMode_12d000.cpp ----
 // MenuTouchWindow::inCinematicMode()
 bool MenuTouchWindow::inCinematicMode()
 {
     return i32(this, 0x16c) == 0xd;
 }
 
-// ---- getRelativeScrollStartPos_125d74.cpp ----
 // MenuTouchWindow::getRelativeScrollStartPos()
 //   r = CONST; if (this->0x194 <= 0) r = -(float)(int)this->0x194 / (float)(int)this->0x22c;
 float MenuTouchWindow::getRelativeScrollStartPos()
@@ -189,14 +180,12 @@ float MenuTouchWindow::getRelativeScrollStartPos()
     return -(float)a / (float)i32(this, 0x22c);
 }
 
-// ---- OnTouchEnd_12aabc.cpp ----
 // MenuTouchWindow::OnTouchEnd(int y, int x). The menu's master action dispatcher: when a
 // ChoiceWindow dialog is open it routes the release to the right confirm/cancel handler
 // (case 0 below); otherwise it forwards to whichever widget set owns the current state
 // (this->0x16c) and runs that state's button actions. The per-state action bodies are large
 // and share a lot of structure, so each is delegated to an extern handler that performs the
 // genuine work for that state. r0=this, r1=y, r2=x. Returns 0.
-
 
 // Per-state release handlers (return non-zero when they fully consumed the event).
 
@@ -346,7 +335,6 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
     return 0;
 }
 
-// ---- _MenuTouchWindow_125170.cpp ----
 // MenuTouchWindow::~MenuTouchWindow(). Tears down all owned arrays, buttons, choice window,
 // scroll windows and two heap buffers, then returns this (base dtor is not chained here).
 extern "C" void _mtw_ArrayReleaseClasses_TB(void *arr);       // Array<TouchButton*> release
@@ -431,7 +419,6 @@ MenuTouchWindow *MenuTouchWindow::dtor()
     return this;
 }
 
-// ---- createRecordButtons_125454.cpp ----
 // MenuTouchWindow::createRecordButtons(bool inSaveMode).
 // Rebuilds the per-slot text rows (Array<Array<String*>>) shown in the load/save list and
 // the OK/back buttons. r0=this, r1=inSaveMode.
@@ -600,7 +587,6 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
     pp(self, 0xc8) = backBtn;
 }
 
-// ---- startValkyrie_12ca80.cpp ----
 // MenuTouchWindow::startValkyrie() - sets up the "Valkyrie" pre-made savegame and jumps
 // into the game. Walks 0x2d campaign missions forward, builds a ship with fixed loadout,
 // flips a set of option flags, awards medals, then transitions to the game module.
@@ -685,11 +671,9 @@ void MenuTouchWindow::startValkyrie()
     fn(*app, 5);
 }
 
-// ---- OnTouchBegin_129bd4.cpp ----
 // MenuTouchWindow::OnTouchBegin(int y, int x, int touchId). Routes the press to whichever
 // sub-widget owns the current menu state (this->0x16c), kicking off scroll drags, slider
 // grabs, list selection and the in-flight 3D steer. r0=this, r1=y, r2=x, r3=touchId. Returns 0.
-
 
 extern void *const gBgLayout   __attribute__((visibility("hidden"))); // *holder -> layout (=*piVar5)
 extern void *const gBgScreenW  __attribute__((visibility("hidden")));
@@ -945,7 +929,6 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
     return 0;
 }
 
-// ---- loadGame_125c2c.cpp ----
 // PC-relative singleton holders.
 extern void *const gLoadStatusFlags __attribute__((visibility("hidden")));   // *holder -> flags, +0x35/+0x37
 extern void *const gLoadGameText __attribute__((visibility("hidden")));      // *holder -> GameText
@@ -1007,7 +990,6 @@ int MenuTouchWindow::loadGame(int slot)
     return 0;
 }
 
-// ---- addButton_124fd8.cpp ----
 extern "C" void _mtw_TouchButton_ctor(void *btn, void *label, int a, int x, int y, int w,
                                       char type, char id);
 
@@ -1053,7 +1035,6 @@ void MenuTouchWindow::addButton(int id, void *label, int row, void *arr, int yOf
     *(uint32_t *)*(void **)gAddBtnCount = *(uint32_t *)arr;
 }
 
-// ---- setCutsceneMode_125414.cpp ----
 // MenuTouchWindow::setCutsceneMode(bool). Ghidra mislabels: r0=this, r1=mode.
 // Sets this->0x238 = mode, then hides/shows all type-0x13 buttons (id 0) to !mode.
 void MenuTouchWindow::setCutsceneMode(bool mode)
@@ -1069,7 +1050,6 @@ void MenuTouchWindow::setCutsceneMode(bool mode)
     }
 }
 
-// ---- loadPreviewRecords_124f1c.cpp ----
 // PC-relative singleton holders used to lay out the scroll geometry.
 extern void *const gPrevScreenW __attribute__((visibility("hidden")));   // *holder -> screen metrics, [0]=width
 extern void *const gPrevLayout __attribute__((visibility("hidden")));    // *holder -> layout, +0x10/0xc/0x20/0x24/0x70
@@ -1108,7 +1088,6 @@ void MenuTouchWindow::loadPreviewRecords()
     refresh();
 }
 
-// ---- saveGame_125b28.cpp ----
 extern void *const gSaveGameText __attribute__((visibility("hidden")));
 
 // MenuTouchWindow::saveGame(int slot)
@@ -1142,11 +1121,9 @@ void MenuTouchWindow::saveGame(int slot)
     u8(this, 0x170) = 1;
 }
 
-// ---- update_129598.cpp ----
 // MenuTouchWindow::update(int dt). Applies scroll inertia (state 0/3 lists), reacts to the
 // async DLC purchase/restore result codes carried on the ApplicationData object, drives the
 // active sub-window's update, and refreshes the ChoiceWindow. r0=this, r1=dt.
-
 
 // PC-relative holders (each *holder -> the relevant singleton/state object).
 extern void *const gUpStatusGuard __attribute__((visibility("hidden")));
@@ -1390,7 +1367,6 @@ void MenuTouchWindow::update(int dt)
     }
 }
 
-// ---- startSupernovaChallenge_12d0cc.cpp ----
 // MenuTouchWindow::startSupernovaChallenge()
 // The target's 16 bytes disassemble as bad/ARM-misdecoded data: this is a thin tail
 // thunk that forwards to the supernova-challenge start handler. Faithful recoverable
@@ -1401,7 +1377,6 @@ void MenuTouchWindow::startSupernovaChallenge()
     _mtw_startSupernovaChallenge_impl(this);
 }
 
-// ---- callDlcMenu_12d064.cpp ----
 extern void *const gAppHolder __attribute__((visibility("hidden")));
 extern void *const gDlcGameText __attribute__((visibility("hidden")));
 
@@ -1422,13 +1397,11 @@ void MenuTouchWindow::callDlcMenu()
     return _mtw_DlcMenu_call(win, s1, s2);
 }
 
-// ---- draw_12629c.cpp ----
 // MenuTouchWindow::draw(). Caches the current button Y positions, publishes the active state
 // to a global, optionally paints the background layout, then renders the widget set for the
 // current menu state (this->0x16c). Each state's drawing is large (dozens of localized
 // strings, boxes and thumbnails) and is delegated to its extern renderer doing the genuine
 // work. r0=this.
-
 
 // Per-state renderers.
 extern "C" void _mtw_draw_mainMenu(void *self);        // state 0
@@ -1507,7 +1480,6 @@ void MenuTouchWindow::draw()
     }
 }
 
-// ---- getRelativeScrollHeight_125da4.cpp ----
 // MenuTouchWindow::getRelativeScrollHeight()
 //   Returns the visible fraction of the scrollable list (page / content), clamped by the
 //   current scroll offset at +0x194. Content height at +0x228, page height at +0x22c.
@@ -1533,7 +1505,6 @@ float MenuTouchWindow::getRelativeScrollHeight()
     return (float)numer / (float)page;
 }
 
-// ---- OnTouchMove_12a33c.cpp ----
 // MenuTouchWindow::OnTouchMove(int y, int x). Dispatches the drag to whatever sub-widget owns
 // the current menu state (this->0x16c). r0=this, r1=y, r2(=param_3)=x. Returns 0.
 
@@ -1695,7 +1666,6 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
     return 0;
 }
 
-// ---- MenuTouchWindow_12299c.cpp ----
 // MenuTouchWindow::MenuTouchWindow(int menuType). Copies the layout metric block from the
 // shared layout singleton into the per-window fields at +0x1a8, allocates the two top-level
 // TouchButton arrays, zero-inits the many widget/slot pointers and flags, loads the savegame
@@ -1757,7 +1727,6 @@ void MenuTouchWindow::ctor(int menuType)
     _mtw_buildMenu(self, menuType);
 }
 
-// ---- setSkipButtonVisible_12d026.cpp ----
 // MenuTouchWindow::setSkipButtonVisible(bool). r0=this, r1=visible.
 // Shows/hides all type-0x12 buttons (id 0).
 void MenuTouchWindow::setSkipButtonVisible(bool visible)
@@ -1774,11 +1743,9 @@ void MenuTouchWindow::setSkipButtonVisible(bool visible)
     }
 }
 
-// ---- drawLoadSaveMenu_125df8.cpp ----
 // MenuTouchWindow::drawLoadSaveMenu(bool). Draws the scrollable list of save slots:
 // optional scrollbar image strip, then per-slot boxed rows with name / time / kills / rank
 // strings and a ship thumbnail. r0=this, r1 unused (the disasm never reads it).
-
 
 // PC-relative holders.
 extern void *const gDlsLayout   __attribute__((visibility("hidden")));  // *holder -> layout obj
@@ -1900,7 +1867,6 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
     }
 }
 
-// ---- startSupernova_12cce4.cpp ----
 // MenuTouchWindow::startSupernova() - sets up the "Supernova" pre-made savegame and jumps
 // into the game. Same shape as startValkyrie but advances 0x54 missions and a richer loadout.
 
@@ -1989,7 +1955,6 @@ void MenuTouchWindow::startSupernova()
     fn(*app, 5);
 }
 
-// ---- startGOF2_12cf84.cpp ----
 // FModSound singleton holder, a Status-state object holder, and a transition-thunk holder.
 extern void *const gGof2Fmod __attribute__((visibility("hidden")));
 extern void *const gGof2StatusObj __attribute__((visibility("hidden")));

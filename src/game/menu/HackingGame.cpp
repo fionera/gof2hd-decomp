@@ -2,7 +2,6 @@
 #include "gof2/engine/audio/FModSound.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-
 extern "C" unsigned __aeabi_uidiv(unsigned value, unsigned divisor);
 extern "C" int __aeabi_idiv(int value, int divisor);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
@@ -11,13 +10,11 @@ namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit
 // The game state is a POD block of ints/bytes; nothing to free.
 HackingGame::~HackingGame() {}
 
-// ---- getDockingIndex_14f10a.cpp ----
 int HackingGame::getDockingIndex()
 {
     return I(this, 0x13c);
 }
 
-// ---- rotateLeftCW_14ef8c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_HackingGame_sound_left;
 
 void HackingGame::rotateLeftCW(bool sound)
@@ -29,13 +26,11 @@ void HackingGame::rotateLeftCW(bool sound)
     return rotateLeftCW((int *)((char *)this + 0x34));
 }
 
-// ---- getRewardAmount_14ef48.cpp ----
 int HackingGame::getRewardAmount()
 {
     return I(this, 0x138);
 }
 
-// ---- rotateLeftCW_14f0c6.cpp ----
 void HackingGame::rotateLeftCW(int *state)
 {
     int a = state[0];
@@ -50,7 +45,6 @@ void HackingGame::rotateLeftCW(int *state)
     B(this, 0x128) = 1;
 }
 
-// ---- gameWon_14f110.cpp ----
 int HackingGame::gameWon()
 {
     if (I(this, 0x130) < 0x5dd)
@@ -67,7 +61,6 @@ int HackingGame::gameWon()
     } while (true);
 }
 
-// ---- rotateRightCW_14ef50.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_HackingGame_sound_right;
 
 void HackingGame::rotateRightCW(bool sound)
@@ -79,7 +72,6 @@ void HackingGame::rotateRightCW(bool sound)
     return rotateRightCW((int *)((char *)this + 0x34));
 }
 
-// ---- gameWon_14f0a4.cpp ----
 int HackingGame::gameWon(int *state)
 {
     unsigned i = 0;
@@ -93,7 +85,6 @@ int HackingGame::gameWon(int *state)
     } while (true);
 }
 
-// ---- isRotating_14f1cc.cpp ----
 bool HackingGame::isRotating()
 {
     if (B(this, 0x128) != 0)
@@ -101,13 +92,11 @@ bool HackingGame::isRotating()
     return B(this, 0x129) != 0;
 }
 
-// ---- getRewardItem_14ef42.cpp ----
 int HackingGame::getRewardItem()
 {
     return I(this, 0x134);
 }
 
-// ---- rotateRightCW_14f0e8.cpp ----
 void HackingGame::rotateRightCW(int *state)
 {
     int a = state[1];
@@ -122,7 +111,6 @@ void HackingGame::rotateRightCW(int *state)
     B(this, 0x129) = 1;
 }
 
-// ---- HackingGame_14ecc8.cpp ----
 typedef void (*ImageCreateFn)(void *canvas, uint16_t image, uint32_t *out);
 
 __attribute__((visibility("hidden"))) extern void **g_HackingGame_ctor_canvas;
@@ -162,9 +150,7 @@ HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount,
     reInit();
 }
 
-// ---- render2D_14f1e4.cpp ----
 typedef int (*ImageMeasureFn)(void *canvas, int image);
-
 
 __attribute__((visibility("hidden"))) extern void **g_HackingGame_render_canvas;
 __attribute__((visibility("hidden"))) extern int *g_HackingGame_render_screen_w_a;
@@ -325,7 +311,6 @@ done:
     return;
 }
 
-// ---- reInit_14ed9c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_HackingGame_reinit_random2;
 __attribute__((visibility("hidden"))) extern void **g_HackingGame_reinit_random3;
 __attribute__((visibility("hidden"))) extern void **g_HackingGame_reinit_random_shuffle;
@@ -396,7 +381,6 @@ void HackingGame::reInit()
     this->f_128 = 0;
 }
 
-// ---- solvableInNSteps_14efc8.cpp ----
 int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state)
 {
     char leftBytes[24];
@@ -460,7 +444,6 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
     return 0;
 }
 
-// ---- update_14f138.cpp ----
 __attribute__((visibility("hidden"))) extern FModSound **g_HackingGame_update_sound;
 
 int HackingGame::update(int dt)

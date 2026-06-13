@@ -4,7 +4,6 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 #include <new>
 
-
 extern "C" void glUseProgram(uint32_t program);
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);
 extern "C" int glGetAttribLocation(uint32_t program, const char *name);
@@ -28,8 +27,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -39,12 +36,6 @@ struct ShaderBaseStruct {
     int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
     int LoadBindShader(const char *vertexPath, const char *fragmentPath);
 };
-
-
-
-
-
-
 
 // EnergyShield — refraction shield shader. Derives from ShaderBaseStruct
 // (vtable ptr at +0x0). Int fields are GL uniform/attribute locations.

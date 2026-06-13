@@ -4,11 +4,9 @@
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 
-
 extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);
 extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
 
-// ---- _PlayerStaticFar_11c2c8.cpp ----
 // PlayerStaticFar deleting destructor (D0): PlayerStaticFar has no owned members,
 // so it directly runs the base (PlayerStatic) destructor, then tail-calls
 // operator delete (the b.w 0x1ab098 trampoline).
@@ -26,7 +24,6 @@ void PlayerStaticFar::dtor()
     PlayerStatic_base_dtor(this);
 }
 
-// ---- getProjectionVector_11c510.cpp ----
 Vector PlayerStaticFar::getProjectionVector(const Vector &value)
 {
     void *volumes = this->boundingVolumes;
@@ -40,7 +37,6 @@ Vector PlayerStaticFar::getProjectionVector(const Vector &value)
     return r;
 }
 
-// ---- render_11c2da.cpp ----
 // render(): a single unconditional tail-call thunk (b.w into the PLT-ish
 // trampoline). The body is one branch to the resolved render routine.
 
@@ -55,8 +51,6 @@ void PlayerStaticFar::render_tail()
 {
     ((AEGeometry *)this->geometry)->render();
 }
-
-// ---- projectCollisionOnSurface_11c52e.cpp ----
 
 // Static helper returning a Vector via sret. The decompiler dropped the receiver
 // (self) of BoundingVolume::staticProjectCollisionOnSurface and only forwarded the
@@ -76,7 +70,6 @@ Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value)
     return r;
 }
 
-// ---- outerCollide_11c4fc.cpp ----
 // outerCollide(float,float,float): tail-call the virtual slot at vtable+0x38,
 // forwarding the same (this,x,y,z) arguments unchanged.
 typedef bool (*OuterCollideFn)(PlayerStaticFar *self, float x, float y, float z);
@@ -87,7 +80,6 @@ bool PlayerStaticFar::outerCollide(float x, float y, float z)
     return fn(this, x, y, z);
 }
 
-// ---- _PlayerStaticFar_11c2c4.cpp ----
 // PlayerStaticFar base-object destructor (D2): no owned members, so the whole
 // body is a single tail-call thunk forwarding to the base PlayerStatic dtor
 // (b.w into the trampoline).
@@ -97,7 +89,6 @@ void *_ZN15PlayerStaticFarD2Ev(PlayerStaticFar *self)
     return PlayerStatic_base_dtor_thunk(self);
 }
 
-// ---- getInitPosition_11c4ee.cpp ----
 // Returns the init position (fields at +0x58,+0x5c,+0x60) by value: sret in r0,
 // this in r1. ldrd/strd pair the first two floats; the third is a single str.
 Vector PlayerStaticFar::getInitPosition(Vector)
@@ -109,7 +100,6 @@ Vector PlayerStaticFar::getInitPosition(Vector)
     return r;
 }
 
-// ---- outerCollide_11c506.cpp ----
 // outerCollide(Vector): the Vector is passed in r0..? In the target this is a
 // 3-instruction thunk: load vtable, fetch slot+0x38, tail-call with args
 // already in place. Model as a tail-call through the virtual slot forwarding
@@ -122,7 +112,6 @@ void PlayerStaticFar::outerCollide(Vector value)
     return fn(this, value.x, value.y, value.z);
 }
 
-// ---- update_11c2e0.cpp ----
 // PlayerStaticFar::update(int):
 // When the object has a geometry (field 0x8), reproject the object's stored integer
 // position relative to the current camera. If the camera-relative distance is below a
@@ -165,15 +154,12 @@ static inline void AEMath_Vector_add_eq(Vec3 *v, const Vec3 *o) { *(AEVec *)v +=
 
 extern "C" {
 // AEGeometry placement.
-// 0x73048
-// 0x727b4
-
 // Globals (camera object holder, limits/factors materialized as PC-relative loads).
 void *g_PlayerStaticFar_cameraHolder; // **(DAT_0012c458 + 0x12c30a)
-int g_PlayerStaticFar_distLimit;      // DAT_0012c444
+int g_PlayerStaticFar_distLimit;
 float g_PlayerStaticFar_radius;       // DAT_0012c448 (sphere radius numerator)
-float g_PlayerStaticFar_scaleNum;     // DAT_0012c44c
-float g_PlayerStaticFar_scaleFactor;  // DAT_0012c450
+float g_PlayerStaticFar_scaleNum;
+float g_PlayerStaticFar_scaleFactor;
 }
 
 void PlayerStaticFar::update(int /*delta*/)
@@ -229,7 +215,6 @@ void PlayerStaticFar::update(int /*delta*/)
     }
 }
 
-// ---- collide_11c460.cpp ----
 // collide(x,y,z): true iff (x,y,z) lies strictly inside the +/- bound box centered
 // at the stored integer position (fields 0x124/0x128/0x12c), where bound is the
 // radius integer at *(this+4)+0x40 converted to float.
@@ -258,7 +243,6 @@ bool PlayerStaticFar::collide(float x, float y, float z)
     return false;
 }
 
-// ---- PlayerStaticFar_11c254.cpp ----
 // Base PlayerStatic constructor (blx 0x75fdc) and Player::setRadius (blx 0x730d8).
 extern "C" void PlayerStatic_ctor(PlayerStaticFar *self, int playerId,
                                   AEGeometry *geometry, float x, float y, float z);

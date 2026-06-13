@@ -4,7 +4,6 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 #include <new>
 
-
 extern "C" void glUseProgram(uint32_t program);
 extern "C" int glGetUniformLocation(uint32_t program, const char *name);
 extern "C" int glGetAttribLocation(uint32_t program, const char *name);
@@ -28,8 +27,6 @@ namespace AbyssEngine {
 struct Engine;
 struct Mesh;
 
-
-
 struct ShaderBaseStruct {
     static int shaderIndexIntern;
 
@@ -40,14 +37,9 @@ struct ShaderBaseStruct {
     int LoadBindShader(const char *vertexPath, const char *fragmentPath);
 };
 
-
-
 // Per-class backing storage accessor helpers. The GlowShader fields live at fixed byte
 // offsets (program handle at 0x4, name String at 0xc, attribute/uniform locations 0x20..0x30)
 // and are read/written through these helpers.
-
-
-
 
 // AbyssEngine::GlowShader — GLES2 glow shader (derives from ShaderBaseStruct).
 class GlowShader {

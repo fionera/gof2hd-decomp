@@ -10,7 +10,6 @@
 #include "gof2/game/core/PaintCanvasClass.h"
 #include "gof2/externs.h"
 
-
 extern "C" char ParticleSystemSprite_vtable;
 extern "C" void *ParticleSystemSprite_baseDtor(void *self);
 extern "C" void *memset(void *, int, unsigned long);
@@ -19,7 +18,6 @@ extern "C" float VectorSignedToFloat(int v, unsigned char mode);
 extern "C" void ParticleSystem_updateAreaExitParticleImpl(void *self, int param_1, float param_2);
 extern "C" float VectorUnsignedToFloat(unsigned int v, unsigned char mode);
 
-// ---- _ParticleSystemSprite_182c58.cpp ----
 // Complete object destructor (D1): set vtable, run release(), tail-call base dtor.
 extern "C" void _ZN20ParticleSystemSprite7releaseEv(void *self); // release()
 
@@ -51,7 +49,6 @@ extern "C" void *ParticleSystemSprite_baseDtor(void *self)
     return self;
 }
 
-// ---- reset_18335c.cpp ----
 void ParticleSystemSprite::reset()
 {
     for (int i = 0; i < this->particleCount; i++) {
@@ -66,7 +63,6 @@ void ParticleSystemSprite::reset()
     this->field_0x4 = 1;
 }
 
-// ---- init_182c48.cpp ----
 int ParticleSystemSprite::init(unsigned int param_1, unsigned short param_2)
 {
     void **vt = *(void ***)this;
@@ -77,7 +73,6 @@ int ParticleSystemSprite::init(unsigned int param_1, unsigned short param_2)
     return ((pfn)vt[2])(this);
 }
 
-// ---- release_1833b8.cpp ----
 void ParticleSystemSprite::release()
 {
     if (this->spriteData != 0)
@@ -90,7 +85,6 @@ void ParticleSystemSprite::release()
     this->setIndices = 0;
 }
 
-// ---- render_1833e0.cpp ----
 // ParticleSystemSprite::render(PaintCanvas*, unsigned int handle, unsigned int texture, BlendMode)
 // Draws the sprite system with an identity world transform: binds the texture and blend mode,
 // builds an identity 3x4 matrix on the stack, pushes it as the world-view matrix, and issues
@@ -129,13 +123,11 @@ void ParticleSystemSprite::render(void *canvas, int handle, unsigned int texture
     ((PaintCanvas*)(long)canvas)->DrawSpriteSystem((unsigned int)(unsigned long)canvas);
 }
 
-// ---- ParticleSystemSprite_182b88.cpp ----
 // ParticleSystemSprite::ParticleSystemSprite(PaintCanvas*, Matrix const*,
 //     Array<ParticleSettings::ParticleSet> const&, bool, bool)
 // Chains to the IParticleSystem base ctor, installs the derived vtable, allocates the per-
 // particle sprite scratch array (count at +0x48, 12 bytes each) at +0x64 and zero-fills it,
 // and caches a precomputed Pow value at +0x70.
-
 
 extern "C" void _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
     void *self, void *canvas, const void *matrix, const void *sets, bool b4, bool b5);
@@ -185,7 +177,6 @@ ParticleSystemSprite::ParticleSystemSprite(
     this->cachedPow = AbyssEngine::AEMath::Pow(0.0f, 0.0f);
 }
 
-// ---- updateSingle_1830b4.cpp ----
 // ParticleSystemSprite::updateSingle(int index, float dt)
 // Advances one live particle. Skips the work when the system's active flag (+0x34 bit7) is
 // clear. Otherwise it ages the particle (ages array at +0x68, per-particle set index at +0x6c
@@ -271,7 +262,6 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
     ((PaintCanvas*)g_PaintCanvas)->SpriteSystemAddPosition(handle, id, pos[1], 0.0f, pos[2]);
 }
 
-// ---- setAlpha_183028.cpp ----
 void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float param_3)
 {
     float c0 = (float)(param_2 & 0xff);
@@ -297,7 +287,6 @@ void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float par
                                     c3, c2, c1, c0);
 }
 
-// ---- updateAreaExitParticle_182d6c.cpp ----
 // ParticleSystemSprite::updateAreaExitParticle(int, float)
 // The target is a 12-byte veneer that the disassembler could not lift cleanly (it decodes as
 // stray conditional ARM ops ending in a conditional branch). Functionally it is a thin
@@ -309,7 +298,6 @@ void ParticleSystemSprite::updateAreaExitParticle(int param_1, float param_2)
     ParticleSystem_updateAreaExitParticleImpl(this, param_1, param_2);
 }
 
-// ---- setParticle_182c7c.cpp ----
 // ParticleSystemSprite::setParticle(Vector const& pos, float, unsigned int color, float, float,
 //     float, float, bool clearColor, float, float, Vector const& uv)
 // Pushes one particle's state into the PaintCanvas sprite system: position (from `pos`), size
@@ -350,7 +338,6 @@ void ParticleSystemSprite::setParticle(const void *pos, float p2, unsigned int c
     ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetRGBA(handle, id, r * g_colorScale, g, g_colorScale, b);
 }
 
-// ---- render_18347c.cpp ----
 // ParticleSystemSprite::render(PaintCanvas*, unsigned int handle)
 // Camera-relative draw: snapshots the current camera's local matrix twice (the engine swaps
 // the active camera between the two queries) and forwards both 15-float matrices to the

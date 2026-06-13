@@ -7,7 +7,6 @@
 // AbyssEngine::AEMath::Vector. Field offsets recovered per-method from the
 // target disassembly; accessed via byte-offset casts from `this`.
 
-
 namespace AbyssEngine {
 namespace AEMath {
 

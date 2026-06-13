@@ -54,9 +54,7 @@ extern "C" int Station_getIndex(void *station);
 extern "C" void Player_setAutoPilotTarget(void *player, void *target);
 extern "C" void *Explosion_dtor(void *explosion);
 
-// ---- render3D_145d84.cpp ----
 typedef void (*RenderProc)(void *);
-
 
 static volatile RenderProc gRenderProc;
 
@@ -91,13 +89,11 @@ void LevelScript::render3D()
     }
 }
 
-// ---- startSequenceOver_14603a.cpp ----
 uint8_t LevelScript::startSequenceOver()
 {
     return UC(this, 0x21);
 }
 
-// ---- resetCamera_145ca8.cpp ----
 void LevelScript::resetCamera(Level *level)
 {
     if (((Level *)(level))->getPlayer() != 0) {
@@ -109,7 +105,6 @@ void LevelScript::resetCamera(Level *level)
     }
 }
 
-// ---- skipSequence_145e08.cpp ----
 void LevelScript::skipSequence()
 {
     if (I(this, 0x24) > 0 && ((Status *)(gStatus))->getCurrentCampaignMission() > 0) {
@@ -119,13 +114,11 @@ void LevelScript::skipSequence()
     }
 }
 
-// ---- startSequence_146040.cpp ----
 uint8_t LevelScript::startSequence()
 {
     return UC(this, 0x20);
 }
 
-// ---- setAutoPilotToProgrammedStation_137b68.cpp ----
 void LevelScript::setAutoPilotToProgrammedStation()
 {
     void **programmedStation = &gProgrammedStation;
@@ -162,7 +155,6 @@ void LevelScript::setAutoPilotToProgrammedStation()
     }
 }
 
-// ---- _LevelScript_137c3c.cpp ----
 LevelScript::~LevelScript()
 {
     void *geometry = P(this, 0xdc);
@@ -242,7 +234,6 @@ LevelScript::~LevelScript()
     P(this, 0xcc) = 0;
 }
 
-// ---- canSkipCutsceneNow_145e44.cpp ----
 uint32_t LevelScript::canSkipCutsceneNow()
 {
     void **status = &gStatus;
@@ -260,7 +251,6 @@ uint32_t LevelScript::canSkipCutsceneNow()
     return 1;
 }
 
-// ---- resetStartSequenceOver_146030.cpp ----
 void LevelScript::resetStartSequenceOver()
 {
     char *self = B(this, 0);
@@ -268,12 +258,10 @@ void LevelScript::resetStartSequenceOver()
     *(volatile uint8_t *)(self + 0x21) = 0;
 }
 
-// ---- skipCutscene_145e94.cpp ----
 typedef void *(*LevelListProc)(Level *);
 typedef void (*ReadWaypointProc)(StackVector *out, void *waypoint);
 typedef void (*SetVectorProc)(void *self, StackVector *value);
 typedef void (*VirtualCommandProc)(void *self, int a, int b, int c);
-
 
 static volatile LevelListProc gLevelListProc;
 
@@ -352,7 +340,6 @@ void LevelScript::skipCutscene()
     }
 }
 
-// ---- process_137d18.cpp ----
 void LevelScript::process(int delta)
 {
     Level *level = (Level *)P(this, 0x18);
@@ -371,14 +358,12 @@ void LevelScript::process(int delta)
     }
 }
 
-// ---- lookBehind_145d24.cpp ----
 void LevelScript::lookBehind()
 {
     ((TargetFollowCamera *)(P(this, 0x14)))->setTargetOffset(StackVector(0.0f, 0.0f, -950.0f));
     ((TargetFollowCamera *)(P(this, 0x14)))->setCamOffset(StackVector(0.0f, 600.0f, 2230.0f));
 }
 
-// ---- LevelScript_135adc.cpp ----
 LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamera *camera)
 {
     P(this, 0x48) = 0;

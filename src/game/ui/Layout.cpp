@@ -13,7 +13,6 @@
 // for the single-arg SetColor sites that target the global canvas.
 extern void *g_PaintCanvas;
 
-
 extern "C" float __aeabi_l2f(long long);
 extern "C" void *ChoiceWindow_dtor(void *p);
 extern "C" void operator_delete_li(void *p);
@@ -39,8 +38,6 @@ void    TouchButton_ctorImg2(...);
 
 void *ChoiceWindow_ctor(...);
 
-
-
 void String_cstr_ctor(...);
 void String_copy_ctor(...);
 void String_concat(...);
@@ -54,14 +51,12 @@ unsigned short GameText_getLanguage(...);
 void Globals_drawLines(...);
 }
 
-// ---- isFading_d514c.cpp ----
 // ldrb.w r0,[r0,#0x400]; bx lr
 uint8_t Layout::isFading() {
     Layout *self = this;
     return self->fading;
 }
 
-// ---- getHelpButtonOffset_d4bd0.cpp ----
 __attribute__((visibility("hidden"))) extern int **gTouchButtonHolder;  // ldr [0xe4bec]
 
 // Layout::getHelpButtonOffset() -> TouchButton::getWidth(self->f3bc) - (**holder)[0x38/4]
@@ -70,8 +65,6 @@ int Layout::getHelpButtonOffset() {
     int w = ((TouchButton *)(self->helpButton))->getWidth();
     return w - (*gTouchButtonHolder)[0x38 / 4];
 }
-
-// ---- update_d5152.cpp ----
 
 // Layout::update(int dt)
 void Layout::update(int dt) {
@@ -96,7 +89,6 @@ void Layout::update(int dt) {
     }
 }
 
-// ---- getFooterTransitionWidth_d3c08.cpp ----
 // PC-relative hidden global: pointer to the PaintCanvas singleton holder.
 __attribute__((visibility("hidden"))) extern void **gPaintCanvasHolder; // ldr [0xe3c38]
 
@@ -109,7 +101,6 @@ int Layout::getFooterTransitionWidth() {
     return w2 + w1;
 }
 
-// ---- OnTouchBegin_d51a8.cpp ----
 // tail 0x1ac0c8
 
 // Layout::OnTouchBegin(int x, int y)
@@ -129,7 +120,6 @@ int Layout::OnTouchBegin(int x, int y) {
     return this->dispatchTouchBegin(btn, x, y);
 }
 
-// ---- getPulseValue_d4bf0.cpp ----
 // Status singleton (PC-rel double-indirect). getPlayingTime returns a 64-bit value
 // (r0/r1), converted to float via __aeabi_l2f, scaled by the arg, fed to Sinf.
 struct Status;
@@ -146,18 +136,14 @@ float Layout::getPulseValue(float speed) {
     return a > 0.0f ? b : -b;
 }
 
-// ---- setDrawColor_d3138.cpp ----
 // str.w r1,[r0,#0x3b0]; bx lr
 void Layout::setDrawColor(int color) {
     Layout *self = this;
     self->drawColor = color;
 }
 
-// ---- drawMask_d3140.cpp ----
 __attribute__((visibility("hidden"))) extern int *gW;  // ldr [0xe3160]
 __attribute__((visibility("hidden"))) extern int *gH;  // ldr [0xe3164]
-// 0x74ddc
-
 // Layout::drawMask() -> drawMask(*gH, 0, 0, *gW, *gH)
 void Layout_drawMask0() {
     void *pc = (void *)*gH;
@@ -165,11 +151,8 @@ void Layout_drawMask0() {
     ((Layout *)(pc))->drawMaskImpl(0, 0, w, *gH);
 }
 
-// ---- drawBG_d3544.cpp ----
 __attribute__((visibility("hidden"))) extern int *gA;  // ldr [0xe356c]
 __attribute__((visibility("hidden"))) extern int *gB;  // ldr [0xe3570]
-// 0x74e00
-
 // Layout::drawBG() -> drawBGPattern(this, this->0x324, 0, 0, *gA, *gB)
 void Layout::drawBG() {
     Layout *self = this;
@@ -178,14 +161,12 @@ void Layout::drawBG() {
     ((Layout *)(self))->drawBGPattern(self->bgPatternImage, 0, 0, p4, p5);
 }
 
-// ---- enableFillScreen_d5032.cpp ----
 // strb.w r1,[r0,#0x410]; bx lr
 void Layout::enableFillScreen(bool v) {
     Layout *self = this;
     self->fillScreen = v;
 }
 
-// ---- _Layout_d2bc8.cpp ----
 // ~TouchButton (0x74d7c) and ~ChoiceWindow (0x74d88) return the object pointer;
 // operator delete (0x6eb48) frees it. Each owned field is deleted then nulled.
 
@@ -204,21 +185,18 @@ Layout::~Layout() {
     this->choiceWindow = 0;
 }
 
-// ---- helpPressed_d4bc8.cpp ----
 // ldrb.w r0,[r0,#0x3c0]; bx lr
 uint8_t Layout::helpPressed() {
     Layout *self = this;
     return self->helpPressedFlag;
 }
 
-// ---- drawFooterNoBackButton_d4090.cpp ----
 // Layout::drawFooterNoBackButton() -> drawFooter(this, 0, 0)
 void Layout::drawFooterNoBackButton() {
     Layout *self = this;
     return ((Layout *)(self))->drawFooterImpl(0, 0);
 }
 
-// ---- drawFooter_d3fb4.cpp ----
 // -> 0x1ac098
 
 // Layout::drawFooter() -> drawFooter(this, 0, 1)
@@ -227,7 +205,6 @@ void Layout::drawFooter() {
     return ((Layout *)(self))->drawFooterImpl(0, 1);
 }
 
-// ---- OnTouchMove_d5206.cpp ----
 // tail 0x1ac0d8
 
 // Layout::OnTouchMove(int x, int y)
@@ -247,10 +224,7 @@ int Layout::OnTouchMove(int x, int y) {
     return this->dispatchTouchMove(btn, x, y);
 }
 
-// ---- drawBGBorder_d393c.cpp ----
 // 9-arg impl. Forwarded: (p5 as self, p2, p3, p4, p5, p6, instack, 0, 0).
-// 0x74e30
-
 // Layout::drawBGBorder(uint p1, uint p2, int p3, int p4, int p5, int p6) + stack arg s8.
 // This 7-arg forwarding wrapper (engine 0x74e30) is distinct from the 6-arg
 // Layout::drawBGBorder method (0x74e78) used by drawBox; renamed to avoid the
@@ -260,7 +234,6 @@ void Layout_drawBGBorder7(unsigned p1, unsigned p2, int p3, int p4,
     ((Layout *)(p5))->drawBGBorderImpl(p2, p3, p4, p5, p6, s8, 0, 0);
 }
 
-// ---- OnTouchEnd_d5264.cpp ----
 // tail 0x1ac0e8
 
 // Layout::OnTouchEnd(int x, int y)
@@ -278,7 +251,6 @@ int Layout::OnTouchEnd(int x, int y) {
     return this->dispatchTouchEnd(btn, x, y);
 }
 
-// ---- startFade_d5014.cpp ----
 // Layout::startFade(bool, int, int)
 void Layout::startFade(uint8_t fadeOut, int color, int duration) {
     Layout *self = this;
@@ -289,11 +261,9 @@ void Layout::startFade(uint8_t fadeOut, int color, int duration) {
     self->fadeDuration = duration;
 }
 
-// ---- initTip_d495c.cpp ----
-
-extern "C" void ArrayReleaseClasses_StringPtr(void *arr);    // 0x6facc
-extern "C" void *ArrayStringPtr_dtor(void *arr);             // 0x6f64c
-extern "C" void ArrayStringPtr_ctor(void *arr);             // 0x6f628
+extern "C" void ArrayReleaseClasses_StringPtr(void *arr);
+extern "C" void *ArrayStringPtr_dtor(void *arr);
+extern "C" void ArrayStringPtr_ctor(void *arr);
 
 // Hidden PC-relative globals from initTip disasm:
 //   g_tipColor  : *(uint**) @0xe499c — color value (read [0]).
@@ -332,10 +302,8 @@ void Layout::initTip() {
     ((PaintCanvas*)(canvas))->GetLineArray(color, str, width, (char *)*tipArr);
 }
 
-// ---- drawEmptyFooter_d3fbc.cpp ----
 struct TouchButton;
 
-// 0x74e00
 // Footer "scroll into place" tail-called helper at 0x1ac0a8.
 
 // Hidden globals from drawEmptyFooter disasm.
@@ -364,7 +332,6 @@ void Layout::drawEmptyFooter(int showBack) {
     TouchButton_footerAnim(self->backButton, 1, footerH, sp);
 }
 
-// ---- Layout_d1028.cpp ----
 // Layout::Layout() — config-driven field initializer (elf 0xd1028, 5478 bytes).
 //
 // The target body is one huge nested-conditional initializer that fills the
@@ -414,7 +381,7 @@ void Layout::ctor() {
         self->field_0x280 = 0;
         self->field_0x3e0 = 1;
         self->field_0x3e4 = 0;
-        self->field_0x3e8 = 0x8c;     // 0x3e8
+        self->field_0x3e8 = 0x8c;
         self->field_0x3f4 = 0x4d;
         self->field_0x3f8 = 0x84;
     }
@@ -535,7 +502,6 @@ void Layout::ctor() {
     }
 }
 
-// ---- drawMask_d3168.cpp ----
 __attribute__((visibility("hidden"))) extern void **gPC;          // ldr [0xe31ac]
 // tail 0x1ac088
 
@@ -550,7 +516,6 @@ int Layout::drawMask4(int p1, int p2, int p3, int p4) {
     return 0;
 }
 
-// ---- formatCredits_d34d8.cpp ----
 void Layout_formatNumber(void *out, int n);   // 0x74df4 (formatNumber)
 
 // Layout::formatCredits(int) -> out = formatNumber(n) + "$"
@@ -564,9 +529,7 @@ void Layout_formatCredits(void *out, int n) {
     ((String *)(num))->dtor();
 }
 
-// ---- drawBGPattern_d3574.cpp ----
-
-extern "C" int __aeabi_idiv(int a, int b);                                 // 0x7198c
+extern "C" int __aeabi_idiv(int a, int b);
 
 // Hidden global from drawBGPattern disasm.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_bgCanvas;  // @0xe358a
@@ -616,7 +579,6 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     }
 }
 
-// ---- formatNumber_d32b4.cpp ----
 // Engine String helpers used by the thousands-separator formatter.
 
 // Hidden globals from formatNumber disasm.
@@ -702,8 +664,6 @@ void Layout_formatNumber(void *out, int value) {
     
 }
 
-// ---- drawWindow_d36f4.cpp ----
-// 0x74e0c
 __attribute__((visibility("hidden"))) extern int *gW1;  // ldr [0xe3774]
 __attribute__((visibility("hidden"))) extern int *gW2;  // ldr [0xe3778]
 __attribute__((visibility("hidden"))) extern int *gW3;  // ldr [0xe377c]
@@ -720,7 +680,6 @@ void Layout::drawWindow2(const void *param, int flag) {
     ((String *)(tmp))->dtor();
 }
 
-// ---- setWindowDimensions_d4c60.cpp ----
 // Function pointer (TouchButton::setPosition) loaded from a global, called via blx.
 typedef void (*SetPosFn)(void *btn, int x, int y, int mode);
 __attribute__((visibility("hidden"))) extern SetPosFn gSetPos;   // ldr [0xe4d30]
@@ -745,7 +704,6 @@ void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
            (self->windowY + self->windowHeight) - self->field_0x3fc, 0x21);
 }
 
-// ---- showMissionRewardMessage_d4d40.cpp ----
 __attribute__((visibility("hidden"))) extern int **gFmod;  // ldr [0xe4d70]
 // FModSound::play(int sound, Vector* a, Vector* b, float v) — blx 0x71548.
 struct Vec3 { float x, y, z; };
@@ -763,9 +721,6 @@ void Layout::showMissionRewardMessage(int show, bool flag) {
     ((FModSound *)(*g))->play(0x24, 0, 0, 0.0f);
 }
 
-// ---- drawWindow_d38d4.cpp ----
-// 0x74e0c
-
 // Layout::drawWindow(String, int p3, int p4, int p5, int p6)
 //   -> drawWindow(this, copy, p3, p4, p5, p6, 1)
 void Layout::drawWindow5(const void *param, int p3, int p4, int p5, int p6) {
@@ -776,9 +731,7 @@ void Layout::drawWindow5(const void *param, int p3, int p4, int p5, int p6) {
     ((String *)(tmp))->dtor();
 }
 
-// ---- drawBGBorder_d395c.cpp ----
-
-extern "C" int __aeabi_idiv(int a, int b);                                 // 0x7198c
+extern "C" int __aeabi_idiv(int a, int b);
 
 // Hidden globals from drawBGBorder disasm.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_bbCanvas;  // @0xe3972
@@ -840,10 +793,6 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     }
 }
 
-// ---- drawScrollBar_d4258.cpp ----
-
-// 0x74e00
-
 // Hidden globals from drawScrollBar disasm.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_sbCanvas;  // @0xe426e
 __attribute__((visibility("hidden"))) extern unsigned g_sbColor0;       // @0xe4370 ([0])
@@ -886,9 +835,6 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
                              self->field_0x3e4 + x + 1, (thumb - ih) + y + off, (unsigned char)(0x02));
 }
 
-// ---- drawFade_d5038.cpp ----
-
-
 // Hidden globals from drawFade disasm.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvasA;  // @0xe5052
 __attribute__((visibility("hidden"))) extern int **g_dfDimA;             // @0xe50c8 ([0][0])
@@ -925,11 +871,6 @@ uint8_t Layout::drawFade() {
     return self->fading;
 }
 
-// ---- drawBox_d4384.cpp ----
-
-// 0x74e00
-// 0x74e30
-// 0x74e78
 // Color-restore tail helper @0x1ac088.
 
 // Hidden globals from drawBox disasm.
@@ -1078,9 +1019,6 @@ void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned
     ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->SetColor(saved);
 }
 
-// ---- drawWindow_d3780.cpp ----
-
-// 0x74e00
 // Color-restore tail helper @0x1ac088.
 
 // Hidden globals from drawWindow disasm.
@@ -1116,9 +1054,6 @@ void Layout::drawWindow7(void *title, int x, int y, int w, int h, int drawBG) {
     ((PaintCanvas*)(*g_dwCanvas))->SetColor(saved);
 }
 
-// ---- drawBox_d48f0.cpp ----
-// 0x74e84
-
 // Layout::drawBox(int, int, int, int, int, String) -> drawBox(..., copy, 1)
 void Layout::drawBox6(int p2, int p3, int p4, int p5, int p6, const void *str) {
     Layout *self = this;
@@ -1127,10 +1062,6 @@ void Layout::drawBox6(int p2, int p3, int p4, int p5, int p6, const void *str) {
     ((Layout *)(self))->drawBoxImpl(p2, p3, p4, p5, p6, tmp, 1);
     ((String *)(tmp))->dtor();
 }
-
-// ---- drawTip_d4a14.cpp ----
-
-// 0x7462c
 
 // Hidden globals from drawTip disasm.
 __attribute__((visibility("hidden"))) extern int *g_dtGuard;     // @0xe4a26 (stack guard [0])
@@ -1170,9 +1101,6 @@ void Layout::drawTip() {
     
 }
 
-// ---- drawHeader_d4200.cpp ----
-// 0x74e6c
-
 // Layout::drawHeader(String) -> drawHeader(this, copy, 1)
 void Layout::drawHeader1(const void *param) {
     Layout *self = this;
@@ -1182,7 +1110,6 @@ void Layout::drawHeader1(const void *param) {
     ((String *)(tmp))->dtor();
 }
 
-// ---- drawHelpWindow_d4bc0.cpp ----
 // -> 0x1ac0b8
 
 // Layout::drawHelpWindow() -> ext(*(this+0x3c4))
@@ -1191,8 +1118,7 @@ void Layout::drawHelpWindow() {
     return ((Layout *)(self->choiceWindow))->drawHelpWindowImpl();
 }
 
-// ---- initHelpWindow_d4b40.cpp ----
-extern "C" void *operator_new_li(unsigned sz);                  // 0x6eb24
+extern "C" void *operator_new_li(unsigned sz);
 __attribute__((visibility("hidden"))) extern int *gFmodHelp;        // ldr [0xe4bb8] (distinct global from showMissionRewardMessage's gFmod)
 // gGameText holder declared at top of file.
 
@@ -1212,7 +1138,6 @@ void Layout::initHelpWindow(void *text) {
     self->helpPressedFlag = 0;
 }
 
-// ---- resetWindowDimensions_d3048.cpp ----
 struct TouchButton;
 
 // setRect-style helper invoked via fn ptr @0xe306c: (ptr, x, y, anchor).
@@ -1256,8 +1181,6 @@ void Layout::resetWindowDimensions() {
     
 }
 
-// ---- tagString_d31b0.cpp ----
-
 // Hidden globals from tagString disasm.
 __attribute__((visibility("hidden"))) extern const void *g_tagBaseString;  // @0xe329c
 __attribute__((visibility("hidden"))) extern const char g_tagLit0[];       // @0xe31d2
@@ -1294,11 +1217,9 @@ void Layout_tagString(void *out, const void *in) {
     ((String *)(s_lit0))->dtor();
 }
 
-// ---- reload_d2c20.cpp ----
 struct TouchButton;
 
-extern "C" void __aeabi_memset4(void *dst, int n, int v);                // 0x74d94
-// 0xd3048
+extern "C" void __aeabi_memset4(void *dst, int n, int v);
 // Image2DCreate-into-field loader (fn ptr @0xe2c64): (canvas, imgId, &field).
 
 __attribute__((visibility("hidden"))) extern int *g_rlGuard;    // @0xe2c38 (stack guard [0])
@@ -1416,13 +1337,11 @@ void Layout::reload() {
     
 }
 
-// ---- drawFooter_d3c3c.cpp ----
 struct TouchButton;
 struct Status;
 struct Ship;
 
-// 0x74e00
-void Layout_formatCredits(void *out, int n);                    // 0x74e54
+void Layout_formatCredits(void *out, int n);
 
 // Hidden globals from drawFooter disasm.
 __attribute__((visibility("hidden"))) extern int *g_dfGuard;       // @0xe3c54 (stack guard [0])
@@ -1539,9 +1458,6 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     
 }
 
-// ---- drawHeader_d40a0.cpp ----
-// 0x74e6c
-
 // Layout::drawHeader() -> drawHeader(this, String(""), 0)
 void Layout::drawHeader0() {
     Layout *self = this;
@@ -1551,16 +1467,12 @@ void Layout::drawHeader0() {
     ((String *)(tmp))->dtor();
 }
 
-// ---- drawFooterStation_d4098.cpp ----
 // Layout::drawFooterStation() -> drawFooter(this, 1, 0)  (this passed implicitly in r0)
 void Layout::drawFooterStation() {
     Layout *self = this;
     return ((Layout *)(self))->drawFooterImpl(1, 0);
 }
 
-// ---- drawHeader_d4100.cpp ----
-
-// 0x74e00
 // Header transition tail helper @0x1ac0a8.
 
 // Hidden globals from drawHeader disasm.
@@ -1596,9 +1508,6 @@ void Layout::drawHeader7(void *title, int transition) {
     }
 }
 
-// ---- drawWindow_d387c.cpp ----
-// 0x74e24
-
 // Layout::drawWindow(String) -> drawWindow(this, copy, 0). The on-stack String
 // temp makes the compiler emit the -fstack-protector canary automatically.
 void Layout::drawWindow1(const void *param) {
@@ -1609,10 +1518,7 @@ void Layout::drawWindow1(const void *param) {
     ((String *)(tmp))->dtor();
 }
 
-// ---- drawMissionRewardMessage_d4d74.cpp ----
-
-// 0x7462c
-void Layout_formatCredits(void *out, int n);                    // 0x74e54
+void Layout_formatCredits(void *out, int n);
 
 // Hidden globals from drawMissionRewardMessage disasm.
 __attribute__((visibility("hidden"))) extern int *g_mrGuard;       // @0xe4d88 (stack guard [0])

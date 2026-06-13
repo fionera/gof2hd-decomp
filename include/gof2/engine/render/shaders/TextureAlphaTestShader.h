@@ -30,9 +30,6 @@ public:
     void UseShader(bool);
 };
 
-
-
-
 static inline String &string_at(void *self, unsigned int offset)
 {
     return *(String *)((char *)self + offset);

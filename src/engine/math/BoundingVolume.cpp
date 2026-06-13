@@ -1,11 +1,9 @@
 #include "gof2/engine/math/BoundingVolume.h"
 #include "gof2/engine/math/AEMath.h"
 
-
-// ---- _BoundingVolume_11f718.cpp ----
 __attribute__((visibility("hidden"))) extern void *const g_BoundingVolume_vtbl;
 
-extern "C" void ArrayReleaseClasses_BVPtr(void *arr);  // 0x757a8
+extern "C" void ArrayReleaseClasses_BVPtr(void *arr);
 extern "C" void *ArrayBV_dtor(void *arr);              // 0x757b4  Array<BoundingVolume*>::~Array
 
 BoundingVolume::~BoundingVolume()
@@ -21,7 +19,6 @@ BoundingVolume::~BoundingVolume()
     this->children = 0;
 }
 
-// ---- collide_11f870.cpp ----
 // Each child is a BoundingVolume* whose vtable slot at +8 takes (x,y,z) and
 // returns nonzero on collision. collide forwards this->center to every child.
 typedef int (*CollideFn)(void *self, float x, float y, float z);
@@ -42,7 +39,6 @@ int BoundingVolume::collide(float, float, float)
     return 0;
 }
 
-// ---- getCollisionNormal_11f7d8.cpp ----
 // getCollisionNormal(Vector&): zero the three components of the passed vector.
 void BoundingVolume::getCollisionNormal(const Vector &out)
 {
@@ -52,11 +48,8 @@ void BoundingVolume::getCollisionNormal(const Vector &out)
     v->z = 0.0f;
 }
 
-// ---- setVolume_11f750.cpp ----
 extern "C" void ArrayBV_ctor(void *a);                             // 0x730c0  Array<BoundingVolume*>::Array()
 // Tail-call: copy the source volume's children into the new array.
-// 0x1ac218
-
 void BoundingVolume::setVolume(BoundingVolume *src)
 {
     Array<BoundingVolume*> *arr = new Array<BoundingVolume*>();
@@ -77,7 +70,6 @@ void BoundingVolume::setArr(Array<BoundingVolume *> *arr)
     arr->push_back(this);
 }
 
-// ---- BoundingVolume_11f6dc.cpp ----
 BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez)
 {
     void *vt = (void *)((char *)g_BoundingVolume_vtbl + 8);
@@ -91,7 +83,6 @@ BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey,
     this->centerZ = cz;
 }
 
-// ---- staticProjectCollisionOnSurface_11f8b0.cpp ----
 // child->vtable[0xc](x,y,z) -> bool collides; child->vtable[0x10](&out, child, this).
 typedef int (*HitFn)(void *self, float x, float y, float z);
 typedef void (*ProjFn)(Vector *out, void *self, void *bv);
@@ -122,7 +113,6 @@ void BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<Boun
     }
 }
 
-// ---- update_11f7e4.cpp ----
 // Each child's vtable slot at +4 takes (x,y,z); update forwards its params to
 // every child, then stores them as this->center.
 typedef void (*UpdateFn)(void *self, float x, float y, float z);
@@ -145,7 +135,6 @@ void BoundingVolume::update(float x, float y, float z)
     *(Vector *)&this->centerX = v;
 }
 
-// ---- getProjectionVector_11f788.cpp ----
 // getProjectionVector(v): returns normalize(v - this->center).
 Vector BoundingVolume::getProjectionVector(const Vector &v)
 {

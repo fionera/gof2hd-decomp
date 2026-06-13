@@ -16,7 +16,6 @@ void MatrixMultiply(Matrix &, const Matrix &);
 Vector operator-(const Vector &);
 } }
 
-
 ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self);
 extern "C" void ObjectGun_delete(ObjectGun *self);
 extern "C" void ArrayReleaseClasses_Explosion(Array<Explosion*> *self);
@@ -44,22 +43,18 @@ extern "C" void MatrixSetScaling(Matrix *dst, float x, float y, float z);
 void TransformSetLocal(void *canvas, uint32_t transform, Matrix *matrix);
 void DrawTransform(void *canvas, uint32_t transform, int flags);
 
-// ---- _ObjectGun_15f94c.cpp ----
 void _ZN9ObjectGunD0Ev(ObjectGun *self)
 {
     return ObjectGun_delete(_ZN9ObjectGunD1Ev(self));
 }
 
-// ---- setScaling_16035a.cpp ----
 void ObjectGun::setScaling(int x, int y)
 {
     this->field_0x3c = (float)x;
     this->field_0x40 = (float)y;
 }
 
-// ---- _ObjectGun_15f904.cpp ----
 __attribute__((visibility("hidden"))) extern "C" void *ObjectGun_vtable;
-
 
 ObjectGun *_ZN9ObjectGunD1Ev(ObjectGun *self)
 {
@@ -113,7 +108,6 @@ ObjectGun::~ObjectGun()
     this->field_0x30 = 0;
 }
 
-// ---- replaceGun_160374.cpp ----
 __attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;
 
 void ObjectGun::replaceGun(int mesh)
@@ -124,20 +118,17 @@ void ObjectGun::replaceGun(int mesh)
     return TransformAddMesh(*canvas, this->field_0x10, (uint16_t)mesh, 0);
 }
 
-// ---- setEnemies_15f95c.cpp ----
 void ObjectGun::setEnemies(Array<Player*> *enemies)
 {
     // Forwards the enemy list to the underlying implementation.
     return ObjectGun_setEnemies_impl((void *)enemies->data());
 }
 
-// ---- ObjectGun_15f700.cpp ----
 __attribute__((visibility("hidden"))) extern "C" void *ObjectGun_vtable;
 __attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;
 __attribute__((visibility("hidden"))) extern "C" void *g_ObjectGunScaleFlag;
 __attribute__((visibility("hidden"))) extern "C" MeshId g_ObjectGunGeometryIds[];
 __attribute__((visibility("hidden"))) extern "C" int g_ObjectGunPlayerGunIds[];
-
 
 ObjectGun::ObjectGun(int, Gun *gun, int mesh, uint32_t, Level *level)
 {
@@ -272,12 +263,10 @@ done:
     self->field_0x34 = 0;
 }
 
-// ---- update_15f964.cpp ----
 __attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;
 __attribute__((visibility("hidden"))) extern "C" MeshId g_ObjectGunGeometryIds[];
 __attribute__((visibility("hidden"))) extern "C" uint32_t (*g_TransformGetObject)(void *canvas, uint32_t mesh);
 __attribute__((visibility("hidden"))) extern "C" void (*g_TransformSetState)(uint32_t object, int state, int value);
-
 
 static inline Explosion *explosion_at(ObjectGun *self, uint32_t index)
 {
@@ -441,10 +430,8 @@ after_geometry:
     }
 }
 
-// ---- render_15fda8.cpp ----
 __attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;
 __attribute__((visibility("hidden"))) extern "C" void *g_ObjectGunRenderScaleFlag;
-
 
 static inline Explosion *render_explosion_at(ObjectGun *self, uint32_t index)
 {

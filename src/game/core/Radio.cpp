@@ -31,19 +31,16 @@ extern "C" __attribute__((visibility("hidden"))) GameText **g_Radio_drawGameText
 extern "C" __attribute__((visibility("hidden"))) ImageFactory **g_Radio_drawImageFactory;
 extern "C" __attribute__((visibility("hidden"))) Globals **g_Radio_drawGlobals;
 
-// ---- isShowingMessage_1555d0.cpp ----
 bool Radio::isShowingMessage()
 {
     return this->currentMessage != 0;
 }
 
-// ---- lastMessageShown_15505a.cpp ----
 uint8_t Radio::lastMessageShown()
 {
     return this->lastMessageShownFlag;
 }
 
-// ---- _Radio_154fd4.cpp ----
 Radio::~Radio()
 {
     void *array = this->imageParts;
@@ -73,7 +70,6 @@ Radio::~Radio()
     this->textLines = 0;
 }
 
-// ---- getMessage_155050.cpp ----
 RadioMessage *Radio::getMessage(int index)
 {
     void *messages = this->messages;
@@ -81,7 +77,6 @@ RadioMessage *Radio::getMessage(int index)
     return (RadioMessage *)data[index];
 }
 
-// ---- setMessages_15501c.cpp ----
 void Radio::setMessages(Array<RadioMessage *> *messages)
 {
     Radio *self = this;
@@ -125,7 +120,6 @@ void Radio::addMessage(int textId)
     message->setRadio(this);
 }
 
-// ---- update_155060.cpp ----
 #define ALWAYS_INLINE __attribute__((always_inline)) inline
 
 static ALWAYS_INLINE RadioMessage *radio_message_at(Radio *self, uint32_t index)
@@ -271,7 +265,6 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script)
     }
 }
 
-// ---- Radio_154f7c.cpp ----
 struct RadioBlock16 {
     uint64_t a;
     uint64_t b;
@@ -281,7 +274,6 @@ struct RadioPair {
     uint32_t a;
     uint32_t b;
 };
-
 
 Radio::Radio()
 {
@@ -302,7 +294,6 @@ Radio::Radio()
     this->boxY = layout->field_0x9c;
 }
 
-// ---- draw_155378.cpp ----
 #define ALWAYS_INLINE __attribute__((always_inline)) inline
 
 static ALWAYS_INLINE Wanted *draw_wanted_for_image(int imageId)

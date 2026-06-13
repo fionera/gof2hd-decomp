@@ -1,7 +1,6 @@
 #include "gof2/game/menu/MiningGame.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 
-
 extern "C" float MiningGame_sqrt(void *globals, float value);
 extern "C" void *MiningGame_Sprite_dtor(void *sprite);
 extern "C" void MiningGame_MarqueeImage_update(void *self, int delta);
@@ -42,17 +41,14 @@ static inline int &I(void *p, unsigned off) { return *(int *)((char *)p + off); 
 static inline float &F(void *p, unsigned off) { return *(float *)((char *)p + off); }
 static inline uint8_t &UC(void *p, unsigned off) { return *(uint8_t *)((char *)p + off); }
 
-// ---- getOreAmount_11eb9e.cpp ----
 int MiningGame::getOreAmount()
 {
     return (int)this->oreAmount;
 }
 
-// ---- isInCurrentLayer_11f0a0.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_sqrt;
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_layout;
 __attribute__((visibility("hidden"))) extern int *g_MiningGame_layerSizes;
-
 
 bool MiningGame::isInCurrentLayer()
 {
@@ -70,43 +66,36 @@ bool MiningGame::isInCurrentLayer()
     return distance < scale * (float)(size / 2);
 }
 
-// ---- up_11ebb6.cpp ----
 void MiningGame::up(float amount)
 {
     this->inputY = amount * 3.0f;
 }
 
-// ---- gameWon_11eb92.cpp ----
 uint8_t MiningGame::gameWon()
 {
     return this->gameWonFlag;
 }
 
-// ---- down_11ebc8.cpp ----
 void MiningGame::down(float amount)
 {
     this->inputY = amount * 3.0f;
 }
 
-// ---- gotCore_11ebac.cpp ----
 uint8_t MiningGame::gotCore()
 {
     return this->gotCoreFlag;
 }
 
-// ---- left_11ebda.cpp ----
 void MiningGame::left(float amount)
 {
     this->inputX = amount * 3.0f;
 }
 
-// ---- gameLost_11eb98.cpp ----
 uint8_t MiningGame::gameLost()
 {
     return this->gameLostFlag;
 }
 
-// ---- right_11ebec.cpp ----
 void MiningGame::right(float amount)
 {
     this->inputX = amount * 3.0f;
@@ -140,7 +129,6 @@ float MiningGame::steerYAlt(float delta)
     return this->inputY;
 }
 
-// ---- _MiningGame_11eb74.cpp ----
 MiningGame::~MiningGame()
 {
     void *sprite = this->drillSprite;
@@ -150,7 +138,6 @@ MiningGame::~MiningGame()
     this->drillSprite = 0;
 }
 
-// ---- update_11ec00.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_random;
 __attribute__((visibility("hidden"))) extern int (*g_MiningGame_randomNext)(void *random, int limit);
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_layoutUpdate;
@@ -159,7 +146,6 @@ __attribute__((visibility("hidden"))) extern void **g_MiningGame_sound;
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_statusUpdate;
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_achievements;
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_statusMedal;
-
 
 int MiningGame::update(int delta)
 {
@@ -295,7 +281,6 @@ int MiningGame::update(int delta)
     return 1;
 }
 
-// ---- MiningGame_11e7a8.cpp ----
 __attribute__((visibility("hidden"))) extern int *g_MiningGame_screenW;
 __attribute__((visibility("hidden"))) extern int *g_MiningGame_screenH;
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_layoutCtor;
@@ -304,7 +289,6 @@ __attribute__((visibility("hidden"))) extern void **g_MiningGame_canvasCtor;
 __attribute__((visibility("hidden"))) extern void (*g_MiningGame_imageCreate)(void *canvas, int imageId, int *outId);
 __attribute__((visibility("hidden"))) extern int (*g_MiningGame_imageWidth)(void *canvas, int imageId);
 __attribute__((visibility("hidden"))) extern float *g_MiningGame_layerSpeed;
-
 
 MiningGame::MiningGame(int layer, int station, Hud *hud)
 {
@@ -418,7 +402,6 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     this->campaignFlag = MiningGame_Status_getCurrentCampaignMission(*statusHolder) > 4;
 }
 
-// ---- render2D_11f12c.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_canvasRender;
 __attribute__((visibility("hidden"))) extern int *g_MiningGame_layerTableRender;
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_layoutRender;

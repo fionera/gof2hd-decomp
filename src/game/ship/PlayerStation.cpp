@@ -45,13 +45,11 @@ extern "C" void Array_BoundingVolumePtr_constructor(void *array);
 extern "C" void ArraySetLength_BoundingVolumePtr(uint32_t length, void *array);
 extern "C" void *PlayerStation_destructor_body(PlayerStation *self) __attribute__((nothrow));
 
-// ---- setVisible_122760.cpp ----
 void PlayerStation::setVisible(bool visible)
 {
     this->visible = visible;
 }
 
-// ---- _PlayerStation_122588.cpp ----
 PlayerStation::~PlayerStation() noexcept(false)
 {
     P(this, 0x0) = (char *)PlayerStation_vtable + 8;
@@ -82,7 +80,6 @@ PlayerStation::~PlayerStation() noexcept(false)
 
 }
 
-// ---- setPosition_1226f8.cpp ----
 typedef void (*BoundingVolumeSetPositionFn)(void *volume, float x, float y, float z);
 
 void PlayerStation::setPosition(const Vector &position)
@@ -104,8 +101,6 @@ void PlayerStation::setPosition(const Vector &position)
     }
 }
 
-// ---- projectCollisionOnSurface_12287c.cpp ----
-
 Vector PlayerStation::projectCollisionOnSurface(const Vector &position)
 {
     // staticProjectCollisionOnSurface seeds a BoundingVolume's center with `position`,
@@ -117,13 +112,11 @@ Vector PlayerStation::projectCollisionOnSurface(const Vector &position)
     return *(Vector *)&scratch.centerX;
 }
 
-// ---- getRoot_12275a.cpp ----
 void *PlayerStation::getRoot()
 {
     return P(this, 0x140);
 }
 
-// ---- getProjectionVector_122858.cpp ----
 Vector PlayerStation::getProjectionVector(const Vector &position)
 {
     void *volumes = P(this, 0x130);
@@ -138,7 +131,6 @@ Vector PlayerStation::getProjectionVector(const Vector &position)
     return result;
 }
 
-// ---- render_1226e8.cpp ----
 void PlayerStation::render()
 {
     if (this->visible == 0) {
@@ -147,7 +139,6 @@ void PlayerStation::render()
     return ((AEGeometry *)(P(this, 0x140)))->render();
 }
 
-// ---- outerCollide_12283c.cpp ----
 typedef void (*OuterCollideVectorFn)(PlayerStation *self, float x, float y, float z);
 
 void PlayerStation::outerCollide(const Vector &position)
@@ -156,13 +147,11 @@ void PlayerStation::outerCollide(const Vector &position)
     return fn(this, position.x, position.y, position.z);
 }
 
-// ---- getPosition_12274c.cpp ----
 Vector PlayerStation::getPosition()
 {
     return ((AEGeometry *)(P(this, 0x140)))->getPosition();
 }
 
-// ---- collide_12276e.cpp ----
 typedef bool (*CollideFn)(PlayerStation *self, float x, float y, float z);
 
 bool PlayerStation::collide(float x, float y, float z)
@@ -171,7 +160,6 @@ bool PlayerStation::collide(float x, float y, float z)
     return fn(this, x, y, z);
 }
 
-// ---- update_1225fc.cpp ----
 void PlayerStation::update(int delta)
 {
     register int savedDelta = delta;
@@ -217,7 +205,6 @@ void PlayerStation::update(int delta)
     }
 }
 
-// ---- PlayerStation_121818.cpp ----
 extern "C" void BoundingSphere_constructor(void *self, float x, float y, float z, float radius,
                                            float a, float b, float c);
 extern "C" void BoundingAAB_constructor(void *self, float x, float y, float z, float sx,
@@ -526,7 +513,6 @@ PlayerStation::PlayerStation(Station *station)
     this->collisionRadius = (int)(F<float>(transform, 0xe0) + 10.0f);
 }
 
-// ---- outerCollide_122778.cpp ----
 typedef bool (*BoundingVolumeCollideFn)(void *volume, uint32_t x, uint32_t y, uint32_t z);
 
 bool PlayerStation::outerCollide(float x, float y, float z)
@@ -568,7 +554,6 @@ bool PlayerStation::outerCollide(float x, float y, float z)
     return false;
 }
 
-// ---- _PlayerStation_1225ec.cpp ----
 // Deleting destructor variant (D0): runs the base destructor body then frees.
 // Emitted as a named function so it doesn't collide with the in-place ~PlayerStation() above.
 void PlayerStation::deleting_dtor() {
@@ -601,7 +586,6 @@ void PlayerStation::transformUpdate(uint32_t lo, uint32_t hi, int delta, int del
     transform->Update((long long)delta, flag != 0);
 }
 
-// ---- translate_122766.cpp ----
 void PlayerStation::translate(float x, float y, float z)
 {
     return ((AEGeometry *)(P(this, 0x140)))->translate(x, y, z);

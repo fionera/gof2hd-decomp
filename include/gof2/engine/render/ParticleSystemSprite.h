@@ -7,7 +7,6 @@
 // namespace; only argument types like AbyssEngine::PaintCanvas are).
 // Field offsets recovered per-method from the target disassembly; accessed via byte-offset casts.
 
-
 namespace AbyssEngine {
 struct PaintCanvas;
 enum BlendMode { BLEND_DUMMY };

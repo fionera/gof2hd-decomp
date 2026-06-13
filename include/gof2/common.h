@@ -124,7 +124,6 @@ typedef unsigned int   uint;
 typedef unsigned short ushort;
 struct u32x4 { uint32_t v[4]; };          // NEON 4x u32 (best-effort, non-matching)
 
-
 // ---- GOF2 byte-offset accessor helpers (single definition; were duplicated per header) ----
 static inline bool&           BL(void* p, int off) { return *(bool*)((char*)p + off); }
 static inline char&           C (void* p, int off) { return *(char*)((char*)p + off); }

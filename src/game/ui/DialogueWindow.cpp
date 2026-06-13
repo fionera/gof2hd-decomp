@@ -23,7 +23,6 @@
 // Layout's drawMask/drawBox are used via the local extern "C" prototypes below;
 // the full Layout.h is not required here.
 
-
 extern "C" void ArrayReleaseClasses_ImagePartPtr(void *self);
 extern "C" void *Array_ImagePartPtr_dtor(void *self);
 extern "C" void *ScrollTouchWindow_dtor(void *self);
@@ -42,7 +41,6 @@ void TouchButton_getPosition(Vec2 *out, void *self);
 // engine's button position records) whose layouts are not part of this class.
 template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
 
-// ---- OnTouchBegin_168318.cpp ----
 typedef int (*TouchHandler)(void *, int, int);
 
 __attribute__((visibility("hidden"))) extern TouchHandler g_dw_touchButtonOnTouchBegin;
@@ -62,7 +60,6 @@ int DialogueWindow::OnTouchBegin(int x, int y) {
     return 0;
 }
 
-// ---- length_168044.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_briefingCounts[];
 __attribute__((visibility("hidden"))) extern int g_dw_successCounts[];
 __attribute__((visibility("hidden"))) extern void **g_dw_status;
@@ -90,7 +87,6 @@ int DialogueWindow::length() {
     return 1;
 }
 
-// ---- nextPage_16801e.cpp ----
 int DialogueWindow::nextPage() {
     DialogueWindow *self = this;
     int page = self->page;
@@ -103,13 +99,11 @@ int DialogueWindow::nextPage() {
     return 0;
 }
 
-// ---- hasLevel_1680b6.cpp ----
 bool DialogueWindow::hasLevel() {
     DialogueWindow *self = this;
     return self->level != 0;
 }
 
-// ---- _DialogueWindow_167118.cpp ----
 DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
 {
     void *p = self->faceParts;
@@ -159,7 +153,6 @@ DialogueWindow::~DialogueWindow()
     _ZN14DialogueWindowD2Ev(this);
 }
 
-// ---- OnTouchMove_168370.cpp ----
 typedef int (*TouchHandler)(void *, int, int);
 
 __attribute__((visibility("hidden"))) extern TouchHandler g_dw_touchButtonOnTouchMove;
@@ -179,13 +172,11 @@ int DialogueWindow::OnTouchMove(int x, int y) {
     return 0;
 }
 
-// ---- isFirstPage_1680ac.cpp ----
 bool DialogueWindow::isFirstPage() {
     DialogueWindow *self = this;
     return self->page == 0;
 }
 
-// ---- previousPage_1680c4.cpp ----
 int DialogueWindow::previousPage() {
     DialogueWindow *self = this;
     int page = self->page;
@@ -195,7 +186,6 @@ int DialogueWindow::previousPage() {
     return 1;
 }
 
-// ---- isLastPage_168008.cpp ----
 bool DialogueWindow::isLastPage() {
     DialogueWindow *self = this;
     int page = self->page;
@@ -203,7 +193,6 @@ bool DialogueWindow::isLastPage() {
     return page == len - 1;
 }
 
-// ---- hasBriefingDialogue_1671b4.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_briefingDialogueIds[];
 
 bool DialogueWindow::hasBriefingDialogue(int id) {
@@ -211,7 +200,6 @@ bool DialogueWindow::hasBriefingDialogue(int id) {
     return g_dw_briefingDialogueIds[id] > 0;
 }
 
-// ---- hasSuccessDialogue_1671d4.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_successDialogueIds[];
 
 bool DialogueWindow::hasSuccessDialogue(int id) {
@@ -219,7 +207,6 @@ bool DialogueWindow::hasSuccessDialogue(int id) {
     return g_dw_successDialogueIds[id] > 0;
 }
 
-// ---- set_166ee4.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_dw_statusForSet;
 
 void DialogueWindow::set(Mission *mission, int kind, int campaign) {
@@ -254,7 +241,6 @@ finish:
     ((DialogueWindow *)(self))->loadContent();
 }
 
-// ---- loadContent_1671f4.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_dw_gameTextLoad;
 __attribute__((visibility("hidden"))) extern void **g_dw_soundLoad;
 __attribute__((visibility("hidden"))) extern void **g_dw_randomLoad;
@@ -376,7 +362,6 @@ void DialogueWindow::loadContent() {
     }
 }
 
-// ---- DialogueWindow_166f5c.cpp ----
 DialogueWindow * DialogueWindow::ctor_default() {
     DialogueWindow *self = this;
     ((String *)((String *)((char *)self + 0x28)))->ctor();
@@ -385,7 +370,6 @@ DialogueWindow * DialogueWindow::ctor_default() {
     return self;
 }
 
-// ---- update_167f94.cpp ----
 __attribute__((visibility("hidden"))) extern void *g_dw_soundConfig;
 __attribute__((visibility("hidden"))) extern void **g_dw_fmodSound;
 
@@ -415,7 +399,6 @@ void DialogueWindow::update(int dt) {
     }
 }
 
-// ---- OnTouchEnd_1683c8.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_dw_statusTouchEnd;
 __attribute__((visibility("hidden"))) extern void **g_dw_soundChoice;
 __attribute__((visibility("hidden"))) extern void **g_dw_soundVoice;
@@ -469,7 +452,6 @@ choice_return_zero:
     return 0;
 }
 
-// ---- init_166c58.cpp ----
 __attribute__((visibility("hidden"))) extern int g_dw_briefingPartCounts[];
 __attribute__((visibility("hidden"))) extern int g_dw_successPartCounts[];
 __attribute__((visibility("hidden"))) extern const char g_dw_defaultAgentName[];
@@ -565,7 +547,6 @@ int DialogueWindow::init() {
     return 0;
 }
 
-// ---- DialogueWindow_166fa0.cpp ----
 __attribute__((visibility("hidden"))) extern const char g_dw_emptyString[];
 __attribute__((visibility("hidden"))) extern void **g_dw_imageFactoryCtor;
 __attribute__((visibility("hidden"))) extern void **g_dw_gameTextCtor;
@@ -615,7 +596,6 @@ DialogueWindow * DialogueWindow::ctor_text(String *text, String *agentName, int 
     return self;
 }
 
-// ---- DialogueWindow_166bfc.cpp ----
 DialogueWindow * DialogueWindow::ctor_mission(Mission *mission, Level *level, int kind) {
     DialogueWindow *self = this;
     ((String *)((String *)((char *)self + 0x28)))->ctor();
@@ -626,7 +606,6 @@ DialogueWindow * DialogueWindow::ctor_mission(Mission *mission, Level *level, in
     return self;
 }
 
-// ---- pickGermanGenericTextBecauseWeSaved100EurosWithThat_1680e0.cpp ----
 __attribute__((visibility("hidden"))) extern void **g_dw_random;
 __attribute__((visibility("hidden"))) extern int g_dw_germanBriefingTexts[];
 __attribute__((visibility("hidden"))) extern int g_dw_germanSuccessTexts[];
@@ -677,14 +656,12 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     return *picked;
 }
 
-// ---- draw_168198.cpp ----
 struct Vec2 {
     float x;
     float y;
 };
 
 typedef void (*ButtonDraw)(void *);
-
 
 __attribute__((visibility("hidden"))) extern int *g_dw_drawGuard;
 __attribute__((visibility("hidden"))) extern void **g_dw_paintCanvas;
@@ -742,7 +719,6 @@ void DialogueWindow::draw() {
     }
 }
 
-// ---- setLevel_1780c0.cpp ----
 // Attach the campaign Level whose briefing/success text this window is showing.
 // hasLevel() reports whether a level was bound this way.
 void DialogueWindow::setLevel(Level *level) {

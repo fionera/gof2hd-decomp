@@ -1,7 +1,5 @@
 #include "gof2/engine/render/shaders/BumpMapping.h"
 
-
-// ---- _BumpMapping_914d0.cpp ----
 void _ZN11AbyssEngine11BumpMappingD0Ev(
     AbyssEngine::BumpMapping *self)
 {
@@ -10,7 +8,6 @@ void _ZN11AbyssEngine11BumpMappingD0Ev(
     operator delete(base);
 }
 
-// ---- Init_912f4.cpp ----
 namespace AbyssEngine {
 
 void BumpMapping::Init(Engine *)
@@ -36,7 +33,6 @@ void BumpMapping::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_913f8.cpp ----
 namespace AbyssEngine {
 
 void BumpMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -70,7 +66,6 @@ void BumpMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- BumpMapping_91268.cpp ----
 namespace AbyssEngine {
 
 int BumpMapping::ShaderIndex;
@@ -85,7 +80,6 @@ BumpMapping::BumpMapping()
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_913cc.cpp ----
 namespace AbyssEngine {
 
 void BumpMapping::SetInActive()

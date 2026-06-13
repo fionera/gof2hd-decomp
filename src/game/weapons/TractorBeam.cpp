@@ -44,9 +44,6 @@ extern Status *gStatus;
 static inline void *&kiPtr(void *p, int off) { return *(void **)((char *)p + off); }
 static inline uint8_t &kiByte(void *p, int off) { return *((uint8_t *)p + off); }
 
-
-
-// ---- TractorBeam_1511b4.cpp ----
 // AEGeometry::AEGeometry(mesh-id, canvas, visible) ctor @ 0x0007207c.
 // Hidden PC-relative pointer to the active PaintCanvas root.
 extern void *const gCanvasRoot __attribute__((visibility("hidden")));
@@ -71,7 +68,6 @@ void TractorBeam::ctor(AEGeometry * /*unused*/, int param2) {
     self->storedHitpoints = 0;
 }
 
-// ---- render_151580.cpp ----
 // AEGeometry::render(AEGeometry*) -- resolved global render entry for the beam mesh.
 
 // TractorBeam::render()
@@ -83,36 +79,12 @@ void TractorBeam::render() {
     ((AEGeometry *)(self->beamGeometry))->render();
 }
 
-// ---- update_15122c.cpp ----
 using namespace AbyssEngine::AEMath;
 
 // --- cross-subsystem callees (resolved blx targets) ---------------------------
-// 0x72034
-// 0x7678c
-// 0x73540
 // 0x73540 family
-// 0x7354c
-// 0x71f14
-// 0x724f0
 // 0x71f14 family
-// 0x75904
-// 0x772fc
-// 0x71ec0
-// 0x71f50
-
-// 0x71a58
-// 0x719c8
-
-// 0x6f7cc
-
-// 0x720b8
-// 0x727b4
-// 0x726ac
-// 0x72148
 // 0x72628 family
-
-// 0x71548
-// 0x724a8
 
 // AEMath free operators used below; declared minimally to avoid pulling in AEMath.h.
 namespace AbyssEngine { namespace AEMath {
@@ -252,7 +224,6 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     }
 }
 
-// ---- _TractorBeam_151210.cpp ----
 // AEGeometry::~AEGeometry() @ 0x00071fc8.
 
 // TractorBeam::~TractorBeam() (D2). Returns `this`.

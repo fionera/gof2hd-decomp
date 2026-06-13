@@ -1,9 +1,6 @@
 #include "gof2/engine/render/shaders/DrawFBOShader.h"
 #include <arm_neon.h>
 
-
-
-// ---- DrawFBOShader_88490.cpp ----
 namespace AbyssEngine {
 
 DrawFBOShader::DrawFBOShader()
@@ -13,7 +10,6 @@ DrawFBOShader::DrawFBOShader()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_88788.cpp ----
 namespace AbyssEngine {
 
 void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -43,7 +39,6 @@ void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- RenderEffect_88560.cpp ----
 namespace AbyssEngine {
 
 typedef uint64_t unaligned_u64 __attribute__((aligned(1)));
@@ -139,7 +134,6 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- SetInActive_88548.cpp ----
 namespace AbyssEngine {
 
 void DrawFBOShader::SetInActive()
@@ -151,7 +145,6 @@ void DrawFBOShader::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- Init_884d4.cpp ----
 namespace AbyssEngine {
 
 void DrawFBOShader::Init(Engine *)
@@ -171,7 +164,6 @@ void DrawFBOShader::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- _DrawFBOShader_884c4.cpp ----
 namespace AbyssEngine {
 
 DrawFBOShader::~DrawFBOShader()

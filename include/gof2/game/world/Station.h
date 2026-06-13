@@ -7,7 +7,6 @@
 // Field offsets recovered from per-method target disassembly. Methods access
 // fields via byte-offset casts from `this`.
 
-
 struct Station;
 
 // RetStr (AbyssEngine::String by value: 12-byte trivially-copied aggregate)

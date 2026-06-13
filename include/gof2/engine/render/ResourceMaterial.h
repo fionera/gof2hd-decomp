@@ -5,7 +5,6 @@
 // Galaxy on Fire 2 -- AbyssEngine::ResourceMaterial (Android libgof2hdaa.so, armv7 Thumb).
 // Two constructor overloads. Fields accessed via byte-offset casts from `this`.
 
-
 namespace AbyssEngine {
 
 enum BlendMode { BlendMode_dummy };

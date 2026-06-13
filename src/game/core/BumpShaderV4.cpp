@@ -1,9 +1,5 @@
 #include "gof2/game/core/BumpShaderV4.h"
 
-
-
-
-// ---- SetInActive_8b3e0.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderV4::SetInActive()
@@ -28,7 +24,6 @@ void BumpShaderV4::SetInActive()
 
 } // namespace AbyssEngine
 
-// ---- UpdateMeshData_8b420.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderV4::UpdateMeshData(Mesh *mesh, Engine *engine)
@@ -94,7 +89,6 @@ void BumpShaderV4::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 } // namespace AbyssEngine
 
-// ---- _BumpShaderV4_8b624.cpp ----
 void _ZN11AbyssEngine12BumpShaderV4D0Ev(
     AbyssEngine::BumpShaderV4 *self)
 {
@@ -103,7 +97,6 @@ void _ZN11AbyssEngine12BumpShaderV4D0Ev(
     operator delete(base);
 }
 
-// ---- Init_8b29c.cpp ----
 namespace AbyssEngine {
 
 void BumpShaderV4::Init(Engine *)
@@ -138,7 +131,6 @@ void BumpShaderV4::Init(Engine *)
 
 } // namespace AbyssEngine
 
-// ---- BumpShaderV4_8b210.cpp ----
 namespace AbyssEngine {
 
 int BumpShaderV4::ShaderIndex;

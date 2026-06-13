@@ -19,13 +19,11 @@ extern "C" int zip_fclose(void *zf);
 extern "C" const unsigned short *String_GetAEWChar(const void *s);
 extern "C" void String_ctor_wide(void *out, const unsigned short *w, bool);
 
-// ---- GetDirPreFix_6e80c.cpp ----
 // AbyssEngine::String::String(String* out, const char* cstr, bool) -> void (0x6ee18)
 
 // FileInterfaceAndroid::GetDirPreFix() -> String built from a literal prefix (sret in r0).
 // The copy ctor returns void, so the compiler keeps a frame and restores the sret pointer.
 extern const char kDirPreFix[] __attribute__((visibility("hidden")));
-
 
 RetStr FileInterfaceAndroid_GetDirPreFix()
 {
@@ -34,7 +32,6 @@ RetStr FileInterfaceAndroid_GetDirPreFix()
     return r;
 }
 
-// ---- GetFileSize_6e5e0.cpp ----
 // FileInterfaceAndroid::GetFileSize() — seek end, tell, seek start; FILE* at +0x8.
 int FileInterfaceAndroid::GetFileSize() {
     FileInterfaceAndroid *self = this;
@@ -44,7 +41,6 @@ int FileInterfaceAndroid::GetFileSize() {
     return size;
 }
 
-// ---- SetZipDirectory_6e7fa.cpp ----
 // FileInterfaceAndroid::SetZipDirectory(void*) — cbz r1; str r1,[r0,#0x34]; bx lr
 void FileInterfaceAndroid::SetZipDirectory(void *p) {
     FileInterfaceAndroid *self = this;
@@ -52,7 +48,6 @@ void FileInterfaceAndroid::SetZipDirectory(void *p) {
         self->zipDirectory = p;
 }
 
-// ---- _FileInterfaceAndroid_6df88.cpp ----
 // Complete-object destructor (D2). Re-establishes the vptr, closes any open handle, then either
 // decrements the live-instance count or, when it is already zero, clears the alive byte at +0x4.
 // Returns `this` (ARM EABI D1/D2 convention -> mov r0,r4; pop).
@@ -70,7 +65,6 @@ FileInterfaceAndroid::~FileInterfaceAndroid()
         this->alive = 0;
 }
 
-// ---- SetAppRootDir_6e7f4.cpp ----
 // FileInterfaceAndroid::SetAppRootDir(void*) — cbz r1; str r1,[r0,#0x30]; bx lr
 void FileInterfaceAndroid::SetAppRootDir(void *p) {
     FileInterfaceAndroid *self = this;
@@ -78,7 +72,6 @@ void FileInterfaceAndroid::SetAppRootDir(void *p) {
         self->appRootDir = (const char *)p;
 }
 
-// ---- FileInterfaceAndroid_6de18.cpp ----
 struct zip_file;
 extern void *gFIAVtable_zip __attribute__((visibility("hidden")));
 extern int *gFIAInstCount_zip __attribute__((visibility("hidden")));
@@ -105,7 +98,6 @@ FileInterfaceAndroid * FileInterfaceAndroid::ctor_zip(zip_file *zf, bool append,
     return self;
 }
 
-// ---- Read_6e2e4.cpp ----
 // FileInterfaceAndroid::Read(unsigned int, void*) — reads from the zip handle, the stdio handle,
 // or the JNI input stream (in which case the bytes are copied out of a Java byte[] region).
 //
@@ -155,7 +147,6 @@ bool FileInterfaceAndroid::Read(unsigned int n, void *buf) {
     return ok;
 }
 
-// ---- Seek_6e590.cpp ----
 // FileInterfaceAndroid::Seek(unsigned int) — skip `n` bytes forward. For a zip handle this means
 // reading (and discarding) into a scratch buffer; for a stdio handle a relative fseek.
 // NOTE: near-match (33/33 instruction multiset identical; ~2 instrs differ in scheduling slot —
@@ -182,7 +173,6 @@ bool FileInterfaceAndroid::Seek(unsigned int n) {
     return delta == 0;
 }
 
-// ---- _FileInterfaceAndroid_6dfce.cpp ----
 // FileInterfaceAndroid::~FileInterfaceAndroid() [deleting destructor] — runs the complete-object
 // dtor (external), then tail-calls operator delete:
 //   blx <complete dtor> ; pop {r7,lr} ; b.w <operator delete>
@@ -192,7 +182,6 @@ void _ZN20FileInterfaceAndroidD0Ev(FileInterfaceAndroid *self)
     ::operator delete(FileInterfaceAndroid_completeDtor(self));
 }
 
-// ---- Write_6e4ac.cpp ----
 // JNI: env holder global. r9 = *gEnvW; the jobject is *r9; its function table is *(jobject).
 // Slots used: 0x2c0 NewByteArray, 0x340 SetByteArrayRegion, 0x3c ExceptionCheck,
 // 0x44 ExceptionClear, 0x5c DeleteLocalRef.
@@ -234,7 +223,6 @@ bool FileInterfaceAndroid::Write(unsigned int n, const void *buf) {
     return ok;
 }
 
-// ---- FileDelete_6e764.cpp ----
 // AbyssEngine::String::String(String* out, const String* src, bool) (0x6f028) and ~String (0x6ee30).
 
 // FileInterfaceAndroid::FileDelete(AbyssEngine::String) — static. The String arrives by value
@@ -251,7 +239,6 @@ void FileInterfaceAndroid_FileDelete(String12 s)
     ((String *)(tmp))->dtor();
 }
 
-// ---- FileExist_6e630.cpp ----
 // FileInterfaceAndroid::FileExist(AbyssEngine::String) — probes both zip directories and, failing
 // that, the filesystem (fopen) under AppRootDir. Returns whether the file exists.
 //
@@ -301,7 +288,6 @@ bool FileInterfaceAndroid::FileExist(String12 name) {
     return exists;
 }
 
-// ---- FileInterfaceAndroid_6de68.cpp ----
 // Vtable group base + an instance-count cell, both PC-relative globals.
 extern void *gFIAVtable_file __attribute__((visibility("hidden")));
 extern int *gFIAInstCount __attribute__((visibility("hidden")));
@@ -321,7 +307,6 @@ void FileInterfaceAndroid::ctor_file(FILE *f, bool append) {
     *cnt = *cnt + 1;
 }
 
-// ---- FileInterfaceAndroid_6de9c.cpp ----
 // JNI env: *env is a function table; we call slot 0x7c (GetObjectClass) and 0x84 (GetMethodID).
 typedef void *(*jni_getclass)(void *env);
 typedef void *(*jni_getmethod)(void *env, void *cls, const char *name, const char *sig);
@@ -375,7 +360,6 @@ FileInterfaceAndroid * FileInterfaceAndroid::ctor_obj(jobject *stream, bool read
     return self;
 }
 
-// ---- OpenRead_6dfe0.cpp ----
 // FileInterfaceAndroid::OpenRead(AbyssEngine::String, int, bool, int, int, unsigned int) —
 // resolves the requested file name against the two zip archives (or the filesystem under
 // AppRootDir) and, when found, wraps the handle in a freshly-allocated FileInterfaceAndroid.
@@ -448,7 +432,6 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String12 name, int p2, boo
     return result;
 }
 
-// ---- OpenWrite_6e208.cpp ----
 // FileInterfaceAndroid::OpenWrite(AbyssEngine::String, int, bool, unsigned int) — static.
 // Builds "<dir><name>" from the AppRootDir prefix and the requested file name, fopen("..","wb"),
 // and on success wraps the FILE* in a freshly-allocated FileInterfaceAndroid.
@@ -491,7 +474,6 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenWrite(String12 name, int, bool,
     return result;
 }
 
-// ---- FileInterfaceAndroid_6ddf4.cpp ----
 // Vtable group base (PC-relative global); the installed vptr is *gVtable + 8.
 extern void *gFIAVtable __attribute__((visibility("hidden")));
 
@@ -510,7 +492,6 @@ void FileInterfaceAndroid::ctor_default() {
     self->field_0x0 = vt;
 }
 
-// ---- Close_6e7a0.cpp ----
 // _JNIEnv::CallVoidMethod(jobject env, jmethodID m, jobject arg) — variadic JNI stub.
 
 // JNI env slot + the two cached jstring constants (append vs write mode), all PC-relative.

@@ -1,9 +1,5 @@
 #include "gof2/engine/core/NFC.h"
 
-
-
-
-// ---- iap_buy_dlc_full_package_69744.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -26,7 +22,6 @@ void NFC::iap_buy_dlc_full_package()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- isPad_69ccc.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern char nfc_class_name[] __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -43,7 +38,6 @@ bool NFC::isPad()
     return value != 0;
 }
 
-// ---- free_credits_rateGame_69bd0.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -61,7 +55,6 @@ void NFC::free_credits_rateGame()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- free_credits_subscribeToYoutubeChannel_69a80.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -79,7 +72,6 @@ void NFC::free_credits_subscribeToYoutubeChannel()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- free_credits_likeGOF2OnFacebook_699d8.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -97,7 +89,6 @@ void NFC::free_credits_likeGOF2OnFacebook()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_credits_300_000_69858.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -120,7 +111,6 @@ void NFC::iap_buy_credits_300_000()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- free_credits_followOnTwitter_69ad4.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -138,7 +128,6 @@ void NFC::free_credits_followOnTwitter()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- showMoreGames_69b28.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -156,7 +145,6 @@ void NFC::showMoreGames()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_dlc_vip_696e4.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -179,7 +167,6 @@ void NFC::iap_buy_dlc_vip()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_credits_1_000_000_698b8.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -202,7 +189,6 @@ void NFC::iap_buy_credits_1_000_000()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_dlc_supernova_69684.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -225,7 +211,6 @@ void NFC::iap_buy_dlc_supernova()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_dlc_kaamo_club_69624.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -248,7 +233,6 @@ void NFC::iap_buy_dlc_kaamo_club()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_dlc_valkyrie_6958c.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -271,7 +255,6 @@ void NFC::iap_buy_dlc_valkyrie()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- free_credits_likeFishlabsOnFacebook_69a2c.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -289,7 +272,6 @@ void NFC::free_credits_likeFishlabsOnFacebook()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- getWidth_69d7c.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern char nfc_class_name[] __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -306,7 +288,6 @@ int NFC::getWidth()
     return value;
 }
 
-// ---- getHeight_69e08.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern char nfc_class_name[] __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -323,7 +304,6 @@ int NFC::getHeight()
     return value;
 }
 
-// ---- iap_restore_purchases_697a4.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -341,7 +321,6 @@ void NFC::iap_restore_purchases()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- rateGame_69b7c.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -359,7 +338,6 @@ void NFC::rateGame()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- openTermsOfService_69c78.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
@@ -377,7 +355,6 @@ void NFC::openTermsOfService()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_credits_10_000_000_69978.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -400,7 +377,6 @@ void NFC::iap_buy_credits_10_000_000()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_credits_100_000_697f8.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -423,7 +399,6 @@ void NFC::iap_buy_credits_100_000()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- iap_buy_credits_3_000_000_69918.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
@@ -446,7 +421,6 @@ void NFC::iap_buy_credits_3_000_000()
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
 }
 
-// ---- openPrivacyPolicy_69c24.cpp ----
 extern void **nfc_env __attribute__((visibility("hidden")));
 extern void **nfc_class_slot __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));

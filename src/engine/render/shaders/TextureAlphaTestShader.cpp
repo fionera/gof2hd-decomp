@@ -8,11 +8,6 @@ static inline unsigned int &meshU32(void *m, int off) { return *(unsigned int *)
 // String(const char*, bool) ctor -- provided by the engine (no in-tree definition).
 extern "C" void String_ctor_cstr(String *self, const char *text, bool copy);
 
-
-
-
-// ---- Init_89230.cpp ----
-
 void TextureAlphaTestShader::Init(Engine *)
 {
     int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("TextureAlphaTestShader.vsh", "TextureAlphaTestShader.fsh");
@@ -24,9 +19,6 @@ void TextureAlphaTestShader::Init(Engine *)
     ConnectShaderComponents(program, 1);
 }
 
-
-// ---- SetInActive_89278.cpp ----
-
 void TextureAlphaTestShader::SetInActive()
 {
     for (int i = 0; i != 2; i++) {
@@ -35,9 +27,6 @@ void TextureAlphaTestShader::SetInActive()
         glDisableVertexAttribArray(*(int *)(base + 0x2c));
     }
 }
-
-
-// ---- UpdateMeshData_892a4.cpp ----
 
 void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
@@ -100,9 +89,6 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     }
 }
 
-
-// ---- ConnectShaderComponents_8916c.cpp ----
-
 void TextureAlphaTestShader::ConnectShaderComponents(int program, int index)
 {
     int (*getUniformLocation)(int, const char *) = glGetUniformLocation;
@@ -122,9 +108,6 @@ void TextureAlphaTestShader::ConnectShaderComponents(int program, int index)
     glUniform1i(*(int *)(base + 0x44), 0);
 }
 
-
-// ---- TextureAlphaTestShader_890c0.cpp ----
-
 TextureAlphaTestShader::TextureAlphaTestShader()
 {
     uint32_t storage[4];
@@ -140,17 +123,11 @@ TextureAlphaTestShader::TextureAlphaTestShader()
     return;
 }
 
-
-// ---- _TextureAlphaTestShader_893cc.cpp ----
-
 TextureAlphaTestShader::~TextureAlphaTestShader()
 {
     ((ShaderBaseStruct *)this)->~ShaderBaseStruct();
     ::operator delete(this);
 }
-
-
-// ---- UseShader_8914c.cpp ----
 
 void TextureAlphaTestShader::UseShader(bool)
 {

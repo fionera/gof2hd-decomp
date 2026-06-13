@@ -110,7 +110,6 @@ GenericShader2::GenericShader2()
 
 } // namespace AbyssEngine
 
-// ---- _GenericShader2_8e412.cpp ----
 // AbyssEngine::GenericShader2::~GenericShader2() (deleting dtor)
 void _ZN11AbyssEngine14GenericShader2D0Ev(AbyssEngine::GenericShader2 *self)
 {

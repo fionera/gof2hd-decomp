@@ -9,9 +9,6 @@ class SolarSystem;
 //   +0x00  uint8_t* stations  (heap array of 0x87 visited-flags)
 //   +0x04  AEArray* systems   (Array<SolarSystem*>)
 
-
-
-
 // ---- tiny offset-cast helpers -------------------------------------------------
 #ifndef GOF2_BIP_HELPERS
 #define GOF2_BIP_HELPERS
