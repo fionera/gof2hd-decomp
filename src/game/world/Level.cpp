@@ -316,8 +316,8 @@ __attribute__((visibility("hidden"))) extern PaintCanvas **g_paintCanvas_intro;
 
 void Level::switchSkyboxForIntro() {
     PaintCanvas **pc = g_paintCanvas_intro;
-    ((PaintCanvas*)(*pc))->MeshCreate((unsigned short)(0x4591), (unsigned int *)((unsigned int *)((char *)this + 4)), false);
-    ((PaintCanvas*)(*pc))->TextureCreate((unsigned short)(0x275a), (void *)0, (void *)0, (unsigned int *)((unsigned int *)((char *)this + 0x198)), false);
+    ((PaintCanvas*)(*pc))->MeshCreate((unsigned short)(0x4591), (unsigned int *)&skyboxMesh, false);
+    ((PaintCanvas*)(*pc))->TextureCreate((unsigned short)(0x275a), (void *)0, (void *)0, (unsigned int *)&field_198, false);
     RawArray *list = (RawArray *)(intptr_t)asteroids;
     if (list != 0) {
         for (unsigned int i = 0; i < list->size; i = i + 1) {
@@ -335,10 +335,10 @@ void Level::switchSkyboxForSupernovaReversal() {
     Status **st = g_status_snr;
     PaintCanvas *canvas = *pc;
     int tex = (*st)->getSystem()->getTextureIndex();
-    ((PaintCanvas*)(canvas))->MeshCreate((unsigned short)((unsigned short)(tex + 0x4588)), (unsigned int *)((unsigned int *)((char *)this + 4)), false);
+    ((PaintCanvas*)(canvas))->MeshCreate((unsigned short)((unsigned short)(tex + 0x4588)), (unsigned int *)&skyboxMesh, false);
     PaintCanvas *canvas2 = *pc;
     int tex2 = (*st)->getSystem()->getTextureIndex();
-    ((PaintCanvas*)(canvas2))->TextureCreate((unsigned short)((unsigned short)(tex2 + 0x2751)), (void *)0, (void *)0, (unsigned int *)((unsigned int *)((char *)this + 0x198)), false);
+    ((PaintCanvas*)(canvas2))->TextureCreate((unsigned short)((unsigned short)(tex2 + 0x2751)), (void *)0, (void *)0, (unsigned int *)&field_198, false);
     skyboxTexture = -1;
 }
 
@@ -2246,11 +2246,11 @@ void Level::createSentryGuns() {
 __attribute__((visibility("hidden"))) extern Status **g_status_collideStation;
 
 int Level::collideStation(Vector v) {
-    int landmarks = landmarks;
-    if (landmarks != 0 &&
-        *(int *)(*(int *)(landmarks + 4)) != 0 &&
+    int lm = landmarks;
+    if (lm != 0 &&
+        *(int *)(*(int *)(lm + 4)) != 0 &&
         (*g_status_collideStation)->inEmptyOrbit() == 0) {
-        int *obj = *(int **)(landmarks + 4);
+        int *obj = *(int **)(lm + 4);
         return (*(int (**)(int *, Vector))(*obj + 0x38))(obj, v);
     }
     return 0;
