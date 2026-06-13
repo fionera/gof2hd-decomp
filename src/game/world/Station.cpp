@@ -7,34 +7,22 @@
 #include "gof2/game/ship/Agent.h"
 #include "gof2/game/core/String.h"
 
-extern "C" void Array_Item_ctor(void *arr);
-extern "C" void ArraySetLength_Item(uint32_t len, void *arr);
 // NOTE: Station's name is an AbyssEngine::String passed/returned BY VALUE through the engine's
 // 12-byte RetStr/String12 aggregate ABI (getName() returns RetStr, callers do `*(RetStr*)tmp = ...`).
 // That trivially-copied 12-byte aggregate does not match our 24-byte std::u16string-backed String,
 // so these by-value-String copy/format entry points are kept as documented engine externs rather
 // than rewritten to std::u16string methods (doing so would require rewriting the whole RetStr ABI).
 extern "C" void String_copy_ctor(void *out, void *src, bool);
-extern "C" void Array_Ship_ctor(void *arr);
-extern "C" void ArraySetLength_Ship(uint32_t len, void *arr);
-extern "C" void ArrayReleaseClasses_Ship(void *arr) __attribute__((nothrow));
-extern "C" void ArrayReleaseClasses_Item(void *arr) __attribute__((nothrow));
-extern "C" void *Array_Ship_dtor(void *arr) __attribute__((nothrow));
-extern "C" void *Array_Item_dtor(void *arr) __attribute__((nothrow));
-extern "C" void *Array_Agent_dtor(void *arr) __attribute__((nothrow));
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
-extern "C" void ArrayReleaseClasses_Agent(void *arr) __attribute__((nothrow));
-
-struct Ship;
 
 void Station::removeShips() {
     Station *self = this;
-    void *arr = self->ships;
+    Array<Ship*> *arr = self->ships;
     if (arr != 0) {
-        ArrayReleaseClasses_Ship(arr);
-        void *a2 = self->ships;
-        if (a2 != 0)
-            ::operator delete(Array_Ship_dtor(a2));
+        for (Ship *s : *arr) delete s;
+        arr->clear();
+        if (self->ships != 0)
+            delete self->ships;
     }
     self->ships = 0;
 }
@@ -86,20 +74,18 @@ struct Item;
 // Station::setItems(Array<Item*>*, bool) — this in r0, items in r1, deep in r2.
 void Station::setItems(uint32_t *items, bool deep) {
     Station *self = this;
-    void *old = self->items;
-    if (old != 0)
-        ::operator delete(Array_Item_dtor(old));
+    if (self->items != 0)
+        delete self->items;
     self->items = 0;
-    if (items == 0 || !deep) {
-        self->items = items;
+    Array<Item*> *src = (Array<Item*> *)items;
+    if (src == 0 || !deep) {
+        self->items = src;
     } else {
-        void *na = ::operator new(0xc);
-        Array_Item_ctor(na);
+        Array<Item*> *na = new Array<Item*>();
         self->items = na;
-        ArraySetLength_Item(items[0], na);
-        for (uint32_t i = 0; i < items[0]; i++) {
-            void *cloned = ((Item *)(((Item **)items[1])[i]))->clone();
-            ((void **)((uint32_t *)self->items)[1])[i] = cloned;
+        na->resize(src->size());
+        for (uint32_t i = 0; i < src->size(); i++) {
+            (*na)[i] = (*src)[i]->clone();
         }
     }
 }
@@ -142,24 +128,22 @@ struct Ship;
 // Station::setShips(Array<Ship*>*, bool) — this in r0, ships in r1, deep in r2.
 void Station::setShips(uint32_t *ships, bool deep) {
     Station *self = this;
-    void *old = self->ships;
-    if (old != 0) {
-        ArrayReleaseClasses_Ship(old);
-        void *o2 = self->ships;
-        if (o2 != 0)
-            ::operator delete(Array_Ship_dtor(o2));
+    if (self->ships != 0) {
+        for (Ship *s : *self->ships) delete s;
+        self->ships->clear();
+        if (self->ships != 0)
+            delete self->ships;
     }
     self->ships = 0;
-    if (ships == 0 || !deep) {
-        self->ships = ships;
+    Array<Ship*> *src = (Array<Ship*> *)ships;
+    if (src == 0 || !deep) {
+        self->ships = src;
     } else {
-        void *na = ::operator new(0xc);
-        Array_Ship_ctor(na);
+        Array<Ship*> *na = new Array<Ship*>();
         self->ships = na;
-        ArraySetLength_Ship(ships[0], na);
-        for (uint32_t i = 0; i < ships[0]; i++) {
-            void *cloned = ((Ship *)(((Ship **)ships[1])[i]))->clone();
-            ((void **)((uint32_t *)self->ships)[1])[i] = cloned;
+        na->resize(src->size());
+        for (uint32_t i = 0; i < src->size(); i++) {
+            (*na)[i] = (*src)[i]->clone();
         }
     }
 }
@@ -170,35 +154,30 @@ void Station::setShips(uint32_t *ships, bool deep) {
 // (the elements are already owned by us, so no per-element clone like setShips()).
 void Station::setShipsArr(void *ships) {
     Station *self = this;
-    void *old = self->ships;
-    if (old != ships) {
-        if (old != 0) {
-            ArrayReleaseClasses_Ship(old);
-            void *o2 = self->ships;
-            if (o2 != 0)
-                ::operator delete(Array_Ship_dtor(o2));
+    Array<Ship*> *src = (Array<Ship*> *)ships;
+    if (self->ships != src) {
+        if (self->ships != 0) {
+            for (Ship *s : *self->ships) delete s;
+            self->ships->clear();
+            if (self->ships != 0)
+                delete self->ships;
         }
-        self->ships = ships;
+        self->ships = src;
     }
 }
 
 // ---- ArrayRemove<Ship*> ----
-// Compact the ships array in place, removing every slot that equals `ship`, then
-// shrink the backing storage. Engine container layout: { length, data, cap }.
+// Compact the ships array in place, removing every slot that equals `ship`.
 void Station::arrayRemoveShip(Ship *ship, void *ships) {
-    struct ShipArray { uint32_t length; Ship **data; uint32_t cap; };
-    ShipArray *arr = (ShipArray *)ships;
-    uint32_t n = arr->length;
+    Array<Ship*> *arr = (Array<Ship*> *)ships;
+    uint32_t n = arr->size();
     uint32_t kept = 0;
     for (uint32_t i = 0; i < n; i++) {
-        Ship *cur = arr->data[i];
+        Ship *cur = (*arr)[i];
         if (cur != ship)
-            arr->data[kept++] = cur;
+            (*arr)[kept++] = cur;
     }
-    uint32_t cap = (kept == 0) ? 1 : kept;
-    arr->cap = cap;
-    arr->length = kept;
-    arr->data = (Ship **)realloc(arr->data, cap * sizeof(Ship *));
+    arr->resize(kept);
 }
 
 // ---- baseDtor / dtorFinish ----
@@ -278,36 +257,28 @@ uint32_t Station::getPirateStationIndex() {
     }
 }
 
-struct Item;
-// tail-called veneer
-extern "C" void ArrayAdd_Item(Item *item, void *arr);     // tail-called veneer
-
 // Station::addItem(Item*) — this in r0, item in r1.
 void Station::addItem(Item *item) {
     Station *self = this;
-    uint32_t *arr = (uint32_t *)self->items;
+    Array<Item*> *arr = self->items;
     if (arr == 0) {
-        arr = (uint32_t *)::operator new(0xc);
-        Array_Item_ctor(arr);
+        arr = new Array<Item*>();
         self->items = arr;
     } else {
-        uint32_t n = arr[0];
+        uint32_t n = arr->size();
         if (n != 0) {
             for (uint32_t i = 0; i < n; i++) {
-                if (((Item *)((Item **)arr[1])[i])->equals(item) != 0) {
-                    if ((int)i < 0)
-                        break;
-                    uint32_t *cur = (uint32_t *)self->items;
-                    Item *found = ((Item **)cur[1])[i];
-                    ((Item *)(found))->addAmount(((Item *)(item))->getAmount());
+                if ((*arr)[i]->equals(item) != 0) {
+                    Item *found = (*self->items)[i];
+                    found->addAmount(item->getAmount());
                     return;
                 }
-                arr = (uint32_t *)self->items;
-                n = arr[0];
+                arr = self->items;
+                n = arr->size();
             }
         }
     }
-    ArrayAdd_Item(item, arr);
+    arr->push_back(item);
 }
 
 // Station::clone() — this in r0, returns a new Station copy.
@@ -323,9 +294,6 @@ Station * Station::clone() {
 
 // Station::~Station() — real C++ destructor so the demangled symbol contains "~Station".
 
-// Engine container layout: { uint32_t length; T* data; uint32_t cap; }
-struct StationArray { uint32_t length; void **data; uint32_t cap; };
-
 // Status singleton: global slot holds P (kept in a reg); *P is reloaded per call.
 extern Status **const gStatusForDtor __attribute__((visibility("hidden")));
 #define STATUS (*gStatusForDtor)
@@ -334,21 +302,23 @@ extern Status **const gStatusForDtor __attribute__((visibility("hidden")));
 void Station::dtor() {
     Station *self = this;
     if (self->ships != 0) {
-        ArrayReleaseClasses_Ship(self->ships);
+        for (Ship *s : *self->ships) delete s;
+        self->ships->clear();
         if (self->ships != 0)
-            ::operator delete(Array_Ship_dtor(self->ships));
+            delete self->ships;
         self->ships = 0;
     }
     if (self->items != 0) {
-        ArrayReleaseClasses_Item(self->items);
+        for (Item *it : *self->items) delete it;
+        self->items->clear();
         if (self->items != 0)
-            ::operator delete(Array_Item_dtor(self->items));
+            delete self->items;
         self->items = 0;
     }
-    StationArray *agents = (StationArray *)self->agents;
+    Array<Agent*> *agents = self->agents;
     if (agents != 0) {
-        for (uint32_t i = 0; i < agents->length; i++) {
-            Agent *a = (Agent *)agents->data[i];
+        for (uint32_t i = 0; i < agents->size(); i++) {
+            Agent *a = (*agents)[i];
             Agent *campA = ((Status *)(STATUS))->getCampaignMission() == 0
                                ? (Agent *)0
                                : ((Mission *)((Mission *)(intptr_t)((Status *)(STATUS))->getCampaignMission()))->getAgent();
@@ -357,10 +327,10 @@ void Station::dtor() {
                                : ((Mission *)(((Status *)(STATUS))->getFreelanceMission()))->getAgent();
             if (a != 0 && a != campA && a != freeA && ((Agent *)(a))->isStoryAgent() == 0)
                 ::operator delete(Agent_dtor(a));
-            agents = (StationArray *)self->agents;
+            agents = self->agents;
         }
         if (agents != 0)
-            ::operator delete(Array_Agent_dtor(agents));
+            delete agents;
         self->agents = 0;
     }
     ((Station *)(self))->baseDtor();
@@ -370,15 +340,15 @@ struct Agent;
 
 void Station::setAgents(void *agents) {
     Station *self = this;
-    void *cur = self->agents;
-    if (cur != agents) {
-        if (cur != 0) {
-            ArrayReleaseClasses_Agent(cur);
-            void *a2 = self->agents;
-            if (a2 != 0)
-                ::operator delete(Array_Agent_dtor(a2));
+    Array<Agent*> *src = (Array<Agent*> *)agents;
+    if (self->agents != src) {
+        if (self->agents != 0) {
+            for (Agent *a : *self->agents) delete a;
+            self->agents->clear();
+            if (self->agents != 0)
+                delete self->agents;
         }
-        self->agents = agents;
+        self->agents = src;
     }
 }
 
@@ -412,14 +382,14 @@ struct Ship;
 // Station::hasShip(int) — this in r0, index in r1.
 uint32_t Station::hasShip(int index) {
     Station *self = this;
-    uint32_t *arr = (uint32_t *)self->ships;
+    Array<Ship*> *arr = self->ships;
     if (arr != 0) {
-        for (uint32_t i = 0; i < arr[0]; i++) {
-            Ship *sh = ((Ship **)arr[1])[i];
+        for (uint32_t i = 0; i < arr->size(); i++) {
+            Ship *sh = (*arr)[i];
             if (sh != 0) {
-                if (((Ship *)(sh))->getIndex() == index)
+                if (sh->getIndex() == index)
                     return 1;
-                arr = (uint32_t *)self->ships;
+                arr = self->ships;
             }
         }
     }
@@ -431,47 +401,40 @@ struct Item;
 // Station::hasItem(int) — this in r0, index in r1.
 uint32_t Station::hasItem(int index) {
     Station *self = this;
-    uint32_t *arr = (uint32_t *)self->items;
+    Array<Item*> *arr = self->items;
     if (arr != 0) {
-        for (uint32_t i = 0; i < arr[0]; i++) {
-            Item *it = ((Item **)arr[1])[i];
+        for (uint32_t i = 0; i < arr->size(); i++) {
+            Item *it = (*arr)[i];
             if (it != 0) {
-                if (((Item *)(it))->getIndex() == index)
+                if (it->getIndex() == index)
                     return 1;
-                arr = (uint32_t *)self->items;
+                arr = self->items;
             }
         }
     }
     return 0;
 }
 
-struct Ship;
-extern "C" void ArrayAdd_Ship(Ship *ship, void *arr);   // tail-called veneer
-
 // Station::addShip(Ship*) — this in r0, ship in r1.
 void Station::addShip(Ship *ship) {
     Station *self = this;
-    uint32_t *arr = (uint32_t *)self->ships;
+    Array<Ship*> *arr = self->ships;
     if (arr == 0) {
-        arr = (uint32_t *)::operator new(0xc);
-        Array_Ship_ctor(arr);
+        arr = new Array<Ship*>();
         self->ships = arr;
     } else {
-        uint32_t n = arr[0];
+        uint32_t n = arr->size();
         if (n != 0) {
             for (uint32_t i = 0; i < n; i++) {
-                if (((Ship *)(((Ship **)arr[1])[i]))->equals(ship) != 0) {
-                    if ((int)i >= 0)
-                        return;
-                    arr = (uint32_t *)self->ships;
-                    break;
+                if ((*arr)[i]->equals(ship) != 0) {
+                    return;
                 }
-                arr = (uint32_t *)self->ships;
-                n = arr[0];
+                arr = self->ships;
+                n = arr->size();
             }
         }
     }
-    ArrayAdd_Ship(ship, arr);
+    arr->push_back(ship);
 }
 
 extern "C" void *String_default_ctor(void *s);         // String::String() -> this

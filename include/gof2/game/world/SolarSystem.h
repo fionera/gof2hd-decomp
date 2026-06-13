@@ -33,9 +33,9 @@ public:
     int mapZ;                     // +0x2c
     int jumpgateStationId;                     // +0x30
     int textureIndex;                     // +0x34
-    uint32_t* stationIds;               // +0x38
-    void* field_0x3c;                   // +0x3c
-    uint32_t* linkedSystemIds;               // +0x40
+    Array<int>* stationIds;             // +0x38
+    Array<int>* field_0x3c;             // +0x3c
+    Array<int>* linkedSystemIds;        // +0x40
 
     // ---- methods (converted from free functions) ----
     SolarSystem * ctor(int p1, const String12 &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14);

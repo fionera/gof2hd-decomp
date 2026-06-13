@@ -20,9 +20,9 @@ public:
     uint8_t visited;                 // +0x1c
     int techLevel;                     // +0x20
     uint8_t attackedFriends;                 // +0x24
-    void* items;                   // +0x28 Array<Item*>*
-    void* ships;                   // +0x2c Array<Ship*>*
-    void* agents;                   // +0x30 Array<Agent*>*
+    Array<Item*>* items;           // +0x28 Array<Item*>*
+    Array<Ship*>* ships;           // +0x2c Array<Ship*>*
+    Array<Agent*>* agents;         // +0x30 Array<Agent*>*
     uint8_t field_0x71;                 // +0x71
 
     // ---- methods (converted from free functions) ----

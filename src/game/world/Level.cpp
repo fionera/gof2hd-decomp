@@ -87,6 +87,68 @@ struct RawArray {
     unsigned int capacity;
 };
 
+// Array<T> container helpers (defined at end of file over the engine's RawArray
+// {size,data,capacity} layout). Each is one Array<T> special member specialised
+// per element type; the trailing context suffix (_ca/_csc/_csp/_cm/...) marks
+// the call site the decompiler inlined it at. Consolidated here as forward
+// declarations so the call sites below resolve.
+struct ObjectGun;
+extern "C" {
+// Array<T>::Array()
+void  ArrayKIPlayer_ctor_ca(void *a);
+void  ArrayKIPlayer_ctor_ccm(void *a);
+void  ArrayKIPlayer_ctor_cm(void *a);
+void  ArrayKIPlayer_ctor_csc(void *a);
+void  ArrayKIPlayer_ctor_cso(void *a);
+void  ArrayKIPlayer_ctor_csp(void *a);
+void  ArrayKIPlayer_ctor_cwm(void *a);
+void  ArrayPlayer_ctor_cp(void *a);
+void  ArrayRadio_ctor_crm(void *a);
+void  ArrayRadio_ctor_crms(void *a);
+void  ArrayGasCloud_ctor_cgc(void *a);
+void  ArrayBV_ctor_gbv(void *a);
+void  Array_int_ctor_ips(void *a);
+void  ArrayAGun_ctor_cg(void *a);
+void  ArrayAGun_ctor_ag(void *a);
+// Array<T>::~Array() (returns this)
+void *ArrayKIPlayer_dtor_csc(void *a);
+void *ArrayPlayer_dtor_cp(void *a);
+void *ArrayRadio_dtor_crm(void *a);
+void *ArrayInt_dtor_gbv(void *a);
+void *Array_int_dtor_cs(void *a);
+void *Array_int_dtor_cso(void *a);
+void *ArrayAGun_dtor_ag(void *a);
+// Array<T>::setLength(n)
+void  ArraySetLength_KIPlayer_ca(int n, void *a);
+void  ArraySetLength_KIPlayer_ccm(unsigned n, void *a);
+void  ArraySetLength_KIPlayer_cm(unsigned n, void *a);
+void  ArraySetLength_KIPlayer_csc(unsigned n, void *a);
+void  ArraySetLength_KIPlayer_csp(unsigned n, void *a);
+void  ArraySetLength_KIPlayer_cwm(unsigned n, void *a);
+void  ArraySetLength_Player_cp(unsigned n, void *a);
+void  ArraySetLength_Radio_crms(unsigned n, void *a);
+void  ArraySetLength_GasCloud_cgc(int n, void *a);
+void  ArraySetLength_BV_gbv(unsigned n, void *a);
+void  ArraySetLength_int_ips(unsigned n, void *a);
+void  ArraySetLength_AGun_ag(unsigned n, void *a);
+// Array<T>::add(item)
+void  ArrayAdd_KIPlayer_cft(KIPlayer *k, void *a);
+void  ArrayAdd_KIPlayer_csc(KIPlayer *k, void *a);
+void  ArrayAdd_KIPlayer_cso(KIPlayer *k, void *a);
+void  ArrayAdd_KIPlayer_cwm(KIPlayer *k, void *a);
+void  ArrayAdd_Radio_crm(RadioMessage *m, void *a);
+void  ArrayAdd_AGun_cg(ObjectGun *o, void *a);
+void  ArrayAdd_AGun_ag(ObjectGun *o, void *a);
+// Array<int>::release() / Array<T>::releaseClasses()
+void  ArrayRelease_int_gbv(void *a);
+void  ArrayReleaseClasses_AGun_ag(void *a);
+void  ArrayReleaseClasses_KIPlayer_csc(void *a);
+// generic (untyped, int-handle) Array helpers used by createSentryGuns
+void  ArrayCtor(int arr);
+void  ArraySetLength(int len, int arr);
+void  ArrayAdd(int item, int arr);
+}
+
 extern "C" void *dtor_Objective(void *p);
 extern "C" void *dtor_BoundingVolume(void *p);
 extern "C" void *dtor_StarSystem(void *p);
@@ -108,10 +170,7 @@ extern "C" void *dtor_ArrayRadioMessage(void *p);
 extern "C" void *_Znwj(unsigned int size);
 extern "C" void Level_setAlwaysEnemy(int obj, int flag);
 extern "C" int Level_opnew(unsigned int size);
-extern "C" void ArrayCtor(int arr);
-extern "C" void ArraySetLength(int len, int arr);
 extern "C" unsigned int uidiv(unsigned int a, unsigned int b);
-extern "C" void ArrayAdd(int item, int arr);
 extern "C" void Level_createPlayer_impl(Level *self);
 extern "C" void *Level_opnew_akw(unsigned int size);
 extern "C" void *dtor_Objective_akw(void *p);
@@ -761,8 +820,6 @@ void MineGun_ctor_cg(ObjectGun *o, Gun *g, int res, int c, int d, Level *self);
 void SentryGun_ctor_cg(ObjectGun *o, Gun *g, int res, int c, int d, Level *self);
 int  Item_getAttribute_cg(int item);
 void Globals_addSoundResourceToList_cg(int snd);
-void ArrayAGun_ctor_cg(void *a);
-void ArrayAdd_AGun_cg(ObjectGun *o, void *a);
 }
 
 // Level::createGun(idx, owner, kind, hp, dmg, rate, cool, color) — factory for the player's and
@@ -956,8 +1013,6 @@ int  Station_isAttackedByAliens_csp(Station *s);
 int  aeabi_idivmod_csp(int a, int b);
 void *Level_opnew_csp(unsigned size);
 void StarSystem_ctor_csp(StarSystem *s, int mode);
-void ArrayKIPlayer_ctor_csp(void *a);
-void ArraySetLength_KIPlayer_csp(unsigned n, void *a);
 int  ApplicationManager_GetEngine_csp();
 int  Engine_IsPostEffectActivated_csp(Engine *e);
 // Builds the skybox detail meshes (rings/storm/supernova flare/jumpgates), the station object and
@@ -1054,11 +1109,8 @@ int  Status_getStation_crm();
 int  Station_getIndex_crm(Station *s);
 int  AERandom_nextInt_crm(int rng);
 void *Level_opnew_crm(unsigned size);
-void ArrayRadio_ctor_crm(void *a);
-void *ArrayRadio_dtor_crm(void *a);
 void operator_delete_crm(void *p);
 void RadioMessage_ctor_crm(RadioMessage *m, int id, int arg, int kind, int delay);
-void ArrayAdd_Radio_crm(RadioMessage *m, void *a);
 // Hands the finished radio-message queue to the player's comm system (vtable slot at player+0x18).
 void Level_crm_dispatch(int ego, void *queue);
 }
@@ -1475,7 +1527,6 @@ void Player_setVulnerable_cft(Player *player, int flag);
 int  Player_getMaxHitpoints_cft();
 void Player_setMaxHitpoints_cft(Player *p, int hp);
 void PlayerTurret_setHost_cft(PlayerTurret *t, KIPlayer *host, void *offset);
-void ArrayAdd_KIPlayer_cft(KIPlayer *k, void *arr);
 }
 
 // Level::createFighterTurrets() — attaches a defensive turret to capital-class enemies.
@@ -1587,8 +1638,6 @@ int  Status_getCurrentCampaignMission_cm();
 int  AERandom_nextInt_cm(int rng);
 int  cm_randPos(int rng, int slot); // randomized position component
 void *Level_opnew_cm(unsigned size);
-void ArrayKIPlayer_ctor_cm(void *a);
-void ArraySetLength_KIPlayer_cm(unsigned n, void *a);
 int  Globals_getRandomEnemyFighter_cm(Globals *g, int race);
 void Player_setAlwaysEnemy_cm(Player *p);
 // The full per-mission-type scene construction (escorts, freighters, derelicts, generators, radio
@@ -1677,9 +1726,6 @@ int   AERandom_nextIntBound_ca(int rng, int bound);
 
 void *Level_opnew_ca(unsigned size);
 void  operator_deletearr_ca(void *p);
-
-void  ArrayKIPlayer_ctor_ca(void *a);
-void  ArraySetLength_KIPlayer_ca(int n, void *a);
 
 void  Waypoint_ctor_ca(Waypoint *w, int x, int y, int z, void *route);
 void  BoundingSphere_ctor_ca(BoundingSphere *bs);
@@ -1924,8 +1970,6 @@ __attribute__((visibility("hidden"))) extern float g_ccm_pos0;     // DAT_000c53
 extern "C" {
 int  Status_getCurrentCampaignMission_ccm();
 void *Level_opnew_ccm(unsigned size);
-void ArrayKIPlayer_ctor_ccm(void *a);
-void ArraySetLength_KIPlayer_ccm(unsigned n, void *a);
 void KIPlayer_setToSleep_ccm(KIPlayer *k);
 void Player_setAlwaysEnemy_ccm(Player *p);
 void Player_setHitpoints_ccm(int p);
@@ -2383,9 +2427,6 @@ __attribute__((visibility("hidden"))) extern ApplicationManager **g_cp_appMgr; /
 extern "C" {
 int  ApplicationManager_GetCurrentApplicationModule_cp(ApplicationManager *m);
 void *Level_opnew_cp(unsigned size);
-void ArrayPlayer_ctor_cp(void *a);
-void *ArrayPlayer_dtor_cp(void *a);
-void ArraySetLength_Player_cp(unsigned n, void *a);
 void operator_delete_cp(void *p);
 void Player_setEnemies_cp(Player *p, void *arr);
 void Player_addEnemies_cp(Player *p, void *arr);
@@ -2689,8 +2730,6 @@ struct RadioMessage;
 
 extern "C" {
 void *Level_opnew_crms(unsigned size);
-void  ArrayRadio_ctor_crms(void *a);
-void  ArraySetLength_Radio_crms(unsigned n, void *a);
 void  RadioMessage_ctor_crms(RadioMessage *m, int id, int speaker, int kind, int delay);
 // A couple of cases use a randomized delay constant the original loads from a data slot.
 int   crms_randDelay(int which);
@@ -3065,10 +3104,7 @@ void PlayerFixedObject_setName_cso(PlayerFixedObject *o, String *n);
 void PlayerFixedObject_setDockingType_cso(PlayerFixedObject *o, int t);
 void Player_setAlwaysFriend_cso(Player *p, int flag);
 void *Level_opnew_cso(unsigned size);
-void ArrayKIPlayer_ctor_cso(void *a);
-void *Array_int_dtor_cso(void *a);
 void operator_delete_cso(void *p);
-void ArrayAdd_KIPlayer_cso(KIPlayer *k, void *a);
 }
 
 // Level::createStaticObjects() — spawns campaign-specific landmark/escort objects.
@@ -3204,10 +3240,6 @@ void *FileRead_dtor_gbv(FileRead *fr);
 int   FileRead_loadStationCollision_gbv(int fr);
 int   FileRead_loadStaticCollision_gbv(int fr);
 void  operator_delete_gbv(void *p);
-void  ArrayBV_ctor_gbv(void *a);
-void *ArrayInt_dtor_gbv(void *a);
-void  ArraySetLength_BV_gbv(unsigned n, void *a);
-void  ArrayRelease_int_gbv(void *a);
 // Builds one BoundingVolume (sphere when shape==0, AAB when shape==1) from the raw collision
 // record at `rec`; returns the new object. The conversion is fixed-point->float SIMD math the
 // decompiler mangled, so it lives in the engine helper.
@@ -3291,7 +3323,6 @@ void PlayerFixedObject_setWreckedMeshId_cs(PlayerFixedObject *o, int mesh);
 void PlayerFixedObject_setBV_cs(PlayerFixedObject *o, void *bv);
 int  Globals_getShipGroup_cs(Globals *g, int type, int race, int flag);
 void LODManager_addObject_cs(LODManager *m, AEGeometry *g);
-void *Array_int_dtor_cs(void *a);
 void operator_delete_cs(void *p);
 // Builds the class-appropriate bounding-volume array (the original is a long cascade of SIMD
 // BoundingAAB constructions Ghidra could not lift) and returns it; also returns the wreck mesh id.
@@ -3446,13 +3477,8 @@ __attribute__((visibility("hidden"))) extern int   **g_ag_snd2;      // [DAT_000
 __attribute__((visibility("hidden"))) extern float   g_ag_perLevel;
 
 extern "C" {
-void  ArrayReleaseClasses_AGun_ag(void *a);
-void *ArrayAGun_dtor_ag(void *a);
 void  operator_delete_ag(void *p);
 void *Level_opnew_ag(unsigned size);
-void  ArrayAGun_ctor_ag(void *a);
-void  ArraySetLength_AGun_ag(unsigned n, void *a);
-void  ArrayAdd_AGun_ag(ObjectGun *o, void *a);
 int   Status_getLevel_ag();
 int   Status_getCurrentCampaignMission_ag();
 int   Status_getMission_ag();
@@ -3720,8 +3746,6 @@ int  Status_getCurrentCampaignMission_cgc();
 int  Station_getIndex_cgc(Station *s);
 int  AERandom_nextInt_cgc(int rng);
 void *Level_opnew_cgc(unsigned size);
-void ArrayGasCloud_ctor_cgc(void *a);
-void ArraySetLength_GasCloud_cgc(int n, void *a);
 void PlayerGasCloud_ctor_cgc(PlayerGasCloud *c, int kind, ParticleSystemManager *psm,
                              AEGeometry *geo, Vector *pos);
 // Generates a random spawn position for cloud index `i` that is far enough from the player and
@@ -3910,8 +3934,6 @@ __attribute__((visibility("hidden"))) extern void (*g_ips_enableEmit)(int);  // 
 
 extern "C" {
 void *Level_opnew_ips(unsigned size);
-void  Array_int_ctor_ips(void *a);
-void  ArraySetLength_int_ips(unsigned n, void *a);
 int   Status_getSystem_ips();
 int   SolarSystem_hasPirateBase_ips(SolarSystem *s);
 int   SolarSystem_getTextureIndex_ips();
@@ -4044,8 +4066,6 @@ int  Status_inSupernovaSystem_cwm();
 int  Status_getCurrentCampaignMission_cwm();
 int  Status_getWingmen_cwm();
 void *Level_opnew_cwm(unsigned size);
-void ArrayKIPlayer_ctor_cwm(void *a);
-void ArraySetLength_KIPlayer_cwm(unsigned n, void *a);
 void AERandom_setSeed_cwm(int seed);
 void AERandom_reset_cwm();
 int  Globals_getRandomEnemyFighter_cwm(Globals *g, int race);
@@ -4055,7 +4075,6 @@ void Player_setHitpoints_cwm(int p);
 void String_assign_cwm(String *dst, String *src);
 int  Status_getMission_cwm();
 int  Mission_getType_cwm();
-void ArrayAdd_KIPlayer_cwm(KIPlayer *k, void *a);
 // Positions wingman `i` relative to the player's geometry (right/forward offsets) and sets its
 // heading. The original is SIMD vector math Ghidra could not lift cleanly.
 void Level_cwm_placeWingman(Level *self, int *kiSlot, unsigned i);
@@ -4134,14 +4153,9 @@ __attribute__((visibility("hidden"))) extern Globals **g_csc_globals;// [DAT_000
 __attribute__((visibility("hidden"))) extern int   **g_csc_shipHost; // [DAT_000c46a4]
 
 extern "C" {
-void  ArrayReleaseClasses_KIPlayer_csc(void *a);
-void *ArrayKIPlayer_dtor_csc(void *a);
 void  operator_delete_csc(void *p);
 void *Level_opnew_csc(unsigned size);
 void *Level_opnew_arr_csc(unsigned size);
-void  ArrayKIPlayer_ctor_csc(void *a);
-void  ArraySetLength_KIPlayer_csc(unsigned n, void *a);
-void  ArrayAdd_KIPlayer_csc(KIPlayer *k, void *a);
 void  Status_setMission_csc(Mission *m);
 int   Status_getCurrentCampaignMission_csc();
 int   Status_getSystem_csc();
@@ -4618,6 +4632,147 @@ extern "C" void Level_releaseInt(void *p)
         ::operator delete[](a->data);
     a->data = 0;
 }
+
+// ---- Array<T> container helpers (RawArray {size,data,capacity}) ------------
+// These are the engine's per-element-type Array<T> special members the
+// decompiler emitted as undefined externs (Array_<T>_ctor/_dtor, ArrayXxx_ctor,
+// ArraySetLength_<T>, ArrayAdd_<T>, ArrayRelease(Classes)_<T>). Each is the same
+// Array<T> operation specialised per element type; the `_ca`/`_csc`/`_csp`/...
+// context suffixes are duplicate inlinings of the same instantiation at distinct
+// call sites. They are defined here over the engine's 32-bit RawArray layout
+// (size@+0, data@+4, capacity@+8) — the layout this Level and ~15 peer TUs read
+// directly (KIPlayer/Player/Radio/RepairBeam/CutScene/MGame/...). Element size
+// is 4 bytes (a 32-bit handle/pointer) for every instantiation used here.
+namespace {
+
+// Array<T>::Array() — empty container.
+inline void arrayCtor(void *p)
+{
+    RawArray *a = (RawArray *)p;
+    a->size = 0;
+    a->data = 0;
+    a->capacity = 0;
+}
+
+// Array<T>::~Array() — free the element buffer; returns `this` (ARM ABI) so the
+// caller can hand it straight to operator delete.
+inline void *arrayDtor(void *p)
+{
+    RawArray *a = (RawArray *)p;
+    if (a->data != 0)
+        ::operator delete[](a->data);
+    a->data = 0;
+    a->size = 0;
+    a->capacity = 0;
+    return p;
+}
+
+// Array<T>::setLength(n) — (re)allocate an n-slot, zero-filled element buffer.
+inline void arraySetLength(unsigned n, void *p)
+{
+    RawArray *a = (RawArray *)p;
+    if (a->data != 0)
+        ::operator delete[](a->data);
+    if (n != 0) {
+        a->data = ::operator new[]((size_t)n * 4);
+        for (unsigned i = 0; i < n; ++i)
+            ((int *)a->data)[i] = 0;
+    } else {
+        a->data = 0;
+    }
+    a->size = n;
+    a->capacity = n;
+}
+
+// Array<T>::add(item) — append one 4-byte element, growing the buffer by one.
+inline void arrayAdd(int item, void *p)
+{
+    RawArray *a = (RawArray *)p;
+    unsigned n = a->size;
+    void *grown = ::operator new[]((size_t)(n + 1) * 4);
+    for (unsigned i = 0; i < n; ++i)
+        ((int *)grown)[i] = ((int *)a->data)[i];
+    ((int *)grown)[n] = item;
+    if (a->data != 0)
+        ::operator delete[](a->data);
+    a->data = grown;
+    a->size = n + 1;
+    a->capacity = n + 1;
+}
+
+} // namespace
+
+// Array<T>::Array() per element type.
+extern "C" void ArrayKIPlayer_ctor_ca(void *a)   { arrayCtor(a); }
+extern "C" void ArrayKIPlayer_ctor_ccm(void *a)  { arrayCtor(a); }
+extern "C" void ArrayKIPlayer_ctor_cm(void *a)   { arrayCtor(a); }
+extern "C" void ArrayKIPlayer_ctor_csc(void *a)  { arrayCtor(a); }
+extern "C" void ArrayKIPlayer_ctor_cso(void *a)  { arrayCtor(a); }
+extern "C" void ArrayKIPlayer_ctor_csp(void *a)  { arrayCtor(a); }
+extern "C" void ArrayKIPlayer_ctor_cwm(void *a)  { arrayCtor(a); }
+extern "C" void ArrayPlayer_ctor_cp(void *a)     { arrayCtor(a); }
+extern "C" void ArrayRadio_ctor_crm(void *a)     { arrayCtor(a); }
+extern "C" void ArrayRadio_ctor_crms(void *a)    { arrayCtor(a); }
+extern "C" void ArrayGasCloud_ctor_cgc(void *a)  { arrayCtor(a); }
+extern "C" void ArrayBV_ctor_gbv(void *a)        { arrayCtor(a); }
+extern "C" void Array_int_ctor_ips(void *a)      { arrayCtor(a); }
+extern "C" void ArrayAGun_ctor_cg(void *a)       { arrayCtor(a); }
+extern "C" void ArrayAGun_ctor_ag(void *a)       { arrayCtor(a); }
+
+// Array<T>::~Array() per element type (returns `this`).
+extern "C" void *ArrayKIPlayer_dtor_csc(void *a) { return arrayDtor(a); }
+extern "C" void *ArrayPlayer_dtor_cp(void *a)    { return arrayDtor(a); }
+extern "C" void *ArrayRadio_dtor_crm(void *a)    { return arrayDtor(a); }
+extern "C" void *ArrayInt_dtor_gbv(void *a)      { return arrayDtor(a); }
+extern "C" void *Array_int_dtor_cs(void *a)      { return arrayDtor(a); }
+extern "C" void *Array_int_dtor_cso(void *a)     { return arrayDtor(a); }
+extern "C" void *ArrayAGun_dtor_ag(void *a)      { return arrayDtor(a); }
+
+// Array<T>::setLength(n) per element type.
+extern "C" void ArraySetLength_KIPlayer_ca(int n, void *a)      { arraySetLength((unsigned)n, a); }
+extern "C" void ArraySetLength_KIPlayer_ccm(unsigned n, void *a){ arraySetLength(n, a); }
+extern "C" void ArraySetLength_KIPlayer_cm(unsigned n, void *a) { arraySetLength(n, a); }
+extern "C" void ArraySetLength_KIPlayer_csc(unsigned n, void *a){ arraySetLength(n, a); }
+extern "C" void ArraySetLength_KIPlayer_csp(unsigned n, void *a){ arraySetLength(n, a); }
+extern "C" void ArraySetLength_KIPlayer_cwm(unsigned n, void *a){ arraySetLength(n, a); }
+extern "C" void ArraySetLength_Player_cp(unsigned n, void *a)   { arraySetLength(n, a); }
+extern "C" void ArraySetLength_Radio_crms(unsigned n, void *a)  { arraySetLength(n, a); }
+extern "C" void ArraySetLength_GasCloud_cgc(int n, void *a)     { arraySetLength((unsigned)n, a); }
+extern "C" void ArraySetLength_BV_gbv(unsigned n, void *a)      { arraySetLength(n, a); }
+extern "C" void ArraySetLength_int_ips(unsigned n, void *a)     { arraySetLength(n, a); }
+extern "C" void ArraySetLength_AGun_ag(unsigned n, void *a)     { arraySetLength(n, a); }
+
+// Array<T>::add(item) per element type.
+extern "C" void ArrayAdd_KIPlayer_cft(KIPlayer *k, void *a) { arrayAdd((int)(intptr_t)k, a); }
+extern "C" void ArrayAdd_KIPlayer_csc(KIPlayer *k, void *a) { arrayAdd((int)(intptr_t)k, a); }
+extern "C" void ArrayAdd_KIPlayer_cso(KIPlayer *k, void *a) { arrayAdd((int)(intptr_t)k, a); }
+extern "C" void ArrayAdd_KIPlayer_cwm(KIPlayer *k, void *a) { arrayAdd((int)(intptr_t)k, a); }
+extern "C" void ArrayAdd_Radio_crm(RadioMessage *m, void *a){ arrayAdd((int)(intptr_t)m, a); }
+extern "C" void ArrayAdd_AGun_cg(ObjectGun *o, void *a)     { arrayAdd((int)(intptr_t)o, a); }
+extern "C" void ArrayAdd_AGun_ag(ObjectGun *o, void *a)     { arrayAdd((int)(intptr_t)o, a); }
+
+// Array<int>::release() — clear element values, keep the slots.
+extern "C" void ArrayRelease_int_gbv(void *p) { Level_releaseInt(p); }
+
+// Array<T>::~Array() for the level's owned member arrays (freed in ~Level via the
+// ARR() macro after the matching Level_release* element pass). Same RawArray
+// teardown — free the element buffer and return `this` for operator delete.
+extern "C" void *dtor_ArrayAEGeometry(void *a)  { return arrayDtor(a); }
+extern "C" void *dtor_ArrayInt(void *a)         { return arrayDtor(a); }
+extern "C" void *dtor_ArrayAbstractGun(void *a) { return arrayDtor(a); }
+extern "C" void *dtor_ArrayKI(void *a)          { return arrayDtor(a); }
+extern "C" void *dtor_ArrayRadioMessage(void *a){ return arrayDtor(a); }
+
+// Generic (untyped) Array<int-handle> helpers used by createSentryGuns on the
+// level's member arrays (field_b0 / enemies). Same RawArray operations as the
+// per-type variants above, taking the array as an int handle.
+extern "C" void ArrayCtor(int arr)                 { arrayCtor((void *)(intptr_t)arr); }
+extern "C" void ArraySetLength(int len, int arr)   { arraySetLength((unsigned)len, (void *)(intptr_t)arr); }
+extern "C" void ArrayAdd(int item, int arr)        { arrayAdd(item, (void *)(intptr_t)arr); }
+
+// Array<T>::releaseClasses() — destroy + delete every live element, clear slots.
+extern "C" void ArrayReleaseClasses_AGun_ag(void *p)     { releasePolymorphicArray(p); }
+extern "C" void ArrayReleaseClasses_KIPlayer_csc(void *p){ releasePolymorphicArray(p); }
 
 // ---- enemy-flag forwarders ------------------------------------------------
 // Both operate on a Player object (the level passes player = *(obj+4)). These

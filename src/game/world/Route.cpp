@@ -1,17 +1,8 @@
 #include "gof2/game/world/Route.h"
 #include "gof2/game/world/Waypoint.h"
 
-extern "C" void ArrayReleaseClasses_Waypoint(Array<Waypoint *> *a);
-extern "C" void *ArrayWaypoint_dtor(Array<Waypoint *> *a);
-extern "C" void *ArrayKIPlayer_dtor(Array<KIPlayer *> *a);
-extern "C" void *ArrayInt_dtor(Array<int> *a);
 extern "C" int __aeabi_idiv(int n, int d);
-extern "C" void ArraySetLengthKIPlayer(uint32_t n, void *a);
-extern "C" void ArraySetLengthInt(uint32_t n, void *a);
 extern "C" void Waypoint_ctor(void *wp, int x, int y, int z, Route *route);
-extern "C" void ArrayAddWaypoint(void *wp, void *a);
-extern "C" void ArrayAddInt(int v, void *a);
-extern "C" void ArrayKIPlayer_ctor(void *a);
 extern "C" Route *Route_ctor2(Route *self, int *coords, void *targets, int *times, int count);
 extern "C" Route *Route_ctor1(Route *self, int *coords, int count);
 
@@ -86,23 +77,18 @@ void Route::setNewCoords(float x, float y, float z) {
 // Route::~Route() (D2). Returns this.
 void *_ZN5RouteD2Ev(Route *self)
 {
-    Array<Waypoint *> *wps = self->field_0xc;
-    if (wps != 0) {
-        ArrayReleaseClasses_Waypoint(wps);
-        Array<Waypoint *> *wps2 = self->field_0xc;
-        if (wps2 != 0)
-            ::operator delete(ArrayWaypoint_dtor(wps2));
+    if (self->field_0xc != 0) {
+        for (Waypoint *wp : *self->field_0xc)
+            delete wp;
+        self->field_0xc->clear();
+        delete self->field_0xc;
     }
     self->field_0xc = 0;
 
-    Array<KIPlayer *> *tgt = self->field_0x10;
-    if (tgt != 0)
-        ::operator delete(ArrayKIPlayer_dtor(tgt));
+    delete self->field_0x10;
     self->field_0x10 = 0;
 
-    Array<int> *times = self->field_0x14;
-    if (times != 0)
-        ::operator delete(ArrayInt_dtor(times));
+    delete self->field_0x14;
     self->field_0x14 = 0;
 
     return self;
@@ -123,31 +109,21 @@ void Route::update(const Vector &v) {
     ((Route *)(self))->update_xyz(v.x, v.y, v.z);
 }
 
-extern "C" void ArrayWaypoint_ctor(void *a);   // Array<Waypoint*>::Array
-extern "C" void ArrayKIPlayer_ctor(void *a);   // Array<KIPlayer*>::Array
-extern "C" void ArrayInt_ctor(void *a);        // Array<int>::Array
-
 // Route::Route(int *coords, int count) -- count triples of (x,y,z) define the waypoints.
 Route *_ZN5RouteC2EPii(Route *self, int *coords, int count)
 {
     self->field_0x4 = 0;
     self->field_0x0 = 0;
-    void *wps = ::operator new(0xc);
-    ArrayWaypoint_ctor(wps);
-    self->field_0xc = (Array<Waypoint *> *)wps;
-    void *tgts = ::operator new(0xc);
-    ArrayKIPlayer_ctor(tgts);
-    self->field_0x10 = (Array<KIPlayer *> *)tgts;
-    void *times = ::operator new(0xc);
-    ArrayInt_ctor(times);
-    self->field_0x14 = (Array<int> *)times;
+    self->field_0xc = new Array<Waypoint *>();
+    self->field_0x10 = new Array<KIPlayer *>();
+    self->field_0x14 = new Array<int>();
     uint32_t n = __aeabi_idiv(count, 3);
-    ArraySetLengthKIPlayer(n, self->field_0x10);
-    ArraySetLengthInt(n, self->field_0x14);
+    self->field_0x10->resize(n);
+    self->field_0x14->resize(n);
     for (int i = 0; i < count; i += 3) {
         void *wp = ::operator new(0x138);
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
-        ArrayAddWaypoint(wp, self->field_0xc);
+        self->field_0xc->push_back((Waypoint *)wp);
     }
     return self;
 }
@@ -197,19 +173,15 @@ Route *_ZN5RouteC2EPiPvPii(Route *self, int *coords, void *targets, int *times, 
 {
     self->field_0x4 = 0;
     self->field_0x0 = 0;
-    void *wps = ::operator new(0xc);
-    ArrayWaypoint_ctor(wps);
-    self->field_0xc = (Array<Waypoint *> *)wps;
-    void *timesArr = ::operator new(0xc);
-    ArrayInt_ctor(timesArr);
+    self->field_0xc = new Array<Waypoint *>();
     self->field_0x10 = (Array<KIPlayer *> *)targets;
-    self->field_0x14 = (Array<int> *)timesArr;
+    self->field_0x14 = new Array<int>();
     for (int i = 0; i < count; i += 3)
-        ArrayAddInt(*times++, self->field_0x14);
+        self->field_0x14->push_back(*times++);
     for (int i = 0; i < count; i += 3) {
         void *wp = ::operator new(0x138);
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
-        ArrayAddWaypoint(wp, self->field_0xc);
+        self->field_0xc->push_back((Waypoint *)wp);
     }
     return self;
 }
@@ -239,14 +211,12 @@ Route * Route::clone() {
             int *timesCopy = (int *)::operator new[](times->size() * 4);
             for (uint32_t k = 0; k < times->size(); k++)
                 timesCopy[k] = (*times)[k];
-            void *targets = ::operator new(0xc);
-            ArrayKIPlayer_ctor(targets);
-            ArraySetLengthKIPlayer(self->field_0x10->size(), targets);
-            Array<KIPlayer *> *targetsArr = (Array<KIPlayer *> *)targets;
+            Array<KIPlayer *> *targetsArr = new Array<KIPlayer *>();
+            targetsArr->resize(self->field_0x10->size());
             for (uint32_t k = 0; k < self->field_0x10->size(); k++)
                 (*targetsArr)[k] = (*self->field_0x10)[k];
             Route *r = (Route *)::operator new(0x18);
-            Route_ctor2(r, coords, targets, timesCopy, (int)self->field_0xc->size() * 3);
+            Route_ctor2(r, coords, targetsArr, timesCopy, (int)self->field_0xc->size() * 3);
             r->field_0x4 = self->field_0x4;
             ::operator delete[](timesCopy);
             return r;
@@ -342,22 +312,16 @@ Route * Route::ctor(int *coords, int count) {
     Route *self = this;
     self->field_0x4 = 0;
     self->field_0x0 = 0;
-    void *wps = ::operator new(0xc);
-    ArrayWaypoint_ctor(wps);
-    self->field_0xc = (Array<Waypoint *> *)wps;
-    void *tgts = ::operator new(0xc);
-    ArrayKIPlayer_ctor(tgts);
-    self->field_0x10 = (Array<KIPlayer *> *)tgts;
-    void *times = ::operator new(0xc);
-    ArrayInt_ctor(times);
-    self->field_0x14 = (Array<int> *)times;
+    self->field_0xc = new Array<Waypoint *>();
+    self->field_0x10 = new Array<KIPlayer *>();
+    self->field_0x14 = new Array<int>();
     uint32_t n = __aeabi_idiv(count, 3);
-    ArraySetLengthKIPlayer(n, self->field_0x10);
-    ArraySetLengthInt(n, self->field_0x14);
+    self->field_0x10->resize(n);
+    self->field_0x14->resize(n);
     for (int i = 0; i < count; i += 3) {
         void *wp = ::operator new(0x138);
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
-        ArrayAddWaypoint(wp, self->field_0xc);
+        self->field_0xc->push_back((Waypoint *)wp);
     }
     return self;
 }
@@ -368,19 +332,15 @@ Route * Route::ctorWithTargets(int *coords, Array<KIPlayer *> *targets, int *tim
     Route *self = this;
     self->field_0x4 = 0;
     self->field_0x0 = 0;
-    void *wps = ::operator new(0xc);
-    ArrayWaypoint_ctor(wps);
-    self->field_0xc = (Array<Waypoint *> *)wps;
-    void *timesArr = ::operator new(0xc);
-    ArrayInt_ctor(timesArr);
+    self->field_0xc = new Array<Waypoint *>();
     self->field_0x10 = targets;
-    self->field_0x14 = (Array<int> *)timesArr;
+    self->field_0x14 = new Array<int>();
     for (int i = 0; i < count; i += 3)
-        ArrayAddInt(times[i / 3], self->field_0x14);
+        self->field_0x14->push_back(times[i / 3]);
     for (int i = 0; i < count; i += 3) {
         void *wp = ::operator new(0x138);
         Waypoint_ctor(wp, coords[i], coords[i + 1], coords[i + 2], self);
-        ArrayAddWaypoint(wp, self->field_0xc);
+        self->field_0xc->push_back((Waypoint *)wp);
     }
     return self;
 }
@@ -389,16 +349,15 @@ Route * Route::ctorWithTargets(int *coords, Array<KIPlayer *> *targets, int *tim
 Route * Route::dtor() {
     Route *self = this;
     if (self->field_0xc != 0) {
-        ArrayReleaseClasses_Waypoint(self->field_0xc);
-        if (self->field_0xc != 0)
-            ::operator delete(ArrayWaypoint_dtor(self->field_0xc));
+        for (Waypoint *wp : *self->field_0xc)
+            delete wp;
+        self->field_0xc->clear();
+        delete self->field_0xc;
     }
     self->field_0xc = 0;
-    if (self->field_0x10 != 0)
-        ::operator delete(ArrayKIPlayer_dtor(self->field_0x10));
+    delete self->field_0x10;
     self->field_0x10 = 0;
-    if (self->field_0x14 != 0)
-        ::operator delete(ArrayInt_dtor(self->field_0x14));
+    delete self->field_0x14;
     self->field_0x14 = 0;
     return self;
 }

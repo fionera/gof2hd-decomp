@@ -61,9 +61,6 @@ public:
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_render_canvas;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_render_geometry)(void *);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_alien_text;
-extern "C" void *Array_int_dtor(void *arr);
-extern "C" void ArrayReleaseClasses_Vector(void *arr);
-extern "C" void *Array_Vector_dtor(void *arr);
 extern "C" void *SystemPathFinder_dtor(void *finder);
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_draw_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_draw_status;
@@ -88,8 +85,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_sound;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_depart_modstation_flag;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_depart_canvas;
 extern "C" int Station_getSystem(void *station);
-extern "C" void ArrayReleaseClasses_Station(void *arr);
-extern "C" void *Array_Station_dtor(void *arr);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_layout;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_status;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_end_canvas;
@@ -109,24 +104,15 @@ void MatrixSetTranslation(void *matrix, float x, float y, float z);
 void VectorNormalize(Vector *out, Vector *value);
 extern "C" void EaseInOut_Update(void *ease, float dt);
 extern "C" float EaseInOut_GetCurrentValue(void *ease);
-extern "C" void ArrayReleaseClasses_AEGeometry(void *arr);
-extern "C" void *Array_AEGeometry_dtor(void *arr);
-extern "C" void ArrayRelease_bool(void *arr);
-extern "C" void *Array_bool_dtor(void *arr);
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_ctor_vecCtor)(void *);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_ctor_status;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_ctor_galaxy;
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_ctor_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_ctor_random;
-extern "C" void Array_AEGeometry_ctor(void *arr);
-extern "C" void Array_Vector_ctor(void *arr);
-extern "C" void ArraySetLength_AEGeometry(uint32_t n, void *arr);
-extern "C" void ArraySetLength_Vector(uint32_t n, void *arr);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_touch_layout;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_touch_screenH;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_touch_sound;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_touch_status;
-extern "C" void Array_Station_ctor(void *arr);
 extern "C" void FileRead_ctor(void *reader);
 extern "C" void *FileRead_dtor(void *reader);
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_move_guard;
@@ -146,9 +132,6 @@ extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_system_random;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_system_status;
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_system_engine;
 extern "C" int Station_getTextureIndex(void *station);
-extern "C" void Array_bool_ctor(void *arr);
-extern "C" void ArraySetLength_Station(uint32_t n, void *arr);
-extern "C" void ArraySetLength_bool(uint32_t n, void *arr);
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_info_screenW;
 extern "C" __attribute__((visibility("hidden"))) int *g_StarMap_info_screenH;
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_info_canvas;
@@ -239,9 +222,9 @@ void StarMap::setStart(int start, int target)
 {
     field<int32_t>(this, 0x1dc) = target;
     field<int32_t>(this, 0x1e0) = start;
-    void *path = ptr_field(this, 0xa0);
+    Array<int> *path = (Array<int> *)ptr_field(this, 0xa0);
     if (path != 0) {
-        operator delete(Array_int_dtor(path));
+        delete path;
     }
     ptr_field(this, 0xa0) = 0;
     ptr_field(this, 0xa0) =
@@ -252,25 +235,23 @@ StarMap::~StarMap()
 {
     void *p;
 
-    p = ptr_field(this, 0x194);
-    if (p != 0) {
-        ArrayReleaseClasses_Vector(p);
-        p = ptr_field(this, 0x194);
-        if (p != 0) {
-            operator delete(Array_Vector_dtor(p));
+    {
+        Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
+        if (positions != 0) {
+            for (Vector *v : *positions) delete v;
+            delete positions;
         }
+        ptr_field(this, 0x194) = 0;
     }
-    ptr_field(this, 0x194) = 0;
 
-    p = ptr_field(this, 0x198);
-    if (p != 0) {
-        ArrayReleaseClasses_Vector(p);
-        p = ptr_field(this, 0x198);
-        if (p != 0) {
-            operator delete(Array_Vector_dtor(p));
+    {
+        Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x198);
+        if (positions != 0) {
+            for (Vector *v : *positions) delete v;
+            delete positions;
         }
+        ptr_field(this, 0x198) = 0;
     }
-    ptr_field(this, 0x198) = 0;
 
     p = ptr_field(this, 0x1bc);
     if (p != 0) {
@@ -480,19 +461,19 @@ no_jump:
 
 cleanup:
     {
-        Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
+        Array<Station *> *stations = (Array<Station *> *)ptr_field(this, 0x58);
         for (uint32_t i = 0; i < stations->size(); i++) {
             if (i != (uint32_t)field<int32_t>(this, 0x64)) {
-                void *station = stations->data()[i];
+                Station *station = (*stations)[i];
                 if (station != 0) {
-                    ((Station *)(station))->dtor();
+                    station->dtor();
                     operator delete(station);
                 }
-                stations->data()[i] = 0;
+                (*stations)[i] = 0;
             }
         }
         if (stations != 0) {
-            operator delete(Array_Station_dtor(stations));
+            delete stations;
         }
         ptr_field(this, 0x58) = 0;
     }
@@ -756,16 +737,22 @@ void StarMap::update(int dt)
             absf_update(field<float>(this, 0x7c) - ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x180)))->GetMaxValue()) <= 1.0f &&
             absf_update(field<float>(this, 0x80) - ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x184)))->GetMaxValue()) <= 1.0f) {
             if (field<uint8_t>(this, 0x138) == 0) {
-                if (ptr_field(this, 0x90) != 0) {
-                    ArrayReleaseClasses_AEGeometry(ptr_field(this, 0x90));
-                    operator delete(Array_AEGeometry_dtor(ptr_field(this, 0x90)));
+                {
+                    Array<AEGeometry *> *geoms = (Array<AEGeometry *> *)ptr_field(this, 0x90);
+                    if (geoms != 0) {
+                        for (AEGeometry *g : *geoms) delete g;
+                        delete geoms;
+                    }
+                    ptr_field(this, 0x90) = 0;
                 }
-                ptr_field(this, 0x90) = 0;
-                if (ptr_field(this, 0x94) != 0) {
-                    ArrayReleaseClasses_AEGeometry(ptr_field(this, 0x94));
-                    operator delete(Array_AEGeometry_dtor(ptr_field(this, 0x94)));
+                {
+                    Array<AEGeometry *> *rings = (Array<AEGeometry *> *)ptr_field(this, 0x94);
+                    if (rings != 0) {
+                        for (AEGeometry *g : *rings) delete g;
+                        delete rings;
+                    }
+                    ptr_field(this, 0x94) = 0;
                 }
-                ptr_field(this, 0x94) = 0;
                 if (ptr_field(this, 0x98) != 0) {
                     operator delete(ptr_field(this, 0x98));
                 }
@@ -774,11 +761,14 @@ void StarMap::update(int dt)
                     operator delete(ptr_field(this, 0x9c));
                 }
                 ptr_field(this, 0x9c) = 0;
-                if (ptr_field(this, 0x100) != 0) {
-                    ArrayRelease_bool(ptr_field(this, 0x100));
-                    operator delete(Array_bool_dtor(ptr_field(this, 0x100)));
+                {
+                    Array<uint8_t> *used = (Array<uint8_t> *)ptr_field(this, 0x100);
+                    if (used != 0) {
+                        used->clear();
+                        delete used;
+                    }
+                    ptr_field(this, 0x100) = 0;
                 }
-                ptr_field(this, 0x100) = 0;
                 if (ptr_field(this, 0xa4) != 0) {
                     [&]{ AEGeometry *g_=(AEGeometry*)(ptr_field(this, 0xa4)); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
                 }
@@ -930,14 +920,12 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     new ((void*)root) AEGeometry((PaintCanvas*)(long)(*g_StarMap_ctor_canvas));
     ptr_field(this, 0x6c) = root;
 
-    void *systemsGeom = operator new(0xc);
-    Array_AEGeometry_ctor(systemsGeom);
+    Array<AEGeometry *> *systemsGeom = new Array<AEGeometry *>();
     ptr_field(this, 0x68) = systemsGeom;
-    void *systemPositions = operator new(0xc);
-    Array_Vector_ctor(systemPositions);
+    Array<Vector *> *systemPositions = new Array<Vector *>();
     ptr_field(this, 0x194) = systemPositions;
-    ArraySetLength_AEGeometry(0x22, systemsGeom);
-    ArraySetLength_Vector(0x22, systemPositions);
+    systemsGeom->resize(0x22);
+    systemPositions->resize(0x22);
 
     Array<void *> *systems = (Array<void *> *)ptr_field(this, 0x54);
     Array<void *> *geoms = (Array<void *> *)ptr_field(this, 0x68);
@@ -1040,17 +1028,14 @@ uint32_t StarMap::OnTouchBegin(int x, int y)
                     absf_local(field<float>(this, 0x78) - fx) < (float)field<int32_t>(this, 0x1c8) &&
                     absf_local(field<float>(this, 0x7c) - fy) < (float)field<int32_t>(this, 0x1c8)) {
                     field<int32_t>(this, 0x60) = (int)i;
-                    void *stations = ptr_field(this, 0x58);
+                    Array<Station *> *stations = (Array<Station *> *)ptr_field(this, 0x58);
                     if (stations != 0) {
-                        ArrayReleaseClasses_Station(stations);
-                        if (ptr_field(this, 0x58) != 0) {
-                            operator delete(Array_Station_dtor(ptr_field(this, 0x58)));
-                        }
+                        for (Station *s : *stations) delete s;
+                        stations->clear();
+                        delete stations;
                         ptr_field(this, 0x58) = 0;
                     }
-                    void *arr = operator new(0xc);
-                    Array_Station_ctor(arr);
-                    ptr_field(this, 0x58) = arr;
+                    ptr_field(this, 0x58) = new Array<Station *>();
                     void *reader = operator new(1);
                     FileRead_ctor(reader);
                     ptr_field(this, 0x58) =
@@ -1227,10 +1212,9 @@ void StarMap::initStarSystem()
     Array<void *> *stationIds = (Array<void *> *)((SolarSystem *)(system))->getStations();
     uint32_t count = stationIds->size();
 
-    void *stations = operator new(0xc);
-    Array_Station_ctor(stations);
+    Array<Station *> *stations = new Array<Station *>();
     ptr_field(this, 0x58) = stations;
-    ArraySetLength_Station(count, stations);
+    stations->resize(count);
     void *reader = operator new(1);
     FileRead_ctor(reader);
     ptr_field(this, 0x58) = ((FileRead *)(reader))->loadStationsBinary();
@@ -1242,21 +1226,19 @@ void StarMap::initStarSystem()
     field<int32_t>(this, 0x1c4) = -1;
     ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->setSeed((long long)((SolarSystem *)(system))->getIndex() * 1000);
 
-    void *stationGeoms = operator new(0xc);
-    Array_AEGeometry_ctor(stationGeoms);
+    Array<AEGeometry *> *stationGeoms = new Array<AEGeometry *>();
     ptr_field(this, 0x90) = stationGeoms;
-    ArraySetLength_AEGeometry(count + 1, stationGeoms);
+    stationGeoms->resize(count + 1);
 
     void *root = operator new(0xc0);
     new ((void*)root) AEGeometry((PaintCanvas*)(long)(*g_StarMap_system_canvas));
     ptr_field(this, 0xa4) = root;
 
-    void *used = operator new(0xc);
-    Array_bool_ctor(used);
+    Array<uint8_t> *used = new Array<uint8_t>();
     ptr_field(this, 0x100) = used;
-    ArraySetLength_bool(((Array<void *> *)stationGeoms)->size(), used);
-    for (uint32_t i = 0; i < ((Array<uint8_t> *)used)->size(); i++) {
-        ((Array<uint8_t> *)used)->data()[i] = 0;
+    used->resize(stationGeoms->size());
+    for (uint32_t i = 0; i < used->size(); i++) {
+        (*used)[i] = 0;
     }
 
     Array<void *> *stationArr = (Array<void *> *)ptr_field(this, 0x58);
@@ -1268,8 +1250,8 @@ void StarMap::initStarSystem()
         new ((void*)geom) AEGeometry((uint16_t)(tex + 0x4704), (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
         geomArr->data()[i] = geom;
         ((int *)ptr_field(this, 0x98))[stationIndex] =
-            ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->nextInt(((Array<uint8_t> *)used)->size()) *
-            (0x10000 / (int)((Array<uint8_t> *)used)->size());
+            ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->nextInt(used->size()) *
+            (0x10000 / (int)used->size());
         int dist = (i == 1) ? 0x1900 : ((int *)ptr_field(this, 0x9c))[i - 2];
         dist += ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->nextInt(0x15e0) + 0x640;
         ((int *)ptr_field(this, 0x9c))[stationIndex] = dist;
@@ -1286,14 +1268,13 @@ void StarMap::initStarSystem()
 
     ((AEGeometry *)(((Array<void *> *)ptr_field(this, 0x90))->data()[1]))->setVisible(false);
 
-    void *rings = operator new(0xc);
-    Array_AEGeometry_ctor(rings);
+    Array<AEGeometry *> *rings = new Array<AEGeometry *>();
     ptr_field(this, 0x94) = rings;
-    ArraySetLength_AEGeometry(count, rings);
-    for (uint32_t i = 0; i < ((Array<void *> *)rings)->size(); i++) {
+    rings->resize(count);
+    for (uint32_t i = 0; i < rings->size(); i++) {
         void *ring = operator new(0xc0);
         new ((void*)ring) AEGeometry((uint16_t)0x1a7b, (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
-        ((Array<void *> *)rings)->data()[i] = ring;
+        (*rings)[i] = (AEGeometry *)ring;
         ((AEGeometry *)(root))->addChild(field<uint32_t>(ring, 0xc));
         float scale = (float)(((int *)ptr_field(this, 0x9c))[i] << 1) * 0.001f;
         ((AEGeometry *)(ring))->setScaling(scale);
@@ -1309,23 +1290,23 @@ void StarMap::initStarSystem()
     field<int32_t>(this, 0x64) = -1;
     ((PaintCanvas*)(long)(*g_StarMap_system_canvas))->Image2DCreate((unsigned short)((uint16_t)(0x4500 + ((SolarSystem *)(system))->getRace())), (unsigned int *)((char *)this + 0x34));
 
-    if (ptr_field(this, 0x198) != 0) {
-        ArrayReleaseClasses_Vector(ptr_field(this, 0x198));
-        if (ptr_field(this, 0x198) != 0) {
-            operator delete(Array_Vector_dtor(ptr_field(this, 0x198)));
+    {
+        Array<Vector *> *oldPositions = (Array<Vector *> *)ptr_field(this, 0x198);
+        if (oldPositions != 0) {
+            for (Vector *v : *oldPositions) delete v;
+            delete oldPositions;
         }
+        ptr_field(this, 0x198) = 0;
     }
-    ptr_field(this, 0x198) = 0;
-    void *stationPositions = operator new(0xc);
-    Array_Vector_ctor(stationPositions);
+    Array<Vector *> *stationPositions = new Array<Vector *>();
     ptr_field(this, 0x198) = stationPositions;
-    ArraySetLength_Vector(((Array<void *> *)ptr_field(this, 0x58))->size(), stationPositions);
-    for (uint32_t i = 0; i < ((Array<Vector *> *)stationPositions)->size(); i++) {
+    stationPositions->resize(((Array<void *> *)ptr_field(this, 0x58))->size());
+    for (uint32_t i = 0; i < stationPositions->size(); i++) {
         Vector *p = (Vector *)operator new(0xc);
         p->x = 0.0f;
         p->y = 0.0f;
         p->z = 0.0f;
-        ((Array<Vector *> *)stationPositions)->data()[i] = p;
+        (*stationPositions)[i] = p;
     }
 
     ((Engine *)(*g_StarMap_system_engine))->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
@@ -1555,16 +1536,14 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
         initStarSystem();
     } else {
         field<int32_t>(this, 0x19c) = field<int32_t>(this, 0x60);
-        if (ptr_field(this, 0x58) != 0) {
-            ArrayReleaseClasses_Station(ptr_field(this, 0x58));
-            if (ptr_field(this, 0x58) != 0) {
-                operator delete(Array_Station_dtor(ptr_field(this, 0x58)));
-            }
+        Array<Station *> *stations = (Array<Station *> *)ptr_field(this, 0x58);
+        if (stations != 0) {
+            for (Station *s : *stations) delete s;
+            stations->clear();
+            delete stations;
             ptr_field(this, 0x58) = 0;
         }
-        void *arr = operator new(0xc);
-        Array_Station_ctor(arr);
-        ptr_field(this, 0x58) = arr;
+        ptr_field(this, 0x58) = new Array<Station *>();
         void *reader = operator new(1);
         FileRead_ctor(reader);
         ptr_field(this, 0x58) =

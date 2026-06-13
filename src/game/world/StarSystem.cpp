@@ -23,33 +23,35 @@ Vector operator+(const Vector &lhs, const Vector &rhs);
 Vector operator*(const Vector &lhs, float rhs);
 } }
 
-extern "C" void *Array_AEGeometry_dtor(void *array);
+extern "C" void *LensFlare_dtor(void *flare);
+// +0x18 players array (getPlanetTargets) is read by LevelScript.cpp using the flattened
+// {count,data} ABI (P(targets,4)[...]); keep it on the original container helpers so that
+// cross-TU layout stays consistent. See REPORT.
 extern "C" void ArrayRelease_KIPlayer(void *array);
 extern "C" void *Array_KIPlayer_dtor(void *array);
-extern "C" void *LensFlare_dtor(void *flare);
-extern "C" void ArrayRelease_uint(void *array);
-extern "C" void *Array_uint_dtor(void *array);
-extern "C" void ArrayRelease_int(void *array);
-extern "C" void *Array_int_dtor(void *array);
-extern "C" void ArrayRelease_Vector(void *array);
-extern "C" void *Array_Vector_dtor(void *array);
+extern "C" void Array_KIPlayer_ctor(void *array);
+extern "C" void ArraySetLength_KIPlayer(int length, void *array);
 extern "C" uint32_t Station_getTextureIndex(void *station);
 extern "C" int Station_getIndex(void *station);
 extern "C" void FileRead_ctor(void *self);
 extern "C" void *FileRead_dtor(void *self);
-extern "C" void Array_uint_ctor(void *array);
-extern "C" void Array_int_ctor(void *array);
-extern "C" void Array_KIPlayer_ctor(void *array);
-extern "C" void Array_AEGeometry_ctor(void *array);
-extern "C" void Array_Vector_ctor(void *array);
 extern "C" void Array_Station_release(void *array);
 extern "C" void *Array_Station_dtor(void *array);
-extern "C" void ArraySetLength_uint(int length, void *array);
-extern "C" void ArraySetLength_int(int length, void *array);
-extern "C" void ArraySetLength_KIPlayer(int length, void *array);
-extern "C" void ArraySetLength_AEGeometry(int length, void *array);
-extern "C" void ArraySetLength_Vector(int length, void *array);
 extern "C" void LensFlare_ctor(void *self, void *canvas);
+
+// ---- Typed array members (held at fixed byte offsets in the StarSystem object) ----
+// The recovered code stored these as flattened void* slots manipulated by Array_<T>_*
+// container helpers. They are real Array<T> (== std::vector<T>) heap objects: class-element
+// arrays hold owning-free element pointers, value arrays hold the values inline.
+//   +0x14  Array<uint>*       station/planet texture handles
+//   +0x1c  Array<AEGeometry*>* sun + planet/station billboard meshes
+//   +0x20  Array<Vector>*     per-mesh world positions
+//   +0x24  Array<int>*        station indices
+// (+0x18 stays on the flattened container helpers because LevelScript.cpp reads it directly.)
+static inline Array<uint32_t>     *&texturesArray(void *self)  { return *(Array<uint32_t>     **)((char *)self + 0x14); }
+static inline Array<AEGeometry *> *&planetsArray(void *self)   { return *(Array<AEGeometry *> **)((char *)self + 0x1c); }
+static inline Array<Vector>       *&positionsArray(void *self) { return *(Array<Vector>       **)((char *)self + 0x20); }
+static inline Array<int>          *&stationIdxArray(void *self){ return *(Array<int>          **)((char *)self + 0x24); }
 void MatrixGetPosition(char *out, void *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned long n);
 void MatrixGetUp(char *out, const char *matrix);
@@ -59,7 +61,7 @@ extern "C" void MatrixSetScaling(char *matrix, float x, float y, float z);
 void StarSystem::switchSunForSupernovaExpansion() {
     StarSystem *self = this;
     char scaleBytes[12];
-    AEGeometry *geom = *(AEGeometry **)P(P(self, 0x1c), 4);
+    AEGeometry *geom = (*planetsArray(self))[0];
     uint32_t *scale = (uint32_t *)scaleBytes;
     scale[0] = 0x46311048;
     scale[1] = 0x46311048;
@@ -73,7 +75,7 @@ void StarSystem::renderSunStreak() {
     StarSystem *self = this;
     void **holder = g_StarSystem_sunstreak_canvas;
     void *canvas = *holder;
-    void *slot = (B(self, 0x0c) != 0) ? (void *)((char *)self + 0x10) : P(P(self, 0x14), 4);
+    void *slot = (B(self, 0x0c) != 0) ? (void *)((char *)self + 0x10) : (void *)&(*texturesArray(self))[0];
     ((PaintCanvas *)canvas)->SetTexture(*(uint32_t *)slot, (unsigned)-1);
     ((PaintCanvas *)*holder)->SetBlendMode(2);
     return self->renderSunStreak_tail(P(self, 0x40));
@@ -106,57 +108,42 @@ Vector StarSystem::getLightDirection() {
 StarSystem::~StarSystem()
 {
     StarSystem *self = this;
-    void *p = P(self, 0x1c);
-    if (p != 0) {
-        ::operator delete(Array_AEGeometry_dtor(p));
-    }
-    P(self, 0x1c) = 0;
+    delete planetsArray(self);
+    planetsArray(self) = nullptr;
 
-    p = P(self, 0x18);
-    if (p != 0) {
-        ArrayRelease_KIPlayer(p);
-        p = P(self, 0x18);
-        if (p != 0) {
-            ::operator delete(Array_KIPlayer_dtor(p));
+    void *players = P(self, 0x18);
+    if (players != 0) {
+        ArrayRelease_KIPlayer(players);
+        players = P(self, 0x18);
+        if (players != 0) {
+            ::operator delete(Array_KIPlayer_dtor(players));
         }
     }
     P(self, 0x18) = 0;
 
-    p = P(self, 0x2c);
+    void *p = P(self, 0x2c);
     if (p != 0) {
         ::operator delete(LensFlare_dtor(p));
     }
     P(self, 0x2c) = 0;
 
-    p = P(self, 0x14);
-    if (p != 0) {
-        ArrayRelease_uint(p);
-        p = P(self, 0x14);
-        if (p != 0) {
-            ::operator delete(Array_uint_dtor(p));
-        }
+    if (texturesArray(self) != nullptr) {
+        texturesArray(self)->clear();
+        delete texturesArray(self);
     }
-    P(self, 0x14) = 0;
+    texturesArray(self) = nullptr;
 
-    p = P(self, 0x24);
-    if (p != 0) {
-        ArrayRelease_int(p);
-        p = P(self, 0x24);
-        if (p != 0) {
-            ::operator delete(Array_int_dtor(p));
-        }
+    if (stationIdxArray(self) != nullptr) {
+        stationIdxArray(self)->clear();
+        delete stationIdxArray(self);
     }
-    P(self, 0x24) = 0;
+    stationIdxArray(self) = nullptr;
 
-    p = P(self, 0x20);
-    if (p != 0) {
-        ArrayRelease_Vector(p);
-        p = P(self, 0x20);
-        if (p != 0) {
-            ::operator delete(Array_Vector_dtor(p));
-        }
+    if (positionsArray(self) != nullptr) {
+        positionsArray(self)->clear();
+        delete positionsArray(self);
     }
-    P(self, 0x20) = 0;
+    positionsArray(self) = nullptr;
 }
 
 typedef Engine *(*EngineGetter)(void *app);
@@ -281,9 +268,9 @@ void StarSystem::initLight() {
         ((PaintCanvas *)canvas)->FogSetParameter(0x2601, 0.0f, 0.0f, 1.0f, fogColor);
         ((PaintCanvas *)canvas)->FogEnable(1, 1);
         B(self, 0x54) = 1;
-        for (uint32_t i = 1; i < array_len(P(self, 0x1c)); ++i) {
-            AEGeometry **geoms = (AEGeometry **)array_data(P(self, 0x1c));
-            void *transform = ((PaintCanvas *)canvas)->TransformGetTransform(I(geoms[i], 0x0c));
+        for (uint32_t i = 1; i < planetsArray(self)->size(); ++i) {
+            AEGeometry *geom = (*planetsArray(self))[i];
+            void *transform = ((PaintCanvas *)canvas)->TransformGetTransform(I(geom, 0x0c));
             U(transform, 0x48) = fogColor;
         }
         return;
@@ -304,9 +291,9 @@ void StarSystem::initLight() {
     ((PaintCanvas *)canvas)->FogEnable(1, 1);
     B(self, 0x54) = 1;
     uint32_t scaled = rgba_scaled(fogColor, 0.65f);
-    for (uint32_t i = 1; i < array_len(P(self, 0x1c)); ++i) {
-        AEGeometry **geoms = (AEGeometry **)array_data(P(self, 0x1c));
-        void *transform = ((PaintCanvas *)canvas)->TransformGetTransform(I(geoms[i], 0x0c));
+    for (uint32_t i = 1; i < planetsArray(self)->size(); ++i) {
+        AEGeometry *geom = (*planetsArray(self))[i];
+        void *transform = ((PaintCanvas *)canvas)->TransformGetTransform(I(geom, 0x0c));
         U(transform, 0x48) = scaled;
     }
 }
@@ -359,10 +346,10 @@ StarSystem::StarSystem(int mode) {
     FL(self, 0x30) = 0.0f;
     FL(self, 0x34) = 0.0f;
     FL(self, 0x38) = 0.0f;
-    P(self, 0x24) = 0;
-    P(self, 0x14) = 0;
+    stationIdxArray(self) = nullptr;
+    texturesArray(self) = nullptr;
     P(self, 0x18) = 0;
-    P(self, 0x1c) = 0;
+    planetsArray(self) = nullptr;
 
     void *status = *g_StarSystem_ctor_status;
     B(self, 0x28) = ((Status *)(status))->getSystem() == 0;
@@ -375,14 +362,12 @@ StarSystem::StarSystem(int mode) {
     I(self, 0x4c) = -1;
 
     if (B(self, 0x28) != 0) {
-        void *geomArray = ::operator new(0x0c);
-        Array_AEGeometry_ctor(geomArray);
-        P(self, 0x1c) = geomArray;
-        ArraySetLength_AEGeometry(2, geomArray);
+        planetsArray(self) = new Array<AEGeometry *>();
+        planetsArray(self)->resize(2);
 
         AEGeometry *sun = (AEGeometry *)::operator new(0xc0);
         new ((void*)sun) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
-        ((AEGeometry **)array_data(P(self, 0x1c)))[0] = sun;
+        (*planetsArray(self))[0] = sun;
         set_vec(vec, 1000.0f, 1000.0f, 1000.0f);
         ((AEGeometry *)(sun))->setScaling(*(const Vector *)vec);
         ((AEGeometry *)(sun))->moveForward(0x447a0000);
@@ -394,7 +379,7 @@ StarSystem::StarSystem(int mode) {
 
         AEGeometry *planet = (AEGeometry *)::operator new(0xc0);
         new ((void*)planet) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
-        ((AEGeometry **)array_data(P(self, 0x1c)))[1] = planet;
+        (*planetsArray(self))[1] = planet;
         int rnd = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(0x4e20);
         float scale = (float)(rnd + 0x4e20) * 0.001f;
         set_vec(vec, scale, scale, scale);
@@ -403,21 +388,17 @@ StarSystem::StarSystem(int mode) {
         ((AEGeometry *)(planet))->setRotation(*(const Vector *)vec);
         ((AEGeometry *)(planet))->moveForward(0x447a0000);
 
-        void *textures = ::operator new(0x0c);
-        Array_uint_ctor(textures);
-        P(self, 0x14) = textures;
-        ArraySetLength_uint(2, textures);
-        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2739), (unsigned int *)(array_data(P(self, 0x14))), (bool)(0));
-        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2719), (unsigned int *)((char *)array_data(P(self, 0x14)) + 4), (bool)(0));
+        texturesArray(self) = new Array<uint32_t>();
+        texturesArray(self)->resize(2);
+        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2739), &(*texturesArray(self))[0], (bool)(0));
+        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2719), &(*texturesArray(self))[1], (bool)(0));
 
-        void *positions = ::operator new(0x0c);
-        Array_Vector_ctor(positions);
-        P(self, 0x20) = positions;
-        ArraySetLength_Vector(2, positions);
+        positionsArray(self) = new Array<Vector>();
+        positionsArray(self)->resize(2);
         ((AEGeometry *)(vec))->getPosition();
-        *(Vector *)((char *)array_data(P(self, 0x20))) = *(const Vector *)(vec);
+        (*positionsArray(self))[0] = *(const Vector *)(vec);
         ((AEGeometry *)(vec))->getPosition();
-        *(Vector *)((char *)array_data(P(self, 0x20)) + 0x0c) = *(const Vector *)(vec);
+        (*positionsArray(self))[1] = *(const Vector *)(vec);
 
         AEGeometry *streak = (AEGeometry *)::operator new(0xc0);
         new ((void*)streak) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
@@ -435,29 +416,25 @@ StarSystem::StarSystem(int mode) {
     void *stationArray = (void *)(intptr_t)((FileRead *)(reader))->loadStationsBinary();
     ::operator delete(FileRead_dtor(reader));
 
-    void *textures = ::operator new(0x0c);
-    Array_uint_ctor(textures);
-    P(self, 0x14) = textures;
-    ArraySetLength_uint(array_len(stationArray) + 1, textures);
+    texturesArray(self) = new Array<uint32_t>();
+    texturesArray(self)->resize(array_len(stationArray) + 1);
 
-    void *stationIndexes = ::operator new(0x0c);
-    Array_int_ctor(stationIndexes);
-    P(self, 0x24) = stationIndexes;
-    ArraySetLength_int(array_len(stations), stationIndexes);
+    stationIdxArray(self) = new Array<int>();
+    stationIdxArray(self)->resize(array_len(stations));
 
     int mission = ((Status *)(status))->getCurrentCampaignMission();
     if ((mission == 0x59 && B(self, 0x0c) != 0) ||
         (mission > 0x9d && ((SolarSystem *)((void *)(intptr_t)((Status *)(status))->getSystem()))->getIndex() == 0x1b)) {
-        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2dde), (unsigned int *)(array_data(P(self, 0x14))), (bool)(0));
+        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x2dde), &(*texturesArray(self))[0], (bool)(0));
         U(self, 0x3c) = 3;
     } else {
         uint32_t tex = ((SolarSystem *)((void *)(intptr_t)((Status *)(status))->getSystem()))->getTextureIndex();
-        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_planetTextures[tex]), (unsigned int *)(array_data(P(self, 0x14))), (bool)(0));
+        ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_planetTextures[tex]), &(*texturesArray(self))[0], (bool)(0));
         U(self, 0x3c) = g_StarSystem_ctor_systemColors[((SolarSystem *)((void *)(intptr_t)((Status *)(status))->getSystem()))->getIndex()];
     }
 
     uint32_t count = array_len(stations);
-    for (uint32_t i = 1, off = 0; i < array_len(P(self, 0x14)); ++i, off += 4) {
+    for (uint32_t i = 1, off = 0; i < texturesArray(self)->size(); ++i, off += 4) {
         int stationIndex = ((int *)array_data(stations))[off / 4];
         int currentStation = Station_getIndex(((Status *)(status))->getStation());
         void *station = ((void **)array_data(stationArray))[off / 4];
@@ -465,12 +442,12 @@ StarSystem::StarSystem(int mode) {
         if (stationIndex == currentStation) {
             if (mode == 3 && ((Status *)(status))->getCurrentCampaignMission() == 0) {
                 U(self, 0x50) = i;
-                ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x273b), (unsigned int *)((char *)array_data(P(self, 0x14)) + off + 4), (bool)(0));
+                ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(0x273b), &(*texturesArray(self))[i], (bool)(0));
             } else {
-                ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_planetTextures[stationTex]), (unsigned int *)((char *)array_data(P(self, 0x14)) + off + 4), (bool)(0));
+                ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_planetTextures[stationTex]), &(*texturesArray(self))[i], (bool)(0));
             }
         } else {
-            ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_stationTextures[stationTex]), (unsigned int *)((char *)array_data(P(self, 0x14)) + off + 4), (bool)(0));
+            ((PaintCanvas *)(*g_StarSystem_ctor_canvas))->TextureCreate((unsigned short)(g_StarSystem_ctor_stationTextures[stationTex]), &(*texturesArray(self))[i], (bool)(0));
             int idx = Station_getIndex(station);
             if (((Status *)(*g_StarSystem_ctor_status_obj))->orbitHasPlanetRing(idx) != 0) {
                 AEGeometry *ring = (AEGeometry *)::operator new(0xc0);
@@ -480,7 +457,7 @@ StarSystem::StarSystem(int mode) {
                 U(self, 0x4c) = i;
             }
         }
-        ((int *)array_data(P(self, 0x24)))[off / 4] = Station_getIndex(station);
+        (*stationIdxArray(self))[off / 4] = Station_getIndex(station);
     }
 
     Array_Station_release(stationArray);
@@ -491,23 +468,19 @@ StarSystem::StarSystem(int mode) {
     P(self, 0x18) = players;
     ArraySetLength_KIPlayer(count, players);
 
-    void *geometries = ::operator new(0x0c);
-    Array_AEGeometry_ctor(geometries);
-    P(self, 0x1c) = geometries;
-    ArraySetLength_AEGeometry(count + 1, geometries);
+    planetsArray(self) = new Array<AEGeometry *>();
+    planetsArray(self)->resize(count + 1);
 
-    void *positions = ::operator new(0x0c);
-    Array_Vector_ctor(positions);
-    P(self, 0x20) = positions;
-    ArraySetLength_Vector(count + 1, positions);
+    positionsArray(self) = new Array<Vector>();
+    positionsArray(self)->resize(count + 1);
 
     ((AbyssEngine::AERandom *)(g_StarSystem_ctor_rng))->setSeed((long long)Station_getIndex(((Status *)(status))->getStation()) * 300);
 
     int sunSlot = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(14);
-    for (uint32_t i = 0; i < array_len(P(self, 0x1c)); ++i) {
+    for (uint32_t i = 0; i < planetsArray(self)->size(); ++i) {
         AEGeometry *geom = (AEGeometry *)::operator new(0xc0);
         new ((void*)geom) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)*g_StarSystem_ctor_canvas, false);
-        ((AEGeometry **)array_data(P(self, 0x1c)))[i] = geom;
+        (*planetsArray(self))[i] = geom;
 
         if (i == 0) {
             float sunScale = B(self, 0x0c) == 0 ? 1000.0f : 2000.0f;
@@ -552,7 +525,7 @@ StarSystem::StarSystem(int mode) {
             FL(self, 0x38) = -FL(self, 0x38);
         }
         ((AEGeometry *)(vec))->getPosition();
-        *(Vector *)((char *)array_data(P(self, 0x20)) + i * 0x0c) = *(const Vector *)(vec);
+        (*positionsArray(self))[i] = *(const Vector *)(vec);
     }
 
     ((AbyssEngine::AERandom *)(g_StarSystem_ctor_rng))->reset();
@@ -571,7 +544,7 @@ void StarSystem::updateSupernova(int dt) {
         int mode = 0;
         ((AbyssEngine::Transform *)(transform))->Update(mode, dt);
     }
-    void *sun = *(void **)P(P(self, 0x1c), 4);
+    void *sun = (*planetsArray(self))[0];
     if (sun != 0) {
         void *transform = ((PaintCanvas *)*g_StarSystem_update_canvas_b)->TransformGetTransform(I(sun, 0x0c));
         int mode = 1;
@@ -584,7 +557,7 @@ void StarSystem::scaleSunDuringSupernovaIntro(int amount) {
     char scaleBytes[12];
     ((AEGeometry *)(scaleBytes))->getScaling();
     float scale = *(float *)scaleBytes + (float)amount * -9.769497830779909e32f;
-    (*(AEGeometry **)P(P(self, 0x1c), 4))->setScaling(scale, scale, scale);
+    (*planetsArray(self))[0]->setScaling(scale, scale, scale);
 }
 
 __attribute__((visibility("hidden"))) extern int *g_StarSystem_planet_guard;
@@ -595,10 +568,10 @@ void StarSystem::switchPlanetForIntro() {
     char scaled[12];
     char current[12];
     int flags = 0;
-    ((PaintCanvas *)(*g_StarSystem_planet_canvas))->TextureCreate((unsigned short)(0x273a), (unsigned int *)((char *)P(P(self, 0x14), 4) + U(self, 0x50) * 4), (bool)(flags));
+    ((PaintCanvas *)(*g_StarSystem_planet_canvas))->TextureCreate((unsigned short)(0x273a), &(*texturesArray(self))[U(self, 0x50)], (bool)(flags));
     ((AEGeometry *)(current))->getScaling();
     *(Vector *)(scaled) = *(const Vector *)(current) * (2.0f);
-    ((AEGeometry *)(((AEGeometry **)P(P(self, 0x1c), 4))[U(self, 0x50)]))->setScaling(*(const Vector *)scaled);
+    (*planetsArray(self))[U(self, 0x50)]->setScaling(*(const Vector *)scaled);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_StarSystem_reversal_canvas;
@@ -607,8 +580,8 @@ void StarSystem::switchSunForSupernovaReversal() {
     StarSystem *self = this;
     void **canvasHolder = g_StarSystem_reversal_canvas;
     char scaleBytes[12];
-    ((PaintCanvas *)(*canvasHolder))->TextureCreate((unsigned short)(0x2734), (unsigned int *)(P(P(self, 0x14), 4)), (bool)(0));
-    AEGeometry *geom = *(AEGeometry **)P(P(self, 0x1c), 4);
+    ((PaintCanvas *)(*canvasHolder))->TextureCreate((unsigned short)(0x2734), &(*texturesArray(self))[0], (bool)(0));
+    AEGeometry *geom = (*planetsArray(self))[0];
     uint32_t *scale = (uint32_t *)scaleBytes;
     scale[0] = 0x68009815;
     scale[1] = 0x68009815;
@@ -631,7 +604,7 @@ void StarSystem::switchSunForSupernovaIntro() {
     char scaled[12];
     char current[12];
     void *canvas = *canvasHolder;
-    ((PaintCanvas *)(canvas))->TextureCreate((unsigned short)(0x2df3), (unsigned int *)(P(P(self, 0x14), 4)), (bool)(0));
+    ((PaintCanvas *)(canvas))->TextureCreate((unsigned short)(0x2df3), &(*texturesArray(self))[0], (bool)(0));
     ((PaintCanvas *)(*canvasHolder))->TextureCreate((unsigned short)(0x2df4), (unsigned int *)((char *)self + 0x10), (bool)(0));
 
     ((AEGeometry *)((AEGeometry *)P(self, 0x40)))->setMesh(0x2df2);
@@ -640,21 +613,21 @@ void StarSystem::switchSunForSupernovaIntro() {
     *(Vector *)(scaled) = *(const Vector *)(current) * (5.0f);
     ((AEGeometry *)(streak))->setScaling(*(const Vector *)scaled);
 
-    AEGeometry *sun = *(AEGeometry **)P(P(self, 0x1c), 4);
+    AEGeometry *sun = (*planetsArray(self))[0];
     ((AEGeometry *)(sun))->setMesh(0x2df1);
     {
         uint32_t scaleBits = 0x3f2fc800;
-        (*(AEGeometry **)P(P(self, 0x1c), 4))->setScaling(*(float *)&scaleBits);
+        (*planetsArray(self))[0]->setScaling(*(float *)&scaleBits);
     }
 
     GetTransformFn getTransform = g_StarSystem_intro_getTransform;
-    int transformId = I(*(void **)P(P(self, 0x1c), 4), 0x0c);
+    int transformId = I((*planetsArray(self))[0], 0x0c);
     void *transform = getTransform(*canvasHolder, transformId);
     SetTransformModeFn setTransformMode = g_StarSystem_intro_setTransformMode;
     setTransformMode(transform, 0, 0);
-    transformId = I(*(void **)P(P(self, 0x1c), 4), 0x0c);
+    transformId = I((*planetsArray(self))[0], 0x0c);
     setTransformMode(getTransform(*canvasHolder, transformId), 3, 0);
-    transformId = I(*(void **)P(P(self, 0x1c), 4), 0x0c);
+    transformId = I((*planetsArray(self))[0], 0x0c);
     setTransformMode(getTransform(*canvasHolder, transformId), 1, 0);
 
     void *system = (void *)(intptr_t)((Status *)(*g_StarSystem_intro_status))->getSystem();
@@ -681,17 +654,17 @@ void StarSystem::render() {
     void *local = ((PaintCanvas *)canvas)->CameraGetLocal(current);
     MatrixGetPosition(cameraPos, local);
 
-    uint32_t count = array_len(P(self, 0x1c));
+    uint32_t count = planetsArray(self)->size();
     int posOffset = 0;
     for (uint32_t i = 0; i < count; ++i, posOffset += 0x0c) {
-        AEGeometry **geoms = (AEGeometry **)array_data(P(self, 0x1c));
+        AEGeometry **geoms = planetsArray(self)->data();
         if (count > 1) {
             if (posOffset == 0) {
                 void *canvas2 = *canvasHolder;
                 unsigned current2 = ((PaintCanvas *)canvas2)->CameraGetCurrent();
                 void *local2 = ((PaintCanvas *)canvas2)->CameraGetLocal(current2);
                 __aeabi_memcpy(savedCamera, local2, 0x3c);
-                *(Vector *)(tempVec) = *(const Vector *)((const char *)array_data(P(self, 0x20))) + *(const Vector *)(cameraPos);
+                *(Vector *)(tempVec) = (*positionsArray(self))[0] + *(const Vector *)(cameraPos);
                 if (B(self, 0x0c) == 0) {
                     MatrixGetUp(up, savedCamera);
                 } else {
@@ -724,7 +697,7 @@ void StarSystem::render() {
                     unsigned current3 = ((PaintCanvas *)canvas3)->CameraGetCurrent();
                     void *local3 = ((PaintCanvas *)canvas3)->CameraGetLocal(current3);
                     *(Matrix *)(savedCamera) = *(const Matrix *)((const char *)local3);
-                    *(Vector *)(up) = *(const Vector *)((const char *)array_data(P(self, 0x20))) + *(const Vector *)(cameraPos);
+                    *(Vector *)(up) = (*positionsArray(self))[0] + *(const Vector *)(cameraPos);
                     MatrixGetUp(scaleBytes, savedCamera);
                     MatrixGetLookAt(lookAt, up, cameraPos, scaleBytes);
                     *(Matrix *)(savedCamera) = *(const Matrix *)(lookAt);
@@ -757,11 +730,11 @@ void StarSystem::render() {
                                      FL(self, 0x58) + clamped);
             }
 
-            *(Vector *)(tempMatrix) = *(const Vector *)((const char *)array_data(P(self, 0x20)) + posOffset) + *(const Vector *)(cameraPos);
+            *(Vector *)(tempMatrix) = (*positionsArray(self))[i] + *(const Vector *)(cameraPos);
             ((AEGeometry *)(geoms[i]))->setPosition(*(const Vector *)tempMatrix);
         }
 
-        ((PaintCanvas *)*canvasHolder)->SetTexture(((uint32_t *)array_data(P(self, 0x14)))[i], (unsigned)-1);
+        ((PaintCanvas *)*canvasHolder)->SetTexture((*texturesArray(self))[i], (unsigned)-1);
         int blend;
         if (posOffset == 0) {
             blend = 2;
@@ -769,12 +742,12 @@ void StarSystem::render() {
             blend = B(self, 0x54) == 0 ? 1 : 0x15;
         }
         ((PaintCanvas *)*canvasHolder)->SetBlendMode(blend);
-        ((AEGeometry *)(((AEGeometry **)array_data(P(self, 0x1c)))[i]))->render();
+        (*planetsArray(self))[i]->render();
 
         if (i == U(self, 0x4c)) {
             ((PaintCanvas *)*canvasHolder)->SetTexture(U(self, 0x48), (unsigned)-1);
             ((PaintCanvas *)*canvasHolder)->SetBlendMode(1);
-            __aeabi_memcpy(savedCamera, &((AEGeometry *)(((AEGeometry **)array_data(P(self, 0x1c)))[i]))->getMatrix(), 0x3c);
+            __aeabi_memcpy(savedCamera, &(*planetsArray(self))[i]->getMatrix(), 0x3c);
             MatrixSetScaling(lookAt, 4.0f, 4.0f, 4.0f);
             ((AEGeometry*)(AEGeometry *)P(self, 0x44))->setMatrix(*(const AbyssEngine::AEMath::Matrix*)(lookAt));
             ((AEGeometry *)((AEGeometry *)P(self, 0x44)))->render();

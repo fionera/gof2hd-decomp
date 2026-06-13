@@ -40,8 +40,15 @@ public:
     ~StarSystem();
 
     // ---- methods (converted from free functions) ----
-    // The planet/target geometry arrays live at byte offsets +0x18 / +0x1c.
-    void *getPlanetTargets();   // +0x18  Array<AEGeometry*>* of intro camera targets
+    // Container members held at fixed byte offsets (real Array<T> == std::vector<T> heap objects):
+    //   +0x14  Array<uint>*        station/planet texture handles
+    //   +0x1c  Array<AEGeometry*>* sun + planet/station billboard meshes
+    //   +0x20  Array<Vector>*      per-mesh world positions
+    //   +0x24  Array<int>*         station indices
+    // +0x18 (getPlanetTargets) remains on the flattened {count,data} container ABI because
+    // LevelScript.cpp dereferences it directly via P(targets, 4); migrating it would need a
+    // matching cross-file edit there.
+    void *getPlanetTargets();   // +0x18  flattened Array<KIPlayer*> (intro camera targets)
     void *getPlanets();         // +0x1c  Array<AEGeometry*>* of planet meshes
     Vector getLightDirection();
     void initLight();

@@ -27,7 +27,7 @@ int GameText_getLanguage();
 extern "C" void String_cstr_ctor(void *self, const char *text, bool copy);
 extern "C" void String_plus(void *out, void *left, void *right);
 extern "C" void String_plusAssign(void *self, void *other);
-typedef Array<NewsItemView *> NewsItemArray;
+typedef Array<NewsItem *> NewsItemArray;
 // Minimal view of FileRead so loadTicker() resolves to the real FileRead::loadTicker.
 class FileRead {
 public:
@@ -35,10 +35,6 @@ public:
 };
 extern "C" void FileRead_ctor(void *self);
 extern "C" void *FileRead_dtor(void *self);
-extern "C" void Array_NewsItem_ctor(NewsItemArray *self);
-extern "C" void *Array_NewsItem_dtor(NewsItemArray *self);
-extern "C" void ArrayReleaseClasses_NewsItem(NewsItemArray *self);
-extern "C" void ArrayAdd_NewsItem(void *item, NewsItemArray *array);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int bound); } }
 
 __attribute__((visibility("hidden"))) extern void **g_NewsTicker_draw_canvas;
@@ -203,22 +199,21 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 
     void *reader = operator new(1);
     FileRead_ctor(reader);
-    NewsItemArray *allItems = (NewsItemArray *)((FileRead *)reader)->loadTicker();
+    NewsItemArray *allItems = ((FileRead *)reader)->loadTicker();
     operator delete(FileRead_dtor(reader));
 
-    NewsItemArray *items = (NewsItemArray *)operator new(sizeof(NewsItemArray));
-    Array_NewsItem_ctor(items);
+    NewsItemArray *items = new NewsItemArray();
 
     void *random = *g_NewsTicker_ctor_random;
     int wanted = AbyssEngine::AERandom::nextInt(random, 1) + 2;
 
     for (uint32_t i = 0; i < allItems->size(); ++i) {
-        NewsItemView *item = (*allItems)[i];
+        NewsItemView *item = (NewsItemView *)(*allItems)[i];
         int minLevel = item->field_0x10;
         if (minLevel > 0 && minLevel <= level && level <= item->field_0x14) {
             int *factions = item->field_0x8;
             if (((uint8_t *)factions)[faction] != 0) {
-                ArrayAdd_NewsItem(((NewsItem *)(item))->clone(), items);
+                items->push_back((NewsItem *)((NewsItem *)(item))->clone());
             }
         }
     }
@@ -230,7 +225,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         if (allItems->size() == 0) {
             break;
         }
-        NewsItemView *item = (*allItems)[AbyssEngine::AERandom::nextInt(random, allItems->size())];
+        NewsItemView *item = (NewsItemView *)(*allItems)[AbyssEngine::AERandom::nextInt(random, allItems->size())];
         void *system = (void *)((Status *)(*g_NewsTicker_ctor_status))->getSystem();
         if (((SolarSystem *)(system))->getIndex() > 0x15 && item->field_0x0 == 0x0d) {
             continue;
@@ -254,7 +249,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
             *(int64_t *)(status + 0x160) = now;
             *(int *)(status + 0x174) = item->field_0x0;
         }
-        ArrayAdd_NewsItem(((NewsItem *)(item))->clone(), items);
+        items->push_back((NewsItem *)((NewsItem *)(item))->clone());
         item->field_0x18 = 1;
         ++added;
     }
@@ -262,7 +257,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     String separator;
     String_cstr_ctor(&separator, g_NewsTicker_ctor_separator, false);
     for (uint32_t i = 0; i < items->size(); ++i) {
-        NewsItemView *item = (*items)[i];
+        NewsItemView *item = (NewsItemView *)(*items)[i];
         String line;
         ((String *)(&line))->ctor_copy((String *)(((GameText *)(*g_NewsTicker_ctor_text))->getText(item->field_0x0 + 0x0cbe)), false);
         String replaced = replaceTokens(line);
@@ -302,10 +297,12 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     this->touched = 0;
     this->scrollOffset = (float)width;
 
-    ArrayReleaseClasses_NewsItem(items);
-    operator delete(Array_NewsItem_dtor(items));
-    ArrayReleaseClasses_NewsItem(allItems);
-    operator delete(Array_NewsItem_dtor(allItems));
+    for (NewsItem *e : *items) delete e;
+    items->clear();
+    delete items;
+    for (NewsItem *e : *allItems) delete e;
+    allItems->clear();
+    delete allItems;
     ((String *)(&separator))->dtor();
 }
 

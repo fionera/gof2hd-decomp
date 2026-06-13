@@ -3,8 +3,6 @@
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/core/String.h"
 
-extern "C" void ArrayRelease_int(void *a) __attribute__((nothrow));
-extern "C" void *Array_int_dtor(void *a) __attribute__((nothrow));
 extern "C" int Station_getIndex(Station *st);
 
 // SolarSystem::~SolarSystem() — real C++ destructor so the demangled symbol contains "~SolarSystem".
@@ -19,21 +17,18 @@ using AbyssEngine::String12;
 void SolarSystem::dtor() {
     SolarSystem *self = this;
     if (self->stationIds != 0) {
-        ArrayRelease_int(self->stationIds);
-        if (self->stationIds != 0)
-            ::operator delete(Array_int_dtor(self->stationIds));
+        self->stationIds->clear();
+        delete self->stationIds;
     }
     self->stationIds = 0;
     if (self->field_0x3c != 0) {
-        ArrayRelease_int(self->field_0x3c);
-        if (self->field_0x3c != 0)
-            ::operator delete(Array_int_dtor(self->field_0x3c));
+        self->field_0x3c->clear();
+        delete self->field_0x3c;
     }
     self->field_0x3c = 0;
     if (self->linkedSystemIds != 0) {
-        ArrayRelease_int(self->linkedSystemIds);
-        if (self->linkedSystemIds != 0)
-            ::operator delete(Array_int_dtor(self->linkedSystemIds));
+        self->linkedSystemIds->clear();
+        delete self->linkedSystemIds;
     }
     self->linkedSystemIds = 0;
     SolarSystem::baseStringDtor((char *)self + 0xc);
@@ -66,14 +61,14 @@ int SolarSystem::getX()              { return mapX; }                // +0x24
 int SolarSystem::getY()              { return mapY; }                // +0x28
 int SolarSystem::getZ()              { return mapZ; }                // +0x2c
 int SolarSystem::getWarpGateIndex()  { return jumpgateStationId; }   // +0x30
-uint32_t *SolarSystem::getStations() { return stationIds; }          // +0x38
-uint32_t *SolarSystem::getRoutes()   { return linkedSystemIds; }     // +0x40
+uint32_t *SolarSystem::getStations() { return (uint32_t *)stationIds; }      // +0x38
+uint32_t *SolarSystem::getRoutes()   { return (uint32_t *)linkedSystemIds; } // +0x40
 
 // Array<int>*-typed view of the station-id list — the very same member at +0x38
 // that getStations() returns. Status::activateNewWanted() uses it to pick a
 // random station in a destination system (it then reads the embedded data
 // pointer at +4 and indexes into it).
-uint32_t *SolarSystem::getStations_i() { return stationIds; }        // +0x38
+uint32_t *SolarSystem::getStations_i() { return (uint32_t *)stationIds; }     // +0x38
 
 // SolarSystem::warpGateLookup(int) — getWarpGateEnumIndex() forwards here with
 // the orbit's jump-gate station id. Resolving the warp-gate enum index is the
@@ -99,10 +94,10 @@ uint8_t SolarSystem::isVisible() {
 // SolarSystem::stationIsInSystem(int) — scan station-index array at +0x38.
 int SolarSystem::stationIsInSystem_int(int idx) {
     SolarSystem *self = this;
-    uint32_t *arr = self->stationIds;
-    uint32_t n = arr[0];
+    Array<int> *arr = self->stationIds;
+    uint32_t n = arr->size();
     for (uint32_t i = 0; i < n; i++) {
-        if (((int *)arr[1])[i] == idx)
+        if ((*arr)[i] == idx)
             return 1;
     }
     return 0;
@@ -113,12 +108,12 @@ int SolarSystem::stationIsInSystem_int(int idx) {
 int SolarSystem::systemIsInSystemRoutes(int sys) {
     SolarSystem *self = this;
     if (self->systemId != sys) {
-        uint32_t *arr = self->linkedSystemIds;
+        Array<int> *arr = self->linkedSystemIds;
         if (arr == 0)
             return 0;
-        uint32_t n = arr[0];
+        uint32_t n = arr->size();
         for (uint32_t i = 0; i < n; i++) {
-            if (((int *)arr[1])[i] == sys)
+            if ((*arr)[i] == sys)
                 return 1;
         }
         return 0;
@@ -135,9 +130,9 @@ void SolarSystem::setVisible(bool v) {
 // SolarSystem::getStationEnumIndex(int) — index of matching station in array at +0x38, or -1.
 uint32_t SolarSystem::getStationEnumIndex(int idx) {
     SolarSystem *self = this;
-    uint32_t *arr = self->stationIds;
-    for (uint32_t i = 0; i < arr[0]; i++) {
-        if (((int *)arr[1])[i] == idx)
+    Array<int> *arr = self->stationIds;
+    for (uint32_t i = 0; i < arr->size(); i++) {
+        if ((*arr)[i] == idx)
             return i;
     }
     return 0xffffffff;
@@ -261,10 +256,10 @@ SolarSystem * SolarSystem::ctor(int p1, const String12 &p2, int p3, bool p4, int
     self->field_0x0 = p11[0];
     self->field_0x4 = p11[1];
     int v2 = p11[2];
-    self->stationIds = (uint32_t *)p12;
+    self->stationIds = (Array<int> *)p12;
     self->field_0x8 = v2;
-    self->field_0x3c = p14;
-    self->linkedSystemIds = (uint32_t *)p13;
+    self->field_0x3c = (Array<int> *)p14;
+    self->linkedSystemIds = (Array<int> *)p13;
     return self;
 }
 
@@ -289,15 +284,15 @@ extern Galaxy *gGalaxyDiscover __attribute__((visibility("hidden")));
 // SolarSystem::isFullyDiscovered() — every station in array +0x38 must be visited.
 int SolarSystem::isFullyDiscovered() {
     SolarSystem *self = this;
-    uint32_t *arr = self->stationIds;
+    Array<int> *arr = self->stationIds;
     uint32_t i = 0;
     Galaxy *gal = gGalaxyDiscover;
     while (true) {
-        if (i >= arr[0])
+        if (i >= arr->size())
             return 1;
         char *visited = (char *)((Galaxy *)(*(Galaxy **)gal))->getVisited();
         arr = self->stationIds;
-        uint32_t flagIdx = ((int *)arr[1])[i];
+        uint32_t flagIdx = (*arr)[i];
         i++;
         if (visited[flagIdx] == 0)
             return 0;
