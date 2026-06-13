@@ -1337,7 +1337,7 @@ void * Globals::dtor() {
     }
     *genSlot = 0;
     if (*rhSlot != 0) {
-        ::operator delete(((RecordHandler *)(*rhSlot))->dtor());
+        do { RecordHandler *_rh = (RecordHandler *)(*rhSlot); _rh->~RecordHandler(); ::operator delete(_rh); } while (0);
     }
     *rhSlot = 0;
     void **polySlot = gG_polyObj;
@@ -1840,7 +1840,7 @@ int Globals::init(void *app) {
     **gI_generator = gen;
 
     void *rh = ::operator new(0x2c);
-    ((RecordHandler *)(rh))->ctor();
+    new (rh) RecordHandler();
     void **rhSlotP = *gI_recHandler;
     *rhSlotP = rh;
     ((Status *)(*g_status))->resetGame();

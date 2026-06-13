@@ -106,10 +106,10 @@ void ModStation::autosave() {
     if (((Status *)(st))->getPlayingTime() - 1LL < 0)
         return;
     void *rh = ModStation_op_new(0x2c);
-    ((RecordHandler *)(rh))->ctor();
+    new (rh) RecordHandler();
     ((RecordHandler *)(rh))->recordStoreWrite(0);
     ((RecordHandler *)(rh))->recordStoreWritePreview_int(0);
-    ModStation_op_delete(((RecordHandler *)(rh))->dtor());
+    do { RecordHandler *_rh = (RecordHandler *)(rh); _rh->~RecordHandler(); ModStation_op_delete(_rh); } while (0);
     UC(this, 0xb1) = 1;
     if (I(this, 0x50) != 0)
         ModStation_autosaveTail();
