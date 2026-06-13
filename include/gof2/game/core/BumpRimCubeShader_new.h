@@ -41,7 +41,7 @@ struct ShaderBaseStruct {
 // Int fields are GL uniform/attribute locations (contiguous block 0x20..0x94).
 class BumpRimCubeShader_new {
 public:
-    void *field_0x0;            // +0x0  vtable ptr
+    void *vtable;               // +0x0  vtable ptr
     int program;              // +0x4  program
     uint8_t pad_0x8;            // +0x8
     uint8_t needsUpdate;          // +0x9  needsUpdate flag

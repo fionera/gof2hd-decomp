@@ -7,8 +7,8 @@ namespace AbyssEngine {
 
 void TextureConference::SetInActive()
 {
-    glDisableVertexAttribArray(field_i32(this, 0x20));
-    return glDisableVertexAttribArray(field_i32(this, 0x24));
+    glDisableVertexAttribArray(this->attribPosition);
+    return glDisableVertexAttribArray(this->attribTexCoord);
 }
 
 } // namespace AbyssEngine
@@ -25,10 +25,10 @@ namespace AbyssEngine {
 
 void TextureConference::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(field_i32(this, 0x2c), 1, 0, (char *)engine + 0x104);
-    if (field_u8(this, 0x9) != 0) {
-        glUniform4fv(field_i32(this, 0x30), 1, (float *)((char *)engine + 0xd0));
-        field_u8(this, 0x9) = 0;
+    glUniformMatrix4fv(this->mvpMatrixLoc, 1, 0, (char *)engine + 0x104);
+    if (this->offsetDirty != 0) {
+        glUniform4fv(this->offsetLoc, 1, (float *)((char *)engine + 0xd0));
+        this->offsetDirty = 0;
     }
 
     long long elapsed =
@@ -37,13 +37,13 @@ void TextureConference::UpdateMeshData(Mesh *mesh, Engine *engine)
     t = t + this->animTime;
     long long clamped = (0xe10 > t) ? t : (t - 0xe10);
     this->animTime = clamped;
-    glUniform1i(field_i32(this, 0x28), (int)clamped);
+    glUniform1i(this->colorLoc, (int)clamped);
 
-    glEnableVertexAttribArray(field_i32(this, 0x20));
-    glEnableVertexAttribArray(field_i32(this, 0x24));
-    glVertexAttribPointer(field_i32(this, 0x20), 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+    glEnableVertexAttribArray(this->attribPosition);
+    glEnableVertexAttribArray(this->attribTexCoord);
+    glVertexAttribPointer(this->attribPosition, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
     if ((field_u8(mesh, 0x0) & 2) != 0)
-        glVertexAttribPointer(field_i32(this, 0x24), 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+        glVertexAttribPointer(this->attribTexCoord, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
 }
 
 } // namespace AbyssEngine
@@ -54,17 +54,17 @@ void TextureConference::Init(Engine *)
 {
     int program = ((ShaderBaseStruct *)this)->ES2LoadProgram(
         "TextureConference.vsh", "TextureConference.fsh");
-    field_i32(this, 0x04) = program;
+    this->programHandle = program;
 
-    field_i32(this, 0x34) = glGetUniformLocation(program, "u_texture");
-    field_i32(this, 0x20) = glGetAttribLocation(field_i32(this, 0x04), "a_position");
-    field_i32(this, 0x24) = glGetAttribLocation(field_i32(this, 0x04), "a_texCoord");
-    field_i32(this, 0x2c) = glGetUniformLocation(field_i32(this, 0x04), "u_mvp");
-    field_i32(this, 0x28) = glGetUniformLocation(field_i32(this, 0x04), "u_color");
-    field_i32(this, 0x30) = glGetUniformLocation(field_i32(this, 0x04), "u_offset");
+    this->textureLoc = glGetUniformLocation(program, "u_texture");
+    this->attribPosition = glGetAttribLocation(this->programHandle, "a_position");
+    this->attribTexCoord = glGetAttribLocation(this->programHandle, "a_texCoord");
+    this->mvpMatrixLoc = glGetUniformLocation(this->programHandle, "u_mvp");
+    this->colorLoc = glGetUniformLocation(this->programHandle, "u_color");
+    this->offsetLoc = glGetUniformLocation(this->programHandle, "u_offset");
 
-    glUseProgram(field_i32(this, 0x04));
-    return glUniform1i(field_i32(this, 0x34), 0);
+    glUseProgram(this->programHandle);
+    return glUniform1i(this->textureLoc, 0);
 }
 
 } // namespace AbyssEngine

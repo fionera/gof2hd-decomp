@@ -7,73 +7,73 @@ namespace AbyssEngine {
 
 void BumpShaderParticle::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    if (field_i32(this, 0x38) >= 0)
-        glUniformMatrix4fv(field_i32(this, 0x38), 1, 0, (char *)engine + 0x104);
-    if (field_i32(this, 0x3c) >= 0)
-        glUniformMatrix3fv(field_i32(this, 0x3c), 1, 0, (char *)engine + 0x204);
-    if (field_i32(this, 0x64) >= 0)
-        glUniform1f(field_i32(this, 0x64), g_particleGlobalA);
-    if (field_i32(this, 0x68) >= 0)
-        glUniform1f(field_i32(this, 0x68), g_particleGlobalB);
+    if (uniformU1 >= 0)
+        glUniformMatrix4fv(uniformU1, 1, 0, (char *)engine + 0x104);
+    if (uniformU2 >= 0)
+        glUniformMatrix3fv(uniformU2, 1, 0, (char *)engine + 0x204);
+    if (uniformU12 >= 0)
+        glUniform1f(uniformU12, g_particleGlobalA);
+    if (uniformU13 >= 0)
+        glUniform1f(uniformU13, g_particleGlobalB);
 
-    if (field_u8(this, 0x9) != 0) {
-        glUniform3f(field_i32(this, 0x40), field_f32(engine, 0x330),
+    if (field_0x9 != 0) {
+        glUniform3f(uniformU3, field_f32(engine, 0x330),
                     field_f32(engine, 0x334), field_f32(engine, 0x338));
-        if (field_i32(this, 0x44) >= 0)
-            glUniform3f(field_i32(this, 0x44), field_f32(engine, 0x34c),
+        if (uniformU4 >= 0)
+            glUniform3f(uniformU4, field_f32(engine, 0x34c),
                         field_f32(engine, 0x350), field_f32(engine, 0x354));
-        if (field_i32(this, 0x50) >= 0)
-            glUniform4fv(field_i32(this, 0x50), 1, (float *)((char *)engine + 0xd0));
-        if (field_i32(this, 0x54) >= 0)
-            glUniform3fv(field_i32(this, 0x54), 1, (float *)((char *)engine + 0x314));
-        if (field_i32(this, 0x58) >= 0)
-            glUniform3fv(field_i32(this, 0x58), 1, (float *)((char *)engine + 0x2fc));
-        if (field_i32(this, 0x5c) >= 0)
-            glUniform3fv(field_i32(this, 0x5c), 1, (float *)((char *)engine + 0x2e4));
-        if (field_i32(this, 0x60) >= 0)
-            glUniform1f(field_i32(this, 0x60), field_f32(engine, 0x2c8));
-        field_u8(this, 0x9) = 0;
+        if (uniformU7 >= 0)
+            glUniform4fv(uniformU7, 1, (float *)((char *)engine + 0xd0));
+        if (uniformU8 >= 0)
+            glUniform3fv(uniformU8, 1, (float *)((char *)engine + 0x314));
+        if (uniformU9 >= 0)
+            glUniform3fv(uniformU9, 1, (float *)((char *)engine + 0x2fc));
+        if (uniformU10 >= 0)
+            glUniform3fv(uniformU10, 1, (float *)((char *)engine + 0x2e4));
+        if (uniformU11 >= 0)
+            glUniform1f(uniformU11, field_f32(engine, 0x2c8));
+        field_0x9 = 0;
     }
 
-    if (field_i32(this, 0x20) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x20));
-    if (field_i32(this, 0x24) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x24));
-    if (field_i32(this, 0x28) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x28));
-    if (field_i32(this, 0x2c) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x2c));
-    if (field_i32(this, 0x30) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x30));
-    if (field_i32(this, 0x34) >= 0)
-        glEnableVertexAttribArray(field_i32(this, 0x34));
+    if (attribA0 >= 0)
+        glEnableVertexAttribArray(attribA0);
+    if (attribA1 >= 0)
+        glEnableVertexAttribArray(attribA1);
+    if (attribA2 >= 0)
+        glEnableVertexAttribArray(attribA2);
+    if (attribA3 >= 0)
+        glEnableVertexAttribArray(attribA3);
+    if (attribA4 >= 0)
+        glEnableVertexAttribArray(attribA4);
+    if (uniformU0 >= 0)
+        glEnableVertexAttribArray(uniformU0);
 
     if (field_u8(mesh, 0x5c) == 0) {
-        if (field_i32(this, 0x20) >= 0)
-            glVertexAttribPointer(field_i32(this, 0x20), 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
-        if (field_i32(this, 0x24) >= 0)
-            glVertexAttribPointer(field_i32(this, 0x24), 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
-        if (field_i32(this, 0x28) >= 0)
-            glVertexAttribPointer(field_i32(this, 0x28), 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
-        if (field_i32(this, 0x2c) >= 0)
-            glVertexAttribPointer(field_i32(this, 0x2c), 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
-        if (field_i32(this, 0x30) >= 0)
-            glVertexAttribPointer(field_i32(this, 0x30), 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
-        if (field_i32(this, 0x34) >= 0)
-            glVertexAttribPointer(field_i32(this, 0x34), 4, 0x1406, 0, 0, field_ptr(mesh, 0xc));
+        if (attribA0 >= 0)
+            glVertexAttribPointer(attribA0, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+        if (attribA1 >= 0)
+            glVertexAttribPointer(attribA1, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+        if (attribA2 >= 0)
+            glVertexAttribPointer(attribA2, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
+        if (attribA3 >= 0)
+            glVertexAttribPointer(attribA3, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
+        if (attribA4 >= 0)
+            glVertexAttribPointer(attribA4, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+        if (uniformU0 >= 0)
+            glVertexAttribPointer(uniformU0, 4, 0x1406, 0, 0, field_ptr(mesh, 0xc));
     } else {
         glBindBuffer(0x8892, field_i32(mesh, 0x60));
-        glVertexAttribPointer(field_i32(this, 0x20), 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(attribA0, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x68));
-        glVertexAttribPointer(field_i32(this, 0x24), 2, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(attribA1, 2, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x6c));
-        glVertexAttribPointer(field_i32(this, 0x28), 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(attribA2, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x70));
-        glVertexAttribPointer(field_i32(this, 0x2c), 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(attribA3, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x74));
-        glVertexAttribPointer(field_i32(this, 0x30), 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(attribA4, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x78));
-        glVertexAttribPointer(field_i32(this, 0x34), 4, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(uniformU0, 4, 0x1406, 0, 0, 0);
     }
 }
 
@@ -84,22 +84,22 @@ namespace AbyssEngine {
 void BumpShaderParticle::SetInActive()
 {
     int loc;
-    loc = field_i32(this, 0x20);
+    loc = attribA0;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x24);
+    loc = attribA1;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x28);
+    loc = attribA2;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x2c);
+    loc = attribA3;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x30);
+    loc = attribA4;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = field_i32(this, 0x34);
+    loc = uniformU0;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
 }
@@ -124,11 +124,11 @@ __attribute__((minsize)) BumpShaderParticle::BumpShaderParticle()
     *(void **)this = (void *)(_ZTVN11AbyssEngine18BumpShaderParticleE + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     {
-        // name = String("BumpShaderParticle", false); this->name(0xc) = name; ~name.
+        // name = String("BumpShaderParticle", false);
         String tmp("BumpShaderParticle");
-        ((String *)((char *)this + 0xc))->assign(&tmp);
+        name.assign(&tmp);
     }
-    
+
 }
 
 } // namespace AbyssEngine
@@ -138,32 +138,34 @@ namespace AbyssEngine {
 void BumpShaderParticle::Init(Engine *)
 {
     int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("BumpShaderParticle.vsh", "BumpShaderParticle.fsh");
-    field_i32(this, 0x04) = program;
+    field_0x4 = program;
 
-    field_i32(this, 0x20) = glGetAttribLocation(program, "a0");
-    field_i32(this, 0x24) = glGetAttribLocation(field_i32(this, 0x04), "a1");
-    field_i32(this, 0x28) = glGetAttribLocation(field_i32(this, 0x04), "a2");
-    field_i32(this, 0x2c) = glGetAttribLocation(field_i32(this, 0x04), "a3");
-    field_i32(this, 0x30) = glGetAttribLocation(field_i32(this, 0x04), "a4");
+    attribA0 = glGetAttribLocation(program, "a0");
+    attribA1 = glGetAttribLocation(field_0x4, "a1");
+    attribA2 = glGetAttribLocation(field_0x4, "a2");
+    attribA3 = glGetAttribLocation(field_0x4, "a3");
+    attribA4 = glGetAttribLocation(field_0x4, "a4");
 
-    field_i32(this, 0x34) = glGetUniformLocation(field_i32(this, 0x04), "u0");
-    field_i32(this, 0x38) = glGetUniformLocation(field_i32(this, 0x04), "u1");
-    field_i32(this, 0x3c) = glGetUniformLocation(field_i32(this, 0x04), "u2");
-    field_i32(this, 0x40) = glGetUniformLocation(field_i32(this, 0x04), "u3");
-    field_i32(this, 0x44) = glGetUniformLocation(field_i32(this, 0x04), "u4");
-    field_i32(this, 0x48) = glGetUniformLocation(field_i32(this, 0x04), "u5");
-    field_i32(this, 0x4c) = glGetUniformLocation(field_i32(this, 0x04), "u6");
-    field_i32(this, 0x50) = glGetUniformLocation(field_i32(this, 0x04), "u7");
-    field_i32(this, 0x54) = glGetUniformLocation(field_i32(this, 0x04), "u8");
-    field_i32(this, 0x58) = glGetUniformLocation(field_i32(this, 0x04), "u9");
-    field_i32(this, 0x5c) = glGetUniformLocation(field_i32(this, 0x04), "u10");
-    field_i32(this, 0x60) = glGetUniformLocation(field_i32(this, 0x04), "u11");
-    field_i32(this, 0x64) = glGetUniformLocation(field_i32(this, 0x04), "u12");
-    field_i32(this, 0x68) = glGetUniformLocation(field_i32(this, 0x04), "u13");
+    uniformU0 = glGetUniformLocation(field_0x4, "u0");
+    uniformU1 = glGetUniformLocation(field_0x4, "u1");
+    uniformU2 = glGetUniformLocation(field_0x4, "u2");
+    uniformU3 = glGetUniformLocation(field_0x4, "u3");
+    uniformU4 = glGetUniformLocation(field_0x4, "u4");
+    uniformU5 = glGetUniformLocation(field_0x4, "u5");
+    uniformU6 = glGetUniformLocation(field_0x4, "u6");
+    uniformU7 = glGetUniformLocation(field_0x4, "u7");
+    uniformU8 = glGetUniformLocation(field_0x4, "u8");
+    uniformU9 = glGetUniformLocation(field_0x4, "u9");
+    uniformU10 = glGetUniformLocation(field_0x4, "u10");
+    uniformU11 = glGetUniformLocation(field_0x4, "u11");
+    uniformU12 = glGetUniformLocation(field_0x4, "u12");
+    uniformU13 = glGetUniformLocation(field_0x4, "u13");
 
-    glUseProgram(field_i32(this, 0x04));
+    glUseProgram(field_0x4);
+    // samplers u5 (+0x48) and u6 (+0x4c): consecutive int fields, indexed at runtime.
+    int *samplers = &uniformU5;
     for (int i = 0; i != 2; i++) {
-        int loc = field_i32(this, i * 4 + 0x48);
+        int loc = samplers[i];
         if (loc >= 0)
             glUniform1i(loc, i);
     }

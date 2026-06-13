@@ -218,7 +218,7 @@ int BumpRimCubeShader_new::ShaderIndex;
 __attribute__((minsize)) BumpRimCubeShader_new::BumpRimCubeShader_new()
 {
     new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->field_0x0 = _ZTVN11AbyssEngine21BumpRimCubeShader_newE + 8;
+    this->vtable = _ZTVN11AbyssEngine21BumpRimCubeShader_newE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 
     String name("BumpRimCubeShader_new");

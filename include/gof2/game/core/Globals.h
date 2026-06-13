@@ -16,7 +16,7 @@ typedef AbyssEngine::String String;
 
 class Globals {
 public:
-    Array<int>* field_0x4;              // +0x4  (sound-resource id list)
+    Array<int>* soundResources;         // +0x4  sound-resource id list
     int field_0x34;                     // +0x34
     void* field_0x3c;                   // +0x3c
     void* field_0x40;                   // +0x40

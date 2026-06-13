@@ -102,15 +102,15 @@ void Globals_resetHints()
 
 void Globals_startNewSoundResourceList(void *self)
 {
-    if (((Globals*)self)->field_0x4 != 0) {
-        ((Globals*)self)->field_0x4->clear();
-        delete ((Globals*)self)->field_0x4;
+    if (((Globals*)self)->soundResources != 0) {
+        ((Globals*)self)->soundResources->clear();
+        delete ((Globals*)self)->soundResources;
     }
-    ((Globals*)self)->field_0x4 = 0;
+    ((Globals*)self)->soundResources = 0;
     Array<int> *a = new Array<int>();
-    ((Globals*)self)->field_0x4 = a;
+    ((Globals*)self)->soundResources = a;
     a->push_back(0x7c);
-    return ((Globals*)self)->startNewSoundResourceList_tail(0x7b, ((Globals*)self)->field_0x4);
+    return ((Globals*)self)->startNewSoundResourceList_tail(0x7b, ((Globals*)self)->soundResources);
 }
 
 // hidden PC-relative pointer-to-pointer global (deref'd twice).
@@ -159,7 +159,7 @@ void Globals_getRandomSystemForDrinks()
 // r0=container, r1=value. Linear search; on no-match (index reaches length) tail-call to add.
 void Globals_addSoundResourceToList(void *self, int val)
 {
-    Array<int> *a = ((Globals*)self)->field_0x4;
+    Array<int> *a = ((Globals*)self)->soundResources;
     if (a != 0) {
         unsigned i = 0;
         for (;;) {
@@ -1278,7 +1278,7 @@ Globals::Globals() {
     *(int *)p5b = 0;
     *(int *)p7b = 0;
     *(int *)p8b = 0;
-    self->field_0x4 = 0;
+    self->soundResources = 0;
 }
 
 // Each singleton lives behind a hidden PC-relative pointer-to-pointer global.
@@ -1386,11 +1386,11 @@ Globals::~Globals() {
     }
     *ifSlot = 0;
 
-    if (this->field_0x4 != 0) {
-        this->field_0x4->clear();
-        delete this->field_0x4;
+    if (this->soundResources != 0) {
+        this->soundResources->clear();
+        delete this->soundResources;
     }
-    this->field_0x4 = 0;
+    this->soundResources = 0;
     **gG_tail = 0;
 }
 
@@ -1885,7 +1885,7 @@ int Globals::init(void *app) {
     ParticleSettingsRef_initialize();
 
     Array<int> *arr = new Array<int>();
-    this->field_0x4 = arr;
+    this->soundResources = arr;
     return (int)(long)arr;
 }
 
@@ -2227,7 +2227,7 @@ void Globals::addSoundResource_tail(int val, Array<int> *list)
 // already present (matches addSoundResourceToList's linear-search-then-append behaviour).
 void Globals::addSoundResource_oi(int val)
 {
-    Array<int> *list = this->field_0x4;
+    Array<int> *list = this->soundResources;
     if (list == 0) {
         return;
     }

@@ -34,20 +34,26 @@ struct ShaderBaseStruct {
 };
 
 // AbyssEngine::TextureConference — GLES2 scrolling-texture shader (derives from ShaderBaseStruct).
-// Most members are accessed through the field_i32/field_u8/field_ptr helpers above; only the
-// byte-match-recovered animation accumulator at +0x38 keeps a named field.
+// Holds the GL program handle, the dirty flag, the shader name, the attribute/uniform locations
+// and the scrolling-animation accumulator. Layout matches the sibling AbyssEngine shaders.
 class TextureConference : public ShaderBaseStruct  {
 public:
     static int ShaderIndex;
 
+    int       programHandle;          // +0x04  GL program handle (ES2LoadProgram result)
+    uint8_t   offsetDirty;            // +0x09  upload-u_offset flag
+    String    shaderName;             // +0x0c  shader name ("TextureConference")
+    int       attribPosition;         // +0x20  attrib a_position
+    int       attribTexCoord;         // +0x24  attrib a_texCoord
+    int       colorLoc;               // +0x28  uniform u_color
+    int       mvpMatrixLoc;           // +0x2c  uniform u_mvp
+    int       offsetLoc;              // +0x30  uniform u_offset
+    int       textureLoc;             // +0x34  uniform u_texture (sampler)
+    long long animTime;               // +0x38  scrolling-animation accumulator
+
     void SetInActive();
     void UpdateMeshData(Mesh *mesh, Engine *engine);
     void Init(Engine *engine);
-
-    // raw field storage up to the named animation accumulator at +0x38.
-    char field_storage[0x38];
-    long long animTime;               // +0x38
-    String shaderName;                // shader name ("TextureConference")
 };
 
 } // namespace AbyssEngine
