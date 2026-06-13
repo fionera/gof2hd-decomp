@@ -1,26 +1,26 @@
-#include "gof2/ModStation.h"
-#include "gof2/Globals.h"
-#include "gof2/Ship.h"
-#include "gof2/FModSound.h"
-#include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
-#include "gof2/AEMath.h"             // MatrixSetTranslation/Rotation, VectorSignedToFloat
+#include "gof2/game/menu/ModStation.h"
+#include "gof2/game/core/Globals.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "gof2/engine/math/AEMath.h"             // MatrixSetTranslation/Rotation, VectorSignedToFloat
 #include <new>
-#include "gof2/ChoiceWindow.h"
-#include "gof2/CutScene.h"
-#include "gof2/EaseInOut.h"
-#include "gof2/Item.h"
-#include "gof2/MissionsWindow.h"
-#include "gof2/NewsTicker.h"
+#include "gof2/game/ui/ChoiceWindow.h"
+#include "gof2/game/core/CutScene.h"
+#include "gof2/engine/math/EaseInOut.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/ui/MissionsWindow.h"
+#include "gof2/game/world/NewsTicker.h"
 // Radio.h omitted: it embeds conflicting inline defs of Layout/ImageFactory/Agent.
 // ModStation only needs Radio::lastMessageShown(); supply a minimal decl instead.
 struct Radio { unsigned char lastMessageShown(); };
-#include "gof2/StarMap.h"
-#include "gof2/Achievements.h"
-#include "gof2/ApplicationManager.h"
-#include "gof2/DialogueWindow.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
-#include "gof2/RecordHandler.h"   // defines the canonical B/I/P offset helpers (guarded)
+#include "gof2/game/world/StarMap.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/game/ui/DialogueWindow.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/mission/RecordHandler.h"   // defines the canonical B/I/P offset helpers (guarded)
 // SpaceLounge.h and TouchButton.h define their own (unguarded) copies of the B/I/P
 // offset helpers, and TouchButton.h redefines `RetStr` (already provided by Station.h).
 // Rename those tokens for the duration of these two includes so the duplicates land on
@@ -28,23 +28,23 @@ struct Radio { unsigned char lastMessageShown(); };
 #define B  B_SpaceLounge
 #define I  I_SpaceLounge
 #define P  P_SpaceLounge
-#include "gof2/SpaceLounge.h"
+#include "gof2/game/menu/SpaceLounge.h"
 #undef B
 #undef I
 #undef P
-#include "gof2/Station.h"
-#include "gof2/Status.h"
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/world/SolarSystem.h"
 #define B      B_TouchButton
 #define I      I_TouchButton
 #define P      P_TouchButton
 #define RetStr RetStr
-#include "gof2/TouchButton.h"
+#include "gof2/game/ui/TouchButton.h"
 #undef B
 #undef I
 #undef P
 #undef RetStr
-#include "gof2/MenuTouchWindow.h"
+#include "gof2/game/ui/MenuTouchWindow.h"
 
 // HangarWindow.h and StatusWindow.h are intentionally NOT included: both leak their
 // converted methods into the `AbyssEngine` namespace as free functions (a decompiler

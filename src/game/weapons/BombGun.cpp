@@ -1,14 +1,14 @@
-#include "gof2/BombGun.h"
+#include "gof2/game/weapons/BombGun.h"
 #include <new>
-#include "gof2/TargetFollowCamera.h"
-#include "gof2/FModSound.h"
-#include "gof2/LevelScript.h"
-#include "gof2/RocketGun.h"
-#include "gof2/Status.h"
-#include "gof2/Transform.h"
-#include "gof2/Explosion.h"
-#include "gof2/Gun.h"
-#include "gof2/AEGeometry.h"
+#include "gof2/game/ship/TargetFollowCamera.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/world/LevelScript.h"
+#include "gof2/game/weapons/RocketGun.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/game/mission/Explosion.h"
+#include "gof2/game/weapons/Gun.h"
+#include "gof2/engine/render/AEGeometry.h"
 
 namespace AbyssEngine { namespace AEMath {
     Vector operator+(const Vector &, const Vector &);

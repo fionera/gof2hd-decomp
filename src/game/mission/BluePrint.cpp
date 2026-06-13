@@ -1,9 +1,9 @@
-#include "gof2/BluePrint.h"
-#include "gof2/Galaxy.h"
-#include "gof2/Item.h"
-#include "gof2/Status.h"
-#include "gof2/Station.h"
-#include "gof2/String.h"
+#include "gof2/game/mission/BluePrint.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/core/String.h"
 
 
 Array<int> *BluePrint_getIngredientList(BluePrint *self);

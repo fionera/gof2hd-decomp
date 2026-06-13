@@ -1,10 +1,10 @@
 #include <new>
 #include <cstdint>
-#include "gof2/Objective.h"
-#include "gof2/Level.h"
-#include "gof2/Route.h"
-#include "gof2/KIPlayer.h"
-#include "gof2/Player.h"
+#include "gof2/game/mission/Objective.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/world/Route.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/ship/Player.h"
 // RadioMessage.h re-declares incompatible mini Level/Player/Objective structs,
 // so it cannot be pulled in here; forward-declare just the predicate we call.
 struct RadioMessage { uint8_t isOver(); };

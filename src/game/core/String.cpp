@@ -1,4 +1,4 @@
-#include "gof2/String.h"
+#include "gof2/game/core/String.h"
 
 // AbyssEngine::String, native re-expression.
 // The canonical type is common.h's `AbyssEngine::String { std::u16string s; }`. Every method

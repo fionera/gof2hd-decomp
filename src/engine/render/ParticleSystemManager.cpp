@@ -1,6 +1,6 @@
-#include "gof2/ParticleSystemManager.h"
-#include "gof2/IParticleSystem.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/engine/render/ParticleSystemManager.h"
+#include "gof2/engine/render/IParticleSystem.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 
 extern "C" void _psm_ArrayReleaseSprites(void *arr);

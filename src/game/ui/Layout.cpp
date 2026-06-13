@@ -1,13 +1,13 @@
-#include "gof2/Layout.h"
-#include "gof2/Ship.h"
-#include "gof2/AERandom.h"
-#include "gof2/ChoiceWindow.h"
-#include "gof2/FModSound.h"
-#include "gof2/Status.h"
-#include "gof2/GameText.h"
-#include "gof2/String.h"
-#include "gof2/TouchButton.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/engine/core/AERandom.h"
+#include "gof2/game/ui/ChoiceWindow.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/core/String.h"
+#include "gof2/game/ui/TouchButton.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 // The PaintCanvas singleton lives in externs.h as a definition; declare it here
 // for the single-arg SetColor sites that target the global canvas.

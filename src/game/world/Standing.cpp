@@ -1,6 +1,6 @@
-#include "gof2/Standing.h"
-#include "gof2/Status.h"
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/Standing.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/world/SolarSystem.h"
 #include <arm_neon.h>
 
 

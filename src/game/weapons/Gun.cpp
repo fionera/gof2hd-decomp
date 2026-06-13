@@ -1,8 +1,8 @@
-#include "gof2/Gun.h"
-#include "gof2/Player.h"
-#include "gof2/Item.h"
-#include "gof2/Sparks.h"
-#include "gof2/AEGeometry.h"
+#include "gof2/game/weapons/Gun.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/engine/render/Sparks.h"
+#include "gof2/engine/render/AEGeometry.h"
 
 // gof2/Player.h (included above) provides the full Player definition, including
 // isActive()/isAsteroid(). The former name collision has been resolved in that header.

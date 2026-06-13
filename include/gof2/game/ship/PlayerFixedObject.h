@@ -1,7 +1,7 @@
 #ifndef GOF2_PLAYERFIXEDOBJECT_H
 #define GOF2_PLAYERFIXEDOBJECT_H
 #include "gof2/common.h"
-#include "gof2/Station.h"   // provides the single shared `struct RetStr`
+#include "gof2/game/world/Station.h"   // provides the single shared `struct RetStr`
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 - PlayerFixedObject class. Android libgof2hdaa.so, armv7 Thumb.
 // Top-level class (no AbyssEngine namespace). Field offsets recovered per-method from the

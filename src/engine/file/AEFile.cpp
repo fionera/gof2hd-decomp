@@ -1,5 +1,5 @@
-#include "gof2/AEFile.h"
-#include "gof2/String.h"
+#include "gof2/engine/file/AEFile.h"
+#include "gof2/game/core/String.h"
 #include <new>   // placement new used by the in-place String construction below
 
 // ---------------------------------------------------------------------------------------------

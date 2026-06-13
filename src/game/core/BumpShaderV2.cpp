@@ -1,6 +1,6 @@
-#include "gof2/BumpShaderV2.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
+#include "gof2/game/core/BumpShaderV2.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
 
 
 extern "C" int BumpShaderV2_ShaderIndex;

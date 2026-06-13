@@ -1,29 +1,29 @@
-#include "gof2/Globals.h"
-#include "gof2/Mesh.h"
-#include "gof2/Ship.h"
-#include "gof2/PaintCanvasClass.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/FModSound.h"
+#include "gof2/game/core/Globals.h"
+#include "gof2/engine/render/Mesh.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/audio/FModSound.h"
 // gof2/FileRead.h intentionally NOT included: its stub `struct Station`/`struct Agent`
 // collide with the canonical Station.h/Agent.h definitions this file relies on. FileRead
 // is only used here as an opaque handle via local extern "C" declarations.
-#include "gof2/Status.h"
-#include "gof2/Agent.h"          // defines the canonical global `struct RetStr` (12-byte String sret)
-#include "gof2/ApplicationManager.h"
-#include "gof2/GameText.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/ship/Agent.h"          // defines the canonical global `struct RetStr` (12-byte String sret)
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
 // Mission.h transitively pulls Station.h, which redefines the identical (token-for-token,
 // 12-byte aligned aggregate) global `struct RetStr` already provided by Agent.h. Rename the
 // duplicate so it doesn't collide. Station::getName()'s return type becomes RetStr,
 // which is layout-identical and only ever discarded here. (Other headers are out of edit scope.)
 #define RetStr RetStr
-#include "gof2/Mission.h"
-#include "gof2/Station.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/world/Station.h"
 #undef RetStr
-#include "gof2/RecordHandler.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/String.h"
+#include "gof2/game/mission/RecordHandler.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/game/core/String.h"
 
 // Status / AEGeometry / String full layouts are not needed here: Globals only takes
 // Status* as an opaque handle and reaches the engine via extern "C" free functions.
@@ -2291,7 +2291,7 @@ done:
 // These were previously called through extern "C" Globals_* shims with no body.
 // =====================================================================================
 
-#include "gof2/AERandom.h"
+#include "gof2/engine/core/AERandom.h"
 
 // ---- sqrt_impl ----
 // Globals::sqrt(float) tail-jumps to the runtime sqrtf with the float in r0. The leaf

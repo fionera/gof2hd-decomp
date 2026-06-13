@@ -1,5 +1,5 @@
-#include "gof2/VertexColorAlphaTextureShader.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/shaders/VertexColorAlphaTextureShader.h"
+#include "gof2/game/core/String.h"
 
 // Engine / Mesh are opaque here; their fields are accessed by raw offset since
 // their real layouts live in other (non-batch) classes.

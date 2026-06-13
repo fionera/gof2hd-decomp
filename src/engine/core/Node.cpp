@@ -1,4 +1,4 @@
-#include "gof2/Node.h"
+#include "gof2/engine/core/Node.h"
 
 
 

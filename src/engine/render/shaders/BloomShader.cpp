@@ -1,7 +1,7 @@
-#include "gof2/BloomShader.h"
+#include "gof2/engine/render/shaders/BloomShader.h"
 #include "gof2/externs.h"
-#include "gof2/FBOContainer.h"
-#include "gof2/Engine.h"
+#include "gof2/engine/render/FBOContainer.h"
+#include "gof2/engine/render/Engine.h"
 
 // cross-class field accessors (Engine/Mesh/FBOContainer are not in this batch; opaque here)
 template <class T> static inline T &ae_field(void *base, unsigned int off) {

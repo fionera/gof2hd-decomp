@@ -1,4 +1,4 @@
-#include "gof2/Item.h"
+#include "gof2/game/mission/Item.h"
 
 
 extern "C" void Array_Item_ctor(ItemArray *array);

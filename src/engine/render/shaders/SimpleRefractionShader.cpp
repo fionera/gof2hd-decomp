@@ -1,5 +1,5 @@
-#include "gof2/SimpleRefractionShader.h"
-#include "gof2/Engine.h"
+#include "gof2/engine/render/shaders/SimpleRefractionShader.h"
+#include "gof2/engine/render/Engine.h"
 
 extern "C" void glUniform2f(int location, float x, float y);
 

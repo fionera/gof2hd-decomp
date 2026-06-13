@@ -1,4 +1,4 @@
-#include "gof2/GenericShader1.h"
+#include "gof2/engine/render/shaders/GenericShader1.h"
 // NOTE: do not include gof2/ShaderBaseStruct.h here — GenericShader1.h already declares
 // the minimal AbyssEngine::ShaderBaseStruct base layout this shader derives from, and the
 // full class in ShaderBaseStruct.h would redefine it.

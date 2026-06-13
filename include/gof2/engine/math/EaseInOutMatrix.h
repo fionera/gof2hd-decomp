@@ -2,7 +2,7 @@
 #define GOF2_EASEINOUTMATRIX_H
 #include "gof2/common.h"
 #include "gof2/math.h"
-#include "gof2/AEMath.h"
+#include "gof2/engine/math/AEMath.h"
 // Galaxy on Fire 2 - AbyssEngine::EaseInOutMatrix.
 // Eased interpolation between two transform matrices. Real named struct
 // (the deterministic field_0xNN names are kept as member names so cross-class

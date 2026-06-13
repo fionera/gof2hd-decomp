@@ -1,7 +1,7 @@
 #ifndef GOF2_AEFILE_H
 #define GOF2_AEFILE_H
 #include "gof2/common.h"
-#include "gof2/String.h"
+#include "gof2/game/core/String.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 namespace AbyssEngine {
 

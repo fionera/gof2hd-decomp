@@ -1,4 +1,4 @@
-#include "gof2/Radio.h"
+#include "gof2/game/core/Radio.h"
 // NOTE: gof2/Layout.h is intentionally NOT included here. Radio only needs the
 // minimal byte-offset Layout view declared in Radio.h, which is not layout-
 // compatible with the full Layout.h definition.

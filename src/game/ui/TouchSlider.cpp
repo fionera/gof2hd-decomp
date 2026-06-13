@@ -1,5 +1,5 @@
-#include "gof2/TouchSlider.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/ui/TouchSlider.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 // ---- setPosition_a232c.cpp ----
 void TouchSlider::setPosition(int param_1, int param_2)

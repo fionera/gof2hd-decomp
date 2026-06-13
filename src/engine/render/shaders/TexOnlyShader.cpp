@@ -1,6 +1,6 @@
-#include "gof2/TexOnlyShader.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/shaders/TexOnlyShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
 
 // Engine / Mesh are opaque here; their fields are accessed by raw offset since
 // their real layouts live in other (non-batch) classes.

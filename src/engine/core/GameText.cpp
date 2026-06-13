@@ -1,5 +1,5 @@
-#include "gof2/GameText.h"
-#include "gof2/AEFile.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/engine/file/AEFile.h"
 
 
 struct Arr { uint32_t size; int *data; uint32_t size2; };

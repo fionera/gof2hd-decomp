@@ -1,4 +1,4 @@
-#include "gof2/TextureAlphaTestShader.h"
+#include "gof2/engine/render/shaders/TextureAlphaTestShader.h"
 
 // AbyssEngine::Mesh is forward-declared only (its full header conflicts with this TU's
 // global typedefs), so read the few Mesh fields used here by typed offset.

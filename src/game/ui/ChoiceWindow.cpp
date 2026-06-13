@@ -1,12 +1,12 @@
-#include "gof2/ChoiceWindow.h"
-#include "gof2/FModSound.h"
-#include "gof2/ScrollTouchWindow.h"
-#include "gof2/Status.h"
-#include "gof2/Achievements.h"
-#include "gof2/GameText.h"
-#include "gof2/Layout.h"
-#include "gof2/TouchButton.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/ui/ChoiceWindow.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/ui/ScrollTouchWindow.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/ui/TouchButton.h"
+#include "gof2/engine/render/PaintCanvas.h"
 // NOTE: the foreign Layout object is read by byte offset via F<int>(layout, ...) -- its
 // header (gof2/Layout.h) is not included here because Layout is not part of this batch and
 // its full layout is not modelled.

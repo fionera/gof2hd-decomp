@@ -1,8 +1,8 @@
-#include "gof2/PlayerStaticFar.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/BoundingVolume.h"
-#include "gof2/Player.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/ship/PlayerStaticFar.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/math/BoundingVolume.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 
 extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);

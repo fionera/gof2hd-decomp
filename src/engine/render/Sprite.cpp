@@ -1,5 +1,5 @@
-#include "gof2/Sprite.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/engine/render/Sprite.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 
 

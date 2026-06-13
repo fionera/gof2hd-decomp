@@ -1,8 +1,8 @@
 #ifndef GOF2_BLURSHADER_H
 #define GOF2_BLURSHADER_H
 #include "gof2/common.h"
-#include "gof2/Mesh.h"
-#include "gof2/Engine.h"
+#include "gof2/engine/render/Mesh.h"
+#include "gof2/engine/render/Engine.h"
 #include <new>
 // Galaxy on Fire 2 -- AbyssEngine::BlurShader (Android libgof2hdaa.so, armv7 Thumb).
 // GLES2 radial/box blur post-process shader. Derives from ShaderBaseStruct: program handle at

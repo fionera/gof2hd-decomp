@@ -1,5 +1,5 @@
-#include "gof2/TextureConference.h"
-#include "gof2/ApplicationManager.h"
+#include "gof2/game/core/TextureConference.h"
+#include "gof2/engine/core/ApplicationManager.h"
 
 extern "C" long long __divdi3_like(int a_lo, int a_hi, int b_lo, int b_hi);
 

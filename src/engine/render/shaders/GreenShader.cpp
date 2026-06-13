@@ -1,5 +1,5 @@
-#include "gof2/GreenShader.h"
-#include "gof2/ShaderBaseStruct.h"
+#include "gof2/engine/render/shaders/GreenShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
 
 // ---- SetInActive_883c0.cpp ----
 namespace AbyssEngine {

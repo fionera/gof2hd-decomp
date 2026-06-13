@@ -1,11 +1,11 @@
-#include "gof2/StarMap.h"
-#include "gof2/Ship.h"
-#include "gof2/AERandom.h"
-#include "gof2/Galaxy.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/ChoiceWindow.h"
-#include "gof2/EaseInOut.h"
-#include "gof2/FModSound.h"
+#include "gof2/game/world/StarMap.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/engine/core/AERandom.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/ui/ChoiceWindow.h"
+#include "gof2/engine/math/EaseInOut.h"
+#include "gof2/engine/audio/FModSound.h"
 // FileRead.h defines stub `struct Item/Station/SolarSystem/Agent/...` that collide with
 // the real class headers pulled in below. StarMap only needs FileRead::loadStationsBinary()
 // (its result is stored into an opaque void* field), so declare a minimal FileRead here
@@ -14,7 +14,7 @@ class FileRead {
 public:
     void *loadStationsBinary();
 };
-#include "gof2/Item.h"
+#include "gof2/game/mission/Item.h"
 // SystemPathFinder.h declares stub `struct SolarSystem`/`struct Status` that collide with
 // the real class headers. StarMap only needs the SystemPathFinder class itself, so declare a
 // minimal version here (its array params use the real SolarSystem, forward-declared below).
@@ -29,20 +29,20 @@ public:
     int getJumpDistance(Array<SolarSystem *> *systems, int from, int to);
     Array<int> *getSystemPath(Array<SolarSystem *> *systems, int from, int to);
 };
-#include "gof2/Transform.h"
-#include "gof2/PaintCanvasClass.h"
-#include "gof2/Achievements.h"
-#include "gof2/ApplicationManager.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/engine/core/ApplicationManager.h"
 // Engine.h re-declares __aeabi_memcpy with `unsigned long n`, conflicting with AEGeometry.h's
 // `uint32_t n`. Rename Engine.h's decl during its include so both can coexist in this TU; the
 // real builtin is resolved at link time and StarMap never calls __aeabi_memcpy directly.
 #define __aeabi_memcpy __aeabi_memcpy_engine_unused
-#include "gof2/Engine.h"
+#include "gof2/engine/render/Engine.h"
 #undef __aeabi_memcpy
-#include "gof2/GameText.h"
-#include "gof2/Layout.h"
-#include "gof2/Mission.h"   // pulls in Station.h -> Agent.h, the canonical RetStr
-#include "gof2/Station.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/mission/Mission.h"   // pulls in Station.h -> Agent.h, the canonical RetStr
+#include "gof2/game/world/Station.h"
 // Agent.h (via Station.h above), SolarSystem.h and TouchButton.h each define an
 // identical, layout-compatible `struct RetStr` at global scope. Including more than
 // one in a single TU is a C++ redefinition. Let Agent.h own the canonical RetStr and
@@ -50,12 +50,12 @@ public:
 // ABI-identical and the only RetStr-returning calls used here (Station::getName(),
 // SolarSystem::getName()) discard their results, so the ABI is unaffected.
 #define RetStr RetStr
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/SolarSystem.h"
 #undef RetStr
-#include "gof2/Status.h"
-#include "gof2/String.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/core/String.h"
 #define RetStr RetStr
-#include "gof2/TouchButton.h"
+#include "gof2/game/ui/TouchButton.h"
 #undef RetStr
 
 

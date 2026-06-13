@@ -1,6 +1,6 @@
-#include "gof2/Status.h"
-#include "gof2/PendingProduct.h"
-#include "gof2/AERandom.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/mission/PendingProduct.h"
+#include "gof2/engine/core/AERandom.h"
 #include "gof2/externs.h"
 // FileRead.h is intentionally NOT included: it defines layout-stub structs
 // (Station, Item, SolarSystem, Agent, Wanted, Ship, ...) that collide with the
@@ -8,31 +8,31 @@
 // is declared locally (see `struct FileRead` further down) plus the extern "C"
 // FileRead_* entry points.
 struct FileRead;
-#include "gof2/Galaxy.h"
-#include "gof2/Item.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Item.h"
 // SystemPathFinder.h is intentionally NOT included: it defines layout-stub
 // structs Status and SolarSystem that collide with the real Status.h/SolarSystem.h.
 // The only SystemPathFinder entry point used here is getSystemPath; it is declared
 // locally below with the decompiler-observed ABI (int* path, opaque void* systems).
-#include "gof2/Achievements.h"
+#include "gof2/game/mission/Achievements.h"
 // Agent.h, Station.h, SolarSystem.h and Wanted.h each define an identical,
 // layout-compatible `struct RetStr` at global scope. Including more than one in a
 // single TU is a C++ redefinition. Let Agent.h own the canonical RetStr and rename
 // the duplicates from the other three headers (Station.h is pulled in transitively by
 // Mission.h). Their renamed RetStr is unused here: the only RetStr-returning call,
 // Station::getName(), discards its result, so the ABI is unaffected.
-#include "gof2/Agent.h"
-#include "gof2/BluePrint.h"
+#include "gof2/game/ship/Agent.h"
+#include "gof2/game/mission/BluePrint.h"
 #define RetStr RetStr
-#include "gof2/Mission.h"   // pulls in Station.h
-#include "gof2/Station.h"
+#include "gof2/game/mission/Mission.h"   // pulls in Station.h
+#include "gof2/game/world/Station.h"
 #undef RetStr
 #define RetStr RetStr
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/SolarSystem.h"
 #undef RetStr
 #define RetStr RetStr
-#include "gof2/Wanted.h"
-#include "gof2/Ship.h"
+#include "gof2/game/world/Wanted.h"
+#include "gof2/game/ship/Ship.h"
 #undef RetStr
 
 

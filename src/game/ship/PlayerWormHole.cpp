@@ -1,13 +1,13 @@
-#include "gof2/PlayerWormHole.h"
+#include "gof2/game/ship/PlayerWormHole.h"
 // engine shim (unmapped)
-#include "gof2/AEGeometry.h"
-#include "gof2/Level.h"
-#include "gof2/PlayerStaticFar.h"
-#include "gof2/Status.h"
-#include "gof2/Transform.h"
-#include "gof2/GameText.h"
-#include "gof2/Hud.h"
-#include "gof2/KIPlayer.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/ship/PlayerStaticFar.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/ui/Hud.h"
+#include "gof2/game/ship/KIPlayer.h"
 // NOTE: gof2/Player.h is not included here because that header currently has an
 // unresolved member/method name collision ('turnedEnemy' is both a data member at
 // 0xe0 and a converted accessor method) that is owned by the Player batch. This TU
@@ -15,9 +15,9 @@
 struct Player {
     void setRadius(int value);
 };
-#include "gof2/PlayerEgo.h"
-#include "gof2/Station.h"
-#include "gof2/String.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/core/String.h"
 
 
 extern "C" void PlayerStaticFar_ctor(PlayerWormHole *self, int playerId, AEGeometry *geometry, float x, float y, float z);

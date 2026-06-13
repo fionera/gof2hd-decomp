@@ -1,5 +1,5 @@
-#include "gof2/BumpShaderRefract.h"
-#include "gof2/Engine.h"
+#include "gof2/game/core/BumpShaderRefract.h"
+#include "gof2/engine/render/Engine.h"
 namespace AbyssEngine {
 
 int BumpShaderRefract::ShaderIndex;

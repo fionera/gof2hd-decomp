@@ -1,5 +1,5 @@
-#include "gof2/MaskShader.h"
-#include "gof2/Engine.h"
+#include "gof2/engine/render/shaders/MaskShader.h"
+#include "gof2/engine/render/Engine.h"
 
 namespace AbyssEngine {
 

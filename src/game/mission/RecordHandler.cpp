@@ -1,32 +1,32 @@
-#include "gof2/RecordHandler.h"
-#include "gof2/PendingProduct.h"
-#include "gof2/Achievements.h"
-#include "gof2/BluePrint.h"
-#include "gof2/GameText.h"
-#include "gof2/Item.h"
-#include "gof2/Standing.h"
-#include "gof2/Ship.h"
-#include "gof2/Galaxy.h"
-#include "gof2/AEFile.h"
-#include "gof2/FModSound.h"
-#include "gof2/Status.h"
+#include "gof2/game/mission/RecordHandler.h"
+#include "gof2/game/mission/PendingProduct.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/game/mission/BluePrint.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/world/Standing.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/engine/file/AEFile.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/mission/Status.h"
 // Station.h is the canonical home of `struct RetStr`; pull it in first so the
 // shared definition wins. SolarSystem.h / Wanted.h / Agent.h each redefine an
 // identical `struct RetStr` unguarded, which would be a redefinition error here.
 // Rename their local copies during inclusion so only Station.h's definition is
 // used (the value is layout-identical and always discarded at the call sites).
-#include "gof2/Station.h"
-#include "gof2/Mission.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/mission/Mission.h"
 #define RetStr RetStr
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/SolarSystem.h"
 #undef RetStr
 #define RetStr RetStr
-#include "gof2/Wanted.h"
+#include "gof2/game/world/Wanted.h"
 #undef RetStr
 #define RetStr RetStr
-#include "gof2/Agent.h"
+#include "gof2/game/ship/Agent.h"
 #undef RetStr
-#include "gof2/String.h"
+#include "gof2/game/core/String.h"
 
 
 extern "C" void *RH_op_new(unsigned int sz);

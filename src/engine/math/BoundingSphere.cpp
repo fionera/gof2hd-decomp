@@ -1,4 +1,4 @@
-#include "gof2/BoundingSphere.h"
+#include "gof2/engine/math/BoundingSphere.h"
 #include <new>
 
 // Helpers to view the inherited center/extents floats as Vectors.

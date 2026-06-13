@@ -1,9 +1,9 @@
-#include "gof2/MTitle.h"
-#include "gof2/FModSound.h"
-#include "gof2/ApplicationManager.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/menu/MTitle.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 
 int GameText_getLanguage();

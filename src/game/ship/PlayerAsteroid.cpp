@@ -1,9 +1,9 @@
-#include "gof2/PlayerAsteroid.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/Level.h"
-#include "gof2/Explosion.h"
-#include "gof2/KIPlayer.h"
-#include "gof2/Player.h"
+#include "gof2/game/ship/PlayerAsteroid.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/mission/Explosion.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/ship/Player.h"
 
 // AEGeometry / Transform are only touched via opaque pointers plus two byte-offset
 // field reads; we forward-declare them and provide minimal accessors below rather

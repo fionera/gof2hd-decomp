@@ -1,5 +1,5 @@
-#include "gof2/ParticleSettingsRef.h"
-#include "gof2/ParticleSettings.h"
+#include "gof2/engine/render/ParticleSettingsRef.h"
+#include "gof2/engine/render/ParticleSettings.h"
 
 
 extern "C" __attribute__((visibility("hidden"))) void **g_PSR_settingsA;

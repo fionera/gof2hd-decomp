@@ -1,14 +1,14 @@
-#include "gof2/ListItemWindow.h"
-#include "gof2/Ship.h"
-#include "gof2/BluePrint.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/Item.h"
-#include "gof2/ScrollTouchWindow.h"
-#include "gof2/GameText.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
-#include "gof2/ListItem.h"
-#include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "gof2/game/ui/ListItemWindow.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/game/mission/BluePrint.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/ui/ScrollTouchWindow.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/ui/ListItem.h"
+#include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
 
 
 extern "C" void _liw_stw_OnTouchBegin(void *stw, int x);

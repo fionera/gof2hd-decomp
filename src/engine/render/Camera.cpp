@@ -1,4 +1,4 @@
-#include "gof2/Camera.h"
+#include "gof2/engine/render/Camera.h"
 
 
 

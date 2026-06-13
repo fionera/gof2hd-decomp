@@ -1,24 +1,24 @@
-#include "gof2/DialogueWindow.h"
-#include "gof2/ChoiceWindow.h"
-#include "gof2/FModSound.h"
-#include "gof2/ScrollTouchWindow.h"
-#include "gof2/Status.h"
-#include "gof2/Agent.h"   // defines the canonical (identical-layout) `struct RetStr`
-#include "gof2/GameText.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/ui/DialogueWindow.h"
+#include "gof2/game/ui/ChoiceWindow.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/ui/ScrollTouchWindow.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/ship/Agent.h"   // defines the canonical (identical-layout) `struct RetStr`
+#include "gof2/engine/core/GameText.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/engine/render/PaintCanvas.h"
 // Mission.h (-> Station.h) and TouchButton.h each re-declare an identical, unguarded
 // `struct RetStr`, which collides with Agent.h's. None of the RetStr-returning accessors
 // are used in this TU, so the duplicate definitions are renamed away here to avoid the
 // redefinition error without touching those (other-batch) headers.
 #define RetStr RetStr
-#include "gof2/Mission.h"
+#include "gof2/game/mission/Mission.h"
 #undef RetStr
-#include "gof2/Standing.h"
-#include "gof2/String.h"
+#include "gof2/game/world/Standing.h"
+#include "gof2/game/core/String.h"
 #define RetStr RetStr
-#include "gof2/TouchButton.h"
+#include "gof2/game/ui/TouchButton.h"
 #undef RetStr
 // Layout's drawMask/drawBox are used via the local extern "C" prototypes below;
 // the full Layout.h is not required here.

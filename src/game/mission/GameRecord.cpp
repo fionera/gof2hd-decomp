@@ -1,13 +1,13 @@
-#include "gof2/GameRecord.h"
-#include "gof2/Galaxy.h"
-#include "gof2/Item.h"
-#include "gof2/Status.h"
-#include "gof2/Achievements.h"
-#include "gof2/BluePrint.h"
-#include "gof2/Station.h"
-#include "gof2/Mission.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/Ship.h"
+#include "gof2/game/mission/GameRecord.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/game/mission/BluePrint.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/game/ship/Ship.h"
 
 
 

@@ -1,5 +1,5 @@
-#include "gof2/Waypoint.h"
-#include "gof2/Player.h"
+#include "gof2/game/world/Waypoint.h"
+#include "gof2/game/ship/Player.h"
 
 
 extern "C" void *KIPlayer_dtor(KIPlayer *self);

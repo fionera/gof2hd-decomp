@@ -1,10 +1,10 @@
-#include "gof2/HangarList.h"
-#include "gof2/BluePrint.h"
-#include "gof2/Item.h"
-#include "gof2/Status.h"
-#include "gof2/GameText.h"
-#include "gof2/ListItem.h"
-#include "gof2/Ship.h"
+#include "gof2/game/core/HangarList.h"
+#include "gof2/game/mission/BluePrint.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/ui/ListItem.h"
+#include "gof2/game/ship/Ship.h"
 
 
 

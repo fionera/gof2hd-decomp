@@ -1,4 +1,4 @@
-#include "gof2/SimpleShader.h"
+#include "gof2/engine/render/shaders/SimpleShader.h"
 
 namespace AbyssEngine {
 

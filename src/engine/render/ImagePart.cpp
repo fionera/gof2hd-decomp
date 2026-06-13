@@ -1,5 +1,5 @@
-#include "gof2/ImagePart.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/engine/render/ImagePart.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 using AbyssEngine::PaintCanvas;
 

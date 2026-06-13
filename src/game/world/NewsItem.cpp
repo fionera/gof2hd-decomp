@@ -1,4 +1,4 @@
-#include "gof2/NewsItem.h"
+#include "gof2/game/world/NewsItem.h"
 
 
 // ---- clone_e09fa.cpp ----

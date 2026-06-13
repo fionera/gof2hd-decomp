@@ -1,11 +1,11 @@
-#include "gof2/Station.h"
-#include "gof2/Ship.h"
-#include "gof2/Galaxy.h"
-#include "gof2/Mission.h"
-#include "gof2/Item.h"
-#include "gof2/Status.h"
-#include "gof2/Agent.h"
-#include "gof2/String.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/ship/Agent.h"
+#include "gof2/game/core/String.h"
 
 
 extern "C" void Array_Item_ctor(void *arr);

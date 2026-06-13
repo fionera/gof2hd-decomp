@@ -1,5 +1,5 @@
-#include "gof2/ResourceTexture.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/ResourceTexture.h"
+#include "gof2/game/core/String.h"
 
 
 

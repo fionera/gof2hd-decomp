@@ -1,5 +1,5 @@
-#include "gof2/MenuTouchWindow.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/ui/MenuTouchWindow.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 extern void *g_PaintCanvas;
 

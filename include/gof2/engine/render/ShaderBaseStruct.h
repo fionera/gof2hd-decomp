@@ -1,7 +1,7 @@
 #ifndef GOF2_SHADERBASESTRUCT_H
 #define GOF2_SHADERBASESTRUCT_H
 #include "gof2/common.h"
-#include "gof2/String.h"
+#include "gof2/game/core/String.h"
 
 // AbyssEngine::ShaderBaseStruct — the GLSL shader base that every concrete shader
 // (BloomShader, BumpShader*, GenericShader*, TextureShader, ...) derives from. It owns the

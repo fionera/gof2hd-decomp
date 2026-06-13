@@ -1,19 +1,19 @@
-#include "gof2/StarSystem.h"
-#include "gof2/AERandom.h"
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/StarSystem.h"
+#include "gof2/engine/core/AERandom.h"
+#include "gof2/game/world/SolarSystem.h"
 // AEGeometry.h declares __aeabi_memcpy with a uint32_t length, which clashes with
 // Engine.h's unsigned-long version. Rename the loose decl away while parsing AEGeometry.h
 // so only one canonical prototype survives.
 #define __aeabi_memcpy __aeabi_memcpy_aegeom_unused
-#include "gof2/AEGeometry.h"
+#include "gof2/engine/render/AEGeometry.h"
 #undef __aeabi_memcpy
-#include "gof2/FileRead.h"
-#include "gof2/LensFlare.h"
-#include "gof2/Status.h"
-#include "gof2/Transform.h"
-#include "gof2/ApplicationManager.h"
-#include "gof2/Engine.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/engine/file/FileRead.h"
+#include "gof2/engine/render/LensFlare.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 // Free AEMath operators used below (declared in AEMath.cpp; not pulling in AEMath.h
 // here because it redefines BSphere/Transform which clash in this TU).

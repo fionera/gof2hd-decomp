@@ -1,5 +1,5 @@
-#include "gof2/SpriteGun.h"
-#include "gof2/Gun.h"
+#include "gof2/game/weapons/SpriteGun.h"
+#include "gof2/game/weapons/Gun.h"
 
 
 extern "C" void SpriteGun_Gun_update(void *base);

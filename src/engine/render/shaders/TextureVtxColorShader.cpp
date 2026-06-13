@@ -1,5 +1,5 @@
-#include "gof2/TextureVtxColorShader.h"
-#include "gof2/Mesh.h"
+#include "gof2/engine/render/shaders/TextureVtxColorShader.h"
+#include "gof2/engine/render/Mesh.h"
 
 namespace AbyssEngine {
 

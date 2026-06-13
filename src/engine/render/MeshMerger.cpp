@@ -1,7 +1,7 @@
-#include "gof2/MeshMerger.h"
-#include "gof2/Mesh.h"
-#include "gof2/Vector.h"
-#include "gof2/AEMath.h"
+#include "gof2/engine/render/MeshMerger.h"
+#include "gof2/engine/render/Mesh.h"
+#include "gof2/game/core/Vector.h"
+#include "gof2/engine/math/AEMath.h"
 
 // MeshMerger.h forward-declares AbyssEngine::PaintCanvas as a *native* class, which
 // conflicts with the `using ::PaintCanvas` re-export inside PaintCanvasClass.h, so we

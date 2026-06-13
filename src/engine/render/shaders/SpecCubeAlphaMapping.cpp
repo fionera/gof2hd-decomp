@@ -1,6 +1,6 @@
-#include "gof2/SpecCubeAlphaMapping.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/shaders/SpecCubeAlphaMapping.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
 
 
 // ---- Init_87a10.cpp ----

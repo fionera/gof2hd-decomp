@@ -1,7 +1,7 @@
-#include "gof2/TextureLightShader.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
-#include "gof2/Mesh.h"
+#include "gof2/engine/render/shaders/TextureLightShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/Mesh.h"
 
 
 

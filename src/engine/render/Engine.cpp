@@ -1,15 +1,15 @@
 #include <new>
 #include "gof2/externs.h"
-#include "gof2/FBOContainer.h"
-#include "gof2/Engine.h"
-#include "gof2/ApplicationManager.h"
-#include "gof2/AEFile.h"
-#include "gof2/String.h"
-#include "gof2/Mesh.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/engine/render/FBOContainer.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/engine/file/AEFile.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/Mesh.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 // canonical void* declaration in ApplicationManager.h (included above). Neutralize the
 // duplicate declaration just for this header; the void* symbol is the one actually used.
-#include "gof2/ShaderBaseStruct.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
 #include <arm_neon.h>
 
 // ShaderBaseStruct lives in AbyssEngine (complete type with field_0x4).

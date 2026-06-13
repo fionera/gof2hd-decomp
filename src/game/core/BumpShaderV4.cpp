@@ -1,4 +1,4 @@
-#include "gof2/BumpShaderV4.h"
+#include "gof2/game/core/BumpShaderV4.h"
 
 
 

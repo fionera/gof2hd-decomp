@@ -1,4 +1,4 @@
-#include "gof2/ListItem.h"
+#include "gof2/game/ui/ListItem.h"
 // gof2/PendingProduct.h is intentionally NOT included (it does not compile standalone); ListItem.h
 // provides a minimal PendingProduct view with the one field this TU reads.
 

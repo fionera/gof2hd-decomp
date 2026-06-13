@@ -1,6 +1,6 @@
-#include "gof2/GenericShader.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/shaders/GenericShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
 
 // Registry slot the constructor links itself into (engine-global, resolved at link).
 extern "C" void *GenericShader_registerSrc;

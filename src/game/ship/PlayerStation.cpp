@@ -1,12 +1,12 @@
-#include "gof2/PlayerStation.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/BoundingVolume.h"
-#include "gof2/FileRead.h"
-#include "gof2/Status.h"
-#include "gof2/Transform.h"
-#include "gof2/Player.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/ship/PlayerStation.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/math/BoundingVolume.h"
+#include "gof2/engine/file/FileRead.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 // Transform / AEGeometry are only used as opaque pointers and via byte-offset reads
 // on ambiguous locals (helper F below); avoid pulling in the conflicting Transform.h.

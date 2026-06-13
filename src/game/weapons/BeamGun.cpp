@@ -1,9 +1,9 @@
-#include "gof2/BeamGun.h"
-#include "gof2/Level.h"
-#include "gof2/Transform.h"
-#include "gof2/Gun.h"
-#include "gof2/PlayerEgo.h"
-#include "gof2/AEGeometry.h"
+#include "gof2/game/weapons/BeamGun.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/game/weapons/Gun.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/engine/render/AEGeometry.h"
 #include <cstring>
 
 namespace AbyssEngine { namespace AEMath {

@@ -1,4 +1,4 @@
-#include "gof2/AMeshMerger.h"
+#include "gof2/engine/render/AMeshMerger.h"
 
 // ---- render_1811e4.cpp ----
 // AMeshMerger::render()

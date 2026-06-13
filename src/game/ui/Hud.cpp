@@ -1,34 +1,34 @@
-#include "gof2/Hud.h"
-#include "gof2/Mission.h"
-#include "gof2/Item.h"
-#include "gof2/Sprite.h"
-#include "gof2/GameText.h"
-#include "gof2/Globals.h"
-#include "gof2/PlayerEgo.h"
-#include "gof2/SolarSystem.h"   // first definer of RetStr in this TU
+#include "gof2/game/ui/Hud.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/engine/render/Sprite.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/core/Globals.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/world/SolarSystem.h"   // first definer of RetStr in this TU
 // Station.h and TouchButton.h re-define the same per-class helper symbols
 // (RetStr/B/I/P) without include guards. Rename them per-header so the TU has
 // one canonical RetStr/B/I/P (from the headers above) and no redefinitions.
 #define RetStr RetStr
-#include "gof2/Station.h"
+#include "gof2/game/world/Station.h"
 #undef RetStr
-#include "gof2/String.h"
+#include "gof2/game/core/String.h"
 #define RetStr RetStr
 #define B B_TouchButton
 #define I I_TouchButton
 #define P P_TouchButton
-#include "gof2/TouchButton.h"
+#include "gof2/game/ui/TouchButton.h"
 #undef RetStr
 #undef B
 #undef I
 #undef P
-#include "gof2/ListItem.h"
-#include "gof2/Status.h"
-#include "gof2/Ship.h"
-#include "gof2/Level.h"
-#include "gof2/Player.h"
-#include "gof2/PaintCanvas.h"
-#include "gof2/Layout.h"
+#include "gof2/game/ui/ListItem.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/engine/render/PaintCanvas.h"
+#include "gof2/game/ui/Layout.h"
 
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls are
 // method calls on this global instance.

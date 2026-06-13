@@ -1,5 +1,5 @@
-#include "gof2/MarqueeImage.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/engine/render/MarqueeImage.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 using AbyssEngine::PaintCanvas;
 

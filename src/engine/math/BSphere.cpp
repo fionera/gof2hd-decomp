@@ -1,4 +1,4 @@
-#include "gof2/BSphere.h"
+#include "gof2/engine/math/BSphere.h"
 #include "gof2/externs.h"
 
 

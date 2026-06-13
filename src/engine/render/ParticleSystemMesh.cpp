@@ -1,4 +1,4 @@
-#include "gof2/ParticleSystemMesh.h"
+#include "gof2/engine/render/ParticleSystemMesh.h"
 #include "gof2/externs.h"
 
 

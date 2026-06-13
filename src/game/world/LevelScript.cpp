@@ -1,13 +1,13 @@
 // Offset accessors come from a single source each within this TU:
 //   I() from Explosion.h, B() from PlayerEgo.h, P() from LevelScript.h.
-#include "gof2/LevelScript.h"   // defines P()
-#include "gof2/Explosion.h"     // defines I()
-#include "gof2/KIPlayer.h"
-#include "gof2/Hud.h"
-#include "gof2/StarSystem.h"
-#include "gof2/TargetFollowCamera.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/Level.h"
+#include "gof2/game/world/LevelScript.h"   // defines P()
+#include "gof2/game/mission/Explosion.h"     // defines I()
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/ui/Hud.h"
+#include "gof2/game/world/StarSystem.h"
+#include "gof2/game/ship/TargetFollowCamera.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/world/Level.h"
 // RadioMessage.h is intentionally NOT included here: it defines stub structs
 // (PlayerEgo, Route, Level, Player, LevelScript, ...) that collide with the real
 // class headers used by this TU. This TU only needs RadioMessage::trigger/finish,
@@ -17,16 +17,16 @@ public:
     void finish();
     void trigger();
 };
-#include "gof2/Status.h"
-#include "gof2/Player.h"
-#include "gof2/PlayerEgo.h"     // defines B()
-#include "gof2/PlayerFighter.h"
-#include "gof2/Route.h"
-#include "gof2/SolarSystem.h"   // first to define struct RetStr
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/ship/PlayerEgo.h"     // defines B()
+#include "gof2/game/ship/PlayerFighter.h"
+#include "gof2/game/world/Route.h"
+#include "gof2/game/world/SolarSystem.h"   // first to define struct RetStr
 // Station.h also defines an identical struct RetStr; rename it inside that
 // header so it doesn't collide with SolarSystem.h's copy within this TU.
 #define RetStr RetStr
-#include "gof2/Station.h"
+#include "gof2/game/world/Station.h"
 #undef RetStr
 
 // A by-value 3-float vector passed to the camera helpers (a math Vector laid out

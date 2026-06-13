@@ -1,6 +1,6 @@
-#include "gof2/ImageFactory.h"
-#include "gof2/ImagePart.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/engine/render/ImagePart.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 
 extern "C" void *Sprite_dtor(void *p);

@@ -1,4 +1,4 @@
-#include "gof2/Vector.h"
+#include "gof2/game/core/Vector.h"
 
 
 

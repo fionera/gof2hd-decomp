@@ -1,5 +1,5 @@
-#include "gof2/Agent.h"
-#include "gof2/String.h"
+#include "gof2/game/ship/Agent.h"
+#include "gof2/game/core/String.h"
 
 using AbyssEngine::String12;
 

@@ -1,8 +1,8 @@
-#include "gof2/FBOContainer.h"
-#include "gof2/BlurShader.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/Engine.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/FBOContainer.h"
+#include "gof2/engine/render/shaders/BlurShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/game/core/String.h"
 // gof2/Mesh.h is pulled in by gof2/BlurShader.h. gof2/Engine.h is intentionally NOT included
 // (it does not compile standalone); BlurShader.h provides a minimal Engine view instead.
 

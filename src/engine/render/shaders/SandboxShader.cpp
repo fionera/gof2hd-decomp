@@ -1,5 +1,5 @@
-#include "gof2/SandboxShader.h"
-#include "gof2/Mesh.h"
+#include "gof2/engine/render/shaders/SandboxShader.h"
+#include "gof2/engine/render/Mesh.h"
 
 
 // ---- _SandboxShader_91ad0.cpp ----

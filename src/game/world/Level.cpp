@@ -1,22 +1,22 @@
-#include "gof2/Level.h"
-#include "gof2/Mission.h"
-#include "gof2/Ship.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/ship/Ship.h"
 extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engine shim (setDirection up-vec unrecoverable)
 #include "gof2/externs.h"
-#include "gof2/PaintCanvasClass.h"
-#include "gof2/AEGeometry.h"
+#include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/engine/render/AEGeometry.h"
 // NOTE: gof2/ParticleSystemManager.h and gof2/Status.h are intentionally NOT included.
 // Level reaches those classes only through a handful of accessor methods and opaque
 // pointers, and uses local minimal interface structs (below) whose signatures match the
 // recovered code (e.g. Status::getSystem() -> SolarSystem*, PSM static-style helpers).
 // The full headers model different (32-bit-layout) signatures and would conflict.
-#include "gof2/Achievements.h"
-#include "gof2/Hud.h"
-#include "gof2/Player.h"
-#include "gof2/PlayerEgo.h"
-#include "gof2/Gun.h"
-#include "gof2/PlayerTurret.h"
-#include "gof2/Waypoint.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/game/ui/Hud.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/weapons/Gun.h"
+#include "gof2/game/ship/PlayerTurret.h"
+#include "gof2/game/world/Waypoint.h"
 
 // Several related game classes (Status, KIPlayer, ...) are defined in their own
 // headers, but those headers assert the 32-bit ARM struct layout

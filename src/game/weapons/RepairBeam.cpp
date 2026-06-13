@@ -1,9 +1,9 @@
-#include "gof2/RepairBeam.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/PaintCanvasClass.h"
-#include "gof2/Ship.h"
-#include "gof2/Item.h"
-#include "gof2/Status.h"
+#include "gof2/game/weapons/RepairBeam.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/mission/Status.h"
 
 #include <cstdlib>
 #include <cstring>

@@ -1,7 +1,7 @@
-#include "gof2/SentryGun.h"
-#include "gof2/KIPlayer.h"
-#include "gof2/Player.h"
-#include "gof2/Gun.h"
+#include "gof2/game/weapons/SentryGun.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/weapons/Gun.h"
 
 
 

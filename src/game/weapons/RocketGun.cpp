@@ -1,11 +1,11 @@
-#include "gof2/RocketGun.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/Level.h"
-#include "gof2/ParticleSystemManager.h"
-#include "gof2/PlayerEgo.h"
-#include "gof2/Gun.h"
-#include "gof2/Player.h"
-#include "gof2/Radar.h"
+#include "gof2/game/weapons/RocketGun.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/engine/render/ParticleSystemManager.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/weapons/Gun.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/weapons/Radar.h"
 
 // Radar.h defines a competing AbyssEngine::PaintCanvas stub, so the real
 // PaintCanvas headers cannot be co-included here. Complete the global

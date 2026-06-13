@@ -1,6 +1,6 @@
-#include "gof2/Mesh.h"
-#include "gof2/AEMath.h"
-#include "gof2/AEFile.h"
+#include "gof2/engine/render/Mesh.h"
+#include "gof2/engine/math/AEMath.h"
+#include "gof2/engine/file/AEFile.h"
 #include <new>
 
 // Minimal view of the (top-level) PaintCanvas, declaring only the three mesh-table

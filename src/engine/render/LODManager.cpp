@@ -1,5 +1,5 @@
-#include "gof2/LODManager.h"
-#include "gof2/AEGeometry.h"
+#include "gof2/engine/render/LODManager.h"
+#include "gof2/engine/render/AEGeometry.h"
 
 uint32_t CameraGetCurrent(void *canvas);
 Matrix *CameraGetLocal(void *canvas, uint32_t index);

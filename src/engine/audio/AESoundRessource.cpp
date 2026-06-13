@@ -1,4 +1,4 @@
-#include "gof2/AESoundRessource.h"
+#include "gof2/engine/audio/AESoundRessource.h"
 
 
 extern "C" void ArraySetLength_AESoundInterface(int size, void *array);

@@ -2,7 +2,7 @@
 #define GOF2_LODMESHMERGER_H
 #include "gof2/common.h"
 #include "gof2/math.h"
-#include "gof2/Mesh.h"
+#include "gof2/engine/render/Mesh.h"
 // Galaxy on Fire 2 -- LodMeshMerger class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class. Its API uses AbyssEngine::{Mesh, PaintCanvas, AEMath::Matrix}.
 //

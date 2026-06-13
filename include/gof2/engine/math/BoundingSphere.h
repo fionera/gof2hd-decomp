@@ -2,7 +2,7 @@
 #define GOF2_BOUNDINGSPHERE_H
 #include "gof2/common.h"
 #include "gof2/math.h"
-#include "gof2/BoundingVolume.h"
+#include "gof2/engine/math/BoundingVolume.h"
 
 using Vector = AbyssEngine::AEMath::Vector;
 

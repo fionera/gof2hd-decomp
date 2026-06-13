@@ -1,10 +1,10 @@
-#include "gof2/Generator.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Ship.h"
-#include "gof2/AERandom.h"
-#include "gof2/Galaxy.h"
-#include "gof2/Item.h"
-#include "gof2/Achievements.h"
+#include "gof2/game/mission/Generator.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/engine/core/AERandom.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/mission/Achievements.h"
 // Several headers (Agent/SolarSystem/Station/Wanted) each define an identical
 // global `struct RetStr` (the 12-byte by-value String aggregate) unconditionally.
 // Station.h provides the canonical one (Mission.h delegates to it); rename the
@@ -12,19 +12,19 @@
 // collide. Generator never names RetStr directly and discards these getters'
 // return values, so the distinct tags are harmless.
 #define RetStr RetStr
-#include "gof2/Agent.h"
+#include "gof2/game/ship/Agent.h"
 #undef RetStr
-#include "gof2/Globals.h"
-#include "gof2/Station.h"
-#include "gof2/Mission.h"
+#include "gof2/game/core/Globals.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/mission/Mission.h"
 #define RetStr RetStr
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/SolarSystem.h"
 #undef RetStr
-#include "gof2/Standing.h"
+#include "gof2/game/world/Standing.h"
 #define RetStr RetStr
-#include "gof2/Wanted.h"
+#include "gof2/game/world/Wanted.h"
 #undef RetStr
-#include "gof2/Status.h"
+#include "gof2/game/mission/Status.h"
 
 
 

@@ -1,4 +1,4 @@
-#include "gof2/FBOContainer.h"
+#include "gof2/engine/render/FBOContainer.h"
 
 // FBOContainer only needs the Engine framebuffer-binding field at +0x40c.
 // The full Engine definition is owned by another batch (Engine.h); to keep this

@@ -1,35 +1,35 @@
-#include "gof2/WantedWindow.h"
-#include "gof2/Galaxy.h"
-#include "gof2/ScrollTouchWindow.h"
-#include "gof2/StarMap.h"
-#include "gof2/Status.h"
-#include "gof2/ApplicationManager.h"
-#include "gof2/GameText.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
-#include "gof2/SolarSystem.h"   // defines the canonical global `struct RetStr` (12-byte String sret)
+#include "gof2/game/ui/WantedWindow.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/ui/ScrollTouchWindow.h"
+#include "gof2/game/world/StarMap.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/world/SolarSystem.h"   // defines the canonical global `struct RetStr` (12-byte String sret)
 // Station.h, TouchButton.h and Wanted.h each redefine the identical (token-for-token,
 // 12-byte aligned aggregate) global `struct RetStr` already provided by SolarSystem.h.
 // Rename their duplicate definitions so they don't collide; the only RetStr-returning
 // methods used here (getName/getText) have their results discarded, so the distinct-but-
 // identical return type is harmless. (Those headers are out of this batch's edit scope.)
 #define RetStr RetStr
-#include "gof2/Station.h"
+#include "gof2/game/world/Station.h"
 #undef RetStr
 #define RetStr RetStr
 #define B B_TouchButton
 #define I I_TouchButton
 #define P P_TouchButton
-#include "gof2/TouchButton.h"
+#include "gof2/game/ui/TouchButton.h"
 #undef RetStr
 #undef B
 #undef I
 #undef P
 #define RetStr RetStr
-#include "gof2/Wanted.h"
+#include "gof2/game/world/Wanted.h"
 #undef RetStr
-#include "gof2/String.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 
 extern "C" void WantedWindow_update_tail(void *starMap, int dt);

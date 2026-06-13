@@ -1,6 +1,6 @@
-#include "gof2/ScrollTouchBox.h"
-#include "gof2/String.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/ui/ScrollTouchBox.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 
 extern "C" void ArrayReleaseClasses_StringPtr(void *self);

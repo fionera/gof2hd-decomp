@@ -1,4 +1,4 @@
-#include "gof2/SimpleMeshMerger.h"
+#include "gof2/engine/render/SimpleMeshMerger.h"
 
 
 extern "C" void SMM_Array_Mesh_ctor(void *arr);

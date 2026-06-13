@@ -1,12 +1,12 @@
-#include "gof2/PlayerJumpgate.h"
-#include "gof2/PlayerStaticFar.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/Status.h"
-#include "gof2/Transform.h"
-#include "gof2/KIPlayer.h"
-#include "gof2/BoundingSphere.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/ship/PlayerJumpgate.h"
+#include "gof2/game/ship/PlayerStaticFar.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/engine/math/BoundingSphere.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 #include <new>
 
 // Minimal local layouts for engine types accessed through opaque handles in this

@@ -1,4 +1,4 @@
-#include "gof2/ResourceMesh.h"
+#include "gof2/engine/render/ResourceMesh.h"
 
 
 

@@ -1,5 +1,5 @@
-#include "gof2/PendingProduct.h"
-#include "gof2/BluePrint.h"
+#include "gof2/game/mission/PendingProduct.h"
+#include "gof2/game/mission/BluePrint.h"
 
 
 

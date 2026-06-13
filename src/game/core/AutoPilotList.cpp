@@ -1,12 +1,12 @@
-#include "gof2/AutoPilotList.h"   // also pulls in gof2/SolarSystem.h (RetStr + SolarSystem)
-#include "gof2/GameText.h"
-#include "gof2/Layout.h"
-#include "gof2/Level.h"
-#include "gof2/Status.h"
-#include "gof2/PlayerEgo.h"
-#include "gof2/Route.h"
-#include "gof2/String.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/core/AutoPilotList.h"   // also pulls in gof2/SolarSystem.h (RetStr + SolarSystem)
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/world/Route.h"
+#include "gof2/game/core/String.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 // Station is declared minimally here rather than via gof2/Station.h: that header
 // defines RetStr unconditionally, which would clash with the identical definition

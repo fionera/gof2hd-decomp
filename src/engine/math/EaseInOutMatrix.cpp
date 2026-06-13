@@ -1,4 +1,4 @@
-#include "gof2/EaseInOutMatrix.h"
+#include "gof2/engine/math/EaseInOutMatrix.h"
 #include <arm_neon.h>
 #include <new>
 

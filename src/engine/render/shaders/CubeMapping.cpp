@@ -1,6 +1,6 @@
-#include "gof2/CubeMapping.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/shaders/CubeMapping.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
 
 // ---- Init_907d8.cpp ----
 namespace AbyssEngine {

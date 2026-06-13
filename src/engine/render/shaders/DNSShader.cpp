@@ -1,4 +1,4 @@
-#include "gof2/DNSShader.h"
+#include "gof2/engine/render/shaders/DNSShader.h"
 
 
 extern "C" float DNSShader_g0;

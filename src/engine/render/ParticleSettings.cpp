@@ -1,5 +1,5 @@
-#include "gof2/ParticleSettings.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/ParticleSettings.h"
+#include "gof2/game/core/String.h"
 #include <arm_neon.h>
 
 

@@ -1,5 +1,5 @@
-#include "gof2/BoundingAAB.h"
-#include "gof2/BoundingVolume.h"
+#include "gof2/engine/math/BoundingAAB.h"
+#include "gof2/engine/math/BoundingVolume.h"
 
 
 extern "C" float external_fabsf(float value);

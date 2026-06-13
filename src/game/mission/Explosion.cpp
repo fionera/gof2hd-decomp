@@ -1,9 +1,9 @@
-#include "gof2/Explosion.h"
-#include "gof2/TargetFollowCamera.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/FModSound.h"
-#include "gof2/Transform.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/mission/Explosion.h"
+#include "gof2/game/ship/TargetFollowCamera.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 namespace AbyssEngine { namespace AEMath {
     Vector operator-(const Vector &, const Vector &);

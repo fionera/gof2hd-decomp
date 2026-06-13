@@ -1,9 +1,9 @@
-#include "gof2/Mission.h"
-#include "gof2/Galaxy.h"
-#include "gof2/Status.h"
-#include "gof2/GameText.h"
-#include "gof2/Station.h"
-#include "gof2/String.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/core/String.h"
 
 struct Systems;
 

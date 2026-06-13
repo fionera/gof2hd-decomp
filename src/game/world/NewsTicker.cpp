@@ -1,10 +1,10 @@
-#include "gof2/NewsTicker.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/NewsItem.h"
-#include "gof2/Status.h"
-#include "gof2/GameText.h"
-#include "gof2/String.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/world/NewsTicker.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/game/world/NewsItem.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 // Minimal view of NewsItem fields read here (NewsItem.h is opaque; not in this batch).
 // Layout confirmed from Ghidra NewsTicker::NewsTicker @ 0x16c468.

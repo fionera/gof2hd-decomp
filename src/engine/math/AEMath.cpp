@@ -1,4 +1,4 @@
-#include "gof2/AEMath.h"
+#include "gof2/engine/math/AEMath.h"
 #include "gof2/externs.h"
 #include <arm_neon.h>
 

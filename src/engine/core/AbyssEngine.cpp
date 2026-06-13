@@ -1,12 +1,12 @@
-#include "gof2/AbyssEngine.h"
+#include "gof2/engine/core/AbyssEngine.h"
 #include "gof2/externs.h"
-#include "gof2/AEFile.h"
-#include "gof2/FileInterfaceAndroid.h"
-#include "gof2/AEMath.h"
-#include "gof2/String.h"
-#include "gof2/Mesh.h"
-#include "gof2/Engine.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/engine/file/AEFile.h"
+#include "gof2/engine/file/FileInterfaceAndroid.h"
+#include "gof2/engine/math/AEMath.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/Mesh.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 #include <cstdlib>   // realloc, for the engine raw-array helpers below
 
 // AbyssEngine::FBOContainer is defined fully in gof2/FBOContainer.h, but that header

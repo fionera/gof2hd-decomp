@@ -1,74 +1,74 @@
 #include <new>
-#include "gof2/MGame.h"
-#include "gof2/Globals.h"
-#include "gof2/PlayerFighter.h"
-#include "gof2/Ship.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/TargetFollowCamera.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/ChoiceWindow.h"
-#include "gof2/FModSound.h"
-#include "gof2/Galaxy.h"
-#include "gof2/Item.h"
+#include "gof2/game/menu/MGame.h"
+#include "gof2/game/core/Globals.h"
+#include "gof2/game/ship/PlayerFighter.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/game/ship/TargetFollowCamera.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/ui/ChoiceWindow.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Item.h"
 // Galaxy.h (above) already provides the canonical file-local B()/I()/P() offset helpers.
 // Sibling headers below redefine identical static-inline B/I/P with no shared guard, which
 // is a redefinition error within one TU. Rename their copies to throwaway names on include
 // so only Galaxy.h's definitions remain for this TU's call sites.
 #define P P_levelscript
-#include "gof2/LevelScript.h"
+#include "gof2/game/world/LevelScript.h"
 #undef P
-#include "gof2/MenuTouchWindow.h"
-#include "gof2/Objective.h"
-#include "gof2/PlayerJumpgate.h"
+#include "gof2/game/ui/MenuTouchWindow.h"
+#include "gof2/game/mission/Objective.h"
+#include "gof2/game/ship/PlayerJumpgate.h"
 // NOTE: gof2/Radar.h and gof2/Radio.h are intentionally NOT included. Both define their
 // own minimal duplicate views of Status/KIPlayer/Layout/GameText/ImageFactory/Globals/
 // FModSound/Agent for their own standalone TUs; those collide with the full headers this
 // TU needs (Status.h, KIPlayer.h, Layout.h, ...). MGame only touches Radar/Radio through a
 // couple of methods and opaque pointers, declared minimally below.
-#include "gof2/StarMap.h"
-#include "gof2/Transform.h"
+#include "gof2/game/world/StarMap.h"
+#include "gof2/engine/math/Transform.h"
 // RecordHandler.h, Hud.h and PlayerEgo.h each define the file-local offset
 // helpers B()/I()/P(). RecordHandler.h gates its trio behind GOF2_BIP_HELPERS;
 // pre-define it so this TU takes B from PlayerEgo.h and I/P from Hud.h (one each).
 #define GOF2_BIP_HELPERS
-#include "gof2/Achievements.h"
-#include "gof2/ApplicationManager.h"
-#include "gof2/DialogueWindow.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/game/ui/DialogueWindow.h"
 // Engine.h and GameRecord.h each redeclare __aeabi_memcpy with a signature that conflicts
 // with AEGeometry.h's (uint32_t vs unsigned long size, void vs void* return). None is called
 // here, so rename their decls away on include so AEGeometry.h's canonical decl stands.
 #define __aeabi_memcpy __aeabi_memcpy_engine
-#include "gof2/Engine.h"
+#include "gof2/engine/render/Engine.h"
 #undef __aeabi_memcpy
 #define __aeabi_memcpy __aeabi_memcpy_gamerecord
-#include "gof2/GameRecord.h"
+#include "gof2/game/mission/GameRecord.h"
 #undef __aeabi_memcpy
-#include "gof2/GameText.h"
+#include "gof2/engine/core/GameText.h"
 #define I I_hud
 #define P P_hud
-#include "gof2/Hud.h"
+#include "gof2/game/ui/Hud.h"
 #undef I
 #undef P
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
-#include "gof2/Level.h"
-#include "gof2/Mission.h"
-#include "gof2/Player.h"
-#include "gof2/RecordHandler.h"
-#include "gof2/Route.h"
-#include "gof2/StarSystem.h"
-#include "gof2/Station.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/mission/RecordHandler.h"
+#include "gof2/game/world/Route.h"
+#include "gof2/game/world/StarSystem.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/game/core/String.h"
 // NOTE: gof2/Engine.h is intentionally NOT included — it does not compile
 // standalone (it is owned by another batch) and MGame only uses Engine as an
 // opaque pointer type, which is already forward-declared via fwd.h (common.h).
-#include "gof2/KIPlayer.h"
+#include "gof2/game/ship/KIPlayer.h"
 #define B B_playerego
-#include "gof2/PlayerEgo.h"
+#include "gof2/game/ship/PlayerEgo.h"
 #undef B
-#include "gof2/PlayerFixedObject.h"
-#include "gof2/Status.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/ship/PlayerFixedObject.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
 // The Status singleton. The original 0-argument Status_* calls below loaded this global and

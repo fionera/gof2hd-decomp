@@ -1,8 +1,8 @@
-#include "gof2/GlowPPShader.h"
-#include "gof2/ShaderBaseStruct.h"
+#include "gof2/engine/render/shaders/GlowPPShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
 #include "gof2/externs.h"
-#include "gof2/Engine.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/game/core/String.h"
 
 
 extern "C" void *operator_new_0(uint32_t size);

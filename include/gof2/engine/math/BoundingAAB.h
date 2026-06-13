@@ -1,7 +1,7 @@
 #ifndef GOF2_BOUNDINGAAB_H
 #define GOF2_BOUNDINGAAB_H
 #include "gof2/common.h"
-#include "gof2/BoundingVolume.h"
+#include "gof2/engine/math/BoundingVolume.h"
 // Galaxy on Fire 2 -- BoundingAAB (axis-aligned box) bounding volume.
 // Derives from BoundingVolume; adds per-axis half-extents at 0x20/0x24/0x28.
 // Inherited layout (from BoundingVolume): vtable@0x0, children@0x4,

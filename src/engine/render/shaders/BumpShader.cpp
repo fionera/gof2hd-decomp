@@ -1,6 +1,6 @@
-#include "gof2/BumpShader.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/shaders/BumpShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
 
 
 

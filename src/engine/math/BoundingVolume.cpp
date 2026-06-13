@@ -1,5 +1,5 @@
-#include "gof2/BoundingVolume.h"
-#include "gof2/AEMath.h"
+#include "gof2/engine/math/BoundingVolume.h"
+#include "gof2/engine/math/AEMath.h"
 
 
 // ---- _BoundingVolume_11f718.cpp ----

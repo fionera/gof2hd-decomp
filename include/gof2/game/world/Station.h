@@ -1,7 +1,7 @@
 #ifndef GOF2_STATION_H
 #define GOF2_STATION_H
 #include "gof2/common.h"
-#include "gof2/Agent.h"   // provides the shared RetStr aggregate
+#include "gof2/game/ship/Agent.h"   // provides the shared RetStr aggregate
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 — Station class. Top-level, no namespace.
 // Field offsets recovered from per-method target disassembly. Methods access

@@ -3,7 +3,7 @@
 #include "gof2/common.h"
 // ImageFactory.h provides the shared `struct Arr` { size, data, size2 } view; reuse it here so
 // the two definitions don't collide at global scope when both headers are pulled into a TU.
-#include "gof2/ImageFactory.h"
+#include "gof2/engine/render/ImageFactory.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 -- StatusWindow (Android libgof2hdaa.so, armv7 Thumb).
 // Qualified target name is top-level: "StatusWindow::..." (class not in a namespace;

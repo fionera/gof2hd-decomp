@@ -1,11 +1,11 @@
-#include "gof2/PlayerCreature.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/FModSound.h"
-#include "gof2/Level.h"
-#include "gof2/ParticleSystemManager.h"
-#include "gof2/KIPlayer.h"
-#include "gof2/Player.h"
-#include "gof2/PlayerJunk.h"
+#include "gof2/game/ship/PlayerCreature.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/engine/render/ParticleSystemManager.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/ship/PlayerJunk.h"
 
 
 extern "C" PlayerCreature *KIPlayer_dtor(KIPlayer *self);

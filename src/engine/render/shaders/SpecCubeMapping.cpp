@@ -1,5 +1,5 @@
-#include "gof2/SpecCubeMapping.h"
-#include "gof2/Mesh.h"
+#include "gof2/engine/render/shaders/SpecCubeMapping.h"
+#include "gof2/engine/render/Mesh.h"
 
 
 // ---- _SpecCubeMapping_92b60.cpp ----

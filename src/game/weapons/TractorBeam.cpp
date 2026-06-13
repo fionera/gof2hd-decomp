@@ -1,13 +1,13 @@
-#include "gof2/TractorBeam.h"
-#include "gof2/Ship.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/FModSound.h"
-#include "gof2/Level.h"
-#include "gof2/Transform.h"
-#include "gof2/KIPlayer.h"
-#include "gof2/PlayerEgo.h"
-#include "gof2/Status.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/weapons/TractorBeam.h"
+#include "gof2/game/ship/Ship.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 // Player.h cannot be included here: it both declares a data member 'turnedEnemy'
 // (field 0xe0) and a method 'turnedEnemy()' inside the same struct, which is
@@ -29,7 +29,7 @@ struct Player {
 #define Status Status_RadarUnused
 #define gStatus gStatus_RadarUnused
 #define PaintCanvas PaintCanvas_RadarUnused
-#include "gof2/Radar.h"
+#include "gof2/game/weapons/Radar.h"
 #undef PaintCanvas
 #undef gStatus
 #undef Status

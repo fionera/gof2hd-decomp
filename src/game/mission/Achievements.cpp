@@ -1,7 +1,7 @@
-#include "gof2/Achievements.h"
-#include "gof2/Item.h"
-#include "gof2/Status.h"
-#include "gof2/Ship.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/ship/Ship.h"
 
 
 

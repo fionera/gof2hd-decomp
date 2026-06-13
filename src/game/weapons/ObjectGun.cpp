@@ -1,11 +1,11 @@
-#include "gof2/ObjectGun.h"
-#include "gof2/Level.h"
-#include "gof2/Transform.h"
-#include "gof2/Explosion.h"
-#include "gof2/PlayerEgo.h"
-#include "gof2/Gun.h"
-#include "gof2/Player.h"
-#include "gof2/AEGeometry.h"
+#include "gof2/game/weapons/ObjectGun.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/game/mission/Explosion.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/weapons/Gun.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/engine/render/AEGeometry.h"
 
 // Byte-offset reader retained ONLY for foreign-class fields that are not yet
 // modelled in their (out-of-batch) header (currently a few Player fields).

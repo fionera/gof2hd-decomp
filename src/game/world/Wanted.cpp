@@ -1,5 +1,5 @@
-#include "gof2/Wanted.h"
-#include "gof2/String.h"
+#include "gof2/game/world/Wanted.h"
+#include "gof2/game/core/String.h"
 
 
 using AbyssEngine::String12;

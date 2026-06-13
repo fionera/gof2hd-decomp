@@ -1,5 +1,5 @@
-#include "gof2/Route.h"
-#include "gof2/Waypoint.h"
+#include "gof2/game/world/Route.h"
+#include "gof2/game/world/Waypoint.h"
 
 
 extern "C" void ArrayReleaseClasses_Waypoint(Array<Waypoint *> *a);

@@ -1,4 +1,4 @@
-#include "gof2/NoTexShader.h"
+#include "gof2/engine/render/shaders/NoTexShader.h"
 
 namespace AbyssEngine {
 

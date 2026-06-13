@@ -4,10 +4,10 @@
 // lean header's `using ::PaintCanvas`. Rename that opaque forward-decl in those two
 // headers to a private tag so the real ::PaintCanvas class can be used for the calls.
 #define PaintCanvas AE_PaintCanvasOpaque
-#include "gof2/ParticleSystemSprite.h"
-#include "gof2/IParticleSystem.h"
+#include "gof2/engine/render/ParticleSystemSprite.h"
+#include "gof2/engine/render/IParticleSystem.h"
 #undef PaintCanvas
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 #include "gof2/externs.h"
 
 

@@ -1,4 +1,4 @@
-#include "gof2/BumpRimCubeShader.h"
+#include "gof2/engine/render/shaders/BumpRimCubeShader.h"
 #include "gof2/externs.h"
 
 

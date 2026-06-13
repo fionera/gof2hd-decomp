@@ -1,6 +1,6 @@
-#include "gof2/TextureShader.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
+#include "gof2/engine/render/shaders/TextureShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
 
 // Engine / Mesh are opaque to this translation unit; their fields are accessed
 // by raw offset since their real layouts live in other (non-batch) classes.

@@ -1,4 +1,4 @@
-#include "gof2/PostBWShader.h"
+#include "gof2/engine/render/shaders/PostBWShader.h"
 
 namespace AbyssEngine {
 

@@ -1,4 +1,4 @@
-#include "gof2/Galaxy.h"
+#include "gof2/game/world/Galaxy.h"
 
 
 extern "C" void *Galaxy_ctor_op_new_array(unsigned int size);

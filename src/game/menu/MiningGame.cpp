@@ -1,5 +1,5 @@
-#include "gof2/MiningGame.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/game/menu/MiningGame.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 
 extern "C" float MiningGame_sqrt(void *globals, float value);

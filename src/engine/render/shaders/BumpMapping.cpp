@@ -1,4 +1,4 @@
-#include "gof2/BumpMapping.h"
+#include "gof2/engine/render/shaders/BumpMapping.h"
 
 
 // ---- _BumpMapping_914d0.cpp ----

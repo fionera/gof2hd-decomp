@@ -1,4 +1,4 @@
-#include "gof2/GenericShader2.h"
+#include "gof2/engine/render/shaders/GenericShader2.h"
 // gof2/ShaderBaseStruct.h is intentionally NOT included: it defines a second,
 // layout-incompatible AbyssEngine::ShaderBaseStruct that collides with the
 // minimal base declared in GenericShader2.h.

@@ -6,7 +6,7 @@
 // SolarSystem.h and Station.h (both define RetStr unconditionally) are pulled into
 // one TU. getTargetString() below returns RetStr by value, so its definition must be
 // in scope here.
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/SolarSystem.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 - AutoPilotList class. Android libgof2hdaa.so, armv7 Thumb.
 // Top-level class (no AbyssEngine namespace; only some arg/field types live in

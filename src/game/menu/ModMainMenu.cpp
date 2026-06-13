@@ -1,20 +1,20 @@
 // Galaxy.h defines the B/I/P offset-cast helpers unconditionally; include it first
 // and mark them as already provided so ModMainMenu.h does not redefine them.
-#include "gof2/Galaxy.h"
-#include "gof2/SolarSystem.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/world/SolarSystem.h"
 #define GOF2_BIP_HELPERS
-#include "gof2/ModMainMenu.h"
-#include "gof2/CutScene.h"
-#include "gof2/FModSound.h"
-#include "gof2/Level.h"
-#include "gof2/MenuTouchWindow.h"
-#include "gof2/Status.h"
-#include "gof2/ApplicationManager.h"
-#include "gof2/GameText.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
-#include "gof2/RecordHandler.h"
-#include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "gof2/game/menu/ModMainMenu.h"
+#include "gof2/game/core/CutScene.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/ui/MenuTouchWindow.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/mission/RecordHandler.h"
+#include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
 
 
 extern "C" void *CutScene_dtor(void *self);

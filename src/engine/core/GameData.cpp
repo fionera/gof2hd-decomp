@@ -1,4 +1,4 @@
-#include "gof2/GameData.h"
+#include "gof2/engine/core/GameData.h"
 
 // ---- GameData_d0c6c.cpp / _GameData_d06f4.cpp ----
 // GameData manages 8 embedded AbyssEngine::String members. These are now real

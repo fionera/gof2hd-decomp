@@ -1,6 +1,6 @@
-#include "gof2/HackingGame.h"
-#include "gof2/FModSound.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/menu/HackingGame.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 
 extern "C" unsigned __aeabi_uidiv(unsigned value, unsigned divisor);

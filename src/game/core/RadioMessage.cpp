@@ -1,4 +1,4 @@
-#include "gof2/RadioMessage.h"
+#include "gof2/game/core/RadioMessage.h"
 
 
 

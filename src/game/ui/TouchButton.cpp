@@ -1,9 +1,9 @@
-#include "gof2/TouchButton.h"
-#include "gof2/FModSound.h"
-#include "gof2/Achievements.h"
-#include "gof2/Layout.h"
-#include "gof2/String.h"
-#include "gof2/PaintCanvas.h"
+#include "gof2/game/ui/TouchButton.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/PaintCanvas.h"
 
 extern void *g_PaintCanvas;
 

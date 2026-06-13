@@ -1,4 +1,4 @@
-#include "gof2/ResourceMaterial.h"
+#include "gof2/engine/render/ResourceMaterial.h"
 
 
 

@@ -1,9 +1,9 @@
-#include "gof2/PlayerJunk.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/FModSound.h"
-#include "gof2/Level.h"
-#include "gof2/ParticleSystemManager.h"
-#include "gof2/KIPlayer.h"
+#include "gof2/game/ship/PlayerJunk.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/engine/render/ParticleSystemManager.h"
+#include "gof2/game/ship/KIPlayer.h"
 // Player is dereferenced here only for getHitpoints()/setActive(); we declare a
 // minimal local view of those two methods rather than pull in the full Player.h
 // (whose byte-layout static_asserts assume the 32-bit ARM target, and which is

@@ -1,4 +1,4 @@
-#include "gof2/LensFlare.h"
+#include "gof2/engine/render/LensFlare.h"
 
 
 // ---- _LensFlare_11d06c.cpp ----

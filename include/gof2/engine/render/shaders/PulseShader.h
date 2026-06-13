@@ -9,7 +9,7 @@
 //   +0x20..0x30 attribute locations a0..a4
 //   +0x34..0x58 uniform locations u0..u9 (note 0x58 carries u4)
 
-#include "gof2/Mesh.h"   // full Mesh layout (top-level ::Mesh)
+#include "gof2/engine/render/Mesh.h"   // full Mesh layout (top-level ::Mesh)
 
 struct Engine;            // top-level, matches fwd.h (layout not modelled in this batch)
 

@@ -1,19 +1,19 @@
-#include "gof2/PlayerEgo.h"
-#include "gof2/Camera.h"
-#include "gof2/AERandom.h"
-#include "gof2/TargetFollowCamera.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/engine/render/Camera.h"
+#include "gof2/engine/core/AERandom.h"
+#include "gof2/game/ship/TargetFollowCamera.h"
 #include "gof2/externs.h"
-#include "gof2/PaintCanvasClass.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/FModSound.h"
-#include "gof2/HackingGame.h"
-#include "gof2/Item.h"
-#include "gof2/Level.h"
-#include "gof2/LevelScript.h"
-#include "gof2/MiningGame.h"
-#include "gof2/ParticleSystemManager.h"
-#include "gof2/PlayerAsteroid.h"
-#include "gof2/PlayerWormHole.h"
+#include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/audio/FModSound.h"
+#include "gof2/game/menu/HackingGame.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/world/LevelScript.h"
+#include "gof2/game/menu/MiningGame.h"
+#include "gof2/engine/render/ParticleSystemManager.h"
+#include "gof2/game/ship/PlayerAsteroid.h"
+#include "gof2/game/ship/PlayerWormHole.h"
 // Radar.h is intentionally NOT included: it defines stub structs (KIPlayer, Status,
 // SolarSystem) that collide with the real class headers used by this TU. Only the two
 // Radar methods below are needed here, so forward-declare a minimal interface.
@@ -22,10 +22,10 @@ public:
     void unlockAsteroid();
     bool isPlasmaInRange();
 };
-#include "gof2/Status.h"
-#include "gof2/Transform.h"
-#include "gof2/ApplicationManager.h"
-#include "gof2/Explosion.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/engine/math/Transform.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/game/mission/Explosion.h"
 // Hud.h is intentionally NOT included: it redefines the file-scope P() accessor that
 // LevelScript.h already provides in this TU. Only these two Hud methods are needed,
 // so forward-declare a minimal interface.
@@ -34,16 +34,16 @@ public:
     void hudEvent(int eventId, void *ego, int arg);
     void setHackingGameActive(bool value);
 };
-#include "gof2/KIPlayer.h"
-#include "gof2/Mission.h"
-#include "gof2/Player.h"
-#include "gof2/PlayerFixedObject.h"
-#include "gof2/RepairBeam.h"
-#include "gof2/Route.h"
-#include "gof2/SpacePoint.h"
-#include "gof2/String.h"
-#include "gof2/TractorBeam.h"
-#include "gof2/Ship.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/ship/PlayerFixedObject.h"
+#include "gof2/game/weapons/RepairBeam.h"
+#include "gof2/game/world/Route.h"
+#include "gof2/game/world/SpacePoint.h"
+#include "gof2/game/core/String.h"
+#include "gof2/game/weapons/TractorBeam.h"
+#include "gof2/game/ship/Ship.h"
 
 // Free AEMath operator used by getTurretPosition (declared in AEMath.cpp; AEMath.h
 // is not included here because it redefines BSphere/Transform which clash in this TU).

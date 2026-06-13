@@ -1,8 +1,8 @@
-#include "gof2/PulseShader.h"
-#include "gof2/ShaderBaseStruct.h"
-#include "gof2/String.h"
-#include "gof2/Mesh.h"
-#include "gof2/ApplicationManager.h"
+#include "gof2/engine/render/shaders/PulseShader.h"
+#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/Mesh.h"
+#include "gof2/engine/core/ApplicationManager.h"
 
 // The decompiler dropped the receiver from the original
 // ApplicationManager_GetCurrentTimeMillis() call; it reads from the global

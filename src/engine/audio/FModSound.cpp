@@ -1,4 +1,4 @@
-#include "gof2/FModSound.h"
+#include "gof2/engine/audio/FModSound.h"
 
 
 extern "C" void FMOD_setLanguage(void *system, uint32_t lang);

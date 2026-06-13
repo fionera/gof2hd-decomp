@@ -1,4 +1,4 @@
-#include "gof2/EaseInOut.h"
+#include "gof2/engine/math/EaseInOut.h"
 
 
 

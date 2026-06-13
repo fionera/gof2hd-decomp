@@ -1,6 +1,6 @@
-#include "gof2/PlayerStatic.h"
-#include "gof2/AEGeometry.h"
-#include "gof2/Player.h"
+#include "gof2/game/ship/PlayerStatic.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/ship/Player.h"
 
 
 extern "C" void *KIPlayer_dtor(PlayerStatic *self);

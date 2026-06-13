@@ -1,4 +1,4 @@
-#include "gof2/SystemPathFinder.h"
+#include "gof2/game/world/SystemPathFinder.h"
 
 
 // ---- SystemPathFinder_12b77c / ~SystemPathFinder_12b77e ----

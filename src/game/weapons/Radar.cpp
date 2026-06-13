@@ -1,4 +1,4 @@
-#include "gof2/Radar.h"
+#include "gof2/game/weapons/Radar.h"
 
 // Layout and Station are not part of this batch; their fields are read by raw byte offset
 // (including their headers triggers a placement-new redefinition against the STL).

@@ -1,7 +1,7 @@
-#include "gof2/SolarSystem.h"
-#include "gof2/Galaxy.h"
-#include "gof2/Status.h"
-#include "gof2/String.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/core/String.h"
 
 
 extern "C" void ArrayRelease_int(void *a) __attribute__((nothrow));

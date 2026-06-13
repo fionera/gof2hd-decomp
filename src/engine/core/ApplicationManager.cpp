@@ -1,11 +1,11 @@
-#include "gof2/ApplicationManager.h"
-#include "gof2/AESoundRessource.h"
+#include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/engine/audio/AESoundRessource.h"
 #include "gof2/externs.h"
-#include "gof2/IApplicationModule.h"
-#include "gof2/String.h"
-#include "gof2/Engine.h"
-#include "gof2/ConfigReader.h"
-#include "gof2/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "gof2/engine/core/IApplicationModule.h"
+#include "gof2/game/core/String.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/file/ConfigReader.h"
+#include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
 
 // PaintCanvas::GetWidth()/GetHeight() return void in the recovered class; the
 // underlying int-returning implementation is exposed as pc_GetWidth/pc_GetHeight

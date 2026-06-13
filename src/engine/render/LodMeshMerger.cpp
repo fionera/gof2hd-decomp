@@ -1,6 +1,6 @@
-#include "gof2/LodMeshMerger.h"
-#include "gof2/Vector.h"
-#include "gof2/PaintCanvasClass.h"
+#include "gof2/engine/render/LodMeshMerger.h"
+#include "gof2/game/core/Vector.h"
+#include "gof2/game/core/PaintCanvasClass.h"
 
 
 

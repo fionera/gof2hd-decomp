@@ -1,5 +1,5 @@
-#include "gof2/TargetFollowCamera.h"
-#include "gof2/AEGeometry.h"
+#include "gof2/game/ship/TargetFollowCamera.h"
+#include "gof2/engine/render/AEGeometry.h"
 
 
 namespace AbyssEngine { namespace AEMath { float VectorLength(Vector *v); } }

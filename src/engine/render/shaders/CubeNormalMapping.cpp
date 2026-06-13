@@ -1,5 +1,5 @@
-#include "gof2/CubeNormalMapping.h"
-#include "gof2/Mesh.h"
+#include "gof2/engine/render/shaders/CubeNormalMapping.h"
+#include "gof2/engine/render/Mesh.h"
 
 
 

@@ -1,6 +1,6 @@
-#include "gof2/BumpShaderV3.h"
+#include "gof2/game/core/BumpShaderV3.h"
 #include "gof2/externs.h"
-#include "gof2/Mesh.h"
+#include "gof2/engine/render/Mesh.h"
 
 
 

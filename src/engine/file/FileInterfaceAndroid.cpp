@@ -1,5 +1,5 @@
-#include "gof2/FileInterfaceAndroid.h"
-#include "gof2/String.h"
+#include "gof2/engine/file/FileInterfaceAndroid.h"
+#include "gof2/game/core/String.h"
 #include <cstdio>
 #include <cstdlib>
 #include <new>

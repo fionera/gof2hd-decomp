@@ -1,30 +1,30 @@
 #include <cstring>
-#include "gof2/SpaceLounge.h"
-#include "gof2/SolarSystem.h"
-#include "gof2/AEGeometry.h"
+#include "gof2/game/menu/SpaceLounge.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/engine/render/AEGeometry.h"
 #include "gof2/externs.h"
-#include "gof2/ChoiceWindow.h"
-#include "gof2/CutScene.h"
-#include "gof2/EaseInOut.h"
-#include "gof2/EaseInOutMatrix.h"
-#include "gof2/Level.h"
-#include "gof2/ListItemWindow.h"
-#include "gof2/ScrollTouchWindow.h"
-#include "gof2/StarMap.h"
-#include "gof2/Agent.h"
-#include "gof2/GameText.h"
-#include "gof2/ImageFactory.h"
-#include "gof2/Layout.h"
-#include "gof2/Mission.h"
-#include "gof2/String.h"
-#include "gof2/Status.h"
+#include "gof2/game/ui/ChoiceWindow.h"
+#include "gof2/game/core/CutScene.h"
+#include "gof2/engine/math/EaseInOut.h"
+#include "gof2/engine/math/EaseInOutMatrix.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/ui/ListItemWindow.h"
+#include "gof2/game/ui/ScrollTouchWindow.h"
+#include "gof2/game/world/StarMap.h"
+#include "gof2/game/ship/Agent.h"
+#include "gof2/engine/core/GameText.h"
+#include "gof2/engine/render/ImageFactory.h"
+#include "gof2/game/ui/Layout.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/core/String.h"
+#include "gof2/game/mission/Status.h"
 // gof2/TouchButton.h and gof2/Station.h (pulled in via Mission.h above) both define
 // `struct RetStr` unconditionally with identical layout, which is a C++ redefinition error.
 // We need TouchButton.h for the TouchButton struct/methods used below, so include it with
 // its RetStr renamed out of the way (it is never referenced in this translation unit; the
 // canonical RetStr is the one already provided by Station.h).
 #define RetStr RetStr
-#include "gof2/TouchButton.h"
+#include "gof2/game/ui/TouchButton.h"
 #undef RetStr
 
 // This translation unit pulls in externs.h/fwd.h (which forward-declares the global

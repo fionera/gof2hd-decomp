@@ -1,5 +1,5 @@
 #include <new>
-#include "gof2/CheatHandler.h"
+#include "gof2/game/core/CheatHandler.h"
 
 
 

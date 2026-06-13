@@ -1,4 +1,4 @@
-#include "gof2/SpacePoint.h"
+#include "gof2/game/world/SpacePoint.h"
 
 
 extern "C" void *memset(void *, int, unsigned long);
