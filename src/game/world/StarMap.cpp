@@ -60,7 +60,6 @@ public:
 
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_render_canvas;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_render_geometry)(void *);
-extern "C" void StarMap_render_tail();
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_alien_text;
 extern "C" void *Array_int_dtor(void *arr);
 extern "C" void ArrayReleaseClasses_Vector(void *arr);
@@ -194,7 +193,7 @@ void StarMap::render()
         ((AEGeometry *)(ptr_field(this, 0xa4)))->render();
     }
     if (ptr_field(this, 0xf8) != 0) {
-        return StarMap_render_tail();
+        return this->render_tail();
     }
 }
 

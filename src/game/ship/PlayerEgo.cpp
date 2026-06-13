@@ -1091,9 +1091,6 @@ void PlayerEgo::startSmokeEmission() {
 //   pitch 0x1a4, each rotating its geometry), scripted maneuver (0x7c), or the
 //   normal load-scaled pitch ramp on accumulator 0x278 (direction flag 0x100=-1).
 
-extern "C" float MiningGame_steerY(void *mg, float d);                 // 0x1abb18 veneer
-extern "C" float MiningGame_steerYAlt(void);                          // 0x1abb38 veneer
-
 __attribute__((visibility("hidden"))) extern char **g_PE_d_miningGate; // 0xb0bb0 -> flags (+0x10)
 extern const float g_PE_d_eps;      // 0xb0dc0 free-look limit
 extern const float g_PE_d_lookK1;
@@ -1107,8 +1104,8 @@ float PlayerEgo::down(int frameTime, float delta) {
     PlayerEgo *self = this;
     if (P(self, 0x1e4) != 0) {
         if (C(*g_PE_d_miningGate, 0x10) == 0)
-            return MiningGame_steerYAlt();
-        return MiningGame_steerY(P(self, 0x1e4), -delta);
+            return ((MiningGame *)(P(self, 0x1e4)))->steerYAlt(delta);
+        return ((MiningGame *)(P(self, 0x1e4)))->steerY(-delta);
     }
 
     if (C(self, 0x1a0) != 0) {
@@ -1413,8 +1410,6 @@ void PlayerEgo::setDockingCamera() {
 //   yaw direction flag (0x104) is -1 and the yaw accumulator (0x27c) ramps
 //   downward toward the (negative) target.
 
-extern "C" float MiningGame_steerXR(void *mg, float d);                // 0x1abaf8 veneer
-
 extern const float g_PE_r_loadK;
 extern const float g_PE_r_loadB;
 extern const float g_PE_r_rateK;
@@ -1427,7 +1422,7 @@ extern const float g_PE_r_manK2;
 float PlayerEgo::right(int frameTime, float delta) {
     PlayerEgo *self = this;
     if (P(self, 0x1e4) != 0)
-        return MiningGame_steerXR(P(self, 0x1e4), delta);
+        return ((MiningGame *)(P(self, 0x1e4)))->steerXR(delta);
 
     if (C(self, 0x1a0) != 0) {
         float pitch = (float)I(self, 0x1f8);
@@ -1483,7 +1478,6 @@ float PlayerEgo::right(int frameTime, float delta) {
 //   The yaw-rate ramp (which samples the active-camera ease state) is computed
 //   by PE_yawRampDelta to keep the FP-flag soup out of line.
 
-extern "C" float MiningGame_steerX(void *mg, float d);                 // 0x1abb08 veneer
 // Ramp helper: given base rate and inputs, returns the accumulator increment.
 
 extern const float g_PE_l_loadK;
@@ -1498,7 +1492,7 @@ extern const float g_PE_l_manK2;
 float PlayerEgo::left(int frameTime, float delta) {
     PlayerEgo *self = this;
     if (P(self, 0x1e4) != 0)
-        return MiningGame_steerX(P(self, 0x1e4), -delta);
+        return ((MiningGame *)(P(self, 0x1e4)))->steerX(-delta);
 
     if (C(self, 0x1a0) != 0) {
         // turret yaw: scale by inverse turret-pitch and apply to 3 nodes.
@@ -2000,9 +1994,6 @@ void PlayerEgo::dockToPlanet() {
 //   the free-look/turret accumulators (0x1a8 / 0x1a4) and the pitch accumulator
 //   (0x278) ramp upward, with the pitch direction flag (0x100) set to +1.
 
-extern "C" float MiningGame_steerY(void *mg, float d);                 // 0x1abb18 veneer
-extern "C" float MiningGame_steerYAlt(void);                          // 0x1abb38 veneer
-
 __attribute__((visibility("hidden"))) extern char **g_PE_u_miningGate; // 0xb0e1c -> flags (+0x10)
 extern const float g_PE_u_eps;      // 0xb1030 free-look limit
 extern const float g_PE_u_eps2;
@@ -2017,8 +2008,8 @@ float PlayerEgo::up(int frameTime, float delta) {
     PlayerEgo *self = this;
     if (P(self, 0x1e4) != 0) {
         if (C(*g_PE_u_miningGate, 0x10) == 0)
-            return MiningGame_steerY(P(self, 0x1e4), -delta);
-        return MiningGame_steerYAlt();
+            return ((MiningGame *)(P(self, 0x1e4)))->steerY(-delta);
+        return ((MiningGame *)(P(self, 0x1e4)))->steerYAlt(delta);
     }
 
     if (C(self, 0x1a0) != 0) {

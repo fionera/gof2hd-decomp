@@ -99,7 +99,6 @@ extern "C" int Station_getIndex(int station);
 // each of these 0-arg calls; the singleton lives at the hidden global g_status (same one
 // MGame/Mission/PlayerTurret reach). Recover the receiver as (*g_status)->method().
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
-extern "C" void Status_resetGame();
 extern "C" void ArrayReleaseClasses_Str(void *a);
 extern "C" void *ArrayStr_dtor(void *a);
 int GameText_getLanguage();
@@ -1903,7 +1902,7 @@ int Globals::init(void *app) {
     ((RecordHandler *)(rh))->ctor();
     void **rhSlotP = *gI_recHandler;
     *rhSlotP = rh;
-    Status_resetGame();
+    ((Status *)(*g_status))->resetGame();
     ((RecordHandler *)(*rhSlotP))->loadOptions();
 
     void *fmod = ::operator new(0x243c);

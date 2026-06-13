@@ -434,8 +434,6 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
 // (+0xc4), the cargo array (+0x50) and the navigation space-point array (+0xcc,
 // whose elements are class instances and so are released first). Finally tears
 // down the embedded name String at +0x18.
-extern "C" void *Route_dtor(Route *r);          // Route::~Route (D2)
-
 KIPlayer::~KIPlayer() {
     KIPlayer *self = this;
     *(int *)self = (int)(intptr_t)(KIPlayer_vtable + 8);
@@ -445,7 +443,7 @@ KIPlayer::~KIPlayer() {
     self->player = 0;
 
     if (self->route != 0)
-        ::operator delete(Route_dtor(self->route));
+        ::operator delete(((Route *)(self->route))->dtor());
     self->route = 0;
 
     if (self->crateGeometry != 0) {

@@ -149,7 +149,7 @@ void PlayerFighter::setCloakingPossible(bool v) {
     self->cloakingPossible = v;
     if (!v && self->field_0x13c != 0) {
         self->cloakTimer = self->cloakDuration + 1;
-        return PlayerFighter_cloak_off_helper();
+        return ((PlayerFighter *)(self))->cloak_off_helper();
     }
 }
 

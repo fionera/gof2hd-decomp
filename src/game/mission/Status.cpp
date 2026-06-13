@@ -56,7 +56,6 @@ extern "C" void Array_int_ctor(void *a);
 extern "C" void ArraySetLength_Mission(uint32_t n, Array<Mission *> *a);
 extern "C" void ArraySetLength_Station(uint32_t n, Array<Station *> *a);
 extern "C" void ArraySetLength_bool(int len, void *a);
-extern "C" bool Status_inAlienOrbit_impl(Station *station, Station *playerStation);
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" int __aeabi_idivmod(int a, int b);
 extern "C" void SystemPathFinder_ctor(SystemPathFinder *p);
@@ -93,7 +92,12 @@ struct FileRead {
     Array<Wanted *> *loadWanted();
     Array<Agent *> *loadAgents();
 };
-struct Generator { Generator(); };
+struct Generator {
+    Generator();
+    Array<Agent *> *createAgents(Station *station);
+    Array<Ship *> *getShipBuyList(Station *station);
+    Array<Item *> *getItemBuyList(Station *station);
+};
 
 int Status::getPlanetNames() { return planetNames; }
 
@@ -734,7 +738,7 @@ bool Status::inAlienOrbit_impl(Station *station, Station *playerStation) {
 }
 
 bool Status::inAlienOrbit() {
-    return Status_inAlienOrbit_impl(station, playerStation);
+    return Status::inAlienOrbit_impl(station, playerStation);
 }
 
 // Local offset-cast helpers (the Status header models fields by name, but resetGame
@@ -782,7 +786,6 @@ void   BluePrint_ctor(void *bp, unsigned int index);
 void   Standing_ctor(Standing *s);
 void  *Standing_dtor(Standing *s);
 void   Mission_ctor(void *m, int a, int b, int c);
-int    Ship_getMaxShieldHP();
 void   Status_rg_loadAgents(Status *self);
 void   Status_rg_loadWanted(Status *self);
 void   Status_rg_setCampaignMission(Status *self, void *m);
@@ -1080,7 +1083,7 @@ void Status::resetGame()
         ((char *)(*(int *)((char *)P(self, 0x38) + 4)))[0x19] = 1;
 
     I(self, 0x64) = ((Ship *)(*(Ship **)(self + 0x190)))->getMaxHP();
-    I(self, 0x5c) = Ship_getMaxShieldHP();
+    I(self, 0x5c) = ((Ship *)(*(Ship **)(self + 0x190)))->getMaxShieldHP();
     I(self, 0x60) = ((Ship *)(*(Ship **)(self + 0x190)))->getMaxArmorHP();
     I(self, 0x68) = 100;
     I(self, 0x150) = -1;
@@ -1733,9 +1736,6 @@ int Station_getShips_ds();
 int isOnStack_ds(Status *self, Station *s);
 void addStationToStack_ds(Status *self, Station *s);
 void Generator_ctor(Generator *g);
-void *Generator_getItemBuyList(Generator *g, Station *s);
-int Generator_getShipBuyList(Station *g);
-void *Generator_createAgents(Generator *g, Station *s);
 int Mission_getType_ds();
 int Mission_isCampaignMission_ds(Mission *m);
 int Mission_getProductionGoodIndex_ds(Mission *m);
@@ -1789,14 +1789,14 @@ void Status::departStation(Station *dest) {
             if (prev == 0) {
                 Generator g;
                 Generator_ctor(&g);
-                ((Station *)(dest))->setAgents(Generator_createAgents(&g, dest));
+                ((Station *)(dest))->setAgents(((Generator *)(&g))->createAgents(dest));
             }
         } else if (prev == 0) {
             Generator g;
             Generator_ctor(&g);
-            ((Station *)(dest))->setItems((uint32_t *)Generator_getItemBuyList(&g, dest), false);
-            ((Station *)((void *)dest))->setShips((uint32_t *)(long)Generator_getShipBuyList((Station *)&g), false);
-            ((Station *)(dest))->setAgents(Generator_createAgents(&g, dest));
+            ((Station *)(dest))->setItems((uint32_t *)((Generator *)(&g))->getItemBuyList(dest), false);
+            ((Station *)((void *)dest))->setShips((uint32_t *)(long)((Generator *)(&g))->getShipBuyList(dest), false);
+            ((Station *)(dest))->setAgents(((Generator *)(&g))->createAgents(dest));
         }
         SF(self, 0x70) = (int)self->playingTime;
         SF(self, 0x74) = (int)(self->playingTime >> 32);

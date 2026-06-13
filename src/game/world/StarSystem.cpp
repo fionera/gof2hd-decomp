@@ -14,6 +14,7 @@
 #include "gof2/engine/core/ApplicationManager.h"
 #include "gof2/engine/render/Engine.h"
 #include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/game/ship/PlayerStatic.h"
 
 // Free AEMath operators used below (declared in AEMath.cpp; not pulling in AEMath.h
 // here because it redefines BSphere/Transform which clash in this TU).
@@ -49,7 +50,6 @@ extern "C" void ArraySetLength_KIPlayer(int length, void *array);
 extern "C" void ArraySetLength_AEGeometry(int length, void *array);
 extern "C" void ArraySetLength_Vector(int length, void *array);
 extern "C" void LensFlare_ctor(void *self, void *canvas);
-extern "C" void PlayerStatic_ctor(void *self, int mode, AEGeometry *geom, float x, float y, float z);
 void MatrixGetPosition(char *out, void *matrix);
 extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned long n);
 void MatrixGetUp(char *out, const char *matrix);
@@ -526,7 +526,7 @@ StarSystem::StarSystem(int mode) {
             usedSlots[sunSlot * 4] = 1;
         } else {
             void *player = ::operator new(0x130);
-            PlayerStatic_ctor(player, 0, geom, 0.0f, 0.0f, 0.0f);
+            ((PlayerStatic *)player)->ctor(0, geom, 0.0f, 0.0f, 0.0f);
             ((void **)array_data(P(self, 0x18)))[i - 1] = player;
             int slot = ((AbyssEngine::AERandom *)g_StarSystem_ctor_rng)->nextInt(11) + 7;
             usedSlots[slot * 4] = 1;

@@ -259,18 +259,16 @@ void BeamGun::update(int elapsed)
 
 // The veneers do a terminal b.w into a relocated slot that lands in the inherited
 // engine implementation. We model those landing pads as extern engine routines.
-extern "C" void BeamGun_setEnemiesEngine(void *data);   // shared enemy-list handler
-extern "C" void BeamGun_setEnemyEngine(void *data);     // shared enemy handler
 void AEGeometryRender(AEGeometry *self);                // AEGeometry::render landing pad
 
 // setEnemies() tail: hand the enemy list's raw element buffer to the engine.
 void BeamGun::setEnemies_tail(void *data) {
-    BeamGun_setEnemiesEngine(data);
+    this->setEnemiesEngine(data);
 }
 
 // setEnemy() tail: hand the single enemy's secondary geometry pointer to the engine.
 void BeamGun::setEnemy_tail(void *data) {
-    BeamGun_setEnemyEngine(data);
+    this->setEnemyEngine(data);
 }
 
 // ---------------------------------------------------------------------------
@@ -288,14 +286,6 @@ void BeamGun::setEnemy_tail(void *data) {
 // ---------------------------------------------------------------------------
 __attribute__((visibility("hidden"))) extern void (*BeamGun_enemiesHandler_slot)(void *);
 __attribute__((visibility("hidden"))) extern void (*BeamGun_enemyHandler_slot)(void *);
-
-extern "C" void BeamGun_setEnemiesEngine(void *data) {
-    BeamGun_enemiesHandler_slot(data);
-}
-
-extern "C" void BeamGun_setEnemyEngine(void *data) {
-    BeamGun_enemyHandler_slot(data);
-}
 
 // BeamGun::setEnemiesEngine / setEnemyEngine — the inherited gun-hierarchy enemy
 // landing pads behind the setEnemies()/setEnemy() tail veneers. The terminal b.w

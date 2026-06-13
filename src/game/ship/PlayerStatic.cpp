@@ -3,13 +3,11 @@
 #include "gof2/game/ship/Player.h"
 
 extern "C" void *KIPlayer_dtor(PlayerStatic *self);
-extern "C" void *PlayerStatic_dtor_tail();
-extern "C" void PlayerStatic_render_geometry(void *geometry);
 
 void *_ZN12PlayerStaticD1Ev(PlayerStatic *self)
 {
     KIPlayer_dtor(self);
-    return PlayerStatic_dtor_tail();
+    return ((PlayerStatic *)self)->dtor_tail();
 }
 
 // ---- ~PlayerStatic (D2 base-object destructor) ----
@@ -23,7 +21,7 @@ PlayerStatic::~PlayerStatic()
 
 void PlayerStatic::render()
 {
-    return PlayerStatic_render_geometry(field_0x8);
+    return PlayerStatic::render_geometry(field_0x8);
 }
 
 // ---- render_geometry fragment ----

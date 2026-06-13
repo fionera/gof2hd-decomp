@@ -88,7 +88,6 @@ extern "C" void *ArrayReleaseClasses_TouchButton(void *a);
 extern "C" void *Array_TB_dtor(void *p);
 extern "C" void *HangarWindow_dtor(void *p);
 extern "C" void *StarMap_dtor(void *p);
-extern "C" void *SpaceLounge_dtor(void *p);
 extern "C" void *MissionsWindow_dtor(void *p);
 extern "C" void *DialogueWindow_dtor(void *p);
 extern "C" void *ChoiceWindow_dtor(void *p);
@@ -1406,7 +1405,7 @@ void ModStation::OnRelease() {
     P(self, 0x10) = 0;
 
     if (P(self, 0x74) != 0)
-        ms_op_delete(SpaceLounge_dtor(P(self, 0x74)));
+        ms_op_delete(((SpaceLounge *)(P(self, 0x74)))->dtor());
     P(self, 0x74) = 0;
 
     if (P(self, 0x80) != 0)

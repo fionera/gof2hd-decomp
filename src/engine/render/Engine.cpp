@@ -3,6 +3,7 @@
 #include "gof2/engine/render/FBOContainer.h"
 #include "gof2/engine/render/Engine.h"
 #include "gof2/engine/core/ApplicationManager.h"
+#include "gof2/engine/core/NFC.h"
 #include "gof2/engine/file/AEFile.h"
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/Mesh.h"
@@ -38,9 +39,6 @@ extern "C" void glViewport(int x, int y, int width, int height);
 extern "C" void glClearColor(float red, float green, float blue, float alpha);
 extern "C" void glClear(unsigned int mask);
 extern "C" void FBOContainer_DeactivateRender2Texture(FBOContainer *self);
-extern "C" uint32_t NFC_isPad();
-extern "C" uint32_t NFC_getWidth();
-extern "C" uint32_t NFC_getHeight();
 extern "C" void glEnable(unsigned int cap);
 extern "C" void glDepthMask(unsigned int flag);
 extern "C" void glDisable(unsigned int cap);
@@ -355,9 +353,9 @@ void Engine::DeactivateRender2TextureFBO() {
 
 void Engine::GetDeviceInfo() {
     Engine *self = this;
-    self->field_0x8 = NFC_isPad();
-    self->field_0x0 = NFC_getWidth();
-    self->field_0x4 = NFC_getHeight();
+    self->field_0x8 = NFC().isPad();
+    self->field_0x0 = NFC().getWidth();
+    self->field_0x4 = NFC().getHeight();
 }
 
 void Engine::CopyFBO() {

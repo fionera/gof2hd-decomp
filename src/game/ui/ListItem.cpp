@@ -30,7 +30,6 @@ ListItem * ListItem::ctor_BluePrint(BluePrint *bp) {
 }
 
 extern "C" int Item_getSort_li(Item *it);              // blx 0x71908
-extern "C" int ListItem_sortCmp(Ship *ship, int sort); // tail b.w 0x1abe28
 
 // ListItem::checkSort() — field 0x10 is reloaded (not cached) before getSort.
 int ListItem::checkSort() {
@@ -39,7 +38,7 @@ int ListItem::checkSort() {
         return 0;
     Ship *ship = status->getShip();
     int sort = Item_getSort_li(self->field_0x10);
-    return ListItem_sortCmp(ship, sort);
+    return ListItem::sortCmp(ship, sort);
 }
 
 // ListItem::sortCmp(Ship*, int) — the tail-called helper of checkSort(). The original

@@ -964,8 +964,6 @@ int  Engine_IsPostEffectActivated_csp(Engine *e);
 // the agent gallery, plus all the SIMD light-direction / jumpgate-placement math the decompiler
 // mangled. Profile selects the orbit context.
 void Level_csp_buildDetail(Level *self);
-void Level_csp_buildStarSystemScene(Level *self);
-void Level_csp_buildStationAndGates(Level *self);
 }
 
 // Level::createSpace() — creates the skybox + star-system backdrop, the home station and the
@@ -1009,7 +1007,7 @@ void Level::createSpace()
         if (Status_inFogSkyboxOrbit_csp() == 0) {
             // (*status) used for storm check inside helper; spin written into self+0x1a4..0x1ac.
             (void)status;
-            Level_csp_buildStarSystemScene(this);
+            this->csp_buildStarSystemScene();
         } else {
             *(int *)(self + 0x1a4) = 0;
             *(int *)(self + 0x1a8) = 0;
@@ -1022,7 +1020,7 @@ void Level::createSpace()
         StarSystem *ss = (StarSystem *)Level_opnew_csp(0x60);
         StarSystem_ctor_csp(ss, mode);
         *(StarSystem **)(self + 0xec) = ss;
-        Level_csp_buildStarSystemScene(this);
+        this->csp_buildStarSystemScene();
         return;
     }
 
@@ -1034,7 +1032,7 @@ void Level::createSpace()
     *(void **)(self + 0x100) = players;
     ArraySetLength_KIPlayer_csp(4, players);
 
-    Level_csp_buildStationAndGates(this);
+    this->csp_buildStationAndGates();
 }
 
 struct RadioMessage;
@@ -1271,23 +1269,9 @@ int   Mission_isCampaignMission_init(Mission *m);
 int   Station_getIndex_init(void *s);
 int   SolarSystem_currentOrbitHasWarpGate_init();
 int   SolarSystem_getStations_init(SolarSystem *s);
-void  Level_createSpace_init(Level *self);
-void  Level_createPlayer_init(Level *self);
-void  Level_createAsteroids_init(Level *self);
-void  Level_createGasClouds_init(Level *self);
-void  Level_createMission_init(Level *self);
-void  Level_createCampaignMission_init(Level *self);
-void  Level_createScene_init(Level *self);
-void  Level_createStaticObjects_init(Level *self);
-void  Level_createSentryGuns_init(Level *self);
-void  Level_createFighterTurrets_init(Level *self);
-void  Level_createWingmen_init(Level *self);
-void  Level_assignGuns_init(Level *self);
-void  Level_connectPlayers_init(Level *self);
 int   KIPlayer_isWingMan_init();
 // Places the player at the appropriate spawn (station/warpgate/planet/origin); all the candidate
 // positions involve SIMD vector math the decompiler corrupted, so delegate the whole choice.
-void  Level_init_placePlayer(Level *self, int statusA, int stationStack);
 }
 
 // Level::init() — staged level setup; runs over up to two ticks (the counter at self+0x134),
@@ -1365,14 +1349,14 @@ int Level::init() {
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x6aaf, 1, 0xffff, 0);
         *(ParticleSystemManager **)(self + 0x94) = psm;
 
-        Level_createSpace_init(thisptr);
+        thisptr->createSpace_init();
 
         if (*(int *)(self + 0xc0) == 3) {
-            Level_createPlayer_init(thisptr);
+            thisptr->createPlayer_init();
             int stk = 0;
             if (**g_init_flagStack != 0 && *(int *)(*(int *)(self + 0xf0) + 8) != 0)
                 stk = Status_getStationStack_init((int)(intptr_t)*statusA);
-            Level_init_placePlayer(thisptr, (int)(intptr_t)*statusA, stk);
+            thisptr->init_placePlayer((int)(intptr_t)*statusA, stk);
         }
         stage = *(int *)(self + 0x134);
     }
@@ -1383,8 +1367,8 @@ int Level::init() {
     }
 
     if (*(int *)(self + 0xc0) != 4 && *(int *)(self + 0xc0) != 0x17) {
-        Level_createAsteroids_init(thisptr);
-        Level_createGasClouds_init(thisptr);
+        thisptr->createAsteroids_init();
+        thisptr->createGasClouds_init();
     }
 
     Mission *m = (Mission *)Status_getMission_init();
@@ -1403,9 +1387,9 @@ int Level::init() {
                 bool skip = won != 0 && *(char *)(settings + 0x37) == 0 &&
                             *(char *)(settings + 0x35) == 0;
                 if (skip) {
-                    Level_createMission_init(thisptr);
+                    thisptr->createMission_init();
                     if (**g_init_bmFlag != 0 && Status_inBlackMarketSystem_init() != 0)
-                        Level_init_placePlayer(thisptr, (int)(intptr_t)*statusA, 0);
+                        thisptr->init_placePlayer((int)(intptr_t)*statusA, 0);
                 } else if (*(int *)(self + 0xc0) != 3) {
                     madeScene = true;
                 } else {
@@ -1413,36 +1397,36 @@ int Level::init() {
                     if (Mission_isEmpty_init() == 0) {
                         Mission *mm = (Mission *)Status_getMission_init();
                         if (Mission_isCampaignMission_init(mm) != 0)
-                            Level_createCampaignMission_init(thisptr);
+                            thisptr->createCampaignMission_init();
                     }
                 }
             }
         } else {
-            Level_createMission_init(thisptr);
+            thisptr->createMission_init();
             if (**g_init_bmFlag != 0 && Status_inBlackMarketSystem_init() != 0)
-                Level_init_placePlayer(thisptr, (int)(intptr_t)*statusA, 0);
+                thisptr->init_placePlayer((int)(intptr_t)*statusA, 0);
         }
         if (madeScene) {
-            Level_createScene_init(thisptr);
+            thisptr->createScene_init();
             *(int *)(self + 0xc0) = mode;
         }
     } else {
-        Level_createScene_init(thisptr);
+        thisptr->createScene_init();
         *(int *)(self + 0xc0) = mode;
     }
 
-    Level_createStaticObjects_init(thisptr);
+    thisptr->createStaticObjects_init();
     mode = *(int *)(self + 0xc0);
     if (mode != 0x17 && mode != 4 &&
         (mode != 2 || Status_getCurrentCampaignMission_init() != 0x2b)) {
-        Level_createSentryGuns_init(thisptr);
-        Level_createFighterTurrets_init(thisptr);
-        Level_createWingmen_init(thisptr);
+        thisptr->createSentryGuns_init();
+        thisptr->createFighterTurrets_init();
+        thisptr->createWingmen_init();
     }
-    Level_assignGuns_init(thisptr);
+    thisptr->assignGuns_init();
     if (*(int *)(self + 0xc0) != 3)
         *(int *)(self + 0xc0) = 3;
-    Level_connectPlayers_init(thisptr);
+    thisptr->connectPlayers_init();
     if (*(Route **)(self + 0xf0) != 0)
         ((PlayerEgo *)(*(int *)(self + 0xf0)))->setRoute_init();
 
@@ -1487,7 +1471,6 @@ struct PlayerTurret;
 __attribute__((visibility("hidden"))) extern int *g_cft_stack; // [DAT_000cc3e8]
 
 extern "C" {
-int  Level_createStaticObject_cft(Level *self, int wp, int type, int turret);
 void Player_setVulnerable_cft(Player *player, int flag);
 int  Player_getMaxHitpoints_cft();
 void Player_setMaxHitpoints_cft(Player *p, int hp);
@@ -1508,7 +1491,7 @@ void Level::createFighterTurrets()
         if (ki != 0) {
             int kind = *(int *)(ki + 0x7c);
             if (kind == 0x2d || kind == 0x33) {
-                PlayerTurret *t = (PlayerTurret *)Level_createStaticObject_cft(this, 0, 0x1a74, 1);
+                PlayerTurret *t = (PlayerTurret *)this->createStaticObject_cft(0, 0x1a74, 1);
                 Player_setVulnerable_cft(*(Player **)((char *)t + 0x4), 0);
                 Player *pp = *(Player **)((char *)t + 0x4);
                 int hp = Player_getMaxHitpoints_cft();
@@ -1544,7 +1527,6 @@ int  Station_isAttackedByAliens_uaa(Station *s);
 // Computes a randomized spawn offset for an alien attacker relative to either the player or the
 // station origin, then commits it to the KIPlayer at +0x48 (vtable setPosition). The original is
 // pure SIMD float math that Ghidra could not lift cleanly; delegate to the engine helper.
-void Level_uaa_placeAlien(int self, int *kiPlayer, int alienInOrbit);
 }
 
 // Level::updateAlienAttackers(int dt) — periodically (re)spawns the alien attacker wave.
@@ -1582,7 +1564,7 @@ void Level::updateAlienAttackers(int dt) {
                 if (Station_isAttackedByAliens_uaa(st) == 0)
                     inOrbit = 1; // fall back to player-relative placement
             }
-            Level_uaa_placeAlien((int)(intptr_t)self, ki, inOrbit);
+            thisptr->uaa_placeAlien(ki, inOrbit);
         }
         enemies = *(unsigned **)(self + 0xf8);
     }
@@ -1709,7 +1691,6 @@ void  PlayerAsteroid_setAsteroidCenter_ca(PlayerAsteroid *a, float cx, float cy,
 
 void  Vector_assign_ca(Vector *dst, Vector *src);
 // Distance between the existing asteroid `idx` center and `pos` (the original is SIMD reject math).
-float Level_ca_asteroidDistance(Level *self, unsigned idx, Vector *pos);
 // Builds the lod-mesh distance table appropriate for the current detail level / distance band and
 // installs it on the geometry (the original inlines several f64 immediates the decompiler corrupted).
 void  Level_ca_installLodMeshes(Level *self, AEGeometry *geo, short baseMesh, int near);
@@ -1889,7 +1870,7 @@ void Level::createAsteroids()
                 break;
             bool farEnough = false;
             for (unsigned j = 0; j < i; j = j + 1) {
-                float d = Level_ca_asteroidDistance(this, j, &pos);
+                float d = this->ca_asteroidDistance(j, &pos);
                 if (8000 < (int)d) { farEnough = true; break; }
             }
             if (farEnough)
@@ -1952,7 +1933,6 @@ void PlayerFighter_setExhaustVisible_ccm(int pf);
 // The story-battle builder for one campaign mission index: each case scripts a bespoke scene
 // (boss ships, escorts, derelicts, scripted waypoints/objectives). This is the giant, SIMD-heavy
 // per-mission switch that the decompiler could not lift, so it is provided by the engine helper.
-void Level_ccm_buildCampaignScene(Level *self, int missionIndex);
 }
 
 // Level::createCampaignMission() — constructs the scripted actors/objectives for the player's
@@ -1992,7 +1972,7 @@ void Level::createCampaignMission()
     }
 
     // all other campaign missions are scripted by the engine helper.
-    Level_ccm_buildCampaignScene(this, idx);
+    this->ccm_buildCampaignScene(idx);
 }
 
 struct SolarSystem;
@@ -2005,8 +1985,6 @@ extern "C" {
 int  Status_getSystem_uo();
 int  SolarSystem_getRace_uo();
 int  SolarSystem_getSecurityLevel_uo(SolarSystem *s);
-void Level_alarmAllFriends_uo(Level *self, int race, int message);
-void Level_createRadioMessage_uo(Level *self, int type);
 int  KIPlayer_isJumper_uo(KIPlayer *k);
 int  KIPlayer_isDead_uo();
 int  KIPlayer_isWingMan_uo();
@@ -2030,10 +2008,10 @@ void Level::updateOrbit(int dt) {
         if (Status_getSystem_uo() != 0 && *(int *)(*(int *)(self + 0xf0) + 0x18) != 0) {
             Status_getSystem_uo();
             int race = SolarSystem_getRace_uo();
-            Level_alarmAllFriends_uo(thisptr, race, 0);
+            thisptr->alarmAllFriends_uo(race, 0);
             Status_getSystem_uo();
             SolarSystem_getRace_uo();
-            Level_createRadioMessage_uo(thisptr, 2);
+            thisptr->createRadioMessage_uo(2);
             *(char *)(self + 0x18a) = 0;
         }
         t178 = *(int *)(self + 0x178);
@@ -2269,12 +2247,9 @@ __attribute__((visibility("hidden"))) extern float *g_up_clampW;    // [DAT_000d
 extern "C" {
 int  Status_getMission_up();
 int  Mission_isEmpty_up();
-void Level_updateMissionOrbit_call(Level *self, unsigned dt);
-void Level_updateOrbit_call(Level *self, unsigned dt);
 int  Status_getStation_up();
 int  Station_isAttackedByAliens_up(Station *s);
 int  Status_inAlienOrbit_up();
-void Level_updateAlienAttackers_call(Level *self);
 int  Station_getIndex_up(Station *s);
 int  Status_getCurrentCampaignMission_up();
 float Status_getGammaRayDamagePerSecond_up(int a, int b);
@@ -2317,16 +2292,16 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     if (Status_getMission_up() != 0) {
         Status_getMission_up();
         if (Mission_isEmpty_up() == 0) {
-            Level_updateMissionOrbit_call(thisptr, dt);
+            thisptr->updateMissionOrbit_call(dt);
             didMission = true;
         }
     }
     if (!didMission)
-        Level_updateOrbit_call(thisptr, dt);
+        thisptr->updateOrbit_call(dt);
 
     Station *st = (Station *)Status_getStation_up();
     if (Station_isAttackedByAliens_up(st) != 0 || Status_inAlienOrbit_up() != 0)
-        Level_updateAlienAttackers_call(thisptr);
+        thisptr->updateAlienAttackers_call();
 
     // tick player guns then enemy guns via their vtable update slot (+0x10).
     unsigned *guns = *(unsigned **)(self + 0xe4);
@@ -3078,7 +3053,6 @@ int  Status_inAlienOrbit_cso();
 int  Status_getStation_cso();
 int  Station_getIndex_cso(Station *s);
 int  Status_getCurrentCampaignMission_cso();
-int  Level_createStaticObject_cso(Level *self, int wp, int type, int turret);
 void PlayerFixedObject_setMoving_cso(PlayerFixedObject *o, int flag);
 void StarSystem_getLightDirection_cso(void *dst);
 // UNRECOVERED up-vector: AEGeometry::setDirection takes (dir, up); the binary's `up`
@@ -3116,7 +3090,7 @@ void Level::createStaticObjects()
             else                                                    type = 0x494a;
 
             if (type != -1) {
-                char *o = (char *)Level_createStaticObject_cso(this, 0, type, 0);
+                char *o = (char *)this->createStaticObject_cso(0, type, 0);
                 (*(void (**)(char *, float, int, float))(*(int *)o + 0x48))(o, g_cso_posX, 0,
                                                                            g_cso_posZ);
                 PlayerFixedObject_setMoving_cso((PlayerFixedObject *)o, 0);
@@ -3148,7 +3122,7 @@ void Level::createStaticObjects()
         Status_inAlienOrbit_cso() == 0) {
         Station *st = (Station *)Status_getStation_cso();
         if (Station_getIndex_cso(st) == 0x67) {
-            char *o = (char *)Level_createStaticObject_cso(this, 0, 0x4a88, 0);
+            char *o = (char *)this->createStaticObject_cso(0, 0x4a88, 0);
             (*(void (**)(char *, int, int, int))(*(int *)o + 0x48))(o, 0, 0, 0);
             PlayerFixedObject_setMoving_cso((PlayerFixedObject *)o, 0);
             *(char *)(o + 0x70) = 1;
@@ -3187,7 +3161,6 @@ int  cso2_rand20000(int rng); // (*pcVar23)(rng, 20000) randomized jitter
 // Constructs the requested static-object type (junk, turret, sentry gun, jumpgate gear, capital
 // landmark, etc.) fully positioned at (x,y,z); the original is a giant per-type cascade of
 // SIMD-built geometry that Ghidra could not lift. Returns the new KIPlayer-derived object.
-int  Level_cso2_construct(Level *self, int type, int x, int y, int z);
 }
 
 // Level::createStaticObject(Waypoint* wp, int type, bool jitter) — spawns one scenery / structure
@@ -3216,7 +3189,7 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
     }
 
     (void)self;
-    return Level_cso2_construct(thisptr, type, x, y, z);
+    return thisptr->cso2_construct(type, x, y, z);
 }
 
 struct FileRead;
@@ -3238,7 +3211,6 @@ void  ArrayRelease_int_gbv(void *a);
 // Builds one BoundingVolume (sphere when shape==0, AAB when shape==1) from the raw collision
 // record at `rec`; returns the new object. The conversion is fixed-point->float SIMD math the
 // decompiler mangled, so it lives in the engine helper.
-BoundingVolume *Level_gbv_makeVolume(int rec, int shape);
 }
 
 // Level::getBoundingVolume(int idx, AEGeometry* outArrayHolder) — loads the per-mesh collision
@@ -3271,10 +3243,10 @@ void *Level_getBoundingVolume(int idx, int kind)
             int rec = (int)(intptr_t)(data + cursor);
             BoundingVolume *bv = 0;
             if (shape == 1) {
-                bv = Level_gbv_makeVolume(rec, 1);
+                bv = ((Level*)0)->gbv_makeVolume(rec, 1);
                 cursor = cursor + 7;
             } else if (shape == 0) {
-                bv = Level_gbv_makeVolume(rec, 0);
+                bv = ((Level*)0)->gbv_makeVolume(rec, 0);
                 cursor = cursor + 5;
             } else {
                 cursor = cursor + 1;
@@ -3323,7 +3295,6 @@ void *Array_int_dtor_cs(void *a);
 void operator_delete_cs(void *p);
 // Builds the class-appropriate bounding-volume array (the original is a long cascade of SIMD
 // BoundingAAB constructions Ghidra could not lift) and returns it; also returns the wreck mesh id.
-void *Level_cs_buildBV(int race, int type, int *outWreckMesh);
 }
 
 // Level::createShip(race, shipClass, type, wp, hostile, group) — spawns a fighter (class 0) or a
@@ -3404,7 +3375,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         obj = (PlayerFixedObject *)Level_opnew_cs(0x1bc);
         PlayerFixedObject_ctor_cs(obj, type, race, pl, 0, fx, fy, fz);
         int wreck = 0;
-        void *bv = Level_cs_buildBV(race, type, &wreck);
+        void *bv = Level::cs_buildBV(race, type, &wreck);
         PlayerFixedObject_setWreckedMeshId_cs(obj, wreck);
         PlayerFixedObject_setBV_cs(obj, bv);
         int gg = Globals_getShipGroup_cs(*g_cs_globalsB, type, race, 0);
@@ -4171,9 +4142,7 @@ void *Level_opnew_arr_csc(unsigned size);
 void  ArrayKIPlayer_ctor_csc(void *a);
 void  ArraySetLength_KIPlayer_csc(unsigned n, void *a);
 void  ArrayAdd_KIPlayer_csc(KIPlayer *k, void *a);
-void  Level_createPlayer_csc(Level *self);
 void  Status_setMission_csc(Mission *m);
-void  Level_createMission_csc(Level *self);
 int   Status_getCurrentCampaignMission_csc();
 int   Status_getSystem_csc();
 int   SolarSystem_getRace_csc();
@@ -4195,7 +4164,6 @@ void  PlayerFighter_setExhaustVisible_csc(int pf);
 void  KIPlayer_setToSleep_csc(KIPlayer *k);
 void  Player_setAlwaysFriend_csc(Player *p, int flag);
 // Position/rotate a freshly created static actor — corrupted SIMD in the original.
-void  Level_csc_placeActor(Level *self, int actor, int idx, int profile);
 }
 
 // Level::createScene() — builds the non-flight presentation scenes (cut-scene mode 2, station
@@ -4213,9 +4181,9 @@ void Level::createScene()
     *(int *)(self + 0xf8) = 0;
 
     if (mode == 2) {
-        Level_createPlayer_csc(this);
+        this->createPlayer_csc();
         Status_setMission_csc((Mission *)**g_csc_missionDef);
-        Level_createMission_csc(this);
+        this->createMission_csc();
         if (Status_getCurrentCampaignMission_csc() == 0x2b) {
             void *canvas = *g_csc_canvas;
             AEGeometry *g = (AEGeometry *)Level_opnew_csc(0xc0);
@@ -4273,7 +4241,7 @@ void Level::createScene()
                 PlayerStatic *p = (PlayerStatic *)Level_opnew_csc(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
                 *(PlayerStatic **)(*(int *)(*(int *)(self + 0xf8) + 4) + a * 4) = p;
-                Level_csc_placeActor(this, (int)(intptr_t)p, seat, 0);
+                this->csc_placeActor((int)(intptr_t)p, seat, 0);
 
                 g = (AEGeometry *)Level_opnew_csc(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
@@ -4322,7 +4290,7 @@ void Level::createScene()
         int actor = (int)(intptr_t)this->createShip_csc(shipRace, 0, shipIdx, 0,
                                          *(int *)(self + 0xc0) != 0x17, 0);
         **(int **)(*(int *)(self + 0xf8) + 4) = actor;
-        Level_csc_placeActor(this, actor, shipIdx, 1);
+        this->csc_placeActor(actor, shipIdx, 1);
         PlayerFighter_removeTrail_csc(actor);
         PlayerFighter_setExhaustVisible_csc(actor);
         KIPlayer_setToSleep_csc((KIPlayer *)actor);
@@ -4384,7 +4352,7 @@ void Level::createScene()
                 guard = guard + 1;
             }
             seats[seat & 0x3f] = 1;
-            Level_csc_placeActor(this, (int)(intptr_t)k, seat, 2);
+            this->csc_placeActor((int)(intptr_t)k, seat, 2);
             Player_setAlwaysFriend_csc(*(Player **)((char *)k + 0x4), 1);
             KIPlayer_setToSleep_csc(k);
             PlayerFighter_setExhaustVisible_csc((int)(intptr_t)k);

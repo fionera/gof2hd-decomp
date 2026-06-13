@@ -430,9 +430,3 @@ extern "C" Route *Route_ctor2(Route *self, int *coords, void *targets, int *time
 {
     return self->ctorWithTargets(coords, (Array<KIPlayer *> *)targets, times, count);
 }
-
-// Route_dtor — ~Route(); releases the waypoint array (deep) and target/time arrays.
-extern "C" void *Route_dtor(Route *self)
-{
-    return self->dtor();
-}

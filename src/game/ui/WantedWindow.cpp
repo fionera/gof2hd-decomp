@@ -31,14 +31,11 @@
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-extern "C" void WantedWindow_update_tail(void *starMap, int dt);
-extern "C" void WantedWindow_render3D_tail(void *starMap);
 extern "C" int __aeabi_idiv(int numerator, int denominator);
 extern "C" void StarMap_OnTouchEnd_tail(void);
 extern "C" void *Mission_ctor(void *mission, int a, int b, int dest);
 extern "C" void *StarMap_ctor(void *map, bool jumpMapMode, void *mission, bool flag, int idx);
 extern "C" int Station_getSystem(void *station);
-extern "C" void WantedWindow_draw_tail(void *starMap);
 extern void DisableClip();  // AbyssEngine::PaintCanvas::DisableClip (free fn, not methodized)
 extern "C" void String_cstr_ctor(String *s, const char *text, bool copy);
 extern "C" void String_plus(String *out, String *a, String *b);
@@ -115,7 +112,7 @@ int WantedWindow::OnTouchMove(int x, int y) {
 void WantedWindow::update(int dt) {
     WantedWindow *self = this;
     if (self->showingMap != 0) {
-        return WantedWindow_update_tail(self->starMap, dt);
+        return this->update_tail(self->starMap, dt);
     }
 
     ((TouchButton *)(*(void **)((char *)F<void *>(self->buttons, 0x4) + 4)))->setAlwaysPressed(true);
@@ -189,7 +186,7 @@ int WantedWindow::OnTouchBegin(int x, int y) {
 void WantedWindow::render3D() {
     WantedWindow *self = this;
     if (self->showingMap != 0) {
-        return WantedWindow_render3D_tail(self->starMap);
+        return this->render3D_tail(self->starMap);
     }
 }
 
@@ -397,7 +394,7 @@ void WantedWindow::draw() {
     String sa0;
 
     if (self->showingMap != 0) {
-        WantedWindow_draw_tail(self->starMap);
+        this->draw_tail(self->starMap);
         return;
     }
 

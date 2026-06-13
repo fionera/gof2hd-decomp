@@ -621,8 +621,3 @@ extern "C" void *HangarList_dtor(void *p) {
     if (p) ((HangarList *)p)->~HangarList();
     return p;
 }
-
-// HangarList_getItems — C-ABI accessor for the tab/item table.
-extern "C" void *HangarList_getItems(void *list) {
-    return ((HangarList *)list)->getItems();
-}

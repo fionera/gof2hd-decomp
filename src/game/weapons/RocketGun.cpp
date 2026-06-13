@@ -19,11 +19,9 @@ public:
     void TransformSetLocal(unsigned int index, const Matrix &matrix);
 };
 
-extern "C" void RocketGun_render_tail();
 extern "C" __attribute__((visibility("hidden"))) void *RocketGun_vtable;
 extern "C" void *Array_Matrix_dtor(void *p);
 extern "C" void *Array_int_dtor(void *p);
-extern "C" void *RocketGun_base_dtor(RocketGun *self);
 void *_ZN9RocketGunD1Ev(RocketGun *self);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder;
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder2;
@@ -32,7 +30,6 @@ extern "C" void Array_int_ctor(void *self);
 extern "C" void ArraySetLength_Matrix(uint32_t length, void *array);
 extern "C" void ArraySetLength_int(uint32_t length, void *array);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func)(void *out, void *in);
-extern "C" int Player_getEnemies(void *player);
 extern "C" __attribute__((visibility("hidden"))) void **RocketGun_canvas_holder3;
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_func2)(void *out, void *in);
 extern "C" __attribute__((visibility("hidden"))) void (*RocketGun_vector_scale_func)(void *out, void *in, float scale);
@@ -56,7 +53,7 @@ Vector operator*(const Vector &v, float scale);
 
 void RocketGun::render()
 {
-    return RocketGun_render_tail();
+    return this->render_tail();
 }
 
 // RocketGun::base_dtor() — the chained ObjectGun base destructor. After
@@ -99,7 +96,7 @@ void *_ZN9RocketGunD1Ev(RocketGun *self)
         ::operator delete(Array_int_dtor(a2));
 
     self->trailTimers = 0;
-    return RocketGun_base_dtor(self);
+    return self->base_dtor();
 }
 
 void _ZN9RocketGunD0Ev(RocketGun *self)
@@ -127,7 +124,7 @@ RocketGun::~RocketGun()
         ::operator delete(Array_int_dtor(this->trailTimers));
     this->trailTimers = 0;
 
-    RocketGun_base_dtor(this);
+    this->base_dtor();
 }
 
 extern "C" void ObjectGun_ctor(RocketGun *self, int param_1, Gun *param_2, int param_3,
@@ -306,7 +303,7 @@ void RocketGun::seekEnemy(int unused, int index)
     enemy = F<void *>(this->gun, 0x4);
     if (F<int>(((Player *)(enemy))->getKIPlayer(), 0x38) < 0)
         goto fallback;
-    if (Player_getEnemies(F<void *>(this->gun, 0x4)) == 0)
+    if (((Player *)(F<void *>(this->gun, 0x4)))->getEnemies() == 0)
         goto fallback;
     enemy = F<void *>(this->gun, 0x4);
     enemy = ((Player *)(enemy))->getEnemy(F<int>(((Player *)(enemy))->getKIPlayer(), 0x38));

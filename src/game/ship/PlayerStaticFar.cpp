@@ -1,11 +1,9 @@
 #include "gof2/game/ship/PlayerStaticFar.h"
+#include "gof2/game/ship/PlayerStatic.h"
 #include "gof2/engine/render/AEGeometry.h"
 #include "gof2/engine/math/BoundingVolume.h"
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/core/PaintCanvasClass.h"
-
-extern "C" void *PlayerStatic_base_dtor(PlayerStaticFar *self);
-extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
 
 // PlayerStaticFar deleting destructor (D0): PlayerStaticFar has no owned members,
 // so it directly runs the base (PlayerStatic) destructor, then tail-calls
@@ -13,7 +11,7 @@ extern "C" void *PlayerStatic_base_dtor_thunk(PlayerStaticFar *self);
 
 void _ZN15PlayerStaticFarD0Ev(PlayerStaticFar *self)
 {
-    return ::operator delete(PlayerStatic_base_dtor(self));
+    return ::operator delete(((PlayerStatic *)self)->base_dtor());
 }
 
 // ---- ~PlayerStaticFar (D2) — non-deleting destructor.
@@ -21,7 +19,7 @@ void _ZN15PlayerStaticFarD0Ev(PlayerStaticFar *self)
 // into the PlayerStatic base destructor.
 void PlayerStaticFar::dtor()
 {
-    PlayerStatic_base_dtor(this);
+    ((PlayerStatic *)this)->base_dtor();
 }
 
 Vector PlayerStaticFar::getProjectionVector(const Vector &value)
@@ -86,7 +84,7 @@ bool PlayerStaticFar::outerCollide(float x, float y, float z)
 
 void *_ZN15PlayerStaticFarD2Ev(PlayerStaticFar *self)
 {
-    return PlayerStatic_base_dtor_thunk(self);
+    return ((PlayerStatic *)self)->base_dtor_thunk();
 }
 
 // Returns the init position (fields at +0x58,+0x5c,+0x60) by value: sret in r0,
@@ -244,15 +242,12 @@ bool PlayerStaticFar::collide(float x, float y, float z)
 }
 
 // Base PlayerStatic constructor (blx 0x75fdc) and Player::setRadius (blx 0x730d8).
-extern "C" void PlayerStatic_ctor(PlayerStaticFar *self, int playerId,
-                                  AEGeometry *geometry, float x, float y, float z);
-
 // Hidden-visibility vtable so the address is materialized via a PC-relative load.
 __attribute__((visibility("hidden"))) extern void *volatile g_PlayerStaticFar_vtable;
 
 PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z)
 {
-    PlayerStatic_ctor(this, playerId, geometry, x, y, z);
+    ((PlayerStatic *)this)->ctor(playerId, geometry, x, y, z);
 
     void *vtable = g_PlayerStaticFar_vtable;
     this->viewDirX = 0;

@@ -35,7 +35,6 @@
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
-extern "C" int  Status_isChallengeMode();
 extern "C" void String_concat(void *out, void *lhs, void *rhs);
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
@@ -239,7 +238,7 @@ void Hud::draw(long long t0, long long t1, void *ego, bool letterbox, unsigned i
         ((Hud *)(self))->drawMenu();
 
     // challenge-mode score/time readout
-    if (Status_isChallengeMode() != 0)
+    if (Status::isChallengeMode() != 0)
         ((Hud *)(self))->drawChallengeModeScore();
 
     // pause button and any pending full-screen message

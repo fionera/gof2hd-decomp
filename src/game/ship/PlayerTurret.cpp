@@ -34,7 +34,6 @@ Matrix operator*(const Matrix &, const Matrix &);
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int max); } }
 extern "C" void Array_int_ctor(IntArray *array);
 extern "C" void ArrayAdd_int(int value, IntArray *array);
-extern "C" PlayerArray *Player_getEnemies(Player *self);
 float VectorLength(const Vector *v);
 extern "C" void *Explosion_dtor(Explosion *self);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
@@ -382,7 +381,7 @@ void PlayerTurret::pickEnemy()
         I(this, 0x130) = 0;
         this->f_14c = 0;
 
-        PlayerArray *enemies = Player_getEnemies(TP<Player>(this, 0x4));
+        PlayerArray *enemies = (PlayerArray *)((Player *)(TP<Player>(this, 0x4)))->getEnemies();
         if (enemies != 0) {
             Vector *position = (Vector *)B(this, 0x2c);
             uint32_t i = 0;

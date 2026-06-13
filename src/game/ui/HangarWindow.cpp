@@ -15,6 +15,7 @@
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/ui/ListItem.h"
 #include "gof2/game/ship/Ship.h"
+#include "gof2/engine/core/NFC.h"
 
 // Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls are
 // method calls on this global instance.
@@ -50,7 +51,6 @@ extern "C" void *Array_TouchButton_dtor(void *p);
 extern "C" extern const char hw_ote_fmt1[], hw_ote_fmt2[], hw_ote_fmt3[], hw_ote_fmt4[];
 // Last arg is void* in some sections, float in others; variadic covers both.
 extern "C" extern const char hw_otb_fmt1[], hw_otb_fmt2[];
-extern "C" void *HangarList_getItems(void *list);
 void *BluePrint_getIngredientList(void *bp);
 extern "C" extern const char hw_bp_fmt1[], hw_bp_fmt2[], hw_bp_fmt3[];
 extern "C" extern const char hw_sel_fmt1[], hw_sel_fmt2[], hw_sel_fmt3[];
@@ -533,17 +533,6 @@ void AEString_assign(String12 *self, String12 *src);
 void AEString_add(String12 *out, String12 *a, String12 *b);
 void AEString_addAssign(String12 *self, String12 *other);
 
-void NFC_free_credits_likeGOF2OnFacebook();
-void NFC_free_credits_likeFishlabsOnFacebook();
-void NFC_free_credits_subscribeToYoutubeChannel();
-void NFC_free_credits_followOnTwitter();
-void NFC_free_credits_rateGame();
-void NFC_iap_buy_credits_100_000();
-void NFC_iap_buy_credits_300_000();
-void NFC_iap_buy_credits_1_000_000();
-void NFC_iap_buy_credits_3_000_000();
-void NFC_iap_buy_credits_10_000_000();
-
 void *AppManager_GetApplicationData();
 void *AppManager_GetApplicationModule(unsigned int id);
 void ArrayReleaseClasses_ItemPtr(void *arr);
@@ -788,31 +777,31 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                         break;
                     case 1:
                         G<uint8_t>(appData, 0xa0) = 1;
-                        NFC_free_credits_likeGOF2OnFacebook();
+                        NFC().free_credits_likeGOF2OnFacebook();
                         Status_changeCredits(globals);
                         g_hw_optionFlags[0x49] = 1;
                         break;
                     case 2:
                         G<uint8_t>(appData, 0xa1) = 1;
-                        NFC_free_credits_likeFishlabsOnFacebook();
+                        NFC().free_credits_likeFishlabsOnFacebook();
                         Status_changeCredits(globals);
                         g_hw_optionFlags[0x4a] = 1;
                         break;
                     case 3:
                         G<uint8_t>(appData, 0xa2) = 1;
-                        NFC_free_credits_subscribeToYoutubeChannel();
+                        NFC().free_credits_subscribeToYoutubeChannel();
                         Status_changeCredits(globals);
                         g_hw_optionFlags[0x4b] = 1;
                         break;
                     case 4:
                         G<uint8_t>(appData, 0xa3) = 1;
-                        NFC_free_credits_followOnTwitter();
+                        NFC().free_credits_followOnTwitter();
                         Status_changeCredits(globals);
                         g_hw_optionFlags[0x4c] = 1;
                         break;
                     case 5:
                         G<uint8_t>(appData, 0xd) = 1;
-                        NFC_free_credits_rateGame();
+                        NFC().free_credits_rateGame();
                         Status_changeCredits(globals);
                         g_hw_optionFlags[0x4d] = 1;
                         break;
@@ -921,11 +910,11 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             for (unsigned int i = 0; i < 5; i++) {
                 if (((TouchButton *)(G<void *>(G<void *>(btns, 4), i * 4 + 0x30)))->OnTouchEnd(touch) != 0) {
                     switch (i) {
-                    case 0: NFC_iap_buy_credits_300_000(); break;
-                    case 1: NFC_iap_buy_credits_1_000_000(); break;
-                    case 2: NFC_iap_buy_credits_3_000_000(); break;
-                    case 3: NFC_iap_buy_credits_10_000_000(); break;
-                    default: NFC_iap_buy_credits_100_000(); break;
+                    case 0: NFC().iap_buy_credits_300_000(); break;
+                    case 1: NFC().iap_buy_credits_1_000_000(); break;
+                    case 2: NFC().iap_buy_credits_3_000_000(); break;
+                    case 3: NFC().iap_buy_credits_10_000_000(); break;
+                    default: NFC().iap_buy_credits_100_000(); break;
                     }
                 }
             }
@@ -1161,7 +1150,6 @@ void *Station_getItems(void *station);
 void ArrayAdd_ItemPtr(void *item, void *arr);
 void ArrayReleaseClasses_ItemPtr(void *arr);
 void *Array_ItemPtr_dtor(void *arr);
-void *HangarWindow_statusShip();
 }
 
 __attribute__((visibility("hidden"))) extern void **g_hw_sound;
@@ -1203,12 +1191,12 @@ void HangarWindow::demountItem(void *item, int slot) {
     }
     self->itemList = 0;
 
-    HangarWindow_statusShip();
+    this->statusShip();
     void *mixed = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(Station_getItems(((Status *)(*gStatus))->getStation())));
     self->itemList = mixed;
-    ((HangarList *)(self->hangarList))->initShipTab((Ship *)HangarWindow_statusShip());
+    ((HangarList *)(self->hangarList))->initShipTab((Ship *)this->statusShip());
 
-    HangarWindow_statusShip();
+    this->statusShip();
     void *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(Station_getItems(((Status *)(*gStatus))->getStation())));
     ((HangarList *)(self->hangarList))->initShopTab((Array<Item *> *)(items), Station_getShips(((Status *)(*gStatus))->getStation()));
     ((HangarList *)(self->hangarList))->setCurrentTab(false);
@@ -1408,7 +1396,7 @@ __attribute__((visibility("hidden"))) extern void **g_hw_status2;
 
 void HangarWindow::refreshCargoAvailabilityForBlueprints() {
     HangarWindow *self = this;
-    void *items = HangarList_getItems(self->hangarList);
+    void *items = ((HangarList *)(self->hangarList))->getItems();
     Array<void *> *arr = *(Array<void *> **)((char *)G<void *>(items, 0x4) + 0x8);
     if (arr == 0) return;
     for (uint32_t i = 0; i < arr->size(); i++) {
@@ -1446,7 +1434,6 @@ void AEString_assign(String12 *self, String12 *src);
 void ArrayReleaseClasses_ItemPtr(void *arr);
 void *Array_ItemPtr_dtor(void *arr);
 void ArrayAdd_ItemPtr(void *item, void *arr);
-void *HangarWindow_statusShip();
 }
 
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
@@ -1566,8 +1553,8 @@ void HangarWindow::setSellMode() {
         }
 
         Globals *globals = (Globals *)*g_hw_globals;
-        ((Ship *)(HangarWindow_statusShip()))->setCargo(Item::extractItems((ItemArray *)(((Ship *)(0))->getCargo()), true));
-        HangarWindow_statusShip();
+        ((Ship *)(this->statusShip()))->setCargo(Item::extractItems((ItemArray *)(((Ship *)(0))->getCargo()), true));
+        this->statusShip();
         void *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(Station_getItems(((Status *)(*gStatus))->getStation())));
         ((HangarList *)(self->hangarList))->initShopTab((Array<Item *> *)(items), Station_getShips(((Status *)(*gStatus))->getStation()));
         ((HangarList *)(self->hangarList))->initBlueprintTab((Array<BluePrint *> *)(long)((Status *)(globals))->getBluePrints());
@@ -1983,7 +1970,6 @@ void HangarWindow::transaction(bool buy) {
 extern "C" {
 void *Station_getItems(void *station);
 void ArrayRemove_ItemPtr(void *item, void *arr);
-void *HangarWindow_statusShip();
 }
 
 __attribute__((visibility("hidden"))) extern void **g_hw_sound;
@@ -2024,11 +2010,11 @@ void HangarWindow::mountItem(void *item) {
         }
     }
 
-    void *ship2 = HangarWindow_statusShip();
+    void *ship2 = this->statusShip();
     ((Ship *)(ship2))->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
-    ((HangarList *)(self->hangarList))->initShipTab((Ship *)HangarWindow_statusShip());
+    ((HangarList *)(self->hangarList))->initShipTab((Ship *)this->statusShip());
 
-    HangarWindow_statusShip();
+    this->statusShip();
     void *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(Station_getItems(((Status *)(*gStatus))->getStation())));
     ((HangarList *)(self->hangarList))->initShopTab((Array<Item *> *)(items), Station_getShips(((Status *)(*gStatus))->getStation()));
     ((HangarList *)(self->hangarList))->setCurrentTab(false);
@@ -2111,7 +2097,6 @@ void AEString_ctor(String12 *self, const char *text, bool copy);
 void AEString_ctor_copy(String12 *self, String12 *src, bool copy);
 void AEString_dtor(String12 *self);
 void AEString_assign(String12 *self, String12 *src);
-void *HangarWindow_statusShip();
 }
 
 __attribute__((visibility("hidden"))) extern int *g_hw_equipTextId;
@@ -2154,9 +2139,9 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
             }
         }
 
-        ((Ship *)(HangarWindow_statusShip()))->setEquipment((Item *)made);
-        ((Ship *)(HangarWindow_statusShip()))->removeCargo(((Item *)(made))->getIndex(), ((Item *)(itm))->getAmount());
-        ((HangarList *)(self->hangarList))->initShipTab((Ship *)HangarWindow_statusShip());
+        ((Ship *)(this->statusShip()))->setEquipment((Item *)made);
+        ((Ship *)(this->statusShip()))->removeCargo(((Item *)(made))->getIndex(), ((Item *)(itm))->getAmount());
+        ((HangarList *)(self->hangarList))->initShipTab((Ship *)this->statusShip());
 
         String12 msg, msgCopy, name, fmt;
         String12 result;

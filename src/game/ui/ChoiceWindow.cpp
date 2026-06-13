@@ -19,7 +19,6 @@ void Globals_getLineArray(void *self, void *font, String const &text, int width,
 void ScrollTouchWindow_ctor(void *self, int x, int y, int width, int height, bool centered);
 void ArrayReleaseClasses_StringPtr(void *self);
 void *Array_StringPtr_dtor(void *self);
-void ScrollTouchWindow_setPosition(void *self, int y);
 void Layout_formatCredits(String *out, void *layout, int value);
 void TouchButton_getPosition(float *out, void *self);
 // Status::replaceHash(String pattern, String value) -> String
@@ -380,7 +379,7 @@ void ChoiceWindow::setMiscButton(String const &text)
     if (this->leftButton != 0) ((TouchButton *)(this->leftButton))->translate(0, delta);
     if (this->rightButton != 0) ((TouchButton *)(this->rightButton))->translate(0, delta);
 
-    ScrollTouchWindow_setPosition(this->scrollWindow,
+    ((ScrollTouchWindow *)(this->scrollWindow))->setPosition(
                                   *g_ChoiceWindow_screenHeight_147068 / 2 -
                                       this->height / 2 + F<int>(layout, 0x8));
 }

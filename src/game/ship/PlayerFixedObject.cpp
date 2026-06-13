@@ -33,7 +33,6 @@ template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)
 
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 extern "C" void *Explosion_ctor(void *e, int a);
-extern "C" void *Player_getEnemies();
 extern "C" void Array_BV_ctor(void *arr);
 void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 extern "C" V3 BV_getProjectionVector(void *bv);
@@ -496,7 +495,7 @@ afterMotion:
         }
     } else if (state == 5) {
         // dead-but-selectable: search for a nearby active enemy to re-home on
-        unsigned int *enemies = (unsigned int *)Player_getEnemies();
+        unsigned int *enemies = (unsigned int *)((Player *)(self->player))->getEnemies();
         if (enemies != 0) {
             self->targetEnemy = 0;
             for (unsigned int i = 0; i < enemies[0]; i++) {

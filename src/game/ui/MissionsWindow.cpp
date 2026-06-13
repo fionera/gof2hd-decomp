@@ -181,7 +181,6 @@ void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
 void  String_fromInt(void *s, int value);
 
-int   Status_wantedBoardAccessible();
 void  Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
 void  Globals_getAgentMissionText(void *out, void *agent);
@@ -421,7 +420,7 @@ int MissionsWindow::init() {
     i32(self, 0x40) = 0;
     u8(self, 0x23) = 0;
 
-    if (Status_wantedBoardAccessible() != 0) {
+    if (((Status *)(*(void **)g_mwi_status))->wantedBoardAccessible() != 0) {
         if (pp(self, 0x10) == 0) {
             void *ww = ::operator new(0xb4);
             WantedWindow_ctor(ww);
@@ -439,14 +438,12 @@ extern "C" {
 
 // Two mode-specific draw tail calls (mode==1 / flag@0x22).
 void MissionsWindow_drawWanted(void *self);   // DAT_1ac504 thunk
-void MissionsWindow_drawStarMap(void *self);  // DAT_1ac274 thunk
 
 void  Layout_drawHeader(void *layout, void *title);
 
 void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
 
-int   Status_wantedBoardAccessible();
 // Draw uses the Status singleton via free-function helpers.
 
 extern void *g_mwd_canvas;    // *(DAT_16059c): paint canvas
@@ -463,7 +460,7 @@ void MissionsWindow::draw() {
     char *s = (char *)self;
 
     if (i32(self, 0x40) == 1) { MissionsWindow_drawWanted(self);  return; }
-    if (u8(self, 0x22) != 0)  { MissionsWindow_drawStarMap(self); return; }
+    if (u8(self, 0x22) != 0)  { ((MissionsWindow *)(self))->drawStarMap(); return; }
 
     void *canvas = *(void **)g_mwd_canvas;
     void *layout = *(void **)g_mwd_layout;
@@ -479,7 +476,7 @@ void MissionsWindow::draw() {
     Layout_drawHeader(layout, header);
     ((String *)(header))->dtor();
 
-    if (Status_wantedBoardAccessible() != 0) {
+    if (((Status *)(*(void **)g_mwi_status))->wantedBoardAccessible() != 0) {
         void **tabs = (void **)pp(self, 0x14);
         for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
             ((TouchButton *)(((void **)tabs[1])[i]))->draw();
@@ -614,8 +611,6 @@ void StarMap_ctor(void *map, bool a, void *mission, bool b, int c);
 // returns a hit flag here; declare the real ABI signature so the test compiles.
 int  StarMap_OnTouchEnd(StarMap *map, int x, int y);
 
-int  Status_wantedBoardAccessible();
-
 void String_fromText(void *s, void *text, bool copy);
 
 extern void *g_mwt_freelanceSrc;  // *(DAT_161174): freelance mission source
@@ -693,7 +688,7 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
 
     // Normal (no dialog) path, unless StarMap is showing.
     if (u8(self, 0x22) == 0) {
-        if (Status_wantedBoardAccessible() != 0) {
+        if (((Status *)(*(void **)g_mwi_status))->wantedBoardAccessible() != 0) {
             void **tabs = (void **)pp(self, 0x14);
             for (unsigned int i = 0; i < *(unsigned int *)tabs; i++) {
                 if (((TouchButton *)(((void **)tabs[1])[i]))->OnTouchEnd(y, z) != 0)
@@ -794,10 +789,6 @@ done:
 
 extern "C" {
 
-// Two mode-specific tail calls reached via GOT thunks.
-void MissionsWindow_acceptAction(void *self);   // DAT_1ac514 thunk (mode == 1)
-void MissionsWindow_cancelAction(void *self);   // DAT_1ac284 thunk (flag @0x22)
-
 void  String_fromC(void *s, const char *text, bool copy);
 void  String_fromText(void *s, void *text, bool copy);
 void  String_fromInt(void *s, int value);
@@ -817,12 +808,12 @@ void MissionsWindow::update(int dt) {
 
     // Mode 1: confirm/accept and bail out.
     if (i32(self, 0x40) == 1) {
-        MissionsWindow_acceptAction(self);
+        ((MissionsWindow *)(self))->acceptAction();
         return;
     }
     // Cancel flag set: cancel and bail out.
     if (u8(self, 0x22) != 0) {
-        MissionsWindow_cancelAction(self);
+        ((MissionsWindow *)(self))->cancelAction();
         return;
     }
 

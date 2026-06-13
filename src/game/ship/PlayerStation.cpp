@@ -43,7 +43,6 @@ extern "C" void Array_int_destructor(void *array) __attribute__((nothrow));
 extern "C" void ArrayRelease_int(void *array) __attribute__((nothrow));
 extern "C" void Array_BoundingVolumePtr_constructor(void *array);
 extern "C" void ArraySetLength_BoundingVolumePtr(uint32_t length, void *array);
-extern "C" void *PlayerStation_destructor_body(PlayerStation *self) __attribute__((nothrow));
 
 void PlayerStation::setVisible(bool visible)
 {
@@ -558,7 +557,7 @@ bool PlayerStation::outerCollide(float x, float y, float z)
 // Emitted as a named function so it doesn't collide with the in-place ~PlayerStation() above.
 void PlayerStation::deleting_dtor() {
     PlayerStation *self = this;
-    ::operator delete(PlayerStation_destructor_body(self));
+    ::operator delete(((PlayerStation *)self)->destructor_body());
 }
 
 // Complete-object destructor body (engine 0x1325ec calls this, then frees the

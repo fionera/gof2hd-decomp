@@ -60,7 +60,6 @@ extern "C" void *SpaceLounge_layout_move;
 extern "C" void SpaceLounge_OnRender3D_map_tail(void *map);
 extern "C" void SpaceLounge_OnRender3D_cutscene_tail(void *cutscene);
 extern "C" void SpaceLounge_OnRenderBG_tail();
-extern "C" void SpaceLounge_draw3DShip_tail(void *ship);
 extern "C" void *SpaceLounge_layout_begin;
 // Dropped-self Status singleton accessors: the decompiler emitted these calls
 // with no receiver argument (the Status* singleton is loaded inside the thunk).
@@ -135,13 +134,9 @@ extern "C" void ArrayRelease_ImagePartPtr(void *p);
 extern "C" void ArrayRelease_ArrayImagePartPtr(void *p);
 extern "C" void ArrayRelease_VectorPtr(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
-extern "C" void SpaceLounge_draw_cutscene_tail();
-extern "C" void SpaceLounge_draw_map_tail(void *map);
 extern "C" void *SpaceLounge_draw_layout_slot;
 extern "C" void *SpaceLounge_draw_canvas_slot;
 extern "C" void *SpaceLounge_draw_text_slot;
-extern "C" void SpaceLounge_update_map_tail(void *map, int dt);
-extern "C" void SpaceLounge_update_ship_tail(void *list, int dt);
 float Sinf(float value);
 extern "C" void EaseInOut_ctor(void *ease, float start, float end);
 extern "C" float EaseInOut_GetValue(void *ease);
@@ -260,7 +255,7 @@ unsigned char SpaceLounge::hangarNeedsUpdate() {
 void SpaceLounge::draw3DShip() {
     SpaceLounge *self = this;
     if (UC(self, 0x1c) != 0) {
-        return SpaceLounge_draw3DShip_tail(P(self, 0xc));
+        return this->draw3DShip_tail(P(self, 0xc));
     }
 }
 
@@ -1293,11 +1288,11 @@ void SpaceLounge::draw() {
             ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
         }
         ((ListItemWindow *)(P(self, 0xc)))->draw();
-        return SpaceLounge_draw_cutscene_tail();
+        return this->draw_cutscene_tail();
     }
 
     if (UC(self, 0x34) != 0) {
-        return SpaceLounge_draw_map_tail(P(self, 0x4));
+        return this->draw_map_tail(P(self, 0x4));
     }
 
     void *layoutSlot = *(void **)&SpaceLounge_draw_layout_slot;
@@ -1335,10 +1330,10 @@ void SpaceLounge::update(int dt) {
     }
 
     if (UC(self, 0x34) != 0) {
-        return SpaceLounge_update_map_tail(P(self, 0x4), dt);
+        return this->update_map_tail(P(self, 0x4), dt);
     }
     if (UC(self, 0x1c) != 0) {
-        return SpaceLounge_update_ship_tail(P(self, 0xc), dt);
+        return this->update_ship_tail(P(self, 0xc), dt);
     }
 
     if (UC(self, 0xbc) == 0) {
@@ -1550,47 +1545,10 @@ extern "C" void SpaceLounge_OnRender3D_cutscene_tail(void *cutscene)
     ((CutScene *)cutscene)->render3D();
 }
 
-extern "C" void SpaceLounge_draw3DShip_tail(void *ship)
-{
-    ((ListItemWindow *)ship)->render();
-}
-
-extern "C" void SpaceLounge_draw_map_tail(void *map)
-{
-    ((StarMap *)map)->draw();
-}
-
-extern "C" void SpaceLounge_draw_cutscene_tail()
-{
-    // Tail of SpaceLounge::draw() in 3D-ship mode: after the ListItemWindow has
-    // been drawn, render the footer for the current draw layout.
-    void *layout = *(void **)(*(void **)&SpaceLounge_draw_layout_slot);
-    ((Layout *)layout)->drawFooter();
-}
-
-extern "C" void SpaceLounge_update_map_tail(void *map, int dt)
-{
-    ((StarMap *)map)->update(dt);
-}
-
-extern "C" void SpaceLounge_update_ship_tail(void *list, int dt)
-{
-    ((ListItemWindow *)list)->update(dt);
-}
-
 // SpaceLounge::refresh -- called from ModStation after a mission reward is credited
 // and the mission removed, to refresh the lounge's offer list. In this build the body
 // is empty: the agent/offer list is rebuilt on the next init()/re-entry of the lounge,
 // so refresh() has no work to do here (the binary's SpaceLounge::refresh is a no-op stub).
 void SpaceLounge::refresh()
 {
-}
-
-// SpaceLounge_dtor: the in-place destructor entry the decompiler emitted as a
-// free function (the deleting-dtor thunk dereferenced from ModStation). Runs the
-// real destructor and returns the object pointer so the caller can free it.
-extern "C" void *SpaceLounge_dtor(void *p)
-{
-    ((SpaceLounge *)p)->~SpaceLounge();
-    return p;
 }

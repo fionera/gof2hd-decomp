@@ -706,15 +706,22 @@ void CutScene::resetCamera()
                                      CutScene_persp_znear, CutScene_persp_zfar);
 }
 
+// Declaration of the loader's real method as a cast target. The full
+// FileRead.h header cannot be included here because it carries placeholder
+// struct definitions for Item/Ship that collide with the real class headers
+// already included above.
+class FileRead {
+public:
+    Array<Array<Vector *> *> *loadWeaponPositions(int32_t id);
+};
+
 extern "C" {
 void FileRead_ctor(void *self);
 void *FileRead_dtor(void *self);
-void *FileRead_loadWeaponPositions(void *self, int shipIndex);
 void ArrayReleaseClasses_VectorPtr(void *arr);
 void *Array_VectorPtr_dtor(void *arr);
 void ArrayReleaseClasses_ArrayVectorPtr(void *arr);
 void *Array_ArrayVectorPtr_dtor(void *arr);
-void CutScene_turretFinalize();
 }
 
 __attribute__((visibility("hidden"))) extern void **g_canvas;
@@ -811,7 +818,7 @@ void CutScene::checkForTurret()
     FileRead_ctor(fr);
     ((Status *)(*gStatus))->getShip();
     int shipIdx = ((Ship *)(((Status *)(*gStatus))->getShip()))->getIndex();
-    void *positions = FileRead_loadWeaponPositions(fr, shipIdx);
+    void *positions = ((FileRead *)(fr))->loadWeaponPositions(shipIdx);
     ::operator delete(FileRead_dtor(fr));
 
     void *posVec = *(void **)(*(char **)(*(char **)((char *)positions + 4) + 8) + 4);
@@ -846,7 +853,7 @@ void CutScene::checkForTurret()
     }
     ArrayReleaseClasses_ArrayVectorPtr(positions);
     Array_ArrayVectorPtr_dtor(positions);
-    CutScene_turretFinalize();
+    this->turretFinalize(positions);
 }
 
 // ---- update_tail / render2D_tail / renderBG_tail -----------------------------

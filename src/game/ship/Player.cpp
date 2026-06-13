@@ -132,11 +132,6 @@ void Player::damageHull(int damage) {
     return Player_damageHull_tail();
 }
 
-extern "C" Array<Player *> *Player_getEnemies(Player *self)
-{
-    return self->enemies;
-}
-
 int Player::getShieldDamageRate() {
     Player *self = this;
     return self->shieldDamageRate;
