@@ -33,12 +33,9 @@ template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)
 
 extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 extern "C" void *Explosion_ctor(void *e, int a);
-extern "C" void Array_BV_ctor(void *arr);
 void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 extern "C" V3 BV_getProjectionVector(void *bv);
 extern "C" char PlayerFixedObject_vtable;
-extern "C" void ArrayReleaseClasses_BV(void *arr);
-extern "C" void *Array_BV_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
 extern "C" void String_ctor_empty(void *s);
 extern "C" void String_ctor_cstr(void *s, const char *cstr, bool b);
@@ -55,6 +52,7 @@ void PlayerFixedObject::setBV_arr(Array<BoundingVolume *> *bv) {
     PlayerFixedObject *self = this;
     self->boundingVolumes = bv;
 }
+
 
 void PlayerFixedObject::hideShip() {
     PlayerFixedObject *self = this;
@@ -129,11 +127,11 @@ void PlayerFixedObject::setMoving(bool v) {
 // the projected Vector into the same sret, so the compiler keeps a frame + call (not tail).
 V3 PlayerFixedObject::projectCollisionOnSurface(void *vec) {
     PlayerFixedObject *self = this;
-    void *bv = self->wreckCollision;
+    Array<BoundingVolume *> *bv = self->wreckCollision;
     if (bv != 0 && self->state == 4) {
         return BV_staticProjectCollisionOnSurface(vec, bv);
     }
-    void *bv2 = self->boundingVolumes;
+    Array<BoundingVolume *> *bv2 = self->boundingVolumes;
     if (bv2 != 0) {
         return BV_staticProjectCollisionOnSurface(vec, bv2);
     }
@@ -370,14 +368,14 @@ afterMotion:
             *(Matrix *)((char *)self->player + 0x4) = m;
             Vector pos = ((AEGeometry *)(self->wreckGeometry))->getPosition();
             *(Vector *)((char *)self + 0x2c) = pos;
-            Array<void *> *bv = (Array<void *> *)self->boundingVolumes;
+            Array<BoundingVolume *> *bv = self->boundingVolumes;
             if (bv != 0) {
                 for (unsigned int i = 0; i < bv->size(); i++) {
-                    void *o = bv->data()[i];
+                    void *o = (*bv)[i];
                     typedef void (*BVFn)(void *, float, float, float);
                     BVFn fn = *(BVFn *)(*(char **)o + 0x4);
                     fn(o, self->posX, self->posY, self->posZ);
-                    bv = (Array<void *> *)self->boundingVolumes;
+                    bv = self->boundingVolumes;
                 }
             }
         }
@@ -449,9 +447,9 @@ afterMotion:
                 char posBuf[12];
                 ((AEGeometry *)((Vector *)posBuf))->getPosition();
                 *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)posBuf);
-                Array<void *> *bv = (Array<void *> *)self->wreckCollision;
+                Array<BoundingVolume *> *bv = self->wreckCollision;
                 for (unsigned int i = 0; i < bv->size(); i++) {
-                    void *o = bv->data()[i];
+                    void *o = (*bv)[i];
                     typedef void (*BVFn)(void *, float, float, float);
                     BVFn fn = *(BVFn *)(*(char **)o + 0x4);
                     fn(o, self->posX, self->posY, self->posZ);
@@ -561,23 +559,23 @@ typedef int (*CollideFn)(void *bv, float, float, float);
 
 int PlayerFixedObject::collide(float x, float y, float z) {
     PlayerFixedObject *self = this;
-    Array<void *> *a = (Array<void *> *)self->wreckCollision;
+    Array<BoundingVolume *> *a = self->wreckCollision;
     if ((a != 0 || self->state != 4) && self->field_0x8c != 0) {
         if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
-                void *bv = a->data()[i];
+                void *bv = (*a)[i];
                 CollideFn fn = *(CollideFn *)(*(char **)bv + 0x8);
                 if (fn(bv, x, y, z) != 0) return 1;
-                a = (Array<void *> *)self->wreckCollision;
+                a = self->wreckCollision;
             }
         } else {
-            Array<void *> *b = (Array<void *> *)self->boundingVolumes;
+            Array<BoundingVolume *> *b = self->boundingVolumes;
             if (b != 0) {
                 for (uint32_t i = 0; i < b->size(); i++) {
-                    void *bv = b->data()[i];
+                    void *bv = (*b)[i];
                     CollideFn fn = *(CollideFn *)(*(char **)bv + 0x8);
                     if (fn(bv, x, y, z) != 0) return 1;
-                    b = (Array<void *> *)self->boundingVolumes;
+                    b = self->boundingVolumes;
                 }
             }
         }
@@ -590,10 +588,9 @@ int PlayerFixedObject::collide(float x, float y, float z) {
 // NEAR: clang assigns arr->r5, this->r6 (we get them swapped); allocator tie-break, not source-driven.
 void PlayerFixedObject::setBV(BoundingVolume *bv) {
     PlayerFixedObject *self = this;
-    void *arr = ::operator new(0xc);
-    Array_BV_ctor(arr);
+    Array<BoundingVolume *> *arr = new Array<BoundingVolume *>();
     self->boundingVolumes = arr;
-    return ((BoundingVolume *)(bv))->setArr((Array<BoundingVolume *> *)arr);
+    return ((BoundingVolume *)(bv))->setArr(arr);
 }
 
 typedef unsigned long long uint64_t;
@@ -679,11 +676,11 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     } else {
         sel = self->wreckType;
         if (sel < 0) return;
-        self->wreckCollision = Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
+        self->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
         return;
     }
     self->wreckType = sel;
-    self->wreckCollision = Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
+    self->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, self->wreckGeometry);
 }
 
 // Returns a Vector by value (sret r0, this r1). Picks the active bounding-volume array,
@@ -692,17 +689,15 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
 // first bv in a callee reg; clang lays the branches out separately here.
 V3 PlayerFixedObject::getProjectionVector() {
     PlayerFixedObject *self = this;
-    void *bv = self->wreckCollision;
+    Array<BoundingVolume *> *bv = self->wreckCollision;
     if (bv != 0 && self->state == 4) {
         int idx = self->collisionIndex;
-        void **data = *(void ***)((char *)bv + 0x4);
-        return BV_getProjectionVector(data[idx]);
+        return BV_getProjectionVector((*bv)[idx]);
     }
-    void *bv2 = self->boundingVolumes;
+    Array<BoundingVolume *> *bv2 = self->boundingVolumes;
     if (bv2 != 0) {
         int idx = self->collisionIndex;
-        void **data = *(void ***)((char *)bv2 + 0x4);
-        return BV_getProjectionVector(data[idx]);
+        return BV_getProjectionVector((*bv2)[idx]);
     }
     V3 z = {0.0f, 0.0f, 0.0f};
     return z;
@@ -720,18 +715,18 @@ void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
         if (wreck != 0) { ((AEGeometry *)wreck)->~AEGeometry(); ::operator delete(wreck); }
         self->wreckGeometry = 0;
     }
-    void *bvB = self->boundingVolumes;
+    Array<BoundingVolume *> *bvB = self->boundingVolumes;
     if (bvB != 0) {
-        ArrayReleaseClasses_BV(bvB);
-        void *b = self->boundingVolumes;
-        if (b != 0) ::operator delete(Array_BV_dtor(b));
+        for (auto *e : *bvB) delete e;
+        bvB->clear();
+        delete bvB;
     }
     self->boundingVolumes = 0;
-    void *bvA = self->wreckCollision;
+    Array<BoundingVolume *> *bvA = self->wreckCollision;
     if (bvA != 0) {
-        ArrayReleaseClasses_BV(bvA);
-        void *a = self->wreckCollision;
-        if (a != 0) ::operator delete(Array_BV_dtor(a));
+        for (auto *e : *bvA) delete e;
+        bvA->clear();
+        delete bvA;
     }
     self->wreckCollision = 0;
     void *expl = self->explosion;
@@ -753,18 +748,18 @@ PlayerFixedObject::~PlayerFixedObject() {
         if (wreck != 0) { ((AEGeometry *)wreck)->~AEGeometry(); ::operator delete(wreck); }
         self->wreckGeometry = 0;
     }
-    void *bvB = self->boundingVolumes;
+    Array<BoundingVolume *> *bvB = self->boundingVolumes;
     if (bvB != 0) {
-        ArrayReleaseClasses_BV(bvB);
-        void *b = self->boundingVolumes;
-        if (b != 0) ::operator delete(Array_BV_dtor(b));
+        for (auto *e : *bvB) delete e;
+        bvB->clear();
+        delete bvB;
     }
     self->boundingVolumes = 0;
-    void *bvA = self->wreckCollision;
+    Array<BoundingVolume *> *bvA = self->wreckCollision;
     if (bvA != 0) {
-        ArrayReleaseClasses_BV(bvA);
-        void *a = self->wreckCollision;
-        if (a != 0) ::operator delete(Array_BV_dtor(a));
+        for (auto *e : *bvA) delete e;
+        bvA->clear();
+        delete bvA;
     }
     self->wreckCollision = 0;
     void *expl = self->explosion;
@@ -901,7 +896,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
 
     if (special) {
         if (self->lootList != 0) {
-            delete (Array<int> *)self->lootList;
+            delete self->lootList;
         }
         self->lootList = 0;
     } else {
@@ -913,37 +908,32 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
             int sidx = Station_getIndex((Station *)station);
             for (uint32_t i = 0; i < 4; i++) {
                 if (g_pfo_stationIdx[i] == sidx) {
-                    void *loot = ((Generator *)(gen))->getLootList(g_pfo_lootParams[i * 2 + 1], 0);
-                    self->lootList = loot;
+                    self->lootList = ((Generator *)(gen))->getLootList(g_pfo_lootParams[i * 2 + 1], 0);
                 }
             }
         } else {
-            uint32_t *loot = (uint32_t *)((Generator *)(gen))->getLootList(-1, -1);
+            Array<int> *loot = ((Generator *)(gen))->getLootList(-1, -1);
             self->lootList = loot;
             if (loot != 0) {
                 int second = (kind != 0x498e) ? 0x4a88 : 0x498e;
                 if (kind != 0x498e && kind != second) {
                     void *rng = *g_pfo_random;
-                    for (int idx = 1; (uint32_t)(idx - 1) < loot[0]; idx += 2) {
+                    for (int idx = 1; (uint32_t)(idx - 1) < self->lootList->size(); idx += 2) {
                         // NOTE: AERandom::nextInt(self, bound) had its `bound`
                         // argument dropped by the decompiler; the receiver `rng`
                         // is preserved. Exact bounds are unrecovered (Ghidra
                         // unavailable) — using the additive offsets as bounds.
                         if (kind == 0xe) {
                             int r = ((AbyssEngine::AERandom *)rng)->nextInt();
-                            loot = (uint32_t *)self->lootList;
-                            int *cell = (int *)(loot[1] + idx * 4);
-                            *cell = *cell * (r + 5);
+                            int &cell = (*self->lootList)[idx];
+                            cell = cell * (r + 5);
                         } else {
                             int r = ((AbyssEngine::AERandom *)rng)->nextInt();
-                            int *base = (int *)(*(int *)((char *)self->lootList + 4) + idx * 4);
-                            *base = *base * (r + 2);
+                            int &base = (*self->lootList)[idx];
+                            base = base * (r + 2);
                             int r2 = ((AbyssEngine::AERandom *)rng)->nextInt();
-                            loot = (uint32_t *)self->lootList;
-                            int *cell = (int *)(loot[1] + idx * 4);
-                            int v = *cell;
-                            if (v < r2 + 8) v = r2 + 8;
-                            *cell = v;
+                            int &cell = (*self->lootList)[idx];
+                            if (cell < r2 + 8) cell = r2 + 8;
                         }
                     }
                 }
@@ -983,13 +973,13 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
     ((AEGeometry *)((Vector *)buf))->getPosition();
     *(Vector *)((Vector *)((char *)self + 0x2c)) = *(const Vector *)((Vector *)buf);
 
-    Array<void *> *bv = (Array<void *> *)self->boundingVolumes;
+    Array<BoundingVolume *> *bv = self->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
-            void *o = bv->data()[i];
+            void *o = (*bv)[i];
             BVSetPosFn fn = *(BVSetPosFn *)(*(char **)o + 0x4);
             fn(o, self->posX, self->posY, self->posZ);
-            bv = (Array<void *> *)self->boundingVolumes;
+            bv = self->boundingVolumes;
         }
     }
 
@@ -1029,23 +1019,23 @@ typedef int (*CollideFn)(void *bv, float, float, float);
 
 int PlayerFixedObject::outerCollide(float x, float y, float z) {
     PlayerFixedObject *self = this;
-    Array<void *> *a = (Array<void *> *)self->wreckCollision;
+    Array<BoundingVolume *> *a = self->wreckCollision;
     if ((a != 0 || self->state != 4) && self->field_0x8c != 0) {
         if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
-                void *bv = a->data()[i];
+                void *bv = (*a)[i];
                 CollideFn fn = *(CollideFn *)(*(char **)bv + 0xc);
                 if (fn(bv, x, y, z) != 0) { self->collisionIndex = i; return 1; }
-                a = (Array<void *> *)self->wreckCollision;
+                a = self->wreckCollision;
             }
         } else {
-            Array<void *> *b = (Array<void *> *)self->boundingVolumes;
+            Array<BoundingVolume *> *b = self->boundingVolumes;
             if (b != 0) {
                 for (uint32_t i = 0; i < b->size(); i++) {
-                    void *bv = b->data()[i];
+                    void *bv = (*b)[i];
                     CollideFn fn = *(CollideFn *)(*(char **)bv + 0xc);
                     if (fn(bv, x, y, z) != 0) { self->collisionIndex = i; return 1; }
-                    b = (Array<void *> *)self->boundingVolumes;
+                    b = self->boundingVolumes;
                 }
             }
         }
@@ -1073,14 +1063,14 @@ void PlayerFixedObject::moveForward(int amount) {
     if (self->wreckGeometry != 0) {
         ((AEGeometry *)(self->wreckGeometry))->moveForward(d);
     }
-    Array<void *> *bv = (Array<void *> *)self->boundingVolumes;
+    Array<BoundingVolume *> *bv = self->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
-            void *o = bv->data()[i];
+            void *o = (*bv)[i];
             BVMoveFn fn = *(BVMoveFn *)(*(char **)o + 0x4);
             Vector pos = { self->posX, self->posY, self->posZ };
             fn(o, pos);
-            bv = (Array<void *> *)self->boundingVolumes;
+            bv = self->boundingVolumes;
         }
     }
 }

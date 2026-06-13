@@ -8,10 +8,6 @@ using AbyssEngine::String12;
 // Minimal view of a virtual object whose deleting-dtor lives at vt[0]+4.
 struct VObj { void (*vt[8])(void *); };
 
-extern "C" void *Array_StringPtr_dtor(void *arr);
-extern "C" void Array_StringPtr_ctor(void *arr);
-extern "C" void ArrayAdd_StringPtr(void *str, void *arr);
-
 RetStr Agent::getStationName() {
     Agent *self = this;
     RetStr r;
@@ -168,10 +164,8 @@ Triple * Agent::setSellItemData(int a, int b, int c) {
     return p + 1;
 }
 
-// final tail-called veneer (frees the incoming param array's backing)
-
 // Agent::setWingmanFriendNames(Array<String*>*) — this in r0, param in r1.
-void Agent::setWingmanFriendNames(uint32_t *param) {
+void Agent::setWingmanFriendNames(Array<AbyssEngine::String*> *param) {
     Agent *self = this;
     VObj *f0c = (VObj *)self->wingman1;
     if (f0c != 0)
@@ -182,46 +176,43 @@ void Agent::setWingmanFriendNames(uint32_t *param) {
         (*(void (**)(void *))((char *)f10->vt[0] + 4))(f10);
     self->wingman2 = 0;
     if (self->wingmanNames != 0) {
-        ::operator delete(Array_StringPtr_dtor(self->wingmanNames));
+        delete self->wingmanNames;
         self->wingmanNames = 0;
     }
-    void *na = ::operator new(0xc);
-    Array_StringPtr_ctor(na);
-    self->wingmanNames = na;
-    void *ns = ::operator new(0xc);
-    ((String *)(ns))->ctor_copy((String *)(self), false);
-    ArrayAdd_StringPtr(ns, self->wingmanNames);
+    self->wingmanNames = new Array<AbyssEngine::String*>();
+    String *ns = (String *)::operator new(sizeof(String));
+    ns->ctor_copy((String *)(self), false);
+    self->wingmanNames->push_back(ns);
     self->wingmanCount = 0;
     if (param == 0)
         return;
-    uint32_t n = param[0];
+    uint32_t n = param->size();
     if (n != 0) {
-        void *w0 = *(void **)(param[1]);
+        String *w0 = (*param)[0];
         if (w0 != 0) {
             self->wingmanCount = 1;
             self->wingman1 = w0;
-            ArrayAdd_StringPtr(w0, self->wingmanNames);
-            n = param[0];
+            self->wingmanNames->push_back(w0);
+            n = param->size();
         }
         if (n >= 2) {
-            void *w1 = ((void **)param[1])[1];
+            String *w1 = (*param)[1];
             if (w1 != 0) {
                 self->wingman2 = w1;
                 self->wingmanCount = self->wingmanCount + 1;
-                ArrayAdd_StringPtr(w1, self->wingmanNames);
+                self->wingmanNames->push_back(w1);
             }
         }
     }
-    Array_StringPtr_dtor(param);
     self->finishWingman(param);
 }
 
-// Tail of setWingmanFriendNames (engine 0x18762a -> 0x1ab098): after the source
-// Array<String*> has been destructed, release its heap backing.  This is the
-// trailing `operator delete(consumedArray)` the compiler tail-called out of
-// setWingmanFriendNames once the array contents were moved into wingmanNames.
-void Agent::finishWingman(void *consumedArray) {
-    ::operator delete(consumedArray);
+// Tail of setWingmanFriendNames (engine 0x18762a -> 0x1ab098): once the source
+// array's String* elements have been moved into wingmanNames, destruct the
+// Array<String*> and release its heap backing (delete = vector dtor + operator
+// delete, the compiler's tail-called teardown of the consumed source array).
+void Agent::finishWingman(Array<AbyssEngine::String*> *consumedArray) {
+    delete consumedArray;
 }
 
 RetStr Agent::getWingmanName(int idx) {

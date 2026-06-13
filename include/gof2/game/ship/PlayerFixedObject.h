@@ -32,7 +32,7 @@ public:
     uint8_t field_0x40;                 // +0x40
     uint8_t field_0x41;                 // +0x41
     unsigned char hasCargo;           // +0x4c
-    void* lootList;                   // +0x50
+    Array<int>* lootList;             // +0x50  loot id/amount pairs
     void* level;                   // +0x54
     float spawnX;                   // +0x58
     float spawnY;                   // +0x5c
@@ -48,8 +48,8 @@ public:
     int32_t field_0xf8;                 // +0xf8
     unsigned char finished;          // +0x101
     void* wreckGeometry;                  // +0x124
-    void* boundingVolumes;                  // +0x128
-    void* wreckCollision;                  // +0x12c
+    Array<BoundingVolume*>* boundingVolumes;  // +0x128  active bounding volumes
+    Array<BoundingVolume*>* wreckCollision;   // +0x12c  wreck collision volumes
     int32_t deltaTime;                // +0x130
     unsigned char moving;          // +0x134
     uint64_t field_0x138;               // +0x138

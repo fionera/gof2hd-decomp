@@ -32,8 +32,6 @@ Vector operator*(const Vector &, float);
 Matrix operator*(const Matrix &, const Matrix &);
 } }
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int max); } }
-extern "C" void Array_int_ctor(IntArray *array);
-extern "C" void ArrayAdd_int(int value, IntArray *array);
 float VectorLength(const Vector *v);
 extern "C" void *Explosion_dtor(Explosion *self);
 extern "C" void Explosion_ctor(Explosion *self, int kind);
@@ -302,11 +300,10 @@ void PlayerTurret::update(int delta)
         int random = AbyssEngine::AERandom::nextInt(*gPlayerTurretRandom, 100);
         if (random < 0) {
             UC(this, 0x4c) = 1;
-            IntArray *array = (IntArray *)operator new(0xc);
-            Array_int_ctor(array);
+            Array<int> *array = new Array<int>();
             this->f_50 = array;
-            ArrayAdd_int(99, array);
-            ArrayAdd_int(AbyssEngine::AERandom::nextInt(*gPlayerTurretRandom, 10) + 1, (IntArray *)this->f_50);
+            array->push_back(99);
+            this->f_50->push_back(AbyssEngine::AERandom::nextInt(*gPlayerTurretRandom, 10) + 1);
             ((KIPlayer *)(this))->createCrate(3);
             UC(this, 0x4c) = 1;
         } else {
@@ -381,14 +378,14 @@ void PlayerTurret::pickEnemy()
         I(this, 0x130) = 0;
         this->f_14c = 0;
 
-        PlayerArray *enemies = (PlayerArray *)((Player *)(TP<Player>(this, 0x4)))->getEnemies();
+        Array<Player *> *enemies = ((Player *)(TP<Player>(this, 0x4)))->getEnemies();
         if (enemies != 0) {
             Vector *position = (Vector *)B(this, 0x2c);
             uint32_t i = 0;
             goto check;
         next:
             {
-                Player *enemy = enemies->data[i];
+                Player *enemy = (*enemies)[i];
 
                 if (((Player *)(enemy))->isDead() == 0 && ((Player *)(enemy))->isActive() != 0) {
                     bool accepted = false;
@@ -418,7 +415,7 @@ void PlayerTurret::pickEnemy()
             }
             i = i + 1;
         check:
-            if (i < enemies->length) {
+            if (i < enemies->size()) {
                 goto next;
             }
         }

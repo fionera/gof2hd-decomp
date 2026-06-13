@@ -168,8 +168,12 @@ void *Globals_getShipGroup(void *g, int race, int group, bool b);
 extern "C" void *TractorBeam_new(void *geo, int kind);
 void  Globals_addSoundResourceToList(int snd);
 extern "C" void *RepairBeam_new(int idx, int sort);
-extern "C" void  ArrayAdd_RepairBeam(void *rb, void *arr);
-extern "C" void *Array_RepairBeam_new();
+
+// Typed accessor for the repair-beam array member (+0x1b8). The class layout is
+// sparse / offset-addressed, so reach the Array<RepairBeam*>* through the raw offset.
+static inline Array<RepairBeam *> *&PE_repairBeams(void *self) {
+    return *(Array<RepairBeam *> **)((char *)self + 0x1b8);
+}
 extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void **canvasHolder);
 extern "C" void Player_addGun2(void*, void*, int);
 extern "C" void PlayerEgo_addGun2_ext(PlayerEgo*);
@@ -1546,9 +1550,6 @@ float PlayerEgo::left(int frameTime, float delta) {
 // and repair beams, the mining game, both explosions, the ease matrix) and
 // nulls each handle, mirroring the target teardown order.
 
-extern "C" void  Array_releaseRepairBeams(void *);     // ArrayReleaseClasses<RepairBeam*>
-extern "C" void *ArrayRB_dtor(void *);                 // Array<RepairBeam*>::~Array
-
 static inline void *&PP(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
 __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
@@ -1588,12 +1589,13 @@ __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
     PP(self, 0x90) = 0;
     if (PP(self, 0x358)) ::operator delete(EaseInOutMatrix_dtor(PP(self, 0x358)));
     PP(self, 0x358) = 0;
-    if (PP(self, 0x1b8)) {
-        Array_releaseRepairBeams(PP(self, 0x1b8));
-        if (PP(self, 0x1b8))
-            ::operator delete(ArrayRB_dtor(PP(self, 0x1b8)));
+    if (Array<RepairBeam *> *beams = PE_repairBeams(self)) {
+        for (RepairBeam *beam : *beams)
+            if (beam)
+                ::operator delete(beam->dtor());
+        delete beams;
     }
-    PP(self, 0x1b8) = 0;
+    PE_repairBeams(self) = 0;
 }
 
 void PlayerEgo::throttleChanged() {
@@ -2998,15 +3000,15 @@ void PlayerEgo::setShip(int race, int group) {
         int sort = (i == 0) ? 0x25 : 0x29;
         void *it = (void *)((Ship *)(PE_status()->getShip()))->getFirstEquipmentOfSort(sort);
         if (it != 0) {
-            if (P(self, 0x1b8) == 0)
-                P(self, 0x1b8) = Array_RepairBeam_new();
-            void *rb = RepairBeam_new(((Item *)(it))->getIndex(), ((Item *)(it))->getSort());
+            if (PE_repairBeams(self) == 0)
+                PE_repairBeams(self) = new Array<RepairBeam *>();
+            RepairBeam *rb = (RepairBeam *)RepairBeam_new(((Item *)(it))->getIndex(), ((Item *)(it))->getSort());
             int idx = ((Item *)(it))->getIndex();
             if (idx == 0xde)
                 Globals_addSoundResourceToList(*(int *)(*globals));
             else if (((Item *)(it))->getIndex() == 0xdf)
                 Globals_addSoundResourceToList(*(int *)(*globals));
-            ArrayAdd_RepairBeam(rb, P(self, 0x1b8));
+            PE_repairBeams(self)->push_back(rb);
         }
     }
 
@@ -3083,11 +3085,10 @@ void PlayerEgo::render(int allowHud) {
         if (P(self, 0x1b4) != 0)
             ((TractorBeam *)(P(self, 0x1b4)))->render();
 
-        unsigned int *beams = (unsigned int *)P(self, 0x1b8);
+        Array<RepairBeam *> *beams = PE_repairBeams(self);
         if (beams != 0) {
-            for (unsigned int i = 0; i < beams[0]; i++) {
-                ((RepairBeam *)(*(void **)(beams[1] + i * 4)))->render();
-                beams = (unsigned int *)P(self, 0x1b8);
+            for (unsigned int i = 0; i < beams->size(); i++) {
+                (*beams)[i]->render();
             }
         }
 

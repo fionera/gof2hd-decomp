@@ -10,6 +10,7 @@ typedef Vector Vec3;
 // from each work-item's target disasm.
 
 struct PlayerEgo;          // opaque; we only ever take a PlayerEgo* and offset-cast.
+class RepairBeam;          // element type of the repairBeams array.
 
 // Other game types referenced by pointer only — keep opaque.
 // (Player/Ship/etc. forward-declared in fwd.h via common.h; Vector comes from math.h.)
@@ -28,6 +29,7 @@ public:
     LevelScript* levelScript;            // +0x10
     uint8_t field_0x25;                 // +0x25
     void* autoPilotTarget;                  // +0x15c
+    Array<RepairBeam*>* repairBeams;        // +0x1b8  active repair-beam effects
     unsigned short cloakMaterial;         // +0x388
     unsigned short cloakMaterial2;         // +0x38c
     unsigned short cloakMaterial3;         // +0x390

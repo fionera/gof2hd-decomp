@@ -18,18 +18,6 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-struct IntArray {
-    uint32_t length;
-    int *data;
-    uint32_t capacity;
-};
-
-struct PlayerArray {
-    uint32_t length;
-    Player **data;
-    uint32_t capacity;
-};
-
 // Byte-offset accessors used for fields whose individual names were not recovered and
 // for reads/writes into cross-class objects (Player/AEGeometry/Level/...).
 static inline char *B(void *self, uint32_t off) { return (char *)self + off; }
@@ -55,7 +43,7 @@ public:
     void *f_8;                          // 0x8  main geometry
     void *f_c;                          // 0xc
     unsigned char _pad_10[0x50 - 0x10];
-    void *f_50;                         // 0x50
+    Array<int> *f_50;                   // 0x50 loot/crate id list
     void *f_54;                         // 0x54 level / particle-system manager
     unsigned char _pad_58[0x78 - 0x58];
     void *f_78;                         // 0x78 visible geometry

@@ -7,25 +7,24 @@
 extern "C" void *ItemDtor(Item *it);
 extern "C" void operatorDelete(void *p);
 Ship* clone(Ship *self);
-extern "C" void *ArrayItemDtor(Array<Item*> *a);
-extern "C" void Array_Item_ctor(Array<Item*> *a);
 extern "C" int *operatorNewArrayInt(unsigned int n);
 void refreshValue(Ship *self);
-extern "C" void ArrayReleaseClassesItem(Array<Item*> *a);
-extern "C" void *ArrayIntDtor(Array<int> *a);
 int getUsedSlots(Ship *self, int type);
 int hasCargo(Ship *self, int type, int amount);
-extern "C" Array<Item*>* operatorNewArr(unsigned int sz);
 extern "C" Ship *operatorNewShip(unsigned int sz);
 void addMod(Ship *self, int mod);
-extern "C" Array<int>* operatorNewModsArr(unsigned int sz);
-extern "C" void Array_int_ctor(Array<int> *a);
 extern "C" Item* operatorNewItem(unsigned int sz);
 extern "C" void Item_ctor3(Item *it, void *a, void *b, void *c);
 int getCargoValue(Ship *self);
 void setCargo(Ship *self, Array<Item*> *cargo);
-extern "C" Array<Item*>* operatorNewArray(unsigned int sz);
-extern "C" void ArrayCtorItem(Array<Item*> *a);
+
+// Releases each owned Item* in `a` then empties the list (was ArrayReleaseClassesItem).
+static void releaseItems(Array<Item*> *a) {
+    for (Item *it : *a) {
+        if (it != 0) operatorDelete(ItemDtor(it));
+    }
+    a->clear();
+}
 
 // Ship::removeCargo(int) -> tail-calls Ship::removeCargo(int,int) with amount = 9999999
 void removeCargo(Ship *self, int idx) {
@@ -83,8 +82,7 @@ void removeCargo(Ship *self, Item *item) {
 
 void removeAllCargo(Ship *self) {
     if (self->cargo != 0) {
-        void *p = ArrayItemDtor(self->cargo);
-        operatorDelete(p);
+        delete self->cargo;
     }
     self->cargo = 0;
 }
@@ -125,8 +123,7 @@ Ship *_ZN4ShipC2Eiiiiiiiif(Ship *self, int index, int baseHP, int baseLoad,
     slots[2] = s2;
     slots[3] = s3;
     self->handling = handling / 1.6f;
-    Array<Item*> *eq = (Array<Item*> *)operatorNewArrayInt(0xc);
-    Array_Item_ctor(eq);
+    Array<Item*> *eq = new Array<Item*>();
     self->equipment = eq;
     ArraySetLength<Item*>(s1 + s0 + s2 + s3, *eq);
     self->cargo = 0;
@@ -138,12 +135,11 @@ Ship *_ZN4ShipC2Eiiiiiiiif(Ship *self, int index, int baseHP, int baseLoad,
 }
 
 float getHandling(Ship *self) {
-    int *m = (int *)self->mods;
+    Array<int> *m = self->mods;
     float h = 1.3f;
     if (m != 0) {
-        int n = *m;
-        for (int i = 0; n != i; i = i + 1) {
-            if (((int *)m[1])[i] == 3) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 3) {
                 h = h + 0.1f;
             }
         }
@@ -201,31 +197,25 @@ Ship *_ZN4ShipD2Ev(Ship *self) {
     Array<Item*> *a = self->equipment;
     if (a != 0) {
         if (a->size() != 0) {
-            ArrayReleaseClassesItem(a);
-            a = self->equipment;
-            if (a == 0) goto skip1;
+            releaseItems(a);
         }
-        operatorDelete(ArrayItemDtor(a));
+        delete a;
     }
-skip1:
     a = self->cargo;
     self->equipment = 0;
     if (a != 0) {
         if (a->size() != 0) {
-            ArrayReleaseClassesItem(a);
-            a = self->cargo;
-            if (a == 0) goto skip2;
+            releaseItems(a);
         }
-        operatorDelete(ArrayItemDtor(a));
+        delete a;
     }
-skip2:
     self->cargo = 0;
     if (self->slots != 0) {
         operatorDelete(self->slots);
     }
     self->slots = 0;
     if (self->mods != 0) {
-        operatorDelete(ArrayIntDtor(self->mods));
+        delete self->mods;
     }
     self->mods = 0;
     return self;
@@ -268,15 +258,11 @@ int getMaxShieldHP(Ship *self) { return self->maxShieldHP; }
 void setPrice(Ship *self, int v) { self->price = v; }
 
 int getCombinedHP(Ship *self) {
-    int *m = (int *)self->mods;
-    int bonus;
-    if (m == 0) {
-        bonus = 0;
-    } else {
-        bonus = 0;
-        int n = *m;
-        for (int i = 0; n != i; i = i + 1) {
-            if (((int *)m[1])[i] == 0) {
+    Array<int> *m = self->mods;
+    int bonus = 0;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 0) {
                 bonus = bonus + 0x28;
             }
         }
@@ -335,12 +321,11 @@ Array<int>* getMods(Ship *self) { return self->mods; }
 Array<Item*>* Ship::getEquipment() { Ship *self = this; return self->equipment; }
 
 float getHandlingForShop(Ship *self) {
-    int *m = (int *)self->mods;
+    Array<int> *m = self->mods;
     float h = 1.3f;
     if (m != 0) {
-        int n = *m;
-        for (int i = 0; n != i; i = i + 1) {
-            if (((int *)m[1])[i] == 3) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 3) {
                 h = h + 0.1f;
             }
         }
@@ -401,15 +386,11 @@ void freeAllSlots(Ship *self) {
 }
 
 int getMaxHP(Ship *self) {
-    int *m = (int *)self->mods;
-    int bonus;
-    if (m == 0) {
-        bonus = 0;
-    } else {
-        bonus = 0;
-        int n = *m;
-        for (int i = 0; n != i; i = i + 1) {
-            if (((int *)m[1])[i] == 0) {
+    Array<int> *m = self->mods;
+    int bonus = 0;
+    if (m != 0) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == 0) {
                 bonus = bonus + 0x28;
             }
         }
@@ -458,14 +439,13 @@ int hasCargo(Ship *self, int index, int amount) {
 }
 
 int hasCargoType(Ship *self, int type) {
-    unsigned int *p = (unsigned int *)self->cargo;
-    if (p != 0) {
-        for (unsigned int i = 0; i < *p; i = i + 1) {
-            Item *it = *(Item **)(p[1] + i * 4);
+    Array<Item*> *c = self->cargo;
+    if (c != 0) {
+        for (unsigned int i = 0; i < c->size(); i = i + 1) {
+            Item *it = c->data()[i];
             if (it != 0) {
                 int t = ((Item *)(it))->getType();
                 if (t == type) return 1;
-                p = (unsigned int *)self->cargo;
             }
         }
     }
@@ -476,8 +456,7 @@ Array<Item*>* Ship::getEquipment(int type) { Ship *self = this;
     if (type >= 4 || self->slots[type] == 0) {
         return 0;
     }
-    Array<Item*> *result = operatorNewArr(0xc);
-    Array_Item_ctor(result);
+    Array<Item*> *result = new Array<Item*>();
     ArraySetLength<Item*>(self->slots[type], *result);
     int base = 0;
     for (int i = 0; i < type; i = i + 1) {
@@ -595,8 +574,7 @@ Item* getCargo(Ship *self, int index) {
 void addMod(Ship *self, int mod) {
     Array<int> *m = self->mods;
     if (m == 0) {
-        m = operatorNewModsArr(0xc);
-        Array_int_ctor(m);
+        m = new Array<int>();
         self->mods = m;
     }
     unsigned int sz = m->size();
@@ -660,52 +638,53 @@ void refreshValue(Ship *self) {
 
     unsigned int i = 0;
     unsigned int n;
-    unsigned int *eq;
+    Array<Item*> *eq;
     for (;;) {
-        eq = (unsigned int *)self->equipment;
-        n = *eq;
+        eq = self->equipment;
+        n = eq->size();
         if (n <= i) break;
-        Item *it = *(Item **)(eq[1] + i * 4);
-        if (it != 0) {
+        Item *cur = eq->data()[i];
+        if (cur != 0) {
+            Item *it = cur;
             int sort = ((Item *)(it))->getSort();
             switch (sort) {
             case 0: case 1: case 2: case 3: case 8: case 0x19: {
-                float a = (float)((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(9);
-                float b = (float)((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0xb);
+                float a = (float)((Item *)(cur))->getAttribute(9);
+                float b = (float)((Item *)(cur))->getAttribute(0xb);
                 self->firePower = (int)((float)self->firePower + (a / b) * 1.0f);
                 break;
             }
             case 9:
-                self->maxShieldHP = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x12);
-                self->shieldRegen = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x13);
+                self->maxShieldHP = ((Item *)(cur))->getAttribute(0x12);
+                self->shieldRegen = ((Item *)(cur))->getAttribute(0x13);
                 break;
             case 10:
-                self->maxArmorHP = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x14);
+                self->maxArmorHP = ((Item *)(cur))->getAttribute(0x14);
                 break;
             case 0xc:
-                self->cargoPlus = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x16) + self->cargoPlus;
+                self->cargoPlus = ((Item *)(cur))->getAttribute(0x16) + self->cargoPlus;
                 break;
             case 0xe:
-                self->boostSpeed = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x19);
-                self->boostTime = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x1b);
-                self->boostDelay = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x1a);
+                self->boostSpeed = ((Item *)(cur))->getAttribute(0x19);
+                self->boostTime = ((Item *)(cur))->getAttribute(0x1b);
+                self->boostDelay = ((Item *)(cur))->getAttribute(0x1a);
                 break;
             case 0xf: {
-                int idx = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getIndex();
+                int idx = ((Item *)(cur))->getIndex();
                 self->repairType = idx != 0x4b;
                 break;
             }
             case 0x10:
-                self->agility = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x1c);
+                self->agility = ((Item *)(cur))->getAttribute(0x1c);
                 break;
             case 0x11:
-                self->radarType = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x1f);
+                self->radarType = ((Item *)(cur))->getAttribute(0x1f);
                 break;
             case 0x12:
                 self->hasJumpDriveFlag = 1;
                 break;
             case 0x14:
-                self->firePower = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x22) + self->firePower;
+                self->firePower = ((Item *)(cur))->getAttribute(0x22) + self->firePower;
                 break;
             case 0x15:
                 self->hasCloakFlag = 1;
@@ -714,18 +693,18 @@ void refreshValue(Ship *self) {
                 self->hasEmergency = 1;
                 break;
             case 0x1c: {
-                float r = (float)((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x27);
+                float r = (float)((Item *)(cur))->getAttribute(0x27);
                 r = 1.0f - r / 100.0f;
                 if (r == 0.0f) r = 1.0f;
                 self->fireRateFactor = r;
-                float d = (float)((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0x28);
+                float d = (float)((Item *)(cur))->getAttribute(0x28);
                 d = d / 100.0f + 1.0f;
                 self->damageFactor = d;
                 if (d == 0.0f) self->damageFactor = 1.0f;
                 break;
             }
             case 0x1d: {
-                int idx = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getIndex();
+                int idx = ((Item *)(cur))->getIndex();
                 self->signatureRace = idx - 0xbd;
                 if (*status != 0 && ((Status *)(*(void **)status))->getStanding() != 0) {
                     ((Standing *)((void *)(intptr_t)((Status *)(*(void **)status))->getStanding()))->setPlayerSignatureRace(self->signatureRace);
@@ -733,36 +712,30 @@ void refreshValue(Ship *self) {
                 break;
             }
             }
-            self->value = ((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getTotalPrice() + self->value;
+            self->value = ((Item *)(cur))->getTotalPrice() + self->value;
         }
         i = i + 1;
     }
 
     self->firePower = 0;
     for (i = 0; i < n; i = i + 1) {
-        Item *it = *(Item **)(eq[1] + i * 4);
+        Item *cur = eq->data()[i];
         unsigned int sort;
-        if (it != 0 && (sort = ((Item *)(it))->getSort()) < 0x1a && (1 << (sort & 0xff) & 0x4000) != 0) {
+        if (cur != 0 && (sort = ((Item *)(cur))->getSort()) < 0x1a && (1 << (sort & 0xff) & 0x4000) != 0) {
             float dmg = self->damageFactor;
-            float a = (float)((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(9);
-            float b = (float)((Item *)(*(Item **)(((unsigned int *)self->equipment)[1] + i * 4)))->getAttribute(0xb);
+            float a = (float)((Item *)(cur))->getAttribute(9);
+            float b = (float)((Item *)(cur))->getAttribute(0xb);
             self->firePower = (int)((float)self->firePower + ((dmg * a) / (self->fireRateFactor * b)) * 1.0f);
         }
-        eq = (unsigned int *)self->equipment;
-        n = *eq;
+        eq = self->equipment;
+        n = eq->size();
     }
 
-    int *m = (int *)self->mods;
-    int loadBonus;
-    if (m == 0) {
-        loadBonus = 0;
-    } else {
-        loadBonus = 0;
-        int j = 0;
-        while (*m != j) {
-            int off = j * 4;
-            j = j + 1;
-            if (*(int *)(m[1] + off) == 1) {
+    Array<int> *m = self->mods;
+    int loadBonus = 0;
+    if (m != 0) {
+        for (unsigned int j = 0; j < m->size(); j = j + 1) {
+            if (m->data()[j] == 1) {
                 loadBonus = loadBonus + 0x1e;
             }
         }
@@ -838,10 +811,10 @@ void replaceCargo(Ship *self, Array<Item*> *cargo) {
 
 int getModdedLoad(Ship *self) {
     int load = self->baseLoad;
-    int *m = (int *)self->mods;
+    Array<int> *m = self->mods;
     if (m == 0) return load;
-    for (int i = 0; i < *m; i++)
-        if (*(int *)(m[1] + i * 4) == 1) load += 0x1e;
+    for (unsigned int i = 0; i < m->size(); i = i + 1)
+        if (m->data()[i] == 1) load += 0x1e;
     return load;
 }
 
@@ -858,8 +831,7 @@ int getSlotTypes(Ship *self) {
 
 // Ship::addCargo(Item*) -> wrap the single item in a fresh array, then commit.
 void Ship::addCargo(Item *item) {
-    Array<Item*> *a = operatorNewArray(0xc);
-    ArrayCtorItem(a);
+    Array<Item*> *a = new Array<Item*>();
     ArrayAdd<Item*>(item, *a);
     ((Ship *)(this))->addCargo2(a);
 }
@@ -882,18 +854,13 @@ done:
 
 int hasSecondaryWeapons(Ship *self) {
     if (self->slots[1] != 0) {
-        unsigned int *p = (unsigned int *)self->equipment;
-        if (p != 0) {
-            unsigned int n = *p;
-            if (n != 0) {
-                for (unsigned int i = 0; i < n; i = i + 1) {
-                    Item *it = *(Item **)(p[1] + i * 4);
-                    if (it != 0) {
-                        int t = ((Item *)(it))->getType();
-                        if (t == 1) return 1;
-                        p = (unsigned int *)self->equipment;
-                        n = *p;
-                    }
+        Array<Item*> *e = self->equipment;
+        if (e != 0) {
+            for (unsigned int i = 0; i < e->size(); i = i + 1) {
+                Item *it = e->data()[i];
+                if (it != 0) {
+                    int t = ((Item *)(it))->getType();
+                    if (t == 1) return 1;
                 }
             }
         }
@@ -942,13 +909,10 @@ int slotAvailable(Ship *self, int sort) {
 }
 
 unsigned int hasModInstalled(Ship *self, int mod) {
-    unsigned int *m = (unsigned int *)self->mods;
+    Array<int> *m = self->mods;
     if (m != 0) {
-        unsigned int i = 0;
-        while (i < *m) {
-            int idx = i * 4;
-            i = i + 1;
-            if (*(int *)(m[1] + idx) == mod) {
+        for (unsigned int i = 0; i < m->size(); i = i + 1) {
+            if (m->data()[i] == mod) {
                 return 1;
             }
         }
@@ -998,8 +962,7 @@ Ship::Ship(int index, int baseHP, int baseLoad, int value,
 
     this->handling = handling / 100.0f;
 
-    Array<Item*> *eq = operatorNewArr(0xc);
-    Array_Item_ctor(eq);
+    Array<Item*> *eq = new Array<Item*>();
     this->equipment = eq;
     ArraySetLength<Item*>(slot0 + slot1 + slot2 + slot3, *eq);
 
@@ -1017,21 +980,17 @@ Ship::Ship(int index, int baseHP, int baseLoad, int value,
 Ship::~Ship() {
     if (this->equipment != 0) {
         if (this->equipment->size() != 0) {
-            ArrayReleaseClassesItem(this->equipment);
+            releaseItems(this->equipment);
         }
-        if (this->equipment != 0) {
-            operatorDelete(ArrayItemDtor(this->equipment));
-        }
+        delete this->equipment;
     }
     this->equipment = 0;
 
     if (this->cargo != 0) {
         if (this->cargo->size() != 0) {
-            ArrayReleaseClassesItem(this->cargo);
+            releaseItems(this->cargo);
         }
-        if (this->cargo != 0) {
-            operatorDelete(ArrayItemDtor(this->cargo));
-        }
+        delete this->cargo;
     }
     this->cargo = 0;
 
@@ -1041,7 +1000,7 @@ Ship::~Ship() {
     this->slots = 0;
 
     if (this->mods != 0) {
-        operatorDelete(ArrayIntDtor(this->mods));
+        delete this->mods;
     }
     this->mods = 0;
 }
@@ -1144,7 +1103,7 @@ void Ship::removeCargo(Item *item) {
 
 void Ship::removeAllCargo() {
     if (this->cargo != 0) {
-        operatorDelete(ArrayItemDtor(this->cargo));
+        delete this->cargo;
     }
     this->cargo = 0;
 }
@@ -1648,8 +1607,7 @@ Ship *Ship::ctor_full(int index, int baseHP, int baseLoad, int value,
 
     this->handling = handling / 100.0f;
 
-    Array<Item*> *eq = operatorNewArr(0xc);
-    Array_Item_ctor(eq);
+    Array<Item*> *eq = new Array<Item*>();
     this->equipment = eq;
     ArraySetLength<Item*>(slot0 + slot1 + slot2 + slot3, *eq);
 

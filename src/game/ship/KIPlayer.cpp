@@ -19,10 +19,6 @@ extern "C" void FModSound_stopEvent(void *player);
 extern "C" void Player_render(void *player);
 extern "C" void FModSound_playEvent(void *a, int b, int c);
 extern "C" void *Player_dtor(void *p);
-extern "C" void *ArrayUint_dtor(void *p);
-extern "C" void *ArrayInt_dtor(void *p);
-extern "C" void ArrayReleaseClasses_SpacePoint(void *arr);
-extern "C" void *ArraySpacePoint_dtor(void *p);
 extern "C" void Player_addGun_b(void *player);
 extern "C" void *gCanvas;
 extern "C" void Player_addGun_a(void *player);
@@ -34,75 +30,58 @@ namespace AbyssEngine { namespace AEMath {
 extern "C" void **gCanvasPtr;
 
 int KIPlayer::getType() {
-    KIPlayer *self = this;
-    return self->type;
+    return this->type;
 }
 
 bool KIPlayer::isDead() {
-    KIPlayer *self = this;
-    return self->state == 4;
-}
-
-extern "C" Array<SpacePoint *> *KIPlayer_getSpacePoints(KIPlayer *self)
-{
-    return *(Array<SpacePoint *> **)((char *)self + 0xcc);
+    return this->state == 4;
 }
 
 void KIPlayer::setJumpSphere(uint32_t sphere) {
-    KIPlayer *self = this;
-    self->jumpSphere = sphere;
+    this->jumpSphere = sphere;
 }
 
 uint8_t KIPlayer::isWingMan() {
-    KIPlayer *self = this;
-    return self->wingmanFlag;
+    return this->wingmanFlag;
 }
 
 void KIPlayer::ResumeEngineSound() {
-    KIPlayer *self = this;
-    if (self->player != 0 && self->engineSoundEvent != -1) {
-        return FModSound_resumeEvent(self->player, 0);
+    if (this->player != 0 && this->engineSoundEvent != -1) {
+        return FModSound_resumeEvent(this->player, 0);
     }
 }
 
 void KIPlayer::setWingmanCommand(int cmd, KIPlayer *target) {
-    KIPlayer *self = this;
-    self->field_0xe4 = cmd;
-    self->wingmanTarget = target;
+    this->field_0xe4 = cmd;
+    this->wingmanTarget = target;
 }
 
 void KIPlayer::PauseEngineSound() {
-    KIPlayer *self = this;
-    void *player = self->player;
-    if (player != 0 && self->engineSoundEvent != -1) {
+    void *player = this->player;
+    if (player != 0 && this->engineSoundEvent != -1) {
         return FModSound_pauseEvent(player);
     }
 }
 
 void KIPlayer::setRotationSpeed(float speed) {
-    KIPlayer *self = this;
-    self->rotationSpeed = speed;
+    this->rotationSpeed = speed;
 }
 
 uint8_t KIPlayer::isEnemy() {
-    KIPlayer *self = this;
-    return *(uint8_t *)((char *)self->player + 0x5c);
+    return *(uint8_t *)((char *)this->player + 0x5c);
 }
 
 bool KIPlayer::isDocked() {
-    KIPlayer *self = this;
-    return self->state == 9;
+    return this->state == 9;
 }
 
 bool KIPlayer::isDying() {
-    KIPlayer *self = this;
-    return self->state == 3;
+    return this->state == 3;
 }
 
 void KIPlayer::translate(const Vector &v) {
-    KIPlayer *self = this;
-    ((AEGeometry *)(self->geometry))->translate(v);
-    Route *route = self->route;
+    ((AEGeometry *)(this->geometry))->translate(v);
+    Route *route = this->route;
     if (route == 0) {
         return;
     }
@@ -111,16 +90,14 @@ void KIPlayer::translate(const Vector &v) {
 
 // Returns the ship position by value (sret in r0, this in r1).
 Vector KIPlayer::getPosition() {
-    KIPlayer *self = this;
     Vector v;
-    MatrixGetPosition(&v, (float *)((char *)self->player + 0x4));
+    MatrixGetPosition(&v, (float *)((char *)this->player + 0x4));
     return v;
 }
 
 void KIPlayer::setVisible(bool visible) {
-    KIPlayer *self = this;
-    void *obj = self->geometry;
-    self->visibleFlag = visible;
+    void *obj = this->geometry;
+    this->visibleFlag = visible;
     if (obj != 0) {
         return Object_setVisible(obj);
     }
@@ -135,66 +112,57 @@ void _ZN8KIPlayerD0Ev(KIPlayer *self)
 }
 
 void KIPlayer::StopEngineSound() {
-    KIPlayer *self = this;
-    void *player = self->player;
-    if (player != 0 && self->engineSoundEvent != -1) {
+    void *player = this->player;
+    if (player != 0 && this->engineSoundEvent != -1) {
         return FModSound_stopEvent(player);
     }
 }
 
 void KIPlayer::render() {
-    KIPlayer *self = this;
-    return Player_render(self->geometry);
+    return Player_render(this->geometry);
 }
 
 void KIPlayer::setToSleep() {
-    KIPlayer *self = this;
-    void *player = self->player;
-    self->state = 5;
+    void *player = this->player;
+    this->state = 5;
     ((Player *)(player))->setActive(0);
-    self->sleepFlag = 1;
+    this->sleepFlag = 1;
 }
 
 void KIPlayer::setState(int state) {
-    KIPlayer *self = this;
-    self->state = state;
+    this->state = state;
 }
 
 void KIPlayer::jump() {
-    KIPlayer *self = this;
-    self->jumpDone = 0;
-    self->jumperFlag = 1;
+    this->jumpDone = 0;
+    this->jumperFlag = 1;
 }
 
 void KIPlayer::setActive() {
-    KIPlayer *self = this;
-    return ((Player *)(self->player))->setActive(1);
+    return ((Player *)(this->player))->setActive(1);
 }
 
 void KIPlayer::PlayEngineSound() {
-    KIPlayer *self = this;
-    if (self->player != 0 && self->engineSoundEvent != -1) {
-        return FModSound_playEvent(self->player,
-                                   self->engineSoundEvent, 0);
+    if (this->player != 0 && this->engineSoundEvent != -1) {
+        return FModSound_playEvent(this->player,
+                                   this->engineSoundEvent, 0);
     }
 }
 
 void KIPlayer::setRoute(Route *route) {
-    KIPlayer *self = this;
-    Route *old = self->route;
+    Route *old = this->route;
     if (old != 0) {
         ::operator delete(((Route *)(old))->dtor());
     }
-    self->route = 0;
+    this->route = 0;
     if (route != 0) {
-        self->initialRoute = route;
+        this->initialRoute = route;
     }
-    self->route = route;
+    this->route = route;
 }
 
 uint8_t KIPlayer::isVisible() {
-    KIPlayer *self = this;
-    return self->visibleFlag;
+    return this->visibleFlag;
 }
 
 extern "C" char KIPlayer_vtable[];     // vtable symbol base
@@ -216,8 +184,7 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
     if (g1 != 0) { ((AEGeometry *)g1)->~AEGeometry(); ::operator delete(g1); }
     self->crateGeometry = 0;
 
-    void *au = self->field_0xc4;
-    if (au != 0) ::operator delete(ArrayUint_dtor(au));
+    delete self->field_0xc4;
     self->field_0xc4 = 0;
 
     void *g2 = self->geometry;
@@ -228,15 +195,13 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
     if (g3 != 0) { ((AEGeometry *)g3)->~AEGeometry(); ::operator delete(g3); }
     self->parentGeometry = 0;
 
-    void *ai = self->cargo;
-    if (ai != 0) ::operator delete(ArrayInt_dtor(ai));
+    delete self->cargo;
     self->cargo = 0;
 
-    void *sp = self->spacePoints;
-    if (sp != 0) {
-        ArrayReleaseClasses_SpacePoint(sp);
-        void *sp2 = self->spacePoints;
-        if (sp2 != 0) ::operator delete(ArraySpacePoint_dtor(sp2));
+    if (self->spacePoints != 0) {
+        for (SpacePoint *e : *self->spacePoints) delete e;
+        self->spacePoints->clear();
+        delete self->spacePoints;
         self->spacePoints = 0;
     }
 
@@ -245,56 +210,49 @@ void *_ZN8KIPlayerD1Ev(KIPlayer *self)
 }
 
 void KIPlayer::awake() {
-    KIPlayer *self = this;
-    void *player = self->player;
-    self->state = 1;
+    void *player = this->player;
+    this->state = 1;
     return ((Player *)(player))->awake(1);
 }
 
 void KIPlayer::setInitActive() {
-    KIPlayer *self = this;
-    self->initActiveFlag = 0;
+    this->initActiveFlag = 0;
 }
 
 void KIPlayer::setWingman(bool b, int cmd) {
-    KIPlayer *self = this;
-    self->wingmanFlag = b;
-    self->wingmanCommand = cmd;
-    self->field_0xe4 = 1;
+    this->wingmanFlag = b;
+    this->wingmanCommand = cmd;
+    this->field_0xe4 = 1;
 }
 
 void KIPlayer::setSpacePoints(Array<SpacePoint *> *pts) {
-    KIPlayer *self = this;
-    *(Array<SpacePoint *> **)((char *)self + 0xcc) = pts;
+    this->spacePoints = pts;
 }
 
 uint8_t KIPlayer::isJumper() {
-    KIPlayer *self = this;
-    return self->jumperFlag;
+    return this->jumperFlag;
 }
 
 typedef void (*CollideFn)(KIPlayer *, float, float, float);
+// vtable getPosition(out)/setPosition(Vector const&) thunk signature.
+typedef void (*fn_t)(KIPlayer *, Vector *);
 
 void KIPlayer::outerCollide(const Vector &v) {
-    KIPlayer *self = this;
-    CollideFn fn = *(CollideFn *)(*(char **)self + 0x3c);
-    return fn(self, v.x, v.y, v.z);
+    CollideFn fn = *(CollideFn *)(*(char **)this + 0x3c);
+    return fn(this, v.x, v.y, v.z);
 }
 
 void KIPlayer::setJumper(bool b) {
-    KIPlayer *self = this;
-    self->jumperFlag = b;
+    this->jumperFlag = b;
 }
 
 int KIPlayer::cargoAvailable() {
-    KIPlayer *self = this;
-    unsigned int *arr = (unsigned int *)self->cargo;
+    Array<int> *arr = this->cargo;
     if (arr != 0) {
-        unsigned int len = arr[0];
+        unsigned int len = arr->size();
         unsigned int i = 0;
         while (i < len) {
-            int *data = *(int **)((char *)arr + 4);
-            if (data[i + 1] > 0) {
+            if ((*arr)[i + 1] > 0) {
                 return 1;
             }
             i += 2;
@@ -304,9 +262,8 @@ int KIPlayer::cargoAvailable() {
 }
 
 void KIPlayer::setDead() {
-    KIPlayer *self = this;
-    self->state = 4;
-    return ((Player *)(self))->setDead();
+    this->state = 4;
+    return ((Player *)(this))->setDead();
 }
 
 // String12 is provided by gof2/common.h.
@@ -326,104 +283,103 @@ extern unsigned KIPlayer_initB;
 // KIPlayer::KIPlayer(int faction, int group, Player* player, AEGeometry* geom,
 //                    float x, float y, float z, bool active)
 void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, float y, float z, bool active) {
-    KIPlayer *self = this;
-    *(int *)self = (int)(intptr_t)(KIPlayer_vtable + 8);
-    String_ctor_default((char *)self + 0x18);
+    *(int *)this = (int)(intptr_t)(KIPlayer_vtable + 8);
+    String_ctor_default((char *)this + 0x18);
 
     // zero a wide block of fields (the engine writes zero-vectors via NEON stores).
-    self->field_0x90 = 0;  self->field_0x94 = 0;
-    self->field_0x98 = 0;  self->field_0x9c = 0;
-    self->field_0x10c = 0; self->field_0x110 = 0;
-    self->field_0x114 = 0; self->field_0x118 = 0;
-    self->field_0x2c = 0;  self->field_0x30 = 0;  self->field_0x34 = 0;
-    self->level = 0;  self->route = 0;  self->initialRoute = 0;
-    self->field_0xa0 = 0;  self->field_0xa4 = 0;
-    self->field_0x11c = 0; self->field_0x120 = 0;
+    this->field_0x90 = 0;  this->field_0x94 = 0;
+    this->field_0x98 = 0;  this->field_0x9c = 0;
+    this->field_0x10c = 0; this->field_0x110 = 0;
+    this->field_0x114 = 0; this->field_0x118 = 0;
+    this->field_0x2c = 0;  this->field_0x30 = 0;  this->field_0x34 = 0;
+    this->level = 0;  this->route = 0;  this->initialRoute = 0;
+    this->field_0xa0 = 0;  this->field_0xa4 = 0;
+    this->field_0x11c = 0; this->field_0x120 = 0;
 
-    self->player = player;
-    self->geometry = 0;
-    self->parentGeometry = 0;
-    self->field_0xc4 = 0;
-    self->field_0xc8 = 0;
-    self->spacePoints = 0;
+    this->player = player;
+    this->geometry = 0;
+    this->parentGeometry = 0;
+    this->field_0xc4 = 0;
+    this->field_0xc8 = 0;
+    this->spacePoints = 0;
 
     // geometry: when a parent geometry is supplied (and it has children) build a child group.
     bool haveChild = (geom != 0) && (*(void **)((char *)geom + 0x18) != 0);
     if (geom != 0 && haveChild) {
-        self->parentGeometry = geom;
+        this->parentGeometry = geom;
         void *child = ::operator new(0xc0);
         new ((void *)child) AEGeometry((PaintCanvas *)*(void **)gCanvas);
-        self->geometry = child;
-        ((AEGeometry *)(child))->addChild(*(int *)((char *)self->parentGeometry + 0xc));
-        *(int *)((char *)self->parentGeometry + 0x24) = *(int *)((char *)self->geometry + 0xc);
+        this->geometry = child;
+        ((AEGeometry *)(child))->addChild(*(int *)((char *)this->parentGeometry + 0xc));
+        *(int *)((char *)this->parentGeometry + 0x24) = *(int *)((char *)this->geometry + 0xc);
     } else {
-        self->geometry = geom;
-        self->parentGeometry = 0;
+        this->geometry = geom;
+        this->parentGeometry = 0;
     }
 
-    self->cargo = 0;
-    self->shipGroup = group;
-    self->field_0x72 = 0;
-    self->field_0x25 = 0;
-    self->field_0x75 = 0;
-    self->field_0x42 = 0;
-    self->field_0x44 = 0;
-    self->field_0x48 = -1;
-    self->field_0x8c = 1;
-    self->stealFlag = 0;
-    self->field_0x4c = 0;
-    self->field_0xd0 = 0;
-    self->field_0x68 = 0;
-    self->field_0x6a = 0;
-    self->wingmanFlag = 0;
-    self->jumperFlag = 0;
-    self->jumpDone = 0;
+    this->cargo = 0;
+    this->shipGroup = group;
+    this->field_0x72 = 0;
+    this->field_0x25 = 0;
+    this->field_0x75 = 0;
+    this->field_0x42 = 0;
+    this->field_0x44 = 0;
+    this->field_0x48 = -1;
+    this->field_0x8c = 1;
+    this->stealFlag = 0;
+    this->field_0x4c = 0;
+    this->field_0xd0 = 0;
+    this->field_0x68 = 0;
+    this->field_0x6a = 0;
+    this->wingmanFlag = 0;
+    this->jumperFlag = 0;
+    this->jumpDone = 0;
 
     {
         String12 tmp;
         ((String *)(&tmp))->ctor_char("", false);
-        ((String *)((char *)self + 0x18))->assign((String *)&tmp);
+        ((String *)((char *)this + 0x18))->assign((String *)&tmp);
         ((String *)(&tmp))->dtor();
     }
 
-    self->field_0x24 = 0;
-    self->visibleFlag = 1;
-    self->wingmanTarget = 0;
-    self->field_0x70 = 0;
-    self->field_0x40 = 0;
-    self->field_0xd8 = 0;
-    self->field_0x80 = -1;
-    self->field_0x84 = -1;
-    self->field_0x104 = 0;
+    this->field_0x24 = 0;
+    this->visibleFlag = 1;
+    this->wingmanTarget = 0;
+    this->field_0x70 = 0;
+    this->field_0x40 = 0;
+    this->field_0xd8 = 0;
+    this->field_0x80 = -1;
+    this->field_0x84 = -1;
+    this->field_0x104 = 0;
 
-    ((Player *)(self->player))->setKIPlayer(self);
+    ((Player *)(this->player))->setKIPlayer(this);
 
-    self->state = 0;
-    self->field_0x10 = 0;
-    self->sleepFlag = 0x100;
-    self->field_0xbc = 0;
-    self->field_0xc0 = 0xff;
-    self->crateGeometry = 0;
-    self->rotationSpeed = KIPlayer_initB;
-    self->type = faction;
-    self->field_0x64 = KIPlayer_initA;
+    this->state = 0;
+    this->field_0x10 = 0;
+    this->sleepFlag = 0x100;
+    this->field_0xbc = 0;
+    this->field_0xc0 = 0xff;
+    this->crateGeometry = 0;
+    this->rotationSpeed = KIPlayer_initB;
+    this->type = faction;
+    this->field_0x64 = KIPlayer_initA;
 
     if (geom != 0) {
         ((AEGeometry *)(geom))->setPosition((float)x, (float)y, (float)z);
-        *(Matrix *)((char *)self->player + 4) = ((AEGeometry *)(geom))->getMatrix();
-        if (self->parentGeometry != 0)
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)self->player + 4), ((AEGeometry *)(self->parentGeometry))->getMatrix());
+        *(Matrix *)((char *)this->player + 4) = ((AEGeometry *)(geom))->getMatrix();
+        if (this->parentGeometry != 0)
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)this->player + 4), ((AEGeometry *)(this->parentGeometry))->getMatrix());
     }
 
-    self->posX = x;
-    self->posY = y;
-    self->posZ = z;
-    self->field_0x14 = 0;
-    self->field_0x73 = 0;
-    self->field_0x76 = 0;
-    self->engineSoundEvent = -1;
-    self->field_0xfc = 0;
-    self->field_0x100 = 0x100;
+    this->posX = x;
+    this->posY = y;
+    this->posZ = z;
+    this->field_0x14 = 0;
+    this->field_0x73 = 0;
+    this->field_0x76 = 0;
+    this->engineSoundEvent = -1;
+    this->field_0xfc = 0;
+    this->field_0x100 = 0x100;
     (void)active;
 }
 
@@ -435,51 +391,48 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
 // whose elements are class instances and so are released first). Finally tears
 // down the embedded name String at +0x18.
 KIPlayer::~KIPlayer() {
-    KIPlayer *self = this;
-    *(int *)self = (int)(intptr_t)(KIPlayer_vtable + 8);
+    *(int *)this = (int)(intptr_t)(KIPlayer_vtable + 8);
 
-    if (self->player != 0)
-        ::operator delete(Player_dtor(self->player));
-    self->player = 0;
+    if (this->player != 0)
+        ::operator delete(Player_dtor(this->player));
+    this->player = 0;
 
-    if (self->route != 0)
-        ::operator delete(((Route *)(self->route))->dtor());
-    self->route = 0;
+    if (this->route != 0)
+        ::operator delete(((Route *)(this->route))->dtor());
+    this->route = 0;
 
-    if (self->crateGeometry != 0) {
-        ((AEGeometry *)(self->crateGeometry))->~AEGeometry();
-        ::operator delete(self->crateGeometry);
+    if (this->crateGeometry != 0) {
+        ((AEGeometry *)(this->crateGeometry))->~AEGeometry();
+        ::operator delete(this->crateGeometry);
     }
-    self->crateGeometry = 0;
+    this->crateGeometry = 0;
 
-    if (self->field_0xc4 != 0)
-        ::operator delete(ArrayUint_dtor(self->field_0xc4));
-    self->field_0xc4 = 0;
+    delete this->field_0xc4;
+    this->field_0xc4 = 0;
 
-    if (self->geometry != 0) {
-        ((AEGeometry *)(self->geometry))->~AEGeometry();
-        ::operator delete(self->geometry);
+    if (this->geometry != 0) {
+        ((AEGeometry *)(this->geometry))->~AEGeometry();
+        ::operator delete(this->geometry);
     }
-    self->geometry = 0;
+    this->geometry = 0;
 
-    if (self->parentGeometry != 0) {
-        ((AEGeometry *)(self->parentGeometry))->~AEGeometry();
-        ::operator delete(self->parentGeometry);
+    if (this->parentGeometry != 0) {
+        ((AEGeometry *)(this->parentGeometry))->~AEGeometry();
+        ::operator delete(this->parentGeometry);
     }
-    self->parentGeometry = 0;
+    this->parentGeometry = 0;
 
-    if (self->cargo != 0)
-        ::operator delete(ArrayInt_dtor(self->cargo));
-    self->cargo = 0;
+    delete this->cargo;
+    this->cargo = 0;
 
-    if (self->spacePoints != 0) {
-        ArrayReleaseClasses_SpacePoint(self->spacePoints);
-        if (self->spacePoints != 0)
-            ::operator delete(ArraySpacePoint_dtor(self->spacePoints));
-        self->spacePoints = 0;
+    if (this->spacePoints != 0) {
+        for (SpacePoint *e : *this->spacePoints) delete e;
+        this->spacePoints->clear();
+        delete this->spacePoints;
+        this->spacePoints = 0;
     }
 
-    ((String *)((char *)self + 0x18))->dtor();
+    ((String *)((char *)this + 0x18))->dtor();
 }
 
 namespace AbyssEngine { namespace AEMath {
@@ -493,39 +446,37 @@ Vector operator-(const Vector &lhs, const Vector &rhs);
 //   Returns the nearest space point of type 2 (docking) to the supplied direction vector,
 //   measured from the player's transformed position.
 void * KIPlayer::getNearestDockingPoint(Vector *dir) {
-    KIPlayer *self = this;
-    void *arr = self->spacePoints;
+    Array<SpacePoint *> *arr = this->spacePoints;
     if (arr == 0)
         return 0;
 
     Vector selfPos;
     {
-        void **vtbl = *(void ***)self;
-        typedef void (*fn_t)(KIPlayer *, Vector *);
-        ((fn_t)vtbl[0x28 / 4])(self, &selfPos);
+        void **vtbl = *(void ***)this;
+        ((fn_t)vtbl[0x28 / 4])(this, &selfPos);
     }
 
     void *best = 0;
     float bestLen = 1e30f;
-    unsigned count = *(unsigned *)arr;
+    unsigned count = arr->size();
     for (unsigned i = 0; i < count; i = i + 1) {
-        void *pt = ((void **)(*(char **)((char *)arr + 4)))[i];
+        void *pt = (*arr)[i];
         if (*(int *)((char *)pt + 0x18) != 2)
             continue;
 
-        void *mat = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
+        void *mat = (void *)&((AEGeometry *)(this->geometry))->getMatrix();
         Vector rotated = AEMath::MatrixRotateVector(
             *(const AEMath::Matrix *)mat,
-            *(const Vector *)((void **)(*(char **)((char *)arr + 4)))[i]);
+            *(const Vector *)(*arr)[i]);
         Vector world = selfPos + rotated;
         Vector delta = world - *dir;
         float len = AEMath::VectorLength(delta);
         float alen = len < 0.0f ? -len : len;
         if (alen < bestLen) {
-            best = ((void **)(*(char **)((char *)self->spacePoints + 4)))[i];
+            best = (*this->spacePoints)[i];
             bestLen = alen;
         }
-        count = *(unsigned *)self->spacePoints;
+        count = this->spacePoints->size();
     }
     return best;
 }
@@ -534,38 +485,34 @@ void * KIPlayer::getNearestDockingPoint(Vector *dir) {
 //   Packs the three floats into a Vector and dispatches through vtable slot +0x44
 //   (the virtual setPosition(Vector const&)).
 void KIPlayer::setPosition3(float x, float y, float z) {
-    KIPlayer *self = this;
     Vector v;
     v.x = x;
     v.y = y;
     v.z = z;
-    void **vtbl = *(void ***)self;
-    typedef void (*fn_t)(KIPlayer *, Vector *);
-    ((fn_t)vtbl[0x44 / 4])(self, &v);
+    void **vtbl = *(void ***)this;
+    ((fn_t)vtbl[0x44 / 4])(this, &v);
 }
 
 void KIPlayer::addGun_b() {
-    KIPlayer *self = this;
-    return Player_addGun_b(self->player);
+    return Player_addGun_b(this->player);
 }
 
 void KIPlayer::reset() {
-    KIPlayer *self = this;
-    if (self->player != 0) {
-        ((Player *)(self->player))->reset();
+    if (this->player != 0) {
+        ((Player *)(this->player))->reset();
     }
-    if (self->sleepFlag != 0 || self->initActiveFlag == 0) {
-        ((KIPlayer *)(self))->setToSleep();
+    if (this->sleepFlag != 0 || this->initActiveFlag == 0) {
+        ((KIPlayer *)(this))->setToSleep();
     }
-    Route *r = self->initialRoute;
+    Route *r = this->initialRoute;
     if (r != 0) {
-        self->route = r;
+        this->route = r;
         ((Route *)(r))->reset();
-    } else if (self->route != 0) {
-        ((Route *)(self->route))->reset();
+    } else if (this->route != 0) {
+        ((Route *)(this->route))->reset();
     }
-    self->field_0xfc = 0;
-    self->field_0x100 = 0;
+    this->field_0xfc = 0;
+    this->field_0x100 = 0;
 }
 
 // PC-relative singleton holders.
@@ -583,26 +530,25 @@ void KIPlayer_setActive_732f4(KIPlayer *self, int v);
 //   applies steal/standing penalties, moves the cargo into the ship's hold or equipment, bumps
 //   the relevant statistics, and notifies the HUD.
 void KIPlayer::captureCrate(void *hud) {
-    KIPlayer *self = this;
-    if ((unsigned)(self->state - 3) < 2) {
-        self->field_0x4c = 0;
-        if (self->field_0x101 != 0)
-            KIPlayer_setActive_732f4(self, 0);
+    if ((unsigned)(this->state - 3) < 2) {
+        this->field_0x4c = 0;
+        if (this->field_0x101 != 0)
+            KIPlayer_setActive_732f4(this, 0);
     }
 
-    void *cargo = self->cargo;
-    self->crateGeometry = 0;
+    Array<int> *cargo = this->cargo;
+    this->crateGeometry = 0;
     if (cargo == 0)
         return;
 
-    unsigned count = *(unsigned *)cargo;
+    unsigned count = cargo->size();
     for (unsigned i = 0; i < count; i = i + 2) {
-        int amount = *(int *)(*(char **)((char *)cargo + 4) + i * 4 + 4);
+        int amount = (*cargo)[i + 1];
         if (amount < 1)
             continue;
 
         // randomise the captured amount unless we are in a "guaranteed" state.
-        if ((unsigned)(self->state - 3) >= 2)
+        if ((unsigned)(this->state - 3) >= 2)
             amount = ((AbyssEngine::AERandom *)(*(void **)gAERandom))->nextInt();
 
         void *status = *(void **)gStatus;
@@ -622,23 +568,22 @@ void KIPlayer::captureCrate(void *hud) {
         }
 
         // resolve the item info and decrement the crate's remaining count.
-        int itemId = *(int *)(*(char **)((char *)self->cargo + 4) + i * 4);
+        int itemId = (*this->cargo)[i];
         int infoPtr = *(int *)(*(char **)(*(char **)gItemDb + 4) + itemId * 4);
         void *item = ((Item *)(infoPtr))->makeItem();
-        int *slot = (int *)(*(char **)((char *)self->cargo + 4) + i * 4);
-        slot[1] = slot[1] - amount;
+        (*this->cargo)[i + 1] = (*this->cargo)[i + 1] - amount;
         if (item == 0)
             return;
 
-        if (*(char *)((char *)self->player + 0x5d) != 0)
-            ((Level *)(self->level))->stealFriendCargo();
+        if (*(char *)((char *)this->player + 0x5d) != 0)
+            ((Level *)(this->level))->stealFriendCargo();
 
-        if (self->stealFlag == 0)
-            ((Standing *)(intptr_t)(((Status *)status)->getStanding()))->applyStealCargo(self->shipGroup);
+        if (this->stealFlag == 0)
+            ((Standing *)(intptr_t)(((Status *)status)->getStanding()))->applyStealCargo(this->shipGroup);
 
         // determine whether this is a special (illegal) cargo item.
         bool special = false;
-        if (self->field_0xd0 != 0) {
+        if (this->field_0xd0 != 0) {
             int idx = ((Item *)(item))->getIndex();
             if (idx == 0x74)
                 special = true;
@@ -655,7 +600,7 @@ void KIPlayer::captureCrate(void *hud) {
 
         if (avail == 0) {
             if (special)
-                self->field_0x68 = 1;
+                this->field_0x68 = 1;
             hudIndex = ((Item *)(item))->getIndex();
             hudAmount = ((Item *)(item))->getAmount();
             flagB = 1;
@@ -685,12 +630,12 @@ void KIPlayer::captureCrate(void *hud) {
         if (!merged)
             ((Ship *)(((Status *)status)->getShip()))->addCargo((Item *)item);
 
-        *(int *)((char *)self->level + 0x1c) =
-            ((Item *)(item))->getAmount() + *(int *)((char *)self->level + 0x1c);
+        *(int *)((char *)this->level + 0x1c) =
+            ((Item *)(item))->getAmount() + *(int *)((char *)this->level + 0x1c);
 
         if (special) {
-            self->field_0x69 = 1;
-        } else if (self->shipGroup == 9) {
+            this->field_0x69 = 1;
+        } else if (this->shipGroup == 9) {
             void *st = *(void **)gStatus;
             *(int *)((char *)st + 0xcc) = ((Item *)(item))->getAmount() + *(int *)((char *)st + 0xcc);
         } else {
@@ -718,37 +663,35 @@ int SpacePoint_isFree(void *sp);
 //   Among the player's space points of type 1 (navigation), returns the nearest free one
 //   (or the explicitly requested `target`) measured against the player's transformed position.
 void * KIPlayer::getNearestNavigationPoint(Vector *dir, void *target) {
-    KIPlayer *self = this;
-    void *arr = self->spacePoints;
+    Array<SpacePoint *> *arr = this->spacePoints;
     if (arr == 0)
         return 0;
 
     // this->getPosition(&selfPos) via vtable +0x28.
     Vector selfPos;
     {
-        void **vtbl = *(void ***)self;
-        typedef void (*fn_t)(KIPlayer *, Vector *);
-        ((fn_t)vtbl[0x28 / 4])(self, &selfPos);
+        void **vtbl = *(void ***)this;
+        ((fn_t)vtbl[0x28 / 4])(this, &selfPos);
     }
 
     void *best = 0;
     float bestLen = 1e30f;
-    unsigned count = *(unsigned *)arr;
+    unsigned count = arr->size();
     for (unsigned i = 0; i < count; i = i + 1) {
-        void *pt = ((void **)(*(char **)((char *)arr + 4)))[i];
+        void *pt = (*arr)[i];
         if (*(int *)((char *)pt + 0x18) != 1)
             continue;
 
-        void *mat = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
+        void *mat = (void *)&((AEGeometry *)(this->geometry))->getMatrix();
         Vector rotated = AEMath::MatrixRotateVector(
             *(const AEMath::Matrix *)mat,
-            *(const Vector *)((void **)(*(char **)((char *)arr + 4)))[i]);
+            *(const Vector *)(*arr)[i]);
         Vector world = selfPos + rotated;
         Vector delta = world - *dir;
         float len = AEMath::VectorLength(delta);
         float alen = len < 0.0f ? -len : len;
         if (alen < bestLen) {
-            void *cand = ((void **)(*(char **)((char *)self->spacePoints + 4)))[i];
+            void *cand = (*this->spacePoints)[i];
             if (SpacePoint_isFree(cand) != 0 || cand == target) {
                 best = cand;
                 bestLen = alen;
@@ -757,66 +700,61 @@ void * KIPlayer::getNearestNavigationPoint(Vector *dir, void *target) {
                 bestLen = alen;
             }
         }
-        count = *(unsigned *)self->spacePoints;
+        count = this->spacePoints->size();
     }
     return best;
 }
 
 void KIPlayer::setEnemies(Array<Player *> *enemies) {
-    KIPlayer *self = this;
-    return ((Player *)(self->player))->setEnemies(enemies);
+    return ((Player *)(this->player))->setEnemies(enemies);
 }
 
 void KIPlayer::setShipGroup(int param2, int flag, int cond) {
-    KIPlayer *self = this;
-    self->shipGroupFlag = flag;
+    this->shipGroupFlag = flag;
     if (param2 == 0 || cond == 0) {
-        self->geometry = (void *)(intptr_t)param2;
-        void *g = self->parentGeometry;
+        this->geometry = (void *)(intptr_t)param2;
+        void *g = this->parentGeometry;
         if (g != 0) { ((AEGeometry *)g)->~AEGeometry(); ::operator delete(g); }
-        self->parentGeometry = 0;
+        this->parentGeometry = 0;
     } else {
-        void *grp = self->geometry;
-        self->parentGeometry = (void *)(intptr_t)param2;
+        void *grp = this->geometry;
+        this->parentGeometry = (void *)(intptr_t)param2;
         if (grp == 0) {
             grp = ::operator new(0xc0);
             new ((void *)grp) AEGeometry((PaintCanvas *)gCanvas);
-            self->geometry = grp;
+            this->geometry = grp;
         }
-        ((AEGeometry *)(grp))->addChild(*(int *)((char *)self->parentGeometry + 0xc));
-        *(int *)((char *)self->parentGeometry + 0x24) = *(int *)((char *)self->geometry + 0xc);
+        ((AEGeometry *)(grp))->addChild(*(int *)((char *)this->parentGeometry + 0xc));
+        *(int *)((char *)this->parentGeometry + 0x24) = *(int *)((char *)this->geometry + 0xc);
     }
-    ((AEGeometry *)(self->geometry))->setPosition((float)self->posX,
-                            (float)self->posY,
-                            (float)self->posZ);
-    *(Matrix *)((char *)self->player + 0x4) = ((AEGeometry *)(self->geometry))->getMatrix();
-    if (self->parentGeometry != 0) {
-        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)self->player + 0x4), ((AEGeometry *)(self->parentGeometry))->getMatrix());
+    ((AEGeometry *)(this->geometry))->setPosition((float)this->posX,
+                            (float)this->posY,
+                            (float)this->posZ);
+    *(Matrix *)((char *)this->player + 0x4) = ((AEGeometry *)(this->geometry))->getMatrix();
+    if (this->parentGeometry != 0) {
+        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)this->player + 0x4), ((AEGeometry *)(this->parentGeometry))->getMatrix());
     }
 }
 
 void KIPlayer::setPosition_vec(const Vector &v) {
-    KIPlayer *self = this;
-    void *geom = self->geometry;
+    void *geom = this->geometry;
     if (geom != 0) {
         ((AEGeometry *)(geom))->setPosition(v);
-        void *m = ((AEGeometry *)(self->geometry))->getMatrix();
-        *(Matrix *)((char *)self->player + 0x4) = *(const Matrix *)m;
-        void *cond = self->parentGeometry;
+        void *m = ((AEGeometry *)(this->geometry))->getMatrix();
+        *(Matrix *)((char *)this->player + 0x4) = *(const Matrix *)m;
+        void *cond = this->parentGeometry;
         if (cond != 0) {
             void *m2 = ((AEGeometry *)(cond))->getMatrix();
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)self->player + 0x4), *(const Matrix *)m2);
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)this->player + 0x4), *(const Matrix *)m2);
         }
     }
 }
 
 void KIPlayer::addGun_a() {
-    KIPlayer *self = this;
-    return Player_addGun_a(self->player);
+    return Player_addGun_a(this->player);
 }
 
 void KIPlayer::createCrate(int type) {
-    KIPlayer *self = this;
     void *crate = ::operator new(0xc0);
     unsigned short id;
     if (type == 1) {
@@ -826,7 +764,7 @@ void KIPlayer::createCrate(int type) {
     } else if (type == 3) {
         id = 0x4218;
     } else {
-        int st = self->shipGroup;
+        int st = this->shipGroup;
         if (st == 1) {
             id = 0x425f;
         } else if (st == 3) {
@@ -841,12 +779,12 @@ void KIPlayer::createCrate(int type) {
         }
     }
     new ((void *)crate) AEGeometry((uint16_t)id, (PaintCanvas *)gCanvasPtr[0], false);
-    self->crateGeometry = crate;
+    this->crateGeometry = crate;
     Vector pos;
     ((AEGeometry *)(&pos))->getPosition();
     ((AEGeometry *)(crate))->setPosition(*(const AbyssEngine::AEMath::Vector *)&pos);
-    *(Matrix *)((char *)self->player + 0x4) = ((AEGeometry *)(crate))->getMatrix();
-    ((Player *)(self->player))->setKIPlayer(self);
+    *(Matrix *)((char *)this->player + 0x4) = ((AEGeometry *)(crate))->getMatrix();
+    ((Player *)(this->player))->setKIPlayer(this);
 }
 
 // ---- getRoute (a5b4c) ----
@@ -858,7 +796,7 @@ Route *KIPlayer::getRoute() {
 // ---- getSpacePoints (a5b44) ----
 // Accessor for the patrol/space-point list (field +0xcc).
 Array<SpacePoint *> *KIPlayer::getSpacePoints() {
-    return (Array<SpacePoint *> *)this->spacePoints;
+    return this->spacePoints;
 }
 
 // ---- setLevel (base, called by PlayerFighter/PlayerTurret) ----
@@ -901,8 +839,7 @@ Vector KIPlayer::projectCollisionOnSurface(const Vector &position) {
 extern "C" void *AppManager_GetEngine();
 
 void KIPlayer::addGun(Gun *gun) {
-    KIPlayer *self = this;
-    Player_addGun_a(self->player);
+    Player_addGun_a(this->player);
 }
 
 // KIPlayer::setAutoPilot(KIPlayer *target) — engage/disengage the auto-pilot lock.

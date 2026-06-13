@@ -698,8 +698,7 @@ Agent *Generator::createAgent(Station *station) {
             Globals_getRandomName(friendName, *names, ((Agent *)(agent))->getRace(), 1);
             friendNames->data()[i] = friendName;
         }
-        // setWingmanFriendNames takes an opaque Array<String*>* (declared as uint32_t*).
-        ((Agent *)(agent))->setWingmanFriendNames((uint32_t *)friendNames);
+        ((Agent *)(agent))->setWingmanFriendNames(friendNames);
         int costRoll = ((AbyssEngine::AERandom *)(*randomPtr))->nextInt();
         ((Agent *)(agent))->setCosts((costRoll + 700) * (count + 1));
         if (((Status *)(status))->hardCoreMode() != 0) {

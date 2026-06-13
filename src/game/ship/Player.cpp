@@ -28,9 +28,6 @@ namespace AbyssEngine { namespace AEMath {
 __attribute__((visibility("hidden"))) extern Status **gStatus;
 
 extern "C" void Player_damageHull_tail();
-extern "C" void Player_removeAllGuns_releaseClasses(void *array);
-extern "C" void *Player_removeAllGuns_dtor(void *array);
-extern "C" void Player_removeAllGuns_delete(void *p);
 extern "C" void Player_damageShield_tail();
 extern "C" void Player_regenerateArmor_tail();
 extern "C" void Player_setMaxHitpoints_tail();
@@ -40,25 +37,13 @@ extern "C" void Player_setHitpoints_tail();
 extern "C" void Player_setMaxShieldHP_tail();
 extern "C" void Player_setMaxEmpPoints_tail();
 extern "C" void Player_setShieldHP_tail();
-extern "C" void Array_Player_ctor(Array<Player *> *array);
-extern "C" void ArrayAdd_Player(Player *value, Array<Player *> *array);
-extern "C" void *Array_Player_dtor(Array<Player *> *array);
 extern "C" void Player_operator_delete_tail(void *p);
 extern "C" void Player_setEnemies_tail(Player *self, Array<Player *> *enemies);
-extern "C" void Array_GunArrayArray_ctor(Array<Array<Gun *> *> *array);
-extern "C" void Array_Gun_ctor(Array<Gun *> *array);
-extern "C" void ArraySetLength_GunArrayArray(int len, Array<Array<Gun *> *> *array);
-extern "C" void ArraySetLength_Gun(int len, Array<Gun *> *array);
 void MatrixGetPosition(void *out, float *matrix);
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" void Player_damageEmp_tail(Player *self);
-extern "C" void ArrayAdd_Gun(Gun *gun, Array<Gun *> *array);
 extern "C" void Player_shoot_tail(Player *self, int soundId);
 extern "C" void Player_regenerateHull_tail();
-extern "C" void ArrayReleaseClasses_GunArray(Array<Gun *> *array);
-extern "C" void ArrayReleaseClasses_GunArrayArray(Array<Array<Gun *> *> *array);
-extern "C" void *Array_GunArray_dtor(Array<Gun *> *array);
-extern "C" void *Array_GunArrayArray_dtor(Array<Array<Gun *> *> *array);
 extern "C" void Player_setGammaHP_tail();
 extern "C" int gStopSoundIds[];
 extern "C" void *gFModSound;
@@ -68,9 +53,6 @@ void Globals_addSoundResourceToList(int id);
 extern "C" void Player_calcWeaponSounds_tail(int a, int b);
 extern "C" void *gAppManager;
 extern "C" void **gFModSoundPtr;
-// Two engine overloads share this name; declared as C++ overloads (not extern "C")
-// so overload resolution by arity/argument types selects the right one.
-extern "C" void ArrayAdd_PlayerArray(Array<Player *> *src, Array<Player *> *dst);
 extern "C" void Gun_setEnemies(void *gun);
 extern "C" int gShootSoundsByType[];
 extern "C" int gShootSoundsByIndex[];
@@ -150,10 +132,9 @@ int Player::getShieldHP() {
 void Player::removeAllGuns() {
     Player *self = this;
     if (self->guns != 0) {
-        Player_removeAllGuns_releaseClasses(self->guns);
-        if (self->guns != 0) {
-            Player_removeAllGuns_delete(Player_removeAllGuns_dtor(self->guns));
-        }
+        for (Array<Gun *> *slot : *self->guns) delete slot;
+        self->guns->clear();
+        delete self->guns;
     }
     self->guns = 0;
 }
@@ -579,17 +560,15 @@ void Player::addEnemies(Array<Player *> *enemies) {
     if (self->enemies == 0) {
         return Player_setEnemies_tail(self, enemies);
     }
-    Array<Player *> *tmp = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
-    Array_Player_ctor(tmp);
+    Array<Player *> *tmp = new Array<Player *>();
     for (unsigned int i = 0; i < self->enemies->size(); i++) {
-        ArrayAdd_Player(self->enemies->data()[i], tmp);
+        tmp->push_back(self->enemies->data()[i]);
     }
     for (unsigned int i = 0; i < enemies->size(); i++) {
-        ArrayAdd_Player(enemies->data()[i], tmp);
+        tmp->push_back(enemies->data()[i]);
     }
     ((Player *)(self))->setEnemies(tmp);
-    Array_Player_dtor(tmp);
-    return Player_operator_delete_tail(tmp);
+    delete tmp;
 }
 
 Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
@@ -623,35 +602,30 @@ Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondar
     ((Player *)(self))->updateDamageRate();
     self->field_58 = -1;
 
-    Array<Array<Gun *> *> *gunArr =
-        static_cast<Array<Array<Gun *> *> *>(operator new(sizeof(Array<Array<Gun *> *>)));
-    Array_GunArrayArray_ctor(gunArr);
+    Array<Array<Gun *> *> *gunArr = new Array<Array<Gun *> *>();
     self->guns = gunArr;
-    ArraySetLength_GunArrayArray(3, gunArr);
+    gunArr->resize(3);
 
     if (numPrimary < 1) {
         self->guns->data()[0] = 0;
     } else {
-        Array<Gun *> *a = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
-        Array_Gun_ctor(a);
+        Array<Gun *> *a = new Array<Gun *>();
         self->guns->data()[0] = a;
-        ArraySetLength_Gun(numPrimary, self->guns->data()[0]);
+        self->guns->data()[0]->resize(numPrimary);
     }
     if (numSecondary < 1) {
         self->guns->data()[1] = 0;
     } else {
-        Array<Gun *> *a = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
-        Array_Gun_ctor(a);
+        Array<Gun *> *a = new Array<Gun *>();
         self->guns->data()[1] = a;
-        ArraySetLength_Gun(numSecondary, self->guns->data()[1]);
+        self->guns->data()[1]->resize(numSecondary);
     }
     if (numTertiary < 1) {
         self->guns->data()[2] = 0;
     } else {
-        Array<Gun *> *a = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
-        Array_Gun_ctor(a);
+        Array<Gun *> *a = new Array<Gun *>();
         self->guns->data()[2] = a;
-        ArraySetLength_Gun(numTertiary, self->guns->data()[2]);
+        self->guns->data()[2]->resize(numTertiary);
     }
 
     self->playShootSound = 1;
@@ -821,11 +795,10 @@ void Player::addGun(Array<Gun *> *gunsIn, int slot) {
     Player *self = this;
     if (self->guns != 0) {
         if ((unsigned int)slot < 4) {
-            Array<Gun *> *arr = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
-            Array_Gun_ctor(arr);
+            Array<Gun *> *arr = new Array<Gun *>();
             self->guns->data()[slot] = arr;
             for (unsigned int i = 0; i < gunsIn->size(); i++) {
-                ArrayAdd_Gun(gunsIn->data()[i], self->guns->data()[slot]);
+                self->guns->data()[slot]->push_back(gunsIn->data()[i]);
             }
         }
         if (self->playShootSound) {
@@ -861,25 +834,25 @@ __attribute__((minsize)) Player::~Player()
         for (unsigned int i = 0; i < guns->size(); i++) {
             Array<Gun *> *slot = guns->data()[i];
             if (slot != 0) {
-                ArrayReleaseClasses_GunArray(slot);
+                for (Gun *gun : *slot) delete gun;
+                slot->clear();
                 Array<Gun *> *s2 = this->guns->data()[i];
                 if (s2 == 0) {
                     this->guns->data()[i] = 0;
                 } else {
-                    ::operator delete(Array_GunArray_dtor(s2));
+                    delete s2;
                     this->guns->data()[i] = 0;
                 }
                 guns = this->guns;
             }
         }
-        ArrayReleaseClasses_GunArrayArray(guns);
-        if (this->guns != 0) {
-            ::operator delete(Array_GunArrayArray_dtor(this->guns));
-        }
+        for (Array<Gun *> *slot : *guns) delete slot;
+        guns->clear();
+        delete this->guns;
         this->guns = 0;
     }
     if (this->enemies != 0) {
-        ::operator delete(Array_Player_dtor(this->enemies));
+        delete this->enemies;
     }
     this->enemies = 0;
 }
@@ -946,10 +919,9 @@ void Player::addGun(Gun *gun, int slot) {
     Player *self = this;
     if (self->guns != 0) {
         if ((unsigned int)slot < 4) {
-            Array<Gun *> *arr = static_cast<Array<Gun *> *>(operator new(sizeof(Array<Gun *>)));
-            Array_Gun_ctor(arr);
+            Array<Gun *> *arr = new Array<Gun *>();
             self->guns->data()[slot] = arr;
-            ArrayAdd_Gun(gun, self->guns->data()[slot]);
+            self->guns->data()[slot]->push_back(gun);
         }
         if (self->playShootSound) {
             return Player_shoot_tail(self, self->playShootSoundId);
@@ -1054,14 +1026,15 @@ __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Ve
 void Player::setEnemies(Array<Player *> *enemies) {
     Player *self = this;
     if (self->enemies != 0) {
-        ::operator delete(Array_Player_dtor(self->enemies));
+        delete self->enemies;
     }
     self->enemies = 0;
     if (enemies != 0) {
-        Array<Player *> *copy = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
-        Array_Player_ctor(copy);
+        Array<Player *> *copy = new Array<Player *>();
         self->enemies = copy;
-        ArrayAdd_PlayerArray(enemies, copy);
+        for (unsigned int i = 0; i < enemies->size(); i++) {
+            copy->push_back(enemies->data()[i]);
+        }
     }
     Array<Array<Gun *> *> *guns = self->guns;
     if (guns != 0) {
@@ -1382,12 +1355,10 @@ LAB_3488:
 
 void Player::setEnemy(Player *enemy) {
     Player *self = this;
-    Array<Player *> *tmp = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
-    Array_Player_ctor(tmp);
-    ArrayAdd_Player(enemy, tmp);
+    Array<Player *> *tmp = new Array<Player *>();
+    tmp->push_back(enemy);
     ((Player *)(self))->setEnemies(tmp);
-    Array_Player_dtor(tmp);
-    return Player_operator_delete_tail(tmp);
+    delete tmp;
 }
 
 void Player::addEnemy(Player *enemy) {
@@ -1395,15 +1366,15 @@ void Player::addEnemy(Player *enemy) {
     if (self->enemies == 0) {
         return Player_setEnemy_tail(self, enemy);
     }
-    Array<Player *> *tmp = static_cast<Array<Player *> *>(operator new(sizeof(Array<Player *>)));
-    Array_Player_ctor(tmp);
+    Array<Player *> *tmp = new Array<Player *>();
     if (self->enemies->size() != 0) {
-        ArrayAdd_PlayerArray(self->enemies, tmp);
+        for (unsigned int i = 0; i < self->enemies->size(); i++) {
+            tmp->push_back(self->enemies->data()[i]);
+        }
     }
-    ArrayAdd_Player(enemy, tmp);
+    tmp->push_back(enemy);
     ((Player *)(self))->setEnemies(tmp);
-    Array_Player_dtor(tmp);
-    return Player_operator_delete_tail(tmp);
+    delete tmp;
 }
 
 __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, bool force)
@@ -1871,19 +1842,6 @@ extern "C" void Player_setMaxEmpPoints_tail()    { /* -> this->updateDamageRate(
 extern "C" void Player_setMaxHitpoints_tail()    { /* -> this->updateDamageRate() */ }
 extern "C" void Player_setMaxShieldHP_tail()     { /* -> this->updateDamageRate() */ }
 extern "C" void Player_setShieldHP_tail()        { /* -> this->updateDamageRate() */ }
-
-// removeAllGuns() destruction helpers: release the per-slot Gun objects held by
-// the outer gun-array-array, run that container's destructor (returning the raw
-// storage), then free it. Same primitives the real ~Player() uses.
-extern "C" void Player_removeAllGuns_releaseClasses(void *array) {
-    ArrayReleaseClasses_GunArrayArray(static_cast<Array<Array<Gun *> *> *>(array));
-}
-extern "C" void *Player_removeAllGuns_dtor(void *array) {
-    return Array_GunArrayArray_dtor(static_cast<Array<Array<Gun *> *> *>(array));
-}
-extern "C" void Player_removeAllGuns_delete(void *p) {
-    ::operator delete(p);
-}
 
 // Player_dtor: the demangled destructor body reused as an `operator delete`
 // helper — run ~Player() on the object and hand the storage back to the caller,

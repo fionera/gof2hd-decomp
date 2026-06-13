@@ -87,7 +87,7 @@ public:
     int field_0x44;                     // +0x44
     int field_0x48;                     // +0x48
     int field_0x4c;                     // +0x4c
-    void* cargo;                   // +0x50
+    Array<int>* cargo;             // +0x50
     void* level;                   // +0x54  Item/cargo holder
     float posX;                   // +0x58
     float posY;                   // +0x5c
@@ -121,9 +121,9 @@ public:
     Route* initialRoute;                  // +0xb4
     int field_0xbc;                     // +0xbc
     uint8_t field_0xc0;                 // +0xc0
-    void* field_0xc4;                   // +0xc4
+    Array<uint32_t>* field_0xc4;        // +0xc4
     int field_0xc8;                     // +0xc8
-    void* spacePoints;                   // +0xcc
+    Array<SpacePoint*>* spacePoints;    // +0xcc
     int field_0xd0;                     // +0xd0
     uint32_t jumpSphere;                // +0xd4
     int field_0xd8;                     // +0xd8

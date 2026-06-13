@@ -1168,7 +1168,7 @@ void * RecordHandler::readAgent(unsigned int fd) {
         AEString_copy_ctor(s, src, 0);
         (*arr)[i] = (String *)s;
     }
-    ((Agent *)(agent))->setWingmanFriendNames((uint32_t *)arr);
+    ((Agent *)(agent))->setWingmanFriendNames(arr);
     ((Agent *)(agent))->giveRewardAtNextChat(hasReward);
     ((Agent *)(agent))->setOfferAccepted(accepted);
     ((Agent *)(agent))->setImageParts(img);

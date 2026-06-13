@@ -49,7 +49,7 @@ public:
     uint8_t rewardAtNextChat;                 // +0x85
     int* imageParts;                    // +0x88
     Mission* mission;                // +0x8c
-    void* wingmanNames;                   // +0x90
+    Array<AbyssEngine::String*>* wingmanNames;   // +0x90
     int sellModIndex;                     // +0x94
 
     // Real C++ destructor so the demangled symbol contains "~Agent".
@@ -83,7 +83,7 @@ public:
     Triple * setSellItemData(int a, int b, int c);
     void setStationName(String12 src);
     void setSystemName(String12 src);
-    void setWingmanFriendNames(uint32_t *param);
+    void setWingmanFriendNames(Array<AbyssEngine::String*> *param);
 
     // ---- simple field accessors (recovered) ----
     int getStation();
@@ -105,6 +105,6 @@ public:
     int getWingmanFriendsCount();
 
     // Tail of setWingmanFriendNames: free the consumed source array's backing.
-    void finishWingman(void *consumedArray);
+    void finishWingman(Array<AbyssEngine::String*> *consumedArray);
 };
 #endif
