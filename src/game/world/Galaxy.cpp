@@ -42,19 +42,19 @@ extern "C" void Galaxy_gs_op_delete(void *p);
 Galaxy::Galaxy()
 {
     uint8_t *stations = (uint8_t *)Galaxy_ctor_op_new_array(0x87);
-    P(this, 0x0) = stations;
+    this->visited = stations;
     for (int i = 0; i != 0x87; i = i + 1) {
         stations[i] = 0;
     }
     void *fr = Galaxy_ctor_op_new(1);
     Galaxy_ctor_FileRead_ctor(fr);
-    P(this, 0x4) = Galaxy_ctor_FileRead_loadSystemsBinary(fr);
+    this->systems = Galaxy_ctor_FileRead_loadSystemsBinary(fr);
     Galaxy_ctor_op_delete(Galaxy_ctor_FileRead_dtor(fr));
 }
 
 void Galaxy::reset()
 {
-    uint8_t *stations = (uint8_t *)P(this, 0x0);
+    uint8_t *stations = this->visited;
     for (int i = 0; i != 0x87; i = i + 1) {
         stations[i] = 0;
     }
@@ -72,7 +72,7 @@ int Galaxy::distancePercent(int x1, int y1, int x2, int y2)
 
 void Galaxy::visitStation(int index)
 {
-    uint8_t *stations = (uint8_t *)P(this, 0x0);
+    uint8_t *stations = this->visited;
     stations[index] = 1;
 }
 
@@ -82,7 +82,7 @@ void Galaxy::visitStation(int index)
 // stations[] array held at +0x0 (station index == system index on the star map).
 void Galaxy::setSystemVisited(int systemId)
 {
-    uint8_t *stations = (uint8_t *)P(this, 0x0);
+    uint8_t *stations = this->visited;
     stations[systemId] = 1;
 }
 
@@ -95,13 +95,13 @@ void Galaxy::setVisited(bool *src, int count)
 {
     int i;
     for (i = 0; i < count; i = i + 1) {
-        uint8_t *stations = (uint8_t *)P(this, 0x0);
+        uint8_t *stations = this->visited;
         stations[i] = ((uint8_t *)src)[i];
     }
     while (true) {
         if (count >= 0x87)
             return;
-        uint8_t *stations = (uint8_t *)P(this, 0x0);
+        uint8_t *stations = this->visited;
         stations[count] = 0;
         count = count + 1;
     }
@@ -111,7 +111,7 @@ int Galaxy::getSystem(int index)
 {
     if (index < 0)
         return 0;
-    void *systems = P(this, 0x4);
+    void *systems = this->systems;
     void *data = P(systems, 0x4);
     return ((int *)data)[index];
 }
@@ -148,7 +148,7 @@ __attribute__((visibility("hidden"))) extern void **g_Galaxy_pp_items;
 void *Galaxy::getPlasmaProbabilities(void *station)
 {
     int alien = Galaxy_pp_inAlienOrbit(*g_Galaxy_pp_status);
-    void *systems = alien == 0 ? P(this, 0x4) : 0;
+    void *systems = alien == 0 ? this->systems : 0;
     void *itemTable = *g_Galaxy_pp_items;
 
     int *probs = (int *)Galaxy_pp_new(0x10);
@@ -226,26 +226,26 @@ void *Galaxy::getPlasmaProbabilities(void *station)
 // Destructor: free the visited-flag array, release/destroy the SolarSystem* Array.
 Galaxy::~Galaxy()
 {
-    ::operator delete[](P(this, 0x0));
-    void *systems = P(this, 0x4);
-    P(this, 0x0) = 0;
+    ::operator delete[](this->visited);
+    void *systems = this->systems;
+    this->visited = 0;
     Galaxy_ArrayReleaseClasses_SolarSystem(systems);
-    if (P(this, 0x4) != 0) {
-        ::operator delete(Galaxy_Array_SolarSystem_dtor(P(this, 0x4)));
+    if (this->systems != 0) {
+        ::operator delete(Galaxy_Array_SolarSystem_dtor(this->systems));
     }
-    P(this, 0x4) = 0;
+    this->systems = 0;
 }
 
 // Returns the owned Array<SolarSystem*> (stored at +0x4).
 void *Galaxy::getSystems()
 {
-    return P(this, 0x4);
+    return this->systems;
 }
 
 // Returns the per-station visited-flag array (0x87 bytes, stored at +0x0).
 void *Galaxy::getVisited()
 {
-    return P(this, 0x0);
+    return this->visited;
 }
 
 __attribute__((visibility("hidden"))) extern void **g_Galaxy_ap_status;
@@ -255,7 +255,7 @@ void *Galaxy::getAsteroidProbabilities(void *station)
 {
     int alien = Galaxy_ap_inAlienOrbit(*g_Galaxy_ap_status);
     int supernova = Galaxy_ap_inSupernovaOrbit(*g_Galaxy_ap_status);
-    void *systems = alien == 0 ? P(this, 0x4) : 0;
+    void *systems = alien == 0 ? this->systems : 0;
     void *itemTable = *g_Galaxy_ap_items;
 
     int *probs = (int *)Galaxy_ap_new(0x2c);

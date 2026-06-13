@@ -144,7 +144,7 @@ extern "C" void *SystemPathFinder_ctor(void *finder);
 
 uint8_t StarMap::missionChanged()
 {
-    return field<uint8_t>(this, 0xdc);
+    return this->missionChangedFlag;
 }
 
 void StarMap::render()
@@ -152,19 +152,19 @@ void StarMap::render()
     uint32_t *canvasHolder = g_StarMap_render_canvas;
     ((PaintCanvas*)(long)(*canvasHolder))->SetColor((unsigned int)(0xffffffffu));
     void (*renderGeometry)(void *) = g_StarMap_render_geometry;
-    renderGeometry(ptr_field(this, 0x1b0));
-    renderGeometry(ptr_field(this, 0x1b4));
-    renderGeometry(ptr_field(this, 0x1b8));
-    renderGeometry(ptr_field(this, 0x6c));
+    renderGeometry(this->bgLayer0);
+    renderGeometry(this->bgLayer1);
+    renderGeometry(this->bgLayer2);
+    renderGeometry(this->systemRoot);
     ((PaintCanvas*)(long)(*canvasHolder))->End3d();
     ((PaintCanvas*)(long)(*canvasHolder))->Begin3d();
-    if (ptr_field(this, 0xa4) != 0) {
-        ((PaintCanvas*)(long)(*canvasHolder))->SetTexture((unsigned int)(field<uint32_t>(this, 0x178)), (unsigned int)(0xffffffffu));
+    if (this->starSystemRoot != 0) {
+        ((PaintCanvas*)(long)(*canvasHolder))->SetTexture((unsigned int)(this->planetTexture), (unsigned int)(0xffffffffu));
         ((PaintCanvas*)(long)(*canvasHolder))->SetBlendMode(2);
-        ((AEGeometry *)(ptr_field(this, 0x1bc)))->render();
-        ((AEGeometry *)(ptr_field(this, 0xa4)))->render();
+        ((AEGeometry *)(this->planetGeom))->render();
+        ((AEGeometry *)(this->starSystemRoot))->render();
     }
-    if (ptr_field(this, 0xf8) != 0) {
+    if (this->markerGeom != 0) {
         return this->render_tail();
     }
 }
@@ -174,7 +174,7 @@ void StarMap::render()
 // selected-system overlay geometry that sits on top of the system map.
 void StarMap::render_tail()
 {
-    ((AEGeometry *)(ptr_field(this, 0xf8)))->render();
+    ((AEGeometry *)(this->markerGeom))->render();
 }
 
 // Background-render hook. The star map paints its whole scene (3D systems plus the
@@ -186,38 +186,37 @@ void StarMap::renderBG()
 
 bool StarMap::isInPlanetMode()
 {
-    return field<int32_t>(this, 4) == 3;
+    return this->mode == 3;
 }
 
 void StarMap::askForJumpIntoAlienWorld()
 {
-    void *window = *(void *volatile *)((char *)this + 0x5c);
-    field<uint8_t>(this, 0x120) = 1;
+    void *window = (void *)this->choiceWindow;
+    this->alienJumpPending = 1;
     String *text = (String *)((GameText *)(*g_StarMap_alien_text))->getText(0x1a6);
     ((ChoiceWindow *)(window))->set(*text, true);
-    field<uint8_t>(this, 0xa9) = 1;
+    this->choiceVisible = 1;
 }
 
 void StarMap::setJumpMapMode(bool enabled, bool value)
 {
-    volatile uint8_t *bytes = (volatile uint8_t *)this;
-    bytes[0xab] = (uint8_t)value;
-    bytes[0xaa] = (uint8_t)enabled;
+    this->jumpMapModeB = (uint8_t)value;
+    this->jumpMapModeA = (uint8_t)enabled;
 }
 
 struct SystemPathFinder;
 
 void StarMap::setStart(int start, int target)
 {
-    field<int32_t>(this, 0x1dc) = target;
-    field<int32_t>(this, 0x1e0) = start;
-    Array<int> *path = (Array<int> *)ptr_field(this, 0xa0);
+    this->routeStart = target;
+    this->routeTarget = start;
+    Array<int> *path = (Array<int> *)this->systemPath;
     if (path != 0) {
         delete path;
     }
-    ptr_field(this, 0xa0) = 0;
-    ptr_field(this, 0xa0) =
-        ((SystemPathFinder *)((SystemPathFinder *)ptr_field(this, 0x50)))->getSystemPath((Array<SolarSystem *> *)ptr_field(this, 0x54), start, field<int32_t>(this, 0x104));
+    this->systemPath = (Array<int> *)0;
+    this->systemPath =
+        ((SystemPathFinder *)((SystemPathFinder *)this->pathFinder))->getSystemPath((Array<SolarSystem *> *)this->systems, start, this->targetSystem);
 }
 
 StarMap::~StarMap()
@@ -225,184 +224,184 @@ StarMap::~StarMap()
     void *p;
 
     {
-        Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
+        Array<Vector *> *positions = (Array<Vector *> *)this->systemPositions;
         if (positions != 0) {
             for (Vector *v : *positions) delete v;
             delete positions;
         }
-        ptr_field(this, 0x194) = 0;
+        this->systemPositions = 0;
     }
 
     {
-        Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x198);
+        Array<Vector *> *positions = (Array<Vector *> *)this->stationPositions;
         if (positions != 0) {
             for (Vector *v : *positions) delete v;
             delete positions;
         }
-        ptr_field(this, 0x198) = 0;
+        this->stationPositions = 0;
     }
 
-    p = ptr_field(this, 0x1bc);
+    p = this->planetGeom;
     if (p != 0) {
         [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
-    ptr_field(this, 0x1bc) = 0;
+    this->planetGeom = (AEGeometry *)0;
 
-    p = ptr_field(this, 0x1b0);
+    p = this->bgLayer0;
     if (p != 0) {
         [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
-    ptr_field(this, 0x1b0) = 0;
+    this->bgLayer0 = (AEGeometry *)0;
 
-    p = ptr_field(this, 0x1b4);
+    p = this->bgLayer1;
     if (p != 0) {
         [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
-    ptr_field(this, 0x1b4) = 0;
+    this->bgLayer1 = (AEGeometry *)0;
 
-    p = ptr_field(this, 0x1b8);
+    p = this->bgLayer2;
     if (p != 0) {
         [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
-    ptr_field(this, 0x1b8) = 0;
+    this->bgLayer2 = (AEGeometry *)0;
 
-    p = ptr_field(this, 0x17c);
+    p = this->easeX;
     if (p != 0) {
         operator delete(p);
     }
-    ptr_field(this, 0x17c) = 0;
+    this->easeX = (AbyssEngine::EaseInOut *)0;
 
-    p = ptr_field(this, 0x180);
+    p = this->easeY;
     if (p != 0) {
         operator delete(p);
     }
-    ptr_field(this, 0x180) = 0;
+    this->easeY = (AbyssEngine::EaseInOut *)0;
 
-    p = ptr_field(this, 0x184);
+    p = this->easeZ;
     if (p != 0) {
         operator delete(p);
     }
-    ptr_field(this, 0x184) = 0;
+    this->easeZ = (AbyssEngine::EaseInOut *)0;
 
-    p = ptr_field(this, 0xf8);
+    p = this->markerGeom;
     if (p != 0) {
         [&]{ AEGeometry *g_=(AEGeometry*)(p); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
-    ptr_field(this, 0xf8) = 0;
+    this->markerGeom = (AEGeometry *)0;
 
-    p = ptr_field(this, 0x50);
+    p = this->pathFinder;
     if (p != 0) {
         operator delete(SystemPathFinder_dtor(p));
     }
-    ptr_field(this, 0x50) = 0;
+    this->pathFinder = (SystemPathFinder *)0;
 }
 
 void StarMap::draw()
 {
     String tmp;
 
-    int mode = field<int32_t>(this, 4);
+    int mode = this->mode;
     int alpha = mode == 0 ? 0xff : 0;
-    field<int32_t>(this, 0x1a4) = alpha;
-    if (field<uint8_t>(this, 0x138) != 0 || field<uint8_t>(this, 0x139) != 0) {
-        float v = EaseInOut_GetValue(ptr_field(this, 0x184));
-        float min = EaseInOut_GetMinValue(ptr_field(this, 0x184));
-        float max = ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x184)))->GetMaxValue();
+    this->alpha = alpha;
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
+        float v = EaseInOut_GetValue(this->easeZ);
+        float min = EaseInOut_GetMinValue(this->easeZ);
+        float max = ((AbyssEngine::EaseInOut *)(this->easeZ))->GetMaxValue();
         float t = (v - min) / (max - min);
-        if (field<uint8_t>(this, 0x138) != 0) {
+        if (this->transitionIn != 0) {
             t = 1.0f - t;
         }
-        field<int32_t>(this, 0x1a4) = (int)(t * 255.0f);
+        this->alpha = (int)(t * 255.0f);
     }
 
     uint32_t canvas = *g_StarMap_draw_canvas;
-    if (mode != 3 || field<uint8_t>(this, 0x138) != 0 || field<uint8_t>(this, 0x139) != 0) {
-        ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
-        Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
+    if (mode != 3 || this->transitionIn != 0 || this->transitionOut != 0) {
+        ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
+        Array<Vector *> *positions = (Array<Vector *> *)this->systemPositions;
         for (uint32_t i = 0; i < positions->size(); i++) {
-            *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(positions->data()[i]);
-            void *routes = ((SolarSystem *)(((Array<void *> *)ptr_field(this, 0x54))->data()[i]))->getRoutes();
+            this->scratchVector = *(const Vector *)(positions->data()[i]);
+            void *routes = ((SolarSystem *)(((Array<void *> *)this->systems)->data()[i]))->getRoutes();
             if (routes != 0) {
                 Array<int> *r = (Array<int> *)routes;
                 for (uint32_t j = 0; j < r->size(); j++) {
                     uint32_t to = (uint32_t)r->data()[j];
                     if (to < positions->size()) {
-                        *(Vector *)((Vector *)((char *)this + 0x84)) = *(const Vector *)(positions->data()[to]);
-                        if (field<float>(this, 0x80) >= 0.0f || field<float>(this, 0x8c) >= 0.0f) {
-                            ((PaintCanvas*)(long)(canvas))->DrawLine((int)field<float>(this, 0x78), (int)field<float>(this, 0x7c), (int)field<float>(this, 0x84), (int)field<float>(this, 0x88));
+                        this->scratchVector2 = *(const Vector *)(positions->data()[to]);
+                        if (this->scratchVector.z >= 0.0f || this->scratchVector2.z >= 0.0f) {
+                            ((PaintCanvas*)(long)(canvas))->DrawLine((int)this->scratchVector.x, (int)this->scratchVector.y, (int)this->scratchVector2.x, (int)this->scratchVector2.y);
                         }
                     }
                 }
             }
         }
-        for (uint32_t i = 0; i < ((Array<void *> *)ptr_field(this, 0x54))->size(); i++) {
+        for (uint32_t i = 0; i < ((Array<void *> *)this->systems)->size(); i++) {
             drawOnScreenInfo((int)i, false);
         }
     }
 
-    if (field<int32_t>(this, 0x60) >= 0 &&
-        (field<uint8_t>(this, 0x118) == 0 || field<int32_t>(this, 0x11c) > 3999)) {
-        drawOnScreenInfo(field<int32_t>(this, 0x60), false);
+    if (this->selectedSystem >= 0 &&
+        (this->autoMode == 0 || this->autoTimer > 3999)) {
+        drawOnScreenInfo(this->selectedSystem, false);
     }
 
-    if (ptr_field(this, 0xa4) != 0 && ptr_field(this, 0x58) != 0) {
-        void *system = ((Array<void *> *)ptr_field(this, 0x54))->data()[field<int32_t>(this, 0x60)];
+    if (this->starSystemRoot != 0 && this->stations != 0) {
+        void *system = ((Array<void *> *)this->systems)->data()[this->selectedSystem];
         if (((SolarSystem *)(system))->hasNoOwner() == 0) {
-            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4) ^ 0xff));
-            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x34)), field<int32_t>(*g_StarMap_draw_layout, 0x2c), field<int32_t>(*g_StarMap_draw_layout, 0xc) +
+            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha ^ 0xff));
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(this->systemNameImage), field<int32_t>(*g_StarMap_draw_layout, 0x2c), field<int32_t>(*g_StarMap_draw_layout, 0xc) +
                                         field<int32_t>(*g_StarMap_draw_layout, 0x2c), (unsigned char)(0));
             ((SolarSystem *)(&tmp))->getName();
-            ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_draw_font), (void *)(&tmp), ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned int)(field<uint32_t>(this, 0x34))) +
+            ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_draw_font), (void *)(&tmp), ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned int)(this->systemNameImage)) +
                                        field<int32_t>(*g_StarMap_draw_layout, 0x2c) * 2, field<int32_t>(*g_StarMap_draw_layout, 0xc) +
                                        field<int32_t>(*g_StarMap_draw_layout, 0x2c) + 2, false);
         }
-        Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
+        Array<void *> *stations = (Array<void *> *)this->stations;
         for (uint32_t i = 0; i < stations->size(); i++) {
-            if (i != (uint32_t)field<int32_t>(this, 0x64)) {
+            if (i != (uint32_t)this->selectedStation) {
                 drawOnScreenInfo((int)i, true);
             }
         }
-        if (field<int32_t>(this, 0x64) >= 0) {
-            drawOnScreenInfo(field<int32_t>(this, 0x64), true);
+        if (this->selectedStation >= 0) {
+            drawOnScreenInfo(this->selectedStation, true);
         }
     }
 
-    if (field<uint8_t>(this, 0x108) != 0) {
+    if (this->showKey != 0) {
         drawKey();
     }
     tmp.copy((String *)((GameText *)(*g_StarMap_draw_text))->getText(0x190), false);
     ((Layout *)(*g_StarMap_draw_layout))->drawHeader1(&tmp);
     ((Layout *)(*g_StarMap_draw_layout))->drawEmptyFooter(1);
-    ((TouchButton *)(ptr_field(this, 0x4c)))->draw();
-    if (field<uint8_t>(this, 0xa9) != 0) {
-        ((ChoiceWindow *)(ptr_field(this, 0x5c)))->draw();
+    ((TouchButton *)(this->backButton))->draw();
+    if (this->choiceVisible != 0) {
+        ((ChoiceWindow *)(this->choiceWindow))->draw();
     }
 }
 
 void StarMap::depart(bool jump)
 {
-    int selected = field<int32_t>(this, 0x64);
+    int selected = this->selectedStation;
     if (selected < 0) {
         return;
     }
 
     void **statusHolder = g_StarMap_depart_status;
     void *status = *statusHolder;
-    if (field<uint8_t>(this, 0xaa) != 0) {
-        Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
+    if (this->jumpMapModeA != 0) {
+        Array<void *> *stations = (Array<void *> *)this->stations;
         ((Status *)(status))->departStation((Station *)stations->data()[selected]);
         *g_StarMap_depart_store0_a = 0;
         Level::setInitStreamOut();
         int used = ((Status *)(status))->getJumpgateUsed();
         if (jump) {
-            used = field<uint8_t>(this, 0xab);
+            used = this->jumpMapModeB;
         }
         if (jump && used != 0) {
             int toSystem = Station_getSystem(stations->data()[selected]);
             int current = ((Status *)(status))->getSystem();
             *g_StarMap_depart_jumpFlag_a = (uint8_t)(toSystem != current);
             if (toSystem != current) {
-                *g_StarMap_depart_jumpCost_a = field<int32_t>(this, 0x1d0);
+                *g_StarMap_depart_jumpCost_a = this->jumpCost;
             }
         } else {
             *g_StarMap_depart_flag_a = 0;
@@ -419,8 +418,8 @@ void StarMap::depart(bool jump)
         statusWords[0x68 / 4] = -1;
         ((Status *)(status))->departStation((Station *)((Status *)(status))->getStation());
 
-        Array<void *> *stations = (Array<void *> *)ptr_field(this, 0x58);
-        void *target = stations->data()[field<int32_t>(this, 0x64)];
+        Array<void *> *stations = (Array<void *> *)this->stations;
+        void *target = stations->data()[this->selectedStation];
         if (((Station *)(target))->equals((Station *)((Status *)(status))->getStation()) == 0) {
             *g_StarMap_depart_targetStation = (int)(intptr_t)target;
         }
@@ -430,14 +429,14 @@ void StarMap::depart(bool jump)
             if (((Ship *)(ship))->hasVolatileGoods() != 0) {
                 goto no_jump;
             }
-            if (((Ship *)(((Status *)(status))->getShip()))->hasJumpDriveIntegrated() == 0 && field<uint8_t>(this, 0xab) == 0) {
+            if (((Ship *)(((Status *)(status))->getShip()))->hasJumpDriveIntegrated() == 0 && this->jumpMapModeB == 0) {
                 goto no_jump;
             }
             int toSystem = Station_getSystem(*g_StarMap_depart_status2);
             int current = ((Status *)(status))->getSystem();
             *g_StarMap_depart_jumpFlag_b = (uint8_t)(toSystem != current);
             if (toSystem != current) {
-                *g_StarMap_depart_jumpCost_b = field<int32_t>(this, 0x1d0);
+                *g_StarMap_depart_jumpCost_b = this->jumpCost;
             }
         } else {
 no_jump:
@@ -448,9 +447,9 @@ no_jump:
 
 cleanup:
     {
-        Array<Station *> *stations = (Array<Station *> *)ptr_field(this, 0x58);
+        Array<Station *> *stations = (Array<Station *> *)this->stations;
         for (uint32_t i = 0; i < stations->size(); i++) {
-            if (i != (uint32_t)field<int32_t>(this, 0x64)) {
+            if (i != (uint32_t)this->selectedStation) {
                 Station *station = (*stations)[i];
                 if (station != 0) {
                     station->dtor();
@@ -462,7 +461,7 @@ cleanup:
         if (stations != 0) {
             delete stations;
         }
-        ptr_field(this, 0x58) = 0;
+        this->stations = (Array<Station *> *)0;
     }
     ((FModSound *)(*g_StarMap_depart_sound))->stop(0x66);
     *g_StarMap_depart_modstation_flag = 1;
@@ -486,125 +485,125 @@ void StarMap::OnTouchEnd(int x, int y)
 {
     String help;
 
-    if (field<uint8_t>(this, 0xa9) != 0) {
-        int result = ((ChoiceWindow *)(ptr_field(this, 0x5c)))->OnTouchEnd(x, y);
+    if (this->choiceVisible != 0) {
+        int result = ((ChoiceWindow *)(this->choiceWindow))->OnTouchEnd(x, y);
         if (result == 1) {
-            field<uint8_t>(this, 0xa9) = 0;
-            field<uint8_t>(this, 0x120) = 0;
+            this->choiceVisible = 0;
+            this->alienJumpPending = 0;
             return;
         }
         if (result != 0) {
             return;
         }
-        field<uint8_t>(this, 0xa9) = 0;
-        if (field<uint8_t>(this, 0x1e4) != 0) {
-            field<uint8_t>(this, 0x1e4) = 0;
+        this->choiceVisible = 0;
+        if (this->suppressNextClose != 0) {
+            this->suppressNextClose = 0;
             return;
         }
-        if (field<int32_t>(this, 4) == 3) {
-            void *station = ((Array<void *> *)ptr_field(this, 0x58))->data()[field<int32_t>(this, 0x64)];
+        if (this->mode == 3) {
+            void *station = ((Array<void *> *)this->stations)->data()[this->selectedStation];
             if (Station_getIndex(station) == Station_getIndex(((Status *)(*g_StarMap_end_status))->getStation())) {
-                field<uint8_t>(this, 0x1e4) = 0;
+                this->suppressNextClose = 0;
                 return;
             }
         }
-        if (field<uint8_t>(this, 0x120) != 0 && field<int32_t>(this, 4) == 0 &&
-            field<uint8_t>(this, 0xa8) == 0 && field<uint8_t>(this, 0x118) == 0) {
-            field<uint8_t>(this, 0x120) = 0;
-            field<uint8_t>(this, 0) = 1;
-            ((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraSetCurrent((unsigned int)(field<uint32_t>(this, 0x74)));
+        if (this->alienJumpPending != 0 && this->mode == 0 &&
+            this->pad_0xa8_a == 0 && this->autoMode == 0) {
+            this->alienJumpPending = 0;
+            this->exitRequested = 1;
+            ((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraSetCurrent((unsigned int)(this->prevCamera));
             return;
         }
-        if (field<uint8_t>(this, 0xa8) == 0 && field<int32_t>(this, 4) == 3) {
-            if (field<uint8_t>(this, 0xab) == 0 ||
-                field<int32_t>(this, 0x1d0) <= field<int32_t>(this, 0x1d8)) {
-                if (field<uint8_t>(this, 0xaa) == 0) {
+        if (this->pad_0xa8_a == 0 && this->mode == 3) {
+            if (this->jumpMapModeB == 0 ||
+                this->jumpCost <= this->cargoAmount) {
+                if (this->jumpMapModeA == 0) {
                     depart(true);
                     return;
                 }
-            } else if (field<int32_t>(this, 0x1d0) == 1 && field<uint8_t>(this, 0xaa) == 0) {
+            } else if (this->jumpCost == 1 && this->jumpMapModeA == 0) {
                 depart(false);
                 return;
             }
-            field<uint8_t>(this, 0) = 1;
-            ((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraSetCurrent((unsigned int)(field<uint32_t>(this, 0x74)));
+            this->exitRequested = 1;
+            ((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraSetCurrent((unsigned int)(this->prevCamera));
         }
         return;
     }
 
-    if (field<uint8_t>(this, 0x138) != 0 || field<uint8_t>(this, 0x139) != 0) {
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
         return;
     }
     void *layout = *g_StarMap_end_layout;
     if (*(uint8_t *)layout == 0 && ((Layout *)(layout))->OnTouchEnd(x, y) != 0) {
-        if (field<int32_t>(this, 4) == 3 && field<uint8_t>(this, 0xf4) != 0) {
-            field<uint8_t>(this, 0x139) = 1;
-            field<int32_t>(this, 0x168) = 0;
-            field<int32_t>(this, 0x16c) = 0;
-            field<int32_t>(this, 0x170) = 0;
-            ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x17c)))->SetRange(field<float>(this, 0x78), field<float>(this, 0x78));
-            ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x180)))->SetRange(field<float>(this, 0x7c), field<float>(this, 0x7c));
-            ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x184)))->SetRange(field<float>(this, 0x80), field<float>(this, 0x80));
+        if (this->mode == 3 && this->isGalaxyMode != 0) {
+            this->transitionOut = 1;
+            this->momentumFactor = 0.0f;
+            this->velocityX = 0.0f;
+            this->velocityY = 0.0f;
+            ((AbyssEngine::EaseInOut *)(this->easeX))->SetRange(this->scratchVector.x, this->scratchVector.x);
+            ((AbyssEngine::EaseInOut *)(this->easeY))->SetRange(this->scratchVector.y, this->scratchVector.y);
+            ((AbyssEngine::EaseInOut *)(this->easeZ))->SetRange(this->scratchVector.z, this->scratchVector.z);
             ((FModSound *)(*g_StarMap_end_sound))->play(0x6b, 0, 0, 0.0f);
         } else {
-            ((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraSetCurrent((unsigned int)(field<uint32_t>(this, 0x74)));
+            ((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraSetCurrent((unsigned int)(this->prevCamera));
             ((FModSound *)(*g_StarMap_end_sound))->stop(0x66);
         }
         return;
     }
-    if (field<uint8_t>(this, 0xa8) != 0 && field<uint8_t>(this, 0x13a) != 0) {
+    if (this->pad_0xa8_a != 0 && this->pathAnim != 0) {
         return;
     }
-    if (((TouchButton *)(ptr_field(this, 0x4c)))->OnTouchEnd(x, y) != 0) {
-        field<uint8_t>(this, 0x108) ^= 1;
+    if (((TouchButton *)(this->backButton))->OnTouchEnd(x, y) != 0) {
+        this->showKey ^= 1;
     }
-    if (field<uint8_t>(this, 0x174) != 0) {
-        float dx = field<float>(this, 0x150);
-        float dy = field<float>(this, 0x154);
-        field<int32_t>(this, 0x168) = 0x3f666666;
-        field<uint8_t>(this, 0x174) = 0;
-        field<float>(this, 0x16c) = absf_end(dx) > 3.0f ? dx : 0.0f;
-        field<float>(this, 0x170) = absf_end(dy) > 3.0f ? dy : 0.0f;
-        if (field<int32_t>(this, 4) == 0) {
-            if (field<int32_t>(this, 0x60) >= 0 &&
-                field<uint8_t>(this, 0x118) == 0 &&
-                field<uint8_t>(this, 0xa8) == 0 &&
-                field<int32_t>(this, 0x19c) == field<int32_t>(this, 0x60)) {
-                if (field<uint8_t>(this, 0xab) == 0 &&
+    if (this->dragging != 0) {
+        float dx = this->touchDeltaX;
+        float dy = this->touchDeltaY;
+        this->momentumFactor = 0.9f;
+        this->dragging = 0;
+        this->velocityX = absf_end(dx) > 3.0f ? dx : 0.0f;
+        this->velocityY = absf_end(dy) > 3.0f ? dy : 0.0f;
+        if (this->mode == 0) {
+            if (this->selectedSystem >= 0 &&
+                this->autoMode == 0 &&
+                this->pad_0xa8_a == 0 &&
+                this->lastSelectedSystem == this->selectedSystem) {
+                if (this->jumpMapModeB == 0 &&
                     ((SolarSystem *)(long)(((Status *)(*g_StarMap_end_status))->getSystem()))->systemIsInSystemRoutes(((Status *)(*g_StarMap_end_status))->getSystem()) == 0) {
-                    ((ChoiceWindow *)(ptr_field(this, 0x5c)))->set(*(String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a4), false);
-                    field<uint8_t>(this, 0xa9) = 1;
+                    ((ChoiceWindow *)(this->choiceWindow))->set(*(String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a4), false);
+                    this->choiceVisible = 1;
                     return;
                 }
                 ((FModSound *)(*g_StarMap_end_sound))->play(0x6a, 0, 0, 0.0f);
                 initStarSystem();
-                field<uint8_t>(this, 0x138) = 1;
+                this->transitionIn = 1;
                 Vector p;
                 ((AEGeometry *)(&p))->getPosition();
-                *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&p);
-                field<float>(this, 0x80) += 20.0f;
+                this->scratchVector = *(const Vector *)(&p);
+                this->scratchVector.z += 20.0f;
                 MatrixGetPosition(&p, ((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraGetLocal(((PaintCanvas*)(long)(*g_StarMap_end_canvas))->CameraGetCurrent()));
-                *(Vector *)((Vector *)((char *)this + 0x84)) = *(const Vector *)(&p);
-                ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x17c)))->SetRange(field<float>(this, 0x84), field<float>(this, 0x78));
-                ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x180)))->SetRange(field<float>(this, 0x88), field<float>(this, 0x7c));
-                ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x184)))->SetRange(field<float>(this, 0x8c), field<float>(this, 0x80));
-                field<int32_t>(this, 0x168) = 0;
-                field<int32_t>(this, 0x16c) = 0;
-                field<int32_t>(this, 0x170) = 0;
-            } else if (field<int32_t>(this, 0x60) >= 0) {
-                field<int32_t>(this, 0x19c) = -1;
-                field<uint8_t>(this, 0x13a) = 1;
+                this->scratchVector2 = *(const Vector *)(&p);
+                ((AbyssEngine::EaseInOut *)(this->easeX))->SetRange(this->scratchVector2.x, this->scratchVector.x);
+                ((AbyssEngine::EaseInOut *)(this->easeY))->SetRange(this->scratchVector2.y, this->scratchVector.y);
+                ((AbyssEngine::EaseInOut *)(this->easeZ))->SetRange(this->scratchVector2.z, this->scratchVector.z);
+                this->momentumFactor = 0.0f;
+                this->velocityX = 0.0f;
+                this->velocityY = 0.0f;
+            } else if (this->selectedSystem >= 0) {
+                this->lastSelectedSystem = -1;
+                this->pathAnim = 1;
             }
-        } else if (field<int32_t>(this, 0x64) >= 0) {
-            if (field<int32_t>(this, 0x1a0) == field<int32_t>(this, 0x64)) {
-                if (ptr_field(this, 0x5c) == 0) {
-                    ptr_field(this, 0x5c) = ChoiceWindow_ctor(operator new(0x5c));
+        } else if (this->selectedStation >= 0) {
+            if (this->lastSelectedStation == this->selectedStation) {
+                if (this->choiceWindow == 0) {
+                    this->choiceWindow = (ChoiceWindow *)ChoiceWindow_ctor(operator new(0x5c));
                 }
-                ((ChoiceWindow *)(ptr_field(this, 0x5c)))->set(*(String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a3), true);
-                field<uint8_t>(this, 0xa9) = 1;
+                ((ChoiceWindow *)(this->choiceWindow))->set(*(String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a3), true);
+                this->choiceVisible = 1;
             } else {
                 ((FModSound *)(*g_StarMap_end_sound))->play(0x69, 0, 0, 0.0f);
-                field<uint8_t>(this, 0x13b) = 1;
+                this->stationCenterAnim = 1;
             }
         }
     }
@@ -656,17 +655,17 @@ void StarMap::update(int dt)
     Matrix matrix;
     Vector tmp;
 
-    field<int32_t>(this, 0x18) = dt;
-    if (field<int32_t>(this, 4) == 0 || field<uint8_t>(this, 0x138) != 0 || field<uint8_t>(this, 0x139) != 0) {
-        Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
+    this->lastDt = dt;
+    if (this->mode == 0 || this->transitionIn != 0 || this->transitionOut != 0) {
+        Array<Vector *> *positions = (Array<Vector *> *)this->systemPositions;
         for (uint32_t i = 0; i < positions->size(); i++) {
             ((AEGeometry *)(&tmp))->getPosition();
             int visible = (int)(long)((PaintCanvas*)(long)(*g_StarMap_update_canvas))->GetScreenPosition((AbyssEngine::AEMath::Vector *)(&tmp), (AbyssEngine::AEMath::Vector *)(positions->data()[i]));
             positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
         }
     }
-    if (field<int32_t>(this, 4) == 3 || field<uint8_t>(this, 0x138) != 0 || field<uint8_t>(this, 0x139) != 0) {
-        Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x198);
+    if (this->mode == 3 || this->transitionIn != 0 || this->transitionOut != 0) {
+        Array<Vector *> *positions = (Array<Vector *> *)this->stationPositions;
         if (positions != 0) {
             for (uint32_t i = 0; i < positions->size(); i++) {
                 ((AEGeometry *)(&tmp))->getPosition();
@@ -676,187 +675,188 @@ void StarMap::update(int dt)
         }
     }
 
-    if (ptr_field(this, 0xf8) != 0) {
-        float v = EaseInOut_GetValue(ptr_field(this, 0x184));
-        float min = EaseInOut_GetMinValue(ptr_field(this, 0x184));
-        float max = ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x184)))->GetMaxValue();
+    if (this->markerGeom != 0) {
+        float v = EaseInOut_GetValue(this->easeZ);
+        float min = EaseInOut_GetMinValue(this->easeZ);
+        float max = ((AbyssEngine::EaseInOut *)(this->easeZ))->GetMaxValue();
         float t = (v - min) / (max - min);
-        if (field<uint8_t>(this, 0x139) != 0) {
+        if (this->transitionOut != 0) {
             t = 1.0f - t;
-        } else if (field<uint8_t>(this, 0x138) == 0 && field<int32_t>(this, 4) == 0) {
+        } else if (this->transitionIn == 0 && this->mode == 0) {
             t = 1.0f;
         }
         float scale = (float)(0.5 + (double)t * 0.5);
-        ((AEGeometry *)(ptr_field(this, 0xf8)))->setScaling(scale);
-        if (ptr_field(this, 0xa4) != 0 && field<int32_t>(this, 0x1c4) >= 0) {
+        ((AEGeometry *)(this->markerGeom))->setScaling(scale);
+        if (this->starSystemRoot != 0 && this->centeredStation >= 0) {
             ((AEGeometry *)(&tmp))->getPosition();
-            ((AEGeometry *)(ptr_field(this, 0xf8)))->setPosition(tmp);
+            ((AEGeometry *)(this->markerGeom))->setPosition(tmp);
         }
         void *canvas = *g_StarMap_update_canvas;
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         MatrixGetPosition(&tmp, ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent()));
-        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&tmp);
+        this->scratchVector = *(const Vector *)(&tmp);
         ((AEGeometry *)(&tmp))->getPosition();
-        *(Vector *)((char *)this + 0x78) -= *(const Vector *)(&tmp);
-        VectorNormalize(&tmp, (Vector *)((char *)this + 0x78));
-        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&tmp);
-        field<float>(this, 0x78) += 0.5f;
+        this->scratchVector -= *(const Vector *)(&tmp);
+        VectorNormalize(&tmp, &this->scratchVector);
+        this->scratchVector = *(const Vector *)(&tmp);
+        this->scratchVector.x += 0.5f;
         Vector worldUp = {0.0f, 1.0f, 0.0f};
-        ((AEGeometry *)(ptr_field(this, 0xf8)))->setDirection(*(Vector *)((char *)this + 0x78), worldUp);
+        ((AEGeometry *)(this->markerGeom))->setDirection(this->scratchVector, worldUp);
         ((AbyssEngine::Transform *)(((PaintCanvas*)(long)(canvas))->TransformGetTransform(0)))->Update(dt, false);
     }
 
-    if (field<uint8_t>(this, 0x138) != 0 || field<uint8_t>(this, 0x139) != 0) {
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
         float step = (float)(dt * 15);
-        EaseInOut_Update(ptr_field(this, 0x17c), step);
-        EaseInOut_Update(ptr_field(this, 0x180), step);
-        EaseInOut_Update(ptr_field(this, 0x184), step);
-        tmp.x = EaseInOut_GetCurrentValue(ptr_field(this, 0x17c));
-        tmp.y = EaseInOut_GetCurrentValue(ptr_field(this, 0x180));
-        tmp.z = EaseInOut_GetCurrentValue(ptr_field(this, 0x184));
-        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&tmp);
+        EaseInOut_Update(this->easeX, step);
+        EaseInOut_Update(this->easeY, step);
+        EaseInOut_Update(this->easeZ, step);
+        tmp.x = EaseInOut_GetCurrentValue(this->easeX);
+        tmp.y = EaseInOut_GetCurrentValue(this->easeY);
+        tmp.z = EaseInOut_GetCurrentValue(this->easeZ);
+        this->scratchVector = *(const Vector *)(&tmp);
         void *canvas = *g_StarMap_update_canvas;
         __builtin_memcpy(&matrix, ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent()), 0x3c);
-        MatrixSetTranslation(&matrix, field<float>(this, 0x78), field<float>(this, 0x7c), field<float>(this, 0x80));
+        MatrixSetTranslation(&matrix, this->scratchVector.x, this->scratchVector.y, this->scratchVector.z);
         ((PaintCanvas*)(long)(canvas))->CameraSetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent(), *(const AbyssEngine::AEMath::Matrix *)(&matrix));
-        if (absf_update(field<float>(this, 0x78) - ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x17c)))->GetMaxValue()) <= 1.0f &&
-            absf_update(field<float>(this, 0x7c) - ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x180)))->GetMaxValue()) <= 1.0f &&
-            absf_update(field<float>(this, 0x80) - ((AbyssEngine::EaseInOut *)(ptr_field(this, 0x184)))->GetMaxValue()) <= 1.0f) {
-            if (field<uint8_t>(this, 0x138) == 0) {
+        if (absf_update(this->scratchVector.x - ((AbyssEngine::EaseInOut *)(this->easeX))->GetMaxValue()) <= 1.0f &&
+            absf_update(this->scratchVector.y - ((AbyssEngine::EaseInOut *)(this->easeY))->GetMaxValue()) <= 1.0f &&
+            absf_update(this->scratchVector.z - ((AbyssEngine::EaseInOut *)(this->easeZ))->GetMaxValue()) <= 1.0f) {
+            if (this->transitionIn == 0) {
                 {
-                    Array<AEGeometry *> *geoms = (Array<AEGeometry *> *)ptr_field(this, 0x90);
+                    Array<AEGeometry *> *geoms = (Array<AEGeometry *> *)this->stationGeoms;
                     if (geoms != 0) {
                         for (AEGeometry *g : *geoms) delete g;
                         delete geoms;
                     }
-                    ptr_field(this, 0x90) = 0;
+                    this->stationGeoms = 0;
                 }
                 {
-                    Array<AEGeometry *> *rings = (Array<AEGeometry *> *)ptr_field(this, 0x94);
+                    Array<AEGeometry *> *rings = (Array<AEGeometry *> *)this->ringGeoms;
                     if (rings != 0) {
                         for (AEGeometry *g : *rings) delete g;
                         delete rings;
                     }
-                    ptr_field(this, 0x94) = 0;
+                    this->ringGeoms = 0;
                 }
-                if (ptr_field(this, 0x98) != 0) {
-                    operator delete(ptr_field(this, 0x98));
+                if (this->stationAngles != 0) {
+                    operator delete(this->stationAngles);
                 }
-                ptr_field(this, 0x98) = 0;
-                if (ptr_field(this, 0x9c) != 0) {
-                    operator delete(ptr_field(this, 0x9c));
+                this->stationAngles = (int *)0;
+                if (this->stationDistances != 0) {
+                    operator delete(this->stationDistances);
                 }
-                ptr_field(this, 0x9c) = 0;
+                this->stationDistances = (int *)0;
                 {
-                    Array<uint8_t> *used = (Array<uint8_t> *)ptr_field(this, 0x100);
+                    Array<uint8_t> *used = (Array<uint8_t> *)this->usedFlags;
                     if (used != 0) {
                         used->clear();
                         delete used;
                     }
-                    ptr_field(this, 0x100) = 0;
+                    this->usedFlags = 0;
                 }
-                if (ptr_field(this, 0xa4) != 0) {
-                    [&]{ AEGeometry *g_=(AEGeometry*)(ptr_field(this, 0xa4)); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
+                if (this->starSystemRoot != 0) {
+                    [&]{ AEGeometry *g_=(AEGeometry*)(this->starSystemRoot); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
                 }
-                field<int32_t>(this, 4) = 0;
-                ptr_field(this, 0xa4) = 0;
-                ((AEGeometry *)(((Array<void *> *)ptr_field(this, 0x68))->data()[field<int32_t>(this, 0x60)]))->setVisible(true);
+                this->mode = 0;
+                this->starSystemRoot = (AEGeometry *)0;
+                ((AEGeometry *)(((Array<void *> *)this->systemGeoms)->data()[this->selectedSystem]))->setVisible(true);
             } else {
-                field<int32_t>(this, 4) = 3;
+                this->mode = 3;
             }
-            field<uint16_t>(this, 0x138) = 0;
+            this->transitionIn = 0;
+            this->transitionOut = 0;
         }
         return;
     }
 
     ((FModSound *)(*g_StarMap_update_sound))->setParamValue(0, 0x66, 0.0f);
-    if (field<int32_t>(this, 4) == 3) {
-        if (field<uint8_t>(this, 0x13b) == 0 && field<uint8_t>(this, 0x174) == 0) {
-            float vx = field<float>(this, 0x168) * field<float>(this, 0x16c);
-            float vy = field<float>(this, 0x168) * field<float>(this, 0x170);
-            field<float>(this, 0x16c) = vx;
-            field<float>(this, 0x170) = vy;
+    if (this->mode == 3) {
+        if (this->stationCenterAnim == 0 && this->dragging == 0) {
+            float vx = this->momentumFactor * this->velocityX;
+            float vy = this->momentumFactor * this->velocityY;
+            this->velocityX = vx;
+            this->velocityY = vy;
             if (absf_update(vx) > 0.5f) {
-                field<float>(this, 0x188) += vx;
+                this->yaw += vx;
             }
             if (absf_update(vy) > 0.5f) {
-                field<float>(this, 0x18c) += vy;
+                this->pitch += vy;
             }
-        } else if (field<uint8_t>(this, 0x13b) != 0 && field<int32_t>(this, 0x64) >= 0) {
-            int target = 0x8000 - ((int *)ptr_field(this, 0x98))[field<int32_t>(this, 0x64)];
-            int diff = (int)field<float>(this, 0x188) - target;
-            field<float>(this, 0x188) += (float)(diff < 0 ? -diff : diff) * (diff < 0 ? 0.25f : -0.25f);
+        } else if (this->stationCenterAnim != 0 && this->selectedStation >= 0) {
+            int target = 0x8000 - ((int *)this->stationAngles)[this->selectedStation];
+            int diff = (int)this->yaw - target;
+            this->yaw += (float)(diff < 0 ? -diff : diff) * (diff < 0 ? 0.25f : -0.25f);
             if (absf_update((float)diff) < 11.0f) {
-                field<uint8_t>(this, 0x13b) = 0;
+                this->stationCenterAnim = 0;
             }
         }
-        float speed = absf_update(field<float>(this, 0x16c) + field<float>(this, 0x170));
+        float speed = absf_update(this->velocityX + this->velocityY);
         if (speed > 10.0f) {
             speed = 10.0f;
         }
-        field<float>(this, 0x1c0) += speed;
-        if (ptr_field(this, 0x90) != 0) {
-            Array<void *> *geoms = (Array<void *> *)ptr_field(this, 0x90);
+        this->spin += speed;
+        if (this->stationGeoms != 0) {
+            Array<void *> *geoms = (Array<void *> *)this->stationGeoms;
             for (uint32_t i = 0; i < geoms->size(); i++) {
                 if (geoms->data()[i] != 0) {
                     ((AEGeometry *)(geoms->data()[i]))->rotate((float)dt * 0.001f, 0.0f, 0.001f);
                 }
             }
         }
-        field<float>(this, 0x188) = (float)((int)field<float>(this, 0x188) & 0xffff);
-        if (field<float>(this, 0x18c) < -90.0f) {
-            field<float>(this, 0x18c) = -90.0f;
+        this->yaw = (float)((int)this->yaw & 0xffff);
+        if (this->pitch < -90.0f) {
+            this->pitch = -90.0f;
         }
-        if (field<float>(this, 0x18c) > 90.0f) {
-            field<float>(this, 0x18c) = 90.0f;
+        if (this->pitch > 90.0f) {
+            this->pitch = 90.0f;
         }
-        ((AEGeometry *)(ptr_field(this, 0xa4)))->setRotation(field<float>(this, 0x18c), 0.0f, field<float>(this, 0x188));
+        ((AEGeometry *)(this->starSystemRoot))->setRotation(this->pitch, 0.0f, this->yaw);
         return;
     }
 
-    if (field<int32_t>(this, 4) == 0) {
-        if (field<int32_t>(this, 0x114) >= 0 && field<uint8_t>(this, 0x118) != 0 &&
-            field<int32_t>(this, 0x11c) < 4000) {
-            field<int32_t>(this, 0x11c) += dt;
-            if (field<int32_t>(this, 0x11c) > 3999) {
+    if (this->mode == 0) {
+        if (this->pulseSystem >= 0 && this->autoMode != 0 &&
+            this->autoTimer < 4000) {
+            this->autoTimer += dt;
+            if (this->autoTimer > 3999) {
                 OnTouchBegin(*g_StarMap_update_screenW >> 1, *g_StarMap_update_screenH >> 1);
             }
-            float scale = ((float)field<int32_t>(this, 0x11c) / 4000.0f) * 1.5f;
-            ((AEGeometry *)(((Array<void *> *)ptr_field(this, 0x68))->data()[field<int32_t>(this, 0x114)]))->setScaling(scale);
+            float scale = ((float)this->autoTimer / 4000.0f) * 1.5f;
+            ((AEGeometry *)(((Array<void *> *)this->systemGeoms)->data()[this->pulseSystem]))->setScaling(scale);
         }
-        if (field<uint8_t>(this, 0x174) == 0) {
-            float vx = field<float>(this, 0x168) * field<float>(this, 0x16c);
-            float vy = field<float>(this, 0x168) * field<float>(this, 0x170);
-            field<float>(this, 0x16c) = vx;
-            field<float>(this, 0x170) = vy;
+        if (this->dragging == 0) {
+            float vx = this->momentumFactor * this->velocityX;
+            float vy = this->momentumFactor * this->velocityY;
+            this->velocityX = vx;
+            this->velocityY = vy;
             if (absf_update(vx) > 0.5f) {
-                field<int32_t>(this, 0x13c) = (int)((float)field<int32_t>(this, 0x13c) + vx);
+                this->panX = (int)((float)this->panX + vx);
             }
             if (absf_update(vy) > 0.5f) {
-                field<int32_t>(this, 0x140) = (int)((float)field<int32_t>(this, 0x140) + vy);
+                this->panY = (int)((float)this->panY + vy);
             }
         }
         void *canvas = *g_StarMap_update_canvas;
         __builtin_memcpy(&matrix, ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent()), 0x3c);
         MatrixSetTranslation(&matrix,
-                             (field<float>(this, 8) + (float)field<int32_t>(this, 0x13c)) * 20.0f,
+                             (this->cameraBaseX + (float)this->panX) * 20.0f,
                              0.0f,
-                             (field<float>(this, 0xc) + (float)field<int32_t>(this, 0x140)) * 20.0f);
+                             (this->cameraBaseZ + (float)this->panY) * 20.0f);
         ((PaintCanvas*)(long)(canvas))->CameraSetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent(), *(const AbyssEngine::AEMath::Matrix *)(&matrix));
-        if (field<uint8_t>(this, 0x13a) != 0) {
+        if (this->pathAnim != 0) {
             Array<uint8_t> *vis = (Array<uint8_t> *)((Status *)(*g_StarMap_update_status))->getSystemVisibilities();
-            uint32_t selected = field<uint32_t>(this, 0x60);
+            uint32_t selected = this->selectedSystem;
             if (vis != 0 && selected < vis->size() && vis->data()[selected] != 0) {
-                *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(((Array<Vector *> *)ptr_field(this, 0x194))->data()[selected]);
+                this->scratchVector = *(const Vector *)(((Array<Vector *> *)this->systemPositions)->data()[selected]);
                 float targetX = (float)(*g_StarMap_update_screenW >> 1);
                 float targetY = (float)(*g_StarMap_update_screenH >> 1);
-                float sx = (field<float>(this, 0x78) - targetX) / -30.0f;
-                float sy = (field<float>(this, 0x7c) - targetY) / -30.0f;
-                field<float>(this, 0x16c) = sx;
-                field<float>(this, 0x170) = sy;
+                float sx = (this->scratchVector.x - targetX) / -30.0f;
+                float sy = (this->scratchVector.y - targetY) / -30.0f;
+                this->velocityX = sx;
+                this->velocityY = sy;
                 if (absf_update(sx) <= 2.0f && absf_update(sy) <= 2.0f) {
-                    field<uint8_t>(this, 0x13a) = 0;
-                    field<int32_t>(this, 0x19c) = field<int32_t>(this, 0x60);
+                    this->pathAnim = 0;
+                    this->lastSelectedSystem = this->selectedSystem;
                 }
             }
         }
@@ -868,54 +868,54 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     void (*vecCtor)(void *) = g_StarMap_ctor_vecCtor;
     Vector zero = {0.0f, 0.0f, 0.0f};
     this->scratchVector = zero;
-    field<int32_t>(this, 0x88) = 0;
-    field<int32_t>(this, 0x8c) = 0;
-    vecCtor((char *)this + 0xac);
-    vecCtor((char *)this + 0xbc);
-    vecCtor((char *)this + 0xcc);
-    field<Vector>(this, 0x154) = zero;
-    field<Vector>(this, 0x144) = zero;
-    field<int32_t>(this, 0x164) = 0;
-    field<int32_t>(this, 0x188) = 0;
-    field<int32_t>(this, 0x18c) = 0;
-    field<int32_t>(this, 0x190) = 0;
+    this->scratchVector2.y = 0.0f;
+    this->scratchVector2.z = 0.0f;
+    vecCtor(&this->field_0xac);
+    vecCtor(&this->field_0xbc);
+    vecCtor(&this->field_0xcc);
+    this->touchDeltaX = 0.0f; this->touchDeltaY = 0.0f; this->field_0x158 = 0.0f;
+    this->touchStartX = 0.0f; this->touchStartY = 0.0f; this->field_0x14c = 0.0f;
+    this->field_0x164 = 0;
+    this->yaw = 0.0f;
+    this->pitch = 0.0f;
+    this->field_0x190 = 0;
 
-    field<int32_t>(this, 4) = 0;
-    field<int32_t>(this, 0x1c8) = field<int32_t>(*g_StarMap_ctor_status, 0x88);
-    field<int32_t>(this, 0x60) = -1;
-    ptr_field(this, 0xa4) = 0;
-    ptr_field(this, 0x58) = 0;
-    ptr_field(this, 0x194) = 0;
-    ptr_field(this, 0x198) = 0;
-    field<uint8_t>(this, 0x1e4) = 0;
-    field<uint8_t>(this, 1) = 0;
-    field<uint8_t>(this, 0x120) = 0;
-    ptr_field(this, 0x17c) = 0;
-    ptr_field(this, 0x180) = 0;
-    ptr_field(this, 0x184) = 0;
-    field<int32_t>(this, 0x168) = 0;
-    field<int32_t>(this, 0x16c) = 0;
-    field<int32_t>(this, 0x170) = 0;
+    this->mode = 0;
+    this->hitRadius = field<int32_t>(*g_StarMap_ctor_status, 0x88);
+    this->selectedSystem = -1;
+    this->starSystemRoot = (AEGeometry *)0;
+    this->stations = (Array<Station *> *)0;
+    this->systemPositions = 0;
+    this->stationPositions = 0;
+    this->suppressNextClose = 0;
+    this->field_0x01 = 0;
+    this->alienJumpPending = 0;
+    this->easeX = (AbyssEngine::EaseInOut *)0;
+    this->easeY = (AbyssEngine::EaseInOut *)0;
+    this->easeZ = (AbyssEngine::EaseInOut *)0;
+    this->momentumFactor = 0.0f;
+    this->velocityX = 0.0f;
+    this->velocityY = 0.0f;
 
-    ptr_field(this, 0xfc) = operator new(0x14);
-    ptr_field(this, 0x54) = ((Galaxy *)(*g_StarMap_ctor_galaxy))->getSystems();
-    field<int32_t>(this, 0x10) = 500;
-    field<int32_t>(this, 0x14) = 500;
+    this->iconBuffer = (int *)operator new(0x14);
+    this->systems = (Array<SolarSystem *> *)((Galaxy *)(*g_StarMap_ctor_galaxy))->getSystems();
+    this->field_0x10 = 500;
+    this->field_0x14 = 500;
 
     void *root = operator new(0xc0);
     new ((void*)root) AEGeometry((PaintCanvas*)(long)(*g_StarMap_ctor_canvas));
-    ptr_field(this, 0x6c) = root;
+    this->systemRoot = (AEGeometry *)root;
 
     Array<AEGeometry *> *systemsGeom = new Array<AEGeometry *>();
-    ptr_field(this, 0x68) = systemsGeom;
+    this->systemGeoms = systemsGeom;
     Array<Vector *> *systemPositions = new Array<Vector *>();
-    ptr_field(this, 0x194) = systemPositions;
+    this->systemPositions = systemPositions;
     systemsGeom->resize(0x22);
     systemPositions->resize(0x22);
 
-    Array<void *> *systems = (Array<void *> *)ptr_field(this, 0x54);
-    Array<void *> *geoms = (Array<void *> *)ptr_field(this, 0x68);
-    Array<Vector *> *positions = (Array<Vector *> *)ptr_field(this, 0x194);
+    Array<void *> *systems = (Array<void *> *)this->systems;
+    Array<void *> *geoms = (Array<void *> *)this->systemGeoms;
+    Array<Vector *> *positions = (Array<Vector *> *)this->systemPositions;
     for (uint32_t i = 0; i < geoms->size(); i++) {
         void *sys = systems->data()[i];
         int tex = ((SolarSystem *)(sys))->getTextureIndex();
@@ -939,13 +939,13 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4)
     }
 
     ((AbyssEngine::AERandom *)(*g_StarMap_ctor_random))->reset();
-    ptr_field(this, 0xf8) = 0;
-    field<uint8_t>(this, 0xa9) = 0;
+    this->markerGeom = (AEGeometry *)0;
+    this->choiceVisible = 0;
     if (((Status *)(*g_StarMap_ctor_status))->getCurrentCampaignMission() > 0x1f &&
         field<int32_t>(*g_StarMap_ctor_status, 0x7c) >= 0) {
         void *marker = operator new(0xc0);
         new ((void*)marker) AEGeometry((uint16_t)0x4262, (PaintCanvas*)(long)(*g_StarMap_ctor_canvas), false);
-        ptr_field(this, 0xf8) = marker;
+        this->markerGeom = (AEGeometry *)marker;
         Vector p;
         ((AEGeometry *)(&p))->getPosition();
         ((AEGeometry *)(marker))->setPosition(p);
@@ -963,25 +963,25 @@ static inline float absf_local(float v)
 
 uint32_t StarMap::OnTouchBegin(int x, int y)
 {
-    if (field<uint8_t>(this, 0xa9) != 0) {
-        ((ChoiceWindow *)(ptr_field(this, 0x5c)))->OnTouchBegin(x, y);
+    if (this->choiceVisible != 0) {
+        ((ChoiceWindow *)(this->choiceWindow))->OnTouchBegin(x, y);
         return 0;
     }
-    if (field<uint8_t>(this, 0x138) != 0 || field<uint8_t>(this, 0x139) != 0) {
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
         return 0;
     }
 
     void *layout = *g_StarMap_touch_layout;
     ((Layout *)(layout))->OnTouchBegin(x, y);
-    if ((field<uint8_t>(this, 0xa8) != 0 && field<uint8_t>(this, 0x13a) != 0) ||
-        field<uint8_t>(this, 0x13b) != 0) {
+    if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) ||
+        this->stationCenterAnim != 0) {
         return 0;
     }
-    ((TouchButton *)(ptr_field(this, 0x4c)))->OnTouchBegin(x, y);
+    ((TouchButton *)(this->backButton))->OnTouchBegin(x, y);
     if (field<int32_t>(layout, 0xc) >= y || y >= *g_StarMap_touch_screenH - field<int32_t>(layout, 0x10)) {
         return 0;
     }
-    if (field<uint8_t>(this, 0x118) != 0 && field<int32_t>(this, 0x11c) < 4000) {
+    if (this->autoMode != 0 && this->autoTimer < 4000) {
         return 0;
     }
 
@@ -991,69 +991,69 @@ uint32_t StarMap::OnTouchBegin(int x, int y)
 
     float fx = (float)x;
     float fy = (float)y;
-    field<float>(this, 0x15c) = fx;
-    field<float>(this, 0x160) = fy;
-    field<float>(this, 0x144) = fx;
-    field<float>(this, 0x148) = fy;
-    field<int32_t>(this, 0x150) = 0;
-    field<int32_t>(this, 0x154) = 0;
-    field<uint8_t>(this, 0x174) = 1;
-    field<uint8_t>(this, 0x13a) = 0;
+    this->lastTouchX = fx;
+    this->lastTouchY = fy;
+    this->touchStartX = fx;
+    this->touchStartY = fy;
+    this->touchDeltaX = 0.0f;
+    this->touchDeltaY = 0.0f;
+    this->dragging = 1;
+    this->pathAnim = 0;
 
-    int oldSystem = field<int32_t>(this, 0x60);
-    if (field<int32_t>(this, 4) == 0) {
-        field<int32_t>(this, 0x1d0) = 0;
-        field<int32_t>(this, 0x60) = -1;
+    int oldSystem = this->selectedSystem;
+    if (this->mode == 0) {
+        this->jumpCost = 0;
+        this->selectedSystem = -1;
         void *status = *g_StarMap_touch_status;
-        Array<void *> *systems = (Array<void *> *)ptr_field(this, 0x68);
+        Array<void *> *systems = (Array<void *> *)this->systemGeoms;
         for (uint32_t i = 0; i < systems->size(); i++) {
             Array<uint8_t> *vis = (Array<uint8_t> *)((Status *)(status))->getSystemVisibilities();
             if (vis != 0 && i < vis->size() && vis->data()[i] != 0) {
-                *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(((Array<Vector *> *)ptr_field(this, 0x194))->data()[i]);
-                if (field<float>(this, 0x80) > 0.0f &&
-                    absf_local(field<float>(this, 0x78) - fx) < (float)field<int32_t>(this, 0x1c8) &&
-                    absf_local(field<float>(this, 0x7c) - fy) < (float)field<int32_t>(this, 0x1c8)) {
-                    field<int32_t>(this, 0x60) = (int)i;
-                    Array<Station *> *stations = (Array<Station *> *)ptr_field(this, 0x58);
+                this->scratchVector = *(const Vector *)(((Array<Vector *> *)this->systemPositions)->data()[i]);
+                if (this->scratchVector.z > 0.0f &&
+                    absf_local(this->scratchVector.x - fx) < (float)this->hitRadius &&
+                    absf_local(this->scratchVector.y - fy) < (float)this->hitRadius) {
+                    this->selectedSystem = (int)i;
+                    Array<Station *> *stations = (Array<Station *> *)this->stations;
                     if (stations != 0) {
                         for (Station *s : *stations) delete s;
                         stations->clear();
                         delete stations;
-                        ptr_field(this, 0x58) = 0;
+                        this->stations = (Array<Station *> *)0;
                     }
-                    ptr_field(this, 0x58) = new Array<Station *>();
+                    this->stations = new Array<Station *>();
                     void *reader = operator new(1);
                     FileRead_ctor(reader);
-                    ptr_field(this, 0x58) =
-                        ((FileRead *)(reader))->loadStationsBinary();
+                    this->stations =
+                        (Array<Station *> *)((FileRead *)(reader))->loadStationsBinary();
                     operator delete(FileRead_dtor(reader));
-                    if (oldSystem != field<int32_t>(this, 0x60)) {
+                    if (oldSystem != this->selectedSystem) {
                         ((FModSound *)(sound))->play(0x67, 0, 0, 0.0f);
                     }
                     int current = ((Status *)(status))->getSystem();
-                    int dist = ((SystemPathFinder *)(ptr_field(this, 0x50)))->getJumpDistance((Array<SolarSystem *> *)ptr_field(this, 0x54), current, field<int32_t>(this, 0x60));
-                    field<int32_t>(this, 0x1d0) = dist;
-                    if (dist == 0 && current != field<int32_t>(this, 0x60)) {
-                        field<int32_t>(this, 0x1d0) = 4;
-                        if (((SolarSystem *)(((Array<void *> *)ptr_field(this, 0x54))->data()[i]))->getRoutes() == 0) {
-                            field<uint8_t>(this, 0x1d4) = 1;
+                    int dist = ((SystemPathFinder *)(this->pathFinder))->getJumpDistance((Array<SolarSystem *> *)this->systems, current, this->selectedSystem);
+                    this->jumpCost = dist;
+                    if (dist == 0 && current != this->selectedSystem) {
+                        this->jumpCost = 4;
+                        if (((SolarSystem *)(((Array<void *> *)this->systems)->data()[i]))->getRoutes() == 0) {
+                            this->noRoute = 1;
                         }
                     }
                     if (((Status *)(status))->hardCoreMode() != 0) {
-                        field<int32_t>(this, 0x1d0) <<= 1;
+                        this->jumpCost <<= 1;
                     }
                     return 0;
                 }
             }
         }
-    } else if (field<int32_t>(this, 4) == 3) {
-        Array<Vector *> *stations = (Array<Vector *> *)ptr_field(this, 0x198);
+    } else if (this->mode == 3) {
+        Array<Vector *> *stations = (Array<Vector *> *)this->stationPositions;
         for (uint32_t i = 0; i < stations->size(); i++) {
-            *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(stations->data()[i]);
-            if (field<float>(this, 0x80) > 0.0f &&
-                absf_local(field<float>(this, 0x78) - fx) < (float)field<int32_t>(this, 0x1c8) &&
-                absf_local(field<float>(this, 0x7c) - fy) < (float)field<int32_t>(this, 0x1c8)) {
-                field<int32_t>(this, 0x64) = (int)i;
+            this->scratchVector = *(const Vector *)(stations->data()[i]);
+            if (this->scratchVector.z > 0.0f &&
+                absf_local(this->scratchVector.x - fx) < (float)this->hitRadius &&
+                absf_local(this->scratchVector.y - fy) < (float)this->hitRadius) {
+                this->selectedStation = (int)i;
                 ((FModSound *)(sound))->play(0x68, 0, 0, 0.0f);
                 return 0;
             }
@@ -1066,51 +1066,51 @@ void StarMap::OnTouchMove(int x, int y)
 {
     Matrix matrix;
 
-    if (field<uint8_t>(this, 0xa9) != 0) {
-        ((ChoiceWindow *)(ptr_field(this, 0x5c)))->OnTouchMove(x, y);
+    if (this->choiceVisible != 0) {
+        ((ChoiceWindow *)(this->choiceWindow))->OnTouchMove(x, y);
         return;
     }
-    if (field<uint8_t>(this, 0x138) != 0 || field<uint8_t>(this, 0x139) != 0) {
+    if (this->transitionIn != 0 || this->transitionOut != 0) {
         return;
     }
     void *layout = *g_StarMap_move_layout;
     ((Layout *)(layout))->OnTouchMove(x, y);
-    if ((field<uint8_t>(this, 0xa8) != 0 && field<uint8_t>(this, 0x13a) != 0) ||
-        field<uint8_t>(this, 0x13b) != 0) {
+    if ((this->pad_0xa8_a != 0 && this->pathAnim != 0) ||
+        this->stationCenterAnim != 0) {
         return;
     }
-    ((TouchButton *)(ptr_field(this, 0x4c)))->OnTouchMove(x, y);
-    if (field<uint8_t>(this, 0x174) == 0) {
+    ((TouchButton *)(this->backButton))->OnTouchMove(x, y);
+    if (this->dragging == 0) {
         return;
     }
 
     float fx = (float)x;
     float fy = (float)y;
-    float lastX = field<float>(this, 0x15c);
-    float lastY = field<float>(this, 0x160);
-    field<int32_t>(this, 0x168) = 0x3f800000;
-    field<float>(this, 0x15c) = fx;
-    field<float>(this, 0x160) = fy;
-    float dx = (fx - lastX) * field<float>(this, 0x1cc);
-    float dy = field<float>(this, 0x1cc) * (fy - lastY);
-    field<float>(this, 0x150) = dx;
-    field<float>(this, 0x154) = dy;
+    float lastX = this->lastTouchX;
+    float lastY = this->lastTouchY;
+    this->momentumFactor = 1.0f;
+    this->lastTouchX = fx;
+    this->lastTouchY = fy;
+    float dx = (fx - lastX) * this->dragScale;
+    float dy = this->dragScale * (fy - lastY);
+    this->touchDeltaX = dx;
+    this->touchDeltaY = dy;
 
-    if (field<int32_t>(this, 4) == 0) {
+    if (this->mode == 0) {
         float speed = absf_local(dx + dy);
         if (speed > 10.0f) {
             speed = 10.0f;
         }
-        float targetX = (float)field<int32_t>(this, 0x13c);
-        float targetY = (float)field<int32_t>(this, 0x140);
-        field<int32_t>(this, 0x13c) = (int)(dx + targetX);
-        field<int32_t>(this, 0x140) = (int)(dy + targetY);
-        field<float>(this, 0x1c0) = field<float>(this, 0x1c0) + speed;
-        if (absf_local(field<float>(this, 0x144) - fx) > 3.0f ||
-            absf_local(field<float>(this, 0x148) - fy) > 3.0f) {
-            field<int32_t>(this, 0x19c) = -1;
-            field<int32_t>(this, 0x60) = -1;
-            field<int32_t>(this, 0x1d0) = 0;
+        float targetX = (float)this->panX;
+        float targetY = (float)this->panY;
+        this->panX = (int)(dx + targetX);
+        this->panY = (int)(dy + targetY);
+        this->spin = this->spin + speed;
+        if (absf_local(this->touchStartX - fx) > 3.0f ||
+            absf_local(this->touchStartY - fy) > 3.0f) {
+            this->lastSelectedSystem = -1;
+            this->selectedSystem = -1;
+            this->jumpCost = 0;
         }
         void *canvas = *g_StarMap_move_canvas;
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
@@ -1119,42 +1119,42 @@ void StarMap::OnTouchMove(int x, int y)
         return;
     }
 
-    if (absf_local(field<float>(this, 0x144) - fx) <= 3.0f ||
-        absf_local(field<float>(this, 0x148) - fy) <= 3.0f) {
-        field<int32_t>(this, 0x1a0) = -1;
-        field<int32_t>(this, 0x64) = -1;
+    if (absf_local(this->touchStartX - fx) <= 3.0f ||
+        absf_local(this->touchStartY - fy) <= 3.0f) {
+        this->lastSelectedStation = -1;
+        this->selectedStation = -1;
     }
 
     float rotZ = dx * 16.0f;
     float rotX = dy * 16.0f;
-    float pitch = field<float>(this, 0x18c) + rotX;
+    float pitch = this->pitch + rotX;
     if (pitch < -90.0f) {
         pitch = -90.0f;
     }
     if (pitch > 90.0f) {
         pitch = 90.0f;
     }
-    float yaw = (float)((int)(field<float>(this, 0x188) + rotZ) & 0xffff);
+    float yaw = (float)((int)(this->yaw + rotZ) & 0xffff);
     float absZ = absf_local(rotZ);
     float absX = absf_local(rotX);
-    field<float>(this, 0x150) = rotZ;
-    field<float>(this, 0x154) = rotX;
-    field<float>(this, 0x16c) = absZ > 3.0f ? rotZ : 0.0f;
-    field<float>(this, 0x170) = absX > 3.0f ? rotX : 0.0f;
-    field<float>(this, 0x188) = yaw;
-    field<float>(this, 0x18c) = pitch;
-    ((AEGeometry *)(ptr_field(this, 0xa4)))->setRotation(field<float>(this, 0x170), yaw, field<float>(this, 0x16c));
+    this->touchDeltaX = rotZ;
+    this->touchDeltaY = rotX;
+    this->velocityX = absZ > 3.0f ? rotZ : 0.0f;
+    this->velocityY = absX > 3.0f ? rotX : 0.0f;
+    this->yaw = yaw;
+    this->pitch = pitch;
+    ((AEGeometry *)(this->starSystemRoot))->setRotation(this->velocityY, yaw, this->velocityX);
 }
 
 void StarMap::drawKey()
 {
     uint32_t *canvasHolder = g_StarMap_drawKey_canvas;
-    int imageWidth = ((PaintCanvas*)(long)(*canvasHolder))->GetImage2DWidth((unsigned int)(field<uint32_t>(this, 0x30)));
+    int imageWidth = ((PaintCanvas*)(long)(*canvasHolder))->GetImage2DWidth((unsigned int)(this->keyImageDiscovered));
     void *layout = *g_StarMap_drawKey_layout;
     int screenW = *g_StarMap_drawKey_screenW;
     int screenH = *g_StarMap_drawKey_screenH;
-    int boxW = field<int32_t>(this, 0x10c);
-    int boxH = field<int32_t>(this, 0x110);
+    int boxW = this->keyBoxWidth;
+    int boxH = this->keyBoxHeight;
     int marginY = field<int32_t>(layout, 4);
     int padY = field<int32_t>(layout, 8);
     int rightPad = field<int32_t>(layout, 0x10);
@@ -1168,7 +1168,7 @@ void StarMap::drawKey()
     int y = ((screenW - lineH) - rightPad) - marginY;
 
     void (*drawImage)(uint32_t, uint32_t, int, int) = g_StarMap_drawKey_drawImage;
-    drawImage(*canvasHolder, field<uint32_t>(this, 0x20), drawX, y);
+    drawImage(*canvasHolder, this->keyImageRetreat, drawX, y);
 
     void **textHolder = g_StarMap_drawKey_text;
     String *(*getText)(void *, int) = g_StarMap_drawKey_getText;
@@ -1177,90 +1177,90 @@ void StarMap::drawKey()
 
     drawString(*canvasHolder, *fontHolder, getText(*textHolder, 0x112), textX, y, false);
     y -= field<int32_t>(*g_StarMap_drawKey_layout, 4);
-    drawImage(*canvasHolder, field<uint32_t>(this, 0x30), drawX, y);
+    drawImage(*canvasHolder, this->keyImageDiscovered, drawX, y);
     drawString(*canvasHolder, *fontHolder, getText(*textHolder, 0x191), textX, y, false);
     y -= field<int32_t>(*g_StarMap_drawKey_layout, 4);
-    drawImage(*canvasHolder, field<uint32_t>(this, 0x2c), drawX, y);
+    drawImage(*canvasHolder, this->keyImageCurrent, drawX, y);
     drawString(*canvasHolder, *fontHolder, getText(*textHolder, 0x223), textX, y, false);
     y -= field<int32_t>(*g_StarMap_drawKey_layout, 4);
-    drawImage(*canvasHolder, field<uint32_t>(this, 0x28), drawX, y);
+    drawImage(*canvasHolder, this->keyImageMission, drawX, y);
     drawString(*canvasHolder, *fontHolder, getText(*textHolder, 0x22c), textX, y, false);
     y -= field<int32_t>(*g_StarMap_drawKey_layout, 4);
-    drawImage(*canvasHolder, field<uint32_t>(this, 0x24), drawX, y);
+    drawImage(*canvasHolder, this->keyImageWanted, drawX, y);
     drawString(*canvasHolder, *fontHolder, getText(*textHolder, 0x22b), textX, y, false);
 }
 
 void StarMap::initStarSystem()
 {
-    void *system = ((Array<void *> *)ptr_field(this, 0x54))->data()[field<int32_t>(this, 0x60)];
+    void *system = ((Array<void *> *)this->systems)->data()[this->selectedSystem];
     Array<void *> *stationIds = (Array<void *> *)((SolarSystem *)(system))->getStations();
     uint32_t count = stationIds->size();
 
     Array<Station *> *stations = new Array<Station *>();
-    ptr_field(this, 0x58) = stations;
+    this->stations = (Array<Station *> *)stations;
     stations->resize(count);
     void *reader = operator new(1);
     FileRead_ctor(reader);
-    ptr_field(this, 0x58) = ((FileRead *)(reader))->loadStationsBinary();
+    this->stations = (Array<Station *> *)((FileRead *)(reader))->loadStationsBinary();
     operator delete(FileRead_dtor(reader));
 
     uint32_t bytes = count > 0x3fffffffu ? 0xffffffffu : count * 4;
-    ptr_field(this, 0x98) = operator new(bytes);
-    ptr_field(this, 0x9c) = operator new(bytes);
-    field<int32_t>(this, 0x1c4) = -1;
+    this->stationAngles = (int *)operator new(bytes);
+    this->stationDistances = (int *)operator new(bytes);
+    this->centeredStation = -1;
     ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->setSeed((long long)((SolarSystem *)(system))->getIndex() * 1000);
 
     Array<AEGeometry *> *stationGeoms = new Array<AEGeometry *>();
-    ptr_field(this, 0x90) = stationGeoms;
+    this->stationGeoms = stationGeoms;
     stationGeoms->resize(count + 1);
 
     void *root = operator new(0xc0);
     new ((void*)root) AEGeometry((PaintCanvas*)(long)(*g_StarMap_system_canvas));
-    ptr_field(this, 0xa4) = root;
+    this->starSystemRoot = (AEGeometry *)root;
 
     Array<uint8_t> *used = new Array<uint8_t>();
-    ptr_field(this, 0x100) = used;
+    this->usedFlags = used;
     used->resize(stationGeoms->size());
     for (uint32_t i = 0; i < used->size(); i++) {
         (*used)[i] = 0;
     }
 
-    Array<void *> *stationArr = (Array<void *> *)ptr_field(this, 0x58);
-    Array<void *> *geomArr = (Array<void *> *)ptr_field(this, 0x90);
+    Array<void *> *stationArr = (Array<void *> *)this->stations;
+    Array<void *> *geomArr = (Array<void *> *)this->stationGeoms;
     for (uint32_t i = 1; i < geomArr->size(); i++) {
         uint32_t stationIndex = i - 1;
         int tex = Station_getTextureIndex(stationArr->data()[stationIndex]);
         void *geom = operator new(0xc0);
         new ((void*)geom) AEGeometry((uint16_t)(tex + 0x4704), (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
         geomArr->data()[i] = geom;
-        ((int *)ptr_field(this, 0x98))[stationIndex] =
+        ((int *)this->stationAngles)[stationIndex] =
             ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->nextInt(used->size()) *
             (0x10000 / (int)used->size());
-        int dist = (i == 1) ? 0x1900 : ((int *)ptr_field(this, 0x9c))[i - 2];
+        int dist = (i == 1) ? 0x1900 : ((int *)this->stationDistances)[i - 2];
         dist += ((AbyssEngine::AERandom *)(*g_StarMap_system_random))->nextInt(0x15e0) + 0x640;
-        ((int *)ptr_field(this, 0x9c))[stationIndex] = dist;
+        ((int *)this->stationDistances)[stationIndex] = dist;
         Vector pos = {0.0f, 0.0f, (float)dist};
         ((AEGeometry *)(geom))->translate(pos);
         float scale = (float)(tex << 4) * 0.001f;
         ((AEGeometry *)(geom))->setScaling(scale);
         ((AEGeometry *)(root))->addChild(field<uint32_t>(geom, 0xc));
-        if (ptr_field(this, 0xf8) != 0 && field<int32_t>(this, 0x60) == field<int32_t>(*g_StarMap_system_status, 0x7c) &&
+        if (this->markerGeom != 0 && this->selectedSystem == field<int32_t>(*g_StarMap_system_status, 0x7c) &&
             Station_getIndex(stationArr->data()[stationIndex]) == field<int32_t>(*g_StarMap_system_status, 0x80)) {
-            field<uint32_t>(this, 0x1c4) = i;
+            this->centeredStation = i;
         }
     }
 
-    ((AEGeometry *)(((Array<void *> *)ptr_field(this, 0x90))->data()[1]))->setVisible(false);
+    ((AEGeometry *)(((Array<void *> *)this->stationGeoms)->data()[1]))->setVisible(false);
 
     Array<AEGeometry *> *rings = new Array<AEGeometry *>();
-    ptr_field(this, 0x94) = rings;
+    this->ringGeoms = rings;
     rings->resize(count);
     for (uint32_t i = 0; i < rings->size(); i++) {
         void *ring = operator new(0xc0);
         new ((void*)ring) AEGeometry((uint16_t)0x1a7b, (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
         (*rings)[i] = (AEGeometry *)ring;
         ((AEGeometry *)(root))->addChild(field<uint32_t>(ring, 0xc));
-        float scale = (float)(((int *)ptr_field(this, 0x9c))[i] << 1) * 0.001f;
+        float scale = (float)(((int *)this->stationDistances)[i] << 1) * 0.001f;
         ((AEGeometry *)(ring))->setScaling(scale);
     }
 
@@ -1269,22 +1269,22 @@ void StarMap::initStarSystem()
     ((AEGeometry *)(root))->setPosition(selected);
     ((AEGeometry *)(root))->setScaling(0.0078125f);
     ((AEGeometry *)(root))->setRotation(0.0f, 0.0f, 0.0f);
-    field<int32_t>(this, 0x188) = 0x45800000;
-    field<float>(this, 0x18c) = 0.0f;
-    field<int32_t>(this, 0x64) = -1;
-    ((PaintCanvas*)(long)(*g_StarMap_system_canvas))->Image2DCreate((unsigned short)((uint16_t)(0x4500 + ((SolarSystem *)(system))->getRace())), (unsigned int *)((char *)this + 0x34));
+    this->yaw = 4096.0f;
+    this->pitch = 0.0f;
+    this->selectedStation = -1;
+    ((PaintCanvas*)(long)(*g_StarMap_system_canvas))->Image2DCreate((unsigned short)((uint16_t)(0x4500 + ((SolarSystem *)(system))->getRace())), &this->systemNameImage);
 
     {
-        Array<Vector *> *oldPositions = (Array<Vector *> *)ptr_field(this, 0x198);
+        Array<Vector *> *oldPositions = (Array<Vector *> *)this->stationPositions;
         if (oldPositions != 0) {
             for (Vector *v : *oldPositions) delete v;
             delete oldPositions;
         }
-        ptr_field(this, 0x198) = 0;
+        this->stationPositions = 0;
     }
     Array<Vector *> *stationPositions = new Array<Vector *>();
-    ptr_field(this, 0x198) = stationPositions;
-    stationPositions->resize(((Array<void *> *)ptr_field(this, 0x58))->size());
+    this->stationPositions = stationPositions;
+    stationPositions->resize(((Array<void *> *)this->stations)->size());
     for (uint32_t i = 0; i < stationPositions->size(); i++) {
         Vector *p = (Vector *)operator new(0xc);
         p->x = 0.0f;
@@ -1294,23 +1294,23 @@ void StarMap::initStarSystem()
     }
 
     ((Engine *)(*g_StarMap_system_engine))->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
-    if (ptr_field(this, 0x1bc) != 0) {
-        [&]{ AEGeometry *g_=(AEGeometry*)(ptr_field(this, 0x1bc)); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
+    if (this->planetGeom != 0) {
+        [&]{ AEGeometry *g_=(AEGeometry*)(this->planetGeom); if(g_){ g_->~AEGeometry(); ::operator delete(g_);} }();
     }
-    field<uint32_t>(this, 0x178) = 0xffffffffu;
-    ptr_field(this, 0x1bc) = 0;
+    this->planetTexture = 0xffffffffu;
+    this->planetGeom = (AEGeometry *)0;
     uint16_t texture = (uint16_t)(0x2700 + ((SolarSystem *)(system))->getTextureIndex());
-    if (field<int32_t>(this, 0x60) == 0x1b) {
+    if (this->selectedSystem == 0x1b) {
         texture = 0x2734;
     }
-    ((PaintCanvas*)(long)(*g_StarMap_system_canvas))->TextureCreate((unsigned short)(texture), (void *)0, (void *)0, (unsigned int *)((char *)this + 0x178), false);
+    ((PaintCanvas*)(long)(*g_StarMap_system_canvas))->TextureCreate((unsigned short)(texture), (void *)0, (void *)0, &this->planetTexture, false);
     void *planet = operator new(0xc0);
     new ((void*)planet) AEGeometry((uint16_t)0x1a70, (PaintCanvas*)(long)(*g_StarMap_system_canvas), false);
-    ptr_field(this, 0x1bc) = planet;
+    this->planetGeom = (AEGeometry *)planet;
     ((AEGeometry *)(planet))->setPosition(selected);
     ((AEGeometry *)(planet))->setRotation(0.0f, 0.0f, 0.0f);
     ((AEGeometry *)(planet))->setScaling(1.0f);
-    ((AEGeometry *)(((Array<void *> *)ptr_field(this, 0x68))->data()[field<int32_t>(this, 0x60)]))->setVisible(false);
+    ((AEGeometry *)(((Array<void *> *)this->systemGeoms)->data()[this->selectedSystem]))->setVisible(false);
 }
 
 void StarMap::drawOnScreenInfo(int index, bool stationMode)
@@ -1320,10 +1320,10 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
     String value;
 
     Array<Vector *> *positions =
-        stationMode ? (Array<Vector *> *)ptr_field(this, 0x198) : (Array<Vector *> *)ptr_field(this, 0x194);
-    *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(positions->data()[index]);
-    float x = field<float>(this, 0x78);
-    float y = field<float>(this, 0x7c);
+        stationMode ? (Array<Vector *> *)this->stationPositions : (Array<Vector *> *)this->systemPositions;
+    this->scratchVector = *(const Vector *)(positions->data()[index]);
+    float x = this->scratchVector.x;
+    float y = this->scratchVector.y;
     if (x < 0.0f || x > (float)(*g_StarMap_info_screenW + 0x32) ||
         y < 0.0f || y > (float)(*g_StarMap_info_screenH + 0x32)) {
         return;
@@ -1331,101 +1331,101 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
 
     uint32_t canvas = *g_StarMap_info_canvas;
     ((PaintCanvas*)(long)(canvas))->SetColor((unsigned int)(0xffffffffu));
-    int *icons = (int *)ptr_field(this, 0xfc);
+    int *icons = (int *)this->iconBuffer;
     for (int i = 0; i != 5; i++) {
         icons[i] = -1;
     }
 
     if (stationMode) {
-        void *station = ((Array<void *> *)ptr_field(this, 0x58))->data()[index];
+        void *station = ((Array<void *> *)this->stations)->data()[index];
         if (((Station *)(station))->isDiscovered() != 0) {
-            icons[0] = field<int32_t>(this, 0x30);
+            icons[0] = this->keyImageDiscovered;
         }
         int current = Station_getIndex(((Status *)(*g_StarMap_info_status))->getStation());
         if (current == Station_getIndex(station)) {
-            icons[3] = field<int32_t>(this, 0x2c);
+            icons[3] = this->keyImageCurrent;
         }
         ((Station *)(&name))->getName();
         int textW = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_info_font), (void *)&name);
         int drawX = (int)(x - (float)(textW / 2));
-        int drawY = (int)(y + (float)(field<int32_t>(this, 0x1a8) >> 1) - 3.0f);
-        if (field<int32_t>(this, 0x64) == index) {
-            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0x80), (unsigned char)(0), (unsigned char)(field<int32_t>(this, 0x1a4)));
+        int drawY = (int)(y + (float)(this->iconWidth >> 1) - 3.0f);
+        if (this->selectedStation == index) {
+            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0x80), (unsigned char)(0), (unsigned char)(this->alpha));
             ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
-            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
+            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
             if (Station_getTecLevel(station) > 0) {
                 line.copy((String *)((GameText *)(*g_StarMap_info_text))->getText(0x200), false);
                 value.ctor_int(Station_getTecLevel(station));
                 name = line + value;
                 ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY + field<int32_t>(*g_StarMap_info_layout, 4), false);
             }
-            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x40)), (int)x, (int)y, (unsigned char)(0x11));
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(this->selectIcon), (int)x, (int)y, (unsigned char)(0x11));
         } else {
-            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
-            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x44)), (int)x, (int)y, (unsigned char)(0x11));
+            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(this->cursorIcon), (int)x, (int)y, (unsigned char)(0x11));
             ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
         }
     } else {
-        void *system = ((Array<void *> *)ptr_field(this, 0x54))->data()[index];
+        void *system = ((Array<void *> *)this->systems)->data()[index];
         if (((SolarSystem *)(system))->isFullyDiscovered() != 0) {
-            icons[0] = field<int32_t>(this, 0x30);
+            icons[0] = this->keyImageDiscovered;
         }
         if (((Status *)(*g_StarMap_info_status))->getCurrentCampaignMission() == 0x34 &&
             ((SolarSystem *)(system))->getStationEnumIndex(0x4a) >= 0) {
-            icons[1] = field<int32_t>(this, 0x24);
+            icons[1] = this->keyImageWanted;
         }
         void *mission = (void *)(long)((Status *)(*g_StarMap_info_status))->getCampaignMission();
         if (mission != 0 && ((Mission *)(mission))->isEmpty() == 0) {
             int target = ((Mission *)(mission))->getTargetStation();
             if (((SolarSystem *)(system))->getStationEnumIndex(target) >= 0) {
-                icons[2] = field<int32_t>(this, 0x28);
+                icons[2] = this->keyImageMission;
             }
         }
         void *freelance = ((Status *)(*g_StarMap_info_status))->getFreelanceMission();
         if (freelance != 0 && ((Mission *)(freelance))->isEmpty() == 0) {
             int target = ((Mission *)(freelance))->getTargetStation();
             if (((SolarSystem *)(system))->getStationEnumIndex(target) >= 0) {
-                icons[2] = field<int32_t>(this, 0x28);
+                icons[2] = this->keyImageMission;
             }
         }
         ((SolarSystem *)(&name))->getName();
         int textW = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_info_font), (void *)&name);
         int drawX = (int)(x - (float)(textW / 2));
-        int drawY = (int)(y + (float)(field<int32_t>(this, 0x1a8) >> 1) - 3.0f);
+        int drawY = (int)(y + (float)(this->iconWidth >> 1) - 3.0f);
         int currentSystem = ((Status *)(*g_StarMap_info_status))->getSystem();
         if (currentSystem == ((SolarSystem *)(system))->getIndex()) {
-            ((Layout *)(*g_StarMap_info_layout))->getPulseValue((float)field<int32_t>(this, 0x1a4));
-            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
-            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x48)), (int)x, (int)y, (unsigned char)(0x11));
+            ((Layout *)(*g_StarMap_info_layout))->getPulseValue((float)this->alpha);
+            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(this->currentMarkerIcon), (int)x, (int)y, (unsigned char)(0x11));
         }
-        if (field<int32_t>(this, 0x60) == index) {
-            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0x80), (unsigned char)(0), (unsigned char)(field<int32_t>(this, 0x1a4)));
-        } else if (field<int32_t>(this, 0x60) >= 0) {
-            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
+        if (this->selectedSystem == index) {
+            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0x80), (unsigned char)(0), (unsigned char)(this->alpha));
+        } else if (this->selectedSystem >= 0) {
+            ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
         }
         ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
-        ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(field<int32_t>(this, 0x1a4)));
+        ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
         if (((SolarSystem *)(system))->hasNoOwner() == 0) {
-            uint32_t image = field<uint32_t>(this, 0x130);
+            uint32_t image = this->raceImageDefault;
             int race = ((SolarSystem *)(system))->getRace();
             if (race == 2) {
-                image = field<uint32_t>(this, 0x12c);
+                image = this->raceImageB;
             } else if (race == 1) {
-                image = field<uint32_t>(this, 0x128);
+                image = this->raceImageA;
             } else if (race == 0) {
-                image = field<uint32_t>(this, 0x124);
+                image = this->raceImageNeutral;
             }
             ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(image), drawX, drawY + 0xfd, (unsigned char)(0x11));
         }
-        if (field<int32_t>(this, 0x60) == index) {
-            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x40)), (int)x, (int)y, (unsigned char)(0x11));
+        if (this->selectedSystem == index) {
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(this->selectIcon), (int)x, (int)y, (unsigned char)(0x11));
         } else {
-            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(field<uint32_t>(this, 0x44)), (int)x, (int)y, (unsigned char)(0x11));
+            ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(this->cursorIcon), (int)x, (int)y, (unsigned char)(0x11));
         }
     }
 
-    float iconY = (float)(int)((field<float>(this, 0x7c) - (float)(field<int32_t>(this, 0x1a8) >> 1)) + 10.0f);
-    float iconX = (float)(int)(field<float>(this, 0x78) + (float)(field<int32_t>(this, 0x1a8) >> 1) - 7.0f);
+    float iconY = (float)(int)((this->scratchVector.y - (float)(this->iconWidth >> 1)) + 10.0f);
+    float iconX = (float)(int)(this->scratchVector.x + (float)(this->iconWidth >> 1) - 7.0f);
     for (int i = 0; i != 5; i++) {
         int image = icons[i];
         if (image != -1) {
@@ -1442,153 +1442,157 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
 
     uint32_t canvas = *g_StarMap_init_canvas;
     ((PaintCanvas*)(long)(canvas))->FogEnable(0, (int)(true));
-    field<uint8_t>(this, 0x118) = (uint8_t)param3;
-    field<uint8_t>(this, 0xa8) = (uint8_t)jumpMapMode;
-    field<int32_t>(this, 0x114) = param4;
+    this->autoMode = (uint8_t)param3;
+    this->pad_0xa8_a = (uint8_t)jumpMapMode;
+    this->pulseSystem = param4;
 
     void (*imageCreate)(uint32_t, int, void *) = g_StarMap_init_imageCreate;
-    imageCreate(canvas, 0x4a1, (char *)this + 0x124);
-    imageCreate(canvas, 0x49c, (char *)this + 0x128);
-    imageCreate(canvas, 0x49f, (char *)this + 0x12c);
-    imageCreate(canvas, 0x49e, (char *)this + 0x130);
-    imageCreate(canvas, 0x452, (char *)this + 0x20);
-    imageCreate(canvas, 0x4a2, (char *)this + 0x30);
-    imageCreate(canvas, 0x453, (char *)this + 0x2c);
-    imageCreate(canvas, 0x455, (char *)this + 0x28);
-    imageCreate(canvas, 0x454, (char *)this + 0x24);
-    imageCreate(canvas, 0x48c, (char *)this + 0x40);
-    imageCreate(canvas, 0x48a, (char *)this + 0x44);
-    imageCreate(canvas, 0x4fd, (char *)this + 0x48);
-    imageCreate(canvas, 0x545, (char *)this + 0x134);
+    imageCreate(canvas, 0x4a1, (void *)&this->raceImageNeutral);
+    imageCreate(canvas, 0x49c, (void *)&this->raceImageA);
+    imageCreate(canvas, 0x49f, (void *)&this->raceImageB);
+    imageCreate(canvas, 0x49e, (void *)&this->raceImageDefault);
+    imageCreate(canvas, 0x452, (void *)&this->keyImageRetreat);
+    imageCreate(canvas, 0x4a2, (void *)&this->keyImageDiscovered);
+    imageCreate(canvas, 0x453, (void *)&this->keyImageCurrent);
+    imageCreate(canvas, 0x455, (void *)&this->keyImageMission);
+    imageCreate(canvas, 0x454, (void *)&this->keyImageWanted);
+    imageCreate(canvas, 0x48c, (void *)&this->selectIcon);
+    imageCreate(canvas, 0x48a, (void *)&this->cursorIcon);
+    imageCreate(canvas, 0x4fd, (void *)&this->currentMarkerIcon);
+    imageCreate(canvas, 0x545, (void *)&this->image_0x134);
 
-    field<int32_t>(this, 0x1a8) = ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned int)(field<uint32_t>(this, 0x40)));
-    field<int32_t>(this, 0x1ac) = ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned int)(field<uint32_t>(this, 0x28)));
-    field<int32_t>(this, 0x1d0) = 0;
-    field<uint8_t>(this, 0x1d4) = 0;
-    ptr_field(this, 0x1bc) = 0;
-    field<int32_t>(this, 0x1c0) = 0;
-    field<int32_t>(this, 0x1c4) = -1;
-    field<int32_t>(this, 0x19c) = -1;
-    field<int32_t>(this, 0x1a0) = -1;
-    field<int32_t>(this, 0x1dc) = -1;
-    field<int32_t>(this, 0x1e0) = -1;
-    field<int32_t>(this, 0xe8) = 0;
-    field<int32_t>(this, 0xec) = 0;
-    field<float>(this, 8) = 0.0f;
-    field<float>(this, 0xc) = 0.0f;
-    field<uint8_t>(this, 1) = 0;
-    field<uint8_t>(this, 0x174) = 0;
-    field<int32_t>(this, 0x138) = 0;
-    field<int32_t>(this, 0x13c) = 0;
-    field<int32_t>(this, 0x140) = 0;
+    this->iconWidth = ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned int)(this->selectIcon));
+    this->missionIconWidth = ((PaintCanvas*)(long)(canvas))->GetImage2DWidth((unsigned int)(this->keyImageMission));
+    this->jumpCost = 0;
+    this->noRoute = 0;
+    this->planetGeom = (AEGeometry *)0;
+    this->spin = 0.0f;
+    this->centeredStation = -1;
+    this->lastSelectedSystem = -1;
+    this->lastSelectedStation = -1;
+    this->routeStart = -1;
+    this->routeTarget = -1;
+    this->field_0xe8 = 0;
+    this->field_0xec = 0;
+    this->cameraBaseX = 0.0f;
+    this->cameraBaseZ = 0.0f;
+    this->field_0x01 = 0;
+    this->dragging = 0;
+    this->transitionIn = 0;
+    this->transitionOut = 0;
+    this->pathAnim = 0;
+    this->stationCenterAnim = 0;
+    this->panX = 0;
+    this->panY = 0;
 
-    ptr_field(this, 0x17c) = EaseInOut_ctor(operator new(0x10));
-    ptr_field(this, 0x180) = EaseInOut_ctor(operator new(0x10));
-    ptr_field(this, 0x184) = EaseInOut_ctor(operator new(0x10));
-    field<int32_t>(this, 0x1cc) = field<int32_t>(*g_StarMap_init_layout, 0x90);
-    ptr_field(this, 0x74) = (void *)(long)((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
-    ((PaintCanvas*)(long)(canvas))->CameraCreate((unsigned int *)((char *)this + 0x70));
-    ((PaintCanvas*)(long)(canvas))->CameraSetPerspective(field<uint32_t>(this, 0x70), 60.0f, 1.0f, 10000.0f);
+    this->easeX = (AbyssEngine::EaseInOut *)EaseInOut_ctor(operator new(0x10));
+    this->easeY = (AbyssEngine::EaseInOut *)EaseInOut_ctor(operator new(0x10));
+    this->easeZ = (AbyssEngine::EaseInOut *)EaseInOut_ctor(operator new(0x10));
+    this->dragScale = field<int32_t>(*g_StarMap_init_layout, 0x90);
+    this->prevCamera = (uint32_t)((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
+    ((PaintCanvas*)(long)(canvas))->CameraCreate(&this->camera);
+    ((PaintCanvas*)(long)(canvas))->CameraSetPerspective(this->camera, 60.0f, 1.0f, 10000.0f);
     MatrixSetTranslation(&matrix, 0.0f, 0.0f, 0.0f);
     MatrixSetRotation(&matrix, 0.0f, 0.0f, 0.0f, 0.0f);
-    ((PaintCanvas*)(long)(canvas))->CameraSetLocal(field<uint32_t>(this, 0x70), *(const AbyssEngine::AEMath::Matrix *)(&matrix));
-    ((PaintCanvas*)(long)(canvas))->CameraSetCurrent((unsigned int)(field<uint32_t>(this, 0x70)));
+    ((PaintCanvas*)(long)(canvas))->CameraSetLocal(this->camera, *(const AbyssEngine::AEMath::Matrix *)(&matrix));
+    ((PaintCanvas*)(long)(canvas))->CameraSetCurrent((unsigned int)(this->camera));
 
     void *status = *g_StarMap_init_status;
     int campaign = ((Status *)(status))->getCurrentCampaignMission();
-    field<uint8_t>(this, 0xf4) = campaign > 0xf;
-    field<int32_t>(this, 4) = campaign > 0xf ? 0 : 3;
-    field<int32_t>(this, 0x60) = ((Status *)(status))->getSystem();
+    this->isGalaxyMode = campaign > 0xf;
+    this->mode = campaign > 0xf ? 0 : 3;
+    this->selectedSystem = ((Status *)(status))->getSystem();
 
     if (param3 != 0) {
         ((AEGeometry *)(&pos))->getPosition();
-        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&pos);
-    } else if (!jumpMapMode || field<uint8_t>(this, 0xf4) == 0) {
+        this->scratchVector = *(const Vector *)(&pos);
+    } else if (!jumpMapMode || this->isGalaxyMode == 0) {
         ((AEGeometry *)(&pos))->getPosition();
-        *(Vector *)((Vector *)((char *)this + 0x78)) = *(const Vector *)(&pos);
+        this->scratchVector = *(const Vector *)(&pos);
     }
 
-    field<float>(this, 8) = field<float>(this, 0x78) / 20.0f;
-    field<float>(this, 0xc) = field<float>(this, 0x7c) / 20.0f;
-    if (field<int32_t>(this, 4) == 3) {
-        field<int32_t>(this, 0x64) = -1;
+    this->cameraBaseX = this->scratchVector.x / 20.0f;
+    this->cameraBaseZ = this->scratchVector.y / 20.0f;
+    if (this->mode == 3) {
+        this->selectedStation = -1;
         initStarSystem();
     } else {
-        field<int32_t>(this, 0x19c) = field<int32_t>(this, 0x60);
-        Array<Station *> *stations = (Array<Station *> *)ptr_field(this, 0x58);
+        this->lastSelectedSystem = this->selectedSystem;
+        Array<Station *> *stations = (Array<Station *> *)this->stations;
         if (stations != 0) {
             for (Station *s : *stations) delete s;
             stations->clear();
             delete stations;
-            ptr_field(this, 0x58) = 0;
+            this->stations = (Array<Station *> *)0;
         }
-        ptr_field(this, 0x58) = new Array<Station *>();
+        this->stations = new Array<Station *>();
         void *reader = operator new(1);
         FileRead_ctor(reader);
-        ptr_field(this, 0x58) =
-            ((FileRead *)(reader))->loadStationsBinary();
+        this->stations =
+            (Array<Station *> *)((FileRead *)(reader))->loadStationsBinary();
         operator delete(FileRead_dtor(reader));
     }
     if (param3 != 0) {
-        field<int32_t>(this, 0x19c) = -1;
-        field<int32_t>(this, 0x60) = -1;
+        this->lastSelectedSystem = -1;
+        this->selectedSystem = -1;
     }
 
-    field<uint8_t>(this, 0x108) = 0;
-    field<uint16_t>(this, 0xaa) = 0;
-    field<uint8_t>(this, 0) = 0;
+    this->showKey = 0;
+    this->jumpMapModeA = 0;
+    this->jumpMapModeB = 0;
+    this->exitRequested = 0;
     void *button = operator new(0xc8);
     String *back = (String *)((GameText *)(*g_StarMap_init_text))->getText(0x190);
     new ((button)) TouchButton(back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c), *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
-    ptr_field(this, 0x4c) = button;
-    ptr_field(this, 0xa0) = 0;
-    ptr_field(this, 0x5c) = ChoiceWindow_ctor(operator new(0x5c));
-    ptr_field(this, 0x50) = SystemPathFinder_ctor(operator new(1));
+    this->backButton = (TouchButton *)button;
+    this->systemPath = (Array<int> *)0;
+    this->choiceWindow = (ChoiceWindow *)ChoiceWindow_ctor(operator new(0x5c));
+    this->pathFinder = (SystemPathFinder *)SystemPathFinder_ctor(operator new(1));
 
-    if (jumpMapMode && field<int32_t>(this, 4) == 0 && mission != 0 && ((Mission *)(mission))->isEmpty() == 0 &&
+    if (jumpMapMode && this->mode == 0 && mission != 0 && ((Mission *)(mission))->isEmpty() == 0 &&
         (((Mission *)(mission))->isVisible() != 0 || ((Mission *)(mission))->getType() == 0xe)) {
-        field<int32_t>(this, 0x104) = -1;
-        field<int32_t>(this, 0x60) = -1;
+        this->targetSystem = -1;
+        this->selectedSystem = -1;
         int target = ((Mission *)(mission))->getTargetStation();
-        Array<void *> *systems = (Array<void *> *)ptr_field(this, 0x54);
+        Array<void *> *systems = (Array<void *> *)this->systems;
         for (uint32_t i = 0; i < systems->size(); i++) {
             if (target >= 0) {
-                field<int32_t>(this, 0x104) = (int)i;
+                this->targetSystem = (int)i;
                 break;
             }
         }
-        if (field<int32_t>(this, 0x104) >= 0) {
+        if (this->targetSystem >= 0) {
             int current = ((Status *)(status))->getSystem();
-            ptr_field(this, 0xa0) =
-                ((SystemPathFinder *)(ptr_field(this, 0x50)))->getSystemPath((Array<SolarSystem *> *)ptr_field(this, 0x54), current, field<int32_t>(this, 0x104));
-            field<uint8_t>(this, 0x13a) = 1;
-            field<int32_t>(this, 0x168) = 0x3f800000;
-            field<int32_t>(this, 0x60) = field<int32_t>(this, 0x104);
+            this->systemPath =
+                ((SystemPathFinder *)(this->pathFinder))->getSystemPath((Array<SolarSystem *> *)this->systems, current, this->targetSystem);
+            this->pathAnim = 1;
+            this->momentumFactor = 1.0f;
+            this->selectedSystem = this->targetSystem;
         }
     }
 
-    field<int32_t>(this, 0x10c) = 0;
+    this->keyBoxWidth = 0;
     for (int i = 0; i < 6; i++) {
         int width = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_init_font), (void *)((GameText *)(*g_StarMap_init_text))->getText(0x112 + i));
-        if (field<int32_t>(this, 0x10c) < width) {
-            field<int32_t>(this, 0x10c) = width;
+        if (this->keyBoxWidth < width) {
+            this->keyBoxWidth = width;
         }
     }
-    field<int32_t>(this, 0x10c) += field<int32_t>(*g_StarMap_init_layout, 0x8c);
-    field<int32_t>(this, 0x110) =
+    this->keyBoxWidth += field<int32_t>(*g_StarMap_init_layout, 0x8c);
+    this->keyBoxHeight =
         field<int32_t>(*g_StarMap_init_layout, 4) * 5 + field<int32_t>(*g_StarMap_init_layout, 0x2c) * 2;
-    field<int32_t>(this, 0x11c) = 0;
+    this->autoTimer = 0;
     void *cargo = (void *)((Ship *)(((Status *)(status))->getShip()))->getCargo();
-    field<int32_t>(this, 0x1d8) = cargo != 0 ? ((Item *)(cargo))->getAmount() : 0;
+    this->cargoAmount = cargo != 0 ? ((Item *)(cargo))->getAmount() : 0;
 
-    ptr_field(this, 0x1b0) = (void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d2, (PaintCanvas*)(long)(canvas), false);
-    ((AEGeometry *)(ptr_field(this, 0x1b0)))->setRotation(0.0f, 0.0f, 0.0f);
-    ((AEGeometry *)(ptr_field(this, 0x1b0)))->setPosition((Vector){0.0f, 0.0f, 0.0f});
-    ptr_field(this, 0x1b4) = (void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d3, (PaintCanvas*)(long)(canvas), false);
-    ((AEGeometry *)(ptr_field(this, 0x1b4)))->setRotation(0.0f, 0.0f, 0.0f);
-    ((AEGeometry *)(ptr_field(this, 0x1b4)))->setPosition((Vector){0.0f, 0.0f, 0.0f});
-    ptr_field(this, 0x1b8) = (void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d4, (PaintCanvas*)(long)(canvas), false);
-    ((AEGeometry *)(ptr_field(this, 0x1b8)))->setRotation(0.0f, 0.0f, 0.0f);
-    ((AEGeometry *)(ptr_field(this, 0x1b8)))->setPosition((Vector){0.0f, 0.0f, 0.0f});
+    this->bgLayer0 = (AEGeometry *)(void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d2, (PaintCanvas*)(long)(canvas), false);
+    ((AEGeometry *)(this->bgLayer0))->setRotation(0.0f, 0.0f, 0.0f);
+    ((AEGeometry *)(this->bgLayer0))->setPosition((Vector){0.0f, 0.0f, 0.0f});
+    this->bgLayer1 = (AEGeometry *)(void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d3, (PaintCanvas*)(long)(canvas), false);
+    ((AEGeometry *)(this->bgLayer1))->setRotation(0.0f, 0.0f, 0.0f);
+    ((AEGeometry *)(this->bgLayer1))->setPosition((Vector){0.0f, 0.0f, 0.0f});
+    this->bgLayer2 = (AEGeometry *)(void*)new ((void*)operator new(0xc0)) AEGeometry((uint16_t)0x41d4, (PaintCanvas*)(long)(canvas), false);
+    ((AEGeometry *)(this->bgLayer2))->setRotation(0.0f, 0.0f, 0.0f);
+    ((AEGeometry *)(this->bgLayer2))->setPosition((Vector){0.0f, 0.0f, 0.0f});
     return 0;
 }

@@ -21,11 +21,11 @@ typedef AbyssEngine::AEMath::Vector Vector;
 
 class Route {
 public:
-    int32_t              field_0x0;     // +0x0  current waypoint index
-    uint8_t              field_0x4;     // +0x4  looping flag
-    Array<Waypoint *>   *field_0xc;     // +0xc  waypoints
-    Array<KIPlayer *>   *field_0x10;    // +0x10 docking targets
-    Array<int>          *field_0x14;    // +0x14 docking times
+    int32_t              currentIndex;   // +0x0  current waypoint index
+    uint8_t              loop;           // +0x4  looping flag
+    Array<Waypoint *>   *waypoints;      // +0xc  waypoints
+    Array<KIPlayer *>   *dockingTargets; // +0x10 docking targets
+    Array<int>          *dockingTimes;   // +0x14 docking times
 
     // ---- constructors / destructor (demangle to Route::Route / ~Route) ----
     Route(int *coords, int count);

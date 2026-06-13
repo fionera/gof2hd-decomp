@@ -30,7 +30,7 @@ void SolarSystem::dtor() {
         delete this->linkedSystemIds;
     }
     this->linkedSystemIds = 0;
-    SolarSystem::baseStringDtor((char *)this + 0xc);
+    SolarSystem::baseStringDtor(&this->name);
 }
 
 struct Status;
@@ -85,7 +85,7 @@ void SolarSystem::baseStringDtor(void *strField) {
 
 // SolarSystem::isVisible() — ldrb.w r0,[r0,#0x44]; bx lr
 uint8_t SolarSystem::isVisible() {
-    return u8(this, 0x44);
+    return this->visible;
 }
 
 // SolarSystem::stationIsInSystem(int) — scan station-index array at +0x38.
@@ -118,7 +118,7 @@ int SolarSystem::systemIsInSystemRoutes(int sys) {
 
 // SolarSystem::setVisible(bool) — strb.w r1,[r0,#0x44]; bx lr
 void SolarSystem::setVisible(bool v) {
-    u8(this, 0x44) = v;
+    this->visible = v;
 }
 
 // SolarSystem::getStationEnumIndex(int) — index of matching station in array at +0x38, or -1.
@@ -139,7 +139,7 @@ uint32_t SolarSystem::getStationEnumIndex(int idx) {
 // String is defined in gof2/SolarSystem.h.
 
 String SolarSystem::getName() {
-    return *(String *)((char *)this + 0xc);
+    return this->name;
 }
 
 // Pirate-base station-index table (PC-relative global).
@@ -222,12 +222,12 @@ void SolarSystem::setCoords(int x, int y) {
 // the target keeps them as discrete ldr/str. This is dominated by register-allocation
 // and frame-layout choices not reachable from source form.
 SolarSystem * SolarSystem::ctor(int p1, const String &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14) {
-    ((String *)((char *)this + 0xc))->ctor();
+    this->name.ctor();
     this->systemId = p1;
     String tmp;
     tmp.ctor_copy((String *)(&p2), false);
-    ((String *)((char *)this + 0xc))->assign(&tmp);
-    u8(this, 0x44) = p4;
+    this->name.assign(&tmp);
+    this->visible = p4;
     this->securityLevel = p3;
     this->faction = p5;
     this->mapX = p6;

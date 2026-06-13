@@ -25,6 +25,7 @@ public:
     int field_0x0;                      // +0x0
     int field_0x4;                      // +0x4
     int field_0x8;                      // +0x8
+    String name;                        // +0xc  (embedded AbyssEngine::String)
     int systemId;                     // +0x18
     int securityLevel;                     // +0x1c
     uint32_t faction;                // +0x20
@@ -36,6 +37,7 @@ public:
     Array<int>* stationIds;             // +0x38
     Array<int>* field_0x3c;             // +0x3c
     Array<int>* linkedSystemIds;        // +0x40
+    uint8_t visible;                    // +0x44  (isVisible/setVisible flag)
 
     // ---- methods (converted from free functions) ----
     SolarSystem * ctor(int p1, const String &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14);

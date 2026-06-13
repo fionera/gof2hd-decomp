@@ -43,6 +43,7 @@ public:
     // scaled by the global unit factor. Returns 0 when both refer to the same system.
     float distance(SolarSystem *a, SolarSystem *b);
 
-    char field_storage[0x8];
+    uint8_t *visited;   // +0x0  heap array of 0x87 per-station visited flags
+    void *systems;      // +0x4  Array<SolarSystem*>*
 };
 #endif

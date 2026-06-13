@@ -15,8 +15,8 @@ SpacePoint::SpacePoint(int param_1, const Vector &param_2, const Vector &param_3
 {
     memset(__builtin_assume_aligned(this, 4), 0, 0x18);
     this->type = param_1;
-    *(Vector *)this = param_2;
-    *(Vector *)((char *)this + 0xc) = param_3;
+    this->position = param_2;
+    this->direction = param_3;
     this->free = 1;
     this->param = param_4;
 }

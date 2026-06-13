@@ -823,7 +823,6 @@ void Globals_addSoundResourceToList_cg(int snd);
 // AI ships' weapons; dispatches on `kind` to the right Gun subclass and registers the sound.
 Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
     ObjectGun *obj = 0;
     Gun *gun = 0;
 
@@ -973,11 +972,11 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     }
 
     Gun_setLevel_cg(gun, thisptr);
-    void *guns = *(void **)(self + 0xe4);
+    void *guns = *(void **)&this->playerGuns;
     if (guns == 0) {
         guns = Level_opnew_cg(0xc);
         ArrayAGun_ctor_cg(guns);
-        *(void **)(self + 0xe4) = guns;
+        *(void **)&this->playerGuns = guns;
     }
     ArrayAdd_AGun_cg(obj, guns);
     return gun;
@@ -1025,7 +1024,7 @@ void Level::createSpace()
     char *self = (char *)this;
 
     // skybox mesh/texture only need (re)building when not yet created (mesh handle at +4 == -1).
-    if (*(unsigned *)(self + 4) == 0xffffffff) {
+    if (*(unsigned *)&this->skyboxMesh == 0xffffffff) {
         Status **status = g_csp_status;
         int alien = Status_inAlienOrbit_csp();
         unsigned canvas = *g_csp_canvas;
@@ -1033,7 +1032,7 @@ void Level::createSpace()
         if (alien == 0) {
             Status_getSystem_csp();
             int sysVariant = aeabi_idivmod_csp(SolarSystem_getIndex_csp(), 3);
-            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(sysVariant + 0x45ba), (unsigned int *)((unsigned *)(self + 8)), (bool)(0));
+            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(sysVariant + 0x45ba), (unsigned int *)((unsigned *)((char *)&this->field_08)), (bool)(0));
             Status_getSystem_csp();
             sysVariant = aeabi_idivmod_csp(SolarSystem_getIndex_csp(), 3);
             ((PaintCanvas*)(long)(canvas))->TextureCreate((unsigned short)((sysVariant + 0x2766) & 0xffff), (void *)0, (void *)0, &g_level_texOutScratch, (bool)(0));
@@ -1044,14 +1043,14 @@ void Level::createSpace()
             if (0xf < SolarSystem_getTextureIndex_csp()) {
                 Engine *eng = (Engine *)ApplicationManager_GetEngine_csp();
                 if (Engine_IsPostEffectActivated_csp(eng) != 0) {
-                    int mp = (int)(long)((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshGetPointer((unsigned int)(*(unsigned *)(self + 4)));
+                    int mp = (int)(long)((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshGetPointer((unsigned int)(*(unsigned *)&this->skyboxMesh));
                     *(int *)(mp + 0x1c) = 0;
                 }
             }
         } else {
-            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(0x45bc), (unsigned int *)((unsigned *)(self + 8)), (bool)(0));
+            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(0x45bc), (unsigned int *)((unsigned *)((char *)&this->field_08)), (bool)(0));
             ((PaintCanvas*)(long)(canvas))->TextureCreate((unsigned short)(0x2768), (void *)0, (void *)0, &g_level_texOutScratch, (bool)(0));
-            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(0x4592), (unsigned int *)((unsigned *)(self + 4)), (bool)(0));
+            ((PaintCanvas*)(long)((PaintCanvas *)canvas))->MeshCreate((unsigned short)(0x4592), (unsigned int *)((unsigned *)((char *)&this->skyboxMesh)), (bool)(0));
             ((PaintCanvas*)(long)(canvas))->TextureCreate((unsigned short)(0x275b), (void *)0, (void *)0, &g_level_texOutScratch, (bool)(0));
         }
 
@@ -1061,17 +1060,17 @@ void Level::createSpace()
             (void)status;
             this->csp_buildStarSystemScene();
         } else {
-            *(int *)(self + 0x1a4) = 0;
-            *(int *)(self + 0x1a8) = 0;
-            *(int *)(self + 0x1ac) = 0;
+            this->field_1a4 = 0;
+            this->field_1a8 = 0;
+            this->field_1ac = 0;
         }
     }
 
-    int mode = *(int *)(self + 0xc0);
+    int mode = this->missionPtr;
     if (mode == 4 || mode == 0x17) {
         StarSystem *ss = (StarSystem *)Level_opnew_csp(0x60);
         StarSystem_ctor_csp(ss, mode);
-        *(StarSystem **)(self + 0xec) = ss;
+        *(StarSystem **)&this->starSystem = ss;
         this->csp_buildStarSystemScene();
         return;
     }
@@ -1081,7 +1080,7 @@ void Level::createSpace()
     (void)status;
     void *players = Level_opnew_csp(0xc);
     ArrayKIPlayer_ctor_csp(players);
-    *(void **)(self + 0x100) = players;
+    *(void **)&this->landmarks = players;
     ArraySetLength_KIPlayer_csp(4, players);
 
     this->csp_buildStationAndGates();
@@ -1116,10 +1115,9 @@ void Level_crm_dispatch(int ego, void *queue);
 // chatter lines for the current orbit/mission and queues them on the player's comms.
 void Level::createRadioMessage(int type, int sub) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
     unsigned r2 = (unsigned)sub;
 
-    if (*(int *)(self + 0xf0) == 0 || *(int *)(*(int *)(self + 0xf0) + 0x18) == 0)
+    if (this->player == 0 || *(int *)(this->player + 0x18) == 0)
         return;
 
     int **statusHolder = g_crm_status;
@@ -1128,13 +1126,13 @@ void Level::createRadioMessage(int type, int sub) {
         return;
 
     // fresh message queue.
-    if (*(void **)(self + 0x114) != 0) {
-        operator_delete_crm(ArrayRadio_dtor_crm(*(void **)(self + 0x114)));
-        *(int *)(self + 0x114) = 0;
+    if (*(void **)&this->messages != 0) {
+        operator_delete_crm(ArrayRadio_dtor_crm(*(void **)&this->messages));
+        this->messages = 0;
     }
     void *queue = Level_opnew_crm(0xc);
     ArrayRadio_ctor_crm(queue);
-    *(void **)(self + 0x114) = queue;
+    *(void **)&this->messages = queue;
 
     // resolve the speaker portrait from the sub-parameter.
     int speaker;
@@ -1167,11 +1165,11 @@ void Level::createRadioMessage(int type, int sub) {
         break;
     }
     case 3:
-        *(char *)(self + 0x1b0) = 1;
+        *(char *)&this->field_1b0 = 1;
         id = AERandom_nextInt_crm(*g_crm_rngStorm) + 0x1b3;
         break;
     case 4:
-        *(char *)(self + 0x68) = 1;
+        *(char *)&this->field_68 = 1;
         id = AERandom_nextInt_crm(*g_crm_rngStorm) + 0x1b6;
         break;
     case 5:  id = 0x1bb; extraDelay = 0; break;
@@ -1214,7 +1212,7 @@ void Level::createRadioMessage(int type, int sub) {
             RadioMessage *m = (RadioMessage *)Level_opnew_crm(0x28);
             int kind = (k == 0) ? 5 : 6;
             RadioMessage_ctor_crm(m, tbl[k * 2 + 1], arg, kind, delay);
-            ArrayAdd_Radio_crm(m, *(void **)(self + 0x114));
+            ArrayAdd_Radio_crm(m, *(void **)&this->messages);
         }
         builtInline = true;
         break;
@@ -1223,10 +1221,10 @@ void Level::createRadioMessage(int type, int sub) {
         RadioMessage *m = (RadioMessage *)Level_opnew_crm(0x28);
         int rng = *g_crm_rngStorm;
         RadioMessage_ctor_crm(m, AERandom_nextInt_crm(rng) + 0xaf4, 0, 5, 0x5dc);
-        ArrayAdd_Radio_crm(m, *(void **)(self + 0x114));
+        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
         m = (RadioMessage *)Level_opnew_crm(0x28);
         RadioMessage_ctor_crm(m, AERandom_nextInt_crm(rng) + 0xafa, 0, 6, 0);
-        ArrayAdd_Radio_crm(m, *(void **)(self + 0x114));
+        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
         builtInline = true;
         break;
     }
@@ -1239,10 +1237,10 @@ void Level::createRadioMessage(int type, int sub) {
     case 0x1b: {
         RadioMessage *m = (RadioMessage *)Level_opnew_crm(0x28);
         RadioMessage_ctor_crm(m, r2 * 2 + 0xc60, 6, 5, 0x5dc);
-        ArrayAdd_Radio_crm(m, *(void **)(self + 0x114));
+        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
         m = (RadioMessage *)Level_opnew_crm(0x28);
         RadioMessage_ctor_crm(m, r2 * 2 + 0xc61, 0, 6, 0);
-        ArrayAdd_Radio_crm(m, *(void **)(self + 0x114));
+        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
         builtInline = true;
         break;
     }
@@ -1262,10 +1260,10 @@ void Level::createRadioMessage(int type, int sub) {
     }
 
     if (aborted) {
-        if (*(void **)(self + 0x114) != 0)
-            operator_delete_crm(ArrayRadio_dtor_crm(*(void **)(self + 0x114)));
-        int ego = *(int *)(self + 0xf0);
-        *(int *)(self + 0x114) = 0;
+        if (*(void **)&this->messages != 0)
+            operator_delete_crm(ArrayRadio_dtor_crm(*(void **)&this->messages));
+        int ego = this->player;
+        this->messages = 0;
         Level_crm_dispatch(*(int *)(ego + 0x18), 0);
         return;
     }
@@ -1273,11 +1271,11 @@ void Level::createRadioMessage(int type, int sub) {
     if (!builtInline) {
         RadioMessage *m = (RadioMessage *)Level_opnew_crm(0x28);
         RadioMessage_ctor_crm(m, id, speaker, 5, extraDelay);
-        ArrayAdd_Radio_crm(m, *(void **)(self + 0x114));
+        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
     }
 
-    int ego = *(int *)(self + 0xf0);
-    Level_crm_dispatch(*(int *)(ego + 0x18), *(void **)(self + 0x114));
+    int ego = this->player;
+    Level_crm_dispatch(*(int *)(ego + 0x18), *(void **)&this->messages);
 }
 
 struct Route;
@@ -1330,27 +1328,27 @@ int Level::init() {
     char *self = (char *)thisptr;
     int **statusA = 0;
 
-    int stage = *(int *)(self + 0x134);
+    int stage = this->field_134;
     if (stage == 0) {
         // --- first tick: tear down stale routes/objectives and build particle systems ---
-        *(char *)(self + 0x68) = 0;
-        *(char *)(self + 0x1b0) = 0;
-        *(short *)(self + 0x189) = 0;
-        if (*(Route **)(self + 0x108) != 0)
-            operator_delete_init(Route_dtor_init(*(Route **)(self + 0x108)));
-        *(int *)(self + 0x108) = 0;
-        if (*(Route **)(self + 0x110) != 0)
-            operator_delete_init(Route_dtor_init(*(Route **)(self + 0x110)));
-        *(int *)(self + 0x110) = 0;
-        if (*(Route **)(self + 0x10c) != 0)
-            operator_delete_init(Route_dtor_init(*(Route **)(self + 0x10c)));
-        *(int *)(self + 0x10c) = 0;
-        if (*(Objective **)(self + 0x2c) != 0)
-            operator_delete_init(Objective_dtor_init(*(Objective **)(self + 0x2c)));
-        *(int *)(self + 0x2c) = 0;
-        if (*(Objective **)(self + 0x28) != 0)
-            operator_delete_init(Objective_dtor_init(*(Objective **)(self + 0x28)));
-        *(int *)(self + 0x28) = 0;
+        *(char *)&this->field_68 = 0;
+        *(char *)&this->field_1b0 = 0;
+        *(short *)((char *)this + 0x189) = 0;
+        if (*(Route **)&this->playerRoute != 0)
+            operator_delete_init(Route_dtor_init(*(Route **)&this->playerRoute));
+        this->playerRoute = 0;
+        if (*(Route **)&this->enemyRoute != 0)
+            operator_delete_init(Route_dtor_init(*(Route **)&this->enemyRoute));
+        this->enemyRoute = 0;
+        if (*(Route **)&this->friendRoute != 0)
+            operator_delete_init(Route_dtor_init(*(Route **)&this->friendRoute));
+        this->friendRoute = 0;
+        if (*(Objective **)&this->objectivesB != 0)
+            operator_delete_init(Objective_dtor_init(*(Objective **)&this->objectivesB));
+        this->objectivesB = 0;
+        if (*(Objective **)&this->objectivesA != 0)
+            operator_delete_init(Objective_dtor_init(*(Objective **)&this->objectivesA));
+        this->objectivesA = 0;
 
         LODManager *lod = (LODManager *)Level_opnew_init(0x14);
         LODManager_ctor_init(lod);
@@ -1369,53 +1367,53 @@ int Level::init() {
         ParticleSystemManager *psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x4e85, 0, 0xffff, 0);
-        *(ParticleSystemManager **)(self + 0x78) = psm;
+        *(ParticleSystemManager **)&this->particleEmitBoolPtr = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x6a72, 0, 0xffff, 0);
-        *(ParticleSystemManager **)(self + 0x84) = psm;
+        *(ParticleSystemManager **)&this->particleRenderBoolPtr = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x4e83, 1, 0xffff, 0);
-        *(ParticleSystemManager **)(self + 0x74) = psm;
+        *(ParticleSystemManager **)&this->field_74 = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x4e7a, 1, 0x4e7a, 1);
-        *(ParticleSystemManager **)(self + 0x80) = psm;
+        *(ParticleSystemManager **)&this->field_80 = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x5e20, 1, 0x5e20, 1);
-        *(ParticleSystemManager **)(self + 0x98) = psm;
+        *(ParticleSystemManager **)&this->field_98 = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, dustVariant ? 0x4ea9 : 0x4e7f, 1, 0, 0);
-        *(ParticleSystemManager **)(self + 0x7c) = psm;
+        *(ParticleSystemManager **)&this->particleSystemMgr = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x4e7c, 0, 0x4e7c, 0);
-        *(ParticleSystemManager **)(self + 0x88) = psm;
+        *(ParticleSystemManager **)&this->skybox2Mesh = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x6a7c, 1, 0x6a7c, 1);
-        *(ParticleSystemManager **)(self + 0x8c) = psm;
+        *(ParticleSystemManager **)&this->field_8c = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x6ab9, 1, 0xffff, 0);
-        *(ParticleSystemManager **)(self + 0x9c) = psm;
+        *(ParticleSystemManager **)&this->field_9c = psm;
         psm = (ParticleSystemManager *)Level_opnew_init(100);
         ParticleSystemManager_ctor_init(psm, canvas, 1, 0x6aaf, 1, 0xffff, 0);
-        *(ParticleSystemManager **)(self + 0x94) = psm;
+        *(ParticleSystemManager **)&this->field_94 = psm;
 
         thisptr->createSpace_init();
 
-        if (*(int *)(self + 0xc0) == 3) {
+        if (this->missionPtr == 3) {
             thisptr->createPlayer_init();
             int stk = 0;
-            if (**g_init_flagStack != 0 && *(int *)(*(int *)(self + 0xf0) + 8) != 0)
+            if (**g_init_flagStack != 0 && *(int *)(this->player + 8) != 0)
                 stk = Status_getStationStack_init((int)(intptr_t)*statusA);
             thisptr->init_placePlayer((int)(intptr_t)*statusA, stk);
         }
-        stage = *(int *)(self + 0x134);
+        stage = this->field_134;
     }
 
     if (stage != 1) {
-        *(int *)(self + 0x134) = stage + 1;
+        this->field_134 = stage + 1;
         return 0;
     }
 
-    if (*(int *)(self + 0xc0) != 4 && *(int *)(self + 0xc0) != 0x17) {
+    if (this->missionPtr != 4 && this->missionPtr != 0x17) {
         thisptr->createAsteroids_init();
         thisptr->createGasClouds_init();
     }
@@ -1424,12 +1422,12 @@ int Level::init() {
     if (m == 0)
         Status_setMission_init((Mission *)**g_init_missionDef);
 
-    int mode = *(int *)(self + 0xc0);
+    int mode = this->missionPtr;
     if (mode == 3) {
         bool campaign = Mission_isEmpty_init() == 0 && Mission_isCampaignMission_init(m) != 0;
         bool madeScene = false;
         if (campaign) {
-            if (*(int *)(self + 0xc0) != 3) { madeScene = true; }
+            if (this->missionPtr != 3) { madeScene = true; }
             else {
                 int won = Status_gameWon_init();
                 int *settings = *g_init_settings;
@@ -1439,7 +1437,7 @@ int Level::init() {
                     thisptr->createMission_init();
                     if (**g_init_bmFlag != 0 && Status_inBlackMarketSystem_init() != 0)
                         thisptr->init_placePlayer((int)(intptr_t)*statusA, 0);
-                } else if (*(int *)(self + 0xc0) != 3) {
+                } else if (this->missionPtr != 3) {
                     madeScene = true;
                 } else {
                     Status_getMission_init();
@@ -1457,15 +1455,15 @@ int Level::init() {
         }
         if (madeScene) {
             thisptr->createScene_init();
-            *(int *)(self + 0xc0) = mode;
+            this->missionPtr = mode;
         }
     } else {
         thisptr->createScene_init();
-        *(int *)(self + 0xc0) = mode;
+        this->missionPtr = mode;
     }
 
     thisptr->createStaticObjects_init();
-    mode = *(int *)(self + 0xc0);
+    mode = this->missionPtr;
     if (mode != 0x17 && mode != 4 &&
         (mode != 2 || Status_getCurrentCampaignMission_init() != 0x2b)) {
         thisptr->createSentryGuns_init();
@@ -1473,14 +1471,14 @@ int Level::init() {
         thisptr->createWingmen_init();
     }
     thisptr->assignGuns_init();
-    if (*(int *)(self + 0xc0) != 3)
-        *(int *)(self + 0xc0) = 3;
+    if (this->missionPtr != 3)
+        this->missionPtr = 3;
     thisptr->connectPlayers_init();
-    if (*(Route **)(self + 0xf0) != 0)
-        ((PlayerEgo *)(*(int *)(self + 0xf0)))->setRoute_init();
+    if (*(Route **)&this->player != 0)
+        ((PlayerEgo *)(this->player))->setRoute_init();
 
     // recompute enemiesLeft.
-    unsigned *list = *(unsigned **)(self + 0xf8);
+    unsigned *list = *(unsigned **)&this->enemies;
     int initial = 0;
     int enemies = 0;
     if (list != 0) {
@@ -1488,7 +1486,7 @@ int Level::init() {
             int e = *(int *)(list[1] + i * 4);
             if (*(char *)(e + 0x41) == 0 && *(char *)(e + 0x71) == 0 && *(char *)(e + 0x3f) == 0) {
                 int wm = KIPlayer_isWingMan_init();
-                list = *(unsigned **)(self + 0xf8);
+                list = *(unsigned **)&this->enemies;
                 if (wm == 0) {
                     e = *(int *)(list[1] + i * 4);
                     if (*(char *)(e + 0x44) == 0 && *(char *)(e + 0x3c) == 0)
@@ -1497,19 +1495,19 @@ int Level::init() {
             }
         }
         if (list != 0)
-            enemies = enemies - *(int *)(self + 0x120);
+            enemies = enemies - this->field_120;
     }
-    *(int *)(self + 0x128) = 0;
-    *(int *)(self + 0x118) = enemies;
-    if (*(unsigned **)(self + 0xfc) != 0)
-        initial = **(unsigned **)(self + 0xfc);
-    *(int *)(self + 0x184) = 0;
-    *(char *)(self + 0x188) = 0;
-    *(int *)(self + 0x1c) = 0;
-    *(int *)(self + 0x128) = initial;
-    *(int *)(self + 0x12c) = 0;
-    *(char *)(self + 0x13c) = 0;
-    *(char *)(self + 0x70) = 1;
+    this->asteroidsLeft = 0;
+    this->enemiesLeft = enemies;
+    if (*(unsigned **)&this->asteroids != 0)
+        initial = **(unsigned **)&this->asteroids;
+    this->field_184 = 0;
+    *(char *)&this->field_188 = 0;
+    this->field_1c = 0;
+    this->asteroidsLeft = initial;
+    this->kills = 0;
+    *(char *)&this->friendCargoStolen = 0;
+    *(char *)&this->field_70 = 1;
     return 1;
 }
 
@@ -1526,8 +1524,7 @@ int  Player_getMaxHitpoints_cft();
 // Level::createFighterTurrets() — attaches a defensive turret to capital-class enemies.
 void Level::createFighterTurrets()
 {
-    char *self = (char *)this;
-    unsigned *list = *(unsigned **)(self + 0xf8);
+    unsigned *list = *(unsigned **)&this->enemies;
     if (list == 0)
         return;
 
@@ -1546,10 +1543,10 @@ void Level::createFighterTurrets()
                 *(PlayerTurret **)(ki + 0x10) = t;
                 t->standing = (kind == 0x2d) ? 8 : 0;
                 t->field_0x74 = 1;
-                ArrayAdd_KIPlayer_cft((KIPlayer *)t, *(void **)(self + 0xf8));
+                ArrayAdd_KIPlayer_cft((KIPlayer *)t, *(void **)&this->enemies);
             }
         }
-        list = *(unsigned **)(self + 0xf8);
+        list = *(unsigned **)&this->enemies;
     }
 }
 
@@ -1577,8 +1574,7 @@ int  Station_isAttackedByAliens_uaa(Station *s);
 // Level::updateAlienAttackers(int dt) — periodically (re)spawns the alien attacker wave.
 void Level::updateAlienAttackers(int dt) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
-    *(int *)(self + 0x170) = *(int *)(self + 0x170) + dt;
+    this->alienAttackTimer = this->alienAttackTimer + dt;
 
     Mission *m = (Mission *)Status_getMission_uaa();
     bool blocked = (m != 0) && Mission_isCampaignMission_uaa(m) != 0 &&
@@ -1588,13 +1584,13 @@ void Level::updateAlienAttackers(int dt) {
     if (blocked)
         return;
 
-    int elapsed = *(int *)(self + 0x170);
+    int elapsed = this->alienAttackTimer;
     int period = (Status_getCurrentCampaignMission_uaa() == 0x29) ? 10000 : 45000;
     if (elapsed <= period)
         return;
 
-    unsigned *enemies = *(unsigned **)(self + 0xf8);
-    *(int *)(self + 0x170) = 0;
+    unsigned *enemies = *(unsigned **)&this->enemies;
+    this->alienAttackTimer = 0;
     if (enemies == 0)
         return;
 
@@ -1611,7 +1607,7 @@ void Level::updateAlienAttackers(int dt) {
             }
             thisptr->uaa_placeAlien(ki, inOrbit);
         }
-        enemies = *(unsigned **)(self + 0xf8);
+        enemies = *(unsigned **)&this->enemies;
     }
 }
 
@@ -1665,15 +1661,15 @@ void Level::createMission()
 
         void *arr = Level_opnew_cm(0xc);
         ArrayKIPlayer_ctor_cm(arr);
-        *(void **)(self + 0xf8) = arr;
+        *(void **)&this->enemies = arr;
         ArraySetLength_KIPlayer_cm(count, arr);
 
         Globals *globals = *g_cm_globals;
         for (unsigned i = 0; i < count; i = i + 1) {
             int fighter = Globals_getRandomEnemyFighter_cm(globals, 9);
             int ship = (int)(intptr_t)((Level *)self)->createShip_cm(9, 0, fighter, 0, 1, 0);
-            *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) = ship;
-            int *kp = *(int **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
+            *(int *)(*(int *)(this->enemies + 4) + i * 4) = ship;
+            int *kp = *(int **)(*(int *)(this->enemies + 4) + i * 4);
             float x = (float)(cm_randPos(rng, 0) - 60000);
             float y = (float)(cm_randPos(rng, 1) - 40000);
             float z = (float)(cm_randPos(rng, 2) - 60000);
@@ -1757,7 +1753,7 @@ void Level::createAsteroids()
     // asteroid container.
     void *arr = Level_opnew_ca(0xc);
     ArrayKIPlayer_ctor_ca(arr);
-    *(void **)(self + 0xfc) = arr;
+    *(void **)&this->asteroids = arr;
 
     Galaxy *gal = (Galaxy *)**g_ca_galaxy;
     Station *st = (Station *)Status_getStation_ca();
@@ -1771,7 +1767,7 @@ void Level::createAsteroids()
     AERandom_setSeed_ca((long long)seed);
 
     int countRoll = AERandom_nextIntBound_ca(*rngObj, 0x28);
-    ArraySetLength_KIPlayer_ca(countRoll + 0x28, *(void **)(self + 0xfc));
+    ArraySetLength_KIPlayer_ca(countRoll + 0x28, *(void **)&this->asteroids);
 
     int rx = AERandom_nextIntBound_ca(*rngObj, 0x4e20); // DAT_000bf990 == 0x4e20
     int ry = AERandom_nextIntBound_ca(*rngObj, 0x4e20);
@@ -1827,7 +1823,7 @@ void Level::createAsteroids()
             ox = rx - 50000;
             oz = rz + 20000;
             oy = ry - 50000;
-            if (Status_getCurrentCampaignMission_ca() == 0 && *(int *)(self + 0xc0) == 3) {
+            if (Status_getCurrentCampaignMission_ca() == 0 && this->missionPtr == 3) {
                 oz = 0;
                 ox = 0;
                 oy = 0;
@@ -1842,15 +1838,15 @@ void Level::createAsteroids()
     center.x = (float)oy;
     center.y = (float)ox;
     center.z = (float)oz;
-    Vector_assign_ca((Vector *)(self + 0xc8), &center);
+    Vector_assign_ca((Vector *)((char *)&this->field_c8), &center);
 
     Waypoint *wp = (Waypoint *)Level_opnew_ca(0x138);
     Waypoint_ctor_ca(wp, oz, oy, ox, 0);
-    *(Waypoint **)(self + 0xd8) = wp;
+    *(Waypoint **)&this->asteroidWaypoint = wp;
 
     BoundingSphere *bs = (BoundingSphere *)Level_opnew_ca(0x48);
     BoundingSphere_ctor_ca(bs);
-    *(BoundingSphere **)(self + 0xc4) = bs;
+    *(BoundingSphere **)&this->collisionVolume = bs;
 
     int density = AERandom_nextInt_ca(*rngObj) + 2; // # of "core" (dense) asteroids
     int alien2 = Status_inAlienOrbit_ca();
@@ -1859,7 +1855,7 @@ void Level::createAsteroids()
     int kind = 0x9a;
     int probCursor = 0;
 
-    for (unsigned i = 0; i < **(unsigned **)(self + 0xfc); i = i + 1) {
+    for (unsigned i = 0; i < **(unsigned **)&this->asteroids; i = i + 1) {
         // choose asteroid kind from the probability table (skip in alien orbit -> fixed 0xa4).
         if (alien2 == 0) {
             bool ok = false;
@@ -1899,11 +1895,11 @@ void Level::createAsteroids()
         // reject-sample a position far enough from already-placed asteroids.
         Vector pos;
         for (;;) {
-            float cx = *(float *)(self + 0xc8);
+            float cx = *(float *)&this->field_c8;
             pos.x = (cx - half) + (float)AERandom_nextIntBound_ca(*rngObj, spread);
-            float cy = *(float *)(self + 0xcc);
+            float cy = *(float *)&this->field_cc;
             pos.y = (cy - half) + (float)AERandom_nextIntBound_ca(*rngObj, spread);
-            float cz = *(float *)(self + 0xd0);
+            float cz = *(float *)&this->field_d0;
             pos.z = (cz - half) + (float)AERandom_nextIntBound_ca(*rngObj, spread);
             if (i == 0 || (int)i >= density)
                 break;
@@ -1939,15 +1935,15 @@ void Level::createAsteroids()
 
         PlayerAsteroid *a = (PlayerAsteroid *)Level_opnew_ca(0x170);
         PlayerAsteroid_ctor_ca(a, kind, geo, colVariant, kind, &pos, scale, (int)scale);
-        *(PlayerAsteroid **)(*(int *)(*(int *)(self + 0xfc) + 4) + i * 4) = a;
+        *(PlayerAsteroid **)(*(int *)(this->asteroids + 4) + i * 4) = a;
 
         // virtual init(level) on the freshly built asteroid (vtable slot +0x14).
-        int *obj = *(int **)(*(int *)(*(int *)(self + 0xfc) + 4) + i * 4);
+        int *obj = *(int **)(*(int *)(this->asteroids + 4) + i * 4);
         (**(void (***)(int *, Level *))(*obj + 0x14))(obj, this);
 
         PlayerAsteroid_setAsteroidCenter_ca(
-            *(PlayerAsteroid **)(*(int *)(*(int *)(self + 0xfc) + 4) + i * 4),
-            *(float *)(self + 0xc8), *(float *)(self + 0xcc), *(float *)(self + 0xd0));
+            *(PlayerAsteroid **)(*(int *)(this->asteroids + 4) + i * 4),
+            *(float *)&this->field_c8, *(float *)&this->field_cc, *(float *)&this->field_d0);
     }
 
     if (prob != 0)
@@ -1975,34 +1971,33 @@ void PlayerFighter_setExhaustVisible_ccm(int pf);
 // current story (campaign) mission.
 void Level::createCampaignMission()
 {
-    char *self = (char *)this;
     int idx = Status_getCurrentCampaignMission_ccm();
 
     if (idx == 0) {
         // mission 0 — the tutorial ambush: three sleeping enemy fighters at a fixed point.
         void *arr = Level_opnew_ccm(0xc);
         ArrayKIPlayer_ctor_ccm(arr);
-        *(void **)(self + 0xf8) = arr;
+        *(void **)&this->enemies = arr;
         ArraySetLength_KIPlayer_ccm(3, arr);
         float c = g_ccm_pos0;
-        for (unsigned i = 0; i < **(unsigned **)(self + 0xf8); i = i + 1) {
+        for (unsigned i = 0; i < **(unsigned **)&this->enemies; i = i + 1) {
             int type = (i == 1) ? 0x17 : 2;
             int ship = (int)(intptr_t)this->createShip_ccm(8, 0, type, 0, 1, 0);
-            *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) = ship;
-            KIPlayer_setToSleep_ccm(*(KIPlayer **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4));
-            (*(Player **)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 4))->setAlwaysEnemy(true);
-            int *kp = *(int **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
+            *(int *)(*(int *)(this->enemies + 4) + i * 4) = ship;
+            KIPlayer_setToSleep_ccm(*(KIPlayer **)(*(int *)(this->enemies + 4) + i * 4));
+            (*(Player **)(*(int *)(*(int *)(this->enemies + 4) + i * 4) + 4))->setAlwaysEnemy(true);
+            int *kp = *(int **)(*(int *)(this->enemies + 4) + i * 4);
             (*(void (**)(int *, float, float, float))(*kp + 0x48))(kp, c, c, c);
-            int base = *(int *)(*(int *)(self + 0xf8) + 4);
+            int base = *(int *)(this->enemies + 4);
             int e = *(int *)(base + i * 4);
             *(int *)(e + 0x50) = 0;
             *(char *)(e + 0x4c) = 0;
             Player_setHitpoints_ccm(*(int *)(*(int *)(base + i * 4) + 4));
             if (i < 3)
                 PlayerFighter_setExhaustVisible_ccm(
-                    *(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
+                    *(int *)(this->enemies + 4) + i * 4);
         }
-        Player_setHitpoints_ccm(**(int **)(self + 0xf0));
+        Player_setHitpoints_ccm(**(int **)&this->player);
         return;
     }
 
@@ -2032,30 +2027,29 @@ void Level_uo_spawnFar(Level *self, int *kiPlayer);
 // Level::updateOrbit(int dt) — non-mission ambient traffic / reinforcement spawner.
 void Level::updateOrbit(int dt) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
 
-    int t178 = *(int *)(self + 0x178) + dt;
-    *(int *)(self + 0x174) = *(int *)(self + 0x174) + dt;
-    *(int *)(self + 0x178) = t178;
+    int t178 = this->field_178 + dt;
+    this->orbitWaveTimer = this->orbitWaveTimer + dt;
+    this->field_178 = t178;
 
     // delayed "friends turned hostile" alarm.
-    if (*(char *)(self + 0x18a) != 0) {
-        if (Status_getSystem_uo() != 0 && *(int *)(*(int *)(self + 0xf0) + 0x18) != 0) {
+    if (*(char *)&this->field_18a != 0) {
+        if (Status_getSystem_uo() != 0 && *(int *)(this->player + 0x18) != 0) {
             Status_getSystem_uo();
             int race = SolarSystem_getRace_uo();
             thisptr->alarmAllFriends_uo(race, 0);
             Status_getSystem_uo();
             SolarSystem_getRace_uo();
             thisptr->createRadioMessage_uo(2);
-            *(char *)(self + 0x18a) = 0;
+            *(char *)&this->field_18a = 0;
         }
-        t178 = *(int *)(self + 0x178);
+        t178 = this->field_178;
     }
 
     // jumper reinforcement every 10s.
     if (10000 < t178) {
-        unsigned *en = *(unsigned **)(self + 0xf8);
-        *(int *)(self + 0x178) = 0;
+        unsigned *en = *(unsigned **)&this->enemies;
+        this->field_178 = 0;
         if (en != 0) {
             for (unsigned i = 0; i < *en; i = i + 1) {
                 KIPlayer *ki = *(KIPlayer **)(en[1] + i * 4);
@@ -2065,25 +2059,25 @@ void Level::updateOrbit(int dt) {
                     (*(void (**)(KIPlayer *, int, int, int))(*(int *)ki + 0x48))(ki, 0, 0, 0);
                     break;
                 }
-                en = *(unsigned **)(self + 0xf8);
+                en = *(unsigned **)&this->enemies;
             }
         }
     }
 
     // major reinforcement sweep every 45s.
-    if (45000 < *(int *)(self + 0x174)) {
+    if (45000 < this->orbitWaveTimer) {
         int hostileAlive = 0;
-        unsigned *en = *(unsigned **)(self + 0xf8);
-        *(int *)(self + 0x174) = 0;
-        if (0 < *(int *)(self + 0x16c)) {
+        unsigned *en = *(unsigned **)&this->enemies;
+        this->orbitWaveTimer = 0;
+        if (0 < this->hostileCount) {
             if (en == 0)
                 return;
             for (unsigned i = 0; i < *en; i = i + 1) {
-                if ((*en - (unsigned)*(int *)(self + 0x16c)) <= i &&
+                if ((*en - (unsigned)this->hostileCount) <= i &&
                     KIPlayer_isWingMan_uo() == 0 && KIPlayer_isDead_uo() != 0) {
                     hostileAlive = hostileAlive + (Player_isActive_uo() ^ 1);
                 }
-                en = *(unsigned **)(self + 0xf8);
+                en = *(unsigned **)&this->enemies;
             }
         }
         if (en != 0) {
@@ -2091,16 +2085,16 @@ void Level::updateOrbit(int dt) {
             for (unsigned i = 0; i < *en; i = i + 1) {
                 int *ki = *(int **)(en[1] + i * 4);
                 // re-activate friendly slots that died.
-                if (0 < *(int *)(self + 0x160) && (int)i < *(int *)(self + 0x160) &&
+                if (0 < this->friendCount && (int)i < this->friendCount &&
                     KIPlayer_isDead_uo() != 0 && Player_isActive_uo() == 0 &&
                     *(unsigned char *)((char *)ki + 0x42) == 0) {
                     (*(void (**)(int *))(*ki + 0x18))(ki);
                     (*(void (**)(int *, int, int, int))(*ki + 0x48))(ki, 0, 0, 0);
                 }
                 // spawn enemy reinforcements subject to security-level caps.
-                if (1 < hostileAlive && *(int *)(self + 0x184) < 2 &&
-                    0 < *(int *)(self + 0x16c) &&
-                    (unsigned)(**(int **)(self + 0xf8) - *(int *)(self + 0x16c)) <= i) {
+                if (1 < hostileAlive && this->field_184 < 2 &&
+                    0 < this->hostileCount &&
+                    (unsigned)(**(int **)&this->enemies - this->hostileCount) <= i) {
                     int race = ki[10];
                     bool secZero = false, secOne = false;
                     if (Status_inAlienOrbit_uo() == 0) {
@@ -2115,21 +2109,21 @@ void Level::updateOrbit(int dt) {
                         *(unsigned char *)((char *)ki + 0x42) == 0) {
                         bool doSpawn;
                         if (race != 9 && !secZero) {
-                            doSpawn = secOne && *(int *)(self + 0x17c) <= 2;
+                            doSpawn = secOne && this->field_17c <= 2;
                         } else {
                             doSpawn = true;
                         }
                         if (doSpawn) {
-                            *(int *)(self + 0x17c) = *(int *)(self + 0x17c) + 1;
+                            this->field_17c = this->field_17c + 1;
                             Level_uo_spawnFar(thisptr, ki);
                             spawned = 1;
                         }
                     }
                 }
-                en = *(unsigned **)(self + 0xf8);
+                en = *(unsigned **)&this->enemies;
             }
             if (spawned & 1)
-                *(int *)(self + 0x184) = *(int *)(self + 0x184) + 1;
+                this->field_184 = this->field_184 + 1;
         }
     }
 }
@@ -2305,14 +2299,14 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     unsigned dt = dtArg;
 
     // screen-flash fade.
-    if (*(char *)(self + 0x158) != 0) {
-        unsigned remaining = *(unsigned *)(self + 0x150) - dt;
-        *(unsigned *)(self + 0x150) = remaining;
+    if (*(char *)&this->flashActive != 0) {
+        unsigned remaining = *(unsigned *)&this->flashDurationA - dt;
+        *(unsigned *)&this->flashDurationA = remaining;
         if (0x7fffffff < remaining)
-            *(char *)(self + 0x158) = 0;
+            *(char *)&this->flashActive = 0;
         // colour scaled toward 0 by remaining/duration, clamped — handled by engine helper.
-        float frac = (float)remaining / (float)*(int *)(self + 0x154);
-        float *col = (float *)(self + 0x140);
+        float frac = (float)remaining / (float)this->flashDurationB;
+        float *col = (float *)((char *)&this->flashColor);
         float lo = *g_up_clampLo, hi = *g_up_clampHi, z = *g_up_clampZ, w = *g_up_clampW;
         float scaled[4] = { col[0] * frac, col[1] * frac, col[2] * frac, col[3] * frac };
         float bounds[4] = { lo, hi, z, w };
@@ -2339,20 +2333,20 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         thisptr->updateAlienAttackers_call();
 
     // tick player guns then enemy guns via their vtable update slot (+0x10).
-    unsigned *guns = *(unsigned **)(self + 0xe4);
+    unsigned *guns = *(unsigned **)&this->playerGuns;
     if (guns != 0) {
         for (unsigned i = 0; i < *guns; i = i + 1) {
             int *g = *(int **)(guns[1] + i * 4);
             (*(void (**)(int *, unsigned))(*g + 0x10))(g, dt);
-            guns = *(unsigned **)(self + 0xe4);
+            guns = *(unsigned **)&this->playerGuns;
         }
     }
-    guns = *(unsigned **)(self + 0xe8);
+    guns = *(unsigned **)&this->enemyGuns;
     if (guns != 0) {
         for (unsigned i = 0; i < *guns; i = i + 1) {
             int *g = *(int **)(guns[1] + i * 4);
             (*(void (**)(int *, unsigned))(*g + 0x10))(g, dt);
-            guns = *(unsigned **)(self + 0xe8);
+            guns = *(unsigned **)&this->enemyGuns;
         }
     }
 
@@ -2362,7 +2356,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     int idx = Station_getIndex_up(st2);
     Status_getCurrentCampaignMission_up();
     float gamma = Status_getGammaRayDamagePerSecond_up(aPtr, idx);
-    int ego = *(int *)(self + 0xf0);
+    int ego = this->player;
     if (gamma > 0.0f && ego != 0) {
         int ship = Status_getShip_up();
         int eq = Ship_getFirstEquipmentOfSort_up(ship);
@@ -2373,35 +2367,35 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
                 factor = (g_up_eqMax - (float)attr) / g_up_eqMax;
         }
         int hpBefore = Player_getGammaHP_up();
-        Player_damageGamma_up((Player *)*(int *)(self + 0xf0), factor);
+        Player_damageGamma_up((Player *)this->player, factor);
         if (hpBefore > 0xe && Player_getGammaHP_up() < 0xf) {
-            int hud = ((PlayerEgo *)(*(int *)(self + 0xf0)))->getHUD_up();
-            Hud_hudEvent_up(hud, 0x2c, *(int *)(self + 0xf0));
+            int hud = ((PlayerEgo *)(this->player))->getHUD_up();
+            Hud_hudEvent_up(hud, 0x2c, this->player);
         }
-        ego = *(int *)(self + 0xf0);
+        ego = this->player;
     }
 
     // tick the in-flight particle-system managers (skybox, engine trails, etc).
     if (ego != 0) {
         char dummy[16];
-        if (*(int *)(self + 0x80) != 0) {
+        if (this->field_80 != 0) {
             ((PlayerEgo *)(dummy))->getPosition_up();
-            *(int *)(self + 0xb4) = *(int *)dummy;
-            ParticleSystemManager_update_up(*(int *)(self + 0x80), dt);
+            this->field_b4 = *(int *)dummy;
+            ParticleSystemManager_update_up(this->field_80, dt);
         }
-        if (*(int *)(self + 0x74) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x74), dt);
-        if (*(int *)(self + 0x78) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x78), dt);
-        if (*(int *)(self + 0x88) != 0) {
+        if (this->field_74 != 0) ParticleSystemManager_update_up(this->field_74, dt);
+        if (this->particleEmitBoolPtr != 0) ParticleSystemManager_update_up(this->particleEmitBoolPtr, dt);
+        if (this->skybox2Mesh != 0) {
             ((PlayerEgo *)(dummy))->getPosition_up();
-            *(int *)(self + 0xb4) = *(int *)dummy;
-            ParticleSystemManager_update_up(*(int *)(self + 0x88), dt);
+            this->field_b4 = *(int *)dummy;
+            ParticleSystemManager_update_up(this->skybox2Mesh, dt);
         }
-        if (*(int *)(self + 0x7c) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x7c), dt);
-        if (*(int *)(self + 0x84) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x84), dt);
-        if (*(int *)(self + 0x8c) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x8c), dt);
-        if (*(int *)(self + 0x98) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x98), dt);
-        if (*(int *)(self + 0x94) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x94), dt);
-        if (*(int *)(self + 0x9c) != 0) ParticleSystemManager_update_up(*(int *)(self + 0x9c), dt);
+        if (this->particleSystemMgr != 0) ParticleSystemManager_update_up(this->particleSystemMgr, dt);
+        if (this->particleRenderBoolPtr != 0) ParticleSystemManager_update_up(this->particleRenderBoolPtr, dt);
+        if (this->field_8c != 0) ParticleSystemManager_update_up(this->field_8c, dt);
+        if (this->field_98 != 0) ParticleSystemManager_update_up(this->field_98, dt);
+        if (this->field_94 != 0) ParticleSystemManager_update_up(this->field_94, dt);
+        if (this->field_9c != 0) ParticleSystemManager_update_up(this->field_9c, dt);
     }
 
     if (stackFlag == 0)
@@ -2436,53 +2430,52 @@ int  PlayerFixedObject_getDockingType_cp();
 // honouring a thicket of campaign-mission-specific exceptions.
 void Level::connectPlayers()
 {
-    char *self = (char *)this;
 
     if (ApplicationManager_GetCurrentApplicationModule_cp(*g_cp_appMgr) == 5)
         return;
 
     // player's enemy list from the enemy array.
-    if (*(int *)(self + 0xf8) != 0 && *(int *)(self + 0xf0) != 0) {
+    if (this->enemies != 0 && this->player != 0) {
         void *arr = Level_opnew_cp(0xc);
         ArrayPlayer_ctor_cp(arr);
-        ArraySetLength_Player_cp(**(unsigned **)(self + 0xf8), arr);
+        ArraySetLength_Player_cp(**(unsigned **)&this->enemies, arr);
         int n = *(int *)arr;
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
-                *(int *)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + j * 4) + 4);
-        ((Player *)**(int **)(self + 0xf0))->setEnemies((Array<Player *> *)arr);
+                *(int *)(*(int *)(*(int *)(this->enemies + 4) + j * 4) + 4);
+        ((Player *)**(int **)&this->player)->setEnemies((Array<Player *> *)arr);
         operator_delete_cp(ArrayPlayer_dtor_cp(arr));
     }
     // add asteroids/landmarks arrays as additional enemies.
-    if (*(int *)(self + 0xfc) != 0 && *(int *)(self + 0xf0) != 0) {
+    if (this->asteroids != 0 && this->player != 0) {
         void *arr = Level_opnew_cp(0xc);
         ArrayPlayer_ctor_cp(arr);
-        ArraySetLength_Player_cp(**(unsigned **)(self + 0xfc), arr);
+        ArraySetLength_Player_cp(**(unsigned **)&this->asteroids, arr);
         int n = *(int *)arr;
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
-                *(int *)(*(int *)(*(int *)(*(int *)(self + 0xfc) + 4) + j * 4) + 4);
-        ((Player *)**(int **)(self + 0xf0))->addEnemies((Array<Player *> *)arr);
+                *(int *)(*(int *)(*(int *)(this->asteroids + 4) + j * 4) + 4);
+        ((Player *)**(int **)&this->player)->addEnemies((Array<Player *> *)arr);
         operator_delete_cp(ArrayPlayer_dtor_cp(arr));
     }
-    if (*(int *)(self + 0xf4) != 0 && *(int *)(self + 0xf0) != 0) {
+    if (this->gasClouds != 0 && this->player != 0) {
         void *arr = Level_opnew_cp(0xc);
         ArrayPlayer_ctor_cp(arr);
-        ArraySetLength_Player_cp(**(unsigned **)(self + 0xf4), arr);
+        ArraySetLength_Player_cp(**(unsigned **)&this->gasClouds, arr);
         int n = *(int *)arr;
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
-                *(int *)(*(int *)(*(int *)(*(int *)(self + 0xf4) + 4) + j * 4) + 4);
-        ((Player *)**(int **)(self + 0xf0))->addEnemies((Array<Player *> *)arr);
+                *(int *)(*(int *)(*(int *)(this->gasClouds + 4) + j * 4) + 4);
+        ((Player *)**(int **)&this->player)->addEnemies((Array<Player *> *)arr);
         operator_delete_cp(ArrayPlayer_dtor_cp(arr));
     }
 
-    if (*(int *)(self + 0xf8) == 0)
+    if (this->enemies == 0)
         return;
 
     int camp = Status_getCurrentCampaignMission_cp();
-    for (unsigned i = 0; i < **(unsigned **)(self + 0xf8); i = i + 1) {
-        int e = *(int *)((*(unsigned **)(self + 0xf8))[1] + i * 4);
+    for (unsigned i = 0; i < **(unsigned **)&this->enemies; i = i + 1) {
+        int e = *(int *)((*(unsigned **)&this->enemies)[1] + i * 4);
         int eFaction = *(int *)(e + 0x28);
         int wmAll = KIPlayer_isWingMan_cp();
         unsigned count = 0;
@@ -2490,8 +2483,8 @@ void Level::connectPlayers()
         bool notFirst = i != 0;
 
         // first pass: count how many ships become this ship's enemies.
-        for (unsigned k = 0; k < **(unsigned **)(self + 0xf8); k = k + 1) {
-            int o = *(int *)((*(unsigned **)(self + 0xf8))[1] + k * 4);
+        for (unsigned k = 0; k < **(unsigned **)&this->enemies; k = k + 1) {
+            int o = *(int *)((*(unsigned **)&this->enemies)[1] + k * 4);
             if (o != e && (((~wmAll) & (*(int *)(o + 0x28) == eFaction)) == 0)) {
                 bool consider;
                 if (notM24 || notFirst) {
@@ -2521,7 +2514,7 @@ void Level::connectPlayers()
 
         void *arr = Level_opnew_cp(0xc);
         ArrayPlayer_ctor_cp(arr);
-        if (*(int *)(self + 0xf0) != 0)
+        if (this->player != 0)
             count = count + 1;
         ArraySetLength_Player_cp(count, arr);
 
@@ -2552,13 +2545,13 @@ void Level::connectPlayers()
 
                 int *dst = (int *)((char *)arr + 4);
                 int slot = 0;
-                int ego = *(int *)(self + 0xf0);
+                int ego = this->player;
                 if (ego != 0) {
                     *(int *)(*dst) = *(int *)ego;
                     slot = 1;
                 }
-                for (unsigned k = 0; k < **(unsigned **)(self + 0xf8); k = k + 1) {
-                    int o = *(int *)((*(unsigned **)(self + 0xf8))[1] + k * 4);
+                for (unsigned k = 0; k < **(unsigned **)&this->enemies; k = k + 1) {
+                    int o = *(int *)((*(unsigned **)&this->enemies)[1] + k * 4);
                     if (o != e && (((~wmAll) & (*(int *)(o + 0x28) == eFaction)) == 0)) {
                         bool consider;
                         if (notM24 || notFirst) {
@@ -2583,8 +2576,8 @@ void Level::connectPlayers()
                             }
                             if (!skip) {
                                 *(int *)(*dst + slot * 4) =
-                                    *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + k * 4) + 4
-                                        ? *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + k * 4) + 4
+                                    *(int *)(*(int *)(this->enemies + 4) + k * 4) + 4
+                                        ? *(int *)(*(int *)(this->enemies + 4) + k * 4) + 4
                                         : 0;
                                 slot = slot + 1;
                             }
@@ -2597,8 +2590,8 @@ void Level::connectPlayers()
         if (!branchA || jumpAlwaysFriend) {
             if (Player_isAlwaysFriend_cp() == 0) {
                 int slot = 0;
-                for (unsigned k = 0; k < **(unsigned **)(self + 0xf8); k = k + 1) {
-                    int o = *(int *)((*(unsigned **)(self + 0xf8))[1] + k * 4);
+                for (unsigned k = 0; k < **(unsigned **)&this->enemies; k = k + 1) {
+                    int o = *(int *)((*(unsigned **)&this->enemies)[1] + k * 4);
                     if (o != e && *(char *)(o + 0x3c) == 0 &&
                         (((~wmAll) & (*(int *)(o + 0x28) == eFaction)) == 0)) {
                         bool add;
@@ -2608,7 +2601,7 @@ void Level::connectPlayers()
                             add = KIPlayer_isWingMan_cp() == 0;
                         }
                         if (add) {
-                            int src = *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + k * 4);
+                            int src = *(int *)(*(int *)(this->enemies + 4) + k * 4);
                             *(int *)(*(int *)((char *)arr + 4) + slot * 4) = *(int *)(src + 4);
                             slot = slot + 1;
                         }
@@ -2620,7 +2613,7 @@ void Level::connectPlayers()
                 ArrayPlayer_ctor_cp(arr);
                 ArraySetLength_Player_cp(1, arr);
             }
-            *(int *)(*(int *)((char *)arr + 4) + *(int *)arr * 4 - 4) = **(int **)(self + 0xf0);
+            *(int *)(*(int *)((char *)arr + 4) + *(int *)arr * 4 - 4) = **(int **)&this->player;
         }
 
         (*(Player **)(e + 4))->addEnemies((Array<Player *> *)arr);
@@ -2628,7 +2621,7 @@ void Level::connectPlayers()
 
         Status_getMission_cp();
         if (eFaction == 10 && Mission_isEmpty_cp() != 0)
-            (*(Player **)(e + 4))->setEnemy((Player *)**(int **)(self + 0xf0));
+            (*(Player **)(e + 4))->setEnemy((Player *)**(int **)&this->player);
     }
 }
 
@@ -2651,22 +2644,21 @@ int  aeabi_idivmod_ed(int a, int b);
 // engine invokes with (Level* self, _, bool wasFriendlyFire).
 void Level::enemyDied(int r1, bool r2arg) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
     int r2 = (int)r2arg; // the recovered "in_r2" discriminator
     (void)r1;
 
-    *(int *)(self + 0x118) = *(int *)(self + 0x118) - 1;  // enemiesLeft--
-    *(int *)(self + 0x12c) = *(int *)(self + 0x12c) + 1;  // kills++
+    this->enemiesLeft = this->enemiesLeft - 1;  // enemiesLeft--
+    this->kills = this->kills + 1;  // kills++
 
     if (r2 != 0) {
-        *(int *)(self + 0x20) = *(int *)(self + 0x20) + 1;
+        this->killCountA = this->killCountA + 1;
         return;
     }
 
     Status **statusHolder = g_ed_status;
     ((Status *)(*statusHolder))->incKills();
-    *(int *)(self + 0x24) = *(int *)(self + 0x24) + 1;
-    if (*(int *)(self + 0xf0) == 0)
+    this->killCountB = this->killCountB + 1;
+    if (this->player == 0)
         return;
 
     if (Radar::hasScanner() == 0) {
@@ -2681,7 +2673,7 @@ void Level::enemyDied(int r1, bool r2arg) {
             int goal = ((Achievements *)(*achA))->getValue(0x28, 1);
             int prog = (int)(((float)v / (float)goal) * g_ed_100);
             if (aeabi_idivmod_ed(prog, 10) == 0) {
-                int hud = ((PlayerEgo *)(*(int *)(self + 0xf0)))->getHUD();
+                int hud = ((PlayerEgo *)(this->player))->getHUD();
                 int cur = *(int *)(*(int *)statusHolder + 0x11c);
                 int g2 = ((Achievements *)(*achA))->getValue(0x28, 1);
                 ((Hud *)(hud))->hudEventMedal(0x28, (int)(((float)cur / (float)g2) * g_ed_100));
@@ -2692,8 +2684,8 @@ void Level::enemyDied(int r1, bool r2arg) {
         }
     }
 
-    if (*(int *)(self + 0xf0) != 0 &&
-        ((PlayerEgo *)(*(int *)(self + 0xf0)))->emergencySystemActive() != 0) {
+    if (this->player != 0 &&
+        ((PlayerEgo *)(this->player))->emergencySystemActive() != 0) {
         Achievements **achB = g_ed_achB;
         if (((Achievements *)(*achB))->hasMedal(0x2b, 1) == 0) {
             int st = *(int *)statusHolder;
@@ -2701,7 +2693,7 @@ void Level::enemyDied(int r1, bool r2arg) {
             *(int *)(st + 0x13c) = v;
             int goal = ((Achievements *)(*achB))->getValue(0x2b, 1);
             if (0 < (int)((float)v / (float)goal)) {
-                int hud = ((PlayerEgo *)(*(int *)(self + 0xf0)))->getHUD();
+                int hud = ((PlayerEgo *)(this->player))->getHUD();
                 int cur = *(int *)(*(int *)statusHolder + 0x13c);
                 int g2 = ((Achievements *)(*achB))->getValue(0x2b, 1);
                 ((Hud *)(hud))->hudEventMedal(0x2b, (int)(((float)cur / (float)g2) * g_ed_100));
@@ -2744,7 +2736,7 @@ static void buildQueue(char *self, const RMSpec *specs, unsigned n)
 void Level::createRadioMessages(int set) {
     Level *thisptr = this;
     char *self = (char *)thisptr;
-    *(int *)(self + 0x114) = 0;
+    this->messages = 0;
 
     switch (set) {
     case 0: {
@@ -3007,13 +2999,13 @@ Level::Level(int mission) {
     field_18c = 0;
     field_190 = 0;
     field_194 = 0;
-    ctor((char *)this + 0x1d0);
-    ctor((char *)this + 0x20c);
-    ctor((char *)this + 0x248);
+    ctor((char *)&this->sub_1d0);
+    ctor((char *)&this->sub_20c);
+    ctor((char *)&this->sub_248);
     zero16(&field_1c);
-    zero16((char *)this + 0x90);
-    zero16((char *)this + 0x84);
-    zero16((char *)this + 0x74);
+    zero16((char *)&this->field_90);
+    zero16((char *)&this->particleRenderBoolPtr);
+    zero16((char *)&this->field_74);
     skyboxMesh = -1;
     field_08 = -1;
     skyboxTexture = -1;
@@ -3031,9 +3023,9 @@ Level::Level(int mission) {
     // +0x29 and +0x2d; net effect is clearing objectivesA/objectivesB.
     objectivesA = 0;
     objectivesB = 0;
-    __aeabi_memclr4((char *)this + 0xd8, 0x65);
-    zero16((char *)this + 0x16c);
-    zero16((char *)this + 0x15c);
+    __aeabi_memclr4((char *)&this->asteroidWaypoint, 0x65);
+    zero16((char *)&this->hostileCount);
+    zero16((char *)&this->flashType);
     field_18a = 0;
     field_188 = 0;
     movingStarsIndex = -1;
@@ -3093,7 +3085,6 @@ void operator_delete_cso(void *p);
 // Level::createStaticObjects() — spawns campaign-specific landmark/escort objects.
 void Level::createStaticObjects()
 {
-    char *self = (char *)this;
 
     // --- carrier escort that follows the campaign progression (station 0x70) ---
     if (Status_inAlienOrbit_cso() == 0) {
@@ -3121,11 +3112,11 @@ void Level::createStaticObjects()
                 String *txt = (String *)GameText_getText_cso(**g_cso_textA);
                 *(String *)(o + 0x18) = *txt;
                 (*(Player **)(o + 4))->setAlwaysFriend(1);
-                void *arr = *(void **)(self + 0xf8);
+                void *arr = *(void **)&this->enemies;
                 if (arr == 0) {
                     arr = Level_opnew_cso(0xc);
                     ArrayKIPlayer_ctor_cso(arr);
-                    *(void **)(self + 0xf8) = arr;
+                    *(void **)&this->enemies = arr;
                 }
                 ArrayAdd_KIPlayer_cso((KIPlayer *)o, arr);
                 if (*(void **)(o + 0x50) != 0)
@@ -3154,11 +3145,11 @@ void Level::createStaticObjects()
                 operator_delete_cso(Array_int_dtor_cso(*(void **)(o + 0x50)));
             *(int *)(o + 0x50) = 0;
             (*(Player **)(o + 4))->setAlwaysFriend(1);
-            void *arr = *(void **)(self + 0xf8);
+            void *arr = *(void **)&this->enemies;
             if (arr == 0) {
                 arr = Level_opnew_cso(0xc);
                 ArrayKIPlayer_ctor_cso(arr);
-                *(void **)(self + 0xf8) = arr;
+                *(void **)&this->enemies = arr;
             }
             ArrayAdd_KIPlayer_cso((KIPlayer *)o, arr);
         }
@@ -3372,7 +3363,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         obj = (PlayerFixedObject *)pf;
         int gg = Globals_getShipGroup_cs(*g_cs_globalsA, type, race, group);
         (*(void (**)(PlayerFixedObject *, int, int, int))(*(int *)obj + 8))(obj, gg, type, hostile);
-        if (*(int *)(self + 0xc0) != 1 && *(int *)(self + 0xc0) != 0x17) {
+        if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = *(AEGeometry **)((char *)obj + 0xc);
             if (g == 0) g = *(AEGeometry **)((char *)obj + 0x8);
             LODManager_addObject_cs(*(LODManager **)self, g);
@@ -3489,16 +3480,15 @@ void  Globals_addSoundResourceToList_ag(int snd);
 // level and difficulty, with a large set of campaign/wanted/ship-type special cases.
 void Level::assignGuns()
 {
-    char *self = (char *)this;
 
-    if (*(void **)(self + 0xe8) != 0) {
-        ArrayReleaseClasses_AGun_ag(*(void **)(self + 0xe8));
-        if (*(void **)(self + 0xe8) != 0)
-            operator_delete_ag(ArrayAGun_dtor_ag(*(void **)(self + 0xe8)));
-        *(int *)(self + 0xe8) = 0;
+    if (*(void **)&this->enemyGuns != 0) {
+        ArrayReleaseClasses_AGun_ag(*(void **)&this->enemyGuns);
+        if (*(void **)&this->enemyGuns != 0)
+            operator_delete_ag(ArrayAGun_dtor_ag(*(void **)&this->enemyGuns));
+        this->enemyGuns = 0;
     }
     Status **status = g_ag_status;
-    *(int *)(self + 0xe8) = 0;
+    this->enemyGuns = 0;
 
     // base weapon "power" from player level (clamped to 20).
     float lvlPower = (float)(Status_getLevel_ag() - 2) * g_ag_perLevel;
@@ -3509,7 +3499,7 @@ void Level::assignGuns()
     int camp = Status_getCurrentCampaignMission_ag();
     int basePower = (int)(lvlPower + lvlPower * (diffScale - 0.5f));
     Wanted *wanted = (Wanted *)Status_getWantedInCurrentOrbit_ag(*status);
-    unsigned *list = *(unsigned **)(self + 0xf8);
+    unsigned *list = *(unsigned **)&this->enemies;
     if (0x15 < basePower) basePower = 0x16;
     if (list == 0)
         return;
@@ -3520,29 +3510,29 @@ void Level::assignGuns()
         int e = *(int *)(list[1] + i * 4);
         if (e != 0 && *(char *)(e + 0x25) != 0) {
             int add = (KIPlayer_isWingMan_ag() != 0) ? 2 : 1;
-            list = *(unsigned **)(self + 0xf8);
+            list = *(unsigned **)&this->enemies;
             slots = slots + add;
         }
     }
 
     void *guns = Level_opnew_ag(0xc);
     ArrayAGun_ctor_ag(guns);
-    *(void **)(self + 0xe8) = guns;
+    *(void **)&this->enemyGuns = guns;
     ArraySetLength_AGun_ag(slots, guns);
 
     int baseDmg = (basePower == 0) ? 3 : (basePower + 2);
     if (camp == 4) baseDmg = 1;
 
     int outIdx = 0;
-    for (unsigned i = 0; i < **(unsigned **)(self + 0xf8); i = i + 1) {
-        int e = *(int *)((*(unsigned **)(self + 0xf8))[1] + i * 4);
+    for (unsigned i = 0; i < **(unsigned **)&this->enemies; i = i + 1) {
+        int e = *(int *)((*(unsigned **)&this->enemies)[1] + i * 4);
         if (e == 0)
             continue;
         if (*(char *)(e + 0x25) == 0)
             goto wingmanExtra;
 
         {
-            if (*(int *)(self + 0xc0) == 2)
+            if (this->missionPtr == 2)
                 (*(Player **)(e + 4))->setPlayShootSound(0, 2);
 
             int color = 0x41800000;
@@ -3562,8 +3552,8 @@ void Level::assignGuns()
 
             // alien ships ramp the damage harder.
             if (KIPlayer_isWingMan_ag() == 0 && Player_isAlwaysFriend_ag() == 0 &&
-                *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) &&
-                *(int *)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x28) == 9) {
+                *(int *)(*(int *)(this->enemies + 4) + i * 4) &&
+                *(int *)(*(int *)(*(int *)(this->enemies + 4) + i * 4) + 0x28) == 9) {
                 if (camp != 0x10) dmg = (int)((float)dmg * 1.0f);
                 else dmg = dmg + dmg;
             } else {
@@ -3590,8 +3580,8 @@ void Level::assignGuns()
             gun->weaponType = 0;
 
             int res;
-            switch (*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x28
-                        ? *(int *)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x28)
+            switch (*(int *)(*(int *)(this->enemies + 4) + i * 4) + 0x28
+                        ? *(int *)(*(int *)(*(int *)(this->enemies + 4) + i * 4) + 0x28)
                         : 0) {
             case 0:  gun->weaponType = 0; gun->setIndex(0);    res = 0x1a62; break;
             case 1:  gun->setIndex(3);    res = 0x1a68; break;
@@ -3605,13 +3595,13 @@ void Level::assignGuns()
             }
 
             int camp2 = Status_getCurrentCampaignMission_ag();
-            PlayerTurret *turret = *(PlayerTurret **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
+            PlayerTurret *turret = *(PlayerTurret **)(*(int *)(this->enemies + 4) + i * 4);
             if (turret->field_0x3e != 0) {
                 int host = (int)(intptr_t)turret->getHost();
                 if (host != 0 && (*(int *)(host + 0x7c) == 0x2d || *(int *)(host + 0x7c) == 0x33)) {
                     gun->weaponType = 2; gun->setIndex(0x16); res = 0x1a8e;
                 } else {
-                    KIPlayer *k = *(KIPlayer **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
+                    KIPlayer *k = *(KIPlayer **)(*(int *)(this->enemies + 4) + i * 4);
                     if (*(unsigned char *)((char *)k + 0x3f) == 0) {
                         gun->weaponType = 1;
                         if (*(unsigned char *)((char *)k + 0x28) == 1) { gun->setIndex(0xf);  res = 0x1a87; }
@@ -3624,7 +3614,7 @@ void Level::assignGuns()
                         gun->field_0xa8 = 1;
                         // base stats from the ship-stat table (corrupted SIMD in original).
                         if (camp2 == 0x9e && kt == 0x49c2 && Player_isAlwaysEnemy_ag() != 0) {
-                            Player *pp = *(Player **)(*(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 4);
+                            Player *pp = *(Player **)(*(int *)(*(int *)(this->enemies + 4) + i * 4) + 4);
                             int mhp = Player_getMaxHitpoints_ag();
                             pp->setMaxHitpoints((int)((float)mhp * 5.0f));
                         }
@@ -3634,13 +3624,13 @@ void Level::assignGuns()
 
             // wanted/ship special weapon overrides.
             int kt2 = Status_getCurrentCampaignMission_ag();
-            int host2 = *(int *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
+            int host2 = *(int *)(*(int *)(this->enemies + 4) + i * 4);
             if (Status_getMission_ag() != 0) {
                 Mission *mm = (Mission *)Status_getMission_ag();
                 if (mm->isCampaignMission() != 0) {
                     if (**g_ag_statusB == Status_getCurrentCampaignMission_ag() &&
                         2 < **g_ag_alienCnt &&
-                        KIPlayer_isEnemy_ag(*(KIPlayer **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4)) != 0)
+                        KIPlayer_isEnemy_ag(*(KIPlayer **)(*(int *)(this->enemies + 4) + i * 4)) != 0)
                         gun->field_0x60 = (int)((float)gun->field_0x60 * 1.0f);
                 }
             }
@@ -3659,7 +3649,7 @@ void Level::assignGuns()
                 RocketGun *r = (RocketGun *)Level_opnew_ag(0xe8);
                 RocketGun_ctor_ag(r, gun->itemIndex, gun, res, 0, 0, sc,
                                   sc == 5 ? 1 : 0, this);
-                *(RocketGun **)(*(int *)(*(int *)(self + 0xe8) + 4) + outIdx * 4) = r;
+                *(RocketGun **)(*(int *)(this->enemyGuns + 4) + outIdx * 4) = r;
                 gun->field_0x50 = 0x41000000;
                 gun->initialLifetime = 10000;
                 gun->fireDelay = 3000;
@@ -3667,9 +3657,9 @@ void Level::assignGuns()
             } else {
                 ObjectGun *o = (ObjectGun *)Level_opnew_ag(0xb0);
                 ObjectGun_ctor_ag(o, 0, gun, res, 0x2711, this);
-                *(ObjectGun **)(*(int *)(*(int *)(self + 0xe8) + 4) + outIdx * 4) = o;
+                *(ObjectGun **)(*(int *)(this->enemyGuns + 4) + outIdx * 4) = o;
             }
-            KIPlayer_addGun_ag(*(Gun **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4), (int)(intptr_t)gun);
+            KIPlayer_addGun_ag(*(Gun **)(*(int *)(this->enemies + 4) + i * 4), (int)(intptr_t)gun);
             Globals_addSoundResourceToList_ag(**g_ag_snd);
             outIdx = outIdx + 1;
             (void)kt2;
@@ -3677,7 +3667,7 @@ void Level::assignGuns()
 
 wingmanExtra:
         if (KIPlayer_isWingMan_ag() != 0 &&
-            *(char *)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4) + 0x25 != 0) {
+            *(char *)(*(int *)(this->enemies + 4) + i * 4) + 0x25 != 0) {
             Gun *gun = (Gun *)Level_opnew_ag(0x114);
             Gun_ctor_ag(gun, 0x12, 0, 4, -1, 3000, 400, 0x41800000, 0, 0, 0, 0, 0, 0);
             gun->setFriendGun(1);
@@ -3686,11 +3676,11 @@ wingmanExtra:
             gun->weaponType = 1;
             ObjectGun *o = (ObjectGun *)Level_opnew_ag(0xb0);
             ObjectGun_ctor_ag(o, 0x12, gun, 0x1a8a, 0x2711, this);
-            *(ObjectGun **)(*(int *)(*(int *)(self + 0xe8) + 4) + outIdx * 4) = o;
+            *(ObjectGun **)(*(int *)(this->enemyGuns + 4) + outIdx * 4) = o;
             gun->setIndex(0x12);
             int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48));
             gun->field_0x64 = attr;
-            KIPlayer_addGun_ag(*(Gun **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4), (int)(intptr_t)gun);
+            KIPlayer_addGun_ag(*(Gun **)(*(int *)(this->enemies + 4) + i * 4), (int)(intptr_t)gun);
             Globals_addSoundResourceToList_ag(**g_ag_snd2);
             outIdx = outIdx + 1;
         }
@@ -3734,7 +3724,6 @@ void Level_cgc_randomPos(int rng, int boss, unsigned i, Vector *out);
 // collector and the system permits it.
 void Level::createGasClouds()
 {
-    char *self = (char *)this;
 
     Galaxy *gal = *g_cgc_galaxy;
     Station *st = (Station *)Status_getStation_cgc();
@@ -3753,7 +3742,7 @@ void Level::createGasClouds()
 
     void *arr = Level_opnew_cgc(0xc);
     ArrayGasCloud_ctor_cgc(arr);
-    *(void **)(self + 0xf4) = arr;
+    *(void **)&this->gasClouds = arr;
 
     bool boss = false;
     if (Status_getCurrentCampaignMission_cgc() == 0x8e) {
@@ -3766,10 +3755,10 @@ void Level::createGasClouds()
     // count = base + (prob[1]/denom) * (roll+4); base 3 for the boss fight.
     float countF = (float)(boss ? 3.0f : 0.0f) + ((float)prob[1] / 1.0f) * (float)(roll + 4);
     int count = (countF > 0.0f) ? (int)countF : 0;
-    ArraySetLength_GasCloud_cgc(count, *(void **)(self + 0xf4));
+    ArraySetLength_GasCloud_cgc(count, *(void **)&this->gasClouds);
 
     void *canvas = *g_cgc_canvas;
-    for (unsigned i = 0; i < **(unsigned **)(self + 0xf4); i = i + 1) {
+    for (unsigned i = 0; i < **(unsigned **)&this->gasClouds; i = i + 1) {
         int kind = *prob;
         Vector pos;
         Level_cgc_randomPos(rng, boss ? 1 : 0, i, &pos);
@@ -3778,9 +3767,9 @@ void Level::createGasClouds()
         new ((void*)geo) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
         PlayerGasCloud *cloud = (PlayerGasCloud *)Level_opnew_cgc(0x16c);
         PlayerGasCloud_ctor_cgc(cloud, kind,
-                                *(ParticleSystemManager **)(self + 0x94), geo, &pos);
-        *(PlayerGasCloud **)(*(int *)(*(int *)(self + 0xf4) + 4) + i * 4) = cloud;
-        char *c = *(char **)(*(int *)(*(int *)(self + 0xf4) + 4) + i * 4);
+                                *(ParticleSystemManager **)&this->field_94, geo, &pos);
+        *(PlayerGasCloud **)(*(int *)(this->gasClouds + 4) + i * 4) = cloud;
+        char *c = *(char **)(*(int *)(this->gasClouds + 4) + i * 4);
         (*(void (**)())(*(int *)c + 0x14))();
     }
 }
@@ -3805,21 +3794,20 @@ void Level_umo_spawnAt(Level *self, int *kiPlayer, int profile);
 // Level::updateMissionOrbit(int dt) — drives mission-specific enemy respawn timing.
 void Level::updateMissionOrbit(int dt) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
 
     // --- phase A: periodic far wave (only when a "boss present" flag at 0x288 is set) ---
-    if (*(char *)(self + 0x288) != 0) {
+    if (*(char *)&this->field_288 != 0) {
         Status_getMission_umo();
         if (Mission_isEmpty_umo() == 0) {
-            int t = *(int *)(self + 0x174);
-            *(int *)(self + 0x174) = t + dt;
+            int t = this->orbitWaveTimer;
+            this->orbitWaveTimer = t + dt;
             if (0x57e4 < t + dt) {
-                *(int *)(self + 0x174) = 0;
+                this->orbitWaveTimer = 0;
                 int aliveCore = 0;
                 for (int j = 0; j != 4; j = j + 1)
                     aliveCore = aliveCore + (KIPlayer_isDead_umo() ^ 1);
                 if (aliveCore != 0) {
-                    unsigned *en = *(unsigned **)(self + 0xf8);
+                    unsigned *en = *(unsigned **)&this->enemies;
                     for (unsigned i = 4; i < *en; i = i + 1) {
                         int *ki = *(int **)(en[1] + i * 4);
                         if (KIPlayer_isDead_umo() != 0 && Player_isActive_umo() == 0)
@@ -3834,11 +3822,11 @@ void Level::updateMissionOrbit(int dt) {
     if (Status_getMission_umo() != 0) {
         Status_getMission_umo();
         if (Mission_getType_umo() == 0xb7) {
-            int t = *(int *)(self + 0x174);
-            *(int *)(self + 0x174) = t + dt;
+            int t = this->orbitWaveTimer;
+            this->orbitWaveTimer = t + dt;
             if (0x1d4c < t + dt) {
-                *(int *)(self + 0x174) = 0;
-                unsigned *en = *(unsigned **)(self + 0xf8);
+                this->orbitWaveTimer = 0;
+                unsigned *en = *(unsigned **)&this->enemies;
                 for (unsigned i = 0; i < *en; i = i + 1) {
                     int *ki = *(int **)(en[1] + i * 4);
                     if (KIPlayer_isDead_umo() != 0 && Player_isActive_umo() == 0 &&
@@ -3856,11 +3844,11 @@ void Level::updateMissionOrbit(int dt) {
     if (Mission_isEmpty_umo() == 0) {
         Status_getMission_umo();
         if (Mission_getType_umo() == 0xf) {
-            int t = *(int *)(self + 0x174);
-            *(int *)(self + 0x174) = t + dt;
+            int t = this->orbitWaveTimer;
+            this->orbitWaveTimer = t + dt;
             if (50000 < t + dt) {
-                *(int *)(self + 0x174) = 0;
-                unsigned *en = *(unsigned **)(self + 0xf8);
+                this->orbitWaveTimer = 0;
+                unsigned *en = *(unsigned **)&this->enemies;
                 unsigned count = *en;
                 // require at least one of the non-leader enemies to still be alive.
                 bool anyAlive = false;
@@ -3872,7 +3860,7 @@ void Level::updateMissionOrbit(int dt) {
                         int *ki = *(int **)(en[1] + i * 4);
                         if (KIPlayer_isDead_umo() != 0 && Player_isActive_umo() == 0)
                             Level_umo_spawnAt(thisptr, ki, 0);
-                        en = *(unsigned **)(self + 0xf8);
+                        en = *(unsigned **)&this->enemies;
                         count = *en;
                     }
                 }
@@ -3937,15 +3925,14 @@ int   Level_ips_addPlayerSystem(Level *self, int kind);
 // explosions, asteroid dust, nebula tint) once the player and scene exist.
 void Level::initParticleSystems()
 {
-    char *self = (char *)this;
 
-    if (*(int *)(self + 0xf0) != 0) {
+    if (this->player != 0) {
         // per-asteroid dust systems.
-        if (*(int *)(self + 0xa4) != 0) {
+        if (this->field_a4 != 0) {
             void *arr = Level_opnew_ips(0xc);
             Array_int_ctor_ips(arr);
-            *(void **)(self + 0xa8) = arr;
-            ArraySetLength_int_ips(**(unsigned **)(self + 0xa4), arr);
+            *(void **)&this->field_a8 = arr;
+            ArraySetLength_int_ips(**(unsigned **)&this->field_a4, arr);
             Level_ips_buildAsteroidDust(this, arr);
         }
 
@@ -3953,13 +3940,13 @@ void Level::initParticleSystems()
         unsigned canvas = *g_ips_canvas;
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         int local = (int)(long)((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
-        int sys = ParticleSystemManager_addSystem_ips(*(int *)(self + 0x88), (void *)local, 4, 0);
-        *(int *)(self + 0x64) = sys;
+        int sys = ParticleSystemManager_addSystem_ips(this->skybox2Mesh, (void *)local, 4, 0);
+        this->movingStarsIndex = sys;
 
         // pirate-base smoke plume attached to the pirate flagship.
         if (Status_getSystem_ips() != 0) {
             SolarSystem *ss = (SolarSystem *)Status_getSystem_ips();
-            unsigned *en = *(unsigned **)(self + 0xf8);
+            unsigned *en = *(unsigned **)&this->enemies;
             if (SolarSystem_hasPirateBase_ips(ss) != 0 && en != 0) {
                 for (unsigned i = 0; i < *en; i = i + 1) {
                     KIPlayer *k = *(KIPlayer **)(en[1] + i * 4);
@@ -3969,18 +3956,18 @@ void Level::initParticleSystems()
                         AEGeometry *kg = *(AEGeometry **)((char *)k + 8);
                         kg->updateReferenceMatrix();
                         int ref = (int)(intptr_t)&kg->getReferenceMatrix();
-                        ParticleSystemManager_addSystem_ips(*(int *)(self + 0x7c), (void *)ref, 8, 0);
+                        ParticleSystemManager_addSystem_ips(this->particleSystemMgr, (void *)ref, 8, 0);
                         break;
                     }
-                    en = *(unsigned **)(self + 0xf8);
+                    en = *(unsigned **)&this->enemies;
                 }
             }
         }
 
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         local = (int)(long)((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
-        sys = ParticleSystemManager_addSystem_ips(*(int *)(self + 0x7c), (void *)local, 7, 0);
-        *(int *)(self + 0x284) = sys;
+        sys = ParticleSystemManager_addSystem_ips(this->particleSystemMgr, (void *)local, 7, 0);
+        this->field_284 = sys;
 
         Level_ips_applyAmbient(this);
     }
@@ -3989,43 +3976,43 @@ void Level::initParticleSystems()
     Level_ips_applyAmbient(this);
 
     // init the always-present managers.
-    if (*(ParticleSystemManager **)(self + 0x80) != 0)
-        ParticleSystemManager_init_ips(*(ParticleSystemManager **)(self + 0x80), 0);
-    if (*(ParticleSystemManager **)(self + 0x7c) != 0)
-        ParticleSystemManager_init_ips(*(ParticleSystemManager **)(self + 0x7c), 0);
-    if (*(ParticleSystemManager **)(self + 0x88) != 0)
-        ParticleSystemManager_init_ips(*(ParticleSystemManager **)(self + 0x88), 0);
-    if (*(ParticleSystemManager **)(self + 0x8c) != 0)
-        ParticleSystemManager_init_ips(*(ParticleSystemManager **)(self + 0x8c), 0);
-    if (*(ParticleSystemManager **)(self + 0x98) != 0)
-        ParticleSystemManager_init_ips(*(ParticleSystemManager **)(self + 0x98), 0);
+    if (*(ParticleSystemManager **)&this->field_80 != 0)
+        ParticleSystemManager_init_ips(*(ParticleSystemManager **)&this->field_80, 0);
+    if (*(ParticleSystemManager **)&this->particleSystemMgr != 0)
+        ParticleSystemManager_init_ips(*(ParticleSystemManager **)&this->particleSystemMgr, 0);
+    if (*(ParticleSystemManager **)&this->skybox2Mesh != 0)
+        ParticleSystemManager_init_ips(*(ParticleSystemManager **)&this->skybox2Mesh, 0);
+    if (*(ParticleSystemManager **)&this->field_8c != 0)
+        ParticleSystemManager_init_ips(*(ParticleSystemManager **)&this->field_8c, 0);
+    if (*(ParticleSystemManager **)&this->field_98 != 0)
+        ParticleSystemManager_init_ips(*(ParticleSystemManager **)&this->field_98, 0);
 
     // the player-engine systems (slots 0x34..0x5c) all use a unit transform.
-    *(int *)(self + 0x38) = Level_ips_addPlayerSystem(this, 10);
-    *(int *)(self + 0x3c) = Level_ips_addPlayerSystem(this, 0xb);
-    *(int *)(self + 0x48) = Level_ips_addPlayerSystem(this, 0x14);
-    *(int *)(self + 0x34) = Level_ips_addPlayerSystem(this, 0x15);
-    *(int *)(self + 0x50) = Level_ips_addPlayerSystem(this, 0x16);
-    *(int *)(self + 0x54) = Level_ips_addPlayerSystem(this, 0x17);
+    this->field_38 = Level_ips_addPlayerSystem(this, 10);
+    this->field_3c = Level_ips_addPlayerSystem(this, 0xb);
+    this->field_48 = Level_ips_addPlayerSystem(this, 0x14);
+    this->field_34 = Level_ips_addPlayerSystem(this, 0x15);
+    this->field_50 = Level_ips_addPlayerSystem(this, 0x16);
+    this->field_54 = Level_ips_addPlayerSystem(this, 0x17);
     if (Status_getCurrentCampaignMission_ips() == 0x50) {
-        *(int *)(self + 0x58) = Level_ips_addPlayerSystem(this, 0x18);
-        *(int *)(self + 0x5c) = Level_ips_addPlayerSystem(this, 0x18);
+        this->field_58 = Level_ips_addPlayerSystem(this, 0x18);
+        this->field_5c = Level_ips_addPlayerSystem(this, 0x18);
     }
 
-    ParticleSystemManager_init_ips(*(ParticleSystemManager **)(self + 0x74), 0);
-    ParticleSystemManager_enableSystemEmit_ips(*(int *)(self + 0x74), *(int *)(self + 0x50));
-    ParticleSystemManager_enableSystemEmit_ips(*(int *)(self + 0x74), *(int *)(self + 0x54));
+    ParticleSystemManager_init_ips(*(ParticleSystemManager **)&this->field_74, 0);
+    ParticleSystemManager_enableSystemEmit_ips(this->field_74, this->field_50);
+    ParticleSystemManager_enableSystemEmit_ips(this->field_74, this->field_54);
     if (Status_getCurrentCampaignMission_ips() == 0x50) {
-        ParticleSystemManager_enableSystemEmit_ips(*(int *)(self + 0x74), *(int *)(self + 0x58));
-        ParticleSystemManager_enableSystemEmit_ips(*(int *)(self + 0x74), *(int *)(self + 0x5c));
+        ParticleSystemManager_enableSystemEmit_ips(this->field_74, this->field_58);
+        ParticleSystemManager_enableSystemEmit_ips(this->field_74, this->field_5c);
     }
 
     void (*enableEmit)(int) = g_ips_enableEmit;
-    enableEmit(*(int *)(self + 0x9c));
-    enableEmit(*(int *)(self + 0x78));
-    enableEmit(*(int *)(self + 0x84));
-    if (*(ParticleSystemManager **)(self + 0x94) != 0)
-        ParticleSystemManager_init_ips(*(ParticleSystemManager **)(self + 0x94), 0);
+    enableEmit(this->field_9c);
+    enableEmit(this->particleEmitBoolPtr);
+    enableEmit(this->particleRenderBoolPtr);
+    if (*(ParticleSystemManager **)&this->field_94 != 0)
+        ParticleSystemManager_init_ips(*(ParticleSystemManager **)&this->field_94, 0);
 }
 
 struct Mission;
@@ -4057,13 +4044,12 @@ void Level_cwm_placeWingman(Level *self, int *kiSlot, unsigned i);
 // Level::createWingmen() — spawns the player's hired escort fighters in formation.
 void Level::createWingmen()
 {
-    char *self = (char *)this;
     int **statusB = g_cwm_statusB;
 
     if (Status_inSupernovaSystem_cwm() != 0 ||
         Status_getCurrentCampaignMission_cwm() == 0x9e ||
         Status_getWingmen_cwm() == 0 ||
-        *(int *)(self + 0xf0) == 0)
+        this->player == 0)
         return;
 
     void *arr = Level_opnew_cwm(0xc);
@@ -4097,12 +4083,12 @@ void Level::createWingmen()
             *(char *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 0x25) = 0;
     }
 
-    if (*(int *)(self + 0xf8) == 0) {
-        *(void **)(self + 0xf8) = arr;
+    if (this->enemies == 0) {
+        *(void **)&this->enemies = arr;
     } else {
         for (unsigned i = 0; i < n; i = i + 1) {
             ArrayAdd_KIPlayer_cwm(*(KIPlayer **)(*(int *)((char *)arr + 4) + i * 4),
-                                  *(void **)(self + 0xf8));
+                                  *(void **)&this->enemies);
             n = *(unsigned *)arr;
         }
     }
@@ -4156,15 +4142,14 @@ void  KIPlayer_setToSleep_csc(KIPlayer *k);
 // crew gallery mode 4, and ship-showroom mode 0x17).
 void Level::createScene()
 {
-    char *self = (char *)this;
 
-    if (*(void **)(self + 0xf8) != 0) {
-        ArrayReleaseClasses_KIPlayer_csc(*(void **)(self + 0xf8));
-        if (*(void **)(self + 0xf8) != 0)
-            operator_delete_csc(ArrayKIPlayer_dtor_csc(*(void **)(self + 0xf8)));
+    if (*(void **)&this->enemies != 0) {
+        ArrayReleaseClasses_KIPlayer_csc(*(void **)&this->enemies);
+        if (*(void **)&this->enemies != 0)
+            operator_delete_csc(ArrayKIPlayer_dtor_csc(*(void **)&this->enemies));
     }
-    int mode = *(int *)(self + 0xc0);
-    *(int *)(self + 0xf8) = 0;
+    int mode = this->missionPtr;
+    this->enemies = 0;
 
     if (mode == 2) {
         this->createPlayer_csc();
@@ -4176,12 +4161,12 @@ void Level::createScene()
             new ((void*)g) AEGeometry((uint16_t)0x37d0, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)Level_opnew_csc(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
-            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)(self + 0xf8));
+            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)&this->enemies);
             g = (AEGeometry *)Level_opnew_csc(0xc0);
             new ((void*)g) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
             p = (PlayerStatic *)Level_opnew_csc(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
-            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)(self + 0xf8));
+            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)&this->enemies);
         }
         return;
     }
@@ -4198,13 +4183,13 @@ void Level::createScene()
         if (agents == 0) {
             void *arr = Level_opnew_csc(0xc);
             ArrayKIPlayer_ctor_csc(arr);
-            *(void **)(self + 0xf8) = arr;
+            *(void **)&this->enemies = arr;
             ArraySetLength_KIPlayer_csc(3, arr);
         } else {
             int nAgents = *agents;
             void *arr = Level_opnew_csc(0xc);
             ArrayKIPlayer_ctor_csc(arr);
-            *(void **)(self + 0xf8) = arr;
+            *(void **)&this->enemies = arr;
             ArraySetLength_KIPlayer_csc(nAgents * 3 + crew, arr);
             for (int j = 0; j != 7; j = j + 1) taken[j] = 0;
 
@@ -4226,20 +4211,20 @@ void Level::createScene()
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)part, (PaintCanvas*)canvas, 0);
                 PlayerStatic *p = (PlayerStatic *)Level_opnew_csc(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
-                *(PlayerStatic **)(*(int *)(*(int *)(self + 0xf8) + 4) + a * 4) = p;
+                *(PlayerStatic **)(*(int *)(this->enemies + 4) + a * 4) = p;
                 this->csc_placeActor((int)(intptr_t)p, seat, 0);
 
                 g = (AEGeometry *)Level_opnew_csc(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)Level_opnew_csc(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
-                *(PlayerStatic **)(*(int *)(*(int *)(self + 0xf8) + 4) + (nAgents + a) * 4) = p;
+                *(PlayerStatic **)(*(int *)(this->enemies + 4) + (nAgents + a) * 4) = p;
 
                 g = (AEGeometry *)Level_opnew_csc(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)0x380c, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)Level_opnew_csc(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
-                *(PlayerStatic **)(*(int *)(*(int *)(self + 0xf8) + 4) + (nAgents * 2 + a) * 4) = p;
+                *(PlayerStatic **)(*(int *)(this->enemies + 4) + (nAgents * 2 + a) * 4) = p;
             }
         }
         for (unsigned u = 0; u < crew; u = u + 1) {
@@ -4247,8 +4232,8 @@ void Level::createScene()
             new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)Level_opnew_csc(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
-            *(PlayerStatic **)((*(int **)(self + 0xf8))[1] +
-                               (**(int **)(self + 0xf8) + (u - crew)) * 4) = p;
+            *(PlayerStatic **)((*(int **)&this->enemies)[1] +
+                               (**(int **)&this->enemies + (u - crew)) * 4) = p;
         }
         return;
     }
@@ -4266,7 +4251,7 @@ void Level::createScene()
 
         void *arr = Level_opnew_csc(0xc);
         ArrayKIPlayer_ctor_csc(arr);
-        *(void **)(self + 0xf8) = arr;
+        *(void **)&this->enemies = arr;
         ArraySetLength_KIPlayer_csc(1, arr);
 
         Status_getShip_csc();
@@ -4274,8 +4259,8 @@ void Level::createScene()
         Ship *ship = (Ship *)Status_getShip_csc();
         int shipRace = ship->getRace();
         int actor = (int)(intptr_t)this->createShip_csc(shipRace, 0, shipIdx, 0,
-                                         *(int *)(self + 0xc0) != 0x17, 0);
-        **(int **)(*(int *)(self + 0xf8) + 4) = actor;
+                                         this->missionPtr != 0x17, 0);
+        **(int **)(this->enemies + 4) = actor;
         this->csc_placeActor(actor, shipIdx, 1);
         PlayerFighter_removeTrail_csc(actor);
         PlayerFighter_setExhaustVisible_csc(actor);
@@ -4297,7 +4282,7 @@ void Level::createScene()
                 ((AEGeometry*)g)->addChild(((AEGeometry*)child)->transform);
                 [&]{ AEGeometry *g_=(AEGeometry*)(child); if(g_){ g_->~AEGeometry(); operator_delete_csc(g_);} }();
             }
-            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)(self + 0xf8));
+            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)&this->enemies);
         }
 
         // background traffic fighters.
@@ -4342,7 +4327,7 @@ void Level::createScene()
             (*(Player **)((char *)k + 0x4))->setAlwaysFriend(1);
             KIPlayer_setToSleep_csc(k);
             PlayerFighter_setExhaustVisible_csc((int)(intptr_t)k);
-            ArrayAdd_KIPlayer_csc(k, *(void **)(self + 0xf8));
+            ArrayAdd_KIPlayer_csc(k, *(void **)&this->enemies);
         }
     }
 }
@@ -4389,11 +4374,11 @@ void Level::renderBG(float t) {
     ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
     ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
 
-    Matrix *sky = (Matrix *)(self + 0x1d0);
+    Matrix *sky = (Matrix *)((char *)&this->sub_1d0);
     Matrix_getInverse_rbg(sky);
-    *(int *)(self + 0x1ec) = 0;
-    *(int *)(self + 0x1dc) = 0;
-    *(int *)(self + 0x1fc) = 0;
+    *(int *)((char *)this + 0x1ec) = 0;
+    *(int *)((char *)this + 0x1dc) = 0;
+    *(int *)((char *)this + 0x1fc) = 0;
 
     bool alienRing = false;
     if (Status_inAlienOrbit_rbg() == 0) {
@@ -4402,52 +4387,52 @@ void Level::renderBG(float t) {
             alienRing = true;
     }
     Level_rbg_buildSkyMatrix(self, alienRing ? 1 : 0, t);
-    Matrix_mulEq_rbg(sky, (Matrix *)(self + 0x20c));
+    Matrix_mulEq_rbg(sky, (Matrix *)((char *)&this->sub_20c));
 
-    ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)(self + 0x1d0));
-    ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x19c)), 0);
+    ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
+    ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_19c), 0);
     ((PaintCanvas*)(long)(canvas))->SetBlendMode(0);
-    ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)(self + 8)));
-    ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x198)), 0);
+    ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)&this->field_08));
+    ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_198), 0);
     ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
-    ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)(self + 4)));
+    ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)&this->skyboxMesh));
 
     // optional far cloud layer.
-    if (*(int *)(self + 0x1b4) != -1) {
-        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x1b8)), 0);
+    if (this->field_1b4 != -1) {
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_1b8), 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(1);
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         Matrix_getInverse_rbg(sky);
         Matrix_assign_rbg(sky, sky);
-        *(int *)(self + 0x1ec) = 0;
-        *(int *)(self + 0x1dc) = 0;
-        *(int *)(self + 0x1fc) = 0;
+        *(int *)((char *)this + 0x1ec) = 0;
+        *(int *)((char *)this + 0x1dc) = 0;
+        *(int *)((char *)this + 0x1fc) = 0;
         Matrix_getInverse_rbg(sky);
-        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)(self + 0x1b4)), (const float *)0);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_1b4), (const float *)0);
     }
 
-    StarSystem_render_rbg(*(StarSystem **)(self + 0xec));
+    StarSystem_render_rbg(*(StarSystem **)&this->starSystem);
 
     // supernova glow billboards.
-    if (Status_inSupernovaSystem_rbg() != 0 && *(int *)(self + 0xc) != -1) {
+    if (Status_inSupernovaSystem_rbg() != 0 && this->skyboxTexture != -1) {
         int camp = Status_getCurrentCampaignMission_rbg();
-        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x1a0)), 0);
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_1a0), 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
         float scale = (0x6a < camp) ? 1.5f : 1.0f;
         int flag = (int)(scale * t);
         int xf = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         Transform_Update_rbg(xf, flag);
         Matrix_getInverse_rbg(sky);
-        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)(self + 0x10)), (const float *)0);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_10), (const float *)0);
         xf = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         Transform_Update_rbg(xf, flag);
-        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)(self + 0x18)), (const float *)0);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_18), (const float *)0);
     }
 
     // rotating planet ring.
-    if (*(int *)(self + 0x1bc) != -1) {
-        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x1c0)), 0);
+    if (this->field_1bc != -1) {
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_1c0), 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
@@ -4465,33 +4450,33 @@ void Level::renderBG(float t) {
             AERandom_nextInt_rbg(rng);
             Level_rbg_buildSkyMatrix(self, 2, t);
         }
-        Matrix_mulEq_rbg(sky, (Matrix *)(self + 0x248));
-        *(int *)(self + 0x1dc) = 0;
-        *(int *)(self + 0x1ec) = 0;
-        *(int *)(self + 0x1fc) = 0;
+        Matrix_mulEq_rbg(sky, (Matrix *)((char *)&this->sub_248));
+        *(int *)((char *)this + 0x1dc) = 0;
+        *(int *)((char *)this + 0x1ec) = 0;
+        *(int *)((char *)this + 0x1fc) = 0;
         Matrix_getInverse_rbg(sky);
-        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)(self + 0x1bc)), (const float *)0);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_1bc), (const float *)0);
     }
 
     // supernova flare mesh (when the explosion timeline is past its trigger).
-    if (*(char *)(self + 0x289) != 0 &&
+    if (*(char *)((char *)this + 0x289) != 0 &&
         1.0f <= *(float *)(*(int *)g_rbg_engine + 0x28)) {
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         Matrix_getInverse_rbg(sky);
         Matrix_assign_rbg(sky, sky);
-        *(int *)(self + 0x1ec) = 0;
-        *(int *)(self + 0x1dc) = 0;
-        *(int *)(self + 0x1fc) = 0;
-        ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)(self + 0x1d0));
+        *(int *)((char *)this + 0x1ec) = 0;
+        *(int *)((char *)this + 0x1dc) = 0;
+        *(int *)((char *)this + 0x1fc) = 0;
+        ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
         ((PaintCanvas*)(long)(canvas))->SetColor(0xffffffffu);
         Engine *eng = *(Engine **)(canvas + 0x34);
         Engine_SetModelMatrix_rbg((Matrix *)eng);
-        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)(self + 0x1c4)), 0);
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)((char *)this + 0x1c4)), 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(8);
         Engine_LightSetLight_rbg(*(Engine **)(canvas + 0x34), 0x4000);
         Engine_GlEnable_rbg(*(unsigned *)(canvas + 0x34), 0);
-        ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)(self + 0x1cc)));
+        ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)((char *)this + 0x1cc)));
         Engine_GlEnable_rbg(*(unsigned *)(canvas + 0x34), 0);
         Engine_LightEnable_rbg(*(int *)(canvas + 0x34));
     }
@@ -5061,10 +5046,9 @@ void Level::csp_buildDetail() {
 // --- createSpace(): seed a per-orbit random skybox spin (light direction) into
 // self+0x1a4..0x1ac, unless the orbit forces an unrotated fog skybox.
 void Level::csp_buildStarSystemScene() {
-    char *self = (char *)this;
-    *(int *)(self + 0x1a4) = 0;
-    *(int *)(self + 0x1a8) = 0;
-    *(int *)(self + 0x1ac) = 0;
+    this->field_1a4 = 0;
+    this->field_1a8 = 0;
+    this->field_1ac = 0;
 }
 
 // --- createSpace(): allocate the home-station + jumpgate roster (4 slots) and
@@ -5079,8 +5063,7 @@ void Level::csp_buildStationAndGates() {
 // we resolve through the player object's own placement entry.
 void Level::init_placePlayer(int statusA, int stationStack) {
     (void)statusA; (void)stationStack;
-    char *self = (char *)this;
-    int player = *(int *)(self + 0xf0);
+    int player = this->player;
     if (player == 0)
         return;
     // PlayerEgo exposes its respawn placement through vtable slot +0x1c.
@@ -5098,8 +5081,7 @@ void Level::cm_buildMissionScene(Mission *mission) {
 // (stored on the PlayerAsteroid at +0x150) and a candidate position, used to
 // reject overlapping spawns.
 float Level::ca_asteroidDistance(unsigned idx, Vector *pos) {
-    char *self = (char *)this;
-    int arr = *(int *)(self + 0xfc);          // asteroids array
+    int arr = this->asteroids;          // asteroids array
     if (arr == 0)
         return 1.0e30f;
     int *data = *(int **)(arr + 4);
@@ -5230,8 +5212,7 @@ void Level::ips_applyAmbient() {
 // --- initParticleSystems(): register one player-engine particle system (kind)
 // against a unit reference transform and return its handle.
 int Level::ips_addPlayerSystem(int kind) {
-    char *self = (char *)this;
-    int mgr = *(int *)(self + 0x7c);          // particleSystemMgr
+    int mgr = this->particleSystemMgr;          // particleSystemMgr
     if (mgr == 0)
         return -1;
     int sys = ParticleSystemManager_addSystem_ips(mgr, 0, kind, 1);
@@ -5263,10 +5244,9 @@ void Level::csc_placeActor(int actor, int idx, int profile) {
 // (self+0x1a4..0x1ac) into the skybox matrix at self+0x1d0. mode==1 selects the
 // alien-orbit variant.
 void Level::rbg_buildSkyMatrix(int mode, float spin) {
-    char *self = (char *)this;
-    Matrix *sky = (Matrix *)(self + 0x1d0);
-    float ax = *(float *)(self + 0x1a4);
-    float ay = *(float *)(self + 0x1a8) + (mode ? 0.0f : spin);
-    float az = *(float *)(self + 0x1ac);
+    Matrix *sky = (Matrix *)((char *)&this->sub_1d0);
+    float ax = *(float *)&this->field_1a4;
+    float ay = *(float *)&this->field_1a8 + (mode ? 0.0f : spin);
+    float az = *(float *)&this->field_1ac;
     AbyssEngine::AEMath::MatrixSetRotation(*sky, ax, ay, az);
 }
