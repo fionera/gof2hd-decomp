@@ -312,3 +312,12 @@ TractorBeam *TractorBeam::dtor() {
     this->~TractorBeam();
     return this;
 }
+
+// ---- C-ABI shim (recovered) ----
+// TractorBeam_new — flat heap factory. PlayerEgo::equip reaches the beam through
+// this entry point; it allocates and constructs a TractorBeam from the player's
+// ship geometry and the equipment-derived beam kind.
+extern "C" void *TractorBeam_new(void *geo, int kind)
+{
+    return TractorBeam::create((AEGeometry *)geo, kind);
+}

@@ -27,6 +27,9 @@ public:
     void touch_end(int x, int y);
     void setTextCentered(bool centered);
     void setYPosition(int y);
+    // Window-level reposition (engine-name alias used by ChoiceWindow); forwards
+    // the new top Y to the hosted ScrollTouchBox.
+    void setPosition(int y);
     void update(int dt);
     // Keyboard / D-pad scroll: nudge the hosted ScrollTouchBox by `amount` steps
     // (positive scrolls the content down, negative up); the box settles via update().

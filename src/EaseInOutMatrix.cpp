@@ -1,5 +1,6 @@
 #include "gof2/EaseInOutMatrix.h"
 #include <arm_neon.h>
+#include <new>
 
 namespace AbyssEngine {
 
@@ -156,3 +157,28 @@ EaseInOutMatrix::EaseInOutMatrix()
 }
 
 } // namespace AbyssEngine
+
+// ---- C-ABI shims (recovered) ----
+// These are the C-callable faces of the real EaseInOutMatrix constructor and
+// destructor; consuming translation units (SpaceLounge, PlayerEgo, ModStation,
+// PlayerFighter, ...) reach the object through these flat entry points.
+
+// EaseInOutMatrix_ctor — in-place construct an EaseInOutMatrix from two camera
+// matrices and an animation duration (ms). `from`/`to` point at 0x3c-byte
+// Matrix blobs on the caller's stack.
+extern "C" void EaseInOutMatrix_ctor(void *ease, void *from, void *to, int duration)
+{
+    new (ease) AbyssEngine::EaseInOutMatrix(
+        *(AbyssEngine::AEMath::Matrix *)from,
+        *(AbyssEngine::AEMath::Matrix *)to,
+        duration);
+}
+
+// EaseInOutMatrix_dtor — non-deleting destructor. Runs ~EaseInOutMatrix() in
+// place (releasing the two orientation quaternions) and returns the storage so
+// the caller can hand it to operator delete.
+extern "C" void *EaseInOutMatrix_dtor(void *p)
+{
+    if (p) ((AbyssEngine::EaseInOutMatrix *)p)->~EaseInOutMatrix();
+    return p;
+}

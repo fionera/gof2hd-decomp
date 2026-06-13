@@ -61,3 +61,12 @@ PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry, float x, float y,
     this->field_0x128 = (int)y;
     this->field_0x12c = (int)z;
 }
+
+// ---- PlayerStatic(playerId, geometry) ----
+// Convenience overload used when the caller (Level::createStaticActors) builds
+// the actor at the origin and positions/rotates it afterwards. Delegates to the
+// full constructor with a zero fallback position.
+PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry)
+    : PlayerStatic(playerId, geometry, 0.0f, 0.0f, 0.0f)
+{
+}

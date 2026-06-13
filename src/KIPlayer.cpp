@@ -464,6 +464,64 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
     (void)active;
 }
 
+// ---- _KIPlayer_b59f4.cpp ----
+// KIPlayer::~KIPlayer() (D2) -- non-deleting destructor. Resets the vtable to the
+// KIPlayer base, then releases every owned sub-object: the wrapped Player, the
+// active and initial Routes are not freed here (only the active Route at +0x6c),
+// the crate/parent/child AEGeometry transforms, the jump-animation handle array
+// (+0xc4), the cargo array (+0x50) and the navigation space-point array (+0xcc,
+// whose elements are class instances and so are released first). Finally tears
+// down the embedded name String at +0x18.
+extern "C" void *Route_dtor(Route *r);          // Route::~Route (D2)
+
+KIPlayer::~KIPlayer() {
+    KIPlayer *self = this;
+    *(int *)self = (int)(intptr_t)(KIPlayer_vtable + 8);
+
+    if (self->player != 0)
+        ::operator delete(Player_dtor(self->player));
+    self->player = 0;
+
+    if (self->route != 0)
+        ::operator delete(Route_dtor(self->route));
+    self->route = 0;
+
+    if (self->crateGeometry != 0) {
+        ((AEGeometry *)(self->crateGeometry))->~AEGeometry();
+        ::operator delete(self->crateGeometry);
+    }
+    self->crateGeometry = 0;
+
+    if (self->field_0xc4 != 0)
+        ::operator delete(ArrayUint_dtor(self->field_0xc4));
+    self->field_0xc4 = 0;
+
+    if (self->geometry != 0) {
+        ((AEGeometry *)(self->geometry))->~AEGeometry();
+        ::operator delete(self->geometry);
+    }
+    self->geometry = 0;
+
+    if (self->parentGeometry != 0) {
+        ((AEGeometry *)(self->parentGeometry))->~AEGeometry();
+        ::operator delete(self->parentGeometry);
+    }
+    self->parentGeometry = 0;
+
+    if (self->cargo != 0)
+        ::operator delete(ArrayInt_dtor(self->cargo));
+    self->cargo = 0;
+
+    if (self->spacePoints != 0) {
+        ArrayReleaseClasses_SpacePoint(self->spacePoints);
+        if (self->spacePoints != 0)
+            ::operator delete(ArraySpacePoint_dtor(self->spacePoints));
+        self->spacePoints = 0;
+    }
+
+    ((String *)((char *)self + 0x18))->dtor();
+}
+
 // ---- getNearestDockingPoint_a5c54.cpp ----
 namespace AbyssEngine { namespace AEMath {
 Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);

@@ -1,4 +1,5 @@
 #include "gof2/BoundingSphere.h"
+#include <new>
 
 // Helpers to view the inherited center/extents floats as Vectors.
 static inline Vector *centerOf(BoundingVolume *v) { return (Vector *)&v->centerX; }
@@ -100,4 +101,31 @@ bool BoundingSphere::collide(float x, float y, float z)
         return true;
     }
     return BoundingVolume::collide(x, y, z);
+}
+
+// ---- C-ABI shims (recovered) ----
+// Flat constructor entry points used where a BoundingSphere is allocated raw
+// (operator new) and constructed through a C call. They forward to the real
+// in-class constructors.
+
+// BoundingSphere_constructor(self, cx, cy, cz, radius, ex, ey, ez) — full form
+// with explicit centre, radius and extents (PlayerStation collision volumes).
+extern "C" void BoundingSphere_constructor(void *self, float cx, float cy, float cz,
+                                           float radius, float ex, float ey, float ez)
+{
+    new (self) BoundingSphere(cx, cy, cz, ex, ey, ez, radius);
+}
+
+// BoundingSphere_ctor(self, cx, cy, cz, r) — centre + radius, zero extents
+// (Globals geometry loading).
+extern "C" void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r)
+{
+    new (self) BoundingSphere(cx, cy, cz, r);
+}
+
+// BoundingSphere_ctor_ca(bs) — default sphere (centre origin, zero radius); the
+// Level asteroid builder allocates the sphere then update()s it later.
+void BoundingSphere_ctor_ca(BoundingSphere *bs)
+{
+    new (bs) BoundingSphere(0.0f, 0.0f, 0.0f, 0.0f);
 }

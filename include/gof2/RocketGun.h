@@ -30,6 +30,9 @@ typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
 class RocketGun {
 public:
     void render();
+    // render() tail: RocketGun owns no rocket-specific geometry to draw, so once
+    // dispatched the renderer forwards straight to the ObjectGun base renderer.
+    void render_tail();
     RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
               uint32_t param_5, int param_6, bool param_7, Level *param_8);
     ~RocketGun();

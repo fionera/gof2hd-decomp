@@ -269,6 +269,50 @@ public:
     void wingmanDied_all(Status *status, int zero);
     void wingmanDied_one(String *name, unsigned int *list);
     int createStaticObject_call(int wp, int type, int jitter);
+
+    // init() runs its build pipeline by chaining to each of these sibling
+    // builders (the decompiler split them out as separate _init fragments);
+    // every one simply re-enters the matching no-argument Level method.
+    void createSpace_init();
+    void createPlayer_init();
+    void createAsteroids_init();
+    void createGasClouds_init();
+    void createMission_init();
+    void createCampaignMission_init();
+    void createScene_init();
+    void createStaticObjects_init();
+    void createSentryGuns_init();
+    void createFighterTurrets_init();
+    void createWingmen_init();
+    void assignGuns_init();
+    void connectPlayers_init();
+
+    // Per-context spawn helpers all funnel into the single createShip(...)
+    // body; the suffix marks the calling scene builder (mission / campaign /
+    // cut-scene / wingmen).
+    PlayerFixedObject *createShip_cm(int race, int shipClass, int type, int wp, int hostile, int group);
+    PlayerFixedObject *createShip_ccm(int race, int shipClass, int type, int wp, int hostile, int group);
+    PlayerFixedObject *createShip_csc(int race, int shipClass, int type, int wp, int hostile, int group);
+    PlayerFixedObject *createShip_cwm(int race, int shipClass, int type, int wp, int hostile, int group);
+
+    // Static-object spawners (createStaticObjects / createFighterTurrets) both
+    // re-enter createStaticObject(wp, type, jitter).
+    int createStaticObject_cso(int wp, int type, int jitter);
+    int createStaticObject_cft(int wp, int type, int jitter);
+
+    // createScene(mode 2) replays the in-flight player/mission build.
+    void createPlayer_csc();
+    void createMission_csc();
+
+    // update() dispatches the orbit/attacker ticks through these veneers.
+    void updateMissionOrbit_call(int dt);
+    void updateOrbit_call(int dt);
+    void updateAlienAttackers_call();
+
+    // updateOrbit() raises the delayed "friends turned hostile" alarm and the
+    // accompanying radio message through these veneers.
+    void alarmAllFriends_uo(int race, int message);
+    void createRadioMessage_uo(int type);
 };
 
 static_assert(sizeof(Level) == 0x2a0, "Level size");

@@ -54,6 +54,15 @@ void ScrollTouchWindow::setYPosition(int y)
     return ((ScrollTouchBox *)(this->scrollBox))->setYPosition(y);
 }
 
+// ---- setPosition (engine-name alias used by ChoiceWindow) ----
+// Window-level reposition: forwards the new top Y to the hosted ScrollTouchBox,
+// which re-lays out its content. Same effect as setYPosition; exposed under the
+// engine's public "setPosition" name (resolved through the GOT at the call site).
+void ScrollTouchWindow::setPosition(int y)
+{
+    return ((ScrollTouchBox *)(this->scrollBox))->setYPosition(y);
+}
+
 // ---- _ScrollTouchWindow_174244.cpp ----
 ScrollTouchWindow::~ScrollTouchWindow()
 {

@@ -2036,3 +2036,92 @@ extern "C" void Player_setUnknown(void *player, bool enabled) {
     (void)player; (void)enabled; /* virtual Player flag setter — resolved via vtable */
 }
 
+// =====================================================================
+// KIPlayer gun-install veneers.
+//
+// KIPlayer::addGun_a()/addGun_b() are tiny interworking thunks that branch
+// straight into the matching Player::addGun overload (Gun* vs Array<Gun*>*),
+// passing the wrapped Player through r0 while the gun and slot stay live in
+// r1/r2 from the KIPlayer caller. The standalone shims only carry the player,
+// so they forward into the corresponding Player::addGun overload; the wiring
+// pass restores the real gun/slot operands at the call site.
+// =====================================================================
+extern "C" void Player_addGun_a(void *player) {
+    // veneer -> Player::addGun(Gun*, int) at 0x7252c
+    static_cast<Player *>(player)->addGun(static_cast<Gun *>(nullptr), 0);
+}
+extern "C" void Player_addGun_b(void *player) {
+    // veneer -> Player::addGun(Array<Gun*>*, int) at 0x72544
+    static_cast<Player *>(player)->addGun(static_cast<Array<Gun *> *>(nullptr), 0);
+}
+
+// PlayerEgo explosion path: deactivate the destroyed ship. The veneer at this
+// tail (DAT_001abad4) resolves to Player::setActive (0x72580); the explosion
+// handler drops the player out of the active simulation.
+extern "C" void Player_setActive_(int player) {
+    reinterpret_cast<Player *>(static_cast<__INTPTR_TYPE__>(player))->setActive(false);
+}
+
+// LevelScript autopilot routing: the warp/station autopilot helper branches into
+// the Player autopilot-target setter (veneer at DAT_001abc24 -> setAutoPilot,
+// 0x728d4). There is no static Player::setAutoPilotTarget body — it is a virtual
+// dispatch through the live vtable — so it is exposed as a forwarder the wiring
+// pass routes to the resolved virtual method.
+extern "C" void Player_setAutoPilotTarget(void *player, void *target) {
+    (void)player; (void)target; /* virtual Player autopilot-target setter — resolved via vtable */
+}
+
+// =====================================================================
+// PlayerEgo weapon-fire dispatch (shootPrimary / shootSecondary / shootTurret).
+//
+// PlayerEgo::shoot(weapon, type) splits into three calls of the Player::shoot
+// family depending on weapon class:
+//   - type==1  -> secondary launch: Player::shoot(kind, lockIdx, pos, flag), int
+//   - turret   -> Player::shoot(2, weapon, ..., matrix) with a combined geometry
+//                 matrix supplied externally (the turret aims independently of the
+//                 hull transform)
+//   - else     -> primary fire: Player::shoot(type, weapon, pos, flag)
+// The (weapon, hi) pair is the low/high half of the 64-bit gun id/position the
+// canonical Player::shoot(int,int,long long,bool) overload consumes.
+// =====================================================================
+extern "C" int Player_shootPrimary(void *player, int kind, int weapon, int hi, int zero) {
+    (void)zero;
+    long long pos = ((long long)hi << 32) | (unsigned int)weapon;
+    static_cast<Player *>(player)->shoot(kind, weapon, pos, hi < 0);
+    return 1;
+}
+
+extern "C" int Player_shootSecondary(void *player, int kind, int idx, int hi, int zero) {
+    (void)zero;
+    long long pos = ((long long)hi << 32) | (unsigned int)idx;
+    static_cast<Player *>(player)->shoot(kind, idx, pos, hi < 0);
+    return 1;
+}
+
+extern "C" int Player_shootTurret(void *player, int kind, int weapon, int hi,
+                                  int flag, const void *matrix) {
+    (void)flag;
+    // Turret fire aims through an externally-combined geometry matrix rather than
+    // the hull transform, so it routes through the matrix-expanding shoot1 overload.
+    const int *m = static_cast<const int *>(matrix);
+    static_cast<Player *>(player)->shoot1((unsigned)kind, weapon, hi,
+                                          hi < 0,
+                                          m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7],
+                                          m[8], m[9], m[10], m[11], m[12], m[13], m[14]);
+    return 1;
+}
+
+// shoot_full2: the canonical Player::shoot(int,int,long long,bool) expands the
+// hull transform (fields 0x04..0x3c) into the trailing matrix arguments and tail-
+// calls the matrix-taking shoot1 overload (veneer -> Player::shoot1 at 0xb3b20).
+extern "C" void Player_shoot_full2(
+    Player *self, int a, int b, int loC, int hiC,
+    int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7,
+    int m8, int m9, int m10, int m11, int m12, int m13, int m14) {
+    long long pos = ((long long)hiC << 32) | (unsigned int)loC;
+    (void)pos;
+    self->shoot1((unsigned)a, b, hiC, loC,
+                 m0, m1, m2, m3, m4, m5, m6, m7,
+                 m8, m9, m10, m11, m12, m13, m14);
+}
+

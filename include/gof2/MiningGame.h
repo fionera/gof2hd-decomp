@@ -76,6 +76,14 @@ public:
     void down(float amount);
     void left(float amount);
     void right(float amount);
+    // Interworking veneers exported to PlayerEgo's input dispatch. Each is a thin
+    // forwarder that hands the steering delta to the matching axis handler above:
+    //   steerXR -> right, steerX -> left, steerY -> down, steerYAlt -> up.
+    // They mirror the ARM-Thumb PLT thunks at 0x1abaf8..0x1abb38 in the original.
+    float steerXR(float delta);
+    float steerX(float delta);
+    float steerY(float delta);
+    float steerYAlt(float delta);
     int getOreAmount();
     uint8_t gameWon();
     uint8_t gameLost();

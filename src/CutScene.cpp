@@ -416,6 +416,23 @@ CutScene::CutScene(int param)
     u32(this, 0x24) = 0x3851b717u;
 }
 
+// CutScene_ctor / CutScene_dtor: the C1/D1 entry-point thunks the decompiler
+// emitted as free functions. The mod screens (SpaceLounge, ModStation,
+// ModMainMenu) allocate a CutScene's storage themselves and then call these to
+// construct/destruct it in place. CutScene_ctor runs the complete-object
+// constructor over the already-allocated block; CutScene_dtor runs the
+// destructor and hands the pointer back so the caller can free it.
+extern "C" void CutScene_ctor(void *cutscene, int id)
+{
+    new (cutscene) CutScene(id);
+}
+
+extern "C" void *CutScene_dtor(void *p)
+{
+    ((CutScene *)p)->~CutScene();
+    return p;
+}
+
 // ---- replacePlayerShip_99668.cpp ----
 extern "C" {
 void *__aeabi_memcpy(void *dst, const void *src, unsigned int n);

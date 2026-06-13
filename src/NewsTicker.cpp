@@ -348,3 +348,22 @@ extern "C" void *NewsTicker_dtor(void *p)
     if (p) ((NewsTicker *)p)->~NewsTicker();
     return p;
 }
+
+// ---- inlined-station seam wrappers (recovered) ----
+// ModStation's OnUpdate/OnTouchEnd were emitted with the ticker calls inlined;
+// these flat wrappers are the per-frame tick and touch-release entry points that
+// the station reaches the embedded NewsTicker through.
+
+// NewsTicker_update_ou(nt) — per-frame scroll tick. The station drives the ticker
+// once per idle frame; the scroll step is derived inside update().
+void NewsTicker_update_ou(int nt)
+{
+    ((NewsTicker *)(intptr_t)nt)->update(0);
+}
+
+// NewsTicker_OnTouchEnd_ote(nt, p1) — touch-release handler; returns non-zero when
+// the ticker consumed the release (it had been grabbed for manual scrolling).
+int NewsTicker_OnTouchEnd_ote(int nt, int p1)
+{
+    return (int)((NewsTicker *)(intptr_t)nt)->OnTouchEnd(p1, 0);
+}

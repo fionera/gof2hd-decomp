@@ -150,6 +150,7 @@ public:
     int field_0x120;                    // +0x120
 
     // ---- methods (converted from free functions) ----
+    ~KIPlayer();
     void PauseEngineSound();
     void PlayEngineSound();
     void ResumeEngineSound();

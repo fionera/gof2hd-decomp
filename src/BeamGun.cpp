@@ -283,6 +283,30 @@ void BeamGun::setEnemy_tail(void *data) {
     BeamGun_setEnemyEngine(data);
 }
 
+// ---------------------------------------------------------------------------
+// Inherited gun-hierarchy enemy handlers (the landing pads behind the tail
+// veneers above).
+//
+// In the binary, BeamGun::setEnemies / setEnemy are themselves veneers whose
+// terminal b.w dispatches through a single relocated GOT slot (the same slot
+// shared by every *Gun::setEnemies in the hierarchy). The dynamic linker fills
+// that slot at load time with the inherited base-class enemy handler, so the
+// target has no static body of its own in this image -- it is reached purely by
+// the runtime relocation. We model that indirect dispatch faithfully: read the
+// resolved handler out of the engine's relocation slot and forward the data
+// pointer the tail already extracted.
+// ---------------------------------------------------------------------------
+__attribute__((visibility("hidden"))) extern void (*BeamGun_enemiesHandler_slot)(void *);
+__attribute__((visibility("hidden"))) extern void (*BeamGun_enemyHandler_slot)(void *);
+
+extern "C" void BeamGun_setEnemiesEngine(void *data) {
+    BeamGun_enemiesHandler_slot(data);
+}
+
+extern "C" void BeamGun_setEnemyEngine(void *data) {
+    BeamGun_enemyHandler_slot(data);
+}
+
 // render() tail: render the secondary beam geometry via AEGeometry::render.
 void BeamGun::render_tail(AEGeometry *self) {
     AEGeometryRender(self);

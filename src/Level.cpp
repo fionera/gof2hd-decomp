@@ -4924,3 +4924,64 @@ void Level::wingmanDied_one(String *name, unsigned int *list) {
 int Level::createStaticObject_call(int wp, int type, int jitter) {
     return createStaticObject((Waypoint *)(intptr_t)wp, type, jitter);
 }
+
+// ---------------------------------------------------------------------------
+// Recovered sibling-forwarding fragments.
+//
+// init() and the scene builders were decompiled as a flat sequence of helper
+// calls (the _init / _csc / _cm / ... fragments). In the binary each of those
+// is a PI veneer that lands directly in the matching Level builder method, so
+// the recovered body is simply the re-entry into that sibling. These mirror the
+// _call / _tail forwarders above and let init()/createScene()/createMission()/
+// createWingmen()/etc. run their build pipeline through real method calls.
+// ---------------------------------------------------------------------------
+
+// init()'s staged build pipeline (createSpace_init .. connectPlayers_init).
+void Level::createSpace_init()           { createSpace(); }
+void Level::createPlayer_init()          { createPlayer(); }
+void Level::createAsteroids_init()       { createAsteroids(); }
+void Level::createGasClouds_init()       { createGasClouds(); }
+void Level::createMission_init()         { createMission(); }
+void Level::createCampaignMission_init() { createCampaignMission(); }
+void Level::createScene_init()           { createScene(); }
+void Level::createStaticObjects_init()   { createStaticObjects(); }
+void Level::createSentryGuns_init()      { createSentryGuns(); }
+void Level::createFighterTurrets_init()  { createFighterTurrets(); }
+void Level::createWingmen_init()         { createWingmen(); }
+void Level::assignGuns_init()            { assignGuns(); }
+void Level::connectPlayers_init()        { connectPlayers(); }
+
+// Each scene builder spawns its actors through the shared createShip(...) body.
+PlayerFixedObject *Level::createShip_cm(int race, int shipClass, int type, int wp, int hostile, int group) {
+    return createShip(race, shipClass, type, (Waypoint *)(intptr_t)wp, hostile, group);
+}
+PlayerFixedObject *Level::createShip_ccm(int race, int shipClass, int type, int wp, int hostile, int group) {
+    return createShip(race, shipClass, type, (Waypoint *)(intptr_t)wp, hostile, group);
+}
+PlayerFixedObject *Level::createShip_csc(int race, int shipClass, int type, int wp, int hostile, int group) {
+    return createShip(race, shipClass, type, (Waypoint *)(intptr_t)wp, hostile, group);
+}
+PlayerFixedObject *Level::createShip_cwm(int race, int shipClass, int type, int wp, int hostile, int group) {
+    return createShip(race, shipClass, type, (Waypoint *)(intptr_t)wp, hostile, group);
+}
+
+// createStaticObjects()/createFighterTurrets() build scenery via createStaticObject(...).
+int Level::createStaticObject_cso(int wp, int type, int jitter) {
+    return createStaticObject((Waypoint *)(intptr_t)wp, type, jitter);
+}
+int Level::createStaticObject_cft(int wp, int type, int jitter) {
+    return createStaticObject((Waypoint *)(intptr_t)wp, type, jitter);
+}
+
+// createScene(mode 2) replays the regular player/mission build.
+void Level::createPlayer_csc()  { createPlayer(); }
+void Level::createMission_csc() { createMission(); }
+
+// update() drives the orbit / alien-attacker ticks through these veneers.
+void Level::updateMissionOrbit_call(int dt) { updateMissionOrbit(dt); }
+void Level::updateOrbit_call(int dt)        { updateOrbit(dt); }
+void Level::updateAlienAttackers_call()     { updateAlienAttackers(0); }
+
+// updateOrbit() raises the delayed friends-turned-hostile alarm + radio line.
+void Level::alarmAllFriends_uo(int race, int message) { alarmAllFriends(race, message != 0); }
+void Level::createRadioMessage_uo(int type)           { createRadioMessage(type, 0); }

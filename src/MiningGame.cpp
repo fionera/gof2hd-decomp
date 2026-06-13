@@ -112,6 +112,34 @@ void MiningGame::right(float amount)
     this->inputX = amount * 3.0f;
 }
 
+// ---- steer veneers (0x1abaf8..0x1abb38) ----
+// PlayerEgo's pitch/yaw input handlers reach the mining game through these
+// interworking thunks. Each forwards the steering delta to the corresponding
+// axis handler and reports the resulting axis input back to the caller.
+float MiningGame::steerXR(float delta)
+{
+    right(delta);
+    return this->inputX;
+}
+
+float MiningGame::steerX(float delta)
+{
+    left(delta);
+    return this->inputX;
+}
+
+float MiningGame::steerY(float delta)
+{
+    down(delta);
+    return this->inputY;
+}
+
+float MiningGame::steerYAlt(float delta)
+{
+    up(delta);
+    return this->inputY;
+}
+
 // ---- _MiningGame_11eb74.cpp ----
 MiningGame::~MiningGame()
 {

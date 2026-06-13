@@ -61,6 +61,16 @@ void RocketGun::render()
     return RocketGun_render_tail();
 }
 
+// render() tail-call fragment. RocketGun::render() is a thin shim that branches
+// straight into the ObjectGun base renderer (which draws the gun's muzzle
+// geometry); the branch target was resolved from the PLT veneer in the binary.
+extern "C" void _ZN9ObjectGun6renderEv(void *self);   // ObjectGun::render()
+
+void RocketGun::render_tail()
+{
+    _ZN9ObjectGun6renderEv(this);
+}
+
 // ---- _RocketGun_15e9d0.cpp ----
 void *_ZN9RocketGunD1Ev(RocketGun *self)
 {

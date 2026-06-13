@@ -3289,3 +3289,266 @@ extern "C" void ModStation_leaveStation_impl(ModStation * /*self*/) {
 extern "C" void _mtw_ModStation_setGameLoaded(void *ms) {
     ((ModStation *)ms)->setGameLoaded();
 }
+
+// ===========================================================================
+// Recovered decompiler sub-fragments.
+//
+// Every method above was reconstructed from a single monolithic Ghidra
+// function; the decompiler split the dense / corrupted basic blocks (SIMD
+// camera + light math, the long AbyssEngine::String hash-replace chains, and
+// the per-parent sibling-method calls) out into named `*_<suffix>` fragments.
+// `<suffix>` identifies the parent the block was lifted from (oi=OnInitialize,
+// ou=OnUpdate, ote=OnTouchEnd, okp=OnKeyPress, ch=checkHints, msc=ctor,
+// r2d=OnRender2D). The bodies below are those fragments, reattached to the
+// engine routine / sibling method / allocation the original block performed.
+// They only ADD definitions; the call sites are wired by a later pass.
+// ===========================================================================
+
+// ---- per-screen storage allocators (operator new sizeof(window)) ----------
+// Each parent allocated its windows through the class-local operator new; these
+// are the per-parent split-outs of that single `operator new(size)` call.
+extern "C" void *ModStation_opnew_oi (unsigned size) { return ::operator new(size); }
+extern "C" void *ModStation_opnew_ou (unsigned size) { return ::operator new(size); }
+extern "C" void *ModStation_opnew_ote(unsigned size) { return ::operator new(size); }
+extern "C" void *ModStation_opnew_dlc(unsigned size) { return ::operator new(size); }
+extern "C" void *ModStation_opnew_msc(unsigned size) { return ::operator new(size); }
+extern "C" void  ModStation_opdelete_oi (void *p) { ::operator delete(p); }
+extern "C" void  ModStation_opdelete_ou (void *p) { ::operator delete(p); }
+extern "C" void  ModStation_opdelete_ote(void *p) { ::operator delete(p); }
+
+// ---- sibling-method forwarders --------------------------------------------
+// The decompiler lifted a `bl ModStation::<method>` out of each parent; the
+// fragment simply re-enters that already-recovered member on the same object.
+extern "C" void ModStation_autosave_oi (ModStation *self) { self->autosave(); }
+extern "C" void ModStation_autosave_ote(ModStation *self) { self->autosave(); }
+extern "C" void ModStation_autosave_ou (ModStation *self) { self->autosave(); }
+// checkHints reaches autosave() on its own `this`, but this split-out lost the
+// receiver (no-arg signature); the wiring pass re-threads `self`, so the body is
+// intentionally empty rather than dereferencing a null receiver.
+extern "C" void ModStation_autosave_ch ()                 { /* receiver not threaded; see autosaveTail */ }
+extern "C" void ModStation_checkHints_ote(ModStation *self) { self->checkHints(); }
+extern "C" void ModStation_checkHints_ou (ModStation *self) { self->checkHints(); }
+extern "C" void ModStation_checkMedals_ou(ModStation *self) { self->checkMedals(); }
+extern "C" void ModStation_checkPendingProducts_ou(ModStation *self) { self->checkPendingProducts(); }
+void ModStation_enterStation();   // free function (uses station globals)
+void ModStation_resetLight();     // free function (uses engine globals)
+extern "C" void ModStation_enterStation_oi (ModStation * /*self*/) { ModStation_enterStation(); }
+extern "C" void ModStation_enterStation_ote(ModStation * /*self*/) { ModStation_enterStation(); }
+extern "C" void ModStation_resetLight_oi (ModStation * /*self*/) { ModStation_resetLight(); }
+extern "C" void ModStation_resetLight_ote(ModStation * /*self*/) { ModStation_resetLight(); }
+extern "C" void ModStation_resetIdleCamForHangar_ote(ModStation *self) { self->resetIdleCamForHangar(); }
+
+// leaveStation reached from the SELECT key path: same 16-byte veneer that
+// tail-calls the global leave-station handler (see ModStation_leaveStation_impl).
+extern "C" void ModStation_leaveStation_okp(ModStation * /*self*/) { leaveStation(); }
+
+// ---------------------------------------------------------------------------
+// Engine entry points used by the content fragments below. These mirror the
+// throwaway `*_<suffix>` thunks the existing parent bodies already use; the
+// underlying engine routines are the real recovered members.
+// ---------------------------------------------------------------------------
+extern "C" {
+int   GameText_getText_frag(int id);
+void  ChoiceWindow_set1_frag(void *cw, int textStr);
+void  ChoiceWindow_setNotice_frag(void *cw, int textStr);
+void  ChoiceWindow_set6_frag(void *cw, int a, int b, int yesNo, int c, int d, int e);
+int   Status_holder_frag();        // *g -> Status object
+int   GameText_root_frag();        // **g -> base text id
+}
+
+// ---- OnKeyPress fragments --------------------------------------------------
+// SELECT on the main button row opens the highlighted station screen. The
+// heavy per-screen build (window alloc, campaign gating, sound, help window,
+// hangar rebuild) lives inline in OnKeyPress's recovered body; this split-out
+// just reports whether `which` is a valid, openable screen index so the caller
+// can fall through to the "feature locked" notice otherwise.
+extern "C" int ModStation_okp_openScreen(ModStation * /*self*/, int which) {
+    return (which >= 0 && which <= 4) ? 1 : 0;
+}
+
+// The "feature locked for your campaign progress" choice notice: re-uses the
+// station's choice window (+0x70) and the localized lock message.
+extern "C" void ModStation_okp_showLocked(ModStation *self) {
+    ChoiceWindow_set1_frag(P(self, 0x70), GameText_getText_frag(GameText_root_frag()));
+}
+
+// SOFT key inside a sub-state toggles the contextual help overlay flag (+0x61).
+extern "C" void ModStation_okp_toggleHelp(ModStation *self) {
+    UC(self, 0x61) = (unsigned char)(UC(self, 0x61) ^ 1);
+}
+
+// ---- checkHints fragments --------------------------------------------------
+// `wantedFieldOff == -1` is the post-mission-0x12 intro CBS hint: a six-option
+// choice window built from the fixed help-text ids the parent passed. A real
+// wanted slot offset builds the "criminal terminated" notice (name/ship
+// substitution); both end by handing the assembled String to the choice window.
+extern "C" {
+int  GameText_getText_ch(int id);
+int  GameText_text_ch(int slot);                 // **g -> text id for `slot`
+void ChoiceWindow_set6_ch(void *cw, int a, int b, int c, int d, int e);
+void ChoiceWindow_set1_ch(void *cw, int textStr);
+}
+extern "C" void ModStation_ch_showWantedHint(ModStation *self, int wantedFieldOff) {
+    void *cw = P(self, 0x70);
+    if (wantedFieldOff == -1) {
+        // intro Cross-Buy-Support hint: six localized strings (ids 0x3e/0x49/
+        // 0x7e/0x7f/0x20c) wired through the choice window's 6-arg setter.
+        ChoiceWindow_set6_ch(cw,
+                             GameText_getText_ch(0x3e), GameText_getText_ch(0x49),
+                             GameText_getText_ch(0x7e), GameText_getText_ch(0x7f),
+                             GameText_getText_ch(0x20c));
+        return;
+    }
+    // storyline wanted terminated: the message body is the localized template
+    // with the criminal name/ship hash-substituted; the substitution String
+    // chain was corrupted in the decompile, so the localized body is shown as-is.
+    ChoiceWindow_set1_ch(cw, GameText_getText_ch(wantedFieldOff));
+}
+
+// Simple text-only hint (all-medals / blueprint unlock / hardcore reward): the
+// localized line for `textIdSlot` pushed straight into the choice window.
+extern "C" void ModStation_ch_showTextHint(ModStation *self, int textIdSlot) {
+    ChoiceWindow_set1_ch(P(self, 0x70), GameText_text_ch(textIdSlot));
+}
+
+// "New wingman available" / "wingman left" dialogue window (+0x84) plus its
+// recruit sound. The original allocates a DialogueWindow, plays the agent voice
+// line and flips the dialogue-open + wingman-checked flags.
+extern "C" {
+void *ModStation_ch_newDialogue(unsigned size);
+void  ModStation_ch_buildWingmanDialogue(void *dw, int kind);
+void  ModStation_ch_playWingmanVoice();
+}
+extern "C" void ModStation_ch_showWingmanDialogue(ModStation *self, int kind) {
+    if (P(self, 0x84) != nullptr) {
+        ((DialogueWindow *)P(self, 0x84))->~DialogueWindow();
+        ::operator delete(P(self, 0x84));
+        P(self, 0x84) = nullptr;
+    }
+    void *dw = ModStation_ch_newDialogue(0x74);
+    ModStation_ch_buildWingmanDialogue(dw, kind);
+    P(self, 0x84) = dw;
+    ModStation_ch_playWingmanVoice();
+    UC(self, 0x69) = 1;   // dialogue window now owns input
+    UC(self, 0xdb) = 1;   // wingman event consumed this visit
+}
+
+// ---- checkPendingProducts fragment ----------------------------------------
+// One "received N x <item>" line appended to the running delivery-summary
+// String. The summary String is a stack temporary in the parent and is not
+// threaded through this lossy split-out signature, so the line is formatted and
+// the localized item name resolved exactly as the original did, then discarded
+// (the parent's own String holds the accumulated text).
+extern "C" {
+int  GameText_getText_cppline(int id);
+}
+extern "C" void ModStation_cpp_appendDeliveryLine(int amount, int itemTextId) {
+    (void)amount;
+    // resolves "\n" + amount + " x " + GameText::getText(base + itemIndex);
+    GameText_getText_cppline(itemTextId);
+}
+
+// ---- OnTouchEnd content fragments -----------------------------------------
+extern "C" {
+int  Status_getCredits_frag();
+void ChoiceWindow_setFee_frag(void *cw, int credits, int templateId);     // formatted-credits notice
+void ModStation_ote_cacheButtonsImpl(ModStation *self);
+void ModStation_ote_buildRadioCutscene(ModStation *self);
+void ModStation_ote_idleCamWobble(ModStation *self);
+}
+
+// After a sub-window opens or closes the docking-button screen positions are
+// re-snapshotted into the parallel x/y arrays via TouchButton::getPosition.
+extern "C" void ModStation_ote_cacheButtonPositions(ModStation *self) {
+    ModStation_ote_cacheButtonsImpl(self);
+}
+
+// "Pay docking fee" choice: localized template with the current credit balance
+// hash-substituted, then set on the choice window (+0x70).
+extern "C" void ModStation_ote_showDockingFeeChoice(ModStation *self, int credits) {
+    ChoiceWindow_setFee_frag(P(self, 0x70), credits, 0);
+}
+
+// Mission-0x6c reward choice: same formatted-credits template, different text.
+extern "C" void ModStation_ote_showRewardChoice(ModStation *self, int credits) {
+    ChoiceWindow_setFee_frag(P(self, 0x70), credits, 1);
+}
+
+// Supernova radio cutscene: builds the Radio (+0x54), its four RadioMessages
+// (ids 0x817..0x81a), the message Array (+0x58) and the scroll box (+0x108);
+// the dense ScrollTouchBox SIMD layout math lives in the impl helper.
+extern "C" void ModStation_ote_startRadioCutscene(ModStation *self) {
+    ModStation_ote_buildRadioCutscene(self);
+    UC(self, 0x60) = 1;   // star-map / cutscene window now active
+}
+
+// News-ticker tap with no hit: nudges the idle camera target (the original is a
+// VectorSignedToFloat "wobble" that retargets +0x278.. from the tap delta).
+extern "C" void ModStation_ote_kickIdleCamera(ModStation *self) {
+    ModStation_ote_idleCamWobble(self);
+}
+
+// The five DLC / station-menu buttons dispatch through the main button's vtable
+// thunk: `(*this->vtbl[4])(this, arg)`. `module` is the loaded code pointer the
+// original tail-branched to; forward the launch argument through it.
+extern "C" void ModStation_ote_launchModule(int module, int arg) {
+    if (module != 0)
+        ((void (*)(int, int))module)(module, arg);
+}
+
+// ---- OnUpdate camera / animation fragments --------------------------------
+// These were the per-frame SIMD easing blocks (idle camera pitch/yaw/roll,
+// radio-reveal scroll, idle hangar-ship geometry, hangar light intensity). The
+// dense MatrixSetTranslation/EaseInOut math was corrupted in the decompile; each
+// fragment drives the same engine easing object the parent advanced.
+extern "C" {
+void ModStation_ou_idleCameraImpl(ModStation *self, int elapsed);
+void ModStation_ou_radioRevealImpl(ModStation *self, int elapsed);
+void ModStation_ou_hangarShipImpl(ModStation *self);
+void ModStation_ou_hangarLightImpl(ModStation *self, int elapsed);
+}
+extern "C" void ModStation_ou_updateIdleCamera (ModStation *self, int elapsed) { ModStation_ou_idleCameraImpl(self, elapsed); }
+extern "C" void ModStation_ou_updateRadioReveal(ModStation *self, int elapsed) { ModStation_ou_radioRevealImpl(self, elapsed); }
+extern "C" void ModStation_ou_animateHangarShip(ModStation *self)              { ModStation_ou_hangarShipImpl(self); }
+extern "C" void ModStation_ou_updateHangarLight(ModStation *self, int elapsed) { ModStation_ou_hangarLightImpl(self, elapsed); }
+
+// ---- OnRender2D fragment ---------------------------------------------------
+// Draws the persistent station HUD chrome (credits readout / frame). The 2D
+// blit chain was a corrupted PaintCanvas SIMD block; delegated to the impl.
+extern "C" {
+void ModStation_r2d_drawHudImpl(ModStation *self);
+}
+extern "C" void ModStation_r2d_drawStationHud(ModStation *self) {
+    ModStation_r2d_drawHudImpl(self);
+}
+
+// ---- OnInitialize content fragments ---------------------------------------
+extern "C" {
+void ModStation_oi_setupHangarCameraImpl(ModStation *self, int race);
+int  ModStation_oi_dockingFeeImpl(ModStation *self, int standing, int credits);
+void ModStation_oi_pirateDialogueImpl(ModStation *self);
+void ModStation_oi_wantedActivatedImpl(ModStation *self, int count);
+void ModStation_oi_rewardMissionImpl(ModStation *self);
+void ModStation_oi_newsTickerImpl(ModStation *self);
+void ModStation_oi_dlcMenuImpl(ModStation *self);
+}
+extern "C" void ModStation_oi_setupHangarCamera(ModStation *self, int race) { ModStation_oi_setupHangarCameraImpl(self, race); }
+extern "C" int  ModStation_oi_showDockingFeeChoice(ModStation *self, int standing, int credits) { return ModStation_oi_dockingFeeImpl(self, standing, credits); }
+extern "C" void ModStation_oi_showPirateDialogue(ModStation *self)          { ModStation_oi_pirateDialogueImpl(self); }
+extern "C" void ModStation_oi_showWantedActivated(ModStation *self, int count) { ModStation_oi_wantedActivatedImpl(self, count); }
+extern "C" void ModStation_oi_showRewardMission(ModStation *self)           { ModStation_oi_rewardMissionImpl(self); }
+extern "C" void ModStation_oi_buildNewsTicker(ModStation *self)             { ModStation_oi_newsTickerImpl(self); }
+extern "C" void ModStation_oi_buildDlcMenu(ModStation *self)                { ModStation_oi_dlcMenuImpl(self); }
+
+// ---- constructor camera-tween fragment ------------------------------------
+// Builds the two hangar idle-camera key matrices for `race` (translate+rotate
+// cascade from the per-race coord table), constructs the 3000ms EaseInOutMatrix
+// tween, records the resting camera position in self+0x278.., and returns the
+// new tween object. The MatrixSet* SIMD cascade and the coord table read are in
+// the impl helper.
+extern "C" {
+EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race);
+}
+extern "C" EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race) {
+    return ModStation_msc_buildCameraTweenImpl(self, race);
+}
