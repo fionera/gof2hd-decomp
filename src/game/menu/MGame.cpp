@@ -320,7 +320,7 @@ void MGame::startJumpScene() {
         void *vt = *(void **)obj;
         float vtmp[4];
         (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, vtmp);
-        *(Vector*)((Vector *)((char *)this + 0xe4)) = *(const Vector*)((Vector *)vtmp);
+        *(Vector*)((Vector *)((char *)&this->field_0xe4)) = *(const Vector*)((Vector *)vtmp);
         float nz = (float)this->field_0xec + *(float *)&g_jsOffsetZ;
         this->field_0xec = (int)nz;
         ((PlayerEgo *)(this->field_0x58))->setPosition();
@@ -344,7 +344,7 @@ void MGame::startJumpScene() {
 
         float pos[4];
         ((PlayerEgo *)(pos))->getPosition();
-        Vector *dst = (Vector *)((char *)this + 0xe4);
+        Vector *dst = (Vector *)((char *)&this->field_0xe4);
         *(Vector*)(dst) = *(const Vector*)((Vector *)pos);
 
         float dir[4];
@@ -587,12 +587,12 @@ void MGame::gameOverCheck() {
             if (((PlayerEgo *)(this->field_0x58))->explosionEnded() != 0) {
                 this->field_0x60 = 1;
                 String *t = (String *)((GameText *)(**g_goDeathText))->getText(0);
-                ((String *)((char *)this + 0x64))->assign(t);
+                this->field_0x64.assign(t);
             }
         } else {
             this->field_0x60 = 1;
             String *t = (String *)((GameText *)(**g_goWormText))->getText(0);
-            ((String *)((char *)this + 0x64))->assign(t);
+            this->field_0x64.assign(t);
             this->field_0x111 = 1;
         }
 
@@ -1551,19 +1551,19 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
 
         if (t0 == 0) {
             float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
-            *(Vector*)((Vector *)((char *)this + 0xb0)) = *(const Vector*)((Vector *)v);
+            *(Vector*)((Vector *)((char *)&this->field_0xb0)) = *(const Vector*)((Vector *)v);
         } else if (t1 == 0) {
             float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
-            *(Vector*)((Vector *)((char *)this + 0xa4)) = *(const Vector*)((Vector *)v);
+            *(Vector*)((Vector *)((char *)&this->field_0xa4)) = *(const Vector*)((Vector *)v);
         }
         
         return;
     }
 
     // Two-finger pinch: zoom by the change in finger distance.
-    Vector *base = (Vector *)((char *)this + 0xa4);
+    Vector *base = (Vector *)((char *)&this->field_0xa4);
     float tmp[4];
-    *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)((char *)this + 0xb0));
+    *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)((char *)&this->field_0xb0));
     float oldLen = AbyssEngine::AEMath::VectorLength(*(const Vector*)((Vector *)tmp));
     float newLen = oldLen;
 
@@ -1576,7 +1576,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
         float v[4]; v[0] = (float)x; v[1] = (float)ty; v[2] = 0;
         *(Vector*)((Vector *)tmp) = *(const Vector*)(base) - *(const Vector*)((Vector *)v);
         newLen = AbyssEngine::AEMath::VectorLength(*(const Vector*)((Vector *)tmp));
-        *(Vector*)((Vector *)((char *)this + 0xb0)) = *(const Vector*)((Vector *)v);
+        *(Vector*)((Vector *)((char *)&this->field_0xb0)) = *(const Vector*)((Vector *)v);
     }
 
     float zoom = this->field_0xbc + (newLen - oldLen) * g_fcRotScale;
@@ -1730,7 +1730,8 @@ void MGame::buildMissionFollowup() {
     }
     level[11] = 0;
 
-    *(uint16_t *)((char *)this + 0x5d) = 0x101;   // pause + cutscene flags
+    this->field_0x5d = 1;   // pause flag  (low byte of the original 0x101 16-bit store)
+    this->field_0x5e = 1;   // cutscene flag (high byte)
     ((MGame *)(this))->pauseSounds();
 }
 
@@ -1869,7 +1870,7 @@ MGame::~MGame() {
     MGame *self = this;
     *(void **)self = (char *)MGame_vtable + 8;
     ((MGame *)(self))->OnRelease();
-    ((String *)((char *)self + 0x64))->dtor();
+    this->field_0x64.dtor();
 }
 
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
@@ -2002,7 +2003,7 @@ void MGame::reset() {
     ((Radio *)(radio))->setMessages((Array<RadioMessage *> *)(intptr_t)((Level *)(this->field_0x78))->getMessages());
 
     PaintCanvas *pc = *g_resCanvas;
-    pc->CameraCreate((unsigned *)((char *)this + 0xf0));
+    pc->CameraCreate((unsigned *)&this->field_0xf0);
     unsigned cam = *(unsigned *)g_resCanvas;
     int *status = g_resStatus;
 
@@ -2356,7 +2357,7 @@ camMove: {
         int ego = *(int *)((char *)self->field_0x58);
         float mtx[4];
         *(Vector*)((Vector *)((char *)ego + 4)) = AbyssEngine::AEMath::MatrixRotateVector(*(const Matrix*)(mtx), *(const Vector*)((Vector *)((char *)ego + 4)));
-        *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)mtx);
+        *(Vector*)((Vector *)((char *)&self->field_0xe4)) = *(const Vector*)((Vector *)mtx);
         TFC_translate(self->field_0xf4, 0, 0, 0);
         (void)speed;
         if (self->field_0xdd != 0) {
@@ -2367,7 +2368,7 @@ camMove: {
             void *vt = *(void **)obj;
             (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, mtx);
         }
-        *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)mtx);
+        *(Vector*)((Vector *)((char *)&self->field_0xe4)) = *(const Vector*)((Vector *)mtx);
         fadeOut = false;
     }
 
@@ -2427,7 +2428,7 @@ afterCam:
             void *node2 = *(void **)((char *)*(int *)((char *)lm + 4) + 0xc);
             float mtx[4];
             (*(void (**)(void *, void *))((char *)*(void **)node2 + 0x28))(node2, mtx);
-            *(Vector*)((Vector *)((char *)self + 0xe4)) = *(const Vector*)((Vector *)mtx);
+            *(Vector*)((Vector *)((char *)&self->field_0xe4)) = *(const Vector*)((Vector *)mtx);
             ((PlayerEgo *)(self->field_0x58))->setPosition();
             PlayerEgo *p = self->field_0x58;
             p->inWormhole = 1;
@@ -2466,7 +2467,7 @@ __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (D
 // MGame::MGame() — install vtable, default-construct the title String, zero state.
 MGame::MGame() {
     this->field_0x0 = g_mgameVtable + 8;
-    ((String *)((char *)this + 0x64))->ctor();
+    this->field_0x64.ctor();
 
     int z = 0;
     int initVal = g_mgameInitVal;

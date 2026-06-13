@@ -131,141 +131,141 @@ extern "C" int *SpaceLounge_update_height_slot;
 extern "C" int *SpaceLounge_update_top_slot;
 
 int SpaceLounge::OnTouchMove(int x, int y) {
-    I(this, 0xb4) = x;
-    I(this, 0xb8) = y;
+    this->touchX = x;
+    this->touchY = y;
 
-    if (UC(this, 0x1b) != 0 || UC(this, 0x19) != 0) {
-        ((ChoiceWindow *)(P(this, 0x8)))->OnTouchMove(x, y);
+    if (this->choiceVisible != 0 || this->chatActive != 0) {
+        this->choiceWindow->OnTouchMove(x, y);
         return 0;
     }
 
-    if (UC(this, 0x34) != 0) {
-        ((StarMap *)(P(this, 0x4)))->OnTouchMove(x, y);
+    if (this->mapVisible != 0) {
+        this->starMap->OnTouchMove(x, y);
         return 0;
     }
 
-    int mode = I(this, 0x14);
+    int mode = this->mode;
     if (mode == 0) {
-        Array<Agent *> *agents = (Array<Agent *> *)P(this, 0x24);
+        Array<Agent *> *agents = this->agents;
         if (agents != 0) {
-            Array<Vector *> *rects = (Array<Vector *> *)P(this, 0x40);
+            Array<Vector *> *rects = this->agentRects;
             float fy = (float)y;
             float fx = (float)x;
-            I(this, 0x88) = -1;
-            I(this, 0x20) = -1;
+            this->hoverAgent = -1;
+            this->selectedAgent = -1;
             int count = (int)agents->size();
             for (int i = 0; count != i; ++i) {
                 float *a = (float *)(*rects)[i * 2];
                 if (a[0] < fx) {
                     float *b = (float *)(*rects)[i * 2 + 1];
                     if (fx < b[0] && fy < a[1] && b[1] < fy) {
-                        I(this, 0x88) = i;
+                        this->hoverAgent = i;
                     }
                 }
             }
         }
     } else if (mode == 3) {
-        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(this, 0x5c);
+        Array<TouchButton *> *buttons = this->buttons;
         (*buttons)[0]->OnTouchMove(x, y);
     } else if (mode == 2) {
-        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(this, 0x5c);
+        Array<TouchButton *> *buttons = this->buttons;
         for (unsigned i = 0; i < buttons->size(); ++i) {
             (*buttons)[i]->OnTouchMove(x, y);
         }
     }
 
     ((Layout *)(*(void **)SpaceLounge_layout_move))->OnTouchMove(x, y);
-    if (UC(this, 0x1c) != 0) {
-        ((ListItemWindow *)(P(this, 0xc)))->OnTouchMove(x, y);
+    if (this->listVisible != 0) {
+        this->listWindow->OnTouchMove(x, y);
     } else {
-        ((ScrollTouchWindow *)(P(this, 0x60)))->OnTouchMove(x, y);
+        this->scrollWindow->OnTouchMove(x, y);
     }
     return 0;
 }
 
 void SpaceLounge::OnRender3D() {
-    if (UC(this, 0x34) != 0) {
-        return this->OnRender3D_map_tail(P(this, 0x4));
+    if (this->mapVisible != 0) {
+        return this->OnRender3D_map_tail(this->starMap);
     }
 
-    void *cutscene = P(this, 0x44);
+    void *cutscene = this->cutScene;
     if (cutscene == 0) {
         return;
     }
 
-    if (UC(this, 0x1c) != 0) {
-        if (((ListItemWindow *)(P(this, 0xc)))->shows3DShip() != 0) {
+    if (this->listVisible != 0) {
+        if (this->listWindow->shows3DShip() != 0) {
             return;
         }
-        cutscene = P(this, 0x44);
+        cutscene = this->cutScene;
     }
 
     return this->OnRender3D_cutscene_tail(cutscene);
 }
 
 void SpaceLounge::OnRenderBG() {
-    if (I(this, 0x44) != 0) {
-        return this->OnRenderBG_tail(P(this, 0x44));
+    if (this->cutScene != 0) {
+        return this->OnRenderBG_tail(this->cutScene);
     }
 }
 
 unsigned char SpaceLounge::introFinished() {
-    return UC(this, 0xbd);
+    return this->introDone;
 }
 
 bool SpaceLounge::listMode() {
-    return UC(this, 0x34) == 0;
+    return this->mapVisible == 0;
 }
 
 unsigned char SpaceLounge::mapMode() {
-    return UC(this, 0x34);
+    return this->mapVisible;
 }
 
 unsigned char SpaceLounge::hangarNeedsUpdate() {
-    return UC(this, 0x35);
+    return this->hangarUpdate;
 }
 
 void SpaceLounge::draw3DShip() {
-    if (UC(this, 0x1c) != 0) {
-        return this->draw3DShip_tail(P(this, 0xc));
+    if (this->listVisible != 0) {
+        return this->draw3DShip_tail(this->listWindow);
     }
 }
 
 void SpaceLounge::setHangarUpdate(bool value) {
-    BL(this, 0x35) = value;
+    this->hangarUpdate = value;
 }
 
 int SpaceLounge::OnTouchBegin(int x, int y) {
-    UC(this, 0xb2) = 1;
-    I(this, 0xb4) = x;
-    I(this, 0xb8) = y;
-    I(this, 0x88) = -1;
+    this->touchDown = 1;
+    this->touchX = x;
+    this->touchY = y;
+    this->hoverAgent = -1;
 
-    if (UC(this, 0x1b) != 0 || UC(this, 0x19) != 0) {
-        ((ChoiceWindow *)(P(this, 0x8)))->OnTouchBegin(x, y);
+    if (this->choiceVisible != 0 || this->chatActive != 0) {
+        this->choiceWindow->OnTouchBegin(x, y);
         return 0;
     }
 
-    if (UC(this, 0x34) != 0) {
-        ((StarMap *)(P(this, 0x4)))->OnTouchBegin(x, y);
+    if (this->mapVisible != 0) {
+        this->starMap->OnTouchBegin(x, y);
         return 0;
     }
 
-    if (UC(this, 0x1c) != 0) {
-        ((ListItemWindow *)(P(this, 0xc)))->OnTouchBegin(x, y);
+    if (this->listVisible != 0) {
+        this->listWindow->OnTouchBegin(x, y);
         ((Layout *)(*(void **)SpaceLounge_layout_begin))->OnTouchBegin(x, y);
-        ((ScrollTouchWindow *)(P(this, 0x60)))->OnTouchBegin(x, y);
+        this->scrollWindow->OnTouchBegin(x, y);
         return 0;
     }
 
-    int mode = I(this, 0x14);
+    int mode = this->mode;
     if (mode == 0) {
-        if (UC(this, 0xbd) == 0) {
+        if (this->introDone == 0) {
             return 0;
         }
-        Array<Agent *> *agents = (Array<Agent *> *)P(this, 0x24);
+        Array<Agent *> *agents = this->agents;
         if (agents != 0) {
-            Array<Vector *> *rects = (Array<Vector *> *)P(this, 0x40);
+            Array<Vector *> *rects = this->agentRects;
             float fy = (float)y;
             float fx = (float)x;
             int count = (int)agents->size();
@@ -274,23 +274,23 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
                 if (a[0] < fx) {
                     float *b = (float *)(*rects)[i * 2 + 1];
                     if (fx < b[0] && fy < a[1] && b[1] < fy) {
-                        I(this, 0x88) = i;
+                        this->hoverAgent = i;
                     }
                 }
             }
         }
     } else if (mode == 3) {
-        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(this, 0x5c);
+        Array<TouchButton *> *buttons = this->buttons;
         (*buttons)[0]->OnTouchBegin(x, y);
     } else if (mode == 2) {
-        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(this, 0x5c);
+        Array<TouchButton *> *buttons = this->buttons;
         for (unsigned i = 0; i < buttons->size(); ++i) {
             (*buttons)[i]->OnTouchBegin(x, y);
         }
     }
 
     ((Layout *)(*(void **)SpaceLounge_layout_begin))->OnTouchBegin(x, y);
-    ((ScrollTouchWindow *)(P(this, 0x60)))->OnTouchBegin(x, y);
+    this->scrollWindow->OnTouchBegin(x, y);
     return 0;
 }
 
@@ -346,13 +346,13 @@ done:
 
 static inline void *selected_agent(SpaceLounge *self)
 {
-    Array<Agent *> *agents = (Array<Agent *> *)P(self, 0x24);
-    return (*agents)[I(self, 0x20)];
+    Array<Agent *> *agents = self->agents;
+    return (*agents)[self->selectedAgent];
 }
 
 static inline bool hit_agent(SpaceLounge *self, int x, int y, int i)
 {
-    Array<Vector *> *rects = (Array<Vector *> *)P(self, 0x40);
+    Array<Vector *> *rects = self->agentRects;
     float *a = (float *)(*rects)[i * 2];
     if (!(a[0] < (float)x)) {
         return false;
@@ -366,22 +366,22 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     String helpSmall;
     char matrix[60];
 
-    UC(this, 0xb2) = 0;
+    this->touchDown = 0;
 
-    if (UC(this, 0x1b) != 0 || UC(this, 0x19) != 0) {
-        int result = ((ChoiceWindow *)(P(this, 0x8)))->touch_end(x, y);
+    if (this->choiceVisible != 0 || this->chatActive != 0) {
+        int result = this->choiceWindow->touch_end(x, y);
         if (result == 1) {
-            UC(this, 0x19) = 0;
+            this->chatActive = 0;
         } else if (result == 0) {
             ((SpaceLounge *)(this))->onKeyPress(0x10000);
         }
         return;
     }
 
-    if (UC(this, 0x34) != 0) {
-        if (((StarMap *)(P(this, 0x4)))->touch_end(x, y) != 0) {
-            ((CutScene *)(P(this, 0x44)))->resetCamera();
-            UC(this, 0x34) = 0;
+    if (this->mapVisible != 0) {
+        if (this->starMap->touch_end(x, y) != 0) {
+            this->cutScene->resetCamera();
+            this->mapVisible = 0;
         }
         return;
     }
@@ -389,24 +389,24 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     void *layoutSlot = *(void **)&SpaceLounge_touch_layout_slot;
     void *layout = *(void **)layoutSlot;
     if (((Layout *)(layout))->touch_end(x, y) != 0) {
-        if (UC(this, 0x1c) != 0) {
+        if (this->listVisible != 0) {
             ((Layout *)(layout))->resetWindowDimensions();
-            UC(this, 0x1c) = 0;
-        } else if (I(this, 0x14) != 0) {
-            if (I(this, 0x20) >= 0) {
+            this->listVisible = 0;
+        } else if (this->mode != 0) {
+            if (this->selectedAgent >= 0) {
                 void *agent = selected_agent(this);
                 if (((Agent *)(agent))->isGenericAgent() != 0) {
                     ((Agent *)(agent))->setEvent(1);
                 }
             }
-            I(this, 0x14) = 0;
-            UC(this, 0x36) = 0;
+            this->mode = 0;
+            this->field_0x36 = 0;
         }
         return;
     }
 
-    if (UC(this, 0x1c) != 0) {
-        ((ListItemWindow *)(P(this, 0xc)))->touch_end(x, y);
+    if (this->listVisible != 0) {
+        this->listWindow->touch_end(x, y);
         if (((Layout *)(layout))->helpPressed() != 0) {
             void *texts = *(void **)&SpaceLounge_touch_list_help_text_slot;
             void *text = ((GameText *)(*(void **)texts))->getText(0x283);
@@ -416,9 +416,9 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         return;
     }
 
-    switch (I(this, 0x14)) {
+    switch (this->mode) {
     case 0:
-        if (UC(this, 0xbd) == 0) {
+        if (this->introDone == 0) {
             void *system = (void *)(*g_status)->getSystem();
             int race = ((SolarSystem *)(system))->getRace();
             int *v = &SpaceLounge_touch_race_vectors[race * 3];
@@ -428,20 +428,20 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             void *camera = *(void **)cameraSlot;
             void *current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
             ((PaintCanvas *)camera)->CameraSetLocal((unsigned int)(long)camera, *(const AbyssEngine::AEMath::Matrix *)current);
-            if (P(this, 0x48) != 0) {
-                ((AbyssEngine::EaseInOutMatrix *)(P(this, 0x48)))->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
+            if (this->cameraEase != 0) {
+                this->cameraEase->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
             }
-            UC(this, 0xbd) = 1;
-            I(this, 0x104) = 0;
+            this->introDone = 1;
+            this->field_0x104 = 0;
             return;
         }
-        if (P(this, 0x24) != 0) {
-            I(this, 0x88) = -1;
-            I(this, 0x20) = -1;
-            unsigned count = (unsigned)((Array<Agent *> *)P(this, 0x24))->size();
+        if (this->agents != 0) {
+            this->hoverAgent = -1;
+            this->selectedAgent = -1;
+            unsigned count = (unsigned)this->agents->size();
             for (unsigned i = 0; i < count; ++i) {
                 if (hit_agent(this, x, y, i)) {
-                    I(this, 0x20) = i;
+                    this->selectedAgent = i;
                     ((SpaceLounge *)(this))->onKeyPress(0x10000);
                     return;
                 }
@@ -452,7 +452,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         ((SpaceLounge *)(this))->onKeyPress(0x10000);
         break;
     case 2: {
-        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(this, 0x5c);
+        Array<TouchButton *> *buttons = this->buttons;
         for (unsigned i = 0; i < buttons->size(); ++i) {
             TouchButton *button = (*buttons)[i];
             if (button->touch_end(x, y) != 0) {
@@ -465,13 +465,13 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         break;
     }
     case 3:
-        if ((*((Array<TouchButton *> *)P(this, 0x5c)))[0]->touch_end(x, y) != 0) {
+        if ((*this->buttons)[0]->touch_end(x, y) != 0) {
             ((SpaceLounge *)(this))->onKeyPress(0x10000);
         }
         break;
     }
 
-    ((ScrollTouchWindow *)(P(this, 0x60)))->touch_end(x, y);
+    this->scrollWindow->touch_end(x, y);
     if (((Layout *)(layout))->helpPressed() != 0) {
         void *texts = *(void **)&SpaceLounge_touch_help_text_slot;
         void *text = ((GameText *)(*(void **)texts))->getText(0x273);
@@ -609,38 +609,38 @@ special_done:
 
 static inline void *key_agent(SpaceLounge *self)
 {
-    return (*((Array<Agent *> *)P(self, 0x24)))[I(self, 0x20)];
+    return (*self->agents)[self->selectedAgent];
 }
 
 void SpaceLounge::onKeyPress(int key) {
     char scratch[960];
     (void)scratch;
 
-    if (UC(this, 0x1b) != 0) {
+    if (this->choiceVisible != 0) {
         if (key == 0x1000) {
-            ((ChoiceWindow *)(P(this, 0x8)))->left();
+            this->choiceWindow->left();
         } else if (key == 0x2000) {
-            ((ChoiceWindow *)(P(this, 0x8)))->right();
+            this->choiceWindow->right();
         } else if (key == 0x10000) {
-            UC(this, 0x1b) = 0;
+            this->choiceVisible = 0;
         }
         return;
     }
 
-    int mode = I(this, 0x14);
+    int mode = this->mode;
     if (mode == 0) {
         if (key == 0x1000 || key == 0x8000) {
-            unsigned next = I(this, 0x20) + 1;
-            if (P(this, 0x24) != 0 && next >= ((Array<Agent *> *)P(this, 0x24))->size()) {
+            unsigned next = this->selectedAgent + 1;
+            if (this->agents != 0 && next >= this->agents->size()) {
                 next = 0;
             }
-            I(this, 0x20) = next;
+            this->selectedAgent = next;
         } else if (key == 0x2000 || key == 0x4000) {
-            int current = I(this, 0x20);
-            if (current < 1 && P(this, 0x24) != 0) {
-                current = (int)((Array<Agent *> *)P(this, 0x24))->size();
+            int current = this->selectedAgent;
+            if (current < 1 && this->agents != 0) {
+                current = (int)this->agents->size();
             }
-            I(this, 0x20) = current - 1;
+            this->selectedAgent = current - 1;
         } else if (key == 0x10000 || key == 0x20000) {
             ((SpaceLounge *)(this))->startChat();
         }
@@ -649,21 +649,21 @@ void SpaceLounge::onKeyPress(int key) {
 
     if (mode == 1 || mode == 3) {
         if (key == 0x10000 || key == 0x20000) {
-            I(this, 0x30) = 0;
+            this->field_0x30 = 0;
             void *agent = key_agent(this);
             if (((Agent *)(agent))->getOffer() == 1) {
-                I(this, 0x14) = 2;
+                this->mode = 2;
             } else {
-                I(this, 0x14) = mode == 1 ? 2 : 0;
+                this->mode = mode == 1 ? 2 : 0;
             }
         } else if (key == 0x40000) {
-            if (I(this, 0x2c) < 3) {
+            if (this->field_0x2c < 3) {
                 if (mode == 1) {
-                    I(this, 0x2c) = 0;
-                    I(this, 0x14) = 0;
+                    this->field_0x2c = 0;
+                    this->mode = 0;
                 }
             } else {
-                I(this, 0x2c) -= 0x28;
+                this->field_0x2c -= 0x28;
             }
         }
         return;
@@ -672,16 +672,16 @@ void SpaceLounge::onKeyPress(int key) {
     if (mode == 2) {
         void *agent = key_agent(this);
         if (key == 0x40000) {
-            I(this, 0x14) = 1;
+            this->mode = 1;
         } else if (key == 0x10000 || key == 0x20000) {
             if (((Agent *)(agent))->getMission() == 0 && ((Agent *)(agent))->isGenericAgent() != 0) {
                 ((Agent *)(agent))->setEvent(1);
             }
-            I(this, 0x14) = 0;
+            this->mode = 0;
         } else if (key == 0x8000) {
-            ((ScrollTouchWindow *)(P(this, 0x60)))->scroll(1);
+            this->scrollWindow->scroll(1);
         } else if (key == 0x4000) {
-            ((ScrollTouchWindow *)(P(this, 0x60)))->scroll(-1);
+            this->scrollWindow->scroll(-1);
         }
     }
 }
@@ -695,7 +695,7 @@ void SpaceLounge::updateScreenPositions() {
     char halfRight[12];
     char screen[12];
 
-    if (P(this, 0x24) == 0) {
+    if (this->agents == 0) {
         return;
     }
 
@@ -710,7 +710,7 @@ void SpaceLounge::updateScreenPositions() {
     MatrixGetRight(pos, local);
     *(Vector*)(halfRight) = *(const Vector*)(pos) * (0.5f);
 
-    unsigned count = (unsigned)((Array<Agent *> *)P(this, 0x24))->size();
+    unsigned count = (unsigned)this->agents->size();
     for (unsigned i = 0; i < count; ++i) {
         void *enemy = ((void **)P(enemies, 0x4))[i];
         void (**vt)(void) = *(void (***)(void))enemy;
@@ -736,13 +736,13 @@ void SpaceLounge::updateScreenPositions() {
         void *mapped = ((void **)P(enemies, 0x4))[count + i];
         ((AEGeometry *)P(mapped, 0x8))->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(camera));
 
-        ((void (*)(void *, void *))project)(B(this, 0x4c), target);
+        ((void (*)(void *, void *))project)(&this->silhouettePos, target);
         MatrixGetDir(pos, look);
-        F(this, 0x4c) -= (*(float *)pos) * 20.0f;
+        this->silhouettePos.x -= (*(float *)pos) * 20.0f;
         MatrixGetDir(pos, look);
-        F(this, 0x54) -= (*(float *)(pos + 8)) * 20.0f;
+        this->silhouettePos.z -= (*(float *)(pos + 8)) * 20.0f;
 
-        ((void (*)(void *, void *))(*(void ***)mapped)[0x44 / 4])(mapped, B(this, 0x4c));
+        ((void (*)(void *, void *))(*(void ***)mapped)[0x44 / 4])(mapped, &this->silhouettePos);
 
         if (((SolarSystem *)((void *)(*g_status)->getSystem()))->getRace() == 0) {
             MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
@@ -756,7 +756,7 @@ void SpaceLounge::updateScreenPositions() {
 
 static inline void *button_at(SpaceLounge *self, unsigned i)
 {
-    return (*((Array<TouchButton *> *)P(self, 0x5c)))[i];
+    return (*self->buttons)[i];
 }
 
 void SpaceLounge::drawLounge() {
@@ -769,11 +769,11 @@ void SpaceLounge::drawLounge() {
     void *factorySlot = *(void **)&SpaceLounge_lounge_image_factory_slot;
     void *factory = *(void **)factorySlot;
 
-    if (I(this, 0x14) == 0) {
-        int hover = I(this, 0x88);
+    if (this->mode == 0) {
+        int hover = this->hoverAgent;
         if (hover >= 0) {
-            void *agent = (*((Array<Agent *> *)P(this, 0x24)))[hover];
-            Array<Vector *> *rects = (Array<Vector *> *)P(this, 0x40);
+            void *agent = (*this->agents)[hover];
+            Array<Vector *> *rects = this->agentRects;
             float *left = (float *)(*rects)[hover * 2];
             float *right = (float *)(*rects)[hover * 2 + 1];
             int pad = I(layout, 0x94);
@@ -837,56 +837,56 @@ void SpaceLounge::drawLounge() {
 
     ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
     s0 = "";
-    ((Layout *)(layout))->drawBox6(2, I(this, 0x70), I(this, 0x74), I(layout, 0x68), I(layout, 0x6c), &s0);
-    ((PaintCanvas *)canvas)->DrawRectangle(I(this, 0x70), I(this, 0x74), I(layout, 0x68), I(layout, 0x6c));
-    ((ImageFactory *)(factory))->drawChar((*((Array<Array<ImagePart *> *> *)P(this, 0x38)))[I(this, 0x20)], I(layout, 0x4c) + I(this, 0x70), I(layout, 0x4c) + I(this, 0x74), false);
-    ((ScrollTouchWindow *)(P(this, 0x60)))->draw();
+    ((Layout *)(layout))->drawBox6(2, this->panelX, this->panelY, I(layout, 0x68), I(layout, 0x6c), &s0);
+    ((PaintCanvas *)canvas)->DrawRectangle(this->panelX, this->panelY, I(layout, 0x68), I(layout, 0x6c));
+    ((ImageFactory *)(factory))->drawChar((*this->silhouetteGrid)[this->selectedAgent], I(layout, 0x4c) + this->panelX, I(layout, 0x4c) + this->panelY, false);
+    this->scrollWindow->draw();
 
-    if ((I(this, 0x14) & 0xfffffffe) != 2) {
+    if ((this->mode & 0xfffffffe) != 2) {
         return;
     }
 
     ((TouchButton *)(button_at(this, 0)))->setTextColor(-1);
-    int offer = ((Agent *)((*((Array<Agent *> *)P(this, 0x24)))[I(this, 0x20)]))->getOffer();
-    if (I(this, 0x14) == 2) {
-        ((TouchButton *)(button_at(this, 0)))->setPosition2(I(this, 0x84), I(this, 0x80));
-        ((TouchButton *)(button_at(this, 1)))->setPosition3(I(this, 0x6c) + I(this, 0x84), I(this, 0x80), 0x12);
-        I(this, 0x68) = 0;
+    int offer = ((Agent *)((*this->agents)[this->selectedAgent]))->getOffer();
+    if (this->mode == 2) {
+        ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY0);
+        ((TouchButton *)(button_at(this, 1)))->setPosition3(this->panelWidth + this->buttonX, this->buttonY0, 0x12);
+        this->field_0x68 = 0;
         if (offer < 11 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
-            I(this, 0x68) = 3;
+            this->field_0x68 = 3;
         } else if (offer == 1) {
-            I(this, 0x68) = 1;
-            ((TouchButton *)(button_at(this, 0)))->setPosition2(I(this, 0x84), I(this, 0x7c));
+            this->field_0x68 = 1;
+            ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
         } else {
-            I(this, 0x68) = 2;
-            ((TouchButton *)(button_at(this, 0)))->setPosition2(I(this, 0x84), I(this, 0x7c));
-            ((TouchButton *)(button_at(this, 1)))->setPosition3(I(this, 0x6c) + I(this, 0x84), I(this, 0x7c), 0x12);
+            this->field_0x68 = 2;
+            ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
+            ((TouchButton *)(button_at(this, 1)))->setPosition3(this->panelWidth + this->buttonX, this->buttonY1, 0x12);
         }
     } else {
-        I(this, 0x68) = 1;
+        this->field_0x68 = 1;
         ((TouchButton *)(button_at(this, 0)))->setTextColor(-1);
-        ((TouchButton *)(button_at(this, 0)))->setPosition2(I(this, 0x84), I(this, 0x7c));
+        ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
     }
 
-    for (unsigned i = 0; i < ((Array<TouchButton *> *)P(this, 0x5c))->size(); ++i) {
+    for (unsigned i = 0; i < this->buttons->size(); ++i) {
         ((TouchButton *)(button_at(this, i)))->setVisible(false);
     }
 
     int buttonHeight = I(layout, 0x2d8);
-    if (I(this, 0x68) > 2) {
-        int needed = I(layout, 0x30) * (I(this, 0x68) - 1) + I(layout, 0x34) * (I(this, 0x68) - 2);
+    if (this->field_0x68 > 2) {
+        int needed = I(layout, 0x30) * (this->field_0x68 - 1) + I(layout, 0x34) * (this->field_0x68 - 2);
         if (needed > buttonHeight) {
             buttonHeight = needed;
         }
     }
     int panelHeight = I(layout, 0x4c) * 2 + buttonHeight;
     s0 = "";
-    ((Layout *)(layout))->drawBox6(2, I(this, 0x70), I(this, 0x78), I(layout, 0x68), panelHeight, &s0);
-    ((PaintCanvas *)canvas)->DrawRectangle(I(this, 0x70), I(this, 0x78), I(layout, 0x68), panelHeight);
-    ((ImageFactory *)(factory))->drawChar((Array<ImagePart *> *)P(this, 0x3c), I(layout, 0x4c) + I(this, 0x70), I(this, 0x78) + I(layout, 0x4c), true);
+    ((Layout *)(layout))->drawBox6(2, this->panelX, this->buttonPanelY, I(layout, 0x68), panelHeight, &s0);
+    ((PaintCanvas *)canvas)->DrawRectangle(this->panelX, this->buttonPanelY, I(layout, 0x68), panelHeight);
+    ((ImageFactory *)(factory))->drawChar(this->agentImageParts, I(layout, 0x4c) + this->panelX, this->buttonPanelY + I(layout, 0x4c), true);
 
     ((TouchButton *)(button_at(this, 0)))->setVisible(true);
-    if (!(offer == 1 || UC(this, 0x36) != 0 || I(this, 0x14) == 3)) {
+    if (!(offer == 1 || this->field_0x36 != 0 || this->mode == 3)) {
         ((TouchButton *)(button_at(this, 1)))->setVisible(true);
         ((TouchButton *)(button_at(this, 0)))->draw();
         ((TouchButton *)(button_at(this, 1)))->draw();
@@ -900,81 +900,81 @@ void SpaceLounge::drawLounge() {
 int SpaceLounge::init() {
     char matrix[60];
 
-    UC(this, 0xb2) = 0;
-    UC(this, 0xb0) = 0;
-    UC(this, 0xbc) = 0;
-    P(this, 0x24) = Station_getAgents((*g_status)->getStation());
+    this->touchDown = 0;
+    this->initialized = 0;
+    this->field_0xbc = 0;
+    this->agents = (Array<Agent *> *)Station_getAgents((*g_status)->getStation());
 
-    if (P(this, 0x8) != 0) {
-        ::operator delete(ChoiceWindow_dtor(P(this, 0x8)));
-        P(this, 0x8) = 0;
+    if (this->choiceWindow != 0) {
+        ::operator delete(ChoiceWindow_dtor(this->choiceWindow));
+        this->choiceWindow = 0;
     }
     void *choice = ::operator new(0x5c);
     ChoiceWindow_ctor(choice);
-    P(this, 0x8) = choice;
-    UC(this, 0x35) = 0;
+    this->choiceWindow = (ChoiceWindow *)choice;
+    this->hangarUpdate = 0;
 
-    if (P(this, 0x44) != 0) {
-        ((CutScene *)(P(this, 0x44)))->resetCamera();
+    if (this->cutScene != 0) {
+        this->cutScene->resetCamera();
     }
 
-    UC(this, 0x18) = 0;
-    P(this, 0x58) = ::operator new[](0x15);
+    this->field_0x18 = 0;
+    this->agentVisited = (char *)::operator new[](0x15);
     for (int i = 0; i != 0x15; ++i) {
-        ((char *)P(this, 0x58))[i] = 0;
+        this->agentVisited[i] = 0;
     }
 
     void *layoutSlot = *(void **)&SpaceLounge_init_layout_slot;
     void *layout = *(void **)layoutSlot;
     int panelW = I(layout, 0x68);
-    I(this, 0x70) = panelW / 2;
-    I(this, 0x74) = I(layout, 0x20) + I(layout, 0xc);
-    I(this, 0x6c) = panelW - I(layout, 0x4c) * 3 - I(layout, 0x2d4);
+    this->panelX = panelW / 2;
+    this->panelY = I(layout, 0x20) + I(layout, 0xc);
+    this->panelWidth = panelW - I(layout, 0x4c) * 3 - I(layout, 0x2d4);
 
     void *scroll = ::operator new(0x24);
-    ScrollTouchWindow_ctor(scroll, I(this, 0x70) + I(layout, 0x4c) * 2 + I(layout, 0x2d4),
-                           I(this, 0x74), I(this, 0x6c), I(layout, 0x6c), false);
-    P(this, 0x60) = scroll;
+    ScrollTouchWindow_ctor(scroll, this->panelX + I(layout, 0x4c) * 2 + I(layout, 0x2d4),
+                           this->panelY, this->panelWidth, I(layout, 0x6c), false);
+    this->scrollWindow = (ScrollTouchWindow *)scroll;
 
-    I(this, 0x14) = 0;
-    I(this, 0x78) = I(this, 0x74) + I(layout, 0x6c) + I(layout, 0x2c);
-    I(this, 0x64) = (I(layout, 0x34) + I(layout, 0x30)) * 5;
+    this->mode = 0;
+    this->buttonPanelY = this->panelY + I(layout, 0x6c) + I(layout, 0x2c);
+    this->field_0x64 = (I(layout, 0x34) + I(layout, 0x30)) * 5;
 
-    if (P(this, 0x5c) != 0) {
-        Array<TouchButton *> *oldButtons = (Array<TouchButton *> *)P(this, 0x5c);
+    if (this->buttons != 0) {
+        Array<TouchButton *> *oldButtons = this->buttons;
         oldButtons->clear();
         delete oldButtons;
     }
     Array<TouchButton *> *buttons = new Array<TouchButton *>();
-    P(this, 0x5c) = buttons;
+    this->buttons = buttons;
     buttons->resize(5);
 
     void *textsSlot = *(void **)&SpaceLounge_init_text_slot;
     void *text = ((GameText *)(*(void **)textsSlot))->getText(0);
-    int baseY = I(this, 0x78) + I(layout, 0x4c);
-    I(this, 0x84) = I(this, 0x70) + I(layout, 0x68) - I(layout, 0x4c) - I(this, 0x6c);
-    I(this, 0x7c) = (baseY + I(layout, 0x2d8) / 2) - I(layout, 0x30) / 2;
-    I(this, 0x80) = baseY;
+    int baseY = this->buttonPanelY + I(layout, 0x4c);
+    this->buttonX = this->panelX + I(layout, 0x68) - I(layout, 0x4c) - this->panelWidth;
+    this->buttonY1 = (baseY + I(layout, 0x2d8) / 2) - I(layout, 0x30) / 2;
+    this->buttonY0 = baseY;
 
     for (unsigned i = 0; i < 5; ++i) {
         TouchButton *button = (TouchButton *)::operator new(200);
-        new (button) TouchButton((String *)text, 0, I(this, 0x84), baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)), I(this, 0x6c), 0x11, 4);
+        new (button) TouchButton((String *)text, 0, this->buttonX, baseY + (int)i * (I(layout, 0x30) + I(layout, 0x34)), this->panelWidth, 0x11, 4);
         (*buttons)[i] = button;
         button->setTextColor(-1);
     }
 
-    I(this, 0x88) = -1;
+    this->hoverAgent = -1;
     MatrixSetTranslation(matrix, 0.0f, 0.0f, 0.0f);
     MatrixSetRotation(matrix, 0.0f, 0.0f, 0.0f);
     void *cameraSlot = *(void **)&SpaceLounge_init_camera_slot;
     void *camera = *(void **)cameraSlot;
     void *current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
     ((PaintCanvas *)camera)->CameraSetLocal((unsigned int)(long)camera, *(const AbyssEngine::AEMath::Matrix *)current);
-    if (P(this, 0x48) != 0) {
-        ((AbyssEngine::EaseInOutMatrix *)(P(this, 0x48)))->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
+    if (this->cameraEase != 0) {
+        this->cameraEase->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
     }
-    UC(this, 0xbd) = 1;
-    I(this, 0x104) = 0;
+    this->introDone = 1;
+    this->field_0x104 = 0;
     ((SpaceLounge *)(this))->updateScreenPositions();
     return 0;
 }
@@ -984,43 +984,42 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     char from[60];
     char to[60];
 
-    I(self, 0x8c) = 0;
-    I(self, 0x90) = 0;
-    I(self, 0x94) = 0;
-    I(self, 0x98) = 0;
-    I(self, 0x4c) = 0;
-    I(self, 0x50) = 0;
-    I(self, 0x54) = 0;
-    I(self, 0x9c) = 0;
-    I(self, 0xa0) = 0;
-    ((String *)B(self, 0xa4))->ctor();
-    ((Matrix*)(B(self, 0xc8)))->initIdentity();
+    self->field_0x8c = 0;
+    self->field_0x90 = 0;
+    self->field_0x94 = 0;
+    self->field_0x98 = 0;
+    self->silhouettePos.x = 0;
+    self->silhouettePos.y = 0;
+    self->silhouettePos.z = 0;
+    self->field_0x9c = 0;
+    self->field_0xa0 = 0;
+    self->baseMatrix.initIdentity();
 
-    UC(self, 0xb0) = 0;
-    P(self, 0x4) = 0;
-    P(self, 0x8) = 0;
-    P(self, 0xc) = 0;
-    I(self, 0x34) = 0;
-    UC(self, 0x36) = 0;
-    P(self, 0x58) = 0;
-    P(self, 0x5c) = 0;
-    P(self, 0xc0) = 0;
-    UC(self, 0x1c) = 0;
-    I(self, 0x14) = 0;
-    I(self, 0x18) = 0;
-    P(self, 0x48) = 0;
-    I(self, 0x20) = 0;
-    P(self, 0x24) = 0;
-    P(self, 0x28) = 0;
-    P(self, 0x2c) = 0;
-    P(self, 0x38) = 0;
-    P(self, 0x3c) = 0;
-    P(self, 0x40) = 0;
-    P(self, 0x44) = 0;
+    self->initialized = 0;
+    self->starMap = 0;
+    self->choiceWindow = 0;
+    self->listWindow = 0;
+    self->mapVisible = 0;
+    self->field_0x36 = 0;
+    self->agentVisited = 0;
+    self->buttons = 0;
+    self->headEase = 0;
+    self->listVisible = 0;
+    self->mode = 0;
+    self->field_0x18 = 0;
+    self->cameraEase = 0;
+    self->selectedAgent = 0;
+    self->agents = 0;
+    self->agentTexts = 0;
+    self->field_0x2c = 0;
+    self->silhouetteGrid = 0;
+    self->agentImageParts = 0;
+    self->agentRects = 0;
+    self->cutScene = 0;
 
     ((SpaceLounge *)(self))->init();
 
-    Array<Agent *> *agents = (Array<Agent *> *)P(self, 0x24);
+    Array<Agent *> *agents = self->agents;
     if (agents != 0) {
         for (unsigned i = 0; i < agents->size(); ++i) {
             void *agent = (*agents)[i];
@@ -1028,24 +1027,24 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
             if ((offer == 6 || offer == 0) && ((Agent *)(agent))->getMission() != 0) {
                 void *mission = ((Agent *)(agent))->getMission();
                 if (((Mission *)(mission))->getType() == 0xc && ((Agent *)(agent))->hasAcceptedOffer() != 0) {
-                    ArrayRemove_AgentPtr(agent, P(self, 0x24));
+                    ArrayRemove_AgentPtr(agent, self->agents);
                     ((SpaceLounge *)(self))->init();
                     break;
                 }
             }
-            agents = (Array<Agent *> *)P(self, 0x24);
+            agents = self->agents;
         }
     }
 
-    void *cutscene = P(self, 0x44);
+    void *cutscene = self->cutScene;
     if (cutscene == 0) {
         cutscene = ::operator new(0xa0);
         CutScene_ctor(cutscene, 4);
-        P(self, 0x44) = cutscene;
+        self->cutScene = (CutScene *)cutscene;
     }
     while (((CutScene *)(cutscene))->isInitialized() == 0) {
         ((CutScene *)(cutscene))->initialize();
-        cutscene = P(self, 0x44);
+        cutscene = self->cutScene;
     }
 
     int race = ((SolarSystem *)((void *)(*g_status)->getSystem()))->getRace();
@@ -1055,14 +1054,14 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     MatrixSetRotation(to, 0.0f, 0.0f, 0.0f);
     void *ease = ::operator new(0xf4);
     EaseInOutMatrix_ctor(ease, from, to, 3000);
-    P(self, 0x48) = ease;
+    self->cameraEase = (AbyssEngine::EaseInOutMatrix *)ease;
 
     void *cameraSlot = *(void **)&SpaceLounge_ctor_camera_slot;
     void *camera = *(void **)cameraSlot;
     void *current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
     ((PaintCanvas *)camera)->CameraSetLocal((unsigned int)(long)camera, *(const AbyssEngine::AEMath::Matrix *)current);
-    UC(self, 0xb0) = 1;
-    UC(self, 0xbd) = 0;
+    self->initialized = 1;
+    self->introDone = 0;
     return self;
 }
 
@@ -1072,11 +1071,11 @@ void SpaceLounge::startChat() {
     String left;
     String right;
 
-    if (P(this, 0x24) == 0 || I(this, 0x20) < 0) {
+    if (this->agents == 0 || this->selectedAgent < 0) {
         return;
     }
 
-    void *agent = (*((Array<Agent *> *)P(this, 0x24)))[I(this, 0x20)];
+    void *agent = (*this->agents)[this->selectedAgent];
     int offer = ((Agent *)(agent))->getOffer();
     void *mission = ((Agent *)(agent))->getMission();
     void *texts = *(void **)&SpaceLounge_start_text_slot;
@@ -1099,20 +1098,20 @@ void SpaceLounge::startChat() {
     left.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x10), false);
     right.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x11), false);
 
-    ((ChoiceWindow *)(P(this, 0x8)))->setText(title, body);
-    ((ChoiceWindow *)(P(this, 0x8)))->setButtonText(left, right);
+    this->choiceWindow->setText(title, body);
+    this->choiceWindow->setButtonText(left, right);
 
     if (((Agent *)(agent))->isKnown() == 0 && ((Agent *)(agent))->isStoryAgent() == 0) {
         ((Agent *)(agent))->setKnown(true);
     }
     SpaceLounge_getSoundId(this, agent);
 
-    UC(this, 0x1b) = 1;
-    UC(this, 0x19) = 1;
-    I(this, 0x14) = 1;
+    this->choiceVisible = 1;
+    this->chatActive = 1;
+    this->mode = 1;
 
     if (offer == 1) {
-        I(this, 0x14) = 3;
+        this->mode = 3;
     } else if (((Agent *)(agent))->isGenericAgent() != 0) {
         ((Agent *)(agent))->setEvent(1);
     }
@@ -1123,46 +1122,46 @@ void SpaceLounge::startChat() {
 // array, the camera-ease matrix, and the cached canvas buffer + title String.
 SpaceLounge::~SpaceLounge()
 {
-    void *p = P(this, 0x8);
+    void *p = this->choiceWindow;
     if (p != 0) {
         ::operator delete(ChoiceWindow_dtor(p));
     }
-    P(this, 0x8) = 0;
+    this->choiceWindow = 0;
 
-    p = P(this, 0x44);
+    p = this->cutScene;
     if (p != 0) {
         ::operator delete(CutScene_dtor(p));
     }
-    P(this, 0x44) = 0;
+    this->cutScene = 0;
 
-    ::operator delete[](P(this, 0x58));
-    P(this, 0x58) = 0;
+    ::operator delete[](this->agentVisited);
+    this->agentVisited = 0;
 
     {
-        Array<String *> *strings = (Array<String *> *)P(this, 0x28);
+        Array<String *> *strings = this->agentTexts;
         if (strings != 0) {
             strings->clear();
             delete strings;
         }
     }
-    P(this, 0x28) = 0;
+    this->agentTexts = 0;
 
     {
-        Array<TouchButton *> *buttons = (Array<TouchButton *> *)P(this, 0x5c);
+        Array<TouchButton *> *buttons = this->buttons;
         if (buttons != 0) {
             buttons->clear();
             delete buttons;
         }
     }
-    P(this, 0x5c) = 0;
+    this->buttons = 0;
 
-    if (I(this, 0x3c) != 0) {
+    if (this->agentImageParts != 0) {
         return;
     }
-    I(this, 0x3c) = 0;
+    this->agentImageParts = 0;
 
     {
-        Array<Array<ImagePart *> *> *grid = (Array<Array<ImagePart *> *> *)P(this, 0x38);
+        Array<Array<ImagePart *> *> *grid = this->silhouetteGrid;
         if (grid != 0) {
             for (unsigned i = 0; i < grid->size(); ++i) {
                 Array<ImagePart *> *inner = (*grid)[i];
@@ -1176,36 +1175,35 @@ SpaceLounge::~SpaceLounge()
             delete grid;
         }
     }
-    P(this, 0x38) = 0;
+    this->silhouetteGrid = 0;
 
     {
-        Array<Vector *> *rects = (Array<Vector *> *)P(this, 0x40);
+        Array<Vector *> *rects = this->agentRects;
         if (rects != 0) {
             rects->clear();
             delete rects;
         }
     }
-    P(this, 0x40) = 0;
+    this->agentRects = 0;
 
-    p = P(this, 0x48);
+    p = this->cameraEase;
     if (p != 0) {
         ::operator delete(EaseInOutMatrix_dtor(p));
     }
-    P(this, 0x48) = 0;
+    this->cameraEase = 0;
 
-    p = P(this, 0xc0);
+    p = this->headEase;
     if (p != 0) {
         ::operator delete(p);
     }
-    P(this, 0xc0) = 0;
-    ((String *)(B(this, 0xa4)))->dtor();
+    this->headEase = 0;
 }
 
 void SpaceLounge::draw() {
     String title;
 
-    if (UC(this, 0x1c) != 0) {
-        if (((ListItemWindow *)(P(this, 0xc)))->shows3DShip() != 0) {
+    if (this->listVisible != 0) {
+        if (this->listWindow->shows3DShip() != 0) {
             void *canvasSlot = *(void **)&SpaceLounge_draw_canvas_slot;
             void *canvas = *(void **)canvasSlot;
             ((PaintCanvas *)canvas)->SetColor((unsigned char)(long)canvas, 0, 0, 0);
@@ -1215,12 +1213,12 @@ void SpaceLounge::draw() {
             ((PaintCanvas *)canvas)->FillRectangle((int)(long)canvas, 0, 0, width);
             ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
         }
-        ((ListItemWindow *)(P(this, 0xc)))->draw();
+        this->listWindow->draw();
         return this->draw_cutscene_tail();
     }
 
-    if (UC(this, 0x34) != 0) {
-        return this->draw_map_tail(P(this, 0x4));
+    if (this->mapVisible != 0) {
+        return this->draw_map_tail(this->starMap);
     }
 
     void *layoutSlot = *(void **)&SpaceLounge_draw_layout_slot;
@@ -1233,14 +1231,14 @@ void SpaceLounge::draw() {
     ((SpaceLounge *)(this))->drawLounge();
 
     layout = *(void **)layoutSlot;
-    if ((I(this, 0x14) & 0xfffffffe) == 2) {
+    if ((this->mode & 0xfffffffe) == 2) {
         ((Layout *)layout)->drawFooterNoBackButton();
     } else {
         ((Layout *)layout)->drawFooter();
     }
 
-    if (UC(this, 0x19) != 0 || UC(this, 0x1a) != 0 || UC(this, 0x1b) != 0) {
-        ((ChoiceWindow *)(P(this, 0x8)))->draw();
+    if (this->chatActive != 0 || this->field_0x1a != 0 || this->choiceVisible != 0) {
+        this->choiceWindow->draw();
     }
 }
 
@@ -1251,29 +1249,29 @@ void SpaceLounge::update(int dt) {
     if (dt > 50) {
         dt = 50;
     }
-    if (UC(this, 0xb0) == 0) {
+    if (this->initialized == 0) {
         return;
     }
 
-    if (UC(this, 0x34) != 0) {
-        return this->update_map_tail(P(this, 0x4), dt);
+    if (this->mapVisible != 0) {
+        return this->update_map_tail(this->starMap, dt);
     }
-    if (UC(this, 0x1c) != 0) {
-        return this->update_ship_tail(P(this, 0xc), dt);
+    if (this->listVisible != 0) {
+        return this->update_ship_tail(this->listWindow, dt);
     }
 
-    if (UC(this, 0xbc) == 0) {
-        ((AbyssEngine::EaseInOutMatrix *)(P(this, 0x48)))->Increase((float)dt);
+    if (this->field_0xbc == 0) {
+        this->cameraEase->Increase((float)dt);
     }
 
     void *cameraSlot;
     void *camera;
     void *current;
-    if (UC(this, 0xbd) == 0) {
+    if (this->introDone == 0) {
         ((AbyssEngine::EaseInOutMatrix *)(maxMatrix))->GetMaxValue();
         ((AbyssEngine::EaseInOutMatrix *)(valueMatrix))->GetValue();
         if ((memcmp((maxMatrix),(valueMatrix),sizeof(float)*16)==0) == 0) {
-            UC(this, 0xbc) = 0;
+            this->field_0xbc = 0;
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_c;
             camera = *(void **)cameraSlot;
             current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
@@ -1291,54 +1289,54 @@ idle_camera:
         if (step < 0.0f) {
             step = 0.0f;
         }
-        UC(this, 0xbd) = 1;
-        F(this, 0x104) = F(this, 0x104) + step;
-        float wave = Sinf(F(this, 0x104));
-        float maxRot = (float)I(this, 0x108) * 0.5f;
+        this->introDone = 1;
+        this->field_0x104 = this->field_0x104 + step;
+        float wave = Sinf(this->field_0x104);
+        float maxRot = (float)this->field_0x108 * 0.5f;
 
-        if (UC(this, 0xbc) == 0) {
+        if (this->field_0xbc == 0) {
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_a;
             camera = *(void **)cameraSlot;
             current = ((PaintCanvas *)camera)->CameraGetLocal((unsigned int)(long)camera);
             (void)current;
-            UC(this, 0xbc) = 1;
+            this->field_0xbc = 1;
             int amount = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_update_random_slot, 10);
-            UC(this, 0xc4) = 0;
-            if (P(this, 0xc0) == 0) {
+            this->field_0xc4 = 0;
+            if (this->headEase == 0) {
                 void *ease = ::operator new(0x10);
                 EaseInOut_ctor(ease, 0.0f, (float)amount);
-                P(this, 0xc0) = ease;
+                this->headEase = (AbyssEngine::EaseInOut *)ease;
             } else {
-                ((AbyssEngine::EaseInOut *)(P(this, 0xc0)))->SetRange(0.0f, (float)amount);
+                this->headEase->SetRange(0.0f, (float)amount);
             }
-            I(this, 0x108) = 2;
+            this->field_0x108 = 2;
         } else {
-            float value = EaseInOut_GetValue(P(this, 0xc0));
-            float maxValue = ((AbyssEngine::EaseInOut *)(P(this, 0xc0)))->GetMaxValue();
+            float value = EaseInOut_GetValue(this->headEase);
+            float maxValue = this->headEase->GetMaxValue();
             float distance = value - maxValue;
             if (distance < 0.0f) {
                 distance = -distance;
             }
-            int amount = I(this, 0x108);
+            int amount = this->field_0x108;
             if (distance < 0.25f) {
                 void *random = *(void **)&SpaceLounge_update_random_slot;
                 amount = AbyssEngine::AERandom::nextInt(random, 10);
                 float next = (float)(5 - amount);
-                UC(this, 0xc4) = value > next;
-                ((AbyssEngine::EaseInOut *)(P(this, 0xc0)))->SetRange(value, next);
-                I(this, 0x108) = AbyssEngine::AERandom::nextInt(random, 4) + 1;
-                amount = I(this, 0x108);
+                this->field_0xc4 = value > next;
+                this->headEase->SetRange(value, next);
+                this->field_0x108 = AbyssEngine::AERandom::nextInt(random, 4) + 1;
+                amount = this->field_0x108;
             }
-            if (UC(this, 0xc4) != 0) {
+            if (this->field_0xc4 != 0) {
                 amount = -amount;
             }
-            ((AbyssEngine::EaseInOut *)(P(this, 0xc0)))->Increase((float)(dt * amount));
+            this->headEase->Increase((float)(dt * amount));
         }
 
-        float value = EaseInOut_GetValue(P(this, 0xc0));
+        float value = EaseInOut_GetValue(this->headEase);
         MatrixSetRotation(valueMatrix, value / 90.0f, 0.0f, value);
         MatrixSetTranslation(maxMatrix, 0.0f, 0.0f, wave * maxRot);
-        AbyssEngine::AEMath::MatrixMultiply(*(Matrix*)(valueMatrix),*(const Matrix*)(B(this, 0xc8)));
+        AbyssEngine::AEMath::MatrixMultiply(*(Matrix*)(valueMatrix),this->baseMatrix);
         cameraSlot = *(void **)&SpaceLounge_update_camera_slot_b;
         camera = *(void **)cameraSlot;
         current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
@@ -1346,18 +1344,18 @@ idle_camera:
     }
 
     ((SpaceLounge *)(this))->updateScreenPositions();
-    if (I(this, 0x14) != 0) {
-        ((ScrollTouchWindow *)(P(this, 0x60)))->update(dt);
+    if (this->mode != 0) {
+        this->scrollWindow->update(dt);
     }
-    ((CutScene *)(P(this, 0x44)))->update();
+    this->cutScene->update();
 
-    if (UC(this, 0xb2) != 0) {
-        int x = I(this, 0xb4);
-        int y = I(this, 0xb8);
+    if (this->touchDown != 0) {
+        int x = this->touchX;
+        int y = this->touchY;
         int top = *(int *)SpaceLounge_update_top_slot;
         int height = *(int *)SpaceLounge_update_height_slot;
         int width = *(int *)SpaceLounge_update_width_slot;
-        void *cutscene = P(this, 0x44);
+        void *cutscene = this->cutScene;
         if (y < top) {
             if (x < 150) {
                 F(cutscene, 0xc) -= 10.0f;

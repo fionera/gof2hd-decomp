@@ -87,6 +87,7 @@ public:
     int field_0x30;                     // +0x30
     int field_0x34;                     // +0x34
     int field_0x40;                     // +0x40
+    int field_0x44;                     // +0x44  (alt ship-field selected at runtime: 0x40 or 0x44)
     unsigned field_0x48;                // +0x48
     int field_0x4c;                     // +0x4c
     int field_0x50;                     // +0x50
@@ -98,6 +99,7 @@ public:
     uint8_t field_0x5f;                 // +0x5f
     uint8_t field_0x60;                 // +0x60
     uint8_t field_0x61;                 // +0x61
+    AbyssEngine::String field_0x64;     // +0x64  (game-over message title)
     int field_0x70;                     // +0x70
     Hud* field_0x74;                    // +0x74
     Level* field_0x78;                  // +0x78
@@ -111,6 +113,10 @@ public:
     int field_0x98;                     // +0x98
     int field_0x9c;                     // +0x9c
     int field_0xa0;                     // +0xa0
+    int field_0xa4;                     // +0xa4  (free-cam finger-1 pos: Vector{0xa4,0xa8,0xac})
+    int field_0xa8;                     // +0xa8
+    int field_0xac;                     // +0xac
+    int field_0xb0;                     // +0xb0  (free-cam finger-0 pos: Vector{0xb0,0xb4,0xb8})
     int field_0xb4;                     // +0xb4
     int field_0xb8;                     // +0xb8
     float field_0xbc;                   // +0xbc

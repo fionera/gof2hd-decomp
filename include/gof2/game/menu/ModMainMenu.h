@@ -23,18 +23,19 @@ static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
 // Explicit layout so the named members coexist with raw byte-offset macro access.
 class ModMainMenu {
 public:
-    void*    field_0x00;   // vtable
-    int      paintCanvas;   // paint canvas handle
-    void*    f_8;          // 0x08 ApplicationManager*
-    int      state;   // state
-    byte     field_0x10[4];
-    int      frameTime;
-    void*    f_18;         // 0x18 MenuTouchWindow*
-    void*    f_1c;         // 0x1c CutScene*
-    int      logoImage;
-    int      fadeTimer;
-    byte     logoActive;
-    byte     hasSavedGame;
+    void*    field_0x00;   // +0x00 vtable
+    int      paintCanvas;  // +0x04 paint canvas handle
+    void*    appManager;   // +0x08 ApplicationManager*
+    int      state;        // +0x0c state-machine state (=100 idle)
+    byte     initialized;  // +0x10 init-complete flag
+    byte     _pad_11[3];   // +0x11 padding
+    int      frameTime;    // +0x14 clamped frame delta (ms)
+    void*    touchWindow;  // +0x18 MenuTouchWindow*
+    void*    cutScene;     // +0x1c CutScene*
+    int      logoImage;    // +0x20 logo image handle
+    int      fadeTimer;    // +0x24 logo fade accumulator (ms)
+    byte     logoActive;   // +0x28 logo/touch-lock active flag
+    byte     hasSavedGame; // +0x29 saved-game preview present
 
     // Tail-call fragments peeled out of the OnXxx() handlers: the decompiler split each
     // handler's basic block at its final tail-branch. Each helper completes the operation

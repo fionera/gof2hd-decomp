@@ -99,14 +99,14 @@ __attribute__((visibility("hidden"))) extern void *volatile g_ModMainMenu_vtable
 
 void _ZN11ModMainMenuC2Ev(ModMainMenu *self)
 {
-    *(volatile uint8_t *)B(self, 0x10) = 0;
-    *(volatile uint8_t *)B(self, 0x29) = 0;
-    *(volatile int *)B(self, 0x0c) = 100;
+    self->initialized = 0;
+    self->hasSavedGame = 0;
+    self->state = 100;
     void *vtable = g_ModMainMenu_vtable;
-    I(self, 0x14) = 0;
-    I(self, 0x18) = 0;
-    I(self, 0x1c) = 0;
-    P(self, 0) = (char *)vtable + 8;
+    self->frameTime = 0;
+    self->touchWindow = 0;
+    self->cutScene = 0;
+    self->field_0x00 = (char *)vtable + 8;
 }
 
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_releaseCanvas;
@@ -117,16 +117,16 @@ __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_releaseSound;
 
 void _ZN11ModMainMenu9OnReleaseEv(ModMainMenu *self)
 {
-    void *cutscene = P(self, 0x1c);
+    void *cutscene = self->cutScene;
     if (cutscene != 0)
         ::operator delete(CutScene_dtor(cutscene));
 
-    void *touchWindow = P(self, 0x18);
-    P(self, 0x1c) = 0;
+    void *touchWindow = self->touchWindow;
+    self->cutScene = 0;
     if (touchWindow != 0)
         ::operator delete(((MenuTouchWindow *)(touchWindow))->dtor());
 
-    P(self, 0x18) = 0;
+    self->touchWindow = 0;
     ((PaintCanvas *)*g_ModMainMenu_releaseCanvas)->ReleaseAllResources();
 
     int fontObj = *g_ModMainMenu_releaseFontObj;
@@ -165,9 +165,9 @@ void _ZN11ModMainMenu10OnRender3DEv(ModMainMenu *self)
 {
     void **canvas = g_ModMainMenu_r3d_canvas;
     ((PaintCanvas *)*canvas)->ClearBuffer(0);
-    ((CutScene *)(P(self, 0x1c)))->renderBG();
+    ((CutScene *)(self->cutScene))->renderBG();
     ((PaintCanvas *)*canvas)->Begin3d();
-    ((CutScene *)(P(self, 0x1c)))->render3D();
+    ((CutScene *)(self->cutScene))->render3D();
     ModMainMenu_r3dTail(*canvas);
 }
 
@@ -179,9 +179,9 @@ void _ZN11ModMainMenuD0Ev(ModMainMenu *self)
 extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu11OnTouchMoveEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
 {
-    if (UC(self, 0x28) != 0)
+    if (self->logoActive != 0)
         return;
-    ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchMove(x, y);
+    ((MenuTouchWindow *)(self->touchWindow))->OnTouchMove(x, y);
 }
 
 __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_suspendObj;
@@ -198,27 +198,27 @@ __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_touchEndFlag;
 void _ZN11ModMainMenu10OnTouchEndEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
 {
-    if (UC(self, 0x28) == 0) {
-        ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchEnd(x, y);
-        ModMainMenu::touchEndTail((void *)(intptr_t)((Level *)(*(void **)P(self, 0x1c)))->getStarSystem());
+    if (self->logoActive == 0) {
+        ((MenuTouchWindow *)(self->touchWindow))->OnTouchEnd(x, y);
+        ModMainMenu::touchEndTail((void *)(intptr_t)((Level *)(*(void **)(self->cutScene)))->getStarSystem());
         return;
     }
 
-    UC(self, 0x28) = 0;
+    self->logoActive = 0;
     *g_ModMainMenu_touchEndFlag = 0;
 }
 
 extern "C" __attribute__((disable_tail_calls)) void _ZN11ModMainMenu12OnTouchBeginEiiPv(
     ModMainMenu *self, int x, int y, void *touch)
 {
-    if (UC(self, 0x28) != 0)
+    if (self->logoActive != 0)
         return;
-    ((MenuTouchWindow *)(P(self, 0x18)))->OnTouchBegin(x, y, (int)(intptr_t)touch);
+    ((MenuTouchWindow *)(self->touchWindow))->OnTouchBegin(x, y, (int)(intptr_t)touch);
 }
 
 ModMainMenu *_ZN11ModMainMenuD2Ev(ModMainMenu *self)
 {
-    P(self, 0) = (char *)g_ModMainMenu_vtable + 8;
+    self->field_0x00 = (char *)g_ModMainMenu_vtable + 8;
     _ZN11ModMainMenu9OnReleaseEv(self);
     return self;
 }
@@ -232,27 +232,27 @@ __attribute__((visibility("hidden"))) extern int *g_ModMainMenu_r2d_screenH;
 
 void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
 {
-    ((PaintCanvas *)(long)I(self, 0x04))->Begin2d();
-    ((PaintCanvas *)(long)I(self, 0x04))->SetColor((unsigned int)I(self, 0x04));
-    ((CutScene *)(self->f_1c))->render2D();
+    ((PaintCanvas *)(long)self->paintCanvas)->Begin2d();
+    ((PaintCanvas *)(long)self->paintCanvas)->SetColor((unsigned int)self->paintCanvas);
+    ((CutScene *)(self->cutScene))->render2D();
 
-    if (UC(self, 0x28) == 0) {
-        ((MenuTouchWindow *)(self->f_18))->draw();
+    if (self->logoActive == 0) {
+        ((MenuTouchWindow *)(self->touchWindow))->draw();
     } else {
         int color;
-        int time = I(self, 0x24);
+        int time = self->fadeTimer;
         if (time <= 0x0f3b)
             color = (int)(((float)time / 3900.0f) * 255.0f) - 0x100;
         else
             color = -1;
 
         (void)color;
-        ((PaintCanvas *)(long)I(self, 0x04))->SetColor((unsigned int)I(self, 0x04));
+        ((PaintCanvas *)(long)self->paintCanvas)->SetColor((unsigned int)self->paintCanvas);
 
         int *imageHolder = g_ModMainMenu_r2d_image;
-        ((PaintCanvas *)(long)*imageHolder)->DrawImage2D((unsigned int)I(self, 0x20), 0, 0, (unsigned char)'D');
+        ((PaintCanvas *)(long)*imageHolder)->DrawImage2D((unsigned int)self->logoImage, 0, 0, (unsigned char)'D');
 
-        if (I(self, 0x24) >= 0x0f3c) {
+        if (self->fadeTimer >= 0x0f3c) {
             int canvas = *imageHolder;
             void **timeHolder = g_ModMainMenu_r2d_time;
             float pulseA =
@@ -280,7 +280,7 @@ void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
             int measureCanvas = *imageHolder;
             int textWidth = ((PaintCanvas *)(long)measureCanvas)->GetTextWidth((unsigned int)measureCanvas, measureStr);
 
-            int image = I(self, 0x20);
+            int image = self->logoImage;
             int screenH = *g_ModMainMenu_r2d_screenH;
             int imageHeight = ((PaintCanvas *)(long)*imageHolder)->GetImage2DHeight((unsigned int)*imageHolder);
             ((PaintCanvas *)(long)draw.canvas)->DrawString((unsigned int)draw.canvas, draw.str, text,
@@ -289,7 +289,7 @@ void _ZN11ModMainMenu10OnRender2DEv(ModMainMenu *self)
         }
     }
 
-    ModMainMenu_r2dTail(I(self, 0x04));
+    ModMainMenu_r2dTail(self->paintCanvas);
 }
 
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_initSoundRes;
@@ -314,7 +314,7 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
     void *window;
     int *musicSlot;
 
-    if (self->f_1c == 0) {
+    if (self->cutScene == 0) {
         void **soundRes = g_ModMainMenu_initSoundRes;
         Globals_startNewSoundResourceList(*soundRes);
         void (*addSound)(void *, int) = g_ModMainMenu_initAddSound;
@@ -336,10 +336,10 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
 
         void *cutscene = ::operator new(0xa0);
         CutScene_ctor(cutscene, 2);
-        self->f_1c = cutscene;
+        self->cutScene = cutscene;
         ((CutScene *)(cutscene))->initialize();
 
-        int canvas = I(self, 0x04);
+        int canvas = self->paintCanvas;
         int texture;
         if (((Status *)(*statusHolder))->inAlienOrbit() != 0) {
             texture = 0x2f08;
@@ -350,11 +350,11 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
         }
         unsigned int texSlot = 0xffffffff;
         ((PaintCanvas *)(long)canvas)->TextureCreate((unsigned short)texture, &texSlot, true);
-        ((PaintCanvas *)(long)I(self, 0x04))->ChangeCubeTexture((unsigned int)I(self, 0x04));
+        ((PaintCanvas *)(long)self->paintCanvas)->ChangeCubeTexture((unsigned int)self->paintCanvas);
         return;
     }
 
-    int state = I(self, 0x0c);
+    int state = self->state;
     if (state == 0x1e)
         goto state30;
     if (state == 0x3c)
@@ -369,7 +369,7 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
         recordHolder = g_ModMainMenu_initRecord;
         record = ((RecordHandler *)(*recordHolder))->recordStoreReadPreview(0);
         if (record != 0) {
-            UC(self, 0x29) = 1;
+            self->hasSavedGame = 1;
             ::operator delete(GameRecord_dtor(record));
         }
         UC(options, 0x48) = 1;
@@ -379,37 +379,37 @@ void _ZN11ModMainMenu12OnInitializeEv(ModMainMenu *self)
     ((Status *)(*g_ModMainMenu_initPlayingTime))->setPlayingTime(0);
     window = ::operator new(0x240);
     ((MenuTouchWindow *)(window))->ctor(0);
-    self->f_18 = window;
-    if (UC(self, 0x29) != 0) {
+    self->touchWindow = window;
+    if (self->hasSavedGame != 0) {
         ((MenuTouchWindow *)(window))->showSupernovaMessage();
-        UC(self, 0x29) = 0;
+        self->hasSavedGame = 0;
     }
-    I(self, 0x0c) = 0x50;
+    self->state = 0x50;
     return;
 
 state60:
-    I(self, 0x0c) = 0x1e;
+    self->state = 0x1e;
     return;
 
 state30:
-    I(self, 0x0c) = 1;
+    self->state = 1;
 
 music:
     musicSlot = g_ModMainMenu_initMusicSlot;
     if (*musicSlot != -1)
         Globals_playMusicAndFadeOutCurrent(*g_ModMainMenu_initMusic);
     *musicSlot = -1;
-    UC(self, 0x10) = 1;
-    I(self, 0x0c) = 100;
+    self->initialized = 1;
+    self->state = 100;
     return;
 
 state80:
     ((PaintCanvas *)*g_ModMainMenu_initImageFactory)->Image2DCreate(0x1b5a,
-                              (unsigned int *)B(self, 0x20));
-    UC(self, 0x28) = 1;
-    I(self, 0x24) = 0;
+                              (unsigned int *)&self->logoImage);
+    self->logoActive = 1;
+    self->fadeTimer = 0;
     *g_ModMainMenu_initTouchFlag = 1;
-    I(self, 0x0c) = 0x3c;
+    self->state = 0x3c;
 }
 
 __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_updateLayout;
@@ -417,30 +417,30 @@ __attribute__((visibility("hidden"))) extern void **g_ModMainMenu_updateListener
 
 void _ZN11ModMainMenu8OnUpdateEv(ModMainMenu *self)
 {
-    int elapsed = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis();
+    int elapsed = ((ApplicationManager *)(self->appManager))->GetElapsedTimeMillis();
     int frameTime;
     if (elapsed < 0x97 &&
-        (elapsed = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis()) < 0) {
+        (elapsed = ((ApplicationManager *)(self->appManager))->GetElapsedTimeMillis()) < 0) {
         frameTime = 0;
     } else {
-        elapsed = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis();
+        elapsed = ((ApplicationManager *)(self->appManager))->GetElapsedTimeMillis();
         if (elapsed > 0x96)
             frameTime = 0x96;
         else
-            frameTime = ((ApplicationManager *)(self->f_8))->GetElapsedTimeMillis();
+            frameTime = ((ApplicationManager *)(self->appManager))->GetElapsedTimeMillis();
     }
 
-    I(self, 0x14) = frameTime;
+    self->frameTime = frameTime;
 
     void **layout = g_ModMainMenu_updateLayout;
     ((Layout *)(*layout))->update(frameTime);
-    ((CutScene *)(self->f_1c))->update();
-    if (UC(self, 0x28) == 0)
-        ((MenuTouchWindow *)(self->f_18))->update(I(self, 0x14));
-    ((Layout *)(*layout))->update(I(self, 0x14));
+    ((CutScene *)(self->cutScene))->update();
+    if (self->logoActive == 0)
+        ((MenuTouchWindow *)(self->touchWindow))->update(self->frameTime);
+    ((Layout *)(*layout))->update(self->frameTime);
 
     void **listener = g_ModMainMenu_updateListener;
-    I(self, 0x24) = I(self, 0x14) + I(self, 0x24);
+    self->fadeTimer = self->frameTime + self->fadeTimer;
     void *zero = 0;
     ((FModSound *)(*listener))->updateAll((Vector *)zero, (Vector *)zero, (Vector *)zero, (Vector *)zero);
 }

@@ -51,18 +51,18 @@ public:
     void* leftMarquee;    // +0x8c  left MarqueeImage
     void* rightMarquee;    // +0x90  right MarqueeImage
     void* drillSprite;    // +0x94  drill Sprite
-    int oreIconImageId;      // +0x98  image ids ...
-    int field_0x9c;      // +0x9c
-    int field_0xa0;      // +0xa0
-    int field_0xa4;      // +0xa4
-    int progressBarImageId;      // +0xa8
-    int field_0xac;      // +0xac
-    int field_0xb0;      // +0xb0
-    int field_0xb4;      // +0xb4
-    int field_0xb8;      // +0xb8
-    int field_0xbc;      // +0xbc
-    int field_0xc0;      // +0xc0
-    int field_0xc4;      // +0xc4
+    int oreIconImageId;      // +0x98  ore icon image (res 0x4e7)
+    int oreLabelImageId;     // +0x9c  ore label glow image (res 0x4e5)
+    int oreTextImageId;      // +0xa0  ore-amount text strip image (res 0x4e4)
+    int cornerImageId;       // +0xa4  progress-bar corner decoration (res 0x4e3)
+    int progressBarImageId;  // +0xa8  progress bar image (res 0x4e8)
+    int ringEvenNear;        // +0xac  even-layer ring tile, near band (res 0x4e2)
+    int ringEvenFar;         // +0xb0  even-layer ring tile, far band (res 0x4dd)
+    int ringEvenMid;         // +0xb4  even-layer ring tile, mid band (res 0x4de)
+    int ringOddNear;         // +0xb8  odd-layer ring tile, near band (res 0x4e1)
+    int ringOddMid;          // +0xbc  odd-layer ring tile, mid band (res 0x4df)
+    int ringOddFar;          // +0xc0  odd-layer ring tile, far band (res 0x4e0)
+    int progressLabelImageId;// +0xc4  progress-bar label image (res 0x4ed)
     int marqueeWidth;      // +0xc8  marquee width
     int promptPulseTimer;      // +0xcc  prompt pulse timer
     void* hud;    // +0xd0  Hud*

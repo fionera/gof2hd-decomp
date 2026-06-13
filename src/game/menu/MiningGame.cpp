@@ -343,18 +343,18 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
 
     this->animAccumulator = 0.0f;
     void (*imageCreate)(void *, int, int *) = g_MiningGame_imageCreate;
-    imageCreate(*canvasHolder, 0x4e2, &this->field_0xac);
-    imageCreate(*canvasHolder, 0x4dd, &this->field_0xb0);
-    imageCreate(*canvasHolder, 0x4de, &this->field_0xb4);
-    imageCreate(*canvasHolder, 0x4e1, &this->field_0xb8);
-    imageCreate(*canvasHolder, 0x4df, &this->field_0xbc);
-    imageCreate(*canvasHolder, 0x4e0, &this->field_0xc0);
-    imageCreate(*canvasHolder, 0x4e5, &this->field_0x9c);
-    imageCreate(*canvasHolder, 0x4e4, &this->field_0xa0);
+    imageCreate(*canvasHolder, 0x4e2, &this->ringEvenNear);
+    imageCreate(*canvasHolder, 0x4dd, &this->ringEvenFar);
+    imageCreate(*canvasHolder, 0x4de, &this->ringEvenMid);
+    imageCreate(*canvasHolder, 0x4e1, &this->ringOddNear);
+    imageCreate(*canvasHolder, 0x4df, &this->ringOddMid);
+    imageCreate(*canvasHolder, 0x4e0, &this->ringOddFar);
+    imageCreate(*canvasHolder, 0x4e5, &this->oreLabelImageId);
+    imageCreate(*canvasHolder, 0x4e4, &this->oreTextImageId);
     imageCreate(*canvasHolder, 0x4e7, &this->oreIconImageId);
-    imageCreate(*canvasHolder, 0x4e3, &this->field_0xa4);
+    imageCreate(*canvasHolder, 0x4e3, &this->cornerImageId);
     imageCreate(*canvasHolder, 0x4e8, &this->progressBarImageId);
-    imageCreate(*canvasHolder, 0x4ed, &this->field_0xc4);
+    imageCreate(*canvasHolder, 0x4ed, &this->progressLabelImageId);
 
     if (this->isCoreLayer != 0) {
         int coreImage = 0x523;
@@ -383,11 +383,11 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
 
     int (*imageWidth)(void *, int) = g_MiningGame_imageWidth;
     this->oreIconOffsetX = imageWidth(*canvasHolder, this->oreIconImageId) / 2 + 5;
-    this->oreIconOffsetY = imageWidth(*canvasHolder, this->field_0x9c) / 2;
-    this->oreImageHeight = ((PaintCanvas *)*canvasHolder)->GetImage2DHeight(this->field_0xa0);
+    this->oreIconOffsetY = imageWidth(*canvasHolder, this->oreLabelImageId) / 2;
+    this->oreImageHeight = ((PaintCanvas *)*canvasHolder)->GetImage2DHeight(this->oreTextImageId);
 
     void *oreMarquee = ::operator new(0x24);
-    MiningGame_MarqueeImage_ctor(oreMarquee, 0x4e4, imageWidth(*canvasHolder, this->field_0x9c) - 8, 0, 0,
+    MiningGame_MarqueeImage_ctor(oreMarquee, 0x4e4, imageWidth(*canvasHolder, this->oreLabelImageId) - 8, 0, 0,
                                  F(layout, 0xdc));
     this->oreMarquee = oreMarquee;
     MiningGame_MarqueeImage_setSpeed(oreMarquee, F(layout, 0xe0) * g_MiningGame_layerSpeed[this->currentLayer]);
@@ -432,19 +432,19 @@ void MiningGame::render2D()
         int radius = (int)(F(layout, 0xe8) * (float)raw);
         int *imageSlot;
         if ((layerIndex & 1) == 0) {
-            imageSlot = &this->field_0xac;
+            imageSlot = &this->ringEvenNear;
             if (I(layout, 0xec) < radius) {
-                imageSlot = &this->field_0xb4;
+                imageSlot = &this->ringEvenMid;
                 if (radius < I(layout, 0xf4)) {
-                    imageSlot = &this->field_0xb0;
+                    imageSlot = &this->ringEvenFar;
                 }
             }
         } else {
-            imageSlot = &this->field_0xb8;
+            imageSlot = &this->ringOddNear;
             if (I(layout, 0xec) < radius) {
-                imageSlot = &this->field_0xc0;
+                imageSlot = &this->ringOddFar;
                 if (radius < I(layout, 0xf4)) {
-                    imageSlot = &this->field_0xbc;
+                    imageSlot = &this->ringOddMid;
                 }
             }
         }
@@ -465,7 +465,7 @@ void MiningGame::render2D()
     MiningGame_Sprite_setRefPixelPosition(this->drillSprite, (int)this->posX, (int)this->posY);
     MiningGame_Sprite_draw(this->drillSprite, 1.0f, 1.0f);
 
-    ((PaintCanvas *)canvas)->DrawImage2D(this->field_0xa4, this->progressBarX - I(layout, 0xfc),
+    ((PaintCanvas *)canvas)->DrawImage2D(this->cornerImageId, this->progressBarX - I(layout, 0xfc),
                                          this->progressBarY - I(layout, 0xfc));
 
     int lossTimer = this->lossTimer;
@@ -479,14 +479,14 @@ void MiningGame::render2D()
     ((PaintCanvas *)canvas)->DrawRegion2D(this->progressBarImageId, 0, 0, width, this->progressBarHeight, (float)width, 0, 0, 0,
                                           this->progressBarX);
     ((PaintCanvas *)canvas)->SetColor((unsigned int)-1);
-    ((PaintCanvas *)canvas)->DrawImage2D(this->field_0xc4, this->centerX, this->progressBarY - 3, (unsigned char)0x2411);
+    ((PaintCanvas *)canvas)->DrawImage2D(this->progressLabelImageId, this->centerX, this->progressBarY - 3, (unsigned char)0x2411);
 
     MiningGame_MarqueeImage_draw(this->leftMarquee);
     MiningGame_MarqueeImage_draw(this->rightMarquee);
     MiningGame_MarqueeImage_drawAt(this->oreMarquee, (int)(this->posX + (float)this->oreIconOffsetX),
                                    (int)(this->posY - (float)this->oreImageHeight));
 
-    ((PaintCanvas *)canvas)->DrawImage2D(this->field_0x9c,
+    ((PaintCanvas *)canvas)->DrawImage2D(this->oreLabelImageId,
                                          (int)((this->posX + (float)this->oreIconOffsetX) - (float)I(layout, 0xfc)),
                                          (int)(this->posY - (float)I(layout, 0x100)));
 
