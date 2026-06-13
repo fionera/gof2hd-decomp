@@ -142,11 +142,11 @@ void RecordHandler::convertSDVersionSaves() {
 
         String num, path;
         num.ctor_int(i);
-        path = *(String *)((char *)this + 0x14) + num;
+        path = this->recordDir + num;
         AEFile::FileDelete(path);
 
         num.ctor_int(i);
-        path = *(String *)((char *)this + 0x20) + num;
+        path = this->backupDir + num;
         AEFile::FileDelete(path);
         n = *cnt;
     }
@@ -243,8 +243,8 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     int sz;
 
     num.ctor_int(slot);
-    char *dir = (char *)this + (fromBackup ? 0x20 : 0x14);
-    path = *(String *)dir + num;
+    String &dir = fromBackup ? this->backupDir : this->recordDir;
+    path = dir + num;
 
     if (AEFile::FileExist(path) != 0) {
         AEFile::OpenRead(path, &fd);
@@ -375,16 +375,9 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
     ((RecordHandler *)(sizes1))->csd_tail(1, n, a1);
 }
 
-// String::~String function pointer (single pc-rel deref to the fn-ptr global).
-__attribute__((visibility("hidden"))) extern void (*g_RH_stringDtor)(void *s);
-
-// RecordHandler::~RecordHandler() — destroys the three String members at +0x20,
-// +0x14, +0x8 (high to low) and returns `this`.
+// RecordHandler::~RecordHandler() — the three String members destroy automatically
+// (backupDir, recordDir, optionsPath, high to low).
 RecordHandler::~RecordHandler() {
-    void (*dtor)(void *) = g_RH_stringDtor;
-    dtor((char *)this + 0x20);
-    dtor((char *)this + 0x14);
-    dtor((char *)this + 0x8);
 }
 
 // RecordHandler::recordStoreReadPreview(int)
@@ -393,7 +386,7 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
     String num;
 
     num.ctor_int(slot);
-    path = *(String *)((char *)this + 0x20) + num;
+    path = this->backupDir + num;
 
     unsigned int fd;
     void *gr = 0;
@@ -419,26 +412,19 @@ __attribute__((visibility("hidden"))) extern const char RH_lit0[];
 __attribute__((visibility("hidden"))) extern const char RH_lit1[];
 __attribute__((visibility("hidden"))) extern const char RH_lit2[];
 
-// RecordHandler::RecordHandler() — default-constructs the three String members at
-// +0x8, +0x14, +0x20, then assigns each from a literal, and returns `this`.
+// RecordHandler::RecordHandler() — default-constructs the three String members and
+// assigns each from a path-prefix literal.
 RecordHandler::RecordHandler() {
     String tmp;
-    char *m0 = (char *)this + 0x8;
-    char *m1 = (char *)this + 0x14;
-    char *m2 = (char *)this + 0x20;
-
-    ((String *)m0)->ctor();
-    ((String *)m1)->ctor();
-    ((String *)m2)->ctor();
 
     tmp.ctor_char(RH_lit0, false);
-    ((String *)(m0))->assign(&tmp);
+    this->optionsPath.assign(&tmp);
 
     tmp.ctor_char(RH_lit1, false);
-    ((String *)(m1))->assign(&tmp);
+    this->recordDir.assign(&tmp);
 
     tmp.ctor_char(RH_lit2, false);
-    ((String *)(m2))->assign(&tmp);
+    this->backupDir.assign(&tmp);
 }
 
 // RecordHandler::writeByteArrayAsOptionsFile(signed char*, int)
@@ -446,7 +432,7 @@ void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     String tmp;
     unsigned int fd;
 
-    tmp.ctor_copy((String *)((char *)this + 0x8), false);
+    tmp.ctor_copy(&this->optionsPath, false);
     if (AEFile::FileExist(tmp) != 0)
         AEFile::FileDelete(tmp);
     AEFile::OpenWrite(tmp, &fd);
@@ -471,7 +457,7 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
     unsigned int fd;
 
     num.ctor_int(slot);
-    path = *(String *)((char *)this + 0x20) + num;
+    path = this->backupDir + num;
 
     if (AEFile::FileExist(path) != 0)
         AEFile::FileDelete(path);
@@ -565,7 +551,7 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
 
     self->currentAgent = agent;
     void *mission = ((Agent *)(agent))->getMission();
-    if (mission == 0 || *(void **)self == mission) {
+    if (mission == 0 || self->currentMission == mission) {
         AEFile_WriteInt(-1, fd);
     } else {
         AEFile_WriteInt(1, fd);
@@ -616,7 +602,7 @@ void RecordHandler::writeMission(void *m, unsigned int fd) {
         AEFile_WriteInt(((Mission *)(m))->getStatusValue(), fd);
         AEFile_WriteBool(((Mission *)(m))->isVisible(), fd);
 
-        *(void **)self = m;
+        self->currentMission = m;
         void *agent = ((Mission *)(m))->getAgent();
         if (agent == 0 || self->currentAgent == agent) {
             AEFile_WriteInt(-1, fd);
@@ -645,14 +631,14 @@ void RecordHandler::loadOptions() {
     int *guardP = g_LO_guard;
     volatile int saved = *guardP;
 
-    void *path = (char *)this + 8;
-    if (AEFile::FileExist(*(String *)(path)) != 0) {
+    String &path = this->optionsPath;
+    if (AEFile::FileExist(path) != 0) {
         unsigned int fd;
-        AEFile::OpenRead(*(String *)path, &fd);
+        AEFile::OpenRead(path, &fd);
         int valid = RecordHandler_checkHash(fd);
         AEFile::Close(fd);
         if (valid != 0) {
-            AEFile::OpenRead(*(String *)path, &fd);
+            AEFile::OpenRead(path, &fd);
             unsigned char *s = g_LO_settings;
 
             AEFile_ReadByte(s + 0x10, fd);
@@ -762,10 +748,10 @@ void RecordHandler::loadResolutionValue() {
     int *guardP = g_LRV_guard;
     volatile int saved = *guardP;
 
-    void *path = (char *)this + 8;
-    if (AEFile::FileExist(*(String *)(path)) != 0) {
+    String &path = this->optionsPath;
+    if (AEFile::FileExist(path) != 0) {
         unsigned int fd;
-        AEFile::OpenRead(*(String *)path, &fd);
+        AEFile::OpenRead(path, &fd);
 
         // Scratch settings record (mirrors the on-stack layout the target fills in).
         unsigned char buf[0x4c];
@@ -829,8 +815,8 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
     unsigned int fd;
 
     num.ctor_int(slot);
-    char *dir = (char *)this + (toBackup ? 0x20 : 0x14);
-    path = *(String *)dir + num;
+    String &dir = toBackup ? this->backupDir : this->recordDir;
+    path = dir + num;
 
     if (AEFile::FileExist(path) != 0)
         AEFile::FileDelete(path);
@@ -938,12 +924,12 @@ void RecordHandler::saveOptions() {
     int *guardP = g_SO_guard;
     volatile int saved = *guardP;
 
-    void *path = (char *)this + 8;
-    if (AEFile::FileExist(*(String *)(path)) != 0) {
-        AEFile::FileDelete(*(String *)(path));
+    String &path = this->optionsPath;
+    if (AEFile::FileExist(path) != 0) {
+        AEFile::FileDelete(path);
     }
     unsigned int fd;
-    AEFile::OpenWrite(*(String *)path, &fd);
+    AEFile::OpenWrite(path, &fd);
 
     unsigned char *s = g_SO_settings;
 
@@ -1183,7 +1169,7 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     unsigned int fd;
 
     num.ctor_int(slot);
-    path = *(String *)((char *)this + 0x20) + num;
+    path = this->backupDir + num;
 
     if (AEFile::FileExist(path) != 0)
         AEFile::FileDelete(path);
@@ -1219,7 +1205,7 @@ void RecordHandler::recordStoreWrite(int slot) {
 
     String num, path;
     num.ctor_int(slot);
-    path = *(String *)((char *)this + 0x14) + num;
+    path = this->recordDir + num;
 
     if (AEFile::FileExist(path) != 0) {
         AEFile::FileDelete(path);
@@ -1979,7 +1965,7 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     unsigned int fd;
     int sz;
 
-    tmp.ctor_copy((String *)((char *)this + 0x8), false);
+    tmp.ctor_copy(&this->optionsPath, false);
     if (AEFile::FileExist(tmp) != 0) {
         AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
@@ -2007,7 +1993,7 @@ void * RecordHandler::recordStoreRead(int slot) {
     char *rec = 0;
     String num, path;
     num.ctor_int(slot);
-    path = *(String *)((char *)this + 0x14) + num;
+    path = this->recordDir + num;
 
     if (AEFile::FileExist(path) != 0) {
         unsigned int fd;

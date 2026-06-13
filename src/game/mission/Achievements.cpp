@@ -30,11 +30,11 @@ Achievements::~Achievements()
 }
 
 uint8_t Achievements::gotAllSupernovaMedals() {
-    return this->field_0x22;
+    return this->gotAllSupernovaMedals_;
 }
 
 uint8_t Achievements::gotAllMedals() {
-    return this->field_0x20;
+    return this->gotAllMedals_;
 }
 
 void Achievements::updateCredits(int value) {
@@ -78,8 +78,8 @@ Achievements::Achievements()
 {
     this->medals = (int *)operator new[](0xb4);
     this->newMedals = (int *)operator new[](0xb4);
-    this->field_0x22 = 0;
-    this->field_0x20 = 0;
+    this->gotAllSupernovaMedals_ = 0;
+    this->gotAllMedals_ = 0;
 }
 
 void Achievements::resetNewMedals() {
@@ -117,7 +117,7 @@ void Achievements::resetPirateKills() {
 }
 
 uint8_t Achievements::gotAllGoldMedals() {
-    return this->field_0x21;
+    return this->gotAllGoldMedals_;
 }
 
 void Achievements::countMedals() {
@@ -145,9 +145,9 @@ void Achievements::countMedals() {
             supers = supers + 1;
     }
     uint8_t allGold = (golds == 0x24);
-    this->field_0x22 = (supers == 9) & allGold;
-    this->field_0x21 = allGold;
-    this->field_0x20 = (total == 0x24);
+    this->gotAllSupernovaMedals_ = (supers == 9) & allGold;
+    this->gotAllGoldMedals_ = allGold;
+    this->gotAllMedals_ = (total == 0x24);
 }
 
 // NEAR / RESISTANT: Achievements::checkForNewMedal(PlayerEgo*) is a ~922-byte function

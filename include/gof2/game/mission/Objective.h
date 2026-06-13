@@ -36,13 +36,13 @@ extern "C" unsigned int Objective_tail_enemy_final(KIPlayer *player);
 
 class Objective {
 public:
-    int field_0x0;                      // +0x0 objective type
-    int field_0x4;                      // +0x4 value
-    int field_0x8;                      // +0x8 calc value
-    Level* field_0xc;                   // +0xc owning level
-    Array<Objective *>* field_0x10;     // +0x10 child objectives
-    void* field_0x14;                   // +0x14 achieved-text String*
-    int field_0x18;                     // +0x18
+    int type;                           // +0x0 objective type
+    int value;                          // +0x4 value / index parameter
+    int calcValue;                      // +0x8 calc value / end value
+    Level* level;                       // +0xc owning level
+    Array<Objective *>* children;       // +0x10 child objectives
+    String* achievedText;               // +0x14 achieved-text String*
+    int field_0x18;                     // +0x18 stored value when type==0xd
 
     Objective(int type, int value, Level *level);
     Objective(int type, int value, int calcValue, Level *level);

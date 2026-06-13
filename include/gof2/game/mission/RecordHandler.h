@@ -1,11 +1,10 @@
 #ifndef GOF2_RECORDHANDLER_H
 #define GOF2_RECORDHANDLER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// RecordHandler — top-level class (NO namespace). Byte-exact decomp scaffold.
-// Save/record I/O. Fields accessed by byte offset from each work-item's target disasm.
-
-struct RecordHandler;     // opaque; only ever a RecordHandler* + offset-cast.
+// RecordHandler — top-level class (NO namespace). Save/record I/O.
+// Members named from accessor bodies, ctor init and usage. The three String members
+// are real String objects (auto ctor/dtor); the two leading pointers track the
+// mission/agent currently being (de)serialized so the writer can break self-reference cycles.
 
 // Game types referenced by pointer only — keep opaque.
 struct Agent;
@@ -23,7 +22,11 @@ static inline void*&          P (void* p, int off) { return *(void**)((char*)p +
 
 class RecordHandler {
 public:
-    void* currentAgent;                    // +0x4
+    void*  currentMission;                 // +0x0   mission being serialized (cycle guard)
+    void*  currentAgent;                   // +0x4   agent being serialized (cycle guard)
+    String optionsPath;                    // +0x8   options file path
+    String recordDir;                      // +0x14  primary save-record directory prefix
+    String backupDir;                      // +0x20  backup save-record directory prefix
 
     // ---- methods (converted from free functions) ----
     void addHash(int slot);

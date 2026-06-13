@@ -15,7 +15,7 @@ uint8_t Mission::isInstantActionMission() {
 }
 
 String Mission::getTargetStationName() {
-    return *(String *)((char *)this + 0x40);
+    return this->targetStationName;
 }
 
 bool Mission::isCampaignMission() {
@@ -30,7 +30,7 @@ String Mission::getDescription() {
 }
 
 String Mission::getTargetSystemName() {
-    return *(String *)((char *)this + 0x4c);
+    return this->targetSystemName;
 }
 
 struct GameText;
@@ -47,8 +47,8 @@ String Mission::getName() {
     if (this->campaign != 0) {
         return String("");
     }
-    void *txt = ((GameText *)(*g_gameText))->getText(this->id + 0x162);
-    return *(String *)(txt);
+    String *txt = (String *)((GameText *)(*g_gameText))->getText(this->id + 0x162);
+    return *txt;
 }
 
 void Mission::setProductionGoods(int a, int b) {
@@ -61,9 +61,8 @@ void Mission::setProductionGoods(int a, int b) {
 // Mission::setTargetName(String by value): the String has a non-trivial copy
 // ctor/dtor so it is passed by invisible reference (pointer in r1).
 void * Mission::setTargetName(const String &rhs) {
-    String *dst = (String *)((char *)this + 0x1c);
-    *dst = rhs;
-    return dst;
+    this->targetName = rhs;
+    return &this->targetName;
 }
 
 // AbyssEngine::String::String(String* out, const String* src, bool) -> 0x6f028
@@ -71,7 +70,7 @@ void * Mission::setTargetName(const String &rhs) {
 // Returns the client name String (offset 0x10) by value. The void copy-ctor forces
 // a frame + non-tail blx (the sret r0 must be restored).
 String Mission::getClientName() {
-    return *(String *)((char *)this + 0x10);
+    return this->name;
 }
 
 uint8_t Mission::isVisible() {
@@ -83,7 +82,7 @@ bool Mission::isEmpty() {
 }
 
 String Mission::getTargetName() {
-    return *(String *)((char *)this + 0x1c);
+    return this->targetName;
 }
 
 void Mission::setInstantActionMission(bool v) {
@@ -93,9 +92,8 @@ void Mission::setInstantActionMission(bool v) {
 // AbyssEngine::String::operator=(String* this, const String& rhs) -> 0x1ac548
 
 void * Mission::setTargetSystemName(const String &rhs) {
-    String *dst = (String *)((char *)this + 0x4c);
-    *dst = rhs;
-    return dst;
+    this->targetSystemName = rhs;
+    return &this->targetSystemName;
 }
 
 void Mission::setVisible(bool v) {
@@ -112,7 +110,7 @@ Mission * Mission::clone() {
     String name;
     Mission *m = (Mission *)::operator new(0x78);
     int id = this->id;
-    name.ctor_copy((String *)((char *)this + 0x10), false);
+    name.ctor_copy(&this->name, false);
     new (m) Mission(id, &name, this->field_0x28, this->field_0x2c, this->field_0x30, this->targetStation, this->reward);
     m->instantAction = this->instantAction;
     return m;
@@ -132,7 +130,7 @@ void Mission::setTargetStation(int idx) {
     this->targetStation = idx;
     Station *st = (Station *)((Galaxy *)(*gp))->getStation(idx);
     String name = st->getName();
-    ((String *)((char *)this + 0x40))->assign(&name);
+    this->targetStationName.assign(&name);
 }
 
 // Mission::~Mission() (the inner/base dtor at 0x15ba54) returns `this` in r0.
@@ -154,27 +152,26 @@ __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 Mission::Mission(int id, const void *client, int a, int b, int c, int station, int reward) {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
-    ((String *)((char *)self + 0x10))->ctor();
-    ((String *)((char *)self + 0x1c))->ctor();
-    ((String *)((char *)self + 0x40))->ctor();
-    ((String *)((char *)self + 0x4c))->ctor();
+    // name / targetName / targetStationName / targetSystemName are real String
+    // members, default-constructed before this body runs.
     self->id = id;
-    ((String *)((char *)self + 0x10))->assign((String *)client);
+    self->name.assign((String *)client);
     self->field_0x28 = a;
     self->field_0x2c = b;
     self->field_0x30 = c;
     self->targetStation = station;
     Station *st = (Station *)((Galaxy *)(*g_galaxy))->getStation(station);
     String tmp = st->getName();
-    ((String *)((char *)self + 0x40))->assign(&tmp);
+    self->targetStationName.assign(&tmp);
     self->reward = reward;
     tmp = String("");
-    ((String *)((char *)self + 0x4c))->assign(&tmp);
+    self->targetSystemName.assign(&tmp);
     self->visible = 1;
     self->campaign = 0;
     self->instantAction = 0;
-    self->field_0x4 = 0;
-    self->field_0x8 = 0;
+    self->failed = 0;
+    self->won = 0;
+    self->agent = 0;
     self->field_0x38 = 0;
 }
 
@@ -185,15 +182,12 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 Mission::Mission(int id) {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
-    ((String *)((char *)self + 0x10))->ctor();
-    ((String *)((char *)self + 0x1c))->ctor();
-    ((String *)((char *)self + 0x40))->ctor();
-    ((String *)((char *)self + 0x4c))->ctor();
+    // String members are real fields, default-constructed before this body runs.
     String tmp("");
-    ((String *)((char *)self + 0x10))->assign(&tmp);
+    self->name.assign(&tmp);
     self->campaign = 0;
     self->visible = 0;
-    self->field_0x8 = 0;
+    self->agent = 0;
     self->id = id;
     self->field_0x28 = 0;
     self->field_0x2c = 0;
@@ -201,7 +195,8 @@ Mission::Mission(int id) {
     self->reward = 0;
     self->instantAction = 0;
     self->field_0x70 = 0;
-    self->field_0x4 = 0;
+    self->failed = 0;
+    self->won = 0;
     self->field_0x38 = 0;
     self->targetStation = 0;
 }
@@ -245,14 +240,11 @@ __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 Mission::Mission(int id, int goods, int station) {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
-    ((String *)((char *)self + 0x10))->ctor();
-    ((String *)((char *)self + 0x1c))->ctor();
-    ((String *)((char *)self + 0x40))->ctor();
-    ((String *)((char *)self + 0x4c))->ctor();
+    // String members are real fields, default-constructed before this body runs.
     self->field_0x30 = goods;
     self->targetStation = station;
     self->field_0x28 = 0;
-    self->field_0x8 = 0;
+    self->agent = 0;
     self->id = id;
     String tmp;
     if (station < 0) {
@@ -261,12 +253,13 @@ Mission::Mission(int id, int goods, int station) {
         Station *st = (Station *)((Galaxy *)(*g_galaxy))->getStation(station);
         tmp = st->getName();
     }
-    ((String *)((char *)self + 0x40))->assign(&tmp);
+    self->targetStationName.assign(&tmp);
     tmp = String("");
-    ((String *)((char *)self + 0x4c))->assign(&tmp);
+    self->targetSystemName.assign(&tmp);
     self->visible = 1;
     self->campaign = 1;
-    self->field_0x4 = 0;
+    self->failed = 0;
+    self->won = 0;
     self->instantAction = 0;
     self->field_0x70 = 0;
     self->field_0x38 = 0;
@@ -282,10 +275,8 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 Mission::~Mission() {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
-    ((String *)((char *)self + 0x4c))->dtor();
-    ((String *)((char *)self + 0x40))->dtor();
-    ((String *)((char *)self + 0x1c))->dtor();
-    ((String *)((char *)self + 0x10))->dtor();
+    // name / targetName / targetStationName / targetSystemName are real String
+    // members and are destroyed automatically when ~Mission() returns.
 }
 
 // PIC globals (hidden -> single pc-relative deref): the Mission vtable base.
@@ -301,15 +292,12 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 Mission::Mission() {
     Mission *self = this;
     *(void **)self = (char *)Mission_vtable + 8;
-    ((String *)((char *)self + 0x10))->ctor();
-    ((String *)((char *)self + 0x1c))->ctor();
-    ((String *)((char *)self + 0x40))->ctor();
-    ((String *)((char *)self + 0x4c))->ctor();
+    // String members are real fields, default-constructed before this body runs.
     String tmp("");
-    ((String *)((char *)self + 0x10))->assign(&tmp);
+    self->name.assign(&tmp);
     self->campaign = 0;
     self->visible = 0;
-    self->field_0x8 = 0;
+    self->agent = 0;
     self->id = -1;
     self->field_0x28 = 0;
     self->field_0x2c = 0;
@@ -317,7 +305,8 @@ Mission::Mission() {
     self->reward = 0;
     self->instantAction = 0;
     self->field_0x70 = 0;
-    self->field_0x4 = 0;
+    self->failed = 0;
+    self->won = 0;
     self->field_0x38 = 0;
     self->targetStation = 0;
 }
@@ -378,11 +367,11 @@ void Mission::setStatusValue(int value) {
 
 // Mission::getAgent()/setAgent() (0x16bcac/0x16bcb0): pointer slot at +0x8.
 Agent *Mission::getAgent() {
-    return *(Agent **)((char *)this + 0x8);
+    return this->agent;
 }
 
 void Mission::setAgent(Agent *agent) {
-    *(Agent **)((char *)this + 0x8) = agent;
+    this->agent = agent;
 }
 
 int Mission::getClientImage() {
@@ -408,19 +397,19 @@ int Mission::getTargetStation() {
 
 // Status flags packed into the int at +0x4: failed at byte +0x4, won at byte +0x5.
 bool Mission::hasFailed() {
-    return *((uint8_t *)this + 0x4) != 0;
+    return this->failed != 0;
 }
 
 void Mission::setFailed(bool failed) {
-    *((uint8_t *)this + 0x4) = failed ? 1 : 0;
+    this->failed = failed ? 1 : 0;
 }
 
 bool Mission::hasWon() {
-    return *((uint8_t *)this + 0x5) != 0;
+    return this->won != 0;
 }
 
 void Mission::setWon(bool won) {
-    *((uint8_t *)this + 0x5) = won ? 1 : 0;
+    this->won = won ? 1 : 0;
 }
 
 // Mission::setCampaignMission(bool) (0x16bb88): writes the campaign flag at +0x64.

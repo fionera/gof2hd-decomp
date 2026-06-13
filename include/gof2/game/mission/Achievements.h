@@ -29,12 +29,12 @@ public:
     int kills;                      // +0x8
     int catches;                      // +0xc
     int pirateKills;                     // +0x10
-    int field_0x14;                     // +0x14
+    int field_0x14;                     // +0x14 count of type-0 equipment items (semantics unconfirmed)
     uint8_t hasTurretAndWeapon;                 // +0x18
     int credits;                     // +0x1c
-    uint8_t field_0x20;                 // +0x20
-    uint8_t field_0x21;                 // +0x21
-    uint8_t field_0x22;                 // +0x22
+    uint8_t gotAllMedals_;              // +0x20 all 36 medals present
+    uint8_t gotAllGoldMedals_;          // +0x21 all 36 gold medals
+    uint8_t gotAllSupernovaMedals_;     // +0x22 all gold + all 9 supernova medals
     int medalCount;                     // +0x24
 
     Achievements();

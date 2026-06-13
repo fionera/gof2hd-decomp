@@ -15,21 +15,21 @@ struct RadioMessage { uint8_t isOver(); };
 
 Objective::Objective(int type, int value, Level *level)
 {
-    this->field_0x0 = type;
-    this->field_0x4 = value;
-    this->field_0x8 = 0;
-    this->field_0xc = level;
-    this->field_0x10 = 0;
-    this->field_0x14 = 0;
+    this->type = type;
+    this->value = value;
+    this->calcValue = 0;
+    this->level = level;
+    this->children = 0;
+    this->achievedText = 0;
     this->field_0x18 = 0;
 }
 
 Objective *Objective::addObjective(Objective *objective)
 {
-    Array<Objective *> *children = this->field_0x10;
+    Array<Objective *> *children = this->children;
     if (children == 0) {
         children = new Array<Objective *>();
-        this->field_0x10 = children;
+        this->children = children;
     }
     children->push_back(objective);
     return this;
@@ -37,44 +37,44 @@ Objective *Objective::addObjective(Objective *objective)
 
 Objective::Objective(int type, int value, int calcValue, Level *level)
 {
-    this->field_0x0 = type;
-    this->field_0x4 = value;
-    this->field_0x8 = calcValue;
-    this->field_0xc = level;
-    this->field_0x10 = 0;
-    this->field_0x14 = 0;
+    this->type = type;
+    this->value = value;
+    this->calcValue = calcValue;
+    this->level = level;
+    this->children = 0;
+    this->achievedText = 0;
     if (type == 0xd)
         this->field_0x18 = calcValue;
 }
 
 bool Objective::isSurvivalObjective()
 {
-    return this->field_0x0 == 3;
+    return this->type == 3;
 }
 
 bool Objective::getCalcValue()
 {
-    return this->field_0x0 == 3;
+    return this->type == 3;
 }
 
 Objective *_ZN9ObjectiveD2Ev(Objective *self)
 {
-    Array<Objective *> *children = self->field_0x10;
+    Array<Objective *> *children = self->children;
     if (children != 0) {
         for (Objective *child : *children)
             delete child;
         children->clear();
         delete children;
     }
-    self->field_0x10 = 0;
+    self->children = 0;
 
-    void *text = self->field_0x14;
+    String *text = self->achievedText;
     if (text != 0) {
         typedef void (*ReleaseFn)(void *);
         ReleaseFn release = *(ReleaseFn *)((char *)*(void **)text + 4);
         release(text);
     }
-    self->field_0x14 = 0;
+    self->achievedText = 0;
     return self;
 }
 
@@ -83,22 +83,22 @@ Objective *_ZN9ObjectiveD2Ev(Objective *self)
 // the achieved-text String, mirroring the D2Ev teardown above.
 Objective::~Objective()
 {
-    Array<Objective *> *children = this->field_0x10;
+    Array<Objective *> *children = this->children;
     if (children != 0) {
         for (Objective *child : *children)
             delete child;
         children->clear();
         delete children;
     }
-    this->field_0x10 = 0;
+    this->children = 0;
 
-    void *text = this->field_0x14;
+    String *text = this->achievedText;
     if (text != 0) {
         typedef void (*ReleaseFn)(void *);
         ReleaseFn release = *(ReleaseFn *)((char *)*(void **)text + 4);
         release(text);
     }
-    this->field_0x14 = 0;
+    this->achievedText = 0;
 }
 
 void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective *self,
@@ -106,58 +106,58 @@ void _ZN9Objective15setAchievedTextEPN11AbyssEngine6StringE(Objective *self,
 {
     String *copy = (String *)::operator new(sizeof(String));
     ((String *)(copy))->ctor_copy(text, false);
-    self->field_0x14 = copy;
+    self->achievedText = copy;
 }
 
 unsigned int Objective::achieved(int value)
 {
-    Array<KIPlayer *> *enemies = ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies());
+    Array<KIPlayer *> *enemies = ((Array<KIPlayer *> *)((Level *)(this->level))->getEnemies());
     unsigned int result = 0;
 
-    switch (this->field_0x0) {
+    switch (this->type) {
     case 0:
-        result = ((Level *)(this->field_0xc))->getEnemiesLeft() == 0;
+        result = ((Level *)(this->level))->getEnemiesLeft() == 0;
         break;
     case 1:
         return Objective_tail_enemy(
-            ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]);
+            ((Array<KIPlayer *> *)((Level *)(this->level))->getEnemies())->data()[this->value]);
     case 2:
-        result = *(uint8_t *)((char *)((Route *)(((Level *)(this->field_0xc))->getPlayerRoute()))->getLastWaypoint() + 0x130) != 0;
+        result = *(uint8_t *)((char *)((Route *)(((Level *)(this->level))->getPlayerRoute()))->getLastWaypoint() + 0x130) != 0;
         break;
     case 3:
-        result = this->field_0x4 < value;
+        result = this->value < value;
         break;
     case 4:
-        return Objective_tail_message(((Array<void *> *)((Level *)(this->field_0xc))->getMessages())->data()[this->field_0x4]);
+        return Objective_tail_message(((Array<void *> *)((Level *)(this->level))->getMessages())->data()[this->value]);
     case 5:
-        result = ((Level *)(this->field_0xc))->getFriendsLeft() == 0;
+        result = ((Level *)(this->level))->getFriendsLeft() == 0;
         break;
     case 7: {
         result = 0;
         int i = 0;
-        while (i < this->field_0x4) {
+        while (i < this->value) {
             result += ((KIPlayer *)(enemies->data()[i]))->isDead();
             i++;
         }
-        result = (int)result == this->field_0x4;
+        result = (int)result == this->value;
         break;
     }
     case 8: {
-        Array<KIPlayer *> *asteroids = ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getAsteroids());
+        Array<KIPlayer *> *asteroids = ((Array<KIPlayer *> *)((Level *)(this->level))->getAsteroids());
         result = 0;
         uint32_t i = 0;
         while (i < asteroids->size()) {
             result += ((KIPlayer *)(asteroids->data()[i]))->isDead();
             i++;
         }
-        result = (int)result > this->field_0x4;
+        result = (int)result > this->value;
         break;
     }
     case 9: {
-        Array<KIPlayer *> *asteroids = ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getAsteroids());
+        Array<KIPlayer *> *asteroids = ((Array<KIPlayer *> *)((Level *)(this->level))->getAsteroids());
         uint32_t i = 0;
         while (i < asteroids->size()) {
-            int limit = this->field_0x4;
+            int limit = this->value;
             if ((int)i >= limit)
                 return limit < 1;
             i++;
@@ -165,24 +165,24 @@ unsigned int Objective::achieved(int value)
     }
         [[fallthrough]];
     case 10: {
-        Array<KIPlayer *> *asteroids = ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getAsteroids());
+        Array<KIPlayer *> *asteroids = ((Array<KIPlayer *> *)((Level *)(this->level))->getAsteroids());
         uint32_t i = 0;
         while (i < asteroids->size()) {
-            if ((int)i >= this->field_0x4)
+            if ((int)i >= this->value)
                 return 0;
             i++;
         }
     }
         [[fallthrough]];
     case 11:
-        result = ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]->field_0x69 != 0;
+        result = ((Array<KIPlayer *> *)((Level *)(this->level))->getEnemies())->data()[this->value]->field_0x69 != 0;
         break;
     case 12:
-        result = ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]->field_0x68 != 0;
+        result = ((Array<KIPlayer *> *)((Level *)(this->level))->getEnemies())->data()[this->value]->field_0x68 != 0;
         break;
     case 15:
         return Objective_tail_enemy_payload(
-            ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]->player);
+            ((Array<KIPlayer *> *)((Level *)(this->level))->getEnemies())->data()[this->value]->player);
     case 16: {
         uint32_t i = 0;
         while (i < enemies->size()) {
@@ -205,51 +205,51 @@ unsigned int Objective::achieved(int value)
     }
     case 18: {
         result = 0;
-        int i = this->field_0x4;
-        while (i < this->field_0x8) {
+        int i = this->value;
+        while (i < this->calcValue) {
             result += ((KIPlayer *)(enemies->data()[i]))->isDead();
             i++;
         }
-        result = (int)result == this->field_0x8 - this->field_0x4;
+        result = (int)result == this->calcValue - this->value;
         break;
     }
     case 19:
-        return Objective_tail_level(this->field_0xc);
+        return Objective_tail_level(this->level);
     case 20:
     case 21: {
         result = 0;
-        int i = this->field_0x4;
-        while (i < this->field_0x8) {
+        int i = this->value;
+        while (i < this->calcValue) {
             KIPlayer *enemy = enemies->data()[i];
             if (((KIPlayer *)(enemy))->isDead() != 0 && enemy->shipGroup == 8)
                 result++;
             i++;
         }
-        int count = this->field_0x8 - this->field_0x4;
+        int count = this->calcValue - this->value;
         if ((int)result != count)
             return 0;
-        Level *level = this->field_0xc;
+        Level *level = this->level;
         int field20 = *(int *)((char *)level + 0x20);
         int field24 = *(int *)((char *)level + 0x24);
-        if (this->field_0x0 != 0x14)
+        if (this->type != 0x14)
             return field24 <= field20;
         result = field24 > field20;
         break;
     }
     case 22: {
-        Array<void *> *messages = ((Array<void *> *)((Level *)(this->field_0xc))->getMessages());
-        Array<void *> *messages2 = ((Array<void *> *)((Level *)(this->field_0xc))->getMessages());
+        Array<void *> *messages = ((Array<void *> *)((Level *)(this->level))->getMessages());
+        Array<void *> *messages2 = ((Array<void *> *)((Level *)(this->level))->getMessages());
         return Objective_tail_message(messages->data()[messages2->size() - 1]);
     }
     case 23:
-        result = (uint8_t)((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]->field_0x24 != 0;
+        result = (uint8_t)((Array<KIPlayer *> *)((Level *)(this->level))->getEnemies())->data()[this->value]->field_0x24 != 0;
         break;
     case 25:
-        result = *(float *)&((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]->field_0x64 == 0.0f;
+        result = *(float *)&((Array<KIPlayer *> *)((Level *)(this->level))->getEnemies())->data()[this->value]->field_0x64 == 0.0f;
         break;
     case 26: {
-        int i = this->field_0x4;
-        while (i < this->field_0x8) {
+        int i = this->value;
+        while (i < this->calcValue) {
             int dead = ((KIPlayer *)(enemies->data()[i]))->isDead();
             i++;
             result = 1;
@@ -259,17 +259,17 @@ unsigned int Objective::achieved(int value)
         return 0;
     }
     case 27:
-        result = ((Level *)(this->field_0xc))->getEnemiesLeft() < this->field_0x4;
+        result = ((Level *)(this->level))->getEnemiesLeft() < this->value;
         break;
     case 28:
-        result = ((Level *)(this->field_0xc))->getNumDeliveredOre() >= this->field_0x4;
+        result = ((Level *)(this->level))->getNumDeliveredOre() >= this->value;
         break;
     case 29:
-        result = ((Level *)(this->field_0xc))->getNumDeliveredPassengers() >= this->field_0x4;
+        result = ((Level *)(this->level))->getNumDeliveredPassengers() >= this->value;
         break;
     case 30:
         return Objective_tail_enemy_final(
-            ((Array<KIPlayer *> *)((Level *)(this->field_0xc))->getEnemies())->data()[this->field_0x4]);
+            ((Array<KIPlayer *> *)((Level *)(this->level))->getEnemies())->data()[this->value]);
     default:
         break;
     }

@@ -5,16 +5,8 @@
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 — Mission class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class (no AbyssEngine:: namespace). Field offsets recovered from the
-// per-method target disassembly. We do NOT model a full layout: methods access
-// fields via byte-offset casts from `this` (which arrives in r0 just like the
-// first explicit arg of an extern "C" function).
-//
-// Known offsets:
-//   0x00 vtable ptr        0x10 String name        0x1c String targetName
-//   0x40 String targetStationName                  0x4c String targetSystemName
-//   0x0c int id            0x3c int targetStation  0x58 int reward
-//   0x5c bool instantAction 0x60 float distance     0x64 int campaign
-//   0x68/0x6c production goods (int,int)            0x74 bool visible
+// per-method target disassembly. All members are now named and typed; the embedded
+// String members are real String fields (auto ctor/dtor).
 
 struct Mission;
 struct Agent;
@@ -24,40 +16,41 @@ struct Agent;
 // String is defined once in gof2/common.h.
 using AbyssEngine::String;
 
-// Full Mission layout recovered from the per-method disassembly. The four embedded
-// String members (0x10/0x1c/0x40/0x4c) are reached via byte-offset casts, so they are
-// kept as raw 12-byte slots here.
+// Full named Mission layout (recovered from the per-method disassembly). The four
+// embedded String members (0x10/0x1c/0x40/0x4c) are real String fields: they are
+// auto-constructed/destroyed, so the ctors no longer placement-ctor them and ~Mission
+// no longer hand-destroys them. Trailing comments are the original 32-bit field
+// offsets, kept for cross-reference.
 class Mission {
 public:
     void* field_0x0;                    // +0x0  vtable ptr
-    int field_0x4;                      // +0x4  status flags: failed (byte +0x4), won (byte +0x5)
-    int field_0x8;                      // +0x8  agent pointer slot
-    int id;                      // +0xc  id (also reported as "type")
-    unsigned char name[12];       // +0x10 String name
-    unsigned char targetName[12];       // +0x1c String targetName
+    uint8_t failed;                     // +0x4  failed flag
+    uint8_t won;                        // +0x5  won flag
+    unsigned char _pad_6[2];            // +0x6
+    Agent* agent;                       // +0x8  agent pointer slot
+    int id;                             // +0xc  id (also reported as "type")
+    String name;                        // +0x10 client name String
+    String targetName;                  // +0x1c targetName String
     int field_0x28;                     // +0x28 clientImage
     int field_0x2c;                     // +0x2c clientRace
     int field_0x30;                     // +0x30 reward / costs (getCosts reads this slot)
     int field_0x34;                     // +0x34 costs (setCosts writes this slot)
     int field_0x38;                     // +0x38 bonus
-    int targetStation;                     // +0x3c targetStation
-    unsigned char targetStationName[12];       // +0x40 String targetStationName
-    unsigned char targetSystemName[12];       // +0x4c String targetSystemName
-    int reward;                     // +0x58 difficulty (getDifficulty reads this slot)
-    uint8_t instantAction;                 // +0x5c instantAction
+    int targetStation;                  // +0x3c targetStation
+    String targetStationName;           // +0x40 targetStationName String
+    String targetSystemName;            // +0x4c targetSystemName String
+    int reward;                         // +0x58 difficulty (getDifficulty reads this slot)
+    uint8_t instantAction;              // +0x5c instantAction
     unsigned char _pad_5d[3];
-    int distance;                     // +0x60 distance  getDistance()
-    int campaign;                     // +0x64 campaign  setCampaignMission()
-    int productionGoodsA;                     // +0x68 production good index
-    int productionGoodsB;                     // +0x6c production good amount
+    int distance;                       // +0x60 distance  getDistance()
+    int campaign;                       // +0x64 campaign  setCampaignMission()
+    int productionGoodsA;               // +0x68 production good index
+    int productionGoodsB;               // +0x6c production good amount
     int field_0x70;                     // +0x70 status value
-    uint8_t visible;                 // +0x74 visible
+    uint8_t visible;                    // +0x74 visible
 
     // ---- constructors / destructor (demangle to Mission::Mission / ~Mission) ----
-    // The four String members are byte-offset views (0x10/0x1c/0x40/0x4c), placement-
-    // constructed in the ctors and destroyed in ~Mission(). The former (int,int,int)
-    // aliases ctor_akw/ctorEmpty collapse into Mission(int,int,int); ctorFull collapses
-    // into the 7-arg ctor (its call site applies the int*->int cast).
+    // The four String members are real fields, auto ctor/dtor'd.
     Mission();
     Mission(int id);
     Mission(int id, int goods, int station);
